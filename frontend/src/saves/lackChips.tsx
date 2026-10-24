@@ -71,7 +71,7 @@ function LackChip({
         bgcolor: 'var(--mortar-overlay-30)',
       }}
     >
-      <Typography sx={{ fontSize: 13, ...nowrap }}>
+      <Typography sx={{ fontSize: 'base.fontSize', ...nowrap }}>
         {lack.disabled ? t`${name} (disabled)` : lack.name}
       </Typography>
       <LackChipActions

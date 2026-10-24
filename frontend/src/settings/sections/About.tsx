@@ -29,7 +29,7 @@ function CreditList() {
         gridTemplateColumns: `repeat(auto-fill, minmax(${CREDIT_COLUMN}, 1fr))`,
         columnGap: 4,
         rowGap: '6px',
-        fontSize: 14,
+        fontSize: 'medium.fontSize',
       }}
     >
       {credits.map((entry) => (
@@ -81,13 +81,20 @@ export function About() {
             <Box component="span" sx={{ fontSize: 18, fontWeight: 700 }}>
               {t`Mortar`}
             </Box>
-            <Box component="span" sx={{ color: 'var(--mortar-ink-sec)', fontSize: 14 }}>
+            <Box
+              component="span"
+              sx={{ color: 'var(--mortar-ink-sec)', fontSize: 'medium.fontSize' }}
+            >
               {LICENSE_LINE}
             </Box>
             {info?.version ? (
               <Box
                 component="span"
-                sx={{ color: 'var(--mortar-ink-sec)', fontSize: 14, userSelect: 'text' }}
+                sx={{
+                  color: 'var(--mortar-ink-sec)',
+                  fontSize: 'medium.fontSize',
+                  userSelect: 'text',
+                }}
               >
                 {[
                   t`Version ${{ version: info.version }}`,

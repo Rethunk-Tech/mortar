@@ -201,7 +201,7 @@ function CardTitle(props: { name: string; flag: 'error' | 'warning' | null; onOp
           <TriangleAlert size={15} aria-hidden={true} />
         </Box>
       ) : null}
-      <Typography noWrap={true} title={name} sx={{ fontSize: 15, fontWeight: 600 }}>
+      <Typography noWrap={true} title={name} sx={{ fontSize: 'lead.fontSize', fontWeight: 600 }}>
         {name}
       </Typography>
     </ButtonBase>
@@ -220,13 +220,17 @@ function Byline({ author, reuploadOf }: { author: string; reuploadOf: string }) 
       {author === '' ? null : (
         <Typography
           noWrap={true}
-          sx={{ fontSize: 12, fontWeight: 500, color: 'var(--mortar-accent-ink)' }}
+          sx={{ fontSize: 'small.fontSize', fontWeight: 500, color: 'var(--mortar-accent-ink)' }}
         >
           {formatAuthors(author)}
         </Typography>
       )}
       {reuploadOf === '' ? null : (
-        <Typography noWrap={true} title={reuploadOf} sx={{ fontSize: 12, color: 'warning.main' }}>
+        <Typography
+          noWrap={true}
+          title={reuploadOf}
+          sx={{ fontSize: 'small.fontSize', color: 'warning.main' }}
+        >
           {t`Possibly a re-upload of ${reuploadOf}`}
         </Typography>
       )}
@@ -242,7 +246,7 @@ function StatsLine({ stats }: { stats: string[] }) {
   return (
     <Typography
       sx={{
-        fontSize: 12,
+        fontSize: 'small.fontSize',
         color: 'var(--mortar-ink-dim-60)',
         fontVariantNumeric: 'tabular-nums',
         display: 'flex',
@@ -367,7 +371,7 @@ const ResultCard = memo(function BrowseResultCard(props: ResultCardProps) {
         <Typography
           title={summary}
           sx={{
-            fontSize: 13,
+            fontSize: 'base.fontSize',
             color: 'var(--mortar-ink-85)',
             display: '-webkit-box',
             WebkitLineClamp: row ? 1 : 2,

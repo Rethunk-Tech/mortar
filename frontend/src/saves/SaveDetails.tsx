@@ -22,7 +22,7 @@ function Stat({ icon, children }: { icon: ReactNode; children: ReactNode }) {
         display: 'flex',
         alignItems: 'center',
         gap: 0.75,
-        fontSize: 13,
+        fontSize: 'base.fontSize',
         color: 'var(--mortar-ink-85)',
         ...nowrap,
       }}
@@ -81,7 +81,7 @@ export function SaveDetails({
         }}
       >
         <Typography
-          sx={{ flex: 1, minWidth: 0, fontSize: 12, color: 'text.secondary' }}
+          sx={{ flex: 1, minWidth: 0, fontSize: 'small.fontSize', color: 'text.secondary' }}
           noWrap={true}
           title={fit.played ? absoluteWhen(fit.played, i18n.locale) || undefined : undefined}
         >
@@ -89,7 +89,7 @@ export function SaveDetails({
         </Typography>
         {fit.lastProfileId ? (
           <Typography
-            sx={{ fontSize: 12, color: 'text.secondary' }}
+            sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}
             noWrap={true}
             title={lastGone ? fit.lastProfileId : lastLine}
           >

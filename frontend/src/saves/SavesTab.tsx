@@ -48,7 +48,10 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
   if (status === 'error') {
     body = (
       <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-        <Typography sx={{ fontSize: 13, color: 'error.main' }} title={errorDetails(detail)}>
+        <Typography
+          sx={{ fontSize: 'base.fontSize', color: 'error.main' }}
+          title={errorDetails(detail)}
+        >
           {errorMessage(detail)}
         </Typography>
         <Button

@@ -149,7 +149,7 @@ const Row = memo(function RowView({
               px: 0.75,
               flexShrink: 0,
               borderRadius: '10px',
-              fontSize: 12,
+              fontSize: 'small.fontSize',
               fontVariantNumeric: 'tabular-nums',
               bgcolor: 'var(--mortar-hairline-16)',
               color: 'text.secondary',

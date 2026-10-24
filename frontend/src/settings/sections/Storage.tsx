@@ -96,7 +96,7 @@ export function Storage() {
             gap: space.gap,
             px: space.pad,
             py: space.pad,
-            fontSize: 15,
+            fontSize: 'lead.fontSize',
           }}
         >
           {t`Could not measure disk use`}

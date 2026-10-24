@@ -98,11 +98,14 @@ function NotesEditor({ profile, onDone }: { profile: Profile; onDone: () => void
           {t`Done`}
         </Button>
         {typeof status === 'object' ? (
-          <Typography sx={{ fontSize: 13, color: 'error.main' }} title={errorDetails(status.error)}>
+          <Typography
+            sx={{ fontSize: 'base.fontSize', color: 'error.main' }}
+            title={errorDetails(status.error)}
+          >
             {errorMessage(status.error)}
           </Typography>
         ) : (
-          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+          <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
             {STATUS_TEXT[status]?.()}
           </Typography>
         )}

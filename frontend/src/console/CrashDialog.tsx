@@ -245,7 +245,7 @@ export function CrashDialog() {
         </DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
           {crash.cause ? (
-            <Box sx={{ fontSize: 14 }}>
+            <Box sx={{ fontSize: 'medium.fontSize' }}>
               <Box sx={{ fontWeight: 700 }}>{t`Caused by ${{ name: crash.cause.modName }}`}</Box>
               <Box sx={{ color: 'text.secondary', mt: 0.25 }} title={crash.cause.detail}>
                 {causeBody}
@@ -253,14 +253,14 @@ export function CrashDialog() {
             </Box>
           ) : null}
           {crash.mods === null || crash.mods.length === 0 ? (
-            <Typography sx={{ fontSize: 14 }}>
+            <Typography sx={{ fontSize: 'medium.fontSize' }}>
               {canBisect
                 ? t`Mortar could not tell which mod caused this. Finding the mod tries halves of your mods until the crash stops; your profile is not changed.`
                 : t`The game log has errors.`}
             </Typography>
           ) : (
             crash.mods.map((row: { mod: string; count: number; first: string }) => (
-              <Box key={row.mod} sx={{ fontSize: 14, lineHeight: 1.45 }}>
+              <Box key={row.mod} sx={{ fontSize: 'medium.fontSize', lineHeight: 1.45 }}>
                 <Box sx={{ fontWeight: 700 }}>
                   <Link component="button" type="button" onClick={() => showMod(row.mod, dismiss)}>
                     {row.mod}

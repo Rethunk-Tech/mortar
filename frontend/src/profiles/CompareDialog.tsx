@@ -128,7 +128,7 @@ function CompareFooter({
         borderColor: 'divider',
       }}
     >
-      <Typography color="text.secondary" sx={{ fontSize: 13 }}>
+      <Typography color="text.secondary" sx={{ fontSize: 'base.fontSize' }}>
         {t`${count} selected`}
       </Typography>
       <Box sx={{ flex: 1 }} />

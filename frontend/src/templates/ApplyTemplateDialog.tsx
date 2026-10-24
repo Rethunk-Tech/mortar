@@ -57,7 +57,7 @@ function PreviewGroups({ preview }: { preview: Preview }) {
         <div key={group.title}>
           <Typography sx={{ mt: 1.5, fontWeight: 600 }}>{group.title}</Typography>
           {group.names.length > 0 ? (
-            <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+            <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
               {group.names.join(', ')}
             </Typography>
           ) : null}

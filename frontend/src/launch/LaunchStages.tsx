@@ -289,7 +289,7 @@ function Label({ mark, shown }: { mark: StageMark; shown: Shown }) {
         gap: 0.75,
       }}
     >
-      <Typography sx={{ fontWeight: 600, fontSize: 14 }} noWrap={true}>
+      <Typography sx={{ fontWeight: 600, fontSize: 'medium.fontSize' }} noWrap={true}>
         {mark.name}
       </Typography>
       <Typography

@@ -82,7 +82,7 @@ export function TitleBar({ maximised }: { maximised: boolean }) {
       <AppMenu />
       <Box sx={rule} />
       {routeName === 'setup' ? (
-        <Box component="span" sx={{ px: '10px', fontSize: 14, fontWeight: 600 }}>
+        <Box component="span" sx={{ px: '10px', fontSize: 'medium.fontSize', fontWeight: 600 }}>
           {t`Setup`}
         </Box>
       ) : (
@@ -97,7 +97,7 @@ export function TitleBar({ maximised }: { maximised: boolean }) {
       {routeName === 'settings' ? (
         <>
           <Slash />
-          <Box component="span" sx={{ fontSize: 14, fontWeight: 600 }}>
+          <Box component="span" sx={{ fontSize: 'medium.fontSize', fontWeight: 600 }}>
             {t`Settings`}
           </Box>
         </>

@@ -171,12 +171,12 @@ function OverlayValues({
         key={key}
         sx={{ display: 'flex', alignItems: 'center', gap: space.gap, minHeight: space.control }}
       >
-        <Box sx={{ width: 140, flexShrink: 0, fontSize: 13 }}>{label}</Box>
+        <Box sx={{ width: 140, flexShrink: 0, fontSize: 'base.fontSize' }}>{label}</Box>
         <Box
           sx={{
             flexGrow: 1,
             minWidth: 0,
-            fontSize: 13,
+            fontSize: 'base.fontSize',
             color: 'var(--mortar-ink-sec)',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -198,13 +198,15 @@ function OverlayValues({
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
       <Box sx={{ display: 'flex', alignItems: 'baseline', gap: space.gap }}>
-        <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Values`}</Box>
-        {status ? <Box sx={{ fontSize: 12, color: 'text.secondary' }}>{status}</Box> : null}
+        <Box sx={{ fontSize: 'medium.fontSize', fontWeight: 600 }}>{t`Values`}</Box>
+        {status ? (
+          <Box sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>{status}</Box>
+        ) : null}
       </Box>
       {row('all', t`All values`)}
       {groups.map((g) => (
         <Box key={g.title} sx={{ display: 'flex', flexDirection: 'column' }}>
-          <Box sx={{ fontSize: 12, fontWeight: 600, color: 'text.secondary', mt: 1 }}>
+          <Box sx={{ fontSize: 'small.fontSize', fontWeight: 600, color: 'text.secondary', mt: 1 }}>
             {g.title}
           </Box>
           {g.fields.map((f) => row(f, <OverlayFieldLabel field={f} />, f))}
@@ -218,7 +220,7 @@ function OverlayHowTo({ copied }: { copied: string }) {
   const { t } = useLingui()
   const [done, setDone] = useState(false)
   return (
-    <Box sx={{ fontSize: 13, color: 'var(--mortar-ink-sec)' }}>
+    <Box sx={{ fontSize: 'base.fontSize', color: 'var(--mortar-ink-sec)' }}>
       {t`In ${{ app: OBS }}: Sources, +, Browser, paste the URL. Width 400, height 80. Style with Custom CSS.`}
       <Button
         variant="text"

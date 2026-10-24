@@ -24,12 +24,16 @@ export function DetailsHeader({
     <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
       {picture}
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography noWrap={true} title={title} sx={{ fontSize: 16, fontWeight: 700 }}>
+        <Typography
+          noWrap={true}
+          title={title}
+          sx={{ fontSize: 'large.fontSize', fontWeight: 700 }}
+        >
           {title}
         </Typography>
         <Typography
           component="div"
-          sx={{ fontSize: 13, color: 'text.secondary', overflowWrap: 'anywhere' }}
+          sx={{ fontSize: 'base.fontSize', color: 'text.secondary', overflowWrap: 'anywhere' }}
         >
           {subtitle}
         </Typography>

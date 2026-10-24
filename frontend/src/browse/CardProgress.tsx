@@ -33,7 +33,7 @@ function Block({
         minWidth: 0,
       }}
     >
-      <Typography noWrap={true} title={title} sx={{ fontSize: 12, lineHeight: 1.2 }}>
+      <Typography noWrap={true} title={title} sx={{ fontSize: 'small.fontSize', lineHeight: 1.2 }}>
         {label}
       </Typography>
       {children}

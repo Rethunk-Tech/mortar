@@ -33,7 +33,7 @@ export function SectionTitle({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        fontSize: 12,
+        fontSize: 'small.fontSize',
         fontWeight: 700,
         letterSpacing: '0.06em',
         textTransform: 'uppercase',

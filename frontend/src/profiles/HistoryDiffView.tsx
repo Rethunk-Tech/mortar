@@ -23,13 +23,15 @@ export function HistoryDiffView({
   const lines = diffLines(diff)
   return (
     <Box sx={{ mb: 2, p: space.pad, bgcolor: 'var(--mortar-paper-78)', borderRadius: '6px' }}>
-      <Typography sx={{ fontWeight: 600, fontSize: 13 }}>{t`Snapshot diff`}</Typography>
+      <Typography
+        sx={{ fontWeight: 600, fontSize: 'base.fontSize' }}
+      >{t`Snapshot diff`}</Typography>
       {lines.length === 0 ? (
         <Typography
-          sx={{ mt: 1, fontSize: 13, color: 'text.secondary' }}
+          sx={{ mt: 1, fontSize: 'base.fontSize', color: 'text.secondary' }}
         >{t`No differences.`}</Typography>
       ) : (
-        <Box component="ul" sx={{ m: 0, mt: 1, pl: space.pad, fontSize: 13 }}>
+        <Box component="ul" sx={{ m: 0, mt: 1, pl: space.pad, fontSize: 'base.fontSize' }}>
           {lines.map((line) => (
             <li key={line}>{line}</li>
           ))}

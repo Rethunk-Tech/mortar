@@ -20,7 +20,7 @@ function PagePreview({ info, onClose }: { info: ShownInfo; onClose: () => void }
     placeItems: 'center',
     height: 40,
     borderRadius: '6px',
-    fontSize: 14,
+    fontSize: 'medium.fontSize',
     whiteSpace: 'nowrap',
   } as const
   return (
@@ -53,7 +53,7 @@ function PagePreview({ info, onClose }: { info: ShownInfo; onClose: () => void }
             display: 'flex',
             alignItems: 'center',
             gap: space.gap,
-            fontSize: 13,
+            fontSize: 'base.fontSize',
             fontWeight: 700,
           }}
         >
@@ -76,7 +76,7 @@ function PagePreview({ info, onClose }: { info: ShownInfo; onClose: () => void }
         >
           {info.name}
         </Typography>
-        <Typography sx={{ fontSize: 13, color: 'inherit' }}>
+        <Typography sx={{ fontSize: 'base.fontSize', color: 'inherit' }}>
           {`${gameName} · ${modsLabel(count)}`}
         </Typography>
         <Box sx={{ ...button, bgcolor: '#1b1a17', color: '#f4f1ea', fontWeight: 700 }}>
@@ -84,7 +84,7 @@ function PagePreview({ info, onClose }: { info: ShownInfo; onClose: () => void }
         </Box>
         <Box sx={{ ...button, border: '1px solid #1b1a17' }}>{t`Get Mortar`}</Box>
       </Box>
-      <Typography sx={{ fontSize: 12, color: 'text.secondary', lineHeight: 1.5 }}>
+      <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary', lineHeight: 1.5 }}>
         {t`The page reads the profile from the link itself. Nothing is uploaded or stored on a server.`}
       </Typography>
     </Box>

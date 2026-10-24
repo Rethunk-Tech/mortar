@@ -59,10 +59,12 @@ export function NexusSSO() {
       >
         {t`Sign in to ${{ source: sourceLabel('nexus') }}`}
       </Button>
-      {stage === 'connected' ? <Box sx={{ fontSize: 14 }}>{t`Connecting…`}</Box> : null}
+      {stage === 'connected' ? (
+        <Box sx={{ fontSize: 'medium.fontSize' }}>{t`Connecting…`}</Box>
+      ) : null}
       {stage === 'waiting-browser' ? (
         <>
-          <Box sx={{ fontSize: 14 }}>{t`Approve Mortar in your browser…`}</Box>
+          <Box sx={{ fontSize: 'medium.fontSize' }}>{t`Approve Mortar in your browser…`}</Box>
           <Button
             variant="outlined"
             color="inherit"

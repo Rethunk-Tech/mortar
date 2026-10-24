@@ -54,7 +54,7 @@ function useOpenProblems() {
 function OfflineChecksNote() {
   const { t } = useLingui()
   return (
-    <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+    <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
       {t`Some checks could not run without a connection, so more problems may show up later.`}
     </Typography>
   )
@@ -97,7 +97,7 @@ function RedundantSection({
       />
       {dismissed.length > 0 ? (
         <Box>
-          <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 0.75 }}>
+          <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary', mb: 0.75 }}>
             {t`Dismissed`}
           </Typography>
           <CleanupSection
@@ -469,7 +469,7 @@ function CheckingLine() {
           gap: space.gap,
         }}
       >
-        <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
+        <Typography sx={{ fontSize: 'medium.fontSize', color: 'text.secondary' }}>
           {count > 0
             ? t`Checking ${plural({ count }, { one: '# mod', other: '# mods' })} for conflicts, missing requirements and compatibility…`
             : t`Checking the mods for problems…`}

@@ -75,7 +75,7 @@ export function CrashHintCard({ game, profileId }: { game: string; profileId: st
                 ? t`The game crashed ${{ when: formatWhen(crashedAt) }}`
                 : t`The game crashed`}
             </Typography>
-            <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+            <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
               {culprit
                 ? t`Most likely cause: ${{ name: hint.modName }} (${{ reason: reason || named }})`
                 : reason || t`The log does not name a mod.`}
@@ -84,7 +84,7 @@ export function CrashHintCard({ game, profileId }: { game: string; profileId: st
               <Typography
                 title={hint.nativeFrame}
                 sx={{
-                  fontSize: 12,
+                  fontSize: 'small.fontSize',
                   color: 'text.secondary',
                   fontFamily: MONO,
                   wordBreak: 'break-all',
@@ -97,7 +97,7 @@ export function CrashHintCard({ game, profileId }: { game: string; profileId: st
               <Typography
                 title={hint.evidence}
                 sx={{
-                  fontSize: 12,
+                  fontSize: 'small.fontSize',
                   color: 'text.secondary',
                   fontFamily: MONO,
                   wordBreak: 'break-all',

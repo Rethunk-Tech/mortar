@@ -35,7 +35,13 @@ function ReplacedRow({ file, onRestore }: { file: ReplacedFile; onRestore: () =>
       </Box>
       <Typography
         title={file.path}
-        sx={{ flex: 1, minWidth: 0, fontSize: 14, whiteSpace: 'normal', wordBreak: 'break-word' }}
+        sx={{
+          flex: 1,
+          minWidth: 0,
+          fontSize: 'medium.fontSize',
+          whiteSpace: 'normal',
+          wordBreak: 'break-word',
+        }}
       >
         {file.path}
       </Typography>
@@ -63,7 +69,7 @@ export function ReplacedSection({ files }: { files: ReplacedFile[] }) {
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, mb: 1 }}>
-        <Typography sx={{ flex: 1, fontSize: 14 }}>
+        <Typography sx={{ flex: 1, fontSize: 'medium.fontSize' }}>
           {plural(
             { count: files.length },
             {

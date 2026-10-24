@@ -37,21 +37,25 @@ function PreviewLists({ preview }: { preview: EverywherePreview }) {
   }
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
-      <Typography sx={{ fontSize: 13 }}>{t`Will update`}</Typography>
+      <Typography sx={{ fontSize: 'base.fontSize' }}>{t`Will update`}</Typography>
       {affected.length === 0 ? (
         <Typography color="text.secondary">{t`No eligible profiles.`}</Typography>
       ) : (
         affected.map((row) => (
-          <Typography key={row.profileId} sx={{ fontSize: 13 }}>
+          <Typography key={row.profileId} sx={{ fontSize: 'base.fontSize' }}>
             {row.name}
           </Typography>
         ))
       )}
       {skipped.length > 0 ? (
         <>
-          <Typography sx={{ fontSize: 13 }}>{t`Skipped`}</Typography>
+          <Typography sx={{ fontSize: 'base.fontSize' }}>{t`Skipped`}</Typography>
           {skipped.map((row) => (
-            <Typography key={row.profileId} sx={{ fontSize: 13 }} color="text.secondary">
+            <Typography
+              key={row.profileId}
+              sx={{ fontSize: 'base.fontSize' }}
+              color="text.secondary"
+            >
               {t`${{ name: row.name }}: ${{ reason: reasonText(row.reason) }}`}
             </Typography>
           ))}

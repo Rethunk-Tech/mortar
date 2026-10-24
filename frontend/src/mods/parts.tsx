@@ -398,7 +398,7 @@ export function LastRunBadge({ mod }: { mod: Mod }) {
     px: 0.4,
     borderRadius: '4px',
     color: 'common.white',
-    fontSize: 11,
+    fontSize: 'tiny.fontSize',
     fontWeight: 700,
     lineHeight: '16px',
     textAlign: 'center',

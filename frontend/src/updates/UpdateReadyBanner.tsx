@@ -18,7 +18,7 @@ export function UpdateReadyBanner() {
       sx={{
         '--wails-draggable': 'no-drag',
         borderRadius: 0,
-        fontSize: 14,
+        fontSize: 'medium.fontSize',
         alignItems: 'center',
       }}
       action={

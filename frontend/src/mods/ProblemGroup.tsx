@@ -32,13 +32,13 @@ export function ProblemGroup({ tab }: { tab: ProblemTab }) {
       sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Typography component="h2" sx={{ fontSize: 16, fontWeight: 600 }}>
+        <Typography component="h2" sx={{ fontSize: 'large.fontSize', fontWeight: 600 }}>
           {tab.label}
         </Typography>
         <Typography
           component="span"
           sx={{
-            fontSize: 13,
+            fontSize: 'base.fontSize',
             color: tab.errors ? 'error.main' : 'text.secondary',
             fontWeight: tab.errors ? STRONG : PLAIN,
           }}
@@ -84,7 +84,7 @@ export function FooterLinks({
           aria-expanded={open === tab.id}
           onClick={() => onToggle(tab.id)}
           sx={{
-            fontSize: 13,
+            fontSize: 'base.fontSize',
             color: open === tab.id ? 'text.primary' : 'text.secondary',
             fontWeight: open === tab.id ? STRONG : PLAIN,
           }}

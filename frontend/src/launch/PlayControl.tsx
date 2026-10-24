@@ -161,14 +161,14 @@ export function PlayControl({ game, rail }: { game: string; rail: boolean }) {
               <Typography
                 role="status"
                 noWrap={true}
-                sx={{ fontSize: 14, fontWeight: 600, minWidth: 0, flex: 1 }}
+                sx={{ fontSize: 'medium.fontSize', fontWeight: 600, minWidth: 0, flex: 1 }}
               >
                 {who === '' ? t`Running` : t`Running ${who}`}
               </Typography>
               <Typography
                 noWrap={true}
                 sx={{
-                  fontSize: 15,
+                  fontSize: 'lead.fontSize',
                   fontWeight: 600,
                   fontVariantNumeric: 'tabular-nums',
                   color: 'var(--mortar-ink-soft)',

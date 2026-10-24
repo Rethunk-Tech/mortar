@@ -18,7 +18,9 @@ const NOTE_MAX_PX = 260
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-      <Typography sx={{ fontSize: 12, color: 'var(--mortar-ink-soft)' }}>{label}</Typography>
+      <Typography sx={{ fontSize: 'small.fontSize', color: 'var(--mortar-ink-soft)' }}>
+        {label}
+      </Typography>
       {children}
     </Box>
   )
@@ -91,7 +93,7 @@ export function PlayInstances({
             maxWidth: NOTE_MAX_PX,
           }}
         >
-          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+          <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
             {t`This game starts through its store, which runs one copy. A Direct launch can start several.`}
           </Typography>
           <Button

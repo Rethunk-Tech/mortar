@@ -57,7 +57,7 @@ function OtherPicker({
   const listed = useProfiles((s) => s.profiles)
   const [menu, setMenu] = useState<HTMLElement | null>(null)
   const heading = {
-    fontSize: 11,
+    fontSize: 'tiny.fontSize',
     fontWeight: 700,
     letterSpacing: '0.08em',
     lineHeight: '28px',

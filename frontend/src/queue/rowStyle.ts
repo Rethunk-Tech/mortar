@@ -8,7 +8,7 @@ export const ROW = {
   borderRadius: '6px',
 } as const
 export const detail = {
-  fontSize: 12,
+  fontSize: 'small.fontSize',
   whiteSpace: 'nowrap',
   overflow: 'hidden',
   textOverflow: 'ellipsis',

@@ -29,11 +29,11 @@ export function FoundProfileRow({
         <Typography title={name} noWrap={true} sx={{ fontWeight: 600 }}>
           {name}
         </Typography>
-        <Typography color="text.secondary" sx={{ fontSize: 12 }}>
+        <Typography color="text.secondary" sx={{ fontSize: 'small.fontSize' }}>
           {source}
         </Typography>
       </Box>
-      <Typography color="text.secondary" sx={{ fontSize: 13, flexShrink: 0 }}>
+      <Typography color="text.secondary" sx={{ fontSize: 'base.fontSize', flexShrink: 0 }}>
         {modsLabel(mods)}
       </Typography>
     </Button>

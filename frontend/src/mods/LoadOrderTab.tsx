@@ -288,7 +288,7 @@ function OrderList({
         ref={parentRef}
         sx={{ flex: 1, minHeight: 0, overflow: 'auto', px: space.gutter, pb: space.gutter }}
       >
-        <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1.5 }}>
+        <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary', mb: 1.5 }}>
           {t`The game loader chooses this order. Mortar does not change it.`}
         </Typography>
         <Box sx={{ position: 'relative', height: virtualizer.getTotalSize() }}>

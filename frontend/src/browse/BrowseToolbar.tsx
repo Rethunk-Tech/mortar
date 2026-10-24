@@ -28,7 +28,7 @@ const sourceButton = {
   minWidth: 34,
   height: `calc(${space.control} - 6px)`,
   px: space.gap,
-  fontSize: 13,
+  fontSize: 'base.fontSize',
 }
 
 // The source picker shows each site's logo, named in its tooltip; a source with no logo shows its name.

@@ -97,7 +97,7 @@ function StartFromSelect({
         ))}
       </TextField>
       {chosen ? (
-        <Typography sx={{ mt: 0.75, fontSize: 13, color: 'text.secondary' }}>
+        <Typography sx={{ mt: 0.75, fontSize: 'base.fontSize', color: 'text.secondary' }}>
           {t`${{ description: chosen.description }} Adds ${{ names: listNames((chosen.packages ?? []).map((p) => p.name)) }}.`}
         </Typography>
       ) : null}

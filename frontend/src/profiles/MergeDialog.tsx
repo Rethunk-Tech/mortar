@@ -68,7 +68,7 @@ function AddsLine({ adds, targetName }: { adds: Preview['adds']; targetName: str
       {open ? (
         <Box component="ul" sx={{ m: 0, p: 0, pl: 2.5, maxHeight: 160, overflowY: 'auto' }}>
           {adds.map((side) => (
-            <Typography component="li" key={side.id} sx={{ fontSize: 13 }}>
+            <Typography component="li" key={side.id} sx={{ fontSize: 'base.fontSize' }}>
               {side.name}
             </Typography>
           ))}

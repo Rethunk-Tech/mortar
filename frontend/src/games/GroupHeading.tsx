@@ -28,7 +28,7 @@ const GroupHeading = memo(function GroupHeadingView({
           px: '40px',
           pt: '14px',
           pb: '8px',
-          fontSize: 12,
+          fontSize: 'small.fontSize',
           fontWeight: 700,
           letterSpacing: '0.08em',
           textTransform: 'uppercase',

@@ -249,10 +249,10 @@ export function ReportToAuthorButton({
         <DialogTitle sx={{ fontSize: 22, fontWeight: 700 }}>{t`Report to author`}</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
           {log === null ? (
-            <Typography sx={{ fontSize: 14 }}>{t`Reading the log…`}</Typography>
+            <Typography sx={{ fontSize: 'medium.fontSize' }}>{t`Reading the log…`}</Typography>
           ) : (
             <>
-              <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
+              <Typography sx={{ fontSize: 'medium.fontSize', lineHeight: 1.5 }}>
                 {shareLogConfirm(i18n, bytes)}
               </Typography>
               <Alert severity="warning" icon={<TriangleAlert size={16} aria-hidden={true} />}>

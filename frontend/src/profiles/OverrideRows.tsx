@@ -105,8 +105,10 @@ export function OverridesSection({
   }
   return (
     <Box sx={{ mt: 2, mb: 2 }}>
-      <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{t`Overrides`}</Typography>
-      <Typography sx={{ fontSize: 12, color: 'text.secondary', mb: 1 }}>
+      <Typography
+        sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}
+      >{t`Overrides`}</Typography>
+      <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary', mb: 1 }}>
         {t`These apply only to this profile.`}
       </Typography>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.pad, pt: 1 }}>

@@ -107,7 +107,7 @@ export function ReportSelect({
       displayEmpty={true}
       onChange={(event) => onChange(event.target.value)}
       slotProps={{ input: { 'aria-label': label } }}
-      sx={{ minWidth: 145, fontSize: 12 }}
+      sx={{ minWidth: 145, fontSize: 'small.fontSize' }}
     >
       <MenuItem value="">{label}</MenuItem>
       {reports.map((report) => (

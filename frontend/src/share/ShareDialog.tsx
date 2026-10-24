@@ -102,7 +102,7 @@ export function ShareDialog() {
                 noWrap={true}
                 sx={{
                   color: 'text.secondary',
-                  fontSize: 14,
+                  fontSize: 'medium.fontSize',
                   px: space.pad,
                   ...(destination ? { pl: 0 } : {}),
                 }}

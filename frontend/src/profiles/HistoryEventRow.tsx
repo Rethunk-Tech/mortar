@@ -89,12 +89,12 @@ export function HistoryEventRow({
         <Box sx={{ display: 'flex', color: 'text.secondary' }}>{ICONS[historyKind(ev)]}</Box>
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, flexWrap: 'wrap' }}>
-            <Typography sx={{ fontSize: 14, fontWeight: 600 }}>{summary}</Typography>
+            <Typography sx={{ fontSize: 'medium.fontSize', fontWeight: 600 }}>{summary}</Typography>
             {ev.kind === 'good' ? (
               <Chip size="small" color="success" variant="outlined" label={t`Known good`} />
             ) : null}
           </Box>
-          <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+          <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
             <When value={ev.at} withTime={true} />
           </Typography>
         </Box>
@@ -153,7 +153,9 @@ export function HistoryEventRow({
                 py: 0.25,
               }}
             >
-              <Typography sx={{ fontSize: 13, flex: 1, minWidth: 0 }}>{itemLabel(item)}</Typography>
+              <Typography sx={{ fontSize: 'base.fontSize', flex: 1, minWidth: 0 }}>
+                {itemLabel(item)}
+              </Typography>
               <Tooltip
                 describeChild={true}
                 title={t`Undo only this mod's change from this entry. Everything else stays as it is.`}

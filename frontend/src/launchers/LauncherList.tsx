@@ -26,7 +26,7 @@ const STATUS_ICON = 30
 // Two columns once each can hold a row comfortably.
 const COLUMN_MIN = 400
 
-const pathSx = { fontSize: 13, userSelect: 'text', overflowWrap: 'anywhere' } as const
+const pathSx = { fontSize: 'base.fontSize', userSelect: 'text', overflowWrap: 'anywhere' } as const
 
 const MISSING_OPACITY = 0.5
 
@@ -58,7 +58,9 @@ function FolderRow({
       >
         {dir}
       </Typography>
-      <Typography sx={{ fontSize: 12, color: 'text.secondary', whiteSpace: 'nowrap' }}>
+      <Typography
+        sx={{ fontSize: 'small.fontSize', color: 'text.secondary', whiteSpace: 'nowrap' }}
+      >
         {note}
       </Typography>
       {onRemove ? (
@@ -98,7 +100,11 @@ function FixedRow({ launcher, heading }: { launcher: StoreApp; heading: Heading 
         <Typography component={heading} sx={{ fontSize: 17, fontWeight: 700 }}>
           {launcher.name}
         </Typography>
-        <Typography title={summary} sx={{ fontSize: 13, color: 'text.secondary' }} noWrap={true}>
+        <Typography
+          title={summary}
+          sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}
+          noWrap={true}
+        >
           {summary}
         </Typography>
       </Box>
@@ -183,7 +189,11 @@ function LauncherRow({
           <Typography component={heading} sx={{ fontSize: 17, fontWeight: 700 }}>
             {launcher.name}
           </Typography>
-          <Typography title={summary} sx={{ fontSize: 13, color: 'text.secondary' }} noWrap={true}>
+          <Typography
+            title={summary}
+            sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}
+            noWrap={true}
+          >
             {summary}
           </Typography>
         </Box>
@@ -250,7 +260,7 @@ function LauncherRow({
           <Typography
             role="alert"
             title={error.details}
-            sx={{ fontSize: 13, color: 'error.light' }}
+            sx={{ fontSize: 'base.fontSize', color: 'error.light' }}
           >
             {error.message}
           </Typography>

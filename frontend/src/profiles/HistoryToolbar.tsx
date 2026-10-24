@@ -45,14 +45,14 @@ export function HistoryToolbar({
         {t`Restore known good`}
       </Button>
       {canRestore ? null : (
-        <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+        <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
           {t`Mark a known good point first.`}
         </Typography>
       )}
       <Box sx={{ flex: 1 }} />
       {comparing ? (
         <>
-          <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+          <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
             {t`Pick two entries (${picked} of 2)`}
           </Typography>
           <Button size="small" variant="contained" disabled={picked !== 2} onClick={onCompare}>

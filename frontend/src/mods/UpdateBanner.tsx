@@ -54,12 +54,12 @@ export function UpdateBanner({ mod }: { mod: Mod }) {
     >
       <Box sx={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
         {official ? (
-          <Typography sx={{ fontSize: 13 }}>
+          <Typography sx={{ fontSize: 'base.fontSize' }}>
             {t`Update available: ${{ installed: official.installed }} to ${{ version: official.version }}`}
           </Typography>
         ) : null}
         {unofficial ? (
-          <Typography sx={{ fontSize: 13 }}>
+          <Typography sx={{ fontSize: 'base.fontSize' }}>
             {t`Unofficial update available: ${{ version: unofficial.version }}`}
             {unofficial.url ? (
               <>
@@ -67,7 +67,7 @@ export function UpdateBanner({ mod }: { mod: Mod }) {
                 <Link
                   component="button"
                   onClick={() => openPage(unofficial.url)}
-                  sx={{ fontSize: 13 }}
+                  sx={{ fontSize: 'base.fontSize' }}
                 >
                   {t`Open page`}
                 </Link>

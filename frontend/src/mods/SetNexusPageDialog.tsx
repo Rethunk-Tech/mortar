@@ -95,7 +95,7 @@ export const SetNexusPageDialog = memo(function SetNexusPageDialogView() {
     <Dialog open={open} onClose={close} fullWidth={true} maxWidth="sm">
       <DialogTitle>{t`Set the ${{ source: sourceLabel('nexus') }} page of ${name}`}</DialogTitle>
       <DialogContent>
-        <Typography sx={{ mb: 1.5, fontSize: 14, color: 'text.secondary' }}>
+        <Typography sx={{ mb: 1.5, fontSize: 'medium.fontSize', color: 'text.secondary' }}>
           {t`Paste the address of the mod's page on ${{ source: sourceLabel('nexus') }}. To name the exact file, open that file's Manual Download on the page's Files tab and paste that address instead.`}
         </Typography>
         <TextField

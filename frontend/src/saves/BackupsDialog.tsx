@@ -83,13 +83,13 @@ function BackupRow({
       }}
     >
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography noWrap={true} sx={{ fontSize: 14, fontWeight: 600 }}>
+        <Typography noWrap={true} sx={{ fontSize: 'medium.fontSize', fontWeight: 600 }}>
           {when}
         </Typography>
         <Typography
           noWrap={true}
           title={backup.name}
-          sx={{ fontSize: 13, color: 'text.secondary' }}
+          sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}
         >
           {meta}
         </Typography>
@@ -160,7 +160,7 @@ export function BackupsDialog({
         <DialogContent>
           {status === 'error' ? (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-              <Typography sx={{ fontSize: 13, color: 'error.main' }}>
+              <Typography sx={{ fontSize: 'base.fontSize', color: 'error.main' }}>
                 {t`Could not list backups: ${error}`}
               </Typography>
               <Button size="small" onClick={() => load(game, profile).catch(reportUnexpected)}>
@@ -270,7 +270,7 @@ export function BackupsDialog({
           })
         }}
       >
-        <Typography sx={{ fontSize: 14 }}>
+        <Typography sx={{ fontSize: 'medium.fontSize' }}>
           {overwriteMessage(confirm?.snaps ?? [], new Set((fits ?? []).map((f) => f.folder)))}
         </Typography>
       </ConfirmDialog>

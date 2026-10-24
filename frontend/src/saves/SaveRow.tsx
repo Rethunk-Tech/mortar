@@ -83,7 +83,7 @@ export function FitStatus({ missing }: { missing: number }) {
         px: space.gap,
         py: '3px',
         borderRadius: '12px',
-        fontSize: 12,
+        fontSize: 'small.fontSize',
         fontWeight: 700,
         color,
         bgcolor: 'var(--mortar-overlay-30)',
@@ -242,7 +242,11 @@ export function SaveRow({
           >
             {label}
           </Typography>
-          <Typography title={subtitle} noWrap={true} sx={{ fontSize: 13, color: 'text.secondary' }}>
+          <Typography
+            title={subtitle}
+            noWrap={true}
+            sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}
+          >
             {subtitle}
           </Typography>
         </Box>

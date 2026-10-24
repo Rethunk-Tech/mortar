@@ -17,9 +17,9 @@ import { plainDescription } from './optionalFiles.ts'
 import { useLocked } from './useLocked.ts'
 import type { OverlayRow } from './virtualRows.ts'
 
-const text = { fontSize: 13, overflowWrap: 'anywhere' } as const
-const muted = { fontSize: 12, color: 'text.secondary' } as const
-const chipSx = { height: 20, fontSize: 11, '& .MuiChip-label': { px: 0.75 } } as const
+const text = { fontSize: 'base.fontSize', overflowWrap: 'anywhere' } as const
+const muted = { fontSize: 'small.fontSize', color: 'text.secondary' } as const
+const chipSx = { height: 20, fontSize: 'tiny.fontSize', '& .MuiChip-label': { px: 0.75 } } as const
 
 /** Size, version and the first lines of a Nexus file's description. */
 function FileFacts({ file }: { file: File | undefined }) {

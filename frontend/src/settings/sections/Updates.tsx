@@ -143,7 +143,7 @@ function MortarUpdate() {
       {phase === 'available' && release?.notes ? (
         <Box
           sx={{
-            fontSize: 13,
+            fontSize: 'base.fontSize',
             whiteSpace: 'pre-wrap',
             maxHeight: 200,
             overflow: 'auto',

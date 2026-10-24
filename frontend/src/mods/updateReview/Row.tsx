@@ -107,7 +107,15 @@ function ChangeSummary({
 }) {
   const { t } = useLingui()
   return sizeKb > 0 || changelog ? (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, minWidth: 0, fontSize: 12 }}>
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: space.gap,
+        minWidth: 0,
+        fontSize: 'small.fontSize',
+      }}
+    >
       {sizeKb > 0 ? (
         <Box component="span" sx={{ color: 'text.secondary', flexShrink: 0 }}>
           {formatKb(sizeKb)}

@@ -48,7 +48,7 @@ const toastButtonSx = {
   height: space.control,
   bgcolor: 'var(--mortar-hairline)',
   color: 'var(--mortar-ink)',
-  fontSize: 13,
+  fontSize: 'base.fontSize',
   fontWeight: 600,
 } as const
 
@@ -63,7 +63,7 @@ function CopyDetail({ text }: { text: string }) {
       sx={{
         alignSelf: 'flex-start',
         mt: '4px',
-        fontSize: 12,
+        fontSize: 'small.fontSize',
         color: 'var(--mortar-ink-soft)',
         textDecoration: 'underline',
       }}
@@ -170,13 +170,17 @@ const ToastCard = memo(function ToastCardView({ toast }: { toast: Toast }) {
         }}
       >
         <Box sx={{ flex: '1 1 180px', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-          <Box component="span" sx={{ fontSize: 14, fontWeight: 600 }}>
+          <Box component="span" sx={{ fontSize: 'medium.fontSize', fontWeight: 600 }}>
             {toast.title}
           </Box>
           {toast.body ? (
             <Box
               component="span"
-              sx={{ fontSize: 13, color: 'var(--mortar-ink-soft)', overflowWrap: 'anywhere' }}
+              sx={{
+                fontSize: 'base.fontSize',
+                color: 'var(--mortar-ink-soft)',
+                overflowWrap: 'anywhere',
+              }}
             >
               {toast.body}
             </Box>
@@ -187,7 +191,7 @@ const ToastCard = memo(function ToastCardView({ toast }: { toast: Toast }) {
               sx={{
                 m: 0,
                 mt: '6px',
-                fontSize: 12,
+                fontSize: 'small.fontSize',
                 fontFamily: 'inherit',
                 whiteSpace: 'pre-wrap',
                 color: 'var(--mortar-ink-soft)',

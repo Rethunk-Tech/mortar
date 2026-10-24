@@ -89,10 +89,14 @@ export function TileGrid<Id extends string>({
           >
             {tile.icon}
             <Box sx={{ minWidth: 0 }}>
-              <Typography sx={{ fontWeight: 600, fontSize: 15 }}>{tile.name}</Typography>
-              <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{tile.hint}</Typography>
+              <Typography sx={{ fontWeight: 600, fontSize: 'lead.fontSize' }}>
+                {tile.name}
+              </Typography>
+              <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
+                {tile.hint}
+              </Typography>
               {tile.disabled ? (
-                <Typography sx={{ fontSize: 12, color: 'text.primary', mt: 0.5 }}>
+                <Typography sx={{ fontSize: 'small.fontSize', color: 'text.primary', mt: 0.5 }}>
                   {tile.disabled}
                 </Typography>
               ) : null}
@@ -104,7 +108,7 @@ export function TileGrid<Id extends string>({
                   position: 'absolute',
                   top: space.pad,
                   right: space.pad,
-                  fontSize: 11,
+                  fontSize: 'tiny.fontSize',
                   color: 'var(--mortar-accent-ink)',
                 }}
               >

@@ -30,7 +30,7 @@ export function LibrariesChip({ libraries }: { libraries: readonly ListRow[] | u
         onClick={(e) => setAnchor(e.currentTarget)}
         sx={{
           height: 20,
-          fontSize: 11,
+          fontSize: 'tiny.fontSize',
           bgcolor: 'action.selected',
           color: 'text.secondary',
           '& .MuiChip-label': { px: 0.75 },
@@ -60,7 +60,7 @@ export function LibrariesChip({ libraries }: { libraries: readonly ListRow[] | u
                   pl: (r.depth ?? 1) > 1 ? 2 : 0,
                 }}
               >
-                <Typography noWrap={true} title={r.mod.name} sx={{ fontSize: 14 }}>
+                <Typography noWrap={true} title={r.mod.name} sx={{ fontSize: 'medium.fontSize' }}>
                   {r.mod.name}
                 </Typography>
               </ButtonBase>

@@ -41,7 +41,7 @@ function SlowRow({ row }: { row: SlowStartup }) {
         borderRadius: '6px',
       }}
     >
-      <Typography sx={{ flex: 1, minWidth: 0, fontSize: 14 }}>
+      <Typography sx={{ flex: 1, minWidth: 0, fontSize: 'medium.fontSize' }}>
         <LinkedText text={text} links={mod ? [{ name: row.name, key: mod.key, id: mod.id }] : []} />
       </Typography>
       <Button
@@ -89,7 +89,10 @@ export function CheckTimings({ timings, at }: { timings: CheckTiming[]; at: numb
       title={t`Checked in ${{ duration: formatDuration(total, i18n.locale) }}: ${parts}`}
       describeChild={true}
     >
-      <Typography tabIndex={0} sx={{ fontSize: 12, color: 'text.secondary', width: 'fit-content' }}>
+      <Typography
+        tabIndex={0}
+        sx={{ fontSize: 'small.fontSize', color: 'text.secondary', width: 'fit-content' }}
+      >
         {t`Checked ${{ when: formatWhen(at) }}`}
       </Typography>
     </Tooltip>

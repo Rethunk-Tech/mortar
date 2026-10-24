@@ -54,7 +54,7 @@ export function LaunchPreview({
   return (
     <Box sx={{ mt: 1, mb: 1 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
-        <Typography sx={{ fontSize: 12, color: 'text.secondary', flex: 1 }}>
+        <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary', flex: 1 }}>
           {t`Direct launch preview`}
         </Typography>
         {preview.error || loadError ? null : (
@@ -69,7 +69,7 @@ export function LaunchPreview({
         )}
       </Box>
       {preview.error || loadError ? (
-        <Typography color="error" sx={{ fontSize: 12 }}>
+        <Typography color="error" sx={{ fontSize: 'small.fontSize' }}>
           {preview.error || loadError}
           {loadError && !preview.error ? (
             <Button size="small" onClick={read}>
@@ -95,7 +95,7 @@ export function LaunchPreview({
             boxSizing: 'border-box',
             color: 'text.secondary',
             fontFamily: MONO,
-            fontSize: 12,
+            fontSize: 'small.fontSize',
             userSelect: 'text',
           }}
         >

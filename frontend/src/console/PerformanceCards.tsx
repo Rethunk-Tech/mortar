@@ -46,7 +46,7 @@ function Card({
       <Typography
         component="span"
         sx={{
-          fontSize: 12,
+          fontSize: 'small.fontSize',
           letterSpacing: '0.06em',
           textTransform: 'uppercase',
           color: 'text.secondary',

@@ -12,7 +12,7 @@ export function NexusMeter() {
   const limits = useNexus((s) => s.limits)
   if (!limits.known) {
     return (
-      <Box sx={{ fontSize: 13, color: 'text.secondary' }}>
+      <Box sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
         {t`Request counts appear after Mortar talks to ${{ source: sourceLabel('nexus') }}.`}
       </Box>
     )
@@ -20,7 +20,7 @@ export function NexusMeter() {
   const throttled =
     limits.daily.remaining <= remainingFloor || limits.hourly.remaining <= remainingFloor
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: 14 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: 'medium.fontSize' }}>
       <Box>
         {[
           t`${{ remaining: limits.daily.remaining }} of ${{ limit: limits.daily.limit }} requests left today`,
@@ -28,7 +28,7 @@ export function NexusMeter() {
         ].join(' · ')}
       </Box>
       {limits.hourly.reset && limits.daily.reset ? (
-        <Box sx={{ fontSize: 13, color: 'text.secondary' }}>
+        <Box sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
           {[
             t`Hourly count resets ${{ when: formatWhen(limits.hourly.reset) }}`,
             lowerFirst(t`Daily count resets ${{ when: formatWhen(limits.daily.reset) }}`),

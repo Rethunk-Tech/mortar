@@ -60,7 +60,9 @@ function LargeBackgroundNote({ src }: { src: string }) {
   const { t } = useLingui()
   const bytes = useBackgroundBytes(src)
   return bytes > LARGE_BACKGROUND_BYTES ? (
-    <Typography sx={{ maxWidth: 420, fontSize: 12, textAlign: 'right', color: 'warning.main' }}>
+    <Typography
+      sx={{ maxWidth: 420, fontSize: 'small.fontSize', textAlign: 'right', color: 'warning.main' }}
+    >
       {t`This image is ${{ size: formatBytes(bytes) }}, which costs memory and GPU while Mortar is open. The same picture or animation saved as WebP is often a tenth of the size.`}
     </Typography>
   ) : null
@@ -211,10 +213,13 @@ function AccentPicker() {
                       bgcolor: accentColour(card.name, systemAccent),
                     }}
                   />
-                  <Box component="span" sx={{ fontSize: 14, fontWeight: 600 }}>
+                  <Box component="span" sx={{ fontSize: 'medium.fontSize', fontWeight: 600 }}>
                     {card.label}
                   </Box>
-                  <Box component="span" sx={{ fontSize: 12, color: 'var(--mortar-ink-sec)' }}>
+                  <Box
+                    component="span"
+                    sx={{ fontSize: 'small.fontSize', color: 'var(--mortar-ink-sec)' }}
+                  >
                     {card.note}
                   </Box>
                 </Box>

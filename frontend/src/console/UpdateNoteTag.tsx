@@ -41,7 +41,7 @@ export function UpdateNoteTag({ note }: { note: UpdateNote }) {
         variant="outlined"
         tabIndex={0}
         label={t`Mortar: ${{ name: label }}`}
-        sx={{ ml: 1, flexShrink: 0, fontSize: 11, color: 'text.secondary' }}
+        sx={{ ml: 1, flexShrink: 0, fontSize: 'tiny.fontSize', color: 'text.secondary' }}
       />
     </Tooltip>
   )

@@ -23,7 +23,7 @@ export function NexusStep({ onDone }: { onDone: () => void }) {
         variant="h6"
         component="h2"
       >{t`Sign in to ${{ source: sourceLabel('nexus') }}`}</Typography>
-      <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
+      <Typography sx={{ fontSize: 'medium.fontSize', color: 'text.secondary' }}>
         {t`Mod Manager Download on ${{ source: sourceLabel('nexus') }} only works in Mortar when you are signed in.`}
       </Typography>
       <NexusSignIn />

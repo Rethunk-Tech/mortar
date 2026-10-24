@@ -35,7 +35,7 @@ export const DownloadsPill = memo(function DownloadsPillView() {
         px: '12px',
         borderRadius: '8px',
         fontFamily: 'inherit',
-        fontSize: 14,
+        fontSize: 'medium.fontSize',
         whiteSpace: 'nowrap',
         color: 'inherit',
         border: '1px solid var(--mortar-hairline-12)',
@@ -61,7 +61,7 @@ export const DownloadsPill = memo(function DownloadsPillView() {
           [compact]: { display: 'none' },
         }}
       />
-      <Box component="span" sx={{ fontSize: 12, color: 'var(--mortar-ink-90)' }}>
+      <Box component="span" sx={{ fontSize: 'small.fontSize', color: 'var(--mortar-ink-90)' }}>
         {`${percent}%`}
       </Box>
     </ButtonBase>

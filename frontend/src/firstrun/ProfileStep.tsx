@@ -56,7 +56,7 @@ function ManagerImportCard({ game }: { game: GameId }) {
         component="h3"
         sx={{ fontSize: 18, fontWeight: 700 }}
       >{t`From another mod manager`}</Typography>
-      <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
+      <Typography sx={{ fontSize: 'medium.fontSize', lineHeight: 1.5 }}>
         {`${t`${plural({ count: found }, { one: '# profile from another mod manager is', other: '# profiles from other mod managers are' })} on this computer.`} ${plural({ count: found }, { one: 'Its mods download from their own sites.', other: 'Their mods download from their own sites.' })}`}
       </Typography>
       <Box sx={{ flex: 1 }} />
@@ -126,7 +126,7 @@ export function ProfileStep({ game, site }: { game: GameId; site: string }) {
             <Typography component="h3" sx={{ fontSize: 18, fontWeight: 700 }}>
               {t`Import from the game's Mods folder`}
             </Typography>
-            <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
+            <Typography sx={{ fontSize: 'medium.fontSize', lineHeight: 1.5 }}>
               {t`Copy the mods already in ${{ game: gameName }}'s Mods folder into a new profile. The game folder is not changed.`}
             </Typography>
             <Box sx={{ flex: 1 }} />
@@ -151,7 +151,7 @@ export function ProfileStep({ game, site }: { game: GameId; site: string }) {
             component="h3"
             sx={{ fontSize: 18, fontWeight: 700 }}
           >{t`Start empty`}</Typography>
-          <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
+          <Typography sx={{ fontSize: 'medium.fontSize', lineHeight: 1.5 }}>
             {loader
               ? t`A profile with only ${loader}. Add mods from ${{ source: site }} or from archives.`
               : t`An empty profile. Add mods from ${{ source: site }} or from archives.`}
@@ -194,7 +194,7 @@ export function ProfileStep({ game, site }: { game: GameId; site: string }) {
             component="h3"
             sx={{ fontSize: 18, fontWeight: 700 }}
           >{t`From a shared link`}</Typography>
-          <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
+          <Typography sx={{ fontSize: 'medium.fontSize', lineHeight: 1.5 }}>
             {t`Got a Mortar link? You see what it holds first. ${{ source: sourceLabel('nexus') }} mods need your ${{ source: sourceLabel('nexus') }} sign-in; Mortar asks then.`}
           </Typography>
           <TextField

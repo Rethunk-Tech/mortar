@@ -82,7 +82,7 @@ export function SectionNav({
           </IconButton>
         </Tooltip>
         {open ? (
-          <Typography sx={{ fontSize: 12, fontWeight: 700, color: 'text.secondary' }}>
+          <Typography sx={{ fontSize: 'small.fontSize', fontWeight: 700, color: 'text.secondary' }}>
             {t`Sections`}
           </Typography>
         ) : null}
@@ -102,7 +102,7 @@ export function SectionNav({
                   textAlign: 'left',
                   px: 1.5,
                   py: 0.5,
-                  fontSize: 13,
+                  fontSize: 'base.fontSize',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',

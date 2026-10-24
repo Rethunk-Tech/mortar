@@ -118,7 +118,7 @@ function ExtensionConnection() {
   const mismatch = mismatchText[contact?.mismatch ?? '']
   return (
     <SettingRow label={t`Connection`}>
-      <Box sx={{ fontSize: 14 }}>
+      <Box sx={{ fontSize: 'medium.fontSize' }}>
         {mismatch ??
           (connected ? (
             <>

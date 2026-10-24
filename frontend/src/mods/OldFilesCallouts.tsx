@@ -133,7 +133,7 @@ function OldFilesCallout({
           {files.map((f) => (
             <Typography
               key={`${f.id}/${f.path}`}
-              sx={{ fontSize: 12, fontFamily: MONO, overflowWrap: 'anywhere' }}
+              sx={{ fontSize: 'small.fontSize', fontFamily: MONO, overflowWrap: 'anywhere' }}
             >
               {f.path}
             </Typography>

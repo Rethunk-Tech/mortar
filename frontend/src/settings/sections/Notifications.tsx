@@ -43,7 +43,7 @@ function ChannelHeader() {
   const cell = {
     width: CHANNEL_WIDTH,
     textAlign: 'center',
-    fontSize: 12,
+    fontSize: 'small.fontSize',
     fontWeight: 700,
     letterSpacing: '0.06em',
     textTransform: 'uppercase',

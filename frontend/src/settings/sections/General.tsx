@@ -82,7 +82,7 @@ function ScannerName() {
   const reasonText = useReasonText()
   const line =
     product.text === '' ? t`Checking…` : reasonText(product.code, product.params, product.text)
-  return <Typography sx={{ fontSize: 14 }}>{line}</Typography>
+  return <Typography sx={{ fontSize: 'medium.fontSize' }}>{line}</Typography>
 }
 
 function Antivirus() {

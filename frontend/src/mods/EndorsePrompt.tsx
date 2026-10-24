@@ -119,13 +119,15 @@ export function EndorsePrompt({ profile }: { profile: Profile }) {
       anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
     >
       <Card sx={{ p: space.pad, maxWidth: 460, bgcolor: 'var(--mortar-toast)' }}>
-        <Typography sx={{ mb: 1, fontSize: 14, fontWeight: 700 }}>
+        <Typography sx={{ mb: 1, fontSize: 'medium.fontSize', fontWeight: 700 }}>
           {t`Enjoying these mods? Endorse them on ${{ source: sourceLabel('nexus') }}`}
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
           {prompts.map((prompt) => (
             <Box key={prompt.modId} sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-              <Typography sx={{ flex: 1, minWidth: 0, fontSize: 13, overflowWrap: 'anywhere' }}>
+              <Typography
+                sx={{ flex: 1, minWidth: 0, fontSize: 'base.fontSize', overflowWrap: 'anywhere' }}
+              >
                 {t`Enjoying ${{ name: prompt.name }}? Endorse it on ${{ source: sourceLabel('nexus') }}`}
               </Typography>
               <Button

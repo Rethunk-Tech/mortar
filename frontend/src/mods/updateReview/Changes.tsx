@@ -13,7 +13,13 @@ import { changelogNoteIsRisky } from '../changelogRange.ts'
 
 function ChangelogText({ text, risky }: { text: string; risky?: boolean }) {
   return (
-    <Box sx={{ fontSize: 13, overflowWrap: 'anywhere', color: risky ? 'warning.main' : undefined }}>
+    <Box
+      sx={{
+        fontSize: 'base.fontSize',
+        overflowWrap: 'anywhere',
+        color: risky ? 'warning.main' : undefined,
+      }}
+    >
       {parseInstructions(text).map(({ at, parts }) => (
         <Box key={at} sx={{ minHeight: '1.4em' }}>
           {parts.map((part) => (
@@ -71,10 +77,12 @@ function Loaded({ update }: { update: Update }) {
     return <Box role="status" aria-busy={true} sx={{ minHeight: 20 }} />
   }
   if (logs === 'failed') {
-    return <Typography sx={{ fontSize: 12 }}>{t`Changelog unavailable`}</Typography>
+    return <Typography sx={{ fontSize: 'small.fontSize' }}>{t`Changelog unavailable`}</Typography>
   }
   if (logs.length === 0) {
-    return <Typography sx={{ fontSize: 12 }}>{t`No changelog for this update`}</Typography>
+    return (
+      <Typography sx={{ fontSize: 'small.fontSize' }}>{t`No changelog for this update`}</Typography>
+    )
   }
   return logs.map((c) => <Version key={c.version} entry={c} />)
 }

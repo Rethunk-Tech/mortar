@@ -136,7 +136,9 @@ export function SelectionBarActions({
         overflow: 'hidden',
       }}
     >
-      <Typography sx={{ fontSize: 14, fontWeight: 600, mr: 'auto', whiteSpace: 'nowrap' }}>
+      <Typography
+        sx={{ fontSize: 'medium.fontSize', fontWeight: 600, mr: 'auto', whiteSpace: 'nowrap' }}
+      >
         {count}
       </Typography>
       <LockedReason locked={locked}>

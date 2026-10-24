@@ -87,7 +87,10 @@ export function BugReportDialog() {
         <DialogContent
           sx={{ display: 'flex', flexDirection: 'column', gap: space.pad, pt: '8px !important' }}
         >
-          <Typography id={destinationLabel} sx={{ fontSize: 13, color: 'text.secondary' }}>
+          <Typography
+            id={destinationLabel}
+            sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}
+          >
             {t`Post on`}
           </Typography>
           <ToggleButtonGroup
@@ -145,7 +148,7 @@ export function BugReportDialog() {
                 : t`Attach diagnostics (a zip of checks, logs and settings with secrets and your home folder removed; you drag it into the issue)`
             }
           />
-          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+          <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
             {discord
               ? t`Copies the report for you to paste into a new post in the bug-reports forum on Mortar's ${{ app: sourceLabel('discord') }}, and saves the diagnostics zip to attach.`
               : t`Opens a ${{ source: sourceLabel('github') }} issue with these filled in. You review it before posting.`}

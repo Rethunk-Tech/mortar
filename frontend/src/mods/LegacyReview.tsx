@@ -62,10 +62,10 @@ export function LegacyReview({
               }
               label={
                 <>
-                  <Typography sx={{ fontSize: 14 }}>
+                  <Typography sx={{ fontSize: 'medium.fontSize' }}>
                     {mods.find((m) => m.key === p.key)?.name ?? p.key}
                   </Typography>
-                  <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+                  <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
                     {why[p.why]}
                   </Typography>
                 </>

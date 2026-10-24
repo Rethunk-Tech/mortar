@@ -25,7 +25,7 @@ function Row({ row }: { row: TreeRow }) {
         gap: 0.75,
         pl: `${row.depth * INDENT}px`,
         py: '1px',
-        fontSize: 12,
+        fontSize: 'small.fontSize',
         ...(manifest
           ? { bgcolor: 'var(--mortar-card-hover)', borderRadius: '3px', fontWeight: 600 }
           : {}),
@@ -99,13 +99,13 @@ export function ArchivePreview({ path }: { path: string }) {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 0, gap: space.gap }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, flexWrap: 'wrap' }}>
-        <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+        <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
           {t`${{ size: formatBytes(preview.totalSize) }} in total`}
         </Typography>
         {preview.fomod ? <Chip size="small" color="info" label={t`FOMOD installer`} /> : null}
       </Box>
       {preview.truncated ? (
-        <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+        <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
           {t`Showing the first 2,000 files`}
         </Typography>
       ) : null}

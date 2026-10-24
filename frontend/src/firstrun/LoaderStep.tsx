@@ -46,7 +46,7 @@ function InstallLog({ steps, installing }: { steps: string[]; installing: boolea
         bgcolor: 'var(--mortar-overlay-45)',
         borderRadius: '6px',
         fontFamily: MONO,
-        fontSize: 13,
+        fontSize: 'base.fontSize',
       }}
     >
       {ORDER.map((step, i) => {
@@ -114,7 +114,7 @@ function LaunchLine({
         component="h2"
         sx={{ fontSize: 22, fontWeight: 700 }}
       >{t`One step in ${{ launcher: STEAM }}`}</Typography>
-      <Typography sx={{ fontSize: 15, lineHeight: 1.5 }}>
+      <Typography sx={{ fontSize: 'lead.fontSize', lineHeight: 1.5 }}>
         {t`On ${{ os: WINDOWS }}, ${{ launcher: STEAM }} starts the game without ${loader} unless told to. With ${{ launcher: STEAM }} closed, Mortar can set that up; or in ${{ launcher: STEAM }}, right-click ${{ game: gameName }}, choose Properties and paste this line into Launch Options:`}
       </Typography>
       <Box sx={{ display: 'flex', gap: space.gap }}>
@@ -131,7 +131,7 @@ function LaunchLine({
             border: '1px solid var(--mortar-hairline-15)',
             borderRadius: '6px',
             fontFamily: MONO,
-            fontSize: 13,
+            fontSize: 'base.fontSize',
             wordBreak: 'break-all',
             userSelect: 'text',
           }}
@@ -161,7 +161,7 @@ function LaunchLine({
           gap: space.gap,
           px: space.pad,
           py: space.gap,
-          fontSize: 14,
+          fontSize: 'medium.fontSize',
           borderRadius: '6px',
           border: '1px solid',
           borderColor: calloutLine(set ? 'success' : 'warning'),
@@ -201,7 +201,11 @@ function CheckFailed({ error, onRetry }: { error: InlineError; onRetry: () => vo
   const { t } = useLingui()
   return (
     <Panel width={680}>
-      <Typography role="alert" title={error.details} sx={{ fontSize: 14, color: 'error.light' }}>
+      <Typography
+        role="alert"
+        title={error.details}
+        sx={{ fontSize: 'medium.fontSize', color: 'error.light' }}
+      >
         {error.message}
       </Typography>
       <Button variant="contained" onClick={onRetry}>
@@ -246,14 +250,14 @@ function InstallFailed({
   const { t } = useLingui()
   return (
     <>
-      <Typography role="alert" sx={{ fontSize: 14, color: 'error.light' }}>
+      <Typography role="alert" sx={{ fontSize: 'medium.fontSize', color: 'error.light' }}>
         {error}
       </Typography>
       {detail && detail !== error ? (
         <Typography
           sx={{
             fontFamily: MONO,
-            fontSize: 12,
+            fontSize: 'small.fontSize',
             opacity: 0.8,
             wordBreak: 'break-word',
             userSelect: 'text',
@@ -373,7 +377,9 @@ export function LoaderStep({
     const showLaunch = windows && !launchReady
     return (
       <Panel width={720}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, fontSize: 15 }}>
+        <Box
+          sx={{ display: 'flex', alignItems: 'center', gap: space.gap, fontSize: 'lead.fontSize' }}
+        >
           <Check size={18} color={ok} />
           {t`${loader} ${{ version: status.version }} installed`}
         </Box>
@@ -411,7 +417,7 @@ export function LoaderStep({
       <Typography component="h2" sx={{ fontSize: 22, fontWeight: 700 }}>
         {latest ? t`Installing ${loader} ${latest}` : t`Installing ${loader}`}
       </Typography>
-      <Typography sx={{ fontSize: 15, lineHeight: 1.5 }}>{introText()}</Typography>
+      <Typography sx={{ fontSize: 'lead.fontSize', lineHeight: 1.5 }}>{introText()}</Typography>
       {installing ? (
         <>
           <LinearProgress variant="determinate" value={(steps.length / ORDER.length) * PERCENT} />

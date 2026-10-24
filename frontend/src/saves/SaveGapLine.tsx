@@ -53,7 +53,7 @@ export function SaveGapLine({ fit, profile, game }: { fit: Fit; profile: Profile
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-        <Typography sx={{ flex: 1, fontSize: 12, color: 'warning.main' }}>
+        <Typography sx={{ flex: 1, fontSize: 'small.fontSize', color: 'warning.main' }}>
           {t`Needs ${plural({ count: need }, { one: '# mod this profile lacks', other: '# mods this profile lacks' })}`}
         </Typography>
         <Button size="small" onClick={() => setShown(!shown)}>
@@ -73,7 +73,7 @@ export function SaveGapLine({ fit, profile, game }: { fit: Fit; profile: Profile
       </Box>
       {shown
         ? rows.map(({ m, state }) => (
-            <Typography key={`${state}-${m.id}`} sx={{ fontSize: 12 }} noWrap={true}>
+            <Typography key={`${state}-${m.id}`} sx={{ fontSize: 'small.fontSize' }} noWrap={true}>
               {`${m.name} · ${m.version} · ${state}`}
             </Typography>
           ))

@@ -65,7 +65,7 @@ export function LevelToggles() {
                 gap: '6px',
                 height: 28,
                 px: space.gap,
-                fontSize: 13,
+                fontSize: 'base.fontSize',
                 whiteSpace: 'nowrap',
               }}
             >

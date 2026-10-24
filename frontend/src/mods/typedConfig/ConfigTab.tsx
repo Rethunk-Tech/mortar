@@ -198,7 +198,9 @@ function ListEntry({
 function WithoutConfig({ count }: { count: number }) {
   const { t } = useLingui()
   return (
-    <Typography sx={{ px: space.pad, py: space.gap, fontSize: 12, color: 'text.secondary' }}>
+    <Typography
+      sx={{ px: space.pad, py: space.gap, fontSize: 'small.fontSize', color: 'text.secondary' }}
+    >
       {t`${plural({ count }, { one: '# mod has', other: '# mods have' })} no config yet; mods create it the first time the game runs.`}
     </Typography>
   )
@@ -304,7 +306,9 @@ function SettingHits({ profileId, hits }: { profileId: string; hits: Hit[] }) {
   }
   return (
     <Box role="group" aria-label={t`Matching settings`}>
-      <Typography sx={{ px: space.pad, py: 0.5, fontSize: 12, color: 'text.secondary' }}>
+      <Typography
+        sx={{ px: space.pad, py: 0.5, fontSize: 'small.fontSize', color: 'text.secondary' }}
+      >
         {t`Matching settings`}
       </Typography>
       {hits.slice(0, MAX_SHOWN_HITS).map((h) => (
@@ -321,7 +325,9 @@ function SettingHits({ profileId, hits }: { profileId: string; hits: Hit[] }) {
         </ListItemButton>
       ))}
       {hits.length > MAX_SHOWN_HITS ? (
-        <Typography sx={{ px: space.pad, py: 0.5, fontSize: 12, color: 'text.secondary' }}>
+        <Typography
+          sx={{ px: space.pad, py: 0.5, fontSize: 'small.fontSize', color: 'text.secondary' }}
+        >
           {t`${plural({ count: hits.length - MAX_SHOWN_HITS }, { one: '# more setting', other: '# more settings' })}; type more to narrow the search.`}
         </Typography>
       ) : null}

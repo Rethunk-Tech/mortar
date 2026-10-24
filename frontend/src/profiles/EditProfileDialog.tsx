@@ -74,13 +74,13 @@ function CoverField({
   return (
     <>
       <Typography
-        sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}
+        sx={{ fontSize: 'base.fontSize', color: 'text.secondary', mb: 1 }}
       >{t`Cover image`}</Typography>
       <Box sx={{ width: 160, height: 90, borderRadius: '6px', overflow: 'hidden', mb: 1 }}>
         {gameId ? <HeroCover game={gameId} profile={profile} /> : null}
       </Box>
       {staged === undefined ? null : (
-        <Typography sx={{ fontSize: 12, color: 'text.secondary', mb: 1 }}>
+        <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary', mb: 1 }}>
           {staged === null
             ? t`The automatic cover is used after Save.`
             : t`${{ name: pickedName }} is used after Save.`}
@@ -137,7 +137,7 @@ function FieldsTabs({
           minHeight: 44,
           minWidth: 0,
           px: '14px',
-          fontSize: 14,
+          fontSize: 'medium.fontSize',
           fontWeight: 400,
           color: 'text.secondary',
           '&.Mui-selected': { color: 'var(--mortar-ink)', fontWeight: 600 },

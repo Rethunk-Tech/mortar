@@ -63,7 +63,7 @@ function TrackedRow({
         py: 0.5,
       }}
     >
-      <Typography sx={{ flex: 1, minWidth: 0, fontSize: 14 }}>{name}</Typography>
+      <Typography sx={{ flex: 1, minWidth: 0, fontSize: 'medium.fontSize' }}>{name}</Typography>
       <Button
         size="small"
         variant="outlined"
@@ -135,7 +135,7 @@ const TrackedNotInProfile = memo(function TrackedNotInProfileView({
         expandIcon={<ChevronDown size={16} />}
         sx={{ px: 0, minHeight: 36, '& .MuiAccordionSummary-content': { my: 0.5 } }}
       >
-        <Typography sx={{ fontSize: 14, fontWeight: 600 }}>{heading}</Typography>
+        <Typography sx={{ fontSize: 'medium.fontSize', fontWeight: 600 }}>{heading}</Typography>
       </AccordionSummary>
       <AccordionDetails sx={{ px: 0, pt: 0, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
         {mods.map((mod) => (

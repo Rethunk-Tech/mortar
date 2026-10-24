@@ -79,7 +79,14 @@ function KindChip({ kind }: { kind: NoteKind }) {
       label={label}
       color={kind === 'new' ? 'primary' : 'default'}
       variant={kind === 'new' ? 'filled' : 'outlined'}
-      sx={{ height: 20, fontSize: 11, fontWeight: 600, flexShrink: 0, minWidth: 64, mt: '1px' }}
+      sx={{
+        height: 20,
+        fontSize: 'tiny.fontSize',
+        fontWeight: 600,
+        flexShrink: 0,
+        minWidth: 64,
+        mt: '1px',
+      }}
     />
   )
 }
@@ -98,7 +105,7 @@ function AreaSection({ area }: { area: NoteArea }) {
         <Typography
           component="h3"
           sx={{
-            fontSize: 12,
+            fontSize: 'small.fontSize',
             fontWeight: 700,
             letterSpacing: '0.06em',
             textTransform: 'uppercase',
@@ -106,7 +113,7 @@ function AreaSection({ area }: { area: NoteArea }) {
         >
           {title}
         </Typography>
-        <Typography sx={{ fontSize: 12 }}>{area.items.length}</Typography>
+        <Typography sx={{ fontSize: 'small.fontSize' }}>{area.items.length}</Typography>
       </Box>
       <Box
         component="ul"
@@ -119,7 +126,9 @@ function AreaSection({ area }: { area: NoteArea }) {
             sx={{ display: 'flex', gap: 1.25, alignItems: 'flex-start' }}
           >
             {area.byKind ? null : <KindChip kind={item.kind} />}
-            <Typography sx={{ fontSize: 14, lineHeight: 1.45, color: 'var(--mortar-ink-sec)' }}>
+            <Typography
+              sx={{ fontSize: 'medium.fontSize', lineHeight: 1.45, color: 'var(--mortar-ink-sec)' }}
+            >
               <LineText line={item.line} />
             </Typography>
           </Box>
@@ -145,7 +154,9 @@ function Notes({ text }: { text: string }) {
   ].filter(Boolean)
   if (areas.length === 0) {
     return (
-      <Typography sx={{ whiteSpace: 'pre-wrap', fontSize: 14, color: 'var(--mortar-ink-sec)' }}>
+      <Typography
+        sx={{ whiteSpace: 'pre-wrap', fontSize: 'medium.fontSize', color: 'var(--mortar-ink-sec)' }}
+      >
         {text || t`No notes for this release.`}
       </Typography>
     )
@@ -153,7 +164,7 @@ function Notes({ text }: { text: string }) {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
       {summary.length > 0 ? (
-        <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+        <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
           {summary.join(' · ')}
         </Typography>
       ) : null}
@@ -171,7 +182,7 @@ function Notes({ text }: { text: string }) {
           }}
         >
           {extra.map((line) => (
-            <Typography key={line.at} sx={{ fontSize: 12, color: 'text.secondary' }}>
+            <Typography key={line.at} sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
               <LineText line={line} />
             </Typography>
           ))}
@@ -211,7 +222,7 @@ export function WhatsNewDialog() {
           <Link
             component="button"
             type="button"
-            sx={{ mt: 1.5, fontSize: 13 }}
+            sx={{ mt: 1.5, fontSize: 'base.fontSize' }}
             onClick={() =>
               openPage(`https://github.com/Rethunk-Tech/mortar/releases/tag/v${version}`)
             }
@@ -229,7 +240,10 @@ export function WhatsNewDialog() {
               borderTop: '1px solid var(--mortar-hairline-faint)',
             }}
           >
-            <Typography component="h2" sx={{ fontSize: 16, fontWeight: 700, mb: 1.5 }}>
+            <Typography
+              component="h2"
+              sx={{ fontSize: 'large.fontSize', fontWeight: 700, mb: 1.5 }}
+            >
               {t`Also in Mortar ${{ version: r.version }}`}
             </Typography>
             <Notes text={r.notes} />

@@ -14,7 +14,7 @@ export const accent = {
 }
 
 export const heading = {
-  fontSize: 12,
+  fontSize: 'small.fontSize',
   fontWeight: 700,
   letterSpacing: '0.06em',
   textTransform: 'uppercase',

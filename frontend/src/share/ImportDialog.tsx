@@ -60,7 +60,10 @@ function MissingMods({
       <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
         {t`Not found in the Mods folder`}
       </Typography>
-      <Box component="ul" sx={{ m: 0, pl: space.pad, fontSize: 13, color: 'text.secondary' }}>
+      <Box
+        component="ul"
+        sx={{ m: 0, pl: space.pad, fontSize: 'base.fontSize', color: 'text.secondary' }}
+      >
         {ids.map((id) => {
           const name = missingModName(id, mods)
           return (
@@ -238,7 +241,10 @@ function Body({ request }: { request: ImportRequest }) {
         >
           {manager ? t`Import from ${manager}` : t`Import a profile`}
           {step ? (
-            <Box component="span" sx={{ ml: 1.25, color: 'text.secondary', fontSize: 14 }}>
+            <Box
+              component="span"
+              sx={{ ml: 1.25, color: 'text.secondary', fontSize: 'medium.fontSize' }}
+            >
               {step}
             </Box>
           ) : null}

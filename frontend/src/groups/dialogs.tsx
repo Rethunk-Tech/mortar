@@ -91,7 +91,7 @@ function SavedGroupPickList({
           sx={{ justifyContent: 'space-between' }}
         >
           <span>{group.name}</span>
-          <Typography component="span" sx={{ color: 'text.secondary', fontSize: 12 }}>
+          <Typography component="span" sx={{ color: 'text.secondary', fontSize: 'small.fontSize' }}>
             {modsLabel(group.mods?.length ?? 0)}
           </Typography>
         </Button>

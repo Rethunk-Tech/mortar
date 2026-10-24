@@ -33,7 +33,7 @@ import { type ShareInclude, toShareInclude } from './shareDefaults.ts'
 
 const PERCENT = 100
 
-const note = { fontSize: 13, color: 'text.secondary', lineHeight: 1.5 } as const
+const note = { fontSize: 'base.fontSize', color: 'text.secondary', lineHeight: 1.5 } as const
 
 function Pane({ children }: { children: ReactNode }) {
   return <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.25 }}>{children}</Box>
@@ -100,7 +100,7 @@ export function LinkPane({
   return (
     <Pane>
       {info.tooLarge ? (
-        <Typography sx={{ fontSize: 14, color: 'warning.light' }}>
+        <Typography sx={{ fontSize: 'medium.fontSize', color: 'warning.light' }}>
           {t`This profile is too large for a link.`}
         </Typography>
       ) : (
@@ -117,7 +117,7 @@ export function LinkPane({
                 bgcolor: 'var(--mortar-overlay-30)',
                 borderRadius: '8px',
                 fontFamily: MONO,
-                fontSize: 13,
+                fontSize: 'base.fontSize',
                 userSelect: 'text',
               }}
             >
@@ -130,7 +130,7 @@ export function LinkPane({
               startIcon={<Copy size={16} />}
               disabled={info.count === 0}
               onClick={() => copyText(info.web, t`Link copied`)}
-              sx={{ height: 40, px: '18px', fontSize: 14, whiteSpace: 'nowrap' }}
+              sx={{ height: 40, px: '18px', fontSize: 'medium.fontSize', whiteSpace: 'nowrap' }}
             >
               {t`Copy link`}
             </Button>
@@ -143,7 +143,7 @@ export function LinkPane({
       )}
       {large ? (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-          <Typography sx={{ flex: 1, fontSize: 14, color: 'warning.light' }}>
+          <Typography sx={{ flex: 1, fontSize: 'medium.fontSize', color: 'warning.light' }}>
             {t`A .mortar file suits a profile this size better, and carries your mod settings too.`}
           </Typography>
           <Button variant="outlined" color="inherit" onClick={onFile}>
@@ -204,7 +204,7 @@ export function FilePane({
       ) : null}
       {skipped.length > 0 ? (
         <Box>
-          <Typography sx={{ fontSize: 13, fontWeight: 600 }}>
+          <Typography sx={{ fontSize: 'base.fontSize', fontWeight: 600 }}>
             {t`${plural({ count: skipped.length }, { one: '# settings file was', other: '# settings files were' })} left out (too large or an unusual name):`}
           </Typography>
           <Box component="ul" sx={{ m: 0, pl: space.pad, ...note }}>
@@ -375,7 +375,9 @@ export function NearbyPane({
   }
   return (
     <Pane>
-      <Typography sx={{ fontSize: 15, fontWeight: 600 }}>{t`Enable sharing nearby?`}</Typography>
+      <Typography
+        sx={{ fontSize: 'lead.fontSize', fontWeight: 600 }}
+      >{t`Enable sharing nearby?`}</Typography>
       <Typography sx={note}>
         {t`Other Mortar users on your local network will be able to find this computer and send you profiles. You can disable it again in Settings › General.`}
       </Typography>

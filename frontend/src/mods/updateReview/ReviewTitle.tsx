@@ -28,7 +28,7 @@ export function ReviewTitle({
         })}
       </Typography>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, minHeight: 30 }}>
-        <Typography sx={{ fontSize: 13 }}>{checkedLabel}</Typography>
+        <Typography sx={{ fontSize: 'base.fontSize' }}>{checkedLabel}</Typography>
         {canLoadAll ? (
           <Button size="small" disabled={loadingAll} onClick={onLoadAll}>
             {loadingAll ? t`Loading changes…` : t`Load all changes`}

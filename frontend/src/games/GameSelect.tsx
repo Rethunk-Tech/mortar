@@ -52,7 +52,7 @@ const shadow = '0 1px 2px var(--mortar-art-dim-90), 0 0 18px var(--mortar-art-di
 const actionSx = {
   minWidth: 132,
   height: 44,
-  fontSize: 16,
+  fontSize: 'large.fontSize',
   fontWeight: 700,
 } as const
 
@@ -243,7 +243,7 @@ function RowView({
         <Typography component="h3" sx={{ fontSize: 30, fontWeight: 600, lineHeight: 1.15 }}>
           {game.name}
         </Typography>
-        <Typography sx={{ fontSize: 15, opacity: 0.9 }}>
+        <Typography sx={{ fontSize: 'lead.fontSize', opacity: 0.9 }}>
           {[loaderLine, note].filter(Boolean).join(' · ')}
         </Typography>
         {cards ? (

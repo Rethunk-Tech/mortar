@@ -239,7 +239,7 @@ const CommandLine = memo(function CommandLineView({ game }: { game: string }) {
           outlineOffset: '2px',
         },
         fontFamily: MONO,
-        fontSize: 13,
+        fontSize: 'base.fontSize',
         color: 'var(--mortar-ink)',
       }}
     />
@@ -440,7 +440,7 @@ const ConsoleControls = memo(function ConsoleControlsView({
             px: space.pad,
             pb: space.gap,
             flexShrink: 0,
-            fontSize: 13,
+            fontSize: 'base.fontSize',
             whiteSpace: 'nowrap',
           }}
         >
@@ -451,7 +451,7 @@ const ConsoleControls = memo(function ConsoleControlsView({
               label={t`Mod: ${{ name: mod }}`}
               onDelete={() => setMods(filters.mods.filter((m) => m !== mod))}
               deleteIcon={<X size={14} aria-label={t`Remove filter ${{ name: mod }}`} />}
-              sx={{ bgcolor: 'var(--mortar-hairline)', fontSize: 13 }}
+              sx={{ bgcolor: 'var(--mortar-hairline)', fontSize: 'base.fontSize' }}
             />
           ))}
         </Box>

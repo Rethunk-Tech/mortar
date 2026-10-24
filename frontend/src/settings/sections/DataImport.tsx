@@ -85,7 +85,7 @@ export function ImportSettingsDialog({
       }}
     >
       {sections.length === 0 ? (
-        <Box sx={{ fontSize: 13 }}>{t`Nothing would change.`}</Box>
+        <Box sx={{ fontSize: 'base.fontSize' }}>{t`Nothing would change.`}</Box>
       ) : (
         sections.map((s) => (
           <Box key={s.section} sx={{ mb: 1 }}>
@@ -100,7 +100,7 @@ export function ImportSettingsDialog({
               label={sectionTitle(s.section)}
             />
             {(s.changes ?? []).map((c) => (
-              <Box key={c.key} sx={{ fontSize: 13, pl: 4 }}>
+              <Box key={c.key} sx={{ fontSize: 'base.fontSize', pl: 4 }}>
                 {i18n._(
                   msg`${{ name: changeLabel(c.key, c.label) }}: ${{ from: c.from }} to ${{ to: c.to }}`,
                 )}
@@ -110,7 +110,7 @@ export function ImportSettingsDialog({
         ))
       )}
       {ignored.length > 0 ? (
-        <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 1 }}>
+        <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary', mt: 1 }}>
           {t`Ignored fields Mortar does not import: ${{ names: listNames(ignored) }}`}
         </Typography>
       ) : null}

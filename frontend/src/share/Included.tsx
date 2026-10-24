@@ -31,7 +31,7 @@ function ModNames({ info }: { info: ShownInfo }) {
               key={g.source}
               size="small"
               label={t`${count} ${{ source: sourceLabel(g.source) }}`}
-              sx={{ bgcolor: 'var(--mortar-hairline-muted)', fontSize: 12 }}
+              sx={{ bgcolor: 'var(--mortar-hairline-muted)', fontSize: 'small.fontSize' }}
             />
           )
         })}
@@ -46,7 +46,7 @@ function ModNames({ info }: { info: ShownInfo }) {
               py: 0.5,
               borderRadius: '4px',
               bgcolor: 'var(--mortar-card-hover)',
-              fontSize: 13,
+              fontSize: 'base.fontSize',
               whiteSpace: 'nowrap',
             }}
           >
@@ -56,7 +56,7 @@ function ModNames({ info }: { info: ShownInfo }) {
         {names.length > shown.length ? (
           <Box
             component="span"
-            sx={{ px: space.gap, py: 0.5, fontSize: 13, color: 'text.secondary' }}
+            sx={{ px: space.gap, py: 0.5, fontSize: 'base.fontSize', color: 'text.secondary' }}
           >
             {t`and ${{ count: names.length - shown.length }} more`}
           </Box>
@@ -132,12 +132,12 @@ export function Included({
     { one: '# more mod is left out', other: '# more mods are left out' },
   )
   const warning = [local > 0 ? archive : '', other > 0 ? rest : ''].filter(Boolean).join(' · ')
-  const link = { minWidth: 0, p: 0, ml: 1, fontSize: 14 }
+  const link = { minWidth: 0, p: 0, ml: 1, fontSize: 'medium.fontSize' }
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
       <Typography sx={{ fontWeight: 600 }}>{t`Included`}</Typography>
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-        <Typography sx={{ fontSize: 14 }}>{line}</Typography>
+        <Typography sx={{ fontSize: 'medium.fontSize' }}>{line}</Typography>
         <Button
           variant="text"
           sx={link}
@@ -162,7 +162,7 @@ export function Included({
           <Box sx={{ display: 'flex', color: 'warning.main' }}>
             <TriangleAlert size={16} />
           </Box>
-          <Typography sx={{ fontSize: 14 }}>{warning}</Typography>
+          <Typography sx={{ fontSize: 'medium.fontSize' }}>{warning}</Typography>
           <Button variant="text" sx={link} aria-expanded={which} onClick={() => setWhich(!which)}>
             {t`Which?`}
           </Button>
@@ -173,7 +173,12 @@ export function Included({
           {info.leftOut.map((o) => (
             <Box
               key={`${o.name}-${o.reason}`}
-              sx={{ display: 'flex', alignItems: 'center', gap: space.gap, fontSize: 13 }}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: space.gap,
+                fontSize: 'base.fontSize',
+              }}
             >
               <Box
                 component="span"

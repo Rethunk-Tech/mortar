@@ -25,18 +25,18 @@ function WhyBody({ row }: { row: Row }) {
   const reasonText = useReasonText()
   return (
     <Box sx={{ mt: 0.5, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-      <Typography sx={{ fontSize: 13, color: 'text.secondary', whiteSpace: 'normal' }}>
+      <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary', whiteSpace: 'normal' }}>
         {why.text()}
       </Typography>
       <Link
         component="button"
         onClick={() => openPage(problemGuideUrl(why))}
-        sx={{ alignSelf: 'flex-start', fontSize: 13 }}
+        sx={{ alignSelf: 'flex-start', fontSize: 'base.fontSize' }}
       >
         {t`Read more in the guide`}
       </Link>
       {row.kind === 'loadFailure' ? (
-        <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+        <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
           {`${row.loadFailure.line}: ${reasonText(row.loadFailure.code, row.loadFailure.params, row.loadFailure.message)}`}
         </Typography>
       ) : null}
@@ -54,7 +54,7 @@ function AssetConflictWhy({ asset }: { asset: AssetConflict }) {
       <Link
         component="button"
         onClick={() => setMapOpen(true)}
-        sx={{ alignSelf: 'flex-start', fontSize: 13 }}
+        sx={{ alignSelf: 'flex-start', fontSize: 'base.fontSize' }}
       >
         {t`Show conflicts`}
       </Link>
@@ -76,7 +76,7 @@ function ProblemRow({ row, dismissed }: { row: Row; dismissed?: DismissedRow }) 
       sx={{
         px: space.pad,
         py: space.gap,
-        fontSize: 14,
+        fontSize: 'medium.fontSize',
         '&:not(:first-of-type)': { borderTop: '1px solid var(--mortar-hairline-12)' },
         ...(dismissed ? { opacity: 0.75 } : {}),
       }}
@@ -108,7 +108,7 @@ function ProblemRow({ row, dismissed }: { row: Row; dismissed?: DismissedRow }) 
                 useTab.getState().revealLoadOrder(row.missing.id, row.missing.dependentId)
               }
               sx={{
-                fontSize: 14,
+                fontSize: 'medium.fontSize',
                 whiteSpace: 'normal',
                 wordBreak: 'break-word',
                 textAlign: 'left',
@@ -117,14 +117,16 @@ function ProblemRow({ row, dismissed }: { row: Row; dismissed?: DismissedRow }) 
               {text}
             </Link>
           ) : (
-            <Typography sx={{ fontSize: 14, whiteSpace: 'normal', wordBreak: 'break-word' }}>
+            <Typography
+              sx={{ fontSize: 'medium.fontSize', whiteSpace: 'normal', wordBreak: 'break-word' }}
+            >
               <LinkedText text={text} links={modLinksOf(row)} />
             </Typography>
           )}
           {authorNote === '' ? null : (
             <Typography
               sx={{
-                fontSize: 13,
+                fontSize: 'base.fontSize',
                 color: 'text.secondary',
                 whiteSpace: 'normal',
                 wordBreak: 'break-word',

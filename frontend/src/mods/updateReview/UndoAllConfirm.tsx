@@ -33,11 +33,11 @@ export function UndoAllConfirm() {
           })
       }}
     >
-      <Typography sx={{ fontSize: 13, mb: 1 }}>
+      <Typography sx={{ fontSize: 'base.fontSize', mb: 1 }}>
         {t`Restoring from before Update all also reverts these later changes:`}
       </Typography>
       {(target?.later ?? []).map((e) => (
-        <Typography key={e.id} sx={{ fontSize: 13 }} color="text.secondary">
+        <Typography key={e.id} sx={{ fontSize: 'base.fontSize' }} color="text.secondary">
           {historyLabel(e)}
         </Typography>
       ))}

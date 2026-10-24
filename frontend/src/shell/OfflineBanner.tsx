@@ -64,7 +64,7 @@ export function OfflineBanner() {
         px: space.pad,
         minHeight: 32,
         flexShrink: 0,
-        fontSize: 13,
+        fontSize: 'base.fontSize',
         bgcolor: 'background.paper',
         borderBottom: '1px solid var(--mortar-hairline)',
       }}

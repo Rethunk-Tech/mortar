@@ -62,7 +62,7 @@ function EntryRow({ section, entry }: { section: string; entry: ConfigEntry }) {
       </Box>
       {entry.readOnly ? (
         <Typography
-          sx={{ fontSize: 13, color: 'text.secondary' }}
+          sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}
         >{t`Change it in the game`}</Typography>
       ) : (
         <EntryWidget
@@ -89,17 +89,24 @@ function EntryRow({ section, entry }: { section: string; entry: ConfigEntry }) {
         <span />
       )}
       {entry.pending ? (
-        <Typography sx={{ gridColumn: '1 / -1', fontSize: 12, color: 'text.secondary' }}>
+        <Typography
+          sx={{ gridColumn: '1 / -1', fontSize: 'small.fontSize', color: 'text.secondary' }}
+        >
           {t`Applied when the game next starts`}
         </Typography>
       ) : null}
       {entry.note ? (
-        <Typography sx={{ gridColumn: '1 / -1', fontSize: 12, color: 'warning.main' }}>
+        <Typography
+          sx={{ gridColumn: '1 / -1', fontSize: 'small.fontSize', color: 'warning.main' }}
+        >
           {t`The game could not apply the last change: ${{ reason: entry.note }}`}
         </Typography>
       ) : null}
       {error ? (
-        <Typography role="alert" sx={{ gridColumn: '1 / -1', fontSize: 12, color: 'error.main' }}>
+        <Typography
+          role="alert"
+          sx={{ gridColumn: '1 / -1', fontSize: 'small.fontSize', color: 'error.main' }}
+        >
           {t`Could not save: ${error}`}
         </Typography>
       ) : null}
@@ -148,7 +155,7 @@ function Toolbar({
           <Typography
             noWrap={true}
             title={file?.name ?? ''}
-            sx={{ fontSize: 12, color: 'text.secondary' }}
+            sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}
           >
             {file ? fileLabel(file) : ''}
           </Typography>
@@ -258,7 +265,10 @@ function Sections({ shown }: { shown: ReturnType<typeof filterFile> | null }) {
             sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}
           >
             {section.name ? (
-              <Typography component="h2" sx={{ fontSize: 16, fontWeight: 600, mt: 1 }}>
+              <Typography
+                component="h2"
+                sx={{ fontSize: 'large.fontSize', fontWeight: 600, mt: 1 }}
+              >
                 {section.name}
               </Typography>
             ) : null}
@@ -323,7 +333,11 @@ function TextFile({ target, name }: { target: Target; name: string }) {
       }}
     >
       {error ? (
-        <Typography role="alert" title={error.details} sx={{ fontSize: 12, color: 'error.main' }}>
+        <Typography
+          role="alert"
+          title={error.details}
+          sx={{ fontSize: 'small.fontSize', color: 'error.main' }}
+        >
           {saved === null
             ? t`Could not open: ${{ error: error.message }}`
             : t`Could not save: ${{ error: error.message }}`}
@@ -348,7 +362,7 @@ function TextFile({ target, name }: { target: Target; name: string }) {
             height: '100% !important',
             overflow: 'auto',
             fontFamily: MONO,
-            fontSize: 13,
+            fontSize: 'base.fontSize',
           },
         }}
       />

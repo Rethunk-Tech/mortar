@@ -40,7 +40,9 @@ export function IncludeOptions({
               {label}
             </Typography>
             {why ? (
-              <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{reasons[why]}</Typography>
+              <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
+                {reasons[why]}
+              </Typography>
             ) : null}
           </Box>
         }

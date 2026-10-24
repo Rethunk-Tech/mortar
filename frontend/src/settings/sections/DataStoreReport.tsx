@@ -165,7 +165,7 @@ function Row({
         sx={{
           flex: 1,
           minWidth: 0,
-          fontSize: 15,
+          fontSize: 'lead.fontSize',
           ...nowrap,
           overflow: 'hidden',
           textOverflow: 'ellipsis',
@@ -173,13 +173,15 @@ function Row({
       >
         {title}
       </Box>
-      <Box sx={{ flexShrink: 0, fontSize: 13, color: 'text.secondary', ...nowrap }}>{detail}</Box>
+      <Box sx={{ flexShrink: 0, fontSize: 'base.fontSize', color: 'text.secondary', ...nowrap }}>
+        {detail}
+      </Box>
       <Box
         sx={{
           flexShrink: 0,
           width: 96,
           textAlign: 'right',
-          fontSize: 15,
+          fontSize: 'lead.fontSize',
           fontWeight: 600,
           fontVariantNumeric: 'tabular-nums',
         }}
@@ -205,7 +207,7 @@ function Section({
         sx={{
           display: 'flex',
           justifyContent: 'space-between',
-          fontSize: 12,
+          fontSize: 'small.fontSize',
           fontWeight: 700,
           letterSpacing: '0.06em',
           textTransform: 'uppercase',
@@ -285,7 +287,11 @@ function CleanupBody({
   )
   const sum = (rows: Sel[]) => rows.reduce((n, s) => n + s.item.size, 0)
   if (allIds.length === 0) {
-    return <Box sx={{ fontSize: 15, px: space.pad, py: space.pad }}>{t`Nothing to clean up.`}</Box>
+    return (
+      <Box
+        sx={{ fontSize: 'lead.fontSize', px: space.pad, py: space.pad }}
+      >{t`Nothing to clean up.`}</Box>
+    )
   }
   return (
     <>
@@ -398,7 +404,7 @@ function CleanupDialog({
               gap: space.gap,
               px: space.pad,
               py: space.pad,
-              fontSize: 15,
+              fontSize: 'lead.fontSize',
             }}
           >
             {t`Could not load what can be cleaned up`}
@@ -417,7 +423,7 @@ function CleanupDialog({
         )}
       </DialogContent>
       <DialogActions>
-        <Box sx={{ flex: 1, pl: space.gap, fontSize: 15 }}>
+        <Box sx={{ flex: 1, pl: space.gap, fontSize: 'lead.fontSize' }}>
           {picked.size > 0
             ? `${t`${{ count: picked.size }} selected`} · ${formatBytes(bytes)}`
             : ''}

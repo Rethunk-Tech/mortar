@@ -34,7 +34,12 @@ export function NewSinceLooked({ show }: { show: boolean }) {
   return (
     <Typography
       component="span"
-      sx={{ fontSize: 11, color: 'var(--mortar-accent-ink)', whiteSpace: 'nowrap', flexShrink: 0 }}
+      sx={{
+        fontSize: 'tiny.fontSize',
+        color: 'var(--mortar-accent-ink)',
+        whiteSpace: 'nowrap',
+        flexShrink: 0,
+      }}
     >
       {t`New since you last looked`}
     </Typography>

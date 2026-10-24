@@ -74,7 +74,7 @@ const NavItem = memo(function NavItemView<Id extends string>({
           height: space.nav,
           px: '12px',
           borderRadius: '6px',
-          fontSize: 15,
+          fontSize: 'lead.fontSize',
           fontWeight: active ? ACTIVE_WEIGHT : 'normal',
           fontFamily: 'inherit',
           whiteSpace: 'nowrap',

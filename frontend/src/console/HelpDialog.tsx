@@ -100,7 +100,7 @@ function HelpLog({
   const { t, i18n } = useLingui()
   return (
     <>
-      <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
+      <Typography sx={{ fontSize: 'medium.fontSize', lineHeight: 1.5 }}>
         {paste
           ? pasteLogConfirm(i18n, new TextEncoder().encode(log).length, paste)
           : shareLogConfirm(i18n, new TextEncoder().encode(log).length)}
@@ -117,7 +117,12 @@ function HelpLog({
             readOnly: true,
             spellCheck: false,
             'aria-label': t`Game log`,
-            sx: { fontFamily: MONO, fontSize: 12, whiteSpace: 'pre', overflowX: 'auto' },
+            sx: {
+              fontFamily: MONO,
+              fontSize: 'small.fontSize',
+              whiteSpace: 'pre',
+              overflowX: 'auto',
+            },
           },
         }}
       />
@@ -235,7 +240,9 @@ export function HelpDialog({ game }: { game: string }) {
         {body ? (
           <>
             {log === null ? <LoadingRow>{body}</LoadingRow> : null}
-            {log === null ? null : <Typography sx={{ fontSize: 14 }}>{body}</Typography>}
+            {log === null ? null : (
+              <Typography sx={{ fontSize: 'medium.fontSize' }}>{body}</Typography>
+            )}
           </>
         ) : (
           <HelpLog

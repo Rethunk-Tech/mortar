@@ -70,13 +70,13 @@ function CopyOption({ copy, dup, differ }: { copy: Copy; dup: Duplicate; differ:
         />
         <LetterTile mod={{ id: dup.id, name: copy.name }} size={40} />
         <Box sx={{ minWidth: 0 }}>
-          <Typography sx={{ fontSize: 15, fontWeight: 700 }}>{source}</Typography>
-          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+          <Typography sx={{ fontSize: 'lead.fontSize', fontWeight: 700 }}>{source}</Typography>
+          <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
             {t`Version ${{ version: copy.version }}`}
           </Typography>
         </Box>
       </Box>
-      <Typography sx={{ fontSize: 13, lineHeight: 1.5 }}>{lines.join(' ')}</Typography>
+      <Typography sx={{ fontSize: 'base.fontSize', lineHeight: 1.5 }}>{lines.join(' ')}</Typography>
     </Box>
   )
 }
@@ -101,7 +101,7 @@ function Resolver({ dup, profileName }: { dup: Duplicate; profileName: string })
         )}
       </DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
-        <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
+        <Typography sx={{ fontSize: 'medium.fontSize', lineHeight: 1.5 }}>
           {t`${{ profile: profileName }} has ${{ name: dup.name }} more than once. ${loader} loads only one, so pick which to keep. The others are disabled, not removed.`}
         </Typography>
         <RadioGroup

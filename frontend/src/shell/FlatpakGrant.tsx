@@ -45,9 +45,9 @@ export function FlatpakGrant() {
         }}
       >
         <Box
-          sx={{ fontSize: 16 }}
+          sx={{ fontSize: 'large.fontSize' }}
         >{t`${{ app: FLATPAK }} ${{ launcher: STEAM }} cannot read your mods`}</Box>
-        <Box sx={{ fontSize: 13, color: 'var(--mortar-ink-sec)' }}>
+        <Box sx={{ fontSize: 'base.fontSize', color: 'var(--mortar-ink-sec)' }}>
           {t`Grant the ${{ launcher: STEAM }} sandbox read access to Mortar's data folder, or the game will not see this profile's mods.`}
         </Box>
         <Box sx={{ display: 'flex', gap: space.gap, alignItems: 'flex-start' }}>
@@ -61,7 +61,7 @@ export function FlatpakGrant() {
               border: '1px solid var(--mortar-hairline-15)',
               borderRadius: '6px',
               fontFamily: MONO,
-              fontSize: 13,
+              fontSize: 'base.fontSize',
               wordBreak: 'break-all',
               userSelect: 'text',
             }}
@@ -99,7 +99,9 @@ export function FlatpakGrant() {
             .catch(reportUnexpected)
         }}
       >
-        <Box sx={{ mt: 1.5, fontFamily: MONO, fontSize: 13, userSelect: 'text' }}>{cmd}</Box>
+        <Box sx={{ mt: 1.5, fontFamily: MONO, fontSize: 'base.fontSize', userSelect: 'text' }}>
+          {cmd}
+        </Box>
       </ConfirmDialog>
     </>
   )

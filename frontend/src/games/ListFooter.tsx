@@ -24,7 +24,11 @@ export const ListFooter = memo(function ListFooterView({
   return (
     <>
       <Box sx={{ px: 2, py: 0.75 }}>
-        <Link component="button" onClick={() => setAdding(true)} sx={{ fontSize: 14 }}>
+        <Link
+          component="button"
+          onClick={() => setAdding(true)}
+          sx={{ fontSize: 'medium.fontSize' }}
+        >
           {t`Add a game…`}
         </Link>
       </Box>
@@ -37,17 +41,25 @@ export const ListFooter = memo(function ListFooterView({
       />
       {hiddenCount > 0 ? (
         <Box sx={{ px: 2, py: 0.75 }}>
-          <Link component="button" onClick={() => onShowHidden(!showHidden)} sx={{ fontSize: 14 }}>
+          <Link
+            component="button"
+            onClick={() => onShowHidden(!showHidden)}
+            sx={{ fontSize: 'medium.fontSize' }}
+          >
             {showHidden ? t`Hide hidden games` : t`Show hidden games`}
           </Link>
         </Box>
       ) : null}
       {!games.some((g) => g.available && g.installed) && (
         <Box sx={{ px: 2, py: 0.75, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
+          <Typography sx={{ fontSize: 'medium.fontSize', color: 'text.secondary' }}>
             {t`No supported game was found in your launchers.`}
           </Typography>
-          <Link component="button" onClick={() => openSettings('launchers')} sx={{ fontSize: 14 }}>
+          <Link
+            component="button"
+            onClick={() => openSettings('launchers')}
+            sx={{ fontSize: 'medium.fontSize' }}
+          >
             {t`Check launchers…`}
           </Link>
         </Box>

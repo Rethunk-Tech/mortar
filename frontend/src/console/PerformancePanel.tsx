@@ -195,7 +195,7 @@ function FrameLine({ frame, smapi }: { frame: FrameSummary | null; smapi: boolea
       sx={{
         px: space.pad,
         pb: space.gap,
-        fontSize: 12,
+        fontSize: 'small.fontSize',
         color: 'text.secondary',
         display: 'flex',
         flexDirection: 'column',

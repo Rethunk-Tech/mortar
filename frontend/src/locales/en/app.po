@@ -1821,10 +1821,6 @@ msgstr "Main"
 msgid "Could not launch the game"
 msgstr "Could not launch the game"
 
-#: src/tidy/report.ts
-msgid "Repaired mod folder records"
-msgstr "Repaired mod folder records"
-
 #: src/firstrun/FindStep.tsx
 #: src/launchers/LauncherList.tsx
 msgid "Choose {name} folder"
@@ -2185,10 +2181,6 @@ msgstr "Where the profile comes from"
 #: src/install/RemapDialog.tsx
 msgid "This archive holds several variants of the same mod. Pick the one to install; updates keep it."
 msgstr "This archive holds several variants of the same mod. Pick the one to install; updates keep it."
-
-#: src/tidy/report.ts
-msgid "Repaired mod file names"
-msgstr "Repaired mod file names"
 
 #: src/tools/ToolEditorDialog.tsx
 msgid "Working directory"

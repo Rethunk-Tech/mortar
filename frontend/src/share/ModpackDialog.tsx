@@ -36,7 +36,7 @@ import { usePending } from '../toasts/usePending.ts'
 const DESCRIPTION_MAX = 250
 const NAME_PATTERN = /^[A-Za-z0-9_]+$/
 const VERSION_PATTERN = /^\d+\.\d+\.\d+$/
-const monoField = { '& textarea': { fontFamily: MONO, fontSize: 13 } } as const
+const monoField = { '& textarea': { fontFamily: MONO, fontSize: 'base.fontSize' } } as const
 
 const HTTP = /^https?:\/\//
 
@@ -44,7 +44,7 @@ function IconRow({ path, onChange }: { path: string; onChange: (path: string) =>
   const { t } = useLingui()
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-      <Typography sx={{ flex: 1, fontSize: 13, overflowWrap: 'anywhere' }}>
+      <Typography sx={{ flex: 1, fontSize: 'base.fontSize', overflowWrap: 'anywhere' }}>
         {path || t`A plain icon (${{ source: sourceLabel('thunderstore') }} needs a 256x256 PNG)`}
       </Typography>
       <Button
@@ -82,7 +82,7 @@ function ConfigFiles({
   const files = new Set(chosen)
   return (
     <Box>
-      <Typography sx={{ fontSize: 13, fontWeight: 700 }}>
+      <Typography sx={{ fontSize: 'base.fontSize', fontWeight: 700 }}>
         {t`Config files (${{ count: files.size }} of ${{ total: all.length }})`}
       </Typography>
       <Box sx={{ display: 'flex', gap: space.gap }}>
@@ -107,7 +107,7 @@ function ConfigFiles({
                 }
               />
             }
-            label={<Typography sx={{ fontSize: 13 }}>{name}</Typography>}
+            label={<Typography sx={{ fontSize: 'base.fontSize' }}>{name}</Typography>}
           />
         ))}
       </Box>
@@ -250,12 +250,14 @@ function Fields({
             chosen={o.configs ?? []}
             onChange={(names) => set('configs', names)}
           />
-          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+          <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
             {left.length > 0
               ? t`Depends on ${{ dependencies: form.dependencies }} ${{ source: sourceLabel('thunderstore') }} packages. Left out: ${{ names: listNames(left) }}.`
               : t`Depends on ${{ dependencies: form.dependencies }} ${{ source: sourceLabel('thunderstore') }} packages.`}
           </Typography>
-          {bad ? <Typography sx={{ fontSize: 13, color: 'error.main' }}>{bad}</Typography> : null}
+          {bad ? (
+            <Typography sx={{ fontSize: 'base.fontSize', color: 'error.main' }}>{bad}</Typography>
+          ) : null}
         </Box>
       </DialogContent>
       <DialogActions>

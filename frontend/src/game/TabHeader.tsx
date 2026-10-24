@@ -45,7 +45,7 @@ function Chip({
         borderColor: tone ?? 'var(--mortar-hairline-16)',
         bgcolor: 'var(--mortar-hairline-faint)',
         color: tone ?? 'text.primary',
-        fontSize: 12,
+        fontSize: 'small.fontSize',
       }}
     >
       {label}
@@ -124,7 +124,7 @@ export const TabHeader = memo(function TabHeaderView() {
         title={notes}
         sx={{
           minWidth: 0,
-          fontSize: 13,
+          fontSize: 'base.fontSize',
           color: 'text.secondary',
           [compact]: { display: 'none' },
         }}

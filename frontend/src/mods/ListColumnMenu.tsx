@@ -123,7 +123,7 @@ function HeaderGhost({ label }: { label: string }) {
         border: `1px solid ${theme.palette.primary.main}`,
         bgcolor: 'var(--mortar-menu-95)',
         color: 'var(--mortar-ink)',
-        fontSize: 12,
+        fontSize: 'small.fontSize',
         fontWeight: 700,
         letterSpacing: '0.06em',
         textTransform: 'uppercase',

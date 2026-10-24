@@ -51,16 +51,18 @@ function HistoryRow({ item }: { item: ToastHistoryItem }) {
       }}
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, flex: 1, minWidth: 0 }}>
-        <Typography sx={{ fontSize: 13, fontWeight: 600 }}>
+        <Typography sx={{ fontSize: 'base.fontSize', fontWeight: 600 }}>
           {item.title}
           {item.count && item.count > 1 ? ` (×${item.count})` : ''}
         </Typography>
         {item.body ? (
-          <Typography sx={{ fontSize: 12, color: 'text.secondary', overflowWrap: 'anywhere' }}>
+          <Typography
+            sx={{ fontSize: 'small.fontSize', color: 'text.secondary', overflowWrap: 'anywhere' }}
+          >
             {item.body}
           </Typography>
         ) : null}
-        <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>
+        <Typography sx={{ fontSize: 'tiny.fontSize', color: 'text.secondary' }}>
           <When value={item.at} withTime={true} />
         </Typography>
       </Box>
@@ -83,7 +85,13 @@ let bellMounted = false
 function SectionLabel({ children }: { children: ReactNode }) {
   return (
     <Typography
-      sx={{ px: space.pad, pt: space.gap, fontSize: 11, fontWeight: 700, color: 'text.secondary' }}
+      sx={{
+        px: space.pad,
+        pt: space.gap,
+        fontSize: 'tiny.fontSize',
+        fontWeight: 700,
+        color: 'text.secondary',
+      }}
     >
       {children}
     </Typography>
@@ -150,7 +158,9 @@ function HistoryPopover({
           borderBottom: '1px solid var(--mortar-hairline-muted)',
         }}
       >
-        <Typography sx={{ flex: 1, fontSize: 13, fontWeight: 700 }}>{t`Notifications`}</Typography>
+        <Typography
+          sx={{ flex: 1, fontSize: 'base.fontSize', fontWeight: 700 }}
+        >{t`Notifications`}</Typography>
         <Button size="small" onClick={onClear} disabled={history.length === 0}>
           {t`Clear`}
         </Button>
@@ -165,7 +175,12 @@ function HistoryPopover({
             <SectionLabel>{t`New`}</SectionLabel>
             {fresh.length === 0 ? (
               <Typography
-                sx={{ px: space.pad, pb: space.gap, fontSize: 13, color: 'text.secondary' }}
+                sx={{
+                  px: space.pad,
+                  pb: space.gap,
+                  fontSize: 'base.fontSize',
+                  color: 'text.secondary',
+                }}
               >
                 {t`Nothing new`}
               </Typography>

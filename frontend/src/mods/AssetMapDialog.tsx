@@ -102,7 +102,9 @@ function ModTouches({ target, onChanged }: { target: AssetTarget; onChanged: () 
             key={`${mod.modId}-${mod.action}-${String(mod.index)}-${mod.source ?? ''}-${mod.dataKey ?? ''}`}
             sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}
           >
-            <Typography sx={{ fontSize: 13, fontWeight: mod.winner ? 'bold' : 'normal' }}>
+            <Typography
+              sx={{ fontSize: 'base.fontSize', fontWeight: mod.winner ? 'bold' : 'normal' }}
+            >
               <LinkedText text={name} links={[{ name, key: mod.modKey, id: mod.modId }]} />
             </Typography>
             {mod.action ? <Chip size="small" label={mod.action} sx={chipSx} /> : null}
@@ -149,7 +151,7 @@ function TargetRow({
           textAlign: 'left',
         }}
       >
-        <Typography component="span" sx={{ fontSize: 14, fontWeight: 600, flex: 1 }}>
+        <Typography component="span" sx={{ fontSize: 'medium.fontSize', fontWeight: 600, flex: 1 }}>
           {label}
         </Typography>
         <Typography
@@ -158,7 +160,7 @@ function TargetRow({
             many ? t`More than one mod changes this; the winner's version is used.` : undefined
           }
           sx={{
-            fontSize: 13,
+            fontSize: 'base.fontSize',
             color: many ? 'warning.main' : 'text.secondary',
             whiteSpace: 'nowrap',
           }}
@@ -195,7 +197,7 @@ export function AssetMapDialog({
         dividers={true}
         sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}
       >
-        <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
+        <Typography sx={{ fontSize: 'medium.fontSize', color: 'text.secondary' }}>
           {t`Every game asset the profile's mods change, and which mod wins it. Open one to see each mod's edit in load order.`}
         </Typography>
         <SearchField
@@ -210,7 +212,7 @@ export function AssetMapDialog({
             label={t`Only assets more than one mod changes`}
           />
           {page ? (
-            <Typography sx={{ fontSize: 13, color: 'text.secondary', ml: 'auto' }}>
+            <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary', ml: 'auto' }}>
               {t`${plural({ count: page.all }, { one: '# asset', other: '# assets' })}, ${{ shared: page.shared }} changed by more than one mod`}
             </Typography>
           ) : null}

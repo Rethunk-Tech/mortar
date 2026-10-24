@@ -52,7 +52,7 @@ export function SearchField({
           ),
           sx: {
             height: space.control,
-            fontSize: 13,
+            fontSize: 'base.fontSize',
             borderRadius: '6px',
             // Opaque paper in light mode: a dark tint over the wallpaper reads as grey.
             bgcolor: (theme) =>

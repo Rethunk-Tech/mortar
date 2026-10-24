@@ -48,19 +48,24 @@ export function MarkdownView({ source }: { source: string }) {
   return (
     <Box
       sx={{
-        fontSize: 13,
+        fontSize: 'base.fontSize',
         lineHeight: 1.5,
         overflowWrap: 'anywhere',
         '& > :first-of-type': { mt: 0 },
-        '& h1, & h2, & h3, & h4, & h5, & h6': { fontSize: 14, fontWeight: 700, mt: 1.5, mb: 0.5 },
-        '& h1, & h2': { fontSize: 15 },
+        '& h1, & h2, & h3, & h4, & h5, & h6': {
+          fontSize: 'medium.fontSize',
+          fontWeight: 700,
+          mt: 1.5,
+          mb: 0.5,
+        },
+        '& h1, & h2': { fontSize: 'lead.fontSize' },
         '& p': { my: 0.75 },
         '& ul, & ol': { my: 0.5, pl: space.pad },
         '& li': { my: 0.25 },
         '& img': { maxWidth: '100%', height: 'auto', verticalAlign: 'middle' },
         '& code': {
           fontFamily: MONO,
-          fontSize: 12,
+          fontSize: 'small.fontSize',
           px: 0.5,
           borderRadius: '4px',
           bgcolor: 'var(--mortar-overlay-30)',

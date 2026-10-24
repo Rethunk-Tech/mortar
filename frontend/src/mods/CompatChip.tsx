@@ -8,7 +8,7 @@ import { openPage } from './menu.ts'
 import { heading } from './paper.ts'
 import { useMods } from './store.ts'
 
-const text = { fontSize: 13 } as const
+const text = { fontSize: 'base.fontSize' } as const
 
 export function CompatChip({ mod }: { mod: Mod }) {
   const { t } = useLingui()

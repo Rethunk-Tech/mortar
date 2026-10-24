@@ -78,11 +78,14 @@ export function NexusAccountActions({
   }
   return (
     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: space.gap }}>
-      <Typography sx={{ flexBasis: '100%', fontSize: 13, color: 'text.secondary' }}>
+      <Typography sx={{ flexBasis: '100%', fontSize: 'base.fontSize', color: 'text.secondary' }}>
         {statusLine}
       </Typography>
       {refusal ? (
-        <Typography role="alert" sx={{ flexBasis: '100%', fontSize: 13, color: 'error.main' }}>
+        <Typography
+          role="alert"
+          sx={{ flexBasis: '100%', fontSize: 'base.fontSize', color: 'error.main' }}
+        >
           {refusal}
         </Typography>
       ) : null}

@@ -108,11 +108,17 @@ function GameStrip({
         sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
       />
       <Box sx={{ position: 'relative', zIndex: 2, minWidth: 0 }}>
-        <Typography noWrap={true} sx={{ fontSize: 14, fontWeight: 700, lineHeight: 1.25 }}>
+        <Typography
+          noWrap={true}
+          sx={{ fontSize: 'medium.fontSize', fontWeight: 700, lineHeight: 1.25 }}
+        >
           {game.name}
         </Typography>
         {line ? (
-          <Typography noWrap={true} sx={{ fontSize: 12, lineHeight: 1.3, opacity: 0.85 }}>
+          <Typography
+            noWrap={true}
+            sx={{ fontSize: 'small.fontSize', lineHeight: 1.3, opacity: 0.85 }}
+          >
             {line}
           </Typography>
         ) : null}
@@ -189,7 +195,7 @@ export const GameMenu = memo(function GameMenuView() {
           px: '10px',
           borderRadius: '8px',
           fontFamily: 'inherit',
-          fontSize: 14,
+          fontSize: 'medium.fontSize',
           fontWeight: 600,
           color: 'inherit',
           '&:hover, &[aria-expanded="true"]': { bgcolor: 'var(--mortar-hairline-faint)' },

@@ -132,7 +132,7 @@ function ExtraInstalls({
                 <StoreLabel store={item.store} />
                 <Box
                   sx={{
-                    fontSize: 12,
+                    fontSize: 'small.fontSize',
                     color: 'var(--mortar-ink-sec)',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
@@ -219,7 +219,9 @@ function GameFolder({
             }
             description={t`Read from the game's install.`}
           >
-            <Box sx={{ fontSize: 14, color: 'var(--mortar-ink-sec)' }}>{install.version}</Box>
+            <Box sx={{ fontSize: 'medium.fontSize', color: 'var(--mortar-ink-sec)' }}>
+              {install.version}
+            </Box>
           </SettingRow>
         ) : null}
         {install?.runtimeVersion ? (
@@ -227,7 +229,7 @@ function GameFolder({
             label={t`Compatibility tool`}
             description={t`Chosen in the game's ${{ launcher: STEAM }} properties.`}
           >
-            <Box sx={{ fontSize: 14, color: 'var(--mortar-ink-sec)' }}>
+            <Box sx={{ fontSize: 'medium.fontSize', color: 'var(--mortar-ink-sec)' }}>
               {install.runtimeVersion}
             </Box>
           </SettingRow>
@@ -236,7 +238,7 @@ function GameFolder({
           <Box
             role="alert"
             title={error.details}
-            sx={{ px: space.pad, py: space.pad, fontSize: 14, color: 'error.light' }}
+            sx={{ px: space.pad, py: space.pad, fontSize: 'medium.fontSize', color: 'error.light' }}
           >
             {error.message}
           </Box>

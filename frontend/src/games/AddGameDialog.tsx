@@ -60,7 +60,7 @@ export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () =>
       <DialogTitle>{t`Add a game`}</DialogTitle>
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap, pt: 0.5 }}>
-          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+          <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
             {loader === 'shimloader'
               ? t`For a game that is not in Mortar's list. It stays on this computer, and its mods come from its ${{ source: sourceLabel('thunderstore') }} community.`
               : t`For a game that is not in Mortar's list. It stays on this computer, and its mods come from archives you add, since Mortar knows no site for it.`}
@@ -73,7 +73,7 @@ export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () =>
             slotProps={{ htmlInput: { maxLength: 60 } }}
           />
           <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-            <Typography sx={{ flex: 1, fontSize: 13, overflowWrap: 'anywhere' }}>
+            <Typography sx={{ flex: 1, fontSize: 'base.fontSize', overflowWrap: 'anywhere' }}>
               {exe || t`No game program chosen`}
             </Typography>
             <Button
@@ -87,7 +87,9 @@ export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () =>
               {t`Choose the game's program…`}
             </Button>
           </Box>
-          <Typography sx={{ fontSize: 13, fontWeight: 700 }}>{t`How it is modded`}</Typography>
+          <Typography
+            sx={{ fontSize: 'base.fontSize', fontWeight: 700 }}
+          >{t`How it is modded`}</Typography>
           <RadioGroup value={loader} onChange={(_, v) => setLoader(v)}>
             {(loaders ?? []).map((l) => (
               <FormControlLabel
@@ -110,10 +112,12 @@ export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () =>
           ) : null}
           {mine.length > 0 ? (
             <Box>
-              <Typography sx={{ fontSize: 13, fontWeight: 700 }}>{t`Games you added`}</Typography>
+              <Typography
+                sx={{ fontSize: 'base.fontSize', fontWeight: 700 }}
+              >{t`Games you added`}</Typography>
               {mine.map((g) => (
                 <Box key={g.id} sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-                  <Typography sx={{ flex: 1, fontSize: 14 }}>{g.name}</Typography>
+                  <Typography sx={{ flex: 1, fontSize: 'medium.fontSize' }}>{g.name}</Typography>
                   <Button size="small" color="error" onClick={() => remove(g.id)}>
                     {t`Remove`}
                   </Button>

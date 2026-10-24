@@ -33,7 +33,10 @@ export function OptionalUpdates({ update, profileId }: { update: Update; profile
           { one: 'Also update # optional file', other: 'Also update # optional files' },
         )}`,
       )}
-      sx={{ alignSelf: 'flex-start', '& .MuiFormControlLabel-label': { fontSize: 13 } }}
+      sx={{
+        alignSelf: 'flex-start',
+        '& .MuiFormControlLabel-label': { fontSize: 'base.fontSize' },
+      }}
     />
   )
 }

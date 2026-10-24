@@ -23,7 +23,9 @@ export function GameModsProgressLine({
         value={progress === null || total === 0 ? 0 : (progress.done / total) * PERCENT}
         sx={{ my: 1.5 }}
       />
-      <Typography sx={{ fontSize: 14, color: 'text.secondary', overflowWrap: 'anywhere' }}>
+      <Typography
+        sx={{ fontSize: 'medium.fontSize', color: 'text.secondary', overflowWrap: 'anywhere' }}
+      >
         {progress === null
           ? `${verb}…`
           : `${t`${verb} ${{ count: n }} of ${total}`} · ${progress.name}`}

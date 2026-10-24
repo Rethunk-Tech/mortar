@@ -71,7 +71,7 @@ function Group({ group }: { group: PlayIssueGroup }) {
         <GroupHeading group={group} />
       </Typography>
       {group.kind === 'saveMods' || group.kind === 'saveModsOff' ? (
-        <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
+        <Typography sx={{ fontSize: 'medium.fontSize', color: 'text.secondary' }}>
           {listNames(group.names, undefined, group.count)}
         </Typography>
       ) : null}

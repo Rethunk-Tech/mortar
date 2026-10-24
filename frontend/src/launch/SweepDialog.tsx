@@ -71,17 +71,17 @@ function ProfileRows({
           <Link
             component="button"
             onClick={() => openProblems(report.game, row.profile, close).catch(reportUnexpected)}
-            sx={{ fontSize: 13, fontWeight: 600, textAlign: 'left' }}
+            sx={{ fontSize: 'base.fontSize', fontWeight: 600, textAlign: 'left' }}
           >
             {row.name}
           </Link>
           {(row.broken ?? []).map((mod) => (
-            <Typography key={`${row.profile}-${mod.key}`} sx={{ fontSize: 13 }}>
+            <Typography key={`${row.profile}-${mod.key}`} sx={{ fontSize: 'base.fontSize' }}>
               {i18n._(msg`${{ name: mod.name }}: ${{ fix: fixLabel(i18n, mod.fix) }}`)}
             </Typography>
           ))}
           {(row.missingDeps ?? 0) > 0 ? (
-            <Typography sx={{ fontSize: 13 }} color="text.secondary">
+            <Typography sx={{ fontSize: 'base.fontSize' }} color="text.secondary">
               {i18n._(
                 msg`${plural(
                   { count: row.missingDeps },

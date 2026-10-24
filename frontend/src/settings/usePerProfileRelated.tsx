@@ -35,7 +35,7 @@ export function usePerProfileRelated(game: string): { related?: Related; dialog:
       row: (label) => (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: space.pad }}>
           <Typography
-            sx={{ flex: 1, fontSize: 14 }}
+            sx={{ flex: 1, fontSize: 'medium.fontSize' }}
           >{t`${{ name: label }} is set per profile`}</Typography>
           <Button onClick={() => setEditing(true)}>{t`Edit ${{ name: profile.name }}`}</Button>
         </Box>

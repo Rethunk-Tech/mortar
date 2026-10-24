@@ -48,7 +48,11 @@ export function PreviewPick({
               primary={formatPreviewRow(m, switchedOff, reasonText)}
               slotProps={{
                 primary: {
-                  sx: { fontSize: 14, color: 'text.secondary', overflowWrap: 'anywhere' },
+                  sx: {
+                    fontSize: 'medium.fontSize',
+                    color: 'text.secondary',
+                    overflowWrap: 'anywhere',
+                  },
                 },
               }}
             />

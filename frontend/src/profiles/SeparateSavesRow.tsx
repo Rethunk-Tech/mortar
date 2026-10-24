@@ -43,7 +43,7 @@ export function SeparateSavesRow({
         label={t`Keep this profile's saves separate`}
       />
       {on ? (
-        <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+        <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
           {t`This profile plays on its own saves. Your shared saves are untouched.`}
         </Typography>
       ) : null}

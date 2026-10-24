@@ -83,7 +83,7 @@ function Header({
           <Typography component="h2" sx={{ fontSize: 18, fontWeight: 700 }}>
             {view === 'history' ? t`History` : t`Downloads`}
           </Typography>
-          <Typography noWrap={true} title={line} sx={{ fontSize: 13 }}>
+          <Typography noWrap={true} title={line} sx={{ fontSize: 'base.fontSize' }}>
             {line}
           </Typography>
         </Box>
@@ -139,7 +139,7 @@ function Header({
       {limitedUntil > 0 ? (
         <Typography
           title={clockWhen(limitedUntil * UNIX_MS_PER_SECOND, i18n.locale)}
-          sx={{ mx: space.pad, mt: 1, fontSize: 13, color: 'warning.main' }}
+          sx={{ mx: space.pad, mt: 1, fontSize: 'base.fontSize', color: 'warning.main' }}
         >
           {t`Downloads resume ${{ when: formatWhen(limitedUntil * UNIX_MS_PER_SECOND) }}.`}
         </Typography>

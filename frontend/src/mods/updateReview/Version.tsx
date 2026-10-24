@@ -20,7 +20,7 @@ export function Version({ children, isNew }: { children: string; isNew?: boolean
         whiteSpace: 'nowrap',
         verticalAlign: 'middle',
         fontFamily: MONO,
-        fontSize: 13,
+        fontSize: 'base.fontSize',
         fontWeight: isNew ? MEDIUM : 'normal',
         color: isNew ? 'primary.main' : 'text.primary',
         bgcolor: isNew ? accent.chip : 'var(--mortar-hairline-muted)',

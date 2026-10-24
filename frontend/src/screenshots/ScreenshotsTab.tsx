@@ -122,7 +122,7 @@ function Viewer({
           gap: space.gap,
           px: space.pad,
           py: 1,
-          fontSize: 12,
+          fontSize: 'small.fontSize',
           color: 'text.secondary',
         }}
       >
@@ -168,7 +168,9 @@ export function ScreenshotsTab({ game }: { game: string }) {
   if (error !== null) {
     body = (
       <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-        <Typography sx={{ fontSize: 13, color: 'error.main' }}>{errorMessage(error)}</Typography>
+        <Typography sx={{ fontSize: 'base.fontSize', color: 'error.main' }}>
+          {errorMessage(error)}
+        </Typography>
         <Button size="small" onClick={load}>
           {t`Retry`}
         </Button>
@@ -221,7 +223,7 @@ export function ScreenshotsTab({ game }: { game: string }) {
                 gap: 1,
                 px: 1,
                 py: 0.5,
-                fontSize: 12,
+                fontSize: 'small.fontSize',
                 color: 'text.secondary',
               }}
             >

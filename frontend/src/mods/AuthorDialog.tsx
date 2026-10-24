@@ -27,8 +27,8 @@ import { useNexusEntry } from './nexusDetails.ts'
 import { nexusDomain } from './nexusDomain.ts'
 import { nexusModUrl } from './nexusUrl.ts'
 
-const text = { fontSize: 13 } as const
-const muted = { fontSize: 12, color: 'text.secondary' } as const
+const text = { fontSize: 'base.fontSize' } as const
+const muted = { fontSize: 'small.fontSize', color: 'text.secondary' } as const
 
 function modPageUrl(profile: Profile, mod: Mod): string {
   const source = (profile.entries ?? []).find((e) => e.key === mod.key)?.source
@@ -125,7 +125,7 @@ function AuthorDialogBody({
       <NexusAuthorBlock nexusName={nexusName} authorUrl={authorUrl} />
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
         <Typography
-          sx={{ fontWeight: 700, fontSize: 14 }}
+          sx={{ fontWeight: 700, fontSize: 'medium.fontSize' }}
         >{t`Installed in your profiles`}</Typography>
         {rows.map((row) => (
           <ModRow

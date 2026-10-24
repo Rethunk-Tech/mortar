@@ -56,7 +56,7 @@ export function ImportFooter({
             border: '1px solid',
             borderColor: calloutLine('info'),
             borderRadius: '4px',
-            fontSize: 13,
+            fontSize: 'base.fontSize',
           }}
         >
           <Box
@@ -72,7 +72,7 @@ export function ImportFooter({
       {flow.error ? (
         <Typography
           role="alert"
-          sx={{ px: space.gap, pb: space.gap, fontSize: 14, color: 'error.light' }}
+          sx={{ px: space.gap, pb: space.gap, fontSize: 'medium.fontSize', color: 'error.light' }}
         >
           {flow.error}
         </Typography>
@@ -143,13 +143,13 @@ export function ImportFooter({
           >
             <Typography
               tabIndex={0}
-              sx={{ fontSize: 13, maxHeight: 120, overflowY: 'auto', mt: 0.5 }}
+              sx={{ fontSize: 'base.fontSize', maxHeight: 120, overflowY: 'auto', mt: 0.5 }}
             >
               {(preview.replace?.remove ?? []).join(', ')}
             </Typography>
           </Fold>
         ) : (
-          <Typography sx={{ fontSize: 13 }}>{t`Nothing will be removed.`}</Typography>
+          <Typography sx={{ fontSize: 'base.fontSize' }}>{t`Nothing will be removed.`}</Typography>
         )}
         {(preview.replace?.keepLocal ?? []).length > 0 ? (
           <Fold
@@ -157,7 +157,7 @@ export function ImportFooter({
           >
             <Typography
               tabIndex={0}
-              sx={{ fontSize: 13, maxHeight: 120, overflowY: 'auto', mt: 0.5 }}
+              sx={{ fontSize: 'base.fontSize', maxHeight: 120, overflowY: 'auto', mt: 0.5 }}
             >
               {(preview.replace?.keepLocal ?? []).join(', ')}
             </Typography>

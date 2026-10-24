@@ -39,7 +39,14 @@ function Instructions({ text }: { text: string }) {
       <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
         {t`Curator's instructions`}
       </Typography>
-      <Box sx={{ maxHeight: 160, overflowY: 'auto', fontSize: 13, color: 'text.secondary' }}>
+      <Box
+        sx={{
+          maxHeight: 160,
+          overflowY: 'auto',
+          fontSize: 'base.fontSize',
+          color: 'text.secondary',
+        }}
+      >
         {lines.map(({ at, parts }) => (
           <Box key={at} sx={{ minHeight: '1.4em' }}>
             {parts.map((part) => (
@@ -59,14 +66,17 @@ function Externals({ items }: { items: NonNullable<CollectionInfo['external']> }
       <Typography variant="body2" sx={{ fontWeight: 600 }}>
         {t`Install yourself`}
       </Typography>
-      <Typography sx={{ fontSize: 12, color: 'text.secondary', mb: 0.5 }}>
+      <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary', mb: 0.5 }}>
         {t`These come from outside ${{ source: sourceLabel('nexus') }}, so Mortar does not download them.`}
       </Typography>
-      <Box component="ul" sx={{ m: 0, pl: space.pad, fontSize: 13 }}>
+      <Box component="ul" sx={{ m: 0, pl: space.pad, fontSize: 'base.fontSize' }}>
         {items.map((r) => (
           <li key={`${r.name}:${r.url}`}>
             {r.url ? <PageLink part={{ at: 0, text: r.name, url: r.url }} /> : r.name}
-            <Typography component="span" sx={{ fontSize: 12, color: 'text.secondary' }}>
+            <Typography
+              component="span"
+              sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}
+            >
               {[r.version, formatAuthors(r.author)].filter(Boolean).map((s) => ` · ${s}`)}
             </Typography>
           </li>
@@ -84,7 +94,9 @@ function DetailsNote({ details }: { details: string }) {
   }
   const note = notes[details]
   return note ? (
-    <Typography sx={{ mb: 1, fontSize: 12, color: 'text.secondary' }}>{note}</Typography>
+    <Typography sx={{ mb: 1, fontSize: 'small.fontSize', color: 'text.secondary' }}>
+      {note}
+    </Typography>
   ) : null
 }
 

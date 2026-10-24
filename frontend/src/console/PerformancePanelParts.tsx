@@ -121,7 +121,7 @@ function ReportTable({
                 sx={{
                   bgcolor: 'var(--mortar-console)',
                   color: 'var(--mortar-ink-sec)',
-                  fontSize: 11,
+                  fontSize: 'tiny.fontSize',
                   whiteSpace: 'nowrap',
                 }}
               >
@@ -190,7 +190,7 @@ function PanelHeader(props: HeaderProps) {
         py: space.gap,
       }}
     >
-      <Typography sx={{ flex: '1 1 auto', fontSize: 13, fontWeight: 600 }}>
+      <Typography sx={{ flex: '1 1 auto', fontSize: 'base.fontSize', fontWeight: 600 }}>
         {t`Performance`}
       </Typography>
       <DisabledReason title={t`Play this profile to measure.`} disabled={!running}>
@@ -255,7 +255,9 @@ function ReportBody({
   return rows.length > 0 ? (
     <ReportTable rows={rows} sort={sort} onSort={onSort} />
   ) : (
-    <Typography sx={{ px: space.pad, pb: space.gap, color: 'text.secondary', fontSize: 12 }}>
+    <Typography
+      sx={{ px: space.pad, pb: space.gap, color: 'text.secondary', fontSize: 'small.fontSize' }}
+    >
       {reportLines.length > 0
         ? t`No performance data was returned.`
         : t`Start measuring to view a report.`}

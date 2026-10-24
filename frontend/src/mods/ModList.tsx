@@ -159,7 +159,13 @@ function OverridesNote({ count }: { count: number }) {
   return (
     <Box
       component="span"
-      sx={{ ...ellipsis, flexShrink: 0, fontSize: 12, fontWeight: 400, color: 'text.secondary' }}
+      sx={{
+        ...ellipsis,
+        flexShrink: 0,
+        fontSize: 'small.fontSize',
+        fontWeight: 400,
+        color: 'text.secondary',
+      }}
     >
       {t`overrides ${plural(count, { one: '# file', other: '# files' })}`}
     </Box>
@@ -264,7 +270,7 @@ function cellsFor(id: ListColumnId, row: ListRow, locale: string, profile: Profi
         <Cell
           key="status"
           sx={{
-            fontSize: 13,
+            fontSize: 'base.fontSize',
             whiteSpace: 'nowrap',
             color: m.enabled ? 'text.primary' : 'text.secondary',
           }}
@@ -387,7 +393,7 @@ function ModRowView({ row, cols, locale, first, orderedRef, profile, onArrow }: 
         alignItems: 'center',
         px: space.gutter,
         height: space.row,
-        fontSize: 14,
+        fontSize: 'medium.fontSize',
         cursor: 'pointer',
         bgcolor: (th) => (marked ? alpha(th.palette.primary.main, SELECTED_ALPHA) : 'transparent'),
         ...(marked ? {} : { '[data-striped] > &': { bgcolor: 'var(--mortar-hairline-ghost)' } }),

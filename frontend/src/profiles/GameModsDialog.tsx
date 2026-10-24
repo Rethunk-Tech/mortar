@@ -64,7 +64,7 @@ function Plan({
             }
             label={t`Move them out of the game's Mods folder`}
           />
-          <Typography sx={{ mb: 1.5, fontSize: 13, color: 'text.secondary' }}>
+          <Typography sx={{ mb: 1.5, fontSize: 'base.fontSize', color: 'text.secondary' }}>
             {t`If they stay there, the game goes on loading them even when a profile disables them.`}
           </Typography>
         </>
@@ -199,7 +199,7 @@ export function GameModsDialog({
             {mods.map((m) => (
               <Typography
                 key={`${m.name}-${m.version}-${m.source}-${m.status}-${m.reason}`}
-                sx={{ fontSize: 14, py: 0.25 }}
+                sx={{ fontSize: 'medium.fontSize', py: 0.25 }}
               >
                 {formatPreviewRow(m, switchedOff, reasonText)}
               </Typography>

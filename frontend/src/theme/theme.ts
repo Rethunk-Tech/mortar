@@ -27,6 +27,21 @@ const MONO = 'ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, monospace
 // MUI converts px to rem against this root size, so a larger value renders smaller text: compact shrinks type.
 const HTML_FONT_SIZE = 18
 const HTML_FONT_SIZE_COMPACT = 20
+// Text sizes in sx (`fontSize: 'base.fontSize'`), at their px in normal density and shrunk with MUI's own text in compact.
+const TEXT_PX = { tiny: 11, small: 12, base: 13, medium: 14, lead: 15, large: 16 } as const
+type TextSize = keyof typeof TEXT_PX
+
+declare module '@mui/material/styles' {
+  interface TypographyVariants extends Record<TextSize, React.CSSProperties> {}
+  interface TypographyVariantsOptions extends Partial<Record<TextSize, React.CSSProperties>> {}
+}
+
+function textSizes(htmlFontSize: number): Record<TextSize, { fontSize: string }> {
+  const scale = HTML_FONT_SIZE / htmlFontSize
+  return Object.fromEntries(
+    Object.entries(TEXT_PX).map(([name, px]) => [name, { fontSize: `${px * scale}px` }]),
+  ) as Record<TextSize, { fontSize: string }>
+}
 const TITLE_BAR_PX = 48
 const TITLE_BAR_COMPACT_PX = 40
 const WINDOW_BUTTON_PX = 46
@@ -358,6 +373,7 @@ function createMortarTheme(
     typography: {
       fontFamily: fontStack(opts.font),
       htmlFontSize: compactUi ? HTML_FONT_SIZE_COMPACT : HTML_FONT_SIZE,
+      ...textSizes(compactUi ? HTML_FONT_SIZE_COMPACT : HTML_FONT_SIZE),
     },
     components: {
       MuiCssBaseline: {

@@ -34,7 +34,7 @@ export function SourceBadges({
                 height: 24,
                 px: 0.5,
                 borderRadius: '6px',
-                fontSize: 12,
+                fontSize: 'small.fontSize',
                 border: '1px solid',
                 borderColor: id === picked ? 'var(--mortar-ink-dim-60)' : 'var(--mortar-hairline)',
                 bgcolor: id === picked ? 'var(--mortar-hairline-16)' : 'transparent',

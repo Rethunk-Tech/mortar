@@ -32,7 +32,7 @@ export function Fold({
           borderRadius: '6px',
           bgcolor: bg,
           color: color ?? 'inherit',
-          fontSize: 13,
+          fontSize: 'base.fontSize',
         }}
       >
         <CoverButton onClick={() => setOpen(!open)} aria-expanded={open} aria-label={line} />

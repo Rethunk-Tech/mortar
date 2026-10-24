@@ -187,7 +187,12 @@ function Diagnostics() {
           {failed ? (
             <Box
               role="alert"
-              sx={{ display: 'flex', alignItems: 'center', gap: space.gap, fontSize: 15 }}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: space.gap,
+                fontSize: 'lead.fontSize',
+              }}
             >
               {t`Could not run diagnostics`}
               <Button size="small" variant="outlined" disabled={busy} onClick={run}>
@@ -196,7 +201,7 @@ function Diagnostics() {
             </Box>
           ) : null}
           {!busy && report && groups.length === 0 ? (
-            <Box sx={{ fontSize: 15 }}>{t`All checks passed`}</Box>
+            <Box sx={{ fontSize: 'lead.fontSize' }}>{t`All checks passed`}</Box>
           ) : null}
           {groups.map((g) => (
             <Box key={g.kind} sx={{ display: 'flex', gap: space.gap, alignItems: 'flex-start' }}>
@@ -204,9 +209,12 @@ function Diagnostics() {
                 <StatusIcon status={g.status} />
               </Box>
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Box sx={{ fontSize: 15, fontWeight: 600 }}>{title(g.kind)}</Box>
+                <Box sx={{ fontSize: 'lead.fontSize', fontWeight: 600 }}>{title(g.kind)}</Box>
                 {g.details.map((d) => (
-                  <Box key={d} sx={{ ...detail, fontSize: 13, overflowWrap: 'anywhere' }}>
+                  <Box
+                    key={d}
+                    sx={{ ...detail, fontSize: 'base.fontSize', overflowWrap: 'anywhere' }}
+                  >
                     {d}
                   </Box>
                 ))}

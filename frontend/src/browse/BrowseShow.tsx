@@ -79,7 +79,9 @@ function BrowseShow({
         >
           {ROWS.map((row) => (
             <Box key={row} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-              <Typography sx={{ fontSize: 13, fontWeight: 600 }}>{labels[row]}</Typography>
+              <Typography sx={{ fontSize: 'base.fontSize', fontWeight: 600 }}>
+                {labels[row]}
+              </Typography>
               <PrefSegmented
                 label={labels[row]}
                 value={modes[row]}
@@ -95,7 +97,9 @@ function BrowseShow({
             </Box>
           ))}
           <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-            <Typography sx={{ fontSize: 13, fontWeight: 600 }}>{t`Card details`}</Typography>
+            <Typography
+              sx={{ fontSize: 'base.fontSize', fontWeight: 600 }}
+            >{t`Card details`}</Typography>
             {CARD_STATS.map((stat) => (
               <FormControlLabel
                 key={stat}

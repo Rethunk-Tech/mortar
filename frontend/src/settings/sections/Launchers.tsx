@@ -24,7 +24,7 @@ export function Launchers() {
       terms={`${t`Launchers`} Steam GOG Flatpak ${t`Game folder`} ${launchers.map((l) => l.name).join(' ')}`}
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
-        <Box sx={{ fontSize: 13, color: 'var(--mortar-ink-sec)' }}>
+        <Box sx={{ fontSize: 'base.fontSize', color: 'var(--mortar-ink-sec)' }}>
           {t`Mortar finds your games through these launchers. Choose a folder for a game it missed or you moved.`}
         </Box>
         <LauncherList launchers={launchers} refresh={refresh} />

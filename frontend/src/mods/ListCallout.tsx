@@ -32,7 +32,7 @@ export function ListCallout({
         '& .MuiAlert-action': { gap: space.gap, flexWrap: 'wrap', ml: 'auto' },
       }}
     >
-      <Typography sx={{ fontSize: 14 }}>{text}</Typography>
+      <Typography sx={{ fontSize: 'medium.fontSize' }}>{text}</Typography>
       {children}
     </Alert>
   )

@@ -71,7 +71,7 @@ function ShortcutRow({
           onClick={onRecord}
           sx={{
             color: 'var(--mortar-ink-sec)',
-            fontSize: 12,
+            fontSize: 'small.fontSize',
             px: 0.75,
             py: 0.25,
             border: '1px solid var(--mortar-hairline-25)',
@@ -178,7 +178,9 @@ export function Shortcuts() {
     ['Tabs', t`Tabs`],
   ]
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.pad, fontSize: 14 }}>
+    <Box
+      sx={{ display: 'flex', flexDirection: 'column', gap: space.pad, fontSize: 'medium.fontSize' }}
+    >
       {groups.map(([group, name]) => {
         const grouped = SHORTCUTS.filter((row) => row.group === group)
         return grouped.length > 0 ? (

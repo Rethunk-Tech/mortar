@@ -46,7 +46,7 @@ export function GraphicsDialog() {
             {graphics.reason}
           </Link>
         ) : null}
-        <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+        <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
           {t`You can change this later in ${name}'s settings, under Play.`}
         </Typography>
       </DialogContent>

@@ -141,7 +141,9 @@ function ImplicitViewItems() {
   const view = useSettings((s) => s.implicitModsView)
   return (
     <>
-      <ListSubheader sx={{ bgcolor: 'transparent', lineHeight: '28px', fontSize: 12 }}>
+      <ListSubheader
+        sx={{ bgcolor: 'transparent', lineHeight: '28px', fontSize: 'small.fontSize' }}
+      >
         {t`Implicit mods`}
       </ListSubheader>
       {[

@@ -27,7 +27,7 @@ const KEYS_SHOWN = 8
 
 function EvidenceLine({ children }: { children: ReactNode }) {
   return (
-    <Typography sx={{ fontSize: 12, color: 'text.secondary', whiteSpace: 'normal' }}>
+    <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary', whiteSpace: 'normal' }}>
       {children}
     </Typography>
   )
@@ -95,14 +95,16 @@ export function ConflictWhy({ asset }: { asset: AssetConflict }) {
     <Box sx={{ mt: 0.75, display: 'flex', flexDirection: 'column', gap: space.gap }}>
       {evidence.map((e) => (
         <Box key={evidenceKey(e)}>
-          <Typography sx={{ fontSize: 13, fontWeight: 600 }}>{e.packName || e.packId}</Typography>
+          <Typography sx={{ fontSize: 'base.fontSize', fontWeight: 600 }}>
+            {e.packName || e.packId}
+          </Typography>
           <EvidenceLine>{`${e.source} · ${e.index}`}</EvidenceLine>
           <EvidenceLine>{t`${{ action: e.action }} ${{ target: e.target }}`}</EvidenceLine>
           {e.keys && e.keys.length > 0 ? (
             <Typography
               title={e.keys.join('\n')}
               sx={{
-                fontSize: 12,
+                fontSize: 'small.fontSize',
                 color: 'warning.main',
                 whiteSpace: 'normal',
                 overflowWrap: 'anywhere',
@@ -127,7 +129,7 @@ export function ConflictWhy({ asset }: { asset: AssetConflict }) {
             const src = previews[previewKey(e)]
             return (
               <Box key={previewKey(e)} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+                <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
                   {e.packName || e.packId}
                 </Typography>
                 <Box

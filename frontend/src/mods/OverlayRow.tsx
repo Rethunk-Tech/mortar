@@ -17,7 +17,7 @@ import { LIST_ROW_PX, type OverlayRow } from './virtualRows.ts'
 
 const chipSx = {
   height: 20,
-  fontSize: 11,
+  fontSize: 'tiny.fontSize',
   bgcolor: 'action.selected',
   color: 'text.secondary',
   '& .MuiChip-label': { px: 0.75 },
@@ -38,7 +38,7 @@ export function OverlayListRow({ overlay }: { overlay: OverlayRow }) {
         height: LIST_ROW_PX,
         pl: 5,
         pr: space.pad,
-        fontSize: 13,
+        fontSize: 'base.fontSize',
         color: dim ? 'text.secondary' : 'text.primary',
       }}
     >

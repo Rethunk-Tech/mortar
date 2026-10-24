@@ -39,7 +39,12 @@ export function HomePanel({
     >
       <Typography
         component="h2"
-        sx={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.06em', color: 'text.secondary' }}
+        sx={{
+          fontSize: 'small.fontSize',
+          fontWeight: 700,
+          letterSpacing: '0.06em',
+          color: 'text.secondary',
+        }}
       >
         {title.toUpperCase()}
       </Typography>

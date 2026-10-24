@@ -18,7 +18,7 @@ export function ImportInput({ flow }: { flow: ImportFlow }) {
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap, p: '20px 18px' }}>
       {flow.tab === 'file' ? (
         <>
-          <Typography sx={{ fontSize: 14, textAlign: 'center' }}>
+          <Typography sx={{ fontSize: 'medium.fontSize', textAlign: 'center' }}>
             {t`Open a .mortar file, an ${{ manager: R2MODMAN }} or ${{ otherManager: GALE }} .r2z, or a ${{ source: sourceLabel('thunderstore') }} modpack. You see what it holds before anything downloads.`}
           </Typography>
           <Box sx={{ display: 'flex', justifyContent: 'center' }}>
@@ -36,7 +36,7 @@ export function ImportInput({ flow }: { flow: ImportFlow }) {
         </>
       ) : (
         <>
-          <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
+          <Typography sx={{ fontSize: 'medium.fontSize', color: 'text.secondary' }}>
             {t`Paste a Mortar link, a ${{ source: sourceLabel('nexus') }} collection, an ${{ manager: R2MODMAN }} or ${{ otherManager: GALE }} code, a ${{ otherSource: sourceLabel('patreon') }} post, an ${{ thirdSource: sourceLabel('itch') }} page or (Premium) a ${{ source: sourceLabel('nexus') }} mod link.`}
           </Typography>
           <Box
@@ -60,7 +60,7 @@ export function ImportInput({ flow }: { flow: ImportFlow }) {
               helperText={flow.error || undefined}
               slotProps={{
                 htmlInput: { 'aria-label': t`Link or code`, spellCheck: false },
-                formHelperText: { role: 'alert', sx: { mx: 0, fontSize: 13 } },
+                formHelperText: { role: 'alert', sx: { mx: 0, fontSize: 'base.fontSize' } },
                 input: {
                   endAdornment: (
                     <InputAdornment position="end">
@@ -97,14 +97,14 @@ export function ImportInput({ flow }: { flow: ImportFlow }) {
         </>
       )}
       {handoff ? (
-        <Typography role="status" sx={{ fontSize: 14, color: 'text.secondary' }}>
+        <Typography role="status" sx={{ fontSize: 'medium.fontSize', color: 'text.secondary' }}>
           {handoff.kind === 'patreon'
             ? t`Opened the ${{ source: sourceLabel('patreon') }} post. Save the file from it; Mortar offers it from your Downloads folder.`
             : t`Opened the ${{ source: sourceLabel('itch') }} page. Save the file from it; Mortar offers it from your Downloads folder.`}
         </Typography>
       ) : null}
       {flow.tab === 'file' && flow.error ? (
-        <Typography role="alert" sx={{ fontSize: 14, color: 'error.light' }}>
+        <Typography role="alert" sx={{ fontSize: 'medium.fontSize', color: 'error.light' }}>
           {flow.error}
         </Typography>
       ) : null}

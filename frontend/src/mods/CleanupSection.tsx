@@ -107,7 +107,7 @@ function CleanupRow({ cleanup }: { cleanup: CleanupItem }) {
         pl: space.pad,
         pr: 0.75,
         py: space.gap,
-        fontSize: 14,
+        fontSize: 'medium.fontSize',
         bgcolor: 'var(--mortar-overlay-45)',
         borderRadius: '6px',
         ...(cleanup.onRestore ? { opacity: 0.75 } : {}),
@@ -119,7 +119,7 @@ function CleanupRow({ cleanup }: { cleanup: CleanupItem }) {
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Typography
           title={cleanup.name.trim() === '' ? cleanup.id : undefined}
-          sx={{ fontSize: 14, whiteSpace: 'normal', wordBreak: 'break-word' }}
+          sx={{ fontSize: 'medium.fontSize', whiteSpace: 'normal', wordBreak: 'break-word' }}
         >
           <LinkedText
             text={sentence}

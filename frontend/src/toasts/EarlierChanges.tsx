@@ -35,8 +35,8 @@ function EarlierRow({
     >
       <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: space.gap }}>
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography sx={{ fontSize: 13, fontWeight: 600 }}>{label}</Typography>
-          <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>
+          <Typography sx={{ fontSize: 'base.fontSize', fontWeight: 600 }}>{label}</Typography>
+          <Typography sx={{ fontSize: 'tiny.fontSize', color: 'text.secondary' }}>
             {changes === '' ? null : `${changes} · `}
             <When value={ev.at} withTime={true} />
           </Typography>
@@ -58,7 +58,7 @@ function EarlierRow({
         )}
       </Box>
       <Collapse in={diff} unmountOnExit={true}>
-        <Box component="ul" sx={{ m: 0, mt: 0.5, pl: space.pad, fontSize: 12 }}>
+        <Box component="ul" sx={{ m: 0, mt: 0.5, pl: space.pad, fontSize: 'small.fontSize' }}>
           {details.map((item) => (
             <li key={`${item.kind}:${item.mod}:${item.file ?? ''}`}>{item.detail}</li>
           ))}
@@ -82,7 +82,7 @@ export function EarlierChanges({ panel, hide }: { panel: Panel; hide: ReadonlySe
   }
   if (panel.events.length === 0) {
     return (
-      <Typography sx={{ p: space.pad, fontSize: 13, color: 'text.secondary' }}>
+      <Typography sx={{ p: space.pad, fontSize: 'base.fontSize', color: 'text.secondary' }}>
         {t`No changes yet`}
       </Typography>
     )
@@ -113,16 +113,18 @@ export function EarlierChanges({ panel, hide }: { panel: Panel; hide: ReadonlySe
         }}
       >
         <Typography
-          sx={{ fontSize: 13, mb: 1 }}
+          sx={{ fontSize: 'base.fontSize', mb: 1 }}
         >{t`These changes will be reverted too:`}</Typography>
         {later.map((e) => (
-          <Typography key={e.id} sx={{ fontSize: 13 }} color="text.secondary">
+          <Typography key={e.id} sx={{ fontSize: 'base.fontSize' }} color="text.secondary">
             {historyLabel(e)}
           </Typography>
         ))}
       </ConfirmDialog>
       {panel.error === '' ? null : (
-        <Typography sx={{ px: space.pad, py: space.gap, fontSize: 13, color: 'error.main' }}>
+        <Typography
+          sx={{ px: space.pad, py: space.gap, fontSize: 'base.fontSize', color: 'error.main' }}
+        >
           {panel.error}
         </Typography>
       )}

@@ -81,7 +81,7 @@ function ProfileButton({
         px: '10px',
         borderRadius: '8px',
         fontFamily: 'inherit',
-        fontSize: 14,
+        fontSize: 'medium.fontSize',
         fontWeight: 600,
         color: 'inherit',
         bgcolor: 'var(--mortar-hairline-faint)',
@@ -113,7 +113,7 @@ function ProfileButton({
           component="span"
           sx={{
             flexShrink: 0,
-            fontSize: 12,
+            fontSize: 'small.fontSize',
             fontWeight: 400,
             px: '8px',
             py: '2px',

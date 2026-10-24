@@ -50,7 +50,7 @@ export function HistoryTimeline({
           <Typography
             component="h3"
             sx={{
-              fontSize: 12,
+              fontSize: 'small.fontSize',
               fontWeight: 700,
               color: 'var(--mortar-ink-sec)',
               px: space.gap,

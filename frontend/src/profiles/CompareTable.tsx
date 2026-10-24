@@ -24,7 +24,7 @@ const COLUMNS = '22px minmax(0,1fr) 110px 24px 110px'
 export function CompareHeader({ aName, bName }: { aName: string; bName: string }) {
   const { t } = useLingui()
   const cell = {
-    fontSize: 11,
+    fontSize: 'tiny.fontSize',
     fontWeight: 700,
     letterSpacing: '0.08em',
     color: 'text.secondary',
@@ -133,7 +133,7 @@ export function CompareGroupView({
                   noWrap={true}
                   title={row.name}
                   sx={{
-                    fontSize: 14,
+                    fontSize: 'medium.fontSize',
                     cursor: 'pointer',
                     '&:hover': { textDecoration: 'underline' },
                   }}
@@ -144,14 +144,14 @@ export function CompareGroupView({
                 <Typography
                   noWrap={true}
                   color="text.secondary"
-                  sx={{ textAlign: 'right', fontSize: 14 }}
+                  sx={{ textAlign: 'right', fontSize: 'medium.fontSize' }}
                 >
                   {cellText(row, row.a, profileA)}
                 </Typography>
                 <Typography color="text.secondary" sx={{ textAlign: 'center' }}>
                   {ARROW}
                 </Typography>
-                <Typography noWrap={true} sx={{ fontSize: 14 }}>
+                <Typography noWrap={true} sx={{ fontSize: 'medium.fontSize' }}>
                   {cellText(row, row.b, profileB)}
                 </Typography>
               </Box>

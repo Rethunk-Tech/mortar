@@ -23,7 +23,14 @@ export function RowCopy({
   return (
     <Box sx={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: '3px' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}>
-        <Typography sx={{ fontSize: 16, fontWeight: 600, overflowWrap: 'anywhere', minWidth: 0 }}>
+        <Typography
+          sx={{
+            fontSize: 'large.fontSize',
+            fontWeight: 600,
+            overflowWrap: 'anywhere',
+            minWidth: 0,
+          }}
+        >
           {update.unofficial ? (
             t`Unofficial update available: ${{ version: update.version }}`
           ) : (
@@ -48,16 +55,22 @@ export function RowCopy({
         <Chip
           size="small"
           label={notes.join(' · ')}
-          sx={{ alignSelf: 'flex-start', bgcolor: 'var(--mortar-hairline-muted)', fontSize: 12 }}
+          sx={{
+            alignSelf: 'flex-start',
+            bgcolor: 'var(--mortar-hairline-muted)',
+            fontSize: 'small.fontSize',
+          }}
         />
       ) : null}
       {caution ? (
-        <Typography sx={{ fontSize: 12, color: 'warning.main', overflowWrap: 'anywhere' }}>
+        <Typography
+          sx={{ fontSize: 'small.fontSize', color: 'warning.main', overflowWrap: 'anywhere' }}
+        >
           {caution}
         </Typography>
       ) : null}
       {reportedElsewhere ? (
-        <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+        <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
           {t`Reported by ${{ source: update.source }}`}
         </Typography>
       ) : null}

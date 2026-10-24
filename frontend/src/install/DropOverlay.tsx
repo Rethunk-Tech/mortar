@@ -113,7 +113,7 @@ export function DropOverlay({ target: frame }: { target: RefObject<HTMLElement |
                 <Typography component="h2" sx={{ fontSize: 38, fontWeight: 700 }}>
                   {t`Drop to install into ${{ name: profile.name }}`}
                 </Typography>
-                <Typography sx={{ maxWidth: 640, fontSize: 15, lineHeight: 1.5 }}>
+                <Typography sx={{ maxWidth: 640, fontSize: 'lead.fontSize', lineHeight: 1.5 }}>
                   {t`Zip, RAR, 7z, tar, gzip, xz, lzma, zstd and bzip2. Mortar reads the mods inside and shows you what was added.`}
                 </Typography>
               </>

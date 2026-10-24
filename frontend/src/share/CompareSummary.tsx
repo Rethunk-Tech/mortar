@@ -35,7 +35,7 @@ export function CompareSummary({ preview, targetName }: { preview: Preview; targ
         gap: 0.75,
       }}
     >
-      <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+      <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
         {t`${plural({ count: matching.length }, { one: '# mod already matches', other: '# mods already match' })} ${{ name: targetName }}.`}
       </Typography>
       {rows
@@ -44,7 +44,7 @@ export function CompareSummary({ preview, targetName }: { preview: Preview; targ
           <Fold key={r.label} title={`${r.label} (${r.items.length})`}>
             <Typography
               tabIndex={0}
-              sx={{ fontSize: 13, maxHeight: 120, overflowY: 'auto', mt: 0.5 }}
+              sx={{ fontSize: 'base.fontSize', maxHeight: 120, overflowY: 'auto', mt: 0.5 }}
             >
               {r.items.join(', ')}
             </Typography>

@@ -63,7 +63,7 @@ export const UpdateBar = memo(function UpdateBarView() {
         gap: space.gap,
         pl: space.pad,
         pr: 0.75,
-        fontSize: 14,
+        fontSize: 'medium.fontSize',
         bgcolor: accent.fill,
         border: '1px solid',
         borderColor: accent.line,
@@ -79,14 +79,14 @@ export const UpdateBar = memo(function UpdateBarView() {
       <Typography
         component="span"
         noWrap={true}
-        sx={{ flexShrink: 0, fontSize: 14, fontWeight: 600 }}
+        sx={{ flexShrink: 0, fontSize: 'medium.fontSize', fontWeight: 600 }}
       >
         {plural(count, { one: '# update ready', other: '# updates ready' })}
       </Typography>
       <Typography
         component="span"
         noWrap={true}
-        sx={{ flex: 1, minWidth: 0, fontSize: 13, color: 'text.secondary' }}
+        sx={{ flex: 1, minWidth: 0, fontSize: 'base.fontSize', color: 'text.secondary' }}
       >
         {first ? t`including ${{ name: first.name }} ${{ version: first.version }}` : ''}
       </Typography>

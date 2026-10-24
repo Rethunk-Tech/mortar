@@ -236,12 +236,15 @@ export function HistoryList({
                 <Typography
                   noWrap={true}
                   title={`${e.name}${e.version ? ` ${e.version}` : ''}`}
-                  sx={{ fontSize: 14, fontWeight: 600 }}
+                  sx={{ fontSize: 'medium.fontSize', fontWeight: 600 }}
                 >
                   {e.name}
                   {e.version ? ` ${e.version}` : ''}
                 </Typography>
-                <Typography noWrap={true} sx={{ fontSize: 12, color: 'text.secondary' }}>
+                <Typography
+                  noWrap={true}
+                  sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}
+                >
                   <OutcomeText outcome={e.outcome} />
                   {` · ${e.source}`}
                   {e.profileId ? ` · ${nameOf(e.profileId)}` : ''}
@@ -257,7 +260,7 @@ export function HistoryList({
                   <Typography
                     noWrap={true}
                     title={errorDetails(e.error)}
-                    sx={{ fontSize: 12, color: failColor }}
+                    sx={{ fontSize: 'small.fontSize', color: failColor }}
                   >
                     {failureText(e.error)}
                   </Typography>

@@ -123,7 +123,7 @@ function SaveListRow({
       sx={{
         ...rowGrid(recordsMods),
         minHeight: space.row,
-        fontSize: 14,
+        fontSize: 'medium.fontSize',
         borderBottom: '1px solid var(--mortar-hairline-faint)',
       }}
     >
@@ -133,7 +133,7 @@ function SaveListRow({
           {kind === '' ? null : (
             <Box
               component="span"
-              sx={{ ml: 1, fontWeight: 400, fontSize: 13, color: 'text.secondary' }}
+              sx={{ ml: 1, fontWeight: 400, fontSize: 'base.fontSize', color: 'text.secondary' }}
             >
               {kind}
             </Box>
@@ -149,7 +149,7 @@ function SaveListRow({
                 }
               : {})}
           >
-            <Typography noWrap={true} sx={{ fontSize: 13, color: 'text.secondary' }}>
+            <Typography noWrap={true} sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
               {when}
             </Typography>
           </SaveCell>

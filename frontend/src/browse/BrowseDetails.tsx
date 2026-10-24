@@ -39,7 +39,7 @@ const VERSIONS_SHOWN = 6
 const PICTURE = 52
 const SKELETON_ROWS = 4
 const SKELETON_PX = 18
-const text = { fontSize: 13 } as const
+const text = { fontSize: 'base.fontSize' } as const
 
 function Versions({ versions }: { versions: string[] }) {
   const { t } = useLingui()
@@ -271,7 +271,7 @@ function Panel({
           onClose={() => setChoosing(false)}
         />
       ) : null}
-      <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{stats}</Typography>
+      <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>{stats}</Typography>
       {source === NEXUS ? (
         <NexusPage key={shownItem.id} game={game} modId={Number(shownItem.id)} />
       ) : (

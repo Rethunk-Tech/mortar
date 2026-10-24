@@ -21,7 +21,11 @@ export function Title({ item, size }: { item: Item; size: number }) {
         {item.name || item.fileName}
       </Typography>
       {profile === null ? null : (
-        <Typography noWrap={true} title={profile} sx={{ fontSize: 12, color: 'text.secondary' }}>
+        <Typography
+          noWrap={true}
+          title={profile}
+          sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}
+        >
           {profile ? t`Into ${{ profile }}` : t`Into a deleted profile`}
         </Typography>
       )}
@@ -61,7 +65,7 @@ export function Callout({
         <Box sx={{ flexGrow: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
           <Typography
             sx={{
-              fontSize: 12,
+              fontSize: 'small.fontSize',
               fontWeight: 700,
               letterSpacing: '0.06em',
               textTransform: 'uppercase',
@@ -74,7 +78,7 @@ export function Callout({
         </Box>
         <Box sx={{ flexShrink: 0 }}>{actions}</Box>
       </Box>
-      <Typography sx={{ fontSize: 13, lineHeight: 1.45 }}>{text}</Typography>
+      <Typography sx={{ fontSize: 'base.fontSize', lineHeight: 1.45 }}>{text}</Typography>
       {children}
     </Box>
   )

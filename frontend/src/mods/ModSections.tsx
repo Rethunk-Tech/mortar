@@ -21,7 +21,7 @@ import { EditConfigButton } from './typedConfig/EditConfigButton.tsx'
 import { useLocked } from './useLocked.ts'
 import { targetOfSource } from './versionChoices.ts'
 
-const text = { fontSize: 13 } as const
+const text = { fontSize: 'base.fontSize' } as const
 const row = {
   display: 'flex',
   alignItems: 'center',

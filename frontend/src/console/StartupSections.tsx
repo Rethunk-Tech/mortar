@@ -162,7 +162,7 @@ function Phases({ report }: { report: StartupReport }) {
               minWidth: 0,
               overflow: 'hidden',
               whiteSpace: 'nowrap',
-              fontSize: 12,
+              fontSize: 'small.fontSize',
               fontWeight: 600,
               color: 'background.default',
               bgcolor: PHASE_COLORS[s.id],

@@ -50,7 +50,7 @@ function Share({ part, largest }: { part: number; largest: number }) {
           bgcolor: 'primary.main',
         }}
       />
-      <Box component="span" sx={{ color: 'text.secondary', fontSize: 12 }}>
+      <Box component="span" sx={{ color: 'text.secondary', fontSize: 'small.fontSize' }}>
         {part.toLocaleString(i18n.locale, { style: 'percent', maximumFractionDigits: 1 })}
       </Box>
     </Box>
@@ -135,7 +135,7 @@ function ModDetails({ mod, sampled }: { mod: StartupMod; sampled: boolean }) {
           display: 'grid',
           gridTemplateColumns: 'max-content max-content',
           columnGap: 3,
-          fontSize: 13,
+          fontSize: 'base.fontSize',
         }}
       >
         <Detail label={t`Load`} value={mod.entryMs > 0 ? duration(mod.entryMs) : '—'} />
@@ -154,7 +154,7 @@ function ModDetails({ mod, sampled }: { mod: StartupMod; sampled: boolean }) {
         display: 'flex',
         flexDirection: 'column',
         gap: space.gap,
-        fontSize: 13,
+        fontSize: 'base.fontSize',
       }}
     >
       <Box sx={{ display: 'grid', gridTemplateColumns: 'max-content max-content', columnGap: 3 }}>
@@ -254,7 +254,7 @@ function ModRow({
               <Box
                 component="span"
                 tabIndex={0}
-                sx={{ color: 'text.secondary', fontSize: 12, ml: 0.5 }}
+                sx={{ color: 'text.secondary', fontSize: 'small.fontSize', ml: 0.5 }}
               >
                 {t`Mortar`}
               </Box>

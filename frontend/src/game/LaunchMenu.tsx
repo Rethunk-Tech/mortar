@@ -41,7 +41,9 @@ export function LaunchMenu({ game, profile }: { game: string; profile: Profile }
           <MenuItem disabled={true} dense={true} sx={{ opacity: 1 }}>
             <ListItemText
               primary={t`No tools yet`}
-              slotProps={{ primary: { sx: { fontSize: 14, color: 'text.primary' } } }}
+              slotProps={{
+                primary: { sx: { fontSize: 'medium.fontSize', color: 'text.primary' } },
+              }}
             />
           </MenuItem>
         ) : null}

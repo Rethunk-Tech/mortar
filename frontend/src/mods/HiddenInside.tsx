@@ -54,8 +54,8 @@ export function HiddenInside({ mod, profile }: { mod: Mod; profile: Profile }) {
               primary={h.version === '' ? h.name : `${h.name} · ${h.version}`}
               secondary={h.folder}
               slotProps={{
-                primary: { sx: { fontSize: 13, overflowWrap: 'anywhere' } },
-                secondary: { sx: { fontSize: 12, overflowWrap: 'anywhere' } },
+                primary: { sx: { fontSize: 'base.fontSize', overflowWrap: 'anywhere' } },
+                secondary: { sx: { fontSize: 'small.fontSize', overflowWrap: 'anywhere' } },
               }}
             />
             <Button
@@ -84,7 +84,7 @@ export function HiddenInside({ mod, profile }: { mod: Mod; profile: Profile }) {
           </ListItem>
         ))}
       </List>
-      <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 0.5 }}>
+      <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary', mt: 0.5 }}>
         {t`${{ loader: SMAPI }} skips folders whose names start with a dot.`}
       </Typography>
       <ConfirmDialog

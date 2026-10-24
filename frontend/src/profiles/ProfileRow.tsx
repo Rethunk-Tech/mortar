@@ -125,7 +125,11 @@ function BudgetLine({ budget }: { budget: ProfileBudget | undefined }) {
     budget.saves > 0 ? t`${{ size: formatBytes(budget.saves) }} of saves` : undefined,
   ])
   return (
-    <Typography noWrap={true} title={line} sx={{ fontSize: 13, color: 'text.secondary' }}>
+    <Typography
+      noWrap={true}
+      title={line}
+      sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}
+    >
       {line}
     </Typography>
   )
@@ -224,12 +228,20 @@ export const ProfileRow = memo(function ProfileRowView({
         )}
         {profile.description ? (
           <Tooltip title={profile.description}>
-            <Typography noWrap={true} tabIndex={0} sx={{ fontSize: 13, color: 'text.secondary' }}>
+            <Typography
+              noWrap={true}
+              tabIndex={0}
+              sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}
+            >
               {profile.description}
             </Typography>
           </Tooltip>
         ) : null}
-        <Typography noWrap={true} title={summary} sx={{ fontSize: 13, color: 'text.secondary' }}>
+        <Typography
+          noWrap={true}
+          title={summary}
+          sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}
+        >
           {summary}
         </Typography>
         <BudgetLine budget={budget} />

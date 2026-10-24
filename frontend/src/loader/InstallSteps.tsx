@@ -20,7 +20,7 @@ export function InstallSteps({ steps }: { steps: string[] }) {
             display: 'flex',
             alignItems: 'center',
             gap: 0.5,
-            fontSize: 13,
+            fontSize: 'base.fontSize',
             color: 'text.secondary',
             whiteSpace: 'nowrap',
           }}

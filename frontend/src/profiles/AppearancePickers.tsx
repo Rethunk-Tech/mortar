@@ -51,11 +51,15 @@ export function AppearancePickers({
   }
   return (
     <>
-      <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}>{t`Colour`}</Typography>
+      <Typography
+        sx={{ fontSize: 'base.fontSize', color: 'text.secondary', mb: 1 }}
+      >{t`Colour`}</Typography>
       <Box sx={{ mb: 2 }}>
         <ColorSwatches label={t`Colour`} value={color} onChange={onColor} />
       </Box>
-      <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}>{t`Icon`}</Typography>
+      <Typography
+        sx={{ fontSize: 'base.fontSize', color: 'text.secondary', mb: 1 }}
+      >{t`Icon`}</Typography>
       <Box sx={{ mb: 2 }}>
         <IconSwatches
           label={t`Icon`}

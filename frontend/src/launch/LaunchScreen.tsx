@@ -243,7 +243,7 @@ function SlowNotice({ p, stage, onKeep }: { p: Progress; stage: StageId; onKeep:
       <Typography component="h3" sx={{ fontSize: 17, fontWeight: 600 }}>
         {title}
       </Typography>
-      <Typography sx={{ color: 'text.secondary', fontSize: 14 }}>{body}</Typography>
+      <Typography sx={{ color: 'text.secondary', fontSize: 'medium.fontSize' }}>{body}</Typography>
       <Box sx={{ display: 'flex', gap: space.gap, mt: 0.5 }}>
         {stage === 'via' && launcherNames[p.via] === STEAM ? (
           <Button
@@ -282,7 +282,12 @@ function FailurePanel({ game }: { game: string }) {
           : t`${name} did not start`}
       </Typography>
       <Typography
-        sx={{ color: 'text.secondary', fontSize: 14, userSelect: 'text', maxWidth: '100%' }}
+        sx={{
+          color: 'text.secondary',
+          fontSize: 'medium.fontSize',
+          userSelect: 'text',
+          maxWidth: '100%',
+        }}
         noWrap={true}
         title={body}
       >
@@ -331,7 +336,7 @@ function Log() {
         p: `${LOG_PAD}px`,
         bgcolor: 'var(--mortar-overlay-55)',
         fontFamily: MONO,
-        fontSize: 13,
+        fontSize: 'base.fontSize',
         lineHeight: `${LINE_HEIGHT}px`,
         color: 'text.secondary',
         userSelect: 'text',
@@ -506,7 +511,7 @@ export function LaunchScreen({ game }: { game: string }) {
         <Typography component="h2" sx={{ fontSize: 30, fontWeight: 700 }}>
           {title}
         </Typography>
-        <Typography sx={{ fontSize: 16 }}>{sub}</Typography>
+        <Typography sx={{ fontSize: 'large.fontSize' }}>{sub}</Typography>
         <Typography sx={{ fontSize: 13.5, color: 'text.secondary', minHeight: 19 }}>
           {[usual, elapsed].filter(Boolean).join(' · ')}
         </Typography>

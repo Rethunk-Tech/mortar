@@ -89,7 +89,7 @@ export function StoreCheckRow() {
         {running ? (
           <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: space.gap }}>
             <LinearProgress variant="determinate" value={percent} sx={{ flex: 1 }} />
-            <Typography sx={{ fontSize: 14, fontVariantNumeric: 'tabular-nums' }}>
+            <Typography sx={{ fontSize: 'medium.fontSize', fontVariantNumeric: 'tabular-nums' }}>
               {t`${{ done: progress.done }} of ${{ total: progress.total }}`}
             </Typography>
           </Box>

@@ -30,7 +30,7 @@ function Version({ entry, installed }: { entry: Changelog; installed: string }) 
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-        <Box sx={{ fontWeight: 700, fontSize: 14 }}>
+        <Box sx={{ fontWeight: 700, fontSize: 'medium.fontSize' }}>
           {entry.date ? `${entry.version} · ${entry.date}` : entry.version}
         </Box>
         {current ? <Chip size="small" color="success" label={t`Installed`} /> : null}

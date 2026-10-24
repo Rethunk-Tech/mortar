@@ -171,7 +171,14 @@ function ProblemRow({
     applyFix(i18n, problem, game).catch(reportUnexpected)
   }
   return (
-    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: space.gap, fontSize: 14 }}>
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: space.gap,
+        fontSize: 'medium.fontSize',
+      }}
+    >
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Box sx={{ fontWeight: 600 }}>{problem.modName || problem.modId}</Box>
         <Box sx={{ color: 'text.secondary', mt: 0.25, whiteSpace: 'normal' }}>{problem.detail}</Box>
@@ -269,7 +276,7 @@ export function RunProblemsStrip({
   if (live.length === 0) {
     return hidden > 0 ? (
       <Box sx={{ mx: space.gutter, mb: 1, display: 'flex', alignItems: 'center', gap: space.gap }}>
-        <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+        <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
           {plural(hidden, {
             one: '# problem in this run is dismissed',
             other: '# problems in this run are dismissed',
@@ -307,7 +314,7 @@ export function RunProblemsStrip({
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
         <Typography
-          sx={{ fontSize: 13, fontWeight: 700, flex: 1 }}
+          sx={{ fontSize: 'base.fontSize', fontWeight: 700, flex: 1 }}
         >{t`Problems in this run`}</Typography>
         {bulk.length > 0 ? (
           <Button

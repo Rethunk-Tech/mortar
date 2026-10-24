@@ -94,7 +94,7 @@ function ProfileCards({
             overflow: 'hidden',
             color: 'inherit',
             fontFamily: 'inherit',
-            fontSize: 13,
+            fontSize: 'base.fontSize',
             fontWeight: 600,
             whiteSpace: 'nowrap',
           }}
@@ -143,14 +143,14 @@ function ProfileCard({
       <Typography
         noWrap={true}
         title={profile.name}
-        sx={{ fontSize: 13, fontWeight: 700, lineHeight: 1.2 }}
+        sx={{ fontSize: 'base.fontSize', fontWeight: 700, lineHeight: 1.2 }}
       >
         {profile.name}
       </Typography>
       {lastPlayedAt ? (
         <Box
           sx={{
-            fontSize: 12,
+            fontSize: 'small.fontSize',
             lineHeight: 1.2,
             overflow: 'hidden',
             whiteSpace: 'nowrap',

@@ -100,7 +100,7 @@ export function LoaderLaunchSettings({
           />
         )
       })}
-      <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+      <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
         {t`Saved in the profile's config folder and applied the next time the game starts.`}
       </Typography>
     </Box>

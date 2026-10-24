@@ -1821,10 +1821,6 @@ msgstr ""
 msgid "Could not launch the game"
 msgstr ""
 
-#: src/tidy/report.ts
-msgid "Repaired mod folder records"
-msgstr ""
-
 #: src/firstrun/FindStep.tsx
 #: src/launchers/LauncherList.tsx
 msgid "Choose {name} folder"
@@ -2184,10 +2180,6 @@ msgstr ""
 #: src/install/NeedsRootCallout.tsx
 #: src/install/RemapDialog.tsx
 msgid "This archive holds several variants of the same mod. Pick the one to install; updates keep it."
-msgstr ""
-
-#: src/tidy/report.ts
-msgid "Repaired mod file names"
 msgstr ""
 
 #: src/tools/ToolEditorDialog.tsx

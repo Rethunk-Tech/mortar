@@ -53,7 +53,7 @@ function OfferRow({ offer }: { offer: Offer }) {
           : t`${{ name: offer.name }} was changed on ${{ machine: offer.machine }}`}
       </Typography>
       {offer.conflict ? (
-        <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+        <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
           {t`Both sides changed it, so Mortar will not merge them. Pick one side.`}
         </Typography>
       ) : null}
@@ -73,7 +73,7 @@ function OfferRow({ offer }: { offer: Offer }) {
         >{t`Show diff`}</Button>
       </Box>
       {diff ? (
-        <Box sx={{ mt: 1, fontSize: 13 }}>
+        <Box sx={{ mt: 1, fontSize: 'base.fontSize' }}>
           {updated ? (
             <Box
               sx={{ color: 'text.secondary', mb: 0.5 }}
@@ -120,7 +120,7 @@ export function SyncOffers() {
             <Typography
               sx={{ fontWeight: 600 }}
             >{t`${{ name: st.name }} is not syncing yet`}</Typography>
-            <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+            <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
               {t`Waiting for ${{ machine: st.machine }}'s profile file to finish syncing. Changes made here are written out once it arrives.`}
             </Typography>
           </Box>

@@ -187,12 +187,22 @@ function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle
       </Box>
       <Box sx={{ flex: 1, minWidth: 0, py: 0.5 }}>
         <Typography
-          sx={{ fontSize: 13, lineHeight: 1.4, overflowWrap: 'anywhere', userSelect: 'text' }}
+          sx={{
+            fontSize: 'base.fontSize',
+            lineHeight: 1.4,
+            overflowWrap: 'anywhere',
+            userSelect: 'text',
+          }}
         >
           <TileName mod={mod} />
         </Typography>
         <Typography
-          sx={{ fontSize: 12, lineHeight: 1.4, color: 'text.secondary', userSelect: 'text' }}
+          sx={{
+            fontSize: 'small.fontSize',
+            lineHeight: 1.4,
+            color: 'text.secondary',
+            userSelect: 'text',
+          }}
         >
           {byline}
         </Typography>
@@ -203,7 +213,7 @@ function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle
           px: 0.75,
           py: '1px',
           borderRadius: '3px',
-          fontSize: 11,
+          fontSize: 'tiny.fontSize',
           fontWeight: 700,
           whiteSpace: 'nowrap',
           bgcolor: chip[state].bg,
@@ -282,7 +292,7 @@ function ProblemRow({
         border: '1px solid',
         borderColor: calloutLine(tone),
         borderRadius: '4px',
-        fontSize: 13,
+        fontSize: 'base.fontSize',
         whiteSpace: 'nowrap',
       }}
     >
@@ -334,7 +344,7 @@ function Pill({
         px: space.gap,
         py: 0.5,
         borderRadius: '12px',
-        fontSize: 13,
+        fontSize: 'base.fontSize',
         whiteSpace: 'nowrap',
         bgcolor: bg,
         color: fg,
@@ -353,7 +363,10 @@ function LeftOut({ title, paths }: { title: string; paths: string[] }) {
       <Typography variant="body2" sx={{ fontWeight: 600, color: SHARE_CARD.muted }}>
         {title}
       </Typography>
-      <Box component="ul" sx={{ m: 0, pl: space.pad, fontSize: 13, color: SHARE_CARD.muted }}>
+      <Box
+        component="ul"
+        sx={{ m: 0, pl: space.pad, fontSize: 'base.fontSize', color: SHARE_CARD.muted }}
+      >
         {paths.map((p) => (
           <li key={p}>{p}</li>
         ))}
@@ -513,7 +526,7 @@ export function StatusBar({
           display: 'flex',
           alignItems: 'center',
           gap: space.gap,
-          fontSize: 16,
+          fontSize: 'large.fontSize',
           color: SHARE_CARD.accent,
           whiteSpace: 'nowrap',
         }}
@@ -523,10 +536,18 @@ export function StatusBar({
       </Box>
       <Box sx={{ width: '1px', height: 24, bgcolor: SHARE_CARD.divider, flexShrink: 0 }} />
       <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        <Typography noWrap={true} sx={{ fontSize: 16, fontWeight: 600 }} title={preview.name}>
+        <Typography
+          noWrap={true}
+          sx={{ fontSize: 'large.fontSize', fontWeight: 600 }}
+          title={preview.name}
+        >
           {preview.name}
         </Typography>
-        <Typography noWrap={true} sx={{ fontSize: 12, color: SHARE_CARD.muted }} title={detail}>
+        <Typography
+          noWrap={true}
+          sx={{ fontSize: 'small.fontSize', color: SHARE_CARD.muted }}
+          title={detail}
+        >
           {detail}
         </Typography>
         {skippedSettings.length > 0 ? (

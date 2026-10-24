@@ -125,8 +125,10 @@ export function PrefCards({
           control={<Radio size="small" sx={{ p: 0, mt: '2px' }} />}
           label={
             <Box sx={{ minWidth: 0 }}>
-              <Box sx={{ fontSize: 15, fontWeight: 600 }}>{o.label}</Box>
-              {o.hint ? <Box sx={{ fontSize: 14, color: 'text.secondary' }}>{o.hint}</Box> : null}
+              <Box sx={{ fontSize: 'lead.fontSize', fontWeight: 600 }}>{o.label}</Box>
+              {o.hint ? (
+                <Box sx={{ fontSize: 'medium.fontSize', color: 'text.secondary' }}>{o.hint}</Box>
+              ) : null}
             </Box>
           }
           // Plain rows inside the setting's tile, which is already the card: the radio marks the choice.

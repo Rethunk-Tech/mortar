@@ -159,13 +159,17 @@ function TourPopover({
               }}
             >
               <Stack spacing={1.5}>
-                <Typography id={titleId} sx={{ fontSize: 15, fontWeight: 700 }}>
+                <Typography id={titleId} sx={{ fontSize: 'lead.fontSize', fontWeight: 700 }}>
                   {title}
                 </Typography>
-                <Typography sx={{ fontSize: 13, lineHeight: 1.5, color: 'text.secondary' }}>
+                <Typography
+                  sx={{ fontSize: 'base.fontSize', lineHeight: 1.5, color: 'text.secondary' }}
+                >
                   {body}
                 </Typography>
-                <Typography sx={{ fontSize: 12, color: 'text.disabled' }}>{stepLabel}</Typography>
+                <Typography sx={{ fontSize: 'small.fontSize', color: 'text.disabled' }}>
+                  {stepLabel}
+                </Typography>
                 <Stack
                   direction="row"
                   spacing={1}

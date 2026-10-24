@@ -41,7 +41,7 @@ export const TipBanner = memo(function TipBannerView({
         borderRadius: '8px',
       }}
     >
-      <Typography sx={{ flex: 1, minWidth: 0, fontSize: 13, lineHeight: 1.5 }}>
+      <Typography sx={{ flex: 1, minWidth: 0, fontSize: 'base.fontSize', lineHeight: 1.5 }}>
         {children}
       </Typography>
       <TipIconButton

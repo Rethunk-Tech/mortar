@@ -45,7 +45,11 @@ function CopyRow({
   const { t } = useLingui()
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-      <Typography noWrap={true} title={copy.name} sx={{ flex: 1, minWidth: 0, fontSize: 12 }}>
+      <Typography
+        noWrap={true}
+        title={copy.name}
+        sx={{ flex: 1, minWidth: 0, fontSize: 'small.fontSize' }}
+      >
         <When value={copy.at} withTime={true} />
         <Box component="span" sx={{ color: 'text.secondary' }}>
           {` · ${[t`Kept by the game`, formatBytes(copy.size)].join(' · ')}`}
@@ -81,7 +85,7 @@ function Row({
   const size = formatBytes(backup.size)
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-      <Typography noWrap={true} sx={{ flex: 1, minWidth: 0, fontSize: 12 }}>
+      <Typography noWrap={true} sx={{ flex: 1, minWidth: 0, fontSize: 'small.fontSize' }}>
         {backup.at > 0 ? <When value={backup.at} withTime={true} /> : backup.name}
         <Box component="span" sx={{ color: 'text.secondary' }}>
           {` · ${[cause, size, backup.pinned ? t`Kept` : ''].filter(Boolean).join(' · ')}`}
@@ -191,7 +195,7 @@ export function SaveBackupsButton({
         >
           {backups === null ? <LoadingRow>{t`Reading backups…`}</LoadingRow> : null}
           {backups?.length === 0 && copies.length === 0 ? (
-            <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+            <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
               {t`No backup contains this save yet.`}
             </Typography>
           ) : null}

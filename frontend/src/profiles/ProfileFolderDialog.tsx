@@ -60,7 +60,7 @@ export function ProfileFolderDialog({
             {folder ? t`Kept in ${{ path: folder }}.` : t`Kept in Mortar's data folder.`}
           </Typography>
           {check && !check.ok ? <Alert severity="error">{check.problem}</Alert> : null}
-          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+          <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
             {t`Moving copies the whole profile, then removes the old copy, so it needs room for both. On another drive the mods are copies, not links to the shared store, so the profile takes its full size there. Stop the game first.`}
           </Typography>
         </Box>

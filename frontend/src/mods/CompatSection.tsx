@@ -23,7 +23,7 @@ function CompatInfoRow({
         component="button"
         type="button"
         underline="hover"
-        sx={{ fontSize: 13, textAlign: 'left' }}
+        sx={{ fontSize: 'base.fontSize', textAlign: 'left' }}
         onClick={() => openPage(row.unofficialUrl)}
       >
         {t`Unofficial update`}
@@ -32,7 +32,7 @@ function CompatInfoRow({
   const replacement =
     row.replacement === '' ? null : (
       <Typography
-        sx={{ fontSize: 13 }}
+        sx={{ fontSize: 'base.fontSize' }}
       >{t`Replacement: ${{ replacement: row.replacement }}`}</Typography>
     )
   return (
@@ -45,7 +45,7 @@ function CompatInfoRow({
         pl: space.pad,
         pr: 0.75,
         py: space.gap,
-        fontSize: 14,
+        fontSize: 'medium.fontSize',
         bgcolor: calloutFill('info'),
         border: '1px solid',
         borderColor: calloutLine('info'),
@@ -53,7 +53,7 @@ function CompatInfoRow({
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-        <Typography sx={{ fontSize: 14, flex: 1, minWidth: 0 }}>
+        <Typography sx={{ fontSize: 'medium.fontSize', flex: 1, minWidth: 0 }}>
           <LinkedText
             text={`${row.name}: ${row.status}${summary}`}
             links={[{ name: row.name, key: row.key, id: row.id }]}
@@ -84,7 +84,9 @@ export function CompatSection({
         <CompatInfoRow key={modId(row)} row={row} />
       ))}
       {dismissed.length > 0 ? (
-        <Typography sx={{ fontSize: 13, color: 'var(--mortar-ink-sec)', mt: space.gap }}>
+        <Typography
+          sx={{ fontSize: 'base.fontSize', color: 'var(--mortar-ink-sec)', mt: space.gap }}
+        >
           {t`Dismissed`}
         </Typography>
       ) : null}

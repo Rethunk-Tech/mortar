@@ -58,8 +58,14 @@ export function SavedGroupRow({
           <Trash2 size={ICON_SIZE} />
         </TipIconButton>
       </Box>
-      <Typography sx={{ color: 'text.secondary', fontSize: 12 }}>{modCount}</Typography>
-      <Typography sx={{ color: 'text.secondary', fontSize: 12 }} noWrap={true} title={holderNames}>
+      <Typography sx={{ color: 'text.secondary', fontSize: 'small.fontSize' }}>
+        {modCount}
+      </Typography>
+      <Typography
+        sx={{ color: 'text.secondary', fontSize: 'small.fontSize' }}
+        noWrap={true}
+        title={holderNames}
+      >
         {t`Profiles: ${holderNames}`}
       </Typography>
       <Collapse in={open} unmountOnExit={true}>
@@ -73,7 +79,7 @@ export function SavedGroupRow({
               <Typography
                 noWrap={true}
                 title={mod.name}
-                sx={{ flex: 1, minWidth: 0, fontSize: 13 }}
+                sx={{ flex: 1, minWidth: 0, fontSize: 'base.fontSize' }}
               >
                 {mod.overlayOf ? t`${{ name: mod.name }} (optional file)` : mod.name}
               </Typography>

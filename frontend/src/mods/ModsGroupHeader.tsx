@@ -65,8 +65,8 @@ function ModsGroupHeader({
       ) : (
         <ChevronRight size={14} aria-hidden={true} />
       )}
-      <Typography sx={{ fontSize: 13, fontWeight: 600 }}>{label}</Typography>
-      <Box component="span" sx={{ fontSize: 12, color: 'text.secondary' }}>
+      <Typography sx={{ fontSize: 'base.fontSize', fontWeight: 600 }}>{label}</Typography>
+      <Box component="span" sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
         {count}
       </Box>
       {menu || onEnabled ? (

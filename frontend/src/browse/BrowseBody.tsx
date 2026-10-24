@@ -105,7 +105,7 @@ function ResultFooter({ result }: { result: BrowseResult }) {
         flexShrink: 0,
         px: space.gutter,
         py: space.gap,
-        fontSize: 13,
+        fontSize: 'base.fontSize',
         color: 'text.secondary',
         borderTop: '1px solid var(--mortar-hairline-muted)',
       }}

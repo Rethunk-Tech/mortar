@@ -109,7 +109,7 @@ function PaletteRows({
                 px: space.pad,
                 pt: at === 0 ? 0 : 1,
                 pb: 0.5,
-                fontSize: 11,
+                fontSize: 'tiny.fontSize',
                 fontWeight: 700,
                 letterSpacing: '0.08em',
                 textTransform: 'uppercase',

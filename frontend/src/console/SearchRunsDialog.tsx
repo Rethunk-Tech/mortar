@@ -115,7 +115,12 @@ export function SearchRunsDialog({ open, onClose }: { open: boolean; onClose: ()
             {Array.from(groups, ([runId, hits]) => (
               <Box key={runId} sx={{ mb: 1.5 }}>
                 <Typography
-                  sx={{ fontSize: 13, fontWeight: 700, color: 'text.secondary', mb: 0.5 }}
+                  sx={{
+                    fontSize: 'base.fontSize',
+                    fontWeight: 700,
+                    color: 'text.secondary',
+                    mb: 0.5,
+                  }}
                 >
                   {hits[0]
                     ? `${formatWhen(hits[0].started, { withTime: true })} · ${outcome(hits[0].outcome)}`
@@ -150,7 +155,7 @@ export function SearchRunsDialog({ open, onClose }: { open: boolean; onClose: ()
               </Box>
             ))}
             {result.truncated ? (
-              <Typography color="text.secondary" sx={{ fontSize: 13 }}>
+              <Typography color="text.secondary" sx={{ fontSize: 'base.fontSize' }}>
                 {t`Showing the first 500 matches.`}
               </Typography>
             ) : null}

@@ -134,9 +134,9 @@ function LaunchPresetsBlock({
   return (
     <Box sx={{ mt: 1, mb: 1 }}>
       <Typography
-        sx={{ fontSize: 13, color: 'text.secondary', mb: 0.5 }}
+        sx={{ fontSize: 'base.fontSize', color: 'text.secondary', mb: 0.5 }}
       >{t`Launch presets`}</Typography>
-      <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+      <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
         {t`The fields above are the Standard preset. Play uses the default preset; the Play menu can launch with another one once. Templates are game-wide and copied in.`}
       </Typography>
       <PresetRow

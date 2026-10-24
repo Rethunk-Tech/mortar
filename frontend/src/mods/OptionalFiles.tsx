@@ -108,7 +108,9 @@ export function OptionalFiles({ mod, profile }: { mod: Mod; profile: Profile }) 
           onKeyDown={moveBetweenRadios}
           sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}
         >
-          <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{t`Choose one`}</Typography>
+          <Typography
+            sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}
+          >{t`Choose one`}</Typography>
           {rows
             .filter((r) => group.includes(r.key))
             .map((r) => installed(r, `optional-${group.join('|')}`))}

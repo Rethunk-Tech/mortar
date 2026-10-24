@@ -76,7 +76,7 @@ export const SavedGroupsSection = memo(function SavedGroupsSectionView({
           '& > .empty-state': { pb: 0 },
         }}
       >
-        <Typography component="h2" sx={{ fontSize: 16, fontWeight: 700 }}>
+        <Typography component="h2" sx={{ fontSize: 'large.fontSize', fontWeight: 700 }}>
           {t`Saved groups`}
         </Typography>
         {loading ? <LoadingRow>{t`Loading saved groups…`}</LoadingRow> : null}

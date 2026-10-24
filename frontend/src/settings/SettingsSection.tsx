@@ -50,7 +50,9 @@ export function SettingsSection({
           {title}
         </Box>
       ) : null}
-      {description ? <Box sx={{ fontSize: 14, color: 'text.secondary' }}>{description}</Box> : null}
+      {description ? (
+        <Box sx={{ fontSize: 'medium.fontSize', color: 'text.secondary' }}>{description}</Box>
+      ) : null}
       {tiles ? (
         <Box
           className="settings-tiles"
@@ -144,11 +146,16 @@ export function SettingRow({
       }}
     >
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Box data-setting-label={true} sx={hideTitle ? visuallyHidden : { fontSize: 16 }}>
+        <Box
+          data-setting-label={true}
+          sx={hideTitle ? visuallyHidden : { fontSize: 'large.fontSize' }}
+        >
           {label}
         </Box>
         {description ? (
-          <Box sx={{ fontSize: 14, color: 'text.secondary', mt: 0.25 }}>{description}</Box>
+          <Box sx={{ fontSize: 'medium.fontSize', color: 'text.secondary', mt: 0.25 }}>
+            {description}
+          </Box>
         ) : null}
       </Box>
       {block ? (

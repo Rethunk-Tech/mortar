@@ -119,7 +119,7 @@ export function TitleMenuItem({
       sx={{
         minHeight: 0,
         px: `${ITEM_INSET_PX}px`,
-        fontSize: 14,
+        fontSize: 'medium.fontSize',
         whiteSpace: 'nowrap',
         color,
       }}

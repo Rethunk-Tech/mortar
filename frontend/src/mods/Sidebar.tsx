@@ -81,7 +81,7 @@ function Field({ label, value, hint }: { label: string; value: string; hint?: st
       <Tooltip title={hint ?? ''} disableHoverListener={!hint} describeChild={true}>
         {caption}
       </Tooltip>
-      <Typography sx={{ fontSize: 13, overflowWrap: 'anywhere' }}>{value}</Typography>
+      <Typography sx={{ fontSize: 'base.fontSize', overflowWrap: 'anywhere' }}>{value}</Typography>
     </Box>
   )
 }
@@ -95,7 +95,7 @@ function Clipped({ label, value, lines = 1, accented = false }: ClippedProps) {
         <Typography
           tabIndex={0}
           sx={{
-            fontSize: 13,
+            fontSize: 'base.fontSize',
             color: accented ? 'primary.main' : undefined,
             overflow: 'hidden',
             display: '-webkit-box',
@@ -145,7 +145,9 @@ function NexusFields({
   return (
     <>
       {goneLabel ? (
-        <Typography sx={{ fontSize: 13, color: 'warning.main' }}>{goneLabel}</Typography>
+        <Typography sx={{ fontSize: 'base.fontSize', color: 'warning.main' }}>
+          {goneLabel}
+        </Typography>
       ) : null}
       {page.summary ? <Clipped label={t`Summary`} value={page.summary} lines={2} /> : null}
       <Box
@@ -180,7 +182,7 @@ function ProblemLine({ mod }: { mod: Mod }) {
   return (
     <Box sx={{ display: 'flex', gap: space.gap, color: 'warning.main' }}>
       <TriangleAlert size={16} style={{ flexShrink: 0, marginTop: 2 }} aria-hidden={true} />
-      <Typography sx={{ fontSize: 13 }}>{mine.map(describe).join(' ')}</Typography>
+      <Typography sx={{ fontSize: 'base.fontSize' }}>{mine.map(describe).join(' ')}</Typography>
     </Box>
   )
 }
@@ -195,7 +197,7 @@ function LastRunLine({ mod, profile }: { mod: Mod; profile: Profile }) {
   const summary = lastRunSummary(hit)
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, alignItems: 'flex-start' }}>
-      <Typography sx={{ fontSize: 13 }}>{t`Last run: ${summary}`}</Typography>
+      <Typography sx={{ fontSize: 'base.fontSize' }}>{t`Last run: ${summary}`}</Typography>
       <Button
         size="small"
         variant="outlined"
@@ -238,7 +240,7 @@ function AlsoInProfiles({ mod, profile }: { mod: Mod; profile: Profile }) {
             width: '100%',
             justifyContent: 'flex-start',
             textAlign: 'left',
-            fontSize: 13,
+            fontSize: 'base.fontSize',
             px: 0.5,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -353,7 +355,7 @@ function DependentRows({ label, dependents }: { label: string; dependents: reado
                 e.preventDefault()
                 showModId(modId(d))
               }}
-              sx={{ ...rowLink, fontSize: 13, color: 'text.primary' }}
+              sx={{ ...rowLink, fontSize: 'base.fontSize', color: 'text.primary' }}
             >
               {d.name}
             </Link>
@@ -364,7 +366,7 @@ function DependentRows({ label, dependents }: { label: string; dependents: reado
   )
 }
 
-const rowLink = { display: 'block', fontSize: 14, textAlign: 'left' } as const
+const rowLink = { display: 'block', fontSize: 'medium.fontSize', textAlign: 'left' } as const
 
 // Opening or switching paints the panel's header and actions at once; the sections between follow in a render that
 // never blocks input, and a toggle or profile save re-renders them there too.
@@ -540,7 +542,12 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
                 e.preventDefault()
                 useDetail.getState().show(o)
               }}
-              sx={{ display: 'block', fontSize: 13, textAlign: 'left', color: 'text.primary' }}
+              sx={{
+                display: 'block',
+                fontSize: 'base.fontSize',
+                textAlign: 'left',
+                color: 'text.primary',
+              }}
             >
               {o.name}
             </Link>

@@ -29,8 +29,8 @@ import { currentFiles, formatCount, isNewer, recentChangelogs } from './nexusFor
 import { goneCaption, nexusPageMark } from './nexusMark.ts'
 import { heading } from './paper.ts'
 
-const text = { fontSize: 13 } as const
-const muted = { fontSize: 12, color: 'text.secondary' } as const
+const text = { fontSize: 'base.fontSize' } as const
+const muted = { fontSize: 'small.fontSize', color: 'text.secondary' } as const
 const noWrap = { whiteSpace: 'nowrap' } as const
 const FILES_SHOWN = 5
 const PANEL_COLUMNS = 2

@@ -22,7 +22,7 @@ const text = {
   m: 0,
   p: space.pad,
   fontFamily: MONO,
-  fontSize: 13,
+  fontSize: 'base.fontSize',
   lineHeight: 1.6,
   whiteSpace: 'pre-wrap',
   overflowWrap: 'anywhere',
@@ -53,7 +53,11 @@ function ListHint({ skipped, total }: { skipped: string[]; total: number }) {
   } else if (total > 1) {
     hint = t`${{ app: sourceLabel('discord') }} takes 2,000 characters a message: paste each one in turn.`
   }
-  return <Typography sx={{ flex: 1, fontSize: 13, color: 'text.secondary' }}>{hint}</Typography>
+  return (
+    <Typography sx={{ flex: 1, fontSize: 'base.fontSize', color: 'text.secondary' }}>
+      {hint}
+    </Typography>
+  )
 }
 
 // The mod list as text: the format, the text itself as it will be pasted, and Copy and Save. Discord's list is
@@ -128,7 +132,9 @@ export function ListFormat() {
           ))}
         </ToggleButtonGroup>
         <Box sx={{ flex: 1 }} />
-        <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{summary}</Typography>
+        <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
+          {summary}
+        </Typography>
       </Box>
       <Box
         role="region"
@@ -161,11 +167,11 @@ export function ListFormat() {
                 }}
               >
                 {part.n <= copied ? <Check size={14} aria-label={t`Copied`} /> : null}
-                <Typography sx={{ flex: 1, fontSize: 12, fontWeight: 600 }}>
+                <Typography sx={{ flex: 1, fontSize: 'small.fontSize', fontWeight: 600 }}>
                   {t`Message ${{ count: part.n }} of ${total}`}
                   <Typography
                     component="span"
-                    sx={{ ml: 1, fontSize: 12, color: 'text.secondary' }}
+                    sx={{ ml: 1, fontSize: 'small.fontSize', color: 'text.secondary' }}
                   >
                     {t`${{ count: part.text.length.toLocaleString(i18n.locale) }} characters`}
                   </Typography>
@@ -191,7 +197,7 @@ export function ListFormat() {
           color="inherit"
           startIcon={<Save size={16} />}
           onClick={save}
-          sx={{ height: 40, px: '14px', fontSize: 14 }}
+          sx={{ height: 40, px: '14px', fontSize: 'medium.fontSize' }}
         >
           {t`Save to a file…`}
         </Button>
@@ -199,7 +205,7 @@ export function ListFormat() {
           variant="contained"
           startIcon={<Copy size={16} />}
           onClick={copyNext}
-          sx={{ height: 40, px: '18px', fontSize: 14, whiteSpace: 'nowrap' }}
+          sx={{ height: 40, px: '18px', fontSize: 'medium.fontSize', whiteSpace: 'nowrap' }}
         >
           {total > 1 ? t`Copy message ${{ current: next + 1 }} of ${total}` : t`Copy mod list`}
         </Button>

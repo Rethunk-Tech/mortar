@@ -66,7 +66,7 @@ function NexusLines({ close }: { close: () => void }) {
   const premium = useNexus((s) => s.premium)
   return (
     <>
-      <Box sx={{ px: '14px', py: '6px', fontSize: 13 }}>
+      <Box sx={{ px: '14px', py: '6px', fontSize: 'base.fontSize' }}>
         {[sourceLabel('nexus'), signedIn ? t`Signed in as ${name}` : t`Not signed in`].join(' · ')}
         {signedIn && premium ? (
           <Box
@@ -183,7 +183,7 @@ export const AppMenu = memo(function AppMenuView() {
           height: space.control,
           px: '10px',
           borderRadius: '8px',
-          fontSize: 15,
+          fontSize: 'lead.fontSize',
           fontWeight: 700,
           fontFamily: 'inherit',
           color: 'inherit',

@@ -82,7 +82,7 @@ export function LinkedLog({
             : 'var(--mortar-overlay-50)',
         borderRadius: '6px',
         fontFamily: MONO,
-        fontSize: 13,
+        fontSize: 'base.fontSize',
         lineHeight: '23px',
         overflow: 'hidden',
       }}

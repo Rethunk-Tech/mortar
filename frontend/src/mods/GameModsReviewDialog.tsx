@@ -32,7 +32,7 @@ import { useLocked } from './useLocked.ts'
 
 const Section = ({ title, children }: { title: string; children: ReactNode }) => (
   <Box sx={{ mb: 1.5 }}>
-    <Typography sx={{ fontWeight: 600, fontSize: 14, mb: 0.5 }}>{title}</Typography>
+    <Typography sx={{ fontWeight: 600, fontSize: 'medium.fontSize', mb: 0.5 }}>{title}</Typography>
     {children}
   </Box>
 )
@@ -76,7 +76,10 @@ function ReviewLists({
               label={
                 <>
                   {m.name}
-                  <Typography component="span" sx={{ fontSize: 13, color: 'text.secondary' }}>
+                  <Typography
+                    component="span"
+                    sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}
+                  >
                     {` · ${t`folder ${{ version: m.folderVersion }}`} · ${t`profile ${{ version: m.profileVersion }}`}`}
                     {m.newer === 'folder' ? ` · ${t`newer in folder`}` : null}
                     {m.newer === 'profile' ? ` · ${t`newer in profile`}` : null}
@@ -92,7 +95,7 @@ function ReviewLists({
           {unreadable.map((m) => (
             <Typography
               key={m.folder}
-              sx={{ fontSize: 14, color: 'text.secondary', pl: space.gap }}
+              sx={{ fontSize: 'medium.fontSize', color: 'text.secondary', pl: space.gap }}
             >
               {`${m.name} · ${m.reason ?? ''}`}
             </Typography>
@@ -100,7 +103,7 @@ function ReviewLists({
         </Section>
       )}
       {diff.same > 0 || diff.profileOnly > 0 ? (
-        <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+        <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
           {[
             diff.same > 0
               ? plural({ count: diff.same }, { one: '# mod matches.', other: '# mods match.' })
@@ -182,7 +185,7 @@ export function GameModsReviewDialog({
         {busy ? <GameModsProgressLine progress={progress} moving={moving} /> : null}
         {result !== null && !busy ? (
           <Section title={t`Done`}>
-            <Typography sx={{ fontSize: 14 }}>
+            <Typography sx={{ fontSize: 'medium.fontSize' }}>
               {[
                 plural({ count: result.imported }, { one: '# imported', other: '# imported' }),
                 plural({ count: result.skipped }, { one: '# skipped', other: '# skipped' }),
@@ -191,7 +194,12 @@ export function GameModsReviewDialog({
             </Typography>
             {detail === '' ? null : (
               <Typography
-                sx={{ fontSize: 14, color: 'text.secondary', whiteSpace: 'pre-line', mt: 0.5 }}
+                sx={{
+                  fontSize: 'medium.fontSize',
+                  color: 'text.secondary',
+                  whiteSpace: 'pre-line',
+                  mt: 0.5,
+                }}
               >
                 {detail}
               </Typography>

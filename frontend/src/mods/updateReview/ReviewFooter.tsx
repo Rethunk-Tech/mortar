@@ -39,7 +39,7 @@ export function ReviewFooter({
         }}
       >
         <ShieldCheck size={16} aria-hidden={true} style={{ flexShrink: 0 }} />
-        <Typography noWrap={true} sx={{ fontSize: 12, color: 'inherit' }}>
+        <Typography noWrap={true} sx={{ fontSize: 'small.fontSize', color: 'inherit' }}>
           {t`Settings are kept and saves backed up.`}
         </Typography>
       </Box>

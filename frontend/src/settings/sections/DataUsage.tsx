@@ -53,7 +53,7 @@ function useSegmentColors() {
 function SizeRow({ label, size }: { label: string; size: number | null }) {
   return (
     <SettingRow label={label}>
-      <Box sx={{ fontSize: 15, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
+      <Box sx={{ fontSize: 'lead.fontSize', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
         {size === null ? <Skeleton width={SKELETON_WIDTH} /> : formatBytes(size)}
       </Box>
     </SettingRow>
@@ -89,7 +89,7 @@ function Legend({
             display: 'flex',
             alignItems: 'center',
             gap: 0.5,
-            fontSize: 13,
+            fontSize: 'base.fontSize',
             whiteSpace: 'nowrap',
           }}
         >
@@ -147,11 +147,11 @@ function StorageBar({
   return (
     <Box sx={{ px: space.pad, py: space.pad }}>
       <Box sx={{ display: 'flex', alignItems: 'baseline', gap: space.pad, pb: space.pad }}>
-        <Box sx={{ flex: 1, fontSize: 16 }}>
+        <Box sx={{ flex: 1, fontSize: 'large.fontSize' }}>
           {usage ? t`${{ size: formatBytes(usage.total) }} used` : <MeasuringBytes />}
         </Box>
         {usage?.sharedSavedKnown && usage.sharedSaved > 0 ? (
-          <Box sx={{ fontSize: 14, color: 'text.secondary' }}>
+          <Box sx={{ fontSize: 'medium.fontSize', color: 'text.secondary' }}>
             {t`${{ size: formatBytes(usage.sharedSaved) }} saved by sharing files`}
           </Box>
         ) : null}

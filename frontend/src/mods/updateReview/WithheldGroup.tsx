@@ -24,7 +24,7 @@ export function WithheldGroup({ withheld, mods }: { withheld: Update[]; mods: Mo
       <Typography sx={{ px: space.pad, pt: space.pad, fontWeight: 600 }}>
         {t`Not offered (${{ count: withheld.length }})`}
       </Typography>
-      <Typography sx={{ px: space.pad, fontSize: 13, color: 'text.secondary' }}>
+      <Typography sx={{ px: space.pad, fontSize: 'base.fontSize', color: 'text.secondary' }}>
         {t`${{ source: sourceLabel('nexus') }} hides or has removed these pages, so there is no download to offer.`}
       </Typography>
       <List disablePadding={true}>

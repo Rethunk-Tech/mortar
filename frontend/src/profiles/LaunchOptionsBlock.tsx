@@ -76,10 +76,12 @@ function TestLaunchRow({
         >{t`Test launch`}</Button>
       </DisabledReason>
       <Typography
-        sx={{ fontSize: 13, color: 'text.secondary' }}
+        sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}
       >{t`Uses the saved options`}</Typography>
       {result ? (
-        <Typography sx={{ fontSize: 13, color: 'text.secondary', mt: 1 }}>{result}</Typography>
+        <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary', mt: 1 }}>
+          {result}
+        </Typography>
       ) : null}
     </Box>
   )

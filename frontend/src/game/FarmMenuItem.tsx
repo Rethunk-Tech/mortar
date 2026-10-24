@@ -138,9 +138,13 @@ export function FarmDialog({
           ) : null}
           {rows?.map((row) => (
             <Box key={row.id} sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-              <Typography sx={{ flex: 1, fontSize: 14 }}>
+              <Typography sx={{ flex: 1, fontSize: 'medium.fontSize' }}>
                 {row.name}
-                <Typography component="span" color="text.secondary" sx={{ fontSize: 13, ml: 1 }}>
+                <Typography
+                  component="span"
+                  color="text.secondary"
+                  sx={{ fontSize: 'base.fontSize', ml: 1 }}
+                >
                   {detail(row)}
                 </Typography>
               </Typography>

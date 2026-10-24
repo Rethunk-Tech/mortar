@@ -76,10 +76,14 @@ function TrashRow({ item }: { item: TrashItem }) {
       }}
     >
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography noWrap={true} title={item.name} sx={{ fontSize: 15, fontWeight: 600 }}>
+        <Typography
+          noWrap={true}
+          title={item.name}
+          sx={{ fontSize: 'lead.fontSize', fontWeight: 600 }}
+        >
           {item.name}
         </Typography>
-        <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{days}</Typography>
+        <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>{days}</Typography>
       </Box>
       <TipIconButton
         label={t`Restore ${{ name: item.name }}`}
@@ -129,7 +133,10 @@ const Damaged = memo(function DamagedView() {
       aria-label={t`Damaged`}
       sx={{ display: 'flex', flexDirection: 'column', gap: space.gap, mb: 2 }}
     >
-      <Typography component="h2" sx={{ fontSize: 16, fontWeight: 700 }}>{t`Damaged`}</Typography>
+      <Typography
+        component="h2"
+        sx={{ fontSize: 'large.fontSize', fontWeight: 700 }}
+      >{t`Damaged`}</Typography>
       {damaged.map((item) => (
         <Box
           key={item.id}
@@ -145,11 +152,15 @@ const Damaged = memo(function DamagedView() {
           }}
         >
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography noWrap={true} title={item.id} sx={{ fontSize: 15, fontWeight: 600 }}>
+            <Typography
+              noWrap={true}
+              title={item.id}
+              sx={{ fontSize: 'lead.fontSize', fontWeight: 600 }}
+            >
               {item.id.slice(Math.max(item.id.lastIndexOf('/'), item.id.lastIndexOf('\\')) + 1)}
             </Typography>
             <Typography
-              sx={{ fontSize: 13, color: 'text.secondary' }}
+              sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}
               title={errorDetails(item.error)}
             >
               {t`Could not read this profile`}
@@ -205,7 +216,7 @@ const Trash = memo(function TrashView() {
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Typography
           component="h2"
-          sx={{ fontSize: 16, fontWeight: 700 }}
+          sx={{ fontSize: 'large.fontSize', fontWeight: 700 }}
         >{t`Recently deleted`}</Typography>
         {trash.length === 0 ? null : (
           <TipIconButton
@@ -218,7 +229,7 @@ const Trash = memo(function TrashView() {
           </TipIconButton>
         )}
       </Box>
-      <Typography sx={{ fontSize: 13, lineHeight: 1.45 }}>
+      <Typography sx={{ fontSize: 'base.fontSize', lineHeight: 1.45 }}>
         {t`Deleted profiles stay here, mods and settings included.`}
       </Typography>
       {trash.map((item) => (
@@ -272,7 +283,7 @@ const FindModSearch = memo(function FindModSearchView({ profiles }: { profiles: 
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 justifyContent: 'flex-start',
-                fontSize: 13,
+                fontSize: 'base.fontSize',
               }}
             >
               {`${h.name} · ${h.profileName} · ${h.version} · ${h.enabled ? t`Enabled` : t`Disabled`}`}
@@ -325,7 +336,7 @@ const ProfilesHeader = memo(function ProfilesHeaderView({
         color="inherit"
         startIcon={<Download size={16} />}
         onClick={() => openImport()}
-        sx={{ height: 40, px: space.pad, fontSize: 14 }}
+        sx={{ height: 40, px: space.pad, fontSize: 'medium.fontSize' }}
       >
         {t`Import…`}
       </Button>
@@ -334,7 +345,7 @@ const ProfilesHeader = memo(function ProfilesHeaderView({
           variant="contained"
           startIcon={<Plus size={16} />}
           onClick={onCreate}
-          sx={{ height: 40, px: space.pad, fontSize: 14 }}
+          sx={{ height: 40, px: space.pad, fontSize: 'medium.fontSize' }}
         >
           {t`New profile…`}
         </Button>

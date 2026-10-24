@@ -50,7 +50,7 @@ export function KeptGroup({ kept, mods }: { kept: Update[]; mods: Mod[] }) {
                   <ModNameLink id={u.id} modKey={u.key} name={u.name} />
                 </Box>
                 <Version>{u.installed}</Version>
-                <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+                <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
                   {t`newer: ${{ version: u.version }}`}
                 </Typography>
                 {mod ? (

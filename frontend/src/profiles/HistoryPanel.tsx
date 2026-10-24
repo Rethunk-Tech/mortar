@@ -113,7 +113,7 @@ export function HistoryPanel({
         {h.error !== '' && (
           <Box sx={{ mt: 1 }}>
             <Typography
-              sx={{ fontSize: 13, color: 'error.main' }}
+              sx={{ fontSize: 'base.fontSize', color: 'error.main' }}
               title={h.missingNames.length > 0 ? undefined : errorDetails(h.error)}
             >
               {errorText}

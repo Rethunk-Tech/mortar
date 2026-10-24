@@ -40,7 +40,7 @@ export function ExtraFilesChip({ mod, profile }: { mod: Mod; profile: Profile })
         }}
         sx={{
           height: 20,
-          fontSize: 11,
+          fontSize: 'tiny.fontSize',
           bgcolor: 'action.selected',
           color: 'text.secondary',
           '& .MuiChip-label': { px: 0.75 },

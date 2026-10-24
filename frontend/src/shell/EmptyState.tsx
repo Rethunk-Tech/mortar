@@ -61,7 +61,9 @@ export function EmptyState({
       >
         {title}
       </Typography>
-      <Typography sx={{ maxWidth: 480, fontSize: 15, lineHeight: 1.5, color: 'text.secondary' }}>
+      <Typography
+        sx={{ maxWidth: 480, fontSize: 'lead.fontSize', lineHeight: 1.5, color: 'text.secondary' }}
+      >
         {children}
       </Typography>
       {action}

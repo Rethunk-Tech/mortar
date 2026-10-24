@@ -94,7 +94,12 @@ function Looked({ game, launchers }: { game: GameInfo; launchers: StoreApp[] }) 
             <Box
               component="li"
               key={l.id}
-              sx={{ display: 'flex', alignItems: 'center', gap: space.gap, fontSize: 14 }}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: space.gap,
+                fontSize: 'medium.fontSize',
+              }}
             >
               {l.found ? <Check size={15} color={ok} /> : <X size={15} color={muted} />}
               <Box component="span" sx={{ fontWeight: 600 }}>
@@ -124,7 +129,9 @@ function Suggested({ gameId, onUse }: { gameId: string; onUse: (dir: string) => 
   }
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '6px' }}>
-      <Typography sx={{ fontSize: 14 }}>{t`Found a copy outside your launchers:`}</Typography>
+      <Typography
+        sx={{ fontSize: 'medium.fontSize' }}
+      >{t`Found a copy outside your launchers:`}</Typography>
       {suggested.map((folder) => (
         <Button
           key={folder}
@@ -213,7 +220,7 @@ export function FindStep({
       <Hero game={game} dim={!found} />
       {found ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <Typography sx={{ fontSize: 13 }}>{caption}</Typography>
+          <Typography sx={{ fontSize: 'base.fontSize' }}>{caption}</Typography>
           <Box sx={{ display: 'flex', gap: space.gap }}>
             <TextField
               // Unfocused, the path is laid out right to left so a long one loses its start, not the game's folder
@@ -250,13 +257,13 @@ export function FindStep({
               {t`Change folder…`}
             </Button>
           </Box>
-          <Typography sx={{ fontSize: 13 }}>{details}</Typography>
+          <Typography sx={{ fontSize: 'base.fontSize' }}>{details}</Typography>
         </Box>
       ) : (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
             <TriangleAlert size={18} color={warning.main} />
-            <Typography sx={{ fontSize: 16, fontWeight: 600 }}>
+            <Typography sx={{ fontSize: 'large.fontSize', fontWeight: 600 }}>
               {t`${{ name: game.name }} was not found in your launchers`}
             </Typography>
           </Box>
@@ -284,7 +291,11 @@ export function FindStep({
       )}
       {typing ? <TypedFolder label={t`${{ name: game.name }} folder`} onUse={use} /> : null}
       {error ? (
-        <Typography role="alert" title={error.details} sx={{ fontSize: 13, color: 'error.light' }}>
+        <Typography
+          role="alert"
+          title={error.details}
+          sx={{ fontSize: 'base.fontSize', color: 'error.light' }}
+        >
           {error.message}
         </Typography>
       ) : null}

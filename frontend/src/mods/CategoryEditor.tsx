@@ -105,7 +105,7 @@ function CategoryEditorDialog({ open, onClose }: { open: boolean; onClose: () =>
       >
         <DialogTitle>{t`Custom categories`}</DialogTitle>
         <DialogContent>
-          <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 2 }}>
+          <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary', mb: 2 }}>
             {t`Group mods by these names, or assign one as a mod's primary category.`}
           </Typography>
           {draft.length === 0 ? (
