@@ -166,7 +166,10 @@ func startEnv(t *testing.T) (*Service, profile.Profile) {
 	}
 	_, profiles := testenv.Stores(t)
 	p := testenv.Profile(t, profiles, "stardew", "A")
-	return NewService(t.TempDir(), set, profiles), p
+	svc := NewService(t.TempDir(), set, profiles)
+	// No test on this service starts a real game, and every status read would otherwise scan the host's /proc.
+	svc.procDir = t.TempDir()
+	return svc, p
 }
 
 func TestPreviewCommandUsesUnsavedLaunchFields(t *testing.T) {
@@ -457,6 +460,8 @@ func TestMain(m *testing.M) {
 		os.Exit(0)
 	}
 	pollEvery = 50 * time.Millisecond
+	bisectPoll = 20 * time.Millisecond
+	reapGrace = 100 * time.Millisecond
 	root, err := os.MkdirTemp("", "launchsvc")
 	if err != nil {
 		panic(err)

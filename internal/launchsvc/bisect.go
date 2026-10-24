@@ -28,6 +28,9 @@ var bisectStartupGrace = 20 * time.Second
 // Company's mods most often crash as a scene loads, so the step waits past the load rather than for the chainloader.
 var bisectSceneSettle = 10 * time.Second
 
+// bisectPoll is how often a bisect step looks at the run.
+var bisectPoll = 500 * time.Millisecond
+
 // bridgeScene is the Mortar BepInEx Bridge's line for each scene the game loads.
 var bridgeScene = regexp.MustCompile(`^Bridge plugin alive after scene (.+): \w+$`)
 
@@ -125,7 +128,7 @@ func (s *Service) runForInstall(ctx context.Context, gameID, profileID, installI
 
 	started := false
 	var runningSince time.Time
-	ticker := time.NewTicker(500 * time.Millisecond)
+	ticker := time.NewTicker(bisectPoll)
 	defer ticker.Stop()
 	for {
 		if hasBridge && startupReportAfter(startup, launched) {

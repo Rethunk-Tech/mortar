@@ -104,7 +104,7 @@ func (s *Service) awaitPID(g game.Game) {
 }
 
 // reapGrace is how long a poll that finds the game gone gives the exit waiter to report how it ended.
-const reapGrace = 500 * time.Millisecond
+var reapGrace = 500 * time.Millisecond
 
 // awaitReap waits up to reapGrace for the exit waiter to finish.
 func (s *Service) awaitReap(g game.Game) {
