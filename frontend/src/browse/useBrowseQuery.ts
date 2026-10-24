@@ -37,6 +37,12 @@ function pagedTotal(r: BrowseResult): number {
   return r.pages ? r.pages * PAGE_SIZE : r.total
 }
 
+// How many source pages a search has: the largest source's count across sources, else its hits in pages. A single
+// source sends no count, which the window reads as 0, so 0 means unknown too.
+function sourcePages(head: BrowseResult): number {
+  return head.pages || Math.ceil(head.total / PAGE_SIZE)
+}
+
 // One screen from the source pages it spans: their hits in order, the hidden counts added and the failed sources once.
 function joinPages(parts: BrowseResult[], skip: number, size: number): BrowseResult {
   const [head = EMPTY_RESULT] = parts
@@ -70,7 +76,7 @@ function cachedScreen(done: Map<number, BrowseResult>, page: number, size: numbe
   if (head.items.length > PAGE_SIZE) {
     return { next: head, whole: true }
   }
-  const known = head.pages ?? Math.ceil(head.total / PAGE_SIZE)
+  const known = sourcePages(head)
   const parts = [head]
   for (let p = first + 1; p <= Math.min(last, known); p += 1) {
     const part = done.get(p)
@@ -107,7 +113,7 @@ async function loadScreen(
   if (head.items.length > PAGE_SIZE) {
     return { next: head, whole: true }
   }
-  const known = head.pages ?? Math.ceil(head.total / PAGE_SIZE)
+  const known = sourcePages(head)
   const rest = await Promise.all(
     Array.from({ length: Math.max(0, Math.min(last, known) - first) }, (_, i) =>
       sourcePage(first + 1 + i),
