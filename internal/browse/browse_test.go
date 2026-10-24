@@ -503,3 +503,48 @@ func TestTheSourcePageCacheKeepsAtMostItsCap(t *testing.T) {
 		t.Fatal("the newest page was evicted")
 	}
 }
+
+type hugeSource struct{}
+
+func (hugeSource) ID() string              { return "hugesrc" }
+func (hugeSource) Name() string            { return "Huge" }
+func (hugeSource) Modes() []source.Acquire { return nil }
+func (hugeSource) Search(_ context.Context, q source.Query) (source.Page, error) {
+	p := source.Page{Total: 1000}
+	for i := (q.Page - 1) * source.PageSize; i < q.Page*source.PageSize; i++ {
+		p.Items = append(p.Items, source.Item{Source: "hugesrc", ID: fmt.Sprint(i)})
+	}
+	return p, nil
+}
+
+var _ = source.Register(hugeSource{})
+
+// The window asks for a screen's source pages at once, so page 12 can arrive before page 11 has remembered its end:
+// it starts from the nearest earlier end, so no hit dropped before it is served twice or skipped.
+func TestAPageAskedBeforeThePageBeforeItStartsWhereThatPageEnds(t *testing.T) {
+	g := components.GameInfo{ID: "g", Sources: []components.GameSource{{ID: "hugesrc"}}}
+	topCache = map[string]topEntry{}
+	cursors = map[string]cursorEntry{}
+	c := &Client{ShowAdult: true, Hidden: func(it Item) bool { return it.ID == "0" }}
+	pageIDs := func(p int) []string {
+		page, err := c.search(context.Background(), g, "hugesrc", "", p, Filter{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		var ids []string
+		for _, it := range page.Items {
+			ids = append(ids, it.ID)
+		}
+		return ids
+	}
+	for p := 1; p <= 9; p++ {
+		pageIDs(p)
+	}
+	ten, eleven := pageIDs(10), pageIDs(12)
+	if ten[0] != "181" || eleven[0] != "221" {
+		t.Fatalf("page 10 starts %s, page 12 starts %s; want 181 and 221", ten[0], eleven[0])
+	}
+	if first := pageIDs(11)[0]; first != "201" {
+		t.Fatalf("page 11 starts %s, want 201", first)
+	}
+}

@@ -326,6 +326,22 @@ func cursorEnd(key string, page int) (upPos, bool) {
 	return pos, ok
 }
 
+// nearestEnd is the latest remembered end of a visible page from below down to floor, with the page it ends.
+func nearestEnd(key string, below, floor int) (int, upPos, bool) {
+	cursorMu.Lock()
+	defer cursorMu.Unlock()
+	e, ok := cursors[key]
+	if !ok || !time.Now().Before(e.until) {
+		return 0, upPos{}, false
+	}
+	for page := below; page >= max(floor, source.FirstPage); page-- {
+		if pos, ok := e.ends[page]; ok {
+			return page, pos, true
+		}
+	}
+	return 0, upPos{}, false
+}
+
 func storeEnds(key string, ends map[int]upPos) {
 	if len(ends) == 0 {
 		return
@@ -361,12 +377,21 @@ func (c *Client) searchFilled(ctx context.Context, info components.GameInfo, id 
 	size := source.PageSize
 	// pos is where reading starts, numbered the visible hit at it.
 	pos, numbered := upPos{page: source.FirstPage}, 0
+	// guessed is a start taken without a remembered end; the page ends it reads are then not remembered either.
+	guessed := false
 	switch end, ok := cursorEnd(key, first-1); {
 	case first == source.FirstPage:
 	case ok:
 		pos, numbered = end, (first-1)*size
-	case first > maxScan:
-		pos, numbered = upPos{page: first}, (first-1)*size
+	default:
+		// The window asks for a screen's pages at once, so the page before may still be reading: an earlier page's end
+		// within the scan is exact, where taking upstream page N as visible page N repeats or skips the hits dropped
+		// before it.
+		if page, end, ok := nearestEnd(key, first-1, first-maxScan); ok {
+			pos, numbered = end, page*size
+		} else if first > maxScan {
+			pos, numbered, guessed = upPos{page: first}, (first-1)*size, true
+		}
 	}
 	from, want := (first-1)*size, first*size
 	out := Page{Items: []Item{}}
@@ -410,7 +435,9 @@ func (c *Client) searchFilled(ctx context.Context, info components.GameInfo, id 
 	if ended && pos == (upPos{page: source.FirstPage}) {
 		out.Total = max(out.Total-dropped, 0)
 	}
-	storeEnds(key, ends)
+	if !guessed {
+		storeEnds(key, ends)
+	}
 	log.Printf("browse: %s page %d (sort %q): %d hits from upstream pages %d to %d (resumed at %d+%d), %d hidden, %d dropped, total %d",
 		id, first, q.Sort, len(out.Items), pos.page, q.Page, pos.page, pos.offset, out.Hidden, dropped, out.Total)
 	return out, nil
