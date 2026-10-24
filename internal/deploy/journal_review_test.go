@@ -13,6 +13,7 @@ import (
 // A file Mortar placed over one of the player's is Mortar's whatever the game wrote to it since: it is removed and the
 // player's displaced file returns.
 func TestPurgeRemovesARewrittenInstallRootFileAndReturnsTheDisplacedOne(t *testing.T) {
+	t.Parallel()
 	r := newRig(t)
 	m := r.apply()
 	dll := filepath.Join(r.install, "winhttp.dll")
@@ -29,6 +30,7 @@ func TestPurgeRemovesARewrittenInstallRootFileAndReturnsTheDisplacedOne(t *testi
 // A crash between two checkpoints leaves the first record on disk: no Done flags and no Created list, while the
 // files and the folders made for them exist. Recovery must remove the folders Mortar made.
 func TestRecoverAfterACrashBetweenCheckpointsRemovesTheFoldersApplyMade(t *testing.T) {
+	t.Parallel()
 	r := newRig(t)
 	r.files = []launchplan.PlanFile{{Src: filepath.Join(r.store, "doorstop_config.ini"), Dst: "a/b/c.ini"}}
 	m := r.apply()
@@ -54,6 +56,7 @@ func TestRecoverAfterACrashBetweenCheckpointsRemovesTheFoldersApplyMade(t *testi
 
 // CopyFile writes through DST.mortar-tmp; a crash mid-copy leaves it, and recovery must not leave a Mortar file behind.
 func TestRecoverRemovesATempFileACrashedCopyLeft(t *testing.T) {
+	t.Parallel()
 	r := newRig(t)
 	m := r.apply()
 	tmp := filepath.Join(r.install, "doorstop_config.ini.mortar-tmp")

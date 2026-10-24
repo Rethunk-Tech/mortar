@@ -87,6 +87,7 @@ func (r *rig) apply() Manifest {
 }
 
 func TestApplyPurgeRestoresTheInstall(t *testing.T) {
+	t.Parallel()
 	r := newRig(t)
 	before := snapshot(t, r.install)
 	m := r.apply()
@@ -115,6 +116,7 @@ func TestApplyPurgeRestoresTheInstall(t *testing.T) {
 }
 
 func TestPlanRefusesAFileOutsideTheInstall(t *testing.T) {
+	t.Parallel()
 	r := newRig(t)
 	d := Place{}
 	if _, err := d.Plan(r.view, r.install, []launchplan.PlanFile{{Src: "x", Dst: "../escape.dll"}}); err == nil {
@@ -123,6 +125,7 @@ func TestPlanRefusesAFileOutsideTheInstall(t *testing.T) {
 }
 
 func TestPurgeLeavesTheGamesOwnFilesAlone(t *testing.T) {
+	t.Parallel()
 	r := newRig(t)
 	m := r.apply()
 	write(t, filepath.Join(r.install, "game.exe"), "patched by Steam")
@@ -137,6 +140,7 @@ func TestPurgeLeavesTheGamesOwnFilesAlone(t *testing.T) {
 }
 
 func TestRecoverAfterACrash(t *testing.T) {
+	t.Parallel()
 	r := newRig(t)
 	before := snapshot(t, r.install)
 	r.apply()
@@ -166,6 +170,7 @@ func TestRecoverAfterACrash(t *testing.T) {
 }
 
 func TestApplyRefusesAnUnrecoveredJournal(t *testing.T) {
+	t.Parallel()
 	r := newRig(t)
 	r.apply()
 	d := Place{}
@@ -185,6 +190,7 @@ func TestApplyRefusesAnUnrecoveredJournal(t *testing.T) {
 }
 
 func TestPurgeKeepsTheFileOfAnOpThatNeverRan(t *testing.T) {
+	t.Parallel()
 	r := newRig(t)
 	dst := filepath.Join(r.install, "winhttp.dll")
 	// The player's file happens to equal ours, and the cancelled launch never got to displace or replace it.
@@ -198,6 +204,7 @@ func TestPurgeKeepsTheFileOfAnOpThatNeverRan(t *testing.T) {
 }
 
 func TestACanceledApplyRecordsWhatItPlaced(t *testing.T) {
+	t.Parallel()
 	r := newRig(t)
 	d := Place{}
 	ctx, cancel := context.WithCancel(t.Context())
@@ -212,6 +219,7 @@ func TestACanceledApplyRecordsWhatItPlaced(t *testing.T) {
 }
 
 func TestAPlacedFileIsACopyOfTheSource(t *testing.T) {
+	t.Parallel()
 	r := newRig(t)
 	m := r.apply()
 	// The game rewrites a placed file in place; the profile's own copy must not change with it.
@@ -231,6 +239,7 @@ func TestAPlacedFileIsACopyOfTheSource(t *testing.T) {
 }
 
 func TestPurgeRunAgainKeepsWhatItRestored(t *testing.T) {
+	t.Parallel()
 	if runtime.GOOS == "windows" {
 		t.Skip("a read-only folder does not stop a delete on Windows")
 	}
@@ -261,6 +270,7 @@ func TestPurgeRunAgainKeepsWhatItRestored(t *testing.T) {
 
 // An install-root file (Doorstop's pair) that changed since it was placed and displaced nothing is left, not written back.
 func TestPurgeLeavesAnInstallRootFileThatIsNoLongerOurs(t *testing.T) {
+	t.Parallel()
 	r := newRig(t)
 	m := r.apply()
 	ini := filepath.Join(r.install, "doorstop_config.ini")
@@ -275,6 +285,7 @@ func TestPurgeLeavesAnInstallRootFileThatIsNoLongerOurs(t *testing.T) {
 }
 
 func TestRecoverKeepsAJournalItCannotRead(t *testing.T) {
+	t.Parallel()
 	r := newRig(t)
 	r.apply()
 	write(t, filepath.Join(r.view.JournalDir, journalFile), "{not json")
@@ -288,6 +299,7 @@ func TestRecoverKeepsAJournalItCannotRead(t *testing.T) {
 }
 
 func TestACanceledPurgeLeavesTheJournalToFinishLater(t *testing.T) {
+	t.Parallel()
 	r := newRig(t)
 	before := snapshot(t, r.install)
 	m := r.apply()
@@ -317,6 +329,7 @@ func TestACanceledPurgeLeavesTheJournalToFinishLater(t *testing.T) {
 }
 
 func TestApplyMarksEveryPlacedFileDone(t *testing.T) {
+	t.Parallel()
 	r := newRig(t)
 	for _, op := range r.apply().Ops {
 		if !op.Done {
@@ -326,6 +339,7 @@ func TestApplyMarksEveryPlacedFileDone(t *testing.T) {
 }
 
 func TestPurgeRemovesTheFoldersApplyMade(t *testing.T) {
+	t.Parallel()
 	r := newRig(t)
 	write(t, filepath.Join(r.store, "deep.ini"), "deep")
 	// The parent folder is made for the first file and the child for the second, so Created lists the parent first.
@@ -350,6 +364,7 @@ func TestPurgeRemovesTheFoldersApplyMade(t *testing.T) {
 }
 
 func TestApplyFailsWhenAFolderCannotBeMade(t *testing.T) {
+	t.Parallel()
 	r := newRig(t)
 	write(t, filepath.Join(r.install, "blocker"), "a file where a folder is needed")
 	write(t, filepath.Join(r.store, "x.ini"), "x")
@@ -361,6 +376,7 @@ func TestApplyFailsWhenAFolderCannotBeMade(t *testing.T) {
 }
 
 func TestHasJournalFollowsTheRecord(t *testing.T) {
+	t.Parallel()
 	r := newRig(t)
 	if HasJournal(r.view.JournalDir) {
 		t.Fatal("a journal before any apply")
@@ -372,6 +388,7 @@ func TestHasJournalFollowsTheRecord(t *testing.T) {
 }
 
 func TestAFailedPurgeRecordsWhatItAlreadyUndid(t *testing.T) {
+	t.Parallel()
 	r := newRig(t)
 	m := r.apply()
 	// Ops undo last to first. The first op's destination is now a folder with content, which cannot be removed.
@@ -418,6 +435,7 @@ func (r *rig) outside() (dir string, files []launchplan.PlanFile) {
 }
 
 func TestAFileForARootIsPlacedOutsideTheInstallAndTakenBack(t *testing.T) {
+	t.Parallel()
 	r := newRig(t)
 	dir, files := r.outside()
 	r.files = files
@@ -448,6 +466,7 @@ func TestAFileForARootIsPlacedOutsideTheInstallAndTakenBack(t *testing.T) {
 }
 
 func TestACrashWithFilesOutsideTheInstallIsRecovered(t *testing.T) {
+	t.Parallel()
 	r := newRig(t)
 	dir, files := r.outside()
 	r.files = files
@@ -464,6 +483,7 @@ func TestACrashWithFilesOutsideTheInstallIsRecovered(t *testing.T) {
 }
 
 func TestAPlanRefusesAnUnknownRootAndAPathThatLeavesTheRoot(t *testing.T) {
+	t.Parallel()
 	r := newRig(t)
 	d := Place{}
 	for _, f := range []launchplan.PlanFile{

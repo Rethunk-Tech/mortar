@@ -42,6 +42,7 @@ func (rr *rootRig) purge(m Manifest) {
 }
 
 func TestARewrittenProfileFileIsWrittenBackAndLeavesTheSharedFolder(t *testing.T) {
+	t.Parallel()
 	rr := newRootRig(t)
 	m := rr.apply()
 	write(t, filepath.Join(rr.shared, "mc", "mc_settings.cfg"), "player=2")
@@ -59,6 +60,7 @@ func TestARewrittenProfileFileIsWrittenBackAndLeavesTheSharedFolder(t *testing.T
 }
 
 func TestARewrittenFileThatDisplacedThePlayersIsWrittenBackAndThePlayersReturns(t *testing.T) {
+	t.Parallel()
 	rr := newRootRig(t)
 	write(t, filepath.Join(rr.shared, "top.package"), "the player's own")
 	m := rr.apply()
@@ -73,6 +75,7 @@ func TestARewrittenFileThatDisplacedThePlayersIsWrittenBackAndThePlayersReturns(
 }
 
 func TestFilesCreatedDuringPlayAreAdoptedOnlyInFoldersAnEntryOwns(t *testing.T) {
+	t.Parallel()
 	rr := newRootRig(t)
 	old := filepath.Join(rr.shared, "mc", "players_own.cfg")
 	write(t, old, "was here before")
@@ -102,6 +105,7 @@ func TestFilesCreatedDuringPlayAreAdoptedOnlyInFoldersAnEntryOwns(t *testing.T) 
 }
 
 func TestNothingIsDeletedWhenTheProfileFolderIsGone(t *testing.T) {
+	t.Parallel()
 	rr := newRootRig(t)
 	m := rr.apply()
 	write(t, filepath.Join(rr.shared, "mc", "mc_settings.cfg"), "player=2")
@@ -121,6 +125,7 @@ func TestNothingIsDeletedWhenTheProfileFolderIsGone(t *testing.T) {
 }
 
 func TestInstallRootFilesKeepTheirRule(t *testing.T) {
+	t.Parallel()
 	r := newRig(t)
 	m := r.apply()
 	ini := filepath.Join(r.install, "doorstop_config.ini")
@@ -219,6 +224,7 @@ func TestACrashAtAnyRescueStepKeepsTheChangedBytes(t *testing.T) {
 }
 
 func TestFilesLeftSharedAreNotedUntilTheyAreGone(t *testing.T) {
+	t.Parallel()
 	rr := newRootRig(t)
 	write(t, filepath.Join(rr.shared, "top.package"), "the player's own")
 	m := rr.apply()
@@ -267,6 +273,7 @@ func TestFilesLeftSharedAreNotedUntilTheyAreGone(t *testing.T) {
 // The path-role twins of the install-root purge tests: a changed file is written back into the profile's copy and then
 // removed from the shared folder, with and without a displaced player's file.
 func TestPurgeWritesBackAChangedPathRoleFileThenRemovesIt(t *testing.T) {
+	t.Parallel()
 	rr := newRootRig(t)
 	m := rr.apply()
 	cfg := filepath.Join(rr.shared, "mc", "mc_settings.cfg")
@@ -281,6 +288,7 @@ func TestPurgeWritesBackAChangedPathRoleFileThenRemovesIt(t *testing.T) {
 }
 
 func TestPurgeWritesBackARewrittenPathRoleFileAndReturnsTheDisplacedOne(t *testing.T) {
+	t.Parallel()
 	rr := newRootRig(t)
 	top := filepath.Join(rr.shared, "top.package")
 	write(t, top, "the player's own")
@@ -298,6 +306,7 @@ func TestPurgeWritesBackARewrittenPathRoleFileAndReturnsTheDisplacedOne(t *testi
 // Across file systems a displaced file goes back by copy then remove; a crash between the two leaves the player's file
 // at Dst with its backup still kept. Recovery must not take the player's file for the game's rewrite of the profile's.
 func TestRecoveryAfterACrashMidRestoreLeavesTheProfilesCopyAlone(t *testing.T) {
+	t.Parallel()
 	rr := newRootRig(t)
 	top := filepath.Join(rr.shared, "top.package")
 	write(t, top, "the player's own")

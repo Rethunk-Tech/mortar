@@ -14,6 +14,7 @@ import (
 // A file of the player's own inside a folder an entry owns is the player's even when the game rewrites it: only a file
 // created during play is adopted, and the player's stays in the shared folder.
 func TestAPlayersOwnFileInAnOwnedFolderStaysWhenTheGameRewritesIt(t *testing.T) {
+	t.Parallel()
 	rr := newRootRig(t)
 	own := filepath.Join(rr.shared, "mc", "players_own.cfg")
 	write(t, own, "mine")
@@ -32,6 +33,7 @@ func TestAPlayersOwnFileInAnOwnedFolderStaysWhenTheGameRewritesIt(t *testing.T) 
 // A mod that replaces a file it was placed with a link to a file elsewhere must not get that file's bytes copied into
 // the profile (where backups and shares carry them), and the target stays as it was.
 func TestALinkInPlaceOfAPlacedFileIsNotFollowedIntoTheProfile(t *testing.T) {
+	t.Parallel()
 	rr := newRootRig(t)
 	secret := filepath.Join(rr.root, "outside", "secret.txt")
 	write(t, secret, "secret bytes")
@@ -54,6 +56,7 @@ func TestALinkInPlaceOfAPlacedFileIsNotFollowedIntoTheProfile(t *testing.T) {
 
 // A link a mod leaves in its own folder is not adopted, followed or deleted through.
 func TestALinkedFileOrFolderInAnOwnedFolderIsNotAdopted(t *testing.T) {
+	t.Parallel()
 	rr := newRootRig(t)
 	outside := filepath.Join(rr.root, "outside")
 	write(t, filepath.Join(outside, "f.txt"), "outside file")
@@ -84,6 +87,7 @@ func TestALinkedFileOrFolderInAnOwnedFolderIsNotAdopted(t *testing.T) {
 // No bytes are removed without a copy: when the profile's folder is gone and a changed file displaced the player's,
 // the player's file returns, and the changed bytes must still be somewhere on disk.
 func TestChangedBytesSurviveWhenTheProfileIsGoneAndTheyDisplacedAPlayersFile(t *testing.T) {
+	t.Parallel()
 	rr := newRootRig(t)
 	write(t, filepath.Join(rr.shared, "top.package"), "the player's own")
 	m := rr.apply()
@@ -108,6 +112,7 @@ func TestChangedBytesSurviveWhenTheProfileIsGoneAndTheyDisplacedAPlayersFile(t *
 
 // A link a mod leaves in place of a placed file that displaced the player's is removed, and the player's file returns.
 func TestALinkInPlaceOfAFileThatDisplacedThePlayersDoesNotStopThePurge(t *testing.T) {
+	t.Parallel()
 	rr := newRootRig(t)
 	top := filepath.Join(rr.shared, "top.package")
 	write(t, top, "the player's own")

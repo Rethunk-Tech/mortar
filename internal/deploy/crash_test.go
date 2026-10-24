@@ -115,6 +115,7 @@ func TestACrashAfterAnyPurgeStepIsRecoveredToTheStartingTree(t *testing.T) {
 // A placed file the game rewrote is Mortar's only where it displaced the player's file; with nothing displaced it holds
 // data that is no longer ours and stays.
 func TestRecoveryOfARewrittenPlacedFileFollowsWhetherSomethingWasDisplaced(t *testing.T) {
+	t.Parallel()
 	r := crashRig(t)
 	start := snapshot(t, r.install)
 	r.apply()

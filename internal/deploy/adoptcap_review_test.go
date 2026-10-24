@@ -8,6 +8,7 @@ import (
 
 // A created file over the per-file cap stays shared and is not copied into the profile.
 func TestACreatedFileOverTheCapStaysSharedAndIsNotCopied(t *testing.T) {
+	t.Parallel()
 	rr := newRootRig(t)
 	m := rr.apply()
 	big := filepath.Join(rr.shared, "mc", "world.dat")
