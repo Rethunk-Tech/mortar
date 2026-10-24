@@ -128,6 +128,6 @@ func removeEmptyBelow(root string, files []string) {
 	}
 	slices.SortFunc(dirs, func(a, b string) int { return len(b) - len(a) })
 	for _, d := range dirs {
-		_ = os.Remove(d)
+		_ = fsx.Remove(d)
 	}
 }

@@ -163,7 +163,7 @@ func (c *Cache) pruneTo(budget int64) int64 {
 		if total <= budget {
 			break
 		}
-		if err := os.Remove(filepath.Join(c.dir, f.name)); err != nil {
+		if err := fsx.Remove(filepath.Join(c.dir, f.name)); err != nil {
 			continue
 		}
 		total -= f.size

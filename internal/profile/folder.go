@@ -68,7 +68,7 @@ func (s *Store) CheckFolder(game, id string) (FolderCheck, error) {
 		return fail("Mortar cannot write to %s", cmpFolder(out.Folder, home))
 	}
 	_ = probe.Close()
-	_ = os.Remove(probe.Name())
+	_ = fsx.Remove(probe.Name())
 	out.OK = true
 	return out, nil
 }
@@ -177,7 +177,7 @@ func (s *Store) relocate(game, id, home, target string) error {
 	forgetProfile(filepath.Join(home, fileName))
 	if linked {
 		// Moving between two custom folders: the old link goes, the old folder after the new link stands.
-		if err := os.Remove(home); err != nil {
+		if err := fsx.Remove(home); err != nil {
 			return errors.Join(err, fsx.RemoveAll(target))
 		}
 	} else if err := fsx.Rename(home, home+".moving"); err != nil {
@@ -213,7 +213,7 @@ func (s *Store) bringHome(game, id, home string) error {
 		return errors.Join(err, fsx.RemoveAll(tmp))
 	}
 	forgetProfile(filepath.Join(home, fileName))
-	if err := os.Remove(home); err != nil {
+	if err := fsx.Remove(home); err != nil {
 		return errors.Join(err, fsx.RemoveAll(tmp))
 	}
 	if err := fsx.Rename(tmp, home); err != nil {

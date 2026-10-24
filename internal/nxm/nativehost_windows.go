@@ -87,7 +87,7 @@ func (w *System) removeNativeHosts() error {
 		return errors.Join(append(errs, err)...)
 	}
 	for _, firefox := range []bool{false, true} {
-		if err := os.Remove(hostManifestPath(dir, firefox)); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		if err := fsx.Remove(hostManifestPath(dir, firefox)); err != nil && !errors.Is(err, fs.ErrNotExist) {
 			errs = append(errs, err)
 		}
 	}

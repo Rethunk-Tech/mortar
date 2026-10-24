@@ -61,7 +61,7 @@ func removeCover(dir, name string) error {
 	if coverType(name) == "" {
 		return nil
 	}
-	if err := os.Remove(filepath.Join(dir, name)); err != nil && !errors.Is(err, os.ErrNotExist) {
+	if err := fsx.Remove(filepath.Join(dir, name)); err != nil && !errors.Is(err, os.ErrNotExist) {
 		return err
 	}
 	return nil

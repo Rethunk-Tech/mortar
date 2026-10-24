@@ -2,7 +2,6 @@ package sharesvc
 
 import (
 	"encoding/json"
-	"os"
 	"path/filepath"
 	"slices"
 
@@ -39,7 +38,7 @@ func (s *Service) savePending() {
 	s.mu.Unlock()
 	path := filepath.Join(s.d.Dir, pendingFile)
 	if len(list) == 0 {
-		_ = os.Remove(path)
+		_ = fsx.Remove(path)
 		return
 	}
 	// A pending list that cannot be saved still works this session; it only starts over after a restart.

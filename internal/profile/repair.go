@@ -61,7 +61,7 @@ func (s *Store) UndoRepair(game, id string) error {
 		return err
 	}
 	src := filepath.Join(dir, fileName)
-	_ = os.Remove(src)
+	_ = fsx.Remove(src)
 	return fsx.Rename(aside, src)
 }
 

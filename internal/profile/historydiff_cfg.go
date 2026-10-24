@@ -90,7 +90,7 @@ func restoreGmcmPending(dir, targetID, headID string) bool {
 	pendingDir := gmcm.PendingFolder(dir)
 	for name := range live[gmcmPendingKey] {
 		if _, keep := target[gmcmPendingKey][name]; !keep {
-			_ = os.Remove(filepath.Join(pendingDir, name))
+			_ = fsx.Remove(filepath.Join(pendingDir, name))
 		}
 	}
 	for name, hash := range target[gmcmPendingKey] {

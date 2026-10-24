@@ -123,7 +123,7 @@ func (e Entry) Enabled(uniqueID mod.ID) bool {
 // materialize prepares a fresh copy of an entry in tmp: disabled nested mods get their dot names.
 // It returns the folder name the entry belongs under in mods/.
 func materialize(tmp string, e Entry) (string, error) {
-	if err := os.Remove(filepath.Join(tmp, ".complete")); err != nil && !errors.Is(err, fs.ErrNotExist) {
+	if err := fsx.Remove(filepath.Join(tmp, ".complete")); err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return "", err
 	}
 	final := e.Key

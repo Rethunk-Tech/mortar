@@ -164,7 +164,7 @@ func unshareTree(tree string) error {
 		_ = fsx.RemoveAll(tmp)
 		return err
 	}
-	if err := os.Remove(tree); err != nil {
+	if err := fsx.Remove(tree); err != nil {
 		_ = fsx.RemoveAll(tmp)
 		return err
 	}

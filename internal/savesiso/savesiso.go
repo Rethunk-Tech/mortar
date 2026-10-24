@@ -155,7 +155,7 @@ func Purge(m Manifest) error {
 			return err
 		}
 	case isLink(m.Saves):
-		if err := os.Remove(m.Saves); err != nil {
+		if err := fsx.Remove(m.Saves); err != nil {
 			return err
 		}
 	}

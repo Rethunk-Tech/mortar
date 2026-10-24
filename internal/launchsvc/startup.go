@@ -13,6 +13,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi"
@@ -90,7 +91,7 @@ func prepareStartup(l loader.Loader, gameID, modsDir string) (bool, error) {
 		}
 	}
 	dir := filepath.Join(filepath.Dir(modsDir), startupDir)
-	err := os.Remove(filepath.Join(dir, measureMarker))
+	err := fsx.Remove(filepath.Join(dir, measureMarker))
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return false, err
 	}
@@ -141,7 +142,7 @@ func (s *Service) CancelMeasureNextLaunch(gameID, profileID string) error {
 	if err != nil {
 		return err
 	}
-	if err := os.Remove(filepath.Join(dir, startupDir, measureMarker)); err != nil && !errors.Is(err, fs.ErrNotExist) {
+	if err := fsx.Remove(filepath.Join(dir, startupDir, measureMarker)); err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return err
 	}
 	return nil

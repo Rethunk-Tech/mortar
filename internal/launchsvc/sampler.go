@@ -60,11 +60,11 @@ func (s *Service) sampleStartup(parent context.Context, g game.Game, profileID, 
 	stopCancel()
 	stopped()
 	if stopErr != nil {
-		_ = os.Remove(tracePath)
+		_ = fsx.Remove(tracePath)
 		log.Printf("startup sampler: %s: %v", g.ID(), stopErr)
 		return
 	}
-	defer func() { _ = os.Remove(tracePath) }()
+	defer func() { _ = fsx.Remove(tracePath) }()
 	if !reportFound {
 		return
 	}

@@ -116,7 +116,7 @@ func release(ctx context.Context, dir, path string, b, prev []byte) {
 	if len(prev) > 0 && datadir.WriteFile(path, prev, 0o600) == nil && answers(ctx, dir) {
 		return
 	}
-	_ = os.Remove(path)
+	_ = fsx.Remove(path)
 }
 
 // Serve listens until ctx ends, then removes the discovery file. It takes the file over from an app still running

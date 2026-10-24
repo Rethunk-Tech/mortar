@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"regexp"
 	"strings"
 
@@ -147,7 +146,7 @@ func (l Loader) download(ctx context.Context, r github.Release, dst string) erro
 		return err
 	}
 	if err := l.verify(ctx, pack, sum, dst); err != nil {
-		_ = os.Remove(dst)
+		_ = fsx.Remove(dst)
 		return err
 	}
 	return nil

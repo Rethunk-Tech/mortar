@@ -180,10 +180,10 @@ func resolve(ctx context.Context, client *github.Client, source components.Sourc
 	}
 	tempPath := temp.Name()
 	if err := temp.Close(); err != nil {
-		_ = os.Remove(tempPath)
+		_ = fsx.Remove(tempPath)
 		return components.Component{}, err
 	}
-	defer func() { _ = os.Remove(tempPath) }()
+	defer func() { _ = fsx.Remove(tempPath) }()
 	if err := downloadAsset(ctx, client.HTTP, downloadURL(client, source, asset), tempPath); err != nil {
 		return components.Component{}, fmt.Errorf("download %s: %w", asset.Name, err)
 	}

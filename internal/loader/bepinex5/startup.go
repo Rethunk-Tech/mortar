@@ -22,7 +22,7 @@ func (Loader) ReportsStartup() {}
 func RequestStartup(startupDir, gameID string, measure bool) error {
 	path := filepath.Join(startupDir, measureFile)
 	if !measure {
-		if err := os.Remove(path); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		if err := fsx.Remove(path); err != nil && !errors.Is(err, fs.ErrNotExist) {
 			return err
 		}
 		return nil

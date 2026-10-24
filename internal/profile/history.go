@@ -942,7 +942,7 @@ func migratePlainSnapshot(dir, id, path string) ([]Entry, bool) {
 		return nil, false
 	}
 	if writeSnapshotFile(dir, id, entries) == nil {
-		_ = os.Remove(path)
+		_ = fsx.Remove(path)
 	}
 	return entries, true
 }
@@ -986,7 +986,7 @@ func pruneSnapshotFiles(dir string, referenced map[string]struct{}) error {
 			}
 			continue
 		}
-		if err := os.Remove(filepath.Join(dir, snapshotsDir, ent.Name())); err != nil && !errors.Is(err, os.ErrNotExist) {
+		if err := fsx.Remove(filepath.Join(dir, snapshotsDir, ent.Name())); err != nil && !errors.Is(err, os.ErrNotExist) {
 			return err
 		}
 	}

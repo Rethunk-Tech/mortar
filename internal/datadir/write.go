@@ -67,7 +67,7 @@ func writeStream(path string, perm os.FileMode, durable bool, write func(io.Writ
 	}
 	defer func() {
 		if err != nil {
-			err = errors.Join(err, os.Remove(f.Name()))
+			err = errors.Join(err, fsx.Remove(f.Name()))
 		}
 	}()
 	if err = write(f); err != nil {

@@ -613,7 +613,7 @@ func removeUp(root, file string) {
 	if fsx.Remove(file) != nil {
 		return
 	}
-	for d := filepath.Dir(file); d != root && datadir.UnderRoot(root, d) && os.Remove(d) == nil; d = filepath.Dir(d) {
+	for d := filepath.Dir(file); d != root && datadir.UnderRoot(root, d) && fsx.Remove(d) == nil; d = filepath.Dir(d) {
 	}
 }
 

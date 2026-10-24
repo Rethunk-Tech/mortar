@@ -8,6 +8,8 @@ import (
 	"unicode/utf16"
 
 	"golang.org/x/sys/windows"
+
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // mountPointTag is IO_REPARSE_TAG_MOUNT_POINT, the reparse tag of a directory junction.
@@ -42,7 +44,7 @@ func makeJunction(link, target string) error {
 		return err
 	}
 	if err := setMountPoint(link, abs); err != nil {
-		_ = os.Remove(link)
+		_ = fsx.Remove(link)
 		return err
 	}
 	return nil

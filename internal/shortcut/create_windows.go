@@ -10,10 +10,11 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/winname"
 	"github.com/go-ole/go-ole"
 	"github.com/go-ole/go-ole/oleutil"
+
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/winname"
 )
 
 // create writes a .lnk in the Start menu's Mortar folder through the shell's own shortcut object.
@@ -182,7 +183,7 @@ func Removed(game, profile string) error {
 		return err
 	}
 	for _, path := range matches {
-		if err := os.Remove(path); err != nil && !errors.Is(err, os.ErrNotExist) {
+		if err := fsx.Remove(path); err != nil && !errors.Is(err, os.ErrNotExist) {
 			return err
 		}
 	}

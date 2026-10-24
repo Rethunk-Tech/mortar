@@ -991,7 +991,7 @@ func (s *Store) RestoreModsFolder(game, id, token string) error {
 	if err := fsx.Rename(src, dst); err != nil {
 		return renameBusy(err)
 	}
-	_ = os.Remove(filepath.Dir(src))
+	_ = fsx.Remove(filepath.Dir(src))
 	return s.RecordModsSnapshot(game, id)
 }
 

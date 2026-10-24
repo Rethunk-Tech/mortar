@@ -212,8 +212,8 @@ func (m resumeMeta) ifRange() string {
 }
 
 func dropDownload(path string) {
-	_ = os.Remove(path)
-	_ = os.Remove(ResumeSidecar(path))
+	_ = fsx.Remove(path)
+	_ = fsx.Remove(ResumeSidecar(path))
 }
 
 // Download streams url to dest, appending with Range when a partial and the server allow it, and

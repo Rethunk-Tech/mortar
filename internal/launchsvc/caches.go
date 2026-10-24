@@ -109,7 +109,7 @@ func clearCache(root, rel string) (int, error) {
 	case info.Mode()&os.ModeSymlink != 0:
 		return 0, fmt.Errorf("%q is a link", rel)
 	case info.Mode().IsRegular():
-		if err := os.Remove(target); err != nil {
+		if err := fsx.Remove(target); err != nil {
 			return 0, err
 		}
 		return 1, nil
@@ -136,12 +136,12 @@ func clearFolder(dir string) (int, error) {
 				errs = append(errs, err)
 				continue
 			}
-			if err := os.Remove(p); err != nil {
+			if err := fsx.Remove(p); err != nil {
 				errs = append(errs, err)
 			}
 			continue
 		}
-		if err := os.Remove(p); err != nil {
+		if err := fsx.Remove(p); err != nil {
 			errs = append(errs, err)
 			continue
 		}

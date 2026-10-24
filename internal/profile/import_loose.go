@@ -84,7 +84,7 @@ func switchStagedOn(staged string, kinds, keepWhole []string) (off map[string]bo
 	off = map[string]bool{}
 	for _, f := range offFiles {
 		if _, statErr := os.Lstat(f.on); statErr == nil {
-			if err := os.Remove(f.path); err != nil {
+			if err := fsx.Remove(f.path); err != nil {
 				return nil, false, err
 			}
 			continue

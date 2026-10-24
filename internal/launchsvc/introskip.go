@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -24,7 +25,7 @@ func (s *Service) armIntroSkip(g game.Game, l loader.Loader, profileID, dir stri
 	if !ok {
 		return nil
 	}
-	err := os.Remove(filepath.Join(dir, startupDir, menuMarker))
+	err := fsx.Remove(filepath.Join(dir, startupDir, menuMarker))
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return err
 	}
@@ -52,5 +53,5 @@ func (s *Service) launchToMenu(gameID, profileID string) (func(), error) {
 	if err := datadir.WriteFile(path, nil, 0o600); err != nil {
 		return nil, err
 	}
-	return func() { _ = os.Remove(path) }, nil
+	return func() { _ = fsx.Remove(path) }, nil
 }

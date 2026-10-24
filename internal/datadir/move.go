@@ -66,12 +66,12 @@ func clonesSupported(dir string) bool {
 	}
 	_, _ = a.WriteString("probe")
 	_ = a.Close()
-	defer func() { _ = os.Remove(a.Name()) }()
+	defer func() { _ = fsx.Remove(a.Name()) }()
 	b := a.Name() + ".c"
 	if cloneFile(a.Name(), b) != nil {
 		return false
 	}
-	_ = os.Remove(b)
+	_ = fsx.Remove(b)
 	return true
 }
 
@@ -82,12 +82,12 @@ func linksSupported(dir string) bool {
 		return true
 	}
 	_ = a.Close()
-	defer func() { _ = os.Remove(a.Name()) }()
+	defer func() { _ = fsx.Remove(a.Name()) }()
 	b := a.Name() + ".l"
 	if os.Link(a.Name(), b) != nil {
 		return false
 	}
-	_ = os.Remove(b)
+	_ = fsx.Remove(b)
 	return true
 }
 

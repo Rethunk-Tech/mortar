@@ -333,7 +333,7 @@ func SetPinned(backupsDir, name string, pinned bool) error {
 	cause := readCause(path)
 	cause.Pinned = pinned
 	if cause.Profile == "" && cause.Kind == "" && !cause.Pinned {
-		if err := os.Remove(causePath(path)); !errors.Is(err, fs.ErrNotExist) {
+		if err := fsx.Remove(causePath(path)); !errors.Is(err, fs.ErrNotExist) {
 			return err
 		}
 		return nil
@@ -353,8 +353,8 @@ func Delete(backupsDir, name string) error {
 	if readCause(path).Pinned {
 		return usererr.New(usererr.Invalid, "this backup is kept; allow cleanup first")
 	}
-	err := os.Remove(path)
-	if cerr := os.Remove(causePath(path)); cerr != nil && !errors.Is(cerr, fs.ErrNotExist) {
+	err := fsx.Remove(path)
+	if cerr := fsx.Remove(causePath(path)); cerr != nil && !errors.Is(cerr, fs.ErrNotExist) {
 		err = errors.Join(err, cerr)
 	}
 	return err
@@ -380,8 +380,8 @@ func prune(dir string, keep int, now time.Time, group string) error {
 			break
 		}
 		p := filepath.Join(dir, n)
-		errs = append(errs, os.Remove(p))
-		if err := os.Remove(causePath(p)); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		errs = append(errs, fsx.Remove(p))
+		if err := fsx.Remove(causePath(p)); err != nil && !errors.Is(err, fs.ErrNotExist) {
 			errs = append(errs, err)
 		}
 		unpinned--
@@ -392,7 +392,7 @@ func prune(dir string, keep int, now time.Time, group string) error {
 	}
 	for _, p := range tmps {
 		if info, err := os.Stat(p); err == nil && now.Sub(info.ModTime()) > MinGap {
-			errs = append(errs, os.Remove(p))
+			errs = append(errs, fsx.Remove(p))
 		}
 	}
 	return errors.Join(errs...)

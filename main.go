@@ -1263,7 +1263,7 @@ func run() error {
 			_ = fsx.WriteFile(failurePath, []byte(time.Now().Format(time.RFC3339Nano)), 0o600)
 			return
 		}
-		_ = os.Remove(failurePath)
+		_ = fsx.Remove(failurePath)
 		// A fetched manifest can name a newer bridge than the one synced at startup from the bundled copy.
 		for _, id := range implemented {
 			loadersvc.SyncBundled(context.Background(), loaders, id)

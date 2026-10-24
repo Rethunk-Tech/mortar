@@ -112,7 +112,7 @@ func (s *Service) prepareGameSettings(gameID, id, installID string) (*settingsRe
 		return nil, false, err
 	}
 	if err := datadir.WriteFile(path, patched, 0o600); err != nil {
-		return nil, false, errors.Join(err, os.Remove(recordPath))
+		return nil, false, errors.Join(err, fsx.Remove(recordPath))
 	}
 	return restore, false, nil
 }
@@ -136,7 +136,7 @@ func readSettingsRestore(path string) (*settingsRestore, error) {
 }
 
 func removeSettingsRestore(path string) error {
-	if err := os.Remove(path); !errors.Is(err, os.ErrNotExist) {
+	if err := fsx.Remove(path); !errors.Is(err, os.ErrNotExist) {
 		return err
 	}
 	return nil

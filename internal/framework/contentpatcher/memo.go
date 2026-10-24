@@ -171,7 +171,7 @@ func pruneAnalysisMemos(dir string) {
 	}
 	slices.SortFunc(memos, func(a, b memoFile) int { return cmp.Compare(b.at, a.at) })
 	for _, m := range memos[min(len(memos), analysisMemoKeep):] {
-		_ = os.Remove(filepath.Join(dir, m.name))
+		_ = fsx.Remove(filepath.Join(dir, m.name))
 	}
 }
 

@@ -86,7 +86,7 @@ func (l *System) hostWrite(path string, b []byte) error {
 
 func (l *System) hostRemove(path string) error {
 	if !inFlatpak() {
-		if err := os.Remove(path); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		if err := fsx.Remove(path); err != nil && !errors.Is(err, fs.ErrNotExist) {
 			return err
 		}
 		return nil

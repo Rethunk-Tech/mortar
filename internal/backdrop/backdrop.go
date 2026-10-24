@@ -208,7 +208,7 @@ func keep(dir, path string, b []byte) {
 		return ai.ModTime().Compare(bi.ModTime())
 	})
 	for _, e := range entries[:len(entries)-keptCopies] {
-		_ = os.Remove(filepath.Join(dir, e.Name()))
+		_ = fsx.Remove(filepath.Join(dir, e.Name()))
 	}
 }
 

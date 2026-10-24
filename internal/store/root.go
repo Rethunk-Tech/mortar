@@ -63,7 +63,7 @@ func (s *Store) SetRoot(game, key, rel string) error {
 	side := filepath.Join(dir, RootFile)
 	rel = CleanRoot(rel)
 	if rel == "" {
-		err := os.Remove(side)
+		err := fsx.Remove(side)
 		if err != nil && !os.IsNotExist(err) {
 			return &Error{Game: game, Key: key, Err: err}
 		}

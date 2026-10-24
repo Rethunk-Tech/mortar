@@ -251,7 +251,7 @@ func (s *Store) RestoreOldFiles(game, id, token string) error {
 			return err
 		}
 	}
-	_ = os.Remove(filepath.Dir(src))
+	_ = fsx.Remove(filepath.Dir(src))
 	return nil
 }
 

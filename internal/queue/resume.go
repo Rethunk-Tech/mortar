@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 )
 
@@ -28,8 +29,8 @@ func (s *Service) dest(id, fileName string) string {
 }
 
 func dropDownload(path string) {
-	_ = os.Remove(path)
-	_ = os.Remove(github.ResumeSidecar(path))
+	_ = fsx.Remove(path)
+	_ = fsx.Remove(github.ResumeSidecar(path))
 }
 
 func (s *Service) dropDownloadUnlessKept(path string) {
@@ -63,7 +64,7 @@ func (s *Service) sweepDownloads() {
 		if keep[id] {
 			continue
 		}
-		_ = os.Remove(filepath.Join(root, name))
+		_ = fsx.Remove(filepath.Join(root, name))
 	}
 }
 

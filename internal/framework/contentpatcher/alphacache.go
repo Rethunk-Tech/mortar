@@ -51,7 +51,7 @@ func pruneAlphaDir(dir string) {
 	cutoff := time.Now().Add(-alphaKeepFor)
 	for _, e := range entries {
 		if info, err := e.Info(); err == nil && info.ModTime().Before(cutoff) {
-			_ = os.Remove(filepath.Join(dir, e.Name()))
+			_ = fsx.Remove(filepath.Join(dir, e.Name()))
 		}
 	}
 }

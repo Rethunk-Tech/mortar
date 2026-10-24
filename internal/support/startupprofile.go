@@ -29,7 +29,7 @@ func RequestStartupProfile(dataDir string) error {
 // it or MORTAR_PROFILE_STARTUP is set, replacing the last profile. It logs where the files went.
 func StartStartupProfile(dataDir string) {
 	if os.Getenv("MORTAR_PROFILE_STARTUP") == "" {
-		if err := os.Remove(filepath.Join(dataDir, startupProfileFlag)); err != nil {
+		if err := fsx.Remove(filepath.Join(dataDir, startupProfileFlag)); err != nil {
 			return
 		}
 	}

@@ -99,7 +99,7 @@ func UseDefaultLocation() error {
 	if err != nil {
 		return err
 	}
-	err = os.Remove(filepath.Join(def, PointerName))
+	err = fsx.Remove(filepath.Join(def, PointerName))
 	if os.IsNotExist(err) {
 		return nil
 	}

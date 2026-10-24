@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"maps"
-	"os"
 	"path/filepath"
 	"slices"
 
@@ -122,7 +121,7 @@ func restoreConfigsTo(dir string, entries []Entry, targetID, headID string) []st
 			continue
 		}
 		if want == "" {
-			if os.Remove(filepath.Join(liveEntryDir(filepath.Join(dir, "mods"), e.Key), configFile)) == nil {
+			if fsx.Remove(filepath.Join(liveEntryDir(filepath.Join(dir, "mods"), e.Key), configFile)) == nil {
 				changed = append(changed, e.Key)
 			}
 			continue

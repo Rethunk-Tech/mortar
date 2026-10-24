@@ -159,7 +159,7 @@ func (s *Store) ResetConfig(game, id, key string, uniqueID mod.ID) error {
 		return nil
 	}
 	return s.editConfigLocked(game, id, HistoryEvent{Change: ChangeConfigReset, Name: uniqueID.Local()}, func() error {
-		return os.Remove(filepath.Join(folder, configFile))
+		return fsx.Remove(filepath.Join(folder, configFile))
 	})
 }
 

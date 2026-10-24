@@ -4,10 +4,10 @@ package datadir
 
 import (
 	"errors"
-	"os"
+
+	"golang.org/x/sys/unix"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"golang.org/x/sys/unix"
 )
 
 func cloneFile(src, dst string) error {
@@ -22,7 +22,7 @@ func cloneFile(src, dst string) error {
 	}
 	if err := unix.IoctlFileClone(int(out.Fd()), int(in.Fd())); err != nil {
 		_ = out.Close()
-		_ = os.Remove(dst)
+		_ = fsx.Remove(dst)
 		return err
 	}
 	return out.Close()

@@ -12,6 +12,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 //go:embed overlay.html
@@ -72,7 +73,7 @@ const ProfileConfigFile = "startup/overlay.json"
 func WriteProfileConfig(dir string, cfg BridgeConfig) error {
 	path := filepath.Join(dir, filepath.FromSlash(ProfileConfigFile))
 	if !cfg.OverlayEnabled {
-		if err := os.Remove(path); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		if err := fsx.Remove(path); err != nil && !errors.Is(err, fs.ErrNotExist) {
 			return err
 		}
 		return nil

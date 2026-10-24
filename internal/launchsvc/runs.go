@@ -507,8 +507,8 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 		return
 	}
 	for _, old := range drop {
-		_ = os.Remove(runLogPath(dir, old.ID))
-		_ = os.Remove(runPlayerLogPath(dir, old.ID))
+		_ = fsx.Remove(runLogPath(dir, old.ID))
+		_ = fsx.Remove(runPlayerLogPath(dir, old.ID))
 	}
 	if !failed && s.settings != nil {
 		_, _ = s.settings.AddPlaytime(g.ID(), ended.Sub(started))

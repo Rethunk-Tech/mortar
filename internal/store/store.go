@@ -440,7 +440,7 @@ func (s *Store) install(ctx context.Context, game, key, final string, fill func(
 	}
 	if err == nil {
 		marker := filepath.Join(tmp, CompleteMarker)
-		if removeErr := os.Remove(marker); removeErr != nil && !errors.Is(removeErr, fs.ErrNotExist) {
+		if removeErr := fsx.Remove(marker); removeErr != nil && !errors.Is(removeErr, fs.ErrNotExist) {
 			err = removeErr
 		}
 	}

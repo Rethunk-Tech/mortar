@@ -317,7 +317,7 @@ func dropOtherListings(dir, key, keep string) {
 		if !ok || !tagged || tag == "" || strings.Trim(tag, "0123456789") != "" || !strings.HasSuffix(rest, ".json") || path == keep {
 			continue
 		}
-		_ = os.Remove(path)
+		_ = fsx.Remove(path)
 	}
 }
 

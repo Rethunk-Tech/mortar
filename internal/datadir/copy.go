@@ -210,7 +210,7 @@ func CopyFile(src, dst string) (err error) {
 		return err
 	}
 	tmp := CopyTempName(dst)
-	_ = os.Remove(tmp)
+	_ = fsx.Remove(tmp)
 	// The copy keeps the source's exec and read bits but never grants write to group or others. The owner always
 	// keeps write: a read-only copy is a read-only attribute on Windows, and renaming over it later fails.
 	out, err := fsx.CreateExcl(tmp, info.Mode().Perm()&0o755|0o200)
@@ -219,7 +219,7 @@ func CopyFile(src, dst string) (err error) {
 	}
 	defer func() {
 		if err != nil {
-			_ = os.Remove(tmp)
+			_ = fsx.Remove(tmp)
 		}
 	}()
 	if _, err = io.Copy(out, in); err == nil {

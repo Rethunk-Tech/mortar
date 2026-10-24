@@ -515,7 +515,7 @@ func copyOver(src, dst string) error {
 	if err := os.MkdirAll(filepath.Dir(dst), 0o750); err != nil {
 		return err
 	}
-	if err := os.Remove(dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
+	if err := fsx.Remove(dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return err
 	}
 	return fsx.WriteFile(dst, b, 0o600)

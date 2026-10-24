@@ -2,8 +2,9 @@ package savessvc
 
 import (
 	"fmt"
-	"os"
 	"slices"
+
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // SaveUsage is the backup footprint of one save folder. One zip can hold several saves, so it counts toward each
@@ -94,7 +95,7 @@ func (s *Service) TrimBackups(game string, keepPerSave int) (TrimResult, error) 
 		if err := backupNameOK(b.Name); err != nil {
 			return out, err
 		}
-		if err := os.Remove(findBackup(reads, b.Name)); err != nil {
+		if err := fsx.Remove(findBackup(reads, b.Name)); err != nil {
 			return out, err
 		}
 		out.Removed++

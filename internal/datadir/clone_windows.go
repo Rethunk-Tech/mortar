@@ -8,8 +8,9 @@ import (
 	"errors"
 	"os"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"golang.org/x/sys/windows"
+
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 const fsctlDuplicateExtentsToFile = 0x98344
@@ -30,7 +31,7 @@ func cloneFile(src, dst string) error {
 	}
 	if err := out.Truncate(st.Size()); err != nil {
 		_ = out.Close()
-		_ = os.Remove(dst)
+		_ = fsx.Remove(dst)
 		return err
 	}
 	if st.Size() == 0 {
@@ -55,7 +56,7 @@ func cloneFile(src, dst string) error {
 	)
 	if err != nil {
 		_ = out.Close()
-		_ = os.Remove(dst)
+		_ = fsx.Remove(dst)
 		return err
 	}
 	return out.Close()

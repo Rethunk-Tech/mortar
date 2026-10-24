@@ -203,7 +203,7 @@ func move(src, dst string) error {
 	if err := datadir.CopyFile(src, dst); err != nil {
 		return err
 	}
-	return os.Remove(src)
+	return fsx.Remove(src)
 }
 
 // Purge removes the placed files and restores what they displaced, then drops the journal.
@@ -225,7 +225,7 @@ func (Place) Purge(ctx context.Context, m Manifest) error {
 	at("adopted")
 	// Deepest first: a folder made for one file may hold a sibling's folder made later.
 	for _, d := range slices.SortedFunc(slices.Values(m.Created), func(a, b string) int { return len(b) - len(a) }) {
-		_ = os.Remove(d)
+		_ = fsx.Remove(d)
 		at("folder:" + d)
 	}
 	err := log.close()

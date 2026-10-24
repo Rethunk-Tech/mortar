@@ -2,10 +2,11 @@ package configsvc
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"slices"
 	"strings"
+
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // DeleteUnowned deletes a config file that no mod of the profile owns (one the Config page lists under Loader and
@@ -39,7 +40,7 @@ func (s *Service) DeleteUnowned(game, profileID, file string) error {
 	if err != nil {
 		return err
 	}
-	return os.Remove(path)
+	return fsx.Remove(path)
 }
 
 // cfgGUID is the plugin GUID a .cfg's header names, "" when it has none.

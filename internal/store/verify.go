@@ -163,7 +163,7 @@ func (s *Store) recordInstalled(game, key, dir string) {
 	}
 	if err != nil {
 		log.Printf("store %s/%s: record hashes: %v", game, key, err)
-		_ = os.Remove(s.manifestPath(game, key))
+		_ = fsx.Remove(s.manifestPath(game, key))
 	}
 	st := s.loadVerify()
 	if st.Items[game] != nil {
@@ -177,7 +177,7 @@ func (s *Store) recordInstalled(game, key, dir string) {
 // forget drops what is recorded about removed items.
 func (s *Store) forget(game string, keys ...string) {
 	for _, key := range keys {
-		_ = os.Remove(s.manifestPath(game, key))
+		_ = fsx.Remove(s.manifestPath(game, key))
 	}
 	st := s.loadVerify()
 	changed := false

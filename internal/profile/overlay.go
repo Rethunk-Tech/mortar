@@ -338,7 +338,7 @@ func (s *Store) layOverlays(game, id string, base Entry, entryDir string, was, o
 		for _, f := range l.files {
 			rel := path.Join(l.to, f)
 			dst := livePath(entryDir, rel)
-			if err := os.Remove(dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
+			if err := fsx.Remove(dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
 				return err
 			}
 			if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
@@ -354,7 +354,7 @@ func (s *Store) layOverlays(game, id string, base Entry, entryDir string, was, o
 
 func restoreBaseFile(entryDir, baseSrc, rel string) error {
 	dst := livePath(entryDir, rel)
-	if err := os.Remove(dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
+	if err := fsx.Remove(dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return err
 	}
 	src := filepath.Join(baseSrc, filepath.FromSlash(rel))
@@ -372,7 +372,7 @@ func restoreBaseFile(entryDir, baseSrc, rel string) error {
 // leaves a folder that still holds anything.
 func pruneEmptyDirs(entryDir, d string) {
 	for ; d != entryDir && strings.HasPrefix(d, entryDir+string(filepath.Separator)); d = filepath.Dir(d) {
-		if os.Remove(d) != nil {
+		if fsx.Remove(d) != nil {
 			return
 		}
 	}

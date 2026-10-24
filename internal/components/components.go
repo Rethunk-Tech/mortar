@@ -1575,12 +1575,12 @@ func (c *Client) Download(ctx context.Context, component Component, dest string)
 	}
 	tmpPath := tmp.Name()
 	if err := tmp.Close(); err != nil {
-		_ = os.Remove(tmpPath)
+		_ = fsx.Remove(tmpPath)
 		return err
 	}
 	defer func() {
-		_ = os.Remove(tmpPath)
-		_ = os.Remove(github.ResumeSidecar(tmpPath))
+		_ = fsx.Remove(tmpPath)
+		_ = fsx.Remove(github.ResumeSidecar(tmpPath))
 	}()
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
 	defer cancel()

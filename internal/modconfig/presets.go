@@ -90,7 +90,7 @@ func DeletePreset(dataDir, game string, id mod.ID, name string) error {
 	if err != nil {
 		return err
 	}
-	if err := os.Remove(path); err != nil {
+	if err := fsx.Remove(path); err != nil {
 		if os.IsNotExist(err) {
 			return fmt.Errorf("preset %q is not saved", name)
 		}

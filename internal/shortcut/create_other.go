@@ -119,7 +119,7 @@ func Removed(game, profile string) error {
 	if err != nil {
 		return err
 	}
-	err = os.Remove(path)
+	err = fsx.Remove(path)
 	if errors.Is(err, os.ErrNotExist) {
 		return nil
 	}

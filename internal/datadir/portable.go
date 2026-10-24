@@ -62,7 +62,7 @@ func portableDir(exe string) (string, error) {
 		return "", &PortableError{Dir: dir, Err: err}
 	}
 	_ = probe.Close()
-	_ = os.Remove(probe.Name())
+	_ = fsx.Remove(probe.Name())
 	return filepath.Join(dir, "data"), nil
 }
 
