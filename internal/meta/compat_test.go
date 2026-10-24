@@ -213,3 +213,15 @@ func TestCompatListFetchesAgainACacheWrittenWithoutThisBuildsStamp(t *testing.T)
 		t.Fatalf("this build's cache answers the next call: asked %d times, %v", asked.Load(), err)
 	}
 }
+
+func TestParseCompatJSONSplitsACommaSeparatedID(t *testing.T) {
+	idx, err := parseCompatJSON([]byte(`{"mods": [{"id": "StultusV.ActivatedSprinklers, StultusV.ActivatingSprinklers", "brokeIn": "Stardew Valley 1.6"}]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, id := range []string{"StultusV.ActivatedSprinklers", "StultusV.ActivatingSprinklers"} {
+		if e, ok := idx.Lookup(id, 0); !ok || e.Status != StatusBroken {
+			t.Fatalf("%s: %+v %v", id, e, ok)
+		}
+	}
+}

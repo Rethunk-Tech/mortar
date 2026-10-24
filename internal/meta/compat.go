@@ -360,7 +360,8 @@ func stringIDs(raw json.RawMessage) []string {
 	}
 	var one string
 	if json.Unmarshal(raw, &one) == nil {
-		return []string{one}
+		// The list writes a mod's former ids after its current one in one string, comma-separated.
+		return strings.Split(one, ",")
 	}
 	var many []string
 	if json.Unmarshal(raw, &many) == nil {
