@@ -82,11 +82,14 @@ type listSource struct {
 func (l listSource) ID() string            { return l.id }
 func (l listSource) Name() string          { return l.id + " site" }
 func (listSource) Modes() []source.Acquire { return nil }
-func (l listSource) Search(context.Context, source.Query) (source.Page, error) {
+func (l listSource) Search(_ context.Context, q source.Query) (source.Page, error) {
 	if l.err != nil {
 		return source.Page{}, l.err
 	}
 	p := source.Page{Total: l.total}
+	if q.Page > source.FirstPage {
+		return p, nil
+	}
 	for _, id := range l.items {
 		p.Items = append(p.Items, source.Item{Source: l.id, ID: id})
 	}
@@ -260,24 +263,32 @@ var _ = source.Register(bigSource{})
 
 func TestHiddenHitsDoNotShortenAPage(t *testing.T) {
 	g := components.GameInfo{ID: "g", Sources: []components.GameSource{{ID: "bigsrc"}}}
-	c := &Client{ShowAdult: true, Installed: func(_, id string) bool {
+	odd := func(id string) bool {
 		n, _ := strconv.Atoi(id)
 		return n%2 != 0
-	}}
-	f := Filter{Installed: ModeHide}
-	var ids []string
-	for p := 1; p <= 3; p++ {
-		page, err := c.search(context.Background(), g, "bigsrc", "x", p, f)
-		if err != nil || len(page.Items) != source.PageSize || page.Total != 200 || page.Hidden == 0 {
-			t.Fatalf("page %d: %d items, %+v, %v", p, len(page.Items), page, err)
-		}
-		for _, it := range page.Items {
-			ids = append(ids, it.ID)
-		}
 	}
-	for i, id := range ids {
-		if id != fmt.Sprint(i*2) {
-			t.Fatalf("pages must continue without gaps or repeats: %v", ids)
+	for name, tc := range map[string]struct {
+		c *Client
+		f Filter
+	}{
+		"installed hidden by the filter":       {&Client{ShowAdult: true, Installed: func(_, id string) bool { return odd(id) }}, Filter{Installed: ModeHide}},
+		"hidden mods under the default filter": {&Client{Hidden: func(it Item) bool { return odd(it.ID) }}, Filter{}},
+	} {
+		topCache = map[string]topEntry{}
+		var ids []string
+		for p := 1; p <= 3; p++ {
+			page, err := tc.c.search(context.Background(), g, "bigsrc", "x", p, tc.f)
+			if err != nil || len(page.Items) != source.PageSize {
+				t.Fatalf("%s, page %d: %d items, %+v, %v", name, p, len(page.Items), page, err)
+			}
+			for _, it := range page.Items {
+				ids = append(ids, it.ID)
+			}
+		}
+		for i, id := range ids {
+			if id != fmt.Sprint(i*2) {
+				t.Fatalf("%s: pages must continue without gaps or repeats: %v", name, ids)
+			}
 		}
 	}
 }
@@ -306,11 +317,12 @@ func TestAPartlyFailedSourceNamesItsFailedPartsInEverySearchShape(t *testing.T) 
 	if err != nil || fmt.Sprint(page.Failed) != "[Partial site (Create a Sim) broken]" {
 		t.Fatalf("all: %+v %v", page, err)
 	}
+	topCache = map[string]topEntry{}
 	topPage, err := searchCached(context.Background(), "partial", partialSource{id: "partial"}, source.Query{Game: "m", Key: "k", Page: 1})
 	if err != nil || len(topPage.Failed) != 1 {
 		t.Fatalf("%+v %v", topPage, err)
 	}
-	if _, cached := topCache[fmt.Sprintf("%T|%s|%s|%d|%s|%q|%q", partialSource{}, "m", "k", 1, "", []string(nil), []string(nil))]; cached {
+	if len(topCache) != 0 {
 		t.Fatal("a partial answer was cached")
 	}
 }

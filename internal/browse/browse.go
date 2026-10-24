@@ -213,7 +213,8 @@ func catalogGame(id string) (components.GameInfo, bool) {
 	return catalog[i], true
 }
 
-// topTTL is how long an empty-text (top mods) answer is reused, so opening Browse costs each source one request.
+// topTTL is how long a source's answer is reused, so opening Browse costs each source one request and page N of a
+// search rereads its earlier pages from here.
 const topTTL = 10 * time.Minute
 
 type topEntry struct {
@@ -226,14 +227,9 @@ var (
 	topCache = map[string]topEntry{}
 )
 
-// searchCached runs the source's search, reusing an empty-text answer for topTTL. It returns a copy callers may edit.
+// searchCached runs the source's search, reusing its answer for topTTL. It returns a copy callers may edit.
 func searchCached(ctx context.Context, id string, s source.Searcher, q source.Query) (Page, error) {
-	if strings.TrimSpace(q.Text) != "" {
-		page, err := s.Search(ctx, q)
-		netstate.Record(id, err)
-		return page, err
-	}
-	key := fmt.Sprintf("%s|%s|%s|%d|%d|%s|%q|%q", id, q.Game, q.Key, q.Page, q.Len(), q.Sort, q.Categories, q.ExcludeCategories)
+	key := fmt.Sprintf("%s|%s|%s|%d|%d|%s|%q|%q|%q", id, q.Game, q.Key, q.Page, q.Len(), q.Sort, q.Categories, q.ExcludeCategories, strings.TrimSpace(q.Text))
 	topMu.Lock()
 	e, ok := topCache[key]
 	topMu.Unlock()
@@ -272,17 +268,7 @@ func (c *Client) search(ctx context.Context, info components.GameInfo, sourceID,
 		Game: info.ID, Key: gs.Key, Text: text, Version: c.Version,
 		Categories: f.Include, ExcludeCategories: f.Exclude, Sort: f.Sort,
 	}
-	first := max(page, source.FirstPage)
-	if f.Installed != ModeHide && f.Obsolete != ModeHide && f.Broken != ModeHide {
-		q.Page = first
-		result, err := c.fetchMarked(ctx, info, id, searcher, q)
-		if err != nil {
-			return Page{}, err
-		}
-		c.applyModes(&result, f)
-		return result, nil
-	}
-	return c.searchFilled(ctx, info, id, searcher, q, first, f)
+	return c.searchFilled(ctx, info, id, searcher, q, max(page, source.FirstPage), f)
 }
 
 // maxScan is the most upstream pages one visible page reads: a filter that hides nearly everything yields a short
@@ -292,7 +278,7 @@ const maxScan = 10
 // searchFilled serves page `first` of the visible stream: upstream pages are read from the start, hidden hits dropped,
 // and the (first-1)*PageSize visible hits before this page skipped, so consecutive pages neither repeat nor skip a hit
 // and each is full unless the upstream ends or maxScan is reached.
-// ponytail: rereads upstream pages 1..N for page N (topCache absorbs it for empty-text browse); a deep page past
+// ponytail: rereads upstream pages 1..N for page N (topCache absorbs it); a deep page past
 // maxScan upstream pages comes back short. Upgrade: a per-query cursor.
 func (c *Client) searchFilled(ctx context.Context, info components.GameInfo, id string, s source.Searcher, q source.Query, first int, f Filter) (Page, error) {
 	want := first * source.PageSize
@@ -305,7 +291,11 @@ func (c *Client) searchFilled(ctx context.Context, info components.GameInfo, id 
 			return Page{}, err
 		}
 		c.applyModes(&raw, f)
-		out.Total, out.Hidden = raw.Total, out.Hidden+raw.Hidden
+		// Each page's Total drops only that page's adult and hidden hits; page 1's is the one every page reads.
+		if p == source.FirstPage {
+			out.Total = raw.Total
+		}
+		out.Hidden += raw.Hidden
 		for _, name := range raw.Failed {
 			if !slices.Contains(out.Failed, name) {
 				out.Failed = append(out.Failed, name)
