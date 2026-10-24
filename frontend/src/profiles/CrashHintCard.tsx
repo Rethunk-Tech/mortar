@@ -40,11 +40,13 @@ export function CrashHintCard({ game, profileId }: { game: string; profileId: st
   const reason = useReasonText()(hint?.code, hint?.params, hint?.reason ?? '')
   const bisect = () => StartBisect(game, profileId).then(setBisectJob).catch(reportUnexpected)
   const retry = (target: NonNullable<typeof culprit>) =>
-    run(() =>
-      useMods
-        .getState()
-        .setEnabled(target, false)
-        .then(() => useLaunch.getState().start(game, profileId, false)),
+    run(
+      () =>
+        useMods
+          .getState()
+          .setEnabled(target, false)
+          .then(() => useLaunch.getState().start(game, profileId, false)),
+      { quietExpected: true },
     )
   return (
     <>

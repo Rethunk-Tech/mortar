@@ -42,7 +42,9 @@ function OfferRow({ offer }: { offer: Offer }) {
     }
   }, [offer.revision, shown, load])
   const answer = (choice: string) =>
-    run(() => Resolve(offer.game, offer.remote, revisionToAnswer(offer.revision, shown), choice))
+    run(() => Resolve(offer.game, offer.remote, revisionToAnswer(offer.revision, shown), choice), {
+      quietExpected: true,
+    })
   return (
     <Box sx={{ py: space.gap, borderBottom: '1px solid var(--mortar-hairline)' }}>
       <Typography sx={{ fontWeight: 600 }}>
