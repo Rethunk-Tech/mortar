@@ -459,35 +459,40 @@ func (s *Service) RecoverGameDeploys(ctx context.Context, id string) (found bool
 			continue
 		}
 		alive := func() bool { return s.slotInUse(sl) }
-		if sj, err := savesJournal(sl.inst); deploy.HasJournal(dir) || (err == nil && savesiso.HasJournal(sj)) {
-			found = true
-		}
-		if oj, err := optionsJournal(sl.inst); err == nil && savesiso.HasFileJournal(oj) {
-			found = true
-		}
-		if mj, err := modConfigJournal(sl.inst); err == nil && savesiso.HasJournal(mj) {
+		if deploy.HasJournal(dir) {
 			found = true
 		}
 		if err := d.Recover(ctx, dir, alive); err != nil {
 			errs = append(errs, fmt.Errorf("%s: %w", id, err))
 		}
-		if sj, err := savesJournal(sl.inst); err != nil {
-			errs = append(errs, err)
-		} else if err := savesiso.Recover(sj, alive); err != nil {
-			errs = append(errs, fmt.Errorf("%s saves: %w", id, err))
-		}
-		if oj, err := optionsJournal(sl.inst); err != nil {
-			errs = append(errs, err)
-		} else if err := savesiso.RecoverFile(oj, alive); err != nil {
-			errs = append(errs, fmt.Errorf("%s options file: %w", id, err))
-		}
-		if mj, err := modConfigJournal(sl.inst); err != nil {
-			errs = append(errs, err)
-		} else if err := savesiso.Recover(mj, alive); err != nil {
-			errs = append(errs, fmt.Errorf("%s mod config folder: %w", id, err))
+		for _, k := range swapJournals {
+			j, err := k.dir(sl.inst)
+			if err != nil {
+				errs = append(errs, err)
+				continue
+			}
+			if k.has(j) {
+				found = true
+			}
+			if err := k.recover(j, alive); err != nil {
+				errs = append(errs, fmt.Errorf("%s %s: %w", id, k.name, err))
+			}
 		}
 	}
 	return found, errors.Join(errs...)
+}
+
+// swapJournals are the journals of what a launch swaps into the install besides the deploy, which recovery finishes and
+// Problems lists.
+var swapJournals = []struct {
+	name    string
+	dir     func(installID string) (string, error)
+	has     func(dir string) bool
+	recover func(journal string, alive func() bool) error
+}{
+	{"saves", savesJournal, savesiso.HasJournal, savesiso.Recover},
+	{"options file", optionsJournal, savesiso.HasFileJournal, savesiso.RecoverFile},
+	{"mod config folder", modConfigJournal, savesiso.HasJournal, savesiso.Recover},
 }
 
 // slotInUse reports whether the install's game may be using its deploy and saves: a process runs, or a launch is
@@ -522,14 +527,10 @@ func (s *Service) LeftoverJournals(gameID string) []string {
 		if dir, err := journalDir(sl.inst); err == nil && deploy.HasJournal(dir) {
 			out = append(out, dir)
 		}
-		if dir, err := savesJournal(sl.inst); err == nil && savesiso.HasJournal(dir) {
-			out = append(out, dir)
-		}
-		if dir, err := optionsJournal(sl.inst); err == nil && savesiso.HasFileJournal(dir) {
-			out = append(out, dir)
-		}
-		if dir, err := modConfigJournal(sl.inst); err == nil && savesiso.HasJournal(dir) {
-			out = append(out, dir)
+		for _, k := range swapJournals {
+			if dir, err := k.dir(sl.inst); err == nil && k.has(dir) {
+				out = append(out, dir)
+			}
 		}
 	}
 	return out
