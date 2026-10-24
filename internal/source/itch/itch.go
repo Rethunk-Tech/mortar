@@ -168,11 +168,11 @@ type game struct {
 	} `json:"user"`
 }
 
-// Search lists games matching the key and text. The API has no sort or total, so Sort is ignored and Total counts
-// only what is known: this page, plus a full page's worth more so browse offers a next page.
+// Search lists games matching the key and text. The API answers every hit at once, ignoring a page number (measured:
+// 23 games for "mod" on page 1, none on page 2), and has no sort, so Sort is ignored and a later page is empty.
 func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error) {
 	// A game that lists itch.io with no key is there for pasted page links only, so there is nothing to search.
-	if q.Key == "" {
+	if q.Key == "" || q.Page > source.FirstPage {
 		return source.Page{}, nil
 	}
 	key, err := d.key()
@@ -181,7 +181,6 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 	}
 	params := url.Values{}
 	params.Set("query", strings.TrimSpace(q.Key+" "+q.Text))
-	params.Set("page", strconv.Itoa(max(q.Page, source.FirstPage)))
 	var parsed struct {
 		Games []game `json:"games"`
 	}
@@ -195,11 +194,7 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 			Picture: g.CoverURL, Updated: g.PublishedAt, URL: g.URL,
 		})
 	}
-	total := (max(q.Page, source.FirstPage)-source.FirstPage)*source.PageSize + len(items)
-	if len(items) >= source.PageSize {
-		total += source.PageSize
-	}
-	return source.Page{Total: total, Items: items}, nil
+	return source.Page{Total: len(items), Items: items}, nil
 }
 
 // Resolved is what an install needs of one upload.

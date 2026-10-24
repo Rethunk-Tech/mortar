@@ -25,7 +25,7 @@ func fake(t *testing.T) Driver {
 		case "/profile":
 			_, _ = w.Write([]byte(`{"user":{"username":"farmer"}}`))
 		case "/search/games":
-			if r.URL.Query().Get("query") != "stardew cool" || r.URL.Query().Get("page") != "2" {
+			if r.URL.Query().Get("query") != "stardew cool" || r.URL.Query().Has("page") {
 				t.Errorf("params %v", r.URL.Query())
 			}
 			_, _ = w.Write([]byte(`{"games":[{"id":7,"title":"Cool Mod","short_text":"hi","url":"https://a.itch.io/cool","cover_url":"c.png","published_at":"2026-01-01","user":{"username":"a"}}]}`))
@@ -44,9 +44,12 @@ func fake(t *testing.T) Driver {
 func TestSearchAndResolve(t *testing.T) {
 	t.Parallel()
 	d := fake(t)
-	page, err := d.Search(context.Background(), source.Query{Key: "stardew", Text: "cool", Page: 2})
-	if err != nil || len(page.Items) != 1 || page.Items[0].ID != "7" || page.Items[0].Author != "a" || page.Total != 21 {
+	page, err := d.Search(context.Background(), source.Query{Key: "stardew", Text: "cool", Page: 1})
+	if err != nil || len(page.Items) != 1 || page.Items[0].ID != "7" || page.Items[0].Author != "a" || page.Total != 1 {
 		t.Fatalf("%+v %v", page, err)
+	}
+	if next, err := d.Search(context.Background(), source.Query{Key: "stardew", Text: "cool", Page: 2}); err != nil || len(next.Items) != 0 {
+		t.Fatalf("itch.io answers every hit on page 1; page 2 = %+v %v", next, err)
 	}
 	r, err := d.Resolve(context.Background(), "7", "")
 	if err != nil || r.UploadID != "2" || r.URL != "https://cdn/cool.zip" || r.Size != 9 {
