@@ -30,7 +30,7 @@ type Service struct {
 	budgetFP string
 	budgetAt time.Time
 	usageAt  time.Time
-	busy     []BusySource
+	busy     []func() bool
 	// OnClearCache runs after ClearCache empties the cache folder, to drop copies held in memory.
 	OnClearCache func()
 	// OnCleanup runs after Cleanup removed stored mods, so checks that counted them run again.
@@ -38,14 +38,6 @@ type Service struct {
 	// Restart starts Mortar again after a successful move; nil skips that in tests.
 	Restart func() error
 }
-
-type BusySource interface {
-	Busy() bool
-}
-
-type BusyFunc func() bool
-
-func (f BusyFunc) Busy() bool { return f() }
 
 type MoveEstimate struct {
 	Bytes     int64 `json:"bytes"`
@@ -75,7 +67,7 @@ func KeepSet(profiles *profile.Store, history bool, sources []KeySource) (map[st
 }
 
 // NewService measures and cleans the data folder using the store's Collect keep set.
-func NewService(items *store.Store, profiles *profile.Store, keep []KeySource, busy ...BusySource) *Service {
+func NewService(items *store.Store, profiles *profile.Store, keep []KeySource, busy ...func() bool) *Service {
 	return &Service{items: items, profiles: profiles, keep: keep, busy: busy}
 }
 
@@ -311,7 +303,7 @@ func (s *Service) MoveDataFolder(dest string) error {
 		return errPortable
 	}
 	for _, busy := range s.busy {
-		if busy != nil && busy.Busy() {
+		if busy != nil && busy() {
 			return errGameRunning
 		}
 	}

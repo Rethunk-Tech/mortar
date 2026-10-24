@@ -15,7 +15,7 @@ import (
 )
 
 func TestMoveDataFolderRefusesWhileAnotherServiceIsBusy(t *testing.T) {
-	s := NewService(nil, nil, nil, BusyFunc(func() bool { return true }))
+	s := NewService(nil, nil, nil, func() bool { return true })
 	if err := s.MoveDataFolder(t.TempDir()); !errors.Is(err, errGameRunning) {
 		t.Fatalf("busy = %v", err)
 	}

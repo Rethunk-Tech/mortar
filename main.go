@@ -903,8 +903,8 @@ func run() error {
 		func() (map[string][]string, error) { return queueSvc.StagedKeys(), nil },
 	}
 	dataSvc := datasvc.NewService(items, profiles, keepSources,
-		queueSvc, lanSvc,
-		datasvc.BusyFunc(launches.AnyBusy),
+		queueSvc.Busy, lanSvc.Busy,
+		launches.AnyBusy,
 	)
 	profileSvc.HealthKeep = func() (map[string][]string, error) { return datasvc.KeepSet(profiles, true, keepSources) }
 	profileSvc.HealthJournals = launches.LeftoverJournals
