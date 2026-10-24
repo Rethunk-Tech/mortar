@@ -1,20 +1,17 @@
 import { expect, test } from 'bun:test'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { errorDetails, errorKind } from './errorKind.ts'
 
-test('errorKind reads the Wails [kind] prefix', () => {
-  const tagged = '[not_found] profile abc'
-  expect(errorKind(tagged)).toBe('not_found')
-  expect(errorDetails(tagged)).toBe('profile abc')
+test("errorKind reads the Wails [kind] prefix for every kind Go's usererr sends", () => {
+  const go = readFileSync(join(import.meta.dir, '../../../internal/usererr/usererr.go'), 'utf8')
+  const sent = [...go.matchAll(/^\t\w+\s+Kind = "(\w+)"$/gm)].map((m) => m[1] ?? '')
+  expect(sent.length).toBeGreaterThan(10)
+  for (const kind of sent) {
+    expect(errorKind(`[${kind}] x`)).toBe(kind)
+  }
   expect(errorKind(new Error('[busy] stardew is running'))).toBe('busy')
-  expect(errorKind('[network] dial tcp')).toBe('network')
-  expect(errorKind('[permission] open')).toBe('permission')
-  expect(errorKind('[disk_full] write')).toBe('disk_full')
-  expect(errorKind('[damaged] json')).toBe('damaged')
-  expect(errorKind('[invalid] id')).toBe('invalid')
-  expect(errorKind('[other_game] this share is for lethal-company')).toBe('other_game')
-  expect(errorKind('[outdated] made by a newer Mortar')).toBe('outdated')
-  expect(errorKind('[external] only on the site')).toBe('external')
-  expect(errorKind('[process_denied] Access is denied.')).toBe('process_denied')
+  expect(errorDetails('[not_found] profile abc')).toBe('profile abc')
 })
 
 test('an untagged bound-call error takes its kind from the Wails cause', () => {
