@@ -11,7 +11,7 @@ import {
   Menu,
 } from '@mui/material'
 import { UserRound } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { Arrival } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nxmsvc/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { NewProfileDialog } from '../game/NewProfileDialog.tsx'
@@ -67,21 +67,20 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
   // New profile creates in the game the profiles store has open, so it is offered only when that is this game.
   const canCreate = useProfiles((s) => s.game?.id === game)
   const gameName = useProfiles((s) => (s.game?.id === game ? s.game.name : game))
-  const [profiles, setProfiles] = useState<Profile[] | null>(null)
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const [creating, setCreating] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<InlineError | null>(null)
   const [applyAll, setApplyAll] = useState(false)
-  const load = useCallback(() => {
-    listProfiles(game)
-      .then((list) => setProfiles(list ?? []))
-      .catch((e: unknown) => {
-        setProfiles([])
-        reportUnexpected(e)
-      })
-  }, [game])
-  useEffect(load, [load])
+  const listed = useLoaded<Profile[] | null>(
+    () => listProfiles(game).then((list) => list ?? []),
+    [game],
+    null,
+    reportUnexpected,
+  )
+  const load = listed.reload
+  // A list that cannot be read offers New profile rather than waiting on a spinner.
+  const profiles = listed.error === null ? listed.data : (listed.data ?? [])
   const open = profiles?.find((p) => p.id === lastId) ?? profiles?.[0]
   const others = profiles?.filter((p) => p.id !== open?.id) ?? []
   const pick = (profile: string) => {
