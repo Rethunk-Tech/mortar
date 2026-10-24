@@ -78,6 +78,16 @@ func TestMelonStringIsWrittenWithTOMLEscapes(t *testing.T) {
 	}
 }
 
+func TestMelonQuotedCategoryIsNamedWithoutItsQuotes(t *testing.T) {
+	d := parseMelon("[\"My Mod\"]\nOn = true\n['Lit.Mod']\nOn = true\n")
+	if d.entries[0].section != "My Mod" || d.entries[1].section != "Lit.Mod" {
+		t.Fatalf("sections %q, %q", d.entries[0].section, d.entries[1].section)
+	}
+	if out, err := d.set("My Mod", "On", "false"); err != nil || out != "[\"My Mod\"]\nOn = false\n['Lit.Mod']\nOn = true\n" {
+		t.Fatalf("%q %v", out, err)
+	}
+}
+
 // Tomlet writes a string holding a newline and a backslash or double quote as a multi-line literal, and an array of
 // arrays one element per line; an edit replaces the whole value, and no line inside it reads as a setting.
 func TestMelonMultiLineValuesAreEditedWhole(t *testing.T) {

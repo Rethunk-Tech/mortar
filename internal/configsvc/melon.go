@@ -61,7 +61,7 @@ func parseMelon(text string) melonDoc {
 		case strings.HasPrefix(line, "#"):
 			desc = append(desc, strings.TrimSpace(strings.TrimPrefix(line, "#")))
 		case strings.HasPrefix(line, "[[") || strings.HasPrefix(line, "["):
-			section, desc = strings.Trim(line, "[] \t"), nil
+			section, desc = tableName(line), nil
 		default:
 			eq := strings.Index(raw, "=")
 			if eq < 0 {
@@ -87,6 +87,20 @@ func parseMelon(text string) melonDoc {
 		}
 	}
 	return d
+}
+
+// tableName is a table header's name, a quoted one without its quotes.
+func tableName(line string) string {
+	name := strings.Trim(line, "[] \t")
+	if strings.HasPrefix(name, `"`) {
+		if u, err := strconv.Unquote(name); err == nil {
+			return u
+		}
+	}
+	if len(name) >= 2 && name[0] == '\'' && name[len(name)-1] == '\'' {
+		return name[1 : len(name)-1]
+	}
+	return name
 }
 
 // splitInline separates a value from a trailing `# comment`, which only counts outside a quoted string.
