@@ -30,3 +30,12 @@ test('a screen spans every source page when the answer has no page count', () =>
   ])
   expect(cachedScreen(done, 1, 42)?.next.items).toHaveLength(42)
 })
+
+test('a hit two source pages both carry shows once on the screen', () => {
+  const done = new Map([
+    [1, page(0)],
+    [2, { ...page(19), items: page(19).items }],
+  ])
+  const ids = cachedScreen(done, 1, 24)?.next.items.map((i) => i.id) ?? []
+  expect(new Set(ids).size).toBe(ids.length)
+})

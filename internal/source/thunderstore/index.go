@@ -503,6 +503,7 @@ func loadPackages(key, path string) ([]pkg, error) {
 	if err != nil {
 		return nil, err
 	}
+	pk = distinct(pk)
 	if old, ok := memo[key]; ok {
 		old.idle.Stop()
 	}
@@ -586,6 +587,25 @@ func dedupeIDs(pk []pkg) []pkg {
 
 // keepsOver reports whether listing o wins over its case-folded twin p, which comes after it: the live listing wins,
 // then the more recently updated, then the first.
+// distinct keeps one entry per package: the listing is fetched in chunks while packages are updated, so one can be
+// listed twice, and Browse would show it twice. The entry keepsOver prefers stays.
+func distinct(pk []pkg) []pkg {
+	at := make(map[string]int, len(pk))
+	out := pk[:0]
+	for _, p := range pk {
+		id := packageID(p.Owner, p.Name)
+		if i, seen := at[id]; seen {
+			if !keepsOver(out[i], p) {
+				out[i] = p
+			}
+			continue
+		}
+		at[id] = len(out)
+		out = append(out, p)
+	}
+	return out
+}
+
 func keepsOver(o, p pkg) bool {
 	return o.Hidden != p.Hidden && p.Hidden || o.Hidden == p.Hidden && o.Updated >= p.Updated
 }

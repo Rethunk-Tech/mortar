@@ -43,12 +43,22 @@ function sourcePages(head: BrowseResult): number {
   return head.pages || Math.ceil(head.total / PAGE_SIZE)
 }
 
+// A site whose list shifts between two page requests can send one hit on both; a screen shows it once, since two cards
+// with one key leave a stale card behind when the page changes.
+function once(items: BrowseItem[]): BrowseItem[] {
+  const seen = new Set<string>()
+  return items.filter((i) => {
+    const key = hitKey(i)
+    return !seen.has(key) && Boolean(seen.add(key))
+  })
+}
+
 // One screen from the source pages it spans: their hits in order, the hidden counts added and the failed sources once.
 function joinPages(parts: BrowseResult[], skip: number, size: number): BrowseResult {
   const [head = EMPTY_RESULT] = parts
   return {
     ...head,
-    items: parts.flatMap((p) => p.items).slice(skip, skip + size),
+    items: once(parts.flatMap((p) => p.items).slice(skip, skip + size)),
     hidden: parts.reduce((n, p) => n + (p.hidden ?? 0), 0),
     failed: [...new Set(parts.flatMap((p) => p.failed ?? []))],
   }
