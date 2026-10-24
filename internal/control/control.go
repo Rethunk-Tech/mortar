@@ -89,6 +89,21 @@ func answers(ctx context.Context, dir string) bool {
 	return ok
 }
 
+// staleTempAge is how old a leftover temp of the discovery file must be before it is removed: a younger one may be
+// another running Mortar's write in progress.
+const staleTempAge = time.Minute
+
+// removeStaleTemps removes temp files earlier writes of path left behind. The app quitting while release writes the
+// previous app's file back leaves one, since no write survives the process ending under it.
+func removeStaleTemps(path string, now time.Time) {
+	temps, _ := filepath.Glob(path + ".*.tmp")
+	for _, temp := range temps {
+		if info, err := os.Stat(temp); err == nil && now.Sub(info.ModTime()) > staleTempAge {
+			_ = fsx.Remove(temp)
+		}
+	}
+}
+
 // republish writes the discovery file b back whenever it goes missing while the app runs, unless another app now
 // answers on the folder.
 func republish(ctx context.Context, every time.Duration, dir, path string, b []byte) {
@@ -139,6 +154,7 @@ func Serve(ctx context.Context, dir, version string, h Handler) error {
 		return errors.New("control: listener has no TCP address")
 	}
 	path := filepath.Join(dir, controlwire.FileName)
+	removeStaleTemps(path, time.Now())
 	prev, _ := fsx.ReadFile(path)
 	b, err := json.Marshal(controlwire.Discovery{Port: tcp.Port, Token: token, PID: os.Getpid(), Version: version, Protocol: controlwire.Protocol})
 	if err != nil {
