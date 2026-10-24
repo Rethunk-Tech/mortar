@@ -12,6 +12,11 @@ func TestRecordRateLimitHeaders(t *testing.T) {
 		t.Fatal("expected unknown limits before a response")
 	}
 	h := make(http.Header)
+	h.Set("X-Rl-Daily-Remaining", "1")
+	c.record(h)
+	if c.Limits().Known {
+		t.Fatal("incomplete headers must not mark limits known")
+	}
 	h.Set("X-Rl-Daily-Remaining", "42")
 	h.Set("X-Rl-Daily-Limit", "2500")
 	h.Set("X-Rl-Daily-Reset", "2026-10-01T00:00:00Z")
@@ -34,15 +39,5 @@ func TestRecordRateLimitHeaders(t *testing.T) {
 	}
 	if !l.Hourly.Reset.Equal(time.Date(2026, 9, 30, 18, 0, 0, 0, time.UTC)) {
 		t.Fatalf("hourly reset: %v", l.Hourly.Reset)
-	}
-}
-
-func TestRecordIgnoresIncompleteHeaders(t *testing.T) {
-	c := New("test")
-	h := make(http.Header)
-	h.Set("X-Rl-Daily-Remaining", "1")
-	c.record(h)
-	if c.Limits().Known {
-		t.Fatal("incomplete headers must not mark limits known")
 	}
 }
