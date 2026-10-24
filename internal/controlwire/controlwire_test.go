@@ -20,6 +20,16 @@ func TestUnansweringNamesAFrozenAppOnly(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer func() { _ = ln.Close() }()
+	// Hang up on hello rather than leave it to its timeout: either way the app did not answer.
+	go func() {
+		for {
+			c, err := ln.Accept()
+			if err != nil {
+				return
+			}
+			_ = c.Close()
+		}
+	}()
 	addr, ok := ln.Addr().(*net.TCPAddr)
 	if !ok {
 		t.Fatalf("listener address %v", ln.Addr())
