@@ -68,4 +68,6 @@ test('the page host follows the URL', () => {
   expect(hostOf('https://x.itch.io/game')).toBe('itch')
   expect(hostOf('https://example.com/x')).toBe('web')
   expect(hostOf('https://notgithub.com/a/b')).toBe('web')
+  expect(hostOf('https://www.patreon.com/posts/cool-mod-4242')).toBe('patreon')
+  expect(hostOf('https://patreon.com.evil.test/posts/1')).toBe('web')
 })
