@@ -460,7 +460,7 @@ func TestMain(m *testing.M) {
 		os.Exit(0)
 	}
 	pollEvery = 50 * time.Millisecond
-	bisectPoll = 20 * time.Millisecond
+	bisectPoll = 100 * time.Millisecond
 	reapGrace = 100 * time.Millisecond
 	root, err := os.MkdirTemp("", "launchsvc")
 	if err != nil {
