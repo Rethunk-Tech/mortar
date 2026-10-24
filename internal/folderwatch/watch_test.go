@@ -157,8 +157,8 @@ func TestRenamedInFileIsAnnouncedAtOnce(t *testing.T) {
 func TestRetargetKeepsPendingEvent(t *testing.T) {
 	t.Parallel()
 	for name, c := range map[string]struct{ quiet, flipAfter time.Duration }{
-		"quiet wait":  {400 * time.Millisecond, 0},
-		"stable wait": {50 * time.Millisecond, 200 * time.Millisecond},
+		"quiet wait":  {200 * time.Millisecond, 0},
+		"stable wait": {50 * time.Millisecond, 100 * time.Millisecond},
 	} {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
@@ -173,7 +173,7 @@ func TestRetargetKeepsPendingEvent(t *testing.T) {
 					mu.Lock()
 					defer mu.Unlock()
 					return []Target{{DownloadsEvent, game, dir}}
-				}, Emit: g.emit, Quiet: c.quiet, Stable: 500 * time.Millisecond, Retarget: 50 * time.Millisecond})
+				}, Emit: g.emit, Quiet: c.quiet, Stable: 250 * time.Millisecond, Retarget: 50 * time.Millisecond})
 				close(done)
 			}()
 			t.Cleanup(func() { cancel(); <-done })
@@ -186,7 +186,7 @@ func TestRetargetKeepsPendingEvent(t *testing.T) {
 			game = "stardew"
 			mu.Unlock()
 			g.wait(t, 1)
-			time.Sleep(700 * time.Millisecond)
+			time.Sleep(350 * time.Millisecond)
 			if evs := g.wait(t, 1); len(evs) != 1 || evs[0] != DownloadsEvent+":stardew" {
 				t.Fatalf("events = %v", evs)
 			}
