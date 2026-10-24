@@ -81,7 +81,7 @@ func TestPacksStayForTheGraceAfterACheck(t *testing.T) {
 	t.Setenv("LOCALAPPDATA", t.TempDir())
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
-	packGrace = 100 * time.Millisecond
+	packGrace = 40 * time.Millisecond
 	t.Cleanup(func() { packGrace = 30 * time.Second })
 	im, _, _ := diskCachePack(t)
 	end := holdPacks()
