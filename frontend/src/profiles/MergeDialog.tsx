@@ -17,7 +17,7 @@ import {
   Typography,
 } from '@mui/material'
 import { ChevronDown, ChevronRight } from 'lucide-react'
-import { useEffect, useId, useState } from 'react'
+import { useId, useState } from 'react'
 import type {
   MergePreview as Merged,
   Profile,
@@ -29,6 +29,7 @@ import {
 import { useOrderedProfiles } from '../game/useSidebarProfiles.ts'
 import { lockedIn, useLaunchLocks } from '../mods/useLocked.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -152,31 +153,23 @@ function MergeBody({ source, onClose }: { source: Profile; onClose: () => void }
   const { profiles } = useOrderedProfiles(gameId)
   const others = profiles.filter((p) => p.id !== source.id)
   const [targetId, setTargetId] = useState(others[0]?.id ?? '')
-  const [loaded, setLoaded] = useState<{ id: string; preview: Preview } | null>(null)
   const [newerWins, setNewerWins] = useState(false)
   const [pending, run] = usePending()
   const launch = useLaunchLocks()
   const target = others.find((p) => p.id === targetId)
-  const preview = loaded?.id === targetId ? loaded.preview : null
-  useEffect(() => {
-    if (!targetId) {
-      return
-    }
-    let stale = false
-    PreviewMerge(gameId, source.id, targetId)
-      .then((p) => {
-        if (!stale) {
-          setLoaded({
-            id: targetId,
-            preview: { adds: p.adds ?? [], both: p.both ?? [], targetOnly: p.targetOnly },
-          })
-        }
-      })
-      .catch(reportUnexpected)
-    return () => {
-      stale = true
-    }
-  }, [gameId, source.id, targetId])
+  const { data: preview } = useLoaded<Preview | null>(
+    targetId
+      ? () =>
+          PreviewMerge(gameId, source.id, targetId).then((p) => ({
+            adds: p.adds ?? [],
+            both: p.both ?? [],
+            targetOnly: p.targetOnly,
+          }))
+      : null,
+    [gameId, source.id, targetId],
+    null,
+    reportUnexpected,
+  )
   const updates = preview ? preview.both.filter((b) => b.sourceNewer).length : 0
   const changes = preview ? preview.adds.length + (newerWins ? updates : 0) : 0
   const locked = lockedIn(launch, targetId)

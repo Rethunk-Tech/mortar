@@ -10,7 +10,7 @@ import {
 } from '@mui/material'
 import { Events } from '@wailsio/runtime'
 import { ChevronDown, ExternalLink, Plus } from 'lucide-react'
-import { memo, useCallback, useEffect, useState } from 'react'
+import { memo, useEffect } from 'react'
 import {
   ModName,
   TrackedMissing,
@@ -32,6 +32,7 @@ import { nexusModUrl } from './nexusUrl.ts'
 import { useLocked } from './useLocked.ts'
 
 const FALLBACK_PREFIX = '#'
+const NONE: TrackedMod[] = []
 
 function TrackedRow({
   mod,
@@ -99,27 +100,16 @@ const TrackedNotInProfile = memo(function TrackedNotInProfileView({
   const premium = useNexus((s) => s.premium)
   const gameId = useProfiles((s) => s.game?.id)
   const locked = useLocked()
-  const [mods, setMods] = useState<TrackedMod[]>([])
-  const load = useCallback(() => {
-    if (!(signedIn && gameId)) {
-      setMods([])
-      return () => undefined
-    }
-    let live = true
-    TrackedMissing(gameId, profileId)
-      .then((list) => {
-        if (live) {
-          setMods(list ?? [])
-        }
-      })
-      .catch(reportUnexpected)
-    return () => {
-      live = false
-    }
-  }, [signedIn, gameId, profileId])
-  useEffect(load, [load])
+  const { data: mods, reload } = useLoaded(
+    signedIn && gameId
+      ? () => TrackedMissing(gameId, profileId).then((list) => list ?? NONE)
+      : null,
+    [signedIn, gameId, profileId],
+    NONE,
+    reportUnexpected,
+  )
   // The first answer may be the copy kept on disk; the background refresh says when Nexus differs.
-  useEffect(() => Events.On('nexus:tracked', load), [load])
+  useEffect(() => Events.On('nexus:tracked', reload), [reload])
   if (!signedIn || mods.length === 0) {
     return null
   }

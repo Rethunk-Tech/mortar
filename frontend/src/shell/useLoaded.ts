@@ -1,4 +1,4 @@
-import { type DependencyList, useEffect, useRef, useState } from 'react'
+import { type DependencyList, useCallback, useEffect, useRef, useState } from 'react'
 
 export const sameDeps = (a: DependencyList | null, b: DependencyList) =>
   a !== null && a.length === b.length && b.every((dep, i) => Object.is(dep, a[i]))
@@ -65,5 +65,6 @@ export function useLoaded<T>(
     },
     [],
   )
-  return { data, setData, loading, error, reload: () => start.current(false) }
+  const reload = useCallback(() => start.current(false), [])
+  return { data, setData, loading, error, reload }
 }

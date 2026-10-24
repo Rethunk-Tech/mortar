@@ -20,6 +20,7 @@ import { HeroCover } from '../game/HeroCover.tsx'
 import { useGameInfo } from '../games/info.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { useDiscardGuard } from '../shell/useDiscardGuard.tsx'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { AppearancePickers } from './AppearancePickers.tsx'
@@ -46,36 +47,13 @@ type FieldsTab = 'appearance' | 'launch' | 'overrides' | 'game'
 type LaunchError = { field: 'options' | 'settings'; message: string } | null
 
 function useProfileGameSettings(gameId: string, profileId: string, open: boolean) {
-  const [value, setValue] = useState<GameSettingsValues | null>(null)
-  const [loaded, setLoaded] = useState(false)
-  useEffect(() => {
-    let active = true
-    if (open) {
-      setValue(null)
-      setLoaded(false)
-      if (gameId) {
-        GetGameSettings(gameId, profileId)
-          .then((next) => {
-            if (active) {
-              setValue(formSettingsFromBackend(next))
-              setLoaded(true)
-            }
-          })
-          .catch((error) => {
-            if (active) {
-              reportUnexpected(error)
-              setLoaded(true)
-            }
-          })
-      } else {
-        setLoaded(true)
-      }
-    }
-    return () => {
-      active = false
-    }
-  }, [gameId, open, profileId])
-  return [value, setValue, loaded] as const
+  const { data, setData, loading } = useLoaded<GameSettingsValues | null>(
+    open && gameId ? () => GetGameSettings(gameId, profileId).then(formSettingsFromBackend) : null,
+    [gameId, open, profileId],
+    null,
+    reportUnexpected,
+  )
+  return [data, setData, !loading] as const
 }
 
 // The cover choice is staged here and applied by the dialog's Save.
