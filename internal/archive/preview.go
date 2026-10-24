@@ -84,7 +84,7 @@ func (v *previewer) add(name string, size int64, isDir bool, open func() (io.Rea
 		return
 	}
 	defer func() { _ = rc.Close() }()
-	b, err := io.ReadAll(io.LimitReader(rc, maxManifestBytes))
+	b, err := fsx.ReadCapped(rc, maxManifestBytes)
 	if err != nil {
 		return
 	}

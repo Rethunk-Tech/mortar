@@ -36,7 +36,7 @@ func CatLib(profileDir string, since time.Time) (Fault, bool) {
 		return Fault{}, false
 	}
 	fault, _ := readDump(filepath.Join(newest, "crash.dmp"))
-	if text, err := readCapped(newest, "report.txt"); err == nil {
+	if text, err := readHead(newest, "report.txt"); err == nil {
 		if r, ok := ParseCatLibReport(text); ok {
 			if fault.Module == "" || isSystemModule(fault.Module) {
 				fault.Module = r.Module
@@ -51,7 +51,9 @@ func CatLib(profileDir string, since time.Time) (Fault, bool) {
 	return fault, true
 }
 
-func readCapped(dir, name string) (string, error) {
+// readHead reads the first maxReportBytes of the file and drops the rest: a crash report is text, so the start of a
+// damaged, huge one is still worth showing.
+func readHead(dir, name string) (string, error) {
 	f, err := os.OpenInRoot(dir, name)
 	if err != nil {
 		return "", err

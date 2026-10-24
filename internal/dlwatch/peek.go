@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // maxManifestBytes bounds one manifest.json read: this peek runs before the capped extractor,
@@ -14,7 +15,7 @@ import (
 const maxManifestBytes = 1 << 20
 
 func readManifestName(r io.Reader) string {
-	b, err := io.ReadAll(io.LimitReader(r, maxManifestBytes))
+	b, err := fsx.ReadCapped(r, maxManifestBytes)
 	if err != nil {
 		return ""
 	}
