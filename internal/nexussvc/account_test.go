@@ -27,6 +27,9 @@ func TestEndorseAndTrackActOnSignedInAccount(t *testing.T) {
 				return
 			}
 			_, _ = w.Write([]byte(`{"message":"Updated to: Endorsed","status":"Endorsed"}`))
+		case "/v1/games/stardewvalley/mods/542/endorse.json":
+			w.WriteHeader(http.StatusForbidden)
+			_, _ = w.Write([]byte(`{"message":"You must download this mod before you can endorse it."}`))
 		case "/v1/user/tracked_mods.json":
 			if r.Method == http.MethodGet {
 				_, _ = w.Write([]byte(`[{"mod_id":541,"domain_name":"stardewvalley"}]`))
@@ -52,6 +55,9 @@ func TestEndorseAndTrackActOnSignedInAccount(t *testing.T) {
 	if err != nil || status != "Endorsed" || last != "POST /v1/games/stardewvalley/mods/541/endorse.json" {
 		t.Fatalf("endorse = %q %v %s", status, err, last)
 	}
+	if _, err := s.Endorse(ctx, "stardew", 542, "1.0.0"); err == nil || err.Error() != "You must download this mod before you can endorse it." {
+		t.Fatalf("Nexus's refusal reaches the player as it is: %v", err)
+	}
 	list, err := s.TrackedMods(ctx)
 	if err != nil || len(list) != 1 || list[0].ModID != 541 {
 		t.Fatalf("tracked = %+v, %v", list, err)
@@ -68,29 +74,5 @@ func TestEndorseAndTrackActOnSignedInAccount(t *testing.T) {
 	}
 	if _, err := s.UntrackAll(ctx, "stardew", true); err == nil {
 		t.Fatal("untracking only unused mods without the profile store must refuse, not untrack everything")
-	}
-}
-
-func TestEndorseWithoutDownloadSurfacesNexusMessage(t *testing.T) {
-	store := testStore(t)
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/v1/users/validate.json" {
-			_, _ = w.Write([]byte(`{"user_id":7,"name":"Ada","is_premium":false}`))
-			return
-		}
-		w.WriteHeader(http.StatusForbidden)
-		_, _ = w.Write([]byte(`{"message":"You must download this mod before you can endorse it."}`))
-	}))
-	defer srv.Close()
-	c := nexus.New("1")
-	c.BaseURL = srv.URL
-	s := NewService(store, c, &meta.Client{})
-	ctx := context.Background()
-	if _, err := s.SignIn(ctx, "k"); err != nil {
-		t.Fatal(err)
-	}
-	_, err := s.Endorse(ctx, "stardew", 541, "1.0.0")
-	if err == nil || err.Error() != "You must download this mod before you can endorse it." {
-		t.Fatalf("endorse = %v", err)
 	}
 }
