@@ -552,7 +552,7 @@ func (s *Service) ImportData(ctx context.Context, game, encoded string) (Result,
 	if err != nil {
 		return Result{}, err
 	}
-	return s.Import(ctx, game, pv.Session, "", nil)
+	return s.Import(ctx, game, pv.Session, "", nil, false)
 }
 
 // ImportExternal imports another manager's profile as the import wizard does by default: every mod, into a new
@@ -564,7 +564,7 @@ func (s *Service) ImportExternal(ctx context.Context, game string, external migr
 	if err != nil {
 		return Result{}, err
 	}
-	return s.Import(ctx, game, pv.Session, "", nil)
+	return s.Import(ctx, game, pv.Session, "", nil, false)
 }
 
 // PreviewExternal resolves missing external mods through the normal import resolver and keeps staged folders local.
@@ -854,6 +854,18 @@ func joinNotes(parts ...string) string {
 	return strings.Join(kept, "\n\n")
 }
 
+// pinnedAtTheirVersions pins every versioned mod of a share installed as-is, so updating all mods keeps the versions
+// it was shared with.
+func pinnedAtTheirVersions(refs []share.Ref) []share.Ref {
+	out := slices.Clone(refs)
+	for i := range out {
+		if out[i].Version != "" {
+			out[i].Pinned = true
+		}
+	}
+	return out
+}
+
 // applySharedEntryNotes gives the profile's entries the notes, tags and pins the share recorded for them.
 func (s *Service) applySharedEntryNotes(game, profileID string, refs []share.Ref) error {
 	p, err := s.find(game, profileID)
@@ -884,12 +896,13 @@ func (s *Service) applySharedEntryNotes(game, profileID string, refs []share.Ref
 // are written once their mods are installed, except for mods the profile already had, whose config is the user's.
 // A preview resolved against another profile than profileID is resolved again, so a new profile made from a preview
 // of the open one still gets the mods the open one has.
-func (s *Service) Import(ctx context.Context, game, session, profileID string, exclude []string) (Result, error) {
-	return s.importWithBatch(ctx, game, session, profileID, exclude, "", false)
+func (s *Service) Import(ctx context.Context, game, session, profileID string, exclude []string, asIs bool) (Result, error) {
+	return s.importWithBatch(ctx, game, session, profileID, exclude, "", false, asIs)
 }
 
 // replace makes the share's order the profile's: its mods keep the order they were shared in, wherever they land.
-func (s *Service) importWithBatch(ctx context.Context, game, session, profileID string, exclude []string, batchID string, replace bool) (res Result, err error) {
+// asIs installs the share's Thunderstore packages at exactly their versions and without dependencies it left out.
+func (s *Service) importWithBatch(ctx context.Context, game, session, profileID string, exclude []string, batchID string, replace, asIs bool) (res Result, err error) {
 	s.mu.Lock()
 	cur := s.current
 	switch {
@@ -975,6 +988,7 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 		}
 		req := requestFor(game, "", m)
 		req.InferReason = !share.RecordsReasons(cur.refs)
+		req.AsIs = asIs
 		reqs = append(reqs, req)
 		wanted = append(wanted, wantedOf(m))
 	}
@@ -1143,7 +1157,11 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 	}
 	res.Queued = len(reqs)
 	res.BatchID = batchID
-	if err := s.applySharedEntryNotes(game, profileID, cur.refs); err != nil {
+	refs := cur.refs
+	if asIs {
+		refs = pinnedAtTheirVersions(refs)
+	}
+	if err := s.applySharedEntryNotes(game, profileID, refs); err != nil {
 		return Result{}, err
 	}
 	if err := s.applySharedGroups(game, profileID, cur.groups); err != nil {
@@ -1167,7 +1185,7 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 		s.mu.Lock()
 		s.pending = append(s.pending, &pending{
 			Game: game, Profile: profileID, BatchID: batchID, Wanted: wanted, Configs: configs,
-			Refs: slices.Clone(cur.refs), Groups: slices.Clone(cur.groups), Choices: cur.choices, Follow: replace || created, Placed: placed,
+			Refs: slices.Clone(refs), Groups: slices.Clone(cur.groups), Choices: cur.choices, Follow: replace || created, Placed: placed,
 		})
 		s.mu.Unlock()
 		s.savePending()
@@ -1178,7 +1196,7 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 
 // Replace makes profileID match the preview: missing mods are queued as Import does, entries not in the share
 // are removed, and local-only mods not in the share are kept. profileID must be the preview's target.
-func (s *Service) Replace(ctx context.Context, game, session, profileID string, exclude []string) (Result, error) {
+func (s *Service) Replace(ctx context.Context, game, session, profileID string, exclude []string, asIs bool) (Result, error) {
 	if profileID == "" {
 		return Result{}, errors.New("replace needs a profile")
 	}
@@ -1207,7 +1225,7 @@ func (s *Service) Replace(ctx context.Context, game, session, profileID string, 
 			return Result{}, err
 		}
 	}
-	return s.importWithBatch(ctx, game, session, profileID, exclude, batchID, true)
+	return s.importWithBatch(ctx, game, session, profileID, exclude, batchID, true, asIs)
 }
 
 // --- Config files ---

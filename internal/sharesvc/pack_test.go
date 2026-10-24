@@ -18,6 +18,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
+	"github.com/Rethunk-Tech/mortar/internal/share"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
@@ -142,7 +143,7 @@ func TestImportFromACodeWritesConfigsAndQueuesWhatResolves(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, err := s.Import(context.Background(), "lethal-company", pv.Session, "", nil)
+	res, err := s.Import(context.Background(), "lethal-company", pv.Session, "", nil, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -159,6 +160,23 @@ func TestImportFromACodeWritesConfigsAndQueuesWhatResolves(t *testing.T) {
 	e, files := localEntry(t, s, res.Profile.ID, "Mine")
 	if len(e.Mods) != 1 || !e.Enabled(e.Mods[0].ID) || !fsx.IsFile(filepath.Join(files, "BepInEx", "plugins", "Mine.dll")) {
 		t.Fatalf("Mine = %+v in %s", e, files)
+	}
+}
+
+func TestImportAsIsQueuesTheCodesPackagesWithoutDependenciesAndPinsThem(t *testing.T) {
+	s, rec := packService(t)
+	pv, err := s.PreviewLink(context.Background(), "lethal-company", codeKey, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.Import(context.Background(), "lethal-company", pv.Session, "", nil, true); err != nil {
+		t.Fatal(err)
+	}
+	if len(rec.reqs) != 1 || !rec.reqs[0].AsIs {
+		t.Fatalf("queued %+v", rec.reqs)
+	}
+	if len(s.pending) != 1 || !slices.ContainsFunc(s.pending[0].Refs, func(r share.Ref) bool { return r.Package == "Alice-MoreCompany" && r.Pinned }) {
+		t.Fatalf("the code's package is not pinned once installed: %+v", s.pending)
 	}
 }
 
@@ -200,7 +218,7 @@ func TestImportFromAGaleProfileBringsItsLocalModAndItsDependencies(t *testing.T)
 	if mods["Carol-Lib"].State != StateDownload {
 		t.Errorf("the local mod's dependency is not brought: %+v", pv.Mods)
 	}
-	res, err := s.Import(t.Context(), "lethal-company", pv.Session, "", nil)
+	res, err := s.Import(t.Context(), "lethal-company", pv.Session, "", nil, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -236,7 +254,7 @@ func TestPreviewFileReadsAnR2zAndALocalProfileFolder(t *testing.T) {
 	if err != nil || packMods(pv)["Alice-MoreCompany"].State != StateDownload {
 		t.Fatalf("folder preview %+v, %v", pv, err)
 	}
-	res, err := s.Import(context.Background(), "lethal-company", pv.Session, "", nil)
+	res, err := s.Import(context.Background(), "lethal-company", pv.Session, "", nil, false)
 	if err != nil || res.Profile.ImportedFrom != prof {
 		t.Fatalf("imported from %q, %v", res.Profile.ImportedFrom, err)
 	}
@@ -259,7 +277,7 @@ func TestReplaceFromACodeRemovesThunderstoreModsItLacks(t *testing.T) {
 	if err != nil || len(pv.Replace.Remove) != 1 {
 		t.Fatalf("plan %+v, %v", pv.Replace, err)
 	}
-	if _, err := s.Replace(context.Background(), "lethal-company", pv.Session, prof.ID, nil); err != nil {
+	if _, err := s.Replace(context.Background(), "lethal-company", pv.Session, prof.ID, nil, false); err != nil {
 		t.Fatal(err)
 	}
 	got, _ := s.find("lethal-company", prof.ID)
@@ -289,7 +307,7 @@ func TestImportFromAnR2modmanFolderBringsAHandAddedModAsLocal(t *testing.T) {
 	if slices.ContainsFunc(pv.Problems, func(p Problem) bool { return p.Name == "Gone" }) {
 		t.Errorf("a problem is left for the adopted mod: %+v", pv.Problems)
 	}
-	res, err := s.Import(t.Context(), "lethal-company", pv.Session, "", nil)
+	res, err := s.Import(t.Context(), "lethal-company", pv.Session, "", nil, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -336,7 +354,7 @@ func TestImportKeepsAProfilesOwnConfigUnlessReplaceIsChosen(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := s.Import(t.Context(), "lethal-company", pv.Session, prof.ID, nil); err != nil {
+	if _, err := s.Import(t.Context(), "lethal-company", pv.Session, prof.ID, nil, false); err != nil {
 		t.Fatal(err)
 	}
 	if got := read(); got != "mine\n" {
@@ -346,7 +364,7 @@ func TestImportKeepsAProfilesOwnConfigUnlessReplaceIsChosen(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := s.Replace(t.Context(), "lethal-company", pv.Session, prof.ID, nil); err != nil {
+	if _, err := s.Replace(t.Context(), "lethal-company", pv.Session, prof.ID, nil, false); err != nil {
 		t.Fatal(err)
 	}
 	if got := read(); got != "[General]\n" {

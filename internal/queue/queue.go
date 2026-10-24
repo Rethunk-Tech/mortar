@@ -272,6 +272,9 @@ type Request struct {
 	Disabled []mod.ID                       `json:"disabled,omitempty"`
 	Fomod    map[string]map[string][]string `json:"fomod,omitempty"`
 	Overlay  *OverlayPlace                  `json:"overlay,omitempty"`
+	// AsIs installs a Thunderstore package at exactly its Version and without its dependencies, as an imported list
+	// shared it; a dependency the list left out stays out.
+	AsIs bool `json:"asIs,omitempty"`
 	// Implicit creates the entry as one brought in for another mod, for a request that copies an entry's flag
 	// (undo, a template, a share); a dependency request is implicit by its kind.
 	Implicit bool `json:"implicit,omitempty"`
@@ -331,7 +334,7 @@ type Deps struct {
 	InstallExtra func(ctx context.Context, game, profileID, entryKey, path string, source profile.Source) (profile.InstallResult, error)
 	Verify       func(ctx context.Context, id mod.ID, owner, repo string) (bool, error)
 	// Closure resolves Thunderstore packages and their dependencies for a game, dependencies first; nil refuses packages.
-	Closure func(ctx context.Context, gameID string, roots []thunderstore.Ref, exactDeps bool) ([]thunderstore.Resolved, error)
+	Closure func(ctx context.Context, gameID string, roots []thunderstore.Ref, deps thunderstore.Deps) ([]thunderstore.Resolved, error)
 	// ExactDependencies reports whether the profile installs a package's dependencies at the versions it pins; nil
 	// means the newest.
 	ExactDependencies func(gameID, profileID string) bool

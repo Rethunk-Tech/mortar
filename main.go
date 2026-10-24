@@ -642,12 +642,12 @@ func run() error {
 		Verify: func(ctx context.Context, id mod.ID, owner, repo string) (bool, error) {
 			return github.Verify(ctx, modMeta, id.Local(), owner, repo)
 		},
-		Closure: func(ctx context.Context, gameID string, roots []thunderstore.Ref, exact bool) ([]thunderstore.Resolved, error) {
+		Closure: func(ctx context.Context, gameID string, roots []thunderstore.Ref, deps thunderstore.Deps) ([]thunderstore.Resolved, error) {
 			key := share.SourceKeys(gameID)["thunderstore"]
 			if key == "" {
 				return nil, fmt.Errorf("%s has no Thunderstore community", gameID)
 			}
-			return thunderstore.Driver{CacheDir: filepath.Join(dataDir, "cache")}.Closure(ctx, key, roots, version, exact)
+			return thunderstore.Driver{CacheDir: filepath.Join(dataDir, "cache")}.Closure(ctx, key, roots, version, deps)
 		},
 		ExactDependencies: func(game, profileID string) bool {
 			p, err := profiles.Get(game, profileID)

@@ -238,6 +238,19 @@ function usePreviewSources(
 
 export type Tab = 'choose' | 'link' | 'file' | 'manager'
 
+// The rows an import leaves out: the unticked ones, and as-is every dependency the share did not list (Thunderstore's
+// are left out by the queue).
+function skipped(
+  preview: ShownPreview | null,
+  excluded: ReadonlySet<string>,
+  asIs: boolean,
+): string[] {
+  const deps = asIs
+    ? (preview?.mods ?? []).filter((m) => m.state === 'dependency').map((m) => m.key)
+    : []
+  return [...excluded, ...deps]
+}
+
 // The import dialog's state: what was typed or picked, the preview it produced and the mods unticked.
 export function useImportFlow(
   game: string,
@@ -250,6 +263,7 @@ export function useImportFlow(
   const [path, setPath] = useState('')
   const [preview, setPreview] = useState<ShownPreview | null>(null)
   const [excluded, setExcluded] = useState<ReadonlySet<string>>(new Set())
+  const [asIs, setAsIs] = useState(false)
   const [error, setError] = useState('')
   const [previewBusy, setPreviewBusy] = useState(false)
   const [importBusy, setImportBusy] = useState(false)
@@ -285,6 +299,7 @@ export function useImportFlow(
     Discard().catch(reportUnexpected)
     setPreview(null)
     setExcluded(new Set())
+    setAsIs(false)
     setError('')
     setText('')
     setPath('')
@@ -298,15 +313,15 @@ export function useImportFlow(
     const opened = useImportDialog.getState().request?.run
     try {
       const session = preview?.session ?? ''
-      const skip = [...excluded]
+      const skip = skipped(preview, excluded, asIs)
       // A share can bring mods from a site nobody moderates; the first download from it is warned about here too.
-      const sites = (preview?.mods ?? []).filter((m) => !excluded.has(m.key)).map((m) => m.site)
+      const sites = (preview?.mods ?? []).filter((m) => !skip.includes(m.key)).map((m) => m.site)
       if (!(await warnUnmoderated(sites))) {
         return
       }
       const result = replace
-        ? await Replace(game, session, profileId, skip)
-        : await Import(game, session, intoOpen ? profileId : '', skip)
+        ? await Replace(game, session, profileId, skip, asIs)
+        : await Import(game, session, intoOpen ? profileId : '', skip, asIs)
       const lan = useImportDialog.getState().request?.lan
       if (lan) {
         rememberLanProfile(lan, result.profile.id)
@@ -339,6 +354,8 @@ export function useImportFlow(
     path,
     preview,
     excluded,
+    asIs,
+    setAsIs,
     error,
     busy: previewBusy || importBusy,
     previewLink,

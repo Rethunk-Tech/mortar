@@ -53,7 +53,7 @@ func TestReplaceRemovesExtrasAndQueuesTheShare(t *testing.T) {
 	if !slices.Contains(pv.Replace.Remove, "A.Drop") && !slices.ContainsFunc(pv.Replace.Remove, func(n string) bool { return n != "" }) {
 		t.Fatalf("plan = %+v", pv.Replace)
 	}
-	if _, err := s.Replace(context.Background(), "stardew", pv.Session, prof.ID, nil); err != nil {
+	if _, err := s.Replace(context.Background(), "stardew", pv.Session, prof.ID, nil, false); err != nil {
 		t.Fatal(err)
 	}
 	got, err := s.find("stardew", prof.ID)
@@ -70,7 +70,7 @@ func TestReplaceRemovesExtrasAndQueuesTheShare(t *testing.T) {
 
 func TestReplaceNeedsAProfile(t *testing.T) {
 	s, _ := newService(t, true)
-	_, err := s.Replace(context.Background(), "stardew", "nope", "", nil)
+	_, err := s.Replace(context.Background(), "stardew", "nope", "", nil, false)
 	if err == nil {
 		t.Fatal("expected error")
 	}
@@ -95,7 +95,7 @@ func TestReplaceKeepsTheSharedOrderAsModsArrive(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, err := s.Replace(context.Background(), "stardew", pv.Session, prof.ID, nil)
+	res, err := s.Replace(context.Background(), "stardew", pv.Session, prof.ID, nil, false)
 	if err != nil {
 		t.Fatal(err)
 	}

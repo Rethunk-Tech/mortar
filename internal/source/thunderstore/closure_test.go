@@ -61,7 +61,7 @@ func TestClosure(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			got, err := d.Closure(t.Context(), "lethal-company", c.roots, "1.2.3", false)
+			got, err := d.Closure(t.Context(), "lethal-company", c.roots, "1.2.3", DepsNewest)
 			if c.wantErr != "" {
 				if err == nil || !strings.Contains(err.Error(), c.wantErr) {
 					t.Fatalf("err %v, want it to contain %q", err, c.wantErr)
@@ -91,16 +91,18 @@ func TestClosureDependencyVersions(t *testing.T) {
 	)
 	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
 	for name, c := range map[string]struct {
-		exact bool
+		deps  Deps
 		roots []Ref
 		want  string
 	}{
-		"newest takes the latest":                     {false, []Ref{{"Ns", "A", ""}}, "B 3.0.0, A 1.0.0"},
-		"exact takes the pin":                         {true, []Ref{{"Ns", "A", ""}}, "B 1.0.0, A 1.0.0"},
-		"exact with two pins takes the higher":        {true, []Ref{{"Ns", "A", ""}, {"Ns", "C", ""}}, "B 2.0.0, A 1.0.0, C 1.0.0"},
-		"exact keeps a root named at its own version": {true, []Ref{{"Ns", "A", ""}, {"Ns", "B", "3.0.0"}}, "B 3.0.0, A 1.0.0"},
+		"newest takes the latest":                     {DepsNewest, []Ref{{"Ns", "A", ""}}, "B 3.0.0, A 1.0.0"},
+		"exact takes the pin":                         {DepsPinned, []Ref{{"Ns", "A", ""}}, "B 1.0.0, A 1.0.0"},
+		"exact with two pins takes the higher":        {DepsPinned, []Ref{{"Ns", "A", ""}, {"Ns", "C", ""}}, "B 2.0.0, A 1.0.0, C 1.0.0"},
+		"exact keeps a root named at its own version": {DepsPinned, []Ref{{"Ns", "A", ""}, {"Ns", "B", "3.0.0"}}, "B 3.0.0, A 1.0.0"},
+		"as-is adds no dependency":                    {DepsNone, []Ref{{"Ns", "A", ""}}, "A 1.0.0"},
+		"as-is keeps a root another root needs newer": {DepsNone, []Ref{{"Ns", "C", ""}, {"Ns", "B", "1.0.0"}}, "C 1.0.0, B 1.0.0"},
 	} {
-		got, err := d.Closure(t.Context(), "lethal-company", c.roots, "1.2.3", c.exact)
+		got, err := d.Closure(t.Context(), "lethal-company", c.roots, "1.2.3", c.deps)
 		if err != nil {
 			t.Fatalf("%s: %v", name, err)
 		}
@@ -157,7 +159,7 @@ func TestClosureCaseTwinKeepsTheLivePackage(t *testing.T) {
 			f.chunk0, f.chunk1 = append(f.chunk0, twin), append(f.chunk1, live)
 		}
 		d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
-		got, err := d.Closure(t.Context(), "lethal-company", []Ref{{"Mel", "Two_sToRy_Ship", "2.2.14"}}, "1.2.3", false)
+		got, err := d.Closure(t.Context(), "lethal-company", []Ref{{"Mel", "Two_sToRy_Ship", "2.2.14"}}, "1.2.3", DepsNewest)
 		if err != nil || len(got) != 1 || got[0].Version != "2.2.14" {
 			t.Fatalf("liveFirst=%v: %v %v", liveFirst, got, err)
 		}

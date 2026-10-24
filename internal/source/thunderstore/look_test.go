@@ -26,7 +26,7 @@ func TestLooksComeFromTheIndexAndTheCacheAlone(t *testing.T) {
 	l["categories"] = []string{"Mods", "Tools"}
 	f.chunk0 = append(f.chunk0, l)
 	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
-	got, err := d.Closure(t.Context(), "lethal-company", []Ref{{"Ns", "Gen", ""}}, "1.2.3", false)
+	got, err := d.Closure(t.Context(), "lethal-company", []Ref{{"Ns", "Gen", ""}}, "1.2.3", DepsNewest)
 	if err != nil || len(got) != 1 || got[0].Look != (Look{Icon: icon, Category: "Tools"}) {
 		t.Fatalf("closure %+v %v", got, err)
 	}

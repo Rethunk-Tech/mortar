@@ -52,7 +52,7 @@ func (s *Service) expandPackages(ctx context.Context, reqs []Request) ([]Request
 		byID := map[string]Request{}
 		for j := i; j < len(reqs); j++ {
 			q := reqs[j]
-			if q.Package == "" || q.Source != "" || q.Game != r.Game || q.Profile != r.Profile {
+			if q.Package == "" || q.Source != "" || q.Game != r.Game || q.Profile != r.Profile || q.AsIs != r.AsIs {
 				continue
 			}
 			done[j] = true
@@ -61,8 +61,7 @@ func (s *Service) expandPackages(ctx context.Context, reqs []Request) ([]Request
 			byID[strings.ToLower(q.Package)] = q
 		}
 		cctx, cancel := context.WithTimeout(ctx, closureTimeout)
-		exact := s.d.ExactDependencies != nil && s.d.ExactDependencies(r.Game, r.Profile)
-		list, err := s.d.Closure(cctx, r.Game, roots, exact)
+		list, err := s.d.Closure(cctx, r.Game, roots, s.depsFor(r.Game, r.Profile, r.AsIs))
 		cancel()
 		if err != nil {
 			return nil, err
@@ -104,20 +103,31 @@ func (s *Service) Unresolvable(ctx context.Context, gameID, profileID string, re
 	if s.d.Closure == nil {
 		return out
 	}
-	exact := s.d.ExactDependencies != nil && s.d.ExactDependencies(gameID, profileID)
 	for _, q := range reqs {
 		if q.Package == "" || q.Source != "" {
 			continue
 		}
 		ns, name, _ := strings.Cut(q.Package, "-")
 		cctx, cancel := context.WithTimeout(ctx, closureTimeout)
-		_, err := s.d.Closure(cctx, gameID, []thunderstore.Ref{{Namespace: ns, Name: name, Version: q.Version}}, exact)
+		_, err := s.d.Closure(cctx, gameID, []thunderstore.Ref{{Namespace: ns, Name: name, Version: q.Version}}, s.depsFor(gameID, profileID, q.AsIs))
 		cancel()
 		if err != nil {
 			out[q.Package] = err.Error()
 		}
 	}
 	return out
+}
+
+// depsFor is how a profile's Thunderstore requests take their dependencies: none for a list installed as it was shared,
+// else as the profile's dependencyVersions setting says.
+func (s *Service) depsFor(gameID, profileID string, asIs bool) thunderstore.Deps {
+	switch {
+	case asIs:
+		return thunderstore.DepsNone
+	case s.d.ExactDependencies != nil && s.d.ExactDependencies(gameID, profileID):
+		return thunderstore.DepsPinned
+	}
+	return thunderstore.DepsNewest
 }
 
 // packageNeeds is the lowercase package ids of a package's "Namespace-Name-Version" dependencies.

@@ -40,7 +40,7 @@ func TestTopPausesTheLastRunningDownloadAndItResumesAfter(t *testing.T) {
 
 func TestTopMovesPendingDependenciesAhead(t *testing.T) {
 	f := newFixture(t)
-	f.s.d.Closure = func(_ context.Context, _ string, roots []thunderstore.Ref, _ bool) ([]thunderstore.Resolved, error) {
+	f.s.d.Closure = func(_ context.Context, _ string, roots []thunderstore.Ref, _ thunderstore.Deps) ([]thunderstore.Resolved, error) {
 		out := []thunderstore.Resolved{}
 		for _, r := range roots {
 			if r.Name == "Mod" {
@@ -66,7 +66,7 @@ func TestTopMovesPendingDependenciesAhead(t *testing.T) {
 
 func TestQueueOrderSurvivesAReload(t *testing.T) {
 	f := newFixture(t)
-	f.s.d.Closure = func(_ context.Context, _ string, roots []thunderstore.Ref, _ bool) ([]thunderstore.Resolved, error) {
+	f.s.d.Closure = func(_ context.Context, _ string, roots []thunderstore.Ref, _ thunderstore.Deps) ([]thunderstore.Resolved, error) {
 		var out []thunderstore.Resolved
 		for _, r := range roots {
 			out = append(out, thunderstore.Resolved{Namespace: r.Namespace, Name: r.Name, Version: "1.0.0", URL: "https://x/" + r.Name})

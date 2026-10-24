@@ -56,7 +56,7 @@ func TestExternalImportWritesEachModsOwnConfigWithinTheCap(t *testing.T) {
 	if pv.Settings != 1 || !slices.Equal(pv.SkippedSettings, []string{"Me.B/config.json"}) {
 		t.Fatalf("settings = %d, skipped = %v", pv.Settings, pv.SkippedSettings)
 	}
-	res, err := s.Import(context.Background(), "stardew", pv.Session, "", nil)
+	res, err := s.Import(context.Background(), "stardew", pv.Session, "", nil, false)
 	if err != nil {
 		t.Fatal(err)
 	}

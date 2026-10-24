@@ -763,7 +763,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 				if err != nil {
 					return nil, err
 				}
-				return s.Shares.Import(ctx, p.Game, preview.Session, id, nil)
+				return s.Shares.Import(ctx, p.Game, preview.Session, id, nil, false)
 			})
 		}
 		return s.Shares.CollectionStatus(ctx, p.Game, id)

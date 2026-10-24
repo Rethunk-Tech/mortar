@@ -355,6 +355,10 @@ msgstr "Downloads…"
 msgid "Mod loader"
 msgstr "Mod loader"
 
+#: src/share/ImportFooter.tsx
+msgid "Fill in missing dependencies"
+msgstr "Fill in missing dependencies"
+
 #: src/share/importCompletion.ts
 msgid "{skipped} skipped"
 msgstr "{skipped} skipped"
@@ -579,6 +583,10 @@ msgstr "Update an existing profile…"
 #: src/groups/SavedGroupsSection.tsx
 msgid "Loading saved groups…"
 msgstr "Loading saved groups…"
+
+#: src/share/ImportFooter.tsx
+msgid "How to install"
+msgstr "How to install"
 
 #: src/saves/backups.ts
 msgid "Scheduled"
@@ -4212,6 +4220,10 @@ msgstr "No Mortar computers found nearby."
 #: src/share/MethodPanes.tsx
 msgid "Upload"
 msgstr "Upload"
+
+#: src/share/ImportFooter.tsx
+msgid "As shared: same versions, no added dependencies (mods may be outdated or broken)"
+msgstr "As shared: same versions, no added dependencies (mods may be outdated or broken)"
 
 #: src/install/DownloadsDialog.tsx
 msgid "Choose an archive to see what is inside"

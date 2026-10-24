@@ -40,7 +40,7 @@ func (s *Services) packImport(ctx context.Context, p Params) (any, error) {
 		return pv, err
 	}
 	game := cmp.Or(p.Game, pv.Game)
-	res, err := s.Shares.Import(ctx, game, pv.Session, profileID, nil)
+	res, err := s.Shares.Import(ctx, game, pv.Session, profileID, nil, false)
 	if err == nil && profileID == "" && strings.TrimSpace(p.Name) != "" {
 		_, err = s.Profiles.Rename(game, res.Profile.ID, p.Name)
 	}

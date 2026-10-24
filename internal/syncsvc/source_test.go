@@ -25,7 +25,7 @@ func (f *fakeShares) PreviewPayload(context.Context, string, string, []byte) (sh
 	return sharesvc.Preview{Session: "s1"}, f.previewErr
 }
 
-func (f *fakeShares) Replace(_ context.Context, _, session, _ string, _ []string) (sharesvc.Result, error) {
+func (f *fakeShares) Replace(_ context.Context, _, session, _ string, _ []string, _ bool) (sharesvc.Result, error) {
 	f.replaced = append(f.replaced, session)
 	return sharesvc.Result{}, nil
 }

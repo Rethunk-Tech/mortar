@@ -355,6 +355,10 @@ msgstr ""
 msgid "Mod loader"
 msgstr ""
 
+#: src/share/ImportFooter.tsx
+msgid "Fill in missing dependencies"
+msgstr ""
+
 #: src/share/importCompletion.ts
 msgid "{skipped} skipped"
 msgstr ""
@@ -578,6 +582,10 @@ msgstr ""
 #: src/groups/dialogs.tsx
 #: src/groups/SavedGroupsSection.tsx
 msgid "Loading saved groups…"
+msgstr ""
+
+#: src/share/ImportFooter.tsx
+msgid "How to install"
 msgstr ""
 
 #: src/saves/backups.ts
@@ -4211,6 +4219,10 @@ msgstr ""
 
 #: src/share/MethodPanes.tsx
 msgid "Upload"
+msgstr ""
+
+#: src/share/ImportFooter.tsx
+msgid "As shared: same versions, no added dependencies (mods may be outdated or broken)"
 msgstr ""
 
 #: src/install/DownloadsDialog.tsx

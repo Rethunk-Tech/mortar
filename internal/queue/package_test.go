@@ -19,7 +19,7 @@ import (
 func TestPackageInstallsWithItsDependencies(t *testing.T) {
 	f := newFixture(t)
 	c, _ := f.s.d.Client()
-	f.s.d.Closure = func(_ context.Context, game string, roots []thunderstore.Ref, _ bool) ([]thunderstore.Resolved, error) {
+	f.s.d.Closure = func(_ context.Context, game string, roots []thunderstore.Ref, _ thunderstore.Deps) ([]thunderstore.Resolved, error) {
 		if game != "riskofrain2" || len(roots) != 2 || roots[0].Name != "Mod" || roots[1].Name != "Other" {
 			t.Errorf("closure asked %q %+v", game, roots)
 		}
@@ -80,7 +80,7 @@ func TestInferPackageReasons(t *testing.T) {
 func TestPackageUpdateInstallsANewDependency(t *testing.T) {
 	f := newFixture(t)
 	c, _ := f.s.d.Client()
-	f.s.d.Closure = func(_ context.Context, _ string, roots []thunderstore.Ref, _ bool) ([]thunderstore.Resolved, error) {
+	f.s.d.Closure = func(_ context.Context, _ string, roots []thunderstore.Ref, _ thunderstore.Deps) ([]thunderstore.Resolved, error) {
 		if len(roots) != 1 || roots[0].Version != "2.0.0" {
 			t.Errorf("closure asked %+v", roots)
 		}
@@ -148,7 +148,7 @@ func TestPackageDownloadFallsBackAcrossCDNs(t *testing.T) {
 	f := newFixture(t)
 	f.s.d.CDNs = []string{deadURL, stalled.URL, good.URL}
 	fire := manualStall(f.s, 2)
-	f.s.d.Closure = func(_ context.Context, _ string, _ []thunderstore.Ref, _ bool) ([]thunderstore.Resolved, error) {
+	f.s.d.Closure = func(_ context.Context, _ string, _ []thunderstore.Ref, _ thunderstore.Deps) ([]thunderstore.Resolved, error) {
 		return []thunderstore.Resolved{{Namespace: "Me", Name: "Mod", Version: "1.0.0", URL: deadURL + "/p/Me-Mod.zip"}}, nil
 	}
 	f.s.d.InstallPackage = f.s.d.Install
@@ -179,7 +179,7 @@ func TestPinnedCDNIsTheOnlyOneTried(t *testing.T) {
 	f := newFixture(t)
 	f.s.d.CDNs = []string{a.URL, b.URL}
 	f.s.d.ThunderstoreHost = func() string { return b.URL }
-	f.s.d.Closure = func(_ context.Context, _ string, _ []thunderstore.Ref, _ bool) ([]thunderstore.Resolved, error) {
+	f.s.d.Closure = func(_ context.Context, _ string, _ []thunderstore.Ref, _ thunderstore.Deps) ([]thunderstore.Resolved, error) {
 		return []thunderstore.Resolved{{Namespace: "Me", Name: "Mod", Version: "1.0.0", URL: a.URL + "/p/Me-Mod.zip"}}, nil
 	}
 	f.s.d.InstallPackage = f.s.d.Install
@@ -214,7 +214,7 @@ func TestPackageStalledCDNHandsItsPartialToTheNext(t *testing.T) {
 	f := newFixture(t)
 	f.s.d.CDNs = []string{stalled.URL, good.URL}
 	fire := manualStall(f.s, 1)
-	f.s.d.Closure = func(_ context.Context, _ string, _ []thunderstore.Ref, _ bool) ([]thunderstore.Resolved, error) {
+	f.s.d.Closure = func(_ context.Context, _ string, _ []thunderstore.Ref, _ thunderstore.Deps) ([]thunderstore.Resolved, error) {
 		return []thunderstore.Resolved{{Namespace: "Me", Name: "Mod", Version: "1.0.0", URL: stalled.URL + "/p/Me-Mod.zip"}}, nil
 	}
 	f.s.d.InstallPackage = f.s.d.Install
@@ -232,7 +232,7 @@ func TestPackageStalledCDNHandsItsPartialToTheNext(t *testing.T) {
 
 func TestUnresolvableNamesOnlyThePackagesWhoseClosureFails(t *testing.T) {
 	f := newFixture(t)
-	f.s.d.Closure = func(_ context.Context, _ string, roots []thunderstore.Ref, _ bool) ([]thunderstore.Resolved, error) {
+	f.s.d.Closure = func(_ context.Context, _ string, roots []thunderstore.Ref, _ thunderstore.Deps) ([]thunderstore.Resolved, error) {
 		if roots[0].Name == "Gone" {
 			return nil, errors.New("me-gone 1.0.0 is not in the index")
 		}
@@ -247,5 +247,22 @@ func TestUnresolvableNamesOnlyThePackagesWhoseClosureFails(t *testing.T) {
 func TestPackageNeedsSkipsADependencyWithoutAVersion(t *testing.T) {
 	if got := packageNeeds([]string{"Ns-Name", "A-B-1.0.0"}); !slices.Equal(got, []string{"a-b"}) {
 		t.Fatalf("%v", got)
+	}
+}
+
+func TestAnAsIsRequestResolvesWithoutDependencies(t *testing.T) {
+	f := newFixture(t)
+	var asked []thunderstore.Deps
+	f.s.d.Closure = func(_ context.Context, _ string, roots []thunderstore.Ref, deps thunderstore.Deps) ([]thunderstore.Resolved, error) {
+		asked = append(asked, deps)
+		return []thunderstore.Resolved{{Namespace: roots[0].Namespace, Name: roots[0].Name, Version: "1.0.0"}}, nil
+	}
+	f.s.d.ExactDependencies = func(string, string) bool { return true }
+	_, err := f.s.expandPackages(t.Context(), []Request{
+		{Kind: KindInstall, Game: "g", Profile: "p", Package: "Me-Shared", Version: "1.0.0", AsIs: true},
+		{Kind: KindInstall, Game: "g", Profile: "p", Package: "Me-Browsed"},
+	})
+	if err != nil || fmt.Sprint(asked) != fmt.Sprint([]thunderstore.Deps{thunderstore.DepsNone, thunderstore.DepsPinned}) {
+		t.Fatalf("closures asked %v, %v", asked, err)
 	}
 }

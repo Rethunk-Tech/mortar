@@ -44,7 +44,7 @@ async function importEach(game: string, folders: string[], failed: string): Prom
   for (const folder of folders) {
     try {
       const preview = await PreviewLocalProfile(game, folder, '')
-      const result = await Import(game, preview.session, '', [])
+      const result = await Import(game, preview.session, '', [], false)
       first ||= result.profile.id
       done += 1
     } catch (error) {

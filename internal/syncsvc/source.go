@@ -20,7 +20,7 @@ type profileStore interface {
 type Shares interface {
 	ExportBytes(game, profileID string, include share.Include) ([]byte, []string, error)
 	PreviewPayload(ctx context.Context, game, profileID string, data []byte) (sharesvc.Preview, error)
-	Replace(ctx context.Context, game, session, profileID string, exclude []string) (sharesvc.Result, error)
+	Replace(ctx context.Context, game, session, profileID string, exclude []string, asIs bool) (sharesvc.Result, error)
 }
 
 // AppSource is the Source over the app's profiles and share service.
@@ -83,6 +83,6 @@ func (a *AppSource) Apply(ctx context.Context, gameID, id string, payload []byte
 	if err != nil {
 		return err
 	}
-	_, err = a.shares.Replace(ctx, gameID, pv.Session, id, nil)
+	_, err = a.shares.Replace(ctx, gameID, pv.Session, id, nil, false)
 	return err
 }

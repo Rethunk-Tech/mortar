@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Typography } from '@mui/material'
+import { Box, Button, FormControlLabel, Radio, RadioGroup, Typography } from '@mui/material'
 import { ChevronRight } from 'lucide-react'
 import { useState } from 'react'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
@@ -68,6 +68,7 @@ export function ImportFooter({
         </Box>
       ) : null}
       <StatusBar preview={preview} summary={summary} needsSignIn={needsSignIn} />
+      <InstallMode flow={flow} preview={preview} />
       {flow.error ? (
         <Typography
           role="alert"
@@ -164,5 +165,34 @@ export function ImportFooter({
         ) : null}
       </ConfirmDialog>
     </Box>
+  )
+}
+
+// Whether a share's missing dependencies are filled in or it installs exactly as shared: a modpack missing a mod on
+// purpose (a lobby whose host left one out) must not gain it. Shown only when the share could bring dependencies.
+function InstallMode({ flow, preview }: { flow: ImportFlow; preview: ShownPreview }) {
+  const { t } = useLingui()
+  if (!preview.mods.some((m) => m.site === 'thunderstore' || m.state === 'dependency')) {
+    return null
+  }
+  return (
+    <RadioGroup
+      row={true}
+      aria-label={t`How to install`}
+      value={flow.asIs ? 'as-is' : 'fill'}
+      onChange={(e) => flow.setAsIs(e.target.value === 'as-is')}
+      sx={{ px: space.gap }}
+    >
+      <FormControlLabel
+        value="fill"
+        control={<Radio size="small" />}
+        label={t`Fill in missing dependencies`}
+      />
+      <FormControlLabel
+        value="as-is"
+        control={<Radio size="small" />}
+        label={t`As shared: same versions, no added dependencies (mods may be outdated or broken)`}
+      />
+    </RadioGroup>
   )
 }

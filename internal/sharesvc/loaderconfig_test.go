@@ -45,7 +45,7 @@ func TestLoaderConfigsRoundTripThroughAMortarFile(t *testing.T) {
 	if err != nil || pv.Settings != 2 {
 		t.Fatalf("preview settings %d, %v", pv.Settings, err)
 	}
-	res, err := s.Import(t.Context(), "lethal-company", sessionOf(s), "", nil)
+	res, err := s.Import(t.Context(), "lethal-company", sessionOf(s), "", nil, false)
 	if err != nil {
 		t.Fatal(err)
 	}

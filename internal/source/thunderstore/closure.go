@@ -84,12 +84,23 @@ func parseDependency(s string) (Ref, error) {
 	return Ref{Namespace: namespace, Name: name, Version: d.Constraint}, nil
 }
 
+// Deps is how Closure treats the roots' dependencies.
+type Deps int
+
+const (
+	// DepsNewest installs each dependency at its newest version, as r2modman does.
+	DepsNewest Deps = iota
+	// DepsPinned installs each dependency at the version its author pinned, as Gale does.
+	DepsPinned
+	// DepsNone resolves the roots alone, each at its own version: a list installed exactly as it was shared.
+	DepsNone
+)
+
 // Closure resolves roots and everything they depend on from the community's cached index. Each package appears once,
 // at the highest version anything in the closure asks for, and dependencies come before the packages that need them,
-// in a deterministic order. With exactDeps a dependency installs at the version its author pinned, as Gale does,
-// instead of the newest. A missing package, a loader pack outside the series Mortar runs it as or a dependency cycle is an error
-// naming the chain of requests that led to it.
-func (d Driver) Closure(ctx context.Context, key string, roots []Ref, mortarVersion string, exactDeps bool) ([]Resolved, error) {
+// in a deterministic order; deps chooses the dependencies' versions, or leaves them out. A missing package, a loader
+// pack outside the series Mortar runs it as or a dependency cycle is an error naming the chain of requests that led to it.
+func (d Driver) Closure(ctx context.Context, key string, roots []Ref, mortarVersion string, deps Deps) ([]Resolved, error) {
 	list, err := d.packages(ctx, key, source.UserAgentWithSite(mortarVersion))
 	if err != nil {
 		return nil, err
@@ -110,7 +121,7 @@ func (d Driver) Closure(ctx context.Context, key string, roots []Ref, mortarVers
 	// A later request can raise a version that an earlier visit used, so walk again until nothing rises; versions only
 	// go up, so this ends.
 	for {
-		w := &walk{byID: byID, exact: exact, exactDeps: exactDeps, chosen: chosen, state: map[string]int{}}
+		w := &walk{byID: byID, exact: exact, deps: deps, chosen: chosen, state: map[string]int{}}
 		for _, r := range roots {
 			if err := w.visit(r, nil); err != nil {
 				return nil, err
@@ -132,14 +143,13 @@ func (d Driver) Closure(ctx context.Context, key string, roots []Ref, mortarVers
 }
 
 type walk struct {
-	byID  map[string]pkg
-	exact map[string]bool
-	// exactDeps installs a dependency at its pin rather than the newest.
-	exactDeps bool
-	chosen    map[string]string
-	state     map[string]int // 1 visiting, 2 done
-	order     []string
-	raised    bool
+	byID   map[string]pkg
+	exact  map[string]bool
+	deps   Deps
+	chosen map[string]string
+	state  map[string]int // 1 visiting, 2 done
+	order  []string
+	raised bool
 }
 
 // managers are other mod managers that communities list as packages. They are programs, not mods: nothing a profile
@@ -164,7 +174,7 @@ func (w *walk) visit(ref Ref, chain []string) error {
 	if !ok {
 		return fmt.Errorf("%s is not in the index (requested by %s)", id, via)
 	}
-	v, err := pick(p, ref, chain != nil && !w.exact[id] && !w.exactDeps)
+	v, err := pick(p, ref, chain != nil && !w.exact[id] && w.deps == DepsNewest)
 	if err != nil {
 		return fmt.Errorf("%w (requested by %s)", err, via)
 	}
@@ -180,7 +190,7 @@ func (w *walk) visit(ref Ref, chain []string) error {
 	}
 	w.state[id] = 1
 	for _, ver := range p.Versions {
-		if ver.Number != w.chosen[id] {
+		if ver.Number != w.chosen[id] || w.deps == DepsNone {
 			continue
 		}
 		for _, dep := range p.depsOf(ver) {
