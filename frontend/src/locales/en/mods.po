@@ -908,6 +908,10 @@ msgstr "Edit categories…"
 msgid "Installed file"
 msgstr "Installed file"
 
+#: src/mods/brokenKind.ts
+msgid "{name} is superseded"
+msgstr "{name} is superseded"
+
 #: src/mods/problemFixButtons.tsx
 msgid "Keep my changes"
 msgstr "Keep my changes"
@@ -992,6 +996,10 @@ msgstr "Disabled in this profile"
 #: src/mods/GameModsReviewDialog.tsx
 msgid "{count, plural, one {# skipped} other {# skipped}}"
 msgstr "{count, plural, one {# skipped} other {# skipped}}"
+
+#: src/mods/brokenKind.ts
+msgid "{name} is not recommended"
+msgstr "{name} is not recommended"
 
 #: src/mods/problemFixButtons.tsx
 msgid "Your edits to its files are replaced with the installed copy."
@@ -3195,6 +3203,10 @@ msgstr "Mods in this category will move to Uncategorised."
 #: src/mods/GameModsReviewDialog.tsx
 msgid "profile {version}"
 msgstr "profile {version}"
+
+#: src/mods/brokenKind.ts
+msgid "{name} is known to be broken"
+msgstr "{name} is known to be broken"
 
 #: src/mods/columnLabel.ts
 msgid "Order"

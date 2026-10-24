@@ -2945,6 +2945,10 @@ msgstr ""
 msgid "Home"
 msgstr ""
 
+#: src/browse/useCardAction.tsx
+msgid "{reason} Use {replacement} instead."
+msgstr ""
+
 #: src/game/Sidebar.tsx
 msgid "Load order"
 msgstr ""
@@ -6235,6 +6239,7 @@ msgstr ""
 msgid "Default folder"
 msgstr ""
 
+#: src/browse/useCardAction.tsx
 #: src/queue/QueueBody.tsx
 #: src/toasts/AvOverrideDialog.tsx
 msgid "Install anyway"

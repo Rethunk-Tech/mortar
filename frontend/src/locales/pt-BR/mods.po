@@ -908,6 +908,10 @@ msgstr ""
 msgid "Installed file"
 msgstr ""
 
+#: src/mods/brokenKind.ts
+msgid "{name} is superseded"
+msgstr ""
+
 #: src/mods/problemFixButtons.tsx
 msgid "Keep my changes"
 msgstr ""
@@ -991,6 +995,10 @@ msgstr ""
 
 #: src/mods/GameModsReviewDialog.tsx
 msgid "{count, plural, one {# skipped} other {# skipped}}"
+msgstr ""
+
+#: src/mods/brokenKind.ts
+msgid "{name} is not recommended"
 msgstr ""
 
 #: src/mods/problemFixButtons.tsx
@@ -3194,6 +3202,10 @@ msgstr ""
 
 #: src/mods/GameModsReviewDialog.tsx
 msgid "profile {version}"
+msgstr ""
+
+#: src/mods/brokenKind.ts
+msgid "{name} is known to be broken"
 msgstr ""
 
 #: src/mods/columnLabel.ts

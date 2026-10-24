@@ -153,6 +153,8 @@ type Item struct {
 	// list calls broken.
 	Obsolete bool `json:"obsolete"`
 	Broken   bool `json:"broken"`
+	// KnownBroken is the game's known-broken list's entry for the hit's newest version, which Add asks about first.
+	KnownBroken *KnownBrokenNote `json:"knownBroken,omitempty"`
 	// Loader marks the game's mod loader itself, which Mortar installs from the game's page; Browse drops it.
 	Loader bool `json:"-"`
 	// Bundled marks a mod Mortar installs itself with the loader (its companion), so Add does not apply.
@@ -162,6 +164,14 @@ type Item struct {
 	// ReuploadOf names the mod this hit may copy: one of the same name by another author on another site, with more
 	// downloads, as "name by author".
 	ReuploadOf string `json:"reuploadOf,omitempty"`
+}
+
+// KnownBrokenNote is a known-broken list's word on a mod: its kind (broken, superseded, notRecommended), why, and the
+// package to use instead.
+type KnownBrokenNote struct {
+	Kind        string `json:"kind"`
+	Reason      string `json:"reason"`
+	Replacement string `json:"replacement,omitempty"`
 }
 
 // Alt is the same mod on another source: where to open it and install it from, and that hit's own flags.

@@ -1,6 +1,9 @@
+import { useLingui } from '@lingui/react/macro'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
+import { listedTitle } from '../mods/brokenKind.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { useQueue } from '../queue/store.ts'
+import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { usePending } from '../toasts/usePending.ts'
 import { GITHUB, NEXUS, THUNDERSTORE } from './browseConstants.ts'
 import type { BrowseItem, ResultCardProps } from './browseTypes.ts'
@@ -25,8 +28,11 @@ interface CardActionState {
 
 /** The Add, Download or Open files page action of a hit from source, shared by its card and its details panel. */
 function useCardAction(props: ActionProps, item: BrowseItem, source: string): CardActionState {
+  const { t } = useLingui()
   const { premium, openUrl, profileID } = props
   const [pending, run] = usePending()
+  // The install a known-broken hit's Add holds until the player answers.
+  const [asking, setAsking] = useState<(() => void) | null>(null)
   const [openedFiles, setOpenedFiles] = useState(false)
   const items = useQueue((s) => s.state.items)
   const primary = { source: item.source, id: item.id, url: item.url, installed: item.installed }
@@ -72,8 +78,12 @@ function useCardAction(props: ActionProps, item: BrowseItem, source: string): Ca
       ? props.addPackage(id)
       : props.addDirect(source, id, shownItem.picture)
   }
-  const onAdd = () => run(() => Promise.resolve(addFromSource()))
-  const onDownload = () => run(() => Promise.resolve(props.downloadNexus(id)))
+  // The note is about the hit's own site's newest version, not another site's copy of the mod.
+  const listed = source === item.source ? item.knownBroken : undefined
+  // A hit on the game's known-broken list asks before it installs.
+  const askFirst = (install: () => void) => () => (listed ? setAsking(() => install) : install())
+  const onAdd = askFirst(() => run(() => Promise.resolve(addFromSource())))
+  const onDownload = askFirst(() => run(() => Promise.resolve(props.downloadNexus(id))))
   const onOpenFiles = () => {
     setOpenedFiles(true)
     openUrl(`${url}?tab=files`)
@@ -93,17 +103,35 @@ function useCardAction(props: ActionProps, item: BrowseItem, source: string): Ca
     installed,
     add,
     action: (
-      <CardAction
-        item={shownItem}
-        source={source}
-        state={shown}
-        installed={installed}
-        premium={premium}
-        pending={pending}
-        onAdd={onAdd}
-        onDownload={onDownload}
-        onOpenFiles={onOpenFiles}
-      />
+      <>
+        <CardAction
+          item={shownItem}
+          source={source}
+          state={shown}
+          installed={installed}
+          premium={premium}
+          pending={pending}
+          onAdd={onAdd}
+          onDownload={onDownload}
+          onOpenFiles={onOpenFiles}
+        />
+        <ConfirmDialog
+          open={asking !== null && listed !== undefined}
+          title={listedTitle(listed?.kind, shownItem.name)}
+          body={
+            listed?.replacement
+              ? t`${{ reason: listed.reason }} Use ${{ replacement: listed.replacement }} instead.`
+              : listed?.reason
+          }
+          confirmLabel={t`Install anyway`}
+          color="warning"
+          onCancel={() => setAsking(null)}
+          onConfirm={() => {
+            asking?.()
+            setAsking(null)
+          }}
+        />
+      </>
     ),
   }
 }

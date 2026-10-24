@@ -2945,6 +2945,10 @@ msgstr "{count, plural, one {# new archive} other {# new archives}} in your down
 msgid "Home"
 msgstr "Home"
 
+#: src/browse/useCardAction.tsx
+msgid "{reason} Use {replacement} instead."
+msgstr "{reason} Use {replacement} instead."
+
 #: src/game/Sidebar.tsx
 msgid "Load order"
 msgstr "Load order"
@@ -6235,6 +6239,7 @@ msgstr "A link or .mortar file"
 msgid "Default folder"
 msgstr "Default folder"
 
+#: src/browse/useCardAction.tsx
 #: src/queue/QueueBody.tsx
 #: src/toasts/AvOverrideDialog.tsx
 msgid "Install anyway"

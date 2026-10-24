@@ -12,6 +12,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
 // mark sets each hit's Obsolete, Broken and Loader flags. The compatibility list is read only when the game has
@@ -26,6 +27,7 @@ func (c *Client) mark(ctx context.Context, info components.GameInfo, items []Ite
 		it := &items[i]
 		it.Obsolete = it.Obsolete || problems.ObsoleteText(it.Name, it.Summary)
 		if e, listed := known.Find(brokenModOf(*it), ""); listed {
+			it.KnownBroken = &source.KnownBrokenNote{Kind: e.Status(), Reason: e.Reason, Replacement: e.Replacement}
 			switch e.Status() {
 			case components.BrokenKindBroken:
 				it.Broken = true
