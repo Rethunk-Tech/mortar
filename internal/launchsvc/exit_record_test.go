@@ -106,16 +106,6 @@ func TestCrashedBeforeAcrossMidnight(t *testing.T) {
 	}
 }
 
-func TestRunEndNotificationTextExit(t *testing.T) {
-	title, body, _ := RunEndNotificationText("Stardew Valley", launch.Summary{
-		Crashed: true,
-		Exit:    launch.Exit{Code: 134, Signal: "SIGABRT"},
-	})
-	if title != "Stardew Valley crashed" || body != "Exited with code 134 (SIGABRT)" {
-		t.Fatalf("got %q / %q", title, body)
-	}
-}
-
 const coreclrStderr = "wine: some noise\nUnhandled exception. System.NullReferenceException: Object reference not set to an instance of an object.\n" +
 	"   at BetterRepair.Logic.X() in /src/Logic.cs:line 12\n   at Game.Main()\n"
 

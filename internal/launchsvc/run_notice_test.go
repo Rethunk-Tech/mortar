@@ -6,23 +6,23 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 )
 
-func TestRunEndNotificationTextClosed(t *testing.T) {
-	if _, _, ok := RunEndNotificationText("Stardew Valley", launch.Summary{}); ok {
-		t.Fatal("a normal close sends a notification")
-	}
-}
-
-func TestRunEndNotificationTextCrash(t *testing.T) {
-	title, body, ok := RunEndNotificationText("Stardew Valley", launch.Summary{
-		Crashed: true,
-		Mods:    []launch.ModError{{Mod: "A"}, {Mod: "B"}},
-	})
-	if !ok || title != "Stardew Valley crashed" || body != "Mods with errors: 2" {
-		t.Fatalf("got %q / %q", title, body)
-	}
-	title, body, _ = RunEndNotificationText("Stardew Valley", launch.Summary{Crashed: true, Mods: []launch.ModError{{Mod: "A"}}})
-	if title != "Stardew Valley crashed" || body != "Mods with errors: 1" {
-		t.Fatalf("singular: got %q / %q", title, body)
+func TestRunEndNotificationText(t *testing.T) {
+	for _, c := range []struct {
+		name    string
+		summary launch.Summary
+		send    bool
+		title   string
+		body    string
+	}{
+		{"normal close", launch.Summary{}, false, "", ""},
+		{"mods", launch.Summary{Crashed: true, Mods: []launch.ModError{{Mod: "A"}, {Mod: "B"}}}, true, "Stardew Valley crashed", "Mods with errors: 2"},
+		{"one mod", launch.Summary{Crashed: true, Mods: []launch.ModError{{Mod: "A"}}}, true, "Stardew Valley crashed", "Mods with errors: 1"},
+		{"exit code", launch.Summary{Crashed: true, Exit: launch.Exit{Code: 134, Signal: "SIGABRT"}}, true, "Stardew Valley crashed", "Exited with code 134 (SIGABRT)"},
+	} {
+		title, body, ok := RunEndNotificationText("Stardew Valley", c.summary)
+		if ok != c.send || (ok && (title != c.title || body != c.body)) {
+			t.Errorf("%s: got %q / %q, %v", c.name, title, body, ok)
+		}
 	}
 }
 

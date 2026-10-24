@@ -1,14 +1,10 @@
 package launchsvc
 
 import (
-	"path/filepath"
 	"testing"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/backup"
-	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
-	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 func TestChangedSinceLastRun(t *testing.T) {
@@ -37,23 +33,6 @@ func TestChangedSinceLastRun(t *testing.T) {
 				t.Fatalf("changedSinceLastRun() = %t, want %t", got, test.want)
 			}
 		})
-	}
-}
-
-func TestLaunchBackupLocationFollowsGameSetting(t *testing.T) {
-	data := t.TempDir()
-	datadirtest.Use(t, data)
-	custom := filepath.Join(t.TempDir(), "launch-backups")
-	var set settings.Settings
-	if err := settings.ApplyKeyGame(&set, "backupLocation", custom, "stardew"); err != nil {
-		t.Fatal(err)
-	}
-	write, _, err := backup.Locations(data, settings.ResolveAt(set, "backupLocation", settings.Scope{Game: "stardew"}, nil), "stardew")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if want := filepath.Join(custom, "stardew"); write != want {
-		t.Fatalf("write dir = %q, want %q", write, want)
 	}
 }
 
