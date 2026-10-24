@@ -8,3 +8,12 @@ reconciled = "canon v0.1.0-poc"
 # The Astro site (web/) is English only and has no translation catalogue (translations are "not yet", AGENTS.md), so its
 # templates' copy stays literal; the app frontend routes every string through Lingui and keeps the rule.
 "ts-biome-00033" = "web/ is a single-language site with no i18n library; the Lingui frontend keeps noJsxLiterals on"
+# Astro templates are HTML, not React: React's prop names (class, for) do not apply, and Fragment is Astro's own element.
+"ts-biome-00006 suspicious/noUnknownAttribute" = "Astro templates are HTML, not React; React's prop names do not apply"
+"ts-biome-00006 style/noJsxLiterals" = "web/ is a single-language site with no i18n library; the Lingui frontend keeps noJsxLiterals on"
+# The site's pages and data modules run at build time in Bun, reading the repo's files.
+"ts-biome-00006 correctness/noNodejsModules" = "web/src/lib, web/src/pages and content.config.ts run at build time in Bun, reading the repo's files"
+# Registry lookups return whichever registered implementation matches: the interface is the point (.golangci.yml ireturn.allow).
+"go-golangci-lint-00013" = "loader.Loader, game.Game, installer.(Installer|Archive|Game) and deploy.Deployer are registry lookups whose interface is the point, not hidden concrete types"
+# forbidigo bans os.Remove/RemoveAll/ReadFile/WriteFile in favour of fsx; the one exclusion rule lists the paths that keep the plain calls.
+"go-golangci-lint-00014" = "forbidigo routes Mortar's own files through fsx (Windows antivirus and indexer locks, symlink refusal); tests, build tools, /proc reads, a CLI-named file and a game's options file keep the plain calls"
