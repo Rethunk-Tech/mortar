@@ -9,7 +9,12 @@ async function rowLabels(page: Page): Promise<string[]> {
   // The page buttons; Back is the only one named by aria-label.
   for (const button of await nav.locator('button:not([aria-label])').all()) {
     await button.click()
-    await expect(page.locator('[data-setting-label]').first()).toBeVisible()
+    // A page may hold no rows of its own (Launchers lists its launchers), so wait for the page, not a row.
+    await expect(
+      page.getByRole('heading', { level: 2, name: await button.innerText(), exact: true }),
+    ).toBeVisible()
+    // Storage names its per-game rows once it has measured them.
+    await expect(page.getByText(/^Measuring…/)).toHaveCount(0, { timeout: 15_000 })
     for (const text of await page.locator('[data-setting-label]').allInnerTexts()) {
       labels.add(text.trim())
     }
