@@ -81,21 +81,27 @@ func TestPacksStayForTheGraceAfterACheck(t *testing.T) {
 	t.Setenv("LOCALAPPDATA", t.TempDir())
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
-	packGrace = 40 * time.Millisecond
+	// No grace timer fires while the first checks look, however slow the runner (the race detector on CI).
+	packGrace = time.Hour
 	t.Cleanup(func() { packGrace = 30 * time.Second })
 	im, _, _ := diskCachePack(t)
 	end := holdPacks()
 	readContentPack(im)
 	flushPackDiskCache([]framework.Mod{im})
+	packUse.Lock()
+	ended := packUse.gen
+	packUse.Unlock()
 	end()
 	if _, held := packCache.Load(cleanFolder(im)); !held {
 		t.Fatal("the packs left memory the moment the check ended")
 	}
 	next := holdPacks()
-	time.Sleep(3 * packGrace)
+	// The first check's grace running out under a newer check must not release the packs.
+	releasePacks(ended)
 	if _, held := packCache.Load(cleanFolder(im)); !held {
 		t.Fatal("the packs were released under a running check")
 	}
+	packGrace = 40 * time.Millisecond
 	next()
 	deadline := time.Now().Add(5 * time.Second)
 	for time.Now().Before(deadline) {
