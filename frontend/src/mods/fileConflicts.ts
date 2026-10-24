@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import type { FileConflict } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { FileConflicts } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
@@ -26,18 +27,29 @@ export function groupConflicts(conflicts: readonly FileConflict[]): ConflictGrou
   return [...groups.values()].toSorted((a, b) => b.paths.length - a.paths.length)
 }
 
-/** The open profile's package file conflicts, read again whenever the profile changes. */
 const NO_GROUPS: ConflictGroup[] = []
 
+/** The open profile's package file conflicts, read again whenever the profile changes. */
 export function useFileConflicts(): ConflictGroup[] {
   const game = useProfiles((s) => s.game?.id ?? '')
-  const open = useProfiles(openProfileOf)
-  return useLoaded(
-    game && open
-      ? () => FileConflicts(game, open.id).then((got) => groupConflicts(got ?? []))
+  const openId = useProfiles((s) => openProfileOf(s)?.id ?? '')
+  const updated = useProfiles((s) => openProfileOf(s)?.updated)
+  const { data, reload } = useLoaded(
+    game && openId
+      ? () => FileConflicts(game, openId).then((got) => groupConflicts(got ?? []))
       : null,
-    [game, open],
+    [game, openId],
     NO_GROUPS,
     reportUnexpected,
-  ).data
+  )
+  // An edit to the same profile reads again but keeps the list shown until the answer, where new keys would blank it.
+  const seen = useRef({ openId, updated })
+  useEffect(() => {
+    const was = seen.current
+    seen.current = { openId, updated }
+    if (was.openId === openId && was.updated !== updated) {
+      reload()
+    }
+  }, [openId, updated, reload])
+  return data
 }
