@@ -11,11 +11,8 @@ import {
   Typography,
 } from '@mui/material'
 import { FileSearch } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
-import type {
-  RunHit,
-  RunSearch,
-} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
+import { useCallback, useMemo, useState } from 'react'
+import type { RunHit } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { SearchRuns } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
@@ -23,11 +20,10 @@ import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
-import { reportUnexpected } from '../toasts/report.ts'
 import { useOutcomeLabel } from './outcome.ts'
 import { useConsole } from './store.ts'
+import { useRunSearch } from './useRunSearch.ts'
 
-const SEARCH_DEBOUNCE_MS = 250
 const HIT_ALPHA = 0.35
 
 function Highlight({ text, query }: { text: string; query: string }) {
@@ -35,13 +31,17 @@ function Highlight({ text, query }: { text: string; query: string }) {
     return <>{text}</>
   }
   const parts = text.split(new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'ig'))
+  // A match is keyed by where it starts: a line can hold the same match more than once.
+  let at = 0
   return (
     <>
-      {parts.map((part) =>
-        part.toLowerCase() === query.toLowerCase() ? (
+      {parts.map((part) => {
+        const start = at
+        at += part.length
+        return part.toLowerCase() === query.toLowerCase() ? (
           <Box
             component="mark"
-            key={part}
+            key={start}
             sx={{
               bgcolor: (theme) => alpha(theme.palette.warning.main, HIT_ALPHA),
               color: 'inherit',
@@ -51,8 +51,8 @@ function Highlight({ text, query }: { text: string; query: string }) {
           </Box>
         ) : (
           part
-        ),
-      )}
+        )
+      })}
     </>
   )
 }
@@ -64,27 +64,11 @@ export function SearchRunsDialog({ open, onClose }: { open: boolean; onClose: ()
   const viewRun = useConsole((s) => s.viewRun)
   const jumpTo = useConsole((s) => s.jumpTo)
   const [query, setQuery] = useState('')
-  const [result, setResult] = useState<RunSearch>({ hits: [], truncated: false })
-  const [loading, setLoading] = useState(false)
-
-  useEffect(() => {
-    if (!open) {
-      return
-    }
-    const trimmed = query.trim()
-    if (!trimmed) {
-      setResult({ hits: [], truncated: false })
-      return
-    }
-    setLoading(true)
-    const timer = globalThis.setTimeout(() => {
-      SearchRuns(shown.game, shown.profile, trimmed)
-        .then((next) => setResult(next ?? { hits: [], truncated: false }))
-        .catch(reportUnexpected)
-        .finally(() => setLoading(false))
-    }, SEARCH_DEBOUNCE_MS)
-    return () => globalThis.clearTimeout(timer)
-  }, [open, query, shown.game, shown.profile])
+  const search = useCallback(
+    (text: string) => SearchRuns(shown.game, shown.profile, text),
+    [shown.game, shown.profile],
+  )
+  const { result, loading } = useRunSearch(open, query, search)
 
   const groups = useMemo(() => {
     const grouped = new Map<string, RunHit[]>()
