@@ -162,7 +162,8 @@ function CategoryPicker({
 // One compact row: include and exclude category pickers, then the sort. The pickers are disabled for a source with
 // no categories (GitHub, or Nexus while signed out).
 const BrowseFilters = memo(function BrowseFiltersView({
-  categories,
+  categories: names,
+  categoriesWhy: why,
   filter,
   onFilter,
   modes,
@@ -171,7 +172,9 @@ const BrowseFilters = memo(function BrowseFiltersView({
   source,
   sorts,
 }: {
-  categories: { names: string[]; why: string }
+  categories: string[]
+  // Why the categories could not load, or ''.
+  categoriesWhy: string
   filter: BrowseFilter
   onFilter: (next: BrowseFilter) => void
   modes: BrowseModes
@@ -199,7 +202,6 @@ const BrowseFilters = memo(function BrowseFiltersView({
     newest: t`Sort: newest`,
     name: t`Sort: name (A to Z)`,
   }
-  const { names, why } = categories
   const none = names.length === 0
   const title = why
     ? t`Could not load categories: ${why}`

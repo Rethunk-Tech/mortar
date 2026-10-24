@@ -260,7 +260,8 @@ function BrowsePage({
         placeholder={placeholder}
       />
       <BrowseFilters
-        categories={categoryNames}
+        categories={categoryNames.names}
+        categoriesWhy={categoryNames.why}
         filter={filter}
         onFilter={onFilter}
         modes={modes}
