@@ -10,6 +10,7 @@ import { parseInstructions } from '../../share/instructions.ts'
 import { Fold } from '../../shell/Fold.tsx'
 import { useLoaded } from '../../shell/useLoaded.ts'
 import { changelogNoteIsRisky } from '../changelogRange.ts'
+import { MarkdownView } from '../MarkdownView.tsx'
 
 function ChangelogText({ text, risky }: { text: string; risky?: boolean }) {
   return (
@@ -37,7 +38,7 @@ function Version({ entry }: { entry: Changelog }) {
       <Typography variant="subtitle2">
         {entry.date ? `${entry.version} · ${entry.date}` : entry.version}
       </Typography>
-      {entry.body ? <ChangelogText text={entry.body} /> : null}
+      {entry.body ? <MarkdownView source={entry.body} /> : null}
       {(entry.notes ?? []).map((n) => (
         <ChangelogText key={n} text={`• ${n}`} risky={changelogNoteIsRisky(n)} />
       ))}
