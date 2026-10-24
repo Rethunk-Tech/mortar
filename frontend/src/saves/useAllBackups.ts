@@ -1,29 +1,26 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import type { Backup } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/backup/models.ts'
 import { ListBackups } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 
 // Every backup of the game's saves, read once for the whole page so each save's button can count its own; null until
-// the first read. `stamp` changes when the saves do, which is when a backup may have been made.
+// the first read. `stamp` changes when the saves do, which is when a backup may have been made: that reads again but
+// keeps the counts shown, where another game starts over.
 export function useAllBackups(game: string, stamp: string) {
-  const [all, setAll] = useState<Backup[] | null>(null)
-  const latest = useRef(0)
-  // Only the newest read is shown: an older one, for the game shown before or the saves before a change, may answer last.
-  const read = useCallback((g: string) => {
-    latest.current += 1
-    const ask = latest.current
-    return ListBackups(g, '')
-      .then((rows) => {
-        if (ask === latest.current) {
-          setAll(rows ?? [])
-        }
-      })
-      .catch(reportUnexpected)
-  }, [])
-  const key = `${game}\0${stamp}`
+  const { data: all, reload } = useLoaded<Backup[] | null>(
+    () => ListBackups(game, '').then((rows) => rows ?? []),
+    [game],
+    null,
+    reportUnexpected,
+  )
+  const seen = useRef({ game, stamp })
   useEffect(() => {
-    read(key.split('\0')[0] ?? '')
-  }, [key, read])
-  const reload = useCallback(() => read(game), [read, game])
+    const was = seen.current
+    seen.current = { game, stamp }
+    if (was.game === game && was.stamp !== stamp) {
+      reload()
+    }
+  }, [game, stamp, reload])
   return { all, reload }
 }
