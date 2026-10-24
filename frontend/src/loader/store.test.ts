@@ -1,28 +1,24 @@
-import { beforeEach, expect, mock, test } from 'bun:test'
+import { afterEach, beforeEach, expect, mock, test } from 'bun:test'
 import * as loadersvc from '../../bindings/github.com/Rethunk-Tech/mortar/internal/loadersvc/service.ts'
 import { useNav } from '../nav/store.ts'
+import { stubBinding } from '../testing/stubBinding.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useLoader } from './store.ts'
 
-mock.module('@lingui/core/macro', () => ({
-  msg: (parts: TemplateStringsArray) => parts.join(''),
-  plural: () => '',
-}))
-
 let installFails = false
-mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/loadersvc/service.ts', () => ({
-  ...loadersvc,
-  Install: async () => {
+beforeEach(() => {
+  installFails = false
+  stubBinding(loadersvc, 'Install', () => {
     if (installFails) {
       throw new Error('no network')
     }
     return { installed: true, version: '4.5.2' }
-  },
-}))
-
-beforeEach(() => {
+  })
   useLoader.setState(useLoader.getInitialState(), true)
   useToasts.setState(useToasts.getInitialState(), true)
+})
+afterEach(() => {
+  mock.restore()
 })
 
 test('a second install while one is in flight does nothing', async () => {
