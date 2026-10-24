@@ -8,43 +8,34 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
-func TestAppendHealthDedupesWithinWindow(t *testing.T) {
+// A point repeating the last one's counts within the window is dropped; a later one, or one with other counts, is kept.
+func TestAppendHealthKeepsAPointUnlessItRepeatsTheLast(t *testing.T) {
 	t.Parallel()
-	dir := t.TempDir()
 	at := time.Date(2026, 3, 1, 12, 0, 0, 0, time.UTC)
-	if err := AppendHealth(dir, HealthPoint{At: at, Problems: 2, Warnings: 1, Updates: 3}); err != nil {
-		t.Fatal(err)
-	}
-	later := at.Add(5 * time.Minute)
-	if err := AppendHealth(dir, HealthPoint{At: later, Problems: 2, Warnings: 1, Updates: 3}); err != nil {
-		t.Fatal(err)
-	}
-	got, err := ReadHealth(dir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(got) != 1 {
-		t.Fatalf("points = %d, want 1", len(got))
-	}
-}
-
-func TestAppendHealthAllowsAfterWindow(t *testing.T) {
-	t.Parallel()
-	dir := t.TempDir()
-	at := time.Date(2026, 3, 1, 12, 0, 0, 0, time.UTC)
-	if err := AppendHealth(dir, HealthPoint{At: at, Problems: 1, Warnings: 0, Updates: 0}); err != nil {
-		t.Fatal(err)
-	}
-	later := at.Add(11 * time.Minute)
-	if err := AppendHealth(dir, HealthPoint{At: later, Problems: 1, Warnings: 0, Updates: 0}); err != nil {
-		t.Fatal(err)
-	}
-	got, err := ReadHealth(dir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(got) != 2 {
-		t.Fatalf("points = %d, want 2", len(got))
+	first := HealthPoint{At: at, Problems: 2, Warnings: 1, Updates: 3}
+	for _, tc := range []struct {
+		name   string
+		points []HealthPoint
+		want   int
+	}{
+		{"no file", nil, 0},
+		{"same counts within the window", []HealthPoint{first, {At: at.Add(5 * time.Minute), Problems: 2, Warnings: 1, Updates: 3}}, 1},
+		{"same counts after the window", []HealthPoint{first, {At: at.Add(11 * time.Minute), Problems: 2, Warnings: 1, Updates: 3}}, 2},
+		{"other counts within the window", []HealthPoint{first, {At: at.Add(time.Minute), Problems: 3, Warnings: 1, Updates: 3}}, 2},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			dir := t.TempDir()
+			for _, pt := range tc.points {
+				if err := AppendHealth(dir, pt); err != nil {
+					t.Fatal(err)
+				}
+			}
+			got, err := ReadHealth(dir)
+			if err != nil || len(got) != tc.want {
+				t.Fatalf("points = %d, %v; want %d", len(got), err, tc.want)
+			}
+		})
 	}
 }
 
@@ -78,36 +69,6 @@ func TestAppendHealthCapsHistory(t *testing.T) {
 	}
 	if got[len(got)-1].Problems != maxHealthPoints+4 {
 		t.Fatalf("newest problems = %d, want %d", got[len(got)-1].Problems, maxHealthPoints+4)
-	}
-}
-
-func TestAppendHealthAppendsWhenCountsChange(t *testing.T) {
-	t.Parallel()
-	dir := t.TempDir()
-	at := time.Date(2026, 3, 1, 12, 0, 0, 0, time.UTC)
-	if err := AppendHealth(dir, HealthPoint{At: at, Problems: 0, Warnings: 0, Updates: 0}); err != nil {
-		t.Fatal(err)
-	}
-	if err := AppendHealth(dir, HealthPoint{At: at.Add(time.Minute), Problems: 1, Warnings: 0, Updates: 0}); err != nil {
-		t.Fatal(err)
-	}
-	got, err := ReadHealth(dir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(got) != 2 {
-		t.Fatalf("points = %d, want 2", len(got))
-	}
-}
-
-func TestReadHealthMissingFile(t *testing.T) {
-	t.Parallel()
-	got, err := ReadHealth(t.TempDir())
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(got) != 0 {
-		t.Fatalf("points = %d", len(got))
 	}
 }
 

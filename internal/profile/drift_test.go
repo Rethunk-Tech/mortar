@@ -94,37 +94,18 @@ func (e env) mustScanDrift(t *testing.T, profileID string) []Drift {
 	return got
 }
 
-func TestScanDriftIgnoresConfigJSON(t *testing.T) {
+// Files a mod writes while the game runs (its config.json, its data folder) are not outside edits.
+func TestFolderStatIgnoresFilesTheModWrites(t *testing.T) {
 	t.Parallel()
-	mods := t.TempDir()
-	when := time.Date(2026, 3, 1, 12, 0, 0, 0, time.UTC)
-	writeTimed(t, filepath.Join(mods, "mod", "manifest.json"), "a", when)
-	st := mustFolderStat(t, filepath.Join(mods, "mod"), "")
-	writeTimed(t, filepath.Join(mods, "mod", "config.json"), `{"x":1}`, when.Add(time.Hour))
-	after := mustFolderStat(t, filepath.Join(mods, "mod"), "")
-	if after != st {
-		t.Fatalf("config.json counted as an outside edit: %+v vs %+v", st, after)
-	}
-	names, err := liveFolders(mods, "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	got := scanDrift(names, map[string]FolderStat{"mod": after}, []string{"mod"}, ModsSnapshot{Folders: map[string]FolderStat{"mod": st}})
-	if len(got) != 0 {
-		t.Fatalf("config-only change: %#v", got)
-	}
-}
-
-func TestScanDriftIgnoresModDataWrites(t *testing.T) {
-	t.Parallel()
-	mods := t.TempDir()
-	when := time.Date(2026, 3, 1, 12, 0, 0, 0, time.UTC)
-	writeTimed(t, filepath.Join(mods, "mod", "manifest.json"), "a", when)
-	st := mustFolderStat(t, filepath.Join(mods, "mod"), "")
-	writeTimed(t, filepath.Join(mods, "mod", "data", "x.json"), `{"x":1}`, when.Add(time.Hour))
-	after := mustFolderStat(t, filepath.Join(mods, "mod"), "")
-	if after != st {
-		t.Fatalf("data/ counted as an outside edit: %+v vs %+v", st, after)
+	for _, rel := range []string{"config.json", "data/x.json"} {
+		mods := t.TempDir()
+		when := time.Date(2026, 3, 1, 12, 0, 0, 0, time.UTC)
+		writeTimed(t, filepath.Join(mods, "mod", "manifest.json"), "a", when)
+		st := mustFolderStat(t, filepath.Join(mods, "mod"), "")
+		writeTimed(t, filepath.Join(mods, "mod", filepath.FromSlash(rel)), `{"x":1}`, when.Add(time.Hour))
+		if after := mustFolderStat(t, filepath.Join(mods, "mod"), ""); after != st {
+			t.Fatalf("%s counted as an outside edit: %+v vs %+v", rel, st, after)
+		}
 	}
 }
 

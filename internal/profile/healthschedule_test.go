@@ -104,7 +104,7 @@ func TestRunHealthChecksWaitsForStartupToSettle(t *testing.T) {
 	seen := &counted{}
 	svc.Emit = seen.emit
 	old := healthIdleDelay
-	healthIdleDelay = 300 * time.Millisecond
+	healthIdleDelay = 100 * time.Millisecond
 	t.Cleanup(func() { healthIdleDelay = old })
 	ctx, cancel := context.WithCancel(context.Background())
 	settled := make(chan struct{})
@@ -113,12 +113,12 @@ func TestRunHealthChecksWaitsForStartupToSettle(t *testing.T) {
 		svc.RunHealthChecks(ctx, settled)
 		close(done)
 	}()
-	time.Sleep(50 * time.Millisecond)
+	time.Sleep(20 * time.Millisecond)
 	if seen.len() != 0 {
 		t.Fatal("checked before startup settled")
 	}
 	close(settled)
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(30 * time.Millisecond)
 	if seen.len() != 0 {
 		t.Fatal("checked right after startup settled instead of waiting for it to stay quiet")
 	}

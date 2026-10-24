@@ -128,9 +128,22 @@ func TestChangesSinceLastRun(t *testing.T) {
 	e.item(t, "local-a", map[string]string{"A/manifest.json": manifestJSON("Me.A")})
 	e.item(t, "local-b", map[string]string{"B/manifest.json": manifestJSON("Me.B")})
 	p := addFarmMod(t, e)
-	mid := time.Now().UTC()
-	// Event times are whole seconds, so the next event must land in a later second than mid.
-	time.Sleep(time.Until(mid.Truncate(time.Second).Add(time.Second)))
+	// Event times are whole seconds: the events so far move two seconds back so the next one lands after mid.
+	_, dir, err := e.readDir("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := readHistory(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i := range data.Events {
+		data.Events[i].At = data.Events[i].At.Add(-2 * time.Second)
+	}
+	if err := writeHistory(dir, data, 0); err != nil {
+		t.Fatal(err)
+	}
+	mid := time.Now().UTC().Add(-time.Second)
 	if _, err := e.AddEntry("stardew", p.ID, "local-b", Source{Kind: KindLocal, Name: "b.zip"}); err != nil {
 		t.Fatal(err)
 	}
