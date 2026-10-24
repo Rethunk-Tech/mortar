@@ -113,6 +113,11 @@ func TestNothingIsDeletedWhenTheProfileFolderIsGone(t *testing.T) {
 	if read(filepath.Join(rr.shared, "mc", "mc_settings.cfg")) != "player=2" || read(filepath.Join(rr.shared, "mc", "mc_state.dat")) != "created" {
 		t.Fatal("a file with no profile to go to was deleted")
 	}
+	if !slices.ContainsFunc(Notes(m.View.JournalDir), func(n Note) bool {
+		return n.Path == filepath.Join(rr.shared, "mc", "mc_settings.cfg") && n.Kind == NoteRescued
+	}) {
+		t.Fatalf("the changed file left in the shared folder is not noted: %+v", Notes(m.View.JournalDir))
+	}
 }
 
 func TestInstallRootFilesKeepTheirRule(t *testing.T) {

@@ -283,6 +283,8 @@ func undoOps(ctx context.Context, m *Manifest, log *opLog) error {
 						if err := fsx.Remove(o.Dst); err != nil {
 							return err
 						}
+					} else {
+						m.notes = append(m.notes, Note{Path: o.Dst, Kind: NoteRescued})
 					}
 				}
 			}
