@@ -115,6 +115,20 @@ const CLICK = `
   }
   tryClick()
 `
+// The page-side wait: done once the DOM has not changed for quiet ms, or max ms have passed.
+const STILL = `
+  const [quiet, max, done] = arguments
+  const start = Date.now()
+  let last = start
+  const watch = new MutationObserver(() => { last = Date.now() })
+  watch.observe(document, { subtree: true, childList: true, attributes: true, characterData: true })
+  const tick = () => {
+    const now = Date.now()
+    if (now - last >= quiet || now - start >= max) { watch.disconnect(); done(true) } else { setTimeout(tick, 50) }
+  }
+  tick()
+`
+const QUIET_MS = 300
 const check = (fn: () => unknown) => `return (${fn.toString()})()`
 
 // MiniBrowser's environment: the sandbox's hidden X display only (its Xwayland), with Wayland and every other display
@@ -147,9 +161,12 @@ const click = async (id: string, s: Step) =>
     }),
   )
 
+const still = (id: string, maxMs: number) =>
+  call('POST', `/session/${id}/execute/async`, { script: STILL, args: [QUIET_MS, maxMs] })
+
 async function load(id: string, url: string) {
   await call('POST', `/session/${id}/url`, { url })
-  await Bun.sleep(SETTLE_MS)
+  await still(id, SETTLE_MS)
 }
 
 async function shoot(id: string, file: string) {
@@ -167,7 +184,7 @@ async function visit(id: string, screen: Screen, w: Walk): Promise<string[]> {
     if (w.shots && s === screen.steps.at(-1)) {
       await shoot(id, join(w.shots, 'loading', `${screen.name}.png`))
     }
-    await Bun.sleep(SETTLE_MS / 2)
+    await still(id, SETTLE_MS / 2)
   }
   if (!reached) {
     await load(id, w.url)
@@ -181,10 +198,10 @@ async function visit(id: string, screen: Screen, w: Walk): Promise<string[]> {
       if (w.shots && s === screen.steps.at(-1)) {
         await shoot(id, join(w.shots, 'loading', `${screen.name}.png`))
       }
-      await Bun.sleep(SETTLE_MS / 2)
+      await still(id, SETTLE_MS / 2)
     }
   }
-  await Bun.sleep(SETTLE_MS)
+  await still(id, SETTLE_MS)
   for (const fn of [collapsed, covered, overflow]) {
     const found = await call('POST', `/session/${id}/execute/sync`, { script: check(fn), args: [] })
     for (const b of Array.isArray(found) ? found.filter(isJson) : []) {
