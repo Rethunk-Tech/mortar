@@ -8,14 +8,13 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"path"
 	"path/filepath"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/winname"
 )
 
@@ -93,26 +92,15 @@ func (d *Direct) Fetch(ctx context.Context, rawURL, dstDir string) (string, erro
 	if resp.ContentLength > limit {
 		return "", fmt.Errorf("larger than %s", bytefmt.Format(limit))
 	}
-	tmp, err := os.CreateTemp(dstDir, ".download-*")
-	if err != nil {
-		return "", err
-	}
-	defer func() { _ = os.Remove(tmp.Name()) }()
-	n, err := io.Copy(tmp, io.LimitReader(resp.Body, limit+1))
-	if err == nil && n > limit {
-		err = fmt.Errorf("larger than %s", bytefmt.Format(limit))
-	}
-	if err == nil {
-		err = tmp.Sync()
-	}
-	if cerr := tmp.Close(); err == nil {
-		err = cerr
-	}
-	if err != nil {
-		return "", err
-	}
 	dst := filepath.Join(dstDir, fileName(u))
-	if err := fsx.Rename(tmp.Name(), dst); err != nil {
+	err = datadir.WriteStream(dst, 0o600, func(w io.Writer) error {
+		n, err := io.Copy(w, io.LimitReader(resp.Body, limit+1))
+		if err == nil && n > limit {
+			err = fmt.Errorf("larger than %s", bytefmt.Format(limit))
+		}
+		return err
+	})
+	if err != nil {
 		return "", err
 	}
 	return dst, nil
