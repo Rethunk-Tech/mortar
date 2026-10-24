@@ -5,6 +5,7 @@ import {
   gridColumnCount,
   groupKeyHolding,
   orderedModIds,
+  revealMod,
   stepId,
   stuckHeader,
   typeaheadChar,
@@ -156,4 +157,36 @@ test('a collapsed group hides the groups inside it only when groups are nested',
     }).map((row) => row.key)
   expect(keys(true)).toEqual(['h:Looks', 'h:Core', 'r:2'])
   expect(keys(false)).toEqual(['h:Looks', 'h:Looks/Hats', 'r:1', 'h:Core', 'r:2'])
+})
+
+// Opening a mod reveals it once; collapsing its group or another one afterwards is the user's choice, not undone.
+test('the open mod is revealed when opened, not after the user collapses a group', () => {
+  const shown = [
+    { key: 'problems', items: [{ id: 'p' }] },
+    { key: 'enabled', items: [{ id: 'a' }, { id: 'b' }] },
+  ]
+  const expanded: string[] = []
+  const scrolled: number[] = []
+  const done = { expandedFor: '', scrolledTo: '' }
+  const reveal = (detailId: string, collapsed: Record<string, boolean>) =>
+    revealMod(done, {
+      detailId,
+      groups: shown,
+      items: flattenModGroups(shown, { grouped: true, collapsed, idOf }),
+      idOf,
+      collapsed,
+      setCollapsed: (fn) => expanded.push(Object.keys(fn({ enabled: true })).join()),
+      gameId: '',
+      virtualizer: { scrollToIndex: (i: number) => scrolled.push(i) },
+    })
+  reveal('b', {})
+  expect(scrolled.length).toBe(1)
+
+  reveal('b', { problems: true })
+  reveal('b', { problems: true, enabled: true })
+  expect(expanded).toEqual([])
+  expect(scrolled.length).toBe(1)
+
+  reveal('a', { problems: true, enabled: true })
+  expect(expanded.length).toBe(1)
 })

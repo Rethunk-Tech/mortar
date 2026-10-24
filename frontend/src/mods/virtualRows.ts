@@ -258,8 +258,7 @@ export function focusModAt<T>(view: ModView<T>, id: string) {
   })
 }
 
-// Brings the open detail's row into view, expanding its group first when collapsed.
-export function useModReveal<T>(opts: {
+interface RevealOpts<T> {
   detailId: string
   groups: readonly { key: string; items: readonly T[] }[]
   items: readonly VirtualRow<T>[]
@@ -268,34 +267,54 @@ export function useModReveal<T>(opts: {
   setCollapsed: (fn: (cur: Record<string, boolean>) => Record<string, boolean>) => void
   gameId: string
   virtualizer: Scroller
-}) {
-  const { detailId, groups, items, idOf, collapsed, setCollapsed, gameId, virtualizer } = opts
-  // The mod last expanded for and the mod last scrolled to: each happens once per opened mod, so a group the user
-  // collapses afterwards, or one above it, stays as the user left it.
-  const expandedFor = useRef('')
-  const scrolledTo = useRef('')
-  useLayoutEffect(() => {
-    if (!detailId) {
-      expandedFor.current = ''
-      scrolledTo.current = ''
-      return
+}
+
+// Brings the open detail's row into view, expanding its group first when collapsed. `done` holds the mod last
+// expanded for and the mod last scrolled to: each happens once per opened mod, so a group the user
+// collapses afterwards, or one above it, stays as the user left it.
+export function revealMod<T>(
+  done: { expandedFor: string; scrolledTo: string },
+  { detailId, groups, items, idOf, collapsed, setCollapsed, gameId, virtualizer }: RevealOpts<T>,
+) {
+  if (!detailId) {
+    done.expandedFor = ''
+    done.scrolledTo = ''
+    return
+  }
+  const held = groupKeyHolding(groups, (row) => idOf(row) === detailId)
+  if (held !== undefined && collapsed[held] === true) {
+    if (done.expandedFor !== detailId) {
+      done.expandedFor = detailId
+      setCollapsed((cur) => toggleCollapsed(gameId, cur, held, false))
     }
-    const held = groupKeyHolding(groups, (row) => idOf(row) === detailId)
-    if (held !== undefined && collapsed[held] === true) {
-      if (expandedFor.current !== detailId) {
-        expandedFor.current = detailId
-        setCollapsed((cur) => toggleCollapsed(gameId, cur, held, false))
-      }
-      return
-    }
-    expandedFor.current = detailId
-    const idx = virtualIndexOf(items, detailId, idOf)
-    if (scrolledTo.current === detailId || idx < 0) {
-      return
-    }
-    scrolledTo.current = detailId
-    virtualizer.scrollToIndex(idx, { align: 'auto' })
-  }, [collapsed, detailId, gameId, groups, idOf, items, setCollapsed, virtualizer])
+    return
+  }
+  done.expandedFor = detailId
+  const idx = virtualIndexOf(items, detailId, idOf)
+  if (done.scrolledTo === detailId || idx < 0) {
+    return
+  }
+  done.scrolledTo = detailId
+  virtualizer.scrollToIndex(idx, { align: 'auto' })
+}
+
+export function useModReveal<T>(opts: RevealOpts<T>) {
+  const done = useRef({ expandedFor: '', scrolledTo: '' })
+  const { collapsed, detailId, gameId, groups, idOf, items, setCollapsed, virtualizer } = opts
+  useLayoutEffect(
+    () =>
+      revealMod(done.current, {
+        collapsed,
+        detailId,
+        gameId,
+        groups,
+        idOf,
+        items,
+        setCollapsed,
+        virtualizer,
+      }),
+    [collapsed, detailId, gameId, groups, idOf, items, setCollapsed, virtualizer],
+  )
 }
 
 /** Scrolls the open mod into view. A component of its own that renders nothing, so opening another mod re-renders
