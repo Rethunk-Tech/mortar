@@ -223,6 +223,8 @@ type Settings struct {
 	DownloadFolder string `json:"downloadFolder"`
 	// WatchFolders are extra folders, joined by the OS path-list separator, that new archives are offered from.
 	WatchFolders string `json:"watchFolders,omitempty"`
+	// ALVRProgram is ALVR's dashboard, which a game set to start ALVR first runs before the game.
+	ALVRProgram string `json:"alvrProgram,omitempty"`
 	// AutoInstallFolders is read only to move each folder into the last game's extra mods folders, which install
 	// themselves the same way (written by 0.3.9 to 0.3.13).
 	AutoInstallFolders string `json:"autoInstallFolders,omitempty"`

@@ -37,6 +37,8 @@ type GameSettings struct {
 	EnableRequirements          string `json:"enableRequirements"`
 	MissingRequirements         string `json:"missingRequirements"`
 	DefaultLaunchMethod         string `json:"defaultLaunchMethod"`
+	// StartFirst is the VR runtime Play starts before the game: off, SteamVR, or ALVR (whose dashboard starts SteamVR).
+	StartFirst string `json:"startFirst,omitempty"`
 	// Instances is how many processes a direct Play starts (1–8). Steam and store URL launches ignore it.
 	Instances int `json:"instances"`
 	// DelaySeconds is the pause between those processes.
@@ -245,6 +247,8 @@ var registry = withDefaults([]pref{
 	loaderPref("rivet", pinPref("rivetPin", "rivet")),
 	loaderPref("umm", pinPref("ummPin", "umm")),
 	loaderPref("shimloader", pinPref("shimloaderPin", "shimloader")),
+	overridable(enumPref("startFirst", ScopeGame, startFirstValues, func(s Settings, g string) string { return s.GamePrefs(g).StartFirst }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.StartFirst = v; putGame(s, g, gp) })),
+	strPref("alvrProgram", ScopeApp, func(s Settings, _ string) string { return s.ALVRProgram }, func(s *Settings, _, v string) { s.ALVRProgram = v }),
 	overridable(enumPref("defaultLaunchMethod", ScopeGame, launchMethodValues, func(s Settings, g string) string { return s.GamePrefs(g).DefaultLaunchMethod }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.DefaultLaunchMethod = v; putGame(s, g, gp) })),
 	overridable(intPref("instances", ScopeGame, MinInstances, MaxInstances, func(s Settings, g string) int { return s.GamePrefs(g).Instances }, func(s *Settings, g string, n int) { gp := s.GamePrefs(g); gp.Instances = n; putGame(s, g, gp) })),
 	overridable(intPref("delaySeconds", ScopeGame, MinDelaySeconds, MaxDelaySeconds, func(s Settings, g string) int { return s.GamePrefs(g).DelaySeconds }, func(s *Settings, g string, n int) { gp := s.GamePrefs(g); gp.DelaySeconds = n; putGame(s, g, gp) })),
@@ -343,6 +347,7 @@ func defaultGameSettings() GameSettings {
 		EnableRequirements:          EnableReqAlways,
 		MissingRequirements:         MissingReqAsk,
 		DefaultLaunchMethod:         LaunchSteam,
+		StartFirst:                  StartFirstOff,
 		Instances:                   DefaultInstances,
 		DelaySeconds:                DefaultDelaySeconds,
 		ConsoleLevel:                ConsoleLevelWarn,
@@ -425,6 +430,9 @@ func mergeGame(dst *GameSettings, src GameSettings) {
 	}
 	if src.MissingRequirements != "" {
 		dst.MissingRequirements = src.MissingRequirements
+	}
+	if src.StartFirst != "" {
+		dst.StartFirst = src.StartFirst
 	}
 	if src.DefaultLaunchMethod != "" {
 		dst.DefaultLaunchMethod = src.DefaultLaunchMethod
@@ -519,6 +527,9 @@ func normalizeGame(id string, g *GameSettings) {
 	}
 	if !slices.Contains(missingReqValues, g.MissingRequirements) {
 		g.MissingRequirements = d.MissingRequirements
+	}
+	if !slices.Contains(startFirstValues, g.StartFirst) {
+		g.StartFirst = d.StartFirst
 	}
 	if !slices.Contains(launchMethodValues, g.DefaultLaunchMethod) {
 		g.DefaultLaunchMethod = d.DefaultLaunchMethod

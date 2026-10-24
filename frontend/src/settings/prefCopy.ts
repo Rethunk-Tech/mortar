@@ -7,6 +7,7 @@ import { antivirusPrefs, type PrefCopy } from './prefCopyAntivirus.ts'
 import { gamePrefs } from './prefCopyGame.ts'
 import { graphicsPrefs } from './prefCopyGraphics.ts'
 import { modsViewPrefs } from './prefCopyModsView.ts'
+import { vrPrefs } from './vrPrefCopy.ts'
 
 function windowAndMods(i18n: I18n): Record<string, PrefCopy> {
   return {
@@ -490,6 +491,7 @@ export function prefCopy(i18n: I18n, key: string): PrefCopy {
     logsAndNexus(i18n)[key] ??
     batchPrefs(i18n)[key] ??
     modsViewPrefs(i18n)[key] ??
-    gamePrefs(i18n)[key] ?? { label: key }
+    gamePrefs(i18n)[key] ??
+    vrPrefs(i18n)[key] ?? { label: key }
   )
 }

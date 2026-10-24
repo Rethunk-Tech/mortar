@@ -50,6 +50,8 @@ function overrideLabel(key: OverrideKey, i18n: I18n): string {
   switch (key) {
     case 'defaultLaunchMethod':
       return i18n._(msg`Launch method`)
+    case 'startFirst':
+      return i18n._(msg`Start first`)
     case 'showSmapiConsole':
       return i18n._(msg`${{ loader: SMAPI }} console window`)
     case 'backupBeforePlay':

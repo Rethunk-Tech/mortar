@@ -4,6 +4,7 @@ import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/inte
 import { prefCopy } from '../settings/prefCopy.ts'
 export const OVERRIDE_KEYS = [
   'defaultLaunchMethod',
+  'startFirst',
   'instances',
   'delaySeconds',
   'showSmapiConsole',
@@ -35,6 +36,7 @@ export type OverrideKey = (typeof OVERRIDE_KEYS)[number]
 
 export const OVERRIDE_VALUES: Record<OverrideKey, string[]> = {
   defaultLaunchMethod: ['steam', 'direct'],
+  startFirst: ['off', 'steamvr', 'alvr'],
   instances: ['1', '2', '3', '4', '5', '6', '7', '8'],
   delaySeconds: Array.from({ length: 60 }, (_, i) => String(i + 1)),
   showSmapiConsole: ['true', 'false'],

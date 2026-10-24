@@ -31,6 +31,7 @@ msgstr ""
 msgid "Other"
 msgstr ""
 
+#: src/settings/sections/ALVRProgram.tsx
 #: src/settings/sections/GameSync.tsx
 #: src/settings/sections/SyncFolder.tsx
 msgid "Choose…"
@@ -794,6 +795,7 @@ msgstr ""
 #: src/settings/prefCopyAntivirus.ts
 #: src/settings/prefCopyGame.ts
 #: src/settings/sections/SyncFolder.tsx
+#: src/settings/vrPrefCopy.ts
 msgid "Off"
 msgstr ""
 
@@ -993,6 +995,10 @@ msgstr ""
 msgid "How mods Mortar brought in for other mods appear in the mod list"
 msgstr ""
 
+#: src/settings/vrPrefCopy.ts
+msgid "{name} program"
+msgstr ""
+
 #: src/settings/sections/Appearance.tsx
 msgid "Size"
 msgstr ""
@@ -1159,6 +1165,10 @@ msgstr ""
 msgid "Search {game} settings"
 msgstr ""
 
+#: src/settings/vrPrefCopy.ts
+msgid "Start first"
+msgstr ""
+
 #: src/settings/prefCopyGame.ts
 msgid "Which version of a {source} mod's dependency to install when the mod names one"
 msgstr ""
@@ -1249,6 +1259,7 @@ msgstr ""
 #: src/settings/PrefControls.tsx
 #: src/settings/PrefRow.tsx
 #: src/settings/ProtonRow.tsx
+#: src/settings/sections/ALVRProgram.tsx
 #: src/settings/sections/Appearance.tsx
 #: src/settings/sections/Downloads.tsx
 #: src/settings/sections/ExtraModsFolders.tsx
@@ -2064,6 +2075,10 @@ msgstr ""
 msgid "Use default"
 msgstr ""
 
+#: src/settings/sections/ALVRProgram.tsx
+msgid "Choose the {alvr} dashboard"
+msgstr ""
+
 #: src/settings/sections/Updates.tsx
 msgid "Open game settings"
 msgstr ""
@@ -2138,6 +2153,10 @@ msgstr ""
 
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "{source} download links"
+msgstr ""
+
+#: src/settings/vrPrefCopy.ts
+msgid "The {alvr} dashboard program, started before a game set to start it first"
 msgstr ""
 
 #: src/settings/sections/Notifications.tsx
@@ -3091,6 +3110,10 @@ msgstr ""
 msgid "Not contacted yet"
 msgstr ""
 
+#: src/settings/vrPrefCopy.ts
+msgid "Starts a VR runtime before the game; the {alvr} dashboard opens {runtime} itself. Leave it off in a profile that plays the game on a flat screen."
+msgstr ""
+
 #: src/settings/GraphicsApiRow.tsx
 msgid "Ask when I press Play"
 msgstr ""
@@ -3201,6 +3224,10 @@ msgstr ""
 
 #: src/settings/sections/Sources.tsx
 msgid "it took too long to answer"
+msgstr ""
+
+#: src/settings/sections/ALVRProgram.tsx
+msgid "Not chosen"
 msgstr ""
 
 #: src/settings/sections/StreamOverlay.tsx

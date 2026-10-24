@@ -22,6 +22,7 @@ import { PrefKeys } from './PrefRow.tsx'
 import { ProtonRow } from './ProtonRow.tsx'
 import { SettingsSection } from './SettingsSection.tsx'
 import { SettingsShell, type ShellPage } from './SettingsShell.tsx'
+import { ALVRProgram } from './sections/ALVRProgram.tsx'
 import { HistoryUsageRows } from './sections/DataHistory.tsx'
 import { DismissedFolders } from './sections/DismissedFolders.tsx'
 import { ExtraModsFolders } from './sections/ExtraModsFolders.tsx'
@@ -119,6 +120,12 @@ function GamePages({
   const info = useGameInfo(game)
   const loader = useProfiles((s) => s.game?.loaders?.[0])
   const launchDirect = useSettings((s) => gamePrefs(s, game).defaultLaunchMethod === 'direct')
+  // The ALVR program row shows wherever ALVR can start first: the game's choice or a profile's override.
+  const gameALVR = useSettings((s) => gamePrefs(s, game).startFirst === 'alvr')
+  const profileALVR = useProfiles((s) =>
+    s.game?.id === game ? s.profiles.some((p) => p.overrides?.startFirst === 'alvr') : false,
+  )
+  const startsALVR = gameALVR || profileALVR
   const { related, dialog } = usePerProfileRelated(game)
   const pages: ShellPage<GamePage>[] = [
     { id: 'install', label: t`Install`, icon: FolderOpen },
@@ -155,6 +162,7 @@ function GamePages({
             <PrefKeys
               keys={[
                 'defaultLaunchMethod',
+                'startFirst',
                 ...(launchDirect ? ['instances', 'delaySeconds'] : []),
                 ...(loader?.id === 'smapi' ? ['showSmapiConsole'] : []),
                 ...(loader?.introSkip ? ['skipIntro'] : []),
@@ -164,6 +172,7 @@ function GamePages({
               ]}
               game={game}
             />
+            {startsALVR ? <ALVRProgram /> : null}
             <GraphicsApiRow game={game} />
             <ProtonRow game={game} />
           </SettingsSection>

@@ -29,6 +29,7 @@ export interface GamePrefBlock {
   missingRequirements: string
   smapiBuilds: string
   defaultLaunchMethod: string
+  startFirst: string
   showSmapiConsole: boolean
   consoleLevel: string
   consoleTimestamps: boolean
@@ -56,6 +57,7 @@ export function gamePrefs(s: Settings, game = currentGame()): GamePrefBlock {
     enableRequirements: text('enableRequirements', game),
     missingRequirements: text('missingRequirements', game),
     defaultLaunchMethod: text('defaultLaunchMethod', game),
+    startFirst: text('startFirst', game),
     consoleLevel: text('consoleLevel', game),
     consoleTimestamps: flag('consoleTimestamps', game),
     consoleFollow: flag('consoleFollow', game),
@@ -78,6 +80,7 @@ export function gamePrefs(s: Settings, game = currentGame()): GamePrefBlock {
     enableRequirements: got.enableRequirements || defaults.enableRequirements,
     missingRequirements: got.missingRequirements || defaults.missingRequirements,
     defaultLaunchMethod: got.defaultLaunchMethod || defaults.defaultLaunchMethod,
+    startFirst: got.startFirst || defaults.startFirst,
     consoleLevel: got.consoleLevel || defaults.consoleLevel,
     consoleTimestamps: on(got.consoleTimestamps, defaults.consoleTimestamps),
     consoleFollow: on(got.consoleFollow, defaults.consoleFollow),

@@ -549,6 +549,10 @@ msgstr ""
 msgid "Choose where {name} lives"
 msgstr ""
 
+#: src/profiles/OverrideRows.tsx
+msgid "Start first"
+msgstr ""
+
 #: src/profiles/CompareTable.tsx
 #: src/profiles/GameModsDialog.tsx
 #: src/profiles/ProfilesPage.tsx

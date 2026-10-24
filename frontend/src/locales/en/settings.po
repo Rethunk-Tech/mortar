@@ -31,6 +31,7 @@ msgstr "{source} CLI login"
 msgid "Other"
 msgstr "Other"
 
+#: src/settings/sections/ALVRProgram.tsx
 #: src/settings/sections/GameSync.tsx
 #: src/settings/sections/SyncFolder.tsx
 msgid "Choose…"
@@ -794,6 +795,7 @@ msgstr "Sound volume"
 #: src/settings/prefCopyAntivirus.ts
 #: src/settings/prefCopyGame.ts
 #: src/settings/sections/SyncFolder.tsx
+#: src/settings/vrPrefCopy.ts
 msgid "Off"
 msgstr "Off"
 
@@ -993,6 +995,10 @@ msgstr "Collapsed"
 msgid "How mods Mortar brought in for other mods appear in the mod list"
 msgstr "How mods Mortar brought in for other mods appear in the mod list"
 
+#: src/settings/vrPrefCopy.ts
+msgid "{name} program"
+msgstr "{name} program"
+
 #: src/settings/sections/Appearance.tsx
 msgid "Size"
 msgstr "Size"
@@ -1159,6 +1165,10 @@ msgstr "Share libraries and supporting mods"
 msgid "Search {game} settings"
 msgstr "Search {game} settings"
 
+#: src/settings/vrPrefCopy.ts
+msgid "Start first"
+msgstr "Start first"
+
 #: src/settings/prefCopyGame.ts
 msgid "Which version of a {source} mod's dependency to install when the mod names one"
 msgstr "Which version of a {source} mod's dependency to install when the mod names one"
@@ -1249,6 +1259,7 @@ msgstr "{name} version"
 #: src/settings/PrefControls.tsx
 #: src/settings/PrefRow.tsx
 #: src/settings/ProtonRow.tsx
+#: src/settings/sections/ALVRProgram.tsx
 #: src/settings/sections/Appearance.tsx
 #: src/settings/sections/Downloads.tsx
 #: src/settings/sections/ExtraModsFolders.tsx
@@ -2064,6 +2075,10 @@ msgstr "Not found"
 msgid "Use default"
 msgstr "Use default"
 
+#: src/settings/sections/ALVRProgram.tsx
+msgid "Choose the {alvr} dashboard"
+msgstr "Choose the {alvr} dashboard"
+
 #: src/settings/sections/Updates.tsx
 msgid "Open game settings"
 msgstr "Open game settings"
@@ -2139,6 +2154,10 @@ msgstr "Mod list"
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "{source} download links"
 msgstr "{source} download links"
+
+#: src/settings/vrPrefCopy.ts
+msgid "The {alvr} dashboard program, started before a game set to start it first"
+msgstr "The {alvr} dashboard program, started before a game set to start it first"
 
 #: src/settings/sections/Notifications.tsx
 msgid "A download fails"
@@ -3091,6 +3110,10 @@ msgstr "Mining skill"
 msgid "Not contacted yet"
 msgstr "Not contacted yet"
 
+#: src/settings/vrPrefCopy.ts
+msgid "Starts a VR runtime before the game; the {alvr} dashboard opens {runtime} itself. Leave it off in a profile that plays the game on a flat screen."
+msgstr "Starts a VR runtime before the game; the {alvr} dashboard opens {runtime} itself. Leave it off in a profile that plays the game on a flat screen."
+
 #: src/settings/GraphicsApiRow.tsx
 msgid "Ask when I press Play"
 msgstr "Ask when I press Play"
@@ -3202,6 +3225,10 @@ msgstr "About"
 #: src/settings/sections/Sources.tsx
 msgid "it took too long to answer"
 msgstr "it took too long to answer"
+
+#: src/settings/sections/ALVRProgram.tsx
+msgid "Not chosen"
+msgstr "Not chosen"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "World"

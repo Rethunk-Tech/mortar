@@ -43,7 +43,7 @@ var sectionFields = map[string][]string{
 		"shareIncludeLibraries",
 		"lanSharing", "lanPort", "lanAllowAnyAddress", "lanName", "lanAutoAcceptPaired",
 	},
-	SectionGames: {"games", "smapiBuilds", "loaderPrefs", "showSmapiConsole"},
+	SectionGames: {"games", "smapiBuilds", "loaderPrefs", "showSmapiConsole", "alvrProgram"},
 }
 
 // ImportSections lists every section id.

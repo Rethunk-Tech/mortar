@@ -549,6 +549,10 @@ msgstr "Crashed in {nativeFrame}"
 msgid "Choose where {name} lives"
 msgstr "Choose where {name} lives"
 
+#: src/profiles/OverrideRows.tsx
+msgid "Start first"
+msgstr "Start first"
+
 #: src/profiles/CompareTable.tsx
 #: src/profiles/GameModsDialog.tsx
 #: src/profiles/ProfilesPage.tsx

@@ -78,6 +78,10 @@ const (
 	LaunchSteam  = "steam"
 	LaunchDirect = "direct"
 
+	StartFirstOff     = "off"
+	StartFirstSteamVR = "steamvr"
+	StartFirstALVR    = "alvr"
+
 	ConsoleLevelTrace = "trace"
 	ConsoleLevelDebug = "debug"
 	ConsoleLevelInfo  = "info"
@@ -484,6 +488,7 @@ var (
 	missingReqValues          = []string{MissingReqAsk, MissingReqAutodownload, MissingReqNever}
 	smapiBuildsValues         = []string{SmapiBuildsNever, SmapiBuildsShow, SmapiBuildsInclude}
 	launchMethodValues        = []string{LaunchSteam, LaunchDirect}
+	startFirstValues          = []string{StartFirstOff, StartFirstSteamVR, StartFirstALVR}
 	consoleLevelValues        = []string{ConsoleLevelTrace, ConsoleLevelDebug, ConsoleLevelInfo, ConsoleLevelWarn, ConsoleLevelError}
 	profileOrderValues        = []string{ProfileOrderManual, ProfileOrderName, ProfileOrderLastPlayed}
 	thunderstoreHostValues    = []string{ThunderstoreHostAuto, ThunderstoreHostC, ThunderstoreHostG, ThunderstoreHostH}

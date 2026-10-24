@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -577,5 +578,39 @@ func TestStartSchedulesDirectInstances(t *testing.T) {
 				t.Fatalf("starts %d delays %v, want %d %v", starts, delays, tc.wantStarts, tc.wantDelays)
 			}
 		})
+	}
+}
+
+// Play starts the VR runtime the game is set to start first: SteamVR through Steam, ALVR's dashboard by its program.
+func TestStartVRStartsTheRuntimeFirst(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		t.Skip("Steam's command line is checked on Linux")
+	}
+	var ran [][]string
+	st := Starter{
+		LookPath: func(name string) (string, error) { return "/usr/bin/" + name, nil },
+		Runner: func(_, name string, args ...string) (<-chan error, error) {
+			ran = append(ran, append([]string{name}, args...))
+			return make(chan error), nil
+		},
+	}
+	env := StartEnv{Steam: &steam.Steam{Root: t.TempDir()}}
+	for _, off := range []string{"", settings.StartFirstOff} {
+		env.StartFirst = off
+		if err := st.startVR(t.Context(), env); err != nil || len(ran) != 0 {
+			t.Fatalf("%q: ran %v, %v", off, ran, err)
+		}
+	}
+	env.StartFirst = settings.StartFirstSteamVR
+	if err := st.startVR(t.Context(), env); err != nil || !slices.Equal(ran[0], []string{"/usr/bin/steam", "-applaunch", "250820"}) {
+		t.Fatalf("SteamVR: ran %v, %v", ran, err)
+	}
+	env.StartFirst = settings.StartFirstALVR
+	if err := st.startVR(t.Context(), env); err == nil {
+		t.Fatal("ALVR with no program chosen started")
+	}
+	env.ALVRProgram = filepath.Join(t.TempDir(), "alvr-dashboard-not-running")
+	if err := st.startVR(t.Context(), env); err != nil || len(ran) != 2 || ran[1][0] != env.ALVRProgram {
+		t.Fatalf("ALVR: ran %v, %v", ran, err)
 	}
 }

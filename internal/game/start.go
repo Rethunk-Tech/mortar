@@ -19,7 +19,9 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	gameruntime "github.com/Rethunk-Tech/mortar/internal/runtime"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/steam"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // StartEnv is what starting a plan needs beyond the plan itself.
@@ -49,6 +51,10 @@ type StartEnv struct {
 	Instances int
 	// DelaySeconds is the pause between those processes.
 	DelaySeconds int
+	// StartFirst is the VR runtime started before the game (settings.StartFirstSteamVR or StartFirstALVR), and
+	// ALVRProgram ALVR's dashboard; empty or off starts none.
+	StartFirst  string
+	ALVRProgram string
 }
 
 // Starter starts launch plans the way the install's store requires: Steam installs through `steam -applaunch`, which
@@ -77,6 +83,9 @@ func (st Starter) Start(ctx context.Context, inst Install, plan *launchplan.Plan
 	sleep := st.Sleep
 	if sleep == nil {
 		sleep = waitDelay
+	}
+	if err := st.startVR(ctx, env); err != nil {
+		return err
 	}
 	for i := 0; i < n; i++ {
 		if i > 0 {
@@ -253,8 +262,11 @@ func (st Starter) command(goos string, inst Install, plan *launchplan.Plan, env 
 		return launch.Command{Dir: inst.Dir, Name: name, Args: args, Env: env}, nil
 	}
 	info, _ := catalogGame(inst.Game)
-	appID := []string{"-applaunch", info.SteamAppID()}
-	args := append(slices.Clone(appID), plan.Args...)
+	return st.steamRelay(goos, env, steamPath, flatpakPath, append([]string{"-applaunch", info.SteamAppID()}, plan.Args...))
+}
+
+// steamRelay hands args to Steam (`steam -applaunch <app>`), which starts the app and exits.
+func (st Starter) steamRelay(goos string, env StartEnv, steamPath, flatpakPath string, args []string) (launch.Command, error) {
 	switch {
 	case env.Steam == nil:
 		return launch.Command{}, launch.ErrNoSteam
@@ -335,4 +347,47 @@ func environ(env map[string]string) []string {
 	}
 	slices.Sort(out)
 	return out
+}
+
+// steamVRAppID is SteamVR's Steam app.
+const steamVRAppID = "250820"
+
+// startVR starts the VR runtime the game is set to start first and returns without waiting for it: SteamVR through
+// Steam, or ALVR's dashboard (which opens SteamVR itself) unless it already runs. The game then starts as usual.
+func (st Starter) startVR(ctx context.Context, env StartEnv) error {
+	var cmd launch.Command
+	switch env.StartFirst {
+	case settings.StartFirstSteamVR:
+		lookPath := st.lookPathOrDefault()
+		steamPath, _ := lookPath("steam")
+		flatpakPath, _ := lookPath("flatpak")
+		c, err := st.steamRelay(runtime.GOOS, env, steamPath, flatpakPath, []string{"-applaunch", steamVRAppID})
+		if err != nil {
+			return err
+		}
+		cmd = c
+	case settings.StartFirstALVR:
+		if env.ALVRProgram == "" {
+			return usererr.Wrap(usererr.Invalid, errors.New("ALVR is set to start first, but its program is not chosen: choose it in the game's Play settings"))
+		}
+		if running, err := launch.Processes("/proc", filepath.Base(env.ALVRProgram)); err == nil && len(running) > 0 {
+			return nil
+		}
+		cmd = launch.Command{Dir: filepath.Dir(env.ALVRProgram), Name: env.ALVRProgram}
+	default:
+		return nil
+	}
+	if sandbox.InFlatpak() {
+		cmd = onHost(cmd)
+	}
+	run := st.Runner
+	if run == nil {
+		run = func(dir, name string, args ...string) (<-chan error, error) {
+			return launch.StartWithEnv(context.WithoutCancel(ctx), cmd.Env, dir, name, args...)
+		}
+	}
+	if _, err := run(cmd.Dir, cmd.Name, cmd.Args...); err != nil {
+		return fmt.Errorf("start %s first: %w", env.StartFirst, err)
+	}
+	return nil
 }

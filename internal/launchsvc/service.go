@@ -921,6 +921,8 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 	direct = direct || !inst.StoreStarts()
 	env := game.StartEnv{Direct: direct, HideWindow: !showConsole, Ready: s.seen(g)}
 	env.Proton = settings.ResolveAt(s.settings.Get(), "protonVersion", settings.Scope{Game: g.ID(), Install: installOf(g), Profile: profileID}, launchOverrides(s.profiles, g.ID(), profileID))
+	env.StartFirst = settings.ResolveAt(s.settings.Get(), "startFirst", settings.Scope{Game: g.ID(), Install: installOf(g), Profile: profileID}, launchOverrides(s.profiles, g.ID(), profileID))
+	env.ALVRProgram = s.settings.Get().ALVRProgram
 	var measure, sample bool
 	var startupBefore map[string]bool
 	if waitOnChild(direct, vanilla) {
