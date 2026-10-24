@@ -30,7 +30,7 @@ function stepProfile(dir: -1 | 1) {
     return
   }
   const i = profiles.findIndex((p) => p.id === openId)
-  const from = i < 0 ? 0 : i
+  const from = Math.max(i, 0)
   const next = profiles[(from + dir + profiles.length) % profiles.length]
   if (next) {
     open(next.id)

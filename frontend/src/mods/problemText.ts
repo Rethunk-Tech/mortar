@@ -59,7 +59,7 @@ function useSectionTitle() {
 
 // useRowText is a row's sentence and the author's note shown under it, shared by the list and Copy all.
 function useRowText() {
-  const describe = useDescribe()
+  const describeRow = useDescribe()
   const describeDrift = useDescribeDrift()
   return (row: Row) => {
     let note = ''
@@ -74,7 +74,7 @@ function useRowText() {
     } else if (row.kind === 'fileConflict') {
       note = row.fileConflict.paths.join(', ')
     }
-    let text = row.kind === 'drift' ? describeDrift(row.drift) : describe(row)
+    let text = row.kind === 'drift' ? describeDrift(row.drift) : describeRow(row)
     if (note !== '' && text.endsWith(`: ${note}`)) {
       text = text.slice(0, -(note.length + 2))
     }

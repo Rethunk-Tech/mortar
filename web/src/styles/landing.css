@@ -254,9 +254,6 @@ h1.words em > span:nth-child(3) {
   background: rgba(12, 12, 14, 0.88);
   padding: 6px 10px;
   border-radius: 6px;
-}
-
-.demo .looplbl {
   right: 14px;
   color: var(--dim);
 }

@@ -5,7 +5,7 @@ import { join } from 'node:path'
 // render.sh takes everything above the sideload manifest's `modules:` as the Flathub header and appends this
 // directory's template from `sdk-extensions:` on, so the two manifests share one list of finish-args.
 const topLevelKeys = (path: string): string[] =>
-  [...readFileSync(path, 'utf8').matchAll(/^([a-z-]+):/gm)].map((m) => m[1] ?? '')
+  [...readFileSync(path, 'utf8').matchAll(/^([a-z-]+):/gmu)].map((m) => m[1] ?? '')
 
 test('the Flathub template carries no header of its own', () => {
   expect(topLevelKeys(join(import.meta.dir, 'tech.rethunk.Mortar.yml'))).toEqual([
