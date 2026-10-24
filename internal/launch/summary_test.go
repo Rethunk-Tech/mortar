@@ -12,6 +12,7 @@ func TestSummarizeAttributesErrorsFromFixture(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	hideStardewDefaults(t)
 	got := Summarize(string(body))
 	if got.SMAPI != "4.5.2" || got.Game != "1.6.15" {
 		t.Fatalf("versions = %q / %q", got.SMAPI, got.Game)
@@ -22,7 +23,7 @@ func TestSummarizeAttributesErrorsFromFixture(t *testing.T) {
 	if got.Warnings != 1 {
 		t.Fatalf("warnings = %d", got.Warnings)
 	}
-	// Content Patcher 2, Lookup Anything 1, SMAPI alert; Galaxy's ERROR game lines are suppressed.
+	// Content Patcher 2, Lookup Anything 1, SMAPI alert; Galaxy's ERROR game lines are hidden by Stardew's published suppressions.
 	if got.Errors != 4 {
 		t.Fatalf("errors = %d", got.Errors)
 	}

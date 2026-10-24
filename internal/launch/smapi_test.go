@@ -72,7 +72,20 @@ func TestBufferKeepsSMAPIStartupAndTail(t *testing.T) {
 	}
 }
 
+// hideStardewDefaults hides what Stardew Valley's published log suppressions hide (Rethunk-Tech/mortar-log-suppressions
+// lists/stardew.json), and more.
+func hideStardewDefaults(t *testing.T, more ...ModMessage) {
+	t.Helper()
+	SetHiddenMessages("stardew", append([]ModMessage{
+		{"SMAPI", "Writing to the terminal is disabled because the --no-terminal argument was received. This usually means launching the terminal failed."},
+		{"game", "Error initializing the Galaxy API."},
+		{"game", "Galaxy SignInSteam failed with an exception:"},
+	}, more...))
+	t.Cleanup(func() { SetHiddenMessages("stardew", nil) })
+}
+
 func TestParserHidesSuppressedMessageAndItsContinuations(t *testing.T) {
+	hideStardewDefaults(t, ModMessage{"SMAPI", "Skipped # files in #s"})
 	var p Parser
 	lines := []struct {
 		line  string
@@ -82,6 +95,7 @@ func TestParserHidesSuppressedMessageAndItsContinuations(t *testing.T) {
 		{"   continued", false},
 		{"[19:43:47 INFO  SMAPI] Loaded 3 mods", true},
 		{"   continued", true},
+		{"[19:43:47 TRACE SMAPI] Skipped 12 files in 0.25s", false},
 		{"[04:00:28 ERROR game] Error initializing the Galaxy API.", false},
 		{"TypeInitializationException: The type initializer for 'Galaxy.Api.GalaxyInstancePINVOKE' threw an exception.", false},
 		{"[04:00:28 TRACE game] Signing into GalaxySDK", true},

@@ -58,7 +58,12 @@ function useStats(item: BrowseItem): string {
 }
 
 /** One stat on a Browse card: an icon, a short figure, and the whole wording for its tooltip and screen readers. */
-type CardStatPart = { id: CardStat; icon: StatIcon; short: string; full: string }
+interface CardStatPart {
+  id: CardStat
+  icon: StatIcon
+  short: string
+  full: string
+}
 
 /** Which mark a stat shows; popularity's depends on what the hit's site counts. */
 type StatIcon =

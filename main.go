@@ -527,6 +527,7 @@ func run() error {
 	}
 	log.Printf("catalog: starting with the %s copy, serial %d", catalogFrom, game.CatalogSerial())
 	components.UseSignedLists(componentClient, modMeta, updateKey)
+	go launches.PrimeHiddenMessages(context.Background())
 	game.CacheInstalls(installCacheTTL)
 	loaders := loadersvc.NewService(home, store, items, profiles, componentClient)
 	implemented := game.Implemented()

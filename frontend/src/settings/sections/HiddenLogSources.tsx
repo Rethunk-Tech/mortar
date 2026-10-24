@@ -10,12 +10,21 @@ import { Searchable, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 
 const ENGINE = 'unity:'
+// A mod's message by its log column (launch.ModMessagePrefix), as SMAPI names the mod writing each line.
+const MOD = 'mod:'
 
-// Hidden sources grouped by where their lines come from (a method, or the engine), groups and lines in name order.
+function whereFrom(source: string, engine: string): string {
+  if (source.startsWith(ENGINE)) {
+    return engine
+  }
+  return source.startsWith(MOD) ? source.slice(MOD.length) : source.replace('::', '.')
+}
+
+// Hidden sources grouped by where their lines come from (a method, a mod, or the engine), groups and lines in name order.
 function grouped(hidden: readonly HiddenLogSource[], engine: string) {
   const groups = new Map<string, HiddenLogSource[]>()
   for (const h of hidden) {
-    const from = h.source.startsWith(ENGINE) ? engine : h.source.replace('::', '.')
+    const from = whereFrom(h.source, engine)
     groups.set(from, [...(groups.get(from) ?? []), h])
   }
   const shown = (h: HiddenLogSource) => h.text || h.label || h.source

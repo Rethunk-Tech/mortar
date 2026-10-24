@@ -50,15 +50,6 @@ type Entry struct {
 // SMAPI writes `[HH:MM:SS LEVEL  Mod] message`, padding the level to five characters.
 var header = regexp.MustCompile(`^\[(\d\d:\d\d:\d\d) (TRACE|DEBUG|INFO|WARN|ERROR|ALERT) *([^\]]*)\] ?(.*)$`)
 
-// suppressed lists log messages Mortar never shows, with their continuation lines. Mortar passes --no-terminal on
-// purpose and its Console replaces the terminal, so SMAPI's complaint about having none only misleads. The game's
-// own GOG Galaxy start-up fails on Steam launches and reads like a broken mod when it is neither.
-var suppressed = []string{
-	"Writing to the terminal is disabled because the --no-terminal argument was received. This usually means launching the terminal failed.",
-	"Error initializing the Galaxy API.",
-	"Galaxy SignInSteam failed with an exception:",
-}
-
 var loadedSaveRe = regexp.MustCompile(`(?i)(?:Context:\s*)?loaded save '([^']+)'`)
 
 // LoadedSave returns the save folder SMAPI loaded, from the last matching SMAPI line in log.
@@ -133,13 +124,13 @@ func smapiModsLoadedEnd(log string) int {
 	return 0
 }
 
-// Parse returns the entry for one SMAPI or BepInEx line, and false when the line belongs to a suppressed message. A line that is not
+// Parse returns the entry for one SMAPI or BepInEx line, and false when the line belongs to a hidden message (SetHiddenMessages). A line that is not
 // a header continues the previous entry; with none yet it stands alone as an INFO line.
 func (p *Parser) Parse(line string) (Entry, bool) {
 	if m := header.FindStringSubmatch(line); m != nil {
 		p.last = Entry{Time: m[1], Level: Level(m[2]), Mod: strings.TrimSpace(m[3]), Message: m[4]}
 		p.seen = true
-		p.hidden = slices.Contains(suppressed, p.last.Message)
+		p.hidden = isHidden(p.last.Mod, p.last.Message)
 		return p.last, !p.hidden
 	}
 	if e, ok := parseBepInEx(line); ok {
