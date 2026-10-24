@@ -11,6 +11,7 @@ import (
 )
 
 func TestTopPausesTheLastRunningDownloadAndItResumesAfter(t *testing.T) {
+	t.Parallel()
 	cdn := &blockingCDN{release: make(chan struct{})}
 	srv := httptest.NewServer(cdn)
 	defer srv.Close()
@@ -39,6 +40,7 @@ func TestTopPausesTheLastRunningDownloadAndItResumesAfter(t *testing.T) {
 }
 
 func TestTopMovesPendingDependenciesAhead(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.s.d.Closure = func(_ context.Context, _ string, roots []thunderstore.Ref, _ thunderstore.Deps) ([]thunderstore.Resolved, error) {
 		out := []thunderstore.Resolved{}
@@ -65,6 +67,7 @@ func TestTopMovesPendingDependenciesAhead(t *testing.T) {
 }
 
 func TestQueueOrderSurvivesAReload(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.s.d.Closure = func(_ context.Context, _ string, roots []thunderstore.Ref, _ thunderstore.Deps) ([]thunderstore.Resolved, error) {
 		var out []thunderstore.Resolved

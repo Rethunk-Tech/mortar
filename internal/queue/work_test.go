@@ -10,6 +10,7 @@ import (
 )
 
 func TestNextScansRunningProfilesWithoutTheQueueLock(t *testing.T) {
+	t.Parallel()
 	entered := make(chan struct{})
 	release := make(chan struct{})
 	s := &Service{
@@ -50,6 +51,7 @@ func TestNextScansRunningProfilesWithoutTheQueueLock(t *testing.T) {
 }
 
 func TestABusySourceHoldsOnlyItsOwnItemsAndGivesUp(t *testing.T) {
+	t.Parallel()
 	now := time.Unix(1000, 0).UTC()
 	s := &Service{
 		d:    Deps{Now: func() time.Time { return now }, Premium: func() bool { return true }, Dir: t.TempDir()},
@@ -86,6 +88,7 @@ func TestABusySourceHoldsOnlyItsOwnItemsAndGivesUp(t *testing.T) {
 
 // A step's error that lands after the player paused or cancelled the item leaves the player's choice standing.
 func TestAnErrorAfterPauseOrCancelKeepsTheItemPausedOrCancelled(t *testing.T) {
+	t.Parallel()
 	for _, state := range []string{StatePaused, StateCancelled} {
 		s := &Service{
 			d:       Deps{Now: func() time.Time { return time.Unix(1, 0).UTC() }, Dir: t.TempDir()},

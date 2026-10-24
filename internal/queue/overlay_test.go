@@ -17,6 +17,7 @@ import (
 )
 
 func TestOptionalFileWaitsForItsMainFile(t *testing.T) {
+	t.Parallel()
 	main := &Item{ID: "a", Game: "stardew", Profile: "p", ModID: 7, State: StateDownloading}
 	opt := &Item{ID: "b", Game: "stardew", Profile: "p", ModID: 7, State: StateDownloading}
 	other := &Item{ID: "c", Game: "stardew", Profile: "p", ModID: 8, State: StateQueued}
@@ -56,6 +57,7 @@ func TestOptionalFileWaitsForItsMainFile(t *testing.T) {
 }
 
 func TestManifestLess(t *testing.T) {
+	t.Parallel()
 	write := func(name string, files ...string) string {
 		p := filepath.Join(t.TempDir(), name)
 		f, err := fsx.Create(p)

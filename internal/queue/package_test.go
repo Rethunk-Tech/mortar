@@ -17,6 +17,7 @@ import (
 )
 
 func TestPackageInstallsWithItsDependencies(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	c, _ := f.s.d.Client()
 	f.s.d.Closure = func(_ context.Context, game string, roots []thunderstore.Ref, _ thunderstore.Deps) ([]thunderstore.Resolved, error) {
@@ -65,6 +66,7 @@ func TestPackageInstallsWithItsDependencies(t *testing.T) {
 
 // A listed package another listed package depends on, directly or through a dependency in between, is implicit.
 func TestInferPackageReasons(t *testing.T) {
+	t.Parallel()
 	list := []thunderstore.Resolved{
 		{Namespace: "Lib", Name: "Core", Version: "1.0.0"},
 		{Namespace: "Lib", Name: "Mid", Version: "1.0.0", Dependencies: []string{"Lib-Core-1.0.0"}},
@@ -78,6 +80,7 @@ func TestInferPackageReasons(t *testing.T) {
 
 // An update to a version that adds a dependency installs that dependency as an implicit entry beside the update.
 func TestPackageUpdateInstallsANewDependency(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	c, _ := f.s.d.Client()
 	f.s.d.Closure = func(_ context.Context, _ string, roots []thunderstore.Ref, _ thunderstore.Deps) ([]thunderstore.Resolved, error) {
@@ -128,6 +131,7 @@ func manualStall(s *Service, nth int32) (fire func()) {
 }
 
 func TestPackageDownloadFallsBackAcrossCDNs(t *testing.T) {
+	t.Parallel()
 	dead := httptest.NewServer(http.NotFoundHandler())
 	deadURL := dead.URL
 	dead.Close()
@@ -171,6 +175,7 @@ func TestPackageDownloadFallsBackAcrossCDNs(t *testing.T) {
 }
 
 func TestPinnedCDNIsTheOnlyOneTried(t *testing.T) {
+	t.Parallel()
 	var other atomic.Int32
 	a := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { other.Add(1) }))
 	defer a.Close()
@@ -194,6 +199,7 @@ func TestPinnedCDNIsTheOnlyOneTried(t *testing.T) {
 }
 
 func TestPackageStalledCDNHandsItsPartialToTheNext(t *testing.T) {
+	t.Parallel()
 	const cut = 5
 	stalled := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Length", fmt.Sprint(len(payload)))
@@ -231,6 +237,7 @@ func TestPackageStalledCDNHandsItsPartialToTheNext(t *testing.T) {
 }
 
 func TestUnresolvableNamesOnlyThePackagesWhoseClosureFails(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.s.d.Closure = func(_ context.Context, _ string, roots []thunderstore.Ref, _ thunderstore.Deps) ([]thunderstore.Resolved, error) {
 		if roots[0].Name == "Gone" {
@@ -245,12 +252,14 @@ func TestUnresolvableNamesOnlyThePackagesWhoseClosureFails(t *testing.T) {
 }
 
 func TestPackageNeedsSkipsADependencyWithoutAVersion(t *testing.T) {
+	t.Parallel()
 	if got := packageNeeds([]string{"Ns-Name", "A-B-1.0.0"}); !slices.Equal(got, []string{"a-b"}) {
 		t.Fatalf("%v", got)
 	}
 }
 
 func TestAnAsIsRequestResolvesWithoutDependencies(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	var asked []thunderstore.Deps
 	f.s.d.Closure = func(_ context.Context, _ string, roots []thunderstore.Ref, deps thunderstore.Deps) ([]thunderstore.Resolved, error) {

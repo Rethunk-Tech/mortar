@@ -9,6 +9,7 @@ import (
 )
 
 func TestNeedsRootAnswerAndFail(t *testing.T) {
+	t.Parallel()
 	ask := &profile.RemapAsk{Key: "store-key", Source: profile.Source{Kind: profile.KindNexus, ModID: 1, FileID: 2}}
 	s := &Service{
 		d: Deps{

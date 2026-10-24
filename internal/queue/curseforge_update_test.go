@@ -47,6 +47,7 @@ func cfDirect(t *testing.T, cdn string) func(context.Context, string, string, st
 }
 
 func TestACurseForgeUpdateOfANexusEntryDownloadsAndInstallsFromCurseForge(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	c, _ := f.s.d.Client()
 	f.s.d.Direct = cfDirect(t, c.BaseURL)
@@ -69,6 +70,7 @@ func TestACurseForgeUpdateOfANexusEntryDownloadsAndInstallsFromCurseForge(t *tes
 }
 
 func TestACurseForgeUpdateOfAForbiddenProjectOpensItsPageInsteadOfDownloading(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	c, _ := f.s.d.Client()
 	f.s.d.Direct = cfDirect(t, c.BaseURL)

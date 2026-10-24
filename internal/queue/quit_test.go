@@ -27,6 +27,7 @@ func stopWaitReturns(s *Service, wait func(), limit time.Duration) <-chan struct
 }
 
 func TestStopWaitReturnsWhenWorkersStop(t *testing.T) {
+	t.Parallel()
 	s := newQuitService(t)
 	select {
 	case <-stopWaitReturns(s, func() { time.Sleep(5 * time.Millisecond) }, time.Second):
@@ -36,6 +37,7 @@ func TestStopWaitReturnsWhenWorkersStop(t *testing.T) {
 }
 
 func TestStopWaitAbandonsAStuckDownload(t *testing.T) {
+	t.Parallel()
 	s := newQuitService(t, StateDownloading)
 	stuck := make(chan struct{})
 	defer close(stuck)

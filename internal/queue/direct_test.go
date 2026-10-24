@@ -14,6 +14,7 @@ import (
 )
 
 func TestVerifyDigestSHA512(t *testing.T) {
+	t.Parallel()
 	sum := sha512.Sum512([]byte("abc"))
 	p := writeFile(t, "abc")
 	if err := verifyDigest(p, "SHA512:"+hex.EncodeToString(sum[:])); err != nil {
@@ -25,6 +26,7 @@ func TestVerifyDigestSHA512(t *testing.T) {
 }
 
 func TestExpandDirectQueuesDependenciesFirstOnce(t *testing.T) {
+	t.Parallel()
 	files := map[string]DirectFile{
 		"root": {Version: "2", URL: "u/root", Digest: "sha512:aa", Dependencies: []DirectRef{{ID: "a", Version: "1"}, {ID: "b"}}},
 		"a":    {Version: "1", URL: "u/a", Dependencies: []DirectRef{{ID: "b"}}},
@@ -53,6 +55,7 @@ func TestExpandDirectQueuesDependenciesFirstOnce(t *testing.T) {
 }
 
 func TestExpandDirectOpensThePageOfAForbiddenFile(t *testing.T) {
+	t.Parallel()
 	var opened string
 	s := &Service{d: Deps{
 		OpenURL: func(u string) error { opened = u; return nil },
@@ -67,6 +70,7 @@ func TestExpandDirectOpensThePageOfAForbiddenFile(t *testing.T) {
 }
 
 func TestExpandDirectPinsCurseForgeFileID(t *testing.T) {
+	t.Parallel()
 	var asked string
 	s := &Service{d: Deps{Direct: func(_ context.Context, _, _, version string, _ []string) (DirectFile, error) {
 		asked = version
@@ -88,6 +92,7 @@ func TestExpandDirectPinsCurseForgeFileID(t *testing.T) {
 }
 
 func TestExpandDirectKeepsThePicturePerEntryOnlyForTheRoot(t *testing.T) {
+	t.Parallel()
 	s := &Service{d: Deps{Direct: func(_ context.Context, _, id, _ string, _ []string) (DirectFile, error) {
 		if id == "root" {
 			return DirectFile{Version: "1", URL: "u", Dependencies: []DirectRef{{ID: "dep"}}}, nil
@@ -101,6 +106,7 @@ func TestExpandDirectKeepsThePicturePerEntryOnlyForTheRoot(t *testing.T) {
 }
 
 func TestAModDBIDIsAValidDirectPackage(t *testing.T) {
+	t.Parallel()
 	r := Request{Game: "vintage-story", Profile: "p", Source: "vsmoddb", Package: vsmoddb.ID(890, 4405)}
 	if !r.valid() {
 		t.Fatalf("%q was refused", r.Package)

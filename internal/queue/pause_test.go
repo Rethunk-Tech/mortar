@@ -61,6 +61,7 @@ func (f *fixture) waitPartial(id string) {
 }
 
 func TestPauseKeepsThePartialAndResumeContinuesIt(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	var hits atomic.Int32
 	var rng atomic.Value
@@ -82,6 +83,7 @@ func TestPauseKeepsThePartialAndResumeContinuesIt(t *testing.T) {
 }
 
 func TestRetryAfterANetworkErrorResumesThePartial(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	var hits atomic.Int32
 	var rng atomic.Value
@@ -157,6 +159,7 @@ func (f *fixture) stateOf(pkg string) Item {
 }
 
 func TestPausingFreesTheSlotForTheNextItem(t *testing.T) {
+	t.Parallel()
 	cdn := &blockingCDN{release: make(chan struct{})}
 	srv := httptest.NewServer(cdn)
 	defer srv.Close()
@@ -176,6 +179,7 @@ func TestPausingFreesTheSlotForTheNextItem(t *testing.T) {
 }
 
 func TestPausedItemsSurviveAReload(t *testing.T) {
+	t.Parallel()
 	f := packageFixture(t, "https://x")
 	f.s.Pause()
 	addPackages(t, f, "A", "B")
@@ -200,6 +204,7 @@ func TestPausedItemsSurviveAReload(t *testing.T) {
 }
 
 func TestHoldForPlayPausesRunningDownloadsAndSparesTheUsersOwnPauses(t *testing.T) {
+	t.Parallel()
 	cdn := &blockingCDN{release: make(chan struct{})}
 	srv := httptest.NewServer(cdn)
 	defer srv.Close()

@@ -10,6 +10,7 @@ import (
 )
 
 func TestHistoryRecordsAFinishedDownload(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.start()
 	r := req(10)
@@ -30,6 +31,7 @@ func TestHistoryRecordsAFinishedDownload(t *testing.T) {
 }
 
 func TestHistoryRecordsSkipAndClear(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.s.Pause()
 	f.add(req(10))
@@ -49,6 +51,7 @@ func TestHistoryRecordsSkipAndClear(t *testing.T) {
 }
 
 func TestHistoryKeepsOnlyTheLastThousand(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	it := &Item{Name: "n", Version: "1", Profile: "p1", started: f.now()}
 	f.s.writeHistory(make([]HistoryEntry, historyLimit))
@@ -62,6 +65,7 @@ func TestHistoryKeepsOnlyTheLastThousand(t *testing.T) {
 }
 
 func TestHistoryFileIsJSON(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.s.recordHistory(&Item{Name: "n", Version: "2", Profile: "p", SizeKB: 4, started: time.Unix(10, 0)}, StateFailed)
 	b, err := os.ReadFile(filepath.Join(f.dir, historyFile))
@@ -74,6 +78,7 @@ func TestHistoryFileIsJSON(t *testing.T) {
 }
 
 func TestRetryAllFailed(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.s.Pause()
 	f.add(req(30))
@@ -111,6 +116,7 @@ func TestRetryAllFailed(t *testing.T) {
 }
 
 func TestHistoryReadsFileOnceAndWritesThrough(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.s.recordHistory(&Item{Name: "a", started: f.now()}, StateDone)
 	if err := os.Remove(f.s.historyPath()); err != nil {

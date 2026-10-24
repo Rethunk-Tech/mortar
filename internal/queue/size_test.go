@@ -26,6 +26,7 @@ func bigPackage(t *testing.T, size, free int64) *fixture {
 }
 
 func TestALargeDownloadWaitsForContinue(t *testing.T) {
+	t.Parallel()
 	f := bigPackage(t, LargeDownloadBytes+1<<20, 1<<50)
 	st := f.wait("the confirmation", f.item(StateConfirmLarge))
 	if st.Items[0].SizeKB != (LargeDownloadBytes+1<<20)>>10 || len(f.installs) != 0 {
@@ -39,6 +40,7 @@ func TestALargeDownloadWaitsForContinue(t *testing.T) {
 }
 
 func TestCancellingALargeDownloadEndsIt(t *testing.T) {
+	t.Parallel()
 	f := bigPackage(t, LargeDownloadBytes+1<<20, 1<<50)
 	st := f.wait("the confirmation", f.item(StateConfirmLarge))
 	f.s.Cancel(st.Items[0].ID)
@@ -49,11 +51,13 @@ func TestCancellingALargeDownloadEndsIt(t *testing.T) {
 }
 
 func TestADownloadAtTheThresholdDoesNotAsk(t *testing.T) {
+	t.Parallel()
 	f := bigPackage(t, LargeDownloadBytes, 1<<50)
 	f.wait("done", f.item(StateDone))
 }
 
 func TestADownloadThatCannotFitFailsBeforeAnyByteWithNoContinue(t *testing.T) {
+	t.Parallel()
 	size := LargeDownloadBytes + 1<<20
 	f := bigPackage(t, size, 3*size)
 	st := f.wait("failed", f.item(StateFailed))
@@ -65,6 +69,7 @@ func TestADownloadThatCannotFitFailsBeforeAnyByteWithNoContinue(t *testing.T) {
 }
 
 func TestCheckSpaceSplitsVolumesAndSkipsAnUnknownSize(t *testing.T) {
+	t.Parallel()
 	dir, dl := t.TempDir(), t.TempDir()
 	free := map[string]int64{}
 	s := &Service{d: Deps{Dir: dir, DownloadDir: func() string { return dl }, FreeBytes: func(p string) (int64, error) { return free[p], nil }}}

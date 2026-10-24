@@ -7,6 +7,7 @@ import (
 )
 
 func TestProgressTickSendsOnlyTheDelta(t *testing.T) {
+	t.Parallel()
 	var mu sync.Mutex
 	var events []string
 	var delta Progress

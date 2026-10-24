@@ -83,6 +83,7 @@ func seedPartial(t *testing.T, path, partial string, resume map[string]any) {
 }
 
 func TestFetchStartsOverWhenTheServerIgnoresRange(t *testing.T) {
+	t.Parallel()
 	srv := bodyServer(t, nil)
 	s := rangeSvc(t, srv.Client())
 	path := s.dest("item", "m.zip")
@@ -98,6 +99,7 @@ func TestFetchStartsOverWhenTheServerIgnoresRange(t *testing.T) {
 }
 
 func TestFetchVerifiesAChecksumFromTheSource(t *testing.T) {
+	t.Parallel()
 	sum := sha256.Sum256([]byte(rangeBody))
 	if _, err := fetchFrom(t, bodyServer(t, map[string]string{"X-Checksum-Sha256": hex.EncodeToString(sum[:])})); err != nil {
 		t.Fatal(err)
@@ -105,6 +107,7 @@ func TestFetchVerifiesAChecksumFromTheSource(t *testing.T) {
 }
 
 func TestFetchContentMD5(t *testing.T) {
+	t.Parallel()
 	sum := md5.Sum([]byte(rangeBody)) // #nosec G401 -- Content-MD5 is MD5 by RFC 1864
 
 	t.Run("match", func(t *testing.T) {
@@ -131,6 +134,7 @@ func TestFetchContentMD5(t *testing.T) {
 }
 
 func TestTruncatedPartialResumesAfterRestart(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	const body = payload
 	half := len(body) / 2
@@ -162,6 +166,7 @@ func TestTruncatedPartialResumesAfterRestart(t *testing.T) {
 }
 
 func TestExpiredNexusLinkRefetchesThenRanges(t *testing.T) {
+	t.Parallel()
 	const body = payload
 	half := len(body) / 2
 	var links atomic.Int32
@@ -245,6 +250,7 @@ func TestExpiredNexusLinkRefetchesThenRanges(t *testing.T) {
 }
 
 func TestSweepKeepsPartialsForQueuedItems(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	if err := os.MkdirAll(filepath.Join(f.dir, downloadsDir), 0o700); err != nil {
 		t.Fatal(err)
@@ -268,6 +274,7 @@ func TestSweepKeepsPartialsForQueuedItems(t *testing.T) {
 }
 
 func TestFetchGivesUpOnALoopingPartialRange(t *testing.T) {
+	t.Parallel()
 	var n atomic.Int32
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		n.Add(1)
@@ -291,6 +298,7 @@ func TestFetchGivesUpOnALoopingPartialRange(t *testing.T) {
 }
 
 func TestDownloadRootUsesSeparateFolder(t *testing.T) {
+	t.Parallel()
 	dir := t.TempDir()
 	custom := t.TempDir()
 	s := &Service{d: Deps{Dir: dir, DownloadDir: func() string { return custom }}}
@@ -309,6 +317,7 @@ func TestDownloadRootUsesSeparateFolder(t *testing.T) {
 }
 
 func TestDestKeepsABareCompressedDownloadsName(t *testing.T) {
+	t.Parallel()
 	s := &Service{d: Deps{Dir: t.TempDir()}}
 	got := s.dest("item", "Cool Mod.dll.gz")
 	if filepath.Base(got) != "item~~Cool Mod.dll.gz" {

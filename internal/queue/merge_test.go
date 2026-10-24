@@ -9,6 +9,7 @@ import (
 )
 
 func TestNexusOptionalFileOffersMergeIntoTheSamePageEntry(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.samePage = func(_, _ string, in profile.IncomingFile) (profile.MergeAsk, int, bool) {
 		if in.ModID != 1 || in.FileID != 10 || in.Category != "MAIN" {
@@ -40,6 +41,7 @@ func TestNexusOptionalFileOffersMergeIntoTheSamePageEntry(t *testing.T) {
 }
 
 func TestNexusSecondMainFileCanStayASeparateEntry(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.samePage = func(_, _ string, _ profile.IncomingFile) (profile.MergeAsk, int, bool) {
 		return profile.MergeAsk{EntryKey: "nexus-1-9", Label: "Alpha", DefaultAdd: false}, 0, true
@@ -56,6 +58,7 @@ func TestNexusSecondMainFileCanStayASeparateEntry(t *testing.T) {
 }
 
 func TestNexusUpdateFromTheSamePageInstallsInPlaceOfTheEntry(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.samePage = func(_, _ string, in profile.IncomingFile) (profile.MergeAsk, int, bool) {
 		if len(in.Files) == 0 {
@@ -73,6 +76,7 @@ func TestNexusUpdateFromTheSamePageInstallsInPlaceOfTheEntry(t *testing.T) {
 }
 
 func TestAnInstalledArchiveIsKeptWhenThePlayerKeepsArchives(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.keep.Store(true)
 	f.start()
@@ -84,6 +88,7 @@ func TestAnInstalledArchiveIsKeptWhenThePlayerKeepsArchives(t *testing.T) {
 }
 
 func TestAWantJoiningAFailedItemTakesItsBatch(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.add(req(10))
 	f.s.mu.Lock()

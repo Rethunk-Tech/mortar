@@ -8,6 +8,7 @@ import (
 )
 
 func TestMissingRequiredSkipsTheGameAndModsAlreadyThere(t *testing.T) {
+	t.Parallel()
 	p := profile.Profile{Entries: []profile.Entry{
 		{Mods: []profile.Component{{ModID: "carryon", Requires: []string{"game", "vsimgui", "configlib"}}}},
 		{Mods: []profile.Component{{ModID: "configlib", Requires: []string{"vsimgui"}}}},

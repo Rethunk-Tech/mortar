@@ -99,6 +99,7 @@ func ghReq(version string) Request {
 }
 
 func TestGitHubSingleAssetInstalls(t *testing.T) {
+	t.Parallel()
 	g := newGitHubFixture(t)
 	g.start()
 	g.add(ghReq("2.0.0"))
@@ -114,6 +115,7 @@ func TestGitHubSingleAssetInstalls(t *testing.T) {
 }
 
 func TestGitHubSeveralAssetsWaitForAChoice(t *testing.T) {
+	t.Parallel()
 	g := newGitHubFixture(t)
 	g.multi.Store(true)
 	g.start()
@@ -144,6 +146,7 @@ func TestGitHubSeveralAssetsWaitForAChoice(t *testing.T) {
 // TestGitHubAssetPrefersTheLoadersShape serves a release with a source archive and two zips, only one holding a SMAPI
 // manifest; that one is picked without asking.
 func TestGitHubAssetPrefersTheLoadersShape(t *testing.T) {
+	t.Parallel()
 	zipOf := func(names ...string) []byte {
 		var buf bytes.Buffer
 		zw := zip.NewWriter(&buf)
@@ -188,6 +191,7 @@ func (g *ghFixture) awaitConfirmation() State {
 }
 
 func TestGitHubMismatchWaitsForConfirmation(t *testing.T) {
+	t.Parallel()
 	g := newGitHubFixture(t)
 	st := g.awaitConfirmation()
 	if len(g.final) != 0 {
@@ -211,6 +215,7 @@ func TestGitHubMismatchWaitsForConfirmation(t *testing.T) {
 }
 
 func TestGitHubUnknownSourceInstallsWithANote(t *testing.T) {
+	t.Parallel()
 	g := newGitHubFixture(t)
 	g.verdict.Store(github.ErrUnknown)
 	g.start()
@@ -222,6 +227,7 @@ func TestGitHubUnknownSourceInstallsWithANote(t *testing.T) {
 }
 
 func TestGitHubRateLimitPausesUntilTheReset(t *testing.T) {
+	t.Parallel()
 	g := newGitHubFixture(t)
 	g.limited.Store(true)
 	g.start()
@@ -237,6 +243,7 @@ func TestGitHubRateLimitPausesUntilTheReset(t *testing.T) {
 }
 
 func TestGitHubRequestsNeedNoSignInButAValidRepo(t *testing.T) {
+	t.Parallel()
 	g := newGitHubFixture(t)
 	for _, repo := range []string{"", "me", "me/mod/extra", "../etc/passwd", "me/mo d"} {
 		r := ghReq("")
@@ -251,6 +258,7 @@ func TestGitHubRequestsNeedNoSignInButAValidRepo(t *testing.T) {
 }
 
 func TestConfirmSurvivesARestartAndItsInstallIgnoresCancel(t *testing.T) {
+	t.Parallel()
 	g := newGitHubFixture(t)
 	id := g.awaitConfirmation().Items[0].ID
 
@@ -298,6 +306,7 @@ func TestConfirmSurvivesARestartAndItsInstallIgnoresCancel(t *testing.T) {
 }
 
 func TestAStagedKeyIsKeptAndALostOneDownloadsAgain(t *testing.T) {
+	t.Parallel()
 	g := newGitHubFixture(t)
 	id := g.awaitConfirmation().Items[0].ID
 	if keys := g.s.StagedKeys()["stardew"]; len(keys) != 1 || keys[0] != "github-key" {
@@ -324,6 +333,7 @@ func TestAStagedKeyIsKeptAndALostOneDownloadsAgain(t *testing.T) {
 }
 
 func TestSkippingAConfirmationReleasesItsStagedKey(t *testing.T) {
+	t.Parallel()
 	g := newGitHubFixture(t)
 	id := g.awaitConfirmation().Items[0].ID
 	g.s.Skip(id)
@@ -333,6 +343,7 @@ func TestSkippingAConfirmationReleasesItsStagedKey(t *testing.T) {
 }
 
 func TestAddKeepsGitHubTagAndAssetDistinct(t *testing.T) {
+	t.Parallel()
 	g := newGitHubFixture(t)
 	first, err := g.s.Add(t.Context(), []Request{
 		{Kind: KindInstall, Game: "stardew", Profile: "p1", Repo: "me/mod", Tag: "v1.0.0", Asset: "a.zip"},
@@ -353,6 +364,7 @@ func TestAddKeepsGitHubTagAndAssetDistinct(t *testing.T) {
 }
 
 func TestAClickBoundUpdateUsesTheSameGitHubVersionInstead(t *testing.T) {
+	t.Parallel()
 	g := newGitHubFixture(t)
 	add := func(id, version string) Item {
 		it := &Item{ID: id, Kind: KindUpdate, ModID: 6304, Version: version, FallbackRepo: "me/mod", State: StateWaitingClick}
@@ -384,6 +396,7 @@ func TestAClickBoundUpdateUsesTheSameGitHubVersionInstead(t *testing.T) {
 }
 
 func TestAGitHubFallbackWithoutTheModGoesBackToNexus(t *testing.T) {
+	t.Parallel()
 	g := newGitHubFixture(t)
 	run := func(id, fallbackID string) Item {
 		it := &Item{
@@ -414,6 +427,7 @@ func TestAGitHubFallbackWithoutTheModGoesBackToNexus(t *testing.T) {
 // A game whose loader reads no manifests has no update keys to check the repository against, so its release installs
 // with the note instead of passing as verified.
 func TestGitHubReleaseOfAGameWithoutManifestsInstallsUnverified(t *testing.T) {
+	t.Parallel()
 	g := newGitHubFixture(t)
 	g.s.d.Stage = func(_ context.Context, _ string, _ profile.Source, _ string) (string, []mod.ID, error) {
 		return "github-key", nil, nil

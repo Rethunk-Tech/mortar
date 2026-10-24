@@ -248,6 +248,7 @@ func req(fileID int) Request {
 }
 
 func TestPremiumDownloadsAndInstallsWithoutClicks(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.start()
 	if _, err := f.s.Add(t.Context(), []Request{req(10), {Kind: KindUpdate, Game: "stardew", Profile: "p1", ModID: 1, Version: "2.0", CurrentKey: "nexus-1-10"}}); err != nil {
@@ -275,6 +276,7 @@ func TestPremiumDownloadsAndInstallsWithoutClicks(t *testing.T) {
 }
 
 func TestSkipProfileHoldsDownloadsUntilRestore(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.s.Pause()
 	f.add(req(10))
@@ -291,6 +293,7 @@ func TestSkipProfileHoldsDownloadsUntilRestore(t *testing.T) {
 }
 
 func TestSkipCancelsAFetch(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	entered := make(chan struct{})
 	release := make(chan struct{})
@@ -311,6 +314,7 @@ func TestSkipCancelsAFetch(t *testing.T) {
 }
 
 func TestFetchSlotsCapPremiumAndFreeSources(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	for _, tc := range []struct {
 		name    string
@@ -353,6 +357,7 @@ func TestFetchSlotsCapPremiumAndFreeSources(t *testing.T) {
 }
 
 func TestInstallsAreSerialized(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	entered := make(chan struct{}, 2)
 	release := make(chan struct{})
@@ -390,6 +395,7 @@ func TestInstallsAreSerialized(t *testing.T) {
 }
 
 func TestAStoredFileInstallsFromTheStoreWithoutAClick(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.premium.Store(false)
 	f.stored = map[string]profile.Source{"nexus-1-10": {Kind: "nexus", Name: "a-1.0.zip", ModID: 1, FileID: 10, Version: "1.0", Picture: "https://img/a.png", EndorsementCount: 7}}
@@ -407,6 +413,7 @@ func TestAStoredFileInstallsFromTheStoreWithoutAClick(t *testing.T) {
 }
 
 func TestAQueuedItemIsNamedBeforeItsTurn(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.s.Pause()
 	assigned := make(chan nxmsvc.Assignment, 1)
@@ -423,6 +430,7 @@ func TestAQueuedItemIsNamedBeforeItsTurn(t *testing.T) {
 }
 
 func TestFreeAccountWaitsForTheClickThenTakesTheLink(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.premium.Store(false)
 	f.start()
@@ -453,6 +461,7 @@ func TestFreeAccountWaitsForTheClickThenTakesTheLink(t *testing.T) {
 }
 
 func TestWaitingLatestItemIsSkippedOnceTheProfileHasANewerFile(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.premium.Store(false)
 	f.start()
@@ -471,6 +480,7 @@ func TestWaitingLatestItemIsSkippedOnceTheProfileHasANewerFile(t *testing.T) {
 }
 
 func TestExactUpdateIsNotSkippedForANewerHeldFile(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.premium.Store(false)
 	f.start()
@@ -486,6 +496,7 @@ func TestExactUpdateIsNotSkippedForANewerHeldFile(t *testing.T) {
 }
 
 func TestExpiredKeyReopensThePage(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.premium.Store(false)
 	f.start()
@@ -503,6 +514,7 @@ func TestExpiredKeyReopensThePage(t *testing.T) {
 }
 
 func TestRateLimitPausesUntilTheReset(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.limitNow.Store(true)
 	f.start()
@@ -518,6 +530,7 @@ func TestRateLimitPausesUntilTheReset(t *testing.T) {
 }
 
 func TestFailedRetrySkipAndCancel(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	var fail atomic.Bool
 	fail.Store(true)
@@ -569,6 +582,7 @@ func TestFailedRetrySkipAndCancel(t *testing.T) {
 }
 
 func TestPauseHoldsBackNewDownloads(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.start()
 	f.s.Pause()
@@ -582,6 +596,7 @@ func TestPauseHoldsBackNewDownloads(t *testing.T) {
 }
 
 func TestQueueSurvivesARestart(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.s.Pause()
 	f.add(req(10), req(11))
@@ -606,6 +621,7 @@ func TestQueueSurvivesARestart(t *testing.T) {
 }
 
 func TestRestartPausesAQueueHoldingNexusFiles(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.add(req(10))
 	again, err := New(f.s.d)
@@ -629,6 +645,7 @@ func TestRestartPausesAQueueHoldingNexusFiles(t *testing.T) {
 }
 
 func TestSignedOutRefusesToQueue(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.s.d.Client = func() (*nexus.Client, error) { return nil, fmt.Errorf("sign in") }
 	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err == nil {
@@ -637,6 +654,7 @@ func TestSignedOutRefusesToQueue(t *testing.T) {
 }
 
 func TestNexusDownloadOverTheCapFails(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.cdn = func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Length", fmt.Sprint(archive.DefaultMaxTotalBytes+1))
@@ -652,6 +670,7 @@ func TestNexusDownloadOverTheCapFails(t *testing.T) {
 }
 
 func TestItemsForARunningProfileWait(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	var running atomic.Bool
 	running.Store(true)
@@ -668,6 +687,7 @@ func TestItemsForARunningProfileWait(t *testing.T) {
 }
 
 func TestARejectedLinkCanBeRetried(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	client := f.s.d.Client
 	f.s.d.Client = func() (*nexus.Client, error) { return nil, fmt.Errorf("sign in") }
@@ -689,6 +709,7 @@ func TestARejectedLinkCanBeRetried(t *testing.T) {
 }
 
 func TestAddValidatesTheWholeBatch(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	if _, err := f.s.Add(t.Context(), []Request{req(10), {Kind: KindInstall, Game: "stardew", ModID: 1, FileID: 11}}); err == nil {
 		t.Fatal("expected error")
@@ -699,6 +720,7 @@ func TestAddValidatesTheWholeBatch(t *testing.T) {
 }
 
 func TestAddCarriesHistoryBatchID(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	request := req(10)
 	request.BatchID = "batch-1"
@@ -712,6 +734,7 @@ func TestAddCarriesHistoryBatchID(t *testing.T) {
 }
 
 func TestDismissAndClearFinishedLeaveActiveItems(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.s.mu.Lock()
 	f.s.items = []*Item{
@@ -760,6 +783,7 @@ func TestDismissAndClearFinishedLeaveActiveItems(t *testing.T) {
 }
 
 func TestNewQueueClientTimesOutSlowHeaders(t *testing.T) {
+	t.Parallel()
 	s, err := New(Deps{Dir: t.TempDir(), Now: func() time.Time { return time.Unix(1, 0).UTC() }})
 	if err != nil {
 		t.Fatal(err)
@@ -804,6 +828,7 @@ func TestAutoRetryFetchesBeforeFailing(t *testing.T) {
 }
 
 func TestNexusMD5MismatchFailsDownload(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.s.d.VerifyNexusMD5 = func() bool { return true }
 	f.cdn = func(w http.ResponseWriter, _ *http.Request) {
@@ -818,6 +843,7 @@ func TestNexusMD5MismatchFailsDownload(t *testing.T) {
 }
 
 func TestNexusMD5MatchAllowsInstall(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.s.d.VerifyNexusMD5 = func() bool { return true }
 	f.start()
@@ -828,6 +854,7 @@ func TestNexusMD5MatchAllowsInstall(t *testing.T) {
 // A file named up front (a link, a share) skips the list the queue would choose from, so its md5 is looked up; a
 // mismatch drops the download, so Retry fetches it again instead of rechecking the bad copy.
 func TestNexusMD5OfANamedFileIsLookedUpAndRetryRefetches(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.s.d.VerifyNexusMD5 = func() bool { return true }
 	var bad atomic.Bool
@@ -853,6 +880,7 @@ func TestNexusMD5OfANamedFileIsLookedUpAndRetryRefetches(t *testing.T) {
 }
 
 func TestRouteGivesAClickedFileToAPendingUpdate(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.premium.Store(false)
 	f.s.mu.Lock()
@@ -870,6 +898,7 @@ func TestRouteGivesAClickedFileToAPendingUpdate(t *testing.T) {
 }
 
 func TestFinishedItemCarriesTheHistoryEventItRecorded(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	var calls []string
 	f.s.d.HistoryBatch = func(_, _, batchID string) (string, error) {
@@ -903,6 +932,7 @@ func TestFinishedItemCarriesTheHistoryEventItRecorded(t *testing.T) {
 // A request for the file itself makes a queued dependency an install; a dependency request or a Nexus link never
 // turns an install back.
 func TestJoiningRequestsOnlyPromoteTheInstallReason(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.s.Pause()
 	dep := req(10)

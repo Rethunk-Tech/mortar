@@ -20,6 +20,7 @@ func writeFile(t *testing.T, body string) string {
 }
 
 func TestVerifyDigest(t *testing.T) {
+	t.Parallel()
 	sum := sha256.Sum256([]byte("abc"))
 	p := writeFile(t, "abc")
 	if err := verifyDigest(p, "sha256:"+hex.EncodeToString(sum[:])); err != nil {
@@ -34,6 +35,7 @@ func TestVerifyDigest(t *testing.T) {
 }
 
 func TestPackageHashHoldsLaterCopiesToTheFirst(t *testing.T) {
+	t.Parallel()
 	s := &Service{d: Deps{Dir: t.TempDir()}}
 	it := Item{Package: "Me-Mod", Version: "1.0.0"}
 	if err := s.checkPackageHash(it, writeFile(t, "one")); err != nil {
@@ -52,6 +54,7 @@ func TestPackageHashHoldsLaterCopiesToTheFirst(t *testing.T) {
 }
 
 func TestSourceLimitPacesStartsAndCapsConcurrency(t *testing.T) {
+	t.Parallel()
 	now := time.Unix(1000, 0)
 	l := newSourceLimit(1, 2, 1, now)
 	for range 2 {

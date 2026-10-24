@@ -12,6 +12,7 @@ import (
 )
 
 func TestADetectionFailsTheItemAndInstallAnywayRunsItAgain(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	var flagged atomic.Bool
 	flagged.Store(true)
@@ -44,6 +45,7 @@ func TestADetectionFailsTheItemAndInstallAnywayRunsItAgain(t *testing.T) {
 }
 
 func TestInstallAnywayRefusesAnItemWithNoDetection(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	if err := f.s.InstallAnyway("nope"); err == nil {
 		t.Fatal("no error")
@@ -51,6 +53,7 @@ func TestInstallAnywayRefusesAnItemWithNoDetection(t *testing.T) {
 }
 
 func TestAFileTheAntivirusRemovedFromStagingFailsAsMalwareWithNoInstallAnyway(t *testing.T) {
+	t.Parallel()
 	f := newFixture(t)
 	f.installErr = func() error {
 		return &fs.PathError{Op: "open", Path: filepath.Join(f.s.downloadRoot(), "m.zip"), Err: fs.ErrNotExist}
