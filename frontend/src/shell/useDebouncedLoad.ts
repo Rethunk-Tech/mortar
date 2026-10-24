@@ -1,5 +1,5 @@
 import { type DependencyList, useEffect, useRef, useState } from 'react'
-import { sameDeps } from './useLoaded.ts'
+import { loader } from './loader.ts'
 
 // useLoaded for input that changes on every key: `load` runs `delayMs` after `deps` last changed, and `data` keeps the
 // last answer meanwhile instead of going back to `initial`. Only the newest run lands: the answer or error of one that
@@ -17,58 +17,41 @@ export function useDebouncedLoad<T>(
   const [data, setData] = useState(initial)
   const [loading, setLoading] = useState(load !== null)
   const [error, setError] = useState<unknown>(null)
-  const generation = useRef(0)
-  const timer = useRef<ReturnType<typeof globalThis.setTimeout> | undefined>(undefined)
-  const seen = useRef<DependencyList | null>(null)
-  const start = useRef<(next: () => Promise<T>) => void>(() => undefined)
-  start.current = (next) => {
-    generation.current += 1
-    const mine = generation.current
-    const current = () => generation.current === mine
-    setLoading(true)
-    next()
-      .then((value) => {
-        if (current()) {
-          setData(value)
+  const latest = useRef({ initial, onError })
+  latest.current = { initial, onError }
+  const [runs] = useState(() =>
+    loader<T>(
+      {
+        value: (value) => {
+          setData(() => value)
           setError(null)
-        }
-      })
-      .catch((e: unknown) => {
-        if (current()) {
+        },
+        error: (e) => {
           setError(e)
-          onError?.(e)
-        }
-      })
-      .finally(() => {
-        if (current()) {
-          setLoading(false)
-        }
-      })
-  }
+          latest.current.onError?.(e)
+        },
+        loading: setLoading,
+        reset: () => setData(() => latest.current.initial),
+      },
+      {
+        keepAcrossKeys: true,
+        defer: (go) => {
+          const timer = globalThis.setTimeout(go, delayMs)
+          return () => globalThis.clearTimeout(timer)
+        },
+      },
+    ),
+  )
   // Runs after every render and acts only when the caller's deps changed: an effect cannot take a caller-supplied
   // dependency list.
   useEffect(() => {
-    if (sameDeps(seen.current, deps)) {
-      return
-    }
-    seen.current = deps
-    globalThis.clearTimeout(timer.current)
-    generation.current += 1
-    if (load === null) {
-      setData(initial)
-      setLoading(false)
-      return
-    }
-    setLoading(true)
-    timer.current = globalThis.setTimeout(() => start.current(load), delayMs)
+    runs.deps(deps, load)
   })
-  useEffect(
-    () => () => {
-      generation.current += 1
-      globalThis.clearTimeout(timer.current)
-      seen.current = null
-    },
-    [],
-  )
-  return { data, loading, error, run: (next: () => Promise<T>) => start.current(next) }
+  useEffect(() => () => runs.stop(), [runs])
+  return {
+    data,
+    loading,
+    error,
+    run: (next: () => Promise<T>) => runs.run(next),
+  }
 }

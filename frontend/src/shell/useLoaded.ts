@@ -1,7 +1,5 @@
 import { type DependencyList, useCallback, useEffect, useRef, useState } from 'react'
-
-export const sameDeps = (a: DependencyList | null, b: DependencyList) =>
-  a !== null && a.length === b.length && b.every((dep, i) => Object.is(dep, a[i]))
+import { loader } from './loader.ts'
 
 // Runs `load` whenever `deps` change (never while `load` is null) and drops the answer of any run that has been
 // superseded or unmounted. New deps and a skipped load reset `data` to `initial`; a failed load keeps the last good
@@ -16,55 +14,30 @@ export function useLoaded<T>(
   const [data, setData] = useState(initial)
   const [loading, setLoading] = useState(load !== null)
   const [error, setError] = useState<unknown>(null)
-  const generation = useRef(0)
-  const seen = useRef<DependencyList | null>(null)
-  const start = useRef<(fresh: boolean) => void>(() => undefined)
-  start.current = (fresh) => {
-    generation.current += 1
-    if (fresh || load === null) {
-      setData(initial)
-    }
-    if (load === null) {
-      setLoading(false)
-      return
-    }
-    const mine = generation.current
-    const current = () => generation.current === mine
-    setLoading(true)
-    setError(null)
-    load()
-      .then((value) => {
-        if (current()) {
-          setData(value)
+  const latest = useRef({ load, initial, onError })
+  latest.current = { load, initial, onError }
+  const [runs] = useState(() =>
+    loader<T>({
+      value: (value) => setData(() => value),
+      error: (e) => {
+        setError(e)
+        latest.current.onError?.(e)
+      },
+      loading: (on) => {
+        setLoading(on)
+        if (on) {
+          setError(null)
         }
-      })
-      .catch((e: unknown) => {
-        if (current()) {
-          setError(e)
-          onError?.(e)
-        }
-      })
-      .finally(() => {
-        if (current()) {
-          setLoading(false)
-        }
-      })
-  }
+      },
+      reset: () => setData(() => latest.current.initial),
+    }),
+  )
   // Runs after every render and starts a load only when the caller's deps changed: an effect cannot take a
   // caller-supplied dependency list.
   useEffect(() => {
-    if (!sameDeps(seen.current, deps)) {
-      start.current(seen.current !== null)
-      seen.current = deps
-    }
+    runs.deps(deps, load)
   })
-  useEffect(
-    () => () => {
-      generation.current += 1
-      seen.current = null
-    },
-    [],
-  )
-  const reload = useCallback(() => start.current(false), [])
+  useEffect(() => () => runs.stop(), [runs])
+  const reload = useCallback(() => runs.run(latest.current.load), [runs])
   return { data, setData, loading, error, reload }
 }

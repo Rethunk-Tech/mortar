@@ -31,7 +31,7 @@ test('loads, then reloads with the same deps', async () => {
   await settle()
   expect(result.current.data).toBe(1)
   expect(result.current.loading).toBe(false)
-  testing.act(() => result.current.reload())
+  await testing.act(() => result.current.reload())
   await settle()
   expect(result.current.data).toBe(2)
 })
@@ -117,7 +117,7 @@ test('a failed reload keeps the last good data', async () => {
   await settle()
   expect(result.current.data).toBe('good')
   fail = true
-  testing.act(() => result.current.reload())
+  await testing.act(() => result.current.reload())
   await settle()
   expect(result.current.data).toBe('good')
   expect(result.current.error).toBeInstanceOf(Error)
