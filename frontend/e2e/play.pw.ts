@@ -2,7 +2,7 @@ import { type ChildProcess, execFileSync, spawn } from 'node:child_process'
 import { chmodSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
 import { expect, type Page, test } from '@playwright/test'
-import { dwell } from './app.ts'
+import { dwell, openSeedFarm } from './app.ts'
 import { selftest, serverEnv } from './sandbox.ts'
 
 // A --play start runs its own server on the sandbox's port, so each test stops the shared one and starts its binary again
@@ -93,7 +93,7 @@ const runs = (): { outcome: string }[] => JSON.parse(cli('runs', 'stardew', fine
 let fine = ''
 let blocked = ''
 
-test.beforeAll(() => {
+test.beforeAll(async ({ browser }) => {
   env = serverEnv(dir)
   const fake = `${dir}/fake-game.sh`
   writeFileSync(fake, FAKE_GAME)
@@ -104,6 +104,10 @@ test.beforeAll(() => {
   cli('profile', 'set', 'stardew', fine, 'launchPrefix', fake)
   cli('profile', 'set', 'stardew', fine, 'skipPlayCheck', 'true')
   cli('settings', 'set', '--game', 'stardew', 'defaultLaunchMethod', 'direct')
+  // A play request opens its profile only once first-run setup is done, which no other spec may have done yet.
+  const page = await browser.newPage()
+  await openSeedFarm(page)
+  await page.close()
 })
 
 test('a Steam session with a blocked profile shows only the pre-Play prompt, and Cancel quits', async ({
@@ -172,16 +176,12 @@ test('a Steam session sent to a running Mortar lasts until its game closes', asy
   await served(page)
   const { child, exited } = mortar([`--play=stardew/${fine}`, '--steam-session'])
   try {
-    // The fake game runs for 3s, so a process that only forwarded the request would be gone by now.
-    expect(await Promise.race([exited, new Promise((r) => setTimeout(r, 1500, 'running'))])).toBe(
-      'running',
-    )
     expect(await within(exited)).toBe(0)
   } finally {
     stop(child)
   }
-  // The run's record lands just after the game goes idle, which is what the session waited for.
-  await expect.poll(() => runs().length).toBe(before + 1)
+  // The run is recorded when the game closes, so a session that only forwarded the request exits before it is.
+  expect(runs().length).toBe(before + 1)
 })
 
 test('a play request the window already ran does not run again when the window reloads', async ({
@@ -195,7 +195,7 @@ test('a play request the window already ran does not run again when the window r
     await expect.poll(() => runs().length, { timeout: 15_000 }).toBe(before + 1)
     await page.reload()
     await served(page)
-    // The stand-in game runs for 3s, so a replayed request would have started a second run by now.
+    // The stand-in game runs for 1s, so a replayed request would have recorded a second run by now.
     await dwell(page, 4000)
     expect(runs().length).toBe(before + 1)
   } finally {
