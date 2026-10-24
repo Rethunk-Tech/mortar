@@ -22,8 +22,10 @@ func (s *Service) CancelLaunch(ctx context.Context, gameID string) error {
 	}
 	for _, sl := range s.slots(g) {
 		if s.current(sl).State != Launching {
+			// A game already up may still be loading its mods, which holds off a polite close until they have all
+			// loaded, so a cancel ends it outright here too.
 			if s.stoppable(sl) {
-				return s.stopSlot(ctx, sl)
+				return s.endSlot(sl, terminate)
 			}
 			continue
 		}
@@ -48,7 +50,7 @@ func (s *Service) CancelLaunch(ctx context.Context, gameID string) error {
 			errs = append(errs, err)
 		}
 		for _, p := range procs {
-			errs = append(errs, stopError(launch.Terminate(p.PID, stopGrace)))
+			errs = append(errs, stopError(terminate(p)))
 		}
 		cancel()
 		if handedOnly {
@@ -93,7 +95,7 @@ func (s *Service) endLateStart(ctx context.Context, sl slot) {
 			continue
 		}
 		for _, p := range procs {
-			if err := launch.Terminate(p.PID, stopGrace); err != nil {
+			if err := terminate(p); err != nil {
 				log.Printf("launch: %s: ending the game started after its launch was cancelled: %v", sl.ID(), err)
 			}
 		}

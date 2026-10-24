@@ -1414,6 +1414,14 @@ func (s *Service) stoppable(sl slot) bool {
 }
 
 func (s *Service) stopSlot(ctx context.Context, g slot) error {
+	return s.endSlot(g, func(p launch.Process) error { return launch.Stop(ctx, p, stopGrace) })
+}
+
+// terminate ends a process outright, without first asking it to close.
+func terminate(p launch.Process) error { return launch.Terminate(p.PID, stopGrace) }
+
+// endSlot ends the game's processes with end and records the run as stopped from Mortar.
+func (s *Service) endSlot(g slot, end func(launch.Process) error) error {
 	cur := s.current(g)
 	// One game runs per install, so its processes are the run's; a profile search misses a loader inside the game.
 	procs, err := s.gameProcs(g)
@@ -1429,7 +1437,7 @@ func (s *Service) stopSlot(ctx context.Context, g slot) error {
 	s.mu.Unlock()
 	var errs []error
 	for _, p := range procs {
-		errs = append(errs, stopError(launch.Stop(ctx, p, stopGrace)))
+		errs = append(errs, stopError(end(p)))
 	}
 	if err := errors.Join(errs...); err != nil {
 		return err
