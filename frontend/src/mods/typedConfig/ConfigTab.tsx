@@ -23,6 +23,7 @@ import { playOpenProfile } from '../../launch/playOpen.ts'
 import { ControlsRow } from '../../shell/ControlsRow.tsx'
 import { EmptyState } from '../../shell/EmptyState.tsx'
 import { LoadErrorRow, LoadingRow } from '../../shell/LoadingRow.tsx'
+import { useDebouncedLoad } from '../../shell/useDebouncedLoad.ts'
 import { space } from '../../theme/density.ts'
 import { type InlineError, inlineError } from '../../toasts/report.ts'
 import { GroupHeaderRow } from '../ModsGroupHeader.tsx'
@@ -48,6 +49,8 @@ import { OtherFiles } from './OtherFiles.tsx'
 const LIST_WIDTH_PX = 300
 const MIN_SETTING_QUERY = 2
 const SETTING_SEARCH_DELAY_MS = 300
+// One empty list for every query below the minimum, so typing those keys does not render the tab again.
+const NO_HITS: Hit[] = []
 const DIMMED = 0.55
 const SHOWS: ConfigShow[] = ['all', 'changed', 'menu', 'waiting']
 
@@ -273,26 +276,20 @@ const Editor = memo(function EditorView({
 
 // Settings across the profile's config files that the Filter mods text matches, found by the app a moment after typing.
 function useSettingHits(game: string, profile: string, query: string): Hit[] {
-  const [hits, setHits] = useState<Hit[]>([])
-  useEffect(() => {
-    const q = query.trim()
-    if (q.length < MIN_SETTING_QUERY) {
-      // The same empty list keeps the tab from rendering again for every key typed below the minimum.
-      setHits((prev) => (prev.length === 0 ? prev : []))
-      return
-    }
-    let live = true
-    const timer = setTimeout(() => {
-      Search(game, profile, q)
-        .then((found) => live && setHits(found ?? []))
-        .catch(() => live && setHits((prev) => (prev.length === 0 ? prev : [])))
-    }, SETTING_SEARCH_DELAY_MS)
-    return () => {
-      live = false
-      clearTimeout(timer)
-    }
-  }, [game, profile, query])
-  return hits
+  const q = query.trim()
+  // A failed search shows no hits rather than an error: the filter still narrows the mod list.
+  const { data } = useDebouncedLoad(
+    q.length < MIN_SETTING_QUERY
+      ? null
+      : () =>
+          Search(game, profile, q).then(
+            (found) => found ?? NO_HITS,
+            () => NO_HITS,
+          ),
+    [game, profile, q],
+    { initial: NO_HITS, delayMs: SETTING_SEARCH_DELAY_MS },
+  )
+  return data
 }
 
 // A search can match hundreds of settings; the list shows the first ones and says how many it left out.

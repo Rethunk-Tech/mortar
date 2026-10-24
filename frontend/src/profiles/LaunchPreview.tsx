@@ -1,15 +1,16 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, IconButton, Typography } from '@mui/material'
 import { Copy } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CommandPreview } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { PreviewCommand } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { copyText } from '../share/copyText.ts'
+import { useDebouncedLoad } from '../shell/useDebouncedLoad.ts'
 import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
 import { errorMessage } from '../toasts/report.ts'
 
 const PREVIEW_DEBOUNCE_MS = 300
+const NO_PREVIEW: CommandPreview = { env: [], argv: [], error: '' }
 const PREVIEW_LINE_PX = 18
 const PREVIEW_HEIGHT_PX = 44
 
@@ -35,26 +36,17 @@ export function LaunchPreview({
   env: string
 }) {
   const { t } = useLingui()
-  const [preview, setPreview] = useState<CommandPreview>({ env: [], argv: [], error: '' })
-  const [loadError, setLoadError] = useState('')
-  // Only the newest read may show: an older one answering late would preview options the player has since edited.
-  const latest = useRef(0)
-  const read = useCallback(() => {
-    latest.current += 1
-    const mine = latest.current
-    return PreviewCommand(gameId, profileId, options, prefix, env)
-      .then((next) => {
-        if (mine === latest.current) {
-          setLoadError('')
-          setPreview(next)
-        }
-      })
-      .catch((e: unknown) => mine === latest.current && setLoadError(errorMessage(e)))
-  }, [env, gameId, options, prefix, profileId])
-  useEffect(() => {
-    const timer = setTimeout(read, PREVIEW_DEBOUNCE_MS)
-    return () => clearTimeout(timer)
-  }, [read])
+  const load = () => PreviewCommand(gameId, profileId, options, prefix, env)
+  const {
+    data: preview,
+    error,
+    run,
+  } = useDebouncedLoad(load, [gameId, profileId, options, prefix, env], {
+    initial: NO_PREVIEW,
+    delayMs: PREVIEW_DEBOUNCE_MS,
+  })
+  const loadError = error === null ? '' : errorMessage(error)
+  const read = () => run(load)
   const copyCommand = () => {
     copyText(formatShellLine(preview), t`Command copied`)
   }

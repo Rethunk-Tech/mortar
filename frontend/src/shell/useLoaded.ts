@@ -1,6 +1,6 @@
 import { type DependencyList, useEffect, useRef, useState } from 'react'
 
-const sameDeps = (a: DependencyList | null, b: DependencyList) =>
+export const sameDeps = (a: DependencyList | null, b: DependencyList) =>
   a !== null && a.length === b.length && b.every((dep, i) => Object.is(dep, a[i]))
 
 // Runs `load` whenever `deps` change (never while `load` is null) and drops the answer of any run that has been

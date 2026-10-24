@@ -14,17 +14,15 @@ import {
   Switch,
   Typography,
 } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type {
-  AssetMapPage,
   AssetTarget,
   AssetTouch,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher/models.ts'
-import { AssetMap } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
-import { useProfiles } from '../profiles/store.ts'
 import { SearchField } from '../shell/SearchField.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { useAssetPages } from './assetPages.ts'
 import { LockedReason } from './LockedReason.tsx'
 import { sameId } from './lookup.ts'
 import { LinkedText } from './ModLinks.tsx'
@@ -32,7 +30,6 @@ import { applyWins } from './problemFix/applyWins.ts'
 import { useMods } from './store.ts'
 import { useLocked } from './useLocked.ts'
 
-const filterDelayMs = 200
 const chipSx = { height: 22, borderRadius: '4px' } as const
 const buttonSx = { height: 24, flexShrink: 0, whiteSpace: 'nowrap' } as const
 
@@ -172,39 +169,6 @@ function TargetRow({
       {expanded ? <ModTouches target={target} onChanged={onChanged} /> : null}
     </Box>
   )
-}
-
-function useAssetPages(open: boolean, filter: string, shared: boolean) {
-  const game = useProfiles((s) => s.game)
-  const openId = useProfiles((s) => s.openId)
-  const [page, setPage] = useState<AssetMapPage | null>(null)
-  useEffect(() => {
-    if (!(open && game && openId)) {
-      return
-    }
-    const handle = globalThis.setTimeout(() => {
-      AssetMap(game.id, openId, filter.trim(), shared, 0).then(setPage).catch(reportUnexpected)
-    }, filterDelayMs)
-    return () => {
-      globalThis.clearTimeout(handle)
-    }
-  }, [open, game, openId, filter, shared])
-  const fetchFrom = (offset: number, before: AssetTarget[]) => {
-    if (!(game && openId)) {
-      return
-    }
-    AssetMap(game.id, openId, filter.trim(), shared, offset)
-      .then((next) => {
-        setPage({ ...next, targets: [...before, ...(next.targets ?? [])] })
-      })
-      .catch(reportUnexpected)
-  }
-  const targets = page?.targets ?? []
-  return {
-    page,
-    more: () => fetchFrom(targets.length, targets),
-    reload: () => fetchFrom(0, []),
-  }
 }
 
 // focus opens the map on one asset: filtered to it with its rows expanded, as a conflict's Show conflicts does.
