@@ -35,6 +35,7 @@ function ExtraModsFolders() {
             </Typography>
             <Button
               size="small"
+              aria-label={t`Remove ${{ name: dir }}`}
               onClick={() => persist(() => save(folders.filter((d) => d !== dir)), failed)}
             >
               {t`Remove`}

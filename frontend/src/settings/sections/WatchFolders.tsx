@@ -73,7 +73,11 @@ function WatchFolders() {
               <MenuItem value="offer">{t`Offer installs`}</MenuItem>
               <MenuItem value="auto">{t`Auto-install`}</MenuItem>
             </Select>
-            <Button size="small" onClick={() => remove(dir, mode)}>
+            <Button
+              size="small"
+              aria-label={t`Remove ${{ name: dir }}`}
+              onClick={() => remove(dir, mode)}
+            >
               {t`Remove`}
             </Button>
           </Box>

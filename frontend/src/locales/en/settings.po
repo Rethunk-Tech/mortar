@@ -1677,6 +1677,11 @@ msgstr "Enter 1 or more"
 msgid "Endorsements"
 msgstr "Endorsements"
 
+#: src/settings/sections/ExtraModsFolders.tsx
+#: src/settings/sections/WatchFolders.tsx
+msgid "Remove {name}"
+msgstr "Remove {name}"
+
 #: src/settings/sections/checkDetail.ts
 msgid "Mortar {version} (this command {otherVersion})"
 msgstr "Mortar {version} (this command {otherVersion})"

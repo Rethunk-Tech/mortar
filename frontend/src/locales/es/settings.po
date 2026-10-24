@@ -1677,6 +1677,11 @@ msgstr ""
 msgid "Endorsements"
 msgstr ""
 
+#: src/settings/sections/ExtraModsFolders.tsx
+#: src/settings/sections/WatchFolders.tsx
+msgid "Remove {name}"
+msgstr ""
+
 #: src/settings/sections/checkDetail.ts
 msgid "Mortar {version} (this command {otherVersion})"
 msgstr ""
