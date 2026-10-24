@@ -91,14 +91,12 @@ func validSegment(s string) bool {
 		!strings.HasSuffix(s, " ") && !reserved.MatchString(s)
 }
 
-// ValidConfigPath reports whether p is a path Apply would write.
-func ValidConfigPath(p string) bool { return validConfigPath(p) }
-
 // ValidFomod reports whether recorded FOMOD choices are within the bounds a share link enforces.
 func ValidFomod(f map[string]map[string][]string) bool { return validDetails(Ref{Fomod: f}) }
 
-// validConfigPath accepts a slash-separated relative .json path whose every segment is plain.
-func validConfigPath(p string) bool {
+// ValidConfigPath reports whether p is a path Apply would write: a slash-separated relative .json path whose every
+// segment is plain.
+func ValidConfigPath(p string) bool {
 	if len(p) > maxRelPath || !strings.HasSuffix(strings.ToLower(p), ".json") {
 		return false
 	}
@@ -282,7 +280,7 @@ func ReadConfigs(modsDir, key string, m profile.Component) (found []Config, skip
 			return nil
 		}
 		data, err := readCapped(p)
-		if errors.Is(err, fsx.ErrTooLarge) || !validConfigPath(rel) {
+		if errors.Is(err, fsx.ErrTooLarge) || !ValidConfigPath(rel) {
 			skipped = append(skipped, m.ID.Local()+"/"+rel)
 			return nil
 		}
@@ -433,7 +431,7 @@ func readZip(zr *zip.Reader) (Preview, error) {
 		if !ok {
 			return Preview{}, fmt.Errorf("%w: %q is for a mod the profile does not list", ErrBadFile, f.Name)
 		}
-		if path.Clean(rel) != rel || !validConfigPath(rel) {
+		if path.Clean(rel) != rel || !ValidConfigPath(rel) {
 			return Preview{}, fmt.Errorf("%w: unsafe path %q", ErrBadFile, f.Name)
 		}
 		data, err := read(f, strings.ToLower(string(canon)+"/"+rel))

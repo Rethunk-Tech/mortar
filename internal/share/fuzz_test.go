@@ -116,7 +116,7 @@ func FuzzParseDoc(f *testing.F) {
 func checkPreview(t *testing.T, pv Preview) {
 	t.Helper()
 	for _, c := range pv.Configs {
-		if path.Clean(c.Path) != c.Path || !validConfigPath(c.Path) || !validID(c.ID) || len(c.Data) > MaxConfigBytes {
+		if path.Clean(c.Path) != c.Path || !ValidConfigPath(c.Path) || !validID(c.ID) || len(c.Data) > MaxConfigBytes {
 			t.Fatalf("accepted config %q for %q (%d bytes)", c.Path, c.ID, len(c.Data))
 		}
 	}
