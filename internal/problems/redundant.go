@@ -80,6 +80,13 @@ func namedIn(domain, summary string, enabled []framework.Mod, self string) []fra
 	for _, parts := range markdownLinkText.FindAllStringSubmatch(summary, -1) {
 		names[strings.ToLower(strings.TrimSpace(parts[1]))] = true
 	}
+	// A link to the mod's own page asks for its update, which another mod from that page does not stand in for.
+	for _, m := range enabled {
+		if m.Key == self {
+			delete(pages, nexusIDOf(m))
+		}
+	}
+	delete(pages, 0)
 	var out []framework.ModRef
 	for _, m := range enabled {
 		if m.Key == self {

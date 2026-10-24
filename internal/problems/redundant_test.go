@@ -60,3 +60,17 @@ func TestRedundantCountsASameJobGroupOnce(t *testing.T) {
 		t.Fatalf("count = %d, want 4", got)
 	}
 }
+
+// A summary that links the broken mod's own Nexus page asks for its update; another mod from that page does not
+// replace it.
+func TestALinkToTheBrokenModsOwnPageIsNotAReplacement(t *testing.T) {
+	mods := []framework.Mod{
+		{Key: "pack", UniqueID: "A.Pack", Name: "Pack", Enabled: true, UpdateKeys: []string{"Nexus:100"}},
+		{Key: "core", UniqueID: "A.Core", Name: "Core", Enabled: true, UpdateKeys: []string{"Nexus:100"}},
+	}
+	summary := "broken in SDV 1.6; get the update from https://www.nexusmods.com/stardewvalley/mods/100"
+	r := Result{Broken: []Broken{{Key: "pack", ID: "smapi:A.Pack", Name: "Pack", Status: "broken", Summary: summary}}}
+	if r = superseded(r, "stardewvalley", mods); len(r.Broken) != 1 || len(r.Redundant) != 0 {
+		t.Fatalf("broken %+v, redundant %+v", r.Broken, r.Redundant)
+	}
+}
