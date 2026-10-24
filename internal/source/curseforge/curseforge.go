@@ -725,6 +725,7 @@ func (d Driver) Details(ctx context.Context, _, id, _ string) (source.Details, e
 	for _, f := range files {
 		if f.IsAvailable {
 			out.Versions = append(out.Versions, f.version())
+			out.Released = append(out.Released, source.Released(f.FileDate))
 		}
 	}
 	if f, ok := newest(files, nil, source.StabilityRelease); ok {

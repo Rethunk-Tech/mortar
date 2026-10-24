@@ -3,6 +3,7 @@ package source
 import (
 	"context"
 	"net/url"
+	"time"
 )
 
 // Details is the fuller page of one mod, read when the player opens it in Browse.
@@ -13,6 +14,9 @@ type Details struct {
 	Changelog string `json:"changelog,omitempty"`
 	// Versions are the published version numbers, newest first.
 	Versions []string `json:"versions"`
+	// Released holds when each of Versions was published, as Unix seconds at the same index, 0 where the site gave no
+	// readable date; empty when the site dates none.
+	Released []int64 `json:"released,omitempty"`
 	// Dependencies are the ids the newest version needs, as the site names them.
 	Dependencies []string `json:"dependencies"`
 	Categories   []string `json:"categories"`
@@ -33,4 +37,13 @@ func WebLink(raw string) string {
 // Detailer is a source that reads one mod's Details; key is the source's name for the game.
 type Detailer interface {
 	Details(ctx context.Context, key, id, mortarVersion string) (Details, error)
+}
+
+// Released is an RFC 3339 time as Unix seconds, or 0 when it does not parse.
+func Released(rfc3339 string) int64 {
+	t, err := time.Parse(time.RFC3339, rfc3339)
+	if err != nil {
+		return 0
+	}
+	return t.Unix()
 }

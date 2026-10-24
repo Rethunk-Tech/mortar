@@ -31,6 +31,7 @@ func (d Driver) Details(ctx context.Context, key, id, mortarVersion string) (sou
 		out := source.Details{Versions: []string{}, Dependencies: []string{}, Categories: p.Categories, Donation: p.Donation}
 		for _, v := range p.Versions {
 			out.Versions = append(out.Versions, v.Number)
+			out.Released = append(out.Released, v.Created)
 		}
 		out.Dependencies = append(out.Dependencies, p.depsOf(p.Versions[0])...)
 		latest := p.Versions[0].Number

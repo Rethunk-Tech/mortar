@@ -394,6 +394,7 @@ func (d Driver) Details(ctx context.Context, _, id, mortarVersion string) (sourc
 	}
 	for _, v := range all {
 		out.Versions = append(out.Versions, v.Label())
+		out.Released = append(out.Released, source.Released(v.Created))
 	}
 	if len(m.Detail.Changelog) > 0 {
 		newest := slices.MaxFunc(m.Detail.Changelog, func(a, b changeEntry) int { return cmp.Compare(a.ModVersion, b.ModVersion) })

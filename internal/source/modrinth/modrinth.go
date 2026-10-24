@@ -225,6 +225,7 @@ type versionResp struct {
 	ID            string `json:"id"`
 	ProjectID     string `json:"project_id"`
 	VersionNumber string `json:"version_number"`
+	DatePublished string `json:"date_published"`
 	Dependencies  []struct {
 		ProjectID      string `json:"project_id"`
 		VersionID      string `json:"version_id"`
@@ -477,6 +478,7 @@ func (d Driver) Details(ctx context.Context, _, id, mortarVersion string) (sourc
 	}
 	for _, v := range all {
 		out.Versions = append(out.Versions, v.VersionNumber)
+		out.Released = append(out.Released, source.Released(v.DatePublished))
 	}
 	if len(all) > 0 {
 		for _, dep := range all[0].Dependencies {

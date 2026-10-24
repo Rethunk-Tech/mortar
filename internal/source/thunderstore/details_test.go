@@ -17,6 +17,7 @@ func TestDetailsReadsTheIndexAndTheNewestReadme(t *testing.T) {
 		t.Fatal(err)
 	}
 	if got.Description != "# More" || got.Changelog != "" || !slices.Equal(got.Versions, []string{"2.0.0", "1.0.0"}) ||
+		!slices.Equal(got.Released, []int64{1768471200, 1764547200}) ||
 		!slices.Equal(got.Dependencies, []string{"BepInEx-BepInExPack-5.4.2100"}) || !slices.Equal(got.Categories, []string{"Items"}) {
 		t.Fatalf("details = %+v", got)
 	}

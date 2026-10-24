@@ -400,6 +400,7 @@ func (d Driver) Details(ctx context.Context, _, id, _ string) (source.Details, e
 	}
 	for _, r := range m.Releases {
 		out.Versions = append(out.Versions, r.ModVersion)
+		out.Released = append(out.Released, source.Released(stamp(r.Created)))
 	}
 	if r, ok := m.newest(); ok {
 		out.Changelog = source.HTMLMarkdown(r.Changelog)
