@@ -143,14 +143,10 @@ func smapiOrder(mods []framework.Mod) (order map[string]int, after map[string][]
 		if !im.Enabled {
 			continue
 		}
-		m := loadorder.Mod{ID: im.ModID(), Name: im.Name, ContentPackFor: im.ContentPackForID()}
+		m := loadorder.Mod{ID: im.ModID(), Name: im.Name, Folder: im.Folder, ContentPackFor: im.ContentPackForID()}
 		id := im.ModID().Fold()
 		for _, d := range im.Dependencies {
-			if d.Required {
-				m.Needs = append(m.Needs, d.ModID())
-			} else {
-				m.Optional = append(m.Optional, d.ModID())
-			}
+			m.Deps = append(m.Deps, loadorder.Dep{ID: d.ModID(), Required: d.Required})
 			after[id] = append(after[id], d.ModID().Fold())
 		}
 		if im.ContentPackFor != "" {

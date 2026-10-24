@@ -166,8 +166,10 @@ func TestFilesWinnerFollowsSMAPILoadOrder(t *testing.T) {
 		t.Fatalf("tie %+v", objects)
 	}
 
+	// SMAPI gives up on a pack whose framework is missing before it walks the pack's dependencies.
+	cp := framework.Mod{Key: "cp", Enabled: true, Folder: t.TempDir(), Name: "Content Patcher", UniqueID: "Pathoschild.ContentPatcher"}
 	early.Dependencies = []mod.Dependency{{UniqueID: "Pack.Z"}}
-	objects = findTarget(BuildAssetIndex([]framework.Mod{late, early}), "data/objects", "123")
+	objects = findTarget(BuildAssetIndex([]framework.Mod{cp, late, early}), "data/objects", "123")
 	if objects.Winner != "smapi:Pack.A" || touchOf(t, objects, "Pack.Z").CanWin {
 		t.Fatalf("A loads after Z through its dependency, so Z cannot be moved past it: %+v", objects)
 	}

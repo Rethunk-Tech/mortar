@@ -7,6 +7,22 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
+func needs(ids ...mod.ID) []Dep {
+	out := make([]Dep, len(ids))
+	for i, id := range ids {
+		out[i] = Dep{ID: id, Required: true}
+	}
+	return out
+}
+
+func optional(ids ...mod.ID) []Dep {
+	out := make([]Dep, len(ids))
+	for i, id := range ids {
+		out[i] = Dep{ID: id}
+	}
+	return out
+}
+
 func ids(rows []Row) []mod.ID {
 	out := make([]mod.ID, len(rows))
 	for i, r := range rows {
@@ -17,7 +33,7 @@ func ids(rows []Row) []mod.ID {
 
 func TestDependencyLoadsBeforeDependent(t *testing.T) {
 	rows := Resolve([]Mod{
-		{ID: "smapi:Z.Addon", Name: "Aaa Addon", Needs: []mod.ID{"smapi:Z.Lib"}},
+		{ID: "smapi:Z.Addon", Name: "Aaa Addon", Deps: needs("smapi:Z.Lib")},
 		{ID: "smapi:Z.Lib", Name: "Zzz Library"},
 		{ID: "smapi:A.Solo", Name: "Middle"},
 	})
@@ -42,7 +58,7 @@ func TestContentPackLoadsAfterFramework(t *testing.T) {
 
 func TestOptionalDependencyLoadsBeforeDependent(t *testing.T) {
 	rows := Resolve([]Mod{
-		{ID: "smapi:Z.Host", Name: "Aaa Host", Optional: []mod.ID{"smapi:Z.Opt"}},
+		{ID: "smapi:Z.Host", Name: "Aaa Host", Deps: optional("smapi:Z.Opt")},
 		{ID: "smapi:Z.Opt", Name: "Zzz Optional"},
 	})
 	got := ids(rows)
@@ -53,8 +69,8 @@ func TestOptionalDependencyLoadsBeforeDependent(t *testing.T) {
 
 func TestCycleDetection(t *testing.T) {
 	rows := Resolve([]Mod{
-		{ID: "smapi:A.One", Name: "One", Needs: []mod.ID{"smapi:A.Two"}},
-		{ID: "smapi:A.Two", Name: "Two", Needs: []mod.ID{"smapi:A.One"}},
+		{ID: "smapi:A.One", Name: "One", Deps: needs("smapi:A.Two")},
+		{ID: "smapi:A.Two", Name: "Two", Deps: needs("smapi:A.One")},
 		{ID: "smapi:B.Free", Name: "Free"},
 	})
 	if len(rows) != 3 || rows[0].ID != "smapi:B.Free" || rows[0].Cycle {
@@ -67,7 +83,7 @@ func TestCycleDetection(t *testing.T) {
 
 func TestMissingRequiredDependency(t *testing.T) {
 	rows := Resolve([]Mod{
-		{ID: "smapi:A.Mod", Name: "Mod", Needs: []mod.ID{"smapi:Missing.Lib"}, Optional: []mod.ID{"smapi:Also.Gone"}},
+		{ID: "smapi:A.Mod", Name: "Mod", Deps: append(needs("smapi:Missing.Lib"), optional("smapi:Also.Gone")...)},
 	})
 	if len(rows) != 1 {
 		t.Fatalf("still listed: %+v", rows)
@@ -87,5 +103,17 @@ func TestAlphabeticalWhenIndependent(t *testing.T) {
 	})
 	if got := ids(rows); !slices.Equal(got, []mod.ID{"smapi:A.Mod", "smapi:B.Mod"}) {
 		t.Fatalf("by name: %v", got)
+	}
+}
+
+// SMAPI loads a mod's dependency just before it, not where the dependency's own folder name would put it.
+func TestADependencyLoadsJustBeforeItsMod(t *testing.T) {
+	rows := Resolve([]Mod{
+		{ID: "smapi:B", Name: "B", Folder: "Mods/B"},
+		{ID: "smapi:Z", Name: "Z", Folder: "Mods/Z"},
+		{ID: "smapi:A", Name: "A", Folder: "Mods/A", Deps: needs("smapi:Z")},
+	})
+	if got := ids(rows); !slices.Equal(got, []mod.ID{"smapi:Z", "smapi:A", "smapi:B"}) {
+		t.Fatalf("order = %v, want Z, A, B", got)
 	}
 }

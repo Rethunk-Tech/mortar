@@ -211,13 +211,9 @@ func (Loader) Order(p loader.ProfileView) ([]loadorder.Row, error) {
 		if err != nil {
 			continue
 		}
-		m := loadorder.Mod{ID: mf.ModID(), Name: mf.Name, ContentPackFor: mf.ContentPackForID()}
+		m := loadorder.Mod{ID: mf.ModID(), Name: mf.Name, Folder: dir, ContentPackFor: mf.ContentPackForID()}
 		for _, d := range mf.Dependencies {
-			if d.Required {
-				m.Needs = append(m.Needs, d.ModID())
-			} else {
-				m.Optional = append(m.Optional, d.ModID())
-			}
+			m.Deps = append(m.Deps, loadorder.Dep{ID: d.ModID(), Required: d.Required})
 		}
 		mods = append(mods, m)
 	}
