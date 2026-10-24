@@ -224,6 +224,21 @@ func TestCategoriesSayWhyOnlyWhenNoSourceGaveAny(t *testing.T) {
 	}
 }
 
+type signedOutCats struct{ catSource }
+
+func (*signedOutCats) ID() string { return "signedoutcats" }
+func (*signedOutCats) Categories(context.Context, string) ([]string, error) {
+	return nil, fmt.Errorf("listing: %w", source.ErrSignedOut)
+}
+
+func TestCategoriesOfASignedOutSourceAreNoneAndNoError(t *testing.T) {
+	game := components.GameInfo{ID: "signedout", Sources: []components.GameSource{{ID: "signedoutcats"}}}
+	names, err := categoriesOf(context.Background(), game, []source.Source{&signedOutCats{}})
+	if err != nil || len(names) != 0 {
+		t.Fatalf("signed out must read as no categories: %v %v", names, err)
+	}
+}
+
 type gatedCats struct{ lockedCats }
 
 func (*gatedCats) ID() string          { return "gatedcats" }

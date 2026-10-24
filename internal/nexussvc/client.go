@@ -8,10 +8,16 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/nexussso"
 	"github.com/Rethunk-Tech/mortar/internal/secret"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
-// ErrSignedOut means a Nexus call was made without a signed-in account.
-var ErrSignedOut = errors.New("sign in to Nexus Mods in Settings before downloading")
+// ErrSignedOut means a Nexus call was made without a signed-in account; it is a source.ErrSignedOut.
+var ErrSignedOut error = signedOut{}
+
+type signedOut struct{}
+
+func (signedOut) Error() string        { return "sign in to Nexus Mods in Settings before downloading" }
+func (signedOut) Is(target error) bool { return target == source.ErrSignedOut }
 
 // Authed returns c authenticated as the signed-in account: with its OAuth access token when this build has a
 // client id (the API key is then never read), else with its personal API key. ErrSignedOut when there is none.

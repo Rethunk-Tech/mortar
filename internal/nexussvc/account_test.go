@@ -48,6 +48,9 @@ func TestEndorseAndTrackActOnSignedInAccount(t *testing.T) {
 	if _, err := s.Endorse(ctx, "stardew", 541, "1.55.0"); !errors.Is(err, ErrSignedOut) {
 		t.Fatalf("signed out endorse = %v", err)
 	}
+	if count, err := s.TrackedCount(ctx, "stardew"); err != nil || count != 0 {
+		t.Fatalf("signed out tracked count = %d %v, want none and no error", count, err)
+	}
 	if _, err := s.SignIn(ctx, "secret-key"); err != nil {
 		t.Fatal(err)
 	}

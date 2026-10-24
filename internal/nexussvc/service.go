@@ -188,9 +188,12 @@ func (s *Service) trackedFor(ctx context.Context, gameID string) ([]int, error) 
 	return ids, nil
 }
 
-// TrackedCount returns how many of a Mortar game's mods the user tracks on Nexus.
+// TrackedCount returns how many of a Mortar game's mods the user tracks on Nexus; signed out, that is none.
 func (s *Service) TrackedCount(ctx context.Context, gameID string) (int, error) {
 	ids, err := s.trackedFor(ctx, gameID)
+	if errors.Is(err, ErrSignedOut) {
+		return 0, nil
+	}
 	return len(ids), err
 }
 

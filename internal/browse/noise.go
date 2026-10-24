@@ -2,6 +2,7 @@ package browse
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"slices"
 	"strings"
@@ -43,6 +44,10 @@ func categoriesCached(ctx context.Context, game string, s source.Source, key str
 	catMu.Unlock()
 	if !hit || !time.Now().Before(e.until) {
 		names, err := cat.Categories(ctx, key)
+		// Signed out, the source simply has no categories to offer; nothing is kept, so signing in shows them.
+		if errors.Is(err, source.ErrSignedOut) {
+			return nil, nil
+		}
 		if err != nil {
 			slog.Warn("could not list categories", "game", game, "source", s.ID(), "err", err)
 			return nil, err

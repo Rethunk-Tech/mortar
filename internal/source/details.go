@@ -2,6 +2,7 @@ package source
 
 import (
 	"context"
+	"errors"
 	"net/url"
 	"time"
 )
@@ -38,6 +39,10 @@ func WebLink(raw string) string {
 type Detailer interface {
 	Details(ctx context.Context, key, id, mortarVersion string) (Details, error)
 }
+
+// ErrSignedOut marks a call a source refused because no account is signed in to it: there is nothing to show, which is
+// not a failure to report.
+var ErrSignedOut = errors.New("signed out")
 
 // Released is an RFC 3339 time as Unix seconds, or 0 when it does not parse.
 func Released(rfc3339 string) int64 {
