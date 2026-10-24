@@ -1,5 +1,5 @@
 # This file contains the configuration for this project.
-version: '3'
+version: "3"
 
 # This information is used to generate the build assets.
 info:
@@ -58,4 +58,3 @@ dev_mode:
     - cmd: wails3 task run
       type: primary
       exit_policy: shutdown
-

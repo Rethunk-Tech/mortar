@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 includes:
   common: ../Taskfile.yml
@@ -9,11 +9,11 @@ tasks:
     cmds:
       - task: build:native
         vars:
-          ARCH: '{{.ARCH}}'
-          DEV: '{{.DEV}}'
-          EXTRA_TAGS: '{{.EXTRA_TAGS}}'
-          OBFUSCATED: '{{.OBFUSCATED}}'
-          GARBLE_ARGS: '{{.GARBLE_ARGS}}'
+          ARCH: "{{.ARCH}}"
+          DEV: "{{.DEV}}"
+          EXTRA_TAGS: "{{.EXTRA_TAGS}}"
+          OBFUSCATED: "{{.OBFUSCATED}}"
+          GARBLE_ARGS: "{{.GARBLE_ARGS}}"
 
   build:native:
     summary: Builds the application using native Go cross-compilation
@@ -35,7 +35,7 @@ tasks:
     cmds:
       - task: generate:syso
         vars:
-          ARCH: '{{.ARCH}}'
+          ARCH: "{{.ARCH}}"
       - '{{if eq .OBFUSCATED "true"}}garble {{.GARBLE_ARGS}} build{{else}}go build{{end}} {{.BUILD_FLAGS}} -o "{{.BIN_DIR}}/{{.APP_NAME}}.exe"'
       - cmd: scripts/check-embedded-key.sh "{{.BIN_DIR}}/{{.APP_NAME}}.exe"
         platforms: [linux]
@@ -55,7 +55,7 @@ tasks:
     env:
       GOOS: windows
       CGO_ENABLED: '{{.CGO_ENABLED | default "0"}}'
-      GOARCH: '{{.ARCH | default ARCH}}'
+      GOARCH: "{{.ARCH | default ARCH}}"
 
   package:
     summary: Packages the application as an NSIS installer
@@ -68,7 +68,7 @@ tasks:
     cmds:
       - wails3 generate syso -arch {{.ARCH}} -icon windows/icon.ico -manifest windows/wails.exe.manifest -info windows/info.json -out ../wails_windows_{{.ARCH}}.syso
     vars:
-      ARCH: '{{.ARCH | default ARCH}}'
+      ARCH: "{{.ARCH | default ARCH}}"
 
   create:nsis:installer:
     summary: Creates an NSIS installer
@@ -85,10 +85,9 @@ tasks:
         makensis -DARG_WAILS_{{.ARG_FLAG}}_BINARY="{{.ROOT_DIR}}/{{.BIN_DIR}}/{{.APP_NAME}}.exe" project.nsi
         {{end}}
     vars:
-      ARCH: '{{.ARCH | default ARCH}}'
+      ARCH: "{{.ARCH | default ARCH}}"
       ARG_FLAG: '{{if eq .ARCH "amd64"}}AMD64{{else}}ARM64{{end}}'
 
   run:
     cmds:
-      - '{{.BIN_DIR}}/{{.APP_NAME}}.exe'
-
+      - "{{.BIN_DIR}}/{{.APP_NAME}}.exe"

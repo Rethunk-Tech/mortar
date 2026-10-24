@@ -495,7 +495,6 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: build/release/verify.sh --public "$TAG"
 
-
   # Publishes the signed package repository and the tagged site to the `packages` branch, which mortar.rethunk.tech deploys.
   package-repo:
     needs: finalize

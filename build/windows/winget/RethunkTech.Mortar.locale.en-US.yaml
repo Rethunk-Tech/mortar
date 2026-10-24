@@ -16,14 +16,14 @@ ShortDescription: Desktop mod manager for PC games.
 Description: Mortar finds your games on Steam, GOG, Epic Games, the EA app, the Xbox app, Heroic, Lutris, Minigalaxy or Bottles, installs their mod loader, keeps each set of mods in its own profile, explains mod conflicts, downloads from Nexus Mods, CurseForge, Modrinth, Thunderstore, GitHub, itch.io and the Vintage Story Mod DB, and shares a profile as a link. It supports Stardew Valley, Lethal Company, Valheim, Vintage Story, The Sims 4 and many Thunderstore games.
 Moniker: mortar
 Tags:
-- mod-manager
-- modding
-- nexus-mods
-- smapi
-- bepinex
-- stardew-valley
-- lethal-company
-- valheim
+  - mod-manager
+  - modding
+  - nexus-mods
+  - smapi
+  - bepinex
+  - stardew-valley
+  - lethal-company
+  - valheim
 ReleaseNotesUrl: https://github.com/Rethunk-Tech/mortar/releases/tag/v0.2.2
 ManifestType: defaultLocale
 ManifestVersion: 1.12.0

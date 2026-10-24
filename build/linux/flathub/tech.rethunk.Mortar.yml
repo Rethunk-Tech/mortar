@@ -42,7 +42,7 @@ modules:
       - type: git
         url: https://github.com/Rethunk-Tech/mortar.git
         tag: v@VERSION@
-        commit: '@COMMIT@'
+        commit: "@COMMIT@"
       - type: file
         path: yarn.lock
       - go-sources.json

@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 includes:
   common: ../Taskfile.yml
@@ -14,13 +14,13 @@ tasks:
     cmds:
       - task: build:native
         vars:
-          ARCH: '{{.ARCH}}'
-          DEV: '{{.DEV}}'
-          OUTPUT: '{{.OUTPUT}}'
-          EXTRA_TAGS: '{{.EXTRA_TAGS}}'
-          OBFUSCATED: '{{.OBFUSCATED}}'
-          GARBLE_ARGS: '{{.GARBLE_ARGS}}'
-          PACKAGED: '{{.PACKAGED}}'
+          ARCH: "{{.ARCH}}"
+          DEV: "{{.DEV}}"
+          OUTPUT: "{{.OUTPUT}}"
+          EXTRA_TAGS: "{{.EXTRA_TAGS}}"
+          OBFUSCATED: "{{.OBFUSCATED}}"
+          GARBLE_ARGS: "{{.GARBLE_ARGS}}"
+          PACKAGED: "{{.PACKAGED}}"
 
   build:native:
     summary: Builds the application natively on Linux
@@ -51,13 +51,13 @@ tasks:
         sh: |-
           git rev-list --count "v$(sed -n 's/^  version: "\([^"]*\)".*/\1/p' build/config.yml)..HEAD" 2>/dev/null || true
       BUILD_FLAGS: '{{if eq .DEV "true"}}{{if or .EXTRA_TAGS (eq .OBFUSCATED "true")}}-tags {{if eq .OBFUSCATED "true"}}wails_obfuscated{{if .EXTRA_TAGS}},{{end}}{{end}}{{.EXTRA_TAGS}} {{end}}-buildvcs=false -gcflags=all="-l"{{else}}-tags production{{if eq .OBFUSCATED "true"}},wails_obfuscated{{end}}{{if .EXTRA_TAGS}},{{.EXTRA_TAGS}}{{end}} -trimpath -buildvcs=false -ldflags="-w -s{{if .COMMIT}} -X github.com/Rethunk-Tech/mortar/internal/appversion.stamped={{.COMMIT}}{{end}}{{if .SINCE_RELEASE}} -X github.com/Rethunk-Tech/mortar/internal/appversion.pastRelease={{.SINCE_RELEASE}}{{end}}{{if .CURSEFORGE_API_KEY}} -X github.com/Rethunk-Tech/mortar/internal/source/curseforge.apiKey=$CURSEFORGE_API_KEY{{end}}{{if .PACKAGED}} -X main.packaged={{.PACKAGED}} -X github.com/Rethunk-Tech/mortar/internal/nxm.packaged={{.PACKAGED}} -extldflags ''-Wl,-z,relro,-z,now''{{end}}"{{end}}'
-      DEFAULT_OUTPUT: '{{.BIN_DIR}}/{{.APP_NAME}}'
-      OUTPUT: '{{ .OUTPUT | default .DEFAULT_OUTPUT }}'
-      PACKAGED: '{{.PACKAGED}}'
+      DEFAULT_OUTPUT: "{{.BIN_DIR}}/{{.APP_NAME}}"
+      OUTPUT: "{{ .OUTPUT | default .DEFAULT_OUTPUT }}"
+      PACKAGED: "{{.PACKAGED}}"
     env:
       GOOS: linux
       CGO_ENABLED: 1
-      GOARCH: '{{.ARCH | default ARCH}}'
+      GOARCH: "{{.ARCH | default ARCH}}"
 
   package:
     summary: Packages the application for Linux
@@ -102,18 +102,18 @@ tasks:
         cp -a "{{.APP_BINARY}}" "{{.OUTPUT_DIR}}/{{.APP_NAME}}-linux-${goarch}"
         rm "{{.APP_NAME}}" "tech.rethunk.Mortar.png"
     env:
-      LINUXDEPLOY_REAL: '{{.TOOLS_CACHE}}/linuxdeploy-{{.ARCH_NAME}}'
-      LDAI_RUNTIME_FILE: '{{.TOOLS_CACHE}}/runtime-{{.ARCH_NAME}}'
+      LINUXDEPLOY_REAL: "{{.TOOLS_CACHE}}/linuxdeploy-{{.ARCH_NAME}}"
+      LDAI_RUNTIME_FILE: "{{.TOOLS_CACHE}}/runtime-{{.ARCH_NAME}}"
     vars:
       ARCH_NAME:
         sh: echo "${APPIMAGE_ARCH:-$(uname -m)}"
       TOOLS_CACHE:
         sh: ./fetch-tools.sh "${APPIMAGE_ARCH:-$(uname -m)}"
-      APP_NAME: '{{.APP_NAME}}'
-      APP_BINARY: '../../../bin/{{.APP_NAME}}'
-      ICON: 'tech.rethunk.Mortar.png'
-      DESKTOP_FILE: '../tech.rethunk.Mortar.desktop'
-      OUTPUT_DIR: '../../../bin'
+      APP_NAME: "{{.APP_NAME}}"
+      APP_BINARY: "../../../bin/{{.APP_NAME}}"
+      ICON: "tech.rethunk.Mortar.png"
+      DESKTOP_FILE: "../tech.rethunk.Mortar.desktop"
+      OUTPUT_DIR: "../../../bin"
 
   nfpm:
     summary: Builds .deb, .rpm and Arch packages (self-updater off)
@@ -121,7 +121,7 @@ tasks:
       - task: build
         vars:
           PACKAGED: deb
-          OUTPUT: '{{.BIN_DIR}}/mortar-packaged'
+          OUTPUT: "{{.BIN_DIR}}/mortar-packaged"
     cmds:
       - |
         set -euo pipefail
@@ -148,9 +148,9 @@ tasks:
     deps:
       - task: build
         vars:
-          ARCH: '{{.ARCH}}'
+          ARCH: "{{.ARCH}}"
           PACKAGED: flatpak
-          OUTPUT: '{{.BIN_DIR}}/mortar-packaged'
+          OUTPUT: "{{.BIN_DIR}}/mortar-packaged"
     cmds:
       - |
         set -euo pipefail
@@ -162,4 +162,4 @@ tasks:
 
   run:
     cmds:
-      - '{{.BIN_DIR}}/{{.APP_NAME}}'
+      - "{{.BIN_DIR}}/{{.APP_NAME}}"
