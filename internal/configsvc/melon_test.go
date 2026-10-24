@@ -69,3 +69,25 @@ func TestMelonFloatIsWrittenAsTOML(t *testing.T) {
 		}
 	}
 }
+
+// Tomlet writes a string holding a newline and a backslash or double quote as a multi-line literal, and an array of
+// arrays one element per line; an edit replaces the whole value, and no line inside it reads as a setting.
+func TestMelonMultiLineValuesAreEditedWhole(t *testing.T) {
+	const text = "[Mod]\nNote = '''\nsay \"a=b\"\nC:\\x'''\nGrid = [\n\t[ \"[\", 1, ],\n\t[ 2, ],\n]\nAfter = 1\n"
+	d := parseMelon(text)
+	var keys []string
+	for _, e := range d.entries {
+		keys = append(keys, e.Key)
+	}
+	if strings.Join(keys, ",") != "Note,Grid,After" || d.entries[0].Value != "say \"a=b\"\nC:\\x" {
+		t.Fatalf("entries %+v", d.entries)
+	}
+	out, err := d.set("Mod", "Note", "short")
+	if err != nil || out != "[Mod]\nNote = \"short\"\nGrid = [\n\t[ \"[\", 1, ],\n\t[ 2, ],\n]\nAfter = 1\n" {
+		t.Fatalf("set string: %q %v", out, err)
+	}
+	out, err = d.set("Mod", "Grid", "[]")
+	if err != nil || out != "[Mod]\nNote = '''\nsay \"a=b\"\nC:\\x'''\nGrid = []\nAfter = 1\n" {
+		t.Fatalf("set array: %q %v", out, err)
+	}
+}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -27,7 +28,8 @@ func (s *Service) melonPath(game, id string) (string, error) {
 
 type melonEntry struct {
 	section string
-	line    int
+	// line is where the entry starts and end where its value ends: Tomlet writes some values over several lines.
+	line, end int
 	// prefix is the line up to and including "=" and its following space; suffix an inline comment with its spaces.
 	prefix, suffix string
 	Entry
@@ -50,7 +52,8 @@ func parseMelon(text string) melonDoc {
 	d.lines = strings.Split(strings.ReplaceAll(text, "\r\n", "\n"), "\n")
 	var section string
 	var desc []string
-	for i, raw := range d.lines {
+	for i := 0; i < len(d.lines); i++ {
+		raw := d.lines[i]
 		line := strings.TrimSpace(raw)
 		switch {
 		case line == "":
@@ -66,9 +69,13 @@ func parseMelon(text string) melonDoc {
 				continue
 			}
 			value, suffix := splitInline(strings.TrimSpace(raw[eq+1:]))
+			end := valueEnd(d.lines, i, value)
+			if end > i {
+				value, suffix = strings.Join(append([]string{value}, d.lines[i+1:end+1]...), "\n"), ""
+			}
 			typ, val := melonType(value)
 			e := melonEntry{
-				section: section, line: i, prefix: raw[:eq+1] + " ", suffix: suffix,
+				section: section, line: i, end: end, prefix: raw[:eq+1] + " ", suffix: suffix,
 				Key:         strings.Trim(strings.TrimSpace(raw[:eq]), `"'`),
 				Description: strings.Join(desc, "\n"),
 				Type:        typ,
@@ -76,6 +83,7 @@ func parseMelon(text string) melonDoc {
 			}
 			d.entries = append(d.entries, e)
 			desc = nil
+			i = end
 		}
 	}
 	return d
@@ -99,8 +107,62 @@ func splitInline(v string) (value, comment string) {
 	return v, ""
 }
 
+// valueEnd is the line a value opening on line i ends on: a multi-line string runs to its closing quotes, an array
+// until its brackets close.
+func valueEnd(lines []string, i int, value string) int {
+	for _, q := range []string{"'''", `"""`} {
+		if strings.HasPrefix(value, q) && !strings.Contains(value[len(q):], q) {
+			for j := i + 1; j < len(lines); j++ {
+				if strings.Contains(lines[j], q) {
+					return j
+				}
+			}
+			return len(lines) - 1
+		}
+	}
+	depth := 0
+	for j := i; j < len(lines) && strings.HasPrefix(value, "["); j++ {
+		text := lines[j]
+		if j == i {
+			text = value
+		}
+		if depth += bracketDepth(text); depth <= 0 {
+			return j
+		}
+	}
+	return i
+}
+
+// bracketDepth is how many more brackets a line opens than it closes, outside strings and comments.
+func bracketDepth(line string) int {
+	value, _ := splitInline(strings.TrimSpace(line))
+	var quote rune
+	depth := 0
+	for i, r := range value {
+		switch {
+		case quote != 0:
+			if r == quote && (quote == '\'' || value[i-1] != '\\') {
+				quote = 0
+			}
+		case r == '"' || r == '\'':
+			quote = r
+		case r == '[':
+			depth++
+		case r == ']':
+			depth--
+		}
+	}
+	return depth
+}
+
 // melonType is the schema type of a TOML value and the text to show for it.
 func melonType(v string) (typ, shown string) {
+	for _, q := range []string{"'''", `"""`} {
+		if inner, ok := strings.CutPrefix(v, q); ok {
+			inner = strings.TrimPrefix(strings.TrimSuffix(inner, q), "\n")
+			return TypeString, inner
+		}
+	}
 	switch {
 	case v == "true" || v == "false":
 		return TypeBool, v
@@ -164,7 +226,7 @@ func (d melonDoc) set(section, key, value string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		lines := append([]string(nil), d.lines...)
+		lines := slices.Delete(append([]string(nil), d.lines...), e.line+1, e.end+1)
 		lines[e.line] = e.prefix + lit + e.suffix
 		eol := "\n"
 		if d.crlf {
