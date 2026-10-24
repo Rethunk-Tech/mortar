@@ -214,7 +214,28 @@ func (e melonEntry) literal(value string) (string, error) {
 		}
 		return value, nil
 	}
-	return strconv.Quote(value), nil
+	return tomlString(value), nil
+}
+
+// tomlString is value as a TOML basic string; strconv.Quote's \a, \v and \x escapes are not TOML.
+func tomlString(value string) string {
+	var b strings.Builder
+	b.WriteByte('"')
+	for _, r := range value {
+		switch {
+		case r == '"' || r == '\\':
+			b.WriteByte('\\')
+			b.WriteRune(r)
+		case r == '\t':
+			b.WriteString(`\t`)
+		case r < 0x20 || r == 0x7f:
+			fmt.Fprintf(&b, `\u%04X`, r)
+		default:
+			b.WriteRune(r)
+		}
+	}
+	b.WriteByte('"')
+	return b.String()
 }
 
 func (d melonDoc) set(section, key, value string) (string, error) {

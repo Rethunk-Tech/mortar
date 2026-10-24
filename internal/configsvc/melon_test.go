@@ -70,6 +70,14 @@ func TestMelonFloatIsWrittenAsTOML(t *testing.T) {
 	}
 }
 
+func TestMelonStringIsWrittenWithTOMLEscapes(t *testing.T) {
+	d := parseMelon("[Mod]\nName = \"x\"\n")
+	out, err := d.set("Mod", "Name", "a\a\v\x01é\"\\\tz")
+	if err != nil || out != "[Mod]\nName = \"a\\u0007\\u000B\\u0001é\\\"\\\\\\tz\"\n" {
+		t.Fatalf("%q %v", out, err)
+	}
+}
+
 // Tomlet writes a string holding a newline and a backslash or double quote as a multi-line literal, and an array of
 // arrays one element per line; an edit replaces the whole value, and no line inside it reads as a setting.
 func TestMelonMultiLineValuesAreEditedWhole(t *testing.T) {
