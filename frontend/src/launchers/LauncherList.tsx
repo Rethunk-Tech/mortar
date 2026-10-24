@@ -95,7 +95,9 @@ function FixedRow({ launcher }: { launcher: StoreApp }) {
         <LauncherLogo id={launcher.id} size={STATUS_ICON} />
       </Box>
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography sx={{ fontSize: 17, fontWeight: 700 }}>{launcher.name}</Typography>
+        <Typography component="h3" sx={{ fontSize: 17, fontWeight: 700 }}>
+          {launcher.name}
+        </Typography>
         <Typography title={summary} sx={{ fontSize: 13, color: 'text.secondary' }} noWrap={true}>
           {summary}
         </Typography>
@@ -176,7 +178,9 @@ function LauncherRow({
           <LauncherLogo id={launcher.id} size={STATUS_ICON} />
         </Box>
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography sx={{ fontSize: 17, fontWeight: 700 }}>{launcher.name}</Typography>
+          <Typography component="h3" sx={{ fontSize: 17, fontWeight: 700 }}>
+            {launcher.name}
+          </Typography>
           <Typography title={summary} sx={{ fontSize: 13, color: 'text.secondary' }} noWrap={true}>
             {summary}
           </Typography>
