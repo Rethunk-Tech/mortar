@@ -53,19 +53,8 @@ func TestRunErrorsFromSummary_infoWhenNoCrash(t *testing.T) {
 		Mods: []launch.ModError{{Mod: "author.alpha", Count: 1, First: "oops"}},
 	}
 	got := RunErrorsFromSummary("run-3", summary, mods, nil)
-	if len(got) != 1 || got[0].Severe {
-		t.Fatalf("want info-level: %#v", got)
-	}
-}
-
-func TestRunErrorsFromSummary_matchByUniqueID(t *testing.T) {
-	mods := []framework.Mod{installedMod("k", "Display Name", "me.mod", true)}
-	summary := launch.Summary{
-		Mods: []launch.ModError{{Mod: "me.mod", Count: 1, First: "x"}},
-	}
-	got := RunErrorsFromSummary("r", summary, mods, nil)
-	if len(got) != 1 || got[0].Key != "k" {
-		t.Fatalf("match by id: %#v", got)
+	if len(got) != 1 || got[0].Severe || got[0].Key != "a" {
+		t.Fatalf("want info-level, matched by unique id: %#v", got)
 	}
 }
 

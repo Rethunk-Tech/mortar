@@ -189,26 +189,8 @@ func TestDuplicates(t *testing.T) {
 	}
 }
 
+// A file the page lists without a name is named for its mod.
 func TestNexusFilesInDuplicate(t *testing.T) {
-	a := inst("nexus-21788-116403", "SVE.WorldMap", "1.0", true)
-	a.SourceKind = "nexus"
-	b := inst("nexus-21788-175477", "SVE.WorldMap", "1.0", true)
-	b.SourceKind = "nexus"
-	got := Check(context.Background(), fakeMeta{pages: map[int]meta.Page{21788: {
-		Downloads: []meta.File{
-			{ID: 116403, Type: "MAIN", FileName: "WorldMap-1.0.zip", Version: "1.0"},
-			{ID: 175477, Type: "MAIN", FileName: "WorldMap-2.0.zip", Version: "2.0"},
-		},
-	}}}, testEnv, []framework.Mod{a, b}, nil)
-	if len(got.Duplicates) != 1 || len(got.Duplicates[0].NexusFiles) != 2 {
-		t.Fatalf("nexus files = %+v", got.Duplicates)
-	}
-	if !got.Duplicates[0].NexusFiles[0].Remove || got.Duplicates[0].NexusFiles[1].Remove {
-		t.Fatalf("remove flags = %+v", got.Duplicates[0].NexusFiles)
-	}
-}
-
-func TestNexusFileWithoutANameIsNamedForItsMod(t *testing.T) {
 	a := inst("nexus-21788-116403", "SVE.WorldMap", "1.0", true)
 	a.SourceKind = "nexus"
 	b := inst("nexus-21788-175477", "SVE.WorldMap", "1.0", true)
@@ -222,8 +204,9 @@ func TestNexusFileWithoutANameIsNamedForItsMod(t *testing.T) {
 	if len(got.Duplicates) != 1 || len(got.Duplicates[0].NexusFiles) != 2 {
 		t.Fatalf("nexus files = %+v", got.Duplicates)
 	}
-	if name := got.Duplicates[0].NexusFiles[1].FileName; name != got.Duplicates[0].Name+" file 175477" {
-		t.Fatalf("file name = %q", name)
+	files := got.Duplicates[0].NexusFiles
+	if !files[0].Remove || files[1].Remove || files[1].FileName != got.Duplicates[0].Name+" file 175477" {
+		t.Fatalf("files = %+v", files)
 	}
 }
 
