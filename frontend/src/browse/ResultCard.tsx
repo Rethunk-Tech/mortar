@@ -223,29 +223,39 @@ function CardTitle(props: { name: string; flag: 'error' | 'warning' | null; onOp
 const onControl = (e: MouseEvent<HTMLElement>) =>
   e.target instanceof Element && e.target.closest('button, a, [role="button"]') !== null
 
-// The author line, and under it a note when another site lists a mod of this name by someone else with more downloads.
-function Byline({ author, reuploadOf }: { author: string; reuploadOf: string }) {
-  const { t } = useLingui()
+function Byline({ author }: { author: string }) {
+  if (author === '') {
+    return null
+  }
   return (
-    <>
-      {author === '' ? null : (
-        <Typography
-          noWrap={true}
-          sx={{ fontSize: 'small.fontSize', fontWeight: 500, color: 'var(--mortar-accent-ink)' }}
-        >
-          {formatAuthors(author)}
-        </Typography>
-      )}
-      {reuploadOf === '' ? null : (
-        <Typography
-          noWrap={true}
-          title={reuploadOf}
-          sx={{ fontSize: 'small.fontSize', color: 'warning.main' }}
-        >
-          {t`Possibly a re-upload of ${reuploadOf}`}
-        </Typography>
-      )}
-    </>
+    <Typography
+      noWrap={true}
+      sx={{ fontSize: 'small.fontSize', fontWeight: 500, color: 'var(--mortar-accent-ink)' }}
+    >
+      {formatAuthors(author)}
+    </Typography>
+  )
+}
+
+// When another site lists a mod of this name by someone else with more downloads: a mark at the card's top right, the
+// note in its tooltip, so the card keeps its height.
+function ReuploadMark({ reuploadOf }: { reuploadOf: string }) {
+  const { t } = useLingui()
+  if (reuploadOf === '') {
+    return null
+  }
+  const note = t`Possibly a re-upload of ${reuploadOf}`
+  return (
+    <Tooltip title={note}>
+      <Box
+        component="span"
+        role="img"
+        aria-label={note}
+        sx={{ display: 'inline-flex', flexShrink: 0, ml: 'auto', color: 'warning.main' }}
+      >
+        <TriangleAlert size={15} aria-hidden={true} />
+      </Box>
+    </Tooltip>
   )
 }
 
@@ -398,12 +408,15 @@ const ResultCard = memo(function BrowseResultCard(props: ResultCardProps) {
           opacity: dim,
         }}
       >
-        <CardTitle
-          name={name}
-          flag={flag}
-          onOpen={() => useBrowseSelection.getState().select({ item, source })}
-        />
-        <Byline author={author} reuploadOf={item.reuploadOf ?? ''} />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0 }}>
+          <CardTitle
+            name={name}
+            flag={flag}
+            onOpen={() => useBrowseSelection.getState().select({ item, source })}
+          />
+          <ReuploadMark reuploadOf={item.reuploadOf ?? ''} />
+        </Box>
+        <Byline author={author} />
         <Typography
           title={summary}
           sx={{
