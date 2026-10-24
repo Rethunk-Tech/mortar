@@ -11,6 +11,7 @@ import { ProblemsTab } from '../mods/ProblemsTab.tsx'
 import { RemoveDialog } from '../mods/parts.tsx'
 import { ConfigTab } from '../mods/typedConfig/ConfigTab.tsx'
 import { useConfigListLoaded } from '../mods/typedConfig/configList.ts'
+import { entriesKey } from '../profiles/entriesKey.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { SavesTab } from '../saves/SavesTab.tsx'
 import { ScreenshotsTab } from '../screenshots/ScreenshotsTab.tsx'
@@ -26,10 +27,13 @@ function WithProfile({ show }: { show: (profile: Profile) => ReactNode }) {
   return profile ? show(profile) : null
 }
 
-// Rereads the config list on each save of the open profile; its own component, so a save re-renders only this.
+// Rereads the config list when the open profile's mods change; its own component, so a save re-renders only this.
 function ConfigListFollower({ game, id }: { game: string; id: string }) {
-  const updated = useProfiles((s) => openProfileOf(s)?.updated ?? '')
-  useConfigListLoaded(game, { id, updated })
+  const stamp = useProfiles((s) => {
+    const p = openProfileOf(s)
+    return p ? entriesKey(p) : ''
+  })
+  useConfigListLoaded(game, { id }, stamp)
   return null
 }
 

@@ -124,10 +124,11 @@ function selectionOf(
   return file ? fileSelection(file.name) : ''
 }
 
-// Keeps the open profile's list read, so menus can tell at once whether a mod has settings.
-function useConfigListLoaded(game: string, profile: Pick<Profile, 'id' | 'updated'>) {
+// Keeps the open profile's list read, so menus can tell at once whether a mod has settings. stamp is the profile's
+// entriesKey, not its save time: a mod switched on or off adds or removes no settings, and the Config page rereads the
+// list itself when it opens.
+function useConfigListLoaded(game: string, profile: Pick<Profile, 'id'>, stamp: string) {
   const load = useConfigList((s) => s.load)
-  const stamp = String(profile.updated)
   useEffect(() => {
     load(game, profile.id, stamp).catch(reportUnexpected)
   }, [load, game, profile.id, stamp])

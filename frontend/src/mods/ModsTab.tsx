@@ -10,6 +10,7 @@ import type {
 import { useGameBusy } from '../launch/store.ts'
 import { useCurrentGame } from '../nav/currentGame.ts'
 import { userModCount } from '../profiles/count.ts'
+import { entriesKey } from '../profiles/entriesKey.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { boundShortcut, dialogOpen } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
@@ -348,11 +349,6 @@ function FilteredMods({ profile }: { profile: Profile }) {
   )
 }
 
-// What the old-files and game-folder comparisons read of a profile: which mods at which versions, not whether they
-// are switched on, so a toggle leaves it equal.
-const foldersKey = (p: Profile) =>
-  `${p.id}|${(p.entries ?? []).map((e) => `${e.key}:${(e.mods ?? []).map((m) => `${m.id}@${m.version}`).join(',')}`).join('|')}`
-
 export function ModsTab({ profile }: { profile: Profile }) {
   const { t } = useLingui()
   const load = useMods((s) => s.load)
@@ -432,8 +428,8 @@ export function ModsTab({ profile }: { profile: Profile }) {
     return (
       <>
         <TrackedNotInProfile profileId={profile.id} />
-        <OldFilesCallouts profileId={profile.id} stamp={foldersKey(profile)} />
-        <NewFoldersCallout profileId={profile.id} stamp={foldersKey(profile)} />
+        <OldFilesCallouts profileId={profile.id} stamp={entriesKey(profile)} />
+        <NewFoldersCallout profileId={profile.id} stamp={entriesKey(profile)} />
         <EmptyMods profileId={profile.id} />
       </>
     )
@@ -448,8 +444,8 @@ export function ModsTab({ profile }: { profile: Profile }) {
       </TipBanner>
       <ModsHeaderActions />
       <UpdateBar />
-      <OldFilesCallouts profileId={profile.id} stamp={foldersKey(profile)} />
-      <NewFoldersCallout profileId={profile.id} stamp={foldersKey(profile)} />
+      <OldFilesCallouts profileId={profile.id} stamp={entriesKey(profile)} />
+      <NewFoldersCallout profileId={profile.id} stamp={entriesKey(profile)} />
       <FrozenCallout />
       <LegacyReasonsCallout />
       <FilteredMods profile={profile} />
