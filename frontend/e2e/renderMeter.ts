@@ -80,7 +80,7 @@ interface PageCounts {
   lastWhy: string[]
 }
 
-type Metrics = Record<string, number>
+type Metrics = Partial<Record<string, number>>
 
 export class Meter {
   calls = 0

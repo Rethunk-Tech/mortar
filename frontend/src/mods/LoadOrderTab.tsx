@@ -266,7 +266,7 @@ function OrderList({
     return true
   }
   scrollRef.current = onScroll
-  const scrollTo = useCallback((id: string) => scrollRef.current?.(id) ?? false, [scrollRef])
+  const scrollTo = useCallback((id: string) => scrollRef.current(id), [scrollRef])
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
       <PageActions>

@@ -33,7 +33,7 @@ export const useLastRun = create<{
           byId[idKey(row.id)] = row
         }
       }
-      set({ runId: got.runId ?? '', byId })
+      set({ runId: got.runId, byId })
     } catch (e) {
       if (n === loadSeq) {
         reportUnexpected(e)

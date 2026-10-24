@@ -22,7 +22,7 @@ export function FirstRun() {
   const [launchers, setLaunchers] = useState<StoreApp[] | null>(null)
   const [loadError, setLoadError] = useState<InlineError | null>(null)
   const [busy, setBusy] = useState(false)
-  const loaded = useRef(false)
+  const loaded = useRef<boolean>(false)
   // Only the first read shows Loading; a refresh on window focus keeps the page, its scroll and row errors.
   const refresh = useCallback(() => {
     if (!loaded.current) {

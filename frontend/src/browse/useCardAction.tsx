@@ -54,7 +54,7 @@ function useCardAction(props: ActionProps, item: BrowseItem, source: string): Ca
     }
   }, [queueState])
   // A mod removed again (Undo from the bell) is no longer one this card watched arrive.
-  const wasHeld = useRef(false)
+  const wasHeld = useRef<boolean>(false)
   useEffect(() => {
     if (held) {
       wasHeld.current = true

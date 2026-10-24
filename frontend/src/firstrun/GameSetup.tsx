@@ -111,7 +111,7 @@ export function GameSetup({ game: id }: { game: GameId }) {
   const [launchers, setLaunchers] = useState<StoreApp[]>([])
   const [loadError, setLoadError] = useState<InlineError | null>(null)
   const [ready, setReady] = useState(false)
-  const loaded = useRef(false)
+  const loaded = useRef<boolean>(false)
   // Only the first read shows Loading; a refresh on window focus keeps the step and its row errors.
   const refresh = useCallback(() => {
     if (!loaded.current) {

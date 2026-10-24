@@ -20,7 +20,7 @@ function vanillaBusy(game: string): boolean {
 
 const isBool = (v: unknown): v is boolean => typeof v === 'boolean'
 
-const linuxVanillaDirectAgreed = () => readStored(linuxVanillaDirectKey, false, isBool)
+const linuxVanillaDirectAgreed = () => readStored<boolean>(linuxVanillaDirectKey, false, isBool)
 
 // With storage blocked the next Play without mods asks again.
 export const rememberLinuxVanillaDirect = () => writeStored(linuxVanillaDirectKey, true)

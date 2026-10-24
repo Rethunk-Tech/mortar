@@ -37,8 +37,8 @@ export function ModDisplayEdit({ profile, mod }: { profile: Profile; mod: Mod })
   }
   const begin = () => {
     setName(mod.name)
-    setAuthor(mod.author ?? '')
-    setVersion(mod.version ?? '')
+    setAuthor(mod.author)
+    setVersion(mod.version)
     setOpen(true)
   }
   // A blank field, or one equal to the mod's own value, stores no override.

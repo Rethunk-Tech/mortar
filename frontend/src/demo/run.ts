@@ -16,7 +16,7 @@ export function emit(name: string, data: unknown) {
 export class Run {
   private phase: Phase = 'before'
   private startedAt = 0
-  private playedAt = 0
+  private playedAt: number
   private readonly loadedAt = Date.now()
   /** The profile played, whose id the recorded run's events carry in place of the recorded one. */
   private as = ''
@@ -27,6 +27,7 @@ export class Run {
   constructor(recording: Recording) {
     this.run = recording.run
     this.after = recording.after
+    this.playedAt = 0
   }
 
   /** Whether the recording holds a run to play. */

@@ -164,7 +164,7 @@ function HeaderCells({
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   )
   // The click that ends a drag must not also re-sort by the dragged column.
-  const dragged = useRef(false)
+  const dragged = useRef<boolean>(false)
   const [lifted, setLifted] = useState<ListColumnId | null>(null)
   const onSort = (col: ListColumnId) => {
     if (dragged.current) {

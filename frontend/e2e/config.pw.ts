@@ -9,7 +9,8 @@ const dir = process.env.MORTAR_E2E_DIR ?? ''
 
 /** Seed Alpha's config.json in the Seed Farm profile, parsed from disk, so a bool can be told from a string. */
 const alphaConfig = (): Record<string, unknown> => {
-  const home = serverEnv(dir).HOME ?? ''
+  const env: Record<string, string | undefined> = serverEnv(dir)
+  const home = env.HOME ?? ''
   const [found] = execFileSync(
     'find',
     [`${home}/.local/share/mortar`, '-path', '*/profiles/stardew/*/Seed.Alpha/config.json'],

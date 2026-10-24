@@ -32,7 +32,7 @@ function NotesEditor({ profile, onDone }: { profile: Profile; onDone: () => void
   const [status, setStatus] = useState<Status>('idle')
   const latest = useRef(profile.notes)
   const saved = useRef(profile.notes)
-  const inflight = useRef(false)
+  const inflight = useRef<boolean>(false)
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   const save = useCallback((): void => {

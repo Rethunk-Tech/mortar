@@ -354,7 +354,7 @@ export function ModsTab({ profile }: { profile: Profile }) {
   const loadKey = `${profile.id}:${profile.updated}`
   const gameId = useProfiles((s) => s.game?.id)
   const gameBusy = useGameBusy(gameId)
-  const loading = useRef(false)
+  const loading = useRef<boolean>(false)
   useEffect(() => {
     if (!gameId) {
       return

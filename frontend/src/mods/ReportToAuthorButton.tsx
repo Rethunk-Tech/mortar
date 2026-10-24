@@ -104,7 +104,7 @@ async function reportTarget(
     return none
   }
   try {
-    return (await ReportTarget(game, source.kind, source.name)) ?? none
+    return await ReportTarget(game, source.kind, source.name)
   } catch {
     return none
   }
