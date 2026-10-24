@@ -472,3 +472,19 @@ func TestAFixedTotalSourceCountsTheSamePagesOnEveryPage(t *testing.T) {
 		t.Fatalf("totals %d and %d, %v %v", one.Total, three.Total, err1, err3)
 	}
 }
+
+func TestTheSourcePageCacheKeepsAtMostItsCap(t *testing.T) {
+	freshBrowse()
+	s := numberedSource{id: "deep", real: 40000}
+	for p := 1; p <= topCap+10; p++ {
+		if _, err := searchCached(context.Background(), "deep", s, source.Query{Game: "g", Page: p}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if len(topCache) != topCap {
+		t.Fatalf("%d pages kept, cap %d", len(topCache), topCap)
+	}
+	if _, kept := topCache[fmt.Sprintf("%s|%d", queryKey("deep", source.Query{Game: "g"}), topCap+10)]; !kept {
+		t.Fatal("the newest page was evicted")
+	}
+}

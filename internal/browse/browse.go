@@ -217,6 +217,9 @@ func catalogGame(id string) (components.GameInfo, bool) {
 // search rereads its earlier pages from here.
 const topTTL = 10 * time.Minute
 
+// topCap is the most source pages kept: a walk through a few sources' pages, the least recently fetched going first.
+const topCap = 256
+
 type topEntry struct {
 	page  Page
 	until time.Time
@@ -249,6 +252,15 @@ func searchCached(ctx context.Context, id string, s source.Searcher, q source.Qu
 		topMu.Lock()
 		maps.DeleteFunc(topCache, func(_ string, old topEntry) bool { return !now.Before(old.until) })
 		topCache[key] = e
+		for len(topCache) > topCap {
+			oldest := ""
+			for k, v := range topCache {
+				if oldest == "" || v.until.Before(topCache[oldest].until) {
+					oldest = k
+				}
+			}
+			delete(topCache, oldest)
+		}
 		topMu.Unlock()
 	}
 	out := e.page
