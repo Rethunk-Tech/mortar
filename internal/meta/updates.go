@@ -130,10 +130,10 @@ func (c *Client) CheckUpdates(ctx context.Context, req UpdateRequest) []UpdateRe
 	if pathErr == nil {
 		if e, ok := readEntry[map[string]entry[UpdateResult]](path); ok {
 			store = e.Value
-			if e.Build != appversion.Build() {
-				// Another build's answers are asked again, and serve only while the API cannot be reached.
-				for k, v := range store {
-					v.Fetched = time.Time{}
+			// An answer carries the build that fetched it; one written before answers carried it takes the file's.
+			for k, v := range store {
+				if v.Build == "" {
+					v.Build = e.Build
 					store[k] = v
 				}
 			}
@@ -143,16 +143,17 @@ func (c *Client) CheckUpdates(ctx context.Context, req UpdateRequest) []UpdateRe
 		store = map[string]entry[UpdateResult]{}
 	}
 	now := c.now()
+	build := appversion.Build()
 	out := make([]UpdateResult, len(req.Mods))
 	var stale []int
 	var later []InstalledMod
 	for i, m := range req.Mods {
 		e, ok := store[req.key(m)]
 		switch {
-		case ok && !req.Fresh && now.Sub(e.Fetched) < updatesTTL:
+		// Another build's answers are asked now, and serve only while the API cannot be reached.
+		case ok && !req.Fresh && e.Build == build && now.Sub(e.Fetched) < updatesTTL:
 			out[i] = e.Value
-		// Another build's answers carry a zero Fetched and are asked now.
-		case ok && !req.Fresh && e.Value.Known && !e.Fetched.IsZero():
+		case ok && !req.Fresh && e.Build == build && e.Value.Known:
 			out[i] = e.Value
 			later = append(later, req.Mods[i])
 		default:
@@ -176,7 +177,7 @@ func (c *Client) CheckUpdates(ctx context.Context, req UpdateRequest) []UpdateRe
 				out[i] = got[strings.ToLower(req.Mods[i].ID)]
 				out[i].ID = req.Mods[i].ID
 				out[i].Known = true
-				store[k] = entry[UpdateResult]{Fetched: now, Value: out[i]}
+				store[k] = entry[UpdateResult]{Fetched: now, Value: out[i], Build: build}
 				dirty = true
 			case store[k].Value.Known:
 				out[i] = store[k].Value
@@ -191,7 +192,7 @@ func (c *Client) CheckUpdates(ctx context.Context, req UpdateRequest) []UpdateRe
 				delete(store, k)
 			}
 		}
-		writeEntry(path, entry[map[string]entry[UpdateResult]]{Fetched: now, Value: store, Build: appversion.Build()})
+		writeEntry(path, entry[map[string]entry[UpdateResult]]{Fetched: now, Value: store, Build: build})
 	}
 	return out
 }

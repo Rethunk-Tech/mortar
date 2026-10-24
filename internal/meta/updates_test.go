@@ -54,10 +54,28 @@ func TestCheckUpdatesAsksAgainAfterAnotherBuildCached(t *testing.T) {
 		t.Fatalf("the cache carries no build stamp: %+v", cached)
 	}
 	cached.Build = "another-build"
+	for k, v := range cached.Value {
+		v.Build = ""
+		cached.Value[k] = v
+	}
 	writeEntry(path, cached)
 	c.CheckUpdates(context.Background(), req)
 	if n := asked.Load(); n != 2 {
 		t.Fatalf("another build's cache is asked again: asked %d times", n)
+	}
+	cached, _ = readEntry[map[string]entry[UpdateResult]](path)
+	cached.Build = "another-build"
+	for k, v := range cached.Value {
+		v.Build = "another-build"
+		cached.Value[k] = v
+	}
+	other := InstalledMod{ID: "B.Mod", Version: "2.0.0"}
+	cached.Value[req.key(other)] = entry[UpdateResult]{Fetched: time.Now(), Value: UpdateResult{ID: "B.Mod", Known: true}, Build: "another-build"}
+	writeEntry(path, cached)
+	c.CheckUpdates(context.Background(), req)
+	cached, _ = readEntry[map[string]entry[UpdateResult]](path)
+	if _, kept := cached.Value[req.key(other)]; !kept {
+		t.Fatal("a check of one mod dropped another build's answer for a mod it did not ask about")
 	}
 }
 
