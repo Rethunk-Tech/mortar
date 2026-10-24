@@ -314,13 +314,28 @@ interface ModRowProps {
   onArrow: (id: string, dir: -1 | 1) => void
 }
 
-// List rows are rebuilt whenever the mods or the profile change, so a row compares their fields, not their identity.
+// List rows are rebuilt whenever the mods, the profile or the problems change, so a row compares their fields, not
+// their identity; tags and figures are built fresh each time and compare by content.
 function sameRowFields(a: ListRow, b: ListRow) {
   const keys = Object.keys(a) as (keyof ListRow)[]
-  return (
-    keys.length === Object.keys(b).length &&
-    keys.every((k) => (k === 'tags' ? a.tags.join('\0') === b.tags.join('\0') : a[k] === b[k]))
-  )
+  return keys.length === Object.keys(b).length && keys.every((k) => sameField(k, a, b))
+}
+
+function sameField(k: keyof ListRow, a: ListRow, b: ListRow) {
+  if (k === 'tags') {
+    return a.tags.join('\0') === b.tags.join('\0')
+  }
+  if (k === 'figures' && a.figures && b.figures) {
+    const [x, y] = [a.figures, b.figures]
+    return (
+      x.latest === y.latest &&
+      x.released === y.released &&
+      x.updated === y.updated &&
+      x.rating === y.rating &&
+      x.downloads === y.downloads
+    )
+  }
+  return a[k] === b[k]
 }
 
 const sameRow = (a: ModRowProps, b: ModRowProps) =>
