@@ -135,6 +135,30 @@ function Language() {
   )
 }
 
+// The LAN rows only mean something while sharing is on; what to share also sets the file and link defaults.
+function SharingPrefs({ on }: { on: boolean }) {
+  const { t } = useLingui()
+  const first = t`Turn on Share profiles on the local network first.`
+  return (
+    <PrefKeys
+      keys={[
+        'lanName',
+        'lanAutoAcceptPaired',
+        'lanAllowAnyAddress',
+        'shareIncludeDisabledMods',
+        'shareIncludeFomodChoices',
+        'shareIncludeNotes',
+        'shareIncludeConfigFiles',
+        'shareIncludeProblemChoices',
+        'shareIncludeLibraries',
+      ]}
+      disabledBy={
+        on ? {} : { lanName: first, lanAutoAcceptPaired: first, lanAllowAnyAddress: first }
+      }
+    />
+  )
+}
+
 function Sharing() {
   const { t } = useLingui()
   const reportFailure = useReportFailure()
@@ -191,19 +215,7 @@ function Sharing() {
           label={t`Share profiles on the local network`}
         />
       </SettingRow>
-      <PrefKeys
-        keys={[
-          'lanName',
-          'lanAutoAcceptPaired',
-          'lanAllowAnyAddress',
-          'shareIncludeDisabledMods',
-          'shareIncludeFomodChoices',
-          'shareIncludeNotes',
-          'shareIncludeConfigFiles',
-          'shareIncludeProblemChoices',
-          'shareIncludeLibraries',
-        ]}
-      />
+      <SharingPrefs on={lanSharing} />
       {lanSharing ? <PairedComputers /> : null}
       {lanSharing ? (
         <SettingRow

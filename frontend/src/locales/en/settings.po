@@ -11,6 +11,10 @@ msgstr ""
 msgid "{name}: desktop notification"
 msgstr "{name}: desktop notification"
 
+#: src/settings/sections/ModsProfiles.tsx
+msgid "Set Sidebar badge counts, in Appearance, to something other than Off first."
+msgstr "Set Sidebar badge counts, in Appearance, to something other than Off first."
+
 #: src/settings/sections/Appearance.tsx
 msgid "Gentle violet"
 msgstr "Gentle violet"
@@ -196,6 +200,10 @@ msgstr "Light"
 #: src/settings/sections/HiddenLogSources.tsx
 msgid "Engine"
 msgstr "Engine"
+
+#: src/settings/sections/Notifications.tsx
+msgid "Turn on Check for mod updates when Mortar starts, in Updates, first."
+msgstr "Turn on Check for mod updates when Mortar starts, in Updates, first."
 
 #: src/settings/sections/Notifications.tsx
 msgid "When"
@@ -2729,6 +2737,10 @@ msgstr "What the sidebar shows on profile badges"
 msgid "Sharing"
 msgstr "Sharing"
 
+#: src/settings/sections/GameSettings.tsx
+msgid "{name} is pinned to one version. Set its version to Latest first."
+msgstr "{name} is pinned to one version. Set its version to Latest first."
+
 #: src/settings/prefCopy.ts
 msgid "Follow system"
 msgstr "Follow system"
@@ -3223,6 +3235,10 @@ msgstr "Sidebar"
 msgid "Cool and calm"
 msgstr "Cool and calm"
 
+#: src/settings/sections/Updates.tsx
+msgid "Turn on Check for mod updates when Mortar starts first."
+msgstr "Turn on Check for mod updates when Mortar starts first."
+
 #: src/settings/sections/Shortcuts.tsx
 msgid "Navigation"
 msgstr "Navigation"
@@ -3304,6 +3320,10 @@ msgstr "Mods view"
 msgid "Accent colour"
 msgstr "Accent colour"
 
+#: src/settings/sections/Notifications.tsx
+msgid "Turn on a notification for Mod updates are found first."
+msgstr "Turn on a notification for Mod updates are found first."
+
 #: src/settings/sections/checkDetail.ts
 msgid "control.json is absent"
 msgstr "control.json is absent"
@@ -3328,6 +3348,10 @@ msgid "Games"
 msgstr "Games"
 
 #: src/settings/sections/General.tsx
+msgid "Turn on Share profiles on the local network first."
+msgstr "Turn on Share profiles on the local network first."
+
+#: src/settings/sections/General.tsx
 msgid "Language"
 msgstr "Language"
 
@@ -3338,6 +3362,10 @@ msgstr "The {app} build from {launcher} that runs this copy, which {launcher} do
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Part of the {app} address; regenerate it if it leaks"
 msgstr "Part of the {app} address; regenerate it if it leaks"
+
+#: src/settings/sections/Notifications.tsx
+msgid "Set Update digest notification to something other than Off first."
+msgstr "Set Update digest notification to something other than Off first."
 
 #: src/settings/sections/About.tsx
 msgid "Logs"

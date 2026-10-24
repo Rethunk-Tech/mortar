@@ -45,6 +45,7 @@ function PrefRow({
   const gameArg = specGameArg(spec, game)
   const save = (value: string) => persist(() => SetByKey(spec.key, value, gameArg), fail)
   const kind = prefControl(spec.type)
+  const disabled = disabledReason !== ''
   const options = copy.options ?? (spec.values ?? []).map((value) => ({ value, label: value }))
   let selectValue = prefAsString(raw, spec)
   if (options.length > 0 && !options.some((o) => o.value === selectValue)) {
@@ -58,17 +59,38 @@ function PrefRow({
         checked={prefAsBool(raw, spec)}
         onChange={(on) => save(String(on))}
         label={copy.label}
+        disabled={disabled}
       />
     )
   } else if (style === 'cards') {
-    control = <PrefCards value={selectValue} onChange={save} options={options} label={copy.label} />
+    control = (
+      <PrefCards
+        value={selectValue}
+        onChange={save}
+        options={options}
+        label={copy.label}
+        disabled={disabled}
+      />
+    )
   } else if (style === 'segmented' && options.length > 0) {
     control = (
-      <PrefSegmented value={selectValue} onChange={save} options={options} label={copy.label} />
+      <PrefSegmented
+        value={selectValue}
+        onChange={save}
+        options={options}
+        label={copy.label}
+        disabled={disabled}
+      />
     )
   } else if (kind === 'select' || options.length > 0) {
     control = (
-      <PrefSelect value={selectValue} onChange={save} options={options} label={copy.label} />
+      <PrefSelect
+        value={selectValue}
+        onChange={save}
+        options={options}
+        label={copy.label}
+        disabled={disabled}
+      />
     )
   } else if (kind === 'number') {
     control = (
@@ -78,7 +100,7 @@ function PrefRow({
         max={spec.max || Number.MAX_SAFE_INTEGER}
         onCommit={(n) => SetByKey(spec.key, String(n), gameArg)}
         label={copy.label}
-        disabled={disabledReason !== ''}
+        disabled={disabled}
       />
     )
   } else {
@@ -88,6 +110,7 @@ function PrefRow({
         {...(copy.placeholder === undefined ? {} : { placeholder: copy.placeholder })}
         onCommit={(v) => SetByKey(spec.key, v, gameArg)}
         label={copy.label}
+        disabled={disabled}
       />
     )
   }

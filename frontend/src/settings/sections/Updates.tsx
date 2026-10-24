@@ -14,6 +14,7 @@ import { showWhatsNew } from '../../updates/whatsNew.ts'
 import { PrefSwitch } from '../PrefControls.tsx'
 import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
 import { persist } from '../persist.ts'
+import { usePrefValue } from '../prefValue.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import { useMortarUpdate } from '../updates.ts'
@@ -160,6 +161,7 @@ function MortarUpdate() {
 
 export function Updates() {
   const { t } = useLingui()
+  const checksOn = usePrefValue('checkModUpdatesOnStart') === 'true'
   const lastGame = useSettings((s) => s.lastGame)
   const game = isGameId(lastGame) ? lastGame : null
   const includeBetaReleases = useSettings((s) => s.includeBetaReleases)
@@ -180,7 +182,16 @@ export function Updates() {
         <PrefByKey prefKey="autoInstallMortarUpdates" />
       </SettingsSection>
       <SettingsSection title={t`Mods`}>
-        <PrefKeys keys={['checkModUpdatesOnStart', 'updateCheckIntervalMinutes']} />
+        <PrefKeys
+          keys={['checkModUpdatesOnStart', 'updateCheckIntervalMinutes']}
+          disabledBy={
+            checksOn
+              ? {}
+              : {
+                  updateCheckIntervalMinutes: t`Turn on Check for mod updates when Mortar starts first.`,
+                }
+          }
+        />
         <SettingRow label={t`Check only enabled mods`}>
           <PrefSwitch
             checked={checkOnlyEnabledMods}

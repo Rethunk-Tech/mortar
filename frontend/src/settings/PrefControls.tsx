@@ -21,15 +21,18 @@ export function PrefSelect({
   onChange,
   options,
   label,
+  disabled = false,
 }: {
   value: string
   onChange: (v: string) => void
   options: { value: string; label: string }[]
   label: string
+  disabled?: boolean
 }) {
   return (
     <Select
       size="small"
+      disabled={disabled}
       displayEmpty={true}
       value={value}
       inputProps={{ 'aria-label': label }}
@@ -50,11 +53,13 @@ export function PrefSegmented({
   onChange,
   options,
   label,
+  disabled = false,
 }: {
   value: string
   onChange: (v: string) => void
   options: { value: string; label: string; unavailable?: string }[]
   label: string
+  disabled?: boolean
 }) {
   return (
     <ToggleButtonGroup
@@ -88,7 +93,7 @@ export function PrefSegmented({
         <ToggleButton
           key={o.value}
           value={o.value}
-          disabled={Boolean(o.unavailable)}
+          disabled={disabled || Boolean(o.unavailable)}
           title={o.unavailable}
           // A disabled button takes no pointer events, which would hide the reason in its title.
           sx={{ '&.Mui-disabled': { pointerEvents: 'auto' } }}
@@ -105,11 +110,13 @@ export function PrefCards({
   onChange,
   options,
   label,
+  disabled = false,
 }: {
   value: string
   onChange: (v: string) => void
   options: { value: string; label: string; hint?: string }[]
   label: string
+  disabled?: boolean
 }) {
   return (
     <RadioGroup
@@ -122,6 +129,7 @@ export function PrefCards({
         <FormControlLabel
           key={o.value}
           value={o.value}
+          disabled={disabled}
           control={<Radio size="small" sx={{ p: 0, mt: '2px' }} />}
           label={
             <Box sx={{ minWidth: 0 }}>
@@ -151,14 +159,17 @@ export function PrefSwitch({
   checked,
   onChange,
   label,
+  disabled = false,
 }: {
   checked: boolean
   onChange: (on: boolean) => void
   label?: string
+  disabled?: boolean
 }) {
   return (
     <Switch
       checked={checked}
+      disabled={disabled}
       onChange={(_, on) => onChange(on)}
       {...(label ? { slotProps: { input: { 'aria-label': label } } } : {})}
     />
@@ -170,11 +181,13 @@ export function PrefText({
   onCommit,
   placeholder,
   label,
+  disabled = false,
 }: {
   value: string
   onCommit: (v: string) => Promise<void>
   placeholder?: string
   label: string
+  disabled?: boolean
 }) {
   const { t } = useLingui()
   const [draft, setDraft] = useState(value)
@@ -191,6 +204,7 @@ export function PrefText({
   return (
     <TextField
       size="small"
+      disabled={disabled}
       value={draft}
       placeholder={placeholder}
       slotProps={{ htmlInput: { 'aria-label': label } }}

@@ -330,11 +330,21 @@ function LoaderPage({
   loader: { id: string; name: string }
   onVersion: (v: string) => void
 }) {
+  const { t } = useLingui()
   const game = useCurrentGame()
+  const pinned = useSettings((s) => s.loaderPrefs?.[`${game}/${loader.id}`]?.pin ?? '') !== ''
   return (
     <SettingsSection title={loader.name}>
       <LoaderRow loader={loader} onVersion={onVersion} />
-      <PrefByKey prefKey="tellWhenLoaderOut" game={game} />
+      <PrefByKey
+        prefKey="tellWhenLoaderOut"
+        game={game}
+        disabledReason={
+          pinned
+            ? t`${{ name: loader.name }} is pinned to one version. Set its version to Latest first.`
+            : ''
+        }
+      />
       {loader.id === 'smapi' ? <PrefByKey prefKey="smapiBuilds" game={game} /> : null}
     </SettingsSection>
   )

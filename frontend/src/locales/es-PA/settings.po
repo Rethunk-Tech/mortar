@@ -11,6 +11,10 @@ msgstr ""
 msgid "{name}: desktop notification"
 msgstr ""
 
+#: src/settings/sections/ModsProfiles.tsx
+msgid "Set Sidebar badge counts, in Appearance, to something other than Off first."
+msgstr ""
+
 #: src/settings/sections/Appearance.tsx
 msgid "Gentle violet"
 msgstr ""
@@ -195,6 +199,10 @@ msgstr ""
 
 #: src/settings/sections/HiddenLogSources.tsx
 msgid "Engine"
+msgstr ""
+
+#: src/settings/sections/Notifications.tsx
+msgid "Turn on Check for mod updates when Mortar starts, in Updates, first."
 msgstr ""
 
 #: src/settings/sections/Notifications.tsx
@@ -2729,6 +2737,10 @@ msgstr ""
 msgid "Sharing"
 msgstr ""
 
+#: src/settings/sections/GameSettings.tsx
+msgid "{name} is pinned to one version. Set its version to Latest first."
+msgstr ""
+
 #: src/settings/prefCopy.ts
 msgid "Follow system"
 msgstr ""
@@ -3223,6 +3235,10 @@ msgstr ""
 msgid "Cool and calm"
 msgstr ""
 
+#: src/settings/sections/Updates.tsx
+msgid "Turn on Check for mod updates when Mortar starts first."
+msgstr ""
+
 #: src/settings/sections/Shortcuts.tsx
 msgid "Navigation"
 msgstr ""
@@ -3304,6 +3320,10 @@ msgstr ""
 msgid "Accent colour"
 msgstr ""
 
+#: src/settings/sections/Notifications.tsx
+msgid "Turn on a notification for Mod updates are found first."
+msgstr ""
+
 #: src/settings/sections/checkDetail.ts
 msgid "control.json is absent"
 msgstr ""
@@ -3328,6 +3348,10 @@ msgid "Games"
 msgstr ""
 
 #: src/settings/sections/General.tsx
+msgid "Turn on Share profiles on the local network first."
+msgstr ""
+
+#: src/settings/sections/General.tsx
 msgid "Language"
 msgstr ""
 
@@ -3337,6 +3361,10 @@ msgstr ""
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Part of the {app} address; regenerate it if it leaks"
+msgstr ""
+
+#: src/settings/sections/Notifications.tsx
+msgid "Set Update digest notification to something other than Off first."
 msgstr ""
 
 #: src/settings/sections/About.tsx

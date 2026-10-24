@@ -3,12 +3,14 @@ import { SetEnableModsWhenInstalled } from '../../../bindings/github.com/Rethunk
 import { PrefSwitch } from '../PrefControls.tsx'
 import { PrefKeys } from '../PrefRow.tsx'
 import { persist } from '../persist.ts'
+import { usePrefValue } from '../prefValue.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import { SyncFolder } from './SyncFolder.tsx'
 
 export function ModsProfiles() {
   const { t } = useLingui()
+  const badgesOff = usePrefValue('sidebarBadges') === 'off'
   const enableModsWhenInstalled = useSettings((s) => s.enableModsWhenInstalled)
   return (
     <SettingsSection title={t`Installing`}>
@@ -29,6 +31,13 @@ export function ModsProfiles() {
           'backgroundBadgeChecks',
           'showAdultContent',
         ]}
+        disabledBy={
+          badgesOff
+            ? {
+                backgroundBadgeChecks: t`Set Sidebar badge counts, in Appearance, to something other than Off first.`,
+              }
+            : {}
+        }
       />
       <SyncFolder />
     </SettingsSection>

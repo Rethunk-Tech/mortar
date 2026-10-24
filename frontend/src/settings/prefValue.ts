@@ -3,7 +3,8 @@ import type {
   Settings,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import { currentGame } from '../nav/currentGame.ts'
-import { specDefault } from './prefSpecs.ts'
+import { specByKey, specDefault, usePrefSpecs } from './prefSpecs.ts'
+import { useSettings } from './store.ts'
 
 export function prefRaw(settings: Settings, spec: PrefSpec, game = currentGame()): unknown {
   if (spec.scope === 'game') {
@@ -39,4 +40,11 @@ export function prefAsNumber(raw: unknown, spec: PrefSpec, game = currentGame())
 
 export function specGameArg(spec: PrefSpec, game = currentGame()): string {
   return spec.scope === 'game' ? game : ''
+}
+
+/** A setting's value as its control shows it (stored, else its default), for a control another setting disables. */
+export function usePrefValue(key: string, game = currentGame()): string {
+  const spec = specByKey(usePrefSpecs(), key)
+  const raw = useSettings((s) => (spec ? prefRaw(s, spec, game) : undefined))
+  return spec ? prefAsString(raw, spec, game) : ''
 }

@@ -87,6 +87,8 @@ export function OverridesSection({
   const info = useGameInfo()
   const launch = useSettings((s) => gamePrefs(s, info?.id).defaultLaunchMethod)
   const directPlay = resolveOverride('defaultLaunchMethod', launch, overrides) === 'direct'
+  const gameHours = useSettings((s) => gamePrefs(s, info?.id).saveBackupHours)
+  const scheduleOff = Number(resolveOverride('saveBackupHours', String(gameHours), overrides)) === 0
   const smapi = info?.loaderId === 'smapi'
   const introSkip = info?.loaders?.[0]?.introSkip === true
   const graphics = info?.graphics ?? undefined
@@ -130,7 +132,12 @@ export function OverridesSection({
           const choice = choiceFromOverride(stored)
           const label = overrideLabel(key, i18n)
           const field = (
-            <FormControl key={key} fullWidth={true} size="small">
+            <FormControl
+              key={key}
+              fullWidth={true}
+              size="small"
+              disabled={key === 'saveBackupKeep' && scheduleOff}
+            >
               <InputLabel shrink={true} id={`override-${key}`}>
                 {label}
               </InputLabel>
@@ -158,6 +165,9 @@ export function OverridesSection({
                   </MenuItem>
                 ))}
               </Select>
+              {key === 'saveBackupKeep' && scheduleOff ? (
+                <FormHelperText>{t`Enable scheduled save backups first.`}</FormHelperText>
+              ) : null}
               {key === 'updateModsBeforePlayDefault' && nexus && !premium ? (
                 <FormHelperText>
                   {t`Free ${{ source: sourceLabel('nexus') }} accounts click each download on ${{ source: sourceLabel('nexus') }}; those updates do not block Play.`}

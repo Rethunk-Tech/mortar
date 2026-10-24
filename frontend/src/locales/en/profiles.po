@@ -176,6 +176,10 @@ msgstr "Stack frame: {evidence}"
 msgid "Orange"
 msgstr "Orange"
 
+#: src/profiles/OverrideRows.tsx
+msgid "Enable scheduled save backups first."
+msgstr "Enable scheduled save backups first."
+
 #: src/profiles/MergeDialog.tsx
 msgid "{count, plural, one {Added # mod from {profile} to {name}} other {Added # mods from {profile} to {name}}}"
 msgstr "{count, plural, one {Added # mod from {profile} to {name}} other {Added # mods from {profile} to {name}}}"

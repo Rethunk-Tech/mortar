@@ -1,16 +1,19 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box } from '@mui/material'
 import { SetByKey } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { DisabledReason } from '../../shell/DisabledReason.tsx'
 import { space } from '../../theme/density.ts'
 import { PrefSwitch } from '../PrefControls.tsx'
 import { PrefKeys } from '../PrefRow.tsx'
 import { persist } from '../persist.ts'
 import { specByKey, usePrefSpecs } from '../prefSpecs.ts'
-import { prefAsBool, prefRaw } from '../prefValue.ts'
+import { prefAsBool, prefRaw, usePrefValue } from '../prefValue.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 
 const CHANNEL_WIDTH = 96
+// settings.UpdateDigestOff: the background check sends no notice.
+const DIGEST_OFF = 'off'
 
 interface EventRow {
   label: string
@@ -18,7 +21,15 @@ interface EventRow {
   desktop: string
 }
 
-function ChannelSwitch({ prefKey, label }: { prefKey: string; label: string }) {
+function ChannelSwitch({
+  prefKey,
+  label,
+  disabledReason = '',
+}: {
+  prefKey: string
+  label: string
+  disabledReason?: string
+}) {
   const { t } = useLingui()
   const spec = specByKey(usePrefSpecs(), prefKey)
   const raw = useSettings((s) => (spec ? prefRaw(s, spec) : undefined))
@@ -27,13 +38,16 @@ function ChannelSwitch({ prefKey, label }: { prefKey: string; label: string }) {
   }
   return (
     <Box sx={{ width: CHANNEL_WIDTH, display: 'flex', justifyContent: 'center' }}>
-      <PrefSwitch
-        checked={prefAsBool(raw, spec)}
-        label={label}
-        onChange={(on) =>
-          persist(() => SetByKey(prefKey, String(on), ''), t`Could not save that setting`)
-        }
-      />
+      <DisabledReason title={disabledReason} disabled={disabledReason !== ''}>
+        <PrefSwitch
+          checked={prefAsBool(raw, spec)}
+          label={label}
+          disabled={disabledReason !== ''}
+          onChange={(on) =>
+            persist(() => SetByKey(prefKey, String(on), ''), t`Could not save that setting`)
+          }
+        />
+      </DisabledReason>
     </Box>
   )
 }
@@ -62,6 +76,22 @@ function ChannelHeader() {
 
 export function Notifications() {
   const { t } = useLingui()
+  const checksOn = usePrefValue('checkModUpdatesOnStart') === 'true'
+  const digest = usePrefValue('updateDigest')
+  const toastOn = usePrefValue('notifyModUpdates') === 'true'
+  const desktopOn = usePrefValue('desktopModUpdates') === 'true'
+  const noChecks = checksOn
+    ? ''
+    : t`Turn on Check for mod updates when Mortar starts, in Updates, first.`
+  let digestReason = noChecks
+  if (digestReason === '' && !(toastOn || desktopOn)) {
+    digestReason = t`Turn on a notification for Mod updates are found first.`
+  }
+  const desktopUpdatesReason =
+    noChecks ||
+    (digest === DIGEST_OFF
+      ? t`Set Update digest notification to something other than Off first.`
+      : '')
   const events: EventRow[] = [
     {
       label: t`A download finishes`,
@@ -82,13 +112,17 @@ export function Notifications() {
               <ChannelSwitch
                 prefKey={e.desktop}
                 label={t`${{ name: e.label }}: desktop notification`}
+                disabledReason={e.desktop === 'desktopModUpdates' ? desktopUpdatesReason : ''}
               />
             </Box>
           </SettingRow>
         ))}
       </SettingsSection>
       <SettingsSection title={t`Mod updates`}>
-        <PrefKeys keys={['updateDigest']} />
+        <PrefKeys
+          keys={['updateDigest']}
+          disabledBy={digestReason ? { updateDigest: digestReason } : {}}
+        />
       </SettingsSection>
     </>
   )
