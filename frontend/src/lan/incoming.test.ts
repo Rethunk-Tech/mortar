@@ -1,16 +1,9 @@
-import { afterEach, expect, mock, test } from 'bun:test'
+import { afterEach, beforeEach, expect, mock, test } from 'bun:test'
+import * as lan from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/service.ts'
+import { stubBinding } from '../testing/stubBinding.ts'
+import { useIncomingShares } from './incoming.ts'
 
 const dismissed: number[] = []
-mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/service.ts', () => ({
-  Dismiss: (id: number) => {
-    dismissed.push(id)
-    return Promise.resolve()
-  },
-  Inbox: () => Promise.resolve([]),
-  OutgoingTransfers: () => Promise.resolve([]),
-}))
-const { useIncomingShares } = await import('./incoming.ts')
-
 const arrival = (id: number) => ({
   id,
   sender: 'Alex',
@@ -20,7 +13,15 @@ const arrival = (id: number) => ({
   paired: true,
 })
 
+beforeEach(() => {
+  stubBinding(lan, 'Dismiss', (id: number) => {
+    dismissed.push(id)
+  })
+  stubBinding(lan, 'Inbox', () => [])
+  stubBinding(lan, 'OutgoingTransfers', () => [])
+})
 afterEach(() => {
+  mock.restore()
   useIncomingShares.setState(useIncomingShares.getInitialState(), true)
   dismissed.length = 0
 })
