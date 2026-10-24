@@ -29,6 +29,7 @@ export function ProblemGroup({ tab }: { tab: ProblemTab }) {
     <Box
       component="section"
       aria-label={tab.label}
+      data-section={tab.id}
       sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -82,6 +83,7 @@ export function FooterLinks({
           component="button"
           underline="hover"
           aria-expanded={open === tab.id}
+          data-section={tab.id}
           onClick={() => onToggle(tab.id)}
           sx={{
             fontSize: 'base.fontSize',

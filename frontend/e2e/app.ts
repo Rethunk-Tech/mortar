@@ -139,3 +139,13 @@ export async function dwell(page: Page, ms: number) {
     },
   )
 }
+
+/** Brings a Problems section into view: listed sections always show, advice sections open from their footer link. */
+export async function showProblemSection(page: Page, id: string) {
+  await expect(page.locator(`[data-section="${id}"]`).first()).toBeVisible()
+  const link = page.locator(`nav button[data-section="${id}"]`)
+  if ((await link.count()) > 0 && (await link.getAttribute('aria-expanded')) !== 'true') {
+    await link.click()
+  }
+  await expect(page.locator(`section[data-section="${id}"]`)).toBeVisible()
+}

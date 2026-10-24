@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process'
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
 import { expect, type Page, test } from '@playwright/test'
-import { openSeedFarm, switchProfile } from './app.ts'
+import { openSeedFarm, showProblemSection, switchProfile } from './app.ts'
 import { serverEnv } from './sandbox.ts'
 
 // One profile of small generated content packs, each pair shaped to give one of the Problems tab's explained rows,
@@ -181,7 +181,7 @@ test.afterAll(() => {
 })
 
 async function section(page: Page, id: string) {
-  await page.locator(`[data-section="${id}"]`).click()
+  await showProblemSection(page, id)
 }
 
 async function expectClean(page: Page) {

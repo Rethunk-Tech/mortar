@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
 import { expect, test } from '@playwright/test'
-import { openSeedFarm, switchProfile } from './app.ts'
+import { openSeedFarm, showProblemSection, switchProfile } from './app.ts'
 import { serverEnv } from './sandbox.ts'
 
 // A profile holding one mod id twice: Resolve on its Problems row must open the dialog without a visit to Mods.
@@ -62,7 +62,7 @@ test('Resolve on a duplicate in the Problems tab opens the copies dialog', async
   await openSeedFarm(page)
   await switchProfile(page, PROFILE)
   await page.getByRole('tab', { name: /^Problems/ }).click()
-  await page.locator('[data-section="duplicates"]').click()
+  await showProblemSection(page, 'duplicates')
   await page.getByRole('button', { name: 'Resolve' }).first().click()
   await expect(page.getByRole('dialog', { name: `2 copies of ${NAME}` })).toBeVisible()
 })

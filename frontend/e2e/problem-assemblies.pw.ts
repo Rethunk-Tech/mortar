@@ -4,7 +4,7 @@ import { dirname } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { expect, type Page, test } from '@playwright/test'
-import { openGameSelect, openSeedFarm, switchProfile } from './app.ts'
+import { openGameSelect, openSeedFarm, showProblemSection, switchProfile } from './app.ts'
 import { serverEnv } from './sandbox.ts'
 
 // The Problems sentences that need compiled assemblies (internal/dotnet/testdata/src/E2E, rebuilt by build.sh): a
@@ -95,7 +95,7 @@ test.afterAll(() => {
 
 /** The placeholder debris found in the row a section shows for the sentence. */
 async function brokenIn(page: Page, section: string, sentence: string | RegExp) {
-  await page.locator(`[data-section="${section}"]`).click()
+  await showProblemSection(page, section)
   const row = page.getByText(sentence).first()
   await expect(row).toBeVisible()
   const text = await row.innerText()
