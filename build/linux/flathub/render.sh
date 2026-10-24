@@ -77,5 +77,14 @@ cp "$root/package.json" "$root/bun.lock" "$work/node/"
 cp "$root/frontend/package.json" "$work/node/frontend/"
 (cd "$work/node" && bun install --frozen-lockfile --ignore-scripts --yarn >/dev/null)
 awk 'BEGIN { RS = ""; ORS = "\n\n" } !/resolved "workspace:/' "$work/node/yarn.lock" >"$out/yarn.lock"
-uvx --from "$node_generator" flatpak-node-generator yarn "$out/yarn.lock" -o "$work/node-sources.json" >/dev/null
-jq '[.[] | select(.type == "file")]' "$work/node-sources.json" >"$out/node-sources.json"
+# For the playwright package the generator reads its browser list from github.com, whose headers outgrow the
+# generator's HTTP client; the build needs only that package's tarball, so it is left out there and added from its lock entry.
+mkdir -p "$work/node/generator"
+awk 'BEGIN { RS = ""; ORS = "\n\n" } !/^"?playwright@/' "$out/yarn.lock" >"$work/node/generator/yarn.lock"
+uvx --from "$node_generator" flatpak-node-generator yarn "$work/node/generator/yarn.lock" -o "$work/node-sources.json" >/dev/null
+playwright=$(awk 'BEGIN { RS = "" } /^"?playwright@/' "$out/yarn.lock")
+url=$(sed -n 's/^  resolved "\(.*\)"$/\1/p' <<<"$playwright")
+sha512=$(sed -n 's/^  integrity sha512-//p' <<<"$playwright" | base64 -d | od -An -tx1 -v | tr -d ' \n')
+jq --arg url "$url" --arg sha512 "$sha512" \
+  '[.[] | select(.type == "file")] + (if $url == "" then [] else [{type: "file", url: $url, sha512: $sha512, "dest-filename": ($url | sub(".*/"; "")), dest: "flatpak-node/yarn-mirror"}] end)' \
+  "$work/node-sources.json" >"$out/node-sources.json"
