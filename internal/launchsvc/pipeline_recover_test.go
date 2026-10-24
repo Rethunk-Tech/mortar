@@ -115,7 +115,9 @@ func TestUnwindTakesBackTheDeployAndTheSaveSwap(t *testing.T) {
 	c := leaveCrashedLaunch(t, svc)
 	d := &deploy.Place{}
 	dep := &deployment{d: d, m: c.placed, saves: &c.swapped}
-	dep.unwind(context.Background())
+	cancelled, cancel := context.WithCancel(context.Background())
+	cancel()
+	dep.unwind(cancelled)
 	dep.unwind(context.Background())
 	var nilDep *deployment
 	nilDep.unwind(context.Background())

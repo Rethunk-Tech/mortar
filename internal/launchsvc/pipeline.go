@@ -396,6 +396,8 @@ func (dep *deployment) unwind(ctx context.Context) {
 	if dep == nil {
 		return
 	}
+	// A cancelled launch must still take its files back out of the install.
+	ctx = context.WithoutCancel(ctx)
 	dep.once.Do(func() {
 		if dep.d != nil {
 			if err := dep.d.Purge(ctx, dep.m); err != nil {

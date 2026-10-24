@@ -1310,7 +1310,7 @@ func (s *Service) run(ctx context.Context, g game.Game, profileID string, r laun
 		sess := s.logs[keyOf(g)]
 		s.mu.Unlock()
 		if sess.buf == buf && sess.profile == profileID {
-			sess.deployed.unwind(context.WithoutCancel(ctx))
+			sess.deployed.unwind(ctx)
 			if restoreErr := s.restoreGameSettings(sess.restore); restoreErr != nil {
 				s.reportSettingsRestore(g, profileID, restoreErr)
 			}
