@@ -390,3 +390,85 @@ func TestHitsASourceLeftOutForExcludedCategoriesStayCountedAsHidden(t *testing.T
 		t.Fatalf("hidden = %d, %v", page.Hidden, err)
 	}
 }
+
+// numberedSource has `real` hits numbered from 0; total is what each page reports, or real when nil.
+type numberedSource struct {
+	id    string
+	real  int
+	total func(q source.Query, served int) int
+}
+
+func (n numberedSource) ID() string            { return n.id }
+func (n numberedSource) Name() string          { return n.id }
+func (numberedSource) Modes() []source.Acquire { return nil }
+func (n numberedSource) Search(_ context.Context, q source.Query) (source.Page, error) {
+	end := min(q.Page*q.Len(), n.real)
+	p := source.Page{Total: n.real}
+	if n.total != nil {
+		p.Total = n.total(q, end)
+	}
+	for i := (q.Page - 1) * q.Len(); i < end; i++ {
+		p.Items = append(p.Items, source.Item{Source: n.id, ID: fmt.Sprint(i)})
+	}
+	return p, nil
+}
+
+var (
+	_ = source.Register(numberedSource{id: "deep", real: 40000})
+	// Shaped like the Mod DB's API, which gives no total: a full page reports one more hit than it shows.
+	_ = source.Register(numberedSource{id: "limitonly", real: 1000, total: func(q source.Query, served int) int {
+		if served == q.Page*q.Len() {
+			return served + 1
+		}
+		return served
+	}})
+)
+
+func freshBrowse() {
+	topCache = map[string]topEntry{}
+	cursors = map[string]cursorEntry{}
+}
+
+func TestPagesPastTheScanLimitOfABigSourceAreFull(t *testing.T) {
+	freshBrowse()
+	g := components.GameInfo{ID: "g", Sources: []components.GameSource{{ID: "deep"}}}
+	c := &Client{Hidden: func(it Item) bool { return it.ID == "3" }}
+	for p := 1; p <= 12; p++ {
+		page, err := c.search(context.Background(), g, "deep", "", p, Filter{})
+		if err != nil || len(page.Items) != source.PageSize {
+			t.Fatalf("page %d: %d items, %v", p, len(page.Items), err)
+		}
+		// One hit is hidden, so page p starts one past its upstream place.
+		if want := fmt.Sprint((p-1)*source.PageSize + 1); p > 1 && page.Items[0].ID != want {
+			t.Fatalf("page %d starts at %s, want %s", p, page.Items[0].ID, want)
+		}
+	}
+	page, err := c.search(context.Background(), g, "deep", "", 2000, Filter{})
+	if err != nil || len(page.Items) != source.PageSize || page.Total != 40000 {
+		t.Fatalf("page 2000: %d items, total %d, %v", len(page.Items), page.Total, err)
+	}
+}
+
+func TestALimitOnlySourceOffersPageThree(t *testing.T) {
+	freshBrowse()
+	g := components.GameInfo{ID: "g", Sources: []components.GameSource{{ID: "limitonly"}}}
+	page, err := (&Client{}).search(context.Background(), g, "limitonly", "", 2, Filter{})
+	if err != nil || page.Total <= 2*source.PageSize {
+		t.Fatalf("page 2 total %d offers no page 3, %v", page.Total, err)
+	}
+	page, err = (&Client{}).search(context.Background(), g, "limitonly", "", 3, Filter{})
+	if err != nil || len(page.Items) != source.PageSize || page.Items[0].ID != "40" {
+		t.Fatalf("page 3: %+v, %v", page.Items, err)
+	}
+}
+
+func TestAFixedTotalSourceCountsTheSamePagesOnEveryPage(t *testing.T) {
+	freshBrowse()
+	g := components.GameInfo{ID: "g", Sources: []components.GameSource{{ID: "bigsrc"}}}
+	c := &Client{Hidden: func(it Item) bool { n, _ := strconv.Atoi(it.ID); return n%2 != 0 }}
+	one, err1 := c.search(context.Background(), g, "bigsrc", "", 1, Filter{})
+	three, err3 := c.search(context.Background(), g, "bigsrc", "", 3, Filter{})
+	if err1 != nil || err3 != nil || one.Total != three.Total {
+		t.Fatalf("totals %d and %d, %v %v", one.Total, three.Total, err1, err3)
+	}
+}

@@ -229,7 +229,7 @@ var (
 
 // searchCached runs the source's search, reusing its answer for topTTL. It returns a copy callers may edit.
 func searchCached(ctx context.Context, id string, s source.Searcher, q source.Query) (Page, error) {
-	key := fmt.Sprintf("%s|%s|%s|%d|%d|%s|%q|%q|%q", id, q.Game, q.Key, q.Page, q.Len(), q.Sort, q.Categories, q.ExcludeCategories, strings.TrimSpace(q.Text))
+	key := fmt.Sprintf("%s|%d", queryKey(id, q), q.Page)
 	topMu.Lock()
 	e, ok := topCache[key]
 	topMu.Unlock()
@@ -275,62 +275,152 @@ func (c *Client) search(ctx context.Context, info components.GameInfo, sourceID,
 // page instead of a loop.
 const maxScan = 10
 
-// searchFilled serves page `first` of the visible stream: upstream pages are read from the start, hidden hits dropped,
-// and the (first-1)*PageSize visible hits before this page skipped, so consecutive pages neither repeat nor skip a hit
-// and each is full unless the upstream ends or maxScan is reached.
-// ponytail: rereads upstream pages 1..N for page N (topCache absorbs it); a deep page past
-// maxScan upstream pages comes back short. Upgrade: a per-query cursor.
+// cursorCap is the most queries whose page ends are remembered, the least recently used going first.
+const cursorCap = 64
+
+// upPos is a place in a query's upstream stream: an upstream page and how many of its hits left after the drops come
+// before it.
+type upPos struct{ page, offset int }
+
+type cursorEntry struct {
+	ends  map[int]upPos
+	until time.Time
+}
+
+var (
+	cursorMu sync.Mutex
+	// cursors remembers, per query and filter, where each served visible page ended upstream, so page N continues
+	// from page N-1 without reading the pages before it.
+	cursors = map[string]cursorEntry{}
+)
+
+func queryKey(id string, q source.Query) string {
+	return fmt.Sprintf("%s|%s|%s|%d|%s|%q|%q|%q", id, q.Game, q.Key, q.Len(), q.Sort, q.Categories, q.ExcludeCategories, strings.TrimSpace(q.Text))
+}
+
+func cursorKey(id string, q source.Query, f Filter, showAdult bool) string {
+	return fmt.Sprintf("%s|%s|%s|%s|%t", queryKey(id, q), f.Installed, f.Obsolete, f.Broken, showAdult)
+}
+
+func cursorEnd(key string, page int) (upPos, bool) {
+	cursorMu.Lock()
+	defer cursorMu.Unlock()
+	e, ok := cursors[key]
+	if !ok || !time.Now().Before(e.until) {
+		return upPos{}, false
+	}
+	pos, ok := e.ends[page]
+	return pos, ok
+}
+
+func storeEnds(key string, ends map[int]upPos) {
+	if len(ends) == 0 {
+		return
+	}
+	cursorMu.Lock()
+	defer cursorMu.Unlock()
+	now := time.Now()
+	e, ok := cursors[key]
+	if !ok || !now.Before(e.until) {
+		e = cursorEntry{ends: map[int]upPos{}}
+	}
+	maps.Copy(e.ends, ends)
+	e.until = now.Add(topTTL)
+	cursors[key] = e
+	maps.DeleteFunc(cursors, func(_ string, old cursorEntry) bool { return !now.Before(old.until) })
+	for len(cursors) > cursorCap {
+		oldest := ""
+		for k, v := range cursors {
+			if oldest == "" || v.until.Before(cursors[oldest].until) {
+				oldest = k
+			}
+		}
+		delete(cursors, oldest)
+	}
+}
+
+// searchFilled serves page `first` of the visible stream, the upstream hits left after the drops, so each page is
+// full unless the upstream ends or maxScan upstream pages are read, and consecutive pages neither repeat nor skip a
+// hit. Page N starts where page N-1 ended when that is remembered; a page within maxScan is counted from the start;
+// a deeper cold jump starts at upstream page N, so the drops before it shift it slightly.
 func (c *Client) searchFilled(ctx context.Context, info components.GameInfo, id string, s source.Searcher, q source.Query, first int, f Filter) (Page, error) {
-	want := first * source.PageSize
+	key := cursorKey(id, q, f, c.ShowAdult)
+	size := source.PageSize
+	// pos is where reading starts, numbered the visible hit at it.
+	pos, numbered := upPos{page: source.FirstPage}, 0
+	switch end, ok := cursorEnd(key, first-1); {
+	case first == source.FirstPage:
+	case ok:
+		pos, numbered = end, (first-1)*size
+	case first > maxScan:
+		pos, numbered = upPos{page: first}, (first-1)*size
+	}
+	from, want := (first-1)*size, first*size
 	out := Page{Items: []Item{}}
-	var visible []Item
-	for p := source.FirstPage; p < source.FirstPage+maxScan; p++ {
+	ends := map[int]upPos{}
+	dropped, ended := 0, false
+	for p := pos.page; p < pos.page+maxScan && numbered < want; p++ {
 		q.Page = p
-		raw, last, err := c.fetchMarked(ctx, info, id, s, q)
+		raw, total, last, err := c.fetchMarked(ctx, info, id, s, q)
 		if err != nil {
 			return Page{}, err
 		}
+		dropped += total - raw.Total
 		c.applyModes(&raw, f)
-		// Each page's Total drops only that page's adult and hidden hits; page 1's is the one every page reads.
-		if p == source.FirstPage {
-			out.Total = raw.Total
-		}
+		out.Total = max(out.Total, total)
 		out.Hidden += raw.Hidden
 		for _, name := range raw.Failed {
 			if !slices.Contains(out.Failed, name) {
 				out.Failed = append(out.Failed, name)
 			}
 		}
-		visible = append(visible, raw.Items...)
-		if len(visible) >= want || last {
+		skip := 0
+		if p == pos.page {
+			skip = min(pos.offset, len(raw.Items))
+		}
+		for i := skip; i < len(raw.Items) && numbered < want; i++ {
+			if numbered >= from {
+				out.Items = append(out.Items, raw.Items[i])
+			}
+			numbered++
+			if numbered%size == 0 {
+				ends[numbered/size] = upPos{page: p, offset: i + 1}
+			}
+		}
+		if last {
+			ended = true
 			break
 		}
 	}
-	out.Items = visible[min((first-1)*source.PageSize, len(visible)):min(want, len(visible))]
+	// The upstream's own total keeps the page count the same on every page and lets a source that only knows there is
+	// more offer the next page; a read that saw every hit from the first knows exactly how many it dropped.
+	if ended && pos == (upPos{page: source.FirstPage}) {
+		out.Total = max(out.Total-dropped, 0)
+	}
+	storeEnds(key, ends)
 	return out, nil
 }
 
-// fetchMarked reads one upstream page, dropping adult hits unless ShowAdult and marking each hit. last reports that
-// the upstream has no later page, judged before any hit is dropped.
-func (c *Client) fetchMarked(ctx context.Context, info components.GameInfo, id string, s source.Searcher, q source.Query) (result Page, last bool, err error) {
+// fetchMarked reads one upstream page, dropping adult and hidden hits and marking each hit; the page's Total leaves out
+// its own drops. total is the upstream's own count, and last reports that the upstream has no later page.
+func (c *Client) fetchMarked(ctx context.Context, info components.GameInfo, id string, s source.Searcher, q source.Query) (result Page, total int, last bool, err error) {
 	result, err = searchCached(ctx, id, s, q)
 	if err != nil {
-		return Page{}, false, err
+		return Page{}, 0, false, err
 	}
-	last = result.Total <= q.Page*q.Len()
+	total = result.Total
+	last = total <= q.Page*q.Len()
+	before := len(result.Items)
 	if !c.ShowAdult {
-		before := len(result.Items)
 		result.Items = slices.DeleteFunc(result.Items, func(i Item) bool { return i.Adult })
-		result.Total = max(result.Total-(before-len(result.Items)), 0)
 	}
 	if c.Hidden != nil {
-		before := len(result.Items)
 		result.Items = slices.DeleteFunc(result.Items, c.Hidden)
-		result.Total = max(result.Total-(before-len(result.Items)), 0)
 	}
+	result.Total = max(total-(before-len(result.Items)), 0)
 	c.markInstalled(result.Items)
 	c.mark(ctx, info, result.Items)
-	return result, last, nil
+	return result, total, last, nil
 }
 
 func (c *Client) markInstalled(items []Item) {

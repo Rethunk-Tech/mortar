@@ -143,7 +143,7 @@ func placedPrefix(window []Item, lanes []*lane, compare func(a, b Item) int) []I
 func (c *Client) readNext(ctx context.Context, info components.GameInfo, l *lane, f Filter, limit int) {
 	l.q.Page = source.FirstPage + l.read
 	l.read++
-	raw, last, err := c.fetchMarked(ctx, info, l.id, l.s, l.q)
+	raw, total, last, err := c.fetchMarked(ctx, info, l.id, l.s, l.q)
 	if err != nil {
 		l.err, l.done = err, true
 		return
@@ -151,7 +151,7 @@ func (c *Client) readNext(ctx context.Context, info components.GameInfo, l *lane
 	c.applyModes(&raw, f)
 	// Each page's Total drops only that page's adult and hidden hits; page 1's is the one every request reads.
 	if l.read == 1 {
-		l.total = raw.Total
+		l.total = max(l.total, total)
 	}
 	l.hidden += raw.Hidden
 	l.hits = append(l.hits, raw.Items...)
