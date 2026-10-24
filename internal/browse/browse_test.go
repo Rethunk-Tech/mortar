@@ -370,3 +370,23 @@ func TestHitsDroppedFromPageOneDoNotEndTheSearchBeforeTheLastUpstreamPage(t *tes
 		t.Fatalf("the 21st upstream hit must fill page 1: %d items, %v", len(page.Items), err)
 	}
 }
+
+type excludingSource struct{}
+
+func (excludingSource) ID() string              { return "excluding" }
+func (excludingSource) Name() string            { return "Excluding" }
+func (excludingSource) Modes() []source.Acquire { return nil }
+func (excludingSource) Search(context.Context, source.Query) (source.Page, error) {
+	return source.Page{Total: 3, Hidden: 2, Items: []source.Item{{Source: "excluding", ID: "1"}}}, nil
+}
+
+var _ = source.Register(excludingSource{})
+
+func TestHitsASourceLeftOutForExcludedCategoriesStayCountedAsHidden(t *testing.T) {
+	topCache = map[string]topEntry{}
+	g := components.GameInfo{ID: "g", Sources: []components.GameSource{{ID: "excluding"}}}
+	page, err := (&Client{}).search(context.Background(), g, "excluding", "", 1, Filter{Exclude: []string{"Maps"}})
+	if err != nil || page.Hidden != 2 {
+		t.Fatalf("hidden = %d, %v", page.Hidden, err)
+	}
+}
