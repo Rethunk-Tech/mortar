@@ -10,6 +10,7 @@ import {
 } from './app.ts'
 import { nestedBoxes } from './renderBoxes.ts'
 import { newCases } from './renderCases.ts'
+import { writeGallery } from './renderGallery.ts'
 import { unevenSpacing } from './renderGaps.ts'
 import { HOOK } from './renderHook.ts'
 import { type LayoutBreak, layoutBreaks } from './renderLayout.ts'
@@ -35,13 +36,14 @@ import { webkitWalk } from './webkit-walk.ts'
 //   MORTAR_RENDER_SETTLE_MS / _IDLE_MS how long a case's own steps wait (3000) and how long idle is watched (3000); setup
 //                                      and action end once nothing has committed or called the backend for 1.5 s
 //   MORTAR_RENDER_GAPS=1              print each screen's unevenly spaced stacks and cards (renderGaps.ts)
-//   MORTAR_RENDER_SHOTS=<dir>          save a PNG of each screen in <dir>/chromium and <dir>/webkit; `bun run renders:diff
-//                                      OLD/chromium NEW/chromium` compares two runs
+//   MORTAR_RENDER_SHOTS=<dir>          where each screen's pictures go (default <out>/shots): settled in <dir>/chromium
+//                                      and <dir>/webkit, loading (just after the action) in their loading/ folders;
+//                                      `bun run renders:diff OLD/chromium NEW/chromium` compares two runs' settled ones
 // Every screen is checked for layout breaks (renderLayout.ts) in Chromium, then in WebKitGTK (webkit-walk.ts) on the same
 // sandbox; a break fails the run like a budget.
 //   MORTAR_RENDER_TOP=<n>              how many components, roots and causes each case lists (8)
-// Writes render-budget.json under MORTAR_RENDER_OUT (default /var/tmp/render-budget-<ts>) and exits 1 when a case is
-// over its budget or fails.
+// Writes render-budget.json and index.html (every screen loading and settled, in both engines, beside its figures and
+// breaks) under MORTAR_RENDER_OUT (default /var/tmp/render-budget-<ts>) and exits 1 when a case is over its budget or fails.
 
 const BASE = '/var/tmp'
 
@@ -317,7 +319,12 @@ function perIdle(s: Sample): Sample {
   }
 }
 
-async function measure(page: Page, meter: Meter, c: Case): Promise<Result> {
+async function measure(
+  page: Page,
+  meter: Meter,
+  c: Case,
+  loading: () => Promise<unknown>,
+): Promise<Result> {
   try {
     const t0 = Date.now()
     await c.setup?.(page)
@@ -325,6 +332,7 @@ async function measure(page: Page, meter: Meter, c: Case): Promise<Result> {
     await meter.reset()
     const t1 = Date.now()
     await c.run(page)
+    await loading()
     // Background checks (a profile's badges) finish after the action; what they cause belongs to it, not to idle.
     await meter.untilStill(QUIET_MS, QUIET_MAX_MS)
     const action = await meter.read()
@@ -359,6 +367,7 @@ function chosenCases(): Case[] {
 async function run(
   baseURL: string,
   chosen: Case[],
+  shotsDir: string,
 ): Promise<{ results: Result[]; breaks: string[] }> {
   const browser = await chromium.launch()
   try {
@@ -375,14 +384,14 @@ async function run(
     }
     const results: Result[] = []
     const breaks: string[] = []
-    const shots = process.env.MORTAR_RENDER_SHOTS && `${process.env.MORTAR_RENDER_SHOTS}/chromium`
-    if (shots) {
-      mkdirSync(shots, { recursive: true })
-    }
+    const shots = `${shotsDir}/chromium`
+    mkdirSync(`${shots}/loading`, { recursive: true })
     const logged = watchLog(page)
     for (const c of chosen) {
       logged.length = 0
-      const result = await measure(page, meter, c)
+      const result = await measure(page, meter, c, () =>
+        page.screenshot({ path: `${shots}/loading/${c.name}.png` }),
+      )
       console.log(`${c.name} measured`)
       const t = Date.now()
       // A page that reloads under the check is itself a break; the walk goes on with the next case.
@@ -392,9 +401,7 @@ async function run(
             (b: LayoutBreak) => `LAYOUT ${c.name} | ${b.kind} | ${b.where} | ${b.text}`,
           ),
         )
-        if (shots) {
-          await page.screenshot({ path: `${shots}/${c.name}.png` })
-        }
+        await page.screenshot({ path: `${shots}/${c.name}.png` })
       } catch (e) {
         breaks.push(`LAYOUT ${c.name} | unchecked | ${String(e).split('\n')[0]}`)
       }
@@ -421,14 +428,13 @@ async function run(
 }
 
 // The Chromium walk, then the WebKitGTK one on the same sandbox while it still runs (webkit-walk.ts).
-async function walk(url: string, sandboxDir: string, chosen: Case[]) {
-  const { results, breaks } = await run(url, chosen)
-  const shots = process.env.MORTAR_RENDER_SHOTS
+async function walk(url: string, sandboxDir: string, chosen: Case[], shots: string) {
+  const { results, breaks } = await run(url, chosen, shots)
   const only = (process.env.MORTAR_RENDER_ONLY ?? '').split(',').filter(Boolean)
   const webkit = await webkitWalk({
     sandbox: sandboxDir,
     url,
-    shots: shots && `${shots}/webkit`,
+    shots: `${shots}/webkit`,
     only,
   })
   if (webkit === null) {
@@ -441,11 +447,13 @@ async function main(): Promise<number> {
   const chosen = chosenCases()
   const external = process.env.MORTAR_RENDER_URL
   const dir = `${BASE}/mortar-render-${process.pid}`
+  const out = process.env.MORTAR_RENDER_OUT ?? `${BASE}/render-budget-${Date.now()}`
+  const shots = process.env.MORTAR_RENDER_SHOTS ?? `${out}/shots`
   let results: Result[]
   let breaks: string[]
   if (external) {
     const sandboxDir = process.env.MORTAR_SELFTEST_DIR ?? `${BASE}/mortar-selftest`
-    ;({ results, breaks } = await walk(external, sandboxDir, chosen))
+    ;({ results, breaks } = await walk(external, sandboxDir, chosen, shots))
   } else {
     process.env.MORTAR_E2E_DIR = dir
     mkdirSync(dir, { recursive: true })
@@ -458,7 +466,7 @@ async function main(): Promise<number> {
       if (seeded) {
         selftest(dir, 'seed')
       }
-      ;({ results, breaks } = await walk(`http://127.0.0.1:${sandboxPort()}`, dir, chosen))
+      ;({ results, breaks } = await walk(`http://127.0.0.1:${sandboxPort()}`, dir, chosen, shots))
     } finally {
       try {
         selftest(dir, 'destroy')
@@ -468,9 +476,9 @@ async function main(): Promise<number> {
       rmSync(dir, { recursive: true, force: true })
     }
   }
-  const out = process.env.MORTAR_RENDER_OUT ?? `${BASE}/render-budget-${Date.now()}`
   mkdirSync(out, { recursive: true })
   writeFileSync(`${out}/render-budget.json`, `${JSON.stringify(results, null, 2)}\n`)
+  console.log(`gallery: xdg-open ${writeGallery(out, shots, results, breaks)}`)
   console.log(report(results))
   console.log(`JSON: ${out}/render-budget.json`)
   console.log(breaks.length === 0 ? 'layout: no breaks' : breaks.join('\n'))

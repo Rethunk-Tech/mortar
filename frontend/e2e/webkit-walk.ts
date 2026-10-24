@@ -152,12 +152,21 @@ async function load(id: string, url: string) {
   await Bun.sleep(SETTLE_MS)
 }
 
-// Reaches one screen from the one before, reloading only when a step finds nothing, and returns its layout breaks.
+async function shoot(id: string, file: string) {
+  const png = await call('GET', `/session/${id}/screenshot`)
+  await Bun.write(file, Buffer.from(String(png), 'base64'))
+}
+
+// Reaches one screen from the one before, reloading only when a step finds nothing, and returns its layout breaks. The
+// loading picture is taken as the last step lands, the settled one after the wait.
 async function visit(id: string, screen: Screen, w: Walk): Promise<string[]> {
   const breaks: string[] = []
   let reached = true
   for (const s of screen.steps) {
     reached = reached && (await click(id, s))
+    if (w.shots && s === screen.steps.at(-1)) {
+      await shoot(id, join(w.shots, 'loading', `${screen.name}.png`))
+    }
     await Bun.sleep(SETTLE_MS / 2)
   }
   if (!reached) {
@@ -168,6 +177,9 @@ async function visit(id: string, screen: Screen, w: Walk): Promise<string[]> {
     ]) {
       if (!(await click(id, s))) {
         breaks.push(`LAYOUT ${screen.name} | missing | ${s.role} ${s.name} not found`)
+      }
+      if (w.shots && s === screen.steps.at(-1)) {
+        await shoot(id, join(w.shots, 'loading', `${screen.name}.png`))
       }
       await Bun.sleep(SETTLE_MS / 2)
     }
@@ -180,8 +192,7 @@ async function visit(id: string, screen: Screen, w: Walk): Promise<string[]> {
     }
   }
   if (w.shots) {
-    const png = await call('GET', `/session/${id}/screenshot`)
-    await Bun.write(join(w.shots, `${screen.name}.png`), Buffer.from(String(png), 'base64'))
+    await shoot(id, join(w.shots, `${screen.name}.png`))
   }
   return breaks
 }
@@ -193,7 +204,7 @@ export async function webkitWalk(w: Walk): Promise<string[] | null> {
     return null
   }
   if (w.shots) {
-    mkdirSync(w.shots, { recursive: true })
+    mkdirSync(join(w.shots, 'loading'), { recursive: true })
   }
   const driver = Bun.spawn([DRIVER_BIN, `--port=${PORT}`], {
     env,
