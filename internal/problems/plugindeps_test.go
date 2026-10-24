@@ -1,6 +1,7 @@
 package problems
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -19,8 +20,11 @@ import (
 )
 
 // pkgWith seeds the scan cache for a package that ships one plugin with the given relations.
-func pkgWith(key, guid, version string, enabled bool, relations ...dotnet.Relation) profile.PackageRef {
-	dir := "/pkg/" + key
+func pkgWith(t *testing.T, key, guid, version string, enabled bool, relations ...dotnet.Relation) profile.PackageRef {
+	dir := filepath.Join(t.TempDir(), key)
+	if err := os.Mkdir(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
 	for i := range relations {
 		relations[i].Plugin = guid
 	}
@@ -35,10 +39,10 @@ func hard(guid, minimum string) dotnet.Relation {
 }
 
 func TestPluginDepsHardDependencyIsMetAbsentOrTooOld(t *testing.T) {
-	lib := pkgWith("lib", "com.x.Lib", "2.0.0", true)
-	met := pkgWith("met", "com.x.Met", "1.0.0", true, hard("COM.X.LIB", "1.5.0"))
-	old := pkgWith("old", "com.x.Old", "1.0.0", true, hard("com.x.lib", "2.1.0"))
-	gone := pkgWith("gone", "com.x.Gone", "1.0.0", true, hard("com.x.nowhere", ""))
+	lib := pkgWith(t, "lib", "com.x.Lib", "2.0.0", true)
+	met := pkgWith(t, "met", "com.x.Met", "1.0.0", true, hard("COM.X.LIB", "1.5.0"))
+	old := pkgWith(t, "old", "com.x.Old", "1.0.0", true, hard("com.x.lib", "2.1.0"))
+	gone := pkgWith(t, "gone", "com.x.Gone", "1.0.0", true, hard("com.x.nowhere", ""))
 
 	got, _ := pluginDeps([]profile.PackageRef{lib, met, old, gone}, nil)
 
@@ -54,8 +58,8 @@ func TestPluginDepsHardDependencyIsMetAbsentOrTooOld(t *testing.T) {
 }
 
 func TestPluginDepsNamesALibraryThatIsDisabled(t *testing.T) {
-	lib := pkgWith("lib", "com.x.Lib", "2.0.0", false)
-	user := pkgWith("user", "com.x.User", "1.0.0", true, hard("com.x.lib", "1.0.0"))
+	lib := pkgWith(t, "lib", "com.x.Lib", "2.0.0", false)
+	user := pkgWith(t, "user", "com.x.User", "1.0.0", true, hard("com.x.lib", "1.0.0"))
 
 	got, _ := pluginDeps([]profile.PackageRef{lib, user}, nil)
 
@@ -65,9 +69,9 @@ func TestPluginDepsNamesALibraryThatIsDisabled(t *testing.T) {
 }
 
 func TestPluginDepsIgnoresSoftDependencies(t *testing.T) {
-	user := pkgWith("user", "com.x.User", "1.0.0", true, dotnet.Relation{GUID: "com.x.extra", Kind: dotnet.SoftDependency})
-	off := pkgWith("off", "com.x.Off", "1.0.0", true, dotnet.Relation{GUID: "com.x.sleeping", Kind: dotnet.SoftDependency})
-	sleeping := pkgWith("sleeping", "com.x.Sleeping", "1.0.0", false)
+	user := pkgWith(t, "user", "com.x.User", "1.0.0", true, dotnet.Relation{GUID: "com.x.extra", Kind: dotnet.SoftDependency})
+	off := pkgWith(t, "off", "com.x.Off", "1.0.0", true, dotnet.Relation{GUID: "com.x.sleeping", Kind: dotnet.SoftDependency})
+	sleeping := pkgWith(t, "sleeping", "com.x.Sleeping", "1.0.0", false)
 
 	got, _ := pluginDeps([]profile.PackageRef{user, off, sleeping}, nil)
 
@@ -77,10 +81,10 @@ func TestPluginDepsIgnoresSoftDependencies(t *testing.T) {
 }
 
 func TestPluginDepsReportsAnIncompatibilityBetweenEnabledPackages(t *testing.T) {
-	a := pkgWith("a", "com.x.A", "1.0.0", true, dotnet.Relation{GUID: "com.x.b", Kind: dotnet.Incompatible})
-	b := pkgWith("b", "com.x.B", "1.0.0", true)
-	c := pkgWith("c", "com.x.C", "1.0.0", true, dotnet.Relation{GUID: "com.x.d", Kind: dotnet.Incompatible})
-	d := pkgWith("d", "com.x.D", "1.0.0", false)
+	a := pkgWith(t, "a", "com.x.A", "1.0.0", true, dotnet.Relation{GUID: "com.x.b", Kind: dotnet.Incompatible})
+	b := pkgWith(t, "b", "com.x.B", "1.0.0", true)
+	c := pkgWith(t, "c", "com.x.C", "1.0.0", true, dotnet.Relation{GUID: "com.x.d", Kind: dotnet.Incompatible})
+	d := pkgWith(t, "d", "com.x.D", "1.0.0", false)
 
 	_, got := pluginDeps([]profile.PackageRef{a, b, c, d}, nil)
 
@@ -90,7 +94,7 @@ func TestPluginDepsReportsAnIncompatibilityBetweenEnabledPackages(t *testing.T) 
 }
 
 func TestPluginDepsSkipsTheLoaderAndAModShippedUnderAnotherGUID(t *testing.T) {
-	user := pkgWith("user", "com.x.User", "1.0.0", true,
+	user := pkgWith(t, "user", "com.x.User", "1.0.0", true,
 		hard("BepInEx", ""), hard("BepInEx.Harmony", ""), hard("com.rune580.lethalcompanyinpututils", ""), hard("com.x.user", ""))
 	named := inst("inpututils", "LethalCompany_InputUtils", "1.0.0", true)
 
@@ -111,7 +115,7 @@ func TestPluginDepsReadsTheAttributesOfARealAssembly(t *testing.T) {
 		t.Fatal(err)
 	}
 	pkg := profile.PackageRef{Key: "fixture", Enabled: true, ID: "bepinex:fixture", Name: "Fixture", Dir: dir}
-	clash := pkgWith("clash", "com.fixture.clash", "1.0.0", true)
+	clash := pkgWith(t, "clash", "com.fixture.clash", "1.0.0", true)
 
 	missing, failures := pluginDeps([]profile.PackageRef{pkg, clash}, nil)
 
@@ -280,11 +284,11 @@ func TestProblemsReportsAMissingPackageOnceWhenManifestAndAssemblyBothNameIt(t *
 }
 
 func TestAPluginsAttributesAddItsDependenciesSoItsLibrariesAreNotOfferedForRemoval(t *testing.T) {
-	lib := pkgWith("lethallib", "evaisa.lethallib", "1.0.0", true)
-	extra := pkgWith("extra", "com.x.Extra", "1.0.0", true)
-	clash := pkgWith("clash", "com.x.Clash", "1.0.0", true)
+	lib := pkgWith(t, "lethallib", "evaisa.lethallib", "1.0.0", true)
+	extra := pkgWith(t, "extra", "com.x.Extra", "1.0.0", true)
+	clash := pkgWith(t, "clash", "com.x.Clash", "1.0.0", true)
 	// A locally built mod with no manifest: its plugin's attributes are all that name its libraries.
-	local := pkgWith("local", "com.wallet.Local", "0.1.0", true,
+	local := pkgWith(t, "local", "com.wallet.Local", "0.1.0", true,
 		hard("evaisa.lethallib", ""),
 		dotnet.Relation{GUID: "com.x.extra", Kind: dotnet.SoftDependency},
 		dotnet.Relation{GUID: "com.x.clash", Kind: dotnet.Incompatible})

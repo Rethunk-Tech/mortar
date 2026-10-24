@@ -2,6 +2,10 @@ package problems
 
 import (
 	"cmp"
+	"errors"
+	"io/fs"
+	"maps"
+	"os"
 	"slices"
 	"strings"
 	"sync"
@@ -42,7 +46,8 @@ var (
 func pluginsIn(dir string) []dotnet.Plugin { return declaredIn(dir).Plugins }
 
 // declaredIn reads what every DLL under dir declares about its plugins. A store folder never changes for its key, so
-// the answer is kept for the life of the process.
+// the answer is kept while the folder exists; a new folder usually comes with an update that removed an older one,
+// so that is when the entries of removed folders go.
 func declaredIn(dir string) dotnet.Declared {
 	pluginMu.Lock()
 	cached, ok := pluginCache[pluginKey{dir}]
@@ -52,6 +57,10 @@ func declaredIn(dir string) dotnet.Declared {
 	}
 	out := dotnet.ScanDir(dir)
 	pluginMu.Lock()
+	maps.DeleteFunc(pluginCache, func(k pluginKey, _ dotnet.Declared) bool {
+		_, err := os.Stat(k.dir)
+		return errors.Is(err, fs.ErrNotExist)
+	})
 	pluginCache[pluginKey{dir}] = out
 	pluginMu.Unlock()
 	return out

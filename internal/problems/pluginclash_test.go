@@ -1,6 +1,7 @@
 package problems
 
 import (
+	"os"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
@@ -41,5 +42,21 @@ func TestPluginClashKeepsTheCopyThatIsNotDeprecatedBetweenEqualVersions(t *testi
 	}, map[string]bool{"old": true})
 	if len(got) != 1 || got[0].Keep != "new" {
 		t.Fatalf("got %+v", got)
+	}
+}
+
+func TestThePluginScanOfARemovedStoreFolderIsDropped(t *testing.T) {
+	gone, kept := t.TempDir(), t.TempDir()
+	declaredIn(gone)
+	if err := os.Remove(gone); err != nil {
+		t.Fatal(err)
+	}
+	declaredIn(kept)
+	pluginMu.Lock()
+	_, stale := pluginCache[pluginKey{gone}]
+	_, fresh := pluginCache[pluginKey{kept}]
+	pluginMu.Unlock()
+	if stale || !fresh {
+		t.Fatalf("removed folder kept %v, live folder kept %v", stale, fresh)
 	}
 }
