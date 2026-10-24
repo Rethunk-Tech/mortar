@@ -14,7 +14,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"slices"
 	"strings"
 	"unicode/utf8"
 
@@ -253,40 +252,6 @@ func utf8Name(name string) string {
 		return strings.ToValidUTF8(name, "_")
 	}
 	return decoded
-}
-
-// RepairNames renames every file and folder under root whose name is not UTF-8, as zipName would have named it,
-// deepest first so a folder's own path stays valid while its children move. A name whose repaired form already
-// exists is left alone. It returns how many entries it renamed.
-func RepairNames(root string) (int, error) {
-	var bad []string
-	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			if errors.Is(err, fs.ErrNotExist) {
-				return nil
-			}
-			return err
-		}
-		if path != root && !utf8.ValidString(d.Name()) {
-			bad = append(bad, path)
-		}
-		return nil
-	})
-	if err != nil {
-		return 0, err
-	}
-	renamed := 0
-	for _, from := range slices.Backward(bad) {
-		to := filepath.Join(filepath.Dir(from), utf8Name(filepath.Base(from)))
-		if _, err := os.Lstat(to); err == nil {
-			continue
-		}
-		if err := fsx.Rename(from, to); err != nil {
-			return renamed, err
-		}
-		renamed++
-	}
-	return renamed, nil
 }
 
 func (x *extractor) sevenZip(r io.ReaderAt, size int64) error {

@@ -24,7 +24,6 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/services/notifications"
 
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
-	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/archivesvc"
 	"github.com/Rethunk-Tech/mortar/internal/avscan"
 	"github.com/Rethunk-Tech/mortar/internal/backdrop"
@@ -35,7 +34,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/configsvc"
 	"github.com/Rethunk-Tech/mortar/internal/control"
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/datasvc"
 	"github.com/Rethunk-Tech/mortar/internal/desktopnotify"
 	"github.com/Rethunk-Tech/mortar/internal/doctor"
@@ -1210,33 +1208,6 @@ func run() error {
 			}
 			tidied.Close()
 		}()
-		// Mods extracted before zip names were decoded may sit in folders the game cannot open. Extraction decodes
-		// names now, so one clean pass over both trees is enough.
-		repairedMarker := filepath.Join(dataDir, "names-repaired")
-		if _, err := os.Stat(repairedMarker); err != nil {
-			clean := true
-			for _, root := range []string{filepath.Join(dataDir, "store"), filepath.Join(dataDir, "profiles")} {
-				if n, err := archive.RepairNames(root); err != nil {
-					clean = false
-					log.Printf("repair names under %s: %v", root, err)
-				} else if n > 0 {
-					log.Printf("repaired %d file names under %s", n, root)
-					tidied.Add("modFileNames", "Repaired mod file names", filepath.Base(root), "", n)
-				}
-			}
-			if clean {
-				if err := datadir.WriteFile(repairedMarker, nil, 0o600); err != nil {
-					log.Printf("repair names marker: %v", err)
-				}
-			}
-		}
-		// Repaired folder names must reach the profiles that record them, or a mod cannot be switched off.
-		if n, err := profiles.RepairFolderRecords(); err != nil {
-			log.Printf("repair folder records: %v", err)
-		} else if n > 0 {
-			log.Printf("repaired %d mod folder records", n)
-			tidied.Add("folderRecords", "Repaired mod folder records", "profiles", "", n)
-		}
 		r := profiles.RelayoutFomod(launches.Busy)
 		log.Printf("fomod relayout: %d moved, %d unchanged, %d left without their archive, %d failed", r.Moved, r.Unchanged, r.NoArchive, r.Failed)
 		// An unreadable profile.json stops collection: its keys are unknown, and their items must not be deleted.

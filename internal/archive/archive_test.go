@@ -14,8 +14,6 @@ import (
 	"syscall"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
-
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
@@ -480,28 +478,6 @@ func TestZipNamesInALegacyEncodingBecomeUTF8(t *testing.T) {
 	}
 	if got := readFile(t, filepath.Join(dest, "[FS]Kyuya‘s hats Pack", "manifest.json")); got != "{}" {
 		t.Fatalf("manifest = %q", got)
-	}
-}
-
-func TestRepairNamesRenamesLegacyEncodedEntries(t *testing.T) {
-	root := t.TempDir()
-	dir := filepath.Join(root, "Pack\xa1\xae")
-	if err := os.MkdirAll(dir, 0o750); err != nil {
-		t.Fatal(err)
-	}
-	testfs.WriteFile(t, dir, "note\xa1\xae.txt", "x")
-	n, err := RepairNames(root)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if n != 2 {
-		t.Fatalf("renamed %d, want 2", n)
-	}
-	if got := readFile(t, filepath.Join(root, "Pack‘", "note‘.txt")); got != "x" {
-		t.Fatalf("file = %q", got)
-	}
-	if n, err := RepairNames(root); err != nil || n != 0 {
-		t.Fatalf("second pass renamed %d, %v", n, err)
 	}
 }
 

@@ -12,10 +12,6 @@ const what = (code: string, fallback: string): string => {
       return i18n._(msg`Emptied the crash log after it was reported`)
     case 'tempFolders':
       return i18n._(msg`Removed leftover temporary folders`)
-    case 'modFileNames':
-      return i18n._(msg`Repaired mod file names`)
-    case 'folderRecords':
-      return i18n._(msg`Repaired mod folder records`)
     case 'leftoverModFolder':
       return i18n._(msg`Removed a leftover mod folder`)
     case 'rebuiltModFolder':

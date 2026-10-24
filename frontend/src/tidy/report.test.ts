@@ -12,7 +12,7 @@ test('every tidy code Go reports has a message', () => {
     }
   }
   const words = readFileSync(join(import.meta.dir, 'report.ts'), 'utf8')
-  expect(codes.size).toBe(7)
+  expect(codes.size).toBe(5)
   for (const code of codes) {
     expect(words).toContain(`case '${code}'`)
   }
