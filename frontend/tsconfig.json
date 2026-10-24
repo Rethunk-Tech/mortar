@@ -28,6 +28,7 @@
     "esModuleInterop": true,
     "erasableSyntaxOnly": true,
     "allowJs": false,
+    "incremental": true,
     "types": ["bun"]
   },
   "include": ["src", "bindings"]

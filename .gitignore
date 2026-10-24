@@ -17,3 +17,4 @@ web/.astro/
 
 # Claude Code agent worktrees: full nested checkouts of this repo.
 /.claude/worktrees/
+*.tsbuildinfo
