@@ -10,6 +10,7 @@ import (
 )
 
 func TestQuitWaitsUntilTheAppStopsAnswering(t *testing.T) {
+	fastQuit(t)
 	var methods []string
 	answered := 0
 	call := func(method string, _ control.Params, _ any, _ time.Duration) error {
@@ -32,6 +33,7 @@ func TestQuitWaitsUntilTheAppStopsAnswering(t *testing.T) {
 }
 
 func TestQuitWaitsForTheProcessAfterTheControlChannelCloses(t *testing.T) {
+	fastQuit(t)
 	call := func(method string, p control.Params, out any, _ time.Duration) error {
 		if method == "app.quit" {
 			if !p.Force {
@@ -69,4 +71,10 @@ func TestQuitWithNothingRunningSucceeds(t *testing.T) {
 	if code := run("9.9.9", call, []string{"quit"}, &o, &e); code != 0 {
 		t.Fatalf("code %d stderr %q", code, e.String())
 	}
+}
+
+func fastQuit(t *testing.T) {
+	prev := quitPoll
+	quitPoll = time.Millisecond
+	t.Cleanup(func() { quitPoll = prev })
 }

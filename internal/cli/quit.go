@@ -15,6 +15,9 @@ import (
 // removes the exe and asks the user to close Mortar when this runs out.
 const quitWait = 10 * time.Second
 
+// quitPoll is how often quit looks again.
+var quitPoll = 200 * time.Millisecond
+
 // processAlive is how quit tells the app's process has ended. Each Flatpak run has its own PID namespace, so a pid
 // from the app means nothing to a CLI started by another flatpak run; there only the control channel can tell.
 var processAlive = func(pid int) bool { return !sandbox.InFlatpak() && launch.Alive(pid) }
@@ -34,7 +37,7 @@ func (c *cmd) quit() error {
 	if n, ok := reply.(float64); ok {
 		pid = int(n)
 	}
-	for deadline := time.Now().Add(quitWait); time.Now().Before(deadline); time.Sleep(200 * time.Millisecond) {
+	for deadline := time.Now().Add(quitWait); time.Now().Before(deadline); time.Sleep(quitPoll) {
 		if err := c.call("games", control.Params{}, nil, time.Second); !errors.Is(err, controlwire.ErrNotRunning) {
 			continue
 		}

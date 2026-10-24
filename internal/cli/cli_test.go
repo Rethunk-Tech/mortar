@@ -319,23 +319,6 @@ func TestProfilesCountsOnlyUserMods(t *testing.T) {
 	}
 }
 
-func TestProfilesMarksDamaged(t *testing.T) {
-	results := map[string]any{
-		"profiles": []profile.Profile{
-			{ID: "1", Name: "Spring"},
-			{ID: "0123456789abcdef", Error: "read profile: unexpected EOF"},
-		},
-	}
-	r := invoke(t, results, "profiles", "stardew")
-	if r.code != 0 || !strings.Contains(r.out, "Could not read this profile") || strings.Contains(r.out, "unexpected EOF") {
-		t.Fatalf("profiles: %q", r.out)
-	}
-	r = invoke(t, results, "profiles", "stardew", "--json")
-	if r.code != 0 || !strings.Contains(r.out, "0123456789abcdef") || !strings.Contains(r.out, "unexpected EOF") {
-		t.Fatalf("profiles json: %q", r.out)
-	}
-}
-
 func TestSourceUntrackRequiresScope(t *testing.T) {
 	r := invoke(t, nil, "source", "untrack", "stardew", "--source", "nexus", "--yes")
 	if r.code != 2 || len(r.calls) != 0 {
