@@ -113,12 +113,16 @@ function Art({ srcs, fallback }: { srcs: string[]; fallback: ReactNode }) {
 // screen never shows through.
 function Backdrop({ src }: { src: string }) {
   return src ? (
-    <Box aria-hidden={true} sx={{ position: 'absolute', inset: 0, zIndex: -1 }}>
+    // Its own layer: the spinner repaints every frame, and WebKitGTK flickers a filtered or shared layer under it.
+    <Box
+      aria-hidden={true}
+      sx={{ position: 'absolute', inset: 0, zIndex: -1, willChange: 'transform' }}
+    >
       <Box
         component="img"
         src={src}
         alt=""
-        sx={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'blur(2px)' }}
+        sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
       />
       <Box sx={{ position: 'absolute', inset: 0, bgcolor: 'var(--mortar-art-dim-55)' }} />
     </Box>
