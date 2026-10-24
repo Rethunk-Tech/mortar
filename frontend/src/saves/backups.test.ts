@@ -1,4 +1,8 @@
-import { expect, mock, test } from 'bun:test'
+import { afterEach, beforeEach, expect, mock, test } from 'bun:test'
+import * as savessvc from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts'
+import { formatBytes } from '../i18n/bytes.ts'
+import { stubBinding } from '../testing/stubBinding.ts'
+import { causeLabel, useSaveBackups } from './backups.ts'
 
 let restored: { name: string; folders: string[] | null } = { name: '', folders: null }
 const firstBackup = {
@@ -14,34 +18,24 @@ const listed = [firstBackup]
 let listImpl: () => Promise<typeof listed> = async () => listed
 let listedFor: string[] = []
 
-mock.module('@lingui/core/macro', () => ({
-  // A named placeholder arrives as { name: value }.
-  msg: (parts: TemplateStringsArray, ...values: unknown[]) =>
-    String.raw(
-      { raw: parts },
-      ...values.map((v) => (v !== null && typeof v === 'object' ? Object.values(v)[0] : v)),
-    ),
-}))
-
-mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts', () => ({
-  ListBackups: (game: string, profile: string) => {
+beforeEach(() => {
+  stubBinding(savessvc, 'ListBackups', (game: string, profile: string) => {
     listedFor = [game, profile]
     return listImpl()
-  },
-  RestoreBackup: async (
-    _game: string,
-    _profile: string,
-    name: string,
-    folders: string[] | null,
-  ) => {
-    restored = { name, folders }
-  },
-  SetBackupPinned: async () => undefined,
-  OpenBackupsFolder: async () => undefined,
-}))
-
-const { causeLabel, useSaveBackups } = await import('./backups.ts')
-const { formatBytes } = await import('../i18n/bytes.ts')
+  })
+  stubBinding(
+    savessvc,
+    'RestoreBackup',
+    (_game: string, _profile: string, name: string, folders: string[] | null) => {
+      restored = { name, folders }
+    },
+  )
+  stubBinding(savessvc, 'SetBackupPinned', () => undefined)
+  stubBinding(savessvc, 'OpenBackupsFolder', () => undefined)
+})
+afterEach(() => {
+  mock.restore()
+})
 
 test('load fills backups newest as returned', async () => {
   listImpl = async () => listed
