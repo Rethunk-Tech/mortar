@@ -112,6 +112,8 @@ function words(html: string): { title: string; description: string } | undefined
     .exec(html)?.[1]
     ?.replace(/<br\s*\/?>/g, ' ')
     .replace(/<[^>]+>/g, '')
+    // One pass can leave a tag's start behind (`<scr<x>ipt`); a heading's text has no `<` of its own.
+    .replace(/</g, '')
     .replace(/\s+/g, ' ')
     .trim()
   const own = decodeEntities(title)
