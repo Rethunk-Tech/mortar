@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"io/fs"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -224,22 +225,29 @@ func (p Profile) Parse(_ context.Context, in Input) (Draft, error) {
 	return d, nil
 }
 
-// bepinexConfigs reads the files directly in a profile folder's BepInEx/config.
+// bepinexConfigs reads the files below a profile folder's BepInEx/config, subfolders included.
 func bepinexConfigs(profileDir string) ([]File, error) {
 	cfg := filepath.Join(profileDir, "BepInEx", "config")
-	entries, _ := os.ReadDir(cfg)
 	var out []File
-	for _, e := range entries {
-		if !e.Type().IsRegular() {
-			continue
-		}
-		b, err := readCapped(filepath.Join(cfg, e.Name()), maxFile)
+	err := filepath.WalkDir(cfg, func(p string, e fs.DirEntry, err error) error {
 		if err != nil {
-			return nil, err
+			if p == cfg && errors.Is(err, fs.ErrNotExist) {
+				return nil
+			}
+			return err
 		}
-		out = append(out, File{Path: "config/" + e.Name(), Data: b})
-	}
-	return out, nil
+		if !e.Type().IsRegular() {
+			return nil
+		}
+		b, err := readCapped(p, maxFile)
+		if err != nil {
+			return err
+		}
+		rel, _ := filepath.Rel(cfg, p)
+		out = append(out, File{Path: "config/" + filepath.ToSlash(rel), Data: b})
+		return nil
+	})
+	return out, err
 }
 
 // DataDirs lists the r2modman data folders that exist on this machine: extra (the player's own choice, empty for none),

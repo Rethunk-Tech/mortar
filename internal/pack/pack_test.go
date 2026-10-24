@@ -203,3 +203,21 @@ func TestAnUnknownProfileCodeIsNotFound(t *testing.T) {
 		t.Fatalf("err = %v", err)
 	}
 }
+
+func TestProfileFolderKeepsNestedConfigs(t *testing.T) {
+	prof := filepath.Join(t.TempDir(), "LethalCompany", "profiles", "Mine")
+	nested := filepath.Join(prof, "BepInEx", "config", "Sub")
+	if err := os.MkdirAll(nested, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(prof, "mods.yml"), []byte("[]\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(nested, "b.json"), []byte("{}"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	d, err := Profile{}.Parse(t.Context(), Input{Path: prof})
+	if err != nil || len(d.Configs) != 1 || d.Configs[0].Path != "config/Sub/b.json" {
+		t.Fatalf("configs %+v, %v", d.Configs, err)
+	}
+}
