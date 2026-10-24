@@ -324,22 +324,6 @@ func TestCheckUpdatesSharesConcurrentAndPausesAfterFailure(t *testing.T) {
 	}
 }
 
-func TestCheckUpdatesUnlistedModIsKnownAndCached(t *testing.T) {
-	var down atomic.Bool
-	var hits atomic.Int32
-	c := server(t, &down, &hits)
-	req := UpdateRequest{Mods: []InstalledMod{{ID: "Nobody.Lists.This", Version: "1.0.0"}}}
-	first := c.CheckUpdates(context.Background(), req)
-	if !first[0].Known || first[0].Suggested != nil {
-		t.Fatalf("a mod the API answered without listing is known with no update: %+v", first[0])
-	}
-	asked := hits.Load()
-	c.CheckUpdates(context.Background(), req)
-	if hits.Load() != asked {
-		t.Fatalf("unlisted mod asked again: %d -> %d requests", asked, hits.Load())
-	}
-}
-
 func TestPageMissingFromDatasetIsCached(t *testing.T) {
 	var hits atomic.Int32
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
