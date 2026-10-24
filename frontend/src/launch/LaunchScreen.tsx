@@ -46,7 +46,8 @@ const scrim = {
   position: 'fixed',
   inset: 0,
   zIndex: 1200,
-  bgcolor: 'var(--mortar-overlay-80)',
+  bgcolor: 'background.default',
+  overflow: 'hidden',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
@@ -105,6 +106,22 @@ function Art({ srcs, fallback }: { srcs: string[]; fallback: ReactNode }) {
       }}
     />
   )
+}
+
+// The game's art across the whole screen, dimmed so the marks and the log read over it; opaque, so the page under the
+// screen never shows through.
+function Backdrop({ src }: { src: string }) {
+  return src ? (
+    <Box aria-hidden={true} sx={{ position: 'absolute', inset: 0, zIndex: -1 }}>
+      <Box
+        component="img"
+        src={src}
+        alt=""
+        sx={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'blur(2px)' }}
+      />
+      <Box sx={{ position: 'absolute', inset: 0, bgcolor: 'var(--mortar-art-dim-85)' }} />
+    </Box>
+  ) : null
 }
 
 // The panel over the log: the slow-launch notice or the failure, so neither moves anything on the screen.
@@ -497,6 +514,7 @@ export function LaunchScreen({ game }: { game: string }) {
       sx={{ zIndex: scrim.zIndex, clipPath: controlsCutout }}
     >
       <Box role="dialog" aria-label={title} sx={scrim}>
+        <Backdrop src={gameArt(info, globalThis.innerWidth)} />
         <Box
           aria-hidden={true}
           sx={{
