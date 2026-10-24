@@ -312,6 +312,10 @@ func writeBackOrRescue(m *Manifest, o Placed, i int, l *opLog) error {
 	if err != nil {
 		return err
 	}
+	// Dst holding the backup's bytes is the player's file half moved (a copy across file systems cut short), not ours.
+	if b, err := fsx.SHA256(o.Displaced); err == nil && b == h {
+		return nil
+	}
 	wrote, err := writeBackFile(o, i, l)
 	if err != nil || wrote {
 		return err

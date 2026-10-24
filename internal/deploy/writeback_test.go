@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 )
 
@@ -286,5 +287,25 @@ func TestPurgeWritesBackARewrittenPathRoleFileAndReturnsTheDisplacedOne(t *testi
 	}
 	if got := read(filepath.Join(rr.profile, "top.package")); got != "rewritten by the game" {
 		t.Fatalf("the profile's copy = %q", got)
+	}
+}
+
+// Across file systems a displaced file goes back by copy then remove; a crash between the two leaves the player's file
+// at Dst with its backup still kept. Recovery must not take the player's file for the game's rewrite of the profile's.
+func TestRecoveryAfterACrashMidRestoreLeavesTheProfilesCopyAlone(t *testing.T) {
+	rr := newRootRig(t)
+	top := filepath.Join(rr.shared, "top.package")
+	write(t, top, "the player's own")
+	m := rr.apply()
+	i := slices.IndexFunc(m.Ops, func(o Placed) bool { return o.Dst == top })
+	write(t, top, "the player's own")
+	if err := (Place{}).Recover(t.Context(), rr.view.JournalDir, nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := read(filepath.Join(rr.profile, "top.package")); got != "top" {
+		t.Fatalf("the profile's copy = %q", got)
+	}
+	if got := read(top); got != "the player's own" || fsx.IsFile(m.Ops[i].Displaced) {
+		t.Fatalf("the shared file = %q", got)
 	}
 }
