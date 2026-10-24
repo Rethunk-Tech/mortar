@@ -526,7 +526,7 @@ func run() error {
 		catalogFrom = "cached"
 	}
 	log.Printf("catalog: starting with the %s copy, serial %d", catalogFrom, game.CatalogSerial())
-	components.UseKnownBroken(componentClient, modMeta, updateKey)
+	components.UseSignedLists(componentClient, modMeta, updateKey)
 	game.CacheInstalls(installCacheTTL)
 	loaders := loadersvc.NewService(home, store, items, profiles, componentClient)
 	implemented := game.Implemented()

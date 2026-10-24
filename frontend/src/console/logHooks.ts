@@ -2,8 +2,8 @@ import { useLingui } from '@lingui/react/macro'
 import { useMemo } from 'react'
 import { Level } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { useSettings } from '../settings/store.ts'
 import { collapseRepeats, shownLog, visible } from './filter.ts'
+import { useHiddenSources } from './hiddenSources.ts'
 import { withoutHidden } from './logSource.ts'
 import { useConsole } from './store.ts'
 
@@ -16,11 +16,8 @@ export function useShownEntries() {
   const entries = useConsole((s) => s.entries)
   const mine = useMine()
   const game = useConsole((s) => s.shown.game)
-  const hidden = useSettings((s) => s.games?.[game]?.hiddenLogSources)
-  return useMemo(
-    () => withoutHidden(shownLog(entries, mine), hidden ?? []),
-    [mine, entries, hidden],
-  )
+  const { hidden } = useHiddenSources(game)
+  return useMemo(() => withoutHidden(shownLog(entries, mine), hidden), [mine, entries, hidden])
 }
 
 export function useVisible() {

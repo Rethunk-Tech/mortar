@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import type { HiddenLogSource } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import { ShowLogSource } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { sameSource, useHiddenSources } from '../../console/hiddenSources.ts'
 import { useCurrentGame } from '../../nav/currentGame.ts'
 import { space } from '../../theme/density.ts'
 import { persist } from '../persist.ts'
@@ -30,13 +31,16 @@ function grouped(hidden: readonly HiddenLogSource[], engine: string) {
 export function HiddenLogSources() {
   const { t } = useLingui()
   const game = useCurrentGame()
-  const hidden = useSettings((s) => s.games?.[game]?.hiddenLogSources) ?? []
+  const { hidden, defaults } = useHiddenSources(game)
+  const own = useSettings((s) => s.games?.[game]?.hiddenLogSources) ?? []
+  const isDefault = (h: HiddenLogSource) =>
+    defaults.some((d) => sameSource(d, h)) && !own.some((o) => sameSource(o, h))
   const engine = t`Engine`
   return (
     <Searchable terms={t`Hidden messages`}>
       <SettingsSection
         title={t`Hidden messages`}
-        description={t`Right-click a line in the Console to hide every line from where it came from, in every profile of this game. The game stops writing them where its bridge can.`}
+        description={t`Right-click a line in the Console to hide every line from where it came from, in every profile of this game. The game stops writing them where its bridge can. Messages Mortar hides by default for this game are listed too.`}
       >
         {hidden.length === 0 ? (
           <Typography sx={{ p: space.pad, color: 'text.secondary' }}>{t`None`}</Typography>
@@ -71,6 +75,7 @@ export function HiddenLogSources() {
                     {h.object
                       ? t`Only lines about ${{ object: h.object }}`
                       : t`Lines about every object`}
+                    {isDefault(h) ? ` · ${t`Hidden by default`}` : null}
                   </Typography>
                 </Box>
                 <Button

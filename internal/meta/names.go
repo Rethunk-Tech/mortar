@@ -11,6 +11,7 @@ const (
 	StandingPrefix        = "standing-"
 	DatasetPrefix         = "dataset-"
 	KnownBrokenPrefix     = "known-broken-"
+	LogSuppressionsPrefix = "log-suppressions-"
 )
 
 // RetiredCachePrefixes name files no producer writes any more; Clean up removes them whatever their age.

@@ -83,7 +83,7 @@ func (s *Service) launchPlan(ctx context.Context, g game.Game, inst game.Install
 	if err := s.armIntroSkip(g, l, profileID, view.Dir); err != nil {
 		return nil, err
 	}
-	if err := s.writeHiddenLogSources(g.ID(), view.Dir); err != nil {
+	if err := s.writeHiddenLogSources(ctx, g.ID(), view.Dir); err != nil {
 		return nil, err
 	}
 	plan.AddArgs(s.graphicsArgs(g, profileID)...)

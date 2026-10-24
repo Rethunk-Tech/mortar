@@ -17,7 +17,7 @@ import (
 var keptCacheFiles = map[string]bool{"CompatCacheFile": true, "cacheName": true}
 
 // nameBuilders build a cache name from a names.go prefix inside their own package.
-var nameBuilders = map[string]bool{"DetailsName": true, "PageName": true}
+var nameBuilders = map[string]bool{"DetailsName": true, "PageName": true, "listName": true}
 
 func isCacheCall(call *ast.CallExpr) bool {
 	var name string

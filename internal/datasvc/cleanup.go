@@ -20,13 +20,14 @@ const (
 	detailsTTL    = 24 * time.Hour
 	categoriesTTL = 30 * 24 * time.Hour
 	datasetTTL    = 30 * 24 * time.Hour
-	// knownBrokenTTL drops the list of a game not opened for a month; the next open fetches it again.
-	knownBrokenTTL = 30 * 24 * time.Hour
-	changelogsTTL  = 4 * time.Hour
-	collectionTTL  = 15 * time.Minute
-	standingTTL    = 24 * time.Hour
-	releasesTTL    = time.Hour
-	updatesTTL     = time.Hour
+	// signedListTTL drops a signed per-game list (known-broken mods, log suppressions) of a game not opened for a month;
+	// the next open fetches it again.
+	signedListTTL = 30 * 24 * time.Hour
+	changelogsTTL = 4 * time.Hour
+	collectionTTL = 15 * time.Minute
+	standingTTL   = 24 * time.Hour
+	releasesTTL   = time.Hour
+	updatesTTL    = time.Hour
 )
 
 // Item is one path Clean up would remove.
@@ -205,8 +206,8 @@ func cacheTTL(rel string) (time.Duration, bool) {
 		return collectionTTL, true
 	case strings.HasPrefix(rel, meta.DatasetPrefix):
 		return datasetTTL, true
-	case strings.HasPrefix(rel, meta.KnownBrokenPrefix):
-		return knownBrokenTTL, true
+	case strings.HasPrefix(rel, meta.KnownBrokenPrefix), strings.HasPrefix(rel, meta.LogSuppressionsPrefix):
+		return signedListTTL, true
 	case rel == "smapi-updates.json":
 		return updatesTTL, true
 	case strings.HasSuffix(rel, "-releases.json"):

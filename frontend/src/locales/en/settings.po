@@ -1206,6 +1206,10 @@ msgstr "Offer new downloads"
 msgid "Extra mods folder"
 msgstr "Extra mods folder"
 
+#: src/settings/sections/HiddenLogSources.tsx
+msgid "Hidden by default"
+msgstr "Hidden by default"
+
 #: src/settings/sections/Downloads.tsx
 msgid "Links for games Mortar does not manage open in the app that had them before."
 msgstr "Links for games Mortar does not manage open in the app that had them before."
@@ -3078,10 +3082,6 @@ msgstr "Play"
 msgid "Luck skill"
 msgstr "Luck skill"
 
-#: src/settings/sections/HiddenLogSources.tsx
-msgid "Right-click a line in the Console to hide every line from where it came from, in every profile of this game. The game stops writing them where its bridge can."
-msgstr "Right-click a line in the Console to hide every line from where it came from, in every profile of this game. The game stops writing them where its bridge can."
-
 #: src/settings/sections/Sources.tsx
 msgid "the connection was refused"
 msgstr "the connection was refused"
@@ -3430,6 +3430,10 @@ msgstr "Back up saves before Play"
 #: src/settings/prefCopy.ts
 msgid "Run crashed"
 msgstr "Run crashed"
+
+#: src/settings/sections/HiddenLogSources.tsx
+msgid "Right-click a line in the Console to hide every line from where it came from, in every profile of this game. The game stops writing them where its bridge can. Messages Mortar hides by default for this game are listed too."
+msgstr "Right-click a line in the Console to hide every line from where it came from, in every profile of this game. The game stops writing them where its bridge can. Messages Mortar hides by default for this game are listed too."
 
 #: src/settings/sections/NxmReclaim.tsx
 msgid "Leave them"

@@ -94,6 +94,8 @@ type GameSettings struct {
 	HiddenMods []HiddenMod `json:"hiddenMods,omitempty"`
 	// HiddenLogSources are the sources of game log lines the player hid from the Console.
 	HiddenLogSources []HiddenLogSource `json:"hiddenLogSources,omitempty"`
+	// ShownLogSources are sources the game's default suppressions hide that the player showed again.
+	ShownLogSources []HiddenLogSource `json:"shownLogSources,omitempty"`
 	// FavouriteMods are the mods the player starred, as "source:id" keys in lower case; see FavouriteKey.
 	FavouriteMods []string `json:"favouriteMods,omitempty"`
 	// HiddenAuthors are the authors whose mods Browse leaves out, compared without case.
@@ -477,6 +479,7 @@ func mergeGame(dst *GameSettings, src GameSettings) {
 	dst.ListColumns = slices.Clone(src.ListColumns)
 	dst.HiddenMods = slices.Clone(src.HiddenMods)
 	dst.HiddenLogSources = slices.Clone(src.HiddenLogSources)
+	dst.ShownLogSources = slices.Clone(src.ShownLogSources)
 	dst.HiddenAuthors = slices.Clone(src.HiddenAuthors)
 	dst.FavouriteMods = slices.Clone(src.FavouriteMods)
 	if src.OldFilesOnUpdate != "" {

@@ -4,14 +4,11 @@ import (
 	"cmp"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"regexp"
 	"slices"
 	"strconv"
 	"strings"
-	"sync"
-	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -20,11 +17,6 @@ import (
 // KnownBrokenURL is where each game's signed known-broken list is published (Rethunk-Tech/mortar-known-broken, the
 // rolling release "lists"): <game>.json and <game>.json.sig.
 const KnownBrokenURL = "https://github.com/Rethunk-Tech/mortar-known-broken/releases/download/lists/"
-
-const (
-	maxKnownBroken = 4 << 20
-	knownBrokenTTL = 24 * time.Hour
-)
 
 // BrokenIDs names one mod on each site it is on; one is enough.
 type BrokenIDs struct {
@@ -190,89 +182,25 @@ func DecodeBrokenList(body []byte, game string) (BrokenList, error) {
 	return l, nil
 }
 
-type cachedBrokenList struct {
-	List      []byte `json:"list"`
-	Signature []byte `json:"signature"`
+var knownBroken = signedList[BrokenList]{
+	prefix: meta.KnownBrokenPrefix,
+	url:    KnownBrokenURL,
+	decode: func(body []byte, game string) (BrokenList, uint64, error) {
+		l, err := DecodeBrokenList(body, game)
+		return l, l.Serial, err
+	},
 }
+
+var brokenLists listMemo[BrokenList]
 
 // LoadKnownBroken fetches game's signed list, cached a day; a list that fails its signature or is older than the one
 // cached is refused, and the cached one serves while a fetch fails. A game nobody published a list for has none.
 func (c *Client) LoadKnownBroken(ctx context.Context, cache *meta.Client, publicKey []byte, game string) (BrokenList, error) {
-	name := meta.KnownBrokenPrefix + game + ".json"
-	trusted := func(e cachedBrokenList) (BrokenList, bool) {
-		if Verify(e.List, e.Signature, publicKey) != nil {
-			return BrokenList{}, false
-		}
-		l, err := DecodeBrokenList(e.List, game)
-		return l, err == nil
-	}
-	var oldSerial uint64
-	if old, ok := meta.Peek[cachedBrokenList](cache, name); ok {
-		if l, ok := trusted(old); ok {
-			oldSerial = l.Serial
-		}
-	}
-	entry, err := meta.CachedForBuild(cache, meta.KnownBrokenPrefix+game+".json", knownBrokenTTL, func() (cachedBrokenList, error) {
-		url := cmp.Or(c.KnownBrokenURL, KnownBrokenURL) + game + ".json"
-		list, err := c.get(ctx, url, maxKnownBroken)
-		if err != nil {
-			return cachedBrokenList{}, err
-		}
-		sig, err := c.get(ctx, url+".sig", maxSignature)
-		if err != nil {
-			return cachedBrokenList{}, err
-		}
-		e := cachedBrokenList{List: list, Signature: sig}
-		l, ok := trusted(e)
-		if !ok {
-			return cachedBrokenList{}, fmt.Errorf("%w: %s", ErrBadSignature, url)
-		}
-		if l.Serial < oldSerial {
-			return cachedBrokenList{}, fmt.Errorf("%w: %s serial %d is older than %d", ErrRollback, url, l.Serial, oldSerial)
-		}
-		return e, nil
-	})
-	if err != nil {
-		return BrokenList{}, err
-	}
-	l, ok := trusted(entry)
-	if !ok {
-		return BrokenList{}, errors.New("cached known-broken list does not verify")
-	}
-	return l, nil
-}
-
-var brokenSource struct {
-	mu     sync.Mutex
-	client *Client
-	cache  *meta.Client
-	key    []byte
-	lists  map[string]BrokenList
-	at     map[string]time.Time
-}
-
-// UseKnownBroken sets where KnownBrokenFor reads lists from: the catalog's client, cache and key.
-func UseKnownBroken(c *Client, cache *meta.Client, publicKey []byte) {
-	brokenSource.mu.Lock()
-	defer brokenSource.mu.Unlock()
-	brokenSource.client, brokenSource.cache, brokenSource.key = c, cache, publicKey
-	brokenSource.lists, brokenSource.at = map[string]BrokenList{}, map[string]time.Time{}
+	return knownBroken.load(ctx, c, cache, publicKey, c.KnownBrokenURL, game)
 }
 
 // KnownBrokenFor is game's known-broken list, empty when none is published, none could be fetched yet, or no source
 // is set. Lists are read once an hour; the cache file is checked against a day.
-// ponytail: one lock over every game's first fetch, so a slow fetch for one game holds the others; per-game locks if
-// that is ever seen.
 func KnownBrokenFor(ctx context.Context, game string) BrokenList {
-	brokenSource.mu.Lock()
-	defer brokenSource.mu.Unlock()
-	if brokenSource.client == nil {
-		return BrokenList{}
-	}
-	if l, ok := brokenSource.lists[game]; ok && time.Since(brokenSource.at[game]) < time.Hour {
-		return l
-	}
-	l, _ := brokenSource.client.LoadKnownBroken(ctx, brokenSource.cache, brokenSource.key, game)
-	brokenSource.lists[game], brokenSource.at[game] = l, time.Now()
-	return l
+	return brokenLists.get(ctx, knownBroken, game)
 }

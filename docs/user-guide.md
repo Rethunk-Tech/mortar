@@ -242,7 +242,7 @@ Two mods change the same file or asset and only one change wins, so the other ma
 
 A mod wrote errors to the game's log last time you played; it may be broken, out of date or missing something. Open the log to read them.
 
-Right-click a Console line to **Copy this message**, or to **Hide this message**: every line from the same place in the game's code (or, for an engine warning, the same warning about the same object) leaves the Console, and in a BepInEx game the bridge stops the game writing it. The game's settings › **Console** › **Hidden messages** shows them again.
+Right-click a Console line to **Copy this message**, or to **Hide this message**: every line from the same place in the game's code (or, for an engine warning, the same warning about the same object) leaves the Console, and in a BepInEx game the bridge stops the game writing it. The game's settings › **Console** › **Hidden messages** shows them again, along with the common noise Mortar hides for the game by default.
 
 The Console's **Problems in this run** strip reads SMAPI's log and offers one fix per mod: **Add** a missing requirement, **Update** the mod, **Update SMAPI**, **Disable** a mod that crashed or is obsolete, and **Remove duplicate** or **Remove** (a mod installed twice, or one SMAPI flags as malicious).
 

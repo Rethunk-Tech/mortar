@@ -1,6 +1,7 @@
 package launchsvc
 
 import (
+	"context"
 	"errors"
 	"io/fs"
 	"os"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 // hiddenLogSourcesFile lists, one "method<TAB>text<TAB>object" per line, the log lines the bridge drops in the game:
@@ -16,10 +18,11 @@ import (
 // are hidden in the Console only.
 const hiddenLogSourcesFile = startupDir + "/hidden-log-sources"
 
-func (s *Service) writeHiddenLogSources(gameID, dir string) error {
+func (s *Service) writeHiddenLogSources(ctx context.Context, gameID, dir string) error {
 	var b strings.Builder
 	if s.settings != nil {
-		for _, h := range s.settings.Get().GamePrefs(gameID).HiddenLogSources {
+		gp := s.settings.Get().GamePrefs(gameID)
+		for _, h := range settings.HiddenLogSources(gp, settings.LogSuppressionDefaults(ctx, gameID)) {
 			if strings.Contains(h.Source, "::") {
 				b.WriteString(h.Source + "\t" + h.Text + "\t" + h.Object + "\n")
 			}
