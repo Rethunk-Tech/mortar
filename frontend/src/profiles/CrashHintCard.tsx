@@ -1,13 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { FolderOpen, PowerOff, Search, TriangleAlert, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Start as StartBisect } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/bisect/service.ts'
-import type { CrashHint as Hint } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
-import {
-  CrashHint,
-  OpenCrashReport,
-} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
+import { OpenCrashReport } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { BisectDialog } from '../console/BisectDialog.tsx'
 import { useLastRun } from '../game/useLastRun.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
@@ -20,28 +16,12 @@ import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
+import { useCrashHint } from './crashHint.ts'
 import { useProfiles } from './store.ts'
 
 const DISMISSED_KEY = 'mortar.crashHintDismissed'
 
 const isText = (v: unknown): v is string => typeof v === 'string'
-
-// The profile's updated time moves after each run, when a new hint may exist.
-function useCrashHint(game: string, profileId: string, updated: string): Hint | null {
-  const [hint, setHint] = useState<Hint | null>(null)
-  const key = `${game}\0${profileId}\0${updated}`
-  useEffect(() => {
-    const [g = '', id = ''] = key.split('\0')
-    let live = true
-    CrashHint(g, id)
-      .then((h) => live && setHint(h))
-      .catch(() => live && setHint(null))
-    return () => {
-      live = false
-    }
-  }, [key])
-  return hint
-}
 
 // Shown at the top of the profile after a crashed run: the mod the log blames with a way to switch it off and play
 // again, or, when the log blames none, a way to find it by halving the mods.
