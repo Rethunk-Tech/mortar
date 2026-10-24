@@ -24,7 +24,9 @@ beforeEach(() => {
   useMortarUpdate.setState(useMortarUpdate.getInitialState(), true)
 })
 
-test('checking again keeps a found or staged update on offer', async () => {
+test('a check finds Mortar current, and checking again keeps a found or staged update on offer', async () => {
+  await useMortarUpdate.getState().check()
+  expect(useMortarUpdate.getState().phase).toBe('current')
   for (const phase of ['available', 'ready'] as const) {
     useMortarUpdate.setState(
       {
