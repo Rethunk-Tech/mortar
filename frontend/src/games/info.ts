@@ -1,3 +1,4 @@
+import { Events } from '@wailsio/runtime'
 import { create } from 'zustand'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import { List } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
@@ -7,7 +8,7 @@ import { useProfiles } from '../profiles/store.ts'
 const useGameList = create<{ games: GameInfo[] }>(() => ({ games: [] }))
 let requested = false
 
-// The catalog is static for a session, so it loads once, on first lookup.
+// The game list loads on first lookup, and again when a catalog fetched after start replaces the startup one.
 function ensureLoaded() {
   if (requested) {
     return
@@ -62,4 +63,14 @@ export function useGameName(id?: string): string {
 export function reloadGames() {
   requested = false
   ensureLoaded()
+}
+
+let listening = false
+
+export function initGameList() {
+  if (listening || typeof Events.On !== 'function') {
+    return
+  }
+  listening = true
+  Events.On('catalog:changed', reloadGames)
 }

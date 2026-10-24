@@ -79,8 +79,9 @@ type Service struct {
 	profiles *profile.Store
 	settings *settings.Store
 	meta     *meta.Client
-	// scanners holds one saves scanner per implemented game that has a save folder.
-	scanners map[string]*saves.Scanner
+	// scanners holds one saves scanner per implemented game that has a save folder, rebuilt by Reload.
+	scannersMu sync.RWMutex
+	scanners   map[string]*saves.Scanner
 	// byDir holds scanners for profiles that read another saves folder (their own, or a pinned install's), by folder.
 	byDirMu sync.Mutex
 	byDir   map[string]*saves.Scanner
@@ -104,12 +105,35 @@ func NewService(home string, profiles *profile.Store, store *settings.Store, cli
 	if err != nil {
 		return nil, err
 	}
+	s := &Service{home: home, profiles: profiles, settings: store, meta: client, last: NewStore(base)}
+	s.scanners = s.buildScanners(base)
+	return s, nil
+}
+
+// Reload rebuilds every game's scanner from the catalog in use, so a fetched catalog that changes a game's save folder
+// or files applies without a restart.
+func (s *Service) Reload() error {
+	base, err := datadir.Dir()
+	if err != nil {
+		return err
+	}
+	scanners := s.buildScanners(base)
+	s.scannersMu.Lock()
+	s.scanners = scanners
+	s.scannersMu.Unlock()
+	s.byDirMu.Lock()
+	s.byDir = nil
+	s.byDirMu.Unlock()
+	return nil
+}
+
+func (s *Service) buildScanners(base string) map[string]*saves.Scanner {
 	scanners := map[string]*saves.Scanner{}
 	for _, id := range game.Implemented() {
 		if !game.HasSaves(id) {
 			continue
 		}
-		savesDir, err := game.SavesDir(home, store.Get(), id, "")
+		savesDir, err := game.SavesDir(s.home, s.settings.Get(), id, "")
 		if err != nil {
 			// An enabled game that is not installed has no folder to resolve; it gets no scanner until a restart
 			// finds it, like any other change of the selected install.
@@ -117,9 +141,24 @@ func NewService(home string, profiles *profile.Store, store *settings.Store, cli
 			continue
 		}
 		l := game.SaveLayout(id, savesDir)
+		log.Printf("saves: %s: %s, files %v (catalog serial %d)", id, l.Dir, l.Files, game.CatalogSerial())
 		scanners[id] = &saves.Scanner{Dir: l.Dir, Files: l.Files, Companions: l.Companions, CompanionPaths: l.CompanionPaths, Copies: l.Copies, CopyFolders: l.CopyFolders, Linked: l.Linked, UserFolders: l.UserFolders, CacheDir: filepath.Join(base, "cache", id)}
 	}
-	return &Service{home: home, profiles: profiles, settings: store, meta: client, scanners: scanners, last: NewStore(base)}, nil
+	return scanners
+}
+
+// scanner is the scanner of the game's selected saves folder, nil when it has none.
+func (s *Service) scanner(gameID string) *saves.Scanner {
+	s.scannersMu.RLock()
+	defer s.scannersMu.RUnlock()
+	return s.scanners[gameID]
+}
+
+// gameIDs are the games with a saves folder, sorted.
+func (s *Service) gameIDs() []string {
+	s.scannersMu.RLock()
+	defer s.scannersMu.RUnlock()
+	return slices.Sorted(maps.Keys(s.scanners))
 }
 
 // savesDirFor is the saves folder profileID reads: its own when it keeps its saves separate, else its pinned install's
@@ -131,7 +170,7 @@ func (s *Service) savesDirFor(gameID, profileID string) (dir, cache string, err 
 	}
 	pin := s.profiles.InstallOf(gameID, profileID)
 	if pin == "" {
-		return s.scanners[gameID].Dir, "", nil
+		return s.scanner(gameID).Dir, "", nil
 	}
 	dir, err = game.SavesDir(s.home, s.settings.Get(), gameID, pin)
 	return dir, "install-" + pin, err
@@ -139,7 +178,7 @@ func (s *Service) savesDirFor(gameID, profileID string) (dir, cache string, err 
 
 // scannerFor is the scanner of the saves folder profileID reads, nil when the game has no saves folder here.
 func (s *Service) scannerFor(gameID, profileID string) (*saves.Scanner, error) {
-	selected := s.scanners[gameID]
+	selected := s.scanner(gameID)
 	if selected == nil || s.profiles == nil {
 		return selected, nil
 	}

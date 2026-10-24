@@ -36,7 +36,7 @@ func contentMissingCount(recorded []PlayedMod, missing []Lack) int {
 }
 
 func (s *Service) farmOf(ctx context.Context, gameID, folder string) string {
-	scanner := s.scanners[gameID]
+	scanner := s.scanner(gameID)
 	if scanner == nil || folder == "" {
 		return folder
 	}

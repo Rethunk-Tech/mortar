@@ -8,6 +8,7 @@ import { App } from './App.tsx'
 import { logRenderError } from './diag/renderErrors.ts'
 import { initAutoInstall } from './downloads/autoInstall.ts'
 import { initNewDownloads } from './downloads/newDownloads.ts'
+import { initGameList } from './games/info.ts'
 import { activateLanguage, i18n } from './i18n/index.ts'
 import { initInstallAsks } from './install/store.ts'
 import { IncomingPrompt } from './lan/IncomingPrompt.tsx'
@@ -57,6 +58,7 @@ initMortarUpdateBackground()
 initUpdateDigestToast()
 initNewDownloads()
 initAutoInstall()
+initGameList()
 initNexus().catch(reportUnexpected)
 initNexusSeen().catch(reportUnexpected)
 initLaunch()

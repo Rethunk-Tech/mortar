@@ -38,7 +38,7 @@ func (s *Service) ListBackups(game, profile string) ([]backup.Backup, error) {
 	var out []backup.Backup
 	seen := map[string]bool{}
 	for _, dir := range reads {
-		listed, err := backup.List(dir, s.scanners[id].Layout())
+		listed, err := backup.List(dir, s.scanner(id).Layout())
 		if err != nil {
 			return nil, err
 		}
@@ -254,7 +254,7 @@ func (s *Service) saveFolderPath(game, profile, folder string) (string, error) {
 
 // saveGame checks that game has a save folder.
 func (s *Service) saveGame(game string) (string, error) {
-	if s.scanners[game] != nil {
+	if s.scanner(game) != nil {
 		return game, nil
 	}
 	if gamepkg.Find(game) == nil {
@@ -288,7 +288,7 @@ func (s *Service) target(gameID, profileID string) (backup.Target, error) {
 
 func (s *Service) backupDirs(gameID string) (l saves.Layout, backupsDir string, err error) {
 	target, err := s.target(gameID, "")
-	return s.scanners[gameID].Layout(), target.Dir, err
+	return s.scanner(gameID).Layout(), target.Dir, err
 }
 
 func (s *Service) backupReads(gameID string) ([]string, error) {

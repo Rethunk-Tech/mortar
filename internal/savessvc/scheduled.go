@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"log"
-	"maps"
-	"slices"
 	"strconv"
 	"time"
 
@@ -42,7 +40,7 @@ func (s *Service) RunScheduledBackups(ctx context.Context) {
 // running. The first check after start measures from the newest scheduled backup on disk, so restarting Mortar does
 // not reset a daily schedule.
 func (s *Service) scheduledTick(ctx context.Context, now time.Time) {
-	for _, id := range slices.Sorted(maps.Keys(s.scanners)) {
+	for _, id := range s.gameIDs() {
 		s.scheduledTickFor(ctx, id, now)
 	}
 }
@@ -130,7 +128,7 @@ type ScheduledRun struct {
 // LastScheduledBackup is when the scheduled save backup last ran, in Unix milliseconds, or 0 when it has not.
 func (s *Service) LastScheduledBackup() (int64, error) {
 	var newest time.Time
-	for id := range s.scanners {
+	for _, id := range s.gameIDs() {
 		_, backupsDir, err := s.backupDirs(id)
 		if err != nil {
 			return 0, err

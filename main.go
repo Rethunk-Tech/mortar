@@ -183,14 +183,16 @@ func runShowingFailures() error {
 	return err
 }
 
-// registerDoctorLoaders lets each game's loader contribute its checks to the Proton install checks.
+// registerDoctorLoaders lets each game's loader, as the catalog in use names it, contribute its checks to the Proton
+// install checks.
 func registerDoctorLoaders() {
-	for _, g := range game.Catalog() {
-		for _, l := range game.Loaders(g.ID) {
+	doctor.LoaderOf = func(gameID string) doctor.OverrideLoader {
+		for _, l := range game.Loaders(gameID) {
 			if w, ok := l.(doctor.OverrideLoader); ok {
-				doctor.RegisterLoader(g.ID, w)
+				return w
 			}
 		}
+		return nil
 	}
 }
 
@@ -1264,10 +1266,21 @@ func run() error {
 			return
 		}
 		_ = fsx.Remove(failurePath)
-		// A fetched manifest can name a newer bridge than the one synced at startup from the bundled copy.
-		for _, id := range implemented {
+		// What was built from the startup catalog follows the fetched one: save layouts, problems checked against it,
+		// a newer bridge than the one synced from the bundled copy, package looks, and the window's game list.
+		if err := savesSvc.Reload(); err != nil {
+			log.Printf("saves: reload after the catalog: %v", err)
+		}
+		problemsSvc.ForgetCached()
+		for _, id := range game.Implemented() {
 			loadersvc.SyncBundled(context.Background(), loaders, id)
 		}
+		for _, g := range game.Catalog() {
+			if err := profiles.FillPackageLooks(g.ID); err != nil {
+				log.Printf("package icons and categories: %s: %v", g.ID, err)
+			}
+		}
+		emit(game.CatalogChangedEvent, m.Serial)
 	}()
 	windowClosed = func() bool {
 		windowMu.Lock()
@@ -1325,13 +1338,14 @@ func run() error {
 	// trayView is what the tray menu shows, read off the main thread: which games run, the downloads left and each
 	// game's recent launches. Reading it inside InvokeSync would hold the window's thread on the process table.
 	type trayView struct {
+		ids    []string
 		busy   map[string]bool
 		left   int
 		recent map[string][]launchsvc.RecentLaunch
 	}
 	readTray := func() trayView {
-		v := trayView{busy: map[string]bool{}, recent: map[string][]launchsvc.RecentLaunch{}}
-		for _, id := range launches.BusyAmong(implemented) {
+		v := trayView{ids: game.Implemented(), busy: map[string]bool{}, recent: map[string][]launchsvc.RecentLaunch{}}
+		for _, id := range launches.BusyAmong(v.ids) {
 			v.busy[id] = true
 		}
 		for _, item := range queueSvc.State().Items {
@@ -1339,7 +1353,7 @@ func run() error {
 				v.left++
 			}
 		}
-		for _, id := range implemented {
+		for _, id := range v.ids {
 			if recent, _ := launches.RecentLaunches(id, 3); len(recent) > 0 {
 				v.recent[id] = recent
 			}
@@ -1354,7 +1368,7 @@ func run() error {
 		trayMenu.Add(i18n.T("Show Mortar")).OnClick(func(*application.Context) {
 			showWindow()
 		})
-		for _, id := range implemented {
+		for _, id := range v.ids {
 			if !v.busy[id] {
 				continue
 			}
@@ -1371,7 +1385,7 @@ func run() error {
 				toPage("queue:open", nil)
 			})
 		}
-		for _, id := range implemented {
+		for _, id := range v.ids {
 			for _, row := range v.recent[id] {
 				item := trayMenu.Add(i18n.T("Play {profile}", "profile", row.Name))
 				if v.busy[id] {

@@ -17,11 +17,8 @@ import (
 // the game needs without its extension.
 type OverrideLoader interface{ OverrideDLL(gameID string) string }
 
-// loaders are the loaders that contribute checks, by game id; a game without one skips those checks.
-var loaders = map[string]OverrideLoader{}
-
-// RegisterLoader makes a game's loader contribute its checks to the Proton install checks.
-func RegisterLoader(gameID string, l OverrideLoader) { loaders[gameID] = l }
+// LoaderOf is the game's loader that contributes checks, nil for a game without one, which skips those checks.
+var LoaderOf = func(string) OverrideLoader { return nil }
 
 // Replaced by tests.
 var (
@@ -59,7 +56,7 @@ func protonChecks(g game.GameInfo) []Check {
 		if !ok {
 			continue
 		}
-		if l, has := loaders[g.ID]; has && l.OverrideDLL(g.ID) != "" {
+		if l := LoaderOf(g.ID); l != nil && l.OverrideDLL(g.ID) != "" {
 			checks = append(checks, overrideCheck(g, compat, l.OverrideDLL(g.ID)))
 		}
 		if in.Store == "flatpak-steam" {

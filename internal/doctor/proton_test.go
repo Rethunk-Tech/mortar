@@ -27,7 +27,6 @@ func TestProtonChecks(t *testing.T) {
 	launch, show := "", ""
 	flatpakOverrides = func() (string, error) { return show, nil }
 	launchOptions = func(string) string { return launch }
-	t.Cleanup(func() { delete(loaders, "lc") })
 
 	status := func() map[string]string {
 		out := map[string]string{}
@@ -40,7 +39,14 @@ func TestProtonChecks(t *testing.T) {
 	if got := status(); len(got) != 1 || got["flatpakCompatdata:lc"] != Warn {
 		t.Fatalf("no loader: %v", got)
 	}
-	RegisterLoader("lc", bepinex{dll: "winhttp"})
+	prev := LoaderOf
+	t.Cleanup(func() { LoaderOf = prev })
+	LoaderOf = func(id string) OverrideLoader {
+		if id == "lc" {
+			return bepinex{dll: "winhttp"}
+		}
+		return nil
+	}
 	for _, c := range protonChecks(g) {
 		if c.ID == "winhttp:lc" && !strings.Contains(c.Detail, "has not created its prefix") {
 			t.Fatalf("no registry yet: %+v", c)
