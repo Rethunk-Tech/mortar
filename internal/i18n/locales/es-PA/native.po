@@ -42,6 +42,9 @@ msgstr ""
 msgid "End it"
 msgstr ""
 
+msgid "Exited with code 0"
+msgstr ""
+
 msgid "Exited with code {code}"
 msgstr ""
 
@@ -130,6 +133,9 @@ msgid "Show Mortar"
 msgstr ""
 
 msgid "Stop {game}"
+msgstr ""
+
+msgid "Stopped"
 msgstr ""
 
 msgid "Text files"

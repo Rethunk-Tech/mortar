@@ -38,8 +38,10 @@ func DescribeExit(x Exit) string {
 func DescribeExitLocalized(x Exit) string {
 	code := strconv.Itoa(x.Code)
 	switch {
-	case x.Stopped || x.Signal == "" && x.Code == 0:
-		return DescribeExit(x)
+	case x.Stopped:
+		return i18n.T("Stopped")
+	case x.Signal == "" && x.Code == 0:
+		return i18n.T("Exited with code 0")
 	case x.Signal != "" && x.Code != 0:
 		return i18n.T("Exited with code {code} ({signal})", "code", code, "signal", x.Signal)
 	case x.Signal != "":
