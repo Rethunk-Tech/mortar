@@ -14,12 +14,19 @@ import (
 )
 
 // serve runs a control channel whose status for the game steps through states, one per call, then stays on the last.
+// Its profile records no runs.
 func serve(t *testing.T, states ...launchsvc.State) (dir string, asked func() []control.Params) {
+	return serveRuns(t, 0, states...)
+}
+
+// serveRuns is serve whose profile records a run once a play request came and the status was asked recordAfter times.
+func serveRuns(t *testing.T, recordAfter int, states ...launchsvc.State) (dir string, asked func() []control.Params) {
 	t.Helper()
 	dir = t.TempDir()
 	ctx, cancel := context.WithCancel(context.Background())
 	var mu sync.Mutex
 	var requests []control.Params
+	statusCalls := 0
 	done := make(chan struct{})
 	go func() {
 		defer close(done)
@@ -30,7 +37,13 @@ func serve(t *testing.T, states ...launchsvc.State) (dir string, asked func() []
 			case shortcut.PlayRequestMethod:
 				requests = append(requests, p)
 				return shortcut.Request{Game: p.Game, Profile: p.Profile}, nil
+			case "runs":
+				if recordAfter > 0 && len(requests) > 0 && statusCalls >= recordAfter {
+					return []launchsvc.Run{{ID: "r1"}}, nil
+				}
+				return []launchsvc.Run{}, nil
 			case "status":
+				statusCalls++
 				st := states[0]
 				if len(states) > 1 {
 					states = states[1:]
@@ -74,5 +87,12 @@ func TestFollowGivesUpOnAGameThatNeverStarts(t *testing.T) {
 	err := shortcut.Follow(dir, shortcut.Request{Game: "stardew", Profile: "p1"}, time.Millisecond, 20*time.Millisecond)
 	if !errors.Is(err, shortcut.ErrNeverStarted) {
 		t.Fatalf("got %v", err)
+	}
+}
+
+func TestFollowEndsOnARunThatStartedAndEndedBetweenPolls(t *testing.T) {
+	dir, _ := serveRuns(t, 2, launchsvc.Idle)
+	if err := shortcut.Follow(dir, shortcut.Request{Game: "stardew", Profile: "p1"}, time.Millisecond, time.Minute); err != nil {
+		t.Fatal(err)
 	}
 }
