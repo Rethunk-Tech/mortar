@@ -1,27 +1,26 @@
-import { expect, mock, test } from 'bun:test'
+import { afterEach, expect, mock, test } from 'bun:test'
+import * as nexussvc from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import { useNexus } from '../settings/nexus.ts'
+import { stubBinding } from '../testing/stubBinding.ts'
+import { primeDetails, useNexusDetails } from './nexusDetails.ts'
 
 let primeCalls = 0
-mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts', () => ({
-  CachedDetails: async () => ({}),
-  Details: async () => ({}),
-  // Nexus returns nothing for 9999: hidden, removed, or a wrong id from an update key.
-  PrimeDetails: async () => {
-    primeCalls += 1
-    return {}
-  },
-  Seen: async () => ({}),
-  MarkSeen: async () => undefined,
-}))
-const { primeDetails, useNexusDetails } = await import('./nexusDetails.ts')
+afterEach(() => {
+  mock.restore()
+})
 
 test('priming a mod Nexus does not know settles: one request, no store churn', async () => {
+  // Nexus returns nothing for 9999: hidden, removed, or a wrong id from an update key.
+  stubBinding(nexussvc, 'PrimeDetails', () => {
+    primeCalls += 1
+    return {}
+  })
   useNexus.setState({ signedIn: true } as never)
   let wakes = 0
   const unsub = useNexusDetails.subscribe(() => {
     wakes += 1
     if (wakes < 50) {
-      primeDetails('stardew', [9999])
+      primeDetails('stardew', [9999]).catch(() => undefined)
     }
   })
   await primeDetails('stardew', [9999])

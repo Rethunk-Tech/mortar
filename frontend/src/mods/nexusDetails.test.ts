@@ -1,7 +1,9 @@
-import { beforeEach, expect, mock, test } from 'bun:test'
+import { afterEach, beforeEach, expect, mock, test } from 'bun:test'
 import type { File } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexus/models.ts'
 import type { Details } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/models.ts'
+import * as nexussvc from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import { useNexus } from '../settings/nexus.ts'
+import { stubBinding } from '../testing/stubBinding.ts'
 import {
   initNexusSeen,
   isNewSinceLooked,
@@ -48,29 +50,30 @@ const page = (id: number): Details => ({
   changelogs: null,
 })
 
-mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts', () => ({
-  CachedDetails: async () => cached,
-  Details: async (_game: string, id: number) => {
+beforeEach(() => {
+  stubBinding(nexussvc, 'CachedDetails', () => cached)
+  stubBinding(nexussvc, 'Details', (_game: string, id: number) => {
     loads.push(id)
     return page(id)
-  },
-  PrimeDetails: async (_game: string, ids: number[]) => {
+  })
+  stubBinding(nexussvc, 'PrimeDetails', (_game: string, ids: number[]) => {
     primes.push(ids)
     return {
       details: Object.fromEntries(ids.map((id) => [`${id}`, { ...page(id), partial: true }])),
     }
-  },
-  Seen: async () => seenSnap,
-  MarkSeen: async () => undefined,
-}))
-
-beforeEach(() => {
+  })
+  stubBinding(nexussvc, 'Seen', () => seenSnap)
+  stubBinding(nexussvc, 'MarkSeen', () => undefined)
   loads.length = 0
   primes.length = 0
   cached = {}
   useNexus.setState(useNexus.getInitialState(), true)
   useNexusDetails.setState(useNexusDetails.getInitialState(), true)
   useNexusSeen.setState(useNexusSeen.getInitialState(), true)
+})
+
+afterEach(() => {
+  mock.restore()
 })
 
 test('sign-in primes the page data skipped while signed out in one batch', async () => {

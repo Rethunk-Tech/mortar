@@ -1,4 +1,4 @@
-import { expect, mock, test } from 'bun:test'
+import { expect, test } from 'bun:test'
 import { i18n } from '@lingui/core'
 import type { AssetConflict } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/framework/models.ts'
 import type {
@@ -11,10 +11,6 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 
-mock.module('@lingui/core/macro', () => ({
-  msg: (parts: TemplateStringsArray, ...values: unknown[]) => String.raw({ raw: parts }, ...values),
-  plural: (n: number, forms: { other: string }) => forms.other.replace('#', String(n)),
-}))
 i18n.load('en', {})
 i18n.activate('en')
 
