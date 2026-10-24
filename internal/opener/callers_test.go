@@ -44,8 +44,9 @@ func TestOnlyTheGuardedCallersStartTheSystemHandler(t *testing.T) {
 			return err
 		}
 		// tmp holds gitignored scratch (tens of thousands of files, none of it shipped code); walking it costs seconds
-		// and its churn keeps go test from caching this package.
-		if d.IsDir() && (d.Name() == "node_modules" || d.Name() == ".git" || d.Name() == ".claude" || d.Name() == "frontend" || rel0(root, path) == "tmp") {
+		// and its churn keeps go test from caching this package. site is the built website, which the gate rebuilds
+		// while this runs.
+		if d.IsDir() && (d.Name() == "node_modules" || d.Name() == ".git" || d.Name() == ".claude" || d.Name() == "frontend" || rel0(root, path) == "tmp" || rel0(root, path) == "site") {
 			return fs.SkipDir
 		}
 		rel := rel0(root, path)
