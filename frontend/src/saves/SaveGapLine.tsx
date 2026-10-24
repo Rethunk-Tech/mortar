@@ -2,7 +2,7 @@ import { i18n } from '@lingui/core'
 import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import type {
   Fit,
@@ -12,6 +12,7 @@ import type {
 import { SaveGap } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts'
 import { LockedReason } from '../mods/LockedReason.tsx'
 import { useLocked } from '../mods/useLocked.ts'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -29,13 +30,15 @@ function stateText(kind: 'missing' | 'disabled' | 'older', m: GapMod): string {
 
 export function SaveGapLine({ fit, profile, game }: { fit: Fit; profile: Profile; game: string }) {
   const { t } = useLingui()
-  const [gap, setGap] = useState<Gap | null>(null)
+  const { data: gap } = useLoaded<Gap | null>(
+    () => SaveGap(game, profile.id, fit.folder),
+    [game, profile.id, fit.folder],
+    null,
+    reportUnexpected,
+  )
   const [shown, setShown] = useState(false)
   const [pending, run] = usePending()
   const locked = useLocked()
-  useEffect(() => {
-    SaveGap(game, profile.id, fit.folder).then(setGap).catch(reportUnexpected)
-  }, [game, profile.id, fit.folder])
   const missing = gap?.missing ?? []
   const disabled = gap?.disabled ?? []
   const need = missing.length + disabled.length

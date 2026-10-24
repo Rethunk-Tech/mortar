@@ -2,7 +2,7 @@ import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Badge, Box, Popover, Typography } from '@mui/material'
 import { History, Pin, PinOff, RotateCcw, Trash2 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { Backup } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/backup/models.ts'
 import type { Copy } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/saves/models.ts'
 import {
@@ -21,6 +21,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -132,14 +133,12 @@ export function SaveBackupsButton({
   const [pending, run] = usePending()
   const busyGame = useGameBusy()
   const game = useCurrentGame()
-  const [copies, setCopies] = useState<Copy[]>([])
-  useEffect(() => {
-    if (anchor) {
-      SaveCopies(game, profile, folder)
-        .then((c) => setCopies(c ?? []))
-        .catch(() => setCopies([]))
-    }
-  }, [anchor, game, profile, folder])
+  // Copies that cannot be read leave the menu without them.
+  const { data: copies } = useLoaded<Copy[]>(
+    anchor ? () => SaveCopies(game, profile, folder).then((c) => c ?? []) : null,
+    [anchor, game, profile, folder],
+    [],
+  )
   const count = backups?.length ?? 0
   // The name starts with the badge's number, as a label that names what is shown must.
   const tip =

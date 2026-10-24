@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ButtonBase, Dialog, Typography } from '@mui/material'
 import { Camera, ChevronLeft, ChevronRight, FolderOpen, X } from 'lucide-react'
-import { type ReactNode, useCallback, useEffect, useId, useState } from 'react'
+import { type ReactNode, useId, useState } from 'react'
 import {
   OpenScreenshotsFolder,
   ScreenshotFile,
@@ -20,6 +20,7 @@ import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { errorMessage, reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -146,14 +147,12 @@ function Viewer({
 
 export function ScreenshotsTab({ game }: { game: string }) {
   const { t } = useLingui()
-  const [gallery, setGallery] = useState<Gallery | null>(null)
-  const [error, setError] = useState<unknown>(null)
+  const {
+    data: gallery,
+    error,
+    reload: load,
+  } = useLoaded<Gallery | null>(() => Screenshots(game), [game], null)
   const [open, setOpen] = useState<number | null>(null)
-  const load = useCallback(() => {
-    setError(null)
-    Screenshots(game).then(setGallery).catch(setError)
-  }, [game])
-  useEffect(load, [load])
   const shots = gallery?.shots ?? []
   const sources = gallery?.sources ?? []
   const both = sources.length > 1
