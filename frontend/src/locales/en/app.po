@@ -2375,6 +2375,14 @@ msgstr "Choose a game"
 msgid "{name} stopped the game from starting"
 msgstr "{name} stopped the game from starting"
 
+#: src/game/FarmMenuItem.tsx
+msgid "Hosting"
+msgstr "Hosting"
+
+#: src/game/FarmMenuItem.tsx
+msgid "Joining"
+msgstr "Joining"
+
 #: src/launch/LaunchScreen.tsx
 msgid "{plugin} failed to load."
 msgstr "{plugin} failed to load."

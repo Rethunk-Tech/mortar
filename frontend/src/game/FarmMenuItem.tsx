@@ -30,6 +30,8 @@ import { usePending } from '../toasts/usePending.ts'
 import { hasModList } from './modList.ts'
 import { openProfileDialog } from './profileDialog.ts'
 
+const section = { fontSize: 'base.fontSize', fontWeight: 700 } as const
+
 export function FarmDialog({
   open,
   profile,
@@ -104,20 +106,24 @@ export function FarmDialog({
       ? t`Host ${{ host: row.host }}, yours ${{ mine: row.mine }}`
       : t`Host ${{ host: row.host }}`
   }
+  // Once a check finds something to fix, fixing is what the dialog is for.
+  const fixable = rows?.some((row) => row.fixable) === true
   const action = (row: FarmRow) => (row.state === 'different' ? t`Update` : t`Add`)
   return (
     <Dialog open={open} onClose={done} fullWidth={true} maxWidth="sm">
       <DialogTitle>{t`Multiplayer mod list`}</DialogTitle>
       <DialogContent dividers={true}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
-          <Box sx={{ display: 'flex', gap: space.gap }}>
-            <Button disabled={busy} onClick={copyList}>
+          <Typography sx={section}>{t`Hosting`}</Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, flexWrap: 'wrap' }}>
+            <Button variant="outlined" disabled={busy} onClick={copyList}>
               {t`Copy this profile's list`}
             </Button>
-            <Button disabled={busy} onClick={loadList}>
-              {t`Load the host's list from a file…`}
-            </Button>
+            <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
+              {t`Send it to the people joining you.`}
+            </Typography>
           </Box>
+          <Typography sx={{ ...section, mt: 1 }}>{t`Joining`}</Typography>
           <TextField
             fullWidth={true}
             multiline={true}
@@ -131,6 +137,14 @@ export function FarmDialog({
               setRows(null)
             }}
           />
+          <Button
+            variant="outlined"
+            disabled={busy}
+            onClick={loadList}
+            sx={{ alignSelf: 'flex-start' }}
+          >
+            {t`Load the host's list from a file…`}
+          </Button>
           {rows?.length === 0 ? (
             <Typography>
               {host ? t`This profile matches ${host}.` : t`This profile matches that list.`}
@@ -159,14 +173,15 @@ export function FarmDialog({
       </DialogContent>
       <DialogActions>
         <Button onClick={done}>{t`Close`}</Button>
-        {rows?.some((row) => row.fixable) ? (
-          <Button disabled={busy} onClick={() => fix(null)}>
+        {fixable ? (
+          <Button variant="contained" disabled={busy} onClick={() => fix(null)}>
             {t`Fix all`}
           </Button>
-        ) : null}
-        <Button variant="contained" disabled={busy || text.trim() === ''} onClick={check}>
-          {t`Check`}
-        </Button>
+        ) : (
+          <Button variant="contained" disabled={busy || text.trim() === ''} onClick={check}>
+            {t`Check`}
+          </Button>
+        )}
       </DialogActions>
     </Dialog>
   )
