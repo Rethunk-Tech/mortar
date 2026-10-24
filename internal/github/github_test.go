@@ -42,6 +42,7 @@ func server(t *testing.T, hits *atomic.Int32, h http.HandlerFunc) *Client {
 func serve(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write([]byte(releasesJSON)) }
 
 func TestSelect(t *testing.T) {
+	t.Parallel()
 	var all []Release
 	if err := json.Unmarshal([]byte(releasesJSON), &all); err != nil {
 		t.Fatal(err)
@@ -66,6 +67,7 @@ func TestSelect(t *testing.T) {
 }
 
 func TestReleasesCacheAndStale(t *testing.T) {
+	t.Parallel()
 	var hits atomic.Int32
 	fail := false
 	c := server(t, &hits, func(w http.ResponseWriter, r *http.Request) {
@@ -98,6 +100,7 @@ func TestReleasesCacheAndStale(t *testing.T) {
 }
 
 func TestCachedReleasesNeverAsksAndOldFormatsAreFetchedAgain(t *testing.T) {
+	t.Parallel()
 	var hits atomic.Int32
 	c := server(t, &hits, serve)
 	if _, _, ok := c.CachedReleases("o", "r"); ok {
@@ -124,6 +127,7 @@ func TestCachedReleasesNeverAsksAndOldFormatsAreFetchedAgain(t *testing.T) {
 }
 
 func TestRateLimit(t *testing.T) {
+	t.Parallel()
 	var hits atomic.Int32
 	c := server(t, &hits, func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("X-Ratelimit-Remaining", "0")
@@ -145,6 +149,7 @@ func TestRateLimit(t *testing.T) {
 }
 
 func TestDownload(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write([]byte("data")) }))
 	t.Cleanup(srv.Close)
 	c := &Client{APIBase: srv.URL, CacheDir: t.TempDir(), HTTP: srv.Client()}
@@ -207,6 +212,7 @@ func seedPartial(t *testing.T, dest, partial string, m resumeMeta) {
 }
 
 func TestDownloadResumesFromThePartialWithIfRange(t *testing.T) {
+	t.Parallel()
 	var seen []string
 	srv := rangeServer(t, resumeBody, `"v1"`, &seen)
 	dest := filepath.Join(t.TempDir(), "m.zip")
@@ -221,6 +227,7 @@ func TestDownloadResumesFromThePartialWithIfRange(t *testing.T) {
 }
 
 func TestDownloadStartsOverWhenTheValidatorChanged(t *testing.T) {
+	t.Parallel()
 	var seen []string
 	srv := rangeServer(t, resumeBody, `"v2"`, &seen)
 	dest := filepath.Join(t.TempDir(), "m.zip")
@@ -234,6 +241,7 @@ func TestDownloadStartsOverWhenTheValidatorChanged(t *testing.T) {
 }
 
 func TestDownloadStartsOverWhenTheServerIgnoresRange(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { _, _ = io.WriteString(w, resumeBody) }))
 	t.Cleanup(srv.Close)
 	dest := filepath.Join(t.TempDir(), "m.zip")
@@ -247,6 +255,7 @@ func TestDownloadStartsOverWhenTheServerIgnoresRange(t *testing.T) {
 }
 
 func TestDownloadResumesOnANewAddressOfTheSameSize(t *testing.T) {
+	t.Parallel()
 	var seen []string
 	srv := rangeServer(t, resumeBody, `"other-cdn"`, &seen)
 	dest := filepath.Join(t.TempDir(), "m.zip")
@@ -260,6 +269,7 @@ func TestDownloadResumesOnANewAddressOfTheSameSize(t *testing.T) {
 }
 
 func TestDownloadStartsOverWhenTheTotalChanged(t *testing.T) {
+	t.Parallel()
 	var seen []string
 	srv := rangeServer(t, resumeBody+"MORE", `"v1"`, &seen)
 	dest := filepath.Join(t.TempDir(), "m.zip")
@@ -273,6 +283,7 @@ func TestDownloadStartsOverWhenTheTotalChanged(t *testing.T) {
 }
 
 func TestDownloadDropsAPartialNothingVouchesFor(t *testing.T) {
+	t.Parallel()
 	var seen []string
 	srv := rangeServer(t, resumeBody, `"v1"`, &seen)
 	dest := filepath.Join(t.TempDir(), "m.zip")
@@ -288,6 +299,7 @@ func TestDownloadDropsAPartialNothingVouchesFor(t *testing.T) {
 }
 
 func TestKey(t *testing.T) {
+	t.Parallel()
 	k := Key("Pathoschild", "StardewMods", "v2.1.0", "Mod (Final) 2.1.0.zip")
 	if !strings.HasPrefix(k, "github-pathoschild-stardewmods-v2.1.0-mod-final-2.1.0.zip-") {
 		t.Fatalf("key = %q", k)
@@ -307,6 +319,7 @@ func TestKey(t *testing.T) {
 }
 
 func TestVerify(t *testing.T) {
+	t.Parallel()
 	answer := `[{"id":"Some.Mod","metadata":{"gitHubRepo":"Owner/Repo"}}]`
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		if answer == "" {
@@ -331,6 +344,7 @@ func TestVerify(t *testing.T) {
 }
 
 func TestReleasesBetween(t *testing.T) {
+	t.Parallel()
 	var hits atomic.Int32
 	c := server(t, &hits, func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = w.Write([]byte(`[
@@ -348,6 +362,7 @@ func TestReleasesBetween(t *testing.T) {
 }
 
 func TestBucketSharesTheRateAcrossCallers(t *testing.T) {
+	t.Parallel()
 	var b bucket
 	now := time.Unix(1_000, 0)
 	const rate = 100 << 10

@@ -23,6 +23,7 @@ func (s *stallReader) Read(p []byte) (int, error) {
 }
 
 func TestIdleReaderTimeoutDoesNotWriteCallerBuffer(t *testing.T) {
+	t.Parallel()
 	started := make(chan struct{})
 	release := make(chan struct{})
 	r := &idleReader{
@@ -54,6 +55,7 @@ func TestIdleReaderTimeoutDoesNotWriteCallerBuffer(t *testing.T) {
 }
 
 func TestIdleReaderCancelDoesNotWriteCallerBuffer(t *testing.T) {
+	t.Parallel()
 	started := make(chan struct{})
 	release := make(chan struct{})
 	done := make(chan struct{})

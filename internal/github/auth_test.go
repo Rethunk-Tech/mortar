@@ -20,6 +20,7 @@ func req(t *testing.T, url string) *http.Request {
 }
 
 func TestAuthApply(t *testing.T) {
+	t.Parallel()
 	present := &Auth{Run: func(context.Context) ([]byte, error) { return []byte(secret + "\n"), nil }}
 	absent := &Auth{Run: func(context.Context) ([]byte, error) { return nil, nil }}
 	failing := &Auth{Run: func(context.Context) ([]byte, error) { return nil, errors.New("gh: not logged in " + secret) }}
@@ -49,6 +50,7 @@ func TestAuthApply(t *testing.T) {
 }
 
 func TestAuthCachesTheAnswer(t *testing.T) {
+	t.Parallel()
 	n := 0
 	a := &Auth{Run: func(context.Context) ([]byte, error) { n++; return nil, errors.New("x") }}
 	for range 3 {
