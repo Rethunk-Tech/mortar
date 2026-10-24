@@ -1,16 +1,11 @@
 import { useLingui } from '@lingui/react/macro'
 import { Alert, Box, Button, Checkbox, Link, Typography } from '@mui/material'
 import { alpha, type Theme, useTheme } from '@mui/material/styles'
+import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/models.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { listNames } from '../i18n/list.ts'
 import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { formatAuthors } from '../mods/authorNormalize.ts'
-
-const SUCCESS_CHIP = 0.2
-const INFO_CHIP = 0.25
-const WARN_CHIP = 0.22
-
-import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/models.ts'
-import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { openPage } from '../mods/menu.ts'
 import { LetterTile } from '../mods/parts.tsx'
 import { visuallyHidden } from '../shell/visuallyHidden.ts'
@@ -22,6 +17,10 @@ import {
   needsItchFile,
   needsPatreonFile,
 } from './logic.ts'
+
+const SUCCESS_CHIP = 0.2
+const INFO_CHIP = 0.25
+const WARN_CHIP = 0.22
 
 const DIMMED = 0.5
 const LATER_CHIP = 0.18

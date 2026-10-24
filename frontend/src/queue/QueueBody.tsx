@@ -1,12 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, LinearProgress, Typography } from '@mui/material'
 import { alpha, useTheme } from '@mui/material/styles'
-import { listNames } from '../i18n/list.ts'
-
-const DONE_FILL = 0.08
-const FAIL_FILL = 0.1
-const FAIL_LINE = 0.35
-
 import { Download, RotateCcw, X } from 'lucide-react'
 import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/models.ts'
 import {
@@ -26,6 +20,7 @@ import {
 import { WINDOWS } from '../brand/productNames.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { formatBytes, formatKb } from '../i18n/bytes.ts'
+import { listNames } from '../i18n/list.ts'
 import { QueueNeedsMerge } from '../install/QueueNeedsMerge.tsx'
 import { QueueNeedsRoot } from '../install/QueueNeedsRoot.tsx'
 import { LetterTile } from '../mods/parts.tsx'
@@ -42,6 +37,10 @@ import { Fold } from './QueueFold.tsx'
 import { MoveButtons, NowButton, PauseButton, Paused, Row, SectionTitle } from './QueueRows.tsx'
 import { detail, ROW } from './rowStyle.ts'
 import { displayName, downloadedKb, isActive, tile } from './totals.ts'
+
+const DONE_FILL = 0.08
+const FAIL_FILL = 0.1
+const FAIL_LINE = 0.35
 
 const NAME_MAX = 3
 
