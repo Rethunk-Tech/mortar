@@ -912,6 +912,19 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 			s.mu.Unlock()
 		}
 	}()
+	// A failure undoes the import: the history batch it holds open is closed and a profile it made is deleted.
+	batchOpen, created := batchID != "", false
+	defer func() {
+		if err == nil {
+			return
+		}
+		if batchOpen {
+			_ = s.d.Profiles.CloseHistoryBatch(game, profileID)
+		}
+		if created {
+			err = errors.Join(err, s.d.Profiles.Delete(game, profileID))
+		}
+	}()
 	applied := s.applyArchive(ctx, cur)
 	defer func() { res.Collection = applied }()
 	mods := cur.preview.Mods
@@ -969,8 +982,7 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 		return Result{}, ErrSignedOut
 	}
 	configs := cur.configs
-	created := profileID == ""
-	if created {
+	if profileID == "" {
 		existing, err := s.d.Profiles.List(game)
 		if err != nil {
 			return Result{}, err
@@ -985,24 +997,25 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 		if err != nil {
 			return Result{}, err
 		}
+		profileID, created = p.ID, true
 		if cur.origin != "" {
 			stamped, err := s.d.Profiles.SetOrigin(game, p.ID, cur.origin, "")
 			if err != nil {
-				return Result{}, errors.Join(err, s.d.Profiles.Delete(game, p.ID))
+				return Result{}, err
 			}
 			p = stamped
 		}
 		if cur.importedFrom != "" {
 			stamped, err := s.d.Profiles.SetImportedFrom(game, p.ID, cur.importedFrom)
 			if err != nil {
-				return Result{}, errors.Join(err, s.d.Profiles.Delete(game, p.ID))
+				return Result{}, err
 			}
 			p = stamped
 		}
 		if cur.collection != nil {
 			stamped, err := s.d.Profiles.SetCollection(game, p.ID, *cur.collection)
 			if err != nil {
-				return Result{}, errors.Join(err, s.d.Profiles.Delete(game, p.ID))
+				return Result{}, err
 			}
 			p = stamped
 		}
@@ -1013,21 +1026,21 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 		if notes != "" {
 			withNotes, err := s.d.Profiles.SetNotes(game, p.ID, notes)
 			if err != nil {
-				return Result{}, errors.Join(err, s.d.Profiles.Delete(game, p.ID))
+				return Result{}, err
 			}
 			p = withNotes
 		}
 		if cur.description != "" {
 			withDesc, err := s.d.Profiles.SetAppearance(game, p.ID, "", "", cur.description)
 			if err != nil {
-				return Result{}, errors.Join(err, s.d.Profiles.Delete(game, p.ID))
+				return Result{}, err
 			}
 			p = withDesc
 		}
 		if cur.favourite {
 			starred, err := s.d.Profiles.SetFavourite(game, p.ID, true)
 			if err != nil {
-				return Result{}, errors.Join(err, s.d.Profiles.Delete(game, p.ID))
+				return Result{}, err
 			}
 			p = starred
 		}
@@ -1056,9 +1069,6 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 		s.writeChangedFiles(game, profileID, cur.changedFiles, created || replace),
 		s.writePackFiles(game, profileID, cur.packFiles, created || replace),
 	); err != nil {
-		if created {
-			err = errors.Join(err, s.d.Profiles.Delete(game, profileID))
-		}
 		return Result{}, err
 	}
 	if len(local) > 0 || len(carried) > 0 || len(reqs) > 0 || len(fromStore) > 0 {
@@ -1066,20 +1076,14 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 			batchID = historyBatchID()
 		}
 		if err := s.d.Profiles.OpenHistoryBatch(game, profileID, batchID); err != nil {
-			if created {
-				err = errors.Join(err, s.d.Profiles.Delete(game, profileID))
-			}
 			return Result{}, err
 		}
+		batchOpen = true
 	}
 	var change string
 	for _, e := range fromStore {
 		added, err := s.d.Profiles.AddEntry(game, profileID, e.key, e.source)
 		if err != nil {
-			_ = s.d.Profiles.CloseHistoryBatch(game, profileID)
-			if created {
-				err = errors.Join(err, s.d.Profiles.Delete(game, profileID))
-			}
 			return Result{}, err
 		}
 		change = added.LastChange
@@ -1087,9 +1091,6 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 	if len(local) > 0 {
 		imported, err := s.d.Profiles.ImportExternalMods(ctx, game, profileID, local)
 		if err != nil {
-			if created {
-				err = errors.Join(err, s.d.Profiles.Delete(game, profileID))
-			}
 			return Result{}, err
 		}
 		if len(imported) > 0 {
@@ -1099,10 +1100,6 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 	for _, lm := range carried {
 		added, err := s.installCarried(ctx, game, profileID, lm)
 		if err != nil {
-			_ = s.d.Profiles.CloseHistoryBatch(game, profileID)
-			if created {
-				err = errors.Join(err, s.d.Profiles.Delete(game, profileID))
-			}
 			return Result{}, err
 		}
 		change = cmp.Or(added, change)
@@ -1122,9 +1119,6 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 				return err
 			})
 			if err != nil {
-				if created {
-					err = errors.Join(err, s.d.Profiles.Delete(game, profileID))
-				}
 				return Result{}, err
 			}
 			configs = slices.DeleteFunc(slices.Clone(configs), func(c share.Config) bool {
@@ -1139,10 +1133,6 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 	if len(reqs) > 0 {
 		items, err := s.d.Queue.Add(ctx, reqs)
 		if err != nil {
-			_ = s.d.Profiles.CloseHistoryBatch(game, profileID)
-			if created {
-				err = errors.Join(err, s.d.Profiles.Delete(game, profileID))
-			}
 			return Result{}, err
 		}
 		for _, it := range items {
@@ -1154,21 +1144,12 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 	res.Queued = len(reqs)
 	res.BatchID = batchID
 	if err := s.applySharedEntryNotes(game, profileID, cur.refs); err != nil {
-		if created {
-			err = errors.Join(err, s.d.Profiles.Delete(game, profileID))
-		}
 		return Result{}, err
 	}
 	if err := s.applySharedGroups(game, profileID, cur.groups); err != nil {
-		if created {
-			err = errors.Join(err, s.d.Profiles.Delete(game, profileID))
-		}
 		return Result{}, err
 	}
 	if err := s.applySharedChoices(game, profileID, cur.choices); err != nil {
-		if created {
-			err = errors.Join(err, s.d.Profiles.Delete(game, profileID))
-		}
 		return Result{}, err
 	}
 	var placed []string

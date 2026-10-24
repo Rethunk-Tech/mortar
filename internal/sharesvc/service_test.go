@@ -196,6 +196,28 @@ func TestImportRollsBackANewProfileWhenQueueingFails(t *testing.T) {
 	}
 }
 
+func TestAFailedReplaceLeavesNoHistoryBatchOpen(t *testing.T) {
+	s, _ := newService(t, false)
+	items, _ := testenv.Stores(t)
+	p, err := s.d.Profiles.Create("stardew", "Mine")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.PreviewLink(t.Context(), "stardew", link(t, "Cozy", share.Ref{ModID: 100, FileID: 1}), p.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.Replace(t.Context(), "stardew", sessionOf(s), p.ID, nil); !errors.Is(err, ErrSignedOut) {
+		t.Fatalf("replace = %v, want signed out", err)
+	}
+	if _, err := s.d.Profiles.AddEntry("stardew", p.ID, storeMod(t, items, "Me.A"), profile.Source{Kind: profile.KindLocal, Name: "A"}); err != nil {
+		t.Fatal(err)
+	}
+	events, err := s.d.Profiles.History("stardew", p.ID)
+	if err != nil || len(events) == 0 || events[0].Kind == "bulk" {
+		t.Fatalf("a later add was folded into the failed replace's batch: %+v, %v", events, err)
+	}
+}
+
 func TestDiscardLeavesNothingToImport(t *testing.T) {
 	s, _ := newService(t, true)
 	text := link(t, "Cozy", share.Ref{ModID: 100, FileID: 1})
