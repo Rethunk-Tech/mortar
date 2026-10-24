@@ -555,6 +555,10 @@ msgstr "Filter by outcome"
 msgid "Put back a mod folder an interrupted install or update left aside"
 msgstr "Put back a mod folder an interrupted install or update left aside"
 
+#: src/games/AddGameDialog.tsx
+msgid "Mortar chose this from the game's files."
+msgstr "Mortar chose this from the game's files."
+
 #: src/share/MethodPanes.tsx
 msgid "Could not export the collection draft"
 msgstr "Could not export the collection draft"
@@ -2432,6 +2436,10 @@ msgstr "Downloads"
 msgid "{name} is running"
 msgstr "{name} is running"
 
+#: src/games/AddGameDialog.tsx
+msgid "{app} games whose mods are made for it"
+msgstr "{app} games whose mods are made for it"
+
 #: src/lan/PairedComputers.tsx
 msgid "Could not unpair"
 msgstr "Could not unpair"
@@ -3059,6 +3067,10 @@ msgstr "Card details"
 msgid "Press Play to start."
 msgstr "Press Play to start."
 
+#: src/games/AddGameDialog.tsx
+msgid "Unreal Engine games, with their mods from {source}"
+msgstr "Unreal Engine games, with their mods from {source}"
+
 #: src/toasts/HistoryButton.tsx
 #: src/updates/WhatsNewDialog.tsx
 msgid "New"
@@ -3284,10 +3296,6 @@ msgstr "Open saves"
 #: src/game/LaunchMenu.tsx
 msgid "Run with this profile"
 msgstr "Run with this profile"
-
-#: src/games/AddGameDialog.tsx
-msgid "No game program chosen"
-msgstr "No game program chosen"
 
 #: src/updates/WhatsNewDialog.tsx
 msgid "Also in Mortar {version}"
@@ -4139,6 +4147,10 @@ msgstr "Archive contents"
 msgid "Includes: {names}"
 msgstr "Includes: {names}"
 
+#: src/games/AddGameDialog.tsx
+msgid "{app} games with {path} beside the game"
+msgstr "{app} games with {path} beside the game"
+
 #: src/queue/QueueBody.tsx
 msgid "Skipped ({count}): {names}"
 msgstr "Skipped ({count}): {names}"
@@ -4749,6 +4761,10 @@ msgstr "Enabled"
 msgid "Premium"
 msgstr "Premium"
 
+#: src/games/AddGameDialog.tsx
+msgid "Any game whose mods are files in a Mods folder"
+msgstr "Any game whose mods are files in a Mods folder"
+
 #: src/browse/browseConstants.ts
 msgid "Search every site this game's mods come from at once. Each result installs into this profile from wherever its author published it."
 msgstr "Search every site this game's mods come from at once. Each result installs into this profile from wherever its author published it."
@@ -4933,6 +4949,10 @@ msgstr "It encountered an error."
 #: src/game/HeroGlance.tsx
 msgid "No problems"
 msgstr "No problems"
+
+#: src/games/AddGameDialog.tsx
+msgid "Choose the game's program and give it a name first."
+msgstr "Choose the game's program and give it a name first."
 
 #: src/commandPalette/paletteLabels.ts
 msgid "Switch to Config"

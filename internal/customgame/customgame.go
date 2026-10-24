@@ -226,3 +226,36 @@ func Remove(id string) error {
 	}
 	return Register(games)
 }
+
+// Guess is what a game's files suggest for the Add a game form: a name and a loader, each empty when nothing does.
+type Guess struct {
+	Name   string `json:"name"`
+	Loader string `json:"loader"`
+}
+
+// GuessFrom reads the folder around the executable at exe: an Unreal game's Binaries/Win64, a Unity game's
+// GameAssembly.dll (IL2CPP) or *_Data/Managed (Mono), or a MelonLoader folder already in place. The name is the game's
+// own folder.
+func GuessFrom(exe string) Guess {
+	dir := filepath.Dir(exe)
+	if strings.EqualFold(filepath.Base(dir), "Win64") && strings.EqualFold(filepath.Base(filepath.Dir(dir)), "Binaries") {
+		// <game>/<project>/Binaries/Win64
+		return Guess{Name: filepath.Base(filepath.Dir(filepath.Dir(filepath.Dir(dir)))), Loader: Shimloader}
+	}
+	g := Guess{Name: filepath.Base(dir)}
+	managed, _ := filepath.Glob(filepath.Join(dir, "*_Data", "Managed"))
+	switch {
+	case exists(filepath.Join(dir, "MelonLoader")):
+		g.Loader = MelonLoader
+	case exists(filepath.Join(dir, "GameAssembly.dll")):
+		g.Loader = BepInEx6
+	case len(managed) > 0:
+		g.Loader = BepInEx5
+	}
+	return g
+}
+
+func exists(p string) bool {
+	_, err := os.Stat(p)
+	return err == nil
+}

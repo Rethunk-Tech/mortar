@@ -555,6 +555,10 @@ msgstr ""
 msgid "Put back a mod folder an interrupted install or update left aside"
 msgstr ""
 
+#: src/games/AddGameDialog.tsx
+msgid "Mortar chose this from the game's files."
+msgstr ""
+
 #: src/share/MethodPanes.tsx
 msgid "Could not export the collection draft"
 msgstr ""
@@ -2432,6 +2436,10 @@ msgstr ""
 msgid "{name} is running"
 msgstr ""
 
+#: src/games/AddGameDialog.tsx
+msgid "{app} games whose mods are made for it"
+msgstr ""
+
 #: src/lan/PairedComputers.tsx
 msgid "Could not unpair"
 msgstr ""
@@ -3059,6 +3067,10 @@ msgstr ""
 msgid "Press Play to start."
 msgstr ""
 
+#: src/games/AddGameDialog.tsx
+msgid "Unreal Engine games, with their mods from {source}"
+msgstr ""
+
 #: src/toasts/HistoryButton.tsx
 #: src/updates/WhatsNewDialog.tsx
 msgid "New"
@@ -3283,10 +3295,6 @@ msgstr ""
 
 #: src/game/LaunchMenu.tsx
 msgid "Run with this profile"
-msgstr ""
-
-#: src/games/AddGameDialog.tsx
-msgid "No game program chosen"
 msgstr ""
 
 #: src/updates/WhatsNewDialog.tsx
@@ -4139,6 +4147,10 @@ msgstr ""
 msgid "Includes: {names}"
 msgstr ""
 
+#: src/games/AddGameDialog.tsx
+msgid "{app} games with {path} beside the game"
+msgstr ""
+
 #: src/queue/QueueBody.tsx
 msgid "Skipped ({count}): {names}"
 msgstr ""
@@ -4749,6 +4761,10 @@ msgstr ""
 msgid "Premium"
 msgstr ""
 
+#: src/games/AddGameDialog.tsx
+msgid "Any game whose mods are files in a Mods folder"
+msgstr ""
+
 #: src/browse/browseConstants.ts
 msgid "Search every site this game's mods come from at once. Each result installs into this profile from wherever its author published it."
 msgstr ""
@@ -4932,6 +4948,10 @@ msgstr ""
 
 #: src/game/HeroGlance.tsx
 msgid "No problems"
+msgstr ""
+
+#: src/games/AddGameDialog.tsx
+msgid "Choose the game's program and give it a name first."
 msgstr ""
 
 #: src/commandPalette/paletteLabels.ts

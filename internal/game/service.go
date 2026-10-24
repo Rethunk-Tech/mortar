@@ -204,6 +204,9 @@ func (s *Service) CustomLoaders() []CustomLoader {
 	}
 }
 
+// GuessCustomGame is the name and loader the files around the executable at exe suggest for the Add a game form.
+func (s *Service) GuessCustomGame(exe string) customgame.Guess { return customgame.GuessFrom(exe) }
+
 // AddCustomGame adds a game missing from the catalog, started by the executable at exe, and returns it with the
 // folder to set as its install.
 func (s *Service) AddCustomGame(name, exe, loader, community string) (CustomGame, error) {
