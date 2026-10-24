@@ -240,7 +240,7 @@ function RowView({
           gap: '4px',
         }}
       >
-        <Typography sx={{ fontSize: 30, fontWeight: 600, lineHeight: 1.15 }}>
+        <Typography component="h3" sx={{ fontSize: 30, fontWeight: 600, lineHeight: 1.15 }}>
           {game.name}
         </Typography>
         <Typography sx={{ fontSize: 15, opacity: 0.9 }}>
