@@ -249,15 +249,16 @@ func TestServeAnswersModProfiles(t *testing.T) {
 			t.Fatalf("mod request = %q/%d", game, modID)
 		}
 		version := "1.2.3"
-		return modInProfile{Profile: "Default", Version: &version, FileID: 456}, []modInProfile{{Profile: "Co-op", Version: nil, FileID: 789}}
+		return modInProfile{Profile: "Default", Version: &version, FileID: 456, UpdateAvailable: true}, []modInProfile{{Profile: "Co-op", Version: nil, FileID: 789}}
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
 	got := readReply(t, &out)
 	if got.Open == nil || got.Open.Profile != "Default" || got.Open.Version == nil || *got.Open.Version != "1.2.3" ||
-		got.Open.FileID != 456 ||
-		len(got.Others) != 1 || got.Others[0].Profile != "Co-op" || got.Others[0].Version != nil || got.Others[0].FileID != 789 {
+		got.Open.FileID != 456 || !got.Open.UpdateAvailable ||
+		len(got.Others) != 1 || got.Others[0].Profile != "Co-op" || got.Others[0].Version != nil || got.Others[0].FileID != 789 ||
+		got.Others[0].UpdateAvailable {
 		t.Fatalf("mod reply = %+v", got)
 	}
 }
@@ -359,27 +360,6 @@ func TestNexusModProfilesReportsRequiredByPinAndSkip(t *testing.T) {
 	}
 	if len(openProfile.RequiredByNames) != 1 || openProfile.RequiredByNames[0] != "Farm pack" {
 		t.Fatalf("requiredByNames = %v", openProfile.RequiredByNames)
-	}
-}
-
-func TestServeAnswersModUpdateAvailable(t *testing.T) {
-	in := frame(t, request{Type: "mod", Source: "nexus", SourceGameKey: "stardewvalley", ModID: 1915})
-	var out bytes.Buffer
-	err := serve(bytes.NewReader(in), &out, func(string) error {
-		t.Fatal("mod request opened a link")
-		return nil
-	}, nil, func(string, int) (modInProfile, []modInProfile) {
-		v := "1.0.0"
-		fresh := "2.0.0"
-		return modInProfile{Profile: "Default", Version: &v, UpdateAvailable: true},
-			[]modInProfile{{Profile: "Co-op", Version: &fresh}}
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	got := readReply(t, &out)
-	if got.Open == nil || !got.Open.UpdateAvailable || len(got.Others) != 1 || got.Others[0].UpdateAvailable {
-		t.Fatalf("mod reply = %+v", got)
 	}
 }
 
