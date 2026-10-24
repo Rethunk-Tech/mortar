@@ -52,7 +52,9 @@ type GameSettings struct {
 	GraphicsAPI string `json:"graphicsApi,omitempty"`
 	// ProtonVersion is the folder name of the Proton build a Windows copy outside Steam runs through; empty takes the
 	// newest Steam has.
-	ProtonVersion     string `json:"protonVersion,omitempty"`
+	ProtonVersion string `json:"protonVersion,omitempty"`
+	// ConsoleLevel is the levels the Console shows when it opens, joined by commas; one level alone (what 0.3.13 and
+	// earlier wrote) means it and every level above.
 	ConsoleLevel      string `json:"consoleLevel"`
 	ConsoleTimestamps *bool  `json:"consoleTimestamps"`
 	ConsoleFollow     *bool  `json:"consoleFollow"`
@@ -270,7 +272,7 @@ var registry = withDefaults([]pref{
 	})),
 	overridable(strPref("graphicsApi", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).GraphicsAPI }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.GraphicsAPI = v; putGame(s, g, gp) })),
 	overridable(strPref("protonVersion", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).ProtonVersion }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.ProtonVersion = v; putGame(s, g, gp) })),
-	overridable(enumPref("consoleLevel", ScopeGame, consoleLevelValues, func(s Settings, g string) string { return s.GamePrefs(g).ConsoleLevel }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.ConsoleLevel = v; putGame(s, g, gp) })),
+	overridable(consoleLevelPref()),
 	overridable(ptrPref("consoleTimestamps", ScopeGame, func(s Settings, g string) *bool { return s.GamePrefs(g).ConsoleTimestamps }, func(s *Settings, g string, on bool) {
 		gp := s.GamePrefs(g)
 		gp.ConsoleTimestamps = &on
@@ -540,7 +542,7 @@ func normalizeGame(id string, g *GameSettings) {
 	if g.DelaySeconds < MinDelaySeconds || g.DelaySeconds > MaxDelaySeconds {
 		g.DelaySeconds = d.DelaySeconds
 	}
-	if !slices.Contains(consoleLevelValues, g.ConsoleLevel) {
+	if !validConsoleLevel(g.ConsoleLevel) {
 		g.ConsoleLevel = d.ConsoleLevel
 	}
 	if g.ConsoleTimestamps == nil {
@@ -612,8 +614,8 @@ func validateGame(g GameSettings) error {
 	if g.DelaySeconds < MinDelaySeconds || g.DelaySeconds > MaxDelaySeconds {
 		return fmt.Errorf("delay seconds must be %d to %d, got %d", MinDelaySeconds, MaxDelaySeconds, g.DelaySeconds)
 	}
-	if !slices.Contains(consoleLevelValues, g.ConsoleLevel) {
-		return fmt.Errorf("console level must be trace, debug, info, warn or error, got %q", g.ConsoleLevel)
+	if !validConsoleLevel(g.ConsoleLevel) {
+		return fmt.Errorf("console level must be a level, or levels joined by commas, got %q", g.ConsoleLevel)
 	}
 	if !slices.Contains(conflictScanValues, g.ConflictScanDepth) {
 		return fmt.Errorf("conflict scan depth must be full or skipImages, got %q", g.ConflictScanDepth)

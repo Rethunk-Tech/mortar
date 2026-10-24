@@ -710,10 +710,6 @@ msgstr ""
 msgid "Mortar {version} is available."
 msgstr ""
 
-#: src/settings/sections/HiddenLogSources.tsx
-msgid "every object"
-msgstr ""
-
 #: src/settings/sections/ItchAccount.tsx
 #: src/settings/sections/Sources.tsx
 msgid "Account"
@@ -935,6 +931,10 @@ msgstr ""
 msgid "Check store files"
 msgstr ""
 
+#: src/settings/sections/HiddenLogSources.tsx
+msgid "Lines about every object"
+msgstr ""
+
 #: src/settings/sections/GameSettings.tsx
 msgid "Found in {path}"
 msgstr ""
@@ -1079,6 +1079,10 @@ msgstr ""
 
 #: src/settings/sections/Downloads.tsx
 msgid "Download the extension"
+msgstr ""
+
+#: src/settings/sections/ConsoleLevels.tsx
+msgid "Levels shown"
 msgstr ""
 
 #: src/settings/sections/GameSettings.tsx
@@ -1261,6 +1265,7 @@ msgstr ""
 #: src/settings/ProtonRow.tsx
 #: src/settings/sections/ALVRProgram.tsx
 #: src/settings/sections/Appearance.tsx
+#: src/settings/sections/ConsoleLevels.tsx
 #: src/settings/sections/Downloads.tsx
 #: src/settings/sections/ExtraModsFolders.tsx
 #: src/settings/sections/GameSettings.tsx
@@ -2340,10 +2345,6 @@ msgstr ""
 msgid "Take back"
 msgstr ""
 
-#: src/settings/sections/HiddenLogSources.tsx
-msgid "every message"
-msgstr ""
-
 #: src/settings/prefCopy.ts
 msgid "How often background checks report new mod updates. The In Mortar and desktop switches choose where."
 msgstr ""
@@ -2850,6 +2851,10 @@ msgstr ""
 msgid "Links"
 msgstr ""
 
+#: src/settings/sections/ConsoleLevels.tsx
+msgid "The Console opens showing these levels"
+msgstr ""
+
 #: src/settings/sections/DataHistory.tsx
 msgid "{count, plural, one {# change} other {# changes}}"
 msgstr ""
@@ -2914,6 +2919,10 @@ msgstr ""
 
 #: src/settings/sections/About.tsx
 msgid "mortar.log, the previous run's mortar.prev.log and crash.log, in Mortar's data folder. For a bug report, Save diagnostics below puts them in one zip with personal paths removed."
+msgstr ""
+
+#: src/settings/sections/HiddenLogSources.tsx
+msgid "Every message"
 msgstr ""
 
 #: src/settings/sections/StreamOverlay.tsx
@@ -3216,6 +3225,10 @@ msgstr ""
 
 #: src/settings/sections/Shortcuts.tsx
 msgid "Navigation"
+msgstr ""
+
+#: src/settings/sections/HiddenLogSources.tsx
+msgid "Only lines about {object}"
 msgstr ""
 
 #: src/settings/SettingsPage.tsx

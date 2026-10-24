@@ -22,7 +22,21 @@ export const DEFAULT_FILTERS: Filters = {
   excludeMods: [],
 }
 
+const LEVEL_IDS: Record<string, Level> = {
+  trace: Level.Trace,
+  debug: Level.Debug,
+  info: Level.Info,
+  warn: Level.Warn,
+  error: Level.Error,
+  alert: Level.Alert,
+}
+
+/** The levels the consoleLevel setting shows: a comma list of levels, or one level alone and every level above it. */
 export function levelsFromFloor(floor: string): Level[] {
+  if (floor.includes(',') || floor === 'alert') {
+    const picked = floor.split(',').map((id) => LEVEL_IDS[id])
+    return LEVELS.filter((l) => picked.includes(l))
+  }
   const order: Level[] = [Level.Trace, Level.Debug, Level.Info, Level.Warn, Level.Error]
   const start = order.indexOf(
     (

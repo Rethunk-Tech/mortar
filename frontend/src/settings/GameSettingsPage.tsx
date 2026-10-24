@@ -23,6 +23,7 @@ import { ProtonRow } from './ProtonRow.tsx'
 import { SettingsSection } from './SettingsSection.tsx'
 import { SettingsShell, type ShellPage } from './SettingsShell.tsx'
 import { ALVRProgram } from './sections/ALVRProgram.tsx'
+import { ConsoleLevels } from './sections/ConsoleLevels.tsx'
 import { HistoryUsageRows } from './sections/DataHistory.tsx'
 import { DismissedFolders } from './sections/DismissedFolders.tsx'
 import { ExtraModsFolders } from './sections/ExtraModsFolders.tsx'
@@ -197,19 +198,14 @@ function GamePages({
         return <BackupsPage />
       case 'console':
         return (
-          <SettingsSection title={t`Console`}>
-            <PrefKeys
-              keys={[
-                'runsKept',
-                'consoleLogCap',
-                'consoleLevel',
-                'consoleTimestamps',
-                'consoleFollow',
-              ]}
-              game={game}
-            />
+          <>
+            <SettingsSection title={t`Console`}>
+              <PrefKeys keys={['runsKept', 'consoleLogCap']} game={game} />
+              <ConsoleLevels game={game} />
+              <PrefKeys keys={['consoleTimestamps', 'consoleFollow']} game={game} />
+            </SettingsSection>
             <HiddenLogSources />
-          </SettingsSection>
+          </>
         )
       default:
         return loader?.overlay ? <StreamOverlay game={game} /> : null

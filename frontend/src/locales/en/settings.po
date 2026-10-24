@@ -710,10 +710,6 @@ msgstr "Mods and profiles"
 msgid "Mortar {version} is available."
 msgstr "Mortar {version} is available."
 
-#: src/settings/sections/HiddenLogSources.tsx
-msgid "every object"
-msgstr "every object"
-
 #: src/settings/sections/ItchAccount.tsx
 #: src/settings/sections/Sources.tsx
 msgid "Account"
@@ -935,6 +931,10 @@ msgstr "Grid or list for new sessions"
 msgid "Check store files"
 msgstr "Check store files"
 
+#: src/settings/sections/HiddenLogSources.tsx
+msgid "Lines about every object"
+msgstr "Lines about every object"
+
 #: src/settings/sections/GameSettings.tsx
 msgid "Found in {path}"
 msgstr "Found in {path}"
@@ -1080,6 +1080,10 @@ msgstr "Review mod updates"
 #: src/settings/sections/Downloads.tsx
 msgid "Download the extension"
 msgstr "Download the extension"
+
+#: src/settings/sections/ConsoleLevels.tsx
+msgid "Levels shown"
+msgstr "Levels shown"
 
 #: src/settings/sections/GameSettings.tsx
 msgid "Reset game install?"
@@ -1261,6 +1265,7 @@ msgstr "{name} version"
 #: src/settings/ProtonRow.tsx
 #: src/settings/sections/ALVRProgram.tsx
 #: src/settings/sections/Appearance.tsx
+#: src/settings/sections/ConsoleLevels.tsx
 #: src/settings/sections/Downloads.tsx
 #: src/settings/sections/ExtraModsFolders.tsx
 #: src/settings/sections/GameSettings.tsx
@@ -2340,10 +2345,6 @@ msgstr "control.json is current"
 msgid "Take back"
 msgstr "Take back"
 
-#: src/settings/sections/HiddenLogSources.tsx
-msgid "every message"
-msgstr "every message"
-
 #: src/settings/prefCopy.ts
 msgid "How often background checks report new mod updates. The In Mortar and desktop switches choose where."
 msgstr "How often background checks report new mod updates. The In Mortar and desktop switches choose where."
@@ -2850,6 +2851,10 @@ msgstr "Keep the zip after installing"
 msgid "Links"
 msgstr "Links"
 
+#: src/settings/sections/ConsoleLevels.tsx
+msgid "The Console opens showing these levels"
+msgstr "The Console opens showing these levels"
+
 #: src/settings/sections/DataHistory.tsx
 msgid "{count, plural, one {# change} other {# changes}}"
 msgstr "{count, plural, one {# change} other {# changes}}"
@@ -2915,6 +2920,10 @@ msgstr "Hidden messages"
 #: src/settings/sections/About.tsx
 msgid "mortar.log, the previous run's mortar.prev.log and crash.log, in Mortar's data folder. For a bug report, Save diagnostics below puts them in one zip with personal paths removed."
 msgstr "mortar.log, the previous run's mortar.prev.log and crash.log, in Mortar's data folder. For a bug report, Save diagnostics below puts them in one zip with personal paths removed."
+
+#: src/settings/sections/HiddenLogSources.tsx
+msgid "Every message"
+msgstr "Every message"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Existing {app} sources stop working until their URLs are copied again."
@@ -3217,6 +3226,10 @@ msgstr "Cool and calm"
 #: src/settings/sections/Shortcuts.tsx
 msgid "Navigation"
 msgstr "Navigation"
+
+#: src/settings/sections/HiddenLogSources.tsx
+msgid "Only lines about {object}"
+msgstr "Only lines about {object}"
 
 #: src/settings/SettingsPage.tsx
 msgid "About"

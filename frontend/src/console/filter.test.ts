@@ -177,3 +177,9 @@ test('an error and its stack written again and again show once, counted', () => 
   expect(shown.map((row) => row.seq)).toEqual([1, 2, 7])
   expect(shown.map(repeatCount)).toEqual([3, 1, 1])
 })
+
+test('the console level is one level and those above, or the levels ticked', () => {
+  expect(levelsFromFloor('warn')).toEqual([Level.Warn, Level.Error, Level.Alert])
+  expect(levelsFromFloor('info,error')).toEqual([Level.Info, Level.Error])
+  expect(levelsFromFloor('alert')).toEqual([Level.Alert])
+})
