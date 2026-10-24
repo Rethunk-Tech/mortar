@@ -8,11 +8,11 @@ test('the Add split menu lists its sources and the extra folder dialog adds 2 mo
   await page.getByRole('button', { name: 'More ways to add mods' }).click()
   await expect(page.getByRole('menuitem')).toHaveText([
     'The downloads folder…',
-    'The extra mods folder…',
+    'The extra mods folders…',
     'Apply a template…',
     'Add a saved group…',
   ])
-  await page.getByRole('menuitem', { name: 'The extra mods folder…' }).click()
+  await page.getByRole('menuitem', { name: 'The extra mods folders…' }).click()
   const dialog = page.getByRole('dialog', { name: 'Add from the extra mods folder' })
   await expect(dialog.getByText('Seed Extra One')).toBeVisible()
   await expect(dialog.getByText('Seed Extra Two')).toBeVisible()
