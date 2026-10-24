@@ -146,6 +146,7 @@
         "noExplicitAny": "error",
         // canon ts-biome-00005
         "noReactSpecificProps": "off",
+        // canon ts-biome-00019
         "noUnnecessaryConditions": "error"
       },
 
