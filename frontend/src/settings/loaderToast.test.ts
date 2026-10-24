@@ -1,11 +1,6 @@
-import { describe, expect, mock, test } from 'bun:test'
+import { describe, expect, test } from 'bun:test'
 import type { Status } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/loader/models.ts'
 import { loaderToastShownToday, loaderUpdateText } from './loaderToast.ts'
-
-mock.module('@lingui/core/macro', () => ({
-  msg: (parts: TemplateStringsArray, ...values: string[]) => String.raw({ raw: parts }, ...values),
-  plural: () => '',
-}))
 
 const status = (s: Partial<Status>): Status => ({
   installed: true,
