@@ -5,82 +5,92 @@ import { ShowLogSource } from '../../../bindings/github.com/Rethunk-Tech/mortar/
 import { useCurrentGame } from '../../nav/currentGame.ts'
 import { space } from '../../theme/density.ts'
 import { persist } from '../persist.ts'
-import { SettingRow } from '../SettingsSection.tsx'
+import { Searchable, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 
-// Where a hidden source's lines come from, as the Console reads it: the method (or the engine), and which object.
-function useWhere() {
-  const { t } = useLingui()
-  return (h: HiddenLogSource) => {
-    const from = h.source.startsWith('unity:')
-      ? t`Engine`
-      : (() => {
-          const [type = '', name = ''] = h.source.split('::')
-          return `${type.split('.').at(-1)}.${name}`
-        })()
-    const what = h.text ? '' : t`every message`
-    const about = h.object ? h.object : t`every object`
-    return [from, what, about].filter(Boolean).join(' · ')
+const ENGINE = 'unity:'
+
+// Hidden sources grouped by where their lines come from (a method, or the engine), groups and lines in name order.
+function grouped(hidden: readonly HiddenLogSource[], engine: string) {
+  const groups = new Map<string, HiddenLogSource[]>()
+  for (const h of hidden) {
+    const from = h.source.startsWith(ENGINE) ? engine : h.source.replace('::', '.')
+    groups.set(from, [...(groups.get(from) ?? []), h])
   }
+  const shown = (h: HiddenLogSource) => h.text || h.label || h.source
+  return [...groups.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([from, items]) => ({
+      from,
+      items: items.sort((a, b) => shown(a).localeCompare(shown(b))),
+    }))
 }
 
-// The game's hidden log sources, each shown by a line it hid and where it comes from, with Show again.
-function HiddenList({ game }: { game: string }) {
-  const { t } = useLingui()
-  const hidden = useSettings((s) => s.games?.[game]?.hiddenLogSources) ?? []
-  const where = useWhere()
-  if (hidden.length === 0) {
-    return <Typography color="text.secondary">{t`None`}</Typography>
-  }
-  return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap, minWidth: 0 }}>
-      {hidden.map((h) => (
-        <Box
-          key={`${h.source}\t${h.text}\t${h.object}`}
-          sx={{ display: 'flex', alignItems: 'center', gap: space.gap, minWidth: 0 }}
-        >
-          <Box sx={{ minWidth: 0, flex: 1 }}>
-            <Typography noWrap={true} title={h.label} sx={{ fontFamily: 'monospace' }}>
-              {h.text || h.label || h.source}
-            </Typography>
-            <Typography
-              noWrap={true}
-              variant="body2"
-              color="text.secondary"
-              title={[h.source, h.object].filter(Boolean).join('\n')}
-            >
-              {where(h)}
-            </Typography>
-          </Box>
-          <Button
-            size="small"
-            sx={{ flexShrink: 0 }}
-            aria-label={t`Show ${{ name: h.label || h.source }} again`}
-            onClick={() =>
-              persist(
-                () => ShowLogSource(game, h.source, h.text ?? '', h.object ?? ''),
-                t`Could not save that setting`,
-              )
-            }
-          >
-            {t`Show again`}
-          </Button>
-        </Box>
-      ))}
-    </Box>
-  )
-}
-
-// The messages hidden from the game's Console with right-click, for every profile of the game.
+/** The messages hidden from the game's Console with right-click, for every profile of the game, by source. */
 export function HiddenLogSources() {
   const { t } = useLingui()
   const game = useCurrentGame()
+  const hidden = useSettings((s) => s.games?.[game]?.hiddenLogSources) ?? []
+  const engine = t`Engine`
   return (
-    <SettingRow
-      label={t`Hidden messages`}
-      description={t`Right-click a line in the Console to hide every line from where it came from, in every profile of this game. The game stops writing them where its bridge can.`}
-    >
-      <HiddenList game={game} />
-    </SettingRow>
+    <Searchable terms={t`Hidden messages`}>
+      <SettingsSection
+        title={t`Hidden messages`}
+        description={t`Right-click a line in the Console to hide every line from where it came from, in every profile of this game. The game stops writing them where its bridge can.`}
+      >
+        {hidden.length === 0 ? (
+          <Typography sx={{ p: space.pad, color: 'text.secondary' }}>{t`None`}</Typography>
+        ) : null}
+        {grouped(hidden, engine).map(({ from, items }) => (
+          <Box
+            key={from}
+            sx={{ p: space.pad, display: 'flex', flexDirection: 'column', gap: space.gap }}
+          >
+            <Typography sx={{ fontWeight: 600, overflowWrap: 'anywhere' }}>{from}</Typography>
+            {items.map((h) => (
+              <Box
+                key={`${h.text}\t${h.object}`}
+                sx={{ display: 'flex', alignItems: 'flex-start', gap: space.gap, minWidth: 0 }}
+              >
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography
+                    title={h.label}
+                    sx={{
+                      fontFamily: 'monospace',
+                      whiteSpace: 'pre-wrap',
+                      overflowWrap: 'anywhere',
+                    }}
+                  >
+                    {h.text || t`Every message`}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ overflowWrap: 'anywhere' }}
+                  >
+                    {h.object
+                      ? t`Only lines about ${{ object: h.object }}`
+                      : t`Lines about every object`}
+                  </Typography>
+                </Box>
+                <Button
+                  size="small"
+                  sx={{ flexShrink: 0 }}
+                  aria-label={t`Show ${{ name: h.label || h.source }} again`}
+                  onClick={() =>
+                    persist(
+                      () => ShowLogSource(game, h.source, h.text ?? '', h.object ?? ''),
+                      t`Could not save that setting`,
+                    )
+                  }
+                >
+                  {t`Show again`}
+                </Button>
+              </Box>
+            ))}
+          </Box>
+        ))}
+      </SettingsSection>
+    </Searchable>
   )
 }
