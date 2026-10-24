@@ -101,7 +101,13 @@ const ModRow = memo(function ConfigModRow({
   )
 })
 
-function ShowMenu({ show, onChange }: { show: ConfigShow; onChange: (show: ConfigShow) => void }) {
+const ShowMenu = memo(function ShowMenuView({
+  show,
+  onChange,
+}: {
+  show: ConfigShow
+  onChange: (show: ConfigShow) => void
+}) {
   const { t } = useLingui()
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const labels: Record<ConfigShow, string> = {
@@ -144,25 +150,32 @@ function ShowMenu({ show, onChange }: { show: ConfigShow; onChange: (show: Confi
       </Menu>
     </>
   )
-}
+})
 
 type Listed = VirtualRow<ModConfig>
 type GroupsView = ReturnType<typeof useModGroups>
 
-function ListEntry({
+// Memoised with its own selected flag, so choosing a mod repaints the two rows whose selection changed, not the list.
+const ListEntry = memo(function ListEntryView({
   item,
-  view,
+  collapsed,
+  gameId,
+  setCollapsed,
+  groupBy,
   heading,
   headerGroups,
-  selection,
+  selected,
   pictures,
   onChoose,
 }: {
   item: Listed
-  view: GroupsView
+  collapsed: GroupsView['collapsed']
+  gameId: GroupsView['gameId']
+  setCollapsed: GroupsView['setCollapsed']
+  groupBy: GroupsView['groupBy']
   heading: ReturnType<typeof useListHeading>
   headerGroups: { key: string; items: GroupsView['groups'][number]['items'] }[]
-  selection: string | undefined
+  selected: boolean
   pictures: ReadonlyMap<string, string | undefined>
   onChoose: (selection: string) => void
 }) {
@@ -173,10 +186,10 @@ function ListEntry({
         groupKey={item.groupKey}
         count={item.count}
         label={heading(item.groupKey)}
-        collapsed={view.collapsed}
-        gameId={view.gameId}
-        setCollapsed={view.setCollapsed}
-        groupBy={view.groupBy}
+        collapsed={collapsed}
+        gameId={gameId}
+        setCollapsed={setCollapsed}
+        groupBy={groupBy}
         tagHint={t`A mod with several tags appears under its first tag.`}
         groups={headerGroups}
       />
@@ -189,11 +202,11 @@ function ListEntry({
     <ModRow
       config={item.item}
       picture={pictures.get(item.item.id)}
-      selected={modSelection(item.item.id) === selection}
+      selected={selected}
       onChoose={onChoose}
     />
   )
-}
+})
 
 function WithoutConfig({ count }: { count: number }) {
   const { t } = useLingui()
@@ -414,10 +427,13 @@ function ModsColumn({
               >
                 <ListEntry
                   item={item}
-                  view={view}
+                  collapsed={view.collapsed}
+                  gameId={view.gameId}
+                  setCollapsed={view.setCollapsed}
+                  groupBy={view.groupBy}
                   heading={heading}
                   headerGroups={headerGroups}
-                  selection={selection}
+                  selected={item.kind === 'row' && modSelection(item.item.id) === selection}
                   pictures={pictures}
                   onChoose={onChoose}
                 />

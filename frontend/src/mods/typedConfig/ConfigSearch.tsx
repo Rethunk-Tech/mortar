@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react'
+import { memo, useEffect, useState } from 'react'
 import { SearchField } from '../../shell/SearchField.tsx'
 
 // How long typing pauses before the mods and settings re-filter, so a word typed at speed filters them once.
 const SEARCH_SETTLE_MS = 150
 
 // Its own component: only the field follows each key typed; the Config tab hears the query once typing pauses.
-export function ConfigSearch({
+export const ConfigSearch = memo(function ConfigSearchView({
   label,
   placeholder,
   onQuery,
@@ -28,4 +28,4 @@ export function ConfigSearch({
       grow={true}
     />
   )
-}
+})

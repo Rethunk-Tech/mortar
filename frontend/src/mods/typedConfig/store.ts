@@ -96,8 +96,21 @@ const useTypedConfig = create<{
         if (get().target !== target) {
           return
         }
-        set({ files })
-        await get().select(files.find((f) => f.name === file)?.name ?? files[0]?.name ?? '')
+        const current = files.find((f) => f.name === file)?.name ?? files[0]?.name ?? ''
+        // The list and the shown file's settings land in one update, so the pane draws once rather than per step.
+        let loadError = ''
+        let shown = files
+        if (current) {
+          try {
+            const sections = await configApi.schema(target, current)
+            shown = files.map((f) => (f.name === current ? { ...f, sections } : f))
+          } catch (e) {
+            loadError = errorMessage(e)
+          }
+        }
+        if (get().target === target) {
+          set({ files: shown, current, loadError })
+        }
       } catch (e) {
         if (get().target === target) {
           set({ loadError: errorMessage(e) })

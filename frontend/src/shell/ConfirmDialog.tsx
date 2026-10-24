@@ -41,6 +41,10 @@ export function ConfirmDialog({
   onConfirm: () => void
 }) {
   const { t } = useLingui()
+  // A closed confirm draws nothing, so the screen that holds it does not repaint a dialog tree on every render.
+  if (!open) {
+    return null
+  }
   return (
     <Dialog
       open={open}
