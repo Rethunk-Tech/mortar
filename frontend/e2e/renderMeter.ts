@@ -144,6 +144,21 @@ export class Meter {
     return Object.fromEntries(metrics.map((m) => [m.name, m.value]))
   }
 
+  /** Dismisses the toasts on screen, whose timers would otherwise commit during the case, and logs what they said. */
+  async quietToasts(name: string) {
+    const region = this.page.getByRole('region', { name: 'Notifications' })
+    const dismiss = region.getByRole('button', { name: 'Dismiss' })
+    if ((await dismiss.count()) === 0) {
+      return
+    }
+    console.log(
+      `${name}: cleared toasts: ${(await region.innerText()).replace(/\s+/g, ' ').trim()}`,
+    )
+    for (let left = await dismiss.count(); left > 0; left--) {
+      await dismiss.first().click()
+    }
+  }
+
   async reset() {
     await this.page.evaluate(() => (globalThis as unknown as RenderWindow).mortarRenders.reset())
     this.calls = 0

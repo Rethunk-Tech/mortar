@@ -18,8 +18,8 @@ import { type LayoutBreak, layoutBreaks } from './renderLayout.ts'
 import { printExtras, report, startupLine, watchLog } from './renderLog.ts'
 import { Meter, type Sample } from './renderMeter.ts'
 import { screenCases } from './renderScreens.ts'
-import { VIEWPORT } from './renderViewport.ts'
-import { sandboxPort, selftest } from './sandbox.ts'
+import { PAGE } from './renderViewport.ts'
+import { keepServerLogs, sandboxPort, selftest } from './sandbox.ts'
 import { webkitWalk } from './webkit-walk.ts'
 
 // Render budget: walks every screen and the common interactions of a copied (or seeded) profile in headless Chromium and
@@ -50,8 +50,6 @@ import { webkitWalk } from './webkit-walk.ts'
 const BASE = '/var/tmp'
 
 const SETTLE_MS = Number(process.env.MORTAR_RENDER_SETTLE_MS ?? '3000')
-const MOTION = process.env.MORTAR_RENDER_MOTION === '1' ? 'no-preference' : 'reduce'
-const PAGE = { viewport: VIEWPORT, reducedMotion: MOTION } as const
 // Most cases show nothing idle; a short watch still sees churn, and the walk spends most of its time here.
 const IDLE_MS = Number(process.env.MORTAR_RENDER_IDLE_MS ?? '3000')
 const IDLE_SCALE_MS = 10_000
@@ -335,6 +333,7 @@ async function measure(
     const t0 = Date.now()
     await c.setup?.(page)
     await meter.untilStill(QUIET_MS, QUIET_MAX_MS)
+    await meter.quietToasts(c.name)
     await meter.reset()
     const t1 = Date.now()
     await c.run(page)
@@ -474,6 +473,7 @@ async function main(): Promise<number> {
       }
       ;({ results, breaks } = await walk(`http://127.0.0.1:${sandboxPort()}`, dir, chosen, shots))
     } finally {
+      keepServerLogs(dir, `${out}/sandbox-server`)
       try {
         selftest(dir, 'destroy')
       } catch {

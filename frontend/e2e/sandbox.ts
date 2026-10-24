@@ -140,6 +140,15 @@ function keepServerEvidence(dir: string) {
   }
 }
 
+/** Keeps the server's logs and state in out on every run, so a run whose server stopped can be traced after teardown. */
+function keepServerLogs(dir: string, out: string) {
+  try {
+    keepEvidence(dir, out, serverState(dir))
+  } catch {
+    // A start that failed early leaves no log to keep.
+  }
+}
+
 /** Seeds this run's own sandbox, since specs mutate it, and returns the teardown that removes exactly that one. */
 function freshSandbox(): () => void {
   reapStale()
@@ -203,4 +212,4 @@ function serverEnv(dir: string): Record<string, string> {
   return env
 }
 
-export { freshSandbox, sandboxPort, selftest, serverEnv }
+export { freshSandbox, keepServerLogs, sandboxPort, selftest, serverEnv }
