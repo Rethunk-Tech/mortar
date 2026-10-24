@@ -1,9 +1,4 @@
-import { expect, mock, test } from 'bun:test'
-
-mock.module('@lingui/core/macro', () => ({
-  msg: (parts: TemplateStringsArray, ...values: unknown[]) => String.raw({ raw: parts }, ...values),
-  plural: (n: number, forms: { other: string }) => forms.other.replace('#', String(n)),
-}))
+import { expect, test } from 'bun:test'
 
 const { offlineMessage, unreachableNote, updatesReasonOf } = await import('./offlineText.ts')
 
