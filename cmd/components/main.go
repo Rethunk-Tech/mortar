@@ -79,11 +79,11 @@ func run(ctx context.Context, o options) error {
 	if err := manifest.Validate(); err != nil {
 		return err
 	}
-	// Unescaped so version ranges such as ">=1.6.14" stay as the committed manifest has them.
+	// Unescaped so version ranges such as ">=1.6.14" stay as the committed manifest has them. The published manifest is
+	// minified; the bundled copy is indented, for its diffs.
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	enc.SetEscapeHTML(false)
-	enc.SetIndent("", "  ")
 	if err := enc.Encode(manifest); err != nil {
 		return err
 	}
@@ -108,7 +108,11 @@ func run(ctx context.Context, o options) error {
 			return fmt.Errorf("verify component manifest: %w", err)
 		}
 	}
-	if err := fsx.WriteFile(o.bundled, body, 0o600); err != nil {
+	var bundled bytes.Buffer
+	if err := json.Indent(&bundled, body, "", "  "); err != nil {
+		return err
+	}
+	if err := fsx.WriteFile(o.bundled, bundled.Bytes(), 0o600); err != nil {
 		return fmt.Errorf("write bundled component manifest: %w", err)
 	}
 	return nil
