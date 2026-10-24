@@ -158,7 +158,9 @@ owned() {
 # display_up starts the sandbox's hidden display once: a headless mutter with a virtual monitor, its own Xwayland, a
 # D-Bus session of its own and a private runtime dir (no desktop socket, audio or portal in it). The desktop session's
 # DISPLAY, WAYLAND_DISPLAY and bus are unset first, so nothing started on it can reach the desktop. mutter runs a
-# sleep that holds it up; display.hold records that sleep, whose exit ends mutter and its bus.
+# sleep that holds it up; display.hold records that sleep, whose exit ends mutter and its bus. The bus gets a keyring of
+# its own in the sandbox's home before anything asks for one: otherwise D-Bus starts one on the real home's login
+# keyring, locked without its password, and every secret read waits on an unlock prompt nobody can see.
 display_up() {
   local run=$ROOT/run
   if [ -s "$run/display.env" ] && owned "$(cat "$ROOT/display.hold" 2>/dev/null || echo 0)"; then
@@ -174,6 +176,7 @@ display_up() {
   # mutter runs this inside its session, where DISPLAY names the Xwayland it started.
   cat >"$ROOT/display-hold.sh" <<'HOLD'
 echo $$ >display.hold
+HOME=$1 gnome-keyring-daemon --start --components=secrets >/dev/null 2>&1 || true
 printf '%s\n' "$DISPLAY" >"$XDG_RUNTIME_DIR/display.x11"
 printf 'DISPLAY=%s\nWAYLAND_DISPLAY=%s\nDBUS_SESSION_BUS_ADDRESS=%s\nXAUTHORITY=%s\n' "$DISPLAY" "$WAYLAND_DISPLAY" "$DBUS_SESSION_BUS_ADDRESS" "${XAUTHORITY:-}" >"$XDG_RUNTIME_DIR/display.env.new"
 mv "$XDG_RUNTIME_DIR/display.env.new" "$XDG_RUNTIME_DIR/display.env"
@@ -181,7 +184,7 @@ exec sleep infinity
 HOLD
   (cd "$ROOT" && env -u DISPLAY -u WAYLAND_DISPLAY -u XAUTHORITY -u DBUS_SESSION_BUS_ADDRESS -u XDG_SESSION_TYPE -u PULSE_SERVER \
     XDG_RUNTIME_DIR="$run" nohup dbus-run-session -- mutter --wayland --headless --virtual-monitor 1280x720 \
-    --wayland-display mortar-hidden -- sh "$ROOT/display-hold.sh" >"$ROOT/display.log" 2>&1 &)
+    --wayland-display mortar-hidden -- sh "$ROOT/display-hold.sh" "$SANDBOX_HOME" >"$ROOT/display.log" 2>&1 &)
   for _ in $(seq 1 100); do
     [ -s "$run/display.env" ] && return
     sleep 0.1
