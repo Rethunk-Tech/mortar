@@ -19,6 +19,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/pack"
@@ -152,7 +153,7 @@ func (s *Service) ModpackChangelog(gameID, profileID, version string, includeDis
 
 // splitDependency is the package id and version of a Namespace-Name-version string.
 func splitDependency(dep string) (id, version string) {
-	id, version, ok := strings.CutLast(dep, "-")
+	id, version, ok := deps.ThunderstoreRef(dep)
 	if !ok {
 		return dep, ""
 	}

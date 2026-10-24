@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 )
 
@@ -55,11 +56,11 @@ func (Modpack) Parse(_ context.Context, in Input) (Draft, error) {
 	}
 	d := Draft{Name: m.Name, Configs: filesUnder(files, "config/")}
 	for _, dep := range m.Dependencies {
-		i := strings.LastIndex(dep, "-")
-		if i < 1 || !nativeID.MatchString(dep[:i]) || !versionNumber.MatchString(dep[i+1:]) {
+		pkg, version, ok := deps.ThunderstoreRef(dep)
+		if !ok || !nativeID.MatchString(pkg) || !versionNumber.MatchString(version) {
 			return Draft{}, fmt.Errorf("malformed dependency %q", dep)
 		}
-		d.Packages = append(d.Packages, Ref{Source: thunderstore, Native: dep[:i], Version: dep[i+1:]})
+		d.Packages = append(d.Packages, Ref{Source: thunderstore, Native: pkg, Version: version})
 	}
 	return d, nil
 }

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"slices"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -240,5 +241,11 @@ func TestUnresolvableNamesOnlyThePackagesWhoseClosureFails(t *testing.T) {
 	got := f.s.Unresolvable(t.Context(), "riskofrain2", "p1", []Request{{Package: "Me-Gone", Version: "1.0.0"}, {Package: "Me-Fine"}, {Kind: KindInstall}})
 	if len(got) != 1 || got["Me-Gone"] != "me-gone 1.0.0 is not in the index" {
 		t.Errorf("got %v", got)
+	}
+}
+
+func TestPackageNeedsSkipsADependencyWithoutAVersion(t *testing.T) {
+	if got := packageNeeds([]string{"Ns-Name", "A-B-1.0.0"}); !slices.Equal(got, []string{"a-b"}) {
+		t.Fatalf("%v", got)
 	}
 }

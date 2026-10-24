@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
@@ -120,11 +121,11 @@ func (s *Service) Unresolvable(ctx context.Context, gameID, profileID string, re
 }
 
 // packageNeeds is the lowercase package ids of a package's "Namespace-Name-Version" dependencies.
-func packageNeeds(deps []string) []string {
+func packageNeeds(needs []string) []string {
 	var out []string
-	for _, d := range deps {
-		if i := strings.LastIndex(d, "-"); i > 0 {
-			out = append(out, strings.ToLower(d[:i]))
+	for _, d := range needs {
+		if pkg, _, ok := deps.ThunderstoreRef(d); ok {
+			out = append(out, strings.ToLower(pkg))
 		}
 	}
 	return out
@@ -136,8 +137,8 @@ func inferPackageReasons(list []thunderstore.Resolved, roots map[string]Request)
 	for _, p := range list {
 		id := strings.ToLower(p.Namespace + "-" + p.Name)
 		for _, d := range p.Dependencies {
-			if i := strings.LastIndex(d, "-"); i > 0 {
-				requires[id] = append(requires[id], strings.ToLower(d[:i]))
+			if pkg, _, ok := deps.ThunderstoreRef(d); ok {
+				requires[id] = append(requires[id], strings.ToLower(pkg))
 			}
 		}
 	}

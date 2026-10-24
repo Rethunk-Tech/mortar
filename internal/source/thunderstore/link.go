@@ -10,6 +10,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
@@ -154,11 +155,11 @@ func (d Driver) Dependencies(ctx context.Context, key, mortarVersion string, ref
 			if !ok {
 				continue
 			}
-			deps := p.depsOf(v)
-			names := make([]string, 0, len(deps))
-			for _, dep := range deps {
-				if i := strings.LastIndex(dep, "-"); i > 0 {
-					dep = dep[:i]
+			needs := p.depsOf(v)
+			names := make([]string, 0, len(needs))
+			for _, dep := range needs {
+				if pkg, _, ok := deps.ThunderstoreRef(dep); ok {
+					dep = pkg
 				}
 				names = append(names, dep)
 			}

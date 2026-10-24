@@ -12,6 +12,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/winname"
 	_ "modernc.org/sqlite"
@@ -38,12 +39,11 @@ type galeMod struct {
 
 // galeRef is the package a "Namespace-Name-Version" names.
 func galeRef(full string) (Ref, bool) {
-	owner, rest, ok := strings.Cut(full, "-")
-	name, version, ok2 := strings.Cut(rest, "-")
-	if !ok || !ok2 || !nativeID.MatchString(owner+"-"+name) {
+	pkg, version, ok := deps.ThunderstoreRef(full)
+	if !ok || !nativeID.MatchString(pkg) {
 		return Ref{}, false
 	}
-	return Ref{Source: thunderstore, Native: owner + "-" + name, Version: version}, true
+	return Ref{Source: thunderstore, Native: pkg, Version: version}, true
 }
 
 // Gale reads the profiles in Gale's database, data.sqlite3 in its data folder. Gale saves a profile with

@@ -34,15 +34,21 @@ type Dependency struct {
 
 // Thunderstore reads a "Namespace-Name-Version" dependency string; the target keeps the spelling.
 func Thunderstore(s string) (Dependency, error) {
-	parts := strings.Split(s, "-")
-	if len(parts) != 3 || parts[0] == "" || parts[1] == "" {
+	pkg, version, ok := ThunderstoreRef(s)
+	if !ok {
 		return Dependency{}, fmt.Errorf("malformed dependency %q", s)
 	}
-	return Dependency{
-		Target:     Target{Package: "thunderstore:" + parts[0] + "-" + parts[1]},
-		Constraint: parts[2],
-		Relation:   Required,
-	}, nil
+	return Dependency{Target: Target{Package: "thunderstore:" + pkg}, Constraint: version, Relation: Required}, nil
+}
+
+// ThunderstoreRef splits "Namespace-Name-Version" into its "Namespace-Name" package and its version. Thunderstore
+// allows no '-' inside a namespace, name or version, so anything but three parts with a namespace and name is malformed.
+func ThunderstoreRef(s string) (pkg, version string, ok bool) {
+	parts := strings.Split(s, "-")
+	if len(parts) != 3 || parts[0] == "" || parts[1] == "" {
+		return "", "", false
+	}
+	return parts[0] + "-" + parts[1], parts[2], true
 }
 
 // SMAPI maps a manifest Dependencies[] entry; required follows IsRequired.
