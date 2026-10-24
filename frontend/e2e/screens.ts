@@ -339,6 +339,44 @@ const SITE: Scene[] = [
         .click({ timeout: STEP_MS })
     },
   },
+  {
+    name: 'change-version',
+    ...DESK,
+    profile: LETHAL_MEASURED,
+    steps: async (page) => {
+      await click(page, 'tab', 'Mods')
+      await page
+        .getByRole('button', { name: /^Details of /u })
+        .nth(5)
+        .click({ timeout: STEP_MS })
+      await click(page, 'button', /^Change version…/u)
+      await page
+        .getByRole('dialog')
+        .getByRole('list', { name: 'Versions' })
+        .waitFor({ timeout: 20_000 })
+    },
+  },
+  {
+    name: 'add-game',
+    ...DESK,
+    steps: async (page) => {
+      await openGameSelect(page)
+      await click(page, 'button', /^Add a game…/u)
+      await page.getByRole('dialog').waitFor({ timeout: STEP_MS })
+    },
+  },
+  {
+    name: 'multiplayer',
+    ...WIDE,
+    profile: LETHAL_MEASURED,
+    steps: async (page) => {
+      await page
+        .getByRole('button', { name: /^Switch profile/u })
+        .click({ button: 'right', timeout: STEP_MS })
+      await click(page, 'menuitem', /^Multiplayer mod list…/u)
+      await page.getByRole('dialog').waitFor({ timeout: STEP_MS })
+    },
+  },
 ]
 
 function publishSite() {
