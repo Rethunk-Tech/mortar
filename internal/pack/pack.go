@@ -77,9 +77,10 @@ const (
 	maxEntries = 5000
 	// maxTotal bounds a whole pack's unpacked size, so many small-looking entries cannot add up to a zip bomb.
 	maxTotal = 256 << 20
-	// maxInput bounds a pack read from disk or pasted.
-	maxInput = 128 << 20
 )
+
+// maxInput bounds a pack read from disk or pasted.
+var maxInput int64 = 128 << 20
 
 // nativeID is a Thunderstore package name, Namespace-Name, whose parts are the site's own word characters.
 var nativeID = regexp.MustCompile(`^\w+-\w+$`)

@@ -110,7 +110,7 @@ func (c Code) Parse(ctx context.Context, in Input) (Draft, error) {
 			}
 			text = fetched
 		}
-		if len(text) > maxInput {
+		if int64(len(text)) > maxInput {
 			return Draft{}, errors.New("profile code is too large")
 		}
 		body, ok := strings.CutPrefix(text, codePrefix)

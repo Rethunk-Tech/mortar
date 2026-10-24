@@ -42,15 +42,18 @@ func TestGaleCodeDetectsOnlyItsOwnShape(t *testing.T) {
 }
 
 func TestGaleCodeRefusesAMalformedOrOversizedAnswer(t *testing.T) {
-	for name, body := range map[string]string{
-		"not a zip": "hello",
-		"too large": strings.Repeat("x", maxInput+1),
+	prev := maxInput
+	maxInput = 16
+	t.Cleanup(func() { maxInput = prev })
+	for name, tc := range map[string]struct{ body, want string }{
+		"not a zip": {"hello", "zip"},
+		"too large": {strings.Repeat("x", int(maxInput)+1), "too large"},
 	} {
-		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write([]byte(body)) }))
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write([]byte(tc.body)) }))
 		_, err := GaleCode{URL: srv.URL}.Parse(t.Context(), Input{Text: "E5RG8F"})
 		srv.Close()
-		if err == nil {
-			t.Errorf("%s: no error", name)
+		if err == nil || !strings.Contains(err.Error(), tc.want) {
+			t.Errorf("%s: err = %v, want %q", name, err, tc.want)
 		}
 	}
 }
