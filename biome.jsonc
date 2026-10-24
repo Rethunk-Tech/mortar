@@ -129,7 +129,6 @@
         }
       },
 
-      // canon ts-biome-00019 — the rule's type inference does not model RegExp.exec().
       "correctness": {
         // canon ts-biome-00031
         "useImportExtensions": "on",
