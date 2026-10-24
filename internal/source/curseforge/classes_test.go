@@ -131,3 +131,47 @@ func classNumber(q url.Values) string {
 	}
 	return "0"
 }
+
+// Each class answers the Popularity sort, which is not its thumbs-up order; a mod with many thumbs deep in one class
+// must not shift the merged pages under a player paging through them.
+func TestMergedPagesByThumbsNeitherRepeatNorSkip(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		q := r.URL.Query()
+		index, _ := strconv.Atoi(q.Get("index"))
+		size, _ := strconv.Atoi(q.Get("pageSize"))
+		class := classNumber(q)
+		out := `{"data":[`
+		for i := index; i < min(index+size, 200); i++ {
+			if i > index {
+				out += ","
+			}
+			thumbs := 5
+			if class == "1" {
+				thumbs = 10
+				if i == 25 {
+					thumbs = 10000
+				}
+			}
+			out += `{"id":` + class + strconv.Itoa(1000+i) + `,"name":"m","thumbsUpCount":` + strconv.Itoa(thumbs) + `}`
+		}
+		_, _ = w.Write([]byte(out + `],"pagination":{"totalCount":200}}`))
+	}))
+	t.Cleanup(srv.Close)
+	d := Driver{URL: srv.URL, Key: func() string { return "k" }, GameSource: func(string) (components.GameSource, bool) {
+		return components.GameSource{ID: "curseforge", Key: "1", GameID: 7, Classes: []string{"1", "2"}}, true
+	}}
+	seen := map[string]bool{}
+	for p := source.FirstPage; p < source.FirstPage+3; p++ {
+		page, err := d.Search(t.Context(), source.Query{Game: "g", Key: "1", Sort: source.SortEndorsements, Page: p})
+		if err != nil || len(page.Items) != source.PageSize {
+			t.Fatalf("page %d: %d items, %v", p, len(page.Items), err)
+		}
+		for _, it := range page.Items {
+			if seen[it.ID] {
+				t.Fatalf("page %d repeats %s", p, it.ID)
+			}
+			seen[it.ID] = true
+		}
+	}
+}

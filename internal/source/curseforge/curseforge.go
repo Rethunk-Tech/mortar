@@ -517,16 +517,14 @@ func (d Driver) classRowsTo(ctx context.Context, gameID int, class string, q sou
 
 // searchClasses merges the classes' results by the query's sort and returns the page at index, never deeper than
 // mergedCap. Each class is read from its start to the end of the page (rows already read are reused), because a merged
-// page needs every class's leading rows; ties keep each class's own order, interleaved by rank then class.
+// page needs every class's leading rows. The merge takes the best of the classes' next rows and keeps each class's own
+// order, which the API's sort need not match exactly (Popularity is not the thumbs-up count), so the merged order of
+// the first rows never changes as later pages read deeper; ties go by rank, then class.
 func (d Driver) searchClasses(ctx context.Context, gameID int, classes []string, q source.Query, index int) (mods []modResp, total int, failed []string, err error) {
 	end := index + source.PageSize
-	type ranked struct {
-		mod         modResp
-		rank, class int
-	}
-	var all []ranked
+	var lanes [][]modResp
 	var errs []error
-	for ci, class := range classes {
+	for _, class := range classes {
 		got, n, err := d.classRowsTo(ctx, gameID, class, q, end)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("class %s: %w", class, err))
@@ -534,18 +532,32 @@ func (d Driver) searchClasses(ctx context.Context, gameID int, classes []string,
 			continue
 		}
 		total += n
-		for r, m := range got {
-			all = append(all, ranked{m, r, ci})
-		}
+		lanes = append(lanes, got)
 	}
-	slices.SortStableFunc(all, func(a, b ranked) int {
-		if c := compareBySort(q.Sort, a.mod, b.mod); c != 0 {
-			return c
-		}
-		return cmp.Or(cmp.Compare(a.rank, b.rank), cmp.Compare(a.class, b.class))
-	})
 	if len(failed) == len(classes) {
 		return nil, 0, nil, errors.Join(errs...)
+	}
+	next := make([]int, len(lanes))
+	var all []modResp
+	for len(all) < end {
+		best := -1
+		for c, lane := range lanes {
+			if next[c] >= len(lane) {
+				continue
+			}
+			if best < 0 {
+				best = c
+				continue
+			}
+			if cmp.Or(compareBySort(q.Sort, lane[next[c]], lanes[best][next[best]]), cmp.Compare(next[c], next[best])) < 0 {
+				best = c
+			}
+		}
+		if best < 0 {
+			break
+		}
+		all = append(all, lanes[best][next[best]])
+		next[best]++
 	}
 	if len(failed) > 0 {
 		log.Printf("curseforge: search of %d classes: %d answered with %d mods, %d failed (%s): %v",
@@ -554,11 +566,7 @@ func (d Driver) searchClasses(ctx context.Context, gameID int, classes []string,
 	if index >= len(all) {
 		return nil, total, failed, nil
 	}
-	out := make([]modResp, 0, min(end, len(all))-index)
-	for _, r := range all[index:min(end, len(all))] {
-		out = append(out, r.mod)
-	}
-	return out, total, failed, nil
+	return slices.Clone(all[index:]), total, failed, nil
 }
 
 // compareBySort orders two mods as the API's sortField does: negative when a comes first.
