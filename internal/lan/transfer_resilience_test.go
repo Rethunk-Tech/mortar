@@ -45,7 +45,8 @@ func TestAReaderThatPausesMidEntryStillGetsTheWholeEntry(t *testing.T) {
 	sender.rememberGrant("tok", "stardew", []string{key})
 	server := httptest.NewUnstartedServer(sender.handler())
 	server.Config = newHTTPServer(sender.handler())
-	server.Config.ReadHeaderTimeout = 20 * time.Millisecond
+	// Headers are read before the pause, so this bound only has to outlast a loaded runner sending them.
+	server.Config.ReadHeaderTimeout = time.Second
 	server.Config.IdleTimeout = 20 * time.Millisecond
 	server.Start()
 	defer server.Close()
