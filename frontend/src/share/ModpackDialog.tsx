@@ -36,6 +36,7 @@ import { usePending } from '../toasts/usePending.ts'
 const DESCRIPTION_MAX = 250
 const NAME_PATTERN = /^[A-Za-z0-9_]+$/
 const VERSION_PATTERN = /^\d+\.\d+\.\d+$/
+const errorText = { fontSize: 'base.fontSize', color: 'error.main' } as const
 const monoField = { '& textarea': { fontFamily: MONO, fontSize: 'base.fontSize' } } as const
 
 const HTTP = /^https?:\/\//
@@ -255,9 +256,7 @@ function Fields({
               ? t`Depends on ${{ dependencies: form.dependencies }} ${{ source: sourceLabel('thunderstore') }} packages. Left out: ${{ names: listNames(left) }}.`
               : t`Depends on ${{ dependencies: form.dependencies }} ${{ source: sourceLabel('thunderstore') }} packages.`}
           </Typography>
-          {bad ? (
-            <Typography sx={{ fontSize: 'base.fontSize', color: 'error.main' }}>{bad}</Typography>
-          ) : null}
+          {bad ? <Typography sx={errorText}>{bad}</Typography> : null}
         </Box>
       </DialogContent>
       <DialogActions>

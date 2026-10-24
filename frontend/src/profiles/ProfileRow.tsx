@@ -26,6 +26,8 @@ import { joinSummary, knownCount, originLine } from './summary.ts'
 
 const DRAG_TINT_ALPHA = 0.24
 const panelSx = { bgcolor: 'var(--mortar-paper-78)', borderRadius: '6px' }
+const secondaryText = { fontSize: 'base.fontSize', color: 'text.secondary' } as const
+
 function RowMenu({
   profile,
   anchor,
@@ -125,11 +127,7 @@ function BudgetLine({ budget }: { budget: ProfileBudget | undefined }) {
     budget.saves > 0 ? t`${{ size: formatBytes(budget.saves) }} of saves` : undefined,
   ])
   return (
-    <Typography
-      noWrap={true}
-      title={line}
-      sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}
-    >
+    <Typography noWrap={true} title={line} sx={secondaryText}>
       {line}
     </Typography>
   )
@@ -228,20 +226,12 @@ export const ProfileRow = memo(function ProfileRowView({
         )}
         {profile.description ? (
           <Tooltip title={profile.description}>
-            <Typography
-              noWrap={true}
-              tabIndex={0}
-              sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}
-            >
+            <Typography noWrap={true} tabIndex={0} sx={secondaryText}>
               {profile.description}
             </Typography>
           </Tooltip>
         ) : null}
-        <Typography
-          noWrap={true}
-          title={summary}
-          sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}
-        >
+        <Typography noWrap={true} title={summary} sx={secondaryText}>
           {summary}
         </Typography>
         <BudgetLine budget={budget} />
