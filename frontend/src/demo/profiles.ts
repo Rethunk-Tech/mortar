@@ -36,7 +36,7 @@ export class Profiles {
     return list
   }
 
-  find(id: string): Profile | undefined {
+  byId(id: string): Profile | undefined {
     for (const list of this.lists.values()) {
       const found = list.find((p) => p.id === id)
       if (found) {
@@ -79,7 +79,7 @@ export class Profiles {
 
   /** Switches one of a profile's mods, as the profile's entry records it: the ids it holds switched off. */
   setEnabled(id: string, key: string, mod: string, on: boolean): Profile | undefined {
-    const p = this.find(id)
+    const p = this.byId(id)
     const entries = Array.isArray(p?.entries) ? p.entries.filter(isRecord) : []
     const entry = entries.find((e) => e.key === key)
     if (entry) {
@@ -95,7 +95,7 @@ export class Profiles {
   }
 
   state(id: string): string {
-    return modState(this.find(id))
+    return modState(this.byId(id))
   }
 
   /** A recorded answer with every profile it carries as the visit has left it, and each mod's switch to match. */
@@ -106,7 +106,7 @@ export class Profiles {
     if (!isRecord(value)) {
       return value
     }
-    const p = isProfile(value) ? this.find(String(value.id)) : undefined
+    const p = isProfile(value) ? this.byId(String(value.id)) : undefined
     if (p) {
       return p
     }
@@ -119,7 +119,7 @@ export class Profiles {
 
   /** The mod list of a profile with each mod switched as its entry now has it. */
   mods(id: string, list: unknown): unknown {
-    const p = this.find(id)
+    const p = this.byId(id)
     const entries = Array.isArray(p?.entries) ? p.entries.filter(isRecord) : []
     if (!Array.isArray(list)) {
       return list

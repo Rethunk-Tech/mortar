@@ -42,7 +42,7 @@ export class Backend {
     const m = methodOf(method)
     const name = m?.name ?? ''
     for (const a of args) {
-      if (typeof a === 'string' && this.profiles.find(a)) {
+      if (typeof a === 'string' && this.profiles.byId(a)) {
         this.profiles.last = a
       }
     }
@@ -118,7 +118,7 @@ export class Backend {
   // not model leaves the profile as it was, which is what the views read back.
   private fallback(name: string, result: string, args: unknown[]): unknown {
     if (result === '$models.Profile' || result === 'profile$0.Profile') {
-      const p = this.profiles.find(str(args[1]))
+      const p = this.profiles.byId(str(args[1]))
       const field = name.startsWith('profile.Set') ? name.slice('profile.Set'.length) : ''
       if (p && field !== '' && args.length === PROFILE_SETTER_ARGS) {
         p[field.charAt(0).toLowerCase() + field.slice(1)] = args[2]
@@ -139,12 +139,12 @@ export class Backend {
       'profile.List': ([game], recorded) => p.list(str(game), recorded()),
       'profile.Create': ([game, name]) => p.create(str(game), str(name)),
       'profile.Duplicate': ([game, id]) => {
-        const from = p.find(str(id))
+        const from = p.byId(str(id))
         return p.add(str(game), from, `${str(from?.name)} (copy)`, str(id))
       },
-      'profile.Rename': ([, id, name]) => Object.assign(p.find(str(id)) ?? {}, { name: str(name) }),
+      'profile.Rename': ([, id, name]) => Object.assign(p.byId(str(id)) ?? {}, { name: str(name) }),
       'profile.SetAppearance': ([, id, color, icon, description]) =>
-        Object.assign(p.find(str(id)) ?? {}, { color, icon, description }),
+        Object.assign(p.byId(str(id)) ?? {}, { color, icon, description }),
       'profile.Delete': ([game, id]) => {
         p.remove(str(game), str(id))
         this.changed(str(game))
@@ -156,10 +156,10 @@ export class Backend {
         for (const r of Array.isArray(refs) ? refs.filter(isRecord) : []) {
           p.setEnabled(str(id), str(r.key), str(r.id), on === true)
         }
-        return enabled(p.find(str(id)))
+        return enabled(p.byId(str(id)))
       },
       'templates.NewProfileFromTemplate': ([game, , name]) => ({
-        profile: p.add(str(game), p.find(this.demoProfile), str(name), this.demoProfile),
+        profile: p.add(str(game), p.byId(this.demoProfile), str(name), this.demoProfile),
         missing: [],
         missingMods: [],
       }),
