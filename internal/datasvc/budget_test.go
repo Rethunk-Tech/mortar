@@ -10,6 +10,7 @@ import (
 )
 
 func TestMeasureBudgetsSplitsStoreSharedDeployedAndSaves(t *testing.T) {
+	t.Parallel()
 	root := t.TempDir()
 	write := func(rel, body string) {
 		t.Helper()
@@ -41,6 +42,7 @@ func TestMeasureBudgetsSplitsStoreSharedDeployedAndSaves(t *testing.T) {
 // A loader kept in the profile (BepInEx) counts under Deployed, byte for byte as du --apparent-size counts its files;
 // the profile's own bookkeeping does not.
 func TestMeasureBudgetsCountsTheLoaderFilesInTheProfile(t *testing.T) {
+	t.Parallel()
 	root := t.TempDir()
 	id := "0123456789abcdef"
 	for rel, n := range map[string]int{

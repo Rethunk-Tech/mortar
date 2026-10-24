@@ -12,6 +12,7 @@ import (
 )
 
 func TestMeasureSizesSkipSymlinks(t *testing.T) {
+	t.Parallel()
 	root := t.TempDir()
 	write := func(rel string, n int) {
 		t.Helper()
@@ -46,6 +47,7 @@ func TestMeasureSizesSkipSymlinks(t *testing.T) {
 }
 
 func TestMeasureGameTotals(t *testing.T) {
+	t.Parallel()
 	root := t.TempDir()
 	write := func(rel string, n int) {
 		t.Helper()
@@ -118,6 +120,7 @@ func TestMeasureGameTotals(t *testing.T) {
 }
 
 func TestMeasureSharedSavedHardlink(t *testing.T) {
+	t.Parallel()
 	root := t.TempDir()
 	store := filepath.Join(root, "store", "g", "k", "m.bin")
 	testfs.WriteAt(t, store, make([]byte, 8192))
@@ -138,6 +141,7 @@ func TestMeasureSharedSavedHardlink(t *testing.T) {
 }
 
 func TestMeasureModUsageAggregatesStoreAndProfileCopies(t *testing.T) {
+	t.Parallel()
 	root := t.TempDir()
 	write := func(rel string, n int) {
 		t.Helper()
@@ -199,6 +203,7 @@ func TestMeasureModUsageAggregatesStoreAndProfileCopies(t *testing.T) {
 }
 
 func TestMeasureReportsProgress(t *testing.T) {
+	t.Parallel()
 	root := t.TempDir()
 	p := filepath.Join(root, "store", "f.bin")
 	testfs.WriteAt(t, p, []byte("abc"))
@@ -212,6 +217,7 @@ func TestMeasureReportsProgress(t *testing.T) {
 }
 
 func TestPerFileEntriesCountTheirStoreItemOnce(t *testing.T) {
+	t.Parallel()
 	root := t.TempDir()
 	dir := filepath.Join(root, "profiles", "sims4", "0123456789abcdef")
 	if err := os.MkdirAll(dir, 0o700); err != nil {
@@ -228,6 +234,7 @@ func TestPerFileEntriesCountTheirStoreItemOnce(t *testing.T) {
 }
 
 func TestMeasureChargesSharedFilesToTheFirstWalkedAcrossBatches(t *testing.T) {
+	t.Parallel()
 	root := t.TempDir()
 	const files = probeBatch*2 + 7
 	for i := range files {

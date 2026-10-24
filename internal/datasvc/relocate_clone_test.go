@@ -12,6 +12,7 @@ import (
 
 // A move keeps the profile files that clone the store as clones; it skips itself where the temp dir cannot clone.
 func TestRelocateKeepsStoreClonesShared(t *testing.T) {
+	t.Parallel()
 	const size = 1 << 20
 	root := t.TempDir()
 	src, dest, def := filepath.Join(root, "src"), filepath.Join(root, "dest"), filepath.Join(root, "def")

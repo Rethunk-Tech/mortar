@@ -9,6 +9,7 @@ import (
 )
 
 func TestAHardLinkCostsNothingWhenItsFileWasCountedWithoutExtents(t *testing.T) {
+	t.Parallel()
 	dir := t.TempDir()
 	file := filepath.Join(dir, "store.bin")
 	testfs.WriteAt(t, file, make([]byte, 8192))
