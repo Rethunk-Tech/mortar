@@ -103,6 +103,7 @@ func TestAGrantSlidesWithActivityAndExpiresWhenIdle(t *testing.T) {
 }
 
 func TestAFinishedPullEndsItsGrant(t *testing.T) {
+	t.Parallel()
 	r := sentRig(t)
 	token := r.receiver.incoming[r.arrival.ID].Token
 	if !r.sender.grantAllows(token, "stardew", store.NexusKey(7, 2)) {

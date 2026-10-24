@@ -222,6 +222,7 @@ func TestShareRateLimit(t *testing.T) {
 }
 
 func TestLoopbackTransfer(t *testing.T) {
+	t.Parallel()
 	senderStore := store.OpenAt(t.TempDir())
 	source := t.TempDir()
 	if err := os.WriteFile(filepath.Join(source, "mod.dll"), []byte("from sender"), 0o600); err != nil {
@@ -341,6 +342,7 @@ func TestLoopbackTransfer(t *testing.T) {
 }
 
 func TestLethalCompanyProfileOverLAN(t *testing.T) {
+	t.Parallel()
 	senderStore, modsDir := store.OpenAt(t.TempDir()), t.TempDir()
 	packages := []struct{ name, version string }{{"Alice-MoreCompany", "1.2.3"}, {"Bob-LateCompany", "2.0.0"}}
 	var entries []profile.Entry
@@ -570,6 +572,7 @@ func TestPendingKeepsSharesUntilDismissed(t *testing.T) {
 }
 
 func TestPairTranscriptBindsBothNames(t *testing.T) {
+	t.Parallel()
 	base := pairTranscript([]byte("a"), []byte("b"), "j", "Joiner", "h", "Host")
 	for _, other := range [][]byte{
 		pairTranscript([]byte("a"), []byte("b"), "j", "Eve", "h", "Host"),
@@ -582,6 +585,7 @@ func TestPairTranscriptBindsBothNames(t *testing.T) {
 }
 
 func TestEntryMACBindsHashGameAndKey(t *testing.T) {
+	t.Parallel()
 	key := []byte("pair key")
 	mac := entryMAC(key, "stardew", "nexus-1-2", "local-aa")
 	for _, other := range []string{
@@ -597,6 +601,7 @@ func TestEntryMACBindsHashGameAndKey(t *testing.T) {
 }
 
 func TestExtractTarRefusesEscapesAndLinks(t *testing.T) {
+	t.Parallel()
 	tarOf := func(h tar.Header, body string) io.Reader {
 		var buf bytes.Buffer
 		w := tar.NewWriter(&buf)

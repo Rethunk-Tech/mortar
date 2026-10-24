@@ -78,6 +78,7 @@ func sentRig(t *testing.T) outgoingRig {
 }
 
 func TestSenderSeesThePullFinish(t *testing.T) {
+	t.Parallel()
 	r := sentRig(t)
 	if got := r.sender.OutgoingTransfers(); len(got) != 1 || got[0].State != OutgoingSending || got[0].Total != 2 || got[0].Profile != "Farm friends" {
 		t.Fatalf("right after sending = %+v", got)
@@ -98,6 +99,7 @@ func TestSenderSeesThePullFinish(t *testing.T) {
 }
 
 func TestSenderSeesWhyThePullStopped(t *testing.T) {
+	t.Parallel()
 	for _, tc := range []struct {
 		name   string
 		report outgoingReport
@@ -124,6 +126,7 @@ func TestSenderSeesWhyThePullStopped(t *testing.T) {
 }
 
 func TestSenderGivesUpOnAPullThatWentQuiet(t *testing.T) {
+	t.Parallel()
 	r := sentRig(t)
 	for token := range r.sender.outgoing {
 		r.sender.outgoing[token].stall.Reset(time.Millisecond)
@@ -141,6 +144,7 @@ func TestSenderGivesUpOnAPullThatWentQuiet(t *testing.T) {
 }
 
 func TestSenderGoingAwayMidTransferSaysSo(t *testing.T) {
+	t.Parallel()
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		// Promising more than is sent makes the server drop the connection, as a sender that shut down would.
 		w.Header().Set("Content-Length", "100000")
@@ -159,6 +163,7 @@ func TestSenderGoingAwayMidTransferSaysSo(t *testing.T) {
 }
 
 func TestADamagedFileIsNotCalledADisconnect(t *testing.T) {
+	t.Parallel()
 	err := receiveError("Desk", errors.New("tar: invalid header"))
 	if usererr.KindOf(err) != usererr.Damaged || !strings.Contains(err.Error(), "Desk") {
 		t.Fatalf("error = %v (kind %s)", err, usererr.KindOf(err))
@@ -169,6 +174,7 @@ func TestADamagedFileIsNotCalledADisconnect(t *testing.T) {
 }
 
 func TestAPairedArrivalNamesTheSendersProfile(t *testing.T) {
+	t.Parallel()
 	r := sentRig(t)
 	self, err := r.sender.book.self()
 	if err != nil {
