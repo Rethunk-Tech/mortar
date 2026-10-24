@@ -120,7 +120,7 @@ msgstr "Use the newer version ({count, plural, one {# mod updates} other {# mods
 msgid "Delete {name} permanently"
 msgstr "Delete {name} permanently"
 
-#: src/profiles/AppearancePickers.tsx
+#: src/profiles/useColorName.ts
 msgid "Pink"
 msgstr "Pink"
 
@@ -172,7 +172,7 @@ msgstr "Revert this mod"
 msgid "Stack frame: {evidence}"
 msgstr "Stack frame: {evidence}"
 
-#: src/profiles/AppearancePickers.tsx
+#: src/profiles/useColorName.ts
 msgid "Orange"
 msgstr "Orange"
 
@@ -322,7 +322,7 @@ msgstr "Queued"
 msgid "Repaired {name}"
 msgstr "Repaired {name}"
 
-#: src/profiles/AppearancePickers.tsx
+#: src/profiles/useColorName.ts
 msgid "Lime"
 msgstr "Lime"
 
@@ -430,7 +430,7 @@ msgstr "Choose folder…"
 msgid "Different version"
 msgstr "Different version"
 
-#: src/profiles/AppearancePickers.tsx
+#: src/profiles/useColorName.ts
 msgid "Sky"
 msgstr "Sky"
 
@@ -563,7 +563,7 @@ msgstr "Profile changes will appear here."
 msgid "Today"
 msgstr "Today"
 
-#: src/profiles/AppearancePickers.tsx
+#: src/profiles/useColorName.ts
 msgid "Violet"
 msgstr "Violet"
 
@@ -690,7 +690,7 @@ msgstr "Could not save the launch presets"
 msgid "{game} profiles"
 msgstr "{game} profiles"
 
-#: src/profiles/AppearancePickers.tsx
+#: src/profiles/useColorName.ts
 msgid "Gold"
 msgstr "Gold"
 
@@ -727,7 +727,7 @@ msgstr "Mortar found nothing to repair in this profile."
 msgid "Profile name"
 msgstr "Profile name"
 
-#: src/profiles/AppearancePickers.tsx
+#: src/profiles/useColorName.ts
 msgid "Rose"
 msgstr "Rose"
 
@@ -1492,7 +1492,7 @@ msgstr "Use {manager} from another folder?"
 msgid "Could not restore the backup"
 msgstr "Could not restore the backup"
 
-#: src/profiles/AppearancePickers.tsx
+#: src/profiles/useColorName.ts
 msgid "Teal"
 msgstr "Teal"
 

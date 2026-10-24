@@ -5,6 +5,7 @@ import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/inte
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { colorHex, PROFILE_COLORS, PROFILE_ICONS } from './appearance.ts'
 import { ProfileMark } from './ProfileMark.tsx'
+import { useColorName } from './useColorName.ts'
 
 export function AppearancePickers({
   profile,
@@ -20,28 +21,7 @@ export function AppearancePickers({
   onIcon: (next: string) => void
 }) {
   const { t } = useLingui()
-  const colorName = (token: string) => {
-    switch (token) {
-      case 'rose':
-        return t`Rose`
-      case 'orange':
-        return t`Orange`
-      case 'gold':
-        return t`Gold`
-      case 'lime':
-        return t`Lime`
-      case 'teal':
-        return t`Teal`
-      case 'sky':
-        return t`Sky`
-      case 'violet':
-        return t`Violet`
-      case 'pink':
-        return t`Pink`
-      default:
-        return token
-    }
-  }
+  const colorName = useColorName()
   const iconName = (token: string) => {
     switch (token) {
       case 'sprout':

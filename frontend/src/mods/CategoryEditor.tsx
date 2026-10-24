@@ -15,6 +15,7 @@ import { useEffect, useLayoutEffect, useState } from 'react'
 import type { CustomCategory } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { colorHex, PROFILE_COLORS } from '../profiles/appearance.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { useColorName } from '../profiles/useColorName.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
@@ -35,6 +36,7 @@ function CategoryRow({
   onDelete: () => void
 }) {
   const { t } = useLingui()
+  const colorName = useColorName()
   return (
     <Box sx={{ display: 'flex', gap: space.gap, alignItems: 'flex-start', mb: 1.5 }}>
       <TextField
@@ -46,9 +48,9 @@ function CategoryRow({
       />
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, pt: 0.5, maxWidth: 180 }}>
         {PROFILE_COLORS.map((token) => (
-          <Tooltip key={token} title={token}>
+          <Tooltip key={token} title={colorName(token)}>
             <IconButton
-              aria-label={token}
+              aria-label={colorName(token)}
               aria-pressed={row.color === token}
               size="small"
               onClick={() => onChange({ ...row, color: row.color === token ? '' : token })}

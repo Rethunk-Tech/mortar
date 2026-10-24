@@ -120,7 +120,7 @@ msgstr ""
 msgid "Delete {name} permanently"
 msgstr ""
 
-#: src/profiles/AppearancePickers.tsx
+#: src/profiles/useColorName.ts
 msgid "Pink"
 msgstr ""
 
@@ -172,7 +172,7 @@ msgstr ""
 msgid "Stack frame: {evidence}"
 msgstr ""
 
-#: src/profiles/AppearancePickers.tsx
+#: src/profiles/useColorName.ts
 msgid "Orange"
 msgstr ""
 
@@ -322,7 +322,7 @@ msgstr ""
 msgid "Repaired {name}"
 msgstr ""
 
-#: src/profiles/AppearancePickers.tsx
+#: src/profiles/useColorName.ts
 msgid "Lime"
 msgstr ""
 
@@ -430,7 +430,7 @@ msgstr ""
 msgid "Different version"
 msgstr ""
 
-#: src/profiles/AppearancePickers.tsx
+#: src/profiles/useColorName.ts
 msgid "Sky"
 msgstr ""
 
@@ -563,7 +563,7 @@ msgstr ""
 msgid "Today"
 msgstr ""
 
-#: src/profiles/AppearancePickers.tsx
+#: src/profiles/useColorName.ts
 msgid "Violet"
 msgstr ""
 
@@ -690,7 +690,7 @@ msgstr ""
 msgid "{game} profiles"
 msgstr ""
 
-#: src/profiles/AppearancePickers.tsx
+#: src/profiles/useColorName.ts
 msgid "Gold"
 msgstr ""
 
@@ -727,7 +727,7 @@ msgstr ""
 msgid "Profile name"
 msgstr ""
 
-#: src/profiles/AppearancePickers.tsx
+#: src/profiles/useColorName.ts
 msgid "Rose"
 msgstr ""
 
@@ -1492,7 +1492,7 @@ msgstr ""
 msgid "Could not restore the backup"
 msgstr ""
 
-#: src/profiles/AppearancePickers.tsx
+#: src/profiles/useColorName.ts
 msgid "Teal"
 msgstr ""
 
