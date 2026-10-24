@@ -48,6 +48,7 @@ const scrim = {
   zIndex: 1200,
   bgcolor: 'background.default',
   overflow: 'hidden',
+  textShadow: '0 1px 2px var(--mortar-art-dim-90), 0 0 18px var(--mortar-art-dim-85)',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
@@ -119,7 +120,7 @@ function Backdrop({ src }: { src: string }) {
         alt=""
         sx={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'blur(2px)' }}
       />
-      <Box sx={{ position: 'absolute', inset: 0, bgcolor: 'var(--mortar-art-dim-85)' }} />
+      <Box sx={{ position: 'absolute', inset: 0, bgcolor: 'var(--mortar-art-dim-55)' }} />
     </Box>
   ) : null
 }
