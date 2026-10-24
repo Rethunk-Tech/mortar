@@ -52,6 +52,63 @@
     <content_attribute id="social-info">mild</content_attribute>
   </content_rating>
   <releases>
+    <release version="0.3.13" date="2026-10-24">
+      <description>
+        <p>New</p>
+        <ul>
+          <li>The launch screen fills in as the launcher, the game and its loader come up, and stays until the mods have loaded</li>
+          <li>A slow launch says so with Keep waiting, gives up only after five minutes, and Cancel stops a launch at any step</li>
+          <li>A launch waiting on Steam can open Steam's window</li>
+          <li>Change version lists each version with its release date, marks Latest and Installed, and names the version it installs</li>
+          <li>The details panel keeps a mod's version and what changes it in one section, and leads out through one column of links</li>
+          <li>Add a game starts from the game's program, takes its name and how it is modded from the game's files, and says what each loader suits</li>
+          <li>The Multiplayer mod list splits hosting from joining, and Fix all leads once a check finds something</li>
+          <li>An import can install a share as shared: at its versions and without the dependencies it left out</li>
+          <li>The Thunderstore modpack form groups its fields and folds the config list</li>
+          <li>A save's companion folders travel with it, so Cat Mail Co. backups carry CatLib's mod data</li>
+          <li>A plugin's always-install files, and its install-if-usable files while usable, install even when the plugin is not chosen</li>
+        </ul>
+        <p>Changed</p>
+        <ul>
+          <li>Selecting, switching on and off and opening mods, Config, Settings, the Console, Storage and Load order all do far less redrawing and ask Mortar's backend fewer times</li>
+          <li>Dialogs share one look: no dividers, Close as a plain button, and lists that load behind placeholders in their own shape</li>
+          <li>Screenshots and Settings › Launchers show placeholders while they load, and a Settings search with no match says so in the middle of the page</li>
+          <li>Reduce motion also turns off the press ripple</li>
+          <li>Browse falls back from GitHub's API to its search page when the API refuses, and waits out a refused search instead of asking again for every topic</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>Every Browse page holds 20 mods after adult and hidden mods are dropped, the page count stays put between pages, and pages past the tenth fill</li>
+          <li>A Browse source that leaves mods out for excluded categories counts them as hidden; CurseForge sorted by thumbs-up neither repeats nor skips a mod</li>
+          <li>Signed out of Nexus, Browse and Settings › Accounts no longer raise an error toast</li>
+          <li>A site limiting Mortar's requests says so instead of "Something went wrong"</li>
+          <li>A launch cancelled while it prepares takes its files back out of the game; a cancelled launch ends as cancelled even when the game exits first</li>
+          <li>A game a system Wine runs is found by its path, and Steam, its wrappers or a system program are never taken for the game</li>
+          <li>A game whose log is late counts as started instead of as Steam failing to start it</li>
+          <li>GE-Proton10 ranks above GE-Proton9 when Mortar picks the best Proton</li>
+          <li>Load order follows SMAPI's own order, each mod's dependencies loading just before it</li>
+          <li>FOMOD files go where the installer says: a missing destination installs at the source's path and an empty one in the mod's folder</li>
+          <li>A MelonLoader setting spread over several lines, quoted category names and control characters read and save correctly instead of breaking the file</li>
+          <li>A config number a mod cannot read (1E5, Inf, 300 for a byte) is refused or rewritten so the game keeps it</li>
+          <li>A config search hit names its section, and a .cfg named after its package shows under that package</li>
+          <li>An INI section followed by a comment is found, so a setting is no longer added under a second copy of it</li>
+          <li>Cat Mail Co.'s saves are found</li>
+          <li>A Nexus file uploaded again under the same version counts as the newer one, and one mod id in two games no longer shows the other game's page</li>
+          <li>A Thunderstore dependency with no version or an extra dash is refused instead of misread</li>
+          <li>An ignored Thunderstore, CurseForge or Mod DB link is taken again when clicked again</li>
+          <li>Importing an r2modman or Gale profile keeps config files in BepInEx/config subfolders</li>
+          <li>A failed import removes the profile it made</li>
+          <li>A profile of a game Nexus does not host can be shared by link</li>
+          <li>An error after Pause or Cancel no longer marks a download Failed or Queued</li>
+          <li>With beta updates on, a refused prerelease lookup no longer hides a newer stable release</li>
+          <li>Keys saved while the Flatpak secret portal was missing are kept once it answers again</li>
+          <li>Recovery after a crash mid-restore no longer writes your file over the profile's copy, and a leftover link no longer blocks every purge</li>
+          <li>Many screens no longer show another profile's or game's answer when you switch quickly</li>
+          <li>A double click on Retry, Fix and similar actions sends once, and a failure's message offers Retry</li>
+          <li>Screen readers hear headings for each game, profile, save, launcher and first-run step</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.3.12" date="2026-10-22">
       <description>
         <p>New</p>
