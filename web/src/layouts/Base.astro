@@ -10,6 +10,7 @@ import '../styles/site.css'
 import '../styles/site-motion.css'
 import Footer from '../components/Footer.astro'
 import Nav from '../components/Nav.astro'
+import { appVersion } from '../lib/faq.ts'
 import { appLd, breadcrumbLd, type Crumb, ogPath } from '../lib/seo.ts'
 import { SITE } from '../lib/site.ts'
 
@@ -38,7 +39,8 @@ const {
 } = Astro.props
 const path = Astro.url.pathname
 const url = `${SITE}${path}`
-const image = `${SITE}${ogPath(path)}`
+// The release in the address makes link previews fetch the picture again when it changes; they cache by URL.
+const image = `${SITE}${ogPath(path)}?v=${appVersion()}`
 const ld = [appLd(), ...(crumbs ? [breadcrumbLd(crumbs)] : []), ...jsonLd]
 ---
 

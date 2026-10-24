@@ -24,6 +24,14 @@ const TITLE_PX = 68
 const DESCRIPTION_MAX = 160
 const DESCRIPTION_CUT = 157
 const CACHE = 'node_modules/.cache/og'
+// The running-bond tile of Mortar's banners, darkened: rounded bricks a shade above the card's own colour.
+const BRICK_TILE = `data:image/svg+xml;base64,${Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="56" height="60"><rect x="4" y="4" width="48" height="22" rx="4" fill="#1F1F26"/><rect x="-24" y="34" width="48" height="22" rx="4" fill="#1F1F26"/><rect x="32" y="34" width="48" height="22" rx="4" fill="#1F1F26"/></svg>').toString('base64')}`
+// A picture is redrawn when its words or this script change.
+const DRAWER_HASH_CHARS = 12
+const DRAWER = createHash('sha256')
+  .update(readFileSync(fileURLToPath(import.meta.url)))
+  .digest('hex')
+  .slice(0, DRAWER_HASH_CHARS)
 const FONTS =
   'node_modules/@fontsource/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin'
 
@@ -68,7 +76,10 @@ function card(title: string, description: string, icon: string): Node {
       flexDirection: 'column',
       justifyContent: 'space-between',
       padding: '64px 72px',
-      background: '#111114',
+      backgroundColor: '#19191E',
+      backgroundImage: `url(${BRICK_TILE})`,
+      backgroundRepeat: 'repeat',
+      backgroundSize: '56px 60px',
       color: 'rgba(255,255,255,0.93)',
       fontFamily: 'Atkinson',
       borderBottom: '10px solid #d6b17a',
@@ -162,7 +173,10 @@ export function og(): AstroIntegration {
           const target = join(out, new URL(image).pathname)
           const key = join(
             CACHE,
-            `${createHash('sha256').update(JSON.stringify(w)).digest('hex').slice(0, 24)}.png`,
+            `${createHash('sha256')
+              .update(JSON.stringify([w, DRAWER]))
+              .digest('hex')
+              .slice(0, 24)}.png`,
           )
           if (existsSync(key)) {
             cached += 1
