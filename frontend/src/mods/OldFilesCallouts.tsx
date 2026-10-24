@@ -10,7 +10,7 @@ import {
   DialogTitle,
   Typography,
 } from '@mui/material'
-import { memo, useCallback, useEffect, useState } from 'react'
+import { memo, useState } from 'react'
 import type { OldFiles } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   PendingOldFiles,
@@ -20,6 +20,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { MONO } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -157,31 +158,26 @@ export const OldFilesCallouts = memo(function OldFilesCalloutsView({
   const locked = useLocked()
   const [pending, run] = usePending()
   const [reviewing, setReviewing] = useState(false)
-  const [found, setFound] = useState<{ id: string; sets: OldFiles[] }>({ id: '', sets: [] })
-  const sets = found.id === profileId ? found.sets : []
-  const refetch = useCallback(
-    () =>
-      PendingOldFiles(game, profileId)
-        .then((list) => setFound({ id: profileId, sets: list ?? [] }))
-        .catch(reportUnexpected),
-    [game, profileId],
+  const {
+    data: sets,
+    setData: setSets,
+    reload: refetch,
+  } = useLoaded<OldFiles[]>(
+    game !== '' && updated !== ''
+      ? () => PendingOldFiles(game, profileId).then((list) => list ?? [])
+      : null,
+    [game, profileId, updated],
+    [],
+    reportUnexpected,
   )
-  useEffect(() => {
-    if (game !== '' && updated !== '') {
-      refetch().catch(reportUnexpected)
-    }
-  }, [game, updated, refetch])
-  const done = (key: string) =>
-    setFound((f) => ({ ...f, sets: f.sets.filter((s) => s.key !== key) }))
+  const done = (key: string) => setSets((all) => all.filter((s) => s.key !== key))
   const callout = (set: OldFiles) => (
     <OldFilesCallout
       key={set.key}
       set={set}
       game={game}
       profileId={profileId}
-      onRestored={() => {
-        refetch().catch(reportUnexpected)
-      }}
+      onRestored={refetch}
       onDone={done}
     />
   )
