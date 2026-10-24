@@ -215,7 +215,8 @@ func ownerName(text string) string {
 // ORs only text, never topic: qualifiers, so each topic is its own search, read from its first page to q.Page because
 // a merged page needs every topic's leading rows. A repository under several topics is listed once. A topic GitHub
 // refuses is left out while another answers. A query that could be an owner adds that owner's first page of
-// repositories carrying any of the topics, one request rather than one per topic.
+// repositories carrying any of the topics, one request rather than one per topic. A part that fails is named in Failed,
+// so the page is not cached as complete.
 func (d *Driver) searchTopics(ctx context.Context, q source.Query, topics []string) (source.Page, error) {
 	type ranked struct {
 		repo        repo
@@ -225,12 +226,14 @@ func (d *Driver) searchTopics(ctx context.Context, q source.Query, topics []stri
 	seen := map[string]bool{}
 	var errs []error
 	var failed []string
+	topicsFailed := 0
 	sum, read := 0, 0
 	for ti, topic := range topics {
 		for p := source.FirstPage; p <= q.Page; p++ {
 			got, err := d.searchTopic(ctx, q, topicTerms(q.Text, topic), p)
 			if err != nil {
-				errs, failed = append(errs, err), append(failed, topic)
+				errs, failed = append(errs, err), append(failed, "topic:"+topic)
+				topicsFailed++
 				break
 			}
 			if p == source.FirstPage {
@@ -263,7 +266,7 @@ func (d *Driver) searchTopics(ctx context.Context, q source.Query, topics []stri
 			all = append(all, ranked{r, i, len(topics)})
 		}
 	}
-	if len(all) == 0 && len(failed) >= len(topics) {
+	if len(all) == 0 && topicsFailed == len(topics) {
 		return source.Page{}, errs[0]
 	}
 	if len(failed) > 0 {
@@ -284,13 +287,13 @@ func (d *Driver) searchTopics(ctx context.Context, q source.Query, topics []stri
 	}
 	start := (max(q.Page, source.FirstPage) - source.FirstPage) * q.Len()
 	if start >= len(all) {
-		return source.Page{Total: total}, nil
+		return source.Page{Total: total, Failed: failed}, nil
 	}
 	repos := make([]repo, 0, q.Len())
 	for _, r := range all[start:min(start+q.Len(), len(all))] {
 		repos = append(repos, r.repo)
 	}
-	return source.Page{Total: total, Items: d.items(repos)}, nil
+	return source.Page{Total: total, Items: d.items(repos), Failed: failed}, nil
 }
 
 // compareBySort orders two repositories as the search's sort parameter does: negative when a comes first.

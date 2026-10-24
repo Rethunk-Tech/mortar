@@ -163,8 +163,8 @@ func TestSearchMergesTopicsOnceEachByStars(t *testing.T) {
 	refuse["topic:b"] = true
 	mu.Unlock()
 	d = &Driver{URL: srv.URL, Web: srv.URL, Topics: d.Topics}
-	if page, err := d.Search(context.Background(), source.Query{Key: "a", Page: 1}); err != nil || len(page.Items) != 2 {
-		t.Fatalf("one topic refused: %d items, err %v", len(page.Items), err)
+	if page, err := d.Search(context.Background(), source.Query{Key: "a", Page: 1}); err != nil || len(page.Items) != 2 || fmt.Sprint(page.Failed) != "[topic:b]" {
+		t.Fatalf("one topic refused: %d items, failed %v, err %v", len(page.Items), page.Failed, err)
 	}
 	mu.Lock()
 	refuse["topic:a"] = true
