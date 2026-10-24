@@ -199,7 +199,7 @@ const ToastCard = memo(function ToastCardView({ toast }: { toast: Toast }) {
           {open && toast.detail ? <CopyDetail text={toast.detail} /> : null}
         </Box>
         {toast.detail || action ? (
-          <Box sx={{ display: 'flex', gap: '8px', ml: 'auto', alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', gap: space.gap, ml: 'auto', alignItems: 'center' }}>
             {toast.detail ? (
               <DetailsButton open={open} onToggle={() => setOpen((v) => !v)} />
             ) : null}

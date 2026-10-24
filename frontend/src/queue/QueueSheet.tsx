@@ -213,8 +213,8 @@ export function QueueSheet() {
         sx={{
           display: 'flex',
           flexDirection: 'column',
-          gap: '12px',
-          p: '14px 20px',
+          gap: space.gap,
+          p: space.pad,
           minHeight: 0,
           flex: 1,
           overflowY: view === 'history' ? 'hidden' : 'auto',
