@@ -5969,6 +5969,10 @@ msgstr "{count, plural, one {Notifications, # unread} other {Notifications, # un
 msgid "Restore all"
 msgstr "Restore all"
 
+#: src/launch/LaunchScreen.tsx
+msgid "Starting the mods"
+msgstr "Starting the mods"
+
 #: src/saves/SaveRow.tsx
 msgid "Backed up {name}"
 msgstr "Backed up {name}"

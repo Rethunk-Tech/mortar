@@ -5969,6 +5969,10 @@ msgstr ""
 msgid "Restore all"
 msgstr ""
 
+#: src/launch/LaunchScreen.tsx
+msgid "Starting the mods"
+msgstr ""
+
 #: src/saves/SaveRow.tsx
 msgid "Backed up {name}"
 msgstr ""

@@ -172,6 +172,10 @@ function loaderText(p: Progress, failedMod: string): string {
       ? plural({ count: p.loaded }, { one: '# mod loaded', other: '# mods loaded' })
       : i18n._(msg`Mods loaded`)
   }
+  // Every mod is loaded but the game is not up yet: the mods are starting and loading their content.
+  if (p.total > 0 && p.loaded >= p.total) {
+    return i18n._(msg`Starting the mods`)
+  }
   if (p.loaded > 0 && p.total > 0) {
     return i18n._(msg`Loading ${{ loaded: p.loaded }} of ${{ total: p.total }} mods`)
   }
@@ -346,8 +350,11 @@ function toneOf(level: Level, newest: boolean): string {
 
 function Log() {
   const entries = useConsole((s) => s.entries)
-  // Lines for each mod loading are counted by the loader's mark instead.
-  const shown = entries.filter((e) => !e.load).slice(-LOG_LINES)
+  // Lines for each mod loading are counted by the loader's mark instead, and debug and trace lines stay hidden as in
+  // the Console by default, so the box does not flash with a mod's bookkeeping.
+  const shown = entries
+    .filter((e) => !(e.load || e.level === Level.Debug || e.level === Level.Trace))
+    .slice(-LOG_LINES)
   return (
     <Box
       role="log"
@@ -365,7 +372,7 @@ function Log() {
       }}
     >
       {shown.map((line, i) => {
-        const text = format(line)
+        const text = format({ ...line, time: '' })
         const tone = toneOf(line.level, i === shown.length - 1)
         return (
           <Typography
