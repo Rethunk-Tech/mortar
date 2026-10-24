@@ -256,3 +256,19 @@ func TestSwapSavesGivesTheProfileItsOwnAndUndoesIt(t *testing.T) {
 		t.Fatalf("a shared-saves profile was swapped: %v %+v", err, none)
 	}
 }
+
+func TestLeftoverJournalsNamesTheModConfigSwap(t *testing.T) {
+	svc, _ := startEnv(t)
+	svc.procDir = t.TempDir()
+	root := t.TempDir()
+	mj, err := modConfigJournal(svc.selectedSlot(game.Find("stardew")).inst)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := savesiso.Apply(mj, filepath.Join(root, "config"), filepath.Join(root, "prof"), true); err != nil {
+		t.Fatal(err)
+	}
+	if left := svc.LeftoverJournals("stardew"); len(left) != 1 || left[0] != mj {
+		t.Fatalf("leftovers = %v, want the mod config journal", left)
+	}
+}

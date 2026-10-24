@@ -526,6 +526,9 @@ func (s *Service) LeftoverJournals(gameID string) []string {
 		if dir, err := optionsJournal(sl.inst); err == nil && savesiso.HasFileJournal(dir) {
 			out = append(out, dir)
 		}
+		if dir, err := modConfigJournal(sl.inst); err == nil && savesiso.HasJournal(dir) {
+			out = append(out, dir)
+		}
 	}
 	return out
 }
