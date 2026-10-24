@@ -16,13 +16,33 @@ import { selectedPair } from './historyDiff.ts'
 import { pushMissingToast, revertHistoryEvent } from './historyRevert.ts'
 import { useProfiles } from './store.ts'
 
+// The comparison of the two picked entries, null unless exactly two are picked.
+function usePickedPair(game: string, profileId: string, picked: string[]) {
+  const [pair, setPair] = useState<HistoryDiff | null>(null)
+  useEffect(() => {
+    const ids = selectedPair(picked)
+    if (!(ids && game)) {
+      setPair(null)
+      return
+    }
+    // A slower answer for picks since changed must not replace the comparison of the current ones.
+    let live = true
+    LoadDiff(game, profileId, ids[0], ids[1])
+      .then((next) => live && setPair(next))
+      .catch(reportUnexpected)
+    return () => {
+      live = false
+    }
+  }, [picked, game, profileId])
+  return pair
+}
+
 /** toastMissing is for a caller without the panel's own missing-mods UI: a revert that lacks mods says so in a toast. */
 export function useHistoryPanel(profileId: string, open: boolean, toastMissing = false) {
   const game = useProfiles((s) => s.game)
   const [events, setEvents] = useState<HistoryEvent[]>([])
   const [items, setItems] = useState<Record<string, HistoryDiff['items']>>({})
   const [picked, setPicked] = useState<string[]>([])
-  const [pair, setPair] = useState<HistoryDiff | null>(null)
   const [busy, setBusy] = useState('')
   const [error, setError] = useState('')
   const [missingEvent, setMissingEvent] = useState('')
@@ -40,7 +60,6 @@ export function useHistoryPanel(profileId: string, open: boolean, toastMissing =
     setMissingNames([])
     setMissingWants([])
     setPicked([])
-    setPair(null)
     History(game.id, profileId)
       .then(async (list) => {
         const rows = list ?? []
@@ -62,14 +81,7 @@ export function useHistoryPanel(profileId: string, open: boolean, toastMissing =
       live = false
     }
   }, [open, game, profileId])
-  useEffect(() => {
-    const ids = selectedPair(picked)
-    if (!(ids && game)) {
-      setPair(null)
-      return
-    }
-    LoadDiff(game.id, profileId, ids[0], ids[1]).then(setPair).catch(reportUnexpected)
-  }, [picked, game, profileId])
+  const pair = usePickedPair(game?.id ?? '', profileId, picked)
   return {
     game,
     events,
