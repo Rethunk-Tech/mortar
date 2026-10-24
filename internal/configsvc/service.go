@@ -238,7 +238,16 @@ func (d cfgOnDisk) ownedBy(names []string) bool {
 			return len(n) >= minConfigName && strings.Contains(stem, n)
 		})
 	}
-	return slices.ContainsFunc(names, func(n string) bool { return strings.EqualFold(d.stem, n) || strings.EqualFold(d.doc.guid, n) })
+	return slices.ContainsFunc(names, func(n string) bool {
+		if strings.EqualFold(d.stem, n) || strings.EqualFold(d.doc.guid, n) {
+			return true
+		}
+		// A ConfigFile a plugin builds itself has no GUID header and is often named after the package
+		// (LethalLevelLoader.cfg for thunderstore:IAmBatby-LethalLevelLoader).
+		_, pkg, _ := strings.Cut(n, ":")
+		_, name, _ := strings.Cut(pkg, "-")
+		return d.doc.guid == "" && name != "" && strings.EqualFold(d.stem, name)
+	})
 }
 
 // squash lower-cases s and drops everything but letters and digits.

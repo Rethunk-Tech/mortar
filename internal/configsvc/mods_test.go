@@ -3,6 +3,7 @@ package configsvc
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -16,6 +17,9 @@ func TestModsListsOwnedConfigsOtherCfgsAndModsWithoutConfig(t *testing.T) {
 	}
 	cfg := filepath.Join(f.dir, "BepInEx", "config")
 	if err := os.WriteFile(filepath.Join(cfg, "BepInEx.cfg"), []byte("[Logging]\n## Enable\n# Setting type: Boolean\n# Default value: true\nEnabled = true\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(cfg, "BetterStuff.cfg"), []byte("[General]\nOn = true\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	f.mods = []profile.Mod{
@@ -45,8 +49,9 @@ func TestModsListsOwnedConfigsOtherCfgsAndModsWithoutConfig(t *testing.T) {
 		t.Fatalf("after the file was reset to the shipped value: %+v, %v", again.Mods[0], err)
 	}
 	pkg := got.Mods[1]
-	if pkg.Enabled || len(pkg.Files) != 1 || pkg.Files[0].Name != "com.example.betterstuff.cfg" || pkg.Files[0].Format != FormatBepInEx {
-		t.Fatalf("package = %+v", pkg)
+	if pkg.Enabled || len(pkg.Files) != 2 || !slices.ContainsFunc(pkg.Files, func(f ModFile) bool { return f.Name == "com.example.betterstuff.cfg" && f.Format == FormatBepInEx }) ||
+		!slices.ContainsFunc(pkg.Files, func(f ModFile) bool { return f.Name == "BetterStuff.cfg" }) {
+		t.Fatalf("package = %+v (a header-less .cfg named after the package is the package's)", pkg)
 	}
 	if len(got.Other) != 1 || got.Other[0].Name != "BepInEx.cfg" {
 		t.Fatalf("other = %+v", got.Other)
