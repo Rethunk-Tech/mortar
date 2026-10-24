@@ -1043,6 +1043,10 @@ msgstr "Every mod in this profile is already disabled, so there is nothing to di
 msgid "No game output yet"
 msgstr "No game output yet"
 
+#: src/console/LineMenu.tsx
+msgid "Hide every message from {method}"
+msgstr "Hide every message from {method}"
+
 #: src/console/PerformancePanel.tsx
 msgid "Baseline: the mods' timed code is {mods} ms of the {avg} ms average frame; the game and loader alone take about {withoutMods} ms."
 msgstr "Baseline: the mods' timed code is {mods} ms of the {avg} ms average frame; the game and loader alone take about {withoutMods} ms."

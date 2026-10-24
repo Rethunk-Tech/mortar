@@ -13,16 +13,24 @@ type HiddenLogSource struct {
 	Label  string `json:"label"`
 }
 
+// covers reports whether hiding h already hides every line o would: the same source, any text or o's, any object or
+// o's.
+func (h HiddenLogSource) covers(o HiddenLogSource) bool {
+	return h.Source == o.Source && (h.Text == "" || h.Text == o.Text) && (h.Object == "" || h.Object == o.Object)
+}
+
 func (h HiddenLogSource) same(o HiddenLogSource) bool {
 	return h.Source == o.Source && h.Text == o.Text && h.Object == o.Object
 }
 
 // HideLogSource hides a source of the game's log lines from the Console, and from the game's log where its bridge can.
+// A source already hidden by a broader one adds nothing; a broader one replaces the narrower ones it covers.
 func (s *Service) HideLogSource(game string, src HiddenLogSource) error {
 	return s.set(func(v *Settings) {
 		gp := v.GamePrefs(game)
-		if src.Source != "" && !slices.ContainsFunc(gp.HiddenLogSources, src.same) {
-			gp.HiddenLogSources = append(slices.Clone(gp.HiddenLogSources), src)
+		covered := slices.ContainsFunc(gp.HiddenLogSources, func(h HiddenLogSource) bool { return h.covers(src) })
+		if src.Source != "" && !covered {
+			gp.HiddenLogSources = append(slices.DeleteFunc(slices.Clone(gp.HiddenLogSources), src.covers), src)
 		}
 		putGame(v, game, gp)
 	})

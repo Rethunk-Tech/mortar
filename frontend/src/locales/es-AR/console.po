@@ -1043,6 +1043,10 @@ msgstr ""
 msgid "No game output yet"
 msgstr ""
 
+#: src/console/LineMenu.tsx
+msgid "Hide every message from {method}"
+msgstr ""
+
 #: src/console/PerformancePanel.tsx
 msgid "Baseline: the mods' timed code is {mods} ms of the {avg} ms average frame; the game and loader alone take about {withoutMods} ms."
 msgstr ""
