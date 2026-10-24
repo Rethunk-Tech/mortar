@@ -1,10 +1,11 @@
-import { beforeEach, expect, test } from 'bun:test'
+import { afterEach, beforeEach, expect, test } from 'bun:test'
 import { reportUnexpected, toastError } from './report.ts'
 import { useToasts } from './store.ts'
 
 const last = () => useToasts.getState().toasts.at(-1)
 
 beforeEach(() => useToasts.setState({ toasts: [], history: [] }))
+afterEach(() => useToasts.setState(useToasts.getInitialState(), true))
 
 test('an unexpected failure is titled by its cause, not a generic sentence', () => {
   reportUnexpected(new Error("GitHub's release API answered 404 Not Found"))

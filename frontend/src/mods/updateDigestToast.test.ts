@@ -1,13 +1,11 @@
-import { expect, mock, test } from 'bun:test'
+import { afterEach, expect, test } from 'bun:test'
+import { useSettings } from '../settings/store.ts'
+import { useToasts } from '../toasts/store.ts'
+import { showDigest } from './updateDigestToast.ts'
 
-mock.module('@lingui/core/macro', () => ({
-  msg: (parts: TemplateStringsArray) => parts.join(''),
-  plural: () => '',
-}))
-
-const { useSettings } = await import('../settings/store.ts')
-const { useToasts } = await import('../toasts/store.ts')
-const { showDigest } = await import('./updateDigestToast.ts')
+afterEach(() => {
+  useToasts.setState(useToasts.getInitialState(), true)
+})
 
 const notice = {
   game: 'stardew',
