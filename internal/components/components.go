@@ -82,35 +82,8 @@ type SourceFile struct {
 	Authors    []AuthorAliases   `json:"authors,omitempty"`
 }
 
-// KnownBroken is one curated entry: a mod or package that does not work in some versions of the game's mods or of the
-// game itself.
-type KnownBroken struct {
-	// ID is the mod id or, for a Thunderstore package, its "Namespace-Name"; matched without regard to case.
-	ID string `json:"id"`
-	// Versions limits the entry to the affected versions of the mod: constraints separated by spaces, each one of
-	// <, <=, >, >= or = followed by a version ("<2.1.0", ">=1.0 <1.5"). Empty means every version.
-	Versions string `json:"versions,omitempty"`
-	// Reason is the sentence the Problems row shows.
-	Reason string `json:"reason"`
-	// Replacement is a package ("Namespace-Name") to use instead, optional.
-	Replacement string `json:"replacement,omitempty"`
-}
-
-// versionConstraint is one operator and version of KnownBroken.Versions.
+// versionConstraint is one operator and version of a known-broken entry's GameVersions.
 var versionConstraint = regexp.MustCompile(`^(<=|>=|<|>|=)\S+$`)
-
-// Validate checks that an entry names a mod, gives a reason and has a readable version range.
-func (k KnownBroken) Validate() error {
-	if strings.TrimSpace(k.ID) == "" || strings.TrimSpace(k.Reason) == "" {
-		return errors.New("a known-broken entry needs an id and a reason")
-	}
-	for c := range strings.FieldsSeq(k.Versions) {
-		if !versionConstraint.MatchString(c) {
-			return fmt.Errorf("known-broken entry %q has an unreadable version range %q", k.ID, k.Versions)
-		}
-	}
-	return nil
-}
 
 // GameInfo is one game's catalog entry: the names and ids the stores and mod sites know it by, its loaders and its mod
 // sources. How a game is launched or modded stays in its Go implementation; this is only what can change without a
@@ -183,9 +156,6 @@ type GameInfo struct {
 	// Caches are rebuildable cache files or folders the game rebuilds on launch, which Mortar deletes once after a
 	// profile's mod set changes.
 	Caches []CachePath `json:"caches,omitempty"`
-	// KnownBroken is Mortar's curated list of mods and packages of this game that are known not to work; an older
-	// Mortar ignores the field.
-	KnownBroken []KnownBroken `json:"knownBroken,omitempty"`
 	// TitleScene is the Unity scene of the game's main menu, where a BepInEx startup measurement ends; without it the
 	// first scene ends it.
 	TitleScene string `json:"titleScene,omitempty"`
@@ -896,11 +866,6 @@ func (g GameInfo) Validate() error {
 			return fmt.Errorf("game %q has a required setting without a path role of the game, a key, a value or a message", g.ID)
 		}
 	}
-	for _, k := range g.KnownBroken {
-		if err := k.Validate(); err != nil {
-			return fmt.Errorf("game %q: %w", g.ID, err)
-		}
-	}
 	if g.Graphics != nil {
 		if err := g.Graphics.Validate(); err != nil {
 			return fmt.Errorf("game %q: %w", g.ID, err)
@@ -1328,7 +1293,9 @@ type Client struct {
 	ManifestURL   string
 	ReleasesURL   string
 	GitHubBaseURL string
-	manifest      Manifest
+	// KnownBrokenURL, when set, replaces the folder known-broken lists are fetched from (KnownBrokenURL).
+	KnownBrokenURL string
+	manifest       Manifest
 }
 
 // NewClient returns a component client using hc for manifest and asset requests.

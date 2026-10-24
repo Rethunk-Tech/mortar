@@ -10,12 +10,40 @@ import { useMods } from './store.ts'
 
 const text = { fontSize: 'base.fontSize' } as const
 
-export function CompatChip({ mod }: { mod: Mod }) {
-  const { t } = useLingui()
-  const row = compatOf(
+// The mod's compatibility row: SMAPI's list first, else Mortar's own known-broken list, read as a broken row.
+function useCompatRow(mod: Mod): Compat | undefined {
+  const listed = compatOf(
     useMods((s) => s.problems?.compat),
     mod,
   )
+  const curated = compatOf(
+    useMods((s) => s.problems?.broken),
+    mod,
+  )
+  if (listed) {
+    return listed
+  }
+  if (curated?.source !== MORTAR_LIST) {
+    return undefined
+  }
+  return {
+    key: curated.key,
+    id: curated.id,
+    name: curated.name,
+    status: 'broken',
+    summary: curated.summary ?? '',
+    brokeIn: '',
+    unofficialUrl: '',
+    replacement: curated.replacement?.pageName ?? '',
+  }
+}
+
+// The Source of a row from Mortar's own known-broken list (problems.mortarSiteName).
+const MORTAR_LIST = 'Mortar'
+
+export function CompatChip({ mod }: { mod: Mod }) {
+  const { t } = useLingui()
+  const row = useCompatRow(mod)
   if (!showCompatChip(row?.status)) {
     return null
   }
@@ -33,10 +61,7 @@ export function CompatChip({ mod }: { mod: Mod }) {
 
 export function CompatDetail({ mod }: { mod: Mod }) {
   const { t } = useLingui()
-  const row = compatOf(
-    useMods((s) => s.problems?.compat),
-    mod,
-  ) as Compat | undefined
+  const row = useCompatRow(mod)
   if (!showCompatChip(row?.status) || row === undefined) {
     return null
   }

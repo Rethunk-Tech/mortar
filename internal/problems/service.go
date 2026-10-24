@@ -15,6 +15,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher"
@@ -347,7 +348,8 @@ func (s *Service) problems(ctx context.Context, gameID, id string, wait bool) (R
 			runID = lastID
 		}
 	}
-	fp := fingerprint(env, mods, runID)
+	// A newer known-broken list changes what is flagged without any mod changing.
+	fp := fingerprint(env, mods, runID) + "|broken:" + strconv.FormatUint(components.KnownBrokenFor(ctx, gameID).Serial, 10)
 	depth := settings.ConflictScanFull
 	if s.settings != nil {
 		depth = settings.ResolveAt(s.settings.Get(), "conflictScanDepth", settings.Scope{Game: gameID, Profile: id}, s.profileOverrides(gameID, id))
@@ -416,7 +418,7 @@ func (s *Service) problems(ctx context.Context, gameID, id string, wait bool) (R
 			deprecated[d.Key] = true
 		}
 		r.PluginClashes = pluginClashes(pkgs, deprecated)
-		r.Broken = append(r.Broken, knownBrokenMods(gameID, pkgs, enabledMods)...)
+		r.Broken = append(r.Broken, knownBrokenMods(ctx, gameID, env.GameVersion, pkgs, enabledMods)...)
 		if all, err := s.profiles.Packages(gameID, id); err == nil {
 			missing, incompatible := pluginDeps(all, mods)
 			declared := map[string]dotnet.Declared{}

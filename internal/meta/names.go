@@ -10,6 +10,7 @@ const (
 	CollectionPrefix      = "nexus-collection-"
 	StandingPrefix        = "standing-"
 	DatasetPrefix         = "dataset-"
+	KnownBrokenPrefix     = "known-broken-"
 )
 
 // RetiredCachePrefixes name files no producer writes any more; Clean up removes them whatever their age.

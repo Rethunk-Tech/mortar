@@ -541,16 +541,7 @@ func TestLoadFetchesAgainAManifestCachedWithoutThisBuildsStamp(t *testing.T) {
 	}
 }
 
-func TestKnownBrokenIsValidatedAndOptional(t *testing.T) {
-	good := KnownBroken{ID: "Ns-Mod", Versions: ">=1.0.0 <1.5.0", Reason: "Crashes."}
-	if err := good.Validate(); err != nil {
-		t.Fatal(err)
-	}
-	for _, bad := range []KnownBroken{{Reason: "x"}, {ID: "a"}, {ID: "a", Reason: "x", Versions: "1.0.0"}, {ID: "a", Reason: "x", Versions: "<"}} {
-		if bad.Validate() == nil {
-			t.Errorf("%+v passed", bad)
-		}
-	}
+func TestEveryBundledGameValidates(t *testing.T) {
 	m, err := BundledManifest()
 	if err != nil {
 		t.Fatal(err)
@@ -559,20 +550,6 @@ func TestKnownBrokenIsValidatedAndOptional(t *testing.T) {
 		if err := g.Validate(); err != nil {
 			t.Errorf("%s: %v", g.ID, err)
 		}
-	}
-}
-
-func TestAnOlderClientIgnoresTheKnownBrokenField(t *testing.T) {
-	var g GameInfo
-	if err := json.Unmarshal([]byte(`{"id":"g","knownBroken":[{"id":"Ns-Mod","versions":"<2.0.0","reason":"r","replacement":"Ns-New"}]}`), &g); err != nil || len(g.KnownBroken) != 1 || g.KnownBroken[0].Replacement != "Ns-New" {
-		t.Fatalf("%+v %v", g, err)
-	}
-	type older struct {
-		ID string `json:"id"`
-	}
-	var o older
-	if err := json.Unmarshal([]byte(`{"id":"g","knownBroken":[{"id":"x"}]}`), &o); err != nil || o.ID != "g" {
-		t.Fatalf("%+v %v", o, err)
 	}
 }
 
