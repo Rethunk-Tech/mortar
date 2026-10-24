@@ -292,7 +292,7 @@ func contributeServer(plan *launchplan.Plan, p loader.ProfileView) error {
 		return err
 	}
 	src := filepath.Join(p.Dir, serverargs.ConfigName)
-	if err := os.WriteFile(src, []byte(cfg), 0o600); err != nil {
+	if err := fsx.WriteFile(src, []byte(cfg), 0o600); err != nil {
 		return err
 	}
 	plan.AddFile(launchplan.PlanFile{Src: src, Dst: filepath.FromSlash(g.Server.ConfigFile)})

@@ -11,6 +11,7 @@ import (
 	"slices"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 const logFile = "deploy.log"
@@ -85,7 +86,7 @@ func replay(m *Manifest) error {
 	if m.View.JournalDir == "" {
 		return nil
 	}
-	b, err := os.ReadFile(logPath(m.View.JournalDir))
+	b, err := fsx.ReadFile(logPath(m.View.JournalDir))
 	if errors.Is(err, fs.ErrNotExist) {
 		return nil
 	}

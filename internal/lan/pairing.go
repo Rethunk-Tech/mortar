@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // Pairing makes two of the user's own machines trust each other. One shows a short code, the other types it, and both
@@ -87,7 +88,7 @@ func (b *peerBook) loadLocked() error {
 		return nil
 	}
 	if b.dir != "" {
-		raw, err := os.ReadFile(filepath.Join(b.dir, "peers.json"))
+		raw, err := fsx.ReadFile(filepath.Join(b.dir, "peers.json"))
 		switch {
 		case err == nil:
 			if err := json.Unmarshal(raw, &b.file); err != nil {
