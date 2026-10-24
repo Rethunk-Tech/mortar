@@ -302,7 +302,8 @@ func undoOps(ctx context.Context, m *Manifest, log *opLog) error {
 // returns. When the profile's folder is gone it keeps the bytes beside Dst under a rescue name, on the log first, so a
 // changed file is never removed without a copy.
 func writeBackOrRescue(m *Manifest, o Placed, i int, l *opLog) error {
-	if !o.WriteBack {
+	// A link a mod left in place of the file is not followed into the profile; removing it loses no bytes.
+	if st, err := os.Lstat(o.Dst); !o.WriteBack || (err == nil && !st.Mode().IsRegular()) {
 		return nil
 	}
 	h, err := fsx.SHA256(o.Dst)

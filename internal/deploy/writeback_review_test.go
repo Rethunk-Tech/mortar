@@ -105,3 +105,23 @@ func TestChangedBytesSurviveWhenTheProfileIsGoneAndTheyDisplacedAPlayersFile(t *
 		t.Fatal("the changed bytes were removed with no copy anywhere")
 	}
 }
+
+// A link a mod leaves in place of a placed file that displaced the player's is removed, and the player's file returns.
+func TestALinkInPlaceOfAFileThatDisplacedThePlayersDoesNotStopThePurge(t *testing.T) {
+	rr := newRootRig(t)
+	top := filepath.Join(rr.shared, "top.package")
+	write(t, top, "the player's own")
+	secret := filepath.Join(rr.root, "outside", "secret.txt")
+	write(t, secret, "secret bytes")
+	m := rr.apply()
+	if err := os.Remove(top); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(secret, top); err != nil {
+		t.Skip("links are not available")
+	}
+	rr.purge(m)
+	if read(top) != "the player's own" || read(secret) != "secret bytes" || read(filepath.Join(rr.profile, "top.package")) != "top" {
+		t.Fatalf("shared %q, profile %q", read(top), read(filepath.Join(rr.profile, "top.package")))
+	}
+}
