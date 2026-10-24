@@ -67,7 +67,7 @@ export function LaunchPresetTemplatesDialog({
         )}
       </DialogContent>
       <DialogActions>
-        <Button variant="contained" onClick={onClose}>{t`Close`}</Button>
+        <Button onClick={onClose}>{t`Close`}</Button>
       </DialogActions>
       <ConfirmDialog
         open={removing !== null}

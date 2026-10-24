@@ -4,7 +4,7 @@ import type { Changelog } from '../../bindings/github.com/Rethunk-Tech/mortar/in
 import { useProfiles } from '../profiles/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
-import { LoadingRow } from '../shell/LoadingRow.tsx'
+import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { space } from '../theme/density.ts'
 import { changelogNoteIsRisky } from './changelogRange.ts'
 import { MarkdownView } from './MarkdownView.tsx'
@@ -83,7 +83,7 @@ export function ChangelogDialog({
   } else if (state !== null && 'logs' in state) {
     ;({ logs } = state)
   }
-  let body = <LoadingRow>{t`Reading the changelog…`}</LoadingRow>
+  let body = <SkeletonRows label={t`Reading the changelog…`} count={6} height={20} />
   if (state !== null && 'error' in state) {
     body = <ErrorRetry error={state.error} onRetry={retry} />
   } else if (logs !== null && logs.length === 0) {

@@ -394,7 +394,7 @@ function CleanupDialog({
   return (
     <Dialog open={open} onClose={close} maxWidth="md" fullWidth={true} scroll="paper">
       <DialogTitle>{t`Clean up storage`}</DialogTitle>
-      <DialogContent dividers={true} sx={{ display: 'flex', flexDirection: 'column', py: 0.5 }}>
+      <DialogContent sx={{ display: 'flex', flexDirection: 'column', py: 0.5 }}>
         {error ? (
           <Box
             role="alert"

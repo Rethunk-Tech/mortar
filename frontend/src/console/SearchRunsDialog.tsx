@@ -16,8 +16,8 @@ import type { RunHit } from '../../bindings/github.com/Rethunk-Tech/mortar/inter
 import { SearchRuns } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
-import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
+import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
 import { useOutcomeLabel } from './outcome.ts'
@@ -98,7 +98,7 @@ export function SearchRunsDialog({ open, onClose }: { open: boolean; onClose: ()
           onChange={setQuery}
           sx={{ mb: 1.5 }}
         />
-        {loading ? <LoadingRow>{t`Searching…`}</LoadingRow> : null}
+        {loading ? <SkeletonRows label={t`Searching…`} count={4} height={36} /> : null}
         {!loading && groups.size === 0 ? (
           <EmptyState
             icon={<FileSearch />}

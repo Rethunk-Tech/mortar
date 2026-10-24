@@ -272,9 +272,7 @@ export const OldFilesCallouts = memo(function OldFilesCalloutsView({
         scroll="paper"
       >
         <DialogTitle>{t`Files left by updates`}</DialogTitle>
-        <DialogContent dividers={true} sx={{ px: 0, pt: 0 }}>
-          {sets.map(callout)}
-        </DialogContent>
+        <DialogContent sx={{ px: 0, pt: 0 }}>{sets.map(callout)}</DialogContent>
         <DialogActions>
           <Button onClick={() => setReviewing(false)}>{t`Close`}</Button>
           {bulk}

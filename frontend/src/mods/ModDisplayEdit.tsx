@@ -76,7 +76,7 @@ export function ModDisplayEdit({ profile, mod }: { profile: Profile; mod: Mod })
       </Link>
       <Dialog open={open} onClose={() => setOpen(false)} fullWidth={true} maxWidth="xs">
         <DialogTitle>{t`Edit ${{ name: mod.name }}`}</DialogTitle>
-        <DialogContent dividers={true}>
+        <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap, pt: 0.5 }}>
             {field(t`Name`, name, setName)}
             {field(t`Author`, author, setAuthor)}

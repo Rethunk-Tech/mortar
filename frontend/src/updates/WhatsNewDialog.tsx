@@ -251,9 +251,7 @@ export function WhatsNewDialog() {
         ))}
       </DialogContent>
       <DialogActions>
-        <Button variant="contained" onClick={close}>
-          {t`Close`}
-        </Button>
+        <Button onClick={close}>{t`Close`}</Button>
       </DialogActions>
     </Dialog>
   )

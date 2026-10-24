@@ -108,7 +108,7 @@ function ChooseDialog({
   return (
     <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="xs">
       <DialogTitle>{t`Update an existing profile…`}</DialogTitle>
-      <DialogContent dividers={true}>
+      <DialogContent>
         <List disablePadding={true}>
           {profiles.map((profile) => (
             <ListItem key={profile.id} disablePadding={true}>

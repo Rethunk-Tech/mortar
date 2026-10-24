@@ -112,7 +112,7 @@ export function FarmDialog({
   return (
     <Dialog open={open} onClose={done} fullWidth={true} maxWidth="sm">
       <DialogTitle>{t`Multiplayer mod list`}</DialogTitle>
-      <DialogContent dividers={true}>
+      <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
           <Typography sx={section}>{t`Hosting`}</Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, flexWrap: 'wrap' }}>

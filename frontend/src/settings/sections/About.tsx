@@ -135,7 +135,7 @@ export function About() {
         scroll="paper"
       >
         <DialogTitle>{t`Open-source licences`}</DialogTitle>
-        <DialogContent dividers={true}>
+        <DialogContent>
           <CreditList />
         </DialogContent>
         <DialogActions>

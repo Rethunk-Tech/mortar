@@ -25,8 +25,8 @@ import { useGameBusy } from '../launch/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
-import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
+import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { space } from '../theme/density.ts'
@@ -169,7 +169,7 @@ export function BackupsDialog({
             </Box>
           ) : null}
           {status === 'loading' && items.length === 0 ? (
-            <LoadingRow>{t`Reading backups…`}</LoadingRow>
+            <SkeletonRows label={t`Reading backups…`} count={4} height={36} />
           ) : null}
           {status === 'ready' && items.length === 0 ? (
             <EmptyState

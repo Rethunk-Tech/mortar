@@ -70,7 +70,7 @@ function EnterCodeDialog({ open, onClose }: { open: boolean; onClose: () => void
   return (
     <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="xs">
       <DialogTitle>{t`Enter code`}</DialogTitle>
-      <DialogContent dividers={true}>
+      <DialogContent>
         <Typography color="text.secondary">
           {t`Pick the computer showing the code, then type it.`}
         </Typography>

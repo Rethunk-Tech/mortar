@@ -398,7 +398,7 @@ function createMortarTheme(
           root: {
             padding: space.pad,
             '.MuiDialogTitle-root + &': { paddingTop: 8 },
-            '&:not(.MuiDialogContent-dividers):has(+ .MuiDialogActions-root)': { paddingBottom: 0 },
+            '&:has(+ .MuiDialogActions-root)': { paddingBottom: 0 },
           },
         },
       },

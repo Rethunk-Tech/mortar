@@ -179,10 +179,7 @@ function Diagnostics() {
         scroll="paper"
       >
         <DialogTitle>{t`Diagnostics`}</DialogTitle>
-        <DialogContent
-          dividers={true}
-          sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}
-        >
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
           {busy && !report ? <LinearProgress /> : null}
           {failed ? (
             <Box

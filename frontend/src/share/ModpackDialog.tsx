@@ -224,7 +224,7 @@ function Fields({
   const left = [...(form.leftOut ?? []), ...(o.includeDisabled ? [] : (form.disabled ?? []))]
   return (
     <>
-      <DialogContent dividers={true}>
+      <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap, pt: 0.5 }}>
           <Typography sx={{ ...section, mt: 0 }}>{t`Package`}</Typography>
           <Box sx={{ display: 'flex', gap: space.gap }}>

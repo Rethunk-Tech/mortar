@@ -17,8 +17,8 @@ import type {
 import { Apply } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savedgroups/service.ts'
 import { modsLabel } from '../i18n/counts.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
-import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { PromptDialog } from '../shell/PromptDialog.tsx'
+import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { usePending } from '../toasts/usePending.ts'
 import { useSavedGroups } from './useSavedGroups.ts'
 
@@ -74,7 +74,7 @@ function SavedGroupPickList({
 }) {
   const { t } = useLingui()
   if (loading) {
-    return <LoadingRow>{t`Loading saved groups…`}</LoadingRow>
+    return <SkeletonRows label={t`Loading saved groups…`} count={4} height={36} />
   }
   if (savedGroups.length === 0) {
     return empty

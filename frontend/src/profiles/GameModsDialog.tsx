@@ -20,7 +20,7 @@ import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { useReasonText } from '../i18n/reasonText.ts'
 import type { GameId } from '../nav/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
-import { LoadingRow } from '../shell/LoadingRow.tsx'
+import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { type InlineError, inlineError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { GameModsProgressLine } from './GameModsProgress.tsx'
@@ -190,7 +190,7 @@ export function GameModsDialog({
           </>
         )}
         {error === null && previewing ? (
-          <LoadingRow>{t`Reading the Mods folder…`}</LoadingRow>
+          <SkeletonRows label={t`Reading the Mods folder…`} count={5} height={36} />
         ) : null}
         {busy ? <GameModsProgressLine progress={progress} moving={canMove && move} /> : null}
         {error === null && !previewing ? (

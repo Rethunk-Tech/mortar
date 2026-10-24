@@ -193,10 +193,7 @@ export function AssetMapDialog({
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth={true} scroll="paper">
       <DialogTitle>{t`Asset map`}</DialogTitle>
-      <DialogContent
-        dividers={true}
-        sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}
-      >
+      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
         <Typography sx={{ fontSize: 'medium.fontSize', color: 'text.secondary' }}>
           {t`Every game asset the profile's mods change, and which mod wins it. Open one to see each mod's edit in load order.`}
         </Typography>

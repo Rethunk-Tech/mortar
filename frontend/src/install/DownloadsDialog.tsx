@@ -29,8 +29,8 @@ import { arrowFocus } from '../shell/arrowFocus.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
-import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
+import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { useFolderEvent } from '../shell/useFolderEvent.ts'
 import { space } from '../theme/density.ts'
 import { type InlineError, inlineError, reportError } from '../toasts/report.ts'
@@ -177,7 +177,7 @@ function Body({
     return <ErrorRetry error={error} onRetry={onRetry} />
   }
   if (archives === null) {
-    return <LoadingRow>{t`Looking in the downloads folder…`}</LoadingRow>
+    return <SkeletonRows label={t`Looking in the downloads folder…`} count={5} height={36} />
   }
   if (archives.length === 0) {
     return (
