@@ -2,20 +2,21 @@ import { useLingui } from '@lingui/react/macro'
 import {
   Box,
   Button,
+  Chip,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControlLabel,
-  Radio,
-  RadioGroup,
+  List,
+  ListItemButton,
   Typography,
 } from '@mui/material'
 import { useState } from 'react'
+import { formatWhen } from '../i18n/formatWhen.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
-import { LoadingRow } from '../shell/LoadingRow.tsx'
+import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { space } from '../theme/density.ts'
 import { isFrozen } from './frozen.ts'
 import { useListedVersions } from './useListedVersions.ts'
@@ -26,7 +27,10 @@ import {
   versionChoices,
 } from './versionChoices.ts'
 
-const LIST_MAX_PX = 320
+// The list keeps one height while it loads and once it has arrived, so the dialog does not jump.
+const LIST_PX = 320
+const ROW_PX = 44
+const SKELETON_ROWS = 6
 
 /**
  * Picks one of the versions a site lists for a mod and queues it. With an entry (key, its version and whether it is
@@ -62,6 +66,10 @@ export function ChangeVersionDialog({
       download([choice.want], true).catch(() => undefined)
     }
   }
+  let confirmLabel = choice ? t`Install version ${{ version: choice.version }}` : t`Install`
+  if (asking) {
+    confirmLabel = t`Install anyway`
+  }
   const body = (() => {
     if (asking && choice) {
       return (
@@ -73,7 +81,7 @@ export function ChangeVersionDialog({
       )
     }
     if (listed.state === 'loading') {
-      return <LoadingRow>{t`Reading the versions…`}</LoadingRow>
+      return <SkeletonRows label={t`Reading the versions…`} count={SKELETON_ROWS} height={ROW_PX} />
     }
     if (listed.state === 'error') {
       return <ErrorRetry error={listed.error} onRetry={listed.retry} />
@@ -82,25 +90,33 @@ export function ChangeVersionDialog({
       return <Typography sx={{ color: 'text.secondary' }}>{t`No versions are listed.`}</Typography>
     }
     return (
-      <RadioGroup
-        value={picked}
-        onChange={(_, v) => setPicked(v)}
-        sx={{ maxHeight: LIST_MAX_PX, overflowY: 'auto', flexWrap: 'nowrap' }}
-      >
+      <List aria-label={t`Versions`} disablePadding={true} sx={{ overflowY: 'auto', mx: -1 }}>
         {choices.map((c, i) => {
           const here = isInstalledVersion(c, installed)
-          const tags = [i === 0 ? t`Latest` : '', here ? t`Installed` : ''].filter(Boolean)
           return (
-            <FormControlLabel
+            <ListItemButton
               key={c.key}
-              value={c.key}
-              disabled={here}
-              control={<Radio size="small" />}
-              label={tags.length > 0 ? `${c.label} (${tags.join(', ')})` : c.label}
-            />
+              selected={c.key === picked}
+              aria-current={here ? 'true' : undefined}
+              onClick={() => setPicked(here ? '' : c.key)}
+              sx={{ minHeight: ROW_PX, gap: space.gap, borderRadius: 1, px: 1 }}
+            >
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography sx={{ fontSize: 'base.fontSize', overflowWrap: 'anywhere' }}>
+                  {c.label}
+                </Typography>
+                {c.released ? (
+                  <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
+                    {formatWhen(c.released)}
+                  </Typography>
+                ) : null}
+              </Box>
+              {i === 0 ? <Chip size="small" variant="outlined" label={t`Latest`} /> : null}
+              {here ? <Chip size="small" label={t`Installed`} /> : null}
+            </ListItemButton>
           )
         })}
-      </RadioGroup>
+      </List>
     )
   })()
   return (
@@ -109,7 +125,17 @@ export function ChangeVersionDialog({
         {entry ? t`Change the version of ${name}` : t`Install a version of ${name}`}
       </DialogTitle>
       <DialogContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap, pt: 0.5 }}>{body}</Box>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: space.gap,
+            pt: 0.5,
+            height: asking ? undefined : LIST_PX,
+          }}
+        >
+          {body}
+        </Box>
       </DialogContent>
       <DialogActions>
         <Button onClick={asking ? () => setAsking(false) : onClose}>
@@ -120,7 +146,7 @@ export function ChangeVersionDialog({
           disabled={!choice}
           onClick={held && !asking ? () => setAsking(true) : go}
         >
-          {asking ? t`Install anyway` : t`Install`}
+          {confirmLabel}
         </Button>
       </DialogActions>
     </Dialog>

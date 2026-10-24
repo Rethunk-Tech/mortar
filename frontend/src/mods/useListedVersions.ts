@@ -6,6 +6,11 @@ import { type InlineError, inlineError } from '../toasts/report.ts'
 import { loadDetails, useNexusEntry } from './nexusDetails.ts'
 import type { ListedVersion } from './versionChoices.ts'
 
+const MS_PER_S = 1000
+
+// A release time only when the site gave a readable one.
+const dated = (ms: number) => (Number.isFinite(ms) && ms > 0 ? { released: ms } : {})
+
 export type Listed =
   | { state: 'loading' }
   | { state: 'error'; error: InlineError; retry: () => void }
@@ -27,7 +32,12 @@ function useNexusVersions(game: string, modId: number): Listed {
       state: 'ready',
       versions: files
         .filter((f) => f.category !== 'ARCHIVED')
-        .map((f) => ({ version: f.version || f.name, fileId: f.fileId, note: f.name })),
+        .map((f) => ({
+          version: f.version || f.name,
+          fileId: f.fileId,
+          note: f.name,
+          ...dated(Date.parse(f.uploaded)),
+        })),
     }
   }
   if (entry?.error) {
@@ -43,9 +53,17 @@ function useSiteVersions(game: string, source: string, id: string): Listed {
       ? null
       : () =>
           source === 'github'
-            ? ReleaseChangelog(id).then((logs) => (logs ?? []).map((l) => ({ version: l.version })))
+            ? ReleaseChangelog(id).then((logs) =>
+                (logs ?? []).map((l) => ({
+                  version: l.version,
+                  ...dated(Date.parse(l.date ?? '')),
+                })),
+              )
             : ReadDetails(game, source, id).then((d) =>
-                (d.versions ?? []).map((version) => ({ version })),
+                (d.versions ?? []).map((version, i) => ({
+                  version,
+                  ...dated((d.released?.[i] ?? 0) * MS_PER_S),
+                })),
               ),
     [game, source, id],
     null,

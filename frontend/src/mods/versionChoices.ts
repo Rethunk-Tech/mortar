@@ -7,12 +7,15 @@ export interface ListedVersion {
   fileId?: number
   /** What tells same-numbered files apart, such as a Nexus file's title. */
   note?: string
+  /** When the site published it, in milliseconds; absent when the site gives no date. */
+  released?: number
 }
 
 export interface VersionChoice {
   key: string
   label: string
   version: string
+  released?: number
   want: Want
 }
 
@@ -81,6 +84,7 @@ export function versionChoices(
     key: `${i}:${v.version}:${v.fileId ?? 0}`,
     label: v.note && v.note !== v.version ? `${v.version} · ${v.note}` : v.version,
     version: v.version,
+    ...(v.released ? { released: v.released } : {}),
     want: wantOf(target, v, replaces),
   }))
 }

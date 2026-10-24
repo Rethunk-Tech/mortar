@@ -1859,8 +1859,16 @@ msgstr ""
 msgid "The loader's log shows this plugin did not start, so its features are missing in the game. A wrong game version or a missing requirement is the usual cause."
 msgstr ""
 
+#: src/mods/ChangeVersionDialog.tsx
+msgid "Versions"
+msgstr ""
+
 #: src/mods/NexusAccountActions.tsx
 msgid "Track"
+msgstr ""
+
+#: src/mods/ChangeVersionDialog.tsx
+msgid "Install version {version}"
 msgstr ""
 
 #: src/mods/CompatSection.tsx
