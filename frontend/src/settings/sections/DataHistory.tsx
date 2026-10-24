@@ -1,7 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Button } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { HistoryUsage } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   HistoryUsage as LoadHistoryUsage,
@@ -10,6 +10,7 @@ import {
 import { formatBytes } from '../../i18n/bytes.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { DisabledReason } from '../../shell/DisabledReason.tsx'
+import { useLoaded } from '../../shell/useLoaded.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { usePending } from '../../toasts/usePending.ts'
@@ -74,14 +75,12 @@ function HistoryRow({
 
 export function HistoryUsageRows() {
   const gameId = useProfiles((s) => s.game?.id)
-  const [rows, setRows] = useState<HistoryUsage[]>([])
-  useEffect(() => {
-    if (gameId) {
-      LoadHistoryUsage(gameId)
-        .then((r) => setRows(r ?? []))
-        .catch(reportUnexpected)
-    }
-  }, [gameId])
+  const { data: rows, setData: setRows } = useLoaded<HistoryUsage[]>(
+    gameId ? () => LoadHistoryUsage(gameId).then((r) => r ?? []) : null,
+    [gameId],
+    [],
+    reportUnexpected,
+  )
   if (!gameId) {
     return null
   }

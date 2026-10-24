@@ -18,6 +18,7 @@ import {
 import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
+import { useLoaded } from '../../shell/useLoaded.ts'
 import { space } from '../../theme/density.ts'
 import { errorKind } from '../../toasts/errorKind.ts'
 import { type InlineError, inlineError, reportUnexpected } from '../../toasts/report.ts'
@@ -108,17 +109,17 @@ function NexusModsSignedIn({
   onAskEndorse: (on: boolean) => void
 }) {
   const { t } = useLingui()
-  const [trackedCount, setTrackedCount] = useState<number | null>(null)
   const [confirming, setConfirming] = useState<boolean | null>(null)
   const [busy, run] = usePending()
   // The game last opened; untracking is per game, and Settings has no game of its own.
   const game = useProfiles((s) => s.game)
 
-  useEffect(() => {
-    if (game) {
-      TrackedCount(game.id).then(setTrackedCount).catch(reportUnexpected)
-    }
-  }, [game])
+  const { data: trackedCount, setData: setTrackedCount } = useLoaded<number | null>(
+    game ? () => TrackedCount(game.id) : null,
+    [game],
+    null,
+    reportUnexpected,
+  )
   const gameName = game?.name ?? ''
   const untrackOff = busy || trackedCount === null || trackedCount === 0
   let trackedText = t`Untrack every mod you track on ${{ source: sourceLabel('nexus') }}`

@@ -1,12 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
 import { ArrowDown, ArrowUp } from 'lucide-react'
-import { useEffect, useState } from 'react'
 import { SearchableSources } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/browse/service.ts'
 import { SetByKey } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { SourceLogo } from '../../brand/sources/SourceLogo.tsx'
 import { useCurrentGame } from '../../nav/currentGame.ts'
 import { IconAction } from '../../shell/IconAction.tsx'
+import { useLoaded } from '../../shell/useLoaded.ts'
 import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { persist } from '../persist.ts'
@@ -23,12 +23,12 @@ function SourceOrder() {
   const { t } = useLingui()
   const game = useCurrentGame()
   const saved = useSettings((s) => s.games?.[game]?.sourceOrder ?? '')
-  const [all, setAll] = useState<{ id: string; name: string }[]>([])
-  useEffect(() => {
-    SearchableSources(game)
-      .then((found) => setAll(found ?? []))
-      .catch(reportUnexpected)
-  }, [game])
+  const { data: all } = useLoaded<{ id: string; name: string }[]>(
+    () => SearchableSources(game).then((found) => found ?? []),
+    [game],
+    [],
+    reportUnexpected,
+  )
   const list = ordered(all, saved)
   if (list.length < 2) {
     return null

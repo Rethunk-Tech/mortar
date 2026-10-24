@@ -12,6 +12,7 @@ import { useGameBusy } from '../../launch/store.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../../shell/DisabledReason.tsx'
+import { useLoaded } from '../../shell/useLoaded.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { usePending } from '../../toasts/usePending.ts'
@@ -91,16 +92,16 @@ export function BackupsUsageRow() {
   const { t } = useLingui()
   const gameId = useProfiles((s) => s.game?.id)
   const gameName = useProfiles((s) => s.game?.name ?? '')
-  const [usage, setUsage] = useState<BackupsUsage | null>(null)
+  const { data: usage, setData: setUsage } = useLoaded<BackupsUsage | null>(
+    gameId ? () => LoadBackupsUsage(gameId) : null,
+    [gameId],
+    null,
+    reportUnexpected,
+  )
   const [open, setOpen] = useState(false)
   const [pending, run] = usePending()
   const gameBusy = useGameBusy(gameId)
   const keepPerSave = useSettings((s) => gamePrefs(s).saveBackupKeep)
-  useEffect(() => {
-    if (gameId) {
-      LoadBackupsUsage(gameId).then(setUsage).catch(reportUnexpected)
-    }
-  }, [gameId])
   if (!gameId) {
     return null
   }
