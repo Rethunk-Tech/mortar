@@ -1322,7 +1322,31 @@ func run() error {
 
 	var tray *application.SystemTray
 	var trayMenu *application.Menu
-	refreshTrayMenu := func() {
+	// trayView is what the tray menu shows, read off the main thread: which games run, the downloads left and each
+	// game's recent launches. Reading it inside InvokeSync would hold the window's thread on the process table.
+	type trayView struct {
+		busy   map[string]bool
+		left   int
+		recent map[string][]launchsvc.RecentLaunch
+	}
+	readTray := func() trayView {
+		v := trayView{busy: map[string]bool{}, recent: map[string][]launchsvc.RecentLaunch{}}
+		for _, id := range launches.BusyAmong(implemented) {
+			v.busy[id] = true
+		}
+		for _, item := range queueSvc.State().Items {
+			if item.State != queue.StateDone && item.State != queue.StateSkipped && item.State != queue.StateCancelled {
+				v.left++
+			}
+		}
+		for _, id := range implemented {
+			if recent, _ := launches.RecentLaunches(id, 3); len(recent) > 0 {
+				v.recent[id] = recent
+			}
+		}
+		return v
+	}
+	buildTray := func(v trayView) {
 		if trayMenu == nil {
 			return
 		}
@@ -1330,12 +1354,8 @@ func run() error {
 		trayMenu.Add(i18n.T("Show Mortar")).OnClick(func(*application.Context) {
 			showWindow()
 		})
-		busy := map[string]bool{}
-		for _, id := range launches.BusyAmong(implemented) {
-			busy[id] = true
-		}
 		for _, id := range implemented {
-			if !busy[id] {
+			if !v.busy[id] {
 				continue
 			}
 			name := id
@@ -1346,22 +1366,15 @@ func run() error {
 				_ = launches.Stop(context.Background(), id)
 			})
 		}
-		left := 0
-		for _, item := range queueSvc.State().Items {
-			if item.State != queue.StateDone && item.State != queue.StateSkipped && item.State != queue.StateCancelled {
-				left++
-			}
-		}
-		if left > 0 {
-			trayMenu.Add(i18n.T("Downloads: {count}", "count", strconv.Itoa(left))).OnClick(func(*application.Context) {
+		if v.left > 0 {
+			trayMenu.Add(i18n.T("Downloads: {count}", "count", strconv.Itoa(v.left))).OnClick(func(*application.Context) {
 				toPage("queue:open", nil)
 			})
 		}
 		for _, id := range implemented {
-			recent, _ := launches.RecentLaunches(id, 3)
-			for _, row := range recent {
+			for _, row := range v.recent[id] {
 				item := trayMenu.Add(i18n.T("Play {profile}", "profile", row.Name))
-				if busy[id] {
+				if v.busy[id] {
 					item.SetEnabled(false)
 				} else {
 					profileID := row.ProfileID
@@ -1378,6 +1391,9 @@ func run() error {
 		})
 		applyTrayMenu(tray, trayMenu)
 	}
+	refreshTrayMenu := func() { buildTray(readTray()) }
+	// One rebuild at a time, in event order, so a burst of state changes cannot leave an older menu in place.
+	var trayRebuild sync.Mutex
 	syncTray := func() {
 		if !trayWanted(store.Get()) {
 			if tray != nil {
@@ -1406,7 +1422,10 @@ func run() error {
 			// Menus are GTK objects: rebuilding one off the main thread, or twice at once from a burst of
 			// events, leaves items without their native handle and panics.
 			app.Event.On(launchsvc.StateEvent, func(*application.CustomEvent) {
-				gate.run(refreshTrayMenu)
+				trayRebuild.Lock()
+				defer trayRebuild.Unlock()
+				v := readTray()
+				gate.run(func() { buildTray(v) })
 			})
 		}
 		refreshTrayMenu()
