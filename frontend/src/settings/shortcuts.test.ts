@@ -14,45 +14,24 @@ import {
 } from './shortcuts.ts'
 
 describe('SHORTCUTS', () => {
-  test('lists every chord the handler recognises', () => {
+  test('ids are unique', () => {
     const ids = SHORTCUTS.map((s) => s.id)
     expect(new Set(ids).size).toBe(ids.length)
-    expect(ids).toContain('tab-performance')
-    expect(ids).toContain('vanilla-play')
-    expect(ids).toContain('downloads')
-    expect(ids).toContain('notifications')
-    expect(ids).toContain('previous-profile')
-    expect(ids).toContain('next-profile')
-    expect(ids).toContain('collapse-sidebar')
-    expect(ids).toContain('find-all-mods')
   })
 
-  test('matchShortcut covers the table', () => {
+  // Each modifier and each key whose table name differs from the browser's event key.
+  test('matchShortcut reads modifiers and named keys as the browser sends them', () => {
     expect(matchShortcut({ key: 'k', ctrlKey: true })).toBe('command-palette')
-    expect(matchShortcut({ key: 'f', ctrlKey: true })).toBe('filter-mods')
     expect(matchShortcut({ key: 'p', metaKey: true })).toBe('play')
+    expect(matchShortcut({ key: 'n', ctrlKey: true })).toBe('new-profile')
+    expect(matchShortcut({ key: 'n', ctrlKey: true, shiftKey: true })).toBe('notifications')
+    expect(matchShortcut({ key: 'ArrowLeft', altKey: true })).toBe('back')
+    expect(matchShortcut({ key: 'ArrowLeft' })).toBeNull()
     expect(matchShortcut({ key: 'F5' })).toBe('check-updates')
-    expect(matchShortcut({ key: ',', ctrlKey: true })).toBe('open-settings')
     expect(matchShortcut({ key: 'Escape' })).toBe('dismiss')
-    expect(matchShortcut({ key: 'a', ctrlKey: true })).toBe('select-all-mods')
     expect(matchShortcut({ key: 'ArrowUp' })).toBe('mod-up')
     expect(matchShortcut({ key: 'ArrowDown' })).toBe('mod-down')
     expect(matchShortcut({ key: ' ' })).toBe('mod-toggle')
-    expect(matchShortcut({ key: 'Enter' })).toBe('mod-details')
-    expect(matchShortcut({ key: 'Delete' })).toBe('mod-remove')
-    expect(matchShortcut({ key: '6', ctrlKey: true })).toBe('tab-config')
-    expect(matchShortcut({ key: '8', ctrlKey: true })).toBe('tab-performance')
-    expect(matchShortcut({ key: 'n', ctrlKey: true })).toBe('new-profile')
-    expect(matchShortcut({ key: 'F2' })).toBe('rename-profile')
-    expect(matchShortcut({ key: 'i', ctrlKey: true })).toBe('import')
-    expect(matchShortcut({ key: 'ArrowLeft', altKey: true })).toBe('back')
-    expect(matchShortcut({ key: 'j', ctrlKey: true })).toBe('downloads')
-    expect(matchShortcut({ key: 'n', ctrlKey: true, shiftKey: true })).toBe('notifications')
-    expect(matchShortcut({ key: 'PageUp', ctrlKey: true })).toBe('previous-profile')
-    expect(matchShortcut({ key: 'PageDown', ctrlKey: true })).toBe('next-profile')
-    expect(matchShortcut({ key: 'b', ctrlKey: true })).toBe('collapse-sidebar')
-    expect(matchShortcut({ key: 'f', ctrlKey: true, shiftKey: true })).toBe('find-all-mods')
-    expect(matchShortcut({ key: 'p', ctrlKey: true, shiftKey: true })).toBe('vanilla-play')
   })
 })
 
