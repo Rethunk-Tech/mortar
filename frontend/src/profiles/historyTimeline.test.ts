@@ -1,15 +1,5 @@
-import { expect, mock, test } from 'bun:test'
+import { expect, test } from 'bun:test'
 import { HistoryChange } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-
-mock.module('@lingui/core/macro', () => ({
-  msg: (parts: TemplateStringsArray, ...values: unknown[]) =>
-    String.raw(
-      { raw: parts },
-      ...values.map((v) => (v !== null && typeof v === 'object' ? Object.values(v)[0] : v)),
-    ),
-  plural: (n: number, forms: { one: string; other: string }) =>
-    (n === 1 ? forms.one : forms.other).replace('#', String(n)),
-}))
 
 const { historyDays, historyKind, historySummary } = await import('./historyTimeline.ts')
 const { sentence } = await import('../i18n/sentence.ts')
