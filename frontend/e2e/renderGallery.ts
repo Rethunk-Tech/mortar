@@ -14,12 +14,12 @@ const esc = (s: string) =>
     .replaceAll('"', '&quot;')
 
 function picture(
-  out: string,
-  shots: string,
+  dirs: { out: string; shots: string },
   engine: string,
   phase: 'loading' | 'settled',
   name: string,
 ) {
+  const { out, shots } = dirs
   const file = join(shots, engine, ...(phase === 'loading' ? ['loading'] : []), `${name}.png`)
   const label = `${engine === 'chromium' ? 'Chromium' : 'WebKitGTK'} · ${phase === 'loading' ? 'Loading' : 'Settled'}`
   if (!existsSync(file)) {
@@ -62,7 +62,7 @@ export function writeGallery(
   const breaksOf = (name: string) => breaks.filter((b) => b.split(' | ')[0] === `LAYOUT ${name}`)
   const bad = (name: string) => {
     const r = byName.get(name)
-    return Boolean(r?.failure || r?.over.length || breaksOf(name).length)
+    return Boolean(r?.failure) || (r?.over.length ?? 0) > 0 || breaksOf(name).length > 0
   }
   const ordered = [...names.filter(bad), ...names.filter((n) => !bad(n))]
   const toc = ordered
@@ -74,7 +74,7 @@ export function writeGallery(
 <h2>${esc(n)}</h2>${figures(byName.get(n))}${breaksOf(n)
         .map((b) => `<p class="bad">${esc(b.split(' | ').slice(1).join(' | '))}</p>`)
         .join('')}
-<div class="shots">${ENGINES.flatMap((e) => [picture(out, shots, e, 'loading', n), picture(out, shots, e, 'settled', n)]).join('')}</div>
+<div class="shots">${ENGINES.flatMap((e) => [picture({ out, shots }, e, 'loading', n), picture({ out, shots }, e, 'settled', n)]).join('')}</div>
 </section>`,
     )
     .join('\n')
