@@ -391,6 +391,8 @@ function Buttons({ game, phase, focus }: { game: string; phase: Phase; focus: bo
   const dismissFailure = useLaunch((s) => s.dismissFailure)
   const close = useLaunchView((s) => s.close)
   const setTab = useTab((s) => s.setTab)
+  // On the Console already, Open console would only hide the screen, so Hide stands in for it.
+  const onConsole = useTab((s) => s.tab === 'console')
   const failed = phase === 'failed'
   const closeFailure = () => {
     dismissFailure()
@@ -408,25 +410,27 @@ function Buttons({ game, phase, focus }: { game: string; phase: Phase; focus: bo
       }}
     >
       <Button onClick={failed ? closeFailure : cancel}>{failed ? t`Close` : t`Cancel`}</Button>
-      <Button
-        variant="outlined"
-        autoFocus={focus}
-        onClick={() => {
-          setTab('console')
-          if (failed) {
-            closeFailure()
-          } else {
-            hide()
-          }
-        }}
-      >
-        {t`Open console`}
-      </Button>
-      {failed ? null : (
-        <Button variant="outlined" onClick={hide}>
-          {t`Hide`}
+      {onConsole ? null : (
+        <Button
+          variant="outlined"
+          autoFocus={focus}
+          onClick={() => {
+            setTab('console')
+            if (failed) {
+              closeFailure()
+            } else {
+              hide()
+            }
+          }}
+        >
+          {t`Open console`}
         </Button>
       )}
+      {onConsole && !failed ? (
+        <Button variant="outlined" autoFocus={focus} onClick={hide}>
+          {t`Hide`}
+        </Button>
+      ) : null}
     </Box>
   )
 }
