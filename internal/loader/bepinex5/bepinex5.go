@@ -386,7 +386,7 @@ func (m Manifest) Needs() []mod.Dependency {
 	var out []mod.Dependency
 	for _, s := range m.Dependencies {
 		d, err := deps.Thunderstore(s)
-		if err != nil || components.IsLoaderPackage(strings.TrimPrefix(d.Target.Package, "thunderstore:")) {
+		if err != nil || components.IsLoaderPackage(mod.ID(d.Target.Package).Local()) {
 			continue
 		}
 		out = append(out, mod.NewDependency(mod.ID(d.Target.Package), d.Constraint, true))

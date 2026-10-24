@@ -9,6 +9,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
@@ -79,7 +80,7 @@ func parseDependency(s string) (Ref, error) {
 	if err != nil {
 		return Ref{}, err
 	}
-	namespace, name, _ := strings.Cut(strings.TrimPrefix(d.Target.Package, "thunderstore:"), "-")
+	namespace, name, _ := strings.Cut(mod.ID(d.Target.Package).Local(), "-")
 	return Ref{Namespace: namespace, Name: name, Version: d.Constraint}, nil
 }
 
