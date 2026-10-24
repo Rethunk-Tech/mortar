@@ -166,6 +166,7 @@
 
       // canon ts-biome-00014 — sequencing is the point when a loop awaits.
       "performance": {
+        "useDomNodeTextContent": "off",
         "noAwaitInLoops": "off",
         // canon ts-biome-00029
         "noImgElement": "off",
