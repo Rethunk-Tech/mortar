@@ -1419,6 +1419,10 @@ msgid "What happened"
 msgstr ""
 
 #: src/share/ModpackDialog.tsx
+msgid "Texts"
+msgstr ""
+
+#: src/share/ModpackDialog.tsx
 msgid "Export as {source} modpack"
 msgstr ""
 
@@ -3818,6 +3822,10 @@ msgstr ""
 msgid "{count, plural, one {# mod you added from an archive} other {# mods you added from archives}} cannot go in the file"
 msgstr ""
 
+#: src/share/ModpackDialog.tsx
+msgid "Package"
+msgstr ""
+
 #: src/shell/ErrorBoundary.tsx
 msgid "The rest of Mortar still works. Try again, or copy the details for a bug report."
 msgstr ""
@@ -4891,6 +4899,10 @@ msgstr ""
 
 #: src/firstrun/LoaderStep.tsx
 msgid "One step in {launcher}"
+msgstr ""
+
+#: src/share/ModpackDialog.tsx
+msgid "Contents"
 msgstr ""
 
 #: src/sync/store.ts

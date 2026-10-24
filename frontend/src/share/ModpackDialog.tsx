@@ -25,7 +25,8 @@ import { PickImage } from '../../bindings/github.com/Rethunk-Tech/mortar/interna
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { listNames } from '../i18n/list.ts'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
-import { LoadingRow } from '../shell/LoadingRow.tsx'
+import { Fold } from '../shell/Fold.tsx'
+import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
@@ -34,6 +35,7 @@ import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 
 const DESCRIPTION_MAX = 250
+const SKELETON_FIELDS = 6
 const NAME_PATTERN = /^[A-Za-z0-9_]+$/
 const VERSION_PATTERN = /^\d+\.\d+\.\d+$/
 const errorText = { fontSize: 'base.fontSize', color: 'error.main' } as const
@@ -44,12 +46,9 @@ const HTTP = /^https?:\/\//
 function IconRow({ path, onChange }: { path: string; onChange: (path: string) => void }) {
   const { t } = useLingui()
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-      <Typography sx={{ flex: 1, fontSize: 'base.fontSize', overflowWrap: 'anywhere' }}>
-        {path || t`A plain icon (${{ source: sourceLabel('thunderstore') }} needs a 256x256 PNG)`}
-      </Typography>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, flexWrap: 'wrap' }}>
       <Button
-        size="small"
+        variant="outlined"
         onClick={() =>
           PickImage(t`Choose icon`)
             .then((picked) => picked && onChange(picked))
@@ -58,11 +57,18 @@ function IconRow({ path, onChange }: { path: string; onChange: (path: string) =>
       >
         {t`Choose icon…`}
       </Button>
-      {path ? (
-        <Button size="small" onClick={() => onChange('')}>
-          {t`Use the plain icon`}
-        </Button>
-      ) : null}
+      {path ? <Button onClick={() => onChange('')}>{t`Use the plain icon`}</Button> : null}
+      <Typography
+        sx={{
+          flex: 1,
+          minWidth: 0,
+          fontSize: 'small.fontSize',
+          color: 'text.secondary',
+          overflowWrap: 'anywhere',
+        }}
+      >
+        {path || t`A plain icon (${{ source: sourceLabel('thunderstore') }} needs a 256x256 PNG)`}
+      </Typography>
     </Box>
   )
 }
@@ -81,16 +87,14 @@ function ConfigFiles({
     return null
   }
   const files = new Set(chosen)
+  // A profile's configs run to a hundred or more, so the list stays folded until wanted.
   return (
-    <Box>
-      <Typography sx={{ fontSize: 'base.fontSize', fontWeight: 700 }}>
-        {t`Config files (${{ count: files.size }} of ${{ total: all.length }})`}
-      </Typography>
+    <Fold title={t`Config files (${{ count: files.size }} of ${{ total: all.length }})`}>
       <Box sx={{ display: 'flex', gap: space.gap }}>
-        <Button size="small" onClick={() => onChange(all)}>
+        <Button size="small" variant="outlined" onClick={() => onChange(all)}>
           {t`All`}
         </Button>
-        <Button size="small" onClick={() => onChange([])}>
+        <Button size="small" variant="outlined" onClick={() => onChange([])}>
           {t`None`}
         </Button>
       </Box>
@@ -112,7 +116,60 @@ function ConfigFiles({
           />
         ))}
       </Box>
-    </Box>
+    </Fold>
+  )
+}
+
+const section = { fontSize: 'base.fontSize', fontWeight: 700, mt: 1 } as const
+
+// The package's README and changelog, and the button that writes the changelog from the last export.
+function Texts({
+  readme,
+  changelog,
+  onReadme,
+  onChangelog,
+  onRegenerate,
+}: {
+  readme: string
+  changelog: string
+  onReadme: (text: string) => void
+  onChangelog: (text: string) => void
+  onRegenerate: () => void
+}) {
+  const { t } = useLingui()
+  return (
+    <>
+      <Typography sx={section}>{t`Texts`}</Typography>
+      <TextField
+        size="small"
+        multiline={true}
+        minRows={3}
+        maxRows={8}
+        label={t`README`}
+        placeholder={t`Left empty, a README is written from what the profile holds.`}
+        value={readme}
+        onChange={(e) => onReadme(e.target.value)}
+        sx={monoField}
+      />
+      <TextField
+        size="small"
+        multiline={true}
+        minRows={3}
+        maxRows={8}
+        label={t`Changelog`}
+        value={changelog}
+        onChange={(e) => onChangelog(e.target.value)}
+        sx={monoField}
+      />
+      <Button
+        size="small"
+        variant="outlined"
+        onClick={onRegenerate}
+        sx={{ alignSelf: 'flex-start' }}
+      >
+        {t`Write the changelog against the last export`}
+      </Button>
+    </>
   )
 }
 
@@ -169,6 +226,7 @@ function Fields({
     <>
       <DialogContent dividers={true}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap, pt: 0.5 }}>
+          <Typography sx={{ ...section, mt: 0 }}>{t`Package`}</Typography>
           <Box sx={{ display: 'flex', gap: space.gap }}>
             <TextField
               size="small"
@@ -211,32 +269,14 @@ function Fields({
             onChange={(e) => set('website', e.target.value)}
           />
           <IconRow path={o.iconPath} onChange={(path) => set('iconPath', path)} />
-          <TextField
-            size="small"
-            multiline={true}
-            minRows={3}
-            maxRows={8}
-            label={t`README`}
-            placeholder={t`Left empty, a README is written from what the profile holds.`}
-            value={o.readme}
-            onChange={(e) => set('readme', e.target.value)}
-            sx={monoField}
+          <Texts
+            readme={o.readme}
+            changelog={o.changelog}
+            onReadme={(v) => set('readme', v)}
+            onChangelog={(v) => set('changelog', v)}
+            onRegenerate={regenerate}
           />
-          <TextField
-            size="small"
-            multiline={true}
-            minRows={3}
-            maxRows={8}
-            label={t`Changelog`}
-            value={o.changelog}
-            onChange={(e) => set('changelog', e.target.value)}
-            sx={monoField}
-          />
-          <Box>
-            <Button size="small" onClick={regenerate}>
-              {t`Write the changelog against the last export`}
-            </Button>
-          </Box>
+          <Typography sx={section}>{t`Contents`}</Typography>
           <FormControlLabel
             control={
               <Checkbox
@@ -295,7 +335,7 @@ export function ModpackDialog({
       )}
       {error === null && data === null ? (
         <DialogContent>
-          <LoadingRow>{t`Reading the profile…`}</LoadingRow>
+          <SkeletonRows label={t`Reading the profile…`} count={SKELETON_FIELDS} height={40} />
         </DialogContent>
       ) : null}
       {data ? <Fields game={game} profileId={profileId} form={data} onClose={onClose} /> : null}

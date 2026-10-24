@@ -1419,6 +1419,10 @@ msgid "What happened"
 msgstr "What happened"
 
 #: src/share/ModpackDialog.tsx
+msgid "Texts"
+msgstr "Texts"
+
+#: src/share/ModpackDialog.tsx
 msgid "Export as {source} modpack"
 msgstr "Export as {source} modpack"
 
@@ -3818,6 +3822,10 @@ msgstr "{name} is not syncing yet"
 msgid "{count, plural, one {# mod you added from an archive} other {# mods you added from archives}} cannot go in the file"
 msgstr "{count, plural, one {# mod you added from an archive} other {# mods you added from archives}} cannot go in the file"
 
+#: src/share/ModpackDialog.tsx
+msgid "Package"
+msgstr "Package"
+
 #: src/shell/ErrorBoundary.tsx
 msgid "The rest of Mortar still works. Try again, or copy the details for a bug report."
 msgstr "The rest of Mortar still works. Try again, or copy the details for a bug report."
@@ -4892,6 +4900,10 @@ msgstr "Save backups"
 #: src/firstrun/LoaderStep.tsx
 msgid "One step in {launcher}"
 msgstr "One step in {launcher}"
+
+#: src/share/ModpackDialog.tsx
+msgid "Contents"
+msgstr "Contents"
 
 #: src/sync/store.ts
 msgid "Waiting for {machine}'s profile file to finish syncing"
