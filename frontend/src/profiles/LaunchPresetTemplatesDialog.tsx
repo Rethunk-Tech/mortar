@@ -8,13 +8,14 @@ import {
   DialogTitle,
   Typography,
 } from '@mui/material'
-import { useCallback, useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { LaunchPresetTemplate } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import {
   ListLaunchPresetTemplates,
   RemoveLaunchPresetTemplate,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 
@@ -32,18 +33,13 @@ export function LaunchPresetTemplatesDialog({
 }) {
   const { t } = useLingui()
   // null until listed, so opening never flashes the empty message.
-  const [templates, setTemplates] = useState<LaunchPresetTemplate[] | null>(null)
+  const { data: templates, reload } = useLoaded<LaunchPresetTemplate[] | null>(
+    open ? () => ListLaunchPresetTemplates(gameId).then((next) => next ?? []) : null,
+    [open, gameId],
+    null,
+    reportUnexpected,
+  )
   const [removing, setRemoving] = useState<LaunchPresetTemplate | null>(null)
-  const reload = useCallback(() => {
-    ListLaunchPresetTemplates(gameId)
-      .then((next) => setTemplates(next ?? []))
-      .catch(reportUnexpected)
-  }, [gameId])
-  useEffect(() => {
-    if (open) {
-      reload()
-    }
-  }, [open, reload])
   return (
     <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="sm">
       <DialogTitle>{t`Launch preset templates`}</DialogTitle>

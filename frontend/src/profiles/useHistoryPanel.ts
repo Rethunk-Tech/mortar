@@ -11,6 +11,7 @@ import {
   RestoreKnownGood,
   RevertHistoryItem,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { selectedPair } from './historyDiff.ts'
 import { pushMissingToast, revertHistoryEvent } from './historyRevert.ts'
@@ -18,23 +19,13 @@ import { useProfiles } from './store.ts'
 
 // The comparison of the two picked entries, null unless exactly two are picked.
 function usePickedPair(game: string, profileId: string, picked: string[]) {
-  const [pair, setPair] = useState<HistoryDiff | null>(null)
-  useEffect(() => {
-    const ids = selectedPair(picked)
-    if (!(ids && game)) {
-      setPair(null)
-      return
-    }
-    // A slower answer for picks since changed must not replace the comparison of the current ones.
-    let live = true
-    LoadDiff(game, profileId, ids[0], ids[1])
-      .then((next) => live && setPair(next))
-      .catch(reportUnexpected)
-    return () => {
-      live = false
-    }
-  }, [picked, game, profileId])
-  return pair
+  const ids = selectedPair(picked)
+  return useLoaded<HistoryDiff | null>(
+    ids && game ? () => LoadDiff(game, profileId, ids[0], ids[1]) : null,
+    [picked, game, profileId],
+    null,
+    reportUnexpected,
+  ).data
 }
 
 /** toastMissing is for a caller without the panel's own missing-mods UI: a revert that lacks mods says so in a toast. */

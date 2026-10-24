@@ -2,14 +2,16 @@ import type { MessageDescriptor } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, FormControlLabel, MenuItem, Switch, TextField, Typography } from '@mui/material'
-import { useEffect, useState } from 'react'
 import type { LaunchSetting } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/loader/models.ts'
 import {
   LoaderLaunchSettings as ReadSettings,
   SetLoaderLaunchSetting,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { useGameInfo } from '../games/info.ts'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+
+const NO_SETTINGS: LaunchSetting[] = []
 
 const LABELS: Record<string, MessageDescriptor> = {
   console: msg`Show the console window`,
@@ -46,12 +48,12 @@ export function LoaderLaunchSettings({
   const { t, i18n } = useLingui()
   const loaders = useGameInfo(gameId)?.loaders ?? []
   const name = (loaders.find((l) => l.id === loader) ?? loaders[0])?.name ?? ''
-  const [settings, setSettings] = useState<LaunchSetting[]>([])
-  useEffect(() => {
-    ReadSettings(gameId, profileId)
-      .then((got) => setSettings(got ?? []))
-      .catch(reportUnexpected)
-  }, [gameId, profileId])
+  const { data: settings, setData: setSettings } = useLoaded(
+    () => ReadSettings(gameId, profileId).then((got) => got ?? NO_SETTINGS),
+    [gameId, profileId],
+    NO_SETTINGS,
+    reportUnexpected,
+  )
   if (settings.length === 0) {
     return null
   }

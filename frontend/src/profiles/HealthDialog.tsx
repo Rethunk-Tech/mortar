@@ -14,7 +14,7 @@ import {
   Skeleton,
 } from '@mui/material'
 import { ShieldCheck } from 'lucide-react'
-import { type ReactNode, useCallback, useEffect, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 import type { HealthFinding } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   ProfileHealth,
@@ -28,6 +28,7 @@ import { download } from '../queue/actions.ts'
 import { AfterDelay } from '../shell/AfterDelay.tsx'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { downloadWantsForEntries, type UndoEntry } from '../toasts/undo.ts'
@@ -180,24 +181,24 @@ export function HealthDialog({
 }) {
   const { t } = useLingui()
   const game = useProfiles((s) => s.game?.id ?? '')
-  const [findings, setFindings] = useState<HealthFinding[] | null>(null)
-  const [failed, setFailed] = useState(false)
+  const {
+    data: findings,
+    error,
+    reload: load,
+  } = useLoaded<HealthFinding[] | null>(
+    open && game !== '' ? () => ProfileHealth(game, profileId).then((next) => next ?? []) : null,
+    [open, game, profileId],
+    null,
+  )
+  const failed = error !== null
   const [busy, setBusy] = useState(false)
   const [queued, setQueued] = useState<Set<string>>(new Set())
   const [confirm, setConfirm] = useState<HealthFinding[] | null>(null)
-  const load = useCallback(() => {
-    setFailed(false)
-    setFindings(null)
-    ProfileHealth(game, profileId)
-      .then((next) => setFindings(next ?? []))
-      .catch(() => setFailed(true))
-  }, [game, profileId])
   useEffect(() => {
     if (open && game !== '') {
       setQueued(new Set())
-      load()
     }
-  }, [open, game, load])
+  }, [open, game])
 
   const repair = async (chosen: HealthFinding[]) => {
     setBusy(true)
