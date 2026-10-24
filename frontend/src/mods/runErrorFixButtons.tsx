@@ -48,7 +48,7 @@ export function RunErrorButtons({
         : null}
       {installable
         ? button(t`Update`, () =>
-            withOptionalLoaded(installable, profile).then(download).catch(reportUnexpected),
+            withOptionalLoaded(gameId, installable, profile).then(download).catch(reportUnexpected),
           )
         : null}
       {current && profile && gameId && runError.runId !== '' ? (

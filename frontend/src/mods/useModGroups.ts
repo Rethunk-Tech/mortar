@@ -20,7 +20,7 @@ import { useProfileModFacts } from './listFigures.ts'
 import { toListRows, useEntrySizes, usePackageOverrides, useStartupCosts } from './listRows.ts'
 import { modId, modStatusProblem, nexusIdOf, updateFor } from './lookup.ts'
 import { foldLibraries, nestImplicit } from './nestImplicit.ts'
-import { primeDetails, useNexusDetails } from './nexusDetails.ts'
+import { primeDetails, useGameNexusDetails } from './nexusDetails.ts'
 import { useMods } from './store.ts'
 import { useUpdates } from './updates.ts'
 
@@ -70,7 +70,7 @@ export function useModGroups(mods: Mod[], profile: Profile, fold = false) {
     setCollapsedFor(gameId)
     setCollapsed(loadCollapsed(gameId))
   }
-  const byId = useNexusDetails((s) => s.byId)
+  const byId = useGameNexusDetails(gameId)
   const customCategories = useCustomCategories((s) => s.categories)
   const customById = useMemo(() => customCategoryById(customCategories), [customCategories])
   const sizes = useEntrySizes()
@@ -86,8 +86,10 @@ export function useModGroups(mods: Mod[], profile: Profile, fold = false) {
     .sort((a, b) => a - b)
     .join(',')
   useEffect(() => {
-    primeDetails(nexusIds === '' ? [] : nexusIds.split(',').map(Number)).catch(reportUnexpected)
-  }, [nexusIds])
+    primeDetails(gameId, nexusIds === '' ? [] : nexusIds.split(',').map(Number)).catch(
+      reportUnexpected,
+    )
+  }, [gameId, nexusIds])
   const groups = useMemo(() => {
     const built = buildModGroups(
       mods,

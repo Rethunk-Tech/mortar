@@ -10,7 +10,7 @@ const entry = (key: string, fileId: number, extra: Partial<Entry> = {}) =>
 
 test('an update with no optional files is just the main request', async () => {
   const profile = { entries: [entry('nexus-7-1', 1)] }
-  expect(await withOptionalLoaded(update, profile)).toEqual([updateWant(update)])
+  expect(await withOptionalLoaded('stardew', update, profile)).toEqual([updateWant(update)])
 })
 
 test('an update also asks for newer versions of the optional files laid over it', async () => {
@@ -21,8 +21,8 @@ test('an update also asks for newer versions of the optional files laid over it'
     { fileId: 2, fileName: 'a.zip', name: '', version: '1', category: 'OPTIONAL', replacedBy: 3 },
     { fileId: 3, fileName: 'a2.zip', name: '', version: '2', category: 'OPTIONAL', replacedBy: 0 },
   ]
-  useNexusDetails.setState({ byId: { 7: { details: { files } as never } } })
-  const wants = await withOptionalLoaded(update, profile)
+  useNexusDetails.setState({ byKey: { 'stardew:7': { details: { files } as never } } })
+  const wants = await withOptionalLoaded('stardew', update, profile)
   expect(wants.map((w) => [w.currentKey, w.fileId])).toEqual([
     ['nexus-7-1', undefined],
     ['nexus-7-2', 3],

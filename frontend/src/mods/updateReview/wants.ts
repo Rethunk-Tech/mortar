@@ -4,7 +4,7 @@ import type { Profile } from '../../../bindings/github.com/Rethunk-Tech/mortar/i
 import type { Item } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/models.ts'
 import type { Want } from '../../queue/actions.ts'
 import { pendingFor } from '../../queue/totals.ts'
-import { isFull, loadDetails, useNexusDetails } from '../nexusDetails.ts'
+import { isFull, loadDetails, nexusEntryOf, useNexusDetails } from '../nexusDetails.ts'
 import { optionalUpdateWants, useOptionalSkips } from '../optionalFiles.ts'
 
 const updateSource = (u: Update): Partial<Want> => {
@@ -47,6 +47,7 @@ export const withOptional = (
 /** withOptional for an update that no review row decided, such as auto-update before Play or a run error's Update:
  * reads the mod's Nexus files only when the profile holds optional files laid over the entry. */
 export async function withOptionalLoaded(
+  game: string,
   u: Update,
   profile: Pick<Profile, 'entries'> | null | undefined,
 ): Promise<Want[]> {
@@ -55,10 +56,11 @@ export async function withOptionalLoaded(
   if (!hasOptional || skipped || u.githubRepo) {
     return [updateWant(u)]
   }
-  if (!isFull(useNexusDetails.getState().byId[u.nexusId])) {
-    await loadDetails(u.nexusId)
+  if (!isFull(nexusEntryOf(useNexusDetails.getState().byKey, game, u.nexusId))) {
+    await loadDetails(game, u.nexusId)
   }
-  const files = useNexusDetails.getState().byId[u.nexusId]?.details?.files ?? []
+  const files =
+    nexusEntryOf(useNexusDetails.getState().byKey, game, u.nexusId)?.details?.files ?? []
   return withOptional(u, profile, files, false)
 }
 

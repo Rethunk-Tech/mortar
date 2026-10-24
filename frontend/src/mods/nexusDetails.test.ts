@@ -3,9 +3,12 @@ import type { File } from '../../bindings/github.com/Rethunk-Tech/mortar/interna
 import type { Details } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/models.ts'
 import { useNexus } from '../settings/nexus.ts'
 import {
+  initNexusSeen,
   isNewSinceLooked,
   isNewSource,
+  mergeCachedDetails,
   newestOffered,
+  nexusEntryOf,
   primeDetails,
   useNexusDetails,
   useNexusSeen,
@@ -15,6 +18,7 @@ import {
 const loads: number[] = []
 const primes: number[][] = []
 let cached: Record<string, Details> = {}
+let seenSnap: Record<string, { newestFileUnix: number; newestChange: string }> = {}
 
 const page = (id: number): Details => ({
   page: {
@@ -56,7 +60,7 @@ mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/ser
       details: Object.fromEntries(ids.map((id) => [`${id}`, { ...page(id), partial: true }])),
     }
   },
-  Seen: async () => ({}),
+  Seen: async () => seenSnap,
   MarkSeen: async () => undefined,
 }))
 
@@ -70,22 +74,52 @@ beforeEach(() => {
 })
 
 test('sign-in primes the page data skipped while signed out in one batch', async () => {
-  await primeDetails([2400, 2401])
+  await primeDetails('stardew', [2400, 2401])
   expect(primes).toEqual([])
   useNexus.setState({ signedIn: true, name: 'pat', premium: false })
   await new Promise((resolve) => setTimeout(resolve, 0))
   expect(primes).toEqual([[2400, 2401]])
   expect(loads).toEqual([])
-  expect(useNexusDetails.getState().byId[2400]?.details?.partial).toBe(true)
+  expect(nexusEntryOf(useNexusDetails.getState().byKey, 'stardew', 2400)?.details?.partial).toBe(
+    true,
+  )
 })
 
 test('primeDetails applies cache over an error-only entry', async () => {
   const details = page(2400)
   cached = { '2400': details }
-  useNexusDetails.setState({ byId: { 2400: { error: 'offline' } } })
-  await primeDetails([2400])
-  expect(useNexusDetails.getState().byId[2400]).toEqual({ details })
+  useNexusDetails.setState({ byKey: { 'stardew:2400': { error: 'offline' } } })
+  await primeDetails('stardew', [2400])
+  expect(nexusEntryOf(useNexusDetails.getState().byKey, 'stardew', 2400)).toEqual({ details })
   expect(loads).toEqual([])
+})
+
+const named = (id: number, name: string): Details => ({
+  ...page(id),
+  page: { ...page(id).page, name },
+})
+
+test("one mod id in two games keeps each game's details", async () => {
+  cached = { '2400': named(2400, 'Stardew mod') }
+  await mergeCachedDetails('stardew', [2400])
+  cached = { '2400': named(2400, 'Lethal mod') }
+  await mergeCachedDetails('lethal-company', [2400])
+  const { byKey } = useNexusDetails.getState()
+  expect(nexusEntryOf(byKey, 'stardew', 2400)?.details?.page.name).toBe('Stardew mod')
+  expect(nexusEntryOf(byKey, 'lethal-company', 2400)?.details?.page.name).toBe('Lethal mod')
+})
+
+test('a look is kept per game, and a look recorded by bare id still reads in any game', async () => {
+  seenSnap = {
+    'nexus:stardew:541': { newestFileUnix: 9, newestChange: '2.0' },
+    '542': { newestFileUnix: 7, newestChange: '1.0' },
+  }
+  await initNexusSeen()
+  const s = useNexusSeen.getState()
+  expect(s.byKey['stardew:541']?.newestChange).toBe('2.0')
+  expect(s.byKey['lethal-company:541']).toBeUndefined()
+  expect(s.legacy[542]?.newestChange).toBe('1.0')
+  seenSnap = {}
 })
 
 const file = (category: string, uploaded: string): File => ({

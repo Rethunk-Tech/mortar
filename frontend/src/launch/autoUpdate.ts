@@ -214,7 +214,9 @@ async function updateBeforePlay(
     if (updates.length === 0) {
       return { restorePoint: null, previousRunId: before.id, previousErrors: before.errors }
     }
-    const wants = (await Promise.all(updates.map((u) => withOptionalLoaded(u, profile)))).flat()
+    const wants = (
+      await Promise.all(updates.map((u) => withOptionalLoaded(game, u, profile)))
+    ).flat()
     point.updates = updates
     const batchId = wants.length > 1 ? crypto.randomUUID() : ''
     if (useProfiles.getState().openId !== profileId) {

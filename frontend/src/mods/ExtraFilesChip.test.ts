@@ -5,5 +5,7 @@ import { expect, test } from 'bun:test'
 test('the extra-files chip reads the details store and never starts a full read', async () => {
   const source = await Bun.file(new URL('./ExtraFilesChip.tsx', import.meta.url)).text()
   expect(source).not.toMatch(/useNexusEntry|loadDetails|primeDetails/)
-  expect(source).toContain('useNexusDetails((s) => s.byId[nexusId]?.details?.files)')
+  expect(source).toContain(
+    'useNexusDetails((s) => nexusEntryOf(s.byKey, game, nexusId)?.details?.files)',
+  )
 })

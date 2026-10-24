@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Button, IconButton, Menu, MenuItem } from '@mui/material'
 import { MoreHorizontal } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import type {
   EverywherePreview,
@@ -16,10 +16,11 @@ import { DisabledReason } from '../../shell/DisabledReason.tsx'
 import { OfflineGate } from '../../shell/OfflineGate.tsx'
 import { updateSources, useOfflineReason } from '../../shell/offlineText.ts'
 import { StableLabel } from '../../shell/StableLabel.tsx'
+import { useLoaded } from '../../shell/useLoaded.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { installableUpdate } from '../lookup.ts'
 import { openPage } from '../menu.ts'
-import { useNexusDetails } from '../nexusDetails.ts'
+import { detailsFor, useNexusDetails } from '../nexusDetails.ts'
 import { useOptionalSkips } from '../optionalFiles.ts'
 import { useMods } from '../store.ts'
 import { EverywhereDialog } from './EverywhereDialog.tsx'
@@ -48,15 +49,12 @@ export function UpdateActions({
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const [everywhere, setEverywhere] = useState(false)
   const [confirmSwitch, setConfirmSwitch] = useState(false)
-  const [preview, setPreview] = useState<EverywherePreview | null>(null)
-  useEffect(() => {
-    if (game === '' || update.id === '') {
-      return
-    }
-    PreviewEverywhere(game, update.id)
-      .then(setPreview)
-      .catch(() => setPreview(null))
-  }, [game, update.id])
+  // A preview that cannot be read leaves the action without its count.
+  const { data: preview } = useLoaded<EverywherePreview | null>(
+    game === '' || update.id === '' ? null : () => PreviewEverywhere(game, update.id),
+    [game, update.id],
+    null,
+  )
   const n = preview?.affected?.length ?? 0
   const previewReady = preview !== null
   const offline = useOfflineReason(updateSources(update))
@@ -72,7 +70,7 @@ export function UpdateActions({
     fn().catch(reportUnexpected)
   }
   const install = () => {
-    const { byId } = useNexusDetails.getState()
+    const byId = detailsFor(useNexusDetails.getState().byKey, game)
     const skipped = useOptionalSkips.getState().skipped[update.key] === true
     const profile = openProfileOf(useProfiles.getState())
     download(

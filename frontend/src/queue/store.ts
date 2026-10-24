@@ -24,7 +24,7 @@ import { sentence } from '../i18n/sentence.ts'
 import { considerMissing } from '../install/store.ts'
 import { idKey } from '../mods/dependents.ts'
 import { openPage } from '../mods/menu.ts'
-import { useNexusDetails } from '../mods/nexusDetails.ts'
+import { nexusEntryOf, useNexusDetails } from '../mods/nexusDetails.ts'
 import { nexusDomain } from '../mods/nexusDomain.ts'
 import { nexusModUrl } from '../mods/nexusUrl.ts'
 import { useMods } from '../mods/store.ts'
@@ -47,7 +47,10 @@ const snapshot = (s: State): Snapshot => ({
   ...s,
   items: (s.items ?? []).map((i) => ({
     ...i,
-    name: displayName(i, useNexusDetails.getState().byId[i.modId]?.details?.page.name),
+    name: displayName(
+      i,
+      nexusEntryOf(useNexusDetails.getState().byKey, i.game, i.modId)?.details?.page.name,
+    ),
   })),
 })
 

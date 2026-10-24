@@ -99,7 +99,8 @@ function AuthorDialogBody({
   const profiles = useProfiles((s) => s.profiles)
   const rows = useMemo(() => modsByAuthor(profiles, author), [profiles, author])
   const nexusId = seedMod && seedProfile ? nexusIdOf(seedProfile, seedMod) : 0
-  const details = useNexusEntry(nexusId)?.details
+  const game = useProfiles((s) => s.game?.id ?? '')
+  const details = useNexusEntry(game, nexusId)?.details
   const page = details?.page
   const nexusName = page?.author?.trim() || page?.uploadedBy?.trim() || ''
   const modPage = useMemo(() => {

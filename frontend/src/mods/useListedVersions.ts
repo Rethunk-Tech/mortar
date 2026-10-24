@@ -13,14 +13,14 @@ export type Listed =
 
 // A Nexus mod's files come from the details the Mods tab reads too; archived files are not offered. Every other source
 // lists the versions it publishes, newest first.
-function useNexusVersions(modId: number): Listed {
-  const entry = useNexusEntry(modId)
+function useNexusVersions(game: string, modId: number): Listed {
+  const entry = useNexusEntry(game, modId)
   const wanted = modId > 0
   useEffect(() => {
     if (wanted) {
-      loadDetails(modId).catch(() => undefined)
+      loadDetails(game, modId).catch(() => undefined)
     }
-  }, [wanted, modId])
+  }, [wanted, game, modId])
   const files = entry?.details?.files
   if (files) {
     return {
@@ -32,7 +32,7 @@ function useNexusVersions(modId: number): Listed {
   }
   if (entry?.error) {
     const error = { message: entry.error, details: entry.error }
-    return { state: 'error', error, retry: () => loadDetails(modId).then(() => undefined) }
+    return { state: 'error', error, retry: () => loadDetails(game, modId).then(() => undefined) }
   }
   return { state: 'loading' }
 }
@@ -58,7 +58,7 @@ function useSiteVersions(game: string, source: string, id: string): Listed {
 
 /** The versions a source lists for one mod. */
 export function useListedVersions(game: string, source: string, id: string): Listed {
-  const nexus = useNexusVersions(source === 'nexus' ? Number(id) : 0)
+  const nexus = useNexusVersions(game, source === 'nexus' ? Number(id) : 0)
   const site = useSiteVersions(game, source, id)
   return source === 'nexus' ? nexus : site
 }

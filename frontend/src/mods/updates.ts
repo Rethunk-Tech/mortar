@@ -16,7 +16,7 @@ import { toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useBadges } from './badges.ts'
 import { updateCount, updateFor } from './lookup.ts'
-import { useNexusDetails } from './nexusDetails.ts'
+import { detailsFor, useNexusDetails } from './nexusDetails.ts'
 import { openTarget } from './storeView.ts'
 
 function checkedLabel(at: number | null, now: number, unknown: boolean): string {
@@ -38,7 +38,7 @@ const countFor = (updates: UpdatesResult, id: string) =>
   updateCount(
     updates,
     useProfiles.getState().profiles.find((p) => p.id === id),
-    useNexusDetails.getState().byId,
+    detailsFor(useNexusDetails.getState().byKey, useProfiles.getState().game?.id ?? ''),
   )
 
 function syncBadge() {

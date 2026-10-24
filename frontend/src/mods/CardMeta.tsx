@@ -4,12 +4,13 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { parseCardStats, useModCardStats } from '../browse/stats.ts'
+import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { AuthorLink } from './AuthorLink.tsx'
 import { formatAuthors } from './authorNormalize.ts'
 import { useEntrySize } from './listRows.ts'
 import { nexusIdOf } from './lookup.ts'
-import { useNexusDetails } from './nexusDetails.ts'
+import { nexusEntryOf, useNexusDetails } from './nexusDetails.ts'
 
 const META_FONT_PX = 12
 
@@ -26,7 +27,10 @@ export function CardMeta({
   const showAuthor = useSettings((s) => s.showAuthorOnCards) !== false
   // Read here rather than from the card's row, so their arrival re-renders this line and not the whole card.
   const size = useEntrySize(m.key)
-  const details = useNexusDetails((s) => s.byId[nexusIdOf(profile, m)]?.details)
+  const game = useProfiles((s) => s.game?.id ?? '')
+  const details = useNexusDetails(
+    (s) => nexusEntryOf(s.byKey, game, nexusIdOf(profile, m))?.details,
+  )
   const stats = useModCardStats(
     { mod: m, ...(size === undefined ? {} : { size }), ...(details ? { details } : {}) },
     parseCardStats(useSettings((s) => s.browseCardStats)),

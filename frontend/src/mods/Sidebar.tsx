@@ -130,8 +130,9 @@ function NexusFields({
 }) {
   const { t, i18n } = useLingui()
   const customById = customCategoryById(useCustomCategories((s) => s.categories))
-  const details = useNexusEntry(nexusId)?.details
-  useLookedSnapshot(nexusId, details)
+  const game = useProfiles((s) => s.game?.id ?? '')
+  const details = useNexusEntry(game, nexusId)?.details
+  useLookedSnapshot(game, nexusId, details)
   if (!details) {
     return null
   }

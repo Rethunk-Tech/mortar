@@ -15,13 +15,15 @@ import type {
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { useLaunch } from '../launch/store.ts'
 import { currentGame } from '../nav/currentGame.ts'
+import { useProfiles } from '../profiles/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { idKey } from './dependents.ts'
 import { useLastRun } from './lastRun.ts'
 import { nexusIdOf } from './lookup.ts'
-import { useNexusDetails } from './nexusDetails.ts'
+import type { NexusById } from './nexusDetails.ts'
+import { useGameNexusDetails } from './nexusDetails.ts'
 import { useMods } from './store.ts'
 
 interface Prompt {
@@ -34,7 +36,7 @@ function cleanNexusMods(
   mods: Mod[],
   profile: Profile,
   byId: ReturnType<typeof useLastRun.getState>['byId'],
-  details: ReturnType<typeof useNexusDetails.getState>['byId'],
+  details: NexusById,
 ) {
   const seen = new Set<number>()
   const clean: {
@@ -66,7 +68,7 @@ export function EndorsePrompt({ profile }: { profile: Profile }) {
   const mods = useMods((s) => s.mods)
   const runId = useLastRun((s) => s.runId)
   const byId = useLastRun((s) => s.byId)
-  const details = useNexusDetails((s) => s.byId)
+  const details = useGameNexusDetails(useProfiles((s) => s.game?.id ?? ''))
   const launchState = useLaunch((s) => s.status?.state)
   const previousState = useRef(launchState)
   const [completedFrom, setCompletedFrom] = useState<string | null>(null)

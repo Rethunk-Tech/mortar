@@ -358,7 +358,8 @@ export function NexusGoneBadge({ mod }: { mod: Mod }) {
     const profile = openProfileOf(s)
     return profile ? nexusIdOf(profile, mod) : 0
   })
-  const page = useNexusPage(nexusId)
+  const game = useProfiles((s) => s.game?.id ?? '')
+  const page = useNexusPage(game, nexusId)
   const mark = nexusPageMark(page?.status, page?.available, page?.updated, page?.created)
   if (mark.kind === '') {
     return null
@@ -453,7 +454,8 @@ export function UpdateBadge({ mod }: { mod: Mod }) {
     const profile = openProfileOf(s)
     return profile ? nexusIdOf(profile, mod) : 0
   })
-  const downloadable = useNexusDownloadable(nexusId)
+  const game = useProfiles((s) => s.game?.id ?? '')
+  const downloadable = useNexusDownloadable(game, nexusId)
   const setSkipVersion = useMods((s) => s.setSkipVersion)
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   if (!update) {

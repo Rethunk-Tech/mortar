@@ -36,7 +36,8 @@ import { ModsHeaderActions } from './ModsHeaderActions.tsx'
 import { useContextMenu } from './menu.ts'
 import { hasAllTags, matchesQuery, searchFields } from './modSearch.ts'
 import { NewFoldersCallout } from './NewFoldersCallout.tsx'
-import { useNexusDetails } from './nexusDetails.ts'
+import type { NexusById } from './nexusDetails.ts'
+import { detailsFor, useNexusDetails } from './nexusDetails.ts'
 import { OldFilesCallouts } from './OldFilesCallouts.tsx'
 import { focusMod } from './openMod.ts'
 import { addedWithin, WEEK_MS } from './recent.ts'
@@ -235,7 +236,7 @@ function useSettledQuery(query: string): string {
   return typed === '' ? '' : settled
 }
 
-const NO_DETAILS: ReturnType<typeof useNexusDetails.getState>['byId'] = {}
+const NO_DETAILS: NexusById = {}
 const NO_CATEGORIES: ReturnType<typeof useCustomCategories.getState>['categories'] = []
 
 // The search, Show filter and tags, and the mods they leave. Its own component, so a key typed into the search
@@ -258,7 +259,7 @@ function FilteredMods({ profile }: { profile: Profile }) {
   const starred = useSettings((s) =>
     filter === 'favourite' ? s.games?.[game]?.favouriteMods : null,
   )
-  const nexusById = useNexusDetails((s) => (q === '' ? NO_DETAILS : s.byId))
+  const nexusById = useNexusDetails((s) => (q === '' ? NO_DETAILS : detailsFor(s.byKey, game)))
   const customCategories = useCustomCategories((s) => (q === '' ? NO_CATEGORIES : s.categories))
   // Stable for the memoised Show menu, which a key typed into the search then skips.
   const tagKey = profileTags(profile.entries).join('\n')

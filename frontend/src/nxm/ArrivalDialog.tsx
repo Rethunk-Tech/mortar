@@ -16,7 +16,7 @@ import type { Arrival } from '../../bindings/github.com/Rethunk-Tech/mortar/inte
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { NewProfileDialog } from '../game/NewProfileDialog.tsx'
 import { formatKb } from '../i18n/bytes.ts'
-import { useNexusDetails } from '../mods/nexusDetails.ts'
+import { nexusEntryOf, useNexusDetails } from '../mods/nexusDetails.ts'
 import { listProfiles } from '../profiles/listProfiles.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
@@ -45,6 +45,14 @@ function useModName(arrival: Arrival): string {
   return name
 }
 
+// The linked file as the mod's Nexus details list it, once they are read.
+const useArrivalFile = (game: string, arrival: Arrival) =>
+  useNexusDetails((s) =>
+    nexusEntryOf(s.byKey, game, arrival.link.modId)?.details?.files?.find(
+      (f) => f.fileId === arrival.link.fileId,
+    ),
+  )
+
 function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
   const { t } = useLingui()
   const openGameId = useProfiles((s) => s.game?.id)
@@ -55,9 +63,7 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
   const dismiss = useNxm((s) => s.dismiss)
   const lastId = useSettings((s) => gamePrefs(s, game).nxmDefaultProfile || s.lastProfile?.[game])
   const name = useModName(arrival)
-  const file = useNexusDetails((s) =>
-    s.byId[arrival.link.modId]?.details?.files?.find((f) => f.fileId === arrival.link.fileId),
-  )
+  const file = useArrivalFile(game, arrival)
   // New profile creates in the game the profiles store has open, so it is offered only when that is this game.
   const canCreate = useProfiles((s) => s.game?.id === game)
   const gameName = useProfiles((s) => (s.game?.id === game ? s.game.name : game))

@@ -12,7 +12,7 @@ import { ListCallout } from './ListCallout.tsx'
 import { legacyImplicit } from './legacyReasons.ts'
 import { markImplicit } from './markImplicit.ts'
 import { siteCategory } from './modSearch.ts'
-import { useNexusDetails } from './nexusDetails.ts'
+import { useGameNexusDetails } from './nexusDetails.ts'
 import { useMods } from './store.ts'
 
 const NONE: string[] = []
@@ -29,7 +29,7 @@ function LegacyReasonsOffer() {
   const profile = useProfiles(openProfileOf)
   const mods = useMods((s) => s.mods)
   const game = useProfiles((s) => s.game?.id ?? '')
-  const nexusById = useNexusDetails((s) => s.byId)
+  const nexusById = useGameNexusDetails(game)
   const customById = customCategoryById(useCustomCategories((s) => s.categories))
   const supporting = useMods((s) => s.problems?.supporting ?? NONE)
   const [pending, run] = usePending()

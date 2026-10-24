@@ -5,10 +5,11 @@ import type {
   Mod,
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { useProfiles } from '../profiles/store.ts'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { entryOf, nexusIdOf } from './lookup.ts'
 import { extraFileLabel, useContextMenu } from './menu.ts'
-import { useNexusDetails } from './nexusDetails.ts'
+import { nexusEntryOf, useNexusDetails } from './nexusDetails.ts'
 
 export function ExtraFilesChip({ mod, profile }: { mod: Mod; profile: Profile }) {
   const { i18n } = useLingui()
@@ -16,7 +17,8 @@ export function ExtraFilesChip({ mod, profile }: { mod: Mod; profile: Profile })
   const extras = entry?.extraStoreKeys ?? []
   // Store only: a row never starts a Nexus read. The files are there once the details panel has read the mod.
   const nexusId = nexusIdOf(profile, mod)
-  const files = useNexusDetails((s) => s.byId[nexusId]?.details?.files)
+  const game = useProfiles((s) => s.game?.id ?? '')
+  const files = useNexusDetails((s) => nexusEntryOf(s.byKey, game, nexusId)?.details?.files)
   const openMenu = useContextMenu((s) => s.open)
   if (extras.length === 0) {
     return null

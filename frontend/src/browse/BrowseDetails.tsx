@@ -117,14 +117,14 @@ const changelogOf = (logs: Changelog[] | null | undefined) =>
   logs && logs.length > 0 ? <ChangelogEntries logs={logs} installed="" /> : null
 
 // A Nexus mod's page comes from the Nexus details the Mods tab reads too: one read per mod per session.
-function NexusPage({ modId }: { modId: number }) {
-  const entry = useNexusEntry(modId)
+function NexusPage({ game, modId }: { game: string; modId: number }) {
+  const entry = useNexusEntry(game, modId)
   const [attempt, setAttempt] = useState(0)
   useEffect(() => {
     if (attempt >= 0) {
-      loadDetails(modId).catch(() => undefined)
+      loadDetails(game, modId).catch(() => undefined)
     }
-  }, [modId, attempt])
+  }, [game, modId, attempt])
   const details = entry?.details
   if (!details && entry?.error) {
     return (
@@ -273,7 +273,7 @@ function Panel({
       ) : null}
       <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{stats}</Typography>
       {source === NEXUS ? (
-        <NexusPage key={shownItem.id} modId={Number(shownItem.id)} />
+        <NexusPage key={shownItem.id} game={game} modId={Number(shownItem.id)} />
       ) : (
         <SitePage key={`${source}:${shownItem.id}`} game={game} item={shownItem} />
       )}

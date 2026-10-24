@@ -13,7 +13,7 @@ import { space } from '../../theme/density.ts'
 import { changelogsBetween, changelogsHaveRiskyNotes } from '../changelogRange.ts'
 import { sameId, siblingsOf } from '../lookup.ts'
 import { openPage } from '../menu.ts'
-import { useNexusDetails } from '../nexusDetails.ts'
+import { nexusEntryOf, useNexusDetails } from '../nexusDetails.ts'
 import { LetterTile } from '../parts.tsx'
 import { useMods } from '../store.ts'
 import { CautionAck } from './CautionAck.tsx'
@@ -157,7 +157,8 @@ function Row({
   picture?: string
 }) {
   const { mod, entry, notes } = useRowNotes(update, profileId)
-  const details = useNexusDetails((s) => s.byId[update.nexusId]?.details)
+  const game = useProfiles((s) => s.game?.id ?? '')
+  const details = useNexusDetails((s) => nexusEntryOf(s.byKey, game, update.nexusId)?.details)
   const riskyChangelog =
     update.nexusId > 0 && details
       ? changelogsHaveRiskyNotes(

@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
 import type { Changelog } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexus/models.ts'
+import { useProfiles } from '../profiles/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
@@ -73,7 +74,8 @@ export function ChangelogDialog({
   markdown?: string
 }) {
   const { t } = useLingui()
-  const nexusLogs = useNexusEntry(nexusId)?.details?.changelogs
+  const game = useProfiles((s) => s.game?.id ?? '')
+  const nexusLogs = useNexusEntry(game, nexusId)?.details?.changelogs
   const { state, retry } = useReleases(open, nexusId > 0 ? '' : githubRepo)
   let logs: Changelog[] | null = null
   if (nexusId > 0) {

@@ -24,11 +24,11 @@ const { nexusChanged, primeDetails, useNexusDetails } = await import('./nexusDet
 
 test('a prime keeps what arrived and asks for the rest when Nexus is reachable again', async () => {
   useNexus.setState({ signedIn: true } as never)
-  await primeDetails([541, 542])
-  expect(useNexusDetails.getState().byId[541]?.details).toBeDefined()
-  expect(useNexusDetails.getState().byId[542]?.details).toBeUndefined()
+  await primeDetails('stardew', [541, 542])
+  expect(useNexusDetails.getState().byKey['stardew:541']?.details).toBeDefined()
+  expect(useNexusDetails.getState().byKey['stardew:542']?.details).toBeUndefined()
   offline = false
   await nexusChanged()
   expect(asked).toEqual([[541, 542], [542]])
-  expect(useNexusDetails.getState().byId[542]?.details).toBeDefined()
+  expect(useNexusDetails.getState().byKey['stardew:542']?.details).toBeDefined()
 })

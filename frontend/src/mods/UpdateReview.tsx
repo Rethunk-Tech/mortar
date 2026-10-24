@@ -8,7 +8,8 @@ import { useQueue } from '../queue/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { modId, updatesForReview } from './lookup.ts'
-import { isFull, mergeCachedDetails, useNexusDetails } from './nexusDetails.ts'
+import type { NexusById } from './nexusDetails.ts'
+import { isFull, mergeCachedDetails, useGameNexusDetails } from './nexusDetails.ts'
 import { useOptionalSkips } from './optionalFiles.ts'
 import { useMods } from './store.ts'
 import { DIALOG_WIDTH } from './updateReview/constants.ts'
@@ -33,21 +34,20 @@ import { useEmptyReviewNotice, withheldUpdates } from './updateReview/withheld.t
 import { checkedLabel, useUpdates } from './updates.ts'
 
 function useMergeCachedDetails(open: boolean) {
+  const game = useProfiles((s) => s.game?.id ?? '')
   const updates = useUpdates((s) => s.updates)
   useEffect(() => {
     if (!open) {
       return
     }
     mergeCachedDetails(
+      game,
       (updates?.updates ?? []).filter((u) => u.nexusId > 0).map((u) => u.nexusId),
     ).catch(reportUnexpected)
-  }, [open, updates])
+  }, [open, game, updates])
 }
 
-function uncachedNexusIds(
-  list: Update[],
-  byId: ReturnType<typeof useNexusDetails.getState>['byId'],
-) {
+function uncachedNexusIds(list: Update[], byId: NexusById) {
   return [
     ...new Set(list.filter((u) => u.nexusId > 0 && !isFull(byId[u.nexusId])).map((u) => u.nexusId)),
   ]
@@ -79,7 +79,7 @@ function UpdateReviewDialog({ profile }: { profile: Profile }) {
   const checked = useNowValue((now) => checkedLabel(checkedAt, now, unknown))
   const setReviewing = useUpdates((s) => s.setReviewing)
   const close = () => setReviewing(false)
-  const byId = useNexusDetails((s) => s.byId)
+  const byId = useGameNexusDetails(gameId)
   const list = updatesForReview(updates, profile, byId)
   const withheld = withheldUpdates(updates, profile, byId)
   const items = useQueue((s) => s.state.items)
@@ -117,7 +117,7 @@ function UpdateReviewDialog({ profile }: { profile: Profile }) {
         canLoadAll={signedIn && uncachedIds.length > 0}
         loadingAll={loadingAll}
         onLoadAll={() => {
-          loadAllDetails(uncachedIds, setLoadingAll).then(
+          loadAllDetails(gameId, uncachedIds, setLoadingAll).then(
             () => undefined,
             () => undefined,
           )

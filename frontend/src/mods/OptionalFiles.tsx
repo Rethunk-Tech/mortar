@@ -70,7 +70,8 @@ export function OptionalFiles({ mod, profile }: { mod: Mod; profile: Profile }) 
   const { t } = useLingui()
   const entry = entryOf(profile, mod.key)
   const nexusId = entry?.source.kind === 'nexus' ? (entry.source.modId ?? 0) : 0
-  const files = useNexusEntry(nexusId)?.details?.files ?? []
+  const game = useProfiles((s) => s.game?.id ?? '')
+  const files = useNexusEntry(game, nexusId)?.details?.files ?? []
   const rows = overlaysByBase(profile).get(mod.key) ?? []
   const sets = useOverlaySets(profile, mod.key, rows.length)
   const held = installedFileIds(profile, nexusId)

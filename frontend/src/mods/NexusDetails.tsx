@@ -8,6 +8,7 @@ import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { formatKb } from '../i18n/bytes.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { lowerFirst } from '../i18n/lowerFirst.ts'
+import { useProfiles } from '../profiles/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { Fold } from '../shell/Fold.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
@@ -209,7 +210,8 @@ function Loaded({
   const { page } = details
   const logs = details.changelogs ?? []
   const description = page.description ? parseBBCode(page.description) : []
-  const looked = useLookedSnapshot(modId, details)
+  const game = useProfiles((s) => s.game?.id ?? '')
+  const looked = useLookedSnapshot(game, modId, details)
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
       {page.adult ||
@@ -292,7 +294,8 @@ export function NexusDetails({
 }) {
   const { t } = useLingui()
   const signedIn = useNexus((s) => s.signedIn)
-  const entry = useNexusEntry(modId)
+  const game = useProfiles((s) => s.game?.id ?? '')
+  const entry = useNexusEntry(game, modId)
   if (entry?.details) {
     return (
       <Loaded

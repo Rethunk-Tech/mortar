@@ -20,10 +20,10 @@ export function UpdateBanner({ mod }: { mod: Mod }) {
   const { t } = useLingui()
   const profile = useProfiles(openProfileOf)
   const nexusId = profile ? nexusIdOf(profile, mod) : 0
-  const details = useNexusEntry(nexusId)?.details
+  const game = useProfiles((s) => s.game?.id ?? '')
+  const details = useNexusEntry(game, nexusId)?.details
   const raw = useUpdates((s) => s.updates)
   const setReviewing = useUpdates((s) => s.setReviewing)
-  const game = useProfiles((s) => s.game?.id ?? '')
   const [everywhere, setEverywhere] = useState(false)
   const setSkipVersion = useMods((s) => s.setSkipVersion)
   const mine = visibleUpdates(raw, profile).filter((u) => u.key === mod.key && sameId(u.id, mod.id))

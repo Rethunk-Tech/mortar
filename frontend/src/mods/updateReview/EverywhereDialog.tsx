@@ -1,7 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
-import { useCallback, useEffect, useState } from 'react'
 import type {
   EverywherePreview,
   EverywhereResult,
@@ -13,6 +12,7 @@ import {
 import { lowerFirst } from '../../i18n/lowerFirst.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { ErrorRetry } from '../../shell/ErrorRetry.tsx'
+import { useLoaded } from '../../shell/useLoaded.ts'
 import { space } from '../../theme/density.ts'
 import { type InlineError, inlineError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
@@ -99,29 +99,23 @@ export function EverywhereDialog({
   onClose: () => void
 }) {
   const { t } = useLingui()
-  const [preview, setPreview] = useState<EverywherePreview | null>(null)
   const [pending, run] = usePending()
-  const [loadError, setLoadError] = useState<InlineError | null>(null)
   const spec = mods.map((m) => `${m.id}\0${m.newKey}`).join('\n')
-  const load = useCallback(() => {
-    if (game === '' || spec === '') {
-      return
-    }
-    setPreview(null)
-    setLoadError(null)
-    const items = spec.split('\n').map((row) => {
-      const [id] = row.split('\0')
-      return { id: id ?? '' }
-    })
-    Promise.all(items.map((m) => PreviewEverywhere(game, m.id)))
-      .then((parts) => setPreview(mergePreviews(parts)))
-      .catch((err: unknown) => setLoadError(inlineError(err)))
-  }, [game, spec])
-  useEffect(() => {
-    if (open) {
-      load()
-    }
-  }, [open, load])
+  const {
+    data: preview,
+    error,
+    reload: load,
+  } = useLoaded<EverywherePreview | null>(
+    open && game !== '' && spec !== ''
+      ? () =>
+          Promise.all(
+            spec.split('\n').map((row) => PreviewEverywhere(game, row.split('\0')[0] ?? '')),
+          ).then(mergePreviews)
+      : null,
+    [open, game, spec],
+    null,
+  )
+  const loadError = error === null ? null : inlineError(error)
   const n = preview?.affected?.length ?? 0
   const apply = () => {
     run(async () => {

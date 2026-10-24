@@ -8,7 +8,7 @@ import { useSettings } from '../settings/store.ts'
 import { sameValue } from '../shell/sameValue.ts'
 import { runBackgroundBadgeChecks } from './badgeDisplay.ts'
 import { missingCount, problemCount, updateCount } from './lookup.ts'
-import { useNexusDetails } from './nexusDetails.ts'
+import { detailsFor, useNexusDetails } from './nexusDetails.ts'
 
 export interface Counts {
   updates: number
@@ -48,7 +48,7 @@ export const useBadges = create<{
             [p.id]: {
               missing,
               problems: problemCount(problems) - missing,
-              updates: updateCount(updates, p, useNexusDetails.getState().byId),
+              updates: updateCount(updates, p, detailsFor(useNexusDetails.getState().byKey, game)),
             },
           },
         }))

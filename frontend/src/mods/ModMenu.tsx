@@ -59,7 +59,7 @@ import {
 } from './menu.ts'
 import { type ModAction, modActions, openPageLabel } from './modActions.ts'
 import { siteCategory } from './modSearch.ts'
-import { useNexusDetails } from './nexusDetails.ts'
+import { nexusEntryOf, useGameNexusDetails, useNexusDetails } from './nexusDetails.ts'
 import { OtherProfilesDialog } from './OtherProfilesDialog.tsx'
 import { NexusPageMenuItem } from './SetNexusPageDialog.tsx'
 import { SplitCombineItems } from './SplitCombineItems.tsx'
@@ -120,7 +120,9 @@ function ModMenuItems({
   const hasFomod = Boolean(currentEntry?.fomod && Object.keys(currentEntry.fomod).length > 0)
   const extras = currentEntry?.extraStoreKeys ?? []
   const siblings = samePageSiblings(profile, currentEntry)
-  const files = useNexusDetails((s) => s.byId[currentEntry?.source?.modId ?? 0]?.details?.files)
+  const files = useNexusDetails(
+    (s) => nexusEntryOf(s.byKey, game?.id ?? '', currentEntry?.source?.modId ?? 0)?.details?.files,
+  )
   const configured = useConfigList((st) => hasConfig(st.byProfile[profile?.id ?? '']?.list, mod.id))
   const items: Record<
     ModAction | 'reinstall',
@@ -317,7 +319,7 @@ function ModActionMenu({
 }) {
   const { t } = useLingui()
   const profile = useProfiles(openProfileOf)
-  const byId = useNexusDetails((s) => s.byId)
+  const byId = useGameNexusDetails(useProfiles((s) => s.game?.id ?? ''))
   const entry = (profile?.entries ?? []).find((e) => e.key === mod.key)
   const nexusCategory =
     profile === undefined

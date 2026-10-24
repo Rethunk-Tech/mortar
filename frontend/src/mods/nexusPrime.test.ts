@@ -21,11 +21,11 @@ test('priming a mod Nexus does not know settles: one request, no store churn', a
   const unsub = useNexusDetails.subscribe(() => {
     wakes += 1
     if (wakes < 50) {
-      primeDetails([9999])
+      primeDetails('stardew', [9999])
     }
   })
-  await primeDetails([9999])
-  await primeDetails([9999])
+  await primeDetails('stardew', [9999])
+  await primeDetails('stardew', [9999])
   await new Promise((r) => setTimeout(r, 30))
   unsub()
   expect(primeCalls).toBe(1)

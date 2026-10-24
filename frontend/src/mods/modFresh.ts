@@ -3,6 +3,7 @@ import type {
   Mod,
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { useProfiles } from '../profiles/store.ts'
 import { entryFavouriteKey } from './favourites.ts'
 import { entryOf, nexusIdOf, updateFor } from './lookup.ts'
 import {
@@ -22,7 +23,8 @@ const sourceKeyOf = (profile: Profile, mod: Mod) => {
 
 // Whether the mod's source has something new since the user last looked at it.
 export function useModFresh(profile: Profile, mod: Mod) {
-  const nexus = useNexusFresh(nexusIdOf(profile, mod))
+  const game = useProfiles((s) => s.game?.id ?? '')
+  const nexus = useNexusFresh(game, nexusIdOf(profile, mod))
   const key = sourceKeyOf(profile, mod)
   const offered = useUpdates((s) => updateFor(s.updates, mod, profile))?.version
   // The answer, not the seen version: opening the panel records a look, which must not redraw it when nothing is new.
