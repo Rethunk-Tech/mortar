@@ -34,7 +34,7 @@ export function sourceOf(group: readonly Entry[]): HiddenLogSource | null {
 function covers(h: HiddenLogSource, src: HiddenLogSource): boolean {
   return (
     h.source === src.source &&
-    (h.text ?? '') === (src.text ?? '') &&
+    (!h.text || h.text === src.text) &&
     (!h.object || h.object === src.object)
   )
 }

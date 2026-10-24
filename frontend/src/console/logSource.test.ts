@@ -58,6 +58,12 @@ test('a hidden line leaves the log and its counts, and nothing else from the sam
     ':Loaded',
   ])
   expect(countByLevel(shown).get(Level.Warn)).toBe(2)
+  // Every message from the method: both builds and its bare "1".
+  expect(
+    withoutHidden(log, [{ source: 'Round::Start', text: '', object: '', label: '' }]).filter(
+      (e) => e.source === 'Round::Start',
+    ),
+  ).toEqual([])
   // Every object: both colliders go.
   const every = withoutHidden(log, [{ ...(door ?? { source: '', label: '' }), object: '' }])
   expect(every.some((e) => e.message === BOX)).toBe(false)
