@@ -14,7 +14,11 @@ func TestWhatsNewOfflineKeepsLastRun(t *testing.T) {
 	if err := writeLastRun(dir, "1.0.0"); err != nil {
 		t.Fatal(err)
 	}
-	s := &Service{info: Info{Version: "1.1.0"}, dir: dir}
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		http.Error(w, "offline", http.StatusServiceUnavailable)
+	}))
+	defer srv.Close()
+	s := &Service{info: Info{Version: "1.1.0"}, dir: dir, gh: &github.Client{HTTP: srv.Client(), APIBase: srv.URL, CacheDir: t.TempDir()}}
 	got, err := s.WhatsNew(context.Background())
 	if err != nil || got.Version != "" {
 		t.Fatalf("offline skip: %+v, %v", got, err)
