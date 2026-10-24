@@ -26,11 +26,13 @@ test('every preference row is found by its own label', () => {
   }
 })
 
-test('obvious synonyms reach the setting they mean', () => {
+test('a query matches a label, a description or a synonym, and an empty one matches all', () => {
+  expect(prefMatches('', 'Backup before Play', 'When Mortar zips Saves')).toBe(true)
+  expect(prefMatches('zips', 'Backup before Play', 'When Mortar zips Saves')).toBe(true)
   expect(prefMatches('dark', 'Theme', '')).toBe(true)
+  expect(prefMatches('prox', 'LAN port', '')).toBe(true)
+  expect(prefMatches('pr', 'LAN port', '')).toBe(false)
   expect(prefMatches('light', 'Theme', '')).toBe(true)
-  expect(prefMatches('proxy', 'LAN port', '')).toBe(true)
-  expect(prefMatches('port', 'Automatic port', '')).toBe(true)
   expect(prefMatches('api key', 'Account', '')).toBe(true)
   expect(prefMatches('trash', 'Recently deleted retention', '')).toBe(true)
   expect(prefMatches('cleanup', 'Clean up…', '')).toBe(true)
