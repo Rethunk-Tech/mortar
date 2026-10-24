@@ -379,10 +379,10 @@ jobs:
 
       # The Flathub render writes the npm sources with bun and flatpak-node-generator (run through uvx).
       - name: Setup Bun
-        uses: Rethunk-Tech/gh-actions/setup-bun@79cf1f780ce44c714a6928098da557539eba150f # v1.20
+        uses: Rethunk-Tech/gh-actions/setup-bun@67ec8bd68343d915462729ad119c355740cf6205 # v1.22
 
       - name: Setup Python
-        uses: Rethunk-Tech/gh-actions/setup-python@79cf1f780ce44c714a6928098da557539eba150f # v1.20
+        uses: Rethunk-Tech/gh-actions/setup-python@67ec8bd68343d915462729ad119c355740cf6205 # v1.22
         with:
           uv-version: "0.12.23"
           skip-install: "true"
