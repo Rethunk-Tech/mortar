@@ -149,7 +149,10 @@ func (c *Client) readNext(ctx context.Context, info components.GameInfo, l *lane
 		return
 	}
 	c.applyModes(&raw, f)
-	l.total = raw.Total
+	// Each page's Total drops only that page's adult and hidden hits; page 1's is the one every request reads.
+	if l.read == 1 {
+		l.total = raw.Total
+	}
 	l.hidden += raw.Hidden
 	l.hits = append(l.hits, raw.Items...)
 	l.failed = append(l.failed, raw.Failed...)

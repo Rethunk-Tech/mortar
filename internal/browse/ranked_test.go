@@ -131,3 +131,21 @@ func TestRankedKeepsWhatAFailingSourceAlreadyReturned(t *testing.T) {
 		t.Fatalf("page 3 = %v", downloadsOf(page.Items))
 	}
 }
+
+func TestRankedTotalStaysTheSameOnEveryPage(t *testing.T) {
+	a := &rankSource{id: "rt", downloads: descending(1000, 100, 1)}
+	game := rankGame(t, a)
+	c := &Client{Hidden: func(it Item) bool {
+		var n int
+		_, _ = fmt.Sscanf(it.ID, "rt%d", &n)
+		return n >= 2*source.PageSize && n%2 == 0
+	}}
+	one, err := c.searchAll(context.Background(), game, "", 1, Filter{Sort: source.SortDownloads})
+	if err != nil {
+		t.Fatal(err)
+	}
+	three, err := c.searchAll(context.Background(), game, "", 3, Filter{Sort: source.SortDownloads})
+	if err != nil || three.Total != one.Total {
+		t.Fatalf("page 3 total %d, page 1 total %d, %v", three.Total, one.Total, err)
+	}
+}
