@@ -118,3 +118,20 @@ func TestSetKeepsBOMAndCRLF(t *testing.T) {
 		t.Fatalf("BOM and CRLF must survive a write:\n%q", got)
 	}
 }
+
+// BepInEx parses a value into its .NET type and drops one that does not fit for the default when the game starts.
+func TestSetRefusesWhatTheDotNetTypeCannotHold(t *testing.T) {
+	d := parseCfg("[A]\n# Setting type: Int32\nN = 1\n# Setting type: Byte\nB = 1\n# Setting type: Single\nF = 1\n")
+	for _, bad := range [][2]string{{"N", "3000000000"}, {"B", "256"}, {"B", "-1"}, {"F", "Inf"}, {"F", "1e39"}} {
+		if out, err := d.set("A", bad[0], bad[1]); err == nil {
+			t.Errorf("%v accepted: %q", bad, out)
+		}
+	}
+	if out, err := d.set("A", "B", "255"); err != nil || !strings.Contains(out, "B = 255\n") {
+		t.Fatalf("%q %v", out, err)
+	}
+	// Go reads "1_000" and hex floats, .NET does not: the value is written in a form both read.
+	if out, err := d.set("A", "F", "1_000"); err != nil || !strings.Contains(out, "F = 1000\n") {
+		t.Fatalf("%q %v", out, err)
+	}
+}

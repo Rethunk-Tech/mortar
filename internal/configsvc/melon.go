@@ -138,8 +138,9 @@ func (e melonEntry) literal(value string) (string, error) {
 		}
 		return value, nil
 	case TypeFloat:
-		if _, err := strconv.ParseFloat(value, 64); err != nil {
-			return "", fmt.Errorf("%s expects a number", e.Key)
+		_, value, err := finite(e.Key, value)
+		if err != nil {
+			return "", err
 		}
 		if tomlInt.MatchString(value) {
 			value += ".0"

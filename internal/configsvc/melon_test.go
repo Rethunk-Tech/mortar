@@ -54,3 +54,18 @@ func TestMelonPreferencesAreTypedByTheirValuesAndEditedInPlace(t *testing.T) {
 		t.Fatal("category ownership")
 	}
 }
+
+// Tomlet reads a float only as lowercase TOML ("1e5", "inf"); "1E5", "Infinity" or "0x1p3" fails the whole file.
+func TestMelonFloatIsWrittenAsTOML(t *testing.T) {
+	d := parseMelon(melonSample)
+	for in, want := range map[string]string{"1E5": "Speed = 100000.0\n", "0x1p3": "Speed = 8.0\n", ".5": "Speed = 0.5\n"} {
+		if out, err := d.set("BetterHands", "Speed", in); err != nil || !strings.Contains(out, want) {
+			t.Errorf("%s: %q %v", in, out, err)
+		}
+	}
+	for _, in := range []string{"Infinity", "NaN"} {
+		if _, err := d.set("BetterHands", "Speed", in); err == nil {
+			t.Errorf("%s accepted", in)
+		}
+	}
+}

@@ -2,6 +2,7 @@ package configsvc
 
 import (
 	"fmt"
+	"math"
 	"regexp"
 	"slices"
 	"strconv"
@@ -50,7 +51,18 @@ type cfgDoc struct {
 type cfgEntry struct {
 	section string
 	line    int
+	// netType is the .NET type BepInEx parses the value into.
+	netType string
 	Entry
+}
+
+// netLimits bound the .NET number types narrower than what validate parses; BepInEx replaces a value that overflows
+// its type with the default when the game starts.
+var netLimits = map[string][2]float64{
+	"Byte": {0, math.MaxUint8}, "SByte": {math.MinInt8, math.MaxInt8},
+	"Int16": {math.MinInt16, math.MaxInt16}, "UInt16": {0, math.MaxUint16},
+	"Int32": {math.MinInt32, math.MaxInt32}, "UInt32": {0, math.MaxUint32}, "UInt64": {0, math.MaxUint64},
+	"Single": {-math.MaxFloat32, math.MaxFloat32},
 }
 
 func parseCfg(text string) cfgDoc {
@@ -88,8 +100,9 @@ func parseCfg(text string) cfgDoc {
 			e := pending
 			e.Key, e.Value = strings.TrimSpace(key), strings.TrimSpace(val)
 			e.Description = strings.Join(desc, "\n")
+			netType := e.Type
 			finishEntry(&e)
-			d.entries = append(d.entries, cfgEntry{section: section, line: i, Entry: e})
+			d.entries = append(d.entries, cfgEntry{section: section, line: i, netType: netType, Entry: e})
 			reset()
 		}
 	}
@@ -159,11 +172,11 @@ func validate(e Entry, value string) (string, error) {
 		}
 		return value, inRange(e, float64(n))
 	case TypeFloat:
-		n, err := strconv.ParseFloat(value, 64)
+		n, text, err := finite(e.Key, value)
 		if err != nil {
-			return "", fmt.Errorf("%s expects a number", e.Key)
+			return "", err
 		}
-		return value, inRange(e, n)
+		return text, inRange(e, n)
 	case TypeEnum:
 		parts := []string{value}
 		if e.Flags {
@@ -176,6 +189,16 @@ func validate(e Entry, value string) (string, error) {
 		}
 	}
 	return value, nil
+}
+
+// finite parses a number and writes it the way both .NET and TOML read it: Go also takes "1_000", hex and "Inf", which
+// neither does.
+func finite(key, value string) (float64, string, error) {
+	n, err := strconv.ParseFloat(value, 64)
+	if err != nil || math.IsInf(n, 0) || math.IsNaN(n) {
+		return 0, "", fmt.Errorf("%s expects a number", key)
+	}
+	return n, strconv.FormatFloat(n, 'g', -1, 64), nil
 }
 
 func inRange(e Entry, n float64) error {
@@ -210,6 +233,11 @@ func (d cfgDoc) set(section, key, value string) (string, error) {
 	val, err := validate(e.Entry, value)
 	if err != nil {
 		return "", err
+	}
+	if lim, ok := netLimits[e.netType]; ok {
+		if n, _ := strconv.ParseFloat(val, 64); n < lim[0] || n > lim[1] {
+			return "", fmt.Errorf("%s must be between %v and %v", key, lim[0], lim[1])
+		}
 	}
 	lines := append([]string(nil), d.lines...)
 	old := lines[e.line]
