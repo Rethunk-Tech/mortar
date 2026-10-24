@@ -45,8 +45,8 @@ func (s *Service) InstallExtraFolderMod(ctx context.Context, game, id, folder st
 	}
 	for _, root := range roots {
 		// A mod is a folder in the extra folder, or the extra folder itself when it is one mod's build output.
-		whole := filepath.Clean(folder) == filepath.Clean(root) && buildOutput(game, root)
-		if !whole && filepath.Dir(filepath.Clean(folder)) != filepath.Clean(root) {
+		self, child := placeIn(folder, root)
+		if !(self && buildOutput(game, root)) && !child {
 			continue
 		}
 		resolved, err := fsx.EvalSymlinks(root)
@@ -58,6 +58,11 @@ func (s *Service) InstallExtraFolderMod(ctx context.Context, game, id, folder st
 		}
 	}
 	return InstallResult{}, errors.New("that folder is not in an extra mods folder")
+}
+
+// placeIn reports whether folder is root itself or a folder directly in it, ignoring case where the file system does.
+func placeIn(folder, root string) (self, child bool) {
+	return fsx.SamePath(folder, root), fsx.SamePath(filepath.Dir(filepath.Clean(folder)), root)
 }
 
 // InstallBuildFolder installs folder, one of the folders set to auto-install, into the profile as one local mod; a
