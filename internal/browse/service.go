@@ -26,9 +26,10 @@ type Service struct {
 	Compat func(game string) func(ctx context.Context) (meta.CompatIndex, error)
 }
 
-// HasCompat reports whether the game has a compatibility list, so its mods can be marked broken.
-func (s *Service) HasCompat(game string) bool {
-	return s.Compat != nil && s.Compat(game) != nil
+// HasCompat reports whether the game has a compatibility list or a known-broken list, so its mods can be marked
+// broken.
+func (s *Service) HasCompat(ctx context.Context, game string) bool {
+	return (s.Compat != nil && s.Compat(game) != nil) || len(components.KnownBrokenFor(ctx, game).Entries) > 0
 }
 
 // NewService returns a Service that marks hits already on the named profile.
