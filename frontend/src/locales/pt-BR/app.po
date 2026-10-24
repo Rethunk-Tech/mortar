@@ -567,6 +567,10 @@ msgstr ""
 msgid "Undo this and {count, plural, one {# later change} other {# later changes}}?"
 msgstr ""
 
+#: src/launch/LaunchButtons.tsx
+msgid "Cancelling…"
+msgstr ""
+
 #: src/share/DestinationGrid.tsx
 msgid "Local archives cannot go here"
 msgstr ""
@@ -1873,7 +1877,7 @@ msgstr ""
 #: src/lan/IncomingPrompt.tsx
 #: src/lan/PairedComputers.tsx
 #: src/launch/GraphicsDialog.tsx
-#: src/launch/LaunchScreen.tsx
+#: src/launch/LaunchButtons.tsx
 #: src/launch/PrePlayDialog.tsx
 #: src/launch/SaveWarnDialog.tsx
 #: src/launch/UpdateWarnDialog.tsx
@@ -2601,8 +2605,8 @@ msgstr ""
 msgid "{os} antivirus (AMSI)"
 msgstr ""
 
+#: src/launch/LaunchButtons.tsx
 #: src/launch/LaunchLayer.tsx
-#: src/launch/LaunchScreen.tsx
 msgid "Open console"
 msgstr ""
 
@@ -4978,7 +4982,7 @@ msgstr ""
 msgid "Switch to Config"
 msgstr ""
 
-#: src/launch/LaunchScreen.tsx
+#: src/launch/LaunchButtons.tsx
 msgid "Could not cancel the launch"
 msgstr ""
 
@@ -5481,7 +5485,7 @@ msgid "Export as {source} collection draft…"
 msgstr ""
 
 #: src/browse/BrowseShow.tsx
-#: src/launch/LaunchScreen.tsx
+#: src/launch/LaunchButtons.tsx
 #: src/saves/SaveGapLine.tsx
 msgid "Hide"
 msgstr ""
@@ -6039,8 +6043,8 @@ msgstr ""
 
 #: src/game/FarmMenuItem.tsx
 #: src/games/AddGameDialog.tsx
+#: src/launch/LaunchButtons.tsx
 #: src/launch/LaunchLayer.tsx
-#: src/launch/LaunchScreen.tsx
 #: src/launch/SweepDialog.tsx
 #: src/saves/BackupsDialog.tsx
 #: src/screenshots/ScreenshotsTab.tsx

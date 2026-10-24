@@ -6,7 +6,6 @@ import { type ReactNode, useCallback, useEffect, useState } from 'react'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import { Level } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import type { Progress } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
-import { CancelLaunch } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { OpenSteam } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/opener/service.ts'
 import { LauncherLogo } from '../brand/launchers/LauncherLogo.tsx'
 import { loaderLogo } from '../brand/loaders/loaderLogo.ts'
@@ -14,7 +13,6 @@ import { EPIC_GAMES, HEROIC, LUTRIS, STEAM } from '../brand/productNames.ts'
 import { SwitchOffButton } from '../console/CrashDialog.tsx'
 import { format } from '../console/filter.ts'
 import { useConsole } from '../console/store.ts'
-import { useTab } from '../game/tab.ts'
 import { gameArt } from '../games/art.ts'
 import { useGameInfo } from '../games/info.ts'
 import { modsLabel } from '../i18n/counts.ts'
@@ -26,7 +24,8 @@ import { useProfiles } from '../profiles/store.ts'
 import { controlsCutout } from '../shell/controlsCutout.ts'
 import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
-import { reportError, reportUnexpected } from '../toasts/report.ts'
+import { reportUnexpected } from '../toasts/report.ts'
+import { Buttons } from './LaunchButtons.tsx'
 import { LaunchStages, type StageMark } from './LaunchStages.tsx'
 import { type Phase, useLaunchView } from './progress.ts'
 import { launchStages, type StageId } from './stages.ts'
@@ -397,55 +396,6 @@ function screenTitle(phase: Phase, name: string): string {
 }
 
 // Buttons under the log: Cancel (Close once failed), the console, and Hide; gone while the game shows as running.
-function Buttons({ game, phase, focus }: { game: string; phase: Phase; focus: boolean }) {
-  const { t } = useLingui()
-  const hide = useLaunch((s) => s.hide)
-  const dismissFailure = useLaunch((s) => s.dismissFailure)
-  const close = useLaunchView((s) => s.close)
-  const setTab = useTab((s) => s.setTab)
-  // On the Console already, Open console would only hide the screen, so Hide stands in for it.
-  const onConsole = useTab((s) => s.tab === 'console')
-  const failed = phase === 'failed'
-  const closeFailure = () => {
-    dismissFailure()
-    close()
-  }
-  const cancel = () => {
-    CancelLaunch(game).catch(reportError(t`Could not cancel the launch`))
-  }
-  return (
-    <Box
-      sx={{
-        display: 'flex',
-        gap: space.gap,
-        visibility: phase === 'running' ? 'hidden' : 'visible',
-      }}
-    >
-      <Button onClick={failed ? closeFailure : cancel}>{failed ? t`Close` : t`Cancel`}</Button>
-      {onConsole ? null : (
-        <Button
-          variant="outlined"
-          autoFocus={focus}
-          onClick={() => {
-            setTab('console')
-            if (failed) {
-              closeFailure()
-            } else {
-              hide()
-            }
-          }}
-        >
-          {t`Open console`}
-        </Button>
-      )}
-      {onConsole && !failed ? (
-        <Button variant="outlined" autoFocus={focus} onClick={hide}>
-          {t`Hide`}
-        </Button>
-      ) : null}
-    </Box>
-  )
-}
 
 /**
  * LaunchScreen covers the game page while a launch runs: the launcher, the game and its loader as a row of marks that

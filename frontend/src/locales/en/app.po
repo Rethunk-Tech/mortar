@@ -567,6 +567,10 @@ msgstr "Could not export the collection draft"
 msgid "Undo this and {count, plural, one {# later change} other {# later changes}}?"
 msgstr "Undo this and {count, plural, one {# later change} other {# later changes}}?"
 
+#: src/launch/LaunchButtons.tsx
+msgid "Cancelling…"
+msgstr "Cancelling…"
+
 #: src/share/DestinationGrid.tsx
 msgid "Local archives cannot go here"
 msgstr "Local archives cannot go here"
@@ -1873,7 +1877,7 @@ msgstr "Mortar already named the likely mod for the last crash."
 #: src/lan/IncomingPrompt.tsx
 #: src/lan/PairedComputers.tsx
 #: src/launch/GraphicsDialog.tsx
-#: src/launch/LaunchScreen.tsx
+#: src/launch/LaunchButtons.tsx
 #: src/launch/PrePlayDialog.tsx
 #: src/launch/SaveWarnDialog.tsx
 #: src/launch/UpdateWarnDialog.tsx
@@ -2601,8 +2605,8 @@ msgstr "{name} (Recommended)"
 msgid "{os} antivirus (AMSI)"
 msgstr "{os} antivirus (AMSI)"
 
+#: src/launch/LaunchButtons.tsx
 #: src/launch/LaunchLayer.tsx
-#: src/launch/LaunchScreen.tsx
 msgid "Open console"
 msgstr "Open console"
 
@@ -4978,7 +4982,7 @@ msgstr "Choose the game's program and give it a name first."
 msgid "Switch to Config"
 msgstr "Switch to Config"
 
-#: src/launch/LaunchScreen.tsx
+#: src/launch/LaunchButtons.tsx
 msgid "Could not cancel the launch"
 msgstr "Could not cancel the launch"
 
@@ -5481,7 +5485,7 @@ msgid "Export as {source} collection draft…"
 msgstr "Export as {source} collection draft…"
 
 #: src/browse/BrowseShow.tsx
-#: src/launch/LaunchScreen.tsx
+#: src/launch/LaunchButtons.tsx
 #: src/saves/SaveGapLine.tsx
 msgid "Hide"
 msgstr "Hide"
@@ -6039,8 +6043,8 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 
 #: src/game/FarmMenuItem.tsx
 #: src/games/AddGameDialog.tsx
+#: src/launch/LaunchButtons.tsx
 #: src/launch/LaunchLayer.tsx
-#: src/launch/LaunchScreen.tsx
 #: src/launch/SweepDialog.tsx
 #: src/saves/BackupsDialog.tsx
 #: src/screenshots/ScreenshotsTab.tsx
