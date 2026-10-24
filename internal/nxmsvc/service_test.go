@@ -487,7 +487,7 @@ func TestAModDBLinkArrivesUnderTheIDBrowseUses(t *testing.T) {
 	s.VSModDBRelease = func(_ context.Context, id, version string) (vsmoddb.Resolved, error) {
 		return vsmoddb.Resolved{ID: vsmoddb.ID(890, 4405), Name: "Carry On", Version: version}, nil
 	}
-	s.receiveVSModDB(ref)
+	s.receiveVSModDB("", ref)
 	in := s.Inbox()
 	if len(in.Arrivals) != 1 || in.Arrivals[0].Name != "Carry On" || !slices.Contains(in.Arrivals[0].Games, "vintage-story") {
 		t.Fatalf("inbox %+v", in)
@@ -497,5 +497,18 @@ func TestAModDBLinkArrivesUnderTheIDBrowseUses(t *testing.T) {
 	}
 	if got := <-s.Assigned; got.Source != "vsmoddb" || got.Package != "890-4405" || got.Version != "1.14.3" {
 		t.Fatalf("assigned %+v", got)
+	}
+}
+
+func TestAnIgnoredThunderstoreLinkIsTakenAgain(t *testing.T) {
+	source.SetHandleLinks(map[string]bool{"thunderstore": true})
+	t.Cleanup(func() { source.SetHandleLinks(nil) })
+	s := newService(t, &fakeHandler{})
+	link := "ror2mm://v1/install/thunderstore.io/Me/Mod/1.2.3/"
+	s.Receive([]string{link})
+	s.Ignore(s.Inbox().Arrivals[0].ID)
+	s.Receive([]string{link})
+	if n := len(s.Inbox().Arrivals); n != 1 {
+		t.Fatalf("%d arrivals after the ignored link came again", n)
 	}
 }

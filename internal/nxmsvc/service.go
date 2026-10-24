@@ -47,6 +47,8 @@ type Arrival struct {
 	Name string `json:"name,omitempty"`
 	// Games are the games the package's site serves: the link names none, so the window picks from these.
 	Games []string `json:"games,omitempty"`
+	// raw is the link as it arrived, which Ignore forgets so the same link is taken again.
+	raw string
 }
 
 // Rejection is a refused link; Reason is one of nxm.Reason*.
@@ -155,7 +157,7 @@ func (s *Service) Receive(args []string) bool {
 		if ref, err := thunderstore.ParseLink(arg); err == nil {
 			s.mu.Lock()
 			s.nextID++
-			a := Arrival{ID: s.nextID, Package: ref.Namespace + "-" + ref.Name, Version: ref.Version, Games: gamesWith("thunderstore")}
+			a := Arrival{ID: s.nextID, Package: ref.Namespace + "-" + ref.Name, Version: ref.Version, Games: gamesWith("thunderstore"), raw: arg}
 			log.Printf("nxm: link %d arrived: package %s", a.ID, a.Package)
 			s.arrivals = append(s.arrivals, a)
 			s.mu.Unlock()
@@ -167,7 +169,7 @@ func (s *Service) Receive(args []string) bool {
 			continue
 		}
 		if ref, err := vsmoddb.ParseLink(arg); err == nil {
-			go s.receiveVSModDB(ref)
+			go s.receiveVSModDB(arg, ref)
 			continue
 		}
 		if domain, gerr := nxm.LinkGame(arg); gerr == nil && !isMortarGame(domain) {
@@ -200,7 +202,7 @@ func (s *Service) Receive(args []string) bool {
 			s.emit(RejectedEvent, r)
 			continue
 		}
-		a := Arrival{ID: id, Link: link}
+		a := Arrival{ID: id, Link: link, raw: arg}
 		log.Printf("nxm: link %d arrived: mod %d file %d", id, link.ModID, link.FileID)
 		s.arrivals = append(s.arrivals, a)
 		s.mu.Unlock()
@@ -270,7 +272,7 @@ func (s *Service) receiveCurseForge(raw string, ref curseforge.Ref) {
 		s.emit(RejectedEvent, r)
 		return
 	}
-	a := Arrival{ID: id, Source: "curseforge", Package: strconv.Itoa(ref.Project), Name: name, File: ref.File, Games: games}
+	a := Arrival{ID: id, Source: "curseforge", Package: strconv.Itoa(ref.Project), Name: name, File: ref.File, Games: games, raw: raw}
 	log.Printf("nxm: link %d arrived: curseforge project %s file %d", a.ID, a.Package, a.File)
 	s.mu.Lock()
 	s.arrivals = append(s.arrivals, a)
@@ -280,7 +282,7 @@ func (s *Service) receiveCurseForge(raw string, ref curseforge.Ref) {
 
 // receiveVSModDB reads the Mod DB's ids for the mod a link names, so the install lands under the same key as one from
 // Browse; when the site cannot be asked, the link's own mod id stands in, which the Mod DB also answers to.
-func (s *Service) receiveVSModDB(ref vsmoddb.Ref) {
+func (s *Service) receiveVSModDB(raw string, ref vsmoddb.Ref) {
 	release := s.VSModDBRelease
 	if release == nil {
 		release = vsmoddb.Driver{}.Resolve
@@ -288,7 +290,7 @@ func (s *Service) receiveVSModDB(ref vsmoddb.Ref) {
 	ctx, cancel := context.WithTimeout(context.Background(), curseforgeLookup)
 	found, err := release(ctx, ref.ModID, ref.Version)
 	cancel()
-	a := Arrival{Source: "vsmoddb", Package: ref.ModID, Version: ref.Version, Name: ref.ModID, Games: gamesWith("vsmoddb")}
+	a := Arrival{Source: "vsmoddb", Package: ref.ModID, Version: ref.Version, Name: ref.ModID, Games: gamesWith("vsmoddb"), raw: raw}
 	if err != nil {
 		log.Printf("nxm: mod db mod %s not read: %v", ref.ModID, err)
 	} else {
@@ -323,16 +325,6 @@ func (s *Service) forget(link string) {
 	s.mu.Lock()
 	delete(s.recent, link)
 	s.mu.Unlock()
-}
-
-func (s *Service) forgetArrival(link nxm.Link) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	for raw := range s.recent {
-		if parsed, err := nxm.Parse(raw, s.store.Get().NexusUserID, s.now(), game.ByNexusDomain); err == nil && parsed == link {
-			delete(s.recent, raw)
-		}
-	}
 }
 
 // duplicate records link and reports whether it already arrived and has not expired since.
@@ -399,18 +391,16 @@ func (s *Service) Assign(id int, game, profile string) error {
 // Ignore drops the arrival.
 func (s *Service) Ignore(id int) {
 	s.mu.Lock()
-	var link nxm.Link
+	raw := ""
 	s.arrivals = slices.DeleteFunc(s.arrivals, func(a Arrival) bool {
 		if a.ID == id {
-			link = a.Link
+			raw = a.raw
 			return true
 		}
 		return false
 	})
 	s.mu.Unlock()
-	if link.ModID != 0 {
-		s.forgetArrival(link)
-	}
+	s.forget(raw)
 	log.Printf("nxm: link %d ignored", id)
 }
 
