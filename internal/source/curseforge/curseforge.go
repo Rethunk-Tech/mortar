@@ -283,7 +283,7 @@ const apiPageSize = 50
 
 // Search lists mods in the game's Mods class, or in every class the catalog lists for it, merged by the query's sort.
 // Included categories go to the API as ids; it has no exclude parameter and ANDs several ids, so excluded ones are
-// dropped from the page afterwards (the total still counts them).
+// dropped from the page afterwards and counted in Hidden (the total still counts them).
 func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error) {
 	gs, ok := d.gameSource(q.Game)
 	if !ok || gs.GameID == 0 || q.Key == "" {
@@ -315,8 +315,10 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 		}
 	}
 	items := make([]source.Item, 0, len(mods))
+	hidden := 0
 	for _, m := range mods {
 		if !source.CategoryMatch(categoryNames(m), nil, q.ExcludeCategories) {
+			hidden++
 			continue
 		}
 		it := source.Item{
@@ -341,7 +343,7 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 	if len(classes) > 1 {
 		limit = mergedCap
 	}
-	return source.Page{Total: min(total, limit), Items: items, Failed: failed}, nil
+	return source.Page{Total: min(total, limit), Items: items, Failed: failed, Hidden: hidden}, nil
 }
 
 // classNames caches each game's class names (Mods, Create a Sim) for the process, keyed by API address and game.

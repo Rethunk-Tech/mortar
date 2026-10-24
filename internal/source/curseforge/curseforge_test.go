@@ -105,7 +105,7 @@ func TestCategoriesAndFilters(t *testing.T) {
 	}
 	q := source.Query{Game: "stardew", Key: "4643", Categories: []string{"items"}, ExcludeCategories: []string{"Misc"}}
 	page, err := d.Search(context.Background(), q)
-	if err != nil || len(page.Items) != 1 || page.Items[0].ID != "10" {
+	if err != nil || len(page.Items) != 1 || page.Items[0].ID != "10" || page.Hidden != 1 {
 		t.Fatalf("%+v %v", page, err)
 	}
 	q.Categories = []string{"Nope"}
