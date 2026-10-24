@@ -48,10 +48,13 @@ interface Surfaces {
   overlay85: string
   overlay90: string
   // Dims laid over game art and screenshots: the art is the same in both themes, so these are too.
+  artDim20: string
   artDim28: string
   artDim45: string
   artDim55: string
   artDim65: string
+  artDim85: string
+  artDim90: string
   // Text and icons on art.
   onArtInk: string
   panel: string
@@ -112,10 +115,13 @@ const darkSurfaces: Surfaces = {
   overlay80: 'rgba(0,0,0,0.80)',
   overlay85: 'rgba(0,0,0,0.85)',
   overlay90: 'rgba(0,0,0,0.9)',
+  artDim20: 'rgba(0,0,0,0.2)',
   artDim28: 'rgba(0,0,0,0.28)',
   artDim45: 'rgba(0,0,0,0.45)',
   artDim55: 'rgba(0,0,0,0.55)',
   artDim65: 'rgba(0,0,0,0.65)',
+  artDim85: 'rgba(0,0,0,0.85)',
+  artDim90: 'rgba(0,0,0,0.9)',
   onArtInk: 'rgba(255,255,255,0.95)',
   panel: 'rgba(40,40,48,0.78)',
   panel85: 'rgba(40,40,48,0.85)',
@@ -176,10 +182,13 @@ const lightSurfaces: Surfaces = {
   overlay80: 'rgba(0,0,0,0.55)',
   overlay85: 'rgba(0,0,0,0.5)',
   overlay90: 'rgba(0,0,0,0.45)',
+  artDim20: 'rgba(0,0,0,0.2)',
   artDim28: 'rgba(0,0,0,0.28)',
   artDim45: 'rgba(0,0,0,0.45)',
   artDim55: 'rgba(0,0,0,0.55)',
   artDim65: 'rgba(0,0,0,0.65)',
+  artDim85: 'rgba(0,0,0,0.85)',
+  artDim90: 'rgba(0,0,0,0.9)',
   onArtInk: 'rgba(255,255,255,0.95)',
   panel: '#ffffff',
   panel85: '#ffffff',

@@ -48,7 +48,7 @@ import { useOpenGame } from './useOpenGame.ts'
 type Game = GameInfo
 
 const ART_OPACITY = 0.72
-const shadow = '0 1px 2px var(--mortar-overlay-90), 0 0 18px var(--mortar-overlay-85)'
+const shadow = '0 1px 2px var(--mortar-art-dim-90), 0 0 18px var(--mortar-art-dim-85)'
 const actionSx = {
   minWidth: 132,
   height: 44,
@@ -308,7 +308,7 @@ function RowView({
     flexShrink: 0,
     overflow: 'hidden',
     // Art tiles keep a solid dark base so white text stays readable while or after the image fails to load.
-    bgcolor: hasArt ? 'var(--mortar-overlay-90)' : 'background.paper',
+    bgcolor: hasArt ? 'var(--mortar-art-dim-90)' : 'background.paper',
     fontFamily: 'inherit',
   } as const
   return (
