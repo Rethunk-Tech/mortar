@@ -31,6 +31,8 @@ func TestWriteFileRemovesTempOnRenameFailure(t *testing.T) {
 }
 
 func TestWriteStreamReplacesExistingAtomically(t *testing.T) {
+	syncWrites = true
+	t.Cleanup(func() { syncWrites = false })
 	dir := t.TempDir()
 	path := filepath.Join(dir, "target")
 	if err := os.WriteFile(path, []byte("old"), 0o600); err != nil {

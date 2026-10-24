@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
@@ -54,7 +55,12 @@ func WriteCacheStream(path string, perm os.FileMode, write func(io.Writer) error
 	return writeStream(path, perm, false, write)
 }
 
+// syncWrites is off under go test: a test cannot observe an fsync, and the thousands its fixtures write cost the
+// suite seconds on a real disk.
+var syncWrites = !testing.Testing()
+
 func writeStream(path string, perm os.FileMode, durable bool, write func(io.Writer) error) (err error) {
+	durable = durable && syncWrites
 	f, err := os.CreateTemp(filepath.Dir(path), filepath.Base(path)+".*.tmp")
 	if err != nil {
 		return err
