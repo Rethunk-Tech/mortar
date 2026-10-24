@@ -67,17 +67,41 @@ func masterKey() ([]byte, error) {
 
 // location picks the sealed file when the portal answers, else the plain one. A sealed file with no portal is an
 // error: falling back would hide its contents and let the next write start a second store.
-// ponytail: a plain file written while the portal was missing is not upgraded to the sealed file later.
 func location() (path string, key []byte, err error) {
 	dir := storeDir()
 	key, kerr := masterKey()
 	if kerr == nil {
+		if err := sealPlain(dir, key); err != nil {
+			return "", nil, err
+		}
 		return filepath.Join(dir, sealedFile), key, nil
 	}
 	if _, err := os.Stat(filepath.Join(dir, sealedFile)); err == nil {
 		return "", nil, fmt.Errorf("secrets are sealed and the secret portal is unavailable: %w", kerr)
 	}
 	return filepath.Join(dir, plainFile), nil, nil
+}
+
+// sealPlain moves the secrets of a plain file, written while the portal was missing, into the sealed file once the
+// portal answers, so they are neither lost to the sealed store nor left readable on disk.
+func sealPlain(dir string, key []byte) error {
+	plain, sealed := filepath.Join(dir, plainFile), filepath.Join(dir, sealedFile)
+	if _, err := os.Lstat(sealed); !errors.Is(err, fs.ErrNotExist) {
+		return nil
+	}
+	if _, err := os.Lstat(plain); errors.Is(err, fs.ErrNotExist) {
+		return nil
+	} else if err != nil {
+		return err
+	}
+	m, err := load(plain, nil)
+	if err != nil {
+		return err
+	}
+	if err := save(sealed, key, m); err != nil {
+		return err
+	}
+	return fsx.Remove(plain)
 }
 
 // readFile reads through os.Root so the name cannot leave the store folder.

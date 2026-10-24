@@ -3,6 +3,7 @@ package secret
 import (
 	"bytes"
 	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -119,6 +120,24 @@ func TestFlatpakStore(t *testing.T) {
 		}
 		if _, err := os.Stat(filepath.Join(dir, "secrets")); err == nil {
 			t.Fatal("no sealed file without a portal")
+		}
+	})
+
+	t.Run("a plain file is sealed once the portal answers", func(t *testing.T) {
+		dir := flatpakEnv(t, func() ([]byte, error) { return nil, errors.New("no such interface") })
+		if err := Set("nexus", "key-123"); err != nil {
+			t.Fatal(err)
+		}
+		portalSecret, keyDone = fixedPortal("master"), false
+		if v, err := Get("nexus"); err != nil || v != "key-123" {
+			t.Fatalf("got %q, %v", v, err)
+		}
+		if _, err := os.Stat(filepath.Join(dir, "secrets.json")); !errors.Is(err, fs.ErrNotExist) {
+			t.Fatalf("the plain file is still there: %v", err)
+		}
+		raw, err := readFile(filepath.Join(dir, "secrets"))
+		if err != nil || bytes.Contains(raw, []byte("key-123")) {
+			t.Fatalf("the moved secrets must be sealed: %v", err)
 		}
 	})
 
