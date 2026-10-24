@@ -286,7 +286,7 @@ func (c *Client) searchFilled(ctx context.Context, info components.GameInfo, id 
 	var visible []Item
 	for p := source.FirstPage; p < source.FirstPage+maxScan; p++ {
 		q.Page = p
-		raw, err := c.fetchMarked(ctx, info, id, s, q)
+		raw, last, err := c.fetchMarked(ctx, info, id, s, q)
 		if err != nil {
 			return Page{}, err
 		}
@@ -302,7 +302,7 @@ func (c *Client) searchFilled(ctx context.Context, info components.GameInfo, id 
 			}
 		}
 		visible = append(visible, raw.Items...)
-		if len(visible) >= want || raw.Total <= p*source.PageSize {
+		if len(visible) >= want || last {
 			break
 		}
 	}
@@ -310,12 +310,14 @@ func (c *Client) searchFilled(ctx context.Context, info components.GameInfo, id 
 	return out, nil
 }
 
-// fetchMarked reads one upstream page, dropping adult hits unless ShowAdult and marking each hit.
-func (c *Client) fetchMarked(ctx context.Context, info components.GameInfo, id string, s source.Searcher, q source.Query) (Page, error) {
-	result, err := searchCached(ctx, id, s, q)
+// fetchMarked reads one upstream page, dropping adult hits unless ShowAdult and marking each hit. last reports that
+// the upstream has no later page, judged before any hit is dropped.
+func (c *Client) fetchMarked(ctx context.Context, info components.GameInfo, id string, s source.Searcher, q source.Query) (result Page, last bool, err error) {
+	result, err = searchCached(ctx, id, s, q)
 	if err != nil {
-		return Page{}, err
+		return Page{}, false, err
 	}
+	last = result.Total <= q.Page*q.Len() || len(result.Items) == 0
 	if !c.ShowAdult {
 		before := len(result.Items)
 		result.Items = slices.DeleteFunc(result.Items, func(i Item) bool { return i.Adult })
@@ -328,7 +330,7 @@ func (c *Client) fetchMarked(ctx context.Context, info components.GameInfo, id s
 	}
 	c.markInstalled(result.Items)
 	c.mark(ctx, info, result.Items)
-	return result, nil
+	return result, last, nil
 }
 
 func (c *Client) markInstalled(items []Item) {

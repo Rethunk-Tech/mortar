@@ -143,7 +143,7 @@ func placedPrefix(window []Item, lanes []*lane, compare func(a, b Item) int) []I
 func (c *Client) readNext(ctx context.Context, info components.GameInfo, l *lane, f Filter, limit int) {
 	l.q.Page = source.FirstPage + l.read
 	l.read++
-	raw, err := c.fetchMarked(ctx, info, l.id, l.s, l.q)
+	raw, last, err := c.fetchMarked(ctx, info, l.id, l.s, l.q)
 	if err != nil {
 		l.err, l.done = err, true
 		return
@@ -153,5 +153,5 @@ func (c *Client) readNext(ctx context.Context, info components.GameInfo, l *lane
 	l.hidden += raw.Hidden
 	l.hits = append(l.hits, raw.Items...)
 	l.failed = append(l.failed, raw.Failed...)
-	l.done = raw.Total <= l.read*l.q.Len() || l.read >= limit || len(raw.Items)+raw.Hidden == 0
+	l.done = last || l.read >= limit
 }

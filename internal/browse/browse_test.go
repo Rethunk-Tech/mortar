@@ -345,3 +345,28 @@ func TestNoisyNamesKeepsModpacksTranslationsAndCheats(t *testing.T) {
 		t.Fatalf("got %v, want %v", got, want)
 	}
 }
+
+type twentyOneSource struct{}
+
+func (twentyOneSource) ID() string              { return "src21" }
+func (twentyOneSource) Name() string            { return "21" }
+func (twentyOneSource) Modes() []source.Acquire { return nil }
+func (twentyOneSource) Search(_ context.Context, q source.Query) (source.Page, error) {
+	p := source.Page{Total: 21}
+	for i := (q.Page - 1) * source.PageSize; i < min(q.Page*source.PageSize, 21); i++ {
+		p.Items = append(p.Items, source.Item{Source: "src21", ID: fmt.Sprint(i)})
+	}
+	return p, nil
+}
+
+var _ = source.Register(twentyOneSource{})
+
+func TestHitsDroppedFromPageOneDoNotEndTheSearchBeforeTheLastUpstreamPage(t *testing.T) {
+	topCache = map[string]topEntry{}
+	g := components.GameInfo{ID: "g", Sources: []components.GameSource{{ID: "src21"}}}
+	c := &Client{Hidden: func(it Item) bool { return it.ID == "0" }}
+	page, err := c.search(context.Background(), g, "src21", "x", 1, Filter{})
+	if err != nil || len(page.Items) != 20 || page.Items[19].ID != "20" {
+		t.Fatalf("the 21st upstream hit must fill page 1: %d items, %v", len(page.Items), err)
+	}
+}
