@@ -8,16 +8,14 @@ const send = async (m: string, s: string) => {
   sent.push(`${m}|${s}`)
 }
 
-test('one line per distinct stack, each logged however close together, and reportError still sees every one', () => {
+test('one line per distinct stack, each logged however close together, twenty a session, and reportError sees every one', () => {
   const loop = new Error('Maximum update depth exceeded')
   expect(logRenderError(loop, { componentStack: '\n at Foo' }, send)).toBe(true)
   expect(logRenderError(loop, { componentStack: '\n at Foo' }, send)).toBe(false)
   expect(logRenderError(loop, { componentStack: '\n at Bar' }, send)).toBe(true)
   expect(sent).toHaveLength(2)
   expect(reported).toHaveBeenCalledTimes(3)
-})
-
-test('twenty stacks a session at most', () => {
+  // The seen set is per session, so the cap is checked in the same test rather than one that may run first.
   for (let i = 0; i < 30; i++) {
     logRenderError(new Error('x'), { componentStack: `\n at C${i}` }, send)
   }
