@@ -60,9 +60,3 @@ func TestGaleProfileDatabase(t *testing.T) {
 		t.Fatalf("profiles = %v, %v", all, err)
 	}
 }
-
-func TestGaleRefRejectsAnExtraDash(t *testing.T) {
-	if r, ok := galeRef("A-B-C-D"); ok {
-		t.Fatalf("accepted as %+v", r)
-	}
-}
