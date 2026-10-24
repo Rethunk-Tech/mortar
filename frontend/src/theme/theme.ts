@@ -348,6 +348,8 @@ function createMortarTheme(
     compact?: boolean
     roomy?: boolean
     reduceMotion?: boolean
+    // The press ripple re-renders a button through its animation, so it is off unless the player turns it on.
+    ripples?: boolean
     mode?: ThemeMode
   } = {},
 ): Theme {
@@ -451,7 +453,7 @@ function createMortarTheme(
       },
       MuiButtonBase: {
         // The press ripple is motion too.
-        defaultProps: { disableRipple: reduceMotion },
+        defaultProps: { disableRipple: reduceMotion || opts.ripples !== true },
         styleOverrides: {
           root: {
             // A native button takes the system font; every clickable reads in the font chosen in Appearance.

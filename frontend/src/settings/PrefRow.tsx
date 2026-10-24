@@ -141,11 +141,25 @@ export function PrefByKey({
   )
 }
 
-export function PrefKeys({ keys, game }: { keys: string[]; game?: string }) {
+/** Rows for keys; disabledBy names, per key, the other setting that holds it at its value and must change first. */
+export function PrefKeys({
+  keys,
+  game,
+  disabledBy = {},
+}: {
+  keys: string[]
+  game?: string
+  disabledBy?: Record<string, string>
+}) {
   return (
     <>
       {keys.map((key) => (
-        <PrefByKey key={key} prefKey={key} {...(game ? { game } : {})} />
+        <PrefByKey
+          key={key}
+          prefKey={key}
+          {...(game ? { game } : {})}
+          {...(disabledBy[key] ? { disabledReason: disabledBy[key] } : {})}
+        />
       ))}
     </>
   )

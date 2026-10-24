@@ -220,6 +220,10 @@ msgstr "Mod loader updates"
 msgid "Use the system title bar"
 msgstr "Use the system title bar"
 
+#: src/settings/prefCopy.ts
+msgid "A ripple spreads from where you press a button. Off, the button only changes shade."
+msgstr "A ripple spreads from where you press a button. Off, the button only changes shade."
+
 #: src/settings/shortcutLabels.ts
 msgid "Check mods and Mortar for updates"
 msgstr "Check mods and Mortar for updates"
@@ -2177,6 +2181,10 @@ msgstr "Could not run diagnostics"
 msgid "Bosses defeated"
 msgstr "Bosses defeated"
 
+#: src/settings/sections/Appearance.tsx
+msgid "Reduce motion keeps ripples off. Set Reduce motion to Never to use them."
+msgstr "Reduce motion keeps ripples off. Set Reduce motion to Never to use them."
+
 #: src/settings/prefCopyGame.ts
 msgid "Game settings file"
 msgstr "Game settings file"
@@ -3487,6 +3495,10 @@ msgstr "Verify downloads with {source} MD5"
 #: src/settings/prefCopyAntivirus.ts
 msgid "clamd socket"
 msgstr "clamd socket"
+
+#: src/settings/prefCopy.ts
+msgid "Touch ripples"
+msgstr "Touch ripples"
 
 #: src/settings/SettingsNav.tsx
 msgid "Settings sections"

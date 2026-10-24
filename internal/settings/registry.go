@@ -170,6 +170,7 @@ var registry = withDefaults([]pref{
 	ptrPref("markLocalMods", ScopeApp, func(s Settings, _ string) *bool { return s.MarkLocalMods }, func(s *Settings, _ string, on bool) { s.MarkLocalMods = &on }),
 	boolPref("centerConfigControls", ScopeApp, func(s Settings, _ string) bool { return s.CenterConfigControls }, func(s *Settings, _ string, on bool) { s.CenterConfigControls = on }),
 	browseCardStatsPref(),
+	boolPref("touchRipples", ScopeApp, func(s Settings, _ string) bool { return s.TouchRipples }, func(s *Settings, _ string, on bool) { s.TouchRipples = on }),
 	enumPref("reduceMotion", ScopeApp, reduceMotionValues, func(s Settings, _ string) string { return s.ReduceMotion }, func(s *Settings, _, v string) { s.ReduceMotion = v }),
 	enumPref("profileHero", ScopeApp, heroValues, func(s Settings, _ string) string { return s.ProfileHero }, func(s *Settings, _, v string) { s.ProfileHero = v }),
 	ptrPref("reuseFomodChoices", ScopeApp, func(s Settings, _ string) *bool { return s.ReuseFomodChoices }, func(s *Settings, _ string, on bool) { s.ReuseFomodChoices = &on }),

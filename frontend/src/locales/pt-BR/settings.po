@@ -220,6 +220,10 @@ msgstr ""
 msgid "Use the system title bar"
 msgstr ""
 
+#: src/settings/prefCopy.ts
+msgid "A ripple spreads from where you press a button. Off, the button only changes shade."
+msgstr ""
+
 #: src/settings/shortcutLabels.ts
 msgid "Check mods and Mortar for updates"
 msgstr ""
@@ -2177,6 +2181,10 @@ msgstr ""
 msgid "Bosses defeated"
 msgstr ""
 
+#: src/settings/sections/Appearance.tsx
+msgid "Reduce motion keeps ripples off. Set Reduce motion to Never to use them."
+msgstr ""
+
 #: src/settings/prefCopyGame.ts
 msgid "Game settings file"
 msgstr ""
@@ -3486,6 +3494,10 @@ msgstr ""
 
 #: src/settings/prefCopyAntivirus.ts
 msgid "clamd socket"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Touch ripples"
 msgstr ""
 
 #: src/settings/SettingsNav.tsx

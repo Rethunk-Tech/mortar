@@ -104,6 +104,7 @@ const defaults: Settings = {
   centerConfigControls: false,
   browseCardStats: 'popularity,downloads',
   reduceMotion: 'system',
+  touchRipples: false,
   profileHero: 'full',
   reuseFomodChoices: true,
   driftChecks: true,

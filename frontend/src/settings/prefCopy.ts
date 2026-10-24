@@ -167,6 +167,12 @@ function displayAndData(i18n: I18n): Record<string, PrefCopy> {
         { value: 'system', label: i18n._(msg`Follow system`) },
       ],
     },
+    touchRipples: {
+      label: i18n._(msg`Touch ripples`),
+      description: i18n._(
+        msg`A ripple spreads from where you press a button. Off, the button only changes shade.`,
+      ),
+    },
     reduceMotion: {
       label: i18n._(msg`Reduce motion`),
       description: i18n._(msg`Shorter animations. Honour the OS unless you override it.`),

@@ -19,6 +19,7 @@ export function Themed({ children }: { children: React.ReactNode }) {
   const density = useSettings((s) => s.density)
   const roomy = useRoomy((s) => s.roomy)
   const reduceMotion = useSettings((s) => s.reduceMotion)
+  const touchRipples = useSettings((s) => s.touchRipples)
   const colourTheme = useSettings((s) => s.theme)
   const uiScale = useSettings((s) => s.uiScale)
   // The webview's own zoom scales every size alike, as a browser's page zoom does; a page served to a browser has no
@@ -63,9 +64,21 @@ export function Themed({ children }: { children: React.ReactNode }) {
         compact: density === 'compact' && !roomy,
         roomy,
         reduceMotion: honourReducedMotion(reduceMotion || 'system', osReduce),
+        ripples: touchRipples === true,
         mode: honourTheme(colourTheme || 'dark', osLight),
       }),
-    [accent, font, systemAccent, colourTheme, density, osLight, osReduce, reduceMotion, roomy],
+    [
+      accent,
+      font,
+      systemAccent,
+      colourTheme,
+      density,
+      osLight,
+      osReduce,
+      reduceMotion,
+      roomy,
+      touchRipples,
+    ],
   )
   return <ThemeProvider theme={theme}>{children}</ThemeProvider>
 }

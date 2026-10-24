@@ -206,6 +206,7 @@ Under the shared tab header, every non-empty section is a heading with its count
 ### Sections
 
 Section order and membership: `problemSection.ts`. Rules a change could break:
+
 - **The count** comes from one helper, `problemCount`, feeding the tab chip, sidebar badge, the Home hero and cached profile badges, so it is zero only when the tab has nothing to fix. The Mods tab carries no problems banner. While problems load, the chip shows the profile's last known count.
 - **Never counted:** Cosmetic or harmless, Dismissed, Slow startup, and Redundant (warnings, never the chip). Conflicts count except harmless cosmetic asset conflicts.
 - **Conflicts:** the same mods with the same winner and fix are one row listing every asset.
@@ -338,6 +339,8 @@ Mortar's Settings holds only what is Mortar-wide, never one game's (the one exce
 A full page with a back button (Esc also returns), a section list on the left and the page beside it; while open, the title bar shows a "Settings" tab and no game tab. A search field filters rows by label and description across every page. Every control is a row (label and a wrapping description on the left, the control on the right) in its own rounded tile, filled rather than outlined. A choice whose options each carry an explanation renders as radio cards, two to four short options as a segmented strip, longer or dynamic lists as a dropdown. Lists and multi-step flows open dialogs rather than growing the page.
 
 Rules a change could break:
+
+- A setting another setting forces (Reduce motion holds Touch ripples off) shows disabled, its tooltip naming the setting to change first (`PrefKeys` `disabledBy`, `PrefRow` `disabledReason`).
 
 - **General:** a flagged download is refused with **Install anyway**, which asks in an error-coloured confirm, records the override in the profile's History and installs unscanned; a scan that could not finish installs the mod and warns it was installed unscanned. **Settings file** import lists what would change by section and applies only the ticked ones ([architecture.md](architecture.md#settings-file)).
 - **Mods and profiles:** the **Sync folder** holds profile settings, mod lists and configs, offered to other machines using it; mod files are not copied ([Sync offers](#sync-offers)).

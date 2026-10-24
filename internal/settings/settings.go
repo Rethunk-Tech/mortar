@@ -205,8 +205,10 @@ type Settings struct {
 	CenterConfigControls bool `json:"centerConfigControls"`
 	// BrowseCardStats is the stats Browse cards show under the summary: comma-separated ids from browseCardStatValues,
 	// or "none".
-	BrowseCardStats          string `json:"browseCardStats"`
-	ReduceMotion             string `json:"reduceMotion"`
+	BrowseCardStats string `json:"browseCardStats"`
+	ReduceMotion    string `json:"reduceMotion"`
+	// TouchRipples is MUI's press ripple on buttons; off, a press shows only the hover and active fill.
+	TouchRipples             bool   `json:"touchRipples"`
 	ProfileHero              string `json:"profileHero"`
 	ReuseFomodChoices        *bool  `json:"reuseFomodChoices"`
 	DriftChecks              *bool  `json:"driftChecks"`

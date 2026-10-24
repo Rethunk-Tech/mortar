@@ -27,6 +27,7 @@ import { LIST_COLUMN_IDS, sanitizeListSort } from '../../mods/listColumns.ts'
 import { BackdropImage } from '../../shell/BackdropImage.tsx'
 import { visuallyHidden } from '../../shell/visuallyHidden.ts'
 import { space } from '../../theme/density.ts'
+import { useReducedMotion } from '../../theme/reducedMotion.ts'
 import { PAD_FOCUS } from '../../theme/theme.ts'
 import { reportError, reportUnexpected } from '../../toasts/report.ts'
 import { PrefSegmented, PrefSelect } from '../PrefControls.tsx'
@@ -252,6 +253,7 @@ const PREVIEW_REQUEST_PX = 640
 
 export function Appearance() {
   const { t } = useLingui()
+  const reducedMotion = useReducedMotion()
   const background = useSettings((s) => s.background)
   const backgroundImage = useSettings((s) => s.backgroundImage)
   const reportFailure = reportError(t`Could not save that setting`)
@@ -323,11 +325,19 @@ export function Appearance() {
             'dates',
             'density',
             'reduceMotion',
+            'touchRipples',
             'profileHero',
             'centerConfigControls',
             'systemTitleBar',
             ...(System.IsLinux() ? ['graphics'] : []),
           ]}
+          disabledBy={
+            reducedMotion
+              ? {
+                  touchRipples: t`Reduce motion keeps ripples off. Set Reduce motion to Never to use them.`,
+                }
+              : {}
+          }
         />
       </SettingsSection>
       <SettingsSection title={t`Mods view`}>
