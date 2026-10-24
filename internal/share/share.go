@@ -371,7 +371,7 @@ func checkShared(s Shared) error {
 	// What a game has is the receiver's catalog's word; the link must also name the source, but its sourceKeys never grant one.
 	have := SourceKeys(s.Game)
 	for _, r := range s.Entries {
-		if !r.valid() || !validDetails(r) || (r.GitHub == "" && r.Package == "" && r.Patreon == "" && r.Itch == "" && r.CurseForge == 0 && r.VSModDB == "" && r.Paradox == "" && have["nexus"] == "" || s.SourceKeys["nexus"] == "") ||
+		if !r.valid() || !validDetails(r) || (r.GitHub == "" && r.Package == "" && r.Patreon == "" && r.Itch == "" && r.CurseForge == 0 && r.VSModDB == "" && r.Paradox == "" && (have["nexus"] == "" || s.SourceKeys["nexus"] == "")) ||
 			(r.Paradox != "" && (have["paradox"] == "" || s.SourceKeys["paradox"] == "")) ||
 			(r.VSModDB != "" && (have["vsmoddb"] == "" || s.SourceKeys["vsmoddb"] == "")) ||
 			(r.Package != "" && (have["thunderstore"] == "" || s.SourceKeys["thunderstore"] == "")) || (r.CurseForge != 0 && (have["curseforge"] == "" || s.SourceKeys["curseforge"] == "")) {

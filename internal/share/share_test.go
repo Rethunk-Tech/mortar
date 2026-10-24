@@ -670,6 +670,12 @@ func TestThunderstoreEntriesTravelInLinks(t *testing.T) {
 	if err != nil || string(out) != `[{"s":"thunderstore","ns":"Alice","name":"MoreCompany","version":"1.2.3"}]` {
 		t.Errorf("wire = %s, %v", out, err)
 	}
+	// riskofrain2 has no Nexus key, which a Thunderstore entry does not need.
+	if res, err := Encode("riskofrain2", p, profile.ShareFacts{}); err != nil {
+		t.Errorf("encode for a game without Nexus: %v", err)
+	} else if _, err := Parse(res.App); err != nil {
+		t.Errorf("parse for a game without Nexus: %v", err)
+	}
 	// stardew has no Thunderstore community, so a package cannot name its game's source.
 	if _, err := Encode("stardew", p, profile.ShareFacts{}); err == nil {
 		t.Error("a Thunderstore entry was encoded for a game without a community")
