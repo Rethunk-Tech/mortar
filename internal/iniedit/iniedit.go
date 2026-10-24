@@ -48,7 +48,8 @@ func Set(content, section, key, value string) (string, error) {
 		case line == "" || line[0] == ';' || line[0] == '#':
 			continue
 		case line[0] == '[':
-			cur := strings.TrimSpace(strings.Trim(line, "[]"))
+			cur, _, _ := strings.Cut(line[1:], "]")
+			cur = strings.TrimSpace(cur)
 			inWanted = section == "" || strings.EqualFold(cur, section)
 			sectionSeen = sectionSeen || inWanted
 			if inWanted {

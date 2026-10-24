@@ -17,6 +17,7 @@ func TestSet(t *testing.T) {
 		{"appends inside its section", "[a]\nx = 1\n\n[b]\ny = 2\n", "a", "[a]\nx = 1\nmodsdisabled = 0\n\n[b]\ny = 2\n"},
 		{"appends inside the last section keeping CRLF", "[a]\r\nx = 1", "A", "[a]\r\nx = 1\r\nmodsdisabled = 0\r\n"},
 		{"creates the section", "[a]\r\nx = 1\r\n", "b", "[a]\r\nx = 1\r\n[b]\r\nmodsdisabled = 0\r\n"},
+		{"a header with a comment", "[Options] ; game\nmodsdisabled = 1\n", "options", "[Options] ; game\nmodsdisabled = 0\n"},
 		{"fills an empty section", "[a]\n[b]\ny = 2\n", "a", "[a]\nmodsdisabled = 0\n[b]\ny = 2\n"},
 	} {
 		got, err := Set(c.in, c.section, "modsdisabled", "0")
