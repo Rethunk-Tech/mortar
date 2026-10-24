@@ -254,7 +254,7 @@ func (s *Store) replacing(game, id, key string) (Entry, bool, error) {
 // scanItem lays out a store item and scans it for mods; an item with none is a NoModError. done removes any temp
 // layout and is always safe to defer.
 func (s *Store) scanItem(game, id, key string, choices map[string]map[string][]string) (src string, found []smapimanifest.Mod, done func(), err error) {
-	src, tmp, err := s.layoutItem(game, id, key, choices)
+	src, tmp, err := s.layoutItem(game, id, key, choices, false)
 	done = func() {
 		if tmp != "" {
 			_ = fsx.RemoveAll(tmp)
@@ -363,7 +363,7 @@ func (s *Store) applyFomod(game, id, key string, choices map[string]map[string][
 			return err
 		}
 		e := p.Entries[ei]
-		e.Fomod = cloneFomod(choices)
+		e.Fomod, e.FomodSpec = cloneFomod(choices), true
 		prev := e.Mods
 		e.Mods = entryMods(found)
 		keepLoadAfter(e.Mods, prev)

@@ -27,6 +27,9 @@ type Archive struct {
 	Source, Package string
 	// Eval is what a FOMOD's conditions read: the files already installed and the game's version.
 	Eval fomod.EvalContext
+	// LegacyFomod lays a FOMOD out as Mortar placed it before following the spec's destinations, for an entry whose
+	// folder was placed that way.
+	LegacyFomod bool
 }
 
 // GameOf is the catalog game gameID as the installer sees it: the loaders it runs and the content targets it has.

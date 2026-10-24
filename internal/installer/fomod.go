@@ -24,6 +24,21 @@ func (fomodInstaller) Detect(a Archive, _ Game) bool {
 
 func slash(p string) string { return path.Clean(strings.ReplaceAll(p, `\`, "/")) }
 
+// destination is where op puts src in the package's folder. With no destination the spec installs at the source's own
+// path, and an empty one is the package's folder itself; legacy is how Mortar placed both before, at the source's base
+// name.
+func destination(op fomod.Op, src string, legacy bool) string {
+	switch {
+	case op.Destination != nil && *op.Destination != "":
+		return *op.Destination
+	case legacy:
+		return path.Base(src)
+	case op.Destination == nil:
+		return src
+	}
+	return "."
+}
+
 func (fomodInstaller) Layout(a Archive, g Game, choices Choices) (Layout, error) {
 	cfg, _, ok, err := fomod.Open(a.Dir)
 	if err != nil || !ok {
@@ -47,13 +62,12 @@ func (fomodInstaller) Layout(a Archive, g Game, choices Choices) (Layout, error)
 		if !fs.ValidPath(src) {
 			return Layout{}, fmt.Errorf("%w: %q", ErrUnsafe, op.Source)
 		}
-		dest := op.Destination
-		dest = cmp.Or(dest, path.Base(src))
+		dest := destination(op, src, a.LegacyFomod)
 		// A leading slash means the package's folder, as no slash does.
 		dest = slash(cmp.Or(strings.TrimLeft(slash(dest), "/"), "."))
 		// A destination is inside the package's own folder: ".." would reach another mod's files.
 		if dest == ".." || strings.HasPrefix(dest, "../") {
-			return Layout{}, fmt.Errorf("%w: %q", ErrUnsafe, op.Destination)
+			return Layout{}, fmt.Errorf("%w: %q", ErrUnsafe, dest)
 		}
 		info, err := fs.Stat(a.FS, src)
 		if err != nil {

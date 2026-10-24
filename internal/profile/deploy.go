@@ -43,7 +43,7 @@ func (s *Store) packageFiles(gameID, id string) (files map[string]packageFile, w
 		if e.IsOverlay() || !e.hasPackageEnabled() || e.isTrayEntry() {
 			continue
 		}
-		arch, l, _, err := s.layoutOf(gameID, id, e.StoreKey(), e.Fomod)
+		arch, l, _, err := s.layoutOf(gameID, id, e.StoreKey(), e.Fomod, !e.FomodSpec)
 		if err != nil {
 			return nil, nil, fmt.Errorf("%s: %w", entryLabel(e), err)
 		}

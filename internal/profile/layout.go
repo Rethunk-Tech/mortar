@@ -55,11 +55,12 @@ func (s *Store) pick(game, key string) (installer.Archive, installer.Game, insta
 
 // layoutOf picks the installer for the store item key and lays it out: the archive (the item's chosen mod root), the
 // files and where they go, and the driver's id. A FOMOD whose choices are missing or stale is a NeedChoicesError.
-func (s *Store) layoutOf(game, id, key string, choices map[string]map[string][]string) (installer.Archive, installer.Layout, string, error) {
+func (s *Store) layoutOf(game, id, key string, choices map[string]map[string][]string, legacy bool) (installer.Archive, installer.Layout, string, error) {
 	arch, g, inst, err := s.pick(game, key)
 	if err != nil {
 		return installer.Archive{}, installer.Layout{}, "", err
 	}
+	arch.LegacyFomod = legacy
 	root := arch.Dir
 	if inst.ID() == "fomod" {
 		cfg, _, _, err := fomod.Open(root)
@@ -95,8 +96,8 @@ func writeLayout(arch installer.Archive, l installer.Layout, dst string) error {
 
 // layoutItem is a folder holding the store item as its entry lays out. A plain item is its own folder; any other is
 // written to a temp folder, tmp, that the caller removes.
-func (s *Store) layoutItem(game, id, key string, choices map[string]map[string][]string) (src, tmp string, err error) {
-	arch, l, driver, err := s.layoutOf(game, id, key, choices)
+func (s *Store) layoutItem(game, id, key string, choices map[string]map[string][]string, legacy bool) (src, tmp string, err error) {
+	arch, l, driver, err := s.layoutOf(game, id, key, choices, legacy)
 	if err != nil || driver == "plain" {
 		return arch.Dir, "", err
 	}

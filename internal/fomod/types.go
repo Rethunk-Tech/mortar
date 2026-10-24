@@ -28,8 +28,10 @@ type Choices map[string]map[string][]string
 
 // Op is one file or folder to copy from the store item into the install folder.
 type Op struct {
-	Source      string
-	Destination string
+	Source string
+	// Destination is nil when the config names none, which installs at the source's own path; "" is the install
+	// folder itself.
+	Destination *string
 	Priority    int
 	Folder      bool
 }

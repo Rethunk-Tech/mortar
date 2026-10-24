@@ -161,7 +161,7 @@ const pendingPrefix = tempPrefix + "pending_"
 // placeStaged is place with the final rename aimed at stage(final) in mods/. It returns final, the folder name e belongs
 // under, or "" when e has no folder of its own.
 func (s *Store) placeStaged(game, modsDir string, e Entry, stage func(final string) string) (string, error) {
-	arch, l, driver, err := s.layoutOf(game, filepath.Base(filepath.Dir(modsDir)), e.StoreKey(), e.Fomod)
+	arch, l, driver, err := s.layoutOf(game, filepath.Base(filepath.Dir(modsDir)), e.StoreKey(), e.Fomod, !e.FomodSpec)
 	if err != nil || driver == driverThunderstore {
 		return "", err
 	}
@@ -277,7 +277,7 @@ func (s *Store) addToStaged(game string, p *Profile, dir, key string, source Sou
 	if isPackage {
 		mods[0].Version = cmp.Or(mods[0].Version, source.Version)
 	} else {
-		src, tmp, err := s.layoutItem(game, p.ID, key, source.fomodMap())
+		src, tmp, err := s.layoutItem(game, p.ID, key, source.fomodMap(), false)
 		if tmp != "" {
 			defer func() { _ = fsx.RemoveAll(tmp) }()
 		}
@@ -293,7 +293,7 @@ func (s *Store) addToStaged(game string, p *Profile, dir, key string, source Sou
 		}
 		mods = entryMods(found)
 	}
-	e := Entry{Key: key, Source: source, Mods: mods, Disabled: []mod.ID{}, Added: time.Now().UTC(), Fomod: cloneFomod(source.fomodMap()), Package: isPackage, Implicit: newImplicit(p.Entries, source, mods)}
+	e := Entry{Key: key, Source: source, Mods: mods, Disabled: []mod.ID{}, Added: time.Now().UTC(), Fomod: cloneFomod(source.fomodMap()), FomodSpec: true, Package: isPackage, Implicit: newImplicit(p.Entries, source, mods)}
 	if source.disabled != nil {
 		disabled = append(disabled, source.disabled.ids...)
 	}

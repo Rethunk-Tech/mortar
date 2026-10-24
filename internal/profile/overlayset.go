@@ -33,7 +33,7 @@ func (s *Store) overlayFileSets(game, id string, entries []Entry, baseKey string
 	if bi < 0 || len(overs) == 0 {
 		return []OverlayFileSet{}, nil
 	}
-	baseSrc, tmp, err := s.layoutItem(game, id, baseKey, entries[bi].Fomod)
+	baseSrc, tmp, err := s.layoutItem(game, id, baseKey, entries[bi].Fomod, !entries[bi].FomodSpec)
 	if tmp != "" {
 		defer func() { _ = fsx.RemoveAll(tmp) }()
 	}

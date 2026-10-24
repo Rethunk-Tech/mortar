@@ -300,7 +300,7 @@ func (s *Store) layOverlays(game, id string, base Entry, entryDir string, was, o
 	if len(was) == 0 && len(on) == 0 {
 		return nil
 	}
-	baseSrc, tmp, err := s.layoutItem(game, id, base.Key, base.Fomod)
+	baseSrc, tmp, err := s.layoutItem(game, id, base.Key, base.Fomod, !base.FomodSpec)
 	if tmp != "" {
 		defer func() { _ = fsx.RemoveAll(tmp) }()
 	}
@@ -497,7 +497,7 @@ func (s *Store) overlayTarget(game, id, key string, source Source, base Entry, i
 	if err != nil {
 		return "", "", err
 	}
-	baseSrc, tmp, err := s.layoutItem(game, id, base.Key, base.Fomod)
+	baseSrc, tmp, err := s.layoutItem(game, id, base.Key, base.Fomod, !base.FomodSpec)
 	if tmp != "" {
 		defer func() { _ = fsx.RemoveAll(tmp) }()
 	}

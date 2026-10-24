@@ -361,7 +361,7 @@ func (s *Store) applyEntrySnapshot(game string, p *Profile, dir string, entries 
 		}
 		live := liveEntryDir(modsDir, e.Key)
 		if exists(live) {
-			old, tmp, err := s.layoutItem(game, p.ID, e.Key, e.Fomod)
+			old, tmp, err := s.layoutItem(game, p.ID, e.Key, e.Fomod, !e.FomodSpec)
 			if tmp != "" {
 				defer func() { _ = fsx.RemoveAll(tmp) }()
 			}

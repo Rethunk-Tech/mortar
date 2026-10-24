@@ -236,14 +236,14 @@ func (s *Store) swapEntry(game, id, dir string, e Entry, newKey string, source *
 		}
 		return Entry{}, swapped{}, &NeedChoicesError{Ask: ask}
 	}
-	oldSrc, oldTmp, err := s.layoutItem(game, id, e.Key, e.Fomod)
+	oldSrc, oldTmp, err := s.layoutItem(game, id, e.Key, e.Fomod, !e.FomodSpec)
 	if oldTmp != "" {
 		defer func() { _ = fsx.RemoveAll(oldTmp) }()
 	}
 	if err != nil {
 		return Entry{}, swapped{}, err
 	}
-	newSrc, newTmp, err := s.layoutItem(game, id, newKey, choices)
+	newSrc, newTmp, err := s.layoutItem(game, id, newKey, choices, false)
 	if newTmp != "" {
 		defer func() { _ = fsx.RemoveAll(newTmp) }()
 	}
@@ -273,7 +273,7 @@ func (s *Store) swapEntry(game, id, dir string, e Entry, newKey string, source *
 	ne.Mods, ne.Disabled, ne.SkipVersion = entryMods(found), []mod.ID{}, ""
 	keepLoadAfter(ne.Mods, e.Mods)
 	ne.Tags = slices.Clone(e.Tags)
-	ne.Fomod = cloneFomod(choices)
+	ne.Fomod, ne.FomodSpec = cloneFomod(choices), true
 	for _, m := range ne.Mods {
 		if !e.Enabled(m.ID) {
 			ne.Disabled = append(ne.Disabled, m.ID)

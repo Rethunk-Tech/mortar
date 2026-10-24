@@ -198,6 +198,9 @@ type Entry struct {
 	CategoryOverride string `json:"categoryOverride,omitempty"`
 	// Fomod is the chosen plugin names per install step and group, replayed on update and roll back.
 	Fomod map[string]map[string][]string `json:"fomod,omitempty"`
+	// FomodSpec marks an entry placed by the FOMOD spec's destinations. One placed before Mortar followed them keeps
+	// the layout its folder and Mods were recorded with until it is installed again (update, roll back, new choices).
+	FomodSpec bool `json:"fomodSpec,omitempty"`
 	// ExtraStoreKeys are further store items from the same Nexus page, each copied to mods/<key>/<extra>/.
 	ExtraStoreKeys []string `json:"extraStoreKeys,omitempty"`
 	// PreviousExtraStoreKeys parallels ExtraStoreKeys after an update or roll back, for restoring each extra file.

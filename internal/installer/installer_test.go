@@ -218,6 +218,27 @@ func TestLayoutGoldens(t *testing.T) {
 	}
 }
 
+// The spec installs a file or folder with no destination at the source's own path, and one with an empty destination
+// in the package's folder itself; a legacy entry keeps the base-name placement Mortar gave both before.
+func TestFOMODDestinationsFollowTheSpec(t *testing.T) {
+	a := extracted(t, "nexus-9-9", map[string]string{
+		"fomod/ModuleConfig.xml": `<config><moduleName>M</moduleName><requiredInstallFiles><folder source="Main" destination=""/>` +
+			`<file source="Extra/x.txt"/></requiredInstallFiles></config>`,
+		"Main/manifest.json": "{}", "Extra/x.txt": "x",
+	})
+	smapi := Game{Loaders: []string{"smapi"}, Targets: []Target{{ID: TargetMods}}}
+	for legacy, want := range map[bool]string{
+		false: "mods:nexus-9-9/Extra/x.txt<-Extra/x.txt mods:nexus-9-9/manifest.json<-Main/manifest.json",
+		true:  "mods:nexus-9-9/Main/manifest.json<-Main/manifest.json mods:nexus-9-9/x.txt<-Extra/x.txt",
+	} {
+		a.LegacyFomod = legacy
+		l, err := fomodInstaller{}.Layout(a, smapi, nil)
+		if got := render(l); err != nil || got != want {
+			t.Errorf("legacy %v: %s, %v; want %s", legacy, got, err, want)
+		}
+	}
+}
+
 func TestLayoutRefusals(t *testing.T) {
 	shallow := Game{Targets: []Target{{ID: TargetMods, MaxDepth: map[string]int{"ts4script": 2}}}}
 	cases := map[string]map[string]string{

@@ -141,3 +141,58 @@ func TestFomodUpdateReplaysOnlyUnchangedOptions(t *testing.T) {
 		})
 	}
 }
+
+// An entry placed by the destination rule Mortar used before the FOMOD spec's keeps that layout until it is installed
+// again; the update then lays the new version out by the spec and carries the player's file to the mod's new folder,
+// leaving nothing at the old place.
+func TestAnEntryPlacedByTheOldFomodRuleUpdatesToTheSpecLayoutCleanly(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p := mustCreate(t, e, "A")
+	files := func(dll string) map[string]string {
+		return map[string]string{
+			"fomod/ModuleConfig.xml": `<config><moduleName>M</moduleName><requiredInstallFiles><folder source="Main" destination=""/></requiredInstallFiles></config>`,
+			"Main/manifest.json":     manifestJSON("A.Main"),
+			"Main/m.dll":             dll,
+		}
+	}
+	e.item(t, "v1", files("one"))
+	e.item(t, "v2", files("two"))
+	if _, err := e.InstallFomod("stardew", p.ID, "v1", Source{Kind: KindLocal, Name: "x"}, nil); err != nil {
+		t.Fatal(err)
+	}
+	modsDir := e.mods(p.ID)
+	if _, err := e.updateMods("stardew", p.ID, func(p *Profile, dir string) error {
+		old := &p.Entries[0]
+		old.FomodSpec, old.Mods[0].Folder = false, "Main"
+		if err := removeEntryFolders(modsDir, old.Key); err != nil {
+			return err
+		}
+		return e.place("stardew", modsDir, *old)
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(modsDir, "v1", "Main", "config.json"), []byte("mine"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	got, err := e.UpdateEntry("stardew", p.ID, "v1", "v2")
+	if err != nil {
+		t.Fatal(err)
+	}
+	ne := got.Entries[0]
+	dir := liveEntryDir(modsDir, ne.Key)
+	var names []string
+	_ = filepath.WalkDir(dir, func(p string, d os.DirEntry, err error) error {
+		if err == nil && d.Type().IsRegular() {
+			rel, _ := filepath.Rel(dir, p)
+			names = append(names, filepath.ToSlash(rel))
+		}
+		return err
+	})
+	dll, _ := os.ReadFile(filepath.Join(dir, "m.dll"))
+	cfg, _ := os.ReadFile(filepath.Join(dir, "config.json"))
+	if !ne.FomodSpec || ne.Mods[0].Folder != "." || string(dll) != "two" || string(cfg) != "mine" ||
+		strings.Join(names, ",") != "config.json,m.dll,manifest.json" {
+		t.Fatalf("entry %+v, m.dll %q, config %q, files %v", ne, dll, cfg, names)
+	}
+}

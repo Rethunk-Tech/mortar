@@ -128,9 +128,9 @@ type xmlFiles struct {
 }
 
 type xmlFile struct {
-	Source      string `xml:"source,attr"`
-	Destination string `xml:"destination,attr"`
-	Priority    string `xml:"priority,attr"`
+	Source      string  `xml:"source,attr"`
+	Destination *string `xml:"destination,attr"`
+	Priority    string  `xml:"priority,attr"`
 }
 
 type xmlFlags struct {
