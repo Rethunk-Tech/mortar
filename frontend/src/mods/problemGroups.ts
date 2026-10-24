@@ -52,7 +52,7 @@ export function assetRows(conflicts: AssetConflict[]): Row[] {
   for (const asset of conflicts) {
     const key = JSON.stringify([
       asset.kind,
-      [...(asset.packIds ?? [])].sort(),
+      [...(asset.packIds ?? [])].sort((a, b) => Number(a > b) - Number(a < b)),
       asset.winnerKind,
       asset.winnerName,
       asset.fixes ?? [],

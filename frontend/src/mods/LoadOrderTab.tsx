@@ -400,7 +400,9 @@ export function LoadOrderTab({ profile, game }: { profile: Profile; game: string
   const unlisted = useMemo(() => {
     const listed = new Set((rows ?? []).map((row) => idKey(row.id)))
     const ids = (rows ?? []).flatMap((row) => [...(row.required ?? []), ...(row.optional ?? [])])
-    return [...new Set(ids.filter((id) => !listed.has(idKey(id))))].sort()
+    return [...new Set(ids.filter((id) => !listed.has(idKey(id))))].sort(
+      (a, b) => Number(a > b) - Number(a < b),
+    )
   }, [rows])
   const { data: pageNames } = useLoaded<Record<string, string | undefined>>(
     unlisted.length === 0 ? null : () => DependencyNames(game, unlisted).then((n) => n ?? {}),

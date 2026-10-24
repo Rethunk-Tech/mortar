@@ -46,7 +46,9 @@ function SelectionBar({ profileId, mods }: { profileId: string; mods: Mod[] }) {
   const latest = new Map(updates.map((update) => [update.key, update.version]))
   const categories = useCustomCategories((s) => s.categories)
   const profile = useProfiles((s) => s.profiles.find((p) => p.id === profileId))
-  const tags = [...new Set((profile?.entries ?? []).flatMap((entry) => entry.tags ?? []))].sort()
+  const tags = [...new Set((profile?.entries ?? []).flatMap((entry) => entry.tags ?? []))].sort(
+    (a, b) => Number(a > b) - Number(a < b),
+  )
   // One selected mod is covered by the details panel and its menu; the bar is for acting on several.
   const multi = ids.length > 1
   // With nothing selected and no dialog open there is nothing to draw, so a profile save skips the closed dialogs.

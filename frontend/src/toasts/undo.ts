@@ -177,8 +177,8 @@ export function fieldsStillUndoable(
     if ((entry.categoryOverride ?? '') !== field.categoryOverride) {
       return true
     }
-    const now = [...(entry.tags ?? [])].toSorted()
-    const was = [...field.tags].toSorted()
+    const now = [...(entry.tags ?? [])].toSorted((a, b) => Number(a > b) - Number(a < b))
+    const was = [...field.tags].toSorted((a, b) => Number(a > b) - Number(a < b))
     return now.length !== was.length || now.some((tag, i) => tag !== was[i])
   })
 }
