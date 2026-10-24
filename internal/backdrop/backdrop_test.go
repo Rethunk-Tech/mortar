@@ -200,28 +200,21 @@ func TestJXLNeedsAClientThatAcceptsIt(t *testing.T) {
 	}
 }
 
-func TestWidthParameterShrinksTheBackdrop(t *testing.T) {
-	next := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusTeapot) })
-	h := Middleware(func() settings.Settings { return settings.Defaults() }, "", none, "")(next)
-	width := func(query string) int {
-		t.Helper()
-		rec := httptest.NewRecorder()
-		h.ServeHTTP(rec, httptest.NewRequestWithContext(t.Context(), http.MethodGet, Path+query, nil))
-		cfg, _, err := image.DecodeConfig(rec.Body)
-		if err != nil {
-			t.Fatal(err)
-		}
-		return cfg.Width
+// A width below the minimum serves the original; the shrink itself is TestShrunkBackdropIsKeptOnDiskAndDated's.
+func TestWidthBelowTheMinimumServesTheOriginal(t *testing.T) {
+	var src bytes.Buffer
+	if err := jpeg.Encode(&src, image.NewNRGBA(image.Rect(0, 0, 2000, 4)), nil); err != nil {
+		t.Fatal(err)
 	}
-	full := width("")
-	if full <= 1280 {
-		t.Skipf("bundled wallpaper is only %dpx wide", full)
+	wall := write(t, t.TempDir(), "wall.jpg", src.String())
+	cur := func() settings.Settings {
+		return settings.Settings{Background: settings.BackgroundImage, BackgroundImage: wall}
 	}
-	if got := width("?w=1280"); got != 1280 {
-		t.Errorf("w=1280 served %dpx", got)
-	}
-	if got := width("?w=100"); got != full {
-		t.Errorf("a width below the minimum must serve the original, got %dpx", got)
+	h := Middleware(cur, "", none, "")(http.NotFoundHandler())
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, httptest.NewRequestWithContext(t.Context(), http.MethodGet, Path+"?w=100", nil))
+	if rec.Body.String() != src.String() {
+		t.Error("a width below the minimum must serve the original")
 	}
 }
 
@@ -257,7 +250,7 @@ func TestASizedDefaultBackdropIsTheBundledJPEG(t *testing.T) {
 	dir := t.TempDir()
 	sys := write(t, dir, "sys.jxl", "jxl")
 	h := Middleware(func() settings.Settings { return settings.Settings{Background: settings.BackgroundImage} }, sys, none, "")(http.NotFoundHandler())
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, Path+"?w=1280", nil)
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, Path+"?w=1", nil)
 	req.Header.Set("Accept", "image/jxl,image/*")
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
