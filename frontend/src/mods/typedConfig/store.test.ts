@@ -1,26 +1,24 @@
-import { beforeEach, expect, mock, test } from 'bun:test'
-import type { Target } from './store.ts'
+import { afterEach, beforeEach, expect, mock, spyOn, test } from 'bun:test'
+import { configApi } from './api.ts'
+import { type Target, useTypedConfig } from './store.ts'
 
 const asked: string[] = []
-mock.module('./api.ts', () => ({
-  configApi: {
-    files: async () => [
-      { name: '(in-game menu)', label: 'In-game menu', format: 'gmcm', sections: [] },
-    ],
-    schema: async (_t: Target, file: string) => {
-      asked.push(file)
-      return []
-    },
-  },
-}))
-
-const { useTypedConfig } = await import('./store.ts')
 
 const target: Target = { game: 'stardew', profile: 'p', key: 'k', id: 'Seed.Beta' }
 
 beforeEach(() => {
   asked.length = 0
+  spyOn(configApi, 'files').mockResolvedValue([
+    { name: '(in-game menu)', label: 'In-game menu', format: 'gmcm', sections: [] },
+  ])
+  spyOn(configApi, 'schema').mockImplementation(async (_t, file) => {
+    asked.push(file)
+    return []
+  })
   useTypedConfig.setState({ target: null, files: [], current: '', errors: {}, loadError: '' })
+})
+afterEach(() => {
+  mock.restore()
 })
 
 test('a mod with only an in-game menu opens it and never asks for config.json', async () => {
