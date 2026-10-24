@@ -2,6 +2,12 @@
 
 Per game, the decisions and sources behind its catalog entry that the catalog cannot carry. Ids, executables, folders, save and log paths, loaders and sources live in the catalog (`internal/components/components.json`, built from `components.source.json`; `mortar games` lists it). What nobody has read from a real install is in [design.md](design.md#game-facts-to-verify).
 
+## Cat Mail Co.
+
+Source for the save layout: CatLib's docs (`okatodev/CatLib` `docs/Saves.md`) and the maintainer's report of a real save folder.
+- Each save is one file, `GameSaves/GameSave_<date>_<time>_Cat-Mail-Co.bin`, under the game's LocalLow folder. The saves path stays that folder (where 0.3.12 put it, so a profile's own saves copy keeps its shape) and `saveFiles` reaches one folder down.
+- CatLib keeps a save's mod data in `CatLibSaves/<save name>/` beside `GameSaves`; it is inside the saves path, so a swap carries it, but a backup of one save does not yet.
+
 ## Cities: Skylines II
 
 Nobody on the team owns the game. Sources: PCGamingWiki, a decompiled 1.x Steam build (`bworthy89/roadmod`), the GDK build's API dump (`ps1ke/Cities-Skylines-2-Modding-Guide`), LTT Labs' benchmark harness (`LTTLabsOSS/markbench-tests`).

@@ -2491,6 +2491,7 @@
           "windows": "{localLow}/Maracas Studio/CatMailCo/Player.log"
         }
       },
+      "saveFiles": ["GameSaves/GameSave_*.bin"],
       "deploy": "profile",
       "targets": [
         {

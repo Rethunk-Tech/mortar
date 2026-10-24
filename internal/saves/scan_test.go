@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/meta"
@@ -331,5 +332,26 @@ func TestWrittenSinceNamesTheSavesARunWrote(t *testing.T) {
 	valheim := Layout{Dir: dir, Files: []string{"characters_local/*.fch", "worlds_local/*.fwl", "!*_backup_*"}, Companions: []string{".db"}}
 	if got, err := valheim.WrittenSince(start); err != nil || !reflect.DeepEqual(got, []string{"characters_local/Ragnar.fch", "worlds_local/Midgard.fwl"}) {
 		t.Fatalf("Valheim = %v, %v", got, err)
+	}
+}
+
+// Cat Mail Co. keeps each save as one file under GameSaves (layout per okatodev/CatLib docs/Saves.md), beside CatLib's
+// per-save mod data and the Unity log; the bundled catalog entry must find the save and nothing else.
+func TestCatMailCoSavesAreFoundUnderGameSaves(t *testing.T) {
+	info, ok := components.Game("cat-mail-co")
+	if !ok {
+		t.Fatal("cat-mail-co is not in the bundled catalog")
+	}
+	dir := filepath.Join(t.TempDir(), "CatMailCo")
+	for _, name := range []string{
+		"GameSaves/GameSave_20260923_201740_Cat-Mail-Co.bin",
+		"CatLibSaves/GameSave_20260923_201740_Cat-Mail-Co/catlib.labels.json",
+		"Player.log",
+	} {
+		write(t, filepath.Join(dir, name), name)
+	}
+	names, err := Layout{Dir: dir, Files: info.SaveFiles, Companions: info.SaveCompanions}.Names()
+	if want := []string{"GameSaves/GameSave_20260923_201740_Cat-Mail-Co.bin"}; err != nil || !reflect.DeepEqual(names, want) {
+		t.Fatalf("Names = %v, %v; want %v", names, err, want)
 	}
 }
