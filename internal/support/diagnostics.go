@@ -295,7 +295,7 @@ func (s *Service) loaderTail(gameID, profileID string) (name, body string) {
 		return "", ""
 	}
 	text := strings.ToValidUTF8(string(data), "")
-	if rel, err := filepath.Rel(profileDir, path); err != nil || !filepath.IsLocal(rel) {
+	if !datadir.UnderRoot(profileDir, path) {
 		if !launch.LogOwnedBy(text, s.home, modsDir) {
 			return "", ""
 		}

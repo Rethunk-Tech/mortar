@@ -102,7 +102,7 @@ func (Place) Apply(ctx context.Context, p Plan) (Manifest, error) {
 		return Manifest{}, fmt.Errorf("%w: recover %s first", ErrUnrecovered, p.View.JournalDir)
 	}
 	// A plan that places only into a folder outside the install (a mods folder in Documents) needs no write access to it.
-	if slices.ContainsFunc(p.Ops, func(o Op) bool { return inside(p.Dir, o.Dst) }) {
+	if slices.ContainsFunc(p.Ops, func(o Op) bool { return datadir.UnderRoot(p.Dir, o.Dst) }) {
 		if err := fsx.CheckWritable(p.Dir); err != nil {
 			return Manifest{}, err
 		}
@@ -138,11 +138,6 @@ func (Place) Apply(ctx context.Context, p Plan) (Manifest, error) {
 		}
 	}
 	return m, errors.Join(log.close(), persist(m))
-}
-
-func inside(dir, path string) bool {
-	rel, err := filepath.Rel(dir, path)
-	return err == nil && filepath.IsLocal(rel)
 }
 
 func put(m *Manifest, i int, log *opLog) error {

@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
@@ -73,8 +74,7 @@ func within(path, dir string) bool {
 	if path == "" || dir == "" {
 		return false
 	}
-	path, dir = fsx.FoldCase(filepath.Clean(path)), fsx.FoldCase(filepath.Clean(dir))
-	return path == dir || strings.HasPrefix(path, dir+string(filepath.Separator))
+	return datadir.UnderRoot(dir, path)
 }
 
 // UsesModsPath reports whether p was started with --mods-path pointing at modsDir. It is false when the
