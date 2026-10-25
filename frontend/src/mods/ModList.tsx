@@ -20,6 +20,7 @@ import { formatDuration } from '../console/startupView.ts'
 import { compactQuery } from '../game/compact.ts'
 import { formatBytes } from '../i18n/bytes.ts'
 import { When } from '../i18n/When.tsx'
+import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { boundShortcut, type ShortcutId } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
 import { useWidth } from '../shell/useWidth.ts'
@@ -53,7 +54,7 @@ import { useModFresh } from './modFresh.ts'
 import { cellsSx } from './modListCells.ts'
 import { formatCount, isNewer } from './nexusFormat.ts'
 import { OverlayCountChip } from './OverlayRow.tsx'
-import { nestOverlays, overlaysByBase, ownSlice } from './overlayRows.ts'
+import { cardSlice, nestOverlays, overlaysByBase } from './overlayRows.ts'
 import { PackageKind } from './PackageKind.tsx'
 import { MIDDLE, opensPage } from './pageClick.ts'
 import {
@@ -160,6 +161,12 @@ function OverridesNote({ count }: { count: number }) {
   )
 }
 
+// The pin beside a version, read on its own: freezing a profile pins every mod, and only this mark changes.
+function VersionPin({ mod }: { mod: Mod }) {
+  const pinned = useProfiles((s) => entryOf(openProfileOf(s), mod.key)?.pinned === true)
+  return pinned ? <Pin size={14} aria-hidden={true} /> : null
+}
+
 // The name with its chips, beneath a ↳ when the list nests it under the mod that requires it.
 function NameCell({ row, profile }: { row: ListRow; profile: Profile }) {
   const m = row.mod
@@ -197,7 +204,7 @@ function cellsFor(id: ListColumnId, row: ListRow, locale: string, profile: Profi
         <Cell key="version" title={dash(m.version)} className="cell-version">
           <span className="cell-line">
             <span className="cell-text">{dash(m.version)}</span>
-            {row.pinned ? <Pin size={14} aria-hidden={true} /> : null}
+            <VersionPin mod={m} />
           </span>
         </Cell>
       )
@@ -291,6 +298,10 @@ function sameRowFields(a: ListRow, b: ListRow) {
 }
 
 function sameField(k: keyof ListRow, a: ListRow, b: ListRow) {
+  // The pin shows through VersionPin and PinBadge, which read the store themselves.
+  if (k === 'pinned') {
+    return true
+  }
   if (k === 'tags') {
     return a.tags.join('\0') === b.tags.join('\0')
   }
@@ -315,7 +326,7 @@ const sameRow = (a: ModRowProps, b: ModRowProps) =>
   a.cols.join() === b.cols.join() &&
   sameRowFields(a.row, b.row) &&
   (a.profile === b.profile ||
-    ownSlice(a.profile, a.row.mod.key) === ownSlice(b.profile, b.row.mod.key))
+    cardSlice(a.profile, a.row.mod.key) === cardSlice(b.profile, b.row.mod.key))
 
 function ModRowView({ row, cols, locale, first, orderedRef, profile, onArrow }: ModRowProps) {
   const show = useDetail((s) => s.show)
@@ -427,7 +438,7 @@ const RowCells = memo(
     a.cols.join() === b.cols.join() &&
     sameRowFields(a.row, b.row) &&
     (a.profile === b.profile ||
-      ownSlice(a.profile, a.row.mod.key) === ownSlice(b.profile, b.row.mod.key)),
+      cardSlice(a.profile, a.row.mod.key) === cardSlice(b.profile, b.row.mod.key)),
 )
 
 const ModRow = memo(ModRowView, sameRow)
