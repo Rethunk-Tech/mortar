@@ -8,7 +8,13 @@ import { LetterTile } from '../mods/LetterTile.tsx'
 import { FormSection } from '../shell/dialog/FormDialog.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { space } from '../theme/density.ts'
-import { findPackage, type Known, NO_FILTER, THUNDERSTORE } from './dependencies.ts'
+import {
+  findPackage,
+  knowPackage,
+  NO_FILTER,
+  THUNDERSTORE,
+  useKnownPackages,
+} from './dependencies.ts'
 import { chosenDependencies, type Draft, type Recommended, recommendations } from './draft.ts'
 
 const SEARCH_HITS = 5
@@ -76,17 +82,20 @@ function PackageRow({
   )
 }
 
+// One empty list, so clearing the hits when they are already clear sets nothing.
+const NO_HITS: Item[] = []
+
 function useSearch(game: string, profile: string, query: string) {
-  const [hits, setHits] = useState<Item[]>([])
+  const [hits, setHits] = useState<Item[]>(NO_HITS)
   useEffect(() => {
     if (query.trim().length < 2) {
-      setHits([])
+      setHits(NO_HITS)
       return
     }
     const timer = setTimeout(() => {
       Search(game, THUNDERSTORE, query, 1, profile, NO_FILTER)
         .then((page) => setHits((page.items ?? []).slice(0, SEARCH_HITS)))
-        .catch(() => setHits([]))
+        .catch(() => setHits(NO_HITS))
     }, SEARCH_DELAY_MS)
     return () => clearTimeout(timer)
   }, [game, profile, query])
@@ -99,20 +108,17 @@ export function DependenciesStep({
   profile,
   form,
   draft,
-  known,
-  setKnown,
   set,
 }: {
   game: string
   profile: string
   form: Form | null
   draft: Draft
-  known: Known
-  setKnown: (update: (k: Known) => Known) => void
   set: (next: Partial<Draft>) => void
 }) {
   const { t } = useLingui()
   const [query, setQuery] = useState('')
+  const known = useKnownPackages((s) => s)
   const recs = recommendations(form, draft.values)
   const chosen = chosenDependencies(draft, form)
   const ids = [...new Set([...recs.map((r) => r.package), ...chosen])]
@@ -120,10 +126,10 @@ export function DependenciesStep({
   useEffect(() => {
     for (const id of missing.split(',').filter(Boolean)) {
       findPackage(game, profile, id)
-        .then((item) => item && setKnown((k) => ({ ...k, [id]: item })))
+        .then((item) => item && knowPackage(item))
         .catch(() => undefined)
     }
-  }, [game, profile, missing, setKnown])
+  }, [game, profile, missing])
   const hits = useSearch(game, profile, query).filter((h) => !ids.includes(h.id))
   const toggle = (id: string, on: boolean) =>
     set({ dependencies: on ? [...chosen, id] : chosen.filter((x) => x !== id) })
@@ -183,7 +189,7 @@ export function DependenciesStep({
               size="small"
               variant="outlined"
               onClick={() => {
-                setKnown((k) => ({ ...k, [h.id]: h }))
+                knowPackage(h)
                 set({ dependencies: [...chosen, h.id] })
               }}
             >

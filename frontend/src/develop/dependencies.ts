@@ -1,3 +1,4 @@
+import { create } from 'zustand'
 import { Search } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/browse/service.ts'
 import { AddDependency } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/source/models.ts'
@@ -14,6 +15,10 @@ export const NO_FILTER = {
 }
 
 export type Known = Record<string, Item>
+
+// The packages looked up so far, held outside the wizard: one arriving redraws the step that lists it, not the wizard.
+export const useKnownPackages = create<Known>(() => ({}))
+export const knowPackage = (item: Item) => useKnownPackages.setState({ [item.id]: item })
 
 export async function findPackage(
   game: string,

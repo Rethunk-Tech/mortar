@@ -38,7 +38,7 @@ import { usePending } from '../toasts/usePending.ts'
 import { buildProject } from './builds.ts'
 import { ChoicePicker } from './ChoicePicker.tsx'
 import { DependenciesStep } from './DependenciesStep.tsx'
-import { type Known, startDependencies } from './dependencies.ts'
+import { startDependencies, useKnownPackages } from './dependencies.ts'
 import {
   chosenDependencies,
   type Draft,
@@ -400,7 +400,6 @@ export function NewModDialog({
   const [draft, setDraft] = useState<Draft>(() => firstDraft(null, {}))
   const { tools, form, failed } = useWizardData(open, game, setDraft)
   const [at, setAt] = useState(0)
-  const [known, setKnown] = useState<Known>({})
   const openId = useProfiles((s) => s.openId)
   const [pending, run] = usePending()
   useEffect(() => {
@@ -435,7 +434,7 @@ export function NewModDialog({
           game,
           project.dir,
           { ids: chosenDependencies(draft, form), optional: draft.optional },
-          known,
+          useKnownPackages.getState(),
         )
         useToasts
           .getState()
@@ -476,15 +475,7 @@ export function NewModDialog({
         <Params params={stepParams(form, 'author')} draft={draft} set={set} />
       ) : null}
       {step === 'dependencies' ? (
-        <DependenciesStep
-          game={game}
-          profile={openId}
-          form={form}
-          draft={draft}
-          known={known}
-          setKnown={setKnown}
-          set={set}
-        />
+        <DependenciesStep game={game} profile={openId} form={form} draft={draft} set={set} />
       ) : null}
       {step === 'project' ? (
         <ProjectStep draft={draft} user={tools?.githubUser ?? ''} set={set} />
