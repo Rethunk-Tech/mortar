@@ -3,6 +3,7 @@ package profile
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"slices"
@@ -96,58 +97,20 @@ func (s *Store) MergeInto(game, fromID, toID string, newerWins bool) (Profile, e
 	}
 	s.setHistoryQuiet(toID, true)
 	defer s.setHistoryQuiet(toID, false)
-	changed := 0
-	var done []string
-	for _, side := range pv.Adds {
-		if slices.Contains(done, side.Key) {
-			continue
-		}
-		done = append(done, side.Key)
-		src := side.Source
-		if i := entryIndex(from.Entries, side.Key); i >= 0 {
-			src = src.WithImplicit(from.Entries[i].Implicit)
-		}
-		if _, err := s.AddEntry(game, toID, side.Key, src); err != nil {
-			if _, dup := errors.AsType[*DuplicateError](err); dup {
-				continue
-			}
-			return Profile{}, err
-		}
-		for _, m := range pv.Adds {
-			if m.Key != side.Key {
-				continue
-			}
-			changed++
-			if !m.Enabled {
-				if _, err := s.SetModEnabled(game, toID, m.Key, m.ID, false); err != nil {
-					return Profile{}, err
-				}
-			}
-			if err := s.carryConfig(game, fromID, toID, m); err != nil {
-				return Profile{}, err
-			}
-		}
+	// A merge is all or nothing: a failure takes back the entries it added, so the target is as it was.
+	added, changed, err := s.mergeAdds(game, fromID, toID, pv, from)
+	if err == nil && newerWins {
+		var swapped int
+		swapped, err = s.mergeSwaps(game, toID, pv)
+		changed += swapped
 	}
-	if newerWins {
-		var swapped []string
-		for _, b := range pv.Both {
-			if !b.SourceNewer || slices.Contains(swapped, b.Target.Key) {
-				continue
-			}
-			swapped = append(swapped, b.Target.Key)
-			src := b.Source.Source
-			if _, err := s.moveTo(game, toID, b.Target.Key, b.Source.Key, &src); err != nil {
-				if _, dup := errors.AsType[*DuplicateError](err); dup {
-					continue
-				}
-				return Profile{}, err
-			}
-			for _, x := range pv.Both {
-				if x.Target.Key == b.Target.Key && x.SourceNewer {
-					changed++
-				}
+	if err != nil {
+		if len(added) > 0 {
+			if _, undo := s.RemoveEntries(game, toID, added); undo != nil {
+				log.Printf("profile: taking back a failed merge into %s: %v", toID, undo)
 			}
 		}
+		return Profile{}, err
 	}
 	if changed == 0 {
 		return s.load(game, toID)
@@ -162,6 +125,71 @@ func (s *Store) MergeInto(game, fromID, toID string, newerWins bool) (Profile, e
 	p, err := s.load(game, toID)
 	p.LastChange = change
 	return p, err
+}
+
+// mergeAdds adds each mod only fromID holds to toID with its enabled state and config, and returns the entries it
+// added and how many mods they hold.
+func (s *Store) mergeAdds(game, fromID, toID string, pv MergePreview, from Profile) ([]string, int, error) {
+	changed := 0
+	var done, added []string
+	for _, side := range pv.Adds {
+		if slices.Contains(done, side.Key) {
+			continue
+		}
+		done = append(done, side.Key)
+		src := side.Source
+		if i := entryIndex(from.Entries, side.Key); i >= 0 {
+			src = src.WithImplicit(from.Entries[i].Implicit)
+		}
+		if _, err := s.AddEntry(game, toID, side.Key, src); err != nil {
+			if _, dup := errors.AsType[*DuplicateError](err); dup {
+				continue
+			}
+			return added, changed, err
+		}
+		added = append(added, side.Key)
+		for _, m := range pv.Adds {
+			if m.Key != side.Key {
+				continue
+			}
+			changed++
+			if !m.Enabled {
+				if _, err := s.SetModEnabled(game, toID, m.Key, m.ID, false); err != nil {
+					return added, changed, err
+				}
+			}
+			if err := s.carryConfig(game, fromID, toID, m); err != nil {
+				return added, changed, err
+			}
+		}
+	}
+	return added, changed, nil
+}
+
+// mergeSwaps switches each mod both profiles hold to the source's version where that is newer, and returns how many
+// mods changed.
+func (s *Store) mergeSwaps(game, toID string, pv MergePreview) (int, error) {
+	changed := 0
+	var swapped []string
+	for _, b := range pv.Both {
+		if !b.SourceNewer || slices.Contains(swapped, b.Target.Key) {
+			continue
+		}
+		swapped = append(swapped, b.Target.Key)
+		src := b.Source.Source
+		if _, err := s.moveTo(game, toID, b.Target.Key, b.Source.Key, &src); err != nil {
+			if _, dup := errors.AsType[*DuplicateError](err); dup {
+				continue
+			}
+			return changed, err
+		}
+		for _, x := range pv.Both {
+			if x.Target.Key == b.Target.Key && x.SourceNewer {
+				changed++
+			}
+		}
+	}
+	return changed, nil
 }
 
 // carryConfig copies the source mod's config.json over the fresh copy in toID, when the source has one.

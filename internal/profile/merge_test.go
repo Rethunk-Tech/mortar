@@ -157,3 +157,27 @@ func TestMergeIntoCarriesAPackage(t *testing.T) {
 		t.Fatalf("merged entries = %+v", got.Entries)
 	}
 }
+
+// A merge that fails part-way takes back what it added: the target is left as it was. The second mod's config is a
+// folder, so carrying it fails after both entries were added.
+func TestMergeIntoIsAllOrNothing(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	src, _ := e.Create("stardew", "Src")
+	dst, _ := e.Create("stardew", "Dst")
+	e.addLocal(t, src.ID, "aa-1", "Me.Aa", "1.0.0")
+	e.addLocal(t, src.ID, "zz-1", "Me.Zz", "1.0.0")
+	dir, err := e.ModFolder("stardew", src.ID, "zz-1", "smapi:Me.Zz")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Mkdir(filepath.Join(dir, "config.json"), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.MergeInto("stardew", src.ID, dst.ID, true); err == nil {
+		t.Fatal("merged a mod whose config cannot be read")
+	}
+	if after, _ := e.read("stardew", dst.ID); len(after.Entries) != 0 {
+		t.Fatalf("the failed merge left %+v", after.Entries)
+	}
+}
