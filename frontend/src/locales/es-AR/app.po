@@ -1666,6 +1666,10 @@ msgstr ""
 msgid "Saved on version {gameVersion}"
 msgstr ""
 
+#: src/browse/BrowseMenu.tsx
+msgid "Add as dependency of {name}"
+msgstr ""
+
 #: src/share/CompareSummary.tsx
 msgid "Only in {name}"
 msgstr ""
@@ -5431,6 +5435,10 @@ msgstr ""
 msgid "Place here"
 msgstr ""
 
+#: src/browse/BrowseMenu.tsx
+msgid "Could not add the dependency"
+msgstr ""
+
 #: src/launch/VanillaPlay.tsx
 #: src/saves/saveName.ts
 msgid "Standard"
@@ -6232,6 +6240,10 @@ msgstr ""
 
 #: src/tools/ToolEditorDialog.tsx
 msgid "Name the tool."
+msgstr ""
+
+#: src/browse/BrowseMenu.tsx
+msgid "{mod} is a dependency of {name}"
 msgstr ""
 
 #: src/develop/ProjectCard.tsx

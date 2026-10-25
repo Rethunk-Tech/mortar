@@ -1666,6 +1666,10 @@ msgstr "The build failed."
 msgid "Saved on version {gameVersion}"
 msgstr "Saved on version {gameVersion}"
 
+#: src/browse/BrowseMenu.tsx
+msgid "Add as dependency of {name}"
+msgstr "Add as dependency of {name}"
+
 #: src/share/CompareSummary.tsx
 msgid "Only in {name}"
 msgstr "Only in {name}"
@@ -5431,6 +5435,10 @@ msgstr "Choose folder"
 msgid "Place here"
 msgstr "Place here"
 
+#: src/browse/BrowseMenu.tsx
+msgid "Could not add the dependency"
+msgstr "Could not add the dependency"
+
 #: src/launch/VanillaPlay.tsx
 #: src/saves/saveName.ts
 msgid "Standard"
@@ -6233,6 +6241,10 @@ msgstr "{count, plural, one {# superseded by a newer download} other {# supersed
 #: src/tools/ToolEditorDialog.tsx
 msgid "Name the tool."
 msgstr "Name the tool."
+
+#: src/browse/BrowseMenu.tsx
+msgid "{mod} is a dependency of {name}"
+msgstr "{mod} is a dependency of {name}"
 
 #: src/develop/ProjectCard.tsx
 msgid "Last run: {start} ms to start"

@@ -1,16 +1,20 @@
 import { useLingui } from '@lingui/react/macro'
 import { Menu } from '@mui/material'
-import { ExternalLink, EyeOff, Info, Link2, Plus } from 'lucide-react'
+import { ExternalLink, EyeOff, Info, Link2, PackagePlus, Plus } from 'lucide-react'
 import { memo } from 'react'
+import { AddDependency } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import {
   HideBrowseAuthor,
   HideBrowseMod,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { useCurrentGame } from '../nav/currentGame.ts'
+import { useProfiles } from '../profiles/store.ts'
+import { useSettings } from '../settings/store.ts'
 import { copyText } from '../share/copyText.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { reportError } from '../toasts/report.ts'
-import { NEXUS } from './browseConstants.ts'
+import { useToasts } from '../toasts/store.ts'
+import { NEXUS, THUNDERSTORE } from './browseConstants.ts'
 import type { BrowseItem } from './browseTypes.ts'
 import { useBrowseSelection } from './selection.ts'
 import { type ActionProps, useCardAction } from './useCardAction.tsx'
@@ -32,6 +36,24 @@ function Items({
   const { t } = useLingui()
   const game = useCurrentGame()
   const { shownItem, url, installed, add } = useCardAction(card, item, source)
+  const openId = useProfiles((s) => s.openId)
+  const projects = (useSettings((s) => s.games?.[game]?.devProjects) ?? []).filter(
+    (p) => p.profile === openId,
+  )
+  // A development profile's mod declares what it needs: the package joins the profile and the project's manifest.
+  const depend = (dir: string, name: string) => {
+    if (!installed) {
+      add()
+    }
+    AddDependency(game, dir, item.id, item.version)
+      .then(() =>
+        useToasts.getState().push({
+          kind: 'success',
+          title: t`${{ mod: item.name }} is a dependency of ${{ name }}`,
+        }),
+      )
+      .catch(reportError(t`Could not add the dependency`))
+  }
   const choices = [{ source: item.source, url: item.url }, ...(item.alts ?? [])]
   const run = (fn: () => void) => () => {
     close()
@@ -68,6 +90,16 @@ function Items({
         onClick={run(add)}
       />
     ),
+    ...(item.source === THUNDERSTORE && item.version
+      ? projects.map((p) => (
+          <MenuAction
+            key={`depend-${p.dir}`}
+            icon={<PackagePlus size={16} />}
+            label={t`Add as dependency of ${{ name: p.name }}`}
+            onClick={run(() => depend(p.dir, p.name))}
+          />
+        ))
+      : []),
     ...choices.map((c) => (
       <MenuAction
         key={`open-${c.source}`}
