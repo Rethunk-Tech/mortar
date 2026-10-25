@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Checkbox, MenuItem, TextField, Typography } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { Search } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/browse/service.ts'
 import type { Form } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/source/models.ts'
@@ -29,7 +29,8 @@ function answerLabel(form: Form | null, r: Recommended): string {
   return param.choices?.find((c) => c.value === r.value)?.label ?? param.label
 }
 
-function PackageRow({
+// Memoised: a package's details arriving, or one row's tick, redraws only that row.
+const PackageRow = memo(function PackageRowView({
   id,
   item,
   why,
@@ -42,9 +43,9 @@ function PackageRow({
   item: Item | undefined
   why: string
   checked: boolean
-  onToggle: (on: boolean) => void
+  onToggle: (id: string, on: boolean) => void
   optional: boolean
-  onOptional: (on: boolean) => void
+  onOptional: (id: string, on: boolean) => void
 }) {
   const { t } = useLingui()
   const name = item?.name ?? id
@@ -53,7 +54,7 @@ function PackageRow({
       component="label"
       sx={{ display: 'flex', alignItems: 'center', gap: space.gap, cursor: 'pointer' }}
     >
-      <Checkbox checked={checked} onChange={(_, on) => onToggle(on)} />
+      <Checkbox checked={checked} onChange={(_, on) => onToggle(id, on)} />
       <LetterTile
         mod={{ id, name, ...(item?.picture ? { picture: item.picture } : {}) }}
         size={32}
@@ -71,7 +72,7 @@ function PackageRow({
         size="small"
         disabled={!checked}
         value={optional ? 'soft' : 'hard'}
-        onChange={(e) => onOptional(e.target.value === 'soft')}
+        onChange={(e) => onOptional(id, e.target.value === 'soft')}
         slotProps={{ htmlInput: { 'aria-label': t`How ${{ name }} is needed` } }}
         sx={{ width: 140 }}
       >
@@ -80,7 +81,7 @@ function PackageRow({
       </TextField>
     </Box>
   )
-}
+})
 
 // One empty list, so clearing the hits when they are already clear sets nothing.
 const NO_HITS: Item[] = []
@@ -102,6 +103,54 @@ function useSearch(game: string, profile: string, query: string) {
   return hits
 }
 
+// The search for more packages, memoised so a package's details arriving above leave it alone. `taken` lists the ids
+// already shown, comma-joined so an unchanged list compares equal.
+const AddAnother = memo(function AddAnotherView({
+  game,
+  profile,
+  taken,
+  onAdd,
+}: {
+  game: string
+  profile: string
+  taken: string
+  onAdd: (item: Item) => void
+}) {
+  const { t } = useLingui()
+  const [query, setQuery] = useState('')
+  const shown = taken.split(',')
+  const hits = useSearch(game, profile, query).filter((h) => !shown.includes(h.id))
+  return (
+    <FormSection title={t`Add another`}>
+      <SearchField
+        value={query}
+        onChange={setQuery}
+        label={t`Search mods`}
+        placeholder={t`Search mods`}
+      />
+      {hits.map((h) => (
+        <Box key={h.id} sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
+          <LetterTile
+            mod={{ id: h.id, name: h.name, ...(h.picture ? { picture: h.picture } : {}) }}
+            size={32}
+          />
+          <Box sx={{ minWidth: 0, flex: 1 }}>
+            <Typography noWrap={true} sx={{ fontWeight: 600 }}>
+              {h.name}
+            </Typography>
+            <Typography noWrap={true} sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
+              {h.author}
+            </Typography>
+          </Box>
+          <Button size="small" variant="outlined" onClick={() => onAdd(h)}>
+            {t`Add`}
+          </Button>
+        </Box>
+      ))}
+    </FormSection>
+  )
+})
+
 /** The packages the mod starts depending on: those the answers suggest, ticked, and any the player searches for. */
 export function DependenciesStep({
   game,
@@ -117,7 +166,6 @@ export function DependenciesStep({
   set: (next: Partial<Draft>) => void
 }) {
   const { t } = useLingui()
-  const [query, setQuery] = useState('')
   const known = useKnownPackages((s) => s)
   const recs = recommendations(form, draft.values)
   const chosen = chosenDependencies(draft, form)
@@ -130,9 +178,22 @@ export function DependenciesStep({
         .catch(() => undefined)
     }
   }, [game, profile, missing])
-  const hits = useSearch(game, profile, query).filter((h) => !ids.includes(h.id))
-  const toggle = (id: string, on: boolean) =>
-    set({ dependencies: on ? [...chosen, id] : chosen.filter((x) => x !== id) })
+  // The rows and the search get stable handlers that call the latest, so their memo holds.
+  const latest = useRef({ chosen, optional: draft.optional, set })
+  latest.current = { chosen, optional: draft.optional, set }
+  const toggle = useCallback((id: string, on: boolean) => {
+    const { chosen: now, set: apply } = latest.current
+    apply({ dependencies: on ? [...now, id] : now.filter((x) => x !== id) })
+  }, [])
+  const setOptional = useCallback((id: string, on: boolean) => {
+    const { optional, set: apply } = latest.current
+    apply({ optional: on ? [...optional, id] : optional.filter((x) => x !== id) })
+  }, [])
+  const add = useCallback((item: Item) => {
+    knowPackage(item)
+    const { chosen: now, set: apply } = latest.current
+    apply({ dependencies: [...now, item.id] })
+  }, [])
   return (
     <>
       <FormSection title={t`Starting dependencies`}>
@@ -150,54 +211,14 @@ export function DependenciesStep({
               item={known[id]}
               why={rec ? t`Suggested for ${{ answer: answerLabel(form, rec) }}` : ''}
               checked={chosen.includes(id)}
-              onToggle={(on) => toggle(id, on)}
+              onToggle={toggle}
               optional={draft.optional.includes(id)}
-              onOptional={(on) =>
-                set({
-                  optional: on ? [...draft.optional, id] : draft.optional.filter((x) => x !== id),
-                })
-              }
+              onOptional={setOptional}
             />
           )
         })}
       </FormSection>
-      <FormSection title={t`Add another`}>
-        <SearchField
-          value={query}
-          onChange={setQuery}
-          label={t`Search mods`}
-          placeholder={t`Search mods`}
-        />
-        {hits.map((h) => (
-          <Box key={h.id} sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-            <LetterTile
-              mod={{ id: h.id, name: h.name, ...(h.picture ? { picture: h.picture } : {}) }}
-              size={32}
-            />
-            <Box sx={{ minWidth: 0, flex: 1 }}>
-              <Typography noWrap={true} sx={{ fontWeight: 600 }}>
-                {h.name}
-              </Typography>
-              <Typography
-                noWrap={true}
-                sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}
-              >
-                {h.author}
-              </Typography>
-            </Box>
-            <Button
-              size="small"
-              variant="outlined"
-              onClick={() => {
-                knowPackage(h)
-                set({ dependencies: [...chosen, h.id] })
-              }}
-            >
-              {t`Add`}
-            </Button>
-          </Box>
-        ))}
-      </FormSection>
+      <AddAnother game={game} profile={profile} taken={ids.join(',')} onAdd={add} />
     </>
   )
 }

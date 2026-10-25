@@ -14,7 +14,7 @@ import {
   ToggleButtonGroup,
 } from '@mui/material'
 import { Hammer } from 'lucide-react'
-import { useEffect, useId, useState } from 'react'
+import { memo, useEffect, useId, useState } from 'react'
 import type {
   Form,
   Param,
@@ -63,7 +63,21 @@ const TOGGLE_CHOICES = 3
 
 type Set = (next: Partial<Draft>) => void
 
-function Prerequisites({ tools, form }: { tools: Tools | null; form: Form | null }) {
+// One element for every render, so the header's icon is not redrawn with each step.
+const ICON = (
+  <ToneIcon tone="neutral">
+    <Hammer size={22} />
+  </ToneIcon>
+)
+
+// Memoised: stepping through the wizard leaves it alone.
+const Prerequisites = memo(function PrerequisitesView({
+  tools,
+  form,
+}: {
+  tools: Tools | null
+  form: Form | null
+}) {
   const { t } = useLingui()
   if (!tools) {
     return null
@@ -88,7 +102,7 @@ function Prerequisites({ tools, form }: { tools: Tools | null; form: Form | null
       {missing.join(' ')}
     </Alert>
   )
-}
+})
 
 function ChoiceField({
   param,
@@ -457,11 +471,7 @@ export function NewModDialog({
       onClose={onClose}
       title={t`New mod`}
       subtitle={subtitle}
-      icon={
-        <ToneIcon tone="neutral">
-          <Hammer size={22} />
-        </ToneIcon>
-      }
+      icon={ICON}
       submitLabel={last ? t`Start mod` : t`Next`}
       issue={issue}
       dirty={draft.name.trim() !== ''}
