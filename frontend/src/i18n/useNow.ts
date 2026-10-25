@@ -25,10 +25,6 @@ function stop() {
   }
 }
 
-export function useNow() {
-  return useNowValue((now) => now)
-}
-
 /** compute's answer from the minute clock; the component re-renders only when the answer changes, so compute returns a
  * primitive (a label rather than the time). */
 export function useNowValue<T extends string | number | boolean>(compute: (now: number) => T): T {

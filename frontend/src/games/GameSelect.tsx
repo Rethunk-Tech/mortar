@@ -14,7 +14,7 @@ import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
 import { hasSourceLogo } from '../brand/sources/sourceIcons.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
-import { useNow } from '../i18n/useNow.ts'
+import { useNowValue } from '../i18n/useNow.ts'
 import { playDirect } from '../launch/directPref.ts'
 import { useLaunch } from '../launch/store.ts'
 import { type GameId, useNav } from '../nav/store.ts'
@@ -155,8 +155,7 @@ function useLoaderLine({
   playtimeMs: number
 }) {
   const { t, i18n } = useLingui()
-  useNow()
-  const ago = lastPlayedName ? formatWhen(lastPlayedAt) : ''
+  const ago = useNowValue(() => (lastPlayedName ? formatWhen(lastPlayedAt) : ''))
   const playtime = formatPlaytime(playtimeMs, i18n.locale)
   return [
     loader,

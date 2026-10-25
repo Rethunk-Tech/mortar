@@ -6,7 +6,7 @@ import { formatDuration, type SlowStartup } from '../console/startupView.ts'
 import { useTab } from '../game/tab.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { lowerFirst } from '../i18n/lowerFirst.ts'
-import { useNow } from '../i18n/useNow.ts'
+import { useNowValue } from '../i18n/useNow.ts'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { space } from '../theme/density.ts'
@@ -69,7 +69,8 @@ function SlowRow({ row }: { row: SlowStartup }) {
 /** How long the last Problems check took, by check family, so a slow check is visible rather than guessed at. */
 export function CheckTimings({ timings, at }: { timings: CheckTiming[]; at: number }) {
   const { t, i18n } = useLingui()
-  useNow()
+  // Redraws only when the label changes, not on every tick of the minute clock.
+  const when = useNowValue(() => formatWhen(at))
   if (timings.length === 0) {
     return null
   }
@@ -93,7 +94,7 @@ export function CheckTimings({ timings, at }: { timings: CheckTiming[]; at: numb
         tabIndex={0}
         sx={{ fontSize: 'small.fontSize', color: 'text.secondary', width: 'fit-content' }}
       >
-        {t`Checked ${{ when: formatWhen(at) }}`}
+        {t`Checked ${{ when }}`}
       </Typography>
     </Tooltip>
   )

@@ -9,7 +9,7 @@ import type { Played } from '../../bindings/github.com/Rethunk-Tech/mortar/inter
 import { compact } from '../game/compact.ts'
 import { ON_ART_TEXT } from '../game/onArt.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
-import { useNow } from '../i18n/useNow.ts'
+import { useNowValue } from '../i18n/useNow.ts'
 import { routeGame, useNav } from '../nav/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { MenuHeading, MenuRule, TitleMenu, TitleMenuItem } from '../shell/TitleMenu.tsx'
@@ -62,14 +62,15 @@ function GameStrip({
   onClick: () => void
 }) {
   const { t, i18n } = useLingui()
-  useNow()
+  // Redraws only when the "played …" label changes, not on every tick of the minute clock.
+  const when = useNowValue(() => (played?.at ? formatWhen(played.at) : ''))
   const art = gameArt(game, MENU_PX)
   const playtime = formatPlaytime(played?.playtimeMs ?? 0, i18n.locale)
   const line = [
     profiles
       ? i18n._(msg`${plural({ count: profiles }, { one: '# profile', other: '# profiles' })}`)
       : '',
-    played?.at ? t`played ${{ when: formatWhen(played.at) }}` : '',
+    when ? t`played ${{ when }}` : '',
     playtime ? t`${playtime} played` : '',
   ]
     .filter(Boolean)
