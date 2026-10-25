@@ -1,6 +1,7 @@
 import MenuItem from '@mui/material/MenuItem'
 import type { ReactNode } from 'react'
 import { destructiveSx } from './destructive.ts'
+import { pickWithoutFocus } from './pickWithoutFocus.ts'
 
 // The row's parts are plain spans styled from the row rather than ListItemIcon and ListItemText: a menu redraws every
 // row as focus moves through it, and each of those is several components more to redraw.
@@ -32,7 +33,12 @@ export function MenuAction({
   onClick: () => void
 }) {
   return (
-    <MenuItem disabled={disabled} onClick={onClick} sx={tone ? [rowSx, destructiveSx] : rowSx}>
+    <MenuItem
+      disabled={disabled}
+      onClick={onClick}
+      onMouseDown={pickWithoutFocus}
+      sx={tone ? [rowSx, destructiveSx] : rowSx}
+    >
       <span className="menu-action-icon">{icon}</span>
       <span className="menu-action-text">
         {label}

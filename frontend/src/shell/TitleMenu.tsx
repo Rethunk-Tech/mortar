@@ -3,6 +3,7 @@ import { Check } from 'lucide-react'
 import type { MouseEvent, ReactNode } from 'react'
 import { space } from '../theme/density.ts'
 import { useKeptWhileClosed } from './keptWhileClosed.ts'
+import { pickWithoutFocus } from './pickWithoutFocus.ts'
 
 const ITEM_INSET_PX = 14
 const HEADING_FONT_PX = 11
@@ -83,6 +84,37 @@ export function MenuRule() {
   return <Divider sx={{ my: '4px' }} />
 }
 
+// The row's parts are spans styled from the row: a menu redraws its rows as it opens, and each Box is three components.
+const itemSx = {
+  minHeight: 0,
+  px: `${ITEM_INSET_PX}px`,
+  fontSize: 'medium.fontSize',
+  whiteSpace: 'nowrap',
+  '& .title-menu-icon': {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: ICON_COLUMN_PX,
+    mr: '10px',
+    flexShrink: 0,
+  },
+  '& .title-menu-label': { minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' },
+  '& .title-menu-hint': {
+    ml: 'auto',
+    pl: `${HINT_GAP_PX}px`,
+    fontSize: HINT_FONT_PX,
+    color: 'var(--mortar-ink-sec)',
+  },
+} as const
+
+// Only a label cut off at the menu's width cap needs its full text on hover.
+const showCutLabel = (e: MouseEvent<HTMLElement>) => {
+  const el = e.currentTarget.querySelector<HTMLElement>('.title-menu-label')
+  if (el) {
+    el.title = el.scrollWidth > el.clientWidth ? (el.textContent ?? '') : ''
+  }
+}
+
 // A menu row. `checked` makes it a radio row: the choice among a list, marked with a tick at the end.
 export function TitleMenuItem({
   icon,
@@ -117,55 +149,18 @@ export function TitleMenuItem({
       {...(checked === undefined ? {} : { role: 'menuitemradio', 'aria-checked': checked })}
       disabled={disabled}
       onClick={onClick}
+      onMouseDown={pickWithoutFocus}
+      onMouseEnter={showCutLabel}
       {...(onContextMenu ? { onContextMenu } : {})}
-      sx={{
-        minHeight: 0,
-        px: `${ITEM_INSET_PX}px`,
-        fontSize: 'medium.fontSize',
-        whiteSpace: 'nowrap',
-        color,
-      }}
+      sx={[itemSx, { color }]}
     >
       {icon ? (
-        <Box
-          component="span"
-          aria-hidden={true}
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: ICON_COLUMN_PX,
-            mr: '10px',
-            flexShrink: 0,
-          }}
-        >
+        <span className="title-menu-icon" aria-hidden={true}>
           {icon}
-        </Box>
+        </span>
       ) : null}
-      <Box
-        component="span"
-        // Only a label cut off at the menu's width cap needs its full text on hover.
-        onMouseEnter={(e: MouseEvent<HTMLElement>) => {
-          const el = e.currentTarget
-          el.title = el.scrollWidth > el.clientWidth ? (el.textContent ?? '') : ''
-        }}
-        sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}
-      >
-        {label}
-      </Box>
-      {hint ? (
-        <Box
-          component="span"
-          sx={{
-            ml: 'auto',
-            pl: `${HINT_GAP_PX}px`,
-            fontSize: HINT_FONT_PX,
-            color: 'var(--mortar-ink-sec)',
-          }}
-        >
-          {hint}
-        </Box>
-      ) : null}
+      <span className="title-menu-label">{label}</span>
+      {hint ? <span className="title-menu-hint">{hint}</span> : null}
       {checked ? (
         <Check size={16} aria-hidden={true} style={{ marginLeft: 'auto', flexShrink: 0 }} />
       ) : null}
