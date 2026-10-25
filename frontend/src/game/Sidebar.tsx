@@ -281,17 +281,14 @@ function Sections({ rail }: { rail: boolean }) {
             alignItems: rail ? 'center' : 'stretch',
           }}
         >
-          {rail ? (
-            // The rail has no headings, so a hairline is what tells its groups apart.
-            i > 0 ? (
-              <Divider
-                flexItem={true}
-                sx={{ my: 0.75, mx: 1.5, borderColor: 'var(--mortar-hairline-12)' }}
-              />
-            ) : null
-          ) : (
-            <GroupHeading>{labels[group.id]}</GroupHeading>
-          )}
+          {/* The rail has no headings, so a hairline is what tells its groups apart. */}
+          {rail && i > 0 ? (
+            <Divider
+              flexItem={true}
+              sx={{ my: 0.75, mx: 1.5, borderColor: 'var(--mortar-hairline-12)' }}
+            />
+          ) : null}
+          {rail ? null : <GroupHeading>{labels[group.id]}</GroupHeading>}
           {group.entries.map((entry) => (
             <Item
               key={entry.id}
