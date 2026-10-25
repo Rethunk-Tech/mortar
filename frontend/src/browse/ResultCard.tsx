@@ -394,7 +394,10 @@ const ResultCard = memo(function BrowseResultCard(props: ResultCardProps) {
           .openMenu({ item, source }, { top: e.clientY, left: e.clientX })
       }}
       className={row ? 'card-row' : undefined}
-      sx={[cardSx, selected ? { outline: '2px solid', outlineColor: 'primary.main' } : { outline: 'none' }]}
+      sx={[
+        cardSx,
+        selected ? { outline: '2px solid', outlineColor: 'primary.main' } : { outline: 'none' },
+      ]}
     >
       {row ? (
         <CardPicture
