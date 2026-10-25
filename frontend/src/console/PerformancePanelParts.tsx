@@ -11,7 +11,7 @@ import {
   TableSortLabel,
   Typography,
 } from '@mui/material'
-import { Copy, Gauge, Play, RefreshCw } from 'lucide-react'
+import { Copy, Gauge, Play, Save } from 'lucide-react'
 import { type ReactNode, useMemo } from 'react'
 import type {
   PerformanceRow,
@@ -21,6 +21,7 @@ import { cmpText } from '../mods/cmpText.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { space } from '../theme/density.ts'
+import { Elapsed } from './Elapsed.tsx'
 import { formatTiming } from './formatTiming.ts'
 import { CompareTable, ReportSelect } from './PerformanceComparison.tsx'
 import type { PanelBusy, SortColumn, SortDirection } from './usePerformancePanel.ts'
@@ -42,6 +43,8 @@ interface HeaderProps {
   running: boolean
   busy: PanelBusy
   measuring: boolean
+  since?: number | undefined
+  reason?: string | undefined
   hasReport: boolean
   onStart: () => void
   onReport: () => void
@@ -61,6 +64,10 @@ function ComparePickers(props: HeaderProps) {
   const { t } = useLingui()
   const { compareSides, beforeId, afterId, reports, onBefore, onAfter, compareId, onCompare } =
     props
+  // Two reports are the least a comparison needs; until then the pickers would offer nothing.
+  if (reports.length < 2) {
+    return null
+  }
   return compareSides ? (
     <>
       <ReportSelect label={t`Before`} value={beforeId} reports={reports} onChange={onBefore} />
@@ -193,31 +200,54 @@ function PanelHeader(props: HeaderProps) {
       <Typography sx={{ flex: '1 1 auto', fontSize: 'base.fontSize', fontWeight: 600 }}>
         {t`Performance`}
       </Typography>
-      <DisabledReason title={t`Play this profile to measure.`} disabled={!running}>
-        <Button
-          size="small"
-          variant="outlined"
-          startIcon={<Play size={14} />}
-          disabled={!running || busy !== '' || measuring}
-          onClick={onStart}
+      {measuring ? (
+        <Box
+          role="status"
+          sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 'small.fontSize' }}
         >
-          {measuring ? t`Measuring` : t`Start measuring`}
-        </Button>
-      </DisabledReason>
-      <DisabledReason
-        title={running ? t`Start measuring first.` : t`Play this profile to measure.`}
-        disabled={!running || busy !== '' || !measuring}
-      >
+          <Box
+            aria-hidden={true}
+            sx={{
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              bgcolor: 'success.main',
+              animation: 'mortar-pulse 1.4s ease-in-out infinite',
+              '@keyframes mortar-pulse': { '50%': { opacity: 0.3 } },
+            }}
+          />
+          {t`Measuring`}
+          {props.since ? (
+            <>
+              ·
+              <Elapsed since={props.since} />
+            </>
+          ) : null}
+        </Box>
+      ) : (
+        <DisabledReason title={t`Play this profile to measure.`} disabled={!running}>
+          <Button
+            size="small"
+            variant="contained"
+            startIcon={<Play size={14} />}
+            disabled={!running || busy !== ''}
+            onClick={onStart}
+          >
+            {t`Start measuring`}
+          </Button>
+        </DisabledReason>
+      )}
+      {measuring ? (
         <Button
           size="small"
           variant="outlined"
-          startIcon={<RefreshCw size={14} />}
-          disabled={!running || busy !== '' || !measuring}
+          startIcon={<Save size={14} />}
+          disabled={busy !== ''}
           onClick={onReport}
         >
-          {t`Show report`}
+          {t`Save report`}
         </Button>
-      </DisabledReason>
+      ) : null}
       <DisabledReason title={t`Show a report first.`} disabled={!hasReport}>
         <Button
           size="small"
@@ -243,24 +273,37 @@ function PanelHeader(props: HeaderProps) {
 function ReportBody({
   rows,
   reportLines,
+  measuring,
+  reason,
   sort,
   onSort,
 }: {
   rows: PerformanceRow[]
   reportLines: string[]
+  measuring: boolean
+  reason: string | undefined
   sort: { column: SortColumn; direction: SortDirection }
   onSort: (column: SortColumn) => void
 }) {
   const { t } = useLingui()
+  const bodyText = () => {
+    if (reason) {
+      return t`Measuring stopped: ${{ reason }}`
+    }
+    if (measuring) {
+      return t`Measuring… the first results show in a few seconds.`
+    }
+    return reportLines.length > 0
+      ? t`No performance data was returned.`
+      : t`Start measuring to see which mods take the most time per frame.`
+  }
   return rows.length > 0 ? (
     <ReportTable rows={rows} sort={sort} onSort={onSort} />
   ) : (
     <Typography
       sx={{ px: space.pad, pb: space.gap, color: 'text.secondary', fontSize: 'small.fontSize' }}
     >
-      {reportLines.length > 0
-        ? t`No performance data was returned.`
-        : t`Start measuring to view a report.`}
+      {bodyText()}
     </Typography>
   )
 }
@@ -351,7 +394,14 @@ export function MeasuredPanel({
       {comparing ? (
         <CompareTable before={comparisonBefore} now={comparisonNow} />
       ) : (
-        <ReportBody rows={rows} reportLines={reportLines} sort={sort} onSort={onSort} />
+        <ReportBody
+          rows={rows}
+          reportLines={reportLines}
+          measuring={header.measuring}
+          reason={header.reason}
+          sort={sort}
+          onSort={onSort}
+        />
       )}
     </Paper>
   )

@@ -20,13 +20,25 @@ const askPerfFor = 3 * time.Second
 // InGameResult is one answer from the running game's in-game measurement. Measured is false when the launch was not
 // measured, so the companion measured nothing; Report is the saved report a summary produced.
 type InGameResult struct {
-	Measured bool         `json:"measured"`
-	Report   *SavedReport `json:"report,omitempty"`
+	Measured bool `json:"measured"`
+	// Reason is why the companion stopped measuring, when it says.
+	Reason string       `json:"reason,omitempty"`
+	Report *SavedReport `json:"report,omitempty"`
+}
+
+// InGameLive is the measurement so far, read without saving a report: the rows and frame summary a running
+// measurement shows as it goes.
+type InGameLive struct {
+	Measured bool             `json:"measured"`
+	Reason   string           `json:"reason,omitempty"`
+	Rows     []PerformanceRow `json:"rows"`
+	Frame    *FrameSummary    `json:"frame,omitempty"`
 }
 
 // bridgePerf is the companion's perf reply.
 type bridgePerf struct {
 	Measured bool    `json:"measured"`
+	Reason   string  `json:"reason"`
 	Seconds  float64 `json:"seconds"`
 	Frames   int64   `json:"frames"`
 	FPS      float64 `json:"fps"`
@@ -57,42 +69,67 @@ type bridgePerf struct {
 // MeasureInGame starts (start) or reads the running game's in-game measurement. A summary is saved with the
 // profile's performance reports, its rows named by the packages whose plugins they time.
 func (s *Service) MeasureInGame(gameID, profileID string, start bool) (InGameResult, error) {
-	l, ok := s.loaderOf(gameID, profileID)
-	perf, can := l.(loader.InGamePerf)
-	if !ok || !can {
-		return InGameResult{}, usererr.New(usererr.Invalid, "this profile's loader does not measure in game")
-	}
-	dir, err := s.profiles.ProfileDir(gameID, profileID)
+	got, l, err := s.askPerf(gameID, profileID, start)
 	if err != nil {
-		return InGameResult{}, err
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), askPerfFor)
-	defer cancel()
-	raw, err := perf.Perf(ctx, loader.ProfileView{Game: gameID, Dir: dir}, start)
-	if err != nil {
-		return InGameResult{}, err
-	}
-	var got bridgePerf
-	if err := json.Unmarshal(raw, &got); err != nil {
 		return InGameResult{}, err
 	}
 	if !got.Measured || start {
-		return InGameResult{Measured: got.Measured}, nil
+		return InGameResult{Measured: got.Measured, Reason: got.Reason}, nil
 	}
 	rows := perfRows(got, s.perfOwners(l, gameID, profileID))
 	if len(rows) == 0 {
 		return InGameResult{Measured: true}, errors.New("the game has not timed any plugin yet; start measuring first")
 	}
-	saved, err := s.savePerformanceReport(gameID, profileID, rows, &FrameSummary{
-		Seconds: got.Seconds, Frames: got.Frames, FPS: got.FPS,
-		AvgMs: got.FrameMs.Avg, P50Ms: got.FrameMs.P50, P95Ms: got.FrameMs.P95, P99Ms: got.FrameMs.P99, MaxMs: got.FrameMs.Max,
-		MonoUsed: got.MonoUsedBytes, MonoHeap: got.MonoHeapBytes, GCCollections: got.GCCollections,
-		ModsMs: got.Baseline.ModsMs, WithoutModsMs: got.Baseline.WithoutModsMs,
-	})
+	saved, err := s.savePerformanceReport(gameID, profileID, rows, frameOf(got))
 	if err != nil {
 		return InGameResult{}, err
 	}
 	return InGameResult{Measured: true, Report: &saved}, nil
+}
+
+// PeekInGame reads the running measurement so far without saving a report, for a view that updates as it goes.
+func (s *Service) PeekInGame(gameID, profileID string) (InGameLive, error) {
+	got, l, err := s.askPerf(gameID, profileID, false)
+	if err != nil {
+		return InGameLive{}, err
+	}
+	if !got.Measured {
+		return InGameLive{Reason: got.Reason, Rows: []PerformanceRow{}}, nil
+	}
+	return InGameLive{Measured: true, Rows: perfRows(got, s.perfOwners(l, gameID, profileID)), Frame: frameOf(got)}, nil
+}
+
+// askPerf asks the running game's companion for its measurement; start begins one instead.
+func (s *Service) askPerf(gameID, profileID string, start bool) (bridgePerf, loader.Loader, error) {
+	l, ok := s.loaderOf(gameID, profileID)
+	perf, can := l.(loader.InGamePerf)
+	if !ok || !can {
+		return bridgePerf{}, nil, usererr.New(usererr.Invalid, "this profile's loader does not measure in game")
+	}
+	dir, err := s.profiles.ProfileDir(gameID, profileID)
+	if err != nil {
+		return bridgePerf{}, nil, err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), askPerfFor)
+	defer cancel()
+	raw, err := perf.Perf(ctx, loader.ProfileView{Game: gameID, Dir: dir}, start)
+	if err != nil {
+		return bridgePerf{}, nil, err
+	}
+	var got bridgePerf
+	if err := json.Unmarshal(raw, &got); err != nil {
+		return bridgePerf{}, nil, err
+	}
+	return got, l, nil
+}
+
+func frameOf(got bridgePerf) *FrameSummary {
+	return &FrameSummary{
+		Seconds: got.Seconds, Frames: got.Frames, FPS: got.FPS,
+		AvgMs: got.FrameMs.Avg, P50Ms: got.FrameMs.P50, P95Ms: got.FrameMs.P95, P99Ms: got.FrameMs.P99, MaxMs: got.FrameMs.Max,
+		MonoUsed: got.MonoUsedBytes, MonoHeap: got.MonoHeapBytes, GCCollections: got.GCCollections,
+		ModsMs: got.Baseline.ModsMs, WithoutModsMs: got.Baseline.WithoutModsMs,
+	}
 }
 
 // perfOwners maps what the companion names a timed unit to the package that holds it: a BepInEx plugin GUID by the

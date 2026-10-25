@@ -44,6 +44,10 @@ interface Source {
   reportLines: string[]
   startMeasuring: () => void
   showReport: () => void
+  /** When measuring started (ms), for the elapsed time; absent where it is not known. */
+  since?: number
+  /** Why the game stopped measuring, when it did. */
+  reason?: string
   /** Shown above the report: the companion's frame summary and what its rows count. */
   summary?: ReactNode
   /** Replaces the empty state's text. */
@@ -89,6 +93,8 @@ function BridgePanel({ game }: { game: string }) {
   let hint = t`Start the game, then start measuring here to time each plugin per frame.`
   if (smapi) {
     hint = t`Start the game, then start measuring here to time each mod's event handlers per frame.`
+  } else if (perf.reason) {
+    hint = t`Measuring stopped: ${{ reason: perf.reason }}`
   } else if (perf.unmeasured) {
     hint = t`This ${{ loader: BEPINEX }} Bridge measures in game only on a measured launch. Use Measure next launch under Startup and play again.`
   }
@@ -151,6 +157,8 @@ function PanelView({
         running,
         busy,
         measuring,
+        since: source.since,
+        reason: source.reason,
         hasReport: reportLines.length > 0,
         onStart: startMeasuring,
         onReport: showReport,

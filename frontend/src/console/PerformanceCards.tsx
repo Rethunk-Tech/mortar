@@ -1,9 +1,11 @@
-import { plural } from '@lingui/core/macro'
+import { i18n } from '@lingui/core'
+import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Typography } from '@mui/material'
 import type { ReactNode } from 'react'
 import type { StartupReport } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { space } from '../theme/density.ts'
+import { usePerfLive } from './perfLive.ts'
 import { useDuration, useSmapiStartup } from './startupHooks.ts'
 import { modsMs } from './startupView.ts'
 
@@ -64,6 +66,34 @@ function Card({
   )
 }
 
+function inGameValue(measuring: boolean, stopped: string, saved: number): string {
+  if (measuring) {
+    return i18n._(msg`Measuring`)
+  }
+  if (stopped) {
+    return i18n._(msg`Measuring stopped`)
+  }
+  return saved > 0
+    ? i18n._(
+        msg`${plural({ count: saved }, { one: '# measurement saved', other: '# measurements saved' })}`,
+      )
+    : i18n._(msg`Not measured yet`)
+}
+
+function inGameNote(measuring: boolean, stopped: string, top: string, running: boolean): string {
+  if (measuring) {
+    return top
+      ? i18n._(msg`Live: ${{ top }} takes the most time per frame`)
+      : i18n._(msg`Waiting for the first results`)
+  }
+  if (stopped) {
+    return stopped
+  }
+  return running
+    ? i18n._(msg`The game is running: measure it now`)
+    : i18n._(msg`Play this profile, then time each mod per frame`)
+}
+
 // The page's two views as cards that state their own verdict, so the choice between them is also the summary.
 export function PerformanceCards({
   view,
@@ -85,6 +115,9 @@ export function PerformanceCards({
   const { t } = useLingui()
   const duration = useDuration()
   const smapi = useSmapiStartup()
+  const measuring = usePerfLive((s) => running && s.measuring)
+  const stopped = usePerfLive((s) => (running ? s.reason : ''))
+  const top = usePerfLive((s) => s.top)
   let value = t`Not measured yet`
   let note = t`Play this profile to time how long each mod adds to the start`
   if (report) {
@@ -112,20 +145,11 @@ export function PerformanceCards({
       {inGame ? (
         <Card
           label={t`In game`}
-          value={
-            saved > 0
-              ? plural(
-                  { count: saved },
-                  { one: '# measurement saved', other: '# measurements saved' },
-                )
-              : t`Not measured yet`
-          }
+          value={inGameValue(measuring, stopped, saved)}
           on={view === 'inGame'}
           onClick={() => onChoose('inGame')}
         >
-          {running
-            ? t`The game is running: measure it now`
-            : t`Play this profile, then time each mod per frame`}
+          {inGameNote(measuring, stopped, top, running)}
         </Card>
       ) : null}
     </Box>

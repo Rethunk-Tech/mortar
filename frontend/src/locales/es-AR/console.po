@@ -162,6 +162,10 @@ msgstr ""
 msgid "Share log…"
 msgstr ""
 
+#: src/console/PerformanceCards.tsx
+msgid "Waiting for the first results"
+msgstr ""
+
 #: src/console/ConsoleTab.tsx
 msgid "Play this profile and the game's log shows here as it runs. Every run is kept."
 msgstr ""
@@ -280,10 +284,6 @@ msgstr ""
 msgid "No recorded runs yet"
 msgstr ""
 
-#: src/console/PerformancePanelParts.tsx
-msgid "Show report"
-msgstr ""
-
 #: src/console/ConsoleTab.tsx
 msgid "Filter by level or mod, and use Share log to copy this run and paste it on a paste site."
 msgstr ""
@@ -320,6 +320,10 @@ msgstr ""
 msgid "Not downloadable here"
 msgstr ""
 
+#: src/console/PerformancePanelParts.tsx
+msgid "Start measuring to see which mods take the most time per frame."
+msgstr ""
+
 #: src/console/StartupSections.tsx
 msgid "From the first scene to the main menu. Plugins' work in Start, coroutines and scene hooks lands here, not on the plugin, and so does any wait for a click, such as Lethal Company's Online or LAN choice."
 msgstr ""
@@ -342,6 +346,11 @@ msgstr ""
 
 #: src/console/PerformancePanelParts.tsx
 msgid "95th ms"
+msgstr ""
+
+#: src/console/PerformancePanel.tsx
+#: src/console/PerformancePanelParts.tsx
+msgid "Measuring stopped: {reason}"
 msgstr ""
 
 #: src/console/UpdateNoteTag.tsx
@@ -409,6 +418,10 @@ msgstr ""
 msgid "Stopping…"
 msgstr ""
 
+#: src/console/PerformancePanelParts.tsx
+msgid "Measuring… the first results show in a few seconds."
+msgstr ""
+
 #: src/console/SearchRunsDialog.tsx
 msgid "L{lineNumber}"
 msgstr ""
@@ -465,6 +478,10 @@ msgstr ""
 msgid "Could not hide that message"
 msgstr ""
 
+#: src/console/PerformanceCards.tsx
+msgid "Measuring stopped"
+msgstr ""
+
 #: src/console/lineText.ts
 msgid "startup_preferences is missing; skipped profile game settings."
 msgstr ""
@@ -516,10 +533,6 @@ msgstr ""
 
 #: src/console/useBridgePerf.ts
 msgid "Could not start measuring"
-msgstr ""
-
-#: src/console/PerformancePanelParts.tsx
-msgid "Start measuring to view a report."
 msgstr ""
 
 #: src/console/StartupSections.tsx
@@ -644,6 +657,10 @@ msgstr ""
 
 #: src/console/BisectDialog.tsx
 msgid "Finding the mod that crashes the game"
+msgstr ""
+
+#: src/console/PerformancePanelParts.tsx
+msgid "Save report"
 msgstr ""
 
 #: src/console/CrashDialog.tsx
@@ -795,6 +812,10 @@ msgstr ""
 msgid "Mod or event"
 msgstr ""
 
+#: src/console/useBridgePerf.ts
+msgid "The game stopped measuring."
+msgstr ""
+
 #: src/console/BisectDialog.tsx
 msgid "Step {step} of ~{total}, {count, plural, one {# mod left} other {# mods left}}"
 msgstr ""
@@ -819,6 +840,7 @@ msgstr ""
 msgid "{count, plural, one {Keep {name} and remove {other}.} other {Keep {name} and remove # other copies.}}"
 msgstr ""
 
+#: src/console/PerformanceCards.tsx
 #: src/console/PerformancePanelParts.tsx
 msgid "Measuring"
 msgstr ""
@@ -1031,6 +1053,10 @@ msgstr ""
 msgid "Preparing a temporary copy of this profile…"
 msgstr ""
 
+#: src/console/PerformanceCards.tsx
+msgid "Live: {top} takes the most time per frame"
+msgstr ""
+
 #: src/console/StartupTable.tsx
 msgid "Sampled"
 msgstr ""
@@ -1163,10 +1189,6 @@ msgstr ""
 #: src/console/HelpDialog.tsx
 #: src/console/SearchRunsDialog.tsx
 msgid "Close"
-msgstr ""
-
-#: src/console/PerformancePanelParts.tsx
-msgid "Start measuring first."
 msgstr ""
 
 #: src/console/ConsoleTab.tsx

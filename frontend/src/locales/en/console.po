@@ -162,6 +162,10 @@ msgstr "Play this profile to measure."
 msgid "Share log…"
 msgstr "Share log…"
 
+#: src/console/PerformanceCards.tsx
+msgid "Waiting for the first results"
+msgstr "Waiting for the first results"
+
 #: src/console/ConsoleTab.tsx
 msgid "Play this profile and the game's log shows here as it runs. Every run is kept."
 msgstr "Play this profile and the game's log shows here as it runs. Every run is kept."
@@ -280,10 +284,6 @@ msgstr "{app} starts"
 msgid "No recorded runs yet"
 msgstr "No recorded runs yet"
 
-#: src/console/PerformancePanelParts.tsx
-msgid "Show report"
-msgstr "Show report"
-
 #: src/console/ConsoleTab.tsx
 msgid "Filter by level or mod, and use Share log to copy this run and paste it on a paste site."
 msgstr "Filter by level or mod, and use Share log to copy this run and paste it on a paste site."
@@ -320,6 +320,10 @@ msgstr "Show details"
 msgid "Not downloadable here"
 msgstr "Not downloadable here"
 
+#: src/console/PerformancePanelParts.tsx
+msgid "Start measuring to see which mods take the most time per frame."
+msgstr "Start measuring to see which mods take the most time per frame."
+
 #: src/console/StartupSections.tsx
 msgid "From the first scene to the main menu. Plugins' work in Start, coroutines and scene hooks lands here, not on the plugin, and so does any wait for a click, such as Lethal Company's Online or LAN choice."
 msgstr "From the first scene to the main menu. Plugins' work in Start, coroutines and scene hooks lands here, not on the plugin, and so does any wait for a click, such as Lethal Company's Online or LAN choice."
@@ -343,6 +347,11 @@ msgstr "Past run"
 #: src/console/PerformancePanelParts.tsx
 msgid "95th ms"
 msgstr "95th ms"
+
+#: src/console/PerformancePanel.tsx
+#: src/console/PerformancePanelParts.tsx
+msgid "Measuring stopped: {reason}"
+msgstr "Measuring stopped: {reason}"
 
 #: src/console/UpdateNoteTag.tsx
 msgid "This version is only on a site Mortar cannot download from yet; open the link to get it."
@@ -409,6 +418,10 @@ msgstr "Patches"
 msgid "Stopping…"
 msgstr "Stopping…"
 
+#: src/console/PerformancePanelParts.tsx
+msgid "Measuring… the first results show in a few seconds."
+msgstr "Measuring… the first results show in a few seconds."
+
 #: src/console/SearchRunsDialog.tsx
 msgid "L{lineNumber}"
 msgstr "L{lineNumber}"
@@ -465,6 +478,10 @@ msgstr "Enter text to search stored runs."
 msgid "Could not hide that message"
 msgstr "Could not hide that message"
 
+#: src/console/PerformanceCards.tsx
+msgid "Measuring stopped"
+msgstr "Measuring stopped"
+
 #: src/console/lineText.ts
 msgid "startup_preferences is missing; skipped profile game settings."
 msgstr "startup_preferences is missing; skipped profile game settings."
@@ -517,10 +534,6 @@ msgstr "Open console"
 #: src/console/useBridgePerf.ts
 msgid "Could not start measuring"
 msgstr "Could not start measuring"
-
-#: src/console/PerformancePanelParts.tsx
-msgid "Start measuring to view a report."
-msgstr "Start measuring to view a report."
 
 #: src/console/StartupSections.tsx
 msgid "The title screen's intro animation (Mortar skips it on measured launches)"
@@ -645,6 +658,10 @@ msgstr "Mod: {name}"
 #: src/console/BisectDialog.tsx
 msgid "Finding the mod that crashes the game"
 msgstr "Finding the mod that crashes the game"
+
+#: src/console/PerformancePanelParts.tsx
+msgid "Save report"
+msgstr "Save report"
 
 #: src/console/CrashDialog.tsx
 msgid "Find the mod that crashes the game…"
@@ -795,6 +812,10 @@ msgstr "Message copied"
 msgid "Mod or event"
 msgstr "Mod or event"
 
+#: src/console/useBridgePerf.ts
+msgid "The game stopped measuring."
+msgstr "The game stopped measuring."
+
 #: src/console/BisectDialog.tsx
 msgid "Step {step} of ~{total}, {count, plural, one {# mod left} other {# mods left}}"
 msgstr "Step {step} of ~{total}, {count, plural, one {# mod left} other {# mods left}}"
@@ -819,6 +840,7 @@ msgstr "Report copied"
 msgid "{count, plural, one {Keep {name} and remove {other}.} other {Keep {name} and remove # other copies.}}"
 msgstr "{count, plural, one {Keep {name} and remove {other}.} other {Keep {name} and remove # other copies.}}"
 
+#: src/console/PerformanceCards.tsx
 #: src/console/PerformancePanelParts.tsx
 msgid "Measuring"
 msgstr "Measuring"
@@ -1031,6 +1053,10 @@ msgstr "Hide details"
 msgid "Preparing a temporary copy of this profile…"
 msgstr "Preparing a temporary copy of this profile…"
 
+#: src/console/PerformanceCards.tsx
+msgid "Live: {top} takes the most time per frame"
+msgstr "Live: {top} takes the most time per frame"
+
 #: src/console/StartupTable.tsx
 msgid "Sampled"
 msgstr "Sampled"
@@ -1164,10 +1190,6 @@ msgstr "{count, plural, one {# more pack} other {# more packs}}"
 #: src/console/SearchRunsDialog.tsx
 msgid "Close"
 msgstr "Close"
-
-#: src/console/PerformancePanelParts.tsx
-msgid "Start measuring first."
-msgstr "Start measuring first."
 
 #: src/console/ConsoleTab.tsx
 #: src/console/CrashDialog.tsx
