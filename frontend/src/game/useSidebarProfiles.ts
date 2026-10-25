@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { runBackgroundBadgeChecks } from '../mods/badgeDisplay.ts'
 import { useBadges } from '../mods/badges.ts'
 import { useMods } from '../mods/store.ts'
@@ -15,10 +15,12 @@ export function useOrderedProfiles(game: string) {
   const allProfiles = useProfiles((s) => s.profiles)
   const profileOrder = useSettings((s) => s.profileOrder)
   const lastPlayedId = useSettings((s) => s.lastPlayed?.[game]?.profile ?? '')
-  return {
-    allProfiles,
-    profiles: orderProfiles(allProfiles, profileOrder, lastPlayedId),
-  }
+  // The same array until the order changes, so memoised lists of the profiles can skip a redraw.
+  const profiles = useMemo(
+    () => orderProfiles(allProfiles, profileOrder, lastPlayedId),
+    [allProfiles, profileOrder, lastPlayedId],
+  )
+  return { allProfiles, profiles }
 }
 
 export function useSidebarBadges(game: string) {

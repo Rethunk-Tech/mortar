@@ -87,45 +87,34 @@ function ProfileButton({
         bgcolor: 'var(--mortar-hairline-faint)',
         border: '1px solid var(--mortar-hairline-12)',
         '&:hover, &[aria-expanded="true"]': { bgcolor: 'var(--mortar-hairline-12)' },
-      }}
-    >
-      <Dot mark={current} />
-      {/* Named by its content, so the visible text is inside the accessible name. */}
-      {current ? (
-        <Box component="span" sx={visuallyHidden}>
-          {`${t`Switch profile`}:`}
-        </Box>
-      ) : null}
-      <Box
-        component="span"
-        sx={{
+        '& .profile-button-hidden': visuallyHidden,
+        '& .profile-button-name': {
           minWidth: 0,
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           whiteSpace: 'nowrap',
           [compact]: { maxWidth: 110 },
-        }}
-      >
-        {current?.name ?? t`No profile`}
-      </Box>
+        },
+        '& .profile-button-mods': {
+          flexShrink: 0,
+          fontSize: 'small.fontSize',
+          fontWeight: 400,
+          px: '8px',
+          py: '2px',
+          borderRadius: '10px',
+          whiteSpace: 'nowrap',
+          color: 'var(--mortar-ink-90)',
+          bgcolor: 'var(--mortar-hairline-faint)',
+          [compact]: { display: 'none' },
+        },
+      }}
+    >
+      <Dot mark={current} />
+      {/* Named by its content, so the visible text is inside the accessible name. */}
+      {current ? <span className="profile-button-hidden">{`${t`Switch profile`}:`}</span> : null}
+      <span className="profile-button-name">{current?.name ?? t`No profile`}</span>
       {current ? (
-        <Box
-          component="span"
-          sx={{
-            flexShrink: 0,
-            fontSize: 'small.fontSize',
-            fontWeight: 400,
-            px: '8px',
-            py: '2px',
-            borderRadius: '10px',
-            whiteSpace: 'nowrap',
-            color: 'var(--mortar-ink-90)',
-            bgcolor: 'var(--mortar-hairline-faint)',
-            [compact]: { display: 'none' },
-          }}
-        >
-          {modsLabel(userModCount(current))}
-        </Box>
+        <span className="profile-button-mods">{modsLabel(userModCount(current))}</span>
       ) : null}
       <ChevronDown size={14} aria-hidden={true} style={{ flexShrink: 0 }} />
     </ButtonBase>
