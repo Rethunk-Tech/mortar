@@ -353,15 +353,24 @@ function useWizardData(open: boolean, game: string, setDraft: (fn: (d: Draft) =>
     }
     setForm(null)
     setFailed(false)
+    setDraft((d) => ({ ...firstDraft(null, {}), github: d.github, owner: d.owner }))
     TemplateForm(game)
       .then((read) => {
         setForm(read)
-        setDraft((d) => ({
-          ...firstDraft(read, readStored(REMEMBERED, {}, isRecord)),
-          profile: openId || NEW_PROFILE,
-          github: d.github,
-          owner: d.owner,
-        }))
+        // What the player typed while the template loaded stays; the template fills in the rest.
+        setDraft((d) => {
+          const fresh = firstDraft(read, readStored(REMEMBERED, {}, isRecord))
+          const typed = Object.fromEntries(Object.entries(d.values).filter(([, v]) => v !== ''))
+          return {
+            ...fresh,
+            name: d.name,
+            repo: d.repo,
+            values: { ...fresh.values, ...typed },
+            profile: openId || NEW_PROFILE,
+            github: d.github,
+            owner: d.owner,
+          }
+        })
       })
       .catch((err: unknown) => {
         setFailed(true)
