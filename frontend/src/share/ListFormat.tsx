@@ -1,6 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material'
+import { Box, Button, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { Check, Copy, FileText, MessageSquare, Package, Save, Type } from 'lucide-react'
 import { useState } from 'react'
 import { SaveFile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
@@ -18,15 +18,51 @@ import { copyText } from './copyText.ts'
 import { formatModList, listItems, type ModListFormat, skippedForDependencies } from './modList.ts'
 import { useShareDialog } from './store.ts'
 
-const text = {
-  m: 0,
-  p: space.pad,
-  fontFamily: MONO,
-  fontSize: 'base.fontSize',
-  lineHeight: 1.6,
-  whiteSpace: 'pre-wrap',
-  overflowWrap: 'anywhere',
-  userSelect: 'text',
+// The parts are plain elements styled from the root: picking a format redraws the whole pane, and each Box or
+// Typography would be three components more each time.
+const paneSx = {
+  display: 'flex',
+  flexDirection: 'column',
+  flex: 1,
+  minHeight: 0,
+  gap: space.pad,
+  '& .list-bar, & .list-actions': { display: 'flex', alignItems: 'center', gap: space.pad },
+  '& .list-actions': { gap: space.gap },
+  '& .list-note': { m: 0, fontSize: 'base.fontSize', color: 'text.secondary' },
+  '& .list-actions .list-note': { flex: 1 },
+  '& .list-bar .list-note': { ml: 'auto' },
+  '& .list-text': {
+    flex: '1 1 0',
+    minHeight: 160,
+    overflowY: 'auto',
+    bgcolor: 'var(--mortar-overlay-30)',
+    border: '1px solid var(--mortar-hairline-muted)',
+    borderRadius: '8px',
+  },
+  '& .list-message': {
+    position: 'sticky',
+    top: 0,
+    display: 'flex',
+    alignItems: 'center',
+    gap: space.gap,
+    pl: space.pad,
+    pr: '6px',
+    height: 36,
+    bgcolor: 'var(--mortar-panel-solid)',
+    borderBottom: '1px solid var(--mortar-hairline-muted)',
+  },
+  '& .list-message-title': { flex: 1, m: 0, fontSize: 'small.fontSize', fontWeight: 600 },
+  '& .list-message-size': { ml: 1, color: 'text.secondary', fontWeight: 400 },
+  '& pre': {
+    m: 0,
+    p: space.pad,
+    fontFamily: MONO,
+    fontSize: 'base.fontSize',
+    lineHeight: 1.6,
+    whiteSpace: 'pre-wrap',
+    overflowWrap: 'anywhere',
+    userSelect: 'text',
+  },
 } as const
 
 // Thunderstore's dependency list is offered only for a game whose mods come from Thunderstore.
@@ -53,11 +89,7 @@ function ListHint({ skipped, total }: { skipped: string[]; total: number }) {
   } else if (total > 1) {
     hint = t`${{ app: sourceLabel('discord') }} takes 2,000 characters a message: paste each one in turn.`
   }
-  return (
-    <Typography sx={{ flex: 1, fontSize: 'base.fontSize', color: 'text.secondary' }}>
-      {hint}
-    </Typography>
-  )
+  return <p className="list-note">{hint}</p>
 }
 
 // The mod list as text: the format, the text itself as it will be pasted, and Copy and Save. Discord's list is
@@ -110,8 +142,8 @@ export function ListFormat() {
       .catch((error: unknown) => toastError(t`Could not save the file`, error))
   }
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, gap: space.pad }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.pad }}>
+    <Box sx={paneSx}>
+      <div className="list-bar">
         <ToggleButtonGroup
           exclusive={true}
           size="small"
@@ -131,66 +163,34 @@ export function ListFormat() {
             </ToggleButton>
           ))}
         </ToggleButtonGroup>
-        <Box sx={{ flex: 1 }} />
-        <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
-          {summary}
-        </Typography>
-      </Box>
-      <Box
-        role="region"
-        aria-label={t`The text that is copied`}
-        tabIndex={0}
-        sx={{
-          flex: '1 1 0',
-          minHeight: 160,
-          overflowY: 'auto',
-          bgcolor: 'var(--mortar-overlay-30)',
-          border: '1px solid var(--mortar-hairline-muted)',
-          borderRadius: '8px',
-        }}
-      >
+        <p className="list-note">{summary}</p>
+      </div>
+      {/* A Box, since a scrolling region takes focus to scroll from the keyboard. */}
+      <Box role="region" className="list-text" aria-label={t`The text that is copied`} tabIndex={0}>
         {parts.map((part) => (
-          <Box key={part.id}>
+          <div key={part.id}>
             {total > 1 ? (
-              <Box
-                sx={{
-                  position: 'sticky',
-                  top: 0,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: space.gap,
-                  pl: space.pad,
-                  pr: '6px',
-                  height: 36,
-                  bgcolor: 'var(--mortar-panel-solid)',
-                  borderBottom: '1px solid var(--mortar-hairline-muted)',
-                }}
-              >
+              <div className="list-message">
                 {part.n <= copied ? <Check size={14} aria-label={t`Copied`} /> : null}
-                <Typography sx={{ flex: 1, fontSize: 'small.fontSize', fontWeight: 600 }}>
+                <p className="list-message-title">
                   {t`Message ${{ count: part.n }} of ${total}`}
-                  <Typography
-                    component="span"
-                    sx={{ ml: 1, fontSize: 'small.fontSize', color: 'text.secondary' }}
-                  >
+                  <span className="list-message-size">
                     {t`${{ count: part.text.length.toLocaleString(i18n.locale) }} characters`}
-                  </Typography>
-                </Typography>
+                  </span>
+                </p>
                 <TipIconButton
                   label={t`Copy message ${{ count: part.n }}`}
                   onClick={() => copyOne(part.n, part.text)}
                 >
                   <Copy size={14} />
                 </TipIconButton>
-              </Box>
+              </div>
             ) : null}
-            <Box component="pre" sx={text}>
-              {part.text}
-            </Box>
-          </Box>
+            <pre>{part.text}</pre>
+          </div>
         ))}
       </Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
+      <div className="list-actions">
         <ListHint skipped={skipped} total={total} />
         <Button
           variant="outlined"
@@ -209,7 +209,7 @@ export function ListFormat() {
         >
           {total > 1 ? t`Copy message ${{ current: next + 1 }} of ${total}` : t`Copy mod list`}
         </Button>
-      </Box>
+      </div>
     </Box>
   )
 }
