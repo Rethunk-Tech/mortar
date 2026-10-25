@@ -15,7 +15,7 @@ import (
 func TestGameCodeSearchesAndDecompilesTheGamesAssembly(t *testing.T) {
 	svc, _ := testService(t, testTemplate)
 	dir := fixtureProject(t, svc)
-	if _, err := svc.GameCode("lethal-company", dir, "x"); err == nil {
+	if _, err := svc.GameCode("lethal-company", dir, "", "x"); err == nil {
 		t.Fatal("searched without a game folder")
 	}
 	game := t.TempDir()
@@ -33,7 +33,7 @@ func TestGameCodeSearchesAndDecompilesTheGamesAssembly(t *testing.T) {
 	if err := writeUserProps(dir, game); err != nil {
 		t.Fatal(err)
 	}
-	hits, err := svc.GameCode("lethal-company", dir, "MOD switch")
+	hits, err := svc.GameCode("lethal-company", dir, "", "MOD switch")
 	if err != nil || len(hits) != 1 || hits[0].Type != "Fixture.Mod" || hits[0].Method != "SwitchTool" {
 		t.Fatalf("hits = %+v, %v", hits, err)
 	}
@@ -50,12 +50,18 @@ func TestGameCodeSearchesAndDecompilesTheGamesAssembly(t *testing.T) {
 	if err := fsx.WriteFile(filepath.Join(tools, "ilspycmd"), nil, 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := svc.Decompile(t.Context(), "lethal-company", dir, "-o /tmp"); err == nil {
+	if _, err := svc.Decompile(t.Context(), "lethal-company", dir, "", "-o /tmp", false); err == nil {
 		t.Fatal("decompiled a name that is a flag")
 	}
-	src, err := svc.Decompile(t.Context(), "lethal-company", dir, "Fixture.Mod")
+	src, err := svc.Decompile(t.Context(), "lethal-company", dir, "", "Fixture.Mod", false)
 	if err != nil || src != "class Mod {}" || !slices.Equal(args, []string{"-t", "Fixture.Mod", filepath.Join(managed, "Assembly-CSharp.dll")}) {
 		t.Fatalf("decompile = %q %v %v", src, args, err)
+	}
+	if _, err := svc.Decompile(t.Context(), "lethal-company", dir, filepath.Join(managed, "Assembly-CSharp.dll"), "Fixture.Mod", true); err != nil || args[0] != "-il" {
+		t.Fatalf("IL view %v %v", args, err)
+	}
+	if _, err := svc.GameCode("lethal-company", dir, "/etc/passwd", "x"); err == nil {
+		t.Fatal("read an assembly Game code does not list")
 	}
 }
 
@@ -85,5 +91,18 @@ func TestLicenseAndSDKNeed(t *testing.T) {
 	}
 	if got := readSDKNeed(dir); got != (SDKNeed{Version: "10.0.100", RollForward: "latestMajor"}) {
 		t.Fatalf("sdk = %+v", got)
+	}
+}
+
+func TestILBlock(t *testing.T) {
+	il := ".class public A.B\n{\n\t.class nested public C\n\t{\n\t} // end of class C\n} // end of class A.B\n.class public A.D\n{\n} // end of class A.D"
+	if got := ilBlock(il, "A.D"); got != ".class public A.D\n{\n} // end of class A.D" {
+		t.Errorf("A.D = %q", got)
+	}
+	if got := ilBlock(il, "A.B+C"); got != "\t.class nested public C\n\t{\n\t} // end of class C" {
+		t.Errorf("A.B+C = %q", got)
+	}
+	if got := ilBlock(il, "A.Missing"); got != il {
+		t.Error("a missing type should leave the listing whole")
 	}
 }

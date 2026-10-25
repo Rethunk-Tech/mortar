@@ -1,8 +1,17 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, IconButton, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  IconButton,
+  MenuItem,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from '@mui/material'
 import { Code, Copy, FileSearch } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import {
+  Assemblies,
   Decompile,
   GameCode,
   HasDecompiler,
@@ -12,13 +21,15 @@ import type { Member } from '../../bindings/github.com/Rethunk-Tech/mortar/inter
 import { ILSPY, MONOMOD } from '../brand/productNames.ts'
 import { copyText } from '../share/copyText.ts'
 import { AppDialog, ToneIcon } from '../shell/dialog/AppDialog.tsx'
+import { SelectField } from '../shell/dialog/FormDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { Tooltip } from '../shell/Tooltip.tsx'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
-import { reportError } from '../toasts/report.ts'
+import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { hookSnippet } from './hook.ts'
 
@@ -29,7 +40,7 @@ const TYPE_PARTS = /[.+]/
 // Typing settles for this long before the game's members are searched.
 const SEARCH_DELAY_MS = 200
 
-function useHits(game: string, dir: string, query: string) {
+function useHits(game: string, dir: string, assembly: string, query: string) {
   const [hits, setHits] = useState<Member[]>([])
   const [error, setError] = useState('')
   useEffect(() => {
@@ -38,7 +49,7 @@ function useHits(game: string, dir: string, query: string) {
       return
     }
     const timer = setTimeout(() => {
-      GameCode(game, dir, query)
+      GameCode(game, dir, assembly, query)
         .then((found) => {
           setHits(found ?? [])
           setError('')
@@ -46,7 +57,7 @@ function useHits(game: string, dir: string, query: string) {
         .catch((e: unknown) => setError(e instanceof Error ? e.message : String(e)))
     }, SEARCH_DELAY_MS)
     return () => clearTimeout(timer)
-  }, [game, dir, query])
+  }, [game, dir, assembly, query])
   return { hits, error }
 }
 
@@ -77,21 +88,23 @@ function HitRow({ hit, selected, onPick }: { hit: Member; selected: boolean; onP
         }}
       >
         <Typography noWrap={true} sx={{ fontFamily: MONO, fontSize: 'small.fontSize' }}>
-          {`${hit.method}(${(hit.params ?? []).join(', ')})`}
+          {hit.kind === 'field' ? hit.method : `${hit.method}(${(hit.params ?? []).join(', ')})`}
         </Typography>
         <Typography noWrap={true} sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
           {hit.type}
         </Typography>
       </Box>
-      <Tooltip title={t`Copy a ${{ library: MONOMOD }} hook`}>
-        <IconButton
-          size="small"
-          aria-label={t`Copy a ${{ library: MONOMOD }} hook`}
-          onClick={() => copyText(hookSnippet(hit), t`Hook copied`)}
-        >
-          <Copy size={14} />
-        </IconButton>
-      </Tooltip>
+      {hit.kind === 'field' ? null : (
+        <Tooltip title={t`Copy a ${{ library: MONOMOD }} hook`}>
+          <IconButton
+            size="small"
+            aria-label={t`Copy a ${{ library: MONOMOD }} hook`}
+            onClick={() => copyText(hookSnippet(hit), t`Hook copied`)}
+          >
+            <Copy size={14} />
+          </IconButton>
+        </Tooltip>
+      )}
     </Box>
   )
 }
@@ -99,21 +112,32 @@ function HitRow({ hit, selected, onPick }: { hit: Member; selected: boolean; onP
 // The line declaring method in decompiled source: its name before a parameter list, on a line that is not a call.
 function declarationLine(source: string, type: string, method: string): number {
   const name = CONSTRUCTOR_NAME.test(method) ? (type.split(TYPE_PARTS).at(-1) ?? '') : method
-  return source
-    .split('\n')
-    .findIndex((line) => line.includes(` ${name}(`) && !line.trimEnd().endsWith(';'))
+  return (
+    source
+      .split('\n')
+      // IL writes a space before the parameter list.
+      .findIndex(
+        (line) =>
+          (line.includes(` ${name}(`) || line.includes(` ${name} (`)) &&
+          !line.trimEnd().endsWith(';'),
+      )
+  )
 }
 
 function Source({
   game,
   dir,
+  assembly,
   type,
   method,
+  il,
 }: {
   game: string
   dir: string
+  assembly: string
   type: string
   method: string
+  il: boolean
 }) {
   const { t } = useLingui()
   const [has, setHas] = useState<boolean | null>(null)
@@ -137,10 +161,10 @@ function Source({
       return
     }
     setSource('')
-    Decompile(game, dir, type)
+    Decompile(game, dir, assembly, type, il)
       .then(setSource)
       .catch(reportError(t`Could not decompile ${{ type }}`))
-  }, [game, dir, type, has, t])
+  }, [game, dir, assembly, type, il, has, t])
   if (has === false) {
     return (
       <EmptyState
@@ -210,7 +234,11 @@ export function GameCodeDialog({
   const { t } = useLingui()
   const [query, setQuery] = useState('')
   const [picked, setPicked] = useState<Member | null>(null)
-  const { hits, error } = useHits(game, dir, query)
+  const [assembly, setAssembly] = useState('')
+  const [il, setIl] = useState(false)
+  const assemblies =
+    useLoaded(() => Assemblies(game, dir), [game, dir], null, reportUnexpected).data ?? []
+  const { hits, error } = useHits(game, dir, assembly, query)
   return (
     <AppDialog
       open={true}
@@ -236,6 +264,21 @@ export function GameCodeDialog({
             borderRight: '1px solid var(--mortar-hairline-muted)',
           }}
         >
+          <SelectField
+            label={t`Assembly`}
+            displayEmpty={true}
+            value={assembly}
+            onChange={(next) => {
+              setAssembly(next)
+              setPicked(null)
+            }}
+          >
+            {assemblies.map((a, i) => (
+              <MenuItem key={a.path} value={i === 0 && a.group === 'game' ? '' : a.path}>
+                {a.label}
+              </MenuItem>
+            ))}
+          </SelectField>
           <SearchField
             value={query}
             onChange={setQuery}
@@ -259,7 +302,26 @@ export function GameCodeDialog({
           </Box>
         </Box>
         <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 0, minWidth: 0 }}>
-          <Source game={game} dir={dir} type={picked?.type ?? ''} method={picked?.method ?? ''} />
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 2, pt: 1.5 }}>
+            <ToggleButtonGroup
+              exclusive={true}
+              size="small"
+              value={il ? 'il' : 'cs'}
+              onChange={(_, next: string | null) => next && setIl(next === 'il')}
+              aria-label={t`Code view`}
+            >
+              <ToggleButton value="cs">C#</ToggleButton>
+              <ToggleButton value="il">IL</ToggleButton>
+            </ToggleButtonGroup>
+          </Box>
+          <Source
+            game={game}
+            dir={dir}
+            assembly={assembly}
+            type={picked?.type ?? ''}
+            method={picked?.method ?? ''}
+            il={il}
+          />
         </Box>
       </Box>
     </AppDialog>

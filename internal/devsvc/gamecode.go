@@ -9,11 +9,13 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"slices"
 	"strings"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -28,25 +30,92 @@ type gameCode struct {
 	members  []dotnet.Member
 }
 
-// gameAssembly is the game's own code, Assembly-CSharp.dll under the install the project builds against.
-func (s *Service) gameAssembly(gameID, dir string) (string, error) {
+// Assembly is a DLL the Game code view reads: the game's own, a dependency's in the development profile, or the
+// project's build.
+type Assembly struct {
+	Label string `json:"label"`
+	Path  string `json:"path"`
+	// Group is "game", "dependency" or "project".
+	Group string `json:"group"`
+}
+
+// noise names the runtime's own assemblies, which a mod never hooks into.
+var noise = regexp.MustCompile(`^(System(\..*)?|mscorlib|netstandard|Microsoft\..*|Mono\.Security)\.dll$`)
+
+// Assemblies lists what Game code can open, the game's main assembly first: a Unity game's Managed folder, else the
+// DLLs beside the game's executable; the development profile's packages; the project's own build.
+func (s *Service) Assemblies(gameID, dir string) ([]Assembly, error) {
 	p, err := s.project(gameID, dir)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	props, _ := fsx.ReadFile(filepath.Join(p.Dir, "Config.Build.user.props"))
 	root := readProp(string(props), "GameRootDir")
-	found, _ := filepath.Glob(filepath.Join(root, "*_Data", "Managed", "Assembly-CSharp.dll"))
-	if root == "" || len(found) == 0 {
-		return "", usererr.Wrap(usererr.NotFound, errors.New("the game's Assembly-CSharp.dll was not found under the project's game folder"))
+	out := []Assembly{}
+	if root != "" {
+		game, _ := filepath.Glob(filepath.Join(root, "*_Data", "Managed", "*.dll"))
+		if len(game) == 0 {
+			game, _ = filepath.Glob(filepath.Join(root, "*.dll"))
+		}
+		slices.SortStableFunc(game, func(a, b string) int {
+			return cmpBool(filepath.Base(b) == "Assembly-CSharp.dll", filepath.Base(a) == "Assembly-CSharp.dll")
+		})
+		for _, path := range game {
+			if !noise.MatchString(filepath.Base(path)) {
+				out = append(out, Assembly{Label: filepath.Base(path), Path: path, Group: "game"})
+			}
+		}
 	}
-	return found[0], nil
+	if installed, err := s.Profiles.Installed(gameID, p.Profile); err == nil {
+		for _, im := range installed {
+			if im.Source.Kind != profile.KindThunderstore || im.Folder == "" {
+				continue
+			}
+			for _, path := range dotnet.DLLs(im.Folder) {
+				out = append(out, Assembly{Label: im.Source.Name + "/" + filepath.Base(path), Path: path, Group: "dependency"})
+			}
+		}
+	}
+	built, _ := filepath.Glob(filepath.Join(p.Output, "*.dll"))
+	for _, path := range built {
+		out = append(out, Assembly{Label: filepath.Base(path), Path: path, Group: "project"})
+	}
+	return out, nil
 }
 
-// GameCode searches the game's types and methods: every word of query in "Type::Method", ignoring case. The game's
+func cmpBool(a, b bool) int {
+	switch {
+	case a == b:
+		return 0
+	case a:
+		return 1
+	default:
+		return -1
+	}
+}
+
+// assembly is path when Assemblies lists it, else the game's main assembly when path is empty; anything else is
+// refused, so the view never reads a file the player did not pick from the list.
+func (s *Service) assembly(gameID, dir, path string) (string, error) {
+	all, err := s.Assemblies(gameID, dir)
+	if err != nil {
+		return "", err
+	}
+	if path == "" && len(all) > 0 && all[0].Group == "game" {
+		return all[0].Path, nil
+	}
+	for _, a := range all {
+		if a.Path == path && path != "" {
+			return path, nil
+		}
+	}
+	return "", usererr.Wrap(usererr.NotFound, errors.New("that assembly is not one Game code lists"))
+}
+
+// GameCode searches an assembly's types, methods and fields: every word of query in "Type::Method", ignoring case. The game's
 // members are read once per version of its assembly.
-func (s *Service) GameCode(gameID, dir, query string) ([]dotnet.Member, error) {
-	path, err := s.gameAssembly(gameID, dir)
+func (s *Service) GameCode(gameID, dir, assembly, query string) ([]dotnet.Member, error) {
+	path, err := s.assembly(gameID, dir, assembly)
 	if err != nil {
 		return nil, err
 	}
@@ -98,12 +167,12 @@ func (s *Service) members(path string) ([]dotnet.Member, error) {
 	return members, nil
 }
 
-// Decompile returns one of the game's types as C#, through ILSpy's command line (ilspycmd).
-func (s *Service) Decompile(ctx context.Context, gameID, dir, typ string) (string, error) {
+// Decompile returns one of an assembly's types as C#, or as IL, through ILSpy's command line (ilspycmd).
+func (s *Service) Decompile(ctx context.Context, gameID, dir, assembly, typ string, il bool) (string, error) {
 	if !typeName.MatchString(typ) {
 		return "", usererr.Wrap(usererr.Invalid, fmt.Errorf("%q is not a type name", typ))
 	}
-	path, err := s.gameAssembly(gameID, dir)
+	path, err := s.assembly(gameID, dir, assembly)
 	if err != nil {
 		return "", err
 	}
@@ -111,11 +180,40 @@ func (s *Service) Decompile(ctx context.Context, gameID, dir, typ string) (strin
 	if !ok {
 		return "", usererr.Wrap(usererr.NotFound, errors.New("ILSpy's command line (ilspycmd) is not installed"))
 	}
-	out, err := s.run(ctx, filepath.Dir(path), tool, "-t", typ, path)
+	args := []string{"-t", typ, path}
+	if il {
+		args = append([]string{"-il"}, args...)
+	}
+	out, err := s.run(ctx, filepath.Dir(path), tool, args...)
 	if err != nil {
 		return "", err
 	}
+	if il {
+		return ilBlock(string(out), typ), nil
+	}
 	return string(out), nil
+}
+
+// ilBlock cuts typ's .class block out of a whole assembly's IL, since ILSpy disassembles every type with -il; a
+// nested type's block names it without its outer types. The whole listing stands when the block is not found.
+func ilBlock(il, typ string) string {
+	name := typ
+	if _, inner, nested := strings.CutLast(typ, "+"); nested {
+		name = inner
+	}
+	lines := strings.Split(il, "\n")
+	start := slices.IndexFunc(lines, func(l string) bool {
+		t := strings.TrimSpace(l)
+		return strings.HasPrefix(t, ".class ") && strings.HasSuffix(t, " "+name)
+	})
+	if start < 0 {
+		return il
+	}
+	end := slices.IndexFunc(lines[start:], func(l string) bool { return strings.TrimSpace(l) == "} // end of class "+name })
+	if end < 0 {
+		return il
+	}
+	return strings.Join(lines[start:start+end+1], "\n")
 }
 
 // HasDecompiler reports whether ilspycmd is installed.

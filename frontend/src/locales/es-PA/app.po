@@ -2263,6 +2263,10 @@ msgstr ""
 msgid "incompatible dependencies: {list}"
 msgstr ""
 
+#: src/develop/GameCodeDialog.tsx
+msgid "Code view"
+msgstr ""
+
 #: src/tidy/report.ts
 msgid "Emptied the crash log after it was reported"
 msgstr ""
@@ -6205,6 +6209,10 @@ msgstr ""
 
 #: src/queue/QueueBody.tsx
 msgid "Updates, missing dependencies and links from mod sites land here."
+msgstr ""
+
+#: src/develop/GameCodeDialog.tsx
+msgid "Assembly"
 msgstr ""
 
 #: src/loader/Banner.tsx

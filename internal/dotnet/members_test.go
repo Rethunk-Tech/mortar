@@ -21,7 +21,10 @@ func TestMembersListsMethodsWithParameters(t *testing.T) {
 		}
 		return got[i]
 	}
-	if m := find("Fixture.Mod", "get_Own"); m.Void {
+	if m := find("Fixture.Mod", "own"); m.Kind != "field" || m.Static {
+		t.Errorf("own = %+v", m)
+	}
+	if m := find("Fixture.Mod", "get_Own"); m.Void || m.Kind != "method" {
 		t.Errorf("a getter returns its value: %+v", m)
 	}
 	if m := find("Fixture.Mod", "set_Own"); !m.Void {

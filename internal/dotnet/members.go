@@ -7,10 +7,12 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
-// Member is one method an assembly defines: its type as a stack frame names it ("Namespace.Outer+Inner"), and its
-// parameters' names in order.
+// Member is one method or field an assembly defines: its type as a stack frame names it ("Namespace.Outer+Inner"),
+// and a method's parameters' names in order.
 type Member struct {
-	Type   string `json:"type"`
+	Type string `json:"type"`
+	// Kind is "method" or "field".
+	Kind   string `json:"kind"`
 	Method string `json:"method"`
 	Static bool   `json:"static"`
 	// Void is set when the method returns nothing.
@@ -18,10 +20,13 @@ type Member struct {
 	Params []string `json:"params"`
 }
 
-const methodStatic = 0x10
+const (
+	methodStatic = 0x10
+	fieldStatic  = 0x10
+)
 
-// Members lists the methods of every type the assembly at path defines, skipping compiler-generated types and methods
-// (names holding '<'), in table order.
+// Members lists the fields and methods of every type the assembly at path defines, skipping compiler-generated types
+// and members (names holding '<'), in table order.
 func Members(path string) (out []Member, err error) {
 	data, err := fsx.ReadFile(path)
 	if err != nil {
@@ -41,6 +46,15 @@ func Members(path string) (out []Member, err error) {
 		if strings.Contains(typ, "<") {
 			continue
 		}
+		lastField := m.rows[tField] + 1
+		if t < m.rows[tTypeDef] {
+			lastField = int(m.cell(tTypeDef, t+1, 4))
+		}
+		for f := int(m.cell(tTypeDef, t, 4)); f < lastField && f <= m.rows[tField]; f++ {
+			if name := m.str(m.cell(tField, f, 1)); !strings.Contains(name, "<") {
+				out = append(out, Member{Type: typ, Kind: "field", Method: name, Static: m.cell(tField, f, 0)&fieldStatic != 0, Params: []string{}})
+			}
+		}
 		last := m.rows[tMethodDef] + 1
 		if t < m.rows[tTypeDef] {
 			last = int(m.cell(tTypeDef, t+1, 5))
@@ -52,6 +66,7 @@ func Members(path string) (out []Member, err error) {
 			}
 			out = append(out, Member{
 				Type:   typ,
+				Kind:   "method",
 				Method: name,
 				Static: m.cell(tMethodDef, md, 2)&methodStatic != 0,
 				Void:   returnsVoid(m.blob(m.cell(tMethodDef, md, 4))),

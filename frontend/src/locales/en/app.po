@@ -2263,6 +2263,10 @@ msgstr "program files from this code"
 msgid "incompatible dependencies: {list}"
 msgstr "incompatible dependencies: {list}"
 
+#: src/develop/GameCodeDialog.tsx
+msgid "Code view"
+msgstr "Code view"
+
 #: src/tidy/report.ts
 msgid "Emptied the crash log after it was reported"
 msgstr "Emptied the crash log after it was reported"
@@ -6206,6 +6210,10 @@ msgstr "Mod name"
 #: src/queue/QueueBody.tsx
 msgid "Updates, missing dependencies and links from mod sites land here."
 msgstr "Updates, missing dependencies and links from mod sites land here."
+
+#: src/develop/GameCodeDialog.tsx
+msgid "Assembly"
+msgstr "Assembly"
 
 #: src/loader/Banner.tsx
 msgid "{name} here is another mod manager's copy. Removing that manager removes {name}."
