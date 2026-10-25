@@ -7,6 +7,7 @@ import (
 	"slices"
 	"sync"
 
+	"github.com/Rethunk-Tech/mortar/internal/devsvc"
 	"github.com/Rethunk-Tech/mortar/internal/dlwatch"
 	"github.com/Rethunk-Tech/mortar/internal/folderwatch"
 	"github.com/Rethunk-Tech/mortar/internal/game"
@@ -72,6 +73,11 @@ func watchLibraryFolders(ctx context.Context, home, dataDir string, store *setti
 					}
 					if dir := cur.SyncFolderFor(g); dir != "" {
 						out = append(out, folderwatch.Target{Event: syncsvc.FolderEvent, Game: g, Dir: filepath.Join(dir, g)})
+					}
+				}
+				for g, dirs := range devsvc.WatchedSources(cur, game.Implemented()) {
+					for _, dir := range dirs {
+						out = append(out, folderwatch.Target{Event: devsvc.SourceEvent, Game: g, Dir: dir})
 					}
 				}
 				if rel, ok := game.ManifestModsFolder(id); ok {

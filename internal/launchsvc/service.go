@@ -671,6 +671,20 @@ func (s *Service) StartPreset(ctx context.Context, gameID, profileID, installID,
 	return s.start(context.WithoutCancel(ctx), gameID, profileID, installID, preset, direct)
 }
 
+type instancesKey struct{}
+
+// maxTestInstances bounds StartInstances: a host and a few clients on one computer.
+const maxTestInstances = 4
+
+// StartInstances starts n copies of the profile directly for this launch only, such as a host and a client to test a
+// multiplayer mod on one computer; the profile's own instance count is left alone.
+func (s *Service) StartInstances(ctx context.Context, gameID, profileID string, n int) error {
+	if n < 1 || n > maxTestInstances {
+		return usererr.Wrap(usererr.Invalid, fmt.Errorf("start 1 to %d copies", maxTestInstances))
+	}
+	return s.start(context.WithValue(context.WithoutCancel(ctx), instancesKey{}, n), gameID, profileID, "", "", true)
+}
+
 // pinOf is the install a launch of the profile runs on: the one asked for, else the profile's pinned one.
 func (s *Service) pinOf(gameID, profileID, installID string) string {
 	if installID != "" {
@@ -980,6 +994,9 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 		scope := settings.Scope{Game: g.ID(), Install: installOf(g), Profile: profileID}
 		ov := launchOverrides(s.profiles, g.ID(), profileID)
 		env.Instances, _ = strconv.Atoi(settings.ResolveAt(s.settings.Get(), "instances", scope, ov))
+		if n, ok := ctx.Value(instancesKey{}).(int); ok {
+			env.Instances = n
+		}
 		env.DelaySeconds, _ = strconv.Atoi(settings.ResolveAt(s.settings.Get(), "delaySeconds", scope, ov))
 	}
 	if st, status := steam.Locate(s.home); status == steam.Found {

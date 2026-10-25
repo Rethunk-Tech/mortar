@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -135,5 +136,62 @@ func TestNewModRefusesUnsafeNames(t *testing.T) {
 		if bad.check() == nil {
 			t.Errorf("%+v was accepted", bad)
 		}
+	}
+}
+
+func TestParseProblemsReadsMSBuildErrorsOnce(t *testing.T) {
+	out := `  Plugin.cs(12,5): error CS1002: ; expected [/p/src/A/A.csproj]
+/p/src/A/Plugin.cs(3,1,3,9): warning CS0168: The variable 'x' is declared but never used [/p/src/A/A.csproj]
+  Plugin.cs(12,5): error CS1002: ; expected [/p/src/A/A.csproj]
+Build FAILED.
+`
+	got := ParseProblems(out)
+	want := []Problem{
+		{File: "Plugin.cs", Line: 12, Column: 5, Severity: "error", Code: "CS1002", Message: "; expected"},
+		{File: "/p/src/A/Plugin.cs", Line: 3, Column: 1, Severity: "warning", Code: "CS0168", Message: "The variable 'x' is declared but never used"},
+	}
+	if !slices.Equal(got, want) {
+		t.Fatalf("problems = %+v", got)
+	}
+}
+
+func TestNextVersionsAndChangelogEntries(t *testing.T) {
+	if v := nextVersions(""); v != (Versions{Patch: "0.1.0", Minor: "0.1.0", Major: "0.1.0"}) {
+		t.Errorf("first = %+v", v)
+	}
+	if v := nextVersions("1.4.9"); v != (Versions{Current: "1.4.9", Patch: "1.4.10", Minor: "1.5.0", Major: "2.0.0"}) {
+		t.Errorf("after 1.4.9 = %+v", v)
+	}
+	log := "# Changelog\n\n## 0.1.0\n\n- First release.\n"
+	got := AddChangelogEntry(log, "0.2.0", []string{" Lands anywhere. ", "Fixes a crash."})
+	if want := "# Changelog\n\n## 0.2.0\n\n- Lands anywhere.\n- Fixes a crash.\n\n## 0.1.0\n\n- First release.\n"; got != want {
+		t.Errorf("entry =\n%s", got)
+	}
+	if again := AddChangelogEntry(got, "0.2.0", []string{"x"}); again != got {
+		t.Error("a version already listed was added again")
+	}
+}
+
+func TestValidateNamesWhatThunderstoreWouldRefuse(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "p.zip")
+	f, err := os.Create(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	w := zip.NewWriter(f)
+	m, _ := w.Create("manifest.json")
+	_, _ = m.Write([]byte(`{"name":"Shop Drop","version_number":"1.0","description":"d","dependencies":["BepInEx-BepInExPack-5.4.2305","bad"]}`))
+	if err := w.Close(); err != nil {
+		t.Fatal(err)
+	}
+	_ = f.Close()
+	got := strings.Join(Validate(path), "\n")
+	for _, want := range []string{"README.md is missing", "icon.png is missing", "letters, digits and underscores", "three numbers", "website_url", `"bad"`} {
+		if !strings.Contains(got, want) {
+			t.Errorf("issues lack %q:\n%s", want, got)
+		}
+	}
+	if strings.Contains(got, "BepInExPack") {
+		t.Errorf("a good dependency was flagged:\n%s", got)
 	}
 }

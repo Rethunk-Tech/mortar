@@ -204,6 +204,8 @@ type DevProject struct {
 	Name    string `json:"name"`
 	Profile string `json:"profile"`
 	Output  string `json:"output"`
+	// Watch rebuilds the project whenever its source changes.
+	Watch bool `json:"watch,omitempty"`
 }
 
 // AddDevProject records p for the game and makes its build output an extra mods folder that installs into its profile.
@@ -219,6 +221,20 @@ func (s *Service) AddDevProject(game string, p DevProject) error {
 			gp.ExtraModsProfiles = map[string]string{}
 		}
 		gp.ExtraModsProfiles[p.Output] = p.Profile
+		putGame(v, game, gp)
+	})
+}
+
+// SetDevProjectWatch turns rebuilding on source changes on or off for the project in dir.
+func (s *Service) SetDevProjectWatch(game, dir string, on bool) error {
+	return s.set(func(v *Settings) {
+		gp := v.GamePrefs(game)
+		gp.DevProjects = slices.Clone(gp.DevProjects)
+		for i := range gp.DevProjects {
+			if gp.DevProjects[i].Dir == dir {
+				gp.DevProjects[i].Watch = on
+			}
+		}
 		putGame(v, game, gp)
 	})
 }
