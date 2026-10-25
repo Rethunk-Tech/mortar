@@ -69,13 +69,10 @@ export function FormDialog({
         <DialogFooter
           aside={
             issue ? (
-              <Box
-                component="span"
-                sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}
-              >
+              <span className="app-dialog-issue">
                 <CircleAlert size={14} aria-hidden={true} />
                 {issue}
-              </Box>
+              </span>
             ) : null
           }
         >
@@ -99,9 +96,9 @@ export function FormDialog({
         </DialogFooter>
       }
     >
-      <Box
-        component="form"
+      <form
         id={formId}
+        className="app-dialog-form"
         noValidate={true}
         onSubmit={(e) => {
           e.preventDefault()
@@ -109,10 +106,9 @@ export function FormDialog({
             onSubmit()
           }
         }}
-        sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
       >
         {children}
-      </Box>
+      </form>
       {guard.dialog}
     </AppDialog>
   )

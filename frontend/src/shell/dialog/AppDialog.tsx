@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Dialog, IconButton, Typography } from '@mui/material'
+import { Box, Dialog, IconButton } from '@mui/material'
 import { ArrowLeft, X } from 'lucide-react'
 import { type ReactNode, useId } from 'react'
 
@@ -40,24 +40,74 @@ export function ToneIcon({ tone, children }: { tone: DialogTone; children: React
 /** The footer row: something to say on the left (a reason, a note), the buttons on the right, Cancel before the action. */
 export function DialogFooter({ aside, children }: { aside?: ReactNode; children: ReactNode }) {
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 1,
-        px: PAD_X,
-        py: 1.75,
-        borderTop: '1px solid var(--mortar-hairline-muted)',
-        bgcolor: 'var(--mortar-raised)',
-      }}
-    >
-      <Box sx={{ flex: 1, minWidth: 0, fontSize: 'small.fontSize', color: 'text.secondary' }}>
-        {aside}
-      </Box>
+    <div className="app-dialog-footer">
+      <div className="app-dialog-aside">{aside}</div>
       {children}
-    </Box>
+    </div>
   )
 }
+
+// The frame's parts are plain elements styled from the paper: a dialog's frame redraws whenever anything in it changes,
+// and each Box or Typography would be three components more each time.
+const frameSx = {
+  maxWidth: 'calc(100% - 32px)',
+  maxHeight: 'calc(100% - 64px)',
+  m: 2,
+  borderRadius: '10px',
+  border: '1px solid var(--mortar-hairline)',
+  display: 'flex',
+  flexDirection: 'column',
+  overflow: 'hidden',
+  '& > .app-dialog-header': {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 1.75,
+    px: PAD_X,
+    py: 2,
+    // The dialog's own header stands apart from any headings in its body.
+    '&.app-dialog-ruled': { borderBottom: '1px solid var(--mortar-hairline-muted)' },
+  },
+  '& .app-dialog-heading': { flex: 1, minWidth: 0 },
+  '& .app-dialog-title': { m: 0, fontSize: TITLE_PX, fontWeight: 600, lineHeight: 1.25 },
+  '& .app-dialog-subtitle': {
+    m: 0,
+    fontSize: 'medium.fontSize',
+    color: 'text.secondary',
+    lineHeight: 1.35,
+  },
+  '& > .app-dialog-tabs': { px: PAD_X, borderBottom: '1px solid var(--mortar-hairline-muted)' },
+  '& > .app-dialog-body': {
+    px: PAD_X,
+    py: 2.5,
+    overflowY: 'auto',
+    flex: '1 1 auto',
+    minHeight: 0,
+    // The body draws its own edges (a grid or list running to the dialog's sides).
+    '&.app-dialog-flush': { display: 'flex', flexDirection: 'column', p: 0 },
+    // The body's own padding is the gap above the footer; a last child's margin would add to it.
+    '& > :last-child': { mb: 0 },
+    // A switch, checkbox or radio sits on the fields' left edge, as MUI draws it; a row's own margin reset would indent it.
+    '& .MuiFormControlLabel-root': { ml: '-11px' },
+  },
+  '& .app-dialog-footer': {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 1,
+    px: PAD_X,
+    py: 1.75,
+    borderTop: '1px solid var(--mortar-hairline-muted)',
+    bgcolor: 'var(--mortar-raised)',
+  },
+  '& .app-dialog-aside': {
+    flex: 1,
+    minWidth: 0,
+    fontSize: 'small.fontSize',
+    color: 'text.secondary',
+  },
+  // FormDialog's form and the reason its submit button waits.
+  '& .app-dialog-form': { display: 'flex', flexDirection: 'column', gap: 3 },
+  '& .app-dialog-issue': { display: 'inline-flex', alignItems: 'center', gap: 0.75 },
+} as const
 
 /**
  * Every dialog's frame: a header with an optional icon, the title and a line under it, and a close button; a body
@@ -116,31 +166,12 @@ export function AppDialog({
       aria-labelledby={titleId}
       slotProps={{
         paper: {
-          sx: {
-            width: WIDTH[size],
-            ...(height === undefined ? {} : { height }),
-            maxWidth: 'calc(100% - 32px)',
-            maxHeight: 'calc(100% - 64px)',
-            m: 2,
-            borderRadius: '10px',
-            border: '1px solid var(--mortar-hairline)',
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-          },
+          sx: [frameSx, { width: WIDTH[size] }, height === undefined ? {} : { height }],
         },
       }}
     >
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1.75,
-          px: PAD_X,
-          py: 2,
-          // The dialog's own header stands apart from any headings in its body.
-          borderBottom: children && !tabs ? '1px solid var(--mortar-hairline-muted)' : 'none',
-        }}
+      <div
+        className={children && !tabs ? 'app-dialog-header app-dialog-ruled' : 'app-dialog-header'}
       >
         {onBack ? (
           <IconButton aria-label={t`Back`} onClick={onBack} size="small" sx={{ ml: -1 }}>
@@ -148,46 +179,23 @@ export function AppDialog({
           </IconButton>
         ) : null}
         {icon}
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography
-            id={titleId}
-            component="h2"
-            sx={{ fontSize: TITLE_PX, fontWeight: 600, lineHeight: 1.25 }}
-          >
+        <div className="app-dialog-heading">
+          <h2 id={titleId} className="app-dialog-title">
             {title}
-          </Typography>
-          {subtitle ? (
-            <Typography
-              sx={{ fontSize: 'medium.fontSize', color: 'text.secondary', lineHeight: 1.35 }}
-            >
-              {subtitle}
-            </Typography>
-          ) : null}
-        </Box>
+          </h2>
+          {subtitle ? <p className="app-dialog-subtitle">{subtitle}</p> : null}
+        </div>
         {closable && closeButton ? (
           <IconButton aria-label={t`Close`} onClick={onClose} size="small" sx={{ mr: -1 }}>
             <X size={18} />
           </IconButton>
         ) : null}
-      </Box>
-      {tabs ? (
-        <Box sx={{ px: PAD_X, borderBottom: '1px solid var(--mortar-hairline-muted)' }}>{tabs}</Box>
-      ) : null}
+      </div>
+      {tabs ? <div className="app-dialog-tabs">{tabs}</div> : null}
       {children ? (
-        <Box
-          sx={{
-            ...(flush ? { display: 'flex', flexDirection: 'column' } : { px: PAD_X, py: 2.5 }),
-            overflowY: 'auto',
-            flex: '1 1 auto',
-            minHeight: 0,
-            // The body's own padding is the gap above the footer; a last child's margin would add to it.
-            '& > :last-child': { mb: 0 },
-            // A switch, checkbox or radio sits on the fields' left edge, as MUI draws it; a row's own margin reset would indent it.
-            '& .MuiFormControlLabel-root': { ml: '-11px' },
-          }}
-        >
+        <div className={flush ? 'app-dialog-body app-dialog-flush' : 'app-dialog-body'}>
           {children}
-        </Box>
+        </div>
       ) : null}
       {footer}
     </Dialog>
