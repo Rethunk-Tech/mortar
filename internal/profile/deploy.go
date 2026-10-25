@@ -198,6 +198,9 @@ func (s *Store) syncPackages(gameID, id string) error {
 	if err != nil {
 		return err
 	}
+	if err := s.parkModConfigs(gameID, p, dir); err != nil {
+		return err
+	}
 	prev := readPlaced(dir)
 	next := maps.Clone(prev)
 	lays := map[string]bool{}

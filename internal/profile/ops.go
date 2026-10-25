@@ -478,6 +478,7 @@ func (s *Store) removeFrom(game string, p *Profile, dir, key string) error {
 	if err := removeEntryFolders(modsDir, key); err != nil {
 		return err
 	}
+	s.dropModConfigs(game, *p, dir, p.Entries[i])
 	tray := p.Entries[i].TrayFiles
 	p.Entries = slices.Delete(p.Entries, i, i+1)
 	s.releaseTray(game, p, tray)
