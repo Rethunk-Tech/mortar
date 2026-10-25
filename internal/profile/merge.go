@@ -97,7 +97,7 @@ func (s *Store) MergeInto(game, fromID, toID string, newerWins bool) (Profile, e
 	}
 	s.setHistoryQuiet(toID, true)
 	defer s.setHistoryQuiet(toID, false)
-	// A merge is all or nothing: a failure takes back the entries it added, so the target is as it was.
+	// A failure takes back the entries the merge added; a version it already switched stays switched.
 	added, changed, err := s.mergeAdds(game, fromID, toID, pv, from)
 	if err == nil && newerWins {
 		var swapped int
