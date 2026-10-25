@@ -144,7 +144,18 @@ export function AppDialog({
         ) : null}
       </Box>
       {children ? (
-        <Box sx={{ px: PAD_X, py: 2.5, overflowY: 'auto', flex: '1 1 auto', minHeight: 0 }}>
+        <Box
+          sx={{
+            px: PAD_X,
+            pt: 2.5,
+            pb: 1.5,
+            overflowY: 'auto',
+            flex: '1 1 auto',
+            minHeight: 0,
+            // The body's own padding is the gap above the footer; a last child's margin would add to it.
+            '& > :last-child': { mb: 0 },
+          }}
+        >
           {children}
         </Box>
       ) : null}
