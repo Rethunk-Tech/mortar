@@ -53,6 +53,7 @@ import {
   useProjectInfo,
 } from './builds.ts'
 import { EditProjectDialog } from './EditProjectDialog.tsx'
+import { GameCodeDialog } from './GameCodeDialog.tsx'
 import { showModLog, useModCosts } from './modCosts.ts'
 import { ReleaseDialog } from './ReleaseDialog.tsx'
 
@@ -257,11 +258,13 @@ function MoreMenu({
   project,
   onRelease,
   onEdit,
+  onCode,
 }: {
   game: string
   project: DevProject
   onRelease: () => void
   onEdit: () => void
+  onCode: () => void
 }) {
   const { t } = useLingui()
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
@@ -294,6 +297,7 @@ function MoreMenu({
           {t`Pack for ${{ source: sourceLabel('thunderstore') }}`}
         </MenuItem>
         <MenuItem onClick={act(onRelease)}>{t`Release…`}</MenuItem>
+        <MenuItem onClick={act(onCode)}>{t`Game code…`}</MenuItem>
         <MenuItem disabled={!info} onClick={act(() => info && showModLog(info))}>
           {t`Show log`}
         </MenuItem>
@@ -381,6 +385,7 @@ export function ProjectCard({
   const info = useInfo(game, project.dir)
   const [releasing, setReleasing] = useState(false)
   const [editing, setEditing] = useState(false)
+  const [reading, setReading] = useState(false)
   if (info?.missing) {
     return <MissingCard game={game} project={project} />
   }
@@ -427,6 +432,7 @@ export function ProjectCard({
           project={project}
           onRelease={() => setReleasing(true)}
           onEdit={() => setEditing(true)}
+          onCode={() => setReading(true)}
         />
       </Box>
       {list ? null : <Box>{actions}</Box>}
@@ -439,6 +445,9 @@ export function ProjectCard({
           info={info}
           onClose={() => setEditing(false)}
         />
+      ) : null}
+      {reading ? (
+        <GameCodeDialog game={game} dir={project.dir} onClose={() => setReading(false)} />
       ) : null}
       {releasing ? (
         <ReleaseDialog

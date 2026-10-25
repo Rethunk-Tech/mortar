@@ -344,6 +344,10 @@ msgstr "Last played {when}"
 msgid "{name} has a new cover"
 msgstr "{name} has a new cover"
 
+#: src/develop/GameCodeDialog.tsx
+msgid "Type or method, such as player update"
+msgstr "Type or method, such as player update"
+
 #: src/nxm/ArrivalDialog.tsx
 msgid "You started this download on {source}. Choose the profile it goes into."
 msgstr "You started this download on {source}. Choose the profile it goes into."
@@ -707,6 +711,10 @@ msgstr "From a shared link"
 #: src/game/ProfileMenuItems.tsx
 msgid "Use the automatic cover"
 msgstr "Use the automatic cover"
+
+#: src/develop/GameCodeDialog.tsx
+msgid "Search the game's types and methods, then pick one to read its type's code."
+msgstr "Search the game's types and methods, then pick one to read its type's code."
 
 #: src/share/ListFormat.tsx
 msgid "Message {count} of {total} copied"
@@ -1452,6 +1460,7 @@ msgstr "Instances"
 msgid "Pair"
 msgstr "Pair"
 
+#: src/develop/GameCodeDialog.tsx
 #: src/loader/store.ts
 msgid "Could not install {loader}"
 msgstr "Could not install {loader}"
@@ -1669,6 +1678,10 @@ msgstr "Saved on version {gameVersion}"
 #: src/browse/BrowseMenu.tsx
 msgid "Add as dependency of {name}"
 msgstr "Add as dependency of {name}"
+
+#: src/develop/GameCodeDialog.tsx
+msgid "Install {loader} to read the game's code"
+msgstr "Install {loader} to read the game's code"
 
 #: src/share/CompareSummary.tsx
 msgid "Only in {name}"
@@ -2206,6 +2219,10 @@ msgstr "Config files ({count} of {total})"
 msgid "Include disabled mods"
 msgstr "Include disabled mods"
 
+#: src/develop/GameCodeDialog.tsx
+msgid "Installing…"
+msgstr "Installing…"
+
 #: src/share/ImportPreview.tsx
 msgid "program files from this code"
 msgstr "program files from this code"
@@ -2255,6 +2272,10 @@ msgstr "Version"
 #: src/queue/QueueBody.tsx
 msgid "This download is {size}, which is unusually large for a mod."
 msgstr "This download is {size}, which is unusually large for a mod."
+
+#: src/develop/GameCodeDialog.tsx
+msgid "Hook copied"
+msgstr "Hook copied"
 
 #: src/browse/BrowseBody.tsx
 msgid "{hidden} hidden"
@@ -2578,6 +2599,10 @@ msgstr "Broken for this version"
 #: src/share/ImportProblems.tsx
 msgid "{count, plural, one {# dependency} other {# dependencies}}"
 msgstr "{count, plural, one {# dependency} other {# dependencies}}"
+
+#: src/develop/GameCodeDialog.tsx
+msgid "Pick a method"
+msgstr "Pick a method"
 
 #: src/share/ModpackDialog.tsx
 msgid "Could not export the modpack"
@@ -2936,6 +2961,10 @@ msgstr "Settings changes {count}"
 #: src/game/Sidebar.tsx
 msgid "Collapse"
 msgstr "Collapse"
+
+#: src/develop/GameCodeDialog.tsx
+msgid "Decompiling {type}…"
+msgstr "Decompiling {type}…"
 
 #: src/toasts/HistoryButton.tsx
 msgid "No notifications yet"
@@ -4773,6 +4802,10 @@ msgstr "Sent to {name}"
 msgid "Could not read your games"
 msgstr "Could not read your games"
 
+#: src/develop/GameCodeDialog.tsx
+msgid "Mortar installs its command line as a .NET tool and decompiles the type you pick."
+msgstr "Mortar installs its command line as a .NET tool and decompiles the type you pick."
+
 #: src/launch/playStart.ts
 msgid "Could not check profile"
 msgstr "Could not check profile"
@@ -4837,6 +4870,10 @@ msgstr "Anyone can publish files on {sites}, and nobody reviews or scans them fo
 #: src/nxm/ArrivalDialog.tsx
 msgid "You started this download on {source}, but you have no {game} profile yet."
 msgstr "You started this download on {source}, but you have no {game} profile yet."
+
+#: src/develop/GameCodeDialog.tsx
+msgid "Search the game's code"
+msgstr "Search the game's code"
 
 #: src/develop/ProjectCard.tsx
 #: src/screenshots/ScreenshotsTab.tsx
@@ -5165,6 +5202,10 @@ msgstr "Any game whose mods are files in a Mods folder"
 #: src/browse/browseConstants.ts
 msgid "Search every site this game's mods come from at once. Each result installs into this profile from wherever its author published it."
 msgstr "Search every site this game's mods come from at once. Each result installs into this profile from wherever its author published it."
+
+#: src/develop/ProjectCard.tsx
+msgid "Game code…"
+msgstr "Game code…"
 
 #: src/game/detailStates.tsx
 msgid "Mortar could not load the profiles for this game."
@@ -5622,6 +5663,7 @@ msgstr "Step {step} of {count}: {name}"
 msgid "{count, plural, one {Applied the curator's choices for # mod and {configs, plural, one {# config file} other {# config files}}} other {Applied the curator's choices for # mods and {configs, plural, one {# config file} other {# config files}}}}"
 msgstr "{count, plural, one {Applied the curator's choices for # mod and {configs, plural, one {# config file} other {# config files}}} other {Applied the curator's choices for # mods and {configs, plural, one {# config file} other {# config files}}}}"
 
+#: src/develop/GameCodeDialog.tsx
 #: src/firstrun/GameSetup.tsx
 msgid "Install {loader}"
 msgstr "Install {loader}"
@@ -5692,6 +5734,10 @@ msgstr "{name} was blocked by your antivirus"
 msgid "Details"
 msgstr "Details"
 
+#: src/develop/GameCodeDialog.tsx
+msgid "Game code"
+msgstr "Game code"
+
 #: src/shell/TitleBar.tsx
 msgid "Minimise"
 msgstr "Minimise"
@@ -5711,6 +5757,10 @@ msgstr "No archives to add"
 #: src/lan/SendPanel.tsx
 msgid "Pair the two computers to send whole files instead. Pairing takes a one-time code shown here and typed on {name}."
 msgstr "Pair the two computers to send whole files instead. Pairing takes a one-time code shown here and typed on {name}."
+
+#: src/develop/GameCodeDialog.tsx
+msgid "Copy a {library} hook"
+msgstr "Copy a {library} hook"
 
 #: src/game/ProfileMenuItems.tsx
 msgid "Added to {launcher}"
@@ -6640,6 +6690,10 @@ msgstr ".r2z file"
 #: src/groups/SavedGroupsSection.tsx
 msgid "Save a group from the Mods tab to reuse it in other profiles."
 msgstr "Save a group from the Mods tab to reuse it in other profiles."
+
+#: src/develop/GameCodeDialog.tsx
+msgid "Could not decompile {type}"
+msgstr "Could not decompile {type}"
 
 #: src/nxm/store.ts
 msgid "This is not a Mod Manager Download link from {source}."

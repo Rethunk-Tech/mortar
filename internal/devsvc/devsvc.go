@@ -15,6 +15,7 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
@@ -57,6 +58,9 @@ type Service struct {
 	ArchiveURL func(t components.DevTemplate) string
 	// LatestLoader, when set, replaces looking up the newest loader release (tests).
 	LatestLoader func(ctx context.Context, gameID string) string
+
+	codeMu sync.Mutex
+	code   map[string]gameCode
 }
 
 // NewMod is what the Develop wizard asks for: the mod's name, the template's parameters by id (a multi-choice value
