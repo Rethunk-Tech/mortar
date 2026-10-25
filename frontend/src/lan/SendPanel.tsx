@@ -14,7 +14,7 @@ import {
 } from '@mui/material'
 import { Events } from '@wailsio/runtime'
 import { Inbox, RefreshCw } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Peer } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/models.ts'
 import { Peers, Send } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/service.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
@@ -34,6 +34,9 @@ import { peerSecondary } from './peerSecondary.ts'
 // Under the service's 6 s peer lifetime, so a computer that leaves drops off within one look, and well inside its 30 s
 // browse interest, which each look renews.
 const refreshInterval = 5000
+
+// One empty list, so a computer with no saved addresses selects the same array each time.
+const NO_ADDRESSES: string[] = []
 
 function sendPeerView(
   looked: boolean,
@@ -278,7 +281,11 @@ export function SendPanel({
   const [addressPicker, setAddressPicker] = useState(false)
   const [pairing, setPairing] = useState(false)
   const [linksOnly, setLinksOnly] = useState<Peer | null>(null)
-  const addresses = useSettings((state) => state.lanAddresses ?? [])
+  const addresses = useSettings((state) => state.lanAddresses ?? NO_ADDRESSES)
+  // The list gets a send that stays the same and calls the latest, so a refresh spinning leaves the list alone.
+  const latestSend = useRef(send)
+  latestSend.current = send
+  const sendTo = useCallback((target: SendTarget) => latestSend.current(target), [])
 
   useEffect(
     () =>
@@ -290,8 +297,70 @@ export function SendPanel({
     [refresh],
   )
 
-  const sharedNames = new Set(
-    peers.map((peer) => peer.name).filter((name, index, all) => all.indexOf(name) !== index),
+  const view = sendPeerView(looked, refreshing, peers.length)
+  const list = useMemo(() => {
+    const sharedNames = new Set(
+      peers.map((peer) => peer.name).filter((name, index, all) => all.indexOf(name) !== index),
+    )
+    return (
+      <Box>
+        {view === 'empty' ? (
+          <EmptyState
+            compact={true}
+            icon={<Inbox size={28} />}
+            title={t`No Mortar users found nearby.`}
+          >{t`Ask another Mortar user to open sharing nearby.`}</EmptyState>
+        ) : (
+          <List disablePadding={true}>
+            {view === 'looking' ? (
+              <ListItem>
+                <ListItemText primary={t`Looking for Mortar users…`} />
+              </ListItem>
+            ) : null}
+            {peers.map((peer) => (
+              <PeerRow
+                key={peer.id}
+                peer={peer}
+                sharedName={sharedNames.has(peer.name)}
+                disabled={sending !== null}
+                sending={sending === peer.id}
+                onSend={() => (peer.paired ? sendTo(peer) : setLinksOnly(peer))}
+                onPair={() => setPairing(true)}
+              />
+            ))}
+            <AddressRows
+              addresses={addresses}
+              disabled={sending !== null}
+              onPick={() => setAddressPicker((current) => !current)}
+              onSend={(address) => sendTo({ id: address, name: address })}
+            />
+          </List>
+        )}
+        {addressPicker ? (
+          <Box sx={{ display: 'flex', gap: space.gap, mt: 1 }}>
+            <TextField
+              autoFocus={true}
+              fullWidth={true}
+              size="small"
+              label={t`Host:port`}
+              value={manual}
+              onChange={(event) => setManual(event.target.value)}
+            />
+            <Button
+              variant="contained"
+              disabled={sending !== null || manual.trim() === ''}
+              onClick={() => sendTo({ id: manual.trim(), name: manual.trim() })}
+            >
+              {t`Send`}
+            </Button>
+          </Box>
+        ) : null}
+      </Box>
+    )
+  }, [view, peers, sending, addresses, addressPicker, manual, sendTo, t])
+  const pairDialog = useMemo(
+    () => <ShowCodeDialog open={pairing} onClose={() => setPairing(false)} />,
+    [pairing],
   )
 
   return (
@@ -317,62 +386,10 @@ export function SendPanel({
               {refreshing ? <CircularProgress size={18} /> : <RefreshCw size={18} />}
             </IconButton>
           </Box>
-          <Box>
-            {sendPeerView(looked, refreshing, peers.length) === 'empty' ? (
-              <EmptyState
-                compact={true}
-                icon={<Inbox size={28} />}
-                title={t`No Mortar users found nearby.`}
-              >{t`Ask another Mortar user to open sharing nearby.`}</EmptyState>
-            ) : (
-              <List disablePadding={true}>
-                {sendPeerView(looked, refreshing, peers.length) === 'looking' ? (
-                  <ListItem>
-                    <ListItemText primary={t`Looking for Mortar users…`} />
-                  </ListItem>
-                ) : null}
-                {peers.map((peer) => (
-                  <PeerRow
-                    key={peer.id}
-                    peer={peer}
-                    sharedName={sharedNames.has(peer.name)}
-                    disabled={sending !== null}
-                    sending={sending === peer.id}
-                    onSend={() => (peer.paired ? send(peer) : setLinksOnly(peer))}
-                    onPair={() => setPairing(true)}
-                  />
-                ))}
-                <AddressRows
-                  addresses={addresses}
-                  disabled={sending !== null}
-                  onPick={() => setAddressPicker((current) => !current)}
-                  onSend={(address) => send({ id: address, name: address })}
-                />
-              </List>
-            )}
-            {addressPicker ? (
-              <Box sx={{ display: 'flex', gap: space.gap, mt: 1 }}>
-                <TextField
-                  autoFocus={true}
-                  fullWidth={true}
-                  size="small"
-                  label={t`Host:port`}
-                  value={manual}
-                  onChange={(event) => setManual(event.target.value)}
-                />
-                <Button
-                  variant="contained"
-                  disabled={sending !== null || manual.trim() === ''}
-                  onClick={() => send({ id: manual.trim(), name: manual.trim() })}
-                >
-                  {t`Send`}
-                </Button>
-              </Box>
-            ) : null}
-          </Box>
+          {list}
         </>
       )}
-      <ShowCodeDialog open={pairing} onClose={() => setPairing(false)} />
+      {pairDialog}
     </Box>
   )
 }
