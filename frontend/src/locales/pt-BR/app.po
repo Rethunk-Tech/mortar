@@ -36,7 +36,7 @@ msgstr ""
 msgid "Template"
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
+#: src/develop/ProjectCard.tsx
 msgid "Could not open the folder"
 msgstr ""
 
@@ -53,7 +53,7 @@ msgstr ""
 msgid "Open profile"
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
+#: src/develop/ProjectCard.tsx
 msgid "Could not open the file"
 msgstr ""
 
@@ -593,6 +593,10 @@ msgstr ""
 msgid "Mortar chose this from the game's files."
 msgstr ""
 
+#: src/develop/ProjectCard.tsx
+msgid "Starting for debugging"
+msgstr ""
+
 #: src/share/MethodPanes.tsx
 msgid "Could not export the collection draft"
 msgstr ""
@@ -646,7 +650,7 @@ msgstr ""
 msgid "Could not publish the code"
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
+#: src/develop/ProjectCard.tsx
 msgid "Pack for {source}"
 msgstr ""
 
@@ -728,7 +732,7 @@ msgstr ""
 msgid "Update check skipped"
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
+#: src/develop/ProjectCard.tsx
 msgid "Test with {count} copies"
 msgstr ""
 
@@ -756,7 +760,7 @@ msgstr ""
 msgid "Grid view"
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
+#: src/develop/ProjectCard.tsx
 msgid "Could not start the game"
 msgstr ""
 
@@ -797,7 +801,7 @@ msgstr ""
 msgid "Template name"
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
+#: src/develop/ProjectCard.tsx
 msgid "Ready to upload: {path}"
 msgstr ""
 
@@ -1101,7 +1105,7 @@ msgstr ""
 msgid "Could not save the tool"
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
+#: src/develop/ProjectCard.tsx
 msgid "Edit details…"
 msgstr ""
 
@@ -1650,11 +1654,11 @@ msgstr ""
 msgid "Could not start pairing"
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
+#: src/develop/ProjectCard.tsx
 msgid "{count, plural, one {# unpushed commit} other {# unpushed commits}}"
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
+#: src/develop/ProjectCard.tsx
 msgid "The build failed."
 msgstr ""
 
@@ -1700,7 +1704,7 @@ msgstr ""
 msgid "Download {name} now"
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
+#: src/develop/ProjectCard.tsx
 #: src/i18n/counts.ts
 msgid "{count, plural, one {# error} other {# errors}}"
 msgstr ""
@@ -1906,7 +1910,7 @@ msgstr ""
 msgid "{names} cannot be reached; showing what Mortar saved ({asOf})"
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
+#: src/develop/ProjectCard.tsx
 msgid "Remove from list…"
 msgstr ""
 
@@ -2331,7 +2335,7 @@ msgstr ""
 
 #: src/browse/BrowsePage.tsx
 #: src/browse/BrowseShow.tsx
-#: src/develop/DevelopTab.tsx
+#: src/develop/ProjectCard.tsx
 #: src/firstrunTour/TourAgainButton.tsx
 #: src/firstrunTour/useFirstRunTour.ts
 #: src/games/GameRowMenu.tsx
@@ -3220,7 +3224,7 @@ msgstr ""
 msgid "This download's mod is not known to come from {repo}."
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
+#: src/develop/ProjectCard.tsx
 msgid "Open in editor"
 msgstr ""
 
@@ -3280,7 +3284,7 @@ msgstr ""
 msgid "Account or organisation"
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
+#: src/develop/ProjectCard.tsx
 msgid "Build"
 msgstr ""
 
@@ -3395,7 +3399,7 @@ msgstr ""
 msgid "Antivirus scanning is off"
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
+#: src/develop/ProjectCard.tsx
 msgid "Built {when}"
 msgstr ""
 
@@ -3416,7 +3420,7 @@ msgstr ""
 msgid "Reading the template"
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
+#: src/develop/ProjectCard.tsx
 msgid "More actions"
 msgstr ""
 
@@ -3813,7 +3817,7 @@ msgstr ""
 msgid "Edit tool"
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
+#: src/develop/ProjectCard.tsx
 msgid "Release…"
 msgstr ""
 
@@ -3889,7 +3893,7 @@ msgstr ""
 msgid "Marked known good"
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
+#: src/develop/ProjectCard.tsx
 msgid "Could not open the editor"
 msgstr ""
 
@@ -4365,7 +4369,7 @@ msgstr ""
 msgid "The game's Mods folder"
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
+#: src/develop/ProjectCard.tsx
 msgid "Remove from list"
 msgstr ""
 
@@ -4573,7 +4577,7 @@ msgstr ""
 msgid "Clear history"
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
+#: src/develop/ProjectCard.tsx
 msgid "Remove {name} from the list?"
 msgstr ""
 
@@ -4618,7 +4622,7 @@ msgstr ""
 msgid "Click a mod to open its details: versions, what it needs and what needs it, and its update."
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
+#: src/develop/ProjectCard.tsx
 msgid "Building"
 msgstr ""
 
@@ -4781,6 +4785,10 @@ msgstr ""
 msgid "Include config files"
 msgstr ""
 
+#: src/develop/ProjectCard.tsx
+msgid "Start for debugging"
+msgstr ""
+
 #: src/share/ImportSources.tsx
 msgid "{managers} on this computer"
 msgstr ""
@@ -4818,7 +4826,7 @@ msgstr ""
 msgid "You started this download on {source}, but you have no {game} profile yet."
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
+#: src/develop/ProjectCard.tsx
 #: src/screenshots/ScreenshotsTab.tsx
 msgid "Open folder"
 msgstr ""
@@ -4891,7 +4899,7 @@ msgstr ""
 msgid "Nothing downloading"
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
+#: src/develop/ProjectCard.tsx
 msgid "Packing"
 msgstr ""
 
@@ -4939,7 +4947,7 @@ msgstr ""
 msgid "The system would not let Mortar end the game. Close it from its own window or end it in your task manager."
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
+#: src/develop/ProjectCard.tsx
 msgid "Build on save"
 msgstr ""
 
@@ -5542,11 +5550,11 @@ msgstr ""
 msgid "Could not enable sharing nearby"
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
+#: src/develop/ProjectCard.tsx
 msgid "{count, plural, one {# changed file} other {# changed files}}"
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
+#: src/develop/ProjectCard.tsx
 msgid "Upload…"
 msgstr ""
 
@@ -5734,8 +5742,12 @@ msgstr ""
 msgid "World"
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
+#: src/develop/ProjectCard.tsx
 msgid "Its folder stays where it is; Mortar stops building it and installing it into the profile."
+msgstr ""
+
+#: src/develop/ProjectCard.tsx
+msgid "Attach your editor's debugger to {address}."
 msgstr ""
 
 #: src/groups/SavedGroupsSection.tsx
@@ -6623,7 +6635,7 @@ msgstr ""
 msgid "Command palette"
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
+#: src/develop/ProjectCard.tsx
 msgid "Could not open the page"
 msgstr ""
 
@@ -6669,7 +6681,7 @@ msgstr ""
 msgid "Install anyway"
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
+#: src/develop/ProjectCard.tsx
 msgid "{name} is no longer in {path}."
 msgstr ""
 
@@ -6709,7 +6721,7 @@ msgstr ""
 msgid "Sort: most stars"
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
+#: src/develop/ProjectCard.tsx
 msgid "Not released"
 msgstr ""
 

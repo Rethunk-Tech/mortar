@@ -22,6 +22,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/loader/dotnetstack"
 	"github.com/Rethunk-Tech/mortar/internal/serverargs"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // ID is the catalog's id for this loader.
@@ -111,16 +112,28 @@ func (Loader) Install(ctx context.Context, t loader.Target, pkg loader.Package, 
 
 // Contribute points Doorstop at the profile's entry assembly, declares the proxy files for the game folder and, under
 // Proton, asks for the override of the pack's proxy library. A native Linux build is started through LD_PRELOAD instead (see contributeLinux).
-func (Loader) Contribute(_ context.Context, plan *launchplan.Plan, p loader.ProfileView) error {
+func (Loader) Contribute(ctx context.Context, plan *launchplan.Plan, p loader.ProfileView) error {
 	if err := contributeServer(plan, p); err != nil {
 		return err
 	}
 	m := readMarker(p.Dir)
+	debug := loader.Debugger(ctx)
+	// Doorstop 4 opens Mono's debugger; Doorstop 3 and an IL2CPP pack's .NET runtime have no such switch.
+	if debug && (m.Doorstop < 4 || hasCLR(p.Dir)) {
+		return usererr.Wrap(usererr.Invalid, errors.New("starting for debugging needs a Mono game and BepInEx with Doorstop 4"))
+	}
 	if p.Platform == "linux" {
+		if debug {
+			plan.SetEnv("DOORSTOP_MONO_DEBUG_ENABLED", "1")
+			plan.SetEnv("DOORSTOP_MONO_DEBUG_ADDRESS", loader.DebugAddress)
+		}
 		return contributeLinux(plan, p, m)
 	}
 	proton := p.Runtime == "proton" || p.Runtime == "mortar-proton"
 	plan.AddArgs(LaunchArgs(p.Dir, m.Doorstop, proton)...)
+	if debug {
+		plan.AddArgs("--doorstop-mono-debug-enabled", "true", "--doorstop-mono-debug-address", loader.DebugAddress)
+	}
 	for _, f := range DoorstopFiles(p.Dir) {
 		src := filepath.Join(p.Dir, filepath.FromSlash(f))
 		if f == doorstopConfig {

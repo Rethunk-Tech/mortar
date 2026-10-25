@@ -63,6 +63,13 @@ func TestLoaderContract(t *testing.T) {
 	if len(native.RuntimeReqs) != 0 || strings.Contains(strings.Join(native.Args, " "), "Z:") {
 		t.Fatalf("native plan %+v", native)
 	}
+	debug := launchplan.New(launchplan.ModeProfile)
+	if err := l.Contribute(loader.WithDebugger(ctx), debug, view); err != nil {
+		t.Fatal(err)
+	}
+	if got := strings.Join(debug.Args, " "); !strings.HasSuffix(got, "--doorstop-mono-debug-enabled true --doorstop-mono-debug-address "+loader.DebugAddress) {
+		t.Fatalf("debug args %q", got)
+	}
 
 	van := launchplan.New(launchplan.ModeVanilla)
 	vanilla, ok := l.(loader.Vanilla)

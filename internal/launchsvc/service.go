@@ -685,6 +685,15 @@ func (s *Service) StartInstances(ctx context.Context, gameID, profileID string, 
 	return s.start(context.WithValue(context.WithoutCancel(ctx), instancesKey{}, n), gameID, profileID, "", "", true)
 }
 
+// StartDebugging starts the profile directly with its loader opening the game's Mono debugger for this launch only,
+// and returns the address a debugger attaches to.
+func (s *Service) StartDebugging(ctx context.Context, gameID, profileID string) (string, error) {
+	if err := s.start(loader.WithDebugger(context.WithoutCancel(ctx)), gameID, profileID, "", "", true); err != nil {
+		return "", err
+	}
+	return loader.DebugAddress, nil
+}
+
 // pinOf is the install a launch of the profile runs on: the one asked for, else the profile's pinned one.
 func (s *Service) pinOf(gameID, profileID, installID string) string {
 	if installID != "" {
