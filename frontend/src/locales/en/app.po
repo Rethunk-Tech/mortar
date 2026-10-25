@@ -397,6 +397,7 @@ msgstr "Fill in missing dependencies"
 msgid "{skipped} skipped"
 msgstr "{skipped} skipped"
 
+#: src/saves/SaveGapLine.tsx
 #: src/tips/TipBanner.tsx
 #: src/toasts/ToastHost.tsx
 msgid "Dismiss"

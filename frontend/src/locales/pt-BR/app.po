@@ -397,6 +397,7 @@ msgstr ""
 msgid "{skipped} skipped"
 msgstr ""
 
+#: src/saves/SaveGapLine.tsx
 #: src/tips/TipBanner.tsx
 #: src/toasts/ToastHost.tsx
 msgid "Dismiss"

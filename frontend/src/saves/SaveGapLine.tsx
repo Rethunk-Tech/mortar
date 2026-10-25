@@ -13,10 +13,13 @@ import { SaveGap } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/
 import { LockedReason } from '../mods/LockedReason.tsx'
 import { useLocked } from '../mods/useLocked.ts'
 import { useLoaded } from '../shell/useLoaded.ts'
+import { useStoredState } from '../shell/useStoredState.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { addRecordedMods } from './recordedActions.ts'
+
+const isText = (v: unknown): v is string => typeof v === 'string'
 
 function stateText(kind: 'missing' | 'disabled' | 'older', m: GapMod): string {
   if (kind === 'disabled') {
@@ -42,7 +45,17 @@ export function SaveGapLine({ fit, profile, game }: { fit: Fit; profile: Profile
   const missing = gap?.missing ?? []
   const disabled = gap?.disabled ?? []
   const need = missing.length + disabled.length
-  if (!gap || need === 0) {
+  // Dismissing remembers which mods were wanted, so the line comes back only when that set changes.
+  const wanted = [...missing, ...disabled]
+    .map((m) => m.id)
+    .sort()
+    .join('\n')
+  const [dismissed, setDismissed] = useStoredState(
+    `mortar.saveGapDismissed.${game}.${profile.id}.${fit.folder}`,
+    '',
+    isText,
+  )
+  if (!gap || need === 0 || dismissed === wanted) {
     return null
   }
   const rows = [
@@ -58,6 +71,9 @@ export function SaveGapLine({ fit, profile, game }: { fit: Fit; profile: Profile
         </Typography>
         <Button size="small" onClick={() => setShown(!shown)}>
           {shown ? t`Hide` : t`Show`}
+        </Button>
+        <Button size="small" color="inherit" onClick={() => setDismissed(wanted)}>
+          {t`Dismiss`}
         </Button>
         <LockedReason locked={locked}>
           <Button
