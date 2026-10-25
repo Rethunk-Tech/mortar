@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Button, List, ListItem, ListItemText } from '@mui/material'
 import { Inbox, Pencil, Trash2, Wrench } from 'lucide-react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { Tool } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/tools/models.ts'
 import { AppDialog, DialogFooter, ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
@@ -28,9 +28,9 @@ export function ToolsManageDialog({
   const [editing, setEditing] = useState<Tool | null>(null)
   const [adding, setAdding] = useState(false)
   const [deleting, setDeleting] = useState<Tool | null>(null)
-
-  return (
-    <>
+  // Held between renders: opening the editor or the removal question leaves the list dialog and the other editor alone.
+  const manager = useMemo(
+    () => (
       <AppDialog
         open={open}
         onClose={onClose}
@@ -84,6 +84,36 @@ export function ToolsManageDialog({
           </List>
         )}
       </AppDialog>
+    ),
+    [open, onClose, tools, t],
+  )
+  const adder = useMemo(
+    () => (
+      <ToolEditorDialog
+        open={adding}
+        initial={null}
+        onClose={() => setAdding(false)}
+        onSave={async (tool) => {
+          await add(game, tool)
+        }}
+      />
+    ),
+    [adding, add, game],
+  )
+  const editor = useMemo(
+    () => (
+      <ToolEditorDialog
+        open={editing !== null}
+        initial={editing}
+        onClose={() => setEditing(null)}
+        onSave={(tool) => update(game, tool)}
+      />
+    ),
+    [editing, update, game],
+  )
+  return (
+    <>
+      {manager}
       <ConfirmationDialog
         open={deleting !== null}
         title={t`Remove ${{ name: deleting?.name ?? '' }}?`}
@@ -104,20 +134,8 @@ export function ToolsManageDialog({
           drop()
         }}
       />
-      <ToolEditorDialog
-        open={adding}
-        initial={null}
-        onClose={() => setAdding(false)}
-        onSave={async (tool) => {
-          await add(game, tool)
-        }}
-      />
-      <ToolEditorDialog
-        open={editing !== null}
-        initial={editing}
-        onClose={() => setEditing(null)}
-        onSave={(tool) => update(game, tool)}
-      />
+      {adder}
+      {editor}
     </>
   )
 }
