@@ -2426,6 +2426,10 @@ msgstr ""
 msgid "One argument per line. Placeholders: {placeholders}."
 msgstr ""
 
+#: src/develop/DevelopTab.tsx
+msgid "Filter projects"
+msgstr ""
+
 #: src/game/NewProfileDialog.tsx
 msgid "Copy of {name}"
 msgstr ""
@@ -3303,6 +3307,10 @@ msgstr ""
 
 #: src/share/ImportInput.tsx
 msgid "Opened the {source} page. Save the file from it; Mortar offers it from your Downloads folder."
+msgstr ""
+
+#: src/develop/DevelopTab.tsx
+msgid "{count, plural, one {Filter # project} other {Filter # projects}}"
 msgstr ""
 
 #: src/firstrun/NexusStep.tsx

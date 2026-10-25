@@ -2426,6 +2426,10 @@ msgstr "None of this profile's mods are marked broken for the new version."
 msgid "One argument per line. Placeholders: {placeholders}."
 msgstr "One argument per line. Placeholders: {placeholders}."
 
+#: src/develop/DevelopTab.tsx
+msgid "Filter projects"
+msgstr "Filter projects"
+
 #: src/game/NewProfileDialog.tsx
 msgid "Copy of {name}"
 msgstr "Copy of {name}"
@@ -3304,6 +3308,10 @@ msgstr "Open data folder"
 #: src/share/ImportInput.tsx
 msgid "Opened the {source} page. Save the file from it; Mortar offers it from your Downloads folder."
 msgstr "Opened the {source} page. Save the file from it; Mortar offers it from your Downloads folder."
+
+#: src/develop/DevelopTab.tsx
+msgid "{count, plural, one {Filter # project} other {Filter # projects}}"
+msgstr "{count, plural, one {Filter # project} other {Filter # projects}}"
 
 #: src/firstrun/NexusStep.tsx
 msgid "Sign in to {source}"

@@ -5,14 +5,13 @@ import { listNames } from '../i18n/list.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { readStored, writeStored } from '../shell/useStoredState.ts'
+import { isViewMode, type ViewMode } from '../shell/viewMode.ts'
 import { useToasts } from '../toasts/store.ts'
 import type { ModFilter } from './Toolbar.tsx'
 
-type View = 'grid' | 'list'
+type View = ViewMode
 
 const VIEW_KEY = 'mortar.modsView'
-
-const isView = (v: unknown): v is View => v === 'list' || v === 'grid'
 
 const isFilter = (v: unknown): v is ModFilter =>
   typeof v === 'string' &&
@@ -37,7 +36,7 @@ function setStoredView(set: (p: { view: View }) => void, view: View) {
 }
 
 export function storedView(): View {
-  const stored = readStored<View | ''>(VIEW_KEY, '', isView)
+  const stored = readStored<View | ''>(VIEW_KEY, '', isViewMode)
   if (stored !== '') {
     return stored
   }

@@ -6,13 +6,14 @@ import { type ReactNode, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { PageActions } from '../game/PageActions.tsx'
 import { useGameInfo } from '../games/info.ts'
+import { CardsView } from '../shell/CardsView.tsx'
 import { ControlsRow } from '../shell/ControlsRow.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { useStoredState } from '../shell/useStoredState.ts'
 import { ViewToggle } from '../shell/ViewToggle.tsx'
-import type { ViewMode } from '../shell/viewMode.ts'
+import { isViewMode, type ViewMode } from '../shell/viewMode.ts'
 import { space } from '../theme/density.ts'
 import { errorDetails } from '../toasts/errorKind.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
@@ -23,8 +24,6 @@ import { SaveListRow, SaveListTable } from './SaveListRow.tsx'
 import { SaveRow } from './SaveRow.tsx'
 import { useSaves } from './store.ts'
 import { useAllBackups } from './useAllBackups.ts'
-
-const isViewMode = (v: unknown): v is ViewMode => v === 'list' || v === 'grid'
 
 export function SavesTab({ profile, game }: { profile: Profile; game: string }) {
   const { t } = useLingui()
@@ -138,19 +137,9 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
           />
         </ControlsRow>
       )}
-      <Box
-        sx={{
-          flex: fits.length > 0 ? undefined : 1,
-          display: fits.length > 0 && !list ? 'grid' : 'flex',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
-          flexDirection: 'column',
-          gap: space.gap,
-          px: space.gutter,
-          pb: space.gutter,
-        }}
-      >
+      <CardsView list={list} fill={fits.length === 0}>
         {body}
-      </Box>
+      </CardsView>
       <BackupsDialog
         open={backupsOpen}
         onClose={() => setBackupsOpen(false)}

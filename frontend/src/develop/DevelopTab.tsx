@@ -34,8 +34,14 @@ import { LetterTile } from '../mods/LetterTile.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { persist } from '../settings/persist.ts'
 import { useSettings } from '../settings/store.ts'
+import { CardsView } from '../shell/CardsView.tsx'
+import { ControlsRow } from '../shell/ControlsRow.tsx'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
+import { SearchField } from '../shell/SearchField.tsx'
 import { MenuRule } from '../shell/TitleMenu.tsx'
+import { useStoredState } from '../shell/useStoredState.ts'
+import { ViewToggle } from '../shell/ViewToggle.tsx'
+import { isViewMode, type ViewMode } from '../shell/viewMode.ts'
 import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
 import {
@@ -244,20 +250,61 @@ function MoreMenu({
   )
 }
 
-function ProjectCard({ game, project }: { game: string; project: DevProject }) {
+function ProjectActions({ game, project }: { game: string; project: DevProject }) {
   const { t } = useLingui()
   const running = useDevRuns((s) => runOf(s.byDir, project.dir).running)
-  const info = useInfo(game, project.dir)
-  const [releasing, setReleasing] = useState(false)
-  const [editing, setEditing] = useState(false)
   const test = () =>
     StartInstances(game, project.profile, TEST_COPIES).catch(
       reportError(t`Could not start the game`),
     )
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, flexWrap: 'wrap' }}>
+      <Button
+        variant="outlined"
+        startIcon={<Hammer size={16} />}
+        disabled={running !== null}
+        onClick={() => buildProject(game, project.dir).catch(() => undefined)}
+      >
+        {t`Build`}
+      </Button>
+      <Button variant="outlined" startIcon={<Users size={16} />} onClick={test}>
+        {t`Test with ${{ count: TEST_COPIES }} copies`}
+      </Button>
+      <FormControlLabel
+        control={
+          <Switch
+            size="small"
+            checked={Boolean(project.watch)}
+            onChange={(_, on) =>
+              persist(() => SetWatch(game, project.dir, on), t`Could not save that setting`)
+            }
+          />
+        }
+        label={t`Build on save`}
+      />
+    </Box>
+  )
+}
+
+// One project: its name and state, its actions beside them in list view or below them on a grid card.
+function ProjectCard({
+  game,
+  project,
+  list,
+}: {
+  game: string
+  project: DevProject
+  list: boolean
+}) {
+  const { t } = useLingui()
+  const info = useInfo(game, project.dir)
+  const [releasing, setReleasing] = useState(false)
+  const [editing, setEditing] = useState(false)
   if (info?.missing) {
     return <MissingCard game={game} project={project} />
   }
   const name = info?.name ?? project.name
+  const actions = <ProjectActions game={game} project={project} />
   return (
     <Box
       sx={{
@@ -275,7 +322,7 @@ function ProjectCard({ game, project }: { game: string; project: DevProject }) {
           size={40}
         />
         <Box sx={{ minWidth: 0, flex: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
             <Typography sx={{ fontSize: 'large.fontSize', fontWeight: 600 }}>{name}</Typography>
             <Chip
               size="small"
@@ -292,29 +339,7 @@ function ProjectCard({ game, project }: { game: string; project: DevProject }) {
             {info ? [info.guid, info.author].filter(Boolean).join(' · ') : project.dir}
           </Typography>
         </Box>
-        <FormControlLabel
-          control={
-            <Switch
-              size="small"
-              checked={Boolean(project.watch)}
-              onChange={(_, on) =>
-                persist(() => SetWatch(game, project.dir, on), t`Could not save that setting`)
-              }
-            />
-          }
-          label={t`Build on save`}
-        />
-        <Button
-          variant="outlined"
-          startIcon={<Hammer size={16} />}
-          disabled={running !== null}
-          onClick={() => buildProject(game, project.dir).catch(() => undefined)}
-        >
-          {t`Build`}
-        </Button>
-        <Button variant="outlined" startIcon={<Users size={16} />} onClick={test}>
-          {t`Test with ${{ count: TEST_COPIES }} copies`}
-        </Button>
+        {list ? actions : null}
         <MoreMenu
           game={game}
           project={project}
@@ -322,6 +347,7 @@ function ProjectCard({ game, project }: { game: string; project: DevProject }) {
           onEdit={() => setEditing(true)}
         />
       </Box>
+      {list ? null : <Box>{actions}</Box>}
       <Outcome game={game} project={project} />
       {editing && info ? (
         <EditProjectDialog
@@ -367,7 +393,11 @@ export function DevelopTab({ game }: { game: string }) {
   const projects = useSettings((s) => s.games?.[game]?.devProjects) ?? []
   const openId = useProfiles((s) => s.openId)
   const [creating, setCreating] = useState(false)
+  const [query, setQuery] = useState('')
+  const [view, setView] = useStoredState<ViewMode>(`mortar.developView.${game}`, 'list', isViewMode)
   const here = projects.filter((p) => p.profile === openId)
+  const needle = query.trim().toLowerCase()
+  const shown = here.filter((p) => p.name.toLowerCase().includes(needle))
   const elsewhere = projects.filter((p) => p.profile !== openId)
   // Files can change in an editor while Mortar is in the background; coming back rereads them.
   const dirs = here.map((p) => p.dir).join('\n')
@@ -386,10 +416,8 @@ export function DevelopTab({ game }: { game: string }) {
         flex: 1,
         minHeight: 0,
         overflowY: 'auto',
-        p: space.gutter,
         display: 'flex',
         flexDirection: 'column',
-        gap: space.gap,
       }}
     >
       <PageActions>
@@ -398,15 +426,31 @@ export function DevelopTab({ game }: { game: string }) {
         </Button>
       </PageActions>
       {here.length === 0 ? (
-        <Typography sx={{ color: 'text.secondary' }}>
+        <Typography sx={{ color: 'text.secondary', p: space.gutter }}>
           {t`Start a mod from the template: Mortar sets up the project and installs each build into this profile.`}
         </Typography>
-      ) : null}
-      {here.map((p) => (
-        <ProjectCard key={p.dir} game={game} project={p} />
-      ))}
+      ) : (
+        <ControlsRow>
+          <ViewToggle value={view} onChange={setView} />
+          <SearchField
+            value={query}
+            onChange={setQuery}
+            label={t`Filter projects`}
+            placeholder={plural(
+              { count: here.length },
+              { one: 'Filter # project', other: 'Filter # projects' },
+            )}
+            grow={true}
+          />
+        </ControlsRow>
+      )}
+      <CardsView list={view === 'list'}>
+        {shown.map((p) => (
+          <ProjectCard key={p.dir} game={game} project={p} list={view === 'list'} />
+        ))}
+      </CardsView>
       {elsewhere.length > 0 ? (
-        <Box sx={{ mt: 2 }}>
+        <Box sx={{ px: space.gutter, pb: space.gutter }}>
           <Typography sx={{ fontWeight: 600, mb: 0.5 }}>{t`In other profiles`}</Typography>
           {elsewhere.map((p) => (
             <ElsewhereRow key={p.dir} project={p} />
