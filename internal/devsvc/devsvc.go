@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
 	"net/http"
 	"os"
 	"os/exec"
@@ -19,6 +20,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/nowindow"
@@ -237,7 +239,7 @@ func (s *Service) fromGitHub(ctx context.Context, tpl components.DevTemplate, m 
 				return nil
 			}
 		}
-		_ = os.RemoveAll(dest)
+		_ = fsx.RemoveAll(dest)
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -258,7 +260,7 @@ func (s *Service) fromArchive(ctx context.Context, tpl components.DevTemplate, d
 	if err != nil {
 		return err
 	}
-	defer func() { _ = os.RemoveAll(work) }()
+	defer func() { _ = fsx.RemoveAll(work) }()
 	zip := filepath.Join(work, "template.zip")
 	if err := github.Download(ctx, s.HTTP, url, zip, maxTemplateZip, nil); err != nil {
 		return fmt.Errorf("downloading the template %s %s: %w", tpl.Repo, tpl.Ref, err)
@@ -297,7 +299,7 @@ func writeUserProps(dir, gameDir string) error {
 		return nil
 	}
 	body := "<Project>\n  <PropertyGroup>\n    <GameRootDir>" + xmlEscape(filepath.Clean(gameDir)+string(filepath.Separator)) + "</GameRootDir>\n  </PropertyGroup>\n</Project>\n"
-	return os.WriteFile(filepath.Join(dir, "Config.Build.user.props"), []byte(body), 0o600)
+	return fsx.WriteFile(filepath.Join(dir, "Config.Build.user.props"), []byte(body), 0o600)
 }
 
 // Values fill a template's placeholders.
@@ -319,16 +321,23 @@ func Fill(dir string, v Values) error {
 		"modauthor", v.GUIDPrefix,
 		"ModYear", strconv.Itoa(v.Year),
 	)
+	// Rooted, so a link inside the template cannot lead a read, write or rename outside the project.
+	root, err := os.OpenRoot(dir)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = root.Close() }()
 	var renames []string
-	err := filepath.WalkDir(dir, func(path string, d os.DirEntry, err error) error {
+	err = fs.WalkDir(root.FS(), ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
 		if d.IsDir() && d.Name() == ".git" {
-			return filepath.SkipDir
+			return fs.SkipDir
 		}
-		if path != dir && strings.Contains(d.Name(), "ModTemplate") {
-			renames = append(renames, path)
+		name := filepath.FromSlash(path)
+		if path != "." && strings.Contains(d.Name(), "ModTemplate") {
+			renames = append(renames, name)
 		}
 		if !d.Type().IsRegular() {
 			return nil
@@ -337,12 +346,12 @@ func Fill(dir string, v Values) error {
 		if err != nil || info.Size() > maxFilledFile {
 			return err
 		}
-		body, err := os.ReadFile(path) // #nosec G304 -- a file of the project being created
+		body, err := root.ReadFile(name)
 		if err != nil || bytes.IndexByte(body, 0) >= 0 {
 			return err
 		}
 		if filled := r.Replace(string(body)); filled != string(body) {
-			return os.WriteFile(path, []byte(filled), info.Mode().Perm())
+			return root.WriteFile(name, []byte(filled), info.Mode().Perm())
 		}
 		return nil
 	})
@@ -353,7 +362,7 @@ func Fill(dir string, v Values) error {
 	slices.Reverse(renames)
 	for _, path := range renames {
 		next := filepath.Join(filepath.Dir(path), strings.ReplaceAll(filepath.Base(path), "ModTemplate", v.Name))
-		if err := os.Rename(path, next); err != nil {
+		if err := root.Rename(path, next); err != nil {
 			return err
 		}
 	}

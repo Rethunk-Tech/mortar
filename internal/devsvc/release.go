@@ -16,6 +16,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -45,7 +46,7 @@ func (s *Service) Pack(ctx context.Context, gameID, dir string) (PackResult, err
 	}
 	started := time.Now()
 	out, err := s.run(ctx, p.Dir, "dotnet", "build", "-c", "Release", "-nologo")
-	r := PackResult{BuildResult: BuildResult{OK: err == nil, Problems: ParseProblems(string(out)), Log: tail(string(out))}, Issues: []string{}}
+	r := PackResult{OK: err == nil, Problems: ParseProblems(string(out)), Log: tail(string(out)), Issues: []string{}}
 	if !r.OK {
 		return r, nil
 	}
@@ -150,11 +151,12 @@ func (s *Service) NextVersions(ctx context.Context, gameID, dir string) (Version
 	if err != nil {
 		return Versions{}, err
 	}
-	out, err := s.run(ctx, p.Dir, "git", "describe", "--tags", "--abbrev=0", "--match", "v*")
-	if err != nil {
-		return nextVersions(""), nil
+	// Before the first release git finds no tag, and the template's version stands.
+	latest := ""
+	if out, err := s.run(ctx, p.Dir, "git", "describe", "--tags", "--abbrev=0", "--match", "v*"); err == nil {
+		latest = strings.TrimPrefix(strings.TrimSpace(string(out)), "v")
 	}
-	return nextVersions(strings.TrimPrefix(strings.TrimSpace(string(out)), "v")), nil
+	return nextVersions(latest), nil
 }
 
 func nextVersions(current string) Versions {
@@ -194,13 +196,13 @@ func (s *Service) Release(ctx context.Context, gameID, dir, version string, note
 		return usererr.Wrap(usererr.Invalid, fmt.Errorf("v%s is already released", version))
 	}
 	log := filepath.Join(p.Dir, "CHANGELOG.md")
-	body, err := os.ReadFile(log) // #nosec G304 -- the project's own changelog
+	body, err := fsx.ReadFile(log)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return err
 	}
 	next := AddChangelogEntry(string(body), version, notes)
 	if next != string(body) {
-		if err := os.WriteFile(log, []byte(next), 0o644); err != nil { // #nosec G306 -- a tracked text file
+		if err := fsx.WriteFile(log, []byte(next), 0o644); err != nil { // #nosec G306 -- a tracked text file
 			return err
 		}
 		if _, err := s.run(ctx, p.Dir, "git", "add", "CHANGELOG.md"); err != nil {

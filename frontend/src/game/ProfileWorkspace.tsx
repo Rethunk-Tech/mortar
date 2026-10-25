@@ -4,6 +4,7 @@ import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/inte
 import { BrowseHost } from '../browse/BrowseHost.tsx'
 import { ConsoleTab } from '../console/ConsoleTab.tsx'
 import { PerformanceTab } from '../console/PerformanceTab.tsx'
+import { DevelopTab } from '../develop/DevelopTab.tsx'
 import { DuplicateDialog } from '../mods/DuplicateDialog.tsx'
 import { LoadOrderTab } from '../mods/LoadOrderTab.tsx'
 import { ModsTab } from '../mods/ModsTab.tsx'
@@ -60,6 +61,7 @@ export function ProfileWorkspace({ game, gameName }: { game: string; gameName: s
       <ErrorBoundary resetKey={`${tab}-${id}`}>
         {tab === 'console' ? <ConsoleTab game={game} /> : null}
         {tab === 'performance' ? <PerformanceTab game={game} /> : null}
+        {tab === 'develop' ? <DevelopTab game={game} /> : null}
         {tab === 'config' ? (
           <WithProfile show={(profile) => <ConfigTab profile={profile} game={game} />} />
         ) : null}

@@ -72,14 +72,14 @@ type GameSettings struct {
 	ExtraModsFolder string `json:"extraModsFolder,omitempty"`
 	// ExtraModsProfiles is the profile id each extra mods folder installs into, by folder; a folder it does not name
 	// installs into the open profile.
-	ExtraModsProfiles  map[string]string `json:"extraModsProfiles,omitempty"`
+	ExtraModsProfiles map[string]string `json:"extraModsProfiles,omitempty"`
 	// DevProjects are the mods the player develops for the game in the Develop tab.
-	DevProjects []DevProject `json:"devProjects,omitempty"`
-	ShowDotHiddenMods  bool              `json:"showDotHiddenMods,omitempty"`
-	OldFilesOnUpdate   string            `json:"oldFilesOnUpdate,omitempty"`
-	GameSettingsMode   string            `json:"gameSettingsMode,omitempty"`
-	CacheClearing      string            `json:"cacheClearing,omitempty"`
-	DependencyVersions string            `json:"dependencyVersions,omitempty"`
+	DevProjects        []DevProject `json:"devProjects,omitempty"`
+	ShowDotHiddenMods  bool         `json:"showDotHiddenMods,omitempty"`
+	OldFilesOnUpdate   string       `json:"oldFilesOnUpdate,omitempty"`
+	GameSettingsMode   string       `json:"gameSettingsMode,omitempty"`
+	CacheClearing      string       `json:"cacheClearing,omitempty"`
+	DependencyVersions string       `json:"dependencyVersions,omitempty"`
 	// SyncMode is whether the game's profiles sync into the Mortar-wide sync folder, into SyncOwnFolder, or not at all.
 	SyncMode      string `json:"syncMode,omitempty"`
 	SyncOwnFolder string `json:"syncOwnFolder,omitempty"`

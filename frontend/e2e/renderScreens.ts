@@ -71,6 +71,11 @@ export function screenCases(h: Helpers): Case[] {
           .click(),
     },
     { name: 'downloads-sheet', setup: toWorkspace, run: (p) => p.keyboard.press('Control+j') },
+    {
+      name: 'develop-new-mod',
+      setup: (p) => tab(p, 'Develop'),
+      run: (p) => p.getByRole('button', { name: 'New mod…' }).click(),
+    },
     ...SETTINGS_SECTIONS.map(section),
   ]
 }

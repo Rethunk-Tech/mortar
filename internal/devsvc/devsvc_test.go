@@ -15,6 +15,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
@@ -75,7 +76,7 @@ func TestCreateFromTheArchiveFillsTheTemplateAndWiresTheProfile(t *testing.T) {
 	}
 	dir := filepath.Join(parent, "shop-drop")
 	read := func(rel string) string {
-		b, err := os.ReadFile(filepath.Join(dir, rel))
+		b, err := fsx.ReadFile(filepath.Join(dir, rel))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -174,7 +175,7 @@ func TestNextVersionsAndChangelogEntries(t *testing.T) {
 
 func TestValidateNamesWhatThunderstoreWouldRefuse(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "p.zip")
-	f, err := os.Create(path)
+	f, err := fsx.Create(path)
 	if err != nil {
 		t.Fatal(err)
 	}

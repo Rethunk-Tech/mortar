@@ -196,6 +196,10 @@ Finds mods to add to the open profile; the shared header has no page actions her
 - The footer bar under the results, outside the scroll area, shows the result count and what is missing from it: hits Show hid, a source that did not answer, a source a ranked sort leaves out.
 - **Action** (`cardState.ts`): Nexus **Download** for Premium (**Sign in** while signed out), **Get** (opens the files page) for a free account, **Add** on every other source. The game's loader is not listed (Mortar installs it from the game's page); a companion Mortar installs itself shows **Built in**.
 
+## Develop tab
+
+Code: `frontend/src/develop/`. In its own sidebar group (**Create**), only for a game whose loader names a mod template. **New mod…** in the page-actions slot opens the wizard; each project is a card whose row of actions never wraps a label, with the last build's outcome as compact Alerts below and each compiler error a link to its file and line. The wizard says why **Start mod** is off in its tooltip, remembers the author, team, id prefix and projects folder, and offers the GitHub repository only when `gh` is signed in.
+
 ## Problems tab
 
 A full-height tab listing the profile's problems by section. Code: `frontend/src/mods/ProblemsTab.tsx`, `problemFix/` (each row's fixes as one split button: `fixActions.tsx`, `arrangeFixes.ts`); each kind's plain-language explanation is `problemWhy.ts`, backed by [user-guide.md](user-guide.md).

@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase } from '@mui/material'
 import {
   Gauge,
+  Hammer,
   House,
   Images,
   List,
@@ -57,6 +58,7 @@ const icons: Record<TabId, LucideIcon> = {
   'load-order': List,
   performance: Gauge,
   console: SquareTerminal,
+  develop: Hammer,
 }
 
 const tours: Partial<Record<TabId, string>> = {
@@ -214,10 +216,12 @@ function useLabels(): Record<TabId, string> & Record<SidebarGroupId, string> {
     'load-order': t`Load order`,
     performance: t`Performance`,
     console: t`Console`,
+    develop: t`Develop`,
     library: t`Library`,
     get: t`Get mods`,
     health: t`Health`,
     logs: t`Logs`,
+    create: t`Create`,
   }
 }
 
@@ -238,6 +242,7 @@ function Sections({ rail }: { rail: boolean }) {
     startup: Boolean(loader?.startup),
     screenshots: Boolean(gameInfo?.hasScreenshots),
     saves: Boolean(gameInfo?.hasSaves),
+    develop: Boolean(gameInfo?.loaders?.[0]?.devTemplate),
   }
   // A section saved from another game or loader is not there; fall back to Mods.
   const unavailable = loader !== undefined && tabUnavailable(current, caps)

@@ -212,6 +212,12 @@ A card on the profile's Home names the likely cause, read from the loader's log 
 - **Most likely cause: \<mod\>** shows the log line and the **Stack frame** or dump line. **Disable it and play** disables that mod and relaunches.
 - **Find the cause…** first checks that the game crashes with every mod on, then disables mods in halves and relaunches until one is left. A library stays on while a mod that needs it is on. **Dismiss** hides the card for that run.
 
+## Make your own mods
+
+For a game whose loader has a mod template (Lethal Company), **Develop** in the sidebar starts a mod: **New mod…** asks for its name, a one-line description, the author, Thunderstore team and id prefix, and where the project goes. Signed in to the `gh` tool, Mortar can create a GitHub repository for it; otherwise it copies the template into the folder. The project builds against your copy of the game, and every build installs into a development profile (one Mortar creates, or one you pick).
+
+Each project has **Build** (compiler errors open in VS Code, VSCodium or Rider at the line), **Build on save**, **Pack** (a Thunderstore package, checked for what an upload would refuse), **Release…** (the next version, a changelog entry and a git tag; push them yourself) and **Test with 2 copies** (a host and a client of the development profile on one computer). Mortar needs the .NET SDK to build and git to keep the history; the dialog says what is missing.
+
 ## Problems
 
 The **Problems** tab checks the open profile for missing requirements, conflicts, broken or outdated mods, damaged files, duplicates and more. It warns and never blocks Play.

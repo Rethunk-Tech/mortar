@@ -69,12 +69,13 @@ func (s *Service) Build(ctx context.Context, gameID, dir string) (BuildResult, e
 	if err != nil {
 		return BuildResult{}, err
 	}
-	mu, _ := building.LoadOrStore(p.Dir, &sync.Mutex{})
-	mu.(*sync.Mutex).Lock()
-	defer mu.(*sync.Mutex).Unlock()
+	stored, _ := building.LoadOrStore(p.Dir, &sync.Mutex{})
+	if mu, ok := stored.(*sync.Mutex); ok {
+		mu.Lock()
+		defer mu.Unlock()
+	}
 	out, err := s.run(ctx, p.Dir, "dotnet", "build", "-c", "Debug", "-nologo")
-	var missing *exec.Error
-	if errors.As(err, &missing) {
+	if _, missing := errors.AsType[*exec.Error](err); missing {
 		return BuildResult{}, usererr.Wrap(usererr.NotFound, errors.New("install the .NET SDK to build mods"))
 	}
 	return BuildResult{OK: err == nil, Problems: ParseProblems(string(out)), Log: tail(string(out))}, nil
@@ -110,7 +111,7 @@ func (s *Service) OpenProject(gameID, dir string) error {
 
 // OpenAt opens file, which must be inside the project in dir, in the first code editor found (VS Code, VSCodium,
 // Rider) at line and column, else in the system's editor for it.
-func (s *Service) OpenAt(ctx context.Context, gameID, dir, file string, line, column int) error {
+func (s *Service) OpenAt(gameID, dir, file string, line, column int) error {
 	p, err := s.project(gameID, dir)
 	if err != nil {
 		return err
@@ -126,7 +127,7 @@ func (s *Service) OpenAt(ctx context.Context, gameID, dir, file string, line, co
 		if _, err := exec.LookPath(editor[0]); err != nil {
 			continue
 		}
-		cmd := exec.CommandContext(context.WithoutCancel(ctx), editor[0], editor[1:]...) // #nosec G204 -- fixed editors; file is inside the project
+		cmd := exec.CommandContext(context.Background(), editor[0], editor[1:]...) // #nosec G204 -- fixed editors; file is inside the project
 		nowindow.Set(cmd)
 		if err := cmd.Start(); err == nil {
 			go func() { _ = cmd.Wait() }()

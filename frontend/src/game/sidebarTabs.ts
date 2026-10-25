@@ -1,6 +1,6 @@
 import type { TabId } from './tab.ts'
 
-type SidebarGroupId = 'library' | 'get' | 'health' | 'logs'
+type SidebarGroupId = 'library' | 'get' | 'health' | 'logs' | 'create'
 
 // What the open profile's loader supports; a section the loader lacks has no entry.
 interface SidebarCaps {
@@ -9,6 +9,8 @@ interface SidebarCaps {
   startup: boolean
   screenshots: boolean
   saves: boolean
+  // The loader names a template a new mod starts from.
+  develop: boolean
 }
 
 interface SidebarCounts {
@@ -53,6 +55,7 @@ function sidebarGroups(caps: SidebarCaps, counts: SidebarCounts): SidebarGroup[]
       ],
     },
     { id: 'logs', entries: caps.console ? [{ id: 'console', badge: null }] : [] },
+    { id: 'create', entries: caps.develop ? [{ id: 'develop', badge: null }] : [] },
   ]
   return groups.filter((g) => g.entries.length > 0)
 }
@@ -64,7 +67,8 @@ function tabUnavailable(tab: TabId, caps: SidebarCaps): boolean {
     (tab === 'console' && !caps.console) ||
     (tab === 'performance' && !caps.startup) ||
     (tab === 'screenshots' && !caps.screenshots) ||
-    (tab === 'saves' && !caps.saves)
+    (tab === 'saves' && !caps.saves) ||
+    (tab === 'develop' && !caps.develop)
   )
 }
 
