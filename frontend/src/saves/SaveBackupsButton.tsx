@@ -1,6 +1,6 @@
 import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Badge, Box, Popover, Typography } from '@mui/material'
+import { Box, Popover, Typography } from '@mui/material'
 import { History, Pin, PinOff, RotateCcw, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import type { Backup } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/backup/models.ts'
@@ -144,7 +144,7 @@ export function SaveBackupsButton({
     [],
   )
   const count = backups?.length ?? 0
-  // The name starts with the badge's number, as a label that names what is shown must.
+  // The count lives in the button's name, not a badge, so the card stays quiet.
   const tip =
     count > 0
       ? i18n._(msg`${plural(count, { one: '# backup', other: '# backups' })}`)
@@ -171,9 +171,7 @@ export function SaveBackupsButton({
         aria-expanded={anchor !== null}
         onClick={(e) => setAnchor(e.currentTarget)}
       >
-        <Badge badgeContent={count} color="primary" max={99} overlap="circular">
-          <History size={16} />
-        </Badge>
+        <History size={16} />
       </TipIconButton>
       <Popover
         open={anchor !== null}
