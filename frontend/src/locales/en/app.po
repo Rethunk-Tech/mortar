@@ -4542,6 +4542,10 @@ msgstr "That request was not valid."
 msgid "Description"
 msgstr "Description"
 
+#: src/share/ManagerPane.tsx
+msgid "Looking for other mod managers' profiles…"
+msgstr "Looking for other mod managers' profiles…"
+
 #: src/browse/BrowseDetails.tsx
 #: src/develop/EditProjectDialog.tsx
 msgid "Categories"

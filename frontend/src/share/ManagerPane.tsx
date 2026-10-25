@@ -21,6 +21,7 @@ import { VortexFolderPrompt } from '../profiles/VortexFolderPrompt.tsx'
 import { offerVortexFolder } from '../profiles/vortexFolderOffer.ts'
 import { DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -59,6 +60,25 @@ async function importEach(game: string, folders: string[], failed: string): Prom
     })
   }
   return first
+}
+
+// r2modman's and Gale's profiles by folder, then each other manager's by source and id.
+function foundProfiles(
+  folders: Found[] | null,
+  external: ReturnType<typeof useExternalImportSources>['sources'],
+): Found[] {
+  return [
+    ...(folders ?? []),
+    ...external.flatMap((s) =>
+      (s.profiles ?? []).map((p) => ({
+        key: `${s.kind}:${p.id}`,
+        source: s.name,
+        name: p.name,
+        mods: p.mods,
+        external: { kind: s.kind, id: p.id },
+      })),
+    ),
+  ]
 }
 
 // The profiles other mod managers keep for this game on this computer: r2modman, Gale, Vortex, Mod Organizer 2 and
@@ -110,18 +130,7 @@ export function useManagerPane({
       loadFolders()
     }
   }, [active, loadFolders])
-  const all: Found[] = [
-    ...(folders ?? []),
-    ...external.flatMap((s) =>
-      (s.profiles ?? []).map((p) => ({
-        key: `${s.kind}:${p.id}`,
-        source: s.name,
-        name: p.name,
-        mods: p.mods,
-        external: { kind: s.kind, id: p.id },
-      })),
-    ),
-  ]
+  const all = foundProfiles(folders, external)
   const pick = (f: Found) => {
     if (f.folder) {
       onFolder(f.folder)
@@ -141,6 +150,14 @@ export function useManagerPane({
   }
   const body = (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, px: 3, py: 2.5 }}>
+      {folders === null ? (
+        <SkeletonRows
+          label={t`Looking for other mod managers' profiles…`}
+          count={3}
+          height={44}
+          immediate={true}
+        />
+      ) : null}
       {folders !== null && all.length === 0 ? (
         <EmptyState compact={true} icon={<Inbox size={28} />} title={t`No profiles found.`}>
           {t`Mortar found no other mod manager's profiles for this game on this computer.`}

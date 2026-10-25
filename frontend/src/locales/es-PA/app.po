@@ -4542,6 +4542,10 @@ msgstr ""
 msgid "Description"
 msgstr ""
 
+#: src/share/ManagerPane.tsx
+msgid "Looking for other mod managers' profiles…"
+msgstr ""
+
 #: src/browse/BrowseDetails.tsx
 #: src/develop/EditProjectDialog.tsx
 msgid "Categories"

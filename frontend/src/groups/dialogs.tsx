@@ -67,7 +67,7 @@ function SavedGroupPickList({
 }) {
   const { t } = useLingui()
   if (loading) {
-    return <SkeletonRows label={t`Loading saved groups…`} count={4} height={36} />
+    return <SkeletonRows label={t`Loading saved groups…`} count={4} height={36} immediate={true} />
   }
   if (savedGroups.length === 0) {
     return empty
