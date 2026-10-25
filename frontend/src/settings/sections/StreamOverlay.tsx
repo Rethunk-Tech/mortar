@@ -10,7 +10,7 @@ import {
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { OBS } from '../../brand/productNames.ts'
 import { copyText } from '../../share/copyText.ts'
-import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
 import { TipIconButton } from '../../shell/TipIconButton.tsx'
 import { space } from '../../theme/density.ts'
 import { reportError } from '../../toasts/report.ts'
@@ -251,12 +251,12 @@ function OverlayRegenDialog({
 }) {
   const { t } = useLingui()
   return (
-    <ConfirmDialog
+    <ConfirmationDialog
       open={open}
       title={t`Regenerate token?`}
       body={t`Existing ${{ app: OBS }} sources stop working until their URLs are copied again.`}
       confirmLabel={t`Regenerate token`}
-      color="error"
+      tone="danger"
       onCancel={onClose}
       onConfirm={onConfirm}
     />

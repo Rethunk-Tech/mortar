@@ -3,7 +3,7 @@ import { type ReactNode, useEffect, useRef, useState } from 'react'
 import { listedTitle } from '../mods/brokenKind.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { useQueue } from '../queue/store.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { usePending } from '../toasts/usePending.ts'
 import { GITHUB, NEXUS, THUNDERSTORE } from './browseConstants.ts'
 import type { BrowseItem, ResultCardProps } from './browseTypes.ts'
@@ -115,7 +115,7 @@ function useCardAction(props: ActionProps, item: BrowseItem, source: string): Ca
           onDownload={onDownload}
           onOpenFiles={onOpenFiles}
         />
-        <ConfirmDialog
+        <ConfirmationDialog
           open={asking !== null && listed !== undefined}
           title={listedTitle(listed?.kind, shownItem.name)}
           body={
@@ -124,7 +124,7 @@ function useCardAction(props: ActionProps, item: BrowseItem, source: string): Ca
               : listed?.reason
           }
           confirmLabel={t`Install anyway`}
-          color="warning"
+          tone="warning"
           onCancel={() => setAsking(null)}
           onConfirm={() => {
             asking?.()

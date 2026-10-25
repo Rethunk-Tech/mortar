@@ -2,7 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { useState } from 'react'
 import { SaveGroup } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savedgroups/service.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { PromptDialog } from '../shell/PromptDialog.tsx'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -56,7 +56,7 @@ export function SaveGroupToLibrary({
           save(name, false)
         }}
       />
-      <ConfirmDialog
+      <ConfirmationDialog
         open={open && replacing !== null}
         title={t`Replace ${{ name: replacing ?? '' }}?`}
         body={t`A saved group with this name already exists.`}

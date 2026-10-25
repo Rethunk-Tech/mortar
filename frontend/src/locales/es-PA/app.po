@@ -233,10 +233,6 @@ msgstr ""
 msgid "{name} needs {detail}, which Mortar cannot install"
 msgstr ""
 
-#: src/develop/EditProjectDialog.tsx
-msgid "Renames the project's folder, files and namespace."
-msgstr ""
-
 #: src/tidy/report.ts
 msgid "Removed a leftover mod folder"
 msgstr ""
@@ -872,6 +868,7 @@ msgstr ""
 msgid "Download again"
 msgstr ""
 
+#: src/develop/NewModDialog.tsx
 #: src/firstrunTour/TourPopover.tsx
 msgid "Step {step} of {count}"
 msgstr ""
@@ -925,6 +922,10 @@ msgstr ""
 
 #: src/toasts/report.ts
 msgid "Mortar does not have permission to do that."
+msgstr ""
+
+#: src/develop/ReleaseDialog.tsx
+msgid "Say what changed."
 msgstr ""
 
 #: src/nxm/store.ts
@@ -1531,6 +1532,10 @@ msgstr ""
 msgid "Attach diagnostics (a zip of checks, logs and settings with secrets and your home folder removed; you drag it into the issue)"
 msgstr ""
 
+#: src/develop/EditProjectDialog.tsx
+msgid "Plugin id"
+msgstr ""
+
 #: src/game/detailStates.tsx
 msgid "A profile holds one set of mods for this game."
 msgstr ""
@@ -1973,8 +1978,6 @@ msgstr ""
 msgid "Mortar already named the likely mod for the last crash."
 msgstr ""
 
-#: src/develop/EditProjectDialog.tsx
-#: src/develop/NewModDialog.tsx
 #: src/fomod/Dialog.tsx
 #: src/game/NewProfileDialog.tsx
 #: src/groups/ApplySavedGroupToProfile.tsx
@@ -1994,10 +1997,8 @@ msgstr ""
 #: src/queue/QueueBody.tsx
 #: src/share/ModpackDialog.tsx
 #: src/shell/BugReportDialog.tsx
-#: src/shell/ConfirmDialog.tsx
 #: src/shell/dialog/ConfirmationDialog.tsx
 #: src/shell/dialog/FormDialog.tsx
-#: src/shell/PromptDialog.tsx
 #: src/shell/SuggestDialog.tsx
 #: src/templates/ApplyTemplateDialog.tsx
 #: src/tools/ToolEditorDialog.tsx
@@ -2313,6 +2314,10 @@ msgstr ""
 msgid "This archive holds several variants of the same mod. Pick the one to install; updates keep it."
 msgstr ""
 
+#: src/develop/EditProjectDialog.tsx
+msgid "Identity"
+msgstr ""
+
 #: src/tools/ToolEditorDialog.tsx
 msgid "Working directory"
 msgstr ""
@@ -2497,6 +2502,10 @@ msgstr ""
 
 #: src/game/FarmMenuItem.tsx
 msgid "This profile matches {host}."
+msgstr ""
+
+#: src/develop/EditProjectDialog.tsx
+msgid "What players see on {source}."
 msgstr ""
 
 #: src/games/GameMenu.tsx
@@ -2746,6 +2755,10 @@ msgstr ""
 msgid "Open console"
 msgstr ""
 
+#: src/develop/ReleaseDialog.tsx
+msgid "Pick the version."
+msgstr ""
+
 #: src/firstrun/FindStep.tsx
 msgid "has {name}"
 msgstr ""
@@ -2934,6 +2947,10 @@ msgstr ""
 
 #: src/queue/store.ts
 msgid "{source} rejected your API key"
+msgstr ""
+
+#: src/develop/EditProjectDialog.tsx
+msgid "Listing"
 msgstr ""
 
 #: src/share/MethodPanes.tsx
@@ -3165,12 +3182,12 @@ msgstr ""
 msgid "Rescan"
 msgstr ""
 
-#: src/develop/NewModDialog.tsx
 #: src/firstrunTour/TourPopover.tsx
 #: src/fomod/Dialog.tsx
 #: src/lan/SendPanel.tsx
 #: src/share/ImportDialog.tsx
 #: src/share/ShareDialog.tsx
+#: src/shell/dialog/FormDialog.tsx
 msgid "Back"
 msgstr ""
 
@@ -3236,6 +3253,10 @@ msgstr ""
 
 #: src/saves/backups.ts
 msgid "Before updating {name}"
+msgstr ""
+
+#: src/develop/NewModDialog.tsx
+msgid "Repository"
 msgstr ""
 
 #: src/browse/BrowseShow.tsx
@@ -3542,6 +3563,10 @@ msgstr ""
 msgid "The profile stays restorable for 30 days from Recently deleted."
 msgstr ""
 
+#: src/develop/EditProjectDialog.tsx
+msgid "Saved into the project's own files."
+msgstr ""
+
 #: src/browse/CardProgress.tsx
 msgid "Needs input"
 msgstr ""
@@ -3799,6 +3824,10 @@ msgstr ""
 msgid "Install separately"
 msgstr ""
 
+#: src/develop/EditProjectDialog.tsx
+msgid "Credits"
+msgstr ""
+
 #: src/firstrun/LoaderStep.tsx
 msgid "Installing {loader}"
 msgstr ""
@@ -4032,10 +4061,6 @@ msgstr ""
 #: src/sync/store.ts
 #: src/sync/SyncOffers.tsx
 msgid "{name} is not syncing yet"
-msgstr ""
-
-#: src/develop/EditProjectDialog.tsx
-msgid "The plugin's id: {name}"
 msgstr ""
 
 #: src/share/Included.tsx
@@ -4330,6 +4355,7 @@ msgid "Description"
 msgstr ""
 
 #: src/browse/BrowseDetails.tsx
+#: src/develop/EditProjectDialog.tsx
 msgid "Categories"
 msgstr ""
 
@@ -4406,6 +4432,10 @@ msgstr ""
 
 #: src/launch/StopDialog.tsx
 msgid "{game} will close now, and any progress since your last save is lost."
+msgstr ""
+
+#: src/develop/EditProjectDialog.tsx
+msgid "Other mods know it by this."
 msgstr ""
 
 #: src/downloads/autoInstall.ts
@@ -4947,10 +4977,6 @@ msgstr ""
 
 #: src/install/offerInstallAnyway.ts
 msgid "The antivirus flagged it, so Mortar did not install it."
-msgstr ""
-
-#: src/develop/EditProjectDialog.tsx
-msgid "Categories on {source}"
 msgstr ""
 
 #: src/updates/WhatsNewDialog.tsx
@@ -5892,6 +5918,10 @@ msgstr ""
 msgid "{game} was updated: mods to check"
 msgstr ""
 
+#: src/develop/ReleaseDialog.tsx
+msgid "Adds the changelog entry, commits it and tags the version."
+msgstr ""
+
 #: src/browse/BrowseToolbar.tsx
 msgid "Source"
 msgstr ""
@@ -5953,6 +5983,10 @@ msgstr ""
 
 #: src/game/ProfileMenuItems.tsx
 msgid "Unfreeze"
+msgstr ""
+
+#: src/shell/PromptDialog.tsx
+msgid "{label} is empty."
 msgstr ""
 
 #: src/install/ArchivePreview.tsx
@@ -6582,6 +6616,10 @@ msgstr ""
 
 #: src/tools/ToolsManageDialog.tsx
 msgid "This tool will be removed from Mortar."
+msgstr ""
+
+#: src/develop/EditProjectDialog.tsx
+msgid "Renaming moves the project's folder, files and namespace."
 msgstr ""
 
 #: src/develop/NewModDialog.tsx

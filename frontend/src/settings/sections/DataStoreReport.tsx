@@ -31,7 +31,7 @@ import { gameInfo } from '../../games/info.ts'
 import { formatBytes } from '../../i18n/bytes.ts'
 import { When } from '../../i18n/When.tsx'
 import { AfterDelay } from '../../shell/AfterDelay.tsx'
-import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
 import { space } from '../../theme/density.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { usePending } from '../../toasts/usePending.ts'
@@ -438,12 +438,12 @@ function CleanupDialog({
           {t`Delete`}
         </Button>
       </DialogActions>
-      <ConfirmDialog
+      <ConfirmationDialog
         open={confirm}
         title={t`Delete the selected items?`}
         body={t`This frees ${{ size: formatBytes(bytes) }}. Deleted mods download again if a profile needs them later.`}
         confirmLabel={t`Delete`}
-        color="error"
+        tone="danger"
         busy={busy}
         onCancel={() => setConfirm(false)}
         onConfirm={run}

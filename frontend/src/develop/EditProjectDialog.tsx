@@ -1,13 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Alert,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TextField,
-} from '@mui/material'
+import { Alert } from '@mui/material'
+import { Hammer } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type {
   Choice,
@@ -19,8 +12,14 @@ import {
   TemplateForm,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
-import { useDiscardGuard } from '../shell/useDiscardGuard.tsx'
-import { space } from '../theme/density.ts'
+import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
+import {
+  DerivedValue,
+  FieldRow,
+  FormDialog,
+  FormSection,
+  TextInput,
+} from '../shell/dialog/FormDialog.tsx'
 import { usePending } from '../toasts/usePending.ts'
 import { buildProject, useProjectInfo } from './builds.ts'
 import { ChoicePicker } from './ChoicePicker.tsx'
@@ -67,7 +66,6 @@ export function EditProjectDialog({
   const [saving, run] = usePending()
   const categories = useCategoryChoices(game, edit.categories ?? [])
   const dirty = JSON.stringify(edit) !== JSON.stringify(editOf(info))
-  const guard = useDiscardGuard(dirty, onClose)
   const set = (next: Partial<ProjectEdit>) => setEdit((e) => ({ ...e, ...next }))
   const renames = edit.name !== info.name || edit.idPrefix !== info.idPrefix
   const save = () =>
@@ -83,77 +81,74 @@ export function EditProjectDialog({
       },
       { errorTitle: t`Could not save the mod's details` },
     )
+  const thunderstore = sourceLabel('thunderstore')
   return (
-    <Dialog open={true} onClose={guard.request} maxWidth="sm" fullWidth={true}>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault()
-          if (!saving && dirty) {
-            save()
-          }
-        }}
+    <FormDialog
+      open={true}
+      onClose={onClose}
+      title={t`Edit ${{ name: info.name }}`}
+      subtitle={t`Saved into the project's own files.`}
+      icon={
+        <ToneIcon tone="neutral">
+          <Hammer size={22} />
+        </ToneIcon>
+      }
+      submitLabel={t`Save`}
+      dirty={dirty}
+      busy={saving}
+      onSubmit={dirty ? save : onClose}
+    >
+      <FormSection
+        title={t`Identity`}
+        description={t`Renaming moves the project's folder, files and namespace.`}
       >
-        <DialogTitle>{t`Edit ${{ name: info.name }}`}</DialogTitle>
-        <DialogContent
-          sx={{ display: 'flex', flexDirection: 'column', gap: space.pad, pt: space.gap }}
-        >
-          {renames && info.released ? (
-            <Alert severity="warning">
-              {t`Players already have ${{ version: info.released }}: a new name or id makes their game see a different mod, with fresh settings.`}
-            </Alert>
-          ) : null}
-          <TextField
-            label={t`Mod name`}
-            value={edit.name}
-            onChange={(e) => set({ name: e.target.value })}
-            fullWidth={true}
-            helperText={t`Renames the project's folder, files and namespace.`}
-          />
-          <TextField
+        {renames && info.released ? (
+          <Alert severity="warning">
+            {t`Players already have ${{ version: info.released }}: a new name or id makes their game see a different mod, with fresh settings.`}
+          </Alert>
+        ) : null}
+        <FieldRow>
+          <TextInput label={t`Mod name`} value={edit.name} onChange={(name) => set({ name })} />
+          <TextInput
             label={t`Id prefix`}
             value={edit.idPrefix}
-            onChange={(e) => set({ idPrefix: e.target.value })}
-            fullWidth={true}
-            helperText={t`The plugin's id: ${{ name: `${edit.idPrefix}.${edit.name}` }}`}
+            onChange={(idPrefix) => set({ idPrefix })}
           />
-          <TextField
-            label={t`Description`}
-            value={edit.description}
-            onChange={(e) => set({ description: e.target.value })}
-            fullWidth={true}
-            multiline={true}
-            minRows={2}
-            helperText={`${edit.description.length}/${MAX_DESCRIPTION}`}
-          />
-          <ChoicePicker
-            label={t`Categories on ${{ source: sourceLabel('thunderstore') }}`}
-            choices={categories}
-            value={edit.categories ?? []}
-            onChange={(next) => set({ categories: next })}
-          />
-          <TextField
-            label={t`Author`}
-            value={edit.author}
-            onChange={(e) => set({ author: e.target.value })}
-            fullWidth={true}
-          />
-          <TextField
-            label={t`Team on ${{ source: sourceLabel('thunderstore') }}`}
+        </FieldRow>
+        <DerivedValue
+          label={t`Plugin id`}
+          value={`${edit.idPrefix}.${edit.name}`}
+          hint={t`Other mods know it by this.`}
+        />
+      </FormSection>
+      <FormSection
+        title={t`Listing`}
+        description={t`What players see on ${{ source: thunderstore }}.`}
+      >
+        <TextInput
+          label={t`Description`}
+          value={edit.description}
+          onChange={(description) => set({ description })}
+          maxLength={MAX_DESCRIPTION}
+          multiline={true}
+        />
+        <ChoicePicker
+          label={t`Categories`}
+          choices={categories}
+          value={edit.categories ?? []}
+          onChange={(next) => set({ categories: next })}
+        />
+      </FormSection>
+      <FormSection title={t`Credits`}>
+        <FieldRow>
+          <TextInput label={t`Author`} value={edit.author} onChange={(author) => set({ author })} />
+          <TextInput
+            label={t`Team on ${{ source: thunderstore }}`}
             value={edit.team}
-            onChange={(e) => set({ team: e.target.value })}
-            fullWidth={true}
+            onChange={(team) => set({ team })}
           />
-        </DialogContent>
-        <DialogActions>
-          <Button type="button" onClick={guard.request}>
-            {t`Cancel`}
-          </Button>
-          <Button type="submit" variant="contained" disabled={saving || !dirty}>
-            {t`Save`}
-          </Button>
-        </DialogActions>
-      </form>
-      {guard.dialog}
-    </Dialog>
+        </FieldRow>
+      </FormSection>
+    </FormDialog>
   )
 }

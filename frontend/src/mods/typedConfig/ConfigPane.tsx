@@ -5,7 +5,7 @@ import { type RefObject, useEffect, useLayoutEffect, useMemo, useRef, useState }
 import type { Mod } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { openProfileOf, useProfiles } from '../../profiles/store.ts'
 import { useSettings } from '../../settings/store.ts'
-import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
 import { SearchField } from '../../shell/SearchField.tsx'
 import { Tooltip } from '../../shell/Tooltip.tsx'
 import { OnlyHereFileButton } from '../../sync/pins.tsx'
@@ -483,12 +483,12 @@ export function ConfigPane({
           <Sections shown={file ? filterFile(file, query) : null} />
         )}
       </Box>
-      <ConfirmDialog
+      <ConfirmationDialog
         open={deleting}
         title={t`Delete ${{ name: initialFile ?? name }}?`}
         body={t`No mod owns this file. It is removed from this profile, and the game makes a new one if it needs it.`}
         confirmLabel={t`Delete`}
-        color="error"
+        tone="danger"
         onCancel={() => setDeleting(false)}
         onConfirm={() => {
           setDeleting(false)
@@ -501,7 +501,7 @@ export function ConfigPane({
             .catch(reportUnexpected)
         }}
       />
-      <ConfirmDialog
+      <ConfirmationDialog
         open={confirming}
         title={t`Reset all entries?`}
         body={
@@ -510,7 +510,7 @@ export function ConfigPane({
             : t`Every entry in ${current} goes back to its default.`
         }
         confirmLabel={t`Reset all`}
-        color="warning"
+        tone="warning"
         onCancel={() => setConfirming(false)}
         onConfirm={() => {
           setConfirming(false)

@@ -9,8 +9,8 @@ import {
   ReadConfig,
   SaveConfigPreset,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { destructiveSx } from '../shell/destructive.ts'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { PromptDialog } from '../shell/PromptDialog.tsx'
 import { MenuRule } from '../shell/TitleMenu.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -144,7 +144,7 @@ function PresetsButton({ mod }: { mod: Mod }) {
           save(value)
         }}
       />
-      <ConfirmDialog
+      <ConfirmationDialog
         open={replacing !== null}
         title={t`Replace ${{ name: replacing ?? '' }}?`}
         body={t`A preset with this name already exists.`}
@@ -152,12 +152,12 @@ function PresetsButton({ mod }: { mod: Mod }) {
         onCancel={() => setReplacing(null)}
         onConfirm={() => save(replacing ?? '')}
       />
-      <ConfirmDialog
+      <ConfirmationDialog
         open={pendingDelete !== null}
         title={t`Delete ${{ name: pendingDelete ?? '' }}?`}
         body={t`This preset will be deleted.`}
         confirmLabel={t`Delete preset`}
-        color="error"
+        tone="danger"
         onCancel={() => setPendingDelete(null)}
         onConfirm={() => {
           const name = pendingDelete

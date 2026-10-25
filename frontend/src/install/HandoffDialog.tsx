@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { useHandoffAsk } from './handoffConfirm.ts'
 
 /** The confirm behind a file saved from an itch.io or Patreon page Mortar opened: record it against the page, or add it as a local file. */
@@ -13,7 +13,7 @@ export function HandoffDialog() {
     a?.answer(yes)
   }
   return (
-    <ConfirmDialog
+    <ConfirmationDialog
       open={asking !== undefined}
       title={t`Install ${{ file: asking?.file ?? '' }} as from ${{ page: asking?.page ?? '' }}?`}
       body={t`Mortar records the file against that page, so the mod's page link and shares point there. Choose No to add it as a plain local file.`}

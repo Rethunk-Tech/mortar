@@ -2,7 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Typography } from '@mui/material'
 import { useState } from 'react'
 import { historyLabel } from '../../profiles/historyLabel.ts'
-import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { restoreBatch, useUndoAll } from './undoAll.ts'
 
@@ -13,11 +13,11 @@ export function UndoAllConfirm() {
   const [busy, setBusy] = useState(false)
   const close = () => useUndoAll.setState({ target: null })
   return (
-    <ConfirmDialog
+    <ConfirmationDialog
       open={target !== null}
       title={t`Undo all also reverts later changes`}
       confirmLabel={t`Undo all`}
-      color="warning"
+      tone="warning"
       busy={busy}
       onCancel={close}
       onConfirm={() => {
@@ -41,6 +41,6 @@ export function UndoAllConfirm() {
           {historyLabel(e)}
         </Typography>
       ))}
-    </ConfirmDialog>
+    </ConfirmationDialog>
   )
 }

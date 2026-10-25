@@ -1,12 +1,14 @@
 import { useLingui } from '@lingui/react/macro'
 import { MenuItem, TextField } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { Tag } from 'lucide-react'
+import { useEffect, useId, useState } from 'react'
 import type { Versions } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import {
   NextVersions,
   Release,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
+import { Field, FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 
@@ -27,6 +29,7 @@ export function ReleaseDialog({
   const [version, setVersion] = useState('')
   const [notes, setNotes] = useState('')
   const [pending, run] = usePending()
+  const versionId = useId()
   useEffect(() => {
     NextVersions(game, dir)
       .then((v) => {
@@ -50,46 +53,61 @@ export function ReleaseDialog({
       },
       { errorTitle: t`Could not release the mod` },
     )
+  let issue = ''
+  if (version === '') {
+    issue = t`Pick the version.`
+  } else if (lines.length === 0) {
+    issue = t`Say what changed.`
+  }
   return (
-    <ConfirmDialog
+    <FormDialog
       open={true}
+      onClose={onClose}
       title={t`Release ${{ name }}`}
-      confirmLabel={t`Release`}
+      subtitle={t`Adds the changelog entry, commits it and tags the version.`}
+      icon={
+        <ToneIcon tone="neutral">
+          <Tag size={22} />
+        </ToneIcon>
+      }
+      size="sm"
+      submitLabel={t`Release`}
+      issue={issue}
+      dirty={notes.trim() !== ''}
       busy={pending}
-      confirmDisabled={version === '' || lines.length === 0}
-      fieldFocus={true}
-      maxWidth={480}
-      onCancel={onClose}
-      onConfirm={release}
+      onSubmit={release}
     >
-      <TextField
-        select={true}
-        size="small"
-        fullWidth={true}
+      <Field
         label={t`Version`}
-        value={version}
-        onChange={(e) => setVersion(e.target.value)}
-        sx={{ mb: 2 }}
-        helperText={
+        htmlFor={versionId}
+        hint={
           versions?.current
             ? t`Last released: ${{ version: versions.current }}`
             : t`Not released yet`
         }
       >
-        {choices.map((v) => (
-          <MenuItem key={v} value={v}>
-            {v}
-          </MenuItem>
-        ))}
-      </TextField>
-      <TextField
-        multiline={true}
-        minRows={3}
-        fullWidth={true}
+        <TextField
+          id={versionId}
+          select={true}
+          size="small"
+          fullWidth={true}
+          value={version}
+          onChange={(e) => setVersion(e.target.value)}
+        >
+          {choices.map((v) => (
+            <MenuItem key={v} value={v}>
+              {v}
+            </MenuItem>
+          ))}
+        </TextField>
+      </Field>
+      <TextInput
         label={t`What changed, one line each`}
         value={notes}
-        onChange={(e) => setNotes(e.target.value)}
+        onChange={setNotes}
+        multiline={true}
+        autoFocus={true}
       />
-    </ConfirmDialog>
+    </FormDialog>
   )
 }

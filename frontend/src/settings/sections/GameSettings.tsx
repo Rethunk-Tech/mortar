@@ -21,7 +21,7 @@ import { SMAPI, STEAM } from '../../brand/productNames.ts'
 import { gameInfo, useGameInfo, useGameName } from '../../games/info.ts'
 import { storeName } from '../../games/storeName.ts'
 import { currentGame, useCurrentGame } from '../../nav/currentGame.ts'
-import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
 import { FlatpakGrant } from '../../shell/FlatpakGrant.tsx'
 import { space } from '../../theme/density.ts'
 import { type InlineError, inlineError, reportError, toastError } from '../../toasts/report.ts'
@@ -63,12 +63,12 @@ function ResetInstallDialog({
   const { t } = useLingui()
   const loader = useGameInfo()?.loader ?? ''
   return (
-    <ConfirmDialog
+    <ConfirmationDialog
       open={open}
       title={t`Reset game install?`}
       body={t`This deletes the game folder at ${{ path: folder }}, with every file in it, including ${loader} and mods placed there. Your saves and your profiles' mods are stored elsewhere and are kept.`}
       confirmLabel={t`Reset install`}
-      color="error"
+      tone="danger"
       busy={busy}
       onCancel={onClose}
       onConfirm={onConfirm}

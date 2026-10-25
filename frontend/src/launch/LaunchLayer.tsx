@@ -23,7 +23,7 @@ import { nexusDomain } from '../mods/nexusDomain.ts'
 import { nexusModUrl } from '../mods/nexusUrl.ts'
 import { useMods } from '../mods/store.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { FlatpakGrant } from '../shell/FlatpakGrant.tsx'
 import { SyncOffers } from '../sync/SyncOffers.tsx'
 import { space } from '../theme/density.ts'
@@ -126,7 +126,7 @@ function DirectDialog() {
   const ask = useLaunch((s) => s.askDirect)
   const answer = useLaunch((s) => s.answerDirect)
   return (
-    <ConfirmDialog
+    <ConfirmationDialog
       open={ask !== null}
       title={t`${{ launcher: STEAM }} was not found`}
       body={

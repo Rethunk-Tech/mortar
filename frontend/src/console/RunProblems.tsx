@@ -23,8 +23,8 @@ import { useUpdates } from '../mods/updates.ts'
 import { useLocked } from '../mods/useLocked.ts'
 import { download } from '../queue/actions.ts'
 import { refWant } from '../queue/refWant.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -205,9 +205,9 @@ function ProblemRow({
       >
         {t`Dismiss`}
       </Button>
-      <ConfirmDialog
+      <ConfirmationDialog
         open={confirmDup}
-        color="error"
+        tone="danger"
         title={t`Remove duplicate?`}
         body={
           copies.keep

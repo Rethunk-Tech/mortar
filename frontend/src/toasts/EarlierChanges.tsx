@@ -7,7 +7,7 @@ import { When } from '../i18n/When.tsx'
 import { historyChangeSummary } from '../profiles/historyCounts.ts'
 import { historyLabel } from '../profiles/historyLabel.ts'
 import type { useHistoryPanel } from '../profiles/useHistoryPanel.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { space } from '../theme/density.ts'
 import { laterEvents, undoTarget } from './history.ts'
 
@@ -99,11 +99,11 @@ export function EarlierChanges({ panel, hide }: { panel: Panel; hide: ReadonlySe
             onUndo={undoTarget(panel.events, ev.id) === '' ? undefined : undo}
           />
         ))}
-      <ConfirmDialog
+      <ConfirmationDialog
         open={target !== null}
         title={t`Undo this and ${plural({ count: later.length }, { one: '# later change', other: '# later changes' })}?`}
         confirmLabel={t`Undo`}
-        color="warning"
+        tone="warning"
         onCancel={() => setTarget(null)}
         onConfirm={() => {
           if (target) {
@@ -120,7 +120,7 @@ export function EarlierChanges({ panel, hide }: { panel: Panel; hide: ReadonlySe
             {historyLabel(e)}
           </Typography>
         ))}
-      </ConfirmDialog>
+      </ConfirmationDialog>
       {panel.error === '' ? null : (
         <Typography
           sx={{ px: space.pad, py: space.gap, fontSize: 'base.fontSize', color: 'error.main' }}

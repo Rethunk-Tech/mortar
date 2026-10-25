@@ -22,7 +22,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/templates/service.ts'
 import { modsLabel } from '../i18n/counts.ts'
 import { i18n } from '../i18n/index.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { PromptDialog } from '../shell/PromptDialog.tsx'
 import { Tooltip } from '../shell/Tooltip.tsx'
@@ -79,7 +79,7 @@ function SaveTemplateDialog({
           save(name)
         }}
       />
-      <ConfirmDialog
+      <ConfirmationDialog
         open={open && replacing !== null}
         title={t`Replace ${{ name: replacing ?? '' }}?`}
         body={t`A template with this name already exists.`}
@@ -204,12 +204,12 @@ function ManageTemplatesDialog({
           )
         }
       />
-      <ConfirmDialog
+      <ConfirmationDialog
         open={deleting !== null}
         title={t`Delete the template ${{ name: deleting?.name ?? '' }}?`}
         body={t`Profiles already made from it are not changed.`}
         confirmLabel={t`Delete`}
-        color="error"
+        tone="danger"
         busy={busy}
         onCancel={() => setDeleting(null)}
         onConfirm={() => {

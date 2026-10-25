@@ -5,8 +5,8 @@ import { FolderInput } from 'lucide-react'
 import { PickFolder } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import { formatBytes } from '../../i18n/bytes.ts'
 import { useGameBusy } from '../../launch/store.ts'
-import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../../shell/DisabledReason.tsx'
+import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
 import { ErrorRetry } from '../../shell/ErrorRetry.tsx'
 import { type InlineError, reportError } from '../../toasts/report.ts'
 import type { MoveState } from './DataMoveRun.ts'
@@ -64,13 +64,12 @@ export function MoveDialog({
   const { t } = useLingui()
   const short = move !== null && move.estimate.freeBytes < move.estimate.bytes
   return (
-    <ConfirmDialog
+    <ConfirmationDialog
       open={move !== null}
       title={t`Move data folder`}
       confirmLabel={t`Move`}
       busy={moving}
       confirmDisabled={move === null || short}
-      maxWidth={420}
       onCancel={onClose}
       onConfirm={onMove}
     >
@@ -110,6 +109,6 @@ export function MoveDialog({
           {error ? <ErrorRetry error={error} onRetry={onMove} /> : null}
         </>
       ) : null}
-    </ConfirmDialog>
+    </ConfirmationDialog>
   )
 }

@@ -12,7 +12,7 @@ import {
 import { Inbox, Pencil, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import type { Tool } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/tools/models.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { reportError } from '../toasts/report.ts'
@@ -82,12 +82,12 @@ export function ToolsManageDialog({
           </Button>
         </DialogActions>
       </Dialog>
-      <ConfirmDialog
+      <ConfirmationDialog
         open={deleting !== null}
         title={t`Remove ${{ name: deleting?.name ?? '' }}?`}
         body={t`This tool will be removed from Mortar.`}
         confirmLabel={t`Remove`}
-        color="error"
+        tone="danger"
         onCancel={() => setDeleting(null)}
         onConfirm={() => {
           if (deleting === null) {

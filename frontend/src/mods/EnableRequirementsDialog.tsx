@@ -3,7 +3,7 @@ import { List, ListItem } from '@mui/material'
 import { SetModsEnabled } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { listNames } from '../i18n/list.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { reportError } from '../toasts/report.ts'
 import { localId } from './dependents.ts'
 import { useEnableAsk } from './enableAsk.ts'
@@ -38,7 +38,7 @@ export function EnableRequirementsDialog() {
       .catch(reportError(t`Could not enable required mods`))
   }
   return (
-    <ConfirmDialog
+    <ConfirmationDialog
       open={true}
       title={t`${{ name: offer.dependentName }} needs ${{ names: listNames(names) }}`}
       confirmLabel={t`Enable them too`}
@@ -56,6 +56,6 @@ export function EnableRequirementsDialog() {
           </ListItem>
         ))}
       </List>
-    </ConfirmDialog>
+    </ConfirmationDialog>
   )
 }

@@ -23,7 +23,7 @@ import { listNames } from '../i18n/list.ts'
 import { When } from '../i18n/When.tsx'
 import { useGameBusy } from '../launch/store.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
@@ -248,7 +248,7 @@ export function BackupsDialog({
           />
         ))}
       </Menu>
-      <ConfirmDialog
+      <ConfirmationDialog
         open={confirm !== null}
         title={t`Restore this backup?`}
         confirmLabel={t`Restore`}
@@ -273,7 +273,7 @@ export function BackupsDialog({
         <Typography sx={{ fontSize: 'medium.fontSize' }}>
           {overwriteMessage(confirm?.snaps ?? [], new Set((fits ?? []).map((f) => f.folder)))}
         </Typography>
-      </ConfirmDialog>
+      </ConfirmationDialog>
     </>
   )
 }

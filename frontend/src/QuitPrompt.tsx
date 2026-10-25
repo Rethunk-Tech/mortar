@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { useQuitPrompt } from './quit.ts'
-import { ConfirmDialog } from './shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from './shell/dialog/ConfirmationDialog.tsx'
 
 export function QuitPrompt() {
   const message = useQuitPrompt((s) => s.message)
@@ -14,7 +14,7 @@ export function QuitPrompt() {
     resolve(confirmed)
   }
   return (
-    <ConfirmDialog
+    <ConfirmationDialog
       open={true}
       title={t`Quit Mortar?`}
       body={message}

@@ -9,7 +9,7 @@ import { HistoryDialog } from '../profiles/HistoryDialog.tsx'
 import { MergeDialog } from '../profiles/MergeDialog.tsx'
 import { ProfileFolderDialog } from '../profiles/ProfileFolderDialog.tsx'
 import { useProfiles } from '../profiles/store.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { ApplyTemplateDialog } from '../templates/ApplyTemplateDialog.tsx'
 import { ManageTemplatesDialog, SaveTemplateDialog } from '../templates/TemplateDialogs.tsx'
 import { useTemplates } from '../templates/useTemplates.ts'
@@ -28,12 +28,12 @@ function DeleteProfileDialog({ profile, open }: DialogProps) {
   const { t } = useLingui()
   const remove = useProfiles((s) => s.remove)
   return (
-    <ConfirmDialog
+    <ConfirmationDialog
       open={open}
       title={t`Delete ${{ name: profile.name }}?`}
       body={t`The profile stays restorable for 30 days from Recently deleted.`}
       confirmLabel={t`Delete`}
-      color="error"
+      tone="danger"
       onCancel={closeProfileDialog}
       onConfirm={() => {
         closeProfileDialog()

@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { useGameName } from '../games/info.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { useLaunch } from './store.ts'
 
 export function StopDialog({
@@ -16,10 +16,9 @@ export function StopDialog({
   const gameName = useGameName(game)
   const stop = useLaunch((s) => s.stop)
   return (
-    <ConfirmDialog
+    <ConfirmationDialog
       open={open}
-      maxWidth={420}
-      color="error"
+      tone="danger"
       title={t`Stop game?`}
       body={t`${{ game: gameName }} will close now, and any progress since your last save is lost.`}
       confirmLabel={t`Stop game`}

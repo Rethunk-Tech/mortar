@@ -17,7 +17,7 @@ import {
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { useProfiles } from '../../profiles/store.ts'
-import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
 import { useLoaded } from '../../shell/useLoaded.ts'
 import { space } from '../../theme/density.ts'
 import { errorKind } from '../../toasts/errorKind.ts'
@@ -80,9 +80,9 @@ function UntrackConfirmDialog({
     )
   }
   return (
-    <ConfirmDialog
+    <ConfirmationDialog
       open={unused !== null}
-      color="error"
+      tone="danger"
       busy={busy}
       title={t`Untrack mods?`}
       body={

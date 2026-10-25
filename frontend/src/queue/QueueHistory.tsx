@@ -22,7 +22,7 @@ import { formatBytes } from '../i18n/bytes.ts'
 import { When } from '../i18n/When.tsx'
 import { showInProfile } from '../mods/revealMod.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { space } from '../theme/density.ts'
@@ -201,9 +201,9 @@ export function HistoryList({
             <Trash2 size={16} />
           </TipIconButton>
         ) : null}
-        <ConfirmDialog
+        <ConfirmationDialog
           open={confirmClear}
-          color="error"
+          tone="danger"
           title={t`Clear download history?`}
           body={t`Clears the list of past downloads; downloads in progress are unaffected. Failed items lose Retry until downloaded again.`}
           confirmLabel={t`Clear history`}

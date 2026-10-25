@@ -42,7 +42,7 @@ import { useNav } from '../nav/store.ts'
 import { dialogOpen, isTypingTarget } from '../settings/shortcuts.ts'
 import { shouldLeavePageOnEscape } from '../settings/shouldLeavePageOnEscape.ts'
 import { openImport } from '../share/store.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
@@ -100,12 +100,12 @@ function TrashRow({ item }: { item: TrashItem }) {
       >
         <Trash2 size={16} />
       </TipIconButton>
-      <ConfirmDialog
+      <ConfirmationDialog
         open={confirming}
         title={t`Delete ${{ name: item.name }} permanently?`}
         body={t`This cannot be undone.`}
         confirmLabel={t`Delete permanently`}
-        color="error"
+        tone="danger"
         onCancel={() => setConfirming(false)}
         onConfirm={() => {
           setConfirming(false)
@@ -235,12 +235,12 @@ const Trash = memo(function TrashView() {
       {trash.map((item) => (
         <TrashRow key={item.id} item={item} />
       ))}
-      <ConfirmDialog
+      <ConfirmationDialog
         open={confirming}
         title={t`Empty trash?`}
         body={t`This cannot be undone.`}
         confirmLabel={t`Empty trash`}
-        color="error"
+        tone="danger"
         onCancel={() => setConfirming(false)}
         onConfirm={() => {
           setConfirming(false)

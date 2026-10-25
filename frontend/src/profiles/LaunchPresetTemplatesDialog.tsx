@@ -14,7 +14,7 @@ import {
   ListLaunchPresetTemplates,
   RemoveLaunchPresetTemplate,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -69,12 +69,12 @@ export function LaunchPresetTemplatesDialog({
       <DialogActions>
         <Button onClick={onClose}>{t`Close`}</Button>
       </DialogActions>
-      <ConfirmDialog
+      <ConfirmationDialog
         open={removing !== null}
         title={t`Delete ${{ name: removing?.name ?? '' }}?`}
         body={t`This template will be deleted. Presets already copied into profiles stay.`}
         confirmLabel={t`Delete template`}
-        color="error"
+        tone="danger"
         onCancel={() => setRemoving(null)}
         onConfirm={() => {
           const gone = removing

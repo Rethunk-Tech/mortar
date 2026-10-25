@@ -10,8 +10,8 @@ import { useGameBusy, useLaunch } from '../../launch/store.ts'
 import { InstallSteps } from '../../loader/InstallSteps.tsx'
 import { useLoader } from '../../loader/store.ts'
 import { useCurrentGame } from '../../nav/currentGame.ts'
-import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../../shell/DisabledReason.tsx'
+import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
 import { space } from '../../theme/density.ts'
 import { PrefSelect } from '../PrefControls.tsx'
 import { persist } from '../persist.ts'
@@ -140,7 +140,7 @@ function LoaderRow({
           </Box>
         )}
       </SettingRow>
-      <ConfirmDialog
+      <ConfirmationDialog
         open={confirm}
         title={t`Install ${{ name: loader.name }} ${{ version: action.version }}?`}
         body={t`Every profile of this game runs the ${{ name: loader.name }} installed for it, so they all switch to ${{ version: action.version }}.`}

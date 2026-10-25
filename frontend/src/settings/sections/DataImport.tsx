@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import type { ImportPreview } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import { ApplyImport } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { listNames } from '../../i18n/list.ts'
-import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { prefCopy } from '../prefCopy.ts'
@@ -65,12 +65,11 @@ export function ImportSettingsDialog({
       return next
     })
   return (
-    <ConfirmDialog
+    <ConfirmationDialog
       open={preview !== null}
       title={t`Import settings`}
       confirmLabel={plural(count, { one: 'Import # change', other: 'Import # changes' })}
       confirmDisabled={count === 0}
-      maxWidth={460}
       onCancel={onClose}
       onConfirm={() => {
         ApplyImport(
@@ -114,6 +113,6 @@ export function ImportSettingsDialog({
           {t`Ignored fields Mortar does not import: ${{ names: listNames(ignored) }}`}
         </Typography>
       ) : null}
-    </ConfirmDialog>
+    </ConfirmationDialog>
   )
 }

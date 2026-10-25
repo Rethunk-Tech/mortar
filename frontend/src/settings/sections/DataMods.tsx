@@ -9,7 +9,7 @@ import {
 import { SMAPI } from '../../brand/productNames.ts'
 import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { formatBytes } from '../../i18n/bytes.ts'
-import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 
@@ -33,7 +33,7 @@ function CacheClearDialog({
   const size = info === null ? '' : formatBytes(info.size)
   const path = info?.path ?? ''
   return (
-    <ConfirmDialog
+    <ConfirmationDialog
       open={open}
       title={t`Clear cache?`}
       body={

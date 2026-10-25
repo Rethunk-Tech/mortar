@@ -245,6 +245,7 @@ export function TextInput({
         placeholder={placeholder}
         autoFocus={autoFocus}
         error={Boolean(error)}
+        slotProps={maxLength === undefined ? undefined : { htmlInput: { maxLength } }}
       />
     </Field>
   )

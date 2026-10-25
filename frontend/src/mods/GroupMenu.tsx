@@ -12,7 +12,7 @@ import {
 import { type ReactNode, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { SaveGroupToLibrary } from '../groups/SaveGroupToLibrary.tsx'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { PromptDialog } from '../shell/PromptDialog.tsx'
@@ -95,9 +95,9 @@ export function GroupMenu({ name }: { name: string }) {
         }}
       />
       <SaveGroupToLibrary open={saving} group={name} onClose={() => setSaving(false)} />
-      <ConfirmDialog
+      <ConfirmationDialog
         open={deleting}
-        color="error"
+        tone="danger"
         title={t`Delete group ${name}?`}
         body={t`The mods in it stay in the profile; only the group is deleted.`}
         confirmLabel={t`Delete group`}

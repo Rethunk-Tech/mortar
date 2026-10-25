@@ -11,7 +11,7 @@ import {
   SetLaunchPresets,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { AddLaunchPresetTemplate } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { space } from '../theme/density.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -191,12 +191,12 @@ function LaunchPresetsBlock({
         onCancel={() => setEditing(null)}
         onSave={saveOne}
       />
-      <ConfirmDialog
+      <ConfirmationDialog
         open={removing !== null}
         title={t`Delete ${{ name: removing?.name ?? '' }}?`}
         body={t`This launch preset will be deleted.`}
         confirmLabel={t`Delete preset`}
-        color="error"
+        tone="danger"
         onCancel={() => setRemoving(null)}
         onConfirm={() => {
           const gone = removing

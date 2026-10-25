@@ -3,7 +3,7 @@ import { Box, Checkbox, FormControlLabel, Switch, Typography } from '@mui/materi
 import { useState } from 'react'
 import { SetSeparateSaves } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { useGameInfo } from '../games/info.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useProfiles } from './store.ts'
 
@@ -47,7 +47,7 @@ export function SeparateSavesRow({
           {t`This profile plays on its own saves. Your shared saves are untouched.`}
         </Typography>
       ) : null}
-      <ConfirmDialog
+      <ConfirmationDialog
         open={asking}
         title={t`Keep this profile's saves separate?`}
         body={t`While this profile runs, Mortar sets your shared saves aside and shows the game the profile's own folder. When the game closes, your shared saves come back as they were. Nothing is deleted.`}
@@ -62,7 +62,7 @@ export function SeparateSavesRow({
           control={<Checkbox checked={copyIn} onChange={(e) => setCopyIn(e.target.checked)} />}
           label={t`Start with a copy of my current saves`}
         />
-      </ConfirmDialog>
+      </ConfirmationDialog>
     </Box>
   )
 }

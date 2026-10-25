@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { LockedReason } from '../mods/LockedReason.tsx'
 import { useProfileLocked } from '../mods/useLocked.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { Fold } from '../shell/Fold.tsx'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { space } from '../theme/density.ts'
@@ -126,9 +126,9 @@ export function ImportFooter({
           {runLabel}
         </Button>
       </Box>
-      <ConfirmDialog
+      <ConfirmationDialog
         open={askReplace}
-        color="error"
+        tone="danger"
         title={t`Replace ${{ name: targetName }}?`}
         confirmLabel={t`Replace ${{ name: targetName }}`}
         onCancel={() => setAskReplace(false)}
@@ -163,7 +163,7 @@ export function ImportFooter({
             </Typography>
           </Fold>
         ) : null}
-      </ConfirmDialog>
+      </ConfirmationDialog>
     </Box>
   )
 }

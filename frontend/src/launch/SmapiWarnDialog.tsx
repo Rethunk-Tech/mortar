@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { STEAM } from '../brand/productNames.ts'
 import { useGameInfo, useGameName } from '../games/info.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 
 export function SmapiWarnDialog({
   open,
@@ -16,9 +16,8 @@ export function SmapiWarnDialog({
   const gameName = useGameName()
   const loader = useGameInfo()?.loader ?? ''
   return (
-    <ConfirmDialog
+    <ConfirmationDialog
       open={open}
-      maxWidth={440}
       title={t`${{ launcher: STEAM }} will still start ${loader}`}
       body={t`${{ game: gameName }}'s ${{ launcher: STEAM }} launch options run ${loader} in place of the game. ${{ launcher: STEAM }} will still start ${loader} unless that launch option is removed. Mortar will not change it.`}
       confirmLabel={t`Play without mods`}

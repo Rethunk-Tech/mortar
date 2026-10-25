@@ -8,7 +8,7 @@ import {
   RestoreReplaced,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import type { ReplacedFile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useMods } from './store.ts'
@@ -91,12 +91,12 @@ export function ReplacedSection({ files }: { files: ReplacedFile[] }) {
           />
         ))}
       </Box>
-      <ConfirmDialog
+      <ConfirmationDialog
         open={confirming}
         title={t`Delete the replaced files?`}
         body={t`Mortar replaced these with the mods' own files. Deleting them cannot be undone.`}
         confirmLabel={t`Delete all`}
-        color="error"
+        tone="danger"
         onCancel={() => setConfirming(false)}
         onConfirm={() => {
           setConfirming(false)

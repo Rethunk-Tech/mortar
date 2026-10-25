@@ -8,7 +8,7 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -219,7 +219,7 @@ function Confirm({
   const resetConfig = useDetail((s) => s.resetConfig)
   const rolling = confirming === 'rollback'
   return (
-    <ConfirmDialog
+    <ConfirmationDialog
       open={confirming !== null}
       title={
         rolling
@@ -232,7 +232,7 @@ function Confirm({
           : t`config.json is deleted, and the mod writes a fresh one with its own defaults the next time the game runs.`
       }
       confirmLabel={rolling ? t`Roll back` : t`Reset`}
-      color={rolling ? 'primary' : 'error'}
+      tone={rolling ? 'neutral' : 'danger'}
       onCancel={onClose}
       onConfirm={() => {
         const run = rolling ? rollBack : resetConfig

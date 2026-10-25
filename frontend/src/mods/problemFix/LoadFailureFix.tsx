@@ -8,7 +8,7 @@ import { BEPINEX } from '../../brand/productNames.ts'
 import { useBrowseView } from '../../browse/view.ts'
 import { useTab } from '../../game/tab.ts'
 import { useLoader } from '../../loader/store.ts'
-import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
 import type { Problem } from '../lookup.ts'
 import { useMods } from '../store.ts'
@@ -85,12 +85,12 @@ function LoadFailureAction({
       return (
         <>
           {button(t`Remove old copy`, () => setRemoving(true))}
-          <ConfirmDialog
+          <ConfirmationDialog
             open={removing}
             title={t`Remove the older copy?`}
             body={t`${{ loader: BEPINEX }} skipped ${path} because a newer copy of the plugin loaded. Mortar deletes the file.`}
             confirmLabel={t`Remove`}
-            color="error"
+            tone="danger"
             onCancel={() => setRemoving(false)}
             onConfirm={() => {
               setRemoving(false)

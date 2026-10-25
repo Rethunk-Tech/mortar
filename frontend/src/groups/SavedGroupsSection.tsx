@@ -10,7 +10,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savedgroups/service.ts'
 import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { idKey } from '../mods/dependents.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { space } from '../theme/density.ts'
@@ -118,12 +118,12 @@ export const SavedGroupsSection = memo(function SavedGroupsSectionView({
           setRenaming(null)
         }}
       />
-      <ConfirmDialog
+      <ConfirmationDialog
         open={deleting !== null}
         title={t`Delete ${{ name: deleting?.name ?? '' }}?`}
         body={t`This saved group will be deleted. Groups already added to profiles stay.`}
         confirmLabel={t`Delete`}
-        color="error"
+        tone="danger"
         busy={busy}
         onCancel={() => setDeleting(null)}
         onConfirm={() => {

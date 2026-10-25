@@ -2,7 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ButtonBase } from '@mui/material'
 import { useEffect, useMemo, useState } from 'react'
 import { SetShortcuts } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
-import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
 import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
@@ -105,12 +105,12 @@ export function ResetAllShortcuts() {
       <Button variant="outlined" onClick={() => setConfirmReset(true)}>
         {t`Reset all`}
       </Button>
-      <ConfirmDialog
+      <ConfirmationDialog
         open={confirmReset}
         title={t`Reset every shortcut?`}
         body={t`Every key returns to its default.`}
         confirmLabel={t`Reset all`}
-        color="warning"
+        tone="warning"
         onCancel={() => setConfirmReset(false)}
         onConfirm={() => {
           setConfirmReset(false)

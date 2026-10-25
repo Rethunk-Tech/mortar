@@ -13,7 +13,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { driftEntryName } from './describe.ts'
@@ -181,12 +181,12 @@ export function DriftButtons({ drift }: { drift: Drift }) {
     />
   )
   const confirmDialog = confirm ? (
-    <ConfirmDialog
+    <ConfirmationDialog
       open={true}
       title={confirm.title}
       body={confirm.body}
       confirmLabel={confirm.label}
-      color="error"
+      tone="danger"
       onCancel={() => setConfirm(null)}
       onConfirm={() => {
         setConfirm(null)

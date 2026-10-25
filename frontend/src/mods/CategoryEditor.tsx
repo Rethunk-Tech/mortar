@@ -14,7 +14,7 @@ import { useEffect, useLayoutEffect, useState } from 'react'
 import type { CustomCategory } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { ColorSwatches } from '../profiles/Swatches.tsx'
 import { useProfiles } from '../profiles/store.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { useDiscardGuard } from '../shell/useDiscardGuard.tsx'
@@ -150,12 +150,12 @@ function CategoryEditorDialog({ open, onClose }: { open: boolean; onClose: () =>
           </Button>
         </DialogActions>
       </Dialog>
-      <ConfirmDialog
+      <ConfirmationDialog
         open={pendingDelete !== null}
         title={t`Delete ${{ name: pendingDelete?.name ?? '' }}?`}
         body={t`Mods in this category will move to Uncategorised.`}
         confirmLabel={t`Delete`}
-        color="error"
+        tone="danger"
         busy={pending}
         onCancel={() => setPendingDelete(null)}
         onConfirm={() => {

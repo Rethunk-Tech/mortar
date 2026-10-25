@@ -4,25 +4,17 @@ import {
   Box,
   Button,
   Checkbox,
-  Chip,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   FormControlLabel,
   MenuItem,
   Radio,
   RadioGroup,
-  Step as StepItem,
-  StepLabel,
-  Stepper,
   Switch,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
-  Typography,
 } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { Hammer } from 'lucide-react'
+import { type ReactNode, useEffect, useId, useState } from 'react'
 import type {
   Form,
   Param,
@@ -37,12 +29,14 @@ import { PickFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/intern
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { useGameInfo } from '../games/info.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
+import { Field, FieldRow, FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { readStored, writeStored } from '../shell/useStoredState.ts'
-import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { buildProject } from './builds.ts'
+import { ChoicePicker } from './ChoicePicker.tsx'
 import {
   type Draft,
   draftIssue,
@@ -84,11 +78,34 @@ function Prerequisites({ tools }: { tools: Tools | null }) {
   )
 }
 
-function Caption({ children }: { children: string }) {
+// A dropdown in a Field: label above, never in the border.
+function SelectField({
+  label,
+  value,
+  onChange,
+  hint,
+  children,
+}: {
+  label: string
+  value: string
+  onChange: (v: string) => void
+  hint?: string
+  children: ReactNode
+}) {
+  const id = useId()
   return (
-    <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary', mb: 0.5 }}>
-      {children}
-    </Typography>
+    <Field label={label} htmlFor={id} hint={hint}>
+      <TextField
+        id={id}
+        select={true}
+        size="small"
+        fullWidth={true}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      >
+        {children}
+      </TextField>
+    </Field>
   )
 }
 
@@ -103,31 +120,19 @@ function ChoiceField({
 }) {
   const choices = param.choices ?? []
   if (param.multiple) {
-    const picked = value.split('|').filter(Boolean)
-    const toggle = (c: string) =>
-      set((picked.includes(c) ? picked.filter((x) => x !== c) : [...picked, c]).join('|'))
     return (
-      <Box>
-        <Caption>{param.label}</Caption>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
-          {choices.map((c) => (
-            <Chip
-              key={c.value}
-              label={c.label}
-              size="small"
-              color={picked.includes(c.value) ? 'primary' : 'default'}
-              variant={picked.includes(c.value) ? 'filled' : 'outlined'}
-              onClick={() => toggle(c.value)}
-            />
-          ))}
-        </Box>
-      </Box>
+      <ChoicePicker
+        label={param.label}
+        helperText={param.description}
+        choices={choices}
+        value={value.split('|').filter(Boolean)}
+        onChange={(next) => set(next.join('|'))}
+      />
     )
   }
   if (choices.length <= TOGGLE_CHOICES) {
     return (
-      <Box>
-        <Caption>{param.label}</Caption>
+      <Field label={param.label} hint={param.description}>
         <ToggleButtonGroup
           exclusive={true}
           size="small"
@@ -141,23 +146,17 @@ function ChoiceField({
             </ToggleButton>
           ))}
         </ToggleButtonGroup>
-      </Box>
+      </Field>
     )
   }
   return (
-    <TextField
-      select={true}
-      size="small"
-      label={param.label}
-      value={value}
-      onChange={(e) => set(e.target.value)}
-    >
+    <SelectField label={param.label} value={value} onChange={set} hint={param.description}>
       {choices.map((c) => (
         <MenuItem key={c.value} value={c.value}>
           {c.label}
         </MenuItem>
       ))}
-    </TextField>
+    </SelectField>
   )
 }
 
@@ -176,10 +175,11 @@ function ParamField({
   if (param.kind === 'bool') {
     return (
       <FormControlLabel
+        sx={{ m: 0, alignItems: 'flex-start', gap: 1 }}
         control={<Switch checked={value === 'true'} onChange={(_, on) => set(String(on))} />}
         label={
-          <Box>
-            <Box>{param.label}</Box>
+          <Box sx={{ pt: 0.75 }}>
+            <Box sx={{ fontSize: 'medium.fontSize', fontWeight: 500 }}>{param.label}</Box>
             <Box sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
               {param.description}
             </Box>
@@ -188,16 +188,14 @@ function ParamField({
       />
     )
   }
-  const counter = param.maxLength > 0 ? `${value.length}/${param.maxLength}` : ''
   return (
-    <TextField
-      size="small"
+    <TextInput
       label={param.label}
-      helperText={[param.description, counter].filter(Boolean).join(' ')}
+      hint={param.description}
       value={value}
+      onChange={set}
       multiline={param.maxLength > MULTILINE_OVER}
-      onChange={(e) => set(e.target.value)}
-      sx={{ flex: 1, minWidth: 0 }}
+      {...(param.maxLength > 0 ? { maxLength: param.maxLength } : {})}
     />
   )
 }
@@ -217,39 +215,23 @@ function ModStep({ draft, form, set }: { draft: Draft; form: Form | null; set: S
   const { t } = useLingui()
   return (
     <>
-      <Box sx={{ display: 'flex', gap: space.gap }}>
-        <TextField
-          size="small"
+      <FieldRow>
+        <TextInput
           label={t`Mod name`}
-          helperText={t`Letters and digits, starting with a capital`}
+          hint={t`Letters and digits, starting with a capital`}
           placeholder="ShopDrop"
           value={draft.name}
-          onChange={(e) => set({ name: e.target.value })}
+          onChange={(name) => set({ name })}
           autoFocus={true}
-          sx={{ flex: 2 }}
         />
-        <TextField
-          size="small"
+        <TextInput
           label={t`Folder name`}
           placeholder={draft.name}
           value={draft.repo}
-          onChange={(e) => set({ repo: e.target.value })}
-          sx={{ flex: 1 }}
+          onChange={(repo) => set({ repo })}
         />
-      </Box>
+      </FieldRow>
       <Params params={stepParams(form, 'mod')} draft={draft} set={set} />
-    </>
-  )
-}
-
-function AuthorStep({ draft, form, set }: { draft: Draft; form: Form | null; set: Set }) {
-  const { t } = useLingui()
-  return (
-    <>
-      <Typography
-        sx={{ color: 'text.secondary' }}
-      >{t`Mortar remembers these for your next mod.`}</Typography>
-      <Params params={stepParams(form, 'author')} draft={draft} set={set} />
     </>
   )
 }
@@ -258,34 +240,36 @@ function SourceChoice({ draft, user, set }: { draft: Draft; user: string; set: S
   const { t } = useLingui()
   const github = sourceLabel('github')
   return (
-    <RadioGroup
-      value={draft.github ? 'github' : 'copy'}
-      onChange={(_, v) => set({ github: v === 'github' })}
-    >
-      <FormControlLabel
-        value="copy"
-        control={<Radio size="small" />}
-        label={t`Keep it on this computer`}
-      />
-      <FormControlLabel
-        value="github"
-        disabled={user === ''}
-        control={<Radio size="small" />}
-        label={
-          user
-            ? t`Also create a repository on ${{ source: github }}`
-            : t`Sign in with gh to create a repository on ${{ source: github }}`
-        }
-      />
+    <Field label={t`Repository`}>
+      <RadioGroup
+        value={draft.github ? 'github' : 'copy'}
+        onChange={(_, v) => set({ github: v === 'github' })}
+      >
+        <FormControlLabel
+          value="copy"
+          control={<Radio size="small" />}
+          label={t`Keep it on this computer`}
+        />
+        <FormControlLabel
+          value="github"
+          disabled={user === ''}
+          control={<Radio size="small" />}
+          label={
+            user
+              ? t`Also create a repository on ${{ source: github }}`
+              : t`Sign in with gh to create a repository on ${{ source: github }}`
+          }
+        />
+      </RadioGroup>
       {draft.github ? (
-        <Box sx={{ display: 'flex', gap: space.gap, alignItems: 'center', pl: 4 }}>
-          <TextField
-            size="small"
-            label={t`Account or organisation`}
-            value={draft.owner}
-            onChange={(e) => set({ owner: e.target.value })}
-            sx={{ flex: 1 }}
-          />
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-end', pl: 4, mt: 1 }}>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <TextInput
+              label={t`Account or organisation`}
+              value={draft.owner}
+              onChange={(owner) => set({ owner })}
+            />
+          </Box>
           <FormControlLabel
             control={
               <Checkbox
@@ -298,7 +282,7 @@ function SourceChoice({ draft, user, set }: { draft: Draft; user: string; set: S
           />
         </Box>
       ) : null}
-    </RadioGroup>
+    </Field>
   )
 }
 
@@ -306,6 +290,7 @@ function ProjectStep({ draft, user, set }: { draft: Draft; user: string; set: Se
   const { t } = useLingui()
   const profiles = useProfiles((s) => s.profiles)
   const gameName = useGameInfo()?.name ?? ''
+  const folderId = useId()
   const pick = async () => {
     const dir = await PickFolder(t`Folder for your mod projects`)
     if (dir) {
@@ -315,25 +300,24 @@ function ProjectStep({ draft, user, set }: { draft: Draft; user: string; set: Se
   const where = draft.parent ? `${draft.parent}/${draft.repo || draft.name}` : ''
   return (
     <>
-      <Box sx={{ display: 'flex', gap: space.gap, alignItems: 'flex-start' }}>
-        <TextField
-          size="small"
-          label={t`Projects folder`}
-          value={draft.parent}
-          helperText={where}
-          sx={{ flex: 1 }}
-          slotProps={{ input: { readOnly: true } }}
-        />
-        <Button onClick={() => pick().catch(() => undefined)} sx={{ mt: '2px' }}>
-          {t`Choose…`}
-        </Button>
-      </Box>
-      <TextField
-        select={true}
-        size="small"
+      <Field label={t`Projects folder`} htmlFor={folderId} hint={where}>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <TextField
+            id={folderId}
+            size="small"
+            fullWidth={true}
+            value={draft.parent}
+            slotProps={{ input: { readOnly: true } }}
+          />
+          <Button variant="outlined" onClick={() => pick().catch(() => undefined)}>
+            {t`Choose…`}
+          </Button>
+        </Box>
+      </Field>
+      <SelectField
         label={t`Builds install into`}
         value={draft.profile}
-        onChange={(e) => set({ profile: e.target.value })}
+        onChange={(profile) => set({ profile })}
       >
         {profiles.map((p) => (
           <MenuItem key={p.id} value={p.id}>
@@ -343,7 +327,7 @@ function ProjectStep({ draft, user, set }: { draft: Draft; user: string; set: Se
         <MenuItem
           value={NEW_PROFILE}
         >{t`New profile: ${{ name: `${gameName} Development` }}`}</MenuItem>
-      </TextField>
+      </SelectField>
       <SourceChoice draft={draft} user={user} set={set} />
     </>
   )
@@ -433,51 +417,40 @@ export function NewModDialog({
       },
       { errorTitle: t`Could not start the mod` },
     )
+  const subtitle = [
+    t`Step ${{ step: at + 1 }} of ${{ count: STEPS.length }}`,
+    labels[step],
+    step === 'author' ? t`Mortar remembers these for your next mod.` : '',
+  ]
+    .filter(Boolean)
+    .join(' · ')
   return (
-    <Dialog open={open} onClose={pending ? undefined : onClose} maxWidth="sm" fullWidth={true}>
-      <DialogTitle>{t`New mod`}</DialogTitle>
-      <DialogContent
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: space.pad,
-          pt: `${space.gap} !important`,
-        }}
-      >
-        <Stepper activeStep={at} sx={{ mb: 1 }}>
-          {STEPS.map((s) => (
-            <StepItem key={s}>
-              <StepLabel>{labels[s]}</StepLabel>
-            </StepItem>
-          ))}
-        </Stepper>
-        <Prerequisites tools={tools} />
-        {step === 'mod' ? <ModStep draft={draft} form={form} set={set} /> : null}
-        {step === 'author' ? <AuthorStep draft={draft} form={form} set={set} /> : null}
-        {step === 'project' ? (
-          <ProjectStep draft={draft} user={tools?.githubUser ?? ''} set={set} />
-        ) : null}
-      </DialogContent>
-      <DialogActions sx={{ bgcolor: 'background.paper' }}>
-        <Button onClick={onClose} disabled={pending}>
-          {t`Cancel`}
-        </Button>
-        <Box sx={{ flex: 1 }} />
-        {at > 0 ? (
-          <Button onClick={() => setAt(at - 1)} disabled={pending}>
-            {t`Back`}
-          </Button>
-        ) : null}
-        <Button
-          variant="contained"
-          onClick={last ? create : () => setAt(at + 1)}
-          disabled={pending || issue !== ''}
-          title={issue}
-        >
-          {last ? t`Start mod` : t`Next`}
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <FormDialog
+      open={open}
+      onClose={onClose}
+      title={t`New mod`}
+      subtitle={subtitle}
+      icon={
+        <ToneIcon tone="neutral">
+          <Hammer size={22} />
+        </ToneIcon>
+      }
+      submitLabel={last ? t`Start mod` : t`Next`}
+      issue={issue}
+      dirty={draft.name.trim() !== ''}
+      busy={pending}
+      onSubmit={last ? create : () => setAt(at + 1)}
+      onBack={at > 0 ? () => setAt(at - 1) : undefined}
+    >
+      <Prerequisites tools={tools} />
+      {step === 'mod' ? <ModStep draft={draft} form={form} set={set} /> : null}
+      {step === 'author' ? (
+        <Params params={stepParams(form, 'author')} draft={draft} set={set} />
+      ) : null}
+      {step === 'project' ? (
+        <ProjectStep draft={draft} user={tools?.githubUser ?? ''} set={set} />
+      ) : null}
+    </FormDialog>
   )
 }
 

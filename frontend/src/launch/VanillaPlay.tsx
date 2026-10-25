@@ -17,7 +17,7 @@ import { type MouseEvent, type ReactNode, useState } from 'react'
 import { STEAM } from '../brand/productNames.ts'
 import { routeGame, useNav } from '../nav/store.ts'
 import type { PlayPreset } from '../profiles/profilePresets.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { MenuHeading, MenuRule } from '../shell/TitleMenu.tsx'
@@ -130,9 +130,8 @@ export function VanillaPlayDialogs() {
           startVanilla(game, false).then(() => undefined)
         }}
       />
-      <ConfirmDialog
+      <ConfirmationDialog
         open={linuxDirect}
-        maxWidth={440}
         title={t`Play without ${{ launcher: STEAM }} overlay`}
         body={t`Mortar starts the unmodded game directly, outside ${{ launcher: STEAM }}. The ${{ launcher: STEAM }} overlay and playtime tracking do not work; ${{ launcher: STEAM }} still supplies its API if running.`}
         confirmLabel={t`Play without mods`}

@@ -10,7 +10,7 @@ import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/inte
 import { formatBytes } from '../i18n/bytes.ts'
 import { restoreBackup } from '../profiles/restoreBackup.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
@@ -83,7 +83,7 @@ export function BackupProfileDialog({
     }
   }
   return (
-    <ConfirmDialog
+    <ConfirmationDialog
       open={open}
       title={t`Back up ${{ name: profile.name }}?`}
       body={t`The backup holds up to ${{ size: size === null ? '…' : formatBytes(size) }}: the profile, its settings and config files, and its own saves when it keeps them.`}
@@ -103,6 +103,6 @@ export function BackupProfileDialog({
           {t`Mods a site can download again are left out; restoring downloads them.`}
         </DialogContentText>
       )}
-    </ConfirmDialog>
+    </ConfirmationDialog>
   )
 }

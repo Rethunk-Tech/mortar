@@ -8,7 +8,7 @@ import {
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nxmsvc/service.ts'
 import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { listNames } from '../../i18n/list.ts'
-import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
 import { toastError } from '../../toasts/report.ts'
 import { useSettings } from '../store.ts'
 
@@ -51,7 +51,7 @@ export function NxmReclaim() {
   })
   const names = listNames([...new Set(taken.map((x) => x.name))])
   return (
-    <ConfirmDialog
+    <ConfirmationDialog
       open={taken.length > 0}
       title={t`${names} took over mod links`}
       body={[...lines, t`Take them back for Mortar?`].join(' ')}

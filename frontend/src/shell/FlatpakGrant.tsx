@@ -12,7 +12,7 @@ import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
-import { ConfirmDialog } from './ConfirmDialog.tsx'
+import { ConfirmationDialog } from './dialog/ConfirmationDialog.tsx'
 
 export function FlatpakGrant() {
   const { t } = useLingui()
@@ -83,7 +83,7 @@ export function FlatpakGrant() {
           </Button>
         </Box>
       </Box>
-      <ConfirmDialog
+      <ConfirmationDialog
         open={ask}
         title={t`Grant ${{ app: FLATPAK }} ${{ launcher: STEAM }} access?`}
         body={t`This runs the command below once for your user, so ${{ launcher: STEAM }} can read Mortar's data folder.`}
@@ -102,7 +102,7 @@ export function FlatpakGrant() {
         <Box sx={{ mt: 1.5, fontFamily: MONO, fontSize: 'base.fontSize', userSelect: 'text' }}>
           {cmd}
         </Box>
-      </ConfirmDialog>
+      </ConfirmationDialog>
     </>
   )
 }

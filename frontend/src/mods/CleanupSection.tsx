@@ -4,8 +4,8 @@ import { Box, Button, Menu, Typography } from '@mui/material'
 import { ChevronDown, Info, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { useReasonText } from '../i18n/reasonText.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -187,7 +187,7 @@ export function CleanupSection({
           <CleanupRow key={item.key} cleanup={item} />
         ))}
       </Box>
-      <ConfirmDialog
+      <ConfirmationDialog
         open={confirmCleanup}
         title={plural(
           { count: cleanup.length },
@@ -198,7 +198,7 @@ export function CleanupSection({
         )}
         body={t`This change can be undone from History.`}
         confirmLabel={t`Remove all`}
-        color="error"
+        tone="danger"
         onCancel={() => setConfirmCleanup(false)}
         onConfirm={() => {
           setConfirmCleanup(false)

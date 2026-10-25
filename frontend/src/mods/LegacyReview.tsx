@@ -3,7 +3,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Checkbox, FormControlLabel, List, ListItem, Typography } from '@mui/material'
 import { useState } from 'react'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import type { LegacyWhy } from './legacyReasons.ts'
 
 // The legacy offer's suggestions one by one, each with why it was picked; the player keeps the ticked ones.
@@ -29,7 +29,7 @@ export function LegacyReview({
   }
   const chosen = picks.filter((p) => !off.has(p.key)).map((p) => p.key)
   return (
-    <ConfirmDialog
+    <ConfirmationDialog
       open={true}
       title={t`Libraries and supporting mods`}
       confirmLabel={plural(
@@ -74,6 +74,6 @@ export function LegacyReview({
           </ListItem>
         ))}
       </List>
-    </ConfirmDialog>
+    </ConfirmationDialog>
   )
 }

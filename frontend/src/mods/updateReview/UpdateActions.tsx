@@ -11,8 +11,8 @@ import type {
 import { PreviewEverywhere } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { openProfileOf, useProfiles } from '../../profiles/store.ts'
 import { download } from '../../queue/actions.ts'
-import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../../shell/DisabledReason.tsx'
+import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
 import { OfflineGate } from '../../shell/OfflineGate.tsx'
 import { updateSources, useOfflineReason } from '../../shell/offlineText.ts'
 import { StableLabel } from '../../shell/StableLabel.tsx'
@@ -150,7 +150,7 @@ export function UpdateActions({
           </DisabledReason>
         ) : null}
       </Menu>
-      <ConfirmDialog
+      <ConfirmationDialog
         open={confirmSwitch}
         title={t`Switch ${{ name: update.name }} to ${{ source: update.source }}?`}
         body={t`${{ name: update.name }} was installed from another site. Updating installs ${{ version: update.version }} from ${{ source: update.source }} instead and keeps your settings.`}

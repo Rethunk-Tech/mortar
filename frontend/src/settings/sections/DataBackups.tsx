@@ -10,8 +10,8 @@ import {
 import { formatBytes } from '../../i18n/bytes.ts'
 import { useGameBusy } from '../../launch/store.ts'
 import { useProfiles } from '../../profiles/store.ts'
-import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../../shell/DisabledReason.tsx'
+import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
 import { useLoaded } from '../../shell/useLoaded.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
@@ -51,9 +51,9 @@ export function TrimDialog({
   const keep = Number(draft)
   const valid = Number.isInteger(keep) && keep >= MIN_KEEP
   return (
-    <ConfirmDialog
+    <ConfirmationDialog
       open={open}
-      color="error"
+      tone="danger"
       fieldFocus={true}
       busy={busy}
       title={title}
@@ -84,7 +84,7 @@ export function TrimDialog({
           sx={{ mt: 1.5 }}
         />
       </form>
-    </ConfirmDialog>
+    </ConfirmationDialog>
   )
 }
 

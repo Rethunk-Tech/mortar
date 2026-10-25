@@ -14,8 +14,8 @@ import {
 import { SMAPI } from '../brand/productNames.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -87,7 +87,7 @@ export function HiddenInside({ mod, profile }: { mod: Mod; profile: Profile }) {
       <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary', mt: 0.5 }}>
         {t`${{ loader: SMAPI }} skips folders whose names start with a dot.`}
       </Typography>
-      <ConfirmDialog
+      <ConfirmationDialog
         open={unhiding !== null}
         title={t`Unhide ${{ name: unhiding?.name ?? '' }}?`}
         body={t`Mortar renames the folder ${{ path: unhiding?.folder ?? '' }} without its leading dots, so ${{ loader: SMAPI }} loads the mod.`}

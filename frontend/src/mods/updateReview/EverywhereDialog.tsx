@@ -10,7 +10,7 @@ import {
   UpdateEverywhere,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { lowerFirst } from '../../i18n/lowerFirst.ts'
-import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
 import { ErrorRetry } from '../../shell/ErrorRetry.tsx'
 import { useLoaded } from '../../shell/useLoaded.ts'
 import { space } from '../../theme/density.ts'
@@ -139,17 +139,16 @@ export function EverywhereDialog({
     })
   }
   return (
-    <ConfirmDialog
+    <ConfirmationDialog
       open={open}
       title={t`Update in all profiles (${{ count: n }})`}
       confirmLabel={t`Update`}
       busy={pending}
       confirmDisabled={n === 0}
-      maxWidth={420}
       onCancel={onClose}
       onConfirm={apply}
     >
       <PreviewBody loadError={loadError} preview={preview} onRetry={load} />
-    </ConfirmDialog>
+    </ConfirmationDialog>
   )
 }

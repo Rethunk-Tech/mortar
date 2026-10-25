@@ -26,7 +26,7 @@ import { absoluteWhen } from '../i18n/when.ts'
 import { openSettings } from '../nav/store.ts'
 import { download } from '../queue/actions.ts'
 import { AfterDelay } from '../shell/AfterDelay.tsx'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
@@ -290,12 +290,12 @@ export function HealthDialog({
           </Button>
         ) : null}
       </DialogActions>
-      <ConfirmDialog
+      <ConfirmationDialog
         open={confirm !== null}
         title={confirmTitle(confirm ?? [])}
         body={confirmBody(confirm ?? [])}
         confirmLabel={confirm?.some((f) => f.repair === 'revert') ? t`Revert` : t`Delete`}
-        color="error"
+        tone="danger"
         busy={busy}
         onCancel={() => setConfirm(null)}
         onConfirm={() => {

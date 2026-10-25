@@ -14,7 +14,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { listNames } from '../i18n/list.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { reportError } from '../toasts/report.ts'
@@ -247,13 +247,12 @@ export function OtherProfilesDialog({
         )
       : confirmLabel
   return (
-    <ConfirmDialog
+    <ConfirmationDialog
       open={open}
       title={title}
       confirmLabel={confirmText}
       busy={pending}
       confirmDisabled={profiles.length === 0 || selected.length === 0}
-      maxWidth={420}
       onCancel={onClose}
       onConfirm={confirm}
     >
@@ -277,6 +276,6 @@ export function OtherProfilesDialog({
           {t`Also adds what it needs: ${{ names: listNames(needs.map((n) => n.name)) }}`}
         </Typography>
       ) : null}
-    </ConfirmDialog>
+    </ConfirmationDialog>
   )
 }

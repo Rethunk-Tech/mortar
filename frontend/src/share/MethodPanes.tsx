@@ -19,7 +19,7 @@ import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { listNames } from '../i18n/list.ts'
 import { SendPanel } from '../lan/SendPanel.tsx'
 import { useSettings } from '../settings/store.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
 import { reportError, reportUnexpected, toastError } from '../toasts/report.ts'
@@ -327,7 +327,7 @@ export function ThunderstorePane({ game, profileId }: { game: string; profileId:
       {packing ? (
         <ModpackDialog game={game} profileId={profileId} onClose={() => setPacking(false)} />
       ) : null}
-      <ConfirmDialog
+      <ConfirmationDialog
         open={asking}
         title={t`Share as ${{ manager: R2MODMAN }} code?`}
         body={t`This uploads the profile to ${{ source: sourceLabel('thunderstore') }} and gives a public code.`}

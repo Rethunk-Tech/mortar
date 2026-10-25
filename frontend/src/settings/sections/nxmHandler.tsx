@@ -7,7 +7,7 @@ import {
   Owner,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nxmsvc/service.ts'
 import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
-import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
 import { useLoaded } from '../../shell/useLoaded.ts'
 import { toastError } from '../../toasts/report.ts'
 import { useSettings } from '../store.ts'
@@ -55,7 +55,7 @@ export function useNxmHandler(): {
     ? t`${{ owner: prompt.owner }} opens these links now. Mortar takes them over and gives them back when you disable this in Settings.`
     : ''
   const dialog = (
-    <ConfirmDialog
+    <ConfirmationDialog
       open={prompt !== null}
       title={
         prompt?.mode === 'offer' || !prompt?.owner

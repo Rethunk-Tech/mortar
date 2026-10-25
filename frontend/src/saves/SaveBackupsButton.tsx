@@ -18,7 +18,7 @@ import { When } from '../i18n/When.tsx'
 import { useGameBusy } from '../launch/store.ts'
 import { useCurrentGame } from '../nav/currentGame.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
@@ -216,7 +216,7 @@ export function SaveBackupsButton({
           ))}
         </Box>
       </Popover>
-      <ConfirmDialog
+      <ConfirmationDialog
         open={ask !== null}
         title={
           ask?.kind === 'delete'
@@ -224,7 +224,7 @@ export function SaveBackupsButton({
             : t`Restore ${{ name: label }} to ${when}?`
         }
         confirmLabel={ask?.kind === 'delete' ? t`Delete` : t`Restore`}
-        color={ask?.kind === 'delete' ? 'error' : 'primary'}
+        tone={ask?.kind === 'delete' ? 'danger' : 'neutral'}
         busy={pending || (ask?.kind !== 'delete' && busyGame)}
         body={body}
         onCancel={() => setAsk(null)}
