@@ -6,7 +6,6 @@ import {
   Checkbox,
   FormControlLabel,
   IconButton,
-  Menu,
   Switch,
   Typography,
 } from '@mui/material'
@@ -23,7 +22,6 @@ import { useLive } from '../launch/live.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { destructiveSx } from '../shell/destructive.ts'
 import { AppDialog, DialogFooter, ToneIcon } from '../shell/dialog/AppDialog.tsx'
-import { MenuAction } from '../shell/MenuAction.tsx'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -47,7 +45,7 @@ import {
 import { useNexusDownloadable, useNexusPage } from './nexusDetails.ts'
 import { goneCaption, nexusPageMark } from './nexusMark.ts'
 import { useMods } from './store.ts'
-import { useUpdateFor } from './updates.ts'
+import { useUpdateFor, useUpdates } from './updates.ts'
 import { useLocked } from './useLocked.ts'
 
 const MAX_NAMED = 12
@@ -375,8 +373,6 @@ export function UpdateBadge({ mod }: { mod: Mod }) {
   })
   const game = useProfiles((s) => s.game?.id ?? '')
   const downloadable = useNexusDownloadable(game, nexusId)
-  const setSkipVersion = useMods((s) => s.setSkipVersion)
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   if (!update) {
     return null
   }
@@ -387,37 +383,18 @@ export function UpdateBadge({ mod }: { mod: Mod }) {
     ? t`Unofficial update available: ${{ version: update.version }}`
     : t`Update available: ${{ installed: update.installed }} to ${{ version: update.version }}`
   return (
-    <>
-      <Tooltip title={text}>
-        <IconButton
-          aria-label={text}
-          aria-haspopup="menu"
-          aria-expanded={anchor !== null}
-          onClick={(e) => {
-            e.stopPropagation()
-            setAnchor(e.currentTarget)
-          }}
-          sx={{ p: 0, flexShrink: 0, color: 'var(--mortar-accent-ink)', borderRadius: '4px' }}
-        >
-          <ArrowUp size={16} />
-        </IconButton>
-      </Tooltip>
-      <Menu
-        open={anchor !== null}
-        anchorEl={anchor}
-        onClose={() => setAnchor(null)}
-        onClick={(e) => e.stopPropagation()}
+    <Tooltip title={text}>
+      <IconButton
+        aria-label={text}
+        onClick={(e) => {
+          e.stopPropagation()
+          useUpdates.getState().reviewOne(mod.key)
+        }}
+        sx={{ p: 0, flexShrink: 0, color: 'var(--mortar-accent-ink)', borderRadius: '4px' }}
       >
-        <MenuAction
-          icon={<Ban size={16} />}
-          label={t`Skip this update`}
-          onClick={() => {
-            setAnchor(null)
-            setSkipVersion(mod, update.version).catch(reportUnexpected)
-          }}
-        />
-      </Menu>
-    </>
+        <ArrowUp size={16} />
+      </IconButton>
+    </Tooltip>
   )
 }
 

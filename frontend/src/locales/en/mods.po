@@ -3527,7 +3527,6 @@ msgid "Dependencies"
 msgstr "Dependencies"
 
 #: src/mods/ModMenu.tsx
-#: src/mods/parts.tsx
 #: src/mods/SelectionBarActions.tsx
 #: src/mods/UpdateBanner.tsx
 #: src/mods/updateReview/UpdateActions.tsx

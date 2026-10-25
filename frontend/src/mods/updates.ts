@@ -81,13 +81,17 @@ const useUpdates = create<{
   updates: UpdatesResult | null
   checkedAt: number | null
   reviewing: boolean
+  // The mod whose row the review scrolls to as it opens; empty for none.
+  focusKey: string
   load: () => Promise<void>
   checkNow: () => Promise<number | null>
   setReviewing: (reviewing: boolean) => void
+  reviewOne: (key: string) => void
 }>((set, get) => ({
   updates: null,
   checkedAt: null,
   reviewing: false,
+  focusKey: '',
   load: async () => {
     const at = openTarget()
     if (!at) {
@@ -140,6 +144,7 @@ const useUpdates = create<{
     return countFor(updates, at.id)
   },
   setReviewing: (reviewing) => set({ reviewing }),
+  reviewOne: (key) => set({ reviewing: true, focusKey: key }),
 }))
 
 // The profile and interval the running timer was set for; the stores change on every mod toggle and install, and
