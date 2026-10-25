@@ -2,7 +2,7 @@ import { i18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Menu, Typography } from '@mui/material'
-import { FolderOpen, Pin, PinOff, RotateCcw } from 'lucide-react'
+import { FolderOpen, Pin, RotateCcw } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type {
   Backup,
@@ -20,7 +20,6 @@ import { EmptyState } from '../shell/EmptyState.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
-import { Tooltip } from '../shell/Tooltip.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -48,6 +47,7 @@ function BackupRow({
   profiles,
   menuOpen,
   onRestore,
+  onPin,
 }: {
   backup: Backup
   busyGame: boolean
@@ -55,6 +55,7 @@ function BackupRow({
   profiles: readonly Profile[]
   menuOpen: boolean
   onRestore: (el: HTMLElement) => void
+  onPin: () => void
 }) {
   const { t } = useLingui()
   const when = backup.at > 0 ? <When value={backup.at} withTime={true} /> : backup.name
@@ -86,23 +87,20 @@ function BackupRow({
           {meta}
         </Typography>
       </Box>
-      {backup.pinned ? (
-        <Tooltip title={t`Kept forever`}>
-          <Box
-            component="span"
-            role="img"
-            aria-label={t`Kept forever`}
-            sx={{ display: 'flex', color: 'text.secondary' }}
-          >
-            <Pin size={14} />
-          </Box>
-        </Tooltip>
-      ) : null}
+      <TipIconButton
+        label={backup.pinned ? t`Kept forever: allow cleanup` : t`Keep forever`}
+        aria-pressed={backup.pinned === true}
+        onClick={onPin}
+      >
+        <Pin size={16} fill={backup.pinned ? 'currentColor' : 'none'} />
+      </TipIconButton>
       <TipIconButton
         label={busyGame ? t`Stop the game to restore saves.` : t`Restore ${{ name: when }}`}
         disabled={busyGame || pending}
-        aria-haspopup="menu"
-        aria-expanded={menuOpen}
+        // A backup of one save restores it at once; one of several asks which.
+        {...((backup.saves ?? []).length > 1
+          ? { 'aria-haspopup': 'menu' as const, 'aria-expanded': menuOpen }
+          : {})}
         onClick={(e) => {
           onRestore(e.currentTarget)
         }}
@@ -196,8 +194,13 @@ export function BackupsDialog({
               profiles={profiles}
               menuOpen={menu?.backup.name === b.name}
               onRestore={(el) => {
-                setMenu({ backup: b, el })
+                if ((b.saves ?? []).length > 1) {
+                  setMenu({ backup: b, el })
+                } else {
+                  setConfirm({ backup: b, snaps: b.saves ?? [] })
+                }
               }}
+              onPin={() => setPinned(b.name, !b.pinned).catch(reportUnexpected)}
             />
           ))}
         </Box>
@@ -209,17 +212,6 @@ export function BackupsDialog({
           setMenu(null)
         }}
       >
-        <MenuAction
-          icon={menu?.backup.pinned ? <PinOff size={16} /> : <Pin size={16} />}
-          label={menu?.backup.pinned ? t`Allow cleanup` : t`Keep forever`}
-          onClick={() => {
-            if (menu) {
-              const { backup } = menu
-              setPinned(backup.name, !backup.pinned).catch(reportUnexpected)
-            }
-            setMenu(null)
-          }}
-        />
         <MenuAction
           icon={<RotateCcw size={16} />}
           label={t`Restore all`}

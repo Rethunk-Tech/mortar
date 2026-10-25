@@ -110,7 +110,6 @@ msgstr "Launch the game with this profile's mods. Mortar applies your list befor
 msgid "Choose Save as template… from a profile's menu."
 msgstr "Choose Save as template… from a profile's menu."
 
-#: src/saves/BackupsDialog.tsx
 #: src/saves/SaveBackupsButton.tsx
 msgid "Allow cleanup"
 msgstr "Allow cleanup"
@@ -5377,6 +5376,10 @@ msgstr "{name} did not start"
 msgid "Install git to keep your mod's history."
 msgstr "Install git to keep your mod's history."
 
+#: src/saves/BackupsDialog.tsx
+msgid "Kept forever: allow cleanup"
+msgstr "Kept forever: allow cleanup"
+
 #: src/firstrun/FirstRun.tsx
 msgid "Join our {app}"
 msgstr "Join our {app}"
@@ -5458,10 +5461,6 @@ msgstr "Waiting for {machine}'s profile file to finish syncing"
 #: src/shell/AppMenu.tsx
 msgid "Mortar menu"
 msgstr "Mortar menu"
-
-#: src/saves/BackupsDialog.tsx
-msgid "Kept forever"
-msgstr "Kept forever"
 
 #: src/i18n/reasonText.ts
 msgid "same mod as {name}"

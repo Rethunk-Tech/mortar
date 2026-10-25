@@ -110,7 +110,6 @@ msgstr ""
 msgid "Choose Save as template… from a profile's menu."
 msgstr ""
 
-#: src/saves/BackupsDialog.tsx
 #: src/saves/SaveBackupsButton.tsx
 msgid "Allow cleanup"
 msgstr ""
@@ -5377,6 +5376,10 @@ msgstr ""
 msgid "Install git to keep your mod's history."
 msgstr ""
 
+#: src/saves/BackupsDialog.tsx
+msgid "Kept forever: allow cleanup"
+msgstr ""
+
 #: src/firstrun/FirstRun.tsx
 msgid "Join our {app}"
 msgstr ""
@@ -5457,10 +5460,6 @@ msgstr ""
 
 #: src/shell/AppMenu.tsx
 msgid "Mortar menu"
-msgstr ""
-
-#: src/saves/BackupsDialog.tsx
-msgid "Kept forever"
 msgstr ""
 
 #: src/i18n/reasonText.ts
