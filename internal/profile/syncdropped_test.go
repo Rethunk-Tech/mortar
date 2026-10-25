@@ -10,7 +10,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
-// A removed package's files leave the profile at once, not at the next launch's sync.
+// A removed package's files leave the profile in the background right after, not at the next launch's sync.
 func TestRemovingAPackageTakesItsFilesNow(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)
@@ -35,6 +35,7 @@ func TestRemovingAPackageTakesItsFilesNow(t *testing.T) {
 	if _, err := e.RemoveEntries("lethal-company", p.ID, []string{key}); err != nil {
 		t.Fatal(err)
 	}
+	e.WaitSyncs()
 	if _, err := fsx.Stat(dll); !errors.Is(err, fs.ErrNotExist) {
 		t.Fatalf("the removed package's file is still there: %v", err)
 	}

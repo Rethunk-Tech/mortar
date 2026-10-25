@@ -180,13 +180,16 @@ func recordOf(hash, dst string) (placedRec, error) {
 	return placedRec{Hash: h, Size: st.Size(), MTime: st.ModTime().UnixNano()}, nil
 }
 
-// SyncPackages lays the enabled packages' files out in the profile, where the loader reads them, and takes away the
+// syncPackages lays the enabled packages' files out in the profile, where the loader reads them, and takes away the
 // files of packages no longer enabled. A package's config file only seeds the profile: once it is there the player's
 // edits stay. So does any other file a mod or the player changed since it was laid out (a script mod's saved
 // settings): it is never overwritten from the store, and when its package goes away it is held under `changed/` and
 // comes back with the package. A file with no record that differs from the package's is an older install's leftover: the
 // package's file replaces it and the old bytes are kept under `replaced/`. A game that is redirected has nothing to sync.
-func (s *Store) SyncPackages(gameID, id string) error {
+func (s *Store) syncPackages(gameID, id string) error {
+	l := s.bg.lock(syncKey(gameID, id))
+	l.Lock()
+	defer l.Unlock()
 	files, _, err := s.packageFiles(gameID, id)
 	if err != nil || files == nil {
 		return err

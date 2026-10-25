@@ -318,6 +318,7 @@ type Store struct {
 	home            string
 	settings        *settings.Store
 	mu              sync.Mutex
+	bg              bgSync
 	// scans are the plugin scans of store items, which never change under their keys.
 	scans scanCache
 	// seeded is each profile's seedSignature as of its last config seed.

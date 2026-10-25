@@ -29,7 +29,10 @@ func newEnv(t *testing.T) env {
 	t.Helper()
 	base := t.TempDir()
 	items := store.OpenAt(filepath.Join(base, "mortar", "store"))
-	return env{&Store{root: filepath.Join(base, "profiles"), trash: filepath.Join(base, "trash"), dataDir: base, items: items}, items, base}
+	st := &Store{root: filepath.Join(base, "profiles"), trash: filepath.Join(base, "trash"), dataDir: base, items: items}
+	// A removal lays the profile out in the background; it ends before the temporary folder is removed.
+	t.Cleanup(st.WaitSyncs)
+	return env{st, items, base}
 }
 
 func writeFile(t *testing.T, root, rel, body string) {

@@ -520,20 +520,6 @@ func (s *Store) RemoveEntries(game, id string, keys []string) (Profile, error) {
 	return p, nil
 }
 
-// syncDropped lays the profile's package files out again after a change that dropped some, so a removed or switched-off
-// mod's files leave the profile now and not at the next launch. Skipped while the game runs the profile; a failure is
-// logged, since the next launch syncs anyway.
-func (s *Store) syncDropped(game, id string) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if s.unlocked(game, id) != nil {
-		return
-	}
-	if err := s.SyncPackages(game, id); err != nil {
-		log.Printf("profile %s/%s: laying out files after a removal: %v", game, id, err)
-	}
-}
-
 // updateModsRecorded is updateMods followed by a mods/ snapshot, for changes that write the profile's mods.
 func (s *Store) updateModsRecorded(game, id string, fn func(p *Profile, dir string) error) (Profile, error) {
 	p, err := s.updateMods(game, id, fn)

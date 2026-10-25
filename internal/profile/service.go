@@ -340,7 +340,7 @@ func (s *Service) RestoreEntries(game, id string, entries []Entry) (Profile, err
 // SetModEnabled switches a mod of the entry key on or off.
 func (s *Service) SetModEnabled(game, id, key string, uniqueID mod.ID, enabled bool) (EnableResult, error) {
 	p, also, err := s.store.enableMod(game, id, key, uniqueID, enabled)
-	if err == nil && !enabled {
+	if err == nil {
 		s.store.syncDropped(game, id)
 	}
 	return EnableResult{Profile: p, AlsoEnabled: also}, err
@@ -348,7 +348,7 @@ func (s *Service) SetModEnabled(game, id, key string, uniqueID mod.ID, enabled b
 
 func (s *Service) SetModsEnabled(game, id string, mods []EnableRef, enabled bool) (EnableResult, error) {
 	p, also, err := s.store.enableMods(game, id, mods, enabled)
-	if err == nil && !enabled {
+	if err == nil {
 		s.store.syncDropped(game, id)
 	}
 	return EnableResult{Profile: p, AlsoEnabled: also}, err
