@@ -246,14 +246,15 @@ const useProfileContext = create<{ id: string; position: Position | null }>(() =
 const showContext = (id: string, position: Position) => useProfileContext.setState({ id, position })
 const hideContext = () => useProfileContext.setState({ position: null })
 
-function ContextHost({ game }: { game: string }) {
+// Memoised: the switcher opening and closing re-renders its view, and the right-click menu stays mounted under it.
+const ContextHost = memo(function ContextHostView({ game }: { game: string }) {
   const id = useProfileContext((s) => s.id)
   const position = useProfileContext((s) => s.position)
   const profile = useProfiles((s) => s.profiles.find((p) => p.id === id))
   return profile ? (
     <ProfileContextMenu game={game} profile={profile} position={position} onClose={hideContext} />
   ) : null
-}
+})
 
 // The title bar's profile switcher for the open game: the open profile and its mod count over a menu that switches,
 // creates, imports and manages profiles. A profile's right-click menu opens from its row and from the button.
