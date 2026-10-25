@@ -1,16 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Button,
-  Checkbox,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  FormControlLabel,
-  Menu,
-} from '@mui/material'
-import { UserRound } from 'lucide-react'
+import { Box, Button, Checkbox, FormControlLabel, Menu, Typography } from '@mui/material'
+import { Download, UserRound } from 'lucide-react'
 import { useState } from 'react'
 import type { Arrival } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nxmsvc/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
@@ -21,6 +11,7 @@ import { listProfiles } from '../profiles/listProfiles.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
+import { AppDialog, DialogFooter, ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
@@ -103,77 +94,78 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
       : t`You started this download on ${{ source: site }}, but you have no ${{ game: gameName }} profile yet.`
   }
   return (
-    <Dialog
-      open={true}
-      onClose={(_, reason) => {
-        if (reason === 'escapeKeyDown' && !busy) {
-          dismiss(arrival.id)
+    <>
+      <AppDialog
+        open={true}
+        onClose={() => (busy ? undefined : dismiss(arrival.id))}
+        closable={false}
+        size="sm"
+        title={t`Install ${name}?`}
+        subtitle={file ? `${file.fileName} · ${formatKb(file.sizeKb)}` : undefined}
+        icon={
+          <ToneIcon tone="neutral">
+            <Download size={22} />
+          </ToneIcon>
         }
-      }}
-      maxWidth="xs"
-      fullWidth={true}
-    >
-      <DialogTitle>{t`Install ${name}?`}</DialogTitle>
-      <DialogContent>
-        {file ? (
-          <DialogContentText sx={{ mb: 1 }}>
-            {`${file.fileName} · ${formatKb(file.sizeKb)}`}
-          </DialogContentText>
-        ) : null}
-        {arrivals.length > 1 ? (
-          <DialogContentText sx={{ mb: 1 }}>
-            {t`${{ count: arrivals.length - 1 }} more waiting`}
-          </DialogContentText>
-        ) : null}
-        {profiles === null ? (
-          <LoadingRow>{text}</LoadingRow>
-        ) : (
-          <DialogContentText>{text}</DialogContentText>
-        )}
-        {error ? (
-          <ErrorRetry
-            error={error}
-            onRetry={() => {
-              if (open) {
-                pick(open.id)
+        footer={
+          <DialogFooter>
+            <Button disabled={busy} onClick={() => dismiss(arrival.id)}>
+              {t`Ignore`}
+            </Button>
+            {others.length > 0 ? (
+              <Button
+                disabled={busy}
+                aria-haspopup="menu"
+                aria-expanded={anchor !== null}
+                onClick={(e) => setAnchor(e.currentTarget)}
+              >
+                {t`Other profile…`}
+              </Button>
+            ) : null}
+            {open ? (
+              <Button variant="contained" disabled={busy} onClick={() => pick(open.id)}>
+                {t`Install into ${{ name: open.name }}`}
+              </Button>
+            ) : null}
+            {profiles?.length === 0 && canCreate ? (
+              <Button variant={open ? 'text' : 'contained'} onClick={() => setCreating(true)}>
+                {t`New profile`}
+              </Button>
+            ) : null}
+          </DialogFooter>
+        }
+      >
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          {arrivals.length > 1 ? (
+            <Typography sx={{ color: 'text.secondary' }}>
+              {t`${{ count: arrivals.length - 1 }} more waiting`}
+            </Typography>
+          ) : null}
+          {profiles === null ? (
+            <LoadingRow>{text}</LoadingRow>
+          ) : (
+            <Typography sx={{ color: 'text.secondary' }}>{text}</Typography>
+          )}
+          {error ? (
+            <ErrorRetry
+              error={error}
+              onRetry={() => {
+                if (open) {
+                  pick(open.id)
+                }
+              }}
+            />
+          ) : null}
+          {arrivals.length > 1 ? (
+            <FormControlLabel
+              control={
+                <Checkbox checked={applyAll} onChange={(_, checked) => setApplyAll(checked)} />
               }
-            }}
-          />
-        ) : null}
-        {arrivals.length > 1 ? (
-          <FormControlLabel
-            control={
-              <Checkbox checked={applyAll} onChange={(_, checked) => setApplyAll(checked)} />
-            }
-            label={t`Apply this profile to all waiting`}
-          />
-        ) : null}
-      </DialogContent>
-      <DialogActions>
-        <Button disabled={busy} onClick={() => dismiss(arrival.id)}>
-          {t`Ignore`}
-        </Button>
-        {others.length > 0 ? (
-          <Button
-            disabled={busy}
-            aria-haspopup="menu"
-            aria-expanded={anchor !== null}
-            onClick={(e) => setAnchor(e.currentTarget)}
-          >
-            {t`Other profile…`}
-          </Button>
-        ) : null}
-        {open ? (
-          <Button variant="contained" disabled={busy} onClick={() => pick(open.id)}>
-            {t`Install into ${{ name: open.name }}`}
-          </Button>
-        ) : null}
-        {profiles?.length === 0 && canCreate ? (
-          <Button variant={open ? 'text' : 'contained'} onClick={() => setCreating(true)}>
-            {t`New profile`}
-          </Button>
-        ) : null}
-      </DialogActions>
+              label={t`Apply this profile to all waiting`}
+            />
+          ) : null}
+        </Box>
+      </AppDialog>
       <Menu anchorEl={anchor} open={anchor !== null} onClose={() => setAnchor(null)}>
         {others.map((p) => (
           <MenuAction
@@ -194,7 +186,7 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
           load()
         }}
       />
-    </Dialog>
+    </>
   )
 }
 

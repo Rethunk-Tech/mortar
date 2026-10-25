@@ -1,17 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Checkbox,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControlLabel,
-  TextField,
-  Typography,
-} from '@mui/material'
-import { useState } from 'react'
+import { Box, Button, Checkbox, FormControlLabel, TextField, Typography } from '@mui/material'
+import { useId, useState } from 'react'
 import type {
   ModpackForm,
   ModpackOptions,
@@ -24,6 +13,8 @@ import {
 import { PickImage } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { listNames } from '../i18n/list.ts'
+import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
+import { Field, FieldRow, FormDialog, FormSection, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { Fold } from '../shell/Fold.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
@@ -38,7 +29,6 @@ const DESCRIPTION_MAX = 250
 const SKELETON_FIELDS = 6
 const NAME_PATTERN = /^[A-Za-z0-9_]+$/
 const VERSION_PATTERN = /^\d+\.\d+\.\d+$/
-const errorText = { fontSize: 'base.fontSize', color: 'error.main' } as const
 const monoField = { '& textarea': { fontFamily: MONO, fontSize: 'base.fontSize' } } as const
 
 const HTTP = /^https?:\/\//
@@ -120,47 +110,99 @@ function ConfigFiles({
   )
 }
 
-const section = { fontSize: 'base.fontSize', fontWeight: 700, mt: 1 } as const
+type SetOption = <K extends keyof ModpackOptions>(key: K, value: ModpackOptions[K]) => void
+
+// A tall monospace text box in a Field: label above, never in the border.
+function TextBox({
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string
+  value: string
+  onChange: (text: string) => void
+  placeholder?: string
+}) {
+  const id = useId()
+  return (
+    <Field label={label} htmlFor={id}>
+      <TextField
+        id={id}
+        size="small"
+        fullWidth={true}
+        multiline={true}
+        minRows={3}
+        maxRows={8}
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        sx={monoField}
+      />
+    </Field>
+  )
+}
+
+function PackageSection({
+  o,
+  set,
+  lastVersion,
+}: {
+  o: ModpackOptions
+  set: SetOption
+  lastVersion: string
+}) {
+  const { t } = useLingui()
+  return (
+    <FormSection title={t`Package`}>
+      <FieldRow>
+        <TextInput
+          label={t`Name`}
+          value={o.name}
+          onChange={(v) => set('name', v)}
+          error={NAME_PATTERN.test(o.name) ? '' : t`Letters, digits and underscores only.`}
+        />
+        <TextInput
+          label={t`Version`}
+          value={o.version}
+          onChange={(v) => set('version', v)}
+          error={VERSION_PATTERN.test(o.version) ? '' : t`Like 1.0.0.`}
+          hint={lastVersion ? t`Last export ${{ lastVersion }}` : undefined}
+        />
+      </FieldRow>
+      <TextInput label={t`Author`} value={o.author} onChange={(v) => set('author', v)} />
+      <TextInput
+        label={t`Description`}
+        value={o.description}
+        onChange={(v) => set('description', v)}
+        maxLength={DESCRIPTION_MAX}
+      />
+      <TextInput label={t`Website`} value={o.website} onChange={(v) => set('website', v)} />
+      <IconRow path={o.iconPath} onChange={(path) => set('iconPath', path)} />
+    </FormSection>
+  )
+}
 
 // The package's README and changelog, and the button that writes the changelog from the last export.
-function Texts({
-  readme,
-  changelog,
-  onReadme,
-  onChangelog,
+function TextsSection({
+  o,
+  set,
   onRegenerate,
 }: {
-  readme: string
-  changelog: string
-  onReadme: (text: string) => void
-  onChangelog: (text: string) => void
+  o: ModpackOptions
+  set: SetOption
   onRegenerate: () => void
 }) {
   const { t } = useLingui()
   return (
-    <>
-      <Typography sx={section}>{t`Texts`}</Typography>
-      <TextField
-        size="small"
-        multiline={true}
-        minRows={3}
-        maxRows={8}
+    <FormSection title={t`Texts`}>
+      <TextBox
         label={t`README`}
         placeholder={t`Left empty, a README is written from what the profile holds.`}
-        value={readme}
-        onChange={(e) => onReadme(e.target.value)}
-        sx={monoField}
+        value={o.readme}
+        onChange={(v) => set('readme', v)}
       />
-      <TextField
-        size="small"
-        multiline={true}
-        minRows={3}
-        maxRows={8}
-        label={t`Changelog`}
-        value={changelog}
-        onChange={(e) => onChangelog(e.target.value)}
-        sx={monoField}
-      />
+      <TextBox label={t`Changelog`} value={o.changelog} onChange={(v) => set('changelog', v)} />
       <Button
         size="small"
         variant="outlined"
@@ -169,7 +211,7 @@ function Texts({
       >
         {t`Write the changelog against the last export`}
       </Button>
-    </>
+    </FormSection>
   )
 }
 
@@ -187,19 +229,15 @@ function Fields({
   const { t } = useLingui()
   const [o, setO] = useState<ModpackOptions>(form.options)
   const [busy, run] = usePending()
-  const set = <K extends keyof ModpackOptions>(key: K, value: ModpackOptions[K]) =>
-    setO((cur) => ({ ...cur, [key]: value }))
-  const bad = (() => {
-    if (!NAME_PATTERN.test(o.name)) {
-      return t`The name may hold only letters, digits and underscores.`
-    }
-    if (!VERSION_PATTERN.test(o.version)) {
-      return t`The version must look like 1.0.0.`
-    }
-    return o.website !== '' && !HTTP.test(o.website)
-      ? t`The website must start with http:// or https://.`
-      : ''
-  })()
+  const set: SetOption = (key, value) => setO((cur) => ({ ...cur, [key]: value }))
+  let issue = ''
+  if (!NAME_PATTERN.test(o.name)) {
+    issue = t`The name may hold only letters, digits and underscores.`
+  } else if (!VERSION_PATTERN.test(o.version)) {
+    issue = t`The version must look like 1.0.0.`
+  } else if (o.website !== '' && !HTTP.test(o.website)) {
+    issue = t`The website must start with http:// or https://.`
+  }
   const regenerate = () =>
     ModpackChangelog(game, profileId, o.version, o.includeDisabled)
       .then((text) => set('changelog', text))
@@ -223,89 +261,40 @@ function Fields({
     )
   const left = [...(form.leftOut ?? []), ...(o.includeDisabled ? [] : (form.disabled ?? []))]
   return (
-    <>
-      <DialogContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap, pt: 0.5 }}>
-          <Typography sx={{ ...section, mt: 0 }}>{t`Package`}</Typography>
-          <Box sx={{ display: 'flex', gap: space.gap }}>
-            <TextField
-              size="small"
-              fullWidth={true}
-              label={t`Name`}
-              value={o.name}
-              onChange={(e) => set('name', e.target.value)}
-              error={!NAME_PATTERN.test(o.name)}
+    <FormDialog
+      open={true}
+      onClose={onClose}
+      title={t`Export as ${{ source: sourceLabel('thunderstore') }} modpack`}
+      submitLabel={t`Export…`}
+      issue={issue}
+      dirty={JSON.stringify(o) !== JSON.stringify(form.options)}
+      busy={busy}
+      onSubmit={save}
+    >
+      <PackageSection o={o} set={set} lastVersion={form.lastVersion} />
+      <TextsSection o={o} set={set} onRegenerate={regenerate} />
+      <FormSection title={t`Contents`}>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={o.includeDisabled}
+              onChange={(e) => set('includeDisabled', e.target.checked)}
             />
-            <TextField
-              size="small"
-              label={t`Version`}
-              value={o.version}
-              onChange={(e) => set('version', e.target.value)}
-              error={!VERSION_PATTERN.test(o.version)}
-              helperText={
-                form.lastVersion ? t`Last export ${{ lastVersion: form.lastVersion }}` : undefined
-              }
-              sx={{ width: 150 }}
-            />
-          </Box>
-          <TextField
-            size="small"
-            label={t`Author`}
-            value={o.author}
-            onChange={(e) => set('author', e.target.value)}
-          />
-          <TextField
-            size="small"
-            label={t`Description`}
-            value={o.description}
-            onChange={(e) => set('description', e.target.value)}
-            slotProps={{ htmlInput: { maxLength: DESCRIPTION_MAX } }}
-            helperText={`${[...o.description].length}/${DESCRIPTION_MAX}`}
-          />
-          <TextField
-            size="small"
-            label={t`Website`}
-            value={o.website}
-            onChange={(e) => set('website', e.target.value)}
-          />
-          <IconRow path={o.iconPath} onChange={(path) => set('iconPath', path)} />
-          <Texts
-            readme={o.readme}
-            changelog={o.changelog}
-            onReadme={(v) => set('readme', v)}
-            onChangelog={(v) => set('changelog', v)}
-            onRegenerate={regenerate}
-          />
-          <Typography sx={section}>{t`Contents`}</Typography>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={o.includeDisabled}
-                onChange={(e) => set('includeDisabled', e.target.checked)}
-              />
-            }
-            label={t`Include disabled mods`}
-          />
-          <ConfigFiles
-            all={form.configs ?? []}
-            chosen={o.configs ?? []}
-            onChange={(names) => set('configs', names)}
-          />
-          <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
-            {left.length > 0
-              ? t`Depends on ${{ dependencies: form.dependencies }} ${{ source: sourceLabel('thunderstore') }} packages. Left out: ${{ names: listNames(left) }}.`
-              : t`Depends on ${{ dependencies: form.dependencies }} ${{ source: sourceLabel('thunderstore') }} packages.`}
-          </Typography>
-          {bad ? <Typography sx={errorText}>{bad}</Typography> : null}
-        </Box>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>{t`Cancel`}</Button>
-        <Button variant="contained" disabled={busy || bad !== ''} onClick={save}>
-          {t`Export…`}
-        </Button>
-      </DialogActions>
-    </>
+          }
+          label={t`Include disabled mods`}
+        />
+        <ConfigFiles
+          all={form.configs ?? []}
+          chosen={o.configs ?? []}
+          onChange={(names) => set('configs', names)}
+        />
+        <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
+          {left.length > 0
+            ? t`Depends on ${{ dependencies: form.dependencies }} ${{ source: sourceLabel('thunderstore') }} packages. Left out: ${{ names: listNames(left) }}.`
+            : t`Depends on ${{ dependencies: form.dependencies }} ${{ source: sourceLabel('thunderstore') }} packages.`}
+        </Typography>
+      </FormSection>
+    </FormDialog>
   )
 }
 
@@ -325,20 +314,25 @@ export function ModpackDialog({
     [game, profileId],
     null,
   )
+  if (data) {
+    return <Fields game={game} profileId={profileId} form={data} onClose={onClose} />
+  }
   return (
-    <Dialog open={true} onClose={onClose} fullWidth={true} maxWidth="sm">
-      <DialogTitle>{t`Export as ${{ source: sourceLabel('thunderstore') }} modpack`}</DialogTitle>
-      {error === null ? null : (
-        <DialogContent>
-          <ErrorRetry error={inlineError(error)} onRetry={reload} />
-        </DialogContent>
+    <AppDialog
+      open={true}
+      onClose={onClose}
+      title={t`Export as ${{ source: sourceLabel('thunderstore') }} modpack`}
+      footer={
+        <DialogFooter>
+          <Button onClick={onClose}>{t`Cancel`}</Button>
+        </DialogFooter>
+      }
+    >
+      {error === null ? (
+        <SkeletonRows label={t`Reading the profile…`} count={SKELETON_FIELDS} height={40} />
+      ) : (
+        <ErrorRetry error={inlineError(error)} onRetry={reload} />
       )}
-      {error === null && data === null ? (
-        <DialogContent>
-          <SkeletonRows label={t`Reading the profile…`} count={SKELETON_FIELDS} height={40} />
-        </DialogContent>
-      ) : null}
-      {data ? <Fields game={game} profileId={profileId} form={data} onClose={onClose} /> : null}
-    </Dialog>
+    </AppDialog>
   )
 }

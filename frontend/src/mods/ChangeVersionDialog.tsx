@@ -1,20 +1,11 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Chip,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  List,
-  ListItemButton,
-  Typography,
-} from '@mui/material'
+import { Box, Button, Chip, List, ListItemButton, Typography } from '@mui/material'
+import { History } from 'lucide-react'
 import { useState } from 'react'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
+import { AppDialog, DialogFooter, ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { space } from '../theme/density.ts'
@@ -120,35 +111,41 @@ export function ChangeVersionDialog({
     )
   })()
   return (
-    <Dialog open={true} onClose={onClose} fullWidth={true} maxWidth="xs">
-      <DialogTitle>
-        {entry ? t`Change the version of ${name}` : t`Install a version of ${name}`}
-      </DialogTitle>
-      <DialogContent>
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: space.gap,
-            pt: 0.5,
-            height: asking ? undefined : LIST_PX,
-          }}
-        >
-          {body}
-        </Box>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={asking ? () => setAsking(false) : onClose}>
-          {asking ? t`Back` : t`Cancel`}
-        </Button>
-        <Button
-          variant="contained"
-          disabled={!choice}
-          onClick={held && !asking ? () => setAsking(true) : go}
-        >
-          {confirmLabel}
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <AppDialog
+      open={true}
+      onClose={onClose}
+      size="sm"
+      title={entry ? t`Change the version of ${name}` : t`Install a version of ${name}`}
+      icon={
+        <ToneIcon tone="neutral">
+          <History size={22} />
+        </ToneIcon>
+      }
+      footer={
+        <DialogFooter>
+          <Button onClick={asking ? () => setAsking(false) : onClose}>
+            {asking ? t`Back` : t`Cancel`}
+          </Button>
+          <Button
+            variant="contained"
+            disabled={!choice}
+            onClick={held && !asking ? () => setAsking(true) : go}
+          >
+            {confirmLabel}
+          </Button>
+        </DialogFooter>
+      }
+    >
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: space.gap,
+          height: asking ? undefined : LIST_PX,
+        }}
+      >
+        {body}
+      </Box>
+    </AppDialog>
   )
 }

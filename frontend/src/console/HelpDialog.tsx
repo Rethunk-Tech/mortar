@@ -1,17 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Alert,
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControlLabel,
-  Switch,
-  TextField,
-  Typography,
-} from '@mui/material'
+import { Alert, Box, Button, FormControlLabel, Switch, TextField, Typography } from '@mui/material'
 import { Copy, ExternalLink, TriangleAlert } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import {
@@ -25,6 +13,7 @@ import {
 import { openPage } from '../mods/menu.ts'
 import { useProfileLoader } from '../profiles/store.ts'
 import { copyText } from '../share/copyText.ts'
+import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
@@ -234,9 +223,30 @@ export function HelpDialog({ game }: { game: string }) {
   }
 
   return (
-    <Dialog open={open} onClose={uploading ? undefined : close} maxWidth="md" fullWidth={true}>
-      <DialogTitle sx={{ fontSize: 22, fontWeight: 700 }}>{t`Share log…`}</DialogTitle>
-      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
+    <AppDialog
+      open={open}
+      onClose={uploading ? () => undefined : close}
+      size="lg"
+      title={t`Share log…`}
+      footer={
+        <DialogFooter>
+          <Button disabled={uploading} onClick={close} sx={button}>
+            {link || !log ? t`Close` : t`Cancel`}
+          </Button>
+          {log && paste ? (
+            <Button variant="contained" onClick={copyAndOpen} sx={button}>
+              {t`Copy log and open ${pasteHost}`}
+            </Button>
+          ) : null}
+          {log && !link && !paste ? (
+            <Button variant="contained" disabled={uploading} onClick={upload} sx={button}>
+              {uploading ? t`Uploading…` : t`Upload log`}
+            </Button>
+          ) : null}
+        </DialogFooter>
+      }
+    >
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
         {body ? (
           <>
             {log === null ? <LoadingRow>{body}</LoadingRow> : null}
@@ -254,22 +264,7 @@ export function HelpDialog({ game }: { game: string }) {
             copy={copy}
           />
         )}
-      </DialogContent>
-      <DialogActions>
-        <Button disabled={uploading} onClick={close} sx={button}>
-          {link || !log ? t`Close` : t`Cancel`}
-        </Button>
-        {log && paste ? (
-          <Button variant="contained" onClick={copyAndOpen} sx={button}>
-            {t`Copy log and open ${pasteHost}`}
-          </Button>
-        ) : null}
-        {log && !link && !paste ? (
-          <Button variant="contained" disabled={uploading} onClick={upload} sx={button}>
-            {uploading ? t`Uploading…` : t`Upload log`}
-          </Button>
-        ) : null}
-      </DialogActions>
-    </Dialog>
+      </Box>
+    </AppDialog>
   )
 }

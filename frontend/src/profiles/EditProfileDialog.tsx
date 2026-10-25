@@ -1,16 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Tab,
-  Tabs,
-  TextField,
-  Typography,
-} from '@mui/material'
+import { Box, Button, Tab, Tabs, TextField, Typography } from '@mui/material'
 import { type ReactNode, useEffect, useId, useState } from 'react'
 import { GameSettings as GetGameSettings } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { PickImage } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
@@ -19,7 +8,7 @@ import { hasPickedCover, type StagedCover } from '../game/cover.ts'
 import { HeroCover } from '../game/HeroCover.tsx'
 import { useGameInfo } from '../games/info.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
-import { useDiscardGuard } from '../shell/useDiscardGuard.tsx'
+import { Field, FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -130,7 +119,6 @@ function FieldsTabs({
       aria-label={t`Profile settings`}
       sx={{
         minHeight: 44,
-        px: space.pad,
         borderBottom: '1px solid var(--mortar-hairline)',
         '& .MuiTabs-indicator': { height: 2 },
         '& .MuiTab-root': {
@@ -182,13 +170,7 @@ interface ProfileFieldsProps {
   initialTab: FieldsTab
 }
 
-// Every panel stays mounted, so a field keeps what was typed in it, but only the open one takes space: the dialog is
-// as tall as that tab, up to the window, and scrolls when the tab is taller.
-const contentSx = {
-  pt: space.pad,
-  overflowY: 'auto',
-} as const
-
+// Every panel stays mounted, so a field keeps what was typed in it, but only the open one takes space.
 const panelSx = {
   // Room inside the scroll box for a slider's thumb at its far end.
   overflowX: 'hidden',
@@ -227,6 +209,7 @@ function ProfileFields({
 }: ProfileFieldsProps) {
   const { t } = useLingui()
   const ids = useId()
+  const nameId = useId()
   // Only a game with a startup preferences file applies them; elsewhere the fields would change nothing.
   const startupSettings = useGameInfo(gameId)?.startupSettings === true
   const [tab, setTab] = useState<FieldsTab>(initialTab)
@@ -249,25 +232,26 @@ function ProfileFields({
   return (
     <>
       <FieldsTabs ids={ids} tab={tab} onTab={setTab} startupSettings={startupSettings} />
-      <DialogContent sx={contentSx}>
+      <Box>
         {panel(
           'appearance',
           <>
-            <TextField
-              fullWidth={true}
-              margin="dense"
-              autoFocus={focusName}
-              label={t`Name`}
-              value={name}
-              onChange={(event) => onName(event.target.value)}
-              onFocus={(event) => event.target.select()}
-              error={nameError !== ''}
-              helperText={nameError || undefined}
-              slotProps={{
-                htmlInput: { maxLength: MAX_NAME },
-                root: { sx: { userSelect: 'text' } },
-              }}
-            />
+            <Field label={t`Name`} htmlFor={nameId} error={nameError || undefined}>
+              <TextField
+                id={nameId}
+                fullWidth={true}
+                size="small"
+                autoFocus={focusName}
+                value={name}
+                onChange={(event) => onName(event.target.value)}
+                onFocus={(event) => event.target.select()}
+                error={nameError !== ''}
+                slotProps={{
+                  htmlInput: { maxLength: MAX_NAME },
+                  root: { sx: { userSelect: 'text' } },
+                }}
+              />
+            </Field>
             <AppearancePickers
               profile={profile}
               color={color}
@@ -281,19 +265,12 @@ function ProfileFields({
               staged={stagedCover}
               onStage={onStageCover}
             />
-            <TextField
-              fullWidth={true}
-              margin="dense"
-              multiline={true}
-              minRows={2}
+            <TextInput
               label={t`Description`}
               value={description}
-              onChange={(event) => onDescription(event.target.value)}
-              helperText={`${[...description].length}/${MAX_DESCRIPTION}`}
-              slotProps={{
-                htmlInput: { maxLength: MAX_DESCRIPTION },
-                root: { sx: { userSelect: 'text' } },
-              }}
+              onChange={onDescription}
+              maxLength={MAX_DESCRIPTION}
+              multiline={true}
             />
           </>,
         )}
@@ -345,7 +322,7 @@ function ProfileFields({
               />,
             )
           : null}
-      </DialogContent>
+      </Box>
     </>
   )
 }
@@ -392,7 +369,6 @@ export function EditProfileDialog(props: EditProfileDialogProps) {
   const [launchError, setLaunchError] = useState<LaunchError>(null)
   const [busy, setBusy] = useState(false)
   const [touched, setTouched] = useState(false)
-  const guard = useDiscardGuard(touched, onClose)
   const edited = <A,>(set: (value: A) => void) => touching(setTouched, set)
   useEffect(() => {
     if (open) {
@@ -432,56 +408,45 @@ export function EditProfileDialog(props: EditProfileDialogProps) {
       coverFailure: t`Could not use that image`,
     })
   return (
-    <Dialog open={open} onClose={guard.request} fullWidth={true}>
-      {/* The dialog is as tall as its tallest tab (capped by the window), so only the fields scroll, under fixed tabs and above a fixed footer. */}
-      <Box
-        component="form"
-        onSubmit={(e) => {
-          e.preventDefault()
-          save().catch(reportUnexpected)
-        }}
-        sx={{ display: 'flex', flexDirection: 'column', minHeight: 0, flex: '1 1 auto' }}
-      >
-        <DialogTitle>{t`Edit profile`}</DialogTitle>
-        <ProfileFields
-          initialTab={initialTab}
-          profile={profile}
-          gameId={gameId}
-          color={color}
-          icon={icon}
-          onColor={edited(setColor)}
-          onIcon={edited(setIcon)}
-          stagedCover={stagedCover}
-          onStageCover={edited(setStagedCover)}
-          name={name}
-          onName={edited(setName)}
-          nameError={nameError}
-          focusName={focusName}
-          description={description}
-          onDescription={edited(setDescription)}
-          launchOptions={launchOptions}
-          onLaunchOptions={edited(setLaunchOptionsField)}
-          launchPrefix={launchPrefix}
-          onLaunchPrefix={edited(setLaunchPrefix)}
-          launchEnv={launchEnv}
-          onLaunchEnv={edited(setLaunchEnv)}
-          launchError={launchError}
-          onLaunchError={setLaunchError}
-          gameSettings={gameSettings}
-          onGameSettings={edited(setGameSettings)}
-          overrides={overrides}
-          onOverrides={edited(setOverrides)}
-        />
-        <DialogActions>
-          <Button onClick={guard.request}>{t`Cancel`}</Button>
-          <DisabledReason title={t`Loading game settings…`} disabled={!gameSettingsLoaded}>
-            <Button type="submit" variant="contained" disabled={busy || !gameSettingsLoaded}>
-              {t`Save`}
-            </Button>
-          </DisabledReason>
-        </DialogActions>
-      </Box>
-      {guard.dialog}
-    </Dialog>
+    <FormDialog
+      open={open}
+      onClose={onClose}
+      title={t`Edit profile`}
+      submitLabel={t`Save`}
+      issue={gameSettingsLoaded ? '' : t`Loading game settings…`}
+      dirty={touched}
+      busy={busy}
+      onSubmit={() => save().catch(reportUnexpected)}
+    >
+      <ProfileFields
+        initialTab={initialTab}
+        profile={profile}
+        gameId={gameId}
+        color={color}
+        icon={icon}
+        onColor={edited(setColor)}
+        onIcon={edited(setIcon)}
+        stagedCover={stagedCover}
+        onStageCover={edited(setStagedCover)}
+        name={name}
+        onName={edited(setName)}
+        nameError={nameError}
+        focusName={focusName}
+        description={description}
+        onDescription={edited(setDescription)}
+        launchOptions={launchOptions}
+        onLaunchOptions={edited(setLaunchOptionsField)}
+        launchPrefix={launchPrefix}
+        onLaunchPrefix={edited(setLaunchPrefix)}
+        launchEnv={launchEnv}
+        onLaunchEnv={edited(setLaunchEnv)}
+        launchError={launchError}
+        onLaunchError={setLaunchError}
+        gameSettings={gameSettings}
+        onGameSettings={edited(setGameSettings)}
+        overrides={overrides}
+        onOverrides={edited(setOverrides)}
+      />
+    </FormDialog>
   )
 }

@@ -5,20 +5,18 @@ import {
   Button,
   ButtonBase,
   Chip,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   FormControlLabel,
   LinearProgress,
   Switch,
   Typography,
 } from '@mui/material'
+import { Map as MapIcon } from 'lucide-react'
 import { useState } from 'react'
 import type {
   AssetTarget,
   AssetTouch,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher/models.ts'
+import { AppDialog, DialogFooter, ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -191,12 +189,24 @@ export function AssetMapDialog({
   const { page, more, reload } = useAssetPages(open, filter, shared)
   const targets = page?.targets ?? []
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth={true} scroll="paper">
-      <DialogTitle>{t`Asset map`}</DialogTitle>
-      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
-        <Typography sx={{ fontSize: 'medium.fontSize', color: 'text.secondary' }}>
-          {t`Every game asset the profile's mods change, and which mod wins it. Open one to see each mod's edit in load order.`}
-        </Typography>
+    <AppDialog
+      open={open}
+      onClose={onClose}
+      size="lg"
+      title={t`Asset map`}
+      subtitle={t`Every game asset the profile's mods change, and which mod wins it. Open one to see each mod's edit in load order.`}
+      icon={
+        <ToneIcon tone="neutral">
+          <MapIcon size={22} />
+        </ToneIcon>
+      }
+      footer={
+        <DialogFooter>
+          <Button onClick={onClose}>{t`Close`}</Button>
+        </DialogFooter>
+      }
+    >
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
         <SearchField
           label={t`Find an asset`}
           placeholder={t`Find an asset, for example Maps/Town`}
@@ -241,10 +251,7 @@ export function AssetMapDialog({
             ) : null}
           </Box>
         )}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>{t`Close`}</Button>
-      </DialogActions>
-    </Dialog>
+      </Box>
+    </AppDialog>
   )
 }

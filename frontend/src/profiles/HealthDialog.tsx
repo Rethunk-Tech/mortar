@@ -1,18 +1,6 @@
 import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  List,
-  ListItem,
-  ListItemText,
-  ListSubheader,
-  Skeleton,
-} from '@mui/material'
+import { Box, Button, List, ListItem, ListItemText, ListSubheader, Skeleton } from '@mui/material'
 import { ShieldCheck } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
 import type { HealthFinding } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
@@ -26,6 +14,7 @@ import { absoluteWhen } from '../i18n/when.ts'
 import { openSettings } from '../nav/store.ts'
 import { download } from '../queue/actions.ts'
 import { AfterDelay } from '../shell/AfterDelay.tsx'
+import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
@@ -275,21 +264,27 @@ export function HealthDialog({
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth={true}>
-      <DialogTitle>{t`Check this profile`}</DialogTitle>
-      <DialogContent>{body}</DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>{t`Close`}</Button>
-        {findings !== null && findings.length > 0 ? (
-          <Button
-            variant="contained"
-            disabled={busy || repairable.length === 0}
-            onClick={() => ask(repairable)}
-          >
-            {t`Repair all`}
-          </Button>
-        ) : null}
-      </DialogActions>
+    <AppDialog
+      open={open}
+      onClose={onClose}
+      title={t`Check this profile`}
+      size="sm"
+      footer={
+        <DialogFooter>
+          <Button onClick={onClose}>{t`Close`}</Button>
+          {findings !== null && findings.length > 0 ? (
+            <Button
+              variant="contained"
+              disabled={busy || repairable.length === 0}
+              onClick={() => ask(repairable)}
+            >
+              {t`Repair all`}
+            </Button>
+          ) : null}
+        </DialogFooter>
+      }
+    >
+      {body}
       <ConfirmationDialog
         open={confirm !== null}
         title={confirmTitle(confirm ?? [])}
@@ -304,6 +299,6 @@ export function HealthDialog({
           repair(chosen).catch(reportUnexpected)
         }}
       />
-    </Dialog>
+    </AppDialog>
   )
 }

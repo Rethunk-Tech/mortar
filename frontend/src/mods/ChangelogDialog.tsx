@@ -1,7 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
+import { Box, Button, Chip } from '@mui/material'
+import { ScrollText } from 'lucide-react'
 import type { Changelog } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexus/models.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { AppDialog, DialogFooter, ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
@@ -99,12 +101,22 @@ export function ChangelogDialog({
     body = <MarkdownView source={markdown} />
   }
   return (
-    <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="sm">
-      <DialogTitle>{t`Changelog: ${name}`}</DialogTitle>
-      <DialogContent>{body}</DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>{t`Close`}</Button>
-      </DialogActions>
-    </Dialog>
+    <AppDialog
+      open={open}
+      onClose={onClose}
+      title={t`Changelog: ${name}`}
+      icon={
+        <ToneIcon tone="neutral">
+          <ScrollText size={22} />
+        </ToneIcon>
+      }
+      footer={
+        <DialogFooter>
+          <Button onClick={onClose}>{t`Close`}</Button>
+        </DialogFooter>
+      }
+    >
+      {body}
+    </AppDialog>
   )
 }

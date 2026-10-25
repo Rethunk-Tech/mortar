@@ -1,18 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
 import {
-  Button,
   Checkbox,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   FormControlLabel,
-  TextField,
   ToggleButton,
   ToggleButtonGroup,
   Typography,
 } from '@mui/material'
-import { type SyntheticEvent, useEffect, useId, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   BugText,
   BugURL,
@@ -21,19 +15,17 @@ import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { openPage } from '../mods/menu.ts'
 import { openPageLabel } from '../mods/modActions.ts'
 import { copyText } from '../share/copyText.ts'
-import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { type Destination, GO, getDestination, REPORT_KEY, setDestination } from './destination.ts'
+import { Field, FormDialog, TextInput } from './dialog/FormDialog.tsx'
 import { openWeb } from './openWeb.ts'
 import { useBugReport } from './reportBug.ts'
 import { saveDiagnostics } from './saveDiagnostics.ts'
-import { useDiscardGuard } from './useDiscardGuard.tsx'
 
 const empty = { title: '', happened: '', expected: '', steps: '' }
 
 export function BugReportDialog() {
   const { t, i18n } = useLingui()
-  const destinationLabel = useId()
   const game = useBugReport((s) => s.game)
   const [form, setForm] = useState(empty)
   const [diagnostics, setDiagnostics] = useState(true)
@@ -46,19 +38,11 @@ export function BugReportDialog() {
     }
   }, [game])
   const close = () => useBugReport.setState({ game: null })
-  const guard = useDiscardGuard(
-    Object.values(form).some((v) => v.trim() !== ''),
-    close,
-  )
   const field = (key: keyof typeof empty) => ({
     value: form[key],
-    onChange: (e: { target: { value: string } }) => setForm({ ...form, [key]: e.target.value }),
+    onChange: (value: string) => setForm({ ...form, [key]: value }),
   })
-  const submit = (e: SyntheticEvent) => {
-    e.preventDefault()
-    if (form.happened.trim() === '') {
-      return
-    }
+  const submit = () => {
     // The zip is saved first so the destination opens after the user has a file to attach to it.
     const attach = diagnostics ? saveDiagnostics(game ?? '', '', true) : Promise.resolve(false)
     const report = { ...form, diagnostics }
@@ -81,89 +65,61 @@ export function BugReportDialog() {
       .then(close, reportUnexpected)
   }
   return (
-    <Dialog open={game !== null} onClose={guard.request} fullWidth={true} maxWidth="sm">
-      <form onSubmit={submit}>
-        <DialogTitle>{t`Report a bug`}</DialogTitle>
-        <DialogContent
-          sx={{ display: 'flex', flexDirection: 'column', gap: space.pad, pt: '8px !important' }}
+    <FormDialog
+      open={game !== null}
+      onClose={close}
+      title={t`Report a bug`}
+      submitLabel={
+        discord
+          ? t`Copy and open ${{ app: sourceLabel('discord') }}`
+          : openPageLabel(i18n, 'github')
+      }
+      issue={form.happened.trim() === '' ? t`Say what happened.` : ''}
+      dirty={Object.values(form).some((v) => v.trim() !== '')}
+      onSubmit={submit}
+    >
+      <Field label={t`Post on`}>
+        <ToggleButtonGroup
+          exclusive={true}
+          size="small"
+          fullWidth={true}
+          value={to}
+          aria-label={t`Post on`}
+          onChange={(_, next: Destination | null) => {
+            if (next !== null) {
+              setTo(next)
+              setDestination(REPORT_KEY, next)
+            }
+          }}
         >
-          <Typography
-            id={destinationLabel}
-            sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}
-          >
-            {t`Post on`}
-          </Typography>
-          <ToggleButtonGroup
-            exclusive={true}
-            size="small"
-            fullWidth={true}
-            value={to}
-            aria-labelledby={destinationLabel}
-            onChange={(_, next: Destination | null) => {
-              if (next !== null) {
-                setTo(next)
-                setDestination(REPORT_KEY, next)
-              }
-            }}
-          >
-            <ToggleButton value="discord">{sourceLabel('discord')}</ToggleButton>
-            <ToggleButton value="github">{sourceLabel('github')}</ToggleButton>
-          </ToggleButtonGroup>
-          <TextField
-            label={t`Title`}
-            placeholder={t`A short summary`}
-            fullWidth={true}
-            {...field('title')}
-          />
-          <TextField
-            label={t`What happened`}
-            required={true}
-            autoFocus={true}
-            multiline={true}
-            minRows={3}
-            fullWidth={true}
-            {...field('happened')}
-          />
-          <TextField
-            label={t`What you expected`}
-            multiline={true}
-            minRows={2}
-            fullWidth={true}
-            {...field('expected')}
-          />
-          <TextField
-            label={t`Steps to reproduce`}
-            multiline={true}
-            minRows={2}
-            fullWidth={true}
-            {...field('steps')}
-          />
-          <FormControlLabel
-            control={
-              <Checkbox checked={diagnostics} onChange={(e) => setDiagnostics(e.target.checked)} />
-            }
-            label={
-              discord
-                ? t`Attach diagnostics (a zip of checks, logs and settings with secrets and your home folder removed; you attach it to the post)`
-                : t`Attach diagnostics (a zip of checks, logs and settings with secrets and your home folder removed; you drag it into the issue)`
-            }
-          />
-          <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
-            {discord
-              ? t`Copies the report for you to paste into a new post in the bug-reports forum on Mortar's ${{ app: sourceLabel('discord') }}, and saves the diagnostics zip to attach.`
-              : t`Opens a ${{ source: sourceLabel('github') }} issue with these filled in. You review it before posting.`}
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={guard.request}>{t`Cancel`}</Button>
-          <Button type="submit" variant="contained" disabled={form.happened.trim() === ''}>
-            {discord
-              ? t`Copy and open ${{ app: sourceLabel('discord') }}`
-              : openPageLabel(i18n, 'github')}
-          </Button>
-        </DialogActions>
-      </form>
-      {guard.dialog}
-    </Dialog>
+          <ToggleButton value="discord">{sourceLabel('discord')}</ToggleButton>
+          <ToggleButton value="github">{sourceLabel('github')}</ToggleButton>
+        </ToggleButtonGroup>
+      </Field>
+      <TextInput label={t`Title`} placeholder={t`A short summary`} {...field('title')} />
+      <TextInput
+        label={t`What happened`}
+        autoFocus={true}
+        multiline={true}
+        {...field('happened')}
+      />
+      <TextInput label={t`What you expected`} multiline={true} {...field('expected')} />
+      <TextInput label={t`Steps to reproduce`} multiline={true} {...field('steps')} />
+      <FormControlLabel
+        control={
+          <Checkbox checked={diagnostics} onChange={(e) => setDiagnostics(e.target.checked)} />
+        }
+        label={
+          discord
+            ? t`Attach diagnostics (a zip of checks, logs and settings with secrets and your home folder removed; you attach it to the post)`
+            : t`Attach diagnostics (a zip of checks, logs and settings with secrets and your home folder removed; you drag it into the issue)`
+        }
+      />
+      <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
+        {discord
+          ? t`Copies the report for you to paste into a new post in the bug-reports forum on Mortar's ${{ app: sourceLabel('discord') }}, and saves the diagnostics zip to attach.`
+          : t`Opens a ${{ source: sourceLabel('github') }} issue with these filled in. You review it before posting.`}
+      </Typography>
+    </FormDialog>
   )
 }

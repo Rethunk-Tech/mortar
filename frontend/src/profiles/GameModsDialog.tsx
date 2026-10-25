@@ -1,16 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import {
-  Button,
-  Checkbox,
-  Chip,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControlLabel,
-  Typography,
-} from '@mui/material'
+import { Button, Checkbox, Chip, FormControlLabel, Typography } from '@mui/material'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { GameModPreview } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
@@ -22,6 +12,7 @@ import { useReasonText } from '../i18n/reasonText.ts'
 import { brokenKindLabel } from '../mods/brokenKind.ts'
 import type { GameId } from '../nav/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { type InlineError, inlineError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -75,6 +66,23 @@ function Plan({
   )
 }
 
+function PreviewRows({ mods }: { mods: GameModPreview[] }) {
+  const { t } = useLingui()
+  const switchedOff = lowerFirst(t`Disabled`)
+  const reasonText = useReasonText()
+  return mods.map((m) => (
+    <Typography
+      key={`${m.name}-${m.version}-${m.source}-${m.status}-${m.reason}`}
+      sx={{ fontSize: 'medium.fontSize', py: 0.25 }}
+    >
+      {formatPreviewRow(m, switchedOff, reasonText)}
+      {m.broken ? (
+        <Chip size="small" label={brokenKindLabel(m.brokenKind)} title={m.broken} sx={{ ml: 1 }} />
+      ) : null}
+    </Typography>
+  ))
+}
+
 export function GameModsDialog({
   open,
   game,
@@ -87,7 +95,6 @@ export function GameModsDialog({
   onImported: (id: string) => void
 }) {
   const { t } = useLingui()
-  const switchedOff = lowerFirst(t`Disabled`)
   const reasonText = useReasonText()
   const load = useProfiles((s) => s.load)
   const [mods, setMods] = useState<GameModPreview[]>([])
@@ -178,59 +185,47 @@ export function GameModsDialog({
     }
   }
   return (
-    <Dialog open={open} onClose={busy ? undefined : onClose} maxWidth="sm" fullWidth={true}>
-      <DialogTitle>{t`Import from the game's Mods folder`}</DialogTitle>
-      <DialogContent>
-        {error === null ? null : (
-          <>
-            <Typography sx={{ color: 'error.main' }} title={error.details}>
-              {error.message}
-            </Typography>
-            <Button onClick={loadPreview} sx={{ mt: 1 }}>
-              {t`Retry`}
-            </Button>
-          </>
-        )}
-        {error === null && previewing ? (
-          <SkeletonRows label={t`Reading the Mods folder…`} count={5} height={36} />
-        ) : null}
-        {busy ? <GameModsProgressLine progress={progress} moving={canMove && move} /> : null}
-        {error === null && !previewing ? (
-          <>
-            <Plan count={importable} canMove={canMove} move={move} busy={busy} onMove={setMove} />
-            {mods.map((m) => (
-              <Typography
-                key={`${m.name}-${m.version}-${m.source}-${m.status}-${m.reason}`}
-                sx={{ fontSize: 'medium.fontSize', py: 0.25 }}
-              >
-                {formatPreviewRow(m, switchedOff, reasonText)}
-                {m.broken ? (
-                  <Chip
-                    size="small"
-                    label={brokenKindLabel(m.brokenKind)}
-                    title={m.broken}
-                    sx={{ ml: 1 }}
-                  />
-                ) : null}
-              </Typography>
-            ))}
-          </>
-        ) : null}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} disabled={busy}>
-          {t`Cancel`}
-        </Button>
-        <DisabledReason title={t`Nothing to import`} disabled={previewing || importable === 0}>
-          <Button
-            variant="contained"
-            disabled={busy || previewing || importable === 0 || error !== null}
-            onClick={() => importMods().catch(reportUnexpected)}
-          >
-            {t`Import`}
+    <AppDialog
+      open={open}
+      onClose={busy ? () => undefined : onClose}
+      title={t`Import from the game's Mods folder`}
+      footer={
+        <DialogFooter>
+          <Button onClick={onClose} disabled={busy}>
+            {t`Cancel`}
           </Button>
-        </DisabledReason>
-      </DialogActions>
-    </Dialog>
+          <DisabledReason title={t`Nothing to import`} disabled={previewing || importable === 0}>
+            <Button
+              variant="contained"
+              disabled={busy || previewing || importable === 0 || error !== null}
+              onClick={() => importMods().catch(reportUnexpected)}
+            >
+              {t`Import`}
+            </Button>
+          </DisabledReason>
+        </DialogFooter>
+      }
+    >
+      {error === null ? null : (
+        <>
+          <Typography sx={{ color: 'error.main' }} title={error.details}>
+            {error.message}
+          </Typography>
+          <Button onClick={loadPreview} sx={{ mt: 1 }}>
+            {t`Retry`}
+          </Button>
+        </>
+      )}
+      {error === null && previewing ? (
+        <SkeletonRows label={t`Reading the Mods folder…`} count={5} height={36} />
+      ) : null}
+      {busy ? <GameModsProgressLine progress={progress} moving={canMove && move} /> : null}
+      {error === null && !previewing ? (
+        <>
+          <Plan count={importable} canMove={canMove} move={move} busy={busy} onMove={setMove} />
+          <PreviewRows mods={mods} />
+        </>
+      ) : null}
+    </AppDialog>
   )
 }

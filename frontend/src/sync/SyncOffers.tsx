@@ -1,19 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Typography,
-} from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import { useCallback, useEffect, useState } from 'react'
 import type { Offer } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/syncsvc/models.ts'
 import {
   Diff as ReadDiff,
   Resolve,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/syncsvc/service.ts'
+import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -102,33 +95,32 @@ export function SyncOffers() {
   const open = useSync((s) => s.open)
   const setOpen = useSync((s) => s.setOpen)
   return (
-    <Dialog
+    <AppDialog
       open={open && offers.length + stalled.length > 0}
       onClose={() => setOpen(false)}
-      fullWidth={true}
+      title={t`Changes from your other machines`}
+      footer={
+        <DialogFooter>
+          <Button onClick={() => setOpen(false)}>{t`Close`}</Button>
+        </DialogFooter>
+      }
     >
-      <DialogTitle>{t`Changes from your other machines`}</DialogTitle>
-      <DialogContent>
-        {offers.map((o) => (
-          <OfferRow key={`${o.game}/${o.remote}`} offer={o} />
-        ))}
-        {stalled.map((st) => (
-          <Box
-            key={`stalled-${st.game}/${st.remote}`}
-            sx={{ py: space.gap, borderBottom: '1px solid var(--mortar-hairline)' }}
-          >
-            <Typography
-              sx={{ fontWeight: 600 }}
-            >{t`${{ name: st.name }} is not syncing yet`}</Typography>
-            <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
-              {t`Waiting for ${{ machine: st.machine }}'s profile file to finish syncing. Changes made here are written out once it arrives.`}
-            </Typography>
-          </Box>
-        ))}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={() => setOpen(false)}>{t`Close`}</Button>
-      </DialogActions>
-    </Dialog>
+      {offers.map((o) => (
+        <OfferRow key={`${o.game}/${o.remote}`} offer={o} />
+      ))}
+      {stalled.map((st) => (
+        <Box
+          key={`stalled-${st.game}/${st.remote}`}
+          sx={{ py: space.gap, borderBottom: '1px solid var(--mortar-hairline)' }}
+        >
+          <Typography
+            sx={{ fontWeight: 600 }}
+          >{t`${{ name: st.name }} is not syncing yet`}</Typography>
+          <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
+            {t`Waiting for ${{ machine: st.machine }}'s profile file to finish syncing. Changes made here are written out once it arrives.`}
+          </Typography>
+        </Box>
+      ))}
+    </AppDialog>
   )
 }

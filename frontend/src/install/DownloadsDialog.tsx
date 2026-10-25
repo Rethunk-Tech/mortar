@@ -1,17 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Chip,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  List,
-  ListItemButton,
-  ListItemText,
-  Typography,
-} from '@mui/material'
+import { Box, Button, Chip, List, ListItemButton, ListItemText, Typography } from '@mui/material'
 import { FolderOpen } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { DownloadArchive } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/archivesvc/models.ts'
@@ -27,6 +15,7 @@ import { openSettings } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { arrowFocus } from '../shell/arrowFocus.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
@@ -245,17 +234,37 @@ export function DownloadsDialog() {
   }, [open])
   const shown = listArchives(archives ?? [], query)
   return (
-    <Dialog open={open} onClose={close} maxWidth={false}>
-      <DialogTitle>{t`From the downloads folder`}</DialogTitle>
+    <AppDialog
+      open={open}
+      onClose={close}
+      size="lg"
+      title={t`From the downloads folder`}
+      footer={
+        <DialogFooter>
+          <Button onClick={close}>{t`Cancel`}</Button>
+          <DisabledReason
+            title={hasProfile ? t`Choose an archive first.` : t`Open profile first.`}
+            disabled={!(selected && hasProfile)}
+          >
+            <Button
+              variant="contained"
+              disabled={!(selected && hasProfile)}
+              onClick={() => {
+                close()
+                useInstall
+                  .getState()
+                  .installDownloads((archives ?? []).filter((a) => a.path === selected))
+                  .catch(reportError(t`Could not add the archive`))
+              }}
+            >
+              {t`Add to profile`}
+            </Button>
+          </DisabledReason>
+        </DialogFooter>
+      }
+    >
       <FolderLine open={open} onClose={close} />
-      <DialogContent
-        sx={{
-          width: 'min(900px, calc(100vw - 96px))',
-          height: 460,
-          display: 'flex',
-          gap: space.pad,
-        }}
-      >
+      <Box sx={{ height: 460, display: 'flex', gap: space.pad }}>
         <Body
           archives={archives}
           error={error}
@@ -267,28 +276,7 @@ export function DownloadsDialog() {
           onSelect={setSelected}
           onClose={close}
         />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={close}>{t`Cancel`}</Button>
-        <DisabledReason
-          title={hasProfile ? t`Choose an archive first.` : t`Open profile first.`}
-          disabled={!(selected && hasProfile)}
-        >
-          <Button
-            variant="contained"
-            disabled={!(selected && hasProfile)}
-            onClick={() => {
-              close()
-              useInstall
-                .getState()
-                .installDownloads((archives ?? []).filter((a) => a.path === selected))
-                .catch(reportError(t`Could not add the archive`))
-            }}
-          >
-            {t`Add to profile`}
-          </Button>
-        </DisabledReason>
-      </DialogActions>
-    </Dialog>
+      </Box>
+    </AppDialog>
   )
 }

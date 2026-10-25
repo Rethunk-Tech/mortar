@@ -1,16 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Chip,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Link,
-  Typography,
-} from '@mui/material'
+import { Box, Button, Chip, Link, Typography } from '@mui/material'
 import {
   Download,
   Gamepad2,
@@ -35,6 +25,7 @@ import {
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { openPage } from '../mods/menu.ts'
 import { PageLink } from '../share/CollectionNotes.tsx'
+import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -214,45 +205,46 @@ export function WhatsNewDialog() {
     AckWhatsNew().catch(reportUnexpected)
   }
   return (
-    <Dialog open={shown !== null} onClose={close} fullWidth={true} maxWidth="md">
-      <DialogTitle>{t`What is new in Mortar ${{ version: version ?? '' }}`}</DialogTitle>
-      <DialogContent>
-        <Notes text={release?.available ? release.notes : (shown?.fallback ?? '')} />
-        {release && !release.available ? (
-          <Link
-            component="button"
-            type="button"
-            sx={{ mt: 1.5, fontSize: 'base.fontSize' }}
-            onClick={() =>
-              openPage(`https://github.com/Rethunk-Tech/mortar/releases/tag/v${version}`)
-            }
-          >
-            {t`Read the release notes on ${{ source: sourceLabel('github') }}`}
-          </Link>
-        ) : null}
-        {(shown?.earlier ?? []).map((r) => (
-          <Box
-            key={r.version}
-            component="section"
-            sx={{
-              mt: space.pad,
-              pt: space.pad,
-              borderTop: '1px solid var(--mortar-hairline-faint)',
-            }}
-          >
-            <Typography
-              component="h2"
-              sx={{ fontSize: 'large.fontSize', fontWeight: 700, mb: 1.5 }}
-            >
-              {t`Also in Mortar ${{ version: r.version }}`}
-            </Typography>
-            <Notes text={r.notes} />
-          </Box>
-        ))}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={close}>{t`Close`}</Button>
-      </DialogActions>
-    </Dialog>
+    <AppDialog
+      open={shown !== null}
+      onClose={close}
+      title={t`What is new in Mortar ${{ version: version ?? '' }}`}
+      size="lg"
+      footer={
+        <DialogFooter>
+          <Button onClick={close}>{t`Close`}</Button>
+        </DialogFooter>
+      }
+    >
+      <Notes text={release?.available ? release.notes : (shown?.fallback ?? '')} />
+      {release && !release.available ? (
+        <Link
+          component="button"
+          type="button"
+          sx={{ mt: 1.5, fontSize: 'base.fontSize' }}
+          onClick={() =>
+            openPage(`https://github.com/Rethunk-Tech/mortar/releases/tag/v${version}`)
+          }
+        >
+          {t`Read the release notes on ${{ source: sourceLabel('github') }}`}
+        </Link>
+      ) : null}
+      {(shown?.earlier ?? []).map((r) => (
+        <Box
+          key={r.version}
+          component="section"
+          sx={{
+            mt: space.pad,
+            pt: space.pad,
+            borderTop: '1px solid var(--mortar-hairline-faint)',
+          }}
+        >
+          <Typography component="h2" sx={{ fontSize: 'large.fontSize', fontWeight: 700, mb: 1.5 }}>
+            {t`Also in Mortar ${{ version: r.version }}`}
+          </Typography>
+          <Notes text={r.notes} />
+        </Box>
+      ))}
+    </AppDialog>
   )
 }

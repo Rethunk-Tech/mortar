@@ -4,17 +4,13 @@ import {
   Box,
   Button,
   Checkbox,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
   FormControlLabel,
   IconButton,
   Menu,
   Switch,
+  Typography,
 } from '@mui/material'
-import { ArrowUp, Ban, CircleCheck, CircleX, Pin, TriangleAlert } from 'lucide-react'
+import { ArrowUp, Ban, CircleCheck, CircleX, Pin, Trash2, TriangleAlert } from 'lucide-react'
 import { memo, useState } from 'react'
 import type {
   Mod,
@@ -28,6 +24,7 @@ import { listNames } from '../i18n/list.ts'
 import { useLive } from '../launch/live.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { destructiveSx } from '../shell/destructive.ts'
+import { AppDialog, DialogFooter, ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { space } from '../theme/density.ts'
@@ -123,29 +120,74 @@ function RemoveDialogBody({ removing }: { removing: Mod[] }) {
     dependents.length > 0
       ? t`${plural({ count: dependents.length }, { one: '# mod needs this', other: '# mods need this' })}: ${{ names: listNames(dependents.map((m) => m.name)) }}`
       : ''
-  const allCount = removing.length + dependents.length
   return (
-    <>
-      <DialogTitle>
-        {one
+    <AppDialog
+      open={true}
+      onClose={close}
+      title={
+        one
           ? t`Remove ${{ name: one.name }} from this profile?`
           : plural(
               { count: removing.length },
               { one: 'Remove # mod from this profile?', other: 'Remove # mods from this profile?' },
-            )}
-      </DialogTitle>
-      <DialogContent>
-        <DialogContentText>{body}</DialogContentText>
+            )
+      }
+      subtitle={body}
+      icon={
+        <ToneIcon tone="danger">
+          <Trash2 size={22} />
+        </ToneIcon>
+      }
+      footer={
+        <DialogFooter>
+          <Button onClick={close}>{t`Cancel`}</Button>
+          {dependents.length > 0 ? (
+            <>
+              <LockedReason locked={locked}>
+                <Button color="error" disabled={locked} onClick={() => drop(removing)}>
+                  {t`Remove anyway`}
+                </Button>
+              </LockedReason>
+              <LockedReason locked={locked}>
+                <Button
+                  variant="contained"
+                  color="error"
+                  disabled={locked}
+                  onClick={() => drop([...removing, ...dependents])}
+                >
+                  {plural(
+                    { count: removing.length + dependents.length },
+                    { one: 'Remove all # mod', other: 'Remove all # mods' },
+                  )}
+                </Button>
+              </LockedReason>
+            </>
+          ) : (
+            <LockedReason locked={locked}>
+              <Button
+                variant="contained"
+                color="error"
+                disabled={locked}
+                onClick={() => drop(removing)}
+              >
+                {t`Remove`}
+              </Button>
+            </LockedReason>
+          )}
+        </DialogFooter>
+      }
+    >
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         {removing.length > 1 ? (
-          <DialogContentText sx={{ mt: 1 }}>
+          <Typography sx={{ color: 'text.secondary' }}>
             {listNames(
               removing.map((m) => m.name),
               MAX_NAMED,
             )}
-          </DialogContentText>
+          </Typography>
         ) : null}
         {optional > 0 ? (
-          <DialogContentText sx={{ mt: 1 }}>
+          <Typography sx={{ color: 'text.secondary' }}>
             {plural(
               { count: optional },
               {
@@ -153,12 +195,11 @@ function RemoveDialogBody({ removing }: { removing: Mod[] }) {
                 other: 'Also removes # optional files that go on top of it.',
               },
             )}
-          </DialogContentText>
+          </Typography>
         ) : null}
-        {needLine ? <DialogContentText sx={{ mt: 1 }}>{needLine}</DialogContentText> : null}
+        {needLine ? <Typography sx={{ color: 'text.secondary' }}>{needLine}</Typography> : null}
         {unneeded.length > 0 ? (
           <FormControlLabel
-            sx={{ mt: 1 }}
             control={
               <Checkbox
                 checked={withUnneeded}
@@ -168,44 +209,8 @@ function RemoveDialogBody({ removing }: { removing: Mod[] }) {
             label={t`${plural({ count: unneeded.length }, { one: 'Also remove # library only this needed', other: 'Also remove # libraries only these needed' })}: ${{ names: listNames(unneeded.map((m) => m.name)) }}`}
           />
         ) : null}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={close}>{t`Cancel`}</Button>
-        {dependents.length > 0 ? (
-          <>
-            <LockedReason locked={locked}>
-              <Button color="error" disabled={locked} onClick={() => drop(removing)}>
-                {t`Remove anyway`}
-              </Button>
-            </LockedReason>
-            <LockedReason locked={locked}>
-              <Button
-                variant="contained"
-                color="error"
-                disabled={locked}
-                onClick={() => drop([...removing, ...dependents])}
-              >
-                {plural(
-                  { count: allCount },
-                  { one: 'Remove all # mod', other: 'Remove all # mods' },
-                )}
-              </Button>
-            </LockedReason>
-          </>
-        ) : (
-          <LockedReason locked={locked}>
-            <Button
-              variant="contained"
-              color="error"
-              disabled={locked}
-              onClick={() => drop(removing)}
-            >
-              {t`Remove`}
-            </Button>
-          </LockedReason>
-        )}
-      </DialogActions>
-    </>
+      </Box>
+    </AppDialog>
   )
 }
 
@@ -570,11 +575,6 @@ export function RemoveButton({ mod }: { mod: Mod }) {
 
 export function RemoveDialog() {
   const removing = useMods((s) => s.removing)
-  const askRemove = useMods((s) => s.askRemove)
   // The body subscribes to the mod list and profile; a closed dialog renders none of it.
-  return (
-    <Dialog open={removing.length > 0} onClose={() => askRemove(null)}>
-      <RemoveDialogBody removing={removing} />
-    </Dialog>
-  )
+  return removing.length > 0 ? <RemoveDialogBody removing={removing} /> : null
 }

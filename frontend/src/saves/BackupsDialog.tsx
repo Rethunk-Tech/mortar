@@ -1,16 +1,7 @@
 import { i18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Menu,
-  Typography,
-} from '@mui/material'
+import { Box, Button, Menu, Typography } from '@mui/material'
 import { FolderOpen, Pin, PinOff, RotateCcw } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type {
@@ -23,6 +14,7 @@ import { listNames } from '../i18n/list.ts'
 import { When } from '../i18n/When.tsx'
 import { useGameBusy } from '../launch/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
@@ -155,57 +147,61 @@ export function BackupsDialog({
 
   return (
     <>
-      <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth={true}>
-        <DialogTitle>{t`Save backups`}</DialogTitle>
-        <DialogContent>
-          {status === 'error' ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-              <Typography sx={{ fontSize: 'base.fontSize', color: 'error.main' }}>
-                {t`Could not list backups: ${error}`}
-              </Typography>
-              <Button size="small" onClick={() => load(game, profile).catch(reportUnexpected)}>
-                {t`Retry`}
-              </Button>
-            </Box>
-          ) : null}
-          {status === 'loading' && items.length === 0 ? (
-            <SkeletonRows label={t`Reading backups…`} count={4} height={36} />
-          ) : null}
-          {status === 'ready' && items.length === 0 ? (
-            <EmptyState
-              compact={true}
-              icon={<FolderOpen size={28} />}
-              title={t`No save backups yet.`}
-            >{t`Mortar backs up your saves before playing and before updates. Use Back up now on a save to make one yourself.`}</EmptyState>
-          ) : null}
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
-            {items.map((b) => (
-              <BackupRow
-                key={b.name}
-                backup={b}
-                busyGame={busyGame}
-                pending={pending}
-                profiles={profiles}
-                menuOpen={menu?.backup.name === b.name}
-                onRestore={(el) => {
-                  setMenu({ backup: b, el })
-                }}
-              />
-            ))}
+      <AppDialog
+        open={open}
+        onClose={onClose}
+        title={t`Save backups`}
+        size="sm"
+        footer={
+          <DialogFooter>
+            <Button onClick={onClose}>{t`Close`}</Button>
+            <Button
+              startIcon={<FolderOpen size={16} />}
+              onClick={() => {
+                openFolder().catch(reportUnexpected)
+              }}
+            >
+              {t`Open backups folder`}
+            </Button>
+          </DialogFooter>
+        }
+      >
+        {status === 'error' ? (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
+            <Typography sx={{ fontSize: 'base.fontSize', color: 'error.main' }}>
+              {t`Could not list backups: ${error}`}
+            </Typography>
+            <Button size="small" onClick={() => load(game, profile).catch(reportUnexpected)}>
+              {t`Retry`}
+            </Button>
           </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={onClose}>{t`Close`}</Button>
-          <Button
-            startIcon={<FolderOpen size={16} />}
-            onClick={() => {
-              openFolder().catch(reportUnexpected)
-            }}
-          >
-            {t`Open backups folder`}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        ) : null}
+        {status === 'loading' && items.length === 0 ? (
+          <SkeletonRows label={t`Reading backups…`} count={4} height={36} />
+        ) : null}
+        {status === 'ready' && items.length === 0 ? (
+          <EmptyState
+            compact={true}
+            icon={<FolderOpen size={28} />}
+            title={t`No save backups yet.`}
+          >{t`Mortar backs up your saves before playing and before updates. Use Back up now on a save to make one yourself.`}</EmptyState>
+        ) : null}
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
+          {items.map((b) => (
+            <BackupRow
+              key={b.name}
+              backup={b}
+              busyGame={busyGame}
+              pending={pending}
+              profiles={profiles}
+              menuOpen={menu?.backup.name === b.name}
+              onRestore={(el) => {
+                setMenu({ backup: b, el })
+              }}
+            />
+          ))}
+        </Box>
+      </AppDialog>
       <Menu
         open={menu !== null}
         anchorEl={menu?.el}

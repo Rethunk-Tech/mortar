@@ -1,13 +1,4 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TextField,
-  Typography,
-} from '@mui/material'
 import { Link2 } from 'lucide-react'
 import { memo, useState } from 'react'
 import { create } from 'zustand'
@@ -15,6 +6,8 @@ import { SetNexusPage } from '../../bindings/github.com/Rethunk-Tech/mortar/inte
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
+import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
+import { FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { type InlineError, inlineError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -92,37 +85,31 @@ export const SetNexusPageDialog = memo(function SetNexusPageDialogView() {
     }
   }
   return (
-    <Dialog open={open} onClose={close} fullWidth={true} maxWidth="sm">
-      <DialogTitle>{t`Set the ${{ source: sourceLabel('nexus') }} page of ${name}`}</DialogTitle>
-      <DialogContent>
-        <Typography sx={{ mb: 1.5, fontSize: 'medium.fontSize', color: 'text.secondary' }}>
-          {t`Paste the address of the mod's page on ${{ source: sourceLabel('nexus') }}. To name the exact file, open that file's Manual Download on the page's Files tab and paste that address instead.`}
-        </Typography>
-        <TextField
-          autoFocus={true}
-          fullWidth={true}
-          size="small"
-          label={t`${{ source: sourceLabel('nexus') }} page address`}
-          placeholder="https://www.nexusmods.com/…/mods/…"
-          value={link}
-          disabled={busy}
-          error={error !== null}
-          helperText={error?.message}
-          onChange={(e) => setLink(e.target.value)}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={close} disabled={busy}>
-          {t`Cancel`}
-        </Button>
-        <Button
-          variant="contained"
-          disabled={busy || link.trim() === ''}
-          onClick={() => save().catch(reportUnexpected)}
-        >
-          {t`Set page`}
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <FormDialog
+      open={open}
+      onClose={close}
+      size="sm"
+      title={t`Set the ${{ source: sourceLabel('nexus') }} page of ${name}`}
+      subtitle={t`Paste the address of the mod's page on ${{ source: sourceLabel('nexus') }}. To name the exact file, open that file's Manual Download on the page's Files tab and paste that address instead.`}
+      icon={
+        <ToneIcon tone="neutral">
+          <Link2 size={22} />
+        </ToneIcon>
+      }
+      submitLabel={t`Set page`}
+      issue={link.trim() === '' ? t`Paste the page address.` : ''}
+      dirty={link !== ''}
+      busy={busy}
+      onSubmit={() => save().catch(reportUnexpected)}
+    >
+      <TextInput
+        label={t`${{ source: sourceLabel('nexus') }} page address`}
+        placeholder="https://www.nexusmods.com/…/mods/…"
+        value={link}
+        onChange={setLink}
+        autoFocus={true}
+        {...(error ? { error: error.message } : {})}
+      />
+    </FormDialog>
   )
 })

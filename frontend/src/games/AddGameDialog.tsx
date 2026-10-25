@@ -1,17 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControlLabel,
-  Radio,
-  RadioGroup,
-  TextField,
-  Typography,
-} from '@mui/material'
+import { Box, Button, FormControlLabel, Radio, RadioGroup, Typography } from '@mui/material'
 import { FolderOpen } from 'lucide-react'
 import { useState } from 'react'
 import {
@@ -24,6 +12,7 @@ import { PickExecutable } from '../../bindings/github.com/Rethunk-Tech/mortar/in
 import { SetGameFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { SHIMLOADER, UNITY } from '../brand/productNames.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
+import { FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
@@ -31,6 +20,7 @@ import { usePending } from '../toasts/usePending.ts'
 import { reloadGames, useGames } from './info.ts'
 
 const CUSTOM_PREFIX = 'custom-'
+const MAX_NAME = 60
 
 // The loaders a custom game can use, each with the kind of game it suits; guessed says the game's files chose it.
 function LoaderChoice({
@@ -134,91 +124,78 @@ export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () =>
   const remove = (id: string) =>
     RemoveCustomGame(id).then(reloadGames).catch(reportError(t`Could not remove the game`))
   return (
-    <Dialog open={open} onClose={busy ? undefined : onClose} fullWidth={true} maxWidth="sm">
-      <DialogTitle>{t`Add a game`}</DialogTitle>
-      <DialogContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap, pt: 0.5 }}>
-          <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
-            {loader === 'shimloader'
-              ? t`For a game that is not in Mortar's list. It stays on this computer, and its mods come from its ${{ source: sourceLabel('thunderstore') }} community.`
-              : t`For a game that is not in Mortar's list. It stays on this computer, and its mods come from archives you add, since Mortar knows no site for it.`}
+    <FormDialog
+      open={open}
+      onClose={onClose}
+      size="md"
+      title={t`Add a game`}
+      submitLabel={t`Add`}
+      issue={ready ? '' : t`Choose the game's program and give it a name first.`}
+      dirty={name.trim() !== '' || exe !== ''}
+      busy={busy}
+      onSubmit={add}
+    >
+      <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
+        {loader === 'shimloader'
+          ? t`For a game that is not in Mortar's list. It stays on this computer, and its mods come from its ${{ source: sourceLabel('thunderstore') }} community.`
+          : t`For a game that is not in Mortar's list. It stays on this computer, and its mods come from archives you add, since Mortar knows no site for it.`}
+      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
+        <Button variant="outlined" startIcon={<FolderOpen size={16} />} onClick={choose}>
+          {t`Choose the game's program…`}
+        </Button>
+        {exe ? (
+          <Typography
+            title={exe}
+            sx={{
+              flex: 1,
+              minWidth: 0,
+              fontSize: 'medium.fontSize',
+              color: 'text.secondary',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              direction: 'rtl',
+              textAlign: 'left',
+            }}
+          >
+            {exe}
           </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-            <Button variant="outlined" startIcon={<FolderOpen size={16} />} onClick={choose}>
-              {t`Choose the game's program…`}
-            </Button>
-            {exe ? (
-              <Typography
-                title={exe}
-                sx={{
-                  flex: 1,
-                  minWidth: 0,
-                  fontSize: 'medium.fontSize',
-                  color: 'text.secondary',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  direction: 'rtl',
-                  textAlign: 'left',
-                }}
-              >
-                {exe}
-              </Typography>
-            ) : null}
-          </Box>
-          <TextField
-            size="small"
-            label={t`Name`}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            slotProps={{ htmlInput: { maxLength: 60 } }}
-          />
-          <LoaderChoice
-            loaders={loaders ?? []}
-            loader={loader}
-            guessed={guessed !== ''}
-            onLoader={setLoader}
-          />
-          {loader === 'shimloader' ? (
-            <TextField
-              size="small"
-              label={t`${{ source: sourceLabel('thunderstore') }} community`}
-              placeholder="voices-of-the-void"
-              helperText={t`The game's name in its ${{ source: sourceLabel('thunderstore') }} address (thunderstore.io/c/…). Mortar gets ${{ loader: SHIMLOADER }} and the game's mods from it. Choose the game's shipping program, in Binaries/Win64.`}
-              value={community}
-              onChange={(e) => setCommunity(e.target.value)}
-            />
-          ) : null}
-          {ready ? null : (
-            <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
-              {t`Choose the game's program and give it a name first.`}
-            </Typography>
-          )}
-          {mine.length > 0 ? (
-            <Box>
-              <Typography
-                sx={{ fontSize: 'base.fontSize', fontWeight: 700 }}
-              >{t`Games you added`}</Typography>
-              {mine.map((g) => (
-                <Box key={g.id} sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-                  <Typography sx={{ flex: 1, fontSize: 'medium.fontSize' }}>{g.name}</Typography>
-                  <Button size="small" color="error" onClick={() => remove(g.id)}>
-                    {t`Remove`}
-                  </Button>
-                </Box>
-              ))}
+        ) : null}
+      </Box>
+      <TextInput label={t`Name`} value={name} onChange={setName} maxLength={MAX_NAME} />
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
+        <LoaderChoice
+          loaders={loaders ?? []}
+          loader={loader}
+          guessed={guessed !== ''}
+          onLoader={setLoader}
+        />
+      </Box>
+      {loader === 'shimloader' ? (
+        <TextInput
+          label={t`${{ source: sourceLabel('thunderstore') }} community`}
+          placeholder="voices-of-the-void"
+          hint={t`The game's name in its ${{ source: sourceLabel('thunderstore') }} address (thunderstore.io/c/…). Mortar gets ${{ loader: SHIMLOADER }} and the game's mods from it. Choose the game's shipping program, in Binaries/Win64.`}
+          value={community}
+          onChange={setCommunity}
+        />
+      ) : null}
+      {mine.length > 0 ? (
+        <Box>
+          <Typography
+            sx={{ fontSize: 'base.fontSize', fontWeight: 700 }}
+          >{t`Games you added`}</Typography>
+          {mine.map((g) => (
+            <Box key={g.id} sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
+              <Typography sx={{ flex: 1, fontSize: 'medium.fontSize' }}>{g.name}</Typography>
+              <Button size="small" color="error" onClick={() => remove(g.id)}>
+                {t`Remove`}
+              </Button>
             </Box>
-          ) : null}
+          ))}
         </Box>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} disabled={busy}>
-          {t`Close`}
-        </Button>
-        <Button variant="contained" disabled={busy || !ready} onClick={add}>
-          {t`Add`}
-        </Button>
-      </DialogActions>
-    </Dialog>
+      ) : null}
+    </FormDialog>
   )
 }

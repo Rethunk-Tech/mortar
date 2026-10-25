@@ -3,10 +3,6 @@ import { useLingui } from '@lingui/react/macro'
 import {
   Box,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   FormControl,
   FormControlLabel,
   FormLabel,
@@ -28,7 +24,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { useOrderedProfiles } from '../game/useSidebarProfiles.ts'
 import { lockedIn, useLaunchLocks } from '../mods/useLocked.ts'
-import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { Field, FormDialog } from '../shell/dialog/FormDialog.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -156,6 +152,7 @@ function MergeBody({ source, onClose }: { source: Profile; onClose: () => void }
   const [newerWins, setNewerWins] = useState(false)
   const [pending, run] = usePending()
   const launch = useLaunchLocks()
+  const targetFieldId = useId()
   const target = others.find((p) => p.id === targetId)
   const { data: preview } = useLoaded<Preview | null>(
     targetId
@@ -199,18 +196,36 @@ function MergeBody({ source, onClose }: { source: Profile; onClose: () => void }
       { errorTitle: t`Could not add the mods to ${{ name: targetName }}` },
     )
   }
+  let issue = ''
+  if (locked) {
+    issue = reason
+  } else if (!preview) {
+    issue = t`Reading the mods to add…`
+  } else if (changes === 0) {
+    issue = t`Nothing to add.`
+  }
   return (
-    <>
-      <DialogTitle>{t`Add ${{ name: source.name }}'s mods to…`}</DialogTitle>
-      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
+    <FormDialog
+      open={true}
+      onClose={onClose}
+      title={t`Add ${{ name: source.name }}'s mods to…`}
+      subtitle={target ? t`${{ name: source.name }} stays as it is.` : undefined}
+      size="sm"
+      submitLabel={t`Add mods`}
+      issue={issue}
+      dirty={false}
+      busy={pending}
+      onSubmit={merge}
+    >
+      <Field label={t`Profile to add them to`} htmlFor={targetFieldId}>
         <TextField
+          id={targetFieldId}
           select={true}
           size="small"
-          label={t`Profile to add them to`}
+          fullWidth={true}
           value={targetId}
           onChange={(e) => setTargetId(e.target.value)}
           disabled={pending}
-          sx={{ mt: 1 }}
         >
           {others.map((p) => (
             <MenuItem key={p.id} value={p.id}>
@@ -218,42 +233,19 @@ function MergeBody({ source, onClose }: { source: Profile; onClose: () => void }
             </MenuItem>
           ))}
         </TextField>
-        {target ? (
-          <Typography color="text.secondary" variant="body2">
-            {t`${{ name: source.name }} stays as it is.`}
-          </Typography>
-        ) : null}
-        {preview && target ? (
-          <Summary
-            preview={preview}
-            target={target}
-            newerWins={newerWins}
-            onNewerWins={setNewerWins}
-          />
-        ) : null}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} disabled={pending}>
-          {t`Cancel`}
-        </Button>
-        <DisabledReason title={reason} disabled={reason !== ''}>
-          <Button
-            variant="contained"
-            disabled={pending || !preview || changes === 0 || locked}
-            onClick={merge}
-          >
-            {t`Add mods`}
-          </Button>
-        </DisabledReason>
-      </DialogActions>
-    </>
+      </Field>
+      {preview && target ? (
+        <Summary
+          preview={preview}
+          target={target}
+          newerWins={newerWins}
+          onNewerWins={setNewerWins}
+        />
+      ) : null}
+    </FormDialog>
   )
 }
 
 export function MergeDialog({ source, onClose }: { source: Profile | null; onClose: () => void }) {
-  return (
-    <Dialog open={source !== null} onClose={onClose} maxWidth="xs" fullWidth={true}>
-      {source ? <MergeBody source={source} onClose={onClose} /> : null}
-    </Dialog>
-  )
+  return source ? <MergeBody source={source} onClose={onClose} /> : null
 }

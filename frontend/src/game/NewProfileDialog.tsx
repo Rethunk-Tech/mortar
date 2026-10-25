@@ -1,17 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  ListSubheader,
-  MenuItem,
-  TextField,
-  Typography,
-} from '@mui/material'
-import { type SyntheticEvent, useEffect, useState } from 'react'
+import { Box, Button, ListSubheader, MenuItem, TextField } from '@mui/material'
+import { useEffect, useId, useState } from 'react'
 import type { StarterTemplate } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/components/models.ts'
 import {
   Duplicate,
@@ -27,6 +17,7 @@ import { useSavedGroups } from '../groups/useSavedGroups.ts'
 import { listNames } from '../i18n/list.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
+import { Field, FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { starterWants } from '../templates/starterWants.ts'
 import { ManageTemplatesDialog } from '../templates/TemplateDialogs.tsx'
 import { useStarterTemplates } from '../templates/useStarterTemplates.ts'
@@ -64,47 +55,57 @@ function StartFromSelect({
 }) {
   const { t } = useLingui()
   const chosen = starters.find((starter) => STARTER + starter.id === value)
+  const selectId = useId()
   return (
-    <>
-      <TextField
-        select={true}
-        fullWidth={true}
-        label={t`Start from`}
-        value={value}
-        disabled={disabled}
-        onChange={(e) => onChange(e.target.value)}
-        slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}
-        sx={{ mt: 2 }}
-      >
-        <MenuItem value={EMPTY}>{t`Empty profile`}</MenuItem>
-        {copyOf === '' ? null : <MenuItem value={COPY}>{t`Copy of ${{ name: copyOf }}`}</MenuItem>}
-        {names.map((name) => (
-          <MenuItem key={name} value={name}>
-            {name}
-          </MenuItem>
-        ))}
-        {groups.length === 0 ? null : <ListSubheader>{t`Saved groups`}</ListSubheader>}
-        {groups.map((group) => (
-          <MenuItem key={group.id} value={groupStart(group.id)}>
-            {group.name}
-          </MenuItem>
-        ))}
-        {starters.length === 0 ? null : <ListSubheader>{t`Starter templates`}</ListSubheader>}
-        {starters.map((starter) => (
-          <MenuItem key={starter.id} value={STARTER + starter.id}>
-            {starter.name}
-          </MenuItem>
-        ))}
-      </TextField>
-      {chosen ? (
-        <Typography sx={{ mt: 0.75, fontSize: 'base.fontSize', color: 'text.secondary' }}>
-          {t`${{ description: chosen.description }} Adds ${{ names: listNames((chosen.packages ?? []).map((p) => p.name)) }}.`}
-        </Typography>
-      ) : null}
-      <Button size="small" onClick={onManage} disabled={disabled} sx={{ mt: 0.5 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: 'flex-start' }}>
+      <Box sx={{ width: '100%' }}>
+        <Field
+          label={t`Start from`}
+          htmlFor={selectId}
+          hint={
+            chosen
+              ? t`${{ description: chosen.description }} Adds ${{ names: listNames((chosen.packages ?? []).map((p) => p.name)) }}.`
+              : undefined
+          }
+        >
+          <TextField
+            id={selectId}
+            select={true}
+            fullWidth={true}
+            size="small"
+            value={value}
+            disabled={disabled}
+            onChange={(e) => onChange(e.target.value)}
+            slotProps={{ select: { displayEmpty: true } }}
+          >
+            <MenuItem value={EMPTY}>{t`Empty profile`}</MenuItem>
+            {copyOf === '' ? null : (
+              <MenuItem value={COPY}>{t`Copy of ${{ name: copyOf }}`}</MenuItem>
+            )}
+            {names.map((name) => (
+              <MenuItem key={name} value={name}>
+                {name}
+              </MenuItem>
+            ))}
+            {groups.length === 0 ? null : <ListSubheader>{t`Saved groups`}</ListSubheader>}
+            {groups.map((group) => (
+              <MenuItem key={group.id} value={groupStart(group.id)}>
+                {group.name}
+              </MenuItem>
+            ))}
+            {starters.length === 0 ? null : <ListSubheader>{t`Starter templates`}</ListSubheader>}
+            {starters.map((starter) => (
+              <MenuItem key={starter.id} value={STARTER + starter.id}>
+                {starter.name}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Field>
+      </Box>
+      <Button size="small" onClick={onManage} disabled={disabled}>
         {t`Manage templates…`}
       </Button>
-    </>
+    </Box>
   )
 }
 
@@ -232,53 +233,41 @@ export function NewProfileDialog({ open, onClose }: { open: boolean; onClose: ()
   const groupId = savedGroupOf(from)
   const group = savedGroups.find((candidate) => candidate.id === groupId)
   const trimmed = name.trim()
-  const onSubmit = (e: SyntheticEvent) => {
-    e.preventDefault()
-    if (!(busy || trimmed === '')) {
-      submit(trimmed, { template, copyOf: copying ? openId : '', starter, savedGroup: group?.id })
-    }
-  }
+  const onSubmit = () =>
+    submit(trimmed, { template, copyOf: copying ? openId : '', starter, savedGroup: group?.id })
   return (
     <>
-      <Dialog open={open} onClose={busy ? undefined : onClose}>
-        <form onSubmit={onSubmit}>
-          <DialogTitle>{t`New profile`}</DialogTitle>
-          <DialogContent>
-            <TextField
-              autoFocus={true}
-              fullWidth={true}
-              label={t`Profile name`}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              slotProps={{ htmlInput: { maxLength: MAX_NAME } }}
-              disabled={busy}
-            />
-            {templates.length > 0 ||
-            starters.length > 0 ||
-            savedGroups.length > 0 ||
-            openId !== '' ? (
-              <StartFromSelect
-                copyOf={openName}
-                names={templates.map((candidate) => candidate.name)}
-                starters={starters}
-                groups={savedGroups}
-                value={template || starter || group || copying ? from : EMPTY}
-                disabled={busy}
-                onChange={setFrom}
-                onManage={() => setManaging(true)}
-              />
-            ) : null}
-          </DialogContent>
-          <DialogActions sx={{ flexWrap: 'wrap' }}>
-            <Button onClick={onClose} disabled={busy}>
-              {t`Cancel`}
-            </Button>
-            <Button type="submit" variant="contained" disabled={busy || trimmed === ''}>
-              {t`Create`}
-            </Button>
-          </DialogActions>
-        </form>
-      </Dialog>
+      <FormDialog
+        open={open}
+        onClose={onClose}
+        size="sm"
+        title={t`New profile`}
+        submitLabel={t`Create`}
+        issue={trimmed === '' ? t`Name the profile.` : ''}
+        dirty={trimmed !== ''}
+        busy={busy}
+        onSubmit={onSubmit}
+      >
+        <TextInput
+          autoFocus={true}
+          label={t`Profile name`}
+          value={name}
+          onChange={setName}
+          maxLength={MAX_NAME}
+        />
+        {templates.length > 0 || starters.length > 0 || savedGroups.length > 0 || openId !== '' ? (
+          <StartFromSelect
+            copyOf={openName}
+            names={templates.map((candidate) => candidate.name)}
+            starters={starters}
+            groups={savedGroups}
+            value={template || starter || group || copying ? from : EMPTY}
+            disabled={busy}
+            onChange={setFrom}
+            onManage={() => setManaging(true)}
+          />
+        ) : null}
+      </FormDialog>
       <ManageTemplatesDialog
         open={managing}
         game={game}

@@ -1,16 +1,8 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  MenuItem,
-  TextField,
-  Typography,
-} from '@mui/material'
-import { useEffect, useState } from 'react'
+import { MenuItem, TextField, Typography } from '@mui/material'
+import { LayoutTemplate } from 'lucide-react'
+import { useEffect, useId, useState } from 'react'
 import type {
   Preview,
   Template,
@@ -23,6 +15,8 @@ import {
 import { savedGroupWants } from '../groups/missingWants.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
+import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
+import { Field, FormDialog } from '../shell/dialog/FormDialog.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -136,6 +130,7 @@ export function ApplyTemplateDialog({
 }) {
   const { t } = useLingui()
   const [name, setName] = useState('')
+  const nameId = useId()
   const { busy, apply } = useApply(game, profileId, onClose)
   const { data: preview } = useLoaded<Preview | null>(
     open && name ? () => PreviewApplyTemplate(game, name, profileId) : null,
@@ -149,17 +144,31 @@ export function ApplyTemplateDialog({
     }
   }, [open, templates])
   return (
-    <Dialog open={open} onClose={busy ? undefined : onClose} maxWidth="xs" fullWidth={true}>
-      <DialogTitle>{t`Apply a template`}</DialogTitle>
-      <DialogContent>
+    <FormDialog
+      open={open}
+      onClose={onClose}
+      size="sm"
+      title={t`Apply a template`}
+      icon={
+        <ToneIcon tone="neutral">
+          <LayoutTemplate size={22} />
+        </ToneIcon>
+      }
+      submitLabel={t`Apply`}
+      issue={preview || name === '' ? '' : t`Reading the template…`}
+      dirty={false}
+      busy={busy}
+      onSubmit={() => apply(name)}
+    >
+      <Field label={t`Template`} htmlFor={nameId}>
         <TextField
+          id={nameId}
           select={true}
           fullWidth={true}
-          label={t`Template`}
+          size="small"
           value={name}
           disabled={busy}
           onChange={(e) => setName(e.target.value)}
-          sx={{ mt: 1 }}
         >
           {templates.map((template) => (
             <MenuItem key={template.name} value={template.name}>
@@ -167,16 +176,8 @@ export function ApplyTemplateDialog({
             </MenuItem>
           ))}
         </TextField>
-        {preview ? <PreviewGroups preview={preview} /> : null}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} disabled={busy}>
-          {t`Cancel`}
-        </Button>
-        <Button variant="contained" disabled={busy || !preview} onClick={() => apply(name)}>
-          {t`Apply`}
-        </Button>
-      </DialogActions>
-    </Dialog>
+      </Field>
+      {preview ? <PreviewGroups preview={preview} /> : null}
+    </FormDialog>
   )
 }

@@ -1,18 +1,11 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  MenuItem,
-  TextField,
-} from '@mui/material'
-import { useEffect, useState } from 'react'
+import { MenuItem, TextField } from '@mui/material'
+import { useEffect, useId, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import type { SavedGroup } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savedgroups/models.ts'
 import { Apply } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savedgroups/service.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { Field, FormDialog } from '../shell/dialog/FormDialog.tsx'
 import { usePending } from '../toasts/usePending.ts'
 import { savedGroupApplied } from './applied.ts'
 
@@ -32,6 +25,7 @@ export function ApplySavedGroupToProfile({
   const [profileId, setProfileId] = useState('')
   const [busy, run] = usePending()
   const open = group !== null
+  const profileFieldId = useId()
   useEffect(() => {
     if (open) {
       setProfileId(useProfiles.getState().openId || (profiles[0]?.id ?? ''))
@@ -51,14 +45,23 @@ export function ApplySavedGroupToProfile({
     )
   }
   return (
-    <Dialog open={open} onClose={busy ? undefined : onClose}>
-      <DialogTitle>{t`Add ${{ name: group?.name ?? '' }} to a profile`}</DialogTitle>
-      <DialogContent sx={{ minWidth: 340 }}>
+    <FormDialog
+      open={open}
+      onClose={onClose}
+      size="sm"
+      title={t`Add ${{ name: group?.name ?? '' }} to a profile`}
+      submitLabel={t`Add to profile`}
+      issue={profileId === '' ? t`Pick a profile.` : ''}
+      dirty={false}
+      busy={busy}
+      onSubmit={apply}
+    >
+      <Field label={t`Profile`} htmlFor={profileFieldId}>
         <TextField
+          id={profileFieldId}
           select={true}
           fullWidth={true}
-          margin="dense"
-          label={t`Profile`}
+          size="small"
           value={profileId}
           onChange={(e) => setProfileId(e.target.value)}
         >
@@ -68,15 +71,7 @@ export function ApplySavedGroupToProfile({
             </MenuItem>
           ))}
         </TextField>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} disabled={busy}>
-          {t`Cancel`}
-        </Button>
-        <Button variant="contained" onClick={apply} disabled={busy || profileId === ''}>
-          {t`Add to profile`}
-        </Button>
-      </DialogActions>
-    </Dialog>
+      </Field>
+    </FormDialog>
   )
 }

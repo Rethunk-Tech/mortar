@@ -1,20 +1,11 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  alpha,
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  ListItemButton,
-  Typography,
-} from '@mui/material'
+import { alpha, Box, Button, ListItemButton, Typography } from '@mui/material'
 import { FileSearch } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import type { RunHit } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { SearchRuns } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
+import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
@@ -87,84 +78,88 @@ export function SearchRunsDialog({ open, onClose }: { open: boolean; onClose: ()
   }
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="md">
-      <DialogTitle>{t`Search all runs`}</DialogTitle>
-      <DialogContent>
-        <SearchField
-          label={t`Search run logs`}
-          autoFocus={true}
-          fullWidth={true}
-          value={query}
-          onChange={setQuery}
-          sx={{ mb: 1.5 }}
-        />
-        {loading ? <SkeletonRows label={t`Searching…`} count={4} height={36} /> : null}
-        {!loading && groups.size === 0 ? (
-          <EmptyState
-            icon={<FileSearch />}
-            title={query.trim() ? t`No matches` : t`Search every run`}
-            compact={true}
-          >
-            {query.trim()
-              ? t`No stored run contains that text.`
-              : t`Enter text to search stored runs.`}
-          </EmptyState>
-        ) : null}
-        {!loading && groups.size > 0 ? (
-          <>
-            {Array.from(groups, ([runId, hits]) => (
-              <Box key={runId} sx={{ mb: 1.5 }}>
-                <Typography
-                  sx={{
-                    fontSize: 'base.fontSize',
-                    fontWeight: 700,
-                    color: 'text.secondary',
-                    mb: 0.5,
-                  }}
-                >
-                  {hits[0]
-                    ? `${formatWhen(hits[0].started, { withTime: true })} · ${outcome(hits[0].outcome)}`
-                    : null}
-                </Typography>
-                {hits.map((hit) => (
-                  <ListItemButton
-                    dense={true}
-                    key={`${hit.runId}-${hit.lineNumber}`}
-                    onClick={() => choose(hit)}
-                    sx={{ gap: space.gap, borderRadius: 1, alignItems: 'flex-start' }}
-                  >
-                    <Typography
-                      component="span"
-                      sx={{ minWidth: 42, color: 'text.secondary', fontFamily: MONO }}
-                    >
-                      {t`L${{ lineNumber: hit.lineNumber }}`}
-                    </Typography>
-                    <Typography
-                      component="span"
-                      sx={{
-                        minWidth: 0,
-                        whiteSpace: 'pre-wrap',
-                        overflowWrap: 'anywhere',
-                        fontFamily: MONO,
-                      }}
-                    >
-                      <Highlight text={hit.line} query={query.trim()} />
-                    </Typography>
-                  </ListItemButton>
-                ))}
-              </Box>
-            ))}
-            {result.truncated ? (
-              <Typography color="text.secondary" sx={{ fontSize: 'base.fontSize' }}>
-                {t`Showing the first 500 matches.`}
+    <AppDialog
+      open={open}
+      onClose={onClose}
+      size="lg"
+      title={t`Search all runs`}
+      footer={
+        <DialogFooter>
+          <Button onClick={onClose}>{t`Close`}</Button>
+        </DialogFooter>
+      }
+    >
+      <SearchField
+        label={t`Search run logs`}
+        autoFocus={true}
+        fullWidth={true}
+        value={query}
+        onChange={setQuery}
+        sx={{ mb: 1.5 }}
+      />
+      {loading ? <SkeletonRows label={t`Searching…`} count={4} height={36} /> : null}
+      {!loading && groups.size === 0 ? (
+        <EmptyState
+          icon={<FileSearch />}
+          title={query.trim() ? t`No matches` : t`Search every run`}
+          compact={true}
+        >
+          {query.trim()
+            ? t`No stored run contains that text.`
+            : t`Enter text to search stored runs.`}
+        </EmptyState>
+      ) : null}
+      {!loading && groups.size > 0 ? (
+        <>
+          {Array.from(groups, ([runId, hits]) => (
+            <Box key={runId} sx={{ mb: 1.5 }}>
+              <Typography
+                sx={{
+                  fontSize: 'base.fontSize',
+                  fontWeight: 700,
+                  color: 'text.secondary',
+                  mb: 0.5,
+                }}
+              >
+                {hits[0]
+                  ? `${formatWhen(hits[0].started, { withTime: true })} · ${outcome(hits[0].outcome)}`
+                  : null}
               </Typography>
-            ) : null}
-          </>
-        ) : null}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>{t`Close`}</Button>
-      </DialogActions>
-    </Dialog>
+              {hits.map((hit) => (
+                <ListItemButton
+                  dense={true}
+                  key={`${hit.runId}-${hit.lineNumber}`}
+                  onClick={() => choose(hit)}
+                  sx={{ gap: space.gap, borderRadius: 1, alignItems: 'flex-start' }}
+                >
+                  <Typography
+                    component="span"
+                    sx={{ minWidth: 42, color: 'text.secondary', fontFamily: MONO }}
+                  >
+                    {t`L${{ lineNumber: hit.lineNumber }}`}
+                  </Typography>
+                  <Typography
+                    component="span"
+                    sx={{
+                      minWidth: 0,
+                      whiteSpace: 'pre-wrap',
+                      overflowWrap: 'anywhere',
+                      fontFamily: MONO,
+                    }}
+                  >
+                    <Highlight text={hit.line} query={query.trim()} />
+                  </Typography>
+                </ListItemButton>
+              ))}
+            </Box>
+          ))}
+          {result.truncated ? (
+            <Typography color="text.secondary" sx={{ fontSize: 'base.fontSize' }}>
+              {t`Showing the first 500 matches.`}
+            </Typography>
+          ) : null}
+        </>
+      ) : null}
+    </AppDialog>
   )
 }

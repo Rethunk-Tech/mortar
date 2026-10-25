@@ -1909,6 +1909,10 @@ msgstr ""
 msgid "Remove from list…"
 msgstr ""
 
+#: src/share/ModpackDialog.tsx
+msgid "Like 1.0.0."
+msgstr ""
+
 #: src/games/useGameTiles.ts
 msgid "Coming in a later Mortar version"
 msgstr ""
@@ -1983,8 +1987,6 @@ msgid "Mortar already named the likely mod for the last crash."
 msgstr ""
 
 #: src/fomod/Dialog.tsx
-#: src/game/NewProfileDialog.tsx
-#: src/groups/ApplySavedGroupToProfile.tsx
 #: src/groups/dialogs.tsx
 #: src/install/DownloadsDialog.tsx
 #: src/install/OverlayPlaceDialog.tsx
@@ -1997,15 +1999,11 @@ msgstr ""
 #: src/launch/SaveWarnDialog.tsx
 #: src/launch/UpdateWarnDialog.tsx
 #: src/launch/VanillaPlay.tsx
-#: src/queue/LargeDownloadDialog.tsx
 #: src/queue/QueueBody.tsx
 #: src/share/ModpackDialog.tsx
-#: src/shell/BugReportDialog.tsx
 #: src/shell/dialog/ConfirmationDialog.tsx
 #: src/shell/dialog/FormDialog.tsx
 #: src/shell/SuggestDialog.tsx
-#: src/templates/ApplyTemplateDialog.tsx
-#: src/tools/ToolEditorDialog.tsx
 msgid "Cancel"
 msgstr ""
 
@@ -3021,6 +3019,10 @@ msgstr ""
 msgid "This profile has no mods to download"
 msgstr ""
 
+#: src/share/ModpackDialog.tsx
+msgid "Letters, digits and underscores only."
+msgstr ""
+
 #: src/share/ImportPreview.tsx
 msgid "Include {name}"
 msgstr ""
@@ -3415,6 +3417,10 @@ msgstr ""
 msgid "Choose a graphics API for {name}"
 msgstr ""
 
+#: src/templates/ApplyTemplateDialog.tsx
+msgid "Reading the template…"
+msgstr ""
+
 #: src/share/ModpackDialog.tsx
 msgid "Choose icon"
 msgstr ""
@@ -3705,6 +3711,10 @@ msgstr ""
 #: src/launch/PrePlayDialog.tsx
 #: src/launch/UpdateWarnDialog.tsx
 msgid "Open problems"
+msgstr ""
+
+#: src/lan/PairedComputers.tsx
+msgid "Type the code."
 msgstr ""
 
 #: src/firstrun/NexusStep.tsx
@@ -4231,6 +4241,10 @@ msgstr ""
 msgid "{name} installed"
 msgstr ""
 
+#: src/shell/BugReportDialog.tsx
+msgid "Say what happened."
+msgstr ""
+
 #: src/games/ListFooter.tsx
 msgid "Hide hidden games"
 msgstr ""
@@ -4680,6 +4694,10 @@ msgstr ""
 
 #: src/nxm/store.ts
 msgid "The link has expired. Click Mod Manager Download on {source} again."
+msgstr ""
+
+#: src/lan/PairedComputers.tsx
+msgid "Pick the computer showing the code."
 msgstr ""
 
 #: src/firstrun/FirstRun.tsx
@@ -6010,6 +6028,10 @@ msgstr ""
 msgid "Installing"
 msgstr ""
 
+#: src/groups/ApplySavedGroupToProfile.tsx
+msgid "Pick a profile."
+msgstr ""
+
 #: src/queue/LargeDownloadDialog.tsx
 msgid "This download is {size}, far larger than a mod normally is. It will take a long time and fill a lot of your drive. Make sure you meant to get it."
 msgstr ""
@@ -6155,6 +6177,10 @@ msgstr ""
 
 #: src/queue/RetryAllButton.tsx
 msgid "{count, plural, one {# superseded by a newer download} other {# superseded by a newer download}}"
+msgstr ""
+
+#: src/tools/ToolEditorDialog.tsx
+msgid "Name the tool."
 msgstr ""
 
 #: src/queue/QueueBody.tsx
@@ -6406,7 +6432,6 @@ msgid "{count, plural, one {# update} other {# updates}}"
 msgstr ""
 
 #: src/game/FarmMenuItem.tsx
-#: src/games/AddGameDialog.tsx
 #: src/launch/LaunchButtons.tsx
 #: src/launch/LaunchLayer.tsx
 #: src/launch/SweepDialog.tsx
@@ -6446,6 +6471,10 @@ msgstr ""
 
 #: src/queue/QueueBody.tsx
 msgid "Already the newest file"
+msgstr ""
+
+#: src/game/NewProfileDialog.tsx
+msgid "Name the profile."
 msgstr ""
 
 #: src/i18n/reasonText.ts

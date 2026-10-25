@@ -1,23 +1,14 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import {
-  Button,
-  Checkbox,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControlLabel,
-  MenuItem,
-  MenuList,
-  TextField,
-} from '@mui/material'
+import { Button, Checkbox, FormControlLabel, MenuItem, MenuList, TextField } from '@mui/material'
 import { FolderPlus } from 'lucide-react'
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import type {
   Mod,
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { AppDialog, DialogFooter, ToneIcon } from '../shell/dialog/AppDialog.tsx'
+import { Field } from '../shell/dialog/FormDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -59,6 +50,7 @@ function AddToGroupDialog({
   const { t } = useLingui()
   const locked = useLocked()
   const [name, setName] = useState('')
+  const nameId = useId()
   const [withNeeds, setWithNeeds] = useState(true)
   const all = useMods((s) => s.mods)
   const needed = open ? requirementKeys(all, mods) : []
@@ -74,33 +66,56 @@ function AddToGroupDialog({
     onClose()
   }
   return (
-    <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="xs">
-      <DialogTitle>{t`Add to group…`}</DialogTitle>
+    <AppDialog
+      open={open}
+      onClose={onClose}
+      size="sm"
+      title={t`Add to group…`}
+      icon={
+        <ToneIcon tone="neutral">
+          <FolderPlus size={22} />
+        </ToneIcon>
+      }
+      footer={
+        <DialogFooter>
+          <Button onClick={onClose}>{t`Cancel`}</Button>
+          <LockedReason locked={locked}>
+            <Button
+              variant="contained"
+              disabled={locked || name.trim() === ''}
+              onClick={() => add(name).catch(reportUnexpected)}
+            >
+              {t`Add`}
+            </Button>
+          </LockedReason>
+        </DialogFooter>
+      }
+    >
       <LockedReason locked={locked}>
-        <DialogContent>
-          {groups.length === 0 ? (
-            <EmptyState compact={true} icon={<FolderPlus size={28} />} title={t`No groups yet`}>
-              {t`Name a group below to create it.`}
-            </EmptyState>
-          ) : (
-            <MenuList dense={true}>
-              {groups.map((g) => (
-                <MenuItem
-                  key={g.name}
-                  disabled={locked}
-                  onClick={() => {
-                    add(g.name ?? '').catch(reportUnexpected)
-                  }}
-                >
-                  {g.name}
-                </MenuItem>
-              ))}
-            </MenuList>
-          )}
+        {groups.length === 0 ? (
+          <EmptyState compact={true} icon={<FolderPlus size={28} />} title={t`No groups yet`}>
+            {t`Name a group below to create it.`}
+          </EmptyState>
+        ) : (
+          <MenuList dense={true}>
+            {groups.map((g) => (
+              <MenuItem
+                key={g.name}
+                disabled={locked}
+                onClick={() => {
+                  add(g.name ?? '').catch(reportUnexpected)
+                }}
+              >
+                {g.name}
+              </MenuItem>
+            ))}
+          </MenuList>
+        )}
+        <Field label={t`New group`} htmlFor={nameId}>
           <TextField
+            id={nameId}
             autoFocus={true}
-            margin="dense"
-            label={t`New group`}
+            size="small"
             fullWidth={true}
             value={name}
             disabled={locked}
@@ -113,31 +128,21 @@ function AddToGroupDialog({
               }
             }}
           />
-          {needed.length > 0 ? (
-            <FormControlLabel
-              control={<Checkbox checked={withNeeds} onChange={(_, on) => setWithNeeds(on)} />}
-              label={plural(
-                { count: needed.length },
-                {
-                  one: 'Also add the # mod they need',
-                  other: 'Also add the # mods they need',
-                },
-              )}
-            />
-          ) : null}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={onClose}>{t`Cancel`}</Button>
-          <Button
-            variant="contained"
-            disabled={locked || name.trim() === ''}
-            onClick={() => add(name).catch(reportUnexpected)}
-          >
-            {t`Add`}
-          </Button>
-        </DialogActions>
+        </Field>
+        {needed.length > 0 ? (
+          <FormControlLabel
+            control={<Checkbox checked={withNeeds} onChange={(_, on) => setWithNeeds(on)} />}
+            label={plural(
+              { count: needed.length },
+              {
+                one: 'Also add the # mod they need',
+                other: 'Also add the # mods they need',
+              },
+            )}
+          />
+        ) : null}
       </LockedReason>
-    </Dialog>
+    </AppDialog>
   )
 }
 

@@ -1,18 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from '@mui/material'
+import { Button, Typography } from '@mui/material'
 import { useEffect } from 'react'
 import { listNames } from '../i18n/list.ts'
 import { LockedReason } from '../mods/LockedReason.tsx'
 import { useMods } from '../mods/store.ts'
 import { useLocked } from '../mods/useLocked.ts'
 import { download } from '../queue/actions.ts'
+import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { depName, stillMissing, wantsOf } from './missingDeps.ts'
 import { useInstall } from './store.ts'
@@ -35,32 +29,36 @@ export function MissingDepsDialog() {
   const names = missing.map(depName)
   const wants = wantsOf(missing)
   return (
-    <Dialog open={true} onClose={dismissOffer}>
-      <DialogTitle>{t`${{ name: offer.dependentName }} needs ${{ names: listNames(names) }}`}</DialogTitle>
+    <AppDialog
+      open={true}
+      onClose={dismissOffer}
+      size="sm"
+      title={t`${{ name: offer.dependentName }} needs ${{ names: listNames(names) }}`}
+      footer={
+        <DialogFooter>
+          <Button onClick={dismissOffer}>{t`Not now`}</Button>
+          {wants.length > 0 ? (
+            <LockedReason locked={locked}>
+              <Button
+                variant="contained"
+                disabled={locked}
+                onClick={() => {
+                  download(wants).catch(reportUnexpected)
+                  dismissOffer()
+                }}
+              >
+                {t`Add them`}
+              </Button>
+            </LockedReason>
+          ) : null}
+        </DialogFooter>
+      }
+    >
       {wants.length === 0 ? (
-        <DialogContent>
-          <DialogContentText>
-            {t`No download source is known for ${{ names: listNames(names, names.length) }}.`}
-          </DialogContentText>
-        </DialogContent>
+        <Typography sx={{ color: 'text.secondary' }}>
+          {t`No download source is known for ${{ names: listNames(names, names.length) }}.`}
+        </Typography>
       ) : null}
-      <DialogActions>
-        <Button onClick={dismissOffer}>{t`Not now`}</Button>
-        {wants.length > 0 ? (
-          <LockedReason locked={locked}>
-            <Button
-              variant="contained"
-              disabled={locked}
-              onClick={() => {
-                download(wants).catch(reportUnexpected)
-                dismissOffer()
-              }}
-            >
-              {t`Add them`}
-            </Button>
-          </LockedReason>
-        ) : null}
-      </DialogActions>
-    </Dialog>
+    </AppDialog>
   )
 }

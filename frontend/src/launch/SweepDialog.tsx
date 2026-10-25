@@ -1,21 +1,13 @@
 import type { I18n } from '@lingui/core'
 import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Link,
-  Typography,
-} from '@mui/material'
+import { Box, Button, Link, Typography } from '@mui/material'
 import type { SweepReport } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { UpdateEverywhere } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { useTab } from '../game/tab.ts'
 import { isGameId, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -121,25 +113,24 @@ function SweepDialog() {
     })
   }
   return (
-    <Dialog
+    <AppDialog
       open={open && report !== null}
-      onClose={pending ? undefined : close}
-      maxWidth="xs"
-      fullWidth={true}
+      onClose={pending ? () => undefined : close}
+      size="sm"
+      title={t`${{ game: report?.gameName ?? '' }} was updated: mods to check`}
+      footer={
+        <DialogFooter>
+          <Button onClick={close} disabled={pending}>
+            {t`Close`}
+          </Button>
+          <Button variant="contained" onClick={apply} disabled={pending || ids.length === 0}>
+            {plural({ count: ids.length }, { one: 'Update # mod', other: 'Update # mods' })}
+          </Button>
+        </DialogFooter>
+      }
     >
-      <DialogTitle>{t`${{ game: report?.gameName ?? '' }} was updated: mods to check`}</DialogTitle>
-      <DialogContent>
-        {report ? <ProfileRows report={report} i18n={i18n} close={close} /> : null}
-      </DialogContent>
-      <DialogActions sx={{ bgcolor: 'background.paper' }}>
-        <Button onClick={close} disabled={pending}>
-          {t`Close`}
-        </Button>
-        <Button variant="contained" onClick={apply} disabled={pending || ids.length === 0}>
-          {plural({ count: ids.length }, { one: 'Update # mod', other: 'Update # mods' })}
-        </Button>
-      </DialogActions>
-    </Dialog>
+      {report ? <ProfileRows report={report} i18n={i18n} close={close} /> : null}
+    </AppDialog>
   )
 }
 

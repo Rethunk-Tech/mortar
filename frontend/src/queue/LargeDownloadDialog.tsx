@@ -1,26 +1,18 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from '@mui/material'
-import { TriangleAlert } from 'lucide-react'
+import { Typography } from '@mui/material'
 import {
   Cancel,
   ConfirmLarge,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
 import { formatKb } from '../i18n/bytes.ts'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { largeAsk } from './large.ts'
 import { useQueue } from './store.ts'
 
 /**
- * Asks before a download over 2 GB starts. Cancel is the filled, focused button and closing the dialog cancels too,
- * so only a deliberate click on "Continue anyway" lets it through.
+ * Asks before a download over 2 GB starts. Cancel takes focus and closing the dialog cancels too, so only a
+ * deliberate click on "Continue anyway" lets it through.
  */
 export function LargeDownloadDialog() {
   const { t } = useLingui()
@@ -35,42 +27,24 @@ export function LargeDownloadDialog() {
     }
   }
   return (
-    <Dialog
+    <ConfirmationDialog
       open={ask !== null}
-      onClose={cancel}
-      slotProps={{
-        paper: { sx: { maxWidth: 460, borderTop: 4, borderColor: 'error.main' } },
+      tone="danger"
+      title={t`${name} is a very large download`}
+      body={t`This download is ${size}, far larger than a mod normally is. It will take a long time and fill a lot of your drive. Make sure you meant to get it.`}
+      confirmLabel={t`Continue anyway`}
+      onCancel={cancel}
+      onConfirm={() => {
+        if (item) {
+          Promise.resolve(ConfirmLarge(item.id)).catch(reportUnexpected)
+        }
       }}
     >
-      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'error.main' }}>
-        <TriangleAlert size={22} aria-hidden={true} />
-        {t`${name} is a very large download`}
-      </DialogTitle>
-      <DialogContent>
-        <DialogContentText>
-          {t`This download is ${size}, far larger than a mod normally is. It will take a long time and fill a lot of your drive. Make sure you meant to get it.`}
-        </DialogContentText>
-        {more > 0 ? (
-          <Box sx={{ mt: 1 }}>
-            <DialogContentText>{t`${more} more large downloads are waiting after this one.`}</DialogContentText>
-          </Box>
-        ) : null}
-      </DialogContent>
-      <DialogActions sx={{ flexWrap: 'wrap' }}>
-        <Button autoFocus={true} onClick={cancel}>
-          {t`Cancel`}
-        </Button>
-        <Button
-          variant="contained"
-          onClick={() => {
-            if (item) {
-              Promise.resolve(ConfirmLarge(item.id)).catch(reportUnexpected)
-            }
-          }}
-        >
-          {t`Continue anyway`}
-        </Button>
-      </DialogActions>
-    </Dialog>
+      {more > 0 ? (
+        <Typography sx={{ color: 'text.secondary' }}>
+          {t`${more} more large downloads are waiting after this one.`}
+        </Typography>
+      ) : null}
+    </ConfirmationDialog>
   )
 }

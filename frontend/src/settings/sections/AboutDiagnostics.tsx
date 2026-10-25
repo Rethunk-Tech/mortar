@@ -1,13 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  LinearProgress,
-} from '@mui/material'
+import { Box, Button, LinearProgress } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { CircleCheck, CircleX, Copy, FileArchive, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
@@ -23,6 +15,7 @@ import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { routeGame, useNav } from '../../nav/store.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { copyText } from '../../share/copyText.ts'
+import { AppDialog, DialogFooter } from '../../shell/dialog/AppDialog.tsx'
 import { saveDiagnostics } from '../../shell/saveDiagnostics.ts'
 import { space } from '../../theme/density.ts'
 import { usePending } from '../../toasts/usePending.ts'
@@ -171,15 +164,30 @@ function Diagnostics() {
           {t`Save…`}
         </Button>
       </SettingRow>
-      <Dialog
+      <AppDialog
         open={open}
         onClose={() => setOpen(false)}
-        maxWidth="sm"
-        fullWidth={true}
-        scroll="paper"
+        title={t`Diagnostics`}
+        size="sm"
+        footer={
+          <DialogFooter>
+            <Button onClick={() => setOpen(false)}>{t`Close`}</Button>
+            <Button startIcon={<Copy size={16} />} disabled={!report} onClick={copy}>
+              {t`Copy report`}
+            </Button>
+            <Button
+              startIcon={<FileArchive size={16} />}
+              onClick={() => saveDiagnostics(game, profile)}
+            >
+              {t`Save diagnostics…`}
+            </Button>
+            <Button variant="contained" disabled={busy} onClick={run}>
+              {t`Run again`}
+            </Button>
+          </DialogFooter>
+        }
       >
-        <DialogTitle>{t`Diagnostics`}</DialogTitle>
-        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
           {busy && !report ? <LinearProgress /> : null}
           {failed ? (
             <Box
@@ -228,24 +236,8 @@ function Diagnostics() {
               ) : null}
             </Box>
           ))}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpen(false)}>{t`Close`}</Button>
-          <Button startIcon={<Copy size={16} />} disabled={!report} onClick={copy}>
-            {t`Copy report`}
-          </Button>
-          <Button
-            startIcon={<FileArchive size={16} />}
-            onClick={() => saveDiagnostics(game, profile)}
-          >
-            {t`Save diagnostics…`}
-          </Button>
-          <Box sx={{ flex: 1 }} />
-          <Button variant="contained" disabled={busy} onClick={run}>
-            {t`Run again`}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        </Box>
+      </AppDialog>
     </SettingsSection>
   )
 }

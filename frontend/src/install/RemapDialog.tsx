@@ -3,10 +3,6 @@ import {
   Box,
   Button,
   Collapse,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   IconButton,
   List,
   ListItem,
@@ -21,6 +17,7 @@ import type {
   RemapVariant,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { formatBytes } from '../i18n/bytes.ts'
+import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { space } from '../theme/density.ts'
 import { ArchivePreview } from './ArchivePreview.tsx'
 import { useNoModText } from './noModText.ts'
@@ -170,53 +167,53 @@ function RemapBody() {
       ? t`This archive holds several variants of the same mod. Pick the one to install; updates keep it.`
       : noModText
   return (
-    <Dialog
+    <AppDialog
       open={true}
       onClose={close}
-      sx={{ '& .MuiDialog-paper': { minWidth: 420, maxHeight: '80vh' } }}
+      size="sm"
+      title={variants.length > 0 ? t`Choose variant` : t`Choose mod folder`}
+      footer={
+        <DialogFooter>
+          <Button onClick={close}>{t`Cancel`}</Button>
+          <Button
+            variant="contained"
+            disabled={!dir || selected === ''}
+            onClick={() => choose(selected)}
+          >
+            {t`Use folder`}
+          </Button>
+        </DialogFooter>
+      }
     >
-      <DialogTitle>{variants.length > 0 ? t`Choose variant` : t`Choose mod folder`}</DialogTitle>
-      <DialogContent>
-        <Typography variant="body2" sx={{ mb: 1 }}>
-          {intro}
-        </Typography>
-        {session.archivePath ? <ArchiveContents path={session.archivePath} /> : null}
-        <List dense={true} disablePadding={true}>
-          {variants.length > 0 ? (
-            <VariantRows
-              variants={variants}
+      <Typography variant="body2" sx={{ mb: 1 }}>
+        {intro}
+      </Typography>
+      {session.archivePath ? <ArchiveContents path={session.archivePath} /> : null}
+      <List dense={true} disablePadding={true}>
+        {variants.length > 0 ? (
+          <VariantRows
+            variants={variants}
+            selected={selected}
+            onSelect={(path) => {
+              setSelected(path)
+              setDir(true)
+            }}
+          />
+        ) : (
+          (session.ask.tree ?? []).map((n) => (
+            <NodeRow
+              key={n.path}
+              node={n}
               selected={selected}
-              onSelect={(path) => {
+              onSelect={(path, isDir) => {
                 setSelected(path)
-                setDir(true)
+                setDir(isDir)
               }}
             />
-          ) : (
-            (session.ask.tree ?? []).map((n) => (
-              <NodeRow
-                key={n.path}
-                node={n}
-                selected={selected}
-                onSelect={(path, isDir) => {
-                  setSelected(path)
-                  setDir(isDir)
-                }}
-              />
-            ))
-          )}
-        </List>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={close}>{t`Cancel`}</Button>
-        <Button
-          variant="contained"
-          disabled={!dir || selected === ''}
-          onClick={() => choose(selected)}
-        >
-          {t`Use folder`}
-        </Button>
-      </DialogActions>
-    </Dialog>
+          ))
+        )}
+      </List>
+    </AppDialog>
   )
 }
 

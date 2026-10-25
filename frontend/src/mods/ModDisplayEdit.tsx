@@ -1,14 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Link,
-  TextField,
-} from '@mui/material'
+import { Button, Link } from '@mui/material'
+import { Pencil } from 'lucide-react'
 import { useState } from 'react'
 import type {
   Mod,
@@ -16,7 +8,8 @@ import type {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { SetEntryDisplay } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { space } from '../theme/density.ts'
+import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
+import { FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { toastError } from '../toasts/report.ts'
 import { entryOf } from './lookup.ts'
 import { rowLink } from './paper.ts'
@@ -59,13 +52,7 @@ export function ModDisplayEdit({ profile, mod }: { profile: Profile; mod: Mod })
   }
   const stock = entry.mods?.[0]
   const field = (label: string, value: string, set: (v: string) => void) => (
-    <TextField
-      size="small"
-      label={label}
-      value={value}
-      onChange={(e) => set(e.target.value)}
-      slotProps={{ htmlInput: { maxLength: MAX_DISPLAY } }}
-    />
+    <TextInput label={label} value={value} onChange={set} maxLength={MAX_DISPLAY} />
   )
   const shownDiffers = (shown: string, stockValue: string | undefined) =>
     shown === stockValue ? '' : shown
@@ -74,32 +61,33 @@ export function ModDisplayEdit({ profile, mod }: { profile: Profile; mod: Mod })
       <Link component="button" onClick={begin} sx={rowLink}>
         {t`Edit name, author and version…`}
       </Link>
-      <Dialog open={open} onClose={() => setOpen(false)} fullWidth={true} maxWidth="xs">
-        <DialogTitle>{t`Edit ${{ name: mod.name }}`}</DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap, pt: 0.5 }}>
-            {field(t`Name`, name, setName)}
-            {field(t`Author`, author, setAuthor)}
-            {field(t`Version`, version, setVersion)}
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => save(['', '', ''])}>{t`Use the mod's own`}</Button>
-          <Button onClick={() => setOpen(false)}>{t`Cancel`}</Button>
-          <Button
-            variant="contained"
-            onClick={() =>
-              save([
-                shownDiffers(name.trim(), stock?.name),
-                shownDiffers(author.trim(), stock?.author),
-                shownDiffers(version.trim(), stock?.version),
-              ])
-            }
-          >
-            {t`Save`}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <FormDialog
+        open={open}
+        onClose={() => setOpen(false)}
+        size="sm"
+        title={t`Edit ${{ name: mod.name }}`}
+        icon={
+          <ToneIcon tone="neutral">
+            <Pencil size={22} />
+          </ToneIcon>
+        }
+        submitLabel={t`Save`}
+        dirty={name !== mod.name || author !== mod.author || version !== mod.version}
+        onSubmit={() =>
+          save([
+            shownDiffers(name.trim(), stock?.name),
+            shownDiffers(author.trim(), stock?.author),
+            shownDiffers(version.trim(), stock?.version),
+          ])
+        }
+      >
+        {field(t`Name`, name, setName)}
+        {field(t`Author`, author, setAuthor)}
+        {field(t`Version`, version, setVersion)}
+        <Button onClick={() => save(['', '', ''])} sx={{ alignSelf: 'flex-start' }}>
+          {t`Use the mod's own`}
+        </Button>
+      </FormDialog>
     </>
   )
 }

@@ -1,16 +1,6 @@
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  List,
-  ListItem,
-  ListItemText,
-} from '@mui/material'
+import { Button, IconButton, List, ListItem, ListItemText } from '@mui/material'
 import { LayoutTemplate, Pencil, Trash2 } from 'lucide-react'
 import { useRef, useState } from 'react'
 import type { Template } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/templates/models.ts'
@@ -22,6 +12,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/templates/service.ts'
 import { modsLabel } from '../i18n/counts.ts'
 import { i18n } from '../i18n/index.ts'
+import { AppDialog, DialogFooter, ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { PromptDialog } from '../shell/PromptDialog.tsx'
@@ -158,32 +149,41 @@ function ManageTemplatesDialog({
   const closeRef = useRef<HTMLButtonElement>(null)
   return (
     <>
-      <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth={true}>
-        <DialogTitle>{t`Manage templates`}</DialogTitle>
-        <DialogContent>
-          {templates.length === 0 ? (
-            <EmptyState compact={true} icon={<LayoutTemplate size={28} />} title={t`No templates`}>
-              {t`Choose Save as template… from a profile's menu.`}
-            </EmptyState>
-          ) : (
-            <List dense={true}>
-              {templates.map((template) => (
-                <TemplateRow
-                  key={template.name}
-                  template={template}
-                  onRename={() => setRenaming(template.name)}
-                  onDelete={() => setDeleting(template)}
-                />
-              ))}
-            </List>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button ref={closeRef} onClick={onClose}>
-            {t`Close`}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <AppDialog
+        open={open}
+        onClose={onClose}
+        size="sm"
+        title={t`Manage templates`}
+        icon={
+          <ToneIcon tone="neutral">
+            <LayoutTemplate size={22} />
+          </ToneIcon>
+        }
+        footer={
+          <DialogFooter>
+            <Button ref={closeRef} onClick={onClose}>
+              {t`Close`}
+            </Button>
+          </DialogFooter>
+        }
+      >
+        {templates.length === 0 ? (
+          <EmptyState compact={true} icon={<LayoutTemplate size={28} />} title={t`No templates`}>
+            {t`Choose Save as template… from a profile's menu.`}
+          </EmptyState>
+        ) : (
+          <List dense={true}>
+            {templates.map((template) => (
+              <TemplateRow
+                key={template.name}
+                template={template}
+                onRename={() => setRenaming(template.name)}
+                onDelete={() => setDeleting(template)}
+              />
+            ))}
+          </List>
+        )}
+      </AppDialog>
       <PromptDialog
         open={renaming !== null}
         title={t`Rename template`}

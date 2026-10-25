@@ -1,17 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Typography,
-} from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import { History as HistoryIcon } from 'lucide-react'
 import { useState } from 'react'
 import { listNames } from '../i18n/list.ts'
 import { download } from '../queue/actions.ts'
+import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { errorDetails } from '../toasts/errorKind.ts'
 import { undoTarget } from '../toasts/history.ts'
@@ -51,89 +44,87 @@ export function HistoryPanel({
       ? t`Could not restore ${{ names: listNames(h.missingNames) }}`
       : errorMessage(h.error)
   return (
-    <Dialog
+    <AppDialog
       open={open}
       onClose={onClose}
-      maxWidth="md"
-      fullWidth={true}
-      slotProps={{ paper: { sx: { height: 'min(720px, calc(100% - 64px))' } } }}
+      title={t`History`}
+      size="lg"
+      footer={
+        <DialogFooter>
+          <Button onClick={onClose}>{t`Close`}</Button>
+        </DialogFooter>
+      }
     >
-      <DialogTitle>{t`History`}</DialogTitle>
-      <DialogContent>
-        <HistoryToolbar
-          busy={!h.game || h.busy !== ''}
-          canRestore={h.events.some((ev) => ev.kind === 'good')}
-          comparing={comparing}
-          picked={h.picked.length}
-          onMark={h.markGood}
-          onRestore={h.restoreGood}
-          onToggleCompare={toggleCompare}
-          onCompare={() => setComparedKey(h.picked.join(','))}
-        />
-        {pair ? (
-          <HistoryDiffView
-            diff={pair}
-            aLabel={labelOf(pair.a)}
-            bLabel={labelOf(pair.b)}
-            busy={h.busy !== ''}
-            onRestoreA={() => {
-              const id = h.pair?.a ?? ''
-              if (id !== '') {
-                h.revertTo(id).catch(reportUnexpected)
-              }
-            }}
-            onRestoreB={() => {
-              const id = h.pair?.b ?? ''
-              if (id !== '') {
-                h.revertTo(id).catch(reportUnexpected)
-              }
-            }}
-          />
-        ) : null}
-        {h.events.length === 0 ? (
-          <EmptyState icon={<HistoryIcon size={36} />} title={t`No changes yet`}>
-            {t`Profile changes will appear here.`}
-          </EmptyState>
-        ) : (
-          <HistoryTimeline
-            events={h.events}
-            items={h.items}
-            comparing={comparing}
-            picked={h.picked}
-            busy={h.busy !== ''}
-            onToggle={(id) =>
-              h.setPicked((cur) =>
-                cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id].slice(-2),
-              )
+      <HistoryToolbar
+        busy={!h.game || h.busy !== ''}
+        canRestore={h.events.some((ev) => ev.kind === 'good')}
+        comparing={comparing}
+        picked={h.picked.length}
+        onMark={h.markGood}
+        onRestore={h.restoreGood}
+        onToggleCompare={toggleCompare}
+        onCompare={() => setComparedKey(h.picked.join(','))}
+      />
+      {pair ? (
+        <HistoryDiffView
+          diff={pair}
+          aLabel={labelOf(pair.a)}
+          bLabel={labelOf(pair.b)}
+          busy={h.busy !== ''}
+          onRestoreA={() => {
+            const id = h.pair?.a ?? ''
+            if (id !== '') {
+              h.revertTo(id).catch(reportUnexpected)
             }
-            onUndo={(id) => h.revertTo(undoTarget(h.events, id)).catch(reportUnexpected)}
-            onRevertItem={(id, mod) => h.revertItem(id, mod).catch(reportUnexpected)}
-          />
-        )}
-        {h.error !== '' && (
-          <Box sx={{ mt: 1 }}>
-            <Typography
-              sx={{ fontSize: 'base.fontSize', color: 'error.main' }}
-              title={h.missingNames.length > 0 ? undefined : errorDetails(h.error)}
+          }}
+          onRestoreB={() => {
+            const id = h.pair?.b ?? ''
+            if (id !== '') {
+              h.revertTo(id).catch(reportUnexpected)
+            }
+          }}
+        />
+      ) : null}
+      {h.events.length === 0 ? (
+        <EmptyState icon={<HistoryIcon size={36} />} title={t`No changes yet`}>
+          {t`Profile changes will appear here.`}
+        </EmptyState>
+      ) : (
+        <HistoryTimeline
+          events={h.events}
+          items={h.items}
+          comparing={comparing}
+          picked={h.picked}
+          busy={h.busy !== ''}
+          onToggle={(id) =>
+            h.setPicked((cur) =>
+              cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id].slice(-2),
+            )
+          }
+          onUndo={(id) => h.revertTo(undoTarget(h.events, id)).catch(reportUnexpected)}
+          onRevertItem={(id, mod) => h.revertItem(id, mod).catch(reportUnexpected)}
+        />
+      )}
+      {h.error !== '' && (
+        <Box sx={{ mt: 1 }}>
+          <Typography
+            sx={{ fontSize: 'base.fontSize', color: 'error.main' }}
+            title={h.missingNames.length > 0 ? undefined : errorDetails(h.error)}
+          >
+            {errorText}
+          </Typography>
+          {h.missingEvent !== '' && h.missingWants.length > 0 && (
+            <Button
+              size="small"
+              sx={{ mt: 1 }}
+              disabled={h.busy !== ''}
+              onClick={() => download(h.missingWants).catch(reportUnexpected)}
             >
-              {errorText}
-            </Typography>
-            {h.missingEvent !== '' && h.missingWants.length > 0 && (
-              <Button
-                size="small"
-                sx={{ mt: 1 }}
-                disabled={h.busy !== ''}
-                onClick={() => download(h.missingWants).catch(reportUnexpected)}
-              >
-                {t`Download missing mods`}
-              </Button>
-            )}
-          </Box>
-        )}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>{t`Close`}</Button>
-      </DialogActions>
-    </Dialog>
+              {t`Download missing mods`}
+            </Button>
+          )}
+        </Box>
+      )}
+    </AppDialog>
   )
 }

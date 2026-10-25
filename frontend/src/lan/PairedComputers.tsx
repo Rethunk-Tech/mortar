@@ -2,15 +2,10 @@ import { useLingui } from '@lingui/react/macro'
 import {
   Box,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   List,
   ListItem,
   ListItemButton,
   ListItemText,
-  TextField,
   Typography,
 } from '@mui/material'
 import { Events } from '@wailsio/runtime'
@@ -27,6 +22,8 @@ import {
   Unpair,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/service.ts'
 import { SettingRow } from '../settings/SettingsSection.tsx'
+import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
+import { FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { sameValue } from '../shell/sameValue.ts'
 import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
@@ -57,6 +54,12 @@ function EnterCodeDialog({ open, onClose }: { open: boolean; onClose: () => void
       })
   }, [open, t])
   const address = manual.trim() === '' ? target : manual.trim()
+  let issue = ''
+  if (address === '') {
+    issue = t`Pick the computer showing the code.`
+  } else if (code.trim() === '') {
+    issue = t`Type the code.`
+  }
   const submit = () => {
     setPairing(true)
     Pair(address, code)
@@ -68,56 +71,39 @@ function EnterCodeDialog({ open, onClose }: { open: boolean; onClose: () => void
       .finally(() => setPairing(false))
   }
   return (
-    <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="xs">
-      <DialogTitle>{t`Enter code`}</DialogTitle>
-      <DialogContent>
-        <Typography color="text.secondary">
-          {t`Pick the computer showing the code, then type it.`}
-        </Typography>
-        <List disablePadding={true}>
-          {peers?.length === 0 ? (
-            <ListItem>
-              <ListItemText primary={t`No Mortar computers found nearby.`} />
-            </ListItem>
-          ) : null}
-          {peers?.map((peer) => (
-            <ListItem key={peer.id} disablePadding={true}>
-              <ListItemButton selected={target === peer.id} onClick={() => setTarget(peer.id)}>
-                <ListItemText primary={peer.name} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
+    <FormDialog
+      open={open}
+      onClose={onClose}
+      size="sm"
+      title={t`Enter code`}
+      submitLabel={t`Pair`}
+      issue={issue}
+      dirty={code.trim() !== '' || manual.trim() !== ''}
+      busy={pairing}
+      onSubmit={submit}
+    >
+      <Typography color="text.secondary">
+        {t`Pick the computer showing the code, then type it.`}
+      </Typography>
+      <List disablePadding={true}>
         {peers?.length === 0 ? (
-          <TextField
-            fullWidth={true}
-            size="small"
-            label={t`Host:port`}
-            value={manual}
-            onChange={(event) => setManual(event.target.value)}
-            sx={{ mt: 1 }}
-          />
+          <ListItem>
+            <ListItemText primary={t`No Mortar computers found nearby.`} />
+          </ListItem>
         ) : null}
-        <TextField
-          fullWidth={true}
-          size="small"
-          label={t`Code`}
-          value={code}
-          onChange={(event) => setCode(event.target.value)}
-          sx={{ mt: 1 }}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>{t`Cancel`}</Button>
-        <Button
-          variant="contained"
-          disabled={pairing || address === '' || code.trim() === ''}
-          onClick={submit}
-        >
-          {t`Pair`}
-        </Button>
-      </DialogActions>
-    </Dialog>
+        {peers?.map((peer) => (
+          <ListItem key={peer.id} disablePadding={true}>
+            <ListItemButton selected={target === peer.id} onClick={() => setTarget(peer.id)}>
+              <ListItemText primary={peer.name} />
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
+      {peers?.length === 0 ? (
+        <TextInput label={t`Host:port`} value={manual} onChange={setManual} />
+      ) : null}
+      <TextInput label={t`Code`} value={code} onChange={setCode} />
+    </FormDialog>
   )
 }
 
@@ -141,20 +127,24 @@ export function ShowCodeDialog({ open, onClose }: { open: boolean; onClose: () =
       })
   }, [open, t])
   return (
-    <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="xs">
-      <DialogTitle>{t`Pair a computer`}</DialogTitle>
-      <DialogContent>
-        <Typography color="text.secondary">
-          {t`On the other computer, choose Enter code and type this. It works once, for five minutes.`}
-        </Typography>
-        <Typography variant="h4" sx={{ fontFamily: MONO, textAlign: 'center', pt: space.pad }}>
-          {code || '…'}
-        </Typography>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>{t`Cancel`}</Button>
-      </DialogActions>
-    </Dialog>
+    <AppDialog
+      open={open}
+      onClose={onClose}
+      size="sm"
+      title={t`Pair a computer`}
+      footer={
+        <DialogFooter>
+          <Button onClick={onClose}>{t`Cancel`}</Button>
+        </DialogFooter>
+      }
+    >
+      <Typography color="text.secondary">
+        {t`On the other computer, choose Enter code and type this. It works once, for five minutes.`}
+      </Typography>
+      <Typography variant="h4" sx={{ fontFamily: MONO, textAlign: 'center', pt: space.pad }}>
+        {code || '…'}
+      </Typography>
+    </AppDialog>
   )
 }
 

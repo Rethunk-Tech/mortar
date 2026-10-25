@@ -1,15 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Link,
-  Menu,
-  Typography,
-} from '@mui/material'
+import { Box, Button, Link, Menu, Typography } from '@mui/material'
 import { ChevronDown, ExternalLink, LifeBuoy, Search, Terminal } from 'lucide-react'
 import { useState } from 'react'
 import { Start as StartBisect } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/bisect/service.ts'
@@ -29,6 +19,7 @@ import { openMod } from '../mods/openMod.ts'
 import { ReportToAuthorButton } from '../mods/ReportToAuthorButton.tsx'
 import { useMods } from '../mods/store.ts'
 import { useProfileLoader, useProfiles } from '../profiles/store.ts'
+import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { space } from '../theme/density.ts'
@@ -237,13 +228,47 @@ export function CrashDialog() {
     : ''
   return (
     <>
-      <Dialog open={true} onClose={dismiss} maxWidth="sm" fullWidth={true}>
-        <DialogTitle sx={{ fontSize: 22, fontWeight: 700 }}>
-          {crash.crashed
+      <AppDialog
+        open={true}
+        onClose={dismiss}
+        size="md"
+        title={
+          crash.crashed
             ? t`${{ game: gameName }} crashed`
-            : t`${{ game: gameName }} closed with errors`}
-        </DialogTitle>
-        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
+            : t`${{ game: gameName }} closed with errors`
+        }
+        footer={
+          <DialogFooter>
+            <Button onClick={dismiss}>{t`Dismiss`}</Button>
+            <MoreActions
+              crash={crash}
+              nexusID={nexusID}
+              onBisect={canBisect && mod ? startBisect : null}
+              withConsole={Boolean(mod) || canBisect}
+              onDone={dismiss}
+            />
+            {mod && profile && crash.cause ? (
+              <ReportToAuthorButton
+                game={crash.game}
+                profile={profile}
+                runId={crash.runId}
+                mod={mod}
+                modLogName={crash.cause.modName}
+              />
+            ) : null}
+            <CrashPrimary
+              mod={mod}
+              canBisect={canBisect}
+              onBisect={startBisect}
+              onConsole={() => {
+                openRun(crash, true)
+                dismiss()
+              }}
+            />
+          </DialogFooter>
+        }
+      >
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
           {crash.cause ? (
             <Box sx={{ fontSize: 'medium.fontSize' }}>
               <Box sx={{ fontWeight: 700 }}>{t`Caused by ${{ name: crash.cause.modName }}`}</Box>
@@ -279,38 +304,8 @@ export function CrashDialog() {
               }}
             />
           ) : null}
-        </DialogContent>
-        <DialogActions sx={{ px: space.pad, pb: space.pad, gap: space.gap }}>
-          <Button onClick={dismiss} sx={{ mr: 'auto' }}>
-            {t`Dismiss`}
-          </Button>
-          <MoreActions
-            crash={crash}
-            nexusID={nexusID}
-            onBisect={canBisect && mod ? startBisect : null}
-            withConsole={Boolean(mod) || canBisect}
-            onDone={dismiss}
-          />
-          {mod && profile && crash.cause ? (
-            <ReportToAuthorButton
-              game={crash.game}
-              profile={profile}
-              runId={crash.runId}
-              mod={mod}
-              modLogName={crash.cause.modName}
-            />
-          ) : null}
-          <CrashPrimary
-            mod={mod}
-            canBisect={canBisect}
-            onBisect={startBisect}
-            onConsole={() => {
-              openRun(crash, true)
-              dismiss()
-            }}
-          />
-        </DialogActions>
-      </Dialog>
+        </Box>
+      </AppDialog>
       {bisectJob ? (
         <BisectDialog
           game={bisectJob.game}

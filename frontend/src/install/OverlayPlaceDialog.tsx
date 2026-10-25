@@ -1,19 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  List,
-  ListItemButton,
-  ListItemText,
-  Typography,
-} from '@mui/material'
+import { Box, Button, List, ListItemButton, ListItemText, Typography } from '@mui/material'
 import { Folder } from 'lucide-react'
 import { useState } from 'react'
 import type { RemapNode } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { chooseOverlay } from './overlayPlace.ts'
@@ -88,50 +78,50 @@ export function OverlayPlaceDialog() {
   }
   const file = session.source.name || session.key
   return (
-    <Dialog
+    <AppDialog
       open={true}
       onClose={close}
-      sx={{ '& .MuiDialog-paper': { minWidth: 560, maxHeight: '80vh' } }}
+      size="md"
+      title={t`Place ${file}`}
+      footer={
+        <DialogFooter>
+          <Button onClick={close}>{t`Cancel`}</Button>
+          <Button
+            variant="contained"
+            onClick={() => {
+              chooseOverlay(from, to).catch(reportUnexpected)
+            }}
+          >
+            {t`Place here`}
+          </Button>
+        </DialogFooter>
+      }
     >
-      <DialogTitle>{t`Place ${file}`}</DialogTitle>
-      <DialogContent>
-        <Typography variant="body2" sx={{ mb: 1.5 }}>
-          {t`This optional file has no manifest and replaces files of ${{ baseLabel: overlay.baseLabel }}. Mortar could not tell where they go: pick the folder to take from it and the main mod folder it goes into.`}
-        </Typography>
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
-            gap: space.pad,
-          }}
-        >
-          <FolderPick
-            label={t`From this file`}
-            root={t`Whole file`}
-            nodes={session.ask.tree ?? []}
-            selected={from}
-            onSelect={setFrom}
-          />
-          <FolderPick
-            label={t`Into ${{ profile: overlay.baseLabel }}`}
-            root={t`Main mod's folder`}
-            nodes={overlay.targets ?? []}
-            selected={to}
-            onSelect={setTo}
-          />
-        </Box>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={close}>{t`Cancel`}</Button>
-        <Button
-          variant="contained"
-          onClick={() => {
-            chooseOverlay(from, to).catch(reportUnexpected)
-          }}
-        >
-          {t`Place here`}
-        </Button>
-      </DialogActions>
-    </Dialog>
+      <Typography variant="body2" sx={{ mb: 1.5 }}>
+        {t`This optional file has no manifest and replaces files of ${{ baseLabel: overlay.baseLabel }}. Mortar could not tell where they go: pick the folder to take from it and the main mod folder it goes into.`}
+      </Typography>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
+          gap: space.pad,
+        }}
+      >
+        <FolderPick
+          label={t`From this file`}
+          root={t`Whole file`}
+          nodes={session.ask.tree ?? []}
+          selected={from}
+          onSelect={setFrom}
+        />
+        <FolderPick
+          label={t`Into ${{ profile: overlay.baseLabel }}`}
+          root={t`Main mod's folder`}
+          nodes={overlay.targets ?? []}
+          selected={to}
+          onSelect={setTo}
+        />
+      </Box>
+    </AppDialog>
   )
 }

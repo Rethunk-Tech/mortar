@@ -1,16 +1,7 @@
 import type { I18n } from '@lingui/core'
 import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Checkbox,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Skeleton,
-} from '@mui/material'
+import { Box, Button, Checkbox, Skeleton } from '@mui/material'
 import { type ReactNode, useCallback, useEffect, useState } from 'react'
 import type {
   Item as LeftoverItem,
@@ -31,6 +22,7 @@ import { gameInfo } from '../../games/info.ts'
 import { formatBytes } from '../../i18n/bytes.ts'
 import { When } from '../../i18n/When.tsx'
 import { AfterDelay } from '../../shell/AfterDelay.tsx'
+import { AppDialog, DialogFooter } from '../../shell/dialog/AppDialog.tsx'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
 import { space } from '../../theme/density.ts'
 import { useToasts } from '../../toasts/store.ts'
@@ -392,9 +384,32 @@ function CleanupDialog({
     )
   }
   return (
-    <Dialog open={open} onClose={close} maxWidth="md" fullWidth={true} scroll="paper">
-      <DialogTitle>{t`Clean up storage`}</DialogTitle>
-      <DialogContent sx={{ display: 'flex', flexDirection: 'column', py: 0.5 }}>
+    <AppDialog
+      open={open}
+      onClose={close}
+      title={t`Clean up storage`}
+      size="lg"
+      footer={
+        <DialogFooter
+          aside={
+            picked.size > 0
+              ? `${t`${{ count: picked.size }} selected`} · ${formatBytes(bytes)}`
+              : ''
+          }
+        >
+          <Button onClick={close}>{t`Close`}</Button>
+          <Button
+            variant="contained"
+            color="error"
+            disabled={picked.size === 0}
+            onClick={() => setConfirm(true)}
+          >
+            {t`Delete`}
+          </Button>
+        </DialogFooter>
+      }
+    >
+      <Box sx={{ display: 'flex', flexDirection: 'column' }}>
         {error ? (
           <Box
             role="alert"
@@ -421,23 +436,7 @@ function CleanupDialog({
             toggle={toggle}
           />
         )}
-      </DialogContent>
-      <DialogActions>
-        <Box sx={{ flex: 1, pl: space.gap, fontSize: 'lead.fontSize' }}>
-          {picked.size > 0
-            ? `${t`${{ count: picked.size }} selected`} · ${formatBytes(bytes)}`
-            : ''}
-        </Box>
-        <Button onClick={close}>{t`Close`}</Button>
-        <Button
-          variant="contained"
-          color="error"
-          disabled={picked.size === 0}
-          onClick={() => setConfirm(true)}
-        >
-          {t`Delete`}
-        </Button>
-      </DialogActions>
+      </Box>
       <ConfirmationDialog
         open={confirm}
         title={t`Delete the selected items?`}
@@ -448,7 +447,7 @@ function CleanupDialog({
         onCancel={() => setConfirm(false)}
         onConfirm={run}
       />
-    </Dialog>
+    </AppDialog>
   )
 }
 

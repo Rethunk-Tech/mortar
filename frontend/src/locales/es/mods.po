@@ -44,6 +44,10 @@ msgstr ""
 msgid "Remove {name} from this profile?"
 msgstr ""
 
+#: src/mods/SelectionBarDialogs.tsx
+msgid "Type a tag."
+msgstr ""
+
 #: src/mods/ConfigPresets.tsx
 msgid "Presets"
 msgstr ""
@@ -286,6 +290,10 @@ msgstr ""
 
 #: src/mods/ConfigPresets.tsx
 msgid "This preset will be deleted."
+msgstr ""
+
+#: src/mods/SetNexusPageDialog.tsx
+msgid "Paste the page address."
 msgstr ""
 
 #: src/mods/DuplicateDialog.tsx
@@ -834,7 +842,7 @@ msgstr ""
 msgid "{name} now comes from that {source} page"
 msgstr ""
 
-#: src/mods/updateReview/ReviewFooter.tsx
+#: src/mods/UpdateReview.tsx
 msgid "Update in every profile…"
 msgstr ""
 
@@ -1169,11 +1177,8 @@ msgstr ""
 #: src/mods/CategoryEditor.tsx
 #: src/mods/ChangeVersionDialog.tsx
 #: src/mods/GameModsReviewDialog.tsx
-#: src/mods/ModDisplayEdit.tsx
 #: src/mods/parts.tsx
 #: src/mods/ReportToAuthorButton.tsx
-#: src/mods/SelectionBarDialogs.tsx
-#: src/mods/SetNexusPageDialog.tsx
 msgid "Cancel"
 msgstr ""
 
@@ -1416,7 +1421,7 @@ msgstr ""
 msgid "{count, plural, one {Remove # mod} other {Remove # mods}}"
 msgstr ""
 
-#: src/mods/updateReview/ReviewTitle.tsx
+#: src/mods/UpdateReview.tsx
 msgid "Loading changes…"
 msgstr ""
 
@@ -1818,6 +1823,10 @@ msgstr ""
 msgid "Could not set the update channel for {name}"
 msgstr ""
 
+#: src/mods/CategoryEditor.tsx
+msgid "Pick a game first."
+msgstr ""
+
 #: src/mods/typedConfig/ConfigPane.tsx
 msgid "Discard the change to {name}"
 msgstr ""
@@ -1843,7 +1852,7 @@ msgstr ""
 msgid "New"
 msgstr ""
 
-#: src/mods/updateReview/ReviewTitle.tsx
+#: src/mods/UpdateReview.tsx
 msgid "Load all changes"
 msgstr ""
 
@@ -2284,7 +2293,7 @@ msgstr ""
 msgid "{a} and {b} each wait for the other, so {loader} skips at least one of them."
 msgstr ""
 
-#: src/mods/updateReview/ReviewFooter.tsx
+#: src/mods/UpdateReview.tsx
 msgid "Update all ({wantedCount})"
 msgstr ""
 
@@ -3100,7 +3109,7 @@ msgstr ""
 msgid "Disabled while the mod above is disabled"
 msgstr ""
 
-#: src/mods/updateReview/ReviewTitle.tsx
+#: src/mods/UpdateReview.tsx
 msgid "{count, plural, one {# update for {profile}} other {# updates for {profile}}}"
 msgstr ""
 
@@ -3622,7 +3631,7 @@ msgstr ""
 msgid "Drop archives anywhere on the window, or use Browse to find mods."
 msgstr ""
 
-#: src/mods/updateReview/ReviewFooter.tsx
+#: src/mods/UpdateReview.tsx
 msgid "Settings are kept and saves backed up."
 msgstr ""
 
@@ -3670,7 +3679,7 @@ msgstr ""
 #: src/mods/ChangelogDialog.tsx
 #: src/mods/GameModsReviewDialog.tsx
 #: src/mods/OldFilesCallouts.tsx
-#: src/mods/updateReview/ReviewFooter.tsx
+#: src/mods/UpdateReview.tsx
 msgid "Close"
 msgstr ""
 

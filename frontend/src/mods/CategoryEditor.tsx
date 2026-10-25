@@ -1,23 +1,15 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TextField,
-  Typography,
-} from '@mui/material'
+import { Box, Button, TextField } from '@mui/material'
 import { Plus, Tags, Trash2 } from 'lucide-react'
 import { useEffect, useLayoutEffect, useState } from 'react'
 import type { CustomCategory } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { ColorSwatches } from '../profiles/Swatches.tsx'
 import { useProfiles } from '../profiles/store.ts'
+import { AppDialog, DialogFooter, ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
+import { FormDialog } from '../shell/dialog/FormDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
-import { useDiscardGuard } from '../shell/useDiscardGuard.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -37,7 +29,8 @@ function CategoryRow({
     <Box sx={{ display: 'flex', gap: space.gap, alignItems: 'flex-start', mb: 1.5 }}>
       <TextField
         size="small"
-        label={t`Name`}
+        placeholder={t`Name`}
+        slotProps={{ htmlInput: { 'aria-label': t`Name` } }}
         value={row.name}
         onChange={(e) => onChange({ ...row, name: e.target.value })}
         sx={{ flex: 1 }}
@@ -88,26 +81,27 @@ function CategoryEditorDialog({ open, onClose }: { open: boolean; onClose: () =>
   }
 
   const dirty = categoriesDiffer(draft, stored)
-  const guard = useDiscardGuard(dirty, onClose)
-  const requestClose = () => {
-    if (!pending) {
-      guard.request()
-    }
-  }
 
   return (
     <>
-      <Dialog
+      <FormDialog
         open={open}
-        onClose={pending ? undefined : requestClose}
-        maxWidth="sm"
-        fullWidth={true}
+        onClose={onClose}
+        size="sm"
+        title={t`Custom categories`}
+        subtitle={t`Group mods by these names, or assign one as a mod's primary category.`}
+        icon={
+          <ToneIcon tone="neutral">
+            <Tags size={22} />
+          </ToneIcon>
+        }
+        submitLabel={t`Save`}
+        issue={gameId === '' ? t`Pick a game first.` : ''}
+        dirty={dirty}
+        busy={pending}
+        onSubmit={() => persist(draft)}
       >
-        <DialogTitle>{t`Custom categories`}</DialogTitle>
-        <DialogContent>
-          <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary', mb: 2 }}>
-            {t`Group mods by these names, or assign one as a mod's primary category.`}
-          </Typography>
+        <Box>
           {draft.length === 0 ? (
             <EmptyState
               compact={true}
@@ -128,28 +122,15 @@ function CategoryEditorDialog({ open, onClose }: { open: boolean; onClose: () =>
               onDelete={() => setPendingDelete(row)}
             />
           ))}
-        </DialogContent>
-        <DialogActions>
           <Button
             startIcon={<Plus size={14} />}
             onClick={() => setDraft([...draft, { id: '', name: '', color: '' }])}
             disabled={pending}
-            sx={{ mr: 'auto' }}
           >
             {t`Add category`}
           </Button>
-          <Button onClick={requestClose} disabled={pending}>
-            {t`Cancel`}
-          </Button>
-          <Button
-            variant="contained"
-            disabled={pending || gameId === ''}
-            onClick={() => persist(draft)}
-          >
-            {t`Save`}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        </Box>
+      </FormDialog>
       <ConfirmationDialog
         open={pendingDelete !== null}
         title={t`Delete ${{ name: pendingDelete?.name ?? '' }}?`}
@@ -167,7 +148,6 @@ function CategoryEditorDialog({ open, onClose }: { open: boolean; onClose: () =>
           persist(next)
         }}
       />
-      {guard.dialog}
     </>
   )
 }
@@ -204,9 +184,23 @@ function SetCategoryDialog({
   }
 
   return (
-    <Dialog open={open} onClose={onClose}>
-      <DialogTitle>{t`Set category`}</DialogTitle>
-      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 280 }}>
+    <AppDialog
+      open={open}
+      onClose={onClose}
+      size="sm"
+      title={t`Set category`}
+      icon={
+        <ToneIcon tone="neutral">
+          <Tags size={22} />
+        </ToneIcon>
+      }
+      footer={
+        <DialogFooter>
+          <Button onClick={onClose}>{t`Cancel`}</Button>
+        </DialogFooter>
+      }
+    >
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
         {options.map((opt) => (
           <Button
             key={opt.value || 'none'}
@@ -217,11 +211,8 @@ function SetCategoryDialog({
             {opt.label}
           </Button>
         ))}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>{t`Cancel`}</Button>
-      </DialogActions>
-    </Dialog>
+      </Box>
+    </AppDialog>
   )
 }
 

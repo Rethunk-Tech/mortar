@@ -3,10 +3,6 @@ import {
   Box,
   Button,
   Checkbox,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   FormControlLabel,
   Radio,
   RadioGroup,
@@ -15,6 +11,7 @@ import {
 import { useEffect, useMemo, useState } from 'react'
 import { FomodImage } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { type FomodSession, useFomod, watchFomodQueue } from './store.ts'
@@ -168,114 +165,110 @@ function FomodWizard({ session }: { session: FomodSession }) {
   }
 
   return (
-    <Dialog
+    <AppDialog
       open={true}
-      onClose={(_, reason) => {
-        if (reason !== 'backdropClick') {
-          close()
-        }
-      }}
-      maxWidth="sm"
-      fullWidth={true}
+      onClose={close}
+      closable={false}
+      size="md"
+      title={session.ask.moduleName || t`Install options`}
+      footer={
+        <DialogFooter>
+          <Button onClick={close}>{t`Cancel`}</Button>
+          <Button disabled={index === 0} onClick={() => setIndex((i) => i - 1)}>
+            {t`Back`}
+          </Button>
+          {last ? (
+            <Button
+              variant="contained"
+              disabled={!valid}
+              onClick={() => install(choices).catch(reportUnexpected)}
+            >
+              {t`Install`}
+            </Button>
+          ) : (
+            <Button
+              variant="contained"
+              disabled={!step || Boolean(invalidGroup)}
+              onClick={() => setIndex((i) => i + 1)}
+            >
+              {t`Next`}
+            </Button>
+          )}
+        </DialogFooter>
+      }
     >
-      <DialogTitle>{session.ask.moduleName || t`Install options`}</DialogTitle>
-      <DialogContent>
-        {changed ? (
-          <Typography variant="body2" color="warning.main" sx={{ mb: 2 }}>
-            {t`This update changed its install options. Your earlier picks are kept where they still exist.`}
+      {changed ? (
+        <Typography variant="body2" color="warning.main" sx={{ mb: 2 }}>
+          {t`This update changed its install options. Your earlier picks are kept where they still exist.`}
+        </Typography>
+      ) : null}
+      {step ? (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
+          <Typography variant="subtitle2">
+            {t`Step ${{ step: index + 1 }} of ${{ count: steps.length }}: ${{ name: step.name }}`}
           </Typography>
-        ) : null}
-        {step ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
-            <Typography variant="subtitle2">
-              {t`Step ${{ step: index + 1 }} of ${{ count: steps.length }}: ${{ name: step.name }}`}
-            </Typography>
-            {(step.groups ?? []).map((g) => {
-              const selected = choices[step.name]?.[g.name] ?? []
-              const exclusive = g.type === 'SelectExactlyOne' || g.type === 'SelectAtMostOne'
-              const body = (g.plugins ?? []).map((p) => {
-                const blocked = p.type === 'NotUsable'
-                const checked = selected.includes(p.name) || p.type === 'Required'
-                const control = (
-                  <DisabledReason title={t`This option cannot be used.`} disabled={blocked}>
-                    {exclusive ? (
-                      <Radio
-                        checked={checked}
-                        disabled={blocked}
-                        onChange={() => pick(g.type, g.name, p.name, true)}
-                      />
-                    ) : (
-                      <Checkbox
-                        checked={checked}
-                        disabled={blocked || p.type === 'Required'}
-                        onChange={(_, on) => pick(g.type, g.name, p.name, on)}
-                      />
-                    )}
-                  </DisabledReason>
-                )
-                return (
-                  <Box key={p.name} sx={{ pl: space.gap }}>
-                    <FormControlLabel control={control} label={p.name} />
-                    {p.image ? (
-                      <PluginImage game={session.game} itemKey={session.key} rel={p.image} />
-                    ) : null}
-                    {p.description ? (
-                      <Typography variant="body2" color="text.secondary" sx={{ pl: 4, mb: 1 }}>
-                        {p.description}
-                      </Typography>
-                    ) : null}
-                  </Box>
-                )
-              })
-              return (
-                <Box key={g.name}>
-                  <Typography variant="body2" color="text.secondary">
-                    {g.name}
-                  </Typography>
+          {(step.groups ?? []).map((g) => {
+            const selected = choices[step.name]?.[g.name] ?? []
+            const exclusive = g.type === 'SelectExactlyOne' || g.type === 'SelectAtMostOne'
+            const body = (g.plugins ?? []).map((p) => {
+              const blocked = p.type === 'NotUsable'
+              const checked = selected.includes(p.name) || p.type === 'Required'
+              const control = (
+                <DisabledReason title={t`This option cannot be used.`} disabled={blocked}>
                   {exclusive ? (
-                    <RadioGroup aria-label={g.name}>{body}</RadioGroup>
+                    <Radio
+                      checked={checked}
+                      disabled={blocked}
+                      onChange={() => pick(g.type, g.name, p.name, true)}
+                    />
                   ) : (
-                    <Box role="group" aria-label={g.name}>
-                      {body}
-                    </Box>
+                    <Checkbox
+                      checked={checked}
+                      disabled={blocked || p.type === 'Required'}
+                      onChange={(_, on) => pick(g.type, g.name, p.name, on)}
+                    />
                   )}
+                </DisabledReason>
+              )
+              return (
+                <Box key={p.name} sx={{ pl: space.gap }}>
+                  <FormControlLabel control={control} label={p.name} />
+                  {p.image ? (
+                    <PluginImage game={session.game} itemKey={session.key} rel={p.image} />
+                  ) : null}
+                  {p.description ? (
+                    <Typography variant="body2" color="text.secondary" sx={{ pl: 4, mb: 1 }}>
+                      {p.description}
+                    </Typography>
+                  ) : null}
                 </Box>
               )
-            })}
-          </Box>
-        ) : (
-          <Typography>{t`This pack has files that always install.`}</Typography>
-        )}
-        {invalidGroup ? (
-          <Typography color="error" variant="body2" sx={{ mt: 2 }}>
-            {t`Choose an option in ${invalidGroup}.`}
-          </Typography>
-        ) : null}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={close}>{t`Cancel`}</Button>
-        <Button disabled={index === 0} onClick={() => setIndex((i) => i - 1)}>
-          {t`Back`}
-        </Button>
-        {last ? (
-          <Button
-            variant="contained"
-            disabled={!valid}
-            onClick={() => install(choices).catch(reportUnexpected)}
-          >
-            {t`Install`}
-          </Button>
-        ) : (
-          <Button
-            variant="contained"
-            disabled={!step || Boolean(invalidGroup)}
-            onClick={() => setIndex((i) => i + 1)}
-          >
-            {t`Next`}
-          </Button>
-        )}
-      </DialogActions>
-    </Dialog>
+            })
+            return (
+              <Box key={g.name}>
+                <Typography variant="body2" color="text.secondary">
+                  {g.name}
+                </Typography>
+                {exclusive ? (
+                  <RadioGroup aria-label={g.name}>{body}</RadioGroup>
+                ) : (
+                  <Box role="group" aria-label={g.name}>
+                    {body}
+                  </Box>
+                )}
+              </Box>
+            )
+          })}
+        </Box>
+      ) : (
+        <Typography>{t`This pack has files that always install.`}</Typography>
+      )}
+      {invalidGroup ? (
+        <Typography color="error" variant="body2" sx={{ mt: 2 }}>
+          {t`Choose an option in ${invalidGroup}.`}
+        </Typography>
+      ) : null}
+    </AppDialog>
   )
 }
 

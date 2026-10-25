@@ -1,14 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  LinearProgress,
-  Typography,
-} from '@mui/material'
+import { Box, Button, LinearProgress, Typography } from '@mui/material'
 import { type ReactNode, useEffect, useState } from 'react'
 import {
   Status,
@@ -18,6 +10,7 @@ import {
 import { listNames } from '../i18n/list.ts'
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { space } from '../theme/density.ts'
 import { errorDetails } from '../toasts/errorKind.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -154,6 +147,7 @@ export function BisectDialog({ game, profile, jobID, onClose }: Props) {
   const done = status?.state === 'done'
   const stopped = status?.state === 'stopped'
   const failed = status?.state === 'failed'
+  const finished = done || stopped || failed
   const named = status?.result?.mods.map((mod) => mod.name) ?? []
   const names = listNames(named, named.length)
   let content: ReactNode
@@ -206,16 +200,15 @@ export function BisectDialog({ game, profile, jobID, onClose }: Props) {
   }
 
   return (
-    <Dialog open={jobID !== null} onClose={done || stopped || failed ? onClose : undefined}>
-      <DialogTitle sx={{ fontSize: 22, fontWeight: 700 }}>
-        {t`Finding the mod that crashes the game`}
-      </DialogTitle>
-      <DialogContent
-        sx={{ minWidth: 440, display: 'flex', flexDirection: 'column', gap: space.gap }}
-      >
-        {content}
-      </DialogContent>
-      <DialogActions sx={{ px: space.pad, pb: space.pad }}>{actions}</DialogActions>
-    </Dialog>
+    <AppDialog
+      open={jobID !== null}
+      onClose={finished ? onClose : () => undefined}
+      closable={finished}
+      size="sm"
+      title={t`Finding the mod that crashes the game`}
+      footer={<DialogFooter>{actions}</DialogFooter>}
+    >
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>{content}</Box>
+    </AppDialog>
   )
 }

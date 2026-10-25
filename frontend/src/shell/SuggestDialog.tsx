@@ -1,15 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Typography,
-} from '@mui/material'
+import { Button, Typography } from '@mui/material'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { openPage } from '../mods/menu.ts'
 import { type Destination, GO, getDestination, SUGGEST_KEY, setDestination } from './destination.ts'
+import { AppDialog, DialogFooter } from './dialog/AppDialog.tsx'
 import { useSuggest } from './suggest.ts'
 
 const ROUTES: Record<Destination, string> = {
@@ -29,23 +23,27 @@ export function SuggestDialog() {
     openPage(ROUTES[to])
   }
   const variant = (to: Destination) => (last === to ? 'contained' : 'outlined')
+  const order: Destination[] = last === 'github' ? ['discord', 'github'] : ['github', 'discord']
   return (
-    <Dialog open={open} onClose={close} fullWidth={true} maxWidth="xs">
-      <DialogTitle>{t`Suggest a feature`}</DialogTitle>
-      <DialogContent>
-        <Typography>
-          {t`Post your idea where you prefer. ${{ app: sourceLabel('discord') }} lets others vote on it; ${{ source: sourceLabel('github') }} keeps it next to the code.`}
-        </Typography>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={close}>{t`Cancel`}</Button>
-        <Button variant={variant('github')} onClick={go('github')}>
-          {sourceLabel('github')}
-        </Button>
-        <Button variant={variant('discord')} onClick={go('discord')}>
-          {sourceLabel('discord')}
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <AppDialog
+      open={open}
+      onClose={close}
+      title={t`Suggest a feature`}
+      size="sm"
+      footer={
+        <DialogFooter>
+          <Button onClick={close}>{t`Cancel`}</Button>
+          {order.map((to) => (
+            <Button key={to} variant={variant(to)} onClick={go(to)}>
+              {sourceLabel(to)}
+            </Button>
+          ))}
+        </DialogFooter>
+      }
+    >
+      <Typography>
+        {t`Post your idea where you prefer. ${{ app: sourceLabel('discord') }} lets others vote on it; ${{ source: sourceLabel('github') }} keeps it next to the code.`}
+      </Typography>
+    </AppDialog>
   )
 }

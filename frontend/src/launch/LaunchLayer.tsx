@@ -1,13 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from '@mui/material'
-import { useTheme } from '@mui/material/styles'
+import { Box, Button, Typography } from '@mui/material'
 import { CircleAlert } from 'lucide-react'
 import { useEffect } from 'react'
 import { Hint } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
@@ -23,6 +15,7 @@ import { nexusDomain } from '../mods/nexusDomain.ts'
 import { nexusModUrl } from '../mods/nexusUrl.ts'
 import { useMods } from '../mods/store.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
+import { AppDialog, DialogFooter, ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { FlatpakGrant } from '../shell/FlatpakGrant.tsx'
 import { SyncOffers } from '../sync/SyncOffers.tsx'
@@ -42,7 +35,6 @@ import { VanillaPlayDialogs } from './VanillaPlay.tsx'
 function Failure({ game }: { game: string }) {
   const { t, i18n } = useLingui()
   const reasonText = useReasonText()
-  const theme = useTheme()
   const info = useProfiles((s) => s.game)
   const failure = useLaunch((s) => s.failure)
   const dismiss = useLaunch((s) => s.dismissFailure)
@@ -65,57 +57,59 @@ function Failure({ game }: { game: string }) {
   const nexusID = profile && mod ? nexusIdOf(profile, mod) : 0
   const showFlatpak = failure.hint === Hint.HintFlatpakFS
   return (
-    <Dialog
+    <AppDialog
       open={true}
       onClose={close}
-      fullWidth={true}
-      maxWidth="sm"
-      slotProps={{ paper: { sx: { bgcolor: 'var(--mortar-panel-solid)' } } }}
+      size="md"
+      icon={
+        <ToneIcon tone="danger">
+          <CircleAlert size={22} />
+        </ToneIcon>
+      }
+      title={t`${name} did not start`}
+      footer={
+        <DialogFooter>
+          <Button onClick={close}>{t`Close`}</Button>
+          <Button
+            onClick={() => {
+              dismiss()
+              useTab.getState().setTab('console')
+            }}
+          >
+            {t`Open console`}
+          </Button>
+          {mod ? <SwitchOffButton mod={mod} /> : null}
+          {nexusID > 0 ? (
+            <Button onClick={() => openPage(nexusModUrl(nexusID, nexusDomain()))}>
+              {openPageLabel(i18n, 'nexus')}
+            </Button>
+          ) : null}
+          <Button
+            variant="contained"
+            onClick={() => {
+              dismiss()
+              start(game, failure.profile, false)
+            }}
+          >
+            {t`Retry`}
+          </Button>
+        </DialogFooter>
+      }
     >
-      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-        <CircleAlert size={22} color={theme.palette.error.light} aria-hidden={true} />
-        {t`${name} did not start`}
-      </DialogTitle>
-      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
-        <DialogContentText sx={{ whiteSpace: 'pre-wrap', userSelect: 'text' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
+        <Typography sx={{ whiteSpace: 'pre-wrap', userSelect: 'text', color: 'text.secondary' }}>
           {failure.body || t`The game exited before it started. The console has its output.`}
-        </DialogContentText>
+        </Typography>
         {cause ? (
-          <DialogContentText>
+          <Typography sx={{ color: 'text.secondary' }}>
             <strong>{t`Caused by ${{ name: cause.modName }}`}</strong>
             <br />
             {reasonText(cause.reason, cause.params, cause.detail)}
-          </DialogContentText>
+          </Typography>
         ) : null}
         {showFlatpak ? <FlatpakGrant /> : null}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={close}>{t`Close`}</Button>
-        <Button
-          onClick={() => {
-            dismiss()
-            useTab.getState().setTab('console')
-          }}
-        >
-          {t`Open console`}
-        </Button>
-        {mod ? <SwitchOffButton mod={mod} /> : null}
-        {nexusID > 0 ? (
-          <Button onClick={() => openPage(nexusModUrl(nexusID, nexusDomain()))}>
-            {openPageLabel(i18n, 'nexus')}
-          </Button>
-        ) : null}
-        <Button
-          variant="contained"
-          onClick={() => {
-            dismiss()
-            start(game, failure.profile, false)
-          }}
-        >
-          {t`Retry`}
-        </Button>
-      </DialogActions>
-    </Dialog>
+      </Box>
+    </AppDialog>
   )
 }
 

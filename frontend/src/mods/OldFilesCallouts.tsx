@@ -1,15 +1,7 @@
 import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Collapse,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Typography,
-} from '@mui/material'
+import { Box, Button, Collapse, Typography } from '@mui/material'
+import { Files } from 'lucide-react'
 import { memo, useState } from 'react'
 import type { OldFiles } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
@@ -20,6 +12,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { AppDialog, DialogFooter, ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { MONO } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -264,20 +257,25 @@ export const OldFilesCallouts = memo(function OldFilesCalloutsView({
           </>
         }
       />
-      <Dialog
+      <AppDialog
         open={reviewing}
         onClose={() => setReviewing(false)}
-        fullWidth={true}
-        maxWidth="md"
-        scroll="paper"
+        size="lg"
+        title={t`Files left by updates`}
+        icon={
+          <ToneIcon tone="neutral">
+            <Files size={22} />
+          </ToneIcon>
+        }
+        footer={
+          <DialogFooter>
+            <Button onClick={() => setReviewing(false)}>{t`Close`}</Button>
+            {bulk}
+          </DialogFooter>
+        }
       >
-        <DialogTitle>{t`Files left by updates`}</DialogTitle>
-        <DialogContent sx={{ px: 0, pt: 0 }}>{sets.map(callout)}</DialogContent>
-        <DialogActions>
-          <Button onClick={() => setReviewing(false)}>{t`Close`}</Button>
-          {bulk}
-        </DialogActions>
-      </Dialog>
+        {sets.map(callout)}
+      </AppDialog>
     </>
   )
 })

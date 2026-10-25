@@ -3,10 +3,6 @@ import { useLingui } from '@lingui/react/macro'
 import {
   Button,
   Checkbox,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   FormControlLabel,
   List,
   ListItem,
@@ -21,7 +17,7 @@ import { listNames } from '../i18n/list.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useQueue } from '../queue/store.ts'
 import { addRecordedMods, enableRecordedMods } from '../saves/recordedActions.ts'
-import { space } from '../theme/density.ts'
+import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -123,112 +119,112 @@ export function PrePlayDialog() {
     fn()
   }
   return (
-    <Dialog
+    <AppDialog
       open={check !== null}
       onClose={() => persistThen(quit)}
-      slotProps={{ paper: { sx: { maxWidth: 560 } } }}
+      size="lg"
+      title={t`Before you play`}
+      footer={
+        <DialogFooter>
+          <Button onClick={() => persistThen(quit)}>{t`Cancel`}</Button>
+          <Button onClick={() => persistThen(openProblems)}>{t`Open problems`}</Button>
+          {lastProfile?.switchProfileId ? (
+            <Button
+              onClick={() =>
+                persistThen(() => {
+                  useProfiles.getState().open(lastProfile.switchProfileId ?? '')
+                  cancel()
+                })
+              }
+            >
+              {switchName ? t`Switch to ${{ name: switchName }}` : t`Switch profile`}
+            </Button>
+          ) : null}
+          {saveModsOff && check ? (
+            <Button
+              disabled={adding}
+              onClick={() =>
+                persistThen(() =>
+                  runAdding(async () => {
+                    const [save] = await LastSaveGap(check.game, check.profile)
+                    const { enabled, changes } = await enableRecordedMods(
+                      check.game,
+                      check.profile,
+                      save,
+                    )
+                    cancel()
+                    useToasts.getState().push({
+                      kind: 'success',
+                      title: plural(
+                        { count: enabled },
+                        { one: 'Enabled # mod', other: 'Enabled # mods' },
+                      ),
+                      body: i18n._(msg`Press Play to start.`),
+                      changes,
+                    })
+                  }),
+                )
+              }
+            >
+              {t`Enable them`}
+            </Button>
+          ) : null}
+          {saveMods && check ? (
+            <Button
+              disabled={adding}
+              onClick={() =>
+                persistThen(() =>
+                  runAdding(async () => {
+                    const [save] = await LastSaveGap(check.game, check.profile)
+                    await addRecordedMods(check.game, check.profile, save, false)
+                    cancel()
+                    useQueue.getState().setOpen(true)
+                    useToasts.getState().push({
+                      kind: 'info',
+                      title: i18n._(msg`Adding the missing mods`),
+                      body: i18n._(msg`Press Play when the downloads finish.`),
+                    })
+                  }),
+                )
+              }
+            >
+              {t`Add missing mods`}
+            </Button>
+          ) : null}
+          <Button
+            variant={hasUpdates ? 'text' : 'contained'}
+            onClick={() => persistThen(() => playAnyway().catch(reportUnexpected))}
+          >
+            {t`Play anyway`}
+          </Button>
+          {hasUpdates ? (
+            <Button
+              variant="contained"
+              onClick={() => persistThen(() => updateAndPlay().catch(reportUnexpected))}
+            >
+              {t`Update and play`}
+            </Button>
+          ) : null}
+        </DialogFooter>
+      }
     >
-      <DialogTitle>{t`Before you play`}</DialogTitle>
-      <DialogContent>
-        {(check?.groups ?? []).map((group) => (
-          <Group key={group.kind} group={group} />
-        ))}
-        <FormControlLabel
-          sx={{ mt: 1 }}
-          control={
-            <Checkbox
-              checked={skip}
-              onChange={(_, on) => {
-                if (check) {
-                  useLaunch.setState({ playCheck: { ...check, skipPlayCheck: on } })
-                }
-              }}
-            />
-          }
-          label={t`Do not check before Play`}
-        />
-      </DialogContent>
-      <DialogActions sx={{ flexWrap: 'wrap', gap: space.gap }}>
-        <Button onClick={() => persistThen(quit)}>{t`Cancel`}</Button>
-        <Button onClick={() => persistThen(openProblems)}>{t`Open problems`}</Button>
-        {lastProfile?.switchProfileId ? (
-          <Button
-            onClick={() =>
-              persistThen(() => {
-                useProfiles.getState().open(lastProfile.switchProfileId ?? '')
-                cancel()
-              })
-            }
-          >
-            {switchName ? t`Switch to ${{ name: switchName }}` : t`Switch profile`}
-          </Button>
-        ) : null}
-        {saveModsOff && check ? (
-          <Button
-            disabled={adding}
-            onClick={() =>
-              persistThen(() =>
-                runAdding(async () => {
-                  const [save] = await LastSaveGap(check.game, check.profile)
-                  const { enabled, changes } = await enableRecordedMods(
-                    check.game,
-                    check.profile,
-                    save,
-                  )
-                  cancel()
-                  useToasts.getState().push({
-                    kind: 'success',
-                    title: plural(
-                      { count: enabled },
-                      { one: 'Enabled # mod', other: 'Enabled # mods' },
-                    ),
-                    body: i18n._(msg`Press Play to start.`),
-                    changes,
-                  })
-                }),
-              )
-            }
-          >
-            {t`Enable them`}
-          </Button>
-        ) : null}
-        {saveMods && check ? (
-          <Button
-            disabled={adding}
-            onClick={() =>
-              persistThen(() =>
-                runAdding(async () => {
-                  const [save] = await LastSaveGap(check.game, check.profile)
-                  await addRecordedMods(check.game, check.profile, save, false)
-                  cancel()
-                  useQueue.getState().setOpen(true)
-                  useToasts.getState().push({
-                    kind: 'info',
-                    title: i18n._(msg`Adding the missing mods`),
-                    body: i18n._(msg`Press Play when the downloads finish.`),
-                  })
-                }),
-              )
-            }
-          >
-            {t`Add missing mods`}
-          </Button>
-        ) : null}
-        <Button
-          variant={hasUpdates ? 'text' : 'contained'}
-          onClick={() => persistThen(() => playAnyway().catch(reportUnexpected))}
-        >
-          {t`Play anyway`}
-        </Button>
-        {hasUpdates ? (
-          <Button
-            variant="contained"
-            onClick={() => persistThen(() => updateAndPlay().catch(reportUnexpected))}
-          >
-            {t`Update and play`}
-          </Button>
-        ) : null}
-      </DialogActions>
-    </Dialog>
+      {(check?.groups ?? []).map((group) => (
+        <Group key={group.kind} group={group} />
+      ))}
+      <FormControlLabel
+        sx={{ mt: 1 }}
+        control={
+          <Checkbox
+            checked={skip}
+            onChange={(_, on) => {
+              if (check) {
+                useLaunch.setState({ playCheck: { ...check, skipPlayCheck: on } })
+              }
+            }}
+          />
+        }
+        label={t`Do not check before Play`}
+      />
+    </AppDialog>
   )
 }

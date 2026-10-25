@@ -1,18 +1,8 @@
 import type { I18n } from '@lingui/core'
 import { useLingui } from '@lingui/react/macro'
-import {
-  Alert,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControlLabel,
-  Switch,
-  Typography,
-} from '@mui/material'
+import { Alert, Box, Button, FormControlLabel, Switch, Typography } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
-import { TriangleAlert } from 'lucide-react'
+import { Flag, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 import { ReportTarget } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/browse/service.ts'
 import {
@@ -34,6 +24,7 @@ import { gameName } from '../games/info.ts'
 import { useLoader } from '../loader/store.ts'
 import { useProfileLoader } from '../profiles/store.ts'
 import { useMortarUpdate } from '../settings/updates.ts'
+import { AppDialog, DialogFooter, ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { openWeb } from '../shell/openWeb.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
@@ -245,9 +236,35 @@ export function ReportToAuthorButton({
           {t`Report to author…`}
         </Button>
       )}
-      <Dialog open={open} onClose={close} maxWidth="sm" fullWidth={true}>
-        <DialogTitle sx={{ fontSize: 22, fontWeight: 700 }}>{t`Report to author`}</DialogTitle>
-        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
+      <AppDialog
+        open={open}
+        onClose={close}
+        title={t`Report to author`}
+        icon={
+          <ToneIcon tone="neutral">
+            <Flag size={22} />
+          </ToneIcon>
+        }
+        footer={
+          <DialogFooter>
+            <Button disabled={uploading} onClick={close} sx={buttonSx}>
+              {t`Cancel`}
+            </Button>
+            <Button disabled={uploading || log === null} onClick={skipShare} sx={buttonSx}>
+              {t`Skip sharing`}
+            </Button>
+            <Button
+              variant="contained"
+              disabled={uploading || log === null || log === ''}
+              onClick={upload}
+              sx={buttonSx}
+            >
+              {uploading ? t`Uploading…` : t`Share log and continue`}
+            </Button>
+          </DialogFooter>
+        }
+      >
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
           {log === null ? (
             <Typography sx={{ fontSize: 'medium.fontSize' }}>{t`Reading the log…`}</Typography>
           ) : (
@@ -270,24 +287,8 @@ export function ReportToAuthorButton({
               />
             </>
           )}
-        </DialogContent>
-        <DialogActions sx={{ px: space.pad, pb: space.pad, flexWrap: 'wrap', gap: space.gap }}>
-          <Button disabled={uploading} onClick={close} sx={buttonSx}>
-            {t`Cancel`}
-          </Button>
-          <Button disabled={uploading || log === null} onClick={skipShare} sx={buttonSx}>
-            {t`Skip sharing`}
-          </Button>
-          <Button
-            variant="contained"
-            disabled={uploading || log === null || log === ''}
-            onClick={upload}
-            sx={buttonSx}
-          >
-            {uploading ? t`Uploading…` : t`Share log and continue`}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        </Box>
+      </AppDialog>
     </>
   )
 }

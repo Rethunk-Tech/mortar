@@ -1,9 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Link } from '@mui/material'
+import { Box, Button, Link } from '@mui/material'
 import { useState } from 'react'
 import { OpenDataFolder } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { Logo } from '../../brand/Logo.tsx'
 import { openPage } from '../../mods/menu.ts'
+import { AppDialog, DialogFooter } from '../../shell/dialog/AppDialog.tsx'
 import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import credits from '../generated/credits.json' with { type: 'json' }
@@ -127,21 +128,19 @@ export function About() {
         </SettingRow>
       </SettingsSection>
       <Diagnostics />
-      <Dialog
+      <AppDialog
         open={creditsOpen}
         onClose={() => setCreditsOpen(false)}
-        maxWidth="md"
-        fullWidth={true}
-        scroll="paper"
+        title={t`Open-source licences`}
+        size="lg"
+        footer={
+          <DialogFooter>
+            <Button onClick={() => setCreditsOpen(false)}>{t`Close`}</Button>
+          </DialogFooter>
+        }
       >
-        <DialogTitle>{t`Open-source licences`}</DialogTitle>
-        <DialogContent>
-          <CreditList />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setCreditsOpen(false)}>{t`Close`}</Button>
-        </DialogActions>
-      </Dialog>
+        <CreditList />
+      </AppDialog>
     </>
   )
 }

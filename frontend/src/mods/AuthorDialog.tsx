@@ -1,14 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Link,
-  Typography,
-} from '@mui/material'
+import { Box, Button, Link, Typography } from '@mui/material'
+import { UserRound } from 'lucide-react'
 import { useMemo } from 'react'
 import type {
   Mod,
@@ -16,6 +8,7 @@ import type {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { AppDialog, DialogFooter, ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { space } from '../theme/density.ts'
 import { localId } from './dependents.ts'
@@ -157,16 +150,25 @@ export function AuthorDialog({
 }) {
   const { t } = useLingui()
   return (
-    <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="sm">
-      <DialogTitle>{`${t`Author`} · ${author}`}</DialogTitle>
-      <DialogContent>
-        {open ? (
-          <AuthorDialogBody author={author} seedMod={seedMod} seedProfile={seedProfile} />
-        ) : null}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>{t`Close`}</Button>
-      </DialogActions>
-    </Dialog>
+    <AppDialog
+      open={open}
+      onClose={onClose}
+      title={author}
+      subtitle={t`Author`}
+      icon={
+        <ToneIcon tone="neutral">
+          <UserRound size={22} />
+        </ToneIcon>
+      }
+      footer={
+        <DialogFooter>
+          <Button onClick={onClose}>{t`Close`}</Button>
+        </DialogFooter>
+      }
+    >
+      {open ? (
+        <AuthorDialogBody author={author} seedMod={seedMod} seedProfile={seedProfile} />
+      ) : null}
+    </AppDialog>
   )
 }

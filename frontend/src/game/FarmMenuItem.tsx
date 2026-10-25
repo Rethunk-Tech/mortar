@@ -1,14 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TextField,
-  Typography,
-} from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
 import { Users } from 'lucide-react'
 import { useState } from 'react'
@@ -22,6 +13,8 @@ import { ReadTextFile } from '../../bindings/github.com/Rethunk-Tech/mortar/inte
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { listNames } from '../i18n/list.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
+import { TextInput } from '../shell/dialog/FormDialog.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { space } from '../theme/density.ts'
 import { toastError } from '../toasts/report.ts'
@@ -110,80 +103,80 @@ export function FarmDialog({
   const fixable = rows?.some((row) => row.fixable) === true
   const action = (row: FarmRow) => (row.state === 'different' ? t`Update` : t`Add`)
   return (
-    <Dialog open={open} onClose={done} fullWidth={true} maxWidth="sm">
-      <DialogTitle>{t`Multiplayer mod list`}</DialogTitle>
-      <DialogContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
-          <Typography sx={section}>{t`Hosting`}</Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, flexWrap: 'wrap' }}>
-            <Button variant="outlined" disabled={busy} onClick={copyList}>
-              {t`Copy this profile's list`}
+    <AppDialog
+      open={open}
+      onClose={done}
+      size="md"
+      title={t`Multiplayer mod list`}
+      footer={
+        <DialogFooter>
+          <Button onClick={done}>{t`Close`}</Button>
+          {fixable ? (
+            <Button variant="contained" disabled={busy} onClick={() => fix(null)}>
+              {t`Fix all`}
             </Button>
-            <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
-              {t`Send it to the people joining you.`}
-            </Typography>
-          </Box>
-          <Typography sx={{ ...section, mt: 1 }}>{t`Joining`}</Typography>
-          <TextField
-            fullWidth={true}
-            multiline={true}
-            minRows={3}
-            maxRows={6}
-            size="small"
-            label={t`The host's list`}
-            value={text}
-            onChange={(event) => {
-              setText(event.target.value)
-              setRows(null)
-            }}
-          />
-          <Button
-            variant="outlined"
-            disabled={busy}
-            onClick={loadList}
-            sx={{ alignSelf: 'flex-start' }}
-          >
-            {t`Load the host's list from a file…`}
+          ) : (
+            <Button variant="contained" disabled={busy || text.trim() === ''} onClick={check}>
+              {t`Check`}
+            </Button>
+          )}
+        </DialogFooter>
+      }
+    >
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
+        <Typography sx={section}>{t`Hosting`}</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, flexWrap: 'wrap' }}>
+          <Button variant="outlined" disabled={busy} onClick={copyList}>
+            {t`Copy this profile's list`}
           </Button>
-          {rows?.length === 0 ? (
-            <Typography>
-              {host ? t`This profile matches ${host}.` : t`This profile matches that list.`}
-            </Typography>
-          ) : null}
-          {rows?.map((row) => (
-            <Box key={row.id} sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-              <Typography sx={{ flex: 1, fontSize: 'medium.fontSize' }}>
-                {row.name}
-                <Typography
-                  component="span"
-                  color="text.secondary"
-                  sx={{ fontSize: 'base.fontSize', ml: 1 }}
-                >
-                  {detail(row)}
-                </Typography>
-              </Typography>
-              {row.fixable ? (
-                <Button size="small" disabled={busy} onClick={() => fix(row)}>
-                  {action(row)}
-                </Button>
-              ) : null}
-            </Box>
-          ))}
+          <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
+            {t`Send it to the people joining you.`}
+          </Typography>
         </Box>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={done}>{t`Close`}</Button>
-        {fixable ? (
-          <Button variant="contained" disabled={busy} onClick={() => fix(null)}>
-            {t`Fix all`}
-          </Button>
-        ) : (
-          <Button variant="contained" disabled={busy || text.trim() === ''} onClick={check}>
-            {t`Check`}
-          </Button>
-        )}
-      </DialogActions>
-    </Dialog>
+        <Typography sx={{ ...section, mt: 1 }}>{t`Joining`}</Typography>
+        <TextInput
+          multiline={true}
+          label={t`The host's list`}
+          value={text}
+          onChange={(value) => {
+            setText(value)
+            setRows(null)
+          }}
+        />
+        <Button
+          variant="outlined"
+          disabled={busy}
+          onClick={loadList}
+          sx={{ alignSelf: 'flex-start' }}
+        >
+          {t`Load the host's list from a file…`}
+        </Button>
+        {rows?.length === 0 ? (
+          <Typography>
+            {host ? t`This profile matches ${host}.` : t`This profile matches that list.`}
+          </Typography>
+        ) : null}
+        {rows?.map((row) => (
+          <Box key={row.id} sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
+            <Typography sx={{ flex: 1, fontSize: 'medium.fontSize' }}>
+              {row.name}
+              <Typography
+                component="span"
+                color="text.secondary"
+                sx={{ fontSize: 'base.fontSize', ml: 1 }}
+              >
+                {detail(row)}
+              </Typography>
+            </Typography>
+            {row.fixable ? (
+              <Button size="small" disabled={busy} onClick={() => fix(row)}>
+                {action(row)}
+              </Button>
+            ) : null}
+          </Box>
+        ))}
+      </Box>
+    </AppDialog>
   )
 }
 

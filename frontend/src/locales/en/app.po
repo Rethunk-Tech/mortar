@@ -1909,6 +1909,10 @@ msgstr "{names} cannot be reached; showing what Mortar saved ({asOf})"
 msgid "Remove from list…"
 msgstr "Remove from list…"
 
+#: src/share/ModpackDialog.tsx
+msgid "Like 1.0.0."
+msgstr "Like 1.0.0."
+
 #: src/games/useGameTiles.ts
 msgid "Coming in a later Mortar version"
 msgstr "Coming in a later Mortar version"
@@ -1983,8 +1987,6 @@ msgid "Mortar already named the likely mod for the last crash."
 msgstr "Mortar already named the likely mod for the last crash."
 
 #: src/fomod/Dialog.tsx
-#: src/game/NewProfileDialog.tsx
-#: src/groups/ApplySavedGroupToProfile.tsx
 #: src/groups/dialogs.tsx
 #: src/install/DownloadsDialog.tsx
 #: src/install/OverlayPlaceDialog.tsx
@@ -1997,15 +1999,11 @@ msgstr "Mortar already named the likely mod for the last crash."
 #: src/launch/SaveWarnDialog.tsx
 #: src/launch/UpdateWarnDialog.tsx
 #: src/launch/VanillaPlay.tsx
-#: src/queue/LargeDownloadDialog.tsx
 #: src/queue/QueueBody.tsx
 #: src/share/ModpackDialog.tsx
-#: src/shell/BugReportDialog.tsx
 #: src/shell/dialog/ConfirmationDialog.tsx
 #: src/shell/dialog/FormDialog.tsx
 #: src/shell/SuggestDialog.tsx
-#: src/templates/ApplyTemplateDialog.tsx
-#: src/tools/ToolEditorDialog.tsx
 msgid "Cancel"
 msgstr "Cancel"
 
@@ -3021,6 +3019,10 @@ msgstr "Profile backed up"
 msgid "This profile has no mods to download"
 msgstr "This profile has no mods to download"
 
+#: src/share/ModpackDialog.tsx
+msgid "Letters, digits and underscores only."
+msgstr "Letters, digits and underscores only."
+
 #: src/share/ImportPreview.tsx
 msgid "Include {name}"
 msgstr "Include {name}"
@@ -3415,6 +3417,10 @@ msgstr "More actions"
 msgid "Choose a graphics API for {name}"
 msgstr "Choose a graphics API for {name}"
 
+#: src/templates/ApplyTemplateDialog.tsx
+msgid "Reading the template…"
+msgstr "Reading the template…"
+
 #: src/share/ModpackDialog.tsx
 msgid "Choose icon"
 msgstr "Choose icon"
@@ -3706,6 +3712,10 @@ msgstr "No templates"
 #: src/launch/UpdateWarnDialog.tsx
 msgid "Open problems"
 msgstr "Open problems"
+
+#: src/lan/PairedComputers.tsx
+msgid "Type the code."
+msgstr "Type the code."
 
 #: src/firstrun/NexusStep.tsx
 msgid "Mod Manager Download on {source} only works in Mortar when you are signed in."
@@ -4231,6 +4241,10 @@ msgstr "Delay between"
 msgid "{name} installed"
 msgstr "{name} installed"
 
+#: src/shell/BugReportDialog.tsx
+msgid "Say what happened."
+msgstr "Say what happened."
+
 #: src/games/ListFooter.tsx
 msgid "Hide hidden games"
 msgstr "Hide hidden games"
@@ -4681,6 +4695,10 @@ msgstr "A saved group keeps at least one mod; delete the saved group instead"
 #: src/nxm/store.ts
 msgid "The link has expired. Click Mod Manager Download on {source} again."
 msgstr "The link has expired. Click Mod Manager Download on {source} again."
+
+#: src/lan/PairedComputers.tsx
+msgid "Pick the computer showing the code."
+msgstr "Pick the computer showing the code."
 
 #: src/firstrun/FirstRun.tsx
 msgid "Want help, news or a say in what comes next? Mortar has a {app} server."
@@ -6010,6 +6028,10 @@ msgstr "FOMOD installer"
 msgid "Installing"
 msgstr "Installing"
 
+#: src/groups/ApplySavedGroupToProfile.tsx
+msgid "Pick a profile."
+msgstr "Pick a profile."
+
 #: src/queue/LargeDownloadDialog.tsx
 msgid "This download is {size}, far larger than a mod normally is. It will take a long time and fill a lot of your drive. Make sure you meant to get it."
 msgstr "This download is {size}, far larger than a mod normally is. It will take a long time and fill a lot of your drive. Make sure you meant to get it."
@@ -6156,6 +6178,10 @@ msgstr "Import from the game's Mods folder"
 #: src/queue/RetryAllButton.tsx
 msgid "{count, plural, one {# superseded by a newer download} other {# superseded by a newer download}}"
 msgstr "{count, plural, one {# superseded by a newer download} other {# superseded by a newer download}}"
+
+#: src/tools/ToolEditorDialog.tsx
+msgid "Name the tool."
+msgstr "Name the tool."
 
 #: src/queue/QueueBody.tsx
 msgid "Check this download"
@@ -6406,7 +6432,6 @@ msgid "{count, plural, one {# update} other {# updates}}"
 msgstr "{count, plural, one {# update} other {# updates}}"
 
 #: src/game/FarmMenuItem.tsx
-#: src/games/AddGameDialog.tsx
 #: src/launch/LaunchButtons.tsx
 #: src/launch/LaunchLayer.tsx
 #: src/launch/SweepDialog.tsx
@@ -6447,6 +6472,10 @@ msgstr "{names} cannot be reached, so Mortar cannot check for mod updates"
 #: src/queue/QueueBody.tsx
 msgid "Already the newest file"
 msgstr "Already the newest file"
+
+#: src/game/NewProfileDialog.tsx
+msgid "Name the profile."
+msgstr "Name the profile."
 
 #: src/i18n/reasonText.ts
 msgid "incompatible with: {list}"

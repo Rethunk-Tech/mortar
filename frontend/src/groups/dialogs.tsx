@@ -1,13 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Typography,
-} from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import { PackagePlus } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type {
@@ -16,6 +8,7 @@ import type {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savedgroups/models.ts'
 import { Apply } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savedgroups/service.ts'
 import { modsLabel } from '../i18n/counts.ts'
+import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { PromptDialog } from '../shell/PromptDialog.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
@@ -121,39 +114,43 @@ function ApplySavedGroupDialog({
   const { savedGroups, loading } = useSavedGroups(game, open)
   const [busy, run] = usePending()
   return (
-    <Dialog open={open} onClose={busy ? undefined : onClose} maxWidth="sm" fullWidth={true}>
-      <DialogTitle>{t`Add a saved group to ${{ profile: profileName }}`}</DialogTitle>
-      <DialogContent>
-        <SavedGroupPickList
-          loading={loading}
-          savedGroups={savedGroups}
-          busy={busy}
-          empty={
-            <EmptyState
-              compact={true}
-              icon={<PackagePlus size={28} />}
-              title={t`No saved groups yet.`}
-            >
-              {t`Open a group's menu on the Mods tab and choose Save to library.`}
-            </EmptyState>
-          }
-          onPick={(group) => {
-            run(
-              () =>
-                Apply(game, group.id, profileId)
-                  .then((result) => onApplied(result))
-                  .then(() => onClose()),
-              { errorTitle: t`Could not add the saved group` },
-            )
-          }}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button type="button" onClick={onClose} disabled={busy}>
-          {t`Cancel`}
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <AppDialog
+      open={open}
+      onClose={busy ? () => undefined : onClose}
+      size="sm"
+      title={t`Add a saved group to ${{ profile: profileName }}`}
+      footer={
+        <DialogFooter>
+          <Button type="button" onClick={onClose} disabled={busy}>
+            {t`Cancel`}
+          </Button>
+        </DialogFooter>
+      }
+    >
+      <SavedGroupPickList
+        loading={loading}
+        savedGroups={savedGroups}
+        busy={busy}
+        empty={
+          <EmptyState
+            compact={true}
+            icon={<PackagePlus size={28} />}
+            title={t`No saved groups yet.`}
+          >
+            {t`Open a group's menu on the Mods tab and choose Save to library.`}
+          </EmptyState>
+        }
+        onPick={(group) => {
+          run(
+            () =>
+              Apply(game, group.id, profileId)
+                .then((result) => onApplied(result))
+                .then(() => onClose()),
+            { errorTitle: t`Could not add the saved group` },
+          )
+        }}
+      />
+    </AppDialog>
   )
 }
 

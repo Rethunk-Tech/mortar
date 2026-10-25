@@ -1,17 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  List,
-  ListItem,
-  ListItemText,
-} from '@mui/material'
+import { Button, List, ListItem, ListItemText, Typography } from '@mui/material'
 import { useGameName } from '../games/info.ts'
 import { modId } from '../mods/lookup.ts'
+import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { cancelling } from './playModeState.ts'
 import { useLaunch } from './store.ts'
@@ -24,40 +15,42 @@ export function UpdateWarnDialog() {
   const playAnyway = useLaunch((s) => s.playAnyway)
   const openProblems = useLaunch((s) => s.openProblems)
   return (
-    <Dialog open={warn !== null} onClose={cancel} slotProps={{ paper: { sx: { maxWidth: 480 } } }}>
-      <DialogTitle>{t`The game was updated`}</DialogTitle>
-      <DialogContent>
-        <DialogContentText>
-          {t`${{ game: gameName }} is now ${{ installed: warn?.installed ?? '' }}. This profile last launched on ${{ recorded: warn?.recorded ?? '' }}.`}
-        </DialogContentText>
-        {(warn?.broken.length ?? 0) > 0 ? (
-          <List dense={true} sx={{ mt: 1 }}>
-            {warn?.broken.map((mod) => (
-              <ListItem key={modId(mod)} disableGutters={true}>
-                <ListItemText
-                  primary={mod.name}
-                  secondary={
-                    mod.brokeIn
-                      ? t`Broke in ${{ brokeIn: mod.brokeIn }}`
-                      : t`Broken for this version`
-                  }
-                />
-              </ListItem>
-            ))}
-          </List>
-        ) : (
-          <DialogContentText sx={{ mt: 1 }}>
-            {t`None of this profile's mods are marked broken for the new version.`}
-          </DialogContentText>
-        )}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={cancel}>{t`Cancel`}</Button>
-        <Button onClick={openProblems}>{t`Open problems`}</Button>
-        <Button variant="contained" onClick={() => playAnyway().catch(reportUnexpected)}>
-          {t`Play anyway`}
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <AppDialog
+      open={warn !== null}
+      onClose={cancel}
+      size="sm"
+      title={t`The game was updated`}
+      footer={
+        <DialogFooter>
+          <Button onClick={cancel}>{t`Cancel`}</Button>
+          <Button onClick={openProblems}>{t`Open problems`}</Button>
+          <Button variant="contained" onClick={() => playAnyway().catch(reportUnexpected)}>
+            {t`Play anyway`}
+          </Button>
+        </DialogFooter>
+      }
+    >
+      <Typography sx={{ color: 'text.secondary' }}>
+        {t`${{ game: gameName }} is now ${{ installed: warn?.installed ?? '' }}. This profile last launched on ${{ recorded: warn?.recorded ?? '' }}.`}
+      </Typography>
+      {(warn?.broken.length ?? 0) > 0 ? (
+        <List dense={true} sx={{ mt: 1 }}>
+          {warn?.broken.map((mod) => (
+            <ListItem key={modId(mod)} disableGutters={true}>
+              <ListItemText
+                primary={mod.name}
+                secondary={
+                  mod.brokeIn ? t`Broke in ${{ brokeIn: mod.brokeIn }}` : t`Broken for this version`
+                }
+              />
+            </ListItem>
+          ))}
+        </List>
+      ) : (
+        <Typography sx={{ mt: 1, color: 'text.secondary' }}>
+          {t`None of this profile's mods are marked broken for the new version.`}
+        </Typography>
+      )}
+    </AppDialog>
   )
 }

@@ -1,22 +1,11 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  ButtonGroup,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControlLabel,
-  Menu,
-  Radio,
-  RadioGroup,
-} from '@mui/material'
+import { Box, Button, ButtonGroup, FormControlLabel, Menu, Radio, RadioGroup } from '@mui/material'
 import { ChevronDown, Gamepad2, Play, SlidersHorizontal, Star } from 'lucide-react'
 import { type MouseEvent, type ReactNode, useState } from 'react'
 import { STEAM } from '../brand/productNames.ts'
 import { routeGame, useNav } from '../nav/store.ts'
 import type { PlayPreset } from '../profiles/profilePresets.ts'
+import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
@@ -261,30 +250,34 @@ export function VanillaPlay({
           <Box onKeyDown={(e) => e.stopPropagation()}>{options(() => setMenu(null))}</Box>
         ) : null}
       </Menu>
-      <Dialog open={choosing} onClose={() => setChoosing(false)}>
-        <DialogTitle>{t`Default launch preset`}</DialogTitle>
-        <DialogContent>
-          <RadioGroup
-            value={presets.find((p) => p.isDefault)?.key ?? ''}
-            onChange={(e) => {
-              setChoosing(false)
-              setDefault(e.target.value)
-            }}
-          >
-            {presets.map((p) => (
-              <FormControlLabel
-                key={p.key}
-                value={p.key}
-                control={<Radio />}
-                label={p.base ? t`Standard` : p.name}
-              />
-            ))}
-          </RadioGroup>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setChoosing(false)}>{t`Cancel`}</Button>
-        </DialogActions>
-      </Dialog>
+      <AppDialog
+        open={choosing}
+        onClose={() => setChoosing(false)}
+        size="sm"
+        title={t`Default launch preset`}
+        footer={
+          <DialogFooter>
+            <Button onClick={() => setChoosing(false)}>{t`Cancel`}</Button>
+          </DialogFooter>
+        }
+      >
+        <RadioGroup
+          value={presets.find((p) => p.isDefault)?.key ?? ''}
+          onChange={(e) => {
+            setChoosing(false)
+            setDefault(e.target.value)
+          }}
+        >
+          {presets.map((p) => (
+            <FormControlLabel
+              key={p.key}
+              value={p.key}
+              control={<Radio />}
+              label={p.base ? t`Standard` : p.name}
+            />
+          ))}
+        </RadioGroup>
+      </AppDialog>
     </>
   )
 }

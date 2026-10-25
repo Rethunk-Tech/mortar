@@ -1,16 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Checkbox,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControlLabel,
-  Typography,
-} from '@mui/material'
+import { Box, Button, Checkbox, FormControlLabel, Typography } from '@mui/material'
+import { FolderSync } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import type {
   GameModsDiff,
@@ -23,6 +14,7 @@ import { GameModsProgressLine } from '../profiles/GameModsProgress.tsx'
 import { formatOutcomeDetail } from '../profiles/gameModsFormat.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useGameModsProgress } from '../profiles/useGameModsProgress.ts'
+import { AppDialog, DialogFooter, ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { space } from '../theme/density.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -182,62 +174,70 @@ export function GameModsReviewDialog({
   }
   const detail = result === null ? '' : formatOutcomeDetail(result.outcomes ?? [], reasonText)
   return (
-    <Dialog open={true} onClose={busy ? undefined : onClose} maxWidth="sm" fullWidth={true}>
-      <DialogTitle>{t`Game Mods folder vs ${{ name: profile.name }}`}</DialogTitle>
-      <DialogContent>
-        {busy ? <GameModsProgressLine progress={progress} moving={moving} /> : null}
-        {result !== null && !busy ? (
-          <Section title={t`Done`}>
-            <Typography sx={{ fontSize: 'medium.fontSize' }}>
-              {[
-                plural({ count: result.imported }, { one: '# imported', other: '# imported' }),
-                plural({ count: result.skipped }, { one: '# skipped', other: '# skipped' }),
-                plural({ count: result.failed }, { one: '# failed', other: '# failed' }),
-              ].join(' · ')}
-            </Typography>
-            {detail === '' ? null : (
-              <Typography
-                sx={{
-                  fontSize: 'medium.fontSize',
-                  color: 'text.secondary',
-                  whiteSpace: 'pre-line',
-                  mt: 0.5,
-                }}
-              >
-                {detail}
-              </Typography>
-            )}
-          </Section>
-        ) : null}
-        {busy || result !== null ? null : <ReviewLists diff={diff} off={off} onToggle={toggle} />}
-      </DialogContent>
-      <DialogActions>
-        {result === null ? (
-          <>
-            <Button onClick={onClose} disabled={busy}>
-              {t`Cancel`}
+    <AppDialog
+      open={true}
+      onClose={busy ? () => undefined : onClose}
+      title={t`Game Mods folder vs ${{ name: profile.name }}`}
+      icon={
+        <ToneIcon tone="neutral">
+          <FolderSync size={22} />
+        </ToneIcon>
+      }
+      footer={
+        <DialogFooter>
+          {result === null ? (
+            <>
+              <Button onClick={onClose} disabled={busy}>
+                {t`Cancel`}
+              </Button>
+              <LockedReason locked={locked}>
+                <Button disabled={busy || locked || chosen.length === 0} onClick={() => sync(true)}>
+                  {t`Move into profile`}
+                </Button>
+              </LockedReason>
+              <LockedReason locked={locked}>
+                <Button
+                  variant="contained"
+                  disabled={busy || locked || chosen.length === 0}
+                  onClick={() => sync(false)}
+                >
+                  {t`Copy into profile`}
+                </Button>
+              </LockedReason>
+            </>
+          ) : (
+            <Button variant="contained" disabled={busy} onClick={onClose}>
+              {t`Close`}
             </Button>
-            <LockedReason locked={locked}>
-              <Button disabled={busy || locked || chosen.length === 0} onClick={() => sync(true)}>
-                {t`Move into profile`}
-              </Button>
-            </LockedReason>
-            <LockedReason locked={locked}>
-              <Button
-                variant="contained"
-                disabled={busy || locked || chosen.length === 0}
-                onClick={() => sync(false)}
-              >
-                {t`Copy into profile`}
-              </Button>
-            </LockedReason>
-          </>
-        ) : (
-          <Button variant="contained" disabled={busy} onClick={onClose}>
-            {t`Close`}
-          </Button>
-        )}
-      </DialogActions>
-    </Dialog>
+          )}
+        </DialogFooter>
+      }
+    >
+      {busy ? <GameModsProgressLine progress={progress} moving={moving} /> : null}
+      {result !== null && !busy ? (
+        <Section title={t`Done`}>
+          <Typography sx={{ fontSize: 'medium.fontSize' }}>
+            {[
+              plural({ count: result.imported }, { one: '# imported', other: '# imported' }),
+              plural({ count: result.skipped }, { one: '# skipped', other: '# skipped' }),
+              plural({ count: result.failed }, { one: '# failed', other: '# failed' }),
+            ].join(' · ')}
+          </Typography>
+          {detail === '' ? null : (
+            <Typography
+              sx={{
+                fontSize: 'medium.fontSize',
+                color: 'text.secondary',
+                whiteSpace: 'pre-line',
+                mt: 0.5,
+              }}
+            >
+              {detail}
+            </Typography>
+          )}
+        </Section>
+      ) : null}
+      {busy || result !== null ? null : <ReviewLists diff={diff} off={off} onToggle={toggle} />}
+    </AppDialog>
   )
 }

@@ -522,10 +522,7 @@ msgstr ""
 msgid "Cover image"
 msgstr ""
 
-#: src/profiles/EditProfileDialog.tsx
 #: src/profiles/GameModsDialog.tsx
-#: src/profiles/LaunchPresetDialog.tsx
-#: src/profiles/MergeDialog.tsx
 msgid "Cancel"
 msgstr ""
 
@@ -1037,6 +1034,10 @@ msgstr ""
 msgid "Windowed"
 msgstr ""
 
+#: src/profiles/MergeDialog.tsx
+msgid "Reading the mods to add…"
+msgstr ""
+
 #: src/profiles/store.ts
 msgid "Could not read profiles"
 msgstr ""
@@ -1088,6 +1089,10 @@ msgstr ""
 
 #: src/profiles/MergeDialog.tsx
 msgid "{count, plural, one {Keeps # mod only {name} has} other {Keeps # mods only {name} has}}"
+msgstr ""
+
+#: src/profiles/MergeDialog.tsx
+msgid "Nothing to add."
 msgstr ""
 
 #: src/profiles/LaunchOptionsBlock.tsx
@@ -1191,6 +1196,10 @@ msgstr ""
 #: src/profiles/LaunchPresetDialog.tsx
 #: src/profiles/OverrideRows.tsx
 msgid "{loader} console window"
+msgstr ""
+
+#: src/profiles/LaunchPresetDialog.tsx
+msgid "Name the preset."
 msgstr ""
 
 #: src/profiles/GameModsDialog.tsx

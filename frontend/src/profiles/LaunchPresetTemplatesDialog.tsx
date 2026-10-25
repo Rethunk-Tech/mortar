@@ -1,19 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Typography,
-} from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import { useState } from 'react'
 import type { LaunchPresetTemplate } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import {
   ListLaunchPresetTemplates,
   RemoveLaunchPresetTemplate,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
@@ -41,34 +34,38 @@ export function LaunchPresetTemplatesDialog({
   )
   const [removing, setRemoving] = useState<LaunchPresetTemplate | null>(null)
   return (
-    <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="sm">
-      <DialogTitle>{t`Launch preset templates`}</DialogTitle>
-      <DialogContent>
-        <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary', mb: 1 }}>
-          {t`Templates are shared by every profile of this game. Adding one copies it into this profile's launch presets.`}
+    <AppDialog
+      open={open}
+      onClose={onClose}
+      title={t`Launch preset templates`}
+      size="sm"
+      footer={
+        <DialogFooter>
+          <Button onClick={onClose}>{t`Close`}</Button>
+        </DialogFooter>
+      }
+    >
+      <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary', mb: 1 }}>
+        {t`Templates are shared by every profile of this game. Adding one copies it into this profile's launch presets.`}
+      </Typography>
+      {templates?.length === 0 ? (
+        <Typography sx={{ color: 'text.secondary' }}>
+          {t`No templates yet. Use Save as template on a launch preset.`}
         </Typography>
-        {templates?.length === 0 ? (
-          <Typography sx={{ color: 'text.secondary' }}>
-            {t`No templates yet. Use Save as template on a launch preset.`}
-          </Typography>
-        ) : (
-          templates?.map((tpl) => (
-            <Box
-              key={tpl.name}
-              sx={{ display: 'flex', alignItems: 'center', gap: space.gap, py: 0.5 }}
-            >
-              <Typography title={tpl.name} noWrap={true} sx={{ flex: 1, minWidth: 0 }}>
-                {tpl.name}
-              </Typography>
-              <Button onClick={() => onAdd(tpl)}>{t`Add`}</Button>
-              <Button color="error" onClick={() => setRemoving(tpl)}>{t`Delete`}</Button>
-            </Box>
-          ))
-        )}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>{t`Close`}</Button>
-      </DialogActions>
+      ) : (
+        templates?.map((tpl) => (
+          <Box
+            key={tpl.name}
+            sx={{ display: 'flex', alignItems: 'center', gap: space.gap, py: 0.5 }}
+          >
+            <Typography title={tpl.name} noWrap={true} sx={{ flex: 1, minWidth: 0 }}>
+              {tpl.name}
+            </Typography>
+            <Button onClick={() => onAdd(tpl)}>{t`Add`}</Button>
+            <Button color="error" onClick={() => setRemoving(tpl)}>{t`Delete`}</Button>
+          </Box>
+        ))
+      )}
       <ConfirmationDialog
         open={removing !== null}
         title={t`Delete ${{ name: removing?.name ?? '' }}?`}
@@ -84,6 +81,6 @@ export function LaunchPresetTemplatesDialog({
           }
         }}
       />
-    </Dialog>
+    </AppDialog>
   )
 }
