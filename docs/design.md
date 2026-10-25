@@ -9,6 +9,30 @@ Decided work, short enough to build cold. Delete an item in the change that land
 
 ## Ready to build
 
+### Mod development (Develop tab)
+
+A per-game **Develop** tab (`frontend/src/game/tab.ts` `TABS`, after `console`; panel in `ProfileWorkspace.tsx`) lists the player's mod projects for the game and opens a wizard that starts one from the loader's template, wires it into a development profile, and then builds, packs, versions and tests it. Shown only for a game whose loader names a template.
+
+**Catalog.** `GameLoader` (`internal/components/components.go`) gains `devTemplate: {repo, ref}`: the GitHub template repo and the tag Mortar copies. An older build ignores the field. A loader without one hides the tab.
+
+**Wizard fields.** Game (open one); mod name (PascalCase, a C# identifier, free on Thunderstore for the game's community, checked live); author or team (remembered); one-line description (Thunderstore's length limit); parent folder (remembered "Mod projects" folder); development profile (an existing one, or a new "<Game> Development" holding only the loader, optionally with the open profile's mods); starting dependencies picked from Browse (added as `ThunderstoreDependency` and installed into the profile); license (MIT default). A prerequisite panel checks the .NET SDK `global.json` asks for, git and the game's DLLs, each with a fix link.
+
+**Where the project comes from.** Signed in to `gh` (`gh auth status`): offered first, `gh repo create <owner>/<repo> --template <devTemplate.repo> --public|--private` then clone. Otherwise, or by choice: the template's archive at `devTemplate.ref` from codeload.github.com, unpacked with the archive guards in `docs/security.md`, then `git init` and a first commit when git is present. Either way Mortar replaces the placeholders in file contents and paths, writes `Config.Build.user.props`, and commits the rename locally; it pushes nothing after the creation.
+
+**Wiring.** Adds the project's build output folder as an extra mods folder bound to the development profile (the existing setting `extraModsFolder`, `internal/profile/extrafolder.go`), so each build reinstalls into that profile; creates the profile with `profile.Service.Create` when none was picked. A project record per game (folder, profile, name) lives in settings so the tab lists it.
+
+**Per-project page (v1).**
+
+- Build (`dotnet build -c Debug`) and watch (rebuild on source change); compiler errors parsed from MSBuild output (`file(line,col): error CODE: text`) and opened in the detected editor (VS Code, Rider, Visual Studio) at the line.
+- Pack and validate: the template's pack target, then the zip checked against Thunderstore's rules (manifest name and version format, description length, 256×256 PNG icon, README) before it is offered.
+- Version and changelog: next patch, minor or major from the latest `v*` tag, a CHANGELOG entry, and the tag (the tag is the version, as in the template).
+- Multiplayer test: Play the development profile with two instances (the `instances` and `delaySeconds` settings, now shown for every direct launch).
+- The Console filtered to the mod's log source, and its start-up time and per-frame cost from the bridge.
+
+**Later.** Thunderstore upload through its API with a keyring token (v1 opens the upload page with the zip), GitHub release from the tag, keeping the project's dependencies and the profile's mods in step, sending the development profile over LAN pairing for co-op tests, a decompiled view of a game type.
+
+**Acceptance.** In a sandbox with a copied Lethal Company: the wizard creates a project both ways (gh, archive) with no placeholder left, the project builds, its DLL appears in the development profile's plugins, a rebuild reinstalls it, pack yields a zip that passes validation, and a two-instance launch starts both.
+
 ### The website on Astro
 
 **Stage 2:** unique content per game page, beside the loader, sites and stores it shows (`web/src/pages/[game]/index.astro`):
