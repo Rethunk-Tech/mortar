@@ -1,5 +1,13 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, CircularProgress, TextField, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  CircularProgress,
+  OutlinedInput,
+  styled,
+  TextField,
+  Typography,
+} from '@mui/material'
 import { CircleAlert } from 'lucide-react'
 import { type ReactNode, useId } from 'react'
 import { useDiscardGuard } from '../useDiscardGuard.tsx'
@@ -154,6 +162,24 @@ export function FieldRow({ children }: { children: ReactNode }) {
  * One field: its label above it, never inside the border; a hint under it that an error replaces; and a counter beside
  * the label when the value has a length limit.
  */
+// The parts are plain elements styled from the root: a field redraws on every keystroke (its counter), and each Box or
+// Typography is three components more to redraw.
+const fieldSx = {
+  minWidth: 0,
+  '& > .field-label': {
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: 1,
+    fontSize: 'medium.fontSize',
+    fontWeight: 500,
+    mb: 0.75,
+  },
+  '& .field-counter': { color: 'text.secondary', fontWeight: 400 },
+  '& > .field-note': { m: 0, mt: 0.75, fontSize: 'small.fontSize', color: 'text.secondary' },
+  '& > .field-error': { color: 'error.main' },
+} as const
+const FieldRoot = styled('div')({})
+
 export function Field({
   label,
   hint,
@@ -170,39 +196,16 @@ export function Field({
   htmlFor?: string
 }) {
   return (
-    <Box sx={{ minWidth: 0 }}>
-      <Box
-        component="label"
-        htmlFor={htmlFor}
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          gap: 1,
-          fontSize: 'medium.fontSize',
-          fontWeight: 500,
-          mb: 0.75,
-        }}
-      >
+    <FieldRoot sx={fieldSx}>
+      <label className="field-label" htmlFor={htmlFor}>
         <span>{label}</span>
-        {counter ? (
-          <Box component="span" sx={{ color: 'text.secondary', fontWeight: 400 }}>
-            {counter}
-          </Box>
-        ) : null}
-      </Box>
+        {counter ? <span className="field-counter">{counter}</span> : null}
+      </label>
       {children}
       {error || hint ? (
-        <Typography
-          sx={{
-            fontSize: 'small.fontSize',
-            mt: 0.75,
-            color: error ? 'error.main' : 'text.secondary',
-          }}
-        >
-          {error || hint}
-        </Typography>
+        <p className={error ? 'field-note field-error' : 'field-note'}>{error || hint}</p>
       ) : null}
-    </Box>
+    </FieldRoot>
   )
 }
 
@@ -237,7 +240,9 @@ export function TextInput({
       htmlFor={id}
       counter={maxLength ? `${value.length}/${maxLength}` : ''}
     >
-      <TextField
+      {/* The input alone: Field draws the label and note, so TextField's FormControl would only add more to redraw on
+          every keystroke. */}
+      <OutlinedInput
         id={id}
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -248,7 +253,7 @@ export function TextInput({
         placeholder={placeholder}
         autoFocus={autoFocus}
         error={Boolean(error)}
-        slotProps={maxLength === undefined ? undefined : { htmlInput: { maxLength } }}
+        inputProps={maxLength === undefined ? undefined : { maxLength }}
       />
     </Field>
   )
