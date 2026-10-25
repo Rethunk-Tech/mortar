@@ -72,6 +72,7 @@ export function AppDialog({
   size = 'md',
   footer,
   closable = true,
+  closeButton = footer === undefined || footer === null,
   onBack,
   height,
   flush = false,
@@ -86,6 +87,8 @@ export function AppDialog({
   footer?: ReactNode
   // False for a dialog that wants an answer: no X and clicks outside do nothing; Esc still means Cancel (onClose).
   closable?: boolean
+  // An X in the header; by default only a dialog without a footer has one, since a footer holds its own Cancel or Close.
+  closeButton?: boolean
   // A step back inside the dialog: an arrow before the title, and Esc goes back before it closes.
   onBack?: (() => void) | undefined
   // A fixed height, for a body whose content changes size as the reader moves through it.
@@ -158,7 +161,7 @@ export function AppDialog({
             </Typography>
           ) : null}
         </Box>
-        {closable ? (
+        {closable && closeButton ? (
           <IconButton aria-label={t`Close`} onClick={onClose} size="small" sx={{ mr: -1 }}>
             <X size={18} />
           </IconButton>

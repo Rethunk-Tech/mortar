@@ -1653,7 +1653,7 @@ msgid "Applied the next time the server starts. The password stays in this profi
 msgstr ""
 
 #: src/profiles/HealthDialog.tsx
-#: src/profiles/HistoryPanel.tsx
+#: src/profiles/HistoryToolbar.tsx
 #: src/profiles/LaunchPresetTemplatesDialog.tsx
 #: src/profiles/ProfileFolderDialog.tsx
 msgid "Close"

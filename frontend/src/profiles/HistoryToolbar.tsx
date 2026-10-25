@@ -1,8 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Typography } from '@mui/material'
+import { Button } from '@mui/material'
 import { GitCompare, RotateCcw, ShieldCheck } from 'lucide-react'
-import { space } from '../theme/density.ts'
+import { DialogFooter } from '../shell/dialog/AppDialog.tsx'
 
+/** History's footer: what the reader can do with the timeline, and Close. */
 export function HistoryToolbar({
   busy,
   canRestore,
@@ -12,6 +13,7 @@ export function HistoryToolbar({
   onRestore,
   onToggleCompare,
   onCompare,
+  onClose,
 }: {
   busy: boolean
   // False until a point in the history is marked known good.
@@ -22,47 +24,19 @@ export function HistoryToolbar({
   onRestore: () => void
   onToggleCompare: () => void
   onCompare: () => void
+  onClose: () => void
 }) {
   const { t } = useLingui()
+  let aside = ''
+  if (comparing) {
+    aside = t`Pick two entries (${picked} of 2)`
+  } else if (!canRestore) {
+    aside = t`Mark a known good point first.`
+  }
   return (
-    <Box sx={{ display: 'flex', gap: space.gap, mb: 1.5, flexWrap: 'wrap', alignItems: 'center' }}>
+    <DialogFooter aside={aside}>
+      <Button onClick={onClose}>{t`Close`}</Button>
       <Button
-        size="small"
-        variant="outlined"
-        startIcon={<ShieldCheck size={16} />}
-        disabled={busy}
-        onClick={onMark}
-      >
-        {t`Mark current as known good`}
-      </Button>
-      <Button
-        size="small"
-        variant="outlined"
-        startIcon={<RotateCcw size={16} />}
-        disabled={busy || !canRestore}
-        onClick={onRestore}
-      >
-        {t`Restore known good`}
-      </Button>
-      {canRestore ? null : (
-        <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
-          {t`Mark a known good point first.`}
-        </Typography>
-      )}
-      <Box sx={{ flex: 1 }} />
-      {comparing ? (
-        <>
-          <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
-            {t`Pick two entries (${picked} of 2)`}
-          </Typography>
-          <Button size="small" variant="contained" disabled={picked !== 2} onClick={onCompare}>
-            {t`Compare`}
-          </Button>
-        </>
-      ) : null}
-      <Button
-        size="small"
-        variant={comparing ? 'text' : 'outlined'}
         startIcon={<GitCompare size={16} />}
         aria-pressed={comparing}
         disabled={busy}
@@ -70,6 +44,24 @@ export function HistoryToolbar({
       >
         {comparing ? t`Stop comparing` : t`Compare two…`}
       </Button>
-    </Box>
+      {comparing ? (
+        <Button variant="contained" disabled={picked !== 2} onClick={onCompare}>
+          {t`Compare`}
+        </Button>
+      ) : (
+        <>
+          <Button
+            startIcon={<RotateCcw size={16} />}
+            disabled={busy || !canRestore}
+            onClick={onRestore}
+          >
+            {t`Restore known good`}
+          </Button>
+          <Button startIcon={<ShieldCheck size={16} />} disabled={busy} onClick={onMark}>
+            {t`Mark current as known good`}
+          </Button>
+        </>
+      )}
+    </DialogFooter>
   )
 }

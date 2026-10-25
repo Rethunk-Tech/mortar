@@ -48,6 +48,7 @@ export function ShareDialog() {
   const back = destination ? () => setDestination(null) : undefined
   return (
     <AppDialog
+      closeButton={true}
       open={profileId !== '' && info !== null}
       onClose={close}
       onBack={back}

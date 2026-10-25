@@ -4,7 +4,7 @@ import { History as HistoryIcon } from 'lucide-react'
 import { useState } from 'react'
 import { listNames } from '../i18n/list.ts'
 import { download } from '../queue/actions.ts'
-import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
+import { AppDialog } from '../shell/dialog/AppDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { errorDetails } from '../toasts/errorKind.ts'
 import { undoTarget } from '../toasts/history.ts'
@@ -50,21 +50,19 @@ export function HistoryPanel({
       title={t`History`}
       size="lg"
       footer={
-        <DialogFooter>
-          <Button onClick={onClose}>{t`Close`}</Button>
-        </DialogFooter>
+        <HistoryToolbar
+          busy={!h.game || h.busy !== ''}
+          canRestore={h.events.some((ev) => ev.kind === 'good')}
+          comparing={comparing}
+          picked={h.picked.length}
+          onMark={h.markGood}
+          onRestore={h.restoreGood}
+          onToggleCompare={toggleCompare}
+          onCompare={() => setComparedKey(h.picked.join(','))}
+          onClose={onClose}
+        />
       }
     >
-      <HistoryToolbar
-        busy={!h.game || h.busy !== ''}
-        canRestore={h.events.some((ev) => ev.kind === 'good')}
-        comparing={comparing}
-        picked={h.picked.length}
-        onMark={h.markGood}
-        onRestore={h.restoreGood}
-        onToggleCompare={toggleCompare}
-        onCompare={() => setComparedKey(h.picked.join(','))}
-      />
       {pair ? (
         <HistoryDiffView
           diff={pair}

@@ -7,14 +7,14 @@ import {
   FormControlLabel,
   Typography,
 } from '@mui/material'
-import { Info, Trash2, TriangleAlert } from 'lucide-react'
+import { Info, OctagonAlert, TriangleAlert } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { AppDialog, DialogFooter, type DialogTone, ToneIcon } from './AppDialog.tsx'
 
 const ICONS: Record<DialogTone, ReactNode> = {
   neutral: <Info size={22} />,
   warning: <TriangleAlert size={22} />,
-  danger: <Trash2 size={22} />,
+  danger: <OctagonAlert size={22} />,
 }
 
 /**

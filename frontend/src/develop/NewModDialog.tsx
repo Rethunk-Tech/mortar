@@ -344,11 +344,13 @@ function useWizardData(open: boolean, game: string, setDraft: (fn: (d: Draft) =>
   const openId = useProfiles((s) => s.openId)
   const [tools, setTools] = useState<Tools | null>(null)
   const [form, setForm] = useState<Form | null>(null)
+  const [failed, setFailed] = useState(false)
   useEffect(() => {
     if (!open) {
       return
     }
     setForm(null)
+    setFailed(false)
     TemplateForm(game)
       .then((read) => {
         setForm(read)
@@ -359,7 +361,10 @@ function useWizardData(open: boolean, game: string, setDraft: (fn: (d: Draft) =>
           owner: d.owner,
         }))
       })
-      .catch(reportError(t`Could not read the mod template`))
+      .catch((err: unknown) => {
+        setFailed(true)
+        reportError(t`Could not read the mod template`)(err)
+      })
     ReadTools(game)
       .then((found) => {
         setTools(found)
@@ -367,7 +372,7 @@ function useWizardData(open: boolean, game: string, setDraft: (fn: (d: Draft) =>
       })
       .catch(() => setTools(null))
   }, [open, game, openId, setDraft, t])
-  return { tools, form }
+  return { tools, form, failed }
 }
 
 export function NewModDialog({
@@ -382,7 +387,7 @@ export function NewModDialog({
   const { t } = useLingui()
   const labels = useStepLabels()
   const [draft, setDraft] = useState<Draft>(() => firstDraft(null, {}))
-  const { tools, form } = useWizardData(open, game, setDraft)
+  const { tools, form, failed } = useWizardData(open, game, setDraft)
   const [at, setAt] = useState(0)
   const [pending, run] = usePending()
   useEffect(() => {
@@ -393,7 +398,10 @@ export function NewModDialog({
   const set: Set = (next) => setDraft((d) => ({ ...d, ...next }))
   const step = STEPS[at] ?? 'project'
   const last = at === STEPS.length - 1
-  const issue = last ? draftIssue(draft, form) : stepIssue(draft, form, step)
+  let issue = last ? draftIssue(draft, form) : stepIssue(draft, form, step)
+  if (failed) {
+    issue = t`Could not read the mod template`
+  }
   const create = () =>
     run(
       async () => {

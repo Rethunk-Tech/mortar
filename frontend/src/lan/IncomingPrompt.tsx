@@ -327,6 +327,7 @@ export function IncomingPrompt() {
   return (
     <>
       <AppDialog
+        closeButton={true}
         open={!(choosing || transferring)}
         onClose={() => undefined}
         closable={false}

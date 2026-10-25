@@ -14,7 +14,7 @@ import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/inte
 import { listNames } from '../i18n/list.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
-import { TextInput } from '../shell/dialog/FormDialog.tsx'
+import { FormSection, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { space } from '../theme/density.ts'
 import { toastError } from '../toasts/report.ts'
@@ -22,8 +22,6 @@ import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { hasModList } from './modList.ts'
 import { openProfileDialog } from './profileDialog.ts'
-
-const section = { fontSize: 'base.fontSize', fontWeight: 700 } as const
 
 export function FarmDialog({
   open,
@@ -123,58 +121,60 @@ export function FarmDialog({
         </DialogFooter>
       }
     >
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
-        <Typography sx={section}>{t`Hosting`}</Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, flexWrap: 'wrap' }}>
-          <Button variant="outlined" disabled={busy} onClick={copyList}>
-            {t`Copy this profile's list`}
-          </Button>
-          <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
-            {t`Send it to the people joining you.`}
-          </Typography>
-        </Box>
-        <Typography sx={{ ...section, mt: 1 }}>{t`Joining`}</Typography>
-        <TextInput
-          multiline={true}
-          label={t`The host's list`}
-          value={text}
-          onChange={(value) => {
-            setText(value)
-            setRows(null)
-          }}
-        />
-        <Button
-          variant="outlined"
-          disabled={busy}
-          onClick={loadList}
-          sx={{ alignSelf: 'flex-start' }}
-        >
-          {t`Load the host's list from a file…`}
-        </Button>
-        {rows?.length === 0 ? (
-          <Typography>
-            {host ? t`This profile matches ${host}.` : t`This profile matches that list.`}
-          </Typography>
-        ) : null}
-        {rows?.map((row) => (
-          <Box key={row.id} sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-            <Typography sx={{ flex: 1, fontSize: 'medium.fontSize' }}>
-              {row.name}
-              <Typography
-                component="span"
-                color="text.secondary"
-                sx={{ fontSize: 'base.fontSize', ml: 1 }}
-              >
-                {detail(row)}
-              </Typography>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <FormSection title={t`Hosting`}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, flexWrap: 'wrap' }}>
+            <Button variant="outlined" disabled={busy} onClick={copyList}>
+              {t`Copy this profile's list`}
+            </Button>
+            <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
+              {t`Send it to the people joining you.`}
             </Typography>
-            {row.fixable ? (
-              <Button size="small" disabled={busy} onClick={() => fix(row)}>
-                {action(row)}
-              </Button>
-            ) : null}
           </Box>
-        ))}
+        </FormSection>
+        <FormSection title={t`Joining`}>
+          <TextInput
+            multiline={true}
+            label={t`The host's list`}
+            value={text}
+            onChange={(value) => {
+              setText(value)
+              setRows(null)
+            }}
+          />
+          <Button
+            variant="outlined"
+            disabled={busy}
+            onClick={loadList}
+            sx={{ alignSelf: 'flex-start' }}
+          >
+            {t`Load the host's list from a file…`}
+          </Button>
+          {rows?.length === 0 ? (
+            <Typography>
+              {host ? t`This profile matches ${host}.` : t`This profile matches that list.`}
+            </Typography>
+          ) : null}
+          {rows?.map((row) => (
+            <Box key={row.id} sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
+              <Typography sx={{ flex: 1, fontSize: 'medium.fontSize' }}>
+                {row.name}
+                <Typography
+                  component="span"
+                  color="text.secondary"
+                  sx={{ fontSize: 'base.fontSize', ml: 1 }}
+                >
+                  {detail(row)}
+                </Typography>
+              </Typography>
+              {row.fixable ? (
+                <Button size="small" disabled={busy} onClick={() => fix(row)}>
+                  {action(row)}
+                </Button>
+              ) : null}
+            </Box>
+          ))}
+        </FormSection>
       </Box>
     </AppDialog>
   )

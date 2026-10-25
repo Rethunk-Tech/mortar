@@ -201,6 +201,7 @@ export function BisectDialog({ game, profile, jobID, onClose }: Props) {
 
   return (
     <AppDialog
+      closeButton={true}
       open={jobID !== null}
       onClose={finished ? onClose : () => undefined}
       closable={finished}

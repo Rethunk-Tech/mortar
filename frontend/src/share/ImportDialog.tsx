@@ -188,6 +188,7 @@ function Body({ request }: { request: ImportRequest }) {
   const canBack = preview !== null || (flow.tab !== 'choose' && !flow.external)
   return (
     <AppDialog
+      closeButton={true}
       open={true}
       onClose={flow.busy ? () => undefined : flow.dismiss}
       onBack={canBack && !flow.busy ? back : undefined}

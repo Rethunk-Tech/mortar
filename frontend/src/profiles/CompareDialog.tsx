@@ -163,7 +163,7 @@ function Summary({
   return (
     <Typography
       component="div"
-      sx={{ px: space.pad, pb: space.pad, display: 'flex', flexWrap: 'wrap', gap: space.gap }}
+      sx={{ px: 3, pb: 2, display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', gap: space.gap }}
     >
       <span>
         {view.differences === 0
@@ -201,6 +201,7 @@ function CompareFrame({
   const game = useProfiles((s) => s.game?.name ?? '')
   return (
     <AppDialog
+      closeButton={true}
       open={open}
       onClose={onClose}
       title={t`Compare`}
@@ -290,7 +291,7 @@ function ComparePair({
         onHost={onHost}
       />
       {filterOpen ? (
-        <Box sx={{ px: space.pad, pb: space.pad }}>
+        <Box sx={{ px: 3, pb: 2 }}>
           <SearchField
             label={t`Filter mods`}
             fullWidth={true}
@@ -319,7 +320,7 @@ function ComparePair({
           flex: 1,
           minHeight: 0,
           overflowY: 'auto',
-          px: space.pad,
+          px: 3,
           pt: space.gap,
           borderTop: 1,
           borderColor: 'divider',
