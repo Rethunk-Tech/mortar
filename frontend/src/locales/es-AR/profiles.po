@@ -15,6 +15,10 @@ msgstr ""
 msgid "Switched {name} to the {detail} update channel"
 msgstr ""
 
+#: src/profiles/OverrideRows.tsx
+msgid "These apply only to this profile; Use default follows the game's settings."
+msgstr ""
+
 #: src/profiles/ServerSettings.tsx
 msgid "Required before the server can start."
 msgstr ""
@@ -57,6 +61,10 @@ msgstr ""
 
 #: src/profiles/HealthDialog.tsx
 msgid "{name} is missing from the store"
+msgstr ""
+
+#: src/profiles/EditProfileDialog.tsx
+msgid "Command line"
 msgstr ""
 
 #: src/profiles/historyLabel.ts
@@ -611,10 +619,6 @@ msgstr ""
 
 #: src/profiles/CrashHintCard.tsx
 msgid "Open the crash report"
-msgstr ""
-
-#: src/profiles/OverrideRows.tsx
-msgid "These apply only to this profile."
 msgstr ""
 
 #: src/profiles/ProfileRow.tsx
@@ -1318,7 +1322,6 @@ msgid "Changed separate saves"
 msgstr ""
 
 #: src/profiles/EditProfileDialog.tsx
-#: src/profiles/OverrideRows.tsx
 msgid "Overrides"
 msgstr ""
 

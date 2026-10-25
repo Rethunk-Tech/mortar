@@ -23,7 +23,7 @@ function MortarPanel({ built }: { built: ReturnType<typeof useShareBuild> }) {
     return null
   }
   return (
-    <>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <ToggleButtonGroup
         exclusive={true}
         size="small"
@@ -34,7 +34,7 @@ function MortarPanel({ built }: { built: ReturnType<typeof useShareBuild> }) {
             setFormat(next)
           }
         }}
-        sx={{ alignSelf: 'flex-start', mb: 2.25 }}
+        sx={{ alignSelf: 'flex-start' }}
       >
         <ToggleButton value="link" sx={{ px: space.pad }}>
           {t`Link`}
@@ -44,7 +44,7 @@ function MortarPanel({ built }: { built: ReturnType<typeof useShareBuild> }) {
         </ToggleButton>
       </ToggleButtonGroup>
       {format === 'link' ? (
-        <TipBanner tip="share">
+        <TipBanner tip="share" inline={true}>
           {t`A share link names this profile and where each mod comes from, not the files themselves.`}
         </TipBanner>
       ) : null}
@@ -67,18 +67,16 @@ function MortarPanel({ built }: { built: ReturnType<typeof useShareBuild> }) {
           onInclude={setInclude}
         />
       )}
-      <Box sx={{ pt: space.pad }}>
-        <Button
-          variant="text"
-          disabled={info.tooLarge}
-          onClick={() => setPreviewing(true)}
-          sx={{ p: 0, minWidth: 0 }}
-        >
-          {t`Preview what they see`}
-        </Button>
-      </Box>
+      <Button
+        variant="text"
+        disabled={info.tooLarge}
+        onClick={() => setPreviewing(true)}
+        sx={{ alignSelf: 'flex-start', ml: -1 }}
+      >
+        {t`Preview what they see`}
+      </Button>
       <PreviewDialog info={info} open={previewing} onClose={() => setPreviewing(false)} />
-    </>
+    </Box>
   )
 }
 

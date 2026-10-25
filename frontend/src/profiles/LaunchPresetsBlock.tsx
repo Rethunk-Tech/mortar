@@ -12,6 +12,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { AddLaunchPresetTemplate } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
+import { FormSection } from '../shell/dialog/FormDialog.tsx'
 import { space } from '../theme/density.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -132,13 +133,10 @@ function LaunchPresetsBlock({
     return save(next, defaultId)
   }
   return (
-    <Box sx={{ mt: 1, mb: 1 }}>
-      <Typography
-        sx={{ fontSize: 'base.fontSize', color: 'text.secondary', mb: 0.5 }}
-      >{t`Launch presets`}</Typography>
-      <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
-        {t`The fields above are the Standard preset. Play uses the default preset; the Play menu can launch with another one once. Templates are game-wide and copied in.`}
-      </Typography>
+    <FormSection
+      title={t`Launch presets`}
+      description={t`The fields above are the Standard preset. Play uses the default preset; the Play menu can launch with another one once. Templates are game-wide and copied in.`}
+    >
       <PresetRow
         name={t`Standard`}
         isDefault={!presets.some((p) => p.id === defaultId)}
@@ -173,8 +171,10 @@ function LaunchPresetsBlock({
           }}
         />
       ))}
-      <Button onClick={() => setEditing(NEW_PRESET)}>{t`Add preset`}</Button>
-      <Button onClick={() => setTemplates(true)}>{t`Add from game presets…`}</Button>
+      <Box sx={{ display: 'flex', gap: 1 }}>
+        <Button onClick={() => setEditing(NEW_PRESET)}>{t`Add preset`}</Button>
+        <Button onClick={() => setTemplates(true)}>{t`Add from game presets…`}</Button>
+      </Box>
       <LaunchPresetTemplatesDialog
         open={templates}
         gameId={gameId}
@@ -209,7 +209,7 @@ function LaunchPresetsBlock({
           }
         }}
       />
-    </Box>
+    </FormSection>
   )
 }
 

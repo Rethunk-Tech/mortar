@@ -1,11 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, TextField, Typography } from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import { System } from '@wailsio/runtime'
 import { useState } from 'react'
 import { TestLaunch } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { STEAM } from '../brand/productNames.ts'
 import { useGameBusy } from '../launch/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { TextInput } from '../shell/dialog/FormDialog.tsx'
 import { space } from '../theme/density.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { LaunchPreview } from './LaunchPreview.tsx'
@@ -113,55 +114,38 @@ function LaunchOptionsBlock({
   const { t } = useLingui()
   return (
     <>
-      <TextField
-        fullWidth={true}
-        margin="dense"
+      <TextInput
         label={t`Launch options`}
         value={launchOptions}
-        onChange={(event) => {
-          onLaunchOptions(event.target.value)
+        onChange={(v) => {
+          onLaunchOptions(v)
           onLaunchError(null)
         }}
-        error={launchError?.field === 'options'}
-        helperText={
-          (launchError?.field === 'options' && launchError.message) ||
-          t`Extra launch arguments for this profile. Mortar already adds the ones the mod loader needs.`
-        }
-        slotProps={{ root: { sx: { userSelect: 'text' } } }}
+        {...(launchError?.field === 'options' ? { error: launchError.message } : {})}
+        hint={t`Extra launch arguments for this profile. Mortar already adds the ones the mod loader needs.`}
       />
       {/* Windows launches ignore a prefix, so there is nothing to set there. */}
       {System.IsWindows() ? null : (
-        <TextField
-          fullWidth={true}
-          margin="dense"
+        <TextInput
           label={t`Launch prefix`}
           value={launchPrefix}
-          onChange={(event) => {
-            onLaunchPrefix(event.target.value)
+          onChange={(v) => {
+            onLaunchPrefix(v)
             onLaunchError(null)
           }}
-          error={launchError?.field === 'settings'}
-          helperText={t`Prefix for direct launches only (for example, gamemoderun mangohud).`}
-          slotProps={{ root: { sx: { userSelect: 'text' } } }}
+          hint={t`Prefix for direct launches only (for example, gamemoderun mangohud).`}
         />
       )}
-      <TextField
-        fullWidth={true}
-        margin="dense"
-        multiline={true}
-        minRows={2}
+      <TextInput
         label={t`Launch environment`}
         value={launchEnv}
-        onChange={(event) => {
-          onLaunchEnv(event.target.value)
+        multiline={true}
+        onChange={(v) => {
+          onLaunchEnv(v)
           onLaunchError(null)
         }}
-        error={launchError?.field === 'settings'}
-        helperText={
-          (launchError?.field === 'settings' && launchError.message) ||
-          t`One VAR=value per line, for direct launches only; ${{ launcher: STEAM }} launches ignore them.`
-        }
-        slotProps={{ root: { sx: { userSelect: 'text' } } }}
+        {...(launchError?.field === 'settings' ? { error: launchError.message } : {})}
+        hint={t`One VAR=value per line, for direct launches only; ${{ launcher: STEAM }} launches ignore them.`}
       />
       <LaunchPreview
         gameId={gameId}

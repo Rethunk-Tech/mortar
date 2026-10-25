@@ -1,15 +1,7 @@
 import type { I18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  FormControl,
-  FormHelperText,
-  InputLabel,
-  MenuItem,
-  Select,
-  Typography,
-} from '@mui/material'
+import { Box, MenuItem, Typography } from '@mui/material'
 import { PROTON, SMAPI } from '../brand/productNames.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { useGameInfo } from '../games/info.ts'
@@ -18,7 +10,7 @@ import { useNexus } from '../settings/nexus.ts'
 import { prefCopy } from '../settings/prefCopy.ts'
 import { useProtonBuilds } from '../settings/protonBuilds.ts'
 import { useSettings } from '../settings/store.ts'
-import { space } from '../theme/density.ts'
+import { SelectField } from '../shell/dialog/FormDialog.tsx'
 import {
   applyRow,
   choiceFromOverride,
@@ -110,14 +102,11 @@ export function OverridesSection({
     }))
   }
   return (
-    <Box sx={{ mt: 2, mb: 2 }}>
-      <Typography
-        sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}
-      >{t`Overrides`}</Typography>
-      <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary', mb: 1 }}>
-        {t`These apply only to this profile.`}
+    <>
+      <Typography sx={{ fontSize: 'medium.fontSize', color: 'text.secondary' }}>
+        {t`These apply only to this profile; Use default follows the game's settings.`}
       </Typography>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.pad, pt: 1 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
         {OVERRIDE_KEYS.filter(
           (key) =>
             (smapi || key !== 'showSmapiConsole') &&
@@ -133,53 +122,41 @@ export function OverridesSection({
           const stored = overrides[key]
           const choice = choiceFromOverride(stored)
           const label = overrideLabel(key, i18n)
-          const field = (
-            <FormControl
+          const disabled = key === 'saveBackupKeep' && scheduleOff
+          let hint = ''
+          if (disabled) {
+            hint = t`Enable scheduled save backups first.`
+          } else if (key === 'updateModsBeforePlayDefault' && nexus && !premium) {
+            hint = t`Free ${{ source: sourceLabel('nexus') }} accounts click each download on ${{ source: sourceLabel('nexus') }}; those updates do not block Play.`
+          }
+          return (
+            <SelectField
               key={key}
-              fullWidth={true}
-              size="small"
-              disabled={key === 'saveBackupKeep' && scheduleOff}
+              label={label}
+              hint={hint || undefined}
+              disabled={disabled}
+              displayEmpty={true}
+              value={choice.useGame ? '' : choice.value}
+              onChange={(next) =>
+                onChange(
+                  applyRow(
+                    overrides,
+                    key,
+                    next === '' ? { useGame: true } : { useGame: false, value: next },
+                  ),
+                )
+              }
             >
-              <InputLabel shrink={true} id={`override-${key}`}>
-                {label}
-              </InputLabel>
-              <Select
-                labelId={`override-${key}`}
-                displayEmpty={true}
-                notched={true}
-                label={label}
-                value={choice.useGame ? '' : choice.value}
-                onChange={(event) => {
-                  const next = event.target.value
-                  onChange(
-                    applyRow(
-                      overrides,
-                      key,
-                      next === '' ? { useGame: true } : { useGame: false, value: next },
-                    ),
-                  )
-                }}
-              >
-                <MenuItem value="">{t`Use default`}</MenuItem>
-                {choicesFor(key).map((o) => (
-                  <MenuItem key={o.value} value={o.value}>
-                    {o.label}
-                  </MenuItem>
-                ))}
-              </Select>
-              {key === 'saveBackupKeep' && scheduleOff ? (
-                <FormHelperText>{t`Enable scheduled save backups first.`}</FormHelperText>
-              ) : null}
-              {key === 'updateModsBeforePlayDefault' && nexus && !premium ? (
-                <FormHelperText>
-                  {t`Free ${{ source: sourceLabel('nexus') }} accounts click each download on ${{ source: sourceLabel('nexus') }}; those updates do not block Play.`}
-                </FormHelperText>
-              ) : null}
-            </FormControl>
+              <MenuItem value="">{t`Use default`}</MenuItem>
+              {choicesFor(key).map((o) => (
+                <MenuItem key={o.value} value={o.value}>
+                  {o.label}
+                </MenuItem>
+              ))}
+            </SelectField>
           )
-          return field
         })}
       </Box>
-    </Box>
+    </>
   )
 }

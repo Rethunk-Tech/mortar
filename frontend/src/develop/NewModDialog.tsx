@@ -14,7 +14,7 @@ import {
   ToggleButtonGroup,
 } from '@mui/material'
 import { Hammer } from 'lucide-react'
-import { type ReactNode, useEffect, useId, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import type {
   Form,
   Param,
@@ -30,7 +30,7 @@ import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { useGameInfo } from '../games/info.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
-import { Field, FieldRow, FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
+import { Field, FieldRow, FormDialog, SelectField, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { readStored, writeStored } from '../shell/useStoredState.ts'
 import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -75,37 +75,6 @@ function Prerequisites({ tools }: { tools: Tools | null }) {
     <Alert variant="compact" severity="warning">
       {missing.join(' ')}
     </Alert>
-  )
-}
-
-// A dropdown in a Field: label above, never in the border.
-function SelectField({
-  label,
-  value,
-  onChange,
-  hint,
-  children,
-}: {
-  label: string
-  value: string
-  onChange: (v: string) => void
-  hint?: string
-  children: ReactNode
-}) {
-  const id = useId()
-  return (
-    <Field label={label} htmlFor={id} hint={hint}>
-      <TextField
-        id={id}
-        select={true}
-        size="small"
-        fullWidth={true}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-      >
-        {children}
-      </TextField>
-    </Field>
   )
 }
 

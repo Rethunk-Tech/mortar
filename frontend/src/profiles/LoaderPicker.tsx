@@ -1,7 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
-import { MenuItem, TextField } from '@mui/material'
+import { MenuItem } from '@mui/material'
 import { SetLoader } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { useGameInfo } from '../games/info.ts'
+import { SelectField } from '../shell/dialog/FormDialog.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useProfiles } from './store.ts'
 
@@ -22,14 +23,11 @@ export function LoaderPicker({
     return null
   }
   return (
-    <TextField
-      select={true}
-      fullWidth={true}
-      margin="dense"
+    <SelectField
       label={t`Mod loader`}
-      value={loader || loaders[0]?.id}
-      onChange={(event) => {
-        SetLoader(gameId, profileId, event.target.value)
+      value={loader || loaders[0]?.id || ''}
+      onChange={(value) => {
+        SetLoader(gameId, profileId, value)
           .then((next) => next && replace(next))
           .catch(reportUnexpected)
       }}
@@ -39,6 +37,6 @@ export function LoaderPicker({
           {l.name}
         </MenuItem>
       ))}
-    </TextField>
+    </SelectField>
   )
 }

@@ -15,6 +15,10 @@ msgstr "{count, plural, one {Copied # mod to {name}} other {Copied # mods to {na
 msgid "Switched {name} to the {detail} update channel"
 msgstr "Switched {name} to the {detail} update channel"
 
+#: src/profiles/OverrideRows.tsx
+msgid "These apply only to this profile; Use default follows the game's settings."
+msgstr "These apply only to this profile; Use default follows the game's settings."
+
 #: src/profiles/ServerSettings.tsx
 msgid "Required before the server can start."
 msgstr "Required before the server can start."
@@ -58,6 +62,10 @@ msgstr "Snapshot diff"
 #: src/profiles/HealthDialog.tsx
 msgid "{name} is missing from the store"
 msgstr "{name} is missing from the store"
+
+#: src/profiles/EditProfileDialog.tsx
+msgid "Command line"
+msgstr "Command line"
 
 #: src/profiles/historyLabel.ts
 msgid "Restored {detail} of {name}"
@@ -612,10 +620,6 @@ msgstr "Launch environment"
 #: src/profiles/CrashHintCard.tsx
 msgid "Open the crash report"
 msgstr "Open the crash report"
-
-#: src/profiles/OverrideRows.tsx
-msgid "These apply only to this profile."
-msgstr "These apply only to this profile."
 
 #: src/profiles/ProfileRow.tsx
 msgid "Copy of {name}"
@@ -1318,7 +1322,6 @@ msgid "Changed separate saves"
 msgstr "Changed separate saves"
 
 #: src/profiles/EditProfileDialog.tsx
-#: src/profiles/OverrideRows.tsx
 msgid "Overrides"
 msgstr "Overrides"
 

@@ -1,13 +1,14 @@
 import type { MessageDescriptor } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, FormControlLabel, MenuItem, Switch, TextField, Typography } from '@mui/material'
+import { FormControlLabel, MenuItem, Switch } from '@mui/material'
 import type { LaunchSetting } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/loader/models.ts'
 import {
   LoaderLaunchSettings as ReadSettings,
   SetLoaderLaunchSetting,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { useGameInfo } from '../games/info.ts'
+import { FormSection, SelectField } from '../shell/dialog/FormDialog.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 
@@ -63,33 +64,27 @@ export function LoaderLaunchSettings({
       .catch(reportUnexpected)
   }
   return (
-    <Box sx={{ mt: 1 }}>
-      <Typography sx={{ fontWeight: 600, mt: 1 }}>{name}</Typography>
+    <FormSection
+      title={name}
+      description={t`Saved in the profile's config folder and applied the next time the game starts.`}
+    >
       {settings.map((s) => {
         const label = labelOf(LABELS, s.id, (m) => i18n._(m))
         if (s.choices?.length) {
           return (
-            <TextField
-              key={s.id}
-              select={true}
-              fullWidth={true}
-              margin="dense"
-              label={label}
-              value={s.value}
-              onChange={(event) => set(s.id, event.target.value)}
-            >
+            <SelectField key={s.id} label={label} value={s.value} onChange={(v) => set(s.id, v)}>
               {s.choices.map((c) => (
                 <MenuItem key={c} value={c}>
                   {labelOf(CHOICES, c, (m) => i18n._(m))}
                 </MenuItem>
               ))}
-            </TextField>
+            </SelectField>
           )
         }
         return (
           <FormControlLabel
             key={s.id}
-            sx={{ display: 'flex' }}
+            sx={{ display: 'flex', m: 0, gap: 1 }}
             control={
               <Switch
                 checked={s.value === 'true'}
@@ -100,9 +95,6 @@ export function LoaderLaunchSettings({
           />
         )
       })}
-      <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
-        {t`Saved in the profile's config folder and applied the next time the game starts.`}
-      </Typography>
-    </Box>
+    </FormSection>
   )
 }

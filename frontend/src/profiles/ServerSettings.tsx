@@ -1,12 +1,13 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, MenuItem, TextField, Typography } from '@mui/material'
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import type { ServerSetting } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/packsvc/models.ts'
 import {
   MirrorClient,
   ServerSettings as ReadForm,
   SetServerSetting,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/packsvc/service.ts'
+import { Field, FormSection, SelectField } from '../shell/dialog/FormDialog.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -22,6 +23,7 @@ function ServerField({
 }) {
   const { t } = useLingui()
   const [draft, setDraft] = useState(setting.value)
+  const id = useId()
   const error = serverFieldError(setting, draft)
   const commit = () => {
     if (!error && serverFieldChanged(setting, draft)) {
@@ -37,23 +39,30 @@ function ServerField({
   }
   const message = error ? errors[error] : setting.hint
   return (
-    <TextField
-      fullWidth={true}
-      margin="dense"
-      size="small"
+    <Field
       label={setting.name}
-      type={setting.secret ? 'password' : 'text'}
-      autoComplete="off"
-      value={draft}
-      placeholder={
-        setting.secret && setting.set ? t`Saved. Type to change it.` : setting.default || undefined
-      }
-      error={Boolean(error)}
-      helperText={message || undefined}
-      onChange={(event) => setDraft(event.target.value)}
-      onBlur={commit}
-      onKeyDown={(event) => event.key === 'Enter' && commit()}
-    />
+      htmlFor={id}
+      hint={error ? undefined : message}
+      error={error ? message : undefined}
+    >
+      <TextField
+        id={id}
+        fullWidth={true}
+        size="small"
+        type={setting.secret ? 'password' : 'text'}
+        autoComplete="off"
+        value={draft}
+        placeholder={
+          setting.secret && setting.set
+            ? t`Saved. Type to change it.`
+            : setting.default || undefined
+        }
+        error={Boolean(error)}
+        onChange={(event) => setDraft(event.target.value)}
+        onBlur={commit}
+        onKeyDown={(event) => event.key === 'Enter' && commit()}
+      />
+    </Field>
   )
 }
 
@@ -89,8 +98,10 @@ export function ServerSettings({ gameId, profileId }: { gameId: string; profileI
   const save = (id: string, value: string) =>
     SetServerSetting(gameId, profileId, id, value).then(reload).catch(reportUnexpected)
   return (
-    <Box sx={{ mt: 1 }}>
-      <Typography sx={{ fontWeight: 600, mt: 1 }}>{t`Server`}</Typography>
+    <FormSection
+      title={t`Server`}
+      description={t`Applied the next time the server starts. The password stays in this profile's folder.`}
+    >
       {(form.settings ?? []).map((s) => (
         <ServerField
           key={`${s.id}:${s.value}:${s.set}`}
@@ -98,25 +109,16 @@ export function ServerSettings({ gameId, profileId }: { gameId: string; profileI
           onSave={(v) => save(s.id, v)}
         />
       ))}
-      <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
-        {t`Applied the next time the server starts. The password stays in this profile's folder.`}
-      </Typography>
-      <Box sx={{ display: 'flex', gap: space.gap, alignItems: 'center', mt: 1 }}>
-        <TextField
-          select={true}
-          size="small"
-          sx={{ flex: 1 }}
-          label={t`Use mods from…`}
-          value={from}
-          onChange={(event) => setFrom(event.target.value)}
-          helperText={t`Queues the mods of a ${{ clientName: form.clientName }} profile into this server profile.`}
-        >
-          {clients.map((c) => (
-            <MenuItem key={c.id} value={c.id}>
-              {c.name}
-            </MenuItem>
-          ))}
-        </TextField>
+      <Box sx={{ display: 'flex', gap: space.gap, alignItems: 'flex-end' }}>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <SelectField label={t`Use mods from…`} value={from} onChange={setFrom}>
+            {clients.map((c) => (
+              <MenuItem key={c.id} value={c.id}>
+                {c.name}
+              </MenuItem>
+            ))}
+          </SelectField>
+        </Box>
         <Button
           disabled={from === ''}
           onClick={() =>
@@ -128,11 +130,14 @@ export function ServerSettings({ gameId, profileId }: { gameId: string; profileI
           {t`Use mods`}
         </Button>
       </Box>
+      <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary', mt: -1 }}>
+        {t`Queues the mods of a ${{ clientName: form.clientName }} profile into this server profile.`}
+      </Typography>
       {queued === null ? null : (
         <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
           {t`${queued} to install.`}
         </Typography>
       )}
-    </Box>
+    </FormSection>
   )
 }

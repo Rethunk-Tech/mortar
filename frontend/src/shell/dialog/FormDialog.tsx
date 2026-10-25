@@ -24,6 +24,7 @@ export function FormDialog({
   busy = false,
   onSubmit,
   onBack,
+  tabs,
   children,
 }: {
   open: boolean
@@ -40,6 +41,7 @@ export function FormDialog({
   onSubmit: () => void
   // A step back, for a form in steps: shown between Cancel and the submit button.
   onBack?: (() => void) | undefined
+  tabs?: ReactNode
   children: ReactNode
 }) {
   const { t } = useLingui()
@@ -54,6 +56,7 @@ export function FormDialog({
       subtitle={subtitle}
       icon={icon}
       size={size}
+      tabs={tabs}
       footer={
         <DialogFooter
           aside={
@@ -247,6 +250,47 @@ export function TextInput({
         error={Boolean(error)}
         slotProps={maxLength === undefined ? undefined : { htmlInput: { maxLength } }}
       />
+    </Field>
+  )
+}
+
+/** A dropdown in a Field: label above, never in the border. */
+export function SelectField({
+  label,
+  value,
+  onChange,
+  hint,
+  error,
+  disabled = false,
+  displayEmpty = false,
+  children,
+}: {
+  label: string
+  value: string
+  onChange: (v: string) => void
+  hint?: ReactNode | undefined
+  error?: string | undefined
+  disabled?: boolean
+  // Shows the empty value's item (a "Use default" choice) instead of a blank field.
+  displayEmpty?: boolean
+  children: ReactNode
+}) {
+  const id = useId()
+  return (
+    <Field label={label} htmlFor={id} hint={hint} error={error}>
+      <TextField
+        id={id}
+        select={true}
+        size="small"
+        fullWidth={true}
+        disabled={disabled}
+        error={Boolean(error)}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        slotProps={{ select: { displayEmpty } }}
+      >
+        {children}
+      </TextField>
     </Field>
   )
 }

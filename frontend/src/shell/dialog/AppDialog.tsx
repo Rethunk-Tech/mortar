@@ -76,6 +76,7 @@ export function AppDialog({
   onBack,
   height,
   flush = false,
+  tabs,
   children,
 }: {
   open: boolean
@@ -95,6 +96,8 @@ export function AppDialog({
   height?: string | number | undefined
   // The body draws its own edges (a grid or list running to the dialog's sides).
   flush?: boolean
+  // Tabs that switch the body, attached under the header and drawn as its dividing line.
+  tabs?: ReactNode
   children?: ReactNode
 }) {
   const { t } = useLingui()
@@ -136,7 +139,7 @@ export function AppDialog({
           px: PAD_X,
           py: 2,
           // The dialog's own header stands apart from any headings in its body.
-          borderBottom: children ? '1px solid var(--mortar-hairline-muted)' : 'none',
+          borderBottom: children && !tabs ? '1px solid var(--mortar-hairline-muted)' : 'none',
         }}
       >
         {onBack ? (
@@ -167,6 +170,9 @@ export function AppDialog({
           </IconButton>
         ) : null}
       </Box>
+      {tabs ? (
+        <Box sx={{ px: PAD_X, borderBottom: '1px solid var(--mortar-hairline-muted)' }}>{tabs}</Box>
+      ) : null}
       {children ? (
         <Box
           sx={{

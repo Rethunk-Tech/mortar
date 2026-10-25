@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Typography } from '@mui/material'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { Field } from '../shell/dialog/FormDialog.tsx'
 import { PROFILE_ICONS } from './appearance.ts'
 import { ProfileMark } from './ProfileMark.tsx'
 import { ColorSwatches, IconSwatches } from './Swatches.tsx'
@@ -51,16 +51,10 @@ export function AppearancePickers({
   }
   return (
     <>
-      <Typography
-        sx={{ fontSize: 'base.fontSize', color: 'text.secondary', mb: 1 }}
-      >{t`Colour`}</Typography>
-      <Box sx={{ mb: 2 }}>
+      <Field label={t`Colour`}>
         <ColorSwatches label={t`Colour`} value={color} onChange={onColor} />
-      </Box>
-      <Typography
-        sx={{ fontSize: 'base.fontSize', color: 'text.secondary', mb: 1 }}
-      >{t`Icon`}</Typography>
-      <Box sx={{ mb: 2 }}>
+      </Field>
+      <Field label={t`Icon`}>
         <IconSwatches
           label={t`Icon`}
           value={icon}
@@ -71,7 +65,7 @@ export function AppearancePickers({
             face: <ProfileMark profile={{ ...profile, color, icon: name }} size={28} />,
           }))}
         />
-      </Box>
+      </Field>
     </>
   )
 }

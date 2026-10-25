@@ -12,9 +12,12 @@ import { type TipId, tipVisible } from './visible.ts'
 // Memoised: its text is a stable string, so the page it sits on re-rendering leaves it alone.
 export const TipBanner = memo(function TipBannerView({
   tip,
+  inline = false,
   children,
 }: {
   tip: TipId
+  // Inside a dialog or panel that spaces its own children: no page margins.
+  inline?: boolean
   children: ReactNode
 }) {
   const { t } = useLingui()
@@ -33,9 +36,7 @@ export const TipBanner = memo(function TipBannerView({
         gap: space.gap,
         px: space.pad,
         py: 0.5,
-        mx: space.gutter,
-        mt: 1.25,
-        mb: space.gap,
+        ...(inline ? {} : { mx: space.gutter, mt: 1.25, mb: space.gap }),
         bgcolor: 'var(--mortar-panel-solid)',
         border: '1px solid var(--mortar-hairline-12)',
         borderRadius: '8px',

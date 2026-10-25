@@ -8,7 +8,7 @@ import { hasPickedCover, type StagedCover } from '../game/cover.ts'
 import { HeroCover } from '../game/HeroCover.tsx'
 import { useGameInfo } from '../games/info.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
-import { Field, FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
+import { Field, FormDialog, FormSection, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -61,10 +61,7 @@ function CoverField({
   const picked = hasPickedCover(profile.cover, staged)
   const pickedName = typeof staged === 'string' ? (staged.split(PATH_SEPARATORS).pop() ?? '') : ''
   return (
-    <>
-      <Typography
-        sx={{ fontSize: 'base.fontSize', color: 'text.secondary', mb: 1 }}
-      >{t`Cover image`}</Typography>
+    <Field label={t`Cover image`}>
       <Box sx={{ width: 160, height: 90, borderRadius: '6px', overflow: 'hidden', mb: 1 }}>
         {gameId ? <HeroCover game={gameId} profile={profile} /> : null}
       </Box>
@@ -75,7 +72,7 @@ function CoverField({
             : t`${{ name: pickedName }} is used after Save.`}
         </Typography>
       )}
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: space.gap, mb: 2 }}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: space.gap, ml: -1 }}>
         <Button
           onClick={() => {
             PickImage(t`Choose image…`)
@@ -91,7 +88,7 @@ function CoverField({
           <Button disabled={!picked} onClick={() => onStage(null)}>{t`Use default`}</Button>
         </DisabledReason>
       </Box>
-    </>
+    </Field>
   )
 }
 
@@ -119,7 +116,7 @@ function FieldsTabs({
       aria-label={t`Profile settings`}
       sx={{
         minHeight: 44,
-        borderBottom: '1px solid var(--mortar-hairline)',
+        mx: -1.75,
         '& .MuiTabs-indicator': { height: 2 },
         '& .MuiTab-root': {
           minHeight: 44,
@@ -167,7 +164,8 @@ interface ProfileFieldsProps {
   onGameSettings: (value: GameSettingsValues | null) => void
   overrides: Record<string, string>
   onOverrides: (value: Record<string, string>) => void
-  initialTab: FieldsTab
+  ids: string
+  tab: FieldsTab
 }
 
 // Every panel stays mounted, so a field keeps what was typed in it, but only the open one takes space.
@@ -205,84 +203,81 @@ function ProfileFields({
   onGameSettings,
   overrides,
   onOverrides,
-  initialTab,
+  ids,
+  tab,
 }: ProfileFieldsProps) {
   const { t } = useLingui()
-  const ids = useId()
   const nameId = useId()
   // Only a game with a startup preferences file applies them; elsewhere the fields would change nothing.
   const startupSettings = useGameInfo(gameId)?.startupSettings === true
-  const [tab, setTab] = useState<FieldsTab>(initialTab)
-  // A launch field Save rejected is shown, wherever the user was.
-  useEffect(() => {
-    if (launchError) {
-      setTab('launch')
-    }
-  }, [launchError])
   const panel = (id: FieldsTab, children: ReactNode) => (
     <Box
       role="tabpanel"
       id={`${ids}-panel-${id}`}
       aria-labelledby={`${ids}-tab-${id}`}
-      sx={{ ...panelSx, display: tab === id ? 'block' : 'none' }}
+      sx={{
+        ...panelSx,
+        display: tab === id ? 'flex' : 'none',
+        flexDirection: 'column',
+        gap: 3,
+      }}
     >
       {children}
     </Box>
   )
   return (
-    <>
-      <FieldsTabs ids={ids} tab={tab} onTab={setTab} startupSettings={startupSettings} />
-      <Box>
-        {panel(
-          'appearance',
-          <>
-            <Field label={t`Name`} htmlFor={nameId} error={nameError || undefined}>
-              <TextField
-                id={nameId}
-                fullWidth={true}
-                size="small"
-                autoFocus={focusName}
-                value={name}
-                onChange={(event) => onName(event.target.value)}
-                onFocus={(event) => event.target.select()}
-                error={nameError !== ''}
-                slotProps={{
-                  htmlInput: { maxLength: MAX_NAME },
-                  root: { sx: { userSelect: 'text' } },
-                }}
-              />
-            </Field>
-            <AppearancePickers
-              profile={profile}
-              color={color}
-              icon={icon}
-              onColor={onColor}
-              onIcon={onIcon}
+    <Box>
+      {panel(
+        'appearance',
+        <>
+          <Field label={t`Name`} htmlFor={nameId} error={nameError || undefined}>
+            <TextField
+              id={nameId}
+              fullWidth={true}
+              size="small"
+              autoFocus={focusName}
+              value={name}
+              onChange={(event) => onName(event.target.value)}
+              onFocus={(event) => event.target.select()}
+              error={nameError !== ''}
+              slotProps={{
+                htmlInput: { maxLength: MAX_NAME },
+                root: { sx: { userSelect: 'text' } },
+              }}
             />
-            <CoverField
-              gameId={gameId}
-              profile={profile}
-              staged={stagedCover}
-              onStage={onStageCover}
-            />
-            <TextInput
-              label={t`Description`}
-              value={description}
-              onChange={onDescription}
-              maxLength={MAX_DESCRIPTION}
-              multiline={true}
-            />
-          </>,
-        )}
-        {panel(
-          'launch',
-          <>
-            <LoaderPicker gameId={gameId} profileId={profile.id} loader={profile.loader ?? ''} />
-            <SeparateSavesRow
-              gameId={gameId}
-              profileId={profile.id}
-              on={profile.separateSaves ?? false}
-            />
+          </Field>
+          <AppearancePickers
+            profile={profile}
+            color={color}
+            icon={icon}
+            onColor={onColor}
+            onIcon={onIcon}
+          />
+          <CoverField
+            gameId={gameId}
+            profile={profile}
+            staged={stagedCover}
+            onStage={onStageCover}
+          />
+          <TextInput
+            label={t`Description`}
+            value={description}
+            onChange={onDescription}
+            maxLength={MAX_DESCRIPTION}
+            multiline={true}
+          />
+        </>,
+      )}
+      {panel(
+        'launch',
+        <>
+          <LoaderPicker gameId={gameId} profileId={profile.id} loader={profile.loader ?? ''} />
+          <SeparateSavesRow
+            gameId={gameId}
+            profileId={profile.id}
+            on={profile.separateSaves ?? false}
+          />
+          <FormSection title={t`Command line`}>
             <LaunchOptionsBlock
               gameId={gameId}
               profileId={profile.id}
@@ -295,35 +290,31 @@ function ProfileFields({
               launchError={launchError}
               onLaunchError={onLaunchError}
             />
-            <ServerSettings gameId={gameId} profileId={profile.id} />
-            <LoaderLaunchSettings
-              key={profile.loader ?? ''}
-              gameId={gameId}
-              profileId={profile.id}
-              loader={profile.loader ?? ''}
-            />
-            <LaunchPresetsBlock
-              gameId={gameId}
-              profileId={profile.id}
-              launchOptions={launchOptions}
-              launchPrefix={launchPrefix}
-              launchEnv={launchEnv}
-            />
-          </>,
-        )}
-        {panel('overrides', <OverridesSection overrides={overrides} onChange={onOverrides} />)}
-        {startupSettings
-          ? panel(
-              'game',
-              <GameSettings
-                profileId={profile.id}
-                value={gameSettings}
-                onChange={onGameSettings}
-              />,
-            )
-          : null}
-      </Box>
-    </>
+          </FormSection>
+          <ServerSettings gameId={gameId} profileId={profile.id} />
+          <LoaderLaunchSettings
+            key={profile.loader ?? ''}
+            gameId={gameId}
+            profileId={profile.id}
+            loader={profile.loader ?? ''}
+          />
+          <LaunchPresetsBlock
+            gameId={gameId}
+            profileId={profile.id}
+            launchOptions={launchOptions}
+            launchPrefix={launchPrefix}
+            launchEnv={launchEnv}
+          />
+        </>,
+      )}
+      {panel('overrides', <OverridesSection overrides={overrides} onChange={onOverrides} />)}
+      {startupSettings
+        ? panel(
+            'game',
+            <GameSettings profileId={profile.id} value={gameSettings} onChange={onGameSettings} />,
+          )
+        : null}
+    </Box>
   )
 }
 
@@ -345,6 +336,20 @@ interface EditProfileDialogProps {
   focusName?: boolean
 }
 
+// The open tab; a launch field Save rejected is shown, wherever the user was.
+function useFieldsTab(gameId: string, initialTab: FieldsTab, launchError: LaunchError) {
+  const ids = useId()
+  const [tab, setTab] = useState<FieldsTab>(initialTab)
+  const startupSettings = useGameInfo(gameId)?.startupSettings === true
+  useEffect(() => {
+    if (launchError) {
+      setTab('launch')
+    }
+  }, [launchError])
+  const bar = <FieldsTabs ids={ids} tab={tab} onTab={setTab} startupSettings={startupSettings} />
+  return { ids, tab, bar }
+}
+
 export function EditProfileDialog(props: EditProfileDialogProps) {
   const { profile, open, onClose, initialTab = 'appearance', focusName = false } = props
   const { t } = useLingui()
@@ -361,12 +366,9 @@ export function EditProfileDialog(props: EditProfileDialogProps) {
   const [launchEnv, setLaunchEnv] = useState(profile.launchEnv ?? '')
   const [overrides, setOverrides] = useState(() => foldedOverrides(profile))
   const [stagedCover, setStagedCover] = useState<StagedCover>(undefined)
-  const [gameSettings, setGameSettings, gameSettingsLoaded] = useProfileGameSettings(
-    gameId,
-    profile.id,
-    open,
-  )
+  const [gameSettings, setGameSettings, loaded] = useProfileGameSettings(gameId, profile.id, open)
   const [launchError, setLaunchError] = useState<LaunchError>(null)
+  const { ids, tab, bar } = useFieldsTab(gameId, initialTab, launchError)
   const [busy, setBusy] = useState(false)
   const [touched, setTouched] = useState(false)
   const edited = <A,>(set: (value: A) => void) => touching(setTouched, set)
@@ -412,14 +414,17 @@ export function EditProfileDialog(props: EditProfileDialogProps) {
       open={open}
       onClose={onClose}
       title={t`Edit profile`}
+      size="lg"
       submitLabel={t`Save`}
-      issue={gameSettingsLoaded ? '' : t`Loading game settings…`}
+      issue={loaded ? '' : t`Loading game settings…`}
       dirty={touched}
       busy={busy}
       onSubmit={() => save().catch(reportUnexpected)}
+      tabs={bar}
     >
       <ProfileFields
-        initialTab={initialTab}
+        ids={ids}
+        tab={tab}
         profile={profile}
         gameId={gameId}
         color={color}
