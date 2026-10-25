@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, FormControlLabel, Radio, RadioGroup, Typography } from '@mui/material'
 import { FolderOpen } from 'lucide-react'
-import { memo, type RefObject, useCallback, useEffect, useRef, useState } from 'react'
+import { memo, type RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   AddCustomGame,
   CustomLoaders,
@@ -123,7 +123,8 @@ export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () =>
   const [guessed, setGuessed] = useState('')
   const [busy, run] = usePending()
   const { data: loaders } = useLoaded(() => CustomLoaders(), [], [])
-  const mine = useGames().filter((g) => g.id.startsWith(CUSTOM_PREFIX))
+  const games = useGames()
+  const mine = useMemo(() => games.filter((g) => g.id.startsWith(CUSTOM_PREFIX)), [games])
   const add = () =>
     run(
       () =>
@@ -141,24 +142,92 @@ export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () =>
           }),
       { errorTitle: t`Could not add the game` },
     )
-  const choose = () =>
-    PickExecutable(t`Choose the game's program`)
-      .then(async (path) => {
-        if (!path) {
-          return
-        }
-        setExe(path)
-        const guess = await GuessCustomGame(path)
-        setSuggested(guess.name)
-        setGuessed(guess.loader)
-        if (guess.loader) {
-          setLoader(guess.loader)
-        }
-      })
-      .catch(reportError(t`Could not open the file dialog`))
+  // Everything but the footer: the name filling or emptying (hasName) redraws the dialog's frame and footer, not this.
+  const body = useMemo(() => {
+    const choose = () =>
+      PickExecutable(t`Choose the game's program`)
+        .then(async (path) => {
+          if (!path) {
+            return
+          }
+          setExe(path)
+          const guess = await GuessCustomGame(path)
+          setSuggested(guess.name)
+          setGuessed(guess.loader)
+          if (guess.loader) {
+            setLoader(guess.loader)
+          }
+        })
+        .catch(reportError(t`Could not open the file dialog`))
+    const remove = (id: string) =>
+      RemoveCustomGame(id).then(reloadGames).catch(reportError(t`Could not remove the game`))
+    return (
+      <>
+        <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
+          {loader === 'shimloader'
+            ? t`For a game that is not in Mortar's list. It stays on this computer, and its mods come from its ${{ source: sourceLabel('thunderstore') }} community.`
+            : t`For a game that is not in Mortar's list. It stays on this computer, and its mods come from archives you add, since Mortar knows no site for it.`}
+        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
+          <Button variant="outlined" startIcon={<FolderOpen size={16} />} onClick={choose}>
+            {t`Choose the game's program…`}
+          </Button>
+          {exe ? (
+            <Typography
+              title={exe}
+              sx={{
+                flex: 1,
+                minWidth: 0,
+                fontSize: 'medium.fontSize',
+                color: 'text.secondary',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                direction: 'rtl',
+                textAlign: 'left',
+              }}
+            >
+              {exe}
+            </Typography>
+          ) : null}
+        </Box>
+        <NameField key={round} value={name} suggested={suggested} onFilled={setHasName} />
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
+          <LoaderChoice
+            loaders={loaders ?? []}
+            loader={loader}
+            guessed={guessed !== ''}
+            onLoader={setLoader}
+          />
+        </Box>
+        {loader === 'shimloader' ? (
+          <TextInput
+            label={t`${{ source: sourceLabel('thunderstore') }} community`}
+            placeholder="voices-of-the-void"
+            hint={t`The game's name in its ${{ source: sourceLabel('thunderstore') }} address (thunderstore.io/c/…). Mortar gets ${{ loader: SHIMLOADER }} and the game's mods from it. Choose the game's shipping program, in Binaries/Win64.`}
+            value={community}
+            onChange={setCommunity}
+          />
+        ) : null}
+        {mine.length > 0 ? (
+          <Box>
+            <Typography
+              sx={{ fontSize: 'base.fontSize', fontWeight: 700 }}
+            >{t`Games you added`}</Typography>
+            {mine.map((g) => (
+              <Box key={g.id} sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
+                <Typography sx={{ flex: 1, fontSize: 'medium.fontSize' }}>{g.name}</Typography>
+                <Button size="small" color="error" onClick={() => remove(g.id)}>
+                  {t`Remove`}
+                </Button>
+              </Box>
+            ))}
+          </Box>
+        ) : null}
+      </>
+    )
+  }, [exe, loader, community, guessed, loaders, round, suggested, mine, t])
   const ready = exe !== '' && hasName && (loader !== 'shimloader' || community.trim() !== '')
-  const remove = (id: string) =>
-    RemoveCustomGame(id).then(reloadGames).catch(reportError(t`Could not remove the game`))
   return (
     <FormDialog
       open={open}
@@ -171,67 +240,7 @@ export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () =>
       busy={busy}
       onSubmit={add}
     >
-      <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
-        {loader === 'shimloader'
-          ? t`For a game that is not in Mortar's list. It stays on this computer, and its mods come from its ${{ source: sourceLabel('thunderstore') }} community.`
-          : t`For a game that is not in Mortar's list. It stays on this computer, and its mods come from archives you add, since Mortar knows no site for it.`}
-      </Typography>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-        <Button variant="outlined" startIcon={<FolderOpen size={16} />} onClick={choose}>
-          {t`Choose the game's program…`}
-        </Button>
-        {exe ? (
-          <Typography
-            title={exe}
-            sx={{
-              flex: 1,
-              minWidth: 0,
-              fontSize: 'medium.fontSize',
-              color: 'text.secondary',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              direction: 'rtl',
-              textAlign: 'left',
-            }}
-          >
-            {exe}
-          </Typography>
-        ) : null}
-      </Box>
-      <NameField key={round} value={name} suggested={suggested} onFilled={setHasName} />
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
-        <LoaderChoice
-          loaders={loaders ?? []}
-          loader={loader}
-          guessed={guessed !== ''}
-          onLoader={setLoader}
-        />
-      </Box>
-      {loader === 'shimloader' ? (
-        <TextInput
-          label={t`${{ source: sourceLabel('thunderstore') }} community`}
-          placeholder="voices-of-the-void"
-          hint={t`The game's name in its ${{ source: sourceLabel('thunderstore') }} address (thunderstore.io/c/…). Mortar gets ${{ loader: SHIMLOADER }} and the game's mods from it. Choose the game's shipping program, in Binaries/Win64.`}
-          value={community}
-          onChange={setCommunity}
-        />
-      ) : null}
-      {mine.length > 0 ? (
-        <Box>
-          <Typography
-            sx={{ fontSize: 'base.fontSize', fontWeight: 700 }}
-          >{t`Games you added`}</Typography>
-          {mine.map((g) => (
-            <Box key={g.id} sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-              <Typography sx={{ flex: 1, fontSize: 'medium.fontSize' }}>{g.name}</Typography>
-              <Button size="small" color="error" onClick={() => remove(g.id)}>
-                {t`Remove`}
-              </Button>
-            </Box>
-          ))}
-        </Box>
-      ) : null}
+      {body}
     </FormDialog>
   )
 }
