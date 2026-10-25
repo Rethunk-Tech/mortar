@@ -597,6 +597,10 @@ msgstr ""
 msgid "Forget"
 msgstr ""
 
+#: src/mods/Sidebar.tsx
+msgid "Open in Develop"
+msgstr ""
+
 #: src/mods/LoadOrderTab.tsx
 msgid "The game loader chooses this order. Mortar does not change it."
 msgstr ""
@@ -796,6 +800,11 @@ msgstr ""
 
 #: src/mods/NexusDetails.tsx
 msgid "{unique} unique"
+msgstr ""
+
+#: src/mods/listRows.ts
+#: src/mods/Sidebar.tsx
+msgid "In development"
 msgstr ""
 
 #: src/mods/LoadOrderTab.tsx
@@ -3459,6 +3468,10 @@ msgstr ""
 
 #: src/mods/ListColumnMenu.tsx
 msgid "Icon"
+msgstr ""
+
+#: src/mods/Sidebar.tsx
+msgid "Built from your project; edit it in Develop."
 msgstr ""
 
 #: src/mods/problemText.ts

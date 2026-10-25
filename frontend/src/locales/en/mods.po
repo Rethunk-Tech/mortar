@@ -597,6 +597,10 @@ msgstr "Already has it"
 msgid "Forget"
 msgstr "Forget"
 
+#: src/mods/Sidebar.tsx
+msgid "Open in Develop"
+msgstr "Open in Develop"
+
 #: src/mods/LoadOrderTab.tsx
 msgid "The game loader chooses this order. Mortar does not change it."
 msgstr "The game loader chooses this order. Mortar does not change it."
@@ -797,6 +801,11 @@ msgstr "{name} needs {dep}, which is disabled."
 #: src/mods/NexusDetails.tsx
 msgid "{unique} unique"
 msgstr "{unique} unique"
+
+#: src/mods/listRows.ts
+#: src/mods/Sidebar.tsx
+msgid "In development"
+msgstr "In development"
 
 #: src/mods/LoadOrderTab.tsx
 msgid "No enabled mods"
@@ -3460,6 +3469,10 @@ msgstr "{name} is installed twice, and only one of them loads."
 #: src/mods/ListColumnMenu.tsx
 msgid "Icon"
 msgstr "Icon"
+
+#: src/mods/Sidebar.tsx
+msgid "Built from your project; edit it in Develop."
+msgstr "Built from your project; edit it in Develop."
 
 #: src/mods/problemText.ts
 msgid "A plugin it needs failed"

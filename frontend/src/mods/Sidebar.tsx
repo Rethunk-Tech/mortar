@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Chip, Collapse, Link, Typography } from '@mui/material'
+import { Alert, Box, Button, Chip, Collapse, Link, Typography } from '@mui/material'
 import { TriangleAlert } from 'lucide-react'
 import { memo, useDeferredValue, useEffect, useState } from 'react'
 import type { Dependent } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
@@ -13,6 +13,8 @@ import {
   ProfilesWithMod,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
+import { isDevelopEntry } from '../develop/devEntry.ts'
+import { useTab } from '../game/tab.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { openModInProfile } from '../profiles/findMod.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -498,6 +500,31 @@ const LowerSections = memo(
     withoutSwitch(a.mod, a.profile) === withoutSwitch(b.mod, b.profile),
 )
 
+// A mod built from a Develop project: its details come from the project's files, so this shows what helps while
+// testing and sends edits to Develop.
+function DevelopedSections({ mod, profile }: { mod: Mod; profile: Profile }) {
+  const { t } = useLingui()
+  return (
+    <>
+      <Alert
+        variant="compact"
+        severity="info"
+        action={
+          <Button size="small" onClick={() => useTab.getState().setTab('develop')}>
+            {t`Open in Develop`}
+          </Button>
+        }
+      >
+        {t`Built from your project; edit it in Develop.`}
+      </Alert>
+      <ProblemLine mod={mod} />
+      <LastRunLine mod={mod} profile={profile} />
+      <ModDependencyTree mod={mod} />
+      <ModSettings mod={mod} profile={profile} />
+    </>
+  )
+}
+
 function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
   const lazyMod = useDeferredValue<Mod | null>(mod, null)
   const lazyProfile = useDeferredValue(profile)
@@ -506,6 +533,7 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
   const others = siblingsOf(all, mod)
   const dependency = readsImplicit(entryOf(profile, mod.key)?.implicit, mod, all)
   const kind = sourceKind(profile, mod)
+  const developed = isDevelopEntry(entryOf(profile, mod.key))
   const fresh = useModFresh(profile, mod)
   useSourceLooked(profile, mod)
   const sourceName = kindLabel(kind, {
@@ -530,7 +558,7 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
         subtitle={
           <>
             <AuthorLink authorField={mod.author} mod={mod} profile={profile} />
-            {` · ${sourceName}`}
+            {` · ${developed ? t`In development` : sourceName}`}
             {dependency ? ` · ${t`Installed as a dependency`}` : null}
           </>
         }
@@ -538,7 +566,8 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
         onClose={() => useDetail.getState().show(null)}
       />
       <ModChips mod={mod} />
-      {lazyMod ? <LowerSections mod={lazyMod} profile={lazyProfile} /> : null}
+      {lazyMod && developed ? <DevelopedSections mod={lazyMod} profile={lazyProfile} /> : null}
+      {lazyMod && !developed ? <LowerSections mod={lazyMod} profile={lazyProfile} /> : null}
       {others.length > 0 ? (
         <Box>
           <Typography sx={heading}>{t`In the same download`}</Typography>

@@ -14,6 +14,7 @@ import type {
 import { PackageOverrides } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { modTotal } from '../console/startupView.ts'
+import { isDevelopEntry } from '../develop/devEntry.ts'
 import { sameValue } from '../shell/sameValue.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { idKey } from './dependents.ts'
@@ -142,6 +143,28 @@ function toListRows(
   )
 }
 
+// Where a row says its mod came from: a Develop project's build, a site, or why the site is unknown.
+function sourceText(
+  entry: Entry | undefined,
+  { pageless, fileless, developed }: { pageless: boolean; fileless: boolean; developed: boolean },
+): string {
+  if (pageless) {
+    return i18n._(msg`Unknown source`)
+  }
+  if (fileless) {
+    return i18n._(msg`${{ source: sourceLabel('nexus') }}, file unknown`)
+  }
+  if (developed) {
+    return i18n._(msg`In development`)
+  }
+  return kindLabel(entry?.source.kind ?? '', {
+    archive: i18n._(msg`Archive`),
+    nexus: i18n._(msg`${{ source: sourceLabel('nexus') }}`),
+    github: sourceLabel('github'),
+    thunderstore: sourceLabel('thunderstore'),
+  })
+}
+
 function toListRow(
   m: Mod,
   entry: Entry | undefined,
@@ -149,17 +172,9 @@ function toListRow(
   { byId, customById, sizes, costs, wins, facts }: Parameters<typeof toListRows>[2],
 ): ListRow {
   const pageless = entry?.source.kind === 'nexus' && (entry.source.modId ?? 0) <= 0
-  const known = kindLabel(entry?.source.kind ?? '', {
-    archive: i18n._(msg`Archive`),
-    nexus: i18n._(msg`${{ source: sourceLabel('nexus') }}`),
-    github: sourceLabel('github'),
-    thunderstore: sourceLabel('thunderstore'),
-  })
+  const developed = isDevelopEntry(entry)
   const fileless = entry?.source.kind === 'nexus' && !pageless && (entry.source.fileId ?? 0) <= 0
-  const unknownFile = fileless
-    ? i18n._(msg`${{ source: sourceLabel('nexus') }}, file unknown`)
-    : known
-  const source = pageless ? i18n._(msg`Unknown source`) : unknownFile
+  const source = sourceText(entry, { pageless, fileless, developed })
   const nexusId = entry?.source.kind === 'nexus' ? (entry.source.modId ?? 0) : 0
   const details = byId[nexusId]?.details
   const categoryLabel = resolvedCategoryLabel(
@@ -175,7 +190,7 @@ function toListRow(
     implicit,
     reason: implicit ? i18n._(msg`Implicit`) : i18n._(msg`Explicit`),
     source,
-    unsourced: pageless || fileless || entry?.source.kind === 'local',
+    unsourced: pageless || fileless || (entry?.source.kind === 'local' && !developed),
     status: m.enabled ? i18n._(msg`Enabled`) : i18n._(msg`Disabled`),
     note: entry?.note ?? '',
     tags: [...(entry?.tags ?? [])],
