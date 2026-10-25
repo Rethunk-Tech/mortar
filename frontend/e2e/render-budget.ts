@@ -200,6 +200,8 @@ const cases: Case[] = [
     name: 'mods-list-filter',
     setup: (p) => view(p, 'List view'),
     run: (p) => typeInto(p, /^Filter/, 'farm'),
+    // The search is kept; later cases expect every mod listed.
+    teardown: (p) => p.getByRole('button', { name: 'Show all mods' }).click(),
   },
   {
     name: 'mods-view-switch',
@@ -346,8 +348,6 @@ async function measure(
     }
   } catch (e) {
     return { name: c.name, over: [], failure: String(e).split('\n')[0] }
-  } finally {
-    await c.teardown?.(page)
   }
 }
 
@@ -401,6 +401,11 @@ async function run(
       } catch (e) {
         breaks.push(`LAYOUT ${c.name} | unchecked | ${String(e).split('\n')[0]}`)
       }
+      // After the check and the picture, which show the state the case left. A teardown that fails leaves that state for
+      // the next cases, so it is reported.
+      await c.teardown?.(page).catch((e: unknown) => {
+        breaks.push(`TEARDOWN ${c.name} | ${String(e).split('\n')[0]}`)
+      })
       results.push({
         ...result,
         ...(result.ms ? { ms: { ...result.ms, check: Date.now() - t } } : {}),
