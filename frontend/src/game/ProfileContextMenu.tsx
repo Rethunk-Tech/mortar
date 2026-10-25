@@ -4,6 +4,7 @@ import { Palette, Pencil } from 'lucide-react'
 import { useMemo } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { useKeptWhileClosed } from '../shell/keptWhileClosed.ts'
 import { MenuHeading } from '../shell/TitleMenu.tsx'
 import { readTemplates } from '../templates/useTemplates.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -52,6 +53,9 @@ export function ProfileContextMenu({
     ],
     [profile, onClose, t],
   )
+  // A closed menu keeps the items it last showed: a change to the profile rebuilds them, and redrawing a hidden menu
+  // costs every item.
+  const shown = useKeptWhileClosed(position !== null, items)
   return (
     <Menu
       open={position !== null}
@@ -69,7 +73,7 @@ export function ProfileContextMenu({
         },
       }}
     >
-      {items}
+      {shown}
     </Menu>
   )
 }
