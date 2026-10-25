@@ -993,6 +993,10 @@ msgstr "Copied"
 msgid "Page"
 msgstr "Page"
 
+#: src/develop/DependencyKindDialog.tsx
+msgid "Either way its files are referenced for building, not copied into your package."
+msgstr "Either way its files are referenced for building, not copied into your package."
+
 #: src/launch/PlayControl.tsx
 msgid "Running for {time}"
 msgstr "Running for {time}"
@@ -1691,10 +1695,6 @@ msgstr "The build failed."
 msgid "Saved on version {gameVersion}"
 msgstr "Saved on version {gameVersion}"
 
-#: src/browse/BrowseMenu.tsx
-msgid "Add as dependency of {name}"
-msgstr "Add as dependency of {name}"
-
 #: src/develop/GameCodeDialog.tsx
 msgid "Install {loader} to read the game's code"
 msgstr "Install {loader} to read the game's code"
@@ -1976,6 +1976,10 @@ msgstr "{rate}/s"
 #: src/install/DownloadsDialog.tsx
 msgid "Search archives"
 msgstr "Search archives"
+
+#: src/browse/BrowseMenu.tsx
+msgid "Add as dependency of {name}…"
+msgstr "Add as dependency of {name}…"
 
 #: src/game/HeroGlance.tsx
 msgid "Created"
@@ -2990,6 +2994,10 @@ msgstr "Settings changes {count}"
 msgid "Collapse"
 msgstr "Collapse"
 
+#: src/develop/DependencyKindDialog.tsx
+msgid "{mod} is an optional dependency of {name}"
+msgstr "{mod} is an optional dependency of {name}"
+
 #: src/develop/GameCodeDialog.tsx
 msgid "Decompiling {type}…"
 msgstr "Decompiling {type}…"
@@ -3242,6 +3250,10 @@ msgstr "Archives"
 #: src/game/HomeNotes.tsx
 msgid "Saved"
 msgstr "Saved"
+
+#: src/develop/DependencyKindDialog.tsx
+msgid "Dependency kind"
+msgstr "Dependency kind"
 
 #: src/commandPalette/CommandPalette.tsx
 #: src/toasts/HistoryButton.tsx
@@ -4030,6 +4042,11 @@ msgstr "Mod list"
 msgid "A share from {sender} expired. Ask them to send it again."
 msgstr "A share from {sender} expired. Ask them to send it again."
 
+#: src/develop/DependenciesStep.tsx
+#: src/develop/DependencyKindDialog.tsx
+msgid "Optional"
+msgstr "Optional"
+
 #: src/browse/BrowseBody.tsx
 msgid "{count, plural, one {# result} other {# results}}"
 msgstr "{count, plural, one {# result} other {# results}}"
@@ -4378,6 +4395,10 @@ msgstr "This archive has no {loader} mod where Mortar expects one. Pick the fold
 #: src/sync/pins.tsx
 msgid "Follow the sync again"
 msgstr "Follow the sync again"
+
+#: src/develop/DependenciesStep.tsx
+msgid "How {name} is needed"
+msgstr "How {name} is needed"
 
 #: src/toasts/HistoryButton.tsx
 msgid "All changes…"
@@ -5539,7 +5560,7 @@ msgstr "Choose folder"
 msgid "Place here"
 msgstr "Place here"
 
-#: src/browse/BrowseMenu.tsx
+#: src/develop/DependencyKindDialog.tsx
 msgid "Could not add the dependency"
 msgstr "Could not add the dependency"
 
@@ -5565,6 +5586,11 @@ msgstr "Install"
 #: src/toasts/ToastHost.tsx
 msgid "Copy details"
 msgstr "Copy details"
+
+#: src/develop/DependenciesStep.tsx
+#: src/develop/DependencyKindDialog.tsx
+msgid "Required"
+msgstr "Required"
 
 #: src/screenshots/ScreenshotsTab.tsx
 msgid "Open {launcher}'s folder"
@@ -5615,6 +5641,10 @@ msgstr "Toggle {name}"
 #: src/games/gameList.ts
 msgid "All games"
 msgstr "All games"
+
+#: src/develop/DependencyKindDialog.tsx
+msgid "How does {name} use {mod}?"
+msgstr "How does {name} use {mod}?"
 
 #: src/firstrun/LoaderStep.tsx
 msgid "{loader} is the loader every {game} mod needs. It goes into the game folder, and {launcher} keeps launching the game as usual."
@@ -5784,6 +5814,10 @@ msgstr "From the {source} collection \"{name}\""
 #: src/launch/PlayInstances.tsx
 msgid "Copies"
 msgstr "Copies"
+
+#: src/develop/DependencyKindDialog.tsx
+msgid "Listed in the manifest; mod managers install it with {name}"
+msgstr "Listed in the manifest; mod managers install it with {name}"
 
 #: src/game/Sidebar.tsx
 msgid "Health"
@@ -6360,7 +6394,7 @@ msgstr "{count, plural, one {# superseded by a newer download} other {# supersed
 msgid "Name the tool."
 msgstr "Name the tool."
 
-#: src/browse/BrowseMenu.tsx
+#: src/develop/DependencyKindDialog.tsx
 msgid "{mod} is a dependency of {name}"
 msgstr "{mod} is a dependency of {name}"
 
@@ -6599,6 +6633,10 @@ msgstr "Quit Mortar"
 #: src/shell/BugReportDialog.tsx
 msgid "Copies the report for you to paste into a new post in the bug-reports forum on Mortar's {app}, and saves the diagnostics zip to attach."
 msgstr "Copies the report for you to paste into a new post in the bug-reports forum on Mortar's {app}, and saves the diagnostics zip to attach."
+
+#: src/develop/DependencyKindDialog.tsx
+msgid "{name} runs without it and uses it when it is there"
+msgstr "{name} runs without it and uses it when it is there"
 
 #: src/shell/FlatpakGrant.tsx
 msgid "Grant {app} {launcher} access?"

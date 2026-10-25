@@ -26,14 +26,19 @@ export async function findPackage(
 }
 
 /** Records each package in the new project and installs it into the open (development) profile. */
-export async function startDependencies(game: string, dir: string, ids: string[], known: Known) {
+export async function startDependencies(
+  game: string,
+  dir: string,
+  { ids, optional }: { ids: string[]; optional: string[] },
+  known: Known,
+) {
   if (ids.length === 0) {
     return
   }
   for (const id of ids) {
     const version = known[id]?.version || (await findPackage(game, '', id))?.version
     if (version) {
-      await AddDependency(game, dir, id, version)
+      await AddDependency(game, dir, id, version, optional.includes(id))
     }
   }
   await download(ids.map((id) => ({ kind: 'install', package: id })))

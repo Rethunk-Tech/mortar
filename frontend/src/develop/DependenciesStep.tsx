@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Checkbox, Typography } from '@mui/material'
+import { Box, Button, Checkbox, MenuItem, TextField, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { Search } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/browse/service.ts'
 import type { Form } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
@@ -29,13 +29,18 @@ function PackageRow({
   why,
   checked,
   onToggle,
+  optional,
+  onOptional,
 }: {
   id: string
   item: Item | undefined
   why: string
   checked: boolean
   onToggle: (on: boolean) => void
+  optional: boolean
+  onOptional: (on: boolean) => void
 }) {
+  const { t } = useLingui()
   const name = item?.name ?? id
   return (
     <Box
@@ -55,6 +60,18 @@ function PackageRow({
           {[item?.author, why].filter(Boolean).join(' · ')}
         </Typography>
       </Box>
+      <TextField
+        select={true}
+        size="small"
+        disabled={!checked}
+        value={optional ? 'soft' : 'hard'}
+        onChange={(e) => onOptional(e.target.value === 'soft')}
+        slotProps={{ htmlInput: { 'aria-label': t`How ${{ name }} is needed` } }}
+        sx={{ width: 140 }}
+      >
+        <MenuItem value="hard">{t`Required`}</MenuItem>
+        <MenuItem value="soft">{t`Optional`}</MenuItem>
+      </TextField>
     </Box>
   )
 }
@@ -128,6 +145,12 @@ export function DependenciesStep({
               why={rec ? t`Suggested for ${{ answer: answerLabel(form, rec) }}` : ''}
               checked={chosen.includes(id)}
               onToggle={(on) => toggle(id, on)}
+              optional={draft.optional.includes(id)}
+              onOptional={(on) =>
+                set({
+                  optional: on ? [...draft.optional, id] : draft.optional.filter((x) => x !== id),
+                })
+              }
             />
           )
         })}

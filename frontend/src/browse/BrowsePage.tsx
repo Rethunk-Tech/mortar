@@ -3,6 +3,7 @@ import { Box } from '@mui/material'
 import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
+import { DependencyKindDialog } from '../develop/DependencyKindDialog.tsx'
 import { persist } from '../settings/persist.ts'
 import { useOfflineEmpty } from '../shell/offlineText.ts'
 import { space } from '../theme/density.ts'
@@ -309,6 +310,7 @@ function BrowsePage({
         <BrowseDetails game={game} card={card} sourceNames={sourceNames} />
       </Box>
       <BrowseMenu card={card} sourceNames={sourceNames} />
+      <DependencyKindDialog />
     </Box>
   )
 }

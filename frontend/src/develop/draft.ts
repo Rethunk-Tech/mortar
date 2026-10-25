@@ -21,6 +21,8 @@ export interface Draft {
   private: boolean
   // The Thunderstore packages (Team-Name) the mod starts depending on; null until the player sees the recommendations.
   dependencies: string[] | null
+  // The picked packages the mod only uses when present (soft); the rest it requires.
+  optional: string[]
 }
 
 // The projects folder, and each remembered parameter as "param.<id>".
@@ -49,6 +51,7 @@ export function firstDraft(form: Form | null, remembered: Remembered): Draft {
     owner: '',
     private: false,
     dependencies: null,
+    optional: [],
   }
 }
 

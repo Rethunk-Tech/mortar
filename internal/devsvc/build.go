@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"os/exec"
 	"path/filepath"
 	"regexp"
@@ -73,6 +74,10 @@ func (s *Service) Build(ctx context.Context, gameID, dir string) (BuildResult, e
 	if mu, ok := stored.(*sync.Mutex); ok {
 		mu.Lock()
 		defer mu.Unlock()
+	}
+	// Dependencies installed since they were added are declared on the plugin before it compiles.
+	if err := s.syncDependencies(gameID, p); err != nil {
+		log.Printf("devsvc: declaring %s's dependencies: %v", p.Name, err)
 	}
 	out, err := s.run(ctx, p.Dir, "dotnet", "build", "-c", "Debug", "-nologo")
 	if _, missing := errors.AsType[*exec.Error](err); missing {

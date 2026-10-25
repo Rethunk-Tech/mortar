@@ -391,7 +391,12 @@ export function NewModDialog({
         // The mod lives in its profile: open that one, so Mods and Play show it.
         await useProfiles.getState().load(game, project.profile)
         useProfiles.getState().open(project.profile)
-        await startDependencies(game, project.dir, chosenDependencies(draft, form), known)
+        await startDependencies(
+          game,
+          project.dir,
+          { ids: chosenDependencies(draft, form), optional: draft.optional },
+          known,
+        )
         useToasts
           .getState()
           .push({ kind: 'success', title: t`Started ${{ name: project.name }}`, body: project.dir })

@@ -54,6 +54,11 @@ func (s *Service) ModsDir(gameID, id string) (string, error) {
 	return s.store.ModsDir(gameID, id)
 }
 
+// Installed reads the profile's mods with their folders (Store.Installed).
+func (s *Service) Installed(gameID, id string) ([]Installed, error) {
+	return s.store.Installed(gameID, id)
+}
+
 // OpenConsolePath opens the containing folder of path when it is inside the profile's mods folder or the game folder.
 func (s *Service) OpenConsolePath(gameID, id, path string) error {
 	mods, err := s.store.ModsDir(gameID, id)
