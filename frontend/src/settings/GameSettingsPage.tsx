@@ -120,7 +120,9 @@ function GamePages({
   const [folderChanges, folderChanged] = useReducer((n: number) => n + 1, 0)
   const info = useGameInfo(game)
   const loader = useProfiles((s) => s.game?.loaders?.[0])
-  const launchDirect = useSettings((s) => gamePrefs(s, game).defaultLaunchMethod === 'direct')
+  const launchDirect =
+    useSettings((s) => gamePrefs(s, game).defaultLaunchMethod === 'direct') ||
+    info?.directInstall === true
   // The ALVR program row shows wherever ALVR can start first: the game's choice or a profile's override.
   const gameALVR = useSettings((s) => gamePrefs(s, game).startFirst === 'alvr')
   const profileALVR = useProfiles((s) =>

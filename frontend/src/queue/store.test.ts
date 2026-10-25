@@ -111,6 +111,7 @@ beforeEach(() => {
         artUrl: '',
         store: 'steam',
         installs: [],
+        directInstall: false,
       },
       openId: 'p1',
       profiles: [baseProfile()],

@@ -86,7 +86,9 @@ export function OverridesSection({
   const premium = useNexus((s) => s.premium)
   const info = useGameInfo()
   const launch = useSettings((s) => gamePrefs(s, info?.id).defaultLaunchMethod)
-  const directPlay = resolveOverride('defaultLaunchMethod', launch, overrides) === 'direct'
+  const directPlay =
+    resolveOverride('defaultLaunchMethod', launch, overrides) === 'direct' ||
+    info?.directInstall === true
   const gameHours = useSettings((s) => gamePrefs(s, info?.id).saveBackupHours)
   const scheduleOff = Number(resolveOverride('saveBackupHours', String(gameHours), overrides)) === 0
   const smapi = info?.loaderId === 'smapi'

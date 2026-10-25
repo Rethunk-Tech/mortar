@@ -53,7 +53,7 @@ func TestListAndArt(t *testing.T) {
 	if err != nil || len(list) != len(Catalog()) {
 		t.Fatalf("list = %v, %v", list, err)
 	}
-	if g := list[0]; g.ID != "stardew" || !g.Installed || g.ArtURL != "/steam-art/413150" || !g.Available || g.Store != StoreSteam {
+	if g := list[0]; g.ID != "stardew" || !g.Installed || g.ArtURL != "/steam-art/413150" || !g.Available || g.Store != StoreSteam || g.DirectInstall {
 		t.Fatalf("stardew = %+v", g)
 	}
 	if g := list[1]; g.Installed || g.ArtURL != "/steam-art/1966720" || !g.Available {
@@ -202,7 +202,7 @@ func TestGOGAndPreferredStore(t *testing.T) {
 		t.Fatal(err)
 	}
 	list, err = NewService(h2, store2).List()
-	if err != nil || list[0].InstallDir != gog2 || list[0].Store != StoreGOG {
+	if err != nil || list[0].InstallDir != gog2 || list[0].Store != StoreGOG || !list[0].DirectInstall {
 		t.Fatalf("preferred gog = %+v, %v", list[0], err)
 	}
 }
@@ -215,7 +215,7 @@ func TestOverrideWithoutSteam(t *testing.T) {
 		t.Fatal(err)
 	}
 	list, err := NewService(t.TempDir(), store).List()
-	if err != nil || !list[0].Installed || list[0].InstallDir != override {
+	if err != nil || !list[0].Installed || list[0].InstallDir != override || !list[0].DirectInstall {
 		t.Fatalf("list = %+v, %v", list[0], err)
 	}
 }

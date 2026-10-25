@@ -58,6 +58,7 @@ test('listItems drops bundled SMAPI and the bridge and keeps disabled mods', () 
       artUrl: '',
       store: 'steam',
       installs: [],
+      directInstall: false,
     },
   })
   const items = listItems(

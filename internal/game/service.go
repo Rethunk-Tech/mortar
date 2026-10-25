@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -55,6 +56,9 @@ type GameInfo struct {
 	IconURL  string    `json:"iconUrl"`
 	Store    string    `json:"store"`
 	Installs []Install `json:"installs"`
+	// DirectInstall is true when an install's store cannot start it, so Mortar starts it directly whatever the launch
+	// method, and the direct launch settings (instances, delay) apply.
+	DirectInstall bool `json:"directInstall"`
 }
 
 // LoaderRef names one of a game's loaders.
@@ -250,6 +254,10 @@ func List(home string, cur settings.Settings) ([]GameInfo, error) {
 				return nil, err
 			}
 			info.Installed, info.InstallDir, info.Store = dir != "", dir, store
+			// A folder the player chose that no store lists starts as a plain folder install.
+			picked := dir != "" && !slices.ContainsFunc(all, func(in Install) bool { return fsx.SamePath(in.Dir, dir) })
+			info.DirectInstall = picked && !(Install{Store: store}).StoreStarts() ||
+				slices.ContainsFunc(all, func(in Install) bool { return !in.StoreStarts() })
 			if all != nil {
 				info.Installs = all
 				for i := range info.Installs {
