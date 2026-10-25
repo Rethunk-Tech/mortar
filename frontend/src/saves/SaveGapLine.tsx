@@ -48,7 +48,7 @@ export function SaveGapLine({ fit, profile, game }: { fit: Fit; profile: Profile
   // Dismissing remembers which mods were wanted, so the line comes back only when that set changes.
   const wanted = [...missing, ...disabled]
     .map((m) => m.id)
-    .sort()
+    .sort((a, b) => a.localeCompare(b))
     .join('\n')
   const [dismissed, setDismissed] = useStoredState(
     `mortar.saveGapDismissed.${game}.${profile.id}.${fit.folder}`,
