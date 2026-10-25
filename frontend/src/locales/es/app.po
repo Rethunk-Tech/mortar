@@ -1905,6 +1905,10 @@ msgstr ""
 msgid "{names} cannot be reached; showing what Mortar saved ({asOf})"
 msgstr ""
 
+#: src/develop/DevelopTab.tsx
+msgid "Remove from list…"
+msgstr ""
+
 #: src/games/useGameTiles.ts
 msgid "Coming in a later Mortar version"
 msgstr ""
@@ -4532,6 +4536,10 @@ msgstr ""
 msgid "Clear history"
 msgstr ""
 
+#: src/develop/DevelopTab.tsx
+msgid "Remove {name} from the list?"
+msgstr ""
+
 #: src/queue/DownloadsPill.tsx
 msgid "Downloads: {downloading} {percent}%"
 msgstr ""
@@ -5675,6 +5683,10 @@ msgstr ""
 
 #: src/saves/saveName.ts
 msgid "World"
+msgstr ""
+
+#: src/develop/DevelopTab.tsx
+msgid "Its folder stays where it is; Mortar stops building it and installing it into the profile."
 msgstr ""
 
 #: src/groups/SavedGroupsSection.tsx

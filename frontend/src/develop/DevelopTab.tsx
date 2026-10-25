@@ -34,6 +34,7 @@ import { LetterTile } from '../mods/parts.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { persist } from '../settings/persist.ts'
 import { useSettings } from '../settings/store.ts'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { MenuRule } from '../shell/TitleMenu.tsx'
 import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
@@ -200,6 +201,7 @@ function MoreMenu({
 }) {
   const { t } = useLingui()
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const [forgetting, setForgetting] = useState(false)
   const running = useDevRuns((s) => runOf(s.byDir, project.dir).running)
   const act = (fn: () => unknown) => () => {
     setAnchor(null)
@@ -224,14 +226,20 @@ function MoreMenu({
           {t`Open folder`}
         </MenuItem>
         <MenuRule />
-        <MenuItem
-          onClick={act(() =>
-            persist(() => Forget(game, project.dir), t`Could not save that setting`),
-          )}
-        >
-          {t`Remove from list`}
-        </MenuItem>
+        <MenuItem onClick={act(() => setForgetting(true))}>{t`Remove from list…`}</MenuItem>
       </Menu>
+      <ConfirmationDialog
+        open={forgetting}
+        tone="warning"
+        title={t`Remove ${{ name: project.name }} from the list?`}
+        body={t`Its folder stays where it is; Mortar stops building it and installing it into the profile.`}
+        confirmLabel={t`Remove from list`}
+        onCancel={() => setForgetting(false)}
+        onConfirm={() => {
+          setForgetting(false)
+          persist(() => Forget(game, project.dir), t`Could not save that setting`)
+        }}
+      />
     </>
   )
 }

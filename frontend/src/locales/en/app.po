@@ -1905,6 +1905,10 @@ msgstr "Shortcuts"
 msgid "{names} cannot be reached; showing what Mortar saved ({asOf})"
 msgstr "{names} cannot be reached; showing what Mortar saved ({asOf})"
 
+#: src/develop/DevelopTab.tsx
+msgid "Remove from list…"
+msgstr "Remove from list…"
+
 #: src/games/useGameTiles.ts
 msgid "Coming in a later Mortar version"
 msgstr "Coming in a later Mortar version"
@@ -4532,6 +4536,10 @@ msgstr "A profile with that name already exists, so this one is \"{name}\""
 msgid "Clear history"
 msgstr "Clear history"
 
+#: src/develop/DevelopTab.tsx
+msgid "Remove {name} from the list?"
+msgstr "Remove {name} from the list?"
+
 #: src/queue/DownloadsPill.tsx
 msgid "Downloads: {downloading} {percent}%"
 msgstr "Downloads: {downloading} {percent}%"
@@ -5676,6 +5684,10 @@ msgstr "Saves"
 #: src/saves/saveName.ts
 msgid "World"
 msgstr "World"
+
+#: src/develop/DevelopTab.tsx
+msgid "Its folder stays where it is; Mortar stops building it and installing it into the profile."
+msgstr "Its folder stays where it is; Mortar stops building it and installing it into the profile."
 
 #: src/groups/SavedGroupsSection.tsx
 msgid "Rename saved group"
