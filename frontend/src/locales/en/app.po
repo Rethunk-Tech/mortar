@@ -1751,6 +1751,10 @@ msgstr "Preview what they see"
 msgid "Disabled in this profile"
 msgstr "Disabled in this profile"
 
+#: src/develop/ProjectCard.tsx
+msgid "Show log"
+msgstr "Show log"
+
 #: src/install/OverlayPlaceDialog.tsx
 #: src/queue/Callout.tsx
 msgid "Into {profile}"
@@ -3704,6 +3708,10 @@ msgstr "Sign in to import"
 #: src/game/ProfileMenuItems.tsx
 msgid "Folder"
 msgstr "Folder"
+
+#: src/develop/ProjectCard.tsx
+msgid "Last run: {frame} ms a frame"
+msgstr "Last run: {frame} ms a frame"
 
 #: src/firstrun/FindStep.tsx
 #: src/launchers/LauncherList.tsx
@@ -6226,6 +6234,10 @@ msgstr "{count, plural, one {# superseded by a newer download} other {# supersed
 msgid "Name the tool."
 msgstr "Name the tool."
 
+#: src/develop/ProjectCard.tsx
+msgid "Last run: {start} ms to start"
+msgstr "Last run: {start} ms to start"
+
 #: src/queue/QueueBody.tsx
 msgid "Check this download"
 msgstr "Check this download"
@@ -6658,6 +6670,10 @@ msgstr "Forest farm"
 #: src/game/TabHeader.tsx
 msgid "{count, plural, one {# save} other {# saves}}"
 msgstr "{count, plural, one {# save} other {# saves}}"
+
+#: src/develop/ProjectCard.tsx
+msgid "Last run: {start} ms to start, {frame} ms a frame"
+msgstr "Last run: {start} ms to start, {frame} ms a frame"
 
 #: src/install/DownloadsDialog.tsx
 msgid "Choose an archive first."

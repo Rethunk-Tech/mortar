@@ -19,6 +19,7 @@ import { useEffect, useState } from 'react'
 import type {
   GitState,
   Problem,
+  ProjectInfo,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import {
   Forget,
@@ -52,6 +53,7 @@ import {
   useProjectInfo,
 } from './builds.ts'
 import { EditProjectDialog } from './EditProjectDialog.tsx'
+import { showModLog, useModCosts } from './modCosts.ts'
 import { ReleaseDialog } from './ReleaseDialog.tsx'
 
 const THUNDERSTORE_UPLOAD = 'https://thunderstore.io/package/create/'
@@ -201,6 +203,34 @@ function useInfo(game: string, dir: string) {
   return info
 }
 
+// The mod's own cost in the development profile's latest measured run.
+function Costs({
+  game,
+  profile,
+  info,
+}: {
+  game: string
+  profile: string
+  info: ProjectInfo | undefined
+}) {
+  const { t, i18n } = useLingui()
+  const { startupMs, frameMs } = useModCosts(game, profile, info)
+  const start = startupMs === undefined ? '' : Math.round(startupMs).toLocaleString(i18n.locale)
+  const frame =
+    frameMs === undefined ? '' : frameMs.toLocaleString(i18n.locale, { maximumFractionDigits: 2 })
+  let line = ''
+  if (start && frame) {
+    line = t`Last run: ${{ start }} ms to start, ${{ frame }} ms a frame`
+  } else if (start) {
+    line = t`Last run: ${{ start }} ms to start`
+  } else if (frame) {
+    line = t`Last run: ${{ frame }} ms a frame`
+  }
+  return line ? (
+    <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>{line}</Typography>
+  ) : null
+}
+
 // A project whose folder or project file is gone: it can only leave the list.
 function MissingCard({ game, project }: { game: string; project: DevProject }) {
   const { t } = useLingui()
@@ -237,6 +267,7 @@ function MoreMenu({
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const [forgetting, setForgetting] = useState(false)
   const running = useDevRuns((s) => runOf(s.byDir, project.dir).running)
+  const info = useProjectInfo((s) => s.byDir[project.dir])
   // One start with the game's Mono debugger open; the toast says where to attach.
   const debug = () =>
     StartDebugging(game, project.profile)
@@ -263,6 +294,9 @@ function MoreMenu({
           {t`Pack for ${{ source: sourceLabel('thunderstore') }}`}
         </MenuItem>
         <MenuItem onClick={act(onRelease)}>{t`Release…`}</MenuItem>
+        <MenuItem disabled={!info} onClick={act(() => info && showModLog(info))}>
+          {t`Show log`}
+        </MenuItem>
         <MenuItem onClick={act(debug)}>{t`Start for debugging`}</MenuItem>
         <MenuItem
           onClick={act(() =>
@@ -396,6 +430,7 @@ export function ProjectCard({
         />
       </Box>
       {list ? null : <Box>{actions}</Box>}
+      <Costs game={game} profile={project.profile} info={info} />
       <Outcome game={game} project={project} />
       {editing && info ? (
         <EditProjectDialog

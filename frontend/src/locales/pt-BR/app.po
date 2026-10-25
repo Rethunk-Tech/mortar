@@ -1751,6 +1751,10 @@ msgstr ""
 msgid "Disabled in this profile"
 msgstr ""
 
+#: src/develop/ProjectCard.tsx
+msgid "Show log"
+msgstr ""
+
 #: src/install/OverlayPlaceDialog.tsx
 #: src/queue/Callout.tsx
 msgid "Into {profile}"
@@ -3703,6 +3707,10 @@ msgstr ""
 
 #: src/game/ProfileMenuItems.tsx
 msgid "Folder"
+msgstr ""
+
+#: src/develop/ProjectCard.tsx
+msgid "Last run: {frame} ms a frame"
 msgstr ""
 
 #: src/firstrun/FindStep.tsx
@@ -6226,6 +6234,10 @@ msgstr ""
 msgid "Name the tool."
 msgstr ""
 
+#: src/develop/ProjectCard.tsx
+msgid "Last run: {start} ms to start"
+msgstr ""
+
 #: src/queue/QueueBody.tsx
 msgid "Check this download"
 msgstr ""
@@ -6657,6 +6669,10 @@ msgstr ""
 
 #: src/game/TabHeader.tsx
 msgid "{count, plural, one {# save} other {# saves}}"
+msgstr ""
+
+#: src/develop/ProjectCard.tsx
+msgid "Last run: {start} ms to start, {frame} ms a frame"
 msgstr ""
 
 #: src/install/DownloadsDialog.tsx
