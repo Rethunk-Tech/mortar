@@ -22,7 +22,6 @@ import { offerVortexFolder } from '../profiles/vortexFolderOffer.ts'
 import { DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { showImported } from './useImportFlow.ts'
@@ -84,6 +83,16 @@ function foundProfiles(
 // The profiles other mod managers keep for this game on this computer: r2modman, Gale, Vortex, Mod Organizer 2 and
 // Stardrop. Picking one previews it in the import dialog; ticking several r2modman or Gale profiles imports them all.
 // The dialog places the body and the footer; nothing is read until active.
+const toFound = (found: Awaited<ReturnType<typeof LocalProfiles>>): Found[] =>
+  (found ?? []).map((p) => ({
+    key: `folder:${p.path}`,
+    source: p.source,
+    name: p.name,
+    mods: p.mods,
+    folder: p.path,
+    imported: p.imported,
+  }))
+
 export function useManagerPane({
   game,
   active,
@@ -99,37 +108,27 @@ export function useManagerPane({
 }) {
   const { t } = useLingui()
   const { sources: external, reload } = useExternalImportSources(game, active)
-  const { data: vortexSupported } = useLoaded(
-    active ? () => ExternalVortexSupported(game) : null,
-    [game, active],
-    false,
-    reportUnexpected,
-  )
+  const [vortexSupported, setVortexSupported] = useState(false)
   // null until this game's profiles are listed, so opening never flashes "No profiles found".
   const [folders, setFolders] = useState<Found[] | null>(null)
   const [chosen, setChosen] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
   const loadFolders = useCallback(() => {
     LocalProfiles(game)
-      .then((found) =>
-        setFolders(
-          (found ?? []).map((p) => ({
-            key: `folder:${p.path}`,
-            source: p.source,
-            name: p.name,
-            mods: p.mods,
-            folder: p.path,
-            imported: p.imported,
-          })),
-        ),
-      )
+      .then((found) => setFolders(toFound(found)))
       .catch(reportUnexpected)
   }, [game])
+  // Read together, so the pane redraws once for both answers.
   useEffect(() => {
     if (active) {
-      loadFolders()
+      Promise.all([LocalProfiles(game), ExternalVortexSupported(game)])
+        .then(([found, vortex]) => {
+          setFolders(toFound(found))
+          setVortexSupported(vortex)
+        })
+        .catch(reportUnexpected)
     }
-  }, [active, loadFolders])
+  }, [active, game])
   const all = foundProfiles(folders, external)
   const pick = (f: Found) => {
     if (f.folder) {

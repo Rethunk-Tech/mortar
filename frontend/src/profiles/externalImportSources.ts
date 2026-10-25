@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { SourceInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/migrate/models.ts'
 import { ExternalSources } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { sameValue } from '../shell/sameValue.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 
 // Detection runs each time `active` turns true (a dialog opening), so changes made since the last look show up.
@@ -18,7 +19,9 @@ export function useExternalImportSources(
       ExternalSources(game)
         .then((detected) => {
           if (isCurrent()) {
-            setSources(detected ?? [])
+            // An unchanged answer keeps the list, so the pane showing it does not redraw.
+            const next = detected ?? []
+            setSources((prev) => (sameValue(prev, next) ? prev : next))
           }
         })
         .catch((error) => {

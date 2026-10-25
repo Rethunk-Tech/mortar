@@ -8,20 +8,26 @@ import {
   Rename,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import type { SavedGroup } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savedgroups/models.ts'
-import { Apply } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savedgroups/service.ts'
+import {
+  Apply,
+  List as SavedGroupsList,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savedgroups/service.ts'
 import type { Template } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/templates/models.ts'
-import { NewProfileFromTemplate } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/templates/service.ts'
+import {
+  NewProfileFromTemplate,
+  StarterTemplates,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/templates/service.ts'
 import { savedGroupApplied } from '../groups/applied.ts'
 import { savedGroupWants } from '../groups/missingWants.ts'
-import { useSavedGroups } from '../groups/useSavedGroups.ts'
 import { listNames } from '../i18n/list.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
 import { Field, FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { starterWants } from '../templates/starterWants.ts'
 import { ManageTemplatesDialog } from '../templates/TemplateDialogs.tsx'
-import { useStarterTemplates } from '../templates/useStarterTemplates.ts'
 import { useTemplates } from '../templates/useTemplates.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { groupStart, savedGroupOf } from './newProfileStart.ts'
@@ -209,13 +215,35 @@ function useCreate(game: string, onClose: () => void) {
   return { busy, submit }
 }
 
+const NO_STARTING_POINTS = { starters: [] as StarterTemplate[], savedGroups: [] as SavedGroup[] }
+const orNone = <T,>(read: Promise<T[] | null>) =>
+  read
+    .then((found) => found ?? [])
+    .catch((error: unknown) => {
+      reportUnexpected(error)
+      return [] as T[]
+    })
+
+// The starter templates and saved groups a profile can start from, read together so the dialog redraws once.
+function useStartingPoints(game: string, open: boolean) {
+  return useLoaded(
+    open && game
+      ? () =>
+          Promise.all([orNone(StarterTemplates(game)), orNone(SavedGroupsList(game))]).then(
+            ([starters, savedGroups]) => ({ starters, savedGroups }),
+          )
+      : null,
+    [game, open],
+    NO_STARTING_POINTS,
+  ).data
+}
+
 export function NewProfileDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useLingui()
   const game = useProfiles((s) => s.game?.id ?? '')
   const { templates, reload } = useTemplates(game, open)
   const { busy, submit } = useCreate(game, onClose)
-  const starters = useStarterTemplates(game, open)
-  const { savedGroups } = useSavedGroups(game, open)
+  const { starters, savedGroups } = useStartingPoints(game, open)
   const [name, setName] = useState('')
   const [from, setFrom] = useState(EMPTY)
   const [managing, setManaging] = useState(false)
