@@ -85,7 +85,8 @@ function dialogKit(h: Helpers) {
     await inDialog(page, step)
   }
 
-  // New mod's later steps: a valid name and description open the second, the author's fields the third.
+  // New mod's later steps: a valid name and description open the second, the author's fields the third (dependencies),
+  // and Next from there the project step.
   const newModStep = async (p: Page, steps: number) => {
     await tab(p, 'Develop')
     await button(p, /^New mod…/)
@@ -98,6 +99,9 @@ function dialogKit(h: Helpers) {
       await box('Author').fill('Render Check')
       await box('Thunderstore team').fill('RenderCheck')
       await box('Id prefix').fill('com.rendercheck')
+      await inDialog(p, /^Next$/)
+    }
+    if (steps > 2) {
       await inDialog(p, /^Next$/)
     }
   }
@@ -188,7 +192,8 @@ export function dialogCases(h: Helpers): Case[] {
     }),
     // Filling the fields and stepping through is one action, so it re-renders the wizard several times over.
     dialog('new-mod-author', (p) => newModStep(p, 1), WIZARD_BUDGET),
-    dialog('new-mod-project', (p) => newModStep(p, 2), WIZARD_BUDGET),
+    dialog('new-mod-dependencies', (p) => newModStep(p, 2), WIZARD_BUDGET),
+    dialog('new-mod-project', (p) => newModStep(p, 3), WIZARD_BUDGET),
     dialog('mod-also-add', async (p) => {
       await view(p, 'List view')
       await row(p, 0).click()

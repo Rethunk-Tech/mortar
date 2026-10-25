@@ -9,6 +9,7 @@ import {
   openSettings,
   waitForQuietNotices,
 } from './app.ts'
+import { serveModTemplate } from './modTemplate.ts'
 import { nestedBoxes } from './renderBoxes.ts'
 import { newCases } from './renderCases.ts'
 import { dialogCases } from './renderDialogs.ts'
@@ -17,7 +18,7 @@ import { unevenSpacing } from './renderGaps.ts'
 import { HOOK } from './renderHook.ts'
 import { type LayoutBreak, layoutBreaks } from './renderLayout.ts'
 import { printExtras, report, startupLine, watchLog } from './renderLog.ts'
-import { Meter, type Sample } from './renderMeter.ts'
+import { Meter, perTen, type Sample } from './renderMeter.ts'
 import { screenCases } from './renderScreens.ts'
 import { PAGE } from './renderViewport.ts'
 import { keepServerLogs, sandboxPort, selftest } from './sandbox.ts'
@@ -286,7 +287,7 @@ export interface Result {
  * count growing, and one poll caught in a short watch is not read as several. */
 function overBudget(c: Case, action: Sample, idle: Sample): string[] {
   const b = { ...DEFAULT_BUDGET, ...c.budget }
-  const forWatch = (perTen: number) => Math.ceil((perTen * IDLE_MS) / IDLE_SCALE_MS)
+  const forWatch = (tenSecond: number) => Math.ceil((tenSecond * IDLE_MS) / IDLE_SCALE_MS)
   const over: string[] = []
   if (action.updates > b.updates) {
     over.push(`re-rendered ${action.updates} > ${b.updates}`)
@@ -303,26 +304,6 @@ function overBudget(c: Case, action: Sample, idle: Sample): string[] {
     over.push(`idle backend calls ${idle.calls} > ${forWatch(b.idleCalls)} in ${IDLE_MS / 1000} s`)
   }
   return over
-}
-
-/** Idle figures per 10 s, whatever the watch length. */
-function perIdle(s: Sample): Sample {
-  const k = IDLE_SCALE_MS / IDLE_MS
-  const scale = (n: number) => Math.round(n * k)
-  return {
-    ...s,
-    commits: scale(s.commits),
-    mounts: scale(s.mounts),
-    updates: scale(s.updates),
-    mutations: scale(s.mutations),
-    calls: scale(s.calls),
-    layouts: scale(s.layouts),
-    styles: scale(s.styles),
-    scriptMs: scale(s.scriptMs),
-    top: s.top.map(([n, v]) => [n, scale(v)]),
-    startedBy: s.startedBy.map(([n, v]) => [n, scale(v)]),
-    why: s.why.map(([n, v]) => [n, scale(v)]),
-  }
 }
 
 async function measure(
@@ -351,7 +332,7 @@ async function measure(
     return {
       name: c.name,
       action,
-      idle: perIdle(watched),
+      idle: perTen(watched, IDLE_MS),
       ms,
       over: overBudget(c, action, watched),
     }
@@ -462,6 +443,7 @@ async function main(): Promise<number> {
   } else {
     process.env.MORTAR_E2E_DIR = dir
     mkdirSync(dir, { recursive: true })
+    const stopTemplate = serveModTemplate(dir)
     try {
       const seeded = Boolean(process.env.MORTAR_RENDER_SEEDED)
       if (process.env.MORTAR_RENDER_DATA) {
@@ -474,6 +456,7 @@ async function main(): Promise<number> {
       ;({ results, breaks } = await walk(`http://127.0.0.1:${sandboxPort()}`, dir, chosen, shots))
     } finally {
       keepServerLogs(dir, `${out}/sandbox-server`)
+      stopTemplate()
       try {
         selftest(dir, 'destroy')
       } catch {

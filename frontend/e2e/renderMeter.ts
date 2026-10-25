@@ -215,3 +215,25 @@ export class Meter {
 interface RenderWindow {
   mortarRenders: { reset: () => void; read: () => PageCounts; stillMs: () => number }
 }
+
+const TEN_S_MS = 10_000
+
+/** Idle figures per 10 s, whatever the watch length. */
+export function perTen(s: Sample, watchedMs: number): Sample {
+  const k = TEN_S_MS / watchedMs
+  const scale = (n: number) => Math.round(n * k)
+  return {
+    ...s,
+    commits: scale(s.commits),
+    mounts: scale(s.mounts),
+    updates: scale(s.updates),
+    mutations: scale(s.mutations),
+    calls: scale(s.calls),
+    layouts: scale(s.layouts),
+    styles: scale(s.styles),
+    scriptMs: scale(s.scriptMs),
+    top: s.top.map(([n, v]) => [n, scale(v)]),
+    startedBy: s.startedBy.map(([n, v]) => [n, scale(v)]),
+    why: s.why.map(([n, v]) => [n, scale(v)]),
+  }
+}

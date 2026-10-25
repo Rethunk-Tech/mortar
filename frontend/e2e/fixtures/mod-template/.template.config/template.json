@@ -1,0 +1,53 @@
+{
+  "name": "Render check template",
+  "shortName": "render-check-mod",
+  "sourceName": "ModTemplate",
+  "symbols": {
+    "description": {
+      "type": "parameter",
+      "displayName": "Description",
+      "datatype": "string",
+      "isRequired": true,
+      "replaces": "ModDescription"
+    },
+    "modAuthor": {
+      "type": "parameter",
+      "displayName": "Author",
+      "datatype": "string",
+      "isRequired": true,
+      "replaces": "ModAuthor"
+    },
+    "team": {
+      "type": "parameter",
+      "displayName": "Thunderstore team",
+      "datatype": "string",
+      "isRequired": true,
+      "replaces": "ModTeam"
+    },
+    "idPrefix": {
+      "type": "parameter",
+      "displayName": "Id prefix",
+      "datatype": "string",
+      "isRequired": true,
+      "replaces": "modprefix"
+    },
+    "categories": {
+      "type": "parameter",
+      "displayName": "Categories",
+      "datatype": "choice",
+      "allowMultipleValues": true,
+      "defaultValue": "mods",
+      "choices": [
+        { "choice": "mods", "displayName": "Mods" },
+        { "choice": "items", "displayName": "Items" },
+        { "choice": "moons", "displayName": "Moons" }
+      ]
+    },
+    "config": {
+      "type": "parameter",
+      "displayName": "Has settings",
+      "datatype": "bool",
+      "defaultValue": "true"
+    }
+  }
+}
