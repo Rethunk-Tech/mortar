@@ -1,0 +1,300 @@
+package devsvc
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"html"
+	"os"
+	"path/filepath"
+	"regexp"
+	"slices"
+	"strings"
+
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
+)
+
+// The project's own files are the truth about it: Mortar reads them each time and follows a rename made outside it.
+const propsFile = "Directory.Build.props"
+
+var (
+	categorySlug = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
+	teamPattern  = regexp.MustCompile(`^[A-Za-z0-9_]{1,64}$`)
+	guidPattern  = regexp.MustCompile(`^[a-z0-9]+(\.[a-z0-9]+)*$`)
+)
+
+// ProjectInfo is what a project's files say about the mod, read fresh each time.
+type ProjectInfo struct {
+	// Missing is set when the project's folder or its project file is gone; nothing else is.
+	Missing     bool     `json:"missing"`
+	Name        string   `json:"name"`
+	GUID        string   `json:"guid"`
+	IDPrefix    string   `json:"idPrefix"`
+	Author      string   `json:"author"`
+	Team        string   `json:"team"`
+	Description string   `json:"description"`
+	Categories  []string `json:"categories"`
+	// Released is the latest vX.Y.Z tag's version, empty before the first release.
+	Released string `json:"released"`
+}
+
+// ProjectEdit is a change to a project's details; a new Name renames the project.
+type ProjectEdit struct {
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	Author      string   `json:"author"`
+	Team        string   `json:"team"`
+	IDPrefix    string   `json:"idPrefix"`
+	Categories  []string `json:"categories"`
+}
+
+func propPattern(name string) *regexp.Regexp {
+	return regexp.MustCompile(`(<` + name + `(?:\s[^>]*)?>)([^<]*)(</` + name + `>)`)
+}
+
+func readProp(body, name string) string {
+	m := propPattern(name).FindStringSubmatch(body)
+	if m == nil {
+		return ""
+	}
+	return html.UnescapeString(strings.TrimSpace(m[2]))
+}
+
+// setProp sets the first <name> element's text to value, XML-escaped; a file without the element is left alone.
+func setProp(body, name, value string) string {
+	re := propPattern(name)
+	done := false
+	return re.ReplaceAllStringFunc(body, func(m string) string {
+		if done {
+			return m
+		}
+		done = true
+		parts := re.FindStringSubmatch(m)
+		return parts[1] + xmlEscape(value) + parts[3]
+	})
+}
+
+// csprojOf is the project's one project file under src/, which names it; false when the project is gone.
+func csprojOf(dir string) (string, bool) {
+	found, _ := filepath.Glob(filepath.Join(dir, "src", "*", "*.csproj"))
+	if len(found) == 0 {
+		return "", false
+	}
+	return found[0], true
+}
+
+// Inspect reads the project's details from its files. When the project was renamed outside Mortar, the record and the
+// extra mods folder follow the new build output, and the install from the old one leaves its profile.
+func (s *Service) Inspect(ctx context.Context, gameID, dir string) (ProjectInfo, error) {
+	p, err := s.project(gameID, dir)
+	if err != nil {
+		return ProjectInfo{}, err
+	}
+	csproj, ok := csprojOf(p.Dir)
+	if !ok {
+		// Moved or deleted outside Mortar: the card offers to remove it.
+		return ProjectInfo{Missing: true, Name: p.Name, Categories: []string{}}, nil
+	}
+	info, err := readInfo(p.Dir, csproj)
+	if err != nil {
+		return ProjectInfo{}, err
+	}
+	if v, err := s.NextVersions(ctx, gameID, dir); err == nil {
+		info.Released = v.Current
+	}
+	base := strings.TrimSuffix(filepath.Base(csproj), ".csproj")
+	if base != p.Name {
+		if err := s.follow(gameID, p, base); err != nil {
+			return ProjectInfo{}, err
+		}
+	}
+	return info, nil
+}
+
+func readInfo(dir, csproj string) (ProjectInfo, error) {
+	project, err := fsx.ReadFile(csproj)
+	if err != nil {
+		return ProjectInfo{}, err
+	}
+	props, _ := fsx.ReadFile(filepath.Join(dir, propsFile))
+	base := strings.TrimSuffix(filepath.Base(csproj), ".csproj")
+	info := ProjectInfo{
+		Name:        cmpOr(readProp(string(project), "AssemblyTitle"), base),
+		GUID:        readProp(string(project), "AssemblyName"),
+		Author:      readProp(string(props), "Authors"),
+		Team:        readProp(string(props), "ThunderstoreTeam"),
+		Description: readProp(string(project), "ThunderstoreDescription"),
+		Categories:  []string{},
+	}
+	info.IDPrefix = strings.TrimSuffix(info.GUID, "."+info.Name)
+	for c := range strings.SplitSeq(readProp(string(project), "ThunderstoreCategories"), ";") {
+		if c = strings.TrimSpace(c); c != "" {
+			info.Categories = append(info.Categories, c)
+		}
+	}
+	return info, nil
+}
+
+// follow points the record and the extra mods folder at the build output of the project file named name, and takes
+// the install from the old output out of the development profile.
+func (s *Service) follow(gameID string, p settings.DevProject, name string) error {
+	next := p
+	next.Name = name
+	next.Output = filepath.Join(p.Dir, "artifacts", "bin", name, "debug")
+	if err := os.MkdirAll(next.Output, 0o750); err != nil {
+		return err
+	}
+	if err := s.Settings.ReplaceDevProject(gameID, p, next); err != nil {
+		return err
+	}
+	profiles, err := s.Profiles.List(gameID)
+	if err != nil {
+		return err
+	}
+	for _, pr := range profiles {
+		if pr.ID != p.Profile {
+			continue
+		}
+		var stale []string
+		for _, e := range pr.Entries {
+			if e.Source.Folder == p.Output {
+				stale = append(stale, e.Key)
+			}
+		}
+		if len(stale) > 0 {
+			_, err = s.Profiles.RemoveEntries(gameID, pr.ID, stale)
+		}
+	}
+	return err
+}
+
+func (e ProjectEdit) check() error {
+	bad := func(what string) error { return usererr.Wrap(usererr.Invalid, errors.New(what)) }
+	oneLine := func(v string) bool { return strings.TrimSpace(v) != "" && !strings.ContainsAny(v, "\r\n") }
+	switch {
+	case !modName.MatchString(e.Name):
+		return bad("the mod name must start with a capital letter and hold only letters and digits")
+	case !oneLine(e.Description) || len([]rune(e.Description)) > maxDescription:
+		return bad(fmt.Sprintf("describe the mod in one line of at most %d characters", maxDescription))
+	case !oneLine(e.Author):
+		return bad("name the author")
+	case !teamPattern.MatchString(e.Team):
+		return bad("the team holds only letters, digits and underscores")
+	case !guidPattern.MatchString(e.IDPrefix):
+		return bad("the id prefix holds lower-case letters and digits between dots, such as com.yourname")
+	case slices.ContainsFunc(e.Categories, func(c string) bool { return !categorySlug.MatchString(c) }):
+		return bad("categories are Thunderstore category slugs")
+	}
+	return nil
+}
+
+// Edit writes new details into the project's files, renaming the project first when the name changed.
+func (s *Service) Edit(ctx context.Context, gameID, dir string, e ProjectEdit) (ProjectInfo, error) {
+	if err := e.check(); err != nil {
+		return ProjectInfo{}, err
+	}
+	p, err := s.project(gameID, dir)
+	if err != nil {
+		return ProjectInfo{}, err
+	}
+	csproj, ok := csprojOf(p.Dir)
+	if !ok {
+		return ProjectInfo{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("%s has no project file under src", p.Dir))
+	}
+	old, err := readInfo(p.Dir, csproj)
+	if err != nil {
+		return ProjectInfo{}, err
+	}
+	if e.Name != old.Name {
+		if csproj, err = s.rename(ctx, p.Dir, csproj, old.Name, e.Name); err != nil {
+			return ProjectInfo{}, err
+		}
+	}
+	if err := editFile(csproj, func(body string) string {
+		for name, v := range map[string]string{
+			"AssemblyName": e.IDPrefix + "." + e.Name, "AssemblyTitle": e.Name, "RootNamespace": e.Name,
+			"ThunderstoreName": e.Name, "ThunderstoreDescription": e.Description,
+			"ThunderstoreCategories": strings.Join(e.Categories, ";"),
+		} {
+			body = setProp(body, name, v)
+		}
+		return body
+	}); err != nil {
+		return ProjectInfo{}, err
+	}
+	if err := editFile(filepath.Join(p.Dir, propsFile), func(body string) string {
+		body = setProp(body, "ThunderstoreTeam", e.Team)
+		body = setProp(body, "Authors", e.Author)
+		body = setProp(body, "Company", e.Author)
+		return strings.Replace(body, xmlEscape(old.Author)+"</Copyright>", xmlEscape(e.Author)+"</Copyright>", 1)
+	}); err != nil {
+		return ProjectInfo{}, err
+	}
+	if old.Author != "" && old.Author != e.Author {
+		_ = editFile(filepath.Join(p.Dir, "LICENSE"), func(body string) string {
+			return regexp.MustCompile(`(Copyright \(c\) \d{4} )`+regexp.QuoteMeta(old.Author)).ReplaceAllString(body, "${1}"+e.Author)
+		})
+	}
+	return s.Inspect(ctx, gameID, dir)
+}
+
+func editFile(path string, fn func(string) string) error {
+	body, err := fsx.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	if next := fn(string(body)); next != string(body) {
+		return fsx.WriteFile(path, []byte(next), 0o644) // #nosec G306 -- a tracked project file
+	}
+	return nil
+}
+
+// rename moves the project from old to name: its folder, project and solution files (with git when the project is a
+// repository, so history follows), the namespace in its code, its README heading and its bundle's name.
+func (s *Service) rename(ctx context.Context, dir, csproj, old, name string) (string, error) {
+	move := func(from, to string) error {
+		if _, err := os.Stat(filepath.Join(dir, ".git")); err == nil {
+			if _, err := s.run(ctx, dir, "git", "mv", "--", from, to); err == nil {
+				return nil
+			}
+		}
+		return os.Rename(filepath.Join(dir, from), filepath.Join(dir, to))
+	}
+	srcOld, srcNew := filepath.Join("src", filepath.Base(filepath.Dir(csproj))), filepath.Join("src", name)
+	if _, err := os.Lstat(filepath.Join(dir, srcNew)); err == nil {
+		return "", usererr.Wrap(usererr.Invalid, fmt.Errorf("%s already exists", srcNew))
+	}
+	if err := move(srcOld, srcNew); err != nil {
+		return "", err
+	}
+	if err := move(filepath.Join(srcNew, filepath.Base(csproj)), filepath.Join(srcNew, name+".csproj")); err != nil {
+		return "", err
+	}
+	if slnx, _ := filepath.Glob(filepath.Join(dir, "*.slnx")); len(slnx) == 1 {
+		if err := move(filepath.Base(slnx[0]), name+".slnx"); err != nil {
+			return "", err
+		}
+		_ = editFile(filepath.Join(dir, name+".slnx"), func(b string) string {
+			return strings.ReplaceAll(b, filepath.ToSlash(srcOld)+"/"+filepath.Base(csproj), "src/"+name+"/"+name+".csproj")
+		})
+	}
+	word := regexp.MustCompile(`\b` + regexp.QuoteMeta(old) + `\b`)
+	bundle := regexp.MustCompile(`\b` + regexp.QuoteMeta(strings.ToLower(old)) + `\.bundle\b`)
+	code, _ := filepath.Glob(filepath.Join(dir, srcNew, "*.cs"))
+	for _, f := range code {
+		_ = editFile(f, func(b string) string {
+			return bundle.ReplaceAllString(word.ReplaceAllString(b, name), strings.ToLower(name)+".bundle")
+		})
+	}
+	for _, f := range []string{"README.md", "DEVELOPING.md", filepath.Join("assets", "README.md")} {
+		_ = editFile(filepath.Join(dir, f), func(b string) string {
+			return bundle.ReplaceAllString(word.ReplaceAllString(b, name), strings.ToLower(name)+".bundle")
+		})
+	}
+	if _, err := os.Stat(filepath.Join(dir, "assets", strings.ToLower(old)+".bundle")); err == nil {
+		_ = move(filepath.Join("assets", strings.ToLower(old)+".bundle"), filepath.Join("assets", strings.ToLower(name)+".bundle"))
+	}
+	return filepath.Join(dir, srcNew, name+".csproj"), nil
+}

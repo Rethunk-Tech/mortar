@@ -241,6 +241,31 @@ func (s *Service) SetDevProjectWatch(game, dir string, on bool) error {
 	})
 }
 
+// ReplaceDevProject swaps the record old for next, moving its extra mods folder to next's build output.
+func (s *Service) ReplaceDevProject(game string, old, next DevProject) error {
+	return s.set(func(v *Settings) {
+		gp := v.GamePrefs(game)
+		gp.DevProjects = slices.Clone(gp.DevProjects)
+		for i := range gp.DevProjects {
+			if gp.DevProjects[i].Dir == old.Dir {
+				gp.DevProjects[i] = next
+			}
+		}
+		extra := slices.DeleteFunc(gp.ExtraModsFolderList(), func(d string) bool { return d == old.Output })
+		if !slices.Contains(extra, next.Output) {
+			extra = append(extra, next.Output)
+		}
+		gp.ExtraModsFolder = strings.Join(extra, string(filepath.ListSeparator))
+		gp.ExtraModsProfiles = maps.Clone(gp.ExtraModsProfiles)
+		if gp.ExtraModsProfiles == nil {
+			gp.ExtraModsProfiles = map[string]string{}
+		}
+		delete(gp.ExtraModsProfiles, old.Output)
+		gp.ExtraModsProfiles[next.Output] = next.Profile
+		putGame(v, game, gp)
+	})
+}
+
 // ForgetDevProject drops the project in dir from the Develop tab and its build output from the extra mods folders;
 // its files stay.
 func (s *Service) ForgetDevProject(game, dir string) error {

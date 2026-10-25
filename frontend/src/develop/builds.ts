@@ -4,9 +4,11 @@ import { create } from 'zustand'
 import type {
   BuildResult,
   PackResult,
+  ProjectInfo,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import {
   Build,
+  Inspect,
   Pack,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import { i18n } from '../i18n/index.ts'
@@ -42,6 +44,7 @@ export async function buildProject(game: string, dir: string) {
   patch(dir, { running: 'build' })
   try {
     patch(dir, { build: await Build(game, dir), builtAt: Date.now() })
+    await refreshInfo(game, dir)
   } catch (e) {
     toastError(i18n._(msg`Could not build the mod`), e)
   } finally {
@@ -61,6 +64,19 @@ export async function packProject(game: string, dir: string) {
     toastError(i18n._(msg`Could not pack the mod`), e)
   } finally {
     patch(dir, { running: null })
+  }
+}
+
+// What each project's files say, by folder: read on show, after a build, and when the window comes back.
+export const useProjectInfo = create<{ byDir: Record<string, ProjectInfo> }>(() => ({ byDir: {} }))
+
+/** Rereads the project's details from its files; a rename made outside Mortar is followed there. */
+export async function refreshInfo(game: string, dir: string) {
+  try {
+    const info = await Inspect(game, dir)
+    useProjectInfo.setState((s) => ({ byDir: { ...s.byDir, [dir]: info } }))
+  } catch (e) {
+    toastError(i18n._(msg`Could not read the mod project`), e)
   }
 }
 

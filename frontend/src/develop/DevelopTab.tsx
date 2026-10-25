@@ -19,7 +19,6 @@ import { useEffect, useState } from 'react'
 import type { Problem } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import {
   Forget,
-  NextVersions,
   OpenAt,
   OpenProject,
   SetWatch,
@@ -38,7 +37,15 @@ import { useSettings } from '../settings/store.ts'
 import { MenuRule } from '../shell/TitleMenu.tsx'
 import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
-import { buildProject, packProject, runOf, useDevRuns } from './builds.ts'
+import {
+  buildProject,
+  packProject,
+  refreshInfo,
+  runOf,
+  useDevRuns,
+  useProjectInfo,
+} from './builds.ts'
+import { EditProjectDialog } from './EditProjectDialog.tsx'
 import { NewModDialog } from './NewModDialog.tsx'
 import { ReleaseDialog } from './ReleaseDialog.tsx'
 
@@ -148,24 +155,46 @@ function Status({ dir }: { dir: string }) {
   )
 }
 
-function useVersion(game: string, dir: string) {
-  const [current, setCurrent] = useState<string | null>(null)
+// The project's details from its own files, read when the card shows and kept current by refreshInfo.
+function useInfo(game: string, dir: string) {
+  const info = useProjectInfo((s) => s.byDir[dir])
   useEffect(() => {
-    NextVersions(game, dir)
-      .then((v) => setCurrent(v.current))
-      .catch(() => setCurrent(null))
+    refreshInfo(game, dir).catch(() => undefined)
   }, [game, dir])
-  return current
+  return info
+}
+
+// A project whose folder or project file is gone: it can only leave the list.
+function MissingCard({ game, project }: { game: string; project: DevProject }) {
+  const { t } = useLingui()
+  return (
+    <Alert
+      variant="compact"
+      severity="warning"
+      action={
+        <Button
+          size="small"
+          onClick={() => persist(() => Forget(game, project.dir), t`Could not save that setting`)}
+        >
+          {t`Remove from list`}
+        </Button>
+      }
+    >
+      {t`${{ name: project.name }} is no longer in ${{ path: project.dir }}.`}
+    </Alert>
+  )
 }
 
 function MoreMenu({
   game,
   project,
   onRelease,
+  onEdit,
 }: {
   game: string
   project: DevProject
   onRelease: () => void
+  onEdit: () => void
 }) {
   const { t } = useLingui()
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
@@ -180,6 +209,7 @@ function MoreMenu({
         <EllipsisVertical size={18} />
       </IconButton>
       <Menu anchorEl={anchor} open={anchor !== null} onClose={() => setAnchor(null)}>
+        <MenuItem onClick={act(onEdit)}>{t`Edit details…`}</MenuItem>
         <MenuItem disabled={running !== null} onClick={act(() => packProject(game, project.dir))}>
           {t`Pack for ${{ source: sourceLabel('thunderstore') }}`}
         </MenuItem>
@@ -207,12 +237,17 @@ function MoreMenu({
 function ProjectCard({ game, project }: { game: string; project: DevProject }) {
   const { t } = useLingui()
   const running = useDevRuns((s) => runOf(s.byDir, project.dir).running)
-  const version = useVersion(game, project.dir)
+  const info = useInfo(game, project.dir)
   const [releasing, setReleasing] = useState(false)
+  const [editing, setEditing] = useState(false)
   const test = () =>
     StartInstances(game, project.profile, TEST_COPIES).catch(
       reportError(t`Could not start the game`),
     )
+  if (info?.missing) {
+    return <MissingCard game={game} project={project} />
+  }
+  const name = info?.name ?? project.name
   return (
     <Box
       sx={{
@@ -225,16 +260,14 @@ function ProjectCard({ game, project }: { game: string; project: DevProject }) {
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-        <LetterTile mod={{ id: project.name, name: project.name }} size={40} />
+        <LetterTile mod={{ id: name, name }} size={40} />
         <Box sx={{ minWidth: 0, flex: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography sx={{ fontSize: 'large.fontSize', fontWeight: 600 }}>
-              {project.name}
-            </Typography>
+            <Typography sx={{ fontSize: 'large.fontSize', fontWeight: 600 }}>{name}</Typography>
             <Chip
               size="small"
               variant="outlined"
-              label={version ? `v${version}` : t`Not released`}
+              label={info?.released ? `v${info.released}` : t`Not released`}
             />
             <Status dir={project.dir} />
           </Box>
@@ -243,7 +276,7 @@ function ProjectCard({ game, project }: { game: string; project: DevProject }) {
             title={project.dir}
             sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}
           >
-            {project.dir}
+            {info ? [info.guid, info.author].filter(Boolean).join(' · ') : project.dir}
           </Typography>
         </Box>
         <FormControlLabel
@@ -269,14 +302,27 @@ function ProjectCard({ game, project }: { game: string; project: DevProject }) {
         <Button variant="outlined" startIcon={<Users size={16} />} onClick={test}>
           {t`Test with ${{ count: TEST_COPIES }} copies`}
         </Button>
-        <MoreMenu game={game} project={project} onRelease={() => setReleasing(true)} />
+        <MoreMenu
+          game={game}
+          project={project}
+          onRelease={() => setReleasing(true)}
+          onEdit={() => setEditing(true)}
+        />
       </Box>
       <Outcome game={game} project={project} />
+      {editing && info ? (
+        <EditProjectDialog
+          game={game}
+          dir={project.dir}
+          info={info}
+          onClose={() => setEditing(false)}
+        />
+      ) : null}
       {releasing ? (
         <ReleaseDialog
           game={game}
           dir={project.dir}
-          name={project.name}
+          name={name}
           onClose={() => setReleasing(false)}
         />
       ) : null}
@@ -310,6 +356,17 @@ export function DevelopTab({ game }: { game: string }) {
   const [creating, setCreating] = useState(false)
   const here = projects.filter((p) => p.profile === openId)
   const elsewhere = projects.filter((p) => p.profile !== openId)
+  // Files can change in an editor while Mortar is in the background; coming back rereads them.
+  const dirs = here.map((p) => p.dir).join('\n')
+  useEffect(() => {
+    const reread = () => {
+      for (const dir of dirs.split('\n').filter(Boolean)) {
+        refreshInfo(game, dir).catch(() => undefined)
+      }
+    }
+    globalThis.addEventListener('focus', reread)
+    return () => globalThis.removeEventListener('focus', reread)
+  }, [game, dirs])
   return (
     <Box
       sx={{

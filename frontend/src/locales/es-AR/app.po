@@ -1095,6 +1095,10 @@ msgstr ""
 msgid "Could not save the tool"
 msgstr ""
 
+#: src/develop/DevelopTab.tsx
+msgid "Edit details…"
+msgstr ""
+
 #: src/game/LaunchMenu.tsx
 #: src/tools/ToolsManageDialog.tsx
 msgid "No tools yet"
@@ -1329,6 +1333,10 @@ msgstr ""
 
 #: src/browse/browseConstants.ts
 msgid "Search {source}. Free accounts download from the mod's page with Mod Manager Download."
+msgstr ""
+
+#: src/develop/EditProjectDialog.tsx
+msgid "Id prefix"
 msgstr ""
 
 #: src/browse/BrowseDetails.tsx
@@ -2285,6 +2293,10 @@ msgstr ""
 msgid "Back up to a file…"
 msgstr ""
 
+#: src/develop/EditProjectDialog.tsx
+msgid "Team on {source}"
+msgstr ""
+
 #: src/share/ImportSources.tsx
 msgid "Where the profile comes from"
 msgstr ""
@@ -2767,6 +2779,10 @@ msgstr ""
 
 #: src/groups/SaveGroupToLibrary.tsx
 msgid "Saved to the library"
+msgstr ""
+
+#: src/develop/builds.ts
+msgid "Could not read the mod project"
 msgstr ""
 
 #: src/develop/ReleaseDialog.tsx
@@ -3342,6 +3358,7 @@ msgstr ""
 msgid "Built {when}"
 msgstr ""
 
+#: src/develop/EditProjectDialog.tsx
 #: src/tools/ToolsManageDialog.tsx
 msgid "Edit {name}"
 msgstr ""
@@ -3455,6 +3472,10 @@ msgstr ""
 
 #: src/share/ImportPreview.tsx
 msgid "Unavailable"
+msgstr ""
+
+#: src/develop/EditProjectDialog.tsx
+msgid "Could not save the mod's details"
 msgstr ""
 
 #: src/browse/BrowseBody.tsx
@@ -3973,6 +3994,10 @@ msgstr ""
 msgid "{name} is not paired with this computer, so Mortar sends the list of mods, not their files. {name} will download each mod from its site, one click per mod on a free {source} account."
 msgstr ""
 
+#: src/develop/EditProjectDialog.tsx
+msgid "Players already have {version}: a new name or id makes their game see a different mod, with fresh settings."
+msgstr ""
+
 #: src/toasts/HistoryButton.tsx
 msgid "Results of installs, updates and launches appear here."
 msgstr ""
@@ -4288,6 +4313,7 @@ msgid "That request was not valid."
 msgstr ""
 
 #: src/browse/BrowseDetails.tsx
+#: src/develop/EditProjectDialog.tsx
 #: src/share/ModpackDialog.tsx
 msgid "Description"
 msgstr ""
@@ -4912,6 +4938,10 @@ msgstr ""
 msgid "The antivirus flagged it, so Mortar did not install it."
 msgstr ""
 
+#: src/develop/EditProjectDialog.tsx
+msgid "Categories on {source}"
+msgstr ""
+
 #: src/updates/WhatsNewDialog.tsx
 msgid "{count, plural, one {# change} other {# changes}}"
 msgstr ""
@@ -5270,6 +5300,7 @@ msgstr ""
 msgid "Beach farm"
 msgstr ""
 
+#: src/develop/EditProjectDialog.tsx
 #: src/groups/SavedGroupsSection.tsx
 #: src/groups/SaveGroupToLibrary.tsx
 #: src/saves/SaveListRow.tsx
@@ -5646,6 +5677,7 @@ msgstr ""
 msgid "Clear search"
 msgstr ""
 
+#: src/develop/EditProjectDialog.tsx
 #: src/develop/NewModDialog.tsx
 #: src/share/ModpackDialog.tsx
 msgid "Author"
@@ -5873,6 +5905,7 @@ msgstr ""
 msgid "Download progress"
 msgstr ""
 
+#: src/develop/EditProjectDialog.tsx
 #: src/develop/NewModDialog.tsx
 msgid "Mod name"
 msgstr ""
@@ -6509,6 +6542,10 @@ msgstr ""
 #: src/queue/QueueBody.tsx
 #: src/toasts/AvOverrideDialog.tsx
 msgid "Install anyway"
+msgstr ""
+
+#: src/develop/DevelopTab.tsx
+msgid "{name} is no longer in {path}."
 msgstr ""
 
 #: src/launch/SaveWarnDialog.tsx
