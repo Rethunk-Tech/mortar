@@ -23,6 +23,7 @@ import { ProtonRow } from './ProtonRow.tsx'
 import { ScopeSwitch } from './ScopeSwitch.tsx'
 import { SettingsSection } from './SettingsSection.tsx'
 import { SettingsShell, type ShellPage } from './SettingsShell.tsx'
+import { SharedOnProfile } from './SharedOnProfile.tsx'
 import { ALVRProgram } from './sections/ALVRProgram.tsx'
 import { ConsoleLevels } from './sections/ConsoleLevels.tsx'
 import { HistoryUsageRows } from './sections/DataHistory.tsx'
@@ -159,16 +160,20 @@ function GamePages({
     switch (id) {
       case 'install':
         return (
-          <InstallPage
-            game={game}
-            versionNote={version ? ` · ${name} ${version}` : ''}
-            onFolderChanged={folderChanged}
-          />
+          <SharedOnProfile>
+            <InstallPage
+              game={game}
+              versionNote={version ? ` · ${name} ${version}` : ''}
+              onFolderChanged={folderChanged}
+            />
+          </SharedOnProfile>
         )
       case 'loader':
         return loader && !loader.builtin ? (
           <>
-            <LoaderPage key={folderChanges} loader={loader} onVersion={setVersion} />
+            <SharedOnProfile>
+              <LoaderPage key={folderChanges} loader={loader} onVersion={setVersion} />
+            </SharedOnProfile>
             <LoaderProfileSettings game={game} profileId={ownProfile} loaderName={loader.name} />
           </>
         ) : null
@@ -188,7 +193,11 @@ function GamePages({
               ]}
               game={game}
             />
-            {startsALVR ? <ALVRProgram /> : null}
+            {startsALVR ? (
+              <SharedOnProfile>
+                <ALVRProgram />
+              </SharedOnProfile>
+            ) : null}
             <GraphicsApiRow game={game} />
             <ProtonRow game={game} />
             <ProfileGameOptions game={game} profileId={ownProfile} />
@@ -199,15 +208,19 @@ function GamePages({
           <>
             <SettingsSection title={t`Mods`}>
               <PrefKeys keys={modsPrefKeys(info, loader)} game={game} />
-              <ExtraModsFolders />
-              <GameSync />
-              <SourceOrder />
-              <HiddenMods />
+              <SharedOnProfile>
+                <ExtraModsFolders />
+                <GameSync />
+                <SourceOrder />
+                <HiddenMods />
+              </SharedOnProfile>
             </SettingsSection>
-            <DismissedFolders />
-            <SettingsSection title={t`${name} profile history`}>
-              <HistoryUsageRows />
-            </SettingsSection>
+            <SharedOnProfile>
+              <DismissedFolders />
+              <SettingsSection title={t`${name} profile history`}>
+                <HistoryUsageRows />
+              </SettingsSection>
+            </SharedOnProfile>
           </>
         )
       case 'backups':
@@ -220,11 +233,17 @@ function GamePages({
               <ConsoleLevels game={game} />
               <PrefKeys keys={['consoleTimestamps', 'consoleFollow']} game={game} />
             </SettingsSection>
-            <HiddenLogSources />
+            <SharedOnProfile>
+              <HiddenLogSources />
+            </SharedOnProfile>
           </>
         )
       default:
-        return loader?.overlay ? <StreamOverlay game={game} /> : null
+        return loader?.overlay ? (
+          <SharedOnProfile>
+            <StreamOverlay game={game} />
+          </SharedOnProfile>
+        ) : null
     }
   }
   return (

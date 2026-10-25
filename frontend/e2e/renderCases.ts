@@ -165,3 +165,39 @@ export function newCases(h: Helpers): Case[] {
     },
   ]
 }
+
+/** The game settings page opened from a profile's Home, and its switch to every profile's values. */
+export function gameSettingsCases(h: Helpers): Case[] {
+  const { toWorkspace, tab } = h
+  return [
+    {
+      // Home opens the game's settings on the open profile's own values.
+      name: 'game-settings-profile',
+      setup: async (p) => {
+        await toWorkspace(p)
+        await tab(p, 'Home')
+      },
+      run: async (p) => {
+        await p
+          .getByRole('button', { name: / settings$/ })
+          .last()
+          .click()
+        await p.getByRole('button', { name: /^This profile: / }).waitFor()
+      },
+    },
+    {
+      // The switch to every profile's values redraws each row from the profile's to the game's.
+      name: 'game-settings-all-profiles',
+      setup: async (p) => {
+        await toWorkspace(p)
+        await tab(p, 'Home')
+        await p
+          .getByRole('button', { name: / settings$/ })
+          .last()
+          .click()
+        await p.getByRole('button', { name: /^This profile: / }).waitFor()
+      },
+      run: (p) => p.getByRole('button', { name: /^All .* profiles$/ }).click(),
+    },
+  ]
+}

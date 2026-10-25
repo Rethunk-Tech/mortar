@@ -2265,6 +2265,10 @@ msgstr "Approve Mortar in your browser…"
 msgid "Spacing of buttons and lists"
 msgstr "Spacing of buttons and lists"
 
+#: src/settings/SharedOnProfile.tsx
+msgid "Every profile of this game shares these. Switch to all profiles to change them."
+msgstr "Every profile of this game shares these. Switch to all profiles to change them."
+
 #: src/settings/SettingsPage.tsx
 msgid "Source health"
 msgstr "Source health"

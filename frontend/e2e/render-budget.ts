@@ -11,7 +11,7 @@ import {
 } from './app.ts'
 import { serveModTemplate } from './modTemplate.ts'
 import { nestedBoxes } from './renderBoxes.ts'
-import { newCases } from './renderCases.ts'
+import { gameSettingsCases, newCases } from './renderCases.ts'
 import { dialogCases } from './renderDialogs.ts'
 import { writeGallery } from './renderGallery.ts'
 import { unevenSpacing } from './renderGaps.ts'
@@ -246,6 +246,7 @@ const cases: Case[] = [
   },
   { name: 'game-select', setup: toWorkspace, run: openGameSelect },
   ...newCases({ toWorkspace, tab, view, row, typeInto, tabs, settleMs: SETTLE_MS }),
+  ...gameSettingsCases({ toWorkspace, tab, view, row, typeInto, tabs, settleMs: SETTLE_MS }),
   ...screenCases({ toWorkspace, tab, view, row, typeInto, tabs, settleMs: SETTLE_MS }),
   ...dialogCases({ toWorkspace, tab, view, row, typeInto, tabs, settleMs: SETTLE_MS }),
 ]

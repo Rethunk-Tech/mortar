@@ -2265,6 +2265,10 @@ msgstr ""
 msgid "Spacing of buttons and lists"
 msgstr ""
 
+#: src/settings/SharedOnProfile.tsx
+msgid "Every profile of this game shares these. Switch to all profiles to change them."
+msgstr ""
+
 #: src/settings/SettingsPage.tsx
 msgid "Source health"
 msgstr ""
