@@ -178,7 +178,8 @@ export function dialogCases(h: Helpers): Case[] {
     }),
     dialog('share-nexus', (p) => share(p, /^Nexus/)),
     dialog('share-thunderstore', (p) => share(p, /^Thunderstore/)),
-    dialog('share-nearby', shareNearby),
+    // It looks again every 5 s, so one look can land in the watch beside the end of the one before.
+    dialog('share-nearby', shareNearby, { idleCalls: 4 }),
     dialog('share-mod-list', (p) => share(p, /^Mod list/)),
     ...['Plain text', 'Discord', 'Thunderstore'].map((format) =>
       dialog(`share-mod-list-${format.toLowerCase().replace(' ', '-')}`, async (p) => {
