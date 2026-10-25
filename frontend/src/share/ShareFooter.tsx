@@ -1,24 +1,70 @@
 import { useLingui } from '@lingui/react/macro'
 import { Button } from '@mui/material'
-import { MessageSquare } from 'lucide-react'
+import { Copy, MessageSquare, Save } from 'lucide-react'
+import { useState } from 'react'
 import { DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { copyText } from './copyText.ts'
-import type { ShownInfo } from './logic.ts'
+import { PreviewDialog } from './PreviewDialog.tsx'
+import type { useShareBuild } from './useShareBuild.ts'
 
-// A message carrying the link, for pasting into a chat.
-export function MessageFooter({ info, message }: { info: ShownInfo; message: string }) {
+// Share's Mortar footer: what they will see on the left, the link as a chat message, and the main action, Copy link
+// or Save… for a file.
+export function MortarFooter({
+  built,
+  message,
+}: {
+  built: ReturnType<typeof useShareBuild>
+  message: string
+}) {
   const { t } = useLingui()
+  const [previewing, setPreviewing] = useState(false)
+  const { info, format, saving, saveFile } = built
+  if (!info) {
+    return null
+  }
+  const empty = info.count === 0
   return (
-    <DialogFooter>
+    <DialogFooter
+      aside={
+        <>
+          <Button
+            variant="text"
+            disabled={info.tooLarge}
+            onClick={() => setPreviewing(true)}
+            sx={{ ml: -1 }}
+          >
+            {t`Preview what they see`}
+          </Button>
+          <PreviewDialog info={info} open={previewing} onClose={() => setPreviewing(false)} />
+        </>
+      }
+    >
       <Button
-        variant="outlined"
-        color="inherit"
         startIcon={<MessageSquare size={16} />}
-        disabled={info.count === 0 || info.tooLarge}
+        disabled={empty || info.tooLarge}
         onClick={() => copyText(message, t`Message copied`)}
       >
         {t`Copy as a message`}
       </Button>
+      {format === 'link' ? (
+        <Button
+          variant="contained"
+          startIcon={<Copy size={16} />}
+          disabled={empty || info.tooLarge}
+          onClick={() => copyText(info.web, t`Link copied`)}
+        >
+          {t`Copy link`}
+        </Button>
+      ) : (
+        <Button
+          variant="contained"
+          startIcon={<Save size={16} />}
+          disabled={saving || empty}
+          onClick={saveFile}
+        >
+          {t`Save…`}
+        </Button>
+      )}
     </DialogFooter>
   )
 }

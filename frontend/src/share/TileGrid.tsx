@@ -44,11 +44,14 @@ export function TileGrid<Id extends string>({
   tiles,
   lastUsed,
   onChoose,
+  padded = true,
 }: {
   label: string
   tiles: Tile<Id>[]
   lastUsed: Id | null
   onChoose: (id: Id) => void
+  // False inside a body that already pads its content.
+  padded?: boolean
 }) {
   const { t } = useLingui()
   return (
@@ -60,7 +63,7 @@ export function TileGrid<Id extends string>({
         display: 'grid',
         gridTemplateColumns: `repeat(${gridColumns(tiles.length)}, minmax(0, 1fr))`,
         gap: space.gap,
-        p: '24px',
+        p: padded ? '24px' : 0,
         alignContent: 'start',
         overflowY: 'auto',
       }}

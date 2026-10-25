@@ -1,6 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
 import { useEffect, useRef, useState } from 'react'
-import { Share } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/service.ts'
+import type { Saved } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/models.ts'
+import {
+  SaveFile,
+  Share,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/service.ts'
 import { useCurrentGame } from '../nav/currentGame.ts'
 import { hasThunderstore } from '../profiles/hasThunderstore.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -8,6 +12,8 @@ import { useSettings } from '../settings/store.ts'
 import { sameValue } from '../shell/sameValue.ts'
 import { readStored, writeStored } from '../shell/useStoredState.ts'
 import { toastError } from '../toasts/report.ts'
+import { useToasts } from '../toasts/store.ts'
+import { usePending } from '../toasts/usePending.ts'
 import { type ShownInfo, shownInfo, suggestFile } from './logic.ts'
 import {
   type Destination,
@@ -93,7 +99,24 @@ export function useShareBuild() {
       stale = true
     }
   }, [profileId, keys, game, close, include, t, thunderstore])
+  // The .mortar file save: the dialog's footer starts it and the File view shows where it went.
+  const [saved, setSaved] = useState<Saved | null>(null)
+  const [saving, runSave] = usePending()
+  const saveFile = () =>
+    runSave(
+      async () => {
+        const result = await SaveFile(game, profileId, keys, toShareInclude(include))
+        if (result.path) {
+          setSaved(result)
+          useToasts.getState().push({ kind: 'success', title: t`File saved` })
+        }
+      },
+      { errorTitle: t`Could not save the file` },
+    )
   return {
+    saved,
+    saving,
+    saveFile,
     profileId,
     keys,
     close,

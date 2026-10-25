@@ -35,66 +35,67 @@ export function ImportInput({ flow }: { flow: ImportFlow }) {
           </Box>
         </>
       ) : (
-        <>
-          <Typography sx={{ fontSize: 'medium.fontSize', color: 'text.secondary' }}>
-            {t`Paste a Mortar link, a ${{ source: sourceLabel('nexus') }} collection, an ${{ manager: R2MODMAN }} or ${{ otherManager: GALE }} code, a ${{ otherSource: sourceLabel('patreon') }} post, an ${{ thirdSource: sourceLabel('itch') }} page or (Premium) a ${{ source: sourceLabel('nexus') }} mod link.`}
-          </Typography>
-          <Box
-            component="form"
-            onSubmit={(e) => {
-              e.preventDefault()
-              if (canPreview) {
-                flow.previewLink(flow.text).catch(reportUnexpected)
-              }
+        <Box
+          component="form"
+          onSubmit={(e) => {
+            e.preventDefault()
+            if (canPreview) {
+              flow.previewLink(flow.text).catch(reportUnexpected)
+            }
+          }}
+          sx={{ display: 'flex', alignItems: 'flex-start', gap: space.gap }}
+        >
+          <TextField
+            size="small"
+            fullWidth={true}
+            autoFocus={true}
+            placeholder={t`Link or code`}
+            value={flow.text}
+            onChange={(e) => flow.setText(e.target.value)}
+            error={flow.error !== ''}
+            helperText={
+              flow.error ||
+              t`A Mortar link, a mod manager's code, or a collection, post or mod page.`
+            }
+            slotProps={{
+              htmlInput: { 'aria-label': t`Link or code`, spellCheck: false },
+              formHelperText: {
+                ...(flow.error ? { role: 'alert' } : {}),
+                sx: { mx: 0, fontSize: 'small.fontSize' },
+              },
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <Tooltip title={t`Paste`} describeChild={true}>
+                      <span>
+                        <IconButton
+                          edge="end"
+                          size="small"
+                          aria-label={t`Paste`}
+                          disabled={flow.busy}
+                          onClick={() => {
+                            flow.paste().catch(reportUnexpected)
+                          }}
+                        >
+                          <ClipboardPaste size={16} />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                  </InputAdornment>
+                ),
+              },
             }}
-            sx={{ display: 'flex', alignItems: 'flex-start', gap: space.gap }}
+            sx={{ userSelect: 'text' }}
+          />
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={!canPreview}
+            sx={{ flexShrink: 0, whiteSpace: 'nowrap', height: space.control, minWidth: 104 }}
           >
-            <TextField
-              size="small"
-              fullWidth={true}
-              autoFocus={true}
-              placeholder={t`Link or code`}
-              value={flow.text}
-              onChange={(e) => flow.setText(e.target.value)}
-              error={flow.error !== ''}
-              helperText={flow.error || undefined}
-              slotProps={{
-                htmlInput: { 'aria-label': t`Link or code`, spellCheck: false },
-                formHelperText: { role: 'alert', sx: { mx: 0, fontSize: 'base.fontSize' } },
-                input: {
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <Tooltip title={t`Paste`} describeChild={true}>
-                        <span>
-                          <IconButton
-                            edge="end"
-                            size="small"
-                            aria-label={t`Paste`}
-                            disabled={flow.busy}
-                            onClick={() => {
-                              flow.paste().catch(reportUnexpected)
-                            }}
-                          >
-                            <ClipboardPaste size={16} />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                    </InputAdornment>
-                  ),
-                },
-              }}
-              sx={{ userSelect: 'text' }}
-            />
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={!canPreview}
-              sx={{ flexShrink: 0, whiteSpace: 'nowrap', height: space.control, minWidth: 104 }}
-            >
-              {flow.busy ? t`Reading…` : t`Preview`}
-            </Button>
-          </Box>
-        </>
+            {flow.busy ? t`Reading…` : t`Preview`}
+          </Button>
+        </Box>
       )}
       {handoff ? (
         <Typography role="status" sx={{ fontSize: 'medium.fontSize', color: 'text.secondary' }}>

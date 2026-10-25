@@ -781,8 +781,16 @@ msgstr ""
 msgid "Could not unlink the collection"
 msgstr ""
 
+#: src/profiles/OverrideRows.tsx
+msgid "Scheduled save backups"
+msgstr ""
+
 #: src/profiles/store.ts
 msgid "Deleted {name}"
+msgstr ""
+
+#: src/profiles/OverrideRows.tsx
+msgid "Before Play"
 msgstr ""
 
 #: src/profiles/GameModsDialog.tsx
@@ -906,6 +914,10 @@ msgstr ""
 msgid "Direct launch preview"
 msgstr ""
 
+#: src/profiles/OverrideRows.tsx
+msgid "Mods"
+msgstr ""
+
 #: src/profiles/ProfileRow.tsx
 msgid "imported from the game's Mods folder"
 msgstr ""
@@ -939,6 +951,10 @@ msgstr ""
 
 #: src/profiles/HealthDialog.tsx
 msgid "Could not read the saved change {change} from {when}"
+msgstr ""
+
+#: src/profiles/OverrideRows.tsx
+msgid "Console and logs"
 msgstr ""
 
 #: src/profiles/GameModsDialog.tsx
@@ -1683,6 +1699,7 @@ msgid "Unlinked collection {name}"
 msgstr ""
 
 #: src/profiles/EditProfileDialog.tsx
+#: src/profiles/OverrideRows.tsx
 msgid "Launch"
 msgstr ""
 

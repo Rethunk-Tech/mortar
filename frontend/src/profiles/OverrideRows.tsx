@@ -11,7 +11,7 @@ import { useNexus } from '../settings/nexus.ts'
 import { prefCopy } from '../settings/prefCopy.ts'
 import { useProtonBuilds } from '../settings/protonBuilds.ts'
 import { useSettings } from '../settings/store.ts'
-import { SelectField } from '../shell/dialog/FormDialog.tsx'
+import { FormSection, SelectField } from '../shell/dialog/FormDialog.tsx'
 import {
   applyRow,
   choiceFromOverride,
@@ -108,6 +108,42 @@ const OverrideRow = memo(function OverrideRowView({
   )
 })
 
+// The overrides grouped by what they change, in the order a player meets them.
+const LAUNCH_KEYS: OverrideKey[] = [
+  'defaultLaunchMethod',
+  'startFirst',
+  'instances',
+  'delaySeconds',
+  'showSmapiConsole',
+  'skipIntro',
+  'graphicsApi',
+  'protonVersion',
+  'gameSettingsMode',
+]
+const BEFORE_PLAY_KEYS: OverrideKey[] = [
+  'updateModsBeforePlayDefault',
+  'skipPlayCheck',
+  'backupBeforePlay',
+  'saveBackupsKept',
+  'pauseDownloadsWhilePlaying',
+  'cacheClearing',
+]
+const SCHEDULED_KEYS: OverrideKey[] = ['saveBackupHours', 'saveBackupKeep']
+const MOD_KEYS: OverrideKey[] = [
+  'dependencyVersions',
+  'cosmeticConflicts',
+  'conflictScanDepth',
+  'enableRequirements',
+  'missingRequirements',
+]
+const CONSOLE_LOG_KEYS: OverrideKey[] = [
+  'runsKept',
+  'consoleLogCap',
+  'consoleLevel',
+  'consoleTimestamps',
+  'consoleFollow',
+]
+
 export function OverridesSection({
   overrides,
   onChange,
@@ -166,48 +202,66 @@ export function OverridesSection({
       ),
     [onChange],
   )
+  const shown = new Set<OverrideKey>(
+    OVERRIDE_KEYS.filter(
+      (key) =>
+        (smapi || key !== 'showSmapiConsole') &&
+        (introSkip || key !== 'skipIntro') &&
+        (graphics || key !== 'graphicsApi') &&
+        (proton.length > 0 || key !== 'protonVersion') &&
+        (info?.hasOptions || key !== 'gameSettingsMode') &&
+        (info?.hasCaches || key !== 'cacheClearing') &&
+        (info?.sources?.includes('thunderstore') || key !== 'dependencyVersions') &&
+        (directPlay || (key !== 'instances' && key !== 'delaySeconds')) &&
+        applies(key, info?.loaders?.[0]),
+    ),
+  )
+  const row = (key: OverrideKey) => {
+    const stored = overrides[key]
+    const choice = choiceFromOverride(stored)
+    const label = overrideLabel(key, i18n)
+    const disabled = key === 'saveBackupKeep' && scheduleOff
+    let hint = ''
+    if (disabled) {
+      hint = t`Enable scheduled save backups first.`
+    } else if (key === 'updateModsBeforePlayDefault' && nexus && !premium) {
+      hint = t`Free ${{ source: sourceLabel('nexus') }} accounts click each download on ${{ source: sourceLabel('nexus') }}; those updates do not block Play.`
+    }
+    return (
+      <OverrideRow
+        key={key}
+        overrideKey={key}
+        label={label}
+        value={choice.useGame ? '' : choice.value}
+        hint={hint}
+        disabled={disabled}
+        choices={choicesFor(key)}
+        onPick={onPick}
+      />
+    )
+  }
+  const groups: { title: string; keys: OverrideKey[] }[] = [
+    { title: t`Launch`, keys: LAUNCH_KEYS },
+    { title: t`Before Play`, keys: BEFORE_PLAY_KEYS },
+    { title: t`Scheduled save backups`, keys: SCHEDULED_KEYS },
+    { title: t`Mods`, keys: MOD_KEYS },
+    { title: t`Console and logs`, keys: CONSOLE_LOG_KEYS },
+  ]
   return (
     <>
       <Typography sx={{ fontSize: 'medium.fontSize', color: 'text.secondary' }}>
         {t`These apply only to this profile; Use default follows the game's settings.`}
       </Typography>
-      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-        {OVERRIDE_KEYS.filter(
-          (key) =>
-            (smapi || key !== 'showSmapiConsole') &&
-            (introSkip || key !== 'skipIntro') &&
-            (graphics || key !== 'graphicsApi') &&
-            (proton.length > 0 || key !== 'protonVersion') &&
-            (info?.hasOptions || key !== 'gameSettingsMode') &&
-            (info?.hasCaches || key !== 'cacheClearing') &&
-            (info?.sources?.includes('thunderstore') || key !== 'dependencyVersions') &&
-            (directPlay || (key !== 'instances' && key !== 'delaySeconds')) &&
-            applies(key, info?.loaders?.[0]),
-        ).map((key) => {
-          const stored = overrides[key]
-          const choice = choiceFromOverride(stored)
-          const label = overrideLabel(key, i18n)
-          const disabled = key === 'saveBackupKeep' && scheduleOff
-          let hint = ''
-          if (disabled) {
-            hint = t`Enable scheduled save backups first.`
-          } else if (key === 'updateModsBeforePlayDefault' && nexus && !premium) {
-            hint = t`Free ${{ source: sourceLabel('nexus') }} accounts click each download on ${{ source: sourceLabel('nexus') }}; those updates do not block Play.`
-          }
-          return (
-            <OverrideRow
-              key={key}
-              overrideKey={key}
-              label={label}
-              value={choice.useGame ? '' : choice.value}
-              hint={hint}
-              disabled={disabled}
-              choices={choicesFor(key)}
-              onPick={onPick}
-            />
-          )
-        })}
-      </Box>
+      {groups.map(({ title, keys }) => {
+        const rows = keys.filter((key) => shown.has(key))
+        return rows.length === 0 ? null : (
+          <FormSection key={title} title={title}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+              {rows.map(row)}
+            </Box>
+          </FormSection>
+        )
+      })}
     </>
   )
 }

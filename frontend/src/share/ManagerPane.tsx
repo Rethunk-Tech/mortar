@@ -19,9 +19,9 @@ import { FoundProfileRow } from '../profiles/FoundProfileRow.tsx'
 import { ManagerFolderPrompt } from '../profiles/ManagerFolderPrompt.tsx'
 import { VortexFolderPrompt } from '../profiles/VortexFolderPrompt.tsx'
 import { offerVortexFolder } from '../profiles/vortexFolderOffer.ts'
+import { DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
-import { space } from '../theme/density.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { showImported } from './useImportFlow.ts'
@@ -63,22 +63,25 @@ async function importEach(game: string, folders: string[], failed: string): Prom
 
 // The profiles other mod managers keep for this game on this computer: r2modman, Gale, Vortex, Mod Organizer 2 and
 // Stardrop. Picking one previews it in the import dialog; ticking several r2modman or Gale profiles imports them all.
-export function ManagerPane({
+// The dialog places the body and the footer; nothing is read until active.
+export function useManagerPane({
   game,
+  active,
   onFolder,
   onExternal,
   onDone,
 }: {
   game: string
+  active: boolean
   onFolder: (folder: string) => void
   onExternal: (preview: ProfilePreview) => void
   onDone: () => void
 }) {
   const { t } = useLingui()
-  const { sources: external, reload } = useExternalImportSources(game, true)
+  const { sources: external, reload } = useExternalImportSources(game, active)
   const { data: vortexSupported } = useLoaded(
-    () => ExternalVortexSupported(game),
-    [game],
+    active ? () => ExternalVortexSupported(game) : null,
+    [game, active],
     false,
     reportUnexpected,
   )
@@ -102,7 +105,11 @@ export function ManagerPane({
       )
       .catch(reportUnexpected)
   }, [game])
-  useEffect(loadFolders, [loadFolders])
+  useEffect(() => {
+    if (active) {
+      loadFolders()
+    }
+  }, [active, loadFolders])
   const all: Found[] = [
     ...(folders ?? []),
     ...external.flatMap((s) =>
@@ -132,7 +139,7 @@ export function ManagerPane({
       showImported(game, false, first).catch(reportUnexpected)
     }
   }
-  return (
+  const body = (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, px: 3, py: 2.5 }}>
       {folders !== null && all.length === 0 ? (
         <EmptyState compact={true} icon={<Inbox size={28} />} title={t`No profiles found.`}>
@@ -168,8 +175,12 @@ export function ManagerPane({
             {`${s.name}: ${s.error}`}
           </Alert>
         ))}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, mt: space.gap }}>
-        <Box sx={{ mr: 'auto', display: 'flex', flexDirection: 'column' }}>
+    </Box>
+  )
+  const footer = (
+    <DialogFooter
+      aside={
+        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           <ManagerFolderPrompt
             settingKey="packFolder"
             label={t`${{ manager: R2MODMAN }} or ${{ otherManager: GALE }} data folder`}
@@ -180,19 +191,21 @@ export function ManagerPane({
             <VortexFolderPrompt game={game} onChosen={reload} />
           ) : null}
         </Box>
-        {chosen.length > 0 ? (
-          <Button
-            variant="contained"
-            disabled={busy}
-            onClick={() => importChosen().catch(reportUnexpected)}
-          >
-            {plural(
-              { count: chosen.length },
-              { one: 'Import # profile', other: 'Import # profiles' },
-            )}
-          </Button>
-        ) : null}
-      </Box>
-    </Box>
+      }
+    >
+      {chosen.length > 0 ? (
+        <Button
+          variant="contained"
+          disabled={busy}
+          onClick={() => importChosen().catch(reportUnexpected)}
+        >
+          {plural(
+            { count: chosen.length },
+            { one: 'Import # profile', other: 'Import # profiles' },
+          )}
+        </Button>
+      ) : null}
+    </DialogFooter>
   )
+  return { active, body, footer }
 }

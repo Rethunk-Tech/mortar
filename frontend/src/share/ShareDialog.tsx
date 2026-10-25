@@ -11,7 +11,7 @@ import { DestinationGrid } from './DestinationGrid.tsx'
 import { DestinationPanel } from './DestinationPanel.tsx'
 import { type ShownInfo, sharedMods } from './logic.ts'
 import { shareDestinations } from './methods.ts'
-import { MessageFooter } from './ShareFooter.tsx'
+import { MortarFooter } from './ShareFooter.tsx'
 import { useShareBuild } from './useShareBuild.ts'
 
 function shareMessage(info: ShownInfo, gameName: string): string {
@@ -58,9 +58,7 @@ export function ShareDialog() {
       flush={true}
       title={info ? t`Share ${{ name: info.name }}` : ''}
       subtitle={destination ? names[destination] : [gameName, modsLabel(count)].join(' · ')}
-      footer={
-        info && destination === 'mortar' ? <MessageFooter info={info} message={message} /> : null
-      }
+      footer={destination === 'mortar' ? <MortarFooter built={built} message={message} /> : null}
     >
       {info && destination ? (
         <Box

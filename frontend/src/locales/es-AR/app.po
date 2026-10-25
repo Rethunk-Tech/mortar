@@ -190,6 +190,7 @@ msgstr ""
 
 #: src/share/ListFormat.tsx
 #: src/share/MethodPanes.tsx
+#: src/share/useShareBuild.ts
 msgid "Could not save the file"
 msgstr ""
 
@@ -347,6 +348,10 @@ msgstr ""
 msgid "You started this download on {source}. Choose the profile it goes into."
 msgstr ""
 
+#: src/share/MethodPanes.tsx
+msgid "Modpack"
+msgstr ""
+
 #: src/queue/QueueRows.tsx
 msgid "Move {name} up"
 msgstr ""
@@ -361,10 +366,6 @@ msgstr ""
 
 #: src/install/ArchivePreview.tsx
 msgid "Showing the first 2,000 files"
-msgstr ""
-
-#: src/shell/SuggestDialog.tsx
-msgid "Post your idea where you prefer. {app} lets others vote on it; {source} keeps it next to the code."
 msgstr ""
 
 #: src/toasts/HistoryButton.tsx
@@ -984,6 +985,10 @@ msgstr ""
 msgid "Name"
 msgstr ""
 
+#: src/shell/SuggestDialog.tsx
+msgid "Others can vote on it"
+msgstr ""
+
 #: src/install/ArchivePreview.tsx
 msgid "Reading the archive…"
 msgstr ""
@@ -1048,10 +1053,6 @@ msgstr ""
 
 #: src/share/CollectionNotes.tsx
 msgid "Curator's instructions"
-msgstr ""
-
-#: src/share/MethodPanes.tsx
-msgid "Share as {manager} code…"
 msgstr ""
 
 #: src/lan/PairedComputers.tsx
@@ -1455,10 +1456,6 @@ msgstr ""
 msgid "New profile from link"
 msgstr ""
 
-#: src/share/MethodPanes.tsx
-msgid "Export as {source} modpack…"
-msgstr ""
-
 #: src/browse/BrowseShow.tsx
 msgid "Off"
 msgstr ""
@@ -1687,6 +1684,10 @@ msgstr ""
 msgid "Release {name}"
 msgstr ""
 
+#: src/share/ImportInput.tsx
+msgid "A Mortar link, a mod manager's code, or a collection, post or mod page."
+msgstr ""
+
 #: src/shell/useDiscardGuard.tsx
 msgid "Discard"
 msgstr ""
@@ -1732,7 +1733,7 @@ msgstr ""
 msgid "Suggest a feature"
 msgstr ""
 
-#: src/share/DestinationPanel.tsx
+#: src/share/ShareFooter.tsx
 msgid "Preview what they see"
 msgstr ""
 
@@ -1740,10 +1741,6 @@ msgstr ""
 #: src/launch/SaveWarnDialog.tsx
 #: src/share/Included.tsx
 msgid "Disabled in this profile"
-msgstr ""
-
-#: src/share/MethodPanes.tsx
-msgid "For {manager} and other {source} managers: a code anyone can enter, a .r2z file, or a modpack zip with your config folder."
 msgstr ""
 
 #: src/install/OverlayPlaceDialog.tsx
@@ -2003,7 +2000,6 @@ msgstr ""
 #: src/share/ModpackDialog.tsx
 #: src/shell/dialog/ConfirmationDialog.tsx
 #: src/shell/dialog/FormDialog.tsx
-#: src/shell/SuggestDialog.tsx
 msgid "Cancel"
 msgstr ""
 
@@ -2230,7 +2226,7 @@ msgid "None"
 msgstr ""
 
 #: src/browse/BrowseMenu.tsx
-#: src/share/MethodPanes.tsx
+#: src/share/ShareFooter.tsx
 msgid "Link copied"
 msgstr ""
 
@@ -2348,7 +2344,7 @@ msgstr ""
 msgid "Browse mods"
 msgstr ""
 
-#: src/share/MethodPanes.tsx
+#: src/share/useShareBuild.ts
 msgid "File saved"
 msgstr ""
 
@@ -2601,10 +2597,6 @@ msgstr ""
 
 #: src/games/AddGameDialog.tsx
 msgid "{source} community"
-msgstr ""
-
-#: src/share/MethodPanes.tsx
-msgid "Save .r2z…"
 msgstr ""
 
 #: src/share/ImportInput.tsx
@@ -3432,6 +3424,10 @@ msgstr ""
 msgid "Text for {app} or a forum"
 msgstr ""
 
+#: src/shell/SuggestDialog.tsx
+msgid "Where to post"
+msgstr ""
+
 #: src/nxm/ArrivalDialog.tsx
 msgid "{count} more waiting"
 msgstr ""
@@ -3590,6 +3586,10 @@ msgstr ""
 
 #: src/share/ImportFooter.tsx
 msgid "New profile from file"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "A file to send, with your config files"
 msgstr ""
 
 #: src/game/ProfileMenuItems.tsx
@@ -3944,10 +3944,6 @@ msgstr ""
 msgid "{count} characters"
 msgstr ""
 
-#: src/share/ImportInput.tsx
-msgid "Paste a Mortar link, a {source} collection, an {manager} or {otherManager} code, a {otherSource} post, an {thirdSource} page or (Premium) a {source} mod link."
-msgstr ""
-
 #: src/game/Sidebar.tsx
 msgid "Screenshots"
 msgstr ""
@@ -4108,6 +4104,10 @@ msgstr ""
 msgid "Collapse sidebar"
 msgstr ""
 
+#: src/share/MethodPanes.tsx
+msgid "{manager} code"
+msgstr ""
+
 #: src/loader/Banner.tsx
 msgid "{name} here is another mod manager's copy, linked from {linkedFrom}. Removing that manager removes {name}."
 msgstr ""
@@ -4250,6 +4250,10 @@ msgstr ""
 
 #: src/launch/LaunchLayer.tsx
 msgid "Launch without {launcher}"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "How to share it"
 msgstr ""
 
 #: src/install/noModText.ts
@@ -4571,6 +4575,10 @@ msgstr ""
 
 #: src/browse/stats.ts
 msgid "{count, plural, one {# follower} other {# followers}}"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "A zip to publish on {source}"
 msgstr ""
 
 #: src/firstrunTour/TourPopover.tsx
@@ -5008,6 +5016,10 @@ msgstr ""
 msgid "{count, plural, one {# change} other {# changes}}"
 msgstr ""
 
+#: src/shell/SuggestDialog.tsx
+msgid "Kept next to the code"
+msgstr ""
+
 #: src/games/GameMenu.tsx
 msgid "Switch game: {game}"
 msgstr ""
@@ -5022,6 +5034,10 @@ msgstr ""
 
 #: src/develop/draft.ts
 msgid "The folder name holds only letters, digits, dots, dashes and underscores."
+msgstr ""
+
+#: src/shell/SuggestDialog.tsx
+msgid "Where should your idea go?"
 msgstr ""
 
 #: src/queue/QueueSheet.tsx
@@ -5072,10 +5088,6 @@ msgstr ""
 
 #: src/queue/QueueSheet.tsx
 msgid "Close downloads"
-msgstr ""
-
-#: src/share/MethodPanes.tsx
-msgid "A .mortar file holds the link's mods plus their settings files. Send it; they open it from Mortar's Import."
 msgstr ""
 
 #: src/share/DestinationGrid.tsx
@@ -5544,10 +5556,6 @@ msgstr ""
 
 #: src/saves/store.ts
 msgid "Dismissed for this save"
-msgstr ""
-
-#: src/share/MethodPanes.tsx
-msgid "They see the profile name, the mod list and where each mod comes from."
 msgstr ""
 
 #: src/saves/SaveBackupsButton.tsx
@@ -6190,7 +6198,7 @@ msgstr ""
 msgid "Open a group's menu on the Mods tab and choose Save to library."
 msgstr ""
 
-#: src/share/MethodPanes.tsx
+#: src/share/ShareFooter.tsx
 msgid "Save…"
 msgstr ""
 
@@ -6220,6 +6228,10 @@ msgstr ""
 msgid "{app} {launcher} cannot read Mortar's mods folder. Grant the sandbox access (Settings › {name}) or the game will not see this profile."
 msgstr ""
 
+#: src/share/MethodPanes.tsx
+msgid "A code anyone can enter; uploads the profile"
+msgstr ""
+
 #: src/saves/SaveBackupsButton.tsx
 msgid "Backups of {name}"
 msgstr ""
@@ -6234,7 +6246,7 @@ msgid "Reading your saves…"
 msgstr ""
 
 #: src/browse/BrowseMenu.tsx
-#: src/share/MethodPanes.tsx
+#: src/share/ShareFooter.tsx
 msgid "Copy link"
 msgstr ""
 
@@ -6447,6 +6459,7 @@ msgid "Close"
 msgstr ""
 
 #: src/share/DestinationPanel.tsx
+#: src/share/MethodPanes.tsx
 msgid "Link"
 msgstr ""
 
@@ -6558,6 +6571,10 @@ msgstr ""
 
 #: src/firstrun/ProfileStep.tsx
 msgid "{count, plural, one {# profile from another mod manager is} other {# profiles from other mod managers are}} on this computer."
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid ".r2z file"
 msgstr ""
 
 #: src/groups/SavedGroupsSection.tsx

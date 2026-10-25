@@ -1,7 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
-import { Copy, FileJson, Package, Save, Share2 } from 'lucide-react'
+import { FileJson, Package, Save, Share2 } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import {
   ExportCode,
@@ -11,7 +11,6 @@ import { SetLanSharing } from '../../bindings/github.com/Rethunk-Tech/mortar/int
 import type { Saved } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/models.ts'
 import {
   ExportCollection,
-  SaveFile,
   ShowExportedCollection,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/service.ts'
 import { R2MODMAN } from '../brand/productNames.ts'
@@ -20,16 +19,17 @@ import { listNames } from '../i18n/list.ts'
 import { SendPanel } from '../lan/SendPanel.tsx'
 import { useSettings } from '../settings/store.ts'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
+import { Field } from '../shell/dialog/FormDialog.tsx'
 import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
 import { reportError, reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
-import { usePending } from '../toasts/usePending.ts'
 import { copyText } from './copyText.ts'
 import { Included } from './Included.tsx'
 import { type MeterLevel, meter, type ShownInfo, suggestFile } from './logic.ts'
 import { ModpackDialog } from './ModpackDialog.tsx'
-import { type ShareInclude, toShareInclude } from './shareDefaults.ts'
+import type { ShareInclude } from './shareDefaults.ts'
+import { type Tile, TileGrid } from './TileGrid.tsx'
 
 const PERCENT = 100
 
@@ -104,42 +104,25 @@ export function LinkPane({
           {t`This profile is too large for a link.`}
         </Typography>
       ) : (
-        <>
-          <Box sx={{ display: 'flex', gap: space.gap }}>
-            <Box
-              sx={{
-                flex: 1,
-                minWidth: 0,
-                display: 'flex',
-                alignItems: 'center',
-                height: 40,
-                px: space.pad,
-                bgcolor: 'var(--mortar-overlay-30)',
-                borderRadius: '8px',
-                fontFamily: MONO,
-                fontSize: 'base.fontSize',
-                userSelect: 'text',
-              }}
-            >
-              <Typography noWrap={true} title={info.web} sx={{ font: 'inherit' }}>
-                {info.web}
-              </Typography>
-            </Box>
-            <Button
-              variant="contained"
-              startIcon={<Copy size={16} />}
-              disabled={info.count === 0}
-              onClick={() => copyText(info.web, t`Link copied`)}
-              sx={{ height: 40, px: '18px', fontSize: 'medium.fontSize', whiteSpace: 'nowrap' }}
-            >
-              {t`Copy link`}
-            </Button>
+        <Field label={t`Link`} hint={<Meter info={info} />}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              height: space.control,
+              px: 1.5,
+              bgcolor: 'var(--mortar-raised)',
+              borderRadius: '6px',
+              fontFamily: MONO,
+              fontSize: 'base.fontSize',
+              userSelect: 'text',
+            }}
+          >
+            <Typography noWrap={true} title={info.web} sx={{ font: 'inherit' }}>
+              {info.web}
+            </Typography>
           </Box>
-          <Meter info={info} />
-          <Typography sx={note}>
-            {t`They see the profile name, the mod list and where each mod comes from.`}
-          </Typography>
-        </>
+        </Field>
       )}
       {large ? (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
@@ -159,44 +142,15 @@ export function LinkPane({
 export function FilePane({
   info,
   total,
-  game,
-  profileId,
-  keys,
   include,
   onInclude,
-}: IncludeProps & { game: string; profileId: string; keys: string[] }) {
+  saved,
+}: IncludeProps & { saved: Saved | null }) {
   const { t } = useLingui()
-  const [saved, setSaved] = useState<Saved | null>(null)
-  const [busy, run] = usePending()
-  const save = () =>
-    run(
-      async () => {
-        const result = await SaveFile(game, profileId, keys, toShareInclude(include))
-        if (result.path) {
-          setSaved(result)
-          useToasts.getState().push({ kind: 'success', title: t`File saved` })
-        }
-      },
-      { errorTitle: t`Could not save the file` },
-    )
   const skipped = saved?.skipped ?? []
   return (
     <Pane>
-      <Typography sx={note}>
-        {t`A .mortar file holds the link's mods plus their settings files. Send it; they open it from Mortar's Import.`}
-      </Typography>
       <Included info={info} total={total} include={include} onInclude={onInclude} target="file" />
-      <Box>
-        <Button
-          variant="contained"
-          startIcon={<Save size={16} />}
-          disabled={busy || info.count === 0}
-          onClick={save}
-          sx={{ height: 40 }}
-        >
-          {t`Save…`}
-        </Button>
-      </Box>
       {saved?.path ? (
         <Typography
           sx={{ ...note, wordBreak: 'break-all' }}
@@ -261,6 +215,8 @@ export function NexusPane({ game, profileId }: { game: string; profileId: string
   )
 }
 
+const TILE_ICON = 32
+
 export function ThunderstorePane({ game, profileId }: { game: string; profileId: string }) {
   const { t } = useLingui()
   const [asking, setAsking] = useState(false)
@@ -289,41 +245,43 @@ export function ThunderstorePane({ game, profileId }: { game: string; profileId:
       body: path,
     })
   }
+  const thunderstoreTiles: Tile<'code' | 'r2z' | 'modpack'>[] = [
+    {
+      id: 'code',
+      icon: <Share2 size={TILE_ICON} />,
+      name: t`${{ manager: R2MODMAN }} code`,
+      hint: t`A code anyone can enter; uploads the profile`,
+    },
+    {
+      id: 'r2z',
+      icon: <Save size={TILE_ICON} />,
+      name: t`.r2z file`,
+      hint: t`A file to send, with your config files`,
+    },
+    {
+      id: 'modpack',
+      icon: <Package size={TILE_ICON} />,
+      name: t`Modpack`,
+      hint: t`A zip to publish on ${{ source: sourceLabel('thunderstore') }}`,
+    },
+  ]
   return (
     <Pane>
-      <Typography sx={note}>
-        {t`For ${{ manager: R2MODMAN }} and other ${{ source: sourceLabel('thunderstore') }} managers: a code anyone can enter, a .r2z file, or a modpack zip with your config folder.`}
-      </Typography>
-      <Box sx={{ display: 'flex', gap: space.gap, flexWrap: 'wrap' }}>
-        <Button
-          variant="contained"
-          startIcon={<Share2 size={16} />}
-          onClick={() => setAsking(true)}
-          sx={{ height: 40 }}
-        >
-          {t`Share as ${{ manager: R2MODMAN }} code…`}
-        </Button>
-        <Button
-          variant="outlined"
-          color="inherit"
-          startIcon={<Save size={16} />}
-          onClick={() => {
+      <TileGrid
+        label={t`How to share it`}
+        lastUsed={null}
+        padded={false}
+        tiles={thunderstoreTiles}
+        onChoose={(id) => {
+          if (id === 'code') {
+            setAsking(true)
+          } else if (id === 'r2z') {
             saveR2z().catch(reportError(t`Could not save the file`))
-          }}
-          sx={{ height: 40 }}
-        >
-          {t`Save .r2z…`}
-        </Button>
-        <Button
-          variant="outlined"
-          color="inherit"
-          startIcon={<Package size={16} />}
-          onClick={() => setPacking(true)}
-          sx={{ height: 40 }}
-        >
-          {t`Export as ${{ source: sourceLabel('thunderstore') }} modpack…`}
-        </Button>
-      </Box>
+          } else {
+            setPacking(true)
+          }
+        }}
+      />
       {packing ? (
         <ModpackDialog game={game} profileId={profileId} onClose={() => setPacking(false)} />
       ) : null}

@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, LinearProgress, Typography } from '@mui/material'
-import { useEffect } from 'react'
+import { type ReactNode, useEffect } from 'react'
 import { ImportsModsFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { MOD_ORGANIZER_2, STARDROP, VORTEX } from '../brand/productNames.ts'
 import { localId } from '../mods/dependents.ts'
@@ -20,7 +20,7 @@ import { ImportInput } from './ImportInput.tsx'
 import { Tiles } from './ImportPreview.tsx'
 import { type ImportSource, ImportSources } from './ImportSources.tsx'
 import { missingModName, summarize } from './logic.ts'
-import { ManagerPane } from './ManagerPane.tsx'
+import { useManagerPane } from './ManagerPane.tsx'
 import { SaveImportedTemplateHost } from './SaveImportedTemplate.tsx'
 import { seedPreview } from './seedPreview.ts'
 import { type ImportRequest, useImportDialog } from './store.ts'
@@ -114,10 +114,13 @@ function ImportPane({
   flow,
   game,
   close,
+  manager,
 }: {
   flow: ReturnType<typeof useImportFlow>
   game: string
   close: () => void
+  // The other-managers step's body, read by the dialog so its footer can sit in the dialog's footer.
+  manager: ReactNode
 }) {
   const { data: modsFolder } = useLoaded(
     () => ImportsModsFolder(game),
@@ -141,16 +144,34 @@ function ImportPane({
     )
   }
   if (flow.tab === 'manager') {
-    return (
-      <ManagerPane
-        game={game}
-        onFolder={(folder) => flow.previewLocalProfile(folder).catch(reportUnexpected)}
-        onExternal={(found) => flow.previewExternal(found).catch(reportUnexpected)}
-        onDone={close}
-      />
-    )
+    return manager
   }
   return <ImportInput flow={flow} />
+}
+
+// The other-managers step keeps its own footer; a preview has the import's; the other steps have none.
+function dialogFooter(
+  managers: ReturnType<typeof useManagerPane>,
+  flow: ReturnType<typeof useImportFlow>,
+  targetName: string,
+  signedIn: boolean,
+): ReactNode {
+  if (managers.active) {
+    return managers.footer
+  }
+  const { preview } = flow
+  if (preview === null) {
+    return null
+  }
+  return (
+    <ImportFooter
+      flow={flow}
+      preview={preview}
+      summary={summarize(preview.mods, flow.excluded)}
+      targetName={targetName}
+      signedIn={signedIn}
+    />
+  )
 }
 
 function Body({ request }: { request: ImportRequest }) {
@@ -164,6 +185,13 @@ function Body({ request }: { request: ImportRequest }) {
   const source = flow.external?.source ?? ''
   const manager = SOURCE_NAMES[source] ?? source
   useSeedPreview(request, flow)
+  const managers = useManagerPane({
+    game,
+    active: flow.tab === 'manager' && flow.preview === null,
+    onFolder: (folder) => flow.previewLocalProfile(folder).catch(reportUnexpected),
+    onExternal: (found) => flow.previewExternal(found).catch(reportUnexpected),
+    onDone: close,
+  })
 
   const { preview } = flow
   const hasMods = preview !== null && preview.mods.length > 0
@@ -186,6 +214,7 @@ function Body({ request }: { request: ImportRequest }) {
     }
   }
   const canBack = preview !== null || (flow.tab !== 'choose' && !flow.external)
+  const footer = dialogFooter(managers, flow, targetName ?? '', signedIn)
   return (
     <AppDialog
       closeButton={true}
@@ -197,17 +226,7 @@ function Body({ request }: { request: ImportRequest }) {
       // A link or file to choose needs a narrow dialog; the preview's tiles need the room.
       size={preview ? 'xl' : 'lg'}
       flush={true}
-      footer={
-        preview ? (
-          <ImportFooter
-            flow={flow}
-            preview={preview}
-            summary={summarize(preview.mods, flow.excluded)}
-            targetName={targetName ?? ''}
-            signedIn={signedIn}
-          />
-        ) : null
-      }
+      footer={footer}
     >
       {/* Reading a link, code or file, or importing, can take a while: a thin bar says it is under way. */}
       <Box sx={{ height: 2, flexShrink: 0 }}>
@@ -239,7 +258,7 @@ function Body({ request }: { request: ImportRequest }) {
           )}
         </Box>
       ) : (
-        <ImportPane flow={flow} game={game} close={close} />
+        <ImportPane flow={flow} game={game} close={close} manager={managers.body} />
       )}
     </AppDialog>
   )

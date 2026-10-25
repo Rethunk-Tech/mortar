@@ -1,6 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material'
-import { useState } from 'react'
+import { Box, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material'
 import { userModCount } from '../profiles/count.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { space } from '../theme/density.ts'
@@ -8,13 +7,11 @@ import { TipBanner } from '../tips/TipBanner.tsx'
 import { ListFormat } from './ListFormat.tsx'
 import { FilePane, LinkPane, NearbyPane, NexusPane, ThunderstorePane } from './MethodPanes.tsx'
 import type { Destination } from './methods.ts'
-import { PreviewDialog } from './PreviewDialog.tsx'
 import type { useShareBuild } from './useShareBuild.ts'
 
 function MortarPanel({ built }: { built: ReturnType<typeof useShareBuild> }) {
   const { t } = useLingui()
-  const { profileId, keys, game, format, setFormat, info, include, setInclude } = built
-  const [previewing, setPreviewing] = useState(false)
+  const { profileId, format, setFormat, info, include, setInclude } = built
   const total = useProfiles((s) => {
     const p = s.profiles.find((x) => x.id === profileId)
     return p ? userModCount(p) : (info?.count ?? 0)
@@ -34,7 +31,7 @@ function MortarPanel({ built }: { built: ReturnType<typeof useShareBuild> }) {
             setFormat(next)
           }
         }}
-        sx={{ alignSelf: 'flex-start' }}
+        fullWidth={true}
       >
         <ToggleButton value="link" sx={{ px: space.pad }}>
           {t`Link`}
@@ -60,22 +57,11 @@ function MortarPanel({ built }: { built: ReturnType<typeof useShareBuild> }) {
         <FilePane
           info={info}
           total={total}
-          game={game}
-          profileId={profileId}
-          keys={keys}
           include={include}
           onInclude={setInclude}
+          saved={built.saved}
         />
       )}
-      <Button
-        variant="text"
-        disabled={info.tooLarge}
-        onClick={() => setPreviewing(true)}
-        sx={{ alignSelf: 'flex-start', ml: -1 }}
-      >
-        {t`Preview what they see`}
-      </Button>
-      <PreviewDialog info={info} open={previewing} onClose={() => setPreviewing(false)} />
     </Box>
   )
 }

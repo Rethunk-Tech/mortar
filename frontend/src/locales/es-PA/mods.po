@@ -1177,6 +1177,7 @@ msgstr ""
 #: src/mods/CategoryEditor.tsx
 #: src/mods/ChangeVersionDialog.tsx
 #: src/mods/GameModsReviewDialog.tsx
+#: src/mods/OtherProfilesDialog.tsx
 #: src/mods/parts.tsx
 #: src/mods/ReportToAuthorButton.tsx
 msgid "Cancel"

@@ -1,6 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Checkbox, FormControlLabel, Typography } from '@mui/material'
+import { Box, Button, ButtonBase, Checkbox, Typography } from '@mui/material'
 import { Inbox } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import type {
@@ -12,14 +12,20 @@ import {
   NeedsToCopy,
   ProfilesWithMod,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { modsLabel } from '../i18n/counts.ts'
 import { listNames } from '../i18n/list.ts'
+import { userModCount } from '../profiles/count.ts'
+import { ProfileMark } from '../profiles/ProfileMark.tsx'
 import { useProfiles } from '../profiles/store.ts'
-import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
+import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { reportError } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { lockedIn, useLaunchLocks } from './useLocked.ts'
+
+const MARK_PX = 36
+const DISABLED_OPACITY = 0.55
 
 function NoOtherProfiles() {
   const { t } = useLingui()
@@ -30,6 +36,7 @@ function NoOtherProfiles() {
   )
 }
 
+// One profile as a card to tick: its mark, its name, and what it holds or why it cannot change.
 function ProfileChoice({
   profile,
   row,
@@ -51,24 +58,53 @@ function ProfileChoice({
   const has = row !== undefined
   const disabled =
     mode === 'remove' ? !has || isPinned || isLockedProfile : has || isPinned || isLockedProfile
+  const checked = mode === 'remove' ? selected : has || selected
+  let status = modsLabel(userModCount(profile))
+  if (isLockedProfile) {
+    status = t`Stop the game to change mods.`
+  } else if (isPinned) {
+    status = t`pinned in ${{ name: profile.name }}`
+  } else if (has && mode !== 'remove') {
+    status = t`Already has it`
+  }
   return (
-    <FormControlLabel
-      control={
-        <Checkbox
-          checked={mode === 'remove' ? selected : has || selected}
-          disabled={disabled}
-          onChange={() => choose(profile.id)}
-        />
-      }
-      label={
-        <span>
+    <ButtonBase
+      role="checkbox"
+      aria-checked={checked}
+      disabled={disabled}
+      onClick={() => choose(profile.id)}
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        gap: 1.5,
+        p: 1.5,
+        textAlign: 'left',
+        borderRadius: '8px',
+        border: '1px solid',
+        borderColor: checked && !disabled ? 'primary.main' : 'var(--mortar-hairline)',
+        bgcolor: 'var(--mortar-raised)',
+        opacity: disabled ? DISABLED_OPACITY : 1,
+      }}
+    >
+      <ProfileMark profile={profile} size={MARK_PX} />
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Typography noWrap={true} sx={{ fontWeight: 600 }}>
           {profile.name}
-          {has && mode !== 'remove' && !isPinned ? ` · ${t`Already has it`}` : ''}
-          {isPinned ? ` · ${t`pinned in ${{ name: profile.name }}`}` : ''}
-          {isLockedProfile ? ` · ${t`Stop the game to change mods.`}` : ''}
-        </span>
-      }
-    />
+        </Typography>
+        <Typography noWrap={true} sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
+          {status}
+        </Typography>
+      </Box>
+      <Checkbox
+        size="small"
+        checked={checked}
+        disabled={disabled}
+        tabIndex={-1}
+        disableRipple={true}
+        sx={{ p: 0, pointerEvents: 'none' }}
+      />
+    </ButtonBase>
   )
 }
 
@@ -113,7 +149,7 @@ function ProfileChoices({
   locked: (profile: Profile) => boolean
 }) {
   return (
-    <>
+    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
       {profiles.map((profile) => {
         const row = rows.find((candidate) => candidate.profileId === profile.id)
         const isPinned = row !== undefined && pinned(profile, row)
@@ -130,7 +166,49 @@ function ProfileChoices({
           />
         )
       })}
-    </>
+    </Box>
+  )
+}
+
+// Cancel and the action, with what an add brings along said on the left.
+function ChoicesFooter({
+  needs,
+  busy,
+  blocked,
+  danger,
+  confirmText,
+  onCancel,
+  onConfirm,
+}: {
+  needs: DiffSide[]
+  busy: boolean
+  blocked: boolean
+  danger: boolean
+  confirmText: string
+  onCancel: () => void
+  onConfirm: () => void
+}) {
+  const { t } = useLingui()
+  return (
+    <DialogFooter
+      aside={
+        needs.length > 0
+          ? t`Also adds what it needs: ${{ names: listNames(needs.map((n) => n.name)) }}`
+          : ''
+      }
+    >
+      <Button onClick={onCancel} disabled={busy}>
+        {t`Cancel`}
+      </Button>
+      <Button
+        variant="contained"
+        color={danger ? 'error' : 'primary'}
+        disabled={busy || blocked}
+        onClick={onConfirm}
+      >
+        {confirmText}
+      </Button>
+    </DialogFooter>
   )
 }
 
@@ -252,20 +330,23 @@ export function OtherProfilesDialog({
         )
       : confirmLabel
   return (
-    <ConfirmationDialog
+    <AppDialog
       open={open}
+      onClose={pending ? () => undefined : onClose}
       title={title}
-      confirmLabel={confirmText}
-      busy={pending}
-      confirmDisabled={profiles.length === 0 || selected.length === 0}
-      onCancel={onClose}
-      onConfirm={confirm}
+      subtitle={helper && profiles.length > 0 ? helper : undefined}
+      footer={
+        <ChoicesFooter
+          needs={needs}
+          busy={pending}
+          blocked={profiles.length === 0 || selected.length === 0}
+          danger={mode === 'remove'}
+          confirmText={confirmText}
+          onCancel={onClose}
+          onConfirm={confirm}
+        />
+      }
     >
-      {helper && profiles.length > 0 ? (
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-          {helper}
-        </Typography>
-      ) : null}
       {profiles.length === 0 ? <NoOtherProfiles /> : null}
       <ProfileChoices
         profiles={profiles}
@@ -276,11 +357,6 @@ export function OtherProfilesDialog({
         pinned={pinned}
         locked={locked}
       />
-      {needs.length > 0 ? (
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-          {t`Also adds what it needs: ${{ names: listNames(needs.map((n) => n.name)) }}`}
-        </Typography>
-      ) : null}
-    </ConfirmationDialog>
+    </AppDialog>
   )
 }
