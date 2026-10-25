@@ -34,7 +34,7 @@ func TestCollectionExportRoundTrip(t *testing.T) {
 	write("config/extra.json", `{"b":2}`)
 
 	fomod := map[string]map[string][]string{"Step": {"Group": {"Plugin A", "Plugin B"}}}
-	p := profile.Profile{Name: "Cozy Farm", Notes: "Read me first", Description: "desc", Entries: []profile.Entry{
+	p := profile.Profile{Name: "Cozy Farm", Notes: "Read me first", Entries: []profile.Entry{
 		{
 			Key: "k1", Source: profile.Source{Kind: profile.KindNexus, Name: "cozy.zip", ModID: 100, FileID: 7, Version: "1.0"},
 			Mods: []profile.Component{{ID: "smapi:A.Cozy", Name: "Cozy", Folder: "Cozy"}}, Fomod: fomod, Note: "needs SMAPI",
@@ -95,7 +95,7 @@ func TestCollectionExportRoundTrip(t *testing.T) {
 	if err := json.Unmarshal(raw, &back); err != nil {
 		t.Fatal(err)
 	}
-	if back.Info.InstallInstructions != "Read me first" || back.Info.DomainName != "stardewvalley" || len(back.Mods) != 4 {
+	if back.Info.InstallInstructions != "Read me first" || back.Info.Description != "Read me first" || back.Info.DomainName != "stardewvalley" || len(back.Mods) != 4 {
 		t.Fatalf("info = %+v, %d mods", back.Info, len(back.Mods))
 	}
 	if s := back.Mods[0].Source; s.ModID != 100 || s.FileID != 7 || s.MD5 != "abc" || s.FileSize != 2048 || back.Mods[0].Optional {
@@ -123,5 +123,20 @@ func TestCollectionExportRoundTrip(t *testing.T) {
 	want := []string{"A.Cozy/config.json={\"a\":1}", "A.Cozy/config/extra.json={\"b\":2}"}
 	if !slices.Equal(cfgs, want) {
 		t.Fatalf("configs = %v", cfgs)
+	}
+}
+
+func TestSummaryLine(t *testing.T) {
+	t.Parallel()
+	for notes, want := range map[string]string{
+		"":                             "",
+		"\n  \n# **Co-op farm**\nmore": "Co-op farm",
+		"> - __quoted__":               "quoted",
+		"* item":                       "item",
+		"**Bold** then plain":          "**Bold** then plain",
+	} {
+		if got := summaryLine(notes); got != want {
+			t.Errorf("summaryLine(%q) = %q, want %q", notes, got, want)
+		}
 	}
 }

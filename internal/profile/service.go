@@ -241,9 +241,9 @@ func (s *Service) SetSkipPlayCheck(game, id string, on bool) (Profile, error) {
 	return s.store.SetSkipPlayCheck(game, id, on)
 }
 
-// SetAppearance replaces a profile's colour, icon and short description.
-func (s *Service) SetAppearance(game, id, color, icon, description string) (Profile, error) {
-	return s.store.SetAppearance(game, id, color, icon, description)
+// SetAppearance replaces a profile's colour and icon.
+func (s *Service) SetAppearance(game, id, color, icon string) (Profile, error) {
+	return s.store.SetAppearance(game, id, color, icon)
 }
 
 // SetInstall pins a profile to one of the game's installs; an empty id unpins it.

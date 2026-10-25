@@ -270,8 +270,6 @@ type Profile struct {
 	Color string `json:"color,omitempty"`
 	// Icon is a Lucide name from ProfileIcons, or empty for the default profile mark.
 	Icon string `json:"icon,omitempty"`
-	// Description is a short blurb shown on the Profiles list and in the hero; at most MaxDescription runes.
-	Description string `json:"description,omitempty"`
 	// Favourite lists the profile first in the profile menu. It travels in a .mortar file, not in a share link.
 	Favourite bool `json:"favourite,omitempty"`
 	// LaunchOptions is extra SMAPI arguments for this profile, as the user typed them.
@@ -656,6 +654,7 @@ func readAt(dir, id string) (Profile, error) {
 		}
 	}
 	sanitizeAppearance(&p)
+	foldDescription(b, &p)
 	adoptProfileLoadAfter(b, &p, filepath.Join(dir, "mods"))
 	if statErr == nil {
 		rememberProfile(path, fi, p)

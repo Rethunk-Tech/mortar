@@ -62,7 +62,6 @@ type Config struct {
 type Preview struct {
 	Shared
 	Notes         string
-	Description   string
 	Favourite     bool
 	IDs           []mod.ID
 	Configs       []Config
@@ -73,17 +72,18 @@ type Preview struct {
 }
 
 type fileDoc struct {
-	Version     int               `json:"version"`
-	Name        string            `json:"name"`
-	Game        string            `json:"game"`
-	SourceKeys  map[string]string `json:"sourceKeys"`
-	Notes       string            `json:"notes"`
-	Description string            `json:"description,omitempty"`
-	Favourite   bool              `json:"favourite,omitempty"`
-	Entries     json.RawMessage   `json:"entries"`
-	IDs         []mod.ID          `json:"ids"`
-	Groups      []FileGroup       `json:"groups,omitempty"`
-	Problems    *ProblemChoices   `json:"problems,omitempty"`
+	Version    int               `json:"version"`
+	Name       string            `json:"name"`
+	Game       string            `json:"game"`
+	SourceKeys map[string]string `json:"sourceKeys"`
+	Notes      string            `json:"notes"`
+	// Description is only read: a file may carry a profile's old short description, which joins the notes.
+	Description string          `json:"description,omitempty"`
+	Favourite   bool            `json:"favourite,omitempty"`
+	Entries     json.RawMessage `json:"entries"`
+	IDs         []mod.ID        `json:"ids"`
+	Groups      []FileGroup     `json:"groups,omitempty"`
+	Problems    *ProblemChoices `json:"problems,omitempty"`
 }
 
 func validSegment(s string) bool {
@@ -114,8 +114,8 @@ func validID(id mod.ID) bool {
 	return format.MatchString(id.Format()) && len(local) <= maxIDLen && uniqueID.MatchString(local) && !reserved.MatchString(local)
 }
 
-// Write writes the profile as a .mortar zip: profile.json with the link's entries plus name, notes and
-// description, the .json files of each enabled mod's folder under configs/<mod id>/, and the text files of the
+// Write writes the profile as a .mortar zip: profile.json with the link's entries plus name and notes,
+// the .json files of each enabled mod's folder under configs/<mod id>/, and the text files of the
 // loader's config folders under loader/<path in the profile>. modsDir is the profile's mods/ folder, inside the
 // profile's own. Config files that are over the caps or have unusual names are skipped and returned as paths.
 func Write(w io.Writer, gameID string, p profile.Profile, modsDir string, include ...Include) (skipped []string, err error) {
@@ -135,7 +135,7 @@ func Write(w io.Writer, gameID string, p profile.Profile, modsDir string, includ
 		notes = ""
 	}
 	doc := fileDoc{
-		Version: FormatVersion, Name: s.Name, Game: s.Game, SourceKeys: s.SourceKeys, Notes: notes, Description: p.Description, Favourite: p.Favourite,
+		Version: FormatVersion, Name: s.Name, Game: s.Game, SourceKeys: s.SourceKeys, Notes: notes, Favourite: p.Favourite,
 		Entries: entries, IDs: []mod.ID{}, Groups: collectFileGroups(p),
 	}
 	if inc.ProblemChoices {
@@ -146,9 +146,6 @@ func Write(w io.Writer, gameID string, p profile.Profile, modsDir string, includ
 	}
 	if utf8.RuneCountInString(notes) > profile.MaxNotes {
 		return nil, fmt.Errorf("%w: notes are too long", ErrBadFile)
-	}
-	if utf8.RuneCountInString(p.Description) > profile.MaxDescription {
-		return nil, fmt.Errorf("%w: description is too long", ErrBadFile)
 	}
 	var configs []Config
 	for _, e := range p.Entries {
@@ -458,15 +455,16 @@ func parseFileDoc(raw []byte) (Preview, error) {
 	if err != nil {
 		return Preview{}, err
 	}
-	pv := Preview{Name: d.Name, Game: d.Game, SourceKeys: d.SourceKeys, Entries: entries, Notes: d.Notes, Description: d.Description, Favourite: d.Favourite, IDs: d.IDs, Groups: d.Groups}
+	pv := Preview{Name: d.Name, Game: d.Game, SourceKeys: d.SourceKeys, Entries: entries, Notes: d.Notes, Favourite: d.Favourite, IDs: d.IDs, Groups: d.Groups}
 	if err := checkShared(pv.Shared); err != nil {
 		return Preview{}, err
 	}
 	if utf8.RuneCountInString(d.Notes) > profile.MaxNotes {
 		return Preview{}, fmt.Errorf("%w: notes are too long", ErrBadFile)
 	}
-	if utf8.RuneCountInString(d.Description) > profile.MaxDescription {
-		return Preview{}, fmt.Errorf("%w: description is too long", ErrBadFile)
+	pv.Notes = profile.FoldDescription(d.Description, pv.Notes)
+	if utf8.RuneCountInString(pv.Notes) > profile.MaxNotes {
+		pv.Notes = string([]rune(pv.Notes)[:profile.MaxNotes])
 	}
 	if len(d.IDs) > MaxConfigFiles {
 		return Preview{}, fmt.Errorf("%w: too many mods", ErrBadFile)

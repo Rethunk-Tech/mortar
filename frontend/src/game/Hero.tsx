@@ -28,7 +28,6 @@ const NAME_WEIGHT = 700
 const NAME_LINE_HEIGHT = 1.1
 const NAME_FONT_COMPACT_PX = 18
 const NAME_LINE_COMPACT = 1.3
-const DESC_FONT_PX = 13
 const DOT = '·'
 const META_FONT_PX = 12
 const HERO_HEIGHT_PX = 150
@@ -151,21 +150,6 @@ function HeroName({
           </>
         )}
       </Box>
-      {profile.description ? (
-        <Typography
-          noWrap={true}
-          title={profile.description}
-          sx={{
-            mt: 0.5,
-            fontSize: DESC_FONT_PX,
-            color: ON_ART_TEXT,
-            textShadow: ON_ART_SHADOW,
-            [compactAt]: { display: 'none' },
-          }}
-        >
-          {profile.description}
-        </Typography>
-      ) : null}
       <Typography
         title={meta.join(' · ')}
         noWrap={true}

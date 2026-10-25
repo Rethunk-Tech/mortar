@@ -300,7 +300,7 @@ export const useProfiles = create<{
   create: (name: string) => Promise<void>
   // Rejects with the reason when the name is refused, for the field to show.
   rename: (id: string, name: string) => Promise<boolean>
-  setAppearance: (id: string, color: string, icon: string, description: string) => Promise<void>
+  setAppearance: (id: string, color: string, icon: string) => Promise<void>
   setLaunchOptions: (id: string, options: string) => Promise<void>
   setLaunchSettings: (id: string, prefix: string, env: string) => Promise<void>
   replace: (profile: Profile) => void
@@ -379,10 +379,10 @@ export const useProfiles = create<{
     set((s) => ({ profiles: s.profiles.map((x) => (x.id === id ? p : x)) }))
     return true
   },
-  setAppearance: async (id, color, icon, description) => {
+  setAppearance: async (id, color, icon) => {
     const { game } = get()
     if (game) {
-      get().replace(await SetAppearance(game.id, id, color, icon, description))
+      get().replace(await SetAppearance(game.id, id, color, icon))
     }
   },
   setLaunchOptions: (id, options) => applyLaunchOptions(get, id, options),

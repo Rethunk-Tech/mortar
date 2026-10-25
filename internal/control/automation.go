@@ -85,11 +85,9 @@ func (s *Services) profileSet(ctx context.Context, p Params, prof profile.Profil
 	case "notes":
 		return s.Profiles.SetNotes(g, id, v)
 	case "color":
-		return s.Profiles.SetAppearance(g, id, v, prof.Icon, prof.Description)
+		return s.Profiles.SetAppearance(g, id, v, prof.Icon)
 	case "icon":
-		return s.Profiles.SetAppearance(g, id, prof.Color, v, prof.Description)
-	case "description":
-		return s.Profiles.SetAppearance(g, id, prof.Color, prof.Icon, v)
+		return s.Profiles.SetAppearance(g, id, prof.Color, v)
 	case "install":
 		return s.Profiles.SetInstall(g, id, v)
 	case "loader":

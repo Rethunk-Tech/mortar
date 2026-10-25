@@ -1,7 +1,6 @@
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { applyStagedCover, type StagedCover } from '../game/cover.ts'
 import { errorMessage, reportError, reportUnexpected } from '../toasts/report.ts'
-import { clipDescription } from './appearance.ts'
 import { useProfiles } from './store.ts'
 
 type LaunchError = { field: 'options' | 'settings'; message: string } | null
@@ -68,7 +67,7 @@ export async function saveProfile({
   icon: string
   setLaunchOptions: (id: string, options: string) => Promise<void>
   setLaunchSettings: (id: string, prefix: string, env: string) => Promise<void>
-  setAppearance: (id: string, color: string, icon: string, description: string) => Promise<void>
+  setAppearance: (id: string, color: string, icon: string) => Promise<void>
   setLaunchError: (value: LaunchError) => void
   setBusy: (value: boolean) => void
   onClose: () => void
@@ -94,7 +93,7 @@ export async function saveProfile({
       return
     }
     try {
-      await setAppearance(profile.id, color, icon, clipDescription(profile.description ?? ''))
+      await setAppearance(profile.id, color, icon)
     } catch (error) {
       reportUnexpected(error)
       return

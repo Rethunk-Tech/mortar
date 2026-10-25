@@ -103,10 +103,10 @@ func withEntries(doc []byte, entries []Ref) ([]byte, error) {
 }
 
 // SameExceptArrival reports whether have differs from base only by files in missing not having arrived: the profile
-// name, notes, description, every entry's options and order, and every config file must match both ways. Mod ids
+// name, notes, every entry's options and order, and every config file must match both ways. Mod ids
 // and config files base holds for a file that has not arrived are not in have and are not a difference.
 func SameExceptArrival(base, have Preview, missing map[string]bool) bool {
-	if base.Name != have.Name || base.Notes != have.Notes || base.Description != have.Description {
+	if base.Name != have.Name || base.Notes != have.Notes {
 		return false
 	}
 	var want []string

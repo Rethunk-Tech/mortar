@@ -137,12 +137,33 @@ func modOf(e profile.Entry, domain string, facts fileFacts) collectionMod {
 	return m
 }
 
+// summaryLine is the first non-empty line of Markdown notes as plain text: its heading, quote or list marker and
+// surrounding bold dropped.
+func summaryLine(notes string) string {
+	for line := range strings.Lines(notes) {
+		line = strings.TrimLeft(strings.TrimSpace(line), "#> ")
+		for _, marker := range []string{"- ", "* "} {
+			line = strings.TrimPrefix(line, marker)
+		}
+		line = strings.TrimSpace(line)
+		for _, b := range []string{"**", "__"} {
+			if len(line) > 2*len(b) && strings.HasPrefix(line, b) && strings.HasSuffix(line, b) {
+				line = strings.TrimSpace(line[len(b) : len(line)-len(b)])
+			}
+		}
+		if line != "" {
+			return line
+		}
+	}
+	return ""
+}
+
 // buildCollection is the draft of a profile: its enabled mods and notes, plus each mod's .json config files with
 // its manifest (which names the mod to the importer). Mortar cannot fill info.author, and a Nexus file's md5 and
 // size only when facts knows it.
 func buildCollection(p profile.Profile, domain, modsDir string, facts fileFacts) (collectionDoc, []pack.File, []string, error) {
 	doc := collectionDoc{
-		Info: collectionInfo{Name: p.Name, Description: p.Description, InstallInstructions: p.Notes, DomainName: domain},
+		Info: collectionInfo{Name: p.Name, Description: summaryLine(p.Notes), InstallInstructions: p.Notes, DomainName: domain},
 		Mods: []collectionMod{}, ModRules: []struct{}{},
 	}
 	var files []pack.File

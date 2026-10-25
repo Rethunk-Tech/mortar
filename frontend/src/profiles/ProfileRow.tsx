@@ -222,13 +222,6 @@ export const ProfileRow = memo(function ProfileRowView({
             <HealthCheckBadge game={game} profileId={profile.id} />
           </Box>
         )}
-        {profile.description ? (
-          <Tooltip title={profile.description}>
-            <Typography noWrap={true} tabIndex={0} sx={secondaryText}>
-              {profile.description}
-            </Typography>
-          </Tooltip>
-        ) : null}
         <Typography noWrap={true} title={summary} sx={secondaryText}>
           {summary}
         </Typography>

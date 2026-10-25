@@ -155,13 +155,12 @@ func NewService(d Deps) *Service {
 
 // session is the preview the dialog is showing, kept so Import acts on exactly what was shown.
 type session struct {
-	id          string
-	game        string
-	preview     Preview
-	notes       string
-	description string
-	favourite   bool
-	configs     []share.Config
+	id        string
+	game      string
+	preview   Preview
+	notes     string
+	favourite bool
+	configs   []share.Config
 	// loaderConfigs are the loader's own config files, written into the profile as soon as it exists.
 	loaderConfigs []share.LoaderConfig
 	// changedFiles are the sender's changed copies of mod files, written into the profile like the loader's configs.
@@ -509,7 +508,7 @@ func (s *Service) previewBytes(ctx context.Context, game string, data []byte, pr
 	return s.previewShared(ctx, game, pv, profileID)
 }
 
-// previewShared resolves a read .mortar file and keeps its description and groups on the session for the import.
+// previewShared resolves a read .mortar file and keeps its groups on the session for the import.
 func (s *Service) previewShared(ctx context.Context, game string, pv share.Preview, profileID string) (Preview, error) {
 	if err := sameGame(pv.Shared, game); err != nil {
 		return Preview{}, err
@@ -522,7 +521,6 @@ func (s *Service) previewShared(ctx context.Context, game string, pv share.Previ
 	out.Choices = pv.Choices.Count()
 	s.mu.Lock()
 	if s.current != nil && s.current.id == out.Session {
-		s.current.description = pv.Description
 		s.current.favourite = pv.Favourite
 		s.current.groups = pv.Groups
 		s.current.choices = pv.Choices
@@ -1043,13 +1041,6 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 				return Result{}, err
 			}
 			p = withNotes
-		}
-		if cur.description != "" {
-			withDesc, err := s.d.Profiles.SetAppearance(game, p.ID, "", "", cur.description)
-			if err != nil {
-				return Result{}, err
-			}
-			p = withDesc
 		}
 		if cur.favourite {
 			starred, err := s.d.Profiles.SetFavourite(game, p.ID, true)

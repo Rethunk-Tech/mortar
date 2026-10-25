@@ -482,10 +482,9 @@ func TestLoopbackLargeMortarRoundTrip(t *testing.T) {
 		}
 	}
 	original := profile.Profile{
-		Name:        "Large farm",
-		Notes:       "Keep this note.",
-		Description: "Profile settings survive LAN transfer.",
-		Entries:     entries,
+		Name:    "Large farm",
+		Notes:   "Keep this note.",
+		Entries: entries,
 	}
 	var archive bytes.Buffer
 	if _, err := share.Write(&archive, "stardew", original, modsDir); err != nil {
@@ -514,7 +513,7 @@ func TestLoopbackLargeMortarRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if received.Name != original.Name || received.Notes != original.Notes || received.Description != original.Description {
+	if received.Name != original.Name || received.Notes != original.Notes {
 		t.Fatalf("profile metadata = %#v, want %#v", received, original)
 	}
 	if len(received.Entries) != len(original.Entries) || len(received.Configs) != 1 {

@@ -2578,7 +2578,7 @@ takes --game <id>, which may be left out when exactly one game is installed. Out
   profile restore <file.zip> [--game <id>]    new profile from a backup; downloads missing mods
   profile load-order <game> <profile>    enabled mods in the loader's load order
   profile shortcut <game> <profile> [--remove]  desktop shortcut that plays this profile
-  profile set <game> <profile> <field> <value>  notes|color|icon|description|install|launchOptions|launchPrefix|launchEnv|loader|
+  profile set <game> <profile> <field> <value>  notes|color|icon|install|launchOptions|launchPrefix|launchEnv|loader|
                                           defaultLaunchPreset|skipPlayCheck|cover, or a per-profile game setting
   profile steam <game> <profile>         add this profile to Steam as a non-Steam game
   game steam-launch-option <game> [--set|--clear]  read or change Steam's loader launch options

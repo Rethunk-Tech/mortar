@@ -36,7 +36,7 @@ func nexus(key string, im, file int, disabled ...mod.ID) profile.Entry {
 
 func sample() profile.Profile {
 	gh := profile.Entry{Key: "gh", Source: profile.Source{Kind: profile.KindGitHub, Repo: "owner/repo", Tag: "v1.2.3", Asset: "mod-1.2.3.zip"}}
-	return profile.Profile{Name: "Farm 🌾", Notes: "n", Description: "co-op Fridays", Entries: []profile.Entry{
+	return profile.Profile{Name: "Farm 🌾", Notes: "n", Entries: []profile.Entry{
 		{Key: "smapi-4.1", Source: profile.Source{Kind: profile.SourceSMAPI}},
 		{Key: "bridge-1", Source: profile.Source{Kind: profile.SourceMortar}},
 		nexus("one", 541, 1000),
@@ -371,7 +371,7 @@ func TestMortarFileRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if pv.Name != "Farm 🌾" || pv.Notes != "n" || pv.Description != "co-op Fridays" || len(pv.Entries) != 3 {
+	if pv.Name != "Farm 🌾" || pv.Notes != "n" || len(pv.Entries) != 3 {
 		t.Errorf("preview = %+v", pv)
 	}
 	got := map[string]string{}
@@ -500,21 +500,21 @@ func TestImportEntryNotesTruncates(t *testing.T) {
 	}
 }
 
-func TestEncodeOmitsDescription(t *testing.T) {
+func TestReadFoldsDescriptionIntoNotes(t *testing.T) {
 	t.Parallel()
-	with := sample()
-	without := sample()
-	without.Description = ""
-	a, err := Encode("stardew", with, profile.ShareFacts{})
-	if err != nil {
-		t.Fatal(err)
+	doc := func(notes string) [2]string {
+		return [2]string{"profile.json", `{"version":3,"game":"stardew","sourceKeys":{"nexus":"stardewvalley"},"name":"x",` +
+			`"notes":"` + notes + `","description":"co-op Fridays","entries":[{"s":"nexus","mod":1,"file":2}],"ids":[]}`}
 	}
-	b, err := Encode("stardew", without, profile.ShareFacts{})
-	if err != nil {
-		t.Fatal(err)
+	for notes, want := range map[string]string{"": "co-op Fridays", "Read me": "co-op Fridays\n\nRead me"} {
+		pv, err := Read(zipOf(t, doc(notes)))
+		if err != nil || pv.Notes != want {
+			t.Errorf("notes %q: got %q, %v", notes, pv.Notes, err)
+		}
 	}
-	if a.Payload != b.Payload {
-		t.Fatal("description changed the share link payload")
+	pv, err := Read(zipOf(t, doc(strings.Repeat("x", profile.MaxNotes))))
+	if err != nil || utf8.RuneCountInString(pv.Notes) != profile.MaxNotes {
+		t.Errorf("full notes: %d runes, %v", utf8.RuneCountInString(pv.Notes), err)
 	}
 }
 

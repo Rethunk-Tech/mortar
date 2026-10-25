@@ -32,7 +32,7 @@ func TestProfileMovesToAFolderAndHome(t *testing.T) {
 	if b, err := os.ReadFile(filepath.Clean(filepath.Join(want, "mods", "x", "file.dll"))); err != nil || string(b) != "dll" {
 		t.Fatalf("file in the folder = %q, %v", b, err)
 	}
-	if _, err := s.SetAppearance("stardew", p.ID, "teal", "", ""); err != nil {
+	if _, err := s.SetAppearance("stardew", p.ID, "teal", ""); err != nil {
 		t.Fatalf("write through the link: %v", err)
 	}
 	listed, err := s.List("stardew")

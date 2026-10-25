@@ -1,14 +1,11 @@
 package profile
 
 import (
+	"encoding/json"
 	"fmt"
 	"slices"
 	"strings"
-	"unicode/utf8"
 )
-
-// MaxDescription caps a profile's short description, in characters.
-const MaxDescription = 280
 
 // ProfileColors are the palette tokens a profile may store.
 var ProfileColors = []string{
@@ -46,28 +43,16 @@ func validIcon(icon string) bool {
 	return icon == "" || slices.Contains(ProfileIcons, icon)
 }
 
-func cleanDescription(description string) (string, error) {
-	description = strings.TrimSpace(description)
-	if n := utf8.RuneCountInString(description); n > MaxDescription {
-		return "", fmt.Errorf("description is longer than %d characters", MaxDescription)
-	}
-	return description, nil
-}
-
-func cleanAppearance(color, icon, description string) (string, string, string, error) {
+func cleanAppearance(color, icon string) (string, string, error) {
 	color = strings.TrimSpace(color)
 	icon = strings.TrimSpace(icon)
 	if !validColor(color) {
-		return "", "", "", fmt.Errorf("unknown profile color %q", color)
+		return "", "", fmt.Errorf("unknown profile color %q", color)
 	}
 	if !validIcon(icon) {
-		return "", "", "", fmt.Errorf("unknown profile icon %q", icon)
+		return "", "", fmt.Errorf("unknown profile icon %q", icon)
 	}
-	description, err := cleanDescription(description)
-	if err != nil {
-		return "", "", "", err
-	}
-	return color, icon, description, nil
+	return color, icon, nil
 }
 
 func sanitizeAppearance(p *Profile) {
@@ -77,24 +62,42 @@ func sanitizeAppearance(p *Profile) {
 	if !validIcon(p.Icon) {
 		p.Icon = ""
 	}
-	if d, err := cleanDescription(p.Description); err != nil {
-		p.Description = ""
-	} else {
-		p.Description = d
+}
+
+// foldDescription moves a "description" key, which Mortar no longer writes, into the notes so nothing a player
+// wrote is lost; the next write of the profile drops the key.
+func foldDescription(raw []byte, p *Profile) {
+	var old struct {
+		Description string `json:"description"`
+	}
+	if json.Unmarshal(raw, &old) == nil {
+		p.Notes = FoldDescription(old.Description, p.Notes)
 	}
 }
 
-// SetAppearance replaces a profile's colour, icon and description. It never touches mods/, so a running
-// game does not block it.
-func (s *Store) SetAppearance(game, id, color, icon, description string) (Profile, error) {
-	color, icon, description, err := cleanAppearance(color, icon, description)
+// FoldDescription puts a profile's old short description on top of its notes, a blank line between, unless the
+// notes already hold it.
+func FoldDescription(description, notes string) string {
+	d := strings.TrimSpace(description)
+	switch {
+	case d == "" || strings.Contains(notes, d):
+		return notes
+	case strings.TrimSpace(notes) == "":
+		return d
+	default:
+		return d + "\n\n" + notes
+	}
+}
+
+// SetAppearance replaces a profile's colour and icon. It never touches mods/, so a running game does not block it.
+func (s *Store) SetAppearance(game, id, color, icon string) (Profile, error) {
+	color, icon, err := cleanAppearance(color, icon)
 	if err != nil {
 		return Profile{}, err
 	}
 	return s.update(game, id, func(p *Profile, _ string) error {
 		p.Color = color
 		p.Icon = icon
-		p.Description = description
 		return nil
 	})
 }

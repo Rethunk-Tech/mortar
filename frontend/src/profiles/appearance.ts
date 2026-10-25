@@ -39,7 +39,6 @@ export type ProfileColor = (typeof PROFILE_COLORS)[number]
 export type ProfileIcon = (typeof PROFILE_ICONS)[number]
 
 export const MAX_NAME = 60
-export const MAX_DESCRIPTION = 280
 
 export function isProfileColor(value: string | undefined): value is ProfileColor {
   return PROFILE_COLORS.includes(value as ProfileColor)
@@ -51,9 +50,4 @@ export function isProfileIcon(value: string | undefined): value is ProfileIcon {
 
 export function colorHex(value: string | undefined): string | undefined {
   return isProfileColor(value) ? COLOR_HEX[value] : undefined
-}
-
-export function clipDescription(value: string): string {
-  const trimmed = value.trim()
-  return [...trimmed].slice(0, MAX_DESCRIPTION).join('')
 }

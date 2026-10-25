@@ -143,8 +143,8 @@ export class Backend {
         return p.add(str(game), from, `${str(from?.name)} (copy)`, str(id))
       },
       'profile.Rename': ([, id, name]) => Object.assign(p.byId(str(id)) ?? {}, { name: str(name) }),
-      'profile.SetAppearance': ([, id, color, icon, description]) =>
-        Object.assign(p.byId(str(id)) ?? {}, { color, icon, description }),
+      'profile.SetAppearance': ([, id, color, icon]) =>
+        Object.assign(p.byId(str(id)) ?? {}, { color, icon }),
       'profile.Delete': ([game, id]) => {
         p.remove(str(game), str(id))
         this.changed(str(game))
