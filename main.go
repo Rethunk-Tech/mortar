@@ -36,6 +36,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
 	"github.com/Rethunk-Tech/mortar/internal/datasvc"
 	"github.com/Rethunk-Tech/mortar/internal/desktopnotify"
+	"github.com/Rethunk-Tech/mortar/internal/devsvc"
 	"github.com/Rethunk-Tech/mortar/internal/doctor"
 	"github.com/Rethunk-Tech/mortar/internal/folderwatch"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -726,6 +727,7 @@ func run() error {
 	savesSvc.Enqueue = queueSvc.Add
 	profileSvc.Version = version
 	savedGroupsSvc := savedgroups.NewService(profiles, dataDir)
+	devSvc := &devsvc.Service{Home: home, Settings: svc, Profiles: profileSvc}
 	problemsSvc := problems.NewService(home, store, profiles, modMeta)
 	problemsSvc.Runs = launches
 	problemsSvc.SaveFarms = savesSvc.FarmTypes
@@ -1013,6 +1015,7 @@ func run() error {
 		application.NewService(browseSvc),
 		application.NewService(&netstate.Service{}),
 		application.NewService(packs),
+		application.NewService(devSvc),
 	} {
 		app.RegisterService(s)
 	}

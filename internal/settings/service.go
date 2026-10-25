@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/avscan"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -192,6 +193,50 @@ func (s *Service) SetExtraModsProfile(game, dir, profile string) error {
 		} else {
 			gp.ExtraModsProfiles[dir] = profile
 		}
+		putGame(v, game, gp)
+	})
+}
+
+// DevProject is a mod the player develops: its folder, name, the development profile it installs into and the
+// build output folder that installs there as an extra mods folder.
+type DevProject struct {
+	Dir     string `json:"dir"`
+	Name    string `json:"name"`
+	Profile string `json:"profile"`
+	Output  string `json:"output"`
+}
+
+// AddDevProject records p for the game and makes its build output an extra mods folder that installs into its profile.
+func (s *Service) AddDevProject(game string, p DevProject) error {
+	return s.set(func(v *Settings) {
+		gp := v.GamePrefs(game)
+		gp.DevProjects = append(slices.DeleteFunc(slices.Clone(gp.DevProjects), func(d DevProject) bool { return d.Dir == p.Dir }), p)
+		if extra := gp.ExtraModsFolderList(); !slices.Contains(extra, p.Output) {
+			gp.ExtraModsFolder = strings.Join(append(extra, p.Output), string(filepath.ListSeparator))
+		}
+		gp.ExtraModsProfiles = maps.Clone(gp.ExtraModsProfiles)
+		if gp.ExtraModsProfiles == nil {
+			gp.ExtraModsProfiles = map[string]string{}
+		}
+		gp.ExtraModsProfiles[p.Output] = p.Profile
+		putGame(v, game, gp)
+	})
+}
+
+// ForgetDevProject drops the project in dir from the Develop tab and its build output from the extra mods folders;
+// its files stay.
+func (s *Service) ForgetDevProject(game, dir string) error {
+	return s.set(func(v *Settings) {
+		gp := v.GamePrefs(game)
+		var output string
+		gp.DevProjects = slices.DeleteFunc(slices.Clone(gp.DevProjects), func(d DevProject) bool {
+			if d.Dir == dir {
+				output = d.Output
+			}
+			return d.Dir == dir
+		})
+		extra := slices.DeleteFunc(gp.ExtraModsFolderList(), func(d string) bool { return d == output })
+		gp.ExtraModsFolder = strings.Join(extra, string(filepath.ListSeparator))
 		putGame(v, game, gp)
 	})
 }

@@ -73,6 +73,8 @@ type GameSettings struct {
 	// ExtraModsProfiles is the profile id each extra mods folder installs into, by folder; a folder it does not name
 	// installs into the open profile.
 	ExtraModsProfiles  map[string]string `json:"extraModsProfiles,omitempty"`
+	// DevProjects are the mods the player develops for the game in the Develop tab.
+	DevProjects []DevProject `json:"devProjects,omitempty"`
 	ShowDotHiddenMods  bool              `json:"showDotHiddenMods,omitempty"`
 	OldFilesOnUpdate   string            `json:"oldFilesOnUpdate,omitempty"`
 	GameSettingsMode   string            `json:"gameSettingsMode,omitempty"`
@@ -475,6 +477,7 @@ func mergeGame(dst *GameSettings, src GameSettings) {
 	dst.LaunchPresetTemplates = append([]LaunchPresetTemplate(nil), src.LaunchPresetTemplates...)
 	dst.ExtraModsFolder = src.ExtraModsFolder
 	dst.ExtraModsProfiles = maps.Clone(src.ExtraModsProfiles)
+	dst.DevProjects = slices.Clone(src.DevProjects)
 	dst.ShowDotHiddenMods = src.ShowDotHiddenMods
 	dst.ListColumns = slices.Clone(src.ListColumns)
 	dst.HiddenMods = slices.Clone(src.HiddenMods)
