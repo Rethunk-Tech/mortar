@@ -31,7 +31,10 @@ The design system and screen rules for Mortar's UI. Read it before any UI change
 
 - **Dialog actions:** Cancel or Close is a text button, leftmost; at most one contained primary sits rightmost; a destructive primary is contained `color="error"`; other actions beside them stay text.
 - Button and chip labels never wrap; a long message gets its own full-width row and truncates with an ellipsis rather than squeezing the buttons beside it.
-- Dialogs use solid paper with no open or close transition ([Surfaces and colour](#surfaces-and-colour)). Shared pieces: `frontend/src/shell/ConfirmDialog.tsx`, `PromptDialog.tsx`, `useDiscardGuard.tsx`.
+- Every dialog is built on the three primitives in `frontend/src/shell/dialog/`:
+  - `AppDialog` is the frame: solid paper with a hairline border and no transition; a header with an optional 44px tone icon whose title and subtitle centre on it, a close button, and a divider under it when there is a body; a body that scrolls on its own with even padding (a last child's margin is cancelled); and `DialogFooter`, a raised strip with a note or reason on the left and the buttons on the right. Sizes are `sm` 480, `md` 560 and `lg` 760.
+  - `ConfirmationDialog` asks before an action: the title is the question, the subtitle what happens, an optional list of consequences, and an optional "Don't ask again". It has no close button and ignores clicks outside; Esc is Cancel. The action's button names the action, never "OK"; a dangerous one is red and Cancel takes focus.
+  - `FormDialog` edits something: a `<form>` so Enter submits, `FormSection`s set off by rules, each `Field` with its label above the input (never floating in the border), a hint below that an error replaces, and a counter beside the label for a length limit; `FieldRow` pairs two short fields; `DerivedValue` shows a value worked out from the others. While it cannot submit, the footer says why. Closing with unsaved changes asks first.
 
 ## Density
 

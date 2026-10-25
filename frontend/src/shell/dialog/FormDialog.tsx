@@ -23,6 +23,7 @@ export function FormDialog({
   dirty,
   busy = false,
   onSubmit,
+  onBack,
   children,
 }: {
   open: boolean
@@ -37,6 +38,8 @@ export function FormDialog({
   dirty: boolean
   busy?: boolean
   onSubmit: () => void
+  // A step back, for a form in steps: shown between Cancel and the submit button.
+  onBack?: (() => void) | undefined
   children: ReactNode
 }) {
   const { t } = useLingui()
@@ -68,6 +71,11 @@ export function FormDialog({
           <Button type="button" onClick={guard.request} disabled={busy}>
             {t`Cancel`}
           </Button>
+          {onBack ? (
+            <Button type="button" onClick={onBack} disabled={busy}>
+              {t`Back`}
+            </Button>
+          ) : null}
           <Button
             type="submit"
             form={formId}
