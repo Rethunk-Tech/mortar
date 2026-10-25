@@ -64,6 +64,8 @@ export function newCases(h: Helpers): Case[] {
         await p.getByRole('button', { name: /^Show/ }).first().click()
         await p.getByRole('menuitemradio', { name: /^Favourites/ }).click()
       },
+      // The filter is remembered: later cases expect every mod listed.
+      teardown: (p) => p.getByRole('button', { name: 'Show all mods' }).click(),
     },
     {
       name: 'config-search',
@@ -159,7 +161,7 @@ export function newCases(h: Helpers): Case[] {
       setup: (p) => inGame(p, 'Guided Test'),
       run: async (p) => {
         await shareThunderstore(p)
-        await p.getByRole('button', { name: /^Export as Thunderstore modpack…/ }).click()
+        await p.getByRole('button', { name: /^Modpack/ }).click()
         await p.getByRole('textbox', { name: 'Name' }).waitFor()
       },
     },

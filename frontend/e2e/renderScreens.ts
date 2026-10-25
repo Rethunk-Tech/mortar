@@ -102,7 +102,8 @@ export function screenCases(h: Helpers): Case[] {
     {
       name: 'develop-new-mod',
       setup: (p) => tab(p, 'Develop'),
-      run: (p) => p.getByRole('button', { name: 'New mod…' }).click(),
+      // The header's button; an empty Develop page offers a second one.
+      run: (p) => p.getByRole('button', { name: 'New mod…' }).first().click(),
     },
     ...SETTINGS_SECTIONS.map(section),
   ]
