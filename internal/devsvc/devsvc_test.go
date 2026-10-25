@@ -30,7 +30,7 @@ const testTemplate = `{
   "symbols": {
     "description": { "type": "parameter", "datatype": "string", "isRequired": true, "replaces": "ModDescription" },
     "xmlDescription": { "type": "derived", "valueSource": "description", "valueTransform": "xml", "replaces": "ModXmlDescription" },
-    "team": { "type": "parameter", "datatype": "string", "isRequired": true, "replaces": "ModTeam" },
+    "team": { "type": "parameter", "displayName": "Team", "datatype": "string", "isRequired": true, "replaces": "ModTeam" },
     "categories": { "type": "parameter", "datatype": "choice", "allowMultipleValues": true, "defaultValue": "mods",
       "choices": [ { "choice": "mods", "displayName": "Mods" }, { "choice": "items" }, { "choice": "misc" } ] },
     "loaderPackVersion": { "type": "parameter", "datatype": "string", "defaultValue": "5.4.2305", "replaces": "5.4.2305" },
@@ -122,6 +122,9 @@ func TestTemplateFormAsksForTheTemplatesParametersInOrder(t *testing.T) {
 		t.Fatalf("form = %+v", form)
 	}
 	team, categories := form.Parameters[1], form.Parameters[2]
+	if team.Label != "Team" || form.Parameters[0].Label != "description" {
+		t.Errorf("labels %q, %q", team.Label, form.Parameters[0].Label)
+	}
 	if !team.Remember || team.Pattern == "" || !categories.Multiple || categories.Choices[0] != (Choice{Value: "mods", Label: "Mods"}) || categories.Choices[1].Label != "items" {
 		t.Errorf("team %+v, categories %+v", team, categories)
 	}

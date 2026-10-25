@@ -40,7 +40,9 @@ type Choice struct {
 
 // Param is one value the wizard asks for, in the template's words.
 type Param struct {
-	ID          string `json:"id"`
+	ID string `json:"id"`
+	// Label is the template's displayName, else the id; Description says more.
+	Label       string `json:"label"`
 	Description string `json:"description"`
 	// Kind is "string" or "choice".
 	Kind      string   `json:"kind"`
@@ -71,6 +73,7 @@ type templateJSON struct {
 
 type symbolJSON struct {
 	Type                string `json:"type"`
+	DisplayName         string `json:"displayName"`
 	Datatype            string `json:"datatype"`
 	Description         string `json:"description"`
 	DefaultValue        string `json:"defaultValue"`
@@ -133,7 +136,7 @@ func ReadForm(dir string) (Form, error) {
 		if !paramID.MatchString(id) {
 			return Form{}, bad("parameter %q", id)
 		}
-		p := Param{ID: id, Description: sym.Description, Kind: "string", Default: sym.DefaultValue, Required: sym.IsRequired, Multiple: sym.AllowMultipleValues}
+		p := Param{ID: id, Label: cmpOr(sym.DisplayName, id), Description: sym.Description, Kind: "string", Default: sym.DefaultValue, Required: sym.IsRequired, Multiple: sym.AllowMultipleValues}
 		if strings.EqualFold(sym.Datatype, "choice") {
 			p.Kind = "choice"
 			for _, c := range sym.Choices {
@@ -242,18 +245,18 @@ func (f Form) args(values, fills map[string]string) ([]string, map[string]string
 		v = strings.TrimSpace(v)
 		if !ok || v == "" {
 			if p.Required && p.fill == "" {
-				return nil, nil, invalid("fill in %s", cmpOr(p.Description, p.ID))
+				return nil, nil, invalid("fill in %s", p.Label)
 			}
 			continue
 		}
 		if strings.HasPrefix(v, "-") || strings.ContainsAny(v, "\r\n\x00") {
-			return nil, nil, invalid("%s cannot start with a dash or span lines", cmpOr(p.Description, p.ID))
+			return nil, nil, invalid("%s cannot start with a dash or span lines", p.Label)
 		}
 		if p.MaxLength > 0 && len([]rune(v)) > p.MaxLength {
-			return nil, nil, invalid("%s takes at most %d characters", cmpOr(p.Description, p.ID), p.MaxLength)
+			return nil, nil, invalid("%s takes at most %d characters", p.Label, p.MaxLength)
 		}
 		if p.Pattern != "" && !regexp.MustCompile(p.Pattern).MatchString(v) {
-			return nil, nil, invalid("%s is not in the form the template needs", cmpOr(p.Description, p.ID))
+			return nil, nil, invalid("%s is not in the form the template needs", p.Label)
 		}
 		parts := []string{v}
 		if p.Multiple {
@@ -261,7 +264,7 @@ func (f Form) args(values, fills map[string]string) ([]string, map[string]string
 		}
 		for _, part := range parts {
 			if p.Kind == "choice" && !slices.ContainsFunc(p.Choices, func(c Choice) bool { return c.Value == part }) {
-				return nil, nil, invalid("%q is not a choice for %s", part, cmpOr(p.Description, p.ID))
+				return nil, nil, invalid("%q is not a choice for %s", part, p.Label)
 			}
 			out = append(out, "--"+p.ID, part)
 		}

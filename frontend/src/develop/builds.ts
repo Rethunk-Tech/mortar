@@ -18,9 +18,11 @@ interface ProjectRun {
   running: 'build' | 'pack' | null
   build: BuildResult | null
   pack: PackResult | null
+  // When the last build finished, in ms.
+  builtAt: number
 }
 
-const idle: ProjectRun = { running: null, build: null, pack: null }
+const idle: ProjectRun = { running: null, build: null, pack: null, builtAt: 0 }
 
 // Each project's last build and pack, by folder; a build the source watch starts lands here too.
 export const useDevRuns = create<{ byDir: Record<string, ProjectRun> }>(() => ({ byDir: {} }))
@@ -39,7 +41,7 @@ export async function buildProject(game: string, dir: string) {
   }
   patch(dir, { running: 'build' })
   try {
-    patch(dir, { build: await Build(game, dir) })
+    patch(dir, { build: await Build(game, dir), builtAt: Date.now() })
   } catch (e) {
     toastError(i18n._(msg`Could not build the mod`), e)
   } finally {

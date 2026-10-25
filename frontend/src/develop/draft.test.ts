@@ -1,8 +1,9 @@
 import { expect, test } from 'bun:test'
 import type { Form } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
-import { draftIssue, firstDraft, rememberedOf } from './draft.ts'
+import { draftIssue, firstDraft, rememberedOf, stepIssue, stepParams } from './draft.ts'
 
 const param = {
+  label: 'Param',
   kind: 'string',
   default: '',
   required: true,
@@ -55,4 +56,17 @@ test('the template rules are checked before Mortar is asked', () => {
   expect(draftIssue({ ...filled, name: 'shop drop' }, form)).not.toBe('')
   expect(draftIssue({ ...filled, github: true, owner: '--help' }, form)).not.toBe('')
   expect(draftIssue(filled, null)).not.toBe('')
+})
+
+test('remembered parameters are the author step; each step checks only its own', () => {
+  expect(stepParams(form, 'author').map((p) => p.id)).toEqual(['team'])
+  expect(stepParams(form, 'mod').map((p) => p.id)).toEqual(['description', 'categories'])
+  const d = {
+    ...firstDraft(form, {}),
+    name: 'ShopDrop',
+    values: { description: 'Lands.', team: '', categories: 'mods' },
+  }
+  expect(stepIssue(d, form, 'mod')).toBe('')
+  expect(stepIssue(d, form, 'author')).not.toBe('')
+  expect(stepIssue(d, form, 'project')).not.toBe('')
 })

@@ -4,6 +4,7 @@ import {
   Box,
   Button,
   Checkbox,
+  Chip,
   Dialog,
   DialogActions,
   DialogContent,
@@ -12,7 +13,13 @@ import {
   MenuItem,
   Radio,
   RadioGroup,
+  Step as StepItem,
+  StepLabel,
+  Stepper,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
 } from '@mui/material'
 import { useEffect, useState } from 'react'
 import type {
@@ -42,10 +49,18 @@ import {
   REMEMBERED,
   type Remembered,
   rememberedOf,
+  STEPS,
+  type Step,
+  stepIssue,
+  stepParams,
 } from './draft.ts'
 
 // The profile picker's value for a new development profile; Create takes it as no profile.
 const NEW_PROFILE = 'new'
+// A single choice with this many options or fewer is a row of toggle buttons rather than a menu.
+const TOGGLE_CHOICES = 3
+
+type Set = (next: Partial<Draft>) => void
 
 function Prerequisites({ tools }: { tools: Tools | null }) {
   const { t } = useLingui()
@@ -59,56 +74,199 @@ function Prerequisites({ tools }: { tools: Tools | null }) {
       ? ''
       : t`Mortar cannot find the game, so the mod builds against its published libraries.`,
   ].filter((line) => line !== '')
-  if (missing.length === 0) {
-    return null
-  }
-  return (
+  return missing.length === 0 ? null : (
     <Alert variant="compact" severity="warning">
       {missing.join(' ')}
     </Alert>
   )
 }
 
-function Source({
-  draft,
-  user,
+function Caption({ children }: { children: string }) {
+  return (
+    <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary', mb: 0.5 }}>
+      {children}
+    </Typography>
+  )
+}
+
+function ChoiceField({
+  param,
+  value,
   set,
 }: {
-  draft: Draft
-  user: string
-  set: (next: Partial<Draft>) => void
+  param: Param
+  value: string
+  set: (v: string) => void
 }) {
+  const choices = param.choices ?? []
+  if (param.multiple) {
+    const picked = value.split('|').filter(Boolean)
+    const toggle = (c: string) =>
+      set((picked.includes(c) ? picked.filter((x) => x !== c) : [...picked, c]).join('|'))
+    return (
+      <Box>
+        <Caption>{param.label}</Caption>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+          {choices.map((c) => (
+            <Chip
+              key={c.value}
+              label={c.label}
+              size="small"
+              color={picked.includes(c.value) ? 'primary' : 'default'}
+              variant={picked.includes(c.value) ? 'filled' : 'outlined'}
+              onClick={() => toggle(c.value)}
+            />
+          ))}
+        </Box>
+      </Box>
+    )
+  }
+  if (choices.length <= TOGGLE_CHOICES) {
+    return (
+      <Box>
+        <Caption>{param.label}</Caption>
+        <ToggleButtonGroup
+          exclusive={true}
+          size="small"
+          value={value}
+          aria-label={param.label}
+          onChange={(_, next: string | null) => next && set(next)}
+        >
+          {choices.map((c) => (
+            <ToggleButton key={c.value} value={c.value}>
+              {c.label}
+            </ToggleButton>
+          ))}
+        </ToggleButtonGroup>
+      </Box>
+    )
+  }
+  return (
+    <TextField
+      select={true}
+      size="small"
+      label={param.label}
+      value={value}
+      onChange={(e) => set(e.target.value)}
+    >
+      {choices.map((c) => (
+        <MenuItem key={c.value} value={c.value}>
+          {c.label}
+        </MenuItem>
+      ))}
+    </TextField>
+  )
+}
+
+function ParamField({
+  param,
+  value,
+  set,
+}: {
+  param: Param
+  value: string
+  set: (v: string) => void
+}) {
+  if (param.kind === 'choice') {
+    return <ChoiceField param={param} value={value} set={set} />
+  }
+  const counter = param.maxLength > 0 ? `${value.length}/${param.maxLength}` : ''
+  return (
+    <TextField
+      size="small"
+      label={param.label}
+      helperText={[param.description, counter].filter(Boolean).join(' ')}
+      value={value}
+      multiline={param.maxLength > 100}
+      onChange={(e) => set(e.target.value)}
+      sx={{ flex: 1, minWidth: 0 }}
+    />
+  )
+}
+
+function Params({ params, draft, set }: { params: Param[]; draft: Draft; set: Set }) {
+  return params.map((p) => (
+    <ParamField
+      key={p.id}
+      param={p}
+      value={draft.values[p.id] ?? ''}
+      set={(v) => set({ values: { ...draft.values, [p.id]: v } })}
+    />
+  ))
+}
+
+function ModStep({ draft, form, set }: { draft: Draft; form: Form | null; set: Set }) {
   const { t } = useLingui()
   return (
     <>
-      <RadioGroup
-        value={draft.github ? 'github' : 'copy'}
-        onChange={(_, v) => set({ github: v === 'github' })}
-      >
-        <FormControlLabel
-          value="github"
-          disabled={user === ''}
-          control={<Radio size="small" />}
-          label={
-            user
-              ? t`Create a repository for it on ${{ source: sourceLabel('github') }}`
-              : t`Sign in with gh to create a repository on ${{ source: sourceLabel('github') }}`
-          }
+      <Box sx={{ display: 'flex', gap: space.gap }}>
+        <TextField
+          size="small"
+          label={t`Mod name`}
+          helperText={t`Letters and digits, starting with a capital`}
+          placeholder="ShopDrop"
+          value={draft.name}
+          onChange={(e) => set({ name: e.target.value })}
+          autoFocus={true}
+          sx={{ flex: 2 }}
         />
-        <FormControlLabel
-          value="copy"
-          control={<Radio size="small" />}
-          label={t`Copy the template here only`}
+        <TextField
+          size="small"
+          label={t`Folder name`}
+          placeholder={draft.name}
+          value={draft.repo}
+          onChange={(e) => set({ repo: e.target.value })}
+          sx={{ flex: 1 }}
         />
-      </RadioGroup>
+      </Box>
+      <Params params={stepParams(form, 'mod')} draft={draft} set={set} />
+    </>
+  )
+}
+
+function AuthorStep({ draft, form, set }: { draft: Draft; form: Form | null; set: Set }) {
+  const { t } = useLingui()
+  return (
+    <>
+      <Typography
+        sx={{ color: 'text.secondary' }}
+      >{t`Mortar remembers these for your next mod.`}</Typography>
+      <Params params={stepParams(form, 'author')} draft={draft} set={set} />
+    </>
+  )
+}
+
+function SourceChoice({ draft, user, set }: { draft: Draft; user: string; set: Set }) {
+  const { t } = useLingui()
+  const github = sourceLabel('github')
+  return (
+    <RadioGroup
+      value={draft.github ? 'github' : 'copy'}
+      onChange={(_, v) => set({ github: v === 'github' })}
+    >
+      <FormControlLabel
+        value="copy"
+        control={<Radio size="small" />}
+        label={t`Keep it on this computer`}
+      />
+      <FormControlLabel
+        value="github"
+        disabled={user === ''}
+        control={<Radio size="small" />}
+        label={
+          user
+            ? t`Also create a repository on ${{ source: github }}`
+            : t`Sign in with gh to create a repository on ${{ source: github }}`
+        }
+      />
       {draft.github ? (
-        <Box sx={{ display: 'flex', gap: space.gap, alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', gap: space.gap, alignItems: 'center', pl: 4 }}>
           <TextField
             size="small"
-            sx={{ flex: 1 }}
-            label={t`Account or organisation on ${{ source: sourceLabel('github') }}`}
+            label={t`Account or organisation`}
             value={draft.owner}
             onChange={(e) => set({ owner: e.target.value })}
+            sx={{ flex: 1 }}
           />
           <FormControlLabel
             control={
@@ -122,63 +280,11 @@ function Source({
           />
         </Box>
       ) : null}
-    </>
+    </RadioGroup>
   )
 }
 
-// One template parameter: a text field, a menu, or for a multi-choice a menu that keeps several.
-function ParamField({
-  param,
-  value,
-  set,
-}: {
-  param: Param
-  value: string
-  set: (v: string) => void
-}) {
-  const label = param.description || param.id
-  if (param.kind !== 'choice') {
-    return (
-      <TextField
-        size="small"
-        label={label}
-        required={param.required}
-        value={value}
-        onChange={(e) => set(e.target.value)}
-      />
-    )
-  }
-  const choices = param.choices ?? []
-  return (
-    <TextField
-      select={true}
-      size="small"
-      label={label}
-      value={param.multiple ? value.split('|').filter(Boolean) : value}
-      onChange={(e) => {
-        const v: unknown = e.target.value
-        set(Array.isArray(v) ? v.join('|') : String(v))
-      }}
-      slotProps={{ select: { multiple: param.multiple } }}
-    >
-      {choices.map((c) => (
-        <MenuItem key={c.value} value={c.value}>
-          {c.label}
-        </MenuItem>
-      ))}
-    </TextField>
-  )
-}
-
-function Fields({
-  draft,
-  form,
-  set,
-}: {
-  draft: Draft
-  form: Form | null
-  set: (next: Partial<Draft>) => void
-}) {
+function ProjectStep({ draft, user, set }: { draft: Draft; user: string; set: Set }) {
   const { t } = useLingui()
   const profiles = useProfiles((s) => s.profiles)
   const gameName = useGameInfo()?.name ?? ''
@@ -188,59 +294,78 @@ function Fields({
       set({ parent: dir })
     }
   }
+  const where = draft.parent ? `${draft.parent}/${draft.repo || draft.name}` : ''
   return (
     <>
-      <TextField
-        size="small"
-        label={t`Mod name`}
-        helperText={t`Letters and digits, starting with a capital: ShopDrop`}
-        value={draft.name}
-        onChange={(e) => set({ name: e.target.value })}
-        autoFocus={true}
-      />
-      {(form?.parameters ?? []).map((p) => (
-        <ParamField
-          key={p.id}
-          param={p}
-          value={draft.values[p.id] ?? ''}
-          set={(v) => set({ values: { ...draft.values, [p.id]: v } })}
-        />
-      ))}
-      <Box sx={{ display: 'flex', gap: space.gap, alignItems: 'center' }}>
+      <Box sx={{ display: 'flex', gap: space.gap, alignItems: 'flex-start' }}>
         <TextField
           size="small"
           label={t`Projects folder`}
           value={draft.parent}
+          helperText={where}
           sx={{ flex: 1 }}
           slotProps={{ input: { readOnly: true } }}
         />
-        <Button onClick={() => pick().catch(() => undefined)}>{t`Choose…`}</Button>
-        <TextField
-          size="small"
-          label={t`Folder name`}
-          value={draft.repo}
-          placeholder={draft.name}
-          onChange={(e) => set({ repo: e.target.value })}
-        />
+        <Button onClick={() => pick().catch(() => undefined)} sx={{ mt: '2px' }}>
+          {t`Choose…`}
+        </Button>
       </Box>
       <TextField
         select={true}
         size="small"
-        label={t`Development profile`}
+        label={t`Builds install into`}
         value={draft.profile}
         onChange={(e) => set({ profile: e.target.value })}
       >
-        <MenuItem
-          value={NEW_PROFILE}
-        >{t`New profile: ${{ name: `${gameName} Development` }}`}</MenuItem>
         {profiles.map((p) => (
           <MenuItem key={p.id} value={p.id}>
             {p.name}
           </MenuItem>
         ))}
+        <MenuItem
+          value={NEW_PROFILE}
+        >{t`New profile: ${{ name: `${gameName} Development` }}`}</MenuItem>
       </TextField>
+      <SourceChoice draft={draft} user={user} set={set} />
     </>
   )
+}
+
+function useStepLabels(): Record<Step, string> {
+  const { t } = useLingui()
+  return { mod: t`Mod`, author: t`Author`, project: t`Project` }
+}
+
+// Reads the template's questions and the tools each time the dialog opens; the profile starts as the open one.
+function useWizardData(open: boolean, game: string, setDraft: (fn: (d: Draft) => Draft) => void) {
+  const { t } = useLingui()
+  const openId = useProfiles((s) => s.openId)
+  const [tools, setTools] = useState<Tools | null>(null)
+  const [form, setForm] = useState<Form | null>(null)
+  useEffect(() => {
+    if (!open) {
+      return
+    }
+    setForm(null)
+    TemplateForm(game)
+      .then((read) => {
+        setForm(read)
+        setDraft((d) => ({
+          ...firstDraft(read, readStored(REMEMBERED, {}, isRecord)),
+          profile: openId || NEW_PROFILE,
+          github: d.github,
+          owner: d.owner,
+        }))
+      })
+      .catch(reportError(t`Could not read the mod template`))
+    ReadTools(game)
+      .then((found) => {
+        setTools(found)
+        setDraft((d) => (d.owner || !found.githubUser ? d : { ...d, owner: found.githubUser }))
+      })
+      .catch(() => setTools(null))
+  }, [open, game, openId, setDraft, t])
+  return { tools, form }
 }
 
 export function NewModDialog({
@@ -253,36 +378,20 @@ export function NewModDialog({
   onClose: () => void
 }) {
   const { t } = useLingui()
-  const [tools, setTools] = useState<Tools | null>(null)
-  const [form, setForm] = useState<Form | null>(null)
+  const labels = useStepLabels()
   const [draft, setDraft] = useState<Draft>(() => firstDraft(null, {}))
+  const { tools, form } = useWizardData(open, game, setDraft)
+  const [at, setAt] = useState(0)
   const [pending, run] = usePending()
   useEffect(() => {
-    if (!open) {
-      return
+    if (open) {
+      setAt(0)
     }
-    setForm(null)
-    TemplateForm(game)
-      .then((read) => {
-        setForm(read)
-        setDraft((d) => ({
-          ...firstDraft(read, readStored(REMEMBERED, {}, isRecord)),
-          github: d.github,
-          owner: d.owner,
-        }))
-      })
-      .catch(reportError(t`Could not read the mod template`))
-    ReadTools(game)
-      .then((found) => {
-        setTools(found)
-        setDraft((d) =>
-          d.owner || !found.githubUser ? d : { ...d, owner: found.githubUser, github: true },
-        )
-      })
-      .catch(() => setTools(null))
-  }, [open, game, t])
-  const set = (next: Partial<Draft>) => setDraft((d) => ({ ...d, ...next }))
-  const issue = draftIssue(draft, form)
+  }, [open])
+  const set: Set = (next) => setDraft((d) => ({ ...d, ...next }))
+  const step = STEPS[at] ?? 'project'
+  const last = at === STEPS.length - 1
+  const issue = last ? draftIssue(draft, form) : stepIssue(draft, form, step)
   const create = () =>
     run(
       async () => {
@@ -292,10 +401,12 @@ export function NewModDialog({
           repo: draft.repo || draft.name,
           profile: draft.profile === NEW_PROFILE ? '' : draft.profile,
         })
-        await useProfiles.getState().load(game, useProfiles.getState().openId)
         if (form) {
           writeStored(REMEMBERED, rememberedOf(draft, form))
         }
+        // The mod lives in its profile: open that one, so Mods and Play show it.
+        await useProfiles.getState().load(game, project.profile)
+        useProfiles.getState().open(project.profile)
         useToasts
           .getState()
           .push({ kind: 'success', title: t`Started ${{ name: project.name }}`, body: project.dir })
@@ -315,21 +426,37 @@ export function NewModDialog({
           pt: `${space.gap} !important`,
         }}
       >
+        <Stepper activeStep={at} sx={{ mb: 1 }}>
+          {STEPS.map((s) => (
+            <StepItem key={s}>
+              <StepLabel>{labels[s]}</StepLabel>
+            </StepItem>
+          ))}
+        </Stepper>
         <Prerequisites tools={tools} />
-        <Fields draft={draft} form={form} set={set} />
-        <Source draft={draft} user={tools?.githubUser ?? ''} set={set} />
+        {step === 'mod' ? <ModStep draft={draft} form={form} set={set} /> : null}
+        {step === 'author' ? <AuthorStep draft={draft} form={form} set={set} /> : null}
+        {step === 'project' ? (
+          <ProjectStep draft={draft} user={tools?.githubUser ?? ''} set={set} />
+        ) : null}
       </DialogContent>
       <DialogActions sx={{ bgcolor: 'background.paper' }}>
         <Button onClick={onClose} disabled={pending}>
           {t`Cancel`}
         </Button>
+        <Box sx={{ flex: 1 }} />
+        {at > 0 ? (
+          <Button onClick={() => setAt(at - 1)} disabled={pending}>
+            {t`Back`}
+          </Button>
+        ) : null}
         <Button
           variant="contained"
-          onClick={create}
+          onClick={last ? create : () => setAt(at + 1)}
           disabled={pending || issue !== ''}
           title={issue}
         >
-          {t`Start mod`}
+          {last ? t`Start mod` : t`Next`}
         </Button>
       </DialogActions>
     </Dialog>

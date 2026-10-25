@@ -49,6 +49,7 @@ msgid "Choose…"
 msgstr "Choose…"
 
 #: src/commandPalette/paletteLabels.ts
+#: src/develop/DevelopTab.tsx
 msgid "Open profile"
 msgstr "Open profile"
 
@@ -643,6 +644,10 @@ msgstr "Show {name} in its profile"
 #: src/share/MethodPanes.tsx
 msgid "Could not publish the code"
 msgstr "Could not publish the code"
+
+#: src/develop/DevelopTab.tsx
+msgid "Pack for {source}"
+msgstr "Pack for {source}"
 
 #: src/launch/VanillaPlay.tsx
 msgid "More play options"
@@ -1379,10 +1384,6 @@ msgstr "Updated {mods} in {profile}"
 msgid "a newer copy loaded instead: {version}"
 msgstr "a newer copy loaded instead: {version}"
 
-#: src/develop/NewModDialog.tsx
-msgid "Letters and digits, starting with a capital: ShopDrop"
-msgstr "Letters and digits, starting with a capital: ShopDrop"
-
 #: src/firstrun/FindStep.tsx
 msgid "{name} folder"
 msgstr "{name} folder"
@@ -1677,6 +1678,7 @@ msgstr "Discard"
 msgid "Download {name} now"
 msgstr "Download {name} now"
 
+#: src/develop/DevelopTab.tsx
 #: src/i18n/counts.ts
 msgid "{count, plural, one {# error} other {# errors}}"
 msgstr "{count, plural, one {# error} other {# errors}}"
@@ -2149,6 +2151,10 @@ msgstr "Disabled"
 msgid "The author only allows this download on the source's own page. Download the file there and add it from your computer."
 msgstr "The author only allows this download on the source's own page. Download the file there and add it from your computer."
 
+#: src/develop/NewModDialog.tsx
+msgid "Project"
+msgstr "Project"
+
 #: src/browse/BrowseMenu.tsx
 msgid "Mortar installs this itself."
 msgstr "Mortar installs this itself."
@@ -2583,6 +2589,10 @@ msgstr "Sort: most followed"
 msgid "Replace"
 msgstr "Replace"
 
+#: src/develop/DevelopTab.tsx
+msgid "In other profiles"
+msgstr "In other profiles"
+
 #: src/develop/draft.ts
 msgid "{name}: not in the form the template needs."
 msgstr "{name}: not in the form the template needs."
@@ -2766,6 +2776,10 @@ msgstr "Could not release the mod"
 #: src/browse/CardAction.tsx
 msgid "Get"
 msgstr "Get"
+
+#: src/develop/NewModDialog.tsx
+msgid "Also create a repository on {source}"
+msgstr "Also create a repository on {source}"
 
 #: src/shell/AppMenu.tsx
 msgid "What is new in {version}"
@@ -3026,6 +3040,7 @@ msgstr "Problem choices"
 msgid "Depends on {dependencies} {source} packages."
 msgstr "Depends on {dependencies} {source} packages."
 
+#: src/develop/NewModDialog.tsx
 #: src/firstrunTour/TourPopover.tsx
 #: src/fomod/Dialog.tsx
 #: src/screenshots/ScreenshotsTab.tsx
@@ -3127,6 +3142,7 @@ msgstr "Mod config"
 msgid "Rescan"
 msgstr "Rescan"
 
+#: src/develop/NewModDialog.tsx
 #: src/firstrunTour/TourPopover.tsx
 #: src/fomod/Dialog.tsx
 #: src/lan/SendPanel.tsx
@@ -3206,6 +3222,10 @@ msgstr "Card details"
 #: src/launch/PrePlayDialog.tsx
 msgid "Press Play to start."
 msgstr "Press Play to start."
+
+#: src/develop/NewModDialog.tsx
+msgid "Account or organisation"
+msgstr "Account or organisation"
 
 #: src/develop/DevelopTab.tsx
 msgid "Build"
@@ -3318,6 +3338,10 @@ msgstr "This game starts through its store, which runs one copy. A Direct launch
 msgid "Antivirus scanning is off"
 msgstr "Antivirus scanning is off"
 
+#: src/develop/DevelopTab.tsx
+msgid "Built {when}"
+msgstr "Built {when}"
+
 #: src/tools/ToolsManageDialog.tsx
 msgid "Edit {name}"
 msgstr "Edit {name}"
@@ -3333,6 +3357,10 @@ msgstr "Decline"
 #: src/develop/draft.ts
 msgid "Reading the template"
 msgstr "Reading the template"
+
+#: src/develop/DevelopTab.tsx
+msgid "More actions"
+msgstr "More actions"
 
 #: src/launch/GraphicsDialog.tsx
 msgid "Choose a graphics API for {name}"
@@ -3658,6 +3686,10 @@ msgstr "Preparing transfer…"
 #: src/screenshots/ScreenshotsTab.tsx
 msgid "No screenshots yet"
 msgstr "No screenshots yet"
+
+#: src/develop/NewModDialog.tsx
+msgid "Builds install into"
+msgstr "Builds install into"
 
 #: src/launch/store.ts
 msgid "Could not stop the game"
@@ -4038,6 +4070,10 @@ msgstr "Attach diagnostics (a zip of checks, logs and settings with secrets and 
 msgid "Update check failed"
 msgstr "Update check failed"
 
+#: src/develop/DevelopTab.tsx
+msgid "{name} in {profile}"
+msgstr "{name} in {profile}"
+
 #: src/templates/TemplateDialogs.tsx
 msgid "Manage templates"
 msgstr "Manage templates"
@@ -4081,6 +4117,10 @@ msgstr "Undo all"
 #: src/game/HomeNotes.tsx
 msgid "Notes for {name}"
 msgstr "Notes for {name}"
+
+#: src/develop/NewModDialog.tsx
+msgid "Mortar remembers these for your next mod."
+msgstr "Mortar remembers these for your next mod."
 
 #: src/browse/CardAction.tsx
 #: src/queue/UnmoderatedDialog.tsx
@@ -4498,10 +4538,6 @@ msgstr "Grant access"
 msgid "Press Play when the downloads finish."
 msgstr "Press Play when the downloads finish."
 
-#: src/develop/NewModDialog.tsx
-msgid "Create a repository for it on {source}"
-msgstr "Create a repository for it on {source}"
-
 #: src/saves/saveName.ts
 msgid "Challenge moon"
 msgstr "Challenge moon"
@@ -4570,10 +4606,6 @@ msgstr "A saved group keeps at least one mod; delete the saved group instead"
 #: src/nxm/store.ts
 msgid "The link has expired. Click Mod Manager Download on {source} again."
 msgstr "The link has expired. Click Mod Manager Download on {source} again."
-
-#: src/develop/DevelopTab.tsx
-msgid "Start a mod from the template: Mortar sets up the project and installs each build into a development profile."
-msgstr "Start a mod from the template: Mortar sets up the project and installs each build into a development profile."
 
 #: src/firstrun/FirstRun.tsx
 msgid "Want help, news or a say in what comes next? Mortar has a {app} server."
@@ -4707,6 +4739,10 @@ msgstr "Choose the game's program…"
 msgid "Not released yet"
 msgstr "Not released yet"
 
+#: src/develop/NewModDialog.tsx
+msgid "Letters and digits, starting with a capital"
+msgstr "Letters and digits, starting with a capital"
+
 #: src/shell/saveDiagnostics.ts
 msgid "Drag {path} into the {source} issue to attach it."
 msgstr "Drag {path} into the {source} issue to attach it."
@@ -4718,10 +4754,6 @@ msgstr "{count, plural, one {Import # profile} other {Import # profiles}}"
 #: src/launch/playStart.ts
 msgid "Could not check the graphics setting"
 msgstr "Could not check the graphics setting"
-
-#: src/develop/DevelopTab.tsx
-msgid "Built; it installs into the development profile."
-msgstr "Built; it installs into the development profile."
 
 #: src/saves/lackChips.tsx
 msgid "{name} (disabled)"
@@ -4839,10 +4871,6 @@ msgstr "{name} is running, but {loaderName} has not started"
 msgid "Sort: most forks"
 msgstr "Sort: most forks"
 
-#: src/develop/NewModDialog.tsx
-msgid "Account or organisation on {source}"
-msgstr "Account or organisation on {source}"
-
 #: src/share/MethodPanes.tsx
 msgid "A .mortar file suits a profile this size better, and carries your mod settings too."
 msgstr "A .mortar file suits a profile this size better, and carries your mod settings too."
@@ -4858,10 +4886,6 @@ msgstr "Setup"
 #: src/share/ImportInput.tsx
 msgid "Preview"
 msgstr "Preview"
-
-#: src/develop/DevelopTab.tsx
-msgid "Pack"
-msgstr "Pack"
 
 #: src/lan/SendPanel.tsx
 msgid "Recent address"
@@ -4997,10 +5021,6 @@ msgstr "Any game whose mods are files in a Mods folder"
 #: src/browse/browseConstants.ts
 msgid "Search every site this game's mods come from at once. Each result installs into this profile from wherever its author published it."
 msgstr "Search every site this game's mods come from at once. Each result installs into this profile from wherever its author published it."
-
-#: src/develop/NewModDialog.tsx
-msgid "Copy the template here only"
-msgstr "Copy the template here only"
 
 #: src/game/detailStates.tsx
 msgid "Mortar could not load the profiles for this game."
@@ -5233,6 +5253,10 @@ msgstr "Use Direct launch"
 #: src/tools/ToolsManageDialog.tsx
 msgid "Remove {name}?"
 msgstr "Remove {name}?"
+
+#: src/develop/NewModDialog.tsx
+msgid "Mod"
+msgstr "Mod"
 
 #: src/saves/saveName.ts
 msgid "Wilderness Survival"
@@ -5622,6 +5646,7 @@ msgstr "{name} needs {names}"
 msgid "Clear search"
 msgstr "Clear search"
 
+#: src/develop/NewModDialog.tsx
 #: src/share/ModpackDialog.tsx
 msgid "Author"
 msgstr "Author"
@@ -5726,6 +5751,10 @@ msgstr "Hide details"
 #: src/toasts/HistoryButton.tsx
 msgid "Nothing new"
 msgstr "Nothing new"
+
+#: src/develop/DevelopTab.tsx
+msgid "Start a mod from the template: Mortar sets up the project and installs each build into this profile."
+msgstr "Start a mod from the template: Mortar sets up the project and installs each build into this profile."
 
 #: src/lan/PairedComputers.tsx
 msgid "Unpair"
@@ -6011,8 +6040,8 @@ msgid "Could not save the last game"
 msgstr "Could not save the last game"
 
 #: src/develop/NewModDialog.tsx
-msgid "Development profile"
-msgstr "Development profile"
+msgid "Keep it on this computer"
+msgstr "Keep it on this computer"
 
 #: src/firstrun/FirstRun.tsx
 msgid "Welcome to Mortar"
@@ -6059,10 +6088,6 @@ msgstr "Fall"
 #: src/browse/BrowseBody.tsx
 msgid "Try fewer words, or the mod's exact name."
 msgstr "Try fewer words, or the mod's exact name."
-
-#: src/develop/DevelopTab.tsx
-msgid "Installs into {profile}"
-msgstr "Installs into {profile}"
 
 #: src/share/ImportPreview.tsx
 msgid "Open post"
@@ -6517,6 +6542,10 @@ msgstr "Private"
 #: src/browse/BrowseFilters.tsx
 msgid "Sort: most stars"
 msgstr "Sort: most stars"
+
+#: src/develop/DevelopTab.tsx
+msgid "Not released"
+msgstr "Not released"
 
 #: src/firstrun/LoaderStep.tsx
 msgid "On {os}, {launcher} starts the game without {loader} unless told to. With {launcher} closed, Mortar can set that up; or in {launcher}, right-click {game}, choose Properties and paste this line into Launch Options:"

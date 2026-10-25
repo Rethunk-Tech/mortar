@@ -62,7 +62,7 @@ export function rememberedOf(d: Draft, form: Form): Remembered {
 
 function paramIssue(p: Param, raw: string): string {
   const v = raw.trim()
-  const name = p.description || p.id
+  const name = p.label
   if (v === '') {
     return p.required ? i18n._(msg`Fill in: ${{ name }}`) : ''
   }
@@ -78,28 +78,64 @@ function paramIssue(p: Param, raw: string): string {
   return ''
 }
 
-/** The first thing Mortar would refuse in the draft, as the button's reason; empty when it can start. */
-export function draftIssue(d: Draft, form: Form | null): string {
-  if (!form) {
-    return i18n._(msg`Reading the template`)
+// The wizard's steps: the mod itself, the author details Mortar remembers, and where the project goes.
+export const STEPS = ['mod', 'author', 'project'] as const
+export type Step = (typeof STEPS)[number]
+
+/** The parameters a step asks for: remembered ones on the author step, the rest on the mod step. */
+export function stepParams(form: Form | null, step: Step): Param[] {
+  const all = form?.parameters ?? []
+  if (step === 'project') {
+    return []
   }
-  if (!MOD_NAME.test(d.name)) {
-    return i18n._(msg`The mod name starts with a capital letter and holds only letters and digits.`)
-  }
-  for (const p of form.parameters ?? []) {
+  return all.filter((p) => p.remember === (step === 'author'))
+}
+
+function firstIssue(d: Draft, params: Param[]): string {
+  for (const p of params) {
     const issue = paramIssue(p, d.values[p.id] ?? '')
     if (issue) {
       return issue
     }
   }
+  return ''
+}
+
+/** The first thing that keeps a step from going on, as the button's reason; empty when it can. */
+export function stepIssue(d: Draft, form: Form | null, step: Step): string {
+  if (!form) {
+    return i18n._(msg`Reading the template`)
+  }
+  if (step === 'mod') {
+    if (!MOD_NAME.test(d.name)) {
+      return i18n._(
+        msg`The mod name starts with a capital letter and holds only letters and digits.`,
+      )
+    }
+    if (!FOLDER.test(d.repo || d.name)) {
+      return i18n._(msg`The folder name holds only letters, digits, dots, dashes and underscores.`)
+    }
+  }
+  const issue = firstIssue(d, stepParams(form, step))
+  if (issue || step !== 'project') {
+    return issue
+  }
   if (d.parent === '') {
     return i18n._(msg`Choose the folder for your mod projects.`)
   }
-  if (!FOLDER.test(d.repo || d.name)) {
-    return i18n._(msg`The folder name holds only letters, digits, dots, dashes and underscores.`)
-  }
   if (d.github && !OWNER.test(d.owner)) {
     return i18n._(msg`Name the account or organisation on ${{ source: sourceLabel('github') }}.`)
+  }
+  return ''
+}
+
+/** The first thing Mortar would refuse anywhere in the draft; empty when it can start. */
+export function draftIssue(d: Draft, form: Form | null): string {
+  for (const step of STEPS) {
+    const issue = stepIssue(d, form, step)
+    if (issue) {
+      return issue
+    }
   }
   return ''
 }
