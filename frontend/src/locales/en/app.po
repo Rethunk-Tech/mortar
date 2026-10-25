@@ -5302,6 +5302,10 @@ msgstr "Its {source} file is not known. Group the Mods list by Source and choose
 msgid "{save} was last played with {profile}"
 msgstr "{save} was last played with {profile}"
 
+#: src/game/Sidebar.tsx
+msgid "Play data"
+msgstr "Play data"
+
 #: src/shell/FlatpakGrant.tsx
 msgid "Grant the {launcher} sandbox read access to Mortar's data folder, or the game will not see this profile's mods."
 msgstr "Grant the {launcher} sandbox read access to Mortar's data folder, or the game will not see this profile's mods."
@@ -6150,10 +6154,6 @@ msgstr "Could not create the profile"
 #: src/queue/Callout.tsx
 msgid "Into a deleted profile"
 msgstr "Into a deleted profile"
-
-#: src/game/Sidebar.tsx
-msgid "Logs"
-msgstr "Logs"
 
 #: src/lan/SendPanel.tsx
 msgid "Looking for Mortar users…"

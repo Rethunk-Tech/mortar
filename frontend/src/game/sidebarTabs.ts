@@ -1,6 +1,6 @@
 import type { TabId } from './tab.ts'
 
-type SidebarGroupId = 'library' | 'get' | 'health' | 'logs' | 'create'
+type SidebarGroupId = 'library' | 'play' | 'get' | 'health' | 'create'
 
 // What the open profile's loader supports; a section the loader lacks has no entry.
 interface SidebarCaps {
@@ -40,8 +40,14 @@ function sidebarGroups(caps: SidebarCaps, counts: SidebarCounts): SidebarGroup[]
       id: 'library',
       entries: [
         { id: 'mods', badge: count(counts.updates, 'primary') },
-        ...(caps.saves ? [{ id: 'saves' as const, badge: null }] : []),
         { id: 'config', badge: null },
+        ...(caps.order ? [{ id: 'load-order' as const, badge: null }] : []),
+      ],
+    },
+    {
+      id: 'play',
+      entries: [
+        ...(caps.saves ? [{ id: 'saves' as const, badge: null }] : []),
         ...(caps.screenshots ? [{ id: 'screenshots' as const, badge: null }] : []),
       ],
     },
@@ -50,11 +56,10 @@ function sidebarGroups(caps: SidebarCaps, counts: SidebarCounts): SidebarGroup[]
       id: 'health',
       entries: [
         { id: 'problems', badge: count(counts.problems, 'warning') },
-        ...(caps.order ? [{ id: 'load-order' as const, badge: null }] : []),
         ...(caps.startup ? [{ id: 'performance' as const, badge: null }] : []),
+        ...(caps.console ? [{ id: 'console' as const, badge: null }] : []),
       ],
     },
-    { id: 'logs', entries: caps.console ? [{ id: 'console', badge: null }] : [] },
     { id: 'create', entries: caps.develop ? [{ id: 'develop', badge: null }] : [] },
   ]
   return groups.filter((g) => g.entries.length > 0)

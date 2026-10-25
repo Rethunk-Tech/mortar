@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase } from '@mui/material'
+import { Box, ButtonBase, Divider } from '@mui/material'
 import {
   Gauge,
   Hammer,
@@ -221,7 +221,7 @@ function useLabels(): Record<TabId, string> & Record<SidebarGroupId, string> {
     library: t`Library`,
     get: t`Get mods`,
     health: t`Health`,
-    logs: t`Logs`,
+    play: t`Play data`,
     create: t`Create`,
   }
 }
@@ -269,7 +269,7 @@ function Sections({ rail }: { rail: boolean }) {
       }}
     >
       <Item tab="home" label={labels.home} badge={null} active={current === 'home'} rail={rail} />
-      {sidebarGroups(caps, { updates, problems }).map((group) => (
+      {sidebarGroups(caps, { updates, problems }).map((group, i) => (
         <Box
           key={group.id}
           // A tablist owns only tabs, so the visible group headings are layout, not a role.
@@ -281,7 +281,17 @@ function Sections({ rail }: { rail: boolean }) {
             alignItems: rail ? 'center' : 'stretch',
           }}
         >
-          {rail ? null : <GroupHeading>{labels[group.id]}</GroupHeading>}
+          {rail ? (
+            // The rail has no headings, so a hairline is what tells its groups apart.
+            i > 0 ? (
+              <Divider
+                flexItem={true}
+                sx={{ my: 0.75, mx: 1.5, borderColor: 'var(--mortar-hairline-12)' }}
+              />
+            ) : null
+          ) : (
+            <GroupHeading>{labels[group.id]}</GroupHeading>
+          )}
           {group.entries.map((entry) => (
             <Item
               key={entry.id}
