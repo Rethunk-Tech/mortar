@@ -91,10 +91,12 @@ type LoaderRef struct {
 	Builtin bool `json:"builtin"`
 	// ModIDName is the loader's term for the id its mods carry (SMAPI's UniqueID, BepInEx's GUID); "" when they have none.
 	ModIDName string `json:"modIdName"`
+	// DevTemplate is the template a new mod starts from in the Develop tab; nil hides the tab.
+	DevTemplate *components.DevTemplate `json:"devTemplate,omitempty"`
 }
 
 func loaderRef(gameID string, l components.GameLoader) LoaderRef {
-	ref := LoaderRef{ID: l.ID, Name: l.Name}
+	ref := LoaderRef{ID: l.ID, Name: l.Name, DevTemplate: l.DevTemplate}
 	if d, ok := LoaderOf(gameID, l.ID); ok {
 		_, ref.Order = d.(loader.WithOrder)
 		_, ref.Console = d.(loader.WithLogs)

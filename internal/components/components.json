@@ -1,5 +1,5 @@
 {
-  "serial": 1792784514,
+  "serial": 1792900452,
   "components": [
     {
       "game": "melonloader",
@@ -39,10 +39,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-smapi-bridge"
       },
-      "tag": "v0.2.9",
-      "asset": "MortarSmapiBridge-0.2.9.zip",
-      "version": "0.2.9",
-      "sha256": "9ab6f23dccc9310275fff775b4980635970c709a575030771bc07af1d9d3e98e"
+      "tag": "v0.2.10",
+      "asset": "MortarSmapiBridge-0.2.10.zip",
+      "version": "0.2.10",
+      "sha256": "13ce7b1b73cb3faf49d893d7e2a5ce1a141bbd534ea03f239846be0e7ef833b0"
     },
     {
       "game": "lethal-company",
@@ -280,7 +280,11 @@
           "id": "bepinex5",
           "name": "BepInEx 5",
           "nexusModId": 42,
-          "companion": "bridge"
+          "companion": "bridge",
+          "devTemplate": {
+            "repo": "Rethunk-Tech/mortar-bepinex5-template",
+            "ref": "v0.1.0"
+          }
         }
       ],
       "sources": [

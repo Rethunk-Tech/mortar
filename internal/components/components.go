@@ -478,7 +478,21 @@ type GameLoader struct {
 	// PlaceDir is the slash path below the install of the folder a profile-held loader's executable-side files are
 	// placed in for a launch, when that is not MarkerDir (an Unreal game's Binaries/Win64, beside its shipping build).
 	PlaceDir string `json:"placeDir,omitempty"`
+	// DevTemplate is the GitHub template repo a new mod for this loader and game starts from, which the Develop tab
+	// offers; nil hides the tab.
+	DevTemplate *DevTemplate `json:"devTemplate,omitempty"`
 }
+
+// DevTemplate names a mod template: its GitHub repo ("owner/name") and the tag Mortar copies.
+type DevTemplate struct {
+	Repo string `json:"repo"`
+	Ref  string `json:"ref"`
+}
+
+var (
+	devTemplateRepo = regexp.MustCompile(`^[A-Za-z0-9-]+/[A-Za-z0-9._-]+$`)
+	devTemplateRef  = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]*$`)
+)
 
 // LoaderPlaceDir is the folder below the install that loader id's executable-side files go in: its entry's PlaceDir,
 // else MarkerDir.
@@ -851,6 +865,9 @@ func (g GameInfo) Validate() error {
 	for _, l := range g.Loaders {
 		if l.Proxy != "" && !slices.Contains(DoorstopProxies, l.Proxy) {
 			return fmt.Errorf("game %q names an unknown Doorstop proxy %q", g.ID, l.Proxy)
+		}
+		if t := l.DevTemplate; t != nil && (!devTemplateRepo.MatchString(t.Repo) || !devTemplateRef.MatchString(t.Ref) || strings.Contains(t.Ref, "..")) {
+			return fmt.Errorf("game %q has a mod template %q at %q that is not a GitHub repo and tag", g.ID, t.Repo, t.Ref)
 		}
 		if l.PlaceDir != "" && (strings.Contains(l.PlaceDir, "\\") || !fs.ValidPath(l.PlaceDir) || l.PlaceDir == ".") {
 			return fmt.Errorf("game %q has an unsafe loader folder %q", g.ID, l.PlaceDir)

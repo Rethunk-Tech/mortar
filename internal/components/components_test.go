@@ -313,6 +313,12 @@ func TestGameFallsBackToBundledAndRejectsUnsafeNames(t *testing.T) {
 	if err := dup.Validate(); err == nil {
 		t.Fatal("a game listed twice must be refused")
 	}
+	for _, tpl := range []DevTemplate{{Repo: "owner/name", Ref: "--upload-pack=x"}, {Repo: "../x", Ref: "v1"}, {Repo: "o/n", Ref: "v1/../.."}} {
+		withTemplate := Manifest{Serial: 1, Games: []GameInfo{{ID: "x", Name: "X", Marker: "m", Loaders: []GameLoader{{ID: "l", DevTemplate: &tpl}}}}}
+		if err := withTemplate.Validate(); err == nil {
+			t.Errorf("mod template %+v must be refused", tpl)
+		}
+	}
 }
 
 func TestLoadRefusesManifestWithoutCatalogShape(t *testing.T) {
