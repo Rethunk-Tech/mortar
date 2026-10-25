@@ -1,6 +1,8 @@
 import type { SDKNeed } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 
 // major, minor, feature band (the hundreds of the patch) and patch, as .NET's roll-forward compares them.
+// An SDK's feature band is the hundreds of its patch number: 10.0.112 is band 1 of 10.0.
+const FEATURE_BAND = 100
 const VERSION = /^(\d+)\.(\d+)\.(\d+)/
 
 function parts(v: string): [number, number, number, number] | null {
@@ -9,7 +11,7 @@ function parts(v: string): [number, number, number, number] | null {
     return null
   }
   const patch = Number(m[3])
-  return [Number(m[1]), Number(m[2]), Math.floor(patch / 100), patch]
+  return [Number(m[1]), Number(m[2]), Math.floor(patch / FEATURE_BAND), patch]
 }
 
 const PATCH_FIXED = 3

@@ -2200,6 +2200,7 @@ msgstr "Update {name} from {sender}"
 msgid "Very large download"
 msgstr "Very large download"
 
+#: src/develop/CodeView.tsx
 #: src/share/MethodPanes.tsx
 msgid "Code copied"
 msgstr "Code copied"
@@ -2471,6 +2472,7 @@ msgstr "Main mod's folder"
 msgid "The link was made for another {source} account than the one signed in."
 msgstr "The link was made for another {source} account than the one signed in."
 
+#: src/develop/CodeView.tsx
 #: src/lan/PairedComputers.tsx
 msgid "Code"
 msgstr "Code"
@@ -4493,6 +4495,7 @@ msgstr "Play anyway"
 msgid "{length} of {limit} characters"
 msgstr "{length} of {limit} characters"
 
+#: src/develop/CodeView.tsx
 #: src/share/MethodPanes.tsx
 msgid "Copy code"
 msgstr "Copy code"

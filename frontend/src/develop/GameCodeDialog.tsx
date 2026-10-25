@@ -9,7 +9,7 @@ import {
   Typography,
 } from '@mui/material'
 import { Code, Copy, FileSearch } from 'lucide-react'
-import { type ReactNode, useEffect, useRef, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 import type { Usage } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import {
   Assemblies,
@@ -33,6 +33,7 @@ import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
+import { CodeView } from './CodeView.tsx'
 import { hookSnippet } from './hook.ts'
 
 // A constructor's decompiled declaration is named after its type, which a search for ".ctor" cannot find.
@@ -145,14 +146,6 @@ function Source({
   const [has, setHas] = useState<boolean | null>(null)
   const [source, setSource] = useState('')
   const [installing, install] = usePending()
-  const pre = useRef<HTMLPreElement | null>(null)
-  useEffect(() => {
-    const el = pre.current
-    const line = declarationLine(source, type, method)
-    if (el && line >= 0) {
-      el.scrollTop = line * Number.parseFloat(getComputedStyle(el).lineHeight)
-    }
-  }, [source, type, method])
   useEffect(() => {
     HasDecompiler()
       .then(setHas)
@@ -204,23 +197,7 @@ function Source({
   if (source === '') {
     return <LoadingRow>{t`Decompiling ${{ type }}…`}</LoadingRow>
   }
-  return (
-    <Box
-      component="pre"
-      ref={pre}
-      sx={{
-        m: 0,
-        p: 2,
-        flex: 1,
-        overflow: 'auto',
-        fontFamily: MONO,
-        fontSize: 'small.fontSize',
-        userSelect: 'text',
-      }}
-    >
-      {source}
-    </Box>
-  )
+  return <CodeView source={source} il={il} line={declarationLine(source, type, method)} />
 }
 
 // Lists the methods, in every assembly the view lists, that use the picked member; picking one opens it.

@@ -2200,6 +2200,7 @@ msgstr ""
 msgid "Very large download"
 msgstr ""
 
+#: src/develop/CodeView.tsx
 #: src/share/MethodPanes.tsx
 msgid "Code copied"
 msgstr ""
@@ -2471,6 +2472,7 @@ msgstr ""
 msgid "The link was made for another {source} account than the one signed in."
 msgstr ""
 
+#: src/develop/CodeView.tsx
 #: src/lan/PairedComputers.tsx
 msgid "Code"
 msgstr ""
@@ -4493,6 +4495,7 @@ msgstr ""
 msgid "{length} of {limit} characters"
 msgstr ""
 
+#: src/develop/CodeView.tsx
 #: src/share/MethodPanes.tsx
 msgid "Copy code"
 msgstr ""
