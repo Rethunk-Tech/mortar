@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, FormControlLabel, Radio, RadioGroup, Typography } from '@mui/material'
 import { FolderOpen } from 'lucide-react'
-import { memo, useState } from 'react'
+import { memo, type RefObject, useCallback, useEffect, useRef, useState } from 'react'
 import {
   AddCustomGame,
   CustomLoaders,
@@ -80,9 +80,42 @@ const LoaderChoice = memo(function LoaderChoiceView({
 })
 
 /** Adds a game missing from the catalog: its name, its executable and how it is modded. Kept on this computer only. */
-export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+// The name keeps its own state, so typing redraws this field and not the dialog. The dialog reads the name from `value`
+// and hears only when it fills or empties; `suggested` fills an empty name (the chosen program's own).
+function NameField({
+  value,
+  suggested,
+  onFilled,
+}: {
+  value: RefObject<string>
+  suggested: string
+  onFilled: (filled: boolean) => void
+}) {
   const { t } = useLingui()
   const [name, setName] = useState('')
+  const change = useCallback(
+    (next: string) => {
+      value.current = next
+      setName(next)
+      onFilled(next.trim() !== '')
+    },
+    [value, onFilled],
+  )
+  useEffect(() => {
+    if (suggested && value.current === '') {
+      change(suggested)
+    }
+  }, [suggested, value, change])
+  return <TextInput label={t`Name`} value={name} onChange={change} maxLength={MAX_NAME} />
+}
+
+export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { t } = useLingui()
+  const name = useRef('')
+  const [hasName, setHasName] = useState(false)
+  const [suggested, setSuggested] = useState('')
+  // A new round remounts the name field empty after a game is added.
+  const [round, setRound] = useState(0)
   const [exe, setExe] = useState('')
   const [loader, setLoader] = useState('bepinex5')
   const [community, setCommunity] = useState('')
@@ -94,11 +127,14 @@ export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () =>
   const add = () =>
     run(
       () =>
-        AddCustomGame(name, exe, loader, loader === 'shimloader' ? community.trim() : '')
+        AddCustomGame(name.current, exe, loader, loader === 'shimloader' ? community.trim() : '')
           .then((game) => SetGameFolder(game.id, game.folder))
           .then(() => {
             reloadGames()
-            setName('')
+            name.current = ''
+            setHasName(false)
+            setSuggested('')
+            setRound((r) => r + 1)
             setExe('')
             setGuessed('')
             onClose()
@@ -113,15 +149,14 @@ export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () =>
         }
         setExe(path)
         const guess = await GuessCustomGame(path)
-        setName((current) => current || guess.name)
+        setSuggested(guess.name)
         setGuessed(guess.loader)
         if (guess.loader) {
           setLoader(guess.loader)
         }
       })
       .catch(reportError(t`Could not open the file dialog`))
-  const ready =
-    exe !== '' && name.trim() !== '' && (loader !== 'shimloader' || community.trim() !== '')
+  const ready = exe !== '' && hasName && (loader !== 'shimloader' || community.trim() !== '')
   const remove = (id: string) =>
     RemoveCustomGame(id).then(reloadGames).catch(reportError(t`Could not remove the game`))
   return (
@@ -132,7 +167,7 @@ export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () =>
       title={t`Add a game`}
       submitLabel={t`Add`}
       issue={ready ? '' : t`Choose the game's program and give it a name first.`}
-      dirty={name.trim() !== '' || exe !== ''}
+      dirty={hasName || exe !== ''}
       busy={busy}
       onSubmit={add}
     >
@@ -164,7 +199,7 @@ export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () =>
           </Typography>
         ) : null}
       </Box>
-      <TextInput label={t`Name`} value={name} onChange={setName} maxLength={MAX_NAME} />
+      <NameField key={round} value={name} suggested={suggested} onFilled={setHasName} />
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
         <LoaderChoice
           loaders={loaders ?? []}
