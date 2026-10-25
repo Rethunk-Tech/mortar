@@ -1,13 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  CircularProgress,
-  OutlinedInput,
-  styled,
-  TextField,
-  Typography,
-} from '@mui/material'
+import { Box, Button, CircularProgress, OutlinedInput, styled, TextField } from '@mui/material'
 import { CircleAlert } from 'lucide-react'
 import { type ReactNode, useId } from 'react'
 import { useDiscardGuard } from '../useDiscardGuard.tsx'
@@ -114,6 +106,16 @@ export function FormDialog({
   )
 }
 
+const sectionSx = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 2,
+  '& + &': { borderTop: '1px solid var(--mortar-hairline-muted)', pt: 3 },
+  '& > header > h3': { m: 0, fontSize: 'lead.fontSize', fontWeight: 600 },
+  '& > header > p': { m: 0, mt: 0.25, fontSize: 'medium.fontSize', color: 'text.secondary' },
+} as const
+const SectionRoot = styled('section')({})
+
 /** A group of related fields under a heading, set off from the group before it by a rule. */
 export function FormSection({
   title,
@@ -125,27 +127,13 @@ export function FormSection({
   children: ReactNode
 }) {
   return (
-    <Box
-      component="section"
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 2,
-        '& + &': { borderTop: '1px solid var(--mortar-hairline-muted)', pt: 3 },
-      }}
-    >
-      <Box>
-        <Typography component="h3" sx={{ fontSize: 'lead.fontSize', fontWeight: 600 }}>
-          {title}
-        </Typography>
-        {description ? (
-          <Typography sx={{ fontSize: 'medium.fontSize', color: 'text.secondary', mt: 0.25 }}>
-            {description}
-          </Typography>
-        ) : null}
-      </Box>
+    <SectionRoot sx={sectionSx}>
+      <header>
+        <h3>{title}</h3>
+        {description ? <p>{description}</p> : null}
+      </header>
       {children}
-    </Box>
+    </SectionRoot>
   )
 }
 
