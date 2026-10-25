@@ -11,6 +11,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"reflect"
 	"slices"
 	"strings"
 	"testing"
@@ -249,11 +250,14 @@ Build FAILED.
 }
 
 func TestNextVersionsAndChangelogEntries(t *testing.T) {
-	if v := nextVersions(""); v != (Versions{Patch: "0.1.0", Minor: "0.1.0", Major: "0.1.0"}) {
+	if v := nextVersions(""); !reflect.DeepEqual(v, Versions{Patch: "0.1.0", Minor: "0.1.0", Major: "0.1.0"}) {
 		t.Errorf("first = %+v", v)
 	}
-	if v := nextVersions("1.4.9"); v != (Versions{Current: "1.4.9", Patch: "1.4.10", Minor: "1.5.0", Major: "2.0.0"}) {
+	if v := nextVersions("1.4.9"); !reflect.DeepEqual(v, Versions{Current: "1.4.9", Patch: "1.4.10", Minor: "1.5.0", Major: "2.0.0"}) {
 		t.Errorf("after 1.4.9 = %+v", v)
+	}
+	if got := changeLines("Fix the drop point\n\nRelease 0.2.0\nRelease notes in README\n"); !slices.Equal(got, []string{"Fix the drop point", "Release notes in README"}) {
+		t.Errorf("changes = %q", got)
 	}
 	log := "# Changelog\n\n## 0.1.0\n\n- First release.\n"
 	got := AddChangelogEntry(log, "0.2.0", []string{" Lands anywhere. ", "Fixes a crash."})

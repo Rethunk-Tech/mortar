@@ -28,6 +28,7 @@ export function ReleaseDialog({
   const [versions, setVersions] = useState<Versions | null>(null)
   const [version, setVersion] = useState('')
   const [notes, setNotes] = useState('')
+  const [drafted, setDrafted] = useState('')
   const [pending, run] = usePending()
   const versionId = useId()
   useEffect(() => {
@@ -35,6 +36,10 @@ export function ReleaseDialog({
       .then((v) => {
         setVersions(v)
         setVersion(v.patch)
+        // The commits since the last release are a draft of what changed, edited before it is recorded.
+        const draft = (v.changes ?? []).join('\n')
+        setDrafted(draft)
+        setNotes((n) => n || draft)
       })
       .catch(() => setVersions(null))
   }, [game, dir])
@@ -73,7 +78,7 @@ export function ReleaseDialog({
       size="sm"
       submitLabel={t`Release`}
       issue={issue}
-      dirty={notes.trim() !== ''}
+      dirty={notes.trim() !== drafted.trim()}
       busy={pending}
       onSubmit={release}
     >

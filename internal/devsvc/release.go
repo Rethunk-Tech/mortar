@@ -168,6 +168,9 @@ type Versions struct {
 	Patch   string `json:"patch"`
 	Minor   string `json:"minor"`
 	Major   string `json:"major"`
+	// Changes are the subjects of the commits since that tag (all of them before the first release), newest first,
+	// without merges or Mortar's own release commits: a draft of what changed.
+	Changes []string `json:"changes"`
 }
 
 // NextVersions reads the project's latest release tag.
@@ -181,7 +184,30 @@ func (s *Service) NextVersions(ctx context.Context, gameID, dir string) (Version
 	if out, err := s.run(ctx, p.Dir, "git", "describe", "--tags", "--abbrev=0", "--match", "v*"); err == nil {
 		latest = strings.TrimPrefix(strings.TrimSpace(string(out)), "v")
 	}
-	return nextVersions(latest), nil
+	v := nextVersions(latest)
+	since := "HEAD"
+	if latest != "" {
+		since = "v" + latest + "..HEAD"
+	}
+	v.Changes = []string{}
+	if out, err := s.run(ctx, p.Dir, "git", "log", "--no-merges", "--format=%s", since); err == nil {
+		v.Changes = changeLines(string(out))
+	}
+	return v, nil
+}
+
+// changeLines keeps git log's subjects, dropping blanks and the "Release X.Y.Z" commits Release makes.
+func changeLines(out string) []string {
+	lines := []string{}
+	for line := range strings.SplitSeq(out, "\n") {
+		line = strings.TrimSpace(line)
+		version, release := strings.CutPrefix(line, "Release ")
+		if line == "" || release && packageVersion.MatchString(version) {
+			continue
+		}
+		lines = append(lines, line)
+	}
+	return lines
 }
 
 func nextVersions(current string) Versions {
