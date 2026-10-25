@@ -235,12 +235,13 @@ export function dialogCases(h: Helpers): Case[] {
     // Typing twelve characters re-renders the form once per character.
     dialog(
       'add-game-filled',
+      (p) => typeInto(p, 'Name', 'Render Check'),
+      TYPING_BUDGET,
+      // The game library and the dialog opening are setup: only typing the name is measured.
       async (p) => {
         await openGameSelect(p)
         await button(p, /^Add a game…/)
-        await typeInto(p, 'Name', 'Render Check')
       },
-      TYPING_BUDGET,
     ),
   ]
 }
