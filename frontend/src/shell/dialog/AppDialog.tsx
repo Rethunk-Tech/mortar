@@ -147,8 +147,7 @@ export function AppDialog({
         <Box
           sx={{
             px: PAD_X,
-            pt: 2.5,
-            pb: 1.5,
+            py: 2.5,
             overflowY: 'auto',
             flex: '1 1 auto',
             minHeight: 0,

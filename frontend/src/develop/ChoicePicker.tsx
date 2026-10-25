@@ -2,6 +2,7 @@ import { Autocomplete, TextField } from '@mui/material'
 import { useId } from 'react'
 import type { Choice } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import { Field } from '../shell/dialog/FormDialog.tsx'
+import { space } from '../theme/density.ts'
 
 const CHIP_PX = 24
 
@@ -31,7 +32,13 @@ export function ChoicePicker({
         // The text input beside the chips is taller than a small chip, which pushes the chips off centre; it takes
         // the chips' height so the field's own padding is even.
         sx={{
-          '& .MuiAutocomplete-inputRoot': { alignItems: 'center' },
+          // The theme holds small fields to one control's height; this one grows a row per line of chips.
+          '& .MuiAutocomplete-inputRoot.MuiInputBase-root.MuiInputBase-sizeSmall': {
+            alignItems: 'center',
+            rowGap: '4px',
+            height: 'auto',
+            minHeight: space.control,
+          },
           '& .MuiOutlinedInput-root.MuiInputBase-sizeSmall .MuiAutocomplete-input': {
             py: 0,
             height: CHIP_PX,

@@ -22,16 +22,45 @@ const TEXT = {
 const CATEGORIES = [
   { value: 'mods', label: 'Mods' },
   { value: 'bepinex', label: 'BepInEx' },
-  { value: 'items', label: 'Items' },
-  { value: 'misc', label: 'Misc' },
+  { value: 'clientside', label: 'Client-side' },
+  { value: 'serverside', label: 'Server-side' },
   { value: 'tweaks-and-quality-of-life', label: 'Tweaks & Quality Of Life' },
+  { value: 'bug-fixes', label: 'Bug Fixes' },
+  { value: 'performance', label: 'Performance' },
+  { value: 'items', label: 'Items' },
+  { value: 'equipment', label: 'Equipment' },
+  { value: 'monsters', label: 'Monsters' },
+  { value: 'moons', label: 'Moons' },
+  { value: 'interiors', label: 'Interiors' },
+  { value: 'hazards', label: 'Hazards' },
+  { value: 'weather', label: 'Weather' },
+  { value: 'vehicles', label: 'Vehicles' },
+  { value: 'cosmetics', label: 'Cosmetics' },
+  { value: 'suits', label: 'Suits' },
+  { value: 'emotes', label: 'Emotes' },
+  { value: 'furniture', label: 'Furniture' },
+  { value: 'audio', label: 'Audio' },
+  { value: 'translations', label: 'Translations' },
+  { value: 'asset-replacements', label: 'Asset Replacements' },
+  { value: 'libraries', label: 'Libraries' },
+  { value: 'tools', label: 'Tools' },
+  { value: 'misc', label: 'Misc' },
 ]
 
 function EditExample({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [name, setName] = useState('ShopDrop')
   const [prefix, setPrefix] = useState('com.nomadtest')
   const [description, setDescription] = useState(START_DESCRIPTION)
-  const [categories, setCategories] = useState(['mods', 'bepinex'])
+  const [categories, setCategories] = useState([
+    'mods',
+    'bepinex',
+    'clientside',
+    'tweaks-and-quality-of-life',
+    'items',
+    'equipment',
+    'monsters',
+    'moons',
+  ])
   const [author, setAuthor] = useState('NOMAD Test')
   const [team, setTeam] = useState('NomadTest')
   const nameError = MOD_NAME.test(name)
