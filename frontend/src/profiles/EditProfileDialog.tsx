@@ -20,8 +20,6 @@ import { LaunchOptionsBlock } from './LaunchOptionsBlock.tsx'
 import { LaunchPresetsBlock } from './LaunchPresetsBlock.tsx'
 import { LoaderLaunchSettings } from './LoaderLaunchSettings.tsx'
 import { LoaderPicker } from './LoaderPicker.tsx'
-import { OverridesSection } from './OverrideRows.tsx'
-import { foldedOverrides } from './overrideValue.ts'
 import { SeparateSavesRow } from './SeparateSavesRow.tsx'
 import { ServerSettings } from './ServerSettings.tsx'
 import { saveProfile } from './saveProfile.ts'
@@ -30,7 +28,7 @@ import { useNameField } from './useNameField.ts'
 
 const PATH_SEPARATORS = /[\\/]/
 
-type FieldsTab = 'appearance' | 'launch' | 'overrides' | 'game'
+type FieldsTab = 'appearance' | 'launch' | 'game'
 
 // LaunchError is a rejected launch field: the extra SMAPI arguments, or the prefix and environment saved together.
 type LaunchError = { field: 'options' | 'settings'; message: string } | null
@@ -135,7 +133,6 @@ function FieldsTabs({
     >
       <Tab {...tabProps('appearance')} label={t`Appearance`} />
       <Tab {...tabProps('launch')} label={t`Launch`} />
-      <Tab {...tabProps('overrides')} label={t`Overrides`} />
       {startupSettings ? <Tab {...tabProps('game')} label={t`Game settings`} /> : null}
     </Tabs>
   )
@@ -166,8 +163,6 @@ interface ProfileFieldsProps {
   onLaunchError: (value: LaunchError) => void
   gameSettings: GameSettingsValues | null
   onGameSettings: (value: GameSettingsValues | null) => void
-  overrides: Record<string, string>
-  onOverrides: (value: Record<string, string>) => void
   ids: string
   tab: FieldsTab
 }
@@ -205,8 +200,6 @@ function ProfileFields({
   onLaunchError,
   gameSettings,
   onGameSettings,
-  overrides,
-  onOverrides,
   ids,
   tab,
 }: ProfileFieldsProps) {
@@ -307,7 +300,6 @@ function ProfileFields({
           />
         </>,
       )}
-      {panel('overrides', <OverridesSection overrides={overrides} onChange={onOverrides} />)}
       {startupSettings
         ? panel(
             'game',
@@ -364,7 +356,6 @@ export function EditProfileDialog(props: EditProfileDialogProps) {
   const [launchOptions, setLaunchOptionsField] = useState(profile.launchOptions ?? '')
   const [launchPrefix, setLaunchPrefix] = useState(profile.launchPrefix ?? '')
   const [launchEnv, setLaunchEnv] = useState(profile.launchEnv ?? '')
-  const [overrides, setOverrides] = useState(() => foldedOverrides(profile))
   const [stagedCover, setStagedCover] = useState<StagedCover>(undefined)
   const [gameSettings, setGameSettings, loaded] = useProfileGameSettings(gameId, profile.id, open)
   const [launchError, setLaunchError] = useState<LaunchError>(null)
@@ -381,7 +372,6 @@ export function EditProfileDialog(props: EditProfileDialogProps) {
       setLaunchOptionsField(profile.launchOptions ?? '')
       setLaunchPrefix(profile.launchPrefix ?? '')
       setLaunchEnv(profile.launchEnv ?? '')
-      setOverrides(foldedOverrides(profile))
       setStagedCover(undefined)
       setLaunchError(null)
     }
@@ -395,7 +385,6 @@ export function EditProfileDialog(props: EditProfileDialogProps) {
       launchOptions,
       launchPrefix,
       launchEnv,
-      overrides,
       stagedCover,
       gameSettings,
       setLaunchOptions,
@@ -449,8 +438,6 @@ export function EditProfileDialog(props: EditProfileDialogProps) {
         onLaunchError={setLaunchError}
         gameSettings={gameSettings}
         onGameSettings={edited(setGameSettings)}
-        overrides={overrides}
-        onOverrides={edited(setOverrides)}
       />
     </FormDialog>
   )

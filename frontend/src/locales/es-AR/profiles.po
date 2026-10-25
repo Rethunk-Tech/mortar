@@ -15,16 +15,8 @@ msgstr ""
 msgid "Switched {name} to the {detail} update channel"
 msgstr ""
 
-#: src/profiles/OverrideRows.tsx
-msgid "These apply only to this profile; Use default follows the game's settings."
-msgstr ""
-
 #: src/profiles/ServerSettings.tsx
 msgid "Required before the server can start."
-msgstr ""
-
-#: src/profiles/OverrideRows.tsx
-msgid "Launch method"
 msgstr ""
 
 #: src/profiles/LoaderLaunchSettings.tsx
@@ -184,10 +176,6 @@ msgstr ""
 msgid "Orange"
 msgstr ""
 
-#: src/profiles/OverrideRows.tsx
-msgid "Enable scheduled save backups first."
-msgstr ""
-
 #: src/profiles/MergeDialog.tsx
 msgid "{count, plural, one {Added # mod from {profile} to {name}} other {Added # mods from {profile} to {name}}}"
 msgstr ""
@@ -286,10 +274,6 @@ msgstr ""
 
 #: src/profiles/GameSettings.tsx
 msgid "Fullscreen resolution width"
-msgstr ""
-
-#: src/profiles/OverrideRows.tsx
-msgid "Update mods before Play"
 msgstr ""
 
 #: src/profiles/restoreBackup.ts
@@ -554,10 +538,6 @@ msgstr ""
 msgid "Choose where {name} lives"
 msgstr ""
 
-#: src/profiles/OverrideRows.tsx
-msgid "Start first"
-msgstr ""
-
 #: src/profiles/CompareTable.tsx
 #: src/profiles/GameModsDialog.tsx
 #: src/profiles/ProfilesPage.tsx
@@ -594,10 +574,6 @@ msgstr ""
 
 #: src/profiles/LaunchPresetsBlock.tsx
 msgid "Edit"
-msgstr ""
-
-#: src/profiles/OverrideRows.tsx
-msgid "{name} version"
 msgstr ""
 
 #: src/profiles/LaunchPresetsBlock.tsx
@@ -777,16 +753,8 @@ msgstr ""
 msgid "Could not unlink the collection"
 msgstr ""
 
-#: src/profiles/OverrideRows.tsx
-msgid "Scheduled save backups"
-msgstr ""
-
 #: src/profiles/store.ts
 msgid "Deleted {name}"
-msgstr ""
-
-#: src/profiles/OverrideRows.tsx
-msgid "Before Play"
 msgstr ""
 
 #: src/profiles/GameModsDialog.tsx
@@ -910,10 +878,6 @@ msgstr ""
 msgid "Direct launch preview"
 msgstr ""
 
-#: src/profiles/OverrideRows.tsx
-msgid "Mods"
-msgstr ""
-
 #: src/profiles/ProfileRow.tsx
 msgid "imported from the game's Mods folder"
 msgstr ""
@@ -941,16 +905,11 @@ msgstr ""
 
 #: src/profiles/EditProfileDialog.tsx
 #: src/profiles/GameSettings.tsx
-#: src/profiles/OverrideRows.tsx
 msgid "Use default"
 msgstr ""
 
 #: src/profiles/HealthDialog.tsx
 msgid "Could not read the saved change {change} from {when}"
-msgstr ""
-
-#: src/profiles/OverrideRows.tsx
-msgid "Console and logs"
 msgstr ""
 
 #: src/profiles/GameModsDialog.tsx
@@ -981,10 +940,6 @@ msgstr ""
 msgid "Mountain"
 msgstr ""
 
-#: src/profiles/OverrideRows.tsx
-msgid "Skip the intro"
-msgstr ""
-
 #: src/profiles/historyDiff.ts
 #: src/profiles/historyLabel.ts
 msgid "Added {name}"
@@ -1012,10 +967,6 @@ msgstr ""
 
 #: src/profiles/LaunchPresetTemplatesDialog.tsx
 msgid "Add"
-msgstr ""
-
-#: src/profiles/OverrideRows.tsx
-msgid "Game settings file"
 msgstr ""
 
 #: src/profiles/restoreBackup.ts
@@ -1148,10 +1099,6 @@ msgstr ""
 msgid "Enable"
 msgstr ""
 
-#: src/profiles/OverrideRows.tsx
-msgid "Graphics API"
-msgstr ""
-
 #: src/profiles/HealthDialog.tsx
 msgid "Could not check profile"
 msgstr ""
@@ -1210,7 +1157,6 @@ msgid "A launch ended without Mortar putting the game folder back as it was"
 msgstr ""
 
 #: src/profiles/LaunchPresetDialog.tsx
-#: src/profiles/OverrideRows.tsx
 msgid "{loader} console window"
 msgstr ""
 
@@ -1259,16 +1205,8 @@ msgstr ""
 msgid "Borderless"
 msgstr ""
 
-#: src/profiles/OverrideRows.tsx
-msgid "Save backups kept"
-msgstr ""
-
 #: src/profiles/LaunchPresetsBlock.tsx
 msgid "Add from game presets…"
-msgstr ""
-
-#: src/profiles/OverrideRows.tsx
-msgid "Skip pre-Play check"
 msgstr ""
 
 #: src/profiles/GameSettings.tsx
@@ -1331,10 +1269,6 @@ msgstr ""
 
 #: src/profiles/historyLabel.ts
 msgid "Changed separate saves"
-msgstr ""
-
-#: src/profiles/EditProfileDialog.tsx
-msgid "Overrides"
 msgstr ""
 
 #: src/profiles/ProfileMenu.tsx
@@ -1548,10 +1482,6 @@ msgstr ""
 msgid "Everything"
 msgstr ""
 
-#: src/profiles/OverrideRows.tsx
-msgid "Back up saves before Play"
-msgstr ""
-
 #: src/profiles/AppearancePickers.tsx
 msgid "Icon"
 msgstr ""
@@ -1603,10 +1533,6 @@ msgstr ""
 
 #: src/profiles/AppearancePickers.tsx
 msgid "Leaf"
-msgstr ""
-
-#: src/profiles/OverrideRows.tsx
-msgid "Free {source} accounts click each download on {source}; those updates do not block Play."
 msgstr ""
 
 #: src/profiles/LaunchPresetTemplatesDialog.tsx
@@ -1695,7 +1621,6 @@ msgid "Unlinked collection {name}"
 msgstr ""
 
 #: src/profiles/EditProfileDialog.tsx
-#: src/profiles/OverrideRows.tsx
 msgid "Launch"
 msgstr ""
 

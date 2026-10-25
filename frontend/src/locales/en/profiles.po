@@ -15,17 +15,9 @@ msgstr "{count, plural, one {Copied # mod to {name}} other {Copied # mods to {na
 msgid "Switched {name} to the {detail} update channel"
 msgstr "Switched {name} to the {detail} update channel"
 
-#: src/profiles/OverrideRows.tsx
-msgid "These apply only to this profile; Use default follows the game's settings."
-msgstr "These apply only to this profile; Use default follows the game's settings."
-
 #: src/profiles/ServerSettings.tsx
 msgid "Required before the server can start."
 msgstr "Required before the server can start."
-
-#: src/profiles/OverrideRows.tsx
-msgid "Launch method"
-msgstr "Launch method"
 
 #: src/profiles/LoaderLaunchSettings.tsx
 msgid "Saved in the profile's config folder and applied the next time the game starts."
@@ -184,10 +176,6 @@ msgstr "Stack frame: {evidence}"
 msgid "Orange"
 msgstr "Orange"
 
-#: src/profiles/OverrideRows.tsx
-msgid "Enable scheduled save backups first."
-msgstr "Enable scheduled save backups first."
-
 #: src/profiles/MergeDialog.tsx
 msgid "{count, plural, one {Added # mod from {profile} to {name}} other {Added # mods from {profile} to {name}}}"
 msgstr "{count, plural, one {Added # mod from {profile} to {name}} other {Added # mods from {profile} to {name}}}"
@@ -287,10 +275,6 @@ msgstr "This {manager} folder has no profiles for {game}: found {found}."
 #: src/profiles/GameSettings.tsx
 msgid "Fullscreen resolution width"
 msgstr "Fullscreen resolution width"
-
-#: src/profiles/OverrideRows.tsx
-msgid "Update mods before Play"
-msgstr "Update mods before Play"
 
 #: src/profiles/restoreBackup.ts
 msgid "Restored as {name}"
@@ -554,10 +538,6 @@ msgstr "Crashed in {nativeFrame}"
 msgid "Choose where {name} lives"
 msgstr "Choose where {name} lives"
 
-#: src/profiles/OverrideRows.tsx
-msgid "Start first"
-msgstr "Start first"
-
 #: src/profiles/CompareTable.tsx
 #: src/profiles/GameModsDialog.tsx
 #: src/profiles/ProfilesPage.tsx
@@ -595,10 +575,6 @@ msgstr "{count, plural, one {Revert # mod?} other {Revert # mods?}}"
 #: src/profiles/LaunchPresetsBlock.tsx
 msgid "Edit"
 msgstr "Edit"
-
-#: src/profiles/OverrideRows.tsx
-msgid "{name} version"
-msgstr "{name} version"
 
 #: src/profiles/LaunchPresetsBlock.tsx
 msgid "Duplicate"
@@ -777,17 +753,9 @@ msgstr "Nothing selected would change {name}."
 msgid "Could not unlink the collection"
 msgstr "Could not unlink the collection"
 
-#: src/profiles/OverrideRows.tsx
-msgid "Scheduled save backups"
-msgstr "Scheduled save backups"
-
 #: src/profiles/store.ts
 msgid "Deleted {name}"
 msgstr "Deleted {name}"
-
-#: src/profiles/OverrideRows.tsx
-msgid "Before Play"
-msgstr "Before Play"
 
 #: src/profiles/GameModsDialog.tsx
 msgid "If they stay there, the game goes on loading them even when a profile disables them."
@@ -910,10 +878,6 @@ msgstr "Revert"
 msgid "Direct launch preview"
 msgstr "Direct launch preview"
 
-#: src/profiles/OverrideRows.tsx
-msgid "Mods"
-msgstr "Mods"
-
 #: src/profiles/ProfileRow.tsx
 msgid "imported from the game's Mods folder"
 msgstr "imported from the game's Mods folder"
@@ -941,17 +905,12 @@ msgstr "Colour"
 
 #: src/profiles/EditProfileDialog.tsx
 #: src/profiles/GameSettings.tsx
-#: src/profiles/OverrideRows.tsx
 msgid "Use default"
 msgstr "Use default"
 
 #: src/profiles/HealthDialog.tsx
 msgid "Could not read the saved change {change} from {when}"
 msgstr "Could not read the saved change {change} from {when}"
-
-#: src/profiles/OverrideRows.tsx
-msgid "Console and logs"
-msgstr "Console and logs"
 
 #: src/profiles/GameModsDialog.tsx
 msgid "Import"
@@ -981,10 +940,6 @@ msgstr "Not in {name}"
 msgid "Mountain"
 msgstr "Mountain"
 
-#: src/profiles/OverrideRows.tsx
-msgid "Skip the intro"
-msgstr "Skip the intro"
-
 #: src/profiles/historyDiff.ts
 #: src/profiles/historyLabel.ts
 msgid "Added {name}"
@@ -1013,10 +968,6 @@ msgstr "Show all"
 #: src/profiles/LaunchPresetTemplatesDialog.tsx
 msgid "Add"
 msgstr "Add"
-
-#: src/profiles/OverrideRows.tsx
-msgid "Game settings file"
-msgstr "Game settings file"
 
 #: src/profiles/restoreBackup.ts
 msgid "Every mod is in place."
@@ -1148,10 +1099,6 @@ msgstr "{count, plural, one {Updated # mod} other {Updated # mods}}"
 msgid "Enable"
 msgstr "Enable"
 
-#: src/profiles/OverrideRows.tsx
-msgid "Graphics API"
-msgstr "Graphics API"
-
 #: src/profiles/HealthDialog.tsx
 msgid "Could not check profile"
 msgstr "Could not check profile"
@@ -1210,7 +1157,6 @@ msgid "A launch ended without Mortar putting the game folder back as it was"
 msgstr "A launch ended without Mortar putting the game folder back as it was"
 
 #: src/profiles/LaunchPresetDialog.tsx
-#: src/profiles/OverrideRows.tsx
 msgid "{loader} console window"
 msgstr "{loader} console window"
 
@@ -1259,17 +1205,9 @@ msgstr "{count, plural, one {Marked # mod implicit} other {Marked # mods implici
 msgid "Borderless"
 msgstr "Borderless"
 
-#: src/profiles/OverrideRows.tsx
-msgid "Save backups kept"
-msgstr "Save backups kept"
-
 #: src/profiles/LaunchPresetsBlock.tsx
 msgid "Add from game presets…"
 msgstr "Add from game presets…"
-
-#: src/profiles/OverrideRows.tsx
-msgid "Skip pre-Play check"
-msgstr "Skip pre-Play check"
 
 #: src/profiles/GameSettings.tsx
 msgid "Copy from profile…"
@@ -1332,10 +1270,6 @@ msgstr "Server"
 #: src/profiles/historyLabel.ts
 msgid "Changed separate saves"
 msgstr "Changed separate saves"
-
-#: src/profiles/EditProfileDialog.tsx
-msgid "Overrides"
-msgstr "Overrides"
 
 #: src/profiles/ProfileMenu.tsx
 #: src/profiles/ProfilesPage.tsx
@@ -1548,10 +1482,6 @@ msgstr "Enabled in one only"
 msgid "Everything"
 msgstr "Everything"
 
-#: src/profiles/OverrideRows.tsx
-msgid "Back up saves before Play"
-msgstr "Back up saves before Play"
-
 #: src/profiles/AppearancePickers.tsx
 msgid "Icon"
 msgstr "Icon"
@@ -1604,10 +1534,6 @@ msgstr "Import from the game's Mods folder"
 #: src/profiles/AppearancePickers.tsx
 msgid "Leaf"
 msgstr "Leaf"
-
-#: src/profiles/OverrideRows.tsx
-msgid "Free {source} accounts click each download on {source}; those updates do not block Play."
-msgstr "Free {source} accounts click each download on {source}; those updates do not block Play."
 
 #: src/profiles/LaunchPresetTemplatesDialog.tsx
 msgid "This template will be deleted. Presets already copied into profiles stay."
@@ -1695,7 +1621,6 @@ msgid "Unlinked collection {name}"
 msgstr "Unlinked collection {name}"
 
 #: src/profiles/EditProfileDialog.tsx
-#: src/profiles/OverrideRows.tsx
 msgid "Launch"
 msgstr "Launch"
 

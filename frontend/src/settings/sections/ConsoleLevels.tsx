@@ -1,20 +1,25 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Checkbox, FormControlLabel } from '@mui/material'
-import { SetByKey } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { LEVELS, levelsFromFloor } from '../../console/filter.ts'
 import { useLevelNames } from '../../console/logHooks.ts'
 import { gamePrefs } from '../gamePrefs.ts'
 import { persist } from '../persist.ts'
 import { SettingRow } from '../SettingsSection.tsx'
+import { useScopedKey } from '../scopedKey.ts'
 import { useSettings } from '../store.ts'
 
 /** The levels the game's Console shows when it opens, each ticked on or off; one stays on. */
 export function ConsoleLevels({ game }: { game: string }) {
   const { t } = useLingui()
   const names = useLevelNames()
-  const shown = levelsFromFloor(useSettings((s) => gamePrefs(s, game).consoleLevel))
+  const scoped = useScopedKey(
+    'consoleLevel',
+    game,
+    useSettings((s) => gamePrefs(s, game).consoleLevel),
+  )
+  const shown = levelsFromFloor(scoped.value)
   const save = (next: typeof shown) =>
-    persist(() => SetByKey('consoleLevel', next.join(','), game), t`Could not save that setting`)
+    persist(() => scoped.save(next.join(',')), t`Could not save that setting`)
   return (
     <SettingRow label={t`Levels shown`} description={t`The Console opens showing these levels`}>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end' }}>

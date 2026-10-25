@@ -1,6 +1,5 @@
 import { SetGameSettings } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { SetOverrides } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { applyStagedCover, type StagedCover } from '../game/cover.ts'
 import { errorMessage, reportError, reportUnexpected } from '../toasts/report.ts'
 import { clipDescription } from './appearance.ts'
@@ -48,7 +47,6 @@ export async function saveProfile({
   launchOptions,
   launchPrefix,
   launchEnv,
-  overrides,
   stagedCover,
   gameSettings,
   color,
@@ -69,7 +67,6 @@ export async function saveProfile({
   launchOptions: string
   launchPrefix: string
   launchEnv: string
-  overrides: Record<string, string>
   stagedCover: StagedCover
   gameSettings: GameSettingsValues | null
   color: string
@@ -106,7 +103,6 @@ export async function saveProfile({
       await setAppearance(profile.id, color, icon, clipDescription(description))
       if (gameId) {
         await SetGameSettings(gameId, profile.id, gameSettings ?? {})
-        useProfiles.getState().replace(await SetOverrides(gameId, profile.id, overrides))
       }
     } catch (error) {
       reportUnexpected(error)

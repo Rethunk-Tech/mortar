@@ -111,7 +111,7 @@ function useScopedPref(spec: PrefSpec, game: string | undefined) {
 }
 
 // Beside a profile's own value: the game's, and a way back to it.
-function ScopeNote({
+export function ScopeNote({
   own,
   gameLabel,
   onReset,
