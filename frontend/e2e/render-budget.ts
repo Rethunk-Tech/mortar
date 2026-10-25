@@ -151,7 +151,13 @@ let switched: string | null = null // its name
 const cases: Case[] = [
   open('Home'),
   openMods('List view'),
-  { name: 'mods-list-select', setup: (p) => view(p, 'List view'), run: (p) => row(p, 6).click() },
+  // Selecting opens the sidebar, and the narrower list drops a column: every visible row re-renders once without it.
+  {
+    name: 'mods-list-select',
+    budget: { updates: 2500 },
+    setup: (p) => view(p, 'List view'),
+    run: (p) => row(p, 6).click(),
+  },
   {
     name: 'mods-list-switch',
     setup: async (p) => {
