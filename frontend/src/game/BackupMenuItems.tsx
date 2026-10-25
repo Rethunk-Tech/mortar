@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Checkbox, DialogContentText, FormControlLabel } from '@mui/material'
+import { Checkbox, FormControlLabel, Typography } from '@mui/material'
 import { ArchiveRestore, HardDriveDownload } from 'lucide-react'
 import { useState } from 'react'
 import {
@@ -99,9 +99,9 @@ export function BackupProfileDialog({
         label={t`Include mod files (larger, works offline)`}
       />
       {mods ? null : (
-        <DialogContentText>
+        <Typography sx={{ color: 'text.secondary' }}>
           {t`Mods a site can download again are left out; restoring downloads them.`}
-        </DialogContentText>
+        </Typography>
       )}
     </ConfirmationDialog>
   )

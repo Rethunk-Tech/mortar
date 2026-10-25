@@ -75,13 +75,10 @@ export interface ImportRequest {
 
 export const useImportDialog = create<{
   request: ImportRequest | null
-  // An import is running; the dialog stays open until it finishes.
-  busy: boolean
   open: (options: ImportOptions) => void
   close: () => void
 }>((set) => ({
   request: null,
-  busy: false,
   open: ({
     profileId = '',
     link = '',
@@ -113,11 +110,10 @@ export const useImportDialog = create<{
         ...(collectionUpdate ? { collectionUpdate: true } : {}),
         ...(lan ? { lan } : {}),
       },
-      busy: false,
     })
   },
   close: () => {
-    set({ request: null, busy: false })
+    set({ request: null })
     Discard().catch(reportUnexpected)
   },
 }))

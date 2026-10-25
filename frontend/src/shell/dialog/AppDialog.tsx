@@ -1,12 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Dialog, IconButton, Typography } from '@mui/material'
-import { X } from 'lucide-react'
+import { ArrowLeft, X } from 'lucide-react'
 import { type ReactNode, useId } from 'react'
 
-export type DialogSize = 'sm' | 'md' | 'lg'
+export type DialogSize = 'sm' | 'md' | 'lg' | 'xl'
 export type DialogTone = 'neutral' | 'warning' | 'danger'
 
-const WIDTH: Record<DialogSize, number> = { sm: 480, md: 560, lg: 760 }
+const WIDTH: Record<DialogSize, number> = { sm: 480, md: 560, lg: 760, xl: 1180 }
 const TONE_COLOR: Record<DialogTone, string> = {
   neutral: 'var(--mortar-accent-ink)',
   warning: 'warning.main',
@@ -72,6 +72,9 @@ export function AppDialog({
   size = 'md',
   footer,
   closable = true,
+  onBack,
+  height,
+  flush = false,
   children,
 }: {
   open: boolean
@@ -83,6 +86,12 @@ export function AppDialog({
   footer?: ReactNode
   // False for a dialog that wants an answer: no X and clicks outside do nothing; Esc still means Cancel (onClose).
   closable?: boolean
+  // A step back inside the dialog: an arrow before the title, and Esc goes back before it closes.
+  onBack?: (() => void) | undefined
+  // A fixed height, for a body whose content changes size as the reader moves through it.
+  height?: string | number | undefined
+  // The body draws its own edges (a grid or list running to the dialog's sides).
+  flush?: boolean
   children?: ReactNode
 }) {
   const { t } = useLingui()
@@ -91,7 +100,9 @@ export function AppDialog({
     <Dialog
       open={open}
       onClose={(_, reason) => {
-        if (closable || reason === 'escapeKeyDown') {
+        if (reason === 'escapeKeyDown' && onBack) {
+          onBack()
+        } else if (closable || reason === 'escapeKeyDown') {
           onClose()
         }
       }}
@@ -101,6 +112,7 @@ export function AppDialog({
         paper: {
           sx: {
             width: WIDTH[size],
+            ...(height === undefined ? {} : { height }),
             maxWidth: 'calc(100% - 32px)',
             maxHeight: 'calc(100% - 64px)',
             m: 2,
@@ -124,6 +136,11 @@ export function AppDialog({
           borderBottom: children ? '1px solid var(--mortar-hairline-muted)' : 'none',
         }}
       >
+        {onBack ? (
+          <IconButton aria-label={t`Back`} onClick={onBack} size="small" sx={{ ml: -1 }}>
+            <ArrowLeft size={18} />
+          </IconButton>
+        ) : null}
         {icon}
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Typography
@@ -150,8 +167,7 @@ export function AppDialog({
       {children ? (
         <Box
           sx={{
-            px: PAD_X,
-            py: 2.5,
+            ...(flush ? { display: 'flex', flexDirection: 'column' } : { px: PAD_X, py: 2.5 }),
             overflowY: 'auto',
             flex: '1 1 auto',
             minHeight: 0,

@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { LockedReason } from '../mods/LockedReason.tsx'
 import { useProfileLocked } from '../mods/useLocked.ts'
+import { DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { Fold } from '../shell/Fold.tsx'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
@@ -77,16 +78,7 @@ export function ImportFooter({
           {flow.error}
         </Typography>
       ) : null}
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: space.gap,
-          px: space.gap,
-          pb: space.gap,
-        }}
-      >
-        <Box sx={{ flex: 1 }} />
+      <DialogFooter>
         {targetName ? (
           <LockedReason locked={targetLocked}>
             <Button
@@ -95,7 +87,6 @@ export function ImportFooter({
               onClick={() => {
                 flow.run(true).catch(reportUnexpected)
               }}
-              sx={{ height: 40 }}
             >
               {t`Add to ${{ name: targetName }}`}
             </Button>
@@ -108,7 +99,6 @@ export function ImportFooter({
               color="error"
               disabled={!canRun || targetLocked}
               onClick={() => setAskReplace(true)}
-              sx={{ height: 40 }}
             >
               {t`Replace ${{ name: targetName }}`}
             </Button>
@@ -121,11 +111,10 @@ export function ImportFooter({
           onClick={() => {
             flow.run(false).catch(reportUnexpected)
           }}
-          sx={{ height: 40 }}
         >
           {runLabel}
         </Button>
-      </Box>
+      </DialogFooter>
       <ConfirmationDialog
         open={askReplace}
         tone="danger"

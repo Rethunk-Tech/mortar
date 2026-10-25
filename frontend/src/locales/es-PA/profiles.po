@@ -1615,7 +1615,6 @@ msgid "imported from a .mortar file"
 msgstr ""
 
 #: src/profiles/CompareDialog.tsx
-#: src/profiles/CompareTop.tsx
 #: src/profiles/HistoryToolbar.tsx
 msgid "Compare"
 msgstr ""
@@ -1653,7 +1652,6 @@ msgstr ""
 msgid "Applied the next time the server starts. The password stays in this profile's folder."
 msgstr ""
 
-#: src/profiles/CompareTop.tsx
 #: src/profiles/HealthDialog.tsx
 #: src/profiles/HistoryPanel.tsx
 #: src/profiles/LaunchPresetTemplatesDialog.tsx

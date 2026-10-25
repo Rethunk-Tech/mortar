@@ -1,6 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Dialog, IconButton, LinearProgress, Typography } from '@mui/material'
-import { ArrowLeft, X } from 'lucide-react'
+import { Box, LinearProgress, Typography } from '@mui/material'
 import { useEffect } from 'react'
 import { ImportsModsFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { MOD_ORGANIZER_2, STARDROP, VORTEX } from '../brand/productNames.ts'
@@ -9,8 +8,7 @@ import { useCurrentGame } from '../nav/currentGame.ts'
 import { useGameModsDialog } from '../profiles/gameModsDialog.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useNexus } from '../settings/nexus.ts'
-import { TipIconButton } from '../shell/TipIconButton.tsx'
-import { Tooltip } from '../shell/Tooltip.tsx'
+import { AppDialog } from '../shell/dialog/AppDialog.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { space } from '../theme/density.ts'
@@ -27,15 +25,6 @@ import { SaveImportedTemplateHost } from './SaveImportedTemplate.tsx'
 import { seedPreview } from './seedPreview.ts'
 import { type ImportRequest, useImportDialog } from './store.ts'
 import { type Tab as TabId, useImportFlow } from './useImportFlow.ts'
-
-const dialogSx = {
-  bgcolor: 'var(--mortar-panel-solid)',
-  border: '1px solid var(--mortar-hairline)',
-  maxWidth: 'none',
-  maxHeight: 'none',
-  overflow: 'hidden',
-  borderRadius: '6px',
-}
 
 function MissingMods({
   ids,
@@ -176,10 +165,6 @@ function Body({ request }: { request: ImportRequest }) {
   const manager = SOURCE_NAMES[source] ?? source
   useSeedPreview(request, flow)
 
-  useEffect(() => {
-    useImportDialog.setState({ busy: flow.busy })
-  }, [flow.busy])
-
   const { preview } = flow
   const hasMods = preview !== null && preview.mods.length > 0
   const steps: Record<TabId, string> = {
@@ -200,98 +185,19 @@ function Body({ request }: { request: ImportRequest }) {
       setTab('choose')
     }
   }
+  const canBack = preview !== null || (flow.tab !== 'choose' && !flow.external)
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        minHeight: 0,
-        maxHeight: 'calc(100vh - 48px)',
-        // A link or file to choose needs a narrow dialog; the preview's tiles need the room.
-        width: preview ? 'min(1180px, calc(100vw - 72px))' : 'min(720px, calc(100vw - 72px))',
-      }}
-    >
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'stretch',
-          height: 46,
-          flexShrink: 0,
-          borderBottom: '1px solid var(--mortar-hairline)',
-        }}
-      >
-        {preview || (flow.tab !== 'choose' && !flow.external) ? (
-          <Box sx={{ display: 'flex', alignItems: 'center', pl: '8px' }}>
-            <TipIconButton label={t`Back`} disabled={flow.busy} onClick={back}>
-              <ArrowLeft size={18} />
-            </TipIconButton>
-          </Box>
-        ) : null}
-        <Typography
-          component="h2"
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            px: '18px',
-            flexGrow: 1,
-            minWidth: 0,
-            fontSize: 17,
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {manager ? t`Import from ${manager}` : t`Import a profile`}
-          {step ? (
-            <Box
-              component="span"
-              sx={{ ml: 1.25, color: 'text.secondary', fontSize: 'medium.fontSize' }}
-            >
-              {step}
-            </Box>
-          ) : null}
-        </Typography>
-        <Tooltip title={t`Close`} describeChild={true}>
-          <span>
-            <IconButton
-              aria-label={t`Close`}
-              onClick={flow.dismiss}
-              disabled={flow.busy}
-              sx={{ width: 50, borderRadius: 0, flexShrink: 0 }}
-            >
-              <X size={16} />
-            </IconButton>
-          </span>
-        </Tooltip>
-      </Box>
-      {/* Reading a link, code or file, or importing, can take a while: a thin bar says it is under way. */}
-      <Box sx={{ height: 2, flexShrink: 0 }}>
-        {flow.busy ? <LinearProgress sx={{ height: 2 }} aria-label={t`Working`} /> : null}
-      </Box>
-      {preview ? (
-        <>
-          <Box
-            sx={{
-              flex: '1 1 auto',
-              minHeight: 0,
-              overflowY: 'auto',
-              p: space.gap,
-              bgcolor: 'var(--mortar-overlay-20)',
-            }}
-          >
-            {flow.external?.missing && flow.external.missing.length > 0 ? (
-              <MissingMods ids={flow.external.missing} mods={preview.mods} />
-            ) : null}
-            {targetName && !flow.external ? (
-              <CompareSummary preview={preview} targetName={targetName} />
-            ) : null}
-            {preview.collection ? <CollectionNotes collection={preview.collection} /> : null}
-            {hasMods ? (
-              <Tiles mods={preview.mods} excluded={flow.excluded} onToggle={flow.toggle} />
-            ) : (
-              <Typography sx={{ p: space.pad, textAlign: 'center', color: 'text.secondary' }}>
-                {t`This profile has no mods to download`}
-              </Typography>
-            )}
-          </Box>
+    <AppDialog
+      open={true}
+      onClose={flow.busy ? () => undefined : flow.dismiss}
+      onBack={canBack && !flow.busy ? back : undefined}
+      title={manager ? t`Import from ${manager}` : t`Import a profile`}
+      subtitle={step}
+      // A link or file to choose needs a narrow dialog; the preview's tiles need the room.
+      size={preview ? 'xl' : 'lg'}
+      flush={true}
+      footer={
+        preview ? (
           <ImportFooter
             flow={flow}
             preview={preview}
@@ -299,11 +205,42 @@ function Body({ request }: { request: ImportRequest }) {
             targetName={targetName ?? ''}
             signedIn={signedIn}
           />
-        </>
+        ) : null
+      }
+    >
+      {/* Reading a link, code or file, or importing, can take a while: a thin bar says it is under way. */}
+      <Box sx={{ height: 2, flexShrink: 0 }}>
+        {flow.busy ? <LinearProgress sx={{ height: 2 }} aria-label={t`Working`} /> : null}
+      </Box>
+      {preview ? (
+        <Box
+          sx={{
+            flex: '1 1 auto',
+            minHeight: 0,
+            overflowY: 'auto',
+            p: space.gap,
+            bgcolor: 'var(--mortar-overlay-20)',
+          }}
+        >
+          {flow.external?.missing && flow.external.missing.length > 0 ? (
+            <MissingMods ids={flow.external.missing} mods={preview.mods} />
+          ) : null}
+          {targetName && !flow.external ? (
+            <CompareSummary preview={preview} targetName={targetName} />
+          ) : null}
+          {preview.collection ? <CollectionNotes collection={preview.collection} /> : null}
+          {hasMods ? (
+            <Tiles mods={preview.mods} excluded={flow.excluded} onToggle={flow.toggle} />
+          ) : (
+            <Typography sx={{ p: space.pad, textAlign: 'center', color: 'text.secondary' }}>
+              {t`This profile has no mods to download`}
+            </Typography>
+          )}
+        </Box>
       ) : (
         <ImportPane flow={flow} game={game} close={close} />
       )}
-    </Box>
+    </AppDialog>
   )
 }
 
@@ -315,21 +252,11 @@ const SOURCE_NAMES: Record<string, string> = {
 }
 
 export function ImportDialog() {
-  const { t } = useLingui()
   const request = useImportDialog((s) => s.request)
-  const dismiss = useImportDialog((s) => s.close)
-  const busy = useImportDialog((s) => s.busy)
   return (
     <>
       <SaveImportedTemplateHost />
-      <Dialog
-        open={request !== null}
-        onClose={busy ? undefined : dismiss}
-        maxWidth={false}
-        slotProps={{ paper: { sx: dialogSx, 'aria-label': t`Import a profile` } }}
-      >
-        {request ? <Body key={request.run} request={request} /> : null}
-      </Dialog>
+      {request ? <Body key={request.run} request={request} /> : null}
     </>
   )
 }

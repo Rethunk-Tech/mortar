@@ -1,6 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Dialog, Typography } from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import { ArrowLeft, ArrowRight, GitCompare, ListChecks, Users } from 'lucide-react'
 import { type ReactNode, useMemo, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
@@ -14,6 +14,7 @@ import { applyWithUndo } from '../mods/menu.ts'
 import { lockedIn, useLaunchLocks } from '../mods/useLocked.ts'
 import { openImport } from '../share/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { AppDialog, DialogFooter, ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { space } from '../theme/density.ts'
@@ -117,21 +118,7 @@ function CompareFooter({
     },
   ]
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: space.gap,
-        px: space.pad,
-        py: space.pad,
-        borderTop: 1,
-        borderColor: 'divider',
-      }}
-    >
-      <Typography color="text.secondary" sx={{ fontSize: 'base.fontSize' }}>
-        {t`${count} selected`}
-      </Typography>
-      <Box sx={{ flex: 1 }} />
+    <DialogFooter aside={t`${count} selected`}>
       {actions.map(({ toB, icon, label }) => {
         const target = toB ? profileB : profileA
         const plan = applyPlan(selected, toB)
@@ -142,8 +129,7 @@ function CompareFooter({
         return (
           <DisabledReason key={String(toB)} title={reason} disabled={reason !== ''}>
             <Button
-              variant={toB ? 'outlined' : 'contained'}
-              color={toB ? 'inherit' : 'primary'}
+              variant={toB ? 'text' : 'contained'}
               startIcon={icon}
               disabled={pending || reason !== ''}
               onClick={() => matchTo(toB)}
@@ -154,7 +140,7 @@ function CompareFooter({
           </DisabledReason>
         )
       })}
-    </Box>
+    </DialogFooter>
   )
 }
 
@@ -198,26 +184,39 @@ function Summary({
   )
 }
 
+const COMPARE_HEIGHT = 600
+
 function CompareFrame({
   open,
   onClose,
+  footer,
   children,
 }: {
   open: boolean
-  onClose: (() => void) | undefined
+  onClose: () => void
+  footer?: ReactNode
   children: ReactNode
 }) {
   const { t } = useLingui()
+  const game = useProfiles((s) => s.game?.name ?? '')
   return (
-    <Dialog
+    <AppDialog
       open={open}
       onClose={onClose}
-      maxWidth="md"
-      fullWidth={true}
-      slotProps={{ paper: { 'aria-label': t`Compare`, sx: { height: 600 } } }}
+      title={t`Compare`}
+      subtitle={game}
+      icon={
+        <ToneIcon tone="neutral">
+          <GitCompare size={22} />
+        </ToneIcon>
+      }
+      size="xl"
+      height={COMPARE_HEIGHT}
+      flush={true}
+      footer={footer}
     >
       {children}
-    </Dialog>
+    </AppDialog>
   )
 }
 
@@ -263,14 +262,26 @@ function ComparePair({
   const { pending, lockedReason, matchTo } = useMatch(profileA, profileB, selected)
 
   return (
-    <CompareFrame open={open} onClose={pending ? undefined : onClose}>
+    <CompareFrame
+      open={open}
+      onClose={pending ? () => undefined : onClose}
+      footer={
+        <CompareFooter
+          profileA={profileA}
+          profileB={profileB}
+          selected={selected}
+          pending={pending}
+          lockedReason={lockedReason}
+          matchTo={matchTo}
+        />
+      }
+    >
       <CompareTop
         profileA={profileA}
         profileB={profileB}
         pending={pending}
         filterOpen={filterOpen}
         onFilter={() => setFilterOpen((v) => !v)}
-        onClose={onClose}
         onPick={(id) => {
           setToggled(new Set())
           onPick(id)
@@ -340,14 +351,6 @@ function ComparePair({
           </>
         )}
       </Box>
-      <CompareFooter
-        profileA={profileA}
-        profileB={profileB}
-        selected={selected}
-        pending={pending}
-        lockedReason={lockedReason}
-        matchTo={matchTo}
-      />
     </CompareFrame>
   )
 }
@@ -370,7 +373,6 @@ function CompareChoose({
         pending={false}
         filterOpen={false}
         onFilter={() => undefined}
-        onClose={onClose}
         onPick={onPick}
         onFriend={onFriend}
         onHost={onHost}

@@ -3191,8 +3191,7 @@ msgstr ""
 #: src/firstrunTour/TourPopover.tsx
 #: src/fomod/Dialog.tsx
 #: src/lan/SendPanel.tsx
-#: src/share/ImportDialog.tsx
-#: src/share/ShareDialog.tsx
+#: src/shell/dialog/AppDialog.tsx
 #: src/shell/dialog/FormDialog.tsx
 msgid "Back"
 msgstr ""
@@ -6437,9 +6436,7 @@ msgstr ""
 #: src/launch/SweepDialog.tsx
 #: src/saves/BackupsDialog.tsx
 #: src/screenshots/ScreenshotsTab.tsx
-#: src/share/ImportDialog.tsx
 #: src/share/PreviewDialog.tsx
-#: src/share/ShareDialog.tsx
 #: src/shell/dialog/AppDialog.tsx
 #: src/shell/TitleBar.tsx
 #: src/sync/SyncOffers.tsx

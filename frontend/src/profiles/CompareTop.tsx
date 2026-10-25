@@ -10,7 +10,7 @@ import {
   MenuItem,
   Typography,
 } from '@mui/material'
-import { Check, ChevronDown, Search, Users, X } from 'lucide-react'
+import { Check, ChevronDown, Search, Users } from 'lucide-react'
 import { useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { modsLabel } from '../i18n/counts.ts'
@@ -116,7 +116,6 @@ export function CompareTop({
   pending,
   filterOpen,
   onFilter,
-  onClose,
   onPick,
   onFriend,
   onHost,
@@ -126,7 +125,6 @@ export function CompareTop({
   pending: boolean
   filterOpen: boolean
   onFilter: () => void
-  onClose: () => void
   onPick: (id: string) => void
   onFriend: () => void
   onHost: () => void
@@ -136,28 +134,7 @@ export function CompareTop({
   const gameId = game?.id ?? ''
   return (
     <>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'baseline',
-          gap: space.gap,
-          px: space.pad,
-          pt: space.pad,
-          pb: space.pad,
-        }}
-      >
-        <Typography component="h2" sx={{ fontSize: 20, fontWeight: 700 }}>
-          {t`Compare`}
-        </Typography>
-        <Typography color="text.secondary">{game?.name ?? ''}</Typography>
-        <Box sx={{ flex: 1 }} />
-        <IconButton size="small" aria-label={t`Close`} onClick={onClose} disabled={pending}>
-          <X size={18} />
-        </IconButton>
-      </Box>
-      <Box
-        sx={{ display: 'flex', alignItems: 'center', gap: space.gap, px: space.pad, pb: space.pad }}
-      >
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, p: space.pad }}>
         <Box
           sx={{
             display: 'flex',
