@@ -1,7 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ListSubheader, MenuItem, TextField } from '@mui/material'
-import { useEffect, useId, useState } from 'react'
+import { type RefObject, useEffect, useId, useRef, useState } from 'react'
 import type { StarterTemplate } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/components/models.ts'
 import {
   Duplicate,
@@ -238,12 +238,73 @@ function useStartingPoints(game: string, open: boolean) {
   ).data
 }
 
+interface Picked {
+  starter?: StarterTemplate | undefined
+  group?: SavedGroup | undefined
+}
+
+// Loads the starter templates and saved groups itself, so their arrival redraws this field rather than the whole dialog;
+// Create reads the starter or group `from` names through `picked`.
+function StartFromField({
+  game,
+  open,
+  from,
+  templates,
+  copyOf,
+  copying,
+  disabled,
+  picked,
+  onChange,
+  onManage,
+}: {
+  game: string
+  open: boolean
+  from: string
+  templates: Template[]
+  copyOf: string
+  copying: boolean
+  disabled: boolean
+  picked: RefObject<Picked>
+  onChange: (value: string) => void
+  onManage: () => void
+}) {
+  const { starters, savedGroups } = useStartingPoints(game, open)
+  const starter = starters.find((candidate) => STARTER + candidate.id === from)
+  const groupId = savedGroupOf(from)
+  const group = savedGroups.find((candidate) => candidate.id === groupId)
+  useEffect(() => {
+    picked.current = { starter, group }
+  })
+  if (
+    templates.length === 0 &&
+    starters.length === 0 &&
+    savedGroups.length === 0 &&
+    copyOf === ''
+  ) {
+    return null
+  }
+  const known =
+    templates.some((candidate) => candidate.name === from) || starter || group || copying
+  return (
+    <StartFromSelect
+      copyOf={copyOf}
+      names={templates.map((candidate) => candidate.name)}
+      starters={starters}
+      groups={savedGroups}
+      value={known ? from : EMPTY}
+      disabled={disabled}
+      onChange={onChange}
+      onManage={onManage}
+    />
+  )
+}
+
 export function NewProfileDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useLingui()
   const game = useProfiles((s) => s.game?.id ?? '')
   const { templates, reload } = useTemplates(game, open)
   const { busy, submit } = useCreate(game, onClose)
-  const { starters, savedGroups } = useStartingPoints(game, open)
+  const picked = useRef<Picked>({})
   const [name, setName] = useState('')
   const [from, setFrom] = useState(EMPTY)
   const [managing, setManaging] = useState(false)
@@ -256,13 +317,15 @@ export function NewProfileDialog({ open, onClose }: { open: boolean; onClose: ()
   const openId = useProfiles((s) => openProfileOf(s)?.id ?? '')
   const openName = useProfiles((s) => openProfileOf(s)?.name ?? '')
   const template = templates.find((candidate) => candidate.name === from)
-  const starter = starters.find((candidate) => STARTER + candidate.id === from)
   const copying = from === COPY && openId !== ''
-  const groupId = savedGroupOf(from)
-  const group = savedGroups.find((candidate) => candidate.id === groupId)
   const trimmed = name.trim()
   const onSubmit = () =>
-    submit(trimmed, { template, copyOf: copying ? openId : '', starter, savedGroup: group?.id })
+    submit(trimmed, {
+      template,
+      copyOf: copying ? openId : '',
+      starter: picked.current.starter,
+      savedGroup: picked.current.group?.id,
+    })
   return (
     <>
       <FormDialog
@@ -283,18 +346,18 @@ export function NewProfileDialog({ open, onClose }: { open: boolean; onClose: ()
           onChange={setName}
           maxLength={MAX_NAME}
         />
-        {templates.length > 0 || starters.length > 0 || savedGroups.length > 0 || openId !== '' ? (
-          <StartFromSelect
-            copyOf={openName}
-            names={templates.map((candidate) => candidate.name)}
-            starters={starters}
-            groups={savedGroups}
-            value={template || starter || group || copying ? from : EMPTY}
-            disabled={busy}
-            onChange={setFrom}
-            onManage={() => setManaging(true)}
-          />
-        ) : null}
+        <StartFromField
+          game={game}
+          open={open}
+          from={from}
+          templates={templates}
+          copyOf={openId === '' ? '' : openName}
+          copying={copying}
+          disabled={busy}
+          picked={picked}
+          onChange={setFrom}
+          onManage={() => setManaging(true)}
+        />
       </FormDialog>
       <ManageTemplatesDialog
         open={managing}
