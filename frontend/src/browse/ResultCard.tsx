@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase, Card, Typography } from '@mui/material'
+import { Box, ButtonBase, Card } from '@mui/material'
 import {
   Clock,
   Download,
@@ -52,7 +52,8 @@ function CardPicture({
   pick?: { sources: string[]; names: Map<string, string>; onPick: (source: string) => void }
   starKey?: string
 }) {
-  const sx = {
+  // Inline styles rather than Box: a results page draws one picture per card, and each Box is three components.
+  const style = {
     width: size,
     height: size,
     flexShrink: 0,
@@ -62,15 +63,16 @@ function CardPicture({
   const [failed, setFailed] = useState(false)
   const image =
     picture === '' || failed ? (
-      <Box sx={{ ...sx, bgcolor: 'var(--mortar-raised)' }} />
+      <span style={{ ...style, display: 'block', backgroundColor: 'var(--mortar-raised)' }} />
     ) : (
+      // A Box: a plain img may not take the onError that swaps in the blank tile.
       <Box
         component="img"
         src={pictureSrc(picture)}
         alt=""
         loading="lazy"
         onError={() => setFailed(true)}
-        sx={{ ...sx, objectFit: 'cover' }}
+        style={{ ...style, objectFit: 'cover' }}
       />
     )
   const logo = source && hasSourceLogo(source.id) ? source : undefined
@@ -79,29 +81,23 @@ function CardPicture({
   }
   const mark = PICTURE_MARK_PX
   return (
-    <Box
-      sx={{
-        position: 'relative',
-        flexShrink: 0,
-        display: 'flex',
-      }}
-    >
+    <div style={{ position: 'relative', flexShrink: 0, display: 'flex' }}>
       {image}
       {logo && pick && pick.sources.length > 1 ? (
         <SourcePicks pick={pick} chosen={logo.id} mark={mark} />
       ) : null}
       {logo && !(pick && pick.sources.length > 1) ? (
-        <Box
+        <div
           role="img"
           aria-label={logo.name}
           title={logo.name}
-          sx={{ ...corner, ...pictureMarkSx }}
+          style={{ ...corner, ...pictureMarkSx }}
         >
           <SourceLogo id={logo.id} size={mark} />
-        </Box>
+        </div>
       ) : null}
       {starKey ? <FavouriteStar starKey={starKey} onPicture={true} /> : null}
-    </Box>
+    </div>
   )
 }
 
@@ -115,7 +111,7 @@ function SourcePicks({
   mark: number
 }) {
   return (
-    <Box sx={{ ...corner, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+    <div style={{ ...corner, display: 'flex', flexDirection: 'column', gap: '2px' }}>
       {pick.sources.map((id) => {
         const name = pick.names.get(id) ?? id
         const on = id === chosen
@@ -137,7 +133,7 @@ function SourcePicks({
           </Tooltip>
         )
       })}
-    </Box>
+    </div>
   )
 }
 
@@ -182,6 +178,83 @@ const underPictureSx = {
   '& .MuiChip-icon': { display: 'none' },
 } as const
 
+// The card's parts are plain elements styled from the card: a results page redraws every card at once (a view switch,
+// a page), and each Box or Typography is three components more per part.
+const cardSx = {
+  display: 'flex',
+  gap: 1.25,
+  p: 1,
+  borderRadius: '6px',
+  minWidth: 0,
+  cursor: 'pointer',
+  outlineOffset: '-2px',
+  '& .card-body': { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0.25 },
+  '& .card-head': { display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0 },
+  '& .card-name': {
+    // Typography's body1 metrics, which the plain element would not get.
+    typography: 'body1',
+    display: 'block',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    fontSize: 'lead.fontSize',
+    fontWeight: 600,
+  },
+  '& .card-flag': { display: 'inline-flex', flexShrink: 0 },
+  '& .card-flag-error': { color: 'error.main' },
+  '& .card-flag-warning': { color: 'warning.main' },
+  '& .card-reupload': { display: 'inline-flex', flexShrink: 0, ml: 'auto', color: 'warning.main' },
+  '& .card-byline': {
+    // Typography's body1 metrics, which the plain element would not get.
+    typography: 'body1',
+    m: 0,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    fontSize: 'small.fontSize',
+    fontWeight: 500,
+    color: 'var(--mortar-accent-ink)',
+  },
+  '& .card-summary': {
+    // Typography's body1 metrics, which the plain element would not get.
+    typography: 'body1',
+    m: 0,
+    fontSize: 'base.fontSize',
+    color: 'var(--mortar-ink-85)',
+    display: '-webkit-box',
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: 'vertical',
+    overflow: 'hidden',
+  },
+  '& .card-stats': {
+    mt: 'auto',
+    alignSelf: 'flex-end',
+    display: 'flex',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-end',
+    columnGap: 1,
+    fontSize: 'small.fontSize',
+    color: 'var(--mortar-ink-dim-60)',
+    fontVariantNumeric: 'tabular-nums',
+  },
+  '& .card-stat': {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 0.375,
+    whiteSpace: 'nowrap',
+  },
+  '& .card-under': {
+    width: PICTURE_PX,
+    flexShrink: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 0.75,
+    ...underPictureSx,
+  },
+  '&.card-row': { alignItems: 'center' },
+  '&.card-row .card-summary': { WebkitLineClamp: 1 },
+} as const
+
 // The title is the card's keyboard stop: Enter opens the details, the menu key the card's menu. A flagged mod's
 // warning leads it and its accessible name.
 function CardTitle(props: { name: string; flag: 'error' | 'warning' | null; onOpen: () => void }) {
@@ -204,17 +277,13 @@ function CardTitle(props: { name: string; flag: 'error' | 'warning' | null; onOp
       }}
     >
       {flag ? (
-        <Box
-          component="span"
-          title={flagText}
-          sx={{ display: 'inline-flex', flexShrink: 0, color: `${flag}.main` }}
-        >
+        <span className={`card-flag card-flag-${flag}`} title={flagText}>
           <TriangleAlert size={15} aria-hidden={true} />
-        </Box>
+        </span>
       ) : null}
-      <Typography noWrap={true} title={name} sx={{ fontSize: 'lead.fontSize', fontWeight: 600 }}>
+      <span className="card-name" title={name}>
         {name}
-      </Typography>
+      </span>
     </ButtonBase>
   )
 }
@@ -227,14 +296,7 @@ function Byline({ author }: { author: string }) {
   if (author === '') {
     return null
   }
-  return (
-    <Typography
-      noWrap={true}
-      sx={{ fontSize: 'small.fontSize', fontWeight: 500, color: 'var(--mortar-accent-ink)' }}
-    >
-      {formatAuthors(author)}
-    </Typography>
-  )
+  return <p className="card-byline">{formatAuthors(author)}</p>
 }
 
 // When another site lists a mod of this name by someone else with more downloads: a mark at the card's top right, the
@@ -247,14 +309,9 @@ function ReuploadMark({ reuploadOf }: { reuploadOf: string }) {
   const note = t`Possibly a re-upload of ${reuploadOf}`
   return (
     <Tooltip title={note}>
-      <Box
-        component="span"
-        role="img"
-        aria-label={note}
-        sx={{ display: 'inline-flex', flexShrink: 0, ml: 'auto', color: 'warning.main' }}
-      >
+      <span className="card-reupload" role="img" aria-label={note}>
         <TriangleAlert size={15} aria-hidden={true} />
-      </Box>
+      </span>
     </Tooltip>
   )
 }
@@ -276,36 +333,17 @@ function StatsLine({ stats }: { stats: CardStatPart[] }) {
     return null
   }
   return (
-    <Box
-      sx={{
-        mt: 'auto',
-        alignSelf: 'flex-end',
-        display: 'flex',
-        flexWrap: 'wrap',
-        justifyContent: 'flex-end',
-        columnGap: 1,
-        fontSize: 'small.fontSize',
-        color: 'var(--mortar-ink-dim-60)',
-        fontVariantNumeric: 'tabular-nums',
-      }}
-    >
+    <div className="card-stats">
       {stats.map(({ id, icon, short, full }) => {
         const Icon = STAT_ICONS[icon]
         return (
-          <Box
-            component="span"
-            key={id}
-            role="img"
-            aria-label={full}
-            title={full}
-            sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.375, whiteSpace: 'nowrap' }}
-          >
+          <span key={id} className="card-stat" role="img" aria-label={full} title={full}>
             <Icon size={12} aria-hidden={true} />
             {short}
-          </Box>
+          </span>
         )
       })}
-    </Box>
+    </div>
   )
 }
 
@@ -355,18 +393,8 @@ const ResultCard = memo(function BrowseResultCard(props: ResultCardProps) {
           .getState()
           .openMenu({ item, source }, { top: e.clientY, left: e.clientX })
       }}
-      sx={{
-        display: 'flex',
-        alignItems: row ? 'center' : 'stretch',
-        gap: 1.25,
-        p: 1,
-        borderRadius: '6px',
-        minWidth: 0,
-        cursor: 'pointer',
-        outline: selected ? '2px solid' : 'none',
-        outlineColor: 'primary.main',
-        outlineOffset: '-2px',
-      }}
+      className={row ? 'card-row' : undefined}
+      sx={[cardSx, selected ? { outline: '2px solid', outlineColor: 'primary.main' } : { outline: 'none' }]}
     >
       {row ? (
         <CardPicture
@@ -377,16 +405,7 @@ const ResultCard = memo(function BrowseResultCard(props: ResultCardProps) {
           starKey={favouriteKey(item.source, item.id)}
         />
       ) : (
-        <Box
-          sx={{
-            width: PICTURE_PX,
-            flexShrink: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 0.75,
-            ...underPictureSx,
-          }}
-        >
+        <div className="card-under">
           <CardPicture
             picture={item.picture}
             size={PICTURE_PX}
@@ -396,45 +415,26 @@ const ResultCard = memo(function BrowseResultCard(props: ResultCardProps) {
             starKey={favouriteKey(item.source, item.id)}
           />
           {action}
-        </Box>
+        </div>
       )}
-      <Box
-        sx={{
-          flex: 1,
-          minWidth: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 0.25,
-          opacity: dim,
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0 }}>
+      <div className="card-body" style={{ opacity: dim }}>
+        <div className="card-head">
           <CardTitle
             name={name}
             flag={flag}
             onOpen={() => useBrowseSelection.getState().select({ item, source })}
           />
           <ReuploadMark reuploadOf={item.reuploadOf ?? ''} />
-        </Box>
+        </div>
         <Byline author={author} />
-        <Typography
-          title={summary}
-          sx={{
-            fontSize: 'base.fontSize',
-            color: 'var(--mortar-ink-85)',
-            display: '-webkit-box',
-            WebkitLineClamp: row ? 1 : 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-          }}
-        >
+        <p className="card-summary" title={summary}>
           {summary}
-        </Typography>
+        </p>
         <StatsLine stats={stats} />
         {row ? (
           <SourceBadges sources={sources} picked={source} names={sourceNames} onPick={setPicked} />
         ) : null}
-      </Box>
+      </div>
       {row ? action : null}
     </Card>
   )

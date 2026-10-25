@@ -25,12 +25,13 @@ const ICONS: Record<string, { path: string; fill: string }> = {
 const hasSourceLogo = (id: string) => id === 'nexus' || id === 'vsmoddb' || id in ICONS
 
 // A mark laid over a corner of a mod's picture (its source, the favourite star) on a solid chip, readable on any art.
+// Plain CSS names, so it serves as an inline style as well as sx.
 const pictureMarkSx = {
   display: 'grid',
   placeItems: 'center',
-  p: '1px',
+  padding: '1px',
   borderRadius: '4px',
-  bgcolor: 'var(--mortar-raised)',
+  backgroundColor: 'var(--mortar-raised)',
   border: '1px solid var(--mortar-hairline)',
 } as const
 
