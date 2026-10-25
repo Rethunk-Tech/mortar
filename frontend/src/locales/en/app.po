@@ -1063,6 +1063,10 @@ msgstr "Actions"
 msgid "Continue anyway"
 msgstr "Continue anyway"
 
+#: src/develop/NewModDialog.tsx
+msgid "MIT, as the template has it"
+msgstr "MIT, as the template has it"
+
 #: src/saves/SaveBackupsButton.tsx
 msgid "Kept"
 msgstr "Kept"
@@ -1936,6 +1940,10 @@ msgstr "Folder name"
 #: src/firstrun/ProfileStep.tsx
 msgid "Got a Mortar link? You see what it holds first. {source} mods need your {source} sign-in; Mortar asks then."
 msgstr "Got a Mortar link? You see what it holds first. {source} mods need your {source} sign-in; Mortar asks then."
+
+#: src/develop/NewModDialog.tsx
+msgid "This template builds with the .NET SDK {version}; install it to build mods."
+msgstr "This template builds with the .NET SDK {version}; install it to build mods."
 
 #: src/commandPalette/CommandPalette.tsx
 #: src/game/LaunchMenu.tsx
@@ -3337,6 +3345,10 @@ msgstr "{count, plural, one {Imported # profile} other {Imported # profiles}}"
 #: src/firstrun/LoaderStep.tsx
 msgid "Launch options set in {launcher}"
 msgstr "Launch options set in {launcher}"
+
+#: src/develop/NewModDialog.tsx
+msgid "License"
+msgstr "License"
 
 #: src/templates/TemplateDialogs.tsx
 msgid "Could not rename the template"

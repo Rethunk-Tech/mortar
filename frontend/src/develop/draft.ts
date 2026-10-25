@@ -25,6 +25,8 @@ export interface Draft {
   optional: string[]
   // A new development profile starts with the open profile's mods.
   copyMods: boolean
+  // One of devsvc.Licenses replacing the template's LICENSE; empty keeps it.
+  license: string
 }
 
 // The projects folder, and each remembered parameter as "param.<id>".
@@ -55,6 +57,7 @@ export function firstDraft(form: Form | null, remembered: Remembered): Draft {
     dependencies: null,
     optional: [],
     copyMods: false,
+    license: '',
   }
 }
 

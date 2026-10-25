@@ -52,6 +52,7 @@ import {
   stepIssue,
   stepParams,
 } from './draft.ts'
+import { sdkSatisfies } from './sdk.ts'
 
 // The profile picker's value for a new development profile; Create takes it as no profile.
 const NEW_PROFILE = 'new'
@@ -62,13 +63,21 @@ const TOGGLE_CHOICES = 3
 
 type Set = (next: Partial<Draft>) => void
 
-function Prerequisites({ tools }: { tools: Tools | null }) {
+function Prerequisites({ tools, form }: { tools: Tools | null; form: Form | null }) {
   const { t } = useLingui()
   if (!tools) {
     return null
   }
+  const sdks = tools.dotnetSdks ?? []
+  const need = form?.sdk
+  let sdk = ''
+  if (sdks.length === 0) {
+    sdk = t`Install the .NET SDK to build mods.`
+  } else if (need?.version && !sdkSatisfies(need, sdks)) {
+    sdk = t`This template builds with the .NET SDK ${{ version: need.version }}; install it to build mods.`
+  }
   const missing = [
-    (tools.dotnetSdks ?? []).length === 0 ? t`Install the .NET SDK to build mods.` : '',
+    sdk,
     tools.git ? '' : t`Install git to keep your mod's history.`,
     tools.gameDir
       ? ''
@@ -310,6 +319,18 @@ function ProjectStep({ draft, user, set }: { draft: Draft; user: string; set: Se
         />
       ) : null}
       <SourceChoice draft={draft} user={user} set={set} />
+      <SelectField
+        label={t`License`}
+        displayEmpty={true}
+        value={draft.license}
+        onChange={(license) => set({ license })}
+      >
+        <MenuItem value="">{t`MIT, as the template has it`}</MenuItem>
+        <MenuItem value="apache-2.0">Apache 2.0</MenuItem>
+        <MenuItem value="gpl-3.0">GNU GPL 3.0</MenuItem>
+        <MenuItem value="mpl-2.0">Mozilla Public License 2.0</MenuItem>
+        <MenuItem value="unlicense">The Unlicense</MenuItem>
+      </SelectField>
     </>
   )
 }
@@ -440,7 +461,7 @@ export function NewModDialog({
       onSubmit={last ? create : () => setAt(at + 1)}
       onBack={at > 0 ? () => setAt(at - 1) : undefined}
     >
-      <Prerequisites tools={tools} />
+      <Prerequisites tools={tools} form={form} />
       {step === 'mod' ? <ModStep draft={draft} form={form} set={set} /> : null}
       {step === 'author' ? (
         <Params params={stepParams(form, 'author')} draft={draft} set={set} />

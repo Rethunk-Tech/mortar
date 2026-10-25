@@ -63,8 +63,10 @@ type Form struct {
 	Parameters []Param `json:"parameters"`
 	// Recommends are the catalog's starting dependencies for the template, offered by the answers they follow.
 	Recommends []components.DevRecommend `json:"recommends"`
-	shortName  string
-	all        []Param
+	// SDK is the .NET SDK the template's global.json asks for; empty when it pins none.
+	SDK       SDKNeed `json:"sdk"`
+	shortName string
+	all       []Param
 }
 
 type templateJSON struct {
@@ -162,6 +164,7 @@ func ReadForm(dir string) (Form, error) {
 			f.Parameters = append(f.Parameters, p)
 		}
 	}
+	f.SDK = readSDKNeed(dir)
 	return f, nil
 }
 

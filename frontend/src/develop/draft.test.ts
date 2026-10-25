@@ -23,6 +23,7 @@ const param = {
 }
 const form: Form = {
   name: 'Test',
+  sdk: { version: '', rollForward: '' },
   recommends: [
     { package: 'Evaisa-LethalLib', param: 'categories', values: ['items', 'monsters'] },
     { package: 'AinaVT-LethalConfig', param: 'config', values: ['true'] },

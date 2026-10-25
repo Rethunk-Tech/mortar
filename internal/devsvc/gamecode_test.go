@@ -2,6 +2,8 @@ package devsvc
 
 import (
 	"context"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"slices"
@@ -54,5 +56,34 @@ func TestGameCodeSearchesAndDecompilesTheGamesAssembly(t *testing.T) {
 	src, err := svc.Decompile(t.Context(), "lethal-company", dir, "Fixture.Mod")
 	if err != nil || src != "class Mod {}" || !slices.Equal(args, []string{"-t", "Fixture.Mod", filepath.Join(managed, "Assembly-CSharp.dll")}) {
 		t.Fatalf("decompile = %q %v %v", src, args, err)
+	}
+}
+
+func TestLicenseAndSDKNeed(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/apache-2.0" {
+			http.NotFound(w, r)
+			return
+		}
+		_, _ = w.Write([]byte(`{"key":"apache-2.0","body":"Apache License\nVersion 2.0"}`))
+	}))
+	defer srv.Close()
+	svc.LicensesURL = srv.URL + "/"
+	dir := t.TempDir()
+	if err := svc.applyLicense(t.Context(), dir, "apache-2.0"); err != nil {
+		t.Fatal(err)
+	}
+	if body, _ := fsx.ReadFile(filepath.Join(dir, "LICENSE")); string(body) != "Apache License\nVersion 2.0" {
+		t.Fatalf("LICENSE = %q", body)
+	}
+	if err := svc.applyLicense(t.Context(), dir, "../x"); err == nil {
+		t.Fatal("wrote a license New mod does not offer")
+	}
+	if err := fsx.WriteFile(filepath.Join(dir, "global.json"), []byte(`{"sdk":{"version":"10.0.100","rollForward":"latestMajor"}}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if got := readSDKNeed(dir); got != (SDKNeed{Version: "10.0.100", RollForward: "latestMajor"}) {
+		t.Fatalf("sdk = %+v", got)
 	}
 }

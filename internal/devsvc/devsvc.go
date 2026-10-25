@@ -57,6 +57,8 @@ type Service struct {
 	Run func(ctx context.Context, dir, name string, args ...string) ([]byte, error)
 	// ThunderstoreURL, when set, replaces https://thunderstore.io/ for uploads (tests).
 	ThunderstoreURL string
+	// LicensesURL, when set, replaces GitHub's licenses API (tests).
+	LicensesURL string
 	// ArchiveURL, when set, replaces codeload.github.com for the template archive (tests).
 	ArchiveURL func(t components.DevTemplate) string
 	// LatestLoader, when set, replaces looking up the newest loader release (tests).
@@ -79,6 +81,8 @@ type NewMod struct {
 	Profile string `json:"profile"`
 	// CopyFrom is a profile whose mods a new development profile starts with; empty starts it empty.
 	CopyFrom string `json:"copyFrom"`
+	// License replaces the template's LICENSE with one of Licenses; empty keeps the template's own.
+	License string `json:"license"`
 	// GitHub creates Owner/Repo from the template with gh (Private or public) instead of copying its archive.
 	GitHub  bool   `json:"github"`
 	Owner   string `json:"owner"`
@@ -223,6 +227,9 @@ func (s *Service) Create(ctx context.Context, m NewMod) (settings.DevProject, er
 		return settings.DevProject{}, err
 	}
 	if err := writeUserProps(dest, s.Tools(ctx, m.Game).GameDir); err != nil {
+		return settings.DevProject{}, err
+	}
+	if err := s.applyLicense(ctx, dest, m.License); err != nil {
 		return settings.DevProject{}, err
 	}
 	s.commit(ctx, dest, m.GitHub, m.Name)
