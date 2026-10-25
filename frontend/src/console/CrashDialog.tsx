@@ -85,13 +85,11 @@ function openRun(crash: Crash, console: boolean) {
 function MoreActions({
   crash,
   nexusID,
-  onBisect,
   withConsole,
   onDone,
 }: {
   crash: Crash
   nexusID: number
-  onBisect: (() => void) | null
   withConsole: boolean
   onDone: () => void
 }) {
@@ -111,16 +109,6 @@ function MoreActions({
         {t`More`}
       </Button>
       <Menu anchorEl={anchor} open={anchor !== null} onClose={close}>
-        {onBisect ? (
-          <MenuAction
-            icon={<Search size={16} />}
-            label={t`Find the mod that crashes the game…`}
-            onClick={() => {
-              close()
-              onBisect()
-            }}
-          />
-        ) : null}
         {nexusID > 0 ? (
           <MenuAction
             icon={<ExternalLink size={16} />}
@@ -243,7 +231,6 @@ export function CrashDialog() {
             <MoreActions
               crash={crash}
               nexusID={nexusID}
-              onBisect={canBisect && mod ? startBisect : null}
               withConsole={Boolean(mod) || canBisect}
               onDone={dismiss}
             />

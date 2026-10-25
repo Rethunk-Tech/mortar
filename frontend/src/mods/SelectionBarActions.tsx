@@ -92,13 +92,19 @@ export function SelectionBarActions({
       run: () => markImplicit(selected, !implicit).catch(reportUnexpected),
       edits: true,
     },
-    {
-      label: t`Skip this update`,
-      icon: <BellOff size={16} />,
-      run: () =>
-        setSkipVersionMany(selected.filter((mod) => latest.has(mod.key))).catch(reportUnexpected),
-      edits: true,
-    },
+    ...(selected.some((mod) => latest.has(mod.key))
+      ? [
+          {
+            label: t`Skip this update`,
+            icon: <BellOff size={16} />,
+            run: () =>
+              setSkipVersionMany(selected.filter((mod) => latest.has(mod.key))).catch(
+                reportUnexpected,
+              ),
+            edits: true,
+          },
+        ]
+      : []),
     ...(sourceGroups.ignore.size > 0
       ? [
           {

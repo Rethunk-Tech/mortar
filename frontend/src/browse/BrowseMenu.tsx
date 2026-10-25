@@ -98,14 +98,17 @@ function Items({
           />
         ))
       : []),
-    ...choices.map((c) => (
-      <MenuAction
-        key={`open-${c.source}`}
-        icon={<ExternalLink size={16} />}
-        label={t`Open page on ${{ source: sourceNames.get(c.source) ?? c.source }}`}
-        onClick={run(() => card.openUrl(c.url))}
-      />
-    )),
+    // An external item's own page is the Open page above; only the other sources' pages are listed.
+    ...choices
+      .filter((c) => !(shownItem.external === true && c.url === url))
+      .map((c) => (
+        <MenuAction
+          key={`open-${c.source}`}
+          icon={<ExternalLink size={16} />}
+          label={t`Open page on ${{ source: sourceNames.get(c.source) ?? c.source }}`}
+          onClick={run(() => card.openUrl(c.url))}
+        />
+      )),
     <MenuAction
       key="copy"
       icon={<Link2 size={16} />}

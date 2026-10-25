@@ -19,6 +19,7 @@ import {
   ChevronDown,
   Download,
   Filter,
+  Folder,
   FolderTree,
   Layers,
   Library,
@@ -268,7 +269,7 @@ const GroupByControl = memo(function GroupByMenu() {
           { id: 'none' as const, label: t`None`, Icon: Ban, hint: undefined },
           ...[
             { id: 'status' as const, label: t`Status`, Icon: ToggleRight },
-            { id: 'category' as const, label: t`Category`, Icon: Tag },
+            { id: 'category' as const, label: t`Category`, Icon: Folder },
             { id: 'source' as const, label: t`Source`, Icon: Library },
             { id: 'tag' as const, label: t`Tag`, Icon: Tag, hint: tagHint },
             ...(frameworks
