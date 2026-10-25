@@ -105,8 +105,14 @@ function dialogKit(h: Helpers) {
       await inDialog(p, /^Next$/)
     }
   }
+  // The first look for computers takes about 2 s; the action ends when it does, so the idle watch is idle.
+  const shareNearby = async (p: Page) => {
+    await share(p, /^Nearby computer/)
+    await p.getByRole('dialog').getByRole('button', { name: 'Refresh', disabled: false }).waitFor()
+  }
   return {
     dialog,
+    shareNearby,
     profileMenu,
     switcher,
     share,
@@ -124,6 +130,7 @@ export function dialogCases(h: Helpers): Case[] {
   const { tab, view, row, typeInto } = h
   const {
     dialog,
+    shareNearby,
     profileMenu,
     switcher,
     share,
@@ -171,7 +178,7 @@ export function dialogCases(h: Helpers): Case[] {
     }),
     dialog('share-nexus', (p) => share(p, /^Nexus/)),
     dialog('share-thunderstore', (p) => share(p, /^Thunderstore/)),
-    dialog('share-nearby', (p) => share(p, /^Nearby computer/)),
+    dialog('share-nearby', shareNearby),
     dialog('share-mod-list', (p) => share(p, /^Mod list/)),
     ...['Plain text', 'Discord', 'Thunderstore'].map((format) =>
       dialog(`share-mod-list-${format.toLowerCase().replace(' ', '-')}`, async (p) => {

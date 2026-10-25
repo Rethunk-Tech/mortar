@@ -14,7 +14,7 @@ import {
 } from '@mui/material'
 import { Events } from '@wailsio/runtime'
 import { Inbox, RefreshCw } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Peer } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/models.ts'
 import { Peers, Send } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/service.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
@@ -31,7 +31,9 @@ import { useToasts } from '../toasts/store.ts'
 import { ShowCodeDialog } from './PairedComputers.tsx'
 import { peerSecondary } from './peerSecondary.ts'
 
-const refreshInterval = 3000
+// Under the service's 6 s peer lifetime, so a computer that leaves drops off within one look, and well inside its 30 s
+// browse interest, which each look renews.
+const refreshInterval = 5000
 
 function sendPeerView(
   looked: boolean,
@@ -208,6 +210,55 @@ function useSend(game: string, profileId: string, include: ShareInclude, onSent:
   return { sending, send }
 }
 
+// The computers sharing nearby: one look now with the spinner, then a quiet look on a timer.
+function usePeerLook() {
+  const { t } = useLingui()
+  const [peers, setPeers] = useState<Peer[]>([])
+  const [refreshing, setRefreshing] = useState(false)
+  const [looked, setLooked] = useState(false)
+  const lookedOnce = useRef<boolean>(false)
+  const lastPeers = useRef('[]')
+  // A look the reader asked for shows the spinner; the timer's quiet looks change nothing unless the peers did.
+  const look = useCallback(
+    (shown: boolean) => {
+      if (shown) {
+        setRefreshing(true)
+      }
+      Peers()
+        .then((next) => {
+          // An unchanged answer sets nothing: even an updater that keeps the old list commits a render.
+          const seen = JSON.stringify(next ?? [])
+          if (seen !== lastPeers.current) {
+            lastPeers.current = seen
+            setPeers(next ?? [])
+          }
+        })
+        .catch((error: unknown) => {
+          toastError(t`Could not find Mortar users`, error)
+        })
+        .finally(() => {
+          if (shown) {
+            setRefreshing(false)
+          }
+          // Set once: a repeated set still commits a render that changes nothing.
+          if (!lookedOnce.current) {
+            lookedOnce.current = true
+            setLooked(true)
+          }
+        })
+    },
+    [t],
+  )
+  const refresh = useCallback(() => look(true), [look])
+
+  useEffect(() => {
+    look(true)
+    const timer = globalThis.setInterval(() => look(false), refreshInterval)
+    return () => globalThis.clearInterval(timer)
+  }, [look])
+  return { peers, refreshing, looked, refresh }
+}
+
 // Peer list, links-only confirmation, pairing and send-to-an-address for one profile, shown inside the Share dialog.
 export function SendPanel({
   game,
@@ -221,47 +272,13 @@ export function SendPanel({
   onSent: () => void
 }) {
   const { t } = useLingui()
-  const [peers, setPeers] = useState<Peer[]>([])
-  const [refreshing, setRefreshing] = useState(false)
-  const [looked, setLooked] = useState(false)
+  const { peers, refreshing, looked, refresh } = usePeerLook()
   const { sending, send } = useSend(game, profileId, include, onSent)
   const [manual, setManual] = useState('')
   const [addressPicker, setAddressPicker] = useState(false)
   const [pairing, setPairing] = useState(false)
   const [linksOnly, setLinksOnly] = useState<Peer | null>(null)
   const addresses = useSettings((state) => state.lanAddresses ?? [])
-
-  // A look the reader asked for shows the spinner; the timer's quiet looks change nothing unless the peers did.
-  const look = useCallback(
-    (shown: boolean) => {
-      if (shown) {
-        setRefreshing(true)
-      }
-      Peers()
-        .then((next) =>
-          setPeers((current) =>
-            JSON.stringify(current) === JSON.stringify(next ?? []) ? current : (next ?? []),
-          ),
-        )
-        .catch((error: unknown) => {
-          toastError(t`Could not find Mortar users`, error)
-        })
-        .finally(() => {
-          if (shown) {
-            setRefreshing(false)
-          }
-          setLooked(true)
-        })
-    },
-    [t],
-  )
-  const refresh = useCallback(() => look(true), [look])
-
-  useEffect(() => {
-    look(true)
-    const timer = globalThis.setInterval(() => look(false), refreshInterval)
-    return () => globalThis.clearInterval(timer)
-  }, [look])
 
   useEffect(
     () =>
