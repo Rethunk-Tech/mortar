@@ -283,7 +283,29 @@
           "companion": "bridge",
           "devTemplate": {
             "repo": "Rethunk-Tech/mortar-bepinex5-template",
-            "ref": "v0.1.0"
+            "ref": "v0.1.0",
+            "recommends": [
+              {
+                "package": "Evaisa-LethalLib",
+                "param": "categories",
+                "values": ["items", "equipment", "monsters", "hazards"]
+              },
+              {
+                "package": "IAmBatby-LethalLevelLoader",
+                "param": "categories",
+                "values": ["moons", "interiors"]
+              },
+              {
+                "package": "x753-More_Suits",
+                "param": "categories",
+                "values": ["suits"]
+              },
+              {
+                "package": "AinaVT-LethalConfig",
+                "param": "config",
+                "values": ["true"]
+              }
+            ]
           }
         }
       ],

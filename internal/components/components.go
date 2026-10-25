@@ -487,12 +487,31 @@ type GameLoader struct {
 type DevTemplate struct {
 	Repo string `json:"repo"`
 	Ref  string `json:"ref"`
+	// Recommends are the Thunderstore packages the New mod wizard offers as starting dependencies.
+	Recommends []DevRecommend `json:"recommends,omitempty"`
+}
+
+// DevRecommend is a package a new mod likely needs: always, or when the template parameter Param was answered with one
+// of Values (a choice the player picked, or "true" for a switch).
+type DevRecommend struct {
+	Package string   `json:"package"`
+	Param   string   `json:"param,omitempty"`
+	Values  []string `json:"values,omitempty"`
 }
 
 var (
 	devTemplateRepo = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9-]*/[A-Za-z0-9][A-Za-z0-9._-]*$`)
 	devTemplateRef  = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]*$`)
+	// devPackage is a Thunderstore package's Team-Name.
+	devPackage = regexp.MustCompile(`^[A-Za-z0-9_]+-[A-Za-z0-9_]+$`)
 )
+
+func devRecommends(t *DevTemplate) []DevRecommend {
+	if t == nil {
+		return nil
+	}
+	return t.Recommends
+}
 
 // LoaderPlaceDir is the folder below the install that loader id's executable-side files go in: its entry's PlaceDir,
 // else MarkerDir.
@@ -868,6 +887,11 @@ func (g GameInfo) Validate() error {
 		}
 		if t := l.DevTemplate; t != nil && (!devTemplateRepo.MatchString(t.Repo) || !devTemplateRef.MatchString(t.Ref) || strings.Contains(t.Ref, "..")) {
 			return fmt.Errorf("game %q has a mod template %q at %q that is not a GitHub repo and tag", g.ID, t.Repo, t.Ref)
+		}
+		for _, r := range devRecommends(l.DevTemplate) {
+			if !devPackage.MatchString(r.Package) {
+				return fmt.Errorf("game %q recommends %q, which is not a Thunderstore package", g.ID, r.Package)
+			}
 		}
 		if l.PlaceDir != "" && (strings.Contains(l.PlaceDir, "\\") || !fs.ValidPath(l.PlaceDir) || l.PlaceDir == ".") {
 			return fmt.Errorf("game %q has an unsafe loader folder %q", g.ID, l.PlaceDir)

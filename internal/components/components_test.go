@@ -319,6 +319,10 @@ func TestGameFallsBackToBundledAndRejectsUnsafeNames(t *testing.T) {
 			t.Errorf("mod template %+v must be refused", tpl)
 		}
 	}
+	recommends := DevTemplate{Repo: "o/n", Ref: "v1", Recommends: []DevRecommend{{Package: "--flag"}}}
+	if err := (Manifest{Serial: 1, Games: []GameInfo{{ID: "x", Name: "X", Marker: "m", Loaders: []GameLoader{{ID: "l", DevTemplate: &recommends}}}}}).Validate(); err == nil {
+		t.Error("a recommended package that is not Team-Name must be refused")
+	}
 }
 
 func TestLoadRefusesManifestWithoutCatalogShape(t *testing.T) {

@@ -19,6 +19,8 @@ export interface Draft {
   github: boolean
   owner: string
   private: boolean
+  // The Thunderstore packages (Team-Name) the mod starts depending on; null until the player sees the recommendations.
+  dependencies: string[] | null
 }
 
 // The projects folder, and each remembered parameter as "param.<id>".
@@ -46,6 +48,7 @@ export function firstDraft(form: Form | null, remembered: Remembered): Draft {
     github: false,
     owner: '',
     private: false,
+    dependencies: null,
   }
 }
 
@@ -79,13 +82,13 @@ function paramIssue(p: Param, raw: string): string {
 }
 
 // The wizard's steps: the mod itself, the author details Mortar remembers, and where the project goes.
-export const STEPS = ['mod', 'author', 'project'] as const
+export const STEPS = ['mod', 'author', 'dependencies', 'project'] as const
 export type Step = (typeof STEPS)[number]
 
 /** The parameters a step asks for: remembered ones on the author step, the rest on the mod step. */
 export function stepParams(form: Form | null, step: Step): Param[] {
   const all = form?.parameters ?? []
-  if (step === 'project') {
+  if (step === 'project' || step === 'dependencies') {
     return []
   }
   return all.filter((p) => p.remember === (step === 'author'))
@@ -99,6 +102,38 @@ function firstIssue(d: Draft, params: Param[]): string {
     }
   }
   return ''
+}
+
+/** A package the template's catalog entry recommends, and the answer that brought it in (empty when it always fits). */
+export interface Recommended {
+  package: string
+  param: string
+  value: string
+}
+
+/** The recommended packages that fit the draft's answers, each with the first answer that matched it. */
+export function recommendations(form: Form | null, values: Record<string, string>): Recommended[] {
+  const out: Recommended[] = []
+  for (const r of form?.recommends ?? []) {
+    if (out.some((o) => o.package === r.package)) {
+      continue
+    }
+    if (!r.param) {
+      out.push({ package: r.package, param: '', value: '' })
+      continue
+    }
+    const answered = (values[r.param] ?? '').split('|')
+    const value = (r.values ?? []).find((v) => answered.includes(v))
+    if (value !== undefined) {
+      out.push({ package: r.package, param: r.param, value })
+    }
+  }
+  return out
+}
+
+/** The packages the mod will start with: the player's picks, else the recommendations. */
+export function chosenDependencies(d: Draft, form: Form | null): string[] {
+  return d.dependencies ?? recommendations(form, d.values).map((r) => r.package)
 }
 
 /** The first thing that keeps a step from going on, as the button's reason; empty when it can. */

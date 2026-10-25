@@ -3637,6 +3637,10 @@ msgstr "Every archive in the downloads folder is already in a profile or Mortar'
 msgid "Clear download history?"
 msgstr "Clear download history?"
 
+#: src/develop/DependenciesStep.tsx
+msgid "Nothing to suggest from your answers; search for any mod yours builds on."
+msgstr "Nothing to suggest from your answers; search for any mod yours builds on."
+
 #: src/share/ImportSources.tsx
 msgid "Mods already in the game's folder"
 msgstr "Mods already in the game's folder"
@@ -3863,6 +3867,10 @@ msgstr "Hide archive contents"
 msgid "Four Corners farm"
 msgstr "Four Corners farm"
 
+#: src/develop/DependenciesStep.tsx
+msgid "Add another"
+msgstr "Add another"
+
 #: src/develop/UploadDialog.tsx
 msgid "Upload {name} to {source}?"
 msgstr "Upload {name} to {source}?"
@@ -3894,6 +3902,10 @@ msgstr "Yes"
 #: src/tools/ToolEditorDialog.tsx
 msgid "Edit tool"
 msgstr "Edit tool"
+
+#: src/develop/DependenciesStep.tsx
+msgid "Starting dependencies"
+msgstr "Starting dependencies"
 
 #: src/develop/ProjectCard.tsx
 msgid "Release…"
@@ -4111,6 +4123,7 @@ msgstr "Saved .r2z"
 
 #: src/browse/BrowseMenu.tsx
 #: src/browse/CardAction.tsx
+#: src/develop/DependenciesStep.tsx
 #: src/downloads/newDownloads.ts
 #: src/game/FarmMenuItem.tsx
 #: src/games/AddGameDialog.tsx
@@ -4961,6 +4974,10 @@ msgstr "Not released yet"
 #: src/develop/NewModDialog.tsx
 msgid "Letters and digits, starting with a capital"
 msgstr "Letters and digits, starting with a capital"
+
+#: src/develop/DependenciesStep.tsx
+msgid "Search mods"
+msgstr "Search mods"
 
 #: src/shell/saveDiagnostics.ts
 msgid "Drag {path} into the {source} issue to attach it."
@@ -6296,7 +6313,12 @@ msgstr "{app} stopped on an error before {name} started: {error}"
 msgid "Continue"
 msgstr "Continue"
 
+#: src/develop/DependenciesStep.tsx
+msgid "Suggested for {answer}"
+msgstr "Suggested for {answer}"
+
 #: src/browse/BrowseDetails.tsx
+#: src/develop/NewModDialog.tsx
 msgid "Dependencies"
 msgstr "Dependencies"
 

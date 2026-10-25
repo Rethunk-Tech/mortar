@@ -3637,6 +3637,10 @@ msgstr ""
 msgid "Clear download history?"
 msgstr ""
 
+#: src/develop/DependenciesStep.tsx
+msgid "Nothing to suggest from your answers; search for any mod yours builds on."
+msgstr ""
+
 #: src/share/ImportSources.tsx
 msgid "Mods already in the game's folder"
 msgstr ""
@@ -3863,6 +3867,10 @@ msgstr ""
 msgid "Four Corners farm"
 msgstr ""
 
+#: src/develop/DependenciesStep.tsx
+msgid "Add another"
+msgstr ""
+
 #: src/develop/UploadDialog.tsx
 msgid "Upload {name} to {source}?"
 msgstr ""
@@ -3893,6 +3901,10 @@ msgstr ""
 
 #: src/tools/ToolEditorDialog.tsx
 msgid "Edit tool"
+msgstr ""
+
+#: src/develop/DependenciesStep.tsx
+msgid "Starting dependencies"
 msgstr ""
 
 #: src/develop/ProjectCard.tsx
@@ -4111,6 +4123,7 @@ msgstr ""
 
 #: src/browse/BrowseMenu.tsx
 #: src/browse/CardAction.tsx
+#: src/develop/DependenciesStep.tsx
 #: src/downloads/newDownloads.ts
 #: src/game/FarmMenuItem.tsx
 #: src/games/AddGameDialog.tsx
@@ -4960,6 +4973,10 @@ msgstr ""
 
 #: src/develop/NewModDialog.tsx
 msgid "Letters and digits, starting with a capital"
+msgstr ""
+
+#: src/develop/DependenciesStep.tsx
+msgid "Search mods"
 msgstr ""
 
 #: src/shell/saveDiagnostics.ts
@@ -6296,7 +6313,12 @@ msgstr ""
 msgid "Continue"
 msgstr ""
 
+#: src/develop/DependenciesStep.tsx
+msgid "Suggested for {answer}"
+msgstr ""
+
 #: src/browse/BrowseDetails.tsx
+#: src/develop/NewModDialog.tsx
 msgid "Dependencies"
 msgstr ""
 

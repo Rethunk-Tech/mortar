@@ -177,7 +177,9 @@ func (s *Service) TemplateForm(ctx context.Context, gameID string) (Form, error)
 	if err != nil {
 		return Form{}, err
 	}
-	return ReadForm(dir)
+	form, err := ReadForm(dir)
+	form.Recommends = append([]components.DevRecommend{}, tpl.Recommends...)
+	return form, err
 }
 
 // Create starts a mod project from the game's template with `dotnet new`, points it at the game, records the values

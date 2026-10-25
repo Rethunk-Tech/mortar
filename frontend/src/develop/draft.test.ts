@@ -1,6 +1,14 @@
 import { expect, test } from 'bun:test'
 import type { Form } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
-import { draftIssue, firstDraft, rememberedOf, stepIssue, stepParams } from './draft.ts'
+import {
+  chosenDependencies,
+  draftIssue,
+  firstDraft,
+  recommendations,
+  rememberedOf,
+  stepIssue,
+  stepParams,
+} from './draft.ts'
 
 const param = {
   label: 'Param',
@@ -15,6 +23,11 @@ const param = {
 }
 const form: Form = {
   name: 'Test',
+  recommends: [
+    { package: 'Evaisa-LethalLib', param: 'categories', values: ['items', 'monsters'] },
+    { package: 'AinaVT-LethalConfig', param: 'config', values: ['true'] },
+    { package: 'Always-There', param: '', values: [] },
+  ],
   parameters: [
     { ...param, id: 'description', description: 'Description', maxLength: 20 },
     { ...param, id: 'team', description: 'Team', remember: true, pattern: '^[A-Za-z0-9_]+$' },
@@ -69,4 +82,18 @@ test('remembered parameters are the author step; each step checks only its own',
   expect(stepIssue(d, form, 'mod')).toBe('')
   expect(stepIssue(d, form, 'author')).not.toBe('')
   expect(stepIssue(d, form, 'project')).not.toBe('')
+})
+
+test('recommended dependencies follow the answers until the player picks their own', () => {
+  const d = firstDraft(form, {})
+  expect(recommendations(form, d.values).map((r) => r.package)).toEqual(['Always-There'])
+  const picked = { ...d, values: { ...d.values, categories: 'mods|monsters', config: 'true' } }
+  expect(recommendations(form, picked.values)).toEqual([
+    { package: 'Evaisa-LethalLib', param: 'categories', value: 'monsters' },
+    { package: 'AinaVT-LethalConfig', param: 'config', value: 'true' },
+    { package: 'Always-There', param: '', value: '' },
+  ])
+  expect(chosenDependencies({ ...picked, dependencies: ['Other-Pick'] }, form)).toEqual([
+    'Other-Pick',
+  ])
 })

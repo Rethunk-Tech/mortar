@@ -37,7 +37,10 @@ import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { buildProject } from './builds.ts'
 import { ChoicePicker } from './ChoicePicker.tsx'
+import { DependenciesStep } from './DependenciesStep.tsx'
+import { type Known, startDependencies } from './dependencies.ts'
 import {
+  chosenDependencies,
   type Draft,
   draftIssue,
   firstDraft,
@@ -304,7 +307,7 @@ function ProjectStep({ draft, user, set }: { draft: Draft; user: string; set: Se
 
 function useStepLabels(): Record<Step, string> {
   const { t } = useLingui()
-  return { mod: t`Mod`, author: t`Author`, project: t`Project` }
+  return { mod: t`Mod`, author: t`Author`, dependencies: t`Dependencies`, project: t`Project` }
 }
 
 // Reads the template's questions and the tools each time the dialog opens; the profile starts as the open one.
@@ -358,6 +361,8 @@ export function NewModDialog({
   const [draft, setDraft] = useState<Draft>(() => firstDraft(null, {}))
   const { tools, form, failed } = useWizardData(open, game, setDraft)
   const [at, setAt] = useState(0)
+  const [known, setKnown] = useState<Known>({})
+  const openId = useProfiles((s) => s.openId)
   const [pending, run] = usePending()
   useEffect(() => {
     if (open) {
@@ -386,6 +391,7 @@ export function NewModDialog({
         // The mod lives in its profile: open that one, so Mods and Play show it.
         await useProfiles.getState().load(game, project.profile)
         useProfiles.getState().open(project.profile)
+        await startDependencies(game, project.dir, chosenDependencies(draft, form), known)
         useToasts
           .getState()
           .push({ kind: 'success', title: t`Started ${{ name: project.name }}`, body: project.dir })
@@ -423,6 +429,17 @@ export function NewModDialog({
       {step === 'mod' ? <ModStep draft={draft} form={form} set={set} /> : null}
       {step === 'author' ? (
         <Params params={stepParams(form, 'author')} draft={draft} set={set} />
+      ) : null}
+      {step === 'dependencies' ? (
+        <DependenciesStep
+          game={game}
+          profile={openId}
+          form={form}
+          draft={draft}
+          known={known}
+          setKnown={setKnown}
+          set={set}
+        />
       ) : null}
       {step === 'project' ? (
         <ProjectStep draft={draft} user={tools?.githubUser ?? ''} set={set} />

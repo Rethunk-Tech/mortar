@@ -11,6 +11,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -60,6 +61,8 @@ type Param struct {
 type Form struct {
 	Name       string  `json:"name"`
 	Parameters []Param `json:"parameters"`
+	// Recommends are the catalog's starting dependencies for the template, offered by the answers they follow.
+	Recommends []components.DevRecommend `json:"recommends"`
 	shortName  string
 	all        []Param
 }
