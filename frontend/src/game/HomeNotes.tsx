@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { SetNotes } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { i18n } from '../i18n/index.ts'
+import { MarkdownView } from '../mods/MarkdownView.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { space } from '../theme/density.ts'
 import { errorDetails } from '../toasts/errorKind.ts'
@@ -123,16 +124,13 @@ export function HomeNotes({ profile }: { profile: Profile }) {
         <NotesEditor profile={profile} onDone={() => setEditing(false)} />
       ) : (
         <>
-          <Typography
-            sx={{
-              lineHeight: 1.5,
-              whiteSpace: 'pre-wrap',
-              overflowWrap: 'anywhere',
-              color: profile.notes ? 'text.primary' : 'text.secondary',
-            }}
-          >
-            {profile.notes || t`No notes yet.`}
-          </Typography>
+          {profile.notes ? (
+            <MarkdownView source={profile.notes} />
+          ) : (
+            <Typography
+              sx={{ lineHeight: 1.5, color: 'text.secondary' }}
+            >{t`No notes yet.`}</Typography>
+          )}
           <Button
             size="small"
             startIcon={<NotebookPen size={14} />}

@@ -39,8 +39,8 @@ function sidebarGroups(caps: SidebarCaps, counts: SidebarCounts): SidebarGroup[]
     {
       id: 'library',
       entries: [
-        { id: 'mods', badge: count(counts.updates, 'primary') },
         { id: 'config', badge: null },
+        { id: 'mods', badge: count(counts.updates, 'primary') },
         ...(caps.order ? [{ id: 'load-order' as const, badge: null }] : []),
       ],
     },

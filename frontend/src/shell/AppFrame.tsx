@@ -48,8 +48,8 @@ export function AppFrame({ children }: { children: ReactNode }) {
         // A hidden overflow is still a scroll container: focusing a child below the fold slid the whole window up.
         overflow: 'clip',
         boxSizing: 'border-box',
+        // Square: the window is solid, so rounded corners would show its background colour in each corner.
         border: framed ? 0 : '1px solid var(--mortar-hairline-12)',
-        borderRadius: framed ? 0 : '10px',
         userSelect: 'none',
       }}
     >

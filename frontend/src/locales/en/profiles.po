@@ -1009,10 +1009,6 @@ msgstr "Unlinked collection"
 msgid "Reset the settings of {name}"
 msgstr "Reset the settings of {name}"
 
-#: src/profiles/EditProfileDialog.tsx
-msgid "Description"
-msgstr "Description"
-
 #: src/profiles/ServerSettings.tsx
 msgid "Use mods"
 msgstr "Use mods"

@@ -6,11 +6,11 @@ import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/inte
 import { hasPickedCover, type StagedCover } from '../game/cover.ts'
 import { HeroCover } from '../game/HeroCover.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
-import { Field, FormDialog, FormSection, TextInput } from '../shell/dialog/FormDialog.tsx'
+import { Field, FormDialog, FormSection } from '../shell/dialog/FormDialog.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { AppearancePickers } from './AppearancePickers.tsx'
-import { MAX_DESCRIPTION, MAX_NAME } from './appearance.ts'
+import { MAX_NAME } from './appearance.ts'
 import { LaunchOptionsBlock } from './LaunchOptionsBlock.tsx'
 import { LaunchPresetsBlock } from './LaunchPresetsBlock.tsx'
 import { LoaderPicker } from './LoaderPicker.tsx'
@@ -128,8 +128,6 @@ interface ProfileFieldsProps {
   onName: (value: string) => void
   nameError: string
   focusName: boolean
-  description: string
-  onDescription: (value: string) => void
   launchOptions: string
   onLaunchOptions: (value: string) => void
   launchPrefix: string
@@ -163,8 +161,6 @@ function ProfileFields({
   onName,
   nameError,
   focusName,
-  description,
-  onDescription,
   launchOptions,
   onLaunchOptions,
   launchPrefix,
@@ -222,13 +218,6 @@ function ProfileFields({
             profile={profile}
             staged={stagedCover}
             onStage={onStageCover}
-          />
-          <TextInput
-            label={t`Description`}
-            value={description}
-            onChange={onDescription}
-            maxLength={MAX_DESCRIPTION}
-            multiline={true}
           />
         </>,
       )}
@@ -310,7 +299,6 @@ export function EditProfileDialog(props: EditProfileDialogProps) {
   const [color, setColor] = useState(profile.color ?? '')
   const [icon, setIcon] = useState(profile.icon ?? '')
   const { name, setName, nameError, setNameError } = useNameField(profile.name, open)
-  const [description, setDescription] = useState(profile.description ?? '')
   const [launchOptions, setLaunchOptionsField] = useState(profile.launchOptions ?? '')
   const [launchPrefix, setLaunchPrefix] = useState(profile.launchPrefix ?? '')
   const [launchEnv, setLaunchEnv] = useState(profile.launchEnv ?? '')
@@ -325,7 +313,6 @@ export function EditProfileDialog(props: EditProfileDialogProps) {
       setTouched(false)
       setColor(profile.color ?? '')
       setIcon(profile.icon ?? '')
-      setDescription(profile.description ?? '')
       setLaunchOptionsField(profile.launchOptions ?? '')
       setLaunchPrefix(profile.launchPrefix ?? '')
       setLaunchEnv(profile.launchEnv ?? '')
@@ -348,7 +335,6 @@ export function EditProfileDialog(props: EditProfileDialogProps) {
       setAppearance,
       color,
       icon,
-      description,
       setLaunchError,
       setBusy,
       onClose,
@@ -381,8 +367,6 @@ export function EditProfileDialog(props: EditProfileDialogProps) {
         onName={edited(setName)}
         nameError={nameError}
         focusName={focusName}
-        description={description}
-        onDescription={edited(setDescription)}
         launchOptions={launchOptions}
         onLaunchOptions={edited(setLaunchOptionsField)}
         launchPrefix={launchPrefix}

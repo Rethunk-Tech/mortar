@@ -21,7 +21,7 @@ const none = {
 test('the sidebar lists every group for a loader with all capabilities, in order', () => {
   const groups = sidebarGroups(full, { updates: 0, problems: 0 })
   expect(groups.map((g) => [g.id, g.entries.map((e) => e.id)])).toEqual([
-    ['library', ['mods', 'config', 'load-order']],
+    ['library', ['config', 'mods', 'load-order']],
     ['play', ['saves', 'screenshots']],
     ['get', ['browse']],
     ['health', ['problems', 'performance', 'console']],
@@ -58,7 +58,7 @@ test('Mods carries the update count and Problems the problem count, each only wh
 
 test('Config is in the Library group for a loader without any capability', () => {
   const library = sidebarGroups(none, { updates: 0, problems: 0 }).find((g) => g.id === 'library')
-  expect(library?.entries.map((e) => e.id)).toEqual(['mods', 'config'])
+  expect(library?.entries.map((e) => e.id)).toEqual(['config', 'mods'])
   expect(tabUnavailable('config', none)).toBe(false)
 })
 

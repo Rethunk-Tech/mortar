@@ -244,14 +244,14 @@ function PackageMoveItems({ mod, close }: { mod: Mod; close: () => void }) {
       key="package-up"
       disabled={locked || place <= 0}
       icon={<ArrowUp size={ICON_SIZE} />}
-      label={t`Move up (loses files)`}
+      label={t`Load earlier`}
       onClick={() => move(-1)}
     />,
     <MenuAction
       key="package-down"
       disabled={locked || place < 0 || place === packages.length - 1}
       icon={<ArrowDown size={ICON_SIZE} />}
-      label={t`Move down (wins files)`}
+      label={t`Load later`}
       onClick={() => move(1)}
     />,
   ]

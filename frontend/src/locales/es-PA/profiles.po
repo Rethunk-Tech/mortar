@@ -1009,10 +1009,6 @@ msgstr ""
 msgid "Reset the settings of {name}"
 msgstr ""
 
-#: src/profiles/EditProfileDialog.tsx
-msgid "Description"
-msgstr ""
-
 #: src/profiles/ServerSettings.tsx
 msgid "Use mods"
 msgstr ""

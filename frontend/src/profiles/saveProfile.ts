@@ -48,7 +48,6 @@ export async function saveProfile({
   stagedCover,
   color,
   icon,
-  description,
   setLaunchOptions,
   setLaunchSettings,
   setAppearance,
@@ -67,7 +66,6 @@ export async function saveProfile({
   stagedCover: StagedCover
   color: string
   icon: string
-  description: string
   setLaunchOptions: (id: string, options: string) => Promise<void>
   setLaunchSettings: (id: string, prefix: string, env: string) => Promise<void>
   setAppearance: (id: string, color: string, icon: string, description: string) => Promise<void>
@@ -96,7 +94,7 @@ export async function saveProfile({
       return
     }
     try {
-      await setAppearance(profile.id, color, icon, clipDescription(description))
+      await setAppearance(profile.id, color, icon, clipDescription(profile.description ?? ''))
     } catch (error) {
       reportUnexpected(error)
       return

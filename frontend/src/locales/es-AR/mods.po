@@ -437,6 +437,10 @@ msgstr ""
 msgid "newer in profile"
 msgstr ""
 
+#: src/mods/ModMenu.tsx
+msgid "Load later"
+msgstr ""
+
 #: src/mods/SetNexusPageDialog.tsx
 msgid "{source} page address"
 msgstr ""
@@ -2936,6 +2940,10 @@ msgstr ""
 msgid "{name}'s {source} page says it needs {dep} from outside {source}."
 msgstr ""
 
+#: src/mods/ModMenu.tsx
+msgid "Load earlier"
+msgstr ""
+
 #: src/mods/storeEntries.ts
 msgid "None of these mods was found on a site"
 msgstr ""
@@ -3258,10 +3266,6 @@ msgstr ""
 msgid "{name} needs {names}"
 msgstr ""
 
-#: src/mods/ModMenu.tsx
-msgid "Move down (wins files)"
-msgstr ""
-
 #: src/mods/describe.ts
 msgid "{name} is obsolete: {summary}"
 msgstr ""
@@ -3290,10 +3294,6 @@ msgstr ""
 
 #: src/mods/ModsTab.tsx
 msgid "Loading mods"
-msgstr ""
-
-#: src/mods/ModMenu.tsx
-msgid "Move up (loses files)"
 msgstr ""
 
 #: src/mods/ConfigPresets.tsx
