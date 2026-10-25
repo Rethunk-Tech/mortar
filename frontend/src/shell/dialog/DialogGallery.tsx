@@ -46,7 +46,7 @@ function EditExample({ open, onClose }: { open: boolean; onClose: () => void }) 
       subtitle="Saved into the project's own files."
       icon={
         <ToneIcon tone="neutral">
-          <Hammer size={20} />
+          <Hammer size={22} />
         </ToneIcon>
       }
       submitLabel="Save"
@@ -107,7 +107,7 @@ function BaseExample({ open, onClose }: { open: boolean; onClose: () => void }) 
       subtitle="Released October 25"
       icon={
         <ToneIcon tone="neutral">
-          <Sparkles size={20} />
+          <Sparkles size={22} />
         </ToneIcon>
       }
       footer={

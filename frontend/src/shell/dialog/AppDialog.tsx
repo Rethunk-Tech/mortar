@@ -6,16 +6,15 @@ import { type ReactNode, useId } from 'react'
 export type DialogSize = 'sm' | 'md' | 'lg'
 export type DialogTone = 'neutral' | 'warning' | 'danger'
 
-const WIDTH: Record<DialogSize, number> = { sm: 440, md: 560, lg: 760 }
+const WIDTH: Record<DialogSize, number> = { sm: 480, md: 560, lg: 760 }
 const TONE_COLOR: Record<DialogTone, string> = {
   neutral: 'var(--mortar-accent-ink)',
   warning: 'warning.main',
   danger: 'error.main',
 }
-// Beside an icon the title drops a little, so its first line centres on the tile.
-const TITLE_NUDGE = 0.25
 const PAD_X = 3
-const ICON_TILE_PX = 36
+const ICON_TILE_PX = 44
+const TITLE_PX = 17
 
 // A square tile behind the dialog's icon, tinted with the tone's colour.
 export function ToneIcon({ tone, children }: { tone: DialogTone; children: ReactNode }) {
@@ -26,7 +25,7 @@ export function ToneIcon({ tone, children }: { tone: DialogTone; children: React
         width: ICON_TILE_PX,
         height: ICON_TILE_PX,
         flexShrink: 0,
-        borderRadius: '8px',
+        borderRadius: '10px',
         display: 'grid',
         placeItems: 'center',
         color: TONE_COLOR[tone],
@@ -72,6 +71,7 @@ export function AppDialog({
   icon,
   size = 'md',
   footer,
+  closable = true,
   children,
 }: {
   open: boolean
@@ -81,14 +81,16 @@ export function AppDialog({
   icon?: ReactNode
   size?: DialogSize
   footer?: ReactNode
-  children: ReactNode
+  // False for a dialog only its own buttons may close: no X, and Esc and clicks outside do nothing.
+  closable?: boolean
+  children?: ReactNode
 }) {
   const { t } = useLingui()
   const titleId = useId()
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={closable ? onClose : undefined}
       maxWidth={false}
       aria-labelledby={titleId}
       slotProps={{
@@ -107,29 +109,45 @@ export function AppDialog({
         },
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, px: PAD_X, pt: 2.5, pb: 2 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.75,
+          px: PAD_X,
+          py: 2,
+          // The dialog's own header stands apart from any headings in its body.
+          borderBottom: children ? '1px solid var(--mortar-hairline-muted)' : 'none',
+        }}
+      >
         {icon}
-        <Box sx={{ flex: 1, minWidth: 0, pt: icon ? TITLE_NUDGE : 0 }}>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
           <Typography
             id={titleId}
             component="h2"
-            sx={{ fontSize: 17, fontWeight: 600, lineHeight: 1.3 }}
+            sx={{ fontSize: TITLE_PX, fontWeight: 600, lineHeight: 1.25 }}
           >
             {title}
           </Typography>
           {subtitle ? (
-            <Typography sx={{ fontSize: 'medium.fontSize', color: 'text.secondary', mt: 0.5 }}>
+            <Typography
+              sx={{ fontSize: 'medium.fontSize', color: 'text.secondary', lineHeight: 1.35 }}
+            >
               {subtitle}
             </Typography>
           ) : null}
         </Box>
-        <IconButton aria-label={t`Close`} onClick={onClose} size="small" sx={{ mt: -0.5, mr: -1 }}>
-          <X size={18} />
-        </IconButton>
+        {closable ? (
+          <IconButton aria-label={t`Close`} onClick={onClose} size="small" sx={{ mr: -1 }}>
+            <X size={18} />
+          </IconButton>
+        ) : null}
       </Box>
-      <Box sx={{ px: PAD_X, pb: 3, overflowY: 'auto', flex: '1 1 auto', minHeight: 0 }}>
-        {children}
-      </Box>
+      {children ? (
+        <Box sx={{ px: PAD_X, py: 2.5, overflowY: 'auto', flex: '1 1 auto', minHeight: 0 }}>
+          {children}
+        </Box>
+      ) : null}
       {footer}
     </Dialog>
   )

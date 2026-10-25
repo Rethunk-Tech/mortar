@@ -23,6 +23,8 @@ export function ChoicePicker({
       <Autocomplete
         multiple={true}
         autoHighlight={true}
+        size="small"
+        slotProps={{ chip: { size: 'small' } }}
         options={choices}
         value={choices.filter((c) => value.includes(c.value))}
         getOptionLabel={(c) => c.label}

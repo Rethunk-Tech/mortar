@@ -12,9 +12,9 @@ import type { ReactNode } from 'react'
 import { AppDialog, DialogFooter, type DialogTone, ToneIcon } from './AppDialog.tsx'
 
 const ICONS: Record<DialogTone, ReactNode> = {
-  neutral: <Info size={20} />,
-  warning: <TriangleAlert size={20} />,
-  danger: <Trash2 size={20} />,
+  neutral: <Info size={22} />,
+  warning: <TriangleAlert size={22} />,
+  danger: <Trash2 size={22} />,
 }
 
 /**
@@ -48,8 +48,9 @@ export function ConfirmationDialog({
   return (
     <AppDialog
       open={open}
-      onClose={busy ? () => undefined : onCancel}
-      size="sm"
+      onClose={onCancel}
+      closable={false}
+      size="md"
       icon={<ToneIcon tone={tone}>{ICONS[tone]}</ToneIcon>}
       title={title}
       subtitle={body}
@@ -87,12 +88,11 @@ export function ConfirmationDialog({
         </DialogFooter>
       }
     >
-      {consequences.length > 0 ? (
+      {consequences.length === 0 ? null : (
         <Box
           component="ul"
           sx={{
             m: 0,
-            ml: 6,
             px: 2,
             py: 1.25,
             listStyle: 'none',
@@ -109,7 +109,7 @@ export function ConfirmationDialog({
             </Typography>
           ))}
         </Box>
-      ) : null}
+      )}
     </AppDialog>
   )
 }
