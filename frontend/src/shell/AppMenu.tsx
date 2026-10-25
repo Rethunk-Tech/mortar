@@ -101,7 +101,8 @@ function NexusLines({ close }: { close: () => void }) {
   )
 }
 
-// Ways to reach the project: its Discord, bug reports and suggestions, and its source.
+// Ways to reach the project (its Discord, bug reports and suggestions, about, its source), then the startup-profile
+// restart, which is troubleshooting.
 function ProjectLinks({ close, game }: { close: () => void; game: string }) {
   const { t } = useLingui()
   const open = (url: string) => () => {
@@ -124,16 +125,6 @@ function ProjectLinks({ close, game }: { close: () => void; game: string }) {
         }}
       />
       <TitleMenuItem
-        icon={<Timer size={ICON_PX} />}
-        label={t`Restart and record startup profile`}
-        onClick={() => {
-          close()
-          RestartProfilingStartup().catch((e: unknown) =>
-            toastError(t`Could not restart Mortar`, e),
-          )
-        }}
-      />
-      <TitleMenuItem
         icon={<Lightbulb size={ICON_PX} />}
         label={t`Suggest a feature…`}
         onClick={() => {
@@ -142,9 +133,27 @@ function ProjectLinks({ close, game }: { close: () => void; game: string }) {
         }}
       />
       <TitleMenuItem
+        icon={<Info size={ICON_PX} />}
+        label={t`About Mortar`}
+        onClick={() => {
+          close()
+          openSettings('about')
+        }}
+      />
+      <TitleMenuItem
         icon={<Code2 size={ICON_PX} />}
         label={t`Source code`}
         onClick={open(SOURCE)}
+      />
+      <TitleMenuItem
+        icon={<Timer size={ICON_PX} />}
+        label={t`Restart and record startup profile`}
+        onClick={() => {
+          close()
+          RestartProfilingStartup().catch((e: unknown) =>
+            toastError(t`Could not restart Mortar`, e),
+          )
+        }}
       />
     </>
   )
@@ -178,6 +187,14 @@ const AppMenuItems = memo(function AppMenuItemsView() {
         }}
       />
       <TitleMenuItem
+        icon={<FolderOpen size={ICON_PX} />}
+        label={t`Open data folder`}
+        onClick={() => {
+          close()
+          OpenDataFolder().catch(reportUnexpected)
+        }}
+      />
+      <TitleMenuItem
         icon={<Settings size={ICON_PX} />}
         label={t`Mortar settings…`}
         hint={settingsKeys}
@@ -186,15 +203,8 @@ const AppMenuItems = memo(function AppMenuItemsView() {
           openSettings()
         }}
       />
-      <TitleMenuItem
-        icon={<FolderOpen size={ICON_PX} />}
-        label={t`Open data folder`}
-        onClick={() => {
-          close()
-          OpenDataFolder().catch(reportUnexpected)
-        }}
-      />
       <MenuRule />
+      <MenuHeading>{t`Updates`}</MenuHeading>
       <Reason reason={updatesOffline}>
         <TitleMenuItem
           icon={<RefreshCw size={ICON_PX} />}
@@ -216,14 +226,6 @@ const AppMenuItems = memo(function AppMenuItemsView() {
           }}
         />
       ) : null}
-      <TitleMenuItem
-        icon={<Info size={ICON_PX} />}
-        label={t`About Mortar`}
-        onClick={() => {
-          close()
-          openSettings('about')
-        }}
-      />
       <MenuRule />
       <MenuHeading>{t`Help`}</MenuHeading>
       <TitleMenuItem

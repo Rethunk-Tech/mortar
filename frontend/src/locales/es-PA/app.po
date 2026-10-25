@@ -5056,6 +5056,7 @@ msgid "{name} (disabled)"
 msgstr ""
 
 #: src/commandPalette/CommandPalette.tsx
+#: src/shell/AppMenu.tsx
 msgid "Updates"
 msgstr ""
 
