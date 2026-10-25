@@ -493,6 +493,10 @@ msgstr "Sun"
 msgid "Could not move the profile"
 msgstr "Could not move the profile"
 
+#: src/profiles/HistoryTimeline.tsx
+msgid "Show older changes"
+msgstr "Show older changes"
+
 #: src/profiles/EditProfileDialog.tsx
 msgid "Cover image"
 msgstr "Cover image"

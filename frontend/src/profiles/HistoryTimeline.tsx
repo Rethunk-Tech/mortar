@@ -1,7 +1,7 @@
 import { i18n } from '@lingui/core'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Typography } from '@mui/material'
-import { useCallback, useRef } from 'react'
+import { Box, Button, Typography } from '@mui/material'
+import { useCallback, useRef, useState } from 'react'
 import type {
   HistoryDiff,
   HistoryEvent,
@@ -13,6 +13,8 @@ import { HistoryEventRow } from './HistoryEventRow.tsx'
 import { type HistoryDay, historyDays } from './historyTimeline.ts'
 
 const NO_ITEMS: HistoryItem[] = []
+// A long history draws the newest entries and adds older ones a page at a time.
+const PAGE = 50
 
 export function HistoryTimeline({
   events,
@@ -34,6 +36,7 @@ export function HistoryTimeline({
   onRevertItem: (id: string, mod: string) => void
 }) {
   const { t } = useLingui()
+  const [shown, setShown] = useState(PAGE)
   // The panel's handlers are new each render; the rows get stable ones that call the latest, so memo holds.
   const latest = useRef({ onToggle, onUndo, onRevertItem })
   latest.current = { onToggle, onUndo, onRevertItem }
@@ -58,7 +61,7 @@ export function HistoryTimeline({
   }
   return (
     <Box>
-      {historyDays(events).map((day) => (
+      {historyDays(events.slice(0, shown)).map((day) => (
         <Box key={day.day} component="section" sx={{ mb: 1.5 }}>
           <Typography
             component="h3"
@@ -90,6 +93,11 @@ export function HistoryTimeline({
           </Box>
         </Box>
       ))}
+      {events.length > shown ? (
+        <Button size="small" onClick={() => setShown(shown + PAGE)}>
+          {t`Show older changes`}
+        </Button>
+      ) : null}
     </Box>
   )
 }
