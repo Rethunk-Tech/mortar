@@ -1651,6 +1651,10 @@ msgid "Could not start pairing"
 msgstr ""
 
 #: src/develop/DevelopTab.tsx
+msgid "{count, plural, one {# unpushed commit} other {# unpushed commits}}"
+msgstr ""
+
+#: src/develop/DevelopTab.tsx
 msgid "The build failed."
 msgstr ""
 
@@ -5536,6 +5540,10 @@ msgstr ""
 
 #: src/share/MethodPanes.tsx
 msgid "Could not enable sharing nearby"
+msgstr ""
+
+#: src/develop/DevelopTab.tsx
+msgid "{count, plural, one {# changed file} other {# changed files}}"
 msgstr ""
 
 #: src/develop/DevelopTab.tsx

@@ -14,9 +14,12 @@ import {
   Switch,
   Typography,
 } from '@mui/material'
-import { EllipsisVertical, Hammer, Users } from 'lucide-react'
+import { EllipsisVertical, GitBranch, Hammer, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import type { Problem } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
+import type {
+  GitState,
+  Problem,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import {
   Forget,
   OpenAt,
@@ -162,6 +165,36 @@ function Status({ dir }: { dir: string }) {
   const count = (run.build.problems ?? []).filter((p) => p.severity === 'error').length
   return (
     <Chip size="small" color="error" label={plural(count, { one: '# error', other: '# errors' })} />
+  )
+}
+
+// The repository's branch, and what is not committed or not pushed yet.
+function GitChips({ git }: { git: GitState }) {
+  return (
+    <>
+      <Chip size="small" variant="outlined" icon={<GitBranch size={12} />} label={git.branch} />
+      {git.changed > 0 ? (
+        <Chip
+          size="small"
+          color="warning"
+          variant="outlined"
+          label={plural(
+            { count: git.changed },
+            { one: '# changed file', other: '# changed files' },
+          )}
+        />
+      ) : null}
+      {git.unpushed > 0 ? (
+        <Chip
+          size="small"
+          variant="outlined"
+          label={plural(
+            { count: git.unpushed },
+            { one: '# unpushed commit', other: '# unpushed commits' },
+          )}
+        />
+      ) : null}
+    </>
   )
 }
 
@@ -337,6 +370,7 @@ function ProjectCard({
               variant="outlined"
               label={info?.released ? `v${info.released}` : t`Not released`}
             />
+            {info?.git ? <GitChips git={info.git} /> : null}
             <Status dir={project.dir} />
           </Box>
           <Typography

@@ -42,6 +42,17 @@ type ProjectInfo struct {
 	Released string `json:"released"`
 	// Icon is the project's icon.png as a small data URL, empty when the project has none.
 	Icon string `json:"icon"`
+	// Git is the working tree's state, nil when the project is not a git repository or git is missing.
+	Git *GitState `json:"git"`
+}
+
+// GitState is what a project card shows of its repository.
+type GitState struct {
+	Branch string `json:"branch"`
+	// Changed counts the files with uncommitted changes, untracked ones included.
+	Changed int `json:"changed"`
+	// Unpushed counts the commits no remote has.
+	Unpushed int `json:"unpushed"`
 }
 
 // ProjectEdit is a change to a project's details; a new Name renames the project.
@@ -109,6 +120,7 @@ func (s *Service) Inspect(ctx context.Context, gameID, dir string) (ProjectInfo,
 		info.Released = v.Current
 	}
 	info.Icon = iconData(p.Dir)
+	info.Git = s.gitState(ctx, p.Dir)
 	base := strings.TrimSuffix(filepath.Base(csproj), ".csproj")
 	if base != p.Name {
 		if err := s.follow(gameID, p, base); err != nil {
