@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase } from '@mui/material'
 import { ChevronDown, Download, LayoutTemplate, ListOrdered, Plus } from 'lucide-react'
 import { memo, useCallback, useMemo, useState } from 'react'
+import { create } from 'zustand'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { compact } from '../game/compact.ts'
 import { NewProfileDialog } from '../game/NewProfileDialog.tsx'
@@ -236,6 +237,24 @@ const ProfileMenuList = memo(
     a.onContext === b.onContext,
 )
 
+// Which profile's right-click menu is open, and where. Held outside the title-bar menu, so opening and closing it
+// does not redraw that menu and its rows.
+const useProfileContext = create<{ id: string; position: Position | null }>(() => ({
+  id: '',
+  position: null,
+}))
+const showContext = (id: string, position: Position) => useProfileContext.setState({ id, position })
+const hideContext = () => useProfileContext.setState({ position: null })
+
+function ContextHost({ game }: { game: string }) {
+  const id = useProfileContext((s) => s.id)
+  const position = useProfileContext((s) => s.position)
+  const profile = useProfiles((s) => s.profiles.find((p) => p.id === id))
+  return profile ? (
+    <ProfileContextMenu game={game} profile={profile} position={position} onClose={hideContext} />
+  ) : null
+}
+
 // The title bar's profile switcher for the open game: the open profile and its mod count over a menu that switches,
 // creates, imports and manages profiles. A profile's right-click menu opens from its row and from the button.
 // Memoised: the title bar re-renders on every navigation, and this one does not need to.
@@ -248,13 +267,7 @@ export const ProfileMenu = memo(function ProfileMenuView({ game }: { game: strin
   const { anchor, close, trigger } = useTitleMenu('profile')
   const [creating, setCreating] = useState(false)
   const [managing, setManaging] = useState(false)
-  const [context, setContext] = useState<{ id: string; position: Position | null } | null>(null)
   const { templates, reload } = useTemplates(game, anchor !== null || managing)
-  const contextProfile = context ? profiles.find((p) => p.id === context.id) : undefined
-  const showContext = useCallback(
-    (id: string, position: Position) => setContext({ id, position }),
-    [],
-  )
   const onCreate = useCallback(() => setCreating(true), [])
   const onManage = useCallback(() => setManaging(true), [])
   // Elements held between renders: a closed dialog is skipped when the profile list or open profile changes.
@@ -294,14 +307,7 @@ export const ProfileMenu = memo(function ProfileMenuView({ game }: { game: strin
           onContext={showContext}
         />
       </TitleMenu>
-      {contextProfile ? (
-        <ProfileContextMenu
-          game={game}
-          profile={contextProfile}
-          position={context?.position ?? null}
-          onClose={() => setContext((c) => (c ? { ...c, position: null } : c))}
-        />
-      ) : null}
+      <ContextHost game={game} />
       {newProfile}
       {manageTemplates}
     </>

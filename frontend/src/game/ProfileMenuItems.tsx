@@ -71,6 +71,13 @@ function ProfileMenuItem({
   )
 }
 
+// What shortcuts this install can make is fixed for the run, so it is asked once.
+let capabilities: ReturnType<typeof ShortcutCapabilities> | null = null
+const shortcutCapabilities = () => {
+  capabilities ??= ShortcutCapabilities()
+  return capabilities
+}
+
 // ShortcutMenuItems are the ways to start a profile from outside Mortar: a desktop or Start menu shortcut, and Steam.
 function ShortcutMenuItems({ profile, close }: { profile: Profile; close: () => void }) {
   const { t } = useLingui()
@@ -83,7 +90,7 @@ function ShortcutMenuItems({ profile, close }: { profile: Profile; close: () => 
   // Steam on the host cannot start Mortar inside a Flatpak, so the action is left out there.
   const [steamShortcut, setSteamShortcut] = useState(true)
   useEffect(() => {
-    ShortcutCapabilities()
+    shortcutCapabilities()
       .then((c) => setSteamShortcut(c.addToSteam))
       .catch(reportUnexpected)
   }, [])

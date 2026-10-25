@@ -61,9 +61,37 @@ function CreditList() {
   )
 }
 
+// The licences row owns its dialog, so opening it leaves the rest of About alone.
+function LicencesRow() {
+  const { t } = useLingui()
+  const [open, setOpen] = useState(false)
+  return (
+    <SettingRow
+      label={t`Open-source licences`}
+      description={t`Libraries, icons and artwork built into Mortar, with their licences.`}
+    >
+      <Button variant="outlined" onClick={() => setOpen(true)}>
+        {t`View licences…`}
+      </Button>
+      <AppDialog
+        open={open}
+        onClose={() => setOpen(false)}
+        title={t`Open-source licences`}
+        size="lg"
+        footer={
+          <DialogFooter>
+            <Button onClick={() => setOpen(false)}>{t`Close`}</Button>
+          </DialogFooter>
+        }
+      >
+        <CreditList />
+      </AppDialog>
+    </SettingRow>
+  )
+}
+
 export function About() {
   const { t } = useLingui()
-  const [creditsOpen, setCreditsOpen] = useState(false)
   const info = useMortarUpdate((s) => s.info)
   return (
     <>
@@ -110,14 +138,7 @@ export function About() {
             {t`Licence`}
           </Button>
         </Box>
-        <SettingRow
-          label={t`Open-source licences`}
-          description={t`Libraries, icons and artwork built into Mortar, with their licences.`}
-        >
-          <Button variant="outlined" onClick={() => setCreditsOpen(true)}>
-            {t`View licences…`}
-          </Button>
-        </SettingRow>
+        <LicencesRow />
         <SettingRow
           label={t`Logs`}
           description={t`mortar.log, the previous run's mortar.prev.log and crash.log, in Mortar's data folder. For a bug report, Save diagnostics below puts them in one zip with personal paths removed.`}
@@ -128,19 +149,6 @@ export function About() {
         </SettingRow>
       </SettingsSection>
       <Diagnostics />
-      <AppDialog
-        open={creditsOpen}
-        onClose={() => setCreditsOpen(false)}
-        title={t`Open-source licences`}
-        size="lg"
-        footer={
-          <DialogFooter>
-            <Button onClick={() => setCreditsOpen(false)}>{t`Close`}</Button>
-          </DialogFooter>
-        }
-      >
-        <CreditList />
-      </AppDialog>
     </>
   )
 }
