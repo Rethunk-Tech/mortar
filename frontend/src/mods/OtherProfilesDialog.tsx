@@ -2,7 +2,7 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Checkbox, FormControlLabel, Typography } from '@mui/material'
 import { Inbox } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type {
   DiffSide,
   ModInProfile,
@@ -165,7 +165,12 @@ export function OtherProfilesDialog({
   onConfirm: (profiles: Profile[], pinned: Profile[], rows: ModInProfile[]) => Promise<void>
 }) {
   const { t } = useLingui()
-  const profiles = useProfiles((s) => s.profiles).filter((p) => p.id !== currentProfileId)
+  const listed = useProfiles((s) => s.profiles)
+  // Kept stable between renders: the selection effect below depends on it, and a fresh array each render loops.
+  const profiles = useMemo(
+    () => listed.filter((p) => p.id !== currentProfileId),
+    [listed, currentProfileId],
+  )
   const [rows, setRows] = useState<ModInProfile[]>([])
   const [selected, setSelected] = useState<string[]>([])
   const [pending, run] = usePending()
