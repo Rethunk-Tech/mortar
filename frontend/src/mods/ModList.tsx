@@ -1,8 +1,9 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { alpha, Box, TableCell, type TableCellProps, TableRow, useMediaQuery } from '@mui/material'
+import { alpha, Box, TableRow, useMediaQuery } from '@mui/material'
 import { CornerDownRight, Pin } from 'lucide-react'
 import {
+  type ComponentProps,
   type MouseEvent,
   memo,
   type ReactNode,
@@ -49,6 +50,7 @@ import { ModListTable } from './ModListVirtual.tsx'
 import { useMarked, useRowFocus, useTabStop } from './marked.ts'
 import { contextMenuProps, openModPage } from './menu.ts'
 import { useModFresh } from './modFresh.ts'
+import { cellsSx } from './modListCells.ts'
 import { formatCount, isNewer } from './nexusFormat.ts'
 import { OverlayCountChip } from './OverlayRow.tsx'
 import { nestOverlays, overlaysByBase, ownSlice } from './overlayRows.ts'
@@ -70,12 +72,11 @@ import { useModGroups } from './useModGroups.ts'
 import { flattenModGroups } from './virtualRows.ts'
 
 const SELECTED_ALPHA = 0.14
-const ellipsis = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } as const
+// How far each nesting level indents an implicit mod's name: the theme's 2 spacing units.
+const DEPTH_PX = 16
 
-const cellBase = { p: 0, border: 0, fontSize: 'inherit', color: 'inherit' } as const
-
-function Cell({ sx, ...props }: TableCellProps) {
-  return <TableCell role="cell" {...props} sx={{ ...cellBase, ...sx }} />
+function Cell(props: ComponentProps<'td'>) {
+  return <td {...props} />
 }
 
 function dash(value: string) {
@@ -86,11 +87,7 @@ function ValueCell({ text, title, accent }: { text: ReactNode; title?: string; a
   return (
     <Cell
       title={title ?? (typeof text === 'string' ? text : undefined)}
-      sx={{
-        ...ellipsis,
-        color: accent ? 'primary.main' : 'text.secondary',
-        fontVariantNumeric: 'tabular-nums',
-      }}
+      className={accent ? 'cell-value cell-accent' : 'cell-value'}
     >
       {text}
     </Cell>
@@ -157,18 +154,9 @@ function FigureCell({
 function OverridesNote({ count }: { count: number }) {
   const { t } = useLingui()
   return (
-    <Box
-      component="span"
-      sx={{
-        ...ellipsis,
-        flexShrink: 0,
-        fontSize: 'small.fontSize',
-        fontWeight: 400,
-        color: 'text.secondary',
-      }}
-    >
+    <span className="cell-overrides">
       {t`overrides ${plural(count, { one: '# file', other: '# files' })}`}
-    </Box>
+    </span>
   )
 }
 
@@ -176,29 +164,19 @@ function OverridesNote({ count }: { count: number }) {
 function NameCell({ row, profile }: { row: ListRow; profile: Profile }) {
   const m = row.mod
   return (
-    <Cell title={m.name} sx={{ ...ellipsis, fontWeight: 500 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0 }}>
+    <Cell title={m.name} className="cell-name">
+      <span className="cell-line">
         {row.depth ? (
-          <Box
-            component="span"
-            sx={{
-              display: 'flex',
-              flexShrink: 0,
-              ml: (row.depth - 1) * 2,
-              color: 'text.secondary',
-            }}
-          >
+          <span className="cell-depth" style={{ marginLeft: (row.depth - 1) * DEPTH_PX }}>
             <CornerDownRight size={14} aria-hidden={true} />
-          </Box>
+          </span>
         ) : null}
-        <Box component="span" sx={{ ...ellipsis, minWidth: 0 }}>
-          {m.name}
-        </Box>
+        <span className="cell-text">{m.name}</span>
         <ExtraFilesChip mod={m} profile={profile} />
         <OverlayCountChip mod={m} profile={profile} />
         <ProblemBadge mod={m} />
         {row.overrides ? <OverridesNote count={row.overrides} /> : null}
-      </Box>
+      </span>
     </Cell>
   )
 }
@@ -216,13 +194,11 @@ function cellsFor(id: ListColumnId, row: ListRow, locale: string, profile: Profi
       return <NameCell key="name" row={row} profile={profile} />
     case 'version':
       return (
-        <Cell key="version" title={dash(m.version)} sx={{ ...ellipsis, color: 'text.secondary' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0 }}>
-            <Box component="span" sx={{ ...ellipsis, fontVariantNumeric: 'tabular-nums' }}>
-              {dash(m.version)}
-            </Box>
+        <Cell key="version" title={dash(m.version)} className="cell-version">
+          <span className="cell-line">
+            <span className="cell-text">{dash(m.version)}</span>
             {row.pinned ? <Pin size={14} aria-hidden={true} /> : null}
-          </Box>
+          </span>
         </Cell>
       )
     case 'latest':
@@ -267,24 +243,17 @@ function cellsFor(id: ListColumnId, row: ListRow, locale: string, profile: Profi
     }
     case 'status':
       return (
-        <Cell
-          key="status"
-          sx={{
-            fontSize: 'base.fontSize',
-            whiteSpace: 'nowrap',
-            color: m.enabled ? 'text.primary' : 'text.secondary',
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}>
+        <Cell key="status" className={m.enabled ? 'cell-status' : 'cell-status cell-dim'}>
+          <span className="cell-line">
             <PinBadge mod={m} />
             <CompatChip mod={m} />
             <LiveBadge mod={m} />
             <NexusGoneBadge mod={m} />
             <UpdateBadge mod={m} />
-            <Box component="span" title={row.status} sx={ellipsis}>
+            <span title={row.status} className="cell-text">
               {row.status}
-            </Box>
-          </Box>
+            </span>
+          </span>
         </Cell>
       )
     case 'lastRun':
@@ -401,19 +370,23 @@ function ModRowView({ row, cols, locale, first, orderedRef, profile, onArrow }: 
         }
         menu.onKeyDown(e)
       }}
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: listGridColumns(cols),
-        gap: space.gap,
-        alignItems: 'center',
-        px: space.gutter,
-        height: space.row,
-        fontSize: 'medium.fontSize',
-        cursor: 'pointer',
-        bgcolor: (th) => (marked ? alpha(th.palette.primary.main, SELECTED_ALPHA) : 'transparent'),
-        ...(marked ? {} : { '[data-striped] > &': { bgcolor: 'var(--mortar-hairline-ghost)' } }),
-        ...(local ? { boxShadow: (th) => `inset 3px 0 0 ${th.palette.info.main}` } : {}),
-      }}
+      sx={[
+        cellsSx,
+        {
+          display: 'grid',
+          gridTemplateColumns: listGridColumns(cols),
+          gap: space.gap,
+          alignItems: 'center',
+          px: space.gutter,
+          height: space.row,
+          fontSize: 'medium.fontSize',
+          cursor: 'pointer',
+          bgcolor: (th) =>
+            marked ? alpha(th.palette.primary.main, SELECTED_ALPHA) : 'transparent',
+          ...(marked ? {} : { '[data-striped] > &': { bgcolor: 'var(--mortar-hairline-ghost)' } }),
+          ...(local ? { boxShadow: (th) => `inset 3px 0 0 ${th.palette.info.main}` } : {}),
+        },
+      ]}
     >
       <RowCells row={row} cols={cols} locale={locale} profile={profile} fresh={fresh} />
     </TableRow>
@@ -434,10 +407,10 @@ function RowCellsView({ row, cols, locale, profile, fresh }: RowCellsProps) {
     id === 'name'
       ? [
           <Cell key="tile">
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <span className="cell-line cell-tile">
               <FavouriteStar starKey={entryFavouriteKey(entryOf(profile, m.key))} />
               <LetterTile mod={m} size={26} fresh={fresh} />
-            </Box>
+            </span>
           </Cell>,
           cellsFor(id, row, locale, profile),
         ]
