@@ -15,6 +15,10 @@ msgstr "No saves match"
 msgid "{game}'s {launcher} launch options run {loader} in place of the game. {launcher} will still start {loader} unless that launch option is removed. Mortar will not change it."
 msgstr "{game}'s {launcher} launch options run {loader} in place of the game. {launcher} will still start {loader} unless that launch option is removed. Mortar will not change it."
 
+#: src/develop/UploadDialog.tsx
+msgid "{file} is published for everyone under your team; a published version cannot be replaced."
+msgstr "{file} is published for everyone under your team; a published version cannot be replaced."
+
 #: src/game/Sidebar.tsx
 msgid "Performance"
 msgstr "Performance"
@@ -47,6 +51,10 @@ msgstr "These changes will be reverted too:"
 #: src/develop/NewModDialog.tsx
 msgid "Choose…"
 msgstr "Choose…"
+
+#: src/develop/UploadDialog.tsx
+msgid "Could not save the token"
+msgstr "Could not save the token"
 
 #: src/commandPalette/paletteLabels.ts
 #: src/develop/DevelopTab.tsx
@@ -482,6 +490,10 @@ msgstr "Installed by Mortar"
 #: src/shell/AppMenu.tsx
 msgid "Check mods and Mortar for updates"
 msgstr "Check mods and Mortar for updates"
+
+#: src/develop/UploadDialog.tsx
+msgid "Paste the token."
+msgstr "Paste the token."
 
 #: src/firstrun/ProfileStep.tsx
 msgid "Make your first profile"
@@ -1302,6 +1314,10 @@ msgstr "Needs {count, plural, one {# mod this profile lacks} other {# mods this 
 #: src/launch/events.ts
 msgid "Could not restore profile game settings"
 msgstr "Could not restore profile game settings"
+
+#: src/develop/UploadDialog.tsx
+msgid "Upload to {source}"
+msgstr "Upload to {source}"
 
 #: src/share/IncludeOptions.tsx
 msgid "Include problem choices"
@@ -2135,6 +2151,10 @@ msgstr "Imported {name}: {counts}"
 msgid "{source} expects a 7z. Repack collection.zip as a 7z with 7-Zip before uploading."
 msgstr "{source} expects a 7z. Repack collection.zip as a 7z with 7-Zip before uploading."
 
+#: src/develop/UploadDialog.tsx
+msgid "Create one in your team's settings"
+msgstr "Create one in your team's settings"
+
 #: src/lan/SendPanel.tsx
 msgid "Send to…"
 msgstr "Send to…"
@@ -2451,6 +2471,10 @@ msgstr "{loader} not installed yet"
 msgid "{name} (optional file)"
 msgstr "{name} (optional file)"
 
+#: src/develop/UploadDialog.tsx
+msgid "Could not upload the mod"
+msgstr "Could not upload the mod"
+
 #: src/queue/QueueBody.tsx
 msgid "Flagged by {scanner}: {name}{where}"
 msgstr "Flagged by {scanner}: {name}{where}"
@@ -2757,6 +2781,10 @@ msgstr "A share link names this profile and where each mod comes from, not the f
 msgid "Template saved"
 msgstr "Template saved"
 
+#: src/develop/UploadDialog.tsx
+msgid "Uploading…"
+msgstr "Uploading…"
+
 #: src/nxm/ArrivalDialog.tsx
 msgid "Ignore"
 msgstr "Ignore"
@@ -3048,6 +3076,10 @@ msgstr "Added"
 msgid "Made for {name}, which is not enabled"
 msgstr "Made for {name}, which is not enabled"
 
+#: src/develop/UploadDialog.tsx
+msgid "Save token"
+msgstr "Save token"
+
 #: src/shell/win.ts
 msgid "Could not close the window"
 msgstr "Could not close the window"
@@ -3181,6 +3213,7 @@ msgstr "copied from this computer"
 
 #: src/browse/BrowseMenu.tsx
 #: src/browse/CardAction.tsx
+#: src/develop/UploadDialog.tsx
 #: src/share/ImportPreview.tsx
 msgid "Open page"
 msgstr "Open page"
@@ -3829,6 +3862,10 @@ msgstr "Hide archive contents"
 #: src/saves/SaveRow.tsx
 msgid "Four Corners farm"
 msgstr "Four Corners farm"
+
+#: src/develop/UploadDialog.tsx
+msgid "Upload {name} to {source}?"
+msgstr "Upload {name} to {source}?"
 
 #: src/firstrun/ProfileStep.tsx
 msgid "An empty profile. Add mods from {source} or from archives."
@@ -4590,6 +4627,7 @@ msgstr "Website"
 msgid "No Mortar computers found nearby."
 msgstr "No Mortar computers found nearby."
 
+#: src/develop/UploadDialog.tsx
 #: src/share/MethodPanes.tsx
 msgid "Upload"
 msgstr "Upload"
@@ -4751,6 +4789,10 @@ msgstr "{count, plural, one {Update # mod} other {Update # mods}}"
 #: src/queue/LargeDownloadDialog.tsx
 msgid "{more} more large downloads are waiting after this one."
 msgstr "{more} more large downloads are waiting after this one."
+
+#: src/develop/UploadDialog.tsx
+msgid "Uploaded {name}"
+msgstr "Uploaded {name}"
 
 #: src/share/ImportProblems.tsx
 msgid "Some files could not be checked against {source}, so a few may differ from what was shared."
@@ -5391,6 +5433,10 @@ msgstr "Get mods"
 #: src/i18n/reasonText.ts
 msgid "It encountered an error."
 msgstr "It encountered an error."
+
+#: src/develop/UploadDialog.tsx
+msgid "Uploads go through a service account of your team."
+msgstr "Uploads go through a service account of your team."
 
 #: src/game/HeroGlance.tsx
 msgid "No problems"
@@ -6713,7 +6759,7 @@ msgstr "Paused at {done} of {total}"
 msgid "Command palette"
 msgstr "Command palette"
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/UploadDialog.tsx
 msgid "Could not open the page"
 msgstr "Could not open the page"
 
@@ -6802,6 +6848,10 @@ msgstr "Private"
 #: src/browse/BrowseFilters.tsx
 msgid "Sort: most stars"
 msgstr "Sort: most stars"
+
+#: src/develop/UploadDialog.tsx
+msgid "Service account token"
+msgstr "Service account token"
 
 #: src/develop/ProjectCard.tsx
 msgid "Not released"

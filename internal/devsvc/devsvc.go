@@ -54,6 +54,8 @@ type Service struct {
 	CacheDir string
 	// Run runs a tool (dotnet, git, gh) in dir and returns its output; nil runs it.
 	Run func(ctx context.Context, dir, name string, args ...string) ([]byte, error)
+	// ThunderstoreURL, when set, replaces https://thunderstore.io/ for uploads (tests).
+	ThunderstoreURL string
 	// ArchiveURL, when set, replaces codeload.github.com for the template archive (tests).
 	ArchiveURL func(t components.DevTemplate) string
 	// LatestLoader, when set, replaces looking up the newest loader release (tests).

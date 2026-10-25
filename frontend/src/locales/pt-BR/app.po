@@ -15,6 +15,10 @@ msgstr ""
 msgid "{game}'s {launcher} launch options run {loader} in place of the game. {launcher} will still start {loader} unless that launch option is removed. Mortar will not change it."
 msgstr ""
 
+#: src/develop/UploadDialog.tsx
+msgid "{file} is published for everyone under your team; a published version cannot be replaced."
+msgstr ""
+
 #: src/game/Sidebar.tsx
 msgid "Performance"
 msgstr ""
@@ -46,6 +50,10 @@ msgstr ""
 
 #: src/develop/NewModDialog.tsx
 msgid "Choose…"
+msgstr ""
+
+#: src/develop/UploadDialog.tsx
+msgid "Could not save the token"
 msgstr ""
 
 #: src/commandPalette/paletteLabels.ts
@@ -481,6 +489,10 @@ msgstr ""
 
 #: src/shell/AppMenu.tsx
 msgid "Check mods and Mortar for updates"
+msgstr ""
+
+#: src/develop/UploadDialog.tsx
+msgid "Paste the token."
 msgstr ""
 
 #: src/firstrun/ProfileStep.tsx
@@ -1301,6 +1313,10 @@ msgstr ""
 
 #: src/launch/events.ts
 msgid "Could not restore profile game settings"
+msgstr ""
+
+#: src/develop/UploadDialog.tsx
+msgid "Upload to {source}"
 msgstr ""
 
 #: src/share/IncludeOptions.tsx
@@ -2135,6 +2151,10 @@ msgstr ""
 msgid "{source} expects a 7z. Repack collection.zip as a 7z with 7-Zip before uploading."
 msgstr ""
 
+#: src/develop/UploadDialog.tsx
+msgid "Create one in your team's settings"
+msgstr ""
+
 #: src/lan/SendPanel.tsx
 msgid "Send to…"
 msgstr ""
@@ -2451,6 +2471,10 @@ msgstr ""
 msgid "{name} (optional file)"
 msgstr ""
 
+#: src/develop/UploadDialog.tsx
+msgid "Could not upload the mod"
+msgstr ""
+
 #: src/queue/QueueBody.tsx
 msgid "Flagged by {scanner}: {name}{where}"
 msgstr ""
@@ -2757,6 +2781,10 @@ msgstr ""
 msgid "Template saved"
 msgstr ""
 
+#: src/develop/UploadDialog.tsx
+msgid "Uploading…"
+msgstr ""
+
 #: src/nxm/ArrivalDialog.tsx
 msgid "Ignore"
 msgstr ""
@@ -3048,6 +3076,10 @@ msgstr ""
 msgid "Made for {name}, which is not enabled"
 msgstr ""
 
+#: src/develop/UploadDialog.tsx
+msgid "Save token"
+msgstr ""
+
 #: src/shell/win.ts
 msgid "Could not close the window"
 msgstr ""
@@ -3181,6 +3213,7 @@ msgstr ""
 
 #: src/browse/BrowseMenu.tsx
 #: src/browse/CardAction.tsx
+#: src/develop/UploadDialog.tsx
 #: src/share/ImportPreview.tsx
 msgid "Open page"
 msgstr ""
@@ -3828,6 +3861,10 @@ msgstr ""
 
 #: src/saves/SaveRow.tsx
 msgid "Four Corners farm"
+msgstr ""
+
+#: src/develop/UploadDialog.tsx
+msgid "Upload {name} to {source}?"
 msgstr ""
 
 #: src/firstrun/ProfileStep.tsx
@@ -4590,6 +4627,7 @@ msgstr ""
 msgid "No Mortar computers found nearby."
 msgstr ""
 
+#: src/develop/UploadDialog.tsx
 #: src/share/MethodPanes.tsx
 msgid "Upload"
 msgstr ""
@@ -4750,6 +4788,10 @@ msgstr ""
 
 #: src/queue/LargeDownloadDialog.tsx
 msgid "{more} more large downloads are waiting after this one."
+msgstr ""
+
+#: src/develop/UploadDialog.tsx
+msgid "Uploaded {name}"
 msgstr ""
 
 #: src/share/ImportProblems.tsx
@@ -5390,6 +5432,10 @@ msgstr ""
 
 #: src/i18n/reasonText.ts
 msgid "It encountered an error."
+msgstr ""
+
+#: src/develop/UploadDialog.tsx
+msgid "Uploads go through a service account of your team."
 msgstr ""
 
 #: src/game/HeroGlance.tsx
@@ -6713,7 +6759,7 @@ msgstr ""
 msgid "Command palette"
 msgstr ""
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/UploadDialog.tsx
 msgid "Could not open the page"
 msgstr ""
 
@@ -6801,6 +6847,10 @@ msgstr ""
 
 #: src/browse/BrowseFilters.tsx
 msgid "Sort: most stars"
+msgstr ""
+
+#: src/develop/UploadDialog.tsx
+msgid "Service account token"
 msgstr ""
 
 #: src/develop/ProjectCard.tsx

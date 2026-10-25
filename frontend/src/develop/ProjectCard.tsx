@@ -32,7 +32,6 @@ import {
   StartDebugging,
   StartInstances,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
-import { OpenWeb } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/opener/service.ts'
 import type { DevProject } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { useNowValue } from '../i18n/useNow.ts'
@@ -56,8 +55,8 @@ import { EditProjectDialog } from './EditProjectDialog.tsx'
 import { GameCodeDialog } from './GameCodeDialog.tsx'
 import { showModLog, useModCosts } from './modCosts.ts'
 import { ReleaseDialog } from './ReleaseDialog.tsx'
+import { UploadDialog } from './UploadDialog.tsx'
 
-const THUNDERSTORE_UPLOAD = 'https://thunderstore.io/package/create/'
 const TEST_COPIES = 2
 // The status chip's "built X ago" moves on once a minute.
 const MINUTE_MS = 60_000
@@ -102,6 +101,7 @@ function Outcome({ game, project }: { game: string; project: DevProject }) {
   const run = useDevRuns((s) => runOf(s.byDir, project.dir))
   const build = run.build
   const pack = run.pack
+  const [uploading, setUploading] = useState(false)
   return (
     <>
       {build && !build.ok ? (
@@ -117,18 +117,22 @@ function Outcome({ game, project }: { game: string; project: DevProject }) {
           variant="compact"
           severity="success"
           action={
-            <Button
-              size="small"
-              onClick={() =>
-                OpenWeb(THUNDERSTORE_UPLOAD).catch(reportError(t`Could not open the page`))
-              }
-            >
+            <Button size="small" onClick={() => setUploading(true)}>
               {t`Upload…`}
             </Button>
           }
         >
           {t`Ready to upload: ${{ path: pack.zip }}`}
         </Alert>
+      ) : null}
+      {uploading && pack?.zip ? (
+        <UploadDialog
+          game={game}
+          dir={project.dir}
+          name={project.name}
+          zip={pack.zip}
+          onClose={() => setUploading(false)}
+        />
       ) : null}
       {pack && (pack.issues ?? []).length > 0 ? (
         <Alert variant="compact" severity="warning">
