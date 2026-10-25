@@ -43,7 +43,7 @@ import { reportBug } from './reportBug.ts'
 import { suggestFeature } from './suggest.ts'
 import { MenuHeading, MenuRule, TitleMenu, TitleMenuItem } from './TitleMenu.tsx'
 import { Tooltip } from './Tooltip.tsx'
-import { useTitleMenu } from './titleMenus.ts'
+import { closeTitleMenu, useTitleMenu } from './titleMenus.ts'
 
 const ICON_PX = 18
 const SOURCE = 'https://github.com/Rethunk-Tech/mortar'
@@ -150,25 +150,109 @@ function ProjectLinks({ close, game }: { close: () => void; game: string }) {
   )
 }
 
-// Memoised: the title bar re-renders on every navigation, and this one does not need to.
-export const AppMenu = memo(function AppMenuView() {
+// The menu's items, memoised apart from its button: opening the menu changes only the button and the menu around them.
+const AppMenuItems = memo(function AppMenuItemsView() {
   const { t } = useLingui()
-  const { anchor, close, trigger } = useTitleMenu('app')
+  const close = closeTitleMenu
   const updatesOffline = useUpdatesOfflineReason()
   const game = useNav((s) => routeGame(s.route) ?? '')
   const version = useMortarUpdate((s) => s.info?.version)
   const settingsKeys = useShortcutHint('open-settings')
   const helpKeys = useShortcutHint('help')
   const downloadsKeys = useShortcutHint('downloads')
-  useEffect(() => {
-    useMortarUpdate.getState().load().catch(reportUnexpected)
-  }, [])
   const quit = (): void => {
     close()
     Application.Quit().catch((e: unknown) =>
       toastError(t`Could not quit Mortar`, e, { retry: quit }),
     )
   }
+  return (
+    <>
+      <TitleMenuItem
+        icon={<Download size={ICON_PX} />}
+        label={t`Downloads`}
+        hint={downloadsKeys}
+        onClick={() => {
+          close()
+          useQueue.getState().setOpen(true)
+        }}
+      />
+      <TitleMenuItem
+        icon={<Settings size={ICON_PX} />}
+        label={t`Mortar settings…`}
+        hint={settingsKeys}
+        onClick={() => {
+          close()
+          openSettings()
+        }}
+      />
+      <TitleMenuItem
+        icon={<FolderOpen size={ICON_PX} />}
+        label={t`Open data folder`}
+        onClick={() => {
+          close()
+          OpenDataFolder().catch(reportUnexpected)
+        }}
+      />
+      <MenuRule />
+      <Reason reason={updatesOffline}>
+        <TitleMenuItem
+          icon={<RefreshCw size={ICON_PX} />}
+          label={t`Check mods and Mortar for updates`}
+          disabled={updatesOffline !== ''}
+          onClick={() => {
+            close()
+            checkForUpdates().catch(reportUnexpected)
+          }}
+        />
+      </Reason>
+      {version ? (
+        <TitleMenuItem
+          icon={<Sparkles size={ICON_PX} />}
+          label={t`What is new in ${version}`}
+          onClick={() => {
+            close()
+            showWhatsNew(version)
+          }}
+        />
+      ) : null}
+      <TitleMenuItem
+        icon={<Info size={ICON_PX} />}
+        label={t`About Mortar`}
+        onClick={() => {
+          close()
+          openSettings('about')
+        }}
+      />
+      <MenuRule />
+      <MenuHeading>{t`Help`}</MenuHeading>
+      <TitleMenuItem
+        icon={<LifeBuoy size={ICON_PX} />}
+        label={t`Get help`}
+        hint={helpKeys}
+        disabled={game === ''}
+        onClick={() => {
+          close()
+          useTab.getState().setTab('console')
+          useConsole.getState().setHelping(true)
+        }}
+      />
+      <ProjectLinks close={close} game={game} />
+      <MenuRule />
+      <NexusLines close={close} />
+      <MenuRule />
+      <TitleMenuItem icon={<LogOut size={ICON_PX} />} label={t`Quit Mortar`} onClick={quit} />
+    </>
+  )
+})
+
+// Memoised: the title bar re-renders on every navigation, and this one does not need to.
+export const AppMenu = memo(function AppMenuView() {
+  const { t } = useLingui()
+  const { anchor, close, trigger } = useTitleMenu('app')
+  useEffect(() => {
+    useMortarUpdate.getState().load().catch(reportUnexpected)
+  }, [])
   return (
     <>
       <ButtonBase
@@ -196,80 +280,7 @@ export const AppMenu = memo(function AppMenuView() {
         <ChevronDown size={14} aria-hidden={true} className="label" />
       </ButtonBase>
       <TitleMenu anchorEl={anchor} onClose={close} label={t`Mortar`} width={280}>
-        <TitleMenuItem
-          icon={<Download size={ICON_PX} />}
-          label={t`Downloads`}
-          hint={downloadsKeys}
-          onClick={() => {
-            close()
-            useQueue.getState().setOpen(true)
-          }}
-        />
-        <TitleMenuItem
-          icon={<Settings size={ICON_PX} />}
-          label={t`Mortar settings…`}
-          hint={settingsKeys}
-          onClick={() => {
-            close()
-            openSettings()
-          }}
-        />
-        <TitleMenuItem
-          icon={<FolderOpen size={ICON_PX} />}
-          label={t`Open data folder`}
-          onClick={() => {
-            close()
-            OpenDataFolder().catch(reportUnexpected)
-          }}
-        />
-        <MenuRule />
-        <Reason reason={updatesOffline}>
-          <TitleMenuItem
-            icon={<RefreshCw size={ICON_PX} />}
-            label={t`Check mods and Mortar for updates`}
-            disabled={updatesOffline !== ''}
-            onClick={() => {
-              close()
-              checkForUpdates().catch(reportUnexpected)
-            }}
-          />
-        </Reason>
-        {version ? (
-          <TitleMenuItem
-            icon={<Sparkles size={ICON_PX} />}
-            label={t`What is new in ${version}`}
-            onClick={() => {
-              close()
-              showWhatsNew(version)
-            }}
-          />
-        ) : null}
-        <TitleMenuItem
-          icon={<Info size={ICON_PX} />}
-          label={t`About Mortar`}
-          onClick={() => {
-            close()
-            openSettings('about')
-          }}
-        />
-        <MenuRule />
-        <MenuHeading>{t`Help`}</MenuHeading>
-        <TitleMenuItem
-          icon={<LifeBuoy size={ICON_PX} />}
-          label={t`Get help`}
-          hint={helpKeys}
-          disabled={game === ''}
-          onClick={() => {
-            close()
-            useTab.getState().setTab('console')
-            useConsole.getState().setHelping(true)
-          }}
-        />
-        <ProjectLinks close={close} game={game} />
-        <MenuRule />
-        <NexusLines close={close} />
-        <MenuRule />
-        <TitleMenuItem icon={<LogOut size={ICON_PX} />} label={t`Quit Mortar`} onClick={quit} />
+        <AppMenuItems />
       </TitleMenu>
     </>
   )

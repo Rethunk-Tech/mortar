@@ -40,6 +40,9 @@ function read(game: string, force: boolean): Promise<void> {
   return next
 }
 
+/** Reads the game's templates for every reader, unless a read is under way or just ended. */
+export const readTemplates = (game: string) => read(game, false)
+
 /** The game's templates, read when `active` turns on and again on `reload`. */
 export function useTemplates(game: string, active: boolean) {
   const { t } = useLingui()

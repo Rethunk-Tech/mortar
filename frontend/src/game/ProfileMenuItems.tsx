@@ -24,7 +24,6 @@ import {
   Create as CreateShortcut,
   Remove as RemoveShortcut,
   Capabilities as ShortcutCapabilities,
-  Exists as ShortcutExists,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/shortcut/service.ts'
 import { AddResult } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/steam/models.ts'
 import { STEAM } from '../brand/productNames.ts'
@@ -33,13 +32,13 @@ import { isFrozen } from '../mods/frozen.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { MenuHeading, MenuRule } from '../shell/TitleMenu.tsx'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { BackupMenuItem, RestoreMenuItem } from './BackupMenuItems.tsx'
 import { applyStagedCover, hasPickedCover } from './cover.ts'
 import { FarmMenuItem } from './FarmMenuItem.tsx'
 import { openProfileDialog } from './profileDialog.ts'
+import { lookForShortcut, setShortcut, useHasShortcut } from './shortcutLooks.ts'
 import { TemplateMenuItems } from './TemplateMenuItems.tsx'
 
 // The profile actions shared by the profile page's buttons and the sidebar's context menu, so both offer the same.
@@ -82,11 +81,13 @@ const shortcutCapabilities = () => {
 function ShortcutMenuItems({ profile, close }: { profile: Profile; close: () => void }) {
   const { t } = useLingui()
   const currentGame = useProfiles((s) => s.game)
-  const { data: hasShortcut, setData: setHasShortcut } = useLoaded(
-    currentGame ? () => ShortcutExists(currentGame.id, profile.id) : null,
-    [currentGame, profile.id],
-    false,
-  )
+  const gameId = currentGame?.id ?? ''
+  const hasShortcut = useHasShortcut(gameId, profile.id)
+  useEffect(() => {
+    if (gameId) {
+      lookForShortcut(gameId, profile.id)
+    }
+  }, [gameId, profile.id])
   // Steam on the host cannot start Mortar inside a Flatpak, so the action is left out there.
   const [steamShortcut, setSteamShortcut] = useState(true)
   useEffect(() => {
@@ -104,11 +105,10 @@ function ShortcutMenuItems({ profile, close }: { profile: Profile; close: () => 
           const g = currentGame
           if (g) {
             CreateShortcut(g.id, g.name, profile.id, profile.name)
-              .then((path) =>
-                useToasts
-                  .getState()
-                  .push({ kind: 'success', title: t`Shortcut added`, body: path }),
-              )
+              .then((path) => {
+                setShortcut(g.id, profile.id, true)
+                useToasts.getState().push({ kind: 'success', title: t`Shortcut added`, body: path })
+              })
               .catch(reportError(t`Could not add the shortcut`))
           }
         }}
@@ -124,7 +124,7 @@ function ShortcutMenuItems({ profile, close }: { profile: Profile; close: () => 
               RemoveShortcut(g.id, profile.id)
                 .then(() => {
                   useToasts.getState().push({ kind: 'success', title: t`Shortcut removed` })
-                  setHasShortcut(false)
+                  setShortcut(g.id, profile.id, false)
                 })
                 .catch(reportError(t`Could not remove the shortcut`))
             }

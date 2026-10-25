@@ -5,9 +5,12 @@ import { useMemo } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { MenuHeading } from '../shell/TitleMenu.tsx'
+import { readTemplates } from '../templates/useTemplates.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 import { CoverMenuItems, MoreMenuItems, ProfileMenuItem } from './ProfileMenuItems.tsx'
 import { openProfileDialog } from './profileDialog.ts'
 import { useRenameRequest } from './renameRequest.ts'
+import { lookForShortcut } from './shortcutLooks.ts'
 
 // ProfileContextMenu is a sidebar profile's right-click menu: the same actions as the profile page's buttons.
 export function ProfileContextMenu({
@@ -56,6 +59,16 @@ export function ProfileContextMenu({
       onClose={onClose}
       anchorReference="anchorPosition"
       anchorPosition={position ?? undefined}
+      // Kept mounted, so opening it again redraws no item; what the items show is read again as it opens.
+      keepMounted={true}
+      slotProps={{
+        transition: {
+          onEnter: () => {
+            lookForShortcut(game, profile.id)
+            readTemplates(game).catch(reportUnexpected)
+          },
+        },
+      }}
     >
       {items}
     </Menu>
