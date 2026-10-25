@@ -209,7 +209,7 @@ export function dialogCases(h: Helpers): Case[] {
     kit
   return [
     dialog('edit-profile-appearance', editProfile),
-    ...['Launch', 'Game settings'].map((name) =>
+    ...['Launch'].map((name) =>
       dialog(
         `edit-profile-${name.toLowerCase().replace(' ', '-')}`,
         async (p) => {

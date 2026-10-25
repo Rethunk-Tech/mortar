@@ -1,9 +1,7 @@
-import { SetGameSettings } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { applyStagedCover, type StagedCover } from '../game/cover.ts'
 import { errorMessage, reportError, reportUnexpected } from '../toasts/report.ts'
 import { clipDescription } from './appearance.ts'
-import type { GameSettingsValues } from './GameSettings.tsx'
 import { useProfiles } from './store.ts'
 
 type LaunchError = { field: 'options' | 'settings'; message: string } | null
@@ -48,7 +46,6 @@ export async function saveProfile({
   launchPrefix,
   launchEnv,
   stagedCover,
-  gameSettings,
   color,
   icon,
   description,
@@ -68,7 +65,6 @@ export async function saveProfile({
   launchPrefix: string
   launchEnv: string
   stagedCover: StagedCover
-  gameSettings: GameSettingsValues | null
   color: string
   icon: string
   description: string
@@ -101,9 +97,6 @@ export async function saveProfile({
     }
     try {
       await setAppearance(profile.id, color, icon, clipDescription(description))
-      if (gameId) {
-        await SetGameSettings(gameId, profile.id, gameSettings ?? {})
-      }
     } catch (error) {
       reportUnexpected(error)
       return

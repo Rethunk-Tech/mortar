@@ -32,8 +32,10 @@ import { BackupsPage, GameFolder, LoaderPage } from './sections/GameSettings.tsx
 import { GameSync } from './sections/GameSync.tsx'
 import { HiddenLogSources } from './sections/HiddenLogSources.tsx'
 import { HiddenMods } from './sections/HiddenMods.tsx'
+import { LoaderProfileSettings, ProfileGameOptions } from './sections/ProfileScopeSections.tsx'
 import { SourceOrder } from './sections/SourceOrder.tsx'
 import { StreamOverlay } from './sections/StreamOverlay.tsx'
+import { useSettingsScope } from './settingsScope.ts'
 import { useSettings } from './store.ts'
 import { usePerProfileRelated } from './usePerProfileRelated.tsx'
 
@@ -130,7 +132,14 @@ function GamePages({
     s.game?.id === game ? s.profiles.some((p) => p.overrides?.startFirst === 'alvr') : false,
   )
   const startsALVR = gameALVR || profileALVR
-  const { related, dialog } = usePerProfileRelated(game)
+  const related = usePerProfileRelated(game, () => {
+    useSettingsScope.setState({ profile: true })
+    setPage('play')
+  })
+  // On the open profile's scope the page also shows what is only ever per profile.
+  const profileScope = useSettingsScope((s) => s.profile)
+  const openId = useProfiles((s) => s.openId ?? '')
+  const ownProfile = profileScope && openId !== '' ? openId : ''
   const pages: ShellPage<GamePage>[] = [
     { id: 'install', label: t`Install`, icon: FolderOpen },
     ...(loader && !loader.builtin
@@ -158,7 +167,10 @@ function GamePages({
         )
       case 'loader':
         return loader && !loader.builtin ? (
-          <LoaderPage key={folderChanges} loader={loader} onVersion={setVersion} />
+          <>
+            <LoaderPage key={folderChanges} loader={loader} onVersion={setVersion} />
+            <LoaderProfileSettings game={game} profileId={ownProfile} loaderName={loader.name} />
+          </>
         ) : null
       case 'play':
         return (
@@ -179,6 +191,7 @@ function GamePages({
             {startsALVR ? <ALVRProgram /> : null}
             <GraphicsApiRow game={game} />
             <ProtonRow game={game} />
+            <ProfileGameOptions game={game} profileId={ownProfile} />
           </SettingsSection>
         )
       case 'mods':
@@ -228,9 +241,8 @@ function GamePages({
           pages.map((p) => [p.id, <ScopeSwitch key="scope" gameName={name} />]),
         )}
         initialQuery={query}
-        related={related}
+        {...(related ? { related } : {})}
       />
-      {dialog}
     </>
   )
 }

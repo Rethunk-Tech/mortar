@@ -9,21 +9,6 @@ Decided work, short enough to build cold. Delete an item in the change that land
 
 ## Ready to build
 
-### One settings page per game, with a profile scope
-
-**Why:** a profile's overrides (Edit profile › Overrides, `frontend/src/profiles/OverrideRows.tsx` `OverridesSection`, keys in `profiles/overrideValue.ts` `OVERRIDE_KEYS`) repeat the game's own settings pages (`frontend/src/settings/GameSettingsPage.tsx`, pages at `:39` and `:134`), and the game-wide pages open from a profile's Home (`frontend/src/game/Home.tsx:129`), so players read game-wide settings as per-profile.
-
-**Decided shape:**
-
-- The game settings page gets a scope switch above its sections: *All <game> profiles* | *This profile: <name>* (the open profile). Game-wide is the scope when opened from the Games menu, a game row or Settings › Games; a profile's Home and its menus open it in that profile's scope.
-- In the profile scope every row of an `overridable` key (`internal/settings/registry.go`, the `overridable(...)` wrappers) shows the profile's value, the game-wide value beside it ("game: Steam") and a per-row *Use game's* reset; keys that are not overridable show the game-wide value read-only with a link to the all-profiles scope.
-- Edit profile keeps Appearance and launch presets; its Overrides tab and the duplicated rows in Launch (loader console, log level) move into the page's profile scope. Game settings (window mode, resolution, start muted: `profiles/GameSettings.tsx`) stay per profile and move into the same scope as their own section.
-- Values keep their storage: game-wide in `Settings.Games[gameID]`, overrides in the profile's `overrides` map, resolved by the existing `resolveOverride` (`frontend`) and the registry's override resolution (`internal/settings`).
-
-**Traps:** the render cases for Edit profile's tabs (`frontend/e2e/renderDialogs.ts` `edit-profile-*`) move to the settings page; the profile scope must re-read when the open profile changes.
-
-**Done when:** no setting is editable in two places, the profile's Home opens the profile scope, and the Overrides tab is gone.
-
 ### The website on Astro
 
 **Stage 2:** unique content per game page, beside the loader, sites and stores it shows (`web/src/pages/[game]/index.astro`):

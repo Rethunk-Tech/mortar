@@ -19,10 +19,6 @@ msgstr "Switched {name} to the {detail} update channel"
 msgid "Required before the server can start."
 msgstr "Required before the server can start."
 
-#: src/profiles/LoaderLaunchSettings.tsx
-msgid "Saved in the profile's config folder and applied the next time the game starts."
-msgstr "Saved in the profile's config folder and applied the next time the game starts."
-
 #: src/profiles/GameSettings.tsx
 msgid "Start muted"
 msgstr "Start muted"
@@ -66,10 +62,6 @@ msgstr "Restored {detail} of {name}"
 #: src/profiles/HealthDialog.tsx
 msgid "Missing from the store"
 msgstr "Missing from the store"
-
-#: src/profiles/LoaderLaunchSettings.tsx
-msgid "Log level"
-msgstr "Log level"
 
 #: src/profiles/HistoryPanel.tsx
 msgid "History"
@@ -393,10 +385,6 @@ msgstr "with"
 msgid "Keep {name}'s versions"
 msgstr "Keep {name}'s versions"
 
-#: src/profiles/overrideValue.ts
-msgid "Off"
-msgstr "Off"
-
 #: src/profiles/historyLabel.ts
 msgid "Before this change"
 msgstr "Before this change"
@@ -438,7 +426,6 @@ msgstr "Save as template"
 msgid "Neither profile has a mod that matches the filter."
 msgstr "Neither profile has a mod that matches the filter."
 
-#: src/profiles/EditProfileDialog.tsx
 #: src/profiles/GameSettings.tsx
 msgid "Game settings"
 msgstr "Game settings"
@@ -891,10 +878,6 @@ msgstr "Updated {name} from {from} to {to}"
 msgid "Changed launch settings"
 msgstr "Changed launch settings"
 
-#: src/profiles/LoaderLaunchSettings.tsx
-msgid "Show the console window"
-msgstr "Show the console window"
-
 #: src/profiles/CompareTop.tsx
 msgid "Someone else's"
 msgstr "Someone else's"
@@ -1071,10 +1054,6 @@ msgstr "Prefix for direct launches only (for example, gamemoderun mangohud)."
 msgid "Could not repair profile"
 msgstr "Could not repair profile"
 
-#: src/profiles/LoaderLaunchSettings.tsx
-msgid "Debug"
-msgstr "Debug"
-
 #: src/profiles/HealthCheckBadge.tsx
 msgid "{count, plural, one {# thing to repair} other {# things to repair}}"
 msgstr "{count, plural, one {# thing to repair} other {# things to repair}}"
@@ -1246,10 +1225,6 @@ msgstr "Pickaxe"
 msgid "Could not empty the trash"
 msgstr "Could not empty the trash"
 
-#: src/profiles/EditProfileDialog.tsx
-msgid "Loading game settings…"
-msgstr "Loading game settings…"
-
 #: src/profiles/historyDiff.ts
 #: src/profiles/historyLabel.ts
 msgid "Disabled {names}"
@@ -1330,7 +1305,6 @@ msgid "Changed bytes of a mod file are kept beside it, since no profile could ta
 msgstr "Changed bytes of a mod file are kept beside it, since no profile could take them"
 
 #: src/profiles/LaunchPresetsBlock.tsx
-#: src/profiles/LoaderLaunchSettings.tsx
 msgid "Standard"
 msgstr "Standard"
 
@@ -1416,10 +1390,6 @@ msgstr "Edited the note of {name}"
 msgid "This value is not allowed."
 msgstr "This value is not allowed."
 
-#: src/profiles/LoaderLaunchSettings.tsx
-msgid "Warnings and errors"
-msgstr "Warnings and errors"
-
 #: src/profiles/EditProfileDialog.tsx
 msgid "Could not use that image"
 msgstr "Could not use that image"
@@ -1477,10 +1447,6 @@ msgstr "Found mods on {source}"
 #: src/profiles/compareTitle.ts
 msgid "Enabled in one only"
 msgstr "Enabled in one only"
-
-#: src/profiles/LoaderLaunchSettings.tsx
-msgid "Everything"
-msgstr "Everything"
 
 #: src/profiles/AppearancePickers.tsx
 msgid "Icon"
@@ -1603,10 +1569,6 @@ msgstr "Close"
 #: src/profiles/restoreBackup.ts
 msgid "Install by hand: {names}"
 msgstr "Install by hand: {names}"
-
-#: src/profiles/overrideValue.ts
-msgid "On"
-msgstr "On"
 
 #: src/profiles/historyTimeline.ts
 msgid "{count, plural, one {Removed # mod} other {Removed # mods}}"

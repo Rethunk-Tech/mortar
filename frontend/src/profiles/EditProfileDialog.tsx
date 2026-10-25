@@ -1,24 +1,18 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Tab, Tabs, TextField, Typography } from '@mui/material'
 import { type ReactNode, useEffect, useId, useState } from 'react'
-import { GameSettings as GetGameSettings } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { PickImage } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { hasPickedCover, type StagedCover } from '../game/cover.ts'
 import { HeroCover } from '../game/HeroCover.tsx'
-import { useGameInfo } from '../games/info.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { Field, FormDialog, FormSection, TextInput } from '../shell/dialog/FormDialog.tsx'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { AppearancePickers } from './AppearancePickers.tsx'
 import { MAX_DESCRIPTION, MAX_NAME } from './appearance.ts'
-import { formSettingsFromBackend } from './formSettingsFromBackend.ts'
-import { GameSettings, type GameSettingsValues } from './GameSettings.tsx'
 import { LaunchOptionsBlock } from './LaunchOptionsBlock.tsx'
 import { LaunchPresetsBlock } from './LaunchPresetsBlock.tsx'
-import { LoaderLaunchSettings } from './LoaderLaunchSettings.tsx'
 import { LoaderPicker } from './LoaderPicker.tsx'
 import { SeparateSavesRow } from './SeparateSavesRow.tsx'
 import { ServerSettings } from './ServerSettings.tsx'
@@ -28,24 +22,10 @@ import { useNameField } from './useNameField.ts'
 
 const PATH_SEPARATORS = /[\\/]/
 
-type FieldsTab = 'appearance' | 'launch' | 'game'
+type FieldsTab = 'appearance' | 'launch'
 
 // LaunchError is a rejected launch field: the extra SMAPI arguments, or the prefix and environment saved together.
 type LaunchError = { field: 'options' | 'settings'; message: string } | null
-
-// Only a game with a startup preferences file has settings to read; elsewhere the fetch would only re-render.
-function useProfileGameSettings(gameId: string, profileId: string, open: boolean) {
-  const startupSettings = useGameInfo(gameId)?.startupSettings === true
-  const { data, setData, loading } = useLoaded<GameSettingsValues | null>(
-    open && gameId && startupSettings
-      ? () => GetGameSettings(gameId, profileId).then(formSettingsFromBackend)
-      : null,
-    [gameId, open, profileId, startupSettings],
-    null,
-    reportUnexpected,
-  )
-  return [data, setData, !loading] as const
-}
 
 // The cover choice is staged here and applied by the dialog's Save.
 function CoverField({
@@ -98,12 +78,10 @@ function FieldsTabs({
   ids,
   tab,
   onTab,
-  startupSettings,
 }: {
   ids: string
   tab: FieldsTab
   onTab: (tab: FieldsTab) => void
-  startupSettings: boolean
 }) {
   const { t } = useLingui()
   const tabProps = (id: FieldsTab) => ({
@@ -133,7 +111,6 @@ function FieldsTabs({
     >
       <Tab {...tabProps('appearance')} label={t`Appearance`} />
       <Tab {...tabProps('launch')} label={t`Launch`} />
-      {startupSettings ? <Tab {...tabProps('game')} label={t`Game settings`} /> : null}
     </Tabs>
   )
 }
@@ -161,8 +138,6 @@ interface ProfileFieldsProps {
   onLaunchEnv: (value: string) => void
   launchError: LaunchError
   onLaunchError: (value: LaunchError) => void
-  gameSettings: GameSettingsValues | null
-  onGameSettings: (value: GameSettingsValues | null) => void
   ids: string
   tab: FieldsTab
 }
@@ -198,15 +173,11 @@ function ProfileFields({
   onLaunchEnv,
   launchError,
   onLaunchError,
-  gameSettings,
-  onGameSettings,
   ids,
   tab,
 }: ProfileFieldsProps) {
   const { t } = useLingui()
   const nameId = useId()
-  // Only a game with a startup preferences file applies them; elsewhere the fields would change nothing.
-  const startupSettings = useGameInfo(gameId)?.startupSettings === true
   const panel = (id: FieldsTab, children: ReactNode) =>
     tab === id ? (
       <Box
@@ -285,12 +256,6 @@ function ProfileFields({
             />
           </FormSection>
           <ServerSettings gameId={gameId} profileId={profile.id} />
-          <LoaderLaunchSettings
-            key={profile.loader ?? ''}
-            gameId={gameId}
-            profileId={profile.id}
-            loader={profile.loader ?? ''}
-          />
           <LaunchPresetsBlock
             gameId={gameId}
             profileId={profile.id}
@@ -300,12 +265,6 @@ function ProfileFields({
           />
         </>,
       )}
-      {startupSettings
-        ? panel(
-            'game',
-            <GameSettings profileId={profile.id} value={gameSettings} onChange={onGameSettings} />,
-          )
-        : null}
     </Box>
   )
 }
@@ -329,16 +288,15 @@ interface EditProfileDialogProps {
 }
 
 // The open tab; a launch field Save rejected is shown, wherever the user was.
-function useFieldsTab(gameId: string, initialTab: FieldsTab, launchError: LaunchError) {
+function useFieldsTab(initialTab: FieldsTab, launchError: LaunchError) {
   const ids = useId()
   const [tab, setTab] = useState<FieldsTab>(initialTab)
-  const startupSettings = useGameInfo(gameId)?.startupSettings === true
   useEffect(() => {
     if (launchError) {
       setTab('launch')
     }
   }, [launchError])
-  const bar = <FieldsTabs ids={ids} tab={tab} onTab={setTab} startupSettings={startupSettings} />
+  const bar = <FieldsTabs ids={ids} tab={tab} onTab={setTab} />
   return { ids, tab, bar }
 }
 
@@ -357,9 +315,8 @@ export function EditProfileDialog(props: EditProfileDialogProps) {
   const [launchPrefix, setLaunchPrefix] = useState(profile.launchPrefix ?? '')
   const [launchEnv, setLaunchEnv] = useState(profile.launchEnv ?? '')
   const [stagedCover, setStagedCover] = useState<StagedCover>(undefined)
-  const [gameSettings, setGameSettings, loaded] = useProfileGameSettings(gameId, profile.id, open)
   const [launchError, setLaunchError] = useState<LaunchError>(null)
-  const { ids, tab, bar } = useFieldsTab(gameId, initialTab, launchError)
+  const { ids, tab, bar } = useFieldsTab(initialTab, launchError)
   const [busy, setBusy] = useState(false)
   const [touched, setTouched] = useState(false)
   const edited = <A,>(set: (value: A) => void) => touching(setTouched, set)
@@ -386,7 +343,6 @@ export function EditProfileDialog(props: EditProfileDialogProps) {
       launchPrefix,
       launchEnv,
       stagedCover,
-      gameSettings,
       setLaunchOptions,
       setLaunchSettings,
       setAppearance,
@@ -405,7 +361,6 @@ export function EditProfileDialog(props: EditProfileDialogProps) {
       title={t`Edit profile`}
       size="lg"
       submitLabel={t`Save`}
-      issue={loaded ? '' : t`Loading game settings…`}
       dirty={touched}
       busy={busy}
       onSubmit={() => save().catch(reportUnexpected)}
@@ -436,8 +391,6 @@ export function EditProfileDialog(props: EditProfileDialogProps) {
         onLaunchEnv={edited(setLaunchEnv)}
         launchError={launchError}
         onLaunchError={setLaunchError}
-        gameSettings={gameSettings}
-        onGameSettings={edited(setGameSettings)}
       />
     </FormDialog>
   )

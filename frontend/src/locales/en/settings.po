@@ -11,6 +11,10 @@ msgstr ""
 msgid "{name}: desktop notification"
 msgstr "{name}: desktop notification"
 
+#: src/settings/sections/ProfileScopeSections.tsx
+msgid "{name} in this profile"
+msgstr "{name} in this profile"
+
 #: src/settings/sections/ModsProfiles.tsx
 msgid "Set Sidebar badge counts, in Appearance, to something other than Off first."
 msgstr "Set Sidebar badge counts, in Appearance, to something other than Off first."
@@ -18,6 +22,10 @@ msgstr "Set Sidebar badge counts, in Appearance, to something other than Off fir
 #: src/settings/sections/Appearance.tsx
 msgid "Gentle violet"
 msgstr "Gentle violet"
+
+#: src/settings/sections/ProfileScopeSections.tsx
+msgid "Saved in the profile's config folder and applied the next time the game starts."
+msgstr "Saved in the profile's config folder and applied the next time the game starts."
 
 #: src/settings/usePerProfileRelated.tsx
 msgid "Start muted"
@@ -96,6 +104,10 @@ msgstr "{name}: in Mortar"
 #: src/settings/shortcutLabels.ts
 msgid "Duplicate the open profile"
 msgstr "Duplicate the open profile"
+
+#: src/settings/sections/ProfileScopeSections.tsx
+msgid "Log level"
+msgstr "Log level"
 
 #: src/settings/prefCopy.ts
 msgid "Mortar leaves the taskbar and waits in the tray until the game exits."
@@ -1011,6 +1023,10 @@ msgstr "{name} program"
 msgid "Size"
 msgstr "Size"
 
+#: src/settings/usePerProfileRelated.tsx
+msgid "Show for {name}"
+msgstr "Show for {name}"
+
 #: src/settings/shortcutLabels.ts
 msgid "Go back"
 msgstr "Go back"
@@ -1906,10 +1922,6 @@ msgstr "{name} ({game})"
 msgid "Mortar sends {source} requests without a login. Run gh auth login to raise the rate limit."
 msgstr "Mortar sends {source} requests without a login. Run gh auth login to raise the rate limit."
 
-#: src/settings/usePerProfileRelated.tsx
-msgid "Edit {name}"
-msgstr "Edit {name}"
-
 #: src/settings/sections/NexusMods.tsx
 msgid "Kept in your system keyring. Find it on {source} under Settings, API Keys."
 msgstr "Kept in your system keyring. Find it on {source} under Settings, API Keys."
@@ -2042,6 +2054,10 @@ msgstr "Warm and bold"
 #: src/settings/sections/DataImport.tsx
 msgid "{count, plural, one {Import # change} other {Import # changes}}"
 msgstr "{count, plural, one {Import # change} other {Import # changes}}"
+
+#: src/settings/sections/ProfileScopeSections.tsx
+msgid "Show the console window"
+msgstr "Show the console window"
 
 #: src/settings/prefCopy.ts
 msgid "Badge checks for other profiles"
@@ -2512,6 +2528,7 @@ msgid "A game's mod loader version and its update notice are in that game's sett
 msgstr "A game's mod loader version and its update notice are in that game's settings."
 
 #: src/settings/prefCopy.ts
+#: src/settings/sections/ProfileScopeSections.tsx
 msgid "Debug"
 msgstr "Debug"
 
@@ -3126,6 +3143,10 @@ msgstr "Regenerate…"
 msgid "Keep Mortar in the tray"
 msgstr "Keep Mortar in the tray"
 
+#: src/settings/sections/ProfileScopeSections.tsx
+msgid "Standard"
+msgstr "Standard"
+
 #: src/settings/GameSettingsPage.tsx
 #: src/settings/sections/LoaderRow.tsx
 msgid "Install"
@@ -3303,6 +3324,10 @@ msgstr "Reinstall {game} from your game launcher."
 msgid "Import settings"
 msgstr "Import settings"
 
+#: src/settings/sections/ProfileScopeSections.tsx
+msgid "Warnings and errors"
+msgstr "Warnings and errors"
+
 #: src/settings/sections/GameSettings.tsx
 msgid "Chosen in the game's {launcher} properties."
 msgstr "Chosen in the game's {launcher} properties."
@@ -3458,6 +3483,10 @@ msgstr "System default"
 #: src/settings/shortcutLabels.ts
 msgid "Open the previous profile"
 msgstr "Open the previous profile"
+
+#: src/settings/sections/ProfileScopeSections.tsx
+msgid "Everything"
+msgstr "Everything"
 
 #: src/settings/prefCopy.ts
 msgid "Share problem choices"

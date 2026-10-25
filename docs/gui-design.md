@@ -281,7 +281,7 @@ The open profile's History (`frontend/src/profiles/HistoryDialog.tsx`) is a wide
 A solid-paper dialog without a transition, as tall as its tallest tab. Code: `frontend/src/profiles/EditProfileDialog.tsx`.
 
 - **Keep this profile's saves separate:** turning it on asks first and explains that while the profile runs the shared saves folder is set aside and returns when the game closes, with nothing deleted; turning it off applies at once.
-- **Launch options:** Mortar sets `--mods-path` itself and refuses `--mods-path`, `--no-terminal` and `--skip-terminal`. **Launch prefix** and **Launch environment** apply to direct launches only (unavailable on Windows for the prefix); Steam launches receive neither ([architecture.md](architecture.md#launch)). Launch presets and loader-specific options save at once, not with the dialog's Save.
+- **Launch options:** Mortar sets `--mods-path` itself and refuses `--mods-path`, `--no-terminal` and `--skip-terminal`. **Launch prefix** and **Launch environment** apply to direct launches only (unavailable on Windows for the prefix); Steam launches receive neither ([architecture.md](architecture.md#launch)). Launch presets save at once, not with the dialog's Save.
 
 ### Compare, merge and share
 
@@ -362,7 +362,7 @@ Rules a change could break:
 
 Per game, on their own page (`frontend/src/settings/GameSettingsPage.tsx`), opened by the last icon button in the game screen's tab row after **Share**. It reuses Settings' layout (nav with a back button to the game, search, Esc returns); the title bar keeps the game tab highlighted. Pages: **Install**, the game's loader, **Play**, **Mods**, **Save backups** (only for a game with saves), **Console** (only for a loader with a console) and **Streaming**. Anything tied to a game's loader, launcher, saves or content format lives here.
 
-- **Scope:** with a profile open, a switch over the pages picks *All <game> profiles* or *This profile: <name>*. A profile's Home opens the profile scope, every other way in opens all profiles. In the profile scope a row a profile may override shows the profile's value, the game's beside it and **Use the game's**; any other row shows the game's value, held.
+- **Scope:** with a profile open, a switch over the pages picks *All <game> profiles* or *This profile: <name>*. A profile's Home opens the profile scope, every other way in opens all profiles. In the profile scope a row a profile may override shows the profile's value, the game's beside it and **Use the game's**; any other row shows the game's value, held. The profile scope also shows what is only ever per profile: the loader's options in the profile's own files (BepInEx's console window and log level) on the loader's page, and the game's startup options (window mode, resolution, volume) on **Play**, each saved as it changes.
 
 - **Install › Game folder:** **Change folder…** is checked before save. **Reset game install** (outlined, error colour) deletes the folder, SMAPI and the mods placed there while keeping Saves and Mortar profiles ([architecture.md](architecture.md#finding-the-game)).
 - **SMAPI:** installing a pinned version asks first since every profile switches.
