@@ -44,7 +44,7 @@ type Param struct {
 	// Label is the template's displayName, else the id; Description says more.
 	Label       string `json:"label"`
 	Description string `json:"description"`
-	// Kind is "string" or "choice".
+	// Kind is "string", "bool" or "choice".
 	Kind      string   `json:"kind"`
 	Default   string   `json:"default"`
 	Required  bool     `json:"required"`
@@ -137,6 +137,9 @@ func ReadForm(dir string) (Form, error) {
 			return Form{}, bad("parameter %q", id)
 		}
 		p := Param{ID: id, Label: cmpOr(sym.DisplayName, id), Description: sym.Description, Kind: "string", Default: sym.DefaultValue, Required: sym.IsRequired, Multiple: sym.AllowMultipleValues}
+		if strings.EqualFold(sym.Datatype, "bool") {
+			p.Kind = "bool"
+		}
 		if strings.EqualFold(sym.Datatype, "choice") {
 			p.Kind = "choice"
 			for _, c := range sym.Choices {
@@ -263,6 +266,9 @@ func (f Form) args(values, fills map[string]string) ([]string, map[string]string
 			parts = strings.Split(v, "|")
 		}
 		for _, part := range parts {
+			if p.Kind == "bool" && part != "true" && part != "false" {
+				return nil, nil, invalid("%s is true or false", p.Label)
+			}
 			if p.Kind == "choice" && !slices.ContainsFunc(p.Choices, func(c Choice) bool { return c.Value == part }) {
 				return nil, nil, invalid("%q is not a choice for %s", part, p.Label)
 			}

@@ -16,6 +16,7 @@ import {
   Step as StepItem,
   StepLabel,
   Stepper,
+  Switch,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
@@ -169,6 +170,21 @@ function ParamField({
 }) {
   if (param.kind === 'choice') {
     return <ChoiceField param={param} value={value} set={set} />
+  }
+  if (param.kind === 'bool') {
+    return (
+      <FormControlLabel
+        control={<Switch checked={value === 'true'} onChange={(_, on) => set(String(on))} />}
+        label={
+          <Box>
+            <Box>{param.label}</Box>
+            <Box sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
+              {param.description}
+            </Box>
+          </Box>
+        }
+      />
+    )
   }
   const counter = param.maxLength > 0 ? `${value.length}/${param.maxLength}` : ''
   return (

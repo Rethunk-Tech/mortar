@@ -34,6 +34,7 @@ const testTemplate = `{
     "categories": { "type": "parameter", "datatype": "choice", "allowMultipleValues": true, "defaultValue": "mods",
       "choices": [ { "choice": "mods", "displayName": "Mods" }, { "choice": "items" }, { "choice": "misc" } ] },
     "loaderPackVersion": { "type": "parameter", "datatype": "string", "defaultValue": "5.4.2305", "replaces": "5.4.2305" },
+    "netcode": { "type": "parameter", "datatype": "bool", "defaultValue": "false" },
     "year": { "type": "generated", "generator": "now", "replaces": "ModYear" }
   }
 }`
@@ -118,7 +119,7 @@ func TestTemplateFormAsksForTheTemplatesParametersInOrder(t *testing.T) {
 	for _, p := range form.Parameters {
 		ids = append(ids, p.ID)
 	}
-	if !slices.Equal(ids, []string{"description", "team", "categories"}) || form.shortName != "test-mod" {
+	if !slices.Equal(ids, []string{"description", "team", "categories", "netcode"}) || form.Parameters[3].Kind != "bool" || form.shortName != "test-mod" {
 		t.Fatalf("form = %+v", form)
 	}
 	team, categories := form.Parameters[1], form.Parameters[2]
@@ -149,7 +150,7 @@ func TestCreateRunsDotnetNewAndWiresTheProfile(t *testing.T) {
 	parent := t.TempDir()
 	p, err := svc.Create(t.Context(), NewMod{
 		Game: "lethal-company", Name: "ShopDrop", Parent: parent, Repo: "shop-drop",
-		Values: map[string]string{"description": "Lands somewhere.", "team": "Ab", "categories": "items|misc"},
+		Values: map[string]string{"description": "Lands somewhere.", "team": "Ab", "categories": "items|misc", "netcode": "true"},
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -161,7 +162,7 @@ func TestCreateRunsDotnetNewAndWiresTheProfile(t *testing.T) {
 			made = c
 		}
 	}
-	for _, want := range [][]string{{"-n", "ShopDrop"}, {"-o", dir}, {"--team", "Ab"}, {"--categories", "items"}, {"--categories", "misc"}, {"--loaderPackVersion", "5.4.2401"}} {
+	for _, want := range [][]string{{"-n", "ShopDrop"}, {"-o", dir}, {"--team", "Ab"}, {"--categories", "items"}, {"--categories", "misc"}, {"--loaderPackVersion", "5.4.2401"}, {"--netcode", "true"}} {
 		at := slices.Index(made, want[0])
 		if at < 0 || !slices.Contains(made[at:], want[1]) {
 			t.Errorf("dotnet new %v lacks %v", made, want)
@@ -193,6 +194,7 @@ func TestCreateChecksValuesBeforeAnythingIsMade(t *testing.T) {
 		"dash":          {"description": "--help", "team": "Ab"},
 		"not a choice":  {"description": "d", "team": "Ab", "categories": "items|nope"},
 		"spans lines":   {"description": "a\nb", "team": "Ab"},
+		"not a bool":    {"description": "d", "team": "Ab", "netcode": "yes"},
 		"accepted base": ok,
 	} {
 		parent := t.TempDir()
