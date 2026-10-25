@@ -12,7 +12,7 @@ import {
   ToggleLeft,
   ToggleRight,
 } from 'lucide-react'
-import { type ReactNode, useState } from 'react'
+import { memo, type ReactNode, useState } from 'react'
 import type {
   HistoryEvent,
   HistoryItem,
@@ -37,26 +37,22 @@ const ICONS: Record<HistoryKind, ReactNode> = {
   other: <CircleDot size={ICON_SIZE} />,
 }
 
-export function HistoryEventRow({
+// Everything in a row but its compare checkbox, memoised so entering compare mode leaves it alone.
+const RowMain = memo(function RowMainView({
   ev,
   items,
-  comparing,
-  selected,
-  onToggle,
+  busy,
+  undoable,
   onUndo,
   onRevertItem,
-  busy,
 }: {
   ev: HistoryEvent
   items: HistoryItem[]
-  // Compare mode shows a checkbox on each row that can be picked.
-  comparing: boolean
-  selected: boolean
-  onToggle: () => void
-  // Absent for the oldest event, which nothing older can undo.
-  onUndo: (() => void) | undefined
-  onRevertItem: (mod: string) => void
   busy: boolean
+  // False for the oldest event, which nothing older can undo.
+  undoable: boolean
+  onUndo: (id: string) => void
+  onRevertItem: (id: string, mod: string) => void
 }) {
   const { t } = useLingui()
   const [open, setOpen] = useState(false)
@@ -64,28 +60,8 @@ export function HistoryEventRow({
   const trimmed = ev.kind === 'trimmed'
   const detailed = items.length > 0
   return (
-    <Box
-      component="li"
-      sx={{
-        listStyle: 'none',
-        borderRadius: '8px',
-        px: space.gap,
-        py: 0.75,
-        [REVEAL]: { bgcolor: 'var(--mortar-card-hover)' },
-        [`${REVEAL} .history-undo`]: { opacity: 1 },
-      }}
-    >
+    <Box sx={{ flex: 1, minWidth: 0 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, minHeight: 32 }}>
-        {comparing ? (
-          <Checkbox
-            size="small"
-            checked={selected}
-            onChange={onToggle}
-            disabled={busy || trimmed}
-            slotProps={{ input: { 'aria-label': t`Compare ${summary}` } }}
-            sx={{ p: 0.5 }}
-          />
-        ) : null}
         <Box sx={{ display: 'flex', color: 'text.secondary' }}>{ICONS[historyKind(ev)]}</Box>
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, flexWrap: 'wrap' }}>
@@ -98,7 +74,7 @@ export function HistoryEventRow({
             <When value={ev.at} withTime={true} />
           </Typography>
         </Box>
-        {trimmed || onUndo === undefined ? (
+        {trimmed || !undoable ? (
           // The same button, hidden, so every row's columns line up whether or not it can be undone.
           <Button
             size="small"
@@ -119,7 +95,7 @@ export function HistoryEventRow({
                 size="small"
                 className="history-undo"
                 disabled={busy}
-                onClick={onUndo}
+                onClick={() => onUndo(ev.id)}
                 aria-label={t`Undo these changes: ${summary}`}
                 sx={{ opacity: 0, '&:focus-visible': { opacity: 1 } }}
               >
@@ -164,7 +140,7 @@ export function HistoryEventRow({
                   <Button
                     size="small"
                     disabled={busy}
-                    onClick={() => onRevertItem(itemModKey(item))}
+                    onClick={() => onRevertItem(ev.id, itemModKey(item))}
                     aria-label={t`Revert this mod: ${{ detail: itemLabel(item) }}`}
                   >
                     {t`Revert this mod`}
@@ -177,4 +153,64 @@ export function HistoryEventRow({
       ) : null}
     </Box>
   )
-}
+})
+
+export const HistoryEventRow = memo(function HistoryEventRowView({
+  ev,
+  items,
+  comparing,
+  selected,
+  busy,
+  undoable,
+  onToggle,
+  onUndo,
+  onRevertItem,
+}: {
+  ev: HistoryEvent
+  items: HistoryItem[]
+  // Compare mode shows a checkbox on each row that can be picked.
+  comparing: boolean
+  selected: boolean
+  busy: boolean
+  undoable: boolean
+  onToggle: (id: string) => void
+  onUndo: (id: string) => void
+  onRevertItem: (id: string, mod: string) => void
+}) {
+  const { t } = useLingui()
+  return (
+    <Box
+      component="li"
+      sx={{
+        listStyle: 'none',
+        borderRadius: '8px',
+        px: space.gap,
+        py: 0.75,
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: space.gap,
+        [REVEAL]: { bgcolor: 'var(--mortar-card-hover)' },
+        [`${REVEAL} .history-undo`]: { opacity: 1 },
+      }}
+    >
+      {comparing ? (
+        <Checkbox
+          size="small"
+          checked={selected}
+          onChange={() => onToggle(ev.id)}
+          disabled={busy || ev.kind === 'trimmed'}
+          slotProps={{ input: { 'aria-label': t`Compare ${{ summary: historySummary(ev) }}` } }}
+          sx={{ p: 0.5, mt: 0.25 }}
+        />
+      ) : null}
+      <RowMain
+        ev={ev}
+        items={items}
+        busy={busy}
+        undoable={undoable}
+        onUndo={onUndo}
+        onRevertItem={onRevertItem}
+      />
+    </Box>
+  )
+})

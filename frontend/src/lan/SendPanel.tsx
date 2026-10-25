@@ -231,24 +231,37 @@ export function SendPanel({
   const [linksOnly, setLinksOnly] = useState<Peer | null>(null)
   const addresses = useSettings((state) => state.lanAddresses ?? [])
 
-  const refresh = useCallback(() => {
-    setRefreshing(true)
-    Peers()
-      .then((next) => setPeers(next ?? []))
-      .catch((error: unknown) => {
-        toastError(t`Could not find Mortar users`, error)
-      })
-      .finally(() => {
-        setRefreshing(false)
-        setLooked(true)
-      })
-  }, [t])
+  // A look the reader asked for shows the spinner; the timer's quiet looks change nothing unless the peers did.
+  const look = useCallback(
+    (shown: boolean) => {
+      if (shown) {
+        setRefreshing(true)
+      }
+      Peers()
+        .then((next) =>
+          setPeers((current) =>
+            JSON.stringify(current) === JSON.stringify(next ?? []) ? current : (next ?? []),
+          ),
+        )
+        .catch((error: unknown) => {
+          toastError(t`Could not find Mortar users`, error)
+        })
+        .finally(() => {
+          if (shown) {
+            setRefreshing(false)
+          }
+          setLooked(true)
+        })
+    },
+    [t],
+  )
+  const refresh = useCallback(() => look(true), [look])
 
   useEffect(() => {
-    refresh()
-    const timer = globalThis.setInterval(refresh, refreshInterval)
+    look(true)
+    const timer = globalThis.setInterval(() => look(false), refreshInterval)
     return () => globalThis.clearInterval(timer)
-  }, [refresh])
+  }, [look])
 
   useEffect(
     () =>

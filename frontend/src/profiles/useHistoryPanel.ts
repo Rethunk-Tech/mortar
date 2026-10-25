@@ -54,16 +54,15 @@ export function useHistoryPanel(profileId: string, open: boolean, toastMissing =
     History(game.id, profileId)
       .then(async (list) => {
         const rows = list ?? []
-        if (live) {
-          setEvents(rows)
-        }
         const next: Record<string, HistoryDiff['items']> = {}
         await Promise.all(
           rows.map(async (ev) => {
             next[ev.id] = (await EventDiff(game.id, profileId, ev.id)).items ?? []
           }),
         )
+        // Events and their changes arrive together, so the timeline draws once.
         if (live) {
+          setEvents(rows)
           setItems(next)
         }
       })

@@ -2,6 +2,7 @@ import type { I18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, MenuItem, Typography } from '@mui/material'
+import { memo, useCallback, useMemo, useRef } from 'react'
 import { PROTON, SMAPI } from '../brand/productNames.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { useGameInfo } from '../games/info.ts'
@@ -67,6 +68,46 @@ function overrideLabel(key: OverrideKey, i18n: I18n): string {
   }
 }
 
+type Choices = { value: string; label: string }[]
+
+// One override's dropdown. Memoised, so a list arriving for one row (Proton builds) leaves the other rows alone.
+const OverrideRow = memo(function OverrideRowView({
+  overrideKey,
+  label,
+  value,
+  hint,
+  disabled,
+  choices,
+  onPick,
+}: {
+  overrideKey: OverrideKey
+  label: string
+  value: string
+  hint: string
+  disabled: boolean
+  choices: Choices
+  onPick: (key: OverrideKey, value: string) => void
+}) {
+  const { t } = useLingui()
+  return (
+    <SelectField
+      label={label}
+      hint={hint || undefined}
+      disabled={disabled}
+      displayEmpty={true}
+      value={value}
+      onChange={(next) => onPick(overrideKey, next)}
+    >
+      <MenuItem value="">{t`Use default`}</MenuItem>
+      {choices.map((o) => (
+        <MenuItem key={o.value} value={o.value}>
+          {o.label}
+        </MenuItem>
+      ))}
+    </SelectField>
+  )
+})
+
 export function OverridesSection({
   overrides,
   onChange,
@@ -89,18 +130,42 @@ export function OverridesSection({
   const proton = useProtonBuilds(info?.id ?? '')
   const nexus = (info?.sources ?? []).includes('nexus')
   // The game's catalog and this computer's Proton builds supply two keys' choices; the rest are fixed.
+  // Each list keeps its identity until its own source changes, so the rows it does not feed stay put.
+  const fixedChoices = useMemo(() => {
+    const all = {} as Record<OverrideKey, Choices>
+    for (const key of OVERRIDE_KEYS) {
+      all[key] = OVERRIDE_VALUES[key].map((value) => ({
+        value,
+        label: overrideChoiceLabel(key, value, i18n),
+      }))
+    }
+    return all
+  }, [i18n])
+  const graphicsChoices = useMemo(
+    () => (graphics?.choices ?? []).map((c) => ({ value: c.id, label: c.label })),
+    [graphics],
+  )
+  const protonChoices = useMemo(() => proton.map((b) => ({ value: b, label: b })), [proton])
   const choicesFor = (key: OverrideKey) => {
     if (key === 'graphicsApi') {
-      return (graphics?.choices ?? []).map((c) => ({ value: c.id, label: c.label }))
+      return graphicsChoices
     }
-    if (key === 'protonVersion') {
-      return proton.map((b) => ({ value: b, label: b }))
-    }
-    return OVERRIDE_VALUES[key].map((value) => ({
-      value,
-      label: overrideChoiceLabel(key, value, i18n),
-    }))
+    return key === 'protonVersion' ? protonChoices : fixedChoices[key]
   }
+  // The latest overrides, so each row's handler stays the same function while the values change.
+  const latest = useRef(overrides)
+  latest.current = overrides
+  const onPick = useCallback(
+    (key: OverrideKey, next: string) =>
+      onChange(
+        applyRow(
+          latest.current,
+          key,
+          next === '' ? { useGame: true } : { useGame: false, value: next },
+        ),
+      ),
+    [onChange],
+  )
   return (
     <>
       <Typography sx={{ fontSize: 'medium.fontSize', color: 'text.secondary' }}>
@@ -130,30 +195,16 @@ export function OverridesSection({
             hint = t`Free ${{ source: sourceLabel('nexus') }} accounts click each download on ${{ source: sourceLabel('nexus') }}; those updates do not block Play.`
           }
           return (
-            <SelectField
+            <OverrideRow
               key={key}
+              overrideKey={key}
               label={label}
-              hint={hint || undefined}
-              disabled={disabled}
-              displayEmpty={true}
               value={choice.useGame ? '' : choice.value}
-              onChange={(next) =>
-                onChange(
-                  applyRow(
-                    overrides,
-                    key,
-                    next === '' ? { useGame: true } : { useGame: false, value: next },
-                  ),
-                )
-              }
-            >
-              <MenuItem value="">{t`Use default`}</MenuItem>
-              {choicesFor(key).map((o) => (
-                <MenuItem key={o.value} value={o.value}>
-                  {o.label}
-                </MenuItem>
-              ))}
-            </SelectField>
+              hint={hint}
+              disabled={disabled}
+              choices={choicesFor(key)}
+              onPick={onPick}
+            />
           )
         })}
       </Box>

@@ -7,6 +7,7 @@ const PROFILE = 'Guided Test'
 const CLOSE_TRIES = 4
 const CLOSE_WAIT_MS = 1000
 const WIZARD_BUDGET = { updates: 3000 }
+const TYPING_BUDGET = { updates: 2000 }
 
 /**
  * Every dialog a profile can reach, and every tab, step and view inside one, so the report pictures each for review.
@@ -44,13 +45,18 @@ function dialogKit(h: Helpers) {
     page.getByRole('dialog').last().getByRole('tab', { name, exact: true }).click()
 
   /** A case that opens a dialog (and moves to one of its views), pictured once it shows. */
+  // prep runs in the unmeasured setup, so a case can measure one step inside a dialog (a tab) and not its opening.
   const dialog = (
     name: string,
     steps: (page: Page) => Promise<void>,
     budget?: Case['budget'],
+    prep?: (page: Page) => Promise<void>,
   ): Case => ({
     name: `dialog-${name}`,
-    setup: ready,
+    setup: async (p) => {
+      await ready(p)
+      await prep?.(p)
+    },
     run: async (p) => {
       await steps(p)
       await shown(p)
@@ -79,6 +85,22 @@ function dialogKit(h: Helpers) {
     await inDialog(page, step)
   }
 
+  // New mod's later steps: a valid name and description open the second, the author's fields the third.
+  const newModStep = async (p: Page, steps: number) => {
+    await tab(p, 'Develop')
+    await button(p, /^New mod…/)
+    const box = (name: string) =>
+      p.getByRole('dialog').last().getByRole('textbox', { name }).first()
+    await box('Mod name').fill('RenderCheck')
+    await box('Description').fill('Checks how the wizard looks.')
+    await inDialog(p, /^Next$/)
+    if (steps > 1) {
+      await box('Author').fill('Render Check')
+      await box('Thunderstore team').fill('RenderCheck')
+      await box('Id prefix').fill('com.rendercheck')
+      await inDialog(p, /^Next$/)
+    }
+  }
   return {
     dialog,
     profileMenu,
@@ -90,6 +112,7 @@ function dialogKit(h: Helpers) {
     button,
     inDialog,
     tabIn,
+    newModStep,
   }
 }
 
@@ -106,34 +129,22 @@ export function dialogCases(h: Helpers): Case[] {
     button,
     inDialog,
     tabIn,
+    newModStep,
   } = dialogKit(h)
-  // New mod's later steps: a valid name and description open the second, and the author step's remembered values the
-  // third.
-  const newModStep = async (p: Page, steps: number) => {
-    await tab(p, 'Develop')
-    await button(p, /^New mod…/)
-    const box = (name: string) =>
-      p.getByRole('dialog').last().getByRole('textbox', { name }).first()
-    await box('Mod name').fill('RenderCheck')
-    await box('Description').fill('Checks how the wizard looks.')
-    await inDialog(p, /^Next$/)
-    if (steps > 1) {
-      await box('Author').fill('Render Check')
-      await box('Thunderstore team').fill('RenderCheck')
-      await box('Id prefix').fill('com.rendercheck')
-      await inDialog(p, /^Next$/)
-    }
-  }
   return [
     dialog('edit-profile-appearance', editProfile),
     ...['Launch', 'Overrides', 'Game settings'].map((name) =>
-      dialog(`edit-profile-${name.toLowerCase().replace(' ', '-')}`, async (p) => {
-        await editProfile(p)
-        const t = p.getByRole('dialog').last().getByRole('tab', { name, exact: true })
-        if ((await t.count()) > 0) {
-          await tabIn(p, name)
-        }
-      }),
+      dialog(
+        `edit-profile-${name.toLowerCase().replace(' ', '-')}`,
+        async (p) => {
+          const t = p.getByRole('dialog').last().getByRole('tab', { name, exact: true })
+          if ((await t.count()) > 0) {
+            await tabIn(p, name)
+          }
+        },
+        undefined,
+        editProfile,
+      ),
     ),
     dialog('history', (p) => profileMenu(p, /^History…/)),
     dialog('history-compare', async (p) => {
@@ -202,10 +213,15 @@ export function dialogCases(h: Helpers): Case[] {
         .click()
       await button(p, /^View licences…/)
     }),
-    dialog('add-game-filled', async (p) => {
-      await openGameSelect(p)
-      await button(p, /^Add a game…/)
-      await typeInto(p, 'Name', 'Render Check')
-    }),
+    // Typing twelve characters re-renders the form once per character.
+    dialog(
+      'add-game-filled',
+      async (p) => {
+        await openGameSelect(p)
+        await button(p, /^Add a game…/)
+        await typeInto(p, 'Name', 'Render Check')
+      },
+      TYPING_BUDGET,
+    ),
   ]
 }

@@ -35,10 +35,14 @@ type FieldsTab = 'appearance' | 'launch' | 'overrides' | 'game'
 // LaunchError is a rejected launch field: the extra SMAPI arguments, or the prefix and environment saved together.
 type LaunchError = { field: 'options' | 'settings'; message: string } | null
 
+// Only a game with a startup preferences file has settings to read; elsewhere the fetch would only re-render.
 function useProfileGameSettings(gameId: string, profileId: string, open: boolean) {
+  const startupSettings = useGameInfo(gameId)?.startupSettings === true
   const { data, setData, loading } = useLoaded<GameSettingsValues | null>(
-    open && gameId ? () => GetGameSettings(gameId, profileId).then(formSettingsFromBackend) : null,
-    [gameId, open, profileId],
+    open && gameId && startupSettings
+      ? () => GetGameSettings(gameId, profileId).then(formSettingsFromBackend)
+      : null,
+    [gameId, open, profileId, startupSettings],
     null,
     reportUnexpected,
   )
@@ -168,7 +172,7 @@ interface ProfileFieldsProps {
   tab: FieldsTab
 }
 
-// Every panel stays mounted, so a field keeps what was typed in it, but only the open one takes space.
+// Only the open panel is drawn; what a field holds lives in the dialog, so switching tabs loses nothing typed.
 const panelSx = {
   // Room inside the scroll box for a slider's thumb at its far end.
   overflowX: 'hidden',
@@ -210,21 +214,17 @@ function ProfileFields({
   const nameId = useId()
   // Only a game with a startup preferences file applies them; elsewhere the fields would change nothing.
   const startupSettings = useGameInfo(gameId)?.startupSettings === true
-  const panel = (id: FieldsTab, children: ReactNode) => (
-    <Box
-      role="tabpanel"
-      id={`${ids}-panel-${id}`}
-      aria-labelledby={`${ids}-tab-${id}`}
-      sx={{
-        ...panelSx,
-        display: tab === id ? 'flex' : 'none',
-        flexDirection: 'column',
-        gap: 3,
-      }}
-    >
-      {children}
-    </Box>
-  )
+  const panel = (id: FieldsTab, children: ReactNode) =>
+    tab === id ? (
+      <Box
+        role="tabpanel"
+        id={`${ids}-panel-${id}`}
+        aria-labelledby={`${ids}-tab-${id}`}
+        sx={{ ...panelSx, display: 'flex', flexDirection: 'column', gap: 3 }}
+      >
+        {children}
+      </Box>
+    ) : null
   return (
     <Box>
       {panel(

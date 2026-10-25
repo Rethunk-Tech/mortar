@@ -1,14 +1,18 @@
 import { i18n } from '@lingui/core'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
+import { useCallback, useRef } from 'react'
 import type {
   HistoryDiff,
   HistoryEvent,
+  HistoryItem,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { space } from '../theme/density.ts'
 import { undoTarget } from '../toasts/history.ts'
 import { HistoryEventRow } from './HistoryEventRow.tsx'
 import { type HistoryDay, historyDays } from './historyTimeline.ts'
+
+const NO_ITEMS: HistoryItem[] = []
 
 export function HistoryTimeline({
   events,
@@ -30,6 +34,15 @@ export function HistoryTimeline({
   onRevertItem: (id: string, mod: string) => void
 }) {
   const { t } = useLingui()
+  // The panel's handlers are new each render; the rows get stable ones that call the latest, so memo holds.
+  const latest = useRef({ onToggle, onUndo, onRevertItem })
+  latest.current = { onToggle, onUndo, onRevertItem }
+  const toggle = useCallback((id: string) => latest.current.onToggle(id), [])
+  const undo = useCallback((id: string) => latest.current.onUndo(id), [])
+  const revertItem = useCallback(
+    (id: string, mod: string) => latest.current.onRevertItem(id, mod),
+    [],
+  )
   const dayLabel = (day: HistoryDay<unknown>) => {
     if (day.label === 'today') {
       return t`Today`
@@ -64,13 +77,14 @@ export function HistoryTimeline({
               <HistoryEventRow
                 key={ev.id}
                 ev={ev}
-                items={items[ev.id] ?? []}
+                items={items[ev.id] ?? NO_ITEMS}
                 comparing={comparing}
                 selected={picked.includes(ev.id)}
                 busy={busy}
-                onToggle={() => onToggle(ev.id)}
-                onUndo={undoTarget(events, ev.id) === '' ? undefined : () => onUndo(ev.id)}
-                onRevertItem={(mod) => onRevertItem(ev.id, mod)}
+                undoable={undoTarget(events, ev.id) !== ''}
+                onToggle={toggle}
+                onUndo={undo}
+                onRevertItem={revertItem}
               />
             ))}
           </Box>

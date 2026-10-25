@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, FormControlLabel, Radio, RadioGroup, Typography } from '@mui/material'
 import { FolderOpen } from 'lucide-react'
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import {
   AddCustomGame,
   CustomLoaders,
@@ -23,7 +23,8 @@ const CUSTOM_PREFIX = 'custom-'
 const MAX_NAME = 60
 
 // The loaders a custom game can use, each with the kind of game it suits; guessed says the game's files chose it.
-function LoaderChoice({
+// Memoised: typing the game's name leaves the list alone.
+const LoaderChoice = memo(function LoaderChoiceView({
   loaders,
   loader,
   guessed,
@@ -76,7 +77,7 @@ function LoaderChoice({
       </RadioGroup>
     </>
   )
-}
+})
 
 /** Adds a game missing from the catalog: its name, its executable and how it is modded. Kept on this computer only. */
 export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
