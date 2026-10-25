@@ -19,7 +19,7 @@ import {
 import { i18n } from '../i18n/index.ts'
 import { installableUpdate, visibleUpdates } from '../mods/lookup.ts'
 import { useMods } from '../mods/store.ts'
-import { updateWant, withOptionalLoaded } from '../mods/updateReview/wants.ts'
+import { installedCaution, updateWant, withOptionalLoaded } from '../mods/updateReview/wants.ts'
 import { listProfiles } from '../profiles/listProfiles.ts'
 import { foldedOverrides, resolveOverride } from '../profiles/overrideValue.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -209,7 +209,7 @@ async function updateBeforePlay(
     const result = await Updates(game, profileId)
     const plan = planAutoUpdates(visibleUpdates(result, profile), pinnedKeys(profile))
     const updates = plan.updates.filter(
-      (update) => !update.cautionMessage?.trim() || cautionAcknowledged(profileId, update),
+      (update) => installedCaution(update) === '' || cautionAcknowledged(profileId, update),
     )
     if (updates.length === 0) {
       return { restorePoint: null, previousRunId: before.id, previousErrors: before.errors }

@@ -1,7 +1,9 @@
+import { msg } from '@lingui/core/macro'
 import type { File } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nexus/models.ts'
 import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import type { Profile } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import type { Item } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/models.ts'
+import { i18n } from '../../i18n/index.ts'
 import type { Want } from '../../queue/actions.ts'
 import { pendingFor } from '../../queue/totals.ts'
 import { isFull, loadDetails, nexusEntryOf, useNexusDetails } from '../nexusDetails.ts'
@@ -64,7 +66,19 @@ export async function withOptionalLoaded(
   return withOptional(u, profile, files, false)
 }
 
-export const installedCaution = (u: Update): string => u.cautionMessage?.trim() ?? ''
+// What to accept before the update applies: the installed manifest's caution, and the game's known-broken list
+// flagging the new version.
+export const installedCaution = (u: Update): string =>
+  [
+    u.cautionMessage?.trim() ?? '',
+    u.knownBroken
+      ? i18n._(
+          msg`Mortar's known-broken list still flags this version: ${{ reason: u.knownBroken.reason }}`,
+        )
+      : '',
+  ]
+    .filter((part) => part !== '')
+    .join(' ')
 
 export const pendingUpdate = (items: Item[], profileId: string, u: Update) =>
   u.githubRepo

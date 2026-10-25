@@ -60,3 +60,18 @@ func curatedReplacement(pkg, tsKey string) *Ref {
 	}
 	return ref
 }
+
+// withKnownBroken marks each update whose new version the game's known-broken list still flags, or that leaves a
+// flagged installed version behind.
+func withKnownBroken(list components.BrokenList, gameVersion string, r UpdatesResult) UpdatesResult {
+	for i, u := range r.Updates {
+		m := components.BrokenMod{ID: u.ID, NexusID: u.NexusID, GitHub: u.GitHubRepo, Version: u.Version}
+		if e, ok := list.Find(m, gameVersion); ok {
+			r.Updates[i].KnownBroken = &source.KnownBrokenNote{Kind: e.Status(), Reason: e.Reason, Replacement: e.Replacement}
+			continue
+		}
+		m.Version = u.Installed
+		_, r.Updates[i].FixesKnownBroken = list.Find(m, gameVersion)
+	}
+	return r
+}

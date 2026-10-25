@@ -69,6 +69,11 @@ export function RowCopy({
           {caution}
         </Typography>
       ) : null}
+      {update.fixesKnownBroken ? (
+        <Typography sx={{ fontSize: 'small.fontSize', color: 'success.main' }}>
+          {t`Mortar's known-broken list flags the installed version; this one is past it`}
+        </Typography>
+      ) : null}
       {reportedElsewhere ? (
         <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
           {t`Reported by ${{ source: update.source }}`}

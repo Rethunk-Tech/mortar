@@ -2,6 +2,7 @@ package launchsvc
 
 import (
 	"context"
+	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -183,5 +184,32 @@ func TestSweepNoticesASteamBuildForALoaderWithoutAGameVersion(t *testing.T) {
 	}
 	if rep := sweep(); rep.Triggered {
 		t.Fatalf("a swept build triggered again: %+v", rep)
+	}
+}
+
+func TestSweepKnownBrokenListsWhatSMAPIsListDidNot(t *testing.T) {
+	list := components.BrokenList{Entries: []components.BrokenEntry{
+		{IDs: components.BrokenIDs{Thunderstore: "Ns-Fixable"}, Through: "1.0.0", Reason: "r"},
+		{IDs: components.BrokenIDs{Thunderstore: "Ns-Stuck"}, Through: "1.0.0", Reason: "r"},
+		{IDs: components.BrokenIDs{Thunderstore: "Ns-Old"}, Through: "1.0.0", Reason: "r", Kind: components.BrokenKindSuperseded},
+		{IDs: components.BrokenIDs{Thunderstore: "Ns-Off"}, Through: "1.0.0", Reason: "r"},
+		{IDs: components.BrokenIDs{Thunderstore: "Ns-Named"}, Through: "1.0.0", Reason: "r"},
+	}}
+	mods := []profile.Mod{
+		{Key: "fixable", ID: "thunderstore:Ns-Fixable", Version: "1.0.0", Enabled: true},
+		{Key: "stuck", ID: "thunderstore:Ns-Stuck", Version: "1.0.0", Enabled: true},
+		{Key: "old", ID: "thunderstore:Ns-Old", Version: "1.0.0", Enabled: true},
+		{Key: "off", ID: "thunderstore:Ns-Off", Version: "1.0.0"},
+		{Key: "named", ID: "thunderstore:Ns-Named", Version: "1.0.0", Enabled: true},
+	}
+	has := func(id mod.ID, _ int) bool { return id == "thunderstore:Ns-Fixable" }
+	got := sweepKnownBroken(mods, []SweepMod{{Key: "named"}}, list, "", has)
+	fixes := map[string]string{}
+	for _, m := range got {
+		fixes[m.Key] = m.Fix
+	}
+	want := map[string]string{"fixable": fixUpdate, "stuck": fixNone, "old": fixOff}
+	if !maps.Equal(fixes, want) {
+		t.Fatalf("fixes = %v, want %v", fixes, want)
 	}
 }

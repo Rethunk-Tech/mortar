@@ -37,3 +37,25 @@ func TestCuratedBrokenNamesPackagesAndModsThroughTheirListedVersion(t *testing.T
 		}
 	}
 }
+
+func TestWithKnownBrokenMarksStillListedAndFixingUpdates(t *testing.T) {
+	t.Parallel()
+	list := components.BrokenList{Entries: []components.BrokenEntry{
+		{IDs: components.BrokenIDs{Thunderstore: "Ns-Lib"}, Through: "2.0.0", Reason: "Crashes on load."},
+	}}
+	r := withKnownBroken(list, "", UpdatesResult{Updates: []Update{
+		{Key: "still", ID: mod.ID("thunderstore:Ns-Lib"), Installed: "1.0.0", Version: "2.0.0"},
+		{Key: "fixes", ID: mod.ID("thunderstore:Ns-Lib"), Installed: "2.0.0", Version: "2.1.0"},
+		{Key: "other", ID: mod.ID("thunderstore:Ns-Other"), Installed: "1.0.0", Version: "2.0.0"},
+	}})
+	still, fixes, other := r.Updates[0], r.Updates[1], r.Updates[2]
+	if still.KnownBroken == nil || still.KnownBroken.Reason != "Crashes on load." || still.FixesKnownBroken {
+		t.Errorf("still listed = %+v", still)
+	}
+	if fixes.KnownBroken != nil || !fixes.FixesKnownBroken {
+		t.Errorf("fixing = %+v", fixes)
+	}
+	if other.KnownBroken != nil || other.FixesKnownBroken {
+		t.Errorf("unlisted = %+v", other)
+	}
+}

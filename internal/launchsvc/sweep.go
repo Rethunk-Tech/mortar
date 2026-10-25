@@ -5,10 +5,12 @@ import (
 	"context"
 	"fmt"
 	"runtime"
+	"slices"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi"
@@ -88,7 +90,7 @@ func (s *Service) Sweep(ctx context.Context, gameID, installID string) (SweepRep
 		}
 		updates = s.sweepUpdateSet(ctx, gameID, gameVer, smapiVer, profiles)
 	}
-	rep.Profiles = s.scanSweepProfiles(gameID, profiles, idx, updates)
+	rep.Profiles = s.scanSweepProfiles(gameID, profiles, idx, components.KnownBrokenFor(ctx, gameID), gameVer, updates)
 	if err := s.settings.RecordLastSweep(gameID, gameVer, rep.Loader, smapiVer); err != nil {
 		return SweepReport{}, err
 	}
@@ -147,7 +149,7 @@ func (s *Service) sweepCompat(ctx context.Context) (meta.CompatIndex, error) {
 	return c.CompatList(ctx)
 }
 
-func (s *Service) scanSweepProfiles(gameID string, profiles []profile.Profile, idx meta.CompatIndex, updates map[string]bool) []ProfileSweep {
+func (s *Service) scanSweepProfiles(gameID string, profiles []profile.Profile, idx meta.CompatIndex, known components.BrokenList, gameVer string, updates map[string]bool) []ProfileSweep {
 	out := make([]ProfileSweep, 0, len(profiles))
 	for _, p := range profiles {
 		if p.Error != "" {
@@ -164,6 +166,7 @@ func (s *Service) scanSweepProfiles(gameID string, profiles []profile.Profile, i
 			return updates[uniqueID.Fold()]
 		}
 		row := ProfileSweep{Profile: p.ID, Name: p.Name, Broken: sweepBroken(mods, idx, has)}
+		row.Broken = append(row.Broken, sweepKnownBroken(mods, row.Broken, known, gameVer, has)...)
 		row.MissingDeps = s.sweepMissingDeps(gameID, p.ID, mods)
 		out = append(out, row)
 	}
@@ -235,6 +238,30 @@ func sweepBroken(mods []profile.Mod, idx meta.CompatIndex, hasUpdate func(mod.ID
 		out = append(out, SweepMod{
 			Key: m.Key, Name: sweepModName(m), ID: m.ID, Status: e.Status, Fix: sweepFix(e, m, hasUpdate),
 		})
+	}
+	return out
+}
+
+// sweepKnownBroken lists the enabled mods the game's known-broken list flags on gameVer that SMAPI's list has not
+// already named. A broken version is fixed by a newer one; a superseded or not-recommended mod is better off.
+func sweepKnownBroken(mods []profile.Mod, listed []SweepMod, known components.BrokenList, gameVer string, hasUpdate func(mod.ID, int) bool) []SweepMod {
+	var out []SweepMod
+	for _, m := range mods {
+		if !m.Enabled || slices.ContainsFunc(listed, func(l SweepMod) bool { return l.Key == m.Key }) {
+			continue
+		}
+		e, ok := known.Find(components.BrokenMod{ID: m.ID, Version: m.Version}, gameVer)
+		if !ok {
+			continue
+		}
+		fix := fixOff
+		if e.Status() == components.BrokenKindBroken {
+			fix = fixNone
+			if hasUpdate != nil && hasUpdate(m.ID, 0) {
+				fix = fixUpdate
+			}
+		}
+		out = append(out, SweepMod{Key: m.Key, Name: sweepModName(m), ID: m.ID, Status: e.Status(), Fix: fix})
 	}
 	return out
 }

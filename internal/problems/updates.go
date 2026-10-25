@@ -87,6 +87,10 @@ type Update struct {
 	PickFile bool `json:"pickFile,omitempty"`
 	// CautionMessage is the installed manifest's UpdateCautionMessage (a Stardrop update hint).
 	CautionMessage string `json:"cautionMessage,omitempty"`
+	// KnownBroken is the game's known-broken list's entry for the new version; FixesKnownBroken is set instead when
+	// the list flags the installed version and not the new one.
+	KnownBroken      *source.KnownBrokenNote `json:"knownBroken,omitempty"`
+	FixesKnownBroken bool                    `json:"fixesKnownBroken,omitempty"`
 }
 
 // UpdatesResult lists a profile's updates. Unknown is set when SMAPI's API could not be reached for some mod,

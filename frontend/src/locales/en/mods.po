@@ -678,6 +678,10 @@ msgstr "Edit name, author and version…"
 msgid "Remove from other profiles…"
 msgstr "Remove from other profiles…"
 
+#: src/mods/updateReview/wants.ts
+msgid "Mortar's known-broken list still flags this version: {reason}"
+msgstr "Mortar's known-broken list still flags this version: {reason}"
+
 #: src/mods/ProblemRows.tsx
 msgid "Why?"
 msgstr "Why?"
@@ -2700,6 +2704,10 @@ msgstr "Save to library…"
 #: src/mods/parts.tsx
 msgid "Their folders are removed from this profile. You can undo this."
 msgstr "Their folders are removed from this profile. You can undo this."
+
+#: src/mods/updateReview/RowCopy.tsx
+msgid "Mortar's known-broken list flags the installed version; this one is past it"
+msgstr "Mortar's known-broken list flags the installed version; this one is past it"
 
 #: src/mods/ProblemsTab.tsx
 msgid "Copy report"
