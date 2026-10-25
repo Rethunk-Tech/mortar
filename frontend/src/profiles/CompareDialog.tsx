@@ -163,7 +163,14 @@ function Summary({
   return (
     <Typography
       component="div"
-      sx={{ px: 3, pb: 2, display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', gap: space.gap }}
+      sx={{
+        px: 3,
+        pb: 2,
+        display: 'flex',
+        alignItems: 'baseline',
+        flexWrap: 'wrap',
+        gap: space.gap,
+      }}
     >
       <span>
         {view.differences === 0

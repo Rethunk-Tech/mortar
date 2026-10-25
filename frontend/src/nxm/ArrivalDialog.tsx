@@ -96,7 +96,6 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
   return (
     <>
       <AppDialog
-        closeButton={true}
         open={true}
         onClose={() => (busy ? undefined : dismiss(arrival.id))}
         closable={false}

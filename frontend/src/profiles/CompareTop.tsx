@@ -133,50 +133,48 @@ export function CompareTop({
   const game = useProfiles((s) => s.game)
   const gameId = game?.id ?? ''
   return (
-    <>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, px: 3, py: 2 }}>
-        <Box
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, px: 3, py: 2 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: space.gap,
+          height: space.control,
+          px: space.pad,
+          borderRadius: '8px',
+          bgcolor: 'var(--mortar-hairline-12)',
+        }}
+      >
+        <Dot profile={profileA} />
+        <b>{profileA.name}</b>
+      </Box>
+      <Typography color="text.secondary">{t`with`}</Typography>
+      <OtherPicker
+        profileA={profileA}
+        profileB={profileB}
+        gameId={gameId}
+        disabled={pending}
+        onPick={onPick}
+        onFriend={onFriend}
+        onHost={onHost}
+      />
+      <Box sx={{ flex: 1 }} />
+      {profileB ? (
+        <IconButton
+          aria-label={t`Filter mods`}
+          aria-pressed={filterOpen}
+          onClick={() => onFilter()}
           sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: space.gap,
+            width: 36,
             height: space.control,
-            px: space.pad,
             borderRadius: '8px',
-            bgcolor: 'var(--mortar-hairline-12)',
+            border: 1,
+            borderColor: 'divider',
           }}
         >
-          <Dot profile={profileA} />
-          <b>{profileA.name}</b>
-        </Box>
-        <Typography color="text.secondary">{t`with`}</Typography>
-        <OtherPicker
-          profileA={profileA}
-          profileB={profileB}
-          gameId={gameId}
-          disabled={pending}
-          onPick={onPick}
-          onFriend={onFriend}
-          onHost={onHost}
-        />
-        <Box sx={{ flex: 1 }} />
-        {profileB ? (
-          <IconButton
-            aria-label={t`Filter mods`}
-            aria-pressed={filterOpen}
-            onClick={() => onFilter()}
-            sx={{
-              width: 36,
-              height: space.control,
-              borderRadius: '8px',
-              border: 1,
-              borderColor: 'divider',
-            }}
-          >
-            <Search size={16} />
-          </IconButton>
-        ) : null}
-      </Box>
-    </>
+          <Search size={16} />
+        </IconButton>
+      ) : null}
+    </Box>
   )
 }
