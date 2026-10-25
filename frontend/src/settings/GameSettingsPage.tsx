@@ -20,6 +20,7 @@ import { GraphicsApiRow } from './GraphicsApiRow.tsx'
 import { gamePrefs } from './gamePrefs.ts'
 import { PrefKeys } from './PrefRow.tsx'
 import { ProtonRow } from './ProtonRow.tsx'
+import { ScopeSwitch } from './ScopeSwitch.tsx'
 import { SettingsSection } from './SettingsSection.tsx'
 import { SettingsShell, type ShellPage } from './SettingsShell.tsx'
 import { ALVRProgram } from './sections/ALVRProgram.tsx'
@@ -223,6 +224,9 @@ function GamePages({
         current={page}
         onPage={setPage}
         render={render}
+        actions={Object.fromEntries(
+          pages.map((p) => [p.id, <ScopeSwitch key="scope" gameName={name} />]),
+        )}
         initialQuery={query}
         related={related}
       />

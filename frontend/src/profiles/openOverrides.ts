@@ -21,6 +21,22 @@ export function useOpenOverride(key: string, gameValue: string): string {
   return own ?? gameValue
 }
 
+/** Sets the open profile's own value for key, or with undefined drops it so the profile follows the game again. */
+export async function setOpenOverride(game: string, key: string, value: string | undefined) {
+  const s = useProfiles.getState()
+  const open = openProfileOf(s)
+  if (!open) {
+    return
+  }
+  const next = foldedOverrides(open)
+  if (value === undefined) {
+    delete next[key]
+  } else {
+    next[key] = value
+  }
+  s.replace(await SetOverrides(game, open.id, next))
+}
+
 /** Saves a per-game setting where the open profile reads it: its own override when it has one, else the game's. */
 export async function saveOpenPref(game: string, key: string, value: string): Promise<void> {
   const s = useProfiles.getState()

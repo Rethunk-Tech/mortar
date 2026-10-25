@@ -1556,6 +1556,10 @@ msgstr "Rose"
 msgid "{names} took over mod links"
 msgstr "{names} took over mod links"
 
+#: src/settings/ScopeSwitch.tsx
+msgid "All {game} profiles"
+msgstr "All {game} profiles"
+
 #: src/settings/prefCopy.ts
 msgid "Skip the installer wizard when saved choices still fit"
 msgstr "Skip the installer wizard when saved choices still fit"
@@ -1579,6 +1583,10 @@ msgstr "{count, plural, one {# {game} mod tracked on {source}} other {# {game} m
 #: src/settings/sections/DataUsage.tsx
 msgid "Portable copy: data is kept in {portableDir}"
 msgstr "Portable copy: data is kept in {portableDir}"
+
+#: src/settings/PrefRow.tsx
+msgid "Every profile of this game shares this one."
+msgstr "Every profile of this game shares this one."
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Crew"
@@ -1661,6 +1669,10 @@ msgstr "{game} was not found. Browse to its folder."
 #: src/settings/prefCopy.ts
 msgid "Scheduled save backups"
 msgstr "Scheduled save backups"
+
+#: src/settings/ScopeSwitch.tsx
+msgid "This profile: {profile}"
+msgstr "This profile: {profile}"
 
 #: src/settings/sections/General.tsx
 #: src/settings/sections/HiddenLogSources.tsx
@@ -2819,6 +2831,10 @@ msgstr "Hide to tray"
 msgid "Use the sync folder set under Mods and profiles, if any."
 msgstr "Use the sync folder set under Mods and profiles, if any."
 
+#: src/settings/PrefRow.tsx
+msgid "Same as the game"
+msgstr "Same as the game"
+
 #: src/settings/sections/SourceOrder.tsx
 msgid "Move up"
 msgstr "Move up"
@@ -2904,6 +2920,10 @@ msgstr "Mortar has not asked {source} this session."
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Enter a number from {min} to {max}"
 msgstr "Enter a number from {min} to {max}"
+
+#: src/settings/PrefRow.tsx
+msgid "Game: {value}"
+msgstr "Game: {value}"
 
 #: src/settings/shortcutLabels.ts
 msgid "Open focused mod details"
@@ -3154,6 +3174,10 @@ msgstr "Cached {source} release lists"
 #: src/settings/sections/About.tsx
 msgid "View licences…"
 msgstr "View licences…"
+
+#: src/settings/ScopeSwitch.tsx
+msgid "Settings for"
+msgstr "Settings for"
 
 #: src/settings/sections/NexusMods.tsx
 msgid "Tracking"
@@ -3698,6 +3722,10 @@ msgstr "Ignored fields Mortar does not import: {names}"
 #: src/settings/prefCopy.ts
 msgid "{loader} unofficial builds"
 msgstr "{loader} unofficial builds"
+
+#: src/settings/PrefRow.tsx
+msgid "Use the game's"
+msgstr "Use the game's"
 
 #: src/settings/prefCopy.ts
 msgid "Profile hero"

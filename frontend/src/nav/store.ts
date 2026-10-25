@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { useSettingsScope } from '../settings/settingsScope.ts'
 
 type GameId = string
 
@@ -49,7 +50,8 @@ const useNav = create<{
   openGameSetup: (game: GameId) => void
   openProfiles: () => void
   closeProfiles: () => void
-  openGameSettings: () => void
+  // profileScope opens it on the open profile's own values; otherwise it edits every profile's.
+  openGameSettings: (profileScope?: boolean) => void
   closeGameSettings: () => void
   searchGameSettings: (query: string) => void
   openSettings: (section?: SettingsSection) => void
@@ -73,10 +75,12 @@ const useNav = create<{
     set(({ route }) =>
       route.name === 'profiles' ? { route: { name: 'game', game: route.game } } : {},
     ),
-  openGameSettings: () =>
+  openGameSettings: (profileScope = false) => {
+    useSettingsScope.setState({ profile: profileScope })
     set(({ route }) =>
       route.name === 'game' ? { route: { name: 'game-settings', game: route.game } } : {},
-    ),
+    )
+  },
   closeGameSettings: () =>
     set(({ route }) =>
       route.name === 'game-settings' ? { route: { name: 'game', game: route.game } } : {},

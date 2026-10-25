@@ -1556,6 +1556,10 @@ msgstr ""
 msgid "{names} took over mod links"
 msgstr ""
 
+#: src/settings/ScopeSwitch.tsx
+msgid "All {game} profiles"
+msgstr ""
+
 #: src/settings/prefCopy.ts
 msgid "Skip the installer wizard when saved choices still fit"
 msgstr ""
@@ -1578,6 +1582,10 @@ msgstr ""
 
 #: src/settings/sections/DataUsage.tsx
 msgid "Portable copy: data is kept in {portableDir}"
+msgstr ""
+
+#: src/settings/PrefRow.tsx
+msgid "Every profile of this game shares this one."
 msgstr ""
 
 #: src/settings/sections/StreamOverlay.tsx
@@ -1660,6 +1668,10 @@ msgstr ""
 
 #: src/settings/prefCopy.ts
 msgid "Scheduled save backups"
+msgstr ""
+
+#: src/settings/ScopeSwitch.tsx
+msgid "This profile: {profile}"
 msgstr ""
 
 #: src/settings/sections/General.tsx
@@ -2819,6 +2831,10 @@ msgstr ""
 msgid "Use the sync folder set under Mods and profiles, if any."
 msgstr ""
 
+#: src/settings/PrefRow.tsx
+msgid "Same as the game"
+msgstr ""
+
 #: src/settings/sections/SourceOrder.tsx
 msgid "Move up"
 msgstr ""
@@ -2903,6 +2919,10 @@ msgstr ""
 #: src/settings/sections/General.tsx
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Enter a number from {min} to {max}"
+msgstr ""
+
+#: src/settings/PrefRow.tsx
+msgid "Game: {value}"
 msgstr ""
 
 #: src/settings/shortcutLabels.ts
@@ -3153,6 +3173,10 @@ msgstr ""
 
 #: src/settings/sections/About.tsx
 msgid "View licences…"
+msgstr ""
+
+#: src/settings/ScopeSwitch.tsx
+msgid "Settings for"
 msgstr ""
 
 #: src/settings/sections/NexusMods.tsx
@@ -3697,6 +3721,10 @@ msgstr ""
 
 #: src/settings/prefCopy.ts
 msgid "{loader} unofficial builds"
+msgstr ""
+
+#: src/settings/PrefRow.tsx
+msgid "Use the game's"
 msgstr ""
 
 #: src/settings/prefCopy.ts

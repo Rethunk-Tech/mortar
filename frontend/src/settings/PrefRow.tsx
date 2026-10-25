@@ -1,8 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box } from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import type { ReactNode } from 'react'
 import type { PrefSpec } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { setOpenOverride } from '../profiles/openOverrides.ts'
+import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { space } from '../theme/density.ts'
 import {
@@ -19,7 +21,119 @@ import { prefCopy } from './prefCopy.ts'
 import { specByKey, usePrefSpecs } from './prefSpecs.ts'
 import { prefAsBool, prefAsNumber, prefAsString, prefRaw, specGameArg } from './prefValue.ts'
 import { SettingRow } from './SettingsSection.tsx'
+import { useSettingsScope } from './settingsScope.ts'
 import { useSettings } from './store.ts'
+
+type Options = { value: string; label: string }[]
+
+// The control for a pref's kind and choices; save stores at once, commit is what a typed field awaits.
+function prefControlNode(o: {
+  spec: PrefSpec
+  raw: unknown
+  options: Options
+  style: string
+  label: string
+  placeholder: string | undefined
+  disabled: boolean
+  save: (v: string) => void
+  commit: (v: string) => Promise<void>
+}): ReactNode {
+  const { spec, raw, options, style, label, disabled, save, commit } = o
+  const kind = prefControl(spec.type)
+  let selectValue = prefAsString(raw, spec)
+  if (options.length > 0 && !options.some((x) => x.value === selectValue)) {
+    selectValue = options[0]?.value ?? selectValue
+  }
+  if (kind === 'switch') {
+    return (
+      <PrefSwitch
+        checked={prefAsBool(raw, spec)}
+        onChange={(on) => save(String(on))}
+        label={label}
+        disabled={disabled}
+      />
+    )
+  }
+  const choice = { value: selectValue, onChange: save, options, label, disabled }
+  if (style === 'cards') {
+    return <PrefCards {...choice} />
+  }
+  if (style === 'segmented' && options.length > 0) {
+    return <PrefSegmented {...choice} />
+  }
+  if (kind === 'select' || options.length > 0) {
+    return <PrefSelect {...choice} />
+  }
+  if (kind === 'number') {
+    return (
+      <PrefNumber
+        value={prefAsNumber(raw, spec)}
+        min={spec.min ?? 0}
+        max={spec.max || Number.MAX_SAFE_INTEGER}
+        onCommit={(n) => commit(String(n))}
+        label={label}
+        disabled={disabled}
+      />
+    )
+  }
+  return (
+    <PrefText
+      value={prefAsString(raw, spec)}
+      {...(o.placeholder === undefined ? {} : { placeholder: o.placeholder })}
+      onCommit={commit}
+      label={label}
+      disabled={disabled}
+    />
+  )
+}
+
+// On the open profile's scope a game setting reads and writes the profile's own value; one no profile can change
+// shows the game's, held.
+function useScopedPref(spec: PrefSpec, game: string | undefined) {
+  const gameRaw = useSettings((s) => prefRaw(s, spec, game))
+  const profileScope = useSettingsScope((s) => s.profile) && spec.scope === 'game'
+  const own = useProfiles((s) =>
+    profileScope ? openProfileOf(s)?.overrides?.[spec.key] : undefined,
+  )
+  const ownValue = profileScope && spec.profileOverridable === true
+  const gameArg = specGameArg(spec, game)
+  return {
+    gameRaw,
+    own,
+    ownValue,
+    held: profileScope && !ownValue,
+    raw: ownValue && own !== undefined ? own : gameRaw,
+    commit: (value: string) =>
+      ownValue && game
+        ? setOpenOverride(game, spec.key, value)
+        : SetByKey(spec.key, value, gameArg),
+  }
+}
+
+// Beside a profile's own value: the game's, and a way back to it.
+function ScopeNote({
+  own,
+  gameLabel,
+  onReset,
+}: {
+  own: string | undefined
+  gameLabel: string
+  onReset: () => void
+}) {
+  const { t } = useLingui()
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+      <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }} noWrap={true}>
+        {own === undefined ? t`Same as the game` : t`Game: ${{ value: gameLabel }}`}
+      </Typography>
+      {own === undefined ? null : (
+        <Button size="small" onClick={onReset}>
+          {t`Use the game's`}
+        </Button>
+      )}
+    </Box>
+  )
+}
 
 // Game-scope prefs render only where a game is passed, so global pages never write to a guessed game.
 function PrefRow({
@@ -37,83 +151,35 @@ function PrefRow({
 }) {
   const { t, i18n } = useLingui()
   const fail = t`Could not save that setting`
-  const raw = useSettings((s) => prefRaw(s, spec, game))
   const copy = prefCopy(i18n, spec.key)
+  const scoped = useScopedPref(spec, game)
   if (spec.scope === 'game' && !game) {
     return null
   }
-  const gameArg = specGameArg(spec, game)
-  const save = (value: string) => persist(() => SetByKey(spec.key, value, gameArg), fail)
-  const kind = prefControl(spec.type)
-  const disabled = disabledReason !== ''
+  const save = (value: string) => persist(() => scoped.commit(value), fail)
+  const reason =
+    disabledReason || (scoped.held ? t`Every profile of this game shares this one.` : '')
   const options = copy.options ?? (spec.values ?? []).map((value) => ({ value, label: value }))
-  let selectValue = prefAsString(raw, spec)
-  if (options.length > 0 && !options.some((o) => o.value === selectValue)) {
-    selectValue = options[0]?.value ?? selectValue
-  }
   const style = options.length > 0 ? choiceStyle(options) : 'select'
-  let control: ReactNode
-  if (kind === 'switch') {
-    control = (
-      <PrefSwitch
-        checked={prefAsBool(raw, spec)}
-        onChange={(on) => save(String(on))}
-        label={copy.label}
-        disabled={disabled}
-      />
-    )
-  } else if (style === 'cards') {
-    control = (
-      <PrefCards
-        value={selectValue}
-        onChange={save}
-        options={options}
-        label={copy.label}
-        disabled={disabled}
-      />
-    )
-  } else if (style === 'segmented' && options.length > 0) {
-    control = (
-      <PrefSegmented
-        value={selectValue}
-        onChange={save}
-        options={options}
-        label={copy.label}
-        disabled={disabled}
-      />
-    )
-  } else if (kind === 'select' || options.length > 0) {
-    control = (
-      <PrefSelect
-        value={selectValue}
-        onChange={save}
-        options={options}
-        label={copy.label}
-        disabled={disabled}
-      />
-    )
-  } else if (kind === 'number') {
-    control = (
-      <PrefNumber
-        value={prefAsNumber(raw, spec)}
-        min={spec.min ?? 0}
-        max={spec.max || Number.MAX_SAFE_INTEGER}
-        onCommit={(n) => SetByKey(spec.key, String(n), gameArg)}
-        label={copy.label}
-        disabled={disabled}
-      />
-    )
-  } else {
-    control = (
-      <PrefText
-        value={prefAsString(raw, spec)}
-        {...(copy.placeholder === undefined ? {} : { placeholder: copy.placeholder })}
-        onCommit={(v) => SetByKey(spec.key, v, gameArg)}
-        label={copy.label}
-        disabled={disabled}
-      />
-    )
-  }
+  const control = prefControlNode({
+    spec,
+    raw: scoped.raw,
+    options,
+    style,
+    label: copy.label,
+    placeholder: copy.placeholder,
+    disabled: reason !== '',
+    save,
+    commit: scoped.commit,
+  })
+  const gameValue = prefAsString(scoped.gameRaw, spec)
+  const note = scoped.ownValue ? (
+    <ScopeNote
+      own={scoped.own}
+      gameLabel={options.find((o) => o.value === gameValue)?.label ?? gameValue}
+      onReset={() => game && persist(() => setOpenOverride(game, spec.key, undefined), fail)}
+    />
+  ) : null
   return (
     <SettingRow
       label={copy.label}
@@ -121,11 +187,12 @@ function PrefRow({
       block={style === 'cards'}
       hideTitle={hideTitle}
     >
-      <DisabledReason title={disabledReason} disabled={disabledReason !== ''}>
-        {extra ? (
+      <DisabledReason title={reason} disabled={reason !== ''}>
+        {extra || note ? (
           <Box sx={{ display: 'flex', gap: space.gap, alignItems: 'center' }}>
             {control}
             {extra}
+            {note}
           </Box>
         ) : (
           control

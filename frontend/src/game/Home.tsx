@@ -126,7 +126,7 @@ export function Home({
         </HomeButton>
         <LaunchMenu game={game} profile={profile} />
         <Box sx={{ flex: '1 0 24px' }} />
-        <HomeButton icon={<Settings2 size={16} />} onClick={openGameSettings}>
+        <HomeButton icon={<Settings2 size={16} />} onClick={() => openGameSettings(true)}>
           {t`${{ name: gameName }} settings`}
         </HomeButton>
       </Box>
