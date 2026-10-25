@@ -1888,9 +1888,9 @@ msgstr "Install version {version}"
 msgid "Dismissed"
 msgstr "Dismissed"
 
+#: src/mods/AlsoAdd.tsx
 #: src/mods/ModMenu.tsx
 #: src/mods/SelectionBarActions.tsx
-#: src/mods/Sidebar.tsx
 msgid "Also add to…"
 msgstr "Also add to…"
 
@@ -2275,13 +2275,13 @@ msgid "Remove from favourites"
 msgstr "Remove from favourites"
 
 #: src/mods/AddToGroupDialog.tsx
+#: src/mods/AlsoAdd.tsx
 #: src/mods/ModDependencyTree.tsx
 #: src/mods/ModMenu.tsx
 #: src/mods/problemFix/ListedFix.tsx
 #: src/mods/problemFix/MissingFix.tsx
 #: src/mods/SelectionBar.tsx
 #: src/mods/SelectionBarDialogs.tsx
-#: src/mods/Sidebar.tsx
 #: src/mods/TrackedNotInProfile.tsx
 #: src/mods/typedConfig/Widgets.tsx
 msgid "Add"
@@ -2325,8 +2325,8 @@ msgstr "Removed from {source}"
 msgid "New since you last looked"
 msgstr "New since you last looked"
 
+#: src/mods/AlsoAdd.tsx
 #: src/mods/ModMenu.tsx
-#: src/mods/Sidebar.tsx
 msgid "Also add {name} to…"
 msgstr "Also add {name} to…"
 

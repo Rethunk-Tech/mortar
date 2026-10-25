@@ -19,6 +19,7 @@ import { ProfileMark } from '../profiles/ProfileMark.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { sameValue } from '../shell/sameValue.ts'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { reportError } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -212,6 +213,39 @@ function ChoicesFooter({
   )
 }
 
+// Sets a list only when it differs, so a read that finds what the dialog already shows redraws nothing.
+const keep = <T,>(set: (update: (prev: T[]) => T[]) => void, next: T[]) =>
+  set((prev) => (sameValue(prev, next) ? prev : next))
+
+// The other profiles that have the mods, read as the dialog opens.
+function useRows(open: boolean, game: string, currentProfileId: string, which: string | string[]) {
+  const { t } = useLingui()
+  const [rows, setRows] = useState<ModInProfile[]>([])
+  const key = typeof which === 'string' ? which : which.join('\n')
+  useEffect(() => {
+    if (!open) {
+      return
+    }
+    Promise.all(key.split('\n').map((one) => ProfilesWithMod(game, one)))
+      .then((lists) =>
+        keep(
+          setRows,
+          lists
+            .flatMap((next) => next ?? [])
+            .filter(
+              (row, index, all) =>
+                row.profileId !== currentProfileId &&
+                all.findIndex(
+                  (other) => other.profileId === row.profileId && other.key === row.key,
+                ) === index,
+            ),
+        ),
+      )
+      .catch(reportError(t`Could not read profiles`))
+  }, [currentProfileId, game, open, t, key])
+  return rows
+}
+
 export function OtherProfilesDialog({
   open,
   game,
@@ -249,7 +283,7 @@ export function OtherProfilesDialog({
     () => listed.filter((p) => p.id !== currentProfileId),
     [listed, currentProfileId],
   )
-  const [rows, setRows] = useState<ModInProfile[]>([])
+  const rows = useRows(open, game, currentProfileId, ids ?? id)
   const [selected, setSelected] = useState<string[]>([])
   const [pending, run] = usePending()
   const launch = useLaunchLocks()
@@ -259,26 +293,6 @@ export function OtherProfilesDialog({
     to: selected,
     ids: ids ?? [id],
   })
-  useEffect(() => {
-    if (!open) {
-      return
-    }
-    Promise.all((ids ?? [id]).map((one) => ProfilesWithMod(game, one)))
-      .then((lists) =>
-        setRows(
-          lists
-            .flatMap((next) => next ?? [])
-            .filter(
-              (row, index, all) =>
-                row.profileId !== currentProfileId &&
-                all.findIndex(
-                  (other) => other.profileId === row.profileId && other.key === row.key,
-                ) === index,
-            ),
-        ),
-      )
-      .catch(reportError(t`Could not read profiles`))
-  }, [currentProfileId, game, open, t, id, ids])
   useEffect(() => {
     if (!open) {
       return
@@ -293,7 +307,8 @@ export function OtherProfilesDialog({
         })
         .map((row) => row.profileId),
     )
-    setSelected(
+    keep(
+      setSelected,
       mode === 'remove'
         ? []
         : profiles.map((profile) => profile.id).filter((profileId) => !unavailable.has(profileId)),

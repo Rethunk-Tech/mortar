@@ -8,10 +8,7 @@ import type {
   ModInProfile,
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import {
-  CopyModsWithNeeds,
-  ProfilesWithMod,
-} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { ProfilesWithMod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { isDevelopEntry } from '../develop/devEntry.ts'
 import { useTab } from '../game/tab.ts'
@@ -23,6 +20,7 @@ import { Tooltip } from '../shell/Tooltip.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { AlsoAdd } from './AlsoAdd.tsx'
 import { AuthorLink } from './AuthorLink.tsx'
 import { ChangelogDialog } from './ChangelogDialog.tsx'
 import { CompatDetail } from './CompatChip.tsx'
@@ -61,7 +59,6 @@ import { useLookedSnapshot, useNexusEntry } from './nexusDetails.ts'
 import { formatCount, isNewer } from './nexusFormat.ts'
 import { goneCaption, nexusPageMark } from './nexusMark.ts'
 import { OptionalFiles } from './OptionalFiles.tsx'
-import { OtherProfilesDialog } from './OtherProfilesDialog.tsx'
 import { usePackageChangelog } from './packageChangelog.ts'
 import { heading, rowLink } from './paper.ts'
 import { ModSwitch, RemoveButton, ShowFilesButton } from './parts.tsx'
@@ -374,8 +371,6 @@ function LowerSectionsView({ mod, profile }: { mod: Mod; profile: Profile }) {
   const { t, i18n } = useLingui()
   const setSkipVersion = useMods((s) => s.setSkipVersion)
   const setSkipSource = useMods((s) => s.setSkipSource)
-  const game = useProfiles((s) => s.game?.id ?? '')
-  const [alsoOpen, setAlsoOpen] = useState(false)
   const nexusId = nexusIdOf(profile, mod)
   // The mod's own ids under its loader's name for them (UniqueID, GUID), not Mortar's id for the mod.
   const idName = useModIdName()
@@ -443,9 +438,7 @@ function LowerSectionsView({ mod, profile }: { mod: Mod; profile: Profile }) {
           githubRepo={entry?.source?.kind === 'github' ? (entry.source.repo ?? '') : ''}
           thunderstorePackage={entry?.source?.kind === 'thunderstore' ? entry.source.name : ''}
         />
-        <Link component="button" onClick={() => setAlsoOpen(true)} sx={rowLink}>
-          {t`Also add to…`}
-        </Link>
+        <AlsoAdd mod={mod} profile={profile} />
         <ModDisplayEdit profile={profile} mod={mod} />
       </Box>
       {entry?.source?.kind === 'nexus' && entry.source.modId ? (
@@ -459,21 +452,6 @@ function LowerSectionsView({ mod, profile }: { mod: Mod; profile: Profile }) {
         </Fold>
       ) : null}
       <AlsoInProfiles mod={mod} profile={profile} />
-      <OtherProfilesDialog
-        open={alsoOpen}
-        onClose={() => setAlsoOpen(false)}
-        game={game}
-        currentProfileId={profile.id}
-        id={mod.id}
-        title={t`Also add ${{ name: mod.name }} to…`}
-        withNeeds={true}
-        confirmLabel={t`Add`}
-        onConfirm={async (profiles) => {
-          await Promise.all(
-            profiles.map((other) => CopyModsWithNeeds(game, profile.id, other.id, [mod.id])),
-          )
-        }}
-      />
       <HiddenInside mod={mod} profile={profile} />
       <ModNoteTags profile={profile} mod={mod} />
     </>
