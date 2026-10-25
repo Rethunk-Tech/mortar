@@ -47,6 +47,7 @@ import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { useKeptWhileClosed } from '../shell/keptWhileClosed.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
+import { pickWithoutFocus } from '../shell/pickWithoutFocus.ts'
 import { SearchField } from '../shell/SearchField.tsx'
 import { MenuRule } from '../shell/TitleMenu.tsx'
 import { Tooltip } from '../shell/Tooltip.tsx'
@@ -198,6 +199,7 @@ const ShowFilterControl = memo(function ShowFilterMenu({
         role="menuitemradio"
         aria-checked={filter === item.id}
         selected={filter === item.id}
+        onMouseDown={pickWithoutFocus}
         onClick={() => choose(item.id)}
       >
         <ListItemIcon sx={{ color: 'inherit' }}>
@@ -284,6 +286,7 @@ const GroupByControl = memo(function GroupByMenu() {
               role="menuitemradio"
               aria-checked={by === item.id}
               selected={by === item.id}
+              onMouseDown={pickWithoutFocus}
               onClick={() => {
                 persistGroupBy(item.id)
                 setAnchor(null)
