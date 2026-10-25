@@ -6,7 +6,7 @@ import type {
   ModFact,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import type { ListRow } from './listColumns.ts'
-import { figureFields, figureNumber, figureText } from './listFigures.ts'
+import { figureFields, figureNumber, figureText, keepSameFacts } from './listFigures.ts'
 
 const fact = (over: Partial<ModFact>): ModFact => ({
   kind: '',
@@ -69,4 +69,18 @@ test('a mod with endorsements and no figures keeps them; downloads need figures'
   expect(figureNumber(row({}, 4), 'endorsements')).toBe(4)
   expect(figureNumber(row({}), 'endorsements')).toBeUndefined()
   expect(figureNumber(row({}, 4), 'downloads')).toBeUndefined()
+})
+
+test('a re-read keeps the facts that read the same, and the whole map when none changed', () => {
+  const a = fact({ latest: '1.0.0' })
+  const b = fact({ latest: '2.0.0' })
+  const prev = { a, b }
+  expect(keepSameFacts(prev, { a: fact({ latest: '1.0.0' }), b: fact({ latest: '2.0.0' }) })).toBe(
+    prev,
+  )
+  const next = keepSameFacts(prev, { a: fact({ latest: '1.0.0' }), b: fact({ latest: '2.1.0' }) })
+  expect(next).not.toBe(prev)
+  expect(next.a).toBe(a)
+  expect(next.b?.latest).toBe('2.1.0')
+  expect(keepSameFacts(prev, { a: fact({ latest: '1.0.0' }) })).toEqual({ a })
 })

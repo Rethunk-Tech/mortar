@@ -31,6 +31,20 @@ export const useModFacts = create<{ key: string; checked: unknown; byId: FactsBy
   byId: NONE,
 }))
 
+/** next, with each fact that reads the same as in prev kept as prev's object (and prev itself when nothing changed), so
+ * a re-read after an update check redraws only the rows whose facts did. */
+export function keepSameFacts(prev: FactsById, next: FactsById): FactsById {
+  let changed = Object.keys(prev).length !== Object.keys(next).length
+  const kept: Record<string, ModFact | undefined> = {}
+  for (const [id, fact] of Object.entries(next)) {
+    const old = prev[id]
+    const same = old !== undefined && JSON.stringify(old) === JSON.stringify(fact)
+    kept[id] = same ? old : fact
+    changed ||= !same
+  }
+  return changed ? kept : prev
+}
+
 /** The open profile's facts, read again only when its set of packages changes or an update check ran: a switch or a
  * note changes none of them, reading them can cost the backend half a second, and the check is what refreshes the
  * source listings they come from. */
@@ -46,7 +60,7 @@ export function useProfileModFacts(game: string, profile: Profile): FactsById {
     ModFacts(game, profile.id)
       .then((byId) => {
         if (live) {
-          useModFacts.setState({ key, checked, byId: byId ?? NONE })
+          useModFacts.setState((s) => ({ key, checked, byId: keepSameFacts(s.byId, byId ?? NONE) }))
         }
       })
       .catch(reportUnexpected)
