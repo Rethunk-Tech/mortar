@@ -1,6 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
+import { Hammer, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { DevProject } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import { PageActions } from '../game/PageActions.tsx'
@@ -8,6 +9,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { CardsView } from '../shell/CardsView.tsx'
 import { ControlsRow } from '../shell/ControlsRow.tsx'
+import { EmptyState } from '../shell/EmptyState.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { useStoredState } from '../shell/useStoredState.ts'
 import { ViewToggle } from '../shell/ViewToggle.tsx'
@@ -69,14 +71,27 @@ export function DevelopTab({ game }: { game: string }) {
       }}
     >
       <PageActions>
-        <Button variant="contained" onClick={() => setCreating(true)}>
+        <Button variant="outlined" startIcon={<Plus size={14} />} onClick={() => setCreating(true)}>
           {t`New mod…`}
         </Button>
       </PageActions>
       {here.length === 0 ? (
-        <Typography sx={{ color: 'text.secondary', p: space.gutter }}>
+        <EmptyState
+          icon={<Hammer />}
+          title={t`No mods in development`}
+          action={
+            <Button
+              variant="outlined"
+              size="large"
+              startIcon={<Plus size={14} />}
+              onClick={() => setCreating(true)}
+            >
+              {t`New mod…`}
+            </Button>
+          }
+        >
           {t`Start a mod from the template: Mortar sets up the project and installs each build into this profile.`}
-        </Typography>
+        </EmptyState>
       ) : (
         <ControlsRow>
           <ViewToggle value={view} onChange={setView} />

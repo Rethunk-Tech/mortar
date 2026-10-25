@@ -4753,6 +4753,10 @@ msgstr ""
 msgid "A zip to publish on {source}"
 msgstr ""
 
+#: src/develop/DevelopTab.tsx
+msgid "No mods in development"
+msgstr ""
+
 #: src/firstrunTour/TourPopover.tsx
 #: src/game/Sidebar.tsx
 msgid "Problems"

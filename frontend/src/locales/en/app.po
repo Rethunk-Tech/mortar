@@ -4753,6 +4753,10 @@ msgstr "{count, plural, one {# follower} other {# followers}}"
 msgid "A zip to publish on {source}"
 msgstr "A zip to publish on {source}"
 
+#: src/develop/DevelopTab.tsx
+msgid "No mods in development"
+msgstr "No mods in development"
+
 #: src/firstrunTour/TourPopover.tsx
 #: src/game/Sidebar.tsx
 msgid "Problems"
