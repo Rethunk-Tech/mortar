@@ -720,10 +720,6 @@ msgstr "Restart and record startup profile"
 msgid "From a shared link"
 msgstr "From a shared link"
 
-#: src/game/ProfileMenuItems.tsx
-msgid "Use the automatic cover"
-msgstr "Use the automatic cover"
-
 #: src/develop/GameCodeDialog.tsx
 msgid "Search the game's types and methods, then pick one to read its type's code."
 msgstr "Search the game's types and methods, then pick one to read its type's code."
@@ -759,10 +755,6 @@ msgstr "Test with {count} copies"
 #: src/sync/store.ts
 msgid "{name} was changed on {machine} and here"
 msgstr "{name} was changed on {machine} and here"
-
-#: src/game/ProfileMenuItems.tsx
-msgid "Copies and sharing"
-msgstr "Copies and sharing"
 
 #: src/lan/IncomingPrompt.tsx
 msgid "The mod files can be copied directly from this Mortar."
@@ -2577,6 +2569,10 @@ msgstr "Skip {name}"
 msgid "Set it in {launcher} for me"
 msgstr "Set it in {launcher} for me"
 
+#: src/game/ProfileMenuItems.tsx
+msgid "Add mods"
+msgstr "Add mods"
+
 #: src/develop/builds.ts
 msgid "Could not pack the mod"
 msgstr "Could not pack the mod"
@@ -3648,6 +3644,7 @@ msgid "No mods match \"{text}\""
 msgstr "No mods match \"{text}\""
 
 #: src/game/ProfileMenu.tsx
+#: src/game/ProfileMenuItems.tsx
 msgid "Add these mods to another profile…"
 msgstr "Add these mods to another profile…"
 
@@ -3817,10 +3814,6 @@ msgstr "Only on this computer"
 msgid "Sign in to import"
 msgstr "Sign in to import"
 
-#: src/game/ProfileMenuItems.tsx
-msgid "Folder"
-msgstr "Folder"
-
 #: src/develop/ProjectCard.tsx
 msgid "Last run: {frame} ms a frame"
 msgstr "Last run: {frame} ms a frame"
@@ -3980,10 +3973,6 @@ msgstr "Refresh"
 #: src/browse/stats.ts
 msgid "Version {version}"
 msgstr "Version {version}"
-
-#: src/game/ProfileMenuItems.tsx
-msgid "Choose cover image"
-msgstr "Choose cover image"
 
 #: src/install/MergeCallout.tsx
 msgid "Install separately"
@@ -4192,10 +4181,6 @@ msgstr "Could not build the mod"
 #: src/share/ListFormat.tsx
 msgid "Save mod list"
 msgstr "Save mod list"
-
-#: src/game/ProfileMenuItems.tsx
-msgid "Choose cover image…"
-msgstr "Choose cover image…"
 
 #: src/lan/SendPanel.tsx
 msgid "{name} is not paired with this computer, so Mortar sends the list of mods, not their files. {name} will download each mod from its site, one click per mod on a free {source} account."
@@ -5221,6 +5206,11 @@ msgstr "{count, plural, one {# change} other {# changes}}"
 msgid "Kept next to the code"
 msgstr "Kept next to the code"
 
+#: src/game/ProfileMenu.tsx
+#: src/game/ProfileMenuItems.tsx
+msgid "Backup"
+msgstr "Backup"
+
 #: src/games/GameMenu.tsx
 msgid "Switch game: {game}"
 msgstr "Switch game: {game}"
@@ -5246,6 +5236,7 @@ msgid "Pause all"
 msgstr "Pause all"
 
 #: src/game/ProfileMenu.tsx
+#: src/game/ProfileMenuItems.tsx
 msgid "No other profile to add them to."
 msgstr "No other profile to add them to."
 
@@ -5859,6 +5850,7 @@ msgid "From the {source} collection \"{name}\""
 msgstr "From the {source} collection \"{name}\""
 
 #: src/game/ProfileMenu.tsx
+#: src/game/ProfileMenuItems.tsx
 #: src/launch/PlayInstances.tsx
 msgid "Copies"
 msgstr "Copies"
@@ -6019,10 +6011,6 @@ msgstr "{done} done"
 #: src/queue/store.ts
 msgid "{count, plural, one {# download needs your decision} other {# downloads need your decision}}"
 msgstr "{count, plural, one {# download needs your decision} other {# downloads need your decision}}"
-
-#: src/game/ProfileMenuItems.tsx
-msgid "Could not use that image"
-msgstr "Could not use that image"
 
 #: src/launch/LaunchScreen.tsx
 msgid "Loading mods"

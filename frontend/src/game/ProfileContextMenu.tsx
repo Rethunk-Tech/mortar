@@ -7,7 +7,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { MenuHeading } from '../shell/TitleMenu.tsx'
 import { readTemplates } from '../templates/useTemplates.ts'
 import { reportUnexpected } from '../toasts/report.ts'
-import { CoverMenuItems, MoreMenuItems, ProfileMenuItem } from './ProfileMenuItems.tsx'
+import { MoreMenuItems, ProfileMenuItem } from './ProfileMenuItems.tsx'
 import { openProfileDialog } from './profileDialog.ts'
 import { useRenameRequest } from './renameRequest.ts'
 import { lookForShortcut } from './shortcutLooks.ts'
@@ -48,10 +48,9 @@ export function ProfileContextMenu({
           openProfileDialog('edit', profile.id)
         }}
       />,
-      <CoverMenuItems key="cover" game={game} profile={profile} close={onClose} />,
       <MoreMenuItems key="more" profile={profile} close={onClose} />,
     ],
-    [game, profile, onClose, t],
+    [profile, onClose, t],
   )
   return (
     <Menu

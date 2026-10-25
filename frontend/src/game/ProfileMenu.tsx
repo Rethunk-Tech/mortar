@@ -22,7 +22,8 @@ import { HomeButton } from './HomeButton.tsx'
 import { openProfileDialog } from './profileDialog.ts'
 import { SaveTemplateMenuItem } from './TemplateMenuItems.tsx'
 
-// The Profile menu on Home. The sidebar's profile menu keeps the rest (cover, check, export, send, saved groups).
+// The Profile menu on Home, grouped as the profile's full menu is; that one keeps the rest (check, saved groups,
+// shortcuts).
 export function ProfileMenu({ profile }: { profile: Profile }) {
   const { t } = useLingui()
   const profiles = useProfiles((s) => s.profiles)
@@ -60,6 +61,24 @@ export function ProfileMenu({ profile }: { profile: Profile }) {
           }}
         />
         <MenuRule />
+        <MenuHeading>{t`Review`}</MenuHeading>
+        <MenuAction
+          icon={<History size={16} />}
+          label={t`History…`}
+          onClick={() => {
+            close()
+            openProfileDialog('history', profile.id)
+          }}
+        />
+        <MenuAction
+          icon={<GitCompare size={16} />}
+          label={t`Compare…`}
+          onClick={() => {
+            close()
+            openProfileDialog('compare', profile.id)
+          }}
+        />
+        <MenuRule />
         <MenuHeading>{t`Copies`}</MenuHeading>
         <MenuAction
           icon={<Copy size={16} />}
@@ -80,26 +99,10 @@ export function ProfileMenu({ profile }: { profile: Profile }) {
           }}
         />
         <SaveTemplateMenuItem profile={profile} close={close} />
+        <MenuRule />
+        <MenuHeading>{t`Backup`}</MenuHeading>
         <BackupMenuItem profile={profile} close={close} />
         <RestoreMenuItem close={close} />
-        <MenuRule />
-        <MenuHeading>{t`Review`}</MenuHeading>
-        <MenuAction
-          icon={<History size={16} />}
-          label={t`History…`}
-          onClick={() => {
-            close()
-            openProfileDialog('history', profile.id)
-          }}
-        />
-        <MenuAction
-          icon={<GitCompare size={16} />}
-          label={t`Compare…`}
-          onClick={() => {
-            close()
-            openProfileDialog('compare', profile.id)
-          }}
-        />
         <MenuRule />
         <MenuAction
           icon={<Trash2 size={16} />}

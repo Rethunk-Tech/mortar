@@ -5,9 +5,8 @@ import {
   FolderOpen,
   Gamepad2,
   GitCompare,
+  GitMerge,
   History,
-  ImageOff,
-  ImagePlus,
   PackagePlus,
   ShieldCheck,
   Snowflake,
@@ -16,7 +15,6 @@ import {
   Trash2,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { PickImage } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { SetFavourite } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import {
@@ -35,11 +33,14 @@ import { MenuHeading, MenuRule } from '../shell/TitleMenu.tsx'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { BackupMenuItem, RestoreMenuItem } from './BackupMenuItems.tsx'
-import { applyStagedCover, hasPickedCover } from './cover.ts'
 import { FarmMenuItem } from './FarmMenuItem.tsx'
 import { openProfileDialog } from './profileDialog.ts'
 import { lookForShortcut, setShortcut, useHasShortcut } from './shortcutLooks.ts'
-import { TemplateMenuItems } from './TemplateMenuItems.tsx'
+import {
+  ApplyTemplateMenuItem,
+  ManageTemplatesMenuItem,
+  SaveTemplateMenuItem,
+} from './TemplateMenuItems.tsx'
 
 // The profile actions shared by the profile page's buttons and the sidebar's context menu, so both offer the same.
 
@@ -177,66 +178,80 @@ function CheckProfileMenuItem({ profile, close }: { profile: Profile; close: () 
   )
 }
 
-function CoverMenuItems({
-  game,
-  profile,
-  close,
-}: {
-  game: string
-  profile: Profile
-  close: () => void
-}) {
+type Item = { profile: Profile; close: () => void }
+
+// History, comparison and the health check: looking at the profile without changing it.
+function ReviewItems({ profile, close }: Item) {
   const { t } = useLingui()
-  const apply = async (path: string | null) => {
-    const next = await applyStagedCover(game, profile.id, path)
-    if (next) {
-      useProfiles.getState().replace(next)
-    }
-  }
-  const choose = async () => {
-    close()
-    const path = await PickImage(t`Choose cover image`)
-    if (path) {
-      await apply(path).catch(reportError(t`Could not use that image`))
-    }
-  }
   return [
+    <MenuRule key="review-divider" />,
+    <MenuHeading key="review-heading">{t`Review`}</MenuHeading>,
     <ProfileMenuItem
-      key="choose-cover"
-      icon={<ImagePlus size={16} />}
-      label={t`Choose cover image…`}
-      onClick={() => choose().catch(reportUnexpected)}
-    />,
-    <ProfileMenuItem
-      key="automatic-cover"
-      icon={<ImageOff size={16} />}
-      label={t`Use the automatic cover`}
-      disabled={!hasPickedCover(profile.cover, undefined)}
+      key="history"
+      icon={<History size={16} />}
+      label={t`History…`}
       onClick={() => {
         close()
-        apply(null).catch(reportUnexpected)
+        openProfileDialog('history', profile.id)
       }}
     />,
+    <ProfileMenuItem
+      key="compare"
+      icon={<GitCompare size={16} />}
+      label={t`Compare…`}
+      onClick={() => {
+        close()
+        openProfileDialog('compare', profile.id)
+      }}
+    />,
+    <CheckProfileMenuItem key="check" profile={profile} close={close} />,
   ]
 }
 
-// Sharing, exporting and backing up the profile, as one menu group.
-function ShareMenuItems({ profile, close }: { profile: Profile; close: () => void }) {
+// What makes another profile, template or list from this one, then the backup file and its restore.
+function CopyItems({ profile, close }: Item) {
+  const { t } = useLingui()
+  const duplicate = useProfiles((s) => s.duplicate)
+  const others = useProfiles((s) => s.profiles.length > 1)
   return [
+    <MenuRule key="copies-divider" />,
+    <MenuHeading key="copies-heading">{t`Copies`}</MenuHeading>,
+    <ProfileMenuItem
+      key="duplicate"
+      icon={<Copy size={16} />}
+      label={t`Duplicate`}
+      onClick={() => {
+        close()
+        duplicate(profile.id).catch(reportUnexpected)
+      }}
+    />,
+    <ProfileMenuItem
+      key="merge"
+      icon={<GitMerge size={16} />}
+      label={t`Add these mods to another profile…`}
+      disabled={!others}
+      {...(others ? {} : { tooltip: t`No other profile to add them to.` })}
+      onClick={() => {
+        close()
+        openProfileDialog('merge', profile.id)
+      }}
+    />,
+    <SaveTemplateMenuItem key="save-template" profile={profile} close={close} />,
+    <ManageTemplatesMenuItem key="manage-templates" profile={profile} close={close} />,
     <FarmMenuItem key="farm" profile={profile} close={close} />,
+    <MenuRule key="backup-divider" />,
+    <MenuHeading key="backup-heading">{t`Backup`}</MenuHeading>,
     <BackupMenuItem key="backup" profile={profile} close={close} />,
     <RestoreMenuItem key="restore" close={close} />,
   ]
 }
 
-function MoreMenuItems({ profile, close }: { profile: Profile; close: () => void }) {
+// The profile's whole menu after Rename and Edit profile…, grouped as Home's Profile menu is.
+function MoreMenuItems({ profile, close }: Item) {
   const { t } = useLingui()
   const hasGame = useProfiles((s) => s.game !== null)
-  const duplicate = useProfiles((s) => s.duplicate)
   const openId = useProfiles((s) => s.openId)
   const openFolder = useProfiles((s) => s.openFolder)
-  // Grouped under headings: the list grew past what a reader scans, and an unlabelled run of actions hid the one
-  // that opens the folder.
   return [
     <ProfileMenuItem
       key="favourite"
@@ -264,18 +279,6 @@ function MoreMenuItems({ profile, close }: { profile: Profile; close: () => void
       }}
     />,
     <ProfileMenuItem
-      key="saved-group"
-      icon={<PackagePlus size={16} />}
-      label={t`Add a saved group…`}
-      disabled={!hasGame}
-      onClick={() => {
-        close()
-        openProfileDialog('savedGroup', profile.id)
-      }}
-    />,
-    <MenuRule key="folder-divider" />,
-    <MenuHeading key="folder-heading">{t`Folder`}</MenuHeading>,
-    <ProfileMenuItem
       key="open-folder"
       icon={<FolderOpen size={16} />}
       label={t`Open profile folder`}
@@ -293,40 +296,21 @@ function MoreMenuItems({ profile, close }: { profile: Profile; close: () => void
         openProfileDialog('folder', profile.id)
       }}
     />,
-    <MenuRule key="review-divider" />,
-    <MenuHeading key="review-heading">{t`Review`}</MenuHeading>,
+    <ReviewItems key="review" profile={profile} close={close} />,
+    <MenuRule key="add-divider" />,
+    <MenuHeading key="add-heading">{t`Add mods`}</MenuHeading>,
     <ProfileMenuItem
-      key="history"
-      icon={<History size={16} />}
-      label={t`History…`}
+      key="saved-group"
+      icon={<PackagePlus size={16} />}
+      label={t`Add a saved group…`}
+      disabled={!hasGame}
       onClick={() => {
         close()
-        openProfileDialog('history', profile.id)
+        openProfileDialog('savedGroup', profile.id)
       }}
     />,
-    <ProfileMenuItem
-      key="compare"
-      icon={<GitCompare size={16} />}
-      label={t`Compare…`}
-      onClick={() => {
-        close()
-        openProfileDialog('compare', profile.id)
-      }}
-    />,
-    <CheckProfileMenuItem key="check" profile={profile} close={close} />,
-    <MenuRule key="copies-divider" />,
-    <MenuHeading key="copies-heading">{t`Copies and sharing`}</MenuHeading>,
-    <ProfileMenuItem
-      key="duplicate"
-      icon={<Copy size={16} />}
-      label={t`Duplicate`}
-      onClick={() => {
-        close()
-        duplicate(profile.id).catch(reportUnexpected)
-      }}
-    />,
-    <ShareMenuItems key="share" profile={profile} close={close} />,
-    <TemplateMenuItems key="templates" profile={profile} close={close} />,
+    <ApplyTemplateMenuItem key="apply-template" profile={profile} close={close} />,
+    <CopyItems key="copies" profile={profile} close={close} />,
     <MenuRule key="shortcuts-divider" />,
     <MenuHeading key="shortcuts-heading">{t`Shortcuts`}</MenuHeading>,
     <ShortcutMenuItems key="shortcuts" profile={profile} close={close} />,
@@ -344,4 +328,4 @@ function MoreMenuItems({ profile, close }: { profile: Profile; close: () => void
   ]
 }
 
-export { CoverMenuItems, MoreMenuItems, ProfileMenuItem, ShortcutMenuItems }
+export { MoreMenuItems, ProfileMenuItem, ShortcutMenuItems }

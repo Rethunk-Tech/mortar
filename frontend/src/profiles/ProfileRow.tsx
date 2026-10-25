@@ -7,7 +7,7 @@ import { memo, useRef, useState } from 'react'
 import type { ProfileBudget } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/datasvc/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { NameField } from '../game/NameField.tsx'
-import { CoverMenuItems, MoreMenuItems, ProfileMenuItem } from '../game/ProfileMenuItems.tsx'
+import { MoreMenuItems, ProfileMenuItem } from '../game/ProfileMenuItems.tsx'
 import { openProfileDialog } from '../game/profileDialog.ts'
 import { useRestoreFocus } from '../game/useRestoreFocus.ts'
 import { formatBytes } from '../i18n/bytes.ts'
@@ -42,7 +42,6 @@ function RowMenu({
   returnFocus: () => void
 }) {
   const { t } = useLingui()
-  const game = useProfiles((s) => s.game?.id ?? '')
   // An action that moves focus itself (rename, delete) turns the return to the ⋯ button off.
   const refocus = useRef<boolean>(true)
   const choose =
@@ -82,7 +81,6 @@ function RowMenu({
         label={t`Edit profile…`}
         onClick={choose(() => openProfileDialog('edit', profile.id), false)}
       />
-      <CoverMenuItems game={game} profile={profile} close={choose(() => undefined)} />
       <MoreMenuItems profile={profile} close={choose(() => undefined)} />
     </Menu>
   )

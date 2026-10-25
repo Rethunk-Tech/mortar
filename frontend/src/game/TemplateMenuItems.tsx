@@ -59,12 +59,4 @@ function ManageTemplatesMenuItem({ profile, close }: Props) {
   )
 }
 
-export function TemplateMenuItems({ profile, close }: Props) {
-  return [
-    <ApplyTemplateMenuItem key="apply-template" profile={profile} close={close} />,
-    <SaveTemplateMenuItem key="save-template" profile={profile} close={close} />,
-    <ManageTemplatesMenuItem key="manage-templates" profile={profile} close={close} />,
-  ]
-}
-
-export { ApplyTemplateMenuItem, SaveTemplateMenuItem }
+export { ApplyTemplateMenuItem, ManageTemplatesMenuItem, SaveTemplateMenuItem }

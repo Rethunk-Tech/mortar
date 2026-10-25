@@ -720,10 +720,6 @@ msgstr ""
 msgid "From a shared link"
 msgstr ""
 
-#: src/game/ProfileMenuItems.tsx
-msgid "Use the automatic cover"
-msgstr ""
-
 #: src/develop/GameCodeDialog.tsx
 msgid "Search the game's types and methods, then pick one to read its type's code."
 msgstr ""
@@ -758,10 +754,6 @@ msgstr ""
 
 #: src/sync/store.ts
 msgid "{name} was changed on {machine} and here"
-msgstr ""
-
-#: src/game/ProfileMenuItems.tsx
-msgid "Copies and sharing"
 msgstr ""
 
 #: src/lan/IncomingPrompt.tsx
@@ -2577,6 +2569,10 @@ msgstr ""
 msgid "Set it in {launcher} for me"
 msgstr ""
 
+#: src/game/ProfileMenuItems.tsx
+msgid "Add mods"
+msgstr ""
+
 #: src/develop/builds.ts
 msgid "Could not pack the mod"
 msgstr ""
@@ -3648,6 +3644,7 @@ msgid "No mods match \"{text}\""
 msgstr ""
 
 #: src/game/ProfileMenu.tsx
+#: src/game/ProfileMenuItems.tsx
 msgid "Add these mods to another profile…"
 msgstr ""
 
@@ -3817,10 +3814,6 @@ msgstr ""
 msgid "Sign in to import"
 msgstr ""
 
-#: src/game/ProfileMenuItems.tsx
-msgid "Folder"
-msgstr ""
-
 #: src/develop/ProjectCard.tsx
 msgid "Last run: {frame} ms a frame"
 msgstr ""
@@ -3979,10 +3972,6 @@ msgstr ""
 
 #: src/browse/stats.ts
 msgid "Version {version}"
-msgstr ""
-
-#: src/game/ProfileMenuItems.tsx
-msgid "Choose cover image"
 msgstr ""
 
 #: src/install/MergeCallout.tsx
@@ -4191,10 +4180,6 @@ msgstr ""
 
 #: src/share/ListFormat.tsx
 msgid "Save mod list"
-msgstr ""
-
-#: src/game/ProfileMenuItems.tsx
-msgid "Choose cover image…"
 msgstr ""
 
 #: src/lan/SendPanel.tsx
@@ -5221,6 +5206,11 @@ msgstr ""
 msgid "Kept next to the code"
 msgstr ""
 
+#: src/game/ProfileMenu.tsx
+#: src/game/ProfileMenuItems.tsx
+msgid "Backup"
+msgstr ""
+
 #: src/games/GameMenu.tsx
 msgid "Switch game: {game}"
 msgstr ""
@@ -5246,6 +5236,7 @@ msgid "Pause all"
 msgstr ""
 
 #: src/game/ProfileMenu.tsx
+#: src/game/ProfileMenuItems.tsx
 msgid "No other profile to add them to."
 msgstr ""
 
@@ -5859,6 +5850,7 @@ msgid "From the {source} collection \"{name}\""
 msgstr ""
 
 #: src/game/ProfileMenu.tsx
+#: src/game/ProfileMenuItems.tsx
 #: src/launch/PlayInstances.tsx
 msgid "Copies"
 msgstr ""
@@ -6018,10 +6010,6 @@ msgstr ""
 
 #: src/queue/store.ts
 msgid "{count, plural, one {# download needs your decision} other {# downloads need your decision}}"
-msgstr ""
-
-#: src/game/ProfileMenuItems.tsx
-msgid "Could not use that image"
 msgstr ""
 
 #: src/launch/LaunchScreen.tsx
