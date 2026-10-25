@@ -5,6 +5,7 @@ package devsvc
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -219,6 +220,9 @@ func (s *Service) Create(ctx context.Context, m NewMod) (settings.DevProject, er
 		return settings.DevProject{}, err
 	}
 	p := settings.DevProject{Dir: dest, Name: m.Name, Profile: profileID, Output: output}
+	if icon, err := fsx.ReadFile(filepath.Join(dest, "icon.png")); err == nil {
+		p.TemplateIcon = fmt.Sprintf("%x", sha256.Sum256(icon))
+	}
 	return p, s.Settings.AddDevProject(m.Game, p)
 }
 

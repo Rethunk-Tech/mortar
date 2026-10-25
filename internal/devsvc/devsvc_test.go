@@ -4,7 +4,9 @@ import (
 	"archive/zip"
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -101,6 +103,9 @@ func TestCreateFromTheArchiveFillsTheTemplateAndWiresTheProfile(t *testing.T) {
 	if len(gp.DevProjects) != 1 || gp.DevProjects[0] != p || p.Profile == "" || gp.ExtraModsProfile(p.Output) != p.Profile {
 		t.Fatalf("project %+v, settings %+v", p, gp.DevProjects)
 	}
+	if p.TemplateIcon == "" {
+		t.Error("the template's icon was not recorded")
+	}
 	if fi, err := os.Stat(p.Output); err != nil || !fi.IsDir() {
 		t.Errorf("build output folder: %v", err)
 	}
@@ -180,6 +185,8 @@ func TestValidateNamesWhatThunderstoreWouldRefuse(t *testing.T) {
 		t.Fatal(err)
 	}
 	w := zip.NewWriter(f)
+	icon, _ := w.Create("icon.png")
+	_, _ = icon.Write([]byte("not a png"))
 	m, _ := w.Create("manifest.json")
 	_, _ = m.Write([]byte(`{"name":"Shop Drop","version_number":"1.0","description":"d","dependencies":["BepInEx-BepInExPack-5.4.2305","bad"]}`))
 	if err := w.Close(); err != nil {
@@ -187,10 +194,16 @@ func TestValidateNamesWhatThunderstoreWouldRefuse(t *testing.T) {
 	}
 	_ = f.Close()
 	got := strings.Join(Validate(path), "\n")
-	for _, want := range []string{"README.md is missing", "icon.png is missing", "letters, digits and underscores", "three numbers", "website_url", `"bad"`} {
+	for _, want := range []string{"README.md is missing", "letters, digits and underscores", "three numbers", "website_url", `"bad"`} {
 		if !strings.Contains(got, want) {
 			t.Errorf("issues lack %q:\n%s", want, got)
 		}
+	}
+	if !strings.Contains(got, "256×256") {
+		t.Errorf("an icon that is not a PNG passed:\n%s", got)
+	}
+	if h := zipFileHash(path, "icon.png"); h != fmt.Sprintf("%x", sha256.Sum256([]byte("not a png"))) || zipFileHash(path, "none") != "" {
+		t.Errorf("icon hash = %q", h)
 	}
 	if strings.Contains(got, "BepInExPack") {
 		t.Errorf("a good dependency was flagged:\n%s", got)

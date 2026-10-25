@@ -3,6 +3,7 @@ package devsvc
 import (
 	"archive/zip"
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -61,6 +62,9 @@ func (s *Service) Pack(ctx context.Context, gameID, dir string) (PackResult, err
 		return r, nil
 	}
 	r.Issues = Validate(r.Zip)
+	if p.TemplateIcon != "" && zipFileHash(r.Zip, "icon.png") == p.TemplateIcon {
+		r.Issues = append(r.Issues, "icon.png is still the template's; draw the mod its own")
+	}
 	return r, nil
 }
 
@@ -134,6 +138,25 @@ func Validate(path string) []string {
 		}
 	}
 	return issues
+}
+
+// zipFileHash is the SHA-256 of one file in the zip at path, empty when it cannot be read.
+func zipFileHash(path, name string) string {
+	zr, err := zip.OpenReader(path)
+	if err != nil {
+		return ""
+	}
+	defer func() { _ = zr.Close() }()
+	rc, err := zr.Open(name)
+	if err != nil {
+		return ""
+	}
+	defer func() { _ = rc.Close() }()
+	h := sha256.New()
+	if _, err := io.Copy(h, io.LimitReader(rc, maxManifest)); err != nil {
+		return ""
+	}
+	return fmt.Sprintf("%x", h.Sum(nil))
 }
 
 // Versions are the project's released version (its latest vX.Y.Z tag, empty before the first) and the next patch,

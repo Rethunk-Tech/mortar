@@ -206,6 +206,8 @@ type DevProject struct {
 	Output  string `json:"output"`
 	// Watch rebuilds the project whenever its source changes.
 	Watch bool `json:"watch,omitempty"`
+	// TemplateIcon is the SHA-256 of the template's icon.png, so Pack can say the mod still wears it.
+	TemplateIcon string `json:"templateIcon,omitempty"`
 }
 
 // AddDevProject records p for the game and makes its build output an extra mods folder that installs into its profile.
