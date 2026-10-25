@@ -5060,6 +5060,10 @@ msgstr ""
 msgid "Review collection update"
 msgstr ""
 
+#: src/develop/NewModDialog.tsx
+msgid "Start it with the mods of {profile}"
+msgstr ""
+
 #: src/launch/VanillaPlay.tsx
 msgid "Mortar starts the unmodded game directly, outside {launcher}. The {launcher} overlay and playtime tracking do not work; {launcher} still supplies its API if running."
 msgstr ""

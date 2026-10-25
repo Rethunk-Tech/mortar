@@ -23,6 +23,8 @@ export interface Draft {
   dependencies: string[] | null
   // The picked packages the mod only uses when present (soft); the rest it requires.
   optional: string[]
+  // A new development profile starts with the open profile's mods.
+  copyMods: boolean
 }
 
 // The projects folder, and each remembered parameter as "param.<id>".
@@ -52,6 +54,7 @@ export function firstDraft(form: Form | null, remembered: Remembered): Draft {
     private: false,
     dependencies: null,
     optional: [],
+    copyMods: false,
   }
 }
 

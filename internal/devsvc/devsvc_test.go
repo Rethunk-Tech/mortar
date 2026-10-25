@@ -300,3 +300,15 @@ func TestValidateNamesWhatThunderstoreWouldRefuse(t *testing.T) {
 		t.Errorf("a good dependency was flagged:\n%s", got)
 	}
 }
+
+// A new development profile copies the named profile's mods, so a profile that is not there stops the start.
+func TestCreateCopiesModsIntoTheNewProfile(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	_, err := svc.Create(t.Context(), NewMod{
+		Game: "lethal-company", Name: "ShopDrop", Parent: t.TempDir(), Repo: "shop-drop", CopyFrom: "missing",
+		Values: map[string]string{"description": "Lands somewhere.", "team": "Ab"},
+	})
+	if err == nil {
+		t.Fatal("copied from a profile that does not exist")
+	}
+}

@@ -261,6 +261,7 @@ function SourceChoice({ draft, user, set }: { draft: Draft; user: string; set: S
 function ProjectStep({ draft, user, set }: { draft: Draft; user: string; set: Set }) {
   const { t } = useLingui()
   const profiles = useProfiles((s) => s.profiles)
+  const openName = useProfiles((s) => s.profiles.find((p) => p.id === s.openId)?.name ?? '')
   const gameName = useGameInfo()?.name ?? ''
   const folderId = useId()
   const pick = async () => {
@@ -300,6 +301,14 @@ function ProjectStep({ draft, user, set }: { draft: Draft; user: string; set: Se
           value={NEW_PROFILE}
         >{t`New profile: ${{ name: `${gameName} Development` }}`}</MenuItem>
       </SelectField>
+      {draft.profile === NEW_PROFILE && openName ? (
+        <FormControlLabel
+          control={
+            <Switch checked={draft.copyMods} onChange={(_, copyMods) => set({ copyMods })} />
+          }
+          label={t`Start it with the mods of ${{ profile: openName }}`}
+        />
+      ) : null}
       <SourceChoice draft={draft} user={user} set={set} />
     </>
   )
@@ -384,6 +393,7 @@ export function NewModDialog({
           game,
           repo: draft.repo || draft.name,
           profile: draft.profile === NEW_PROFILE ? '' : draft.profile,
+          copyFrom: draft.profile === NEW_PROFILE && draft.copyMods ? openId : '',
         })
         if (form) {
           writeStored(REMEMBERED, rememberedOf(draft, form))

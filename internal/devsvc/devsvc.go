@@ -24,6 +24,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/nowindow"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -76,6 +77,8 @@ type NewMod struct {
 	Repo   string `json:"repo"`
 	// Profile is the development profile's id; empty creates "<game> Development".
 	Profile string `json:"profile"`
+	// CopyFrom is a profile whose mods a new development profile starts with; empty starts it empty.
+	CopyFrom string `json:"copyFrom"`
 	// GitHub creates Owner/Repo from the template with gh (Private or public) instead of copying its archive.
 	GitHub  bool   `json:"github"`
 	Owner   string `json:"owner"`
@@ -234,6 +237,11 @@ func (s *Service) Create(ctx context.Context, m NewMod) (settings.DevProject, er
 			return settings.DevProject{}, err
 		}
 		profileID = p.ID
+		if m.CopyFrom != "" {
+			if err := s.copyMods(m.Game, m.CopyFrom, profileID); err != nil {
+				return settings.DevProject{}, err
+			}
+		}
 	}
 	// The template builds an unpacked package here; it exists before the first build so the folder watch can start.
 	output := filepath.Join(dest, "artifacts", "bin", m.Name, "debug")
@@ -419,6 +427,26 @@ func (s *Service) commit(ctx context.Context, dir string, cloned bool, name stri
 		return
 	}
 	_, _ = s.run(ctx, dir, "git", "commit", "-q", "-m", "Start "+name)
+}
+
+// copyMods starts the new development profile with the mods the player chose in fromID, and what they need; local
+// mods stay behind, since another project's build output is bound to its own profile.
+func (s *Service) copyMods(gameID, fromID, toID string) error {
+	installed, err := s.Profiles.Installed(gameID, fromID)
+	if err != nil {
+		return err
+	}
+	var ids []mod.ID
+	for _, im := range installed {
+		if im.Source.Kind != profile.KindLocal && !im.Implicit {
+			ids = append(ids, im.ModID())
+		}
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	_, err = s.Profiles.CopyModsWithNeeds(gameID, fromID, toID, ids)
+	return err
 }
 
 func writeUserProps(dir, gameDir string) error {
