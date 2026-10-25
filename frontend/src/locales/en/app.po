@@ -3216,6 +3216,10 @@ msgstr "That download is no longer waiting to retry."
 msgid "This download's mod is not known to come from {repo}."
 msgstr "This download's mod is not known to come from {repo}."
 
+#: src/develop/DevelopTab.tsx
+msgid "Open in editor"
+msgstr "Open in editor"
+
 #: src/toasts/AvOverrideDialog.tsx
 msgid "Install {name} anyway?"
 msgstr "Install {name} anyway?"
@@ -3880,6 +3884,10 @@ msgstr "Send it to the people joining you."
 #: src/launch/KnownGoodOffer.tsx
 msgid "Marked known good"
 msgstr "Marked known good"
+
+#: src/develop/DevelopTab.tsx
+msgid "Could not open the editor"
+msgstr "Could not open the editor"
 
 #: src/game/Home.tsx
 #: src/saves/SaveDetails.tsx

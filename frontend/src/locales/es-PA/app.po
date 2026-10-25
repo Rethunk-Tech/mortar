@@ -3216,6 +3216,10 @@ msgstr ""
 msgid "This download's mod is not known to come from {repo}."
 msgstr ""
 
+#: src/develop/DevelopTab.tsx
+msgid "Open in editor"
+msgstr ""
+
 #: src/toasts/AvOverrideDialog.tsx
 msgid "Install {name} anyway?"
 msgstr ""
@@ -3879,6 +3883,10 @@ msgstr ""
 
 #: src/launch/KnownGoodOffer.tsx
 msgid "Marked known good"
+msgstr ""
+
+#: src/develop/DevelopTab.tsx
+msgid "Could not open the editor"
 msgstr ""
 
 #: src/game/Home.tsx

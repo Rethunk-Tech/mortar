@@ -123,18 +123,39 @@ func (s *Service) OpenAt(gameID, dir, file string, line, column int) error {
 		return usererr.Wrap(usererr.Invalid, fmt.Errorf("%s is not in the project", file))
 	}
 	at := fmt.Sprintf("%s:%d:%d", file, max(line, 1), max(column, 1))
-	for _, editor := range [][]string{{"code", "--goto", at}, {"codium", "--goto", at}, {"rider", "--line", strconv.Itoa(max(line, 1)), file}} {
+	if startEditor([][]string{{"code", "--goto", at}, {"codium", "--goto", at}, {"rider", "--line", strconv.Itoa(max(line, 1)), file}}) {
+		return nil
+	}
+	return datadir.Open(file)
+}
+
+// OpenEditor opens the project's folder in the first code editor found (VS Code, VSCodium, Rider), else in the file
+// manager.
+func (s *Service) OpenEditor(gameID, dir string) error {
+	p, err := s.project(gameID, dir)
+	if err != nil {
+		return err
+	}
+	if startEditor([][]string{{"code", p.Dir}, {"codium", p.Dir}, {"rider", p.Dir}}) {
+		return nil
+	}
+	return datadir.Open(p.Dir)
+}
+
+// startEditor runs the first of the editor commands that is installed and starts, and reports whether one did.
+func startEditor(commands [][]string) bool {
+	for _, editor := range commands {
 		if _, err := exec.LookPath(editor[0]); err != nil {
 			continue
 		}
-		cmd := exec.CommandContext(context.Background(), editor[0], editor[1:]...) // #nosec G204 -- fixed editors; file is inside the project
+		cmd := exec.CommandContext(context.Background(), editor[0], editor[1:]...) // #nosec G204 -- fixed editors; paths are inside the project
 		nowindow.Set(cmd)
 		if err := cmd.Start(); err == nil {
 			go func() { _ = cmd.Wait() }()
-			return nil
+			return true
 		}
 	}
-	return datadir.Open(file)
+	return false
 }
 
 func (s *Service) project(gameID, dir string) (settings.DevProject, error) {

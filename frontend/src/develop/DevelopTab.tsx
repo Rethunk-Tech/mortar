@@ -20,6 +20,7 @@ import type { Problem } from '../../bindings/github.com/Rethunk-Tech/mortar/inte
 import {
   Forget,
   OpenAt,
+  OpenEditor,
   OpenProject,
   SetWatch,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
@@ -224,6 +225,13 @@ function MoreMenu({
           {t`Pack for ${{ source: sourceLabel('thunderstore') }}`}
         </MenuItem>
         <MenuItem onClick={act(onRelease)}>{t`Release…`}</MenuItem>
+        <MenuItem
+          onClick={act(() =>
+            OpenEditor(game, project.dir).catch(reportError(t`Could not open the editor`)),
+          )}
+        >
+          {t`Open in editor`}
+        </MenuItem>
         <MenuItem
           onClick={act(() =>
             OpenProject(game, project.dir).catch(reportError(t`Could not open the folder`)),
