@@ -11,11 +11,17 @@ const NONE: Template[] = []
 // Each game's templates, shared: the readers that turn on together (a menu's several template items) make one read.
 const useTemplateStore = create<{ byGame: Record<string, Template[]> }>(() => ({ byGame: {} }))
 const reading = new Map<string, Promise<void>>()
+const readAt = new Map<string, number>()
+// A read this recent stands for the next reader: the switcher menu reads as it opens, New profile a moment later.
+const FRESH_MS = 2000
 
 function read(game: string, force: boolean): Promise<void> {
   const inFlight = reading.get(game)
   if (inFlight && !force) {
     return inFlight
+  }
+  if (!force && Date.now() - (readAt.get(game) ?? 0) < FRESH_MS) {
+    return Promise.resolve()
   }
   const next = Templates(game)
     .then((found) =>
@@ -26,7 +32,10 @@ function read(game: string, force: boolean): Promise<void> {
         return prev && sameValue(prev, list) ? s : { byGame: { ...s.byGame, [game]: list } }
       }),
     )
-    .finally(() => reading.delete(game))
+    .finally(() => {
+      reading.delete(game)
+      readAt.set(game, Date.now())
+    })
   reading.set(game, next)
   return next
 }
