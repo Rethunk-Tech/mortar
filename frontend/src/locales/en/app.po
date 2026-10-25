@@ -2413,6 +2413,10 @@ msgstr "Could not save that setting"
 msgid "There are no mods to share."
 msgstr "There are no mods to share."
 
+#: src/develop/GameCodeDialog.tsx
+msgid "Could not find usages"
+msgstr "Could not find usages"
+
 #: src/queue/QueueBody.tsx
 msgid "Browse mods"
 msgstr "Browse mods"
@@ -2760,6 +2764,10 @@ msgstr "Add this profile to {launcher}"
 #: src/share/ListFormat.tsx
 msgid "{total} messages"
 msgstr "{total} messages"
+
+#: src/develop/GameCodeDialog.tsx
+msgid "Nothing in these assemblies uses it."
+msgstr "Nothing in these assemblies uses it."
 
 #: src/launch/LaunchScreen.tsx
 msgid "Asking {launcher}"
@@ -3577,6 +3585,10 @@ msgstr "Use theirs"
 #: src/develop/NewModDialog.tsx
 msgid "Install the .NET SDK to build mods."
 msgstr "Install the .NET SDK to build mods."
+
+#: src/develop/GameCodeDialog.tsx
+msgid "Finding usages…"
+msgstr "Finding usages…"
 
 #: src/lan/SendPanel.tsx
 msgid "Send"
@@ -6475,6 +6487,10 @@ msgstr "Backups of {name}"
 #: src/share/ImportProblems.tsx
 msgid "{count, plural, one {# settings file was left out (too large):} other {# settings files were left out (too large):}}"
 msgstr "{count, plural, one {# settings file was left out (too large):} other {# settings files were left out (too large):}}"
+
+#: src/develop/GameCodeDialog.tsx
+msgid "Find usages"
+msgstr "Find usages"
 
 #: src/game/Home.tsx
 #: src/saves/SavesTab.tsx

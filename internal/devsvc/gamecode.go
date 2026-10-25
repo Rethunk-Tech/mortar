@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -165,6 +166,34 @@ func (s *Service) members(path string) ([]dotnet.Member, error) {
 	}
 	s.code[path] = gameCode{modified: st.ModTime(), members: members}
 	return members, nil
+}
+
+// Usage is a method that uses a member: in which assembly, as "Type::Method".
+type Usage struct {
+	Assembly string `json:"assembly"`
+	Label    string `json:"label"`
+	Caller   string `json:"caller"`
+}
+
+// Usages finds the methods in every assembly Assemblies lists that call, construct, load or store target
+// ("Namespace.Type::Member").
+func (s *Service) Usages(gameID, dir, target string) ([]Usage, error) {
+	all, err := s.Assemblies(gameID, dir)
+	if err != nil {
+		return nil, err
+	}
+	out := []Usage{}
+	for _, a := range all {
+		callers, err := dotnet.Usages(a.Path, target)
+		if err != nil {
+			log.Printf("devsvc: reading %s for usages: %v", a.Label, err)
+			continue
+		}
+		for _, c := range callers {
+			out = append(out, Usage{Assembly: a.Path, Label: a.Label, Caller: c})
+		}
+	}
+	return out, nil
 }
 
 // Decompile returns one of an assembly's types as C#, or as IL, through ILSpy's command line (ilspycmd).

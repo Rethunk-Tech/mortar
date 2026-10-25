@@ -9,13 +9,15 @@ import {
   Typography,
 } from '@mui/material'
 import { Code, Copy, FileSearch } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { type ReactNode, useEffect, useRef, useState } from 'react'
+import type { Usage } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import {
   Assemblies,
   Decompile,
   GameCode,
   HasDecompiler,
   InstallDecompiler,
+  Usages,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import type { Member } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/dotnet/models.ts'
 import { ILSPY, MONOMOD } from '../brand/productNames.ts'
@@ -221,6 +223,73 @@ function Source({
   )
 }
 
+// Lists the methods, in every assembly the view lists, that use the picked member; picking one opens it.
+function UsagesPanel({
+  game,
+  dir,
+  target,
+  onOpen,
+  children,
+}: {
+  game: string
+  dir: string
+  target: string
+  onOpen: (u: Usage) => void
+  children: ReactNode
+}) {
+  const { t } = useLingui()
+  const [usages, setUsages] = useState<Usage[] | null>(null)
+  const [finding, find] = usePending()
+  return (
+    <Box sx={{ px: 2, pt: 1.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
+        <Button
+          size="small"
+          variant="outlined"
+          disabled={target === '' || finding}
+          onClick={() =>
+            find(async () => setUsages(await Usages(game, dir, target)), {
+              errorTitle: t`Could not find usages`,
+            })
+          }
+        >
+          {finding ? t`Finding usages…` : t`Find usages`}
+        </Button>
+        <Box sx={{ flex: 1 }} />
+        {children}
+      </Box>
+      {usages === null ? null : (
+        <Box sx={{ maxHeight: 160, overflowY: 'auto' }}>
+          {usages.length === 0 ? (
+            <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
+              {t`Nothing in these assemblies uses it.`}
+            </Typography>
+          ) : null}
+          {usages.map((u) => (
+            <Box
+              key={`${u.assembly}|${u.caller}`}
+              component="button"
+              type="button"
+              onClick={() => onOpen(u)}
+              sx={{ all: 'unset', display: 'block', cursor: 'pointer', py: 0.25 }}
+            >
+              <Typography noWrap={true} sx={{ fontFamily: MONO, fontSize: 'small.fontSize' }}>
+                {u.caller}
+              </Typography>
+              <Typography
+                noWrap={true}
+                sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}
+              >
+                {u.label}
+              </Typography>
+            </Box>
+          ))}
+        </Box>
+      )}
+    </Box>
+  )
+}
+
 /** Search the game's code, read a type decompiled, and copy a hook for one of its methods. */
 export function GameCodeDialog({
   game,
@@ -302,7 +371,17 @@ export function GameCodeDialog({
           </Box>
         </Box>
         <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 0, minWidth: 0 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 2, pt: 1.5 }}>
+          <UsagesPanel
+            key={picked ? `${picked.type}::${picked.method}` : ''}
+            game={game}
+            dir={dir}
+            target={picked ? `${picked.type}::${picked.method}` : ''}
+            onOpen={(u) => {
+              const [type = '', method = ''] = u.caller.split('::')
+              setAssembly(u.assembly === assemblies[0]?.path ? '' : u.assembly)
+              setPicked({ type, kind: 'method', method, static: false, void: true, params: [] })
+            }}
+          >
             <ToggleButtonGroup
               exclusive={true}
               size="small"
@@ -313,7 +392,7 @@ export function GameCodeDialog({
               <ToggleButton value="cs">C#</ToggleButton>
               <ToggleButton value="il">IL</ToggleButton>
             </ToggleButtonGroup>
-          </Box>
+          </UsagesPanel>
           <Source
             game={game}
             dir={dir}

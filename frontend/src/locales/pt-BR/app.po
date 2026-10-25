@@ -2413,6 +2413,10 @@ msgstr ""
 msgid "There are no mods to share."
 msgstr ""
 
+#: src/develop/GameCodeDialog.tsx
+msgid "Could not find usages"
+msgstr ""
+
 #: src/queue/QueueBody.tsx
 msgid "Browse mods"
 msgstr ""
@@ -2759,6 +2763,10 @@ msgstr ""
 
 #: src/share/ListFormat.tsx
 msgid "{total} messages"
+msgstr ""
+
+#: src/develop/GameCodeDialog.tsx
+msgid "Nothing in these assemblies uses it."
 msgstr ""
 
 #: src/launch/LaunchScreen.tsx
@@ -3576,6 +3584,10 @@ msgstr ""
 
 #: src/develop/NewModDialog.tsx
 msgid "Install the .NET SDK to build mods."
+msgstr ""
+
+#: src/develop/GameCodeDialog.tsx
+msgid "Finding usages…"
 msgstr ""
 
 #: src/lan/SendPanel.tsx
@@ -6474,6 +6486,10 @@ msgstr ""
 
 #: src/share/ImportProblems.tsx
 msgid "{count, plural, one {# settings file was left out (too large):} other {# settings files were left out (too large):}}"
+msgstr ""
+
+#: src/develop/GameCodeDialog.tsx
+msgid "Find usages"
 msgstr ""
 
 #: src/game/Home.tsx
