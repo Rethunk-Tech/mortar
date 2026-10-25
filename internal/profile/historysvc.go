@@ -28,8 +28,17 @@ func (s *Service) HistoryDiff(game, id, a, b string) (HistoryDiff, error) {
 	return s.store.HistoryDiff(game, id, a, b)
 }
 
-func (s *Service) EventDiff(game, id, eventID string) (HistoryDiff, error) {
-	return s.store.EventDiff(game, id, eventID)
+// EventDiffs is every listed event's changes by event id, in one call for the History timeline.
+func (s *Service) EventDiffs(game, id string, eventIDs []string) (map[string]HistoryDiff, error) {
+	out := make(map[string]HistoryDiff, len(eventIDs))
+	for _, ev := range eventIDs {
+		d, err := s.store.EventDiff(game, id, ev)
+		if err != nil {
+			return nil, err
+		}
+		out[ev] = d
+	}
+	return out, nil
 }
 
 func (s *Service) RevertHistoryItem(game, id, eventID, item string) (Profile, error) {

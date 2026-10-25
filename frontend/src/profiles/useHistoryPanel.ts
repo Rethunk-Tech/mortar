@@ -4,7 +4,7 @@ import type {
   HistoryEvent,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
-  EventDiff,
+  EventDiffs,
   History,
   HistoryDiff as LoadDiff,
   MarkKnownGood,
@@ -54,12 +54,15 @@ export function useHistoryPanel(profileId: string, open: boolean, toastMissing =
     History(game.id, profileId)
       .then(async (list) => {
         const rows = list ?? []
-        const next: Record<string, HistoryDiff['items']> = {}
-        await Promise.all(
-          rows.map(async (ev) => {
-            next[ev.id] = (await EventDiff(game.id, profileId, ev.id)).items ?? []
-          }),
+        const diffs = await EventDiffs(
+          game.id,
+          profileId,
+          rows.map((ev) => ev.id),
         )
+        const next: Record<string, HistoryDiff['items']> = {}
+        for (const ev of rows) {
+          next[ev.id] = diffs?.[ev.id]?.items ?? []
+        }
         // Events and their changes arrive together, so the timeline draws once.
         if (live) {
           setEvents(rows)
