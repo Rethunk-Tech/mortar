@@ -194,14 +194,20 @@ export function dialogCases(h: Helpers): Case[] {
     dialog('new-mod-author', (p) => newModStep(p, 1), WIZARD_BUDGET),
     dialog('new-mod-dependencies', (p) => newModStep(p, 2), WIZARD_BUDGET),
     dialog('new-mod-project', (p) => newModStep(p, 3), WIZARD_BUDGET),
-    dialog('mod-also-add', async (p) => {
-      await view(p, 'List view')
-      await row(p, 0).click()
-      await p
-        .getByRole('complementary', { name: 'Selected mod' })
-        .getByText(/^Also add to…/)
-        .click()
-    }),
+    // Showing the list and picking a mod is setup: only opening the dialog is measured.
+    dialog(
+      'mod-also-add',
+      (p) =>
+        p
+          .getByRole('complementary', { name: 'Selected mod' })
+          .getByText(/^Also add to…/)
+          .click(),
+      undefined,
+      async (p) => {
+        await view(p, 'List view')
+        await row(p, 0).click()
+      },
+    ),
     dialog('report-bug', async (p) => {
       await button(p, /^Mortar/)
       await pick(p, /^Report a bug…/)
