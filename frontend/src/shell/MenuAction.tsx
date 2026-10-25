@@ -1,8 +1,19 @@
-import ListItemIcon from '@mui/material/ListItemIcon'
-import ListItemText from '@mui/material/ListItemText'
 import MenuItem from '@mui/material/MenuItem'
 import type { ReactNode } from 'react'
 import { destructiveSx } from './destructive.ts'
+
+// The row's parts are plain spans styled from the row rather than ListItemIcon and ListItemText: a menu redraws every
+// row as focus moves through it, and each of those is several components more to redraw.
+const rowSx = {
+  '& .menu-action-icon': { minWidth: 36, flexShrink: 0, display: 'inline-flex' },
+  '& .menu-action-text': { flex: '1 1 auto', minWidth: 0 },
+  '& .menu-action-reason': {
+    display: 'block',
+    whiteSpace: 'normal',
+    typography: 'body2',
+    color: 'text.secondary',
+  },
+} as const
 
 export function MenuAction({
   icon,
@@ -21,18 +32,12 @@ export function MenuAction({
   onClick: () => void
 }) {
   return (
-    <MenuItem disabled={disabled} onClick={onClick} sx={tone ? destructiveSx : undefined}>
-      <ListItemIcon sx={{ color: 'inherit' }}>{icon}</ListItemIcon>
-      {disabled && reason ? (
-        <ListItemText
-          secondary={reason}
-          slotProps={{ secondary: { sx: { whiteSpace: 'normal' } } }}
-        >
-          {label}
-        </ListItemText>
-      ) : (
-        <ListItemText>{label}</ListItemText>
-      )}
+    <MenuItem disabled={disabled} onClick={onClick} sx={tone ? [rowSx, destructiveSx] : rowSx}>
+      <span className="menu-action-icon">{icon}</span>
+      <span className="menu-action-text">
+        {label}
+        {disabled && reason ? <span className="menu-action-reason">{reason}</span> : null}
+      </span>
     </MenuItem>
   )
 }
