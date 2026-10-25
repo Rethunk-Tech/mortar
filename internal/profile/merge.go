@@ -167,6 +167,10 @@ func (s *Store) MergeInto(game, fromID, toID string, newerWins bool) (Profile, e
 // carryConfig copies the source mod's config.json over the fresh copy in toID, when the source has one.
 func (s *Store) carryConfig(game, fromID, toID string, side DiffSide) error {
 	srcDir, err := s.ModFolder(game, fromID, side.Key, side.ID)
+	// A package keeps its settings in the loader's config folder, not a folder of its own: there is nothing to carry.
+	if errors.Is(err, ErrNoModFolder) {
+		return nil
+	}
 	if err != nil {
 		return err
 	}

@@ -133,3 +133,27 @@ func TestMergeIntoRefusedWhileRunning(t *testing.T) {
 		t.Fatalf("err = %v", err)
 	}
 }
+
+// A package has no folder of its own in a profile, so merging one carries its state but no per-mod folder.
+func TestMergeIntoCarriesAPackage(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	from, err := e.Create("lethal-company", "From")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.InstallSource(t.Context(), "lethal-company", from.ID, tsZip(t, "1.0.0"), Source{Kind: KindThunderstore, Name: "Ns-Mod", Version: "1.0.0"}); err != nil {
+		t.Fatal(err)
+	}
+	to, err := e.Create("lethal-company", "To")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.MergeInto("lethal-company", from.ID, to.ID, true); err != nil {
+		t.Fatal(err)
+	}
+	got, _ := e.read("lethal-company", to.ID)
+	if len(got.Entries) != 1 || got.Entries[0].Source.Name != "Ns-Mod" {
+		t.Fatalf("merged entries = %+v", got.Entries)
+	}
+}
