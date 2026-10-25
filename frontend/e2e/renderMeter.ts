@@ -7,6 +7,7 @@ import { dwell } from './app.ts'
 const QUIET_POLL_MS = 100
 const TOP = Number(process.env.MORTAR_RENDER_TOP ?? '8')
 // Library building blocks every MUI component renders through; the report names the app's own components instead.
+const ALL_NAMES = process.env.MORTAR_RENDER_ALL_NAMES === '1'
 const LIBRARY =
   /^(Insertion|Styled\(|Mui|Box$|Typography$|ButtonBase$|anonymous$|TouchRipple|Ripple$|Popper|Portal$|Grow$|Fade$|Collapse$|Transition|SvgIcon$|Tooltip$|Modal$|Dialog$|Paper$|Button$|IconButton$|InputBase$|FormControl$|Chip$|Menu$|List|TableCell$|TableRow$)/
 const MIB = 1024 * 1024
@@ -185,7 +186,7 @@ export class Meter {
       mounts: c.mounts,
       updates: c.updates,
       top: Object.entries(c.names)
-        .filter(([n]) => !LIBRARY.test(n))
+        .filter(([n]) => ALL_NAMES || !LIBRARY.test(n))
         .sort((a, b) => b[1] - a[1])
         .slice(0, TOP),
       startedBy: Object.entries(c.roots)

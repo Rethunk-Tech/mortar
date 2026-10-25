@@ -46,6 +46,7 @@ import { webkitWalk } from './webkit-walk.ts'
 // in WebKitGTK too (webkit-walk.ts) on the same sandbox; a break fails the run like a budget.
 //   MORTAR_RENDER_MOTION=1             measure with motion (by default reduced, so no ripple or animation is counted)
 //   MORTAR_RENDER_TOP=<n>              how many components, roots and causes each case lists (8)
+//   MORTAR_RENDER_ALL_NAMES=1          list MUI's and emotion's components among the most re-rendered too
 // Writes render-budget.json and index.html (every screen loading and settled, in both engines, beside its figures and
 // breaks) under MORTAR_RENDER_OUT (default /var/tmp/render-budget-<ts>) and exits 1 when a case is over its budget or fails.
 
