@@ -4,7 +4,6 @@ import { Box, ButtonBase, MenuItem, Typography } from '@mui/material'
 import { ChevronDown } from 'lucide-react'
 import { memo, useEffect, useState } from 'react'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
-import { ProfileCounts } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import type { Played } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import { compact } from '../game/compact.ts'
 import { ON_ART_TEXT } from '../game/onArt.ts'
@@ -12,6 +11,7 @@ import { formatWhen } from '../i18n/formatWhen.ts'
 import { useNowValue } from '../i18n/useNow.ts'
 import { routeGame, useNav } from '../nav/store.ts'
 import { useSettings } from '../settings/store.ts'
+import { profileCounts } from '../shell/sharedReads.ts'
 import { MenuHeading, MenuRule, TitleMenu, TitleMenuItem } from '../shell/TitleMenu.tsx'
 import { useTitleMenu } from '../shell/titleMenus.ts'
 import { space } from '../theme/density.ts'
@@ -148,7 +148,7 @@ export const GameMenu = memo(function GameMenuView() {
   const open = anchor !== null
   useEffect(() => {
     if (open) {
-      ProfileCounts()
+      profileCounts()
         .then((got) => setCounts(got ?? {}))
         .catch(reportUnexpected)
     }

@@ -1,8 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
 import { Chip } from '@mui/material'
 import { useEffect, useState } from 'react'
-import { GitHubLoggedIn } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
+import { githubLoggedIn } from '../../shell/sharedReads.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { ItchAccount } from './ItchAccount.tsx'
@@ -13,7 +13,7 @@ function GitHubLogin() {
   const { t } = useLingui()
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null)
   useEffect(() => {
-    GitHubLoggedIn().then(setLoggedIn).catch(reportUnexpected)
+    githubLoggedIn().then(setLoggedIn).catch(reportUnexpected)
   }, [])
   return (
     <SettingRow

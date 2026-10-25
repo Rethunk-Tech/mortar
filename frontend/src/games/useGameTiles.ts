@@ -2,7 +2,6 @@ import { useLingui } from '@lingui/react/macro'
 import { useCallback, useEffect, useState } from 'react'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { ProfileCounts } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import type { Played } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import { Get } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { setupNeeded } from '../firstrun/needed.ts'
@@ -12,6 +11,7 @@ import { isGameId } from '../nav/store.ts'
 import { listProfiles } from '../profiles/listProfiles.ts'
 import { useSettings } from '../settings/store.ts'
 import { sameValue } from '../shell/sameValue.ts'
+import { profileCounts } from '../shell/sharedReads.ts'
 import { type InlineError, inlineError, reportError } from '../toasts/report.ts'
 import { type GameStatus, installedVersion, loaderCaption, loadGameStatus } from './status.ts'
 
@@ -45,7 +45,7 @@ function useGameTiles() {
   }, [checkLoader, loaderGame])
   const refresh = useCallback(() => {
     setLoadError(null)
-    Promise.all([loadGameStatus(), Get(), ProfileCounts()])
+    Promise.all([loadGameStatus(), Get(), profileCounts()])
       .then(async ([s, settings, counts]) => {
         const entries = await Promise.all(
           s.games

@@ -2,11 +2,11 @@ import { useLingui } from '@lingui/react/macro'
 import { Alert, Box, Button, Chip, TextField } from '@mui/material'
 import { type SubmitEvent, useEffect, useId, useState } from 'react'
 import {
-  Account,
   SignIn,
   SignOut,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/source/itch/service.ts'
 import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
+import { itchAccount } from '../../shell/sharedReads.ts'
 import { space } from '../../theme/density.ts'
 import { errorKind } from '../../toasts/errorKind.ts'
 import { type InlineError, inlineError, reportUnexpected } from '../../toasts/report.ts'
@@ -21,7 +21,7 @@ function ItchRow() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<InlineError | null>(null)
   useEffect(() => {
-    Account()
+    itchAccount()
       .then((a) => setName(a.signedIn ? a.name : ''))
       .catch(reportUnexpected)
   }, [])

@@ -2,15 +2,12 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Chip, Link } from '@mui/material'
 import { type ReactNode, useEffect, useState } from 'react'
 import { Retry } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/netstate/service.ts'
-import {
-  GitHubLoggedIn,
-  GitHubRate,
-} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
-import { Account as ItchAccountInfo } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/source/itch/service.ts'
+import { GitHubRate } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { formatWhen } from '../../i18n/formatWhen.ts'
 import { openSettings } from '../../nav/store.ts'
 import { refresh, useOffline } from '../../shell/offline.ts'
+import { githubLoggedIn, itchAccount } from '../../shell/sharedReads.ts'
 import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { usePending } from '../../toasts/usePending.ts'
@@ -99,10 +96,10 @@ function useAuth(id: SourceId): { ok: boolean | null; text: ReactNode } {
   // Each source's row asks only about its own account.
   useEffect(() => {
     if (id === 'github') {
-      GitHubLoggedIn().then(setGithub).catch(reportUnexpected)
+      githubLoggedIn().then(setGithub).catch(reportUnexpected)
     }
     if (id === 'itch') {
-      ItchAccountInfo()
+      itchAccount()
         .then((a) => setItch(a.signedIn ? a.name : ''))
         .catch(reportUnexpected)
     }

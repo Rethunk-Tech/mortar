@@ -4,10 +4,10 @@ import {
   DeclineOffer,
   Disable,
   Enable,
-  Owner,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nxmsvc/service.ts'
 import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
+import { nxmOwner } from '../../shell/sharedReads.ts'
 import { useLoaded } from '../../shell/useLoaded.ts'
 import { toastError } from '../../toasts/report.ts'
 import { useSettings } from '../store.ts'
@@ -30,7 +30,7 @@ export function useNxmHandler(): {
   const handled = useSettings((s) => s.nxmHandled)
   const [prompt, setPrompt] = useState<Prompt | null>(null)
   const { data: owner } = useLoaded(
-    () => Owner().then((name) => (handled ? '' : name)),
+    () => nxmOwner().then((name) => (handled ? '' : name)),
     [handled],
     '',
   )
@@ -40,7 +40,7 @@ export function useNxmHandler(): {
     done.catch(fail)
   }
   const ask = (mode: Prompt['mode'], onNone: () => void) => {
-    Owner()
+    nxmOwner()
       .then((name) =>
         name === '' && mode === 'takeover' ? onNone() : setPrompt({ mode, owner: name }),
       )
