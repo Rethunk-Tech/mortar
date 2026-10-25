@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { FileUp, FolderInput, Layers, Link2 } from 'lucide-react'
+import { memo } from 'react'
 import { GALE, MOD_ORGANIZER_2, R2MODMAN, STARDROP, VORTEX } from '../brand/productNames.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { listNames } from '../i18n/list.ts'
@@ -13,7 +14,8 @@ export type ImportSource = 'link' | 'file' | 'manager' | 'folder'
 // The first step of Import: every place a profile can come from, each leading to the same preview.
 // modsFolder is whether the game has a Mods folder to import from, and Stardrop, which keeps its profiles beside
 // Stardew's Mods folder, comes with it.
-export function ImportSources({
+// Memoised: the dialog redraws as the mods folder check finishes, and the choices need not.
+export const ImportSources = memo(function ImportSourcesView({
   modsFolder,
   onChoose,
 }: {
@@ -60,4 +62,4 @@ export function ImportSources({
       onChoose={onChoose}
     />
   )
-}
+})

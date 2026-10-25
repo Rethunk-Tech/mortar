@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, LinearProgress, Typography } from '@mui/material'
-import { type ReactNode, useEffect } from 'react'
+import { type ReactNode, useCallback, useEffect } from 'react'
 import { ImportsModsFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { MOD_ORGANIZER_2, STARDROP, VORTEX } from '../brand/productNames.ts'
 import { localId } from '../mods/dependents.ts'
@@ -128,20 +128,21 @@ function ImportPane({
     false,
     reportUnexpected,
   )
+  const { setTab } = flow
+  // Stable, so the memoised sources skip the redraw when the folder check finishes.
+  const choose = useCallback(
+    (picked: ImportSource) => {
+      if (picked === 'folder') {
+        close()
+        useGameModsDialog.getState().open(game)
+        return
+      }
+      setTab(picked)
+    },
+    [close, game, setTab],
+  )
   if (flow.tab === 'choose') {
-    return (
-      <ImportSources
-        modsFolder={modsFolder}
-        onChoose={(picked: ImportSource) => {
-          if (picked === 'folder') {
-            close()
-            useGameModsDialog.getState().open(game)
-            return
-          }
-          flow.setTab(picked)
-        }}
-      />
-    )
+    return <ImportSources modsFolder={modsFolder} onChoose={choose} />
   }
   if (flow.tab === 'manager') {
     return manager
