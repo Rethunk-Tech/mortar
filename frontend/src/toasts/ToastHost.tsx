@@ -12,7 +12,7 @@ import {
   X,
 } from 'lucide-react'
 import { type FocusEvent, type MouseEvent, memo, useState } from 'react'
-import { LetterTile } from '../mods/parts.tsx'
+import { LetterTile } from '../mods/LetterTile.tsx'
 import { useProfileLocked } from '../mods/useLocked.ts'
 import { copyText } from '../share/copyText.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'

@@ -30,7 +30,7 @@ import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { PageActions } from '../game/PageActions.tsx'
 import { useNowValue } from '../i18n/useNow.ts'
 import { relativeWhen } from '../i18n/when.ts'
-import { LetterTile } from '../mods/parts.tsx'
+import { LetterTile } from '../mods/LetterTile.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { persist } from '../settings/persist.ts'
 import { useSettings } from '../settings/store.ts'
@@ -270,7 +270,10 @@ function ProjectCard({ game, project }: { game: string; project: DevProject }) {
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-        <LetterTile mod={{ id: name, name }} size={40} />
+        <LetterTile
+          mod={{ id: name, name, ...(info?.icon ? { picture: info.icon } : {}) }}
+          size={40}
+        />
         <Box sx={{ minWidth: 0, flex: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Typography sx={{ fontSize: 'large.fontSize', fontWeight: 600 }}>{name}</Typography>

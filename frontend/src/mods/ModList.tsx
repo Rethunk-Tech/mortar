@@ -32,6 +32,7 @@ import { useDetail } from './detail.ts'
 import { ExtraFilesChip } from './ExtraFilesChip.tsx'
 import { FavouriteStar } from './FavouriteStar.tsx'
 import { entryFavouriteKey } from './favourites.ts'
+import { LetterTile } from './LetterTile.tsx'
 import {
   columnMenuFromEvent,
   fitListColumns,
@@ -55,7 +56,6 @@ import { PackageKind } from './PackageKind.tsx'
 import { MIDDLE, opensPage } from './pageClick.ts'
 import {
   LastRunBadge,
-  LetterTile,
   LiveBadge,
   ModSwitch,
   NexusGoneBadge,

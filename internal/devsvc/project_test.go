@@ -1,6 +1,9 @@
 package devsvc
 
 import (
+	"bytes"
+	"image"
+	"image/png"
 	"os"
 	"path/filepath"
 	"strings"
@@ -56,8 +59,20 @@ func TestInspectReadsTheProjectFiles(t *testing.T) {
 		t.Fatal(err)
 	}
 	if info.Name != "ShopDrop" || info.GUID != "com.ab.ShopDrop" || info.IDPrefix != "com.ab" || info.Author != "A" ||
-		info.Team != "Ab" || info.Description != "Lands & drops." || strings.Join(info.Categories, ",") != "mods,items" || info.Missing {
+		info.Team != "Ab" || info.Description != "Lands & drops." || strings.Join(info.Categories, ",") != "mods,items" || info.Missing ||
+		info.Icon != "" {
 		t.Fatalf("info = %+v", info)
+	}
+	// With an icon.png the card gets it as a data URL.
+	var icon bytes.Buffer
+	if err := png.Encode(&icon, image.NewRGBA(image.Rect(0, 0, 1, 1))); err != nil {
+		t.Fatal(err)
+	}
+	if err := fsx.WriteFile(filepath.Join(dir, "icon.png"), icon.Bytes(), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if info, err = svc.Inspect(t.Context(), "lethal-company", dir); err != nil || !strings.HasPrefix(info.Icon, "data:image/png;base64,") {
+		t.Fatalf("icon = %.40q, %v", info.Icon, err)
 	}
 }
 

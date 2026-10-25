@@ -11,7 +11,7 @@ import {
   Top,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
 import { formatBytes, formatKb } from '../i18n/bytes.ts'
-import { LetterTile } from '../mods/parts.tsx'
+import { LetterTile } from '../mods/LetterTile.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { Title } from './Callout.tsx'

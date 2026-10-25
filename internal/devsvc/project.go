@@ -2,6 +2,7 @@ package devsvc
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"html"
@@ -12,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/modpic"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -38,6 +40,8 @@ type ProjectInfo struct {
 	Categories  []string `json:"categories"`
 	// Released is the latest vX.Y.Z tag's version, empty before the first release.
 	Released string `json:"released"`
+	// Icon is the project's icon.png as a small data URL, empty when the project has none.
+	Icon string `json:"icon"`
 }
 
 // ProjectEdit is a change to a project's details; a new Name renames the project.
@@ -104,6 +108,7 @@ func (s *Service) Inspect(ctx context.Context, gameID, dir string) (ProjectInfo,
 	if v, err := s.NextVersions(ctx, gameID, dir); err == nil {
 		info.Released = v.Current
 	}
+	info.Icon = iconData(p.Dir)
 	base := strings.TrimSuffix(filepath.Base(csproj), ".csproj")
 	if base != p.Name {
 		if err := s.follow(gameID, p, base); err != nil {
@@ -111,6 +116,22 @@ func (s *Service) Inspect(ctx context.Context, gameID, dir string) (ProjectInfo,
 		}
 	}
 	return info, nil
+}
+
+// iconPx is the size the card's icon is shrunk to: twice what it draws, so it stays sharp on a dense screen.
+const iconPx = 96
+
+// iconData is the project's icon.png, shrunk, as a data URL; a project without one, or with a broken one, has none.
+func iconData(dir string) string {
+	b, err := fsx.ReadFile(filepath.Join(dir, "icon.png"))
+	if err != nil {
+		return ""
+	}
+	small, typ, err := modpic.Shrink(b, "image/png", iconPx)
+	if err != nil {
+		return ""
+	}
+	return "data:" + typ + ";base64," + base64.StdEncoding.EncodeToString(small)
 }
 
 func readInfo(dir, csproj string) (ProjectInfo, error) {

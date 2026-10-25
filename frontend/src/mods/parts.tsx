@@ -11,13 +11,11 @@ import {
   Typography,
 } from '@mui/material'
 import { ArrowUp, Ban, CircleCheck, CircleX, Pin, Trash2, TriangleAlert } from 'lucide-react'
-import { memo, useState } from 'react'
+import { useState } from 'react'
 import type {
   Mod,
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
-import { hasSourceLogo, PICTURE_MARK_PX, pictureMarkSx } from '../brand/sources/sourceIcons.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { errorsLabel } from '../i18n/counts.ts'
 import { listNames } from '../i18n/list.ts'
@@ -29,12 +27,12 @@ import { MenuAction } from '../shell/MenuAction.tsx'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
-import { dependentsOf, idKey, localId } from './dependents.ts'
+import { dependentsOf, idKey } from './dependents.ts'
 import { useDescribe } from './describe.ts'
 import { unneededImplicit } from './disableUnneeded.ts'
-import { FavouriteStar } from './FavouriteStar.tsx'
 import { entryFavouriteKey } from './favourites.ts'
 import { readsImplicit } from './installReason.ts'
+import { LetterTile } from './LetterTile.tsx'
 import { LockedReason } from './LockedReason.tsx'
 import { lastRunSummary, useLastRun } from './lastRun.ts'
 import {
@@ -46,28 +44,11 @@ import {
   siblingsOf,
   sourceKind,
 } from './lookup.ts'
-import { NewDot } from './NewSince.tsx'
 import { useNexusDownloadable, useNexusPage } from './nexusDetails.ts'
 import { goneCaption, nexusPageMark } from './nexusMark.ts'
 import { useMods } from './store.ts'
 import { useUpdateFor } from './updates.ts'
 import { useLocked } from './useLocked.ts'
-
-const HASH_MULTIPLIER = 31
-const UINT32_BITS = 32
-const UINT32_RANGE = 2 ** UINT32_BITS
-const HUE_DEGREES = 360
-const TILE_FONT_RATIO = 0.5
-const DEFAULT_TILE_SIZE = 48
-const SMALL_TILE = 32
-
-function hash(s: string): number {
-  let h = 0
-  for (const c of s) {
-    h = (h * HASH_MULTIPLIER + (c.codePointAt(0) ?? 0)) % UINT32_RANGE
-  }
-  return h
-}
 
 const MAX_NAMED = 12
 
@@ -216,73 +197,6 @@ function RemoveDialogBody({ removing }: { removing: Mod[] }) {
 
 // The panel footer's two buttons share one height.
 const footerButtonSx = { height: space.control } as const
-
-// source and starKey lay the mod's source mark and its favourite star over the picture's corners. Memoised: a card
-// re-renders when its row's size or page details arrive, and the picture does not change with them.
-export const LetterTile = memo(function LetterTileView({
-  mod,
-  size = DEFAULT_TILE_SIZE,
-  fresh = false,
-  source = '',
-  starKey = '',
-}: {
-  mod: Pick<Mod, 'id' | 'name'> & { picture?: string }
-  size?: number
-  fresh?: boolean
-  source?: string
-  starKey?: string
-}) {
-  const [failed, setFailed] = useState<string | null>(null)
-  const picture = mod.picture && failed !== mod.picture ? mod.picture : ''
-  return (
-    <Box sx={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
-      <Box
-        aria-hidden={true}
-        className="tile"
-        sx={{
-          width: size,
-          height: size,
-          borderRadius: size < SMALL_TILE ? '4px' : '6px',
-          display: 'grid',
-          placeItems: 'center',
-          overflow: 'hidden',
-          fontWeight: 700,
-          fontSize: size * TILE_FONT_RATIO,
-          // The colour is the letter's; a picture keeps its own transparency over the card, as in Browse.
-          bgcolor: picture
-            ? 'transparent'
-            : `hsl(${hash(localId(mod.id).toLowerCase()) % HUE_DEGREES} 35% 38% / 0.85)`,
-        }}
-      >
-        {picture ? (
-          <Box
-            component="img"
-            alt=""
-            loading="lazy"
-            referrerPolicy="no-referrer"
-            src={`/mod-picture/?u=${encodeURIComponent(picture)}`}
-            onError={() => setFailed(picture)}
-            sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          />
-        ) : (
-          (Array.from(mod.name)[0] ?? '?').toUpperCase()
-        )}
-      </Box>
-      <NewDot show={fresh} />
-      {hasSourceLogo(source) ? (
-        <Box
-          role="img"
-          aria-label={sourceLabel(source)}
-          title={sourceLabel(source)}
-          sx={{ ...pictureMarkSx, position: 'absolute', top: 2, right: 2 }}
-        >
-          <SourceLogo id={source} size={PICTURE_MARK_PX} />
-        </Box>
-      ) : null}
-      {starKey ? <FavouriteStar starKey={starKey} onPicture={true} /> : null}
-    </Box>
-  )
-})
 
 // A profile's mod with its source and favourite star on the picture.
 export function ProfileModTile({
