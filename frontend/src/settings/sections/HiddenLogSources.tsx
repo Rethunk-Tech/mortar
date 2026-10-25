@@ -74,7 +74,10 @@ export function HiddenLogSources() {
                       overflowWrap: 'anywhere',
                     }}
                   >
-                    {h.text || t`Every message`}
+                    {h.text ||
+                      (h.source.startsWith(ENGINE)
+                        ? h.source.slice(ENGINE.length)
+                        : t`Every message`)}
                   </Typography>
                   <Typography
                     variant="body2"
