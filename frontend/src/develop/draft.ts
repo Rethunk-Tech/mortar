@@ -1,16 +1,18 @@
 import { msg } from '@lingui/core/macro'
+import type {
+  Form,
+  Param,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { i18n } from '../i18n/index.ts'
 
 export const REMEMBERED = 'mortar.newMod'
 
-// What the New mod dialog edits; repo empty means the mod's name.
+// What the New mod dialog edits: the mod's name, the template's parameters by id (a multi-choice joined with "|"),
+// and where the project goes; repo empty means the mod's name.
 export interface Draft {
   name: string
-  description: string
-  author: string
-  team: string
-  guidPrefix: string
+  values: Record<string, string>
   parent: string
   repo: string
   profile: string
@@ -19,61 +21,81 @@ export interface Draft {
   private: boolean
 }
 
-const MAX_DESCRIPTION = 250
+// The projects folder, and each remembered parameter as "param.<id>".
+export type Remembered = Partial<Record<string, string>>
+
 // The same rules as devsvc's NewMod.check, so the button says why before Mortar is asked.
 const MOD_NAME = /^[A-Z][A-Za-z0-9]{1,63}$/
-const TEAM = /^[A-Za-z0-9_]{1,64}$/
-const GUID_PREFIX = /^[a-z0-9]+(\.[a-z0-9]+)*$/
 const FOLDER = /^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$/
 const OWNER = /^[A-Za-z0-9][A-Za-z0-9-]{0,38}$/
 
-export type Remembered = Partial<Record<'author' | 'team' | 'guidPrefix' | 'parent', string>>
+const rememberKey = (id: string) => `param.${id}`
 
-/** A fresh draft with the author, team, id prefix and folder the player used last. */
-export function firstDraft(remembered: Remembered, owner: string): Draft {
+/** A fresh draft: each parameter at the value the player gave last (when the template remembers it) or its default. */
+export function firstDraft(form: Form | null, remembered: Remembered): Draft {
+  const values: Record<string, string> = {}
+  for (const p of form?.parameters ?? []) {
+    values[p.id] = (p.remember ? remembered[rememberKey(p.id)] : undefined) ?? p.default
+  }
   return {
     name: '',
-    description: '',
-    author: remembered.author ?? '',
-    team: remembered.team ?? '',
-    guidPrefix: remembered.guidPrefix ?? '',
-    parent: remembered.parent ?? '',
+    values,
+    parent: remembered['parent'] ?? '',
     repo: '',
     profile: 'new',
-    github: owner !== '',
-    owner,
+    github: false,
+    owner: '',
     private: false,
   }
 }
 
+/** What to remember from a draft that started a mod. */
+export function rememberedOf(d: Draft, form: Form): Remembered {
+  const out: Remembered = { parent: d.parent }
+  for (const p of form.parameters ?? []) {
+    if (p.remember) {
+      out[rememberKey(p.id)] = d.values[p.id] ?? ''
+    }
+  }
+  return out
+}
+
+function paramIssue(p: Param, raw: string): string {
+  const v = raw.trim()
+  const name = p.description || p.id
+  if (v === '') {
+    return p.required ? i18n._(msg`Fill in: ${{ name }}`) : ''
+  }
+  if (v.startsWith('-')) {
+    return i18n._(msg`${{ name }}: cannot start with a dash.`)
+  }
+  if (p.maxLength > 0 && v.length > p.maxLength) {
+    return i18n._(msg`${{ name }}: at most ${{ max: p.maxLength }} characters.`)
+  }
+  if (p.pattern && !new RegExp(p.pattern).test(v)) {
+    return i18n._(msg`${{ name }}: not in the form the template needs.`)
+  }
+  return ''
+}
+
 /** The first thing Mortar would refuse in the draft, as the button's reason; empty when it can start. */
-export function draftIssue(d: Draft): string {
-  const repo = d.repo || d.name
+export function draftIssue(d: Draft, form: Form | null): string {
+  if (!form) {
+    return i18n._(msg`Reading the template`)
+  }
   if (!MOD_NAME.test(d.name)) {
     return i18n._(msg`The mod name starts with a capital letter and holds only letters and digits.`)
   }
-  if (d.description.trim() === '' || d.description.length > MAX_DESCRIPTION) {
-    return i18n._(
-      msg`Describe the mod in one line of at most ${{ max: MAX_DESCRIPTION }} characters.`,
-    )
-  }
-  if (d.author.trim() === '') {
-    return i18n._(msg`Name the author.`)
-  }
-  if (!TEAM.test(d.team)) {
-    return i18n._(
-      msg`The team on ${{ source: sourceLabel('thunderstore') }} holds only letters, digits and underscores.`,
-    )
-  }
-  if (!GUID_PREFIX.test(d.guidPrefix)) {
-    return i18n._(
-      msg`The id prefix holds lower-case letters and digits between dots, such as com.yourname.`,
-    )
+  for (const p of form.parameters ?? []) {
+    const issue = paramIssue(p, d.values[p.id] ?? '')
+    if (issue) {
+      return issue
+    }
   }
   if (d.parent === '') {
     return i18n._(msg`Choose the folder for your mod projects.`)
   }
-  if (!FOLDER.test(repo)) {
+  if (!FOLDER.test(d.repo || d.name)) {
     return i18n._(msg`The folder name holds only letters, digits, dots, dashes and underscores.`)
   }
   if (d.github && !OWNER.test(d.owner)) {

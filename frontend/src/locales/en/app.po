@@ -171,6 +171,10 @@ msgstr "That profile is gone."
 msgid "Up next: {names}"
 msgstr "Up next: {names}"
 
+#: src/develop/draft.ts
+msgid "{name}: cannot start with a dash."
+msgstr "{name}: cannot start with a dash."
+
 #: src/share/CollectionNotes.tsx
 msgid "These come from outside {source}, so Mortar does not download them."
 msgstr "These come from outside {source}, so Mortar does not download them."
@@ -443,10 +447,6 @@ msgstr "Find mods to add"
 #: src/share/ImportFooter.tsx
 msgid "Add to {name}"
 msgstr "Add to {name}"
-
-#: src/develop/draft.ts
-msgid "The team on {source} holds only letters, digits and underscores."
-msgstr "The team on {source} holds only letters, digits and underscores."
 
 #: src/browse/CardProgress.tsx
 msgid "Downloading {percent}%"
@@ -803,6 +803,10 @@ msgstr "Link length"
 msgid "See load errors, missing dependencies, and other issues before you play."
 msgstr "See load errors, missing dependencies, and other issues before you play."
 
+#: src/develop/draft.ts
+msgid "Fill in: {name}"
+msgstr "Fill in: {name}"
+
 #: src/games/ListFooter.tsx
 msgid "No supported game was found in your launchers."
 msgstr "No supported game was found in your launchers."
@@ -1028,6 +1032,10 @@ msgstr "Could not quit Mortar"
 msgid "A short summary"
 msgstr "A short summary"
 
+#: src/develop/draft.ts
+msgid "{name}: at most {max} characters."
+msgstr "{name}: at most {max} characters."
+
 #: src/share/CollectionNotes.tsx
 msgid "Curator's instructions"
 msgstr "Curator's instructions"
@@ -1069,6 +1077,10 @@ msgstr "This game has no compatibility list, so no mod is known to be broken."
 #: src/install/offerInstallAnyway.ts
 msgid "Install anyway…"
 msgstr "Install anyway…"
+
+#: src/develop/NewModDialog.tsx
+msgid "Could not read the mod template"
+msgstr "Could not read the mod template"
 
 #: src/commandPalette/paletteLabels.ts
 msgid "Switch to Browse"
@@ -1313,10 +1325,6 @@ msgstr "Installing {loader} {latest}"
 #: src/browse/browseConstants.ts
 msgid "Search {source}. Free accounts download from the mod's page with Mod Manager Download."
 msgstr "Search {source}. Free accounts download from the mod's page with Mod Manager Download."
-
-#: src/develop/NewModDialog.tsx
-msgid "Id prefix"
-msgstr "Id prefix"
 
 #: src/browse/BrowseDetails.tsx
 msgid "Support the author"
@@ -1652,10 +1660,6 @@ msgstr "Open files page"
 #: src/saves/backups.ts
 msgid "Manual"
 msgstr "Manual"
-
-#: src/develop/draft.ts
-msgid "Name the author."
-msgstr "Name the author."
 
 #: src/share/ListFormat.tsx
 msgid "Save to a file…"
@@ -2275,10 +2279,6 @@ msgstr "Access granted"
 msgid "Back up to a file…"
 msgstr "Back up to a file…"
 
-#: src/develop/NewModDialog.tsx
-msgid "Team on {source}"
-msgstr "Team on {source}"
-
 #: src/share/ImportSources.tsx
 msgid "Where the profile comes from"
 msgstr "Where the profile comes from"
@@ -2582,6 +2582,10 @@ msgstr "Sort: most followed"
 #: src/groups/SaveGroupToLibrary.tsx
 msgid "Replace"
 msgstr "Replace"
+
+#: src/develop/draft.ts
+msgid "{name}: not in the form the template needs."
+msgstr "{name}: not in the form the template needs."
 
 #: src/shell/AppMenu.tsx
 msgid "Report a bug…"
@@ -3049,10 +3053,6 @@ msgstr "Could not delete the saved group"
 msgid "the same copy loaded instead from {path}"
 msgstr "the same copy loaded instead from {path}"
 
-#: src/develop/NewModDialog.tsx
-msgid "One-line description"
-msgstr "One-line description"
-
 #: src/downloads/newDownloads.ts
 msgid "{count, plural, one {# new archive} other {# new archives}} in your downloads folder"
 msgstr "{count, plural, one {# new archive} other {# new archives}} in your downloads folder"
@@ -3330,6 +3330,10 @@ msgstr "Sign out of {source}"
 msgid "Decline"
 msgstr "Decline"
 
+#: src/develop/draft.ts
+msgid "Reading the template"
+msgstr "Reading the template"
+
 #: src/launch/GraphicsDialog.tsx
 msgid "Choose a graphics API for {name}"
 msgstr "Choose a graphics API for {name}"
@@ -3486,10 +3490,6 @@ msgstr "The profile stays restorable for 30 days from Recently deleted."
 msgid "Needs input"
 msgstr "Needs input"
 
-#: src/develop/draft.ts
-msgid "The id prefix holds lower-case letters and digits between dots, such as com.yourname."
-msgstr "The id prefix holds lower-case letters and digits between dots, such as com.yourname."
-
 #: src/develop/NewModDialog.tsx
 msgid "Projects folder"
 msgstr "Projects folder"
@@ -3633,10 +3633,6 @@ msgstr "Could not set it in {launcher}"
 #: src/firstrun/LoaderStep.tsx
 msgid "Mortar found it in {launcher}'s settings."
 msgstr "Mortar found it in {launcher}'s settings."
-
-#: src/develop/draft.ts
-msgid "Describe the mod in one line of at most {max} characters."
-msgstr "Describe the mod in one line of at most {max} characters."
 
 #: src/commandPalette/CommandPalette.tsx
 msgid "Results"
@@ -5626,7 +5622,6 @@ msgstr "{name} needs {names}"
 msgid "Clear search"
 msgstr "Clear search"
 
-#: src/develop/NewModDialog.tsx
 #: src/share/ModpackDialog.tsx
 msgid "Author"
 msgstr "Author"

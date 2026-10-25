@@ -23,7 +23,9 @@ import (
 
 const (
 	maxManifest = 1 << 20
-	iconSide    = 256
+	// maxDescription is the longest description Thunderstore takes.
+	maxDescription = 250
+	iconSide       = 256
 )
 
 var (

@@ -1,22 +1,58 @@
 import { expect, test } from 'bun:test'
-import { draftIssue, firstDraft } from './draft.ts'
+import type { Form } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
+import { draftIssue, firstDraft, rememberedOf } from './draft.ts'
 
-const ready = {
-  ...firstDraft({ author: 'Ab', team: 'Ab', guidPrefix: 'com.ab', parent: '/mods' }, ''),
-  name: 'ShopDrop',
-  description: 'Lands somewhere new.',
+const param = {
+  kind: 'string',
+  default: '',
+  required: true,
+  multiple: false,
+  choices: [],
+  remember: false,
+  pattern: '',
+  maxLength: 0,
+}
+const form: Form = {
+  name: 'Test',
+  parameters: [
+    { ...param, id: 'description', description: 'Description', maxLength: 20 },
+    { ...param, id: 'team', description: 'Team', remember: true, pattern: '^[A-Za-z0-9_]+$' },
+    {
+      ...param,
+      id: 'categories',
+      description: 'Categories',
+      kind: 'choice',
+      required: false,
+      multiple: true,
+      default: 'mods',
+    },
+  ],
 }
 
-test('a remembered author, team, prefix and folder leave only the name and description to fill', () => {
-  expect(
-    draftIssue(firstDraft({ author: 'Ab', team: 'Ab', guidPrefix: 'com.ab', parent: '/mods' }, '')),
-  ).not.toBe('')
-  expect(draftIssue(ready)).toBe('')
+test('a remembered parameter and the projects folder come back; others start at their default', () => {
+  const d = firstDraft(form, {
+    parent: '/mods',
+    'param.team': 'Ab',
+    'param.description': 'not remembered',
+  })
+  expect(d.values).toEqual({ description: '', team: 'Ab', categories: 'mods' })
+  expect(d.parent).toBe('/mods')
+  expect(rememberedOf({ ...d, values: { ...d.values, team: 'Cd' } }, form)).toEqual({
+    parent: '/mods',
+    'param.team': 'Cd',
+  })
 })
 
-test('names Mortar would refuse are caught before it is asked', () => {
-  expect(draftIssue({ ...ready, name: 'shop drop' })).not.toBe('')
-  expect(draftIssue({ ...ready, repo: '-x' })).not.toBe('')
-  expect(draftIssue({ ...ready, github: true, owner: '--help' })).not.toBe('')
-  expect(draftIssue({ ...ready, github: true, owner: 'albinogeek' })).toBe('')
+test('the template rules are checked before Mortar is asked', () => {
+  const ready = { ...firstDraft(form, { parent: '/mods', 'param.team': 'Ab' }), name: 'ShopDrop' }
+  expect(draftIssue(ready, form)).not.toBe('')
+  const filled = { ...ready, values: { ...ready.values, description: 'Lands.' } }
+  expect(draftIssue(filled, form)).toBe('')
+  expect(draftIssue({ ...filled, values: { ...filled.values, team: 'a b' } }, form)).not.toBe('')
+  expect(
+    draftIssue({ ...filled, values: { ...filled.values, description: 'x'.repeat(21) } }, form),
+  ).not.toBe('')
+  expect(draftIssue({ ...filled, name: 'shop drop' }, form)).not.toBe('')
+  expect(draftIssue({ ...filled, github: true, owner: '--help' }, form)).not.toBe('')
+  expect(draftIssue(filled, null)).not.toBe('')
 })

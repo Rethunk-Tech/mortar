@@ -15,10 +15,15 @@ import {
   TextField,
 } from '@mui/material'
 import { useEffect, useState } from 'react'
-import type { Tools } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
+import type {
+  Form,
+  Param,
+  Tools,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import {
   Create,
   Tools as ReadTools,
+  TemplateForm,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import { PickFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
@@ -26,10 +31,18 @@ import { useGameInfo } from '../games/info.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { readStored, writeStored } from '../shell/useStoredState.ts'
 import { space } from '../theme/density.ts'
+import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { buildProject } from './builds.ts'
-import { type Draft, draftIssue, firstDraft, REMEMBERED, type Remembered } from './draft.ts'
+import {
+  type Draft,
+  draftIssue,
+  firstDraft,
+  REMEMBERED,
+  type Remembered,
+  rememberedOf,
+} from './draft.ts'
 
 // The profile picker's value for a new development profile; Create takes it as no profile.
 const NEW_PROFILE = 'new'
@@ -113,7 +126,59 @@ function Source({
   )
 }
 
-function Fields({ draft, set }: { draft: Draft; set: (next: Partial<Draft>) => void }) {
+// One template parameter: a text field, a menu, or for a multi-choice a menu that keeps several.
+function ParamField({
+  param,
+  value,
+  set,
+}: {
+  param: Param
+  value: string
+  set: (v: string) => void
+}) {
+  const label = param.description || param.id
+  if (param.kind !== 'choice') {
+    return (
+      <TextField
+        size="small"
+        label={label}
+        required={param.required}
+        value={value}
+        onChange={(e) => set(e.target.value)}
+      />
+    )
+  }
+  const choices = param.choices ?? []
+  return (
+    <TextField
+      select={true}
+      size="small"
+      label={label}
+      value={param.multiple ? value.split('|').filter(Boolean) : value}
+      onChange={(e) => {
+        const v: unknown = e.target.value
+        set(Array.isArray(v) ? v.join('|') : String(v))
+      }}
+      slotProps={{ select: { multiple: param.multiple } }}
+    >
+      {choices.map((c) => (
+        <MenuItem key={c.value} value={c.value}>
+          {c.label}
+        </MenuItem>
+      ))}
+    </TextField>
+  )
+}
+
+function Fields({
+  draft,
+  form,
+  set,
+}: {
+  draft: Draft
+  form: Form | null
+  set: (next: Partial<Draft>) => void
+}) {
   const { t } = useLingui()
   const profiles = useProfiles((s) => s.profiles)
   const gameName = useGameInfo()?.name ?? ''
@@ -133,32 +198,14 @@ function Fields({ draft, set }: { draft: Draft; set: (next: Partial<Draft>) => v
         onChange={(e) => set({ name: e.target.value })}
         autoFocus={true}
       />
-      <TextField
-        size="small"
-        label={t`One-line description`}
-        value={draft.description}
-        onChange={(e) => set({ description: e.target.value })}
-      />
-      <Box sx={{ display: 'flex', gap: space.gap }}>
-        <TextField
-          size="small"
-          label={t`Author`}
-          value={draft.author}
-          onChange={(e) => set({ author: e.target.value })}
+      {(form?.parameters ?? []).map((p) => (
+        <ParamField
+          key={p.id}
+          param={p}
+          value={draft.values[p.id] ?? ''}
+          set={(v) => set({ values: { ...draft.values, [p.id]: v } })}
         />
-        <TextField
-          size="small"
-          label={t`Team on ${{ source: sourceLabel('thunderstore') }}`}
-          value={draft.team}
-          onChange={(e) => set({ team: e.target.value })}
-        />
-        <TextField
-          size="small"
-          label={t`Id prefix`}
-          value={draft.guidPrefix}
-          onChange={(e) => set({ guidPrefix: e.target.value })}
-        />
-      </Box>
+      ))}
       <Box sx={{ display: 'flex', gap: space.gap, alignItems: 'center' }}>
         <TextField
           size="small"
@@ -172,6 +219,7 @@ function Fields({ draft, set }: { draft: Draft; set: (next: Partial<Draft>) => v
           size="small"
           label={t`Folder name`}
           value={draft.repo}
+          placeholder={draft.name}
           onChange={(e) => set({ repo: e.target.value })}
         />
       </Box>
@@ -206,27 +254,35 @@ export function NewModDialog({
 }) {
   const { t } = useLingui()
   const [tools, setTools] = useState<Tools | null>(null)
-  const [draft, setDraft] = useState<Draft>(() =>
-    firstDraft(readStored(REMEMBERED, {}, isRecord), ''),
-  )
+  const [form, setForm] = useState<Form | null>(null)
+  const [draft, setDraft] = useState<Draft>(() => firstDraft(null, {}))
   const [pending, run] = usePending()
   useEffect(() => {
     if (!open) {
       return
     }
+    setForm(null)
+    TemplateForm(game)
+      .then((read) => {
+        setForm(read)
+        setDraft((d) => ({
+          ...firstDraft(read, readStored(REMEMBERED, {}, isRecord)),
+          github: d.github,
+          owner: d.owner,
+        }))
+      })
+      .catch(reportError(t`Could not read the mod template`))
     ReadTools(game)
       .then((found) => {
         setTools(found)
         setDraft((d) =>
-          d.owner || !found.githubUser
-            ? d
-            : { ...d, owner: found.githubUser, github: true, author: d.author || found.githubUser },
+          d.owner || !found.githubUser ? d : { ...d, owner: found.githubUser, github: true },
         )
       })
       .catch(() => setTools(null))
-  }, [open, game])
+  }, [open, game, t])
   const set = (next: Partial<Draft>) => setDraft((d) => ({ ...d, ...next }))
-  const issue = draftIssue(draft)
+  const issue = draftIssue(draft, form)
   const create = () =>
     run(
       async () => {
@@ -237,12 +293,9 @@ export function NewModDialog({
           profile: draft.profile === NEW_PROFILE ? '' : draft.profile,
         })
         await useProfiles.getState().load(game, useProfiles.getState().openId)
-        writeStored(REMEMBERED, {
-          author: draft.author,
-          team: draft.team,
-          guidPrefix: draft.guidPrefix,
-          parent: draft.parent,
-        })
+        if (form) {
+          writeStored(REMEMBERED, rememberedOf(draft, form))
+        }
         useToasts
           .getState()
           .push({ kind: 'success', title: t`Started ${{ name: project.name }}`, body: project.dir })
@@ -263,7 +316,7 @@ export function NewModDialog({
         }}
       >
         <Prerequisites tools={tools} />
-        <Fields draft={draft} set={set} />
+        <Fields draft={draft} form={form} set={set} />
         <Source draft={draft} user={tools?.githubUser ?? ''} set={set} />
       </DialogContent>
       <DialogActions sx={{ bgcolor: 'background.paper' }}>
