@@ -81,7 +81,7 @@ export function AppDialog({
   icon?: ReactNode
   size?: DialogSize
   footer?: ReactNode
-  // False for a dialog only its own buttons may close: no X, and Esc and clicks outside do nothing.
+  // False for a dialog that wants an answer: no X and clicks outside do nothing; Esc still means Cancel (onClose).
   closable?: boolean
   children?: ReactNode
 }) {
@@ -90,7 +90,11 @@ export function AppDialog({
   return (
     <Dialog
       open={open}
-      onClose={closable ? onClose : undefined}
+      onClose={(_, reason) => {
+        if (closable || reason === 'escapeKeyDown') {
+          onClose()
+        }
+      }}
       maxWidth={false}
       aria-labelledby={titleId}
       slotProps={{
