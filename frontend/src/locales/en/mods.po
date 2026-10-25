@@ -222,6 +222,10 @@ msgstr "Repair"
 msgid "Errors while running"
 msgstr "Errors while running"
 
+#: src/mods/ModActionItems.tsx
+msgid "Organise"
+msgstr "Organise"
+
 #: src/mods/LegacyReasonsCallout.tsx
 #: src/mods/NewFoldersCallout.tsx
 #: src/mods/OldFilesCallouts.tsx
@@ -1321,6 +1325,7 @@ msgid "None"
 msgstr "None"
 
 #: src/mods/columnLabel.ts
+#: src/mods/ModActionItems.tsx
 #: src/mods/ModDisplayEdit.tsx
 #: src/mods/ModSections.tsx
 msgid "Version"

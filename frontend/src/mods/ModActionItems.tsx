@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import { MenuAction } from '../shell/MenuAction.tsx'
-import { MenuRule } from '../shell/TitleMenu.tsx'
+import { MenuHeading, MenuRule } from '../shell/TitleMenu.tsx'
 import { space } from '../theme/density.ts'
 import { ICON_SIZE } from './menu.ts'
 import type { ModAction } from './modActions.ts'
@@ -103,7 +103,7 @@ function ModActionItems({
   onEditConfig,
   labels,
   splitCombine,
-  trailing,
+  extra,
 }: {
   actions: ModAction[]
   items: Record<ModAction | 'reinstall', { label: string; icon: ReactNode; run: () => void }>
@@ -117,7 +117,7 @@ function ModActionItems({
   onEditConfig: (() => void) | undefined
   labels: { category: string; alsoAdd: string; editConfig: string }
   splitCombine: ReactNode
-  trailing: ReactNode[]
+  extra: { version: ReactNode[]; organise: ReactNode[] }
 }) {
   const { t } = useLingui()
   const lockedTip = t`Stop the game to change mods.`
@@ -153,16 +153,24 @@ function ModActionItems({
       />,
     )
   }
-  result.push(<MenuRule key="source-divider" />)
   if (has('page')) {
     result.push(renderAction('page'))
   }
   if (has('files')) {
     result.push(renderAction('files'))
-    if (hasFomod) {
-      result.push(renderAction('reinstall', locked))
+    const version = [
+      ...(has('pin') ? [renderAction('pin')] : []),
+      ...(has('skip') ? [renderAction('skip')] : []),
+      ...extra.version,
+      ...(hasFomod ? [renderAction('reinstall', locked)] : []),
+    ]
+    if (version.length > 0) {
+      result.push(<MenuRule key="version-divider" />)
+      result.push(<MenuHeading key="version-heading">{t`Version`}</MenuHeading>)
+      result.push(...version)
     }
-    result.push(<MenuRule key="organisation-divider" />)
+    result.push(<MenuRule key="organise-divider" />)
+    result.push(<MenuHeading key="organise-heading">{t`Organise`}</MenuHeading>)
     result.push(
       <MenuAction
         key="category"
@@ -171,12 +179,7 @@ function ModActionItems({
         onClick={closeThen(onSetCategory)}
       />,
     )
-    if (has('pin')) {
-      result.push(renderAction('pin'))
-    }
-    if (has('skip')) {
-      result.push(renderAction('skip'))
-    }
+    result.push(...extra.organise)
     if (has('reason')) {
       result.push(renderAction('reason'))
     }
@@ -196,7 +199,6 @@ function ModActionItems({
   if (splitCombine) {
     result.push(splitCombine)
   }
-  result.push(...trailing)
   if (has('remove')) {
     result.push(<MenuRule key="remove-divider" />)
     result.push(

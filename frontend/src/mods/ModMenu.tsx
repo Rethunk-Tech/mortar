@@ -93,14 +93,15 @@ function ModMenuItems({
   onSetCategory,
   onAlsoAdd,
   onRemoveOther,
-  trailing,
+  extra,
 }: {
   mod: Mod
   close: () => void
   onSetCategory: () => void
   onAlsoAdd: () => void
   onRemoveOther: () => void
-  trailing: ReactNode[]
+  // The caller's own items, by the menu group they join.
+  extra: { version: ReactNode[]; organise: ReactNode[] }
 }) {
   const { t, i18n } = useLingui()
   const showFiles = useMods((s) => s.showFiles)
@@ -216,7 +217,7 @@ function ModMenuItems({
         alsoAdd: t`Also add to…`,
       },
       splitCombine,
-      trailing,
+      extra,
     }),
   ]
 }
@@ -348,27 +349,29 @@ function ModActionMenu({
           onSetCategory={() => setCategoryOpen(true)}
           onAlsoAdd={() => setAlsoOpen(true)}
           onRemoveOther={() => setRemoveOtherOpen(true)}
-          trailing={[
-            <PackageMoveItems key="package-move" mod={mod} close={onClose} />,
-            <ModGroupItems
-              key="groups"
-              profile={profile}
-              entryKey={mod.key}
-              close={onClose}
-              onAdd={() => setGroupOpen(true)}
-            />,
-            <NexusPageMenuItem key="nexus-page" mod={mod} close={onClose} />,
-            <OnlyHereMenuItem
-              key="only-here"
-              game={game}
-              profile={currentProfileId ?? ''}
-              modId={mod.id}
-              close={onClose}
-            />,
-            update ? (
-              <EverywhereMenuItem key="everywhere" game={game} id={mod.id} close={onClose} />
-            ) : null,
-          ]}
+          extra={{
+            version: update
+              ? [<EverywhereMenuItem key="everywhere" game={game} id={mod.id} close={onClose} />]
+              : [],
+            organise: [
+              <ModGroupItems
+                key="groups"
+                profile={profile}
+                entryKey={mod.key}
+                close={onClose}
+                onAdd={() => setGroupOpen(true)}
+              />,
+              <PackageMoveItems key="package-move" mod={mod} close={onClose} />,
+              <OnlyHereMenuItem
+                key="only-here"
+                game={game}
+                profile={currentProfileId ?? ''}
+                modId={mod.id}
+                close={onClose}
+              />,
+              <NexusPageMenuItem key="nexus-page" mod={mod} close={onClose} />,
+            ],
+          }}
         />
       </Menu>
       <SetCategoryDialog
