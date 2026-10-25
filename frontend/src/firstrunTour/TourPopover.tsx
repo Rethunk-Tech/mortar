@@ -140,7 +140,7 @@ function TourPopover({
         sx={{ zIndex: TOUR_Z_INDEX }}
       >
         {({ TransitionProps }) => (
-          <Fade {...TransitionProps} timeout={200}>
+          <Fade {...TransitionProps}>
             <Paper
               role="dialog"
               aria-labelledby={titleId}
