@@ -66,11 +66,19 @@ export const HOOK = `(() => {
     inject(r) { this.renderers.set(this.renderers.size + 1, r); return this.renderers.size },
     onScheduleFiberRoot() {},
     // A click's ripple fades out ~550 ms later in a commit of its own; that is MUI's animation, not the app settling.
+    // A relative time ("2 minutes ago") ticking over is the clock, not the app: a commit caused by nothing else is not
+    // counted, so an idle watch that straddles a minute does not fail.
     onCommitFiberRoot(_id, root) {
       st.commits++
       const now = performance.now()
+      const updatesBefore = st.updates
       current = []
       try { walk(root.current.child, null) } catch {}
+      if (current.length > 0 && current.every((w) => w.startsWith('When: '))) {
+        st.commits--
+        st.updates = updatesBefore
+        return
+      }
       if (!(current.length > 0 && current.every((w) => w.startsWith('TouchRipple: ')))) {
         st.last = now
         st.lastWhy = current.slice(0, 3)
