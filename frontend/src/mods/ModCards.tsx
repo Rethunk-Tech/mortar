@@ -475,10 +475,8 @@ function CardsPane({
 
 export function Cards({ shown, profile }: { shown: Mod[]; profile: Profile }) {
   const { t } = useLingui()
-  // A search or Show > Implicit asks for the implicit mods themselves, so they keep their own cards.
-  const wanted = useMods(
-    (s) => (s.queries[profile.id] ?? '') !== '' || s.filters[profile.id] === 'implicit',
-  )
+  // A search asks for the implicit mods themselves, so they keep their own cards.
+  const wanted = useMods((s) => (s.queries[profile.id] ?? '') !== '')
   const { groupBy, gameId, collapsed, setCollapsed, groups, orderedIds } = useModGroups(
     shown,
     profile,

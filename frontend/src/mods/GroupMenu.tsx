@@ -1,14 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Menu } from '@mui/material'
-import {
-  FolderMinus,
-  MoreHorizontal,
-  PackagePlus,
-  Pencil,
-  Power,
-  PowerOff,
-  Trash2,
-} from 'lucide-react'
+import { FolderMinus, MoreHorizontal, PackagePlus, Pencil, Trash2 } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { SaveGroupToLibrary } from '../groups/SaveGroupToLibrary.tsx'
@@ -19,8 +11,7 @@ import { PromptDialog } from '../shell/PromptDialog.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { AddToGroupMenuItem } from './AddToGroupDialog.tsx'
 import { LockedReason } from './LockedReason.tsx'
-import { useMods } from './store.ts'
-import { deleteGroup, removeModFromGroup, renameGroup, setGroupEnabled } from './storeGroups.ts'
+import { deleteGroup, removeModFromGroup, renameGroup } from './storeGroups.ts'
 import { useLocked } from './useLocked.ts'
 
 const ICON_SIZE = 16
@@ -36,10 +27,6 @@ export function GroupMenu({ name }: { name: string }) {
   const [deleting, setDeleting] = useState(false)
   const [saving, setSaving] = useState(false)
   const close = () => setAnchor(null)
-  const switchAll = (on: boolean) =>
-    setGroupEnabled(name, on)
-      .then(() => useMods.getState().load())
-      .catch(reportUnexpected)
   const item = (label: string, icon: ReactNode, run: () => void) => (
     <MenuAction
       disabled={locked}
@@ -71,12 +58,6 @@ export function GroupMenu({ name }: { name: string }) {
             setSaving(true)
           }}
         />
-        <LockedReason locked={locked}>
-          {item(t`Enable all`, <Power size={ICON_SIZE} />, () => switchAll(true))}
-        </LockedReason>
-        <LockedReason locked={locked}>
-          {item(t`Disable all`, <PowerOff size={ICON_SIZE} />, () => switchAll(false))}
-        </LockedReason>
         <LockedReason locked={locked}>
           {item(t`Delete group (mods stay)`, <Trash2 size={ICON_SIZE} />, () => setDeleting(true))}
         </LockedReason>

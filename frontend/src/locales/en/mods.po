@@ -53,7 +53,6 @@ msgid "Presets"
 msgstr "Presets"
 
 #: src/mods/listRows.ts
-#: src/mods/Toolbar.tsx
 #: src/mods/useListHeading.ts
 msgid "Implicit"
 msgstr "Implicit"
@@ -1236,10 +1235,6 @@ msgstr "More ways to add mods"
 msgid "Remove {name} from other profiles"
 msgstr "Remove {name} from other profiles"
 
-#: src/mods/GroupMenu.tsx
-msgid "Enable all"
-msgstr "Enable all"
-
 #: src/mods/CleanupSection.tsx
 #: src/mods/ProblemsTab.tsx
 msgid "Not needed by any enabled mod"
@@ -1483,10 +1478,6 @@ msgstr "{count, plural, one {# mod has} other {# mods have}} no page, or more th
 #: src/mods/ReplacedSection.tsx
 msgid "Mortar replaced these with the mods' own files. Deleting them cannot be undone."
 msgstr "Mortar replaced these with the mods' own files. Deleting them cannot be undone."
-
-#: src/mods/GroupMenu.tsx
-msgid "Disable all"
-msgstr "Disable all"
 
 #: src/mods/describeLoadFailure.ts
 msgid "{plugin} failed to load."
@@ -3028,7 +3019,6 @@ msgid "Could not mark the mods explicit"
 msgstr "Could not mark the mods explicit"
 
 #: src/mods/listRows.ts
-#: src/mods/Toolbar.tsx
 #: src/mods/useListHeading.ts
 msgid "Explicit"
 msgstr "Explicit"

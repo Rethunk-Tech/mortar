@@ -15,18 +15,7 @@ const VIEW_KEY = 'mortar.modsView'
 
 const isFilter = (v: unknown): v is ModFilter =>
   typeof v === 'string' &&
-  [
-    'all',
-    'disabled',
-    'update',
-    'problem',
-    'pinned',
-    'favourite',
-    'local',
-    'recent',
-    'explicit',
-    'implicit',
-  ].includes(v)
+  ['all', 'disabled', 'update', 'problem', 'pinned', 'favourite', 'local', 'recent'].includes(v)
 const isTags = (v: unknown): v is string[] =>
   Array.isArray(v) && v.every((t) => typeof t === 'string')
 

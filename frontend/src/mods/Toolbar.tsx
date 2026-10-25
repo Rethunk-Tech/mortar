@@ -72,8 +72,6 @@ const FILTERS: readonly {
   { id: 'favourite', label: (i18n) => i18n._(msg`Favourites`) },
   { id: 'local', label: (i18n) => i18n._(msg`Local`) },
   { id: 'recent', label: (i18n) => i18n._(msg`Added this week`) },
-  { id: 'explicit', label: (i18n) => i18n._(msg`Explicit`) },
-  { id: 'implicit', label: (i18n) => i18n._(msg`Implicit`) },
 ]
 
 // At the minimum size the toolbar buttons fold into icon buttons.
@@ -503,5 +501,3 @@ export type ModFilter =
   | 'favourite'
   | 'local'
   | 'recent'
-  | 'explicit'
-  | 'implicit'

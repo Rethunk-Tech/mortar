@@ -191,7 +191,6 @@ function passesShow(
   check: {
     update: () => boolean
     problem: () => boolean
-    implicit: () => boolean
     favourite: () => boolean
   },
 ): boolean {
@@ -210,12 +209,8 @@ function passesShow(
       return check.favourite()
     case 'local':
       return entry?.source.kind === 'local'
-    case 'recent':
-      return addedWithin(entry?.added, WEEK_MS, Date.now())
-    case 'explicit':
-      return !check.implicit()
     default:
-      return check.implicit()
+      return addedWithin(entry?.added, WEEK_MS, Date.now())
   }
 }
 
@@ -286,8 +281,8 @@ function FilteredMods({ profile }: { profile: Profile }) {
   const filtered = useMemo(() => {
     const customById = customCategoryById(customCategories)
     const parts = supportParts(mods)
-    // Hidden implicit mods still show when the search or the Show filter asks for them.
-    const hideImplicit = implicitView === 'hidden' && q === '' && filter !== 'implicit'
+    // Hidden implicit mods still show when the search asks for them.
+    const hideImplicit = implicitView === 'hidden' && q === ''
     return mods.filter((m) => {
       const entry = entryOf(profile, m.key)
       if (hideImplicit && (Boolean(entry?.implicit) || parts.has(partKey(m)))) {
@@ -300,7 +295,6 @@ function FilteredMods({ profile }: { profile: Profile }) {
       return passesShow(filter, m, entry, {
         update: () => Boolean(updateFor(updates, m, profile)),
         problem: () => modStatusProblem(problems, m),
-        implicit: () => Boolean(entry?.implicit) || parts.has(partKey(m)),
         favourite: () => isStarred(starred, entryFavouriteKey(entry)),
       })
     })
