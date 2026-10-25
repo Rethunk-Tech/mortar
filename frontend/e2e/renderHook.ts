@@ -60,25 +60,22 @@ export const HOOK = `(() => {
       if (f.child && (!a || a.child !== f.child)) walk(f.child, here)
     }
   }
+  // A periodic timer of 5 s or more (a source state poll, the minute clock, the hourly update check) would fire inside a
+  // case's window at random and be counted as its work, so here it runs a no-op. A shorter one, a live readout a
+  // screen shows, still runs, and the idle watch counts it.
+  const realSetInterval = window.setInterval.bind(window)
+  window.setInterval = (fn, ms, ...args) => (ms >= 5000 ? realSetInterval(() => {}, ms) : realSetInterval(fn, ms, ...args))
   window.__REACT_DEVTOOLS_GLOBAL_HOOK__ = {
     supportsFiber: true,
     renderers: new Map(),
     inject(r) { this.renderers.set(this.renderers.size + 1, r); return this.renderers.size },
     onScheduleFiberRoot() {},
     // A click's ripple fades out ~550 ms later in a commit of its own; that is MUI's animation, not the app settling.
-    // A relative time ("2 minutes ago") ticking over is the clock, not the app: a commit caused by nothing else is not
-    // counted, so an idle watch that straddles a minute does not fail.
     onCommitFiberRoot(_id, root) {
       st.commits++
       const now = performance.now()
-      const updatesBefore = st.updates
       current = []
       try { walk(root.current.child, null) } catch {}
-      if (current.length > 0 && current.every((w) => w.startsWith('When: '))) {
-        st.commits--
-        st.updates = updatesBefore
-        return
-      }
       if (!(current.length > 0 && current.every((w) => w.startsWith('TouchRipple: ')))) {
         st.last = now
         st.lastWhy = current.slice(0, 3)

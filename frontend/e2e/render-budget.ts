@@ -30,6 +30,7 @@ import { webkitWalk } from './webkit-walk.ts'
 // listeners) and how many backend calls it made: once over the action itself, and once while the screen sits idle.
 // The build measured is the production bundle the sandbox serves (it keeps component names), not the dev server,
 // whose StrictMode doubles effects.
+// Periodic timers of 5 s or more never fire (renderHook.ts), so a poll landing in a case's window cannot skew it.
 //
 //   MORTAR_RENDER_DATA=<data folder>   measure a copy of that data (default: the maintainer's own, selftest --copy-data)
 //   MORTAR_RENDER_SEEDED=1             the small seeded sandbox instead (a smoke run)
