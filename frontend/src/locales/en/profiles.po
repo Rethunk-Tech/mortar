@@ -397,10 +397,6 @@ msgstr "Compare {summary}"
 msgid "{count, plural, one {# stored mod is} other {# stored mods are}} not used by any profile"
 msgstr "{count, plural, one {# stored mod is} other {# stored mods are}} not used by any profile"
 
-#: src/profiles/ProfileMenu.tsx
-msgid "Find a mod in all profiles…"
-msgstr "Find a mod in all profiles…"
-
 #: src/profiles/historyLabel.ts
 msgid "Set the {source} page of {name}"
 msgstr "Set the {source} page of {name}"

@@ -397,10 +397,6 @@ msgstr ""
 msgid "{count, plural, one {# stored mod is} other {# stored mods are}} not used by any profile"
 msgstr ""
 
-#: src/profiles/ProfileMenu.tsx
-msgid "Find a mod in all profiles…"
-msgstr ""
-
 #: src/profiles/historyLabel.ts
 msgid "Set the {source} page of {name}"
 msgstr ""

@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase } from '@mui/material'
-import { ChevronDown, Download, LayoutTemplate, ListOrdered, Plus, Search } from 'lucide-react'
+import { ChevronDown, Download, LayoutTemplate, ListOrdered, Plus } from 'lucide-react'
 import { memo, useCallback, useMemo, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { compact } from '../game/compact.ts'
@@ -18,7 +18,6 @@ import { ManageTemplatesDialog } from '../templates/TemplateDialogs.tsx'
 import { useTemplates } from '../templates/useTemplates.ts'
 import { space } from '../theme/density.ts'
 import { userModCount } from './count.ts'
-import { requestFindAllFocus } from './findMod.ts'
 import { ProfileMark } from './ProfileMark.tsx'
 import { openProfileOf, useProfiles } from './store.ts'
 
@@ -200,15 +199,6 @@ function ProfileMenuListView({
         }}
       />
       <MenuRule />
-      <TitleMenuItem
-        icon={<Search size={ICON_PX} />}
-        label={t`Find a mod in all profiles…`}
-        onClick={() => {
-          closeTitleMenu()
-          useNav.getState().openProfiles()
-          requestFindAllFocus()
-        }}
-      />
       <TitleMenuItem
         icon={<ListOrdered size={ICON_PX} />}
         label={t`Manage profiles…`}
