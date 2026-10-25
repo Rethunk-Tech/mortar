@@ -54,34 +54,35 @@ export function ToolsManageDialog({
           <EmptyState compact={true} icon={<Inbox size={28} />} title={t`No tools yet`}>
             {t`Add a program to run alongside the game, such as a save editor or map viewer.`}
           </EmptyState>
-        ) : null}
-        <List dense={true}>
-          {tools.map((tool) => (
-            <ListItem
-              key={tool.id}
-              secondaryAction={
-                <>
-                  <TipIconButton
-                    label={t`Edit ${{ name: tool.name }}`}
-                    edge="end"
-                    onClick={() => setEditing(tool)}
-                  >
-                    <Pencil size={16} />
-                  </TipIconButton>
-                  <TipIconButton
-                    label={t`Remove ${{ name: tool.name }}`}
-                    edge="end"
-                    onClick={() => setDeleting(tool)}
-                  >
-                    <Trash2 size={16} />
-                  </TipIconButton>
-                </>
-              }
-            >
-              <ListItemText primary={tool.name} secondary={tool.executable} />
-            </ListItem>
-          ))}
-        </List>
+        ) : (
+          <List dense={true}>
+            {tools.map((tool) => (
+              <ListItem
+                key={tool.id}
+                secondaryAction={
+                  <>
+                    <TipIconButton
+                      label={t`Edit ${{ name: tool.name }}`}
+                      edge="end"
+                      onClick={() => setEditing(tool)}
+                    >
+                      <Pencil size={16} />
+                    </TipIconButton>
+                    <TipIconButton
+                      label={t`Remove ${{ name: tool.name }}`}
+                      edge="end"
+                      onClick={() => setDeleting(tool)}
+                    >
+                      <Trash2 size={16} />
+                    </TipIconButton>
+                  </>
+                }
+              >
+                <ListItemText primary={tool.name} secondary={tool.executable} />
+              </ListItem>
+            ))}
+          </List>
+        )}
       </AppDialog>
       <ConfirmationDialog
         open={deleting !== null}
