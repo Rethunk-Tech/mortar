@@ -58,6 +58,8 @@ import {
 
 // The profile picker's value for a new development profile; Create takes it as no profile.
 const NEW_PROFILE = 'new'
+// A text parameter allowed longer than this gets a box of several lines.
+const MULTILINE_OVER = 100
 // A single choice with this many options or fewer is a row of toggle buttons rather than a menu.
 const TOGGLE_CHOICES = 3
 
@@ -193,7 +195,7 @@ function ParamField({
       label={param.label}
       helperText={[param.description, counter].filter(Boolean).join(' ')}
       value={value}
-      multiline={param.maxLength > 100}
+      multiline={param.maxLength > MULTILINE_OVER}
       onChange={(e) => set(e.target.value)}
       sx={{ flex: 1, minWidth: 0 }}
     />

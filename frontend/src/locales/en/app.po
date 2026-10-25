@@ -233,6 +233,10 @@ msgstr "{name} needs its main file first"
 msgid "{name} needs {detail}, which Mortar cannot install"
 msgstr "{name} needs {detail}, which Mortar cannot install"
 
+#: src/develop/EditProjectDialog.tsx
+msgid "Renames the project's folder, files and namespace."
+msgstr "Renames the project's folder, files and namespace."
+
 #: src/tidy/report.ts
 msgid "Removed a leftover mod folder"
 msgstr "Removed a leftover mod folder"
@@ -1969,6 +1973,7 @@ msgstr "Sort: name (A to Z)"
 msgid "Mortar already named the likely mod for the last crash."
 msgstr "Mortar already named the likely mod for the last crash."
 
+#: src/develop/EditProjectDialog.tsx
 #: src/develop/NewModDialog.tsx
 #: src/fomod/Dialog.tsx
 #: src/game/NewProfileDialog.tsx
@@ -1990,6 +1995,8 @@ msgstr "Mortar already named the likely mod for the last crash."
 #: src/share/ModpackDialog.tsx
 #: src/shell/BugReportDialog.tsx
 #: src/shell/ConfirmDialog.tsx
+#: src/shell/dialog/ConfirmationDialog.tsx
+#: src/shell/dialog/FormDialog.tsx
 #: src/shell/PromptDialog.tsx
 #: src/shell/SuggestDialog.tsx
 #: src/templates/ApplyTemplateDialog.tsx
@@ -4026,6 +4033,10 @@ msgstr "Switch mod sets here. Right-click a profile for rename, duplicate, and m
 #: src/sync/SyncOffers.tsx
 msgid "{name} is not syncing yet"
 msgstr "{name} is not syncing yet"
+
+#: src/develop/EditProjectDialog.tsx
+msgid "The plugin's id: {name}"
+msgstr "The plugin's id: {name}"
 
 #: src/share/Included.tsx
 msgid "{count, plural, one {# mod you added from an archive} other {# mods you added from archives}} cannot go in the file"
@@ -6358,6 +6369,7 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/share/ImportDialog.tsx
 #: src/share/PreviewDialog.tsx
 #: src/share/ShareDialog.tsx
+#: src/shell/dialog/AppDialog.tsx
 #: src/shell/TitleBar.tsx
 #: src/sync/SyncOffers.tsx
 #: src/templates/TemplateDialogs.tsx

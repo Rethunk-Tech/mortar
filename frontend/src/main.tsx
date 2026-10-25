@@ -31,6 +31,7 @@ import { initScheduledBackups } from './saves/scheduledBackups.ts'
 import { initNexus } from './settings/nexus.ts'
 import { initSettings } from './settings/store.ts'
 import { initShare } from './share/arrivals.ts'
+import { DialogGallery } from './shell/dialog/DialogGallery.tsx'
 import { initGamepad } from './shell/gamepad.ts'
 import { initSync } from './sync/store.ts'
 import { Themed } from './Themed.tsx'
@@ -91,7 +92,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement, {
     <I18nProvider i18n={i18n}>
       <Themed>
         <CssBaseline />
-        <App />
+        {location.search.includes('gallery=dialogs') ? <DialogGallery /> : <App />}
         <IncomingPrompt />
         <OutgoingProgress />
       </Themed>

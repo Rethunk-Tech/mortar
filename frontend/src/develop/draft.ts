@@ -40,7 +40,7 @@ export function firstDraft(form: Form | null, remembered: Remembered): Draft {
   return {
     name: '',
     values,
-    parent: remembered['parent'] ?? '',
+    parent: remembered.parent ?? '',
     repo: '',
     profile: 'new',
     github: false,
