@@ -37,9 +37,10 @@ import { PANEL_ID, type TabId, tabDomId, useTab } from './tab.ts'
 
 const WIDTH_PX = 220
 const RAIL_PX = 76
-const ITEM_HEIGHT_PX = 38
+// Items and headings shrink with a short window, so every section fits above Play without scrolling.
+const ITEM_HEIGHT = 'clamp(25px, calc(6.5vh - 14px), 38px)'
 const RAIL_ITEM_WIDTH_PX = 52
-const RAIL_ITEM_HEIGHT_PX = 44
+const RAIL_ITEM_HEIGHT = 'clamp(32px, 5.2vh, 44px)'
 const COLLAPSE_HEIGHT_PX = 34
 const COLLAPSE_RAIL_HEIGHT_PX = 36
 const BADGE_FONT_PX = 12
@@ -129,7 +130,7 @@ const Item = memo(
           position: 'relative',
           justifyContent: rail ? 'center' : 'flex-start',
           gap: '12px',
-          height: rail ? RAIL_ITEM_HEIGHT_PX : ITEM_HEIGHT_PX,
+          height: rail ? RAIL_ITEM_HEIGHT : ITEM_HEIGHT,
           width: rail ? RAIL_ITEM_WIDTH_PX : 'auto',
           mx: rail ? 0 : '8px',
           px: rail ? 0 : '12px',
@@ -189,8 +190,8 @@ function GroupHeading({ children }: { children: ReactNode }) {
       aria-hidden={true}
       sx={{
         px: '20px',
-        pt: '12px',
-        pb: '4px',
+        pt: 'clamp(2px, 1.2vh, 12px)',
+        pb: 'clamp(2px, 0.5vh, 4px)',
         fontSize: 'tiny.fontSize',
         fontWeight: 700,
         letterSpacing: '0.08em',

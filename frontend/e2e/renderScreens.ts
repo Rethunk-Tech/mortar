@@ -2,6 +2,9 @@ import type { Page } from '@playwright/test'
 import { openSettings } from './app.ts'
 import type { Case } from './render-budget.ts'
 import type { Helpers } from './renderCases.ts'
+import { VIEWPORT } from './renderViewport.ts'
+
+const SHORT_WINDOW = { width: 1280, height: 600 }
 
 const SETTINGS_SECTIONS = [
   'General',
@@ -71,6 +74,31 @@ export function screenCases(h: Helpers): Case[] {
           .click(),
     },
     { name: 'downloads-sheet', setup: toWorkspace, run: (p) => p.keyboard.press('Control+j') },
+    {
+      // A short window: the sidebar's sections and Play all fit, with nothing to scroll.
+      name: 'short-window',
+      setup: (p) => tab(p, 'Home'),
+      run: async (p) => {
+        await p.setViewportSize(SHORT_WINDOW)
+        const list = p.getByRole('tablist', { name: 'Profile sections' })
+        // The resize lays out on the next frames; measuring before then reads the old heights.
+        await list.evaluate(
+          () => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))),
+        )
+        const [needs, has, item, inner] = await list.evaluate((el) => [
+          el.scrollHeight,
+          el.clientHeight,
+          el.querySelector('[role="tab"]')?.getBoundingClientRect().height ?? 0,
+          globalThis.innerHeight,
+        ])
+        if (needs > has) {
+          throw new Error(
+            `the sidebar scrolls in a short window: ${needs}px in ${has}px (items ${item}px, window ${inner}px)`,
+          )
+        }
+      },
+      teardown: (p) => p.setViewportSize(VIEWPORT),
+    },
     {
       name: 'develop-new-mod',
       setup: (p) => tab(p, 'Develop'),
