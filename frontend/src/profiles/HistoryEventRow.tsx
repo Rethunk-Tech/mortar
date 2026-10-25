@@ -98,16 +98,6 @@ export function HistoryEventRow({
             <When value={ev.at} withTime={true} />
           </Typography>
         </Box>
-        {detailed ? (
-          <Button
-            size="small"
-            aria-expanded={open}
-            onClick={() => setOpen(!open)}
-            startIcon={open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-          >
-            {open ? t`Hide mods` : t`Show mods`}
-          </Button>
-        ) : null}
         {trimmed || onUndo === undefined ? (
           // The same button, hidden, so every row's columns line up whether or not it can be undone.
           <Button
@@ -138,6 +128,16 @@ export function HistoryEventRow({
             </span>
           </Tooltip>
         )}
+        {detailed ? (
+          <Button
+            size="small"
+            aria-expanded={open}
+            onClick={() => setOpen(!open)}
+            startIcon={open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+          >
+            {open ? t`Hide mods` : t`Show mods`}
+          </Button>
+        ) : null}
       </Box>
       {open ? (
         <Box component="ul" sx={{ m: 0, mt: 0.5, p: 0, pl: 5.5 }}>

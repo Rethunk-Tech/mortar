@@ -11,6 +11,7 @@ import {
 } from './app.ts'
 import { nestedBoxes } from './renderBoxes.ts'
 import { newCases } from './renderCases.ts'
+import { dialogCases } from './renderDialogs.ts'
 import { writeGallery } from './renderGallery.ts'
 import { unevenSpacing } from './renderGaps.ts'
 import { HOOK } from './renderHook.ts'
@@ -239,6 +240,7 @@ const cases: Case[] = [
   { name: 'game-select', setup: toWorkspace, run: openGameSelect },
   ...newCases({ toWorkspace, tab, view, row, typeInto, tabs, settleMs: SETTLE_MS }),
   ...screenCases({ toWorkspace, tab, view, row, typeInto, tabs, settleMs: SETTLE_MS }),
+  ...dialogCases({ toWorkspace, tab, view, row, typeInto, tabs, settleMs: SETTLE_MS }),
 ]
 
 /** Opens the profile the run measures, and returns how long a fresh load took to show the workspace's tabs. */

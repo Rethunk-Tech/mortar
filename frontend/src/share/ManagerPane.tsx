@@ -133,7 +133,7 @@ export function ManagerPane({
     }
   }
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, p: '20px 18px' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, px: 3, py: 2.5 }}>
       {folders !== null && all.length === 0 ? (
         <EmptyState compact={true} icon={<Inbox size={28} />} title={t`No profiles found.`}>
           {t`Mortar found no other mod manager's profiles for this game on this computer.`}

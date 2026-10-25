@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button } from '@mui/material'
+import { Box, Button } from '@mui/material'
 import { Wrench } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { PickExecutable } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
@@ -104,10 +104,14 @@ export function ToolEditorDialog({ open, initial, onClose, onSave }: Props) {
       onSubmit={save}
     >
       <TextInput label={t`Name`} value={name} onChange={setName} />
-      <TextInput label={t`Executable`} value={executable} onChange={setExecutable} />
-      <Button type="button" variant="outlined" onClick={browse} sx={{ alignSelf: 'flex-start' }}>
-        {t`Choose folder…`}
-      </Button>
+      <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-end' }}>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <TextInput label={t`Executable`} value={executable} onChange={setExecutable} />
+        </Box>
+        <Button type="button" variant="outlined" onClick={browse} sx={{ flexShrink: 0 }}>
+          {t`Choose folder…`}
+        </Button>
+      </Box>
       <TextInput
         label={t`Arguments`}
         value={argsText}

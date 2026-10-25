@@ -15,7 +15,7 @@ export function ImportInput({ flow }: { flow: ImportFlow }) {
   const handoff = liveHandoff(useHandoff((s) => s.page))
   const canPreview = !flow.busy && flow.text.trim() !== ''
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap, p: '20px 18px' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap, px: 3, py: 2.5 }}>
       {flow.tab === 'file' ? (
         <>
           <Typography sx={{ fontSize: 'medium.fontSize', textAlign: 'center' }}>

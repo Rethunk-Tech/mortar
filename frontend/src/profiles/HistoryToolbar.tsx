@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Button } from '@mui/material'
 import { GitCompare, RotateCcw, ShieldCheck } from 'lucide-react'
+import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { DialogFooter } from '../shell/dialog/AppDialog.tsx'
 
 /** History's footer: what the reader can do with the timeline, and Close. */
@@ -27,14 +28,8 @@ export function HistoryToolbar({
   onClose: () => void
 }) {
   const { t } = useLingui()
-  let aside = ''
-  if (comparing) {
-    aside = t`Pick two entries (${picked} of 2)`
-  } else if (!canRestore) {
-    aside = t`Mark a known good point first.`
-  }
   return (
-    <DialogFooter aside={aside}>
+    <DialogFooter aside={comparing ? t`Pick two entries (${picked} of 2)` : ''}>
       <Button onClick={onClose}>{t`Close`}</Button>
       <Button
         startIcon={<GitCompare size={16} />}
@@ -50,13 +45,15 @@ export function HistoryToolbar({
         </Button>
       ) : (
         <>
-          <Button
-            startIcon={<RotateCcw size={16} />}
-            disabled={busy || !canRestore}
-            onClick={onRestore}
-          >
-            {t`Restore known good`}
-          </Button>
+          <DisabledReason title={t`Mark a known good point first.`} disabled={!canRestore}>
+            <Button
+              startIcon={<RotateCcw size={16} />}
+              disabled={busy || !canRestore}
+              onClick={onRestore}
+            >
+              {t`Restore known good`}
+            </Button>
+          </DisabledReason>
           <Button startIcon={<ShieldCheck size={16} />} disabled={busy} onClick={onMark}>
             {t`Mark current as known good`}
           </Button>

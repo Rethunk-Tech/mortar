@@ -182,6 +182,8 @@ export function AppDialog({
             minHeight: 0,
             // The body's own padding is the gap above the footer; a last child's margin would add to it.
             '& > :last-child': { mb: 0 },
+            // A switch, checkbox or radio sits on the fields' left edge, as MUI draws it; a row's own margin reset would indent it.
+            '& .MuiFormControlLabel-root': { ml: '-11px' },
           }}
         >
           {children}
