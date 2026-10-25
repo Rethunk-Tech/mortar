@@ -219,7 +219,7 @@ export function VanillaPlay({
             ]
           }
           return [
-            presets.length > 0 || launchOptions ? <MenuRule key="vanilla-divider" /> : null,
+            presets.length > 0 ? <MenuRule key="vanilla-divider" /> : null,
             launchOptions ? (
               <MenuAction
                 key="launch-options"
