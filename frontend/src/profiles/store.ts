@@ -20,8 +20,6 @@ import {
   Repair,
   Restore,
   SetAppearance,
-  SetLaunchOptions,
-  SetLaunchSettings,
   UndoRepair,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { SetLastProfile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
@@ -32,6 +30,7 @@ import { keepFields, sameValue } from '../shell/sameValue.ts'
 import { reportError } from '../toasts/report.ts'
 import { setLatestChange, useToasts } from '../toasts/store.ts'
 import { settledLastProfile } from './lastProfile.ts'
+import { applyLaunchOptions, applyLaunchSettings, applyTestCopies } from './launchSetters.ts'
 import { listProfiles } from './listProfiles.ts'
 
 const fail = reportError
@@ -109,29 +108,6 @@ async function refreshList(
         damaged: keepSaved(get().damaged, listed.damaged),
       })
     }
-  }
-}
-
-async function applyLaunchOptions(
-  get: () => { game: GameInfo | null; replace: (p: Profile) => void },
-  id: string,
-  options: string,
-) {
-  const { game } = get()
-  if (game) {
-    get().replace(await SetLaunchOptions(game.id, id, options))
-  }
-}
-
-async function applyLaunchSettings(
-  get: () => { game: GameInfo | null; replace: (p: Profile) => void },
-  id: string,
-  prefix: string,
-  env: string,
-) {
-  const { game } = get()
-  if (game) {
-    get().replace(await SetLaunchSettings(game.id, id, prefix, env))
   }
 }
 
@@ -302,6 +278,8 @@ export const useProfiles = create<{
   rename: (id: string, name: string) => Promise<boolean>
   setAppearance: (id: string, color: string, icon: string) => Promise<void>
   setLaunchOptions: (id: string, options: string) => Promise<void>
+  // How many copies the Develop tab's Test starts for the profile; 0 lets the tab choose.
+  setTestCopies: (id: string, n: number) => Promise<void>
   setLaunchSettings: (id: string, prefix: string, env: string) => Promise<void>
   replace: (profile: Profile) => void
   refresh: () => Promise<void>
@@ -386,6 +364,7 @@ export const useProfiles = create<{
     }
   },
   setLaunchOptions: (id, options) => applyLaunchOptions(get, id, options),
+  setTestCopies: (id, n) => applyTestCopies(get, id, n),
   setLaunchSettings: (id, prefix, env) => applyLaunchSettings(get, id, prefix, env),
   replace: (p) =>
     set((s) => {

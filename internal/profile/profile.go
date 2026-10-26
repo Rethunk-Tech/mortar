@@ -287,6 +287,9 @@ type Profile struct {
 	Install string `json:"install,omitempty"`
 	// SeparateSaves gives the profile its own saves folder, which replaces the game's shared one while it runs.
 	SeparateSaves bool `json:"separateSaves,omitempty"`
+	// TestCopies is how many copies the Develop tab's Test starts, as last picked from its menu; 0 lets the tab choose
+	// from the mods in development.
+	TestCopies int `json:"testCopies,omitempty"`
 	// CacheSet is ModSetHash as it was when the game's caches were last cleared for this profile.
 	CacheSet string `json:"cacheSet,omitempty"`
 	// Loader is the id of the game loader this profile runs; empty means the game's primary loader.

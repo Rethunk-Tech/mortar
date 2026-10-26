@@ -673,14 +673,11 @@ func (s *Service) StartPreset(ctx context.Context, gameID, profileID, installID,
 
 type instancesKey struct{}
 
-// maxTestInstances bounds StartInstances: a host and a few clients on one computer.
-const maxTestInstances = 4
-
 // StartInstances starts n copies of the profile directly for this launch only, such as a host and a client to test a
 // multiplayer mod on one computer; the profile's own instance count is left alone.
 func (s *Service) StartInstances(ctx context.Context, gameID, profileID string, n int) error {
-	if n < 1 || n > maxTestInstances {
-		return usererr.Wrap(usererr.Invalid, fmt.Errorf("start 1 to %d copies", maxTestInstances))
+	if n < 1 || n > profile.MaxTestCopies {
+		return usererr.Wrap(usererr.Invalid, fmt.Errorf("start 1 to %d copies", profile.MaxTestCopies))
 	}
 	// A test host writes its save as it starts, which must not be the player's own game.
 	if game.HasSaves(gameID) && !s.profiles.SeparateSaves(gameID, profileID) {

@@ -1,7 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ButtonGroup, Menu, Typography } from '@mui/material'
-import { ChevronDown, FolderPlus, GitBranch, Hammer, Plus, Users } from 'lucide-react'
+import { Check, ChevronDown, FolderPlus, GitBranch, Hammer, Plus, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Add } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import { StartInstances } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
@@ -23,7 +23,7 @@ import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
-import { refreshInfo } from './builds.ts'
+import { refreshInfo, useProjectInfo } from './builds.ts'
 import { CloneDialog } from './CloneDialog.tsx'
 import { NewModDialog } from './NewModDialog.tsx'
 import { ProjectCard } from './ProjectCard.tsx'
@@ -46,21 +46,64 @@ function ElsewhereRow({ project }: { project: DevProject }) {
   )
 }
 
-const TEST_COPIES = 2
+// Matches profile.MaxTestCopies: a host and a few clients on one computer.
+const MAX_TEST_COPIES = 4
 
-// Starts the profile twice, host and guest, for a multiplayer test of everything in development here.
-function TestCopies({ game, profile }: { game: string; profile: string }) {
+// Starts copies of the profile, one hosting and the rest joining, to test everything in development here. Mods only
+// the player who installs them needs test in one copy, others in two, until a count picked from the menu is
+// remembered for the profile.
+function TestCopies({ game, profile, dirs }: { game: string; profile: string; dirs: string[] }) {
   const { t } = useLingui()
+  const [menu, setMenu] = useState<HTMLElement | null>(null)
+  const saved = useProfiles((s) => s.profiles.find((p) => p.id === profile)?.testCopies ?? 0)
+  const clientOnly = useProjectInfo((s) => dirs.every((d) => s.byDir[d]?.clientOnly === true))
+  const count = saved || (clientOnly ? 1 : 2)
+  const start = (n: number) =>
+    StartInstances(game, profile, n).catch(reportError(t`Could not start the game`))
   return (
-    <Button
-      variant="outlined"
-      startIcon={<Users size={14} />}
-      onClick={() =>
-        StartInstances(game, profile, TEST_COPIES).catch(reportError(t`Could not start the game`))
-      }
-    >
-      {t`Test with ${{ count: TEST_COPIES }} copies`}
-    </Button>
+    <>
+      <ButtonGroup variant="outlined">
+        <Button
+          startIcon={<Users size={14} />}
+          title={plural(count, { one: 'Starts # copy', other: 'Starts # copies, one hosting' })}
+          onClick={() => start(count)}
+        >
+          {t`Test`}
+        </Button>
+        <Button
+          aria-label={t`How many copies to test with`}
+          aria-haspopup="menu"
+          aria-expanded={menu !== null}
+          onClick={(e) => setMenu(e.currentTarget)}
+          sx={{ minWidth: 30, px: 0.5 }}
+        >
+          <ChevronDown size={14} aria-hidden={true} />
+        </Button>
+      </ButtonGroup>
+      <Menu open={menu !== null} anchorEl={menu} onClose={() => setMenu(null)}>
+        {Array.from({ length: MAX_TEST_COPIES }, (_, i) => i + 1).map((n) => (
+          <MenuAction
+            key={n}
+            icon={
+              n === count ? (
+                <Check size={16} aria-hidden={true} />
+              ) : (
+                <Users size={16} aria-hidden={true} />
+              )
+            }
+            label={plural(n, { one: 'Test with # copy', other: 'Test with # copies' })}
+            onClick={() => {
+              setMenu(null)
+              useProfiles
+                .getState()
+                .setTestCopies(profile, n)
+                .catch(reportError(t`Could not save the number of copies`))
+              start(n)
+            }}
+          />
+        ))}
+      </Menu>
+    </>
   )
 }
 
@@ -115,7 +158,9 @@ export function DevelopTab({ game }: { game: string }) {
       }}
     >
       <PageActions>
-        {here.length > 0 ? <TestCopies game={game} profile={openId} /> : null}
+        {here.length > 0 ? (
+          <TestCopies game={game} profile={openId} dirs={here.map((p) => p.dir)} />
+        ) : null}
         <ButtonGroup variant="outlined">
           <Button startIcon={<Plus size={14} />} onClick={() => setCreating(true)}>
             {t`New mod…`}

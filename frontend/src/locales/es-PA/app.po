@@ -508,6 +508,10 @@ msgstr ""
 msgid "Make your first profile"
 msgstr ""
 
+#: src/develop/DevelopTab.tsx
+msgid "{n, plural, one {Test with # copy} other {Test with # copies}}"
+msgstr ""
+
 #: src/commandPalette/paletteLabels.ts
 msgid "Configure {name}…"
 msgstr ""
@@ -755,10 +759,6 @@ msgstr ""
 
 #: src/shell/checkForUpdates.ts
 msgid "Update check skipped"
-msgstr ""
-
-#: src/develop/DevelopTab.tsx
-msgid "Test with {count} copies"
 msgstr ""
 
 #: src/sync/store.ts
@@ -4571,6 +4571,10 @@ msgstr ""
 msgid "Copy code"
 msgstr ""
 
+#: src/develop/DevelopTab.tsx
+msgid "Test"
+msgstr ""
+
 #: src/shell/offlineText.ts
 msgid "nothing saved yet from {name}"
 msgstr ""
@@ -4792,6 +4796,10 @@ msgstr ""
 msgid "Check later"
 msgstr ""
 
+#: src/develop/DevelopTab.tsx
+msgid "{count, plural, one {Starts # copy} other {Starts # copies, one hosting}}"
+msgstr ""
+
 #: src/share/useImportFlow.ts
 msgid "A profile with that name already exists, so this one is \"{name}\""
 msgstr ""
@@ -4883,6 +4891,10 @@ msgstr ""
 
 #: src/launch/PrePlayDialog.tsx
 msgid "Press Play when the downloads finish."
+msgstr ""
+
+#: src/develop/DevelopTab.tsx
+msgid "How many copies to test with"
 msgstr ""
 
 #: src/saves/saveName.ts
@@ -5340,6 +5352,10 @@ msgstr ""
 #: src/game/ProfileMenu.tsx
 #: src/game/ProfileMenuItems.tsx
 msgid "No other profile to add them to."
+msgstr ""
+
+#: src/develop/DevelopTab.tsx
+msgid "Could not save the number of copies"
 msgstr ""
 
 #: src/share/ImportProblems.tsx

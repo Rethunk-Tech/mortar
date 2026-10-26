@@ -262,6 +262,11 @@ func (s *Service) SetLoader(game, id, loaderID string) (Profile, error) {
 	return s.store.SetLoader(game, id, loaderID)
 }
 
+// SetTestCopies remembers how many copies the profile's Test starts; 0 forgets the choice.
+func (s *Service) SetTestCopies(game, id string, n int) (Profile, error) {
+	return s.store.SetTestCopies(game, id, n)
+}
+
 // SetLaunchOptions replaces a profile's extra SMAPI arguments.
 func (s *Service) SetLaunchOptions(game, id, options string) (Profile, error) {
 	return s.store.SetLaunchOptions(game, id, options)

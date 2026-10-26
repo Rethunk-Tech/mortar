@@ -508,6 +508,10 @@ msgstr "Paste the token."
 msgid "Make your first profile"
 msgstr "Make your first profile"
 
+#: src/develop/DevelopTab.tsx
+msgid "{n, plural, one {Test with # copy} other {Test with # copies}}"
+msgstr "{n, plural, one {Test with # copy} other {Test with # copies}}"
+
 #: src/commandPalette/paletteLabels.ts
 msgid "Configure {name}…"
 msgstr "Configure {name}…"
@@ -756,10 +760,6 @@ msgstr "Pending updates ({count})"
 #: src/shell/checkForUpdates.ts
 msgid "Update check skipped"
 msgstr "Update check skipped"
-
-#: src/develop/DevelopTab.tsx
-msgid "Test with {count} copies"
-msgstr "Test with {count} copies"
 
 #: src/sync/store.ts
 msgid "{name} was changed on {machine} and here"
@@ -4571,6 +4571,10 @@ msgstr "{length} of {limit} characters"
 msgid "Copy code"
 msgstr "Copy code"
 
+#: src/develop/DevelopTab.tsx
+msgid "Test"
+msgstr "Test"
+
 #: src/shell/offlineText.ts
 msgid "nothing saved yet from {name}"
 msgstr "nothing saved yet from {name}"
@@ -4792,6 +4796,10 @@ msgstr "Could not start {name}"
 msgid "Check later"
 msgstr "Check later"
 
+#: src/develop/DevelopTab.tsx
+msgid "{count, plural, one {Starts # copy} other {Starts # copies, one hosting}}"
+msgstr "{count, plural, one {Starts # copy} other {Starts # copies, one hosting}}"
+
 #: src/share/useImportFlow.ts
 msgid "A profile with that name already exists, so this one is \"{name}\""
 msgstr "A profile with that name already exists, so this one is \"{name}\""
@@ -4884,6 +4892,10 @@ msgstr "Grant access"
 #: src/launch/PrePlayDialog.tsx
 msgid "Press Play when the downloads finish."
 msgstr "Press Play when the downloads finish."
+
+#: src/develop/DevelopTab.tsx
+msgid "How many copies to test with"
+msgstr "How many copies to test with"
 
 #: src/saves/saveName.ts
 msgid "Challenge moon"
@@ -5341,6 +5353,10 @@ msgstr "Pause all"
 #: src/game/ProfileMenuItems.tsx
 msgid "No other profile to add them to."
 msgstr "No other profile to add them to."
+
+#: src/develop/DevelopTab.tsx
+msgid "Could not save the number of copies"
+msgstr "Could not save the number of copies"
 
 #: src/share/ImportProblems.tsx
 msgid "{leftOut} left out"

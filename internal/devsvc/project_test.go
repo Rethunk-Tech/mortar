@@ -64,6 +64,17 @@ func TestInspectReadsTheProjectFiles(t *testing.T) {
 		info.Icon != "" {
 		t.Fatalf("info = %+v", info)
 	}
+	// A mod only its own player needs tests in one copy.
+	rec := filepath.Join(dir, ".mortar", "template.json")
+	if err := os.MkdirAll(filepath.Dir(rec), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(rec, []byte(`{"name":"ShopDrop","values":{"audience":"client"}}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if info, _ = svc.Inspect(t.Context(), "lethal-company", dir); !info.ClientOnly {
+		t.Fatal("a client-only project is not ClientOnly")
+	}
 	// With an icon.png the card gets it as a data URL.
 	var icon bytes.Buffer
 	if err := png.Encode(&icon, image.NewRGBA(image.Rect(0, 0, 1, 1))); err != nil {

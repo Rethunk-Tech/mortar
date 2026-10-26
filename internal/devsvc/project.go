@@ -3,6 +3,7 @@ package devsvc
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"html"
@@ -50,6 +51,9 @@ type ProjectInfo struct {
 	BuiltAt int64 `json:"builtAt"`
 	// Stale is set when a source or asset file changed after that build.
 	Stale bool `json:"stale"`
+	// ClientOnly is set when the template's audience says only the player who installs the mod needs it, so testing it
+	// needs no second copy.
+	ClientOnly bool `json:"clientOnly"`
 }
 
 // GitState is what a project card shows of its repository.
@@ -140,6 +144,10 @@ func (s *Service) Inspect(ctx context.Context, gameID, dir string) (ProjectInfo,
 	info.Icon = iconData(p.Dir)
 	info.Git = s.gitState(ctx, p.Dir)
 	info.BuiltAt, info.Stale = buildState(p)
+	if body, err := fsx.ReadFile(filepath.Join(p.Dir, ".mortar", "template.json")); err == nil {
+		var rec projectRecord
+		info.ClientOnly = json.Unmarshal(body, &rec) == nil && rec.Values["audience"] == "client"
+	}
 	base := strings.TrimSuffix(filepath.Base(csproj), ".csproj")
 	if base != p.Name {
 		if err := s.follow(gameID, p, base); err != nil {
