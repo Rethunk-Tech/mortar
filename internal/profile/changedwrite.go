@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
 // changedRoots are the profile folders a changed copy lives in: the content folder and the held copies.
@@ -70,7 +70,8 @@ func (s *Store) WriteChangedFiles(game, id string, files map[string][]byte, over
 		if err := os.MkdirAll(filepath.Dir(to), 0o750); err != nil {
 			return err
 		}
-		if err := fsx.WriteFile(to, data, 0o600); err != nil {
+		// Replaced, never written in place: the file there may be a hardlink to the store's copy.
+		if err := datadir.WriteFile(to, data, 0o600); err != nil {
 			return err
 		}
 		written = append(written, rel)

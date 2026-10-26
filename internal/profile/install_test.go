@@ -286,6 +286,32 @@ func TestInstallThunderstorePackageRecordsAnEntryWithoutAFolder(t *testing.T) {
 	if err := e.WriteFiles("lethal-company", p.ID, map[string][]byte{"../x": nil}); err == nil {
 		t.Fatal("a path outside the profile was written")
 	}
+	// A profile file hardlinked to the store's copy is replaced, so the store copy every profile shares keeps its bytes.
+	outside := t.TempDir()
+	shared := filepath.Join(outside, "x.bundle")
+	if err := os.WriteFile(shared, []byte("store"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	linked := filepath.Join(profileDir, "BepInEx", "plugins", "x.bundle")
+	if err := os.MkdirAll(filepath.Dir(linked), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Link(shared, linked); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.WriteFiles("lethal-company", p.ID, map[string][]byte{"BepInEx/plugins/x.bundle": []byte("pack")}); err != nil {
+		t.Fatal(err)
+	}
+	if b, _ := os.ReadFile(shared); string(b) != "store" {
+		t.Fatalf("the store copy was written through its hardlink: %q", b)
+	}
+	// A folder linked out of the profile is not a way out.
+	if err := os.Symlink(outside, filepath.Join(profileDir, "BepInEx", "out")); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.WriteFiles("lethal-company", p.ID, map[string][]byte{"BepInEx/out/y.cfg": []byte("y")}); err == nil {
+		t.Fatal("a pack file was written through a linked folder")
+	}
 }
 
 func TestGitHubThunderstorePackageTakesTheRepoOwnerAsPublisher(t *testing.T) {

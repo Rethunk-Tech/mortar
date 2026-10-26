@@ -296,13 +296,17 @@ func (s *Store) WriteFiles(game, id string, files map[string][]byte) error {
 		if !filepath.IsLocal(filepath.FromSlash(rel)) {
 			return fmt.Errorf("pack file %q leaves the profile", rel)
 		}
+		if linkOnPath(dir, rel) {
+			return fmt.Errorf("pack file %q reaches a link", rel)
+		}
 	}
 	for rel, data := range files {
 		to := filepath.Join(dir, filepath.FromSlash(rel))
 		if err := os.MkdirAll(filepath.Dir(to), 0o700); err != nil {
 			return err
 		}
-		if err := fsx.WriteFile(to, data, 0o600); err != nil {
+		// Replaced, never written in place: the file there may be a hardlink to the store's copy.
+		if err := datadir.WriteFile(to, data, 0o600); err != nil {
 			return err
 		}
 	}
