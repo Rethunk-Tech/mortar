@@ -757,7 +757,7 @@ msgstr ""
 msgid "Update check skipped"
 msgstr ""
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/DevelopTab.tsx
 msgid "Test with {count} copies"
 msgstr ""
 
@@ -785,6 +785,7 @@ msgstr ""
 msgid "Grid view"
 msgstr ""
 
+#: src/develop/DevelopTab.tsx
 #: src/develop/ProjectCard.tsx
 msgid "Could not start the game"
 msgstr ""
@@ -1052,6 +1053,10 @@ msgstr ""
 
 #: src/queue/QueueHistory.tsx
 msgid "Clears the list of past downloads; downloads in progress are unaffected. Failed items lose Retry until downloaded again."
+msgstr ""
+
+#: src/develop/ProjectCard.tsx
+msgid "Unreleased"
 msgstr ""
 
 #: src/groups/SaveGroupToLibrary.tsx
@@ -1705,10 +1710,6 @@ msgid "Could not start pairing"
 msgstr ""
 
 #: src/develop/ProjectCard.tsx
-msgid "{count, plural, one {# unpushed commit} other {# unpushed commits}}"
-msgstr ""
-
-#: src/develop/ProjectCard.tsx
 msgid "The build failed."
 msgstr ""
 
@@ -1956,6 +1957,10 @@ msgstr ""
 
 #: src/firstrun/ProfileStep.tsx
 msgid "Got a Mortar link? You see what it holds first. {source} mods need your {source} sign-in; Mortar asks then."
+msgstr ""
+
+#: src/develop/DevelopTab.tsx
+msgid "More ways to add a mod project"
 msgstr ""
 
 #: src/develop/NewModDialog.tsx
@@ -2957,6 +2962,10 @@ msgstr ""
 
 #: src/saves/SaveRow.tsx
 msgid "Open the folder of {name}"
+msgstr ""
+
+#: src/develop/ProjectCard.tsx
+msgid "{count, plural, one {# to push} other {# to push}}"
 msgstr ""
 
 #: src/nxm/store.ts
@@ -5178,6 +5187,10 @@ msgstr ""
 msgid "Add it"
 msgstr ""
 
+#: src/develop/ProjectCard.tsx
+msgid "Not built yet"
+msgstr ""
+
 #: src/toasts/report.ts
 msgid "The system would not let Mortar end the game. Close it from its own window or end it in your task manager."
 msgstr ""
@@ -5281,6 +5294,10 @@ msgstr ""
 
 #: src/updates/WhatsNewDialog.tsx
 msgid "{count, plural, one {# change} other {# changes}}"
+msgstr ""
+
+#: src/develop/ProjectCard.tsx
+msgid "{count, plural, one {# changed} other {# changed}}"
 msgstr ""
 
 #: src/shell/SuggestDialog.tsx
@@ -5826,10 +5843,6 @@ msgstr ""
 
 #: src/share/MethodPanes.tsx
 msgid "Could not enable sharing nearby"
-msgstr ""
-
-#: src/develop/ProjectCard.tsx
-msgid "{count, plural, one {# changed file} other {# changed files}}"
 msgstr ""
 
 #: src/develop/ProjectCard.tsx
@@ -7060,10 +7073,6 @@ msgstr ""
 
 #: src/develop/UploadDialog.tsx
 msgid "Service account token"
-msgstr ""
-
-#: src/develop/ProjectCard.tsx
-msgid "Not released"
 msgstr ""
 
 #: src/firstrun/LoaderStep.tsx

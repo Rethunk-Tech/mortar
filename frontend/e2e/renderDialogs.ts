@@ -196,8 +196,12 @@ function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
     },
     {
       name: 'develop-clone',
-      setup: (p) => tab(p, 'Develop'),
-      run: (p) => p.getByRole('button', { name: 'Clone from GitHub…' }).click(),
+      // The add menu opens in setup, so the action is the dialog alone.
+      setup: async (p) => {
+        await tab(p, 'Develop')
+        await p.getByRole('button', { name: 'More ways to add a mod project' }).click()
+      },
+      run: (p) => p.getByRole('menuitem', { name: 'Clone from GitHub…' }).click(),
     },
     ...[
       ['author', 1],

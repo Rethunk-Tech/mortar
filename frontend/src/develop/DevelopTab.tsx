@@ -1,9 +1,10 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Typography } from '@mui/material'
-import { FolderPlus, GitBranch, Hammer, Plus } from 'lucide-react'
+import { Box, Button, ButtonGroup, Menu, Typography } from '@mui/material'
+import { ChevronDown, FolderPlus, GitBranch, Hammer, Plus, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Add } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
+import { StartInstances } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { PickFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import type { DevProject } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
@@ -13,11 +14,13 @@ import { useSettings } from '../settings/store.ts'
 import { CardsView } from '../shell/CardsView.tsx'
 import { ControlsRow } from '../shell/ControlsRow.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { MenuAction } from '../shell/MenuAction.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { useStoredState } from '../shell/useStoredState.ts'
 import { ViewToggle } from '../shell/ViewToggle.tsx'
 import { isViewMode, type ViewMode } from '../shell/viewMode.ts'
 import { space } from '../theme/density.ts'
+import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { refreshInfo } from './builds.ts'
@@ -43,6 +46,24 @@ function ElsewhereRow({ project }: { project: DevProject }) {
   )
 }
 
+const TEST_COPIES = 2
+
+// Starts the profile twice, host and guest, for a multiplayer test of everything in development here.
+function TestCopies({ game, profile }: { game: string; profile: string }) {
+  const { t } = useLingui()
+  return (
+    <Button
+      variant="outlined"
+      startIcon={<Users size={14} />}
+      onClick={() =>
+        StartInstances(game, profile, TEST_COPIES).catch(reportError(t`Could not start the game`))
+      }
+    >
+      {t`Test with ${{ count: TEST_COPIES }} copies`}
+    </Button>
+  )
+}
+
 /** The open profile's own mods in development: start one from the template, then build, test, pack and release it. */
 export function DevelopTab({ game }: { game: string }) {
   const { t } = useLingui()
@@ -50,6 +71,7 @@ export function DevelopTab({ game }: { game: string }) {
   const openId = useProfiles((s) => s.openId)
   const [creating, setCreating] = useState(false)
   const [cloning, setCloning] = useState(false)
+  const [addMenu, setAddMenu] = useState<HTMLElement | null>(null)
   const [adding, run] = usePending()
   const addFolder = () =>
     run(
@@ -93,15 +115,40 @@ export function DevelopTab({ game }: { game: string }) {
       }}
     >
       <PageActions>
-        <Button variant="outlined" startIcon={<Plus size={14} />} onClick={() => setCreating(true)}>
-          {t`New mod…`}
-        </Button>
-        <Button startIcon={<FolderPlus size={14} />} disabled={adding} onClick={addFolder}>
-          {t`Add a project folder…`}
-        </Button>
-        <Button startIcon={<GitBranch size={14} />} onClick={() => setCloning(true)}>
-          {t`Clone from ${{ source: sourceLabel('github') }}…`}
-        </Button>
+        {here.length > 0 ? <TestCopies game={game} profile={openId} /> : null}
+        <ButtonGroup variant="outlined">
+          <Button startIcon={<Plus size={14} />} onClick={() => setCreating(true)}>
+            {t`New mod…`}
+          </Button>
+          <Button
+            aria-label={t`More ways to add a mod project`}
+            aria-haspopup="menu"
+            aria-expanded={addMenu !== null}
+            onClick={(e) => setAddMenu(e.currentTarget)}
+            sx={{ minWidth: 30, px: 0.5 }}
+          >
+            <ChevronDown size={14} aria-hidden={true} />
+          </Button>
+        </ButtonGroup>
+        <Menu open={addMenu !== null} anchorEl={addMenu} onClose={() => setAddMenu(null)}>
+          <MenuAction
+            icon={<FolderPlus size={16} aria-hidden={true} />}
+            label={t`Add a project folder…`}
+            disabled={adding}
+            onClick={() => {
+              setAddMenu(null)
+              addFolder()
+            }}
+          />
+          <MenuAction
+            icon={<GitBranch size={16} aria-hidden={true} />}
+            label={t`Clone from ${{ source: sourceLabel('github') }}…`}
+            onClick={() => {
+              setAddMenu(null)
+              setCloning(true)
+            }}
+          />
+        </Menu>
       </PageActions>
       {here.length === 0 ? (
         <EmptyState

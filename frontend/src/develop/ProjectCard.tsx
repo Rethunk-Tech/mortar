@@ -4,17 +4,16 @@ import {
   Alert,
   Box,
   Button,
+  Checkbox,
   Chip,
   CircularProgress,
-  FormControlLabel,
   IconButton,
   Link,
   Menu,
   MenuItem,
-  Switch,
   Typography,
 } from '@mui/material'
-import { EllipsisVertical, GitBranch, Hammer, Users } from 'lucide-react'
+import { EllipsisVertical, Hammer } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type {
   GitState,
@@ -28,10 +27,7 @@ import {
   OpenProject,
   SetWatch,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
-import {
-  StartDebugging,
-  StartInstances,
-} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
+import { StartDebugging } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import type { DevProject } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { useNowValue } from '../i18n/useNow.ts'
@@ -57,7 +53,6 @@ import { showModLog, useModCosts } from './modCosts.ts'
 import { ReleaseDialog } from './ReleaseDialog.tsx'
 import { UploadDialog } from './UploadDialog.tsx'
 
-const TEST_COPIES = 2
 // The status chip's "built X ago" moves on once a minute.
 const MINUTE_MS = 60_000
 
@@ -157,7 +152,7 @@ function Status({ dir }: { dir: string }) {
     )
   }
   if (!run.build) {
-    return null
+    return <Chip size="small" variant="outlined" label={t`Not built yet`} />
   }
   if (run.build.ok) {
     const when = relativeWhen(run.builtAt, { now: now * MINUTE_MS, locale: i18n.locale })
@@ -169,34 +164,18 @@ function Status({ dir }: { dir: string }) {
   )
 }
 
-// The repository's branch, and what is not committed or not pushed yet.
-function GitChips({ git }: { git: GitState }) {
-  return (
-    <>
-      <Chip size="small" variant="outlined" icon={<GitBranch size={12} />} label={git.branch} />
-      {git.changed > 0 ? (
-        <Chip
-          size="small"
-          color="warning"
-          variant="outlined"
-          label={plural(
-            { count: git.changed },
-            { one: '# changed file', other: '# changed files' },
-          )}
-        />
-      ) : null}
-      {git.unpushed > 0 ? (
-        <Chip
-          size="small"
-          variant="outlined"
-          label={plural(
-            { count: git.unpushed },
-            { one: '# unpushed commit', other: '# unpushed commits' },
-          )}
-        />
-      ) : null}
-    </>
-  )
+// The repository's branch and what it has not committed or pushed; nothing when both are clean.
+function gitSummary(git: GitState | null | undefined): string {
+  if (!git || (git.changed === 0 && git.unpushed === 0)) {
+    return ''
+  }
+  const parts = [
+    git.changed > 0 ? plural({ count: git.changed }, { one: '# changed', other: '# changed' }) : '',
+    git.unpushed > 0
+      ? plural({ count: git.unpushed }, { one: '# to push', other: '# to push' })
+      : '',
+  ].filter(Boolean)
+  return `${git.branch}: ${parts.join(', ')}`
 }
 
 // The project's details from its own files, read when the card shows and kept current by refreshInfo.
@@ -296,6 +275,25 @@ function MoreMenu({
         <EllipsisVertical size={18} />
       </IconButton>
       <Menu anchorEl={anchor} open={anchor !== null} onClose={() => setAnchor(null)}>
+        <MenuItem
+          role="menuitemcheckbox"
+          aria-checked={Boolean(project.watch)}
+          onClick={() =>
+            persist(
+              () => SetWatch(game, project.dir, !project.watch),
+              t`Could not save that setting`,
+            )
+          }
+        >
+          <Checkbox
+            size="small"
+            checked={Boolean(project.watch)}
+            tabIndex={-1}
+            sx={{ p: 0, mr: 1 }}
+          />
+          {t`Build on save`}
+        </MenuItem>
+        <MenuRule />
         <MenuItem onClick={act(onEdit)}>{t`Edit details…`}</MenuItem>
         <MenuItem disabled={running !== null} onClick={act(() => packProject(game, project.dir))}>
           {t`Pack for ${{ source: sourceLabel('thunderstore') }}`}
@@ -339,39 +337,18 @@ function MoreMenu({
   )
 }
 
-function ProjectActions({ game, project }: { game: string; project: DevProject }) {
+function BuildButton({ game, project }: { game: string; project: DevProject }) {
   const { t } = useLingui()
   const running = useDevRuns((s) => runOf(s.byDir, project.dir).running)
-  const test = () =>
-    StartInstances(game, project.profile, TEST_COPIES).catch(
-      reportError(t`Could not start the game`),
-    )
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, flexWrap: 'wrap' }}>
-      <Button
-        variant="outlined"
-        startIcon={<Hammer size={16} />}
-        disabled={running !== null}
-        onClick={() => buildProject(game, project.dir).catch(() => undefined)}
-      >
-        {t`Build`}
-      </Button>
-      <Button variant="outlined" startIcon={<Users size={16} />} onClick={test}>
-        {t`Test with ${{ count: TEST_COPIES }} copies`}
-      </Button>
-      <FormControlLabel
-        control={
-          <Switch
-            size="small"
-            checked={Boolean(project.watch)}
-            onChange={(_, on) =>
-              persist(() => SetWatch(game, project.dir, on), t`Could not save that setting`)
-            }
-          />
-        }
-        label={t`Build on save`}
-      />
-    </Box>
+    <Button
+      variant="outlined"
+      startIcon={<Hammer size={16} />}
+      disabled={running !== null}
+      onClick={() => buildProject(game, project.dir).catch(() => undefined)}
+    >
+      {t`Build`}
+    </Button>
   )
 }
 
@@ -394,7 +371,9 @@ export function ProjectCard({
     return <MissingCard game={game} project={project} />
   }
   const name = info?.name ?? project.name
-  const actions = <ProjectActions game={game} project={project} />
+  const actions = <BuildButton game={game} project={project} />
+  const version = info?.released ? `v${info.released}` : t`Unreleased`
+  const details = [info?.guid, info ? version : '', gitSummary(info?.git)].filter(Boolean)
   return (
     <Box
       sx={{
@@ -414,12 +393,6 @@ export function ProjectCard({
         <Box sx={{ minWidth: 0, flex: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
             <Typography sx={{ fontSize: 'large.fontSize', fontWeight: 600 }}>{name}</Typography>
-            <Chip
-              size="small"
-              variant="outlined"
-              label={info?.released ? `v${info.released}` : t`Not released`}
-            />
-            {info?.git ? <GitChips git={info.git} /> : null}
             <Status dir={project.dir} />
           </Box>
           <Typography
@@ -427,7 +400,7 @@ export function ProjectCard({
             title={project.dir}
             sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}
           >
-            {info ? [info.guid, info.author].filter(Boolean).join(' · ') : project.dir}
+            {info ? details.join(' · ') : project.dir}
           </Typography>
         </Box>
         {list ? actions : null}
