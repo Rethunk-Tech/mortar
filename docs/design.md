@@ -16,6 +16,14 @@ Decided work, short enough to build cold. Delete an item in the change that land
 - top mods from the sources' APIs, cached in a data file under `web/src/data/` that `bun run site:refresh` writes (`web/scripts/refresh.ts`);
 - an optional hand-written note per game.
 
+### Test copies join each other
+
+"Test with 2 copies" (Develop) starts the profile twice; each copy then waits at Lethal Company's Online/LAN screen. Decided with the maintainer: a separate dev helper mod does the rest, not the BepInEx bridge.
+
+- **The mod:** `mortar-lc-devlaunch` in mortar-mods (public, from the template, no AI files), Thunderstore package `Mortar-DevLaunch`. It acts only when the game's command line holds `--mortar-test host` or `--mortar-test join`: host picks LAN and hosts a lobby; join picks LAN and joins 127.0.0.1 once the host listens, retrying for a short while. Without the argument it does nothing. Research first: decompile `MenuManager` and `GameNetworkManager` for the LAN path the menu buttons take.
+- **Mortar:** `StartInstances` (`internal/launchsvc/service.go`) gives the first copy `--mortar-test host` and the others `--mortar-test join` (today every copy gets the same command, `internal/game/start.go` `command`), and adds `Mortar-DevLaunch` to the development profile when it starts copies, as a development-only mod the profile's mod list marks so.
+- **Done when:** "Test with 2 copies" ends with both copies in one LAN lobby with no clicks; a normal Play of the same profile shows the menu as usual.
+
 ### ConfigSync support
 
 Mortar-ConfigSync (`Rethunk-Tech/mortar-lc-configsync`) lets a Lethal Company mod share chosen settings from the host while players are connected, at a level per setting: Host enforced, Host recommended or Client only. Decided with the maintainer:
