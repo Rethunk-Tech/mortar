@@ -308,6 +308,7 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
           <EmptyState
             icon={<ShieldCheck size={40} aria-hidden={true} />}
             title={t`No problems found`}
+            compact={!empty}
           >
             {t`Every mod has what it needs and nothing clashes.`}
           </EmptyState>
