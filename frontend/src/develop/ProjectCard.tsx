@@ -53,8 +53,6 @@ import { showModLog, useModCosts } from './modCosts.ts'
 import { ReleaseDialog } from './ReleaseDialog.tsx'
 import { UploadDialog } from './UploadDialog.tsx'
 
-// The status chip's "built X ago" moves on once a minute.
-
 // A problem's file below the project, as the editor would show it.
 const relative = (dir: string, file: string) =>
   file.startsWith(`${dir}/`) || file.startsWith(`${dir}\\`) ? file.slice(dir.length + 1) : file
