@@ -100,7 +100,7 @@ func setUserProp(dir, name, value string) error {
 		return err
 	}
 	body := string(raw)
-	element := "<" + name + ">" + xmlEscape(value) + "</" + name + ">"
+	element := "<" + name + ">" + xmlEscape(msbuildEscape.Replace(value)) + "</" + name + ">"
 	switch {
 	case readProp(body, name) != "":
 		body = setProp(body, name, value)

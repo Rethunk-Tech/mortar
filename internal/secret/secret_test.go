@@ -33,7 +33,7 @@ func TestGetOutlivesTimeoutThenCaches(t *testing.T) {
 	t.Cleanup(func() { getTimeout = prev })
 	release := make(chan struct{})
 	var reads atomic.Int32
-	keyringGet = func(string) (string, error) {
+	keyringGet = func(string, string) (string, error) {
 		reads.Add(1)
 		<-release
 		return "token", nil
@@ -41,7 +41,7 @@ func TestGetOutlivesTimeoutThenCaches(t *testing.T) {
 	unlocked := make(chan struct{}, 1)
 	OnUnlocked = func() { unlocked <- struct{}{} }
 	t.Cleanup(func() {
-		keyringGet = func(name string) (string, error) { return "", errors.New("unset " + name) }
+		keyringGet = func(_, name string) (string, error) { return "", errors.New("unset " + name) }
 		OnUnlocked = func() {}
 	})
 

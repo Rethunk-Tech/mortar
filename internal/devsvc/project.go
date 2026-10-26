@@ -23,7 +23,7 @@ const propsFile = "Directory.Build.props"
 
 var (
 	categorySlug = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
-	teamPattern  = regexp.MustCompile(`^[A-Za-z0-9_]{1,64}$`)
+	teamPattern  = regexp.MustCompile(`^[A-Za-z0-9](?:[A-Za-z0-9_]{0,62}[A-Za-z0-9])?$`)
 	guidPattern  = regexp.MustCompile(`^[a-z0-9]+(\.[a-z0-9]+)*$`)
 )
 
@@ -279,9 +279,9 @@ func (s *Service) Edit(ctx context.Context, gameID, dir string, e ProjectEdit) (
 	}
 	if old.Team != e.Team {
 		_ = editFile(filepath.Join(p.Dir, "DEVELOPING.md"), func(body string) string {
-			// The keyring commands name the team after "team " and in their label; a longer team that starts with the
-			// old one is another team.
-			return regexp.MustCompile(`(team |Thunderstore )`+regexp.QuoteMeta(old.Team)+`\b`).
+			// The keyring commands name the team as the item's username, in its Windows target and in its label; a
+			// longer team that starts with the old one is another team.
+			return regexp.MustCompile(`(username |thunderstore:|Thunderstore )`+regexp.QuoteMeta(old.Team)+`\b`).
 				ReplaceAllString(body, "${1}"+strings.ReplaceAll(e.Team, "$", "$$"))
 		})
 	}

@@ -20,7 +20,17 @@ const TEAMS_PAGE = 'https://thunderstore.io/settings/teams/'
 const PATH_SEPARATORS = /[/\\]/
 
 // Asks once for a team's service account token, which Mortar keeps in the system keyring.
-function TokenDialog({ onSaved, onClose }: { onSaved: () => void; onClose: () => void }) {
+function TokenDialog({
+  game,
+  dir,
+  onSaved,
+  onClose,
+}: {
+  game: string
+  dir: string
+  onSaved: () => void
+  onClose: () => void
+}) {
   const { t } = useLingui()
   const [token, setToken] = useState('')
   const [saving, save] = usePending()
@@ -45,7 +55,7 @@ function TokenDialog({ onSaved, onClose }: { onSaved: () => void; onClose: () =>
       onSubmit={() =>
         save(
           async () => {
-            await SetThunderstoreToken(token.trim())
+            await SetThunderstoreToken(game, dir, token.trim())
             onSaved()
           },
           { errorTitle: t`Could not save the token` },
@@ -98,15 +108,15 @@ export function UploadDialog({
   const [uploading, upload] = usePending()
   const site = sourceLabel('thunderstore')
   useEffect(() => {
-    HasThunderstoreToken()
+    HasThunderstoreToken(game, dir)
       .then(setHasToken)
       .catch(() => setHasToken(false))
-  }, [])
+  }, [game, dir])
   if (hasToken === null) {
     return null
   }
   if (!hasToken) {
-    return <TokenDialog onSaved={() => setHasToken(true)} onClose={onClose} />
+    return <TokenDialog game={game} dir={dir} onSaved={() => setHasToken(true)} onClose={onClose} />
   }
   const file = zip.split(PATH_SEPARATORS).at(-1) ?? zip
   return (

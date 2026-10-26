@@ -27,7 +27,7 @@ var getTimeout = 3 * time.Second
 var ErrWaitingForUnlock = usererr.New(usererr.Locked, "Waiting for you to unlock the keyring.")
 
 // keyringGet is the backend read, replaced in tests.
-var keyringGet = func(name string) (string, error) { return keyring.Get(service, name) }
+var keyringGet = keyring.Get
 
 // OnUnlocked is called after a read that outlived getTimeout completes, so the app can retry what it deferred.
 var OnUnlocked = func() {}
@@ -48,22 +48,27 @@ var (
 )
 
 // Get returns the secret stored under name.
-func Get(name string) (string, error) {
+func Get(name string) (string, error) { return GetIn(service, name) }
+
+// GetIn returns the secret another program shares under its own service and name, such as a token a mod
+// template's build reads too.
+func GetIn(svc, name string) (string, error) {
+	key := svc + "\n" + name
 	mu.Lock()
-	if v, ok := late[name]; ok {
-		delete(late, name)
+	if v, ok := late[key]; ok {
+		delete(late, key)
 		mu.Unlock()
 		return v, nil
 	}
-	f, running := inflight[name]
+	f, running := inflight[key]
 	if running && f.stuck {
 		mu.Unlock()
 		return "", ErrWaitingForUnlock
 	}
 	if !running {
 		f = &flight{done: make(chan struct{})}
-		inflight[name] = f
-		go run(name, f)
+		inflight[key] = f
+		go run(svc, name, f)
 	}
 	mu.Unlock()
 	select {
@@ -83,18 +88,21 @@ func Get(name string) (string, error) {
 	}
 }
 
-func run(name string, f *flight) {
-	read := keyringGet
+func run(svc, name string, f *flight) {
+	key := svc + "\n" + name
+	var v string
+	var err error
 	if sandbox.InFlatpak() {
-		read = flatpakGet
+		v, err = flatpakGet(flatpakName(svc, name))
+	} else {
+		v, err = keyringGet(svc, name)
 	}
-	v, err := read(name)
 	mu.Lock()
 	f.value, f.err = v, err
-	delete(inflight, name)
+	delete(inflight, key)
 	wasStuck := f.stuck
 	if wasStuck && err == nil {
-		late[name] = v
+		late[key] = v
 	}
 	close(f.done)
 	mu.Unlock()
@@ -104,27 +112,41 @@ func run(name string, f *flight) {
 }
 
 // Set stores value under name, replacing any earlier one.
-func Set(name, value string) error {
-	forget(name)
+func Set(name, value string) error { return SetIn(service, name, value) }
+
+// SetIn stores value under another program's service and name, as GetIn reads it.
+func SetIn(svc, name, value string) error {
+	forget(svc, name)
 	if sandbox.InFlatpak() {
-		return flatpakSet(name, value)
+		return flatpakSet(flatpakName(svc, name), value)
 	}
-	return explain(keyring.Set(service, name, value))
+	return explain(keyring.Set(svc, name, value))
 }
 
-func forget(name string) {
+func forget(svc, name string) {
 	mu.Lock()
-	delete(late, name)
+	delete(late, svc+"\n"+name)
 	mu.Unlock()
 }
 
-// Delete removes the secret under name; one that is already gone is not an error.
-func Delete(name string) error {
-	forget(name)
-	if sandbox.InFlatpak() {
-		return flatpakDelete(name)
+// flatpakName is the sealed file's name for a secret: Mortar's own keep their bare name.
+func flatpakName(svc, name string) string {
+	if svc == service {
+		return name
 	}
-	if err := keyring.Delete(service, name); err != nil && !errors.Is(err, ErrNotFound) {
+	return svc + "." + name
+}
+
+// Delete removes the secret under name; one that is already gone is not an error.
+func Delete(name string) error { return DeleteIn(service, name) }
+
+// DeleteIn removes the secret under another program's service and name.
+func DeleteIn(svc, name string) error {
+	forget(svc, name)
+	if sandbox.InFlatpak() {
+		return flatpakDelete(flatpakName(svc, name))
+	}
+	if err := keyring.Delete(svc, name); err != nil && !errors.Is(err, ErrNotFound) {
 		return explain(err)
 	}
 	return nil

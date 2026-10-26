@@ -144,6 +144,8 @@ func TestEditRefusesBadDetails(t *testing.T) {
 		func(e *ProjectEdit) { e.Description = "a\nb" },
 		func(e *ProjectEdit) { e.Author = " " },
 		func(e *ProjectEdit) { e.Team = "a b" },
+		func(e *ProjectEdit) { e.Team = "_Ab" },
+		func(e *ProjectEdit) { e.Team = "Ab_" },
 		func(e *ProjectEdit) { e.IDPrefix = "Com" },
 		func(e *ProjectEdit) { e.Categories = []string{"Items & More"} },
 	} {
@@ -204,7 +206,7 @@ func TestEditMovesTheTeamInDevelopingMd(t *testing.T) {
 	svc, _ := testService(t, testTemplate)
 	dir := fixtureProject(t, svc)
 	doc := filepath.Join(dir, "DEVELOPING.md")
-	if err := fsx.WriteFile(doc, []byte("- Linux: `secret-tool store --label \"Thunderstore Ab\" service thunderstore team Ab`\n  `New-StoredCredential -Target 'service thunderstore team Ab' -Password <token>`\n- Other: team Abc\n"), 0o600); err != nil {
+	if err := fsx.WriteFile(doc, []byte("- Linux: `secret-tool store --label \"Thunderstore Ab\" service thunderstore username Ab`\n  `New-StoredCredential -Target 'thunderstore:Ab' -Password <token>`\n- Other: username Abc\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := svc.Edit(t.Context(), "lethal-company", dir, ProjectEdit{
@@ -212,9 +214,9 @@ func TestEditMovesTheTeamInDevelopingMd(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	// "team Abc" names another team and stays.
-	if got := read(t, doc); strings.Contains(got, "team Ab\n") || strings.Count(got, "team Bc") != 2 ||
-		!strings.Contains(got, "team Abc") || !strings.Contains(got, "Thunderstore Bc") {
+	// "username Abc" names another team and stays.
+	if got := read(t, doc); strings.Contains(got, "username Ab`") || !strings.Contains(got, "username Bc`") ||
+		!strings.Contains(got, "thunderstore:Bc'") || !strings.Contains(got, "username Abc") || !strings.Contains(got, "Thunderstore Bc") {
 		t.Errorf("DEVELOPING.md = %s", got)
 	}
 }

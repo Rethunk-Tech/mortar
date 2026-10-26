@@ -19,27 +19,61 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
-// thunderstoreToken names the keyring item holding the player's Thunderstore service account token.
-const thunderstoreToken = "thunderstore-token"
+// thunderstoreKeyring is the keyring service a team's Thunderstore service account token is kept under, named by the
+// team: the template's own publish reads the same item.
+const thunderstoreKeyring = "thunderstore"
 
 const thunderstoreSite = "https://thunderstore.io/"
 
-// SetThunderstoreToken keeps a Thunderstore team's service account token in the keyring for uploads.
-func (s *Service) SetThunderstoreToken(token string) error {
+// SetThunderstoreToken keeps the service account token of the project's Thunderstore team in the keyring for uploads.
+func (s *Service) SetThunderstoreToken(gameID, dir, token string) error {
 	if token == "" {
 		return usererr.Wrap(usererr.Invalid, errors.New("the token is empty"))
 	}
-	return secret.Set(thunderstoreToken, token)
+	team, err := s.projectTeam(gameID, dir)
+	if err != nil {
+		return err
+	}
+	return secret.SetIn(thunderstoreKeyring, team, token)
 }
 
-// HasThunderstoreToken reports whether an upload token is kept.
-func (s *Service) HasThunderstoreToken() bool {
-	token, err := secret.Get(thunderstoreToken)
+// HasThunderstoreToken reports whether the project's team has an upload token kept.
+func (s *Service) HasThunderstoreToken(gameID, dir string) bool {
+	team, err := s.projectTeam(gameID, dir)
+	if err != nil {
+		return false
+	}
+	token, err := secret.GetIn(thunderstoreKeyring, team)
 	return err == nil && token != ""
 }
 
-// ForgetThunderstoreToken removes the kept upload token.
-func (s *Service) ForgetThunderstoreToken() error { return secret.Delete(thunderstoreToken) }
+// ForgetThunderstoreToken removes the project's team's kept upload token.
+func (s *Service) ForgetThunderstoreToken(gameID, dir string) error {
+	team, err := s.projectTeam(gameID, dir)
+	if err != nil {
+		return err
+	}
+	return secret.DeleteIn(thunderstoreKeyring, team)
+}
+
+func (s *Service) projectTeam(gameID, dir string) (string, error) {
+	p, err := s.project(gameID, dir)
+	if err != nil {
+		return "", err
+	}
+	csproj, ok := csprojOf(p.Dir)
+	if !ok {
+		return "", usererr.Wrap(usererr.NotFound, errors.New("the project file is missing"))
+	}
+	info, err := readInfo(p.Dir, csproj)
+	if err != nil {
+		return "", err
+	}
+	if info.Team == "" {
+		return "", usererr.Wrap(usererr.Invalid, errors.New("the project names no Thunderstore team"))
+	}
+	return info.Team, nil
+}
 
 type uploadPart struct {
 	PartNumber int    `json:"part_number"`
@@ -76,7 +110,7 @@ func (s *Service) UploadThunderstore(ctx context.Context, gameID, dir string) (s
 	if err != nil {
 		return "", err
 	}
-	token, err := secret.Get(thunderstoreToken)
+	token, err := secret.GetIn(thunderstoreKeyring, info.Team)
 	if err != nil || token == "" {
 		return "", usererr.Wrap(usererr.Permission, errors.New("add a Thunderstore service account token first"))
 	}
