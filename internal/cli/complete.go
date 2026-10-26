@@ -69,6 +69,7 @@ var subverbs = map[string][]string{
 	"problems":   {"dismissed", "dismiss", "restore", "check-updates"},
 	"settings":   {"get", "set", "export", "import", "reset"},
 	"loader":     {"versions", "install", "pin"},
+	"dev":        {"add", "clone"},
 	"logs":       {"search", "share", "fixes"},
 	"updates":    {"apply"},
 }
@@ -139,7 +140,7 @@ func positions(words []string) (gameAt, profileAt, modAt int) {
 		return 0, 0, 0
 	case "profiles", "status", "stop", "sweep":
 		return 1, 0, 0
-	case "loader":
+	case "loader", "dev":
 		return 2, 0, 0
 	case "history":
 		if len(words) > 1 && (words[1] == "diff" || words[1] == "revert" || words[1] == "trim") {

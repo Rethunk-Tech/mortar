@@ -1065,7 +1065,7 @@ func run() error {
 	ctl := &control.Services{
 		Version: version, Settings: store, SettingsSvc: svc, Games: gamesSvc, Store: profiles, Profiles: profileSvc,
 		Problems: problemsSvc, Launches: launches, Saves: savesSvc, Queue: queueSvc, Tools: toolsSvc, SavedGroups: savedGroupsSvc,
-		Nexus: nexusSvc, Shares: shareSvc, Data: dataSvc, Plays: plays, Loaders: loaders, Templates: templatesSvc, Archives: archivesSvc, Bisect: bisectSvc, StoreCheck: checkSvc, Lan: lanSvc, Sync: syncSvc, Updates: updates, Nxm: nxmSvc, Support: supportSvc, Packs: packs,
+		Nexus: nexusSvc, Shares: shareSvc, Data: dataSvc, Plays: plays, Loaders: loaders, Dev: devSvc, Templates: templatesSvc, Archives: archivesSvc, Bisect: bisectSvc, StoreCheck: checkSvc, Lan: lanSvc, Sync: syncSvc, Updates: updates, Nxm: nxmSvc, Support: supportSvc, Packs: packs,
 		Emit: func(name string, data any) {
 			if name == control.InstallAskEvent {
 				toPage(name, data)

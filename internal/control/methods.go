@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/devsvc"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
@@ -87,6 +88,7 @@ type Services struct {
 	Data        *datasvc.Service
 	Plays       *shortcut.Service
 	Loaders     *loadersvc.Service
+	Dev         *devsvc.Service
 	Templates   *templates.Service
 	Archives    *archivesvc.Service
 	// Bisect and StoreCheck are the window's services; nil in tests that do not need them.
@@ -327,6 +329,10 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		// After the reply, so the caller hears back before the app goes away. The pid lets it wait for the exit.
 		go s.Quit()
 		return os.Getpid(), nil
+	case "dev.add":
+		return s.devAdd(ctx, p)
+	case "dev.clone":
+		return s.devClone(ctx, p)
 	case "loader.versions":
 		return s.loaderVersions(ctx, p)
 	case "loader.install":

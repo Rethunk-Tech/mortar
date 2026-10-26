@@ -60,7 +60,7 @@ var verbs = map[string]bool{
 	"templates": true, "library": true, "archive": true,
 	"browse": true,
 	"groups": true, "source": true, "trash": true, "cache": true, "data": true, "store": true, "bisect": true, "lan": true, "app": true, "support": true, "links": true,
-	"update": true, "backups": true, "doctor": true, "launchers": true, "tools": true, "console": true, "screenshots": true, "endorse": true, "sync": true, "settings": true, "antivirus": true, "loader": true, "sweep": true, "uninstall-cleanup": true, "quit": true, "version": true, "--version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
+	"update": true, "backups": true, "doctor": true, "launchers": true, "tools": true, "console": true, "screenshots": true, "endorse": true, "sync": true, "settings": true, "antivirus": true, "loader": true, "dev": true, "sweep": true, "uninstall-cleanup": true, "quit": true, "version": true, "--version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
 }
 
 // Is reports whether args (without the program name) are a command-line call: a known verb, or a bare word that
@@ -127,6 +127,7 @@ type cmd struct {
 	codeFlag       string
 	peerFlag       string
 	loaderFlag     string
+	dirFlag        string
 	previewFlag    bool
 	fileFlag       string
 	versionFlag    string
@@ -389,6 +390,14 @@ func (c *cmd) parse(args []string) error {
 			c.installFlag = strings.TrimPrefix(a, "--install=")
 		case a == "--preview":
 			c.previewFlag = true
+		case a == "--dir":
+			if i+1 >= len(args) {
+				return usageError{"--dir needs a folder"}
+			}
+			i++
+			c.dirFlag = args[i]
+		case strings.HasPrefix(a, "--dir="):
+			c.dirFlag = strings.TrimPrefix(a, "--dir=")
 		case a == "--file":
 			if i+1 >= len(args) {
 				return usageError{"--file needs a value"}
@@ -594,6 +603,8 @@ func (c *cmd) dispatch() error {
 		return c.backups()
 	case "loader":
 		return c.loader()
+	case "dev":
+		return c.dev()
 	case "settings":
 		return c.settings()
 	case "antivirus":
@@ -2528,6 +2539,8 @@ takes --game <id>, which may be left out when exactly one game is installed. Out
   loader versions <game> [--loader id]    loader versions in the store and upstream
   loader install <game> <version> [--loader id]  install that loader version
   loader pin <game> <version|latest> [--loader id]  pin the loader, or follow latest
+  dev add <game> <dir> [--profile id]     add a mod project folder made from the game's template to the Develop tab
+  dev clone <game> <owner/name|url> [--dir parent] [--profile id]  clone a GitHub mod project into parent and add it
   games                                   supported games, whether each is configured
   profiles <game>                         profiles of a game
   profile list <game> <profile> --format md|text  enabled mods (name, version, Nexus link)
