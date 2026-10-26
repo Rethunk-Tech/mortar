@@ -68,13 +68,10 @@ A mod made of files a loader mod reads (no code): suits, posters, boombox tracks
 
 **Done when:** with a test token, Browse lists Timberborn's mod.io mods with all sources sorted by downloads. Installing one checks its MD5, places it in the profile's mod path, and offers its dependencies. A revoked token shows the sign-in prompt.
 
-### The Sims 4 before a release carries it
+### The Sims 4 process names and placement speed
 
-- **Verify** on a real install and record in [games.md](games.md#the-sims-4): the `Options.ini` section header and whether key names match case-insensitively (Mortar's check finds the keys in any section, ignoring case), the letter case of `TS4_x64.exe` (the match is case-sensitive on Linux), and EA's statement of the `.ts4script` depth limit.
 - **Process names:** the `sims4` catalog entry has no `gameProcesses`, so running-game detection falls back to the marker (`GameProcesses` in `internal/game/catalog_only.go`) and misses `TS4_DX9_x64.exe`; add both executables.
-- **NOMAD-only** (Steam under Proton, EA App on Windows): a modded profile launches with its script mods running; the game keeps `scriptmodsenabled` in the profile's `Options.ini` copy after a restart; Tray files appear in the game's library; the player's own Mods, saves and `Options.ini` are identical after quitting.
 - **Decide** how Windows placement copes with large profiles: every Play places every file again (`internal/deploy/place.go`), several times slower on Windows than on Linux (`MORTAR_SCALE=1 go test ./internal/loader/folder -run ThreeThousand -v`). Options: show progress; leave files unchanged since the last Play in place; link files where the volume allows, which needs an answer for a mod that rewrites its own file.
-- **Measure** the same test with the Mods folder inside a signed-in OneDrive folder (`MORTAR_SCALE_MODS=<folder>`, `MORTAR_SCALE_KB=<size>`); it needs a person with a Microsoft account.
 
 ### Lethal Company facts to verify
 
