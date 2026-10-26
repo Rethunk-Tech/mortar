@@ -16,6 +16,17 @@ Decided work, short enough to build cold. Delete an item in the change that land
 - top mods from the sources' APIs, cached in a data file under `web/src/data/` that `bun run site:refresh` writes (`web/scripts/refresh.ts`);
 - an optional hand-written note per game.
 
+### ConfigSync support
+
+Mortar-ConfigSync (`Rethunk-Tech/mortar-lc-configsync`) lets a Lethal Company mod share chosen settings from the host while players are connected, at a level per setting: Host enforced, Host recommended or Client only. Decided with the maintainer:
+
+- **Sidecar file:** when a mod shares a setting, ConfigSync writes `BepInEx/config/<plugin guid>.sync.json` beside the mod's `.cfg`: `{"version":1,"settings":[{"section":"General","key":"Distance","level":"hostEnforced"}]}`, rewritten only when its content changes. It holds no values.
+- **Config editor:** `internal/configsvc/bepinex.go` (`schema`) reads the sidecar for each `.cfg` and gives each entry a `sync` level (`frontend/src/mods/typedConfig/types.ts` `ConfigEntry`). The editor shows a chip (Host enforced, Host recommended) beside the setting, with a tooltip saying what it means; Client only shows nothing. Works with the game closed.
+- **Live host values:** while the game runs, the BepInEx bridge answers a `configsync` query (`internal/bridge/bridge.go` `Query`) with the values the host sent, by mod and setting, read from ConfigSync by reflection, so the bridge needs no dependency on it. The editor shows "Host: <value>" under a shared setting whose value differs from the player's own, refreshed while the editor is open. Needs a bridge release.
+- **Develop:** the template gains a `configSync` bool, required to be off unless `config` is on and `audience` is everyone (`mortar.host.json` `requires`), on by default when allowed. When on, the generated project depends on `Mortar-ConfigSync` and shares its example setting as Host enforced. The catalog's `devTemplate.recommends` (`internal/components/components.json`) lists `Mortar-ConfigSync` for `configSync` `true`, so the Dependencies step ticks it.
+- **Order:** ConfigSync's audit fixes and the sidecar, then its release to Thunderstore (CI and the template's dependency fetch need the package there), then the template option and catalog entry, then the editor chips, then the bridge's live values.
+- **Done when:** a mod sharing a setting shows its chip in the editor with the game closed; with the game running on a client of a host whose value differs, the editor shows the host's value; a new mod with config on and audience everyone builds against ConfigSync and shares its setting.
+
 ### Asset-only mods in Develop
 
 A mod made of files a loader mod reads (no code): suits, posters, boombox tracks, sounds. Decided with the maintainer: the project is a plain folder Mortar packs itself, so no .NET SDK is needed to make a suit; scrap items wait (Later).
