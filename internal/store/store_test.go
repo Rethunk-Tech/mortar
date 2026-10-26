@@ -160,7 +160,7 @@ func TestAddDir(t *testing.T) {
 	if err := fsx.WriteFile(filepath.Join(src, "ConsoleCommands", "manifest.json"), []byte("{}"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := s.AddDir(t.Context(), "stardew", LoaderKey("smapi", "4.1.0"), src); err != nil {
+	if err := s.AddLoaderDir(t.Context(), "stardew", LoaderKey("smapi", "4.1.0"), src); err != nil {
 		t.Fatal(err)
 	}
 	dir, err := s.Path("stardew", "smapi-4.1.0")
@@ -170,8 +170,14 @@ func TestAddDir(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(dir, "ConsoleCommands", "manifest.json")); err != nil {
 		t.Fatal(err)
 	}
-	if err := s.AddDir(t.Context(), "stardew", "smapi-4.1.0", src); err != nil {
+	if err := s.AddLoaderDir(t.Context(), "stardew", "smapi-4.1.0", src); err != nil {
 		t.Fatalf("re-add: %v", err)
+	}
+	if err := s.AddDir(t.Context(), "stardew", "smapi-4.3.0", src); err == nil {
+		t.Error("AddDir took a loader bundle")
+	}
+	if err := s.AddLoaderDir(t.Context(), "stardew", "local-item", src); err == nil {
+		t.Error("AddLoaderDir took a mod")
 	}
 }
 
@@ -258,7 +264,7 @@ func TestCorruptIndexIsSetAsideForInstall(t *testing.T) {
 func TestCollect(t *testing.T) {
 	s := newStore(t)
 	for _, k := range []string{"smapi-1", "smapi-2", "smapi-3", "smapi-4"} {
-		if err := s.AddDir(t.Context(), "stardew", k, t.TempDir()); err != nil {
+		if err := addAnyDir(t, s, "stardew", k, t.TempDir()); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -291,7 +297,7 @@ func TestCollect(t *testing.T) {
 func TestUnreferencedKeepsReferenced(t *testing.T) {
 	s := newStore(t)
 	for _, k := range []string{"smapi-1", "smapi-2"} {
-		if err := s.AddDir(t.Context(), "stardew", k, t.TempDir()); err != nil {
+		if err := addAnyDir(t, s, "stardew", k, t.TempDir()); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -316,7 +322,7 @@ func TestUnreferencedKeepsReferenced(t *testing.T) {
 
 func TestTouchAndCleanup(t *testing.T) {
 	s := newStore(t)
-	if err := s.AddDir(t.Context(), "stardew", "smapi-1", t.TempDir()); err != nil {
+	if err := s.AddLoaderDir(t.Context(), "stardew", "smapi-1", t.TempDir()); err != nil {
 		t.Fatal(err)
 	}
 	if err := s.saveIndex(index{"stardew": {"smapi-1": {Used: time.Unix(0, 0).UTC()}}}); err != nil {
@@ -471,7 +477,7 @@ func TestLoaderOf(t *testing.T) {
 
 func TestCollectWithRetentionOffRestartsTheClock(t *testing.T) {
 	s := newStore(t)
-	if err := s.AddDir(t.Context(), "stardew", "smapi-1", t.TempDir()); err != nil {
+	if err := s.AddLoaderDir(t.Context(), "stardew", "smapi-1", t.TempDir()); err != nil {
 		t.Fatal(err)
 	}
 	old := time.Now().Add(-90 * 24 * time.Hour).UTC()
@@ -535,13 +541,13 @@ func TestKeysWithTheSameBytesShareOneBlobAndAreFoundBySource(t *testing.T) {
 func TestIndexReuseFollowsTheFile(t *testing.T) {
 	s := newStore(t)
 	other := &Store{root: s.root}
-	if err := s.AddDir(t.Context(), "stardew", "smapi-1", t.TempDir()); err != nil {
+	if err := s.AddLoaderDir(t.Context(), "stardew", "smapi-1", t.TempDir()); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := s.Path("stardew", "smapi-1"); err != nil {
 		t.Fatal(err)
 	}
-	if err := other.AddDir(t.Context(), "stardew", "smapi-2", t.TempDir()); err != nil {
+	if err := other.AddLoaderDir(t.Context(), "stardew", "smapi-2", t.TempDir()); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := s.Path("stardew", "smapi-2"); err != nil {
@@ -564,7 +570,7 @@ func BenchmarkPath(b *testing.B) {
 	for i := range 800 {
 		recs["local-"+strings.Repeat("0", 60)+strconv.Itoa(1000+i)] = record{Source: "local", Used: time.Now()}
 	}
-	if err := s.AddDir(b.Context(), "stardew", "smapi-1", b.TempDir()); err != nil {
+	if err := s.AddLoaderDir(b.Context(), "stardew", "smapi-1", b.TempDir()); err != nil {
 		b.Fatal(err)
 	}
 	idx, err := s.loadIndex()
@@ -621,7 +627,7 @@ func TestUnreferencedMatchesReportAndDanglingEntriesArePruned(t *testing.T) {
 		if err := os.WriteFile(filepath.Join(dir, "f"), []byte(k), 0o600); err != nil {
 			t.Fatal(err)
 		}
-		if err := s.AddDir(t.Context(), "stardew", k, dir); err != nil {
+		if err := addAnyDir(t, s, "stardew", k, dir); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -692,7 +698,7 @@ func TestDropSupersededKeepsWhatIsReferencedOrNewest(t *testing.T) {
 		if err := os.WriteFile(filepath.Join(dir, "f"), []byte(content), 0o600); err != nil {
 			t.Fatal(err)
 		}
-		if err := s.AddDir(t.Context(), "lethal-company", key, dir); err != nil {
+		if err := addAnyDir(t, s, "lethal-company", key, dir); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -737,4 +743,12 @@ func TestNexusFileParsesTheKeysNexusKeyMakes(t *testing.T) {
 			t.Errorf("NexusFile(%q) = %d, %d, %v; want %d, %d, %v", tc.key, mod, file, ok, tc.mod, tc.file, tc.ok)
 		}
 	}
+}
+
+func addAnyDir(t *testing.T, s *Store, game, key, dir string) error {
+	t.Helper()
+	if _, _, ok := LoaderOf(key); ok {
+		return s.AddLoaderDir(t.Context(), game, key, dir)
+	}
+	return s.AddDir(t.Context(), game, key, dir)
 }

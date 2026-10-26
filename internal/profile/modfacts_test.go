@@ -20,7 +20,7 @@ func addPackage(t *testing.T, e env, p Profile, name string, files map[string]st
 	for rel, body := range files {
 		writeFile(t, src, rel, body)
 	}
-	if err := e.items.AddDir(t.Context(), "lethal-company", key, src); err != nil {
+	if err := addAnyDir(t, e.items, "lethal-company", key, src); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := e.update("lethal-company", p.ID, func(p *Profile, _ string) error {

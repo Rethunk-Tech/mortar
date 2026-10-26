@@ -228,7 +228,7 @@ func (s *Service) ensureBundled(ctx context.Context, id string) (string, error) 
 	if err := copier.CopyBundled(dir, tmp); err != nil {
 		return "", err
 	}
-	if err := s.items.AddDir(ctx, id, key, tmp); err != nil {
+	if err := s.items.AddLoaderDir(ctx, id, key, tmp); err != nil {
 		return "", err
 	}
 	if s.settings.Get().Loaders[settings.LoaderKey(id, l.ID())] == "" {

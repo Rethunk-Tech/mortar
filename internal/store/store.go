@@ -368,8 +368,24 @@ func (s *Store) AddHashedDir(ctx context.Context, game, srcDir string) (string, 
 }
 
 // AddDir copies srcDir into the store under key, for entries Mortar builds
-// itself. An existing key is left as it is.
+// itself. An existing key is left as it is. A loader bundle is refused: it skips the antivirus scan and installs into
+// every profile, so only AddLoaderDir admits one.
 func (s *Store) AddDir(ctx context.Context, game, key, srcDir string) error {
+	if _, _, ok := LoaderOf(key); ok {
+		return fmt.Errorf("store key %q names a loader bundle", key)
+	}
+	return s.addDir(ctx, game, key, srcDir)
+}
+
+// AddLoaderDir is AddDir for a loader bundle, which Mortar builds from a checked download or the installed game.
+func (s *Store) AddLoaderDir(ctx context.Context, game, key, srcDir string) error {
+	if _, _, ok := LoaderOf(key); !ok {
+		return fmt.Errorf("store key %q is not a loader bundle", key)
+	}
+	return s.addDir(ctx, game, key, srcDir)
+}
+
+func (s *Store) addDir(ctx context.Context, game, key, srcDir string) error {
 	if err := checkKey(game, key); err != nil {
 		return err
 	}

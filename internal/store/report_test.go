@@ -83,7 +83,7 @@ func addTestItem(t *testing.T, s *Store, gameID string, it testItem) {
 	src := t.TempDir()
 	body := `{"Name":"` + it.name + `","UniqueID":"` + it.uniqueID + `","Version":"` + it.version + `"}`
 	testfs.WriteFile(t, src, "manifest.json", body)
-	if err := s.AddDir(t.Context(), gameID, it.key, src); err != nil {
+	if err := addAnyDir(t, s, gameID, it.key, src); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -146,7 +146,7 @@ func TestReportNamesAndGroupsAPackageGamesItemsByTheirThunderstoreManifest(t *te
 		src := t.TempDir()
 		testfs.WriteFile(t, src, "manifest.json", `{"name":"Pkg","version_number":"1.2.0","namespace":"Author"}`)
 		testfs.WriteFile(t, src, "plugins/Pkg.dll", "x")
-		if err := s.AddDir(t.Context(), "lethal-company", key, src); err != nil {
+		if err := addAnyDir(t, s, "lethal-company", key, src); err != nil {
 			t.Fatal(err)
 		}
 	}

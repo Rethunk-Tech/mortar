@@ -133,7 +133,7 @@ func (s *Service) installVersion(ctx context.Context, g game.Game, dir, id, load
 	}
 	bundled := func(got, modsDir string) error {
 		key := store.LoaderKey(l.ID(), got)
-		if err := s.items.AddDir(ctx, id, key, modsDir); err != nil {
+		if err := s.items.AddLoaderDir(ctx, id, key, modsDir); err != nil {
 			return err
 		}
 		return s.applyBundled(id, l, key, fromStart)
@@ -363,7 +363,7 @@ func (s *Service) fetchIntoStore(ctx context.Context, id, loaderID string, rel l
 		return "", err
 	}
 	s.emit(ProgressEvent, Progress{Game: id, Step: loader.StepDownloaded})
-	if err := s.items.AddDir(ctx, id, key, work); err != nil {
+	if err := s.items.AddLoaderDir(ctx, id, key, work); err != nil {
 		return "", err
 	}
 	return s.items.Path(id, key)

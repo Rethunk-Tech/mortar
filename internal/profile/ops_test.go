@@ -47,7 +47,7 @@ func (e env) item(t *testing.T, key string, files map[string]string) {
 	for rel, body := range files {
 		writeFile(t, src, rel, body)
 	}
-	if err := e.items.AddDir(t.Context(), "stardew", key, src); err != nil {
+	if err := addAnyDir(t, e.items, "stardew", key, src); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -869,4 +869,12 @@ func TestCreateWhileASyncAddsTheBundledModsToTheNewProfile(t *testing.T) {
 	if !slices.ContainsFunc(p.Entries, func(en Entry) bool { return en.Key == b.Key }) {
 		t.Errorf("the new profile lacks the bundled mods: %+v", p.Entries)
 	}
+}
+
+func addAnyDir(t *testing.T, s *store.Store, game, key, dir string) error {
+	t.Helper()
+	if _, _, ok := store.LoaderOf(key); ok {
+		return s.AddLoaderDir(t.Context(), game, key, dir)
+	}
+	return s.AddDir(t.Context(), game, key, dir)
 }

@@ -16,7 +16,7 @@ func TestTheCatalogBridgeIsNamedWithoutAManifestNamespace(t *testing.T) {
 	testfs.WriteFile(t, src, "manifest.json", `{"name":"MortarBepInExBridge","version_number":"0.2.4","website_url":"","description":"","dependencies":[]}`)
 	testfs.WriteFile(t, src, filepath.Join("plugins", "MortarBepInExBridge.dll"), "MZ")
 	key := store.BridgeKey("0.2.4", "abc123")
-	if err := e.items.AddDir(t.Context(), "lethal-company", key, src); err != nil {
+	if err := addAnyDir(t, e.items, "lethal-company", key, src); err != nil {
 		t.Fatal(err)
 	}
 	mods, ok, err := e.packageMods("lethal-company", key, "")

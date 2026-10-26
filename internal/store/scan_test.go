@@ -96,7 +96,7 @@ func TestLoaderBundlesAreNotScanned(t *testing.T) {
 	f := &fakeScanner{hit: &avscan.Detection{Name: "Heuristic"}}
 	s, _ := scanned(t, f)
 	dir := t.TempDir()
-	if err := s.AddDir(t.Context(), "lethal-company", LoaderKey("bepinex5", "5.4.2"), dir); err != nil {
+	if err := s.AddLoaderDir(t.Context(), "lethal-company", LoaderKey("bepinex5", "5.4.2"), dir); err != nil {
 		t.Fatalf("loader bundle was scanned: %v", err)
 	}
 	if f.calls != 0 {
