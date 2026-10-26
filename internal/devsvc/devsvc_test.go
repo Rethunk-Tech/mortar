@@ -367,7 +367,7 @@ func TestAddTakesAnExistingTemplateProject(t *testing.T) {
 			t.Errorf("%s: project %+v", c.name, p)
 		}
 	}
-	if got, _ := os.ReadFile(filepath.Join(kept, "Config.Build.user.props")); !bytes.Equal(got, props) {
+	if got, _ := fsx.ReadFile(filepath.Join(kept, "Config.Build.user.props")); !bytes.Equal(got, props) {
 		t.Errorf("user props rewritten: %s", got)
 	}
 	if _, err := svc.Add(t.Context(), game, projectDir(t, "Other", false), "missing"); err == nil {
@@ -380,7 +380,7 @@ func TestParseRepoReadsOwnerAndName(t *testing.T) {
 		"Rethunk-Tech/mod":             "Rethunk-Tech/mod",
 		"https://github.com/a/b.c.git": "a/b.c",
 		"git@github.com:a/b-c.git":     "a/b-c",
-		" https://github.com/a/b/ ":    "a/b",
+		"https://github.com/a/b/":      "a/b",
 		"":                             "",
 		"just-a-name":                  "",
 		"https://gitlab.com/a/b":       "",

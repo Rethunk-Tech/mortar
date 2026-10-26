@@ -19,9 +19,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
-var (
-	githubRepo = regexp.MustCompile(`^(?:https://github\.com/|git@github\.com:)?([A-Za-z0-9][A-Za-z0-9-]{0,38})/([A-Za-z0-9._-]{1,100}?)(?:\.git)?/?$`)
-)
+var githubRepo = regexp.MustCompile(`^(?:https://github\.com/|git@github\.com:)?([A-Za-z0-9][A-Za-z0-9-]{0,38})/([A-Za-z0-9._-]{1,100}?)(?:\.git)?/?$`)
 
 // enroll makes dir's build output an extra mods folder of the project's profile (created as "<game> Development"
 // when profileID is empty, filled from copyFrom) and records the project.
