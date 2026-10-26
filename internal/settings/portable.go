@@ -23,7 +23,7 @@ var portableFields = []string{
 	"density", "uiScale", "theme", "gridCardSize", "showAuthorOnCards", "markLocalMods", "centerConfigControls", "browseCardStats", "reduceMotion", "touchRipples", "profileHero",
 	"reuseFomodChoices", "driftChecks",
 	"autoInstallMortarUpdates", "autoTrackNexus",
-	"lanSharing", "lanPort", "lanAllowAnyAddress", "lanName", "lanAutoAcceptPaired", "downloadFolder", "watchFolders", "syncFolder", "vortexFolder", "packFolder", "alvrProgram",
+	"lanSharing", "lanPort", "lanAllowAnyAddress", "lanName", "lanAutoAcceptPaired", "downloadFolder", "watchFolders", "syncFolder", "vortexFolder", "packFolder",
 	"profileOrder", "autoRetryDownloads", "thunderstoreHost", "sidebarBadges",
 	"shareIncludeDisabledMods", "shareIncludeFomodChoices", "shareIncludeNotes", "shareIncludeConfigFiles", "shareIncludeProblemChoices", "shareIncludeLibraries",
 	"updateDigest", "verifyNexusMD5", "showAdultContent", "launchAtLogin", "startMinimised", "rememberWindow", "systemTitleBar", "extensionConnection",
@@ -104,7 +104,42 @@ func overlayPortable(cur Settings, raw map[string]json.RawMessage, present map[s
 	if err := json.Unmarshal(b, &out); err != nil {
 		return Settings{}, err
 	}
-	return sanitizePortable(out), nil
+	out = sanitizePortable(out)
+	keepLocalOnly(&out, cur)
+	return out, nil
+}
+
+// keepLocalOnly puts back, from cur, the per-game fields that name a program, a build or a place Mortar reads mods
+// from or writes to. An imported file never sets them, so what a file carries there is dropped and the player's own
+// stay. A launch preset keeps its name and options but loses its prefix command and environment.
+func keepLocalOnly(out *Settings, cur Settings) {
+	for id, g := range cur.Games {
+		if g != nil && out.Games[id] == nil {
+			if out.Games == nil {
+				out.Games = map[string]*GameSettings{}
+			}
+			c := *g
+			out.Games[id] = &c
+		}
+	}
+	for id, dst := range out.Games {
+		if dst == nil {
+			continue
+		}
+		var local GameSettings
+		if g := cur.Games[id]; g != nil {
+			local = *g
+		}
+		dst.DevProjects = local.DevProjects
+		dst.ExtraModsFolder = local.ExtraModsFolder
+		dst.ExtraModsProfiles = local.ExtraModsProfiles
+		dst.SyncOwnFolder = local.SyncOwnFolder
+		dst.BackupLocation = local.BackupLocation
+		for i := range dst.LaunchPresetTemplates {
+			dst.LaunchPresetTemplates[i].Prefix = ""
+			dst.LaunchPresetTemplates[i].Env = ""
+		}
+	}
 }
 
 // ParseExport validates an export. Unknown fields are ignored; each portable value is sanitised as on load.

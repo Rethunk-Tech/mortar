@@ -89,6 +89,8 @@ func TestAutoEnableRequirementsAlwaysOnly(t *testing.T) {
 	}
 }
 
+var localOnlyKeys = []string{"antivirusSocket", "antivirusCommand", "alvrProgram", "extraModsFolder", "syncOwnFolder", "backupLocation"}
+
 func TestPrefsExportImportRoundTrip(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	datadirtest.Use(t, t.TempDir())
@@ -168,8 +170,13 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 	}
 	for _, key := range registry {
 		// A command to run never travels in an export: an imported file must not be able to name a program.
-		if key.spec.Key == "antivirusSocket" || key.spec.Key == "antivirusCommand" {
-			if have, _ := got.LookupGame(key.spec.Key, ""); have != "" {
+		// The same holds for a program (alvrProgram) and a game's own mods, sync and backup folders.
+		if slices.Contains(localOnlyKeys, key.spec.Key) {
+			game := ""
+			if key.spec.Scope == ScopeGame {
+				game = "stardew"
+			}
+			if have, _ := got.LookupGame(key.spec.Key, game); have != "" {
 				t.Fatalf("%s travelled in the export: %q", key.spec.Key, have)
 			}
 			continue
@@ -186,6 +193,47 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		if err != nil || have != want {
 			t.Fatalf("%s: want %q got %q %v", key.spec.Key, want, have, err)
 		}
+	}
+}
+
+// An imported file cannot add a build project, a mods folder or a launch prefix, and the player's own stay.
+func TestImportKeepsLocalOnlyGameFields(t *testing.T) {
+	file := Defaults()
+	file.Games = map[string]*GameSettings{}
+	gp := file.GamePrefs("stardew")
+	file.Games["stardew"] = &gp
+	gp.DevProjects = []DevProject{{Dir: "/evil", Name: "x", Watch: true}}
+	gp.ExtraModsFolder = "/evil"
+	gp.ExtraModsProfiles = map[string]string{"/evil": "p"}
+	gp.SyncOwnFolder = "/evil"
+	gp.BackupLocation = "/evil"
+	gp.LaunchPresetTemplates = []LaunchPresetTemplate{{Name: "VR", Options: "-vr", Prefix: "/evil/run", Env: "A=1"}}
+	b, err := MarshalExport(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+	parsed, present, err := ParseExport(b)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cur := Defaults()
+	mine := cur.GamePrefs("stardew")
+	mine.DevProjects = []DevProject{{Dir: "/mine", Name: "m"}}
+	mine.ExtraModsFolder = "/mine"
+	cur.Games = map[string]*GameSettings{"stardew": &mine}
+	ApplyExport(&cur, parsed, present)
+	got := cur.GamePrefs("stardew")
+	if len(got.DevProjects) != 1 || got.DevProjects[0].Dir != "/mine" || got.ExtraModsFolder != "/mine" {
+		t.Fatalf("local fields lost: %+v %q", got.DevProjects, got.ExtraModsFolder)
+	}
+	if got.ExtraModsProfiles != nil || got.SyncOwnFolder != "" || got.BackupLocation != "" {
+		t.Fatalf("imported folders kept: %+v", got)
+	}
+	if len(got.LaunchPresetTemplates) != 1 || got.LaunchPresetTemplates[0].Options != "-vr" || got.LaunchPresetTemplates[0].Prefix != "" || got.LaunchPresetTemplates[0].Env != "" {
+		t.Fatalf("preset = %+v", got.LaunchPresetTemplates)
+	}
+	if parsed.GamePrefs("stardew").DevProjects != nil {
+		t.Fatal("a parsed export carries a dev project")
 	}
 }
 
