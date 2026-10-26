@@ -4,7 +4,6 @@ package devsvc
 
 import (
 	"context"
-	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -233,33 +232,7 @@ func (s *Service) Create(ctx context.Context, m NewMod) (settings.DevProject, er
 		return settings.DevProject{}, err
 	}
 	s.commit(ctx, dest, m.GitHub, m.Name)
-	profileID := m.Profile
-	if profileID == "" {
-		name := m.Game
-		if info, ok := components.Game(m.Game); ok {
-			name = info.Name
-		}
-		p, err := s.Profiles.Create(m.Game, name+" Development")
-		if err != nil {
-			return settings.DevProject{}, err
-		}
-		profileID = p.ID
-		if m.CopyFrom != "" {
-			if err := s.copyMods(m.Game, m.CopyFrom, profileID); err != nil {
-				return settings.DevProject{}, err
-			}
-		}
-	}
-	// The template builds an unpacked package here; it exists before the first build so the folder watch can start.
-	output := filepath.Join(dest, "artifacts", "bin", m.Name, "debug")
-	if err := os.MkdirAll(output, 0o750); err != nil {
-		return settings.DevProject{}, err
-	}
-	p := settings.DevProject{Dir: dest, Name: m.Name, Profile: profileID, Output: output}
-	if icon, err := fsx.ReadFile(filepath.Join(dest, "icon.png")); err == nil {
-		p.TemplateIcon = fmt.Sprintf("%x", sha256.Sum256(icon))
-	}
-	return p, s.Settings.AddDevProject(m.Game, p)
+	return s.enroll(m.Game, dest, m.Name, m.Profile, m.CopyFrom)
 }
 
 // instantiate runs `dotnet new` on the template in raw, in Mortar's own template hive so nothing is installed for

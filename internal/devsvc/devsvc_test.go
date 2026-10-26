@@ -312,3 +312,120 @@ func TestCreateCopiesModsIntoTheNewProfile(t *testing.T) {
 		t.Fatal("copied from a profile that does not exist")
 	}
 }
+
+// writeAll writes a file and the folders above it.
+func writeAll(path string, body []byte, mode os.FileMode) error {
+	if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
+		return err
+	}
+	return os.WriteFile(path, body, mode)
+}
+
+func projectDir(t *testing.T, name string, record bool) string {
+	t.Helper()
+	dir := t.TempDir()
+	if err := writeAll(filepath.Join(dir, "src", name, name+".csproj"), []byte("<Project/>"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if record {
+		if err := writeAll(filepath.Join(dir, ".mortar", "template.json"), []byte(`{"name": "`+name+`"}`), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	return dir
+}
+
+func TestAddTakesAnExistingTemplateProject(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	const game = "lethal-company"
+	props := []byte("<Project/>")
+	kept := projectDir(t, "Kept", true)
+	if err := writeAll(filepath.Join(kept, "Config.Build.user.props"), props, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	recorded := projectDir(t, "Twice", false)
+	if _, err := svc.Add(t.Context(), game, recorded, ""); err != nil {
+		t.Fatal(err)
+	}
+	for _, c := range []struct {
+		name, dir string
+		ok        bool
+	}{
+		{"valid, name from the folder", projectDir(t, "ShopDrop", false), true},
+		{"valid, name from the record", projectDir(t, "Named", true), true},
+		{"existing user props", kept, true},
+		{"not a project", t.TempDir(), false},
+		{"already recorded", recorded, false},
+		{"relative", "mods/here", false},
+	} {
+		p, err := svc.Add(t.Context(), game, c.dir, "")
+		if (err == nil) != c.ok {
+			t.Errorf("%s: err = %v", c.name, err)
+			continue
+		}
+		if c.ok && (p.Dir != c.dir || p.Profile == "" || p.Output != filepath.Join(c.dir, "artifacts", "bin", p.Name, "debug")) {
+			t.Errorf("%s: project %+v", c.name, p)
+		}
+	}
+	if got, _ := os.ReadFile(filepath.Join(kept, "Config.Build.user.props")); !bytes.Equal(got, props) {
+		t.Errorf("user props rewritten: %s", got)
+	}
+	if _, err := svc.Add(t.Context(), game, projectDir(t, "Other", false), "missing"); err == nil {
+		t.Error("added into a profile that does not exist")
+	}
+}
+
+func TestParseRepoReadsOwnerAndName(t *testing.T) {
+	for in, want := range map[string]string{
+		"Rethunk-Tech/mod":             "Rethunk-Tech/mod",
+		"https://github.com/a/b.c.git": "a/b.c",
+		"git@github.com:a/b-c.git":     "a/b-c",
+		" https://github.com/a/b/ ":    "a/b",
+		"":                             "",
+		"just-a-name":                  "",
+		"https://gitlab.com/a/b":       "",
+		"a/b/c":                        "",
+		"-a/b":                         "",
+		"a/../b":                       "",
+	} {
+		owner, name, err := ParseRepo(in)
+		if got := owner + "/" + name; (want == "") != (err != nil) || (err == nil && got != want) {
+			t.Errorf("%q -> %q, %v", in, got, err)
+		}
+	}
+}
+
+func TestCloneRemovesWhatIsNotAProject(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	parent := t.TempDir()
+	clone := func(files bool) func(context.Context, string, string, ...string) ([]byte, error) {
+		return func(_ context.Context, dir, name string, args ...string) ([]byte, error) {
+			if name == "gh" && args[0] == "api" {
+				return nil, errors.New("signed out")
+			}
+			if name != "git" || args[0] != "clone" || args[1] != "https://github.com/o/shop.git" {
+				return nil, errors.New("unexpected " + name)
+			}
+			out := filepath.Join(dir, args[2])
+			if files {
+				return nil, writeAll(filepath.Join(out, "src", "Shop", "Shop.csproj"), []byte("<Project/>"), 0o644)
+			}
+			return nil, os.MkdirAll(out, 0o750)
+		}
+	}
+	svc.Run = clone(false)
+	if _, err := svc.Clone(t.Context(), "lethal-company", "o/shop", parent, ""); err == nil {
+		t.Fatal("a repository without the template's layout was added")
+	}
+	if _, err := os.Stat(filepath.Join(parent, "shop")); err == nil {
+		t.Error("the refused clone was left behind")
+	}
+	svc.Run = clone(true)
+	p, err := svc.Clone(t.Context(), "lethal-company", "https://github.com/o/shop", parent, "")
+	if err != nil || p.Name != "Shop" || p.Dir != filepath.Join(parent, "shop") {
+		t.Fatalf("clone = %+v, %v", p, err)
+	}
+	if _, err := svc.Clone(t.Context(), "lethal-company", "o/shop", parent, ""); err == nil {
+		t.Error("cloned over an existing folder")
+	}
+}
