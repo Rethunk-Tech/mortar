@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -121,7 +122,16 @@ func (s *Service) Add(ctx context.Context, gameID, dir, profileID string) (setti
 			return settings.DevProject{}, err
 		}
 	}
-	return s.enroll(gameID, dir, name, profileID, "")
+	p, err := s.enroll(gameID, dir, name, profileID, "")
+	if err != nil {
+		return p, err
+	}
+	// The profile gets the mod from its build output, so a project is built once as it joins; a failed build is
+	// the project's to fix and leaves it added.
+	if res, err := s.Build(ctx, gameID, dir); err != nil || !res.OK {
+		log.Printf("devsvc: first build of %s: ok=%v %v", name, res.OK, err)
+	}
+	return p, nil
 }
 
 // ParseRepo reads owner/name, or a github.com address (https or git@), as owner and name.

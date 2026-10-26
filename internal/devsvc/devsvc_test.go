@@ -336,7 +336,7 @@ func projectDir(t *testing.T, name string, record bool) string {
 }
 
 func TestAddTakesAnExistingTemplateProject(t *testing.T) {
-	svc, _ := testService(t, testTemplate)
+	svc, run := testService(t, testTemplate)
 	const game = "lethal-company"
 	props := []byte("<Project/>")
 	kept := projectDir(t, "Kept", true)
@@ -346,6 +346,9 @@ func TestAddTakesAnExistingTemplateProject(t *testing.T) {
 	recorded := projectDir(t, "Twice", false)
 	if _, err := svc.Add(t.Context(), game, recorded, ""); err != nil {
 		t.Fatal(err)
+	}
+	if !slices.ContainsFunc(run.calls, func(c []string) bool { return slices.Equal(c[:2], []string{"dotnet", "build"}) }) {
+		t.Errorf("an added project is not built, so its profile lacks the mod: %v", run.calls)
 	}
 	for _, c := range []struct {
 		name, dir string
