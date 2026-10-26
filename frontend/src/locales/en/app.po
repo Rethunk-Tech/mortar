@@ -3979,6 +3979,10 @@ msgstr "Four Corners farm"
 msgid "Upload {name} to {source}?"
 msgstr "Upload {name} to {source}?"
 
+#: src/develop/ProjectCard.tsx
+msgid "Changed since the last build"
+msgstr "Changed since the last build"
+
 #: src/firstrun/ProfileStep.tsx
 msgid "An empty profile. Add mods from {source} or from archives."
 msgstr "An empty profile. Add mods from {source} or from archives."

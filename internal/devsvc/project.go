@@ -6,11 +6,13 @@ import (
 	"errors"
 	"fmt"
 	"html"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/modpic"
@@ -44,6 +46,10 @@ type ProjectInfo struct {
 	Icon string `json:"icon"`
 	// Git is the working tree's state, nil when the project is not a git repository or git is missing.
 	Git *GitState `json:"git"`
+	// BuiltAt is when the debug build's output was written, in Unix ms; 0 before the first build.
+	BuiltAt int64 `json:"builtAt"`
+	// Stale is set when a source or asset file changed after that build.
+	Stale bool `json:"stale"`
 }
 
 // GitState is what a project card shows of its repository.
@@ -133,6 +139,7 @@ func (s *Service) Inspect(ctx context.Context, gameID, dir string) (ProjectInfo,
 	}
 	info.Icon = iconData(p.Dir)
 	info.Git = s.gitState(ctx, p.Dir)
+	info.BuiltAt, info.Stale = buildState(p)
 	base := strings.TrimSuffix(filepath.Base(csproj), ".csproj")
 	if base != p.Name {
 		if err := s.follow(gameID, p, base); err != nil {
@@ -140,6 +147,41 @@ func (s *Service) Inspect(ctx context.Context, gameID, dir string) (ProjectInfo,
 		}
 	}
 	return info, nil
+}
+
+// buildState reads the last build from the files, so it survives a restart: the newest DLL in the output, and whether
+// anything under src/ (build folders aside) or assets/ is newer.
+func buildState(p settings.DevProject) (int64, bool) {
+	dlls, _ := filepath.Glob(filepath.Join(p.Output, "*.dll"))
+	var built time.Time
+	for _, d := range dlls {
+		if fi, err := os.Stat(d); err == nil && fi.ModTime().After(built) {
+			built = fi.ModTime()
+		}
+	}
+	if built.IsZero() {
+		return 0, false
+	}
+	stale := false
+	for _, root := range []string{filepath.Join(p.Dir, "src"), filepath.Join(p.Dir, "assets")} {
+		_ = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+			if err != nil || stale {
+				return filepath.SkipDir
+			}
+			if d.IsDir() {
+				if n := d.Name(); n == "bin" || n == "obj" {
+					return filepath.SkipDir
+				}
+				return nil
+			}
+			if fi, err := d.Info(); err == nil && fi.ModTime().After(built) {
+				stale = true
+				return filepath.SkipAll
+			}
+			return nil
+		})
+	}
+	return built.UnixMilli(), stale
 }
 
 // iconPx is the size the card's icon is shrunk to: twice what it draws, so it stays sharp on a dense screen.

@@ -3979,6 +3979,10 @@ msgstr ""
 msgid "Upload {name} to {source}?"
 msgstr ""
 
+#: src/develop/ProjectCard.tsx
+msgid "Changed since the last build"
+msgstr ""
+
 #: src/firstrun/ProfileStep.tsx
 msgid "An empty profile. Add mods from {source} or from archives."
 msgstr ""

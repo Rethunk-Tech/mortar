@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -73,6 +74,33 @@ func TestInspectReadsTheProjectFiles(t *testing.T) {
 	}
 	if info, err = svc.Inspect(t.Context(), "lethal-company", dir); err != nil || !strings.HasPrefix(info.Icon, "data:image/png;base64,") {
 		t.Fatalf("icon = %.40q, %v", info.Icon, err)
+	}
+	if info.BuiltAt != 0 || info.Stale {
+		t.Fatalf("unbuilt: %d %v", info.BuiltAt, info.Stale)
+	}
+	// A build found on disk counts, and a source written after it makes it stale.
+	p := svc.Settings.Get().GamePrefs("lethal-company").DevProjects[0]
+	dll := filepath.Join(p.Output, "com.ab.ShopDrop.dll")
+	if err := os.MkdirAll(p.Output, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := fsx.WriteFile(dll, nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	old := time.Now().Add(-time.Hour)
+	for _, f := range []string{"ShopDrop.csproj", "Plugin.cs"} {
+		if err := os.Chtimes(filepath.Join(dir, "src", "ShopDrop", f), old, old); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if info, _ = svc.Inspect(t.Context(), "lethal-company", dir); info.BuiltAt == 0 || info.Stale {
+		t.Fatalf("current build: %d %v", info.BuiltAt, info.Stale)
+	}
+	if err := os.Chtimes(dll, old.Add(-time.Hour), old.Add(-time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	if info, _ = svc.Inspect(t.Context(), "lethal-company", dir); !info.Stale {
+		t.Fatal("a source newer than the build is not stale")
 	}
 }
 
