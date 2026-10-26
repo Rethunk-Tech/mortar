@@ -19,8 +19,9 @@ import (
 const menuMarker = ".menu-next-launch"
 
 // armIntroSkip sets the intro request of the profile's loader for this launch: to the menu when a crash check asked,
-// else the boot animations when the skipIntro setting is on, else none.
-func (s *Service) armIntroSkip(g game.Game, l loader.Loader, profileID, dir string) error {
+// else the boot animations when the skipIntro setting is on, else none. Test copies ask for none: the game's dev helper
+// takes every copy through start-up the same way, and only the first copy could read this request.
+func (s *Service) armIntroSkip(g game.Game, l loader.Loader, profileID, dir string, testCopies bool) error {
 	skipper, ok := l.(loader.IntroSkipper)
 	if !ok {
 		return nil
@@ -33,6 +34,7 @@ func (s *Service) armIntroSkip(g game.Game, l loader.Loader, profileID, dir stri
 	switch {
 	case err == nil:
 		skip = loader.IntroToMenu
+	case testCopies:
 	case s.settings != nil && settings.ResolveAt(s.settings.Get(), "skipIntro", settings.Scope{Game: g.ID(), Install: installOf(g), Profile: profileID}, launchOverrides(s.profiles, g.ID(), profileID)) == "true":
 		skip = loader.IntroAnimations
 	}

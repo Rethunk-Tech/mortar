@@ -31,7 +31,7 @@ func TestALaunchArmsTheBridgesIntroSkipFromTheSettingOrACrashCheck(t *testing.T)
 	l, _ := svc.loaderOf(lc, p.ID)
 	request := func() string {
 		t.Helper()
-		if err := svc.armIntroSkip(g, l, p.ID, dir); err != nil {
+		if err := svc.armIntroSkip(g, l, p.ID, dir, false); err != nil {
 			t.Fatal(err)
 		}
 		b, err := fsx.ReadFile(filepath.Join(dir, filepath.FromSlash(loader.IntroSkipFile)))
@@ -56,6 +56,13 @@ func TestALaunchArmsTheBridgesIntroSkipFromTheSettingOrACrashCheck(t *testing.T)
 	}
 	if got := request(); got != "intro" {
 		t.Fatalf("the setting skips the animations only, got %q", got)
+	}
+	// Test copies leave start-up to the dev helper, setting or not.
+	if err := svc.armIntroSkip(g, l, p.ID, dir, true); err != nil {
+		t.Fatal(err)
+	}
+	if b, err := fsx.ReadFile(filepath.Join(dir, filepath.FromSlash(loader.IntroSkipFile))); err == nil && len(b) > 0 {
+		t.Fatalf("test copies asked for %q", b)
 	}
 	if _, err := profiles.SetOverride(lc, p.ID, "skipIntro", "false"); err != nil {
 		t.Fatal(err)

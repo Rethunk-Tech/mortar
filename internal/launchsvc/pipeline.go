@@ -80,7 +80,8 @@ func (s *Service) launchPlan(ctx context.Context, g game.Game, inst game.Install
 	if err := l.Contribute(ctx, plan, view); err != nil {
 		return nil, err
 	}
-	if err := s.armIntroSkip(g, l, profileID, view.Dir); err != nil {
+	_, testCopies := ctx.Value(instancesKey{}).(int)
+	if err := s.armIntroSkip(g, l, profileID, view.Dir, testCopies); err != nil {
 		return nil, err
 	}
 	if err := s.writeHiddenLogSources(ctx, g.ID(), view.Dir); err != nil {
