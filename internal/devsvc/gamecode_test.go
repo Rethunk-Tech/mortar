@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -128,5 +129,15 @@ func TestUsagesSearchesTheListedAssemblies(t *testing.T) {
 	got, err := svc.Usages("lethal-company", dir, "Fixture.Mod::set_Own")
 	if err != nil || len(got) != 1 || got[0].Caller != "Fixture.Mod::SwitchTool" || got[0].Label != "Assembly-CSharp.dll" {
 		t.Fatalf("usages = %+v, %v", got, err)
+	}
+}
+
+func TestWriteUserPropsEscapesTheGamePathForMSBuild(t *testing.T) {
+	dir := t.TempDir()
+	if err := writeUserProps(dir, filepath.Join(t.TempDir(), "50%25 off")); err != nil {
+		t.Fatal(err)
+	}
+	if body, _ := fsx.ReadFile(filepath.Join(dir, "Config.Build.user.props")); !strings.Contains(string(body), "50%2525 off") {
+		t.Errorf("props = %s", body)
 	}
 }

@@ -460,7 +460,7 @@ func writeUserProps(dir, gameDir string) error {
 	if gameDir == "" {
 		return nil
 	}
-	body := "<Project>\n  <PropertyGroup>\n    <GameRootDir>" + xmlEscape(filepath.Clean(gameDir)+string(filepath.Separator)) + "</GameRootDir>\n  </PropertyGroup>\n</Project>\n"
+	body := "<Project>\n  <PropertyGroup>\n    <GameRootDir>" + xmlEscape(msbuildEscape.Replace(filepath.Clean(gameDir)+string(filepath.Separator))) + "</GameRootDir>\n  </PropertyGroup>\n</Project>\n"
 	return fsx.WriteFile(filepath.Join(dir, "Config.Build.user.props"), []byte(body), 0o600)
 }
 
