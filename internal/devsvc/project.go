@@ -74,10 +74,17 @@ func readProp(body, name string) string {
 	if m == nil {
 		return ""
 	}
-	return html.UnescapeString(strings.TrimSpace(m[2]))
+	return msbuildUnescape.Replace(html.UnescapeString(strings.TrimSpace(m[2])))
 }
 
-// setProp sets the first <name> element's text to value, XML-escaped; a file without the element is left alone.
+// MSBuild expands $(), @(), %XX and splits on ; in a property's text, so the characters it reads specially are written
+// as %XX. The XML escape runs last: escaping first would turn the ; of &lt; into %3B and break the entity.
+var (
+	msbuildEscape   = strings.NewReplacer("%", "%25", "$", "%24", "@", "%40", ";", "%3B", "'", "%27", "*", "%2A", "?", "%3F")
+	msbuildUnescape = strings.NewReplacer("%25", "%", "%24", "$", "%40", "@", "%3B", ";", "%27", "'", "%2A", "*", "%3F", "?")
+)
+
+// setProp sets the first <name> element's text to value, MSBuild- and XML-escaped; a file without the element is left alone.
 func setProp(body, name, value string) string {
 	re := propPattern(name)
 	done := false
@@ -87,7 +94,7 @@ func setProp(body, name, value string) string {
 		}
 		done = true
 		parts := re.FindStringSubmatch(m)
-		return parts[1] + xmlEscape(value) + parts[3]
+		return parts[1] + xmlEscape(msbuildEscape.Replace(value)) + parts[3]
 	})
 }
 

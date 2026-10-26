@@ -154,3 +154,15 @@ func TestEditRefusesBadDetails(t *testing.T) {
 		}
 	}
 }
+
+func TestSetPropEscapesWhatMSBuildExpands(t *testing.T) {
+	const text = "Costs $(Version) 100%3B more @(Compile); it's <b> *?"
+	body := "<Project><PropertyGroup><Description>x</Description></PropertyGroup></Project>"
+	out := setProp(body, "Description", text)
+	if strings.Contains(out, "$(Version)") || strings.Contains(out, "@(Compile)") {
+		t.Fatalf("MSBuild would expand the value: %s", out)
+	}
+	if got := readProp(out, "Description"); got != text {
+		t.Fatalf("round trip = %q, want %q", got, text)
+	}
+}
