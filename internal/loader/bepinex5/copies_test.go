@@ -74,6 +74,10 @@ func TestBuildCopyRootKeepsTheCopysOwnConfig(t *testing.T) {
 	if got := read(t, filepath.Join(own, "changelog.txt")); got != "v2" {
 		t.Fatalf("file after rebuild = %q", got)
 	}
+	// Replacing the link must not reach through it into the profile.
+	if got := read(t, filepath.Join(profile, "BepInEx", "plugins", "a.dll")); got != "a" {
+		t.Fatalf("the profile's plugin after rebuild = %q", got)
+	}
 }
 
 func TestForCopyRootsTheCopyAndOwnsIt(t *testing.T) {
