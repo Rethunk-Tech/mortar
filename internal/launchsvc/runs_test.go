@@ -402,8 +402,19 @@ func TestCopyLogsReadsEachLaterCopysLog(t *testing.T) {
 	if err := os.Chtimes(filepath.Join(dir, "LogOutput.log.2"), old, old); err != nil {
 		t.Fatal(err)
 	}
-	got := copyLogs(path, true, dir, dir, started, 3)
+	own := filepath.Join(dir, "copy3", "LogOutput.log")
+	if err := os.MkdirAll(filepath.Dir(own), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(own, []byte("own root\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	copyLog := func(n int) string { return filepath.Join(dir, fmt.Sprintf("copy%d", n), "LogOutput.log") }
+	got := copyLogs(path, copyLog, true, dir, dir, started, 3)
 	if !strings.Contains(got, "Copy 2 (LogOutput.log.1):\n[Error  : Unity Log] client") || strings.Contains(got, "old") {
 		t.Fatalf("copy logs = %q", got)
+	}
+	if !strings.Contains(got, "Copy 3 (LogOutput.log):\nown root") {
+		t.Fatalf("copy 3 not read from its own root: %q", got)
 	}
 }

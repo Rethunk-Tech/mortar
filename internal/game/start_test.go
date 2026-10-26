@@ -3,6 +3,7 @@ package game
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -594,6 +595,37 @@ func TestStartSchedulesDirectInstances(t *testing.T) {
 				t.Fatalf("starts %d delays %v, want %d %v", starts, delays, tc.wantStarts, tc.wantDelays)
 			}
 		})
+	}
+}
+
+// A loader's per-copy hook adjusts the plan of copies 2 and up only, on a clone of the plan.
+func TestStartTestCopiesAppliesTheLoadersHookToLaterCopies(t *testing.T) {
+	dir := t.TempDir()
+	plan := vanillaPlan("linux", dir)
+	plan.AddArgs("--target", "profile")
+	plan.ForCopy = func(n int, c *launchplan.Plan) error {
+		c.Args[slices.Index(c.Args, "--target")+1] = fmt.Sprintf("copy%d", n)
+		return nil
+	}
+	var targets []string
+	st := Starter{
+		LookPath: func(string) (string, error) { return "/usr/bin/steam", nil },
+		Timing:   launch.Timing{Timeout: 300 * time.Millisecond, Poll: time.Millisecond},
+		Runner: func(_, _ string, args ...string) (<-chan error, error) {
+			targets = append(targets, args[slices.Index(args, "--target")+1])
+			return make(chan error), nil
+		},
+		Sleep: func(context.Context, time.Duration) error { return nil },
+	}
+	env := StartEnv{Steam: &steam.Steam{Root: t.TempDir()}, Direct: true, Instances: 3, TestCopies: true, Ready: func() bool { return true }}
+	if err := st.Start(t.Context(), Install{Game: "stardew", Dir: dir}, plan, env, nil); err != nil {
+		t.Fatal(err)
+	}
+	if want := []string{"profile", "copy2", "copy3"}; !slices.Equal(targets, want) {
+		t.Fatalf("targets = %v, want %v", targets, want)
+	}
+	if slices.Contains(plan.Args, "copy2") {
+		t.Fatalf("the shared plan changed: %v", plan.Args)
 	}
 }
 

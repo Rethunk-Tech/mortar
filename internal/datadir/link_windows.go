@@ -1,4 +1,4 @@
-package profile
+package datadir
 
 import (
 	"encoding/binary"
@@ -25,9 +25,9 @@ const (
 	maxU32 = 0xFFFFFFFF
 )
 
-// linkDir makes link point at the folder target: a symbolic link when the account may create one, else a directory
+// LinkDir makes link point at the folder target: a symbolic link when the account may create one, else a directory
 // junction, which needs no privilege.
-func linkDir(link, target string) error {
+func LinkDir(link, target string) error {
 	if os.Symlink(target, link) == nil {
 		return nil
 	}

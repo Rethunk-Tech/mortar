@@ -183,7 +183,7 @@ func (s *Store) relocate(game, id, home, target string) error {
 	} else if err := fsx.Rename(home, home+".moving"); err != nil {
 		return errors.Join(err, fsx.RemoveAll(target))
 	}
-	if err := linkDir(home, target); err != nil {
+	if err := datadir.LinkDir(home, target); err != nil {
 		if !linked {
 			_ = fsx.Rename(home+".moving", home)
 		}
@@ -217,7 +217,7 @@ func (s *Store) bringHome(game, id, home string) error {
 		return errors.Join(err, fsx.RemoveAll(tmp))
 	}
 	if err := fsx.Rename(tmp, home); err != nil {
-		return errors.Join(err, linkDir(home, cur))
+		return errors.Join(err, datadir.LinkDir(home, cur))
 	}
 	return fsx.RemoveAll(cur)
 }

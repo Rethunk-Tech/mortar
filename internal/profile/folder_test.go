@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
@@ -95,7 +96,7 @@ func TestMovesRefuseALinkToAFolderMortarDidNotMake(t *testing.T) {
 	if err := os.RemoveAll(home); err != nil {
 		t.Fatal(err)
 	}
-	if err := linkDir(home, install); err != nil {
+	if err := datadir.LinkDir(home, install); err != nil {
 		t.Fatal(err)
 	}
 	if err := s.bringHome("stardew", p.ID, home); err == nil {

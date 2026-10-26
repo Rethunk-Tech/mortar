@@ -130,6 +130,7 @@ func (Loader) Contribute(ctx context.Context, plan *launchplan.Plan, p loader.Pr
 		return contributeLinux(plan, p, m)
 	}
 	proton := p.Runtime == "proton" || p.Runtime == "mortar-proton"
+	plan.ForCopy = forCopy(p, proton)
 	plan.AddArgs(LaunchArgs(p.Dir, m.Doorstop, proton)...)
 	if debug {
 		plan.AddArgs("--doorstop-mono-debug-enabled", "true", "--doorstop-mono-debug-address", loader.DebugAddress)
@@ -166,6 +167,7 @@ func contributeLinux(plan *launchplan.Plan, p loader.ProfileView, m marker) erro
 	if err := plan.OverrideExe(ID, filepath.Join(p.InstallDir, g.LinuxMarker)); err != nil {
 		return err
 	}
+	plan.ForCopy = forCopy(p, false)
 	plan.AddArgs(LaunchArgs(p.Dir, m.Doorstop, false)...)
 	target := targetPath(p.Dir, false)
 	if m.Doorstop >= 4 {
@@ -195,13 +197,13 @@ func linuxDoorstop(profileDir string) (string, error) {
 }
 
 // Owns is true for a game process whose Doorstop target is this profile's entry assembly, in either the host or the Wine
-// Z: form Contribute passes it in. A game started without Mortar's flags runs no profile Mortar can name.
+// Z: form Contribute passes it in, or the entry assembly of one of the profile's test copies. A game started without Mortar's flags runs no profile Mortar can name.
 func (Loader) Owns(p loader.Process, prof loader.ProfileView) bool {
 	for i, a := range p.Args[:max(len(p.Args)-1, 0)] {
 		if a != "--doorstop-target" && a != "--doorstop-target-assembly" {
 			continue
 		}
-		if t := p.Args[i+1]; t == targetPath(prof.Dir, false) || t == targetPath(prof.Dir, true) {
+		if t := p.Args[i+1]; t == targetPath(prof.Dir, false) || t == targetPath(prof.Dir, true) || ownsCopyTarget(t, prof) {
 			return true
 		}
 	}

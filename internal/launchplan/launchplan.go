@@ -55,6 +55,9 @@ type Plan struct {
 	Files        []PlanFile
 	ProcessNames []string
 	Version      *VersionManifest
+	// ForCopy, when a loader sets it, adjusts the plan of the n-th (1-based, from 2) copy of a test run, which gets a
+	// clone of the plan whose Args and Env it may change.
+	ForCopy func(n int, copied *Plan) error
 
 	owner string
 }

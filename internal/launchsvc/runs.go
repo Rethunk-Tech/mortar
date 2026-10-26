@@ -411,7 +411,9 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	copies := s.logs[keyOf(g)].progress.Copies
 	s.mu.Unlock()
 	if path, own, err := s.logPath(g.ID(), profileID); err == nil && copies > 1 {
-		text += copyLogs(path, own, s.home, modsDir, started, copies)
+		data, _ := datadir.Dir()
+		copyLog := func(n int) string { return bepinex5.CopyLogPath(data, g.ID(), profileID, n) }
+		text += copyLogs(path, copyLog, own, s.home, modsDir, started, copies)
 	}
 	if s.OnSavePlayed != nil {
 		for _, save := range s.playedSaves(g.ID(), text, started, failed) {
@@ -683,14 +685,17 @@ func (s *Service) runText(g game.Game, profileID, modsDir string, since time.Tim
 	return ""
 }
 
-// copyLogs is the logs of the second and later copies of a run that started several, each under a heading: the
-// first copy holds the loader's log, so BepInEx writes each later one to the next free name, LogOutput.log.1 and on.
-func copyLogs(path string, own bool, home, modsDir string, started time.Time, copies int) string {
+// copyLogs is the logs of the second and later copies of a run that started several, each under a heading. A test
+// copy has a root of its own and writes copyLog(n) there; copies sharing the first one's root get the next free name
+// beside its log, LogOutput.log.1 and on.
+func copyLogs(path string, copyLog func(n int) string, own bool, home, modsDir string, started time.Time, copies int) string {
 	var b strings.Builder
 	for i := 1; i < copies; i++ {
-		name := fmt.Sprintf("%s.%d", path, i)
-		if text, ok := readOwnedLog(name, own, home, modsDir, started); ok {
-			fmt.Fprintf(&b, "\n\nCopy %d (%s):\n%s", i+1, filepath.Base(name), text)
+		for _, name := range []string{copyLog(i + 1), fmt.Sprintf("%s.%d", path, i)} {
+			if text, ok := readOwnedLog(name, own, home, modsDir, started); ok {
+				fmt.Fprintf(&b, "\n\nCopy %d (%s):\n%s", i+1, filepath.Base(name), text)
+				break
+			}
 		}
 	}
 	return b.String()

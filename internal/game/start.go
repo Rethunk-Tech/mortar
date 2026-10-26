@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -105,6 +106,12 @@ func (st Starter) Start(ctx context.Context, inst Install, plan *launchplan.Plan
 			}
 			copied := *plan
 			copied.Args = append(slices.Clone(plan.Args), append(role, "--tile", fmt.Sprintf("%d/%d", i+1, n))...)
+			if i > 0 && plan.ForCopy != nil {
+				copied.Env = maps.Clone(plan.Env)
+				if err := plan.ForCopy(i+1, &copied); err != nil {
+					return err
+				}
+			}
 			one = &copied
 		}
 		if err := st.startOne(ctx, inst, one, env, onLines); err != nil {
