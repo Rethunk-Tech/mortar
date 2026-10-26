@@ -6,6 +6,7 @@ import {
   firstDraft,
   recommendations,
   rememberedOf,
+  requirementIssue,
   stepIssue,
   stepParams,
 } from './draft.ts'
@@ -20,6 +21,7 @@ const param = {
   remember: false,
   pattern: '',
   maxLength: 0,
+  requires: null,
 }
 const form: Form = {
   name: 'Test',
@@ -97,4 +99,31 @@ test('recommended dependencies follow the answers until the player picks their o
   expect(chosenDependencies({ ...picked, dependencies: ['Other-Pick'] }, form)).toEqual([
     'Other-Pick',
   ])
+})
+
+test('a switch that needs another answer says so until that answer is given', () => {
+  const audience = {
+    ...param,
+    id: 'audience',
+    label: 'Audience',
+    description: '',
+    kind: 'choice',
+    default: 'everyone',
+    choices: [
+      { value: 'everyone', label: 'Everyone' },
+      { value: 'host', label: 'Host only' },
+    ],
+  }
+  const netcode = {
+    ...param,
+    id: 'netcode',
+    label: 'Netcode',
+    description: '',
+    kind: 'bool',
+    requires: { audience: 'everyone' },
+  }
+  const all = [audience, netcode]
+  // The template's default answers for an audience never asked.
+  expect(requirementIssue(netcode, {}, all)).toBe('')
+  expect(requirementIssue(netcode, { audience: 'host' }, all)).toContain('Everyone')
 })

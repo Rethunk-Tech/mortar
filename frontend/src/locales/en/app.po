@@ -760,6 +760,10 @@ msgstr "Test with {count} copies"
 msgid "{name} was changed on {machine} and here"
 msgstr "{name} was changed on {machine} and here"
 
+#: src/develop/draft.ts
+msgid "{name} needs {other}: {choice}."
+msgstr "{name} needs {other}: {choice}."
+
 #: src/lan/IncomingPrompt.tsx
 msgid "The mod files can be copied directly from this Mortar."
 msgstr "The mod files can be copied directly from this Mortar."

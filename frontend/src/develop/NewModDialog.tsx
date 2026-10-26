@@ -47,6 +47,7 @@ import {
   REMEMBERED,
   type Remembered,
   rememberedOf,
+  requirementIssue,
   STEPS,
   type Step,
   stepIssue,
@@ -159,10 +160,13 @@ function ParamField({
   param,
   value,
   set,
+  blocked,
 }: {
   param: Param
   value: string
   set: (v: string) => void
+  // Why the switch cannot be turned on with the other answers as they are.
+  blocked: string
 }) {
   if (param.kind === 'choice') {
     return <ChoiceField param={param} value={value} set={set} />
@@ -171,12 +175,18 @@ function ParamField({
     return (
       <FormControlLabel
         sx={{ m: 0, alignItems: 'flex-start', gap: 1 }}
-        control={<Switch checked={value === 'true'} onChange={(_, on) => set(String(on))} />}
+        control={
+          <Switch
+            checked={value === 'true'}
+            disabled={blocked !== '' && value !== 'true'}
+            onChange={(_, on) => set(String(on))}
+          />
+        }
         label={
           <Box sx={{ pt: 0.75 }}>
             <Box sx={{ fontSize: 'medium.fontSize', fontWeight: 500 }}>{param.label}</Box>
             <Box sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
-              {param.description}
+              {blocked || param.description}
             </Box>
           </Box>
         }
@@ -194,13 +204,24 @@ function ParamField({
   )
 }
 
-function Params({ params, draft, set }: { params: Param[]; draft: Draft; set: Set }) {
+function Params({
+  params,
+  all,
+  draft,
+  set,
+}: {
+  params: Param[]
+  all: Param[]
+  draft: Draft
+  set: Set
+}) {
   return params.map((p) => (
     <ParamField
       key={p.id}
       param={p}
       value={draft.values[p.id] ?? ''}
       set={(v) => set({ values: { ...draft.values, [p.id]: v } })}
+      blocked={p.kind === 'bool' ? requirementIssue(p, draft.values, all) : ''}
     />
   ))
 }
@@ -231,7 +252,12 @@ const ModStep = memo(
             onChange={(repo) => set({ repo })}
           />
         </FieldRow>
-        <Params params={stepParams(form, 'mod')} draft={draft} set={set} />
+        <Params
+          params={stepParams(form, 'mod')}
+          all={form?.parameters ?? []}
+          draft={draft}
+          set={set}
+        />
       </>
     )
   },
@@ -495,7 +521,12 @@ export function NewModDialog({
       <Prerequisites tools={tools} form={form} />
       {step === 'mod' ? <ModStep draft={draft} form={form} set={set} /> : null}
       {step === 'author' ? (
-        <Params params={stepParams(form, 'author')} draft={draft} set={set} />
+        <Params
+          params={stepParams(form, 'author')}
+          all={form?.parameters ?? []}
+          draft={draft}
+          set={set}
+        />
       ) : null}
       {step === 'dependencies' ? (
         <DependenciesStep game={game} profile={openId} form={form} draft={draft} set={set} />

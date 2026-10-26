@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"maps"
 	"path/filepath"
 	"regexp"
 	"slices"
@@ -55,7 +56,9 @@ type Param struct {
 	Remember  bool     `json:"remember"`
 	Pattern   string   `json:"pattern"`
 	MaxLength int      `json:"maxLength"`
-	fill      string
+	// Requires names other parameters' values this one needs when it is on (a bool set true, or any value given).
+	Requires map[string]string `json:"requires"`
+	fill     string
 }
 
 // Form is a template's name and the parameters the wizard asks for, in the template's order.
@@ -94,11 +97,12 @@ type symbolJSON struct {
 
 type hostJSON struct {
 	SymbolInfo []struct {
-		ID        string `json:"id"`
-		Remember  bool   `json:"remember"`
-		Fill      string `json:"fill"`
-		Pattern   string `json:"pattern"`
-		MaxLength int    `json:"maxLength"`
+		ID        string            `json:"id"`
+		Remember  bool              `json:"remember"`
+		Fill      string            `json:"fill"`
+		Pattern   string            `json:"pattern"`
+		MaxLength int               `json:"maxLength"`
+		Requires  map[string]string `json:"requires"`
 	} `json:"symbolInfo"`
 }
 
@@ -200,7 +204,17 @@ func applyHost(dir string, all []Param) error {
 				return bad("%s: pattern for %q: %v", hostFile, info.ID, err)
 			}
 		}
+		for id, want := range info.Requires {
+			j := slices.IndexFunc(all, func(p Param) bool { return p.ID == id })
+			if j < 0 {
+				return bad("%s: %q requires %q, which is not a parameter", hostFile, info.ID, id)
+			}
+			if all[j].Kind == "choice" && !slices.ContainsFunc(all[j].Choices, func(c Choice) bool { return c.Value == want }) {
+				return bad("%s: %q requires %q to be %q, which is not one of its choices", hostFile, info.ID, id, want)
+			}
+		}
 		all[i].Remember, all[i].fill, all[i].Pattern, all[i].MaxLength = info.Remember, info.Fill, info.Pattern, info.MaxLength
+		all[i].Requires = info.Requires
 	}
 	return nil
 }
@@ -283,5 +297,38 @@ func (f Form) args(values, fills map[string]string) ([]string, map[string]string
 		}
 		used[p.ID] = v
 	}
+	if err := f.requirements(used); err != nil {
+		return nil, nil, err
+	}
 	return out, used, nil
+}
+
+// requirements refuses a parameter that is on while a value it requires is not set, the template's default counting
+// for a parameter left unasked.
+func (f Form) requirements(used map[string]string) error {
+	for _, p := range f.all {
+		v := used[p.ID]
+		if v == "" || v == "false" || len(p.Requires) == 0 {
+			continue
+		}
+		for _, id := range slices.Sorted(maps.Keys(p.Requires)) {
+			want := p.Requires[id]
+			other := f.all[slices.IndexFunc(f.all, func(q Param) bool { return q.ID == id })]
+			got, ok := used[id]
+			if !ok {
+				got = other.Default
+			}
+			if got != want {
+				return usererr.Wrap(usererr.Invalid, fmt.Errorf("%s needs %s to be %s", p.Label, other.Label, choiceLabel(other, want)))
+			}
+		}
+	}
+	return nil
+}
+
+func choiceLabel(p Param, value string) string {
+	if i := slices.IndexFunc(p.Choices, func(c Choice) bool { return c.Value == value }); i >= 0 && p.Choices[i].Label != "" {
+		return p.Choices[i].Label
+	}
+	return value
 }

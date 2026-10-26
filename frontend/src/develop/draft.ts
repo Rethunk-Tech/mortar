@@ -103,14 +103,35 @@ export function stepParams(form: Form | null, step: Step): Param[] {
   return all.filter((p) => p.remember === (step === 'author'))
 }
 
-function firstIssue(d: Draft, params: Param[]): string {
+function firstIssue(d: Draft, params: Param[], all: Param[]): string {
   for (const p of params) {
-    const issue = paramIssue(p, d.values[p.id] ?? '')
+    const issue = paramIssue(p, d.values[p.id] ?? '') || unmetRequirement(p, d.values, all)
     if (issue) {
       return issue
     }
   }
   return ''
+}
+
+/** Why a parameter cannot be on with the other answers as they are, the template's default standing in for an
+ * unanswered one; empty when it can. */
+export function requirementIssue(p: Param, values: Record<string, string>, all: Param[]): string {
+  for (const [id, want] of Object.entries(p.requires ?? {})) {
+    const other = all.find((q) => q.id === id)
+    if (!other || want === undefined) {
+      continue
+    }
+    if ((values[id] ?? other.default) !== want) {
+      const choice = other.choices?.find((c) => c.value === want)?.label || want
+      return i18n._(msg`${{ name: p.label }} needs ${{ other: other.label }}: ${{ choice }}.`)
+    }
+  }
+  return ''
+}
+
+function unmetRequirement(p: Param, values: Record<string, string>, all: Param[]): string {
+  const v = (values[p.id] ?? '').trim()
+  return v === '' || v === 'false' ? '' : requirementIssue(p, values, all)
 }
 
 /** A package the template's catalog entry recommends, and the answer that brought it in (empty when it always fits). */
@@ -164,7 +185,7 @@ export function stepIssue(d: Draft, form: Form | null, step: Step): string {
       return i18n._(msg`The folder name holds only letters, digits, dots, dashes and underscores.`)
     }
   }
-  const issue = firstIssue(d, stepParams(form, step))
+  const issue = firstIssue(d, stepParams(form, step), form.parameters ?? [])
   if (issue || step !== 'project') {
     return issue
   }
