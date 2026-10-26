@@ -16,6 +16,18 @@ Decided work, short enough to build cold. Delete an item in the change that land
 - top mods from the sources' APIs, cached in a data file under `web/src/data/` that `bun run site:refresh` writes (`web/scripts/refresh.ts`);
 - an optional hand-written note per game.
 
+### Asset-only mods in Develop
+
+A mod made of files a loader mod reads (no code): suits, posters, boombox tracks, sounds. Decided with the maintainer: the project is a plain folder Mortar packs itself, so no .NET SDK is needed to make a suit; scrap items wait (Later).
+
+- **Kinds come from the signed catalog**, beside the loader's `devTemplate` (`internal/components/components.go:481`): `assetKinds`, each with an id, a label, the folder the loader reads below the package (`moresuits/` for suits), the file patterns it takes, the hard dependency (e.g. `x753-More_Suits`) and recommended ones (suits recommend `Verity-TooManySuits`). Each kind's folder and patterns are read from that loader's source, cited by file, before the entry ships; Posters, Boombox and Sounds each name one loader.
+- **The wizard's first step asks what kind of mod**: Code (today's flow) or one of the game's asset kinds. An asset kind skips the template download, the SDK check (`Prerequisites`) and the Dependencies search's template recommends, and asks name, description, author, team and folder.
+- **Create** (`internal/devsvc/devsvc.go:195`) for an asset kind writes `manifest.json` (Thunderstore fields, the kind's dependency), `README.md`, `CHANGELOG.md`, the template's icon, `.gitignore`, the kind's empty folder with a short `README.txt` naming the files it takes, and `.mortar/project.json` recording the kind. Git init and the GitHub repo as for code.
+- **Deploy**: the project folder itself is the development profile's extra mods folder (code projects use the debug output, `devsvc.go:254`), so dropping a PNG in `moresuits/` reaches the profile with no build. Build and watch (`build.go`) are skipped for an asset project.
+- **Pack** (`release.go:45`) for an asset project zips manifest, icon, README, CHANGELOG, LICENSE and the kind's folder into `artifacts/thunderstore/<Team>-<Name>-<version>.zip` with Go, then runs the same `Validate`; version from the latest `vX.Y.Z` tag as for code. Upload and Release reuse the zip unchanged.
+- **Project card**: no build, debug, game-code or dependency-reference actions for an asset project; Add files… opens the kind's folder.
+- **Done when**: a suit project made in the sandbox shows its PNG in the profile through the extra folder, packs a zip Thunderstore's validator accepts, and a code project's flow is unchanged (renders cases for the kind choice and an asset project card).
+
 ### mod.io as a source
 
 **Why:** mod.io is an official mod channel for Blade & Sorcery, BONELAB, Ready or Not, S.T.A.L.K.E.R. 2 and Timberborn, and the only one for Gladio Mori. Outside the catalog it is how Baldur's Gate 3 and Deep Rock Galactic ship mods, and it would bring back Core Keeper (no live source today). Neither r2modman (declined) nor Gale supports it.
