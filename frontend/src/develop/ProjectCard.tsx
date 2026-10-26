@@ -35,6 +35,7 @@ import { relativeWhen } from '../i18n/when.ts'
 import { LetterTile } from '../mods/LetterTile.tsx'
 import { persist } from '../settings/persist.ts'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
+import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { MenuRule } from '../shell/TitleMenu.tsx'
 import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
@@ -350,22 +351,38 @@ function MoreMenu({
   )
 }
 
-function BuildButton({ game, project }: { game: string; project: DevProject }) {
+function BuildButton({
+  game,
+  project,
+  compact,
+}: {
+  game: string
+  project: DevProject
+  compact: boolean
+}) {
   const { t } = useLingui()
   const running = useDevRuns((s) => runOf(s.byDir, project.dir).running)
+  const build = () => buildProject(game, project.dir).catch(() => undefined)
+  if (compact) {
+    return (
+      <TipIconButton label={t`Build`} disabled={running !== null} onClick={build}>
+        <Hammer size={18} />
+      </TipIconButton>
+    )
+  }
   return (
     <Button
       variant="outlined"
       startIcon={<Hammer size={16} />}
       disabled={running !== null}
-      onClick={() => buildProject(game, project.dir).catch(() => undefined)}
+      onClick={build}
     >
       {t`Build`}
     </Button>
   )
 }
 
-// One project: its name and state, its actions beside them in list view or below them on a grid card.
+// One project: its name and state beside its actions; a grid card's narrower Build is an icon.
 export function ProjectCard({
   game,
   project,
@@ -384,7 +401,6 @@ export function ProjectCard({
     return <MissingCard game={game} project={project} />
   }
   const name = info?.name ?? project.name
-  const actions = <BuildButton game={game} project={project} />
   const version = info?.released ? `v${info.released}` : t`Unreleased`
   const details = [info?.guid, info ? version : '', gitSummary(info?.git)].filter(Boolean)
   return (
@@ -416,7 +432,7 @@ export function ProjectCard({
             {info ? details.join(' · ') : project.dir}
           </Typography>
         </Box>
-        {list ? actions : null}
+        <BuildButton game={game} project={project} compact={!list} />
         <MoreMenu
           game={game}
           project={project}
@@ -425,7 +441,6 @@ export function ProjectCard({
           onCode={() => setReading(true)}
         />
       </Box>
-      {list ? null : <Box>{actions}</Box>}
       <Costs game={game} profile={project.profile} info={info} />
       <Outcome game={game} project={project} />
       {editing && info ? (
