@@ -133,3 +133,13 @@ func TestModpackFormSuggestsABumpAndChangelogAgainstTheLastExport(t *testing.T) 
 		}
 	}
 }
+
+func TestModpackLeavesDevHelpersOut(t *testing.T) {
+	ts := func(name string, dev bool) profile.Entry {
+		return profile.Entry{Source: profile.Source{Kind: profile.KindThunderstore, Name: name, Version: "1.0.0"}, DevOnly: dev}
+	}
+	res := modpackPackages(profile.Profile{Entries: []profile.Entry{ts("A-Real", false), ts("A-Helper", true)}}, false)
+	if len(res.Dependencies) != 1 || res.Dependencies[0] != "A-Real-1.0.0" {
+		t.Fatalf("dependencies = %v", res.Dependencies)
+	}
+}

@@ -263,6 +263,7 @@ func reasonOf(e profile.Entry) string {
 }
 
 func withEntryKeys(p profile.Profile, keys []string) profile.Profile {
+	p = p.WithoutDev()
 	if len(keys) == 0 {
 		return p
 	}

@@ -857,3 +857,13 @@ func (s *Store) SourcesOf(game string) map[string]Source {
 	}
 	return out
 }
+
+// WithoutDev is the profile minus its dev helpers (Entry.DevOnly): what leaves this computer in a share, an export or
+// a LAN send.
+func (p Profile) WithoutDev() Profile {
+	if !slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.DevOnly }) {
+		return p
+	}
+	p.Entries = slices.DeleteFunc(slices.Clone(p.Entries), func(e Entry) bool { return e.DevOnly })
+	return p
+}

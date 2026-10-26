@@ -168,7 +168,7 @@ func buildCollection(p profile.Profile, domain, modsDir string, facts fileFacts)
 	}
 	var files []pack.File
 	var skipped []string
-	for _, e := range p.Entries {
+	for _, e := range p.WithoutDev().Entries {
 		if e.Source.Bundled() || !share.Enabled(e) {
 			continue
 		}

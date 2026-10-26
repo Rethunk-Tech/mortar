@@ -782,6 +782,7 @@ func Collect(p profile.Profile, include ...Include) (s Shared, left []LeftOut, o
 	if len(include) > 0 {
 		inc = include[0]
 	}
+	p = p.WithoutDev()
 	s = Shared{Name: p.Name, Entries: []Ref{}}
 	done := map[string]bool{}
 	for _, e := range p.Entries {

@@ -123,6 +123,7 @@ func Write(w io.Writer, gameID string, p profile.Profile, modsDir string, includ
 	if len(include) > 0 {
 		inc = include[0]
 	}
+	p = p.WithoutDev()
 	s, _, _ := Collect(p, inc)
 	s.Game, s.SourceKeys = gameID, SourceKeys(gameID)
 	zw := zip.NewWriter(w)

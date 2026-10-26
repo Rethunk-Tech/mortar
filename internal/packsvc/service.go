@@ -196,7 +196,7 @@ func (s *Service) r2zDraft(gameID, profileID string) (pack.Draft, error) {
 		return pack.Draft{}, err
 	}
 	d := pack.Draft{Name: p.Name}
-	for _, e := range p.Entries {
+	for _, e := range p.WithoutDev().Entries {
 		if e.Source.Kind == profile.KindThunderstore {
 			d.Packages = append(d.Packages, pack.Ref{Source: "thunderstore", Native: e.Source.Name, Version: e.Source.Version, Disabled: allOff(e)})
 		}

@@ -94,7 +94,7 @@ func nextVersion(last string) string {
 // the profile switches off.
 func modpackPackages(p profile.Profile, includeDisabled bool) ModpackResult {
 	res := ModpackResult{Dependencies: []string{}, LeftOut: []string{}, Disabled: []string{}}
-	for _, e := range p.Entries {
+	for _, e := range p.WithoutDev().Entries {
 		switch {
 		case e.Source.Bundled():
 		case e.Source.Kind != profile.KindThunderstore:
