@@ -1193,7 +1193,10 @@ func Decode(data []byte) (Manifest, error) {
 		return Manifest{}, fmt.Errorf("decode component manifest: %w", err)
 	}
 	m, dropped := withoutUnreadable(m)
-	if dropped > 0 && len(m.Games) == 0 {
+	if len(m.Games) == 0 {
+		if dropped == 0 {
+			return Manifest{}, errors.New("component manifest lists no game")
+		}
 		return Manifest{}, errors.New("component manifest lists no game this Mortar can read")
 	}
 	if err := m.Validate(); err != nil {

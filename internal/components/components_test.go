@@ -26,6 +26,7 @@ func signedManifest(t *testing.T, serial uint64, public ed25519.PrivateKey) ([]b
 	t.Helper()
 	m := Manifest{
 		Serial: serial,
+		Games:  []GameInfo{{ID: "stardew", Name: "Stardew Valley", Marker: "m", Deploy: DeployProfile, Loaders: []GameLoader{{ID: "smapi"}}}},
 		Components: []Component{{
 			Game: "stardew", Name: "bridge", Kind: "bridge",
 			Source: Source{Host: "github.com", Owner: "Rethunk-Tech", Repo: "mortar-smapi-bridge"},
