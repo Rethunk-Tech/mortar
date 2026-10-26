@@ -2,7 +2,9 @@ package smapi
 
 import (
 	"context"
+	"crypto/sha256"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -170,8 +172,15 @@ func fakeSMAPI(t *testing.T, script string) Loader {
 		"SMAPI 9.9.9 installer/internal/linux/SMAPI.Installer": script,
 		"SMAPI 9.9.9 installer/internal/linux/install.dat":     string(installDat),
 	})
+	sum := sha256.Sum256(installer)
 	mux := http.NewServeMux()
 	mux.HandleFunc("/releases", func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = fmt.Fprintf(w, `[{"tag_name":"9.9.9","assets":[{"name":"SMAPI-9.9.9-installer.zip","digest":"sha256:%x"}]}]`, sum)
+	})
+	mux.HandleFunc("/bad", func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte(`[{"tag_name":"9.9.9","assets":[{"name":"SMAPI-9.9.9-installer.zip","digest":"sha256:00"}]}]`))
+	})
+	mux.HandleFunc("/none", func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = w.Write([]byte(`[{"tag_name":"9.9.9","assets":[{"name":"SMAPI-9.9.9-installer.zip"}]}]`))
 	})
 	mux.HandleFunc("/dl/9.9.9/SMAPI-9.9.9-installer.zip", func(w http.ResponseWriter, _ *http.Request) {
@@ -323,5 +332,20 @@ func TestLauncherReadIsSizedToTheFile(t *testing.T) {
 	runtime.ReadMemStats(&after)
 	if n := after.TotalAlloc - before.TotalAlloc; n > 1<<20 {
 		t.Fatalf("10 launcher reads allocated %d bytes", n)
+	}
+}
+
+func TestFetchRefusesUnverifiedInstaller(t *testing.T) {
+	g := fakeSMAPI(t, okScript)
+	for _, path := range []string{"/bad", "/none"} {
+		l := g
+		l.ReleasesURL = strings.TrimSuffix(g.ReleasesURL, "/releases") + path
+		dest := filepath.Join(t.TempDir(), "i.zip")
+		if err := l.Fetch(context.Background(), components.GameInfo{}, "9.9.9", dest); err == nil {
+			t.Fatalf("%s: unverified installer accepted", path)
+		}
+		if _, err := os.Stat(dest); err == nil {
+			t.Fatalf("%s: refused installer left on disk", path)
+		}
 	}
 }

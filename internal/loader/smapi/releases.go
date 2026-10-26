@@ -143,12 +143,7 @@ const lastLoaderReleases = 10
 
 // Versions returns the last GitHub SMAPI releases that look like versions, newest first.
 func (l Loader) Versions(ctx context.Context, _ components.GameInfo) ([]string, error) {
-	url := l.ReleasesURL
-	if url == "" {
-		if component, ok := l.loaderComponent(); ok && component.Source.Owner != "" && component.Source.Repo != "" {
-			url = "https://api.github.com/repos/" + component.Source.Owner + "/" + component.Source.Repo + "/releases"
-		}
-	}
+	url := l.releasesURL()
 	if url == "" {
 		return nil, errors.New("SMAPI component manifest is not configured")
 	}
@@ -195,9 +190,59 @@ func (l Loader) Fetch(ctx context.Context, _ components.GameInfo, version, dest 
 	if asset == "" {
 		return errors.New("SMAPI component asset pattern is not configured")
 	}
+	want, err := l.releaseDigest(ctx, version, asset)
+	if err != nil {
+		return fmt.Errorf("download SMAPI %s: %w", version, err)
+	}
 	url := base + "/" + version + "/" + asset
 	if err := github.Download(ctx, l.Client, url, dest, maxInstaller, nil); err != nil {
 		return fmt.Errorf("download SMAPI %s: %w", version, err)
 	}
+	got, err := fsx.SHA256(dest)
+	if err == nil && !strings.EqualFold(got, want) {
+		err = errors.New("the download does not match GitHub's SHA-256 for it")
+	}
+	if err != nil {
+		_ = fsx.Remove(dest)
+		return fmt.Errorf("download SMAPI %s: %w", version, err)
+	}
 	return nil
+}
+
+// releaseDigest is the SHA-256 GitHub reports for version's installer asset. A release without one is refused,
+// since the installer runs natively.
+func (l Loader) releaseDigest(ctx context.Context, version, asset string) (string, error) {
+	url := l.releasesURL()
+	if url == "" {
+		return "", errors.New("SMAPI component manifest is not configured")
+	}
+	all, err := github.FetchReleases(ctx, l.Client, url)
+	if err != nil {
+		return "", fmt.Errorf("look up SMAPI releases: %w", err)
+	}
+	for _, r := range all {
+		if r.Draft || strings.TrimPrefix(r.Tag, "v") != version {
+			continue
+		}
+		for _, a := range r.Assets {
+			if a.Name != asset {
+				continue
+			}
+			if want, ok := strings.CutPrefix(a.Digest, "sha256:"); ok && want != "" {
+				return want, nil
+			}
+			return "", errors.New("the release carries no SHA-256 to verify it by")
+		}
+	}
+	return "", fmt.Errorf("GitHub lists no SMAPI release %s with that installer", version)
+}
+
+func (l Loader) releasesURL() string {
+	if l.ReleasesURL != "" {
+		return l.ReleasesURL
+	}
+	if component, ok := l.loaderComponent(); ok && component.Source.Owner != "" && component.Source.Repo != "" {
+		return "https://api.github.com/repos/" + component.Source.Owner + "/" + component.Source.Repo + "/releases"
+	}
+	return ""
 }
