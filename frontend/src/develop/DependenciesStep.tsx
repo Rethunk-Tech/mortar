@@ -121,12 +121,12 @@ const AddAnother = memo(function AddAnotherView({
   const shown = taken.split(',')
   const hits = useSearch(game, profile, query).filter((h) => !shown.includes(h.id))
   return (
-    <FormSection title={t`Add another`}>
+    <>
       <SearchField
         value={query}
         onChange={setQuery}
-        label={t`Search mods`}
-        placeholder={t`Search mods`}
+        label={t`Add another mod`}
+        placeholder={t`Add another mod`}
       />
       {hits.map((h) => (
         <Box key={h.id} sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
@@ -147,7 +147,7 @@ const AddAnother = memo(function AddAnotherView({
           </Button>
         </Box>
       ))}
-    </FormSection>
+    </>
   )
 })
 
@@ -195,30 +195,28 @@ export function DependenciesStep({
     apply({ dependencies: [...now, item.id] })
   }, [])
   return (
-    <>
-      <FormSection title={t`Starting dependencies`}>
-        {ids.length === 0 ? (
-          <Typography sx={{ color: 'text.secondary' }}>
-            {t`Nothing to suggest from your answers; search for any mod yours builds on.`}
-          </Typography>
-        ) : null}
-        {ids.map((id) => {
-          const rec = recs.find((r) => r.package === id)
-          return (
-            <PackageRow
-              key={id}
-              id={id}
-              item={known[id]}
-              why={rec ? t`Suggested for ${{ answer: answerLabel(form, rec) }}` : ''}
-              checked={chosen.includes(id)}
-              onToggle={toggle}
-              optional={draft.optional.includes(id)}
-              onOptional={setOptional}
-            />
-          )
-        })}
-      </FormSection>
+    <FormSection title={t`Starting dependencies`}>
+      {ids.length === 0 ? (
+        <Typography sx={{ color: 'text.secondary' }}>
+          {t`Nothing to suggest from your answers; search for any mod yours builds on.`}
+        </Typography>
+      ) : null}
+      {ids.map((id) => {
+        const rec = recs.find((r) => r.package === id)
+        return (
+          <PackageRow
+            key={id}
+            id={id}
+            item={known[id]}
+            why={rec ? t`Suggested for ${{ answer: answerLabel(form, rec) }}` : ''}
+            checked={chosen.includes(id)}
+            onToggle={toggle}
+            optional={draft.optional.includes(id)}
+            onOptional={setOptional}
+          />
+        )
+      })}
       <AddAnother game={game} profile={profile} taken={ids.join(',')} onAdd={add} />
-    </>
+    </FormSection>
   )
 }

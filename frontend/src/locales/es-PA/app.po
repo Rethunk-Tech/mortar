@@ -2365,6 +2365,10 @@ msgstr ""
 msgid "Back up to a file…"
 msgstr ""
 
+#: src/develop/DependenciesStep.tsx
+msgid "Add another mod"
+msgstr ""
+
 #: src/develop/EditProjectDialog.tsx
 msgid "Team on {source}"
 msgstr ""
@@ -2805,6 +2809,10 @@ msgstr ""
 
 #: src/develop/UploadDialog.tsx
 msgid "Uploading…"
+msgstr ""
+
+#: src/develop/NewModDialog.tsx
+msgid "Anyone may use and change the code, but a mod built on it must be shared under GPL 3.0 with its source."
 msgstr ""
 
 #: src/nxm/ArrivalDialog.tsx
@@ -3902,10 +3910,6 @@ msgstr ""
 msgid "Four Corners farm"
 msgstr ""
 
-#: src/develop/DependenciesStep.tsx
-msgid "Add another"
-msgstr ""
-
 #: src/develop/UploadDialog.tsx
 msgid "Upload {name} to {source}?"
 msgstr ""
@@ -4564,6 +4568,10 @@ msgstr ""
 msgid "Sign in to {source}…"
 msgstr ""
 
+#: src/develop/NewModDialog.tsx
+msgid "Like MIT, and it also grants any patents of yours the code uses; a changed file must say it was changed."
+msgstr ""
+
 #: src/games/GameRowMenu.tsx
 msgid "Hide this game"
 msgstr ""
@@ -4888,10 +4896,6 @@ msgstr ""
 msgid "Play with"
 msgstr ""
 
-#: src/develop/draft.ts
-msgid "The mod name starts with a capital letter and holds only letters and digits."
-msgstr ""
-
 #: src/lan/SendPanel.tsx
 msgid "Sent to {name}"
 msgstr ""
@@ -5018,10 +5022,6 @@ msgstr ""
 
 #: src/develop/NewModDialog.tsx
 msgid "Letters and digits, starting with a capital"
-msgstr ""
-
-#: src/develop/DependenciesStep.tsx
-msgid "Search mods"
 msgstr ""
 
 #: src/shell/saveDiagnostics.ts
@@ -5386,6 +5386,10 @@ msgstr ""
 
 #: src/share/ModpackDialog.tsx
 msgid "README"
+msgstr ""
+
+#: src/develop/NewModDialog.tsx
+msgid "A changed copy of your files must stay open under MPL 2.0; the rest of a mod using them may use any license."
 msgstr ""
 
 #: src/toasts/report.ts
@@ -6278,6 +6282,10 @@ msgstr ""
 msgid "This download is {size}, far larger than a mod normally is. It will take a long time and fill a lot of your drive. Make sure you meant to get it."
 msgstr ""
 
+#: src/develop/draft.ts
+msgid "Name the mod."
+msgstr ""
+
 #: src/lan/PairedComputers.tsx
 msgid "On the other computer, choose Enter code and type this. It works once, for five minutes."
 msgstr ""
@@ -6674,6 +6682,10 @@ msgstr ""
 msgid "Copies the report for you to paste into a new post in the bug-reports forum on Mortar's {app}, and saves the diagnostics zip to attach."
 msgstr ""
 
+#: src/develop/NewModDialog.tsx
+msgid "Anyone may use, change and share the code, in any mod, as long as they keep your copyright notice."
+msgstr ""
+
 #: src/develop/DependencyKindDialog.tsx
 msgid "{name} runs without it and uses it when it is there"
 msgstr ""
@@ -6767,6 +6779,10 @@ msgstr ""
 msgid "Share"
 msgstr ""
 
+#: src/develop/NewModDialog.tsx
+msgid "Public domain: anyone may do anything with the code, with no notice needed."
+msgstr ""
+
 #: src/share/ImportProblems.tsx
 msgid "Leave out"
 msgstr ""
@@ -6852,6 +6868,10 @@ msgstr ""
 
 #: src/queue/QueueRows.tsx
 msgid "Paused at {done} of {total}"
+msgstr ""
+
+#: src/develop/draft.ts
+msgid "Fix the mod name."
 msgstr ""
 
 #: src/commandPalette/CommandPalette.tsx

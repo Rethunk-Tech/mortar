@@ -78,7 +78,8 @@ const frameSx = {
   '& > .app-dialog-tabs': { px: PAD_X, borderBottom: '1px solid var(--mortar-hairline-muted)' },
   '& > .app-dialog-body': {
     px: PAD_X,
-    py: 2.5,
+    // The form's gap between fields, so the last field sits as far from the footer as from the field above it.
+    py: 3,
     overflowY: 'auto',
     flex: '1 1 auto',
     minHeight: 0,
@@ -88,6 +89,8 @@ const frameSx = {
     '& > :last-child': { mb: 0 },
     // A switch, checkbox or radio sits on the fields' left edge, as MUI draws it; a row's own margin reset would indent it.
     '& .MuiFormControlLabel-root': { ml: '-11px' },
+    // MUI pads each radio 9px; a radio list's first and last rows sit on its text, as a field's other controls do.
+    '& .MuiRadioGroup-root': { my: '-9px' },
   },
   '& .app-dialog-footer': {
     display: 'flex',

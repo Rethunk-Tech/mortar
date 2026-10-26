@@ -146,15 +146,19 @@ export function chosenDependencies(d: Draft, form: Form | null): string[] {
 }
 
 /** The first thing that keeps a step from going on, as the button's reason; empty when it can. */
+export const validModName = (name: string) => MOD_NAME.test(name)
+
 export function stepIssue(d: Draft, form: Form | null, step: Step): string {
   if (!form) {
     return i18n._(msg`Reading the template`)
   }
   if (step === 'mod') {
+    // The field itself says what a valid name looks like.
+    if (d.name === '') {
+      return i18n._(msg`Name the mod.`)
+    }
     if (!MOD_NAME.test(d.name)) {
-      return i18n._(
-        msg`The mod name starts with a capital letter and holds only letters and digits.`,
-      )
+      return i18n._(msg`Fix the mod name.`)
     }
     if (!FOLDER.test(d.repo || d.name)) {
       return i18n._(msg`The folder name holds only letters, digits, dots, dashes and underscores.`)
