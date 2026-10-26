@@ -19,6 +19,6 @@ export function serveModTemplate(dir: string): () => void {
     hostname: '127.0.0.1',
     fetch: () => new Response(Bun.file(zip)),
   })
-  process.env.MORTAR_DEV_TEMPLATE_URL = `http://127.0.0.1:${server.port}/mod-template.zip`
+  process.env.MORTAR_DEV_TEMPLATE = `http://127.0.0.1:${server.port}/mod-template.zip`
   return () => server.stop(true)
 }

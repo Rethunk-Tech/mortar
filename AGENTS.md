@@ -9,6 +9,7 @@ Mortar is a desktop mod manager for several games (`mortar games` lists the cata
 - Your own sandbox (`MORTAR_SELFTEST_DIR=/var/tmp/<name>`, 2 to 6 GB) ends with `selftest.sh destroy` when the task is done.
 - Give each hidden-display regress or matrix run its own `MORTAR_LAUNCH_SESSION` key (a session is capped at 3 launches: [docs/testing.md](docs/testing.md#sandbox-game-launches)). Launch only against a sandbox copy with a direct launch, hash the game folder before and after to prove purge, and never launch on the maintainer's screen or against the maintainer's real data.
 - The maintainer owns no Steam Deck and no Valheim install; the faked gamepad and sandboxed fixtures cover them.
+- To try a template before pushing it, start Mortar (or the sandbox) with `MORTAR_DEV_TEMPLATE` set to the template's folder or a `.zip` of it; New mod then reads it fresh each time instead of the catalog's tag.
 - The sandbox reads the live signed catalog. To try a bundled `internal/components/components.json` change first, delete the sandbox's `cache/components-v2-manifest.json` and `start` with `HTTPS_PROXY=http://127.0.0.1:9` (Mortar falls back to the bundled copy).
 - The sandbox server runs in its own pid namespace, so the pid in its `control.json` is not a host pid: prove a check that ends or inspects a running Mortar by pid with two plain `mortar-server` runs on a throwaway `HOME`.
 - zenity and kdialog reach the desktop even with `DISPLAY` and `WAYLAND_DISPLAY` unset: run a native-dialog proof on the sandbox's headless display.

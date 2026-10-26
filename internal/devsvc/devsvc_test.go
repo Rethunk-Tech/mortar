@@ -462,3 +462,60 @@ func TestCloneRemovesWhatIsNotAProject(t *testing.T) {
 		t.Error("cloned over an existing folder")
 	}
 }
+
+// MORTAR_DEV_TEMPLATE points New mod at a template that isn't published yet: a folder, read fresh each time, or a zip.
+func TestTemplateEnvTakesALocalFolderOrZip(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	svc.ArchiveURL = nil
+	tpl := components.DevTemplate{Repo: "o/n", Ref: "v1"}
+
+	src := t.TempDir()
+	for name, body := range map[string]string{
+		".template.config/template.json":    testTemplate,
+		".template.config/mortar.host.json": testHost,
+		"README.md":                         "first",
+		".git/HEAD":                         "ref: refs/heads/main",
+	} {
+		path := filepath.Join(src, filepath.FromSlash(name))
+		if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	t.Setenv(TemplateEnv, src)
+	dir, err := svc.templateDir(t.Context(), tpl)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(dir, ".git")); err == nil {
+		t.Fatal("the template's .git came along")
+	}
+	if err := os.WriteFile(filepath.Join(src, "README.md"), []byte("edited"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if dir, err = svc.templateDir(t.Context(), tpl); err != nil {
+		t.Fatal(err)
+	}
+	if b, _ := fsx.ReadFile(filepath.Join(dir, "README.md")); string(b) != "edited" {
+		t.Fatalf("a local folder was not read again: %q", b)
+	}
+
+	zipPath := filepath.Join(t.TempDir(), "template.zip")
+	if err := os.WriteFile(zipPath, templateZip(t, testTemplate), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv(TemplateEnv, zipPath)
+	if dir, err = svc.templateDir(t.Context(), tpl); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(dir, filepath.FromSlash(templateFile))); err != nil {
+		t.Fatalf("the zip's one folder was not unwrapped: %v", err)
+	}
+
+	t.Setenv(TemplateEnv, filepath.Join(t.TempDir(), "missing"))
+	if _, err := svc.templateDir(t.Context(), tpl); err == nil {
+		t.Fatal("a missing template was accepted")
+	}
+}

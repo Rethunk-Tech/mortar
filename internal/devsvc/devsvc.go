@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -19,6 +20,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
@@ -363,14 +365,22 @@ func (s *Service) fromGitHub(ctx context.Context, tpl components.DevTemplate, m 
 	return fmt.Errorf("cloning %s: %w", full, err)
 }
 
+// TemplateEnv names a template to use instead of the catalog's, for trying one before it is published: a local
+// template folder, a local .zip of one, or an archive URL. A local one is read again on every use, so edits show.
+const TemplateEnv = "MORTAR_DEV_TEMPLATE"
+
 // templateDir is the template at tpl's tag, downloaded once into the cache: the same files for the wizard's
 // questions and for `dotnet new`.
 func (s *Service) templateDir(ctx context.Context, tpl components.DevTemplate) (string, error) {
 	url := "https://codeload.github.com/" + tpl.Repo + "/zip/refs/tags/" + tpl.Ref
-	if s.ArchiveURL != nil {
+	override := os.Getenv(TemplateEnv)
+	switch {
+	case s.ArchiveURL != nil:
 		url = s.ArchiveURL(tpl)
-	} else if o := archiveOverride(); o != "" {
-		url = o
+	case strings.Contains(override, "://"):
+		url = override
+	case override != "":
+		return s.localTemplate(override)
 	}
 	dir := filepath.Join(s.CacheDir, "dev-templates", refPath.ReplaceAllString(tpl.Repo+"@"+tpl.Ref, "_"))
 	if _, err := os.Stat(filepath.Join(dir, filepath.FromSlash(templateFile))); err == nil {
@@ -402,6 +412,46 @@ func (s *Service) templateDir(ctx context.Context, tpl components.DevTemplate) (
 	}
 	_ = fsx.RemoveAll(dir)
 	return dir, os.Rename(root, dir)
+}
+
+// localTemplate copies a template folder, or unpacks a .zip of one, into the cache fresh.
+func (s *Service) localTemplate(path string) (string, error) {
+	abs, err := filepath.Abs(path)
+	if err != nil {
+		return "", err
+	}
+	info, err := fsx.Stat(abs)
+	if err != nil {
+		return "", fmt.Errorf("%s names no template: %w", TemplateEnv, err)
+	}
+	dir := filepath.Join(s.CacheDir, "dev-templates", "local")
+	if err := fsx.RemoveAll(dir); err != nil {
+		return "", err
+	}
+	if err := os.MkdirAll(dir, 0o750); err != nil {
+		return "", err
+	}
+	if info.IsDir() {
+		err = datadir.CopyTree(abs, dir)
+		// The template's git history isn't part of the template.
+		err = errors.Join(err, fsx.RemoveAll(filepath.Join(dir, ".git")))
+	} else {
+		err = archive.Extract(abs, dir)
+		// A GitHub-style archive holds one folder.
+		if entries, readErr := os.ReadDir(dir); err == nil && readErr == nil && len(entries) == 1 && entries[0].IsDir() {
+			inner := filepath.Join(dir, entries[0].Name())
+			moved := dir + ".unpacked"
+			err = errors.Join(fsx.RemoveAll(moved), os.Rename(inner, moved), fsx.RemoveAll(dir), os.Rename(moved, dir))
+		}
+	}
+	if err != nil {
+		return "", err
+	}
+	if _, err := os.Stat(filepath.Join(dir, filepath.FromSlash(templateFile))); err != nil {
+		return "", fmt.Errorf("%s (%s) is not a template: it has no %s", TemplateEnv, abs, templateFile)
+	}
+	log.Printf("dev template: using the local template copied to %s", dir)
+	return dir, nil
 }
 
 // commit records the filled template as the project's first commit (after the template's own, for a GitHub copy),
