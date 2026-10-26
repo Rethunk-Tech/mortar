@@ -265,7 +265,10 @@ export function Location({
 }) {
   const { t } = useLingui()
   const [portableDir, setPortableDir] = useState('')
-  const relevant = useSettingsRelevant(t`Mortar's data`, t`Portable copy: data is kept in ${''}`)
+  const relevant = useSettingsRelevant(
+    t`Mortar's data`,
+    t`Portable copy: data is kept in ${{ portableDir: '' }}`,
+  )
   useEffect(() => {
     if (relevant) {
       DataLocation()
