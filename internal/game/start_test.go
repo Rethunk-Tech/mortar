@@ -529,7 +529,7 @@ func TestStartSchedulesDirectInstances(t *testing.T) {
 			testCopies: true,
 			wantStarts: 2,
 			wantDelays: []time.Duration{0},
-			wantRoles:  []string{"--lan --host", "--lan --join 127.0.0.1"},
+			wantRoles:  []string{"--lan --host --tile 1/2", "--lan --join 127.0.0.1 --tile 2/2"},
 		},
 		{
 			name:       "steam url starts one",

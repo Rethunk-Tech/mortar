@@ -18,7 +18,7 @@ Decided work, short enough to build cold. Delete an item in the change that land
 
 ### Test copies join each other
 
-"Test with 2 copies" (Develop) gives the first copy `--lan --host` and the others `--lan --join 127.0.0.1` (`internal/game/start.go` `StartEnv.TestCopies`). The dev helper mod `mortar-lc-devlaunch` (mortar-mods, Thunderstore `Mortar-DevLaunch`, decided with the maintainer over putting it in the bridge) reads them, and `--online` too: it picks the launch mode, then hosts, or joins the address with retries. Until it is published it is added to a profile as a Develop project.
+"Test with 2 copies" (Develop) gives the first copy `--lan --host` and the others `--lan --join 127.0.0.1`, each with `--tile <n>/<count>` (`internal/game/start.go` `StartEnv.TestCopies`). The dev helper mod `mortar-lc-devlaunch` (mortar-mods, Thunderstore `Mortar-DevLaunch`, decided with the maintainer over putting it in the bridge) reads them, and `--online` too: it picks the launch mode, then hosts, or joins the address with retries, and puts each window in its cell of a grid over the screen. Until it is published it is added to a profile as a Develop project.
 
 - **Left:** once `Mortar-DevLaunch` is on Thunderstore, `StartInstances` (`internal/launchsvc/service.go`) adds it to a Lethal Company profile that lacks it before starting copies, marked in the profile's mod list as development-only, and a normal Play leaves it off. The catalog names the package per game (a `devHelper` field on the game's dev template entry), so no Go code names Lethal Company.
 - **Done when:** "Test with 2 copies" on a profile without the mod ends with both copies in one LAN lobby with no clicks; a normal Play shows the menus as usual.
