@@ -715,3 +715,49 @@ func TestPeersReportPairing(t *testing.T) {
 		t.Fatalf("paired = %v, want %v", got, want)
 	}
 }
+
+func TestListenerRefusesNonJSONPostsAndCapsHandshakes(t *testing.T) {
+	t.Parallel()
+	service := NewService(Deps{Dir: t.TempDir()})
+	handler := service.handler()
+	for _, path := range []string{"/share", "/outgoing", "/pair/begin", "/pair/finish"} {
+		for _, contentType := range []string{"text/plain", "", "application/jsonx"} {
+			request := httptest.NewRequestWithContext(t.Context(), "POST", "http://mortar.test"+path, strings.NewReader("{}"))
+			request.Header.Set("Content-Type", contentType)
+			response := httptest.NewRecorder()
+			handler.ServeHTTP(response, request)
+			if response.Code != 415 {
+				t.Errorf("%s as %q = %d, want 415", path, contentType, response.Code)
+			}
+		}
+	}
+	request := httptest.NewRequestWithContext(t.Context(), "POST", "http://mortar.test/share", strings.NewReader("{}"))
+	request.Header.Set("Content-Type", "application/json; charset=utf-8")
+	response := httptest.NewRecorder()
+	handler.ServeHTTP(response, request)
+	if response.Code == 415 {
+		t.Error("a JSON charset parameter was refused")
+	}
+
+	service.mu.Lock()
+	for i := range maxNonces {
+		service.nonces[fmt.Sprint(i)] = nonceRecord{expires: time.Now().Add(time.Hour)}
+	}
+	service.mu.Unlock()
+	response = httptest.NewRecorder()
+	handler.ServeHTTP(response, httptest.NewRequestWithContext(t.Context(), "GET", "http://mortar.test/hello", nil))
+	if response.Code != 429 {
+		t.Errorf("/hello over the nonce cap = %d, want 429", response.Code)
+	}
+}
+
+func TestPairFailedForgetsPeersLongQuiet(t *testing.T) {
+	t.Parallel()
+	service := NewService(Deps{Dir: t.TempDir()})
+	now := time.Now()
+	service.pairFailed("old", now.Add(-2*lockout))
+	service.pairFailed("new", now)
+	if _, kept := service.pairing.locks["old"]; kept || len(service.pairing.locks) != 1 {
+		t.Errorf("locks = %v", service.pairing.locks)
+	}
+}

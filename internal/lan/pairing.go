@@ -210,6 +210,7 @@ type pairHost struct {
 type peerLock struct {
 	failures int
 	until    time.Time
+	last     time.Time
 }
 
 type pairBeginRequest struct {
@@ -436,10 +437,16 @@ func (s *Service) pairFailed(remote string, now time.Time) {
 	if h.locks == nil {
 		h.locks = map[string]peerLock{}
 	}
+	for peer, l := range h.locks {
+		if now.Sub(l.last) > lockout {
+			delete(h.locks, peer)
+		}
+	}
 	lock := h.locks[remote]
 	lock.failures++
+	lock.last = now
 	if lock.failures >= maxFailures {
-		lock = peerLock{until: now.Add(lockout)}
+		lock = peerLock{until: now.Add(lockout), last: now}
 	}
 	h.locks[remote] = lock
 	if h.failures++; h.failures >= burnFailures {

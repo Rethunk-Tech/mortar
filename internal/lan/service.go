@@ -12,6 +12,7 @@ import (
 	"io"
 	"log"
 	"log/slog"
+	"mime"
 	"net"
 	"net/http"
 	"net/url"
@@ -50,6 +51,7 @@ const (
 	queryTimeout   = 2 * time.Second
 	httpTimeout    = 5 * time.Second
 	nonceTTL       = time.Minute
+	maxNonces      = 1024
 	transferTTL    = 5 * time.Minute
 	// storeIdle is how long a served store entry may make no progress before the connection is dropped; unlike the
 	// small request deadlines it bounds silence, not the whole stream, which can run for minutes.
@@ -729,12 +731,26 @@ func newHTTPServer(handler http.Handler) *http.Server {
 func (s *Service) handler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/hello", withDeadline(s.handleHello))
-	mux.HandleFunc("/share", withDeadline(s.handleShare))
+	mux.HandleFunc("/share", jsonOnly(withDeadline(s.handleShare)))
 	mux.HandleFunc("/store/", s.handleStore)
-	mux.HandleFunc("/outgoing", withDeadline(s.handleOutgoing))
-	mux.HandleFunc("/pair/begin", withDeadline(s.handlePairBegin))
-	mux.HandleFunc("/pair/finish", withDeadline(s.handlePairFinish))
+	mux.HandleFunc("/outgoing", jsonOnly(withDeadline(s.handleOutgoing)))
+	mux.HandleFunc("/pair/begin", jsonOnly(withDeadline(s.handlePairBegin)))
+	mux.HandleFunc("/pair/finish", jsonOnly(withDeadline(s.handlePairFinish)))
 	return mux
+}
+
+// jsonOnly refuses a POST that is not declared JSON. A web page can send text/plain across origins without a preflight,
+// so the declaration is what keeps a visited page from posting to the listener.
+func jsonOnly(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			if mt, _, err := mime.ParseMediaType(r.Header.Get("Content-Type")); err != nil || mt != "application/json" {
+				http.Error(w, "content type must be application/json", http.StatusUnsupportedMediaType)
+				return
+			}
+		}
+		next(w, r)
+	}
 }
 
 // withDeadline bounds a small request's read and write, which the server no longer does for every handler; the
@@ -769,6 +785,11 @@ func (s *Service) handleHello(w http.ResponseWriter, r *http.Request) {
 		if now.After(record.expires) {
 			delete(s.nonces, value)
 		}
+	}
+	if len(s.nonces) >= maxNonces {
+		s.mu.Unlock()
+		http.Error(w, "too many handshakes", http.StatusTooManyRequests)
+		return
 	}
 	s.nonces[nonce] = nonceRecord{peer: peer, expires: now.Add(nonceTTL)}
 	s.mu.Unlock()

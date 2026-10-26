@@ -50,7 +50,9 @@ func FuzzHandshake(f *testing.F) {
 	f.Fuzz(func(t *testing.T, body []byte) {
 		for _, endpoint := range []string{"/share", "/pair/begin", "/pair/finish"} {
 			w := httptest.NewRecorder()
-			handler.ServeHTTP(w, httptest.NewRequestWithContext(t.Context(), http.MethodPost, endpoint, bytes.NewReader(body)))
+			post := httptest.NewRequestWithContext(t.Context(), http.MethodPost, endpoint, bytes.NewReader(body))
+			post.Header.Set("Content-Type", "application/json")
+			handler.ServeHTTP(w, post)
 			if endpoint != "/share" || w.Code != http.StatusOK {
 				continue
 			}
