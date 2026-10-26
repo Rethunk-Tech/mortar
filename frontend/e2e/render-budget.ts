@@ -238,6 +238,7 @@ const cases: Case[] = [
   open('Load order'),
   open('Performance'),
   open('Console'),
+  open('Develop'),
   { name: 'settings', setup: toWorkspace, run: openSettings },
   { name: 'settings-search', setup: openSettings, run: (p) => typeInto(p, /^Search/, 'theme') },
   {
