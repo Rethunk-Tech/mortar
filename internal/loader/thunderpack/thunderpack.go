@@ -59,9 +59,8 @@ type Spec struct {
 	ProxyDLL string
 	// Exe is the launcher, below the game folder, that starts in place of the game's own executable.
 	Exe string
-	// ImportDirs and ConfigFolders are folders of the profile: where an imported pack's loose files go and where mods
-	// keep settings.
-	ImportDirs, ConfigFolders []string
+	// ConfigFolders are folders of the profile where mods keep settings, and the only ones an imported pack may fill.
+	ConfigFolders []string
 	// Log is the loader's log; nil for a loader that keeps none Mortar reads.
 	Log *LogSpec
 	// Route is where each file of package pkg goes in the profile; nil means the catalog's routes.
@@ -99,9 +98,6 @@ func (Loader) Formats() []string { return nil }
 
 // ProfileFiles are what an install lays out in each profile's folder, with the marker that records the version.
 func (l Loader) ProfileFiles() []string { return append(slices.Clone(l.Files), l.markerFile()) }
-
-// ImportRoots are the folders an imported profile pack may carry loose.
-func (l Loader) ImportRoots() []string { return l.ImportDirs }
 
 // ConfigDirs is where the loader's mods keep their settings.
 func (l Loader) ConfigDirs() []string { return l.ConfigFolders }

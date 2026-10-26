@@ -6,6 +6,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/winname"
 )
@@ -20,9 +21,9 @@ var blockedExtensions = []string{
 // ProfileFiles is the pack's config files and loose files as the profile holds them, by r2modman's import rule
 // (ProfileUtils.ts:56-67): a config/ entry goes below BepInEx/, any other path is relative to the profile, and
 // executable types are skipped. Mortar's profile folder also holds its own records (profile.json, history, saves) and
-// the loader files Mortar writes itself (doorstop_config.ini), so only a file below one of roots, the game's loaders'
-// import folders, is kept, written under the root's own spelling; anything else is dropped without a word, as nothing
-// the player chose is lost. A file the pack lists twice keeps its config. programs lists, sorted, the executables left
+// the loader files Mortar writes itself (doorstop_config.ini), and on most loaders a mod folder is a program tree, so
+// only a text file below one of roots, the game's loaders' config folders, is kept, written under the root's own
+// spelling; anything else is dropped without a word, as nothing the player chose is lost. A file the pack lists twice keeps its config. programs lists, sorted, the executables left
 // out, which the player should hear about. The bridge's state file is dropped too: it holds a token and port Mortar
 // would otherwise trust from the pack.
 func ProfileFiles(d Draft, roots []string) (out map[string][]byte, programs []string) {
@@ -30,19 +31,20 @@ func ProfileFiles(d Draft, roots []string) (out map[string][]byte, programs []st
 	keep := func(p string, data []byte) {
 		w, ok := winPath(p)
 		if ok {
-			first, rest, cut := strings.Cut(w, "/")
-			i := slices.IndexFunc(roots, func(r string) bool { return strings.EqualFold(r, first) })
-			if !cut || i < 0 {
-				return
-			}
-			if strings.EqualFold(w, bridge.BepInEx.StateFile) {
+			if !strings.Contains(w, "/") || strings.EqualFold(w, bridge.BepInEx.StateFile) {
 				return
 			}
 			if blocked(w) {
 				programs = append(programs, p)
 				return
 			}
-			out[roots[i]+"/"+rest] = data
+			i := slices.IndexFunc(roots, func(r string) bool {
+				return len(w) > len(r) && w[len(r)] == '/' && strings.EqualFold(w[:len(r)], r)
+			})
+			if i < 0 || !datadir.EditableText(w) {
+				return
+			}
+			out[roots[i]+w[len(roots[i]):]] = data
 		}
 	}
 	for _, f := range d.Loose {
@@ -78,7 +80,7 @@ func winPath(p string) (string, bool) {
 	return strings.Join(segs, "/"), true
 }
 
-// ImportRoots are the folders the game's loaders let an imported pack write loose files into.
+// ImportRoots are the config folders of the game's loaders, the only places an imported pack may write loose files.
 func ImportRoots(gameID string) []string {
 	info, ok := components.Game(gameID)
 	if !ok {
@@ -86,8 +88,8 @@ func ImportRoots(gameID string) []string {
 	}
 	var out []string
 	for _, l := range loader.For(info) {
-		if r, ok := l.(loader.ImportRoots); ok {
-			out = append(out, r.ImportRoots()...)
+		if c, ok := l.(loader.WithConfig); ok {
+			out = append(out, c.ConfigDirs()...)
 		}
 	}
 	return out

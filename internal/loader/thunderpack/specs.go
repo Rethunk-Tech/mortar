@@ -28,10 +28,10 @@ var specs = []Spec{
 		Args: func(dir string, proton bool) []string {
 			return []string{"--rom_modding_root_folder", hostPath(dir, proton)}
 		},
-		VanillaArgs: []string{"--rom_enabled", "false"},
-		Log:         &LogSpec{Pattern: "ReturnOfModding/LogOutput.log", Analyze: analyzeROM},
-		Overrides:   topDLLs,
-		ImportDirs:  []string{"ReturnOfModding"}, ConfigFolders: []string{"ReturnOfModding/config"},
+		VanillaArgs:   []string{"--rom_enabled", "false"},
+		Log:           &LogSpec{Pattern: "ReturnOfModding/LogOutput.log", Analyze: analyzeROM},
+		Overrides:     topDLLs,
+		ConfigFolders: []string{"ReturnOfModding/config"},
 		Route: perFile(func(p, pkg string) string {
 			for _, folder := range []string{"plugins", "plugins_data", "config"} {
 				if rest, ok := inFolder(p, folder); ok {
@@ -52,8 +52,7 @@ var specs = []Spec{
 		VanillaArgs: []string{"--gdweave-disable"},
 		Log:         &LogSpec{Pattern: "GDWeave/GDWeave.log", Analyze: analyzeGDWeave},
 		Overrides:   topDLLs, ProxyDLL: "winmm",
-		ImportDirs: []string{"GDWeave"},
-		Route:      gdweaveRoute,
+		Route: gdweaveRoute,
 	},
 	{
 		// Lovely's proxy was version.dll until 0.10, winmm.dll since; its own files go in the mods folder it is given.
@@ -68,8 +67,7 @@ var specs = []Spec{
 		VanillaArgs: []string{"--vanilla"},
 		Log:         &LogSpec{Pattern: "mods/lovely/log/lovely-*.log", Analyze: analyzeLovely, Ready: regexp.MustCompile(`Initialization complete in`)},
 		Overrides:   topDLLs, ProxyDLL: "winmm",
-		ImportDirs: []string{"mods"},
-		Route:      perFile(func(p, pkg string) string { return path.Join("mods", pkg, p) }),
+		Route: perFile(func(p, pkg string) string { return path.Join("mods", pkg, p) }),
 	},
 	{
 		// Rivet's whole release is laid out in the profile; only its version.dll proxy sits beside the executable. The
@@ -87,8 +85,7 @@ var specs = []Spec{
 		},
 		VanillaArgs: []string{"-rivetEnable", "false"},
 		Overrides:   topDLLs, ProxyDLL: "version",
-		ImportDirs: []string{"Rivet"},
-		Route:      perFile(func(p, pkg string) string { return path.Join("Rivet", "Mods", pkg, p) }),
+		Route: perFile(func(p, pkg string) string { return path.Join("Rivet", "Mods", pkg, p) }),
 	},
 	{
 		// Unity Mod Manager rides on a Doorstop proxy; the pack's Doorstop is 3 or 4, whose flags differ and each of which
@@ -103,7 +100,6 @@ var specs = []Spec{
 		},
 		VanillaArgs: []string{"--doorstop-enabled", "false", "--doorstop-enable", "false"},
 		Overrides:   topDLLs, ProxyDLL: "winhttp",
-		ImportDirs: []string{"UMM"},
 	},
 	{
 		// unreal_shimloader's top dwmapi.dll is the proxy that works (the one in UE4SS/ is not), and UE4SS's own files are
@@ -121,7 +117,7 @@ var specs = []Spec{
 			return out
 		},
 		Overrides: func([]string) []string { return []string{"dwmapi"} }, ProxyDLL: "dwmapi",
-		ImportDirs: []string{"shimloader"}, ConfigFolders: []string{"shimloader/cfg"},
+		ConfigFolders: []string{"shimloader/cfg"},
 	},
 	{
 		// Northstar's whole release is laid out in the profile, which it is told is its R2Northstar folder; the launcher
@@ -137,7 +133,7 @@ var specs = []Spec{
 		},
 		Log:       &LogSpec{Pattern: "R2Northstar/logs/nslog*.txt", Analyze: analyzeNorthstar},
 		Overrides: func([]string) []string { return []string{"wsock32"} },
-		Exe:       "NorthstarLauncher.exe", ImportDirs: []string{"R2Northstar"},
+		Exe:       "NorthstarLauncher.exe",
 	},
 }
 

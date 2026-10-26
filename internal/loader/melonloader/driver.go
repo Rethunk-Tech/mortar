@@ -145,9 +145,6 @@ func (Loader) OverrideDLL(string) string { return "version" }
 // ProfileFiles are what InstallPack lays out in each profile's folder, with the marker that records the version.
 func (Loader) ProfileFiles() []string { return []string{loaderDir, proxyDLL, markerFile} }
 
-// ImportRoots are the folders an imported profile pack may carry loose.
-func (Loader) ImportRoots() []string { return []string{"Mods", "Plugins", "UserData", "UserLibs"} }
-
 // ConfigDirs is where MelonLoader and its mods keep their settings.
 func (Loader) ConfigDirs() []string { return []string{"UserData"} }
 
