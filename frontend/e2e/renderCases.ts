@@ -158,9 +158,12 @@ export function newCases(h: Helpers): Case[] {
     },
     {
       name: 'modpack-form',
-      setup: (p) => inGame(p, 'Guided Test'),
-      run: async (p) => {
+      // Home and the share dialog open in setup, so the action is the form alone.
+      setup: async (p) => {
+        await inGame(p, 'Guided Test')
         await shareThunderstore(p)
+      },
+      run: async (p) => {
         await p.getByRole('button', { name: /^Modpack/ }).click()
         await p.getByRole('textbox', { name: 'Name' }).waitFor()
       },
