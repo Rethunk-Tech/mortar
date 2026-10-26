@@ -27,7 +27,9 @@ type Mod struct {
 	Enabled      bool
 	Pinned       bool
 	// Implicit is the entry's install reason: Mortar brought it in for another mod.
-	Implicit      bool
+	Implicit bool
+	// SourceFolder is the extra mods folder the entry is kept in step with, such as a Develop project's build output.
+	SourceFolder  string
 	SkipVersion   string
 	SkipSources   []string
 	IgnoreUpdates bool

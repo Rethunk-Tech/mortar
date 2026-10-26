@@ -258,7 +258,7 @@ func (s *Service) installed(gameID, id string) ([]framework.Mod, error) {
 	mods := make([]framework.Mod, len(installed))
 	for i, m := range installed {
 		mods[i] = framework.Mod{
-			Key: m.Key, SourceKind: m.Source.Kind, SourceVersion: m.Source.Version, SourceModID: m.Source.ModID, SourceCategory: m.Source.Category, SourceName: m.Source.Name, SourceRepo: m.Source.Repo, SourceDigest: m.Source.Digest, Enabled: m.Enabled, Folder: m.Folder,
+			Key: m.Key, SourceKind: m.Source.Kind, SourceVersion: m.Source.Version, SourceModID: m.Source.ModID, SourceCategory: m.Source.Category, SourceName: m.Source.Name, SourceRepo: m.Source.Repo, SourceDigest: m.Source.Digest, SourceFolder: m.Source.Folder, Enabled: m.Enabled, Folder: m.Folder,
 			Pinned: m.Pinned, Implicit: m.Implicit, SkipVersion: m.SkipVersion, SkipSources: m.SkipSources, IgnoreUpdates: m.IgnoreUpdates,
 			UpdateChannel: m.UpdateChannel,
 			LoadAfter:     m.LoadAfter, Manifest: m.Manifest,

@@ -55,6 +55,11 @@ func TestCleanupHintsFindsUnusedFrameworkNeededOnlyByDisabledMod(t *testing.T) {
 	if len(got) != 2 || got[0].Key != "content-framework" || got[1].Key != "spacecore" {
 		t.Fatalf("cleanupHints() = %#v, want both unused frameworks", got)
 	}
+	// A framework the player builds in a Develop project stays, even when only switched-off mods need it.
+	mods[0].SourceFolder = "/projects/SpaceCore/artifacts/bin/SpaceCore/debug"
+	if got := cleanupHints(mods, nil, nil); len(got) != 1 || got[0].Key != "content-framework" {
+		t.Fatalf("cleanupHints() = %#v, want the developed framework kept", got)
+	}
 }
 
 func TestCleanupHintsIgnoresOptionalDependents(t *testing.T) {

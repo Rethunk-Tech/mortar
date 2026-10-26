@@ -41,7 +41,8 @@ func cleanupHints(mods []framework.Mod, found []framework.Cleanup, mentioned []s
 	out := make([]framework.Cleanup, 0)
 	for _, im := range mods {
 		id := im.ModID().Fold()
-		if id == "" || im.ContentPackFor != "" || frameworkIDs[id] || enabledNeeds[id] || !disabledDependents[id] {
+		// A mod built from the player's own folder is theirs to keep, whatever needs it.
+		if id == "" || im.SourceFolder != "" || im.ContentPackFor != "" || frameworkIDs[id] || enabledNeeds[id] || !disabledDependents[id] {
 			continue
 		}
 		out = append(out, framework.Cleanup{Key: im.Key, ID: im.ModID(), Name: im.Name})
