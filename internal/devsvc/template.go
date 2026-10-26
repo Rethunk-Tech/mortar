@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"unicode"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -258,8 +259,8 @@ func (f Form) args(values, fills map[string]string) ([]string, map[string]string
 			}
 			continue
 		}
-		if strings.HasPrefix(v, "-") || strings.ContainsAny(v, "\r\n\x00") {
-			return nil, nil, invalid("%s cannot start with a dash or span lines", p.Label)
+		if strings.HasPrefix(v, "-") || strings.ContainsFunc(v, unicode.IsControl) {
+			return nil, nil, invalid("%s cannot start with a dash or hold line breaks or other control characters", p.Label)
 		}
 		if p.MaxLength > 0 && len([]rune(v)) > p.MaxLength {
 			return nil, nil, invalid("%s takes at most %d characters", p.Label, p.MaxLength)
