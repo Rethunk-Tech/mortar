@@ -115,6 +115,30 @@ func setUserProp(dir, name, value string) error {
 	return fsx.WriteFile(path, []byte(body), 0o600)
 }
 
+// setUserDependency points pkg's folder property at folder and lists pkg as a MortarDependencyFolder, so the template
+// leaves fetching it to Mortar.
+func setUserDependency(dir, pkg, folder string) error {
+	if err := setUserProp(dir, depProp(pkg), folder); err != nil {
+		return err
+	}
+	path := filepath.Join(dir, "Config.Build.user.props")
+	raw, err := fsx.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	body := string(raw)
+	item := `<MortarDependencyFolder Include="` + xmlEscape(pkg) + `" />`
+	switch {
+	case strings.Contains(body, item):
+		return nil
+	case strings.Contains(body, "</ItemGroup>"):
+		body = strings.Replace(body, "</ItemGroup>", "  "+item+"\n  </ItemGroup>", 1)
+	default:
+		body = strings.Replace(body, "</Project>", "  <ItemGroup>\n    "+item+"\n  </ItemGroup>\n</Project>", 1)
+	}
+	return fsx.WriteFile(path, []byte(body), 0o600)
+}
+
 // projectDependencies reads a project file's dependencies by package: true for a soft one.
 func projectDependencies(project string) map[string]bool {
 	out := map[string]bool{}
@@ -157,7 +181,7 @@ func (s *Service) syncDependencies(gameID string, p settings.DevProject) error {
 		if folder == "" {
 			continue
 		}
-		if err := setUserProp(p.Dir, depProp(pkg), folder+string(filepath.Separator)); err != nil {
+		if err := setUserDependency(p.Dir, pkg, folder+string(filepath.Separator)); err != nil {
 			return err
 		}
 		for _, pl := range dotnet.PluginsIn(folder) {

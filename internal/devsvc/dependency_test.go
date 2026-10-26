@@ -66,3 +66,22 @@ func TestDeclareSoftDependency(t *testing.T) {
 		t.Fatal("the player's compatibility class was overwritten")
 	}
 }
+
+func TestSetUserDependencyListsEachPackageOnce(t *testing.T) {
+	dir := t.TempDir()
+	for range 2 {
+		if err := setUserDependency(dir, "AinaVT-LethalConfig", "/store/lc/"); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := setUserDependency(dir, "Evaisa-LethalLib", "/store/ll/"); err != nil {
+		t.Fatal(err)
+	}
+	body := read(t, filepath.Join(dir, "Config.Build.user.props"))
+	if strings.Count(body, `<MortarDependencyFolder Include="AinaVT-LethalConfig" />`) != 1 ||
+		strings.Count(body, `<MortarDependencyFolder Include="Evaisa-LethalLib" />`) != 1 ||
+		!strings.Contains(body, "<MortarDependency_AinaVT_LethalConfig>/store/lc/</MortarDependency_AinaVT_LethalConfig>") ||
+		strings.Count(body, "<ItemGroup>") != 1 {
+		t.Errorf("props = %s", body)
+	}
+}
