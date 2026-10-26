@@ -166,7 +166,7 @@ Nexus files without a manifest laid over a mod's main file ([architecture.md](ar
 
 ## Mod detail
 
-The **details panel** (`frontend/src/mods/DetailsAside.tsx`) is shared by both Mods views: a right-hand column while a mod is selected and absent otherwise, so the list takes the full width; resized by dragging its left edge or with the arrow keys on that handle. **More details** in a mod's menu selects the mod; there is no separate details dialog.
+The **details panel** (`frontend/src/mods/DetailsAside.tsx`) is shared by both Mods views: laid over the right edge of the list while a mod is selected, so opening it never changes the list's width or its columns; resized by dragging its left edge or with the arrow keys on that handle. **More details** in a mod's menu selects the mod; there is no separate details dialog.
 
 The enable toggle sits at the top right with an aria-label naming the mod. Pinning stops update offers until unpinned. **Change version…** installs any version the source lists, asking first on a pinned or frozen mod; **Roll back** confirms; **Reset** on the settings section deletes the file after a confirm so the mod writes a fresh one. The foot has **Show files** and **Remove** side by side, Remove outlined in the readable destructive red, as destructive menu items are. BBCode renders as paragraphs, headings, list items, bold, italic and http(s) links; other markup is dropped.
 

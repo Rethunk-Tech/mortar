@@ -41,6 +41,7 @@ import type { NexusById } from './nexusDetails.ts'
 import { detailsFor, useNexusDetails } from './nexusDetails.ts'
 import { OldFilesCallouts } from './OldFilesCallouts.tsx'
 import { focusMod } from './openMod.ts'
+import { DETAILS_HOST_SX } from './panelWidth.ts'
 import { addedWithin, WEEK_MS } from './recent.ts'
 import { SelectionBar } from './SelectionBar.tsx'
 import { SetNexusPageDialog } from './SetNexusPageDialog.tsx'
@@ -159,7 +160,7 @@ const ModsBody = memo(function ModsBodyView({
           useDetail.getState().show(null)
         }
       }}
-      sx={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto' }}
+      sx={DETAILS_HOST_SX}
     >
       <Box sx={{ minHeight: 0, display: 'flex', flexDirection: 'column' }}>
         {view === 'list' ? (

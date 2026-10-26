@@ -10,8 +10,9 @@ import {
   PANEL_MIN_PX,
 } from './panelWidth.ts'
 
-// The details column, resized by dragging its left edge or with the arrow keys on the handle. The width is clamped
-// to the Mods tab it sits in, so a narrow window never leaves the list without room.
+// The details panel, laid over the right of the list so opening it never changes the list's width (and so never
+// re-lays or redraws its rows); resized by dragging its left edge or with the arrow keys on the handle, clamped to the
+// tab it sits in.
 export function ResizableAside({ label, children }: { label: string; children: ReactNode }) {
   const { t } = useLingui()
   const [stored, setStored] = useStoredState('mortar.modPanelWidth', PANEL_DEFAULT_PX, isWidth)
@@ -37,11 +38,15 @@ export function ResizableAside({ label, children }: { label: string; children: R
       component="aside"
       ref={ref}
       sx={{
-        position: 'relative',
+        position: 'absolute',
+        insetBlock: 0,
+        right: 0,
+        zIndex: 2,
         width,
         overflowY: 'auto',
-        bgcolor: 'var(--mortar-panel)',
+        bgcolor: 'var(--mortar-panel-solid)',
         borderLeft: '1px solid var(--mortar-hairline)',
+        boxShadow: '-6px 0 18px var(--mortar-overlay-45)',
       }}
     >
       <Box

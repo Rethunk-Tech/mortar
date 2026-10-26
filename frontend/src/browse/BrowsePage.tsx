@@ -4,6 +4,7 @@ import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } fro
 import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { DependencyKindDialog } from '../develop/DependencyKindDialog.tsx'
+import { DETAILS_HOST_SX } from '../mods/panelWidth.ts'
 import { persist } from '../settings/persist.ts'
 import { useOfflineEmpty } from '../shell/offlineText.ts'
 import { space } from '../theme/density.ts'
@@ -271,9 +272,7 @@ function BrowsePage({
         sorts={sorts}
         onModes={onModes}
       />
-      <Box
-        sx={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto' }}
-      >
+      <Box sx={DETAILS_HOST_SX}>
         <Box sx={{ minHeight: 0, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
           <Box
             ref={results}

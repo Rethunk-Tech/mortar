@@ -3,8 +3,8 @@ import type { ReactNode } from 'react'
 import { compactQuery } from '../game/compact.ts'
 import { ResizableAside } from './ResizableAside.tsx'
 
-// The one details panel shell, for a mod in the profile and a hit in Browse: an aside at the window's normal width,
-// a right drawer below 960px. It takes room only while open, so the list gets the full width otherwise.
+// The one details panel shell, for a mod in the profile and a hit in Browse: an aside over the list's right edge at the
+// window's normal width, a right drawer below 960px.
 export function DetailsAside({
   open,
   label,
