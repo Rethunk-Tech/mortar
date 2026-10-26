@@ -10,7 +10,7 @@ import {
   FileSearch,
   LifeBuoy,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { Level } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import { RunLog } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { SaveFile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
@@ -44,6 +44,78 @@ function ShareLog() {
   )
 }
 
+// The buttons take only what they show, so a log, run or mod list arriving redraws them only when one turns on or off.
+const Buttons = memo(function ButtonsView({
+  firstErr,
+  previousErr,
+  nextErr,
+  hasRows,
+  canSave,
+  onCopy,
+  onSave,
+}: {
+  firstErr: number
+  previousErr: number
+  nextErr: number
+  hasRows: boolean
+  canSave: boolean
+  onCopy: () => void
+  onSave: () => void
+}) {
+  const { t } = useLingui()
+  const [searching, setSearching] = useState(false)
+  const { clear, jumpTo } = useConsole.getState()
+  return (
+    <PageActions>
+      <Box role="group" aria-label={t`Errors`} sx={{ display: 'flex', gap: '2px' }}>
+        <IconAction
+          label={t`Jump to first error`}
+          icon={<CircleAlert size={16} />}
+          disabled={firstErr < 0}
+          onClick={() => jumpTo(firstErr)}
+        />
+        <IconAction
+          label={t`Jump to previous error`}
+          icon={<ChevronUp size={16} />}
+          disabled={previousErr < 0}
+          onClick={() => jumpTo(previousErr)}
+        />
+        <IconAction
+          label={t`Jump to next error`}
+          icon={<ChevronDown size={16} />}
+          disabled={nextErr < 0}
+          onClick={() => jumpTo(nextErr)}
+        />
+      </Box>
+      <IconAction
+        label={t`Copy log`}
+        icon={<Copy size={16} />}
+        disabled={!hasRows}
+        onClick={onCopy}
+      />
+      <IconAction
+        label={t`Save log…`}
+        icon={<Download size={16} />}
+        disabled={!canSave}
+        onClick={onSave}
+      />
+      <IconAction
+        label={t`Search all runs…`}
+        icon={<FileSearch size={16} />}
+        onClick={() => setSearching(true)}
+      />
+      <IconAction
+        label={t`Clear`}
+        icon={<Eraser size={16} />}
+        disabled={!hasRows}
+        onClick={clear}
+      />
+      <ShareLog />
+      <SearchRunsDialog open={searching} onClose={() => setSearching(false)} />
+    </PageActions>
+  )
+})
+
 export function LogActions({ game }: { game: string }) {
   const { t } = useLingui()
   const empty = useConsoleEmpty(game)
@@ -55,9 +127,7 @@ export function LogActions({ game }: { game: string }) {
   const profileName = useProfiles(
     (s) => s.profiles.find((p) => p.id === shown.profile)?.name ?? shown.profile,
   )
-  const { clear, jumpTo } = useConsole.getState()
   const loaderName = useProfileLoader()?.name ?? ''
-  const [searching, setSearching] = useState(false)
   const [viewedStart, setViewedStart] = useState<Date | null>(null)
   useEffect(() => {
     if (!viewingRun) {
@@ -100,56 +170,22 @@ export function LogActions({ game }: { game: string }) {
       })
       .catch(reportUnexpected)
   }
+  const latest = useRef({ rows, saveLog })
+  latest.current = { rows, saveLog }
+  const onCopy = useCallback(() => copyText(formatAll(latest.current.rows), t`Log copied`), [t])
+  const onSave = useCallback(() => latest.current.saveLog(), [])
   if (empty) {
     return null
   }
   return (
-    <PageActions>
-      <Box role="group" aria-label={t`Errors`} sx={{ display: 'flex', gap: '2px' }}>
-        <IconAction
-          label={t`Jump to first error`}
-          icon={<CircleAlert size={16} />}
-          disabled={firstErr < 0}
-          onClick={() => jumpTo(firstErr)}
-        />
-        <IconAction
-          label={t`Jump to previous error`}
-          icon={<ChevronUp size={16} />}
-          disabled={previousErr < 0}
-          onClick={() => jumpTo(previousErr)}
-        />
-        <IconAction
-          label={t`Jump to next error`}
-          icon={<ChevronDown size={16} />}
-          disabled={nextErr < 0}
-          onClick={() => jumpTo(nextErr)}
-        />
-      </Box>
-      <IconAction
-        label={t`Copy log`}
-        icon={<Copy size={16} />}
-        disabled={rows.length === 0}
-        onClick={() => copyText(formatAll(rows), t`Log copied`)}
-      />
-      <IconAction
-        label={t`Save log…`}
-        icon={<Download size={16} />}
-        disabled={!canSave}
-        onClick={saveLog}
-      />
-      <IconAction
-        label={t`Search all runs…`}
-        icon={<FileSearch size={16} />}
-        onClick={() => setSearching(true)}
-      />
-      <IconAction
-        label={t`Clear`}
-        icon={<Eraser size={16} />}
-        disabled={rows.length === 0}
-        onClick={clear}
-      />
-      <ShareLog />
-      <SearchRunsDialog open={searching} onClose={() => setSearching(false)} />
-    </PageActions>
+    <Buttons
+      firstErr={firstErr}
+      previousErr={previousErr}
+      nextErr={nextErr}
+      hasRows={rows.length > 0}
+      canSave={canSave}
+      onCopy={onCopy}
+      onSave={onSave}
+    />
   )
 }

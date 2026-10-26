@@ -11,7 +11,7 @@ import {
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { ChevronDown } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { memo, useMemo, useState } from 'react'
 import { Level } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import { formatCount } from '../mods/nexusFormat.ts'
 import { pillButtonSx, pillGroupSx } from '../shell/pillToggle.ts'
@@ -24,13 +24,22 @@ import { useConsole } from './store.ts'
 // Trace and Debug are rarely wanted and very long, so they live in a menu beside the everyday levels.
 const QUIET_LEVELS: Level[] = [Level.Trace, Level.Debug]
 
+// The lines per level, as one string: a new list of lines with the same counts leaves the pills alone.
 export function LevelToggles() {
+  const entries = useShownEntries()
+  const counts = countByLevel(entries)
+  return <Pills counts={LEVELS.map((level) => counts.get(level) ?? 0).join(',')} />
+}
+
+const Pills = memo(function PillsView({ counts: joined }: { counts: string }) {
   const { t, i18n } = useLingui()
   const theme = useTheme()
-  const entries = useShownEntries()
   const on = useConsole((s) => s.filters.levels)
   const toggle = useConsole((s) => s.toggleLevel)
-  const counts = useMemo(() => countByLevel(entries), [entries])
+  const counts = useMemo(() => {
+    const n = joined.split(',').map(Number)
+    return new Map<Level, number>(LEVELS.map((level, i) => [level, n[i] ?? 0]))
+  }, [joined])
   const [more, setMore] = useState<HTMLElement | null>(null)
   const names = useLevelNames()
   const everyday = LEVELS.filter((level) => !QUIET_LEVELS.includes(level))
@@ -123,4 +132,4 @@ export function LevelToggles() {
       </Menu>
     </Box>
   )
-}
+})
