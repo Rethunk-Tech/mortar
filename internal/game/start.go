@@ -51,6 +51,9 @@ type StartEnv struct {
 	Instances int
 	// DelaySeconds is the pause between those processes.
 	DelaySeconds int
+	// TestCopies gives the first process `--lan --host` and the others `--lan --join 127.0.0.1`, which a game's dev
+	// helper mod reads to host a LAN game and join it.
+	TestCopies bool
 	// StartFirst is the VR runtime started before the game (settings.StartFirstSteamVR or StartFirstALVR), and
 	// ALVRProgram ALVR's dashboard; empty or off starts none.
 	StartFirst  string
@@ -94,7 +97,17 @@ func (st Starter) Start(ctx context.Context, inst Install, plan *launchplan.Plan
 				return err
 			}
 		}
-		if err := st.startOne(ctx, inst, plan, env, onLines); err != nil {
+		one := plan
+		if env.TestCopies {
+			role := []string{"--lan", "--join", "127.0.0.1"}
+			if i == 0 {
+				role = []string{"--lan", "--host"}
+			}
+			copied := *plan
+			copied.Args = append(slices.Clone(plan.Args), role...)
+			one = &copied
+		}
+		if err := st.startOne(ctx, inst, one, env, onLines); err != nil {
 			return err
 		}
 	}

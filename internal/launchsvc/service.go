@@ -1004,7 +1004,7 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 		ov := launchOverrides(s.profiles, g.ID(), profileID)
 		env.Instances, _ = strconv.Atoi(settings.ResolveAt(s.settings.Get(), "instances", scope, ov))
 		if n, ok := ctx.Value(instancesKey{}).(int); ok {
-			env.Instances = n
+			env.Instances, env.TestCopies = n, true
 		}
 		env.DelaySeconds, _ = strconv.Atoi(settings.ResolveAt(s.settings.Get(), "delaySeconds", scope, ov))
 	}

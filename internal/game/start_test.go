@@ -508,6 +508,8 @@ func TestStartSchedulesDirectInstances(t *testing.T) {
 		instances    int
 		delay        int
 		cancelSleep  bool
+		testCopies   bool
+		wantRoles    []string
 		wantStarts   int
 		wantDelays   []time.Duration
 		wantCanceled bool
@@ -519,6 +521,15 @@ func TestStartSchedulesDirectInstances(t *testing.T) {
 			delay:      5,
 			wantStarts: 3,
 			wantDelays: []time.Duration{5 * time.Second, 5 * time.Second},
+		},
+		{
+			name:       "test copies host and join",
+			direct:     true,
+			instances:  2,
+			testCopies: true,
+			wantStarts: 2,
+			wantDelays: []time.Duration{0},
+			wantRoles:  []string{"--lan --host", "--lan --join 127.0.0.1"},
 		},
 		{
 			name:       "steam url starts one",
@@ -541,13 +552,17 @@ func TestStartSchedulesDirectInstances(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			var starts int
 			var delays []time.Duration
+			var roles []string
 			ctx, cancel := context.WithCancel(t.Context())
 			defer cancel()
 			st := Starter{
 				LookPath: func(string) (string, error) { return "/usr/bin/steam", nil },
 				Timing:   launch.Timing{Timeout: 300 * time.Millisecond, Poll: time.Millisecond},
-				Runner: func(string, string, ...string) (<-chan error, error) {
+				Runner: func(_, _ string, args ...string) (<-chan error, error) {
 					starts++
+					if i := slices.Index(args, "--lan"); i >= 0 {
+						roles = append(roles, strings.Join(args[i:], " "))
+					}
 					return make(chan error), nil
 				},
 				Sleep: func(_ context.Context, d time.Duration) error {
@@ -564,6 +579,7 @@ func TestStartSchedulesDirectInstances(t *testing.T) {
 				Direct:       tc.direct,
 				Instances:    tc.instances,
 				DelaySeconds: tc.delay,
+				TestCopies:   tc.testCopies,
 				Ready:        func() bool { return true },
 			}
 			err := st.Start(ctx, Install{Game: "stardew", Dir: dir}, plan, env, nil)
@@ -574,7 +590,7 @@ func TestStartSchedulesDirectInstances(t *testing.T) {
 			} else if err != nil {
 				t.Fatal(err)
 			}
-			if starts != tc.wantStarts || !slices.Equal(delays, tc.wantDelays) {
+			if starts != tc.wantStarts || !slices.Equal(delays, tc.wantDelays) || !slices.Equal(roles, tc.wantRoles) {
 				t.Fatalf("starts %d delays %v, want %d %v", starts, delays, tc.wantStarts, tc.wantDelays)
 			}
 		})
