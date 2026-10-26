@@ -9,6 +9,9 @@ func TestValidChangedPath(t *testing.T) {
 		want      bool
 	}{
 		{game: "sims4", rel: "Mods/mc/x.cfg", want: true},
+		{game: "sims4", rel: "Mods/mc/mc_state.dat", want: true},
+		{game: "sims4", rel: "Mods/mc/evil.ts4script"},
+		{game: "sims4", rel: "Mods/pack/evil.dll"},
 		{game: "sims4", rel: "changed/Mods/old/x.cfg", want: true},
 		{game: "vintage-story", rel: "Mods/pack/modinfo.json", want: true},
 		// Stardew deploys by redirect, Lethal Company has no mods target: neither accepts a copy.
