@@ -50,7 +50,8 @@ type StartEnv struct {
 	Proton string
 	// Instances is how many processes a direct Play starts (1–8). Steam and store URL launches always start one.
 	Instances int
-	// DelaySeconds is the pause between those processes.
+	// DelaySeconds is the pause between those processes. Test copies start without it: the dev helper's joiners retry
+	// until the host is up.
 	DelaySeconds int
 	// TestCopies gives the first process `--lan --host` and the others `--lan --join 127.0.0.1`, which a game's dev
 	// helper mod reads to host a LAN game and join it, and each `--tile <n>/<count>`, its cell of a grid of windows.
@@ -92,7 +93,7 @@ func (st Starter) Start(ctx context.Context, inst Install, plan *launchplan.Plan
 		return err
 	}
 	for i := 0; i < n; i++ {
-		if i > 0 {
+		if i > 0 && !env.TestCopies {
 			d := max(env.DelaySeconds, 0)
 			if err := sleep(ctx, time.Duration(d)*time.Second); err != nil {
 				return err

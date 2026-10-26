@@ -527,9 +527,9 @@ func TestStartSchedulesDirectInstances(t *testing.T) {
 			name:       "test copies host and join",
 			direct:     true,
 			instances:  2,
+			delay:      5,
 			testCopies: true,
 			wantStarts: 2,
-			wantDelays: []time.Duration{0},
 			wantRoles:  []string{"--lan --host --tile 1/2", "--lan --join 127.0.0.1 --tile 2/2"},
 		},
 		{
