@@ -16,23 +16,21 @@ Decided work, short enough to build cold. Delete an item in the change that land
 - top mods from the sources' APIs, cached in a data file under `web/src/data/` that `bun run site:refresh` writes (`web/scripts/refresh.ts`);
 - an optional hand-written note per game.
 
-### Test copies join each other
+### DevLaunch added for test copies
 
-"Test with 2 copies" (Develop) gives the first copy `--lan --host` and the others `--lan --join 127.0.0.1`, each with `--tile <n>/<count>` (`internal/game/start.go` `StartEnv.TestCopies`). The dev helper mod `mortar-lc-devlaunch` (mortar-mods, Thunderstore `Mortar-DevLaunch`, decided with the maintainer over putting it in the bridge) reads them, and `--online` too: it picks the launch mode, then hosts, or joins the address with retries, and puts each window in its cell of a grid over the screen. Until it is published it is added to a profile as a Develop project.
+Develop's Test needs the dev helper mod `Mortar-DevLaunch` (`Rethunk-Tech/mortar-lc-devlaunch`) in the profile; until it is on Thunderstore it is added as a Develop project.
 
-- **Left:** once `Mortar-DevLaunch` is on Thunderstore, `StartInstances` (`internal/launchsvc/service.go`) adds it to a Lethal Company profile that lacks it before starting copies, marked in the profile's mod list as development-only, and a normal Play leaves it off. The catalog names the package per game (a `devHelper` field on the game's dev template entry), so no Go code names Lethal Company.
-- **Done when:** "Test with 2 copies" on a profile without the mod ends with both copies in one LAN lobby with no clicks; a normal Play shows the menus as usual.
+- **Shape:** `StartInstances` (`internal/launchsvc/service.go`) adds it to a Lethal Company profile that lacks it before starting copies, marked in the profile's mod list as development-only, and a normal Play leaves it off. The catalog names the package per game (a `devHelper` field on the game's dev template entry), so no Go code names Lethal Company.
+- **Done when:** Test on a profile without the mod ends with every copy in one LAN lobby with no clicks; a normal Play shows the menus as usual.
 
-### ConfigSync support
+### ConfigSync in the config editor
 
-Mortar-ConfigSync (`Rethunk-Tech/mortar-lc-configsync`) lets a Lethal Company mod share chosen settings from the host while players are connected, at a level per setting: Host enforced, Host recommended or Client only. Decided with the maintainer:
+Mortar-ConfigSync (`Rethunk-Tech/mortar-lc-configsync`) shares chosen settings from the host while players are connected, each Host enforced or Host recommended, and writes `BepInEx/config/<plugin guid>.sync.json` beside the mod's `.cfg` naming them: `{"version":1,"settings":[{"section":"General","key":"Distance","level":"hostEnforced"}]}`.
 
-- **Sidecar file:** when a mod shares a setting, ConfigSync writes `BepInEx/config/<plugin guid>.sync.json` beside the mod's `.cfg`: `{"version":1,"settings":[{"section":"General","key":"Distance","level":"hostEnforced"}]}`, rewritten only when its content changes. It holds no values.
-- **Config editor:** `internal/configsvc/bepinex.go` (`schema`) reads the sidecar for each `.cfg` and gives each entry a `sync` level (`frontend/src/mods/typedConfig/types.ts` `ConfigEntry`). The editor shows a chip (Host enforced, Host recommended) beside the setting, with a tooltip saying what it means; Client only shows nothing. Works with the game closed.
+- **Chips:** `internal/configsvc/bepinex.go` (`schema`) reads the sidecar for each `.cfg` and gives each entry a `sync` level (`frontend/src/mods/typedConfig/types.ts` `ConfigEntry`). The editor shows a chip (Host enforced, Host recommended) beside the setting, with a tooltip saying what it means. Works with the game closed.
 - **Live host values:** while the game runs, the BepInEx bridge answers a `configsync` query (`internal/bridge/bridge.go` `Query`) with the values the host sent, by mod and setting, read from ConfigSync by reflection, so the bridge needs no dependency on it. The editor shows "Host: <value>" under a shared setting whose value differs from the player's own, refreshed while the editor is open. Needs a bridge release.
-- **Develop:** the template gains a `configSync` bool, required to be off unless `config` is on and `audience` is everyone (`mortar.host.json` `requires`), on by default when allowed. When on, the generated project depends on `Mortar-ConfigSync` and shares its example setting as Host enforced. The catalog's `devTemplate.recommends` (`internal/components/components.json`) lists `Mortar-ConfigSync` for `configSync` `true`, so the Dependencies step ticks it.
-- **Order:** ConfigSync's audit fixes and the sidecar, then its release to Thunderstore (CI and the template's dependency fetch need the package there), then the template option and catalog entry, then the editor chips, then the bridge's live values.
-- **Done when:** a mod sharing a setting shows its chip in the editor with the game closed; with the game running on a client of a host whose value differs, the editor shows the host's value; a new mod with config on and audience everyone builds against ConfigSync and shares its setting.
+- **Order:** the chips, then the bridge's live values.
+- **Done when:** a mod sharing a setting shows its chip in the editor with the game closed; with the game running on a client of a host whose value differs, the editor shows the host's value.
 
 ### Asset-only mods in Develop
 
