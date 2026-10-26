@@ -99,10 +99,19 @@ type Tools struct {
 	GameDir string `json:"gameDir"`
 }
 
+// guardGit stops a project's own .git/config (from an archive or a foreign clone) from running programs: no fsmonitor, no hooks.
+func guardGit(name string, args []string) []string {
+	if name != "git" {
+		return args
+	}
+	return append([]string{"-c", "core.fsmonitor=false", "-c", "core.hooksPath=" + os.DevNull}, args...)
+}
+
 func (s *Service) run(ctx context.Context, dir, name string, args ...string) ([]byte, error) {
 	if s.Run != nil {
 		return s.Run(ctx, dir, name, args...)
 	}
+	args = guardGit(name, args)
 	cmd := exec.CommandContext(ctx, name, args...) // #nosec G204 -- fixed tools; arguments validated by the caller
 	cmd.Dir = dir
 	nowindow.Set(cmd)

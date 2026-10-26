@@ -20,7 +20,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
-var githubRepo = regexp.MustCompile(`^(?:https://github\.com/|git@github\.com:)?([A-Za-z0-9][A-Za-z0-9-]{0,38})/([A-Za-z0-9._-]{1,100}?)(?:\.git)?/?$`)
+var githubRepo = regexp.MustCompile(`^(?:https://github\.com/|git@github\.com:)?([A-Za-z0-9][A-Za-z0-9-]{0,38})/([A-Za-z0-9][A-Za-z0-9._-]{0,99}?)(?:\.git)?/?$`)
 
 // enroll makes dir's build output an extra mods folder of the project's profile (created as "<game> Development"
 // when profileID is empty, filled from copyFrom) and records the project.
@@ -161,7 +161,7 @@ func (s *Service) Clone(ctx context.Context, gameID, repo, parentDir, profileID 
 	if s.Tools(ctx, gameID).GitHubUser != "" {
 		_, err = s.run(ctx, parentDir, "gh", "repo", "clone", full, name)
 	} else {
-		_, err = s.run(ctx, parentDir, "git", "clone", "https://github.com/"+full+".git", name)
+		_, err = s.run(ctx, parentDir, "git", "clone", "--", "https://github.com/"+full+".git", name)
 	}
 	if err != nil {
 		_ = fsx.RemoveAll(dest)

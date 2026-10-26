@@ -1,6 +1,10 @@
 package devsvc
 
-import "testing"
+import (
+	"os"
+	"slices"
+	"testing"
+)
 
 func TestArgsRefuseControlCharacters(t *testing.T) {
 	f := Form{all: []Param{{ID: "description", Label: "Description"}}}
@@ -32,5 +36,22 @@ func TestArgsRefuseAnUnmetRequirement(t *testing.T) {
 		if _, _, err := f.args(c.values, nil); (err == nil) != c.ok {
 			t.Errorf("%v: err %v, want ok %v", c.values, err, c.ok)
 		}
+	}
+}
+
+func TestArgsRefuseADashInAnyPartOfAMultiValue(t *testing.T) {
+	f := Form{all: []Param{{ID: "tags", Label: "Tags", Multiple: true}}}
+	if _, _, err := f.args(map[string]string{"tags": "a|-b"}, nil); err == nil {
+		t.Fatal("a|-b was accepted")
+	}
+}
+
+func TestGuardGitDisablesRepoControlledPrograms(t *testing.T) {
+	got := guardGit("git", []string{"status"})
+	if !slices.Contains(got, "core.fsmonitor=false") || !slices.Contains(got, "core.hooksPath="+os.DevNull) || got[len(got)-1] != "status" {
+		t.Fatalf("git args %v", got)
+	}
+	if got := guardGit("gh", []string{"api"}); !slices.Equal(got, []string{"api"}) {
+		t.Fatalf("gh args %v", got)
 	}
 }

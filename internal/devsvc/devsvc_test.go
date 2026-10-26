@@ -393,6 +393,8 @@ func TestParseRepoReadsOwnerAndName(t *testing.T) {
 		"a/b/c":                        "",
 		"-a/b":                         "",
 		"a/../b":                       "",
+		"a/-b":                         "",
+		"a/--upload-pack=x":            "",
 	} {
 		owner, name, err := ParseRepo(in)
 		if got := owner + "/" + name; (want == "") != (err != nil) || (err == nil && got != want) {
@@ -409,10 +411,10 @@ func TestCloneRemovesWhatIsNotAProject(t *testing.T) {
 			if name == "gh" && args[0] == "api" {
 				return nil, errors.New("signed out")
 			}
-			if name != "git" || args[0] != "clone" || args[1] != "https://github.com/o/shop.git" {
+			if name != "git" || args[0] != "clone" || args[1] != "--" || args[2] != "https://github.com/o/shop.git" {
 				return nil, errors.New("unexpected " + name)
 			}
-			out := filepath.Join(dir, args[2])
+			out := filepath.Join(dir, args[3])
 			if files {
 				return nil, writeAll(filepath.Join(out, "src", "Shop", "Shop.csproj"), []byte("<Project/>"), 0o644)
 			}

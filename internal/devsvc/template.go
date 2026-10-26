@@ -273,7 +273,7 @@ func (f Form) args(values, fills map[string]string) ([]string, map[string]string
 			}
 			continue
 		}
-		if strings.HasPrefix(v, "-") || strings.ContainsFunc(v, unicode.IsControl) {
+		if strings.ContainsFunc(v, unicode.IsControl) || slices.ContainsFunc(strings.Split(v, "|"), func(part string) bool { return strings.HasPrefix(part, "-") }) {
 			return nil, nil, invalid("%s cannot start with a dash or hold line breaks or other control characters", p.Label)
 		}
 		if p.MaxLength > 0 && len([]rune(v)) > p.MaxLength {
