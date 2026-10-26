@@ -5,6 +5,7 @@ import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { githubLoggedIn } from '../../shell/sharedReads.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
+import { useSettingsRelevant } from '../useSettingsSearch.ts'
 import { ItchAccount } from './ItchAccount.tsx'
 import { NexusMods } from './NexusMods.tsx'
 
@@ -12,18 +13,17 @@ import { NexusMods } from './NexusMods.tsx'
 function GitHubLogin() {
   const { t } = useLingui()
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null)
+  const label = t`${{ source: sourceLabel('github') }} CLI login`
+  const using = t`Mortar uses your gh login for ${{ source: sourceLabel('github') }} requests, which raises the rate limit.`
+  const without = t`Mortar sends ${{ source: sourceLabel('github') }} requests without a login. Run gh auth login to raise the rate limit.`
+  const relevant = useSettingsRelevant(label, using, without)
   useEffect(() => {
-    githubLoggedIn().then(setLoggedIn).catch(reportUnexpected)
-  }, [])
+    if (relevant) {
+      githubLoggedIn().then(setLoggedIn).catch(reportUnexpected)
+    }
+  }, [relevant])
   return (
-    <SettingRow
-      label={t`${{ source: sourceLabel('github') }} CLI login`}
-      description={
-        loggedIn
-          ? t`Mortar uses your gh login for ${{ source: sourceLabel('github') }} requests, which raises the rate limit.`
-          : t`Mortar sends ${{ source: sourceLabel('github') }} requests without a login. Run gh auth login to raise the rate limit.`
-      }
-    >
+    <SettingRow label={label} description={loggedIn ? using : without}>
       {loggedIn === null ? null : (
         <Chip
           size="small"

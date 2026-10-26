@@ -14,6 +14,7 @@ import { usePending } from '../../toasts/usePending.ts'
 import { NexusMeter } from '../NexusMeter.tsx'
 import { useNexus } from '../nexus.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
+import { useSettingsRelevant } from '../useSettingsSearch.ts'
 
 const SOURCES = [
   'nexus',
@@ -93,8 +94,17 @@ function useAuth(id: SourceId): { ok: boolean | null; text: ReactNode } {
   const name = useNexus((s) => s.name)
   const [github, setGithub] = useState<boolean | null>(null)
   const [itch, setItch] = useState<string | null>(null)
+  const relevant = useSettingsRelevant(
+    t`Account`,
+    t`Using your gh login`,
+    t`No login, so the lower rate limit applies. Run gh auth login to raise it.`,
+    t`API key set for ${{ key: '' }}`,
+  )
   // Each source's row asks only about its own account.
   useEffect(() => {
+    if (!relevant) {
+      return
+    }
     if (id === 'github') {
       githubLoggedIn().then(setGithub).catch(reportUnexpected)
     }
@@ -103,7 +113,7 @@ function useAuth(id: SourceId): { ok: boolean | null; text: ReactNode } {
         .then((a) => setItch(a.signedIn ? a.name : ''))
         .catch(reportUnexpected)
     }
-  }, [id])
+  }, [id, relevant])
   switch (id) {
     case 'nexus':
       return nexusSignedIn
@@ -152,15 +162,19 @@ function Auth({ id }: { id: SourceId }) {
 function GitHubQuota() {
   const { t } = useLingui()
   const [rate, setRate] = useState<Awaited<ReturnType<typeof GitHubRate>> | null>(null)
+  const unknown = t`Request counts appear after Mortar talks to ${{ source: sourceLabel('github') }}.`
+  const relevant = useSettingsRelevant(t`Requests`, unknown)
   useEffect(() => {
-    GitHubRate().then(setRate).catch(reportUnexpected)
-  }, [])
+    if (relevant) {
+      GitHubRate().then(setRate).catch(reportUnexpected)
+    }
+  }, [relevant])
   const detail = rate?.known
     ? [
         t`${{ remaining: rate.remaining }} of ${{ limit: rate.limit }} requests left`,
         t`resets ${{ when: formatWhen(rate.reset) }}`,
       ].join(' · ')
-    : t`Request counts appear after Mortar talks to ${{ source: sourceLabel('github') }}.`
+    : unknown
   return (
     <SettingRow label={t`Requests`} description={detail}>
       {null}
@@ -193,9 +207,13 @@ function Quota({ id }: { id: SourceId }) {
 }
 
 export function Sources() {
+  const { t } = useLingui()
+  const relevant = useSettingsRelevant(t`Connection`)
   useEffect(() => {
-    refresh().catch(reportUnexpected)
-  }, [])
+    if (relevant) {
+      refresh().catch(reportUnexpected)
+    }
+  }, [relevant])
   return (
     <>
       {SOURCES.map((id) => (

@@ -34,6 +34,7 @@ import { PrefSwitch } from '../PrefControls.tsx'
 import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
+import { useSettingsRelevant } from '../useSettingsSearch.ts'
 import { ImportSettingsDialog } from './DataImport.tsx'
 
 const maxLanPort = 65_535
@@ -174,9 +175,14 @@ function Sharing() {
     FirewallBlocked().then(setFirewallBlocked).catch(reportFailure)
     NetworkIsPublic().then(setNetworkPublic).catch(reportFailure)
   }, [reportFailure])
-  // The firewall rules depend on both settings, so a change to either rereads the status; with sharing off there is
-  // nothing to show.
-  const statusKey = `${lanSharing}:${allowAny}`
+  // The firewall rules depend on both settings, so a change to either rereads the status; with sharing off, or a search
+  // these rows do not match, there is nothing to show.
+  const publicLabel = t`This network is set to Public in ${{ os: WINDOWS }}`
+  const publicText = t`Nearby computers cannot reach Mortar. Set the network to Private in ${{ os: WINDOWS }} network settings.`
+  const firewallLabel = t`${{ os: WINDOWS }} Firewall blocks incoming sends to Mortar`
+  const firewallText = t`Allow Mortar through the firewall so nearby users can send profiles.`
+  const relevant = useSettingsRelevant(publicLabel, publicText, firewallLabel, firewallText)
+  const statusKey = `${lanSharing && relevant}:${allowAny}`
   useEffect(() => {
     if (!statusKey.startsWith('true')) {
       setFirewallBlocked(false)
@@ -252,18 +258,12 @@ function Sharing() {
         </SettingRow>
       ) : null}
       {lanSharing && networkPublic && !allowAny ? (
-        <SettingRow
-          label={t`This network is set to Public in ${{ os: WINDOWS }}`}
-          description={t`Nearby computers cannot reach Mortar. Set the network to Private in ${{ os: WINDOWS }} network settings.`}
-        >
+        <SettingRow label={publicLabel} description={publicText}>
           <span />
         </SettingRow>
       ) : null}
       {firewallBlocked ? (
-        <SettingRow
-          label={t`${{ os: WINDOWS }} Firewall blocks incoming sends to Mortar`}
-          description={t`Allow Mortar through the firewall so nearby users can send profiles.`}
-        >
+        <SettingRow label={firewallLabel} description={firewallText}>
           <Button
             variant="outlined"
             disabled={fixingFirewall}

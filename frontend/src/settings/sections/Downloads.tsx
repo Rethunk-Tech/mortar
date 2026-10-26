@@ -1,8 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Link } from '@mui/material'
 import { memo, useCallback, useEffect, useState } from 'react'
-import type { GameInfo } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
-import { List as ListGames } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
 import type { LinkSource } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nxmsvc/models.ts'
 import {
   DisableSource,
@@ -18,6 +16,7 @@ import {
 import { ExtensionContact } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/support/service.ts'
 import { CHROME, CHROMIUM, EDGE, FIREFOX } from '../../brand/productNames.ts'
 import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
+import { useGames } from '../../games/info.ts'
 import { When } from '../../i18n/When.tsx'
 import { openPage } from '../../mods/menu.ts'
 import { listProfiles } from '../../profiles/listProfiles.ts'
@@ -30,6 +29,7 @@ import { persist, pickFolderSetting } from '../persist.ts'
 import { prefCopy } from '../prefCopy.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
+import { useSettingsRelevant } from '../useSettingsSearch.ts'
 import { useNxmHandler } from './nxmHandler.tsx'
 import { WatchFolders } from './WatchFolders.tsx'
 
@@ -50,22 +50,24 @@ function NxmDefaultProfile({ game, gameName }: { game: string; gameName: string 
     return s.game?.id === game ? namesOf(s.profiles) : []
   })
   const value = useSettings((s) => s.games?.[game]?.nxmDefaultProfile ?? '')
+  const copy = prefCopy(i18n, 'nxmDefaultProfile')
+  const label = t`${{ name: copy.label }} (${{ game: gameName }})`
+  const relevant = useSettingsRelevant(label, copy.description ?? '')
   useEffect(() => {
+    if (!relevant) {
+      return
+    }
     const keep = (next: Named[]) => setProfiles((prev) => (sameValue(prev, next) ? prev : next))
     listProfiles(game)
       .then((ps) => keep(namesOf(ps ?? [])))
       .catch(() => keep([]))
-  }, [game])
-  const copy = prefCopy(i18n, 'nxmDefaultProfile')
+  }, [game, relevant])
   const options = [
     { value: '', label: t`Last opened profile` },
     ...profiles.map((p) => ({ value: p.id, label: p.name })),
   ]
   return (
-    <SettingRow
-      label={t`${{ name: copy.label }} (${{ game: gameName }})`}
-      description={copy.description}
-    >
+    <SettingRow label={label} description={copy.description}>
       <PrefSelect
         value={options.some((o) => o.value === value) ? value : ''}
         onChange={(v) =>
@@ -79,12 +81,7 @@ function NxmDefaultProfile({ game, gameName }: { game: string; gameName: string 
 }
 
 function NxmDefaultProfiles() {
-  const [games, setGames] = useState<GameInfo[]>([])
-  useEffect(() => {
-    ListGames()
-      .then((gs) => setGames((gs ?? []).filter((g) => g.installed && g.sources?.includes('nexus'))))
-      .catch(() => setGames([]))
-  }, [])
+  const games = useGames().filter((g) => g.installed && g.sources?.includes('nexus'))
   return (
     <>
       {games.map((g) => (
@@ -107,9 +104,12 @@ function ExtensionConnection() {
     lastSeen: string
     mismatch?: string
   } | null>(null)
+  const relevant = useSettingsRelevant(t`Connection`)
   useEffect(() => {
-    ExtensionContact().then(setContact).catch(reportUnexpected)
-  }, [])
+    if (relevant) {
+      ExtensionContact().then(setContact).catch(reportUnexpected)
+    }
+  }, [relevant])
   const connected = contact !== null && contact.browser !== ''
   const mismatchText: Partial<Record<string, string>> = {
     extensionTooOld: t`The browser extension is too old for this Mortar`,

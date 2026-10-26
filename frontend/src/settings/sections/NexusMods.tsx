@@ -28,6 +28,7 @@ import { useNexus } from '../nexus.ts'
 import { PrefSwitch } from '../PrefControls.tsx'
 import { PrefByKey } from '../PrefRow.tsx'
 import { Searchable, SettingRow, SettingsSection } from '../SettingsSection.tsx'
+import { useSettingsRelevant } from '../useSettingsSearch.ts'
 import { NexusSSO } from './NexusSSO.tsx'
 import { useNxmHandler } from './nxmHandler.tsx'
 
@@ -114,13 +115,17 @@ function NexusModsSignedIn({
   // The game last opened; untracking is per game, and Settings has no game of its own.
   const game = useProfiles((s) => s.game)
 
+  const gameName = game?.name ?? ''
+  const relevant = useSettingsRelevant(
+    t`Untrack on ${{ source: sourceLabel('nexus') }}`,
+    t`Untrack every ${{ game: gameName }} mod on ${{ source: sourceLabel('nexus') }}`,
+  )
   const { data: trackedCount, setData: setTrackedCount } = useLoaded<number | null>(
-    game ? () => TrackedCount(game.id) : null,
-    [game],
+    game && relevant ? () => TrackedCount(game.id) : null,
+    [game, relevant],
     null,
     reportUnexpected,
   )
-  const gameName = game?.name ?? ''
   const untrackOff = busy || trackedCount === null || trackedCount === 0
   let trackedText = t`Untrack every mod you track on ${{ source: sourceLabel('nexus') }}`
   if (gameName && trackedCount !== null) {
@@ -222,14 +227,18 @@ export function NexusSignIn() {
   const { t } = useLingui()
   const keyId = useId()
   const signedIn = useNexus((s) => s.signedIn)
-  const nxm = useNxmHandler()
+  const nxm = useNxmHandler(false)
   const [key, setKey] = useState('')
   const [busy, setBusy] = useState(false)
   const [keyAllowed, setKeyAllowed] = useState(true)
   const [error, setError] = useState<InlineError | null>(null)
+  const terms = `${t`${{ source: sourceLabel('nexus') }} account`} ${t`Personal API key`} ${t`Sign in`}`
+  const relevant = useSettingsRelevant(terms)
   useEffect(() => {
-    APIKeyAvailable().then(setKeyAllowed).catch(reportUnexpected)
-  }, [])
+    if (relevant) {
+      APIKeyAvailable().then(setKeyAllowed).catch(reportUnexpected)
+    }
+  }, [relevant])
   const submit = (e: SubmitEvent) => {
     e.preventDefault()
     setBusy(true)
@@ -263,9 +272,7 @@ export function NexusSignIn() {
     return nxm.dialog
   }
   return (
-    <Searchable
-      terms={`${t`${{ source: sourceLabel('nexus') }} account`} ${t`Personal API key`} ${t`Sign in`}`}
-    >
+    <Searchable terms={terms}>
       {nxm.dialog}
       <NexusSSO />
       {keyAllowed ? (
@@ -312,15 +319,19 @@ export function NexusSignIn() {
 }
 
 export function NexusMods() {
+  const { t } = useLingui()
   const signedIn = useNexus((s) => s.signedIn)
   const name = useNexus((s) => s.name)
   const premium = useNexus((s) => s.premium)
   const [askEndorse, setAskEndorse] = useState(false)
+  const relevant = useSettingsRelevant(t`Ask me to endorse mods I keep using`)
   useEffect(() => {
-    GetSettings()
-      .then((settings) => setAskEndorse(settings.askEndorseMods ?? false))
-      .catch(reportUnexpected)
-  }, [])
+    if (relevant) {
+      GetSettings()
+        .then((settings) => setAskEndorse(settings.askEndorseMods ?? false))
+        .catch(reportUnexpected)
+    }
+  }, [relevant])
   const onAskEndorse = (on: boolean) => {
     setAskEndorse(on)
     SetAskEndorseMods(on).catch((err: unknown) => {
@@ -328,7 +339,6 @@ export function NexusMods() {
       reportUnexpected(err)
     })
   }
-  const { t } = useLingui()
   return (
     <SettingsSection title={t`${{ source: sourceLabel('nexus') }}`} tiles={false}>
       <NexusSignIn />

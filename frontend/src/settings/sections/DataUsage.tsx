@@ -11,6 +11,7 @@ import { Tooltip } from '../../shell/Tooltip.tsx'
 import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { Searchable, SettingRow, SettingsSection } from '../SettingsSection.tsx'
+import { useSettingsRelevant } from '../useSettingsSearch.ts'
 import { MoveDataButton } from './DataMove.tsx'
 import { useUsageBytes } from './DataUsageLoad.ts'
 import { nowrap } from './dataStyles.ts'
@@ -264,11 +265,14 @@ export function Location({
 }) {
   const { t } = useLingui()
   const [portableDir, setPortableDir] = useState('')
+  const relevant = useSettingsRelevant(t`Mortar's data`, t`Portable copy: data is kept in ${''}`)
   useEffect(() => {
-    DataLocation()
-      .then((loc) => setPortableDir(loc.portable ? loc.dir : ''))
-      .catch(reportUnexpected)
-  }, [])
+    if (relevant) {
+      DataLocation()
+        .then((loc) => setPortableDir(loc.portable ? loc.dir : ''))
+        .catch(reportUnexpected)
+    }
+  }, [relevant])
   const portable = portableDir !== ''
   let description = usage ? usage.path : t`Measuring…`
   if (portable) {

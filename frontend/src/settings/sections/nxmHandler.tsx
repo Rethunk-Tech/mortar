@@ -18,8 +18,9 @@ interface Prompt {
   owner: string
 }
 
-// Whether Mortar handles nxm links, the switch that changes it and the dialog that asks first.
-export function useNxmHandler(): {
+// Whether Mortar handles nxm links, the switch that changes it and the dialog that asks first. withOwner reads which
+// app opens the links now, for a caller that shows it.
+export function useNxmHandler(withOwner = true): {
   handled: boolean
   owner: string
   toggle: (on: boolean) => void
@@ -30,8 +31,8 @@ export function useNxmHandler(): {
   const handled = useSettings((s) => s.nxmHandled)
   const [prompt, setPrompt] = useState<Prompt | null>(null)
   const { data: owner } = useLoaded(
-    () => nxmOwner().then((name) => (handled ? '' : name)),
-    [handled],
+    withOwner ? () => nxmOwner().then((name) => (handled ? '' : name)) : null,
+    [handled, withOwner],
     '',
   )
   const fail = (e: unknown) => toastError(t`Could not change how mod links open`, e)

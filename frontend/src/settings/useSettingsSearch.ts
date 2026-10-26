@@ -18,6 +18,12 @@ export function useSettingsMatch(label: string, description = ''): boolean {
   return useSettingsQuery((s) => prefMatches(s.query, label, description))
 }
 
+/** Whether any of a component's row labels matches the search (always, with no search): what a component reads from
+ * the backend for rows a search hides is not read, so a search mounts every section without asking for their data. */
+export function useSettingsRelevant(...labels: string[]): boolean {
+  return useSettingsQuery((s) => labels.some((label) => prefMatches(s.query, label)))
+}
+
 export const setSettingsQuery = (query: string) => useSettingsQuery.setState({ query })
 
 export const settingsQuery = () => useSettingsQuery.getState().query

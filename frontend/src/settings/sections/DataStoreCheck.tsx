@@ -14,18 +14,22 @@ import {
 import { space } from '../../theme/density.ts'
 import { usePending } from '../../toasts/usePending.ts'
 import { SettingRow } from '../SettingsSection.tsx'
+import { useSettingsRelevant } from '../useSettingsSearch.ts'
 
 const FULL = 100
 const IDLE: Progress = { running: false, done: 0, total: 0, damaged: 0 }
 
-function useCheckProgress() {
+function useCheckProgress(relevant: boolean) {
   const [progress, setProgress] = useState<Progress>(IDLE)
   useEffect(() => {
+    if (!relevant) {
+      return
+    }
     CheckProgress()
       .then(setProgress)
       .catch(() => setProgress(IDLE))
     return Events.On('storecheck:progress', (event) => setProgress(event.data as Progress))
-  }, [])
+  }, [relevant])
   return progress
 }
 
@@ -67,7 +71,9 @@ function Result({ summary }: { summary: Summary }) {
 
 export function StoreCheckRow() {
   const { t } = useLingui()
-  const progress = useCheckProgress()
+  const label = t`Check store files`
+  const text = t`Compares every stored mod's files with what was saved when it was added. Mortar also runs it slowly in the background, about weekly.`
+  const progress = useCheckProgress(useSettingsRelevant(label, text))
   const [summary, setSummary] = useState<Summary | null>(null)
   const [pending, run] = usePending()
   const running = pending || progress.running
@@ -77,11 +83,7 @@ export function StoreCheckRow() {
   }
   const percent = progress.total === 0 ? 0 : (FULL * progress.done) / progress.total
   return (
-    <SettingRow
-      label={t`Check store files`}
-      description={t`Compares every stored mod's files with what was saved when it was added. Mortar also runs it slowly in the background, about weekly.`}
-      block={true}
-    >
+    <SettingRow label={label} description={text} block={true}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: space.pad }}>
         <Button variant="outlined" disabled={running} onClick={start}>
           {t`Check now`}

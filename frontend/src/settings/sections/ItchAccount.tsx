@@ -11,6 +11,7 @@ import { space } from '../../theme/density.ts'
 import { errorKind } from '../../toasts/errorKind.ts'
 import { type InlineError, inlineError, reportUnexpected } from '../../toasts/report.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
+import { useSettingsRelevant } from '../useSettingsSearch.ts'
 
 // The account answer lands on the row alone, not the section around it.
 function ItchRow() {
@@ -20,11 +21,19 @@ function ItchRow() {
   const [key, setKey] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<InlineError | null>(null)
+  const relevant = useSettingsRelevant(
+    t`Account`,
+    t`Your API key is kept in your system keyring.`,
+    t`API key`,
+    t`Kept in your system keyring. Create one on ${{ source: sourceLabel('itch') }} under Settings, API keys.`,
+  )
   useEffect(() => {
-    itchAccount()
-      .then((a) => setName(a.signedIn ? a.name : ''))
-      .catch(reportUnexpected)
-  }, [])
+    if (relevant) {
+      itchAccount()
+        .then((a) => setName(a.signedIn ? a.name : ''))
+        .catch(reportUnexpected)
+    }
+  }, [relevant])
   const test = (e: SubmitEvent) => {
     e.preventDefault()
     setBusy(true)
