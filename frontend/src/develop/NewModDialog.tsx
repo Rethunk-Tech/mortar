@@ -53,6 +53,7 @@ import {
   stepParams,
   validModName,
 } from './draft.ts'
+import { LicenseChart } from './LicenseChart.tsx'
 import { sdkSatisfies } from './sdk.ts'
 
 // The profile picker's value for a new development profile; Create takes it as no profile.
@@ -308,14 +309,6 @@ function ProjectStep({ draft, user, set }: { draft: Draft; user: string; set: Se
     }
   }
   const where = draft.parent ? `${draft.parent}/${draft.repo || draft.name}` : ''
-  // What each license lets others do with the mod's code, in a line.
-  const licenseSummary: Partial<Record<string, string>> = {
-    '': t`Anyone may use, change and share the code, in any mod, as long as they keep your copyright notice.`,
-    'apache-2.0': t`Like MIT, and it also grants any patents of yours the code uses; a changed file must say it was changed.`,
-    'gpl-3.0': t`Anyone may use and change the code, but a mod built on it must be shared under GPL 3.0 with its source.`,
-    'mpl-2.0': t`A changed copy of your files must stay open under MPL 2.0; the rest of a mod using them may use any license.`,
-    unlicense: t`Public domain: anyone may do anything with the code, with no notice needed.`,
-  }
   return (
     <>
       <Field label={t`Projects folder`} htmlFor={folderId} hint={where}>
@@ -357,7 +350,6 @@ function ProjectStep({ draft, user, set }: { draft: Draft; user: string; set: Se
       <SourceChoice draft={draft} user={user} set={set} />
       <SelectField
         label={t`License`}
-        hint={licenseSummary[draft.license]}
         displayEmpty={true}
         value={draft.license}
         onChange={(license) => set({ license })}
@@ -368,6 +360,7 @@ function ProjectStep({ draft, user, set }: { draft: Draft; user: string; set: Se
         <MenuItem value="mpl-2.0">Mozilla Public License 2.0</MenuItem>
         <MenuItem value="unlicense">The Unlicense</MenuItem>
       </SelectField>
+      <LicenseChart license={draft.license} />
     </>
   )
 }

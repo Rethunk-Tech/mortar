@@ -65,6 +65,10 @@ msgstr "Open profile"
 msgid "Could not open the file"
 msgstr "Could not open the file"
 
+#: src/develop/LicenseChart.tsx
+msgid "Release that mod under another license"
+msgstr "Release that mod under another license"
+
 #: src/sync/store.ts
 #: src/sync/SyncOffers.tsx
 msgid "{name} was changed on {machine}"
@@ -1485,6 +1489,10 @@ msgstr "Could not install {loader}"
 msgid "New profile from link"
 msgstr "New profile from link"
 
+#: src/develop/LicenseChart.tsx
+msgid "Combine it with closed code"
+msgstr "Combine it with closed code"
+
 #: src/browse/BrowseShow.tsx
 msgid "Off"
 msgstr "Off"
@@ -2002,6 +2010,10 @@ msgstr "Could not launch the game"
 #: src/launchers/LauncherList.tsx
 msgid "Choose {name} folder"
 msgstr "Choose {name} folder"
+
+#: src/develop/LicenseChart.tsx
+msgid "Others may not"
+msgstr "Others may not"
 
 #: src/commandPalette/paletteLabels.ts
 msgid "Play the open profile"
@@ -2811,10 +2823,6 @@ msgstr "Template saved"
 msgid "Uploading…"
 msgstr "Uploading…"
 
-#: src/develop/NewModDialog.tsx
-msgid "Anyone may use and change the code, but a mod built on it must be shared under GPL 3.0 with its source."
-msgstr "Anyone may use and change the code, but a mod built on it must be shared under GPL 3.0 with its source."
-
 #: src/nxm/ArrivalDialog.tsx
 msgid "Ignore"
 msgstr "Ignore"
@@ -2897,6 +2905,10 @@ msgstr "{launcher} must be installed and signed in for this game. Install {launc
 #: src/groups/SaveGroupToLibrary.tsx
 msgid "Saved to the library"
 msgstr "Saved to the library"
+
+#: src/develop/LicenseChart.tsx
+msgid "Share a changed or built-on mod without its source"
+msgstr "Share a changed or built-on mod without its source"
 
 #: src/develop/builds.ts
 msgid "Could not read the mod project"
@@ -3257,6 +3269,10 @@ msgstr "Open page"
 msgid "{count} to download"
 msgstr "{count} to download"
 
+#: src/develop/LicenseChart.tsx
+msgid "Use your name or trademarks"
+msgstr "Use your name or trademarks"
+
 #: src/firstrun/LoaderStep.tsx
 msgid "{loader} is the loader every {game} mod needs. It goes into the game folder."
 msgstr "{loader} is the loader every {game} mod needs. It goes into the game folder."
@@ -3364,6 +3380,10 @@ msgstr "{count, plural, one {Imported # profile} other {Imported # profiles}}"
 msgid "Launch options set in {launcher}"
 msgstr "Launch options set in {launcher}"
 
+#: src/develop/LicenseChart.tsx
+msgid "Others may"
+msgstr "Others may"
+
 #: src/develop/NewModDialog.tsx
 msgid "License"
 msgstr "License"
@@ -3444,6 +3464,10 @@ msgstr "Sign in to {source}"
 #: src/share/MethodPanes.tsx
 msgid "close to the {app} message limit"
 msgstr "close to the {app} message limit"
+
+#: src/develop/LicenseChart.tsx
+msgid "Keep their changes to your files closed"
+msgstr "Keep their changes to your files closed"
 
 #: src/games/AddGameDialog.tsx
 msgid "Could not add the game"
@@ -3922,6 +3946,10 @@ msgstr "An empty profile. Add mods from {source} or from archives."
 msgid "Import"
 msgstr "Import"
 
+#: src/develop/LicenseChart.tsx
+msgid "Sell it or put it in a closed mod"
+msgstr "Sell it or put it in a closed mod"
+
 #: src/browse/BrowseShow.tsx
 msgid "Obsolete"
 msgstr "Obsolete"
@@ -4259,6 +4287,10 @@ msgstr "Collapse sidebar"
 msgid "{manager} code"
 msgstr "{manager} code"
 
+#: src/develop/LicenseChart.tsx
+msgid "Use your patents in it"
+msgstr "Use your patents in it"
+
 #: src/loader/Banner.tsx
 msgid "{name} here is another mod manager's copy, linked from {linkedFrom}. Removing that manager removes {name}."
 msgstr "{name} here is another mod manager's copy, linked from {linkedFrom}. Removing that manager removes {name}."
@@ -4564,13 +4596,13 @@ msgstr "New errors after updating {profile}"
 msgid "missing dependencies: {list}"
 msgstr "missing dependencies: {list}"
 
+#: src/develop/LicenseChart.tsx
+msgid "Hide which files they changed"
+msgstr "Hide which files they changed"
+
 #: src/shell/AppMenu.tsx
 msgid "Sign in to {source}…"
 msgstr "Sign in to {source}…"
-
-#: src/develop/NewModDialog.tsx
-msgid "Like MIT, and it also grants any patents of yours the code uses; a changed file must say it was changed."
-msgstr "Like MIT, and it also grants any patents of yours the code uses; a changed file must say it was changed."
 
 #: src/games/GameRowMenu.tsx
 msgid "Hide this game"
@@ -4910,6 +4942,10 @@ msgstr "Could not read your games"
 msgid "Mortar installs its command line as a .NET tool and decompiles the type you pick."
 msgstr "Mortar installs its command line as a .NET tool and decompiles the type you pick."
 
+#: src/develop/LicenseChart.tsx
+msgid "Nothing"
+msgstr "Nothing"
+
 #: src/launch/playStart.ts
 msgid "Could not check profile"
 msgstr "Could not check profile"
@@ -5040,6 +5076,10 @@ msgstr "Could not check the graphics setting"
 msgid "{name} (disabled)"
 msgstr "{name} (disabled)"
 
+#: src/develop/LicenseChart.tsx
+msgid "Anything at all"
+msgstr "Anything at all"
+
 #: src/commandPalette/CommandPalette.tsx
 #: src/shell/AppMenu.tsx
 msgid "Updates"
@@ -5168,6 +5208,10 @@ msgstr "{count, plural, one {Retried # download} other {Retried # downloads}}"
 #: src/shell/TitleBar.tsx
 msgid "Setup"
 msgstr "Setup"
+
+#: src/develop/LicenseChart.tsx
+msgid "Sell it"
+msgstr "Sell it"
 
 #: src/share/ImportInput.tsx
 msgid "Preview"
@@ -5388,10 +5432,6 @@ msgstr "Join our {app}"
 msgid "README"
 msgstr "README"
 
-#: src/develop/NewModDialog.tsx
-msgid "A changed copy of your files must stay open under MPL 2.0; the rest of a mod using them may use any license."
-msgstr "A changed copy of your files must stay open under MPL 2.0; the rest of a mod using them may use any license."
-
 #: src/toasts/report.ts
 msgid "Could not open Mortar's log"
 msgstr "Could not open Mortar's log"
@@ -5436,6 +5476,10 @@ msgstr "Creative Building"
 #: src/QuitPrompt.tsx
 msgid "Quit"
 msgstr "Quit"
+
+#: src/develop/LicenseChart.tsx
+msgid "Remove your copyright notice"
+msgstr "Remove your copyright notice"
 
 #: src/saves/SaveBackupsButton.tsx
 msgid "Delete this backup?"
@@ -5720,6 +5764,10 @@ msgstr "Changes from your other machines"
 #: src/launch/UpdateWarnDialog.tsx
 msgid "Broke in {brokeIn}"
 msgstr "Broke in {brokeIn}"
+
+#: src/develop/LicenseChart.tsx
+msgid "Hold you liable"
+msgstr "Hold you liable"
 
 #: src/commandPalette/CommandPalette.tsx
 #: src/commandPalette/paletteLabels.ts
@@ -6682,10 +6730,6 @@ msgstr "Quit Mortar"
 msgid "Copies the report for you to paste into a new post in the bug-reports forum on Mortar's {app}, and saves the diagnostics zip to attach."
 msgstr "Copies the report for you to paste into a new post in the bug-reports forum on Mortar's {app}, and saves the diagnostics zip to attach."
 
-#: src/develop/NewModDialog.tsx
-msgid "Anyone may use, change and share the code, in any mod, as long as they keep your copyright notice."
-msgstr "Anyone may use, change and share the code, in any mod, as long as they keep your copyright notice."
-
 #: src/develop/DependencyKindDialog.tsx
 msgid "{name} runs without it and uses it when it is there"
 msgstr "{name} runs without it and uses it when it is there"
@@ -6778,10 +6822,6 @@ msgstr "Games you added"
 #: src/commandPalette/paletteLabels.ts
 msgid "Share"
 msgstr "Share"
-
-#: src/develop/NewModDialog.tsx
-msgid "Public domain: anyone may do anything with the code, with no notice needed."
-msgstr "Public domain: anyone may do anything with the code, with no notice needed."
 
 #: src/share/ImportProblems.tsx
 msgid "Leave out"
@@ -6980,6 +7020,10 @@ msgstr "Not released"
 #: src/firstrun/LoaderStep.tsx
 msgid "On {os}, {launcher} starts the game without {loader} unless told to. With {launcher} closed, Mortar can set that up; or in {launcher}, right-click {game}, choose Properties and paste this line into Launch Options:"
 msgstr "On {os}, {launcher} starts the game without {loader} unless told to. With {launcher} closed, Mortar can set that up; or in {launcher}, right-click {game}, choose Properties and paste this line into Launch Options:"
+
+#: src/develop/LicenseChart.tsx
+msgid "Use, change and share it"
+msgstr "Use, change and share it"
 
 #: src/develop/NewModDialog.tsx
 msgid "Started {name}"

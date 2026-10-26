@@ -65,6 +65,10 @@ msgstr ""
 msgid "Could not open the file"
 msgstr ""
 
+#: src/develop/LicenseChart.tsx
+msgid "Release that mod under another license"
+msgstr ""
+
 #: src/sync/store.ts
 #: src/sync/SyncOffers.tsx
 msgid "{name} was changed on {machine}"
@@ -1485,6 +1489,10 @@ msgstr ""
 msgid "New profile from link"
 msgstr ""
 
+#: src/develop/LicenseChart.tsx
+msgid "Combine it with closed code"
+msgstr ""
+
 #: src/browse/BrowseShow.tsx
 msgid "Off"
 msgstr ""
@@ -2001,6 +2009,10 @@ msgstr ""
 #: src/firstrun/FindStep.tsx
 #: src/launchers/LauncherList.tsx
 msgid "Choose {name} folder"
+msgstr ""
+
+#: src/develop/LicenseChart.tsx
+msgid "Others may not"
 msgstr ""
 
 #: src/commandPalette/paletteLabels.ts
@@ -2811,10 +2823,6 @@ msgstr ""
 msgid "Uploading…"
 msgstr ""
 
-#: src/develop/NewModDialog.tsx
-msgid "Anyone may use and change the code, but a mod built on it must be shared under GPL 3.0 with its source."
-msgstr ""
-
 #: src/nxm/ArrivalDialog.tsx
 msgid "Ignore"
 msgstr ""
@@ -2896,6 +2904,10 @@ msgstr ""
 
 #: src/groups/SaveGroupToLibrary.tsx
 msgid "Saved to the library"
+msgstr ""
+
+#: src/develop/LicenseChart.tsx
+msgid "Share a changed or built-on mod without its source"
 msgstr ""
 
 #: src/develop/builds.ts
@@ -3257,6 +3269,10 @@ msgstr ""
 msgid "{count} to download"
 msgstr ""
 
+#: src/develop/LicenseChart.tsx
+msgid "Use your name or trademarks"
+msgstr ""
+
 #: src/firstrun/LoaderStep.tsx
 msgid "{loader} is the loader every {game} mod needs. It goes into the game folder."
 msgstr ""
@@ -3364,6 +3380,10 @@ msgstr ""
 msgid "Launch options set in {launcher}"
 msgstr ""
 
+#: src/develop/LicenseChart.tsx
+msgid "Others may"
+msgstr ""
+
 #: src/develop/NewModDialog.tsx
 msgid "License"
 msgstr ""
@@ -3443,6 +3463,10 @@ msgstr ""
 
 #: src/share/MethodPanes.tsx
 msgid "close to the {app} message limit"
+msgstr ""
+
+#: src/develop/LicenseChart.tsx
+msgid "Keep their changes to your files closed"
 msgstr ""
 
 #: src/games/AddGameDialog.tsx
@@ -3922,6 +3946,10 @@ msgstr ""
 msgid "Import"
 msgstr ""
 
+#: src/develop/LicenseChart.tsx
+msgid "Sell it or put it in a closed mod"
+msgstr ""
+
 #: src/browse/BrowseShow.tsx
 msgid "Obsolete"
 msgstr ""
@@ -4259,6 +4287,10 @@ msgstr ""
 msgid "{manager} code"
 msgstr ""
 
+#: src/develop/LicenseChart.tsx
+msgid "Use your patents in it"
+msgstr ""
+
 #: src/loader/Banner.tsx
 msgid "{name} here is another mod manager's copy, linked from {linkedFrom}. Removing that manager removes {name}."
 msgstr ""
@@ -4564,12 +4596,12 @@ msgstr ""
 msgid "missing dependencies: {list}"
 msgstr ""
 
-#: src/shell/AppMenu.tsx
-msgid "Sign in to {source}…"
+#: src/develop/LicenseChart.tsx
+msgid "Hide which files they changed"
 msgstr ""
 
-#: src/develop/NewModDialog.tsx
-msgid "Like MIT, and it also grants any patents of yours the code uses; a changed file must say it was changed."
+#: src/shell/AppMenu.tsx
+msgid "Sign in to {source}…"
 msgstr ""
 
 #: src/games/GameRowMenu.tsx
@@ -4910,6 +4942,10 @@ msgstr ""
 msgid "Mortar installs its command line as a .NET tool and decompiles the type you pick."
 msgstr ""
 
+#: src/develop/LicenseChart.tsx
+msgid "Nothing"
+msgstr ""
+
 #: src/launch/playStart.ts
 msgid "Could not check profile"
 msgstr ""
@@ -5040,6 +5076,10 @@ msgstr ""
 msgid "{name} (disabled)"
 msgstr ""
 
+#: src/develop/LicenseChart.tsx
+msgid "Anything at all"
+msgstr ""
+
 #: src/commandPalette/CommandPalette.tsx
 #: src/shell/AppMenu.tsx
 msgid "Updates"
@@ -5167,6 +5207,10 @@ msgstr ""
 
 #: src/shell/TitleBar.tsx
 msgid "Setup"
+msgstr ""
+
+#: src/develop/LicenseChart.tsx
+msgid "Sell it"
 msgstr ""
 
 #: src/share/ImportInput.tsx
@@ -5388,10 +5432,6 @@ msgstr ""
 msgid "README"
 msgstr ""
 
-#: src/develop/NewModDialog.tsx
-msgid "A changed copy of your files must stay open under MPL 2.0; the rest of a mod using them may use any license."
-msgstr ""
-
 #: src/toasts/report.ts
 msgid "Could not open Mortar's log"
 msgstr ""
@@ -5435,6 +5475,10 @@ msgstr ""
 
 #: src/QuitPrompt.tsx
 msgid "Quit"
+msgstr ""
+
+#: src/develop/LicenseChart.tsx
+msgid "Remove your copyright notice"
 msgstr ""
 
 #: src/saves/SaveBackupsButton.tsx
@@ -5719,6 +5763,10 @@ msgstr ""
 
 #: src/launch/UpdateWarnDialog.tsx
 msgid "Broke in {brokeIn}"
+msgstr ""
+
+#: src/develop/LicenseChart.tsx
+msgid "Hold you liable"
 msgstr ""
 
 #: src/commandPalette/CommandPalette.tsx
@@ -6682,10 +6730,6 @@ msgstr ""
 msgid "Copies the report for you to paste into a new post in the bug-reports forum on Mortar's {app}, and saves the diagnostics zip to attach."
 msgstr ""
 
-#: src/develop/NewModDialog.tsx
-msgid "Anyone may use, change and share the code, in any mod, as long as they keep your copyright notice."
-msgstr ""
-
 #: src/develop/DependencyKindDialog.tsx
 msgid "{name} runs without it and uses it when it is there"
 msgstr ""
@@ -6777,10 +6821,6 @@ msgstr ""
 
 #: src/commandPalette/paletteLabels.ts
 msgid "Share"
-msgstr ""
-
-#: src/develop/NewModDialog.tsx
-msgid "Public domain: anyone may do anything with the code, with no notice needed."
 msgstr ""
 
 #: src/share/ImportProblems.tsx
@@ -6979,6 +7019,10 @@ msgstr ""
 
 #: src/firstrun/LoaderStep.tsx
 msgid "On {os}, {launcher} starts the game without {loader} unless told to. With {launcher} closed, Mortar can set that up; or in {launcher}, right-click {game}, choose Properties and paste this line into Launch Options:"
+msgstr ""
+
+#: src/develop/LicenseChart.tsx
+msgid "Use, change and share it"
 msgstr ""
 
 #: src/develop/NewModDialog.tsx
