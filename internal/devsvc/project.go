@@ -86,6 +86,11 @@ var (
 
 // setProp sets the first <name> element's text to value, MSBuild- and XML-escaped; a file without the element is left alone.
 func setProp(body, name, value string) string {
+	return setEscapedProp(body, name, xmlEscape(msbuildEscape.Replace(value)))
+}
+
+// setEscapedProp is setProp for text already escaped.
+func setEscapedProp(body, name, text string) string {
 	re := propPattern(name)
 	done := false
 	return re.ReplaceAllStringFunc(body, func(m string) string {
@@ -94,7 +99,7 @@ func setProp(body, name, value string) string {
 		}
 		done = true
 		parts := re.FindStringSubmatch(m)
-		return parts[1] + xmlEscape(msbuildEscape.Replace(value)) + parts[3]
+		return parts[1] + text + parts[3]
 	})
 }
 
@@ -256,11 +261,11 @@ func (s *Service) Edit(ctx context.Context, gameID, dir string, e ProjectEdit) (
 		for name, v := range map[string]string{
 			"AssemblyName": e.IDPrefix + "." + e.Name, "AssemblyTitle": e.Name, "RootNamespace": e.Name,
 			"ThunderstoreName": e.Name, "ThunderstoreDescription": e.Description,
-			"ThunderstoreCategories": strings.Join(e.Categories, ";"),
 		} {
 			body = setProp(body, name, v)
 		}
-		return body
+		// A ; is the list separator MSBuild splits ThunderPipe's string[] on, so only the XML escape applies.
+		return setEscapedProp(body, "ThunderstoreCategories", xmlEscape(strings.Join(e.Categories, ";")))
 	}); err != nil {
 		return ProjectInfo{}, err
 	}
@@ -268,9 +273,14 @@ func (s *Service) Edit(ctx context.Context, gameID, dir string, e ProjectEdit) (
 		body = setProp(body, "ThunderstoreTeam", e.Team)
 		body = setProp(body, "Authors", e.Author)
 		body = setProp(body, "Company", e.Author)
-		return strings.Replace(body, xmlEscape(old.Author)+"</Copyright>", xmlEscape(e.Author)+"</Copyright>", 1)
+		return strings.Replace(body, authorText(old.Author)+"</Copyright>", authorText(e.Author)+"</Copyright>", 1)
 	}); err != nil {
 		return ProjectInfo{}, err
+	}
+	if old.Team != e.Team {
+		_ = editFile(filepath.Join(p.Dir, "DEVELOPING.md"), func(body string) string {
+			return strings.ReplaceAll(body, "team "+old.Team, "team "+e.Team)
+		})
 	}
 	if old.Author != "" && old.Author != e.Author {
 		_ = editFile(filepath.Join(p.Dir, "LICENSE"), func(body string) string {
@@ -279,6 +289,9 @@ func (s *Service) Edit(ctx context.Context, gameID, dir string, e ProjectEdit) (
 	}
 	return s.Inspect(ctx, gameID, dir)
 }
+
+// authorText is the author as the template writes it into a property's text.
+func authorText(author string) string { return xmlEscape(msbuildEscape.Replace(author)) }
 
 func editFile(path string, fn func(string) string) error {
 	body, err := fsx.ReadFile(path)

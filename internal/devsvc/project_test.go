@@ -166,3 +166,53 @@ func TestSetPropEscapesWhatMSBuildExpands(t *testing.T) {
 		t.Fatalf("round trip = %q, want %q", got, text)
 	}
 }
+
+// MSBuild splits a string[] property on ;, so the categories keep their separator.
+func TestEditWritesCategoriesAsAList(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	dir := fixtureProject(t, svc)
+	info, err := svc.Edit(t.Context(), "lethal-company", dir, ProjectEdit{
+		Name: "ShopDrop", Description: "d", Author: "A", Team: "Ab", IDPrefix: "com.ab", Categories: []string{"mods", "bepinex"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	csproj := read(t, filepath.Join(dir, "src", "ShopDrop", "ShopDrop.csproj"))
+	if !strings.Contains(csproj, "<ThunderstoreCategories>mods;bepinex</ThunderstoreCategories>") || strings.Join(info.Categories, ",") != "mods,bepinex" {
+		t.Errorf("categories %v in %s", info.Categories, csproj)
+	}
+}
+
+func TestEditMatchesAndWritesTheAuthorEscapedLikeTheTemplate(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	dir := fixtureProject(t, svc)
+	propsPath := filepath.Join(dir, "Directory.Build.props")
+	if err := fsx.WriteFile(propsPath, []byte(`<Project><PropertyGroup><ThunderstoreTeam>Ab</ThunderstoreTeam><Authors>O%27Brien</Authors><Company>O%27Brien</Company><Copyright>Copyright (c) 2026 O%27Brien</Copyright></PropertyGroup></Project>`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := svc.Edit(t.Context(), "lethal-company", dir, ProjectEdit{
+		Name: "ShopDrop", Description: "d", Author: "$(Version)", Team: "Ab", IDPrefix: "com.ab", Categories: []string{"mods"},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if props := read(t, propsPath); !strings.Contains(props, "Copyright (c) 2026 %24(Version)</Copyright>") {
+		t.Errorf("props = %s", props)
+	}
+}
+
+func TestEditMovesTheTeamInDevelopingMd(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	dir := fixtureProject(t, svc)
+	doc := filepath.Join(dir, "DEVELOPING.md")
+	if err := fsx.WriteFile(doc, []byte("- Linux: `secret-tool store --label \"Thunderstore Ab\" service thunderstore team Ab`\n  `New-StoredCredential -Target 'service thunderstore team Ab' -Password <token>`\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := svc.Edit(t.Context(), "lethal-company", dir, ProjectEdit{
+		Name: "ShopDrop", Description: "d", Author: "A", Team: "Bc", IDPrefix: "com.ab", Categories: []string{"mods"},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if got := read(t, doc); strings.Contains(got, "team Ab") || strings.Count(got, "team Bc") != 2 {
+		t.Errorf("DEVELOPING.md = %s", got)
+	}
+}
