@@ -2,7 +2,8 @@ import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, MenuItem, Typography } from '@mui/material'
 import { ChevronDown } from 'lucide-react'
-import { memo, useEffect, useState } from 'react'
+import { memo, useCallback, useEffect, useRef } from 'react'
+import { create } from 'zustand'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import type { Played } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import { compact } from '../game/compact.ts'
@@ -47,24 +48,15 @@ function Thumb({ game }: { game: GameInfo | undefined }) {
   )
 }
 
-// One game in the switcher: a strip of its art under a dark tint, its name, and when it was last played.
-function GameStrip({
-  game,
-  played,
-  profiles,
-  current,
-  onClick,
-}: {
-  game: GameInfo
-  played: Played | undefined
-  profiles: number | undefined
-  current: boolean
-  onClick: () => void
-}) {
+// Each game's profile count, read as the menu opens. A store rather than the menu's state, so its arrival redraws only
+// each strip's text line.
+const useCounts = create<Record<string, number | undefined>>(() => ({}))
+
+function StripLine({ id, played }: { id: string; played: Played | undefined }) {
   const { t, i18n } = useLingui()
+  const profiles = useCounts((s) => s[id])
   // Redraws only when the "played …" label changes, not on every tick of the minute clock.
   const when = useNowValue(() => (played?.at ? formatWhen(played.at) : ''))
-  const art = gameArt(game, MENU_PX)
   const playtime = formatPlaytime(played?.playtimeMs ?? 0, i18n.locale)
   const line = [
     profiles
@@ -75,11 +67,31 @@ function GameStrip({
   ]
     .filter(Boolean)
     .join(' · ')
+  return line ? (
+    <Typography noWrap={true} sx={{ fontSize: 'small.fontSize', lineHeight: 1.3, opacity: 0.85 }}>
+      {line}
+    </Typography>
+  ) : null
+}
+
+// One game in the switcher: a strip of its art under a dark tint, its name, and when it was last played.
+const GameStrip = memo(function GameStripView({
+  game,
+  played,
+  current,
+  onPick,
+}: {
+  game: GameInfo
+  played: Played | undefined
+  current: boolean
+  onPick: (game: GameInfo) => void
+}) {
+  const art = gameArt(game, MENU_PX)
   return (
     <MenuItem
       role="menuitemradio"
       aria-checked={current}
-      onClick={onClick}
+      onClick={() => onPick(game)}
       sx={{
         position: 'relative',
         overflow: 'hidden',
@@ -115,18 +127,11 @@ function GameStrip({
         >
           {game.name}
         </Typography>
-        {line ? (
-          <Typography
-            noWrap={true}
-            sx={{ fontSize: 'small.fontSize', lineHeight: 1.3, opacity: 0.85 }}
-          >
-            {line}
-          </Typography>
-        ) : null}
+        <StripLine id={game.id} played={played} />
       </Box>
     </MenuItem>
   )
-}
+})
 
 // The title bar's game switcher: the open game's art and name (or "Choose a game") over a menu of the playable games.
 // Memoised: the title bar re-renders on every navigation, and this one does not need to.
@@ -144,12 +149,11 @@ export const GameMenu = memo(function GameMenuView() {
   const hidden = useSettings((s) => s.hiddenGames)
   const { anchor, close, trigger } = useTitleMenu('game')
   // Read each time the menu opens: the folders are counted, no profile is read.
-  const [counts, setCounts] = useState<Record<string, number | undefined>>({})
   const open = anchor !== null
   useEffect(() => {
     if (open) {
       profileCounts()
-        .then((got) => setCounts(got ?? {}))
+        .then((got) => useCounts.setState(got ?? {}, true))
         .catch(reportUnexpected)
     }
   }, [open])
@@ -165,21 +169,23 @@ export const GameMenu = memo(function GameMenuView() {
   )
   // The rest of the catalog, mostly games not set up here, is one click away under All games.
   const found = rest.filter((g) => g.installed)
+  const openGame = useOpenGame()
+  const latest = useRef({ close, openGame })
+  latest.current = { close, openGame }
+  const onPick = useCallback((g: GameInfo) => {
+    latest.current.close()
+    latest.current.openGame(g)
+  }, [])
   const item = (g: GameInfo) => (
     <GameStrip
       key={g.id}
       game={g}
       played={played?.[g.id]}
-      profiles={counts[g.id]}
       current={g.id === game}
-      onClick={() => {
-        close()
-        openGame(g)
-      }}
+      onPick={onPick}
     />
   )
   const gameLabel = info?.name ?? ''
-  const openGame = useOpenGame()
   return (
     <>
       <ButtonBase

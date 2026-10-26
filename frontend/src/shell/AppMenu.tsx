@@ -103,7 +103,7 @@ function NexusLines({ close }: { close: () => void }) {
 
 // Ways to reach the project (its Discord, bug reports and suggestions, about, its source), then the startup-profile
 // restart, which is troubleshooting.
-function ProjectLinks({ close, game }: { close: () => void; game: string }) {
+function ProjectLinks({ close }: { close: () => void }) {
   const { t } = useLingui()
   const open = (url: string) => () => {
     close()
@@ -121,7 +121,7 @@ function ProjectLinks({ close, game }: { close: () => void; game: string }) {
         label={t`Report a bug…`}
         onClick={() => {
           close()
-          reportBug(game)
+          reportBug(routeGame(useNav.getState().route) ?? '')
         }}
       />
       <TitleMenuItem
@@ -159,15 +159,33 @@ function ProjectLinks({ close, game }: { close: () => void; game: string }) {
   )
 }
 
+// Its own component: only this item follows the open game, so a navigation leaves the other items alone.
+function GetHelp() {
+  const { t } = useLingui()
+  const game = useNav((s) => routeGame(s.route) ?? '')
+  const helpKeys = useShortcutHint('help')
+  return (
+    <TitleMenuItem
+      icon={<LifeBuoy size={ICON_PX} />}
+      label={t`Get help`}
+      hint={helpKeys}
+      disabled={game === ''}
+      onClick={() => {
+        closeTitleMenu()
+        useTab.getState().setTab('console')
+        useConsole.getState().setHelping(true)
+      }}
+    />
+  )
+}
+
 // The menu's items, memoised apart from its button: opening the menu changes only the button and the menu around them.
 const AppMenuItems = memo(function AppMenuItemsView() {
   const { t } = useLingui()
   const close = closeTitleMenu
   const updatesOffline = useUpdatesOfflineReason()
-  const game = useNav((s) => routeGame(s.route) ?? '')
   const version = useMortarUpdate((s) => s.info?.version)
   const settingsKeys = useShortcutHint('open-settings')
-  const helpKeys = useShortcutHint('help')
   const downloadsKeys = useShortcutHint('downloads')
   const quit = (): void => {
     close()
@@ -228,18 +246,8 @@ const AppMenuItems = memo(function AppMenuItemsView() {
       ) : null}
       <MenuRule />
       <MenuHeading>{t`Help`}</MenuHeading>
-      <TitleMenuItem
-        icon={<LifeBuoy size={ICON_PX} />}
-        label={t`Get help`}
-        hint={helpKeys}
-        disabled={game === ''}
-        onClick={() => {
-          close()
-          useTab.getState().setTab('console')
-          useConsole.getState().setHelping(true)
-        }}
-      />
-      <ProjectLinks close={close} game={game} />
+      <GetHelp />
+      <ProjectLinks close={close} />
       <MenuRule />
       <NexusLines close={close} />
       <MenuRule />
