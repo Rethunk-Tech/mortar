@@ -524,12 +524,13 @@ func TestStartSchedulesDirectInstances(t *testing.T) {
 			wantDelays: []time.Duration{5 * time.Second, 5 * time.Second},
 		},
 		{
-			name:       "test copies host and join",
+			name:       "test copies of a loader with no ready line keep the delay",
 			direct:     true,
 			instances:  2,
 			delay:      5,
 			testCopies: true,
 			wantStarts: 2,
+			wantDelays: []time.Duration{5 * time.Second},
 			wantRoles:  []string{"--lan --host --tile 1/2", "--lan --join 127.0.0.1 --tile 2/2"},
 		},
 		{
@@ -626,6 +627,50 @@ func TestStartTestCopiesAppliesTheLoadersHookToLaterCopies(t *testing.T) {
 	}
 	if slices.Contains(plan.Args, "copy2") {
 		t.Fatalf("the shared plan changed: %v", plan.Args)
+	}
+}
+
+// A test copy starts once the copy before it says in its log that the loader finished: copies share the game's save
+// folder, and starting together they write the same files at once.
+func TestStartTestCopiesWaitForTheLoaderBefore(t *testing.T) {
+	for _, tc := range []struct {
+		name       string
+		log        string
+		wantStarts int
+	}{
+		{"loaded", "[Message:   BepInEx] Chainloader startup complete\n", 2},
+		{"never loaded", "[Info   :   BepInEx] Loading [A 1.0]\n", 1},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			dir := t.TempDir()
+			plan := vanillaPlan("linux", dir)
+			plan.Mode = launchplan.ModeProfile
+			logFile := filepath.Join(t.TempDir(), "LogOutput.log")
+			starts := 0
+			st := Starter{
+				LookPath: func(string) (string, error) { return "/usr/bin/steam", nil },
+				Timing:   launch.Timing{Timeout: 300 * time.Millisecond, Poll: time.Millisecond},
+				Runner: func(string, string, ...string) (<-chan error, error) {
+					starts++
+					if starts == 1 {
+						if err := os.WriteFile(logFile, []byte(tc.log), 0o600); err != nil {
+							t.Error(err)
+						}
+					}
+					return make(chan error), nil
+				},
+				Sleep: func(context.Context, time.Duration) error { t.Error("slept between test copies"); return nil },
+			}
+			env := StartEnv{
+				Steam: &steam.Steam{Root: t.TempDir()}, Direct: true, Instances: 2, TestCopies: true, DelaySeconds: 5,
+				LogFile: logFile, Ready: func() bool { return true },
+				LoaderReady: func(line string) bool { return strings.Contains(line, "Chainloader startup complete") },
+			}
+			err := st.Start(t.Context(), Install{Game: "lethal-company", Dir: dir}, plan, env, nil)
+			if starts != tc.wantStarts || (err == nil) != (tc.wantStarts == 2) {
+				t.Fatalf("starts %d err %v, want %d", starts, err, tc.wantStarts)
+			}
+		})
 	}
 }
 

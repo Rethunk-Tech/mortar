@@ -12,6 +12,7 @@ import (
 	"runtime"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -50,9 +51,12 @@ type StartEnv struct {
 	Proton string
 	// Instances is how many processes a direct Play starts (1–8). Steam and store URL launches always start one.
 	Instances int
-	// DelaySeconds is the pause between those processes. Test copies start without it: the dev helper's joiners retry
-	// until the host is up.
+	// DelaySeconds is the pause between those processes.
 	DelaySeconds int
+	// LoaderReady reports the loader's log line that says it finished loading mods. Test copies start the next copy on
+	// that line from the copy before instead of after DelaySeconds: copies share the game's save folder, and two
+	// copies starting up together write the same files at once.
+	LoaderReady func(line string) bool
 	// TestCopies gives the first process `--lan --host` and the others `--lan --join 127.0.0.1`, which a game's dev
 	// helper mod reads to host a LAN game and join it, and each `--tile <n>/<count>`, its cell of a grid of windows.
 	TestCopies bool
@@ -92,12 +96,21 @@ func (st Starter) Start(ctx context.Context, inst Install, plan *launchplan.Plan
 	if err := st.startVR(ctx, env); err != nil {
 		return err
 	}
+	var loaded chan struct{}
 	for i := 0; i < n; i++ {
-		if i > 0 && !env.TestCopies {
-			d := max(env.DelaySeconds, 0)
-			if err := sleep(ctx, time.Duration(d)*time.Second); err != nil {
+		if i > 0 {
+			if loaded != nil {
+				if err := waitLoaded(ctx, loaded, cmp.Or(st.Timing.Timeout, 5*time.Minute)); err != nil {
+					return err
+				}
+			} else if err := sleep(ctx, time.Duration(max(env.DelaySeconds, 0))*time.Second); err != nil {
 				return err
 			}
+		}
+		lines := onLines
+		if env.TestCopies && env.LoaderReady != nil && i < n-1 {
+			loaded = make(chan struct{})
+			lines = signalLoaded(onLines, env.LoaderReady, loaded)
 		}
 		one := plan
 		if env.TestCopies {
@@ -115,11 +128,37 @@ func (st Starter) Start(ctx context.Context, inst Install, plan *launchplan.Plan
 			}
 			one = &copied
 		}
-		if err := st.startOne(ctx, inst, one, env, onLines); err != nil {
+		if err := st.startOne(ctx, inst, one, env, lines); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+// signalLoaded passes lines on to onLines and closes loaded at the first line ready matches.
+func signalLoaded(onLines func([]string), ready func(string) bool, loaded chan struct{}) func([]string) {
+	var once sync.Once
+	return func(lines []string) {
+		if slices.ContainsFunc(lines, ready) {
+			once.Do(func() { close(loaded) })
+		}
+		if onLines != nil {
+			onLines(lines)
+		}
+	}
+}
+
+func waitLoaded(ctx context.Context, loaded <-chan struct{}, limit time.Duration) error {
+	timer := time.NewTimer(limit)
+	defer timer.Stop()
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-loaded:
+		return nil
+	case <-timer.C:
+		return errors.New("the copy before never finished loading mods, so the next copy was not started")
+	}
 }
 
 func waitDelay(ctx context.Context, d time.Duration) error {

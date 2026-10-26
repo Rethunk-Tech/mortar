@@ -1011,6 +1011,11 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 		env.Instances, _ = strconv.Atoi(settings.ResolveAt(s.settings.Get(), "instances", scope, ov))
 		if n, ok := ctx.Value(instancesKey{}).(int); ok {
 			env.Instances, env.TestCopies = n, true
+			if l, _ := s.loaderOf(g.ID(), profileID); l != nil {
+				if logs, ok := l.(loader.WithLogs); ok {
+					env.LoaderReady = logs.Ready
+				}
+			}
 		}
 		env.DelaySeconds, _ = strconv.Atoi(settings.ResolveAt(s.settings.Get(), "delaySeconds", scope, ov))
 	}
