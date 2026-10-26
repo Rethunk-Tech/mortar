@@ -46,6 +46,9 @@ func TestACatalogOnlyGameNeedsNoCode(t *testing.T) {
 		!slices.Equal(g.GameProcesses(), []string{"Catalog Only.exe", "Catalog Only"}) {
 		t.Fatalf("game = %#v", g)
 	}
+	if sims := Find("sims4"); sims == nil || !slices.Contains(sims.GameProcesses(), "TS4_DX9_x64.exe") {
+		t.Fatal("The Sims 4's DirectX 9 build is not a game process")
+	}
 	if l, ok := PrimaryLoader("catalog-only"); !ok || l.ID() != "bepinex5" {
 		t.Fatalf("loader = %v, %v", l, ok)
 	}

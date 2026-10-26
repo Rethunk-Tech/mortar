@@ -107,6 +107,9 @@ type GameInfo struct {
 	// LinuxMarker is the executable of the game's native Linux build where the store ships one beside the build Marker
 	// names: an install holding it and not Marker is that build, started natively rather than under Proton.
 	LinuxMarker string `json:"linuxMarker,omitempty"`
+	// Processes are other executables in the install the game runs as (another renderer's build), file names only, so
+	// running-game detection sees them too.
+	Processes []string `json:"processes,omitempty"`
 	// LinuxStart is the slash path below the install of the file the native Linux build is started through, where
 	// that is not LinuxMarker (a script that sets the build's environment first).
 	LinuxStart string `json:"linuxStart,omitempty"`
@@ -850,6 +853,7 @@ func (g GameInfo) Validate() error {
 	if g.LinuxMarker != "" {
 		names = append(names, g.LinuxMarker)
 	}
+	names = append(names, g.Processes...)
 	if g.Stores.GOG != nil {
 		names = append(names, g.Stores.GOG.Folder)
 	}

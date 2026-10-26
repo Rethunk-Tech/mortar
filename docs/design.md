@@ -62,9 +62,8 @@ A mod made of files a loader mod reads (no code): suits, posters, boombox tracks
 
 **Done when:** with a test token, Browse lists Timberborn's mod.io mods with all sources sorted by downloads. Installing one checks its MD5, places it in the profile's mod path, and offers its dependencies. A revoked token shows the sign-in prompt.
 
-### The Sims 4 process names and placement speed
+### The Sims 4 placement speed
 
-- **Process names:** the `sims4` catalog entry has no `gameProcesses`, so running-game detection falls back to the marker (`GameProcesses` in `internal/game/catalog_only.go`) and misses `TS4_DX9_x64.exe`; add both executables.
 - **Decide** how Windows placement copes with large profiles: every Play places every file again (`internal/deploy/place.go`), several times slower on Windows than on Linux (`MORTAR_SCALE=1 go test ./internal/loader/folder -run ThreeThousand -v`). Options: show progress; leave files unchanged since the last Play in place; link files where the volume allows, which needs an answer for a mod that rewrites its own file.
 
 ### Lethal Company facts to verify

@@ -10166,6 +10166,7 @@
         "mo2": "The Sims 4"
       },
       "marker": "TS4_x64.exe",
+      "processes": ["TS4_DX9_x64.exe"],
       "markerDir": "Game/Bin",
       "metadata": [],
       "paths": {

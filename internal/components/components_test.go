@@ -335,6 +335,10 @@ func TestGameFallsBackToBundledAndRejectsUnsafeNames(t *testing.T) {
 	if err := badSetting.Validate(); err == nil {
 		t.Fatal("a required setting must name one of the game's paths")
 	}
+	unsafeProcess := Manifest{Serial: 1, Games: []GameInfo{{ID: "x", Name: "X", Marker: "m", Loaders: []GameLoader{{ID: "l"}}, Processes: []string{"../evil.exe"}}}}
+	if err := unsafeProcess.Validate(); err == nil {
+		t.Fatal("a process name with a path must be refused")
+	}
 	dup := Manifest{Serial: 1, Games: []GameInfo{{ID: "x", Name: "X", Marker: "m", Loaders: []GameLoader{{ID: "l"}}}, {ID: "x", Name: "X", Marker: "m", Loaders: []GameLoader{{ID: "l"}}}}}
 	if err := dup.Validate(); err == nil {
 		t.Fatal("a game listed twice must be refused")

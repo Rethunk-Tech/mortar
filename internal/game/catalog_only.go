@@ -33,7 +33,8 @@ func (g catalogOnly) ModSources() []string {
 }
 
 // GameProcesses are the marker, when it is an executable, and the marker without its extension: a Windows build's
-// process under Proton, and a native build's; and the native Linux build's executable when the catalog names one.
+// process under Proton, and a native build's; the native Linux build's executable when the catalog names one; and the
+// other executables the catalog lists.
 func (g catalogOnly) GameProcesses() []string {
 	info, _ := catalogGame(string(g))
 	stem := strings.TrimSuffix(info.Marker, filepath.Ext(info.Marker))
@@ -43,6 +44,9 @@ func (g catalogOnly) GameProcesses() []string {
 	}
 	if info.LinuxMarker != "" {
 		out = append(out, info.LinuxMarker)
+	}
+	for _, p := range info.Processes {
+		out = append(out, p, strings.TrimSuffix(p, filepath.Ext(p)))
 	}
 	return out
 }
