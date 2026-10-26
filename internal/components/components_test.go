@@ -290,6 +290,32 @@ func TestLoadRefusesManifestOlderThanBundled(t *testing.T) {
 	}
 }
 
+// When the fetch fails, the cache hands back its last copy however old; one older than this build's bundled catalog
+// must not replace it, or blocking the download would pin an older signed catalog.
+func TestLoadRefusesACachedManifestOlderThanBundledWhenTheFetchFails(t *testing.T) {
+	public, private := newKey(t)
+	base := bundledSerial(t)
+	now := time.Now()
+	cache := &meta.Client{CacheDir: t.TempDir(), Now: func() time.Time { return now }}
+	body, signature := signedManifest(t, base-1, private)
+	if _, err := meta.CachedForBuild(cache, cacheName, day, func() (cachedManifest, error) {
+		return cachedManifest{Manifest: body, Signature: signature}, nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	now = now.Add(25 * time.Hour)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		http.Error(w, "down", http.StatusServiceUnavailable)
+	}))
+	t.Cleanup(server.Close)
+	client := NewClient(server.Client())
+	client.ReleasesURL = server.URL + "/releases"
+	manifest, err := client.Load(t.Context(), cache, public)
+	if manifest.Serial != base || client.Manifest().Serial != base || !errors.Is(err, ErrRollback) {
+		t.Fatalf("stale cache = serial %d (client %d), %v; want the bundled serial %d and ErrRollback", manifest.Serial, client.Manifest().Serial, err, base)
+	}
+}
+
 func TestGameFallsBackToBundledAndRejectsUnsafeNames(t *testing.T) {
 	c := NewClient(nil)
 	c.SetManifest(Manifest{Serial: 1})
