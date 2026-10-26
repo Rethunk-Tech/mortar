@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
 	"log"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
@@ -14,6 +16,7 @@ import (
 	"sync"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/nowindow"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -83,7 +86,27 @@ func (s *Service) Build(ctx context.Context, gameID, dir string) (BuildResult, e
 	if _, missing := errors.AsType[*exec.Error](err); missing {
 		return BuildResult{}, usererr.Wrap(usererr.NotFound, errors.New("install the .NET SDK to build mods"))
 	}
+	if err == nil {
+		removeStaleBundles(p)
+	}
 	return BuildResult{OK: err == nil, Problems: ParseProblems(string(out)), Log: tail(string(out))}, nil
+}
+
+// removeStaleBundles deletes bundles from the output that assets/ no longer holds: the template's CopyAssetBundles only
+// adds, and the whole output folder is what installs.
+func removeStaleBundles(p settings.DevProject) {
+	assets := filepath.Join(p.Dir, "assets")
+	if _, err := os.Stat(assets); err != nil {
+		return
+	}
+	built, _ := filepath.Glob(filepath.Join(p.Output, "*.bundle"))
+	for _, b := range built {
+		if _, err := os.Stat(filepath.Join(assets, filepath.Base(b))); errors.Is(err, fs.ErrNotExist) {
+			if err := fsx.Remove(b); err != nil {
+				log.Printf("devsvc: removing stale bundle %s: %v", b, err)
+			}
+		}
+	}
 }
 
 // SetWatch turns rebuilding on every source change on or off for the project in dir.
@@ -92,13 +115,15 @@ func (s *Service) SetWatch(gameID, dir string, on bool) error {
 }
 
 // WatchedSources are the source folders of the projects being watched, by game, for the folder watch.
-// ponytail: only src/<Name> itself is watched, not its subfolders; walk them when a template nests code.
+// The folder watch is not recursive, so Mortar's own src/<Name>/Compat and the assets/ folder, whose bundles the build
+// copies into the output, are listed beside the source folder.
 func WatchedSources(cur settings.Settings, games []string) map[string][]string {
 	out := map[string][]string{}
 	for _, g := range games {
 		for _, p := range cur.GamePrefs(g).DevProjects {
 			if p.Watch {
-				out[g] = append(out[g], filepath.Join(p.Dir, "src", p.Name))
+				src := filepath.Join(p.Dir, "src", p.Name)
+				out[g] = append(out[g], src, filepath.Join(src, "Compat"), filepath.Join(p.Dir, "assets"))
 			}
 		}
 	}
