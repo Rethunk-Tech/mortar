@@ -10,10 +10,8 @@ import (
 
 func TestWatchedSourcesCoverCompatAndAssets(t *testing.T) {
 	svc, _ := testService(t, testTemplate)
+	// Build on save is off: the sources are still watched, so the card can say they changed.
 	dir := fixtureProject(t, svc)
-	if err := svc.SetWatch("lethal-company", dir, true); err != nil {
-		t.Fatal(err)
-	}
 	got := WatchedSources(svc.Settings.Get(), []string{"lethal-company"})["lethal-company"]
 	src := filepath.Join(dir, "src", "ShopDrop")
 	for _, want := range []string{src, filepath.Join(src, "Compat"), filepath.Join(dir, "assets")} {

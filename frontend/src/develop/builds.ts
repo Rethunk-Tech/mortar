@@ -82,7 +82,7 @@ export async function refreshInfo(game: string, dir: string) {
 
 let listening = false
 
-/** Rebuilds each watched project of a game when its source changes. */
+/** When a project's sources change, rebuilds it if build on save is on, else rereads it so its card says it changed. */
 export function initDevWatch() {
   if (listening || typeof Events.On !== 'function') {
     return
@@ -93,6 +93,8 @@ export function initDevWatch() {
     for (const p of useSettings.getState().games?.[game]?.devProjects ?? []) {
       if (p.watch) {
         buildProject(game, p.dir).catch(() => undefined)
+      } else {
+        refreshInfo(game, p.dir).catch(() => undefined)
       }
     }
   })

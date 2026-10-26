@@ -114,17 +114,16 @@ func (s *Service) SetWatch(gameID, dir string, on bool) error {
 	return s.Settings.SetDevProjectWatch(gameID, dir, on)
 }
 
-// WatchedSources are the source folders of the projects being watched, by game, for the folder watch.
-// The folder watch is not recursive, so Mortar's own src/<Name>/Compat and the assets/ folder, whose bundles the build
-// copies into the output, are listed beside the source folder.
+// WatchedSources are every project's source folders, by game, for the folder watch: a change rebuilds a project with
+// build on save on and marks the others changed since their last build. The folder watch is not recursive, so Mortar's
+// own src/<Name>/Compat and the assets/ folder, whose bundles the build copies into the output, are listed beside the
+// source folder.
 func WatchedSources(cur settings.Settings, games []string) map[string][]string {
 	out := map[string][]string{}
 	for _, g := range games {
 		for _, p := range cur.GamePrefs(g).DevProjects {
-			if p.Watch {
-				src := filepath.Join(p.Dir, "src", p.Name)
-				out[g] = append(out[g], src, filepath.Join(src, "Compat"), filepath.Join(p.Dir, "assets"))
-			}
+			src := filepath.Join(p.Dir, "src", p.Name)
+			out[g] = append(out[g], src, filepath.Join(src, "Compat"), filepath.Join(p.Dir, "assets"))
 		}
 	}
 	return out
