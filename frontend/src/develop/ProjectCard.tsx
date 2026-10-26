@@ -54,7 +54,6 @@ import { ReleaseDialog } from './ReleaseDialog.tsx'
 import { UploadDialog } from './UploadDialog.tsx'
 
 // The status chip's "built X ago" moves on once a minute.
-const MINUTE_MS = 60_000
 
 // A problem's file below the project, as the editor would show it.
 const relative = (dir: string, file: string) =>
@@ -141,7 +140,7 @@ function Outcome({ game, project }: { game: string; project: DevProject }) {
 function Status({ dir }: { dir: string }) {
   const { t, i18n } = useLingui()
   const run = useDevRuns((s) => runOf(s.byDir, dir))
-  const now = useNowValue((n) => Math.floor(n / MINUTE_MS))
+  const when = useNowValue((now) => relativeWhen(run.builtAt, { now, locale: i18n.locale }))
   if (run.running) {
     return (
       <Chip
@@ -155,7 +154,6 @@ function Status({ dir }: { dir: string }) {
     return <Chip size="small" variant="outlined" label={t`Not built yet`} />
   }
   if (run.build.ok) {
-    const when = relativeWhen(run.builtAt, { now: now * MINUTE_MS, locale: i18n.locale })
     return <Chip size="small" color="success" variant="outlined" label={t`Built ${{ when }}`} />
   }
   const count = (run.build.problems ?? []).filter((p) => p.severity === 'error').length

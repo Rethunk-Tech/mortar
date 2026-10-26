@@ -13,6 +13,8 @@ let timer: ReturnType<typeof setInterval> | undefined
 function start() {
   subscribers += 1
   if (subscribers === 1) {
+    // The clock stood still while nobody watched it.
+    useNowStore.setState({ now: Date.now() })
     timer = setInterval(() => useNowStore.setState({ now: Date.now() }), minute)
   }
 }
