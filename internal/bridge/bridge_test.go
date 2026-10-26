@@ -8,6 +8,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
@@ -110,7 +111,7 @@ func TestReadState(t *testing.T) {
 		}
 	}
 	// A Wine PID means nothing on the host, so a pid no host process has is no reason to call the game gone.
-	live := `{"port":51234,"token":"abc","pid":2147483646}`
+	live := `{"port":51234,"token":"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef","pid":2147483646}`
 	cases := []struct {
 		name, body string
 		want       error
@@ -118,6 +119,8 @@ func TestReadState(t *testing.T) {
 		{"missing", "", ErrNotReady},
 		{"garbage", "{", ErrNotReady},
 		{"no token", `{"port":51234,"token":""}`, ErrNotReady},
+		{"injected token", `{"port":51234,"token":"abc\nFLUSHALL"}`, ErrNotReady},
+		{"uppercase token", `{"port":51234,"token":"` + strings.Repeat("A", 64) + `"}`, ErrNotReady},
 		{"live", live, nil},
 	}
 	for _, c := range cases {
@@ -129,7 +132,7 @@ func TestReadState(t *testing.T) {
 		if !errors.Is(err, c.want) {
 			t.Fatalf("%s: err = %v, want %v", c.name, err, c.want)
 		}
-		if c.want == nil && (st.Port != 51234 || st.Token != "abc") {
+		if c.want == nil && (st.Port != 51234 || st.Token != "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef") {
 			t.Fatalf("%s: state = %+v", c.name, st)
 		}
 	}
@@ -141,7 +144,7 @@ func TestQueryReturnsTheRepliesJSON(t *testing.T) {
 	if err := os.MkdirAll(filepath.Dir(file), 0o750); err != nil {
 		t.Fatal(err)
 	}
-	body := fmt.Sprintf(`{"port":%d,"token":"tok"}`, port)
+	body := fmt.Sprintf(`{"port":%d,"token":"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"}`, port)
 	if err := os.WriteFile(file, []byte(body), 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -149,7 +152,7 @@ func TestQueryReturnsTheRepliesJSON(t *testing.T) {
 	if err != nil || string(out) != `{"gameVersion":"v62","plugins":[]}` {
 		t.Fatalf("query = %s, %v", out, err)
 	}
-	if line := <-got; line != "tok\nstatus\n" {
+	if line := <-got; line != "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\nstatus\n" {
 		t.Fatalf("server saw %q", line)
 	}
 	if _, err := Query(t.Context(), file, "quit"); err == nil {

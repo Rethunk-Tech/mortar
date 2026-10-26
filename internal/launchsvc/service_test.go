@@ -272,7 +272,7 @@ func TestSendRunsThroughTheBridgeAndEchoesTheCommand(t *testing.T) {
 	}
 	modsDir, _ := profiles.ModsDir("stardew", p.ID)
 	dir := filepath.Join(modsDir, "bridge-0.9.0", "MortarSmapiBridge")
-	state := fmt.Sprintf(`{"port":%d,"token":"tok","pid":%d}`, addr.Port, os.Getpid())
+	state := fmt.Sprintf(`{"port":%d,"token":"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef","pid":%d}`, addr.Port, os.Getpid())
 	if err := os.WriteFile(filepath.Join(dir, "mortar-smapi-bridge.json"), []byte(state), 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -282,7 +282,7 @@ func TestSendRunsThroughTheBridgeAndEchoesTheCommand(t *testing.T) {
 	if err := svc.Send(t.Context(), "stardew", "  help  "); err != nil {
 		t.Fatal(err)
 	}
-	if line := <-got; line != "tok\nhelp\n" {
+	if line := <-got; line != "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\nhelp\n" {
 		t.Fatalf("bridge saw %q", line)
 	}
 	lines := buf.Lines()

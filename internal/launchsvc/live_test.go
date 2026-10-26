@@ -75,7 +75,7 @@ func TestABepInExGameReportsItsSceneOwnVersionAndWhichPackagesLoaded(t *testing.
 	if !ok {
 		t.Fatalf("listener address %v", ln.Addr())
 	}
-	if err := os.WriteFile(stateFile, fmt.Appendf(nil, `{"port":%d,"token":"tok"}`, addr.Port), 0o600); err != nil {
+	if err := os.WriteFile(stateFile, fmt.Appendf(nil, `{"port":%d,"token":"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"}`, addr.Port), 0o600); err != nil {
 		t.Fatal(err)
 	}
 

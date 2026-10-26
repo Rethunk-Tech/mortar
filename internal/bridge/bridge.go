@@ -81,10 +81,16 @@ func ReadState(stateFile string) (State, error) {
 		return State{}, err
 	}
 	var st State
-	if json.Unmarshal(b, &st) != nil || st.Port <= 0 || st.Port > 65535 || st.Token == "" {
+	if json.Unmarshal(b, &st) != nil || st.Port <= 0 || st.Port > 65535 || !validToken(st.Token) {
 		return State{}, ErrNotReady
 	}
 	return st, nil
+}
+
+// validToken is the 64 lowercase hex characters both companions generate. The state file lives in a profile an import can
+// fill, so anything else could smuggle extra lines into the bytes Mortar writes to the port it names.
+func validToken(t string) bool {
+	return len(t) == 64 && !strings.ContainsFunc(t, func(r rune) bool { return (r < '0' || r > '9') && (r < 'a' || r > 'f') })
 }
 
 // Send runs command in the game whose companion wrote stateFile.

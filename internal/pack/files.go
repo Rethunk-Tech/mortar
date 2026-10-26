@@ -4,6 +4,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/winname"
@@ -22,7 +23,8 @@ var blockedExtensions = []string{
 // the loader files Mortar writes itself (doorstop_config.ini), so only a file below one of roots, the game's loaders'
 // import folders, is kept, written under the root's own spelling; anything else is dropped without a word, as nothing
 // the player chose is lost. A file the pack lists twice keeps its config. programs lists, sorted, the executables left
-// out, which the player should hear about.
+// out, which the player should hear about. The bridge's state file is dropped too: it holds a token and port Mortar
+// would otherwise trust from the pack.
 func ProfileFiles(d Draft, roots []string) (out map[string][]byte, programs []string) {
 	out = map[string][]byte{}
 	keep := func(p string, data []byte) {
@@ -31,6 +33,9 @@ func ProfileFiles(d Draft, roots []string) (out map[string][]byte, programs []st
 			first, rest, cut := strings.Cut(w, "/")
 			i := slices.IndexFunc(roots, func(r string) bool { return strings.EqualFold(r, first) })
 			if !cut || i < 0 {
+				return
+			}
+			if strings.EqualFold(w, bridge.BepInEx.StateFile) {
 				return
 			}
 			if blocked(w) {

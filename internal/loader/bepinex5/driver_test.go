@@ -169,13 +169,13 @@ func TestSendHandsTheLineToTheBridgeConsole(t *testing.T) {
 		t.Fatal("listener has no TCP address")
 	}
 	port := tcp.Port
-	if err := os.WriteFile(state, []byte(fmt.Sprintf(`{"port":%d,"token":"tok"}`, port)), 0o600); err != nil {
+	if err := os.WriteFile(state, []byte(fmt.Sprintf(`{"port":%d,"token":"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"}`, port)), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := (Loader{}).Send(t.Context(), loader.Target{}, loader.ProfileView{Dir: dir}, "Spawn Boar"); err != nil {
 		t.Fatal(err)
 	}
-	if line := <-got; line != "tok\nconsole Spawn Boar\n" {
+	if line := <-got; line != "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\nconsole Spawn Boar\n" {
 		t.Fatalf("bridge got %q", line)
 	}
 }

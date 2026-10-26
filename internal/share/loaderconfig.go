@@ -59,8 +59,8 @@ func validLoaderConfigPath(p string) bool {
 	return true
 }
 
-// companionState is the loader's companion state file, which holds a live token and never leaves the computer.
-func companionState(gameID, loaderID string) string {
+// CompanionState is the loader's companion state file, which holds a live token and never leaves the computer.
+func CompanionState(gameID, loaderID string) string {
 	l, ok := gamereg.LoaderOf(gameID, loaderID)
 	if !ok {
 		return ""
@@ -74,7 +74,7 @@ func companionState(gameID, loaderID string) string {
 // readLoaderConfigs collects the text config files under the loader's config roots in profileDir; files over the
 // size cap, not UTF-8, or with unusual names are skipped and returned as paths.
 func readLoaderConfigs(profileDir, gameID, loaderID string) (found []LoaderConfig, skipped []string, err error) {
-	state := companionState(gameID, loaderID)
+	state := CompanionState(gameID, loaderID)
 	for _, root := range LoaderConfigRoots(gameID, loaderID) {
 		err := filepath.WalkDir(filepath.Join(profileDir, filepath.FromSlash(root)), func(p string, d fs.DirEntry, walkErr error) error {
 			if walkErr != nil {

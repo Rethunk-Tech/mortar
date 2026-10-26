@@ -18,6 +18,16 @@ func TestPackFilesLandUnderBepInEx(t *testing.T) {
 	}
 }
 
+func TestPackFilesLeaveOutTheBridgeState(t *testing.T) {
+	got, _ := ProfileFiles(Draft{
+		Loose:   []File{{Path: "BepInEx/config/Mortar-BepInEx-Bridge-2.json", Data: []byte("{}")}, {Path: "BepInEx/config/MORTAR-bepinex-bridge.json", Data: []byte("{}")}},
+		Configs: []File{{Path: "config/mortar-bepinex-bridge.json", Data: []byte("{}")}},
+	}, ImportRoots("lethal-company"))
+	if len(got) != 1 {
+		t.Fatalf("files = %v", slices.Collect(maps.Keys(got)))
+	}
+}
+
 func TestPackFilesJudgeNamesAsWindowsStoresThem(t *testing.T) {
 	got, _ := ProfileFiles(Draft{Loose: []File{
 		{Path: "BepInEx/plugins/evil.dll.", Data: []byte("MZ")},

@@ -705,14 +705,16 @@ func (s *Service) writeLoaderConfigs(game, profileID string, configs []share.Loa
 	if len(configs) == 0 {
 		return nil
 	}
-	roots := share.LoaderConfigRoots(game, s.d.Profiles.LoaderID(game, profileID))
+	loaderID := s.d.Profiles.LoaderID(game, profileID)
+	roots := share.LoaderConfigRoots(game, loaderID)
+	state := share.CompanionState(game, loaderID)
 	dir, err := s.d.Profiles.ProfileDir(game, profileID)
 	if err != nil {
 		return err
 	}
 	files := map[string][]byte{}
 	for _, c := range configs {
-		if !share.UnderRoots(c.Path, roots) {
+		if !share.UnderRoots(c.Path, roots) || (state != "" && strings.EqualFold(c.Path, state)) {
 			continue
 		}
 		if !overwrite && exists(filepath.Join(dir, filepath.FromSlash(c.Path))) {
