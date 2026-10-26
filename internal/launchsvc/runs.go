@@ -407,6 +407,12 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 		since = started
 	}
 	text := s.runText(g, profileID, modsDir, since)
+	s.mu.Lock()
+	copies := s.logs[keyOf(g)].progress.Copies
+	s.mu.Unlock()
+	if path, own, err := s.logPath(g.ID(), profileID); err == nil && copies > 1 {
+		text += copyLogs(path, own, s.home, modsDir, started, copies)
+	}
 	if s.OnSavePlayed != nil {
 		for _, save := range s.playedSaves(g.ID(), text, started, failed) {
 			s.OnSavePlayed(g.ID(), profileID, save)
@@ -675,6 +681,19 @@ func (s *Service) runText(g game.Game, profileID, modsDir string, since time.Tim
 		return launch.FormatLog(sess.buf.Lines())
 	}
 	return ""
+}
+
+// copyLogs is the logs of the second and later copies of a run that started several, each under a heading: the
+// first copy holds the loader's log, so BepInEx writes each later one to the next free name, LogOutput.log.1 and on.
+func copyLogs(path string, own bool, home, modsDir string, started time.Time, copies int) string {
+	var b strings.Builder
+	for i := 1; i < copies; i++ {
+		name := fmt.Sprintf("%s.%d", path, i)
+		if text, ok := readOwnedLog(name, own, home, modsDir, started); ok {
+			fmt.Fprintf(&b, "\n\nCopy %d (%s):\n%s", i+1, filepath.Base(name), text)
+		}
+	}
+	return b.String()
 }
 
 // crashReport is the game's crash report written since the run began, set off from the log above it; empty when the

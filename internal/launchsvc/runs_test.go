@@ -387,3 +387,23 @@ func TestLastRunIDFollowsTheIndex(t *testing.T) {
 		}
 	}
 }
+
+// A run of several copies keeps each later copy's log, and leaves out one an earlier run wrote.
+func TestCopyLogsReadsEachLaterCopysLog(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "LogOutput.log")
+	started := time.Now().Add(-time.Minute)
+	for name, body := range map[string]string{"LogOutput.log.1": "[Error  : Unity Log] client\n", "LogOutput.log.2": "old\n"} {
+		if err := os.WriteFile(filepath.Join(dir, name), []byte(body), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	old := started.Add(-time.Hour)
+	if err := os.Chtimes(filepath.Join(dir, "LogOutput.log.2"), old, old); err != nil {
+		t.Fatal(err)
+	}
+	got := copyLogs(path, true, dir, dir, started, 3)
+	if !strings.Contains(got, "Copy 2 (LogOutput.log.1):\n[Error  : Unity Log] client") || strings.Contains(got, "old") {
+		t.Fatalf("copy logs = %q", got)
+	}
+}
