@@ -302,7 +302,7 @@ func TestInstallThunderstorePackageRecordsAnEntryWithoutAFolder(t *testing.T) {
 	if err := e.WriteFiles("lethal-company", p.ID, map[string][]byte{"BepInEx/plugins/x.bundle": []byte("pack")}); err != nil {
 		t.Fatal(err)
 	}
-	if b, _ := os.ReadFile(shared); string(b) != "store" {
+	if b, _ := os.ReadFile(filepath.Clean(shared)); string(b) != "store" {
 		t.Fatalf("the store copy was written through its hardlink: %q", b)
 	}
 	// A folder linked out of the profile is not a way out.
