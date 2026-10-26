@@ -76,20 +76,12 @@ A mod made of files a loader mod reads (no code): suits, posters, boombox tracks
 - **Decide** how Windows placement copes with large profiles: every Play places every file again (`internal/deploy/place.go`), several times slower on Windows than on Linux (`MORTAR_SCALE=1 go test ./internal/loader/folder -run ThreeThousand -v`). Options: show progress; leave files unchanged since the last Play in place; link files where the volume allows, which needs an answer for a mod that rewrites its own file.
 - **Measure** the same test with the Mods folder inside a signed-in OneDrive folder (`MORTAR_SCALE_MODS=<folder>`, `MORTAR_SCALE_KB=<size>`); it needs a person with a Microsoft account.
 
-### First real launches of the newer loaders
+### Lethal Company facts to verify
 
-No owned game has launched these yet. The first real launch settles: the Wine `Z:` form of the folder flags for ReturnOfModding, GDWeave, Lovely and Northstar (r2modman passes host paths); `wsock32=native,builtin` for Northstar (`Overrides` in `internal/loader/thunderpack/specs.go`) and whether it needs more beside the game than everything but `R2Northstar/mods` (its `Placed`); for MelonLoader, `--melonloader.basedir` under Proton, the `version=native,builtin` override and the `N Mods loaded.` ready line (`Ready` in `internal/loader/melonloader/driver.go`).
+Record each in [games.md](games.md#lethal-company) once seen.
 
-### Game facts to verify
-
-Nobody on the team has read these from an install; record each in [games.md](games.md) once seen.
-
-- **Lethal Company:** on a real Windows run, that the command-line Doorstop target beats a stale `doorstop_config.ini`; profile paths with spaces or non-ASCII characters (BepInEx flags `Assembly.LoadFile` issues on some Mono builds, `Entrypoint.cs:94,142`).
-- **Valheim:** a real launch of a modded profile, native and under Proton (sandbox checks use a stub executable); the startup and intro steps for the bridge's `MORTAR_SKIP_INTRO` (no `assembly_valheim.dll` has been read).
-- **R.E.P.O.:** the layout inside `saves\`.
-- **Risk of Rain 2:** whether the dedicated server runs `server.cfg` itself or only `server_startup.cfg` (the decompile is the client build; `albodin/RoR2Server` execs the latter); that `Player.log` is where the registry key implies.
-- **PEAK:** the save file name; that `Player.log` is where the registry key implies.
-- **Cities: Skylines II:** a launch with separate saves on, under Proton and on Windows; whether **Continue**, which `UserState` points at a city in the shared folder, copes when that city is missing from the profile's folder; the Xbox build's user folder name.
+- On a real Windows run, that the command-line Doorstop target beats a stale `doorstop_config.ini`.
+- Profile paths with spaces or non-ASCII characters (BepInEx flags `Assembly.LoadFile` issues on some Mono builds, `Entrypoint.cs:94,142`).
 
 ## Later
 
