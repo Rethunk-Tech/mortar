@@ -48,6 +48,7 @@ msgstr ""
 msgid "These changes will be reverted too:"
 msgstr ""
 
+#: src/develop/CloneDialog.tsx
 #: src/develop/NewModDialog.tsx
 msgid "Choose…"
 msgstr ""
@@ -369,6 +370,10 @@ msgstr ""
 
 #: src/queue/QueueRows.tsx
 msgid "Move {name} up"
+msgstr ""
+
+#: src/develop/DevelopTab.tsx
+msgid "Clone from {source}…"
 msgstr ""
 
 #: src/share/DestinationGrid.tsx
@@ -1307,6 +1312,10 @@ msgstr ""
 msgid "Undo"
 msgstr ""
 
+#: src/develop/CloneDialog.tsx
+msgid "Clone"
+msgstr ""
+
 #: src/game/BackupMenuItems.tsx
 msgid "Mods a site can download again are left out; restoring downloads them."
 msgstr ""
@@ -1355,6 +1364,10 @@ msgstr ""
 
 #: src/game/FarmMenuItem.tsx
 msgid "Fix all"
+msgstr ""
+
+#: src/develop/CloneDialog.tsx
+msgid "Could not clone the project"
 msgstr ""
 
 #: src/commandPalette/CommandPalette.tsx
@@ -2109,6 +2122,10 @@ msgstr ""
 msgid "{first} installed into {name}"
 msgstr ""
 
+#: src/develop/CloneDialog.tsx
+msgid "Choose the folder the project goes in."
+msgstr ""
+
 #: src/share/Included.tsx
 msgid "Mod notes"
 msgstr ""
@@ -2835,6 +2852,10 @@ msgstr ""
 msgid "Back up {name} now"
 msgstr ""
 
+#: src/develop/DevelopTab.tsx
+msgid "Add a project folder…"
+msgstr ""
+
 #: src/install/MergeCallout.tsx
 msgid "Another file from a mod you have"
 msgstr ""
@@ -3020,6 +3041,7 @@ msgstr ""
 msgid "Starter templates"
 msgstr ""
 
+#: src/develop/CloneDialog.tsx
 #: src/develop/NewModDialog.tsx
 msgid "Folder for your mod projects"
 msgstr ""
@@ -3404,6 +3426,7 @@ msgstr ""
 msgid "Before updating {name}"
 msgstr ""
 
+#: src/develop/CloneDialog.tsx
 #: src/develop/NewModDialog.tsx
 msgid "Repository"
 msgstr ""
@@ -3712,6 +3735,10 @@ msgstr ""
 msgid "Clear download history?"
 msgstr ""
 
+#: src/develop/DevelopTab.tsx
+msgid "Could not add the project"
+msgstr ""
+
 #: src/develop/DependenciesStep.tsx
 msgid "Nothing to suggest from your answers; search for any mod yours builds on."
 msgstr ""
@@ -3745,6 +3772,7 @@ msgstr ""
 msgid "Needs input"
 msgstr ""
 
+#: src/develop/CloneDialog.tsx
 #: src/develop/NewModDialog.tsx
 msgid "Projects folder"
 msgstr ""
@@ -4091,6 +4119,11 @@ msgstr ""
 #: src/share/DestinationGrid.tsx
 #: src/share/ShareDialog.tsx
 msgid "Mod list"
+msgstr ""
+
+#: src/develop/CloneDialog.tsx
+#: src/develop/DevelopTab.tsx
+msgid "Added {name}"
 msgstr ""
 
 #: src/lan/incoming.ts
@@ -6275,6 +6308,10 @@ msgstr ""
 msgid "Mod name"
 msgstr ""
 
+#: src/develop/CloneDialog.tsx
+msgid "Clone from {source}"
+msgstr ""
+
 #: src/queue/QueueBody.tsx
 msgid "Updates, missing dependencies and links from mod sites land here."
 msgstr ""
@@ -6352,6 +6389,10 @@ msgstr ""
 
 #: src/share/Included.tsx
 msgid "install reasons"
+msgstr ""
+
+#: src/develop/CloneDialog.tsx
+msgid "Name the repository as owner/name or its github.com address."
 msgstr ""
 
 #: src/lan/OutgoingProgress.tsx
@@ -6613,6 +6654,10 @@ msgstr ""
 
 #: src/saves/SavesTab.tsx
 msgid "Play this profile and save a game. Each save shows here with how well it fits {name}, so you know which mods it needs."
+msgstr ""
+
+#: src/develop/DevelopTab.tsx
+msgid "Choose the mod project's folder"
 msgstr ""
 
 #: src/share/arrivals.ts

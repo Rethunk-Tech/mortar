@@ -1,9 +1,12 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
-import { Hammer, Plus } from 'lucide-react'
+import { FolderPlus, GitBranch, Hammer, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { Add } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
+import { PickFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import type { DevProject } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { PageActions } from '../game/PageActions.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
@@ -15,7 +18,10 @@ import { useStoredState } from '../shell/useStoredState.ts'
 import { ViewToggle } from '../shell/ViewToggle.tsx'
 import { isViewMode, type ViewMode } from '../shell/viewMode.ts'
 import { space } from '../theme/density.ts'
+import { useToasts } from '../toasts/store.ts'
+import { usePending } from '../toasts/usePending.ts'
 import { refreshInfo } from './builds.ts'
+import { CloneDialog } from './CloneDialog.tsx'
 import { NewModDialog } from './NewModDialog.tsx'
 import { ProjectCard } from './ProjectCard.tsx'
 
@@ -43,6 +49,22 @@ export function DevelopTab({ game }: { game: string }) {
   const projects = useSettings((s) => s.games?.[game]?.devProjects) ?? []
   const openId = useProfiles((s) => s.openId)
   const [creating, setCreating] = useState(false)
+  const [cloning, setCloning] = useState(false)
+  const [adding, run] = usePending()
+  const addFolder = () =>
+    run(
+      async () => {
+        const dir = await PickFolder(t`Choose the mod project's folder`)
+        if (!dir) {
+          return
+        }
+        const project = await Add(game, dir, openId)
+        useToasts
+          .getState()
+          .push({ kind: 'success', title: t`Added ${{ name: project.name }}`, body: project.dir })
+      },
+      { errorTitle: t`Could not add the project` },
+    )
   const [query, setQuery] = useState('')
   const [view, setView] = useStoredState<ViewMode>(`mortar.developView.${game}`, 'list', isViewMode)
   const here = projects.filter((p) => p.profile === openId)
@@ -73,6 +95,12 @@ export function DevelopTab({ game }: { game: string }) {
       <PageActions>
         <Button variant="outlined" startIcon={<Plus size={14} />} onClick={() => setCreating(true)}>
           {t`New mod…`}
+        </Button>
+        <Button startIcon={<FolderPlus size={14} />} disabled={adding} onClick={addFolder}>
+          {t`Add a project folder…`}
+        </Button>
+        <Button startIcon={<GitBranch size={14} />} onClick={() => setCloning(true)}>
+          {t`Clone from ${{ source: sourceLabel('github') }}…`}
         </Button>
       </PageActions>
       {here.length === 0 ? (
@@ -120,6 +148,7 @@ export function DevelopTab({ game }: { game: string }) {
           ))}
         </Box>
       ) : null}
+      <CloneDialog open={cloning} game={game} onClose={() => setCloning(false)} />
       <NewModDialog open={creating} game={game} onClose={() => setCreating(false)} />
     </Box>
   )

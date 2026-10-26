@@ -201,7 +201,7 @@ Finds mods to add to the open profile; the shared header has no page actions her
 
 ## Develop tab
 
-Code: `frontend/src/develop/`. In its own sidebar group (**Create**), only for a game whose loader names a mod template. **New mod…** in the page-actions slot opens the wizard; each project is a card whose row of actions never wraps a label, with the last build's outcome as compact Alerts below and each compiler error a link to its file and line. The wizard says why **Start mod** is off in its tooltip, remembers the author, team, id prefix and projects folder, and offers the GitHub repository only when `gh` is signed in.
+Code: `frontend/src/develop/`. In its own sidebar group (**Create**), only for a game whose loader names a mod template. **New mod…** in the page-actions slot opens the wizard; each project is a card whose row of actions never wraps a label, with the last build's outcome as compact Alerts below and each compiler error a link to its file and line. **Add a project folder…** takes a folder already made from the template, and **Clone from GitHub…** (owner/name or address) clones one into the wizard's projects folder first. The wizard says why **Start mod** is off in its tooltip, remembers the author, team, id prefix and projects folder, and offers the GitHub repository only when `gh` is signed in.
 
 ## Problems tab
 

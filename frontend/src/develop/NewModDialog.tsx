@@ -44,8 +44,8 @@ import {
   type Draft,
   draftIssue,
   firstDraft,
+  isRemembered,
   REMEMBERED,
-  type Remembered,
   rememberedOf,
   requirementIssue,
   STEPS,
@@ -412,7 +412,7 @@ function useWizardData(open: boolean, game: string, setDraft: (fn: (d: Draft) =>
         setForm(read)
         // What the player typed while the template loaded stays; the template fills in the rest.
         setDraft((d) => {
-          const fresh = firstDraft(read, readStored(REMEMBERED, {}, isRecord))
+          const fresh = firstDraft(read, readStored(REMEMBERED, {}, isRemembered))
           const typed = Object.fromEntries(Object.entries(d.values).filter(([, v]) => v !== ''))
           return {
             ...fresh,
@@ -537,6 +537,3 @@ export function NewModDialog({
     </FormDialog>
   )
 }
-
-const isRecord = (v: unknown): v is Remembered =>
-  typeof v === 'object' && v !== null && Object.values(v).every((x) => typeof x === 'string')

@@ -32,6 +32,9 @@ export interface Draft {
 // The projects folder, and each remembered parameter as "param.<id>".
 export type Remembered = Partial<Record<string, string>>
 
+export const isRemembered = (v: unknown): v is Remembered =>
+  typeof v === 'object' && v !== null && Object.values(v).every((x) => typeof x === 'string')
+
 // The same rules as devsvc's NewMod.check, so the button says why before Mortar is asked.
 const MOD_NAME = /^[A-Z][A-Za-z0-9]{1,63}$/
 const FOLDER = /^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$/

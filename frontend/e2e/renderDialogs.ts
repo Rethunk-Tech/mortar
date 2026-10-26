@@ -194,6 +194,11 @@ function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
       // The header's button; an empty Develop page offers a second one.
       run: (p) => p.getByRole('button', { name: 'New mod…' }).first().click(),
     },
+    {
+      name: 'develop-clone',
+      setup: (p) => tab(p, 'Develop'),
+      run: (p) => p.getByRole('button', { name: 'Clone from GitHub…' }).click(),
+    },
     ...[
       ['author', 1],
       ['dependencies', 2],

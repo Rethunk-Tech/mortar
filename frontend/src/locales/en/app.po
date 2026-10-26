@@ -48,6 +48,7 @@ msgstr "Could not open the folder"
 msgid "These changes will be reverted too:"
 msgstr "These changes will be reverted too:"
 
+#: src/develop/CloneDialog.tsx
 #: src/develop/NewModDialog.tsx
 msgid "Choose…"
 msgstr "Choose…"
@@ -370,6 +371,10 @@ msgstr "Modpack"
 #: src/queue/QueueRows.tsx
 msgid "Move {name} up"
 msgstr "Move {name} up"
+
+#: src/develop/DevelopTab.tsx
+msgid "Clone from {source}…"
+msgstr "Clone from {source}…"
 
 #: src/share/DestinationGrid.tsx
 msgid "An {manager} code or modpack"
@@ -1307,6 +1312,10 @@ msgstr "Check"
 msgid "Undo"
 msgstr "Undo"
 
+#: src/develop/CloneDialog.tsx
+msgid "Clone"
+msgstr "Clone"
+
 #: src/game/BackupMenuItems.tsx
 msgid "Mods a site can download again are left out; restoring downloads them."
 msgstr "Mods a site can download again are left out; restoring downloads them."
@@ -1356,6 +1365,10 @@ msgstr "Appearance"
 #: src/game/FarmMenuItem.tsx
 msgid "Fix all"
 msgstr "Fix all"
+
+#: src/develop/CloneDialog.tsx
+msgid "Could not clone the project"
+msgstr "Could not clone the project"
 
 #: src/commandPalette/CommandPalette.tsx
 msgid "Mods and profiles"
@@ -2109,6 +2122,10 @@ msgstr "{name} was changed on {machine} and on this machine"
 msgid "{first} installed into {name}"
 msgstr "{first} installed into {name}"
 
+#: src/develop/CloneDialog.tsx
+msgid "Choose the folder the project goes in."
+msgstr "Choose the folder the project goes in."
+
 #: src/share/Included.tsx
 msgid "Mod notes"
 msgstr "Mod notes"
@@ -2835,6 +2852,10 @@ msgstr "Ignore"
 msgid "Back up {name} now"
 msgstr "Back up {name} now"
 
+#: src/develop/DevelopTab.tsx
+msgid "Add a project folder…"
+msgstr "Add a project folder…"
+
 #: src/install/MergeCallout.tsx
 msgid "Another file from a mod you have"
 msgstr "Another file from a mod you have"
@@ -3020,6 +3041,7 @@ msgstr "Allow cleanup before deleting."
 msgid "Starter templates"
 msgstr "Starter templates"
 
+#: src/develop/CloneDialog.tsx
 #: src/develop/NewModDialog.tsx
 msgid "Folder for your mod projects"
 msgstr "Folder for your mod projects"
@@ -3404,6 +3426,7 @@ msgstr "{count} waiting"
 msgid "Before updating {name}"
 msgstr "Before updating {name}"
 
+#: src/develop/CloneDialog.tsx
 #: src/develop/NewModDialog.tsx
 msgid "Repository"
 msgstr "Repository"
@@ -3712,6 +3735,10 @@ msgstr "Every archive in the downloads folder is already in a profile or Mortar'
 msgid "Clear download history?"
 msgstr "Clear download history?"
 
+#: src/develop/DevelopTab.tsx
+msgid "Could not add the project"
+msgstr "Could not add the project"
+
 #: src/develop/DependenciesStep.tsx
 msgid "Nothing to suggest from your answers; search for any mod yours builds on."
 msgstr "Nothing to suggest from your answers; search for any mod yours builds on."
@@ -3745,6 +3772,7 @@ msgstr "Saved into the project's own files."
 msgid "Needs input"
 msgstr "Needs input"
 
+#: src/develop/CloneDialog.tsx
 #: src/develop/NewModDialog.tsx
 msgid "Projects folder"
 msgstr "Projects folder"
@@ -4092,6 +4120,11 @@ msgstr "This pack has files that always install."
 #: src/share/ShareDialog.tsx
 msgid "Mod list"
 msgstr "Mod list"
+
+#: src/develop/CloneDialog.tsx
+#: src/develop/DevelopTab.tsx
+msgid "Added {name}"
+msgstr "Added {name}"
 
 #: src/lan/incoming.ts
 msgid "A share from {sender} expired. Ask them to send it again."
@@ -6275,6 +6308,10 @@ msgstr "Download progress"
 msgid "Mod name"
 msgstr "Mod name"
 
+#: src/develop/CloneDialog.tsx
+msgid "Clone from {source}"
+msgstr "Clone from {source}"
+
 #: src/queue/QueueBody.tsx
 msgid "Updates, missing dependencies and links from mod sites land here."
 msgstr "Updates, missing dependencies and links from mod sites land here."
@@ -6353,6 +6390,10 @@ msgstr "Play this profile and save a game. Each save shows here, with its backup
 #: src/share/Included.tsx
 msgid "install reasons"
 msgstr "install reasons"
+
+#: src/develop/CloneDialog.tsx
+msgid "Name the repository as owner/name or its github.com address."
+msgstr "Name the repository as owner/name or its github.com address."
 
 #: src/lan/OutgoingProgress.tsx
 msgid "Sending to {peer} stopped: {why}"
@@ -6614,6 +6655,10 @@ msgstr "Your notes for this profile, for example: Friday co-op profile. Keep eve
 #: src/saves/SavesTab.tsx
 msgid "Play this profile and save a game. Each save shows here with how well it fits {name}, so you know which mods it needs."
 msgstr "Play this profile and save a game. Each save shows here with how well it fits {name}, so you know which mods it needs."
+
+#: src/develop/DevelopTab.tsx
+msgid "Choose the mod project's folder"
+msgstr "Choose the mod project's folder"
 
 #: src/share/arrivals.ts
 msgid "{name} is not in {profile}"
