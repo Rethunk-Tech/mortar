@@ -204,7 +204,7 @@ func TestEditMovesTheTeamInDevelopingMd(t *testing.T) {
 	svc, _ := testService(t, testTemplate)
 	dir := fixtureProject(t, svc)
 	doc := filepath.Join(dir, "DEVELOPING.md")
-	if err := fsx.WriteFile(doc, []byte("- Linux: `secret-tool store --label \"Thunderstore Ab\" service thunderstore team Ab`\n  `New-StoredCredential -Target 'service thunderstore team Ab' -Password <token>`\n"), 0o600); err != nil {
+	if err := fsx.WriteFile(doc, []byte("- Linux: `secret-tool store --label \"Thunderstore Ab\" service thunderstore team Ab`\n  `New-StoredCredential -Target 'service thunderstore team Ab' -Password <token>`\n- Other: team Abc\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := svc.Edit(t.Context(), "lethal-company", dir, ProjectEdit{
@@ -212,7 +212,9 @@ func TestEditMovesTheTeamInDevelopingMd(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	if got := read(t, doc); strings.Contains(got, "team Ab") || strings.Count(got, "team Bc") != 2 {
+	// "team Abc" names another team and stays.
+	if got := read(t, doc); strings.Contains(got, "team Ab\n") || strings.Count(got, "team Bc") != 2 ||
+		!strings.Contains(got, "team Abc") || !strings.Contains(got, "Thunderstore Bc") {
 		t.Errorf("DEVELOPING.md = %s", got)
 	}
 }

@@ -279,7 +279,10 @@ func (s *Service) Edit(ctx context.Context, gameID, dir string, e ProjectEdit) (
 	}
 	if old.Team != e.Team {
 		_ = editFile(filepath.Join(p.Dir, "DEVELOPING.md"), func(body string) string {
-			return strings.ReplaceAll(body, "team "+old.Team, "team "+e.Team)
+			// The keyring commands name the team after "team " and in their label; a longer team that starts with the
+			// old one is another team.
+			return regexp.MustCompile(`(team |Thunderstore )`+regexp.QuoteMeta(old.Team)+`\b`).
+				ReplaceAllString(body, "${1}"+strings.ReplaceAll(e.Team, "$", "$$"))
 		})
 	}
 	if old.Author != "" && old.Author != e.Author {
