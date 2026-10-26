@@ -148,9 +148,13 @@ func FindProton(home, want string) (ProtonBuild, bool) {
 }
 
 // ProtonCommand is the argv and the environment that run exe with args through Proton in inst's prefix, which it
-// creates when missing. A launcher's own Proton prefix is used as it is.
+// creates when missing. A launcher's own Proton prefix is used as it is, and so is Steam's for a Steam copy (a direct
+// start of it, such as several copies at once, which Steam's own start cannot do).
 func ProtonCommand(inst Install, exe string, args ...string) (argv, env []string, err error) {
 	root, own := CompatDataOf(inst)
+	if !own && inst.Store == storeSteam {
+		root, own = CompatDataDir(inst)
+	}
 	switch {
 	case own:
 	case (launcherPrefix{}).Detect(inst):

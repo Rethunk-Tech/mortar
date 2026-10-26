@@ -237,13 +237,18 @@ func (st Starter) command(goos string, inst Install, plan *launchplan.Plan, env 
 			return launch.Command{Dir: inst.Dir, Name: argv[0], Args: argv[1:], Env: environ(plan.Env)}, nil
 		}
 		var protonEnv []string
-		if goos != "windows" && (inst.Runtime == gameruntime.MortarProton || inst.Runtime == gameruntime.LauncherPrefix) {
+		if goos != "windows" && (inst.Runtime == gameruntime.MortarProton || inst.Runtime == gameruntime.LauncherPrefix ||
+			(inst.Runtime == gameruntime.Proton && inst.Store == StoreSteam)) {
 			info, _ := catalogGame(inst.Game)
 			rt := inst.runtime(info, "")
 			rt.Proton = env.Proton
 			argv, penv, err := gameruntime.ProtonCommand(rt, exe, args...)
 			if err != nil {
 				return launch.Command{}, err
+			}
+			// waitforexitandrun waits for everything else in the prefix to end, so a second copy would wait for the first.
+			if env.Instances > 1 && len(argv) > 1 && argv[1] == "waitforexitandrun" {
+				argv[1] = "run"
 			}
 			exe, args, protonEnv = argv[0], argv[1:], penv
 		}

@@ -47,6 +47,12 @@ func TestMortarProtonRunsAFolderCopyThroughSteamsBestProtonInMortarsPrefix(t *te
 	if want := []string{"STEAM_COMPAT_DATA_PATH=" + prefix, "STEAM_COMPAT_CLIENT_INSTALL_PATH=" + root}; !slices.Equal(env, want) {
 		t.Fatalf("env = %v, want %v", env, want)
 	}
+	// A Steam copy started directly (several test copies at once) runs in Steam's own prefix for the app.
+	steamCopy := Install{Game: "x", Store: storeSteam, AppID: "1", Dir: filepath.Join(root, "steamapps", "common", "X"), Platform: "windows", Home: home, GOOS: "linux"}
+	if argv, env, err := ProtonCommand(steamCopy, "X.exe"); err != nil || argv[1] != "waitforexitandrun" ||
+		env[0] != "STEAM_COMPAT_DATA_PATH="+filepath.Join(root, "steamapps", "compatdata", "1") {
+		t.Fatalf("a Steam copy: %v %v %v", argv, env, err)
+	}
 	inst.Proton = "GE-Proton10-34"
 	if argv, _, err := ProtonCommand(inst, "/games/X/X.exe"); err != nil || argv[0] != filepath.Join(root, "compatibilitytools.d", "GE-Proton10-34", "proton") {
 		t.Fatalf("a chosen build: %v %v", argv, err)
