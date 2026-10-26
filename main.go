@@ -267,6 +267,7 @@ func run() error {
 	defer closeReady()
 	// A burst of nxm clicks starts one second instance per link; each launch is queued at once and handled here in
 	// order, so a slow handoff (waiting for startup, asking the window whether it is minimised) never holds up the next.
+	inTray := startedInTray(os.Args[1:])
 	handoffs := make(chan application.SecondInstanceData, 256)
 	go func() {
 		<-ready
@@ -278,6 +279,10 @@ func run() error {
 			// An nxm link leaves an open window where it is, minimised or behind the browser, so a burst of clicks
 			// keeps the browser in front; the window sends a desktop notification when a link needs a profile chosen.
 			// Only a window closed or hidden to the tray is brought back, since nothing else could show the link.
+			// A restart that asks for the tray finds Mortar already running and leaves its window where it is.
+			if len(d.Args) == 2 && d.Args[1] == minimisedArg {
+				continue
+			}
 			nxmLink := nxmSvc.Receive(d.Args)
 			closed, visible := windowClosed(), !windowClosed() && window.IsVisible()
 			if shareSvc.Receive(sharesvc.InDir(d.Args, d.WorkingDir)) || plays.Receive(d.Args) || !nxmLink || closed || !visible {
@@ -1174,7 +1179,7 @@ func run() error {
 		return w
 	}
 	startupStep("services ready")
-	window = newWindow(store.Get().StartMinimised || plays.PlayMode())
+	window = newWindow(store.Get().StartMinimised || plays.PlayMode() || inTray)
 	pageLoaded := sync.OnceFunc(func() { startupStep("page loaded") })
 	window.OnWindowEvent(events.Common.WindowRuntimeReady, func(*application.WindowEvent) { pageLoaded() })
 	// Bundled mods are checked behind the open window: the check finds every game's installs, and may download a bridge.
@@ -1418,7 +1423,7 @@ func run() error {
 	// One rebuild at a time, in event order, so a burst of state changes cannot leave an older menu in place.
 	var trayRebuild sync.Mutex
 	syncTray := func() {
-		if !trayWanted(store.Get()) {
+		if !trayWanted(store.Get(), inTray) {
 			if tray != nil {
 				tray.Destroy()
 				tray = nil
@@ -1454,7 +1459,7 @@ func run() error {
 		refreshTrayMenu()
 	}
 	syncTray()
-	trayShown := trayWanted(store.Get())
+	trayShown := trayWanted(store.Get(), inTray)
 	systemTitleBar := store.Get().SystemTitleBar
 	app.Event.On(settings.ChangedEvent, func(*application.CustomEvent) {
 		if want := store.Get().SystemTitleBar; want != systemTitleBar {
@@ -1465,7 +1470,7 @@ func run() error {
 			}
 		}
 		// Only the tray settings change what the tray is; a rebuild reads every game's launches.
-		if want := trayWanted(store.Get()); want != trayShown {
+		if want := trayWanted(store.Get(), inTray); want != trayShown {
 			trayShown = want
 			gate.run(syncTray)
 		}

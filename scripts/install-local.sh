@@ -70,4 +70,5 @@ if [ "$windows" = 1 ]; then
     case "$old" in *"-$sha-"*) ;; *) [ -e "$old" ] && echo "  $old" ;; esac
   done
 fi
-gtk-launch mortar >/dev/null 2>&1 || true
+# In the tray, so a reinstall never takes the player's focus.
+setsid "$HOME/Apps/mortar.appimage" --minimised >/dev/null 2>&1 </dev/null &
