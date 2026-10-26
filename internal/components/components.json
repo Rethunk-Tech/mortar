@@ -1,5 +1,5 @@
 {
-  "serial": 1792900452,
+  "serial": 1793034960,
   "components": [
     {
       "game": "melonloader",
@@ -303,6 +303,11 @@
               {
                 "package": "AinaVT-LethalConfig",
                 "param": "config",
+                "values": ["true"]
+              },
+              {
+                "package": "Mortar-ConfigSync",
+                "param": "configSync",
                 "values": ["true"]
               }
             ]
