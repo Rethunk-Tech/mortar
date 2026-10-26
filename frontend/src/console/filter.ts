@@ -134,6 +134,17 @@ export function format(e: Entry): string {
   return `[${time}${e.level.padEnd(LEVEL_WIDTH)} ${e.mod}] ${e.message}`
 }
 
+// A line as the Console shows it, with the method that logged it and the object it named, which the window resolves
+// out of the message.
+export function formatFull(e: Entry): string {
+  const line = format(e)
+  if (e.cont || !e.source) {
+    return line
+  }
+  const object = e.object ? ` (${e.object})` : ''
+  return `${line.slice(0, line.length - e.message.length)}${e.source}${object}: ${e.message}`
+}
+
 export function formatAll(rows: Entry[]): string {
   return rows.map(format).join('\n')
 }

@@ -119,6 +119,7 @@ const Row = memo(function RowView({
   const messageLinks = useMemo(() => linksInText(text, mods, roots), [text, mods, roots])
   return (
     <Box
+      data-seq={entry.seq}
       onContextMenu={(e) => {
         e.preventDefault()
         onMenu(entry.seq, e.clientY, e.clientX)
@@ -186,6 +187,23 @@ const Row = memo(function RowView({
 // A BepInEx logger mod's clock carries a fraction the 72px column has no room for; the title keeps it.
 const FRACTION = /^(\d\d:\d\d:\d\d)\.\d+$/
 
+// The first and last line a text selection inside root touches, by seq. Rows scrolled out of view leave the DOM, so
+// the selection is kept as its two ends and the rows between them are read from the log.
+function selectedEnds(root: HTMLElement | null): [number, number] | null {
+  const sel = globalThis.getSelection()
+  if (!(root && sel) || sel.isCollapsed || sel.rangeCount === 0) {
+    return null
+  }
+  const range = sel.getRangeAt(0)
+  const seqAt = (n: Node) => {
+    const row = (n instanceof Element ? n : n.parentElement)?.closest('[data-seq]')
+    return row && root.contains(row) ? Number(row.getAttribute('data-seq')) : null
+  }
+  const a = seqAt(range.startContainer)
+  const b = seqAt(range.endContainer)
+  return a === null || b === null ? null : [a, b]
+}
+
 // The message the row at index belongs to: its header line and the continuation lines after it.
 function groupAt(rows: Entry[], index: number): Entry[] {
   let start = index
@@ -228,13 +246,38 @@ export function VirtualLog({
   const ref = useRef<HTMLDivElement>(null)
   const [top, setTop] = useState(0)
   const [height, setHeight] = useState(0)
-  const [menu, setMenu] = useState<{ seq: number; top: number; left: number } | null>(null)
+  const [menu, setMenu] = useState<{
+    seq: number
+    top: number
+    left: number
+    ends: [number, number] | null
+  } | null>(null)
   const onMenu = useCallback(
-    (seq: number, y: number, x: number) => setMenu({ seq, top: y, left: x }),
+    (seq: number, y: number, x: number) =>
+      setMenu({ seq, top: y, left: x, ends: selectedEnds(ref.current) }),
     [],
   )
   const menuIndex = menu ? rows.findIndex((r) => r.seq === menu.seq) : -1
   const menuGroup = menuIndex >= 0 ? groupAt(rows, menuIndex) : []
+  // Opening the menu moves focus and can drop the selection, so the selected lines stay marked while it is open;
+  // whole messages are taken, as a selection rarely starts and ends on a message's first and last lines.
+  const selection = useMemo(() => {
+    const ends = menu?.ends
+    if (!ends) {
+      return []
+    }
+    const a = rows.findIndex((r) => r.seq === ends[0])
+    const b = rows.findIndex((r) => r.seq === ends[1])
+    if (a < 0 || b < 0) {
+      return []
+    }
+    const first = groupAt(rows, Math.min(a, b))[0]
+    const last = groupAt(rows, Math.max(a, b)).at(-1)
+    const lines = rows.slice(first ? rows.indexOf(first) : 0, last ? rows.indexOf(last) + 1 : 0)
+    // A right-click outside the selection is about that line alone.
+    return lines.some((r) => r.seq === menu?.seq) ? lines : []
+  }, [menu?.ends, menu?.seq, rows])
+  const marked = selection.length > 0 ? selection : menuGroup
 
   useLayoutEffect(() => {
     const el = ref.current
@@ -301,7 +344,7 @@ export function VirtualLog({
               onMod={onMod}
               onPath={onPath}
               onMenu={onMenu}
-              selected={menuGroup.includes(entry)}
+              selected={marked.includes(entry)}
             />
           ))}
         </Box>
@@ -310,6 +353,7 @@ export function VirtualLog({
         game={game}
         at={menu && menuIndex >= 0 ? { top: menu.top, left: menu.left } : null}
         group={menuGroup}
+        selection={selection}
         onClose={() => setMenu(null)}
       />
     </Box>

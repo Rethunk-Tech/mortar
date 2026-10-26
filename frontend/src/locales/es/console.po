@@ -178,6 +178,10 @@ msgstr ""
 msgid "Peak ms"
 msgstr ""
 
+#: src/console/LineMenu.tsx
+msgid "Selected lines copied"
+msgstr ""
+
 #: src/console/StartupTable.tsx
 msgid "Total"
 msgstr ""
@@ -859,6 +863,10 @@ msgstr ""
 
 #: src/console/PerformancePanelParts.tsx
 msgid "Copy report"
+msgstr ""
+
+#: src/console/LineMenu.tsx
+msgid "Copy the selected lines"
 msgstr ""
 
 #: src/console/StartupPanel.tsx

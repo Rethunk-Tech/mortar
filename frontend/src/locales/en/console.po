@@ -178,6 +178,10 @@ msgstr "Startup"
 msgid "Peak ms"
 msgstr "Peak ms"
 
+#: src/console/LineMenu.tsx
+msgid "Selected lines copied"
+msgstr "Selected lines copied"
+
 #: src/console/StartupTable.tsx
 msgid "Total"
 msgstr "Total"
@@ -860,6 +864,10 @@ msgstr "Search run logs"
 #: src/console/PerformancePanelParts.tsx
 msgid "Copy report"
 msgstr "Copy report"
+
+#: src/console/LineMenu.tsx
+msgid "Copy the selected lines"
+msgstr "Copy the selected lines"
 
 #: src/console/StartupPanel.tsx
 msgid "Press Play. Mortar samples the game until the title screen, skipping the intro animation, and shows the results here, with a Sampled column."

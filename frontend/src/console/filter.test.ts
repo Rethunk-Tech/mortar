@@ -9,6 +9,7 @@ import {
   DEFAULT_FILTERS,
   firstError,
   formatAll,
+  formatFull,
   hiddenBy,
   incompatibleSMAPI,
   isFiltered,
@@ -182,4 +183,18 @@ test('the console level is one level and those above, or the levels ticked', () 
   expect(levelsFromFloor('warn')).toEqual([Level.Warn, Level.Error, Level.Alert])
   expect(levelsFromFloor('info,error')).toEqual([Level.Info, Level.Error])
   expect(levelsFromFloor('alert')).toEqual([Level.Alert])
+})
+
+test('formatFull puts the resolved method and object back on the line', () => {
+  const line = {
+    ...e(Level.Warn, 'Unity Log', 'damageTrigger is disabled!'),
+    source: 'NetworkObject::Spawn',
+    object: 'Ship/Door',
+  }
+  expect(formatFull(line)).toBe(
+    '[19:43:50 WARN  Unity Log] NetworkObject::Spawn (Ship/Door): damageTrigger is disabled!',
+  )
+  expect(formatFull(e(Level.Info, 'SMAPI', 'Loaded 42 mods'))).toBe(
+    '[19:43:50 INFO  SMAPI] Loaded 42 mods',
+  )
 })
