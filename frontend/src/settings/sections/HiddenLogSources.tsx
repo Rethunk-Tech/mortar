@@ -8,6 +8,7 @@ import { space } from '../../theme/density.ts'
 import { persist } from '../persist.ts'
 import { Searchable, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
+import { useSettingsRelevant } from '../useSettingsSearch.ts'
 
 const ENGINE = 'unity:'
 // A mod's message by its log column (launch.ModMessagePrefix), as SMAPI names the mod writing each line.
@@ -40,7 +41,7 @@ function grouped(hidden: readonly HiddenLogSource[], engine: string) {
 export function HiddenLogSources() {
   const { t } = useLingui()
   const game = useCurrentGame()
-  const { hidden, defaults } = useHiddenSources(game)
+  const { hidden, defaults } = useHiddenSources(game, useSettingsRelevant(t`Hidden messages`))
   const own = useSettings((s) => s.games?.[game]?.hiddenLogSources) ?? []
   const isDefault = (h: HiddenLogSource) =>
     defaults.some((d) => sameSource(d, h)) && !own.some((o) => sameSource(o, h))

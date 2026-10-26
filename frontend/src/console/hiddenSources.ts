@@ -26,7 +26,10 @@ export function sameSource(a: HiddenLogSource, b: HiddenLogSource): boolean {
 
 /** Every source of the game's log lines hidden, each once (the published defaults the player has not shown again,
  * then the player's own), and the defaults, as settings.HiddenLogSources merges them for the bridge. */
-export function useHiddenSources(game: string): {
+export function useHiddenSources(
+  game: string,
+  read = true,
+): {
   hidden: HiddenLogSource[]
   defaults: readonly HiddenLogSource[]
 } {
@@ -36,7 +39,7 @@ export function useHiddenSources(game: string): {
   })
   useEffect(() => {
     let live = true
-    if (game !== '') {
+    if (game !== '' && read) {
       defaultsOf(game)
         .then((items) => live && setLoaded({ game, items }))
         .catch(() => fetched.delete(game))
@@ -44,7 +47,7 @@ export function useHiddenSources(game: string): {
     return () => {
       live = false
     }
-  }, [game])
+  }, [game, read])
   const defaults = loaded.game === game ? loaded.items : NONE
   const own = useSettings((s) => s.games?.[game]?.hiddenLogSources)
   const shown = useSettings((s) => s.games?.[game]?.shownLogSources)

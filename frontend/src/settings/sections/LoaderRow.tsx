@@ -17,6 +17,7 @@ import { PrefSelect } from '../PrefControls.tsx'
 import { persist } from '../persist.ts'
 import { SettingRow } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
+import { useSettingsMatch } from '../useSettingsSearch.ts'
 import { type SmapiAction, smapiAction } from './smapiAction.ts'
 
 const LATEST = 'latest'
@@ -65,11 +66,7 @@ function LoaderRow({
   const selected = pinValue(pin)
   useEffect(() => {
     check(game)
-    refreshLaunch(game)
-    ListVersions(game, loader.id)
-      .then((rows) => setVersions(rows ?? []))
-      .catch(() => setVersions([]))
-  }, [check, refreshLaunch, game, loader.id])
+  }, [check, game])
   const gameVersion = status?.gameVersion ?? ''
   useEffect(() => {
     onVersion(gameVersion)
@@ -103,6 +100,17 @@ function LoaderRow({
       ? t`${{ name: loader.name }} ${{ latest: status.latest }} is available`
       : t`Installed and up to date`
   }
+  // The status above is what a search matches; the launch state and the version list only feed the controls.
+  const relevant = useSettingsMatch(title, detail)
+  useEffect(() => {
+    if (!relevant) {
+      return
+    }
+    refreshLaunch(game)
+    ListVersions(game, loader.id)
+      .then((rows) => setVersions(rows ?? []))
+      .catch(() => setVersions([]))
+  }, [relevant, refreshLaunch, game, loader.id])
   const run = () => {
     setBusy(true)
     install(game, action.version || undefined).finally(() => {

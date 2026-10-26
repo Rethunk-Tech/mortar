@@ -12,6 +12,7 @@ import { reportUnexpected } from '../../toasts/report.ts'
 import { persist } from '../persist.ts'
 import { SettingRow } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
+import { useSettingsRelevant } from '../useSettingsSearch.ts'
 
 // The game's sources in the player's order: the saved ids first, then the rest in catalog order.
 function ordered(all: { id: string; name: string }[], saved: string) {
@@ -22,10 +23,13 @@ function ordered(all: { id: string; name: string }[], saved: string) {
 function SourceOrder() {
   const { t } = useLingui()
   const game = useCurrentGame()
+  const label = t`Preferred source`
+  const description = t`When a mod is on several sites, its card installs from the first one here.`
   const saved = useSettings((s) => s.games?.[game]?.sourceOrder ?? '')
+  const relevant = useSettingsRelevant(label, description)
   const { data: all } = useLoaded<{ id: string; name: string }[]>(
-    () => SearchableSources(game).then((found) => found ?? []),
-    [game],
+    relevant ? () => SearchableSources(game).then((found) => found ?? []) : null,
+    [game, relevant],
     [],
     reportUnexpected,
   )
@@ -45,10 +49,7 @@ function SourceOrder() {
     )
   }
   return (
-    <SettingRow
-      label={t`Preferred source`}
-      description={t`When a mod is on several sites, its card installs from the first one here.`}
-    >
+    <SettingRow label={label} description={description}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
         {list.map((s, i) => (
           <Box key={s.id} sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>

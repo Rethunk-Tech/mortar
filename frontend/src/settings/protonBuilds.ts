@@ -4,10 +4,10 @@ import { reportUnexpected } from '../toasts/report.ts'
 
 // The Proton builds Steam has that the game's copy could run through; none unless it is a Windows copy outside Steam
 // on Linux.
-export function useProtonBuilds(game: string): string[] {
+export function useProtonBuilds(game: string, read = true): string[] {
   return useLoaded<string[]>(
-    game === '' ? null : () => ProtonBuilds(game).then((b) => b ?? []),
-    [game],
+    game === '' || !read ? null : () => ProtonBuilds(game).then((b) => b ?? []),
+    [game, read],
     [],
     reportUnexpected,
   ).data
