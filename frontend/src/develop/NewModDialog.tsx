@@ -14,7 +14,7 @@ import {
   ToggleButtonGroup,
 } from '@mui/material'
 import { Hammer } from 'lucide-react'
-import { memo, useEffect, useId, useState } from 'react'
+import { memo, useCallback, useEffect, useId, useState } from 'react'
 import type {
   Form,
   Param,
@@ -206,30 +206,39 @@ function Params({ params, draft, set }: { params: Param[]; draft: Draft; set: Se
   ))
 }
 
-function ModStep({ draft, form, set }: { draft: Draft; form: Form | null; set: Set }) {
-  const { t } = useLingui()
-  return (
-    <>
-      <FieldRow>
-        <TextInput
-          label={t`Mod name`}
-          hint={t`Letters and digits, starting with a capital`}
-          placeholder="ShopDrop"
-          value={draft.name}
-          onChange={(name) => set({ name })}
-          autoFocus={true}
-        />
-        <TextInput
-          label={t`Folder name`}
-          placeholder={draft.name}
-          value={draft.repo}
-          onChange={(repo) => set({ repo })}
-        />
-      </FieldRow>
-      <Params params={stepParams(form, 'mod')} draft={draft} set={set} />
-    </>
-  )
-}
+// Memoised on what it shows, so the GitHub owner filled in as the tools arrive leaves the fields alone.
+const ModStep = memo(
+  function ModStepView({ draft, form, set }: { draft: Draft; form: Form | null; set: Set }) {
+    const { t } = useLingui()
+    return (
+      <>
+        <FieldRow>
+          <TextInput
+            label={t`Mod name`}
+            hint={t`Letters and digits, starting with a capital`}
+            placeholder="ShopDrop"
+            value={draft.name}
+            onChange={(name) => set({ name })}
+            autoFocus={true}
+          />
+          <TextInput
+            label={t`Folder name`}
+            placeholder={draft.name}
+            value={draft.repo}
+            onChange={(repo) => set({ repo })}
+          />
+        </FieldRow>
+        <Params params={stepParams(form, 'mod')} draft={draft} set={set} />
+      </>
+    )
+  },
+  (a, b) =>
+    a.form === b.form &&
+    a.set === b.set &&
+    a.draft.name === b.draft.name &&
+    a.draft.repo === b.draft.repo &&
+    a.draft.values === b.draft.values,
+)
 
 function SourceChoice({ draft, user, set }: { draft: Draft; user: string; set: Set }) {
   const { t } = useLingui()
@@ -421,7 +430,7 @@ export function NewModDialog({
       setAt(0)
     }
   }, [open])
-  const set: Set = (next) => setDraft((d) => ({ ...d, ...next }))
+  const set: Set = useCallback((next) => setDraft((d) => ({ ...d, ...next })), [])
   const step = STEPS[at] ?? 'project'
   const last = at === STEPS.length - 1
   let issue = last ? draftIssue(draft, form) : stepIssue(draft, form, step)
