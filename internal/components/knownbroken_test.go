@@ -2,9 +2,12 @@ package components
 
 import (
 	"crypto/ed25519"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -68,5 +71,19 @@ func TestLoadKnownBrokenVerifiesAndRefusesARollback(t *testing.T) {
 	cache.Now = func() time.Time { return time.Now().Add(48 * time.Hour) }
 	if l, err := c.LoadKnownBroken(t.Context(), cache, public, "lc"); err != nil || l.Serial != 5 {
 		t.Fatalf("after a rollback = %+v, %v (want the cached serial 5)", l, err)
+	}
+	// The floor outlives the cache entry: with the entry gone, serial 3 is still refused.
+	if err := os.Remove(filepath.Join(cache.CacheDir, knownBroken.listName("lc"))); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := c.LoadKnownBroken(t.Context(), cache, public, "lc"); !errors.Is(err, ErrRollback) {
+		t.Fatalf("a rollback with the cache removed = %v", err)
+	}
+}
+
+// Another list signed by the same key is not a catalog: it must not decode as an empty one.
+func TestDecodeRefusesAKnownBrokenList(t *testing.T) {
+	if _, err := Decode([]byte(`{"game":"lc","serial":9,"entries":[]}`)); err == nil {
+		t.Fatal("a signed known-broken list decoded as a catalog")
 	}
 }

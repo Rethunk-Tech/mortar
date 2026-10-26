@@ -25,6 +25,10 @@ type signedList[T any] struct {
 
 func (l signedList[T]) listName(game string) string { return l.prefix + game + ".json" }
 
+// floorName is the file holding the highest serial accepted for game, kept apart from the cache entry so a cleared or
+// expired cache cannot reopen the way to an older signed list.
+func (l signedList[T]) floorName(game string) string { return "serial-floor-" + l.listName(game) }
+
 type cachedSignedList struct {
 	List      []byte `json:"list"`
 	Signature []byte `json:"signature"`
@@ -41,10 +45,11 @@ func (l signedList[T]) load(ctx context.Context, c *Client, cache *meta.Client, 
 		v, serial, err := l.decode(e.List, game)
 		return v, serial, err == nil
 	}
-	var oldSerial uint64
+	floor, _ := meta.Peek[uint64](cache, l.floorName(game))
+	oldSerial := floor
 	if old, ok := meta.Peek[cachedSignedList](cache, l.listName(game)); ok {
 		if _, serial, ok := trusted(old); ok {
-			oldSerial = serial
+			oldSerial = max(oldSerial, serial)
 		}
 	}
 	entry, err := meta.CachedForBuild(cache, l.listName(game), signedListTTL, func() (cachedSignedList, error) {
@@ -68,14 +73,20 @@ func (l signedList[T]) load(ctx context.Context, c *Client, cache *meta.Client, 
 		if serial < oldSerial {
 			return cachedSignedList{}, fmt.Errorf("%w: %s serial %d is older than %d", ErrRollback, url, serial, oldSerial)
 		}
+		if serial > floor {
+			meta.Put(cache, l.floorName(game), serial)
+		}
 		return e, nil
 	})
 	if err != nil {
 		return zero, err
 	}
-	v, _, ok := trusted(entry)
+	v, serial, ok := trusted(entry)
 	if !ok {
 		return zero, errors.New("cached signed list does not verify")
+	}
+	if serial < floor {
+		return zero, fmt.Errorf("%w: %s serial %d is older than %d", ErrRollback, l.listName(game), serial, floor)
 	}
 	return v, nil
 }
