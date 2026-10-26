@@ -489,6 +489,9 @@ type DevTemplate struct {
 	Ref  string `json:"ref"`
 	// Recommends are the Thunderstore packages the New mod wizard offers as starting dependencies.
 	Recommends []DevRecommend `json:"recommends,omitempty"`
+	// DevHelper is the Thunderstore package Develop's Test adds to the profile, for this game only, so the test copies
+	// find each other; only its Package is read.
+	DevHelper *DevRecommend `json:"devHelper,omitempty"`
 }
 
 // DevRecommend is a package a new mod likely needs: always, or when the template parameter Param was answered with one
@@ -887,6 +890,9 @@ func (g GameInfo) Validate() error {
 		}
 		if t := l.DevTemplate; t != nil && (!devTemplateRepo.MatchString(t.Repo) || !devTemplateRef.MatchString(t.Ref) || strings.Contains(t.Ref, "..")) {
 			return fmt.Errorf("game %q has a mod template %q at %q that is not a GitHub repo and tag", g.ID, t.Repo, t.Ref)
+		}
+		if t := l.DevTemplate; t != nil && t.DevHelper != nil && !devPackage.MatchString(t.DevHelper.Package) {
+			return fmt.Errorf("game %q names dev helper %q, which is not a Thunderstore package", g.ID, t.DevHelper.Package)
 		}
 		for _, r := range devRecommends(l.DevTemplate) {
 			if !devPackage.MatchString(r.Package) {

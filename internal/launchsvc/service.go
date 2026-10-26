@@ -2,6 +2,7 @@
 package launchsvc
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -20,6 +21,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/backup"
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
@@ -174,6 +176,9 @@ type Service struct {
 	// EnsureLoader installs the game's loader when it is missing or broken. Start calls it before launching.
 	// fromStart is true when Play requested the install, so a preparing claim for this Start must not skip it.
 	EnsureLoader func(ctx context.Context, gameID, loaderID string, fromStart bool) error
+	// InstallPackage adds the Thunderstore package (Namespace-Name, with its dependencies) to the profile and returns
+	// once it is there or fails; Develop's Test calls it for the game's dev helper.
+	InstallPackage func(ctx context.Context, gameID, profileID, pkg string) error
 	// Unlocked is called when a game is no longer launching or running, so the queue can retry work it held.
 	Unlocked func()
 	// OnState is called, off the emitting goroutine, after every launch state change; nil means nothing.
@@ -685,7 +690,54 @@ func (s *Service) StartInstances(ctx context.Context, gameID, profileID string, 
 			return err
 		}
 	}
+	if err := s.addDevHelper(ctx, gameID, profileID); err != nil {
+		return err
+	}
 	return s.start(context.WithValue(context.WithoutCancel(ctx), instancesKey{}, n), gameID, profileID, "", "", true)
+}
+
+// addDevHelper puts the dev helper the profile's loader names into the profile, marked development-only, when the
+// profile lacks it: the copies only find each other through it.
+func (s *Service) addDevHelper(ctx context.Context, gameID, profileID string) error {
+	l, ok := s.loaderOf(gameID, profileID)
+	info, found := components.Game(gameID)
+	if !ok || !found || s.InstallPackage == nil {
+		return nil
+	}
+	var pkg string
+	for _, gl := range info.Loaders {
+		if gl.ID == l.ID() && gl.DevTemplate != nil && gl.DevTemplate.DevHelper != nil {
+			pkg = gl.DevTemplate.DevHelper.Package
+		}
+	}
+	if pkg == "" {
+		return nil
+	}
+	find := func() (string, error) {
+		p, err := s.profiles.Get(gameID, profileID)
+		if err != nil {
+			return "", err
+		}
+		for _, e := range p.Entries {
+			if e.Package && e.Source.Kind == profile.KindThunderstore && strings.EqualFold(e.Source.Name, pkg) {
+				return e.Key, nil
+			}
+		}
+		return "", nil
+	}
+	key, err := find()
+	if err != nil || key != "" {
+		// A copy the player added by hand stays as they have it.
+		return err
+	}
+	if err := s.InstallPackage(ctx, gameID, profileID, pkg); err != nil {
+		return fmt.Errorf("add the dev helper %s, which the test copies need to find each other: %w", pkg, err)
+	}
+	if key, err = find(); err != nil || key == "" {
+		return cmp.Or(err, fmt.Errorf("the dev helper %s was not added to the profile", pkg))
+	}
+	_, err = s.profiles.SetDevOnly(gameID, profileID, key, true)
+	return err
 }
 
 // StartDebugging starts the profile directly with its loader opening the game's Mono debugger for this launch only,

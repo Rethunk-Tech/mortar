@@ -114,7 +114,8 @@ func (s *Service) launchPlan(ctx context.Context, g game.Game, inst game.Install
 // profile's files (the folder loader) lists what is on disk, so the layout comes first.
 func (s *Service) planProfile(ctx context.Context, g game.Game, inst game.Install, profileID string, mode launchplan.Mode, options, prefix, env string) (*launchplan.Plan, error) {
 	if mode != launchplan.ModeVanilla && profileID != "" && s.profiles != nil {
-		if err := s.profiles.SyncPackages(g.ID(), profileID); err != nil {
+		_, testCopies := ctx.Value(instancesKey{}).(int)
+		if err := s.profiles.SyncPackagesFor(g.ID(), profileID, testCopies); err != nil {
 			return nil, err
 		}
 	}

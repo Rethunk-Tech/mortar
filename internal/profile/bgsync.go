@@ -98,7 +98,7 @@ func (s *Store) syncDropped(game, id string) {
 		if running {
 			return
 		}
-		if err := s.syncPackages(game, id); err != nil {
+		if err := s.syncPackages(game, id, false); err != nil {
 			log.Printf("profile %s/%s: laying out files after a change: %v", game, id, err)
 		}
 	})
@@ -107,8 +107,13 @@ func (s *Store) syncDropped(game, id string) {
 // SyncPackages lays the enabled packages' files out in the profile (see syncPackages), after any background layout of
 // it has finished, so a launch never starts on a half-laid profile.
 func (s *Store) SyncPackages(gameID, id string) error {
+	return s.SyncPackagesFor(gameID, id, false)
+}
+
+// SyncPackagesFor is SyncPackages for a launch: the dev helpers (Entry.DevOnly) are laid out only when testCopies.
+func (s *Store) SyncPackagesFor(gameID, id string, testCopies bool) error {
 	s.bg.wait(syncKey(gameID, id))
-	return s.syncPackages(gameID, id)
+	return s.syncPackages(gameID, id, testCopies)
 }
 
 // WaitSyncs returns once every background layout has finished.

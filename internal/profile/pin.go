@@ -110,3 +110,11 @@ func (s *Store) SetFrozen(game, id string, frozen bool) (Profile, error) {
 		return nil
 	})
 }
+
+// SetDevOnly marks the entry as a dev helper that only test copies launch with (see Entry.DevOnly).
+func (s *Store) SetDevOnly(game, id, key string, devOnly bool) (Profile, error) {
+	return s.patchEntry(game, id, key, func(e *Entry) error {
+		e.DevOnly = devOnly
+		return nil
+	})
+}

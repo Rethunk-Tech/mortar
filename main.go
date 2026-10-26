@@ -713,6 +713,9 @@ func run() error {
 	}
 	launches.Unlocked = func() { queue.NotifyUnlocked(queueSvc) }
 	launches.OnState = func() { queueSvc.HoldForPlay(launches.PausesDownloads()) }
+	launches.InstallPackage = func(ctx context.Context, gameID, profileID, pkg string) error {
+		return queueSvc.AddAndWait(ctx, []queue.Request{{Kind: queue.KindInstall, Game: gameID, Profile: profileID, Package: pkg}})
+	}
 	github.SpeedLimit = func() int64 { return int64(store.Get().DownloadSpeedLimit) << 20 }
 	nxmSvc.Route = queueSvc.Route
 	notifier := notifications.New()
