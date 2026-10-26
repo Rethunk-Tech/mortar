@@ -5,7 +5,6 @@ Decided work, short enough to build cold. Delete an item in the change that land
 ## Release
 
 - Drop the `Rethunk-AI/wails` replace in `go.mod` and pin a tagged beta once one carries what branch `mortar/v3-next` adds to upstream master: #6202 (OnUpdateApplied, with WEP #6203), #6199 (service methods fall back to `Options.MarshalError`; `errorkind_test.go` relies on it), #6240 (single-instance lock released at the start of shutdown), #6197 (GTK4 transparency), #6281 and #6282 (session-bus fallbacks), #6283 (GTK4 drop motion), #6284 (tray Menu property), #6285 (server-mode shutdown hooks), #6287 (pre-Run main-thread queue), WEPs #6243 (local linuxdeploy) and #6244 (`-nopack`), and the fork-only apply-on-exit.
-- **NOMAD-only** (Windows Steam with Stardew and SMAPI): set `"<game>\StardewModdingAPI.exe" %command%`, Play once from an account whose user name has a space, and check that `%APPDATA%\StardewValley\ErrorLogs\SMAPI-latest.txt` names the profile's `mods` folder as one path; otherwise the Steam hand-off needs another form ([architecture.md](architecture.md#launch)). Also check that a direct launch with **SMAPI console window** on shows SMAPI's output.
 
 ## Ready to build
 
@@ -77,7 +76,6 @@ A mod made of files a loader mod reads (no code): suits, posters, boombox tracks
 
 Record each in [games.md](games.md#lethal-company) once seen.
 
-- On a real Windows run, that the command-line Doorstop target beats a stale `doorstop_config.ini`.
 - Profile paths with spaces or non-ASCII characters (BepInEx flags `Assembly.LoadFile` issues on some Mono builds, `Entrypoint.cs:94,142`).
 
 ## Later
