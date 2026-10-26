@@ -547,7 +547,7 @@ func (s *Service) schemaOf(game, profileID, modID string, f ConfigFile) (Schema,
 		if err != nil {
 			return Schema{}, err
 		}
-		return doc.schema(f), nil
+		return withSync(doc.schema(f), path), nil
 	}
 	cur, err := s.Profiles.ReadConfig(game, profileID, "", mod.ID(modID))
 	if err != nil {

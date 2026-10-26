@@ -2,6 +2,7 @@ package configsvc
 
 import (
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -133,5 +134,37 @@ func TestSetRefusesWhatTheDotNetTypeCannotHold(t *testing.T) {
 	// Go reads "1_000" and hex floats, .NET does not: the value is written in a form both read.
 	if out, err := d.set("A", "F", "1_000"); err != nil || !strings.Contains(out, "F = 1000\n") {
 		t.Fatalf("%q %v", out, err)
+	}
+}
+
+func TestSyncSidecarMarksSharedEntries(t *testing.T) {
+	dir := t.TempDir()
+	cfg := filepath.Join(dir, "com.example.betterstuff.cfg")
+	schema := func() Schema { return parseCfg(fixture(t)).schema(ConfigFile{Name: "com.example.betterstuff.cfg"}) }
+	side := strings.TrimSuffix(cfg, ".cfg") + syncSidecar
+	sync := func(s Schema) (got []string) {
+		for _, sec := range s.Sections {
+			for _, e := range sec.Entries {
+				if e.Sync != "" {
+					got = append(got, sec.Name+"."+e.Key+"="+e.Sync)
+				}
+			}
+		}
+		return got
+	}
+
+	body := `{"version":1,"settings":[{"section":"General","key":"ShowHud","level":"hostEnforced"},{"section":"Advanced","key":"Mode","level":"hostRecommended"},{"section":"General","key":"Gone","level":"hostEnforced"}]}`
+	if err := os.WriteFile(side, []byte(body), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if got := strings.Join(sync(withSync(schema(), cfg)), " "); got != "General.ShowHud=hostEnforced Advanced.Mode=hostRecommended" {
+		t.Fatalf("levels = %q", got)
+	}
+
+	if err := os.WriteFile(side, []byte(`{"settings":[`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if got := sync(withSync(schema(), cfg)); len(got) != 0 {
+		t.Fatalf("malformed sidecar gave %v", got)
 	}
 }

@@ -1,12 +1,16 @@
 package configsvc
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
+	"path/filepath"
 	"regexp"
 	"slices"
 	"strconv"
 	"strings"
+
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // The layout parsed here is what BepInEx's ConfigFile.Save and ConfigEntryBase.WriteDescription write
@@ -262,6 +266,38 @@ func (d cfgDoc) schema(file ConfigFile) Schema {
 		}
 		last := &s.Sections[len(s.Sections)-1]
 		last.Entries = append(last.Entries, e.Entry)
+	}
+	return s
+}
+
+// withSync marks the entries ConfigSync shares from the host, read from the sidecar beside the .cfg at path. A
+// missing or malformed sidecar marks nothing.
+func withSync(s Schema, path string) Schema {
+	raw, err := fsx.ReadFile(strings.TrimSuffix(path, filepath.Ext(path)) + syncSidecar)
+	if err != nil {
+		return s
+	}
+	var side struct {
+		Settings []struct {
+			Section string `json:"section"`
+			Key     string `json:"key"`
+			Level   string `json:"level"`
+		} `json:"settings"`
+	}
+	if json.Unmarshal(raw, &side) != nil {
+		return s
+	}
+	for _, sh := range side.Settings {
+		for i := range s.Sections {
+			if s.Sections[i].Name != sh.Section {
+				continue
+			}
+			for j := range s.Sections[i].Entries {
+				if e := &s.Sections[i].Entries[j]; e.Key == sh.Key {
+					e.Sync = sh.Level
+				}
+			}
+		}
 	}
 	return s
 }

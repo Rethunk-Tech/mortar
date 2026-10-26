@@ -18,6 +18,7 @@ interface WireEntry {
   pending?: boolean
   readOnly?: boolean
   note?: string
+  sync?: string
 }
 
 interface WireSection {
@@ -80,6 +81,7 @@ function toEntry(w: WireEntry): ConfigEntry {
     ...(w.pending ? { pending: true } : {}),
     ...(w.readOnly ? { readOnly: true } : {}),
     ...(w.note ? { note: w.note } : {}),
+    ...(w.sync === 'hostEnforced' || w.sync === 'hostRecommended' ? { sync: w.sync } : {}),
   }
 }
 

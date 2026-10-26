@@ -17,19 +17,14 @@ Decided work, short enough to build cold. Delete an item in the change that land
 
 ### DevLaunch added for test copies
 
-Develop's Test needs the dev helper mod `Mortar-DevLaunch` (`Rethunk-Tech/mortar-lc-devlaunch`) in the profile; until it is on Thunderstore it is added as a Develop project.
-
-- **Shape:** `StartInstances` (`internal/launchsvc/service.go`) adds it to a Lethal Company profile that lacks it before starting copies, marked in the profile's mod list as development-only, and a normal Play leaves it off. The catalog names the package per game (a `devHelper` field on the game's dev template entry), so no Go code names Lethal Company.
-- **Done when:** Test on a profile without the mod ends with every copy in one LAN lobby with no clicks; a normal Play shows the menus as usual.
+Built: Develop's Test adds the loader's `devHelper` to a profile that lacks it. Open: the catalog entry (`devHelper` on lethal-company's `devTemplate` naming `Mortar-DevLaunch`) is added when DevLaunch is published to Thunderstore, with a `minVersion` per AGENTS.md. **Done when:** Test on a profile without the mod ends with every copy in one LAN lobby with no clicks.
 
 ### ConfigSync in the config editor
 
 Mortar-ConfigSync (`Rethunk-Tech/mortar-lc-configsync`) shares chosen settings from the host while players are connected, each Host enforced or Host recommended, and writes `BepInEx/config/<plugin guid>.sync.json` beside the mod's `.cfg` naming them: `{"version":1,"settings":[{"section":"General","key":"Distance","level":"hostEnforced"}]}`.
 
-- **Chips:** `internal/configsvc/bepinex.go` (`schema`) reads the sidecar for each `.cfg` and gives each entry a `sync` level (`frontend/src/mods/typedConfig/types.ts` `ConfigEntry`). The editor shows a chip (Host enforced, Host recommended) beside the setting, with a tooltip saying what it means. Works with the game closed.
 - **Live host values:** while the game runs, the BepInEx bridge answers a `configsync` query (`internal/bridge/bridge.go` `Query`) with the values the host sent, by mod and setting, read from ConfigSync by reflection, so the bridge needs no dependency on it. The editor shows "Host: <value>" under a shared setting whose value differs from the player's own, refreshed while the editor is open. Needs a bridge release.
-- **Order:** the chips, then the bridge's live values.
-- **Done when:** a mod sharing a setting shows its chip in the editor with the game closed; with the game running on a client of a host whose value differs, the editor shows the host's value.
+- **Done when:** with the game running on a client of a host whose value differs, the editor shows the host's value.
 
 ### Asset-only mods in Develop
 

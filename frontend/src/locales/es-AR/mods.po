@@ -701,6 +701,10 @@ msgstr ""
 msgid "Mortar's known-broken list still flags this version: {reason}"
 msgstr ""
 
+#: src/mods/typedConfig/ConfigPane.tsx
+msgid "Host enforced"
+msgstr ""
+
 #: src/mods/ProblemRows.tsx
 msgid "Why?"
 msgstr ""
@@ -2142,6 +2146,10 @@ msgstr ""
 msgid "Kind"
 msgstr ""
 
+#: src/mods/typedConfig/ConfigPane.tsx
+msgid "While you are in a game, the host's value replaces yours."
+msgstr ""
+
 #: src/mods/updateReview/undoAll.ts
 msgid "Restored the profile from before Update all"
 msgstr ""
@@ -2237,6 +2245,10 @@ msgstr ""
 msgid "Its folder is removed from this profile. You can undo this."
 msgstr ""
 
+#: src/mods/typedConfig/ConfigPane.tsx
+msgid "While you are in a game, you use the host's value unless you turn off Follow host recommendations in ConfigSync."
+msgstr ""
+
 #: src/mods/OtherProfilesDialog.tsx
 msgid "No other profile of this game."
 msgstr ""
@@ -2256,6 +2268,10 @@ msgstr ""
 
 #: src/mods/GameModsReviewDialog.tsx
 msgid "Not in this profile ({count})"
+msgstr ""
+
+#: src/mods/typedConfig/ConfigPane.tsx
+msgid "Host recommended"
 msgstr ""
 
 #: src/mods/GameModsReviewDialog.tsx

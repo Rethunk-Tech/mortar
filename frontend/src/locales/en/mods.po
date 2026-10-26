@@ -701,6 +701,10 @@ msgstr "Remove from other profiles…"
 msgid "Mortar's known-broken list still flags this version: {reason}"
 msgstr "Mortar's known-broken list still flags this version: {reason}"
 
+#: src/mods/typedConfig/ConfigPane.tsx
+msgid "Host enforced"
+msgstr "Host enforced"
+
 #: src/mods/ProblemRows.tsx
 msgid "Why?"
 msgstr "Why?"
@@ -2142,6 +2146,10 @@ msgstr "This profile is frozen, so {name} is held at {installed}. Install {versi
 msgid "Kind"
 msgstr "Kind"
 
+#: src/mods/typedConfig/ConfigPane.tsx
+msgid "While you are in a game, the host's value replaces yours."
+msgstr "While you are in a game, the host's value replaces yours."
+
 #: src/mods/updateReview/undoAll.ts
 msgid "Restored the profile from before Update all"
 msgstr "Restored the profile from before Update all"
@@ -2237,6 +2245,10 @@ msgstr "About {key}"
 msgid "Its folder is removed from this profile. You can undo this."
 msgstr "Its folder is removed from this profile. You can undo this."
 
+#: src/mods/typedConfig/ConfigPane.tsx
+msgid "While you are in a game, you use the host's value unless you turn off Follow host recommendations in ConfigSync."
+msgstr "While you are in a game, you use the host's value unless you turn off Follow host recommendations in ConfigSync."
+
 #: src/mods/OtherProfilesDialog.tsx
 msgid "No other profile of this game."
 msgstr "No other profile of this game."
@@ -2257,6 +2269,10 @@ msgstr "Contents of {name}"
 #: src/mods/GameModsReviewDialog.tsx
 msgid "Not in this profile ({count})"
 msgstr "Not in this profile ({count})"
+
+#: src/mods/typedConfig/ConfigPane.tsx
+msgid "Host recommended"
+msgstr "Host recommended"
 
 #: src/mods/GameModsReviewDialog.tsx
 msgid "{count, plural, one {Copied # mod} other {Copied # mods}}"

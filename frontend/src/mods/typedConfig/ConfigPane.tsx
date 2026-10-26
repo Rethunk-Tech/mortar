@@ -1,5 +1,14 @@
 import { useLingui } from '@lingui/react/macro'
-import { Alert, Box, Button, IconButton, MenuItem, TextField, Typography } from '@mui/material'
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  IconButton,
+  MenuItem,
+  TextField,
+  Typography,
+} from '@mui/material'
 import { CircleHelp, RotateCcw } from 'lucide-react'
 import { type RefObject, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { Mod } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
@@ -59,6 +68,7 @@ function EntryRow({ section, entry }: { section: string; entry: ConfigEntry }) {
             </IconButton>
           </Tooltip>
         ) : null}
+        {entry.sync ? <SyncChip level={entry.sync} /> : null}
       </Box>
       {entry.readOnly ? (
         <Typography
@@ -111,6 +121,28 @@ function EntryRow({ section, entry }: { section: string; entry: ConfigEntry }) {
         </Typography>
       ) : null}
     </Box>
+  )
+}
+
+function SyncChip({ level }: { level: 'hostEnforced' | 'hostRecommended' }) {
+  const { t } = useLingui()
+  const enforced = level === 'hostEnforced'
+  return (
+    <Tooltip
+      title={
+        enforced
+          ? t`While you are in a game, the host's value replaces yours.`
+          : t`While you are in a game, you use the host's value unless you turn off Follow host recommendations in ConfigSync.`
+      }
+    >
+      <Chip
+        size="small"
+        variant="outlined"
+        color={enforced ? 'warning' : 'default'}
+        sx={{ height: 20, fontSize: 'tiny.fontSize', '& .MuiChip-label': { px: 0.75 } }}
+        label={enforced ? t`Host enforced` : t`Host recommended`}
+      />
+    </Tooltip>
   )
 }
 

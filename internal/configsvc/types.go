@@ -63,6 +63,8 @@ type Entry struct {
 	ReadOnly bool `json:"readOnly,omitempty"`
 	// Note is a problem the game reported with the last change to this setting.
 	Note string `json:"note,omitempty"`
+	// Sync is how ConfigSync shares this setting from the host: hostEnforced or hostRecommended.
+	Sync string `json:"sync,omitempty"`
 }
 
 // Section groups entries; Name is "" for a SMAPI file's top-level settings. A SMAPI object nests as a section named

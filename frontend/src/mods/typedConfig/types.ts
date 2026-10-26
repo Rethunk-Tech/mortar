@@ -22,6 +22,8 @@ interface ConfigEntry {
   readOnly?: boolean
   // What the game reported when it could not apply the last change.
   note?: string
+  // How ConfigSync shares the setting from the host while the player is in a game.
+  sync?: 'hostEnforced' | 'hostRecommended'
 }
 
 interface ConfigSection {
