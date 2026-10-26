@@ -10,7 +10,11 @@ const oneLine = (text: string) => text.replace(/\s+/g, ' ').slice(0, 240)
 export function watchLog(page: Page): string[] {
   const logged: string[] = []
   page.on('console', (m) => {
-    if (m.type() === 'error' || m.type() === 'warning') {
+    // Wails warns on every load in a plain browser, which is where the harness runs.
+    if (
+      (m.type() === 'error' || m.type() === 'warning') &&
+      !m.text().includes('Browser Environment Detected')
+    ) {
       logged.push(`${m.type()}: ${oneLine(m.text())}`)
     }
   })

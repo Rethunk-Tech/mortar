@@ -410,7 +410,7 @@ async function run(
       results.push({
         ...result,
         ...(result.ms ? { ms: { ...result.ms, check: Date.now() - t } } : {}),
-        errors: logged,
+        errors: [...logged],
       })
       if (process.env.MORTAR_RENDER_BOXES) {
         for (const b of await nestedBoxes(page)) {
