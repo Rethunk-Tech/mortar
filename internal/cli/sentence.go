@@ -23,6 +23,8 @@ func Sentence(kind usererr.Kind) string {
 		return "That is for another game. Open that game and import it there."
 	case usererr.Outdated:
 		return "That was made by a newer Mortar. Update Mortar to open it."
+	case usererr.Unconfirmed:
+		return "This needs your confirmation first."
 	case usererr.External:
 		return "The author only allows this download on the source's own page. Download the file there and add it from your computer."
 	case usererr.Malware:

@@ -26,6 +26,8 @@ const (
 	OtherGame Kind = "other_game"
 	// Outdated is something made by a newer Mortar than this one.
 	Outdated Kind = "outdated"
+	// Unconfirmed is an action that waits for the user's yes, which the caller asks for and repeats.
+	Unconfirmed Kind = "unconfirmed"
 	// External is a download its author only allows on the source's own page.
 	External Kind = "external"
 	// Malware is a download the antivirus flagged; it was not installed.
@@ -40,7 +42,7 @@ const (
 )
 
 // Kinds lists every Kind, so a table over them (the CLI's sentences, the GUI's) can check it leaves none out.
-var Kinds = []Kind{NotFound, Busy, Network, Permission, DiskFull, Damaged, Invalid, OtherGame, Outdated, External, Malware, Locked, ProcessDenied, RateLimited, Unknown}
+var Kinds = []Kind{NotFound, Busy, Network, Permission, DiskFull, Damaged, Invalid, OtherGame, Outdated, Unconfirmed, External, Malware, Locked, ProcessDenied, RateLimited, Unknown}
 
 const (
 	prefix = "["
@@ -137,7 +139,7 @@ func Parse(s string) (kind Kind, raw string) {
 		if s[i] == ']' && i+1 < len(s) && s[i+1] == ' ' {
 			k := Kind(s[1:i])
 			switch k {
-			case NotFound, Busy, Network, Permission, DiskFull, Damaged, Invalid, OtherGame, Outdated, External, Malware, Locked, ProcessDenied, RateLimited:
+			case NotFound, Busy, Network, Permission, DiskFull, Damaged, Invalid, OtherGame, Outdated, Unconfirmed, External, Malware, Locked, ProcessDenied, RateLimited:
 				return k, s[i+2:]
 			case Unknown:
 			}

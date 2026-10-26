@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -24,7 +23,7 @@ var githubRepo = regexp.MustCompile(`^(?:https://github\.com/|git@github\.com:)?
 
 // enroll makes dir's build output an extra mods folder of the project's profile (created as "<game> Development"
 // when profileID is empty, filled from copyFrom) and records the project.
-func (s *Service) enroll(gameID, dir, name, profileID, copyFrom string) (settings.DevProject, error) {
+func (s *Service) enroll(gameID, dir, name, profileID, copyFrom string, untrusted bool) (settings.DevProject, error) {
 	if profileID == "" {
 		gameName := gameID
 		if info, ok := components.Game(gameID); ok {
@@ -50,7 +49,7 @@ func (s *Service) enroll(gameID, dir, name, profileID, copyFrom string) (setting
 	if err := os.MkdirAll(output, 0o750); err != nil {
 		return settings.DevProject{}, err
 	}
-	p := settings.DevProject{Dir: dir, Name: name, Profile: profileID, Output: output}
+	p := settings.DevProject{Dir: dir, Name: name, Profile: profileID, Output: output, Untrusted: untrusted}
 	if icon, err := fsx.ReadFile(filepath.Join(dir, "icon.png")); err == nil {
 		p.TemplateIcon = fmt.Sprintf("%x", sha256.Sum256(icon))
 	}
@@ -87,7 +86,7 @@ func projectName(dir string) (string, bool) {
 }
 
 // Add puts a mod project that already exists in dir (a clone of a repository made from the game's template) in the
-// Develop tab. Its Config.Build.user.props is written only when it has none. profileID is the profile its builds
+// Develop tab, unbuilt. Its Config.Build.user.props is written only when it has none. profileID is the profile its builds
 // install into; empty creates "<game> Development".
 func (s *Service) Add(ctx context.Context, gameID, dir, profileID string) (settings.DevProject, error) {
 	bad := func(what string, args ...any) (settings.DevProject, error) {
@@ -122,16 +121,8 @@ func (s *Service) Add(ctx context.Context, gameID, dir, profileID string) (setti
 			return settings.DevProject{}, err
 		}
 	}
-	p, err := s.enroll(gameID, dir, name, profileID, "")
-	if err != nil {
-		return p, err
-	}
-	// The profile gets the mod from its build output, so a project is built once as it joins; a failed build is
-	// the project's to fix and leaves it added.
-	if res, err := s.Build(ctx, gameID, dir); err != nil || !res.OK {
-		log.Printf("devsvc: first build of %s: ok=%v %v", name, res.OK, err)
-	}
-	return p, nil
+	// A foreign repository's build files run code, so nothing builds until the user agrees (see Trust).
+	return s.enroll(gameID, dir, name, profileID, "", true)
 }
 
 // ParseRepo reads owner/name, or a github.com address (https or git@), as owner and name.

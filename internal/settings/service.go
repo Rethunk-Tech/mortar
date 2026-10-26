@@ -206,6 +206,9 @@ type DevProject struct {
 	Output  string `json:"output"`
 	// Watch rebuilds the project whenever its source changes.
 	Watch bool `json:"watch,omitempty"`
+	// Untrusted is a project added from a folder or a clone: its first build waits for the user's yes, because a build
+	// runs the repository's own code. A record without it, as every earlier release wrote, is trusted.
+	Untrusted bool `json:"untrusted,omitempty"`
 	// TemplateIcon is the SHA-256 of the template's icon.png, so Pack can say the mod still wears it.
 	TemplateIcon string `json:"templateIcon,omitempty"`
 }
@@ -235,6 +238,20 @@ func (s *Service) SetDevProjectWatch(game, dir string, on bool) error {
 		for i := range gp.DevProjects {
 			if gp.DevProjects[i].Dir == dir {
 				gp.DevProjects[i].Watch = on
+			}
+		}
+		putGame(v, game, gp)
+	})
+}
+
+// TrustDevProject records that the user agreed to build the project in dir.
+func (s *Service) TrustDevProject(game, dir string) error {
+	return s.set(func(v *Settings) {
+		gp := v.GamePrefs(game)
+		gp.DevProjects = slices.Clone(gp.DevProjects)
+		for i := range gp.DevProjects {
+			if gp.DevProjects[i].Dir == dir {
+				gp.DevProjects[i].Untrusted = false
 			}
 		}
 		putGame(v, game, gp)

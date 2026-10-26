@@ -67,10 +67,29 @@ func ParseProblems(out string) []Problem {
 
 var building sync.Map // project dir → *sync.Mutex
 
+// requireTrust refuses to run the project's build files until the user has agreed to it.
+func requireTrust(p settings.DevProject) error {
+	if p.Untrusted {
+		return usererr.Wrap(usererr.Unconfirmed, fmt.Errorf("building %s runs its repository's code on this computer", p.Name))
+	}
+	return nil
+}
+
+// Trust records the user's yes to building the project in dir; builds, packs and watched rebuilds refuse until then.
+func (s *Service) Trust(gameID, dir string) error {
+	if _, err := s.project(gameID, dir); err != nil {
+		return err
+	}
+	return s.Settings.TrustDevProject(gameID, dir)
+}
+
 // Build runs a Debug build of the project in dir; its output folder installs into the development profile.
 func (s *Service) Build(ctx context.Context, gameID, dir string) (BuildResult, error) {
 	p, err := s.project(gameID, dir)
 	if err != nil {
+		return BuildResult{}, err
+	}
+	if err := requireTrust(p); err != nil {
 		return BuildResult{}, err
 	}
 	stored, _ := building.LoadOrStore(p.Dir, &sync.Mutex{})

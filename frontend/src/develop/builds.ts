@@ -13,6 +13,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { useSettings } from '../settings/store.ts'
+import { errorKind } from '../toasts/errorKind.ts'
 import { toastError } from '../toasts/report.ts'
 
 interface ProjectRun {
@@ -36,8 +37,16 @@ const patch = (dir: string, next: Partial<ProjectRun>) =>
 
 export const runOf = (byDir: Record<string, ProjectRun>, dir: string) => byDir[dir] ?? idle
 
-/** Builds the project; its output then installs into the development profile through its extra mods folder. */
-export async function buildProject(game: string, dir: string) {
+// A build the backend refused until the user agrees to run the project's repository code; the dialog resumes it.
+export const useTrustAsk = create<{ ask: { game: string; dir: string; pack: boolean } | null }>(
+  () => ({ ask: null }),
+)
+
+/**
+ * Builds the project; its output then installs into the development profile through its extra mods folder. A project
+ * not yet trusted asks first; a source-watch build (quiet) only marks the card changed.
+ */
+export async function buildProject(game: string, dir: string, quiet = false) {
   if (runOf(useDevRuns.getState().byDir, dir).running) {
     return
   }
@@ -46,6 +55,14 @@ export async function buildProject(game: string, dir: string) {
     patch(dir, { build: await Build(game, dir), builtAt: Date.now() })
     await refreshInfo(game, dir)
   } catch (e) {
+    if (errorKind(e) === 'unconfirmed') {
+      if (quiet) {
+        await refreshInfo(game, dir)
+      } else {
+        useTrustAsk.setState({ ask: { game, dir, pack: false } })
+      }
+      return
+    }
     toastError(i18n._(msg`Could not build the mod`), e)
   } finally {
     patch(dir, { running: null })
@@ -61,6 +78,10 @@ export async function packProject(game: string, dir: string) {
   try {
     patch(dir, { pack: await Pack(game, dir) })
   } catch (e) {
+    if (errorKind(e) === 'unconfirmed') {
+      useTrustAsk.setState({ ask: { game, dir, pack: true } })
+      return
+    }
     toastError(i18n._(msg`Could not pack the mod`), e)
   } finally {
     patch(dir, { running: null })
@@ -92,7 +113,7 @@ export function initDevWatch() {
     const game = String(event.data)
     for (const p of useSettings.getState().games?.[game]?.devProjects ?? []) {
       if (p.watch) {
-        buildProject(game, p.dir).catch(() => undefined)
+        buildProject(game, p.dir, true).catch(() => undefined)
       } else {
         refreshInfo(game, p.dir).catch(() => undefined)
       }

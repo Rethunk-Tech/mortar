@@ -1102,6 +1102,10 @@ msgstr "Curator's instructions"
 msgid "Host:port"
 msgstr "Host:port"
 
+#: src/develop/TrustDialog.tsx
+msgid "Building runs this repository's code on your computer. Build it?"
+msgstr "Building runs this repository's code on your computer. Build it?"
+
 #: src/share/ImportFooter.tsx
 msgid "These will be removed ({count})"
 msgstr "These will be removed ({count})"
@@ -2023,6 +2027,10 @@ msgstr "The game started without errors"
 msgid "Main"
 msgstr "Main"
 
+#: src/toasts/report.ts
+msgid "This needs your confirmation first."
+msgstr "This needs your confirmation first."
+
 #: src/launch/playStart.ts
 #: src/launch/vanillaStart.ts
 msgid "Could not launch the game"
@@ -2436,6 +2444,7 @@ msgstr "Installed"
 #: src/browse/BrowsePage.tsx
 #: src/browse/BrowseShow.tsx
 #: src/develop/ProjectCard.tsx
+#: src/develop/TrustDialog.tsx
 #: src/firstrunTour/TourAgainButton.tsx
 #: src/firstrunTour/useFirstRunTour.ts
 #: src/games/GameRowMenu.tsx
@@ -2768,6 +2777,10 @@ msgstr "Switch to Home"
 #: src/screenshots/ScreenshotsTab.tsx
 msgid "Reading your screenshots…"
 msgstr "Reading your screenshots…"
+
+#: src/develop/TrustDialog.tsx
+msgid "Build this project?"
+msgstr "Build this project?"
 
 #: src/browse/BrowsePage.tsx
 msgid "Search {source}"
@@ -3453,6 +3466,7 @@ msgid "Account or organisation"
 msgstr "Account or organisation"
 
 #: src/develop/ProjectCard.tsx
+#: src/develop/TrustDialog.tsx
 msgid "Build"
 msgstr "Build"
 

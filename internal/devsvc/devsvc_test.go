@@ -22,6 +22,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 const testTemplate = `{
@@ -174,7 +175,7 @@ func TestCreateRunsDotnetNewAndWiresTheProfile(t *testing.T) {
 		t.Errorf("record = %s (%v)", body, err)
 	}
 	gp := svc.Settings.Get().GamePrefs("lethal-company")
-	if len(gp.DevProjects) != 1 || gp.DevProjects[0] != p || p.Profile == "" || gp.ExtraModsProfile(p.Output) != p.Profile || p.TemplateIcon == "" {
+	if len(gp.DevProjects) != 1 || gp.DevProjects[0] != p || p.Profile == "" || gp.ExtraModsProfile(p.Output) != p.Profile || p.TemplateIcon == "" || p.Untrusted {
 		t.Fatalf("project %+v, settings %+v", p, gp.DevProjects)
 	}
 	if _, err := svc.Create(t.Context(), NewMod{Game: "lethal-company", Name: "ShopDrop", Parent: parent, Repo: "shop-drop", Values: map[string]string{"description": "d", "team": "Ab"}}); err == nil {
@@ -344,11 +345,35 @@ func TestAddTakesAnExistingTemplateProject(t *testing.T) {
 		t.Fatal(err)
 	}
 	recorded := projectDir(t, "Twice", false)
-	if _, err := svc.Add(t.Context(), game, recorded, ""); err != nil {
+	added, err := svc.Add(t.Context(), game, recorded, "")
+	if err != nil {
 		t.Fatal(err)
 	}
-	if !slices.ContainsFunc(run.calls, func(c []string) bool { return slices.Equal(c[:2], []string{"dotnet", "build"}) }) {
-		t.Errorf("an added project is not built, so its profile lacks the mod: %v", run.calls)
+	built := func() bool {
+		return slices.ContainsFunc(run.calls, func(c []string) bool { return slices.Equal(c[:2], []string{"dotnet", "build"}) })
+	}
+	if !added.Untrusted || built() {
+		t.Errorf("an added project is built before the user agreed: %+v %v", added, run.calls)
+	}
+	for name, do := range map[string]func() error{
+		"build": func() error { _, err := svc.Build(t.Context(), game, recorded); return err },
+		"pack":  func() error { _, err := svc.Pack(t.Context(), game, recorded); return err },
+	} {
+		if err := do(); usererr.KindOf(err) != usererr.Unconfirmed {
+			t.Errorf("%s of an untrusted project: %v", name, err)
+		}
+	}
+	if built() {
+		t.Fatalf("a refused build ran dotnet: %v", run.calls)
+	}
+	if err := svc.Trust(game, recorded); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := svc.Build(t.Context(), game, recorded); err != nil || !built() {
+		t.Errorf("a trusted project does not build: %v %v", err, run.calls)
+	}
+	if got := svc.Projects(game)[0]; got.Untrusted {
+		t.Errorf("trust was not kept: %+v", got)
 	}
 	for _, c := range []struct {
 		name, dir string

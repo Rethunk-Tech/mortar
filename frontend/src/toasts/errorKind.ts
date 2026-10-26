@@ -11,6 +11,7 @@ const knownKinds = [
   'invalid',
   'other_game',
   'outdated',
+  'unconfirmed',
   'external',
   'malware',
   'process_denied',

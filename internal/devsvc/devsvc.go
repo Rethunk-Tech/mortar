@@ -241,7 +241,7 @@ func (s *Service) Create(ctx context.Context, m NewMod) (settings.DevProject, er
 		return settings.DevProject{}, err
 	}
 	s.commit(ctx, dest, m.GitHub, m.Name)
-	return s.enroll(m.Game, dest, m.Name, m.Profile, m.CopyFrom)
+	return s.enroll(m.Game, dest, m.Name, m.Profile, m.CopyFrom, false)
 }
 
 // instantiate runs `dotnet new` on the template in raw, in Mortar's own template hive so nothing is installed for

@@ -27,6 +27,7 @@ import { refreshInfo, useProjectInfo } from './builds.ts'
 import { CloneDialog } from './CloneDialog.tsx'
 import { NewModDialog } from './NewModDialog.tsx'
 import { ProjectCard } from './ProjectCard.tsx'
+import { TrustDialog } from './TrustDialog.tsx'
 
 // A project in another profile: its builds install there, so it is worked on from that profile.
 function ElsewhereRow({ project }: { project: DevProject }) {
@@ -242,6 +243,7 @@ export function DevelopTab({ game }: { game: string }) {
       ) : null}
       <CloneDialog open={cloning} game={game} onClose={() => setCloning(false)} />
       <NewModDialog open={creating} game={game} onClose={() => setCreating(false)} />
+      <TrustDialog />
     </Box>
   )
 }
