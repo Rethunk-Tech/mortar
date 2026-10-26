@@ -114,7 +114,7 @@ func (st Starter) Start(ctx context.Context, inst Install, plan *launchplan.Plan
 		}
 		one := plan
 		if env.TestCopies {
-			role := []string{"--lan", "--join", "127.0.0.1"}
+			role := []string{"--lan", joinArg, "127.0.0.1"}
 			if i == 0 {
 				role = []string{"--lan", "--host"}
 			}
@@ -160,6 +160,11 @@ func waitLoaded(ctx context.Context, loaded <-chan struct{}, limit time.Duration
 		return errors.New("the copy before never finished loading mods, so the next copy was not started")
 	}
 }
+
+const joinArg = "--join"
+
+// TestJoiner reports whether args are those of a test copy that joined another's game.
+func TestJoiner(args []string) bool { return slices.Contains(args, joinArg) }
 
 func waitDelay(ctx context.Context, d time.Duration) error {
 	if d <= 0 {

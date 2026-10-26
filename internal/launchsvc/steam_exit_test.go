@@ -185,3 +185,20 @@ func TestABepInExGameIsTheProfileItsDoorstopTargetNames(t *testing.T) {
 		})
 	}
 }
+
+// Stopping test copies ends the joiners before the host, so only the host writes the shared save files as it quits.
+func TestStopEndsTestJoinersBeforeTheHost(t *testing.T) {
+	t.Parallel()
+	svc, g := steamRun(t, false, false)
+	fakeProc(t, svc, "4243", "/proton/files/bin/wine64-preloader", protonGame, "--lan", "--join", "127.0.0.1")
+	var order []int
+	if err := svc.endSlot(svc.slots(g)[0], func(p launch.Process) error {
+		order = append(order, p.PID)
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if len(order) != 2 || order[0] != 4243 {
+		t.Fatalf("stopped %v, want the joiner 4243 first", order)
+	}
+}

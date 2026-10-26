@@ -1453,8 +1453,16 @@ func (s *Service) stoppable(sl slot) bool {
 	return s.current(sl).State == Running || s.statusOf(sl).State == Running
 }
 
+// stopSlot asks the game to close. Test copies that joined a game end first, and outright: closing the game by name
+// closes every copy at once, and a joiner that sees its host leave writes the save files the host is writing as it
+// quits, which copies share.
 func (s *Service) stopSlot(ctx context.Context, g slot) error {
-	return s.endSlot(g, func(p launch.Process) error { return launch.Stop(ctx, p, stopGrace) })
+	return s.endSlot(g, func(p launch.Process) error {
+		if game.TestJoiner(p.Args) {
+			return terminate(p)
+		}
+		return launch.Stop(ctx, p, stopGrace)
+	})
 }
 
 // terminate ends a process outright, without first asking it to close.
@@ -1475,6 +1483,16 @@ func (s *Service) endSlot(g slot, end func(launch.Process) error) error {
 		s.logs[keyOf(g)] = sess
 	}
 	s.mu.Unlock()
+	// Joiners first, so a host's stop finds them gone.
+	slices.SortStableFunc(procs, func(a, b launch.Process) int {
+		switch ja, jb := game.TestJoiner(a.Args), game.TestJoiner(b.Args); {
+		case ja && !jb:
+			return -1
+		case jb && !ja:
+			return 1
+		}
+		return 0
+	})
 	var errs []error
 	for _, p := range procs {
 		errs = append(errs, stopError(end(p)))
