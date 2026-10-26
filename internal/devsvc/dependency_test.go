@@ -53,7 +53,7 @@ func TestDeclareSoftDependency(t *testing.T) {
 	}
 	compat := filepath.Join(src, "Compat", "LethalLibCompat.cs")
 	body, err := fsx.ReadFile(compat)
-	if err != nil || !strings.Contains(string(body), `Chainloader.PluginInfos.ContainsKey("evaisa.lethallib")`) || !strings.Contains(string(body), "MethodImplOptions.NoInlining") {
+	if err != nil || !strings.Contains(string(body), `Chainloader.PluginInfos.ContainsKey("evaisa.lethallib")`) || !strings.Contains(string(body), "MethodImplOptions.NoInlining") || !strings.Contains(string(body), "namespace Shop.Compat;\n") {
 		t.Fatalf("compat %v:\n%s", err, body)
 	}
 	if err := fsx.WriteFile(compat, []byte("edited"), 0o600); err != nil {

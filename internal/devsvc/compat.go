@@ -79,21 +79,20 @@ func declareDependency(src, guid string, soft bool) error {
 const compatTemplate = `using System.Runtime.CompilerServices;
 using BepInEx.Bootstrap;
 
-namespace %[1]s.Compat
+namespace %[1]s.Compat;
+
+// %[2]s is a soft dependency: the mod runs without it. Only call into this class after checking Enabled, and keep
+// every use of %[2]s's types inside it.
+internal static class %[3]sCompat
 {
-    // %[2]s is a soft dependency: the mod runs without it. Only call into this class after checking Enabled, and keep
-    // every use of %[2]s's types inside it.
-    internal static class %[3]sCompat
+    private static bool? enabled;
+
+    internal static bool Enabled => enabled ??= Chainloader.PluginInfos.ContainsKey("%[4]s");
+
+    [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+    internal static void Initialize()
     {
-        private static bool? enabled;
-
-        internal static bool Enabled => enabled ??= Chainloader.PluginInfos.ContainsKey("%[4]s");
-
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-        internal static void Initialize()
-        {
-            // Calls into %[2]s go here.
-        }
+        // Calls into %[2]s go here.
     }
 }
 `
