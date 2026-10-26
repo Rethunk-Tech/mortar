@@ -125,6 +125,7 @@ function dialogKit(h: Helpers) {
     tabIn,
     newModTo,
     atHome,
+    tab,
   }
 }
 
@@ -164,7 +165,7 @@ function shareCases(kit: ReturnType<typeof dialogKit>): Case[] {
 
 // Home's Tools menu and the Develop tab's New mod wizard, each step measured on its own.
 function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
-  const { dialog, button, pick, inDialog, newModTo, atHome } = kit
+  const { dialog, button, pick, inDialog, newModTo, atHome, tab } = kit
   return [
     dialog(
       'manage-tools',
@@ -187,18 +188,26 @@ function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
       },
     ),
     // Filling the fields and stepping through is one action, so it re-renders the wizard several times over.
+    {
+      name: 'develop-new-mod',
+      setup: (p) => tab(p, 'Develop'),
+      // The header's button; an empty Develop page offers a second one.
+      run: (p) => p.getByRole('button', { name: 'New mod…' }).first().click(),
+    },
     ...[
       ['author', 1],
       ['dependencies', 2],
       ['project', 3],
-    ].map(([step, n]) =>
-      dialog(
-        `new-mod-${step}`,
+    ].map(([step, n]) => ({
+      ...dialog(
+        '',
         (p) => inDialog(p, /^Next$/),
         WIZARD_BUDGET,
         (p) => newModTo(p, Number(n)),
       ),
-    ),
+      // Named after the first step's case, so the gallery shows the wizard's four steps together.
+      name: `develop-new-mod-${step}`,
+    })),
   ]
 }
 

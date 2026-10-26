@@ -99,12 +99,6 @@ export function screenCases(h: Helpers): Case[] {
       },
       teardown: (p) => p.setViewportSize(VIEWPORT),
     },
-    {
-      name: 'develop-new-mod',
-      setup: (p) => tab(p, 'Develop'),
-      // The header's button; an empty Develop page offers a second one.
-      run: (p) => p.getByRole('button', { name: 'New mod…' }).first().click(),
-    },
     ...SETTINGS_SECTIONS.map(section),
   ]
 }
