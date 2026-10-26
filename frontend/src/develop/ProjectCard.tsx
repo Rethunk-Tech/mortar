@@ -147,7 +147,8 @@ function Status({ dir }: { dir: string }) {
     return (
       <Chip
         size="small"
-        icon={<CircularProgress size={12} />}
+        sx={statusSx}
+        icon={<CircularProgress size={10} />}
         label={run.running === 'build' ? t`Building` : t`Packing`}
       />
     )
@@ -157,39 +158,56 @@ function Status({ dir }: { dir: string }) {
     return (
       <Chip
         size="small"
+        sx={statusSx}
         color="error"
         label={plural(count, { one: '# error', other: '# errors' })}
       />
     )
   }
   if (!builtAt) {
-    return <Chip size="small" variant="outlined" label={t`Not built yet`} />
+    return <Chip size="small" sx={statusSx} variant="outlined" label={t`Not built yet`} />
   }
   if (disk?.stale) {
     return (
       <Chip
         size="small"
+        sx={statusSx}
         color="warning"
         variant="outlined"
         label={t`Changed since the last build`}
       />
     )
   }
-  return <Chip size="small" color="success" variant="outlined" label={t`Built ${{ when }}`} />
+  return (
+    <Chip
+      size="small"
+      sx={statusSx}
+      color="success"
+      variant="outlined"
+      label={t`Built ${{ when }}`}
+    />
+  )
 }
 
-// The repository's branch and what it has not committed or pushed; nothing when both are clean.
+const statusSx = {
+  height: 20,
+  fontSize: 'tiny.fontSize',
+  '& .MuiChip-label': { px: 0.75 },
+} as const
+
+// What the repository has not committed or pushed; nothing when both are clean.
 function gitSummary(git: GitState | null | undefined): string {
-  if (!git || (git.changed === 0 && git.unpushed === 0)) {
+  if (!git) {
     return ''
   }
-  const parts = [
+  return [
     git.changed > 0 ? plural({ count: git.changed }, { one: '# changed', other: '# changed' }) : '',
     git.unpushed > 0
       ? plural({ count: git.unpushed }, { one: '# to push', other: '# to push' })
       : '',
-  ].filter(Boolean)
-  return `${git.branch}: ${parts.join(', ')}`
+  ]
+    .filter(Boolean)
+    .join(', ')
 }
 
 // The project's details from its own files, read when the card shows and kept current by refreshInfo.
@@ -402,7 +420,9 @@ export function ProjectCard({
   }
   const name = info?.name ?? project.name
   const version = info?.released ? `v${info.released}` : t`Unreleased`
-  const details = [info?.guid, info ? version : '', gitSummary(info?.git)].filter(Boolean)
+  const details = [info ? version : '', gitSummary(info?.git)].filter(Boolean)
+  // The card's line stays short; the id, branch and folder are a hover away.
+  const more = [info?.guid, info?.git?.branch, project.dir].filter(Boolean).join('\n')
   return (
     <Box
       sx={{
@@ -426,7 +446,7 @@ export function ProjectCard({
           </Box>
           <Typography
             noWrap={true}
-            title={project.dir}
+            title={more}
             sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}
           >
             {info ? details.join(' · ') : project.dir}
