@@ -367,6 +367,9 @@ func TestAddTakesAnExistingTemplateProject(t *testing.T) {
 			t.Errorf("%s: project %+v", c.name, p)
 		}
 	}
+	if all, err := svc.Profiles.List(game); err != nil || len(all) == 0 || !all[0].SeparateSaves {
+		t.Errorf("a development profile shares the player's saves: %v", err)
+	}
 	if got, _ := fsx.ReadFile(filepath.Join(kept, "Config.Build.user.props")); !bytes.Equal(got, props) {
 		t.Errorf("user props rewritten: %s", got)
 	}

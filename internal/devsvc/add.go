@@ -34,6 +34,10 @@ func (s *Service) enroll(gameID, dir, name, profileID, copyFrom string) (setting
 			return settings.DevProject{}, err
 		}
 		profileID = p.ID
+		// Test runs host games, and a host writes its save; the player's own saves stay out of it.
+		if _, err := s.Profiles.SetSeparateSaves(gameID, profileID, true, false); err != nil {
+			return settings.DevProject{}, err
+		}
 		if copyFrom != "" {
 			if err := s.copyMods(gameID, copyFrom, profileID); err != nil {
 				return settings.DevProject{}, err

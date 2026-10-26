@@ -682,6 +682,12 @@ func (s *Service) StartInstances(ctx context.Context, gameID, profileID string, 
 	if n < 1 || n > maxTestInstances {
 		return usererr.Wrap(usererr.Invalid, fmt.Errorf("start 1 to %d copies", maxTestInstances))
 	}
+	// A test host writes its save as it starts, which must not be the player's own game.
+	if game.HasSaves(gameID) && !s.profiles.SeparateSaves(gameID, profileID) {
+		if _, err := s.profiles.SetSeparateSaves(gameID, profileID, true, false); err != nil {
+			return err
+		}
+	}
 	return s.start(context.WithValue(context.WithoutCancel(ctx), instancesKey{}, n), gameID, profileID, "", "", true)
 }
 
