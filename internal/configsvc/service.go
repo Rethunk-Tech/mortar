@@ -304,6 +304,10 @@ func (s *Service) allDocs(game, profileID string) ([]cfgOnDisk, error) {
 // textExts are the file types listed as text files: what mods write beside their .cfg in BepInEx's config folder.
 var textExts = []string{".json", ".yaml", ".yml", ".toml", ".xml", ".ini", ".txt"}
 
+// syncSidecar ends the file ConfigSync writes beside a mod's .cfg to say which settings the host shares: Mortar's to
+// read, never a setting to edit.
+const syncSidecar = ".sync.json"
+
 // maxTextFile bounds a text file opened for editing; a bigger one is data the mod generates, not settings.
 const maxTextFile = 1 << 20
 
@@ -323,7 +327,7 @@ func (s *Service) textDocs(game, profileID string) ([]cfgOnDisk, error) {
 		}
 		for _, e := range ents {
 			ext := strings.ToLower(filepath.Ext(e.Name()))
-			if e.IsDir() || !slices.Contains(textExts, ext) {
+			if e.IsDir() || !slices.Contains(textExts, ext) || strings.HasSuffix(strings.ToLower(e.Name()), syncSidecar) {
 				continue
 			}
 			name := e.Name()

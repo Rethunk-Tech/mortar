@@ -279,6 +279,7 @@ func TestTextFilesAreMatchedByPackageAndEditedWhole(t *testing.T) {
 	for name, body := range map[string]string{
 		"Ex-BetterStuff/rules.yaml": "speed: 2\n",
 		"BetterStuff.toml":          "speed = 2\n",
+		"BetterStuff.sync.json":     `{"version":1,"settings":[]}`,
 		"Unrelated.xml":             "\ufeff<x/>",
 		"Ex-BetterStuff/icon.png":   "png",
 	} {
