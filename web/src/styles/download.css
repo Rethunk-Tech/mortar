@@ -16,6 +16,8 @@
   align-items: center;
   gap: 10px;
   transition:
+    opacity 0.7s ease,
+    filter 0.7s ease,
     transform 0.2s,
     border-color 0.2s;
 }
