@@ -27,6 +27,7 @@ import { MONO } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { Buttons } from './LaunchButtons.tsx'
 import { LaunchStages, type StageMark } from './LaunchStages.tsx'
+import { launchLogLines } from './logLines.ts'
 import { type Phase, useLaunchView } from './progress.ts'
 import { launchStages, type StageId } from './stages.ts'
 import { useLaunch } from './store.ts'
@@ -349,11 +350,7 @@ function toneOf(level: Level, newest: boolean): string {
 
 function Log() {
   const entries = useConsole((s) => s.entries)
-  // Lines for each mod loading are counted by the loader's mark instead, and debug and trace lines stay hidden as in
-  // the Console by default, so the box does not flash with a mod's bookkeeping.
-  const shown = entries
-    .filter((e) => !(e.load || e.level === Level.Debug || e.level === Level.Trace))
-    .slice(-LOG_LINES)
+  const shown = launchLogLines(entries, LOG_LINES)
   return (
     <Box
       role="log"
