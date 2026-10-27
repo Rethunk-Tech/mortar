@@ -333,6 +333,10 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.devAdd(ctx, p)
 	case "dev.clone":
 		return s.devClone(ctx, p)
+	case "dev.list":
+		return s.devList(p)
+	case "dev.remove":
+		return s.devRemove(p)
 	case "loader.versions":
 		return s.loaderVersions(ctx, p)
 	case "loader.install":

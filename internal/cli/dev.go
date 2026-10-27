@@ -11,7 +11,13 @@ import (
 
 func (c *cmd) dev() error {
 	if len(c.args) < 2 {
-		return usageError{"dev needs add or clone"}
+		return usageError{"dev needs add, clone, list or remove"}
+	}
+	switch c.args[1] {
+	case "list":
+		return c.devList()
+	case "remove":
+		return c.devRemove()
 	}
 	var method string
 	var p control.Params
@@ -42,7 +48,7 @@ func (c *cmd) dev() error {
 		}
 		method, p = "dev.clone", control.Params{Game: a[0], ID: a[1], Path: parent}
 	default:
-		return usageError{"dev needs add or clone"}
+		return usageError{"dev needs add, clone, list or remove"}
 	}
 	p.Profile = c.profileFlag
 	var project settings.DevProject
@@ -51,5 +57,40 @@ func (c *cmd) dev() error {
 	}
 	return c.emit(project, func() {
 		fmt.Fprintf(c.out, "Added %s (%s).\n", project.Name, project.Dir)
+	})
+}
+
+func (c *cmd) devList() error {
+	a, err := c.need(1, "a game")
+	if err != nil {
+		return err
+	}
+	var projects []settings.DevProject
+	if err := c.call("dev.list", control.Params{Game: a[0]}, &projects, readTimeout); err != nil {
+		return err
+	}
+	return c.emit(projects, func() {
+		for _, p := range projects {
+			fmt.Fprintf(c.out, "%s\t%s\n", p.Name, p.Dir)
+		}
+	})
+}
+
+// devRemove takes a project off the Develop tab by its folder or its name; the folder is not touched.
+func (c *cmd) devRemove() error {
+	a, err := c.need(2, "a game", "a project folder or name")
+	if err != nil {
+		return err
+	}
+	dir, err := filepath.Abs(a[1])
+	if err != nil {
+		return err
+	}
+	var project settings.DevProject
+	if err := c.call("dev.remove", control.Params{Game: a[0], Path: dir, ID: a[1]}, &project, readTimeout); err != nil {
+		return err
+	}
+	return c.emit(project, func() {
+		fmt.Fprintf(c.out, "Removed %s from the Develop tab; %s is unchanged.\n", project.Name, project.Dir)
 	})
 }

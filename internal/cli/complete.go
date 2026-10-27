@@ -69,7 +69,7 @@ var subverbs = map[string][]string{
 	"problems":   {"dismissed", "dismiss", "restore", "check-updates"},
 	"settings":   {"get", "set", "export", "import", "reset"},
 	"loader":     {"versions", "install", "pin"},
-	"dev":        {"add", "clone"},
+	"dev":        {"add", "clone", "list", "remove"},
 	"logs":       {"search", "share", "fixes"},
 	"updates":    {"apply"},
 }

@@ -2541,6 +2541,8 @@ takes --game <id>, which may be left out when exactly one game is installed. Out
   loader pin <game> <version|latest> [--loader id]  pin the loader, or follow latest
   dev add <game> <dir> [--profile id]     add a mod project folder made from the game's template to the Develop tab
   dev clone <game> <owner/name|url> [--dir parent] [--profile id]  clone a GitHub mod project into parent and add it
+  dev list <game>                         the game's mod projects: name and folder
+  dev remove <game> <dir|name>            take a project off the Develop tab; its folder stays
   games                                   supported games, whether each is configured
   profiles <game>                         profiles of a game
   profile list <game> <profile> --format md|text  enabled mods (name, version, Nexus link)
