@@ -1,6 +1,7 @@
 package devsvc
 
 import (
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -83,5 +84,50 @@ func TestSetUserDependencyListsEachPackageOnce(t *testing.T) {
 		!strings.Contains(body, "<MortarDependency_AinaVT_LethalConfig>/store/l%3Bc/</MortarDependency_AinaVT_LethalConfig>") ||
 		strings.Count(body, "<ItemGroup>") != 1 {
 		t.Errorf("props = %s", body)
+	}
+}
+
+func TestWireFoldsOnlyItsOwnChangesIntoTheStartCommit(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	svc.Run = nil
+	t.Setenv("GIT_AUTHOR_NAME", "t")
+	t.Setenv("GIT_AUTHOR_EMAIL", "t@t")
+	t.Setenv("GIT_COMMITTER_NAME", "t")
+	t.Setenv("GIT_COMMITTER_EMAIL", "t@t")
+	dir := t.TempDir()
+	git := func(args ...string) string {
+		t.Helper()
+		out, err := svc.run(t.Context(), dir, "git", args...)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return strings.TrimSpace(string(out))
+	}
+	write := func(name, body string) {
+		t.Helper()
+		if err := os.WriteFile(filepath.Join(dir, name), []byte(body), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	git("init", "-q")
+	write("Plugin.cs", "a")
+	git("add", "-A")
+	git("commit", "-q", "-m", "Start Mod")
+	write("Mine.cs", "player's own")
+	wired := func() error { write("Compat.cs", "c"); write("Plugin.cs", "b"); return nil }
+	if err := svc.wire(t.Context(), dir, wired); err != nil {
+		t.Fatal(err)
+	}
+	if n, status := git("rev-list", "--count", "HEAD"), git("status", "--porcelain"); n != "1" || status != "?? Mine.cs" {
+		t.Fatalf("after wiring: %s commits, status %q", n, status)
+	}
+	// Once the player commits, wiring stays a change for them to commit.
+	git("add", "Mine.cs")
+	git("commit", "-q", "-m", "Mine")
+	if err := svc.wire(t.Context(), dir, func() error { write("Plugin.cs", "d"); return nil }); err != nil {
+		t.Fatal(err)
+	}
+	if status := git("status", "--porcelain"); status != "M Plugin.cs" {
+		t.Fatalf("after the player's commit, status %q", status)
 	}
 }

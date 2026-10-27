@@ -33,12 +33,14 @@ var (
 // ProjectInfo is what a project's files say about the mod, read fresh each time.
 type ProjectInfo struct {
 	// Missing is set when the project's folder or its project file is gone; nothing else is.
-	Missing     bool     `json:"missing"`
-	Name        string   `json:"name"`
-	GUID        string   `json:"guid"`
-	IDPrefix    string   `json:"idPrefix"`
-	Author      string   `json:"author"`
-	Team        string   `json:"team"`
+	Missing  bool   `json:"missing"`
+	Name     string `json:"name"`
+	GUID     string `json:"guid"`
+	IDPrefix string `json:"idPrefix"`
+	Author   string `json:"author"`
+	Team     string `json:"team"`
+	// Package is the Thunderstore package (Team-Name) the project publishes, empty without a team.
+	Package     string   `json:"package"`
 	Description string   `json:"description"`
 	Categories  []string `json:"categories"`
 	// Released is the latest vX.Y.Z tag's version, empty before the first release.
@@ -224,6 +226,7 @@ func readInfo(dir, csproj string) (ProjectInfo, error) {
 		Categories:  []string{},
 	}
 	info.IDPrefix = strings.TrimSuffix(info.GUID, "."+info.Name)
+	info.Package = packageOf(dir)
 	for c := range strings.SplitSeq(readProp(string(project), "ThunderstoreCategories"), ";") {
 		if c = strings.TrimSpace(c); c != "" {
 			info.Categories = append(info.Categories, c)

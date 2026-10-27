@@ -3,6 +3,7 @@ import { Search } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/b
 import { AddDependency } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/source/models.ts'
 import { download } from '../queue/actions.ts'
+import { useProjectInfo } from './builds.ts'
 
 export const THUNDERSTORE = 'thunderstore'
 export const NO_FILTER = {
@@ -46,5 +47,10 @@ export async function startDependencies(
       await AddDependency(game, dir, id, version, optional.includes(id))
     }
   }
-  await download(ids.map((id) => ({ kind: 'install', package: id })))
+  // A package another project here publishes is built from that project, so it is not downloaded.
+  const local = new Set(Object.values(useProjectInfo.getState().byDir).map((info) => info.package))
+  const fetched = ids.filter((id) => !local.has(id))
+  if (fetched.length > 0) {
+    await download(fetched.map((id) => ({ kind: 'install', package: id })))
+  }
 }

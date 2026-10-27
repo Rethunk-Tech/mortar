@@ -1,8 +1,10 @@
 package devsvc
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -46,10 +48,72 @@ func (s *Service) AddDependency(gameID, dir, pkg, version string, soft bool) err
 	if err != nil {
 		return err
 	}
-	if err := fsx.WriteFile(csproj, []byte(withDependency(string(raw), pkg, version, soft)), 0o644); err != nil { // #nosec G306 -- a tracked project file
+	return s.wire(context.Background(), p.Dir, func() error {
+		if err := fsx.WriteFile(csproj, []byte(withDependency(string(raw), pkg, version, soft)), 0o644); err != nil { // #nosec G306 -- a tracked project file
+			return err
+		}
+		return s.syncDependencies(gameID, p)
+	})
+}
+
+// wire runs fn, which writes a project's dependency wiring, and while Mortar's own "Start" commit is still the latest
+// one and on no remote, folds the files fn changed into it: New mod adds its dependencies as they install, after that
+// commit, and a new project should start with nothing to commit. Files changed before fn ran are left alone.
+func (s *Service) wire(ctx context.Context, dir string, fn func() error) error {
+	before, ok := s.dirty(ctx, dir)
+	if err := fn(); err != nil {
 		return err
 	}
-	return s.syncDependencies(gameID, p)
+	if ok && s.startIsLatest(ctx, dir) {
+		s.foldIntoStart(ctx, dir, before)
+	}
+	return nil
+}
+
+// startIsLatest reports whether the project's latest commit is Mortar's "Start" commit and no remote has it.
+func (s *Service) startIsLatest(ctx context.Context, dir string) bool {
+	subject, err := s.run(ctx, dir, "git", "log", "-1", "--format=%s")
+	if err != nil || !strings.HasPrefix(string(subject), "Start ") {
+		return false
+	}
+	remote, err := s.run(ctx, dir, "git", "branch", "-r", "--contains", "HEAD")
+	return err == nil && strings.TrimSpace(string(remote)) == ""
+}
+
+// foldIntoStart amends the latest commit with the files changed since before was listed.
+func (s *Service) foldIntoStart(ctx context.Context, dir string, before map[string]bool) {
+	after, _ := s.dirty(ctx, dir)
+	var paths []string
+	for path := range after {
+		if !before[path] {
+			paths = append(paths, path)
+		}
+	}
+	if len(paths) == 0 {
+		return
+	}
+	if _, err := s.run(ctx, dir, "git", append([]string{"add", "--"}, paths...)...); err != nil {
+		log.Printf("devsvc: staging %s's dependencies: %v", dir, err)
+		return
+	}
+	if _, err := s.run(ctx, dir, "git", append([]string{"commit", "-q", "--amend", "--no-edit", "--"}, paths...)...); err != nil {
+		log.Printf("devsvc: folding dependencies into %s's first commit: %v", dir, err)
+	}
+}
+
+// dirty lists the project's changed and untracked files by path; ok is false outside a git repository.
+func (s *Service) dirty(ctx context.Context, dir string) (map[string]bool, bool) {
+	out, err := s.run(ctx, dir, "git", "status", "--porcelain", "-uall", "-z")
+	if err != nil {
+		return nil, false
+	}
+	paths := map[string]bool{}
+	for entry := range strings.SplitSeq(string(out), "\x00") {
+		if len(entry) > 3 {
+			paths[entry[3:]] = true
+		}
+	}
+	return paths, true
 }
 
 // withDependency sets pkg as a hard or soft dependency in a project file, replacing whichever kind it was, and adds
@@ -139,6 +203,21 @@ func setUserDependency(dir, pkg, folder string) error {
 	return fsx.WriteFile(path, []byte(body), 0o600)
 }
 
+// packageOf is the Thunderstore package (Team-Name) the project in dir publishes, empty when it names no team.
+func packageOf(dir string) string {
+	csproj, ok := csprojOf(dir)
+	if !ok {
+		return ""
+	}
+	project, _ := fsx.ReadFile(csproj)
+	props, _ := fsx.ReadFile(filepath.Join(dir, propsFile))
+	team := readProp(string(props), "ThunderstoreTeam")
+	if team == "" {
+		return ""
+	}
+	return team + "-" + cmpOr(readProp(string(project), "ThunderstoreName"), strings.TrimSuffix(filepath.Base(csproj), ".csproj"))
+}
+
 // projectDependencies reads a project file's dependencies by package: true for a soft one.
 func projectDependencies(project string) map[string]bool {
 	out := map[string]bool{}
@@ -172,6 +251,14 @@ func (s *Service) syncDependencies(gameID string, p settings.DevProject) error {
 	for _, im := range installed {
 		if im.Source.Kind == profile.KindThunderstore && im.Folder != "" {
 			folders[im.Source.Name] = im.Folder
+		}
+	}
+	// Another project of the game that publishes the package is built from here, and may not be on Thunderstore yet.
+	for _, q := range s.Projects(gameID) {
+		if q.Dir != p.Dir && q.Output != "" {
+			if pkg := packageOf(q.Dir); pkg != "" {
+				folders[pkg] = q.Output
+			}
 		}
 	}
 	src := filepath.Dir(csproj)

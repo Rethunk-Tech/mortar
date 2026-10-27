@@ -72,20 +72,30 @@ function Problems({
   const { t } = useLingui()
   const failed = t`Could not open the file`
   return (
-    <Box component="ul" sx={{ m: 0, pl: 2.5, fontFamily: 'monospace', fontSize: 'small.fontSize' }}>
+    <Box
+      component="ul"
+      sx={{ m: 0, p: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 0.5 }}
+    >
       {problems.map((p) => (
-        <li key={`${p.file}:${p.line}:${p.column}:${p.code}`}>
+        <Box component="li" key={`${p.file}:${p.line}:${p.column}:${p.code}`} sx={{ minWidth: 0 }}>
+          <Box sx={{ overflowWrap: 'anywhere' }}>{p.message}</Box>
           <Link
             component="button"
-            color={p.severity === 'error' ? 'error' : 'warning'}
+            color="inherit"
             onClick={() =>
               OpenAt(game, project.dir, p.file, p.line, p.column).catch(reportError(failed))
             }
-            sx={{ textAlign: 'left' }}
+            sx={{
+              textAlign: 'left',
+              fontFamily: 'monospace',
+              fontSize: 'small.fontSize',
+              opacity: 0.8,
+              overflowWrap: 'anywhere',
+            }}
           >
-            {`${relative(project.dir, p.file)}(${p.line},${p.column}) ${p.code}: ${p.message}`}
+            {`${relative(project.dir, p.file)}:${p.line}${p.code ? ` · ${p.code}` : ''}`}
           </Link>
-        </li>
+        </Box>
       ))}
     </Box>
   )
@@ -96,15 +106,20 @@ function Outcome({ game, project }: { game: string; project: DevProject }) {
   const run = useDevRuns((s) => runOf(s.byDir, project.dir))
   const build = run.build
   const pack = run.pack
+  const problems = build?.problems ?? []
   return (
     <>
-      {build && !build.ok ? (
-        <Alert variant="compact" severity="error">
-          {t`The build failed.`}
+      {build && (!build.ok || problems.length > 0) ? (
+        <Alert
+          variant="compact"
+          severity={build.ok ? 'warning' : 'error'}
+          sx={{ '& .MuiAlert-message': { minWidth: 0, flex: 1 } }}
+        >
+          {build.ok ? null : <Box sx={{ fontWeight: 600 }}>{t`The build failed.`}</Box>}
+          {problems.length > 0 ? (
+            <Problems game={game} project={project} problems={problems} />
+          ) : null}
         </Alert>
-      ) : null}
-      {build && (build.problems ?? []).length > 0 ? (
-        <Problems game={game} project={project} problems={build.problems ?? []} />
       ) : null}
       {pack && (pack.issues ?? []).length > 0 ? (
         <Alert variant="compact" severity="warning">
