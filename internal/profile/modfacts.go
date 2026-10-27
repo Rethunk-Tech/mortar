@@ -2,10 +2,12 @@ package profile
 
 import (
 	"cmp"
+	"io/fs"
 	"path/filepath"
 	"slices"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
@@ -155,6 +157,28 @@ func factRef(e Entry) string {
 
 // ModFacts is the facts of each of the profile's mods, keyed by the mod's id as Mods lists it. A package's source facts
 // come from its source's cache (SourceFacts) and are left empty when it holds none.
+// lastBuilt is when a mod installed from a watched folder (a project's build output) last changed: its newest file's
+// time, RFC 3339; empty for any other entry.
+func lastBuilt(e Entry) string {
+	if e.Source.Kind != KindLocal || e.Source.Folder == "" {
+		return ""
+	}
+	var newest time.Time
+	_ = filepath.WalkDir(e.Source.Folder, func(_ string, d fs.DirEntry, err error) error {
+		if err != nil || d.IsDir() {
+			return nil
+		}
+		if info, err := d.Info(); err == nil && info.ModTime().After(newest) {
+			newest = info.ModTime()
+		}
+		return nil
+	})
+	if newest.IsZero() {
+		return ""
+	}
+	return newest.UTC().Format(time.RFC3339)
+}
+
 func (s *Store) ModFacts(game, id string) (map[string]ModFact, error) {
 	p, err := s.read(game, id)
 	if err != nil {
@@ -168,6 +192,7 @@ func (s *Store) ModFacts(game, id string) (map[string]ModFact, error) {
 		}
 		sc, scanned := s.scanPackage(game, e)
 		ref := factRef(e)
+		built := lastBuilt(e)
 		for _, c := range e.Mods {
 			if _, dup := out[string(c.ID)]; dup {
 				continue
@@ -184,6 +209,7 @@ func (s *Store) ModFacts(game, id string) (map[string]ModFact, error) {
 			if scanned {
 				f.Kind, f.HardDeps = sc.kind, slices.Clone(sc.hardDeps)
 			}
+			f.Updated = built
 			out[string(c.ID)] = f
 			if ref != "" {
 				if installed[e.Source.Kind] == nil {

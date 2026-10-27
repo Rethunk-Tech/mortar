@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/source"
@@ -106,10 +107,19 @@ func TestModFactsReadsWhatABepInExPackageShipsAndWhatTheIndexSays(t *testing.T) 
 func TestModFactsNameTheIDsOfManifestAndFolderMods(t *testing.T) {
 	e := newEnv(t)
 	p := mustCreate(t, e, "Farm")
+	build := t.TempDir()
+	built := time.Date(2026, 10, 26, 18, 0, 0, 0, time.UTC)
+	if err := os.WriteFile(filepath.Join(build, "Dev.dll"), []byte("x"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chtimes(filepath.Join(build, "Dev.dll"), built, built); err != nil {
+		t.Fatal(err)
+	}
 	if _, err := e.update("stardew", p.ID, func(p *Profile, _ string) error {
 		p.Entries = append(p.Entries,
 			Entry{Key: "cp", Source: Source{Kind: KindNexus}, Mods: []Component{{ID: "smapi:Pathoschild.ContentPatcher", Name: "Content Patcher"}}},
-			Entry{Key: "vs", Source: Source{Kind: KindNexus}, Mods: []Component{{ID: "folder:vs", Name: "VS Mod", ModID: "vsmod"}}})
+			Entry{Key: "vs", Source: Source{Kind: KindNexus}, Mods: []Component{{ID: "folder:vs", Name: "VS Mod", ModID: "vsmod"}}},
+			Entry{Key: "dev", Source: Source{Kind: KindLocal, Folder: build}, Mods: []Component{{ID: "smapi:Me.Dev", Name: "Dev"}}})
 		return nil
 	}); err != nil {
 		t.Fatal(err)
@@ -123,6 +133,10 @@ func TestModFactsNameTheIDsOfManifestAndFolderMods(t *testing.T) {
 	}
 	if f := got["folder:vs"]; !slices.Equal(f.IDs, []string{"vsmod"}) {
 		t.Fatalf("folder mod = %+v", f)
+	}
+	// A mod built into a watched folder is as new as its last build.
+	if f := got["smapi:Me.Dev"]; f.Updated != "2026-10-26T18:00:00Z" {
+		t.Fatalf("development mod = %+v", f)
 	}
 }
 
