@@ -1,25 +1,23 @@
 ---
-
 kind: release
 version: 0.3.13
 title: "A launch you can follow, versions with dates"
-summary: "The launch screen shows each step as it comes up and can be cancelled, Change version lists each version's date, Add a game reads the game's own files, the Multiplayer mod list splits hosting from joining, and Mortar redraws and asks its backend far less."
+summary: "A launch screen you can follow and cancel, dated versions, add any game from its program, and split hosting and joining lists."
 highlights:
-- area: Play
-  title: A launch you can follow
-  text: The launch screen fills in as the launcher, the game and its loader come up, counts the mods as they load, and Cancel stops the launch at any step.
-  image: /img/launch.webp
-- area: Mods
-  title: Versions with dates
-  text: Change version lists each version with its release date, marks Latest and Installed, and names the version it installs.
-  image: /img/change-version.webp
-- area: Games
-  title: Add a game from its program
-  text: Pick the game's program and Mortar takes its name and how it is modded from the game's own files, and says what each loader suits.
-  image: /img/add-game.webp
-- area: Multiplayer
-  title: Hosting and joining
-  text: The Multiplayer mod list keeps the host's copy button apart from the joiner's list, and Fix all leads once a check finds something.
-  image: /img/multiplayer.webp
-
+  - area: Play
+    title: A launch you can follow
+    text: Each step shows as it starts, with a mod count. Cancel stops at any step.
+    image: /img/launch.webp
+  - area: Mods
+    title: Versions with dates
+    text: Every version shows its release date, with Latest and Installed marked.
+    image: /img/change-version.webp
+  - area: Games
+    title: Add any game
+    text: Pick its program; Mortar reads the name and how it's modded from the game itself.
+    image: /img/add-game.webp
+  - area: Multiplayer
+    title: Hosting and joining
+    text: The host's copy button and the joiner's list are kept apart, and Fix all leads after a check.
+    image: /img/multiplayer.webp
 ---

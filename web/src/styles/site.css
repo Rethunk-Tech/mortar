@@ -381,7 +381,8 @@ h3 {
 }
 
 .btn.ghost {
-  border: 1px solid var(--line);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .btn.ghost:hover {

@@ -1,27 +1,61 @@
 ---
 import Page from '../../layouts/Page.astro'
-import { longDate, posts } from '../../lib/news.ts'
+import { longDate, type Post, posts } from '../../lib/news.ts'
+import '../../styles/news.css'
 
+const RECENT = 6
 const all = await posts()
+const [lead, ...rest] = all
+const recent = rest.slice(0, RECENT)
+const picture = (p: Post) => p.image ?? p.highlights[0]?.image
+const iso = (d: Date) => d.toISOString().slice(0, 10)
 ---
 
 <Page
   title="Mortar news"
-  description="Mortar's release posts and how-tos: new games, features and fixes in each version, and how-tos for using it."
+  description="Mortar's release posts and how-tos: new games, features and fixes in each version."
   heading="News"
   kicker="News"
-  lede={'A post for every release, and how-tos. Follow along in a feed reader with the <a href="/news/rss.xml">RSS feed</a>.'}
+  lede={'Release posts and how-tos. <a href="/news/rss.xml">RSS feed</a>.'}
   current="news"
   crumbs={[{ name: 'News', href: '/news/' }]}
+  full={true}
 >
-  <ul class="post-list">
+  {
+    lead && (
+      <a class="news-lead" href={`/news/${lead.slug}/`}>
+        {picture(lead) && <img src={picture(lead)} alt="" width="1280" height="800" />}
+        <div class="news-lead-text">
+          <span class="meta">
+            {lead.release ? <span class="vtag hot">{lead.release.version}</span> : <span class="howto-tag">How-to</span>}
+            <time datetime={iso(lead.date)}>{longDate(lead.date)}</time>
+          </span>
+          <h2>{lead.title}</h2>
+          <p>{lead.summary}</p>
+          {lead.highlights.length > 0 && (
+            <ul class="news-chips">
+              {lead.highlights.map((h) => (
+                <li>{h.title}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </a>
+    )
+  }
+  <ul class="news-grid">
     {
-      all.map((p) => (
+      recent.map((p) => (
         <li>
-          <a class="post" href={`/news/${p.slug}/`}>
+          <a href={`/news/${p.slug}/`}>
+            {picture(p) ? (
+              <img src={picture(p)} alt="" width="1280" height="800" loading="lazy" />
+            ) : (
+              <span class="news-blank" aria-hidden="true">{p.release?.version ?? 'How-to'}</span>
+            )}
             <span class="meta">
               {p.release ? <span class="vtag hot">{p.release.version}</span> : <span class="howto-tag">How-to</span>}
-              <time datetime={p.date.toISOString().slice(0, 10)}>{longDate(p.date)}</time>
+              <time datetime={iso(p.date)}>{longDate(p.date)}</time>
             </span>
             <h2>{p.title}</h2>
             <p>{p.summary}</p>
@@ -30,4 +64,5 @@ const all = await posts()
       ))
     }
   </ul>
+  {all.length > RECENT + 1 && <p class="news-more"><a class="allq" href="/news/archive/">All {all.length} posts →</a></p>}
 </Page>

@@ -232,7 +232,23 @@
 }
 
 .f1 .body {
-  padding: 26px 26px 18px;
+  padding: 22px 26px 18px;
+}
+
+.f1 .body:has(> .ico) {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  column-gap: 16px;
+  align-items: start;
+}
+
+.f1 .body .ico {
+  grid-row: span 2;
+  margin-bottom: 0;
+}
+
+.f1 .body h3 {
+  margin-top: 0;
 }
 
 .peek {

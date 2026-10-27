@@ -1,4 +1,5 @@
 ---
+import Mark from '../../components/Mark.astro'
 import Base from '../../layouts/Base.astro'
 import { releases } from '../../lib/changelog.ts'
 import { PACKAGES_FINGERPRINT } from '../../lib/site.ts'
@@ -11,14 +12,14 @@ const version = releases()[0]?.version ?? ''
 const RELEASE = `https://github.com/Rethunk-Tech/mortar/releases/download/v${version}/`
 const pkg = (asset: string) => RELEASE + asset.replace('VERSION', version)
 const packages = [
-  { asset: 'mortar_VERSION_amd64.deb', name: '.deb, amd64', note: 'Ubuntu and Debian, no updates' },
-  { asset: 'mortar_VERSION_arm64.deb', name: '.deb, arm64', note: 'Ubuntu and Debian, no updates' },
-  { asset: 'mortar-VERSION-1.x86_64.rpm', name: '.rpm, x86_64', note: 'Fedora, no updates' },
-  { asset: 'mortar-VERSION-1.aarch64.rpm', name: '.rpm, aarch64', note: 'Fedora, no updates' },
-  { asset: 'mortar-VERSION-1-x86_64.pkg.tar.zst', name: 'Arch package, x86_64', note: 'pacman -U, no updates' },
-  { asset: 'mortar-VERSION-1-aarch64.pkg.tar.zst', name: 'Arch package, aarch64', note: 'pacman -U, no updates' },
-  { asset: 'mortar-linux-x86_64.flatpak', name: 'Flatpak bundle, x86_64', note: 'flatpak install, no updates' },
-  { asset: 'mortar-linux-aarch64.flatpak', name: 'Flatpak bundle, aarch64', note: 'flatpak install, no updates' },
+  { asset: 'mortar_VERSION_amd64.deb', name: '.deb, amd64', note: 'Ubuntu and Debian, no updates', mark: 'debian' },
+  { asset: 'mortar_VERSION_arm64.deb', name: '.deb, arm64', note: 'Ubuntu and Debian, no updates', mark: 'debian' },
+  { asset: 'mortar-VERSION-1.x86_64.rpm', name: '.rpm, x86_64', note: 'Fedora, no updates', mark: 'fedora' },
+  { asset: 'mortar-VERSION-1.aarch64.rpm', name: '.rpm, aarch64', note: 'Fedora, no updates', mark: 'fedora' },
+  { asset: 'mortar-VERSION-1-x86_64.pkg.tar.zst', name: 'Arch package, x86_64', note: 'pacman -U, no updates', mark: 'archlinux' },
+  { asset: 'mortar-VERSION-1-aarch64.pkg.tar.zst', name: 'Arch package, aarch64', note: 'pacman -U, no updates', mark: 'archlinux' },
+  { asset: 'mortar-linux-x86_64.flatpak', name: 'Flatpak bundle, x86_64', note: 'flatpak install, no updates', mark: 'flatpak' },
+  { asset: 'mortar-linux-aarch64.flatpak', name: 'Flatpak bundle, aarch64', note: 'flatpak install, no updates', mark: 'flatpak' },
 ]
 ---
 
@@ -69,6 +70,7 @@ const packages = [
       data-asset="mortar-amd64-installer.exe"
       href={`${RELEASE}mortar-amd64-installer.exe`}
     >
+        <Mark site="windows" label="" class="fileicon" />
       <strong>Installer, x64</strong><span>Most PCs</span>
     </a>
     <a
@@ -76,6 +78,7 @@ const packages = [
       data-asset="mortar-arm64-installer.exe"
       href={`${RELEASE}mortar-arm64-installer.exe`}
     >
+        <Mark site="windows" label="" class="fileicon" />
       <strong>Installer, ARM64</strong
       ><span>Snapdragon and other ARM PCs</span>
     </a>
@@ -84,6 +87,7 @@ const packages = [
       data-asset="mortar-windows-amd64.exe"
       href={`${RELEASE}mortar-windows-amd64.exe`}
     >
+        <Mark site="windows" label="" class="fileicon" />
       <strong>Portable, x64</strong><span>Runs from any folder</span>
     </a>
     <a
@@ -91,6 +95,7 @@ const packages = [
       data-asset="mortar-windows-arm64.exe"
       href={`${RELEASE}mortar-windows-arm64.exe`}
     >
+        <Mark site="windows" label="" class="fileicon" />
       <strong>Portable, ARM64</strong><span>Runs from any folder</span>
     </a>
   </div>
@@ -122,8 +127,8 @@ scoop install mortar/mortar</code></pre>
   aria-labelledby="tab-linux"
 >
   <div class="tabs modes" role="tablist" aria-label="How to install">
-    <button type="button" role="tab" id="tab-linux-store" aria-controls="linux-store">Software center</button>
     <button type="button" role="tab" id="tab-linux-files" aria-controls="linux-files">Download a file</button>
+    <button type="button" role="tab" id="tab-linux-store" aria-controls="linux-store">Software center</button>
     <button type="button" role="tab" id="tab-linux-cli" aria-controls="linux-cli">Command line</button>
   </div>
 
@@ -134,7 +139,8 @@ scoop install mortar/mortar</code></pre>
       runtime comes from Flathub.
     </p>
     <div class="files">
-      <a class="file primary" href="https://mortar.rethunk.tech/packages/flatpak/tech.rethunk.Mortar.flatpakref">
+      <a class="file" href="https://mortar.rethunk.tech/packages/flatpak/tech.rethunk.Mortar.flatpakref">
+        <Mark site="flatpak" label="" class="fileicon" />
         <strong>Install with Flatpak</strong><span>Opens in your software center</span>
       </a>
     </div>
@@ -155,6 +161,7 @@ scoop install mortar/mortar</code></pre>
         data-asset="mortar-linux-x86_64.AppImage"
         href={`${RELEASE}mortar-linux-x86_64.AppImage`}
       >
+        <Mark site="appimage" label="" class="fileicon" />
         <strong>AppImage, x86_64</strong
         ><span>Nothing else to install</span>
       </a>
@@ -163,6 +170,7 @@ scoop install mortar/mortar</code></pre>
         data-asset="mortar-linux-aarch64.AppImage"
         href={`${RELEASE}mortar-linux-aarch64.AppImage`}
       >
+        <Mark site="appimage" label="" class="fileicon" />
         <strong>AppImage, ARM64</strong
         ><span>Nothing else to install</span>
       </a>
@@ -171,6 +179,7 @@ scoop install mortar/mortar</code></pre>
         data-asset="mortar-linux-amd64"
         href={`${RELEASE}mortar-linux-amd64`}
       >
+        <Mark site="linux" label="" class="fileicon" />
         <strong>Portable, x86_64</strong
         ><span>Uses the system's GTK 4 and WebKitGTK 6</span>
       </a>
@@ -179,12 +188,14 @@ scoop install mortar/mortar</code></pre>
         data-asset="mortar-linux-arm64"
         href={`${RELEASE}mortar-linux-arm64`}
       >
+        <Mark site="linux" label="" class="fileicon" />
         <strong>Portable, ARM64</strong
         ><span>Uses the system's GTK 4 and WebKitGTK 6</span>
       </a>
       {
         packages.map((p) => (
           <a class="file" data-asset={p.asset} href={pkg(p.asset)}>
+        <Mark site={p.mark} label="" class="fileicon" />
             <strong>{p.name}</strong>
             <span>{p.note}</span>
           </a>
@@ -298,6 +309,7 @@ sudo pacman -Syu mortar</code></pre>
       data-asset="mortar-linux-x86_64.AppImage"
       href={`${RELEASE}mortar-linux-x86_64.AppImage`}
     >
+        <Mark site="steamdeck" label="" class="fileicon" />
       <strong>AppImage, x86_64</strong><span>For the Steam Deck</span>
     </a>
   </div>
@@ -333,6 +345,7 @@ sudo pacman -Syu mortar</code></pre>
       class="file primary"
       href="https://github.com/Rethunk-Tech/mortar-browser-extension/releases/latest/download/mortar-browser-extension.xpi"
     >
+        <Mark site="extension" label="" class="fileicon" />
       <strong>Firefox</strong
       ><span>Signed by Mozilla; open the file in Firefox</span>
     </a>
@@ -340,6 +353,7 @@ sudo pacman -Syu mortar</code></pre>
       class="file"
       href="https://chromewebstore.google.com/detail/hboeppdoecbglcmfojappgehkbecdfbi"
     >
+        <Mark site="extension" label="" class="fileicon" />
       <strong>Chrome, Edge and other Chromium browsers</strong
       ><span>Chrome Web Store; updates itself</span>
     </a>

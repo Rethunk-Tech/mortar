@@ -99,7 +99,7 @@ function mortarRelease(rel) {
   } else if (archRe.test(ua) && !debianRe.test(ua)) {
     distro = 'arch'
   }
-  let mode = 'linux-store'
+  let mode = 'linux-files'
   if (modeIds.includes(hash)) {
     mode = hash
   } else if (distroIds.includes(hash)) {

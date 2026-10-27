@@ -299,9 +299,11 @@ html.js .dl .panel[hidden] {
 }
 
 .file {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  column-gap: 14px;
+  row-gap: 2px;
+  align-content: start;
   padding: 16px 18px;
   border: 1px solid var(--line);
   border-radius: 14px;
@@ -309,14 +311,34 @@ html.js .dl .panel[hidden] {
   transition: border-color 0.2s;
 }
 
-.file:hover,
-.file.primary {
+.file > :not(.fileicon) {
+  grid-column: 2;
+}
+
+.file .fileicon {
+  grid-row: 1 / span 3;
+  width: 28px;
+  height: 28px;
+  margin-top: 2px;
+}
+
+.file:hover {
   border-color: rgba(214, 177, 122, 0.6);
+}
+
+.file.primary {
+  background: var(--sand);
+  border-color: var(--sand);
+  color: var(--sand-ink);
 }
 
 .file span {
   color: var(--dim);
   font-size: 14px;
+}
+
+.file.primary span {
+  color: rgba(25, 25, 30, 0.75);
 }
 
 .file .size {

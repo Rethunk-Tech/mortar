@@ -182,15 +182,15 @@
 
 .fcta {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  flex-wrap: wrap;
-  background: var(--raised);
-  border: 1px solid var(--line);
-  border-left: 3px solid var(--sand);
-  border-radius: 18px;
-  padding: 30px 34px;
+  text-align: center;
+  gap: 20px;
+  background:
+    radial-gradient(ellipse at top, rgba(214, 177, 122, 0.16), transparent 70%), var(--raised);
+  border: 1px solid rgba(214, 177, 122, 0.22);
+  border-radius: 20px;
+  padding: 48px 34px;
   margin-bottom: 56px;
 }
 

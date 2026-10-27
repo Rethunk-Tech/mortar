@@ -2,11 +2,11 @@
 kind: release
 version: 0.3.9
 title: "Errors explained, builds auto-install"
-summary: "A mod's error names the method that threw and the mods patching that code, and a build folder installs itself into the open profile."
+summary: "Errors name the method that threw and the mods patching it, and your mod's builds install themselves."
 highlights:
   - area: Problems
     title: Errors explained
-    text: A mod's error names the method that threw and the other mods patching that code.
+    text: The method that threw, and the other mods patching it.
     image: /img/problems-0-3-9.webp
   - area: Downloads
     title: Auto-install folders
@@ -14,6 +14,6 @@ highlights:
     image: /img/watch-folders.webp
   - area: Interface
     title: A lighter interface
-    text: The Mods and Config tabs do much less work when you switch a mod or pick a file.
+    text: Mods and Config do far less work as you switch.
     image: /img/config.webp
 ---

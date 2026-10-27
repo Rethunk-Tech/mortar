@@ -1,0 +1,123 @@
+/* /news/: the latest post large, the next few as picture cards, the rest in the archive. */
+.news-lead {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 28px;
+  align-items: center;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--raised);
+  margin-bottom: 28px;
+}
+
+.news-lead:hover,
+.news-grid a:hover {
+  border-color: rgba(214, 177, 122, 0.5);
+}
+
+.news-lead img,
+.news-grid img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  object-position: top left;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+}
+
+.news-lead h2 {
+  font-size: 30px;
+  margin: 10px 0;
+}
+
+.news-lead p,
+.news-grid p {
+  margin: 0;
+  color: var(--dim);
+}
+
+.news-lead .meta,
+.news-grid .meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--faint);
+  font-size: 14px;
+}
+
+.news-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.news-chips li {
+  font-size: 14px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(214, 177, 122, 0.12);
+  color: var(--sand);
+}
+
+.news-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.news-grid a {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  height: 100%;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--raised);
+}
+
+.news-grid h2 {
+  font-size: 19px;
+  margin: 0;
+}
+
+.news-blank {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 10;
+  border-radius: 10px;
+  font-size: 34px;
+  font-weight: 800;
+  color: var(--sand);
+  background: linear-gradient(135deg, rgba(214, 177, 122, 0.16), rgba(214, 177, 122, 0.03));
+}
+
+.news-more {
+  margin-top: 28px;
+}
+
+.prose .news-lead,
+.prose .news-grid a {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.prose .news-lead:hover h2,
+.prose .news-grid a:hover h2 {
+  color: var(--sand);
+}
+
+@media (max-width: 900px) {
+  .news-lead,
+  .news-grid {
+    grid-template-columns: 1fr;
+  }
+}
