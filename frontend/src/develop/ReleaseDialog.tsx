@@ -7,6 +7,7 @@ import {
   NextVersions,
   Release,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { Field, FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { useToasts } from '../toasts/store.ts'
@@ -18,11 +19,14 @@ export function ReleaseDialog({
   dir,
   name,
   onClose,
+  onLocal,
 }: {
   game: string
   dir: string
   name: string
   onClose: () => void
+  // The release stayed local (no GitHub remote): Mortar offers to upload it itself.
+  onLocal: (version: string) => void
 }) {
   const { t } = useLingui()
   const [versions, setVersions] = useState<Versions | null>(null)
@@ -48,13 +52,21 @@ export function ReleaseDialog({
   const release = () =>
     run(
       async () => {
-        await Release(game, dir, version, lines)
+        const remote = await Release(game, dir, version, lines)
         useToasts.getState().push({
           kind: 'success',
           title: t`Released ${{ name }} ${{ version }}`,
-          body: t`Push the commit and the tag to publish it.`,
+          ...(remote
+            ? {
+                body: t`Pushed to ${{ remote }}; its CI publishes it to ${{ source: sourceLabel('thunderstore') }}.`,
+              }
+            : {}),
         })
-        onClose()
+        if (remote) {
+          onClose()
+        } else {
+          onLocal(version)
+        }
       },
       { errorTitle: t`Could not release the mod` },
     )
@@ -69,7 +81,11 @@ export function ReleaseDialog({
       open={true}
       onClose={onClose}
       title={t`Release ${{ name }}`}
-      subtitle={t`Adds the changelog entry, commits it and tags the version.`}
+      subtitle={
+        versions?.github
+          ? t`Commits the changelog, tags the version and pushes both to ${{ remote: versions.github }}, whose CI publishes it.`
+          : t`Commits the changelog and tags the version here, then offers to upload it.`
+      }
       icon={
         <ToneIcon tone="neutral">
           <Tag size={22} />

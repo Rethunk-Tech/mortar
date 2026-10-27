@@ -15,10 +15,6 @@ msgstr "No saves match"
 msgid "{game}'s {launcher} launch options run {loader} in place of the game. {launcher} will still start {loader} unless that launch option is removed. Mortar will not change it."
 msgstr "{game}'s {launcher} launch options run {loader} in place of the game. {launcher} will still start {loader} unless that launch option is removed. Mortar will not change it."
 
-#: src/develop/UploadDialog.tsx
-msgid "{file} is published for everyone under your team; a published version cannot be replaced."
-msgstr "{file} is published for everyone under your team; a published version cannot be replaced."
-
 #: src/game/Sidebar.tsx
 msgid "Performance"
 msgstr "Performance"
@@ -678,6 +674,10 @@ msgstr "Show {name} in its profile"
 #: src/share/MethodPanes.tsx
 msgid "Could not publish the code"
 msgstr "Could not publish the code"
+
+#: src/develop/ReleaseDialog.tsx
+msgid "Pushed to {remote}; its CI publishes it to {source}."
+msgstr "Pushed to {remote}; its CI publishes it to {source}."
 
 #: src/launch/VanillaPlay.tsx
 msgid "More play options"
@@ -2564,10 +2564,6 @@ msgstr "Export…"
 msgid "Choose a file"
 msgstr "Choose a file"
 
-#: src/develop/ProjectCard.tsx
-msgid "Upload to {source}…"
-msgstr "Upload to {source}…"
-
 #: src/game/NewProfileDialog.tsx
 #: src/groups/SavedGroupsSection.tsx
 msgid "Saved groups"
@@ -2897,6 +2893,10 @@ msgstr "Profiles: {holderNames}"
 #: src/launch/GraphicsDialog.tsx
 msgid "{name} (Recommended)"
 msgstr "{name} (Recommended)"
+
+#: src/develop/UploadDialog.tsx
+msgid "Upload {name} {version} to {source}?"
+msgstr "Upload {name} {version} to {source}?"
 
 #: src/i18n/reasonText.ts
 msgid "{os} antivirus (AMSI)"
@@ -3996,10 +3996,6 @@ msgstr "Hide archive contents"
 #: src/saves/SaveRow.tsx
 msgid "Four Corners farm"
 msgstr "Four Corners farm"
-
-#: src/develop/UploadDialog.tsx
-msgid "Upload {name} to {source}?"
-msgstr "Upload {name} to {source}?"
 
 #: src/develop/ProjectCard.tsx
 msgid "Changed since the last build"
@@ -5277,10 +5273,6 @@ msgstr "Show mods"
 msgid "Could not read the templates"
 msgstr "Could not read the templates"
 
-#: src/develop/ReleaseDialog.tsx
-msgid "Push the commit and the tag to publish it."
-msgstr "Push the commit and the tag to publish it."
-
 #: src/browse/browseConstants.ts
 msgid "Search {source}. Download installs the mod into this profile."
 msgstr "Search {source}. Download installs the mod into this profile."
@@ -5895,6 +5887,14 @@ msgstr "Launching {name}"
 msgid "Could not enable sharing nearby"
 msgstr "Could not enable sharing nearby"
 
+#: src/develop/UploadDialog.tsx
+msgid "Mortar builds the package and publishes it for everyone under your team. A published version cannot be replaced."
+msgstr "Mortar builds the package and publishes it for everyone under your team. A published version cannot be replaced."
+
+#: src/develop/ReleaseDialog.tsx
+msgid "Commits the changelog and tags the version here, then offers to upload it."
+msgstr "Commits the changelog and tags the version here, then offers to upload it."
+
 #: src/game/ProfileMenuItems.tsx
 msgid "Already in {launcher}"
 msgstr "Already in {launcher}"
@@ -6341,10 +6341,6 @@ msgstr "The game exited before it started. The console has its output."
 #: src/launch/SweepDialog.tsx
 msgid "{game} was updated: mods to check"
 msgstr "{game} was updated: mods to check"
-
-#: src/develop/ReleaseDialog.tsx
-msgid "Adds the changelog entry, commits it and tags the version."
-msgstr "Adds the changelog entry, commits it and tags the version."
 
 #: src/browse/BrowseToolbar.tsx
 msgid "Source"
@@ -6942,6 +6938,10 @@ msgstr "Games you added"
 #: src/commandPalette/paletteLabels.ts
 msgid "Share"
 msgstr "Share"
+
+#: src/develop/ReleaseDialog.tsx
+msgid "Commits the changelog, tags the version and pushes both to {remote}, whose CI publishes it."
+msgstr "Commits the changelog, tags the version and pushes both to {remote}, whose CI publishes it."
 
 #: src/share/ImportProblems.tsx
 msgid "Leave out"

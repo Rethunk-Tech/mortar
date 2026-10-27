@@ -167,6 +167,9 @@ func zipFileHash(path, name string) string {
 // Versions are the project's released version (its latest vX.Y.Z tag, empty before the first) and the next patch,
 // minor and major after it; before the first release each is 0.1.0, the version the template starts at.
 type Versions struct {
+	// GitHub is the remote a release is pushed to so the template's CI publishes it; empty means the release stays
+	// local and Mortar uploads the package itself.
+	GitHub  string `json:"github"`
 	Current string `json:"current"`
 	Patch   string `json:"patch"`
 	Minor   string `json:"minor"`
@@ -188,6 +191,7 @@ func (s *Service) NextVersions(ctx context.Context, gameID, dir string) (Version
 		latest = strings.TrimPrefix(strings.TrimSpace(string(out)), "v")
 	}
 	v := nextVersions(latest)
+	v.GitHub = s.githubRemote(ctx, p.Dir)
 	since := "HEAD"
 	if latest != "" {
 		since = "v" + latest + "..HEAD"
@@ -227,13 +231,49 @@ func nextVersions(current string) Versions {
 	}
 }
 
+var remoteName = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]*$`)
+
+// githubRemote is the remote the current branch tracks, else origin, when its URL is on GitHub; empty otherwise.
+func (s *Service) githubRemote(ctx context.Context, dir string) string {
+	remote := "origin"
+	if out, err := s.run(ctx, dir, "git", "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"); err == nil {
+		if name, _, ok := strings.Cut(strings.TrimSpace(string(out)), "/"); ok {
+			remote = name
+		}
+	}
+	if !remoteName.MatchString(remote) {
+		return ""
+	}
+	out, err := s.run(ctx, dir, "git", "remote", "get-url", remote)
+	if err != nil || !strings.Contains(strings.ToLower(string(out)), "github.com") {
+		return ""
+	}
+	return remote
+}
+
 // Release adds version and its notes to CHANGELOG.md, commits that, and tags it vX.Y.Z, which the template takes as
-// the version. The tree must be otherwise committed, so the tag holds what was tested. Nothing is pushed.
-func (s *Service) Release(ctx context.Context, gameID, dir, version string, notes []string) error {
+// the version. The tree must be otherwise committed, so the tag holds what was tested. With a GitHub remote the
+// commit and tag are pushed there, and the template's CI publishes the package; it returns that remote, or "" when
+// the release stayed local.
+func (s *Service) Release(ctx context.Context, gameID, dir, version string, notes []string) (string, error) {
 	p, err := s.project(gameID, dir)
 	if err != nil {
-		return err
+		return "", err
 	}
+	if err := s.tagRelease(ctx, p.Dir, version, notes); err != nil {
+		return "", err
+	}
+	remote := s.githubRemote(ctx, p.Dir)
+	if remote == "" {
+		return "", nil
+	}
+	if _, err := s.run(ctx, p.Dir, "git", "push", remote, "HEAD", "refs/tags/v"+version); err != nil {
+		return "", fmt.Errorf("v%s is tagged here, but pushing it to %s failed: %w", version, remote, err)
+	}
+	return remote, nil
+}
+
+func (s *Service) tagRelease(ctx context.Context, dir, version string, notes []string) error {
 	if !packageVersion.MatchString(version) {
 		return usererr.Wrap(usererr.Invalid, errors.New("the version must be three numbers, such as 1.0.0"))
 	}
@@ -241,15 +281,15 @@ func (s *Service) Release(ctx context.Context, gameID, dir, version string, note
 	if len(notes) == 0 {
 		return usererr.Wrap(usererr.Invalid, errors.New("say what changed"))
 	}
-	if out, err := s.run(ctx, p.Dir, "git", "status", "--porcelain"); err != nil {
+	if out, err := s.run(ctx, dir, "git", "status", "--porcelain"); err != nil {
 		return err
 	} else if strings.TrimSpace(string(out)) != "" {
 		return usererr.Wrap(usererr.Invalid, errors.New("commit your changes first, so the release holds what you tested"))
 	}
-	if _, err := s.run(ctx, p.Dir, "git", "rev-parse", "-q", "--verify", "refs/tags/v"+version); err == nil {
+	if _, err := s.run(ctx, dir, "git", "rev-parse", "-q", "--verify", "refs/tags/v"+version); err == nil {
 		return usererr.Wrap(usererr.Invalid, fmt.Errorf("v%s is already released", version))
 	}
-	log := filepath.Join(p.Dir, "CHANGELOG.md")
+	log := filepath.Join(dir, "CHANGELOG.md")
 	body, err := fsx.ReadFile(log)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return err
@@ -259,14 +299,14 @@ func (s *Service) Release(ctx context.Context, gameID, dir, version string, note
 		if err := fsx.WriteFile(log, []byte(next), 0o644); err != nil { // #nosec G306 -- a tracked text file
 			return err
 		}
-		if _, err := s.run(ctx, p.Dir, "git", "add", "CHANGELOG.md"); err != nil {
+		if _, err := s.run(ctx, dir, "git", "add", "CHANGELOG.md"); err != nil {
 			return err
 		}
-		if _, err := s.run(ctx, p.Dir, "git", "commit", "-q", "-m", "Release "+version); err != nil {
+		if _, err := s.run(ctx, dir, "git", "commit", "-q", "-m", "Release "+version); err != nil {
 			return err
 		}
 	}
-	_, err = s.run(ctx, p.Dir, "git", "tag", "-a", "v"+version, "-m", version)
+	_, err = s.run(ctx, dir, "git", "tag", "-a", "v"+version, "-m", version)
 	return err
 }
 

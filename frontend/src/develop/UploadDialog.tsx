@@ -15,9 +15,9 @@ import { Field, FormDialog } from '../shell/dialog/FormDialog.tsx'
 import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
+import { packProject } from './builds.ts'
 
 const TEAMS_PAGE = 'https://thunderstore.io/settings/teams/'
-const PATH_SEPARATORS = /[/\\]/
 
 // Asks once for a team's service account token, which Mortar keeps in the system keyring.
 function TokenDialog({
@@ -89,18 +89,19 @@ function TokenDialog({
   )
 }
 
-/** Publishes the project's newest package to the game's Thunderstore community, asking for the token first. */
+/** After a release that stayed local: asks for the token once, then on confirmation builds the package and publishes
+ * it to the game's Thunderstore community. */
 export function UploadDialog({
   game,
   dir,
   name,
-  zip,
+  version,
   onClose,
 }: {
   game: string
   dir: string
   name: string
-  zip: string
+  version: string
   onClose: () => void
 }) {
   const { t } = useLingui()
@@ -118,18 +119,23 @@ export function UploadDialog({
   if (!hasToken) {
     return <TokenDialog game={game} dir={dir} onSaved={() => setHasToken(true)} onClose={onClose} />
   }
-  const file = zip.split(PATH_SEPARATORS).at(-1) ?? zip
   return (
     <ConfirmationDialog
       open={true}
-      title={t`Upload ${{ name }} to ${{ source: site }}?`}
-      body={t`${{ file }} is published for everyone under your team; a published version cannot be replaced.`}
+      title={t`Upload ${{ name }} ${{ version }} to ${{ source: site }}?`}
+      body={t`Mortar builds the package and publishes it for everyone under your team. A published version cannot be replaced.`}
       confirmLabel={uploading ? t`Uploading…` : t`Upload`}
       busy={uploading}
       onCancel={onClose}
       onConfirm={() =>
         upload(
           async () => {
+            const pack = await packProject(game, dir)
+            // The card shows why a package was refused.
+            if (!pack?.zip || (pack.issues ?? []).length > 0) {
+              onClose()
+              return
+            }
             const url = await UploadThunderstore(game, dir)
             useToasts.getState().push({
               kind: 'success',

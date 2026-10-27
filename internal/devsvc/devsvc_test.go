@@ -558,3 +558,51 @@ func TestGitHubOwnersAndRepoCheck(t *testing.T) {
 		t.Error("an owner gh would read as a flag was looked up")
 	}
 }
+
+// A release with a GitHub remote reaches it, so the template's CI publishes; without one it stays a local tag.
+func TestReleasePushesOnlyToGitHub(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	svc.Run = nil
+	git := func(dir string, args ...string) {
+		t.Helper()
+		if _, err := svc.run(t.Context(), dir, "git", args...); err != nil {
+			t.Fatal(err)
+		}
+	}
+	project := func(name string) string {
+		dir := filepath.Join(t.TempDir(), name)
+		if err := os.MkdirAll(dir, 0o750); err != nil {
+			t.Fatal(err)
+		}
+		git(dir, "init", "-q")
+		git(dir, "commit", "-q", "--allow-empty", "-m", "start")
+		if err := svc.Settings.AddDevProject("lethal-company", settings.DevProject{Dir: dir, Name: name}); err != nil {
+			t.Fatal(err)
+		}
+		return dir
+	}
+	t.Setenv("GIT_AUTHOR_NAME", "t")
+	t.Setenv("GIT_AUTHOR_EMAIL", "t@t")
+	t.Setenv("GIT_COMMITTER_NAME", "t")
+	t.Setenv("GIT_COMMITTER_EMAIL", "t@t")
+
+	local := project("Local")
+	if remote, err := svc.Release(t.Context(), "lethal-company", local, "0.1.0", []string{"First"}); err != nil || remote != "" {
+		t.Fatalf("local release = %q, %v", remote, err)
+	}
+
+	hub := filepath.Join(t.TempDir(), "github.com", "o", "shop.git")
+	if err := os.MkdirAll(hub, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	git(hub, "init", "-q", "--bare")
+	shared := project("Shared")
+	git(shared, "remote", "add", "origin", hub)
+	if v, err := svc.NextVersions(t.Context(), "lethal-company", shared); err != nil || v.GitHub != "origin" {
+		t.Fatalf("versions = %+v, %v", v, err)
+	}
+	if remote, err := svc.Release(t.Context(), "lethal-company", shared, "0.1.0", []string{"First"}); err != nil || remote != "origin" {
+		t.Fatalf("github release = %q, %v", remote, err)
+	}
+	git(hub, "rev-parse", "-q", "--verify", "refs/tags/v0.1.0")
+}

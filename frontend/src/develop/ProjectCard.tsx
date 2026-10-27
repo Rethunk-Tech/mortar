@@ -23,7 +23,6 @@ import {
   SquareCode,
   Tag,
   Trash2,
-  Upload,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type {
@@ -40,7 +39,6 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import { StartDebugging } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import type { DevProject } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
-import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { useNowValue } from '../i18n/useNow.ts'
 import { relativeWhen } from '../i18n/when.ts'
 import { LetterTile } from '../mods/LetterTile.tsx'
@@ -52,15 +50,7 @@ import { MenuRule } from '../shell/TitleMenu.tsx'
 import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
-import {
-  buildProject,
-  closeUpload,
-  packProject,
-  refreshInfo,
-  runOf,
-  useDevRuns,
-  useProjectInfo,
-} from './builds.ts'
+import { buildProject, refreshInfo, runOf, useDevRuns, useProjectInfo } from './builds.ts'
 import { EditProjectDialog } from './EditProjectDialog.tsx'
 import { showModLog, useModCosts } from './modCosts.ts'
 import { ReleaseDialog } from './ReleaseDialog.tsx'
@@ -115,15 +105,6 @@ function Outcome({ game, project }: { game: string; project: DevProject }) {
       ) : null}
       {build && (build.problems ?? []).length > 0 ? (
         <Problems game={game} project={project} problems={build.problems ?? []} />
-      ) : null}
-      {run.upload && pack?.zip ? (
-        <UploadDialog
-          game={game}
-          dir={project.dir}
-          name={project.name}
-          zip={pack.zip}
-          onClose={() => closeUpload(project.dir)}
-        />
       ) : null}
       {pack && (pack.issues ?? []).length > 0 ? (
         <Alert variant="compact" severity="warning">
@@ -280,7 +261,6 @@ function MoreMenu({
   const { t } = useLingui()
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const [forgetting, setForgetting] = useState(false)
-  const running = useDevRuns((s) => runOf(s.byDir, project.dir).running)
   const info = useProjectInfo((s) => s.byDir[project.dir])
   // One start with the game's Mono debugger open; the toast says where to attach.
   const debug = () =>
@@ -359,12 +339,6 @@ function MoreMenu({
           label={t`Release…`}
           onClick={act(onRelease)}
         />
-        <MenuAction
-          icon={<Upload size={16} aria-hidden={true} />}
-          label={t`Upload to ${{ source: sourceLabel('thunderstore') }}…`}
-          disabled={running !== null}
-          onClick={act(() => packProject(game, project.dir))}
-        />
         <MenuRule />
         <MenuAction
           icon={<Trash2 size={16} aria-hidden={true} />}
@@ -433,6 +407,8 @@ export function ProjectCard({
   const { t } = useLingui()
   const info = useInfo(game, project.dir)
   const [releasing, setReleasing] = useState(false)
+  // The version a local release offers to upload; empty when none is open.
+  const [uploading, setUploading] = useState('')
   const [editing, setEditing] = useState(false)
   if (info?.missing) {
     return <MissingCard game={game} project={project} />
@@ -495,6 +471,19 @@ export function ProjectCard({
           dir={project.dir}
           name={name}
           onClose={() => setReleasing(false)}
+          onLocal={(released) => {
+            setReleasing(false)
+            setUploading(released)
+          }}
+        />
+      ) : null}
+      {uploading ? (
+        <UploadDialog
+          game={game}
+          dir={project.dir}
+          name={name}
+          version={uploading}
+          onClose={() => setUploading('')}
         />
       ) : null}
     </Box>
