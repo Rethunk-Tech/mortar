@@ -17,6 +17,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
@@ -66,6 +67,24 @@ func serveFixtures(t *testing.T) (*httptest.Server, *atomic.Int32) {
 	return srv, &hits
 }
 
+// keepsOutOfSettings fails when settings.json, which holds the signed-in account's name, also holds a secret.
+func keepsOutOfSettings(t *testing.T, secrets ...string) {
+	t.Helper()
+	dir, err := datadir.Dir()
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := fsx.ReadFile(filepath.Join(dir, settings.FileName))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, sec := range secrets {
+		if strings.Contains(string(b), sec) {
+			t.Fatalf("settings.json holds %q: %s", sec, b)
+		}
+	}
+}
+
 func TestSignInOutKeepsKeyOutOfSettings(t *testing.T) {
 	store := testStore(t)
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -94,6 +113,7 @@ func TestSignInOutKeepsKeyOutOfSettings(t *testing.T) {
 	if got, _ := secret.Get(keyName); got != "secret-key" {
 		t.Fatalf("keyring holds %q", got)
 	}
+	keepsOutOfSettings(t, "secret-key")
 	if acct, err = s.SignOut(); err != nil || acct.SignedIn {
 		t.Fatalf("sign out = %+v, %v", acct, err)
 	}
@@ -257,6 +277,7 @@ func TestStartSSOPrefersOAuthWhenClientIDSet(t *testing.T) {
 	if tok, err := nexussso.Load(); err != nil || tok.Refresh != "R1" {
 		t.Fatalf("tokens %+v err %v", tok, err)
 	}
+	keepsOutOfSettings(t, "A1", "R1")
 	if _, err := s.SignOut(); err != nil {
 		t.Fatal(err)
 	}
