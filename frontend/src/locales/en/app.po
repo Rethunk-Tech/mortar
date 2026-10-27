@@ -2394,6 +2394,10 @@ msgstr "Folder chosen by you"
 msgid "Choose a profile…"
 msgstr "Choose a profile…"
 
+#: src/toasts/EarlierChanges.tsx
+msgid "Hide changes"
+msgstr "Hide changes"
+
 #: src/commandPalette/CommandPalette.tsx
 msgid "Search actions and destinations"
 msgstr "Search actions and destinations"
@@ -3923,7 +3927,6 @@ msgid "Not found"
 msgstr "Not found"
 
 #: src/sync/SyncOffers.tsx
-#: src/toasts/EarlierChanges.tsx
 msgid "Show diff"
 msgstr "Show diff"
 
@@ -5164,10 +5167,6 @@ msgstr "{count, plural, one {Import # profile} other {Import # profiles}}"
 msgid "Could not check the graphics setting"
 msgstr "Could not check the graphics setting"
 
-#: src/toasts/EarlierChanges.tsx
-msgid "{more, plural, one {Show # older change} other {Show older changes (# left)}}"
-msgstr "{more, plural, one {Show # older change} other {Show older changes (# left)}}"
-
 #: src/saves/lackChips.tsx
 msgid "{name} (disabled)"
 msgstr "{name} (disabled)"
@@ -5705,6 +5704,10 @@ msgstr "Play"
 #: src/launch/LaunchScreen.tsx
 msgid "Open {name}"
 msgstr "Open {name}"
+
+#: src/toasts/EarlierChanges.tsx
+msgid "Show changes"
+msgstr "Show changes"
 
 #: src/launch/PlayInstances.tsx
 msgid "Use Direct launch"

@@ -1,6 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Collapse, Typography } from '@mui/material'
+import { Box, Collapse, Typography } from '@mui/material'
+import { FileDiff, Undo2 } from 'lucide-react'
 import { useState } from 'react'
 import type { HistoryEvent } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { When } from '../i18n/When.tsx'
@@ -8,6 +9,7 @@ import { historyChangeSummary } from '../profiles/historyCounts.ts'
 import { historyLabel } from '../profiles/historyLabel.ts'
 import type { useHistoryPanel } from '../profiles/useHistoryPanel.ts'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
+import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { space } from '../theme/density.ts'
 import { laterEvents, undoTarget } from './history.ts'
 
@@ -42,19 +44,22 @@ function EarlierRow({
           </Typography>
         </Box>
         {details.length > 0 ? (
-          <Button size="small" aria-expanded={diff} onClick={() => setDiff(!diff)}>
-            {t`Show diff`}
-          </Button>
+          <TipIconButton
+            label={diff ? t`Hide changes` : t`Show changes`}
+            aria-expanded={diff}
+            onClick={() => setDiff(!diff)}
+          >
+            <FileDiff size={16} />
+          </TipIconButton>
         ) : null}
         {trimmed || onUndo === undefined ? null : (
-          <Button
-            size="small"
+          <TipIconButton
+            label={t`Undo this change: ${{ name: label }}`}
             disabled={panel.busy !== ''}
             onClick={() => onUndo(ev)}
-            aria-label={t`Undo this change: ${{ name: label }}`}
           >
-            {t`Undo`}
-          </Button>
+            <Undo2 size={16} />
+          </TipIconButton>
         )}
       </Box>
       <Collapse in={diff} unmountOnExit={true}>
@@ -88,7 +93,6 @@ export function EarlierChanges({ panel, hide }: { panel: Panel; hide: ReadonlySe
     )
   }
   const listed = panel.events.filter((ev) => !hide.has(ev.id))
-  const more = listed.length - panel.shown
   return (
     <>
       {listed.slice(0, panel.shown).map((ev) => (
@@ -99,11 +103,6 @@ export function EarlierChanges({ panel, hide }: { panel: Panel; hide: ReadonlySe
           onUndo={undoTarget(panel.events, ev.id) === '' ? undefined : undo}
         />
       ))}
-      {more > 0 ? (
-        <Button size="small" onClick={panel.showMore} sx={{ mx: space.pad, my: space.gap }}>
-          {plural(more, { one: 'Show # older change', other: 'Show older changes (# left)' })}
-        </Button>
-      ) : null}
       <ConfirmationDialog
         open={target !== null}
         title={t`Undo this and ${plural({ count: later.length }, { one: '# later change', other: '# later changes' })}?`}

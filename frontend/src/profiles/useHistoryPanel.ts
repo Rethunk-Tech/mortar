@@ -76,7 +76,7 @@ function usePickedPair(game: string, profileId: string, picked: string[]) {
 
 /**
  * toastMissing is for a caller without the panel's own missing-mods UI: a revert that lacks mods says so in a toast.
- * pageSize, when set, shows that many events at first and loads each one's changes only once it's shown.
+ * pageSize, when set, shows only that many of the newest events and loads only their changes.
  */
 export function useHistoryPanel(
   profileId: string,
@@ -87,7 +87,7 @@ export function useHistoryPanel(
   const game = useProfiles((s) => s.game)
   const [events, setEvents] = useState<HistoryEvent[]>([])
   const [items, setItems] = useState<Record<string, HistoryDiff['items']>>({})
-  const [shown, setShown] = useState(pageSize)
+  const shown = pageSize
   const [picked, setPicked] = useState<string[]>([])
   const [busy, setBusy] = useState('')
   const [error, setError] = useState('')
@@ -106,7 +106,6 @@ export function useHistoryPanel(
     setMissingNames([])
     setMissingWants([])
     setPicked([])
-    setShown(pageSize)
     History(game.id, profileId)
       .then(async (list) => {
         const rows = list ?? []
@@ -135,7 +134,6 @@ export function useHistoryPanel(
     events,
     items,
     shown,
-    showMore: () => setShown((n) => n + pageSize),
     picked,
     pair,
     busy,

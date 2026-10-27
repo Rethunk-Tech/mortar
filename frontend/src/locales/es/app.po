@@ -2394,6 +2394,10 @@ msgstr ""
 msgid "Choose a profile…"
 msgstr ""
 
+#: src/toasts/EarlierChanges.tsx
+msgid "Hide changes"
+msgstr ""
+
 #: src/commandPalette/CommandPalette.tsx
 msgid "Search actions and destinations"
 msgstr ""
@@ -3923,7 +3927,6 @@ msgid "Not found"
 msgstr ""
 
 #: src/sync/SyncOffers.tsx
-#: src/toasts/EarlierChanges.tsx
 msgid "Show diff"
 msgstr ""
 
@@ -5164,10 +5167,6 @@ msgstr ""
 msgid "Could not check the graphics setting"
 msgstr ""
 
-#: src/toasts/EarlierChanges.tsx
-msgid "{more, plural, one {Show # older change} other {Show older changes (# left)}}"
-msgstr ""
-
 #: src/saves/lackChips.tsx
 msgid "{name} (disabled)"
 msgstr ""
@@ -5704,6 +5703,10 @@ msgstr ""
 #: src/games/GameSelect.tsx
 #: src/launch/LaunchScreen.tsx
 msgid "Open {name}"
+msgstr ""
+
+#: src/toasts/EarlierChanges.tsx
+msgid "Show changes"
 msgstr ""
 
 #: src/launch/PlayInstances.tsx
