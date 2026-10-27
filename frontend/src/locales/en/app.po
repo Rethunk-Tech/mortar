@@ -679,10 +679,6 @@ msgstr "Show {name} in its profile"
 msgid "Could not publish the code"
 msgstr "Could not publish the code"
 
-#: src/develop/ProjectCard.tsx
-msgid "Pack for {source}"
-msgstr "Pack for {source}"
-
 #: src/launch/VanillaPlay.tsx
 msgid "More play options"
 msgstr "More play options"
@@ -826,10 +822,6 @@ msgstr "Could not apply the template"
 #: src/templates/TemplateDialogs.tsx
 msgid "Template name"
 msgstr "Template name"
-
-#: src/develop/ProjectCard.tsx
-msgid "Ready to upload: {path}"
-msgstr "Ready to upload: {path}"
 
 #: src/share/MethodPanes.tsx
 msgid "Link length"
@@ -2567,6 +2559,10 @@ msgstr "Export…"
 #: src/queue/QueueBody.tsx
 msgid "Choose a file"
 msgstr "Choose a file"
+
+#: src/develop/ProjectCard.tsx
+msgid "Upload to {source}…"
+msgstr "Upload to {source}…"
 
 #: src/game/NewProfileDialog.tsx
 #: src/groups/SavedGroupsSection.tsx
@@ -5466,7 +5462,7 @@ msgstr "Any game whose mods are files in a Mods folder"
 msgid "Search every site this game's mods come from at once. Each result installs into this profile from wherever its author published it."
 msgstr "Search every site this game's mods come from at once. Each result installs into this profile from wherever its author published it."
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/DevelopTab.tsx
 msgid "Game code…"
 msgstr "Game code…"
 
@@ -5890,10 +5886,6 @@ msgstr "Launching {name}"
 #: src/share/MethodPanes.tsx
 msgid "Could not enable sharing nearby"
 msgstr "Could not enable sharing nearby"
-
-#: src/develop/ProjectCard.tsx
-msgid "Upload…"
-msgstr "Upload…"
 
 #: src/game/ProfileMenuItems.tsx
 msgid "Already in {launcher}"

@@ -21,11 +21,13 @@ interface ProjectRun {
   running: 'build' | 'pack' | null
   build: BuildResult | null
   pack: PackResult | null
+  // A clean pack asks for the upload dialog; closing it clears this.
+  upload: boolean
   // When the last build finished, in ms.
   builtAt: number
 }
 
-const idle: ProjectRun = { running: null, build: null, pack: null, builtAt: 0 }
+const idle: ProjectRun = { running: null, build: null, pack: null, upload: false, builtAt: 0 }
 
 // Each project's last build and pack, by folder; a build the source watch starts lands here too.
 export const useDevRuns = create<{ byDir: Record<string, ProjectRun> }>(() => ({ byDir: {} }))
@@ -69,14 +71,17 @@ export async function buildProject(game: string, dir: string, quiet = false) {
   }
 }
 
-/** Builds the project in Release and checks the package against Thunderstore's rules. */
+export const closeUpload = (dir: string) => patch(dir, { upload: false })
+
+/** Builds the project in Release, checks the package against Thunderstore's rules, and asks to upload a clean one. */
 export async function packProject(game: string, dir: string) {
   if (runOf(useDevRuns.getState().byDir, dir).running) {
     return
   }
   patch(dir, { running: 'pack' })
   try {
-    patch(dir, { pack: await Pack(game, dir) })
+    const pack = await Pack(game, dir)
+    patch(dir, { pack, upload: pack.zip !== '' && (pack.issues ?? []).length === 0 })
   } catch (e) {
     if (errorKind(e) === 'unconfirmed') {
       useTrustAsk.setState({ ask: { game, dir, pack: true } })

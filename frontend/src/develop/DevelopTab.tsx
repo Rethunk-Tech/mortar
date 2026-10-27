@@ -1,7 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ButtonGroup, Menu, Typography } from '@mui/material'
-import { Check, ChevronDown, FolderPlus, GitBranch, Hammer, Plus, Users } from 'lucide-react'
+import { Check, ChevronDown, Code, FolderPlus, GitBranch, Hammer, Plus, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Add } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import { StartInstances } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
@@ -25,6 +25,7 @@ import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { refreshInfo, useProjectInfo } from './builds.ts'
 import { CloneDialog } from './CloneDialog.tsx'
+import { GameCodeDialog } from './GameCodeDialog.tsx'
 import { NewModDialog } from './NewModDialog.tsx'
 import { ProjectCard } from './ProjectCard.tsx'
 import { TrustDialog } from './TrustDialog.tsx'
@@ -115,6 +116,7 @@ export function DevelopTab({ game }: { game: string }) {
   const openId = useProfiles((s) => s.openId)
   const [creating, setCreating] = useState(false)
   const [cloning, setCloning] = useState(false)
+  const [reading, setReading] = useState(false)
   const [addMenu, setAddMenu] = useState<HTMLElement | null>(null)
   const [adding, run] = usePending()
   const addFolder = () =>
@@ -159,6 +161,15 @@ export function DevelopTab({ game }: { game: string }) {
       }}
     >
       <PageActions>
+        {here[0] ? (
+          <Button
+            variant="outlined"
+            startIcon={<Code size={14} />}
+            onClick={() => setReading(true)}
+          >
+            {t`Game code…`}
+          </Button>
+        ) : null}
         {here.length > 0 ? (
           <TestCopies game={game} profile={openId} dirs={here.map((p) => p.dir)} />
         ) : null}
@@ -244,6 +255,9 @@ export function DevelopTab({ game }: { game: string }) {
       <CloneDialog open={cloning} game={game} onClose={() => setCloning(false)} />
       <NewModDialog open={creating} game={game} onClose={() => setCreating(false)} />
       <TrustDialog />
+      {reading && here[0] ? (
+        <GameCodeDialog game={game} dir={here[0].dir} onClose={() => setReading(false)} />
+      ) : null}
     </Box>
   )
 }

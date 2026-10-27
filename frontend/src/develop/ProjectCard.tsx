@@ -13,7 +13,18 @@ import {
   MenuItem,
   Typography,
 } from '@mui/material'
-import { EllipsisVertical, Hammer } from 'lucide-react'
+import {
+  Bug,
+  EllipsisVertical,
+  FolderOpen,
+  Hammer,
+  Pencil,
+  ScrollText,
+  SquareCode,
+  Tag,
+  Trash2,
+  Upload,
+} from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type {
   GitState,
@@ -35,6 +46,7 @@ import { relativeWhen } from '../i18n/when.ts'
 import { LetterTile } from '../mods/LetterTile.tsx'
 import { persist } from '../settings/persist.ts'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
+import { MenuAction } from '../shell/MenuAction.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { MenuRule } from '../shell/TitleMenu.tsx'
 import { space } from '../theme/density.ts'
@@ -42,6 +54,7 @@ import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import {
   buildProject,
+  closeUpload,
   packProject,
   refreshInfo,
   runOf,
@@ -49,7 +62,6 @@ import {
   useProjectInfo,
 } from './builds.ts'
 import { EditProjectDialog } from './EditProjectDialog.tsx'
-import { GameCodeDialog } from './GameCodeDialog.tsx'
 import { showModLog, useModCosts } from './modCosts.ts'
 import { ReleaseDialog } from './ReleaseDialog.tsx'
 import { UploadDialog } from './UploadDialog.tsx'
@@ -94,7 +106,6 @@ function Outcome({ game, project }: { game: string; project: DevProject }) {
   const run = useDevRuns((s) => runOf(s.byDir, project.dir))
   const build = run.build
   const pack = run.pack
-  const [uploading, setUploading] = useState(false)
   return (
     <>
       {build && !build.ok ? (
@@ -105,26 +116,13 @@ function Outcome({ game, project }: { game: string; project: DevProject }) {
       {build && (build.problems ?? []).length > 0 ? (
         <Problems game={game} project={project} problems={build.problems ?? []} />
       ) : null}
-      {pack?.zip && (pack.issues ?? []).length === 0 ? (
-        <Alert
-          variant="compact"
-          severity="success"
-          action={
-            <Button size="small" onClick={() => setUploading(true)}>
-              {t`Upload…`}
-            </Button>
-          }
-        >
-          {t`Ready to upload: ${{ path: pack.zip }}`}
-        </Alert>
-      ) : null}
-      {uploading && pack?.zip ? (
+      {run.upload && pack?.zip ? (
         <UploadDialog
           game={game}
           dir={project.dir}
           name={project.name}
           zip={pack.zip}
-          onClose={() => setUploading(false)}
+          onClose={() => closeUpload(project.dir)}
         />
       ) : null}
       {pack && (pack.issues ?? []).length > 0 ? (
@@ -273,13 +271,11 @@ function MoreMenu({
   project,
   onRelease,
   onEdit,
-  onCode,
 }: {
   game: string
   project: DevProject
   onRelease: () => void
   onEdit: () => void
-  onCode: () => void
 }) {
   const { t } = useLingui()
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
@@ -326,32 +322,56 @@ function MoreMenu({
           {t`Build on save`}
         </MenuItem>
         <MenuRule />
-        <MenuItem onClick={act(onEdit)}>{t`Edit details…`}</MenuItem>
-        <MenuItem disabled={running !== null} onClick={act(() => packProject(game, project.dir))}>
-          {t`Pack for ${{ source: sourceLabel('thunderstore') }}`}
-        </MenuItem>
-        <MenuItem onClick={act(onRelease)}>{t`Release…`}</MenuItem>
-        <MenuItem onClick={act(onCode)}>{t`Game code…`}</MenuItem>
-        <MenuItem disabled={!info} onClick={act(() => info && showModLog(info))}>
-          {t`Show log`}
-        </MenuItem>
-        <MenuItem onClick={act(debug)}>{t`Start for debugging`}</MenuItem>
-        <MenuItem
+        <MenuAction
+          icon={<Pencil size={16} aria-hidden={true} />}
+          label={t`Edit details…`}
+          onClick={act(onEdit)}
+        />
+        <MenuAction
+          icon={<SquareCode size={16} aria-hidden={true} />}
+          label={t`Open in editor`}
           onClick={act(() =>
             OpenEditor(game, project.dir).catch(reportError(t`Could not open the editor`)),
           )}
-        >
-          {t`Open in editor`}
-        </MenuItem>
-        <MenuItem
+        />
+        <MenuAction
+          icon={<FolderOpen size={16} aria-hidden={true} />}
+          label={t`Open folder`}
           onClick={act(() =>
             OpenProject(game, project.dir).catch(reportError(t`Could not open the folder`)),
           )}
-        >
-          {t`Open folder`}
-        </MenuItem>
+        />
         <MenuRule />
-        <MenuItem onClick={act(() => setForgetting(true))}>{t`Remove from list…`}</MenuItem>
+        <MenuAction
+          icon={<Bug size={16} aria-hidden={true} />}
+          label={t`Start for debugging`}
+          onClick={act(debug)}
+        />
+        <MenuAction
+          icon={<ScrollText size={16} aria-hidden={true} />}
+          label={t`Show log`}
+          disabled={!info}
+          onClick={act(() => info && showModLog(info))}
+        />
+        <MenuRule />
+        <MenuAction
+          icon={<Tag size={16} aria-hidden={true} />}
+          label={t`Release…`}
+          onClick={act(onRelease)}
+        />
+        <MenuAction
+          icon={<Upload size={16} aria-hidden={true} />}
+          label={t`Upload to ${{ source: sourceLabel('thunderstore') }}…`}
+          disabled={running !== null}
+          onClick={act(() => packProject(game, project.dir))}
+        />
+        <MenuRule />
+        <MenuAction
+          icon={<Trash2 size={16} aria-hidden={true} />}
+          label={t`Remove from list…`}
+          tone="error"
+          onClick={act(() => setForgetting(true))}
+        />
       </Menu>
       <ConfirmationDialog
         open={forgetting}
@@ -414,7 +434,6 @@ export function ProjectCard({
   const info = useInfo(game, project.dir)
   const [releasing, setReleasing] = useState(false)
   const [editing, setEditing] = useState(false)
-  const [reading, setReading] = useState(false)
   if (info?.missing) {
     return <MissingCard game={game} project={project} />
   }
@@ -458,7 +477,6 @@ export function ProjectCard({
           project={project}
           onRelease={() => setReleasing(true)}
           onEdit={() => setEditing(true)}
-          onCode={() => setReading(true)}
         />
       </Box>
       <Costs game={game} profile={project.profile} info={info} />
@@ -470,9 +488,6 @@ export function ProjectCard({
           info={info}
           onClose={() => setEditing(false)}
         />
-      ) : null}
-      {reading ? (
-        <GameCodeDialog game={game} dir={project.dir} onClose={() => setReading(false)} />
       ) : null}
       {releasing ? (
         <ReleaseDialog

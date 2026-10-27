@@ -679,10 +679,6 @@ msgstr ""
 msgid "Could not publish the code"
 msgstr ""
 
-#: src/develop/ProjectCard.tsx
-msgid "Pack for {source}"
-msgstr ""
-
 #: src/launch/VanillaPlay.tsx
 msgid "More play options"
 msgstr ""
@@ -825,10 +821,6 @@ msgstr ""
 
 #: src/templates/TemplateDialogs.tsx
 msgid "Template name"
-msgstr ""
-
-#: src/develop/ProjectCard.tsx
-msgid "Ready to upload: {path}"
 msgstr ""
 
 #: src/share/MethodPanes.tsx
@@ -2566,6 +2558,10 @@ msgstr ""
 
 #: src/queue/QueueBody.tsx
 msgid "Choose a file"
+msgstr ""
+
+#: src/develop/ProjectCard.tsx
+msgid "Upload to {source}…"
 msgstr ""
 
 #: src/game/NewProfileDialog.tsx
@@ -5466,7 +5462,7 @@ msgstr ""
 msgid "Search every site this game's mods come from at once. Each result installs into this profile from wherever its author published it."
 msgstr ""
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/DevelopTab.tsx
 msgid "Game code…"
 msgstr ""
 
@@ -5889,10 +5885,6 @@ msgstr ""
 
 #: src/share/MethodPanes.tsx
 msgid "Could not enable sharing nearby"
-msgstr ""
-
-#: src/develop/ProjectCard.tsx
-msgid "Upload…"
 msgstr ""
 
 #: src/game/ProfileMenuItems.tsx
