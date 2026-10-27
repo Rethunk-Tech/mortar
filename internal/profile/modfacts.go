@@ -165,7 +165,11 @@ func lastBuilt(e Entry) string {
 	}
 	var newest time.Time
 	_ = filepath.WalkDir(e.Source.Folder, func(_ string, d fs.DirEntry, err error) error {
-		if err != nil || d.IsDir() {
+		if err != nil {
+			// An unreadable folder adds nothing; the rest are still read.
+			return fs.SkipDir
+		}
+		if d.IsDir() {
 			return nil
 		}
 		if info, err := d.Info(); err == nil && info.ModTime().After(newest) {
