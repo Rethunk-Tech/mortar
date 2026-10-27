@@ -15,10 +15,6 @@ Decided work, short enough to build cold. Delete an item in the change that land
 - top mods from the sources' APIs, cached in a data file under `web/src/data/` that `bun run site:refresh` writes (`web/scripts/refresh.ts`);
 - an optional hand-written note per game.
 
-### DevLaunch added for test copies
-
-Add the catalog entry (`devHelper` on lethal-company's `devTemplate` naming `Mortar-DevLaunch`) when DevLaunch is published to Thunderstore when DevLaunch is published to Thunderstore, with a `minVersion` per AGENTS.md. **Done when:** Test on a profile without the mod ends with every copy in one LAN lobby with no clicks.
-
 ### ConfigSync in the config editor
 
 Mortar-ConfigSync (`Rethunk-Tech/mortar-lc-configsync`) shares chosen settings from the host while players are connected, each Host enforced or Host recommended. The editor already marks the shared settings from the `.sync.json` sidecar (`internal/configsvc` `withSync`). Open:

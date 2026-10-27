@@ -280,7 +280,8 @@
                 "optional": true
               },
               { "package": "Mortar-ConfigSync", "param": "configSync", "values": ["true"] }
-            ]
+            ],
+            "devHelper": { "package": "Mortar-DevLaunch" }
           }
         }
       ],
