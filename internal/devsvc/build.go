@@ -22,7 +22,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
-// SourceEvent is emitted with the game when a watched project's source changes, so the window rebuilds it.
+// SourceEvent is emitted with the game and the changed folder when a watched project's source changes, so the window
+// rebuilds that project.
 const SourceEvent = "dev:source"
 
 const buildLogLines = 200

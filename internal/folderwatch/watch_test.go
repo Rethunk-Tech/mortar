@@ -52,7 +52,7 @@ func start(t *testing.T, targets func() []Target) *got {
 func TestBurstFiresOnce(t *testing.T) {
 	t.Parallel()
 	dir := t.TempDir()
-	g := start(t, func() []Target { return []Target{{DownloadsEvent, "stardew", dir}} })
+	g := start(t, func() []Target { return []Target{{Event: DownloadsEvent, Game: "stardew", Dir: dir}} })
 	for i := range 5 {
 		_ = os.WriteFile(filepath.Join(dir, string(rune('a'+i))+".zip"), nil, 0o600)
 	}
@@ -66,9 +66,9 @@ func TestBurstFiresOnce(t *testing.T) {
 func TestExtraFolderNamesItsFolder(t *testing.T) {
 	t.Parallel()
 	dir := t.TempDir()
-	g := start(t, func() []Target { return []Target{{ExtraFolderEvent, "lethal-company", dir}} })
+	g := start(t, func() []Target { return []Target{{Event: ExtraFolderEvent, Game: "lethal-company", Dir: dir}} })
 	_ = os.WriteFile(filepath.Join(dir, "MyMod.dll"), []byte("x"), 0o600)
-	want := ExtraFolderEvent + ":" + fmt.Sprint(ExtraFolder{Game: "lethal-company", Dir: dir})
+	want := ExtraFolderEvent + ":" + fmt.Sprint(Folder{Game: "lethal-company", Dir: dir})
 	if evs := g.wait(t, 1); evs[0] != want {
 		t.Fatalf("events = %v, want %s", evs, want)
 	}
@@ -77,7 +77,7 @@ func TestExtraFolderNamesItsFolder(t *testing.T) {
 func TestMissingFolderFiresWhenItAppears(t *testing.T) {
 	t.Parallel()
 	dir := filepath.Join(t.TempDir(), "Mods")
-	g := start(t, func() []Target { return []Target{{ModsFolderEvent, "stardew", dir}} })
+	g := start(t, func() []Target { return []Target{{Event: ModsFolderEvent, Game: "stardew", Dir: dir}} })
 	if err := os.Mkdir(dir, 0o700); err != nil {
 		t.Fatal(err)
 	}
@@ -94,7 +94,7 @@ func TestRetargetStopsOldFolder(t *testing.T) {
 	g := start(t, func() []Target {
 		mu.Lock()
 		defer mu.Unlock()
-		return []Target{{ExtraFolderEvent, "stardew", cur}}
+		return []Target{{Event: ExtraFolderEvent, Game: "stardew", Dir: cur}}
 	})
 	mu.Lock()
 	cur = b
@@ -112,7 +112,7 @@ func TestRetargetStopsOldFolder(t *testing.T) {
 func TestSlowDirectWriterWaitsForStableSize(t *testing.T) {
 	t.Parallel()
 	dir := t.TempDir()
-	g := start(t, func() []Target { return []Target{{DownloadsEvent, "stardew", dir}} })
+	g := start(t, func() []Target { return []Target{{Event: DownloadsEvent, Game: "stardew", Dir: dir}} })
 	f, err := os.Create(filepath.Clean(filepath.Join(dir, "big.zip")))
 	if err != nil {
 		t.Fatal(err)
@@ -136,7 +136,7 @@ func TestSlowDirectWriterWaitsForStableSize(t *testing.T) {
 func TestRenamedInFileIsAnnouncedAtOnce(t *testing.T) {
 	t.Parallel()
 	dir := t.TempDir()
-	g := start(t, func() []Target { return []Target{{DownloadsEvent, "stardew", dir}} })
+	g := start(t, func() []Target { return []Target{{Event: DownloadsEvent, Game: "stardew", Dir: dir}} })
 	part := filepath.Join(t.TempDir(), "x.part")
 	if err := os.WriteFile(part, []byte("zip"), 0o600); err != nil {
 		t.Fatal(err)
@@ -172,7 +172,7 @@ func TestRetargetKeepsPendingEvent(t *testing.T) {
 				_ = Run(ctx, Deps{Targets: func() []Target {
 					mu.Lock()
 					defer mu.Unlock()
-					return []Target{{DownloadsEvent, game, dir}}
+					return []Target{{Event: DownloadsEvent, Game: game, Dir: dir}}
 				}, Emit: g.emit, Quiet: c.quiet, Stable: 250 * time.Millisecond, Retarget: 50 * time.Millisecond})
 				close(done)
 			}()
@@ -208,7 +208,7 @@ func TestChangedSignalRetargetsAtOnce(t *testing.T) {
 		_ = Run(ctx, Deps{Targets: func() []Target {
 			mu.Lock()
 			defer mu.Unlock()
-			return []Target{{ExtraFolderEvent, "stardew", cur}}
+			return []Target{{Event: ExtraFolderEvent, Game: "stardew", Dir: cur}}
 		}, Emit: g.emit, Quiet: 50 * time.Millisecond, Retarget: time.Hour, Changed: changed})
 		close(done)
 	}()
@@ -221,4 +221,13 @@ func TestChangedSignalRetargetsAtOnce(t *testing.T) {
 	time.Sleep(100 * time.Millisecond)
 	_ = os.WriteFile(filepath.Join(b, "x"), nil, 0o600)
 	g.wait(t, 1)
+}
+
+func TestATargetSendsItsFolderWhenAsked(t *testing.T) {
+	if got := (Target{Event: "dev:source", Game: "lethal-company", Dir: "/p/src/Mod", WithDir: true}).data(); got != (Folder{Game: "lethal-company", Dir: "/p/src/Mod"}) {
+		t.Errorf("with the folder: %v", got)
+	}
+	if got := (Target{Event: DownloadsEvent, Game: "stardew", Dir: "/d"}).data(); got != "stardew" {
+		t.Errorf("game only: %v", got)
+	}
 }

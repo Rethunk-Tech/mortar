@@ -113,8 +113,12 @@ export function initDevWatch() {
   }
   listening = true
   Events.On('dev:source', (event) => {
-    const game = String(event.data)
+    const { game, dir } = event.data
+    const sep = dir.includes('\\') ? '\\' : '/'
     for (const p of useSettings.getState().games?.[game]?.devProjects ?? []) {
+      if (dir !== p.dir && !dir.startsWith(p.dir + sep)) {
+        continue
+      }
       if (p.watch) {
         buildProject(game, p.dir, true).catch(() => undefined)
       } else {

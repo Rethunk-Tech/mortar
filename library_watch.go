@@ -77,7 +77,7 @@ func watchLibraryFolders(ctx context.Context, home, dataDir string, store *setti
 				}
 				for g, dirs := range devsvc.WatchedSources(cur, game.Implemented()) {
 					for _, dir := range dirs {
-						out = append(out, folderwatch.Target{Event: devsvc.SourceEvent, Game: g, Dir: dir})
+						out = append(out, folderwatch.Target{Event: devsvc.SourceEvent, Game: g, Dir: dir, WithDir: true})
 					}
 				}
 				if rel, ok := game.ManifestModsFolder(id); ok {

@@ -21,16 +21,16 @@ const (
 	DownloadsEvent   = "library:downloads"
 )
 
-// ExtraFolder is ExtraFolderEvent's data: the folder that changed, so the window installs its mods.
-type ExtraFolder struct {
+// Folder is the data of an event that names its folder: the folder that changed, so the window acts on that one.
+type Folder struct {
 	Game string `json:"game"`
 	Dir  string `json:"dir"`
 }
 
-// data is what an event carries: the game, or for an extra mods folder, the folder too.
+// data is what an event carries: the game, and the folder too when the target asks for it.
 func (t Target) data() any {
-	if t.Event == ExtraFolderEvent {
-		return ExtraFolder{Game: t.Game, Dir: t.Dir}
+	if t.Event == ExtraFolderEvent || t.WithDir {
+		return Folder{Game: t.Game, Dir: t.Dir}
 	}
 	return t.Game
 }
@@ -40,6 +40,8 @@ type Target struct {
 	Event string
 	Game  string
 	Dir   string
+	// WithDir sends the folder with the game, as an extra mods folder's event always does.
+	WithDir bool
 }
 
 // Deps wires the watcher to the current targets and the event bus.
