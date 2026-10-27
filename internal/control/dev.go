@@ -10,20 +10,29 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
-// devAdd puts the mod project folder p.Path in the Develop tab, installing its builds into profile p.Profile.
+// devAdd puts the mod project folder p.Path in the Develop tab, installing its builds into profile p.Profile (an id or
+// a name).
 func (s *Services) devAdd(ctx context.Context, p Params) (settings.DevProject, error) {
+	id, err := s.optionalProfile(p.Game, p.Profile)
+	if err != nil {
+		return settings.DevProject{}, err
+	}
 	if s.Dev == nil {
 		return settings.DevProject{}, errors.New("mod development is unavailable")
 	}
-	return s.Dev.Add(ctx, p.Game, p.Path, p.Profile)
+	return s.Dev.Add(ctx, p.Game, p.Path, id)
 }
 
 // devClone clones the GitHub repository p.ID into the folder p.Path and adds it as devAdd does.
 func (s *Services) devClone(ctx context.Context, p Params) (settings.DevProject, error) {
+	id, err := s.optionalProfile(p.Game, p.Profile)
+	if err != nil {
+		return settings.DevProject{}, err
+	}
 	if s.Dev == nil {
 		return settings.DevProject{}, errors.New("mod development is unavailable")
 	}
-	return s.Dev.Clone(ctx, p.Game, p.ID, p.Path, p.Profile)
+	return s.Dev.Clone(ctx, p.Game, p.ID, p.Path, id)
 }
 
 // devList lists the game's mod projects.
