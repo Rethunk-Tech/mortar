@@ -124,13 +124,15 @@ export function CodeView({
           sx={{
             position: 'relative',
             height: virtualizer.getTotalSize(),
-            minWidth: '100%',
-            width: 'max-content',
+            width: '100%',
           }}
         >
           {virtualizer.getVirtualItems().map((v) => (
             <Box
               key={v.key}
+              // Long lines wrap, so each row is measured rather than assumed one line tall.
+              ref={virtualizer.measureElement}
+              data-index={v.index}
               onClick={onPick ? () => onPick(v.index) : undefined}
               sx={{
                 cursor: onPick ? 'pointer' : undefined,
@@ -138,11 +140,12 @@ export function CodeView({
                 position: 'absolute',
                 top: 0,
                 left: 0,
-                height: LINE_PX,
+                width: '100%',
                 lineHeight: `${LINE_PX}px`,
                 transform: `translateY(${v.start}px)`,
                 display: 'flex',
-                whiteSpace: 'pre',
+                whiteSpace: 'pre-wrap',
+                overflowWrap: 'anywhere',
                 tabSize: 4,
               }}
             >
@@ -150,8 +153,6 @@ export function CodeView({
                 component="span"
                 aria-hidden={true}
                 sx={{
-                  position: 'sticky',
-                  left: 0,
                   width: gutter,
                   flexShrink: 0,
                   pr: 1.5,
@@ -163,7 +164,7 @@ export function CodeView({
               >
                 {v.index + 1}
               </Box>
-              <Box component="span" sx={{ pl: 1.5, pr: 2 }}>
+              <Box component="span" sx={{ pl: 1.5, pr: 2, flex: 1, minWidth: 0 }}>
                 <Line text={lines[v.index] ?? ''} il={il} />
               </Box>
             </Box>

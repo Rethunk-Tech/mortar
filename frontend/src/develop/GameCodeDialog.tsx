@@ -3,6 +3,7 @@ import {
   Autocomplete,
   Box,
   Button,
+  CircularProgress,
   Drawer,
   MenuItem,
   TextField,
@@ -10,8 +11,8 @@ import {
   ToggleButtonGroup,
   Typography,
 } from '@mui/material'
-import { Code, Copy, FileSearch, Search } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { CircleAlert, Code, Copy, FileSearch, Search } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
 import type {
   Mapped,
   Usage,
@@ -35,7 +36,7 @@ import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
-import { reportError, reportUnexpected } from '../toasts/report.ts'
+import { type InlineError, inlineError, reportError, reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { CodeView } from './CodeView.tsx'
 import { hookSnippet } from './hook.ts'
@@ -110,6 +111,7 @@ function Source({
   const [has, setHas] = useState<boolean | null>(null)
   const [source, setSource] = useState('')
   const [mapped, setMapped] = useState<Mapped | null>(null)
+  const [failure, setFailure] = useState<InlineError | null>(null)
   const il = mode === 'il'
   const [installing, install] = usePending()
   useEffect(() => {
@@ -117,13 +119,14 @@ function Source({
       .then(setHas)
       .catch(() => setHas(false))
   }, [])
-  useEffect(() => {
+  const load = useCallback(() => {
     if (!has || type === '') {
       return
     }
     setSource('')
     setMapped(null)
-    const failed = reportError(t`Could not decompile ${{ type }}`)
+    setFailure(null)
+    const failed = (e: unknown) => setFailure(inlineError(e))
     if (mode === 'both') {
       DecompileMapped(game, dir, assembly, type).then(setMapped).catch(failed)
     } else {
@@ -131,7 +134,8 @@ function Source({
         .then(setSource)
         .catch(failed)
     }
-  }, [game, dir, assembly, type, mode, has, t])
+  }, [game, dir, assembly, type, mode, has])
+  useEffect(load, [load])
   if (has === false) {
     return (
       <EmptyState
@@ -166,15 +170,33 @@ function Source({
       </EmptyState>
     )
   }
-  if (mode === 'both') {
-    return mapped ? (
-      <MappedView mapped={mapped} line={declarationLine(mapped.csharp, type, method)} />
-    ) : (
-      <LoadingRow>{t`Matching the C# of ${{ type }} to its IL; the first type of an assembly takes a while…`}</LoadingRow>
+  if (failure) {
+    return (
+      <EmptyState
+        icon={<CircleAlert size={40} aria-hidden={true} />}
+        title={t`Could not decompile ${{ type }}`}
+        action={
+          <Button variant="outlined" onClick={load}>
+            {t`Try again`}
+          </Button>
+        }
+      >
+        {failure.details || failure.message}
+      </EmptyState>
     )
   }
-  if (source === '') {
-    return <LoadingRow>{t`Decompiling ${{ type }}…`}</LoadingRow>
+  if (mode === 'both' && mapped) {
+    return <MappedView mapped={mapped} line={declarationLine(mapped.csharp, type, method)} />
+  }
+  if (mode === 'both' || source === '') {
+    return (
+      <EmptyState
+        icon={<CircularProgress size={36} aria-hidden={true} />}
+        title={mode === 'both' ? t`Matching C# to IL` : t`Decompiling ${{ type }}`}
+      >
+        {mode === 'both' ? t`The first type of an assembly takes a while.` : ''}
+      </EmptyState>
+    )
   }
   return <CodeView source={source} il={il} line={declarationLine(source, type, method)} />
 }
@@ -205,7 +227,18 @@ function UsagesDrawer({
     Usages(game, dir, target).then(setUsages).catch(reportError(t`Could not find usages`))
   }, [open, game, dir, target, t])
   return (
-    <Drawer anchor="right" open={open} onClose={onClose}>
+    <Drawer
+      anchor="right"
+      open={open}
+      onClose={onClose}
+      // Above the full-window dialog it opens from, on the dialog's own solid surface.
+      sx={{ zIndex: (theme) => theme.zIndex.modal + 1 }}
+      slotProps={{
+        paper: {
+          sx: { bgcolor: 'var(--mortar-raised)', borderLeft: '1px solid var(--mortar-hairline)' },
+        },
+      }}
+    >
       <Box sx={{ width: USAGES_PX, p: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
         <Typography sx={{ fontWeight: 600 }}>{t`Usages`}</Typography>
         <Typography noWrap={true} sx={{ fontFamily: MONO, fontSize: 'small.fontSize' }}>

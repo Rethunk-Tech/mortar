@@ -401,6 +401,10 @@ msgstr ""
 msgid "{skipped} skipped"
 msgstr ""
 
+#: src/develop/GameCodeDialog.tsx
+msgid "The first type of an assembly takes a while."
+msgstr ""
+
 #: src/saves/SaveGapLine.tsx
 #: src/tips/TipBanner.tsx
 #: src/toasts/ToastHost.tsx
@@ -837,6 +841,10 @@ msgstr ""
 
 #: src/games/ListFooter.tsx
 msgid "No supported game was found in your launchers."
+msgstr ""
+
+#: src/develop/GameCodeDialog.tsx
+msgid "Matching C# to IL"
 msgstr ""
 
 #: src/shell/AppMenu.tsx
@@ -2628,10 +2636,6 @@ msgstr ""
 msgid "Send over your network"
 msgstr ""
 
-#: src/develop/GameCodeDialog.tsx
-msgid "Matching the C# of {type} to its IL; the first type of an assembly takes a while…"
-msgstr ""
-
 #: src/game/FarmMenuItem.tsx
 msgid "This profile matches {host}."
 msgstr ""
@@ -3086,10 +3090,6 @@ msgstr ""
 
 #: src/develop/DependencyKindDialog.tsx
 msgid "{mod} is an optional dependency of {name}"
-msgstr ""
-
-#: src/develop/GameCodeDialog.tsx
-msgid "Decompiling {type}…"
 msgstr ""
 
 #: src/toasts/HistoryButton.tsx
@@ -3850,6 +3850,10 @@ msgstr ""
 
 #: src/firstrun/ProfileStep.tsx
 msgid "From another mod manager"
+msgstr ""
+
+#: src/develop/GameCodeDialog.tsx
+msgid "Try again"
 msgstr ""
 
 #: src/queue/QueueBody.tsx
@@ -4974,6 +4978,10 @@ msgstr ""
 
 #: src/share/ImportProblems.tsx
 msgid "Some files could not be checked against {source}, so a few may differ from what was shared."
+msgstr ""
+
+#: src/develop/GameCodeDialog.tsx
+msgid "Decompiling {type}"
 msgstr ""
 
 #: src/shell/FlatpakGrant.tsx

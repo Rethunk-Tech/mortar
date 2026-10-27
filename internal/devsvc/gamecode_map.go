@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -73,6 +74,9 @@ func (s *Service) withPDB(ctx context.Context, tool, path string) (string, error
 	}
 	body, err := fsx.ReadFile(path)
 	if err != nil {
+		return "", err
+	}
+	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return "", err
 	}
 	if err := fsx.WriteFile(dll, body, 0o600); err != nil {
