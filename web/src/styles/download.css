@@ -9,7 +9,7 @@
   background: var(--raised);
   border: 1px solid var(--line);
   border-radius: 18px;
-  padding: 28px 22px;
+  padding: 28px 22px 22px;
   text-align: center;
   display: flex;
   flex-direction: column;
