@@ -2628,6 +2628,10 @@ msgstr ""
 msgid "Send over your network"
 msgstr ""
 
+#: src/develop/GameCodeDialog.tsx
+msgid "Matching the C# of {type} to its IL; the first type of an assembly takes a while…"
+msgstr ""
+
 #: src/game/FarmMenuItem.tsx
 msgid "This profile matches {host}."
 msgstr ""
@@ -6047,6 +6051,10 @@ msgstr ""
 msgid "Pick the computer showing the code, then type it."
 msgstr ""
 
+#: src/develop/GameCodeDialog.tsx
+msgid "Side by side"
+msgstr ""
+
 #: src/groups/useSavedGroups.ts
 msgid "Could not read saved groups"
 msgstr ""
@@ -6217,6 +6225,10 @@ msgstr ""
 
 #: src/share/MethodPanes.tsx
 msgid "Export as {source} collection draft…"
+msgstr ""
+
+#: src/develop/GameCodeDialog.tsx
+msgid "Type two letters or more"
 msgstr ""
 
 #: src/browse/BrowseShow.tsx
@@ -6412,6 +6424,10 @@ msgstr ""
 #: src/browse/CardProgress.tsx
 #: src/queue/QueueBody.tsx
 msgid "Installing"
+msgstr ""
+
+#: src/develop/GameCodeDialog.tsx
+msgid "Usages"
 msgstr ""
 
 #: src/groups/ApplySavedGroupToProfile.tsx

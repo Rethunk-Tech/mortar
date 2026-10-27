@@ -3,10 +3,10 @@ import { Box, Dialog, IconButton } from '@mui/material'
 import { ArrowLeft, X } from 'lucide-react'
 import { type ReactNode, useId } from 'react'
 
-export type DialogSize = 'sm' | 'md' | 'lg' | 'xl'
+export type DialogSize = 'sm' | 'md' | 'lg' | 'xl' | 'full'
 export type DialogTone = 'neutral' | 'warning' | 'danger'
 
-const WIDTH: Record<DialogSize, number> = { sm: 480, md: 560, lg: 760, xl: 1180 }
+const WIDTH: Record<Exclude<DialogSize, 'full'>, number> = { sm: 480, md: 560, lg: 760, xl: 1180 }
 const TONE_COLOR: Record<DialogTone, string> = {
   neutral: 'var(--mortar-accent-ink)',
   warning: 'warning.main',
@@ -130,6 +130,7 @@ export function AppDialog({
   height,
   flush = false,
   tabs,
+  actions,
   children,
 }: {
   open: boolean
@@ -151,6 +152,8 @@ export function AppDialog({
   flush?: boolean
   // Tabs that switch the body, attached under the header and drawn as its dividing line.
   tabs?: ReactNode
+  // Controls in the header row between the title and the close button.
+  actions?: ReactNode
   children?: ReactNode
 }) {
   const { t } = useLingui()
@@ -166,10 +169,15 @@ export function AppDialog({
         }
       }}
       maxWidth={false}
+      fullScreen={size === 'full'}
       aria-labelledby={titleId}
       slotProps={{
         paper: {
-          sx: [frameSx, { width: WIDTH[size] }, height === undefined ? {} : { height }],
+          sx: [
+            frameSx,
+            size === 'full' ? {} : { width: WIDTH[size] },
+            height === undefined ? {} : { height },
+          ],
         },
       }}
     >
@@ -188,6 +196,7 @@ export function AppDialog({
           </h2>
           {subtitle ? <p className="app-dialog-subtitle">{subtitle}</p> : null}
         </div>
+        {actions}
         {closable && closeButton ? (
           <IconButton aria-label={t`Close`} onClick={onClose} size="small" sx={{ mr: -1 }}>
             <X size={18} />

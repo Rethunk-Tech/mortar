@@ -1,19 +1,25 @@
 import { useLingui } from '@lingui/react/macro'
 import {
+  Autocomplete,
   Box,
   Button,
-  IconButton,
+  Drawer,
   MenuItem,
+  TextField,
   ToggleButton,
   ToggleButtonGroup,
   Typography,
 } from '@mui/material'
-import { Code, Copy, FileSearch } from 'lucide-react'
-import { type ReactNode, useEffect, useState } from 'react'
-import type { Usage } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
+import { Code, Copy, FileSearch, Search } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import type {
+  Mapped,
+  Usage,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import {
   Assemblies,
   Decompile,
+  DecompileMapped,
   GameCode,
   HasDecompiler,
   InstallDecompiler,
@@ -23,11 +29,9 @@ import type { Member } from '../../bindings/github.com/Rethunk-Tech/mortar/inter
 import { ILSPY, MONOMOD } from '../brand/productNames.ts'
 import { copyText } from '../share/copyText.ts'
 import { AppDialog, ToneIcon } from '../shell/dialog/AppDialog.tsx'
-import { SelectField } from '../shell/dialog/FormDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
-import { SearchField } from '../shell/SearchField.tsx'
-import { Tooltip } from '../shell/Tooltip.tsx'
+import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
@@ -35,6 +39,7 @@ import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { CodeView } from './CodeView.tsx'
 import { hookSnippet } from './hook.ts'
+import { MappedView } from './MappedView.tsx'
 
 // A constructor's decompiled declaration is named after its type, which a search for ".ctor" cannot find.
 const CONSTRUCTOR_NAME = /^\.c?ctor$/
@@ -42,6 +47,13 @@ const TYPE_PARTS = /[.+]/
 
 // Typing settles for this long before the game's members are searched.
 const SEARCH_DELAY_MS = 200
+const SEARCH_PX = 420
+const ASSEMBLY_PX = 240
+const USAGES_PX = 420
+const CSHARP = 'C#'
+const IL = 'IL'
+
+type CodeMode = 'cs' | 'il' | 'both'
 
 function useHits(game: string, dir: string, assembly: string, query: string) {
   const [hits, setHits] = useState<Member[]>([])
@@ -62,54 +74,6 @@ function useHits(game: string, dir: string, assembly: string, query: string) {
     return () => clearTimeout(timer)
   }, [game, dir, assembly, query])
   return { hits, error }
-}
-
-function HitRow({ hit, selected, onPick }: { hit: Member; selected: boolean; onPick: () => void }) {
-  const { t } = useLingui()
-  return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 0.5,
-        px: 1,
-        borderRadius: '6px',
-        bgcolor: selected ? 'var(--mortar-raised)' : undefined,
-      }}
-    >
-      <Box
-        component="button"
-        type="button"
-        onClick={onPick}
-        title={`${hit.type}::${hit.method}`}
-        sx={{
-          all: 'unset',
-          flex: 1,
-          minWidth: 0,
-          py: 0.5,
-          cursor: 'pointer',
-        }}
-      >
-        <Typography noWrap={true} sx={{ fontFamily: MONO, fontSize: 'small.fontSize' }}>
-          {hit.kind === 'field' ? hit.method : `${hit.method}(${(hit.params ?? []).join(', ')})`}
-        </Typography>
-        <Typography noWrap={true} sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
-          {hit.type}
-        </Typography>
-      </Box>
-      {hit.kind === 'field' ? null : (
-        <Tooltip title={t`Copy a ${{ library: MONOMOD }} hook`}>
-          <IconButton
-            size="small"
-            aria-label={t`Copy a ${{ library: MONOMOD }} hook`}
-            onClick={() => copyText(hookSnippet(hit), t`Hook copied`)}
-          >
-            <Copy size={14} />
-          </IconButton>
-        </Tooltip>
-      )}
-    </Box>
-  )
 }
 
 // The line declaring method in decompiled source: its name before a parameter list, on a line that is not a call.
@@ -133,18 +97,20 @@ function Source({
   assembly,
   type,
   method,
-  il,
+  mode,
 }: {
   game: string
   dir: string
   assembly: string
   type: string
   method: string
-  il: boolean
+  mode: CodeMode
 }) {
   const { t } = useLingui()
   const [has, setHas] = useState<boolean | null>(null)
   const [source, setSource] = useState('')
+  const [mapped, setMapped] = useState<Mapped | null>(null)
+  const il = mode === 'il'
   const [installing, install] = usePending()
   useEffect(() => {
     HasDecompiler()
@@ -156,10 +122,16 @@ function Source({
       return
     }
     setSource('')
-    Decompile(game, dir, assembly, type, il)
-      .then(setSource)
-      .catch(reportError(t`Could not decompile ${{ type }}`))
-  }, [game, dir, assembly, type, il, has, t])
+    setMapped(null)
+    const failed = reportError(t`Could not decompile ${{ type }}`)
+    if (mode === 'both') {
+      DecompileMapped(game, dir, assembly, type).then(setMapped).catch(failed)
+    } else {
+      Decompile(game, dir, assembly, type, mode === 'il')
+        .then(setSource)
+        .catch(failed)
+    }
+  }, [game, dir, assembly, type, mode, has, t])
   if (has === false) {
     return (
       <EmptyState
@@ -194,80 +166,136 @@ function Source({
       </EmptyState>
     )
   }
+  if (mode === 'both') {
+    return mapped ? (
+      <MappedView mapped={mapped} line={declarationLine(mapped.csharp, type, method)} />
+    ) : (
+      <LoadingRow>{t`Matching the C# of ${{ type }} to its IL; the first type of an assembly takes a while…`}</LoadingRow>
+    )
+  }
   if (source === '') {
     return <LoadingRow>{t`Decompiling ${{ type }}…`}</LoadingRow>
   }
   return <CodeView source={source} il={il} line={declarationLine(source, type, method)} />
 }
 
-// Lists the methods, in every assembly the view lists, that use the picked member; picking one opens it.
-function UsagesPanel({
+// The methods, in every assembly the view lists, that use the picked member; picking one opens it.
+function UsagesDrawer({
   game,
   dir,
   target,
+  open,
+  onClose,
   onOpen,
-  children,
 }: {
   game: string
   dir: string
   target: string
+  open: boolean
+  onClose: () => void
   onOpen: (u: Usage) => void
-  children: ReactNode
 }) {
   const { t } = useLingui()
   const [usages, setUsages] = useState<Usage[] | null>(null)
-  const [finding, find] = usePending()
+  useEffect(() => {
+    if (!open || target === '') {
+      return
+    }
+    setUsages(null)
+    Usages(game, dir, target).then(setUsages).catch(reportError(t`Could not find usages`))
+  }, [open, game, dir, target, t])
   return (
-    <Box sx={{ px: 2, pt: 1.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-        <Button
-          size="small"
-          variant="outlined"
-          disabled={target === '' || finding}
-          onClick={() =>
-            find(async () => setUsages(await Usages(game, dir, target)), {
-              errorTitle: t`Could not find usages`,
-            })
-          }
-        >
-          {finding ? t`Finding usages…` : t`Find usages`}
-        </Button>
-        <Box sx={{ flex: 1 }} />
-        {children}
-      </Box>
-      {usages === null ? null : (
-        <Box sx={{ maxHeight: 160, overflowY: 'auto' }}>
-          {usages.length === 0 ? (
-            <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
-              {t`Nothing in these assemblies uses it.`}
+    <Drawer anchor="right" open={open} onClose={onClose}>
+      <Box sx={{ width: USAGES_PX, p: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <Typography sx={{ fontWeight: 600 }}>{t`Usages`}</Typography>
+        <Typography noWrap={true} sx={{ fontFamily: MONO, fontSize: 'small.fontSize' }}>
+          {target}
+        </Typography>
+        {usages === null ? <LoadingRow>{t`Finding usages…`}</LoadingRow> : null}
+        {usages?.length === 0 ? (
+          <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
+            {t`Nothing in these assemblies uses it.`}
+          </Typography>
+        ) : null}
+        {usages?.map((u) => (
+          <Box
+            key={`${u.assembly}|${u.caller}`}
+            component="button"
+            type="button"
+            onClick={() => onOpen(u)}
+            sx={{ all: 'unset', display: 'block', cursor: 'pointer', py: 0.25 }}
+          >
+            <Typography noWrap={true} sx={{ fontFamily: MONO, fontSize: 'small.fontSize' }}>
+              {u.caller}
             </Typography>
-          ) : null}
-          {usages.map((u) => (
-            <Box
-              key={`${u.assembly}|${u.caller}`}
-              component="button"
-              type="button"
-              onClick={() => onOpen(u)}
-              sx={{ all: 'unset', display: 'block', cursor: 'pointer', py: 0.25 }}
-            >
-              <Typography noWrap={true} sx={{ fontFamily: MONO, fontSize: 'small.fontSize' }}>
-                {u.caller}
-              </Typography>
-              <Typography
-                noWrap={true}
-                sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}
-              >
-                {u.label}
-              </Typography>
-            </Box>
-          ))}
-        </Box>
-      )}
-    </Box>
+            <Typography noWrap={true} sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
+              {u.label}
+            </Typography>
+          </Box>
+        ))}
+      </Box>
+    </Drawer>
   )
 }
 
-/** Search the game's code, read a type decompiled, and copy a hook for one of its methods. */
+const memberKey = (m: Member) => `${m.type}::${m.method}(${(m.params ?? []).join(',')})`
+
+// The search: hits drop down under it, a type or method on each; picking one opens it.
+function MemberSearch({
+  game,
+  dir,
+  assembly,
+  picked,
+  onPick,
+}: {
+  game: string
+  dir: string
+  assembly: string
+  picked: Member | null
+  onPick: (m: Member) => void
+}) {
+  const { t } = useLingui()
+  const [query, setQuery] = useState('')
+  const { hits, error } = useHits(game, dir, assembly, query)
+  return (
+    <Autocomplete
+      size="small"
+      sx={{ width: SEARCH_PX }}
+      options={hits}
+      value={picked}
+      inputValue={query}
+      filterOptions={(all) => all}
+      isOptionEqualToValue={(a, b) => memberKey(a) === memberKey(b)}
+      getOptionLabel={(m) => `${m.type}::${m.method}`}
+      getOptionKey={memberKey}
+      noOptionsText={error || t`Type two letters or more`}
+      onInputChange={(_, next, reason) => reason === 'input' && setQuery(next)}
+      onChange={(_, m) => m && onPick(m)}
+      renderOption={({ key, ...props }, m) => (
+        <Box component="li" key={key} {...props} sx={{ display: 'block !important' }}>
+          <Typography noWrap={true} sx={{ fontFamily: MONO, fontSize: 'small.fontSize' }}>
+            {m.kind === 'field' ? m.method : `${m.method}(${(m.params ?? []).join(', ')})`}
+          </Typography>
+          <Typography noWrap={true} sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
+            {m.type}
+          </Typography>
+        </Box>
+      )}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          placeholder={t`Type or method, such as player update`}
+          slotProps={{
+            ...params.slotProps,
+            htmlInput: { ...params.slotProps.htmlInput, 'aria-label': t`Search the game's code` },
+          }}
+        />
+      )}
+    />
+  )
+}
+
+/** Search the game's code, read a type decompiled as C#, IL or both side by side, and copy a hook for a method. */
 export function GameCodeDialog({
   game,
   dir,
@@ -278,13 +306,62 @@ export function GameCodeDialog({
   onClose: () => void
 }) {
   const { t } = useLingui()
-  const [query, setQuery] = useState('')
   const [picked, setPicked] = useState<Member | null>(null)
   const [assembly, setAssembly] = useState('')
-  const [il, setIl] = useState(false)
+  const [mode, setMode] = useState<CodeMode>('cs')
+  const [usages, setUsages] = useState(false)
   const assemblies =
     useLoaded(() => Assemblies(game, dir), [game, dir], null, reportUnexpected).data ?? []
-  const { hits, error } = useHits(game, dir, assembly, query)
+  const target = picked ? `${picked.type}::${picked.method}` : ''
+  const actions = (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, flexWrap: 'wrap' }}>
+      <TextField
+        select={true}
+        size="small"
+        value={assembly}
+        onChange={(e) => {
+          setAssembly(e.target.value)
+          setPicked(null)
+        }}
+        slotProps={{ select: { displayEmpty: true }, htmlInput: { 'aria-label': t`Assembly` } }}
+        sx={{ width: ASSEMBLY_PX }}
+      >
+        {assemblies.map((a, i) => (
+          <MenuItem key={a.path} value={i === 0 && a.group === 'game' ? '' : a.path}>
+            {a.label}
+          </MenuItem>
+        ))}
+      </TextField>
+      <MemberSearch game={game} dir={dir} assembly={assembly} picked={picked} onPick={setPicked} />
+      <ToggleButtonGroup
+        exclusive={true}
+        size="small"
+        value={mode}
+        onChange={(_, next: CodeMode | null) => next && setMode(next)}
+        aria-label={t`Code view`}
+      >
+        <ToggleButton value="cs">{CSHARP}</ToggleButton>
+        <ToggleButton value="il">{IL}</ToggleButton>
+        <ToggleButton value="both">{t`Side by side`}</ToggleButton>
+      </ToggleButtonGroup>
+      <Button
+        variant="outlined"
+        startIcon={<Search size={14} />}
+        disabled={target === ''}
+        onClick={() => setUsages(true)}
+      >
+        {t`Find usages`}
+      </Button>
+      <TipIconButton
+        label={t`Copy a ${{ library: MONOMOD }} hook`}
+        size="medium"
+        disabled={!picked || picked.kind === 'field'}
+        onClick={() => picked && copyText(hookSnippet(picked), t`Hook copied`)}
+      >
+        <Copy size={16} />
+      </TipIconButton>
+    </Box>
+  )
   return (
     <AppDialog
       open={true}
@@ -295,91 +372,33 @@ export function GameCodeDialog({
           <Code size={22} />
         </ToneIcon>
       }
-      size="xl"
-      height="80vh"
+      size="full"
       flush={true}
+      actions={actions}
     >
-      <Box sx={{ display: 'grid', gridTemplateColumns: '380px minmax(0, 1fr)', height: '100%' }}>
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: space.gap,
-            p: 2,
-            minHeight: 0,
-            borderRight: '1px solid var(--mortar-hairline-muted)',
-          }}
-        >
-          <SelectField
-            label={t`Assembly`}
-            displayEmpty={true}
-            value={assembly}
-            onChange={(next) => {
-              setAssembly(next)
-              setPicked(null)
-            }}
-          >
-            {assemblies.map((a, i) => (
-              <MenuItem key={a.path} value={i === 0 && a.group === 'game' ? '' : a.path}>
-                {a.label}
-              </MenuItem>
-            ))}
-          </SelectField>
-          <SearchField
-            value={query}
-            onChange={setQuery}
-            label={t`Search the game's code`}
-            placeholder={t`Type or method, such as player update`}
-          />
-          {error ? (
-            <Typography role="alert" sx={{ fontSize: 'small.fontSize', color: 'error.light' }}>
-              {error}
-            </Typography>
-          ) : null}
-          <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
-            {hits.map((h) => (
-              <HitRow
-                key={`${h.type}::${h.method}(${(h.params ?? []).join(',')})`}
-                hit={h}
-                selected={picked === h}
-                onPick={() => setPicked(h)}
-              />
-            ))}
-          </Box>
-        </Box>
-        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 0, minWidth: 0 }}>
-          <UsagesPanel
-            key={picked ? `${picked.type}::${picked.method}` : ''}
-            game={game}
-            dir={dir}
-            target={picked ? `${picked.type}::${picked.method}` : ''}
-            onOpen={(u) => {
-              const [type = '', method = ''] = u.caller.split('::')
-              setAssembly(u.assembly === assemblies[0]?.path ? '' : u.assembly)
-              setPicked({ type, kind: 'method', method, static: false, void: true, params: [] })
-            }}
-          >
-            <ToggleButtonGroup
-              exclusive={true}
-              size="small"
-              value={il ? 'il' : 'cs'}
-              onChange={(_, next: string | null) => next && setIl(next === 'il')}
-              aria-label={t`Code view`}
-            >
-              <ToggleButton value="cs">C#</ToggleButton>
-              <ToggleButton value="il">IL</ToggleButton>
-            </ToggleButtonGroup>
-          </UsagesPanel>
-          <Source
-            game={game}
-            dir={dir}
-            assembly={assembly}
-            type={picked?.type ?? ''}
-            method={picked?.method ?? ''}
-            il={il}
-          />
-        </Box>
+      <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
+        <Source
+          game={game}
+          dir={dir}
+          assembly={assembly}
+          type={picked?.type ?? ''}
+          method={picked?.method ?? ''}
+          mode={mode}
+        />
       </Box>
+      <UsagesDrawer
+        game={game}
+        dir={dir}
+        target={target}
+        open={usages}
+        onClose={() => setUsages(false)}
+        onOpen={(u) => {
+          const [type = '', method = ''] = u.caller.split('::')
+          setAssembly(u.assembly === assemblies[0]?.path ? '' : u.assembly)
+          setPicked({ type, kind: 'method', method, static: false, void: true, params: [] })
+          setUsages(false)
+        }}
+      />
     </AppDialog>
   )
 }

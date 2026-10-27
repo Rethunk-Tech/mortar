@@ -2628,6 +2628,10 @@ msgstr "Could not pack the mod"
 msgid "Send over your network"
 msgstr "Send over your network"
 
+#: src/develop/GameCodeDialog.tsx
+msgid "Matching the C# of {type} to its IL; the first type of an assembly takes a while…"
+msgstr "Matching the C# of {type} to its IL; the first type of an assembly takes a while…"
+
 #: src/game/FarmMenuItem.tsx
 msgid "This profile matches {host}."
 msgstr "This profile matches {host}."
@@ -6047,6 +6051,10 @@ msgstr "Added to {launcher}"
 msgid "Pick the computer showing the code, then type it."
 msgstr "Pick the computer showing the code, then type it."
 
+#: src/develop/GameCodeDialog.tsx
+msgid "Side by side"
+msgstr "Side by side"
+
 #: src/groups/useSavedGroups.ts
 msgid "Could not read saved groups"
 msgstr "Could not read saved groups"
@@ -6218,6 +6226,10 @@ msgstr "Not enough disk space"
 #: src/share/MethodPanes.tsx
 msgid "Export as {source} collection draft…"
 msgstr "Export as {source} collection draft…"
+
+#: src/develop/GameCodeDialog.tsx
+msgid "Type two letters or more"
+msgstr "Type two letters or more"
 
 #: src/browse/BrowseShow.tsx
 #: src/launch/LaunchButtons.tsx
@@ -6413,6 +6425,10 @@ msgstr "FOMOD installer"
 #: src/queue/QueueBody.tsx
 msgid "Installing"
 msgstr "Installing"
+
+#: src/develop/GameCodeDialog.tsx
+msgid "Usages"
+msgstr "Usages"
 
 #: src/groups/ApplySavedGroupToProfile.tsx
 msgid "Pick a profile."

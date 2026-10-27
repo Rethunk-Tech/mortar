@@ -195,6 +195,11 @@ function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
       run: (p) => p.getByRole('button', { name: 'New mod…' }).first().click(),
     },
     {
+      name: 'develop-game-code',
+      setup: (p) => tab(p, 'Develop'),
+      run: (p) => p.getByRole('button', { name: 'Game code…' }).click(),
+    },
+    {
       name: 'develop-clone',
       // The add menu opens in setup, so the action is the dialog alone.
       setup: async (p) => {

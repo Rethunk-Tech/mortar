@@ -50,8 +50,26 @@ const Line = memo(function LineView({ text, il }: { text: string; il: boolean })
   )
 })
 
-/** Decompiled code with line numbers and highlighting, drawn a screenful at a time; Copy takes all of it. */
-export function CodeView({ source, il, line }: { source: string; il: boolean; line: number }) {
+const NO_MARKS: ReadonlySet<number> = new Set()
+const MARK_BG = 'color-mix(in srgb, var(--mortar-accent-ink) 18%, transparent)'
+
+/** Decompiled code with line numbers and highlighting, drawn a screenful at a time; Copy takes all of it. `line` is
+ * scrolled to the top when it changes, `follow` into view; `marked` lines are tinted and `onPick` hears a line clicked. */
+export function CodeView({
+  source,
+  il,
+  line,
+  follow = -1,
+  marked = NO_MARKS,
+  onPick,
+}: {
+  source: string
+  il: boolean
+  line: number
+  follow?: number
+  marked?: ReadonlySet<number>
+  onPick?: (line: number) => void
+}) {
   const { t } = useLingui()
   const scroller = useRef<HTMLDivElement | null>(null)
   const lines = useMemo(() => source.split('\n'), [source])
@@ -67,6 +85,11 @@ export function CodeView({ source, il, line }: { source: string; il: boolean; li
       virtualizer.scrollToIndex(line, { align: 'start' })
     }
   }, [line, virtualizer])
+  useEffect(() => {
+    if (follow >= 0) {
+      virtualizer.scrollToIndex(follow, { align: 'center' })
+    }
+  }, [follow, virtualizer])
   return (
     <Box sx={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex' }}>
       <Tooltip title={t`Copy code`}>
@@ -108,7 +131,10 @@ export function CodeView({ source, il, line }: { source: string; il: boolean; li
           {virtualizer.getVirtualItems().map((v) => (
             <Box
               key={v.key}
+              onClick={onPick ? () => onPick(v.index) : undefined}
               sx={{
+                cursor: onPick ? 'pointer' : undefined,
+                bgcolor: marked.has(v.index) ? MARK_BG : undefined,
                 position: 'absolute',
                 top: 0,
                 left: 0,
