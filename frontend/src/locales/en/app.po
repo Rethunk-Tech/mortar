@@ -1435,6 +1435,10 @@ msgstr "Usually starts in about {seconds} s"
 msgid "This file is from the same {source} page as {name}. Install it with that mod to update them as one, or as a separate mod."
 msgstr "This file is from the same {source} page as {name}. Install it with that mod to update them as one, or as a separate mod."
 
+#: src/develop/ProjectCard.tsx
+msgid "Add files"
+msgstr "Add files"
+
 #: src/groups/applied.ts
 msgid "Not downloaded yet: {names}"
 msgstr "Not downloaded yet: {names}"
@@ -2532,6 +2536,7 @@ msgid "The link was made for another {source} account than the one signed in."
 msgstr "The link was made for another {source} account than the one signed in."
 
 #: src/develop/CodeView.tsx
+#: src/develop/KindStep.tsx
 #: src/lan/PairedComputers.tsx
 msgid "Code"
 msgstr "Code"
@@ -2776,6 +2781,10 @@ msgstr "{name}: not in the form the template needs."
 #: src/shell/AppMenu.tsx
 msgid "Report a bug…"
 msgstr "Report a bug…"
+
+#: src/develop/KindStep.tsx
+msgid "Kind of mod"
+msgstr "Kind of mod"
 
 #: src/game/ProfileMenu.tsx
 #: src/game/ProfileMenuItems.tsx
@@ -3938,6 +3947,10 @@ msgstr "Last run: {frame} ms a frame"
 #: src/launchers/LauncherList.tsx
 msgid "Not found"
 msgstr "Not found"
+
+#: src/develop/NewModDialog.tsx
+msgid "Kind"
+msgstr "Kind"
 
 #: src/sync/SyncOffers.tsx
 msgid "Show diff"
@@ -5180,6 +5193,10 @@ msgstr "Drag {path} into the {source} issue to attach it."
 msgid "{count, plural, one {Import # profile} other {Import # profiles}}"
 msgstr "{count, plural, one {Import # profile} other {Import # profiles}}"
 
+#: src/develop/KindStep.tsx
+msgid "Files that {name} loads. No SDK needed."
+msgstr "Files that {name} loads. No SDK needed."
+
 #: src/launch/playStart.ts
 msgid "Could not check the graphics setting"
 msgstr "Could not check the graphics setting"
@@ -5584,6 +5601,10 @@ msgstr "No changes yet"
 #: src/i18n/reasonText.ts
 msgid "Used only by disabled mods: {names}"
 msgstr "Used only by disabled mods: {names}"
+
+#: src/develop/assetKinds.ts
+msgid "Could not read that kind of mod"
+msgstr "Could not read that kind of mod"
 
 #: src/commandPalette/paletteLabels.ts
 msgid "Paste a link…"
@@ -6024,6 +6045,10 @@ msgstr "Diagnostics"
 #: src/develop/draft.ts
 msgid "Name the account or organisation on {source}."
 msgstr "Name the account or organisation on {source}."
+
+#: src/develop/KindStep.tsx
+msgid "A plugin in C#, built with the .NET SDK from the game's template."
+msgstr "A plugin in C#, built with the .NET SDK from the game's template."
 
 #: src/game/Hero.tsx
 msgid "From the {source} collection \"{name}\""
@@ -6882,6 +6907,10 @@ msgstr "Quit Mortar"
 #: src/shell/BugReportDialog.tsx
 msgid "Copies the report for you to paste into a new post in the bug-reports forum on Mortar's {app}, and saves the diagnostics zip to attach."
 msgstr "Copies the report for you to paste into a new post in the bug-reports forum on Mortar's {app}, and saves the diagnostics zip to attach."
+
+#: src/develop/NewModDialog.tsx
+msgid "Installs into"
+msgstr "Installs into"
 
 #: src/develop/DependencyKindDialog.tsx
 msgid "{name} runs without it and uses it when it is there"

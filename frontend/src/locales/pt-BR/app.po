@@ -1435,6 +1435,10 @@ msgstr ""
 msgid "This file is from the same {source} page as {name}. Install it with that mod to update them as one, or as a separate mod."
 msgstr ""
 
+#: src/develop/ProjectCard.tsx
+msgid "Add files"
+msgstr ""
+
 #: src/groups/applied.ts
 msgid "Not downloaded yet: {names}"
 msgstr ""
@@ -2532,6 +2536,7 @@ msgid "The link was made for another {source} account than the one signed in."
 msgstr ""
 
 #: src/develop/CodeView.tsx
+#: src/develop/KindStep.tsx
 #: src/lan/PairedComputers.tsx
 msgid "Code"
 msgstr ""
@@ -2775,6 +2780,10 @@ msgstr ""
 
 #: src/shell/AppMenu.tsx
 msgid "Report a bug…"
+msgstr ""
+
+#: src/develop/KindStep.tsx
+msgid "Kind of mod"
 msgstr ""
 
 #: src/game/ProfileMenu.tsx
@@ -3937,6 +3946,10 @@ msgstr ""
 #: src/firstrun/FindStep.tsx
 #: src/launchers/LauncherList.tsx
 msgid "Not found"
+msgstr ""
+
+#: src/develop/NewModDialog.tsx
+msgid "Kind"
 msgstr ""
 
 #: src/sync/SyncOffers.tsx
@@ -5180,6 +5193,10 @@ msgstr ""
 msgid "{count, plural, one {Import # profile} other {Import # profiles}}"
 msgstr ""
 
+#: src/develop/KindStep.tsx
+msgid "Files that {name} loads. No SDK needed."
+msgstr ""
+
 #: src/launch/playStart.ts
 msgid "Could not check the graphics setting"
 msgstr ""
@@ -5583,6 +5600,10 @@ msgstr ""
 
 #: src/i18n/reasonText.ts
 msgid "Used only by disabled mods: {names}"
+msgstr ""
+
+#: src/develop/assetKinds.ts
+msgid "Could not read that kind of mod"
 msgstr ""
 
 #: src/commandPalette/paletteLabels.ts
@@ -6023,6 +6044,10 @@ msgstr ""
 
 #: src/develop/draft.ts
 msgid "Name the account or organisation on {source}."
+msgstr ""
+
+#: src/develop/KindStep.tsx
+msgid "A plugin in C#, built with the .NET SDK from the game's template."
 msgstr ""
 
 #: src/game/Hero.tsx
@@ -6881,6 +6906,10 @@ msgstr ""
 
 #: src/shell/BugReportDialog.tsx
 msgid "Copies the report for you to paste into a new post in the bug-reports forum on Mortar's {app}, and saves the diagnostics zip to attach."
+msgstr ""
+
+#: src/develop/NewModDialog.tsx
+msgid "Installs into"
 msgstr ""
 
 #: src/develop/DependencyKindDialog.tsx

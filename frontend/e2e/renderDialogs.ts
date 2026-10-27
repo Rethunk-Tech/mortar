@@ -86,12 +86,17 @@ function dialogKit(h: Helpers) {
     await inDialog(page, step)
   }
 
-  // New mod's later steps: a valid name and description open the second, the author's fields the third (features),
-  // and each Next from there the next step.
-  // Everything before the Next that opens step `steps`: the case measures only stepping into it.
+  // New mod's steps after the kind (a code mod): a valid name and description open the author's fields, those the
+  // features, and each Next from there the next step.
+  // Everything before the Next that opens step `steps` (0: the mod step, from the kind): the case measures only
+  // stepping into it.
   const newModTo = async (p: Page, steps: number) => {
     await tab(p, 'Develop')
     await button(p, /^New mod…/)
+    if (steps === 0) {
+      return
+    }
+    await inDialog(p, /^Next$/)
     const box = (name: string) =>
       p.getByRole('dialog').last().getByRole('textbox', { name }).first()
     await box('Mod name').fill('RenderCheck')
@@ -208,7 +213,24 @@ function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
       },
       run: (p) => p.getByRole('menuitem', { name: 'Clone from GitHub…' }).click(),
     },
+    {
+      ...dialog(
+        '',
+        (p) => inDialog(p, /^Next$/),
+        WIZARD_BUDGET,
+        async (p) => {
+          await newModTo(p, 0)
+          await p
+            .getByRole('dialog')
+            .last()
+            .getByRole('radio', { name: /^Suits/ })
+            .click()
+        },
+      ),
+      name: 'develop-new-mod-asset',
+    },
     ...[
+      ['mod', 0],
       ['author', 1],
       ['features', 2],
       ['dependencies', 3],

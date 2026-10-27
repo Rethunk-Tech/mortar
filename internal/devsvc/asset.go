@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -304,4 +305,39 @@ func (s *Service) packAssetProject(ctx context.Context, gameID string, p setting
 		r.Issues = append(r.Issues, "icon.png is still the placeholder; draw the mod its own")
 	}
 	return r, nil
+}
+
+// AssetForm is what the wizard asks for a mod of the asset kind id: the template's questions for its description,
+// author and team under the same ids (so remembered answers carry over), and the kind's packages to start with.
+func (s *Service) AssetForm(gameID, id string) (Form, error) {
+	kind, err := s.assetKind(gameID, id)
+	if err != nil {
+		return Form{}, err
+	}
+	recommends := []components.DevRecommend{{Package: kind.Dependency}}
+	for _, r := range kind.Recommends {
+		recommends = append(recommends, components.DevRecommend{Package: r})
+	}
+	return Form{Name: kind.Label, Recommends: recommends, Parameters: []Param{
+		{ID: "description", Label: "Description", Description: "What the mod does, in one line.", Kind: "string", Required: true, MaxLength: maxDescription},
+		{ID: "modAuthor", Label: "Author", Description: "Who holds the copyright.", Kind: "string", Required: true, Remember: true},
+		{ID: "team", Label: "Thunderstore team", Description: "The team the mod is published under.", Kind: "string", Required: true, Remember: true, Pattern: `^[A-Za-z0-9_]+$`},
+	}}, nil
+}
+
+// OpenAssetFolder shows the folder of an asset project that its loader reads, where the player adds files.
+func (s *Service) OpenAssetFolder(gameID, dir string) error {
+	p, err := s.project(gameID, dir)
+	if err != nil {
+		return err
+	}
+	kind, err := s.assetKind(gameID, p.Kind)
+	if err != nil {
+		return err
+	}
+	folder := filepath.Join(p.Dir, filepath.FromSlash(kind.Folder))
+	if err := os.MkdirAll(folder, 0o750); err != nil {
+		return err
+	}
+	return datadir.Open(folder)
 }

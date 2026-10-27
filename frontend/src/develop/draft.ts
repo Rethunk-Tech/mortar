@@ -29,6 +29,8 @@ export interface Draft {
   copyMods: boolean
   // One of devsvc.Licenses replacing the template's LICENSE; empty keeps it.
   license: string
+  // One of the game's asset kinds for a mod made only of files; empty is a code mod from the template.
+  kind: string
 }
 
 // The projects folder, and each remembered parameter as "param.<id>".
@@ -64,6 +66,7 @@ export function firstDraft(form: Form | null, remembered: Remembered): Draft {
     optional: (form?.recommends ?? []).filter((r) => r.optional).map((r) => r.package),
     copyMods: false,
     license: '',
+    kind: '',
   }
 }
 
@@ -96,10 +99,19 @@ function paramIssue(p: Param, raw: string): string {
   return ''
 }
 
-// The wizard's steps: the mod itself, the author details Mortar remembers, what the mod does, its dependencies, and
-// where the project goes.
-export const STEPS = ['mod', 'author', 'features', 'dependencies', 'project'] as const
+// The wizard's steps: the kind of mod, the mod itself, the author details Mortar remembers, what the mod does, its
+// dependencies, and where the project goes.
+const STEPS = ['kind', 'mod', 'author', 'features', 'dependencies', 'project'] as const
 export type Step = (typeof STEPS)[number]
+
+/** The steps this wizard shows: the kind only when the game offers asset kinds, the features only when the form asks
+ * any. */
+export function wizardSteps(hasKinds: boolean, form: Form | null): Step[] {
+  return STEPS.filter(
+    (s) =>
+      (s !== 'kind' || hasKinds) && (s !== 'features' || !form || stepParams(form, s).length > 0),
+  )
+}
 
 const isFeature = (p: Param) => p.kind === 'bool' || (p.kind === 'choice' && !p.multiple)
 
@@ -186,6 +198,9 @@ export function chosenDependencies(d: Draft, form: Form | null): string[] {
 export const validModName = (name: string) => MOD_NAME.test(name)
 
 export function stepIssue(d: Draft, form: Form | null, step: Step): string {
+  if (step === 'kind') {
+    return ''
+  }
   if (!form) {
     return i18n._(msg`Reading the template`)
   }

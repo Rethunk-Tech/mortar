@@ -15,6 +15,7 @@ import {
   Bug,
   EllipsisVertical,
   FolderOpen,
+  FolderPlus,
   Hammer,
   Pencil,
   ScrollText,
@@ -30,6 +31,7 @@ import type {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import {
   Forget,
+  OpenAssetFolder,
   OpenAt,
   OpenEditor,
   OpenProject,
@@ -277,6 +279,8 @@ function MoreMenu({
   const [forgetting, setForgetting] = useState(false)
   const [trashFolder, setTrashFolder] = useState(false)
   const info = useProjectInfo((s) => s.byDir[project.dir])
+  // A project made only of files has no build, plugin or log.
+  const code = !project.kind
   // One start with the game's Mono debugger open; the toast says where to attach.
   const debug = () =>
     StartDebugging(game, project.profile)
@@ -298,22 +302,26 @@ function MoreMenu({
         <EllipsisVertical size={18} />
       </IconButton>
       <Menu anchorEl={anchor} open={anchor !== null} onClose={() => setAnchor(null)}>
-        <MenuCheck
-          checked={Boolean(project.watch)}
-          label={t`Build on save`}
-          onClick={() =>
-            persist(
-              () => SetWatch(game, project.dir, !project.watch),
-              t`Could not save that setting`,
-            )
-          }
-        />
-        <MenuRule />
-        <MenuAction
-          icon={<Pencil size={16} aria-hidden={true} />}
-          label={t`Edit details…`}
-          onClick={act(onEdit)}
-        />
+        {code ? (
+          <MenuCheck
+            checked={Boolean(project.watch)}
+            label={t`Build on save`}
+            onClick={() =>
+              persist(
+                () => SetWatch(game, project.dir, !project.watch),
+                t`Could not save that setting`,
+              )
+            }
+          />
+        ) : null}
+        {code ? <MenuRule /> : null}
+        {code ? (
+          <MenuAction
+            icon={<Pencil size={16} aria-hidden={true} />}
+            label={t`Edit details…`}
+            onClick={act(onEdit)}
+          />
+        ) : null}
         <MenuAction
           icon={<SquareCode size={16} aria-hidden={true} />}
           label={t`Open in editor`}
@@ -328,18 +336,22 @@ function MoreMenu({
             OpenProject(game, project.dir).catch(reportError(t`Could not open the folder`)),
           )}
         />
-        <MenuRule />
-        <MenuAction
-          icon={<Bug size={16} aria-hidden={true} />}
-          label={t`Start for debugging`}
-          onClick={act(debug)}
-        />
-        <MenuAction
-          icon={<ScrollText size={16} aria-hidden={true} />}
-          label={t`Show log`}
-          disabled={!info}
-          onClick={act(() => info && showModLog(info))}
-        />
+        {code ? <MenuRule /> : null}
+        {code ? (
+          <MenuAction
+            icon={<Bug size={16} aria-hidden={true} />}
+            label={t`Start for debugging`}
+            onClick={act(debug)}
+          />
+        ) : null}
+        {code ? (
+          <MenuAction
+            icon={<ScrollText size={16} aria-hidden={true} />}
+            label={t`Show log`}
+            disabled={!info}
+            onClick={act(() => info && showModLog(info))}
+          />
+        ) : null}
         <MenuRule />
         <MenuAction
           icon={<Tag size={16} aria-hidden={true} />}
@@ -407,6 +419,20 @@ function BuildButton({
   const { t } = useLingui()
   const running = useDevRuns((s) => runOf(s.byDir, project.dir).running)
   const build = () => buildProject(game, project.dir).catch(() => undefined)
+  if (project.kind) {
+    // A project made only of files installs as it is; its button opens the folder the loader reads.
+    const open = () =>
+      OpenAssetFolder(game, project.dir).catch(reportError(t`Could not open the folder`))
+    return compact ? (
+      <TipIconButton label={t`Add files`} onClick={open}>
+        <FolderPlus size={18} />
+      </TipIconButton>
+    ) : (
+      <Button variant="outlined" startIcon={<FolderPlus size={16} />} onClick={open}>
+        {t`Add files`}
+      </Button>
+    )
+  }
   if (compact) {
     return (
       <TipIconButton label={t`Build`} disabled={running !== null} onClick={build}>

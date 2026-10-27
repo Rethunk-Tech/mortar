@@ -32,6 +32,7 @@ import { readStored, writeStored } from '../shell/useStoredState.ts'
 import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
+import { useAssetKinds } from './assetKinds.ts'
 import { buildProject } from './builds.ts'
 import { ChoicePicker } from './ChoicePicker.tsx'
 import { DependenciesStep } from './DependenciesStep.tsx'
@@ -45,12 +46,12 @@ import {
   REMEMBERED,
   rememberedOf,
   requirementIssue,
-  STEPS,
-  type Step,
   stepIssue,
   stepParams,
   validModName,
+  wizardSteps,
 } from './draft.ts'
+import { KindStep } from './KindStep.tsx'
 import { LicenseChart } from './LicenseChart.tsx'
 import { RepositoryChoice } from './RepositoryChoice.tsx'
 import { sdkSatisfies } from './sdk.ts'
@@ -299,7 +300,7 @@ function ProjectStep({ draft, owners, set }: { draft: Draft; owners: GitHubOwner
         </Box>
       </Field>
       <SelectField
-        label={t`Builds install into`}
+        label={draft.kind ? t`Installs into` : t`Builds install into`}
         value={draft.profile}
         onChange={(profile) => set({ profile })}
       >
@@ -338,9 +339,10 @@ function ProjectStep({ draft, owners, set }: { draft: Draft; owners: GitHubOwner
   )
 }
 
-function useStepLabels(): Record<Step, string> {
+function useStepLabels() {
   const { t } = useLingui()
   return {
+    kind: t`Kind`,
     mod: t`Mod`,
     author: t`Author`,
     features: t`Features`,
@@ -412,7 +414,10 @@ export function NewModDialog({
   const { t } = useLingui()
   const labels = useStepLabels()
   const [draft, setDraft] = useState<Draft>(() => firstDraft(null, {}))
-  const { tools, form, failed } = useWizardData(open, game, setDraft)
+  const { tools, form: templateForm, failed } = useWizardData(open, game, setDraft)
+  const { kinds, form: assetForm } = useAssetKinds(open, game, draft.kind, setDraft)
+  const form = draft.kind ? assetForm : templateForm
+  const steps = wizardSteps(kinds.length > 0, form)
   const [at, setAt] = useState(0)
   const openId = useProfiles((s) => s.openId)
   const [pending, run] = usePending()
@@ -422,10 +427,10 @@ export function NewModDialog({
     }
   }, [open])
   const set: Set = useCallback((next) => setDraft((d) => ({ ...d, ...next })), [])
-  const step = STEPS[at] ?? 'project'
-  const last = at === STEPS.length - 1
+  const step = steps[at] ?? 'project'
+  const last = at === steps.length - 1
   let issue = last ? draftIssue(draft, form) : stepIssue(draft, form, step)
-  if (failed) {
+  if (failed && !draft.kind) {
     issue = t`Could not read the mod template`
   }
   const create = () =>
@@ -434,7 +439,7 @@ export function NewModDialog({
         const project = await Create({
           ...draft,
           game,
-          kind: '',
+          kind: draft.kind,
           repo: draft.repo || draft.name,
           profile: draft.profile === NEW_PROFILE ? '' : draft.profile,
           copyFrom: draft.profile === NEW_PROFILE && draft.copyMods ? openId : '',
@@ -455,11 +460,13 @@ export function NewModDialog({
           .getState()
           .push({ kind: 'success', title: t`Started ${{ name: project.name }}`, body: project.dir })
         onClose()
-        await buildProject(game, project.dir)
+        if (!draft.kind) {
+          await buildProject(game, project.dir)
+        }
       },
       { errorTitle: t`Could not start the mod` },
     )
-  const subtitle = [t`Step ${{ step: at + 1 }} of ${{ count: STEPS.length }}`, labels[step]]
+  const subtitle = [t`Step ${{ step: at + 1 }} of ${{ count: steps.length }}`, labels[step]]
     .filter(Boolean)
     .join(' · ')
   return (
@@ -477,7 +484,14 @@ export function NewModDialog({
       onBack={at > 0 ? () => setAt(at - 1) : undefined}
       closeButton={true}
     >
-      <Prerequisites tools={tools} form={form} />
+      {draft.kind ? null : <Prerequisites tools={tools} form={templateForm} />}
+      {step === 'kind' ? (
+        <KindStep
+          kinds={kinds}
+          kind={draft.kind}
+          set={(kind) => set({ kind, dependencies: null })}
+        />
+      ) : null}
       {step === 'mod' ? <ModStep draft={draft} form={form} set={set} /> : null}
       {step === 'author' || step === 'features' ? (
         <Params
