@@ -3416,6 +3416,10 @@ msgstr ""
 msgid "Open in editor"
 msgstr ""
 
+#: src/develop/ProjectDependencies.tsx
+msgid "The mod depends on nothing but the loader."
+msgstr ""
+
 #: src/toasts/AvOverrideDialog.tsx
 msgid "Install {name} anyway?"
 msgstr ""
@@ -3486,6 +3490,7 @@ msgstr ""
 msgid "Unreal Engine games, with their mods from {source}"
 msgstr ""
 
+#: src/develop/ProjectDependencies.tsx
 #: src/toasts/HistoryButton.tsx
 #: src/updates/WhatsNewDialog.tsx
 msgid "New"
@@ -5061,6 +5066,10 @@ msgstr ""
 msgid "Last export {lastVersion}"
 msgstr ""
 
+#: src/develop/ProjectDependencies.tsx
+msgid "Untick one to drop it; new ones install into the mod's profile."
+msgstr ""
+
 #: src/commandPalette/paletteLabels.ts
 msgid "Switch to Performance"
 msgstr ""
@@ -6584,6 +6593,7 @@ msgstr ""
 
 #: src/browse/BrowseDetails.tsx
 #: src/develop/NewModDialog.tsx
+#: src/develop/ProjectDependencies.tsx
 msgid "Dependencies"
 msgstr ""
 

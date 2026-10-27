@@ -2,10 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Checkbox, MenuItem, TextField, Typography } from '@mui/material'
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { Search } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/browse/service.ts'
-import type {
-  Form,
-  ProjectInfo,
-} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
+import type { Form } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/source/models.ts'
 import { LetterTile } from '../mods/LetterTile.tsx'
 import { FormSection } from '../shell/dialog/FormDialog.tsx'
@@ -13,11 +10,13 @@ import { SearchField } from '../shell/SearchField.tsx'
 import { space } from '../theme/density.ts'
 import { useProjectInfo } from './builds.ts'
 import {
-  findPackage,
   knowPackage,
   NO_FILTER,
+  ownProject,
+  type Shown,
   THUNDERSTORE,
   useKnownPackages,
+  usePackageDetails,
 } from './dependencies.ts'
 import { chosenDependencies, type Draft, type Recommended, recommendations } from './draft.ts'
 
@@ -34,7 +33,7 @@ function answerLabel(form: Form | null, r: Recommended): string {
 }
 
 // Memoised: a package's details arriving, or one row's tick, redraws only that row.
-const PackageRow = memo(function PackageRowView({
+export const PackageRow = memo(function PackageRowView({
   id,
   item,
   why,
@@ -87,16 +86,6 @@ const PackageRow = memo(function PackageRowView({
   )
 })
 
-type Shown = Pick<Item, 'name' | 'author'> & { picture?: string }
-
-// A package that is one of the player's own projects shows as that project until the source lists it.
-function ownProject(byDir: Record<string, ProjectInfo>, id: string): Shown | undefined {
-  const info = Object.values(byDir).find((i) => `${i.team}-${i.name}` === id)
-  return (
-    info && { name: info.name, author: info.author, ...(info.icon ? { picture: info.icon } : {}) }
-  )
-}
-
 // One empty list, so clearing the hits when they are already clear sets nothing.
 const NO_HITS: Item[] = []
 
@@ -119,7 +108,7 @@ function useSearch(game: string, profile: string, query: string) {
 
 // The search for more packages, memoised so a package's details arriving above leave it alone. `taken` lists the ids
 // already shown, comma-joined so an unchanged list compares equal.
-const AddAnother = memo(function AddAnotherView({
+export const AddAnother = memo(function AddAnotherView({
   game,
   profile,
   taken,
@@ -185,14 +174,7 @@ export function DependenciesStep({
   const recs = recommendations(form, draft.values)
   const chosen = chosenDependencies(draft, form)
   const ids = [...new Set([...recs.map((r) => r.package), ...chosen])]
-  const missing = ids.filter((id) => !known[id]).join(',')
-  useEffect(() => {
-    for (const id of missing.split(',').filter(Boolean)) {
-      findPackage(game, profile, id)
-        .then((item) => item && knowPackage(item))
-        .catch(() => undefined)
-    }
-  }, [game, profile, missing])
+  usePackageDetails(game, profile, ids)
   // The rows and the search get stable handlers that call the latest, so their memo holds.
   const latest = useRef({ chosen, optional: draft.optional, set })
   latest.current = { chosen, optional: draft.optional, set }

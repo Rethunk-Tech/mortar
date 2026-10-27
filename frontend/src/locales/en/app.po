@@ -3416,6 +3416,10 @@ msgstr "This download's mod is not known to come from {repo}."
 msgid "Open in editor"
 msgstr "Open in editor"
 
+#: src/develop/ProjectDependencies.tsx
+msgid "The mod depends on nothing but the loader."
+msgstr "The mod depends on nothing but the loader."
+
 #: src/toasts/AvOverrideDialog.tsx
 msgid "Install {name} anyway?"
 msgstr "Install {name} anyway?"
@@ -3486,6 +3490,7 @@ msgstr "Build"
 msgid "Unreal Engine games, with their mods from {source}"
 msgstr "Unreal Engine games, with their mods from {source}"
 
+#: src/develop/ProjectDependencies.tsx
 #: src/toasts/HistoryButton.tsx
 #: src/updates/WhatsNewDialog.tsx
 msgid "New"
@@ -5061,6 +5066,10 @@ msgstr "What the person opening the link sees"
 msgid "Last export {lastVersion}"
 msgstr "Last export {lastVersion}"
 
+#: src/develop/ProjectDependencies.tsx
+msgid "Untick one to drop it; new ones install into the mod's profile."
+msgstr "Untick one to drop it; new ones install into the mod's profile."
+
 #: src/commandPalette/paletteLabels.ts
 msgid "Switch to Performance"
 msgstr "Switch to Performance"
@@ -6584,6 +6593,7 @@ msgstr "Suggested for {answer}"
 
 #: src/browse/BrowseDetails.tsx
 #: src/develop/NewModDialog.tsx
+#: src/develop/ProjectDependencies.tsx
 msgid "Dependencies"
 msgstr "Dependencies"
 

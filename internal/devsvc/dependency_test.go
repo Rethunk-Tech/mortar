@@ -169,3 +169,55 @@ func TestSyncReferencesADependencyAnotherProjectBuilds(t *testing.T) {
 		t.Fatalf("project:\n%s\nprops:\n%s", project, props)
 	}
 }
+
+func TestRemoveDependencyUndoesWhatAddingWrote(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	dir := t.TempDir()
+	write := func(rel, body string) {
+		t.Helper()
+		path := filepath.Join(dir, filepath.FromSlash(rel))
+		if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	project := withDependency(withDependency("<Project>\n  <ItemGroup>\n    <ThunderstoreDependency Include=\"BepInEx-BepInExPack\" Version=\"5.4.2305\" />\n  </ItemGroup>\n</Project>\n",
+		"AinaVT-LethalConfig", "1.4.6", true), "Evaisa-LethalLib", "1.1.1", false)
+	write("src/Mod/Mod.csproj", project)
+	if err := writeCompat(filepath.Join(dir, "src", "Mod"), "Mod", "AinaVT-LethalConfig", "ainavt.lc.lethalconfig"); err != nil {
+		t.Fatal(err)
+	}
+	write("Config.Build.user.props", "<Project>\n  <PropertyGroup>\n    <MortarDependency_AinaVT_LethalConfig>/store/x/</MortarDependency_AinaVT_LethalConfig>\n  </PropertyGroup>\n  <ItemGroup>\n    <MortarDependencyFolder Include=\"AinaVT-LethalConfig\" />\n  </ItemGroup>\n</Project>\n")
+	if err := svc.Settings.AddDevProject("lethal-company", settings.DevProject{Dir: dir, Name: "Mod"}); err != nil {
+		t.Fatal(err)
+	}
+	deps, err := svc.Dependencies("lethal-company", dir)
+	if err != nil || len(deps) != 2 || deps[0] != (Dependency{Package: "AinaVT-LethalConfig", Version: "1.4.6", Soft: true}) {
+		t.Fatalf("dependencies = %+v, %v", deps, err)
+	}
+	if err := svc.RemoveDependency("lethal-company", dir, "AinaVT-LethalConfig"); err != nil {
+		t.Fatal(err)
+	}
+	if err := svc.RemoveDependency("lethal-company", dir, "BepInEx-BepInExPack"); err == nil {
+		t.Error("the loader was dropped")
+	}
+	left, _ := fsx.ReadFile(filepath.Join(dir, "src", "Mod", "Mod.csproj"))
+	props, _ := fsx.ReadFile(filepath.Join(dir, "Config.Build.user.props"))
+	if string(left) != withDependency("<Project>\n  <ItemGroup>\n    <ThunderstoreDependency Include=\"BepInEx-BepInExPack\" Version=\"5.4.2305\" />\n  </ItemGroup>\n</Project>\n", "Evaisa-LethalLib", "1.1.1", false) ||
+		strings.Contains(string(props), "LethalConfig") || fsx.IsFile(filepath.Join(dir, "src", "Mod", "Compat", "LethalConfigCompat.cs")) {
+		t.Fatalf("project:\n%s\nprops:\n%s", left, props)
+	}
+	// A class the player wrote into is theirs, and stays.
+	src := filepath.Join(dir, "src", "Mod")
+	if err := writeCompat(src, "Mod", "Evaisa-LethalLib", "evaisa.lethallib"); err != nil {
+		t.Fatal(err)
+	}
+	edited := filepath.Join(src, "Compat", "LethalLibCompat.cs")
+	body, _ := fsx.ReadFile(edited)
+	write("src/Mod/Compat/LethalLibCompat.cs", strings.Replace(string(body), "// Calls into", "Register();\n        // Calls into", 1))
+	if err := dropUntouchedCompat(src, "Evaisa-LethalLib"); err != nil || !fsx.IsFile(edited) {
+		t.Fatalf("an edited compat class was dropped (%v)", err)
+	}
+}

@@ -40,7 +40,9 @@ type ProjectInfo struct {
 	Author   string `json:"author"`
 	Team     string `json:"team"`
 	// Package is the Thunderstore package (Team-Name) the project publishes, empty without a team.
-	Package     string   `json:"package"`
+	Package string `json:"package"`
+	// Version is the version the project builds, from Directory.Build.props.
+	Version     string   `json:"version"`
 	Description string   `json:"description"`
 	Categories  []string `json:"categories"`
 	// Released is the latest vX.Y.Z tag's version, empty before the first release.
@@ -227,6 +229,7 @@ func readInfo(dir, csproj string) (ProjectInfo, error) {
 	}
 	info.IDPrefix = strings.TrimSuffix(info.GUID, "."+info.Name)
 	info.Package = packageOf(dir)
+	info.Version = readProp(string(props), "Version")
 	for c := range strings.SplitSeq(readProp(string(project), "ThunderstoreCategories"), ";") {
 		if c = strings.TrimSpace(c); c != "" {
 			info.Categories = append(info.Categories, c)

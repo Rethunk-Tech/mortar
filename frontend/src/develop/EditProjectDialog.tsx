@@ -23,6 +23,8 @@ import {
 import { usePending } from '../toasts/usePending.ts'
 import { buildProject, useProjectInfo } from './builds.ts'
 import { ChoicePicker } from './ChoicePicker.tsx'
+import { ProjectDependencies } from './ProjectDependencies.tsx'
+import { saveDependencies, useDependencyRows } from './projectDependencies.ts'
 
 const MAX_DESCRIPTION = 250
 
@@ -65,17 +67,24 @@ export function EditProjectDialog({
   const [edit, setEdit] = useState<ProjectEdit>(() => editOf(info))
   const [saving, run] = usePending()
   const categories = useCategoryChoices(game, edit.categories ?? [])
-  const dirty = JSON.stringify(edit) !== JSON.stringify(editOf(info))
+  const details = JSON.stringify(edit) !== JSON.stringify(editOf(info))
+  const deps = useDependencyRows(game, dir)
+  const dirty = details || deps.dirty
   const set = (next: Partial<ProjectEdit>) => setEdit((e) => ({ ...e, ...next }))
   const renames = edit.name !== info.name || edit.idPrefix !== info.idPrefix
   const save = () =>
     run(
       async () => {
-        const next = await Edit(game, dir, edit)
+        // Dependencies first: a rename moves the project's files.
+        if (deps.dirty) {
+          await saveDependencies(game, dir, deps.loaded, deps.rows)
+        }
+        const next = details ? await Edit(game, dir, edit) : info
         useProjectInfo.setState((s) => ({ byDir: { ...s.byDir, [dir]: next } }))
         onClose()
-        // A new name builds to a new output folder; building it installs the renamed mod in place of the old one.
-        if (next.name !== info.name) {
+        // A new name builds to a new output folder, installing the renamed mod in place of the old one; changed
+        // dependencies are referenced and declared on the plugin as it builds.
+        if (next.name !== info.name || deps.dirty) {
           await buildProject(game, dir)
         }
       },
@@ -139,6 +148,7 @@ export function EditProjectDialog({
           onChange={(next) => set({ categories: next })}
         />
       </FormSection>
+      <ProjectDependencies game={game} rows={deps.rows} setRows={deps.setRows} />
       <FormSection title={t`Credits`}>
         <FieldRow>
           <TextInput label={t`Author`} value={edit.author} onChange={(author) => set({ author })} />
