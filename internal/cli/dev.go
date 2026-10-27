@@ -61,7 +61,7 @@ func (c *cmd) dev() error {
 }
 
 func (c *cmd) devList() error {
-	a, err := c.need(1, "a game")
+	a, err := c.need(2, "a game")
 	if err != nil {
 		return err
 	}

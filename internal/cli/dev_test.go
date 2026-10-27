@@ -24,7 +24,7 @@ func TestDevCommands(t *testing.T) {
 	if p := r.calls[0].params; r.code != 0 || r.calls[0].method != "dev.clone" || p.ID != "o/shop" || p.Path != "/work" {
 		t.Fatalf("clone: %+v", r)
 	}
-	if r = invoke(t, results, "dev", "list", "lethal-company"); r.code != 0 || r.out != "Shop\t/p/shop\n" {
+	if r = invoke(t, results, "dev", "list", "lethal-company"); r.code != 0 || r.out != "Shop\t/p/shop\n" || r.calls[0].params.Game != "lethal-company" {
 		t.Fatalf("list: %+v", r)
 	}
 	r = invoke(t, results, "dev", "remove", "lethal-company", "Shop")
