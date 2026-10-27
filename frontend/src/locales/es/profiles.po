@@ -1493,6 +1493,10 @@ msgstr ""
 msgid "Windowed resolution height"
 msgstr ""
 
+#: src/profiles/VortexFolderPrompt.tsx
+msgid "That folder has no {manager} data. Choose the one holding state.v2."
+msgstr ""
+
 #: src/profiles/GameModsDialog.tsx
 msgid "Import from the game's Mods folder"
 msgstr ""

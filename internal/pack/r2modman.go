@@ -11,6 +11,8 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
+	"slices"
 	"strings"
 	"time"
 
@@ -258,16 +260,22 @@ func DataDirs(extra string) []string {
 	if extra != "" && fsx.IsDir(extra) {
 		out = append(out, extra)
 	}
-	base, err := os.UserConfigDir()
-	if err != nil {
-		return out
+	var bases []string
+	if base, err := os.UserConfigDir(); err == nil {
+		bases = append(bases, base)
 	}
-	for _, p := range []string{
-		filepath.Join(base, "r2modmanPlus-local"),
-		filepath.Join(base, "Thunderstore Mod Manager", "DataFolder"),
-	} {
-		if fsx.IsDir(p) {
-			out = append(out, p)
+	// Inside the Flatpak the config dir is the sandbox's own; the host's ~/.config folders are granted read-only.
+	if home, err := os.UserHomeDir(); err == nil && runtime.GOOS == "linux" {
+		bases = append(bases, filepath.Join(home, ".config"))
+	}
+	for _, base := range bases {
+		for _, p := range []string{
+			filepath.Join(base, "r2modmanPlus-local"),
+			filepath.Join(base, "Thunderstore Mod Manager", "DataFolder"),
+		} {
+			if fsx.IsDir(p) && !slices.Contains(out, p) {
+				out = append(out, p)
+			}
 		}
 	}
 	return out

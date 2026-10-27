@@ -2308,6 +2308,10 @@ msgstr ""
 msgid "Mortar"
 msgstr ""
 
+#: src/share/ManagerPane.tsx
+msgid "That folder has no {manager} or {otherManager} data. Choose {otherManager}'s data folder, the one holding data.sqlite3, or {manager}'s."
+msgstr ""
+
 #: src/toasts/report.ts
 msgid "Open log"
 msgstr ""

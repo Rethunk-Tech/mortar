@@ -11,11 +11,14 @@ export function ManagerFolderPrompt({
   settingKey,
   label,
   note,
+  rejected,
   onChosen,
 }: {
   settingKey: string
   label: string
   note: ReactNode
+  // What to say when the folder holds none of the manager's data, the only reason the setting refuses one.
+  rejected: string
   onChosen: () => void
 }) {
   const { t } = useLingui()
@@ -25,7 +28,7 @@ export function ManagerFolderPrompt({
     try {
       await SetByKey(settingKey, dir, '')
     } catch (e) {
-      setError(inlineError(e))
+      setError(inlineError(e, rejected))
       return
     }
     setError(null)

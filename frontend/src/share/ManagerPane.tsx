@@ -201,6 +201,7 @@ export function useManagerPane({
             settingKey="packFolder"
             label={t`${{ manager: R2MODMAN }} or ${{ otherManager: GALE }} data folder`}
             note={t`${{ manager: R2MODMAN }} or ${{ otherManager: GALE }} in another folder?`}
+            rejected={t`That folder has no ${{ manager: R2MODMAN }} or ${{ otherManager: GALE }} data. Choose ${{ otherManager: GALE }}'s data folder, the one holding data.sqlite3, or ${{ manager: R2MODMAN }}'s.`}
             onChosen={loadFolders}
           />
           {offerVortexFolder(vortexSupported, external) ? (

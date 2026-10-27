@@ -25,6 +25,9 @@ finish-args:
   - --filesystem=xdg-download
   - --filesystem=/run/media
   - --filesystem=/mnt
+  # r2modman's and Gale's own data folders, read by Import for their profiles.
+  - --filesystem=xdg-config/r2modmanPlus-local:ro
+  - --filesystem=xdg-data/com.kesomannen.gale:ro
   # Desktop notifications and the tray icon talk to these names directly, not through a portal.
   - --talk-name=org.freedesktop.Notifications
   - --talk-name=org.kde.StatusNotifierWatcher

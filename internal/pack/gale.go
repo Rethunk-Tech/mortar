@@ -105,9 +105,29 @@ func GaleProfiles(ctx context.Context, db string) ([]GaleProfile, error) {
 		if err := rows.Scan(&p.Name, &p.Path, &p.Slug, &p.mods); err != nil {
 			return nil, err
 		}
+		p.Path = reachablePath(p.Path, p.Slug, filepath.Dir(db))
 		out = append(out, p)
 	}
 	return out, rows.Err()
+}
+
+// reachablePath is a profile's folder as this process can reach it. Gale records the absolute path it used, below
+// <data dir>/<game slug>; when that path is not here (a Flatpak reaching the data folder through the document portal,
+// or a data folder since moved) the same folder below the database's own folder is used.
+func reachablePath(path, slug, dataDir string) string {
+	if fsx.IsDir(path) {
+		return path
+	}
+	parts := strings.FieldsFunc(path, func(r rune) bool { return r == '/' || r == '\\' })
+	at := slices.Index(parts, slug)
+	if at < 0 {
+		return path
+	}
+	moved := filepath.Join(append([]string{dataDir}, parts[at:]...)...)
+	if fsx.IsDir(moved) {
+		return moved
+	}
+	return path
 }
 
 func (g Gale) find(ctx context.Context, path string) (GaleProfile, bool) {
@@ -186,24 +206,23 @@ func GaleDataDirs(extra string) []string {
 	if extra != "" && fsx.IsFile(filepath.Join(extra, galeDB)) {
 		out = append(out, extra)
 	}
-	var base string
+	var bases []string
 	if runtime.GOOS == "linux" {
-		if base = os.Getenv("XDG_DATA_HOME"); base == "" {
-			home, err := os.UserHomeDir()
-			if err != nil {
-				return out
-			}
-			base = filepath.Join(home, ".local", "share")
+		// Inside the Flatpak XDG_DATA_HOME is the sandbox's own folder; the host's ~/.local/share is granted read-only.
+		if xdg := os.Getenv("XDG_DATA_HOME"); xdg != "" {
+			bases = append(bases, xdg)
 		}
-	} else {
-		var err error
-		if base, err = os.UserConfigDir(); err != nil {
-			return out
+		if home, err := os.UserHomeDir(); err == nil {
+			bases = append(bases, filepath.Join(home, ".local", "share"))
 		}
+	} else if base, err := os.UserConfigDir(); err == nil {
+		bases = append(bases, base)
 	}
-	p := filepath.Join(base, galeAppID)
-	if st, err := fsx.Stat(p); err == nil && st.IsDir() {
-		out = append(out, p)
+	for _, base := range bases {
+		p := filepath.Join(base, galeAppID)
+		if st, err := fsx.Stat(p); err == nil && st.IsDir() && !slices.Contains(out, p) {
+			out = append(out, p)
+		}
 	}
 	return out
 }

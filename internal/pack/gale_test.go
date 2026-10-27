@@ -32,6 +32,8 @@ func TestGaleProfileDatabase(t *testing.T) {
 			{"enabled":false,"fullName":"Alice-MoreCompany-1.2.3"},
 			{"enabled":true,"name":"Mine","uuid":"x"}]')`,
 		`INSERT INTO profiles (name, path, game_slug, mods) VALUES ('Other', '/elsewhere', 'risk-of-rain-2', '[]')`,
+		// Recorded at a host path this process cannot reach, as a Flatpak sees a data folder opened through the portal.
+		`INSERT INTO profiles (name, path, game_slug, mods) VALUES ('Moved', '/mnt/gone/lethal-company/profiles/Moved', 'lethal-company', '[]')`,
 	} {
 		if _, err := db.ExecContext(t.Context(), q); err != nil {
 			t.Fatal(err)
@@ -56,7 +58,12 @@ func TestGaleProfileDatabase(t *testing.T) {
 	if d.Name != "Crew" || d.Game != "lc" || !slices.Equal(d.Packages, want) || len(d.Configs) != 1 || d.Configs[0].Path != "config/a.cfg" {
 		t.Fatalf("draft = %+v", d)
 	}
-	if all, err := GaleProfiles(t.Context(), dbFile); err != nil || len(all) != 2 {
+	moved := filepath.Join(dir, "lethal-company", "profiles", "Moved")
+	if err := os.MkdirAll(moved, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	all, err := GaleProfiles(t.Context(), dbFile)
+	if err != nil || len(all) != 3 || all[2].Path != moved || all[1].Path != "/elsewhere" {
 		t.Fatalf("profiles = %v, %v", all, err)
 	}
 }

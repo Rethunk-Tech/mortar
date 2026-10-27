@@ -36,6 +36,7 @@ export function VortexFolderPrompt({ game, onChosen }: { game: string; onChosen:
       settingKey="vortexFolder"
       label={t`${{ manager: VORTEX }} data folder`}
       note={note}
+      rejected={t`That folder has no ${{ manager: VORTEX }} data. Choose the one holding state.v2.`}
       onChosen={() => {
         load()
         onChosen()
