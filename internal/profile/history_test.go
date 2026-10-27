@@ -764,3 +764,34 @@ func TestAChangeReturnsTheIDOfItsHistoryEventWithoutWritingIt(t *testing.T) {
 		t.Fatal("profile.json holds lastChange")
 	}
 }
+
+// A mod in development gets a new build, at the same version, every time it's built; that's no change to undo.
+func TestHistorySkipsSameVersionFolderRebuilds(t *testing.T) {
+	t.Parallel()
+	dev := func(key, version string) Entry {
+		return Entry{Key: key, Source: Source{Kind: KindLocal, Folder: "/dev/ConfigSync/out"}, Mods: []Component{{ID: "bepinex:cs", Name: "ConfigSync", Version: version, Folder: "."}}}
+	}
+	if !rebuildsOnly([]Entry{dev("k1", "0.1.0")}, []Entry{dev("k2", "0.1.0")}) {
+		t.Fatal("a same-version rebuild was recorded")
+	}
+	if rebuildsOnly([]Entry{dev("k1", "0.1.0")}, []Entry{dev("k2", "0.2.0")}) {
+		t.Fatal("a new version from the folder was skipped")
+	}
+	off := dev("k2", "0.1.0")
+	off.Disabled = []mod.ID{"bepinex:cs"}
+	if rebuildsOnly([]Entry{dev("k1", "0.1.0")}, []Entry{off}) {
+		t.Fatal("a rebuild that also turned the mod off was skipped")
+	}
+	store := dev("k2", "0.1.0")
+	store.Source = Source{Kind: KindThunderstore}
+	if rebuildsOnly([]Entry{{Key: "k1", Source: Source{Kind: KindThunderstore}, Mods: store.Mods}}, []Entry{store}) {
+		t.Fatal("a store mod's new key was skipped")
+	}
+	moved := []Entry{dev("k1", "0.1.0"), {Key: "k3", Mods: []Component{{ID: "bepinex:other", Name: "Other", Version: "1", Folder: "."}}}}
+	if rebuildsOnly(moved, []Entry{moved[1], moved[0]}) {
+		t.Fatal("a load-order change was skipped")
+	}
+	if id, err := recordHistory(t.TempDir(), []Entry{dev("k1", "0.1.0")}, []Entry{dev("k2", "0.1.0")}, "", "", HistoryEvent{}, nil, 10); err != nil || id != "" {
+		t.Fatalf("a rebuild recorded event %q, %v", id, err)
+	}
+}

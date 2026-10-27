@@ -1027,6 +1027,9 @@ func recordHistory(dir string, before, after []Entry, state HistoryChange, kind 
 		ev, err := appendHistory(dir, ev, after, keep)
 		return ev.ID, err
 	}
+	if kind == "" && state == "" && rebuildsOnly(before, after) {
+		return "", nil
+	}
 	ev := classifyHistory(before, after)
 	if kind != "" {
 		ev.Kind = kind
@@ -1210,6 +1213,30 @@ func tagEdit(before, after []string) (HistoryChange, string) {
 		return ChangeUntagged, removed[0]
 	}
 	return ChangeTags, ""
+}
+
+// rebuildsOnly reports a change that only picked up new builds of folder mods at the same version, as a mod in
+// development gets on every build: nothing the player could want to undo.
+func rebuildsOnly(before, after []Entry) bool {
+	if len(before) != len(after) {
+		return false
+	}
+	rebuilt := false
+	for i, ae := range after {
+		be := before[i]
+		switch {
+		case entryIdentity(be) != entryIdentity(ae):
+			return false
+		case reflect.DeepEqual(be, ae):
+			continue
+		case ae.Source.Kind != KindLocal || ae.Source.Folder == "" || be.Source.Folder != ae.Source.Folder ||
+			entryVersion(be) != entryVersion(ae) || !slices.Equal(be.Disabled, ae.Disabled) ||
+			be.OverlayOff != ae.OverlayOff || be.Pinned != ae.Pinned || !slices.Equal(be.Tags, ae.Tags) || be.Note != ae.Note:
+			return false
+		}
+		rebuilt = true
+	}
+	return rebuilt
 }
 
 func indexEntries(es []Entry) map[string]Entry {
