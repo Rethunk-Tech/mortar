@@ -368,9 +368,15 @@ function npmNotices(inputs: string[]): NoticeEntry[] {
   return [...out.values()]
 }
 
-// The Go standard library is compiled into every build; its licence is the toolchain's own LICENSE.
+// The Go standard library is compiled into every build; its licence is the toolchain's own LICENSE, which a
+// distribution's package (Fedora's golang) keeps in its licences folder rather than in GOROOT.
 function goStdlibNotice(goroot: string, version: string): NoticeEntry {
-  const text = readFileSync(join(goroot, 'LICENSE'), 'utf8').trim()
+  const candidates = [join(goroot, 'LICENSE'), '/usr/share/licenses/golang/LICENSE']
+  const found = candidates.find((path) => existsSync(path))
+  if (!found) {
+    throw new Error(`gen-credits: no Go LICENSE in ${candidates.join(' or ')}`)
+  }
+  const text = readFileSync(found, 'utf8').trim()
   return {
     name: `Go standard library ${version}`,
     licence: classifyLicenceText(text),
@@ -395,7 +401,9 @@ async function gatherSources(): Promise<NoticeSources> {
     listGoDeps(),
     bundleInputs(),
   ])
-  const [goroot = '', goVersion = ''] = envOut.trim().split('\n')
+  const [goroot = '', version = ''] = envOut.trim().split('\n')
+  // A distribution's build appends its experiments (Fedora: go1.27.3-X:nodwarf5); the notice names the release.
+  const goVersion = version.split('-X:')[0] ?? version
   return { goroot, goVersion, goDeps, bundleInputs: inputs }
 }
 
