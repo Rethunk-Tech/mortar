@@ -11,6 +11,7 @@ import {
 } from '@mui/material'
 import { CircleHelp, RotateCcw } from 'lucide-react'
 import { type RefObject, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import type { HostValue } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/configsvc/models.ts'
 import type { Mod } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { openProfileOf, useProfiles } from '../../profiles/store.ts'
 import { useSettings } from '../../settings/store.ts'
@@ -25,15 +26,24 @@ import { PresetsButton } from '../ConfigPresets.tsx'
 import { localId } from '../dependents.ts'
 import { configApi } from './api.ts'
 import { showsOneFile, useConfigList } from './configList.ts'
+import { formatValue } from './convert.ts'
 import { filterFile, humanizeKey, isModified, modifiedCount } from './entries.ts'
+import { useHostValues } from './hostValues.ts'
 import { SectionNav } from './SectionNav.tsx'
 import { type Target, useTypedConfig } from './store.ts'
 import type { ConfigEntry } from './types.ts'
 import { EntryWidget } from './Widgets.tsx'
 
 const FILE_PICKER_WIDTH_PX = 260
-
-function EntryRow({ section, entry }: { section: string; entry: ConfigEntry }) {
+function EntryRow({
+  section,
+  entry,
+  host,
+}: {
+  section: string
+  entry: ConfigEntry
+  host: HostValue | undefined
+}) {
   const { t } = useLingui()
   const set = useTypedConfig((s) => s.set)
   const reset = useTypedConfig((s) => s.reset)
@@ -103,6 +113,15 @@ function EntryRow({ section, entry }: { section: string; entry: ConfigEntry }) {
           sx={{ gridColumn: '1 / -1', fontSize: 'small.fontSize', color: 'text.secondary' }}
         >
           {t`Applied when the game next starts`}
+        </Typography>
+      ) : null}
+      {host && host.value.toLowerCase() !== formatValue(entry.value).toLowerCase() ? (
+        <Typography
+          sx={{ gridColumn: '1 / -1', fontSize: 'small.fontSize', color: 'text.secondary' }}
+        >
+          {host.inUse
+            ? t`Host's value: ${{ value: host.value }}`
+            : t`Host recommends: ${{ value: host.value }}`}
         </Typography>
       ) : null}
       {entry.note ? (
@@ -274,6 +293,9 @@ function Sections({ shown }: { shown: ReturnType<typeof filterFile> | null }) {
   )
   const entries = (shown?.sections ?? []).reduce((n, s) => n + s.entries.length, 0)
   const long = useLongFile(list, names.length, entries)
+  const host = useHostValues(
+    (shown?.sections ?? []).some((s) => s.entries.some((e) => e.sync !== undefined)),
+  )
   return (
     <>
       <Box
@@ -305,7 +327,12 @@ function Sections({ shown }: { shown: ReturnType<typeof filterFile> | null }) {
               </Typography>
             ) : null}
             {section.entries.map((entry) => (
-              <EntryRow key={entry.key} section={section.name} entry={entry} />
+              <EntryRow
+                key={entry.key}
+                section={section.name}
+                entry={entry}
+                host={host.get(`${section.name}/${entry.key}`)}
+              />
             ))}
           </Box>
         ))}

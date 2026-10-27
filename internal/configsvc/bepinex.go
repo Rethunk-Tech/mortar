@@ -1,7 +1,9 @@
 package configsvc
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"path/filepath"
@@ -9,7 +11,9 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
@@ -300,4 +304,59 @@ func withSync(s Schema, path string) Schema {
 		}
 	}
 	return s
+}
+
+// HostValue is the value a ConfigSync host sent for a shared setting. InUse is false while the player keeps their own
+// value for a host recommendation.
+type HostValue struct {
+	Section string `json:"section"`
+	Key     string `json:"key"`
+	Value   string `json:"value"`
+	InUse   bool   `json:"inUse"`
+}
+
+// askHostFor bounds the bridge query the config editor repeats while it is open.
+const askHostFor = 2 * time.Second
+
+// HostValues asks the running game which values the host sent for the settings the mod behind file shares through
+// ConfigSync. There are none while the game is not running, before the bridge is up, or with a bridge older than
+// the query.
+func (s *Service) HostValues(game, profileID, file string) ([]HostValue, error) {
+	none := []HostValue{}
+	if s.Running == nil || !s.Running(game, profileID) || !strings.EqualFold(filepath.Ext(file), cfgExt) {
+		return none, nil
+	}
+	dir, err := s.Profiles.ProfileDir(game, profileID)
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), askHostFor)
+	defer cancel()
+	raw, err := bridge.Query(ctx, filepath.Join(dir, filepath.FromSlash(bridge.BepInEx.StateFile)), "configsync")
+	var rejected *bridge.RejectedError
+	if errors.Is(err, bridge.ErrNotRunning) || errors.Is(err, bridge.ErrNotReady) || errors.As(err, &rejected) {
+		return none, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return hostValuesOf(raw, strings.TrimSuffix(filepath.Base(file), filepath.Ext(file)))
+}
+
+// hostValuesOf picks the bridge's rows for one plugin: a BepInEx config file is named after its plugin's GUID.
+func hostValuesOf(raw json.RawMessage, guid string) ([]HostValue, error) {
+	var rows []struct {
+		Mod string `json:"mod"`
+		HostValue
+	}
+	if err := json.Unmarshal(raw, &rows); err != nil {
+		return nil, err
+	}
+	out := []HostValue{}
+	for _, r := range rows {
+		if r.Mod == guid {
+			out = append(out, r.HostValue)
+		}
+	}
+	return out, nil
 }

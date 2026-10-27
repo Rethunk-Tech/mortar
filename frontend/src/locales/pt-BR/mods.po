@@ -669,6 +669,10 @@ msgstr ""
 msgid "{count, plural, one {Overlaps with {by}: both change {detail}} other {Overlaps with {by}: all change {detail}}}"
 msgstr ""
 
+#: src/mods/typedConfig/ConfigPane.tsx
+msgid "Host's value: {value}"
+msgstr ""
+
 #: src/mods/describe.ts
 msgid "{name} is deprecated on {source}; its page points to {replacement}."
 msgstr ""
@@ -1783,6 +1787,10 @@ msgstr ""
 
 #: src/mods/Toolbar.tsx
 msgid "Add archive…"
+msgstr ""
+
+#: src/mods/typedConfig/ConfigPane.tsx
+msgid "Host recommends: {value}"
 msgstr ""
 
 #: src/mods/ModSections.tsx

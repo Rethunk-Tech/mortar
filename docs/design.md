@@ -15,13 +15,6 @@ Decided work, short enough to build cold. Delete an item in the change that land
 - top mods from the sources' APIs, cached in a data file under `web/src/data/` that `bun run site:refresh` writes (`web/scripts/refresh.ts`);
 - an optional hand-written note per game.
 
-### ConfigSync in the config editor
-
-Mortar-ConfigSync (`Rethunk-Tech/mortar-lc-configsync`) shares chosen settings from the host while players are connected, each Host enforced or Host recommended. The editor already marks the shared settings from the `.sync.json` sidecar (`internal/configsvc` `withSync`). Open:
-
-- **Live host values:** while the game runs, the BepInEx bridge answers a `configsync` query (`internal/bridge/bridge.go` `Query`) with the values the host sent, by mod and setting, read from ConfigSync by reflection, so the bridge needs no dependency on it. The editor shows "Host: <value>" under a shared setting whose value differs from the player's own, refreshed while the editor is open. Needs a bridge release.
-- **Done when:** with the game running on a client of a host whose value differs, the editor shows the host's value.
-
 ### Asset kinds for the Mortar loaders
 
 New mod's asset kinds (`assetKinds` in `components.source.json`) gain one per Mortar loader (`mortar-mods`: `mortar-lc-boombox`, `mortar-lc-posters`, `mortar-lc-television`), each added once its package is on Thunderstore (folders sit below `plugins/`, since BepInEx flattens any other top-level folder): Boombox (`plugins/Custom Songs`, `*.mp3` `*.ogg` `*.wav`, `Mortar-Boombox`), Posters (`plugins/LethalPosters/posters`, `*.png` `*.jpg`, `Mortar-Posters`, starter `README.txt` files in `plugins/LethalPosters/tips` and `plugins/LethalPaintings/paintings`), Television (`plugins/Television Videos`, `*.webm` `*.mp4`, `Mortar-Television`).

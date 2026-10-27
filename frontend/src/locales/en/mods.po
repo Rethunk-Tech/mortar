@@ -669,6 +669,10 @@ msgstr "Queued"
 msgid "{count, plural, one {Overlaps with {by}: both change {detail}} other {Overlaps with {by}: all change {detail}}}"
 msgstr "{count, plural, one {Overlaps with {by}: both change {detail}} other {Overlaps with {by}: all change {detail}}}"
 
+#: src/mods/typedConfig/ConfigPane.tsx
+msgid "Host's value: {value}"
+msgstr "Host's value: {value}"
+
 #: src/mods/describe.ts
 msgid "{name} is deprecated on {source}; its page points to {replacement}."
 msgstr "{name} is deprecated on {source}; its page points to {replacement}."
@@ -1784,6 +1788,10 @@ msgstr "Could not move the old files to trash"
 #: src/mods/Toolbar.tsx
 msgid "Add archive…"
 msgstr "Add archive…"
+
+#: src/mods/typedConfig/ConfigPane.tsx
+msgid "Host recommends: {value}"
+msgstr "Host recommends: {value}"
 
 #: src/mods/ModSections.tsx
 msgid "config.json, made by the mod"

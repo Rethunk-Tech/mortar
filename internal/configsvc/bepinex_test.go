@@ -168,3 +168,12 @@ func TestSyncSidecarMarksSharedEntries(t *testing.T) {
 		t.Fatalf("malformed sidecar gave %v", got)
 	}
 }
+
+func TestHostValuesKeepOnlyTheFilesPlugin(t *testing.T) {
+	raw := []byte(`[{"mod":"tech.rethunk.mortar.Dropship","section":"General","key":"Distance","value":"60","inUse":true},` +
+		`{"mod":"other.mod","section":"General","key":"Distance","value":"5","inUse":true}]`)
+	got, err := hostValuesOf(raw, "tech.rethunk.mortar.Dropship")
+	if err != nil || len(got) != 1 || got[0] != (HostValue{Section: "General", Key: "Distance", Value: "60", InUse: true}) {
+		t.Fatalf("hostValuesOf = %+v, %v", got, err)
+	}
+}
