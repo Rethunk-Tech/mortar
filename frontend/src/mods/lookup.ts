@@ -231,11 +231,10 @@ export const missingCount = (result: Result | null): number =>
   (result?.missing ?? []).filter(countsAsMissing).length
 
 // The one count the Problems chip, the sidebar badge, Home and the badges share: every item the Problems tab lists
-// except the harmless (cosmetic) asset conflicts, which that tab sets apart and which never need a fix.
+// except the low-priority ones it sets apart, harmless (cosmetic) asset conflicts and cleanup, which never need a fix.
 export const problemCount = (result: Result | null): number =>
   problemsOf(result).filter(counts).length +
   (result?.drift?.length ?? 0) +
-  (result?.cleanup?.length ?? 0) +
   (result?.compat?.length ?? 0) +
   redundantRowCount(result?.redundant ?? [])
 

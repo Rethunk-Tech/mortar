@@ -1,5 +1,8 @@
 import { expect, test } from 'bun:test'
-import type { Copy } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
+import type {
+  Copy,
+  Result,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import {
   type Drift,
   DriftKind,
@@ -300,6 +303,10 @@ test('optional and outside requirements are not counted as missing or as problem
   }
   expect(missingCount(result)).toBe(0)
   expect(problemCount(result)).toBe(0)
+  // Cleanup is low priority, set apart on the Problems tab like cosmetic conflicts, and never counted.
+  expect(problemCount({ ...result, cleanup: [{} as NonNullable<Result['cleanup']>[number]] })).toBe(
+    0,
+  )
 })
 
 test('a direct source shows its brand name, not its id', () => {

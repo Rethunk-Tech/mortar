@@ -245,11 +245,6 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
           row.missing.listed &&
           row.missing.where !== null,
       ) ?? []
-  const empty =
-    sections.filter((s) => s.id !== 'dismissed').length === 0 &&
-    cleanup.length + redundant.length + compat.length + replaced.length === 0 &&
-    !result.unknown
-
   const sectionExtras = (section: (typeof sections)[number]): { action?: SectionAction } => {
     if (section.id === 'missing' && installable.length > 0) {
       return {
@@ -289,6 +284,8 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
   const listed = tabs.filter((tab) => !FOOTER_SECTIONS.has(tab.id))
   const footer = tabs.filter((tab) => FOOTER_SECTIONS.has(tab.id))
   const openFooter = footer.find((tab) => tab.id === opened)
+  // Footer sections (cleanup, cosmetic and the like) are low priority, so with only those the tab reads as empty.
+  const empty = listed.length === 0 && !result.unknown
 
   return (
     <>
@@ -321,7 +318,9 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
         ) : null}
         {openFooter ? <ProblemGroup tab={openFooter} /> : null}
         {result.unknown ? <OfflineChecksNote /> : null}
-        {empty ? null : <CheckTimings timings={result.timings ?? []} at={problemsAt} />}
+        {listed.length + footer.length === 0 ? null : (
+          <CheckTimings timings={result.timings ?? []} at={problemsAt} />
+        )}
       </Box>
     </>
   )
