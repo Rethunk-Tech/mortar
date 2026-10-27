@@ -50,3 +50,22 @@ test('an implicit library that sorts before its requirer still nests beneath it'
     'thunderstore:FlipMods-ReservedItemSlotCore:1',
   ])
 })
+
+test('implicit mods follow their requirer into another group, and a group left empty is dropped', () => {
+  const groups = [
+    { key: 'problems', items: [row('Me.Bingo', ['Me.Detour5', 'Lib.Canvas'])] },
+    {
+      key: 'enabled',
+      items: [
+        row('Lib.Canvas', ['Lib.Wav'], true),
+        row('Lib.Detour', [], true),
+        row('Lib.Wav', [], true),
+      ],
+    },
+    { key: 'disabled', items: [row('Me.Detour5', ['Lib.Detour'])] },
+  ]
+  const nested = nestImplicit(groups)
+  expect(
+    nested.map((g) => `${g.key}=${g.items.map((r) => `${r.mod.id}:${r.depth ?? 0}`).join(',')}`),
+  ).toEqual(['problems=Me.Bingo:0,Lib.Canvas:1,Lib.Wav:2', 'disabled=Me.Detour5:0,Lib.Detour:1'])
+})

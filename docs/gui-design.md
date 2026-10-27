@@ -140,7 +140,7 @@ Code: `frontend/src/mods/ModsTab.tsx`. The profile's mods as a **Grid** or a **L
 
 **Group by** (`listGroupBy`) gives collapsible headers with counts in both views; collapse state is per game, and the top group's header stays pinned on a solid surface.
 - A mod with several tags appears under its first, which a tooltip says. Status takes the first match of Problems, Update available, Enabled, Disabled. Framework puts content packs under the framework they are for.
-- **Implicit mods** (`implicitModsView`): Always shown, Nested (under the first mod in its group that requires it) or Hidden (except while a search or Show › Implicit asks).
+- **Implicit mods** (`implicitModsView`): Always shown, Nested (under the first mod that requires it, in whichever group that mod is) or Hidden (except while a search or Show › Implicit asks).
 - **Install reason:** Explicit for a mod the player asked for, Implicit for one Mortar brought in for another. A download holding several mods has one main mod that takes the download's reason; the others read Implicit and offer no Mark items. Only **Mark explicit** and **Mark implicit** change it, each writing a history event. Removing mods with implicit leftovers nothing staying requires adds a checked "Also remove N libraries only these needed" to the confirm (Undo restores them).
 - **Mod groups** (`profile.json` `groups`): a header switch toggles every mod in the group; deleting a group keeps its mods.
 
