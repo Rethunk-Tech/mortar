@@ -11,6 +11,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // probeURL is a cheap address on each source's own host; any HTTP answer from it means the host is reachable.
@@ -82,8 +84,7 @@ func isNetwork(err error) bool {
 	if err == nil || errors.Is(err, context.Canceled) {
 		return false
 	}
-	var ne net.Error
-	return errors.Is(err, context.DeadlineExceeded) || errors.As(err, &ne)
+	return errors.Is(err, context.DeadlineExceeded) || usererr.IsNet(err)
 }
 
 // Record notes the outcome of a real request to source id. A nil err is a success; a network error marks the source

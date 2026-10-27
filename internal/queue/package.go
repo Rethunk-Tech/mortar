@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"net"
 	"os"
 	"slices"
 	"strings"
@@ -17,6 +16,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // closureTimeout bounds the community index refresh a package request may wait on.
@@ -210,8 +210,7 @@ func cdnFailure(ctx context.Context, err error) bool {
 	if ctx.Err() != nil {
 		return false
 	}
-	var netErr net.Error
-	return errors.Is(err, errStalled) || errors.As(err, &netErr)
+	return errors.Is(err, errStalled) || usererr.IsNet(err)
 }
 
 // fetchPackage downloads a Thunderstore package from the first of the CDNs that serves it, moving on after a

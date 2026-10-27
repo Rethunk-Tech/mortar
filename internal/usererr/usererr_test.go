@@ -44,6 +44,8 @@ func TestKindStdlib(t *testing.T) {
 		{syscall.ENOSPC, DiskFull},
 		{&net.OpError{Op: "dial", Err: errors.New("refused")}, Network},
 		{&net.DNSError{Name: "example", Err: "no such host"}, Network},
+		{&url.Error{Op: "Get", URL: "https://x", Err: &net.OpError{Op: "dial", Err: syscall.ECONNREFUSED}}, Network},
+		{&os.LinkError{Op: "rename", Old: "/var/tmp/a", New: "/home/u/a", Err: syscall.EXDEV}, Unknown},
 		{errors.New("plain"), Unknown},
 	}
 	for _, c := range cases {

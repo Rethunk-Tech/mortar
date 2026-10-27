@@ -113,16 +113,26 @@ func classify(err error) Kind {
 	if IsDiskFull(err) {
 		return DiskFull
 	}
-	if _, ok := errors.AsType[net.Error](err); ok {
-		return Network
-	}
-	if _, ok := errors.AsType[*net.OpError](err); ok {
-		return Network
-	}
-	if _, ok := errors.AsType[*net.DNSError](err); ok {
+	if IsNet(err) {
 		return Network
 	}
 	return Unknown
+}
+
+// IsNet reports whether err came from the network (a connection, DNS, or an HTTP client error). syscall.Errno has
+// Timeout and Temporary, so it satisfies net.Error: a bare one is a failed local call (a rename across drives).
+func IsNet(err error) bool {
+	if _, ok := errors.AsType[*net.OpError](err); ok {
+		return true
+	}
+	if _, ok := errors.AsType[*net.DNSError](err); ok {
+		return true
+	}
+	if _, ok := errors.AsType[syscall.Errno](err); ok {
+		return false
+	}
+	_, ok := errors.AsType[net.Error](err)
+	return ok
 }
 
 // IsDiskFull reports whether err is a write that ran out of space, on any platform.
