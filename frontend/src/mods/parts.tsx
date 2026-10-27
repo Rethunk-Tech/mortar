@@ -99,6 +99,8 @@ function RemoveDialogBody({ removing }: { removing: Mod[] }) {
     dependents.length > 0
       ? t`${plural({ count: dependents.length }, { one: '# mod needs this', other: '# mods need this' })}: ${{ names: listNames(dependents.map((m) => m.name)) }}`
       : ''
+  // A dialog with nothing past its heading draws no empty body under it.
+  const hasBody = removing.length > 1 || optional > 0 || needLine !== '' || unneeded.length > 0
   return (
     <AppDialog
       open={true}
@@ -156,39 +158,41 @@ function RemoveDialogBody({ removing }: { removing: Mod[] }) {
         </DialogFooter>
       }
     >
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-        {removing.length > 1 ? (
-          <Typography sx={{ color: 'text.secondary' }}>
-            {listNames(
-              removing.map((m) => m.name),
-              MAX_NAMED,
-            )}
-          </Typography>
-        ) : null}
-        {optional > 0 ? (
-          <Typography sx={{ color: 'text.secondary' }}>
-            {plural(
-              { count: optional },
-              {
-                one: 'Also removes # optional file that goes on top of it.',
-                other: 'Also removes # optional files that go on top of it.',
-              },
-            )}
-          </Typography>
-        ) : null}
-        {needLine ? <Typography sx={{ color: 'text.secondary' }}>{needLine}</Typography> : null}
-        {unneeded.length > 0 ? (
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={withUnneeded}
-                onChange={(e) => setWithUnneeded(e.target.checked)}
-              />
-            }
-            label={t`${plural({ count: unneeded.length }, { one: 'Also remove # library only this needed', other: 'Also remove # libraries only these needed' })}: ${{ names: listNames(unneeded.map((m) => m.name)) }}`}
-          />
-        ) : null}
-      </Box>
+      {hasBody ? (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          {removing.length > 1 ? (
+            <Typography sx={{ color: 'text.secondary' }}>
+              {listNames(
+                removing.map((m) => m.name),
+                MAX_NAMED,
+              )}
+            </Typography>
+          ) : null}
+          {optional > 0 ? (
+            <Typography sx={{ color: 'text.secondary' }}>
+              {plural(
+                { count: optional },
+                {
+                  one: 'Also removes # optional file that goes on top of it.',
+                  other: 'Also removes # optional files that go on top of it.',
+                },
+              )}
+            </Typography>
+          ) : null}
+          {needLine ? <Typography sx={{ color: 'text.secondary' }}>{needLine}</Typography> : null}
+          {unneeded.length > 0 ? (
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={withUnneeded}
+                  onChange={(e) => setWithUnneeded(e.target.checked)}
+                />
+              }
+              label={t`${plural({ count: unneeded.length }, { one: 'Also remove # library only this needed', other: 'Also remove # libraries only these needed' })}: ${{ names: listNames(unneeded.map((m) => m.name)) }}`}
+            />
+          ) : null}
+        </Box>
+      ) : null}
     </AppDialog>
   )
 }
