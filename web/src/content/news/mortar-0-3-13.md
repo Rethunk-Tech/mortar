@@ -1,7 +1,7 @@
 ---
 kind: release
 version: 0.3.13
-title: "A launch you can follow, versions with dates"
+title: "Live launches, dated versions"
 summary: "A launch screen you can follow and cancel, dated versions, add any game from its program, and split hosting and joining lists."
 highlights:
   - area: Play

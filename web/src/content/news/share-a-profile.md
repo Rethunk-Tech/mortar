@@ -1,6 +1,6 @@
 ---
 kind: howto
-title: "Share your mod list as a link"
+title: "Share a profile as a link"
 summary: "Send a whole profile to a friend as one link or a .mortar file, and get everyone on the same mods before you join."
 date: 2026-10-20
 image: /img/mods.webp

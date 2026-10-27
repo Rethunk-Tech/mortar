@@ -1,7 +1,7 @@
 ---
 kind: release
 version: 0.3.12
-title: "Problems on one page, Mortar in your language"
+title: "Problems on one page, in your language"
 summary: "Every problem on one page with one fix button each, a Display language setting, a Graphics setting on Linux, and a faster start."
 highlights:
   - area: Problems

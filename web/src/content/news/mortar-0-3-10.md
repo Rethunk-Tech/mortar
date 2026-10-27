@@ -1,7 +1,7 @@
 ---
 kind: release
 version: 0.3.10
-title: "Import from anywhere, mod Cities: Skylines II"
+title: "Import anything, mod Cities: Skylines II"
 summary: "One Import for links, collections, r2modman and Gale codes; Paradox Mods for Cities: Skylines II; far less memory at idle."
 highlights:
   - area: Import

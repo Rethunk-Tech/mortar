@@ -120,7 +120,7 @@ const features = [
   {
     icon: 'folder',
     title: 'Scanned before it installs',
-    text: 'Each mod goes past your antivirus after unpacking and before it reaches the game.',
+    text: 'Each mod goes past your antivirus after unpacking, before reaching the game.',
     img: 'settings',
   },
 ]
@@ -217,8 +217,8 @@ const features = [
         <p class="kicker">Find your game</p>
         <h2>Which game are you modding?</h2>
         <div class="searchbox"><input type="search" placeholder={`Search ${games.length} games…`} aria-label="Search games" aria-keyshortcuts="/" autocomplete="off" /><kbd aria-hidden="true">/</kbd></div>
-        <p class="dim" id="matches" aria-live="polite" data-idle={`${games.length} of them, each with its loader and mod sites set up.`}>{games.length} of them, each with its loader and mod sites set up.</p>
-        <a class="allq" href="/games/">All {games.length} games →</a>
+        <p class="dim" id="matches" aria-live="polite" data-idle="Each with its loader and mod sites set up.">Each with its loader and mod sites set up.</p>
+        <a class="allq" href="/games/">All games →</a>
       </div>
       <ul class="tiles reveal" id="tiles">
         {

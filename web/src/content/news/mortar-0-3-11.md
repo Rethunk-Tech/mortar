@@ -1,7 +1,7 @@
 ---
 kind: release
 version: 0.3.11
-title: "Startups explained, errors traced to their patch"
+title: "Startups explained, errors traced"
 summary: "Each phase of a start and its slowest mods, errors traced to the Harmony patch that threw, and imported profiles keep their local mods."
 highlights:
   - area: Performance

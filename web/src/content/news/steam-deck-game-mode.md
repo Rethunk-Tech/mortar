@@ -1,6 +1,6 @@
 ---
 kind: howto
-title: "Play your modded games from Steam Deck Game Mode"
+title: "Play from Steam Deck Game Mode"
 summary: "Set Mortar up once in Desktop Mode, then start each profile from Game Mode like any other game."
 date: 2026-10-20
 image: /img/deck.webp
