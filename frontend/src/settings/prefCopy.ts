@@ -7,6 +7,7 @@ import { antivirusPrefs, type PrefCopy } from './prefCopyAntivirus.ts'
 import { gamePrefs } from './prefCopyGame.ts'
 import { graphicsPrefs } from './prefCopyGraphics.ts'
 import { modsViewPrefs } from './prefCopyModsView.ts'
+import { requirementPrefs } from './prefCopyRequirements.ts'
 import { vrPrefs } from './vrPrefCopy.ts'
 
 function windowAndMods(i18n: I18n): Record<string, PrefCopy> {
@@ -92,26 +93,6 @@ function windowAndMods(i18n: I18n): Record<string, PrefCopy> {
       description: i18n._(
         msg`The stats each Browse card shows under its summary; choose them from Browse's Show menu`,
       ),
-    },
-    enableRequirements: {
-      label: i18n._(msg`Auto-enable requirements`),
-      description: i18n._(
-        msg`When you enable a mod, also enable its required mods already in the profile`,
-      ),
-      options: [
-        { value: 'always', label: i18n._(msg`Always`) },
-        { value: 'ask', label: i18n._(msg`Ask`) },
-        { value: 'never', label: i18n._(msg`Never`) },
-      ],
-    },
-    missingRequirements: {
-      label: i18n._(msg`Missing requirements on install`),
-      description: i18n._(msg`What to do when an installed mod still needs other mods`),
-      options: [
-        { value: 'ask', label: i18n._(msg`Ask`) },
-        { value: 'autodownload', label: i18n._(msg`Download them`) },
-        { value: 'never', label: i18n._(msg`Never`) },
-      ],
     },
     reuseFomodChoices: {
       label: i18n._(msg`Reuse FOMOD choices`),
@@ -491,6 +472,7 @@ export function prefCopy(i18n: I18n, key: string): PrefCopy {
     logsAndNexus(i18n)[key] ??
     batchPrefs(i18n)[key] ??
     modsViewPrefs(i18n)[key] ??
+    requirementPrefs(i18n)[key] ??
     gamePrefs(i18n)[key] ??
     vrPrefs(i18n)[key] ?? { label: key }
   )

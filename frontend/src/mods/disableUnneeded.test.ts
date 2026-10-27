@@ -1,6 +1,10 @@
 import { expect, test } from 'bun:test'
-import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { dependentsStillOn, unneededImplicit } from './disableUnneeded.ts'
+import type {
+  Entry,
+  Mod,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { useProfiles } from '../profiles/store.ts'
+import { dependentsStillOn, disableAlso, unneededImplicit } from './disableUnneeded.ts'
 
 const mod = (id: string, needs: string[] = [], over: Partial<Mod> = {}) =>
   ({ key: id, id, name: id, enabled: true, needs, ...over }) as Mod
@@ -46,4 +50,38 @@ test('switching a mod off finds the enabled mods that need it, through what need
     mod('Unrelated'),
   ]
   expect(dependentsStillOn(all, [core]).map((m) => m.id)).toEqual(['Uses.Core', 'Uses.Uses'])
+})
+
+test('disabling asks first, takes the dependents and lone libraries along, or leaves them, per the preference', () => {
+  const before = useProfiles.getState()
+  const all = [mod('Me.Ui', ['Me.Detour']), mod('Me.Detour', ['Lib.Core']), mod('Lib.Core')]
+  const off = [all[1] as Mod]
+  const open = (mode: string) =>
+    useProfiles.setState({
+      openId: 'p1',
+      profiles: [
+        {
+          ...({} as (typeof before.profiles)[number]),
+          id: 'p1',
+          entries: [
+            {
+              key: 'Lib.Core',
+              implicit: true,
+            } as Entry,
+          ],
+          overrides: { disableDependencies: mode },
+        },
+      ],
+    })
+  try {
+    open('ask')
+    expect(disableAlso(all, off)).toBeNull()
+    expect(disableAlso(all, [all[0] as Mod])).toEqual([])
+    open('always')
+    expect(disableAlso(all, off)?.map((m) => m.id)).toEqual(['Me.Ui', 'Lib.Core'])
+    open('never')
+    expect(disableAlso(all, off)).toEqual([])
+  } finally {
+    useProfiles.setState(before)
+  }
 })

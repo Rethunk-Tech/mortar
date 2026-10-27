@@ -114,6 +114,7 @@ msgid "Mortar leaves the taskbar and waits in the tray until the game exits."
 msgstr ""
 
 #: src/settings/prefCopy.ts
+#: src/settings/prefCopyRequirements.ts
 msgid "Always"
 msgstr ""
 
@@ -219,6 +220,10 @@ msgstr ""
 
 #: src/settings/sections/Notifications.tsx
 msgid "When"
+msgstr ""
+
+#: src/settings/prefCopyRequirements.ts
+msgid "Disable dependencies"
 msgstr ""
 
 #: src/settings/prefCopy.ts
@@ -1333,8 +1338,8 @@ msgstr ""
 msgid "Connection"
 msgstr ""
 
-#: src/settings/prefCopy.ts
 #: src/settings/prefCopyGame.ts
+#: src/settings/prefCopyRequirements.ts
 msgid "Ask"
 msgstr ""
 
@@ -1719,7 +1724,7 @@ msgstr ""
 msgid "No release is published yet."
 msgstr ""
 
-#: src/settings/prefCopy.ts
+#: src/settings/prefCopyRequirements.ts
 msgid "When you enable a mod, also enable its required mods already in the profile"
 msgstr ""
 
@@ -2015,7 +2020,7 @@ msgstr ""
 msgid "Kept in your system keyring. Create one on {source} under Settings, API keys."
 msgstr ""
 
-#: src/settings/prefCopy.ts
+#: src/settings/prefCopyRequirements.ts
 msgid "Download them"
 msgstr ""
 
@@ -2807,6 +2812,7 @@ msgid "Updated by your package manager"
 msgstr ""
 
 #: src/settings/prefCopy.ts
+#: src/settings/prefCopyRequirements.ts
 msgid "Never"
 msgstr ""
 
@@ -2958,7 +2964,7 @@ msgstr ""
 msgid "Latest (recommended)"
 msgstr ""
 
-#: src/settings/prefCopy.ts
+#: src/settings/prefCopyRequirements.ts
 msgid "Auto-enable requirements"
 msgstr ""
 
@@ -3592,7 +3598,7 @@ msgstr ""
 msgid "Show adult mods in browse"
 msgstr ""
 
-#: src/settings/prefCopy.ts
+#: src/settings/prefCopyRequirements.ts
 msgid "Missing requirements on install"
 msgstr ""
 
@@ -3605,7 +3611,7 @@ msgstr ""
 msgid "Hours between backups of saves that changed, while Mortar is open (24 is daily, 0 is Off). Waits until the game closes."
 msgstr ""
 
-#: src/settings/prefCopy.ts
+#: src/settings/prefCopyRequirements.ts
 msgid "What to do when an installed mod still needs other mods"
 msgstr ""
 
@@ -3746,6 +3752,10 @@ msgstr ""
 
 #: src/settings/prefCopyGame.ts
 msgid "Install the version the mod's author named, as {manager} does."
+msgstr ""
+
+#: src/settings/prefCopyRequirements.ts
+msgid "When you disable a mod, also disable the mods that need it and the libraries only it needed"
 msgstr ""
 
 #: src/settings/sections/DataImport.tsx

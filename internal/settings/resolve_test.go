@@ -40,7 +40,7 @@ func TestProfileOverridableKeys(t *testing.T) {
 		"defaultLaunchMethod", "instances", "delaySeconds", "showSmapiConsole", "backupBeforePlay",
 		"saveBackupsKept", "updateModsBeforePlayDefault", "skipPlayCheck", "skipIntro",
 		"saveBackupHours", "saveBackupKeep", "runsKept", "consoleLogCap", "consoleLevel", "consoleTimestamps",
-		"consoleFollow", "cosmeticConflicts", "conflictScanDepth", "enableRequirements", "missingRequirements",
+		"consoleFollow", "cosmeticConflicts", "conflictScanDepth", "enableRequirements", "disableDependencies", "missingRequirements",
 	} {
 		if !ProfileOverridable(key) {
 			t.Fatalf("%s should be profile-overridable", key)

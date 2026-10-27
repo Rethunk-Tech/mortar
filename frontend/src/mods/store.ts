@@ -10,6 +10,7 @@ import type {
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useSettings } from '../settings/store.ts'
 import { dependentsOf } from './dependents.ts'
+import { disableAlso } from './disableUnneeded.ts'
 import { requestPinWithReason } from './pinReasonStore.ts'
 import {
   dropMod,
@@ -53,6 +54,8 @@ export const useMods = create<{
   pages: Record<string, string | undefined>
   view: View
   removing: Mod[]
+  // disabling is the mods a Disable asks about first, empty when no dialog is open.
+  disabling: Mod[]
   problems: Result | null
   // problemsFor is the profile problems belongs to, so another profile's result is never shown as this one's.
   problemsFor: string
@@ -75,6 +78,8 @@ export const useMods = create<{
   setTagMany: (mods: Mod[], tag: string, add: boolean) => Promise<void>
   setNoteTags: (mod: Mod, note: string, tags: string[]) => Promise<void>
   askRemove: (mod: Mod | readonly Mod[] | null) => void
+  askDisable: (mods: Mod[] | null) => void
+  disableMany: (mods: Mod[]) => Promise<void>
   remove: (mod: Mod) => Promise<void>
   removeMany: (mods: Mod[]) => Promise<void>
   showFiles: (mod: Mod) => Promise<void>
@@ -108,6 +113,7 @@ export const useMods = create<{
   pages: {},
   view: storedView(),
   removing: [],
+  disabling: [],
   problems: null,
   problemsFor: '',
   problemsAt: 0,
@@ -124,8 +130,29 @@ export const useMods = create<{
     set((s) => ({ tagFilters: { ...s.tagFilters, [profileId]: tags } }))
   },
   loadProblems: () => loadModProblems(set, get),
-  setEnabled: (mod, enabled) => setEnabledAction(set, get, mod, enabled),
-  setEnabledMany: (mods, enabled) => enableMany(set, get, mods, enabled),
+  setEnabled: (mod, enabled) => {
+    const also = enabled ? [] : disableAlso(get().mods, [mod])
+    if (also === null) {
+      set({ disabling: [mod] })
+      return Promise.resolve()
+    }
+    return also.length > 0
+      ? enableMany(set, get, [mod, ...also], false)
+      : setEnabledAction(set, get, mod, enabled)
+  },
+  setEnabledMany: (mods, enabled) => {
+    const also = enabled ? [] : disableAlso(get().mods, mods)
+    if (also === null) {
+      set({ disabling: mods })
+      return Promise.resolve()
+    }
+    return enableMany(set, get, [...mods, ...also], enabled)
+  },
+  askDisable: (mods) => set({ disabling: mods ?? [] }),
+  disableMany: (mods) => {
+    set({ disabling: [] })
+    return enableMany(set, get, mods, false)
+  },
   setPinned: (mod, pinned) => {
     const want = requestPinWithReason([mod], pinned)
     return want.unpinned ? pinMod(mod, false) : Promise.resolve()

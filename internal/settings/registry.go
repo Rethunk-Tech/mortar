@@ -35,6 +35,7 @@ type GameSettings struct {
 	NxmDefaultProfile           string `json:"nxmDefaultProfile"`
 	CosmeticConflicts           string `json:"cosmeticConflicts"`
 	EnableRequirements          string `json:"enableRequirements"`
+	DisableDependencies         string `json:"disableDependencies"`
 	MissingRequirements         string `json:"missingRequirements"`
 	DefaultLaunchMethod         string `json:"defaultLaunchMethod"`
 	// StartFirst is the VR runtime Play starts before the game: off, SteamVR, or ALVR (whose dashboard starts SteamVR).
@@ -241,6 +242,7 @@ var registry = withDefaults([]pref{
 	strPref("nxmDefaultProfile", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).NxmDefaultProfile }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.NxmDefaultProfile = v; putGame(s, g, gp) }),
 	overridable(enumPref("cosmeticConflicts", ScopeGame, cosmeticValues, func(s Settings, g string) string { return s.GamePrefs(g).CosmeticConflicts }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.CosmeticConflicts = v; putGame(s, g, gp) })),
 	overridable(enumPref("enableRequirements", ScopeGame, enableReqValues, func(s Settings, g string) string { return s.GamePrefs(g).EnableRequirements }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.EnableRequirements = v; putGame(s, g, gp) })),
+	overridable(enumPref("disableDependencies", ScopeGame, enableReqValues, func(s Settings, g string) string { return s.GamePrefs(g).DisableDependencies }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.DisableDependencies = v; putGame(s, g, gp) })),
 	overridable(enumPref("missingRequirements", ScopeGame, missingReqValues, func(s Settings, g string) string { return s.GamePrefs(g).MissingRequirements }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.MissingRequirements = v; putGame(s, g, gp) })),
 	loaderPref("smapi", enumPref("smapiBuilds", ScopeLoader, smapiBuildsValues, func(s Settings, _ string) string { return s.SmapiBuilds }, func(s *Settings, _, v string) { s.SmapiBuilds = v })),
 	loaderPref("smapi", pinPref("smapiPin", "smapi")),
@@ -350,7 +352,8 @@ func defaultGameSettings() GameSettings {
 		ConsoleLogCap:               DefaultConsoleLogCap,
 		NxmDefaultProfile:           "",
 		CosmeticConflicts:           CosmeticCollapsed,
-		EnableRequirements:          EnableReqAlways,
+		EnableRequirements:          EnableReqAsk,
+		DisableDependencies:         EnableReqAsk,
 		MissingRequirements:         MissingReqAsk,
 		DefaultLaunchMethod:         LaunchSteam,
 		StartFirst:                  StartFirstOff,
@@ -433,6 +436,9 @@ func mergeGame(dst *GameSettings, src GameSettings) {
 	}
 	if src.EnableRequirements != "" {
 		dst.EnableRequirements = src.EnableRequirements
+	}
+	if src.DisableDependencies != "" {
+		dst.DisableDependencies = src.DisableDependencies
 	}
 	if src.MissingRequirements != "" {
 		dst.MissingRequirements = src.MissingRequirements
@@ -533,6 +539,9 @@ func normalizeGame(id string, g *GameSettings) {
 	if !slices.Contains(enableReqValues, g.EnableRequirements) {
 		g.EnableRequirements = d.EnableRequirements
 	}
+	if !slices.Contains(enableReqValues, g.DisableDependencies) {
+		g.DisableDependencies = d.DisableDependencies
+	}
 	if !slices.Contains(missingReqValues, g.MissingRequirements) {
 		g.MissingRequirements = d.MissingRequirements
 	}
@@ -607,6 +616,9 @@ func validateGame(g GameSettings) error {
 	}
 	if !slices.Contains(enableReqValues, g.EnableRequirements) {
 		return fmt.Errorf("enable requirements must be always, ask or never, got %q", g.EnableRequirements)
+	}
+	if !slices.Contains(enableReqValues, g.DisableDependencies) {
+		return fmt.Errorf("disable dependencies must be always, ask or never, got %q", g.DisableDependencies)
 	}
 	if !slices.Contains(missingReqValues, g.MissingRequirements) {
 		return fmt.Errorf("missing requirements must be ask, autodownload or never, got %q", g.MissingRequirements)

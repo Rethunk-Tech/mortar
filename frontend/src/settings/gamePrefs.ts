@@ -26,6 +26,7 @@ export interface GamePrefBlock {
   nxmDefaultProfile: string
   cosmeticConflicts: string
   enableRequirements: string
+  disableDependencies: string
   missingRequirements: string
   smapiBuilds: string
   defaultLaunchMethod: string
@@ -55,6 +56,7 @@ export function gamePrefs(s: Settings, game = currentGame()): GamePrefBlock {
     nxmDefaultProfile: text('nxmDefaultProfile', game),
     cosmeticConflicts: text('cosmeticConflicts', game),
     enableRequirements: text('enableRequirements', game),
+    disableDependencies: text('disableDependencies', game),
     missingRequirements: text('missingRequirements', game),
     defaultLaunchMethod: text('defaultLaunchMethod', game),
     startFirst: text('startFirst', game),
@@ -78,6 +80,7 @@ export function gamePrefs(s: Settings, game = currentGame()): GamePrefBlock {
     nxmDefaultProfile: got.nxmDefaultProfile ?? '',
     cosmeticConflicts: got.cosmeticConflicts || defaults.cosmeticConflicts,
     enableRequirements: got.enableRequirements || defaults.enableRequirements,
+    disableDependencies: got.disableDependencies || defaults.disableDependencies,
     missingRequirements: got.missingRequirements || defaults.missingRequirements,
     defaultLaunchMethod: got.defaultLaunchMethod || defaults.defaultLaunchMethod,
     startFirst: got.startFirst || defaults.startFirst,

@@ -1,10 +1,8 @@
-import { msg, plural } from '@lingui/core/macro'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { i18n } from '../i18n/index.ts'
-import { listNames } from '../i18n/list.ts'
+import { openOverride } from '../profiles/openOverrides.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
-import { reportUnexpected } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
+import { gamePrefs } from '../settings/gamePrefs.ts'
+import { useSettings } from '../settings/store.ts'
 import { dependentsOf, idKey, requiredIdsOf } from './dependents.ts'
 import { readsImplicit } from './installReason.ts'
 import { entryOf } from './lookup.ts'
@@ -60,33 +58,41 @@ export function unneededImplicit(
   return out
 }
 
-// After mods are switched off, offers to switch off the implicit mods only they needed.
-export function offerUnneeded(
-  all: readonly Mod[],
-  off: readonly Mod[],
-  switchOff: (mods: Mod[]) => Promise<void>,
-) {
+// What to do, as the open profile sees it, with what a disable leaves behind: its own override, else the game's setting.
+function disableDependenciesMode(): string {
+  return openOverride(
+    'disableDependencies',
+    gamePrefs(useSettings.getState()).disableDependencies || 'ask',
+  )
+}
+
+/**
+ * What switching `off` off leaves behind: the mods still on that need them, and the implicit mods still on that only
+ * they needed, counting the dependents as switched off too when `withDependents`.
+ */
+export function disableFallout(all: readonly Mod[], off: readonly Mod[], withDependents = true) {
   const profile = openProfileOf(useProfiles.getState())
-  const unneeded = unneededImplicit(all, off, (m) =>
+  const dependents = dependentsStillOn(all, off)
+  const unneeded = unneededImplicit(all, withDependents ? [...off, ...dependents] : off, (m) =>
     readsImplicit(entryOf(profile, m.key)?.implicit, m, all),
   )
-  if (unneeded.length === 0) {
-    return
+  return { dependents, unneeded }
+}
+
+/**
+ * What else switching `off` off takes, per the Disable dependencies preference: null to ask first, else the mods to
+ * switch off with them (none when nothing needs them and they leave no library behind, or the preference is Never).
+ */
+export function disableAlso(all: readonly Mod[], off: readonly Mod[]): Mod[] | null {
+  const mode = disableDependenciesMode()
+  if (mode === 'never') {
+    return []
   }
-  useToasts.getState().push({
-    kind: 'info',
-    title: plural(
-      { count: unneeded.length },
-      {
-        one: '# library only the disabled mods needed is still enabled',
-        other: '# libraries only the disabled mods needed are still enabled',
-      },
-    ),
-    action: {
-      label: i18n._(msg`Disable`),
-      run: () => switchOff(unneeded).catch(reportUnexpected),
-    },
-  })
+  const { dependents, unneeded } = disableFallout(all, off)
+  if (dependents.length + unneeded.length === 0) {
+    return []
+  }
+  return mode === 'ask' ? null : [...dependents, ...unneeded]
 }
 
 /**
@@ -103,31 +109,4 @@ export function dependentsStillOn(all: readonly Mod[], off: readonly Mod[]): Mod
     out.push(...next)
   }
   return out
-}
-
-// After mods are switched off, warns about the mods that need them and offers to switch those off too.
-export function offerDependents(
-  all: readonly Mod[],
-  off: readonly Mod[],
-  switchOff: (mods: Mod[]) => Promise<void>,
-) {
-  const dependents = dependentsStillOn(all, off)
-  if (dependents.length === 0) {
-    return
-  }
-  useToasts.getState().push({
-    kind: 'warning',
-    title: plural(
-      { count: dependents.length },
-      {
-        one: '# enabled mod needs a mod you disabled',
-        other: '# enabled mods need a mod you disabled',
-      },
-    ),
-    body: listNames(dependents.map((m) => m.name)),
-    action: {
-      label: i18n._(msg`Disable them too`),
-      run: () => switchOff(dependents).catch(reportUnexpected),
-    },
-  })
 }

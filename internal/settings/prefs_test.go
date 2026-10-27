@@ -54,7 +54,7 @@ func TestPrefDefaultsMatchToday(t *testing.T) {
 	if d.ReduceMotion != ReduceMotionSystem || d.ProfileHero != HeroFull {
 		t.Fatal("motion / hero defaults")
 	}
-	if d.GamePrefs("stardew").EnableRequirements != EnableReqAlways || d.GamePrefs("stardew").MissingRequirements != MissingReqAsk {
+	if d.GamePrefs("stardew").EnableRequirements != EnableReqAsk || d.GamePrefs("stardew").MissingRequirements != MissingReqAsk {
 		t.Fatal("requirement defaults")
 	}
 	if !ToggleOn(d.ReuseFomodChoices) || !d.DriftChecksOn() || d.SmapiBuilds != SmapiBuildsShow {
@@ -73,6 +73,9 @@ func TestPrefDefaultsMatchToday(t *testing.T) {
 
 func TestAutoEnableRequirementsAlwaysOnly(t *testing.T) {
 	always := Defaults()
+	ag := always.GamePrefs("stardew")
+	ag.EnableRequirements = EnableReqAlways
+	putGame(&always, "stardew", ag)
 	if !always.GamePrefs("stardew").AutoEnableRequirements() {
 		t.Fatal("always")
 	}
@@ -113,7 +116,7 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		"desktopDownloadFinished": "true", "desktopDownloadFailed": "false", "desktopRunCrashed": "false",
 		"desktopModUpdates": "true",
 		"density":           "compact", "uiScale": "125", "theme": "light", "gridCardSize": "large", "showAuthorOnCards": "false", "markLocalMods": "false", "centerConfigControls": "true", "touchRipples": "true", "browseCardStats": "size,updated",
-		"reduceMotion": "always", "profileHero": "hidden", "enableRequirements": "never",
+		"reduceMotion": "always", "profileHero": "hidden", "enableRequirements": "never", "disableDependencies": "always",
 		"missingRequirements": "autodownload", "reuseFomodChoices": "false", "driftChecks": "false",
 		"smapiBuilds": "include", "smapiPin": "4.0.0", "bepinex5Pin": "5.4.2100", "melonloaderPin": "0.7.2", "returnofmoddingPin": "1.1.30", "gdweavePin": "2.0.14", "lovelyPin": "0.10.0", "northstarPin": "1.31.14", "rivetPin": "0.1.17", "ummPin": "1.1.0", "shimloaderPin": "1.1.7", "autoInstallMortarUpdates": "false", "autoTrackNexus": "true",
 		"defaultLaunchMethod": "direct", "startFirst": "alvr", "alvrProgram": "/opt/alvr/alvr_dashboard", "instances": "2", "delaySeconds": "8", "showSmapiConsole": "false", "skipPlayCheck": "true", "skipIntro": "true", "graphicsApi": "dx12", "protonVersion": "Proton 9.0", "consoleLevel": "debug",

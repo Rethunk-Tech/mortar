@@ -17,7 +17,7 @@ import { announceAlso, openTarget } from './storeView.ts'
 export function enableRequirementsMode(): string {
   return openOverride(
     'enableRequirements',
-    gamePrefs(useSettings.getState()).enableRequirements || 'always',
+    gamePrefs(useSettings.getState()).enableRequirements || 'ask',
   )
 }
 

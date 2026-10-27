@@ -49,7 +49,9 @@ function modsPrefKeys(
   const loaderId = loader?.id
   return [
     // Requirements come from mod manifests, which a game with no loader of its own has none of.
-    ...(loader?.builtin ? [] : ['enableRequirements', 'missingRequirements']),
+    ...(loader?.builtin
+      ? []
+      : ['enableRequirements', 'disableDependencies', 'missingRequirements']),
     // Both concern content packs' asset edits, which only a loader whose framework indexes them has.
     ...(loader?.assets ? ['cosmeticConflicts', 'conflictScanDepth'] : []),
     'offerNewDownloads',

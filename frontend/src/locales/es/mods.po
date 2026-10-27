@@ -470,10 +470,6 @@ msgstr ""
 msgid "Could not disable the group"
 msgstr ""
 
-#: src/mods/disableUnneeded.ts
-msgid "{count, plural, one {# library only the disabled mods needed is still enabled} other {# libraries only the disabled mods needed are still enabled}}"
-msgstr ""
-
 #: src/mods/modActions.ts
 msgid "Open on {source}"
 msgstr ""
@@ -657,6 +653,10 @@ msgstr ""
 #: src/mods/typedConfig/ConfigPane.tsx
 #: src/mods/typedConfig/ConfigTab.tsx
 msgid "In-game menu"
+msgstr ""
+
+#: src/mods/DisableDialog.tsx
+msgid "Mods that need it stop working while it is off."
 msgstr ""
 
 #: src/mods/ModDependencyTree.tsx
@@ -887,6 +887,10 @@ msgstr ""
 msgid "Set the {source} page of {name}"
 msgstr ""
 
+#: src/mods/DisableDialog.tsx
+msgid "{count, plural, one {Also disable # library nothing else needs} other {Also disable # libraries nothing else needs}}: {names}"
+msgstr ""
+
 #: src/mods/describeLoadFailure.ts
 msgid "It was thrown in {thrown}, called from {name}'s {kind} {method} on {target}"
 msgstr ""
@@ -1108,7 +1112,7 @@ msgid "Could not read the game log"
 msgstr ""
 
 #: src/mods/AssetMapDialog.tsx
-#: src/mods/disableUnneeded.ts
+#: src/mods/DisableDialog.tsx
 #: src/mods/ModMenu.tsx
 #: src/mods/problemFix/AssetFix.tsx
 #: src/mods/problemFix/BrokenFix.tsx
@@ -1189,6 +1193,10 @@ msgstr ""
 msgid "The last launch loaded this here, not where its dependencies put it."
 msgstr ""
 
+#: src/mods/DisableDialog.tsx
+msgid "{count, plural, one {Disable # mod?} other {Disable # mods?}}"
+msgstr ""
+
 #: src/mods/describe.ts
 msgid "{name} needs game version {needs} or newer."
 msgstr ""
@@ -1196,6 +1204,7 @@ msgstr ""
 #: src/mods/AddToGroupDialog.tsx
 #: src/mods/CategoryEditor.tsx
 #: src/mods/ChangeVersionDialog.tsx
+#: src/mods/DisableDialog.tsx
 #: src/mods/GameModsReviewDialog.tsx
 #: src/mods/OtherProfilesDialog.tsx
 #: src/mods/parts.tsx
@@ -1477,6 +1486,10 @@ msgstr ""
 
 #: src/mods/GroupMenu.tsx
 msgid "Rename…"
+msgstr ""
+
+#: src/mods/DisableDialog.tsx
+msgid "Nothing else needs the libraries it brought in."
 msgstr ""
 
 #: src/mods/updateReview/EverywhereDialog.tsx
@@ -2209,10 +2222,6 @@ msgstr ""
 msgid "Group"
 msgstr ""
 
-#: src/mods/disableUnneeded.ts
-msgid "Disable them too"
-msgstr ""
-
 #: src/mods/problemWhy.ts
 msgid "{os} programs cannot open a file whose full path is 260 characters or more unless they are built for long paths, which most games are not, so the game may not load these files. Turning on long paths in {os} does not change that for such a game."
 msgstr ""
@@ -2466,10 +2475,6 @@ msgstr ""
 
 #: src/mods/updateReview/EverywhereDialog.tsx
 msgid "{name}: {reason}"
-msgstr ""
-
-#: src/mods/disableUnneeded.ts
-msgid "{count, plural, one {# enabled mod needs a mod you disabled} other {# enabled mods need a mod you disabled}}"
 msgstr ""
 
 #: src/mods/Toolbar.tsx
@@ -2938,6 +2943,10 @@ msgstr ""
 
 #: src/mods/LoadOrderTab.tsx
 msgid "{count} more required"
+msgstr ""
+
+#: src/mods/DisableDialog.tsx
+msgid "{count, plural, one {Disable # mod} other {Disable # mods}}"
 msgstr ""
 
 #: src/mods/ModActionItems.tsx
@@ -3731,6 +3740,10 @@ msgstr ""
 msgid "On"
 msgstr ""
 
+#: src/mods/DisableDialog.tsx
+msgid "Disable {name}?"
+msgstr ""
+
 #: src/mods/storeEntries.ts
 msgid "{count, plural, one {Removed # mod} other {Removed # mods}}"
 msgstr ""
@@ -3743,6 +3756,10 @@ msgstr ""
 #: src/mods/UpdateBanner.tsx
 #: src/mods/updateReview/RowCopy.tsx
 msgid "Unofficial update available: {version}"
+msgstr ""
+
+#: src/mods/DisableDialog.tsx
+msgid "{count, plural, one {Also disable # mod that needs it} other {Also disable # mods that need it}}: {names}"
 msgstr ""
 
 #: src/mods/ProblemsTab.tsx

@@ -5,6 +5,7 @@ import { BrowseHost } from '../browse/BrowseHost.tsx'
 import { ConsoleTab } from '../console/ConsoleTab.tsx'
 import { PerformanceTab } from '../console/PerformanceTab.tsx'
 import { DevelopTab } from '../develop/DevelopTab.tsx'
+import { DisableDialog } from '../mods/DisableDialog.tsx'
 import { DuplicateDialog } from '../mods/DuplicateDialog.tsx'
 import { LoadOrderTab } from '../mods/LoadOrderTab.tsx'
 import { ModsTab } from '../mods/ModsTab.tsx'
@@ -95,6 +96,7 @@ export function ProfileWorkspace({ game, gameName }: { game: string; gameName: s
         ) : null}
         {/* Mods and Problems both open these, so they live above either tab. */}
         <RemoveDialog />
+        <DisableDialog />
         <DuplicateDialog profileName={name} />
       </ErrorBoundary>
     </Box>
