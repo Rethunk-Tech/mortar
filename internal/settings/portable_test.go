@@ -2,6 +2,7 @@ package settings
 
 import (
 	"encoding/json"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -150,5 +151,20 @@ func TestApplyImportTakesOnlyChosenSections(t *testing.T) {
 	}
 	if err := ApplyImport(&cur, raw, nil); err != nil || cur.Accent != Defaults().Accent {
 		t.Fatalf("no sections changed accent: %v", err)
+	}
+}
+
+// A field naming an account, a token, a machine path or a command on this computer must stay out of an export.
+func TestPortableFieldsNameNoAccountOrMachineState(t *testing.T) {
+	for _, k := range []string{
+		"nexusUserId", "nexusName", "nexusPremium", "itchName", "overlayToken", "overlayEnabled", "overlayPort",
+		"gameFolders", "gameStores", "launcherRoots", "launchersConfirmed", "loaders", "lastProfile", "lastPlayed", "hiddenGames",
+		"backgroundImage", "lanStarted", "lanAddresses", "antivirusSocket", "antivirusCommand",
+		"nxmHandled", "nxmPreviousHandlers", "nxmAsked", "nxmPreviousName", "alvrProgram", "autoInstallFolders",
+		"lastModUpdateDigest", "lastModUpdateDigestAt", "dismissed", "shortcuts",
+	} {
+		if slices.Contains(portableFields, k) {
+			t.Errorf("portableFields exports %s", k)
+		}
 	}
 }
