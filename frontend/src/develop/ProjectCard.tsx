@@ -7,6 +7,7 @@ import {
   Checkbox,
   Chip,
   CircularProgress,
+  FormControlLabel,
   IconButton,
   Link,
   Menu,
@@ -36,6 +37,7 @@ import {
   OpenEditor,
   OpenProject,
   SetWatch,
+  Trash as TrashProject,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import { StartDebugging } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import type { DevProject } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
@@ -276,6 +278,7 @@ function MoreMenu({
   const { t } = useLingui()
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const [forgetting, setForgetting] = useState(false)
+  const [trashFolder, setTrashFolder] = useState(false)
   const info = useProjectInfo((s) => s.byDir[project.dir])
   // One start with the game's Mono debugger open; the toast says where to attach.
   const debug = () =>
@@ -364,16 +367,42 @@ function MoreMenu({
       </Menu>
       <ConfirmationDialog
         open={forgetting}
-        tone="warning"
+        tone={trashFolder ? 'danger' : 'warning'}
         title={t`Remove ${{ name: project.name }} from the list?`}
-        body={t`Its folder stays where it is; Mortar stops building it and installing it into the profile.`}
-        confirmLabel={t`Remove from list`}
-        onCancel={() => setForgetting(false)}
+        body={
+          trashFolder
+            ? t`Its folder moves to the trash, where you can restore it, and Mortar stops building it and installing it into the profile.`
+            : t`Its folder stays where it is; Mortar stops building it and installing it into the profile.`
+        }
+        confirmLabel={trashFolder ? t`Remove and move to trash` : t`Remove from list`}
+        onCancel={() => {
+          setForgetting(false)
+          setTrashFolder(false)
+        }}
         onConfirm={() => {
           setForgetting(false)
-          persist(() => Forget(game, project.dir), t`Could not save that setting`)
+          setTrashFolder(false)
+          if (trashFolder) {
+            TrashProject(game, project.dir).catch(
+              reportError(t`Could not move the folder to the trash`),
+            )
+          } else {
+            persist(() => Forget(game, project.dir), t`Could not save that setting`)
+          }
         }}
-      />
+      >
+        <FormControlLabel
+          control={
+            <Checkbox checked={trashFolder} onChange={(e) => setTrashFolder(e.target.checked)} />
+          }
+          label={t`Also move its folder to the trash`}
+        />
+        {trashFolder && (info?.git?.unpushed || info?.git?.changed) ? (
+          <Alert variant="compact" severity="warning">
+            {t`Work that is only in this folder goes with it: ${{ summary: gitSummary(info.git) }}.`}
+          </Alert>
+        ) : null}
+      </ConfirmationDialog>
     </>
   )
 }

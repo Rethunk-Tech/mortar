@@ -733,6 +733,10 @@ msgstr ""
 msgid "From a shared link"
 msgstr ""
 
+#: src/develop/ProjectCard.tsx
+msgid "Also move its folder to the trash"
+msgstr ""
+
 #: src/develop/GameCodeDialog.tsx
 msgid "Search the game's types and methods, then pick one to read its type's code."
 msgstr ""
@@ -1246,6 +1250,10 @@ msgstr ""
 msgid "Not signed in"
 msgstr ""
 
+#: src/develop/ProjectCard.tsx
+msgid "Could not move the folder to the trash"
+msgstr ""
+
 #: src/queue/QueueHistory.tsx
 msgid "{game} profile"
 msgstr ""
@@ -1389,6 +1397,10 @@ msgstr ""
 
 #: src/firstrun/LoaderStep.tsx
 msgid "Installing {loader} {latest}"
+msgstr ""
+
+#: src/develop/ProjectCard.tsx
+msgid "Its folder moves to the trash, where you can restore it, and Mortar stops building it and installing it into the profile."
 msgstr ""
 
 #: src/browse/browseConstants.ts
@@ -5461,6 +5473,10 @@ msgstr ""
 msgid "Premium"
 msgstr ""
 
+#: src/develop/ProjectCard.tsx
+msgid "Remove and move to trash"
+msgstr ""
+
 #: src/games/AddGameDialog.tsx
 msgid "Any game whose mods are files in a Mods folder"
 msgstr ""
@@ -6924,6 +6940,10 @@ msgstr ""
 
 #: src/game/NewProfileDialog.tsx
 msgid "Name the profile."
+msgstr ""
+
+#: src/develop/ProjectCard.tsx
+msgid "Work that is only in this folder goes with it: {summary}."
 msgstr ""
 
 #: src/i18n/reasonText.ts

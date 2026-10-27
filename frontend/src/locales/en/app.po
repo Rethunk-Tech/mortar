@@ -733,6 +733,10 @@ msgstr "Restart and record startup profile"
 msgid "From a shared link"
 msgstr "From a shared link"
 
+#: src/develop/ProjectCard.tsx
+msgid "Also move its folder to the trash"
+msgstr "Also move its folder to the trash"
+
 #: src/develop/GameCodeDialog.tsx
 msgid "Search the game's types and methods, then pick one to read its type's code."
 msgstr "Search the game's types and methods, then pick one to read its type's code."
@@ -1246,6 +1250,10 @@ msgstr "Try a different search."
 msgid "Not signed in"
 msgstr "Not signed in"
 
+#: src/develop/ProjectCard.tsx
+msgid "Could not move the folder to the trash"
+msgstr "Could not move the folder to the trash"
+
 #: src/queue/QueueHistory.tsx
 msgid "{game} profile"
 msgstr "{game} profile"
@@ -1390,6 +1398,10 @@ msgstr "Both sides changed it, so Mortar will not merge them. Pick one side."
 #: src/firstrun/LoaderStep.tsx
 msgid "Installing {loader} {latest}"
 msgstr "Installing {loader} {latest}"
+
+#: src/develop/ProjectCard.tsx
+msgid "Its folder moves to the trash, where you can restore it, and Mortar stops building it and installing it into the profile."
+msgstr "Its folder moves to the trash, where you can restore it, and Mortar stops building it and installing it into the profile."
 
 #: src/browse/browseConstants.ts
 msgid "Search {source}. Free accounts download from the mod's page with Mod Manager Download."
@@ -5461,6 +5473,10 @@ msgstr "Enabled"
 msgid "Premium"
 msgstr "Premium"
 
+#: src/develop/ProjectCard.tsx
+msgid "Remove and move to trash"
+msgstr "Remove and move to trash"
+
 #: src/games/AddGameDialog.tsx
 msgid "Any game whose mods are files in a Mods folder"
 msgstr "Any game whose mods are files in a Mods folder"
@@ -6925,6 +6941,10 @@ msgstr "Already the newest file"
 #: src/game/NewProfileDialog.tsx
 msgid "Name the profile."
 msgstr "Name the profile."
+
+#: src/develop/ProjectCard.tsx
+msgid "Work that is only in this folder goes with it: {summary}."
+msgstr "Work that is only in this folder goes with it: {summary}."
 
 #: src/i18n/reasonText.ts
 msgid "incompatible with: {list}"

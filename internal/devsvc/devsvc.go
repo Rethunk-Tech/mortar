@@ -240,6 +240,19 @@ func (s *Service) Projects(gameID string) []settings.DevProject {
 // Forget drops the project in dir from the Develop tab; its files stay.
 func (s *Service) Forget(gameID, dir string) error { return s.Settings.ForgetDevProject(gameID, dir) }
 
+// Trash moves the project's folder to the system trash, where the file manager can restore it, and drops the project
+// from the Develop tab. Only a folder the Develop tab lists is moved.
+func (s *Service) Trash(gameID, dir string) error {
+	p, err := s.project(gameID, dir)
+	if err != nil {
+		return err
+	}
+	if err := fsx.Trash(p.Dir); err != nil {
+		return err
+	}
+	return s.Forget(gameID, p.Dir)
+}
+
 func (m NewMod) check() error {
 	bad := func(what string) error { return usererr.Wrap(usererr.Invalid, errors.New(what)) }
 	switch {
