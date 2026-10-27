@@ -89,6 +89,7 @@ var versionConstraint = regexp.MustCompile(`^(<=|>=|<|>|=)\S+$`)
 // sources. How a game is launched or modded stays in its Go implementation; this is only what can change without a
 // Mortar release.
 type GameInfo struct {
+	// ID is the slug. It is permanent: profiles, settings and share links store it.
 	ID   string `json:"id"`
 	Name string `json:"name"`
 	// Enabled is false for a game listed as coming later.
@@ -99,7 +100,8 @@ type GameInfo struct {
 	// ImportIDs are the names Vortex and Mod Organizer 2 give the game, so their profiles can be imported; a game
 	// neither manager has an extension or plugin for has none.
 	ImportIDs ImportIDs `json:"importIds,omitzero"`
-	// Marker is a file every install of the game holds, at its root or one "game" folder down.
+	// Marker is a file every install of the game holds, at its root or one "game" folder down. A .exe marker makes a
+	// Windows build.
 	Marker string `json:"marker"`
 	// MarkerDir is the slash-separated folder below the install root that holds Marker, for a game whose executable
 	// sits below the root (Game/Bin); empty when the marker is at the root or one "game" folder down.
@@ -122,8 +124,11 @@ type GameInfo struct {
 	Metadata []string `json:"metadata"`
 	// NewProfileSeparateSaves starts a new profile of this game with its own saves rather than the shared ones.
 	NewProfileSeparateSaves bool `json:"newProfileSeparateSaves,omitempty"`
-	// Paths names folders and files outside the install by role (saves, startupPreferences, options). The options
-	// role is a file; the others are folders.
+	// Paths names folders and files outside the install by role, one PathTemplate per platform. Roles: saves,
+	// errorLogs, startupPreferences; mods (a folder game's mod folder, filled for a launch, then emptied with the
+	// player's files returned); options (one settings file: each profile holds its own copy, seeded on first launch and
+	// swapped in per launch); tray (shared by every profile, filled by a target with a Role); userData (the base
+	// Caches paths resolve under). Any other role a RequiredSettings or Caches entry names must be listed too.
 	Paths map[string]PathTemplate `json:"paths,omitempty"`
 	// SaveFiles are patterns naming each save file in the saves folder or one folder below it, for a game that keeps a
 	// save as a file; a pattern starting with "!" excludes the files it matches. Without them a save is a folder holding
@@ -171,12 +176,21 @@ type GameInfo struct {
 	Deploy string `json:"deploy"`
 	// Targets are the places the game's mod files go.
 	Targets []TargetDef `json:"targets"`
-	Stores  GameStores  `json:"stores"`
+	// Stores holds the game's id per store driver key; a game no store app tracks sets ManualFolder instead.
+	Stores GameStores `json:"stores"`
 	// ManualFolder marks a game sold where no store app tracks it (an itch.io download unpacked anywhere): it names no
 	// store, and the player browses to its folder, as for a game they add themselves.
-	ManualFolder bool         `json:"manualFolder,omitempty"`
-	Loaders      []GameLoader `json:"loaders"`
-	Sources      []GameSource `json:"sources"`
+	ManualFolder bool `json:"manualFolder,omitempty"`
+	// Loaders are the loader ids the game can run (the catalog test's knownLoaders names them; "folder" is a game with
+	// none). A Thunderstore-installed loader names its Package. A companion bridge installs only from the game's own
+	// kind: bridge component, never Thunderstore, so a game without one gets no startup timing, in-game performance,
+	// stream overlay, intro skip or console commands even when its loader names a Companion. MelonLoader without
+	// Routes takes the 0.7 recursive layout; with them, the route marked Default takes a file nothing else claims.
+	// Keep r2modman's rule order when copying its install rules into Routes.
+	Loaders []GameLoader `json:"loaders"`
+	// Sources are the mod sites, in browse order. A link and handoff source (patreon, itch) is just {"id": ...}: browse
+	// does not search it, a pasted address resolves to it and Mortar opens the page.
+	Sources []GameSource `json:"sources"`
 	// Templates are starter profiles offered when creating one: a named list of packages, each queued through the
 	// normal download path.
 	Templates []StarterTemplate `json:"templates,omitempty"`
