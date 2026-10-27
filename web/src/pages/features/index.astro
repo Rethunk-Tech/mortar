@@ -1,115 +1,76 @@
 ---
+import Mark from '../../components/Mark.astro'
 import Page from '../../layouts/Page.astro'
-import { playableGames } from '../../lib/games.ts'
+import { loaderFamilies, modSites, playableGames, SOURCE_NAMES, STORE_NAMES } from '../../lib/games.ts'
 import '../../styles/landing.css'
 import '../../styles/landing-features.css'
 import '../../styles/landing-compare.css'
 
 const games = playableGames().length
-const glance = [
-  ['Finds your game', 'Steam, GOG, Epic, the EA app, Heroic, Lutris and more'],
-  ['Installs the mod loader', 'SMAPI or BepInEx, kept up to date'],
-  ['Every mod site', 'Nexus Mods, Thunderstore, CurseForge and more'],
-  ['Free', 'AGPL-3.0, no account needed'],
-]
+const SHOWN_LOADERS = 2
+const stores = ['steam', 'gog', 'epic', 'ea', 'lutris', 'xbox']
+const loaders = loaderFamilies()
+const sites = modSites()
 const sections = [
   {
     title: 'A profile for every playthrough',
-    text: 'A vanilla-plus farm, an Expanded run and your crew\'s Lethal Company pack, side by side. Each has its own mods, settings and launch options.',
-    ticks: [
-      'Install, update and roll back per profile',
-      'Read the changelog before you update',
-      'Start new profiles from templates',
-      'Freeze a profile on its current versions',
-      'Install any version, not only the newest',
-      'Star your favourite mods and profiles',
-      'Scheduled save backups, with a timeline per save',
-    ],
+    text: 'Each has its own mods, settings and launch options.',
+    ticks: ['Install any version, and roll back', 'Read the changelog before you update', 'Freeze a profile on its versions'],
     img: 'profile',
     alt: "A mod's detail panel in Mortar with its version, update channel and Keep this version",
   },
   {
     title: 'Stardew Valley on SMAPI',
-    text: 'Mortar installs and updates SMAPI, and handles hundreds of mods with cover art, groups and filters.',
-    ticks: [
-      'Nexus Mod Manager Download lands in the right profile',
-      'Import Nexus collections with their FOMOD choices',
-      'SMAPI options per game or per profile',
-    ],
+    text: 'SMAPI installed and kept current, and hundreds of mods with cover art.',
+    ticks: ['Nexus Mod Manager Download lands in the right profile', 'Nexus collections with their FOMOD choices'],
     img: 'mods',
     alt: 'Mortar showing a Stardew Valley profile of 805 mods with cover art',
   },
   {
-    title: 'Lethal Company, Valheim and more on BepInEx',
-    text: "Mortar installs each game's BepInEx pack and keeps packages in the profile, not the game folder. On Linux, Valheim's native build runs modded without Proton.",
-    ticks: [
-      'Plugin settings travel with the profile',
-      'Plugins that failed to load or ship twice show in Problems',
-      'Import r2modman or Gale profiles; export a Thunderstore modpack',
-      'Falls back across Thunderstore download servers',
-      'Dedicated server profiles for Valheim and Risk of Rain 2',
-      "Friends check their mods against the host's list",
-    ],
+    title: 'BepInEx games',
+    text: "Lethal Company, Valheim and more, with packages kept in the profile, not the game folder.",
+    ticks: ['Import r2modman or Gale profiles', 'Failed or duplicate plugins show in Problems', 'Dedicated server profiles'],
     img: 'lethal-company',
     alt: 'A Lethal Company profile in Mortar with its Thunderstore mods',
   },
   {
     title: 'Every mod site in one search',
-    text: 'Browse searches every site the game uses at once. Dependencies come along.',
-    ticks: [
-      'Filter by category; sort by downloads or update',
-      'Mods the profile already has are marked',
-      "Every download comes from the mod's own page",
-      'Hide a mod or an author',
-      'Modpacks, translations and cheats start excluded',
-    ],
+    text: 'Every site the game uses, searched at once. Dependencies come along.',
+    ticks: ['Mods you already have are marked', "Every download comes from the mod's own page"],
     img: 'thunderstore',
     alt: 'The Browse tab listing Lethal Company packages from Thunderstore',
   },
   {
     title: 'Know what broke before you launch',
-    text: 'Missing dependencies, outdated versions and content conflicts, in plain words, each with a fix.',
-    ticks: [
-      'Missing dependencies queued for you',
-      'Content conflicts explained file by file',
-      'One-click fixes',
-      'After a crash, the mod whose code was running is named',
-    ],
+    text: 'Missing dependencies, outdated versions and conflicts, in plain words.',
+    ticks: ['One-click fixes', 'After a crash, the mod at fault is named'],
     img: 'problems',
     alt: 'The Problems tab explaining which mod wins each content conflict',
   },
   {
     title: 'See what slows your startup',
-    text: 'Time to the title screen and what each mod costs, so a slow load has a name.',
-    ticks: ['Compared with the last launch', 'Per-mod startup and in-game cost', 'Game console and logs inside Mortar'],
+    text: 'Time to the title screen and what each mod costs.',
+    ticks: ['Compared with the last launch', 'Console and logs inside Mortar'],
     img: 'performance',
     alt: "The Performance tab with time to title screen and each mod's startup cost",
   },
   {
     title: 'Play from Steam Deck Game Mode',
-    text: 'Add a profile to Steam and start it from Game Mode. Mortar stays out of sight and closes with the game, so Steam counts your playtime.',
-    ticks: [
-      'Full gamepad control',
-      "Laid out for the Deck's 1280×800 screen",
-      'Diagnostics for Desktop and Game Mode',
-    ],
+    text: 'Add a profile to Steam and play it from Game Mode.',
+    ticks: ['Full gamepad control', "Laid out for the Deck's screen"],
     img: 'deck',
     alt: 'Game select at the Steam Deck’s resolution with the Lethal Company row focused by a gamepad',
   },
   {
     title: 'Your profiles on all your PCs',
-    text: 'Pair two computers with a short code. A profile arrives with its mod files, so nothing downloads twice. No account.',
-    ticks: [
-      'Finds nearby computers',
-      'The code works once, for five minutes',
-      'Unpaired computers download each mod instead',
-    ],
+    text: 'Pair two computers with a short code. Profiles arrive with their mod files.',
+    ticks: ['No account', 'Nearby computers are found for you'],
     img: 'pairing',
     alt: 'The Pair a computer dialog showing a one-time pairing code',
   },
   {
     title: 'Scanned before it installs',
-    text: "Each mod goes past your antivirus before it reaches the game: Windows' scanner, ClamAV or your own command.",
+    text: "Each mod goes past your antivirus first: Windows' scanner, ClamAV or your own command.",
     ticks: [],
     img: 'settings',
     alt: 'General settings with the antivirus choices: Automatic, clamd socket, custom command or off',
@@ -128,14 +89,29 @@ const sections = [
   full
 >
   <dl class="glance">
-    {
-      glance.map(([k, v]) => (
-        <div>
-          <dt>{k}</dt>
-          <dd>{v}</dd>
-        </div>
-      ))
-    }
+    <div>
+      <dt>Finds your game</dt>
+      <dd>On every store and launcher, or in a folder you pick.</dd>
+      <div class="vis">{stores.map((s) => <Mark site={s} label={STORE_NAMES[s] ?? s} />)}</div>
+    </div>
+    <div>
+      <dt>Installs the mod loader</dt>
+      <dd>And keeps it up to date.</dd>
+      <div class="vis">
+        {loaders.slice(0, SHOWN_LOADERS).map((n) => <span class="pill ok">{n}</span>)}
+        {loaders.length > SHOWN_LOADERS && <span class="pill">+ {loaders.length - SHOWN_LOADERS}</span>}
+      </div>
+    </div>
+    <div>
+      <dt>Every mod site</dt>
+      <dd>{sites.length} sites, searched at once.</dd>
+      <div class="vis">{sites.map((s) => <Mark site={s} label={SOURCE_NAMES[s] ?? s} />)}</div>
+    </div>
+    <div>
+      <dt>Free</dt>
+      <dd>No account, no ads, open source.</dd>
+      <div class="vis"><span class="pill ok">AGPL-3.0</span><span class="pill">$0</span></div>
+    </div>
   </dl>
   <p class="dim">
     <a href="/download/">Download</a> for Windows or Linux. <a href="/games/">{games} games</a> supported.
@@ -169,7 +145,7 @@ const sections = [
     <div class="duo">
       <div class="companion">
         <h3>Browser extension</h3>
-        <p class="dim">Marks Nexus Mods and Thunderstore pages with what your profile has, and sends downloads to Mortar. Firefox and Chromium browsers.</p>
+        <p class="dim">Marks Nexus Mods, Thunderstore and four more mod sites with what your profile has, and sends downloads to Mortar. Firefox and Chromium browsers.</p>
         <p class="links">
           <a class="btn ghost" href="/extension/">About the extension</a>
           <a class="btn ghost" href="https://github.com/Rethunk-Tech/mortar-browser-extension"><svg aria-hidden="true"><use href="/img/brands.svg#github"></use></svg>Source</a>
@@ -177,7 +153,7 @@ const sections = [
       </div>
       <div class="companion">
         <h3>Game bridge</h3>
-        <p class="dim">A small mod in each profile. In Stardew Valley it runs console commands, exposes GMCM settings, times startup and drives a stream overlay. In BepInEx games it reports which plugins loaded.</p>
+        <p class="dim">A small mod in each profile. It runs console commands and times startup in Stardew Valley, and reports which plugins loaded in BepInEx games.</p>
         <p class="links">
           <a class="btn ghost" href="https://github.com/Rethunk-Tech/mortar-smapi-bridge"><svg aria-hidden="true"><use href="/img/brands.svg#github"></use></svg>SMAPI bridge</a>
           <a class="btn ghost" href="https://github.com/Rethunk-Tech/mortar-bepinex-bridge"><svg aria-hidden="true"><use href="/img/brands.svg#github"></use></svg>BepInEx bridge</a>
@@ -194,11 +170,26 @@ const sections = [
     gap: 14px;
     margin: 0 0 18px;
   }
-  .glance div {
+  .glance > div {
+    display: flex;
+    flex-direction: column;
     background: var(--raised);
     border: 1px solid var(--line);
     border-radius: 14px;
-    padding: 16px 18px;
+    padding: 18px;
+  }
+  .glance .vis {
+    margin-top: auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    padding-top: 14px;
+  }
+  .glance .vis :global(.mark) {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
   }
   .glance dt {
     font-weight: 700;

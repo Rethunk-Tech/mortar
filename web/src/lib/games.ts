@@ -50,6 +50,22 @@ export function playableGames(): Game[] {
   return playable
 }
 
+const LOADER_VERSION = /\s+\d.*$/
+
+/** Loader families by how many playable games use them, versions dropped: "BepInEx 5" and "BepInEx 6" are one family. */
+export function loaderFamilies(): string[] {
+  const families = new Map<string, number>()
+  for (const g of playableGames()) {
+    for (const l of g.loaders ?? []) {
+      const family = l.name.replace(LOADER_VERSION, '')
+      if (family) {
+        families.set(family, (families.get(family) ?? 0) + 1)
+      }
+    }
+  }
+  return [...families].sort((a, b) => b[1] - a[1]).map(([n]) => n)
+}
+
 /** The mod sites any playable game downloads from, in first-seen catalog order. */
 export function modSites(): string[] {
   return [...new Set(playableGames().flatMap((g) => (g.sources ?? []).map((s) => s.id)))]
