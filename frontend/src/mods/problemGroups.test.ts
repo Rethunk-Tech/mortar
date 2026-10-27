@@ -202,3 +202,37 @@ test('a dismissed load failure is listed so it can be restored', () => {
     row: { kind: 'loadFailure' },
   })
 })
+
+test('information rows are listed but not counted: optional or outside needs, errors a mod ran past', () => {
+  const need = (id: string, flags: { optional?: boolean; external?: boolean }) => ({
+    dependentId: 'd',
+    dependentName: 'Dep',
+    id,
+    minimumVersion: '',
+    installedVersion: '',
+    reason: 'absent',
+    listed: false,
+    note: '',
+    optional: false,
+    where: null,
+    ...flags,
+  })
+  const result: Result = {
+    ...emptyResult(),
+    missing: [
+      need('required', {}),
+      need('optional', { optional: true }),
+      need('tool', { external: true }),
+    ],
+    runErrors: [
+      { key: 'a', id: 'A', name: 'A', count: 1, first: '', severe: true, runId: '' },
+      { key: 'b', id: 'B', name: 'B', count: 1, first: '', severe: false, runId: '' },
+    ],
+    loadFailures: [
+      { key: 'c', id: 'C', name: 'C', plugin: '', kind: '', message: '', line: 0, ran: true },
+      { key: 'd', id: 'D', name: 'D', plugin: '', kind: '', message: '', line: 0 },
+    ],
+  }
+  expect(problemSections(result).flatMap((s) => s.rows)).toHaveLength(7)
+  expect(problemCount(result)).toBe(3)
+})
