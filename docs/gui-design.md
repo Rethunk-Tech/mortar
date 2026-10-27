@@ -215,7 +215,7 @@ Under the shared tab header, every non-empty section is a heading with its count
 Section order and membership: `problemSection.ts`. Rules a change could break:
 
 - **The count** comes from one helper, `problemCount`, feeding the tab chip, sidebar badge, the Home hero and cached profile badges, so it is zero only when the tab has nothing to fix. The Mods tab carries no problems banner. While problems load, the chip shows the profile's last known count.
-- **Never counted:** Cosmetic or harmless, Dismissed, Slow startup, and Redundant (warnings, never the chip). Conflicts count except harmless cosmetic asset conflicts.
+- **Never counted:** Cosmetic or harmless, Dismissed, Slow startup, Cleanup and Redundant (warnings, never the chip). Conflicts count except harmless cosmetic asset conflicts.
 - **Conflicts:** the same mods with the same winner and fix are one row listing every asset.
 - **Slow startup:** a mod adding 3 s or more, or a content pack adding 1 s or more, from the latest startup report; a framework that loads content packs (Content Patcher) is never a row itself.
 - **Redundant:** mods replaced by an enabled replacement, packs every edit of which later packs overwrite, and C# mods doing the same job (one row with a **Remove one…** menu). Every row has a quiet **Dismiss**; dismissed rows return by themselves when a different set of mods makes the mod redundant.
