@@ -16,6 +16,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/msbuild"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -51,7 +52,7 @@ func (s *Service) Assemblies(gameID, dir string) ([]Assembly, error) {
 		return nil, err
 	}
 	props, _ := fsx.ReadFile(filepath.Join(p.Dir, "Config.Build.user.props"))
-	root := readProp(string(props), "GameRootDir")
+	root := msbuild.Property(string(props), "GameRootDir")
 	out := []Assembly{}
 	if root != "" {
 		game, _ := filepath.Glob(filepath.Join(root, "*_Data", "Managed", "*.dll"))

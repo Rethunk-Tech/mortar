@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"html"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -17,6 +16,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/modpic"
+	"github.com/Rethunk-Tech/mortar/internal/msbuild"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -79,42 +79,13 @@ type ProjectEdit struct {
 	Categories  []string `json:"categories"`
 }
 
-func propPattern(name string) *regexp.Regexp {
-	return regexp.MustCompile(`(<` + name + `(?:\s[^>]*)?>)([^<]*)(</` + name + `>)`)
-}
-
-func readProp(body, name string) string {
-	m := propPattern(name).FindStringSubmatch(body)
-	if m == nil {
-		return ""
-	}
-	return msbuildUnescape.Replace(html.UnescapeString(strings.TrimSpace(m[2])))
-}
-
-// MSBuild expands $(), @(), %XX and splits on ; in a property's text, so the characters it reads specially are written
-// as %XX. The XML escape runs last: escaping first would turn the ; of &lt; into %3B and break the entity.
-var (
-	msbuildEscape   = strings.NewReplacer("%", "%25", "$", "%24", "@", "%40", ";", "%3B", "'", "%27", "*", "%2A", "?", "%3F")
-	msbuildUnescape = strings.NewReplacer("%25", "%", "%24", "$", "%40", "@", "%3B", ";", "%27", "'", "%2A", "*", "%3F", "?")
-)
-
-// setProp sets the first <name> element's text to value, MSBuild- and XML-escaped; a file without the element is left alone.
+// setProp sets a property of an MSBuild file's text, adding it when missing; a file that does not parse stays as it is.
 func setProp(body, name, value string) string {
-	return setEscapedProp(body, name, xmlEscape(msbuildEscape.Replace(value)))
-}
-
-// setEscapedProp is setProp for text already escaped.
-func setEscapedProp(body, name, text string) string {
-	re := propPattern(name)
-	done := false
-	return re.ReplaceAllStringFunc(body, func(m string) string {
-		if done {
-			return m
-		}
-		done = true
-		parts := re.FindStringSubmatch(m)
-		return parts[1] + text + parts[3]
-	})
+	out, err := msbuild.SetProperty(body, name, value)
+	if err != nil {
+		return body
+	}
+	return out
 }
 
 // csprojOf is the project's one project file under src/, which names it; false when the project is gone.
@@ -220,17 +191,17 @@ func readInfo(dir, csproj string) (ProjectInfo, error) {
 	props, _ := fsx.ReadFile(filepath.Join(dir, propsFile))
 	base := strings.TrimSuffix(filepath.Base(csproj), ".csproj")
 	info := ProjectInfo{
-		Name:        cmpOr(readProp(string(project), "AssemblyTitle"), base),
-		GUID:        readProp(string(project), "AssemblyName"),
-		Author:      readProp(string(props), "Authors"),
-		Team:        readProp(string(props), "ThunderstoreTeam"),
-		Description: readProp(string(project), "ThunderstoreDescription"),
+		Name:        cmpOr(msbuild.Property(string(project), "AssemblyTitle"), base),
+		GUID:        msbuild.Property(string(project), "AssemblyName"),
+		Author:      msbuild.Property(string(props), "Authors"),
+		Team:        msbuild.Property(string(props), "ThunderstoreTeam"),
+		Description: msbuild.Property(string(project), "ThunderstoreDescription"),
 		Categories:  []string{},
 	}
 	info.IDPrefix = strings.TrimSuffix(info.GUID, "."+info.Name)
 	info.Package = packageOf(dir)
-	info.Version = readProp(string(props), "Version")
-	for c := range strings.SplitSeq(readProp(string(project), "ThunderstoreCategories"), ";") {
+	info.Version = msbuild.Property(string(props), "Version")
+	for c := range strings.SplitSeq(msbuild.Property(string(project), "ThunderstoreCategories"), ";") {
 		if c = strings.TrimSpace(c); c != "" {
 			info.Categories = append(info.Categories, c)
 		}
@@ -326,7 +297,10 @@ func (s *Service) Edit(ctx context.Context, gameID, dir string, e ProjectEdit) (
 			body = setProp(body, name, v)
 		}
 		// A ; is the list separator MSBuild splits ThunderPipe's string[] on, so only the XML escape applies.
-		return setEscapedProp(body, "ThunderstoreCategories", xmlEscape(strings.Join(e.Categories, ";")))
+		if out, err := msbuild.SetRawProperty(body, "ThunderstoreCategories", msbuild.EscapeXML(strings.Join(e.Categories, ";"))); err == nil {
+			body = out
+		}
+		return body
 	}); err != nil {
 		return ProjectInfo{}, err
 	}
@@ -334,7 +308,10 @@ func (s *Service) Edit(ctx context.Context, gameID, dir string, e ProjectEdit) (
 		body = setProp(body, "ThunderstoreTeam", e.Team)
 		body = setProp(body, "Authors", e.Author)
 		body = setProp(body, "Company", e.Author)
-		return strings.Replace(body, authorText(old.Author)+"</Copyright>", authorText(e.Author)+"</Copyright>", 1)
+		if c := msbuild.Property(body, "Copyright"); old.Author != "" && strings.HasSuffix(c, old.Author) {
+			body = setProp(body, "Copyright", strings.TrimSuffix(c, old.Author)+e.Author)
+		}
+		return body
 	}); err != nil {
 		return ProjectInfo{}, err
 	}
@@ -353,9 +330,6 @@ func (s *Service) Edit(ctx context.Context, gameID, dir string, e ProjectEdit) (
 	}
 	return s.Inspect(ctx, gameID, dir)
 }
-
-// authorText is the author as the template writes it into a property's text.
-func authorText(author string) string { return xmlEscape(msbuildEscape.Replace(author)) }
 
 func editFile(path string, fn func(string) string) error {
 	body, err := fsx.ReadFile(path)

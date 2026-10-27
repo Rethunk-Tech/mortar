@@ -12,6 +12,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/msbuild"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -116,96 +117,73 @@ func (s *Service) dirty(ctx context.Context, dir string) (map[string]bool, bool)
 	return paths, true
 }
 
-// withDependency sets pkg as a hard or soft dependency in a project file, replacing whichever kind it was, and adds
-// its DLL reference once: in place of an existing entry, after the last dependency, or in a new ItemGroup at the end.
+// withDependency sets pkg as a hard or soft dependency in a project file, in place of whichever kind it was or after
+// the last dependency, and adds its DLL reference once.
 func withDependency(project, pkg, version string, soft bool) string {
 	kind := hardItem
 	if soft {
 		kind = softItem
 	}
-	item := fmt.Sprintf(`<%s Include="%s" Version="%s" />`, kind, pkg, version)
-	listed := regexp.MustCompile(`<(?:` + hardItem + `|` + softItem + `)\s+Include="` + regexp.QuoteMeta(pkg) + `"[^>]*/>`)
-	if listed.MatchString(project) {
-		project = listed.ReplaceAllLiteralString(project, item)
-	} else {
-		project = afterLastDependency(project, item)
+	item := msbuild.Item{Type: kind, Include: pkg, Attrs: map[string]string{"Version": version}}
+	out, err := msbuild.SetItem(project, item, []string{hardItem, softItem}, isDependencyItem)
+	if err != nil {
+		return project
 	}
-	return withReference(project, pkg)
+	return withReference(out, pkg)
 }
 
 // withReference adds pkg's DLL reference, relative to its folder property, after the last dependency unless it is there.
 func withReference(project, pkg string) string {
-	prop := depProp(pkg)
-	ref := fmt.Sprintf(`<Reference Include="$(%[1]s)**/*.dll" Condition="'$(%[1]s)' != ''" Private="false" />`, prop)
-	if !strings.Contains(project, ref) {
-		project = afterLastDependency(project, ref)
-	}
-	return project
-}
-
-var dependencyLine = regexp.MustCompile(`(?m)^([ \t]*)<(?:` + hardItem + `|` + softItem + `|Reference Include="\$\(` + depPropPrefix + `)[^\n]*/>`)
-
-func afterLastDependency(project, item string) string {
-	if all := dependencyLine.FindAllStringSubmatchIndex(project, -1); len(all) > 0 {
-		last := all[len(all)-1]
-		indent := project[last[2]:last[3]]
-		return project[:last[1]] + "\n" + indent + item + project[last[1]:]
-	}
-	closing := strings.LastIndex(project, "</Project>")
-	if closing < 0 {
+	ref := depReference(pkg)
+	out, err := msbuild.SetItem(project, ref, []string{"Reference"}, isDependencyItem)
+	if err != nil {
 		return project
 	}
-	return project[:closing] + "  <ItemGroup>\n    " + item + "\n  </ItemGroup>\n" + project[closing:]
+	return out
+}
+
+func depReference(pkg string) msbuild.Item {
+	prop := depProp(pkg)
+	return msbuild.Item{Type: "Reference", Include: "$(" + prop + ")**/*.dll", Attrs: map[string]string{"Condition": "'$(" + prop + ")' != ''", "Private": "false"}}
+}
+
+// isDependencyItem picks a dependency or the reference to one, the items a new one goes after.
+func isDependencyItem(it msbuild.Item) bool {
+	return it.Type == hardItem || it.Type == softItem || it.Type == "Reference" && strings.HasPrefix(it.Include, "$("+depPropPrefix)
 }
 
 // depProp names the user property holding pkg's folder.
 func depProp(pkg string) string { return depPropPrefix + strings.ReplaceAll(pkg, "-", "_") }
 
-// setUserProp sets a property in the player's own Config.Build.user.props, kept out of the repository.
-func setUserProp(dir, name, value string) error {
+// editUserProps changes the player's own Config.Build.user.props, kept out of the repository, starting one when there is none.
+func editUserProps(dir string, fn func(string) (string, error)) error {
 	path := filepath.Join(dir, "Config.Build.user.props")
 	raw, err := fsx.ReadFile(path)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return err
 	}
 	body := string(raw)
-	element := "<" + name + ">" + xmlEscape(msbuildEscape.Replace(value)) + "</" + name + ">"
-	switch {
-	case readProp(body, name) != "":
-		body = setProp(body, name, value)
-	case strings.Contains(body, "</PropertyGroup>"):
-		body = strings.Replace(body, "</PropertyGroup>", "  "+element+"\n  </PropertyGroup>", 1)
-	default:
-		body = "<Project>\n  <PropertyGroup>\n    " + element + "\n  </PropertyGroup>\n</Project>\n"
+	if strings.TrimSpace(body) == "" {
+		body = "<Project>\n</Project>\n"
 	}
-	if body == string(raw) {
-		return nil
+	out, err := fn(body)
+	if err != nil || out == string(raw) {
+		return err
 	}
-	return fsx.WriteFile(path, []byte(body), 0o600)
+	return fsx.WriteFile(path, []byte(out), 0o600)
 }
 
 // setUserDependency points pkg's folder property at folder and lists pkg as a MortarDependencyFolder, so the template
 // leaves fetching it to Mortar.
 func setUserDependency(dir, pkg, folder string) error {
-	if err := setUserProp(dir, depProp(pkg), folder); err != nil {
-		return err
-	}
-	path := filepath.Join(dir, "Config.Build.user.props")
-	raw, err := fsx.ReadFile(path)
-	if err != nil {
-		return err
-	}
-	body := string(raw)
-	item := `<MortarDependencyFolder Include="` + xmlEscape(pkg) + `" />`
-	switch {
-	case strings.Contains(body, item):
-		return nil
-	case strings.Contains(body, "</ItemGroup>"):
-		body = strings.Replace(body, "</ItemGroup>", "  "+item+"\n  </ItemGroup>", 1)
-	default:
-		body = strings.Replace(body, "</Project>", "  <ItemGroup>\n    "+item+"\n  </ItemGroup>\n</Project>", 1)
-	}
-	return fsx.WriteFile(path, []byte(body), 0o600)
+	return editUserProps(dir, func(body string) (string, error) {
+		body, err := msbuild.SetProperty(body, depProp(pkg), folder)
+		if err != nil {
+			return body, err
+		}
+		item := msbuild.Item{Type: "MortarDependencyFolder", Include: pkg}
+		return msbuild.SetItem(body, item, []string{item.Type}, func(it msbuild.Item) bool { return it.Type == item.Type })
+	})
 }
 
 // packageOf is the Thunderstore package (Team-Name) the project in dir publishes, empty when it names no team.
@@ -216,18 +194,19 @@ func packageOf(dir string) string {
 	}
 	project, _ := fsx.ReadFile(csproj)
 	props, _ := fsx.ReadFile(filepath.Join(dir, propsFile))
-	team := readProp(string(props), "ThunderstoreTeam")
+	team := msbuild.Property(string(props), "ThunderstoreTeam")
 	if team == "" {
 		return ""
 	}
-	return team + "-" + cmpOr(readProp(string(project), "ThunderstoreName"), strings.TrimSuffix(filepath.Base(csproj), ".csproj"))
+	return team + "-" + cmpOr(msbuild.Property(string(project), "ThunderstoreName"), strings.TrimSuffix(filepath.Base(csproj), ".csproj"))
 }
 
 // projectDependencies reads a project file's dependencies by package: true for a soft one.
 func projectDependencies(project string) map[string]bool {
 	out := map[string]bool{}
-	for _, m := range regexp.MustCompile(`<(`+hardItem+`|`+softItem+`)\s+Include="([^"]+)"`).FindAllStringSubmatch(project, -1) {
-		out[m[2]] = m[1] == softItem
+	items, _ := msbuild.Items(project, hardItem, softItem)
+	for _, it := range items {
+		out[it.Include] = it.Type == softItem
 	}
 	return out
 }
@@ -267,7 +246,7 @@ func (s *Service) syncDependencies(gameID string, p settings.DevProject) error {
 		}
 	}
 	src := filepath.Dir(csproj)
-	namespace := cmpOr(readProp(string(raw), "RootNamespace"), strings.TrimSuffix(filepath.Base(csproj), ".csproj"))
+	namespace := cmpOr(msbuild.Property(string(raw), "RootNamespace"), strings.TrimSuffix(filepath.Base(csproj), ".csproj"))
 	// A dependency the template declared has no reference of its own, since the build downloaded it; once Mortar points
 	// at a folder for it, the build skips that download and needs the reference.
 	referenced := string(raw)

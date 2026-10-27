@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/msbuild"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
@@ -203,7 +204,7 @@ func TestSetPropEscapesWhatMSBuildExpands(t *testing.T) {
 	if strings.Contains(out, "$(Version)") || strings.Contains(out, "@(Compile)") {
 		t.Fatalf("MSBuild would expand the value: %s", out)
 	}
-	if got := readProp(out, "Description"); got != text {
+	if got := msbuild.Property(out, "Description"); got != text {
 		t.Fatalf("round trip = %q, want %q", got, text)
 	}
 }

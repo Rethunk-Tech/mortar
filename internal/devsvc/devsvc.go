@@ -26,6 +26,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/msbuild"
 	"github.com/Rethunk-Tech/mortar/internal/nowindow"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -579,10 +580,6 @@ func writeUserProps(dir, gameDir string) error {
 	if gameDir == "" {
 		return nil
 	}
-	body := "<Project>\n  <PropertyGroup>\n    <GameRootDir>" + xmlEscape(msbuildEscape.Replace(filepath.Clean(gameDir)+string(filepath.Separator))) + "</GameRootDir>\n  </PropertyGroup>\n</Project>\n"
+	body := "<Project>\n  <PropertyGroup>\n    <GameRootDir>" + msbuild.Escape(filepath.Clean(gameDir)+string(filepath.Separator)) + "</GameRootDir>\n  </PropertyGroup>\n</Project>\n"
 	return fsx.WriteFile(filepath.Join(dir, "Config.Build.user.props"), []byte(body), 0o600)
-}
-
-func xmlEscape(s string) string {
-	return strings.NewReplacer("&", "&amp;", "<", "&lt;", ">", "&gt;").Replace(s)
 }

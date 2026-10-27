@@ -12,6 +12,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/msbuild"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -24,8 +25,6 @@ type Dependency struct {
 	Version string `json:"version"`
 	Soft    bool   `json:"soft"`
 }
-
-var dependencyItem = regexp.MustCompile(`<(` + hardItem + `|` + softItem + `)\s+Include="([^"]+)"\s+Version="([^"]*)"`)
 
 // Dependencies lists the packages the project in dir depends on, by name, the loader left out.
 func (s *Service) Dependencies(gameID, dir string) ([]Dependency, error) {
@@ -41,10 +40,14 @@ func (s *Service) Dependencies(gameID, dir string) ([]Dependency, error) {
 	if err != nil {
 		return nil, err
 	}
+	items, err := msbuild.Items(string(raw), hardItem, softItem)
+	if err != nil {
+		return nil, err
+	}
 	out := []Dependency{}
-	for _, m := range dependencyItem.FindAllStringSubmatch(string(raw), -1) {
-		if m[2] != loaderPackage {
-			out = append(out, Dependency{Package: m[2], Version: m[3], Soft: m[1] == softItem})
+	for _, it := range items {
+		if it.Include != loaderPackage {
+			out = append(out, Dependency{Package: it.Include, Version: it.Attrs["Version"], Soft: it.Type == softItem})
 		}
 	}
 	slices.SortFunc(out, func(a, b Dependency) int { return strings.Compare(a.Package, b.Package) })
@@ -72,10 +75,14 @@ func (s *Service) RemoveDependency(gameID, dir, pkg string) error {
 	}
 	props := filepath.Join(p.Dir, "Config.Build.user.props")
 	userProps, _ := fsx.ReadFile(props)
-	folder := readProp(string(userProps), depProp(pkg))
+	folder := msbuild.Property(string(userProps), depProp(pkg))
 	soft := projectDependencies(string(raw))[pkg]
 	return s.wire(context.Background(), p.Dir, func() error {
-		if err := fsx.WriteFile(csproj, []byte(withoutDependency(string(raw), pkg)), 0o644); err != nil { // #nosec G306 -- a tracked project file
+		project, err := withoutDependency(string(raw), pkg)
+		if err != nil {
+			return err
+		}
+		if err := fsx.WriteFile(csproj, []byte(project), 0o644); err != nil { // #nosec G306 -- a tracked project file
 			return err
 		}
 		src := filepath.Dir(csproj)
@@ -94,7 +101,7 @@ func (s *Service) RemoveDependency(gameID, dir, pkg string) error {
 		if len(userProps) == 0 {
 			return nil
 		}
-		return fsx.WriteFile(props, []byte(withoutUserDependency(string(userProps), pkg)), 0o600)
+		return editUserProps(p.Dir, func(body string) (string, error) { return withoutUserDependency(body, pkg) })
 	})
 }
 
@@ -127,14 +134,22 @@ func lineOf(pattern string) *regexp.Regexp {
 	return regexp.MustCompile(`(?m)^[ \t]*` + pattern + `[^\n]*\n?`)
 }
 
-func withoutDependency(project, pkg string) string {
-	project = lineOf(`<(?:`+hardItem+`|`+softItem+`)\s+Include="`+regexp.QuoteMeta(pkg)+`"`).ReplaceAllString(project, "")
-	return lineOf(`<Reference Include="\$\(`+regexp.QuoteMeta(depProp(pkg))+`\)`).ReplaceAllString(project, "")
+func withoutDependency(project, pkg string) (string, error) {
+	ref := depReference(pkg).Include
+	return msbuild.Remove(project, func(e msbuild.Elem, parent string) bool {
+		return parent == "ItemGroup" && (e.Name == hardItem || e.Name == softItem) && e.Attrs["Include"] == pkg ||
+			parent == "ItemGroup" && e.Name == "Reference" && e.Attrs["Include"] == ref
+	})
 }
 
-func withoutUserDependency(props, pkg string) string {
-	props = lineOf(`<`+regexp.QuoteMeta(depProp(pkg))+`>`).ReplaceAllString(props, "")
-	return lineOf(`<MortarDependencyFolder Include="`+regexp.QuoteMeta(xmlEscape(pkg))+`"`).ReplaceAllString(props, "")
+func withoutUserDependency(props, pkg string) (string, error) {
+	props, err := msbuild.RemoveProperty(props, depProp(pkg))
+	if err != nil {
+		return props, err
+	}
+	return msbuild.Remove(props, func(e msbuild.Elem, parent string) bool {
+		return parent == "ItemGroup" && e.Name == "MortarDependencyFolder" && e.Attrs["Include"] == pkg
+	})
 }
 
 // undeclareDependency drops the plugin's [BepInDependency] for guid, hard or soft.
