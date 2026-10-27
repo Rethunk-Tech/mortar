@@ -111,3 +111,28 @@ func TestNeedsNewerGame(t *testing.T) {
 		t.Fatalf("an unknown install version made rows: %+v", got)
 	}
 }
+
+func TestADropInReplacementMeetsTheDependency(t *testing.T) {
+	ts := func(id string, enabled bool, needs ...string) framework.Mod {
+		m := framework.Mod{Enabled: enabled}
+		m.UniqueID, m.Format = id, mod.FormatThunderstore
+		for _, n := range needs {
+			m.Dependencies = append(m.Dependencies, mod.Dependency{UniqueID: n, Format: mod.FormatThunderstore, Required: true})
+		}
+		return m
+	}
+	pack := ts("Ns-Pack", true, "Old-Loader")
+	dropIns := map[string]string{"old-loader": "Mortar-Loader"}
+	for name, c := range map[string]struct {
+		mods []framework.Mod
+		want int
+	}{
+		"replacement enabled":   {[]framework.Mod{pack, ts("Mortar-Loader", true)}, 0},
+		"replacement disabled":  {[]framework.Mod{pack, ts("Mortar-Loader", false)}, 1},
+		"replacement not there": {[]framework.Mod{pack}, 1},
+	} {
+		if got := missingDeps("", dropIns, []framework.Mod{pack}, indexByID(c.mods)); len(got) != c.want {
+			t.Errorf("%s: missing = %+v", name, got)
+		}
+	}
+}

@@ -121,7 +121,7 @@ func (d Driver) Closure(ctx context.Context, key string, roots []Ref, mortarVers
 	// A later request can raise a version that an earlier visit used, so walk again until nothing rises; versions only
 	// go up, so this ends.
 	for {
-		w := &walk{byID: byID, exact: exact, deps: deps, chosen: chosen, state: map[string]int{}}
+		w := &walk{byID: byID, exact: exact, deps: deps, chosen: chosen, state: map[string]int{}, dropIns: d.DropIns}
 		for _, r := range roots {
 			if err := w.visit(r, nil); err != nil {
 				return nil, err
@@ -150,6 +150,8 @@ type walk struct {
 	state  map[string]int // 1 visiting, 2 done
 	order  []string
 	raised bool
+	// dropIns swaps a dependency for its outright replacement; a root the user asked for stays as asked.
+	dropIns map[string]string
 }
 
 // managers are other mod managers that communities list as packages. They are programs, not mods: nothing a profile
@@ -197,6 +199,11 @@ func (w *walk) visit(ref Ref, chain []string) error {
 			r, err := parseDependency(dep)
 			if err != nil {
 				return fmt.Errorf("%w (in %s)", err, via)
+			}
+			if to, ok := w.dropIns[packageID(r.Namespace, r.Name)]; ok {
+				if ns, name, cut := strings.Cut(to, "-"); cut {
+					r = Ref{Namespace: ns, Name: name}
+				}
 			}
 			if err := w.visit(r, append(chain, id+" "+ver.Number)); err != nil {
 				return err

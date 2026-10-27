@@ -27,6 +27,9 @@ type Driver struct {
 	CacheDir string
 	// Now is the clock the hourly refresh reads; nil means time.Now.
 	Now func() time.Time
+	// DropIns maps a package (lowercased "Namespace-Name") to the "Namespace-Name" that replaces it outright; a
+	// dependency on the first resolves to the second.
+	DropIns map[string]string
 }
 
 var _ = source.Register(Driver{})

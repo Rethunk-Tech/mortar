@@ -165,3 +165,29 @@ func TestClosureCaseTwinKeepsTheLivePackage(t *testing.T) {
 		}
 	}
 }
+
+func TestClosureSwapsADependencyForItsDropIn(t *testing.T) {
+	f := newFake(t)
+	f.chunk0 = append(f.chunk0,
+		custom("Old", "Loader", v("1.0.0")),
+		custom("Mortar", "Loader", v("0.1.0")),
+		custom("Ns", "Pack", v("1.0.0", "Old-Loader-1.0.0")),
+	)
+	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir(), DropIns: map[string]string{"old-loader": "Mortar-Loader"}}
+	for roots, want := range map[Ref]string{
+		{"Ns", "Pack", ""}:    "Loader 0.1.0, Pack 1.0.0",
+		{"Old", "Loader", ""}: "Loader 1.0.0",
+	} {
+		got, err := d.Closure(t.Context(), "lethal-company", []Ref{roots}, "1.2.3", DepsNewest)
+		if err != nil {
+			t.Fatal(err)
+		}
+		names := make([]string, 0, len(got))
+		for _, r := range got {
+			names = append(names, r.Name+" "+r.Version)
+		}
+		if strings.Join(names, ", ") != want {
+			t.Errorf("%v: %s, want %s", roots, strings.Join(names, ", "), want)
+		}
+	}
+}

@@ -656,7 +656,8 @@ func run() error {
 			if key == "" {
 				return nil, fmt.Errorf("%s has no Thunderstore community", gameID)
 			}
-			return thunderstore.Driver{CacheDir: filepath.Join(dataDir, "cache")}.Closure(ctx, key, roots, version, deps)
+			d := thunderstore.Driver{CacheDir: filepath.Join(dataDir, "cache"), DropIns: components.KnownBrokenFor(ctx, gameID).DropIns()}
+			return d.Closure(ctx, key, roots, version, deps)
 		},
 		ExactDependencies: func(game, profileID string) bool {
 			p, err := profiles.Get(game, profileID)

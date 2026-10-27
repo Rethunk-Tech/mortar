@@ -87,3 +87,16 @@ func TestDecodeRefusesAKnownBrokenList(t *testing.T) {
 		t.Fatal("a signed known-broken list decoded as a catalog")
 	}
 }
+
+func TestADropInNeedsASupersededEntryWithAReplacement(t *testing.T) {
+	entry := func(extra string) []byte {
+		return []byte(`{"game":"lethal-company","serial":1,"entries":[{"ids":{"thunderstore":"Old-Loader"},"through":"9.9.9","reason":"r"` + extra + `}]}`)
+	}
+	if _, err := DecodeBrokenList(entry(`,"dropIn":true,"replacement":"Mortar-Loader"`), "lethal-company"); err == nil {
+		t.Error("a dropIn on a broken entry decoded")
+	}
+	l, err := DecodeBrokenList(entry(`,"kind":"superseded","dropIn":true,"replacement":"Mortar-Loader"`), "lethal-company")
+	if err != nil || l.DropIns()["old-loader"] != "Mortar-Loader" {
+		t.Errorf("drop-ins %v, %v", l.DropIns(), err)
+	}
+}

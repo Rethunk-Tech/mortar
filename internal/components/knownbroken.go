@@ -38,6 +38,9 @@ type BrokenEntry struct {
 	Reason string `json:"reason"`
 	// Replacement is a package ("Namespace-Name") to use instead, optional.
 	Replacement string `json:"replacement,omitempty"`
+	// DropIn, on a superseded entry with a Replacement, says the replacement does everything the mod did for the
+	// packs that need it, so it meets their dependency on the mod.
+	DropIn bool `json:"dropIn,omitempty"`
 }
 
 // Kinds of known-broken entry: it does not work, another mod does its job now, or it works but is best avoided.
@@ -92,6 +95,17 @@ func (e BrokenEntry) Breaks(version, gameVersion string) bool {
 		return false
 	}
 	return e.GameVersions == "" || gameVersion == "" || inConstraints(gameVersion, e.GameVersions)
+}
+
+// DropIns maps each Thunderstore package a drop-in entry names, lowercased "Namespace-Name", to its replacement.
+func (l BrokenList) DropIns() map[string]string {
+	out := map[string]string{}
+	for _, e := range l.Entries {
+		if e.DropIn && e.Status() == BrokenKindSuperseded && e.Replacement != "" && e.IDs.Thunderstore != "" {
+			out[strings.ToLower(e.IDs.Thunderstore)] = e.Replacement
+		}
+	}
+	return out
 }
 
 // Find is the entry that flags m on gameVersion, if any.
@@ -172,6 +186,9 @@ func DecodeBrokenList(body []byte, game string) (BrokenList, error) {
 		}
 		if !slices.Contains([]string{BrokenKindBroken, BrokenKindSuperseded, BrokenKindNotRecommended}, e.Status()) {
 			return BrokenList{}, fmt.Errorf("known-broken entry %d has an unknown kind %q", i, e.Kind)
+		}
+		if e.DropIn && (e.Status() != BrokenKindSuperseded || e.Replacement == "" || e.IDs.Thunderstore == "") {
+			return BrokenList{}, fmt.Errorf("known-broken entry %d: dropIn needs kind superseded, a thunderstore id and a replacement", i)
 		}
 		for c := range strings.FieldsSeq(e.GameVersions) {
 			if !versionConstraint.MatchString(c) {

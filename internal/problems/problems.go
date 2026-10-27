@@ -44,6 +44,9 @@ type Environment struct {
 	// VersionScheme is how the game's loader versions its mods (deps.SemverSMAPI and the like); dependency
 	// constraints are read in it.
 	VersionScheme string
+	// DropIns maps a Thunderstore package (lowercased "Namespace-Name") to the one the known-broken list says
+	// replaces it outright: a dependency on the first is met by the second.
+	DropIns map[string]string
 }
 
 // SiteVSModDB is a Ref to a mod on the Vintage Story Mod DB.
@@ -272,7 +275,7 @@ func Check(ctx context.Context, m Meta, env Environment, mods []framework.Mod, r
 		analyzed <- analysis{found: found, timings: timings}
 	}()
 	reqStart := time.Now()
-	missing := missingDeps(env.VersionScheme, enabled, indexByID(mods))
+	missing := missingDeps(env.VersionScheme, env.DropIns, enabled, indexByID(mods))
 	listed, listedNeeded, listedUnknown := listedRequirements(ctx, m, reqs, env.Nexus.Domain, enabled, mods)
 	missing = append(missing, listed...)
 	reqTiming := CheckTiming{Name: "requirements", Ms: time.Since(reqStart).Milliseconds(), Count: len(missing)}
@@ -407,7 +410,7 @@ func indexByID(mods []framework.Mod) map[string][]framework.Mod {
 	return idx
 }
 
-func missingDeps(scheme string, enabled []framework.Mod, byID map[string][]framework.Mod) []Missing {
+func missingDeps(scheme string, dropIns map[string]string, enabled []framework.Mod, byID map[string][]framework.Mod) []Missing {
 	out := []Missing{}
 	for _, d := range enabled {
 		for _, dep := range d.Dependencies {
@@ -416,7 +419,7 @@ func missingDeps(scheme string, enabled []framework.Mod, byID map[string][]frame
 			}
 			miss := Missing{DependentID: d.ModID(), DependentName: d.Name, ID: dep.ModID(), MinimumVersion: dep.MinimumVersion}
 			reason, installedVersion := depState(scheme, byID, dep)
-			if reason == "" {
+			if reason == "" || reason == "absent" && replacedBy(dropIns, byID, dep.ModID()) {
 				continue
 			}
 			miss.Reason, miss.InstalledVersion = reason, installedVersion
@@ -717,6 +720,15 @@ func optionalRequirement(note string) bool {
 
 func isWordByte(b byte) bool {
 	return (b >= 'a' && b <= 'z') || (b >= '0' && b <= '9') || b == '_'
+}
+
+// replacedBy reports whether an enabled mod in byID is the drop-in replacement for id.
+func replacedBy(dropIns map[string]string, byID map[string][]framework.Mod, id mod.ID) bool {
+	r, ok := dropIns[strings.ToLower(id.Local())]
+	if !ok || id.Format() != mod.FormatThunderstore {
+		return false
+	}
+	return slices.ContainsFunc(byID[mod.ID(mod.FormatThunderstore+":"+r).Fold()], func(x framework.Mod) bool { return x.Enabled })
 }
 
 // depState says why the mods in all do not satisfy dep: "absent", "disabled" or "outdated", with the highest
