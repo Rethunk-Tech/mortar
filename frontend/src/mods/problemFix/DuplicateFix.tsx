@@ -1,4 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
+import { Trash2 } from 'lucide-react'
 import { reportUnexpected } from '../../toasts/report.ts'
 import type { Problem } from '../lookup.ts'
 import { useMods } from '../store.ts'
@@ -26,6 +27,7 @@ export function DuplicateFix({
           const mod = mods.find((candidate) => candidate.key === file.key)
           return mod ? (
             <FixAction
+              icon={<Trash2 size={16} aria-hidden={true} />}
               key={file.key}
               label={t`Remove ${{ name: file.fileName || file.key }}`}
               weight="other"

@@ -1,4 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
+import { ExternalLink } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { type Problem, sameId } from '../lookup.ts'
@@ -33,12 +34,24 @@ export function BrokenFix({
   if (where && replaceName !== '') {
     replace =
       (broken.status === 'obsolete' || broken.status === 'deprecated') && where.url ? (
-        <FixAction label={t`Open replacement`} weight="main" onClick={() => openPage(where.url)} />
+        <FixAction
+          icon={<ExternalLink size={16} aria-hidden={true} />}
+          label={t`Open replacement`}
+          weight="main"
+          onClick={() => openPage(where.url)}
+        />
       ) : (
         <WhereButtons where={where} addLabel={t`Replace with ${{ name: replaceName }}`} />
       )
   } else if (where?.url) {
-    replace = <FixAction label={t`Open page`} weight="main" onClick={() => openPage(where.url)} />
+    replace = (
+      <FixAction
+        icon={<ExternalLink size={16} aria-hidden={true} />}
+        label={t`Open page`}
+        weight="main"
+        onClick={() => openPage(where.url)}
+      />
+    )
   }
   const advice =
     dismissedToken !== undefined ||

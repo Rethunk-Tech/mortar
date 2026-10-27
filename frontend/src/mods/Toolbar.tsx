@@ -1,21 +1,9 @@
 import type { I18n } from '@lingui/core'
 import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Chip,
-  CircularProgress,
-  ListItemIcon,
-  ListItemText,
-  ListSubheader,
-  Menu,
-  MenuItem,
-  useMediaQuery,
-} from '@mui/material'
+import { Box, Button, Chip, CircularProgress, Menu, useMediaQuery } from '@mui/material'
 import {
   Ban,
-  Check,
   ChevronDown,
   Download,
   Filter,
@@ -46,10 +34,9 @@ import { ControlsRow } from '../shell/ControlsRow.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { useKeptWhileClosed } from '../shell/keptWhileClosed.ts'
-import { MenuAction } from '../shell/MenuAction.tsx'
-import { pickWithoutFocus } from '../shell/pickWithoutFocus.ts'
+import { MenuAction, MenuCheck } from '../shell/MenuAction.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
-import { MenuRule } from '../shell/TitleMenu.tsx'
+import { MenuHeading, MenuRule } from '../shell/TitleMenu.tsx'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { ViewToggle } from '../shell/ViewToggle.tsx'
 import { space } from '../theme/density.ts'
@@ -140,28 +127,19 @@ function ImplicitViewItems() {
   const view = useSettings((s) => s.implicitModsView)
   return (
     <>
-      <ListSubheader
-        sx={{ bgcolor: 'transparent', lineHeight: '28px', fontSize: 'small.fontSize' }}
-      >
-        {t`Implicit mods`}
-      </ListSubheader>
+      <MenuHeading>{t`Implicit mods`}</MenuHeading>
       {[
         { id: 'shown', label: t`Always shown` },
         { id: 'nested', label: t`Nested` },
         { id: 'hidden', label: t`Hidden` },
       ].map((item) => (
-        <MenuItem
+        <MenuCheck
           key={item.id}
-          role="menuitemradio"
-          aria-checked={view === item.id}
-          selected={view === item.id}
+          radio={true}
+          checked={view === item.id}
+          label={item.label}
           onClick={() => persistImplicitView(item.id)}
-        >
-          <ListItemIcon sx={{ color: 'inherit' }}>
-            {view === item.id ? <Check size={16} aria-hidden={true} /> : null}
-          </ListItemIcon>
-          <ListItemText>{item.label}</ListItemText>
-        </MenuItem>
+        />
       ))}
     </>
   )
@@ -194,19 +172,13 @@ const ShowFilterControl = memo(function ShowFilterMenu({
       { id: 'all' as const, label: t`All mods` },
       ...FILTERS.map((item) => ({ id: item.id, label: item.label(i18n) })),
     ].map((item) => (
-      <MenuItem
+      <MenuCheck
         key={item.id}
-        role="menuitemradio"
-        aria-checked={filter === item.id}
-        selected={filter === item.id}
-        onMouseDown={pickWithoutFocus}
+        radio={true}
+        checked={filter === item.id}
+        label={item.label}
         onClick={() => choose(item.id)}
-      >
-        <ListItemIcon sx={{ color: 'inherit' }}>
-          {filter === item.id ? <Check size={16} aria-hidden={true} /> : null}
-        </ListItemIcon>
-        <ListItemText>{item.label}</ListItemText>
-      </MenuItem>
+      />
     )),
     <MenuRule key="rule" />,
     <ImplicitViewItems key="implicit" />,
@@ -281,23 +253,18 @@ const GroupByControl = memo(function GroupByMenu() {
             { id: 'reason' as const, label: t`Install reason`, Icon: UserCheck },
           ].sort((a, b) => a.label.localeCompare(b.label)),
         ].map((item) => (
-          <Tooltip key={item.id} title={item.hint ?? ''} placement="right">
-            <MenuItem
-              role="menuitemradio"
-              aria-checked={by === item.id}
-              selected={by === item.id}
-              onMouseDown={pickWithoutFocus}
-              onClick={() => {
-                persistGroupBy(item.id)
-                setAnchor(null)
-              }}
-            >
-              <ListItemIcon sx={{ color: 'inherit' }}>
-                <item.Icon size={16} aria-hidden={true} />
-              </ListItemIcon>
-              <ListItemText>{item.label}</ListItemText>
-            </MenuItem>
-          </Tooltip>
+          <MenuCheck
+            key={item.id}
+            radio={true}
+            checked={by === item.id}
+            icon={<item.Icon size={16} aria-hidden={true} />}
+            label={item.label}
+            hint={item.hint}
+            onClick={() => {
+              persistGroupBy(item.id)
+              setAnchor(null)
+            }}
+          />
         ))}
         <MenuRule />
         <MenuAction

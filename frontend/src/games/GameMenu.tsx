@@ -26,7 +26,7 @@ import { useOpenGame } from './useOpenGame.ts'
 
 const THUMB_PX = 22
 const MENU_PX = 300
-const ICON_PX = 18
+const ICON_PX = 16
 const STRIP_PX = 56
 
 function Thumb({ game }: { game: GameInfo | undefined }) {

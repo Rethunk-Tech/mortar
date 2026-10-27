@@ -1,4 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
+import { Trophy, Undo2 } from 'lucide-react'
 import { reportUnexpected } from '../../toasts/report.ts'
 import type { Problem } from '../lookup.ts'
 import { sameId } from '../lookup.ts'
@@ -40,6 +41,7 @@ function WinFix({
     }
     return (
       <FixAction
+        icon={<Undo2 size={16} aria-hidden={true} />}
         label={t`Undo`}
         weight="other"
         tone={tone}
@@ -54,6 +56,7 @@ function WinFix({
   }
   return (
     <FixAction
+      icon={<Trophy size={16} aria-hidden={true} />}
       label={t`Make a pack win`}
       weight={primary ? 'main' : 'other'}
       tone={tone}

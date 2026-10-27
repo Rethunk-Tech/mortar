@@ -1,4 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
+import { EyeOff, PowerOff, Wrench } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { type Problem, sameId } from '../lookup.ts'
@@ -32,6 +33,7 @@ export function AssetFix({
     <>
       {fixes.map((fix) => (
         <FixAction
+          icon={<Wrench size={16} aria-hidden={true} />}
           key={`${fix.id}/${fix.field}`}
           label={t`Set ${{ field: fix.field }} to ${{ value: fix.value }}`}
           tooltip={t`In ${{ name: fix.name }}; disables its edits here`}
@@ -44,6 +46,7 @@ export function AssetFix({
       {win(fixes.length === 0 && !problem.asset.cosmetic)}
       {mod ? (
         <FixAction
+          icon={<PowerOff size={16} aria-hidden={true} />}
           label={t`Disable`}
           weight="other"
           tone={tone}
@@ -54,6 +57,7 @@ export function AssetFix({
       {dismissedToken === undefined ? null : <RestoreButton token={dismissedToken} />}
       {dismissedToken === undefined && problem.asset.kind !== '' ? (
         <FixAction
+          icon={<EyeOff size={16} aria-hidden={true} />}
           label={t`Dismiss`}
           weight="quiet"
           onClick={() => {

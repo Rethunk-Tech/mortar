@@ -1,4 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
+import { EyeOff, ScrollText } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { RunError } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { DismissRunError } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
@@ -60,8 +61,14 @@ export function RunErrorButtons({
           modLogName={runError.name}
         />
       ) : null}
-      <FixAction label={t`Show in log`} weight="other" onClick={openHelp} />
       <FixAction
+        icon={<ScrollText size={16} aria-hidden={true} />}
+        label={t`Show in log`}
+        weight="other"
+        onClick={openHelp}
+      />
+      <FixAction
+        icon={<EyeOff size={16} aria-hidden={true} />}
         label={t`Dismiss`}
         weight="quiet"
         onClick={() => {

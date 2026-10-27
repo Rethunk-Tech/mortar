@@ -1,4 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
+import { ExternalLink, Plus } from 'lucide-react'
 import type { Ref } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { download } from '../../queue/actions.ts'
@@ -17,7 +18,14 @@ export function WhereButtons({ where, addLabel }: { where: Ref; addLabel: string
   if (!url) {
     return null
   }
-  const open = <FixAction label={t`Open page`} weight="other" onClick={() => openPage(url)} />
+  const open = (
+    <FixAction
+      icon={<ExternalLink size={16} aria-hidden={true} />}
+      label={t`Open page`}
+      weight="other"
+      onClick={() => openPage(url)}
+    />
+  )
   const want = refWant(where, 'dependency')
   if (!want) {
     return open
@@ -27,6 +35,7 @@ export function WhereButtons({ where, addLabel }: { where: Ref; addLabel: string
     <>
       {open}
       <FixAction
+        icon={<Plus size={16} aria-hidden={true} />}
         label={queued ? t`Queued` : addLabel}
         weight="main"
         disabled={queued}

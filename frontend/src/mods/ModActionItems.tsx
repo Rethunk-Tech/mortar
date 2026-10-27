@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Collapse, ListItemIcon, ListItemText, MenuItem } from '@mui/material'
+import { Box, Collapse } from '@mui/material'
 import {
   ChevronDown,
   ChevronRight,
@@ -36,13 +36,13 @@ function OtherProfilesGroup({
   const [open, setOpen] = useState(false)
   return (
     <>
-      <MenuItem aria-expanded={open} onClick={() => setOpen(!open)}>
-        <ListItemIcon sx={{ color: 'inherit' }}>
-          <Users size={ICON_SIZE} />
-        </ListItemIcon>
-        <ListItemText>{t`Other profiles`}</ListItemText>
-        {open ? <ChevronDown size={ICON_SIZE} /> : <ChevronRight size={ICON_SIZE} />}
-      </MenuItem>
+      <MenuAction
+        icon={<Users size={ICON_SIZE} />}
+        label={t`Other profiles`}
+        expanded={open}
+        end={open ? <ChevronDown size={ICON_SIZE} /> : <ChevronRight size={ICON_SIZE} />}
+        onClick={() => setOpen(!open)}
+      />
       <Collapse in={open} unmountOnExit={true}>
         <Box sx={{ pl: space.pad }}>
           <MenuAction

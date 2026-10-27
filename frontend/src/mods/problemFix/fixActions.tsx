@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Divider, ListItemText, ListSubheader, Menu, MenuItem } from '@mui/material'
+import { Box, Button, Menu } from '@mui/material'
 import { ChevronDown } from 'lucide-react'
 import {
   type MouseEvent,
@@ -11,6 +11,8 @@ import {
   useRef,
   useState,
 } from 'react'
+import { MenuAction } from '../../shell/MenuAction.tsx'
+import { MenuHeading, MenuRule } from '../../shell/TitleMenu.tsx'
 import { Tooltip } from '../../shell/Tooltip.tsx'
 import { LockedReason } from '../LockedReason.tsx'
 import { arrangeFixes, type FixWeight } from './arrangeFixes.ts'
@@ -23,6 +25,8 @@ interface FixChoice {
 
 export interface FixSpec {
   label: string
+  // Shown beside the label when the fix lists in the split button's menu.
+  icon?: ReactNode
   weight: FixWeight
   // A fix without onClick offers its choices: as the button it opens them, in the menu they list under its label.
   onClick?: () => void
@@ -107,30 +111,31 @@ export function SplitFix({ children }: { children: ReactNode }) {
   const item = (fix: (typeof entries)[number]) =>
     fix.choices
       ? [
-          <ListSubheader key={`${fix.id}/head`}>{fix.label}</ListSubheader>,
+          <MenuHeading key={`${fix.id}/head`}>{fix.label}</MenuHeading>,
           ...fix.choices.map((choice, i) => (
-            <MenuItem
+            <MenuAction
               key={`${fix.id}/${choice.label}`}
+              icon={null}
+              label={choice.label}
               disabled={fix.locked === true || fix.disabled === true}
               onClick={() => fire(fix.id, i)}
-            >
-              {choice.label}
-            </MenuItem>
+            />
           )),
         ]
       : [
-          <MenuItem
+          <MenuAction
             key={fix.id}
+            icon={fix.icon ?? null}
+            label={fix.label}
+            detail={fix.tooltip}
             disabled={fix.locked === true || fix.disabled === true}
             onClick={() => fire(fix.id)}
-          >
-            <ListItemText primary={fix.label} secondary={fix.tooltip} />
-          </MenuItem>,
+          />,
         ]
   const menuItems = main
     ? [
         ...others.flatMap(item),
-        ...(others.length > 0 && quiet.length > 0 ? [<Divider key="quiet" />] : []),
+        ...(others.length > 0 && quiet.length > 0 ? [<MenuRule key="quiet" />] : []),
         ...quiet.flatMap(item),
       ]
     : []

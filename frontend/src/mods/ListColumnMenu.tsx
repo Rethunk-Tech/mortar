@@ -16,21 +16,13 @@ import {
   useSortable,
 } from '@dnd-kit/sortable'
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  ListItemIcon,
-  ListItemText,
-  Menu,
-  MenuItem,
-  TableCell,
-  type TableCellProps,
-} from '@mui/material'
+import { Box, Menu, TableCell, type TableCellProps } from '@mui/material'
 import { alpha } from '@mui/material/styles'
-import { ArrowDown, ArrowUp, Check, RotateCcw } from 'lucide-react'
+import { ArrowDown, ArrowUp, RotateCcw } from 'lucide-react'
 import { type MouseEvent, type ReactNode, useRef, useState } from 'react'
 import { SetListSort } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { useSettings } from '../settings/store.ts'
-import { MenuAction } from '../shell/MenuAction.tsx'
+import { MenuAction, MenuCheck } from '../shell/MenuAction.tsx'
 import { MenuRule } from '../shell/TitleMenu.tsx'
 import { visuallyHidden } from '../shell/visuallyHidden.ts'
 import { space } from '../theme/density.ts'
@@ -272,20 +264,13 @@ function ListColumnMenu({
           const locked = LOCKED_LIST_COLUMNS.includes(id)
           const shown = visible.includes(id)
           return (
-            <MenuItem
+            <MenuCheck
               key={id}
-              role="menuitemcheckbox"
-              aria-checked={shown}
+              checked={shown}
               disabled={locked}
-              onClick={() => {
-                onToggle(id)
-              }}
-            >
-              <ListItemIcon sx={{ color: 'inherit' }}>
-                {shown ? <Check size={16} aria-hidden={true} /> : null}
-              </ListItemIcon>
-              <ListItemText>{columnLabel(id, idName)}</ListItemText>
-            </MenuItem>
+              label={columnLabel(id, idName)}
+              onClick={() => onToggle(id)}
+            />
           )
         }),
       ])}

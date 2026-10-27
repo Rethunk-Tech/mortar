@@ -45,7 +45,7 @@ import { MenuHeading, MenuRule, TitleMenu, TitleMenuItem } from './TitleMenu.tsx
 import { Tooltip } from './Tooltip.tsx'
 import { closeTitleMenu, useTitleMenu } from './titleMenus.ts'
 
-const ICON_PX = 18
+const ICON_PX = 16
 const SOURCE = 'https://github.com/Rethunk-Tech/mortar'
 
 // A disabled row cannot take hover, so its reason rides on a wrapper.

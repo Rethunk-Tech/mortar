@@ -1,9 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
-import { ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material'
+import { Menu } from '@mui/material'
 import { Copy, EyeOff } from 'lucide-react'
 import type { Entry } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import { HideLogSource } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { copyText } from '../share/copyText.ts'
+import { MenuAction } from '../shell/MenuAction.tsx'
 import { reportError } from '../toasts/report.ts'
 import { formatFull } from './filter.ts'
 import { sourceOf } from './logSource.ts'
@@ -50,45 +51,37 @@ export function LineMenu({
       anchorReference="anchorPosition"
       anchorPosition={at ?? undefined}
     >
-      <MenuItem
+      <MenuAction
+        icon={<Copy size={16} aria-hidden={true} />}
+        label={selection.length > 0 ? t`Copy the selected lines` : t`Copy this message`}
         onClick={() => {
           const lines = (selection.length > 0 ? selection : group).map(formatFull).join('\n')
           copyText(lines, selection.length > 0 ? t`Selected lines copied` : t`Message copied`)
           onClose()
         }}
-      >
-        <ListItemIcon>
-          <Copy size={16} aria-hidden={true} />
-        </ListItemIcon>
-        <ListItemText>
-          {selection.length > 0 ? t`Copy the selected lines` : t`Copy this message`}
-        </ListItemText>
-      </MenuItem>
+      />
       {object ? (
-        <MenuItem title={object} onClick={() => hide(object)}>
-          <ListItemIcon>
-            <EyeOff size={16} aria-hidden={true} />
-          </ListItemIcon>
-          <ListItemText>{t`Hide this message from ${name}`}</ListItemText>
-        </MenuItem>
+        <MenuAction
+          icon={<EyeOff size={16} aria-hidden={true} />}
+          label={t`Hide this message from ${name}`}
+          title={object}
+          onClick={() => hide(object)}
+        />
       ) : null}
       {source ? (
-        <MenuItem onClick={() => hide('')}>
-          <ListItemIcon>
-            <EyeOff size={16} aria-hidden={true} />
-          </ListItemIcon>
-          <ListItemText>
-            {object ? t`Hide this message from every object` : t`Hide this message`}
-          </ListItemText>
-        </MenuItem>
+        <MenuAction
+          icon={<EyeOff size={16} aria-hidden={true} />}
+          label={object ? t`Hide this message from every object` : t`Hide this message`}
+          onClick={() => hide('')}
+        />
       ) : null}
       {method ? (
-        <MenuItem title={method} onClick={() => hide('', '')}>
-          <ListItemIcon>
-            <EyeOff size={16} aria-hidden={true} />
-          </ListItemIcon>
-          <ListItemText>{t`Hide every message from ${{ method: shortMethod(method) }}`}</ListItemText>
-        </MenuItem>
+        <MenuAction
+          icon={<EyeOff size={16} aria-hidden={true} />}
+          label={t`Hide every message from ${{ method: shortMethod(method) }}`}
+          title={method}
+          onClick={() => hide('', '')}
+        />
       ) : null}
     </Menu>
   )

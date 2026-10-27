@@ -1,24 +1,19 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material'
-import { Check, ChevronDown, History } from 'lucide-react'
+import { Box, Button, Menu, MenuItem } from '@mui/material'
+import { ChevronDown, History } from 'lucide-react'
 import { useState } from 'react'
 import type { Run } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { MenuCheck } from '../shell/MenuAction.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { listRuns } from './listRuns.ts'
 import { useOutcomeLabel } from './outcome.ts'
 import { runExitText } from './runExit.ts'
 import { useConsole } from './store.ts'
-
-const RadioMark = ({ on }: { on: boolean }) => (
-  <ListItemIcon sx={{ color: 'inherit' }}>
-    {on ? <Check size={16} aria-hidden={true} /> : null}
-  </ListItemIcon>
-)
 
 export function RunsPicker({ game }: { game: string }) {
   const { t } = useLingui()
@@ -68,50 +63,40 @@ export function RunsPicker({ game }: { game: string }) {
         onClose={() => setAnchor(null)}
         slotProps={{ paper: { sx: { maxHeight: 360, minWidth: 280 } } }}
       >
-        <MenuItem
-          dense={true}
-          role="menuitemradio"
-          aria-checked={viewingRun === ''}
-          selected={viewingRun === ''}
+        <MenuCheck
+          radio={true}
+          checked={viewingRun === ''}
+          label={t`This session`}
           onClick={() => {
             viewRun(game, profile, '')
             setAnchor(null)
           }}
-        >
-          <RadioMark on={viewingRun === ''} />
-          <ListItemText>{t`This session`}</ListItemText>
-        </MenuItem>
+        />
         {runs.length === 0 ? <MenuItem disabled={true}>{t`No recorded runs yet`}</MenuItem> : null}
         {runs.map((r) => (
-          <MenuItem
+          <MenuCheck
             key={r.id}
-            dense={true}
-            role="menuitemradio"
-            aria-checked={viewingRun === r.id}
-            selected={viewingRun === r.id}
+            radio={true}
+            checked={viewingRun === r.id}
             title={r.error || runExitText(r.exit)}
+            label={label(r)}
+            detail={
+              r.error ||
+              (r.unclassified
+                ? plural(
+                    { count: r.unclassified },
+                    {
+                      one: '# log line Mortar could not classify',
+                      other: '# log lines Mortar could not classify',
+                    },
+                  )
+                : undefined)
+            }
             onClick={() => {
               viewRun(game, profile, r.id)
               setAnchor(null)
             }}
-          >
-            <RadioMark on={viewingRun === r.id} />
-            <ListItemText
-              primary={label(r)}
-              secondary={
-                r.error ||
-                (r.unclassified
-                  ? plural(
-                      { count: r.unclassified },
-                      {
-                        one: '# log line Mortar could not classify',
-                        other: '# log lines Mortar could not classify',
-                      },
-                    )
-                  : undefined)
-              }
-            />
-          </MenuItem>
+          />
         ))}
       </Menu>
     </Box>

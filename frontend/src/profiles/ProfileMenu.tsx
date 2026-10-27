@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase } from '@mui/material'
+import { ButtonBase } from '@mui/material'
 import { ChevronDown, Download, LayoutTemplate, ListOrdered, Plus } from 'lucide-react'
 import { memo, useCallback, useMemo, useState } from 'react'
 import { create } from 'zustand'
@@ -19,27 +19,14 @@ import { ManageTemplatesDialog } from '../templates/TemplateDialogs.tsx'
 import { useTemplates } from '../templates/useTemplates.ts'
 import { space } from '../theme/density.ts'
 import { userModCount } from './count.ts'
-import { ProfileMark } from './ProfileMark.tsx'
+import { ProfileDot } from './ProfileDot.tsx'
 import { openProfileOf, useProfiles } from './store.ts'
 
-const ICON_PX = 18
+const ICON_PX = 16
 
 interface Position {
   top: number
   left: number
-}
-
-function Dot({ mark }: { mark: Profile | undefined }) {
-  if (mark && (mark.color || mark.icon)) {
-    return <ProfileMark profile={mark} size={18} />
-  }
-  return (
-    <Box
-      component="span"
-      aria-hidden={true}
-      sx={{ width: 10, height: 10, flexShrink: 0, borderRadius: '50%', bgcolor: 'primary.main' }}
-    />
-  )
 }
 
 function ProfileButton({
@@ -109,7 +96,7 @@ function ProfileButton({
         },
       }}
     >
-      <Dot mark={current} />
+      <ProfileDot profile={current} size={ICON_PX} />
       {/* Named by its content, so the visible text is inside the accessible name. */}
       {current ? <span className="profile-button-hidden">{`${t`Switch profile`}:`}</span> : null}
       <span className="profile-button-name">{current?.name ?? t`No profile`}</span>
@@ -154,7 +141,7 @@ function ProfileMenuListView({
       {profiles.map((p) => (
         <TitleMenuItem
           key={p.id}
-          icon={<Dot mark={p} />}
+          icon={<ProfileDot profile={p} size={ICON_PX} />}
           label={profileRowLabel(p)}
           checked={p.id === openId}
           onClick={() => {

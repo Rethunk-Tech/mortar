@@ -2,7 +2,7 @@ import type { I18n } from '@lingui/core'
 import { useLingui } from '@lingui/react/macro'
 import { Alert, Box, Button, FormControlLabel, Switch, Typography } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
-import { Flag, TriangleAlert } from 'lucide-react'
+import { Flag, MessageSquareWarning, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 import { ReportTarget } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/browse/service.ts'
 import {
@@ -34,6 +34,8 @@ import { nexusDomain } from './nexusDomain.ts'
 import { FixAction } from './problemFix/fixActions.tsx'
 import { useInSplitFix } from './problemFix/splitContext.ts'
 import { buildModReport, type ModReportFields, modErrorLines } from './reportToAuthor.ts'
+
+const reportIcon = <MessageSquareWarning size={16} aria-hidden={true} />
 
 const REPORT_SOURCES = ['thunderstore', 'curseforge', 'vsmoddb']
 
@@ -230,7 +232,7 @@ export function ReportToAuthorButton({
   return (
     <>
       {inSplit ? (
-        <FixAction label={t`Report to author…`} weight="other" onClick={start} />
+        <FixAction icon={reportIcon} label={t`Report to author…`} weight="other" onClick={start} />
       ) : (
         <Button size={size} variant={variant} onClick={start} sx={{ height: 28 }}>
           {t`Report to author…`}

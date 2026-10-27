@@ -1,4 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
+import { EyeOff } from 'lucide-react'
 import { useState } from 'react'
 import {
   DismissLoadFailure,
@@ -40,6 +41,7 @@ export function LoadFailureFix({
       <LoadFailureAction problem={problem} button={button} />
       {dismissable ? (
         <FixAction
+          icon={<EyeOff size={16} aria-hidden={true} />}
           label={t`Dismiss`}
           weight="quiet"
           onClick={() => {

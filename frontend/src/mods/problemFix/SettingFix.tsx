@@ -1,4 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
+import { EyeOff, SlidersHorizontal, Wrench } from 'lucide-react'
 import { RememberSettingChoice } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import { SetConfigValue } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
@@ -44,6 +45,7 @@ export function SettingFix({
     <>
       {dismissedToken === undefined ? (
         <FixAction
+          icon={<Wrench size={16} aria-hidden={true} />}
           label={label(first)}
           weight="main"
           locked={locked}
@@ -54,6 +56,7 @@ export function SettingFix({
       )}
       {values.length > 1 ? (
         <FixAction
+          icon={<SlidersHorizontal size={16} aria-hidden={true} />}
           label={t`Other values`}
           weight="other"
           locked={locked}
@@ -64,6 +67,7 @@ export function SettingFix({
       ) : null}
       {dismissedToken === undefined ? (
         <FixAction
+          icon={<EyeOff size={16} aria-hidden={true} />}
           label={t`Dismiss`}
           weight="quiet"
           onClick={() => dismissSetting(setting).catch(reportUnexpected)}

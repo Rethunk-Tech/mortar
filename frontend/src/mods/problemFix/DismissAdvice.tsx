@@ -1,4 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
+import { EyeOff } from 'lucide-react'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { useMods } from '../store.ts'
 import { FixAction } from './fixActions.tsx'
@@ -20,6 +21,7 @@ export function DismissAdvice({
   }
   return (
     <FixAction
+      icon={<EyeOff size={16} aria-hidden={true} />}
       label={t`Dismiss`}
       weight="quiet"
       onClick={() => dismissAbandoned(id).catch(reportUnexpected)}

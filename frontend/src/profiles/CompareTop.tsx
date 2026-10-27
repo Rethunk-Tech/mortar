@@ -1,40 +1,15 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  IconButton,
-  ListItemIcon,
-  ListItemText,
-  ListSubheader,
-  Menu,
-  MenuItem,
-  Typography,
-} from '@mui/material'
-import { Check, ChevronDown, Search, Users } from 'lucide-react'
+import { Box, Button, IconButton, Menu, Typography } from '@mui/material'
+import { ChevronDown, Search, Users } from 'lucide-react'
 import { useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { modsLabel } from '../i18n/counts.ts'
-import { MenuAction } from '../shell/MenuAction.tsx'
+import { MenuAction, MenuCheck } from '../shell/MenuAction.tsx'
+import { MenuHeading } from '../shell/TitleMenu.tsx'
 import { space } from '../theme/density.ts'
-import { colorHex } from './appearance.ts'
 import { userModCount } from './count.ts'
+import { ProfileDot } from './ProfileDot.tsx'
 import { useProfiles } from './store.ts'
-
-function Dot({ profile }: { profile: Profile }) {
-  return (
-    <Box
-      component="span"
-      aria-hidden={true}
-      sx={{
-        width: 10,
-        height: 10,
-        borderRadius: '50%',
-        flexShrink: 0,
-        bgcolor: colorHex(profile.color) ?? 'primary.main',
-      }}
-    />
-  )
-}
 
 function OtherPicker({
   profileA,
@@ -56,13 +31,6 @@ function OtherPicker({
   const { t } = useLingui()
   const listed = useProfiles((s) => s.profiles)
   const [menu, setMenu] = useState<HTMLElement | null>(null)
-  const heading = {
-    fontSize: 'tiny.fontSize',
-    fontWeight: 700,
-    letterSpacing: '0.08em',
-    lineHeight: '28px',
-    textTransform: 'uppercase',
-  } as const
   const others = listed.filter((p) => p.id !== profileA.id)
   const choose = (action: () => void) => () => {
     setMenu(null)
@@ -82,17 +50,18 @@ function OtherPicker({
         {profileB?.name ?? t`Choose…`}
       </Button>
       <Menu anchorEl={menu} open={menu !== null} onClose={() => setMenu(null)}>
-        {others.length > 0 ? <ListSubheader sx={heading}>{t`Your profiles`}</ListSubheader> : null}
+        {others.length > 0 ? <MenuHeading>{t`Your profiles`}</MenuHeading> : null}
         {others.map((p) => (
-          <MenuItem key={p.id} onClick={choose(() => onPick(p.id))}>
-            <ListItemIcon>
-              <Dot profile={p} />
-            </ListItemIcon>
-            <ListItemText>{`${p.name} · ${modsLabel(userModCount(p))}`}</ListItemText>
-            {p.id === profileB?.id ? <Check size={16} aria-hidden={true} /> : null}
-          </MenuItem>
+          <MenuCheck
+            key={p.id}
+            radio={true}
+            checked={p.id === profileB?.id}
+            icon={<ProfileDot profile={p} />}
+            label={`${p.name} · ${modsLabel(userModCount(p))}`}
+            onClick={choose(() => onPick(p.id))}
+          />
         ))}
-        <ListSubheader sx={heading}>{t`Someone else's`}</ListSubheader>
+        <MenuHeading>{t`Someone else's`}</MenuHeading>
         <MenuAction
           icon={<Users size={16} />}
           label={t`A friend's link or file…`}
@@ -145,7 +114,7 @@ export function CompareTop({
           bgcolor: 'var(--mortar-hairline-12)',
         }}
       >
-        <Dot profile={profileA} />
+        <ProfileDot profile={profileA} />
         <b>{profileA.name}</b>
       </Box>
       <Typography color="text.secondary">{t`with`}</Typography>

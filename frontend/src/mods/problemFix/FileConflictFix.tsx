@@ -1,4 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
+import { Trophy } from 'lucide-react'
 import { MakePackageWin } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { openProfileOf, useProfiles } from '../../profiles/store.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
@@ -36,6 +37,7 @@ export function FileConflictFix({
   }
   return (
     <FixAction
+      icon={<Trophy size={16} aria-hidden={true} />}
       label={t`Make a package win`}
       weight="main"
       locked={locked}
