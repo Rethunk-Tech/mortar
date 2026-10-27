@@ -2,12 +2,16 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Checkbox, MenuItem, TextField, Typography } from '@mui/material'
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { Search } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/browse/service.ts'
-import type { Form } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
+import type {
+  Form,
+  ProjectInfo,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/source/models.ts'
 import { LetterTile } from '../mods/LetterTile.tsx'
 import { FormSection } from '../shell/dialog/FormDialog.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { space } from '../theme/density.ts'
+import { useProjectInfo } from './builds.ts'
 import {
   findPackage,
   knowPackage,
@@ -40,7 +44,7 @@ const PackageRow = memo(function PackageRowView({
   onOptional,
 }: {
   id: string
-  item: Item | undefined
+  item: Shown | undefined
   why: string
   checked: boolean
   onToggle: (id: string, on: boolean) => void
@@ -48,7 +52,7 @@ const PackageRow = memo(function PackageRowView({
   onOptional: (id: string, on: boolean) => void
 }) {
   const { t } = useLingui()
-  const name = item?.name ?? id
+  const name = item?.name ?? id.slice(id.indexOf('-') + 1).replaceAll('_', ' ')
   return (
     <Box
       component="label"
@@ -82,6 +86,16 @@ const PackageRow = memo(function PackageRowView({
     </Box>
   )
 })
+
+type Shown = Pick<Item, 'name' | 'author'> & { picture?: string }
+
+// A package that is one of the player's own projects shows as that project until the source lists it.
+function ownProject(byDir: Record<string, ProjectInfo>, id: string): Shown | undefined {
+  const info = Object.values(byDir).find((i) => `${i.team}-${i.name}` === id)
+  return (
+    info && { name: info.name, author: info.author, ...(info.icon ? { picture: info.icon } : {}) }
+  )
+}
 
 // One empty list, so clearing the hits when they are already clear sets nothing.
 const NO_HITS: Item[] = []
@@ -167,6 +181,7 @@ export function DependenciesStep({
 }) {
   const { t } = useLingui()
   const known = useKnownPackages((s) => s)
+  const projects = useProjectInfo((s) => s.byDir)
   const recs = recommendations(form, draft.values)
   const chosen = chosenDependencies(draft, form)
   const ids = [...new Set([...recs.map((r) => r.package), ...chosen])]
@@ -207,7 +222,7 @@ export function DependenciesStep({
           <PackageRow
             key={id}
             id={id}
-            item={known[id]}
+            item={known[id] ?? ownProject(projects, id)}
             why={rec ? t`Suggested for ${{ answer: answerLabel(form, rec) }}` : ''}
             checked={chosen.includes(id)}
             onToggle={toggle}

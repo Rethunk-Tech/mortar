@@ -614,7 +614,7 @@ msgstr ""
 msgid "Put back a mod folder an interrupted install or update left aside"
 msgstr ""
 
-#: src/develop/NewModDialog.tsx
+#: src/develop/RepositoryChoice.tsx
 msgid "Sign in with gh to create a repository on {source}"
 msgstr ""
 
@@ -1071,10 +1071,6 @@ msgstr ""
 #: src/queue/LargeDownloadDialog.tsx
 #: src/queue/QueueBody.tsx
 msgid "Continue anyway"
-msgstr ""
-
-#: src/develop/NewModDialog.tsx
-msgid "MIT, as the template has it"
 msgstr ""
 
 #: src/saves/SaveBackupsButton.tsx
@@ -2139,6 +2135,10 @@ msgstr ""
 msgid "Choose the folder the project goes in."
 msgstr ""
 
+#: src/develop/RepositoryChoice.tsx
+msgid "Checking {owner} on {source}"
+msgstr ""
+
 #: src/share/Included.tsx
 msgid "Mod notes"
 msgstr ""
@@ -2965,7 +2965,7 @@ msgstr ""
 msgid "Get"
 msgstr ""
 
-#: src/develop/NewModDialog.tsx
+#: src/develop/RepositoryChoice.tsx
 msgid "Also create a repository on {source}"
 msgstr ""
 
@@ -3449,7 +3449,7 @@ msgid "Before updating {name}"
 msgstr ""
 
 #: src/develop/CloneDialog.tsx
-#: src/develop/NewModDialog.tsx
+#: src/develop/RepositoryChoice.tsx
 msgid "Repository"
 msgstr ""
 
@@ -3459,10 +3459,6 @@ msgstr ""
 
 #: src/launch/PrePlayDialog.tsx
 msgid "Press Play to start."
-msgstr ""
-
-#: src/develop/NewModDialog.tsx
-msgid "Account or organisation"
 msgstr ""
 
 #: src/develop/ProjectCard.tsx
@@ -3608,6 +3604,10 @@ msgstr ""
 
 #: src/develop/ProjectCard.tsx
 msgid "More actions"
+msgstr ""
+
+#: src/develop/RepositoryChoice.tsx
+msgid "{source} has no account named {owner}."
 msgstr ""
 
 #: src/launch/GraphicsDialog.tsx
@@ -3785,6 +3785,10 @@ msgstr ""
 
 #: src/game/ProfileDialogHost.tsx
 msgid "The profile stays restorable for 30 days from Recently deleted."
+msgstr ""
+
+#: src/develop/RepositoryChoice.tsx
+msgid "{owner}/{repo} already exists."
 msgstr ""
 
 #: src/develop/EditProjectDialog.tsx
@@ -4170,6 +4174,10 @@ msgstr ""
 msgid "Go to"
 msgstr ""
 
+#: src/develop/NewModDialog.tsx
+msgid "MIT (Recommended)"
+msgstr ""
+
 #: src/launchers/LauncherList.tsx
 msgid "Add folder…"
 msgstr ""
@@ -4437,10 +4445,6 @@ msgstr ""
 
 #: src/game/HomeNotes.tsx
 msgid "Notes for {name}"
-msgstr ""
-
-#: src/develop/NewModDialog.tsx
-msgid "Mortar remembers these for your next mod."
 msgstr ""
 
 #: src/browse/CardAction.tsx
@@ -5069,6 +5073,10 @@ msgstr ""
 
 #: src/saves/SaveListRow.tsx
 msgid "Fits {name}"
+msgstr ""
+
+#: src/develop/NewModDialog.tsx
+msgid "Features"
 msgstr ""
 
 #: src/launch/events.ts
@@ -6550,7 +6558,7 @@ msgstr ""
 msgid "Could not save the last game"
 msgstr ""
 
-#: src/develop/NewModDialog.tsx
+#: src/develop/RepositoryChoice.tsx
 msgid "Keep it on this computer"
 msgstr ""
 
@@ -7006,6 +7014,10 @@ msgstr ""
 msgid "Could not add {name}"
 msgstr ""
 
+#: src/develop/RepositoryChoice.tsx
+msgid "{source} account"
+msgstr ""
+
 #: src/queue/QueueRows.tsx
 msgid "Paused at {done} of {total}"
 msgstr ""
@@ -7101,7 +7113,7 @@ msgstr ""
 msgid "Renaming moves the project's folder, files and namespace."
 msgstr ""
 
-#: src/develop/NewModDialog.tsx
+#: src/develop/RepositoryChoice.tsx
 msgid "Private"
 msgstr ""
 

@@ -614,7 +614,7 @@ msgstr "Filter by outcome"
 msgid "Put back a mod folder an interrupted install or update left aside"
 msgstr "Put back a mod folder an interrupted install or update left aside"
 
-#: src/develop/NewModDialog.tsx
+#: src/develop/RepositoryChoice.tsx
 msgid "Sign in with gh to create a repository on {source}"
 msgstr "Sign in with gh to create a repository on {source}"
 
@@ -1072,10 +1072,6 @@ msgstr "Actions"
 #: src/queue/QueueBody.tsx
 msgid "Continue anyway"
 msgstr "Continue anyway"
-
-#: src/develop/NewModDialog.tsx
-msgid "MIT, as the template has it"
-msgstr "MIT, as the template has it"
 
 #: src/saves/SaveBackupsButton.tsx
 msgid "Kept"
@@ -2139,6 +2135,10 @@ msgstr "{first} installed into {name}"
 msgid "Choose the folder the project goes in."
 msgstr "Choose the folder the project goes in."
 
+#: src/develop/RepositoryChoice.tsx
+msgid "Checking {owner} on {source}"
+msgstr "Checking {owner} on {source}"
+
 #: src/share/Included.tsx
 msgid "Mod notes"
 msgstr "Mod notes"
@@ -2965,7 +2965,7 @@ msgstr "Could not release the mod"
 msgid "Get"
 msgstr "Get"
 
-#: src/develop/NewModDialog.tsx
+#: src/develop/RepositoryChoice.tsx
 msgid "Also create a repository on {source}"
 msgstr "Also create a repository on {source}"
 
@@ -3449,7 +3449,7 @@ msgid "Before updating {name}"
 msgstr "Before updating {name}"
 
 #: src/develop/CloneDialog.tsx
-#: src/develop/NewModDialog.tsx
+#: src/develop/RepositoryChoice.tsx
 msgid "Repository"
 msgstr "Repository"
 
@@ -3460,10 +3460,6 @@ msgstr "Card details"
 #: src/launch/PrePlayDialog.tsx
 msgid "Press Play to start."
 msgstr "Press Play to start."
-
-#: src/develop/NewModDialog.tsx
-msgid "Account or organisation"
-msgstr "Account or organisation"
 
 #: src/develop/ProjectCard.tsx
 #: src/develop/TrustDialog.tsx
@@ -3609,6 +3605,10 @@ msgstr "Reading the template"
 #: src/develop/ProjectCard.tsx
 msgid "More actions"
 msgstr "More actions"
+
+#: src/develop/RepositoryChoice.tsx
+msgid "{source} has no account named {owner}."
+msgstr "{source} has no account named {owner}."
 
 #: src/launch/GraphicsDialog.tsx
 msgid "Choose a graphics API for {name}"
@@ -3786,6 +3786,10 @@ msgstr "Saving…"
 #: src/game/ProfileDialogHost.tsx
 msgid "The profile stays restorable for 30 days from Recently deleted."
 msgstr "The profile stays restorable for 30 days from Recently deleted."
+
+#: src/develop/RepositoryChoice.tsx
+msgid "{owner}/{repo} already exists."
+msgstr "{owner}/{repo} already exists."
 
 #: src/develop/EditProjectDialog.tsx
 msgid "Saved into the project's own files."
@@ -4170,6 +4174,10 @@ msgstr "{count, plural, one {# result} other {# results}}"
 msgid "Go to"
 msgstr "Go to"
 
+#: src/develop/NewModDialog.tsx
+msgid "MIT (Recommended)"
+msgstr "MIT (Recommended)"
+
 #: src/launchers/LauncherList.tsx
 msgid "Add folder…"
 msgstr "Add folder…"
@@ -4438,10 +4446,6 @@ msgstr "Undo all"
 #: src/game/HomeNotes.tsx
 msgid "Notes for {name}"
 msgstr "Notes for {name}"
-
-#: src/develop/NewModDialog.tsx
-msgid "Mortar remembers these for your next mod."
-msgstr "Mortar remembers these for your next mod."
 
 #: src/browse/CardAction.tsx
 #: src/queue/UnmoderatedDialog.tsx
@@ -5070,6 +5074,10 @@ msgstr "Rename {name}"
 #: src/saves/SaveListRow.tsx
 msgid "Fits {name}"
 msgstr "Fits {name}"
+
+#: src/develop/NewModDialog.tsx
+msgid "Features"
+msgstr "Features"
 
 #: src/launch/events.ts
 msgid "{name} updated to {version}: {count, plural, one {# profile needs attention} other {# profiles need attention}}"
@@ -6550,7 +6558,7 @@ msgstr "Dependencies"
 msgid "Could not save the last game"
 msgstr "Could not save the last game"
 
-#: src/develop/NewModDialog.tsx
+#: src/develop/RepositoryChoice.tsx
 msgid "Keep it on this computer"
 msgstr "Keep it on this computer"
 
@@ -7006,6 +7014,10 @@ msgstr "This is not a Mod Manager Download link from {source}."
 msgid "Could not add {name}"
 msgstr "Could not add {name}"
 
+#: src/develop/RepositoryChoice.tsx
+msgid "{source} account"
+msgstr "{source} account"
+
 #: src/queue/QueueRows.tsx
 msgid "Paused at {done} of {total}"
 msgstr "Paused at {done} of {total}"
@@ -7101,7 +7113,7 @@ msgstr "This tool will be removed from Mortar."
 msgid "Renaming moves the project's folder, files and namespace."
 msgstr "Renaming moves the project's folder, files and namespace."
 
-#: src/develop/NewModDialog.tsx
+#: src/develop/RepositoryChoice.tsx
 msgid "Private"
 msgstr "Private"
 

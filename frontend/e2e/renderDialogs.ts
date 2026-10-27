@@ -86,8 +86,8 @@ function dialogKit(h: Helpers) {
     await inDialog(page, step)
   }
 
-  // New mod's later steps: a valid name and description open the second, the author's fields the third (dependencies),
-  // and Next from there the project step.
+  // New mod's later steps: a valid name and description open the second, the author's fields the third (features),
+  // and each Next from there the next step.
   // Everything before the Next that opens step `steps`: the case measures only stepping into it.
   const newModTo = async (p: Page, steps: number) => {
     await tab(p, 'Develop')
@@ -102,7 +102,7 @@ function dialogKit(h: Helpers) {
       await box('Thunderstore team').fill('RenderCheck')
       await box('Id prefix').fill('com.rendercheck')
     }
-    if (steps > 2) {
+    for (let at = 2; at < steps; at++) {
       await inDialog(p, /^Next$/)
     }
   }
@@ -205,8 +205,9 @@ function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
     },
     ...[
       ['author', 1],
-      ['dependencies', 2],
-      ['project', 3],
+      ['features', 2],
+      ['dependencies', 3],
+      ['project', 4],
     ].map(([step, n]) => ({
       ...dialog(
         '',
@@ -214,7 +215,7 @@ function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
         WIZARD_BUDGET,
         (p) => newModTo(p, Number(n)),
       ),
-      // Named after the first step's case, so the gallery shows the wizard's four steps together.
+      // Named after the first step's case, so the gallery shows the wizard's steps together.
       name: `develop-new-mod-${step}`,
     })),
   ]

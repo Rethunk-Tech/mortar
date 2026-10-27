@@ -273,7 +273,12 @@
                 "values": ["moons", "interiors"]
               },
               { "package": "x753-More_Suits", "param": "categories", "values": ["suits"] },
-              { "package": "AinaVT-LethalConfig", "param": "config", "values": ["true"] },
+              {
+                "package": "AinaVT-LethalConfig",
+                "param": "config",
+                "values": ["true"],
+                "optional": true
+              },
               { "package": "Mortar-ConfigSync", "param": "configSync", "values": ["true"] }
             ]
           }

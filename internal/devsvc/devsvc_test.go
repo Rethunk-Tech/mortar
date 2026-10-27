@@ -519,3 +519,42 @@ func TestTemplateEnvTakesALocalFolderOrZip(t *testing.T) {
 		t.Fatal("a missing template was accepted")
 	}
 }
+
+// A fake gh: the signed-in user with one organisation, and a GitHub holding only o/taken.
+func ghAPI(_ context.Context, _, name string, args ...string) ([]byte, error) {
+	if name != "gh" || args[0] != "api" {
+		return nil, errors.New("no such tool here")
+	}
+	switch strings.Join(args[1:], " ") {
+	case `user --jq ` + ownerFields:
+		return []byte("me\thttps://a/me\n"), nil
+	case `--paginate user/orgs --jq .[]|` + ownerFields:
+		return []byte("o\thttps://a/o\n"), nil
+	case `users/o --jq ` + ownerFields:
+		return []byte("o\thttps://a/o\n"), nil
+	case "repos/o/taken --jq .id":
+		return []byte("1\n"), nil
+	}
+	return nil, errors.New("gh: Not Found (HTTP 404)")
+}
+
+func TestGitHubOwnersAndRepoCheck(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	svc.Run = ghAPI
+	tools := svc.Tools(t.Context(), "lethal-company")
+	if tools.GitHubUser != "me" || len(tools.GitHubOwners) != 2 || tools.GitHubOwners[1] != (GitHubOwner{Login: "o", Avatar: "https://a/o"}) {
+		t.Fatalf("tools = %+v", tools)
+	}
+	for repo, taken := range map[string]bool{"taken": true, "free": false} {
+		check, err := svc.CheckRepo(t.Context(), "o", repo)
+		if err != nil || check.Owner == nil || check.Taken != taken {
+			t.Errorf("%s: %+v, %v", repo, check, err)
+		}
+	}
+	if check, err := svc.CheckRepo(t.Context(), "nobody", "free"); err != nil || check.Owner != nil {
+		t.Errorf("missing owner: %+v, %v", check, err)
+	}
+	if _, err := svc.CheckRepo(t.Context(), "--help", "x"); err == nil {
+		t.Error("an owner gh would read as a flag was looked up")
+	}
+}

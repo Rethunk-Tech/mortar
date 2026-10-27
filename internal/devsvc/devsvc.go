@@ -97,6 +97,10 @@ type Tools struct {
 	Git        bool     `json:"git"`
 	// GitHubUser is the gh login, empty when gh is missing or signed out.
 	GitHubUser string `json:"githubUser"`
+	// GitHubOwners are the accounts a repository can be created under: the gh login, then its organisations.
+	GitHubOwners []GitHubOwner `json:"githubOwners"`
+	// ProjectsDir is where new projects go unless the player picked a folder before.
+	ProjectsDir string `json:"projectsDir"`
 	// GameDir is the install the project builds against; empty when the game is not found.
 	GameDir string `json:"gameDir"`
 }
@@ -152,13 +156,80 @@ func (s *Service) Tools(ctx context.Context, gameID string) Tools {
 	}
 	_, err := s.run(ctx, "", "git", "--version")
 	t.Git = err == nil
-	if out, err := s.run(ctx, "", "gh", "api", "user", "--jq", ".login"); err == nil {
-		t.GitHubUser = strings.TrimSpace(string(out))
+	t.GitHubOwners = s.githubOwners(ctx)
+	if len(t.GitHubOwners) > 0 {
+		t.GitHubUser = t.GitHubOwners[0].Login
 	}
+	t.ProjectsDir = filepath.Join(s.Home, "Projects")
 	if inst, err := game.ResolveInstall(s.Home, s.Settings.Get(), gameID, ""); err == nil {
 		t.GameDir = inst.Dir
 	}
 	return t
+}
+
+// GitHubOwner is a GitHub account and its avatar's URL.
+type GitHubOwner struct {
+	Login  string `json:"login"`
+	Avatar string `json:"avatar"`
+}
+
+const ownerFields = `.login+"\t"+.avatar_url`
+
+func parseOwners(out []byte) []GitHubOwner {
+	var owners []GitHubOwner
+	for line := range strings.Lines(string(out)) {
+		login, avatar, _ := strings.Cut(strings.TrimSpace(line), "\t")
+		if ownerName.MatchString(login) {
+			owners = append(owners, GitHubOwner{Login: login, Avatar: avatar})
+		}
+	}
+	return owners
+}
+
+func (s *Service) githubOwners(ctx context.Context) []GitHubOwner {
+	out, err := s.run(ctx, "", "gh", "api", "user", "--jq", ownerFields)
+	if err != nil {
+		return []GitHubOwner{}
+	}
+	owners := parseOwners(out)
+	if orgs, err := s.run(ctx, "", "gh", "api", "--paginate", "user/orgs", "--jq", ".[]|"+ownerFields); err == nil {
+		owners = append(owners, parseOwners(orgs)...)
+	}
+	return owners
+}
+
+// RepoCheck is what GitHub says of a new repository's place: the owner (nil when no such account) and whether the
+// name is taken there.
+type RepoCheck struct {
+	Owner *GitHubOwner `json:"owner"`
+	Taken bool         `json:"taken"`
+}
+
+func notFound(err error) bool { return err != nil && strings.Contains(err.Error(), "HTTP 404") }
+
+// CheckRepo looks up owner on GitHub and whether it already has a repository named repo.
+func (s *Service) CheckRepo(ctx context.Context, owner, repo string) (RepoCheck, error) {
+	if !ownerName.MatchString(owner) || !repoName.MatchString(repo) {
+		return RepoCheck{}, usererr.Wrap(usererr.Invalid, errors.New("not a GitHub account and repository name"))
+	}
+	ctx, cancel := context.WithTimeout(ctx, toolTimeout)
+	defer cancel()
+	out, err := s.run(ctx, "", "gh", "api", "users/"+owner, "--jq", ownerFields)
+	if notFound(err) {
+		return RepoCheck{}, nil
+	}
+	if err != nil {
+		return RepoCheck{}, err
+	}
+	owners := parseOwners(out)
+	if len(owners) == 0 {
+		return RepoCheck{}, nil
+	}
+	_, err = s.run(ctx, "", "gh", "api", "repos/"+owner+"/"+repo, "--jq", ".id")
+	if err != nil && !notFound(err) {
+		return RepoCheck{}, err
+	}
+	return RepoCheck{Owner: &owners[0], Taken: err == nil}, nil
 }
 
 // Projects lists the game's mod projects.

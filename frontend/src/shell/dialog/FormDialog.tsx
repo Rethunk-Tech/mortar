@@ -24,6 +24,7 @@ export function FormDialog({
   busy = false,
   onSubmit,
   onBack,
+  closeButton = false,
   tabs,
   children,
 }: {
@@ -41,6 +42,8 @@ export function FormDialog({
   onSubmit: () => void
   // A step back, for a form in steps: shown between Cancel and the submit button.
   onBack?: (() => void) | undefined
+  // An X in the header in place of the footer's Cancel.
+  closeButton?: boolean
   tabs?: ReactNode
   children: ReactNode
 }) {
@@ -57,6 +60,7 @@ export function FormDialog({
       icon={icon}
       size={size}
       tabs={tabs}
+      closeButton={closeButton}
       footer={
         <DialogFooter
           aside={
@@ -68,9 +72,11 @@ export function FormDialog({
             ) : null
           }
         >
-          <Button type="button" onClick={guard.request} disabled={busy}>
-            {t`Cancel`}
-          </Button>
+          {closeButton ? null : (
+            <Button type="button" onClick={guard.request} disabled={busy}>
+              {t`Cancel`}
+            </Button>
+          )}
           {onBack ? (
             <Button type="button" onClick={onBack} disabled={busy}>
               {t`Back`}

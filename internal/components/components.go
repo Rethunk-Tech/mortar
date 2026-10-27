@@ -498,11 +498,12 @@ type DevTemplate struct {
 }
 
 // DevRecommend is a package a new mod likely needs: always, or when the template parameter Param was answered with one
-// of Values (a choice the player picked, or "true" for a switch).
+// of Values (a choice the player picked, or "true" for a switch). Optional starts it as a soft dependency.
 type DevRecommend struct {
-	Package string   `json:"package"`
-	Param   string   `json:"param,omitempty"`
-	Values  []string `json:"values,omitempty"`
+	Package  string   `json:"package"`
+	Param    string   `json:"param,omitempty"`
+	Values   []string `json:"values,omitempty"`
+	Optional bool     `json:"optional,omitempty"`
 }
 
 var (

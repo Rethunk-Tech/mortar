@@ -28,7 +28,7 @@ const form: Form = {
   sdk: { version: '', rollForward: '' },
   recommends: [
     { package: 'Evaisa-LethalLib', param: 'categories', values: ['items', 'monsters'] },
-    { package: 'AinaVT-LethalConfig', param: 'config', values: ['true'] },
+    { package: 'AinaVT-LethalConfig', param: 'config', values: ['true'], optional: true },
     { package: 'Always-There', param: '', values: [] },
   ],
   parameters: [
@@ -43,6 +43,7 @@ const form: Form = {
       multiple: true,
       default: 'mods',
     },
+    { ...param, id: 'config', description: 'Has settings', kind: 'bool', default: 'false' },
   ],
 }
 
@@ -52,7 +53,8 @@ test('a remembered parameter and the projects folder come back; others start at 
     'param.team': 'Ab',
     'param.description': 'not remembered',
   })
-  expect(d.values).toEqual({ description: '', team: 'Ab', categories: 'mods' })
+  expect(d.values).toEqual({ description: '', team: 'Ab', categories: 'mods', config: 'false' })
+  expect(d.optional).toEqual(['AinaVT-LethalConfig'])
   expect(d.parent).toBe('/mods')
   expect(rememberedOf({ ...d, values: { ...d.values, team: 'Cd' } }, form)).toEqual({
     parent: '/mods',
@@ -71,12 +73,16 @@ test('the template rules are checked before Mortar is asked', () => {
   ).not.toBe('')
   expect(draftIssue({ ...filled, name: 'shop drop' }, form)).not.toBe('')
   expect(draftIssue({ ...filled, github: true, owner: '--help' }, form)).not.toBe('')
+  expect(draftIssue({ ...filled, github: true, owner: 'Ab', ownerIssue: 'taken' }, form)).toBe(
+    'taken',
+  )
   expect(draftIssue(filled, null)).not.toBe('')
 })
 
-test('remembered parameters are the author step; each step checks only its own', () => {
+test('remembered parameters are the author step, switches the features step; each step checks only its own', () => {
   expect(stepParams(form, 'author').map((p) => p.id)).toEqual(['team'])
   expect(stepParams(form, 'mod').map((p) => p.id)).toEqual(['description', 'categories'])
+  expect(stepParams(form, 'features').map((p) => p.id)).toEqual(['config'])
   const d = {
     ...firstDraft(form, {}),
     name: 'ShopDrop',

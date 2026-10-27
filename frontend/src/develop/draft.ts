@@ -18,6 +18,8 @@ export interface Draft {
   profile: string
   github: boolean
   owner: string
+  // Why GitHub would refuse owner/repo (no such account, the name taken), or that the check is running; empty when fine.
+  ownerIssue: string
   private: boolean
   // The Thunderstore packages (Team-Name) the mod starts depending on; null until the player sees the recommendations.
   dependencies: string[] | null
@@ -38,7 +40,7 @@ export const isRemembered = (v: unknown): v is Remembered =>
 // The same rules as devsvc's NewMod.check, so the button says why before Mortar is asked.
 const MOD_NAME = /^[A-Z][A-Za-z0-9]{1,63}$/
 const FOLDER = /^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$/
-const OWNER = /^[A-Za-z0-9][A-Za-z0-9-]{0,38}$/
+export const OWNER = /^[A-Za-z0-9][A-Za-z0-9-]{0,38}$/
 
 const rememberKey = (id: string) => `param.${id}`
 
@@ -56,9 +58,10 @@ export function firstDraft(form: Form | null, remembered: Remembered): Draft {
     profile: 'new',
     github: false,
     owner: '',
+    ownerIssue: '',
     private: false,
     dependencies: null,
-    optional: [],
+    optional: (form?.recommends ?? []).filter((r) => r.optional).map((r) => r.package),
     copyMods: false,
     license: '',
   }
@@ -93,17 +96,27 @@ function paramIssue(p: Param, raw: string): string {
   return ''
 }
 
-// The wizard's steps: the mod itself, the author details Mortar remembers, and where the project goes.
-export const STEPS = ['mod', 'author', 'dependencies', 'project'] as const
+// The wizard's steps: the mod itself, the author details Mortar remembers, what the mod does, its dependencies, and
+// where the project goes.
+export const STEPS = ['mod', 'author', 'features', 'dependencies', 'project'] as const
 export type Step = (typeof STEPS)[number]
 
-/** The parameters a step asks for: remembered ones on the author step, the rest on the mod step. */
+const isFeature = (p: Param) => p.kind === 'bool' || (p.kind === 'choice' && !p.multiple)
+
+/** The parameters a step asks for: remembered ones on the author step, switches and single choices on the features
+ * step, the rest on the mod step. */
 export function stepParams(form: Form | null, step: Step): Param[] {
-  const all = form?.parameters ?? []
-  if (step === 'project' || step === 'dependencies') {
-    return []
+  const all = (form?.parameters ?? []).filter((p) => !p.remember)
+  switch (step) {
+    case 'author':
+      return (form?.parameters ?? []).filter((p) => p.remember)
+    case 'features':
+      return all.filter(isFeature)
+    case 'mod':
+      return all.filter((p) => !isFeature(p))
+    default:
+      return []
   }
-  return all.filter((p) => p.remember === (step === 'author'))
 }
 
 function firstIssue(d: Draft, params: Param[], all: Param[]): string {
@@ -198,7 +211,7 @@ export function stepIssue(d: Draft, form: Form | null, step: Step): string {
   if (d.github && !OWNER.test(d.owner)) {
     return i18n._(msg`Name the account or organisation on ${{ source: sourceLabel('github') }}.`)
   }
-  return ''
+  return d.github ? d.ownerIssue : ''
 }
 
 /** The first thing Mortar would refuse anywhere in the draft; empty when it can start. */

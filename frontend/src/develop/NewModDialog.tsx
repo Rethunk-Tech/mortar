@@ -3,11 +3,8 @@ import {
   Alert,
   Box,
   Button,
-  Checkbox,
   FormControlLabel,
   MenuItem,
-  Radio,
-  RadioGroup,
   Switch,
   TextField,
   ToggleButton,
@@ -17,6 +14,7 @@ import { Hammer } from 'lucide-react'
 import { memo, useCallback, useEffect, useId, useState } from 'react'
 import type {
   Form,
+  GitHubOwner,
   Param,
   Tools,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
@@ -26,7 +24,6 @@ import {
   TemplateForm,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import { PickFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
-import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { useGameInfo } from '../games/info.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
@@ -55,6 +52,7 @@ import {
   validModName,
 } from './draft.ts'
 import { LicenseChart } from './LicenseChart.tsx'
+import { RepositoryChoice } from './RepositoryChoice.tsx'
 import { sdkSatisfies } from './sdk.ts'
 
 // The profile picker's value for a new development profile; Create takes it as no profile.
@@ -63,6 +61,8 @@ const NEW_PROFILE = 'new'
 const TOGGLE_CHOICES = 3
 
 type Set = (next: Partial<Draft>) => void
+
+const NO_OWNERS: GitHubOwner[] = []
 
 // One element for every render, so the header's icon is not redrawn with each step.
 const ICON = (
@@ -269,57 +269,7 @@ const ModStep = memo(
     a.draft.values === b.draft.values,
 )
 
-function SourceChoice({ draft, user, set }: { draft: Draft; user: string; set: Set }) {
-  const { t } = useLingui()
-  const github = sourceLabel('github')
-  return (
-    <Field label={t`Repository`}>
-      <RadioGroup
-        value={draft.github ? 'github' : 'copy'}
-        onChange={(_, v) => set({ github: v === 'github' })}
-      >
-        <FormControlLabel
-          value="copy"
-          control={<Radio size="small" />}
-          label={t`Keep it on this computer`}
-        />
-        <FormControlLabel
-          value="github"
-          disabled={user === ''}
-          control={<Radio size="small" />}
-          label={
-            user
-              ? t`Also create a repository on ${{ source: github }}`
-              : t`Sign in with gh to create a repository on ${{ source: github }}`
-          }
-        />
-      </RadioGroup>
-      {draft.github ? (
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-end', pl: 4, mt: 1 }}>
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <TextInput
-              label={t`Account or organisation`}
-              value={draft.owner}
-              onChange={(owner) => set({ owner })}
-            />
-          </Box>
-          <FormControlLabel
-            control={
-              <Checkbox
-                size="small"
-                checked={draft.private}
-                onChange={(_, on) => set({ private: on })}
-              />
-            }
-            label={t`Private`}
-          />
-        </Box>
-      ) : null}
-    </Field>
-  )
-}
-
-function ProjectStep({ draft, user, set }: { draft: Draft; user: string; set: Set }) {
+function ProjectStep({ draft, owners, set }: { draft: Draft; owners: GitHubOwner[]; set: Set }) {
   const { t } = useLingui()
   const profiles = useProfiles((s) => s.profiles)
   const openName = useProfiles((s) => s.profiles.find((p) => p.id === s.openId)?.name ?? '')
@@ -370,14 +320,14 @@ function ProjectStep({ draft, user, set }: { draft: Draft; user: string; set: Se
           label={t`Start it with the mods of ${{ profile: openName }}`}
         />
       ) : null}
-      <SourceChoice draft={draft} user={user} set={set} />
+      <RepositoryChoice draft={draft} owners={owners} set={set} />
       <SelectField
         label={t`License`}
         displayEmpty={true}
         value={draft.license}
         onChange={(license) => set({ license })}
       >
-        <MenuItem value="">{t`MIT, as the template has it`}</MenuItem>
+        <MenuItem value="">{t`MIT (Recommended)`}</MenuItem>
         <MenuItem value="apache-2.0">Apache 2.0</MenuItem>
         <MenuItem value="gpl-3.0">GNU GPL 3.0</MenuItem>
         <MenuItem value="mpl-2.0">Mozilla Public License 2.0</MenuItem>
@@ -390,7 +340,13 @@ function ProjectStep({ draft, user, set }: { draft: Draft; user: string; set: Se
 
 function useStepLabels(): Record<Step, string> {
   const { t } = useLingui()
-  return { mod: t`Mod`, author: t`Author`, dependencies: t`Dependencies`, project: t`Project` }
+  return {
+    mod: t`Mod`,
+    author: t`Author`,
+    features: t`Features`,
+    dependencies: t`Dependencies`,
+    project: t`Project`,
+  }
 }
 
 // Reads the template's questions and the tools each time the dialog opens; the profile starts as the open one.
@@ -418,6 +374,7 @@ function useWizardData(open: boolean, game: string, setDraft: (fn: (d: Draft) =>
             ...fresh,
             name: d.name,
             repo: d.repo,
+            parent: fresh.parent || d.parent,
             values: { ...fresh.values, ...typed },
             profile: openId || NEW_PROFILE,
             github: d.github,
@@ -432,7 +389,11 @@ function useWizardData(open: boolean, game: string, setDraft: (fn: (d: Draft) =>
     ReadTools(game)
       .then((found) => {
         setTools(found)
-        setDraft((d) => (d.owner || !found.githubUser ? d : { ...d, owner: found.githubUser }))
+        setDraft((d) => ({
+          ...d,
+          owner: d.owner || found.githubUser,
+          parent: d.parent || found.projectsDir,
+        }))
       })
       .catch(() => setTools(null))
   }, [open, game, openId, setDraft, t])
@@ -497,11 +458,7 @@ export function NewModDialog({
       },
       { errorTitle: t`Could not start the mod` },
     )
-  const subtitle = [
-    t`Step ${{ step: at + 1 }} of ${{ count: STEPS.length }}`,
-    labels[step],
-    step === 'author' ? t`Mortar remembers these for your next mod.` : '',
-  ]
+  const subtitle = [t`Step ${{ step: at + 1 }} of ${{ count: STEPS.length }}`, labels[step]]
     .filter(Boolean)
     .join(' · ')
   return (
@@ -517,12 +474,13 @@ export function NewModDialog({
       busy={pending}
       onSubmit={last ? create : () => setAt(at + 1)}
       onBack={at > 0 ? () => setAt(at - 1) : undefined}
+      closeButton={true}
     >
       <Prerequisites tools={tools} form={form} />
       {step === 'mod' ? <ModStep draft={draft} form={form} set={set} /> : null}
-      {step === 'author' ? (
+      {step === 'author' || step === 'features' ? (
         <Params
-          params={stepParams(form, 'author')}
+          params={stepParams(form, step)}
           all={form?.parameters ?? []}
           draft={draft}
           set={set}
@@ -532,7 +490,7 @@ export function NewModDialog({
         <DependenciesStep game={game} profile={openId} form={form} draft={draft} set={set} />
       ) : null}
       {step === 'project' ? (
-        <ProjectStep draft={draft} user={tools?.githubUser ?? ''} set={set} />
+        <ProjectStep draft={draft} owners={tools?.githubOwners ?? NO_OWNERS} set={set} />
       ) : null}
     </FormDialog>
   )
