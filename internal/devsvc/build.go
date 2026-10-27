@@ -93,6 +93,10 @@ func (s *Service) Build(ctx context.Context, gameID, dir string) (BuildResult, e
 	if err := requireTrust(p); err != nil {
 		return BuildResult{}, err
 	}
+	if p.Kind != "" {
+		// An asset project's folder is what installs; there is nothing to compile.
+		return BuildResult{OK: true}, nil
+	}
 	stored, _ := building.LoadOrStore(p.Dir, &sync.Mutex{})
 	if mu, ok := stored.(*sync.Mutex); ok {
 		mu.Lock()
@@ -142,6 +146,9 @@ func WatchedSources(cur settings.Settings, games []string) map[string][]string {
 	out := map[string][]string{}
 	for _, g := range games {
 		for _, p := range cur.GamePrefs(g).DevProjects {
+			if p.Kind != "" {
+				continue
+			}
 			src := filepath.Join(p.Dir, "src", p.Name)
 			out[g] = append(out[g], src, filepath.Join(src, "Compat"), filepath.Join(p.Dir, "assets"))
 		}

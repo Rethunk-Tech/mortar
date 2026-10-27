@@ -434,6 +434,7 @@ export function NewModDialog({
         const project = await Create({
           ...draft,
           game,
+          kind: '',
           repo: draft.repo || draft.name,
           profile: draft.profile === NEW_PROFILE ? '' : draft.profile,
           copyFrom: draft.profile === NEW_PROFILE && draft.copyMods ? openId : '',

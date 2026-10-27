@@ -22,8 +22,9 @@ import (
 var githubRepo = regexp.MustCompile(`^(?:https://github\.com/|git@github\.com:)?([A-Za-z0-9][A-Za-z0-9-]{0,38})/([A-Za-z0-9][A-Za-z0-9._-]{0,99}?)(?:\.git)?/?$`)
 
 // enroll makes dir's build output an extra mods folder of the project's profile (created as "<game> Development"
-// when profileID is empty, filled from copyFrom) and records the project.
-func (s *Service) enroll(gameID, dir, name, profileID, copyFrom string, untrusted bool) (settings.DevProject, error) {
+// when profileID is empty, filled from copyFrom) and records the project. An asset project (kind set) has no build:
+// its folder itself is what installs.
+func (s *Service) enroll(gameID, dir, name, profileID, copyFrom, kind string, untrusted bool) (settings.DevProject, error) {
 	if profileID == "" {
 		gameName := gameID
 		if info, ok := components.Game(gameID); ok {
@@ -44,12 +45,15 @@ func (s *Service) enroll(gameID, dir, name, profileID, copyFrom string, untruste
 			}
 		}
 	}
-	// The template builds an unpacked package here; it exists before the first build so the folder watch can start.
-	output := filepath.Join(dir, "artifacts", "bin", name, "debug")
-	if err := os.MkdirAll(output, 0o750); err != nil {
-		return settings.DevProject{}, err
+	output := dir
+	if kind == "" {
+		// The template builds an unpacked package here; it exists before the first build so the folder watch can start.
+		output = filepath.Join(dir, "artifacts", "bin", name, "debug")
+		if err := os.MkdirAll(output, 0o750); err != nil {
+			return settings.DevProject{}, err
+		}
 	}
-	p := settings.DevProject{Dir: dir, Name: name, Profile: profileID, Output: output, Untrusted: untrusted}
+	p := settings.DevProject{Dir: dir, Name: name, Profile: profileID, Output: output, Untrusted: untrusted, Kind: kind}
 	if icon, err := fsx.ReadFile(filepath.Join(dir, "icon.png")); err == nil {
 		p.TemplateIcon = fmt.Sprintf("%x", sha256.Sum256(icon))
 	}
@@ -99,7 +103,11 @@ func (s *Service) Add(ctx context.Context, gameID, dir, profileID string) (setti
 		return bad("pick the project's folder")
 	}
 	dir = filepath.Clean(dir)
+	rec, asset := readAssetRecord(dir)
 	name, ok := projectName(dir)
+	if asset {
+		name, ok = rec.Name, true
+	}
 	if !ok {
 		return bad("%s is not a mod project from the template: it has no src/<Name>/<Name>.csproj", dir)
 	}
@@ -115,6 +123,13 @@ func (s *Service) Add(ctx context.Context, gameID, dir, profileID string) (setti
 			return settings.DevProject{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("no profile %q", profileID))
 		}
 	}
+	if asset {
+		if _, err := s.assetKind(gameID, rec.Kind); err != nil {
+			return settings.DevProject{}, err
+		}
+		// Nothing in a package of files runs, so it needs no trust before installing.
+		return s.enroll(gameID, dir, name, profileID, "", rec.Kind, false)
+	}
 	props := filepath.Join(dir, "Config.Build.user.props")
 	if _, err := os.Lstat(props); errors.Is(err, os.ErrNotExist) {
 		if err := writeUserProps(dir, s.Tools(ctx, gameID).GameDir); err != nil {
@@ -122,7 +137,7 @@ func (s *Service) Add(ctx context.Context, gameID, dir, profileID string) (setti
 		}
 	}
 	// A foreign repository's build files run code, so nothing builds until the user agrees (see Trust).
-	return s.enroll(gameID, dir, name, profileID, "", true)
+	return s.enroll(gameID, dir, name, profileID, "", "", true)
 }
 
 // ParseRepo reads owner/name, or a github.com address (https or git@), as owner and name.

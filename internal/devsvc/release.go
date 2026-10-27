@@ -50,6 +50,9 @@ func (s *Service) Pack(ctx context.Context, gameID, dir string) (PackResult, err
 	if err := requireTrust(p); err != nil {
 		return PackResult{}, err
 	}
+	if p.Kind != "" {
+		return s.packAssetProject(ctx, gameID, p)
+	}
 	started := time.Now()
 	out, err := s.run(ctx, p.Dir, "dotnet", "build", "-c", "Release", "-nologo")
 	r := PackResult{OK: err == nil, Problems: ParseProblems(string(out)), Log: tail(string(out)), Issues: []string{}}

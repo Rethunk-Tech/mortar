@@ -509,6 +509,47 @@ type DevTemplate struct {
 	// DevHelper is the Thunderstore package Develop's Test adds to the profile, for this game only, so the test copies
 	// find each other; only its Package is read.
 	DevHelper *DevRecommend `json:"devHelper,omitempty"`
+	// AssetKinds are the mods made only of files a loader mod reads, which the New mod wizard offers beside code.
+	AssetKinds []AssetKind `json:"assetKinds,omitempty"`
+}
+
+// AssetKind is a mod of files a loader mod reads (suits, sounds), made without code: Folder below the package holds
+// files matching Patterns, Dependency is the loader mod, and Files are starter files written at creation, each body's
+// {name} replaced by the package name.
+type AssetKind struct {
+	ID         string            `json:"id"`
+	Label      string            `json:"label"`
+	Folder     string            `json:"folder"`
+	Patterns   []string          `json:"patterns"`
+	Dependency string            `json:"dependency"`
+	Recommends []string          `json:"recommends,omitempty"`
+	Files      map[string]string `json:"files,omitempty"`
+}
+
+var assetKindID = regexp.MustCompile(`^[a-z][a-z0-9-]*$`)
+
+// validate refuses a kind whose paths could leave the project folder or whose packages are not Thunderstore names.
+func (k AssetKind) validate() error {
+	safe := func(p string) bool { return p != "." && !strings.Contains(p, "\\") && fs.ValidPath(p) }
+	if !assetKindID.MatchString(k.ID) || k.Label == "" || !safe(k.Folder) || len(k.Patterns) == 0 {
+		return fmt.Errorf("asset kind %q needs an id, a label, a folder and patterns", k.ID)
+	}
+	for _, p := range k.Patterns {
+		if _, err := path.Match(p, ""); err != nil || strings.ContainsAny(p, "/\\") {
+			return fmt.Errorf("asset kind %q has a bad pattern %q", k.ID, p)
+		}
+	}
+	for _, pkg := range append([]string{k.Dependency}, k.Recommends...) {
+		if !devPackage.MatchString(pkg) {
+			return fmt.Errorf("asset kind %q names %q, which is not a Thunderstore package", k.ID, pkg)
+		}
+	}
+	for f := range k.Files {
+		if !safe(f) {
+			return fmt.Errorf("asset kind %q has an unsafe starter file %q", k.ID, f)
+		}
+	}
+	return nil
 }
 
 // DevRecommend is a package a new mod likely needs: always, or when the template parameter Param was answered with one
@@ -916,6 +957,13 @@ func (g GameInfo) Validate() error {
 		for _, r := range devRecommends(l.DevTemplate) {
 			if !devPackage.MatchString(r.Package) {
 				return fmt.Errorf("game %q recommends %q, which is not a Thunderstore package", g.ID, r.Package)
+			}
+		}
+		if t := l.DevTemplate; t != nil {
+			for _, k := range t.AssetKinds {
+				if err := k.validate(); err != nil {
+					return fmt.Errorf("game %q: %w", g.ID, err)
+				}
 			}
 		}
 		if l.PlaceDir != "" && (strings.Contains(l.PlaceDir, "\\") || !fs.ValidPath(l.PlaceDir) || l.PlaceDir == ".") {

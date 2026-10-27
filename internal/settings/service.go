@@ -211,6 +211,8 @@ type DevProject struct {
 	Untrusted bool `json:"untrusted,omitempty"`
 	// TemplateIcon is the SHA-256 of the template's icon.png, so Pack can say the mod still wears it.
 	TemplateIcon string `json:"templateIcon,omitempty"`
+	// Kind is the catalog asset kind of a project made only of files (suits, sounds); empty is a code project.
+	Kind string `json:"kind,omitempty"`
 }
 
 // AddDevProject records p for the game and makes its build output an extra mods folder that installs into its profile.

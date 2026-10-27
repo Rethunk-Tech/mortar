@@ -89,6 +89,8 @@ type NewMod struct {
 	GitHub  bool   `json:"github"`
 	Owner   string `json:"owner"`
 	Private bool   `json:"private"`
+	// Kind is one of the game's AssetKinds for a mod made only of files; empty starts a code mod from the template.
+	Kind string `json:"kind"`
 }
 
 // Tools is what building a mod needs on this computer.
@@ -294,6 +296,9 @@ func (s *Service) Create(ctx context.Context, m NewMod) (settings.DevProject, er
 	if err := m.check(); err != nil {
 		return settings.DevProject{}, err
 	}
+	if m.Kind != "" {
+		return s.createAsset(ctx, m)
+	}
 	tpl, ok := Template(m.Game)
 	if !ok {
 		return settings.DevProject{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("%s has no mod template", m.Game))
@@ -331,7 +336,7 @@ func (s *Service) Create(ctx context.Context, m NewMod) (settings.DevProject, er
 		return settings.DevProject{}, err
 	}
 	s.commit(ctx, dest, m.GitHub, m.Name)
-	return s.enroll(m.Game, dest, m.Name, m.Profile, m.CopyFrom, false)
+	return s.enroll(m.Game, dest, m.Name, m.Profile, m.CopyFrom, "", false)
 }
 
 // instantiate runs `dotnet new` on the template in raw, in Mortar's own template hive so nothing is installed for

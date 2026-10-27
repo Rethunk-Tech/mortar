@@ -58,6 +58,8 @@ type ProjectInfo struct {
 	// ClientOnly is set when the template's audience says only the player who installs the mod needs it, so testing it
 	// needs no second copy.
 	ClientOnly bool `json:"clientOnly"`
+	// Kind is the catalog asset kind of a project made only of files; empty for code.
+	Kind string `json:"kind"`
 }
 
 // GitState is what a project card shows of its repository.
@@ -103,6 +105,15 @@ func (s *Service) Inspect(ctx context.Context, gameID, dir string) (ProjectInfo,
 	p, err := s.project(gameID, dir)
 	if err != nil {
 		return ProjectInfo{}, err
+	}
+	if rec, ok := readAssetRecord(p.Dir); ok && p.Kind != "" {
+		info := assetInfo(p.Dir, rec)
+		if v, err := s.NextVersions(ctx, gameID, dir); err == nil {
+			info.Released = v.Current
+		}
+		info.Icon = iconData(p.Dir)
+		info.Git = s.gitState(ctx, p.Dir)
+		return info, nil
 	}
 	csproj, ok := csprojOf(p.Dir)
 	if !ok {

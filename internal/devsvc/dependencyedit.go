@@ -65,6 +65,9 @@ func (s *Service) RemoveDependency(gameID, dir, pkg string) error {
 	if !thunderstorePackage.MatchString(pkg) || pkg == loaderPackage {
 		return usererr.Wrap(usererr.Invalid, fmt.Errorf("%s is not a dependency the project can drop", pkg))
 	}
+	if p.Kind != "" {
+		return setManifestDependency(p.Dir, pkg, "")
+	}
 	csproj, ok := csprojOf(p.Dir)
 	if !ok {
 		return usererr.Wrap(usererr.NotFound, errors.New("the project file is missing"))
