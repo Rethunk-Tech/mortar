@@ -4,7 +4,7 @@ Where the tests are, what each opt-in run proves and how to start it. The gate t
 
 ## Budget
 
-- The default suite (Go with `-race` plus `bun test`) runs in under 10 s warm. Only the `main` package links the Wails `application` package (GTK and WebKit through cgo): services take a `winhost.Host` and `desktopnotify` a `Notifier`, both implemented in `wailshost.go`, so no other test binary pays that link.
+- The default suite (Go with `-race` plus `bun test`) runs in under 10 s warm. Only the `main` package links the Wails `application` package (GTK and WebKit through cgo; `TestOnlyPackageMainImportsWails`): services take a `winhost.Host` and `desktopnotify` a `Notifier`, both implemented in `wailshost.go`, so no other test binary pays that link.
 - A slow path sits behind a flag below, not in the default run.
 - Every `dotnet` invocation leaves an empty six-character dir in `TMPDIR`: a script that runs it gives it a per-run `TMPDIR`.
 - Browser e2e stays under its 2-minute budget: `frontend/e2e/run-shards.ts` splits it across sandboxes, because the specs mutate one seeded server. Each shard costs a sandbox's memory and a headless display, so the count stays at the smallest that fits.

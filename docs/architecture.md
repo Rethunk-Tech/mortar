@@ -17,7 +17,7 @@ Mortar finds a game, installs its mod loader, keeps each set of mods in its own 
 
 ## Storage
 
-Everything lives in the user data folder, `%LOCALAPPDATA%\Mortar` or `$XDG_DATA_HOME/mortar`, never under the Windows install folder (the uninstaller deletes that recursively). State is JSON written through a temp file and rename (`datadir.WriteFile`/`WriteJSON`/`WriteStream`); no database. The Nexus key is in the OS keyring.
+Everything lives in the user data folder, `%LOCALAPPDATA%\Mortar` or `$XDG_DATA_HOME/mortar`, never under the Windows install folder (the uninstaller deletes that recursively). State is JSON written through a temp file and rename (`datadir.WriteFile`/`WriteJSON`/`WriteStream`; `TestFilesAreCreatedOnlyThroughDatadirOrFsx`); no database. The Nexus key is in the OS keyring.
 
 - **Move** (Settings › Storage): `datasvc.Measure` probes free space with a real clone or link because FAT, exFAT and SMB count every name. It never follows symlinked folders, junctions or mount points, and is refused while the game runs.
 - **Portable mode:** a `portable` file beside the executable (symlinks resolved) puts data at `<exe dir>/data`, ignores `data-location` and refuses Move. The marker is ignored inside a Flatpak and an AppImage mount; one beside an executable in an unwritable folder stops the start with `datadir.PortableError`. A portable copy has its own single-instance id (hash of its data folder).
@@ -58,7 +58,7 @@ The store keeps every item a profile names as `key` or `previousKey` and deletes
 
 Each key's meaning, scope, type, default and allowed values are defined once, in code: field comments on `Settings` (`internal/settings/settings.go`) and the registry (`internal/settings/registry.go`). `mortar settings get` lists every key with its value.
 
-**Export and import:** Settings › General › Settings file writes the fields in `portableFields` (`internal/settings/portable.go`); import (`internal/settings/import.go`) refuses any other version and applies only after a preview. Account and machine state (Nexus identity, game folders and stores, loaders, last played, dismissals, handler state, LAN settings, `backgroundImage`, `overlayToken`) is never exported; the keyring is never read.
+**Export and import:** Settings › General › Settings file writes the fields in `portableFields` (`internal/settings/portable.go`); import (`internal/settings/import.go`) refuses any other version and applies only after a preview. Account and machine state is never exported (`TestPortableFieldsNameNoAccountOrMachineState`); the keyring is never read.
 
 **Clean-up** (`internal/datasvc`): Clean up… previews, then deletes exactly the listed items; its keep set is `datasvc.KeepSet`, the set the startup 30-day sweep also builds.
 
@@ -68,7 +68,7 @@ Installing an item records the SHA-256 and size of every file beside the store (
 
 ## Profile operations
 
-**Materialising store items into a profile** (install, duplicate, rebuild, update) is per file, in order, falling through on `EXDEV`/`EOPNOTSUPP`/`EINVAL`/`ERROR_INVALID_FUNCTION`: copy-on-write clone, hardlink, symlink, copy (`internal/datadir/materialize.go`). Files a mod may write (`config.json`, `data/` and saves-like folders, `*.mortar-old`, editor-openable text files) use clone or copy only: SMAPI's `helper.Data.WriteJsonFile` truncates in place, so a link would leak one profile's write into the store and every other profile. Drift ignores those paths. Duplicate never hardlinks or symlinks `mods/`. Deleting a profile unlinks its names and never removes store files.
+**Materialising store items into a profile** (install, duplicate, rebuild, update) is per file, in order, falling through on `EXDEV`/`EOPNOTSUPP`/`EINVAL`/`ERROR_INVALID_FUNCTION`: copy-on-write clone, hardlink, symlink, copy (`internal/datadir/materialize.go`). Files a mod may write (`config.json`, `data/` and saves-like folders, `*.mortar-old`, editor-openable text files) use clone or copy only: SMAPI's `helper.Data.WriteJsonFile` truncates in place, so a link would leak one profile's write into the store and every other profile (`TestConfigJSONNeverHardlinkedOrSymlinked`). Drift ignores those paths. Duplicate never hardlinks or symlinks `mods/`. Deleting a profile unlinks its names and never removes store files.
 
 Each operation is a method of `internal/profile` `Store` or a named service; the tests state the edge cases. Traps:
 
@@ -98,7 +98,7 @@ Mortar is GUI-first: the CLI exposes only what the window can already do, and a 
 
 ## Failure behaviour
 
-Once mods are installed, nothing external is needed to open, edit or launch a profile. Failures reaching the user are classified in `internal/usererr`. Go wraps the cause as `[kind] message`; the window (`errorMessage` in `frontend/src/toasts/report.ts`) and the CLI (`Sentence` in `internal/cli`) map the kind to the same English sentence, with the cause in a Details tooltip or under `--json`/`-v`.
+Once mods are installed, nothing external is needed to open, edit or launch a profile. Failures reaching the user are classified in `internal/usererr`. Go wraps the cause as `[kind] message`; the window (`errorMessage` in `frontend/src/toasts/report.ts`) and the CLI (`Sentence` in `internal/cli`) map the kind to the same English sentence (`TestSentenceMatchesGUIForEveryKind`), with the cause in a Details tooltip or under `--json`/`-v`.
 
 - **A mod source unreachable:** `internal/netstate` records per source whether its last real request hit a network error; a bad answer leaves state alone. A banner names each unreachable source and disables network actions needing one. Trap: SMAPI's API or the dataset unreachable degrades and never blocks: update checks show "unknown", dependencies are checked after download.
 - **Archive formats** (`internal/archive`): found by magic bytes, never extension (`archive.Extensions` is only what pickers, drop and the downloads watcher accept). A compressed stream whose payload has a `ustar` header is read as a tar; any other is one file named from the archive's name minus its suffix, queued as `<id>~~<original name>` (`archive.SavedName`). A classic `.lzma` stream has no magic, so it is recognised by its properties byte, dictionary size and length.
