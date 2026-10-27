@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { type Dispatch, type SetStateAction, useEffect, useState } from 'react'
 import type {
   HistoryDiff,
   HistoryEvent,
@@ -17,6 +17,52 @@ import { selectedPair } from './historyDiff.ts'
 import { pushMissingToast, revertHistoryEvent } from './historyRevert.ts'
 import { useProfiles } from './store.ts'
 
+async function diffsOf(game: string, profileId: string, events: HistoryEvent[]) {
+  const diffs = await EventDiffs(
+    game,
+    profileId,
+    events.map((ev) => ev.id),
+  )
+  const out: Record<string, HistoryDiff['items']> = {}
+  for (const ev of events) {
+    out[ev.id] = diffs?.[ev.id]?.items ?? []
+  }
+  return out
+}
+
+// Loads the changes of shown events that don't have them yet: a later page, or events a revert made.
+function useShownDiffs({
+  game,
+  profileId,
+  shown,
+  items,
+  setItems,
+}: {
+  game: string
+  profileId: string
+  shown: HistoryEvent[]
+  items: Record<string, HistoryDiff['items']>
+  setItems: Dispatch<SetStateAction<Record<string, HistoryDiff['items']>>>
+}) {
+  useEffect(() => {
+    const missing = shown.filter((ev) => !(ev.id in items))
+    if (game === '' || missing.length === 0) {
+      return
+    }
+    let live = true
+    diffsOf(game, profileId, missing)
+      .then((more) => {
+        if (live) {
+          setItems((had) => ({ ...had, ...more }))
+        }
+      })
+      .catch(reportUnexpected)
+    return () => {
+      live = false
+    }
+  }, [game, profileId, shown, items, setItems])
+}
+
 // The comparison of the two picked entries, null unless exactly two are picked.
 function usePickedPair(game: string, profileId: string, picked: string[]) {
   const ids = selectedPair(picked)
@@ -28,11 +74,20 @@ function usePickedPair(game: string, profileId: string, picked: string[]) {
   ).data
 }
 
-/** toastMissing is for a caller without the panel's own missing-mods UI: a revert that lacks mods says so in a toast. */
-export function useHistoryPanel(profileId: string, open: boolean, toastMissing = false) {
+/**
+ * toastMissing is for a caller without the panel's own missing-mods UI: a revert that lacks mods says so in a toast.
+ * pageSize, when set, shows that many events at first and loads each one's changes only once it's shown.
+ */
+export function useHistoryPanel(
+  profileId: string,
+  open: boolean,
+  toastMissing = false,
+  pageSize = Number.POSITIVE_INFINITY,
+) {
   const game = useProfiles((s) => s.game)
   const [events, setEvents] = useState<HistoryEvent[]>([])
   const [items, setItems] = useState<Record<string, HistoryDiff['items']>>({})
+  const [shown, setShown] = useState(pageSize)
   const [picked, setPicked] = useState<string[]>([])
   const [busy, setBusy] = useState('')
   const [error, setError] = useState('')
@@ -51,18 +106,11 @@ export function useHistoryPanel(profileId: string, open: boolean, toastMissing =
     setMissingNames([])
     setMissingWants([])
     setPicked([])
+    setShown(pageSize)
     History(game.id, profileId)
       .then(async (list) => {
         const rows = list ?? []
-        const diffs = await EventDiffs(
-          game.id,
-          profileId,
-          rows.map((ev) => ev.id),
-        )
-        const next: Record<string, HistoryDiff['items']> = {}
-        for (const ev of rows) {
-          next[ev.id] = diffs?.[ev.id]?.items ?? []
-        }
+        const next = await diffsOf(game.id, profileId, rows.slice(0, pageSize))
         // Events and their changes arrive together, so the timeline draws once.
         if (live) {
           setEvents(rows)
@@ -73,12 +121,21 @@ export function useHistoryPanel(profileId: string, open: boolean, toastMissing =
     return () => {
       live = false
     }
-  }, [open, game, profileId])
+  }, [open, game, profileId, pageSize])
+  useShownDiffs({
+    game: open ? (game?.id ?? '') : '',
+    profileId,
+    shown: events.slice(0, shown),
+    items,
+    setItems,
+  })
   const pair = usePickedPair(game?.id ?? '', profileId, picked)
   return {
     game,
     events,
     items,
+    shown,
+    showMore: () => setShown((n) => n + pageSize),
     picked,
     pair,
     busy,

@@ -87,18 +87,23 @@ export function EarlierChanges({ panel, hide }: { panel: Panel; hide: ReadonlySe
       </Typography>
     )
   }
+  const listed = panel.events.filter((ev) => !hide.has(ev.id))
+  const more = listed.length - panel.shown
   return (
     <>
-      {panel.events
-        .filter((ev) => !hide.has(ev.id))
-        .map((ev) => (
-          <EarlierRow
-            key={ev.id}
-            ev={ev}
-            panel={panel}
-            onUndo={undoTarget(panel.events, ev.id) === '' ? undefined : undo}
-          />
-        ))}
+      {listed.slice(0, panel.shown).map((ev) => (
+        <EarlierRow
+          key={ev.id}
+          ev={ev}
+          panel={panel}
+          onUndo={undoTarget(panel.events, ev.id) === '' ? undefined : undo}
+        />
+      ))}
+      {more > 0 ? (
+        <Button size="small" onClick={panel.showMore} sx={{ mx: space.pad, my: space.gap }}>
+          {plural(more, { one: 'Show # older change', other: 'Show older changes (# left)' })}
+        </Button>
+      ) : null}
       <ConfirmationDialog
         open={target !== null}
         title={t`Undo this and ${plural({ count: later.length }, { one: '# later change', other: '# later changes' })}?`}

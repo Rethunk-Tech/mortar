@@ -241,6 +241,7 @@ export function dialogCases(h: Helpers): Case[] {
       ),
     ),
     dialog('history', (p) => profileMenu(p, /^History…/)),
+    dialog('notifications', (p) => button(p, /^Notifications/)),
     dialog('history-compare', async (p) => {
       await profileMenu(p, /^History…/)
       await inDialog(p, /^Compare two…/)

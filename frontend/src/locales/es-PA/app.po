@@ -5148,6 +5148,10 @@ msgstr ""
 msgid "Could not check the graphics setting"
 msgstr ""
 
+#: src/toasts/EarlierChanges.tsx
+msgid "{more, plural, one {Show # older change} other {Show older changes (# left)}}"
+msgstr ""
+
 #: src/saves/lackChips.tsx
 msgid "{name} (disabled)"
 msgstr ""

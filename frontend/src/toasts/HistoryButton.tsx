@@ -18,6 +18,9 @@ import { historyActionState } from './history.ts'
 import { reportUnexpected } from './report.ts'
 import { type ToastHistoryItem, useToasts } from './store.ts'
 
+// The menu loads this many earlier changes at a time; All changes shows the rest.
+const EARLIER_PAGE = 10
+
 const edge: Record<ToastHistoryItem['kind'], string> = {
   info: 'info.main',
   success: 'success.main',
@@ -117,7 +120,7 @@ function HistoryPopover({
 }) {
   const { t } = useLingui()
   const profileId = useProfiles((st) => st.openId)
-  const panel = useHistoryPanel(profileId, open, true)
+  const panel = useHistoryPanel(profileId, open, true, EARLIER_PAGE)
   // A change to the profile is listed once: while unread under New, then in the history under Earlier.
   const fresh = history.slice(0, freshCount)
   const reported = new Set(fresh.flatMap((item) => item.changes ?? []))

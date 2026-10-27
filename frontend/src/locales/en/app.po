@@ -5148,6 +5148,10 @@ msgstr "{count, plural, one {Import # profile} other {Import # profiles}}"
 msgid "Could not check the graphics setting"
 msgstr "Could not check the graphics setting"
 
+#: src/toasts/EarlierChanges.tsx
+msgid "{more, plural, one {Show # older change} other {Show older changes (# left)}}"
+msgstr "{more, plural, one {Show # older change} other {Show older changes (# left)}}"
+
 #: src/saves/lackChips.tsx
 msgid "{name} (disabled)"
 msgstr "{name} (disabled)"
