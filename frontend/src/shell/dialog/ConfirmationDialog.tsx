@@ -32,7 +32,7 @@ export function ConfirmationDialog({
   busy = false,
   confirmDisabled = false,
   fieldFocus = false,
-  dontAskAgain,
+  checkbox,
   onConfirm,
   onCancel,
   children,
@@ -48,7 +48,7 @@ export function ConfirmationDialog({
   confirmDisabled?: boolean | undefined
   // The body holds a field that takes initial focus instead of a button.
   fieldFocus?: boolean
-  dontAskAgain?: { label: string; checked: boolean; onChange: (on: boolean) => void }
+  checkbox?: { label: string; checked: boolean; onChange: (on: boolean) => void }
   onConfirm: () => void
   onCancel: () => void
   // More than the consequences can say: a choice, a field, a list to review.
@@ -94,16 +94,16 @@ export function ConfirmationDialog({
       footer={
         <DialogFooter
           aside={
-            dontAskAgain ? (
+            checkbox ? (
               <FormControlLabel
                 control={
                   <Checkbox
                     size="small"
-                    checked={dontAskAgain.checked}
-                    onChange={(_, on) => dontAskAgain.onChange(on)}
+                    checked={checkbox.checked}
+                    onChange={(_, on) => checkbox.onChange(on)}
                   />
                 }
-                label={dontAskAgain.label}
+                label={checkbox.label}
                 sx={{ m: 0, '& .MuiFormControlLabel-label': { fontSize: 'small.fontSize' } }}
               />
             ) : null

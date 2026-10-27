@@ -7,7 +7,6 @@ import {
   Checkbox,
   Chip,
   CircularProgress,
-  FormControlLabel,
   IconButton,
   Link,
   Menu,
@@ -390,13 +389,12 @@ function MoreMenu({
             persist(() => Forget(game, project.dir), t`Could not save that setting`)
           }
         }}
+        checkbox={{
+          label: t`Also move its folder to the trash`,
+          checked: trashFolder,
+          onChange: setTrashFolder,
+        }}
       >
-        <FormControlLabel
-          control={
-            <Checkbox checked={trashFolder} onChange={(e) => setTrashFolder(e.target.checked)} />
-          }
-          label={t`Also move its folder to the trash`}
-        />
         {trashFolder && (info?.git?.unpushed || info?.git?.changed) ? (
           <Alert variant="compact" severity="warning">
             {t`Work that is only in this folder goes with it: ${{ summary: gitSummary(info.git) }}.`}

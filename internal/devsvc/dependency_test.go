@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 func TestWithDependency(t *testing.T) {
@@ -129,5 +130,42 @@ func TestWireFoldsOnlyItsOwnChangesIntoTheStartCommit(t *testing.T) {
 	}
 	if status := git("status", "--porcelain"); status != "M Plugin.cs" {
 		t.Fatalf("after the player's commit, status %q", status)
+	}
+}
+
+func TestSyncReferencesADependencyAnotherProjectBuilds(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	prof, err := svc.Profiles.Create("lethal-company", "Dev")
+	if err != nil {
+		t.Fatal(err)
+	}
+	write := func(path, body string) {
+		t.Helper()
+		if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	lib, mod := t.TempDir(), t.TempDir()
+	write(filepath.Join(lib, propsFile), "<Project><PropertyGroup><ThunderstoreTeam>Mortar</ThunderstoreTeam></PropertyGroup></Project>")
+	write(filepath.Join(lib, "src", "ConfigSync", "ConfigSync.csproj"), "<Project><PropertyGroup><ThunderstoreName>ConfigSync</ThunderstoreName></PropertyGroup></Project>")
+	csproj := filepath.Join(mod, "src", "Mod", "Mod.csproj")
+	write(csproj, "<Project>\n  <ItemGroup>\n    <ThunderstoreDependency Include=\"Mortar-ConfigSync\" Version=\"0.1.0\" />\n  </ItemGroup>\n</Project>\n")
+	output := filepath.Join(lib, "artifacts", "bin")
+	for _, p := range []settings.DevProject{{Dir: lib, Name: "ConfigSync", Output: output}, {Dir: mod, Name: "Mod", Profile: prof.ID}} {
+		if err := svc.Settings.AddDevProject("lethal-company", p); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := svc.syncDependencies("lethal-company", settings.DevProject{Dir: mod, Name: "Mod", Profile: prof.ID}); err != nil {
+		t.Fatal(err)
+	}
+	project, _ := fsx.ReadFile(csproj)
+	props, _ := fsx.ReadFile(filepath.Join(mod, "Config.Build.user.props"))
+	if !strings.Contains(string(project), "$(MortarDependency_Mortar_ConfigSync)**/*.dll") ||
+		!strings.Contains(string(props), "<MortarDependency_Mortar_ConfigSync>"+output+string(filepath.Separator)+"<") {
+		t.Fatalf("project:\n%s\nprops:\n%s", project, props)
 	}
 }

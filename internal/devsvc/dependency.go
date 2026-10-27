@@ -130,6 +130,11 @@ func withDependency(project, pkg, version string, soft bool) string {
 	} else {
 		project = afterLastDependency(project, item)
 	}
+	return withReference(project, pkg)
+}
+
+// withReference adds pkg's DLL reference, relative to its folder property, after the last dependency unless it is there.
+func withReference(project, pkg string) string {
 	prop := depProp(pkg)
 	ref := fmt.Sprintf(`<Reference Include="$(%[1]s)**/*.dll" Condition="'$(%[1]s)' != ''" Private="false" />`, prop)
 	if !strings.Contains(project, ref) {
@@ -263,6 +268,19 @@ func (s *Service) syncDependencies(gameID string, p settings.DevProject) error {
 	}
 	src := filepath.Dir(csproj)
 	namespace := cmpOr(readProp(string(raw), "RootNamespace"), strings.TrimSuffix(filepath.Base(csproj), ".csproj"))
+	// A dependency the template declared has no reference of its own, since the build downloaded it; once Mortar points
+	// at a folder for it, the build skips that download and needs the reference.
+	referenced := string(raw)
+	for pkg := range deps {
+		if folders[pkg] != "" && pkg != "BepInEx-BepInExPack" {
+			referenced = withReference(referenced, pkg)
+		}
+	}
+	if referenced != string(raw) {
+		if err := fsx.WriteFile(csproj, []byte(referenced), 0o644); err != nil { // #nosec G306 -- a tracked project file
+			return err
+		}
+	}
 	for pkg, soft := range deps {
 		folder := folders[pkg]
 		if folder == "" {
