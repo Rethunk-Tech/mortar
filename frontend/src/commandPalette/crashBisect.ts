@@ -34,15 +34,14 @@ async function blockOf(game: string | undefined, profile: string | undefined) {
   return bisectBlock(await Runs(game, profile))
 }
 
-async function startCrashBisect(): Promise<string | null> {
+/** Starts the crash check on the open profile, once the player confirmed it. */
+export async function startCrashBisect(): Promise<void> {
   const { game, openId } = useProfiles.getState()
-  const block = await blockOf(game?.id, openId)
-  if (block !== null) {
-    return blockText(block, i18n)
-  }
   const id = await StartBisect(game?.id ?? '', openId ?? '')
-  useCommandPalette.getState().setBisect({ id, game: game?.id ?? '', profile: openId ?? '' })
-  return null
+  useCommandPalette.setState({
+    confirmingBisect: false,
+    bisect: { id, game: game?.id ?? '', profile: openId ?? '' },
+  })
 }
 
 /** Why the open profile has no crash to find, in words; null when there is one. */
@@ -61,12 +60,15 @@ export function useBisectBlockText(): string | null {
   return block === null ? null : blockText(block, lang)
 }
 
-// findCrashCause starts the bisect or, when it cannot, says why in a toast.
+// findCrashCause asks before the crash check or, when there is none to run, says why in a toast.
 export function findCrashCause(): void {
-  startCrashBisect()
-    .then((message) => {
-      if (message) {
-        useToasts.getState().push({ kind: 'info', title: message })
+  const { game, openId } = useProfiles.getState()
+  blockOf(game?.id, openId)
+    .then((block) => {
+      if (block === null) {
+        useCommandPalette.setState({ confirmingBisect: true })
+      } else {
+        useToasts.getState().push({ kind: 'info', title: blockText(block, i18n) })
       }
     })
     .catch(reportUnexpected)

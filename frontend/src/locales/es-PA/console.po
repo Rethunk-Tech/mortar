@@ -39,6 +39,10 @@ msgstr ""
 msgid "Each mod's time in its per-frame event handlers (update, render and one-second ticks), summed per frame, averaged over every frame. The 95th percentile and peak are per frame. {app} patches and work outside events are in the baseline, not in a mod's row."
 msgstr ""
 
+#: src/console/BisectConfirm.tsx
+msgid "Could not start the crash check"
+msgstr ""
+
 #: src/console/BisectDialog.tsx
 msgid "Open profile"
 msgstr ""
@@ -318,6 +322,10 @@ msgstr ""
 
 #: src/console/StartupTable.tsx
 msgid "Show details"
+msgstr ""
+
+#: src/console/BisectConfirm.tsx
+msgid "Mortar starts the game on a copy of this profile, turning half the mods off each time, until one mod is left. Your profile stays as it is."
 msgstr ""
 
 #: src/console/UpdateNoteTag.tsx
@@ -735,6 +743,10 @@ msgstr ""
 msgid "Crash finding was stopped."
 msgstr ""
 
+#: src/console/BisectConfirm.tsx
+msgid "Find the mod that crashes the game?"
+msgstr ""
+
 #: src/console/ConsoleTab.tsx
 msgid "the search is \"{search}\""
 msgstr ""
@@ -1002,6 +1014,10 @@ msgstr ""
 
 #: src/console/UpdateNoteTag.tsx
 msgid "Already installed"
+msgstr ""
+
+#: src/console/BisectConfirm.tsx
+msgid "Start"
 msgstr ""
 
 #: src/console/ConsoleTab.tsx

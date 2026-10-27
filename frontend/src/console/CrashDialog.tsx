@@ -26,6 +26,7 @@ import { space } from '../theme/density.ts'
 import { errorDetails } from '../toasts/errorKind.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { BisectConfirm } from './BisectConfirm.tsx'
 import { BisectDialog } from './BisectDialog.tsx'
 import { crashCauseDetailLine } from './crashCause.ts'
 import { useConsole } from './store.ts'
@@ -186,6 +187,7 @@ export function CrashDialog() {
     null,
   )
   const [bisectError, setBisectError] = useState<string | null>(null)
+  const [asking, setAsking] = useState(false)
   const profile = useProfiles((s) => s.profiles.find((p) => p.id === crash?.profile))
   const mod = useMods((s) => s.mods.find((m) => m.key === crash?.cause?.modKey))
   const reasonText = useReasonText()
@@ -206,9 +208,11 @@ export function CrashDialog() {
       const id = await StartBisect(crash.game, crash.profile)
       setBisectJob({ id, game: crash.game, profile: crash.profile })
       setBisectError(null)
+      setAsking(false)
       dismiss()
     } catch (error) {
       setBisectError(errorDetails(error))
+      setAsking(false)
     }
   }
   const causeBody = crash.cause
@@ -246,7 +250,7 @@ export function CrashDialog() {
             <CrashPrimary
               mod={mod}
               canBisect={canBisect}
-              onBisect={startBisect}
+              onBisect={() => setAsking(true)}
               onConsole={() => {
                 openRun(crash, true)
                 dismiss()
@@ -293,6 +297,7 @@ export function CrashDialog() {
           ) : null}
         </Box>
       </AppDialog>
+      <BisectConfirm open={asking} onCancel={() => setAsking(false)} onConfirm={startBisect} />
       {bisectJob ? (
         <BisectDialog
           game={bisectJob.game}

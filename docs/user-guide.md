@@ -210,7 +210,7 @@ On Windows, Steam's own **Play** starts SMAPI with the game's own `Mods` folder,
 A card on the profile's Home names the likely cause, read from the loader's log (for Lethal Company also Unity's player log) and, when those name no mod, the game's crash dump. When the game died in native code the card names the module and offset; for Unity's player and the Windows system libraries Mortar then downloads that module's public symbols from Unity's or Microsoft's symbol server (only then, and only when online) and names the function instead.
 
 - **Most likely cause: \<mod\>** shows the log line and the **Stack frame** or dump line. **Disable it and play** disables that mod and relaunches.
-- **Find the cause…** first checks that the game crashes with every mod on, then disables mods in halves and relaunches until one is left. A library stays on while a mod that needs it is on. **Dismiss** hides the card for that run.
+- **Find the cause…** asks first, then checks that the game crashes with every mod on, then disables mods in halves and relaunches until one is left. A library stays on while a mod that needs it is on. **Dismiss** hides the card for that run.
 
 ## Make your own mods
 

@@ -24,6 +24,7 @@ import {
   User,
 } from 'lucide-react'
 import { Fragment, type KeyboardEvent, type ReactNode, useState } from 'react'
+import { BisectConfirm } from '../console/BisectConfirm.tsx'
 import { BisectDialog } from '../console/BisectDialog.tsx'
 import { NewProfileDialog } from '../game/NewProfileDialog.tsx'
 import type { SettingsSection } from '../nav/store.ts'
@@ -32,6 +33,7 @@ import { shortcutLabels } from '../settings/shortcutLabels.ts'
 import { mergeBindings } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
 import { space } from '../theme/density.ts'
+import { startCrashBisect } from './crashBisect.ts'
 import type { PaletteItem } from './match.ts'
 import { runPaletteItem } from './run.ts'
 import type { PaletteRow, PaletteSection } from './sections.ts'
@@ -245,6 +247,7 @@ export function CommandPalette() {
   const open = useCommandPalette((s) => s.open)
   const creating = useCommandPalette((s) => s.creating)
   const bisect = useCommandPalette((s) => s.bisect)
+  const confirmingBisect = useCommandPalette((s) => s.confirmingBisect)
   // The body subscribes to profiles and settings; a closed palette renders none of it, and its query starts empty
   // each time it opens.
   return (
@@ -261,6 +264,11 @@ export function CommandPalette() {
       <NewProfileDialog
         open={creating}
         onClose={() => useCommandPalette.getState().setCreating(false)}
+      />
+      <BisectConfirm
+        open={confirmingBisect}
+        onCancel={() => useCommandPalette.setState({ confirmingBisect: false })}
+        onConfirm={startCrashBisect}
       />
       {bisect ? (
         <BisectDialog

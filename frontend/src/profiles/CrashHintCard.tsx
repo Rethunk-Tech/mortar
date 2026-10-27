@@ -4,6 +4,7 @@ import { FolderOpen, PowerOff, Search, TriangleAlert, X } from 'lucide-react'
 import { useState } from 'react'
 import { Start as StartBisect } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/bisect/service.ts'
 import { OpenCrashReport } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
+import { BisectConfirm } from '../console/BisectConfirm.tsx'
 import { BisectDialog } from '../console/BisectDialog.tsx'
 import { useLastRun } from '../game/useLastRun.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
@@ -38,7 +39,11 @@ export function CrashHintCard({ game, profileId }: { game: string; profileId: st
   const culprit = hint?.modKey ? mod.find((m) => m.key === hint.modKey) : undefined
   const named = t`named in the crash log`
   const reason = useReasonText()(hint?.code, hint?.params, hint?.reason ?? '')
-  const bisect = () => StartBisect(game, profileId).then(setBisectJob).catch(reportUnexpected)
+  const [asking, setAsking] = useState(false)
+  const bisect = async () => {
+    setBisectJob(await StartBisect(game, profileId))
+    setAsking(false)
+  }
   const retry = (target: NonNullable<typeof culprit>) =>
     run(
       () =>
@@ -121,7 +126,7 @@ export function CrashHintCard({ game, profileId }: { game: string; profileId: st
             variant="outlined"
             color="inherit"
             startIcon={<Search size={16} />}
-            onClick={bisect}
+            onClick={() => setAsking(true)}
           >
             {t`Find the cause…`}
           </Button>
@@ -147,6 +152,7 @@ export function CrashHintCard({ game, profileId }: { game: string; profileId: st
           </Button>
         </Box>
       ) : null}
+      <BisectConfirm open={asking} onCancel={() => setAsking(false)} onConfirm={bisect} />
       {bisectJob ? (
         <BisectDialog
           game={game}
