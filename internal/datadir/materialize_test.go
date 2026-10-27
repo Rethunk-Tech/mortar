@@ -22,6 +22,7 @@ func seedTree(t *testing.T, dir string) {
 		"A/saves/slot.dat":     "slot",
 		"A/readme.txt":         "readme",
 		"A/nested/config.json": `{"n":1}`,
+		"A/mod.dll.mortar-old": "old",
 	}
 	for rel, body := range files {
 		p := filepath.Join(dir, filepath.FromSlash(rel))
@@ -142,7 +143,7 @@ func TestConfigJSONNeverHardlinkedOrSymlinked(t *testing.T) {
 		if err := MaterializeTreeOps(src, dst, opsFor(t, tier)); err != nil {
 			t.Fatal(err)
 		}
-		for _, rel := range []string{"A/config.json", "A/nested/config.json", "A/data/save.json", "A/saves/slot.dat", "A/readme.txt"} {
+		for _, rel := range []string{"A/config.json", "A/nested/config.json", "A/data/save.json", "A/saves/slot.dat", "A/readme.txt", "A/mod.dll.mortar-old"} {
 			from := filepath.Join(src, filepath.FromSlash(rel))
 			to := filepath.Join(dst, filepath.FromSlash(rel))
 			if linked(t, from, to) {
