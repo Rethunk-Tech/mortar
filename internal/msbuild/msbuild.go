@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"regexp"
 	"slices"
 	"strings"
 )
@@ -216,6 +217,41 @@ func Remove(text string, match func(e Elem, parent string) bool) (string, error)
 	}
 	for _, span := range slices.Backward(spans) {
 		text = text[:span[0]] + text[span[1]:]
+	}
+	return text, nil
+}
+
+// SetAttr sets attr to value on every element match picks, in place: an existing value's bytes are replaced, a missing
+// attribute is added before the tag's end. It also serves .slnx solutions, which are XML.
+func SetAttr(text string, match func(e Elem, parent string) bool, attr, value string) (string, error) {
+	elems, err := Parse(text)
+	if err != nil {
+		return text, err
+	}
+	quoted := attr + `="` + escapeAttr(value) + `"`
+	existing := regexp.MustCompile(`(\s)` + regexp.QuoteMeta(attr) + `\s*=\s*("[^"]*"|'[^']*')`)
+	for _, e := range slices.Backward(elems) {
+		parent := ""
+		if e.Parent >= 0 {
+			parent = elems[e.Parent].Name
+		}
+		if !match(e, parent) {
+			continue
+		}
+		tag := text[e.Start:e.InnerStart]
+		if loc := existing.FindStringSubmatchIndex(tag); loc != nil {
+			tag = tag[:loc[3]] + quoted + tag[loc[1]:]
+		} else {
+			end := len(tag) - 1
+			if strings.HasSuffix(tag, "/>") {
+				end = len(tag) - 2
+			}
+			tag = strings.TrimRight(tag[:end], " \t") + " " + quoted + tag[end:]
+			if strings.HasSuffix(tag, quoted+"/>") {
+				tag = strings.TrimSuffix(tag, "/>") + " />"
+			}
+		}
+		text = text[:e.Start] + tag + text[e.InnerStart:]
 	}
 	return text, nil
 }

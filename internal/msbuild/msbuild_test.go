@@ -72,3 +72,15 @@ func TestEditsTouchOnlyTheirElement(t *testing.T) {
 		t.Errorf("new group:\n%s", got)
 	}
 }
+
+func TestSetAttrRewritesOnlyThatAttribute(t *testing.T) {
+	slnx := "<Solution>\n  <Project Path='src/Old/Old.csproj' Id=\"1\" />\n  <Project Path=\"tools/T.csproj\"/>\n</Solution>\n"
+	got, err := SetAttr(slnx, func(e Elem, _ string) bool { return e.Name == "Project" && e.Attrs["Path"] == "src/Old/Old.csproj" }, "Path", "src/New/New.csproj")
+	if err != nil || got != strings.Replace(slnx, "Path='src/Old/Old.csproj'", `Path="src/New/New.csproj"`, 1) {
+		t.Fatalf("existing:\n%s", got)
+	}
+	got, _ = SetAttr(slnx, func(e Elem, _ string) bool { return e.Attrs["Path"] == "tools/T.csproj" }, "Type", "x")
+	if !strings.Contains(got, `<Project Path="tools/T.csproj" Type="x" />`) {
+		t.Fatalf("added:\n%s", got)
+	}
+}

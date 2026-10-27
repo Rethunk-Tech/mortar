@@ -367,8 +367,15 @@ func (s *Service) rename(ctx context.Context, dir, csproj, old, name string) (st
 		if err := move(filepath.Base(slnx[0]), name+".slnx"); err != nil {
 			return "", err
 		}
+		oldPath := filepath.ToSlash(srcOld) + "/" + filepath.Base(csproj)
 		_ = editFile(filepath.Join(dir, name+".slnx"), func(b string) string {
-			return strings.ReplaceAll(b, filepath.ToSlash(srcOld)+"/"+filepath.Base(csproj), "src/"+name+"/"+name+".csproj")
+			out, err := msbuild.SetAttr(b, func(e msbuild.Elem, _ string) bool {
+				return e.Name == "Project" && e.Attrs["Path"] == oldPath
+			}, "Path", "src/"+name+"/"+name+".csproj")
+			if err != nil {
+				return b
+			}
+			return out
 		})
 	}
 	word := regexp.MustCompile(`\b` + regexp.QuoteMeta(old) + `\b`)
