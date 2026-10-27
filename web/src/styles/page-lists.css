@@ -122,6 +122,22 @@ details.release summary h2 {
   margin-top: 26px;
 }
 
+.notes details {
+  margin-top: 28px;
+  border-top: 1px solid var(--line);
+  padding-top: 8px;
+}
+
+.notes summary {
+  cursor: pointer;
+  color: var(--dim);
+}
+
+.notes summary h3 {
+  display: inline;
+  font-size: 22px;
+}
+
 /* changelog */
 details.release {
   border-top: 1px solid var(--line);

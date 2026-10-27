@@ -22,31 +22,55 @@ function byVersionDesc(a: string, b: string): number {
   return 0
 }
 
-/** A notes file's "## Group", "### Area" and "- line" lines as HTML. */
+/** A notes file's "## Group", "### Area" and "- line" lines as HTML; New shows in full, the other groups fold behind
+ * their name and count. */
 function notesHtml(md: string): string {
-  const out: string[] = []
+  const groups: { name: string; lines: string[]; count: number }[] = []
   let open = false
   const close = () => {
-    if (open) {
-      out.push('</ul>')
+    const g = groups.at(-1)
+    if (open && g) {
+      g.lines.push('</ul>')
       open = false
     }
   }
   for (const line of md.split('\n')) {
     const heading = NOTES_HEADING.exec(line)
+    if (heading?.[1] === '##') {
+      close()
+      groups.push({ name: heading[2] ?? '', lines: [], count: 0 })
+      continue
+    }
+    if (groups.length === 0) {
+      groups.push({ name: '', lines: [], count: 0 })
+    }
+    const g = groups.at(-1)
+    if (!g) {
+      continue
+    }
     if (heading) {
       close()
-      const tag = heading[1] === '##' ? 'h3' : 'h4'
-      out.push(`<${tag}>${escapeHTML(heading[2] ?? '')}</${tag}>`)
+      g.lines.push(`<h4>${escapeHTML(heading[2] ?? '')}</h4>`)
     } else if (line.startsWith('- ')) {
       if (!open) {
-        out.push('<ul>')
+        g.lines.push('<ul>')
         open = true
       }
-      out.push(`<li>${escapeHTML(line.slice(2)).replace(INLINE_CODE, '<code>$1</code>')}</li>`)
+      g.count++
+      g.lines.push(`<li>${escapeHTML(line.slice(2)).replace(INLINE_CODE, '<code>$1</code>')}</li>`)
     }
   }
   close()
+  const out = groups.flatMap((g) => {
+    if (g.name === '' || g.name === 'New') {
+      return [...(g.name ? [`<h3>${escapeHTML(g.name)}</h3>`] : []), ...g.lines]
+    }
+    return [
+      `<details><summary><h3>${escapeHTML(g.name)} (${g.count})</h3></summary>`,
+      ...g.lines,
+      '</details>',
+    ]
+  })
   return out.map((l) => `        ${l}`).join('\n')
 }
 
