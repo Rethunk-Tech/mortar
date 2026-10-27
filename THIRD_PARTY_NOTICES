@@ -3540,7 +3540,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 
-golang.org/x/net@v0.61.0
+golang.org/x/net@v0.62.0
 licence: BSD-3-Clause
 https://pkg.go.dev/golang.org/x/net
 
