@@ -27,11 +27,12 @@ export function GroupMenu({ name }: { name: string }) {
   const [deleting, setDeleting] = useState(false)
   const [saving, setSaving] = useState(false)
   const close = () => setAnchor(null)
-  const item = (label: string, icon: ReactNode, run: () => void) => (
+  const item = (label: string, icon: ReactNode, run: () => void, tone?: 'error') => (
     <MenuAction
       disabled={locked}
       icon={icon}
       label={label}
+      tone={tone}
       onClick={() => {
         close()
         run()
@@ -59,7 +60,12 @@ export function GroupMenu({ name }: { name: string }) {
           }}
         />
         <LockedReason locked={locked}>
-          {item(t`Delete group (mods stay)`, <Trash2 size={ICON_SIZE} />, () => setDeleting(true))}
+          {item(
+            t`Delete group (mods stay)`,
+            <Trash2 size={ICON_SIZE} />,
+            () => setDeleting(true),
+            'error',
+          )}
         </LockedReason>
       </Menu>
       <PromptDialog

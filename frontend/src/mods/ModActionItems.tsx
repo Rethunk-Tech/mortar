@@ -57,6 +57,7 @@ function OtherProfilesGroup({
             reason={tooltip}
             icon={<Trash2 size={ICON_SIZE} />}
             label={t`Remove from other profiles…`}
+            tone="error"
             onClick={closeThen(onRemoveOther)}
           />
         </Box>

@@ -1,7 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, ListItemText, Menu, MenuItem } from '@mui/material'
-import { ChevronDown, History } from 'lucide-react'
+import { Box, Button, ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material'
+import { Check, ChevronDown, History } from 'lucide-react'
 import { useState } from 'react'
 import type { Run } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
@@ -13,6 +13,12 @@ import { listRuns } from './listRuns.ts'
 import { useOutcomeLabel } from './outcome.ts'
 import { runExitText } from './runExit.ts'
 import { useConsole } from './store.ts'
+
+const RadioMark = ({ on }: { on: boolean }) => (
+  <ListItemIcon sx={{ color: 'inherit' }}>
+    {on ? <Check size={16} aria-hidden={true} /> : null}
+  </ListItemIcon>
+)
 
 export function RunsPicker({ game }: { game: string }) {
   const { t } = useLingui()
@@ -72,7 +78,8 @@ export function RunsPicker({ game }: { game: string }) {
             setAnchor(null)
           }}
         >
-          {t`This session`}
+          <RadioMark on={viewingRun === ''} />
+          <ListItemText>{t`This session`}</ListItemText>
         </MenuItem>
         {runs.length === 0 ? <MenuItem disabled={true}>{t`No recorded runs yet`}</MenuItem> : null}
         {runs.map((r) => (
@@ -88,6 +95,7 @@ export function RunsPicker({ game }: { game: string }) {
               setAnchor(null)
             }}
           >
+            <RadioMark on={viewingRun === r.id} />
             <ListItemText
               primary={label(r)}
               secondary={

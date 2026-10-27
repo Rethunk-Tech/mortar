@@ -1,6 +1,14 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button, IconButton, Menu, MenuItem } from '@mui/material'
-import { MoreHorizontal } from 'lucide-react'
+import { Button, IconButton, Menu } from '@mui/material'
+import {
+  BellOff,
+  ExternalLink,
+  MoreHorizontal,
+  Pin,
+  PinOff,
+  RefreshCcw,
+  SkipForward,
+} from 'lucide-react'
 import { useState } from 'react'
 import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import type {
@@ -13,13 +21,14 @@ import { openProfileOf, useProfiles } from '../../profiles/store.ts'
 import { download } from '../../queue/actions.ts'
 import { DisabledReason } from '../../shell/DisabledReason.tsx'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
+import { MenuAction } from '../../shell/MenuAction.tsx'
 import { OfflineGate } from '../../shell/OfflineGate.tsx'
 import { updateSources, useOfflineReason } from '../../shell/offlineText.ts'
 import { StableLabel } from '../../shell/StableLabel.tsx'
 import { useLoaded } from '../../shell/useLoaded.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { installableUpdate } from '../lookup.ts'
-import { openPage } from '../menu.ts'
+import { ICON_SIZE, openPage } from '../menu.ts'
 import { detailsFor, useNexusDetails } from '../nexusDetails.ts'
 import { useOptionalSkips } from '../optionalFiles.ts'
 import { useMods } from '../store.ts'
@@ -101,52 +110,52 @@ export function UpdateActions({
       </IconButton>
       <Menu open={anchor !== null} anchorEl={anchor} onClose={() => setAnchor(null)}>
         {update.url ? (
-          <MenuItem
+          <MenuAction
+            icon={<ExternalLink size={ICON_SIZE} />}
+            label={t`Open page`}
             onClick={() => {
               setAnchor(null)
               openPage(update.url)
             }}
-          >
-            {t`Open page`}
-          </MenuItem>
+          />
         ) : null}
         {installableUpdate(update) ? (
           <DisabledReason title={everywhereWhy} disabled={everywhereBlocked}>
-            <MenuItem
+            <MenuAction
+              icon={<RefreshCcw size={ICON_SIZE} />}
+              label={t`Update in all profiles (${{ count: n }})`}
               disabled={everywhereBlocked || blocked}
               onClick={() => {
                 setAnchor(null)
                 setEverywhere(true)
               }}
-            >
-              {t`Update in all profiles (${{ count: n }})`}
-            </MenuItem>
+            />
           </DisabledReason>
         ) : null}
         <DisabledReason title={missingWhy} disabled={!mod}>
-          <MenuItem
+          <MenuAction
+            icon={<SkipForward size={ICON_SIZE} />}
+            label={t`Skip this update`}
             disabled={!mod}
             onClick={act(async () => mod && setSkipVersion(mod, update.version))}
-          >
-            {t`Skip this update`}
-          </MenuItem>
+          />
         </DisabledReason>
         <DisabledReason title={missingWhy} disabled={!mod}>
-          <MenuItem
+          <MenuAction
+            icon={entry?.pinned ? <PinOff size={ICON_SIZE} /> : <Pin size={ICON_SIZE} />}
+            label={entry?.pinned ? t`Unpin version` : t`Pin this version`}
             disabled={!mod}
             onClick={act(async () => mod && setPinned(mod, !entry?.pinned))}
-          >
-            {entry?.pinned ? t`Unpin version` : t`Pin this version`}
-          </MenuItem>
+          />
         </DisabledReason>
         {update.source && !entry?.skipSources?.includes(update.source) ? (
           <DisabledReason title={missingWhy} disabled={!mod}>
-            <MenuItem
+            <MenuAction
+              icon={<BellOff size={ICON_SIZE} />}
+              label={t`Ignore updates from ${{ source: update.source }}`}
               disabled={!mod}
               onClick={act(async () => mod && setSkipSource(mod, update.source, true))}
-            >
-              {t`Ignore updates from ${{ source: update.source }}`}
-            </MenuItem>
+            />
           </DisabledReason>
         ) : null}
       </Menu>

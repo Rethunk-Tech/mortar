@@ -1,7 +1,7 @@
 import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, MenuItem, Typography } from '@mui/material'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, LayoutGrid } from 'lucide-react'
 import { memo, useCallback, useEffect, useRef } from 'react'
 import { create } from 'zustand'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
@@ -26,6 +26,7 @@ import { useOpenGame } from './useOpenGame.ts'
 
 const THUMB_PX = 22
 const MENU_PX = 300
+const ICON_PX = 18
 const STRIP_PX = 56
 
 function Thumb({ game }: { game: GameInfo | undefined }) {
@@ -230,6 +231,7 @@ export const GameMenu = memo(function GameMenuView() {
         {found.map(item)}
         <MenuRule />
         <TitleMenuItem
+          icon={<LayoutGrid size={ICON_PX} />}
           label={t`All games…`}
           onClick={() => {
             close()

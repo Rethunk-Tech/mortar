@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button, Menu, MenuItem } from '@mui/material'
+import { Button, Menu } from '@mui/material'
+import { FileCheck, Save, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
@@ -9,12 +10,13 @@ import {
   ReadConfig,
   SaveConfigPreset,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
-import { destructiveSx } from '../shell/destructive.ts'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
+import { MenuAction } from '../shell/MenuAction.tsx'
 import { PromptDialog } from '../shell/PromptDialog.tsx'
 import { MenuRule } from '../shell/TitleMenu.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { LockedReason } from './LockedReason.tsx'
+import { ICON_SIZE } from './menu.ts'
 import { openTarget } from './storeView.ts'
 import { useLocked } from './useLocked.ts'
 
@@ -36,15 +38,22 @@ function PresetItems({
     <>
       {names.map((name) => (
         <LockedReason key={`a-${name}`} locked={locked}>
-          <MenuItem disabled={locked} onClick={() => onApply(name)}>
-            {t`Apply ${name}`}
-          </MenuItem>
+          <MenuAction
+            icon={<FileCheck size={ICON_SIZE} />}
+            label={t`Apply ${name}`}
+            disabled={locked}
+            onClick={() => onApply(name)}
+          />
         </LockedReason>
       ))}
       {names.map((name) => (
-        <MenuItem key={`d-${name}`} sx={destructiveSx} onClick={() => onAskDelete(name)}>
-          {t`Delete ${name}`}
-        </MenuItem>
+        <MenuAction
+          key={`d-${name}`}
+          icon={<Trash2 size={ICON_SIZE} />}
+          label={t`Delete ${name}`}
+          tone="error"
+          onClick={() => onAskDelete(name)}
+        />
       ))}
     </>
   )
@@ -104,14 +113,14 @@ function PresetsButton({ mod }: { mod: Mod }) {
         {t`Presets`}
       </Button>
       <Menu anchorEl={anchor} open={anchor !== null} onClose={() => setAnchor(null)}>
-        <MenuItem
+        <MenuAction
+          icon={<Save size={ICON_SIZE} />}
+          label={t`Save current as…`}
           onClick={() => {
             setSaveOpen(true)
             setAnchor(null)
           }}
-        >
-          {t`Save current as…`}
-        </MenuItem>
+        />
         {names.length > 0 ? <MenuRule /> : null}
         <PresetItems
           names={names}

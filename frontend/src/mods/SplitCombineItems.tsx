@@ -1,14 +1,16 @@
 import { useLingui } from '@lingui/react/macro'
-import { ListItemText, MenuItem } from '@mui/material'
+import { Merge, Split } from 'lucide-react'
 import type { Entry } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   CombineEntries,
   SplitExtra,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { MenuAction } from '../shell/MenuAction.tsx'
+import { MenuHeading } from '../shell/TitleMenu.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { pushUndoToast } from '../toasts/undo.ts'
-import { applyWithUndo, entryFileLabel } from './menu.ts'
+import { applyWithUndo, entryFileLabel, ICON_SIZE } from './menu.ts'
 
 export function SplitCombineItems({
   extras,
@@ -42,16 +44,21 @@ export function SplitCombineItems({
   }
   return (
     <>
-      {extras.length > 0 ? (
-        <MenuItem disabled={true}>
-          <ListItemText>{t`Install separately`}</ListItemText>
-        </MenuItem>
-      ) : null}
+      {extras.length > 0 ? <MenuHeading>{t`Install separately`}</MenuHeading> : null}
       {extras.map((extraKey) => (
-        <MenuItem
+        <MenuAction
           key={`split-${extraKey}`}
+          icon={<Split size={ICON_SIZE} />}
+          label={
+            <>
+              {extraLabel(extraKey)}
+              {extraArchive(extraKey) ? (
+                <span className="menu-action-reason">{extraArchive(extraKey)}</span>
+              ) : null}
+            </>
+          }
           disabled={locked}
-          sx={{ pl: 4 }}
+          reason={lockedTip}
           onClick={() => {
             close()
             applyWithUndo(
@@ -61,22 +68,16 @@ export function SplitCombineItems({
               toast(t`Installed separately`),
             ).catch(reportUnexpected)
           }}
-        >
-          <ListItemText secondary={locked ? lockedTip : extraArchive(extraKey) || undefined}>
-            {extraLabel(extraKey)}
-          </ListItemText>
-        </MenuItem>
+        />
       ))}
-      {siblings.length > 0 ? (
-        <MenuItem disabled={true}>
-          <ListItemText>{t`Combine with…`}</ListItemText>
-        </MenuItem>
-      ) : null}
+      {siblings.length > 0 ? <MenuHeading>{t`Combine with…`}</MenuHeading> : null}
       {siblings.map((other) => (
-        <MenuItem
+        <MenuAction
           key={`combine-${other.key}`}
+          icon={<Merge size={ICON_SIZE} />}
+          label={entryFileLabel(other)}
           disabled={locked}
-          sx={{ pl: 4 }}
+          reason={lockedTip}
           onClick={() => {
             close()
             applyWithUndo(
@@ -86,11 +87,7 @@ export function SplitCombineItems({
               toast(t`Combined`),
             ).catch(reportUnexpected)
           }}
-        >
-          <ListItemText secondary={locked ? lockedTip : undefined}>
-            {entryFileLabel(other)}
-          </ListItemText>
-        </MenuItem>
+        />
       ))}
     </>
   )

@@ -118,6 +118,7 @@ function ShortcutMenuItems({ profile, close }: { profile: Profile; close: () => 
         <ProfileMenuItem
           icon={<Trash2 size={16} />}
           label={t`Remove the shortcut`}
+          tone="error"
           onClick={() => {
             close()
             const g = currentGame
