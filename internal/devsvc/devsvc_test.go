@@ -607,3 +607,24 @@ func TestReleasePushesOnlyToGitHub(t *testing.T) {
 	}
 	git(hub, "rev-parse", "-q", "--verify", "refs/tags/v0.1.0")
 }
+
+func TestAnOversizedTemplateZipIsRefused(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	chunk := make([]byte, 1<<20)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		for range maxTemplateZip/len(chunk) + 1 {
+			if _, err := w.Write(chunk); err != nil {
+				return
+			}
+		}
+	}))
+	t.Cleanup(srv.Close)
+	svc.ArchiveURL = func(components.DevTemplate) string { return srv.URL }
+	_, err := svc.TemplateForm(t.Context(), "lethal-company")
+	if err == nil || !strings.Contains(err.Error(), "downloading the template") {
+		t.Fatalf("a template zip past maxTemplateZip was accepted: %v", err)
+	}
+	if entries, _ := os.ReadDir(filepath.Join(svc.CacheDir, "dev-templates")); len(entries) != 0 {
+		t.Fatalf("the refused template was cached: %v", entries)
+	}
+}
