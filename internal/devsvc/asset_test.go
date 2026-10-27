@@ -3,13 +3,16 @@ package devsvc
 import (
 	"archive/zip"
 	"io"
+	"maps"
 	"os"
+	"path"
 	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 )
 
 func TestAnAssetProjectIsItsOwnPackage(t *testing.T) {
@@ -29,7 +32,7 @@ func TestAnAssetProjectIsItsOwnPackage(t *testing.T) {
 	if p.Kind != "sounds" || p.Output != dir || p.Untrusted || p.TemplateIcon == "" {
 		t.Fatalf("project %+v", p)
 	}
-	if body, err := fsx.ReadFile(filepath.Join(dir, "sound_pack.json")); err != nil || !strings.Contains(string(body), `"name": "Quacks"`) {
+	if body, err := fsx.ReadFile(filepath.Join(dir, "plugins", "sound_pack.json")); err != nil || !strings.Contains(string(body), `"name": "Quacks"`) {
 		t.Errorf("starter file = %s (%v)", body, err)
 	}
 	var watched []string
@@ -38,7 +41,7 @@ func TestAnAssetProjectIsItsOwnPackage(t *testing.T) {
 			watched = append(watched, filepath.Base(f.Dir))
 		}
 	}
-	if slices.Sort(watched); !slices.Equal(watched, []string{"replacers", "sounds"}) {
+	if slices.Sort(watched); !slices.Equal(watched, []string{"plugins", "replacers", "sounds"}) {
 		t.Errorf("watched subfolders %v", watched)
 	}
 	if err := svc.AddDependency("lethal-company", dir, "loaforc-loaforcsSoundAPI", "2.0.13", true); err != nil {
@@ -51,7 +54,7 @@ func TestAnAssetProjectIsItsOwnPackage(t *testing.T) {
 	if err != nil || info.Kind != "sounds" || info.Package != "Ab-Quacks" || info.Missing {
 		t.Errorf("info = %+v, %v", info, err)
 	}
-	if err := os.WriteFile(filepath.Join(dir, "sounds", "quack.ogg"), []byte("ogg"), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "plugins", "sounds", "quack.ogg"), []byte("ogg"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	r, err := svc.Pack(t.Context(), "lethal-company", dir)
@@ -68,7 +71,7 @@ func TestAnAssetProjectIsItsOwnPackage(t *testing.T) {
 		names = append(names, f.Name)
 	}
 	slices.Sort(names)
-	want := []string{"CHANGELOG.md", "LICENSE", "README.md", "icon.png", "manifest.json", "replacers/README.txt", "sound_pack.json", "sounds/README.txt", "sounds/quack.ogg"}
+	want := []string{"CHANGELOG.md", "LICENSE", "README.md", "icon.png", "manifest.json", "plugins/replacers/README.txt", "plugins/sound_pack.json", "plugins/sounds/README.txt", "plugins/sounds/quack.ogg"}
 	if !slices.Equal(names, want) || filepath.Base(r.Zip) != "Ab-Quacks-0.1.0.zip" {
 		t.Errorf("zip %s holds %v", r.Zip, names)
 	}
@@ -99,4 +102,21 @@ func zipText(t *testing.T, zr *zip.ReadCloser, name string) string {
 	}
 	t.Fatalf("%s is not in the zip", name)
 	return ""
+}
+
+// A kind's folder has to reach the profile as it is: BepInEx keeps subfolders only below plugins/ (or config/ and the
+// like) and flattens the rest, so a folder at the package's top would never be found by its loader.
+func TestEveryAssetKindKeepsItsFolderWhenInstalled(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	kinds := svc.AssetKinds("lethal-company")
+	if len(kinds) == 0 {
+		t.Fatal("the catalog offers no asset kinds")
+	}
+	for _, k := range kinds {
+		for _, f := range append(slices.Collect(maps.Keys(k.Files)), k.Folder+"/x.png") {
+			if dest := bepinex5.Route(f, "Ab-Pack", nil); dest != path.Join("BepInEx/plugins/Ab-Pack", strings.TrimPrefix(f, "plugins/")) {
+				t.Errorf("%s: %s installs at %s", k.ID, f, dest)
+			}
+		}
+	}
 }

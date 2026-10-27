@@ -1,5 +1,5 @@
 {
-  "serial": 1793090035,
+  "serial": 1793091744,
   "components": [
     {
       "game": "melonloader",
@@ -319,7 +319,7 @@
               {
                 "id": "suits",
                 "label": "Suits",
-                "folder": "moresuits",
+                "folder": "plugins/moresuits",
                 "patterns": ["*.png"],
                 "dependency": "x753-More_Suits",
                 "recommends": ["Verity-TooManySuits"]
@@ -327,13 +327,13 @@
               {
                 "id": "sounds",
                 "label": "Sounds",
-                "folder": "sounds",
+                "folder": "plugins/sounds",
                 "patterns": ["*.ogg", "*.wav", "*.mp3"],
                 "dependency": "loaforc-loaforcsSoundAPI",
                 "recommends": ["loaforc-loaforcsSoundAPI_LethalCompany"],
                 "files": {
-                  "replacers/README.txt": "Each .json file here maps game sounds to files in sounds/. See https://soundapi.loaforc.me/soundpack-tutorials/guide/getting-started.html\n",
-                  "sound_pack.json": "{\n  \"name\": \"{name}\"\n}\n"
+                  "plugins/replacers/README.txt": "Each .json file here maps game sounds to files in sounds/. See https://soundapi.loaforc.me/soundpack-tutorials/guide/getting-started.html\n",
+                  "plugins/sound_pack.json": "{\n  \"name\": \"{name}\"\n}\n"
                 }
               }
             ]

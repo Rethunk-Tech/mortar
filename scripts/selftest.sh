@@ -36,6 +36,7 @@
 # regress --game lethal-company builds its own sandbox, bootstraps a Proton prefix, installs BepInEx and three plugins
 # from Thunderstore (cached in /var/tmp/mortar-regress-cache; MORTAR_REGRESS_OFFLINE=1 proves a rerun needs no network),
 # launches directly under Proton, and requires the plugins to load and the purge to leave the game folder identical.
+# MORTAR_REGRESS_EXTRA (local package zips) and MORTAR_REGRESS_EXTRA_PLUGINS (their plugin names) add a mod under test.
 # MORTAR_REGRESS_MATRIX=1 also runs the BepInEx test matrix (scripts/regress-bepinex.sh, docs/bepinex-test-matrix.md)
 # within three launches, the base one and two more, which leaves none for MORTAR_REGRESS_R2_CODE (refused with it); it needs the network and the .NET SDK, and MORTAR_REGRESS_R2_EXPORT=1
 # also publishes an r2modman code to thunderstore.io.
@@ -931,6 +932,14 @@ EOF
     (cd "$ROOT" && hidden env HOME="$SANDBOX_HOME" timeout 300 "$ROOT/run-proton.sh" wineboot -u >"$ROOT/wineboot.log" 2>&1) ||
       failures+=("the Proton prefix could not be created; see $ROOT/wineboot.log")
     reap_prefix "$compat" >/dev/null
+    # A direct start of a Steam copy runs through Proton in Steam's prefix for the game, found in the sandbox Steam, so
+    # from here the launch prefix only keeps the game off the network and away from a running Steam.
+    cat >"$ROOT/run-proton.sh" <<EOF
+#!/bin/bash
+export STEAM_COMPAT_APP_ID=$rg_app SteamAppId=$rg_app SteamGameId=$rg_app
+exec bwrap --dev-bind / / --unshare-net -- "\$@"
+EOF
+    ln -sfn "$proton" "$SANDBOX_STEAM/steamapps/common/$(basename "$proton")"
   fi
 
   build
@@ -975,8 +984,16 @@ PYEOF
     [ -s "$zip" ] || curl -fsSL -o "$zip" "https://thunderstore.io/package/download/$pkg/" || failures+=("downloading $pkg failed")
     cli install "$rg_id" "$profile" "$zip" >>"$ROOT/install.txt" 2>&1 || failures+=("installing $pkg failed: $(tail -c 200 "$ROOT/install.txt")")
   done
+  # A mod under test: MORTAR_REGRESS_EXTRA's local package zips install beside them, and each plugin in
+  # MORTAR_REGRESS_EXTRA_PLUGINS has to load.
+  for zip in ${MORTAR_REGRESS_EXTRA:-}; do
+    cli install "$rg_id" "$profile" "$zip" >>"$ROOT/install.txt" 2>&1 || failures+=("installing $zip failed: $(tail -c 200 "$ROOT/install.txt")")
+  done
+  # shellcheck disable=SC2206 # names split on spaces
+  plugins+=(${MORTAR_REGRESS_EXTRA_PLUGINS:-})
   cli profile set "$rg_id" "$profile" launchPrefix "$ROOT/run-proton.sh" >/dev/null
-  if [ ! -d "$cache/store" ] && [ ${#failures[@]} -eq 0 ]; then
+  # The cache holds the pinned packages only, never a mod under test.
+  if [ ! -d "$cache/store" ] && [ -z "${MORTAR_REGRESS_EXTRA:-}" ] && [ ${#failures[@]} -eq 0 ]; then
     for d in "${gdirs[@]}"; do [ -d "$data/$d" ] && mkdir -p "$cache/$(dirname "$d")" && cp -a "$data/$d" "$cache/$(dirname "$d")/"; done
   fi
   # BepInEx 6 on IL2CPP downloads the Unity base libraries for the game's engine on its first start, and takes a zip
@@ -1146,6 +1163,8 @@ PY
   echo "matrix         $matrix"
   local f
   for f in "${failures[@]}"; do echo "FAIL: $f"; done
+  # The sandbox goes after a pass, so what a mod under test logged is kept here.
+  for f in ${MORTAR_REGRESS_EXTRA_PLUGINS:-}; do grep -E "^\[[A-Za-z]+ *: *$f\]" "$ROOT/LogOutput-base.log" 2>/dev/null || true; done
   [ "$verdict" = PASS ]
 }
 
