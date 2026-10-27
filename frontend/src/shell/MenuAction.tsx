@@ -9,6 +9,8 @@ import { Tooltip } from './Tooltip.tsx'
 // row as focus moves through it, and each of those is several components more to redraw.
 const rowSx = {
   '& .menu-action-icon': { minWidth: 36, flexShrink: 0, display: 'inline-flex' },
+  // Every menu icon draws at one size, whatever size the icon was given.
+  '& .menu-action-icon > svg, & .menu-action-end > svg': { width: 16, height: 16 },
   '& .menu-action-text': { flex: '1 1 auto', minWidth: 0 },
   '& .menu-action-end': { display: 'inline-flex', width: 16, ml: 2, flexShrink: 0 },
   '& .menu-action-detail': { display: 'block', typography: 'body2', color: 'text.secondary' },
@@ -120,5 +122,18 @@ export function MenuCheck({
     </Tooltip>
   ) : (
     row
+  )
+}
+
+/** A menu's line of text that is not a choice, such as "Loading…" or why the menu is empty. */
+export function MenuNote({ children }: { children: ReactNode }) {
+  return (
+    <MenuItem
+      disabled={true}
+      sx={[rowSx, { '&.Mui-disabled': { opacity: 1, color: 'text.secondary' } }]}
+    >
+      <span className="menu-action-icon" />
+      <span className="menu-action-text">{children}</span>
+    </MenuItem>
   )
 }

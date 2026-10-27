@@ -1,9 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
-import { ListItemText, Menu, MenuItem } from '@mui/material'
+import { Menu } from '@mui/material'
 import { ChevronDown, Play, Settings2, Wrench } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { MenuAction } from '../shell/MenuAction.tsx'
+import { MenuAction, MenuNote } from '../shell/MenuAction.tsx'
 import { MenuHeading, MenuRule } from '../shell/TitleMenu.tsx'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useTools } from '../tools/store.ts'
@@ -29,16 +29,7 @@ export function LaunchMenu({ game, profile }: { game: string; profile: Profile }
   const items = useMemo(
     () => [
       <MenuHeading key="run">{t`Run with this profile`}</MenuHeading>,
-      tools.length === 0 ? (
-        <MenuItem key="none" disabled={true} dense={true} sx={{ opacity: 1 }}>
-          <ListItemText
-            primary={t`No tools yet`}
-            slotProps={{
-              primary: { sx: { fontSize: 'medium.fontSize', color: 'text.primary' } },
-            }}
-          />
-        </MenuItem>
-      ) : null,
+      tools.length === 0 ? <MenuNote key="none">{t`No tools yet`}</MenuNote> : null,
       ...tools.map((tool) => (
         <MenuAction
           key={tool.id}

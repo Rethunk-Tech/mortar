@@ -71,7 +71,7 @@ const problemWhy: Record<Row['kind'], Why> = {
     anchor: 'paths-too-long',
     text: () =>
       i18n._(
-        msg`${{ os: WINDOWS }} programs cannot open a file whose full path is 260 characters or more unless they are built for long paths, which most games are not, so the game may not load these files. Turning on long paths in ${{ os: WINDOWS }} does not change that for such a game.`,
+        msg`${{ os: WINDOWS }} programs cannot open a file whose full path is 260 characters or more unless they are built for long paths, which most games are not, so the game may not load these files. Enabling long paths in ${{ os: WINDOWS }} does not change that for such a game.`,
       ),
   },
   fileConflict: {

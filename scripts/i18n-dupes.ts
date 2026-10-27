@@ -97,6 +97,16 @@ function variants(ids: string[]): string[] {
   return ids.filter((id) => VARIANT.test(id))
 }
 
+// Errors read "Could not …" and a setting or mod is enabled or disabled; no "Please".
+// Errors read "Could not …" (another program's failure, "{plugin} failed to load", is a fact, not Mortar's error), a
+// setting or mod is enabled or disabled, and no "Please".
+const ERROR_OPENING = /^(?:Failed to|Unable to|Cannot)\b/
+const WORDING = /\b(?:please|(?:switch|turn)(?:s|ed|ing)? (?:on|off)|activat(?:e|es|ed|ing))\b/i
+
+function wordings(ids: string[]): string[] {
+  return ids.filter((id) => ERROR_OPENING.test(id) || WORDING.test(id))
+}
+
 const POSITIONAL = /\{\d+[,}]/
 
 function positionals(ids: string[]): string[] {
@@ -165,27 +175,27 @@ if (import.meta.main) {
   const ids = msgids(extractedCatalog())
   const contracted = contractions(ids)
   for (const id of contracted) {
-    console.error(
-      `i18n: contraction in ${JSON.stringify(id)}; spell it out (docs/gui-design.md, Copy)`,
-    )
+    console.error(`i18n: contraction in ${JSON.stringify(id)}; spell it out`)
   }
   const variant = variants(ids)
   for (const id of variant) {
     console.error(
-      `i18n: typographic variant in ${JSON.stringify(id)}; use plain characters and join parts in code (docs/gui-design.md, Copy)`,
+      `i18n: typographic variant in ${JSON.stringify(id)}; use plain characters and join parts in code`,
+    )
+  }
+  const worded = wordings(ids)
+  for (const id of worded) {
+    console.error(
+      `i18n: wording in ${JSON.stringify(id)}; errors read "Could not …", settings are enabled or disabled, and no "Please"`,
     )
   }
   const positional = positionals(ids)
   for (const id of positional) {
-    console.error(
-      `i18n: positional placeholder in ${JSON.stringify(id)}; name it (docs/gui-design.md, Copy)`,
-    )
+    console.error(`i18n: positional placeholder in ${JSON.stringify(id)}; name it`)
   }
   const named = products(ids)
   for (const id of named) {
-    console.error(
-      `i18n: product name in ${JSON.stringify(id)}; pass it as a placeholder (docs/gui-design.md, Copy)`,
-    )
+    console.error(`i18n: product name in ${JSON.stringify(id)}; pass it as a placeholder`)
   }
   const dupes = duplicates(ids)
   for (const group of dupes) {
@@ -194,14 +204,13 @@ if (import.meta.main) {
     )
   }
   if (dupes.length > 0) {
-    console.error(
-      `i18n: ${dupes.length} duplicate messages; use one wording (docs/gui-design.md, Copy)`,
-    )
+    console.error(`i18n: ${dupes.length} duplicate messages; use one wording`)
   }
   if (
     dupes.length > 0 ||
     contracted.length > 0 ||
     variant.length > 0 ||
+    worded.length > 0 ||
     positional.length > 0 ||
     named.length > 0
   ) {
@@ -209,4 +218,4 @@ if (import.meta.main) {
   }
 }
 
-export { contractions, duplicates, positionals, products, variants }
+export { contractions, duplicates, positionals, products, variants, wordings }

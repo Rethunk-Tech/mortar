@@ -12,7 +12,7 @@ Mortar finds a game, installs its mod loader, keeps each set of mods in its own 
 
 - **Wails v3**, pinned in `go.mod` ([AGENTS.md](../AGENTS.md)). React, TypeScript, MUI and Lingui on Vite; typed bindings from `wails3 generate bindings` into `frontend/bindings`; client state in zustand.
 - **Go services:** each backend area the UI calls is one Wails service whose exported methods are bound to TypeScript. Methods only Go calls carry a `//wails:ignore` doc directive, so the bindings expose only what the GUI calls.
-- **Window:** solid and frameless with the app's own title bar unless `systemTitleBar` is on ([gui-design.md](gui-design.md#surfaces-and-colour)). Trap: dragging works only once the Wails runtime is loaded (`@wailsio/runtime` or `/wails/runtime.js`).
+- **Window:** solid and frameless with the app's own title bar unless `systemTitleBar` is on (`frontend/src/theme/palette.ts`). Trap: dragging works only once the Wails runtime is loaded (`@wailsio/runtime` or `/wails/runtime.js`).
 - **Session-only state:** the toast history and the Console's command history live in memory; a toast's Undo, Redo, Show or Retry works only while that change is still the latest for the same mods.
 
 ## Storage

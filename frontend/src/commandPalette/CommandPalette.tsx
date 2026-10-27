@@ -1,15 +1,7 @@
 import type { I18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Dialog,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  TextField,
-} from '@mui/material'
+import { Box, List, ListItemButton, ListItemIcon, ListItemText, TextField } from '@mui/material'
 import {
   Download,
   FolderOpen,
@@ -32,6 +24,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { shortcutLabels } from '../settings/shortcutLabels.ts'
 import { mergeBindings } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
+import { BareDialog } from '../shell/dialog/BareDialog.tsx'
 import { space } from '../theme/density.ts'
 import { startCrashBisect } from './crashBisect.ts'
 import type { PaletteItem } from './match.ts'
@@ -252,15 +245,9 @@ export function CommandPalette() {
   // each time it opens.
   return (
     <>
-      <Dialog
-        open={open}
-        onClose={closePalette}
-        maxWidth="sm"
-        fullWidth={true}
-        slotProps={{ paper: { 'aria-label': t`Command palette` } }}
-      >
+      <BareDialog open={open} onClose={closePalette} label={t`Command palette`} width={600}>
         <PaletteBody />
-      </Dialog>
+      </BareDialog>
       <NewProfileDialog
         open={creating}
         onClose={() => useCommandPalette.getState().setCreating(false)}

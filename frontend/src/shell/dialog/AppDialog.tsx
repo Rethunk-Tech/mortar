@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Dialog, IconButton } from '@mui/material'
 import { ArrowLeft, X } from 'lucide-react'
 import { type ReactNode, useId } from 'react'
+import { paperSx } from './frame.ts'
 
 export type DialogSize = 'sm' | 'md' | 'lg' | 'xl' | 'full'
 export type DialogTone = 'neutral' | 'warning' | 'danger'
@@ -50,14 +51,7 @@ export function DialogFooter({ aside, children }: { aside?: ReactNode; children:
 // The frame's parts are plain elements styled from the paper: a dialog's frame redraws whenever anything in it changes,
 // and each Box or Typography would be three components more each time.
 const frameSx = {
-  maxWidth: 'calc(100% - 32px)',
-  maxHeight: 'calc(100% - 64px)',
-  m: 2,
-  borderRadius: '10px',
-  border: '1px solid var(--mortar-hairline)',
-  display: 'flex',
-  flexDirection: 'column',
-  overflow: 'hidden',
+  ...paperSx,
   '& > .app-dialog-header': {
     display: 'flex',
     alignItems: 'center',

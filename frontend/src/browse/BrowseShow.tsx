@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Checkbox, FormControlLabel, Menu, Typography } from '@mui/material'
+import { Box, Button, Checkbox, FormControlLabel, Popover, Typography } from '@mui/material'
 import { Filter } from 'lucide-react'
 import { useState } from 'react'
 import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
@@ -67,7 +67,8 @@ function BrowseShow({
           {t`Show`}
         </Button>
       </Tooltip>
-      <Menu open={anchor !== null} anchorEl={anchor} onClose={() => setAnchor(null)}>
+      {/* A panel of settings, not a list of actions, so a popover rather than a menu. */}
+      <Popover open={anchor !== null} anchorEl={anchor} onClose={() => setAnchor(null)}>
         <Box
           sx={{
             display: 'flex',
@@ -115,7 +116,7 @@ function BrowseShow({
             ))}
           </Box>
         </Box>
-      </Menu>
+      </Popover>
     </>
   )
 }

@@ -1,19 +1,12 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  ButtonBase,
-  Checkbox,
-  Menu,
-  MenuItem,
-  ToggleButton,
-  ToggleButtonGroup,
-} from '@mui/material'
+import { Box, ButtonBase, Menu, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { ChevronDown } from 'lucide-react'
 import { memo, useMemo, useState } from 'react'
 import { Level } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import { formatCount } from '../mods/nexusFormat.ts'
+import { MenuCheck } from '../shell/MenuAction.tsx'
 import { pillButtonSx, pillGroupSx } from '../shell/pillToggle.ts'
 import { space } from '../theme/density.ts'
 import { countByLevel, LEVELS } from './filter.ts'
@@ -113,21 +106,12 @@ const Pills = memo(function PillsView({ counts: joined }: { counts: string }) {
       </ButtonBase>
       <Menu anchorEl={more} open={more !== null} onClose={() => setMore(null)}>
         {QUIET_LEVELS.map((level) => (
-          <MenuItem
+          <MenuCheck
             key={level}
-            role="menuitemcheckbox"
-            aria-checked={on.includes(level)}
+            checked={on.includes(level)}
+            label={t`${{ level: names[level] }} (${{ count: formatCount(counts.get(level) ?? 0, i18n.locale) }})`}
             onClick={() => toggle(level)}
-          >
-            <Checkbox
-              size="small"
-              checked={on.includes(level)}
-              tabIndex={-1}
-              slotProps={{ input: { 'aria-hidden': true } }}
-              sx={{ p: 0, mr: 1 }}
-            />
-            {t`${{ level: names[level] }} (${{ count: formatCount(counts.get(level) ?? 0, i18n.locale) }})`}
-          </MenuItem>
+          />
         ))}
       </Menu>
     </Box>

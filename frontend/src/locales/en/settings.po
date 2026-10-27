@@ -215,10 +215,6 @@ msgid "Engine"
 msgstr "Engine"
 
 #: src/settings/sections/Notifications.tsx
-msgid "Turn on Check for mod updates when Mortar starts, in Updates, first."
-msgstr "Turn on Check for mod updates when Mortar starts, in Updates, first."
-
-#: src/settings/sections/Notifications.tsx
 msgid "When"
 msgstr "When"
 
@@ -1655,10 +1651,6 @@ msgstr "{remaining} of {limit} requests left"
 msgid "Mortar closed unexpectedly last time"
 msgstr "Mortar closed unexpectedly last time"
 
-#: src/settings/sections/Downloads.tsx
-msgid "{app}, {otherApp} or another {thirdApp} browser: unzip the download, open chrome://extensions, turn on Developer mode and choose Load unpacked on the unzipped folder."
-msgstr "{app}, {otherApp} or another {thirdApp} browser: unzip the download, open chrome://extensions, turn on Developer mode and choose Load unpacked on the unzipped folder."
-
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Stream overlay"
 msgstr "Stream overlay"
@@ -2108,6 +2100,10 @@ msgstr "Colour"
 msgid "What Mortar does about game settings that mods need enabled in the game's options file"
 msgstr "What Mortar does about game settings that mods need enabled in the game's options file"
 
+#: src/settings/sections/General.tsx
+msgid "Enable Share profiles on the local network first."
+msgstr "Enable Share profiles on the local network first."
+
 #: src/settings/sections/SyncFolder.tsx
 msgid "Sync folder"
 msgstr "Sync folder"
@@ -2462,6 +2458,10 @@ msgstr "New archives in these folders are offered for install. Subfolders are no
 #: src/settings/sections/LoaderRow.tsx
 msgid "An install is already running."
 msgstr "An install is already running."
+
+#: src/settings/sections/Notifications.tsx
+msgid "Enable Check for mod updates when Mortar starts, in Updates, first."
+msgstr "Enable Check for mod updates when Mortar starts, in Updates, first."
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Money"
@@ -3058,6 +3058,10 @@ msgstr "Sync folder for this game"
 msgid "Error"
 msgstr "Error"
 
+#: src/settings/sections/Notifications.tsx
+msgid "Enable a notification for Mod updates are found first."
+msgstr "Enable a notification for Mod updates are found first."
+
 #: src/settings/prefCopyGame.ts
 msgid "Sync into a folder chosen for this game alone."
 msgstr "Sync into a folder chosen for this game alone."
@@ -3290,10 +3294,6 @@ msgstr "Sidebar"
 msgid "Cool and calm"
 msgstr "Cool and calm"
 
-#: src/settings/sections/Updates.tsx
-msgid "Turn on Check for mod updates when Mortar starts first."
-msgstr "Turn on Check for mod updates when Mortar starts first."
-
 #: src/settings/sections/Shortcuts.tsx
 msgid "Navigation"
 msgstr "Navigation"
@@ -3379,10 +3379,6 @@ msgstr "Mods view"
 msgid "Accent colour"
 msgstr "Accent colour"
 
-#: src/settings/sections/Notifications.tsx
-msgid "Turn on a notification for Mod updates are found first."
-msgstr "Turn on a notification for Mod updates are found first."
-
 #: src/settings/sections/checkDetail.ts
 msgid "control.json is absent"
 msgstr "control.json is absent"
@@ -3405,10 +3401,6 @@ msgstr "Update digest notification"
 #: src/settings/sections/DataImport.tsx
 msgid "Games"
 msgstr "Games"
-
-#: src/settings/sections/General.tsx
-msgid "Turn on Share profiles on the local network first."
-msgstr "Turn on Share profiles on the local network first."
 
 #: src/settings/sections/General.tsx
 msgid "Language"
@@ -3643,6 +3635,10 @@ msgstr "clamd socket"
 msgid "Touch ripples"
 msgstr "Touch ripples"
 
+#: src/settings/sections/Updates.tsx
+msgid "Enable Check for mod updates when Mortar starts first."
+msgstr "Enable Check for mod updates when Mortar starts first."
+
 #: src/settings/SettingsNav.tsx
 msgid "Settings sections"
 msgstr "Settings sections"
@@ -3781,6 +3777,10 @@ msgstr "1 time"
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "Checks the data folder, games, {source} download links and the browser extension."
 msgstr "Checks the data folder, games, {source} download links and the browser extension."
+
+#: src/settings/sections/Downloads.tsx
+msgid "{app}, {otherApp} or another {thirdApp} browser: unzip the download, open chrome://extensions, enable Developer mode and choose Load unpacked on the unzipped folder."
+msgstr "{app}, {otherApp} or another {thirdApp} browser: unzip the download, open chrome://extensions, enable Developer mode and choose Load unpacked on the unzipped folder."
 
 #: src/settings/sections/NexusMods.tsx
 msgid "{source} account"

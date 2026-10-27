@@ -215,10 +215,6 @@ msgid "Engine"
 msgstr ""
 
 #: src/settings/sections/Notifications.tsx
-msgid "Turn on Check for mod updates when Mortar starts, in Updates, first."
-msgstr ""
-
-#: src/settings/sections/Notifications.tsx
 msgid "When"
 msgstr ""
 
@@ -1655,10 +1651,6 @@ msgstr ""
 msgid "Mortar closed unexpectedly last time"
 msgstr ""
 
-#: src/settings/sections/Downloads.tsx
-msgid "{app}, {otherApp} or another {thirdApp} browser: unzip the download, open chrome://extensions, turn on Developer mode and choose Load unpacked on the unzipped folder."
-msgstr ""
-
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Stream overlay"
 msgstr ""
@@ -2108,6 +2100,10 @@ msgstr ""
 msgid "What Mortar does about game settings that mods need enabled in the game's options file"
 msgstr ""
 
+#: src/settings/sections/General.tsx
+msgid "Enable Share profiles on the local network first."
+msgstr ""
+
 #: src/settings/sections/SyncFolder.tsx
 msgid "Sync folder"
 msgstr ""
@@ -2461,6 +2457,10 @@ msgstr ""
 
 #: src/settings/sections/LoaderRow.tsx
 msgid "An install is already running."
+msgstr ""
+
+#: src/settings/sections/Notifications.tsx
+msgid "Enable Check for mod updates when Mortar starts, in Updates, first."
 msgstr ""
 
 #: src/settings/sections/StreamOverlay.tsx
@@ -3058,6 +3058,10 @@ msgstr ""
 msgid "Error"
 msgstr ""
 
+#: src/settings/sections/Notifications.tsx
+msgid "Enable a notification for Mod updates are found first."
+msgstr ""
+
 #: src/settings/prefCopyGame.ts
 msgid "Sync into a folder chosen for this game alone."
 msgstr ""
@@ -3290,10 +3294,6 @@ msgstr ""
 msgid "Cool and calm"
 msgstr ""
 
-#: src/settings/sections/Updates.tsx
-msgid "Turn on Check for mod updates when Mortar starts first."
-msgstr ""
-
 #: src/settings/sections/Shortcuts.tsx
 msgid "Navigation"
 msgstr ""
@@ -3379,10 +3379,6 @@ msgstr ""
 msgid "Accent colour"
 msgstr ""
 
-#: src/settings/sections/Notifications.tsx
-msgid "Turn on a notification for Mod updates are found first."
-msgstr ""
-
 #: src/settings/sections/checkDetail.ts
 msgid "control.json is absent"
 msgstr ""
@@ -3404,10 +3400,6 @@ msgstr ""
 #: src/settings/sections/AboutDiagnostics.tsx
 #: src/settings/sections/DataImport.tsx
 msgid "Games"
-msgstr ""
-
-#: src/settings/sections/General.tsx
-msgid "Turn on Share profiles on the local network first."
 msgstr ""
 
 #: src/settings/sections/General.tsx
@@ -3643,6 +3635,10 @@ msgstr ""
 msgid "Touch ripples"
 msgstr ""
 
+#: src/settings/sections/Updates.tsx
+msgid "Enable Check for mod updates when Mortar starts first."
+msgstr ""
+
 #: src/settings/SettingsNav.tsx
 msgid "Settings sections"
 msgstr ""
@@ -3780,6 +3776,10 @@ msgstr ""
 
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "Checks the data folder, games, {source} download links and the browser extension."
+msgstr ""
+
+#: src/settings/sections/Downloads.tsx
+msgid "{app}, {otherApp} or another {thirdApp} browser: unzip the download, open chrome://extensions, enable Developer mode and choose Load unpacked on the unzipped folder."
 msgstr ""
 
 #: src/settings/sections/NexusMods.tsx

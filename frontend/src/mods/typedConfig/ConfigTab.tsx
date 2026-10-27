@@ -8,10 +8,9 @@ import {
   ListItemButton,
   ListItemText,
   Menu,
-  MenuItem,
   Typography,
 } from '@mui/material'
-import { Check, ChevronDown, Filter, Play, SlidersHorizontal } from 'lucide-react'
+import { ChevronDown, Filter, Play, SlidersHorizontal } from 'lucide-react'
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import type {
   Hit,
@@ -23,6 +22,7 @@ import { playOpenProfile } from '../../launch/playOpen.ts'
 import { ControlsRow } from '../../shell/ControlsRow.tsx'
 import { EmptyState } from '../../shell/EmptyState.tsx'
 import { LoadErrorRow, LoadingRow } from '../../shell/LoadingRow.tsx'
+import { MenuCheck } from '../../shell/MenuAction.tsx'
 import { useDebouncedLoad } from '../../shell/useDebouncedLoad.ts'
 import { space } from '../../theme/density.ts'
 import { type InlineError, inlineError } from '../../toasts/report.ts'
@@ -131,21 +131,16 @@ const ShowMenu = memo(function ShowMenuView({
       </Button>
       <Menu open={anchor !== null} anchorEl={anchor} onClose={() => setAnchor(null)}>
         {SHOWS.map((item) => (
-          <MenuItem
+          <MenuCheck
             key={item}
-            role="menuitemradio"
-            aria-checked={show === item}
-            selected={show === item}
+            radio={true}
+            checked={show === item}
+            label={labels[item]}
             onClick={() => {
               onChange(item)
               setAnchor(null)
             }}
-          >
-            <Box sx={{ width: 24, display: 'flex' }}>
-              {show === item ? <Check size={16} aria-hidden={true} /> : null}
-            </Box>
-            {labels[item]}
-          </MenuItem>
+          />
         ))}
       </Menu>
     </>

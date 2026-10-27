@@ -82,10 +82,10 @@ export function Notifications() {
   const desktopOn = usePrefValue('desktopModUpdates') === 'true'
   const noChecks = checksOn
     ? ''
-    : t`Turn on Check for mod updates when Mortar starts, in Updates, first.`
+    : t`Enable Check for mod updates when Mortar starts, in Updates, first.`
   let digestReason = noChecks
   if (digestReason === '' && !(toastOn || desktopOn)) {
-    digestReason = t`Turn on a notification for Mod updates are found first.`
+    digestReason = t`Enable a notification for Mod updates are found first.`
   }
   const desktopUpdatesReason =
     noChecks ||

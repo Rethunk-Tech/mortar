@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, ButtonBase, Dialog, Typography } from '@mui/material'
+import { Box, Button, ButtonBase, Typography } from '@mui/material'
 import { Camera, ChevronLeft, ChevronRight, FolderOpen, X } from 'lucide-react'
 import { type ReactNode, useId, useState } from 'react'
 import {
@@ -17,6 +17,7 @@ import { PageActions } from '../game/PageActions.tsx'
 import { storeName } from '../games/storeName.ts'
 import { When } from '../i18n/When.tsx'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
+import { BareDialog } from '../shell/dialog/BareDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
@@ -81,11 +82,10 @@ function Viewer({
     }
   }
   return (
-    <Dialog
+    <BareDialog
       open={true}
       onClose={onClose}
-      maxWidth="xl"
-      aria-labelledby={titleId}
+      labelledBy={titleId}
       onKeyDown={(e) => {
         if (e.key === 'ArrowRight' && index < shots.length - 1) {
           onIndex(index + 1)
@@ -149,7 +149,7 @@ function Viewer({
           </Button>
         ) : null}
       </Box>
-    </Dialog>
+    </BareDialog>
   )
 }
 

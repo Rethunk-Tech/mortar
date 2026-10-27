@@ -164,7 +164,7 @@ function ExtensionSteps() {
       sx={{ m: 0, mt: 1, pl: 2.5 }}
     >
       <li>
-        {t`${{ app: CHROME }}, ${{ otherApp: EDGE }} or another ${{ thirdApp: CHROMIUM }} browser: unzip the download, open chrome://extensions, turn on Developer mode and choose Load unpacked on the unzipped folder.`}
+        {t`${{ app: CHROME }}, ${{ otherApp: EDGE }} or another ${{ thirdApp: CHROMIUM }} browser: unzip the download, open chrome://extensions, enable Developer mode and choose Load unpacked on the unzipped folder.`}
       </li>
       <li>
         {t`${{ app: FIREFOX }}:`}{' '}

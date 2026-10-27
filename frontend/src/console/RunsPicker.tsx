@@ -1,13 +1,13 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Menu, MenuItem } from '@mui/material'
+import { Box, Button, Menu } from '@mui/material'
 import { ChevronDown, History } from 'lucide-react'
 import { useState } from 'react'
 import type { Run } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { MenuCheck } from '../shell/MenuAction.tsx'
+import { MenuCheck, MenuNote } from '../shell/MenuAction.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { listRuns } from './listRuns.ts'
@@ -72,7 +72,7 @@ export function RunsPicker({ game }: { game: string }) {
             setAnchor(null)
           }}
         />
-        {runs.length === 0 ? <MenuItem disabled={true}>{t`No recorded runs yet`}</MenuItem> : null}
+        {runs.length === 0 ? <MenuNote>{t`No recorded runs yet`}</MenuNote> : null}
         {runs.map((r) => (
           <MenuCheck
             key={r.id}

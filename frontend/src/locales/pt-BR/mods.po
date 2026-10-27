@@ -785,6 +785,10 @@ msgstr ""
 msgid "Could not restore the warning"
 msgstr ""
 
+#: src/mods/typedConfig/ConfigPane.tsx
+msgid "While you are in a game, you use the host's value unless you disable Follow host recommendations in ConfigSync."
+msgstr ""
+
 #: src/mods/describeLoadFailure.ts
 msgid "The last launch failed: {message}."
 msgstr ""
@@ -2222,10 +2226,6 @@ msgstr ""
 msgid "Group"
 msgstr ""
 
-#: src/mods/problemWhy.ts
-msgid "{os} programs cannot open a file whose full path is 260 characters or more unless they are built for long paths, which most games are not, so the game may not load these files. Turning on long paths in {os} does not change that for such a game."
-msgstr ""
-
 #: src/mods/DuplicateDialog.tsx
 msgid "Version {version}"
 msgstr ""
@@ -2252,10 +2252,6 @@ msgstr ""
 
 #: src/mods/parts.tsx
 msgid "Its folder is removed from this profile. You can undo this."
-msgstr ""
-
-#: src/mods/typedConfig/ConfigPane.tsx
-msgid "While you are in a game, you use the host's value unless you turn off Follow host recommendations in ConfigSync."
 msgstr ""
 
 #: src/mods/OtherProfilesDialog.tsx
@@ -3463,6 +3459,10 @@ msgstr ""
 
 #: src/mods/ChangelogDialog.tsx
 msgid "The author has not listed any versions here."
+msgstr ""
+
+#: src/mods/problemWhy.ts
+msgid "{os} programs cannot open a file whose full path is 260 characters or more unless they are built for long paths, which most games are not, so the game may not load these files. Enabling long paths in {os} does not change that for such a game."
 msgstr ""
 
 #: src/mods/detail.ts

@@ -1,6 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Alert, Box, Button, Checkbox, Chip, InputBase, Menu, MenuItem } from '@mui/material'
+import { Alert, Box, Button, Chip, InputBase, Menu } from '@mui/material'
 import {
   ArrowDownToLine,
   ChevronDown,
@@ -23,6 +23,7 @@ import { useProfileLoader, useProfiles } from '../profiles/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
+import { MenuCheck, MenuNote } from '../shell/MenuAction.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { space } from '../theme/density.ts'
 import { MONO, PAD_FOCUS } from '../theme/theme.ts'
@@ -69,28 +70,16 @@ function ModPicker() {
         onClose={() => setAnchor(null)}
         slotProps={{ paper: { sx: { maxHeight: 360, minWidth: 220 } } }}
       >
-        {mods.length === 0 ? (
-          <MenuItem disabled={true}>{t`No mods have logged yet`}</MenuItem>
-        ) : null}
+        {mods.length === 0 ? <MenuNote>{t`No mods have logged yet`}</MenuNote> : null}
         {mods.map((mod) => {
           const on = picked.includes(mod)
           return (
-            <MenuItem
+            <MenuCheck
               key={mod}
-              dense={true}
-              role="menuitemcheckbox"
-              aria-checked={on}
+              checked={on}
+              label={mod}
               onClick={() => setMods(on ? picked.filter((m) => m !== mod) : [...picked, mod])}
-            >
-              <Checkbox
-                size="small"
-                checked={on}
-                tabIndex={-1}
-                disableRipple={true}
-                slotProps={{ input: { 'aria-hidden': true } }}
-              />
-              {mod}
-            </MenuItem>
+            />
           )
         })}
       </Menu>

@@ -4,13 +4,11 @@ import {
   Alert,
   Box,
   Button,
-  Checkbox,
   Chip,
   CircularProgress,
   IconButton,
   Link,
   Menu,
-  MenuItem,
   Typography,
 } from '@mui/material'
 import {
@@ -45,7 +43,7 @@ import { relativeWhen } from '../i18n/when.ts'
 import { LetterTile } from '../mods/LetterTile.tsx'
 import { persist } from '../settings/persist.ts'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
-import { MenuAction } from '../shell/MenuAction.tsx'
+import { MenuAction, MenuCheck } from '../shell/MenuAction.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { MenuRule } from '../shell/TitleMenu.tsx'
 import { space } from '../theme/density.ts'
@@ -300,24 +298,16 @@ function MoreMenu({
         <EllipsisVertical size={18} />
       </IconButton>
       <Menu anchorEl={anchor} open={anchor !== null} onClose={() => setAnchor(null)}>
-        <MenuItem
-          role="menuitemcheckbox"
-          aria-checked={Boolean(project.watch)}
+        <MenuCheck
+          checked={Boolean(project.watch)}
+          label={t`Build on save`}
           onClick={() =>
             persist(
               () => SetWatch(game, project.dir, !project.watch),
               t`Could not save that setting`,
             )
           }
-        >
-          <Checkbox
-            size="small"
-            checked={Boolean(project.watch)}
-            tabIndex={-1}
-            sx={{ p: 0, mr: 1 }}
-          />
-          {t`Build on save`}
-        </MenuItem>
+        />
         <MenuRule />
         <MenuAction
           icon={<Pencil size={16} aria-hidden={true} />}

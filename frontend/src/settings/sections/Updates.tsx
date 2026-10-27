@@ -188,7 +188,7 @@ export function Updates() {
             checksOn
               ? {}
               : {
-                  updateCheckIntervalMinutes: t`Turn on Check for mod updates when Mortar starts first.`,
+                  updateCheckIntervalMinutes: t`Enable Check for mod updates when Mortar starts first.`,
                 }
           }
         />

@@ -16,7 +16,7 @@ import {
 import { type MouseEvent, type ReactNode, useCallback, useId, useState } from 'react'
 import { GameSettings as FetchGameSettings } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { cmpText } from '../mods/cmpText.ts'
-import { MenuAction } from '../shell/MenuAction.tsx'
+import { MenuAction, MenuNote } from '../shell/MenuAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { formSettingsFromBackend } from './formSettingsFromBackend.ts'
 import { ProfileDot } from './ProfileDot.tsx'
@@ -98,9 +98,9 @@ function CopyFromProfileMenu({ gameId, profileId, onCopy }: CopyFromProfileProps
 
   let menuBody: ReactNode = null
   if (loading) {
-    menuBody = <MenuItem disabled={true}>{t`Loading…`}</MenuItem>
+    menuBody = <MenuNote>{t`Loading…`}</MenuNote>
   } else if (sources.length === 0) {
-    menuBody = <MenuItem disabled={true}>{t`No other profiles with overrides`}</MenuItem>
+    menuBody = <MenuNote>{t`No other profiles with overrides`}</MenuNote>
   } else {
     menuBody = sources.map((source) => (
       <MenuAction

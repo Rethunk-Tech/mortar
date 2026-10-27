@@ -785,6 +785,10 @@ msgstr "pinned in {name}"
 msgid "Could not restore the warning"
 msgstr "Could not restore the warning"
 
+#: src/mods/typedConfig/ConfigPane.tsx
+msgid "While you are in a game, you use the host's value unless you disable Follow host recommendations in ConfigSync."
+msgstr "While you are in a game, you use the host's value unless you disable Follow host recommendations in ConfigSync."
+
 #: src/mods/describeLoadFailure.ts
 msgid "The last launch failed: {message}."
 msgstr "The last launch failed: {message}."
@@ -2222,10 +2226,6 @@ msgstr "{profile} has {name} more than once. {loader} loads only one, so pick wh
 msgid "Group"
 msgstr "Group"
 
-#: src/mods/problemWhy.ts
-msgid "{os} programs cannot open a file whose full path is 260 characters or more unless they are built for long paths, which most games are not, so the game may not load these files. Turning on long paths in {os} does not change that for such a game."
-msgstr "{os} programs cannot open a file whose full path is 260 characters or more unless they are built for long paths, which most games are not, so the game may not load these files. Turning on long paths in {os} does not change that for such a game."
-
 #: src/mods/DuplicateDialog.tsx
 msgid "Version {version}"
 msgstr "Version {version}"
@@ -2253,10 +2253,6 @@ msgstr "About {key}"
 #: src/mods/parts.tsx
 msgid "Its folder is removed from this profile. You can undo this."
 msgstr "Its folder is removed from this profile. You can undo this."
-
-#: src/mods/typedConfig/ConfigPane.tsx
-msgid "While you are in a game, you use the host's value unless you turn off Follow host recommendations in ConfigSync."
-msgstr "While you are in a game, you use the host's value unless you turn off Follow host recommendations in ConfigSync."
 
 #: src/mods/OtherProfilesDialog.tsx
 msgid "No other profile of this game."
@@ -3464,6 +3460,10 @@ msgstr "Unfreeze"
 #: src/mods/ChangelogDialog.tsx
 msgid "The author has not listed any versions here."
 msgstr "The author has not listed any versions here."
+
+#: src/mods/problemWhy.ts
+msgid "{os} programs cannot open a file whose full path is 260 characters or more unless they are built for long paths, which most games are not, so the game may not load these files. Enabling long paths in {os} does not change that for such a game."
+msgstr "{os} programs cannot open a file whose full path is 260 characters or more unless they are built for long paths, which most games are not, so the game may not load these files. Enabling long paths in {os} does not change that for such a game."
 
 #: src/mods/detail.ts
 msgid "Could not redo the update"

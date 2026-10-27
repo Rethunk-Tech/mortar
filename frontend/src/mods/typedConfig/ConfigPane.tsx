@@ -132,7 +132,7 @@ function SyncChip({ level }: { level: 'hostEnforced' | 'hostRecommended' }) {
       title={
         enforced
           ? t`While you are in a game, the host's value replaces yours.`
-          : t`While you are in a game, you use the host's value unless you turn off Follow host recommendations in ConfigSync.`
+          : t`While you are in a game, you use the host's value unless you disable Follow host recommendations in ConfigSync.`
       }
     >
       <Chip

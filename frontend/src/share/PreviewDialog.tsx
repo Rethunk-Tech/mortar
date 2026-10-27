@@ -1,10 +1,11 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Dialog, IconButton, Typography } from '@mui/material'
+import { Box, IconButton, Typography } from '@mui/material'
 import { X } from 'lucide-react'
 import { Logo } from '../brand/Logo.tsx'
 import { modsLabel } from '../i18n/counts.ts'
 import { heading } from '../mods/paper.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { BareDialog } from '../shell/dialog/BareDialog.tsx'
 import { space } from '../theme/density.ts'
 import type { ShownInfo } from './logic.ts'
 
@@ -102,21 +103,8 @@ export function PreviewDialog({
 }) {
   const { t } = useLingui()
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      slotProps={{
-        paper: {
-          'aria-label': t`What they see`,
-          sx: {
-            bgcolor: 'var(--mortar-panel-solid)',
-            border: '1px solid var(--mortar-hairline-12)',
-            width: 380,
-          },
-        },
-      }}
-    >
+    <BareDialog open={open} onClose={onClose} label={t`What they see`} width={380}>
       <PagePreview info={info} onClose={onClose} />
-    </Dialog>
+    </BareDialog>
   )
 }

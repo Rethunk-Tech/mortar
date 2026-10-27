@@ -1,93 +1,17 @@
 # GUI design
 
-The design system and screen rules for Mortar's UI. Read it before any UI change. `frontend/src` is the record of every label, tooltip, menu entry and state: this doc gives the rules that apply everywhere, then per screen its purpose and the rules a change could break. Concrete (`LethalModding/Concrete`, archived) is one reference for the look, not a template to copy.
+The design system lives in code: `frontend/src/theme/` (palette, density, the MUI theme), `frontend/src/shell/` (dialogs in `shell/dialog/`, menu rows in `shell/MenuAction.tsx`, `TitleMenu.tsx`'s headings and rules, `Tooltip.tsx`, `EmptyState.tsx`) and `frontend/src/brand/`. `frontend/src/lint/patterns.test.ts` and `bun run --cwd frontend i18n:dupes` fail a change that builds around them; `frontend/e2e/deck.pw.ts` checks the Steam Deck size, controller reach and 44px targets. Read those before any UI change. This page holds what code cannot enforce, then per screen the rules a change could break.
 
-## Window
+## Conventions
 
-- **Logo:** the running-bond mark, seven rounded bricks in three courses, in the primary colour (`frontend/src/brand/`); the title bar, the app icon (on a dark rounded square) and desktop notifications use it.
-- Frameless on a solid window ([architecture.md](architecture.md#stack)) with a light 1px border and rounded corners, since GNOME draws no shadow for a frameless window. Sizes: `window.go`.
-- `user-select: none` everywhere except text fields and the console. The WebKit default context menu is suppressed except on an editable field or with a text selection.
-- Icons are Lucide (MIT) at 1.5 to 2px stroke; no hand-drawn or mixed icons.
-- **Keep Mortar in the tray** (Settings › General): closing the window keeps Mortar running; off means close quits. A desktop notification when a Mortar-started run ends raises the window on that profile's Console.
-
-### Title bar
-
-`frontend/src/shell/TitleBar.tsx`. The downloads pill shows only while the queue has items under way. **Use the system title bar** (Settings › Appearance › Display) hands the frame to the desktop, live: the row stays as a toolbar without window buttons, dragging or double-click, and the window loses its rounded edge. In the notifications panel (Ctrl+Shift+N) **New** holds this session's unread toasts and **Earlier** read toasts, then the open profile's change history; a toast action such as Undo is offered only while it still applies.
-
-### Menus and the command palette
-
-- Every menu uses the one dark paper with a 1px light border and 8px corners (`MuiMenu` in `frontend/src/theme/theme.ts`). Dividers are the shared `MenuRule`, never hand-rolled. Tooltips use the shared `Tooltip` (`frontend/src/shell/Tooltip.tsx`: one at a time, closed by a press). One set of profile items (`frontend/src/game/ProfileMenuItems.tsx`) serves the title-bar switcher and the Profiles row menu.
-- **Command palette** (Ctrl+K): fuzzy search over actions, destinations and the shortcuts that run from anywhere. A shortcut that does what an action does shows its keys on that action, never as a second row; shortcuts for the focused list are left out; an action needing an open profile is greyed with a reason. SMAPI's bundled mods and the Mortar bridge are omitted, as on the Mods tab.
-
-### Input, focus and accessibility
-
-- Every focusable control shows a visible focus ring on keyboard focus: a 2px outline in the primary colour, 2px outside the control; a whole-row or whole-tile cover button draws it 2px inside, since its row clips what spills over.
-- Everything works at 1280×800 (the Steam Deck) with the arrow keys, Tab and Enter that Steam Input maps a controller to, and no screen scrolls sideways. Grids move focus by the nearest item in the next row (`frontend/src/shell/arrowFocus.ts`); the mod list drops optional columns until the name keeps 160px (`fitListColumns`). `frontend/e2e/deck.pw.ts` checks it.
-- **Gamepad** (`frontend/src/shell/gamepad.ts`): the d-pad and stick send arrow keys to the focused control first, so lists, tabs, menus and grids keep their own movement, and otherwise move focus to the nearest control, staying inside an open dialog, menu or drawer. Focus the pad moves always shows the ring (`html[data-input="gamepad"]`), since browsers ring script focus only after keyboard use.
-- **Touch or a gamepad as the main input** (`frontend/src/theme/roomy`): every control is at least 44×44px and compact density gives way; a resize handle keeps its thin line with an invisible 44px strip. A link in a line of text keeps its size (WCAG 2.5.8's inline exception). `frontend/e2e/deck.pw.ts` checks target sizes and runs axe-core.
-- **Play prompt:** in play mode (`--play … --steam-session` from a Steam shortcut, [architecture](architecture.md#command-line)) the only thing drawn before a fix is the launch dialog that blocked Play, alone on the window background in a small window with 44px targets (`frontend/e2e/play.pw.ts`).
-
-### Buttons and dialogs
-
-- **Dialog actions:** Cancel or Close is a text button, leftmost; at most one contained primary sits rightmost; a destructive primary is contained `color="error"`; other actions beside them stay text.
-- Button and chip labels never wrap; a long message gets its own full-width row and truncates with an ellipsis rather than squeezing the buttons beside it.
-- Every dialog is built on the three primitives in `frontend/src/shell/dialog/`:
-  - `AppDialog` is the frame: solid paper with a hairline border and no transition; a header with an optional 44px tone icon whose title and subtitle centre on it, a close button, and a divider under it when there is a body; a body that scrolls on its own with even padding (a last child's margin is cancelled); and `DialogFooter`, a raised strip with a note or reason on the left and the buttons on the right. Sizes are `sm` 480, `md` 560 and `lg` 760.
-  - `ConfirmationDialog` asks before an action: the title is the question, the subtitle what happens, an optional list of consequences, and an optional "Don't ask again". It has no close button and ignores clicks outside; Esc is Cancel. The action's button names the action, never "OK"; a dangerous one is red and Cancel takes focus.
-  - `FormDialog` edits something: a `<form>` so Enter submits, `FormSection`s set off by rules, each `Field` with its label above the input (never floating in the border), a hint below that an error replaces, and a counter beside the label for a length limit; `FieldRow` pairs two short fields; `DerivedValue` shows a value worked out from the others. While it cannot submit, the footer says why. Closing with unsaved changes asks first.
-
-## Density
-
-One spacing scale per **Density** level (Settings › Appearance › Display), set as CSS variables on `:root` (`frontend/src/theme/density.ts`). Layout code reads them through `space` and never hand-sets pixels for these roles, so a level change moves every page together. Touch or a gamepad still raises every target to 44px.
-
-| Token         | Role                                                                  | Comfortable | Compact |
-| ------------- | --------------------------------------------------------------------- | ----------- | ------- |
-| `--m-gutter`  | a page's left and right edge, a controls row's inset                  | 16px        | 12px    |
-| `--m-gap`     | between controls in a row; between a row and what follows             | 8px         | 6px     |
-| `--m-pad`     | inside a card or panel                                                | 16px        | 12px    |
-| `--m-row`     | a table or list row                                                   | 36px        | 30px    |
-| `--m-menu-y`  | above and below a menu item's text, and a menu's own top and bottom   | 6px         | 4px     |
-| `--m-control` | buttons, dropdowns, fields and the page-actions slot that share a row | 36px        | 32px    |
-| `--m-nav`     | a navigation item such as a Settings page link                        | 42px        | 36px    |
-
-Fixed on purpose: spacing of 6px and under (icon-to-label gaps, chip and badge insets, a row's inner rhythm), vertical margins between a heading and its text, indents, zero padding resets, chrome that is not a layout role (window buttons, title bar), and widths such as grid column minimums and panel widths.
-
-## Surfaces and colour
-
-- **No gradients** anywhere: not as backgrounds, scrims over art, fallbacks or placeholder art. Legibility over art comes from a solid layer with alpha; a missing image becomes a solid tone. The one exception is an image's edge fading to transparent through an alpha mask.
-- **The window is solid.** Dark uses an opaque base, light an opaque `rgb(236,236,241)`. Behind the surfaces sits the wallpaper under a static tint (`--mortar-tint`). Hard-coded chrome colours live as `--mortar-*` tokens from `frontend/src/theme/palette.ts`, so both palettes share one set of surfaces.
-  - Dark surfaces keep their alpha and composite over the tint; light surfaces are solid, with no translucent fills that turn muddy over the wallpaper.
-  - Dialog paper (`MuiDialog` in `frontend/src/theme/theme.ts`) and the download queue sheet are opaque so the text they cover never shows through. Dialog and drawer backdrops are a static overlay (`--mortar-overlay-30`); the launch overlay uses `--mortar-overlay-80`; the drop overlay and first-run tour spotlight dim with `--mortar-scrim`.
-  - Every popover (menus, the Saves backups list, pickers) is the solid menu surface with a hairline border, never the translucent paper colour.
-- **Theme** (Settings › Appearance): Dark, Light or Follow system; app chrome only, game and profile settings are unchanged. Dark is the lead theme: screenshots, README and store listings show it. Both themes keep the chosen accent as a fill, with white or near-black text on it, whichever reaches 4.5:1. Text and icons tinted with the accent use `--mortar-accent-ink`: the accent on dark, the normal ink on light, where pastel accents are unreadable as text.
-- **Background** (Settings › Appearance): **Image**, **Desktop** or **Solid**, all opaque. Image and Desktop draw the wallpaper full-window behind everything (title bar included), `object-fit: cover`, under the tint; it never fades or filters, and under Reduce motion an animated image shows its first frame. **Desktop** reads the user's own wallpaper and falls back to Image's choice when unreadable.
-- **Colours:** status colours come from Concrete (`frontend/src/theme/palette.ts`); light darkens them until they meet 4.5:1 on paper. Links are secondary text with a dotted underline.
-- **Primary colour** is the user's choice from `frontend/src/theme/accents.ts`. It applies at once everywhere the primary appears, is never darkened, and is the same for every game; game colour appears only in hero art.
-- **One-line status alerts** (a callout above a list, a read error with Retry, a settings status line) are the theme's compact Alert (`<Alert variant="compact" severity=…>`): size and colour come from the variant, never from a component's own `sx`. A window-wide banner, an alert with a title, and notes inside a dialog keep the standard Alert. Callout actions order text secondaries left and one contained primary right.
-- **Fix and action buttons are never blue**; severity colours (warning for real conflicts, error for destructive) carry weight, and harmless rows use outlined buttons.
-
-## Type
-
-Open Sans (300 to 700) from `@fontsource/open-sans`, `htmlFontSize` 18 with MUI's responsive font sizes, as Concrete. Every string goes through Lingui.
-
-## Copy
-
-How every string reads. One wording per message: `bun run --cwd frontend i18n:dupes` fails when two msgids differ only in case, punctuation or placeholder names.
-- **Enable / Disable** a mod, plugin or option; never "Switch on/off", "Turn on/off" or "Activate".
-- **Remove** takes something out of a profile, group or list and leaves the thing itself; **Delete** destroys it on disk (a profile, saved group, template, preset, backup, downloaded file). The button, its confirmation and its toast use the same verb.
-- No article where the meaning holds without it: "Add missing mods", "Could not check profile". A label reused mid-sentence is lowercased in code (`frontend/src/i18n/lowerFirst.ts`), so one msgid serves both.
-- No contractions: "cannot", "do not", "is not", "What is new". `i18n:dupes` fails on one.
-- Plain characters: straight quotes and apostrophes, no dashes or arrows ("1.2 to 1.3"; use a colon, full stop or comma). Only "…" and "›" in a menu path; `i18n:dupes` fails on the rest, "·" included: code joins message parts with " · ", so each part is its own message.
-- Sentence case everywhere: "Open settings", not "Open Settings".
-- Labels, buttons, headings and toast titles take no full stop; a sentence or line of body text does. Change lines and disabled-source reasons start with a capital ("Added <mod>").
-- One placeholder name per concept: `{name}`, `{count}`, `{profile}`, `{game}`, `{version}`, `{path}`, `{when}`, `{min}`, `{max}`, and for a product `{source}` (a mod site: Nexus, Thunderstore, CurseForge), `{manager}` (another mod manager: r2modman, Gale, Vortex), `{loader}` (BepInEx, SMAPI), `{launcher}` (Steam, GOG, Epic Games), `{os}` (Windows, Linux) and `{app}` (any other product: Discord, Chrome, Syncthing). Name an interpolation that is not a bare identifier in the object form, ``t`Open ${{ name: mod.name }}` ``; `i18n:dupes` fails on a positional `{0}`. No per-site names (`{aName}`); plurals use `{count}`, and a message that needs two of one concept adds `other` to the name (`{otherManager}`).
-- Mortar is the only product named in a message. Every other product (`i18n:dupes` lists them) is a placeholder: a mod site comes from `sourceLabel(id)` (`frontend/src/brand/sources/sourceLabel.ts`), the rest from `frontend/src/brand/productNames.ts`. Commands, file names and URLs stay literal.
-- A plural holds only the counted clause (`{count, plural, one {# mod} other {# mods}} will be copied into a new profile.`), never a tail repeated in every branch.
-- A trailing "…" only on a control that opens further input (a dialog, a picker, a confirmation); clicking it never starts the work itself, and the dialog's own title has none. A control that acts at once has none, and "…" is never a loading marker inside a sentence.
-- Menu rows: an action is `MenuAction` (icon, label, optional detail line, red for destructive), a picked-or-not choice is `MenuCheck` (the tick in the icon slot, or at the end when the row has its own icon), a section title is `MenuHeading`, a divider `MenuRule`. Every menu icon is 16px; a row without an icon keeps the empty slot so labels line up.
-- Errors read "Could not <verb> <thing>", never "Couldn't", "Failed to" or "Unable to"; no "Please".
-- **Times:** a moment within the last week reads relative ("3 minutes ago", "yesterday"); older ones show the date, with the time where the list is a timeline (runs, backups, profile history, notifications).
-- **Names that cannot be resolved** read **Unknown mod** with the UniqueID in the tooltip, shown only when no id is known either.
+- Dark is the lead theme: screenshots, the README and store listings show it.
+- Dialog footers: Cancel or Close is a text button, leftmost; at most one contained primary, rightmost; a destructive primary is contained `color="error"`.
+- Layout reads spacing roles from `space` (`theme/density.ts`) rather than hand-set pixels, so a Density change moves every page together.
+- A trailing "…" only on a control that opens further input (a dialog, a picker, a confirmation); clicking it never starts the work, and the dialog's own title has none.
+- **Remove** takes something out of a profile, group or list; **Delete** destroys it on disk. The button, its confirmation and its toast use the same verb.
+- Sentence case everywhere; labels, buttons, headings and toast titles take no full stop, body text does. No article where the meaning holds without it. A label reused mid-sentence is lowercased in code (`i18n/lowerFirst.ts`).
+- One placeholder name per concept (`{name}`, `{count}`, `{profile}`, `{game}`, `{version}`, `{path}`, `{when}`, `{source}`, `{manager}`, `{loader}`, `{launcher}`, `{os}`, `{app}`); a plural holds only the counted clause.
+- **Command palette** (Ctrl+K): a shortcut that does what an action does shows its keys on that action, never as a second row; an action needing an open profile is greyed with a reason.
 
 ## Game Select
 
@@ -122,7 +46,7 @@ The **launch screen** (`LaunchScreen.tsx`, `LaunchStages.tsx`) covers the game p
 - The log box under the row has a fixed height so nothing moves; it leaves out the per-mod loading lines the bar already counts and colours warnings and errors. The slow notice (from twice the profile's usual start, else 90 s) and a failure cover the log box instead of adding height, each with its one contained action (**Keep waiting**, **Retry**). The notice names the stage that is stuck.
 - **Cancel** calls off a launch at any stage and ends only the game's own processes, never the launcher.
 
-Pre-Play dialogs (`PrePlayDialog.tsx`, `UpdateWarnDialog.tsx`, `SaveWarnDialog.tsx`, `GraphicsDialog.tsx`) are each omitted when nothing applies and follow the dialog action rule ([Buttons and dialogs](#buttons-and-dialogs)). Pre-Play's opt-out is stored on the profile; the game-version warning never shows on a first launch; an unreadable save does not ask; the graphics answer is saved to the game's Graphics API setting, and Play asks once more if the last run exited within seconds under a non-recommended choice. A Mortar-started launch that ends with errors or a SMAPI crash opens the closed-with-errors dialog (`frontend/src/console/CrashDialog.tsx`).
+Pre-Play dialogs (`PrePlayDialog.tsx`, `UpdateWarnDialog.tsx`, `SaveWarnDialog.tsx`, `GraphicsDialog.tsx`) are each omitted when nothing applies and follow the dialog footer convention ([Conventions](#conventions)). Pre-Play's opt-out is stored on the profile; the game-version warning never shows on a first launch; an unreadable save does not ask; the graphics answer is saved to the game's Graphics API setting, and Play asks once more if the last run exited within seconds under a non-recommended choice. A Mortar-started launch that ends with errors or a SMAPI crash opens the closed-with-errors dialog (`frontend/src/console/CrashDialog.tsx`).
 
 ## Tab header
 
@@ -163,7 +87,7 @@ Nexus files without a manifest laid over a mod's main file ([architecture.md](ar
 ### Adding mods and callouts
 
 - Dropping an archive on any page of the game (settings included) installs it into the open profile; after an install, a toast offers **Add them** for required dependencies the profile lacks (optional ones are left to Problems). An add that finds no manifest or several variants asks which, with **Show archive contents**. A batch install toasts once, with failures counted in the body and **Undo all** (one history event).
-- Compact Alerts above the list ([Surfaces and colour](#surfaces-and-colour)): **Files an update no longer includes** (Show files, Keep, and a contained error **Delete** that moves them to Mortar's trash with Undo); **Mods in the game's Mods folder that differ from this profile** (clears once the profile matches; an unreadable folder never raises it; **Copy into profile** leaves the game folder untouched, **Move into profile** also removes those folders; one undoable history event); **Hidden inside this mod** (**Unhide** asks first, then renames the dotted folders without their dots so SMAPI loads the mod).
+- Compact Alerts above the list: **Files an update no longer includes** (Show files, Keep, and a contained error **Delete** that moves them to Mortar's trash with Undo); **Mods in the game's Mods folder that differ from this profile** (clears once the profile matches; an unreadable folder never raises it; **Copy into profile** leaves the game folder untouched, **Move into profile** also removes those folders; one undoable history event); **Hidden inside this mod** (**Unhide** asks first, then renames the dotted folders without their dots so SMAPI loads the mod).
 
 ## Mod detail
 

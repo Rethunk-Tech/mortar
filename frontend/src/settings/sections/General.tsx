@@ -139,7 +139,7 @@ function Language() {
 // The LAN rows only mean something while sharing is on; what to share also sets the file and link defaults.
 function SharingPrefs({ on }: { on: boolean }) {
   const { t } = useLingui()
-  const first = t`Turn on Share profiles on the local network first.`
+  const first = t`Enable Share profiles on the local network first.`
   return (
     <PrefKeys
       keys={[

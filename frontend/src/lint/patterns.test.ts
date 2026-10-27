@@ -274,3 +274,79 @@ test('a Tooltip around a bare span describes it rather than naming it', () => {
   )
   expect(hits, hits.join('\n')).toEqual([])
 })
+
+const hitsOf = (pick: (file: string, src: string) => number[]) =>
+  files.flatMap(({ path, src }) =>
+    pick(rel(path), src).map((at) => `${rel(path)}:${lineOf(src, at)}`),
+  )
+
+// AppDialog, ConfirmationDialog, FormDialog and BareDialog carry the dialogs' frame, so a dialog never builds its own.
+test('dialogs are built on shell/dialog', () => {
+  const hits = hitsOf((file, src) =>
+    file.startsWith('shell/dialog/')
+      ? []
+      : [...src.matchAll(/import \{[^}]*\bDialog\b[^}]*\} from '@mui\/material'/g)].map(
+          (m) => m.index ?? 0,
+        ),
+  )
+  expect(hits, hits.join('\n')).toEqual([])
+})
+
+// A menu's rows are MenuAction, MenuCheck and MenuNote, its headings MenuHeading and its dividers MenuRule, so every
+// menu lines up, sizes its icons alike and reads the same to a screen reader.
+test('menus are built from the shared menu rows', () => {
+  const raw = /<(?:MenuItem|ListItemIcon|ListItemText|ListSubheader|Divider|Checkbox)\b/g
+  const hits = hitsOf((file, src) => {
+    if (file.startsWith('shell/')) {
+      return []
+    }
+    const code = strip(src)
+    return [...code.matchAll(/<Menu\b/g)].flatMap((open) => {
+      const start = open.index ?? 0
+      const end = code.indexOf('</Menu>', start)
+      const body = code.slice(start, end === -1 ? undefined : end)
+      return [...body.matchAll(raw)].map((m) => start + (m.index ?? 0))
+    })
+  })
+  expect(hits, hits.join('\n')).toEqual([])
+})
+
+// Legibility over art comes from a solid layer with alpha; an image's edge may fade only through an alpha mask.
+test('no gradients', () => {
+  const hits = hitsOf((_, src) =>
+    [...src.matchAll(/\b(?:linear|radial|conic)-gradient\(/g)]
+      .filter((m) => !/mask/i.test(src.slice(Math.max(0, (m.index ?? 0) - 40), m.index)))
+      .map((m) => m.index ?? 0),
+  )
+  expect(hits, hits.join('\n')).toEqual([])
+})
+
+// Icons are Lucide; only the brand's own marks draw SVG by hand.
+test('icons come from Lucide', () => {
+  const hits = hitsOf((file, src) => [
+    ...[
+      ...src.matchAll(
+        /from '(?:@mui\/icons-material|react-icons|@tabler\/icons-react|@heroicons\/react)[^']*'/g,
+      ),
+    ].map((m) => m.index ?? 0),
+    ...(file.startsWith('brand/')
+      ? []
+      : [...strip(src).matchAll(/<svg\b/g)].map((m) => m.index ?? 0)),
+  ])
+  expect(hits, hits.join('\n')).toEqual([])
+})
+
+// The compact Alert's size and colour come from the variant; its sx places it and nothing more.
+test('a compact Alert takes its size and colour from the theme', () => {
+  const styled =
+    /\b(?:fontSize|color|bgcolor|backgroundColor|height|minHeight|p|px|py|pt|pb|pl|pr|padding|border)\s*:/
+  const hits = hitsOf((_, src) =>
+    [...src.matchAll(/<Alert\b(?:[^>]|=>)*?variant="compact"(?:[^>]|=>)*?>/g)]
+      .filter((m) => {
+        const sx = m[0].match(/\bsx=\{\{([\s\S]*?)\}\}/)
+        return sx !== null && styled.test(sx[1] ?? '')
+      })
+      .map((m) => m.index ?? 0),
+  )
+  expect(hits, hits.join('\n')).toEqual([])
+})
