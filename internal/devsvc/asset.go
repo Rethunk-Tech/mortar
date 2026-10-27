@@ -341,3 +341,33 @@ func (s *Service) OpenAssetFolder(gameID, dir string) error {
 	}
 	return datadir.Open(folder)
 }
+
+// AssetFolder is a subfolder of an asset project, which installs as its Root whenever the subfolder changes.
+type AssetFolder struct{ Game, Dir, Root string }
+
+// AssetSubfolders are every asset project's folders below its root, for the folder watch, which sees only a folder's
+// top level: a file dropped into moresuits/ reinstalls the project. Git's, Mortar's and the packs' folders are left out.
+func AssetSubfolders(cur settings.Settings, games []string) []AssetFolder {
+	var out []AssetFolder
+	for _, g := range games {
+		for _, p := range cur.GamePrefs(g).DevProjects {
+			if p.Kind == "" {
+				continue
+			}
+			_ = filepath.WalkDir(p.Dir, func(dir string, d fs.DirEntry, err error) error {
+				if err != nil {
+					return fs.SkipDir // an unreadable folder has nothing to watch
+				}
+				if !d.IsDir() || dir == p.Dir {
+					return nil
+				}
+				if rel, _ := filepath.Rel(p.Dir, dir); slices.Contains([]string{".git", ".mortar", "artifacts"}, rel) {
+					return fs.SkipDir
+				}
+				out = append(out, AssetFolder{Game: g, Dir: dir, Root: p.Dir})
+				return nil
+			})
+		}
+	}
+	return out
+}

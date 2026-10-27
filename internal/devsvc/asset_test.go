@@ -32,6 +32,15 @@ func TestAnAssetProjectIsItsOwnPackage(t *testing.T) {
 	if body, err := fsx.ReadFile(filepath.Join(dir, "sound_pack.json")); err != nil || !strings.Contains(string(body), `"name": "Quacks"`) {
 		t.Errorf("starter file = %s (%v)", body, err)
 	}
+	var watched []string
+	for _, f := range AssetSubfolders(svc.Settings.Get(), []string{"lethal-company"}) {
+		if f.Root == dir {
+			watched = append(watched, filepath.Base(f.Dir))
+		}
+	}
+	if slices.Sort(watched); !slices.Equal(watched, []string{"replacers", "sounds"}) {
+		t.Errorf("watched subfolders %v", watched)
+	}
 	if err := svc.AddDependency("lethal-company", dir, "loaforc-loaforcsSoundAPI", "2.0.13", true); err != nil {
 		t.Fatal(err)
 	}

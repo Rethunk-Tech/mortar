@@ -75,6 +75,9 @@ func watchLibraryFolders(ctx context.Context, home, dataDir string, store *setti
 						out = append(out, folderwatch.Target{Event: syncsvc.FolderEvent, Game: g, Dir: filepath.Join(dir, g)})
 					}
 				}
+				for _, f := range devsvc.AssetSubfolders(cur, game.Implemented()) {
+					out = append(out, folderwatch.Target{Event: folderwatch.ExtraFolderEvent, Game: f.Game, Dir: f.Dir, Report: f.Root})
+				}
 				for g, dirs := range devsvc.WatchedSources(cur, game.Implemented()) {
 					for _, dir := range dirs {
 						out = append(out, folderwatch.Target{Event: devsvc.SourceEvent, Game: g, Dir: dir, WithDir: true})

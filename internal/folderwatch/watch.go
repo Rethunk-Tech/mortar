@@ -2,6 +2,7 @@
 package folderwatch
 
 import (
+	"cmp"
 	"context"
 	"log"
 	"maps"
@@ -30,7 +31,7 @@ type Folder struct {
 // data is what an event carries: the game, and the folder too when the target asks for it.
 func (t Target) data() any {
 	if t.Event == ExtraFolderEvent || t.WithDir {
-		return Folder{Game: t.Game, Dir: t.Dir}
+		return Folder{Game: t.Game, Dir: cmp.Or(t.Report, t.Dir)}
 	}
 	return t.Game
 }
@@ -42,6 +43,9 @@ type Target struct {
 	Dir   string
 	// WithDir sends the folder with the game, as an extra mods folder's event always does.
 	WithDir bool
+	// Report is the folder the event names when it is not Dir: an asset project's root, for a change in one of its
+	// subfolders (the watch sees only each folder's top level).
+	Report string
 }
 
 // Deps wires the watcher to the current targets and the event bus.
