@@ -1399,10 +1399,6 @@ msgstr ""
 msgid "Installing {loader} {latest}"
 msgstr ""
 
-#: src/develop/ProjectCard.tsx
-msgid "Its folder moves to the trash, where you can restore it, and Mortar stops building it and installing it into the profile."
-msgstr ""
-
 #: src/browse/browseConstants.ts
 msgid "Search {source}. Free accounts download from the mod's page with Mod Manager Download."
 msgstr ""
@@ -6451,6 +6447,10 @@ msgstr ""
 #: src/browse/CardProgress.tsx
 #: src/queue/QueueBody.tsx
 msgid "Installing"
+msgstr ""
+
+#: src/develop/ProjectCard.tsx
+msgid "Its folder moves to the trash, where you can restore it, and the mod leaves the profile."
 msgstr ""
 
 #: src/develop/GameCodeDialog.tsx

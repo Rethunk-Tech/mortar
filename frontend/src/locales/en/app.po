@@ -1399,10 +1399,6 @@ msgstr "Both sides changed it, so Mortar will not merge them. Pick one side."
 msgid "Installing {loader} {latest}"
 msgstr "Installing {loader} {latest}"
 
-#: src/develop/ProjectCard.tsx
-msgid "Its folder moves to the trash, where you can restore it, and Mortar stops building it and installing it into the profile."
-msgstr "Its folder moves to the trash, where you can restore it, and Mortar stops building it and installing it into the profile."
-
 #: src/browse/browseConstants.ts
 msgid "Search {source}. Free accounts download from the mod's page with Mod Manager Download."
 msgstr "Search {source}. Free accounts download from the mod's page with Mod Manager Download."
@@ -6452,6 +6448,10 @@ msgstr "FOMOD installer"
 #: src/queue/QueueBody.tsx
 msgid "Installing"
 msgstr "Installing"
+
+#: src/develop/ProjectCard.tsx
+msgid "Its folder moves to the trash, where you can restore it, and the mod leaves the profile."
+msgstr "Its folder moves to the trash, where you can restore it, and the mod leaves the profile."
 
 #: src/develop/GameCodeDialog.tsx
 msgid "Usages"

@@ -247,6 +247,11 @@ func (s *Service) follow(gameID string, p settings.DevProject, name string) erro
 	if err := s.Settings.ReplaceDevProject(gameID, p, next); err != nil {
 		return err
 	}
+	return s.dropBuild(gameID, p)
+}
+
+// dropBuild takes the install of the project's build output out of its development profile.
+func (s *Service) dropBuild(gameID string, p settings.DevProject) error {
 	profiles, err := s.Profiles.List(gameID)
 	if err != nil {
 		return err

@@ -181,8 +181,9 @@ func TestCreateRunsDotnetNewAndWiresTheProfile(t *testing.T) {
 	if _, err := svc.Create(t.Context(), NewMod{Game: "lethal-company", Name: "ShopDrop", Parent: parent, Repo: "shop-drop", Values: map[string]string{"description": "d", "team": "Ab"}}); err == nil {
 		t.Error("a second project in the same folder was made")
 	}
-	if err := svc.Forget("lethal-company", dir); err != nil || len(svc.Projects("lethal-company")) != 0 {
-		t.Errorf("forget left %+v (%v)", svc.Projects("lethal-company"), err)
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	if err := svc.Trash("lethal-company", dir); err != nil || len(svc.Projects("lethal-company")) != 0 || fsx.IsDir(dir) {
+		t.Errorf("trash left %+v, folder there %v (%v)", svc.Projects("lethal-company"), fsx.IsDir(dir), err)
 	}
 }
 

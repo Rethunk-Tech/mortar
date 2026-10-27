@@ -297,6 +297,8 @@ func (s *Service) ForgetDevProject(game, dir string) error {
 		})
 		extra := slices.DeleteFunc(gp.ExtraModsFolderList(), func(d string) bool { return d == output })
 		gp.ExtraModsFolder = strings.Join(extra, string(filepath.ListSeparator))
+		gp.ExtraModsProfiles = maps.Clone(gp.ExtraModsProfiles)
+		delete(gp.ExtraModsProfiles, output)
 		putGame(v, game, gp)
 	})
 }

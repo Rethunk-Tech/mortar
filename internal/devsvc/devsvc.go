@@ -237,17 +237,20 @@ func (s *Service) Projects(gameID string) []settings.DevProject {
 	return slices.Clone(s.Settings.Get().GamePrefs(gameID).DevProjects)
 }
 
-// Forget drops the project in dir from the Develop tab; its files stay.
+// Forget drops the project in dir from the Develop tab; its files stay, and so does its last build in the profile.
 func (s *Service) Forget(gameID, dir string) error { return s.Settings.ForgetDevProject(gameID, dir) }
 
-// Trash moves the project's folder to the system trash, where the file manager can restore it, and drops the project
-// from the Develop tab. Only a folder the Develop tab lists is moved.
+// Trash moves the project's folder to the system trash, where the file manager can restore it, takes its build out of
+// its profile, and drops the project from the Develop tab. Only a folder the Develop tab lists is moved.
 func (s *Service) Trash(gameID, dir string) error {
 	p, err := s.project(gameID, dir)
 	if err != nil {
 		return err
 	}
 	if err := fsx.Trash(p.Dir); err != nil {
+		return err
+	}
+	if err := s.dropBuild(gameID, p); err != nil {
 		return err
 	}
 	return s.Forget(gameID, p.Dir)

@@ -370,7 +370,7 @@ function MoreMenu({
         title={t`Remove ${{ name: project.name }} from the list?`}
         body={
           trashFolder
-            ? t`Its folder moves to the trash, where you can restore it, and Mortar stops building it and installing it into the profile.`
+            ? t`Its folder moves to the trash, where you can restore it, and the mod leaves the profile.`
             : t`Its folder stays where it is; Mortar stops building it and installing it into the profile.`
         }
         confirmLabel={trashFolder ? t`Remove and move to trash` : t`Remove from list`}
