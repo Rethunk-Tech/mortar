@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"slices"
@@ -12,7 +13,6 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
@@ -91,13 +91,8 @@ func (s *Store) InstallExtraFolder(ctx context.Context, game, id, path string) (
 	}
 	defer func() { _ = fsx.RemoveAll(scratch) }()
 	staged := filepath.Join(scratch, filepath.Base(path))
-	if err := datadir.CopyTree(path, staged); err != nil {
+	if err := copyWithout(path, staged, ".git", ".mortar", "artifacts"); err != nil {
 		return InstallResult{}, installError(err)
-	}
-	for _, name := range []string{".git", ".mortar", "artifacts"} {
-		if err := fsx.RemoveAll(filepath.Join(staged, name)); err != nil {
-			return InstallResult{}, installError(err)
-		}
 	}
 	return s.installDir(ctx, game, id, staged, src, true)
 }
@@ -433,5 +428,33 @@ func installError(err error) error {
 func holdsAny(e Entry, found []smapimanifest.Mod) bool {
 	return slices.ContainsFunc(e.Mods, func(m Component) bool {
 		return slices.ContainsFunc(found, func(f smapimanifest.Mod) bool { return mod.Equal(f.ModID(), m.ID) })
+	})
+}
+
+// copyWithout copies the regular files and folders under src to dst, leaving out the named top-level entries.
+func copyWithout(src, dst string, skip ...string) error {
+	return filepath.WalkDir(src, func(p string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		rel, err := filepath.Rel(src, p)
+		if err != nil {
+			return err
+		}
+		if slices.Contains(skip, rel) {
+			return filepath.SkipDir
+		}
+		to := filepath.Join(dst, rel)
+		if d.IsDir() {
+			return os.MkdirAll(to, 0o700)
+		}
+		if !d.Type().IsRegular() {
+			return nil
+		}
+		b, err := fsx.ReadFile(p)
+		if err != nil {
+			return err
+		}
+		return os.WriteFile(to, b, 0o600)
 	})
 }
