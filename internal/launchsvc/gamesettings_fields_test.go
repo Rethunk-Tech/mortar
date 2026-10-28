@@ -34,7 +34,7 @@ func intField(name string, ptr func(*gamesettings.Settings) **int) field {
 func allFields() []field {
 	return []field{
 		{
-			name: "windowMode", raw: "windowed",
+			name: "windowMode", raw: "0",
 			set: func(s *gamesettings.Settings, n int) {
 				v := []string{"windowed", "fullscreen", "borderless"}[n%3]
 				s.WindowMode = &v
@@ -178,13 +178,13 @@ func TestSetSettingValueParsesEachField(t *testing.T) {
 
 func TestReadStartupSettingsOnlyReadsDirectChildrenOfStartupPreferences(t *testing.T) {
 	data := []byte(`<?xml version="1.0"?>
-<other><windowMode>borderless</windowMode></other>
-<startup_preferences>
+<other><windowMode>1</windowMode></other>
+<StartupPreferences>
   <nested><displayIndex>9</displayIndex></nested>
-  <windowMode> windowed </windowMode>
+  <windowMode> 0 </windowMode>
   <displayIndex>1</displayIndex>
   <ignored>3</ignored>
-</startup_preferences>
+</StartupPreferences>
 <after><zoomLevel>40</zoomLevel></after>`)
 	want := everything(1)
 	got, err := readStartupSettings(data, want)
@@ -206,19 +206,19 @@ func TestReadStartupSettingsOnlyReadsDirectChildrenOfStartupPreferences(t *testi
 	if empty, err := readStartupSettings([]byte("<<<"), gamesettings.Settings{}); err != nil || !emptySettings(empty) {
 		t.Fatalf("empty = %+v, %v", empty, err)
 	}
-	if _, err := readStartupSettings([]byte("<startup_preferences><windowMode>x"), want); err == nil {
+	if _, err := readStartupSettings([]byte("<StartupPreferences><windowMode>x"), want); err == nil {
 		t.Fatal("a truncated file was read as complete")
 	}
-	if _, err := readStartupSettings([]byte("<startup_preferences><displayIndex>wide</displayIndex></startup_preferences>"), want); err == nil {
+	if _, err := readStartupSettings([]byte("<StartupPreferences><displayIndex>wide</displayIndex></StartupPreferences>"), want); err == nil {
 		t.Fatal("a number that is not one was read")
 	}
 }
 
-const prefsXML = `<startup_preferences>
-  <windowMode>fullscreen</windowMode>
+const prefsXML = `<StartupPreferences>
+  <windowMode>2</windowMode>
   <displayIndex>1</displayIndex>
   <soundVolumeLevel>80</soundVolumeLevel>
-</startup_preferences>`
+</StartupPreferences>`
 
 func prefsPath(config string) string {
 	return filepath.Join(config, "StardewValley", "startup_preferences")
@@ -243,18 +243,18 @@ func readBytes(t *testing.T, path string) []byte {
 func TestReadStartupSettingsSectionBoundaries(t *testing.T) {
 	want := everything(1)
 	// A section inside the section does not shift which elements count as direct children.
-	got, err := readStartupSettings([]byte(`<startup_preferences><startup_preferences><windowMode>borderless</windowMode></startup_preferences></startup_preferences>`), want)
+	got, err := readStartupSettings([]byte(`<StartupPreferences><StartupPreferences><windowMode>1</windowMode></StartupPreferences></StartupPreferences>`), want)
 	if err != nil || got.WindowMode != nil {
 		t.Fatalf("a grandchild was read: %+v, %v", got, err)
 	}
 	// A deeper copy after the real value does not replace it.
-	got, err = readStartupSettings([]byte(`<startup_preferences><displayIndex>1</displayIndex><x><displayIndex>9</displayIndex></x></startup_preferences>`), want)
+	got, err = readStartupSettings([]byte(`<StartupPreferences><displayIndex>1</displayIndex><x><displayIndex>9</displayIndex></x></StartupPreferences>`), want)
 	if err != nil || got.DisplayIndex == nil || *got.DisplayIndex != 1 {
 		t.Fatalf("the nested copy won: %+v, %v", got, err)
 	}
 	// Two sections are both read, and what sits two levels down after them is not.
-	got, err = readStartupSettings([]byte(`<startup_preferences><windowMode>windowed</windowMode></startup_preferences>
-<startup_preferences><displayIndex>2</displayIndex></startup_preferences>
+	got, err = readStartupSettings([]byte(`<StartupPreferences><windowMode>0</windowMode></StartupPreferences>
+<StartupPreferences><displayIndex>2</displayIndex></StartupPreferences>
 <wrap><inner><zoomLevel>50</zoomLevel></inner></wrap>`), want)
 	if err != nil || got.WindowMode == nil || got.DisplayIndex == nil || *got.DisplayIndex != 2 || got.ZoomLevel != nil {
 		t.Fatalf("sections = %+v, %v", got, err)
@@ -360,8 +360,8 @@ func TestRestoreWritesNothingTheSecondTime(t *testing.T) {
 
 func TestPrepareNeverTouchesPrefsItCannotRead(t *testing.T) {
 	for name, body := range map[string]string{
-		"corrupt xml": "<startup_preferences><windowMode>fullscreen",
-		"bad number":  "<startup_preferences><windowMode>fullscreen</windowMode><displayIndex>wide</displayIndex></startup_preferences>",
+		"corrupt xml": "<StartupPreferences><windowMode>2",
+		"bad number":  "<StartupPreferences><windowMode>2</windowMode><displayIndex>wide</displayIndex></StartupPreferences>",
 	} {
 		svc, p, config := newGameSettingsService(t)
 		path := writePrefs(t, config, body)
@@ -413,7 +413,7 @@ func TestRestoreKeepsCorruptPrefsAndTheRecord(t *testing.T) {
 	path := writePrefs(t, config, prefsXML)
 	restore := setAndPrepare(t, svc, p.ID)
 	// The game crashed halfway through writing its preferences.
-	torn := "<startup_preferences><windowMode>windowed"
+	torn := "<StartupPreferences><windowMode>0"
 	if err := os.WriteFile(path, []byte(torn), 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -432,7 +432,7 @@ func TestRestoreLeavesPrefsTheGameChangedEverywhere(t *testing.T) {
 	svc, p, config := newGameSettingsService(t)
 	path := writePrefs(t, config, prefsXML)
 	restore := setAndPrepare(t, svc, p.ID)
-	changed := bytes.Replace(readBytes(t, path), []byte("windowed"), []byte("borderless"), 1)
+	changed := bytes.Replace(readBytes(t, path), []byte("<windowMode>0<"), []byte("<windowMode>1<"), 1)
 	if err := os.WriteFile(path, changed, 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -497,5 +497,68 @@ func TestGameSettingsRoundTripAndMissingFile(t *testing.T) {
 	}
 	if _, err := svc.GameSettings("stardew", p.ID); err == nil {
 		t.Fatal("broken settings read as empty")
+	}
+}
+
+func fixturePrefs(t *testing.T) []byte {
+	t.Helper()
+	data, err := os.ReadFile(filepath.Join("testdata", "stardew", "startup_preferences"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	return data
+}
+
+func TestReadsTheFileStardewWrites(t *testing.T) {
+	got, err := readStartupSettings(fixturePrefs(t), everything(1))
+	if err != nil {
+		t.Fatal(err)
+	}
+	pct := func(p *int) int { return *p }
+	if *got.WindowMode != "borderless" || pct(got.DisplayIndex) != 0 || *got.StartMuted ||
+		pct(got.FullscreenResolutionX) != 5504 || pct(got.FullscreenResolutionY) != 2304 ||
+		pct(got.PreferredResolutionX) != 5504 || pct(got.PreferredResolutionY) != 2304 ||
+		pct(got.MusicVolumeLevel) != 75 || pct(got.SoundVolumeLevel) != 100 ||
+		pct(got.ZoomLevel) != 100 || pct(got.UIScale) != -100 {
+		t.Fatalf("read %+v", got)
+	}
+}
+
+func TestPatchChangesOnlyTheManagedText(t *testing.T) {
+	fixture := fixturePrefs(t)
+	mode, music, display, muted := "fullscreen", 40, 2, true
+	got, err := patchStartupSettings(fixture, gamesettings.Settings{
+		WindowMode: &mode, MusicVolumeLevel: &music, DisplayIndex: &display, StartMuted: &muted,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := fixture
+	for _, r := range [][2]string{
+		{"<windowMode>1<", "<windowMode>2<"},
+		{"<musicVolumeLevel>0.75<", "<musicVolumeLevel>0.4<"},
+		{"<displayIndex>0<", "<displayIndex>2<"},
+		{"<startMuted>false<", "<startMuted>true<"},
+	} {
+		if !bytes.Contains(want, []byte(r[0])) {
+			t.Fatalf("fixture lacks %s", r[0])
+		}
+		want = bytes.Replace(want, []byte(r[0]), []byte(r[1]), 1)
+	}
+	if !bytes.Equal(got, want) {
+		t.Fatalf("patch touched more than the managed elements")
+	}
+}
+
+func TestPatchLeavesTheSameNameInOtherSectionsAlone(t *testing.T) {
+	data := []byte(`<StartupPreferences><x><zoomLevel>9</zoomLevel></x><clientOptions><zoomLevel>1</zoomLevel></clientOptions><zoomLevel>7</zoomLevel></StartupPreferences>`)
+	zoom := 50
+	got, err := patchStartupSettings(data, gamesettings.Settings{ZoomLevel: &zoom})
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := `<StartupPreferences><x><zoomLevel>9</zoomLevel></x><clientOptions><zoomLevel>0.5</zoomLevel></clientOptions><zoomLevel>7</zoomLevel></StartupPreferences>`
+	if string(got) != want {
+		t.Fatalf("got %s", got)
 	}
 }

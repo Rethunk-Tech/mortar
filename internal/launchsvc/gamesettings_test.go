@@ -39,11 +39,11 @@ func TestGameSettingsRestoreKeepsGameChanges(t *testing.T) {
 	if err := os.MkdirAll(filepath.Dir(startup), 0o700); err != nil {
 		t.Fatal(err)
 	}
-	initial := []byte(`<startup_preferences>
-<windowMode>fullscreen</windowMode>
+	initial := []byte(`<StartupPreferences>
+<windowMode>2</windowMode>
 <displayIndex>1</displayIndex>
 <soundVolumeLevel>80</soundVolumeLevel>
-</startup_preferences>`)
+</StartupPreferences>`)
 	if err := os.WriteFile(startup, initial, 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -70,7 +70,7 @@ func TestGameSettingsRestoreKeepsGameChanges(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !bytes.Contains(patched, []byte("<windowMode>windowed</windowMode>")) ||
+	if !bytes.Contains(patched, []byte("<windowMode>0</windowMode>")) ||
 		!bytes.Contains(patched, []byte("<displayIndex>2</displayIndex>")) {
 		t.Fatalf("startup preferences were not patched: %s", patched)
 	}
@@ -86,7 +86,7 @@ func TestGameSettingsRestoreKeepsGameChanges(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !bytes.Contains(got, []byte("<windowMode>fullscreen</windowMode>")) {
+	if !bytes.Contains(got, []byte("<windowMode>2</windowMode>")) {
 		t.Fatalf("Mortar value was not restored: %s", got)
 	}
 	if !bytes.Contains(got, []byte("<displayIndex>7</displayIndex>")) {
@@ -103,7 +103,7 @@ func TestGameSettingsRestoreKeepsGameChanges(t *testing.T) {
 func TestGameSettingsLeftoverRestoreRunsAtStartup(t *testing.T) {
 	svc, p, config := newGameSettingsService(t)
 	startup := filepath.Join(config, "StardewValley", "startup_preferences")
-	testfs.WriteAt(t, startup, []byte(`<startup_preferences><windowMode>fullscreen</windowMode></startup_preferences>`))
+	testfs.WriteAt(t, startup, []byte(`<StartupPreferences><windowMode>2</windowMode></StartupPreferences>`))
 	mode := "windowed"
 	if err := svc.SetGameSettings("stardew", p.ID, gamesettings.Settings{WindowMode: &mode}); err != nil {
 		t.Fatal(err)
@@ -119,7 +119,7 @@ func TestGameSettingsLeftoverRestoreRunsAtStartup(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !bytes.Contains(got, []byte("<windowMode>fullscreen</windowMode>")) {
+	if !bytes.Contains(got, []byte("<windowMode>2</windowMode>")) {
 		t.Fatalf("leftover settings were not restored: %s", got)
 	}
 }

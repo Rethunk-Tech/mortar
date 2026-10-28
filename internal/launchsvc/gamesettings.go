@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -93,7 +94,7 @@ func (s *Service) prepareGameSettings(gameID, id, installID string) (*settingsRe
 	if emptySettings(written) {
 		return nil, false, nil
 	}
-	patched, err := gamesettings.Patch(data, written)
+	patched, err := patchStartupSettings(data, written)
 	if err != nil {
 		return nil, false, err
 	}
@@ -167,7 +168,7 @@ func (s *Service) restoreGameSettings(restore *settingsRestore) error {
 			restoreErr = removeSettingsRestore(restore.recordPath)
 			return
 		}
-		patched, err := gamesettings.Patch(data, original)
+		patched, err := patchStartupSettings(data, original)
 		if err != nil {
 			restoreErr = err
 			return
@@ -229,113 +230,185 @@ func (s *Service) recoverGameSettings(gameID string) error {
 	return errors.Join(errs...)
 }
 
-func readStartupSettings(data []byte, wanted gamesettings.Settings) (gamesettings.Settings, error) {
-	if emptySettings(wanted) {
-		return gamesettings.Settings{}, nil
-	}
-	names := settingNames(wanted)
-	var out gamesettings.Settings
+const (
+	startupRoot    = "StartupPreferences"
+	startupOptions = "clientOptions"
+)
+
+// startupSection is where the game keeps each managed element under the root.
+var startupSection = map[string]string{
+	"windowMode": "", "displayIndex": "", "fullscreenResolutionX": "", "fullscreenResolutionY": "", "startMuted": "",
+	"preferredResolutionX": startupOptions, "preferredResolutionY": startupOptions,
+	"zoomLevel": startupOptions, "uiScale": startupOptions,
+	"musicVolumeLevel": startupOptions, "soundVolumeLevel": startupOptions,
+}
+
+// The game writes these as fractions (0.75); Mortar's settings hold percent.
+var startupPercent = map[string]bool{"zoomLevel": true, "uiScale": true, "musicVolumeLevel": true, "soundVolumeLevel": true}
+
+// The game's windowMode enum, read from a file it wrote while borderless.
+var (
+	windowModeCodes = map[string]string{"windowed": "0", "borderless": "1", "fullscreen": "2"}
+	windowModeNames = map[string]string{"0": "windowed", "1": "borderless", "2": "fullscreen"}
+)
+
+type startupElement struct {
+	name       string
+	start, end int // byte range of the element's text
+	text       string
+}
+
+// scanStartup lists the managed elements of data at their section paths, in document order.
+func scanStartup(data []byte, names map[string]bool) ([]startupElement, error) {
+	var out []startupElement
 	decoder := xml.NewDecoder(bytes.NewReader(data))
-	depth := 0
-	startupDepth := -1
+	var path []string
 	for {
 		token, err := decoder.Token()
 		if errors.Is(err, io.EOF) {
 			return out, nil
 		}
 		if err != nil {
-			return gamesettings.Settings{}, err
+			return nil, err
 		}
 		switch element := token.(type) {
 		case xml.StartElement:
-			if startupDepth < 0 && element.Name.Local == "startup_preferences" {
-				startupDepth = depth
-			}
-			if startupDepth >= 0 && depth == startupDepth+1 && names[element.Name.Local] {
-				var value string
-				if err := decoder.DecodeElement(&value, &element); err != nil {
-					return gamesettings.Settings{}, err
-				}
-				if err := setSettingValue(&out, element.Name.Local, strings.TrimSpace(value)); err != nil {
-					return gamesettings.Settings{}, err
-				}
+			name := element.Name.Local
+			path = append(path, name)
+			if !names[name] || len(path) < 2 || path[0] != startupRoot ||
+				strings.Join(path[1:len(path)-1], "/") != startupSection[name] {
 				continue
 			}
-			depth++
-		case xml.EndElement:
-			depth--
-			if startupDepth >= 0 && depth == startupDepth {
-				startupDepth = -1
+			start := int(decoder.InputOffset())
+			if err := decoder.Skip(); err != nil {
+				return nil, err
 			}
+			path = path[:len(path)-1]
+			end := bytes.LastIndexByte(data[:decoder.InputOffset()], '<')
+			if end >= start {
+				out = append(out, startupElement{name: name, start: start, end: end, text: strings.TrimSpace(string(data[start:end]))})
+			}
+		case xml.EndElement:
+			path = path[:len(path)-1]
 		}
 	}
+}
+
+func readStartupSettings(data []byte, wanted gamesettings.Settings) (gamesettings.Settings, error) {
+	if emptySettings(wanted) {
+		return gamesettings.Settings{}, nil
+	}
+	elements, err := scanStartup(data, settingNames(wanted))
+	if err != nil {
+		return gamesettings.Settings{}, err
+	}
+	var out gamesettings.Settings
+	for _, element := range elements {
+		if err := setSettingValue(&out, element.name, element.text); err != nil {
+			return gamesettings.Settings{}, err
+		}
+	}
+	return out, nil
+}
+
+// patchStartupSettings replaces the text of each set element and leaves every other byte alone.
+func patchStartupSettings(data []byte, value gamesettings.Settings) ([]byte, error) {
+	if err := value.Validate(); err != nil {
+		return nil, err
+	}
+	elements, err := scanStartup(data, settingNames(value))
+	if err != nil {
+		return nil, err
+	}
+	values := startupValues(value)
+	out := append([]byte(nil), data...)
+	for i := len(elements) - 1; i >= 0; i-- {
+		e := elements[i]
+		out = append(out[:e.start], append([]byte(values[e.name]), out[e.end:]...)...)
+	}
+	return out, nil
+}
+
+func intSlot(s *gamesettings.Settings, name string) **int {
+	switch name {
+	case "displayIndex":
+		return &s.DisplayIndex
+	case "preferredResolutionX":
+		return &s.PreferredResolutionX
+	case "preferredResolutionY":
+		return &s.PreferredResolutionY
+	case "fullscreenResolutionX":
+		return &s.FullscreenResolutionX
+	case "fullscreenResolutionY":
+		return &s.FullscreenResolutionY
+	case "zoomLevel":
+		return &s.ZoomLevel
+	case "uiScale":
+		return &s.UIScale
+	case "musicVolumeLevel":
+		return &s.MusicVolumeLevel
+	case "soundVolumeLevel":
+		return &s.SoundVolumeLevel
+	}
+	return nil
+}
+
+func startupValues(value gamesettings.Settings) map[string]string {
+	out := map[string]string{}
+	if value.WindowMode != nil {
+		out["windowMode"] = windowModeCodes[*value.WindowMode]
+	}
+	if value.StartMuted != nil {
+		out["startMuted"] = strconv.FormatBool(*value.StartMuted)
+	}
+	for name := range startupSection {
+		slot := intSlot(&value, name)
+		if slot == nil || *slot == nil {
+			continue
+		}
+		if startupPercent[name] {
+			out[name] = strconv.FormatFloat(float64(**slot)/100, 'f', -1, 64)
+		} else {
+			out[name] = strconv.Itoa(**slot)
+		}
+	}
+	return out
 }
 
 func setSettingValue(out *gamesettings.Settings, name, value string) error {
 	switch name {
 	case "windowMode":
-		out.WindowMode = &value
-	case "displayIndex":
-		parsed, err := strconv.Atoi(value)
-		if err != nil {
-			return fmt.Errorf("%s: %w", name, err)
+		if mode, ok := windowModeNames[value]; ok {
+			out.WindowMode = &mode
 		}
-		out.DisplayIndex = &parsed
-	case "preferredResolutionX":
-		parsed, err := strconv.Atoi(value)
-		if err != nil {
-			return fmt.Errorf("%s: %w", name, err)
-		}
-		out.PreferredResolutionX = &parsed
-	case "preferredResolutionY":
-		parsed, err := strconv.Atoi(value)
-		if err != nil {
-			return fmt.Errorf("%s: %w", name, err)
-		}
-		out.PreferredResolutionY = &parsed
-	case "fullscreenResolutionX":
-		parsed, err := strconv.Atoi(value)
-		if err != nil {
-			return fmt.Errorf("%s: %w", name, err)
-		}
-		out.FullscreenResolutionX = &parsed
-	case "fullscreenResolutionY":
-		parsed, err := strconv.Atoi(value)
-		if err != nil {
-			return fmt.Errorf("%s: %w", name, err)
-		}
-		out.FullscreenResolutionY = &parsed
-	case "zoomLevel":
-		parsed, err := strconv.Atoi(value)
-		if err != nil {
-			return fmt.Errorf("%s: %w", name, err)
-		}
-		out.ZoomLevel = &parsed
-	case "uiScale":
-		parsed, err := strconv.Atoi(value)
-		if err != nil {
-			return fmt.Errorf("%s: %w", name, err)
-		}
-		out.UIScale = &parsed
+		return nil
 	case "startMuted":
 		parsed, err := strconv.ParseBool(value)
 		if err != nil {
 			return fmt.Errorf("%s: %w", name, err)
 		}
 		out.StartMuted = &parsed
-	case "musicVolumeLevel":
-		parsed, err := strconv.Atoi(value)
-		if err != nil {
-			return fmt.Errorf("%s: %w", name, err)
-		}
-		out.MusicVolumeLevel = &parsed
-	case "soundVolumeLevel":
-		parsed, err := strconv.Atoi(value)
-		if err != nil {
-			return fmt.Errorf("%s: %w", name, err)
-		}
-		out.SoundVolumeLevel = &parsed
+		return nil
 	}
+	slot := intSlot(out, name)
+	if slot == nil {
+		return nil
+	}
+	var parsed int
+	if startupPercent[name] {
+		f, err := strconv.ParseFloat(value, 64)
+		if err != nil {
+			return fmt.Errorf("%s: %w", name, err)
+		}
+		parsed = int(math.Round(f * 100))
+	} else {
+		n, err := strconv.Atoi(value)
+		if err != nil {
+			return fmt.Errorf("%s: %w", name, err)
+		}
+		parsed = n
+	}
+	*slot = &parsed
 	return nil
 }
 
