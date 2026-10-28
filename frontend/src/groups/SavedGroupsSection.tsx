@@ -121,7 +121,7 @@ export const SavedGroupsSection = memo(function SavedGroupsSectionView({
       <ConfirmationDialog
         open={deleting !== null}
         title={t`Delete ${{ name: deleting?.name ?? '' }}?`}
-        body={t`This saved group will be deleted. Groups already added to profiles stay.`}
+        body={t`Groups already added to profiles stay.`}
         confirmLabel={t`Delete`}
         tone="danger"
         busy={busy}

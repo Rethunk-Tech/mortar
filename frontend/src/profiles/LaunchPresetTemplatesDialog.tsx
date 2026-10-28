@@ -69,7 +69,7 @@ export function LaunchPresetTemplatesDialog({
       <ConfirmationDialog
         open={removing !== null}
         title={t`Delete ${{ name: removing?.name ?? '' }}?`}
-        body={t`This template will be deleted. Presets already copied into profiles stay.`}
+        body={t`Presets already copied into profiles stay.`}
         confirmLabel={t`Delete template`}
         tone="danger"
         onCancel={() => setRemoving(null)}

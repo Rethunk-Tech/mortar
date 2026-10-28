@@ -1,15 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Checkbox,
-  CircularProgress,
-  FormControlLabel,
-  Typography,
-} from '@mui/material'
+import { Button, Checkbox, CircularProgress, FormControlLabel } from '@mui/material'
 import { Info, OctagonAlert, TriangleAlert } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { space } from '../../theme/density.ts'
 import { AppDialog, DialogFooter, type DialogTone, ToneIcon } from './AppDialog.tsx'
 
 const ICONS: Record<DialogTone, ReactNode> = {
@@ -19,7 +11,7 @@ const ICONS: Record<DialogTone, ReactNode> = {
 }
 
 /**
- * Asks before an action: the title is the question, the body says what happens, and consequences list what changes.
+ * Asks before an action: the title is the question, the body says what happens, .
  * The action's button names the action ("Delete profile"), never "OK"; a dangerous one is red and Cancel takes focus.
  */
 export function ConfirmationDialog({
@@ -27,7 +19,6 @@ export function ConfirmationDialog({
   tone = 'neutral',
   title,
   body,
-  consequences = [],
   confirmLabel,
   cancelLabel,
   busy = false,
@@ -42,7 +33,6 @@ export function ConfirmationDialog({
   tone?: DialogTone
   title: ReactNode
   body?: ReactNode
-  consequences?: string[]
   confirmLabel: ReactNode
   cancelLabel?: ReactNode
   busy?: boolean
@@ -52,7 +42,7 @@ export function ConfirmationDialog({
   checkbox?: { label: string; checked: boolean; onChange: (on: boolean) => void }
   onConfirm: () => void
   onCancel: () => void
-  // More than the consequences can say: a choice, a field, a list to review.
+  // More than the body can say: a choice, a field, a list to review.
   children?: ReactNode
 }) {
   const { t } = useLingui()
@@ -60,29 +50,6 @@ export function ConfirmationDialog({
   if (!open) {
     return null
   }
-  const consequenceList =
-    consequences.length === 0 ? null : (
-      <Box
-        component="ul"
-        sx={{
-          m: 0,
-          px: space.pad,
-          py: 1.25,
-          listStyle: 'none',
-          borderRadius: '8px',
-          bgcolor: 'var(--mortar-raised)',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 0.5,
-        }}
-      >
-        {consequences.map((c) => (
-          <Typography key={c} component="li" sx={{ fontSize: 'medium.fontSize' }}>
-            {c}
-          </Typography>
-        ))}
-      </Box>
-    )
   return (
     <AppDialog
       open={open}
@@ -126,12 +93,7 @@ export function ConfirmationDialog({
         </DialogFooter>
       }
     >
-      {consequenceList || children ? (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {consequenceList}
-          {children}
-        </Box>
-      ) : null}
+      {children}
     </AppDialog>
   )
 }

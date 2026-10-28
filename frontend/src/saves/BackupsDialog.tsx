@@ -238,8 +238,12 @@ export function BackupsDialog({
       </Menu>
       <ConfirmationDialog
         open={confirm !== null}
-        title={t`Restore this backup?`}
-        tone="danger"
+        title={
+          confirm?.snaps.length === 1 && confirm.snaps[0]
+            ? t`Restore ${{ name: saveName(confirm.snaps[0]) }}?`
+            : t`Restore this backup?`
+        }
+        body={overwriteMessage(confirm?.snaps ?? [], new Set((fits ?? []).map((f) => f.folder)))}
         confirmLabel={t`Restore`}
         busy={pending || busyGame}
         onCancel={() => {
@@ -258,11 +262,7 @@ export function BackupsDialog({
             setConfirm(null)
           })
         }}
-      >
-        <Typography sx={{ fontSize: 'medium.fontSize' }}>
-          {overwriteMessage(confirm?.snaps ?? [], new Set((fits ?? []).map((f) => f.folder)))}
-        </Typography>
-      </ConfirmationDialog>
+      />
     </>
   )
 }

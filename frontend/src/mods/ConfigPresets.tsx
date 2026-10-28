@@ -157,14 +157,13 @@ function PresetsButton({ mod }: { mod: Mod }) {
         open={replacing !== null}
         title={t`Replace ${{ name: replacing ?? '' }}?`}
         body={t`A preset with this name already exists.`}
-        confirmLabel={t`Save as preset`}
+        confirmLabel={t`Replace`}
         onCancel={() => setReplacing(null)}
         onConfirm={() => save(replacing ?? '')}
       />
       <ConfirmationDialog
         open={pendingDelete !== null}
         title={t`Delete ${{ name: pendingDelete ?? '' }}?`}
-        body={t`This preset will be deleted.`}
         confirmLabel={t`Delete preset`}
         tone="danger"
         onCancel={() => setPendingDelete(null)}

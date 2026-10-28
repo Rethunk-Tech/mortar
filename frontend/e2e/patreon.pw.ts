@@ -13,11 +13,11 @@ const POST_URL = 'https://www.patreon.com/posts/4242'
 const ARCHIVE = 'Seed.Patreon.zip'
 
 /** Writes `<id>.zip` holding a content pack named like the id, and returns its path. */
-/** Answers Yes to the question asked before a saved file is recorded against the post it came from. */
+/** Confirms the question asked before a saved file is recorded against the post it came from. */
 async function answerYes(page: Page, question: string) {
   const ask = page.getByRole('dialog', { name: question })
   await expect(ask).toBeVisible()
-  await ask.getByRole('button', { name: 'Yes' }).click()
+  await ask.getByRole('button', { name: 'Link to page' }).click()
 }
 
 function writeArchive(into: string, id = 'Seed.Patreon') {

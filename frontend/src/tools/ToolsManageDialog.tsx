@@ -117,7 +117,7 @@ export function ToolsManageDialog({
       <ConfirmationDialog
         open={deleting !== null}
         title={t`Remove ${{ name: deleting?.name ?? '' }}?`}
-        body={t`This tool will be removed from Mortar.`}
+        body={t`The program itself is not touched.`}
         confirmLabel={t`Remove`}
         tone="danger"
         onCancel={() => setDeleting(null)}

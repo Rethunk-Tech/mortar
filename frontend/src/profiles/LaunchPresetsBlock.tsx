@@ -194,7 +194,6 @@ function LaunchPresetsBlock({
       <ConfirmationDialog
         open={removing !== null}
         title={t`Delete ${{ name: removing?.name ?? '' }}?`}
-        body={t`This launch preset will be deleted.`}
         confirmLabel={t`Delete preset`}
         tone="danger"
         onCancel={() => setRemoving(null)}

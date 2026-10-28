@@ -16,9 +16,9 @@ export function HandoffDialog() {
     <ConfirmationDialog
       open={asking !== undefined}
       title={t`Install ${{ file: asking?.file ?? '' }} as from ${{ page: asking?.page ?? '' }}?`}
-      body={t`Mortar records the file against that page, so the mod's page link and shares point there. Choose No to add it as a plain local file.`}
-      confirmLabel={t`Yes`}
-      cancelLabel={t`No`}
+      body={t`Mortar records the file against that page, so the mod's page link and shares point there.`}
+      confirmLabel={t`Link to page`}
+      cancelLabel={t`Add as local file`}
       onCancel={() => answer(false)}
       onConfirm={() => answer(true)}
     />

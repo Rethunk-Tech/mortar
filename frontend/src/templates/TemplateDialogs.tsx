@@ -74,7 +74,7 @@ function SaveTemplateDialog({
         open={open && replacing !== null}
         title={t`Replace ${{ name: replacing ?? '' }}?`}
         body={t`A template with this name already exists.`}
-        confirmLabel={t`Save as template`}
+        confirmLabel={t`Replace`}
         busy={busy}
         onCancel={() => setReplacing(null)}
         onConfirm={() => save(replacing ?? '')}
@@ -208,7 +208,7 @@ function ManageTemplatesDialog({
         open={deleting !== null}
         title={t`Delete the template ${{ name: deleting?.name ?? '' }}?`}
         body={t`Profiles already made from it are not changed.`}
-        confirmLabel={t`Delete`}
+        confirmLabel={t`Delete template`}
         tone="danger"
         busy={busy}
         onCancel={() => setDeleting(null)}
