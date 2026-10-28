@@ -20,12 +20,14 @@ import {
   MergePreview as PreviewMerge,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { useOrderedProfiles } from '../game/useSidebarProfiles.ts'
+import { applyWithUndo } from '../mods/menu.ts'
 import { lockedIn, useLaunchLocks } from '../mods/useLocked.ts'
 import { FormDialog, SelectField } from '../shell/dialog/FormDialog.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { pushUndoToast } from '../toasts/undo.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { ShowModsToggle } from './ShowModsToggle.tsx'
 import { useProfiles } from './store.ts'
@@ -132,7 +134,6 @@ function Summary({
 function MergeBody({ source, onClose }: { source: Profile; onClose: () => void }) {
   const { t } = useLingui()
   const gameId = useProfiles((s) => s.game?.id ?? '')
-  const refresh = useProfiles((s) => s.refresh)
   const openProfile = useProfiles((s) => s.open)
   const { profiles } = useOrderedProfiles(gameId)
   const others = profiles.filter((p) => p.id !== source.id)
@@ -163,22 +164,33 @@ function MergeBody({ source, onClose }: { source: Profile; onClose: () => void }
       return
     }
     const targetName = target.name
+    const added = preview?.adds.length ?? 0
+    const updated = newerWins ? updates : 0
+    const from = source.name
+    const mods = (count: number) => plural({ count }, { one: '# mod', other: '# mods' })
+    const addedMods = mods(added)
+    const updatedMods = mods(updated)
+    let title = t`Added ${{ added: addedMods }} and updated ${{ updated: updatedMods }} from ${{ profile: from }} to ${{ name: targetName }}`
+    if (updated === 0) {
+      title = t`Added ${{ added: addedMods }} from ${{ profile: from }} to ${{ name: targetName }}`
+    } else if (added === 0) {
+      title = t`Updated ${{ updated: updatedMods }} from ${{ profile: from }} to ${{ name: targetName }}`
+    }
     run(
       async () => {
-        await MergeInto(gameId, source.id, target.id, newerWins)
-        await refresh()
+        await applyWithUndo(
+          gameId,
+          target.id,
+          () => MergeInto(gameId, source.id, target.id, newerWins),
+          (undo) =>
+            pushUndoToast(useToasts.getState().push, title, {
+              label: t`Undo`,
+              run: undo,
+              profileId: target.id,
+            }),
+        )
         onClose()
         openProfile(target.id)
-        useToasts.getState().push({
-          kind: 'success',
-          title: plural(
-            { count: changes },
-            {
-              one: `Added # mod from ${{ profile: source.name }} to ${{ name: targetName }}`,
-              other: `Added # mods from ${{ profile: source.name }} to ${{ name: targetName }}`,
-            },
-          ),
-        })
       },
       { errorTitle: t`Could not add the mods to ${{ name: targetName }}` },
     )
