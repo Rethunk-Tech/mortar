@@ -390,14 +390,13 @@ func unpack(f *zip.File, tmp string, total *int64) error {
 	if err != nil {
 		return err
 	}
-	n, err := io.Copy(out, io.LimitReader(rc, maxBackupDisk-*total+1))
-	if err := errors.Join(err, out.Close()); err != nil {
-		return err
-	}
-	if *total += n; *total > maxBackupDisk {
+	n, err := io.Copy(out, fsx.CapReader(rc, maxBackupDisk-*total))
+	closeErr := out.Close()
+	if errors.Is(err, fsx.ErrTooLarge) {
 		return usererr.New(usererr.Damaged, "the backup unpacks to too much")
 	}
-	return nil
+	*total += n
+	return errors.Join(err, closeErr)
 }
 
 // storeKeyOf is the key of a store/<key>/<file> entry name.

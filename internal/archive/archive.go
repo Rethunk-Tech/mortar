@@ -365,8 +365,13 @@ func (x *extractor) write(name, target string, src io.Reader, wantCRC *uint32) e
 	}
 	limit := min(x.opts.MaxEntryBytes, x.opts.MaxTotalBytes-x.total, x.ratioMax-x.total)
 	h := crc32.NewIEEE()
-	// One byte past the limit proves the entry is over it without trusting declared sizes.
-	n, err := io.Copy(io.MultiWriter(out, h), io.LimitReader(src, limit+1))
+	// Reading past the limit proves the entry is over it without trusting declared sizes; the byte that
+	// proved it counts, so the checks below see n > limit.
+	n, err := io.Copy(io.MultiWriter(out, h), fsx.CapReader(src, limit))
+	if errors.Is(err, fsx.ErrTooLarge) {
+		err = nil
+		n++
+	}
 	x.total += n
 	if cerr := out.Close(); err == nil {
 		err = cerr

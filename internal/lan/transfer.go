@@ -465,7 +465,7 @@ func (r contextReader) Read(p []byte) (int, error) {
 }
 
 func extractTar(ctx context.Context, source io.Reader, root string, total *int64, progress func(int64)) error {
-	reader := tar.NewReader(io.LimitReader(source, maxTarBytes+1))
+	reader := tar.NewReader(fsx.CapReader(source, maxTarBytes))
 	rootHandle, err := os.OpenRoot(root)
 	if err != nil {
 		return err

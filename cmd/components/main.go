@@ -234,18 +234,15 @@ func downloadAsset(ctx context.Context, client *http.Client, address, dest strin
 	if err != nil {
 		return err
 	}
-	n, copyErr := io.Copy(file, io.LimitReader(resp.Body, maxAsset+1))
+	_, copyErr := io.Copy(file, fsx.CapReader(resp.Body, maxAsset))
 	closeErr := file.Close()
+	if errors.Is(copyErr, fsx.ErrTooLarge) {
+		return fmt.Errorf("larger than %s", bytefmt.Format(maxAsset))
+	}
 	if copyErr != nil {
 		return copyErr
 	}
-	if closeErr != nil {
-		return closeErr
-	}
-	if n > maxAsset {
-		return fmt.Errorf("larger than %s", bytefmt.Format(maxAsset))
-	}
-	return nil
+	return closeErr
 }
 
 func selectAsset(releases []github.Release, repo, version, pattern string) (github.Release, github.Asset, error) {

@@ -274,12 +274,12 @@ func (r *Resolver) get(ctx context.Context, url, path string) error {
 	if err != nil {
 		return err
 	}
-	n, err := io.Copy(tmp, io.LimitReader(resp.Body, maxPDBBytes+1))
+	_, err = io.Copy(tmp, fsx.CapReader(resp.Body, maxPDBBytes))
+	if errors.Is(err, fsx.ErrTooLarge) {
+		err = fmt.Errorf("%s: over the %d-byte cap", url, maxPDBBytes)
+	}
 	if cerr := tmp.Close(); err == nil {
 		err = cerr
-	}
-	if err == nil && n > maxPDBBytes {
-		err = fmt.Errorf("%s: over the %d-byte cap", url, maxPDBBytes)
 	}
 	if err != nil {
 		_ = fsx.Remove(path + ".part")
