@@ -92,7 +92,7 @@ func TestAutoEnableRequirementsAlwaysOnly(t *testing.T) {
 	}
 }
 
-var localOnlyKeys = []string{"antivirusSocket", "antivirusCommand", "alvrProgram", "extraModsFolder", "syncOwnFolder", "backupLocation", "downloadFolder", "watchFolders", "syncFolder", "vortexFolder", "packFolder", "lanAllowAnyAddress"}
+var localOnlyKeys = []string{"antivirusSocket", "antivirusCommand", "alvrProgram", "extraModsFolder", "syncOwnFolder", "backupLocation", "downloadFolder", "watchFolders", "syncFolder", "vortexFolder", "packFolder", "lanAllowAnyAddress", "nxmDefaultProfile"}
 
 func TestPrefsExportImportRoundTrip(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
@@ -167,6 +167,8 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		t.Fatal(err)
 	}
 	got := Defaults()
+	got.AntivirusSocket = "/run/clamd.sock"
+	local := got
 	ApplyExport(&got, p, present)
 	if got.Language != src.Language || got.Accent != src.Accent || got.IncludeBetaReleases != src.IncludeBetaReleases || got.KeepInTray != src.KeepInTray {
 		t.Fatal("portable-only fields did not round-trip")
@@ -179,7 +181,7 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 			if key.spec.Scope == ScopeGame {
 				game = "stardew"
 			}
-			def, _ := Defaults().LookupGame(key.spec.Key, game)
+			def, _ := local.LookupGame(key.spec.Key, game)
 			if have, _ := got.LookupGame(key.spec.Key, game); have != def {
 				t.Fatalf("%s travelled in the export: %q", key.spec.Key, have)
 			}

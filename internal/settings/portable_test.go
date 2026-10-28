@@ -188,3 +188,61 @@ func TestImportKeepsFoldersAndNetworkLocalAndNeverDisablesAntivirus(t *testing.T
 		t.Fatalf("antivirus = %q", cur.Antivirus)
 	}
 }
+
+func TestImportKeepsLocalProgressAndAnExportOmitsIt(t *testing.T) {
+	other := Defaults()
+	other.Games = map[string]*GameSettings{"stardew": {
+		LastDownloadsSeen: 9999999999999, LastSweepGameVersion: "1.6", NxmDefaultProfile: "theirs",
+		DevProjects: []DevProject{{Dir: "/home/alice/secret-project", Name: "X"}}, SyncOwnFolder: "/home/alice/Sync",
+		LaunchPresetTemplates: []LaunchPresetTemplate{{Name: "p", Env: "API_TOKEN=hunter2", Prefix: "/opt/x"}},
+	}}
+	other.LoaderPrefs = map[string]LoaderPrefs{"stardew/smapi": {Pin: "4.0", LastSweepVersion: "9", ToastAt: "2026-01-01T00:00:00Z"}}
+	b, err := MarshalExport(other)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, w := range []string{"/home/alice", "hunter2", "/opt/x", "theirs", "9999999999999"} {
+		if strings.Contains(string(b), w) {
+			t.Errorf("export carries %q", w)
+		}
+	}
+	if other.Games["stardew"].SyncOwnFolder == "" || other.Games["stardew"].LaunchPresetTemplates[0].Env == "" {
+		t.Fatal("exporting changed the settings it was given")
+	}
+	// A file from before the export fix still carries the games' values.
+	old, _ := json.Marshal(map[string]any{"version": 1, "games": other.Games})
+	cur0 := Defaults()
+	cur0.Games = map[string]*GameSettings{"stardew": {LastDownloadsSeen: 100, NxmDefaultProfile: "mine", LastSweepGameVersion: "1.5"}}
+	if err := ApplyImport(&cur0, old, ImportSections()); err != nil {
+		t.Fatal(err)
+	}
+	if g := cur0.GamePrefs("stardew"); g.LastDownloadsSeen != 100 || g.NxmDefaultProfile != "mine" || g.LastSweepGameVersion != "1.5" {
+		t.Errorf("games = %+v", g)
+	}
+	cur := Defaults()
+	cur.LoaderPrefs = map[string]LoaderPrefs{"stardew/smapi": {LastSweepVersion: "8"}}
+	if err := ApplyImport(&cur, b, ImportSections()); err != nil {
+		t.Fatal(err)
+	}
+	if p := cur.LoaderPrefs["stardew/smapi"]; p.Pin != "4.0" || p.LastSweepVersion != "8" || p.ToastAt != "" {
+		t.Errorf("loader prefs = %+v", p)
+	}
+}
+
+func TestImportedScannerModeNeedsALocalScanner(t *testing.T) {
+	other := Defaults()
+	other.Antivirus = AntivirusCommand
+	b, _ := MarshalExport(other)
+	cur := Defaults()
+	cur.Antivirus = AntivirusAutomatic
+	if err := ApplyImport(&cur, b, ImportSections()); err != nil {
+		t.Fatal(err)
+	}
+	if cur.Antivirus != AntivirusAutomatic {
+		t.Fatalf("antivirus = %q", cur.Antivirus)
+	}
+	cur.AntivirusCommand = "scan {path}"
+	if err := ApplyImport(&cur, b, ImportSections()); err != nil || cur.Antivirus != AntivirusCommand {
+		t.Fatalf("antivirus = %q, %v", cur.Antivirus, err)
+	}
+}

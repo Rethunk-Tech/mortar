@@ -3,6 +3,7 @@ package settings
 import (
 	"encoding/json"
 	"fmt"
+	"maps"
 	"slices"
 )
 
@@ -74,6 +75,16 @@ type exportFile struct {
 
 // MarshalExport writes a versioned JSON of s without secrets or machine-specific fields.
 func MarshalExport(s Settings) ([]byte, error) {
+	// What an import would drop anyway stays out of the file: the player's folders, commands and local progress.
+	s.Games = maps.Clone(s.Games)
+	for id, g := range s.Games {
+		if g != nil {
+			c := *g
+			c.LaunchPresetTemplates = slices.Clone(g.LaunchPresetTemplates)
+			s.Games[id] = &c
+		}
+	}
+	keepLocalOnly(&s, Settings{}, true)
 	raw, err := asObject(s)
 	if err != nil {
 		return nil, err
@@ -127,6 +138,22 @@ func avRank(mode string) int {
 // from or writes to. An imported file never sets them, so what a file carries there is dropped and the player's own
 // stay. A launch preset keeps its name and options but loses its prefix command and environment.
 func keepLocalOnly(out *Settings, cur Settings, gamesImported bool) {
+	// A loader's pin travels; where this machine's sweep and toast stand does not.
+	prefs := map[string]LoaderPrefs{}
+	for k, p := range out.LoaderPrefs {
+		p.LastSweepVersion, p.ToastAt = "", ""
+		prefs[k] = p
+	}
+	for k, c := range cur.LoaderPrefs {
+		p := prefs[k]
+		p.LastSweepVersion, p.ToastAt = c.LastSweepVersion, c.ToastAt
+		prefs[k] = p
+	}
+	maps.DeleteFunc(prefs, func(_ string, p LoaderPrefs) bool { return p == LoaderPrefs{} })
+	out.LoaderPrefs = nil
+	if len(prefs) > 0 {
+		out.LoaderPrefs = prefs
+	}
 	fromFile := map[string]bool{}
 	if gamesImported {
 		for id := range out.Games {
@@ -156,6 +183,9 @@ func keepLocalOnly(out *Settings, cur Settings, gamesImported bool) {
 		dst.ExtraModsProfiles = local.ExtraModsProfiles
 		dst.SyncOwnFolder = local.SyncOwnFolder
 		dst.BackupLocation = local.BackupLocation
+		dst.LastDownloadsSeen = local.LastDownloadsSeen
+		dst.LastSweepGameVersion = local.LastSweepGameVersion
+		dst.NxmDefaultProfile = local.NxmDefaultProfile
 		if !fromFile[id] {
 			continue
 		}
@@ -196,6 +226,10 @@ func ParseExport(b []byte) (Settings, map[string]struct{}, error) {
 
 // ApplyExport copies sanitised portable fields that were present in the file onto cur.
 func ApplyExport(cur *Settings, exported Settings, present map[string]struct{}) {
+	// The scanner's command and socket never travel, so a mode that needs one is no use without this machine's own.
+	if exported.Antivirus == AntivirusCommand && cur.AntivirusCommand == "" || exported.Antivirus == AntivirusClamd && cur.AntivirusSocket == "" {
+		exported.Antivirus = cur.Antivirus
+	}
 	raw, err := asObject(exported)
 	if err != nil {
 		return
