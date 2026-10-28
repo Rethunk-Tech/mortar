@@ -139,7 +139,7 @@ function Header({
       {limitedUntil > 0 ? (
         <Typography
           title={clockWhen(limitedUntil * UNIX_MS_PER_SECOND, i18n.locale)}
-          sx={{ mx: space.pad, mt: 1, fontSize: 'base.fontSize', color: 'warning.main' }}
+          sx={{ mx: space.pad, mt: space.gap, fontSize: 'base.fontSize', color: 'warning.main' }}
         >
           {t`Downloads resume ${{ when: formatWhen(limitedUntil * UNIX_MS_PER_SECOND) }}.`}
         </Typography>

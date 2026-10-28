@@ -1,6 +1,7 @@
 import { Box, ButtonBase, Typography } from '@mui/material'
 import { ChevronDown } from 'lucide-react'
 import { memo } from 'react'
+import { space } from '../theme/density.ts'
 
 // A section heading in Game select; a click folds the section's games away or back.
 const GroupHeading = memo(function GroupHeadingView({
@@ -24,10 +25,10 @@ const GroupHeading = memo(function GroupHeadingView({
         sx={{
           width: '100%',
           justifyContent: 'flex-start',
-          gap: '8px',
+          gap: space.gap,
           px: '40px',
           pt: '14px',
-          pb: '8px',
+          pb: space.gap,
           fontSize: 'small.fontSize',
           fontWeight: 700,
           letterSpacing: '0.08em',

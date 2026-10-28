@@ -26,6 +26,7 @@ import { useLoadProblemsOnFocus } from '../mods/useLoadProblemsOnFocus.ts'
 import { openProfileOf, useProfileLoader, useProfiles } from '../profiles/store.ts'
 import { arrowFocus } from '../shell/arrowFocus.ts'
 import { Tooltip } from '../shell/Tooltip.tsx'
+import { space } from '../theme/density.ts'
 import { useRail, useSidebarCollapsed } from './sidebarCollapsed.ts'
 import {
   type SidebarEntry,
@@ -320,7 +321,7 @@ function CollapseButton({ rail }: { rail: boolean }) {
         height: rail ? COLLAPSE_RAIL_HEIGHT_PX : COLLAPSE_HEIGHT_PX,
         width: rail ? RAIL_ITEM_WIDTH_PX : 'auto',
         mx: rail ? 0 : '8px',
-        mb: '8px',
+        mb: space.gap,
         px: rail ? 0 : '12px',
         borderRadius: '8px',
         fontFamily: 'inherit',

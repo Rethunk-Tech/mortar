@@ -21,6 +21,7 @@ import { favouriteKey } from '../mods/favourites.ts'
 import { MIDDLE, opensPage } from '../mods/pageClick.ts'
 import { useSettings } from '../settings/store.ts'
 import { Tooltip } from '../shell/Tooltip.tsx'
+import { space } from '../theme/density.ts'
 import { BUTTON_RADIUS_PX, BUTTON_SMALL_HEIGHT } from '../theme/theme.ts'
 import { GRAY_OPACITY, PICTURE_PX, STALE_OPACITY } from './browseConstants.ts'
 import type { BrowseModes } from './browseModes.ts'
@@ -232,7 +233,7 @@ const cardSx = {
     display: 'flex',
     flexWrap: 'wrap',
     justifyContent: 'flex-end',
-    columnGap: 1,
+    columnGap: space.gap,
     fontSize: 'small.fontSize',
     color: 'var(--mortar-ink-dim-60)',
     fontVariantNumeric: 'tabular-nums',

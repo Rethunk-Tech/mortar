@@ -30,7 +30,7 @@ export const DownloadsPill = memo(function DownloadsPillView() {
       aria-label={t`Downloads: ${downloading} ${percent}%`}
       sx={{
         '--wails-draggable': 'no-drag',
-        gap: '8px',
+        gap: space.gap,
         height: space.control,
         px: '12px',
         borderRadius: '8px',

@@ -13,6 +13,7 @@ import { When } from '../i18n/When.tsx'
 import { type GameId, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
+import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
 import { profileCardLastPlayedIso } from './profileCardLastPlayed.ts'
 import { profileCardsSlice } from './profileCardsSlice.ts'
@@ -70,8 +71,8 @@ function ProfileCards({
         // Chips wrap onto further lines rather than being cut off; the card limit keeps that to two or three.
         flexWrap: 'wrap',
         alignItems: 'center',
-        gap: 1,
-        mt: 1,
+        gap: space.gap,
+        mt: space.gap,
         maxWidth: '100%',
       }}
     >
@@ -124,7 +125,7 @@ function ProfileCard({
         flexDirection: 'row',
         flexWrap: 'nowrap',
         alignItems: 'center',
-        gap: 1,
+        gap: space.gap,
         flexShrink: 0,
         height: 32,
         px: 1.25,
