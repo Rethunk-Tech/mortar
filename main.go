@@ -264,6 +264,12 @@ func run() error {
 	)
 	ready := make(chan struct{})
 	plays := &shortcut.Service{}
+	plays.SteamRoots = func() []string {
+		if store == nil {
+			return nil
+		}
+		return store.Get().LauncherRoots[game.LauncherSteam]
+	}
 	closeReady := sync.OnceFunc(func() { close(ready) })
 	defer closeReady()
 	// A burst of nxm clicks starts one second instance per link; each launch is queued at once and handled here in
@@ -935,7 +941,7 @@ func run() error {
 	queueSvc.Landed = func(gameID string) { profileSvc.FlagHealth(gameID) }
 	dataSvc.OnClearCache = problemsSvc.ForgetCached
 	checkSvc := storecheck.New(storecheck.Deps{
-		Items: items, Source: profiles.SourceOf, Add: queueSvc.Add,
+		Items: items, Source: profiles.SourceOf, Add: queueSvc.Add, State: queueSvc.State,
 		NexusMD5: func(ctx context.Context, gameID string, modID, fileID int) (string, error) {
 			t, err := game.NexusTitle(gameID)
 			if err != nil {

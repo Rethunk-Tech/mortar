@@ -39,6 +39,7 @@ func (s *Service) Doctor() (doctor.Report, error) {
 		Environment:    env,
 		NxmHandled:     cur.NxmHandled,
 		NxmPrevious:    cur.NxmPreviousName,
+		SteamRoots:     cur.LauncherRoots[game.LauncherSteam],
 	})
 	disk := doctor.Scan(dir)
 	return doctor.Report{Checks: append(live.Checks, disk.Checks...)}, nil
