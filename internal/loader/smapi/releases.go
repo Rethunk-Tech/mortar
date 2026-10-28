@@ -118,13 +118,9 @@ func (l Loader) Latest(ctx context.Context, _ components.GameInfo) (string, erro
 }
 
 func (l Loader) fetchLatest(ctx context.Context) (string, error) {
-	url := l.ReleasesURL
-	if url == "" {
-		return "", errors.New("SMAPI component manifest is not configured")
-	}
-	all, err := github.FetchReleases(ctx, l.Client, url)
+	all, err := l.releases(ctx)
 	if err != nil {
-		return "", fmt.Errorf("look up SMAPI releases: %w", err)
+		return "", err
 	}
 	for _, r := range all {
 		v := strings.TrimPrefix(r.Tag, "v")
@@ -144,13 +140,9 @@ const lastLoaderReleases = 10
 
 // Versions returns the last GitHub SMAPI releases that look like versions, newest first.
 func (l Loader) Versions(ctx context.Context, _ components.GameInfo) ([]string, error) {
-	url := l.releasesURL()
-	if url == "" {
-		return nil, errors.New("SMAPI component manifest is not configured")
-	}
-	all, err := github.FetchReleases(ctx, l.Client, url)
+	all, err := l.releases(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("look up SMAPI releases: %w", err)
+		return nil, err
 	}
 	var out []string
 	for _, r := range all {
@@ -221,13 +213,9 @@ func (l Loader) Fetch(ctx context.Context, _ components.GameInfo, version, dest 
 // releaseDigest is the SHA-256 GitHub reports for version's installer asset. A release without one is refused,
 // since the installer runs natively.
 func (l Loader) releaseDigest(ctx context.Context, version, asset string) (string, error) {
-	url := l.releasesURL()
-	if url == "" {
-		return "", errors.New("SMAPI component manifest is not configured")
-	}
-	all, err := github.FetchReleases(ctx, l.Client, url)
+	all, err := l.releases(ctx)
 	if err != nil {
-		return "", fmt.Errorf("look up SMAPI releases: %w", err)
+		return "", err
 	}
 	for _, r := range all {
 		if r.Draft || strings.TrimPrefix(r.Tag, "v") != version {
@@ -244,6 +232,19 @@ func (l Loader) releaseDigest(ctx context.Context, version, asset string) (strin
 		}
 	}
 	return "", fmt.Errorf("GitHub lists no SMAPI release %s with that installer", version)
+}
+
+// releases are SMAPI's GitHub releases.
+func (l Loader) releases(ctx context.Context) ([]github.Release, error) {
+	url := l.releasesURL()
+	if url == "" {
+		return nil, errors.New("SMAPI component manifest is not configured")
+	}
+	all, err := github.FetchReleases(ctx, l.Client, url)
+	if err != nil {
+		return nil, fmt.Errorf("look up SMAPI releases: %w", err)
+	}
+	return all, nil
 }
 
 func (l Loader) releasesURL() string {
