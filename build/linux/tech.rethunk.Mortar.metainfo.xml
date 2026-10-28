@@ -70,7 +70,7 @@
           <li>Release drafts what changed since the last version, then tags and publishes it, through GitHub when the project has one</li>
           <li>Upload to Thunderstore packs and publishes a mod with your team's token, kept in the system keyring, and can upload the latest release again after an interrupted upload</li>
           <li>Pack warns while a mod still carries the template's icon</li>
-          <li>Dependencies are required or optional, added from Browse or the wizard, and changed later in Edit project</li>
+          <li>Dependencies are required or optional, added from Browse or the wizard, and changed later in Edit details</li>
           <li>Game code searches the game's code, shows any type as C# or IL side by side, finds where a method is used, and copies a hook for it</li>
           <li>Open in editor opens a project in VS Code, VSCodium or Rider, whichever is installed</li>
           <li>A card shows your mod's start-up time and frame cost from its last measured run, and Show log opens its own log in the Console</li>
@@ -107,7 +107,7 @@
           <li>Built on Wails 3.0</li>
           <li>Edit profile has tabs; a profile's overrides, loader options and startup options are edited on the game's settings page instead</li>
           <li>Dialogs, menus and the sidebar are regrouped and tidied, and the sidebar fits a short window without scrolling</li>
-          <li>The Play menu no longer starts copies of the game; Develop's Test does</li>
+          <li>The Play menu's copies section is gone: Develop's Test starts linked copies, and Instances in a game's Play settings still starts several</li>
           <li>Touch ripples are off unless you turn them on</li>
           <li>Removing or switching off a mod takes its files out of the game at once instead of at the next launch</li>
           <li>Many screens, menus and dialogs redraw far less, and History and notifications load older entries as you ask for them</li>
@@ -127,6 +127,7 @@
           <li>A failed catalog check never falls back to a cached catalog older than the one Mortar ships with</li>
           <li>Nested mods sit beneath the mod that needs them even when it is in another group</li>
           <li>Several copies of a game each keep their own log, so their errors count</li>
+          <li>On Linux a Steam game started directly, for several copies or a debug start, runs through Proton in Steam's prefix</li>
           <li>Merging profiles carries Thunderstore packages, and a merge that fails takes back what it added</li>
           <li>Cleanup never offers to remove a mod you develop, built or published, and no longer counts toward the Problems badge</li>
           <li>Profiles added, renamed or deleted from the command line, a share or sync show in the window and the tray at once</li>
