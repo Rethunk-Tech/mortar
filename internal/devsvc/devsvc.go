@@ -124,6 +124,9 @@ func (s *Service) run(ctx context.Context, dir, name string, args ...string) ([]
 	args = guardGit(name, args)
 	cmd := exec.CommandContext(ctx, name, args...) // #nosec G204 -- fixed tools; arguments validated by the caller
 	cmd.Dir = dir
+	if name == "dotnet" {
+		cmd.Env = s.dotnetEnv()
+	}
 	nowindow.Set(cmd)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
