@@ -257,3 +257,31 @@ func TestGameWithoutInstallAdoptsNoProcess(t *testing.T) {
 		t.Fatalf("the dedicated server with no install adopted the client's process: %+v", st)
 	}
 }
+
+func TestInstalledServerDoesNotOwnItsClientsProcess(t *testing.T) {
+	pair := twoInstalls(t)
+	svc := pair.svc
+	svc.procDir = t.TempDir()
+	folders := map[string]string{}
+	for _, id := range []string{"riskofrain2", "riskofrain2-server"} {
+		dir := filepath.Join(t.TempDir(), id)
+		if err := os.MkdirAll(dir, 0o750); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(dir, "Risk of Rain 2.exe"), []byte("x"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		folders[id] = dir
+	}
+	if _, err := svc.settings.Update(func(v *settings.Settings) { v.GameFolders = folders }); err != nil {
+		t.Fatal(err)
+	}
+	fakeProc(t, svc, "7", "/proton/files/bin/wine64-preloader", `Z:`+strings.ReplaceAll(folders["riskofrain2"], "/", `\`)+`\Risk of Rain 2.exe`)
+	for id, want := range map[string]int{"riskofrain2": 1, "riskofrain2-server": 0} {
+		g := game.Find(id)
+		_, sel := svc.installs(g)
+		if ps, err := svc.gameProcs(slot{g, sel.ID}); err != nil || len(ps) != want {
+			t.Fatalf("%s sees %d processes, want %d (%v)", id, len(ps), want, err)
+		}
+	}
+}

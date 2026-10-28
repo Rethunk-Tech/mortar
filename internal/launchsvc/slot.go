@@ -1,6 +1,8 @@
 package launchsvc
 
 import (
+	"slices"
+
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
@@ -100,12 +102,26 @@ func (s *Service) owner(g game.Game, p launch.Process) (id string, ok bool) {
 	if p.ExeIs(game.ProcessNames(g)...) {
 		return "", false
 	}
-	// A dedicated server with no install of its own shares its client's executable name, and must not adopt the
-	// client running under Wine or Proton.
-	if info, _ := components.Game(g.ID()); selected.Dir == "" && info.Server != nil {
-		return "", false
+	// A dedicated server shares its client's executable name, so a Wine or Proton process that runs from one of the
+	// client's installs is the client's, and a server with no install of its own owns nothing it cannot place.
+	if info, _ := components.Game(g.ID()); info.Server != nil {
+		if selected.Dir == "" || s.runsFromClient(info.Server.Clients, p) {
+			return "", false
+		}
 	}
 	return selected.ID, true
+}
+
+// runsFromClient reports whether p runs from a folder of an install of the client game.
+func (s *Service) runsFromClient(client string, p launch.Process) bool {
+	c := game.Find(client)
+	if c == nil {
+		return false
+	}
+	all, selected := s.installs(c)
+	return slices.ContainsFunc(append(all, selected), func(in game.Install) bool {
+		return in.Dir != "" && (p.RunsFrom(in.Dir) || p.LinkedFrom(in.Dir))
+	})
 }
 
 // ownedBy keeps the processes that belong to g's install.
