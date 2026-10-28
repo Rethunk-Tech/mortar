@@ -9,17 +9,9 @@ import (
 
 func TestSetGroupEnabledOneHistoryEvent(t *testing.T) {
 	t.Parallel()
-	e := newEnv(t)
-	e.item(t, "local-a", map[string]string{"A/manifest.json": manifestJSON("Me.A")})
-	e.item(t, "local-b", map[string]string{"B/manifest.json": manifestJSON("Me.B")})
-	p := mustCreate(t, e, "P")
+	e := envWithFolderAB(t)
+	p := abProfile(t, e)
 	var err error
-	if p, err = e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
-		t.Fatal(err)
-	}
-	if p, err = e.AddEntry("stardew", p.ID, "local-b", Source{Kind: KindLocal, Name: "b.zip"}); err != nil {
-		t.Fatal(err)
-	}
 	ka, kb := p.Entries[0].Key, p.Entries[1].Key
 	if p, err = e.CreateGroup("stardew", p.ID, "Core"); err != nil {
 		t.Fatal(err)
@@ -93,17 +85,9 @@ func TestFreeGroupNameCountsUpAndStaysWithinTheLimit(t *testing.T) {
 
 func TestNestedGroupsToggleRenameAndDeleteTogether(t *testing.T) {
 	t.Parallel()
-	e := newEnv(t)
-	e.item(t, "local-a", map[string]string{"A/manifest.json": manifestJSON("Me.A")})
-	e.item(t, "local-b", map[string]string{"B/manifest.json": manifestJSON("Me.B")})
-	p := mustCreate(t, e, "P")
+	e := envWithFolderAB(t)
+	p := abProfile(t, e)
 	var err error
-	if p, err = e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
-		t.Fatal(err)
-	}
-	if p, err = e.AddEntry("stardew", p.ID, "local-b", Source{Kind: KindLocal, Name: "b.zip"}); err != nil {
-		t.Fatal(err)
-	}
 	ka, kb := p.Entries[0].Key, p.Entries[1].Key
 	// Visuals has no group of its own: it exists as the parent of two.
 	if _, err = e.AddToGroup("stardew", p.ID, "Visuals/Hats", ka); err != nil {

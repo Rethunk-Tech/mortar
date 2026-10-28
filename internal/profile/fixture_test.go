@@ -3,6 +3,7 @@ package profile
 import (
 	"encoding/json"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -31,6 +32,28 @@ func envWithAB(t *testing.T) env {
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
 	e.item(t, "local-b", map[string]string{"manifest.json": manifestJSON("Me.B")})
 	return e
+}
+
+// envWithFolderAB is envWithAB with each mod in a folder of its own (A/ and B/).
+func envWithFolderAB(t *testing.T) env {
+	t.Helper()
+	e := newEnv(t)
+	e.item(t, "local-a", map[string]string{"A/manifest.json": manifestJSON("Me.A")})
+	e.item(t, "local-b", map[string]string{"B/manifest.json": manifestJSON("Me.B")})
+	return e
+}
+
+// abProfile is a profile "P" on e holding local-a then local-b.
+func abProfile(t *testing.T, e env) Profile {
+	t.Helper()
+	p := mustCreate(t, e, "P")
+	for _, key := range []string{"local-a", "local-b"} {
+		var err error
+		if p, err = e.AddEntry("stardew", p.ID, key, Source{Kind: KindLocal, Name: strings.TrimPrefix(key, "local-") + ".zip"}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	return p
 }
 
 // withSettings is a Service over e with settings of its own, and those settings.

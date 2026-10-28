@@ -10,9 +10,7 @@ import (
 
 func TestHistoryDiffAddedRemovedVersionEnabled(t *testing.T) {
 	t.Parallel()
-	e := newEnv(t)
-	e.item(t, "local-a", map[string]string{"A/manifest.json": manifestJSON("Me.A")})
-	e.item(t, "local-b", map[string]string{"B/manifest.json": manifestJSON("Me.B")})
+	e := envWithFolderAB(t)
 	e.item(t, "local-a2", map[string]string{"A/manifest.json": `{"Name":"Alpha","Author":"me","Version":"2.0.0","UniqueID":"Me.A"}`})
 	p := addFarmMod(t, e)
 	if _, err := e.AddEntry("stardew", p.ID, "local-b", Source{Kind: KindLocal, Name: "b.zip"}); err != nil {
@@ -124,9 +122,7 @@ func TestRevertHistoryItemKinds(t *testing.T) {
 
 func TestChangesSinceLastRun(t *testing.T) {
 	t.Parallel()
-	e := newEnv(t)
-	e.item(t, "local-a", map[string]string{"A/manifest.json": manifestJSON("Me.A")})
-	e.item(t, "local-b", map[string]string{"B/manifest.json": manifestJSON("Me.B")})
+	e := envWithFolderAB(t)
 	p := addFarmMod(t, e)
 	// Event times are whole seconds: the events so far move two seconds back so the next one lands after mid.
 	_, dir, err := e.readDir("stardew", p.ID)
@@ -162,9 +158,7 @@ func TestChangesSinceLastRun(t *testing.T) {
 
 func TestKnownGoodMarkAndRestore(t *testing.T) {
 	t.Parallel()
-	e := newEnv(t)
-	e.item(t, "local-a", map[string]string{"A/manifest.json": manifestJSON("Me.A")})
-	e.item(t, "local-b", map[string]string{"B/manifest.json": manifestJSON("Me.B")})
+	e := envWithFolderAB(t)
 	p := addFarmMod(t, e)
 	if _, err := e.RestoreKnownGood("stardew", p.ID); usererr.KindOf(err) != usererr.NotFound {
 		t.Fatalf("restore with nothing marked: %v, want a not-found user error", err)
