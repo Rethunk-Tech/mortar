@@ -204,7 +204,7 @@ test('a pasted itch.io link opens the page, and the file saved from it asks befo
   await offer.getByRole('button', { name: 'Add', exact: true }).last().click()
   const ask = page.getByRole('dialog', { name: 'Install Itch.Saved.zip as from someone/cool-mod?' })
   await expect(ask).toBeVisible()
-  await ask.getByRole('button', { name: 'Yes' }).click()
+  await ask.getByRole('button', { name: 'Link to page' }).click()
   await page.getByRole('tab', { name: 'Mods' }).click()
   await expect(page.getByRole('button', { name: /^Details of saved\.package/ })).toBeVisible()
 })
