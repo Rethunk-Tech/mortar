@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -151,5 +152,34 @@ func TestExtraFolderTakesAPackageGamesModsAndABuildOutputFolder(t *testing.T) {
 	}
 	if len(res.Profile.Entries) != 2 {
 		t.Fatalf("entries after the rename = %+v", res.Profile.Entries)
+	}
+}
+
+// An asset project's folder is its repository; only its package files reach the store.
+func TestInstallExtraFolderLeavesAnAssetRepositoryOut(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p := mustCreate(t, e, "P")
+	dir := t.TempDir()
+	writeFile(t, dir, "manifest.json", manifestJSON("me.asset"))
+	writeFile(t, dir, "Sounds/a.wav", "RIFF")
+	writeFile(t, dir, ".git/HEAD", "ref")
+	writeFile(t, dir, ".mortar/project.json", "{}")
+	writeFile(t, dir, "artifacts/a.zip", "PK")
+	res, err := e.InstallExtraFolder(t.Context(), "stardew", p.ID, dir)
+	if err != nil || len(res.Profile.Entries) != 1 {
+		t.Fatalf("install = %+v, %v", res, err)
+	}
+	stored, err := e.items.Dir("stardew", res.Profile.Entries[0].StoreKey())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, skipped := range []string{".git", ".mortar", "artifacts"} {
+		if _, err := os.Stat(filepath.Join(stored, skipped)); err == nil {
+			t.Errorf("%s reached the store", skipped)
+		}
+	}
+	if _, err := os.Stat(filepath.Join(stored, "Sounds", "a.wav")); err != nil {
+		t.Error(err)
 	}
 }

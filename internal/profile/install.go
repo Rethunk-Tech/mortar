@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 	"slices"
 	"strconv"
@@ -11,6 +12,8 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -77,7 +80,26 @@ func (s *Store) InstallLocalFolder(ctx context.Context, game, id, path string, e
 
 // InstallExtraFolder is InstallFolder for a mod in an extra mods folder, whose entry remembers the folder.
 func (s *Store) InstallExtraFolder(ctx context.Context, game, id, path string) (InstallResult, error) {
-	return s.installDir(ctx, game, id, path, Source{Kind: KindLocal, Name: filepath.Base(path), Folder: path}, true)
+	src := Source{Kind: KindLocal, Name: filepath.Base(path), Folder: path}
+	if _, err := os.Stat(filepath.Join(path, ".mortar", "project.json")); err != nil {
+		return s.installDir(ctx, game, id, path, src, true)
+	}
+	// An asset project's folder is its repository: the package is what is left without the repository's own files.
+	scratch, err := os.MkdirTemp(filepath.Dir(s.root), "mortar-asset-*")
+	if err != nil {
+		return InstallResult{}, installError(err)
+	}
+	defer func() { _ = fsx.RemoveAll(scratch) }()
+	staged := filepath.Join(scratch, filepath.Base(path))
+	if err := datadir.CopyTree(path, staged); err != nil {
+		return InstallResult{}, installError(err)
+	}
+	for _, name := range []string{".git", ".mortar", "artifacts"} {
+		if err := fsx.RemoveAll(filepath.Join(staged, name)); err != nil {
+			return InstallResult{}, installError(err)
+		}
+	}
+	return s.installDir(ctx, game, id, staged, src, true)
 }
 
 func (s *Store) installDir(ctx context.Context, game, id, path string, source Source, enabled bool) (InstallResult, error) {
