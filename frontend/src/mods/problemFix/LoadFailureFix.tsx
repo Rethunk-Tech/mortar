@@ -9,9 +9,10 @@ import { BEPINEX } from '../../brand/productNames.ts'
 import { useBrowseView } from '../../browse/view.ts'
 import { useTab } from '../../game/tab.ts'
 import { useLoader } from '../../loader/store.ts'
+import { profileById, useProfiles } from '../../profiles/store.ts'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
-import { modByKey, type Problem } from '../lookup.ts'
+import { modByKey, type Problem, updateFor } from '../lookup.ts'
 import { useMods } from '../store.ts'
 import { openTarget } from '../storeView.ts'
 import { useUpdates } from '../updates.ts'
@@ -71,6 +72,9 @@ function LoadFailureAction({
   const failure = problem.loadFailure
   const [removing, setRemoving] = useState(false)
   const owner = useMods((s) => (failure.key === '' ? undefined : modByKey(s.mods, failure.key)))
+  const profile = useProfiles(profileById(useProfiles((s) => s.openId)))
+  const updates = useUpdates((s) => s.updates)
+  const hasUpdate = owner !== undefined && updateFor(updates, owner, profile) !== undefined
   const disable = () =>
     owner
       ? button(t`Disable`, () =>
@@ -119,11 +123,13 @@ function LoadFailureAction({
     case 'incompatible-version':
     case 'load-exception':
     case 'patch-exception':
-      return button(t`Update`, () => {
-        useTab.getState().setTab('mods')
-        useMods.getState().showUpdates()
-        useUpdates.getState().setReviewing(true)
-      })
+      return hasUpdate
+        ? button(t`Update`, () => {
+            useTab.getState().setTab('mods')
+            useMods.getState().showUpdates()
+            useUpdates.getState().setReviewing(true)
+          })
+        : null
     case 'preloader-patch':
     case 'loader-version':
     case 'chainloader':

@@ -24,9 +24,14 @@ export function AssetFix({
   const dismissAsset = useMods((s) => s.dismissAsset)
   const setConfigValue = useMods((s) => s.setConfigValue)
   const locked = useLocked()
-  const key = problem.asset.keys?.[0]
-  const id = problem.asset.packIds?.[0]
-  const mod = mods.find((m) => m.key === key && (id === undefined || sameId(m.id, id)))
+  const keys = problem.asset.keys ?? []
+  const packIds = problem.asset.packIds ?? []
+  const names = problem.asset.names ?? []
+  const disableable = packIds.flatMap((id, index) => {
+    const mod = mods.find((m) => m.key === keys[index] && sameId(m.id, id))
+    return mod ? [{ mod, name: names[index] ?? mod.name }] : []
+  })
+  const only = disableable.length === 1 ? disableable[0] : undefined
   const tone = problem.asset.cosmetic ? 'plain' : 'warning'
   const fixes = problem.asset.fixes ?? []
   return (
@@ -44,14 +49,21 @@ export function AssetFix({
         />
       ))}
       {win(fixes.length === 0 && !problem.asset.cosmetic)}
-      {mod ? (
+      {disableable.length > 0 ? (
         <FixAction
           icon={<PowerOff size={16} aria-hidden={true} />}
           label={t`Disable`}
           weight="other"
           tone={tone}
           locked={locked}
-          onClick={() => setEnabled(mod, false).catch(reportUnexpected)}
+          {...(only
+            ? { onClick: () => setEnabled(only.mod, false).catch(reportUnexpected) }
+            : {
+                choices: disableable.map(({ mod, name }) => ({
+                  label: t`Disable ${{ name }}`,
+                  onClick: () => setEnabled(mod, false).catch(reportUnexpected),
+                })),
+              })}
         />
       ) : null}
       {dismissedToken === undefined ? null : <RestoreButton token={dismissedToken} />}

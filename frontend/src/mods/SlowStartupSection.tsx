@@ -11,15 +11,17 @@ import { Tooltip } from '../shell/Tooltip.tsx'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { LockedReason } from './LockedReason.tsx'
 import { modById } from './lookup.ts'
 import { LinkedText } from './ModLinks.tsx'
-import { useSlowStartups } from './slowStartups.ts'
 import { useMods } from './store.ts'
+import { useLocked } from './useLocked.ts'
 
 function SlowRow({ row }: { row: SlowStartup }) {
   const { t, i18n } = useLingui()
   const mod = useMods((s) => modById(s.mods, row.id))
   const setEnabled = useMods((s) => s.setEnabled)
+  const locked = useLocked()
   const time = formatDuration(row.ms, i18n.locale)
   let text = t`${{ name: row.name }} adds ${time} to startup`
   if (row.kind === 'pack') {
@@ -53,14 +55,17 @@ function SlowRow({ row }: { row: SlowStartup }) {
         {t`See startup`}
       </Button>
       {mod?.enabled ? (
-        <Button
-          size="small"
-          variant="outlined"
-          color="inherit"
-          onClick={() => setEnabled(mod, false).catch(reportUnexpected)}
-        >
-          {t`Disable`}
-        </Button>
+        <LockedReason locked={locked}>
+          <Button
+            size="small"
+            variant="outlined"
+            color="inherit"
+            disabled={locked}
+            onClick={() => setEnabled(mod, false).catch(reportUnexpected)}
+          >
+            {t`Disable`}
+          </Button>
+        </LockedReason>
       ) : null}
     </Box>
   )
@@ -100,8 +105,7 @@ export function CheckTimings({ timings, at }: { timings: CheckTiming[]; at: numb
   )
 }
 
-export function SlowStartupSection() {
-  const rows = useSlowStartups()
+export function SlowStartupSection({ rows }: { rows: SlowStartup[] }) {
   if (rows.length === 0) {
     return null
   }

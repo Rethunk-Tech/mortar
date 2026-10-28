@@ -11,8 +11,10 @@ import type { ReplacedFile } from '../../bindings/github.com/Rethunk-Tech/mortar
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { LockedReason } from './LockedReason.tsx'
 import { useMods } from './store.ts'
 import { openTarget } from './storeView.ts'
+import { useLocked } from './useLocked.ts'
 
 const rowSx = {
   display: 'flex',
@@ -26,7 +28,15 @@ const rowSx = {
   borderRadius: '6px',
 } as const
 
-function ReplacedRow({ file, onRestore }: { file: ReplacedFile; onRestore: () => void }) {
+function ReplacedRow({
+  file,
+  locked,
+  onRestore,
+}: {
+  file: ReplacedFile
+  locked: boolean
+  onRestore: () => void
+}) {
   const { t } = useLingui()
   return (
     <Box sx={rowSx}>
@@ -45,9 +55,16 @@ function ReplacedRow({ file, onRestore }: { file: ReplacedFile; onRestore: () =>
       >
         {file.path}
       </Typography>
-      <Button size="small" aria-label={t`Restore ${{ name: file.path }}`} onClick={onRestore}>
-        {t`Restore`}
-      </Button>
+      <LockedReason locked={locked}>
+        <Button
+          size="small"
+          aria-label={t`Restore ${{ name: file.path }}`}
+          disabled={locked}
+          onClick={onRestore}
+        >
+          {t`Restore`}
+        </Button>
+      </LockedReason>
     </Box>
   )
 }
@@ -55,6 +72,7 @@ function ReplacedRow({ file, onRestore }: { file: ReplacedFile; onRestore: () =>
 // The files sync moved aside because a package's own file belongs at their path: an older install left them there.
 export function ReplacedSection({ files }: { files: ReplacedFile[] }) {
   const { t } = useLingui()
+  const locked = useLocked()
   const [confirming, setConfirming] = useState(false)
   const reload = () => useMods.getState().loadProblems()
   const run = (work: (game: string, id: string) => Promise<void>) => {
@@ -78,15 +96,24 @@ export function ReplacedSection({ files }: { files: ReplacedFile[] }) {
             },
           )}
         </Typography>
-        <Button size="small" color="error" sx={{ height: 26 }} onClick={() => setConfirming(true)}>
-          {t`Delete all`}
-        </Button>
+        <LockedReason locked={locked}>
+          <Button
+            size="small"
+            color="error"
+            disabled={locked}
+            sx={{ height: 26 }}
+            onClick={() => setConfirming(true)}
+          >
+            {t`Delete all`}
+          </Button>
+        </LockedReason>
       </Box>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
         {files.map((file) => (
           <ReplacedRow
             key={file.path}
             file={file}
+            locked={locked}
             onRestore={() => run((game, id) => RestoreReplaced(game, id, file.path))}
           />
         ))}

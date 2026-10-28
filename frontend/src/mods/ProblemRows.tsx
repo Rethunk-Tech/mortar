@@ -27,7 +27,7 @@ function WhyBody({ row }: { row: Row }) {
   return (
     <Box sx={{ mt: 0.5, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
       <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary', whiteSpace: 'normal' }}>
-        {why.text()}
+        {why.text(row)}
       </Typography>
       <Link
         component="button"

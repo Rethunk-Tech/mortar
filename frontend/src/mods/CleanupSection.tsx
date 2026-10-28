@@ -9,9 +9,11 @@ import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { LockedReason } from './LockedReason.tsx'
 import { modByKey } from './lookup.ts'
 import { LinkedText } from './ModLinks.tsx'
 import { useMods } from './store.ts'
+import { useLocked } from './useLocked.ts'
 
 interface CleanupItem {
   key: string
@@ -32,18 +34,22 @@ function RemoveOne({ choices }: { choices: { key: string; name: string }[] }) {
   const { t } = useLingui()
   const remove = useMods((s) => s.remove)
   const mods = useMods((s) => s.mods)
+  const locked = useLocked()
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   return (
     <>
-      <Button
-        size="small"
-        endIcon={<ChevronDown size={14} />}
-        aria-haspopup="menu"
-        aria-expanded={anchor !== null}
-        onClick={(e) => setAnchor(e.currentTarget)}
-      >
-        {t`Remove one…`}
-      </Button>
+      <LockedReason locked={locked}>
+        <Button
+          size="small"
+          disabled={locked}
+          endIcon={<ChevronDown size={14} />}
+          aria-haspopup="menu"
+          aria-expanded={anchor !== null}
+          onClick={(e) => setAnchor(e.currentTarget)}
+        >
+          {t`Remove one…`}
+        </Button>
+      </LockedReason>
       <Menu anchorEl={anchor} open={anchor !== null} onClose={() => setAnchor(null)}>
         {choices.map((choice) => {
           const mod = mods.find((m) => m.key === choice.key)
@@ -72,6 +78,7 @@ function CleanupRow({ cleanup }: { cleanup: CleanupItem }) {
   const { t } = useLingui()
   const reasonText = useReasonText()
   const remove = useMods((s) => s.remove)
+  const locked = useLocked()
   const mod = useMods((s) => modByKey(s.mods, cleanup.key))
   const who = cleanup.name.trim() === '' ? t`Unknown mod` : cleanup.name
   const reason = reasonText(
@@ -83,20 +90,22 @@ function CleanupRow({ cleanup }: { cleanup: CleanupItem }) {
   const removal = cleanup.choices ? (
     <RemoveOne choices={cleanup.choices} />
   ) : (
-    <DisabledReason title={t`This mod is no longer in the profile.`} disabled={mod === undefined}>
-      <Button
-        size="small"
-        aria-label={t`Remove ${{ name: who }}`}
-        disabled={mod === undefined}
-        onClick={() => {
-          if (mod !== undefined) {
-            remove(mod).catch(reportUnexpected)
-          }
-        }}
-      >
-        {t`Remove`}
-      </Button>
-    </DisabledReason>
+    <LockedReason locked={locked}>
+      <DisabledReason title={t`This mod is no longer in the profile.`} disabled={mod === undefined}>
+        <Button
+          size="small"
+          aria-label={t`Remove ${{ name: who }}`}
+          disabled={mod === undefined || locked}
+          onClick={() => {
+            if (mod !== undefined) {
+              remove(mod).catch(reportUnexpected)
+            }
+          }}
+        >
+          {t`Remove`}
+        </Button>
+      </DisabledReason>
+    </LockedReason>
   )
   return (
     <Box
@@ -172,6 +181,7 @@ export function CleanupSection({
 }) {
   const { t } = useLingui()
   const removeMany = useMods((s) => s.removeMany)
+  const locked = useLocked()
   const [confirmCleanup, setConfirmCleanup] = useState(false)
   if (cleanup.length === 0) {
     return null
@@ -179,13 +189,16 @@ export function CleanupSection({
   return (
     <Box>
       {removeAll && cleanup.length > 1 ? (
-        <Button
-          size="small"
-          sx={{ mb: space.gap, height: 26 }}
-          onClick={() => setConfirmCleanup(true)}
-        >
-          {t`Remove all`}
-        </Button>
+        <LockedReason locked={locked}>
+          <Button
+            size="small"
+            disabled={locked}
+            sx={{ mb: space.gap, height: 26 }}
+            onClick={() => setConfirmCleanup(true)}
+          >
+            {t`Remove all`}
+          </Button>
+        </LockedReason>
       ) : null}
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
         {cleanup.map((item) => (

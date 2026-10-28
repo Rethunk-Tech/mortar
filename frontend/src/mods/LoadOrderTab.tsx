@@ -136,6 +136,16 @@ function DepChips({
   const optional = row.optional ?? []
   const users = row.dependents ?? []
   const long = required.length > INLINE_REQUIRED || users.length > INLINE_USERS
+  const collapsedLabel = [
+    users.length > INLINE_USERS
+      ? plural({ count: users.length }, { one: 'Used by # mod', other: 'Used by # mods' })
+      : '',
+    required.length > INLINE_REQUIRED
+      ? t`${{ count: required.length - INLINE_REQUIRED }} more required`
+      : '',
+  ]
+    .filter((part) => part !== '')
+    .join(' · ')
   const shownRequired = open ? required : required.slice(0, INLINE_REQUIRED)
   if (required.length + optional.length + users.length === 0) {
     return null
@@ -147,14 +157,7 @@ function DepChips({
       {open || users.length <= INLINE_USERS ? users.map((id) => chip('dep', id)) : null}
       {long ? (
         <DepChip
-          label={
-            open
-              ? t`Show less`
-              : plural({ count: users.length }, { one: 'Used by # mod', other: 'Used by # mods' }) +
-                (required.length > INLINE_REQUIRED
-                  ? ` · ${t`${{ count: required.length - INLINE_REQUIRED }} more required`}`
-                  : '')
-          }
+          label={open ? t`Show less` : collapsedLabel}
           expanded={open}
           onClick={() => setOpen((v) => !v)}
         />

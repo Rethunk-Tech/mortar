@@ -7,7 +7,7 @@ const GUIDE = 'https://github.com/Rethunk-Tech/mortar/blob/main/docs/user-guide.
 
 interface Why {
   anchor: string
-  text: () => string
+  text: (row: Row) => string
 }
 
 // One plain paragraph per kind of row, and the heading of docs/user-guide.md that expands on it. The record is
@@ -22,10 +22,22 @@ const problemWhy: Record<Row['kind'], Why> = {
   },
   broken: {
     anchor: 'broken-mod',
-    text: () =>
-      i18n._(
+    text: (row) => {
+      const broken = row.kind === 'broken' ? row.broken : undefined
+      if (broken?.cycle?.length) {
+        return i18n._(
+          msg`These mods each wait for another in a loop, so the loader may not be able to start them.`,
+        )
+      }
+      if (broken?.source) {
+        return i18n._(
+          msg`${{ source: broken.source }} marks this mod as broken, obsolete or abandoned for your game version. It may crash, do nothing, or stop working after the next game update.`,
+        )
+      }
+      return i18n._(
         msg`${{ loader: SMAPI }}'s list marks this mod as broken, obsolete or abandoned for your game version. It may crash, do nothing, or stop working after the next game update.`,
-      ),
+      )
+    },
   },
   duplicate: {
     anchor: 'duplicate-mod',

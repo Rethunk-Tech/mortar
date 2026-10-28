@@ -24,7 +24,7 @@ test('every problem row kind has a why paragraph and a user-guide section', () =
   )
   for (const kind of kinds) {
     const block = new RegExp(
-      `\\n  ${kind}: \\{\\n    anchor: '([a-z-]+)',\\n    text: \\(\\) =>`,
+      `\\n  ${kind}: \\{\\n    anchor: '([a-z-]+)',\\n    text: \\((?:row)?\\) =>`,
     ).exec(why)
     expect(block, `${kind} has an explanation`).not.toBeNull()
     expect(anchors.has(block?.[1] ?? ''), `${kind} anchor ${block?.[1]} is in the guide`).toBe(true)

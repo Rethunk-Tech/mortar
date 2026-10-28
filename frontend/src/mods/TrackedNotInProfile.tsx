@@ -83,7 +83,7 @@ function TrackedRow({
             startIcon={<Plus size={14} aria-hidden={true} />}
             onClick={() => openImport({ profileId, link: url })}
           >
-            {t`Add`}
+            {t`Add…`}
           </Button>
         </LockedReason>
       ) : null}

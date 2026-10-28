@@ -141,7 +141,7 @@ function useProblemTabs({
 }): ProblemTab[] {
   const { t } = useLingui()
   const sectionTitle = useSectionTitle()
-  const slowCount = useSlowStartups().length
+  const slowRows = useSlowStartups()
   const fileConflicts = useFileConflicts()
   return [
     ...sections
@@ -165,9 +165,9 @@ function useProblemTabs({
     {
       id: 'slow',
       label: t`Slow startup`,
-      count: slowCount,
+      count: slowRows.length,
       errors: false,
-      body: <SlowStartupSection />,
+      body: <SlowStartupSection rows={slowRows} />,
     },
     {
       id: 'redundant',
@@ -243,6 +243,8 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
           !isDismissedRow(row) &&
           row.kind === 'missing' &&
           row.missing.listed &&
+          row.missing.reason !== 'disabled' &&
+          !row.missing.optional &&
           row.missing.where !== null,
       ) ?? []
   const sectionExtras = (section: (typeof sections)[number]): { action?: SectionAction } => {
