@@ -300,11 +300,11 @@ export function dialogCases(h: Helpers): Case[] {
       },
     ),
     dialog('report-bug', async (p) => {
-      await button(p, /^Mortar/)
+      await button(p, /^Mortar menu$/)
       await pick(p, /^Report a bug…/)
     }),
     dialog('suggest-feature', async (p) => {
-      await button(p, /^Mortar/)
+      await button(p, /^Mortar menu$/)
       await pick(p, /^Suggest a feature…/)
     }),
     dialog(
