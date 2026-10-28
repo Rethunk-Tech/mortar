@@ -128,7 +128,8 @@ func pageURL(alias string, assetID int) string {
 // Search lists the site's mods. The API has no offset, only a limit, so page n asks for n pages and keeps the last.
 // Included categories go to the site as tag ids; excluded ones are dropped from the page and counted in Hidden.
 // ponytail: the total is unknown, so a full page reports one more hit than it shows and the next page is offered;
-// read a count if the API ever gives one.
+// read a count if the API ever gives one. Page n downloads n pages, so paging n deep moves O(n²) rows in total: add
+// an offset or cursor param (or cache the first fetch) once the API has one or players page past a few dozen.
 func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error) {
 	page := max(q.Page-source.FirstPage, 0) + 1
 	params := url.Values{"limit": {strconv.Itoa(page * q.Len())}}
