@@ -80,6 +80,7 @@ func (s *Store) Delete(gameID, id string) error {
 	if err := fsx.Rename(src, dst); err != nil {
 		return err
 	}
+	s.listChanged(gameID)
 	now := time.Now()
 	if err := os.Chtimes(dst, now, now); err != nil {
 		return err
@@ -91,7 +92,6 @@ func (s *Store) Delete(gameID, id string) error {
 			log.Printf("profile %s/%s: remove its shortcuts: %v", gameID, id, err)
 		}
 	}
-	s.listChanged(gameID)
 	return nil
 }
 

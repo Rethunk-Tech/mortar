@@ -17,6 +17,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -1447,8 +1448,23 @@ func run() error {
 	refreshTrayMenu := func() { buildTray(readTray()) }
 	// One rebuild at a time, in event order, so a burst of state changes cannot leave an older menu in place.
 	var trayRebuild sync.Mutex
+	// Set and cleared on the main thread with the tray; read by rebuilds started from other goroutines.
+	var trayOn atomic.Bool
+	rebuild := func() {
+		if !trayOn.Load() {
+			return
+		}
+		trayRebuild.Lock()
+		defer trayRebuild.Unlock()
+		v := readTray()
+		gate.run(func() { buildTray(v) })
+	}
+	// The Play submenus name each game's profiles. The store calls this under its lock, and reading the profiles takes
+	// it again, so the rebuild runs apart.
+	profiles.ListChanged = func(string) { go rebuild() }
 	syncTray := func() {
 		if !trayWanted(store.Get(), inTray) {
+			trayOn.Store(false)
 			if tray != nil {
 				tray.Destroy()
 				tray = nil
@@ -1474,17 +1490,9 @@ func run() error {
 			}
 			// Menus are GTK objects: rebuilding one off the main thread, or twice at once from a burst of
 			// events, leaves items without their native handle and panics.
-			rebuild := func() {
-				trayRebuild.Lock()
-				defer trayRebuild.Unlock()
-				v := readTray()
-				gate.run(func() { buildTray(v) })
-			}
 			app.Event.On(launchsvc.StateEvent, func(*application.CustomEvent) { rebuild() })
-			// The Play submenus name each game's profiles. The store calls this under its lock, and reading the
-			// profiles takes it again, so the rebuild runs apart.
-			profiles.ListChanged = func(string) { go rebuild() }
 		}
+		trayOn.Store(true)
 		refreshTrayMenu()
 	}
 	syncTray()
