@@ -166,14 +166,9 @@ func (s *Service) ExportCode(ctx context.Context, gameID, profileID string, conf
 
 // ExportR2zDialog asks where to save, then writes the profile as an .r2z file. An empty path means the player cancelled.
 func (s *Service) ExportR2zDialog(ctx context.Context, gameID, profileID string) (string, error) {
-	if s.App == nil {
-		return "", errors.New("no window to ask where to save")
-	}
-	p, err := s.find(gameID, profileID)
-	if err != nil {
-		return "", err
-	}
-	dest, err := s.App.SaveFile(winhost.Dialog{Filename: packageName(p.Name) + ".r2z", Filters: []winhost.Filter{{Name: i18n.T("{app} export (.r2z)", "app", "r2modman or Gale"), Pattern: "*.r2z"}}})
+	dest, err := s.askSave(gameID, profileID, func(p profile.Profile) winhost.Dialog {
+		return winhost.Dialog{Filename: packageName(p.Name) + ".r2z", Filters: []winhost.Filter{{Name: i18n.T("{app} export (.r2z)", "app", "r2modman or Gale"), Pattern: "*.r2z"}}}
+	})
 	if err != nil || dest == "" {
 		return dest, err
 	}
@@ -241,4 +236,16 @@ func allOff(e profile.Entry) bool {
 	return len(e.Mods) > 0 && !slices.ContainsFunc(e.Mods, func(m profile.Component) bool {
 		return !slices.ContainsFunc(e.Disabled, func(d mod.ID) bool { return mod.Equal(d, m.ID) })
 	})
+}
+
+// askSave asks where to save the profile's export with the dialog for it; an empty path means the player cancelled.
+func (s *Service) askSave(gameID, profileID string, dialog func(p profile.Profile) winhost.Dialog) (string, error) {
+	if s.App == nil {
+		return "", errors.New("no window to ask where to save")
+	}
+	p, err := s.find(gameID, profileID)
+	if err != nil {
+		return "", err
+	}
+	return s.App.SaveFile(dialog(p))
 }

@@ -189,14 +189,9 @@ func treeHash(root string) (string, error) {
 
 // BackupDialog asks where to save, then backs up as Backup does; an empty path means the player cancelled.
 func (s *Service) BackupDialog(gameID, profileID string, mods bool) (string, error) {
-	if s.App == nil {
-		return "", errors.New("no window to ask where to save")
-	}
-	p, err := s.find(gameID, profileID)
-	if err != nil {
-		return "", err
-	}
-	dest, err := s.App.SaveFile(winhost.Dialog{Filename: packageName(p.Name) + ".mortar-backup.zip", Filters: []winhost.Filter{{Name: i18n.T("Mortar profile backup (zip)"), Pattern: "*.zip"}}})
+	dest, err := s.askSave(gameID, profileID, func(p profile.Profile) winhost.Dialog {
+		return winhost.Dialog{Filename: packageName(p.Name) + ".mortar-backup.zip", Filters: []winhost.Filter{{Name: i18n.T("Mortar profile backup (zip)"), Pattern: "*.zip"}}}
+	})
 	if err != nil || dest == "" {
 		return "", err
 	}

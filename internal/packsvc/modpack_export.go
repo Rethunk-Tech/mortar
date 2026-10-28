@@ -198,13 +198,9 @@ func modpackChangelog(version string, before, after []string, older string) stri
 
 // ExportModpackDialog asks where to save, then exports as ExportModpack does; an empty Path means the player cancelled.
 func (s *Service) ExportModpackDialog(ctx context.Context, gameID, profileID string, o ModpackOptions) (ModpackResult, error) {
-	if s.App == nil {
-		return ModpackResult{}, errors.New("no window to ask where to save")
-	}
-	if _, err := s.find(gameID, profileID); err != nil {
-		return ModpackResult{}, err
-	}
-	dest, err := s.App.SaveFile(winhost.Dialog{Filename: packageName(o.Name) + "-" + o.Version + ".zip", Filters: []winhost.Filter{{Name: i18n.T("{source} modpack (zip)", "source", "Thunderstore"), Pattern: "*.zip"}}})
+	dest, err := s.askSave(gameID, profileID, func(profile.Profile) winhost.Dialog {
+		return winhost.Dialog{Filename: packageName(o.Name) + "-" + o.Version + ".zip", Filters: []winhost.Filter{{Name: i18n.T("{source} modpack (zip)", "source", "Thunderstore"), Pattern: "*.zip"}}}
+	})
 	if err != nil || dest == "" {
 		return ModpackResult{Dependencies: []string{}, LeftOut: []string{}, Disabled: []string{}}, err
 	}
