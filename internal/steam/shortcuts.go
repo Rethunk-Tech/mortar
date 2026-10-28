@@ -233,7 +233,7 @@ func addShortcut(body []byte, sc Shortcut) ([]byte, uint32, AddResult, error) {
 }
 
 // AddShortcut adds a non-Steam game to the current account's library, or updates the entry that already is sc, and
-// writes its art either way. Steam rewrites shortcuts.vdf on exit, so the caller makes sure Steam is closed.
+// writes its art for a new entry only. Steam rewrites shortcuts.vdf on exit, so the caller makes sure Steam is closed.
 func (s Steam) AddShortcut(sc Shortcut) (AddResult, error) {
 	dir, err := s.userConfigDir()
 	if err != nil {
@@ -258,6 +258,9 @@ func (s Steam) AddShortcut(sc Shortcut) (AddResult, error) {
 		if err := datadir.WriteFile(path, next, 0o600); err != nil {
 			return "", err
 		}
+	}
+	if res != Added {
+		return res, nil
 	}
 	return res, writeGrid(dir, appID, sc.Cover)
 }
