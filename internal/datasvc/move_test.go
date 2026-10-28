@@ -60,3 +60,19 @@ func TestMoveDataFolderRelocatesWhenIdle(t *testing.T) {
 		t.Fatalf("old remains: %v", err)
 	}
 }
+
+func TestMoveDataFolderRefusesWithAnUnrecoveredJournal(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", home)
+	t.Setenv("LOCALAPPDATA", home)
+	src, err := datadir.Dir()
+	if err != nil {
+		t.Fatal(err)
+	}
+	testfs.WriteFile(t, src, "journal/inst/journal.json", "{}")
+	s := NewService(nil, nil, nil)
+	dest := filepath.Join(t.TempDir(), "moved")
+	if err := s.MoveDataFolder(dest); !errors.Is(err, errJournal) {
+		t.Fatalf("move = %v", err)
+	}
+}

@@ -120,5 +120,6 @@ func RecoverFile(journal string, alive func() bool) error {
 	if found, err := datadir.ReadJournal(fileJournalPath(journal), alive, &m); !found || err != nil {
 		return err
 	}
+	m.Journal = journal
 	return PurgeFile(m)
 }

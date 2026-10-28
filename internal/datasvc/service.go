@@ -4,6 +4,7 @@ package datasvc
 import (
 	"errors"
 	"log/slog"
+	"os"
 	"path/filepath"
 	"sync"
 	"time"
@@ -292,6 +293,8 @@ var errPortable = errors.New("this copy of Mortar is portable: its data stays in
 
 var errGameRunning = usererr.New(usererr.Busy, "stop the game before moving the data folder")
 
+var errJournal = usererr.New(usererr.Busy, "a game launch left work unfinished: start and stop that game once before moving the data folder")
+
 var errInUse = errors.New("a profile still uses this store item")
 
 // MoveDataFolder copies the data folder to dest, verifies it, points the default location at dest, removes the old copy, and restarts.
@@ -310,6 +313,9 @@ func (s *Service) MoveDataFolder(dest string) error {
 	src, err := datadir.Dir()
 	if err != nil {
 		return err
+	}
+	if ents, err := os.ReadDir(filepath.Join(src, "journal")); err == nil && len(ents) > 0 {
+		return errJournal
 	}
 	def, err := datadir.DefaultDir()
 	if err != nil {

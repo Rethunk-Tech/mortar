@@ -353,7 +353,13 @@ func (p Place) Recover(ctx context.Context, journalDir string, alive func() bool
 	if !found {
 		return nil
 	}
-	if strings.TrimSpace(m.View.JournalDir) == "" {
+	// The journal may have moved with the data folder since it was written.
+	if old := m.View.JournalDir; old != journalDir {
+		for i := range m.Ops {
+			if rel, err := filepath.Rel(old, m.Ops[i].Displaced); old != "" && m.Ops[i].Displaced != "" && err == nil && filepath.IsLocal(rel) {
+				m.Ops[i].Displaced = filepath.Join(journalDir, rel)
+			}
+		}
 		m.View.JournalDir = journalDir
 	}
 	if err := replay(&m); err != nil {

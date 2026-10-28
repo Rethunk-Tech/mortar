@@ -500,3 +500,24 @@ func TestAPlanRefusesAnUnknownRootAndAPathThatLeavesTheRoot(t *testing.T) {
 		}
 	}
 }
+
+func TestRecoverFollowsAJournalThatMoved(t *testing.T) {
+	t.Parallel()
+	r := newRig(t)
+	before := snapshot(t, r.install)
+	r.apply()
+	moved := r.view.JournalDir + "-moved"
+	if err := os.Rename(r.view.JournalDir, moved); err != nil {
+		t.Fatal(err)
+	}
+	if err := (Place{}).Recover(t.Context(), moved, func() bool { return false }); err != nil {
+		t.Fatal(err)
+	}
+	after := snapshot(t, r.install)
+	if len(after) != len(before) {
+		t.Fatalf("tree differs\nbefore %v\n after %v", before, after)
+	}
+	if _, err := os.Stat(moved); !os.IsNotExist(err) {
+		t.Fatalf("moved journal remains: %v", err)
+	}
+}

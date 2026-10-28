@@ -167,5 +167,6 @@ func Recover(journal string, alive func() bool) error {
 	if found, err := datadir.ReadJournal(journalPath(journal), alive, &m); !found || err != nil {
 		return err
 	}
+	m.Journal = journal
 	return Purge(m)
 }
