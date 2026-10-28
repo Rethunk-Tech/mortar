@@ -217,30 +217,12 @@ func (s *Service) NewProfileFromTemplate(game, templateName, profileName string)
 func (s *Service) ReferencedStoreKeys() (map[string][]string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	out := map[string][]string{}
-	files, err := os.ReadDir(s.root)
-	if errors.Is(err, os.ErrNotExist) {
-		return out, nil
-	}
-	if err != nil {
-		return nil, err
-	}
-	for _, file := range files {
-		game := strings.TrimSuffix(file.Name(), ".json")
-		if file.IsDir() || game == file.Name() || !gamepkg.Valid(game) {
-			continue
-		}
+	return savedgroups.StoreKeysIn(s.root, func(game string) ([]savedgroups.Mod, error) {
 		list, err := s.read(game)
-		if err != nil {
-			return nil, err
-		}
+		var mods []savedgroups.Mod
 		for _, t := range list {
-			for _, m := range t.Mods {
-				if m.EntryKey != "" {
-					out[game] = append(out[game], m.EntryKey)
-				}
-			}
+			mods = append(mods, t.Mods...)
 		}
-	}
-	return out, nil
+		return mods, err
+	})
 }

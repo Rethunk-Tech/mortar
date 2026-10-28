@@ -259,8 +259,21 @@ func (s *Service) List(gameID string) ([]SavedGroup, error) {
 func (s *Service) ReferencedStoreKeys() (map[string][]string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	return StoreKeysIn(s.root, func(gameID string) ([]Mod, error) {
+		list, err := s.readLocked(gameID)
+		var mods []Mod
+		for _, group := range list {
+			mods = append(mods, group.Mods...)
+		}
+		return mods, err
+	})
+}
+
+// StoreKeysIn lists, per game, the store keys of the mods that game's file in dir (<game>.json) holds, each once;
+// mods reads one game's mods.
+func StoreKeysIn(dir string, mods func(gameID string) ([]Mod, error)) (map[string][]string, error) {
 	out := map[string][]string{}
-	files, err := os.ReadDir(s.root)
+	files, err := os.ReadDir(dir)
 	if errors.Is(err, os.ErrNotExist) {
 		return out, nil
 	}
@@ -268,36 +281,21 @@ func (s *Service) ReferencedStoreKeys() (map[string][]string, error) {
 		return nil, err
 	}
 	for _, file := range files {
-		if file.IsDir() || filepath.Ext(file.Name()) != ".json" {
+		gameID, ok := strings.CutSuffix(file.Name(), ".json")
+		if file.IsDir() || !ok || !gamepkg.Valid(gameID) {
 			continue
 		}
-		gameID := strings.TrimSuffix(file.Name(), filepath.Ext(file.Name()))
-		if !gamepkg.Valid(gameID) {
-			continue
-		}
-		list, err := s.readLocked(gameID)
+		list, err := mods(gameID)
 		if err != nil {
 			return nil, err
 		}
-		for _, group := range list {
-			for _, im := range group.Mods {
-				if im.EntryKey != "" {
-					out[gameID] = append(out[gameID], im.EntryKey)
-				}
+		seen := map[string]bool{}
+		for _, m := range list {
+			if m.EntryKey != "" && !seen[m.EntryKey] {
+				seen[m.EntryKey] = true
+				out[gameID] = append(out[gameID], m.EntryKey)
 			}
 		}
-	}
-	for gameID, keys := range out {
-		seen := map[string]struct{}{}
-		unique := make([]string, 0, len(keys))
-		for _, key := range keys {
-			if _, ok := seen[key]; ok {
-				continue
-			}
-			seen[key] = struct{}{}
-			unique = append(unique, key)
-		}
-		out[gameID] = unique
 	}
 	return out, nil
 }
