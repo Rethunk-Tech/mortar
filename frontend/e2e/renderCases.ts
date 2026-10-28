@@ -34,11 +34,6 @@ export function newCases(h: Helpers): Case[] {
   }
 
   /** Select the mod at row n and open its details panel. */
-  async function selectMod(page: Page, n: number) {
-    await view(page, 'List view')
-    await row(page, n).click()
-  }
-
   const shareThunderstore = async (page: Page) => {
     await tab(page, 'Home')
     await page.getByRole('button', { name: /^Share…/ }).click()
@@ -50,7 +45,22 @@ export function newCases(h: Helpers): Case[] {
     ...pausedDownloadCases(),
     {
       name: 'change-version',
-      setup: (p) => selectMod(p, 6),
+      // The first mod that offers other versions: a mod built in Develop or added from an archive has none.
+      setup: async (p) => {
+        await view(p, 'List view')
+        const rows = await p.locator('[data-mod-id]').count()
+        for (let n = 0; n < rows; n++) {
+          await row(p, n).click()
+          if (
+            await p
+              .getByRole('button', { name: /^Change version…/ })
+              .first()
+              .isVisible()
+          ) {
+            return
+          }
+        }
+      },
       run: (p) =>
         p
           .getByRole('button', { name: /^Change version…/ })
