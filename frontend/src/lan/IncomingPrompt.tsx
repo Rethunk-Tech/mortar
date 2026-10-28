@@ -10,7 +10,7 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { List as ListGames } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
 import type {
   Arrival,
@@ -197,7 +197,7 @@ function OfferButtons({
           </Button>
         </>
       ) : (
-        <Button variant="contained" onClick={() => onAccept()}>
+        <Button variant="contained" onClick={() => onAccept().catch(reportUnexpected)}>
           {t`Import as new profile`}
         </Button>
       )}
@@ -280,10 +280,13 @@ export function IncomingPrompt() {
   const incomingId = incoming?.id ?? ''
   const paired = incoming?.paired === true
 
+  // The profile the player chose to update, so a retry after a failed transfer updates it too.
+  const chosenId = useRef('')
   const accept = async (profileId = '') => {
     if (!incoming) {
       return
     }
+    chosenId.current = profileId
     setChoosing(false)
     setTransferError(null)
     if (incoming.paired) {
@@ -356,7 +359,10 @@ export function IncomingPrompt() {
             : t`The files will download from each mod's source.`}
         </Typography>
         {transferError ? (
-          <ErrorRetry error={transferError} onRetry={() => accept().catch(reportUnexpected)} />
+          <ErrorRetry
+            error={transferError}
+            onRetry={() => accept(chosenId.current).catch(reportUnexpected)}
+          />
         ) : null}
       </AppDialog>
       <CopyingDialog
