@@ -209,8 +209,8 @@ func vanillaInstall(t *testing.T) string {
 
 // install fetches the installer and runs it the way the loader service does.
 func install(g Loader, dir string, bundled loader.Bundled, progress func(loader.Step)) (string, error) {
-	zip := filepath.Join(os.TempDir(), "smapi-test-installer.zip")
-	defer func() { _ = os.Remove(zip) }()
+	// In the test's own cache folder, so the zip and its download sidecar go with the test.
+	zip := filepath.Join(g.CacheDir, "smapi-test-installer.zip")
 	if err := g.Fetch(context.Background(), components.GameInfo{}, "9.9.9", zip); err != nil {
 		return "", err
 	}
