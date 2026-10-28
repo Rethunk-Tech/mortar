@@ -126,8 +126,9 @@ func Stat(path string) (os.FileInfo, error) {
 	return in(path, func(r *os.Root, name string) (os.FileInfo, error) { return r.Stat(name) })
 }
 
-// IsDir is true when path exists and is a directory.
+// IsDir is true when path resolves to a directory. Like IsFile it follows a final symlink out of path's folder, so a
+// symlinked game, Steam or library folder still counts.
 func IsDir(path string) bool {
-	st, err := Stat(path)
+	st, err := os.Stat(path)
 	return err == nil && st.IsDir()
 }

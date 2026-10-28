@@ -589,7 +589,7 @@ func TestExtensionsStripLongestEndingFirst(t *testing.T) {
 	if HasExtension("readme.txt") || !HasExtension("a.tar.bz2") {
 		t.Error("HasExtension wrong")
 	}
-	if !strings.Contains(PickerPattern(), "*.tar.xz;") {
+	if !strings.Contains(PickerPattern(), "*.tar.xz;*.TAR.XZ;") {
 		t.Error(PickerPattern())
 	}
 }

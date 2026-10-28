@@ -3,6 +3,7 @@ package picker
 
 import (
 	"errors"
+	"os"
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -30,14 +31,14 @@ func (s *Service) PickArchives() ([]string, error) {
 
 // PickImage asks for one image and returns its path, or "" when the dialog is cancelled.
 func (s *Service) PickImage(title string) (string, error) {
-	return s.App.OpenFile(winhost.Dialog{Title: title, Filters: []winhost.Filter{{Name: i18n.T("Images (PNG, JPEG, WebP)"), Pattern: "*.png;*.jpg;*.jpeg;*.webp"}}})
+	return s.App.OpenFile(winhost.Dialog{Title: title, Filters: []winhost.Filter{{Name: i18n.T("Images (PNG, JPEG, WebP)"), Pattern: archive.CaseGlobs("*.png;*.jpg;*.jpeg;*.webp")}}})
 }
 
 // PickPackFile asks for an r2modman profile export (.r2z) or a Thunderstore modpack zip and returns its path, or "" when
 // the dialog is cancelled.
 func (s *Service) PickPackFile() (string, error) {
 	return s.App.OpenFile(winhost.Dialog{Title: i18n.T("Open a profile export"), Filters: []winhost.Filter{
-		{Name: i18n.T("{app} export (.r2z, .zip)", "app", "r2modman or Gale"), Pattern: "*.r2z;*.zip"},
+		{Name: i18n.T("{app} export (.r2z, .zip)", "app", "r2modman or Gale"), Pattern: archive.CaseGlobs("*.r2z;*.zip")},
 		{Name: i18n.T("All files"), Pattern: "*"},
 	}})
 }
@@ -48,13 +49,13 @@ const maxTextBytes = 1 << 20
 // ReadTextFile asks for a text file and returns what it holds, or "" when the dialog is cancelled.
 func (s *Service) ReadTextFile(title string) (string, error) {
 	path, err := s.App.OpenFile(winhost.Dialog{Title: title, Filters: []winhost.Filter{
-		{Name: i18n.T("Text files"), Pattern: "*.txt;*.md;*.json"},
+		{Name: i18n.T("Text files"), Pattern: archive.CaseGlobs("*.txt;*.md;*.json")},
 		{Name: i18n.T("All files"), Pattern: "*"},
 	}})
 	if err != nil || path == "" {
 		return "", err
 	}
-	f, err := fsx.Open(path)
+	f, err := os.Open(path) // follows a picked symlink, which fsx.Open refuses
 	if err != nil {
 		return "", err
 	}

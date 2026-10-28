@@ -23,3 +23,15 @@ func TestOpenRegularRefusesADirectory(t *testing.T) {
 	}
 	_ = f.Close()
 }
+
+func TestIsDirFollowsASymlinkOutOfItsFolder(t *testing.T) {
+	t.Parallel()
+	target := t.TempDir()
+	link := filepath.Join(t.TempDir(), "lib")
+	if err := os.Symlink(target, link); err != nil {
+		t.Skip(err)
+	}
+	if !IsDir(link) {
+		t.Fatal("symlinked folder not seen as a directory")
+	}
+}
