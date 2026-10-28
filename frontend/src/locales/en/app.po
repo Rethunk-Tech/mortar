@@ -7005,6 +7005,7 @@ msgstr "Open settings"
 msgid "Sign in to {source} to download these mods."
 msgstr "Sign in to {source} to download these mods."
 
+#: src/queue/QueueBody.tsx
 #: src/queue/store.ts
 msgid "Could not reach {source}"
 msgstr "Could not reach {source}"
