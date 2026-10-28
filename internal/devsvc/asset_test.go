@@ -291,3 +291,15 @@ func TestCreateAssetRefusesATeamTheRecordWouldRejectBeforeWritingAnything(t *tes
 		t.Errorf("a refused project left %v", entries)
 	}
 }
+
+func TestAssetParamsHaveGUIText(t *testing.T) {
+	src, err := os.ReadFile("../../frontend/src/develop/ownParams.ts")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, p := range assetParams() {
+		if !p.Own || !strings.Contains(string(src), "\n  "+p.ID+": {") {
+			t.Errorf("param %q is not marked own or has no entry in ownParams.ts", p.ID)
+		}
+	}
+}

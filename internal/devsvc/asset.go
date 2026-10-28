@@ -368,11 +368,15 @@ func (s *Service) AssetForm(gameID, id string) (Form, error) {
 	for _, r := range kind.Recommends {
 		recommends = append(recommends, components.DevRecommend{Package: r})
 	}
-	return Form{Name: kind.Label, Recommends: recommends, Parameters: []Param{
-		{ID: "description", Label: "Description", Description: "What the mod does, in one line.", Kind: "string", Required: true, MaxLength: maxDescription},
-		{ID: "modAuthor", Label: "Author", Description: "Who holds the copyright.", Kind: "string", Required: true, Remember: true},
-		{ID: "team", Label: "Thunderstore team", Description: "The team the mod is published under.", Kind: "string", Required: true, Remember: true, Pattern: teamPattern.String()},
-	}}, nil
+	return Form{Name: kind.Label, Recommends: recommends, Parameters: assetParams()}, nil
+}
+
+func assetParams() []Param {
+	return []Param{
+		{ID: "description", Label: "Description", Description: "What the mod does, in one line.", Kind: "string", Required: true, MaxLength: maxDescription, Own: true},
+		{ID: "modAuthor", Label: "Author", Description: "Who holds the copyright.", Kind: "string", Required: true, Remember: true, Own: true},
+		{ID: "team", Label: "Thunderstore team", Description: "The team the mod is published under.", Kind: "string", Required: true, Remember: true, Pattern: teamPattern.String(), Own: true},
+	}
 }
 
 // OpenAssetFolder shows the folder of an asset project that its loader reads, where the player adds files.

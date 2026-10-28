@@ -48,14 +48,16 @@ type Param struct {
 	Label       string `json:"label"`
 	Description string `json:"description"`
 	// Kind is "string", "bool" or "choice".
-	Kind      string   `json:"kind"`
-	Default   string   `json:"default"`
-	Required  bool     `json:"required"`
-	Multiple  bool     `json:"multiple"`
-	Choices   []Choice `json:"choices"`
-	Remember  bool     `json:"remember"`
-	Pattern   string   `json:"pattern"`
-	MaxLength int      `json:"maxLength"`
+	Kind     string   `json:"kind"`
+	Default  string   `json:"default"`
+	Required bool     `json:"required"`
+	Multiple bool     `json:"multiple"`
+	Choices  []Choice `json:"choices"`
+	Remember bool     `json:"remember"`
+	// Own marks a question Mortar adds itself, whose Label and Description are English fallbacks the GUI translates by ID.
+	Own       bool   `json:"own"`
+	Pattern   string `json:"pattern"`
+	MaxLength int    `json:"maxLength"`
 	// Requires names other parameters' values this one needs when it is on (a bool set true, or any value given).
 	Requires map[string]string `json:"requires"`
 	fill     string

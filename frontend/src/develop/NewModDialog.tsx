@@ -56,6 +56,7 @@ import {
 } from './draft.ts'
 import { KindStep } from './KindStep.tsx'
 import { LicenseChart } from './LicenseChart.tsx'
+import { localizedParam } from './ownParams.ts'
 import { RepositoryChoice } from './RepositoryChoice.tsx'
 import { sdkSatisfies } from './sdk.ts'
 
@@ -228,7 +229,7 @@ function Params({
   return params.map((p) => (
     <ParamField
       key={p.id}
-      param={p}
+      param={localizedParam(p)}
       value={draft.values[p.id] ?? ''}
       set={(v) => set({ values: { ...draft.values, [p.id]: v } })}
       blocked={p.kind === 'bool' ? requirementIssue(p, draft.values, all) : ''}

@@ -12,6 +12,7 @@ import {
 } from './draft.ts'
 
 const param = {
+  own: false,
   label: 'Param',
   kind: 'string',
   default: '',
