@@ -2,14 +2,10 @@ package launchsvc
 
 import (
 	"context"
-	"errors"
-	"io/fs"
-	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
@@ -31,16 +27,7 @@ func (s *Service) writeHiddenLogSources(ctx context.Context, gameID, dir string)
 		}
 	}
 	path := filepath.Join(dir, filepath.FromSlash(hiddenLogSourcesFile))
-	if b.Len() == 0 {
-		if err := fsx.Remove(path); err != nil && !errors.Is(err, fs.ErrNotExist) {
-			return err
-		}
-		return nil
-	}
-	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-		return err
-	}
-	return datadir.WriteFile(path, []byte(b.String()), 0o600)
+	return datadir.WriteOrRemove(path, []byte(b.String()))
 }
 
 // hideModMessages gives the log parser the game's hidden mod messages (sources "mod:<Mod>"), which no bridge drops.

@@ -3,8 +3,6 @@ package overlay
 
 import (
 	_ "embed"
-	"errors"
-	"io/fs"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -12,7 +10,6 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 //go:embed overlay.html
@@ -73,15 +70,9 @@ const ProfileConfigFile = "startup/overlay.json"
 func WriteProfileConfig(dir string, cfg BridgeConfig) error {
 	path := filepath.Join(dir, filepath.FromSlash(ProfileConfigFile))
 	if !cfg.OverlayEnabled {
-		if err := fsx.Remove(path); err != nil && !errors.Is(err, fs.ErrNotExist) {
-			return err
-		}
-		return nil
+		return datadir.WriteOrRemove(path, nil)
 	}
-	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-		return err
-	}
-	return datadir.WriteJSON(path, cfg)
+	return datadir.WriteJSONIn(filepath.Dir(path), filepath.Base(path), cfg)
 }
 
 // ApplyToMods writes config.json into every MortarSmapiBridge folder under modsDir.

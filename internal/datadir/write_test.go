@@ -92,3 +92,22 @@ func TestReadJournalSkipsMissingAndBusyAndReadsTheRest(t *testing.T) {
 		t.Fatalf("read: %v, %v, %d", found, err, v.N)
 	}
 }
+
+func TestWriteOrRemoveWritesThenRemoves(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "sub", "f")
+	if err := WriteOrRemove(path, []byte("x")); err != nil {
+		t.Fatal(err)
+	}
+	if b, err := fsx.ReadFile(path); err != nil || string(b) != "x" {
+		t.Fatalf("written = %q, %v", b, err)
+	}
+	if err := WriteOrRemove(path, nil); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(path); !os.IsNotExist(err) {
+		t.Fatalf("not removed: %v", err)
+	}
+	if err := WriteOrRemove(path, nil); err != nil {
+		t.Fatalf("removing a missing file: %v", err)
+	}
+}

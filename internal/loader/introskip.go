@@ -1,13 +1,9 @@
 package loader
 
 import (
-	"errors"
-	"io/fs"
-	"os"
 	"path/filepath"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // IntroSkip is how far a launch takes the game past its start-up on its own.
@@ -43,14 +39,5 @@ const IntroSkipFile = "startup/skip-intro"
 // WriteIntroSkip writes a bridge's intro request for the profile in dir, or removes it for IntroPlay.
 func WriteIntroSkip(dir string, skip IntroSkip) error {
 	path := filepath.Join(dir, filepath.FromSlash(IntroSkipFile))
-	if skip == IntroPlay {
-		if err := fsx.Remove(path); err != nil && !errors.Is(err, fs.ErrNotExist) {
-			return err
-		}
-		return nil
-	}
-	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-		return err
-	}
-	return datadir.WriteFile(path, []byte(skip), 0o600)
+	return datadir.WriteOrRemove(path, []byte(skip))
 }

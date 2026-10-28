@@ -43,6 +43,20 @@ func WriteJSONIn(dir, name string, v any) error {
 	return WriteJSON(filepath.Join(dir, name), v)
 }
 
+// WriteOrRemove writes data to path, making its folder, or removes path when data is empty.
+func WriteOrRemove(path string, data []byte) error {
+	if len(data) == 0 {
+		if err := fsx.Remove(path); err != nil && !errors.Is(err, os.ErrNotExist) {
+			return err
+		}
+		return nil
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		return err
+	}
+	return WriteFile(path, data, 0o600)
+}
+
 // ReadJournal reads the JSON journal at path into v unless the file is missing or busy reports that it must be left
 // alone for now; found says whether v was read.
 func ReadJournal(path string, busy func() bool, v any) (found bool, err error) {
