@@ -1245,7 +1245,7 @@ func decodeTMXLayer(layer tmxLayer) (decodedMapLayer, bool) {
 	out := decodedMapLayer{}
 	if len(layer.Data.Chunks) > 0 {
 		for _, chunk := range layer.Data.Chunks {
-			values, ok := decodeTMXValues(chunk.Text, layer.Data.Encoding, layer.Data.Compression)
+			values, ok := decodeTMXValues(chunk.Text, layer.Data.Encoding, layer.Data.Compression, chunk.Width, chunk.Height)
 			if len(chunk.Tiles) > 0 {
 				values = make([]int, len(chunk.Tiles))
 				for i, tile := range chunk.Tiles {
@@ -1260,7 +1260,7 @@ func decodeTMXLayer(layer tmxLayer) (decodedMapLayer, bool) {
 		}
 		return out, true
 	}
-	values, ok := decodeTMXValues(layer.Data.Text, layer.Data.Encoding, layer.Data.Compression)
+	values, ok := decodeTMXValues(layer.Data.Text, layer.Data.Encoding, layer.Data.Compression, layer.Width, layer.Height)
 	if len(layer.Data.Tiles) > 0 {
 		values = make([]int, len(layer.Data.Tiles))
 		for i, tile := range layer.Data.Tiles {
@@ -1275,7 +1275,10 @@ func decodeTMXLayer(layer tmxLayer) (decodedMapLayer, bool) {
 	return out, true
 }
 
-func decodeTMXValues(text, encoding, compression string) ([]int, bool) {
+// maxTMXTiles bounds one layer or chunk's declared tile count, which also bounds what its compressed data may inflate to.
+const maxTMXTiles = 4_000_000
+
+func decodeTMXValues(text, encoding, compression string, width, height int) ([]int, bool) {
 	text = strings.TrimSpace(text)
 	if strings.EqualFold(encoding, "csv") {
 		if text == "" {
@@ -1302,6 +1305,10 @@ func decodeTMXValues(text, encoding, compression string) ([]int, bool) {
 	if err != nil {
 		return nil, false
 	}
+	if width < 0 || height < 0 || int64(width)*int64(height) > maxTMXTiles {
+		return nil, false
+	}
+	limit := int64(width) * int64(height) * 4
 	var data []byte
 	switch strings.ToLower(strings.TrimSpace(compression)) {
 	case "":
@@ -1311,7 +1318,7 @@ func decodeTMXValues(text, encoding, compression string) ([]int, bool) {
 		if err != nil {
 			return nil, false
 		}
-		data, err = io.ReadAll(reader)
+		data, err = fsx.ReadCapped(reader, limit)
 		_ = reader.Close()
 		if err != nil {
 			return nil, false
@@ -1321,7 +1328,7 @@ func decodeTMXValues(text, encoding, compression string) ([]int, bool) {
 		if err != nil {
 			return nil, false
 		}
-		data, err = io.ReadAll(reader)
+		data, err = fsx.ReadCapped(reader, limit)
 		_ = reader.Close()
 		if err != nil {
 			return nil, false

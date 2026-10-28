@@ -3127,9 +3127,12 @@ func readPackPath(root, rel string) ([]byte, bool) {
 		return nil, false
 	}
 	defer func() { _ = file.Close() }()
-	raw, err := io.ReadAll(file)
+	raw, err := fsx.ReadCapped(file, maxPackFileBytes)
 	return raw, err == nil
 }
+
+// maxPackFileBytes bounds one file read from a content pack.
+const maxPackFileBytes = 256 << 20
 
 func imageFileDigest(root, rel string, image bool) string {
 	if !image {
