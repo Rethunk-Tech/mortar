@@ -1,12 +1,14 @@
 // Every release's player-facing notes (build/release/notes/v*.md), newest first, dated from the AppStream metainfo's
 // release list so no git history is needed to build the changelog, the news posts or the feeds.
 import { readdirSync, readFileSync } from 'node:fs'
-import { escapeHTML, repo } from './site.ts'
+import { escapeHTML, markdown, repo } from './site.ts'
 
 const NOTES = repo('build/release/notes')
 const METAINFO = repo('build/linux/tech.rethunk.Mortar.metainfo.xml')
-const NOTES_HEADING = /^(##|###) (.+)$/
-const INLINE_CODE = /`([^`]+)`/g
+const GROUP_START = /^## /m
+const AREA_HEADING = /^### /gm
+const HEADING_ID = /(<h4) id="[^"]*"/g
+const LIST_ITEM = /^- /gm
 const RELEASE_VERSION = /<release version="(\d+\.\d+\.\d+)" date=/g
 const NOTES_FILE = /^v(\d+\.\d+\.\d+)\.md$/
 
@@ -22,56 +24,31 @@ function byVersionDesc(a: string, b: string): number {
   return 0
 }
 
-/** A notes file's "## Group", "### Area" and "- line" lines as HTML; New shows in full, the other groups fold behind
- * their name and count. */
+/** A notes file as HTML, one block per "## Group"; New shows in full, the other groups fold behind their name and
+ * count. */
 function notesHtml(md: string): string {
-  const groups: { name: string; lines: string[]; count: number }[] = []
-  let open = false
-  const close = () => {
-    const g = groups.at(-1)
-    if (open && g) {
-      g.lines.push('</ul>')
-      open = false
-    }
-  }
-  for (const line of md.split('\n')) {
-    const heading = NOTES_HEADING.exec(line)
-    if (heading?.[1] === '##') {
-      close()
-      groups.push({ name: heading[2] ?? '', lines: [], count: 0 })
-      continue
-    }
-    if (groups.length === 0) {
-      groups.push({ name: '', lines: [], count: 0 })
-    }
-    const g = groups.at(-1)
-    if (!g) {
-      continue
-    }
-    if (heading) {
-      close()
-      g.lines.push(`<h4>${escapeHTML(heading[2] ?? '')}</h4>`)
-    } else if (line.startsWith('- ')) {
-      if (!open) {
-        g.lines.push('<ul>')
-        open = true
+  return md
+    .split(GROUP_START)
+    .flatMap((part, i) => {
+      const [first = '', ...rest] = part.split('\n')
+      const name = i === 0 ? '' : first.trim()
+      const body = i === 0 ? part : rest.join('\n')
+      // Several releases share a page, so the area headings must not carry the ids markdown() gives them.
+      const html = markdown(body.replace(AREA_HEADING, '#### ')).replace(HEADING_ID, '$1')
+      if (name === '') {
+        return html ? [html] : []
       }
-      g.count++
-      g.lines.push(`<li>${escapeHTML(line.slice(2)).replace(INLINE_CODE, '<code>$1</code>')}</li>`)
-    }
-  }
-  close()
-  const out = groups.flatMap((g) => {
-    if (g.name === '' || g.name === 'New') {
-      return [...(g.name ? [`<h3>${escapeHTML(g.name)}</h3>`] : []), ...g.lines]
-    }
-    return [
-      `<details><summary><h3>${escapeHTML(g.name)} (${g.count})</h3></summary>`,
-      ...g.lines,
-      '</details>',
-    ]
-  })
-  return out.map((l) => `        ${l}`).join('\n')
+      if (name === 'New') {
+        return [`<h3>${escapeHTML(name)}</h3>`, html]
+      }
+      const count = body.match(LIST_ITEM)?.length ?? 0
+      return [
+        `<details><summary><h3>${escapeHTML(name)} (${count})</h3></summary>`,
+        html,
+        '</details>',
+      ]
+    })
+    .join('\n')
 }
 
 export interface Release {
