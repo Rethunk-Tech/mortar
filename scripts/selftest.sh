@@ -1098,24 +1098,11 @@ PYEOF
       failures+=("r2 import failed: $(head -c 300 "$ROOT/r2-import.json")")
     fi
     echo "imported $code into $r2_profile; waiting for its downloads"
-    local pending=1
-    deadline=$((SECONDS + 600))
-    while [ -n "$r2_profile" ] && [ "$SECONDS" -lt "$deadline" ]; do
-      cli queue --json >"$ROOT/r2-queue.json"
-      pending=$(
-        python3 - "$ROOT/r2-queue.json" "$r2_profile" 2>"$ROOT/r2-queue-open.txt" <<'PY'
-import json, sys
-items = [i for i in json.load(open(sys.argv[1]))["items"] if i["profileId"] == sys.argv[2]]
-print(sum(1 for i in items if i["state"] not in ("done", "failed", "skipped", "cancelled")))
-for i in items:
-    if i["state"] != "done":
-        print(f'{i["name"]} {i["version"]}: {i["state"]} {i["error"]}', file=sys.stderr)
-PY
-      )
-      [ "$pending" = 0 ] && break
-      sleep 2
-    done
-    [ "$pending" = 0 ] || failures+=("r2 downloads never finished: $(head -c 300 "$ROOT/r2-queue-open.txt")")
+    local r2_open=""
+    [ -n "$r2_profile" ] && r2_open=$(mx_wait_queue "$r2_profile" r2-)
+    if [ -z "$r2_profile" ] || [[ $r2_open == "downloads still open"* ]]; then
+      failures+=("r2 downloads never finished: $(head -c 300 "$ROOT/r2-queue-open.txt")")
+    fi
     [ -s "$ROOT/r2-queue-open.txt" ] && failures+=("r2 downloads failed: $(head -c 600 "$ROOT/r2-queue-open.txt")")
     if [ -n "$r2_profile" ]; then
       local off

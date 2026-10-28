@@ -70,13 +70,14 @@ mx_q() { python3 -c 'import json,sys; print(json.dumps(sys.argv[1]))' "$1"; }
 mx_profile() { cli profile create lethal-company "$1" | cut -f1; }
 mx_dir() { echo "$mx_data/profiles/lethal-company/$1"; }
 
-# mx_wait_queue PROFILE waits for the profile's downloads; it prints the ones that did not finish.
+# mx_wait_queue PROFILE [PREFIX] waits for the profile's downloads; it prints the ones that did not finish, after a
+# "downloads still open" line when some never did. PREFIX names its files in $ROOT (PREFIXqueue-open.txt).
 mx_wait_queue() {
-  local deadline=$((SECONDS + 600)) pending=1
+  local deadline=$((SECONDS + 600)) pending=1 queue="$ROOT/${2:-}queue.json" open="$ROOT/${2:-}queue-open.txt"
   while [ "$SECONDS" -lt "$deadline" ]; do
-    cli queue --json >"$ROOT/queue.json"
+    cli queue --json >"$queue"
     pending=$(
-      python3 - "$ROOT/queue.json" "$1" 2>"$ROOT/queue-open.txt" <<'PY'
+      python3 - "$queue" "$1" 2>"$open" <<'PY'
 import json, sys
 items = [i for i in json.load(open(sys.argv[1]))["items"] if i["profileId"] == sys.argv[2]]
 print(sum(1 for i in items if i["state"] not in ("done", "failed", "skipped", "cancelled")))
@@ -89,7 +90,7 @@ PY
     sleep 2
   done
   [ "$pending" = 0 ] || echo "downloads still open after 600s"
-  cat "$ROOT/queue-open.txt"
+  cat "$open"
 }
 
 # mx_game_pids prints the pids of the game's own executable in the sandbox prefix, each checked through its environment.
