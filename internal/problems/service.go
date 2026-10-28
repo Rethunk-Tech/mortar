@@ -153,6 +153,9 @@ func platform() string {
 func (s *Service) Environment(id string) Environment {
 	env := Environment{Platform: platform(), VersionScheme: game.VersionScheme(id)}
 	env.Nexus, _ = game.NexusTitle(id)
+	if s.DevPackages != nil {
+		env.DevPackages = s.DevPackages(id)
+	}
 	if game.Find(id) == nil {
 		return env
 	}
@@ -253,7 +256,7 @@ func nexusDomain(gameID string) string {
 
 func fingerprint(env Environment, mods []framework.Mod, runID string) string {
 	var b strings.Builder
-	b.WriteString(env.GameVersion + "|" + env.APIVersion + "|run:" + runID)
+	b.WriteString(env.GameVersion + "|" + env.APIVersion + "|run:" + runID + "|dev:" + strings.Join(env.DevPackages, ","))
 	for _, m := range mods {
 		b.WriteString("\n" + m.Key + "|" + string(m.ModID()) + "|" + m.Version + "|" + m.Name + "|ch:" + m.UpdateChannel)
 		b.WriteString("|desc:" + m.Description)

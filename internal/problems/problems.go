@@ -47,6 +47,8 @@ type Environment struct {
 	// DropIns maps a Thunderstore package (lowercased "Namespace-Name") to the one the known-broken list says
 	// replaces it outright: a dependency on the first is met by the second.
 	DropIns map[string]string
+	// DevPackages are the Thunderstore packages the player develops for the game, never offered for cleanup.
+	DevPackages []string
 }
 
 // SiteVSModDB is a Ref to a mod on the Vintage Story Mod DB.
@@ -298,7 +300,7 @@ func Check(ctx context.Context, m Meta, env Environment, mods []framework.Mod, r
 	otherStart := time.Now()
 	r.Duplicates = duplicatesWithNexus(ctx, m, env.VersionScheme, enabled)
 	r.Settings = found.Settings
-	r.Cleanup = cleanupHints(mods, found.Cleanup, append(found.Mentioned, listedNeeded...))
+	r.Cleanup = cleanupHints(mods, found.Cleanup, append(found.Mentioned, listedNeeded...), env.DevPackages)
 	r.Supporting = found.Supporting
 	broken, unknown := brokenMods(ctx, m, env, enabled)
 	broken = append(broken, dependencyCycles(enabled)...)

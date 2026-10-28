@@ -51,13 +51,13 @@ func TestCleanupHintsFindsUnusedFrameworkNeededOnlyByDisabledMod(t *testing.T) {
 		},
 	}
 
-	got := cleanupHints(mods, nil, nil)
+	got := cleanupHints(mods, nil, nil, nil)
 	if len(got) != 2 || got[0].Key != "content-framework" || got[1].Key != "spacecore" {
 		t.Fatalf("cleanupHints() = %#v, want both unused frameworks", got)
 	}
 	// A framework the player builds in a Develop project stays, even when only switched-off mods need it.
 	mods[0].SourceFolder = "/projects/SpaceCore/artifacts/bin/SpaceCore/debug"
-	if got := cleanupHints(mods, nil, nil); len(got) != 1 || got[0].Key != "content-framework" {
+	if got := cleanupHints(mods, nil, nil, nil); len(got) != 1 || got[0].Key != "content-framework" {
 		t.Fatalf("cleanupHints() = %#v, want the developed framework kept", got)
 	}
 }
@@ -72,13 +72,14 @@ func TestCleanupHintsIgnoresOptionalDependents(t *testing.T) {
 		{Key: "a", Enabled: true, Manifest: worldMaps},
 		{Key: "b", Enabled: false, Manifest: earthyMaps},
 	}
-	if got := cleanupHints(mods, nil, nil); len(got) != 0 {
+	if got := cleanupHints(mods, nil, nil, nil); len(got) != 0 {
 		t.Fatalf("cleanupHints() = %#v, want none", got)
 	}
 }
 
 // An implicit mod nothing switched on needs is offered for removal; one a switched-on mod requires or lists as optional,
-// one switched-on content names in a condition, an explicit one, and an implicit content pack are not.
+// one switched-on content names in a condition, an explicit one, an implicit content pack and one the player develops
+// (a build of their folder, or a package they publish) are not.
 func TestCleanupHintsFindsOrphanedImplicitMods(t *testing.T) {
 	lib := func(id string, implicit bool) framework.Mod {
 		m := framework.Mod{Key: id, Enabled: true, Implicit: implicit}
@@ -89,7 +90,11 @@ func TestCleanupHintsFindsOrphanedImplicitMods(t *testing.T) {
 	user.Dependencies = []mod.Dependency{{UniqueID: "Lib.Used", Required: true}, {UniqueID: "Lib.Optional"}}
 	pack := lib("Lib.Tiles", true)
 	pack.ContentPackFor = "Pathoschild.ContentPatcher"
-	got := cleanupHints([]framework.Mod{user, lib("Lib.Used", true), lib("Lib.Optional", true), lib("Lib.Named", true), lib("Lib.Orphan", true), lib("Me.Chosen", false), pack}, nil, []string{"smapi:lib.named"})
+	built := lib("Me.Built", true)
+	built.SourceFolder = "/projects/Built/bin/debug"
+	published := lib("Me.Published", true)
+	published.SourceName = "Me-Published"
+	got := cleanupHints([]framework.Mod{user, lib("Lib.Used", true), lib("Lib.Optional", true), lib("Lib.Named", true), lib("Lib.Orphan", true), lib("Me.Chosen", false), pack, built, published}, nil, []string{"smapi:lib.named"}, []string{"me-published"})
 	if len(got) != 1 || got[0].Key != "Lib.Orphan" || got[0].Reason != orphanReason {
 		t.Fatalf("cleanup = %+v", got)
 	}

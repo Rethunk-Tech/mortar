@@ -13,8 +13,9 @@ const orphanReason = "Brought in for other mods, and none that is switched on ne
 
 // cleanupHints lists framework mods only disabled mods need, implicit mods nothing switched on needs (a content pack
 // is left to its framework's own check, since maps use tilesheet packs without naming them), and what the frameworks
-// found unused. A mod switched-on content names in its conditions is in use too.
-func cleanupHints(mods []framework.Mod, found []framework.Cleanup, mentioned []string) []framework.Cleanup {
+// found unused. A mod switched-on content names in its conditions is in use too. A mod the player develops (built from
+// their own folder, or a package they publish) is theirs to keep, whatever needs it.
+func cleanupHints(mods []framework.Mod, found []framework.Cleanup, mentioned, developed []string) []framework.Cleanup {
 	enabledNeeds := map[string]bool{}
 	for _, id := range mentioned {
 		enabledNeeds[id] = true
@@ -41,15 +42,14 @@ func cleanupHints(mods []framework.Mod, found []framework.Cleanup, mentioned []s
 	out := make([]framework.Cleanup, 0)
 	for _, im := range mods {
 		id := im.ModID().Fold()
-		// A mod built from the player's own folder is theirs to keep, whatever needs it.
-		if id == "" || im.SourceFolder != "" || im.ContentPackFor != "" || frameworkIDs[id] || enabledNeeds[id] || !disabledDependents[id] {
+		if id == "" || isDeveloped(im, developed) || im.ContentPackFor != "" || frameworkIDs[id] || enabledNeeds[id] || !disabledDependents[id] {
 			continue
 		}
 		out = append(out, framework.Cleanup{Key: im.Key, ID: im.ModID(), Name: im.Name})
 	}
 	for _, im := range mods {
 		id := im.ModID().Fold()
-		if !im.Implicit || id == "" || im.ContentPackFor != "" || im.SourceKind == "smapi" || im.SourceKind == "mortar" ||
+		if !im.Implicit || id == "" || isDeveloped(im, developed) || im.ContentPackFor != "" || im.SourceKind == "smapi" || im.SourceKind == "mortar" ||
 			frameworkIDs[id] || enabledNeeds[id] || disabledDependents[id] {
 			continue
 		}
@@ -75,4 +75,9 @@ func recordCleanupDependency(im framework.Mod, uniqueID mod.ID, enabledNeeds, di
 	} else {
 		disabledDependents[id] = true
 	}
+}
+
+func isDeveloped(im framework.Mod, developed []string) bool {
+	return im.SourceFolder != "" ||
+		(im.SourceName != "" && slices.ContainsFunc(developed, func(p string) bool { return strings.EqualFold(p, im.SourceName) }))
 }
