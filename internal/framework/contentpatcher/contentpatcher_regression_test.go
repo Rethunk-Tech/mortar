@@ -361,7 +361,7 @@ func TestOverlayImageUsesOpaqueCells(t *testing.T) {
 	testfs.WriteFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
 	testfs.WriteFile(t, root, "content.json", `{"Changes":[{"Action":"EditImage","Target":"Maps/Test","FromFile":"patch.png","ToArea":{"X":0,"Y":0,"Width":32,"Height":16},"PatchMode":"Overlay"}]}`)
 	writePNG(t, filepath.Join(root, "patch.png"), opaque)
-	pack := readContentPack(packs.FromDisk(framework.Mod{Enabled: true, Folder: root}))
+	pack := readContentPack(packs.FromDisk(framework.Mod{Enabled: true, Folder: root}), false)
 	other := cpPatch{image: true, shapes: []cpShape{{kind: 'r', x: 16, y: 0, w: 16, h: 16}}}
 	if clash, _ := editsClash(pack.patches, []cpPatch{other}); clash {
 		t.Fatal("transparent overlay cells must not clash")
@@ -369,7 +369,7 @@ func TestOverlayImageUsesOpaqueCells(t *testing.T) {
 	opaque.SetNRGBA(16, 0, color.NRGBA{A: 255})
 	writePNG(t, filepath.Join(root, "patch.png"), opaque)
 	packCache.Delete(filepath.Clean(root))
-	pack = readContentPack(packs.FromDisk(framework.Mod{Enabled: true, Folder: root}))
+	pack = readContentPack(packs.FromDisk(framework.Mod{Enabled: true, Folder: root}), false)
 	if clash, _ := editsClash(pack.patches, []cpPatch{other}); !clash {
 		t.Fatal("opaque overlay cell must clash")
 	}

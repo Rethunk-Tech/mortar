@@ -32,7 +32,7 @@ func TestContentPackDiskCache(t *testing.T) {
 	t.Cleanup(resetContentPackCaches)
 
 	im, extra, pngPath := diskCachePack(t)
-	first := readContentPack(im)
+	first := readContentPack(im, false)
 	if len(first.patches) != 2 || first.patches[0].kind != "load" || first.patches[1].kind != "edit" {
 		t.Fatalf("initial pack = %#v", first.patches)
 	}
@@ -54,7 +54,7 @@ func TestContentPackDiskCache(t *testing.T) {
 	}
 
 	resetContentPackCaches()
-	hit := readContentPack(im)
+	hit := readContentPack(im, false)
 	if len(hit.patches) != len(first.patches) || hit.patches[1].shapes[0].cells != first.patches[1].shapes[0].cells {
 		t.Fatalf("disk cache hit = %#v, want %#v", hit.patches, first.patches)
 	}
@@ -67,7 +67,7 @@ func TestContentPackDiskCache(t *testing.T) {
 	}
 	touchFile(t, extra)
 	resetContentPackCaches()
-	invalidatedJSON := readContentPack(im)
+	invalidatedJSON := readContentPack(im, false)
 	if len(invalidatedJSON.patches) != 1 || invalidatedJSON.patches[0].kind != "edit" {
 		t.Fatalf("included JSON invalidation = %#v", invalidatedJSON.patches)
 	}
@@ -78,7 +78,7 @@ func TestContentPackDiskCache(t *testing.T) {
 	writePNG(t, pngPath, img)
 	touchFile(t, pngPath)
 	resetContentPackCaches()
-	invalidatedPNG := readContentPack(im)
+	invalidatedPNG := readContentPack(im, false)
 	if got := invalidatedPNG.patches[0].shapes[0].cells; got != ";1,0" {
 		t.Fatalf("PNG invalidation cells = %q, want %q", got, ";1,0")
 	}
@@ -97,7 +97,7 @@ func TestContentPackDiskCache(t *testing.T) {
 		t.Fatal(err)
 	}
 	resetContentPackCaches()
-	versionReset := readContentPack(im)
+	versionReset := readContentPack(im, false)
 	if len(versionReset.patches) != 1 || versionReset.patches[0].kind != "edit" {
 		t.Fatalf("parser version did not invalidate cache: %#v", versionReset.patches)
 	}
@@ -150,12 +150,12 @@ func TestReadContentPackConcurrent(t *testing.T) {
 		im.Key = im.UniqueID
 		mods[i] = im
 	}
-	preloadContentPacks(mods)
+	preloadContentPacks(mods, false)
 	var wg sync.WaitGroup
 	got := make([]cachedPack, len(mods))
 	for i, im := range mods {
 		wg.Go(func() {
-			got[i] = readContentPack(im)
+			got[i] = readContentPack(im, false)
 		})
 	}
 	wg.Wait()
@@ -244,7 +244,7 @@ func TestPNGAlphaMemoIsBitMaskAndDroppedAfterPack(t *testing.T) {
 		t.Fatalf("mask bytes = %d, want %d (byte-per-pixel would be %d)", len(pix.a), want, 32*16)
 	}
 
-	readContentPack(im)
+	readContentPack(im, false)
 	n := 0
 	pngAlphaCache.Range(func(_, _ any) bool {
 		n++
@@ -263,7 +263,7 @@ func TestPackMemoryCacheDropsFoldersNotInCurrentMods(t *testing.T) {
 	t.Cleanup(resetContentPackCaches)
 
 	im, _, _ := diskCachePack(t)
-	_ = readContentPack(im)
+	_ = readContentPack(im, false)
 	if _, ok := packCache.Load(filepath.Clean(im.Folder)); !ok {
 		t.Fatal("pack was not memoized")
 	}
@@ -469,16 +469,16 @@ func TestPackDiskCacheKeepsEveryPackItRead(t *testing.T) {
 	}
 
 	resetContentPackCaches()
-	_ = readContentPack(on)
+	_ = readContentPack(on, false)
 	other, _, _ := diskCachePack(t)
-	_ = readContentPack(other)
+	_ = readContentPack(other, false)
 	flushPackDiskCache([]framework.Mod{other})
-	_ = readContentPack(other)
+	_ = readContentPack(other, false)
 	touchFile(t, filepath.Join(other.Folder, "content.json"))
-	_ = readContentPack(other)
+	_ = readContentPack(other, false)
 	flushPackDiskCache([]framework.Mod{other})
 	resetContentPackCaches()
-	if got := readContentPack(on); len(got.patches) != 2 {
+	if got := readContentPack(on, false); len(got.patches) != 2 {
 		t.Fatalf("pack of the earlier check after two writes for other mods: %d patches, want 2", len(got.patches))
 	}
 }
@@ -530,7 +530,7 @@ func TestPackDiskCacheSurvivesAMovedDataFolder(t *testing.T) {
 		t.Fatal(err)
 	}
 	im.Folder = inside
-	readContentPack(im)
+	readContentPack(im, false)
 	flushPackDiskCache([]framework.Mod{im})
 
 	newHome := t.TempDir()
@@ -553,7 +553,7 @@ func TestPackDiskCacheSurvivesAMovedDataFolder(t *testing.T) {
 		t.Fatal(err)
 	}
 	resetContentPackCaches()
-	if got := readContentPack(im); len(got.patches) != 2 {
+	if got := readContentPack(im, false); len(got.patches) != 2 {
 		t.Fatalf("a moved data folder missed the pack cache: %d patches", len(got.patches))
 	}
 }

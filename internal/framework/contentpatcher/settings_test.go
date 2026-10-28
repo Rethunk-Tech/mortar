@@ -146,5 +146,5 @@ func TestConflictOffersTheSettingThatRemovesOnePack(t *testing.T) {
 }
 
 func settingsOf(mods []framework.Mod) []framework.SettingHint {
-	return compatibilitySettings(mods, nil)
+	return compatibilitySettings(mods, nil, false)
 }

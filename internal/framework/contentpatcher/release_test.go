@@ -17,7 +17,7 @@ func TestIdlePacksAreReleasedAndReadBackFromDisk(t *testing.T) {
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
 	im, _, _ := diskCachePack(t)
-	first := readContentPack(im)
+	first := readContentPack(im, false)
 	packUse.Lock()
 	gen := packUse.gen
 	packUse.Unlock()
@@ -39,7 +39,7 @@ func TestIdlePacksAreReleasedAndReadBackFromDisk(t *testing.T) {
 	if collections() == before {
 		t.Fatal("the released packs were left uncollected, so their pages stay with the process")
 	}
-	again := readContentPack(im)
+	again := readContentPack(im, false)
 	if len(again.patches) != len(first.patches) || again.fingerprint != first.fingerprint {
 		t.Fatalf("pack read back = %#v, want %#v", again.patches, first.patches)
 	}
@@ -61,7 +61,7 @@ func TestPacksLeaveMemoryWhenTheLastCheckEnds(t *testing.T) {
 	t.Cleanup(func() { packGrace = 30 * time.Second })
 	im, _, _ := diskCachePack(t)
 	end := holdPacks()
-	readContentPack(im)
+	readContentPack(im, false)
 	flushPackDiskCache([]framework.Mod{im})
 	end()
 	if _, held := packCache.Load(cleanFolder(im)); held {
@@ -86,7 +86,7 @@ func TestPacksStayForTheGraceAfterACheck(t *testing.T) {
 	t.Cleanup(func() { packGrace = 30 * time.Second })
 	im, _, _ := diskCachePack(t)
 	end := holdPacks()
-	readContentPack(im)
+	readContentPack(im, false)
 	flushPackDiskCache([]framework.Mod{im})
 	packUse.Lock()
 	ended := packUse.gen

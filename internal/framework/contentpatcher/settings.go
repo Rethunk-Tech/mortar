@@ -24,7 +24,7 @@ type settingGroup struct {
 	active    bool
 }
 
-func compatibilitySettings(mods []framework.Mod, run *partsRun) []framework.SettingHint {
+func compatibilitySettings(mods []framework.Mod, run *partsRun, skip bool) []framework.SettingHint {
 	present := map[string]bool{}
 	byID := map[string]framework.Mod{}
 	for _, im := range mods {
@@ -48,7 +48,7 @@ func compatibilitySettings(mods []framework.Mod, run *partsRun) []framework.Sett
 		if !packMod.Enabled {
 			continue
 		}
-		pack := readContentPack(packMod)
+		pack := readContentPack(packMod, skip)
 		if len(pack.schema) == 0 {
 			continue
 		}
@@ -64,7 +64,7 @@ func compatibilitySettings(mods []framework.Mod, run *partsRun) []framework.Sett
 				fields = append(fields, fmt.Sprintf("r%d %q %q", i, im.ModID(), im.Name))
 			}
 		}
-		e := run.part(partKey(fields...), stable, func() partEntry {
+		e := run.part(partKey(skip, fields...), stable, func() partEntry {
 			return partEntry{Settings: packSettings(packMod, pack, seen, byID, enabled)}
 		})
 		out = append(out, e.Settings...)

@@ -139,5 +139,5 @@ func TestShadowedPacks(t *testing.T) {
 }
 
 func conflictScanOf(mods []framework.Mod) ([]framework.AssetConflict, []framework.SettingHint, []framework.Redundant) {
-	return assetConflictScan(mods, nil)
+	return assetConflictScan(mods, nil, false)
 }

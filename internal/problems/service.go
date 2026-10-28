@@ -428,8 +428,7 @@ func (s *Service) problems(ctx context.Context, gameID, id string, wait bool) (R
 	s.mu.Unlock()
 
 	r, err := s.shareCheck(ctx, checkKey, func() Result {
-		contentpatcher.SkipImageOverlap = depth == settings.ConflictScanSkipImages
-		defer func() { contentpatcher.SkipImageOverlap = false }()
+		env.SkipImageOverlap = depth == settings.ConflictScanSkipImages
 		env.DropIns = components.KnownBrokenFor(ctx, gameID).DropIns()
 		r := Check(ctx, s.metaFor(gameID), env, mods, s.NexusPages.Requirements(gameID))
 		owners := sync.OnceValue(func() map[string]framework.Mod { return pluginOwners(mods) })

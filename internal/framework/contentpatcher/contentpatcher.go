@@ -192,11 +192,13 @@ type cachedPack struct {
 	mentions    map[string]bool
 	schema      map[string]cpSchema
 	skips       int
+	// skipImages is whether the pack's image-edit shapes were read without the pixel-overlap scan.
+	skipImages bool
 	// farms maps the map asset of each custom farm the pack adds to Data/AdditionalFarms to the farm's id.
 	farms map[string]string
 }
 
-const contentPackParserVersion = 24
+const contentPackParserVersion = 25
 
 // absentSize stamps a file that was not there, so the cache is dropped when it appears.
 const absentSize = -1
@@ -215,6 +217,7 @@ type diskPackCache struct {
 type diskPackEntry struct {
 	Fingerprint string          `json:"fingerprint"`
 	Files       []packFileStamp `json:"files"`
+	SkipImages  bool            `json:"skipImages,omitempty"`
 	// Pack is the pack's diskCachedPack, encoded when the pack is parsed, so a save after one pack changed encodes
 	// only that pack, and the packs not read yet stay compact in memory.
 	Pack []byte `json:"pack"`
@@ -381,6 +384,7 @@ func cachedPackOfDisk(root string, disk diskCachedPack, entry diskPackEntry) cac
 		mentions:    disk.Mentions,
 		schema:      make(map[string]cpSchema, len(disk.Schema)),
 		skips:       disk.Skips,
+		skipImages:  entry.SkipImages,
 		farms:       disk.Farms,
 	}
 	if disk.Patches != nil {
@@ -724,22 +728,22 @@ var packCache sync.Map // folder path -> cachedPack
 // pack read many times in one Check is stat'ed once. Check clears it at both ends, never mid-check.
 var packValidated sync.Map
 
-func readContentPack(im framework.Mod) cachedPack {
-	return readContentPackWithEnabled(im, true)
+func readContentPack(im framework.Mod, skip bool) cachedPack {
+	return readContentPackWithEnabled(im, true, skip)
 }
 
-func readContentPackForCleanup(im framework.Mod) cachedPack {
-	return readContentPackWithEnabled(im, false)
+func readContentPackForCleanup(im framework.Mod, skip bool) cachedPack {
+	return readContentPackWithEnabled(im, false, skip)
 }
 
-func readContentPackWithEnabled(im framework.Mod, requireEnabled bool) cachedPack {
+func readContentPackWithEnabled(im framework.Mod, requireEnabled, skip bool) cachedPack {
 	if (requireEnabled && !im.Enabled) || im.Folder == "" || !isContentPatcherPack(im) {
 		return cachedPack{}
 	}
 	root := filepath.Clean(im.Folder)
 	if c, ok := packCache.Load(root); ok {
 		if _, fresh := packValidated.Load(root); fresh {
-			if got, ok := c.(cachedPack); ok {
+			if got, ok := c.(cachedPack); ok && got.skipImages == skip {
 				return got
 			}
 		}
@@ -749,14 +753,14 @@ func readContentPackWithEnabled(im framework.Mod, requireEnabled bool) cachedPac
 	}
 	if c, ok := packCache.Load(root); ok {
 		got, ok := c.(cachedPack)
-		if ok && packFingerprintValid(root, got.files, got.fingerprint) {
+		if ok && got.skipImages == skip && packFingerprintValid(root, got.files, got.fingerprint) {
 			packValidated.Store(root, true)
 			return got
 		}
 	}
 	cachePath := loadPackDiskCache()
 	if cachePath != "" {
-		if entry, ok := diskPackEntryFor(root); ok && packFingerprintValid(root, entry.Files, entry.Fingerprint) {
+		if entry, ok := diskPackEntryFor(root); ok && entry.SkipImages == skip && packFingerprintValid(root, entry.Files, entry.Fingerprint) {
 			if disk, ok := decodeDiskPack(entry.Pack); ok {
 				pack := cachedPackOfDisk(root, disk, entry)
 				packCache.Store(root, pack)
@@ -767,7 +771,7 @@ func readContentPackWithEnabled(im framework.Mod, requireEnabled bool) cachedPac
 	}
 	// Every file is stamped before it is read, and a file changed since its stamp leaves the pack uncached, so a cache
 	// entry never pairs a fresh stamp with what was read before the change.
-	pack := cachedPack{mentions: map[string]bool{}}
+	pack := cachedPack{mentions: map[string]bool{}, skipImages: skip}
 	pack.recordPackFile(root, filepath.Join(root, "content.json"))
 	pack.recordPackFile(root, filepath.Join(root, "config.json"))
 	pack.schema = readConfigSchema(root)
@@ -788,7 +792,7 @@ func readContentPackWithEnabled(im framework.Mod, requireEnabled bool) cachedPac
 	packValidated.Store(root, true)
 	if cachePath != "" {
 		if disk, err := encodeDiskPack(diskPackOf(pack)); err == nil {
-			storeDiskPackEntry(root, diskPackEntry{Fingerprint: pack.fingerprint, Files: slices.Clone(pack.files), Pack: disk})
+			storeDiskPackEntry(root, diskPackEntry{Fingerprint: pack.fingerprint, Files: slices.Clone(pack.files), SkipImages: skip, Pack: disk})
 		}
 	}
 	dropPNGAlphaUnder(root)
@@ -1142,7 +1146,7 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 			pack.patches = append(pack.patches, cpPatch{kind: "other", when: outer.with(parseWhen(tok.When, pack.mentions, pack.schema)), tokenName: strings.ToLower(strings.TrimSpace(tok.Name)), tokenValue: value})
 		}
 	}
-	warmOverlayImages(root, rel, doc.Changes)
+	warmOverlayImages(root, rel, doc.Changes, pack.skipImages)
 	var dynamicValues map[string]string
 	for i, rawChange := range doc.Changes {
 		var ch cpChange
@@ -1180,7 +1184,7 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 			}
 			ch.FromFile = contentSourceReference(root, rel, ch.FromFile)
 			recordReferencedPackFiles(root, ch.FromFile, action == kindEditImage, pack)
-			shapes = editShapes(root, ch, action == kindEditImage)
+			shapes = editShapes(root, ch, action == kindEditImage, pack.skipImages)
 			if len(shapes) == 0 {
 				kind = "other"
 			}
@@ -2034,7 +2038,9 @@ func inside(root, rel string) (string, bool) {
 	return joined, true
 }
 
-func preloadContentPacks(mods []framework.Mod) { preloadPacks(mods, readContentPack) }
+func preloadContentPacks(mods []framework.Mod, skip bool) {
+	preloadPacks(mods, func(m framework.Mod) cachedPack { return readContentPack(m, skip) })
+}
 
 // preloadPacks parses packs on every core, so the serial passes after it find them cached.
 func preloadPacks(mods []framework.Mod, read func(framework.Mod) cachedPack) {
@@ -2116,9 +2122,9 @@ func dropCheckScratch() {
 }
 
 // assetConflictScan also returns the packs whose every change later packs overwrite (see shadowedPacks).
-func assetConflictScan(mods []framework.Mod, run *partsRun) ([]framework.AssetConflict, []framework.SettingHint, []framework.Redundant) {
+func assetConflictScan(mods []framework.Mod, run *partsRun, skip bool) ([]framework.AssetConflict, []framework.SettingHint, []framework.Redundant) {
 	defer dropCheckScratch()
-	preloadContentPacks(mods)
+	preloadContentPacks(mods, skip)
 	present := map[string]bool{}
 	for _, im := range mods {
 		if im.Enabled {
@@ -2130,7 +2136,7 @@ func assetConflictScan(mods []framework.Mod, run *partsRun) ([]framework.AssetCo
 	type hitAt struct{ kind, target, id string }
 	index := map[hitAt]int{}
 	for _, im := range mods {
-		pack := readContentPack(im)
+		pack := readContentPack(im, skip)
 		knows := maps.Clone(pack.mentions)
 		dependencies := map[string]bool{}
 		loadAfter := map[string]bool{}
@@ -2227,7 +2233,7 @@ func assetConflictScan(mods []framework.Mod, run *partsRun) ([]framework.AssetCo
 			h.configOff = nil
 		}
 	}
-	shadowed := shadowedPacks(mods, at)
+	shadowed := shadowedPacks(mods, at, skip)
 	bundled := bundles(authored)
 	for _, key := range slices.Sorted(maps.Keys(bundled)) {
 		if slices.ContainsFunc(shadowed, func(r framework.Redundant) bool { return r.Key == key }) {
@@ -2240,7 +2246,7 @@ func assetConflictScan(mods []framework.Mod, run *partsRun) ([]framework.AssetCo
 	shadowed = slices.DeleteFunc(shadowed, func(r framework.Redundant) bool { return requiredByEnabled(mods, r.ID) })
 	customFarms := map[string]string{}
 	for _, im := range mods {
-		for target, id := range readContentPack(im).farms {
+		for target, id := range readContentPack(im, skip).farms {
 			customFarms[target] = modIDToken.ReplaceAllLiteralString(id, im.UniqueID)
 		}
 	}
@@ -2260,7 +2266,7 @@ func assetConflictScan(mods []framework.Mod, run *partsRun) ([]framework.AssetCo
 				fields = append(fields, h.sig)
 				stable = stable && h.stable
 			}
-			e := run.part(partKey(fields...), stable, func() partEntry { return targetPart(kind, t, hits, farm, bundled) })
+			e := run.part(partKey(skip, fields...), stable, func() partEntry { return targetPart(kind, t, hits, farm, bundled) })
 			if e.Conflict != nil {
 				c := *e.Conflict
 				c.Farms = farmIDs(c.Farms, customFarms)

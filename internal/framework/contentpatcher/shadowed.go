@@ -57,10 +57,10 @@ func changeDoesMore(raw json.RawMessage, ch cpChange) bool {
 // after it, and each Load loses to another pack's unconditional Load of higher priority. A pack with any
 // change this cannot judge (a tokenized target, a change with no shape, one that does more than its shape)
 // is never shadowed.
-func shadowedPacks(mods []framework.Mod, at map[string]map[string][]packHit) []framework.Redundant {
+func shadowedPacks(mods []framework.Mod, at map[string]map[string][]packHit, skip bool) []framework.Redundant {
 	var out []framework.Redundant
 	for _, im := range mods {
-		pack := readContentPack(im)
+		pack := readContentPack(im, skip)
 		if len(pack.patches) == 0 || pack.skips > 0 {
 			continue
 		}

@@ -68,7 +68,7 @@ func TestParsedPackRetainedBytes(t *testing.T) {
 	before := liveHeap()
 	held := make([]cachedPack, count)
 	for i, im := range mods {
-		held[i] = readContentPack(im)
+		held[i] = readContentPack(im, false)
 	}
 	after := liveHeap()
 	per := (after - before) / count

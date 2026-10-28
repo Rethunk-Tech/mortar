@@ -9,7 +9,11 @@ import (
 )
 
 // Input is the profile a framework analyzes: All its mods, and the Enabled ones among them.
-type Input struct{ Enabled, All []Mod }
+type Input struct {
+	Enabled, All []Mod
+	// SkipImageOverlap turns off the pixel-overlap scan of image edits, trading accuracy for speed.
+	SkipImageOverlap bool
+}
 
 // Findings is what a framework's analyzer adds to a profile's problems.
 type Findings struct {

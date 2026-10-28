@@ -43,16 +43,16 @@ func (Driver) Analyze(in framework.Input) framework.Findings {
 	defer flushParts()
 	reads := recordReads()
 	run := newPartsRun()
-	preloadContentPacks(in.Enabled)
-	conflicts, conflictSettings, shadowed := assetConflictScan(in.Enabled, run)
-	cleanup := unusedTilesheetPacks(in.All)
+	preloadContentPacks(in.Enabled, in.SkipImageOverlap)
+	conflicts, conflictSettings, shadowed := assetConflictScan(in.Enabled, run, in.SkipImageOverlap)
+	cleanup := unusedTilesheetPacks(in.All, in.SkipImageOverlap)
 	found := framework.Findings{
 		AssetConflicts: conflicts,
-		Settings:       append(compatibilitySettings(in.Enabled, run), conflictSettings...),
+		Settings:       append(compatibilitySettings(in.Enabled, run, in.SkipImageOverlap), conflictSettings...),
 		Redundant:      shadowed,
 		Cleanup:        append(cleanup, recolourAddons(in.All)...),
-		Supporting:     supportingPackKeys(in.All),
-		Mentioned:      mentionedIDs(in.Enabled),
+		Supporting:     supportingPackKeys(in.All, in.SkipImageOverlap),
+		Mentioned:      mentionedIDs(in.Enabled, in.SkipImageOverlap),
 	}
 	files, complete := reads()
 	if complete {
@@ -79,11 +79,11 @@ func (Driver) Forget() {
 }
 
 // mentionedIDs are the mods the switched-on packs name in a HasMod condition.
-func mentionedIDs(enabled []framework.Mod) []string {
-	preloadPacks(enabled, readContentPackForCleanup)
+func mentionedIDs(enabled []framework.Mod, skip bool) []string {
+	preloadPacks(enabled, func(m framework.Mod) cachedPack { return readContentPackForCleanup(m, skip) })
 	set := map[string]bool{}
 	for _, im := range enabled {
-		maps.Copy(set, readContentPackForCleanup(im).mentions)
+		maps.Copy(set, readContentPackForCleanup(im, skip).mentions)
 	}
 	return slices.Sorted(maps.Keys(set))
 }

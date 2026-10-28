@@ -349,11 +349,11 @@ func scalarLiteral(v string) string {
 // editShapes is what one EditImage or EditMap change writes. An edit that only adds warps, rewrites text
 // properties or sets tile properties has no shape: Content Patcher merges those, so they never overwrite
 // another pack's work.
-func editShapes(root string, ch cpChange, image bool) []cpShape {
+func editShapes(root string, ch cpChange, image, skip bool) []cpShape {
 	if image {
 		if to, ok := areaOf(ch.ToArea); ok {
 			if strings.EqualFold(strings.TrimSpace(ch.PatchMode), "overlay") {
-				return imagePatchShapes(root, ch, to.x, to.y)
+				return imagePatchShapes(root, ch, to.x, to.y, skip)
 			}
 			return []cpShape{to}
 		} else if len(ch.ToArea) > 0 {
@@ -362,15 +362,15 @@ func editShapes(root string, ch cpChange, image bool) []cpShape {
 		// Without ToArea the source lands at the top-left, sized like FromArea or the whole file.
 		if from, ok := areaOf(ch.FromArea); ok {
 			if strings.EqualFold(strings.TrimSpace(ch.PatchMode), "overlay") {
-				return imagePatchShapes(root, ch, 0, 0)
+				return imagePatchShapes(root, ch, 0, 0, skip)
 			}
 			return []cpShape{{kind: 'r', w: from.w, h: from.h}}
 		}
 		if strings.EqualFold(strings.TrimSpace(ch.PatchMode), "overlay") {
-			return imagePatchShapes(root, ch, 0, 0)
+			return imagePatchShapes(root, ch, 0, 0, skip)
 		}
 		if hasToken(ch.FromFile) {
-			return imagePatchShapes(root, ch, 0, 0)
+			return imagePatchShapes(root, ch, 0, 0, skip)
 		}
 		if w, h, ok := pngSize(root, ch.FromFile); ok {
 			return []cpShape{{kind: 'r', w: w, h: h}}
@@ -441,8 +441,6 @@ var (
 	pngAlphaCache sync.Map
 	pngPixPools   sync.Map
 	cellSetCache  sync.Map
-	// SkipImageOverlap turns off the pixel-overlap scan of image edits, trading accuracy for speed.
-	SkipImageOverlap bool
 )
 
 type pngAlpha struct {
@@ -485,12 +483,12 @@ func releaseAlpha(b []byte) {
 	pngPixPool(cap(b)).Put(&b)
 }
 
-func imagePatchShapes(root string, ch cpChange, x, y int) []cpShape {
+func imagePatchShapes(root string, ch cpChange, x, y int, skip bool) []cpShape {
 	files := sourceFiles(root, ch.FromFile)
 	if len(files) == 0 {
 		return whole
 	}
-	if SkipImageOverlap || !strings.EqualFold(strings.TrimSpace(ch.PatchMode), "overlay") {
+	if skip || !strings.EqualFold(strings.TrimSpace(ch.PatchMode), "overlay") {
 		var out []cpShape
 		for _, file := range files {
 			if from, ok := areaOf(ch.FromArea); ok {
@@ -603,8 +601,8 @@ var decodeSlots = make(chan struct{}, max(1, runtime.GOMAXPROCS(0)))
 // warmOverlayImages decodes the images of rel's overlay edits on every core before the serial scan reads their
 // shapes: a recolour pack overlays hundreds of large sheets, and decoding them one by one made that single pack
 // the longest part of a cold check.
-func warmOverlayImages(root, rel string, changes []json.RawMessage) {
-	if SkipImageOverlap {
+func warmOverlayImages(root, rel string, changes []json.RawMessage, skip bool) {
+	if skip {
 		return
 	}
 	var wg sync.WaitGroup

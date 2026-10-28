@@ -101,7 +101,7 @@ func TestAssetConflicts(t *testing.T) {
 		}
 	})
 	t.Run("tokenized target skipped", func(t *testing.T) {
-		if skips := readContentPack(tokenA).skips; skips != 1 {
+		if skips := readContentPack(tokenA, false).skips; skips != 1 {
 			t.Fatalf("skips = %d", skips)
 		}
 		got := check([]framework.Mod{tokenA, tokenB})

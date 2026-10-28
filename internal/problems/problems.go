@@ -37,10 +37,12 @@ type Meta interface {
 // Environment says what the profile runs on, for the broken-mod check.
 type Environment struct {
 	// Nexus is how Nexus names the game the check runs for.
-	Nexus       nexus.Title
-	GameVersion string
-	APIVersion  string
-	Platform    string
+	Nexus nexus.Title
+	// SkipImageOverlap turns off the pixel-overlap scan of image edits, trading accuracy for speed.
+	SkipImageOverlap bool
+	GameVersion      string
+	APIVersion       string
+	Platform         string
 	// VersionScheme is how the game's loader versions its mods (deps.SemverSMAPI and the like); dependency
 	// constraints are read in it.
 	VersionScheme string
@@ -275,7 +277,7 @@ func Check(ctx context.Context, m Meta, env Environment, mods []framework.Mod, r
 				analyzed <- analysis{failed: p}
 			}
 		}()
-		found, timings := runFrameworks(framework.Input{Enabled: enabled, All: mods})
+		found, timings := runFrameworks(framework.Input{Enabled: enabled, All: mods, SkipImageOverlap: env.SkipImageOverlap})
 		analyzed <- analysis{found: found, timings: timings}
 	}()
 	reqStart := time.Now()

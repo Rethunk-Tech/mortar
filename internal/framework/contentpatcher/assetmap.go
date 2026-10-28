@@ -185,7 +185,7 @@ func loadsAfter(after map[string][]string, a, b mod.ID) bool {
 func BuildAssetIndex(mods []framework.Mod) []AssetTarget {
 	defer holdPacks()()
 	defer flushPackDiskCache(mods)
-	preloadContentPacks(mods)
+	preloadContentPacks(mods, false)
 	present := map[string]bool{}
 	for _, im := range mods {
 		if im.Enabled {
@@ -240,7 +240,7 @@ func BuildAssetIndex(mods []framework.Mod) []AssetTarget {
 }
 
 func indexContentPack(im framework.Mod, present map[string]bool, loadOrder int, grouped map[assetIndexKey][]indexedTouch) {
-	pack := readContentPack(im)
+	pack := readContentPack(im, false)
 	config := map[string]string{}
 	if len(pack.schema) > 0 {
 		config = readPackConfig(im.Folder)

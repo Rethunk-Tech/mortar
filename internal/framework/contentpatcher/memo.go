@@ -69,7 +69,7 @@ var buildStamp = sync.OnceValue(func() string {
 // analysisKey covers what a check reads besides files: the build, the mods and the scan depth.
 func analysisKey(in framework.Input) string {
 	h := sha256.New()
-	_, _ = fmt.Fprintf(h, "%s|%d|%t|%#v", buildStamp(), contentPackParserVersion, SkipImageOverlap, in)
+	_, _ = fmt.Fprintf(h, "%s|%d|%#v", buildStamp(), contentPackParserVersion, in)
 	return hex.EncodeToString(h.Sum(nil))
 }
 

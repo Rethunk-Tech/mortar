@@ -30,7 +30,7 @@ func change(t *testing.T, raw string) cpChange {
 func edit(t *testing.T, raw string, image bool) cpPatch {
 	t.Helper()
 	ch := change(t, raw)
-	return cpPatch{kind: "edit", shapes: editShapes(t.TempDir(), ch, image), spouse: spouseOf(ch.When, nil), places: placesOf(ch.When)}
+	return cpPatch{kind: "edit", shapes: editShapes(t.TempDir(), ch, image, false), spouse: spouseOf(ch.When, nil), places: placesOf(ch.When)}
 }
 
 func TestEditsClash(t *testing.T) {
@@ -65,7 +65,7 @@ func TestEditsClash(t *testing.T) {
 }
 
 func TestAdditiveEditHasNoShape(t *testing.T) {
-	if s := editShapes(t.TempDir(), change(t, `{"AddWarps":["1 2 Town 3 4"],"TextOperations":[{"Operation":"Append"}]}`), false); len(s) != 0 {
+	if s := editShapes(t.TempDir(), change(t, `{"AddWarps":["1 2 Town 3 4"],"TextOperations":[{"Operation":"Append"}]}`), false, false); len(s) != 0 {
 		t.Fatalf("shapes %v", s)
 	}
 }
@@ -165,13 +165,11 @@ func TestSkipImageOverlapUsesRectangles(t *testing.T) {
 		t.Fatal(err)
 	}
 	ch := change(t, `{"FromFile":"patch.png","PatchMode":"Overlay"}`)
-	full := imagePatchShapes(dir, ch, 0, 0)
+	full := imagePatchShapes(dir, ch, 0, 0, false)
 	if len(full) != 1 || full[0].cells == "" {
 		t.Fatalf("full scan shapes = %#v", full)
 	}
-	SkipImageOverlap = true
-	t.Cleanup(func() { SkipImageOverlap = false })
-	skipped := imagePatchShapes(dir, ch, 0, 0)
+	skipped := imagePatchShapes(dir, ch, 0, 0, true)
 	if len(skipped) != 1 || skipped[0].cells != "" || skipped[0].w != 32 || skipped[0].h != 16 {
 		t.Fatalf("skip scan shapes = %#v", skipped)
 	}
@@ -229,11 +227,11 @@ func TestMapPatchWithoutToAreaUsesTheSourceMapSize(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(dir, "p.tmx"), []byte(tmx), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	s := editShapes(dir, change(t, `{"FromFile":"p.tmx"}`), false)
+	s := editShapes(dir, change(t, `{"FromFile":"p.tmx"}`), false, false)
 	if len(s) != 1 || s[0].kind != 'r' || s[0].w != 10 || s[0].h != 8 {
 		t.Fatalf("shapes %v", s)
 	}
-	if s := editShapes(dir, change(t, `{"FromFile":"p.tbin"}`), false); len(s) != 1 || s[0].kind != 'w' {
+	if s := editShapes(dir, change(t, `{"FromFile":"p.tbin"}`), false, false); len(s) != 1 || s[0].kind != 'w' {
 		t.Fatalf("tbin should be whole: %v", s)
 	}
 }

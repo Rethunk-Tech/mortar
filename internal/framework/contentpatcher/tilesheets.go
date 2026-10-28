@@ -74,11 +74,11 @@ type tilesheetUse struct {
 }
 
 // isTilesheetPack is a Content Patcher pack whose every patch loads new map or tilesheet assets.
-func isTilesheetPack(im framework.Mod) bool {
+func isTilesheetPack(im framework.Mod, skip bool) bool {
 	if !isContentPatcherPack(im) {
 		return false
 	}
-	pack := readContentPack(im)
+	pack := readContentPack(im, skip)
 	if len(pack.patches) == 0 {
 		return false
 	}
@@ -103,7 +103,7 @@ func isTilesheetPack(im framework.Mod) bool {
 // isSupportingPack is a Content Patcher pack that supplies sheets for other mods: it loads at least one new map,
 // tilesheet or mod asset, and otherwise only redraws images or registers chair tiles. A pack that edits a map or data,
 // or only recolours existing sheets, is something the player chose.
-func isSupportingPack(im framework.Mod) bool {
+func isSupportingPack(im framework.Mod, skip bool) bool {
 	if !isContentPatcherPack(im) {
 		return false
 	}
@@ -112,7 +112,7 @@ func isSupportingPack(im framework.Mod) bool {
 		return isTilesheetTarget(target) || strings.HasPrefix(target, "mods/")
 	}
 	loads := false
-	for _, patch := range readContentPack(im).patches {
+	for _, patch := range readContentPack(im, skip).patches {
 		switch {
 		case patch.tokenName != "":
 			// A dynamic token the pack defines, not a change.
@@ -128,20 +128,20 @@ func isSupportingPack(im framework.Mod) bool {
 }
 
 // supportingPackKeys are the keys of the packs that supply sheets for other mods, switched on or off.
-func supportingPackKeys(mods []framework.Mod) []string {
+func supportingPackKeys(mods []framework.Mod, skip bool) []string {
 	var out []string
 	for _, im := range mods {
-		if isSupportingPack(im) && !slices.Contains(out, im.Key) {
+		if isSupportingPack(im, skip) && !slices.Contains(out, im.Key) {
 			out = append(out, im.Key)
 		}
 	}
 	return out
 }
 
-func unusedTilesheetPacks(mods []framework.Mod) []framework.Cleanup {
+func unusedTilesheetPacks(mods []framework.Mod, skip bool) []framework.Cleanup {
 	var candidates []framework.Mod
 	for _, im := range mods {
-		if im.Enabled && isTilesheetPack(im) {
+		if im.Enabled && isTilesheetPack(im, skip) {
 			candidates = append(candidates, im)
 		}
 	}
@@ -155,7 +155,7 @@ func unusedTilesheetPacks(mods []framework.Mod) []framework.Cleanup {
 		id := candidate.ModID().Fold()
 		uses[id] = &tilesheetUse{}
 		assets := map[string]bool{}
-		for _, patch := range readContentPack(candidate).patches {
+		for _, patch := range readContentPack(candidate, skip).patches {
 			for _, target := range splitTargets(patch.target) {
 				addAssetNames(assets, target)
 			}
@@ -167,9 +167,9 @@ func unusedTilesheetPacks(mods []framework.Mod) []framework.Cleanup {
 		basenamesByID[id] = assetBasenames(assets)
 	}
 	others := slices.DeleteFunc(slices.Clone(mods), func(im framework.Mod) bool { return containsMod(candidates, im) })
-	preloadPacks(others, readContentPackForCleanup)
+	preloadPacks(others, func(m framework.Mod) cachedPack { return readContentPackForCleanup(m, skip) })
 	for _, im := range others {
-		mentions := readContentPackForCleanup(im).mentions
+		mentions := readContentPackForCleanup(im, skip).mentions
 		for _, candidate := range candidates {
 			id := candidate.ModID().Fold()
 			if manifestUses(im, candidate.ModID()) || mentions[id] {

@@ -213,9 +213,9 @@ func packSig(im framework.Mod, pack cachedPack, present map[string]bool) (sig st
 }
 
 // partKey also covers what every part reads besides its packs: the build and the scan depth.
-func partKey(fields ...string) string {
+func partKey(skip bool, fields ...string) string {
 	h := sha256.New()
-	_, _ = fmt.Fprintf(h, "%s|%d|%t", buildStamp(), contentPackParserVersion, SkipImageOverlap)
+	_, _ = fmt.Fprintf(h, "%s|%d|%t", buildStamp(), contentPackParserVersion, skip)
 	for _, f := range fields {
 		_, _ = io.WriteString(h, "\x00")
 		_, _ = io.WriteString(h, f)

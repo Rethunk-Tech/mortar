@@ -109,7 +109,7 @@ func TestRetextureOfVanillaSheetIsNotUnusedTilesheets(t *testing.T) {
 		t.Fatal(err)
 	}
 	im := packs.FromDisk(framework.Mod{Key: "tools", Enabled: true, Folder: root, Name: "Elegant Tools", UniqueID: "Colling.ElegantTools"})
-	if got := unusedTilesheetPacks([]framework.Mod{im}); len(got) != 0 {
+	if got := unusedTilesheetPacks([]framework.Mod{im}, false); len(got) != 0 {
 		t.Fatalf("a retexture is never an unused tilesheet pack, got %+v", got)
 	}
 }
@@ -128,7 +128,7 @@ func TestSupportingPacks(t *testing.T) {
 		{"Sheets.Recolour", `{"Changes":[{"Action":"EditImage","Target":"Maps/springobjects","FromFile":"a.png"}]}`, false},
 		{"Sheets.MapEdit", `{"Changes":[{"Action":"Load","Target":"Maps/own"},{"Action":"EditMap","Target":"Maps/Saloon","FromFile":"saloon.tmx"}]}`, false},
 	} {
-		if got := isSupportingPack(tilesheetPack(t, c.id, c.content)); got != c.want {
+		if got := isSupportingPack(tilesheetPack(t, c.id, c.content), false); got != c.want {
 			t.Errorf("%s: supporting = %v, want %v", c.id, got, c.want)
 		}
 	}
@@ -141,7 +141,7 @@ func TestMentionedIDs(t *testing.T) {
 		{"Action":"EditData","Target":"Other.Mod/ItemQueries","Entries":{}},
 		{"Action":"EditData","Target":"Data/Objects","Entries":{},"When":{"HasMod":"Some.Lib"}}]}`)
 	pack.Enabled = true
-	if got := mentionedIDs([]framework.Mod{pack}); !slices.Equal(got, []string{"smapi:other.mod", "smapi:some.lib"}) {
+	if got := mentionedIDs([]framework.Mod{pack}, false); !slices.Equal(got, []string{"smapi:other.mod", "smapi:some.lib"}) {
 		t.Fatalf("mentioned = %q", got)
 	}
 }
