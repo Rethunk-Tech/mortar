@@ -68,26 +68,11 @@ func TestListIsNewestFirst(t *testing.T) {
 }
 
 func TestRestoreOneLeavesTheOtherSave(t *testing.T) {
-	root := t.TempDir()
-	saves := filepath.Join(root, "Saves")
-	backups := filepath.Join(root, "backups")
-	testfs.WriteFarm(t, saves, "Alpha_1", "Alpha", "old-a")
-	testfs.WriteFarm(t, saves, "Beta_1", "Beta", "old-b")
 	start := time.Date(2026, 4, 1, 0, 0, 0, 0, time.UTC)
-	zipPath, err := Saves(t.Context(), layout(saves), backups, DefaultKeep, start, Cause{})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := fsx.WriteFile(filepath.Join(saves, "Alpha_1", "Alpha_1"), []byte("new-a"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	if err := fsx.WriteFile(filepath.Join(saves, "Beta_1", "Beta_1"), []byte("new-b"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	saves, _, zipPath := twoFarmsBackedUp(t, start)
+	testfs.WriteFile(t, saves, "Beta_1/Beta_1", "new-b")
 	later := start.Add(MinGap)
-	if err := os.Chtimes(filepath.Join(saves, "Alpha_1", "Alpha_1"), later, later); err != nil {
-		t.Fatal(err)
-	}
+	editSave(t, saves, "Alpha_1", "new-a", later)
 	if err := Restore(t.Context(), zipPath, layout(saves), filepath.Dir(zipPath), []string{"Alpha_1"}, DefaultKeep, later); err != nil {
 		t.Fatal(err)
 	}
@@ -102,23 +87,10 @@ func TestRestoreOneLeavesTheOtherSave(t *testing.T) {
 }
 
 func TestRestoreAllAndPreRestoreBackup(t *testing.T) {
-	root := t.TempDir()
-	saves := filepath.Join(root, "Saves")
-	backups := filepath.Join(root, "backups")
-	testfs.WriteFarm(t, saves, "Alpha_1", "Alpha", "old-a")
-	testfs.WriteFarm(t, saves, "Beta_1", "Beta", "old-b")
 	start := time.Date(2026, 5, 1, 0, 0, 0, 0, time.UTC)
-	zipPath, err := Saves(t.Context(), layout(saves), backups, DefaultKeep, start, Cause{})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := fsx.WriteFile(filepath.Join(saves, "Alpha_1", "Alpha_1"), []byte("new-a"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	saves, backups, zipPath := twoFarmsBackedUp(t, start)
 	later := start.Add(MinGap)
-	if err := os.Chtimes(filepath.Join(saves, "Alpha_1", "Alpha_1"), later, later); err != nil {
-		t.Fatal(err)
-	}
+	editSave(t, saves, "Alpha_1", "new-a", later)
 	before, err := List(backups, folderSaves)
 	if err != nil {
 		t.Fatal(err)
@@ -205,4 +177,28 @@ func writeSlipZip(path string) error {
 		return err
 	}
 	return fsx.WriteFile(path, buf.Bytes(), 0o600)
+}
+
+// twoFarmsBackedUp is a saves folder holding Alpha_1 ("old-a") and Beta_1 ("old-b"), the backups folder beside it,
+// and the zip backing both up at start.
+func twoFarmsBackedUp(t *testing.T, start time.Time) (saves, backups, zipPath string) {
+	t.Helper()
+	root := t.TempDir()
+	saves, backups = filepath.Join(root, "Saves"), filepath.Join(root, "backups")
+	testfs.WriteFarm(t, saves, "Alpha_1", "Alpha", "old-a")
+	testfs.WriteFarm(t, saves, "Beta_1", "Beta", "old-b")
+	zipPath, err := Saves(t.Context(), layout(saves), backups, DefaultKeep, start, Cause{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return saves, backups, zipPath
+}
+
+// editSave rewrites the save file of folder with body, dated at.
+func editSave(t *testing.T, saves, folder, body string, at time.Time) {
+	t.Helper()
+	path := testfs.WriteFile(t, saves, folder+"/"+folder, body)
+	if err := os.Chtimes(path, at, at); err != nil {
+		t.Fatal(err)
+	}
 }
