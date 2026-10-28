@@ -85,7 +85,7 @@ export function ConfirmationDialog({
   return (
     <AppDialog
       open={open}
-      onClose={onCancel}
+      onClose={busy ? () => undefined : onCancel}
       closable={false}
       size="md"
       icon={<ToneIcon tone={tone}>{ICONS[tone]}</ToneIcon>}

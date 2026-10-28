@@ -239,6 +239,7 @@ export function BackupsDialog({
       <ConfirmationDialog
         open={confirm !== null}
         title={t`Restore this backup?`}
+        tone="danger"
         confirmLabel={t`Restore`}
         busy={pending || busyGame}
         onCancel={() => {
