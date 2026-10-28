@@ -149,3 +149,41 @@ func TestRankedTotalStaysTheSameOnEveryPage(t *testing.T) {
 		t.Fatalf("page 3 total %d, page 1 total %d, %v", three.Total, one.Total, err)
 	}
 }
+
+// dupSource lists the same mods another source does, under the same names, so the merged list is shorter than the
+// sources' hits.
+type dupSource struct {
+	rankSource
+	step int
+}
+
+func (d *dupSource) Search(ctx context.Context, q source.Query) (source.Page, error) {
+	p, err := d.rankSource.Search(ctx, q)
+	for i := range p.Items {
+		var n int
+		_, _ = fmt.Sscanf(p.Items[i].ID, d.id+"%d", &n)
+		p.Items[i].Name, p.Items[i].Author = fmt.Sprintf("Mod %d", n*d.step), "same"
+	}
+	return p, err
+}
+
+func TestRankedPagesStayFullWhenSourcesShareMods(t *testing.T) {
+	a := &dupSource{rankSource{id: "da", downloads: descending(100000, 200, 100)}, 1}
+	b := &dupSource{rankSource{id: "db", downloads: descending(99990, 200, 100)}, 1}
+	game := rankGame(t, &a.rankSource, &b.rankSource)
+	source.Register(a)
+	source.Register(b)
+	seen := map[string]bool{}
+	for pg := 1; pg <= 10; pg++ {
+		page, err := (&Client{}).searchAll(context.Background(), game, "", pg, Filter{Sort: source.SortDownloads})
+		if err != nil || len(page.Items) != source.PageSize {
+			t.Fatalf("page %d: %d items, %v", pg, len(page.Items), err)
+		}
+		for _, it := range page.Items {
+			if seen[it.Name] {
+				t.Fatalf("page %d repeats %s", pg, it.Name)
+			}
+			seen[it.Name] = true
+		}
+	}
+}

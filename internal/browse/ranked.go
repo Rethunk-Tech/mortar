@@ -71,16 +71,27 @@ func (c *Client) searchRanked(ctx context.Context, info components.GameInfo, sou
 		slices.SortStableFunc(window, compare)
 		placed := placedPrefix(window, lanes, compare)
 		cards = mergeSame(slices.Clone(placed), order, ident, people)
+		if len(cards) >= want {
+			break
+		}
+		// Merging shrinks the placed hits, so more are needed even when the window already holds a page's worth: read the
+		// sources that bound the placed prefix, the only ones whose next page can extend it.
 		var next []*lane
+		var bound *Item
 		for _, l := range lanes {
-			if l.done {
+			if l.done || len(l.hits) == 0 {
 				continue
 			}
-			if len(l.hits) == 0 || len(window) < want || compare(l.hits[len(l.hits)-1], window[want-1]) < 0 {
+			if last := l.hits[len(l.hits)-1]; bound == nil || compare(last, *bound) < 0 {
+				bound = &last
+			}
+		}
+		for _, l := range lanes {
+			if !l.done && (len(l.hits) == 0 || compare(l.hits[len(l.hits)-1], *bound) <= 0) {
 				next = append(next, l)
 			}
 		}
-		if len(cards) >= want || len(next) == 0 {
+		if len(next) == 0 {
 			break
 		}
 		var wg sync.WaitGroup
@@ -105,6 +116,10 @@ func (c *Client) searchRanked(ctx context.Context, info components.GameInfo, sou
 	}
 	if len(errs) == len(lanes) {
 		return Page{}, errors.Join(errs...)
+	}
+	// Sources that share mods count them each, until every hit is read and the merged list is exact.
+	if !slices.ContainsFunc(lanes, func(l *lane) bool { return !l.done }) && len(errs) == 0 {
+		out.Total = len(cards)
 	}
 	out.Pages = (out.Total + source.PageSize - 1) / source.PageSize
 	out.Items = cards[min((page-1)*source.PageSize, len(cards)):min(want, len(cards))]
