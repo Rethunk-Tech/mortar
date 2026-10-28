@@ -761,3 +761,64 @@ func TestPairFailedForgetsPeersLongQuiet(t *testing.T) {
 		t.Errorf("locks = %v", service.pairing.locks)
 	}
 }
+
+// trackedBody records whether the handler read it.
+type trackedBody struct{ read bool }
+
+func (b *trackedBody) Read([]byte) (int, error) { b.read = true; return 0, io.EOF }
+
+func TestRateLimitedPeerIsRefusedBeforeItsBodyIsRead(t *testing.T) {
+	t.Parallel()
+	service := NewService(Deps{})
+	if !service.allowReceive("192.0.2.20") {
+		t.Fatal("first receive refused")
+	}
+	body := &trackedBody{}
+	request := httptest.NewRequestWithContext(context.Background(), "POST", "http://mortar.test/share", body)
+	request.RemoteAddr = "192.0.2.20:4000"
+	response := httptest.NewRecorder()
+	service.handleShare(response, request)
+	if response.Code != 429 || body.read {
+		t.Fatalf("status = %d, body read = %t; want 429 without a read", response.Code, body.read)
+	}
+}
+
+func TestUnpairedInboxIsCappedAndExpires(t *testing.T) {
+	t.Parallel()
+	var expired []Expired
+	s := NewService(Deps{Emit: func(name string, data any) {
+		if e, ok := data.(Expired); ok && name == ExpiredEvent {
+			expired = append(expired, e)
+		}
+	}})
+	s.mu.Lock()
+	for i := 1; i <= maxUnpairedInbox+3; i++ {
+		s.inbox = append(s.inbox, Arrival{ID: i, Sender: "x"})
+		s.dropOldestUnpaired()
+	}
+	s.mu.Unlock()
+	if got := s.Pending(); len(got) != maxUnpairedInbox || got[0].ID != 4 {
+		t.Fatalf("inbox = %d entries, first %d; want the newest %d", len(got), got[0].ID, maxUnpairedInbox)
+	}
+	s.expireShare(4)
+	if len(expired) != 1 || expired[0].ID != 4 || len(s.Pending()) != maxUnpairedInbox-1 {
+		t.Fatalf("expired = %+v, pending %d", expired, len(s.Pending()))
+	}
+}
+
+func TestShareRequestsInFlightAreLimited(t *testing.T) {
+	t.Parallel()
+	s := NewService(Deps{})
+	for range maxShareRequests {
+		if !s.acquireShare() {
+			t.Fatal("slot refused early")
+		}
+	}
+	if s.acquireShare() {
+		t.Fatal("slot granted past the limit")
+	}
+	s.releaseShare()
+	if !s.acquireShare() {
+		t.Fatal("released slot not reusable")
+	}
+}

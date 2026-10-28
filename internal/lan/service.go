@@ -54,6 +54,11 @@ const (
 	nonceTTL       = time.Minute
 	maxNonces      = 1024
 	transferTTL    = 5 * time.Minute
+	// maxShareRequests bounds /share bodies held in memory at once; maxUnpairedInbox bounds arrivals nobody paired.
+	maxShareRequests = 4
+	// senderHeader names the sending device on a /share request so the receiver can rate limit strangers before reading.
+	senderHeader     = "X-Mortar-Sender"
+	maxUnpairedInbox = 20
 	// storeIdle is how long a served store entry may make no progress before the connection is dropped; unlike the
 	// small request deadlines it bounds silence, not the whole stream, which can run for minutes.
 	storeIdle = time.Minute
@@ -144,6 +149,8 @@ type Service struct {
 
 	rateMu      sync.Mutex
 	lastReceive map[string]time.Time
+	// sharesInFlight counts /share requests being read or decoded.
+	sharesInFlight int
 }
 
 type peerRecord struct {
@@ -589,6 +596,7 @@ func (s *Service) sendPayload(ctx context.Context, peerID, game, profileID strin
 		return fmt.Errorf("prepare profile share: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(senderHeader, selfID)
 	resp, err := (&http.Client{}).Do(req)
 	if err != nil {
 		return usererr.Wrap(usererr.Network, fmt.Errorf("%s could not be reached: %w", name, err))
@@ -812,6 +820,19 @@ func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "request is too large", http.StatusRequestEntityTooLarge)
 		return
 	}
+	peer := remotePeer(r)
+	// Only a sender naming a paired device can prove itself paired, so any other has its rate limit charged before its
+	// body is read. The body's own proof still decides pairing.
+	charged := s.book.key(r.Header.Get(senderHeader)) == nil
+	if charged && !s.allowReceive(peer) {
+		http.Error(w, "profile shares from this peer are temporarily rate limited", http.StatusTooManyRequests)
+		return
+	}
+	if !s.acquireShare() {
+		http.Error(w, "too many profile shares at once", http.StatusServiceUnavailable)
+		return
+	}
+	defer s.releaseShare()
 	r.Body = http.MaxBytesReader(w, r.Body, maxRequestBytes)
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -832,10 +853,9 @@ func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), status)
 		return
 	}
-	peer := remotePeer(r)
 	key := s.book.key(request.SenderID)
 	paired := request.SenderPort > 0 && s.consumeProof(peer, request) && proofMatches(key, request.Nonce, request.Payload, request.Proof)
-	if !paired && !s.allowReceive(peer) {
+	if !paired && !charged && !s.allowReceive(peer) {
 		http.Error(w, "profile shares from this peer are temporarily rate limited", http.StatusTooManyRequests)
 		return
 	}
@@ -889,8 +909,10 @@ func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
 	s.inbox = append(s.inbox, arrival)
 	if arrivalTransfer.Token != "" {
 		s.incoming[arrival.ID] = arrivalTransfer
-		time.AfterFunc(transferTTL, func() { s.expireShare(arrival.ID) })
+	} else {
+		s.dropOldestUnpaired()
 	}
+	time.AfterFunc(transferTTL, func() { s.expireShare(arrival.ID) })
 	s.mu.Unlock()
 	if s.deps.Emit != nil {
 		s.deps.Emit(ArrivedEvent, arrival)
@@ -903,18 +925,52 @@ func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
 // running or the share was already dismissed.
 func (s *Service) expireShare(id int) {
 	s.mu.Lock()
-	incoming, waiting := s.incoming[id]
+	_, waiting := s.incoming[id]
+	idx := slices.IndexFunc(s.inbox, func(a Arrival) bool { return a.ID == id })
 	_, running := s.active[id]
-	if !waiting || running {
+	// A paired share lives while its transfer window does; an unpaired one has no window and ages out of the inbox.
+	if idx < 0 || running || (!waiting && s.inbox[idx].Paired) {
 		s.mu.Unlock()
 		return
 	}
 	delete(s.incoming, id)
-	s.inbox = slices.DeleteFunc(s.inbox, func(a Arrival) bool { return a.ID == id })
+	sender := s.inbox[idx].Sender
+	s.inbox = slices.Delete(s.inbox, idx, idx+1)
 	s.mu.Unlock()
 	if s.deps.Emit != nil {
-		s.deps.Emit(ExpiredEvent, Expired{ID: id, Sender: incoming.Sender})
+		s.deps.Emit(ExpiredEvent, Expired{ID: id, Sender: sender})
 	}
+}
+
+// dropOldestUnpaired keeps the unpaired arrivals within maxUnpairedInbox; the caller holds s.mu.
+func (s *Service) dropOldestUnpaired() {
+	unpaired := 0
+	for _, a := range s.inbox {
+		if !a.Paired {
+			unpaired++
+		}
+	}
+	for unpaired > maxUnpairedInbox {
+		i := slices.IndexFunc(s.inbox, func(a Arrival) bool { return !a.Paired })
+		s.inbox = slices.Delete(s.inbox, i, i+1)
+		unpaired--
+	}
+}
+
+func (s *Service) acquireShare() bool {
+	s.rateMu.Lock()
+	defer s.rateMu.Unlock()
+	if s.sharesInFlight >= maxShareRequests {
+		return false
+	}
+	s.sharesInFlight++
+	return true
+}
+
+func (s *Service) releaseShare() {
+	s.rateMu.Lock()
+	s.sharesInFlight--
+	s.rateMu.Unlock()
 }
 
 func (s *Service) consumeProof(peer string, request shareRequest) bool {
