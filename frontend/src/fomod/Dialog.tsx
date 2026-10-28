@@ -34,6 +34,7 @@ function PluginImage({ game, itemKey, rel }: { game: string; itemKey: string; re
   useEffect(() => {
     let revoke = ''
     let alive = true
+    setUrl('')
     FomodImage(game, itemKey, rel)
       .then((data) => {
         if (!alive) {
