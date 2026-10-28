@@ -15,9 +15,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	_ "github.com/Rethunk-Tech/mortar/internal/loader/folder"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
-	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/runtime"
-	"github.com/Rethunk-Tech/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/testenv"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
@@ -64,7 +63,7 @@ func tree(t *testing.T, dir string) map[string]string {
 func TestEnabledModsAreSwappedIntoTheModsFolderAndTakenBack(t *testing.T) {
 	useFolderGame(t, "{documents}/Mods")
 	dir := t.TempDir()
-	ps := profile.OpenIn(dir, store.OpenAt(filepath.Join(dir, "store")))
+	_, ps := testenv.StoresIn(t, dir)
 	p, err := ps.Create(gameID, "A")
 	if err != nil {
 		t.Fatal(err)
@@ -181,7 +180,7 @@ func TestAnUnknownGameIsRefused(t *testing.T) {
 func TestAModsFolderInsideTheInstallIsFilledAndPurgedWithTheInstallUnchanged(t *testing.T) {
 	useFolderGame(t, "{install}")
 	dir := t.TempDir()
-	ps := profile.OpenIn(dir, store.OpenAt(filepath.Join(dir, "store")))
+	_, ps := testenv.StoresIn(t, dir)
 	p, err := ps.Create(gameID, "A")
 	if err != nil {
 		t.Fatal(err)

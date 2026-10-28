@@ -454,7 +454,7 @@ func TestModsParkUnknownFoldersBeforeRebuild(t *testing.T) {
 		t.Fatal(err)
 	}
 	held := filepath.Join(e.root, "stardew", p.ID, modsHoldDir, "dropped", "keep.txt")
-	if got := read(t, held); got != "keep" {
+	if got := testfs.Read(t, held); got != "keep" {
 		t.Fatalf("parked folder = %q", got)
 	}
 	if exists(filepath.Join(e.mods(p.ID), "dropped")) {

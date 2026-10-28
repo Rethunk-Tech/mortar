@@ -5,14 +5,14 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/profile"
-	"github.com/Rethunk-Tech/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/testenv"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func TestAFileSavedFromAnItchPageIsAnEntryThatNamesThePage(t *testing.T) {
 	t.Parallel()
 	dir := t.TempDir()
-	ps := profile.OpenIn(dir, store.OpenAt(filepath.Join(dir, "store")))
+	_, ps := testenv.StoresIn(t, dir)
 	p, err := ps.Create("stardew", "A")
 	if err != nil {
 		t.Fatal(err)

@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func write(t *testing.T, path, body string) {
@@ -21,15 +21,6 @@ func write(t *testing.T, path, body string) {
 	if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
 		t.Fatal(err)
 	}
-}
-
-func read(t *testing.T, path string) string {
-	t.Helper()
-	b, err := fsx.ReadFile(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return string(b)
 }
 
 func TestBuildCopyRootKeepsTheCopysOwnConfig(t *testing.T) {
@@ -44,16 +35,16 @@ func TestBuildCopyRootKeepsTheCopysOwnConfig(t *testing.T) {
 		t.Fatal(err)
 	}
 	own := filepath.Join(root, "BepInEx")
-	if got := read(t, filepath.Join(own, "core", "BepInEx.Preloader.dll")); got != "dll" {
+	if got := testfs.Read(t, filepath.Join(own, "core", "BepInEx.Preloader.dll")); got != "dll" {
 		t.Fatalf("core through the link = %q", got)
 	}
 	if fi, err := os.Lstat(filepath.Join(own, "plugins")); err != nil || fi.Mode().IsRegular() {
 		t.Fatalf("plugins is not a link: %v %v", fi, err)
 	}
-	if got := read(t, filepath.Join(own, "changelog.txt")); got != "v1" {
+	if got := testfs.Read(t, filepath.Join(own, "changelog.txt")); got != "v1" {
 		t.Fatalf("file = %q", got)
 	}
-	if got := read(t, filepath.Join(own, "config", "x.cfg")); got != "host" {
+	if got := testfs.Read(t, filepath.Join(own, "config", "x.cfg")); got != "host" {
 		t.Fatalf("seeded config = %q", got)
 	}
 	for _, name := range []string{"LogOutput.log", "LogOutput.log.1"} {
@@ -68,14 +59,14 @@ func TestBuildCopyRootKeepsTheCopysOwnConfig(t *testing.T) {
 	if err := BuildCopyRoot(profile, root); err != nil {
 		t.Fatal(err)
 	}
-	if got := read(t, filepath.Join(own, "config", "x.cfg")); got != "joiner" {
+	if got := testfs.Read(t, filepath.Join(own, "config", "x.cfg")); got != "joiner" {
 		t.Fatalf("config after rebuild = %q", got)
 	}
-	if got := read(t, filepath.Join(own, "changelog.txt")); got != "v2" {
+	if got := testfs.Read(t, filepath.Join(own, "changelog.txt")); got != "v2" {
 		t.Fatalf("file after rebuild = %q", got)
 	}
 	// Replacing the link must not reach through it into the profile.
-	if got := read(t, filepath.Join(profile, "BepInEx", "plugins", "a.dll")); got != "a" {
+	if got := testfs.Read(t, filepath.Join(profile, "BepInEx", "plugins", "a.dll")); got != "a" {
 		t.Fatalf("the profile's plugin after rebuild = %q", got)
 	}
 }

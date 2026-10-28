@@ -8,16 +8,12 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func TestSavesZipsAndKeepsTheChosenCount(t *testing.T) {
 	saves := filepath.Join(t.TempDir(), "Saves")
-	if err := os.MkdirAll(filepath.Join(saves, "Farm_1"), 0o750); err != nil {
-		t.Fatal(err)
-	}
-	if err := fsx.WriteFile(filepath.Join(saves, "Farm_1", "Farm_1"), []byte("save"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, saves, "Farm_1/Farm_1", "save")
 	out := t.TempDir()
 	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 	var last string
@@ -46,12 +42,7 @@ func TestSavesZipsAndKeepsTheChosenCount(t *testing.T) {
 
 func TestPinnedBackupSurvivesRotation(t *testing.T) {
 	saves := filepath.Join(t.TempDir(), "Saves")
-	if err := os.MkdirAll(filepath.Join(saves, "Farm_1"), 0o750); err != nil {
-		t.Fatal(err)
-	}
-	if err := fsx.WriteFile(filepath.Join(saves, "Farm_1", "Farm_1"), []byte("save"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, saves, "Farm_1/Farm_1", "save")
 	out := t.TempDir()
 	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 	first, err := Saves(t.Context(), layout(saves), out, 2, start, Cause{Kind: KindLaunch})

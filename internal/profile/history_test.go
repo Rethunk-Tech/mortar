@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/store"
@@ -152,7 +153,7 @@ func TestHistoryRevertCarriesModifiedConfig(t *testing.T) {
 	if _, err := e.Revert("stardew", p.ID, afterAdd[0].ID); err != nil {
 		t.Fatal(err)
 	}
-	if got := read(t, filepath.Join(e.mods(p.ID), "local-a", "config.json")); got != "mine" {
+	if got := testfs.Read(t, filepath.Join(e.mods(p.ID), "local-a", "config.json")); got != "mine" {
 		t.Fatalf("config after revert = %q, want mine", got)
 	}
 }

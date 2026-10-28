@@ -16,15 +16,6 @@ func write(t *testing.T, p, body string) {
 	testfs.WriteAt(t, p, []byte(body))
 }
 
-func read(t *testing.T, p string) string {
-	t.Helper()
-	b, err := os.ReadFile(filepath.Clean(p))
-	if err != nil {
-		t.Fatal(err)
-	}
-	return string(b)
-}
-
 func TestSwapKeepsSharedSavesAndProfileSavesApart(t *testing.T) {
 	for _, noLink := range []bool{false, true} {
 		root := t.TempDir()
@@ -35,17 +26,17 @@ func TestSwapKeepsSharedSavesAndProfileSavesApart(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if read(t, filepath.Join(saves, "mine.sav")) != "mine" || exists(filepath.Join(saves, "shared.sav")) {
+		if testfs.Read(t, filepath.Join(saves, "mine.sav")) != "mine" || exists(filepath.Join(saves, "shared.sav")) {
 			t.Fatalf("noLink=%v: the game must see only the profile's saves", noLink)
 		}
 		write(t, filepath.Join(saves, "new.sav"), "played")
 		if err := Purge(m); err != nil {
 			t.Fatal(err)
 		}
-		if read(t, filepath.Join(saves, "shared.sav")) != "shared" || exists(filepath.Join(saves, "mine.sav")) {
+		if testfs.Read(t, filepath.Join(saves, "shared.sav")) != "shared" || exists(filepath.Join(saves, "mine.sav")) {
 			t.Fatalf("noLink=%v: the shared saves must return untouched", noLink)
 		}
-		if read(t, filepath.Join(prof, "new.sav")) != "played" || read(t, filepath.Join(prof, "mine.sav")) != "mine" {
+		if testfs.Read(t, filepath.Join(prof, "new.sav")) != "played" || testfs.Read(t, filepath.Join(prof, "mine.sav")) != "mine" {
 			t.Fatalf("noLink=%v: the profile keeps what was played", noLink)
 		}
 		if exists(journal) || exists(saves+heldSuffix) {
@@ -70,7 +61,7 @@ func TestRecoverAfterACrashRestoresSharedSaves(t *testing.T) {
 	if err := Recover(journal, func() bool { return false }); err != nil {
 		t.Fatal(err)
 	}
-	if read(t, filepath.Join(saves, "shared.sav")) != "shared" || isLink(saves) {
+	if testfs.Read(t, filepath.Join(saves, "shared.sav")) != "shared" || isLink(saves) {
 		t.Fatal("recover must put the shared saves back")
 	}
 }
@@ -113,7 +104,7 @@ func TestPurgeRunAgainKeepsTheWrittenBackSaves(t *testing.T) {
 	if err := Recover(journal, nil); err != nil {
 		t.Fatal(err)
 	}
-	if read(t, filepath.Join(prof, "a.sav")) != "slot a" || read(t, filepath.Join(prof, "locked", "b.sav")) != "slot b" || exists(saves) {
+	if testfs.Read(t, filepath.Join(prof, "a.sav")) != "slot a" || testfs.Read(t, filepath.Join(prof, "locked", "b.sav")) != "slot b" || exists(saves) {
 		t.Fatal("the second purge lost saves or left the working copy")
 	}
 }
@@ -126,7 +117,7 @@ func TestApplyNeverOverwritesSavesAlreadySetAside(t *testing.T) {
 	if _, err := Apply(journal, saves, prof, false); err == nil {
 		t.Fatal("a second set of shared saves was set aside over the first")
 	}
-	if read(t, filepath.Join(saves, "shared.sav")) != "shared" || read(t, filepath.Join(saves+heldSuffix, "older.sav")) != "older" || exists(journal) {
+	if testfs.Read(t, filepath.Join(saves, "shared.sav")) != "shared" || testfs.Read(t, filepath.Join(saves+heldSuffix, "older.sav")) != "older" || exists(journal) {
 		t.Fatal("a refused apply changed something")
 	}
 }
@@ -150,7 +141,7 @@ func TestPurgeStopsWhenSomethingIsWhereTheSharedSavesGoBack(t *testing.T) {
 	if err := Purge(m); err == nil {
 		t.Fatal("purge reported success with the shared saves still set aside")
 	}
-	if read(t, filepath.Join(m.Held, "shared.sav")) != "shared" || read(t, filepath.Join(saves, "stray.sav")) != "stray" || !exists(journalPath(journal)) {
+	if testfs.Read(t, filepath.Join(m.Held, "shared.sav")) != "shared" || testfs.Read(t, filepath.Join(saves, "stray.sav")) != "stray" || !exists(journalPath(journal)) {
 		t.Fatal("purge lost the shared saves, the stray folder or its journal")
 	}
 }
@@ -172,7 +163,7 @@ func TestPurgeOfAHalfCopiedSwapLeavesTheProfileAlone(t *testing.T) {
 	if err := Purge(m); err != nil {
 		t.Fatal(err)
 	}
-	if read(t, filepath.Join(prof, "mine.sav")) != "mine" || read(t, filepath.Join(saves, "shared.sav")) != "shared" {
+	if testfs.Read(t, filepath.Join(prof, "mine.sav")) != "mine" || testfs.Read(t, filepath.Join(saves, "shared.sav")) != "shared" {
 		t.Fatal("a partial copy replaced the profile's saves")
 	}
 }
@@ -211,7 +202,7 @@ func TestPurgeWithAStaleManifestDoesNothing(t *testing.T) {
 	if err := Purge(m); err != nil {
 		t.Fatal(err)
 	}
-	if read(t, filepath.Join(saves, "Shared_1")) != "shared" || read(t, filepath.Join(prof, "Prof_1")) != "mine" {
+	if testfs.Read(t, filepath.Join(saves, "Shared_1")) != "shared" || testfs.Read(t, filepath.Join(prof, "Prof_1")) != "mine" {
 		t.Fatal("a manifest whose journal is gone replayed over the finished swap")
 	}
 }

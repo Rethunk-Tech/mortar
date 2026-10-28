@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/savesiso"
@@ -69,15 +68,6 @@ func writeFile(t *testing.T, p, body string) {
 	testfs.WriteAt(t, p, []byte(body))
 }
 
-func readFile(t *testing.T, p string) string {
-	t.Helper()
-	b, err := fsx.ReadFile(p)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return string(b)
-}
-
 func TestSwapOptionsSeedsTheProfileAndReturnsThePlayersFile(t *testing.T) {
 	svc, pid, target := optionsEnv(t, settings.GameSettingsWarn)
 	g := game.Find(optionsGame)
@@ -91,15 +81,15 @@ func TestSwapOptionsSeedsTheProfileAndReturnsThePlayersFile(t *testing.T) {
 		t.Fatalf("the swap is not tracked for undoing: %+v", dep)
 	}
 	own := filepath.Join(filepath.Dir(dep.options.Profile), "Options.ini")
-	if readFile(t, own) != "[options]\nModsDisabled = 1\n" || readFile(t, target) != readFile(t, own) {
+	if testfs.Read(t, own) != "[options]\nModsDisabled = 1\n" || testfs.Read(t, target) != testfs.Read(t, own) {
 		t.Fatal("the first launch seeds the profile copy from the player's file")
 	}
 	writeFile(t, target, "[options]\nplayed = 1\n")
 	dep.unwind(context.Background())
-	if readFile(t, target) != "[options]\nModsDisabled = 1\n" {
-		t.Fatalf("the player's file after the launch = %q", readFile(t, target))
+	if testfs.Read(t, target) != "[options]\nModsDisabled = 1\n" {
+		t.Fatalf("the player's file after the launch = %q", testfs.Read(t, target))
 	}
-	if readFile(t, own) != "[options]\nplayed = 1\n" {
+	if testfs.Read(t, own) != "[options]\nplayed = 1\n" {
 		t.Fatal("the profile keeps what the game wrote")
 	}
 }
@@ -122,7 +112,7 @@ func TestSwapOptionsAfterACrashIsRecoveredAtNextLaunchAndStart(t *testing.T) {
 	if found, err := svc.RecoverGameDeploys(context.Background(), optionsGame); err != nil || !found {
 		t.Fatalf("recover at start: %v %v", found, err)
 	}
-	if readFile(t, target) != "player" || savesiso.HasFileJournal(dir) {
+	if testfs.Read(t, target) != "player" || savesiso.HasFileJournal(dir) {
 		t.Fatal("recovery must return the player's file")
 	}
 }
@@ -148,15 +138,15 @@ func TestSwapOptionsEditModeChangesOnlyTheProfilesCopy(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := "[options]\r\nModsDisabled = 0\r\nOther = 5\r\nScriptMods = 1\r\n"
-	if got := readFile(t, target); got != want {
+	if got := testfs.Read(t, target); got != want {
 		t.Fatalf("the game sees %q, want %q", got, want)
 	}
 	dep.unwind(context.Background())
-	if got := readFile(t, target); got != player {
+	if got := testfs.Read(t, target); got != player {
 		t.Fatalf("the player's file changed: %q", got)
 	}
 	own := dep.options.Profile
-	if got := readFile(t, own); got != want {
+	if got := testfs.Read(t, own); got != want {
 		t.Fatalf("the profile copy = %q", got)
 	}
 }
@@ -171,11 +161,11 @@ func TestSwapOptionsWarnModeLeavesTheBytesAlone(t *testing.T) {
 	if err := svc.swapOptions(context.Background(), optionsGame, selected, pid, "", dep); err != nil {
 		t.Fatal(err)
 	}
-	if got := readFile(t, target); got != player {
+	if got := testfs.Read(t, target); got != player {
 		t.Fatalf("warn mode edited the file: %q", got)
 	}
 	dep.unwind(context.Background())
-	if got := readFile(t, dep.options.Profile); got != player {
+	if got := testfs.Read(t, dep.options.Profile); got != player {
 		t.Fatalf("profile copy = %q", got)
 	}
 }
@@ -207,11 +197,11 @@ func TestSwapOptionsLeavesAFileMortarCannotEditAndStillLaunches(t *testing.T) {
 	if err := svc.swapOptions(context.Background(), optionsGame, selected, pid, "", dep); err != nil {
 		t.Fatalf("a file Mortar cannot edit stopped the launch: %v", err)
 	}
-	if got := readFile(t, target); got != utf16 {
+	if got := testfs.Read(t, target); got != utf16 {
 		t.Fatalf("the game's file was changed: %q", got)
 	}
 	dep.unwind(context.Background())
-	if got := readFile(t, target); got != utf16 || readFile(t, dep.options.Profile) != utf16 {
+	if got := testfs.Read(t, target); got != utf16 || testfs.Read(t, dep.options.Profile) != utf16 {
 		t.Fatal("the player's file or the profile copy changed")
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func TestUpdateOldFilesFollowTheSetting(t *testing.T) {
@@ -54,7 +55,7 @@ func TestUpdateOldFilesFollowTheSetting(t *testing.T) {
 				t.Errorf("%s answer %v: %s present = %v", tc.mode, tc.answer, rel, got)
 			}
 		}
-		if read(t, filepath.Join(dir, "new.json")) != "n" {
+		if testfs.Read(t, filepath.Join(dir, "new.json")) != "n" {
 			t.Errorf("%s: new.json missing", tc.mode)
 		}
 	}
@@ -118,7 +119,7 @@ func TestUpdateKeepsAFileAddedToAnExtraWhateverTheSetting(t *testing.T) {
 		if _, err := e.UpdateMultiFile("stardew", p.ID, "a-1", "a-2", nil); err != nil {
 			t.Fatal(err)
 		}
-		if read(t, filepath.Join(e.mods(p.ID), "a-2", "extra", "C", "mine.dat")) != "kept" {
+		if testfs.Read(t, filepath.Join(e.mods(p.ID), "a-2", "extra", "C", "mine.dat")) != "kept" {
 			t.Errorf("%s: the player's file in the extra is gone", mode)
 		}
 		if pending, err := e.PendingOldFiles("stardew", p.ID); err != nil || len(pending) != 0 {

@@ -23,7 +23,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/savesiso"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
-	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 )
 
@@ -443,7 +442,7 @@ func parallelStartEnv(t *testing.T) (*Service, profile.Profile) {
 	if _, err := set.Update(func(v *settings.Settings) { v.GameFolders["stardew"] = folder }); err != nil {
 		t.Fatal(err)
 	}
-	profiles := profile.OpenIn(filepath.Join(data, "profiles"), store.OpenAt(filepath.Join(data, "store")))
+	_, profiles := testenv.StoresIn(t, data)
 	p := testenv.Profile(t, profiles, "stardew", "A")
 	svc := NewService(t.TempDir(), set, profiles)
 	svc.dataDir = func() (string, error) { return data, nil }

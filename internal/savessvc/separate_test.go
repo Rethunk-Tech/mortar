@@ -11,6 +11,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 // separateEnv is a service with the shared saves holding Farm_1, a profile "own" keeping its saves separate with
@@ -37,8 +38,8 @@ func separateEnv(t *testing.T) (s *Service, shared, ownDir string, own, plain pr
 	if ownDir, err = s.profiles.SavesFolder("stardew", own.ID); err != nil {
 		t.Fatal(err)
 	}
-	writeFarm(t, shared, "Farm_1", "Shared", "shared-v1")
-	writeFarm(t, ownDir, "Farm_2", "Own", "own-v1")
+	testfs.WriteFarm(t, shared, "Farm_1", "Shared", "shared-v1")
+	testfs.WriteFarm(t, ownDir, "Farm_2", "Own", "own-v1")
 	return s, shared, ownDir, own, plain
 }
 
@@ -134,7 +135,7 @@ func TestSeparateSavesBackupRestoreAndOpenActOnTheProfilesOwn(t *testing.T) {
 
 func TestScheduledBackupsCoverEachSeparateSavesFolderOnce(t *testing.T) {
 	s, _, ownDir, own, _ := separateEnv(t)
-	writeFarm(t, ownDir, "Farm_1", "Own", "own-v1")
+	testfs.WriteFarm(t, ownDir, "Farm_1", "Own", "own-v1")
 	if _, err := s.settings.Update(func(v *settings.Settings) {
 		if err := settings.ApplyKeyGame(v, "saveBackupHours", "6", "stardew"); err != nil {
 			t.Error(err)
@@ -171,7 +172,7 @@ func TestScheduledBackupsCoverEachSeparateSavesFolderOnce(t *testing.T) {
 
 func TestAProfilesOwnSavesFollowItsOwnBackupSchedule(t *testing.T) {
 	s, _, ownDir, own, _ := separateEnv(t)
-	writeFarm(t, ownDir, "Farm_1", "Own", "own-v1")
+	testfs.WriteFarm(t, ownDir, "Farm_1", "Own", "own-v1")
 	if _, err := s.settings.Update(func(v *settings.Settings) {
 		if err := settings.ApplyKeyGame(v, "saveBackupHours", "6", "stardew"); err != nil {
 			t.Error(err)

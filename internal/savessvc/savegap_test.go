@@ -20,7 +20,7 @@ import (
 func TestRestoreSaveCopyRefusedWhileBusy(t *testing.T) {
 	s, savesDir := backupService(t)
 	s.busy = func() bool { return true }
-	writeFarm(t, savesDir, "Farm_1", "Sunny", "current")
+	testfs.WriteFarm(t, savesDir, "Farm_1", "Sunny", "current")
 	if err := fsx.WriteFile(filepath.Join(savesDir, "Farm_1", "Farm_1_old"), []byte("older"), 0o600); err != nil {
 		t.Fatal(err)
 	}

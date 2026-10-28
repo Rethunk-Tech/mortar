@@ -15,7 +15,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/modfixture"
@@ -155,7 +154,7 @@ func TestPerfBudgets(t *testing.T) {
 	contentpatcher.Driver{}.Analyze(in)
 	pack := biggestPack(t, mods)
 	wall, cpu = bestOf(3, func() (time.Duration, time.Duration) {
-		touchPack(t, pack)
+		testfs.Touch(t, pack)
 		return measure(func() { contentpatcher.Driver{}.Analyze(in) })
 	})
 	within(t, "Content Patcher after one pack edit", wall, cpu, packEditBudget)
@@ -184,8 +183,7 @@ func TestPerfWarmCheckChild(t *testing.T) {
 	}
 }
 
-// biggestPack is the content.json of the enabled pack with the most text there, the edit that re-reads the most. The
-// file is put back after the test.
+// biggestPack is the content.json of the enabled pack with the most text there, the edit that re-reads the most.
 func biggestPack(t *testing.T, mods []framework.Mod) string {
 	t.Helper()
 	path, size := "", int64(-1)
@@ -200,33 +198,5 @@ func biggestPack(t *testing.T, mods []framework.Mod) string {
 	if path == "" {
 		t.Fatal("no enabled Content Patcher pack")
 	}
-	raw, err := fsx.ReadFile(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	info, err := os.Stat(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() {
-		_ = fsx.WriteFile(path, raw, info.Mode())
-		_ = os.Chtimes(path, info.ModTime(), info.ModTime())
-	})
 	return path
-}
-
-// touchPack appends a blank line to content.json, dated past the window in which a fresh stamp is not trusted.
-func touchPack(t *testing.T, path string) {
-	t.Helper()
-	raw, err := fsx.ReadFile(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := fsx.WriteFile(path, append(raw, '\n'), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	at := time.Now().Add(-time.Minute)
-	if err := os.Chtimes(path, at, at); err != nil {
-		t.Fatal(err)
-	}
 }

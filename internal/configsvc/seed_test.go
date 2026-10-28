@@ -8,14 +8,14 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/configsvc"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
-	"github.com/Rethunk-Tech/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/testenv"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func TestAPackagesShippedConfigIsEditableBeforeTheFirstLaunch(t *testing.T) {
 	t.Parallel()
 	dir := t.TempDir()
-	ps := profile.OpenIn(dir, store.OpenAt(filepath.Join(dir, "store")))
+	_, ps := testenv.StoresIn(t, dir)
 	const lc = "lethal-company"
 	p, err := ps.Create(lc, "Friends")
 	if err != nil {

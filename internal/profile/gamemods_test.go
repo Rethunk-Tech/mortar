@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func TestMoveGameModsMovesNewFoldersAndSkipsHeldOnes(t *testing.T) {
@@ -34,7 +35,7 @@ func TestMoveGameModsMovesNewFoldersAndSkipsHeldOnes(t *testing.T) {
 		t.Fatalf("game Mods left = %v", got)
 	}
 	cfg, err := e.ModFolder("stardew", p.ID, "", "smapi:me.new")
-	if err != nil || read(t, filepath.Join(cfg, "config.json")) != `{"x":1}` {
+	if err != nil || testfs.Read(t, filepath.Join(cfg, "config.json")) != `{"x":1}` {
 		t.Fatalf("config not carried: %v", err)
 	}
 	for _, en := range res.Profile.Entries {

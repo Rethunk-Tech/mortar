@@ -12,9 +12,9 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 // realProfile reads the profile MORTAR_CP_REAL names as game/id from the data folder HOME points at, which should be a
@@ -100,26 +100,7 @@ func largestPack(t *testing.T, mods []framework.Mod) int {
 // trusted, and puts the file back after the test.
 func editPack(t *testing.T, folder string) {
 	t.Helper()
-	path := filepath.Join(folder, "content.json")
-	raw, err := fsx.ReadFile(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	info, err := os.Stat(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() {
-		_ = fsx.WriteFile(path, raw, info.Mode())
-		_ = os.Chtimes(path, info.ModTime(), info.ModTime())
-	})
-	if err := fsx.WriteFile(path, append(slices.Clone(raw), '\n'), info.Mode()); err != nil {
-		t.Fatal(err)
-	}
-	at := time.Now().Add(-time.Minute)
-	if err := os.Chtimes(path, at, at); err != nil {
-		t.Fatal(err)
-	}
+	testfs.Touch(t, filepath.Join(folder, "content.json"))
 }
 
 func requireSame(t *testing.T, got, want framework.Findings) {

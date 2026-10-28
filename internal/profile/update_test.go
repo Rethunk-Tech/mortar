@@ -10,20 +10,12 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/backup"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
-
-func read(t *testing.T, path string) string {
-	t.Helper()
-	b, err := fsx.ReadFile(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return string(b)
-}
 
 // updEnv is an env with a profile holding entry "a-1" of mod me.a, and store items a-1 and a-2.
 func updEnv(t *testing.T, v1, v2 map[string]string) (env, Profile) {
@@ -60,7 +52,7 @@ func TestUpdateDeleteOldVersionCarriesConfigOnly(t *testing.T) {
 		"config.json": "mine", "tweaked.json": "v1", "both.json": "v2",
 	}
 	for rel, body := range want {
-		if g := read(t, filepath.Join(dir, rel)); g != body {
+		if g := testfs.Read(t, filepath.Join(dir, rel)); g != body {
 			t.Errorf("%s = %q, want %q", rel, g, body)
 		}
 	}
@@ -92,7 +84,7 @@ func TestCarryOverMatrix(t *testing.T) {
 		"same.json": "v1", "target.json": "v2", "new.json": "n",
 	}
 	for rel, body := range want {
-		if g := read(t, filepath.Join(dir, rel)); g != body {
+		if g := testfs.Read(t, filepath.Join(dir, rel)); g != body {
 			t.Errorf("%s = %q, want %q", rel, g, body)
 		}
 	}
@@ -125,7 +117,7 @@ func TestUpdateKeepsDisabledFolderAndRollsBack(t *testing.T) {
 	if len(got.Groups) != 1 || !slices.Equal(got.Groups[0].Keys, []string{"a-2"}) {
 		t.Fatalf("the updated entry left its group: %+v", got.Groups)
 	}
-	if b := read(t, filepath.Join(e.mods(p.ID), "a-2", "Pack", "Moved", ".A", "cfg.json")); b != "v2" {
+	if b := testfs.Read(t, filepath.Join(e.mods(p.ID), "a-2", "Pack", "Moved", ".A", "cfg.json")); b != "v2" {
 		t.Fatalf("cfg = %q", b)
 	}
 
@@ -139,7 +131,7 @@ func TestUpdateKeepsDisabledFolderAndRollsBack(t *testing.T) {
 	if len(back.Groups) != 1 || !slices.Equal(back.Groups[0].Keys, []string{"a-1"}) {
 		t.Fatalf("the rolled back entry left its group: %+v", back.Groups)
 	}
-	if b := read(t, filepath.Join(e.mods(p.ID), "a-1", "Pack", ".A", "cfg.json")); b != "v1" {
+	if b := testfs.Read(t, filepath.Join(e.mods(p.ID), "a-1", "Pack", ".A", "cfg.json")); b != "v1" {
 		t.Fatalf("cfg = %q", b)
 	}
 	if _, err := e.RollBack("stardew", p.ID, "a-1"); err != nil {
@@ -288,7 +280,7 @@ func TestUpdateThatCannotRecordRestoresTheOldFolder(t *testing.T) {
 	if got := names(t, e.mods(p.ID)); !slices.Equal(got, []string{"a-1"}) {
 		t.Fatalf("mods/ = %v", got)
 	}
-	if g := read(t, filepath.Join(e.mods(p.ID), "a-1", "A", "config.json")); g != "mine" {
+	if g := testfs.Read(t, filepath.Join(e.mods(p.ID), "a-1", "A", "config.json")); g != "mine" {
 		t.Fatalf("config = %q", g)
 	}
 }
@@ -310,7 +302,7 @@ func TestRebuildUndoesAnInterruptedUpdate(t *testing.T) {
 	if got := names(t, mods); !slices.Equal(got, []string{"a-1"}) {
 		t.Fatalf("mods/ = %v", got)
 	}
-	if g := read(t, filepath.Join(mods, "a-1", "A", "config.json")); g != "mine" {
+	if g := testfs.Read(t, filepath.Join(mods, "a-1", "A", "config.json")); g != "mine" {
 		t.Fatalf("config = %q", g)
 	}
 }

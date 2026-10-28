@@ -14,6 +14,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/msbuild"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 // fixtureProject writes a filled template's files that Inspect and Edit read and change, and records the project.
@@ -43,15 +44,6 @@ func fixtureProject(t *testing.T, svc *Service) string {
 		t.Fatal(err)
 	}
 	return dir
-}
-
-func read(t *testing.T, path string) string {
-	t.Helper()
-	b, err := fsx.ReadFile(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return string(b)
 }
 
 func TestInspectReadsTheProjectFiles(t *testing.T) {
@@ -132,20 +124,20 @@ func TestEditRenamesAndRewritesTheProject(t *testing.T) {
 	if info.Name != "LandDrop" || info.GUID != "com.bc.LandDrop" || info.Author != "B & C" || info.Description != "Lands <anywhere>." {
 		t.Errorf("info = %+v", info)
 	}
-	csproj := read(t, filepath.Join(dir, "src", "LandDrop", "LandDrop.csproj"))
+	csproj := testfs.Read(t, filepath.Join(dir, "src", "LandDrop", "LandDrop.csproj"))
 	if !strings.Contains(csproj, "<ThunderstoreDescription>Lands &lt;anywhere&gt;.</ThunderstoreDescription>") || !strings.Contains(csproj, "<RootNamespace>LandDrop</RootNamespace>") {
 		t.Errorf("csproj = %s", csproj)
 	}
-	if code := read(t, filepath.Join(dir, "src", "LandDrop", "Plugin.cs")); code != "namespace LandDrop;\n// loads landdrop.bundle\nclass ShopDropThing {}\n" {
+	if code := testfs.Read(t, filepath.Join(dir, "src", "LandDrop", "Plugin.cs")); code != "namespace LandDrop;\n// loads landdrop.bundle\nclass ShopDropThing {}\n" {
 		t.Errorf("code = %q", code)
 	}
-	if slnx := read(t, filepath.Join(dir, "LandDrop.slnx")); !strings.Contains(slnx, "src/LandDrop/LandDrop.csproj") {
+	if slnx := testfs.Read(t, filepath.Join(dir, "LandDrop.slnx")); !strings.Contains(slnx, "src/LandDrop/LandDrop.csproj") {
 		t.Errorf("slnx = %s", slnx)
 	}
-	if lic := read(t, filepath.Join(dir, "LICENSE")); !strings.Contains(lic, "2026 B & C") {
+	if lic := testfs.Read(t, filepath.Join(dir, "LICENSE")); !strings.Contains(lic, "2026 B & C") {
 		t.Errorf("license = %s", lic)
 	}
-	if props := read(t, filepath.Join(dir, "Directory.Build.props")); !strings.Contains(props, "Copyright (c) 2026 B &amp; C</Copyright>") {
+	if props := testfs.Read(t, filepath.Join(dir, "Directory.Build.props")); !strings.Contains(props, "Copyright (c) 2026 B &amp; C</Copyright>") {
 		t.Errorf("props = %s", props)
 	}
 	gp := svc.Settings.Get().GamePrefs("lethal-company")
@@ -223,7 +215,7 @@ func TestEditWritesCategoriesAsAList(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	csproj := read(t, filepath.Join(dir, "src", "ShopDrop", "ShopDrop.csproj"))
+	csproj := testfs.Read(t, filepath.Join(dir, "src", "ShopDrop", "ShopDrop.csproj"))
 	if !strings.Contains(csproj, "<ThunderstoreCategories>mods;bepinex</ThunderstoreCategories>") || strings.Join(info.Categories, ",") != "mods,bepinex" {
 		t.Errorf("categories %v in %s", info.Categories, csproj)
 	}
@@ -241,7 +233,7 @@ func TestEditMatchesAndWritesTheAuthorEscapedLikeTheTemplate(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	if props := read(t, propsPath); !strings.Contains(props, "Copyright (c) 2026 %24(Version)</Copyright>") {
+	if props := testfs.Read(t, propsPath); !strings.Contains(props, "Copyright (c) 2026 %24(Version)</Copyright>") {
 		t.Errorf("props = %s", props)
 	}
 }
@@ -259,7 +251,7 @@ func TestEditMovesTheTeamInDevelopingMd(t *testing.T) {
 		t.Fatal(err)
 	}
 	// "username Abc" names another team and stays.
-	if got := read(t, doc); strings.Contains(got, "username Ab`") || !strings.Contains(got, "username Bc`") ||
+	if got := testfs.Read(t, doc); strings.Contains(got, "username Ab`") || !strings.Contains(got, "username Bc`") ||
 		!strings.Contains(got, "thunderstore:Bc'") || !strings.Contains(got, "username Abc") || !strings.Contains(got, "Thunderstore Bc") {
 		t.Errorf("DEVELOPING.md = %s", got)
 	}

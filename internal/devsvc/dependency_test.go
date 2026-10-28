@@ -8,6 +8,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func TestWithDependency(t *testing.T) {
@@ -79,7 +80,7 @@ func TestSetUserDependencyListsEachPackageOnce(t *testing.T) {
 	if err := setUserDependency(dir, "Evaisa-LethalLib", "/store/ll/"); err != nil {
 		t.Fatal(err)
 	}
-	body := read(t, filepath.Join(dir, "Config.Build.user.props"))
+	body := testfs.Read(t, filepath.Join(dir, "Config.Build.user.props"))
 	if strings.Count(body, `<MortarDependencyFolder Include="AinaVT-LethalConfig" />`) != 1 ||
 		strings.Count(body, `<MortarDependencyFolder Include="Evaisa-LethalLib" />`) != 1 ||
 		!strings.Contains(body, "<MortarDependency_AinaVT_LethalConfig>/store/l%3Bc/</MortarDependency_AinaVT_LethalConfig>") ||

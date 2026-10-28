@@ -14,8 +14,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
-	"github.com/Rethunk-Tech/mortar/internal/profile"
-	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 )
 
@@ -27,7 +25,7 @@ const protonGame = `Z:\home\nomad\.local\share\Steam\steamapps\common\Lethal Com
 func steamRun(t *testing.T, timedOutFirst, exits bool, waitFails ...bool) (*Service, game.Game) {
 	t.Helper()
 	data := t.TempDir()
-	profiles := profile.OpenIn(filepath.Join(data, "profiles"), store.OpenAt(filepath.Join(data, "store")))
+	_, profiles := testenv.StoresIn(t, data)
 	p := testenv.Profile(t, profiles, "lethal-company", "A")
 	svc := NewService(t.TempDir(), nil, profiles)
 	svc.procDir = t.TempDir()

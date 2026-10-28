@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 )
@@ -83,7 +84,7 @@ func TestLoadAfterReappliedAfterUpdate(t *testing.T) {
 	if !hasLoadAfter(got, "a-2", "me.b") {
 		t.Fatalf("update dropped LoadAfter: %+v", got.Entries)
 	}
-	assertOptionalDep(t, read(t, filepath.Join(e.mods(p.ID), "a-2", "A", "manifest.json")), "me.b", true)
+	assertOptionalDep(t, testfs.Read(t, filepath.Join(e.mods(p.ID), "a-2", "A", "manifest.json")), "me.b", true)
 }
 
 func hasLoadAfter(p Profile, key, loser string) bool {
@@ -102,7 +103,7 @@ func hasLoadAfter(p Profile, key, loser string) bool {
 
 func winnerManifest(t *testing.T, e env, profileID, key string) string {
 	t.Helper()
-	return read(t, filepath.Join(e.mods(profileID), key, "manifest.json"))
+	return testfs.Read(t, filepath.Join(e.mods(profileID), key, "manifest.json"))
 }
 
 func assertOptionalDep(t *testing.T, raw, uniqueID string, want bool) {

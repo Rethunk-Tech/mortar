@@ -15,7 +15,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/share"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
-	"github.com/Rethunk-Tech/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/testenv"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
@@ -81,7 +81,7 @@ func TestACatalogOnlyGameBrowsesAndAdds(t *testing.T) {
 	}
 
 	base := t.TempDir()
-	profiles := profile.OpenIn(filepath.Join(base, "profiles"), store.OpenAt(filepath.Join(base, "store")))
+	_, profiles := testenv.StoresIn(t, base)
 	p, err := profiles.Create("catalog-only-game", "CW")
 	if err != nil {
 		t.Fatal(err)

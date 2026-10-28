@@ -14,11 +14,12 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/saves"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func TestServiceListsAndRestoresWithTempDataDirs(t *testing.T) {
 	s, savesDir := backupService(t)
-	writeFarm(t, savesDir, "Farm_1", "Sunny", "v1")
+	testfs.WriteFarm(t, savesDir, "Farm_1", "Sunny", "v1")
 	if _, err := backup.Saves(t.Context(), saves.Layout{Dir: savesDir}, filepath.Join(mustData(t), "mortar", "backups", "stardew"), backup.DefaultKeep, time.Date(2026, 7, 1, 0, 0, 0, 0, time.UTC), backup.Cause{Profile: "p1", Kind: backup.KindUpdate}); err != nil {
 		t.Fatal(err)
 	}
@@ -57,24 +58,10 @@ func mustData(t *testing.T) string {
 	return d
 }
 
-func writeFarm(t *testing.T, saves, folder, farm, body string) {
-	t.Helper()
-	dir := filepath.Join(saves, folder)
-	if err := os.MkdirAll(dir, 0o750); err != nil {
-		t.Fatal(err)
-	}
-	if err := fsx.WriteFile(filepath.Join(dir, folder), []byte(body), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	if err := fsx.WriteFile(filepath.Join(dir, "SaveGameInfo"), []byte(`<Farmer><farmName>`+farm+`</farmName></Farmer>`), 0o600); err != nil {
-		t.Fatal(err)
-	}
-}
-
 func TestCreateBackupIsManualPinnedAndOnlyThatSave(t *testing.T) {
 	s, savesDir := backupService(t)
-	writeFarm(t, savesDir, "Farm_1", "Sunny", "v1")
-	writeFarm(t, savesDir, "Farm_2", "Rainy", "v2")
+	testfs.WriteFarm(t, savesDir, "Farm_1", "Sunny", "v1")
+	testfs.WriteFarm(t, savesDir, "Farm_2", "Rainy", "v2")
 	if _, err := s.CreateBackup(t.Context(), "stardew", "", "Farm_1"); err != nil {
 		t.Fatal(err)
 	}
@@ -95,7 +82,7 @@ func TestCreateBackupIsManualPinnedAndOnlyThatSave(t *testing.T) {
 
 func TestCreateBackupUsesGameBackupLocationAndStillListsOldFolder(t *testing.T) {
 	s, savesDir := backupService(t)
-	writeFarm(t, savesDir, "Farm_1", "Sunny", "v1")
+	testfs.WriteFarm(t, savesDir, "Farm_1", "Sunny", "v1")
 	if _, err := s.CreateBackup(t.Context(), "stardew", "", "Farm_1"); err != nil {
 		t.Fatal(err)
 	}
@@ -161,8 +148,8 @@ func TestDeleteBackupRefusesPinned(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	t.Setenv("LOCALAPPDATA", t.TempDir())
 	savesDir := filepath.Join(t.TempDir(), "Saves")
-	writeFarm(t, savesDir, "Farm_1", "Sunny", "v1")
-	writeFarm(t, savesDir, "Farm_2", "Rainy", "v1")
+	testfs.WriteFarm(t, savesDir, "Farm_1", "Sunny", "v1")
+	testfs.WriteFarm(t, savesDir, "Farm_2", "Rainy", "v1")
 	dir := filepath.Join(mustData(t), "mortar", "backups", "stardew")
 	t0 := time.Date(2026, 7, 1, 0, 0, 0, 0, time.UTC)
 	if _, err := backup.Saves(t.Context(), saves.Layout{Dir: savesDir}, dir, backup.DefaultKeep, t0, backup.Cause{Kind: backup.KindLaunch}); err != nil {
@@ -191,7 +178,7 @@ func TestListBackupsKeepsToTheGameAndProfile(t *testing.T) {
 	s, savesDir := backupService(t)
 	lc := filepath.Join(t.TempDir(), "Lethal Company")
 	s.scanners["lethal-company"] = &saves.Scanner{Dir: lc}
-	writeFarm(t, savesDir, "Farm_1", "Sunny", "v1")
+	testfs.WriteFarm(t, savesDir, "Farm_1", "Sunny", "v1")
 	data, err := datadir.Dir()
 	if err != nil {
 		t.Fatal(err)
@@ -248,7 +235,7 @@ func TestRestoreRotatesAgainstTheProfilesKeepCount(t *testing.T) {
 	if _, err := s.profiles.SetOverride("stardew", p.ID, "saveBackupsKept", "1"); err != nil {
 		t.Fatal(err)
 	}
-	writeFarm(t, savesDir, "Farm_1", "Sunny", "v1")
+	testfs.WriteFarm(t, savesDir, "Farm_1", "Sunny", "v1")
 	if _, err := s.CreateBackup(t.Context(), "stardew", "", "Farm_1"); err != nil {
 		t.Fatal(err)
 	}
@@ -283,8 +270,8 @@ func TestRestoreRotatesAgainstTheProfilesKeepCount(t *testing.T) {
 
 func TestCreateBackupTakesTheSavesDisplayName(t *testing.T) {
 	s, savesDir := backupService(t)
-	writeFarm(t, savesDir, "Farm_1", "Sunny", "v1")
-	writeFarm(t, savesDir, "Farm_2", "Rainy", "v2")
+	testfs.WriteFarm(t, savesDir, "Farm_1", "Sunny", "v1")
+	testfs.WriteFarm(t, savesDir, "Farm_2", "Rainy", "v2")
 	if made, err := s.CreateBackup(t.Context(), "stardew", "", "rainy"); !made || err != nil {
 		t.Fatalf("CreateBackup by name = %v, %v", made, err)
 	}

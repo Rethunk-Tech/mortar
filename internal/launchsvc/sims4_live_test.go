@@ -101,7 +101,7 @@ func (w *sims4World) snapshot(t *testing.T) map[string]string {
 				return err
 			}
 			rel, _ := filepath.Rel(w.docs, p)
-			out[rel] = readFile(t, p)
+			out[rel] = testfs.Read(t, p)
 			return nil
 		})
 		if err != nil && !os.IsNotExist(err) {
@@ -194,10 +194,10 @@ func TestSims4LaunchPlacesOnlyEnabledFilesSwapsOptionsAndSavesAndGivesTheTreeBac
 	if fileExists(filepath.Join(mods, "three.package")) {
 		t.Error("a switched-off file was placed")
 	}
-	if got := readFile(t, filepath.Join(mods, "Resource.cfg")); got != resourceCfg {
+	if got := testfs.Read(t, filepath.Join(mods, "Resource.cfg")); got != resourceCfg {
 		t.Errorf("Resource.cfg during the launch = %q", got)
 	}
-	options := readFile(t, filepath.Join(w.docs, "Options.ini"))
+	options := testfs.Read(t, filepath.Join(w.docs, "Options.ini"))
 	if !strings.Contains(options, "modsdisabled = 0") || !strings.Contains(options, "scriptmodsenabled = 1") || !strings.Contains(options, "volume = 7") {
 		t.Errorf("the game's Options.ini = %q", options)
 	}
@@ -277,10 +277,10 @@ func TestSims4WarnModeLeavesTheOptionsSwitchesAlone(t *testing.T) {
 	if err := w.svc.swapOptions(t.Context(), sims4, inst, w.profileID, "", dep); err != nil {
 		t.Fatal(err)
 	}
-	if got := readFile(t, filepath.Join(w.docs, "Options.ini")); got != playerOption {
+	if got := testfs.Read(t, filepath.Join(w.docs, "Options.ini")); got != playerOption {
 		t.Fatalf("the game's Options.ini in warn mode = %q, want the player's bytes", got)
 	}
-	if got := readFile(t, dep.options.Profile); got != playerOption {
+	if got := testfs.Read(t, dep.options.Profile); got != playerOption {
 		t.Fatalf("the profile copy in warn mode = %q", got)
 	}
 	dep.unwind(t.Context())

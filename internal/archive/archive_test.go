@@ -15,6 +15,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 // zentry is one zip entry; a name ending in "/" is a directory, a zero mode a regular file.
@@ -73,15 +74,6 @@ func wantReason(t *testing.T, err, reason error, entry string) {
 	}
 }
 
-func readFile(t *testing.T, p string) string {
-	t.Helper()
-	b, err := fsx.ReadFile(p)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return string(b)
-}
-
 func TestValidExtractsAndNormalisesModes(t *testing.T) {
 	t.Parallel()
 	zipPath := buildZip(t,
@@ -121,7 +113,7 @@ func TestValidExtractsAndNormalisesModes(t *testing.T) {
 		})
 	}
 	dest, _ := extract(t, "testdata/valid.7z", options{})
-	if got := readFile(t, filepath.Join(dest, "a.txt")); got != "hello mortar\n" {
+	if got := testfs.Read(t, filepath.Join(dest, "a.txt")); got != "hello mortar\n" {
 		t.Fatalf("7z content = %q", got)
 	}
 }
@@ -491,7 +483,7 @@ func TestZipNamesInALegacyEncodingBecomeUTF8(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got := readFile(t, filepath.Join(dest, "[FS]Kyuya‘s hats Pack", "manifest.json")); got != "{}" {
+	if got := testfs.Read(t, filepath.Join(dest, "[FS]Kyuya‘s hats Pack", "manifest.json")); got != "{}" {
 		t.Fatalf("manifest = %q", got)
 	}
 }
@@ -510,7 +502,7 @@ func TestStreamFormatsExtractATarByMagicBytes(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if got := readFile(t, filepath.Join(dest, "Mod", "Fix.dll")); got != "dll" {
+			if got := testfs.Read(t, filepath.Join(dest, "Mod", "Fix.dll")); got != "dll" {
 				t.Fatalf("Fix.dll = %q", got)
 			}
 			if _, err := PreviewArchive(writeTemp(t, "download", src)); err != nil {
@@ -529,7 +521,7 @@ func TestStreamFormatsExtractABareFileNamedWithoutItsSuffix(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if got := readFile(t, filepath.Join(dest, "bare.txt")); got != "hello archive\n" {
+			if got := testfs.Read(t, filepath.Join(dest, "bare.txt")); got != "hello archive\n" {
 				t.Fatalf("bare.txt = %q", got)
 			}
 			if n, err := DeclaredSize(filepath.Join("testdata", name)); err != nil || n != 14 {
@@ -616,7 +608,7 @@ func TestSavedNameKeepsABareFilesOriginalNameForExtraction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got := readFile(t, filepath.Join(dest, "notes.txt")); got != "hello archive\n" {
+	if got := testfs.Read(t, filepath.Join(dest, "notes.txt")); got != "hello archive\n" {
 		t.Fatalf("notes.txt = %q", got)
 	}
 	if SavedName("id", "m.zip") != "id.zip" || SavedName("id", "m.tar.gz") != "id.gz" {

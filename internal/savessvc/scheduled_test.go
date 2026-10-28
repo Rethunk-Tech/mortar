@@ -10,6 +10,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/backup"
 	"github.com/Rethunk-Tech/mortar/internal/saves"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func TestScheduledBackupsFollowTheIntervalAndWaitForTheGame(t *testing.T) {
@@ -34,7 +35,7 @@ func TestScheduledBackupsFollowTheIntervalAndWaitForTheGame(t *testing.T) {
 	s := &Service{settings: store, scanners: map[string]*saves.Scanner{"stardew": {Dir: savesDir}}, busy: func() bool { return busy }}
 	t0 := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 	save := func(at time.Time) {
-		writeFarm(t, savesDir, "Farm_1", "Sunny", at.String())
+		testfs.WriteFarm(t, savesDir, "Farm_1", "Sunny", at.String())
 		dir := filepath.Join(savesDir, "Farm_1")
 		for _, p := range []string{filepath.Join(dir, "Farm_1"), filepath.Join(dir, "SaveGameInfo"), dir} {
 			if err := os.Chtimes(p, at, at); err != nil {
@@ -125,7 +126,7 @@ func TestScheduledBackupRetriesHalfHourAfterAFailedPass(t *testing.T) {
 		t.Fatal(err)
 	}
 	t0 := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
-	writeFarm(t, savesDir, "Farm_1", "Sunny", "a")
+	testfs.WriteFarm(t, savesDir, "Farm_1", "Sunny", "a")
 	locked := filepath.Join(savesDir, "Farm_1", "Farm_1")
 	if err := os.Chmod(locked, 0); err != nil {
 		t.Fatal(err)

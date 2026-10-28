@@ -8,6 +8,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
@@ -187,7 +188,7 @@ func TestAddUpdateRemoveMultiFileEntry(t *testing.T) {
 	if !hasMod(got.Entries[0], "smapi:X.A") || !hasMod(got.Entries[0], "smapi:X.C") {
 		t.Fatalf("rollback mods: %+v", got.Entries[0].Mods)
 	}
-	if b := read(t, filepath.Join(e.mods(p.ID), entryKey, "extra-new", "C", "config.json")); b != "extra-save" {
+	if b := testfs.Read(t, filepath.Join(e.mods(p.ID), entryKey, "extra-new", "C", "config.json")); b != "extra-save" {
 		t.Fatalf("extra carry-over after rollback = %q", b)
 	}
 	if _, err := os.Stat(filepath.Join(e.mods(p.ID), entryKey, "A", "manifest.json")); err != nil {

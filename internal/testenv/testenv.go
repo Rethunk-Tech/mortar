@@ -2,6 +2,7 @@
 package testenv
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -20,6 +21,13 @@ func Stores(t testing.TB) (*store.Store, *profile.Store) {
 		t.Fatal(err)
 	}
 	return items, profiles
+}
+
+// StoresIn opens the item store and the profile store over it in dir, for a test that keeps its data folder to itself.
+func StoresIn(t testing.TB, dir string) (*store.Store, *profile.Store) {
+	t.Helper()
+	items := store.OpenAt(filepath.Join(dir, "store"))
+	return items, profile.OpenIn(filepath.Join(dir, "profiles"), items)
 }
 
 // Profile creates a profile for gameID or fails the test.

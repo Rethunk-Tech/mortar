@@ -7,12 +7,13 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/backup"
 	"github.com/Rethunk-Tech/mortar/internal/saves"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func TestBackupsUsageAndTrimKeepNewestPerSaveAndPinned(t *testing.T) {
 	s, savesDir := backupService(t)
-	writeFarm(t, savesDir, "Farm_1", "Sunny", "v1")
-	writeFarm(t, savesDir, "Farm_2", "Rainy", "v2")
+	testfs.WriteFarm(t, savesDir, "Farm_1", "Sunny", "v1")
+	testfs.WriteFarm(t, savesDir, "Farm_2", "Rainy", "v2")
 	dir := filepath.Join(mustData(t), "mortar", "backups", "stardew")
 	day := func(d int) time.Time { return time.Date(2026, 7, d, 0, 0, 0, 0, time.UTC) }
 	for _, d := range []int{1, 2} {

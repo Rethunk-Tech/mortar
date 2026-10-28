@@ -11,8 +11,6 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
-	"github.com/Rethunk-Tech/mortar/internal/profile"
-	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 )
 
@@ -21,7 +19,7 @@ import (
 func TestARunStaysOpenWhileTheCrashedGameProcessLingers(t *testing.T) {
 	t.Parallel()
 	data := t.TempDir()
-	profiles := profile.OpenIn(filepath.Join(data, "profiles"), store.OpenAt(filepath.Join(data, "store")))
+	_, profiles := testenv.StoresIn(t, data)
 	a := testenv.Profile(t, profiles, "lethal-company", "A")
 	svc := NewService(t.TempDir(), nil, profiles)
 	svc.procDir = t.TempDir()

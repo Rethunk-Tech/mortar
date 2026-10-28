@@ -6,7 +6,9 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
@@ -57,6 +59,50 @@ func WriteAt(t testing.TB, path string, body []byte) {
 	if err := fsx.WriteFile(path, body, 0o600); err != nil {
 		t.Fatal(err)
 	}
+}
+
+// Read is the file at path as a string.
+func Read(t testing.TB, path string) string {
+	t.Helper()
+	b, err := fsx.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(b)
+}
+
+// Touch appends a blank line to the file at path and dates it a minute back, past the window in which a fresh stamp is
+// not trusted. The file's bytes and time come back when the test ends.
+func Touch(t testing.TB, path string) {
+	t.Helper()
+	raw, err := fsx.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	info, err := os.Stat(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		_ = fsx.WriteFile(path, raw, info.Mode())
+		_ = os.Chtimes(path, info.ModTime(), info.ModTime())
+	})
+	if err := fsx.WriteFile(path, append(slices.Clone(raw), '\n'), info.Mode()); err != nil {
+		t.Fatal(err)
+	}
+	at := time.Now().Add(-time.Minute)
+	if err := os.Chtimes(path, at, at); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// WriteFarm writes a Stardew Valley save folder under saves: its save file holding body, and SaveGameInfo naming the
+// farm.
+func WriteFarm(t testing.TB, saves, folder, farm, body string) {
+	t.Helper()
+	dir := filepath.Join(saves, folder)
+	WriteFile(t, dir, folder, body)
+	WriteFile(t, dir, "SaveGameInfo", `<Farmer><name>Ann</name><farmName>`+farm+`</farmName></Farmer>`)
 }
 
 // DataHome points the per-user data folder at a fresh temp dir on every platform and returns it.

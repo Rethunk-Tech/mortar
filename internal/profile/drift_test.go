@@ -208,10 +208,10 @@ func TestParkUnknownFoldersKeepsEarlierCopy(t *testing.T) {
 	}
 
 	hold := filepath.Join(s.root, "stardew", p.ID, modsHoldDir)
-	if got := read(t, filepath.Join(hold, "dropped", "first.txt")); got != "first" {
+	if got := testfs.Read(t, filepath.Join(hold, "dropped", "first.txt")); got != "first" {
 		t.Fatalf("first parked folder = %q", got)
 	}
-	if got := read(t, filepath.Join(hold, "dropped-2", "second.txt")); got != "second" {
+	if got := testfs.Read(t, filepath.Join(hold, "dropped-2", "second.txt")); got != "second" {
 		t.Fatalf("second parked folder = %q", got)
 	}
 }

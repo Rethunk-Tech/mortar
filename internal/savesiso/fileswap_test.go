@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func fileEnv(t *testing.T) (target, prof, journal string) {
@@ -14,25 +16,25 @@ func fileEnv(t *testing.T) (target, prof, journal string) {
 func TestFileSwapKeepsPlayersFileAndProfileCopyApart(t *testing.T) {
 	target, prof, journal := fileEnv(t)
 	write(t, target, "player")
-	if err := SeedFile(target, prof); err != nil || read(t, prof) != "player" {
+	if err := SeedFile(target, prof); err != nil || testfs.Read(t, prof) != "player" {
 		t.Fatalf("seed: %v", err)
 	}
 	write(t, prof, "profile")
-	if err := SeedFile(target, prof); err != nil || read(t, prof) != "profile" {
+	if err := SeedFile(target, prof); err != nil || testfs.Read(t, prof) != "profile" {
 		t.Fatalf("a seed must not replace an existing profile copy: %v", err)
 	}
 	m, err := ApplyFile(journal, target, prof)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if read(t, target) != "profile" {
+	if testfs.Read(t, target) != "profile" {
 		t.Fatal("the game must see the profile's file")
 	}
 	write(t, target, "played")
 	if err := PurgeFile(m); err != nil {
 		t.Fatal(err)
 	}
-	if read(t, target) != "player" || read(t, prof) != "played" || exists(journal) || exists(target+heldSuffix) {
+	if testfs.Read(t, target) != "player" || testfs.Read(t, prof) != "played" || exists(journal) || exists(target+heldSuffix) {
 		t.Fatal("the player's file returns untouched and the profile keeps what was played")
 	}
 }
@@ -47,7 +49,7 @@ func TestFileSwapWithNoPlayersFileLeavesNoneBehind(t *testing.T) {
 	if err := PurgeFile(m); err != nil {
 		t.Fatal(err)
 	}
-	if exists(target) || read(t, prof) != "created" {
+	if exists(target) || testfs.Read(t, prof) != "created" {
 		t.Fatal("a file the game made belongs to the profile")
 	}
 }
@@ -63,13 +65,13 @@ func TestFileRecoverAfterACrashRestoresPlayersFile(t *testing.T) {
 		t.Fatal("a second swap over an unrecovered one must be refused")
 	}
 	write(t, target, "played")
-	if err := RecoverFile(journal, func() bool { return true }); err != nil || read(t, target) != "played" {
+	if err := RecoverFile(journal, func() bool { return true }); err != nil || testfs.Read(t, target) != "played" {
 		t.Fatalf("a running game's swap is left alone: %v", err)
 	}
 	if err := RecoverFile(journal, nil); err != nil {
 		t.Fatal(err)
 	}
-	if read(t, target) != "player" || read(t, prof) != "played" || HasFileJournal(journal) {
+	if testfs.Read(t, target) != "player" || testfs.Read(t, prof) != "played" || HasFileJournal(journal) {
 		t.Fatal("recovery must return the player's file")
 	}
 }
@@ -89,7 +91,7 @@ func TestFileRecoverAfterKillMidPurge(t *testing.T) {
 	if err := RecoverFile(journal, nil); err != nil {
 		t.Fatal(err)
 	}
-	if read(t, target) != "player" || read(t, prof) != "played" || HasFileJournal(journal) {
+	if testfs.Read(t, target) != "player" || testfs.Read(t, prof) != "played" || HasFileJournal(journal) {
 		t.Fatal("the held file must return and the profile copy stay")
 	}
 }
@@ -106,8 +108,8 @@ func TestRecoverAfterACrashBeforeThePlayersFileIsSetAside(t *testing.T) {
 	if err := RecoverFile(journal, nil); err != nil {
 		t.Fatal(err)
 	}
-	if read(t, target) != "player" || read(t, prof) != "profile" {
-		t.Fatalf("player's file = %q (want player), profile copy = %q (want profile)", read(t, target), read(t, prof))
+	if testfs.Read(t, target) != "player" || testfs.Read(t, prof) != "profile" {
+		t.Fatalf("player's file = %q (want player), profile copy = %q (want profile)", testfs.Read(t, target), testfs.Read(t, prof))
 	}
 }
 
@@ -160,8 +162,8 @@ func TestFileRecoverFromEveryKillPoint(t *testing.T) {
 				t.Fatalf("%s: %v", c.name, err)
 			}
 		}
-		if read(t, target) != "player" || read(t, prof) != c.profile || HasFileJournal(journal) || exists(held(target)) {
-			t.Errorf("%s: player's file %q, profile copy %q", c.name, read(t, target), read(t, prof))
+		if testfs.Read(t, target) != "player" || testfs.Read(t, prof) != c.profile || HasFileJournal(journal) || exists(held(target)) {
+			t.Errorf("%s: player's file %q, profile copy %q", c.name, testfs.Read(t, target), testfs.Read(t, prof))
 		}
 	}
 }
@@ -170,7 +172,7 @@ func TestSeedFileTakesTheHeldFileWhileAnotherInstallSwapsItIn(t *testing.T) {
 	target, prof, _ := fileEnv(t)
 	write(t, target, "other install's profile copy")
 	write(t, target+heldSuffix, "player")
-	if err := SeedFile(target, prof); err != nil || read(t, prof) != "player" {
-		t.Fatalf("seed = %q (%v), want the player's file", read(t, prof), err)
+	if err := SeedFile(target, prof); err != nil || testfs.Read(t, prof) != "player" {
+		t.Fatalf("seed = %q (%v), want the player's file", testfs.Read(t, prof), err)
 	}
 }

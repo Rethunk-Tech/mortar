@@ -16,20 +16,9 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
-func writeFarm(t *testing.T, saves, folder, farm, body string) {
-	t.Helper()
-	dir := filepath.Join(saves, folder)
-	if err := os.MkdirAll(dir, 0o750); err != nil {
-		t.Fatal(err)
-	}
-	testfs.WriteFile(t, dir, folder, body)
-	info := `<Farmer><name>Ann</name><farmName>` + farm + `</farmName></Farmer>`
-	testfs.WriteFile(t, dir, "SaveGameInfo", info)
-}
-
 func TestSavesRecordsCauseBesideTheZip(t *testing.T) {
 	saves := filepath.Join(t.TempDir(), "Saves")
-	writeFarm(t, saves, "Farm_1", "Sunny", "a")
+	testfs.WriteFarm(t, saves, "Farm_1", "Sunny", "a")
 	out := t.TempDir()
 	start := time.Date(2026, 2, 1, 0, 0, 0, 0, time.UTC)
 	got, err := Saves(t.Context(), layout(saves), out, DefaultKeep, start, Cause{Profile: "cookie", Kind: KindUpdate})
@@ -54,7 +43,7 @@ func TestSavesRecordsCauseBesideTheZip(t *testing.T) {
 
 func TestListIsNewestFirst(t *testing.T) {
 	saves := filepath.Join(t.TempDir(), "Saves")
-	writeFarm(t, saves, "Farm_1", "Sunny", "a")
+	testfs.WriteFarm(t, saves, "Farm_1", "Sunny", "a")
 	out := t.TempDir()
 	start := time.Date(2026, 3, 1, 0, 0, 0, 0, time.UTC)
 	if _, err := Saves(t.Context(), layout(saves), out, DefaultKeep, start, Cause{}); err != nil {
@@ -82,8 +71,8 @@ func TestRestoreOneLeavesTheOtherSave(t *testing.T) {
 	root := t.TempDir()
 	saves := filepath.Join(root, "Saves")
 	backups := filepath.Join(root, "backups")
-	writeFarm(t, saves, "Alpha_1", "Alpha", "old-a")
-	writeFarm(t, saves, "Beta_1", "Beta", "old-b")
+	testfs.WriteFarm(t, saves, "Alpha_1", "Alpha", "old-a")
+	testfs.WriteFarm(t, saves, "Beta_1", "Beta", "old-b")
 	start := time.Date(2026, 4, 1, 0, 0, 0, 0, time.UTC)
 	zipPath, err := Saves(t.Context(), layout(saves), backups, DefaultKeep, start, Cause{})
 	if err != nil {
@@ -116,8 +105,8 @@ func TestRestoreAllAndPreRestoreBackup(t *testing.T) {
 	root := t.TempDir()
 	saves := filepath.Join(root, "Saves")
 	backups := filepath.Join(root, "backups")
-	writeFarm(t, saves, "Alpha_1", "Alpha", "old-a")
-	writeFarm(t, saves, "Beta_1", "Beta", "old-b")
+	testfs.WriteFarm(t, saves, "Alpha_1", "Alpha", "old-a")
+	testfs.WriteFarm(t, saves, "Beta_1", "Beta", "old-b")
 	start := time.Date(2026, 5, 1, 0, 0, 0, 0, time.UTC)
 	zipPath, err := Saves(t.Context(), layout(saves), backups, DefaultKeep, start, Cause{})
 	if err != nil {
