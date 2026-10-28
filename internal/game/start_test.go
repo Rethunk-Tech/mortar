@@ -715,10 +715,10 @@ func TestRunErrorSearchesAddedSteamFolders(t *testing.T) {
 	t.Setenv("HOME", t.TempDir())
 	root := t.TempDir()
 	proton := filepath.Join(root, "steamapps", "common", "Proton 9.0")
-	if err := os.MkdirAll(proton, 0o755); err != nil {
+	if err := os.MkdirAll(proton, 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(proton, "proton"), nil, 0o755); err != nil {
+	if err := os.WriteFile(filepath.Join(proton, "proton"), nil, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	in := Install{Dir: "/g", Platform: "windows", Runtime: "mortar-proton"}

@@ -10,6 +10,7 @@ import (
 	"math"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -332,8 +333,7 @@ func patchStartupSettings(data []byte, value gamesettings.Settings) ([]byte, err
 	}
 	values := startupValues(value)
 	out := append([]byte(nil), data...)
-	for i := len(elements) - 1; i >= 0; i-- {
-		e := elements[i]
+	for _, e := range slices.Backward(elements) {
 		out = append(out[:e.start], append([]byte(values[e.name]), out[e.end:]...)...)
 	}
 	return out, nil

@@ -28,7 +28,6 @@ func TestNeedsRootAnswer(t *testing.T) {
 	if it := s.find("a"); it.State != StateQueued || it.chosenRoot != "ModFolder" || it.staged != "store-key" {
 		t.Fatalf("after AnswerRoot: %+v", it)
 	}
-
 }
 
 // A chosen root installs from the store even when the item's archive is still on disk, and a Nexus or package item

@@ -215,7 +215,7 @@ func TestClamdSkipsDefaultSocketOwnedByAnotherUser(t *testing.T) {
 		t.Skip("root owns the socket")
 	}
 	path := filepath.Join(t.TempDir(), "clamd.sock")
-	l, err := net.Listen("unix", path)
+	l, err := (&net.ListenConfig{}).Listen(context.Background(), "unix", path)
 	if err != nil {
 		t.Fatal(err)
 	}
