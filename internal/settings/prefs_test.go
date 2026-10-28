@@ -537,6 +537,27 @@ func TestThunderstoreHostChoicesAreTheDownloadCDNs(t *testing.T) {
 	}
 }
 
+func TestLocalArchivesWithOneNameHaveTheirOwnStar(t *testing.T) {
+	st, _ := open(t)
+	svc := NewService(st)
+	a, b := LocalFavouriteKey("A.zip", "k1"), LocalFavouriteKey("A.zip", "k2")
+	if a == b {
+		t.Fatal("two archives share a key")
+	}
+	if err := svc.SetModFavourite("g", "local:a.zip", true); err != nil {
+		t.Fatal(err)
+	}
+	if err := svc.SetModFavourite("g", a, true); err != nil {
+		t.Fatal(err)
+	}
+	if err := svc.SetModFavourite("g", a, false); err != nil {
+		t.Fatal(err)
+	}
+	if got := st.Get().GamePrefs("g").FavouriteMods; len(got) != 0 {
+		t.Fatalf("unstarring left %v, including the 0.3.8 key", got)
+	}
+}
+
 func TestStarringAModIsPerGameAndUndoable(t *testing.T) {
 	st, _ := open(t)
 	svc := NewService(st)

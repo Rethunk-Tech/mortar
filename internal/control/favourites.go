@@ -11,7 +11,14 @@ import (
 
 // entryFavouriteKey is the star key of the mod an entry came from, as the window builds it; empty for a mod with no
 // site.
-func entryFavouriteKey(src profile.Source) string {
+func entryFavouriteKey(e profile.Entry) string {
+	src := e.Source
+	if src.Kind == profile.KindLocal {
+		if src.Name == "" {
+			return ""
+		}
+		return settings.LocalFavouriteKey(src.Name, e.StoreKey())
+	}
 	id := src.Name
 	switch src.Kind {
 	case "nexus":
@@ -41,7 +48,7 @@ func (s *Services) setModFavourites(game string, prof profile.Profile, ids []str
 		var star string
 		for _, e := range prof.Entries {
 			if e.Key == k {
-				star = entryFavouriteKey(e.Source)
+				star = entryFavouriteKey(e)
 			}
 		}
 		if star == "" {

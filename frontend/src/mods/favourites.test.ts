@@ -27,3 +27,11 @@ test('a mod is starred when the game lists its key', () => {
   expect(isStarred(undefined, 'nexus:42')).toBe(false)
   expect(isStarred(['nexus:42'], '')).toBe(false)
 })
+
+test('local archives of one file name have their own star, and a 0.3.8 star still reads', () => {
+  const a = entryFavouriteKey({ ...entry({ kind: 'local', name: 'A.zip' }), key: 'k1' })
+  const b = entryFavouriteKey({ ...entry({ kind: 'local', name: 'A.zip' }), key: 'k2' })
+  expect(a).not.toBe(b)
+  expect(isStarred([a], b)).toBe(false)
+  expect(isStarred(['local:a.zip'], a)).toBe(true)
+})
