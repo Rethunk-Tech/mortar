@@ -7,6 +7,7 @@ import type { ImportPreview } from '../../../bindings/github.com/Rethunk-Tech/mo
 import { ApplyImport } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { listNames } from '../../i18n/list.ts'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
+import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { prefCopy } from '../prefCopy.ts'
@@ -87,7 +88,7 @@ export function ImportSettingsDialog({
         <Box sx={{ fontSize: 'base.fontSize' }}>{t`Nothing would change.`}</Box>
       ) : (
         sections.map((s) => (
-          <Box key={s.section} sx={{ mb: 1 }}>
+          <Box key={s.section} sx={{ mb: space.gap }}>
             <FormControlLabel
               control={
                 <Checkbox
@@ -109,7 +110,7 @@ export function ImportSettingsDialog({
         ))
       )}
       {ignored.length > 0 ? (
-        <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary', mt: 1 }}>
+        <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary', mt: space.gap }}>
           {t`Ignored fields Mortar does not import: ${{ names: listNames(ignored) }}`}
         </Typography>
       ) : null}

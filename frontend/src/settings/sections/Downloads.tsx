@@ -22,6 +22,7 @@ import { openPage } from '../../mods/menu.ts'
 import { listProfiles } from '../../profiles/listProfiles.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { useLoaded } from '../../shell/useLoaded.ts'
+import { space } from '../../theme/density.ts'
 import { reportUnexpected, toastError } from '../../toasts/report.ts'
 import { PrefSelect, PrefSwitch } from '../PrefControls.tsx'
 import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
@@ -158,7 +159,7 @@ function ExtensionSteps() {
     <Box
       component="ol"
       // Inside the row's description, so it takes the description's type and only needs the list's indent.
-      sx={{ m: 0, mt: 1, pl: 2.5 }}
+      sx={{ m: 0, mt: space.gap, pl: 2.5 }}
     >
       <li>
         {t`${{ app: CHROME }}, ${{ otherApp: EDGE }} or another ${{ thirdApp: CHROMIUM }} browser: unzip the download, open chrome://extensions, enable Developer mode and choose Load unpacked on the unzipped folder.`}

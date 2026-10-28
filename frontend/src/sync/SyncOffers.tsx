@@ -50,7 +50,7 @@ function OfferRow({ offer }: { offer: Offer }) {
           {t`Both sides changed it, so Mortar will not merge them. Pick one side.`}
         </Typography>
       ) : null}
-      <Box sx={{ display: 'flex', gap: space.gap, mt: 1, flexWrap: 'wrap' }}>
+      <Box sx={{ display: 'flex', gap: space.gap, mt: space.gap, flexWrap: 'wrap' }}>
         <Button variant="contained" disabled={busy} onClick={() => answer('theirs')}>
           {offer.conflict ? t`Use theirs` : t`Apply`}
         </Button>
@@ -66,7 +66,7 @@ function OfferRow({ offer }: { offer: Offer }) {
         >{t`Show diff`}</Button>
       </Box>
       {diff ? (
-        <Box sx={{ mt: 1, fontSize: 'base.fontSize' }}>
+        <Box sx={{ mt: space.gap, fontSize: 'base.fontSize' }}>
           {updated ? (
             <Box
               sx={{ color: 'text.secondary', mb: 0.5 }}

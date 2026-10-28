@@ -10,6 +10,7 @@ import { SMAPI } from '../../brand/productNames.ts'
 import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { formatBytes } from '../../i18n/bytes.ts'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
+import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 
@@ -40,7 +41,7 @@ function CacheClearDialog({
         <>
           {t`Clears cached ${{ source: sourceLabel('nexus') }} and ${{ loader: SMAPI }} details and problem scans, for a revoked API key or wrong details. Mortar fetches them again, so the next problem check is slower.`}
           {info === null ? null : (
-            <Box component="span" sx={{ display: 'block', mt: 1, wordBreak: 'break-all' }}>
+            <Box component="span" sx={{ display: 'block', mt: space.gap, wordBreak: 'break-all' }}>
               {t`${size} in ${path}`}
             </Box>
           )}

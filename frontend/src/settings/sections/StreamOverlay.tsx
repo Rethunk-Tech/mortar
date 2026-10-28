@@ -207,7 +207,14 @@ function OverlayValues({
       {row('all', t`All values`)}
       {groups.map((g) => (
         <Box key={g.title} sx={{ display: 'flex', flexDirection: 'column' }}>
-          <Box sx={{ fontSize: 'small.fontSize', fontWeight: 600, color: 'text.secondary', mt: 1 }}>
+          <Box
+            sx={{
+              fontSize: 'small.fontSize',
+              fontWeight: 600,
+              color: 'text.secondary',
+              mt: space.gap,
+            }}
+          >
             {g.title}
           </Box>
           {g.fields.map((f) => row(f, <OverlayFieldLabel field={f} />, f))}

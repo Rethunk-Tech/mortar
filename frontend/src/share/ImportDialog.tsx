@@ -37,7 +37,7 @@ function MissingMods({
   return (
     <Box
       sx={{
-        mb: 1,
+        mb: space.gap,
         px: space.pad,
         py: space.gap,
         bgcolor: calloutFill('warning'),

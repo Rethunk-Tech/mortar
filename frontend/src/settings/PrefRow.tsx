@@ -120,7 +120,7 @@ export function ScopeNote({
 }) {
   const { t } = useLingui()
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, flexShrink: 0 }}>
       <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }} noWrap={true}>
         {own === undefined ? t`Same as the game` : t`Game: ${{ value: gameLabel }}`}
       </Typography>

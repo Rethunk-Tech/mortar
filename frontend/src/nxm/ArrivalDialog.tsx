@@ -16,6 +16,7 @@ import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
+import { space } from '../theme/density.ts'
 import { type InlineError, inlineError, reportUnexpected } from '../toasts/report.ts'
 import {
   arrivalGame,
@@ -135,7 +136,7 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
           </DialogFooter>
         }
       >
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
           {arrivals.length > 1 ? (
             <Typography sx={{ color: 'text.secondary' }}>
               {t`${{ count: arrivals.length - 1 }} more waiting`}

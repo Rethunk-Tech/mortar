@@ -285,7 +285,14 @@ export function Appearance() {
         </SettingRow>
         {background === 'image' ? (
           <SettingRow label={t`Image`}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-end',
+                gap: space.gap,
+              }}
+            >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
                 <BackdropImage
                   alt={t`Background preview`}

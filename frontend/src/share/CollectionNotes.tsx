@@ -8,7 +8,7 @@ import { space } from '../theme/density.ts'
 import { type InstructionPart, parseInstructions } from './instructions.ts'
 
 const panelSx = {
-  mb: 1,
+  mb: space.gap,
   px: space.pad,
   py: space.gap,
   bgcolor: 'var(--mortar-card-hover)',
@@ -94,7 +94,7 @@ function DetailsNote({ details }: { details: string }) {
   }
   const note = notes[details]
   return note ? (
-    <Typography sx={{ mb: 1, fontSize: 'small.fontSize', color: 'text.secondary' }}>
+    <Typography sx={{ mb: space.gap, fontSize: 'small.fontSize', color: 'text.secondary' }}>
       {note}
     </Typography>
   ) : null

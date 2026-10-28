@@ -156,7 +156,7 @@ export function ListFormat() {
           }}
         >
           {options.map((o) => (
-            <ToggleButton key={o.id} value={o.id} sx={{ px: space.pad, gap: '8px' }}>
+            <ToggleButton key={o.id} value={o.id} sx={{ px: space.pad, gap: space.gap }}>
               <o.icon size={15} />
               {o.label}
             </ToggleButton>

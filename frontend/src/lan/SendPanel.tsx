@@ -337,7 +337,7 @@ export function SendPanel({
           </List>
         )}
         {addressPicker ? (
-          <Box sx={{ display: 'flex', gap: space.gap, mt: 1 }}>
+          <Box sx={{ display: 'flex', gap: space.gap, mt: space.gap }}>
             <TextField
               autoFocus={true}
               fullWidth={true}

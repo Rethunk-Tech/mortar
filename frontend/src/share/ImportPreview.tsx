@@ -232,7 +232,7 @@ export function Tiles({
   return (
     <>
       {carried.length > 0 ? (
-        <Alert severity="warning" sx={{ mb: 1 }}>
+        <Alert severity="warning" sx={{ mb: space.gap }}>
           {t`${{ names: listNames(carried) }} bring program files with this code rather than from a mod site. Leave them out unless you trust who sent it.`}
         </Alert>
       ) : null}
