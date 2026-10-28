@@ -205,6 +205,7 @@ type Doctor struct {
 	Environment map[string]problems.Environment `json:"environment"`
 	NxmHandled  bool                            `json:"nxmHandled"`
 	NxmPrevious string                          `json:"nxmPrevious"`
+	SteamRoots  []string                        `json:"steamRoots,omitempty"`
 }
 
 type SavedGroupRow struct {
@@ -1866,7 +1867,7 @@ func (s *Services) doctor() (Doctor, error) {
 		env[g.ID] = s.Problems.Environment(g.ID)
 	}
 	st := s.Settings.Get()
-	return Doctor{Version: s.Version, DataDir: dir, Games: gs, Environment: env, NxmHandled: st.NxmHandled, NxmPrevious: st.NxmPreviousName}, nil
+	return Doctor{Version: s.Version, DataDir: dir, Games: gs, Environment: env, NxmHandled: st.NxmHandled, NxmPrevious: st.NxmPreviousName, SteamRoots: st.LauncherRoots[game.LauncherSteam]}, nil
 }
 
 // typedID reads an id a user typed: bare ids are SMAPI's for now, since Stardew is the only game with mods.

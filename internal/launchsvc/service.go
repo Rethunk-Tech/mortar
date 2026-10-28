@@ -1015,7 +1015,7 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 	if err != nil {
 		return err
 	}
-	if err := inst.RunError(g.Name()); err != nil {
+	if err := inst.RunError(g.Name(), s.settings.Get().LauncherRoots[game.LauncherSteam]...); err != nil {
 		return err
 	}
 	direct = direct || !inst.StoreStarts()

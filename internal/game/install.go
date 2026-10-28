@@ -308,13 +308,14 @@ func (in Install) StoreStarts() bool {
 
 // RunError says why the install cannot be started on this computer, or is nil. On Linux a Windows build runs through
 // Proton (Steam's own for a Steam copy, else a Proton build Steam has, in Mortar's prefix) or a Bottles bottle.
-func (in Install) RunError(name string) error {
+// steamRoots are the Steam folders the user added, searched beside the usual ones.
+func (in Install) RunError(name string, steamRoots ...string) error {
 	if goruntime.GOOS == "windows" || in.Dir == "" || in.Platform != "windows" {
 		return nil
 	}
 	switch in.Runtime {
 	case runtime.MortarProton:
-		if _, ok := runtime.FindProton("", ""); !ok {
+		if _, ok := runtime.FindProton("", "", steamRoots...); !ok {
 			return usererr.Wrap(usererr.Invalid, fmt.Errorf("%s in %s is the Windows build, and Mortar runs it through Proton: install any Proton version in Steam (Library, Tools), then press Play again", name, in.Dir))
 		}
 		return nil

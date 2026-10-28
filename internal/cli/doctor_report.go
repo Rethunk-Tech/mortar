@@ -8,6 +8,6 @@ import (
 func liveDoctorReport(d control.Doctor, version string) doctor.Report {
 	return doctor.LiveWithNativeHosts(doctor.Live{
 		Version: d.Version, CommandVersion: version, DataDir: d.DataDir,
-		Games: d.Games, Environment: d.Environment, NxmHandled: d.NxmHandled, NxmPrevious: d.NxmPrevious,
+		Games: d.Games, Environment: d.Environment, NxmHandled: d.NxmHandled, NxmPrevious: d.NxmPrevious, SteamRoots: d.SteamRoots,
 	})
 }
