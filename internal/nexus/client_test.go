@@ -225,3 +225,13 @@ func setRate(h http.Header, remaining string) {
 	h.Set("X-Rl-Hourly-Limit", "2000")
 	h.Set("X-Rl-Hourly-Reset", "2026-09-30T13:00:00+00:00")
 }
+
+func TestTransportErrorDropsTheLinkKey(t *testing.T) {
+	var status, hits atomic.Int32
+	c := serve(t, &status, "1900", &hits)
+	c.BaseURL = "http://127.0.0.1:1"
+	_, err := c.DownloadLinks(context.Background(), stardew, 541, 3001, "SECRETKEY", 1234567)
+	if err == nil || strings.Contains(err.Error(), "SECRETKEY") || strings.Contains(err.Error(), "1234567") {
+		t.Fatalf("error = %v", err)
+	}
+}

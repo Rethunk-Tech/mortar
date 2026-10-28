@@ -226,6 +226,10 @@ func (c *Client) roundTrip(ctx context.Context, method, path string, body any) (
 	}
 	hc := cmp.Or(c.HTTP, http.DefaultClient)
 	resp, err := hc.Do(req)
+	if ue, ok := errors.AsType[*url.Error](err); ok {
+		// A link request carries the nxm key and expiry in its query; the error quotes the URL into logs.
+		ue.URL, _, _ = strings.Cut(ue.URL, "?")
+	}
 	netstate.Record("nexus", err)
 	if err != nil {
 		return 0, "", nil, err

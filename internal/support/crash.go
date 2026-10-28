@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -164,7 +165,11 @@ func shrinkTail(s string) string {
 
 // hideHomeIn replaces every occurrence of the home folder in free text such as a log, where paths appear mid-line;
 // hideHome only rewrites a value that starts with it.
+// linkSecret matches the nxm download key and expiry a logged request URL can carry.
+var linkSecret = regexp.MustCompile(`([?&](?:key|expires)=)[^&\s"']+`)
+
 func hideHomeIn(text, home string) string {
+	text = linkSecret.ReplaceAllString(text, "${1}REDACTED")
 	for _, h := range []string{home, filepath.ToSlash(home), filepath.FromSlash(home)} {
 		if h = strings.TrimRight(h, `/\`); h != "" {
 			text = strings.ReplaceAll(text, h, "~")

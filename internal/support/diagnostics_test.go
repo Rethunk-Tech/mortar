@@ -310,3 +310,11 @@ func TestBundleWithoutProfileUsesTheLastPlayedOne(t *testing.T) {
 		t.Fatalf("a game without runs: %q", got)
 	}
 }
+
+func TestHideHomeInRedactsLinkKeys(t *testing.T) {
+	t.Parallel()
+	got := hideHomeIn(`Get "https://api.nexusmods.com/d.json?key=SECRETKEY&expires=1700000000": dial tcp: refused`, "/home/u")
+	if strings.Contains(got, "SECRETKEY") || strings.Contains(got, "1700000000") || !strings.Contains(got, "dial tcp") {
+		t.Fatalf("got %q", got)
+	}
+}
