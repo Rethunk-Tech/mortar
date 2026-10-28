@@ -46,11 +46,3 @@ export function sameJobGroups(items: RedundantItem[]): { keys: string[]; detail:
   }
   return [...groups.entries()].map(([root, keys]) => ({ keys, detail: detail.get(root) ?? '' }))
 }
-
-// How many rows the Redundant tab lists: every item but a same-job one, plus one row per group of mods doing the same job.
-export function redundantRowCount(items: RedundantItem[]): number {
-  const alone = items.filter((item) => item.kind !== 'sameJob' || item.covered).length
-  return (
-    alone + sameJobGroups(items.filter((item) => item.kind === 'sameJob' && !item.covered)).length
-  )
-}
