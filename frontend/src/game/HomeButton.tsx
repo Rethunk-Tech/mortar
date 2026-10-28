@@ -1,5 +1,6 @@
-import { Button, type ButtonProps, Tooltip } from '@mui/material'
+import { Button, type ButtonProps } from '@mui/material'
 import type { ReactNode } from 'react'
+import { Tooltip } from '../shell/Tooltip.tsx'
 import { space } from '../theme/density.ts'
 import { iconWhenCompact } from './compact.ts'
 
