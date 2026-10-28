@@ -137,7 +137,7 @@ const addIssue = (hasExe: boolean, hasName: boolean): string => {
   if (!hasName) {
     return i18n._(msg`Give the game a name first.`)
   }
-  return i18n._(msg`Give the Thunderstore community first.`)
+  return i18n._(msg`Give the ${{ source: sourceLabel('thunderstore') }} community first.`)
 }
 
 export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () => void }) {

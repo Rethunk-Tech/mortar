@@ -185,10 +185,6 @@ msgstr "Enabled {name}"
 msgid "Sprout"
 msgstr "Sprout"
 
-#: src/profiles/LaunchPresetsBlock.tsx
-msgid "Add preset"
-msgstr "Add preset"
-
 #: src/profiles/ProfileFolderDialog.tsx
 msgid "Moving copies the whole profile, then removes the old copy, so it needs room for both. On another drive the mods are copies, not links to the shared store, so the profile takes its full size there. Stop the game first."
 msgstr "Moving copies the whole profile, then removes the old copy, so it needs room for both. On another drive the mods are copies, not links to the shared store, so the profile takes its full size there. Stop the game first."
@@ -568,10 +564,6 @@ msgid "{count, plural, one {Revert # mod?} other {Revert # mods?}}"
 msgstr "{count, plural, one {Revert # mod?} other {Revert # mods?}}"
 
 #: src/profiles/LaunchPresetsBlock.tsx
-msgid "Edit"
-msgstr "Edit"
-
-#: src/profiles/LaunchPresetsBlock.tsx
 msgid "Duplicate"
 msgstr "Duplicate"
 
@@ -699,6 +691,10 @@ msgstr "Mortar found nothing to repair in this profile."
 msgid "Profile name"
 msgstr "Profile name"
 
+#: src/profiles/LaunchPresetsBlock.tsx
+msgid "Add preset…"
+msgstr "Add preset…"
+
 #: src/profiles/useColorName.ts
 msgid "Rose"
 msgstr "Rose"
@@ -727,6 +723,10 @@ msgstr "Launch options"
 #: src/profiles/EditProfileDialog.tsx
 msgid "The automatic cover is used after Save."
 msgstr "The automatic cover is used after Save."
+
+#: src/profiles/CompareDialog.tsx
+msgid "These profiles have the same mods"
+msgstr "These profiles have the same mods"
 
 #: src/profiles/HealthDialog.tsx
 msgid "The folder of {name} was deleted outside Mortar"
@@ -1074,6 +1074,10 @@ msgstr "{count, plural, one {Added # mod} other {Added # mods}}"
 msgid "{count, plural, one {Imported # mod} other {Imported # mods}}"
 msgstr "{count, plural, one {Imported # mod} other {Imported # mods}}"
 
+#: src/profiles/LaunchPresetsBlock.tsx
+msgid "Edit…"
+msgstr "Edit…"
+
 #: src/profiles/historyTimeline.ts
 msgid "{count, plural, one {Updated # mod} other {Updated # mods}}"
 msgstr "{count, plural, one {Updated # mod} other {Updated # mods}}"
@@ -1158,10 +1162,6 @@ msgstr "Pick two entries ({picked} of 2)"
 #: src/profiles/historyLabel.ts
 msgid "Changed groups"
 msgstr "Changed groups"
-
-#: src/profiles/CompareDialog.tsx
-msgid "These profiles have the same mods."
-msgstr "These profiles have the same mods."
 
 #: src/profiles/historyLabel.ts
 msgid "Marked {name} explicit"

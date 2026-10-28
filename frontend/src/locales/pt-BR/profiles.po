@@ -185,10 +185,6 @@ msgstr ""
 msgid "Sprout"
 msgstr ""
 
-#: src/profiles/LaunchPresetsBlock.tsx
-msgid "Add preset"
-msgstr ""
-
 #: src/profiles/ProfileFolderDialog.tsx
 msgid "Moving copies the whole profile, then removes the old copy, so it needs room for both. On another drive the mods are copies, not links to the shared store, so the profile takes its full size there. Stop the game first."
 msgstr ""
@@ -568,10 +564,6 @@ msgid "{count, plural, one {Revert # mod?} other {Revert # mods?}}"
 msgstr ""
 
 #: src/profiles/LaunchPresetsBlock.tsx
-msgid "Edit"
-msgstr ""
-
-#: src/profiles/LaunchPresetsBlock.tsx
 msgid "Duplicate"
 msgstr ""
 
@@ -699,6 +691,10 @@ msgstr ""
 msgid "Profile name"
 msgstr ""
 
+#: src/profiles/LaunchPresetsBlock.tsx
+msgid "Add preset…"
+msgstr ""
+
 #: src/profiles/useColorName.ts
 msgid "Rose"
 msgstr ""
@@ -726,6 +722,10 @@ msgstr ""
 
 #: src/profiles/EditProfileDialog.tsx
 msgid "The automatic cover is used after Save."
+msgstr ""
+
+#: src/profiles/CompareDialog.tsx
+msgid "These profiles have the same mods"
 msgstr ""
 
 #: src/profiles/HealthDialog.tsx
@@ -1074,6 +1074,10 @@ msgstr ""
 msgid "{count, plural, one {Imported # mod} other {Imported # mods}}"
 msgstr ""
 
+#: src/profiles/LaunchPresetsBlock.tsx
+msgid "Edit…"
+msgstr ""
+
 #: src/profiles/historyTimeline.ts
 msgid "{count, plural, one {Updated # mod} other {Updated # mods}}"
 msgstr ""
@@ -1157,10 +1161,6 @@ msgstr ""
 
 #: src/profiles/historyLabel.ts
 msgid "Changed groups"
-msgstr ""
-
-#: src/profiles/CompareDialog.tsx
-msgid "These profiles have the same mods."
 msgstr ""
 
 #: src/profiles/historyLabel.ts

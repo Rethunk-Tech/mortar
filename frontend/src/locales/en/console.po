@@ -27,10 +27,6 @@ msgstr "Play this profile, then time each mod per frame"
 msgid "{game} crashed"
 msgstr "{game} crashed"
 
-#: src/console/ConsoleTab.tsx
-msgid "{count, plural, one {the {levels} level is off} other {the {levels} levels are off}}"
-msgstr "{count, plural, one {the {levels} level is off} other {the {levels} levels are off}}"
-
 #: src/console/LinkedLog.tsx
 msgid "Could not open the folder"
 msgstr "Could not open the folder"
@@ -103,6 +99,10 @@ msgstr "Mod loader"
 #: src/console/RunProblems.tsx
 msgid "Dismiss"
 msgstr "Dismiss"
+
+#: src/console/ConsoleTab.tsx
+msgid "{count, plural, one {is shown} other {are shown}}"
+msgstr "{count, plural, one {is shown} other {are shown}}"
 
 #: src/console/HelpDialog.tsx
 msgid "Open"
@@ -299,6 +299,11 @@ msgstr "{app} starts"
 msgid "No recorded runs yet"
 msgstr "No recorded runs yet"
 
+#. placeholder {0}: plural({ count: n }, { one: '# line', other: '# lines' })
+#: src/console/LevelToggles.tsx
+msgid "{level}: {0}"
+msgstr "{level}: {0}"
+
 #: src/console/ConsoleTab.tsx
 msgid "Filter by level or mod, and use Share log to copy this run and paste it on a paste site."
 msgstr "Filter by level or mod, and use Share log to copy this run and paste it on a paste site."
@@ -315,6 +320,10 @@ msgstr "Search all runs…"
 msgid "Clear comparison"
 msgstr "Clear comparison"
 
+#: src/console/ConsoleTab.tsx
+msgid "only {mods} {verb}"
+msgstr "only {mods} {verb}"
+
 #: src/console/HelpDialog.tsx
 msgid "Reading the log…"
 msgstr "Reading the log…"
@@ -330,6 +339,10 @@ msgstr "No log for this profile yet. Play it once, then try again."
 #: src/console/StartupTable.tsx
 msgid "Show details"
 msgstr "Show details"
+
+#: src/console/ConsoleTab.tsx
+msgid "{count, plural, one {is hidden} other {are hidden}}"
+msgstr "{count, plural, one {is hidden} other {are hidden}}"
 
 #: src/console/BisectConfirm.tsx
 msgid "Mortar starts the game on a copy of this profile, turning half the mods off each time, until one mod is left. Your profile stays as it is."
@@ -402,10 +415,6 @@ msgstr "In Mortar's updates"
 #: src/console/UpdateNoteTag.tsx
 msgid "This profile skips this version, so Mortar does not offer it."
 msgstr "This profile skips this version, so Mortar does not offer it."
-
-#: src/console/ConsoleTab.tsx
-msgid "{mods} is hidden"
-msgstr "{mods} is hidden"
 
 #: src/console/HelpDialog.tsx
 #: src/console/VirtualLog.tsx
@@ -526,6 +535,10 @@ msgstr "Warn"
 msgid "The game log has errors."
 msgstr "The game log has errors."
 
+#: src/console/LevelToggles.tsx
+msgid "{count, plural, one {# line} other {# lines}}"
+msgstr "{count, plural, one {# line} other {# lines}}"
+
 #: src/console/StartupSections.tsx
 msgid "{name} takes {own} of your {total} start; {count, plural, one {# content pack causes} other {# content packs cause}} most of it."
 msgstr "{name} takes {own} of your {total} start; {count, plural, one {# content pack causes} other {# content packs cause}} most of it."
@@ -635,10 +648,6 @@ msgid "Search the log"
 msgstr "Search the log"
 
 #: src/console/ConsoleTab.tsx
-msgid "only {mods} is shown"
-msgstr "only {mods} is shown"
-
-#: src/console/ConsoleTab.tsx
 msgid "Mods"
 msgstr "Mods"
 
@@ -729,10 +738,6 @@ msgstr "Your download is already {have}; the mod's manifest still carries the ol
 #: src/console/RunProblems.tsx
 msgid "Add"
 msgstr "Add"
-
-#: src/console/LevelToggles.tsx
-msgid "{count, plural, one {{level}: # line} other {{level}: # lines}}"
-msgstr "{count, plural, one {{level}: # line} other {{level}: # lines}}"
 
 #: src/console/RunProblems.tsx
 msgid "Search in Browse"
@@ -847,9 +852,17 @@ msgstr "Source skipped"
 msgid "Mortar offers prereleases only when Settings allows them."
 msgstr "Mortar offers prereleases only when Settings allows them."
 
+#: src/console/ConsoleTab.tsx
+msgid "{mods} {verb}"
+msgstr "{mods} {verb}"
+
 #: src/console/PerformancePanel.tsx
 msgid "Report copied"
 msgstr "Report copied"
+
+#: src/console/ConsoleTab.tsx
+msgid "the {levels} {off}"
+msgstr "the {levels} {off}"
 
 #: src/console/PerformanceCards.tsx
 #: src/console/PerformancePanelParts.tsx
@@ -1071,6 +1084,10 @@ msgstr "Preparing a temporary copy of this profile…"
 #: src/console/PerformanceCards.tsx
 msgid "Live: {top} takes the most time per frame"
 msgstr "Live: {top} takes the most time per frame"
+
+#: src/console/ConsoleTab.tsx
+msgid "{count, plural, one {level is off} other {levels are off}}"
+msgstr "{count, plural, one {level is off} other {levels are off}}"
 
 #: src/console/StartupTable.tsx
 msgid "Sampled"

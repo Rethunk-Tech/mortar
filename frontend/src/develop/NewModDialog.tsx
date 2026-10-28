@@ -61,6 +61,12 @@ import { sdkSatisfies } from './sdk.ts'
 
 // The profile picker's value for a new development profile; Create takes it as no profile.
 const NEW_PROFILE = 'new'
+const LICENCES = [
+  ['apache-2.0', 'Apache 2.0'],
+  ['gpl-3.0', 'GNU GPL 3.0'],
+  ['mpl-2.0', 'Mozilla Public License 2.0'],
+  ['unlicense', 'The Unlicense'],
+] as const
 // A single choice with this many options or fewer is a row of toggle buttons rather than a menu.
 const TOGGLE_CHOICES = 3
 
@@ -333,10 +339,11 @@ function ProjectStep({ draft, owners, set }: { draft: Draft; owners: GitHubOwner
         onChange={(license) => set({ license })}
       >
         <MenuItem value="">{t`MIT (recommended)`}</MenuItem>
-        <MenuItem value="apache-2.0">Apache 2.0</MenuItem>
-        <MenuItem value="gpl-3.0">GNU GPL 3.0</MenuItem>
-        <MenuItem value="mpl-2.0">Mozilla Public License 2.0</MenuItem>
-        <MenuItem value="unlicense">The Unlicense</MenuItem>
+        {LICENCES.map(([value, name]) => (
+          <MenuItem key={value} value={value}>
+            {name}
+          </MenuItem>
+        ))}
       </SelectField>
       <LicenseChart license={draft.license} />
     </>

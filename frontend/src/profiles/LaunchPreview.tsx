@@ -47,6 +47,7 @@ export function LaunchPreview({
     delayMs: PREVIEW_DEBOUNCE_MS,
   })
   const loadError = error === null ? '' : errorMessage(error)
+  const shownError = preview.error ? sentence(preview.error) : loadError
   const read = () => run(load)
   const copyCommand = () => {
     copyText(formatShellLine(preview), t`Command copied`)
@@ -69,9 +70,9 @@ export function LaunchPreview({
           </IconButton>
         )}
       </Box>
-      {preview.error || loadError ? (
+      {shownError ? (
         <Typography color="error" sx={{ fontSize: 'small.fontSize' }}>
-          {preview.error ? sentence(preview.error) : loadError}
+          {shownError}
           {loadError && !preview.error ? (
             <Button size="small" onClick={read}>
               {t`Retry`}

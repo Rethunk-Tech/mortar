@@ -10,10 +10,11 @@ export function UnmoderatedDialog() {
   const { t } = useLingui()
   const ask = useUnmoderatedAsk((s) => s.ask)
   const sites = listNames((ask?.sources ?? []).map(sourceLabel))
+  const count = ask?.sources.length ?? 0
   return (
     <ConfirmationDialog
       open={ask !== null}
-      title={t`${plural((ask?.sources ?? []).length, { one: `${{ sites }} is not moderated`, other: `${{ sites }} are not moderated` })}`}
+      title={t`${plural(count, { one: `${{ sites }} is not moderated`, other: `${{ sites }} are not moderated` })}`}
       body={t`Anyone can publish files on ${sites}, and nobody reviews or scans them for malware. Download only from authors you trust. Mortar asks once per site.`}
       confirmLabel={t`Download`}
       onCancel={() => ask?.answer(false)}

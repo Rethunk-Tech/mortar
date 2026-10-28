@@ -99,7 +99,7 @@ export function ReleaseDialog({
       subtitle={
         versions?.github
           ? t`Commits the changelog, tags the version and pushes both to ${{ remote: versions.github }}, whose CI publishes it.`
-          : t`Commits the changelog and tags the version (pushing both when the folder has a GitHub remote), then offers to upload it.`
+          : t`Commits the changelog and tags the version (pushing both when the folder has a ${{ github: sourceLabel('github') }} remote), then offers to upload it.`
       }
       icon={
         <ToneIcon tone="neutral">

@@ -27,7 +27,7 @@ export function Title({ item, size }: { item: Item; size: number }) {
           title={profile}
           sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}
         >
-          {profile ? t`Into ${{ profile }}` : t`Into a deleted profile`}
+          {profile ? t`Into ${{ name: profile }}` : t`Into a deleted profile`}
         </Typography>
       )}
     </Box>

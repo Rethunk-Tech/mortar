@@ -119,7 +119,7 @@ export function DropOverlay({ target: frame }: { target: RefObject<HTMLElement |
               </>
             ) : (
               <Typography component="h2" sx={{ fontSize: 38, fontWeight: 700 }}>
-                {locked ? t`Stop the game to change mods` : t`Open a profile to install mods`}
+                {locked ? t`Stop the game first` : t`Open a profile to install mods`}
               </Typography>
             )}
           </Box>

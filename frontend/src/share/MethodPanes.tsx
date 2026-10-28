@@ -51,11 +51,14 @@ function Meter({ info }: { info: ShownInfo }) {
   const { ratio, level } = meter(info.length, info.limit)
   const length = info.length.toLocaleString(i18n.locale)
   const limit = info.limit.toLocaleString(i18n.locale)
-  const verdict = {
-    ok: t`${length} of ${limit} characters · fits one ${{ app: sourceLabel('discord') }} message`,
-    warn: t`${length} of ${limit} characters · close to the ${{ app: sourceLabel('discord') }} message limit`,
-    over: t`${length} of ${limit} characters · too long for one ${{ app: sourceLabel('discord') }} message`,
-  }[level]
+  const app = sourceLabel('discord')
+  const verdict = `${t`${length} of ${limit} characters`} · ${
+    {
+      ok: t`fits one ${{ app }} message`,
+      warn: t`close to the ${{ app }} message limit`,
+      over: t`too long for one ${{ app }} message`,
+    }[level]
+  }`
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
       <Box

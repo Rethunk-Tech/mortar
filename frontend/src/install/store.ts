@@ -273,7 +273,7 @@ async function runInstalls(
     return
   }
   if (gate === 'locked') {
-    useToasts.getState().push({ kind: 'warning', title: i18n._(msg`Stop the game to change mods`) })
+    useToasts.getState().push({ kind: 'warning', title: i18n._(msg`Stop the game first`) })
     return
   }
   if (!(game && profile)) {
@@ -416,7 +416,7 @@ export function initInstallAsks() {
   })
 }
 
-export function considerMissing(dependentIds: readonly string[]) {
+function considerMissing(dependentIds: readonly string[]) {
   const mode = openOverride(
     'missingRequirements',
     gamePrefs(useSettings.getState()).missingRequirements || 'ask',

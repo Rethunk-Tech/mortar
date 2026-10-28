@@ -27,10 +27,6 @@ msgstr ""
 msgid "{game} crashed"
 msgstr ""
 
-#: src/console/ConsoleTab.tsx
-msgid "{count, plural, one {the {levels} level is off} other {the {levels} levels are off}}"
-msgstr ""
-
 #: src/console/LinkedLog.tsx
 msgid "Could not open the folder"
 msgstr ""
@@ -102,6 +98,10 @@ msgstr ""
 #: src/console/CrashDialog.tsx
 #: src/console/RunProblems.tsx
 msgid "Dismiss"
+msgstr ""
+
+#: src/console/ConsoleTab.tsx
+msgid "{count, plural, one {is shown} other {are shown}}"
 msgstr ""
 
 #: src/console/HelpDialog.tsx
@@ -299,6 +299,11 @@ msgstr ""
 msgid "No recorded runs yet"
 msgstr ""
 
+#. placeholder {0}: plural({ count: n }, { one: '# line', other: '# lines' })
+#: src/console/LevelToggles.tsx
+msgid "{level}: {0}"
+msgstr ""
+
 #: src/console/ConsoleTab.tsx
 msgid "Filter by level or mod, and use Share log to copy this run and paste it on a paste site."
 msgstr ""
@@ -315,6 +320,10 @@ msgstr ""
 msgid "Clear comparison"
 msgstr ""
 
+#: src/console/ConsoleTab.tsx
+msgid "only {mods} {verb}"
+msgstr ""
+
 #: src/console/HelpDialog.tsx
 msgid "Reading the log…"
 msgstr ""
@@ -329,6 +338,10 @@ msgstr ""
 
 #: src/console/StartupTable.tsx
 msgid "Show details"
+msgstr ""
+
+#: src/console/ConsoleTab.tsx
+msgid "{count, plural, one {is hidden} other {are hidden}}"
 msgstr ""
 
 #: src/console/BisectConfirm.tsx
@@ -401,10 +414,6 @@ msgstr ""
 
 #: src/console/UpdateNoteTag.tsx
 msgid "This profile skips this version, so Mortar does not offer it."
-msgstr ""
-
-#: src/console/ConsoleTab.tsx
-msgid "{mods} is hidden"
 msgstr ""
 
 #: src/console/HelpDialog.tsx
@@ -526,6 +535,10 @@ msgstr ""
 msgid "The game log has errors."
 msgstr ""
 
+#: src/console/LevelToggles.tsx
+msgid "{count, plural, one {# line} other {# lines}}"
+msgstr ""
+
 #: src/console/StartupSections.tsx
 msgid "{name} takes {own} of your {total} start; {count, plural, one {# content pack causes} other {# content packs cause}} most of it."
 msgstr ""
@@ -635,10 +648,6 @@ msgid "Search the log"
 msgstr ""
 
 #: src/console/ConsoleTab.tsx
-msgid "only {mods} is shown"
-msgstr ""
-
-#: src/console/ConsoleTab.tsx
 msgid "Mods"
 msgstr ""
 
@@ -728,10 +737,6 @@ msgstr ""
 
 #: src/console/RunProblems.tsx
 msgid "Add"
-msgstr ""
-
-#: src/console/LevelToggles.tsx
-msgid "{count, plural, one {{level}: # line} other {{level}: # lines}}"
 msgstr ""
 
 #: src/console/RunProblems.tsx
@@ -847,8 +852,16 @@ msgstr ""
 msgid "Mortar offers prereleases only when Settings allows them."
 msgstr ""
 
+#: src/console/ConsoleTab.tsx
+msgid "{mods} {verb}"
+msgstr ""
+
 #: src/console/PerformancePanel.tsx
 msgid "Report copied"
+msgstr ""
+
+#: src/console/ConsoleTab.tsx
+msgid "the {levels} {off}"
 msgstr ""
 
 #: src/console/PerformanceCards.tsx
@@ -1070,6 +1083,10 @@ msgstr ""
 
 #: src/console/PerformanceCards.tsx
 msgid "Live: {top} takes the most time per frame"
+msgstr ""
+
+#: src/console/ConsoleTab.tsx
+msgid "{count, plural, one {level is off} other {levels are off}}"
 msgstr ""
 
 #: src/console/StartupTable.tsx

@@ -60,7 +60,7 @@ const SEARCH_PX = 420
 const ASSEMBLY_PX = 240
 const USAGES_PX = 420
 const CSHARP = 'C#'
-const IL = 'IL'
+const IL_LABEL = 'IL'
 
 type CodeMode = 'cs' | 'il' | 'both'
 
@@ -401,7 +401,7 @@ export function GameCodeDialog({
         aria-label={t`Code view`}
       >
         <ToggleButton value="cs">{CSHARP}</ToggleButton>
-        <ToggleButton value="il">{IL}</ToggleButton>
+        <ToggleButton value="il">{IL_LABEL}</ToggleButton>
         <ToggleButton value="both">{t`Side by side`}</ToggleButton>
       </ToggleButtonGroup>
       <Button

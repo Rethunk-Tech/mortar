@@ -34,6 +34,7 @@ function callsLabel(value: number, locale: string) {
 }
 
 const PERCENT = 100
+const SEPARATOR = ' · '
 
 function percentLabel(share: number, locale: string) {
   return `${(share * PERCENT).toLocaleString(locale, { maximumFractionDigits: 1 })}%`
@@ -219,7 +220,7 @@ function PanelHeader(props: HeaderProps) {
           {t`Measuring`}
           {props.since ? (
             <>
-              ·
+              {SEPARATOR}
               <Elapsed since={props.since} />
             </>
           ) : null}

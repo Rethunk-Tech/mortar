@@ -259,22 +259,20 @@ function GamePages({
     }
   }
   return (
-    <>
-      <SettingsShell
-        title={t`${name} settings`}
-        backLabel={t`Back to ${name}`}
-        onBack={close}
-        pages={pages}
-        current={page}
-        onPage={setPage}
-        render={render}
-        actions={Object.fromEntries(
-          pages.map((p) => [p.id, <ScopeSwitch key="scope" gameName={name} />]),
-        )}
-        initialQuery={query}
-        {...(related ? { related } : {})}
-      />
-    </>
+    <SettingsShell
+      title={t`${name} settings`}
+      backLabel={t`Back to ${name}`}
+      onBack={close}
+      pages={pages}
+      current={page}
+      onPage={setPage}
+      render={render}
+      actions={Object.fromEntries(
+        pages.map((p) => [p.id, <ScopeSwitch key="scope" gameName={name} />]),
+      )}
+      initialQuery={query}
+      {...(related ? { related } : {})}
+    />
   )
 }
 

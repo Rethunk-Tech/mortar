@@ -179,7 +179,10 @@ function CheckProfileMenuItem({ profile, close }: { profile: Profile; close: () 
   )
 }
 
-type Item = { profile: Profile; close: () => void }
+interface Item {
+  profile: Profile
+  close: () => void
+}
 
 // History, comparison and the health check: looking at the profile without changing it.
 function ReviewItems({ profile, close }: Item) {

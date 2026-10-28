@@ -15,6 +15,10 @@ msgstr "No saves match"
 msgid "{game}'s {launcher} launch options run {loader} in place of the game. {launcher} will still start {loader} unless that launch option is removed. Mortar will not change it."
 msgstr "{game}'s {launcher} launch options run {loader} in place of the game. {launcher} will still start {loader} unless that launch option is removed. Mortar will not change it."
 
+#: src/launch/SaveWarnDialog.tsx
+msgid "{name} ({path}) was last played with mods this profile lacks or has disabled. Playing without them can lose their items or break the save."
+msgstr "{name} ({path}) was last played with mods this profile lacks or has disabled. Playing without them can lose their items or break the save."
+
 #: src/game/Sidebar.tsx
 msgid "Performance"
 msgstr "Performance"
@@ -58,13 +62,9 @@ msgstr "Could not save the token"
 msgid "Open profile"
 msgstr "Open profile"
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/Outcome.tsx
 msgid "Could not open the file"
 msgstr "Could not open the file"
-
-#: src/develop/LicenseChart.tsx
-msgid "Release that mod under another license"
-msgstr "Release that mod under another license"
 
 #: src/sync/store.ts
 #: src/sync/SyncOffers.tsx
@@ -145,12 +145,13 @@ msgstr "This optional file has no manifest and replaces files of {baseLabel}. Mo
 msgid "Updated"
 msgstr "Updated"
 
-#: src/install/DropOverlay.tsx
-#: src/install/store.ts
+#: src/templates/ApplyTemplateDialog.tsx
+msgid "{added}; {rest}"
+msgstr "{added}; {rest}"
+
 #: src/saves/lackChipActions.tsx
 #: src/saves/lackChips.tsx
 #: src/saves/SaveRow.tsx
-#: src/share/usePasteLink.ts
 #: src/toasts/HistoryButton.tsx
 #: src/toasts/ToastHost.tsx
 msgid "Stop the game to change mods."
@@ -205,6 +206,10 @@ msgstr "Could not save the file"
 #: src/saves/lackChipActions.tsx
 msgid "Enable {name} in this profile"
 msgstr "Enable {name} in this profile"
+
+#: src/games/AddGameDialog.tsx
+msgid "Choose the game's program first."
+msgstr "Choose the game's program first."
 
 #: src/templates/TemplateDialogs.tsx
 msgid "A template with this name already exists."
@@ -266,13 +271,14 @@ msgstr "Could not hide that mod"
 msgid "History"
 msgstr "History"
 
+#: src/develop/EditProjectDialog.tsx
+#: src/develop/ProjectDependencies.tsx
+msgid "Reading the dependencies…"
+msgstr "Reading the dependencies…"
+
 #: src/shell/useDiscardGuard.tsx
 msgid "Discard changes?"
 msgstr "Discard changes?"
-
-#: src/shell/checkForUpdates.ts
-msgid "a new Mortar is ready"
-msgstr "a new Mortar is ready"
 
 #: src/tidy/report.ts
 msgid "Rebuilt a mod folder from the store"
@@ -287,6 +293,10 @@ msgstr "Another mod manager"
 #: src/share/ShareDialog.tsx
 msgid "Nearby computer"
 msgstr "Nearby computer"
+
+#: src/templates/ApplyTemplateDialog.tsx
+msgid "{left, plural, one {downloading # mod} other {downloading # mods}}"
+msgstr "{left, plural, one {downloading # mod} other {downloading # mods}}"
 
 #: src/share/MethodPanes.tsx
 msgid "Use a file"
@@ -324,6 +334,10 @@ msgstr "Zip, RAR, 7z, tar, gzip, xz, lzma, zstd and bzip2. Mortar reads the mods
 #: src/install/store.ts
 msgid "Could not add the chosen folder"
 msgstr "Could not add the chosen folder"
+
+#: src/shell/checkForUpdates.ts
+msgid "A new Mortar is ready"
+msgstr "A new Mortar is ready"
 
 #: src/game/Sidebar.tsx
 msgid "Config"
@@ -619,6 +633,10 @@ msgstr "Filter by outcome"
 msgid "Put back a mod folder an interrupted install or update left aside"
 msgstr "Put back a mod folder an interrupted install or update left aside"
 
+#: src/commandPalette/crashBisect.ts
+msgid "No crash to investigate: the last run ended normally"
+msgstr "No crash to investigate: the last run ended normally"
+
 #: src/develop/RepositoryChoice.tsx
 msgid "Sign in with gh to create a repository on {source}"
 msgstr "Sign in with gh to create a repository on {source}"
@@ -721,10 +739,6 @@ msgstr "Config files stay here: only a paired computer gets them. Everything els
 #: src/games/ProfileCards.tsx
 msgid "+{more} more"
 msgstr "+{more} more"
-
-#: src/shell/AppMenu.tsx
-msgid "Mortar settings…"
-msgstr "Mortar settings…"
 
 #: src/toasts/report.ts
 msgid "Save diagnostics…"
@@ -848,10 +862,6 @@ msgstr "See load errors, missing dependencies, and other issues before you play.
 msgid "Not installed"
 msgstr "Not installed"
 
-#: src/develop/draft.ts
-msgid "Fill in: {name}"
-msgstr "Fill in: {name}"
-
 #: src/games/ListFooter.tsx
 msgid "No supported game was found in your launchers."
 msgstr "No supported game was found in your launchers."
@@ -859,6 +869,10 @@ msgstr "No supported game was found in your launchers."
 #: src/develop/GameCodeDialog.tsx
 msgid "Matching C# to IL"
 msgstr "Matching C# to IL"
+
+#: src/queue/LargeDownloadDialog.tsx
+msgid "{more, plural, one {# more large download is waiting after this one.} other {# more large downloads are waiting after this one.}}"
+msgstr "{more, plural, one {# more large download is waiting after this one.} other {# more large downloads are waiting after this one.}}"
 
 #: src/shell/AppMenu.tsx
 msgid "Could not restart Mortar"
@@ -884,10 +898,6 @@ msgstr "No mods to share"
 msgid "Roll back"
 msgstr "Roll back"
 
-#: src/templates/ApplyTemplateDialog.tsx
-msgid "{count, plural, one {Added # mod from {name}; downloading {left, plural, one {# mod} other {# mods}}} other {Added # mods from {name}; downloading {left, plural, one {# mod} other {# mods}}}}"
-msgstr "{count, plural, one {Added # mod from {name}; downloading {left, plural, one {# mod} other {# mods}}} other {Added # mods from {name}; downloading {left, plural, one {# mod} other {# mods}}}}"
-
 #: src/groups/SavedGroupsSection.tsx
 msgid "Could not rename the saved group"
 msgstr "Could not rename the saved group"
@@ -895,10 +905,6 @@ msgstr "Could not rename the saved group"
 #: src/toasts/report.ts
 msgid "The antivirus flagged this download, so Mortar did not install it."
 msgstr "The antivirus flagged this download, so Mortar did not install it."
-
-#: src/templates/ApplyTemplateDialog.tsx
-msgid "{count, plural, one {Added # mod from {name}; {left, plural, one {# mod} other {# mods}} still to download} other {Added # mods from {name}; {left, plural, one {# mod} other {# mods}} still to download}}"
-msgstr "{count, plural, one {Added # mod from {name}; {left, plural, one {# mod} other {# mods}} still to download} other {Added # mods from {name}; {left, plural, one {# mod} other {# mods}} still to download}}"
 
 #: src/game/Hero.tsx
 msgid "Unlink"
@@ -992,6 +998,7 @@ msgstr "Save file {slot}"
 #: src/install/MergeCallout.tsx
 #: src/install/NeedsRootCallout.tsx
 #: src/queue/QueueBody.tsx
+#: src/queue/QueueNeedsFomod.tsx
 msgid "Skip"
 msgstr "Skip"
 
@@ -1040,6 +1047,10 @@ msgstr "Others can vote on it"
 msgid "Reading the archive…"
 msgstr "Reading the archive…"
 
+#: src/queue/QueueNeedsFomod.tsx
+msgid "Choose options…"
+msgstr "Choose options…"
+
 #: src/launch/store.ts
 msgid "The program to start {name} was not found. Check that the game is still installed and the launch prefix names a real command. {error}"
 msgstr "The program to start {name} was not found. Check that the game is still installed and the launch prefix names a real command. {error}"
@@ -1047,6 +1058,10 @@ msgstr "The program to start {name} was not found. Check that the game is still 
 #: src/launch/PrePlayDialog.tsx
 msgid "Do not check before Play"
 msgstr "Do not check before Play"
+
+#: src/develop/GameCodeDialog.tsx
+msgid "Pick the member in the search to copy its hook."
+msgstr "Pick the member in the search to copy its hook."
 
 #: src/lan/PairedComputers.tsx
 msgid "Paired computers"
@@ -1093,6 +1108,10 @@ msgstr "Kept"
 #: src/shell/AppMenu.tsx
 msgid "Could not quit Mortar"
 msgstr "Could not quit Mortar"
+
+#: src/game/FarmMenuItem.tsx
+msgid "Paste a mod list first"
+msgstr "Paste a mod list first"
 
 #: src/shell/BugReportDialog.tsx
 msgid "A short summary"
@@ -1240,6 +1259,10 @@ msgstr "Include libraries and supporting mods"
 msgid "Queued"
 msgstr "Queued"
 
+#: src/browse/browseConstants.ts
+msgid "Search {source}. Add puts the mod in this profile."
+msgstr "Search {source}. Add puts the mod in this profile."
+
 #: src/commandPalette/paletteLabels.ts
 #: src/firstrun/ProfileStep.tsx
 #: src/game/NewProfileDialog.tsx
@@ -1255,6 +1278,7 @@ msgstr "New profile"
 msgid "Open profile first."
 msgstr "Open profile first."
 
+#: src/develop/DevelopTab.tsx
 #: src/saves/SavesTab.tsx
 msgid "Try a different search."
 msgstr "Try a different search."
@@ -1291,6 +1315,10 @@ msgstr "Hill-top farm"
 #: src/launch/store.ts
 msgid "{launcher} or {otherLauncher} may not have started the game. Start it, sign in if it asks, and try again, or set the game's Default launch to Direct."
 msgstr "{launcher} or {otherLauncher} may not have started the game. Start it, sign in if it asks, and try again, or set the game's Default launch to Direct."
+
+#: src/develop/DevelopTab.tsx
+msgid "No projects match"
+msgstr "No projects match"
 
 #: src/tools/ToolEditorDialog.tsx
 msgid "Choose executable"
@@ -1637,7 +1665,6 @@ msgstr "Could not open the file dialog"
 
 #: src/firstrun/FindStep.tsx
 #: src/install/NeedsRootCallout.tsx
-#: src/tools/ToolEditorDialog.tsx
 msgid "Choose folder…"
 msgstr "Choose folder…"
 
@@ -1660,10 +1687,6 @@ msgstr "Place the optional file"
 #: src/browse/BrowseShow.tsx
 msgid "Gray out"
 msgstr "Gray out"
-
-#: src/commandPalette/crashBisect.ts
-msgid "No crash to investigate: the last run ended normally."
-msgstr "No crash to investigate: the last run ended normally."
 
 #: src/game/Sidebar.tsx
 msgid "Profile sections"
@@ -1726,11 +1749,15 @@ msgstr "Before updating a deleted profile"
 msgid "Storage"
 msgstr "Storage"
 
+#: src/develop/NewModDialog.tsx
+msgid "Licence"
+msgstr "Licence"
+
 #: src/lan/PairedComputers.tsx
 msgid "Could not start pairing"
 msgstr "Could not start pairing"
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/Outcome.tsx
 msgid "The build failed."
 msgstr "The build failed."
 
@@ -1797,6 +1824,10 @@ msgstr "New mod"
 msgid "Try again in a few seconds."
 msgstr "Try again in a few seconds."
 
+#: src/lan/SendPanel.tsx
+msgid "Send to"
+msgstr "Send to"
+
 #: src/shell/AppMenu.tsx
 msgid "Help"
 msgstr "Help"
@@ -1830,11 +1861,6 @@ msgstr "Disabled in this profile"
 #: src/develop/ProjectCard.tsx
 msgid "Show log"
 msgstr "Show log"
-
-#: src/install/OverlayPlaceDialog.tsx
-#: src/queue/Callout.tsx
-msgid "Into {profile}"
-msgstr "Into {profile}"
 
 #: src/firstrun/FindStep.tsx
 msgid "Found in {path}"
@@ -2087,10 +2113,6 @@ msgstr "Set up"
 msgid "Sort: name (A to Z)"
 msgstr "Sort: name (A to Z)"
 
-#: src/commandPalette/crashBisect.ts
-msgid "Mortar already named the likely mod for the last crash."
-msgstr "Mortar already named the likely mod for the last crash."
-
 #: src/fomod/Dialog.tsx
 #: src/install/DownloadsDialog.tsx
 #: src/install/OverlayPlaceDialog.tsx
@@ -2114,6 +2136,7 @@ msgstr "Cancel"
 msgid "Delete template"
 msgstr "Delete template"
 
+#: src/game/FarmMenuItem.tsx
 #: src/share/ImportProblems.tsx
 #: src/share/useImportFlow.ts
 msgid "Nothing to download"
@@ -2232,10 +2255,6 @@ msgstr "{source} expects a 7z. Repack collection.zip as a 7z with 7-Zip before u
 #: src/develop/UploadDialog.tsx
 msgid "Create one in your team's settings"
 msgstr "Create one in your team's settings"
-
-#: src/lan/SendPanel.tsx
-msgid "Send to…"
-msgstr "Send to…"
 
 #: src/install/batchSummary.ts
 #: src/install/store.ts
@@ -2706,10 +2725,6 @@ msgstr "Character"
 msgid "Show hidden games"
 msgstr "Show hidden games"
 
-#: src/nxm/ArrivalDialog.tsx
-msgid "Install into {name}"
-msgstr "Install into {name}"
-
 #: src/queue/QueueHistory.tsx
 msgid "Filter by profile"
 msgstr "Filter by profile"
@@ -2767,10 +2782,6 @@ msgstr "{app} games whose mods are made for it"
 msgid "Could not unpair"
 msgstr "Could not unpair"
 
-#: src/share/CompareSummary.tsx
-msgid "{count, plural, one {# mod already matches} other {# mods already match}} {name}."
-msgstr "{count, plural, one {# mod already matches} other {# mods already match}} {name}."
-
 #: src/games/AddGameDialog.tsx
 msgid "{source} community"
 msgstr "{source} community"
@@ -2778,6 +2789,10 @@ msgstr "{source} community"
 #: src/share/ImportInput.tsx
 msgid "Choose a file…"
 msgstr "Choose a file…"
+
+#: src/games/AddGameDialog.tsx
+msgid "Give the {source} community first."
+msgstr "Give the {source} community first."
 
 #: src/browse/BrowseFilters.tsx
 msgid "Sort: most followed"
@@ -2787,6 +2802,10 @@ msgstr "Sort: most followed"
 #: src/templates/TemplateDialogs.tsx
 msgid "Replace"
 msgstr "Replace"
+
+#: src/game/HomeNotes.tsx
+msgid "No notes yet"
+msgstr "No notes yet"
 
 #: src/develop/DevelopTab.tsx
 msgid "In other profiles"
@@ -3174,6 +3193,11 @@ msgstr "{name} is still taking your last share"
 msgid "Remove {name}"
 msgstr "Remove {name}"
 
+#: src/develop/DevelopTab.tsx
+#: src/develop/ProjectCard.tsx
+msgid "Could not remove the project"
+msgstr "Could not remove the project"
+
 #: src/install/batchSummary.ts
 msgid "{count, plural, one {Added # mod to {name}} other {Added # mods to {name}}}"
 msgstr "{count, plural, one {Added # mod to {name}} other {Added # mods to {name}}}"
@@ -3467,10 +3491,6 @@ msgstr "Launch options set in {launcher}"
 msgid "Others may"
 msgstr "Others may"
 
-#: src/develop/NewModDialog.tsx
-msgid "License"
-msgstr "License"
-
 #: src/templates/TemplateDialogs.tsx
 msgid "Could not rename the template"
 msgstr "Could not rename the template"
@@ -3666,6 +3686,10 @@ msgstr "Text for {app} or a forum"
 msgid "Where to post"
 msgstr "Where to post"
 
+#: src/develop/NewModDialog.tsx
+msgid "No version found for some dependencies, so they were not added"
+msgstr "No version found for some dependencies, so they were not added"
+
 #: src/nxm/ArrivalDialog.tsx
 msgid "{count} more waiting"
 msgstr "{count} more waiting"
@@ -3715,10 +3739,6 @@ msgstr "Mods"
 #: src/games/LetterRail.tsx
 msgid "Games starting with {letter}"
 msgstr "Games starting with {letter}"
-
-#: src/queue/UnmoderatedDialog.tsx
-msgid "{sites} is not moderated"
-msgstr "{sites} is not moderated"
 
 #: src/saves/SaveRow.tsx
 msgid "Has used {count, plural, one {# mod it lacks} other {# mods it lacks}}"
@@ -3801,6 +3821,10 @@ msgstr "Nothing to suggest from your answers; search for any mod yours builds on
 #: src/share/ImportSources.tsx
 msgid "Mods already in the game's folder"
 msgstr "Mods already in the game's folder"
+
+#: src/games/AddGameDialog.tsx
+msgid "Give the game a name first."
+msgstr "Give the game a name first."
 
 #: src/launch/PlayControl.tsx
 #: src/launch/StopDialog.tsx
@@ -3891,10 +3915,6 @@ msgstr "Skip all"
 #: src/saves/BackupsDialog.tsx
 msgid "Could not list backups: {error}"
 msgstr "Could not list backups: {error}"
-
-#: src/toasts/report.ts
-msgid "Something went wrong."
-msgstr "Something went wrong."
 
 #: src/queue/LargeDownloadDialog.tsx
 msgid "{name} is a very large download"
@@ -4430,6 +4450,10 @@ msgstr "Reading the mod's page…"
 msgid "Attach diagnostics (a zip of checks, logs and settings with secrets and your home folder removed; you attach it to the post)"
 msgstr "Attach diagnostics (a zip of checks, logs and settings with secrets and your home folder removed; you attach it to the post)"
 
+#: src/share/CompareSummary.tsx
+msgid "{count, plural, one {# mod already matches {targetName}.} other {# mods already match {targetName}.}}"
+msgstr "{count, plural, one {# mod already matches {targetName}.} other {# mods already match {targetName}.}}"
+
 #: src/shell/checkForUpdates.ts
 msgid "Update check failed"
 msgstr "Update check failed"
@@ -4545,6 +4569,10 @@ msgstr "This archive has no {loader} mod where Mortar expects one. Pick the fold
 #: src/sync/pins.tsx
 msgid "Follow the sync again"
 msgstr "Follow the sync again"
+
+#: src/develop/LicenseChart.tsx
+msgid "Release that mod under another licence"
+msgstr "Release that mod under another licence"
 
 #: src/develop/DependenciesStep.tsx
 msgid "How {name} is needed"
@@ -4691,6 +4719,10 @@ msgstr "The download queue is empty."
 #: src/share/ImportPreview.tsx
 msgid "unverified until downloaded"
 msgstr "unverified until downloaded"
+
+#: src/toasts/report.ts
+msgid "Something went wrong"
+msgstr "Something went wrong"
 
 #: src/launch/store.ts
 msgid "New errors after updating {profile}"
@@ -4890,6 +4922,10 @@ msgstr "{count, plural, one {# follower} other {# followers}}"
 msgid "A zip to publish on {source}"
 msgstr "A zip to publish on {source}"
 
+#: src/share/ImportProblems.tsx
+msgid "{count} left out"
+msgstr "{count} left out"
+
 #: src/develop/DevelopTab.tsx
 msgid "No mods in development"
 msgstr "No mods in development"
@@ -4955,10 +4991,6 @@ msgstr "How many copies to test with"
 msgid "Challenge moon"
 msgstr "Challenge moon"
 
-#: src/game/HomeNotes.tsx
-msgid "No notes yet."
-msgstr "No notes yet."
-
 #: src/share/ListFormat.tsx
 msgid "Message {count} of {total}"
 msgstr "Message {count} of {total}"
@@ -4968,6 +5000,7 @@ msgid "Sort: most endorsed"
 msgstr "Sort: most endorsed"
 
 #: src/shell/ErrorBoundary.tsx
+#: src/toasts/HistoryButton.tsx
 #: src/toasts/ToastHost.tsx
 msgid "Details copied"
 msgstr "Details copied"
@@ -4995,10 +5028,6 @@ msgstr "Not now"
 #: src/launch/SweepDialog.tsx
 msgid "{count, plural, one {Update # mod} other {Update # mods}}"
 msgstr "{count, plural, one {Update # mod} other {Update # mods}}"
-
-#: src/queue/LargeDownloadDialog.tsx
-msgid "{more} more large downloads are waiting after this one."
-msgstr "{more} more large downloads are waiting after this one."
 
 #: src/develop/UploadDialog.tsx
 msgid "Uploaded {name}"
@@ -5204,6 +5233,10 @@ msgstr "Could not check the graphics setting"
 msgid "{name} (disabled)"
 msgstr "{name} (disabled)"
 
+#: src/develop/UploadDialog.tsx
+msgid "Wait for the running build to finish"
+msgstr "Wait for the running build to finish"
+
 #: src/develop/LicenseChart.tsx
 msgid "Anything at all"
 msgstr "Anything at all"
@@ -5220,6 +5253,10 @@ msgstr "The text that is copied"
 #: src/queue/QueueBody.tsx
 msgid "Nothing downloading"
 msgstr "Nothing downloading"
+
+#: src/templates/ApplyTemplateDialog.tsx
+msgid "{left, plural, one {# mod still to download} other {# mods still to download}}"
+msgstr "{left, plural, one {# mod still to download} other {# mods still to download}}"
 
 #: src/develop/ProjectCard.tsx
 msgid "Packing"
@@ -5424,10 +5461,6 @@ msgstr "No other profile to add them to."
 msgid "Could not save the number of copies"
 msgstr "Could not save the number of copies"
 
-#: src/share/ImportProblems.tsx
-msgid "{leftOut} left out"
-msgstr "{leftOut} left out"
-
 #: src/browse/CardProgress.tsx
 msgid "Waiting for {source}…"
 msgstr "Waiting for {source}…"
@@ -5537,6 +5570,10 @@ msgstr "the mod"
 #: src/browse/BrowseBody.tsx
 msgid "Searching…"
 msgstr "Searching…"
+
+#: src/commandPalette/crashBisect.ts
+msgid "Mortar already named the likely mod for the last crash"
+msgstr "Mortar already named the likely mod for the last crash"
 
 #: src/game/FarmMenuItem.tsx
 msgid "Multiplayer mod list"
@@ -5677,6 +5714,10 @@ msgstr "{launcher} was not found"
 msgid "Switch to Saves"
 msgstr "Switch to Saves"
 
+#: src/queue/UnmoderatedDialog.tsx
+msgid "{count, plural, one {{sites} is not moderated} other {{sites} are not moderated}}"
+msgstr "{count, plural, one {{sites} is not moderated} other {{sites} are not moderated}}"
+
 #: src/firstrunTour/TourPopover.tsx
 msgid "Search every mod site at once or pick one; with nothing typed you see the top mods. Add installs into this profile. You can also drop a downloaded archive anywhere on this window."
 msgstr "Search every mod site at once or pick one; with nothing typed you see the top mods. Add installs into this profile. You can also drop a downloaded archive anywhere on this window."
@@ -5693,6 +5734,10 @@ msgstr "Remove"
 #: src/firstrun/FindStep.tsx
 msgid "{name} was not found in your launchers"
 msgstr "{name} was not found in your launchers"
+
+#: src/queue/QueueNeedsFomod.tsx
+msgid "Choose options"
+msgstr "Choose options"
 
 #: src/launch/PlayControl.tsx
 msgid "Running {who}"
@@ -5791,6 +5836,10 @@ msgstr "Keep waiting"
 msgid "Choose folder"
 msgstr "Choose folder"
 
+#: src/updates/UpdateReadyBanner.tsx
+msgid "Update ready ({version}): applies when you close Mortar."
+msgstr "Update ready ({version}): applies when you close Mortar."
+
 #: src/install/OverlayPlaceDialog.tsx
 msgid "Place here"
 msgstr "Place here"
@@ -5820,6 +5869,7 @@ msgid "Install"
 msgstr "Install"
 
 #: src/shell/ErrorBoundary.tsx
+#: src/toasts/HistoryButton.tsx
 #: src/toasts/ToastHost.tsx
 msgid "Copy details"
 msgstr "Copy details"
@@ -5836,6 +5886,10 @@ msgstr "Open {launcher}'s folder"
 #: src/shell/checkForUpdates.ts
 msgid "Mods are up to date"
 msgstr "Mods are up to date"
+
+#: src/develop/draft.ts
+msgid "Fill in: {name}."
+msgstr "Fill in: {name}."
 
 #: src/install/NeedsRootCallout.tsx
 #: src/install/RemapDialog.tsx
@@ -5940,10 +5994,6 @@ msgstr "Could not enable sharing nearby"
 #: src/develop/UploadDialog.tsx
 msgid "Mortar builds the package and publishes it for everyone under your team. A published version cannot be replaced."
 msgstr "Mortar builds the package and publishes it for everyone under your team. A published version cannot be replaced."
-
-#: src/develop/ReleaseDialog.tsx
-msgid "Commits the changelog and tags the version here, then offers to upload it."
-msgstr "Commits the changelog and tags the version here, then offers to upload it."
 
 #: src/game/ProfileMenuItems.tsx
 msgid "Already in {launcher}"
@@ -6150,6 +6200,12 @@ msgstr "Saves"
 msgid "World"
 msgstr "World"
 
+#: src/install/DropOverlay.tsx
+#: src/install/store.ts
+#: src/share/usePasteLink.ts
+msgid "Stop the game first"
+msgstr "Stop the game first"
+
 #: src/develop/ProjectCard.tsx
 msgid "Its folder stays where it is; Mortar stops building it and installing it into the profile."
 msgstr "Its folder stays where it is; Mortar stops building it and installing it into the profile."
@@ -6306,6 +6362,11 @@ msgstr "Hide details"
 msgid "Nothing new"
 msgstr "Nothing new"
 
+#: src/install/OverlayPlaceDialog.tsx
+#: src/queue/Callout.tsx
+msgid "Into {name}"
+msgstr "Into {name}"
+
 #: src/develop/DevelopTab.tsx
 msgid "Start a mod from the template: Mortar sets up the project and installs each build into this profile."
 msgstr "Start a mod from the template: Mortar sets up the project and installs each build into this profile."
@@ -6313,6 +6374,10 @@ msgstr "Start a mod from the template: Mortar sets up the project and installs e
 #: src/lan/PairedComputers.tsx
 msgid "Unpair"
 msgstr "Unpair"
+
+#: src/develop/NewModDialog.tsx
+msgid "Could not add the dependencies"
+msgstr "Could not add the dependencies"
 
 #: src/firstrunTour/TourPopover.tsx
 #: src/tidy/report.ts
@@ -6344,6 +6409,14 @@ msgstr "Cancelled"
 #: src/launch/LaunchScreen.tsx
 msgid "Did not start"
 msgstr "Did not start"
+
+#: src/develop/TrustDialog.tsx
+msgid "Could not trust the project"
+msgstr "Could not trust the project"
+
+#: src/develop/ProjectCard.tsx
+msgid "Reading the project…"
+msgstr "Reading the project…"
 
 #: src/games/GameMenu.tsx
 msgid "Games"
@@ -6470,6 +6543,10 @@ msgstr "Groups already added to profiles stay."
 msgid "{peer} has all the files for {profile}"
 msgstr "{peer} has all the files for {profile}"
 
+#: src/develop/ReleaseDialog.tsx
+msgid "Could not read the next versions"
+msgstr "Could not read the next versions"
+
 #: src/game/TabHeader.tsx
 msgid "Saves whose recorded mod list this profile covers, out of the saves that record one"
 msgstr "Saves whose recorded mod list this profile covers, out of the saves that record one"
@@ -6514,6 +6591,10 @@ msgstr "Name the mod."
 #: src/lan/PairedComputers.tsx
 msgid "On the other computer, choose Enter code and type this. It works once, for five minutes."
 msgstr "On the other computer, choose Enter code and type this. It works once, for five minutes."
+
+#: src/commandPalette/crashBisect.ts
+msgid "Start the game once so Mortar can see the crash"
+msgstr "Start the game once so Mortar can see the crash"
 
 #: src/launch/LaunchScreen.tsx
 msgid "Still loading {mod} ({loaded} of {total})"
@@ -6569,6 +6650,7 @@ msgstr "Failed, retry"
 msgid "{description} Adds {names}."
 msgstr "{description} Adds {names}."
 
+#: src/browse/BrowseMenu.tsx
 #: src/browse/CardAction.tsx
 msgid "Sign in to download"
 msgstr "Sign in to download"
@@ -6726,9 +6808,17 @@ msgstr "Backups of {name}"
 msgid "{count, plural, one {# settings file was left out (too large):} other {# settings files were left out (too large):}}"
 msgstr "{count, plural, one {# settings file was left out (too large):} other {# settings files were left out (too large):}}"
 
+#: src/queue/QueueNeedsFomod.tsx
+msgid "This mod's installer has options to pick before it installs."
+msgstr "This mod's installer has options to pick before it installs."
+
 #: src/develop/GameCodeDialog.tsx
 msgid "Find usages"
 msgstr "Find usages"
+
+#: src/tools/ToolEditorDialog.tsx
+msgid "Choose program…"
+msgstr "Choose program…"
 
 #: src/game/Home.tsx
 #: src/saves/SavesTab.tsx
@@ -6751,6 +6841,10 @@ msgstr "{count, plural, one {# endorsement} other {# endorsements}}"
 #: src/games/AddGameDialog.tsx
 msgid "The game's name in its {source} address (thunderstore.io/c/…). Mortar gets {loader} and the game's mods from it. Choose the game's shipping program, in Binaries/Win64."
 msgstr "The game's name in its {source} address (thunderstore.io/c/…). Mortar gets {loader} and the game's mods from it. Choose the game's shipping program, in Binaries/Win64."
+
+#: src/lan/OutgoingProgress.tsx
+msgid "Sending to {peer} stopped"
+msgstr "Sending to {peer} stopped"
 
 #: src/browse/BrowseFilters.tsx
 msgid "Sort: top rated"
@@ -6809,10 +6903,6 @@ msgstr "{name} is not in {profile}"
 msgid "Handed off"
 msgstr "Handed off"
 
-#: src/commandPalette/crashBisect.ts
-msgid "Start the game once so Mortar can see the crash."
-msgstr "Start the game once so Mortar can see the crash."
-
 #: src/install/DownloadsDialog.tsx
 msgid "No archives match"
 msgstr "No archives match"
@@ -6855,6 +6945,10 @@ msgstr "Installers ask as usual; Premium accounts also get the curator's choices
 #: src/shell/TitleBar.tsx
 msgid "Restore"
 msgstr "Restore"
+
+#: src/nxm/ArrivalDialog.tsx
+msgid "Install into {profile}"
+msgstr "Install into {profile}"
 
 #: src/launch/SmapiWarnDialog.tsx
 msgid "{launcher} will still start {loader}"
@@ -6923,6 +7017,10 @@ msgstr "Quit Mortar"
 #: src/shell/BugReportDialog.tsx
 msgid "Copies the report for you to paste into a new post in the bug-reports forum on Mortar's {app}, and saves the diagnostics zip to attach."
 msgstr "Copies the report for you to paste into a new post in the bug-reports forum on Mortar's {app}, and saves the diagnostics zip to attach."
+
+#: src/develop/ReleaseDialog.tsx
+msgid "Commits the changelog and tags the version (pushing both when the folder has a {github} remote), then offers to upload it."
+msgstr "Commits the changelog and tags the version (pushing both when the folder has a {github} remote), then offers to upload it."
 
 #: src/develop/NewModDialog.tsx
 msgid "Installs into"
@@ -7067,6 +7165,10 @@ msgstr "Caused by {name}"
 msgid "{name} is not on {source}"
 msgstr "{name} is not on {source}"
 
+#: src/develop/DevelopTab.tsx
+msgid "Show all projects"
+msgstr "Show all projects"
+
 #: src/saves/BackupsDialog.tsx
 #: src/saves/SaveBackupsButton.tsx
 msgid "Reading backups…"
@@ -7083,6 +7185,10 @@ msgstr "Enable them"
 #: src/browse/BrowsePage.tsx
 msgid "Search all mod sites"
 msgstr "Search all mod sites"
+
+#: src/game/HomeNotes.tsx
+msgid "Could not save the notes"
+msgstr "Could not save the notes"
 
 #: src/groups/SavedGroupsSection.tsx
 msgid "Saved group deleted"
@@ -7170,6 +7276,10 @@ msgstr "Could not remove the game"
 msgid "A link or .mortar file"
 msgstr "A link or .mortar file"
 
+#: src/shell/AppMenu.tsx
+msgid "Mortar settings"
+msgstr "Mortar settings"
+
 #: src/games/storeName.ts
 msgid "Default folder"
 msgstr "Default folder"
@@ -7203,6 +7313,10 @@ msgstr "Template deleted"
 #: src/shell/offlineText.ts
 msgid "{sources} cannot sort this way: pick it as the source to see its mods"
 msgstr "{sources} cannot sort this way: pick it as the source to see its mods"
+
+#: src/develop/DevelopTab.tsx
+msgid "Could not move the project"
+msgstr "Could not move the project"
 
 #: src/develop/EditProjectDialog.tsx
 msgid "Renaming moves the project's folder, files and namespace."
