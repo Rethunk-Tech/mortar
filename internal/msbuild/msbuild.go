@@ -106,7 +106,7 @@ func Property(text, name string) string {
 
 func property(elems []Elem, name string) (Elem, bool) {
 	for _, e := range elems {
-		if e.Name == name && e.Parent >= 0 && elems[e.Parent].Name == "PropertyGroup" {
+		if strings.EqualFold(e.Name, name) && e.Parent >= 0 && elems[e.Parent].Name == "PropertyGroup" {
 			return e, true
 		}
 	}
@@ -180,7 +180,7 @@ func SetItem(text string, item Item, same []string, after func(Item) bool) (stri
 		if e.Parent < 0 || elems[e.Parent].Name != "ItemGroup" {
 			continue
 		}
-		if slices.Contains(same, e.Name) && e.Attrs["Include"] == item.Include {
+		if slices.Contains(same, e.Name) && strings.EqualFold(e.Attrs["Include"], item.Include) {
 			return text[:e.Start] + xmlText + text[e.End:], nil
 		}
 		if after(Item{Type: e.Name, Include: e.Attrs["Include"], Attrs: e.Attrs}) {
