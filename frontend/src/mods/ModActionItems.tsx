@@ -16,18 +16,17 @@ import { space } from '../theme/density.ts'
 import { ICON_SIZE } from './menu.ts'
 import type { ModAction } from './modActions.ts'
 
+// The dialog openers keep the menu mounted (its owner hides it): closing would unmount the dialogs' state.
 // One row that unfolds the two actions on this mod's copies in the game's other profiles; the menu stays open.
 function OtherProfilesGroup({
   locked,
   tooltip,
-  closeThen,
   onAlsoAdd,
   onRemoveOther,
   labels,
 }: {
   locked: boolean
   tooltip: string
-  closeThen: (fn: () => void) => () => void
   onAlsoAdd: () => void
   onRemoveOther: () => void
   labels: { alsoAdd: string }
@@ -50,7 +49,7 @@ function OtherProfilesGroup({
             reason={tooltip}
             icon={<CopyPlus size={ICON_SIZE} />}
             label={labels.alsoAdd}
-            onClick={closeThen(onAlsoAdd)}
+            onClick={onAlsoAdd}
           />
           <MenuAction
             disabled={locked}
@@ -58,7 +57,7 @@ function OtherProfilesGroup({
             icon={<Trash2 size={ICON_SIZE} />}
             label={t`Remove from other profiles…`}
             tone="error"
-            onClick={closeThen(onRemoveOther)}
+            onClick={onRemoveOther}
           />
         </Box>
       </Collapse>
@@ -177,7 +176,7 @@ function ModActionItems({
         key="category"
         icon={<Tag size={ICON_SIZE} />}
         label={labels.category}
-        onClick={closeThen(onSetCategory)}
+        onClick={onSetCategory}
       />,
     )
     result.push(...extra.organise)
@@ -191,7 +190,6 @@ function ModActionItems({
       key="other-profiles"
       locked={locked}
       tooltip={lockedTip}
-      closeThen={closeThen}
       onAlsoAdd={onAlsoAdd}
       onRemoveOther={onRemoveOther}
       labels={labels}

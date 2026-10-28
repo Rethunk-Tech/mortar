@@ -157,7 +157,7 @@ export const useMods = create<{
     const all = [mod, ...also]
     return (
       also.length > 0 ? enableMany(set, get, all, false) : setEnabledAction(set, get, mod, enabled)
-    ).then(() => all)
+    ).then((ok) => (ok ? all : []))
   },
   setEnabledMany: (mods, enabled) => {
     const also = enabled ? [] : disableAlso(get().mods, mods)
@@ -165,7 +165,7 @@ export const useMods = create<{
       return askToDisable(set, mods)
     }
     const all = [...mods, ...also]
-    return enableMany(set, get, all, enabled).then(() => all)
+    return enableMany(set, get, all, enabled).then((ok) => (ok ? all : []))
   },
   askDisable: (mods) => {
     if (!mods?.length) {
@@ -176,7 +176,7 @@ export const useMods = create<{
   disableMany: (mods) => {
     set({ disabling: [] })
     return enableMany(set, get, mods, false).then(
-      () => settleDisable(mods),
+      (ok) => settleDisable(ok ? mods : []),
       (err: unknown) => {
         settleDisable([])
         throw err

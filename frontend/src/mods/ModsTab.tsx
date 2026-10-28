@@ -374,6 +374,7 @@ export function ModsTab({ profile }: { profile: Profile }) {
         removing: [],
       })
       useUpdates.setState({ updates: null })
+      useMods.getState().askDisable(null)
     }
     if (!useDetail.getState().pendingId) {
       useDetail.getState().show(null)

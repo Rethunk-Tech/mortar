@@ -25,7 +25,6 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
-  CopyMods,
   FomodPreview,
   MovePackage,
   RemoveEntry,
@@ -39,6 +38,7 @@ import { OnlyHereMenuItem } from '../sync/pins.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { AddToGroupDialog } from './AddToGroupDialog.tsx'
+import { AlsoAddDialog } from './AlsoAdd.tsx'
 import { actingMods, toggleActing } from './actingMods.ts'
 import { SetCategoryDialog } from './CategoryEditor.tsx'
 import { useDetail } from './detail.ts'
@@ -66,6 +66,7 @@ import { SplitCombineItems } from './SplitCombineItems.tsx'
 import { useSelection } from './selection.ts'
 import { useMods } from './store.ts'
 import { hasConfig, openConfigPage, useConfigList } from './typedConfig/configList.ts'
+import { EverywhereDialog } from './updateReview/EverywhereDialog.tsx'
 import { useUpdates } from './updates.ts'
 import { useLocked } from './useLocked.ts'
 
@@ -318,7 +319,6 @@ function ModActionMenu({
   anchor: MenuAnchor
   onClose: () => void
 }) {
-  const { t } = useLingui()
   const profile = useProfiles(openProfileOf)
   const byId = useGameNexusDetails(useProfiles((s) => s.game?.id ?? ''))
   const entry = (profile?.entries ?? []).find((e) => e.key === mod.key)
@@ -330,6 +330,7 @@ function ModActionMenu({
   const [alsoOpen, setAlsoOpen] = useState(false)
   const [groupOpen, setGroupOpen] = useState(false)
   const [removeOtherOpen, setRemoveOtherOpen] = useState(false)
+  const [everywhereOpen, setEverywhereOpen] = useState(false)
   const game = useProfiles((s) => s.game?.id ?? '')
   const currentProfileId = useProfiles((s) => s.openId)
   const update = useUpdates((s) => updateFor(s.updates, mod, profile))
@@ -338,7 +339,7 @@ function ModActionMenu({
   return (
     <>
       <Menu
-        open={!(categoryOpen || groupOpen)}
+        open={!(categoryOpen || groupOpen || alsoOpen || removeOtherOpen || everywhereOpen)}
         onClose={onClose}
         anchorEl={'el' in anchor ? anchor.el : undefined}
         {...position}
@@ -351,7 +352,14 @@ function ModActionMenu({
           onRemoveOther={() => setRemoveOtherOpen(true)}
           extra={{
             version: update
-              ? [<EverywhereMenuItem key="everywhere" game={game} id={mod.id} close={onClose} />]
+              ? [
+                  <EverywhereMenuItem
+                    key="everywhere"
+                    game={game}
+                    id={mod.id}
+                    onOpen={() => setEverywhereOpen(true)}
+                  />,
+                ]
               : [],
             organise: [
               <ModGroupItems
@@ -384,23 +392,30 @@ function ModActionMenu({
         nexusCategory={nexusCategory}
         currentOverride={entry?.categoryOverride ?? ''}
       />
-      <OtherProfilesDialog
+      <AlsoAddDialog
+        mod={mod}
+        profileId={currentProfileId ?? ''}
         open={alsoOpen}
-        onClose={() => setAlsoOpen(false)}
+        onClose={() => {
+          setAlsoOpen(false)
+          onClose()
+        }}
+      />
+      <EverywhereDialog
+        open={everywhereOpen}
         game={game}
-        currentProfileId={currentProfileId}
-        id={mod.id}
-        title={t`Also add ${{ name: mod.name }} to`}
-        confirmLabel={t`Add`}
-        onConfirm={async (profiles) => {
-          await Promise.all(
-            profiles.map((other) => CopyMods(game, currentProfileId, other.id, [mod.id])),
-          )
+        mods={[{ id: mod.id, newKey: 'latest' }]}
+        onClose={() => {
+          setEverywhereOpen(false)
+          onClose()
         }}
       />
       <RemoveFromOthersDialog
         open={removeOtherOpen}
-        onClose={() => setRemoveOtherOpen(false)}
+        onClose={() => {
+          setRemoveOtherOpen(false)
+          onClose()
+        }}
         mod={mod}
         game={game}
         currentProfileId={currentProfileId}

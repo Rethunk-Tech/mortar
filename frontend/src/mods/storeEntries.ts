@@ -161,10 +161,10 @@ export async function enableMany(
   get: () => { mods: Mod[]; loadProblems: () => Promise<void> },
   mods: Mod[],
   enabled: boolean,
-) {
+): Promise<boolean> {
   const target = openTarget()
   if (!target || mods.length === 0) {
-    return
+    return false
   }
   const ids = new Set(mods.map((m) => modId(m)))
   const prev = new Map(get().mods.map((m) => [modId(m), m.enabled]))
@@ -198,12 +198,13 @@ export async function enableMany(
           : msg`Could not disable the selected mods`,
       ),
     )(e)
-    return
+    return false
   }
   if (enabled) {
     await afterEnable(set, get, pending, mods)
   }
   await get().loadProblems()
+  return true
 }
 
 export async function dropMods(
@@ -250,10 +251,10 @@ export async function setEnabledAction(
   get: () => { mods: Mod[]; loadProblems: () => Promise<void> },
   mod: Mod,
   enabled: boolean,
-) {
+): Promise<boolean> {
   const target = openTarget()
   if (!target) {
-    return
+    return false
   }
   const pending = enabled ? pendingRequired(get().mods, [mod]) : []
   const flip = (on: boolean) =>
@@ -270,6 +271,7 @@ export async function setEnabledAction(
     if (enabled) {
       await afterEnable(set, get, pending, [mod])
     }
+    return true
   } catch (e) {
     reportError(
       i18n._(
@@ -278,6 +280,7 @@ export async function setEnabledAction(
           : msg`Could not disable ${{ name: mod.name }}`,
       ),
     )(e)
+    return false
   }
 }
 

@@ -10,31 +10,51 @@ import { useProfiles } from '../profiles/store.ts'
 import { OtherProfilesDialog } from './OtherProfilesDialog.tsx'
 import { rowLink } from './paper.ts'
 
+export function AlsoAddDialog({
+  mod,
+  profileId,
+  open,
+  onClose,
+}: {
+  mod: Mod
+  profileId: string
+  open: boolean
+  onClose: () => void
+}) {
+  const { t } = useLingui()
+  const game = useProfiles((s) => s.game?.id ?? '')
+  return (
+    <OtherProfilesDialog
+      open={open}
+      onClose={onClose}
+      game={game}
+      currentProfileId={profileId}
+      id={mod.id}
+      title={t`Also add ${{ name: mod.name }} to`}
+      withNeeds={true}
+      confirmLabel={t`Add`}
+      onConfirm={async (profiles) => {
+        const copies = await Promise.all(
+          profiles.map((other) => CopyModsWithNeeds(game, profileId, other.id, [mod.id])),
+        )
+        for (const copy of copies) {
+          useProfiles.getState().replace(copy)
+        }
+      }}
+    />
+  )
+}
+
 // The Also add to… link and its dialog: opening it changes only this, not the panel around it.
 export function AlsoAdd({ mod, profile }: { mod: Mod; profile: Profile }) {
   const { t } = useLingui()
-  const game = useProfiles((s) => s.game?.id ?? '')
   const [open, setOpen] = useState(false)
   return (
     <>
       <Link component="button" onClick={() => setOpen(true)} sx={rowLink}>
         {t`Also add to…`}
       </Link>
-      <OtherProfilesDialog
-        open={open}
-        onClose={() => setOpen(false)}
-        game={game}
-        currentProfileId={profile.id}
-        id={mod.id}
-        title={t`Also add ${{ name: mod.name }} to`}
-        withNeeds={true}
-        confirmLabel={t`Add`}
-        onConfirm={async (profiles) => {
-          await Promise.all(
-            profiles.map((other) => CopyModsWithNeeds(game, profile.id, other.id, [mod.id])),
-          )
-        }}
-      />
+      <AlsoAddDialog mod={mod} profileId={profile.id} open={open} onClose={() => setOpen(false)} />
     </>
   )
 }
