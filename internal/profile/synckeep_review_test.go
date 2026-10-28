@@ -6,29 +6,15 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 // A profile copy with no placed record that differs from the store (an older install's file) is replaced by the
 // package's file, the old bytes are kept under replaced/, and the record names the placed file.
 func TestAnUnrecordedDifferingCopyIsReplacedAndKept(t *testing.T) {
 	t.Parallel()
-	e := newEnv(t)
-	p, _ := e.Create(folderGame, "S")
-	zip := zipOf(t, "a.zip", map[string]string{"mc.package": "store bytes"})
-	if _, err := e.InstallSource(t.Context(), folderGame, p.ID, zip, cfSource(10)); err != nil {
-		t.Fatal(err)
-	}
-	if err := e.SyncPackages(folderGame, p.ID); err != nil {
-		t.Fatal(err)
-	}
-	dir, _ := e.ProfileDir(folderGame, p.ID)
+	e, p, zip, dir := unrecordedCopy(t, "stale bytes")
 	copyPath := filepath.Join(dir, "Mods", "mc.package")
-	if err := os.WriteFile(copyPath, []byte("stale bytes"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.Remove(filepath.Join(dir, placedFile)); err != nil {
-		t.Fatal(err)
-	}
 	if err := e.SyncPackages(folderGame, p.ID); err != nil {
 		t.Fatal(err)
 	}
@@ -63,23 +49,8 @@ func TestAnUnrecordedDifferingCopyIsReplacedAndKept(t *testing.T) {
 
 func TestReplacedFilesCanBeRestoredAsAChangedCopyOrDeleted(t *testing.T) {
 	t.Parallel()
-	e := newEnv(t)
-	p, _ := e.Create(folderGame, "S")
-	zip := zipOf(t, "a.zip", map[string]string{"mc.package": "store bytes"})
-	if _, err := e.InstallSource(t.Context(), folderGame, p.ID, zip, cfSource(10)); err != nil {
-		t.Fatal(err)
-	}
-	if err := e.SyncPackages(folderGame, p.ID); err != nil {
-		t.Fatal(err)
-	}
-	dir, _ := e.ProfileDir(folderGame, p.ID)
+	e, p, _, dir := unrecordedCopy(t, "old bytes")
 	copyPath := filepath.Join(dir, "Mods", "mc.package")
-	if err := os.WriteFile(copyPath, []byte("old bytes"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.Remove(filepath.Join(dir, placedFile)); err != nil {
-		t.Fatal(err)
-	}
 	if err := e.SyncPackages(folderGame, p.ID); err != nil {
 		t.Fatal(err)
 	}
@@ -143,4 +114,26 @@ func TestProfileCountsPerGame(t *testing.T) {
 	if err != nil || got[folderGame] != 2 || got["stardew"] != 1 {
 		t.Fatalf("counts = %v, %v", got, err)
 	}
+}
+
+// unrecordedCopy is a folder game profile that installed a.zip (mc.package, "store bytes") and laid it out, then had
+// the copy overwritten with body and its placed record lost, as an older install would leave it. It returns the zip
+// and the profile folder.
+func unrecordedCopy(t *testing.T, body string) (env, Profile, string, string) {
+	t.Helper()
+	e := newEnv(t)
+	p, _ := e.Create(folderGame, "S")
+	zip := zipOf(t, "a.zip", map[string]string{"mc.package": "store bytes"})
+	if _, err := e.InstallSource(t.Context(), folderGame, p.ID, zip, cfSource(10)); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.SyncPackages(folderGame, p.ID); err != nil {
+		t.Fatal(err)
+	}
+	dir, _ := e.ProfileDir(folderGame, p.ID)
+	testfs.WriteFile(t, dir, "Mods/mc.package", body)
+	if err := os.Remove(filepath.Join(dir, placedFile)); err != nil {
+		t.Fatal(err)
+	}
+	return e, p, zip, dir
 }
