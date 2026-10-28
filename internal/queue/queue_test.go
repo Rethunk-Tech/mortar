@@ -957,9 +957,9 @@ func TestEverywhereUpdateAppliesToOtherProfilesWhenTheDownloadFinishes(t *testin
 	var calls []string
 	var emitted []EverywhereFailed
 	f.s.d.Emit = func(name string, data any) {
-		if name == EverywhereFailedEvent {
+		if e, ok := data.(EverywhereFailed); ok && name == EverywhereFailedEvent {
 			mu.Lock()
-			emitted = append(emitted, data.(EverywhereFailed))
+			emitted = append(emitted, e)
 			mu.Unlock()
 		}
 	}
