@@ -234,26 +234,22 @@ func (s *Service) AddDevProject(game string, p DevProject) error {
 
 // SetDevProjectWatch turns rebuilding on source changes on or off for the project in dir.
 func (s *Service) SetDevProjectWatch(game, dir string, on bool) error {
-	return s.set(func(v *Settings) {
-		gp := v.GamePrefs(game)
-		gp.DevProjects = slices.Clone(gp.DevProjects)
-		for i := range gp.DevProjects {
-			if gp.DevProjects[i].Dir == dir {
-				gp.DevProjects[i].Watch = on
-			}
-		}
-		putGame(v, game, gp)
-	})
+	return s.editDevProject(game, dir, func(p *DevProject) { p.Watch = on })
 }
 
 // TrustDevProject records that the user agreed to build the project in dir.
 func (s *Service) TrustDevProject(game, dir string) error {
+	return s.editDevProject(game, dir, func(p *DevProject) { p.Untrusted = false })
+}
+
+// editDevProject applies edit to the record of the project in dir.
+func (s *Service) editDevProject(game, dir string, edit func(p *DevProject)) error {
 	return s.set(func(v *Settings) {
 		gp := v.GamePrefs(game)
 		gp.DevProjects = slices.Clone(gp.DevProjects)
 		for i := range gp.DevProjects {
 			if gp.DevProjects[i].Dir == dir {
-				gp.DevProjects[i].Untrusted = false
+				edit(&gp.DevProjects[i])
 			}
 		}
 		putGame(v, game, gp)
