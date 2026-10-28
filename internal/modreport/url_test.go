@@ -41,3 +41,10 @@ func TestBuildGitHubPrefersRepo(t *testing.T) {
 		t.Fatalf("text: %q", res.Text)
 	}
 }
+
+func TestGitHubIssueURLCutsAtARuneBoundary(t *testing.T) {
+	body := strings.Repeat("a", maxGitHubBody-1) + "é"
+	if strings.Contains(GitHubIssueURL("o/r", "t", body), "%EF%BF%BD") {
+		t.Fatal("the cut split a rune")
+	}
+}

@@ -101,6 +101,7 @@ func (s *Service) SignOut() (Account, error) {
 		return Account{}, err
 	}
 	s.forgetTracked()
+	s.client.ForgetTracked()
 	return s.update(func(v *settings.Settings) { v.NexusUserID, v.NexusName, v.NexusPremium = 0, "", false })
 }
 

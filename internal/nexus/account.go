@@ -141,6 +141,9 @@ type trackBody struct {
 	ModID      int    `json:"mod_id"`
 }
 
+// ForgetTracked drops the remembered tracked-mods list, which belongs to the account that fetched it.
+func (c *Client) ForgetTracked() { c.invalidateTracked() }
+
 func (c *Client) invalidateTracked() {
 	cache := c.cache()
 	cache.mu.Lock()

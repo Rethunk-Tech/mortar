@@ -16,7 +16,7 @@ func GitHubIssueURL(repo, title, body string) string {
 		return ""
 	}
 	if len(body) > maxGitHubBody {
-		body = body[:maxGitHubBody]
+		body = strings.ToValidUTF8(body[:maxGitHubBody], "")
 	}
 	q := url.Values{
 		"title": {title},
