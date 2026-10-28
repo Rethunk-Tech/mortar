@@ -35,11 +35,7 @@ func (d Driver) CachedFacts(_ context.Context, key string, installed map[string]
 			found[id] = *p
 		}
 	}
-	if pk, ok := memoized(key, path); ok {
-		for i := range pk {
-			keep(&pk[i])
-		}
-	} else if err := eachListed(path, keep); err != nil {
+	if err := eachPackage(key, path, keep); err != nil {
 		return nil, err
 	}
 	out := make(map[string]source.Facts, len(found))

@@ -171,11 +171,7 @@ func (d Driver) Items(ctx context.Context, key, mortarVersion string, ids []stri
 			found[id] = *p
 		}
 	}
-	if pk, ok := memoized(key, path); ok {
-		for i := range pk {
-			keep(&pk[i])
-		}
-	} else if err := eachListed(path, keep); err != nil {
+	if err := eachPackage(key, path, keep); err != nil {
 		return nil, err
 	}
 	out := make(map[string]source.Item, len(found))

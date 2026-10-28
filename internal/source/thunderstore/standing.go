@@ -38,11 +38,7 @@ func (d Driver) Standings(ctx context.Context, version string, ids []string) (ma
 				listed[id] = true
 			}
 		}
-		if pk, ok := memoized(key, path); ok {
-			for i := range pk {
-				note(&pk[i])
-			}
-		} else if err := eachListed(path, note); err != nil {
+		if err := eachPackage(key, path, note); err != nil {
 			return nil, err
 		}
 		if !seen {

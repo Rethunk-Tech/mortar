@@ -527,6 +527,17 @@ func (d Driver) unkeptPackages(ctx context.Context, key, ua string) ([]pkg, erro
 	return readPackages(path)
 }
 
+// eachPackage calls fn with each package of the stored listing at path, from the memoized copy when there is one.
+func eachPackage(key, path string, fn func(*pkg)) error {
+	if pk, ok := memoized(key, path); ok {
+		for i := range pk {
+			fn(&pk[i])
+		}
+		return nil
+	}
+	return eachListed(path, fn)
+}
+
 // readPackages decodes the stored listing at path.
 func readPackages(path string) ([]pkg, error) {
 	f, err := fsx.Open(path)
