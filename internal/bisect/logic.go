@@ -5,7 +5,12 @@ import (
 	"context"
 	"errors"
 	"slices"
+
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
+
+// fold compares ids the way mod.ID does: SMAPI ids ignore case and stray spaces.
+func fold(id string) string { return mod.ID(id).Fold() }
 
 // Mod is the dependency graph used by the crash bisector.
 type Mod struct {
@@ -77,16 +82,16 @@ func split(mods []Mod, suspects []string) []string {
 	for _, m := range mods {
 		if slices.Contains(suspects, m.ID) {
 			for _, d := range m.Dependencies {
-				needed[d] = true
+				needed[fold(d)] = true
 			}
 		}
 	}
 	order := slices.Clone(suspects)
 	slices.SortStableFunc(order, func(a, b string) int {
 		switch {
-		case needed[a] == needed[b]:
+		case needed[fold(a)] == needed[fold(b)]:
 			return 0
-		case needed[a]:
+		case needed[fold(a)]:
 			return 1
 		}
 		return -1
@@ -114,10 +119,10 @@ func progressSteps(n int) int {
 func DisableClosure(mods []Mod, seeds []string) []string {
 	known := make(map[string]Mod, len(mods))
 	groups := make(map[string][]string)
-	for _, mod := range mods {
-		known[mod.ID] = mod
-		if mod.Group != "" {
-			groups[mod.Group] = append(groups[mod.Group], mod.ID)
+	for _, m := range mods {
+		known[m.ID] = m
+		if m.Group != "" {
+			groups[m.Group] = append(groups[m.Group], m.ID)
 		}
 	}
 
@@ -129,25 +134,25 @@ func DisableClosure(mods []Mod, seeds []string) []string {
 		if disabled[id] {
 			continue
 		}
-		mod, ok := known[id]
+		km, ok := known[id]
 		if !ok {
 			continue
 		}
 		disabled[id] = true
-		if mod.Group != "" {
-			pending = append(pending, groups[mod.Group]...)
+		if km.Group != "" {
+			pending = append(pending, groups[km.Group]...)
 		}
 		for _, candidate := range mods {
-			if slices.Contains(candidate.Dependencies, id) {
+			if slices.ContainsFunc(candidate.Dependencies, func(d string) bool { return fold(d) == fold(id) }) {
 				pending = append(pending, candidate.ID)
 			}
 		}
 	}
 
 	result := make([]string, 0, len(disabled))
-	for _, mod := range mods {
-		if disabled[mod.ID] {
-			result = append(result, mod.ID)
+	for _, m := range mods {
+		if disabled[m.ID] {
+			result = append(result, m.ID)
 		}
 	}
 	slices.Sort(result)

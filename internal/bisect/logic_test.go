@@ -82,3 +82,14 @@ func TestFindBlamesNobodyWhenEveryModOnRunsClean(t *testing.T) {
 		t.Fatalf("err = %v, want ErrNoCrash", err)
 	}
 }
+
+func TestDisableClosureFoldsDependencyIDs(t *testing.T) {
+	mods := []Mod{
+		{ID: "smapi:Fw.Core"},
+		{ID: "pack", Dependencies: []string{"smapi:fw.core "}},
+	}
+	got := DisableClosure(mods, []string{"smapi:Fw.Core"})
+	if !reflect.DeepEqual(got, []string{"pack", "smapi:Fw.Core"}) {
+		t.Fatalf("disabled = %#v", got)
+	}
+}

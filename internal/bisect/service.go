@@ -129,9 +129,13 @@ func (s *Service) run(ctx context.Context, j *job) {
 	byID := make(map[string]profile.Mod, len(j.mods))
 	for _, pm := range j.mods {
 		id := modID(pm)
+		deps := mod.Strings(pm.Needs)
+		if pm.ContentPackFor != "" {
+			deps = append(deps, string(pm.ContentPackFor))
+		}
 		mods = append(mods, Mod{
 			ID:           id,
-			Dependencies: mod.Strings(pm.Needs),
+			Dependencies: deps,
 			Group:        pm.Key,
 		})
 		byID[id] = pm
