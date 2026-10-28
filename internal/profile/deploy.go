@@ -591,6 +591,10 @@ func seedConfigs(dir string, files map[string]packageFile) error {
 		if _, err := os.Lstat(dst); err == nil {
 			continue
 		}
+		// A copy set aside is the player's; switching the mod on brings it back.
+		if _, err := os.Lstat(filepath.Join(dir, configAsideDir, filepath.Base(dst))); err == nil {
+			continue
+		}
 		if err := os.MkdirAll(filepath.Dir(dst), 0o750); err != nil {
 			return err
 		}

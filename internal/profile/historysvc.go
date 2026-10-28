@@ -42,7 +42,7 @@ func (s *Service) EventDiffs(game, id string, eventIDs []string) (map[string]His
 }
 
 func (s *Service) RevertHistoryItem(game, id, eventID, item string) (Profile, error) {
-	return s.store.RevertHistoryItem(game, id, eventID, item)
+	return s.synced(game, id)(s.store.RevertHistoryItem(game, id, eventID, item))
 }
 
 func (s *Service) ChangesSince(game, id, since string) (HistoryDiff, error) {

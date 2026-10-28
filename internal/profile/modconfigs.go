@@ -76,24 +76,28 @@ func (s *Store) withoutEnabledOwned(game string, p Profile, skip string, files [
 	})
 }
 
-// modConfigPaths is the config files of the entry's mods, live and set aside, that go when the entry is removed, so
-// the mod starts fresh if it is added again. It reads the profile as it is before the entry leaves.
+// modConfigPaths is the live config files of the entry's mods that leave with the entry. It reads the profile as it
+// is before the entry leaves.
 func (s *Store) modConfigPaths(game string, p Profile, dir string, e Entry) []string {
 	var out []string
+	folder := filepath.Join(dir, "BepInEx", "config")
 	for _, m := range e.Mods {
-		names := s.modConfigNames(game, p, m.ID)
-		for _, folder := range []string{filepath.Join(dir, "BepInEx", "config"), filepath.Join(dir, configAsideDir)} {
-			for _, f := range s.withoutEnabledOwned(game, p, e.Key, ownedConfigs(folder, names)) {
-				out = append(out, filepath.Join(folder, f))
-			}
+		for _, f := range s.withoutEnabledOwned(game, p, e.Key, ownedConfigs(folder, s.modConfigNames(game, p, m.ID))) {
+			out = append(out, filepath.Join(folder, f))
 		}
 	}
 	return out
 }
 
-func removeConfigPaths(paths []string) {
+// setConfigsAside moves the live config files of a removed entry into config-aside/ (a path from modConfigPaths), so
+// Undo, or adding the mod again, brings its settings back through parkModConfigs.
+func setConfigsAside(paths []string) {
 	for _, f := range paths {
-		_ = fsx.Remove(f)
+		aside := filepath.Join(filepath.Dir(f), "..", "..", configAsideDir)
+		if err := os.MkdirAll(aside, 0o750); err != nil {
+			continue
+		}
+		_ = fsx.Rename(f, filepath.Join(aside, filepath.Base(f)))
 	}
 }
 

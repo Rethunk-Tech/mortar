@@ -237,6 +237,9 @@ func (s *Store) CombineEntries(game, id, targetKey, otherKey string) (Profile, e
 		if target.IsOverlay() || other.IsOverlay() || len(overlaysOf(p.Entries, otherKey)) > 0 {
 			return fmt.Errorf("optional files laid over a mod cannot be combined")
 		}
+		if target.Package || other.Package {
+			return fmt.Errorf("a package with dependencies cannot be combined with another file")
+		}
 		if len(other.ExtraStoreKeys) > 0 {
 			return fmt.Errorf("%q has extra files of its own", otherKey)
 		}
@@ -251,7 +254,7 @@ func (s *Store) CombineEntries(game, id, targetKey, otherKey string) (Profile, e
 	if err != nil {
 		return Profile{}, err
 	}
-	removeConfigPaths(dropped)
+	setConfigsAside(dropped)
 	return p, s.items.Touch(game, otherKey)
 }
 

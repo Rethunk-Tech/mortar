@@ -200,7 +200,17 @@ func (s *Service) Snapshot(game, id, snapshotID string) ([]Entry, error) {
 
 // Revert restores the profile's entries to the snapshot stored with eventID.
 func (s *Service) Revert(game, id, eventID string) (Profile, error) {
-	return s.store.Revert(game, id, eventID)
+	return s.synced(game, id)(s.store.Revert(game, id, eventID))
+}
+
+// synced wraps a change's result: when it succeeded, the profile's files are laid out again in the background.
+func (s *Service) synced(game, id string) func(Profile, error) (Profile, error) {
+	return func(p Profile, err error) (Profile, error) {
+		if err == nil {
+			s.store.syncDropped(game, id)
+		}
+		return p, err
+	}
 }
 
 // ProfilesWithMod lists the profiles of game whose profile.json names uniqueID.

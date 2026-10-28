@@ -22,5 +22,5 @@ func (s *Service) RemoveFromGroup(game, id, name, key string) (Profile, error) {
 }
 
 func (s *Service) SetGroupEnabled(game, id, name string, on bool) (Profile, error) {
-	return s.store.SetGroupEnabled(game, id, name, on)
+	return s.synced(game, id)(s.store.SetGroupEnabled(game, id, name, on))
 }

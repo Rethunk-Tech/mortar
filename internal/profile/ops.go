@@ -442,7 +442,7 @@ func (s *Store) applyBundled(game string, b Bundle, duringStart bool) error {
 			err = errors.Join(err, fsx.RemoveAll(placed))
 		}
 		if err == nil {
-			removeConfigPaths(dropped)
+			setConfigsAside(dropped)
 		}
 		errs = append(errs, err)
 	}
@@ -527,7 +527,7 @@ func (s *Store) RemoveEntries(game, id string, keys []string) (Profile, error) {
 	if err != nil {
 		return Profile{}, err
 	}
-	removeConfigPaths(dropped)
+	setConfigsAside(dropped)
 	s.syncDropped(game, id)
 	return p, nil
 }
@@ -635,7 +635,7 @@ func (s *Store) RemoveEntry(game, id, key string) (Profile, error) {
 	if err != nil {
 		return Profile{}, err
 	}
-	removeConfigPaths(dropped)
+	setConfigsAside(dropped)
 	s.syncDropped(game, id)
 	return p, nil
 }

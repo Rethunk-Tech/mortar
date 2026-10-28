@@ -557,7 +557,7 @@ func (s *Service) InstallOverlay(game, id, key, from, to string, source Source) 
 }
 
 func (s *Service) SetOverlayEnabled(game, id, key string, enabled bool) (Profile, error) {
-	return s.store.SetOverlayEnabled(game, id, key, enabled)
+	return s.synced(game, id)(s.store.SetOverlayEnabled(game, id, key, enabled))
 }
 
 func isOverlayKey(p *Profile, key string) bool {

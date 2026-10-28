@@ -3,13 +3,14 @@ package profile
 import (
 	"errors"
 	"io/fs"
+	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
-// A switched-off mod's config is set aside and comes back when it is switched on; removing the mod deletes it.
+// A switched-off mod's config is set aside and comes back when it is switched on; removing the mod sets it aside, so Undo and adding it again bring it back.
 func TestModConfigFollowsTheMod(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)
@@ -53,8 +54,17 @@ func TestModConfigFollowsTheMod(t *testing.T) {
 	if _, err := e.RemoveEntries("lethal-company", p.ID, []string{en.Key}); err != nil {
 		t.Fatal(err)
 	}
-	if exists(live) || exists(aside) {
+	if exists(live) || !exists(aside) {
 		t.Fatalf("removed: live %v, aside %v", exists(live), exists(aside))
+	}
+	if _, err := e.RestoreEntries("lethal-company", p.ID, []Entry{en}); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.SyncPackages("lethal-company", p.ID); err != nil {
+		t.Fatal(err)
+	}
+	if b, _ := os.ReadFile(live); string(b) != "[General]\nA = 1\n" || exists(aside) {
+		t.Fatalf("undone: live %q, aside %v", b, exists(aside))
 	}
 }
 
@@ -124,5 +134,22 @@ func TestTheLoadersConfigIsNoModsOwn(t *testing.T) {
 	}
 	if _, err := fsx.Stat(filepath.Join(dir, "BepInEx", "config", "BepInEx.cfg")); err != nil {
 		t.Fatalf("BepInEx.cfg went with the mod: %v", err)
+	}
+}
+
+// A config set aside is not seeded over by the package's own copy, so switching the mod on brings back the player's.
+func TestSeedConfigsSkipsAConfigSetAside(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	src := filepath.Join(t.TempDir(), "Mod.cfg")
+	if err := os.WriteFile(src, []byte("default"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	writeFile(t, dir, configAsideDir+"/Mod.cfg", "mine")
+	if err := seedConfigs(dir, map[string]packageFile{"BepInEx/config/Mod.cfg": {src: src}}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Lstat(filepath.Join(dir, "BepInEx", "config", "Mod.cfg")); err == nil {
+		t.Fatal("seeded over a config set aside")
 	}
 }
