@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import {
   Abstain,
   Endorse,
+  EndorsementOf,
   Track,
   TrackedMods,
   Untrack,
@@ -44,6 +45,19 @@ export function NexusAccountActions({
       }
     },
   )
+  // The page the window holds is cached, so its endorsement can be stale; Nexus's current answer replaces it.
+  useEffect(() => {
+    if (!(signedIn && modId)) {
+      return
+    }
+    let live = true
+    EndorsementOf(currentGame(), modId)
+      .then((s) => live && s && setStatus(s))
+      .catch(() => undefined)
+    return () => {
+      live = false
+    }
+  }, [signedIn, modId])
   const [pending, run] = usePending()
   const [refusal, setRefusal] = useState('')
 

@@ -30,6 +30,8 @@ func TestEndorseAndTrackActOnSignedInAccount(t *testing.T) {
 		case "/v1/games/stardewvalley/mods/542/endorse.json":
 			w.WriteHeader(http.StatusForbidden)
 			_, _ = w.Write([]byte(`{"message":"You must download this mod before you can endorse it."}`))
+		case "/v1/games/stardewvalley/mods/541.json":
+			_, _ = w.Write([]byte(`{"mod_id":541,"endorsement":{"endorse_status":"Abstained"}}`))
 		case "/v1/user/tracked_mods.json":
 			if r.Method == http.MethodGet {
 				_, _ = w.Write([]byte(`[{"mod_id":541,"domain_name":"stardewvalley"}]`))
@@ -53,6 +55,9 @@ func TestEndorseAndTrackActOnSignedInAccount(t *testing.T) {
 	}
 	if _, err := s.SignIn(ctx, "secret-key"); err != nil {
 		t.Fatal(err)
+	}
+	if got, err := s.EndorsementOf(ctx, "stardew", 541); err != nil || got != "Abstained" {
+		t.Fatalf("endorsement = %q %v", got, err)
 	}
 	status, err := s.Endorse(ctx, "stardew", 541, "1.55.0")
 	if err != nil || status != "Endorsed" || last != "POST /v1/games/stardewvalley/mods/541/endorse.json" {

@@ -156,6 +156,17 @@ func (s *Service) Endorse(ctx context.Context, gameID string, modID int, version
 	return string(status), err
 }
 
+// EndorsementOf is the signed-in user's current endorse_status for modID, read live because the mod page the window
+// holds is cached; empty when Nexus omits it.
+func (s *Service) EndorsementOf(ctx context.Context, gameID string, modID int) (string, error) {
+	t, c, err := s.titled(gameID)
+	if err != nil {
+		return "", err
+	}
+	p, err := c.Page(ctx, t, modID)
+	return p.Endorsement, err
+}
+
 // Abstain withdraws the signed-in user's endorsement of modID at version.
 func (s *Service) Abstain(ctx context.Context, gameID string, modID int, version string) (string, error) {
 	t, c, err := s.titled(gameID)
