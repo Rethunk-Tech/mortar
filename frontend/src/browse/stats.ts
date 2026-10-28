@@ -4,6 +4,7 @@ import { useLingui } from '@lingui/react/macro'
 import { formatBytes } from '../i18n/bytes.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import type { ListRow } from '../mods/listColumns.ts'
+import { formatCount } from '../mods/nexusFormat.ts'
 import { GITHUB, NEXUS, THUNDERSTORE } from './browseConstants.ts'
 import type { BrowseItem } from './browseTypes.ts'
 
@@ -85,12 +86,7 @@ const POPULARITY_ICON: Record<string, StatIcon> = {
   [VSMODDB]: 'follower',
 }
 
-function compact(n: number): string {
-  return new Intl.NumberFormat(i18n.locale || 'en', {
-    notation: 'compact',
-    maximumFractionDigits: 1,
-  }).format(n)
-}
+const compact = (n: number) => formatCount(n, i18n.locale || 'en')
 
 /** A card's chosen stats, leaving out what the hit's site does not say. */
 function useCardStats(item: BrowseItem, stats: readonly CardStat[]): CardStatPart[] {
