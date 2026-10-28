@@ -118,9 +118,16 @@ func (s *Service) dirty(ctx context.Context, dir string) (map[string]bool, bool)
 		return nil, false
 	}
 	paths := map[string]bool{}
-	for entry := range strings.SplitSeq(string(out), "\x00") {
-		if len(entry) > 3 {
-			paths[entry[3:]] = true
+	entries := strings.Split(string(out), "\x00")
+	for i := 0; i < len(entries); i++ {
+		entry := entries[i]
+		if len(entry) <= 3 {
+			continue
+		}
+		paths[entry[3:]] = true
+		// A rename or copy is followed by its original path as a field of its own, without a status prefix.
+		if strings.ContainsAny(entry[:2], "RC") {
+			i++
 		}
 	}
 	return paths, true

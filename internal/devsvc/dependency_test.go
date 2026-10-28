@@ -248,3 +248,27 @@ func TestRemoveDependencyUndoesWhatAddingWrote(t *testing.T) {
 		t.Fatalf("an edited compat class was dropped (%v)", err)
 	}
 }
+
+func TestDirtyListsARenamesNewPathOnly(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	svc.Run = nil
+	t.Setenv("GIT_AUTHOR_NAME", "t")
+	t.Setenv("GIT_AUTHOR_EMAIL", "t@t")
+	t.Setenv("GIT_COMMITTER_NAME", "t")
+	t.Setenv("GIT_COMMITTER_EMAIL", "t@t")
+	dir := t.TempDir()
+	for _, args := range [][]string{{"init", "-q"}, {"add", "-A"}, {"commit", "-q", "-m", "x"}, {"mv", "Old.cs", "New.cs"}} {
+		if args[0] == "add" {
+			if err := os.WriteFile(filepath.Join(dir, "Old.cs"), []byte("same content, long enough to pair"), 0o600); err != nil {
+				t.Fatal(err)
+			}
+		}
+		if _, err := svc.run(t.Context(), dir, "git", args...); err != nil {
+			t.Fatal(err)
+		}
+	}
+	got, ok := svc.dirty(t.Context(), dir)
+	if !ok || len(got) != 1 || !got["New.cs"] {
+		t.Errorf("dirty = %v", got)
+	}
+}
