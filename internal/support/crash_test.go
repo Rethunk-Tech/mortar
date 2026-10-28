@@ -171,3 +171,32 @@ func TestDetectLastRunCrashedTruncatedResetsSeen(t *testing.T) {
 		t.Fatalf("seen after truncate = %q", got)
 	}
 }
+
+func TestShrinkTailDropsTheOldestLine(t *testing.T) {
+	if got := shrinkTail("old\nmid\nnew\n"); got != "mid\nnew" {
+		t.Fatalf("got %q", got)
+	}
+}
+
+func TestDetectLastRunCrashedLongLineIsNotACrash(t *testing.T) {
+	dir := mortarDataDir(t)
+	body := strings.Repeat("x", 200<<10) + "\ntime=2026-01-02T03:04:05.000Z level=INFO msg=shutdown clean=true\n"
+	if err := os.WriteFile(filepath.Join(dir, prevLogName), []byte(body), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if DetectLastRunCrashed(dir) {
+		t.Fatal("a long line before the clean-shutdown record read as a crash")
+	}
+}
+
+func TestBundleProfilesAndQueueHideTheHomeFolder(t *testing.T) {
+	home := "/home/ada"
+	got := string(homeHiddenJSON([]bundleProfile{{ID: "p", Name: home + "/mods"}}, home))
+	if strings.Contains(got, home) || !strings.Contains(got, "~/mods") {
+		t.Fatalf("profiles: %s", got)
+	}
+	q := string(redactQueue([]byte(`{"items":[{"path":"`+home+`/dl.zip","key":"k"}]}`), home))
+	if strings.Contains(q, home) || strings.Contains(q, `"key"`) {
+		t.Fatalf("queue: %s", q)
+	}
+}

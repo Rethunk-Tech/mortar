@@ -199,7 +199,7 @@ func diagnosticsSection(report doctor.Report, home, dataDir string) string {
 	var b strings.Builder
 	b.WriteString("\n**Diagnostics**\n```\n")
 	for _, c := range report.Checks {
-		line := c.Status + ": " + hideHome(c.Detail, home) + "\n"
+		line := c.Status + ": " + hideHomeIn(c.Detail, home) + "\n"
 		if b.Len()+len(line) > maxDiagnostics {
 			b.WriteString("…\n")
 			break

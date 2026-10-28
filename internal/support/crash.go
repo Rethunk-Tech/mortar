@@ -72,6 +72,9 @@ func writeCrashSeen(seenPath, crashPath string) {
 	_ = datadir.WriteFile(seenPath, []byte(strconv.FormatInt(size, 10)+"\n"), 0o600)
 }
 
+// maxLogLine is the longest log line prevLogUnclean reads.
+const maxLogLine = 4 << 20
+
 func prevLogUnclean(prevPath string) bool {
 	f, err := fsx.Open(prevPath)
 	if err != nil {
@@ -81,6 +84,7 @@ func prevLogUnclean(prevPath string) bool {
 
 	// Late lines (a service logging as it stops) can follow the record, so it is looked for anywhere in the log.
 	sc := bufio.NewScanner(f)
+	sc.Buffer(nil, maxLogLine)
 	for sc.Scan() {
 		line := sc.Text()
 		// slog text handler: msg=shutdown clean=true
@@ -88,7 +92,8 @@ func prevLogUnclean(prevPath string) bool {
 			return false
 		}
 	}
-	return true
+	// A line too long to scan hides the record: say nothing rather than report a crash that did not happen.
+	return sc.Err() == nil
 }
 
 // LastRunCrashed reports whether the previous Mortar process ended unexpectedly, once per run: a reloaded or
@@ -152,22 +157,22 @@ func longestIndex(bodies []string) int {
 	return best
 }
 
+// shrinkTail drops the oldest line of a log tail, or the older half of a single long line.
 func shrinkTail(s string) string {
 	s = strings.TrimRight(s, "\n")
-	if i := strings.LastIndex(s, "\n"); i >= 0 {
-		return s[:i]
+	if i := strings.Index(s, "\n"); i >= 0 {
+		return s[i+1:]
 	}
 	if len(s) > 1 {
-		return s[:len(s)/2]
+		return s[len(s)/2:]
 	}
 	return ""
 }
 
-// hideHomeIn replaces every occurrence of the home folder in free text such as a log, where paths appear mid-line;
-// hideHome only rewrites a value that starts with it.
 // linkSecret matches the nxm download key and expiry a logged request URL can carry.
 var linkSecret = regexp.MustCompile(`([?&](?:key|expires)=)[^&\s"']+`)
 
+// hideHomeIn replaces every occurrence of the home folder in free text such as a log, where paths appear mid-line.
 func hideHomeIn(text, home string) string {
 	text = linkSecret.ReplaceAllString(text, "${1}REDACTED")
 	for _, h := range []string{home, filepath.ToSlash(home), filepath.FromSlash(home)} {

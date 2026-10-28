@@ -148,8 +148,8 @@ func (s *Service) bundle(gameID, profileID string) ([]byte, error) {
 	files := map[string][]byte{
 		"build.json":      jsonIndent(buildInfo(s.version)),
 		settings.FileName: redactSettings(readFile(filepath.Join(dir, settings.FileName)), s.home),
-		"profiles.json":   jsonIndent(collectProfiles(filepath.Join(dir, "profiles"))),
-		"queue.json":      redactQueue(readFile(filepath.Join(dir, "queue.json"))),
+		"profiles.json":   homeHiddenJSON(collectProfiles(filepath.Join(dir, "profiles")), s.home),
+		"queue.json":      redactQueue(readFile(filepath.Join(dir, "queue.json")), s.home),
 	}
 
 	if report, err := s.Doctor(); err == nil {
@@ -400,26 +400,21 @@ func redactHomePaths(v any, home string) {
 	}
 }
 
-func hideHome(s, home string) string {
-	if home == "" || s == "" {
-		return s
+// homeHiddenJSON is v as indented JSON with the home folder written as ~ in every string.
+func homeHiddenJSON(v any, home string) []byte {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return jsonIndent(v)
 	}
-	for _, h := range []string{home, filepath.ToSlash(home), filepath.FromSlash(home)} {
-		h = strings.TrimRight(h, `/\`)
-		if h == "" {
-			continue
-		}
-		if s == h {
-			return "~"
-		}
-		if strings.HasPrefix(s, h+"/") || strings.HasPrefix(s, h+`\`) {
-			return "~" + s[len(h):]
-		}
+	var tree any
+	if json.Unmarshal(b, &tree) != nil {
+		return jsonIndent(v)
 	}
-	return s
+	redactHomePaths(tree, home)
+	return jsonIndent(tree)
 }
 
-func redactQueue(raw []byte) []byte {
+func redactQueue(raw []byte, home string) []byte {
 	m := map[string]any{}
 	if len(raw) > 0 {
 		_ = json.Unmarshal(raw, &m)
@@ -427,6 +422,7 @@ func redactQueue(raw []byte) []byte {
 	if m == nil {
 		m = map[string]any{"items": []any{}}
 	}
+	redactHomePaths(m, home)
 	items, _ := m["items"].([]any)
 	for _, it := range items {
 		obj, ok := it.(map[string]any)
