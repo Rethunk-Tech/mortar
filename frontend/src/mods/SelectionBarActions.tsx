@@ -52,7 +52,7 @@ export function SelectionBarActions({
   latest: ReadonlyMap<string, string>
   locked: boolean
   count: string
-  setEnabledMany: (mods: Mod[], enabled: boolean) => Promise<void>
+  setEnabledMany: (mods: Mod[], enabled: boolean) => Promise<unknown>
   setPinnedMany: (mods: Mod[], pinned: boolean) => Promise<void>
   setSkipVersionMany: (mods: Mod[]) => Promise<void>
   sourceGroups: SourceGroups

@@ -94,13 +94,16 @@ async function applyFix(i18n: I18n, problem: SMAPIProblem, game: string) {
       if (!mod) {
         return
       }
-      await useMods.getState().setEnabled(mod, false)
+      const off = await useMods.getState().setEnabled(mod, false)
+      if (off.length === 0) {
+        return
+      }
       useToasts.getState().push({
         kind: 'success',
         title: i18n._(msg`Disabled ${{ names: mod.name }}`),
         action: {
           label: i18n._(msg`Undo`),
-          run: () => useMods.getState().setEnabled(mod, true),
+          run: () => useMods.getState().setEnabledMany(off, true),
         },
       })
       return

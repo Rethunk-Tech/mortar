@@ -12,7 +12,7 @@ export function actingMods(mod: Mod): Mod[] {
   return useMods.getState().mods.filter((m) => ids.includes(modId(m)))
 }
 
-export function toggleActing(mod: Mod): Promise<void> {
+export function toggleActing(mod: Mod): Promise<Mod[]> {
   const { setEnabled, setEnabledMany } = useMods.getState()
   const mods = actingMods(mod)
   return mods.length > 1 ? setEnabledMany(mods, !mod.enabled) : setEnabled(mod, !mod.enabled)

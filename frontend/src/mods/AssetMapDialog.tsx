@@ -76,7 +76,9 @@ function TouchActions({
             variant="text"
             disabled={locked}
             onClick={() => {
-              setEnabled(entry, false).then(onChanged).catch(reportUnexpected)
+              setEnabled(entry, false)
+                .then((off) => (off.length > 0 ? onChanged() : undefined))
+                .catch(reportUnexpected)
             }}
             sx={buttonSx}
           >

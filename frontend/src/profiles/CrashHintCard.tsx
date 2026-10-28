@@ -50,7 +50,9 @@ export function CrashHintCard({ game, profileId }: { game: string; profileId: st
         useMods
           .getState()
           .setEnabled(target, false)
-          .then(() => useLaunch.getState().start(game, profileId, false)),
+          .then((off) =>
+            off.length > 0 ? useLaunch.getState().start(game, profileId, false) : undefined,
+          ),
       { quietExpected: true },
     )
   return (

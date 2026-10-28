@@ -46,13 +46,16 @@ function SwitchOffButton({ mod, primary = false }: { mod: Mod; primary?: boolean
         useMods
           .getState()
           .setEnabled(mod, false)
-          .then(() => {
+          .then((off) => {
+            if (off.length === 0) {
+              return
+            }
             useToasts.getState().push({
               kind: 'success',
               title: t`Disabled ${{ names: mod.name }}`,
               action: {
                 label: t`Undo`,
-                run: () => useMods.getState().setEnabled(mod, true),
+                run: () => useMods.getState().setEnabledMany(off, true),
               },
             })
           })

@@ -42,6 +42,23 @@ import {
 } from './storeView.ts'
 import type { ModFilter } from './Toolbar.tsx'
 
+// The caller waiting on the Disable dialog, answered with what was disabled once the player confirms or cancels.
+let pendingDisable: ((mods: Mod[]) => void) | null = null
+
+function settleDisable(mods: Mod[]) {
+  const settle = pendingDisable
+  pendingDisable = null
+  settle?.(mods)
+}
+
+function askToDisable(set: (patch: { disabling: Mod[] }) => void, mods: Mod[]): Promise<Mod[]> {
+  settleDisable([])
+  return new Promise((resolve) => {
+    pendingDisable = resolve
+    set({ disabling: mods })
+  })
+}
+
 export const useMods = create<{
   mods: Mod[]
   loaded: boolean
@@ -65,8 +82,10 @@ export const useMods = create<{
   setView: (view: View) => void
   load: () => Promise<void>
   loadProblems: () => Promise<void>
-  setEnabled: (mod: Mod, enabled: boolean) => Promise<void>
-  setEnabledMany: (mods: Mod[], enabled: boolean) => Promise<void>
+  // Both settle with the mods actually switched: none when the player cancels the Disable dialog, and the
+  // dependents and libraries too when those went with them, so an Undo can restore all of them.
+  setEnabled: (mod: Mod, enabled: boolean) => Promise<Mod[]>
+  setEnabledMany: (mods: Mod[], enabled: boolean) => Promise<Mod[]>
   setPinned: (mod: Mod, pinned: boolean) => Promise<void>
   setPinnedMany: (mods: Mod[], pinned: boolean) => Promise<void>
   setSkipVersion: (mod: Mod, version: string) => Promise<void>
@@ -133,25 +152,36 @@ export const useMods = create<{
   setEnabled: (mod, enabled) => {
     const also = enabled ? [] : disableAlso(get().mods, [mod])
     if (also === null) {
-      set({ disabling: [mod] })
-      return Promise.resolve()
+      return askToDisable(set, [mod])
     }
-    return also.length > 0
-      ? enableMany(set, get, [mod, ...also], false)
-      : setEnabledAction(set, get, mod, enabled)
+    const all = [mod, ...also]
+    return (
+      also.length > 0 ? enableMany(set, get, all, false) : setEnabledAction(set, get, mod, enabled)
+    ).then(() => all)
   },
   setEnabledMany: (mods, enabled) => {
     const also = enabled ? [] : disableAlso(get().mods, mods)
     if (also === null) {
-      set({ disabling: mods })
-      return Promise.resolve()
+      return askToDisable(set, mods)
     }
-    return enableMany(set, get, [...mods, ...also], enabled)
+    const all = [...mods, ...also]
+    return enableMany(set, get, all, enabled).then(() => all)
   },
-  askDisable: (mods) => set({ disabling: mods ?? [] }),
+  askDisable: (mods) => {
+    if (!mods?.length) {
+      settleDisable([])
+    }
+    set({ disabling: mods ?? [] })
+  },
   disableMany: (mods) => {
     set({ disabling: [] })
-    return enableMany(set, get, mods, false)
+    return enableMany(set, get, mods, false).then(
+      () => settleDisable(mods),
+      (err: unknown) => {
+        settleDisable([])
+        throw err
+      },
+    )
   },
   setPinned: (mod, pinned) => {
     const want = requestPinWithReason([mod], pinned)
