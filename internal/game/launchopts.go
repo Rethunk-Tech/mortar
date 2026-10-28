@@ -36,12 +36,9 @@ func (s *Service) SetLaunchOption(id string) (string, error) {
 	if dir == "" {
 		return "", fmt.Errorf("%s is not installed", g.Name())
 	}
-	st, status := steam.Locate(s.home, roots(s.store.Get(), LauncherSteam)...)
-	if status != steam.Found {
-		return "", errors.New("steam was not found")
-	}
-	if running, err := launch.Processes("/proc", "steam"); err == nil && len(running) > 0 {
-		return "", errors.New("close Steam first: it rewrites its settings when it exits")
+	st, err := s.closedSteam()
+	if err != nil {
+		return "", err
 	}
 	exe, err := requireSteamExe(id, dir)
 	if err != nil {
@@ -56,16 +53,26 @@ func (s *Service) ClearLaunchOption(id string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	st, status := steam.Locate(s.home, roots(s.store.Get(), LauncherSteam)...)
-	if status != steam.Found {
-		return "", errors.New("steam was not found")
-	}
-	if running, err := launch.Processes("/proc", "steam"); err == nil && len(running) > 0 {
-		return "", errors.New("close Steam first: it rewrites its settings when it exits")
+	st, err := s.closedSteam()
+	if err != nil {
+		return "", err
 	}
 	exe, err := requireSteamExe(id, "")
 	if err != nil {
 		return "", err
 	}
 	return st.SetLaunchOptions(g.SteamAppID(), func(current string) string { return launchWithout(exe, current) })
+}
+
+// closedSteam is the Steam whose config holds launch options, refused while it runs: Steam rewrites its config when it
+// exits.
+func (s *Service) closedSteam() (steam.Steam, error) {
+	st, status := steam.Locate(s.home, roots(s.store.Get(), LauncherSteam)...)
+	if status != steam.Found {
+		return steam.Steam{}, errors.New("steam was not found")
+	}
+	if running, err := launch.Processes("/proc", "steam"); err == nil && len(running) > 0 {
+		return steam.Steam{}, errors.New("close Steam first: it rewrites its settings when it exits")
+	}
+	return st, nil
 }
