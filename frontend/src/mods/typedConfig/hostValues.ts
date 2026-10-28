@@ -1,22 +1,21 @@
 import { useEffect, useState } from 'react'
 import type { HostValue } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/configsvc/models.ts'
-import { useGameBusy } from '../../launch/store.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { configApi } from './api.ts'
 import { useTypedConfig } from './store.ts'
 
-const HOST_POLL_MS = 2000
+// The backend answers empty at once while the game is closed; a slow poll keeps an idle editor quiet.
+const HOST_POLL_MS = 5000
 
 // What a ConfigSync host sent for the open file's shared settings, by section/key, asked again while the editor is
-// open while the game runs. Empty otherwise.
+// open. Empty while the game is not running.
 export function useHostValues(asks: boolean): Map<string, HostValue> {
   const target = useTypedConfig((s) => s.target)
   const file = useTypedConfig((s) => s.current)
-  const running = useGameBusy(target?.game)
   const [values, setValues] = useState<Map<string, HostValue>>(() => new Map())
   useEffect(() => {
     setValues(new Map())
-    if (!(asks && running && target && file)) {
+    if (!(asks && target && file)) {
       return
     }
     let live = true
@@ -43,6 +42,6 @@ export function useHostValues(asks: boolean): Map<string, HostValue> {
       live = false
       clearInterval(timer)
     }
-  }, [asks, running, target, file])
+  }, [asks, target, file])
   return values
 }
