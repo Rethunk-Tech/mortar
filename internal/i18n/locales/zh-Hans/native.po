@@ -1,0 +1,175 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_Hans\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgid "Add archive"
+msgstr ""
+
+msgid "All files"
+msgstr ""
+
+msgid "Archives (zip, RAR, 7z, tar, gz, xz, zst, bz2, lzma)"
+msgstr ""
+
+msgid "Choose background image"
+msgstr ""
+
+msgid "Choose game folder"
+msgstr ""
+
+msgid "Choose the Mortar data folder"
+msgstr ""
+
+msgid "Choose the data folder…"
+msgstr ""
+
+msgid "Close"
+msgstr ""
+
+msgid "Could not stop {game}"
+msgstr ""
+
+msgid "Download failed"
+msgstr ""
+
+msgid "Download finished"
+msgstr ""
+
+msgid "Downloads: {count}"
+msgstr ""
+
+msgid "End it"
+msgstr ""
+
+msgid "Exited with code {code}"
+msgstr ""
+
+msgid "Exited with code {code} ({signal})"
+msgstr ""
+
+msgid "Exited with {signal}"
+msgstr ""
+
+msgid "Export settings"
+msgstr ""
+
+msgid "Images (PNG, JPEG, GIF, WebP)"
+msgstr ""
+
+msgid "Images (PNG, JPEG, WebP)"
+msgstr ""
+
+msgid "Import settings"
+msgstr ""
+
+msgid "Leave it"
+msgstr ""
+
+msgid "Mod updates available: {count}"
+msgstr ""
+
+msgid "Mods with errors: {count}"
+msgstr ""
+
+msgid "Mortar could not start:\n\n{error}\n\nThe details are in mortar.log in Mortar's data folder."
+msgstr ""
+
+msgid "Mortar is already running but has not answered for {count} seconds.\n\nEnd it and start Mortar again? Anything it was doing stops."
+msgstr ""
+
+msgid "Mortar needs the {runtime}, which does not seem to be installed.\n\nYes: Open the download page (install the {installer}, then start Mortar again)\nNo: Start anyway"
+msgstr ""
+
+msgid "Mortar profile (.mortar)"
+msgstr ""
+
+msgid "Mortar profile backup"
+msgstr ""
+
+msgid "Mortar profile backup (zip)"
+msgstr ""
+
+msgid "Mortar stopped because of an error:\n\n{error}\n\nThe details are in crash.log in {path}."
+msgstr ""
+
+msgid "Mortar stopped while starting:\n\n{error}\n\nThe details are in crash.log in Mortar's data folder."
+msgstr ""
+
+msgid "Mortar's data folder was not found:\n\n{path}\n\nIts drive may be unplugged. Plug it in and choose Cancel, then start Mortar again, or choose here:\n\nYes: Use the default location\nNo: Choose the data folder…\nCancel: Quit"
+msgstr ""
+
+msgid "Mortar's data folder was not found:\n\n{path}\n\nIts drive may be unplugged. Plug it in and choose {quit}, then start Mortar again, or choose here."
+msgstr ""
+
+msgid "Open a profile export"
+msgstr ""
+
+msgid "Open a profile file"
+msgstr ""
+
+msgid "Open the folder that holds the log? (Ctrl+C copies this message.)"
+msgstr ""
+
+msgid "Open the log folder"
+msgstr ""
+
+msgid "Play {game}"
+msgstr ""
+
+msgid "Profile (.mortar, .r2z, .zip)"
+msgstr ""
+
+msgid "Quit"
+msgstr ""
+
+msgid "Save diagnostics"
+msgstr ""
+
+msgid "Show Mortar"
+msgstr ""
+
+msgid "Stop {game}"
+msgstr ""
+
+msgid "Stopped"
+msgstr ""
+
+msgid "Text files"
+msgstr ""
+
+msgid "Use the default location"
+msgstr ""
+
+msgid "Zip archives"
+msgstr ""
+
+msgid "{app} export (.r2z)"
+msgstr ""
+
+msgid "{app} export (.r2z, .zip)"
+msgstr ""
+
+msgid "{app} profile (.r2z)"
+msgstr ""
+
+msgid "{errors}. {exit}"
+msgstr ""
+
+msgid "{game} crashed"
+msgstr ""
+
+msgid "{name} wants to share a profile"
+msgstr ""
+
+msgid "{source} collection draft (zip)"
+msgstr ""
+
+msgid "{source} modpack (.zip)"
+msgstr ""
+
+msgid "{source} modpack (zip)"
+msgstr ""

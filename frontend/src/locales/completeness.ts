@@ -5,4 +5,5 @@ export const completeness: Record<string, { translated: number; total: number }>
   'es-AR': { translated: 0, total: 3918 },
   'es-PA': { translated: 0, total: 3918 },
   'pt-BR': { translated: 0, total: 3918 },
+  'zh-Hans': { translated: 0, total: 3918 },
 }

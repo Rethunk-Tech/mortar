@@ -2,7 +2,7 @@
 // catalogs under internal/i18n/locales are all this set.
 import { completeness } from '../locales/completeness.ts'
 
-export const availableLocales = ['en', 'es', 'es-AR', 'es-PA', 'pt-BR'] as const
+export const availableLocales = ['en', 'es', 'es-AR', 'es-PA', 'pt-BR', 'zh-Hans'] as const
 
 export type AvailableLocale = (typeof availableLocales)[number]
 

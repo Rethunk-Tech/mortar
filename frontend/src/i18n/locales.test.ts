@@ -35,7 +35,13 @@ test('a regional locale falls back to its base language when that is shipped', a
   expect(config.fallbackLocales).toEqual({ 'es-AR': 'es', 'es-PA': 'es' })
 })
 
-const shares: Record<string, number> = { es: 0.85, 'es-AR': 0.9, 'es-PA': 0.1, 'pt-BR': 0 }
+const shares: Record<string, number> = {
+  es: 0.85,
+  'es-AR': 0.9,
+  'es-PA': 0.1,
+  'pt-BR': 0,
+  'zh-Hans': 0,
+}
 const complete = (locale: string) => shares[locale] ?? 1
 
 test('the system language skips a locale below 80% and falls through to the next candidate', () => {
