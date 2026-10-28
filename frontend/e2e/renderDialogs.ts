@@ -225,7 +225,12 @@ function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
     {
       ...dialog(
         '',
-        (p) => p.getByRole('dialog').last().getByRole('button', { name: /^Suits/ }).click(),
+        (p) =>
+          p
+            .getByRole('dialog')
+            .last()
+            .getByRole('button', { name: /^Suits/ })
+            .click(),
         WIZARD_BUDGET,
         (p) => newModTo(p, 0),
       ),
