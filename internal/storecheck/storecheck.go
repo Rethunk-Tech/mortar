@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -40,6 +41,9 @@ type Deps struct {
 	Source func(game, key string) profile.Source
 	// Add queues downloads; Repair uses it to fetch a damaged Nexus or GitHub item again.
 	Add func(context.Context, []queue.Request) ([]queue.Item, error)
+	// State is the download queue's items; Repair uses it to put a damaged item back when its download fails or is
+	// cancelled. Nil leaves the item quarantined once queued.
+	State func() queue.State
 	// ArchiveDir is the downloads folder, where a local item's archive may still be.
 	ArchiveDir func() string
 	// NexusMD5 is Nexus's recorded MD5 of a mod file; nil, or an error, leaves an item without hashes to be baselined
@@ -295,10 +299,35 @@ func (s *Service) refetch(ctx context.Context, gameID, key string, req queue.Req
 	if err != nil {
 		return RepairResult{}, err
 	}
-	if _, err := s.d.Add(ctx, []queue.Request{req}); err != nil {
+	items, err := s.d.Add(ctx, []queue.Request{req})
+	if err != nil {
 		return RepairResult{}, joinRestore(err, restore)
 	}
+	if s.d.State != nil {
+		go s.restoreUnlessInstalled(items, restore)
+	}
 	return RepairResult{Status: "queued"}, nil
+}
+
+// settlePoll is how often a queued repair is checked for an ending.
+var settlePoll = 2 * time.Second
+
+// restoreUnlessInstalled waits for the queued repair to end and then puts the damaged copy back; restore does nothing
+// when the download installed a fresh copy under the key.
+func (s *Service) restoreUnlessInstalled(items []queue.Item, restore func() error) {
+	for {
+		time.Sleep(settlePoll)
+		open := false
+		for _, it := range s.d.State().Items {
+			if slices.ContainsFunc(items, func(q queue.Item) bool { return q.ID == it.ID }) {
+				open = open || !slices.Contains([]string{queue.StateDone, queue.StateFailed, queue.StateSkipped, queue.StateCancelled}, it.State)
+			}
+		}
+		if !open {
+			_ = joinRestore(nil, restore)
+			return
+		}
+	}
 }
 
 func (s *Service) reextract(ctx context.Context, gameID, key string) (RepairResult, error) {

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
 	"time"
 
@@ -161,4 +162,38 @@ func TestCheckBaselinesANexusItemFromItsArchiveWhenTheMD5Matches(t *testing.T) {
 	if err != nil || len(sum.Damaged) != 1 || sum.Damaged[0].Changed != 1 {
 		t.Fatalf("baseline from the archive = %+v, %v", sum, err)
 	}
+}
+
+func TestRepairPutsTheDamagedCopyBackWhenItsDownloadFails(t *testing.T) {
+	settlePoll = time.Millisecond
+	s, downloads, _ := newService(t)
+	key := store.NexusKey(12, 34)
+	if err := s.d.Items.AddArchiveKey(t.Context(), "stardew", key, zipFile(t, downloads, "n.zip", map[string]string{"Mod/a.txt": "a"})); err != nil {
+		t.Fatal(err)
+	}
+	var mu sync.Mutex
+	state := queue.StateDownloading
+	s.d.Add = func(context.Context, []queue.Request) ([]queue.Item, error) { return []queue.Item{{ID: "q1"}}, nil }
+	s.d.State = func() queue.State {
+		mu.Lock()
+		defer mu.Unlock()
+		return queue.State{Items: []queue.Item{{ID: "q1", State: state}}}
+	}
+	if _, err := s.Repair(t.Context(), "stardew", "p1", key); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.d.Items.Path("stardew", key); err == nil {
+		t.Fatal("item not set aside while the download runs")
+	}
+	mu.Lock()
+	state = queue.StateFailed
+	mu.Unlock()
+	deadline := time.Now().Add(5 * time.Second)
+	for time.Now().Before(deadline) {
+		if _, err := s.d.Items.Path("stardew", key); err == nil {
+			return
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+	t.Fatal("damaged copy not put back after the download failed")
 }
