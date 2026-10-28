@@ -107,3 +107,10 @@ test('a comma list is numbers, chips or neither, and keeps the separator it was 
   expect(listSeparator('a', 'x, y')).toBe(', ')
   expect(listSeparator('', 'x,y')).toBe(',')
 })
+
+test('a colour or number list keeps its editor while its value is half typed', () => {
+  expect(looksLikeColour(entry({ type: 'string', default: '#ff00aa', value: '#ff' }))).toBe(true)
+  expect(commaListKind(entry({ type: 'string', default: '200, 250', value: '200, x' }))).toBe(
+    'numbers',
+  )
+})

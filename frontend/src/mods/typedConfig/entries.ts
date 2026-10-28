@@ -70,12 +70,14 @@ function formatLike(picked: string, current: string): string {
 
 // A string entry holding a colour: hex digits under a colour-named key, or a value written with "#".
 const COLOUR_KEY = /colou?r/i
-const looksLikeColour = (e: ConfigEntry): boolean => {
-  const value = String(e.value)
-  return (
-    isHexColor(value) && (value.startsWith('#') || COLOUR_KEY.test(`${e.key} ${e.label ?? ''}`))
-  )
-}
+// The default counts too, so a colour half-typed in its text field keeps its editor.
+const looksLikeColour = (e: ConfigEntry): boolean =>
+  [e.value, e.default].some((v) => {
+    const value = String(v)
+    return (
+      isHexColor(value) && (value.startsWith('#') || COLOUR_KEY.test(`${e.key} ${e.label ?? ''}`))
+    )
+  })
 
 const modifiedCount = (file: ConfigFile): number =>
   file.sections.reduce((n, s) => n + s.entries.filter(isModified).length, 0)
@@ -134,7 +136,12 @@ function commaListKind(e: ConfigEntry): CommaListKind | null {
   if (looksLikeKeybind(e) || looksLikeColour(e)) {
     return null
   }
-  const items = [e.value, e.default].map(splitItems).find((i) => i.length >= 2)
+  const [fromValue, fromDefault] = [e.value, e.default].map(splitItems)
+  // A default that is a number list keeps the number fields while a value is half-typed.
+  if (fromDefault && fromDefault.length >= 2 && fromDefault.every(isNumericItem)) {
+    return 'numbers'
+  }
+  const items = [fromValue, fromDefault].find((i) => i !== undefined && i.length >= 2)
   if (!items) {
     return null
   }

@@ -16,14 +16,16 @@ import type { Mod } from '../../../bindings/github.com/Rethunk-Tech/mortar/inter
 import { openProfileOf, useProfiles } from '../../profiles/store.ts'
 import { useSettings } from '../../settings/store.ts'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
+import { OfflineGate } from '../../shell/OfflineGate.tsx'
 import { SearchField } from '../../shell/SearchField.tsx'
 import { Tooltip } from '../../shell/Tooltip.tsx'
 import { OnlyHereFileButton } from '../../sync/pins.tsx'
 import { space } from '../../theme/density.ts'
-import { MONO } from '../../theme/theme.ts'
-import { type InlineError, inlineError, reportUnexpected } from '../../toasts/report.ts'
+import { reportUnexpected } from '../../toasts/report.ts'
 import { PresetsButton } from '../ConfigPresets.tsx'
 import { localId } from '../dependents.ts'
+import { LockedReason } from '../LockedReason.tsx'
+import { useLocked } from '../useLocked.ts'
 import { configApi } from './api.ts'
 import { showsOneFile, useConfigList } from './configList.ts'
 import { formatValue } from './convert.ts'
@@ -32,10 +34,21 @@ import { useHostValues } from './hostValues.ts'
 import { SaveHostValues } from './SaveHostValues.tsx'
 import { SectionNav } from './SectionNav.tsx'
 import { type Target, useTypedConfig } from './store.ts'
+import { DiscardTextDialog, TextFile } from './TextFile.tsx'
 import type { ConfigEntry } from './types.ts'
 import { EntryWidget } from './Widgets.tsx'
 
 const FILE_PICKER_WIDTH_PX = 260
+// The game holds the files it is running with, so every write is refused; the in-game menu's edits wait for the next
+// start and stay open.
+function useConfigLocked(): boolean {
+  const locked = useLocked()
+  const inGameMenu = useTypedConfig(
+    (s) => s.files.find((f) => f.name === s.current)?.format === 'gmcm',
+  )
+  return locked && !inGameMenu
+}
+
 function EntryRow({
   section,
   entry,
@@ -49,6 +62,7 @@ function EntryRow({
   const set = useTypedConfig((s) => s.set)
   const reset = useTypedConfig((s) => s.reset)
   const error = useTypedConfig((s) => s.errors[`${s.current}/${section}/${entry.key}`] ?? '')
+  const locked = useConfigLocked()
   return (
     <Box
       className="entry-row"
@@ -86,11 +100,13 @@ function EntryRow({
           sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}
         >{t`Change it in the game`}</Typography>
       ) : (
-        <EntryWidget
-          entry={entry}
-          label={entry.label || entry.key}
-          onChange={(v) => set(section, entry.key, v)}
-        />
+        <OfflineGate reason={locked ? t`Stop the game to change mods.` : ''}>
+          <EntryWidget
+            entry={entry}
+            label={entry.label || entry.key}
+            onChange={(v) => set(section, entry.key, v)}
+          />
+        </OfflineGate>
       )}
       {isModified(entry) ? (
         <Tooltip title={entry.pending ? t`Keep the game's current value` : t`Reset to default`}>
@@ -101,6 +117,7 @@ function EntryRow({
                 ? t`Discard the change to ${{ name: entry.label || entry.key }}`
                 : t`Reset ${{ key: entry.key }} to its default`
             }
+            disabled={locked}
             onClick={() => reset(section, entry.key)}
           >
             <RotateCcw size={14} />
@@ -192,6 +209,7 @@ function Toolbar({
   onDelete?: (() => void) | undefined
 }) {
   const { t } = useLingui()
+  const locked = useConfigLocked()
   const labelOf = (f: PaneFile) => (f.format === 'gmcm' ? t`In-game menu` : f.label || f.name)
   const labels = files.map(labelOf)
   // Two files labelled alike (one plugin's .cfg and .json) are told apart by their file names.
@@ -241,9 +259,7 @@ function Toolbar({
             onChange={onQuery}
             sx={{ width: 260 }}
           />
-          {file?.format === 'gmcm' || file?.format === 'json' || !mod ? null : (
-            <PresetsButton mod={mod} />
-          )}
+          {file?.format !== 'smapi' || !mod ? null : <PresetsButton mod={mod} />}
           {file && file.format !== 'gmcm' && file.format !== 'text' ? (
             <OnlyHereFileButton
               game={target.game}
@@ -251,14 +267,16 @@ function Toolbar({
               file={file.format === 'smapi' ? `${localId(target.id)}/${file.name}` : file.name}
             />
           ) : null}
-          <Button
-            variant="outlined"
-            size="small"
-            disabled={!file || modifiedCount(file) === 0}
-            onClick={onReset}
-          >
-            {t`Reset all`}
-          </Button>
+          <LockedReason locked={locked}>
+            <Button
+              variant="outlined"
+              size="small"
+              disabled={!file || modifiedCount(file) === 0 || locked}
+              onClick={onReset}
+            >
+              {t`Reset all`}
+            </Button>
+          </LockedReason>
         </>
       )}
     </Box>
@@ -284,7 +302,13 @@ function useLongFile(list: RefObject<HTMLElement | null>, sections: number, entr
   return long
 }
 
-function Sections({ shown }: { shown: ReturnType<typeof filterFile> | null }) {
+function Sections({
+  shown,
+  all,
+}: {
+  shown: ReturnType<typeof filterFile> | null
+  all: PaneFile | undefined
+}) {
   const { t } = useLingui()
   const list = useRef<HTMLElement | null>(null)
   const centred = useSettings((s) => s.centerConfigControls)
@@ -295,7 +319,7 @@ function Sections({ shown }: { shown: ReturnType<typeof filterFile> | null }) {
   const entries = (shown?.sections ?? []).reduce((n, s) => n + s.entries.length, 0)
   const long = useLongFile(list, names.length, entries)
   const host = useHostValues(
-    (shown?.sections ?? []).some((s) => s.entries.some((e) => e.sync !== undefined)),
+    (all?.sections ?? []).some((s) => s.entries.some((e) => e.sync !== undefined)),
   )
   return (
     <>
@@ -347,114 +371,6 @@ function Sections({ shown }: { shown: ReturnType<typeof filterFile> | null }) {
   )
 }
 
-// A text file (YAML, TOML, XML, INI, JSON or plain text a mod keeps beside its .cfg) has no schema, so it is edited
-// whole, and saved only when asked.
-function TextFile({ target, name }: { target: Target; name: string }) {
-  const { t } = useLingui()
-  const [saved, setSaved] = useState<string | null>(null)
-  const [text, setText] = useState('')
-  const [error, setError] = useState<InlineError | null>(null)
-  const { game, profile, key, id } = target
-  useEffect(() => {
-    const at = { game, profile, key, id }
-    let live = true
-    setSaved(null)
-    setError(null)
-    configApi
-      .text(at, name)
-      .then((v) => {
-        if (live) {
-          setSaved(v)
-          setText(v)
-        }
-      })
-      .catch((e: unknown) => live && setError(inlineError(e)))
-    return () => {
-      live = false
-    }
-  }, [game, profile, key, id, name])
-  const save = () => {
-    setError(null)
-    configApi
-      .setText(target, name, text)
-      .then(() => setSaved(text))
-      .catch((e: unknown) => setError(inlineError(e)))
-  }
-  const dirty = saved !== null && text !== saved
-  return (
-    <Box
-      sx={{
-        flex: 1,
-        minWidth: 0,
-        minHeight: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: space.gap,
-        p: space.pad,
-      }}
-    >
-      {error ? (
-        <Typography
-          role="alert"
-          title={error.details}
-          sx={{ fontSize: 'small.fontSize', color: 'error.main' }}
-        >
-          {saved === null
-            ? t`Could not open: ${{ error: error.message }}`
-            : t`Could not save: ${{ error: error.message }}`}
-        </Typography>
-      ) : null}
-      {/* MUI sizes a multiline textarea inline to its rows; it is forced to fill the pane instead and scrolls. */}
-      <TextField
-        multiline={true}
-        rows={1}
-        fullWidth={true}
-        disabled={saved === null}
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        slotProps={{
-          htmlInput: { 'aria-label': t`Contents of ${name}`, spellCheck: false },
-        }}
-        sx={{
-          flex: 1,
-          minHeight: 0,
-          '& .MuiInputBase-root': { height: '100%', alignItems: 'stretch' },
-          '& textarea': {
-            height: '100% !important',
-            overflow: 'auto',
-            fontFamily: MONO,
-            fontSize: 'base.fontSize',
-          },
-        }}
-      />
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: space.gap }}>
-        <Button
-          variant="text"
-          size="small"
-          sx={{ mr: 'auto' }}
-          disabled={saved === null}
-          onClick={() =>
-            configApi.openText(target, name).catch((e: unknown) => setError(inlineError(e)))
-          }
-        >
-          {t`Open in editor`}
-        </Button>
-        <Button
-          variant="outlined"
-          size="small"
-          disabled={!dirty}
-          onClick={() => setText(saved ?? '')}
-        >
-          {t`Revert`}
-        </Button>
-        <Button variant="contained" size="small" disabled={!dirty} onClick={save}>
-          {t`Save`}
-        </Button>
-      </Box>
-    </Box>
-  )
-}
-
 // The editor of one selection's config files, beside the Config page's list. A selection without a mod (the unowned
 // .cfg files) opens on `file` and offers no presets.
 export function ConfigPane({
@@ -488,6 +404,8 @@ export function ConfigPane({
   const [query, setQuery] = useState(landing?.query ?? '')
   const [confirming, setConfirming] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [textDirty, setTextDirty] = useState(false)
+  const [switchTo, setSwitchTo] = useState<string | null>(null)
   // A preset applied from here rewrites the file, so the profile's change time rereads it.
   const updated = useProfiles((st) => openProfileOf(st)?.updated)
   const seenUpdated = useRef(updated)
@@ -518,6 +436,10 @@ export function ConfigPane({
         query={query}
         onQuery={setQuery}
         onSelect={(n) => {
+          if (textDirty) {
+            setSwitchTo(n)
+            return
+          }
           select(n).catch(() => undefined)
         }}
         onReset={() => setConfirming(true)}
@@ -539,11 +461,22 @@ export function ConfigPane({
       ) : null}
       <Box sx={{ flex: 1, minHeight: 0, display: 'flex' }}>
         {file?.format === 'text' ? (
-          <TextFile key={file.name} target={target} name={file.name} />
+          <TextFile key={file.name} target={target} name={file.name} onDirty={setTextDirty} />
         ) : (
-          <Sections shown={file ? filterFile(file, query) : null} />
+          <Sections shown={file ? filterFile(file, query) : null} all={file} />
         )}
       </Box>
+      <DiscardTextDialog
+        open={switchTo !== null}
+        name={current}
+        onCancel={() => setSwitchTo(null)}
+        onConfirm={() => {
+          if (switchTo !== null) {
+            select(switchTo).catch(() => undefined)
+          }
+          setSwitchTo(null)
+        }}
+      />
       <ConfirmationDialog
         open={deleting}
         title={t`Delete ${{ name: initialFile ?? name }}?`}
