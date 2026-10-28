@@ -429,6 +429,9 @@ func New(d Deps) (*Service, error) {
 			tr = dt.Clone()
 			tr.ResponseHeaderTimeout = 20 * time.Second
 		}
+		// A CDN can stall one HTTP/2 connection that every download shares; pinging it lets the transport drop a dead
+		// one so the retry opens a fresh connection instead of timing out on the same one.
+		tr.HTTP2 = &http.HTTP2Config{SendPingTimeout: 15 * time.Second, PingTimeout: 10 * time.Second}
 		d.HTTP = &http.Client{Transport: tr, Timeout: 30 * time.Minute}
 	}
 	s := &Service{

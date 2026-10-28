@@ -100,6 +100,13 @@ func (s *Service) next(running map[string]bool) (it *Item, act action, held bool
 	return head, s.forFile(head, click), held
 }
 
+// maxNetworkRetries is how many network failures in a row an item waits out before it fails, holding its source for
+// networkBackoff, doubled each time, so a source that stalls under many downloads gets room to recover.
+const (
+	maxNetworkRetries = 3
+	networkBackoff    = 10 * time.Second
+)
+
 // maxBusy is how many busy answers in a row an item waits out before it fails; the waits double from defaultBackoff.
 const maxBusy = 5
 
@@ -378,6 +385,10 @@ func (s *Service) settle(id string, err error) {
 		}
 		it.State, it.Progress, it.Speed = StateQueued, 0, 0
 		s.wait(sourceKey(it), busy.Reset, defaultBackoff<<(it.busy-1))
+	case failureKind(err) == FailNetwork && it.busy < maxNetworkRetries:
+		it.busy++
+		it.State, it.Progress, it.Speed = StateQueued, 0, 0
+		s.wait(sourceKey(it), time.Time{}, networkBackoff<<(it.busy-1))
 	case errors.Is(err, nexus.ErrPremiumRequired):
 		it.State, it.Progress, it.Speed, it.key = StateWaitingClick, 0, 0, ""
 	case errors.Is(err, nexus.ErrUnauthorized):

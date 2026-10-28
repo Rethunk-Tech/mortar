@@ -82,19 +82,21 @@ func TestPauseKeepsThePartialAndResumeContinuesIt(t *testing.T) {
 	}
 }
 
-func TestRetryAfterANetworkErrorResumesThePartial(t *testing.T) {
+// A network error holds the item and its source for a backoff, then resumes the partial on its own.
+func TestANetworkErrorRetriesAndResumesThePartial(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
 	var hits atomic.Int32
 	var rng atomic.Value
 	f.cdn = cutThen(&hits, func(*http.Request, http.ResponseWriter) { panic(http.ErrAbortHandler) }, serveTail(&rng))
 	f.start()
-	id := f.add(req(10))[0].ID
-	st := f.wait("failed", f.item(StateFailed))
-	if st.Items[0].ErrorKind != FailNetwork || st.Items[0].Partial != cutAt {
-		t.Fatalf("failed item %+v", st.Items[0])
+	f.add(req(10))
+	st := f.wait("held for the backoff", func(st State) bool { return hits.Load() == 1 && st.Items[0].State == StateQueued })
+	if f.partialSize(st.Items[0].ID) != cutAt || st.Items[0].Error != "" {
+		t.Fatalf("held item %+v", st.Items[0])
 	}
-	f.s.Retry(id)
+	f.clock.Add(int64(networkBackoff / time.Second))
+	f.s.poke()
 	f.wait("done", f.item(StateDone))
 	if got, _ := rng.Load().(string); got != fmt.Sprintf("bytes=%d-", cutAt) {
 		t.Fatalf("retry asked for %q", got)
