@@ -15,7 +15,7 @@ func (c *cmd) sourceUntrack() error {
 		return usageError{"source untrack needs exactly one of --all or --unused"}
 	}
 	var count int
-	if err := c.call("source.tracked", control.Params{Game: a[0], Source: c.sourceFlag}, &count, readTimeout); err != nil {
+	if err := c.call("source.tracked", control.Params{Game: a[0], Source: c.sourceFlag, Unused: c.unused}, &count, readTimeout); err != nil {
 		return err
 	}
 	if err := c.confirm("source untrack", fmt.Sprintf("Untrack %d mods?", count)); err != nil {

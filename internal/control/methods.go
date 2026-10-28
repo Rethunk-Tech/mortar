@@ -610,6 +610,9 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		if s.Nexus == nil {
 			return nil, errors.New("nexus is unavailable")
 		}
+		if p.Unused {
+			return s.Nexus.TrackedUnusedCount(ctx, p.Game)
+		}
 		return s.Nexus.TrackedCount(ctx, p.Game)
 	case "source.trackedMissing":
 		return s.trackedMissing(ctx, p)
