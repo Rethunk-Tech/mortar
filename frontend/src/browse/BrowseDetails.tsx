@@ -269,6 +269,7 @@ function Panel({
                 },
               }
             : {})}
+          knownBroken={shownItem.knownBroken ?? null}
           onClose={() => setChoosing(false)}
         />
       ) : null}

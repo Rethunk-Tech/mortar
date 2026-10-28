@@ -1,7 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Chip, List, ListItemButton, Typography } from '@mui/material'
-import { History } from 'lucide-react'
+import { CircleAlert, History } from 'lucide-react'
 import { useState } from 'react'
+import type { KnownBrokenNote } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/source/models.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
@@ -33,24 +34,31 @@ export function ChangeVersionDialog({
   name,
   target,
   entry,
+  knownBroken,
   onClose,
 }: {
   game: string
   name: string
   target: VersionTarget
   entry?: { key: string; version: string; pinned: boolean }
+  // The game's known-broken note on the mod's newest version, which asks before that version installs.
+  knownBroken?: KnownBrokenNote | null
   onClose: () => void
 }) {
   const { t } = useLingui()
   const listed = useListedVersions(game, target.source, target.id)
   const frozen = isFrozen(useProfiles(openProfileOf))
   const [picked, setPicked] = useState('')
-  const [asking, setAsking] = useState(false)
+  const [asking, setAsking] = useState<'held' | 'broken' | null>(null)
   const installed = entry?.version ?? ''
   const choices: VersionChoice[] =
     listed.state === 'ready' ? versionChoices(target, listed.versions, entry?.key ?? '') : []
   const choice = choices.find((c) => c.key === picked)
   const held = entry?.pinned === true
+  const broken =
+    knownBroken && choice !== undefined && choice.key === choices[0]?.key ? knownBroken : null
+  const askings = [...(held ? (['held'] as const) : []), ...(broken ? (['broken'] as const) : [])]
+  const next = askings[askings.indexOf(asking ?? 'held') + (asking === null ? 0 : 1)]
   const go = () => {
     if (choice) {
       onClose()
@@ -58,11 +66,20 @@ export function ChangeVersionDialog({
     }
   }
   let confirmLabel = choice ? t`Install version ${{ version: choice.version }}` : t`Install`
-  if (asking) {
+  if (asking !== null) {
     confirmLabel = t`Install anyway`
   }
   const body = (() => {
-    if (asking && choice) {
+    if (asking === 'broken' && choice && broken) {
+      return (
+        <Typography>
+          {broken.replacement
+            ? t`${{ reason: broken.reason }} Use ${{ replacement: broken.replacement }} instead.`
+            : broken.reason}
+        </Typography>
+      )
+    }
+    if (asking === 'held' && choice) {
       return (
         <Typography>
           {frozen
@@ -122,14 +139,23 @@ export function ChangeVersionDialog({
         </ToneIcon>
       }
       footer={
-        <DialogFooter aside={choice || asking ? null : t`Pick the version.`}>
-          <Button onClick={asking ? () => setAsking(false) : onClose}>
-            {asking ? t`Back` : t`Cancel`}
+        <DialogFooter
+          aside={
+            choice || asking !== null ? null : (
+              <span className="app-dialog-issue">
+                <CircleAlert size={14} aria-hidden={true} />
+                {t`Pick the version.`}
+              </span>
+            )
+          }
+        >
+          <Button onClick={asking === null ? onClose : () => setAsking(null)}>
+            {asking === null ? t`Cancel` : t`Back`}
           </Button>
           <Button
             variant="contained"
             disabled={!choice}
-            onClick={held && !asking ? () => setAsking(true) : go}
+            onClick={next ? () => setAsking(next) : go}
           >
             {confirmLabel}
           </Button>
@@ -141,7 +167,7 @@ export function ChangeVersionDialog({
           display: 'flex',
           flexDirection: 'column',
           gap: space.gap,
-          height: asking ? undefined : LIST_PX,
+          height: asking === null ? LIST_PX : undefined,
         }}
       >
         {body}
