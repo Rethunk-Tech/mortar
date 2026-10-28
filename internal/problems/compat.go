@@ -66,6 +66,10 @@ func matchCompat(idx meta.CompatIndex, mods []framework.Mod, skipOK bool) []Comp
 	out := []Compat{}
 	seen := map[string]bool{}
 	for _, m := range mods {
+		// The check is about what runs: a switched-off mod is listed only when asked about on its own.
+		if skipOK && !m.Enabled {
+			continue
+		}
 		e, ok := idx.Lookup(m.ModID().Local(), nexusIDOf(m))
 		if !ok {
 			continue

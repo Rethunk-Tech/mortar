@@ -18,13 +18,14 @@ func TestMatchCompatByUniqueIDAndNexus(t *testing.T) {
 		},
 	}
 	mods := []framework.Mod{
-		{Key: "a", UniqueID: "Author.Broken", Name: "Broken"},
-		{Key: "b", UniqueID: "Author.NexusOnly", Name: "Nexus", UpdateKeys: []string{"Nexus:42"}},
-		{Key: "c", UniqueID: "Author.Ok", Name: "Fine"},
-		{Key: "d", UniqueID: "Author.Unknown", Name: "Unknown"},
+		{Key: "a", Enabled: true, UniqueID: "Author.Broken", Name: "Broken"},
+		{Key: "b", Enabled: true, UniqueID: "Author.NexusOnly", Name: "Nexus", UpdateKeys: []string{"Nexus:42"}},
+		{Key: "c", Enabled: true, UniqueID: "Author.Ok", Name: "Fine"},
+		{Key: "d", Enabled: true, UniqueID: "Author.Unknown", Name: "Unknown"},
+		{Key: "e", UniqueID: "Author.Broken", Name: "Switched off"},
 	}
 	all := matchCompat(idx, mods, false)
-	if len(all) != 3 {
+	if len(all) != 4 {
 		t.Fatalf("all: %+v", all)
 	}
 	info := matchCompat(idx, mods, true)
@@ -46,10 +47,10 @@ func TestMatchCompatSkipsUnofficialRowOnceInstalledMeetsIt(t *testing.T) {
 		"author.old":             {Status: meta.StatusUnofficial, UnofficialVersion: "2.0.0-unofficial.1-x"},
 	}}
 	mods := []framework.Mod{
-		{Key: "a", UniqueID: "bungus.ShowItemQuality", Version: "1.1.3-unofficial.1-bungus"},
-		{Key: "b", UniqueID: "hootless.BusLocations", Version: "2.1.1"},
-		{Key: "c", UniqueID: "author.Old", Version: "1.0.0"},
-		{Key: "d", UniqueID: "author.Old", Version: "not a version"},
+		{Key: "a", Enabled: true, UniqueID: "bungus.ShowItemQuality", Version: "1.1.3-unofficial.1-bungus"},
+		{Key: "b", Enabled: true, UniqueID: "hootless.BusLocations", Version: "2.1.1"},
+		{Key: "c", Enabled: true, UniqueID: "author.Old", Version: "1.0.0"},
+		{Key: "d", Enabled: true, UniqueID: "author.Old", Version: "not a version"},
 	}
 
 	got := matchCompat(idx, mods, true)
