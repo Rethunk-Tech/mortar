@@ -405,6 +405,7 @@ type Service struct {
 	cancels      map[string]context.CancelFunc
 	installMu    sync.Mutex
 	hashMu       sync.Mutex
+	hashes       map[string]string // package-hashes.json, read on first use; guarded by hashMu
 	choiceMu     sync.Mutex
 	limits       map[string]*sourceLimit
 	premiumFetch chan struct{}

@@ -71,18 +71,24 @@ func (s *Service) checkPackageHash(it Item, path string) error {
 	s.hashMu.Lock()
 	defer s.hashMu.Unlock()
 	file := filepath.Join(s.d.Dir, packageHashFile)
-	seen := map[string]string{}
-	if _, err := datadir.ReadJSON(file, &seen); err != nil {
-		seen = map[string]string{}
+	if s.hashes == nil {
+		s.hashes = map[string]string{}
+		if _, err := datadir.ReadJSON(file, &s.hashes); err != nil || s.hashes == nil {
+			s.hashes = map[string]string{}
+		}
 	}
 	key := strings.ToLower(it.Package) + "@" + it.Version
-	if want, ok := seen[key]; ok {
+	if want, ok := s.hashes[key]; ok {
 		return compareSHA256(path, want)
 	}
 	got, err := fsx.SHA256(path)
 	if err != nil {
 		return err
 	}
-	seen[key] = got
-	return datadir.WriteJSON(file, seen)
+	s.hashes[key] = got
+	if err := datadir.WriteJSON(file, s.hashes); err != nil {
+		delete(s.hashes, key)
+		return err
+	}
+	return nil
 }

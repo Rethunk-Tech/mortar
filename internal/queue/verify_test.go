@@ -79,3 +79,19 @@ func TestSourceLimitPacesStartsAndCapsConcurrency(t *testing.T) {
 	}
 	release()
 }
+
+func TestPackageHashesAreReadOnce(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	s := &Service{d: Deps{Dir: dir}}
+	it := Item{Package: "Me-Mod", Version: "1.0.0"}
+	if err := s.checkPackageHash(it, writeFile(t, "one")); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, packageHashFile), []byte("{}"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.checkPackageHash(it, writeFile(t, "two")); err == nil {
+		t.Error("the file was read again instead of the held hashes")
+	}
+}
