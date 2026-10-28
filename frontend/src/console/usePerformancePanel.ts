@@ -31,7 +31,7 @@ function rememberSaved(saved: SavedReport) {
 
 function usePerformanceRunning(game: string) {
   const viewingRun = useConsole((s) => s.viewingRun)
-  const status = useLaunch((s) => s.status)
+  const status = useLaunch((s) => s.byGame[game] ?? null)
   const openId = useProfiles((s) => s.openId)
   return viewingRun === '' && canSendTo(status, game, openId)
 }

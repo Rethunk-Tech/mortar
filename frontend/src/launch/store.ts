@@ -172,6 +172,7 @@ function applyStatus(
   polled: boolean,
   get: () => {
     status: Status | null
+    byGame: Record<string, Status>
     hidden: boolean
     updateRollback: UpdateRollback | null
   },
@@ -182,10 +183,15 @@ function applyStatus(
     failure?: Failure | null
     askDirect?: DirectAsk | null
     status?: Status
+    byGame?: Record<string, Status>
     updateRollback?: UpdateRollback | null
   }) => void,
 ) {
   const previous = get().status
+  const keep = (stored: Status) => ({
+    status: stored,
+    byGame: { ...get().byGame, [stored.game]: stored },
+  })
   applyOnPlayWindow(status, previous)
   if (!polled || status.state !== State.Idle) {
     set({ starting: false, startingProfile: '' })
@@ -199,7 +205,7 @@ function applyStatus(
       set({ hidden: false, failure: null })
     }
     useLaunchView.getState().onStatus(status, isNew)
-    set({ status })
+    set(keep(status))
     return
   }
   useLaunchView.getState().onStatus(status, false)
@@ -228,7 +234,7 @@ function applyStatus(
     if (status.state === State.Running && previous?.state === State.Launching && !get().hidden) {
       useTab.getState().setTab('console')
     }
-    set({ status })
+    set(keep(status))
     const rollback = get().updateRollback
     if (
       status.state === State.Idle &&
@@ -240,12 +246,14 @@ function applyStatus(
       checkUpdatedRun(rollback, get, set).catch(reportUnexpected)
     }
   } else {
-    set({ status: { ...status, state: State.Idle } })
+    set(keep({ ...status, state: State.Idle }))
   }
 }
 
 export const useLaunch = create<{
   status: Status | null
+  // The latest status of each game, so another game's event cannot hide the open game's run.
+  byGame: Record<string, Status>
   hidden: boolean
   failure: Failure | null
   askDirect: DirectAsk | null
@@ -283,6 +291,7 @@ export const useLaunch = create<{
   stop: (game: string) => Promise<void>
 }>((set, get) => ({
   status: null,
+  byGame: {},
   hidden: false,
   failure: null,
   askDirect: null,

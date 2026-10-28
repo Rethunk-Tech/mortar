@@ -18,7 +18,7 @@ export function useConsoleEmpty(game: string): boolean {
   const entries = useShownEntries()
   const openId = useProfiles((s) => s.openId)
   const viewingRun = useConsole((s) => s.viewingRun)
-  const running = useLaunch((s) => canSendTo(s.status, game, openId))
+  const running = useLaunch((s) => canSendTo(s.byGame[game] ?? null, game, openId))
   const hasRuns = useHasRuns(game, openId, running)
   return entries.length === 0 && viewingRun === '' && !running && !hasRuns
 }

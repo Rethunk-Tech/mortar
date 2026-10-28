@@ -105,3 +105,10 @@ test('a polled Idle keeps preparation going; an announced one ends it', () => {
   expect(useLaunch.getState().starting).toBe(false)
   expect(useLaunch.getState().startingProfile).toBe('')
 })
+
+test("another game's status does not replace the open game's", () => {
+  useLaunch.getState().apply(status(State.Running))
+  useLaunch.getState().apply({ ...status(State.Running, ''), game: 'riskofrain2-server' })
+  expect(useLaunch.getState().byGame.stardew?.profile).toBe('p1')
+  expect(useLaunch.getState().byGame['riskofrain2-server']?.profile).toBe('')
+})

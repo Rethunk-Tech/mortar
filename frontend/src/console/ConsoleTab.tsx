@@ -133,7 +133,9 @@ const CommandLine = memo(function CommandLineView({ game }: { game: string }) {
   const viewingRun = useConsole((s) => s.viewingRun)
   const takesCommands = useProfileLoader()?.commands === true
   const running =
-    useLaunch((s) => canSendTo(s.status, game, openId)) && viewingRun === '' && takesCommands
+    useLaunch((s) => canSendTo(s.byGame[game] ?? null, game, openId)) &&
+    viewingRun === '' &&
+    takesCommands
   const history = useConsole((s) => s.history[game] ?? NO_HISTORY)
   const send = useConsole((s) => s.send)
   const [text, setText] = useState('')
