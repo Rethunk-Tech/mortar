@@ -7,11 +7,11 @@ import {
   SetThunderstoreToken,
   UploadThunderstore,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
-import { OpenWeb } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/opener/service.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { Field, FormDialog } from '../shell/dialog/FormDialog.tsx'
+import { openWeb } from '../shell/openWeb.ts'
 import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -69,7 +69,7 @@ function TokenDialog({
           <Button
             size="small"
             sx={{ px: 0 }}
-            onClick={() => OpenWeb(TEAMS_PAGE).catch(reportError(t`Could not open the page`))}
+            onClick={() => openWeb(TEAMS_PAGE).catch(reportError(t`Could not open the page`))}
           >
             {t`Create one in your team's settings`}
           </Button>
@@ -144,7 +144,7 @@ export function UploadDialog({
                 ? {
                     action: {
                       label: t`Open page`,
-                      run: () => OpenWeb(url).catch(reportError(t`Could not open the page`)),
+                      run: () => openWeb(url).catch(reportError(t`Could not open the page`)),
                     },
                   }
                 : {}),
