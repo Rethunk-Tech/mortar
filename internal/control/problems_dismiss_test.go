@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/launch"
+	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
 )
 
 type oneRun string
@@ -75,5 +76,20 @@ func TestDismissingALoadFailureRowByIndexHidesItUntilTheNextRun(t *testing.T) {
 	s.Problems.Runs = oneRun("run-2")
 	if rows() != 1 {
 		t.Fatal("a dismissal outlived the run it was made for")
+	}
+}
+
+func TestLogsSearchNeedsNoProfileAndStopRefusesAnUnknownInstall(t *testing.T) {
+	s, _ := servicesWithItems(t)
+	s.Launches = launchsvc.NewService(t.TempDir(), s.Settings, s.Store)
+	if _, err := s.Profiles.Create("stardew", "Farm"); err != nil {
+		t.Fatal(err)
+	}
+	got, err := s.Handle(t.Context(), "logs.search", Params{Game: "stardew", Query: "error"})
+	if res, ok := got.(launchsvc.RunSearch); err != nil || !ok || len(res.Hits) != 0 {
+		t.Fatalf("logs.search without a profile = %+v, %v", got, err)
+	}
+	if _, err := s.Handle(t.Context(), "stop", Params{Game: "stardew", Install: "nope"}); err == nil {
+		t.Fatal("stop of an unknown install succeeded")
 	}
 }

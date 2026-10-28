@@ -676,11 +676,16 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		}
 		return s.awaitStart(ctx, p.Game, "")
 	case "stop":
-		stop := func() error { return s.Launches.Stop(ctx, p.Game) }
 		if p.Install != "" {
-			stop = func() error { return s.Launches.StopInstall(ctx, p.Install) }
+			if _, err := s.Launches.StatusInstall(p.Game, p.Install); err != nil {
+				return nil, err
+			}
+			if err := s.Launches.StopInstall(ctx, p.Install); err != nil {
+				return nil, err
+			}
+			return s.Launches.StatusInstall(p.Game, p.Install)
 		}
-		if err := stop(); err != nil {
+		if err := s.Launches.Stop(ctx, p.Game); err != nil {
 			return nil, err
 		}
 		return s.Launches.Status(p.Game)
@@ -713,11 +718,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.Settings.Get().GamePrefs(p.Game).FavouriteMods, nil
 	}
 	if method == "logs.search" {
-		prof, err := s.resolve(p.Game, p.Profile)
-		if err != nil {
-			return nil, err
-		}
-		return s.Launches.SearchRuns(p.Game, prof.ID, p.Query)
+		return s.searchLogs(p)
 	}
 	prof, err := s.resolve(p.Game, p.Profile)
 	if err != nil {
@@ -1061,8 +1062,6 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.shareLog(ctx, p.Game, id, p.Run)
 	case "logs.fixes":
 		return s.Launches.RunProblems(p.Game, id, p.Run)
-	case "logs.search":
-		return s.Launches.SearchRuns(p.Game, id, p.Query)
 	case "saves":
 		return s.Saves.Saves(ctx, p.Game, id)
 	case "play.check":
@@ -1115,6 +1114,34 @@ func (s *Services) optionalProfile(gameID, sel string) (string, error) {
 }
 
 // resolve finds a profile by id, or by name ignoring case; an ambiguous name lists the matching ids.
+// searchLogs searches one profile's stored run logs, or every readable profile's of the game when none is named.
+func (s *Services) searchLogs(p Params) (launchsvc.RunSearch, error) {
+	if p.Profile != "" {
+		prof, err := s.resolve(p.Game, p.Profile)
+		if err != nil {
+			return launchsvc.RunSearch{}, err
+		}
+		return s.Launches.SearchRuns(p.Game, prof.ID, p.Query)
+	}
+	all, err := s.Profiles.List(p.Game)
+	if err != nil {
+		return launchsvc.RunSearch{}, err
+	}
+	out := launchsvc.RunSearch{Hits: []launchsvc.RunHit{}}
+	for _, prof := range all {
+		if prof.Error != "" {
+			continue
+		}
+		got, err := s.Launches.SearchRuns(p.Game, prof.ID, p.Query)
+		if err != nil {
+			return launchsvc.RunSearch{}, err
+		}
+		out.Hits = append(out.Hits, got.Hits...)
+		out.Truncated = out.Truncated || got.Truncated
+	}
+	return out, nil
+}
+
 func (s *Services) resolve(gameID, sel string) (profile.Profile, error) {
 	if sel == "" {
 		return profile.Profile{}, errors.New("name a profile")
