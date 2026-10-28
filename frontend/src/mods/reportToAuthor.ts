@@ -17,6 +17,7 @@ interface ModReportFields {
   modVersion: string
   gameName: string
   gameVersion: string
+  loaderName: string
   smapiVersion: string
   mortarVersion: string
   errorLines: readonly string[]
@@ -119,7 +120,7 @@ function buildModReportText(_i18n: I18n, fields: ModReportFields): string {
     lines.push(`Game: ${fields.gameName} ${fields.gameVersion}`)
   }
   if (fields.smapiVersion !== '') {
-    lines.push(`SMAPI: ${fields.smapiVersion}`)
+    lines.push(`${fields.loaderName || 'Loader'}: ${fields.smapiVersion}`)
   }
   if (fields.mortarVersion !== '') {
     lines.push(`Mortar: ${fields.mortarVersion}`)

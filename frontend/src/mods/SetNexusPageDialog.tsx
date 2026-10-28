@@ -5,6 +5,7 @@ import { create } from 'zustand'
 import { SetNexusPage } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
+import { isDevelopEntry } from '../develop/devEntry.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
@@ -31,8 +32,13 @@ export function NexusPageMenuItem({ mod, close }: { mod: Mod; close: () => void 
   const locked = useLocked()
   const game = useProfiles((s) => s.game)
   const profile = useProfiles(openProfileOf)
-  const kind = (profile?.entries ?? []).find((e) => e.key === mod.key)?.source.kind
-  if (!(game?.sources?.includes('nexus') && profile) || (kind !== 'local' && kind !== 'nexus')) {
+  const entry = (profile?.entries ?? []).find((e) => e.key === mod.key)
+  const kind = entry?.source.kind
+  if (
+    !(game?.sources?.includes('nexus') && profile) ||
+    (kind !== 'local' && kind !== 'nexus') ||
+    isDevelopEntry(entry)
+  ) {
     return null
   }
   return (

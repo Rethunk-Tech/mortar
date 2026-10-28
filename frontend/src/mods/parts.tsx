@@ -304,7 +304,7 @@ export function NexusGoneBadge({ mod }: { mod: Mod }) {
 
 export function LastRunBadge({ mod }: { mod: Mod }) {
   const { t } = useLingui()
-  const hit = useLastRun((s) => s.byId[mod.id])
+  const hit = useLastRun((s) => s.byId[idKey(mod.id)])
   if (!hit || (hit.errors === 0 && hit.warnings === 0)) {
     return null
   }

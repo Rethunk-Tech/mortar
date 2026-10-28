@@ -49,6 +49,7 @@ interface ReportFieldsInput {
   issueTitle: string
   entries: Awaited<ReturnType<typeof RunLines>>
   loader: { gameVersion: string; version: string } | null
+  loaderName: string
   mortarVersion: string
   logShareURL: string
   target: { repo: string; url: string }
@@ -63,6 +64,7 @@ function reportFields(input: ReportFieldsInput): ModReportFields {
     issueTitle,
     entries,
     loader,
+    loaderName,
     mortarVersion,
     logShareURL,
     target,
@@ -73,6 +75,7 @@ function reportFields(input: ReportFieldsInput): ModReportFields {
     modVersion: mod.version,
     gameName: gameName(game),
     gameVersion: loader?.gameVersion ?? '',
+    loaderName,
     smapiVersion: loader?.version ?? '',
     mortarVersion,
     errorLines: entries ? modErrorLines(entries, modLogName) : [],
@@ -190,6 +193,7 @@ export function ReportToAuthorButton({
         issueTitle: t`Error in ${{ name: mod.name }}`,
         entries,
         loader,
+        loaderName: profileLoader?.name ?? '',
         mortarVersion,
         logShareURL,
         target,

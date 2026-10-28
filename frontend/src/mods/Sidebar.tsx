@@ -28,6 +28,7 @@ import { useModIdName } from './contributedColumns.ts'
 import { useCustomCategories } from './customCategories.ts'
 import { DetailsAside } from './DetailsAside.tsx'
 import { DetailsHeader } from './DetailsHeader.tsx'
+import { idKey } from './dependents.ts'
 import { useDescribe } from './describe.ts'
 import { showModId, useDetail } from './detail.ts'
 import { customCategoryById, resolvedCategoryLabel } from './group.ts'
@@ -189,7 +190,7 @@ function ProblemLine({ mod }: { mod: Mod }) {
 function LastRunLine({ mod, profile }: { mod: Mod; profile: Profile }) {
   const { t } = useLingui()
   const game = useProfiles((s) => s.game?.id)
-  const hit = useLastRun((s) => s.byId[mod.id])
+  const hit = useLastRun((s) => s.byId[idKey(mod.id)])
   if (!hit || (hit.errors === 0 && hit.warnings === 0) || !game) {
     return null
   }

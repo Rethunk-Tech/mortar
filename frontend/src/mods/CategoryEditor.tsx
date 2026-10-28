@@ -15,6 +15,19 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { categoriesDiffer, useCustomCategories } from './customCategories.ts'
 
+// A row's React key survives its edits (each one makes a new object) and unsaved rows, which have no id yet.
+const rowKeys = new WeakMap<CustomCategory, number>()
+let lastRowKey = 0
+function rowKey(row: CustomCategory): number {
+  let key = rowKeys.get(row)
+  if (key === undefined) {
+    lastRowKey += 1
+    key = lastRowKey
+    rowKeys.set(row, key)
+  }
+  return key
+}
+
 function CategoryRow({
   row,
   onChange,
@@ -113,9 +126,10 @@ function CategoryEditorDialog({ open, onClose }: { open: boolean; onClose: () =>
           ) : null}
           {draft.map((row) => (
             <CategoryRow
-              key={row.id || row.name}
+              key={rowKey(row)}
               row={row}
               onChange={(next) => {
+                rowKeys.set(next, rowKey(row))
                 const rows = draft.map((c) => (c === row ? next : c))
                 setDraft(rows)
               }}
@@ -143,7 +157,7 @@ function CategoryEditorDialog({ open, onClose }: { open: boolean; onClose: () =>
           if (!pendingDelete) {
             return
           }
-          const next = draft.filter((c) => c.id !== pendingDelete.id)
+          const next = draft.filter((c) => c !== pendingDelete)
           setPendingDelete(null)
           persist(next)
         }}

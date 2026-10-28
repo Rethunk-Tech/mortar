@@ -306,16 +306,17 @@ export function OtherProfilesDialog({
     if (touched.current) {
       return
     }
-    const unavailable = new Set(
-      rows
+    const unavailable = new Set([
+      ...rows
         .filter((row) => {
           const profile = profiles.find((p) => p.id === row.profileId)
           const pinned =
             update && profile?.entries?.some((entry) => entry.key === row.key && entry.pinned)
-          return pinned || (profile && lockedIn(launch, profile.id))
+          return mode === 'add' || pinned
         })
         .map((row) => row.profileId),
-    )
+      ...profiles.filter((profile) => lockedIn(launch, profile.id)).map((profile) => profile.id),
+    ])
     keep(
       setSelected,
       mode === 'remove'

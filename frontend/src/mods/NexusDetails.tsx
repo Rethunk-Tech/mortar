@@ -308,7 +308,7 @@ export function NexusDetails({
       />
     )
   }
-  if (!entry) {
+  if (!entry || (signedIn && !entry.error)) {
     return <LoadingRow>{t`Reading the ${{ source: sourceLabel('nexus') }} page…`}</LoadingRow>
   }
   return (

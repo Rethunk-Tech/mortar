@@ -25,13 +25,16 @@ export function ModNoteTags({ profile, mod }: { profile: Profile; mod: Mod }) {
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
   const latest = useRef({ note: savedNote, tags: savedTags })
   const savedTagsKey = savedTags.join('\0')
+  // What the entry holds now, set once the effect below has run, so a leaving mod's cleanup still compares against its own.
+  const saved = useRef({ note: savedNote, tagsKey: savedTagsKey })
   // Keyed on the joined tags: an entry without tags gives a new empty array every render.
   useEffect(() => {
-    const saved = savedTagsKey === '' ? [] : savedTagsKey.split('\0')
+    const tagsNow = savedTagsKey === '' ? [] : savedTagsKey.split('\0')
+    saved.current = { note: savedNote, tagsKey: savedTagsKey }
     globalThis.clearTimeout(timer.current)
     setNote(savedNote)
-    setTags((cur) => (cur.join('\0') === savedTagsKey ? cur : saved))
-    latest.current = { note: savedNote, tags: saved }
+    setTags((cur) => (cur.join('\0') === savedTagsKey ? cur : tagsNow))
+    latest.current = { note: savedNote, tags: tagsNow }
   }, [savedNote, savedTagsKey])
   const suggestions = profileTags(profile.entries)
   const save = useCallback(
@@ -49,11 +52,14 @@ export function ModNoteTags({ profile, mod }: { profile: Profile; mod: Mod }) {
   useEffect(
     () => () => {
       globalThis.clearTimeout(timer.current)
-      if (latest.current.note !== savedNote || latest.current.tags.join('\0') !== savedTagsKey) {
+      if (
+        latest.current.note !== saved.current.note ||
+        latest.current.tags.join('\0') !== saved.current.tagsKey
+      ) {
         save(latest.current.note, latest.current.tags)
       }
     },
-    [savedNote, savedTagsKey, save],
+    [save],
   )
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
