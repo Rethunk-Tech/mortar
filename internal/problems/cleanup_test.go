@@ -141,3 +141,26 @@ func TestADropInReplacementMeetsTheDependency(t *testing.T) {
 		}
 	}
 }
+
+// What a framework finds unused is not offered either when the mod is one the player develops.
+func TestCleanupHintsKeepsDevelopedModsFrameworksFound(t *testing.T) {
+	built := framework.Mod{Key: "built", Enabled: true, SourceFolder: "/projects/Tiles/bin/debug"}
+	built.Name, built.UniqueID = "Tiles", "Me.Tiles"
+	other := framework.Mod{Key: "other", Enabled: true}
+	other.Name, other.UniqueID = "Other", "Someone.Other"
+	found := []framework.Cleanup{{Key: "built", ID: built.ModID(), Name: "Tiles"}, {Key: "other", ID: other.ModID(), Name: "Other"}}
+	got := cleanupHints([]framework.Mod{built, other}, found, nil, nil)
+	if len(got) != 1 || got[0].Key != "other" {
+		t.Fatalf("cleanup = %+v", got)
+	}
+}
+
+func TestAThunderstoreDependencyIsFetchedFromItsPackagePage(t *testing.T) {
+	r := thunderstoreRef("lethal-company", mod.ID("thunderstore:femboytv-LethalPosters:1.2"))
+	if r == nil || r.Package != "femboytv-LethalPosters" || r.URL != "https://thunderstore.io/c/lethal-company/p/femboytv/LethalPosters/" {
+		t.Fatalf("ref = %+v", r)
+	}
+	if thunderstoreRef("", mod.ID("thunderstore:a-b")) != nil || thunderstoreRef("lethal-company", mod.ID("smapi:Pathoschild.ContentPatcher")) != nil {
+		t.Fatal("a ref with no community or for another format")
+	}
+}

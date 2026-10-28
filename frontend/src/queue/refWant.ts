@@ -1,10 +1,13 @@
 import type { Ref } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import type { Want } from './actions.ts'
 
-// The Want for a problem Ref, or null when the Ref names nothing downloadable (no GitHub repo, no Nexus page).
+// The Want for a problem Ref, or null when the Ref names nothing downloadable (no GitHub repo, Nexus page or package).
 export function refWant(where: Ref, kind: 'dependency' | 'install', name?: string): Want | null {
   if (where.site === 'GitHub' && where.github !== '') {
     return { kind, repo: where.github, name: where.github }
+  }
+  if (where.site === 'thunderstore' && where.package) {
+    return { kind, source: 'thunderstore', package: where.package, name: name ?? where.pageName }
   }
   if (where.site === 'vsmoddb' && where.package) {
     return { kind, source: 'vsmoddb', package: where.package, name: name ?? where.pageName }

@@ -49,6 +49,8 @@ type Environment struct {
 	DropIns map[string]string
 	// DevPackages are the Thunderstore packages the player develops for the game, never offered for cleanup.
 	DevPackages []string
+	// Thunderstore is the game's Thunderstore community, where a missing package dependency is fetched from.
+	Thunderstore string
 }
 
 // SiteVSModDB is a Ref to a mod on the Vintage Story Mod DB.
@@ -294,7 +296,7 @@ func Check(ctx context.Context, m Meta, env Environment, mods []framework.Mod, r
 		Drift:          []profile.Drift{},
 		Timings:        append(a.timings, reqTiming),
 	}
-	r.Unknown = fillWhere(ctx, m, env.Nexus.Domain, enabled, missing)
+	r.Unknown = fillWhere(ctx, m, env, enabled, missing)
 	r.Unknown = r.Unknown || listedUnknown
 	r.Missing = missing
 	otherStart := time.Now()
@@ -844,7 +846,8 @@ func needsNewerGame(have string, enabled []framework.Mod) []Broken {
 }
 
 // fillWhere finds where each absent or outdated dependency can be had. It reports whether any lookup failed.
-func fillWhere(ctx context.Context, m Meta, domain string, enabled []framework.Mod, missing []Missing) (unknown bool) {
+func fillWhere(ctx context.Context, m Meta, env Environment, enabled []framework.Mod, missing []Missing) (unknown bool) {
+	domain := env.Nexus.Domain
 	type found struct {
 		ref *Ref
 		ok  bool
@@ -870,9 +873,28 @@ func fillWhere(ctx context.Context, m Meta, domain string, enabled []framework.M
 			cache[k] = f
 		}
 		x.Where = f.ref
+		if x.Where == nil {
+			x.Where = thunderstoreRef(env.Thunderstore, x.ID)
+		}
 		unknown = unknown || !f.ok
 	}
 	return unknown
+}
+
+// thunderstoreRef is the Thunderstore page of a package dependency ("thunderstore:Namespace-Name"), which the metadata
+// sources do not cover; nil for any other id or a game with no community.
+func thunderstoreRef(community string, id mod.ID) *Ref {
+	pkg, _, _ := strings.Cut(id.Local(), ":")
+	namespace, name, ok := strings.Cut(pkg, "-")
+	if community == "" || id.Format() != "thunderstore" || !ok || namespace == "" || name == "" {
+		return nil
+	}
+	return &Ref{
+		Site:     "thunderstore",
+		Package:  pkg,
+		PageName: strings.ReplaceAll(name, "_", " "),
+		URL:      "https://thunderstore.io/c/" + community + "/p/" + namespace + "/" + name + "/",
+	}
 }
 
 func siteURL(domain string, r meta.Ref) string {

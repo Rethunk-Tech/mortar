@@ -153,6 +153,7 @@ func platform() string {
 func (s *Service) Environment(id string) Environment {
 	env := Environment{Platform: platform(), VersionScheme: game.VersionScheme(id)}
 	env.Nexus, _ = game.NexusTitle(id)
+	env.Thunderstore = thunderstoreKey(id)
 	if s.DevPackages != nil {
 		env.DevPackages = s.DevPackages(id)
 	}
