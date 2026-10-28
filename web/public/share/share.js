@@ -6,6 +6,7 @@ const VERSION = 3
 // PARTS is the payload array's length with its optional game version.
 const PARTS = 6
 const PART = /^\w+$/
+const GAME_ID = /^[a-z0-9-]+$/
 const REPO = /^[\w.-]+\/[\w.-]+$/
 const GAME_VERSION = /^\d{1,9}(\.\d{1,9}){0,3}$/
 const PACKAGE_VERSION = /^\d+\.\d+\.\d+$/
@@ -125,7 +126,7 @@ export async function decodeShare(hash, wasm) {
     (gameVersion !== '' && !GAME_VERSION.test(gameVersion)) ||
     typeof name !== 'string' ||
     typeof game !== 'string' ||
-    !game ||
+    !GAME_ID.test(game) ||
     !sourceKeys ||
     typeof sourceKeys !== 'object' ||
     Array.isArray(sourceKeys) ||
