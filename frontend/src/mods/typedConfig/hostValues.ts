@@ -14,13 +14,13 @@ export function useHostValues(asks: boolean): Map<string, HostValue> {
   const file = useTypedConfig((s) => s.current)
   const [values, setValues] = useState<Map<string, HostValue>>(() => new Map())
   useEffect(() => {
-    setValues(new Map())
+    setValues((v) => (v.size === 0 ? v : new Map()))
     if (!(asks && target && file)) {
       return
     }
     let live = true
-    // The poll mostly finds what it found last time; only a change redraws the editor.
-    let last = ''
+    // The poll mostly finds what it found last time, nothing while the game is closed; only a change redraws the editor.
+    let last = '[]'
     const ask = () => {
       configApi
         .hostValues(target, file)
