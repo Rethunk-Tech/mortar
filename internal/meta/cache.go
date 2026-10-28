@@ -120,7 +120,7 @@ func cached[T any](c *Client, name string, ttl time.Duration, build string, fetc
 		return fetch()
 	}
 	old, ok := readEntry[T](path)
-	if ok && c.now().Sub(old.Fetched) < ttl && old.Build == build {
+	if ok && c.young(old.Fetched, ttl) && old.Build == build {
 		return old.Value, nil
 	}
 	v, err := fetch()
@@ -144,6 +144,17 @@ func Peek[T any](c *Client, name string) (T, bool) {
 	}
 	e, ok := readEntry[T](path)
 	return e.Value, ok
+}
+
+// PeekFetched is Peek that also returns when the entry was fetched.
+func PeekFetched[T any](c *Client, name string) (T, time.Time, bool) {
+	path, err := c.cachePath(name)
+	if err != nil {
+		var zero T
+		return zero, time.Time{}, false
+	}
+	e, ok := readEntry[T](path)
+	return e.Value, e.Fetched, ok
 }
 
 // do sends req and returns at most limit bytes of a 200 response body.
@@ -183,7 +194,13 @@ func Fresh[T any](c *Client, name string, ttl time.Duration) bool {
 		return false
 	}
 	e, ok := readEntry[T](path)
-	return ok && c.now().Sub(e.Fetched) < ttl
+	return ok && c.young(e.Fetched, ttl)
+}
+
+// young reports whether an entry fetched at t is younger than ttl; one stamped in the future (a clock set back) is not.
+func (c *Client) young(t time.Time, ttl time.Duration) bool {
+	age := c.now().Sub(t)
+	return age >= 0 && age < ttl
 }
 
 // Put stores value at name as if it had just been fetched.

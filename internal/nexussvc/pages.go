@@ -80,12 +80,15 @@ func (s *Service) Prime(ctx context.Context, gameID string, modIDs []int) (map[i
 	return out, fetchErr
 }
 
-// PeekDetails reads the page data Mortar keeps for a mod without fetching: its full details, else the batched page.
+// PeekDetails reads the page data Mortar keeps for a mod without fetching: the full details or the batched page,
+// whichever was fetched last.
 func PeekDetails(c *meta.Client, domain string, id int) (Details, bool) {
-	if d, ok := meta.Peek[Details](c, DetailsName(domain, id)); ok {
-		return d, true
+	full, fullAt, fullOK := meta.PeekFetched[Details](c, DetailsName(domain, id))
+	page, pageAt, pageOK := meta.PeekFetched[Details](c, PageName(domain, id))
+	if fullOK && (!pageOK || !pageAt.After(fullAt)) {
+		return full, true
 	}
-	return meta.Peek[Details](c, PageName(domain, id))
+	return page, pageOK
 }
 
 func (s *Service) fetchPages(ctx context.Context, domain string, ids []int) error {

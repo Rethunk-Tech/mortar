@@ -5,6 +5,7 @@ package nexussvc
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"sync/atomic"
 
@@ -246,7 +247,7 @@ func (s *Service) profileModIDs(gameID string) (map[int]bool, error) {
 	used := map[int]bool{}
 	for _, p := range profiles {
 		if p.Error != "" {
-			continue
+			return nil, fmt.Errorf("profile %q could not be read, so its mods may be in use: %s", p.ID, p.Error)
 		}
 		for _, entry := range p.Entries {
 			if entry.Source.ModID > 0 {
