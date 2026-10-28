@@ -2,6 +2,7 @@ package problems
 
 import (
 	"context"
+	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
@@ -50,7 +51,10 @@ func curatedReplacement(pkg, tsKey string) *Ref {
 	if pkg == "" {
 		return nil
 	}
-	ref := &Ref{Site: "Thunderstore", PageName: pkg}
+	ref := &Ref{Site: "thunderstore", Package: pkg, PageName: pkg}
+	if _, name, ok := strings.Cut(pkg, "-"); ok && name != "" {
+		ref.PageName = strings.ReplaceAll(name, "_", " ")
+	}
 	if e, ok := source.Get("thunderstore"); ok && tsKey != "" {
 		if d, ok := e.Source.(interface {
 			ModPageURL(gameKey, id string) string

@@ -25,7 +25,7 @@ func TestCuratedBrokenNamesPackagesAndModsThroughTheirListedVersion(t *testing.T
 	for _, b := range got {
 		keys[b.Key] = b
 	}
-	if len(got) != 2 || keys["a"].Replacement == nil || keys["a"].Replacement.PageName != "Ns-NewLib" {
+	if len(got) != 2 || keys["a"].Replacement == nil || keys["a"].Replacement.PageName != "NewLib" || keys["a"].Replacement.Package != "Ns-NewLib" || keys["a"].Replacement.Site != "thunderstore" {
 		t.Fatalf("rows = %+v", got)
 	}
 	if _, fixed := keys["b"]; fixed {
