@@ -8,6 +8,7 @@ import (
 	"crypto/sha256"
 	_ "embed" // bundled wallpaper
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -62,14 +63,12 @@ func open(path string) (*os.File, string, error) {
 	if typ == "" {
 		return nil, "", fmt.Errorf("%q is not a PNG, JPEG, GIF, WebP or JPEG XL image", path)
 	}
-	// A picked file may be a symlink to another folder; os.Open follows it where the parent-rooted fsx.Open refuses.
-	f, err := os.Open(path)
+	f, err := fsx.OpenRegular(path)
+	if errors.Is(err, fsx.ErrNotRegular) {
+		err = fmt.Errorf("%q is not a regular file", path)
+	}
 	if err != nil {
 		return nil, "", err
-	}
-	if info, err := f.Stat(); err != nil || !info.Mode().IsRegular() {
-		_ = f.Close()
-		return nil, "", fmt.Errorf("%q is not a regular file", path)
 	}
 	return f, typ, nil
 }
