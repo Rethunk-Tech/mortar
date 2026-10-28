@@ -7,7 +7,7 @@ import { useProfileScope } from './useProfileScope.ts'
  * profile's scope its own value and a save to it, else the game's. own is the profile's value, when it has one. */
 export function useScopedKey(key: string, game: string, gameValue: string) {
   const profileScope = useProfileScope()
-  const own = useProfiles((s) => (profileScope ? openProfileOf(s)?.overrides?.[key] : undefined))
+  const own = useOpenOverride(key, profileScope)
   return {
     profileScope,
     own,
@@ -17,4 +17,9 @@ export function useScopedKey(key: string, game: string, gameValue: string) {
       profileScope ? setOpenOverride(game, key, value) : SetByKey(key, value, game),
     reset: () => setOpenOverride(game, key, undefined),
   }
+}
+
+/** The open profile's own value for key, read only while on. */
+export function useOpenOverride(key: string, on: boolean) {
+  return useProfiles((s) => (on ? openProfileOf(s)?.overrides?.[key] : undefined))
 }

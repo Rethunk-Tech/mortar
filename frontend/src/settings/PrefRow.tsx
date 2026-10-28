@@ -4,7 +4,6 @@ import type { ReactNode } from 'react'
 import type { PrefSpec } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { setOpenOverride } from '../profiles/openOverrides.ts'
-import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { space } from '../theme/density.ts'
 import {
@@ -21,6 +20,7 @@ import { prefCopy } from './prefCopy.ts'
 import { specByKey, usePrefSpecs } from './prefSpecs.ts'
 import { prefAsBool, prefAsNumber, prefAsString, prefRaw, specGameArg } from './prefValue.ts'
 import { SettingRow } from './SettingsSection.tsx'
+import { useOpenOverride } from './scopedKey.ts'
 import { useSettings } from './store.ts'
 import { useProfileScope } from './useProfileScope.ts'
 
@@ -92,9 +92,7 @@ function prefControlNode(o: {
 function useScopedPref(spec: PrefSpec, game: string | undefined) {
   const gameRaw = useSettings((s) => prefRaw(s, spec, game))
   const profileScope = useProfileScope() && spec.scope === 'game'
-  const own = useProfiles((s) =>
-    profileScope ? openProfileOf(s)?.overrides?.[spec.key] : undefined,
-  )
+  const own = useOpenOverride(spec.key, profileScope)
   const ownValue = profileScope && spec.profileOverridable === true
   const gameArg = specGameArg(spec, game)
   return {
