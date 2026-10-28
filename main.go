@@ -1474,12 +1474,16 @@ func run() error {
 			}
 			// Menus are GTK objects: rebuilding one off the main thread, or twice at once from a burst of
 			// events, leaves items without their native handle and panics.
-			app.Event.On(launchsvc.StateEvent, func(*application.CustomEvent) {
+			rebuild := func() {
 				trayRebuild.Lock()
 				defer trayRebuild.Unlock()
 				v := readTray()
 				gate.run(func() { buildTray(v) })
-			})
+			}
+			app.Event.On(launchsvc.StateEvent, func(*application.CustomEvent) { rebuild() })
+			// The Play submenus name each game's profiles. The store calls this under its lock, and reading the
+			// profiles takes it again, so the rebuild runs apart.
+			profiles.ListChanged = func(string) { go rebuild() }
 		}
 		refreshTrayMenu()
 	}

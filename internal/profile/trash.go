@@ -91,6 +91,7 @@ func (s *Store) Delete(gameID, id string) error {
 			log.Printf("profile %s/%s: remove its shortcuts: %v", gameID, id, err)
 		}
 	}
+	s.listChanged(gameID)
 	return nil
 }
 
@@ -161,7 +162,11 @@ func (s *Store) Restore(gameID, id string) (Profile, error) {
 	if err := fsx.Rename(src, dst); err != nil {
 		return Profile{}, err
 	}
-	return s.replaceTrayLocked(gameID, id)
+	p, err := s.replaceTrayLocked(gameID, id)
+	if err == nil {
+		s.listChanged(gameID)
+	}
+	return p, err
 }
 
 // Purge permanently removes one trashed profile.

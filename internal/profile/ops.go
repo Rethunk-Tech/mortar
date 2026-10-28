@@ -830,6 +830,7 @@ func (s *Store) Duplicate(game, id string) (Profile, error) {
 	if err := s.applyOrder(game, all, ids); err != nil {
 		return Profile{}, err
 	}
+	s.listChanged(game)
 	return s.read(game, newID)
 }
 

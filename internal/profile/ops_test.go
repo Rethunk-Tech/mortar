@@ -868,3 +868,31 @@ func addAnyDir(t *testing.T, s *store.Store, game, key, dir string) error {
 	}
 	return s.AddDir(t.Context(), game, key, dir)
 }
+
+// Every change to which profiles exist or what they are called reaches ListChanged, which the tray's Play menus follow.
+func TestProfileListChangesAreReported(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	calls := 0
+	e.ListChanged = func(game string) {
+		if game == "stardew" {
+			calls++
+		}
+	}
+	a, _ := e.Create("stardew", "A")
+	if _, err := e.Rename("stardew", a.ID, "B"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.Duplicate("stardew", a.ID); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.Delete("stardew", a.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.Restore("stardew", a.ID); err != nil {
+		t.Fatal(err)
+	}
+	if calls != 5 {
+		t.Fatalf("ListChanged ran %d times, want 5", calls)
+	}
+}

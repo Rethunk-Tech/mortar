@@ -335,6 +335,8 @@ type Store struct {
 	Bundled func(game string) []Bundle
 	// Created is called after Create has added a profile; nil means nothing.
 	Created func(game string)
+	// ListChanged is called after a profile is added, renamed, deleted or restored; it may run under the store's lock.
+	ListChanged func(game string)
 	// TrayFolder is the game's shared folder for tray content (the catalog's tray path role), or of another shared path role; nil means the game has none.
 	TrayFolder func(game, role string) (string, error)
 	// Tidied is told about each repair rebuild makes to a profile's mods folder (a code for what was done and its
@@ -691,7 +693,16 @@ func (s *Store) Create(game, name string) (Profile, error) {
 	if err == nil && s.Created != nil {
 		s.Created(game)
 	}
+	if err == nil {
+		s.listChanged(game)
+	}
 	return p, err
+}
+
+func (s *Store) listChanged(game string) {
+	if s.ListChanged != nil {
+		s.ListChanged(game)
+	}
 }
 
 func (s *Store) createBundled(game, name string) (Profile, error) {
@@ -758,6 +769,9 @@ func (s *Store) Rename(gameID, id, name string) (Profile, error) {
 		p.Name = name
 		return nil
 	})
+	if err == nil {
+		s.listChanged(gameID)
+	}
 	if err != nil || s.ShortcutRenamed == nil {
 		return p, err
 	}
