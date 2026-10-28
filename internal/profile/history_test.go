@@ -47,9 +47,7 @@ func (e env) mustSetMeA(t *testing.T, profileID string, enabled bool) {
 
 func TestHistoryRecordsEachOperation(t *testing.T) {
 	t.Parallel()
-	e := newEnv(t)
-	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
-	e.item(t, "local-b", map[string]string{"manifest.json": manifestJSON("Me.B")})
+	e := envWithAB(t)
 	e.item(t, "local-a2", map[string]string{"manifest.json": `{"Name":"Me.A","Author":"me","Version":"2.0.0","UniqueID":"Me.A"}`})
 	p := addFarmMod(t, e)
 	if _, err := e.AddEntry("stardew", p.ID, "local-b", Source{Kind: KindLocal, Name: "b.zip"}); err != nil {
@@ -114,9 +112,7 @@ func kinds(events []HistoryEvent) []string {
 
 func TestHistoryRevertRestoresEntries(t *testing.T) {
 	t.Parallel()
-	e := newEnv(t)
-	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
-	e.item(t, "local-b", map[string]string{"manifest.json": manifestJSON("Me.B")})
+	e := envWithAB(t)
 	p := addFarmMod(t, e)
 	afterAdd := e.mustHistory(t, p.ID)
 	snap, err := e.Snapshot("stardew", p.ID, afterAdd[0].SnapshotID)
@@ -380,9 +376,7 @@ func TestModDiffCounts(t *testing.T) {
 
 func TestHistoryIncludesModDiffCounts(t *testing.T) {
 	t.Parallel()
-	e := newEnv(t)
-	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
-	e.item(t, "local-b", map[string]string{"manifest.json": manifestJSON("Me.B")})
+	e := envWithAB(t)
 	p := addFarmMod(t, e)
 	if _, err := e.AddEntry("stardew", p.ID, "local-b", Source{Kind: KindLocal, Name: "b.zip"}); err != nil {
 		t.Fatal(err)

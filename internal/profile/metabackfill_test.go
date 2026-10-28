@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 // A package installed before its manifest.json and icon.png were placed gains them on the next sync, from the store's
@@ -14,11 +13,7 @@ import (
 func TestSyncPlacesMetaFilesAnEarlierInstallLeftOut(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)
-	p, err := e.Create("lethal-company", "LC")
-	if err != nil {
-		t.Fatal(err)
-	}
-	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "CatLib-1.0.0.zip"), map[string]string{
+	p, zip := e.lcZip(t, "CatLib-1.0.0.zip", map[string]string{
 		"manifest.json": `{"name":"CatLib","version_number":"1.0.0","author":"Cat"}`,
 		"icon.png":      "PNG",
 		"CatLib.dll":    "MZ",

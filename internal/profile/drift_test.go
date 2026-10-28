@@ -399,11 +399,7 @@ func TestStoreListingKeptAcrossStarts(t *testing.T) {
 func TestRefreshDependenciesReadsAPackagesThunderstoreManifest(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)
-	p, err := e.Create("lethal-company", "LC")
-	if err != nil {
-		t.Fatal(err)
-	}
-	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "p.zip"), map[string]string{
+	p, zip := e.lcZip(t, "p.zip", map[string]string{
 		"manifest.json": `{"name":"Mod","version_number":"1.0.0","dependencies":["BepInEx-BepInExPack-5.4.2100","Ns-Lib-2.0.1"]}`, "Mod.dll": "x",
 	})
 	res, err := e.InstallSource(t.Context(), "lethal-company", p.ID, zip, Source{Kind: KindThunderstore, Name: "Ns-Mod", Version: "1.0.0"})

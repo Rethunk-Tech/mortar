@@ -7,10 +7,7 @@ import (
 
 func TestFolderGameBackupCarriesTheStoreItemOfAPerFileEntry(t *testing.T) {
 	t.Parallel()
-	e := newEnv(t)
-	p, _ := e.Create(folderGame, "S")
-	zip := zipOf(t, "a.zip", map[string]string{"one.package": "1", "two.package": "2"})
-	res, err := e.InstallSource(t.Context(), folderGame, p.ID, zip, cfSource(10))
+	e, res, err := installedFolderPackage(t, map[string]string{"one.package": "1", "two.package": "2"})
 	if err != nil || len(res.Profile.Entries) != 2 {
 		t.Fatalf("%v %v", keysOf(res.Profile), err)
 	}

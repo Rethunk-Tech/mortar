@@ -351,11 +351,7 @@ func TestAnAssetPackZippedInItsOwnFolderInstallsAsItsPackage(t *testing.T) {
 func TestALocalPackageShowsItsOwnIcon(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)
-	p, err := e.Create("lethal-company", "LC")
-	if err != nil {
-		t.Fatal(err)
-	}
-	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "SomeLocalMod.zip"), map[string]string{
+	p, zip := e.lcZip(t, "SomeLocalMod.zip", map[string]string{
 		"manifest.json":    `{"name":"SomeLocalMod","version_number":"0.0.1","dependencies":[]}`,
 		"icon.png":         "\x89PNG\r\n\x1a\n",
 		"SomeLocalMod.dll": "MZ",
@@ -377,11 +373,7 @@ func TestALocalPackageShowsItsOwnIcon(t *testing.T) {
 func TestSeedConfigsCopiesAPackagesConfigOnceUntilTheProfileChanges(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)
-	p, err := e.Create("lethal-company", "LC")
-	if err != nil {
-		t.Fatal(err)
-	}
-	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "Ns-Foo-1.0.0.zip"), map[string]string{
+	p, zip := e.lcZip(t, "Ns-Foo-1.0.0.zip", map[string]string{
 		"manifest.json":  `{"name":"Foo","version_number":"1.0.0","dependencies":[]}`,
 		"Foo.dll":        "MZ",
 		"config/Foo.cfg": "x = 1\n",

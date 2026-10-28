@@ -4,18 +4,12 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-
-	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func TestBepInExArchiveWithoutAManifestInstallsAsAPlugin(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)
-	p, err := e.Create("lethal-company", "LC")
-	if err != nil {
-		t.Fatal(err)
-	}
-	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "lbtokg.dll-17-1-0-0-1700625972.zip"), map[string]string{"lbtokg.dll": "MZ"})
+	p, zip := e.lcZip(t, "lbtokg.dll-17-1-0-0-1700625972.zip", map[string]string{"lbtokg.dll": "MZ"})
 	res, err := e.InstallArchive(t.Context(), "lethal-company", p.ID, zip)
 	if err != nil || len(res.Profile.Entries) != 1 {
 		t.Fatalf("install = %+v, %v", res, err)

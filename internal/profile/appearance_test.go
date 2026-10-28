@@ -1,7 +1,6 @@
 package profile
 
 import (
-	"encoding/json"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -51,23 +50,10 @@ func TestLoadSanitizesAppearance(t *testing.T) {
 	s := newStore(t)
 	p := mustCreate(t, s, "Farm")
 	path := filepath.Join(s.root, "stardew", p.ID, fileName)
-	raw, err := fsx.ReadFile(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	var doc map[string]any
-	if err := json.Unmarshal(raw, &doc); err != nil {
-		t.Fatal(err)
-	}
-	doc["color"] = "neon"
-	doc["icon"] = "dragon"
-	out, err := json.Marshal(doc)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := fsx.WriteFile(path, out, 0o600); err != nil {
-		t.Fatal(err)
-	}
+	editProfileJSON(t, path, func(doc map[string]any) {
+		doc["color"] = "neon"
+		doc["icon"] = "dragon"
+	})
 	got, err := s.List("stardew")
 	if err != nil || len(got) != 1 {
 		t.Fatalf("list = %+v, %v", got, err)
@@ -83,23 +69,10 @@ func TestLoadFoldsDescriptionIntoNotes(t *testing.T) {
 		s := newStore(t)
 		p := mustCreate(t, s, "Farm")
 		path := filepath.Join(s.root, "stardew", p.ID, fileName)
-		raw, err := fsx.ReadFile(path)
-		if err != nil {
-			t.Fatal(err)
-		}
-		var doc map[string]any
-		if err := json.Unmarshal(raw, &doc); err != nil {
-			t.Fatal(err)
-		}
-		doc["notes"] = notes
-		doc["description"] = "co-op Fridays"
-		out, err := json.Marshal(doc)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if err := fsx.WriteFile(path, out, 0o600); err != nil {
-			t.Fatal(err)
-		}
+		editProfileJSON(t, path, func(doc map[string]any) {
+			doc["notes"] = notes
+			doc["description"] = "co-op Fridays"
+		})
 		got, err := s.Get("stardew", p.ID)
 		if err != nil || got.Notes != want {
 			t.Fatalf("notes %q: got %q, %v", notes, got.Notes, err)
@@ -107,7 +80,7 @@ func TestLoadFoldsDescriptionIntoNotes(t *testing.T) {
 		if _, err := s.SetAppearance("stardew", p.ID, "teal", ""); err != nil {
 			t.Fatal(err)
 		}
-		raw, err = fsx.ReadFile(path)
+		raw, err := fsx.ReadFile(path)
 		if err != nil {
 			t.Fatal(err)
 		}

@@ -3,18 +3,12 @@ package profile
 import (
 	"slices"
 	"testing"
-
-	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 func TestDotHiddenModsListsOnlyDotsMortarDidNotAdd(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)
-	st, err := settings.OpenIn(e.dataDir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	svc := NewService(e.Store, t.TempDir(), st)
+	svc, st := e.withSettings(t)
 	e.item(t, "pack", map[string]string{
 		"On/manifest.json":          manifestJSON("me.on"),
 		"Off/manifest.json":         manifestJSON("me.off"),
@@ -59,11 +53,7 @@ func TestDotHiddenModsListsOnlyDotsMortarDidNotAdd(t *testing.T) {
 func TestUnhideModRenamesDottedFoldersAndRegistersTheMod(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)
-	st, err := settings.OpenIn(e.dataDir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	svc := NewService(e.Store, t.TempDir(), st)
+	svc, _ := e.withSettings(t)
 	e.item(t, "pack", map[string]string{
 		"On/manifest.json":          manifestJSON("me.on"),
 		".Group/Deep/manifest.json": manifestJSON("me.deep"),

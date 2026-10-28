@@ -7,9 +7,7 @@ import (
 
 func TestRevertToBaselineRestoresEntriesAndEnabledStates(t *testing.T) {
 	t.Parallel()
-	e := newEnv(t)
-	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
-	e.item(t, "local-b", map[string]string{"manifest.json": manifestJSON("Me.B")})
+	e := envWithAB(t)
 	p := addFarmMod(t, e)
 	before, err := e.read("stardew", p.ID)
 	if err != nil {

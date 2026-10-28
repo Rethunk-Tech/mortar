@@ -229,10 +229,7 @@ func TestFolderGameRollBackRestoresTheSupersededArchiveAndItsSwitches(t *testing
 
 func TestFolderGameBackupRoundTripKeepsPerFileEntriesWithTheirItem(t *testing.T) {
 	t.Parallel()
-	e := newEnv(t)
-	p, _ := e.Create(folderGame, "S")
-	zip := zipOf(t, "a.zip", map[string]string{"one.package": "1", "two.package": "2"})
-	res, err := e.InstallSource(t.Context(), folderGame, p.ID, zip, cfSource(10))
+	e, res, err := installedFolderPackage(t, map[string]string{"one.package": "1", "two.package": "2"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -287,10 +284,7 @@ func TestFolderGameAnotherArchiveLayingOutTheSamePathIsCountedAsAnOverride(t *te
 
 func TestFolderGameLoadOrderListsAnArchiveOnce(t *testing.T) {
 	t.Parallel()
-	e := newEnv(t)
-	p, _ := e.Create(folderGame, "S")
-	zip := zipOf(t, "a.zip", map[string]string{"one.package": "1", "two.package": "2"})
-	res, err := e.InstallSource(t.Context(), folderGame, p.ID, zip, cfSource(10))
+	e, res, err := installedFolderPackage(t, map[string]string{"one.package": "1", "two.package": "2"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -497,10 +491,7 @@ func TestFolderGameFailedUpdateLeavesTheOldTrayFilesAndEntries(t *testing.T) {
 
 func TestFolderGameReadersResolveAPerFileEntryToItsStoreItem(t *testing.T) {
 	t.Parallel()
-	e := newEnv(t)
-	p, _ := e.Create(folderGame, "S")
-	zip := zipOf(t, "a.zip", map[string]string{"config.json": `{"a": 1}`, "x.package": "1"})
-	res, err := e.InstallSource(t.Context(), folderGame, p.ID, zip, cfSource(10))
+	e, res, err := installedFolderPackage(t, map[string]string{"config.json": `{"a": 1}`, "x.package": "1"})
 	if err != nil || len(res.Profile.Entries) != 2 {
 		t.Fatalf("%v %v", keysOf(res.Profile), err)
 	}
@@ -510,7 +501,7 @@ func TestFolderGameReadersResolveAPerFileEntryToItsStoreItem(t *testing.T) {
 	}
 	for _, en := range res.Profile.Entries {
 		id := en.Mods[0].ID
-		if dir, err := e.packageDir(folderGame, p.ID, en.Key, id); err != nil || dir != item {
+		if dir, err := e.packageDir(folderGame, res.Profile.ID, en.Key, id); err != nil || dir != item {
 			t.Fatalf("packageDir(%s) = %q, %v; want %q", en.Key, dir, err, item)
 		}
 		if en.File == "config.json" {
@@ -519,7 +510,7 @@ func TestFolderGameReadersResolveAPerFileEntryToItsStoreItem(t *testing.T) {
 			}
 		}
 	}
-	listed, err := e.Installed(folderGame, p.ID)
+	listed, err := e.Installed(folderGame, res.Profile.ID)
 	if err != nil || len(listed) != 2 {
 		t.Fatalf("installed = %+v, %v", listed, err)
 	}

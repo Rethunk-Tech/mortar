@@ -179,9 +179,7 @@ func TestToggleNestedAndRoot(t *testing.T) {
 
 func TestSetModsEnabledAndRemoveEntriesOneWrite(t *testing.T) {
 	t.Parallel()
-	e := newEnv(t)
-	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
-	e.item(t, "local-b", map[string]string{"manifest.json": manifestJSON("Me.B")})
+	e := envWithAB(t)
 	p, _ := e.Create("stardew", "P")
 	for _, k := range []string{"local-a", "local-b"} {
 		if _, err := e.AddEntry("stardew", p.ID, k, Source{}); err != nil {
@@ -792,9 +790,7 @@ func TestSwitchingAModOffRecordsWhenAndSwitchingItOnClearsIt(t *testing.T) {
 
 func TestFreezePinsEveryModAndUnfreezeKeepsThePlayersOwnPins(t *testing.T) {
 	t.Parallel()
-	e := newEnv(t)
-	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
-	e.item(t, "local-b", map[string]string{"manifest.json": manifestJSON("Me.B")})
+	e := envWithAB(t)
 	p, _ := e.Create("stardew", "P")
 	for _, k := range []string{"local-a", "local-b"} {
 		if _, err := e.AddEntry("stardew", p.ID, k, Source{}); err != nil {
@@ -822,9 +818,7 @@ func TestFreezePinsEveryModAndUnfreezeKeepsThePlayersOwnPins(t *testing.T) {
 
 func TestAModInstalledAfterAFreezeIsHeldAndUnfreezeLiftsIt(t *testing.T) {
 	t.Parallel()
-	e := newEnv(t)
-	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
-	e.item(t, "local-b", map[string]string{"manifest.json": manifestJSON("Me.B")})
+	e := envWithAB(t)
 	p, _ := e.Create("stardew", "P")
 	if _, err := e.AddEntry("stardew", p.ID, "local-a", Source{}); err != nil {
 		t.Fatal(err)

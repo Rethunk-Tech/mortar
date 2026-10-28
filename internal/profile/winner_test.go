@@ -287,18 +287,7 @@ func TestEntryLoadAfterMovesToThePacksThatListTheLoser(t *testing.T) {
 	t.Parallel()
 	e, p := capeWon(t)
 	path := filepath.Join(filepath.Dir(e.mods(p.ID)), fileName)
-	var doc map[string]json.RawMessage
-	if err := json.Unmarshal([]byte(read(t, path)), &doc); err != nil {
-		t.Fatal(err)
-	}
-	doc["entries"] = legacyEntries(t, p.Entries)
-	raw, err := json.Marshal(doc)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(path, raw, 0o600); err != nil {
-		t.Fatal(err)
-	}
+	editProfileJSON(t, path, func(doc map[string]any) { doc["entries"] = json.RawMessage(legacyEntries(t, p.Entries)) })
 	got, err := e.load("stardew", p.ID)
 	if err != nil {
 		t.Fatal(err)

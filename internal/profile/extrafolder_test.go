@@ -10,11 +10,7 @@ import (
 func TestExtraFolderListsAndInstallsOnlyItsOwnFolders(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)
-	st, err := settings.OpenIn(e.dataDir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	svc := NewService(e.Store, t.TempDir(), st)
+	svc, st := e.withSettings(t)
 	p := mustCreate(t, e, "P")
 	if got, err := svc.ExtraFolderMods(t.Context(), "stardew"); err != nil || len(got.Mods) != 0 {
 		t.Fatalf("unset folder = %+v, %v", got, err)
@@ -56,11 +52,7 @@ func TestExtraFolderListsAndInstallsOnlyItsOwnFolders(t *testing.T) {
 func TestExtraFolderTakesABuildOutputFolderWithItsManifest(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)
-	st, err := settings.OpenIn(e.dataDir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	svc := NewService(e.Store, t.TempDir(), st)
+	svc, st := e.withSettings(t)
 	p := mustCreate(t, e, "P")
 	build := t.TempDir()
 	writeFile(t, build, "manifest.json", manifestJSON("me.build"))
@@ -97,11 +89,7 @@ func setPrefOf(t *testing.T, st *settings.Store, game, key, value string) {
 func TestExtraFolderTakesAPackageGamesModsAndABuildOutputFolder(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)
-	st, err := settings.OpenIn(e.dataDir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	svc := NewService(e.Store, t.TempDir(), st)
+	svc, st := e.withSettings(t)
 	p, err := e.Create("lethal-company", "LC")
 	if err != nil {
 		t.Fatal(err)
