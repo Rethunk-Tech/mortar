@@ -6,7 +6,8 @@ import { entryOf, type Problem } from '../lookup.ts'
 import { DismissAdvice } from './DismissAdvice.tsx'
 import type { WarningButton } from './warningButton.tsx'
 
-// Queues the replacement package the deprecated one points to, with its install reason, when it names one.
+// Queues the replacement package the deprecated one points to, with its install reason, when it names one; the
+// deprecated package is removed once the replacement installs.
 export function DeprecatedFix({
   problem,
   dismissedToken,
@@ -24,7 +25,9 @@ export function DeprecatedFix({
       {replacement === '' || dismissedToken !== undefined
         ? null
         : button(t`Replace with ${{ name: replacement }}`, () => {
-            download([{ kind: 'install', package: replacement, implicit }]).catch(reportUnexpected)
+            download([
+              { kind: 'install', package: replacement, implicit, replaces: problem.deprecated.key },
+            ]).catch(reportUnexpected)
           })}
       <DismissAdvice id={problem.deprecated.id} dismissedToken={dismissedToken} />
     </>

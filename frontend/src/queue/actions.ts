@@ -32,6 +32,7 @@ export type Want = Pick<Request, 'kind'> &
       | 'tag'
       | 'asset'
       | 'implicit'
+      | 'replaces'
       | 'latest'
       | 'exact'
       | 'batchId'
