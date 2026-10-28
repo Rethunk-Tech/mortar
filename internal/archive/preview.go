@@ -177,10 +177,7 @@ func (v *previewer) zip(r io.ReaderAt, size int64) error {
 }
 
 func (v *previewer) sevenZip(r io.ReaderAt, size int64) error {
-	if err := checkSevenZipLimits(r, size); err != nil {
-		return wrap("", err)
-	}
-	zr, err := OpenSevenZip(r, size)
+	zr, err := openCheckedSevenZip(r, size)
 	if err != nil {
 		return wrap("", err)
 	}

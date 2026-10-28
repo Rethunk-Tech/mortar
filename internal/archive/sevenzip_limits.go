@@ -5,6 +5,8 @@ import (
 	"encoding/binary"
 	"errors"
 	"io"
+
+	"github.com/bodgit/sevenzip"
 )
 
 var (
@@ -489,4 +491,12 @@ func parseSevenZipCRCs(c *sevenZipCursor, n uint64) error {
 		}
 	}
 	return nil
+}
+
+// openCheckedSevenZip opens a 7z archive once its headers pass the extraction limits.
+func openCheckedSevenZip(r io.ReaderAt, size int64) (*sevenzip.Reader, error) {
+	if err := checkSevenZipLimits(r, size); err != nil {
+		return nil, err
+	}
+	return OpenSevenZip(r, size)
 }
