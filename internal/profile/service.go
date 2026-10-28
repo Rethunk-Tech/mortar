@@ -136,6 +136,8 @@ func (s *Service) ImportGameMods(ctx context.Context, gameID string, move bool) 
 func (s *Service) List(game string) ([]Profile, error) { return s.store.List(game) }
 
 // Get returns one profile; see Store.Get.
+//
+//wails:ignore
 func (s *Service) Get(game, id string) (Profile, error) { return s.store.Get(game, id) }
 
 // ProfileCounts is how many profiles each game has.
