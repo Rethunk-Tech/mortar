@@ -205,19 +205,13 @@ type folderMod struct {
 }
 
 func folderMods(modsPath string) ([]folderMod, error) {
-	entries, err := os.ReadDir(modsPath)
-	if errors.Is(err, os.ErrNotExist) {
-		return nil, nil
-	}
+	names, err := modDirs(modsPath)
 	if err != nil {
 		return nil, err
 	}
 	var out []folderMod
-	for _, entry := range entries {
-		if !entry.IsDir() {
-			continue
-		}
-		path := filepath.Join(modsPath, entry.Name())
+	for _, name := range names {
+		path := filepath.Join(modsPath, name)
 		mods, err := smapimanifest.Scan(path)
 		if err != nil {
 			return nil, err
@@ -238,29 +232,38 @@ func stagedMods(gameID, modsPath string) ([]folderMod, error) {
 	if isSMAPIGame(gameID) {
 		return folderMods(modsPath)
 	}
-	entries, err := os.ReadDir(modsPath)
-	if errors.Is(err, os.ErrNotExist) {
-		return nil, nil
-	}
+	names, err := modDirs(modsPath)
 	if err != nil {
 		return nil, err
 	}
 	var out []folderMod
-	for _, entry := range entries {
-		if !entry.IsDir() {
-			continue
-		}
-		path := filepath.Join(modsPath, entry.Name())
+	for _, name := range names {
+		path := filepath.Join(modsPath, name)
 		info := modname.Of(gameID, path)
-		id := cmp.Or(info.ID, mod.NewID(mod.FormatFolder, entry.Name()))
+		id := cmp.Or(info.ID, mod.NewID(mod.FormatFolder, name))
 		if smapimanifest.LoaderManaged(id) {
 			continue
 		}
-		m := smapimanifest.Manifest{Name: cmp.Or(info.Name, entry.Name()), Version: info.Version, UniqueID: id.Local(), Format: id.Format()}
+		m := smapimanifest.Manifest{Name: cmp.Or(info.Name, name), Version: info.Version, UniqueID: id.Local(), Format: id.Format()}
 		item := smapimanifest.Mod{Manifest: m, Folder: "."}
 		out = append(out, folderMod{Mod: item, Path: path})
 	}
 	return out, nil
+}
+
+// modDirs names the folders directly under modsPath; a missing modsPath has none.
+func modDirs(modsPath string) ([]string, error) {
+	entries, err := os.ReadDir(modsPath)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil, nil
+	}
+	var names []string
+	for _, entry := range entries {
+		if entry.IsDir() {
+			names = append(names, entry.Name())
+		}
+	}
+	return names, err
 }
 
 func nexusID(updateKeys []string) int {
