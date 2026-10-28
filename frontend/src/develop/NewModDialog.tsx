@@ -491,7 +491,9 @@ export function NewModDialog({
           kinds={kinds}
           kind={draft.kind}
           choose={(kind) => {
-            set({ kind, dependencies: null })
+            if (kind !== draft.kind) {
+              set({ kind, dependencies: null })
+            }
             setAt(at + 1)
           }}
         />

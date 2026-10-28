@@ -23,7 +23,11 @@ export type Known = Record<string, Item>
 export const useKnownPackages = create<Known>(() => ({}))
 export const knowPackage = (item: Item) => useKnownPackages.setState({ [item.id]: item })
 
-async function findPackage(game: string, profile: string, pkg: string): Promise<Item | undefined> {
+export async function findPackage(
+  game: string,
+  profile: string,
+  pkg: string,
+): Promise<Item | undefined> {
   const name = pkg.slice(pkg.indexOf('-') + 1).replaceAll('_', ' ')
   const page = await Search(game, THUNDERSTORE, name, 1, profile, NO_FILTER)
   return (page.items ?? []).find((i) => i.id === pkg)

@@ -8,7 +8,25 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import { readStored } from '../shell/useStoredState.ts'
 import { reportError } from '../toasts/report.ts'
+import { useProjectInfo } from './builds.ts'
+import { findPackage } from './dependencies.ts'
 import { type Draft, firstDraft, isRemembered, REMEMBERED } from './draft.ts'
+
+// A kind whose loader is neither on Thunderstore nor one of the player's projects makes a pack nothing loads.
+async function offered(game: string, kinds: AssetKind[]): Promise<AssetKind[]> {
+  const own = new Set(Object.values(useProjectInfo.getState().byDir).map((info) => info.package))
+  const found = await Promise.all(
+    kinds.map((k) =>
+      own.has(k.dependency)
+        ? true
+        : findPackage(game, '', k.dependency).then(
+            (item) => item !== undefined,
+            () => false,
+          ),
+    ),
+  )
+  return kinds.filter((_, i) => found[i])
+}
 
 /** The game's asset kinds, and the form for the one the draft picked (null for a code mod or while it loads). Picking a
  * kind fills its questions as the template's are filled: remembered answers first, what was typed kept. */
@@ -24,7 +42,8 @@ export function useAssetKinds(
   useEffect(() => {
     if (open) {
       AssetKinds(game)
-        .then((found) => setKinds(found ?? []))
+        .then((found) => offered(game, found ?? []))
+        .then(setKinds)
         .catch(() => setKinds([]))
     }
   }, [open, game])

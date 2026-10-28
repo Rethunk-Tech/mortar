@@ -11,7 +11,7 @@ export function TrustDialog() {
   const ask = useTrustAsk((s) => s.ask)
   const close = () => useTrustAsk.setState({ ask: null })
   const projects = useSettings((s) => (ask ? s.games?.[ask.game]?.devProjects : undefined))
-  const asset = (projects ?? []).some((p) => p.dir === ask?.dir && p.kind)
+  const asset = !ask?.pack && (projects ?? []).some((p) => p.dir === ask?.dir && p.kind)
   return (
     <ConfirmationDialog
       open={ask !== null}
