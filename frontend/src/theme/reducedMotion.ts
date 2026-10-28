@@ -2,7 +2,7 @@ import { useMediaQuery } from '@mui/material'
 import { useSettings } from '../settings/store.ts'
 
 // The Reduce motion setting: always, never, or the system's choice.
-export function honourReducedMotion(mode: string, os: boolean) {
+function honourReducedMotion(mode: string, os: boolean) {
   if (mode === 'always') {
     return true
   }
