@@ -97,3 +97,37 @@ func TestFileNameStaysOneSegment(t *testing.T) {
 		t.Fatalf("hostile URL path became %q", got)
 	}
 }
+
+func TestHTTPSOnlyRedirects(t *testing.T) {
+	t.Parallel()
+	req := func(raw string) *http.Request {
+		u, err := url.Parse(raw)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return &http.Request{URL: u}
+	}
+	via := func(n int) []*http.Request {
+		out := make([]*http.Request, n)
+		for i := range out {
+			out[i] = req("https://example.com/")
+		}
+		return out
+	}
+	for _, tc := range []struct {
+		name    string
+		to      string
+		via     []*http.Request
+		refused bool
+	}{
+		{"https to http", "http://example.com/x", via(1), true},
+		{"https to https", "https://cdn.example.com/x", via(1), false},
+		{"https to file", "file:///etc/passwd", via(1), true},
+		{"nine hops", "https://example.com/x", via(maxRedirects - 1), false},
+		{"ten hops", "https://example.com/x", via(maxRedirects), true},
+	} {
+		if err := httpsOnly(req(tc.to), tc.via); (err != nil) != tc.refused {
+			t.Errorf("%s: err = %v, refused want %v", tc.name, err, tc.refused)
+		}
+	}
+}
