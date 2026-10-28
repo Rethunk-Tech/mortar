@@ -340,6 +340,15 @@ func readBackup(path, tmp string) (backupJSON, map[string][]byte, error) {
 	if err := json.Unmarshal(doc, &b); err != nil {
 		return backupJSON{}, nil, usererr.Wrap(usererr.Damaged, fmt.Errorf("%s: %w", backupDoc, err))
 	}
+	// A 0.3.8 to 0.3.13 backup keeps the profile's short description, which the profile type no longer has.
+	var old struct {
+		Profile struct {
+			Description string `json:"description"`
+		} `json:"profile"`
+	}
+	if json.Unmarshal(doc, &old) == nil {
+		b.Profile.Notes = profile.FoldDescription(old.Profile.Description, b.Profile.Notes)
+	}
 	if b.Version != backupVersion {
 		kind := usererr.Invalid
 		if b.Version > backupVersion {

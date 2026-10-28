@@ -469,9 +469,9 @@ func parseFileDoc(raw []byte) (Preview, error) {
 	if utf8.RuneCountInString(d.Notes) > profile.MaxNotes {
 		return Preview{}, fmt.Errorf("%w: notes are too long", ErrBadFile)
 	}
-	pv.Notes = profile.FoldDescription(d.Description, pv.Notes)
-	if utf8.RuneCountInString(pv.Notes) > profile.MaxNotes {
-		pv.Notes = string([]rune(pv.Notes)[:profile.MaxNotes])
+	// The description joins the notes only where they all fit: the player's own notes are never cut for it.
+	if folded := profile.FoldDescription(d.Description, pv.Notes); utf8.RuneCountInString(folded) <= profile.MaxNotes {
+		pv.Notes = folded
 	}
 	if len(d.IDs) > MaxConfigFiles {
 		return Preview{}, fmt.Errorf("%w: too many mods", ErrBadFile)

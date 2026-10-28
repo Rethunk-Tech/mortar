@@ -506,7 +506,7 @@ func TestReadFoldsDescriptionIntoNotes(t *testing.T) {
 		}
 	}
 	pv, err := Read(zipOf(t, doc(strings.Repeat("x", profile.MaxNotes))))
-	if err != nil || utf8.RuneCountInString(pv.Notes) != profile.MaxNotes {
+	if err != nil || pv.Notes != strings.Repeat("x", profile.MaxNotes) {
 		t.Errorf("full notes: %d runes, %v", utf8.RuneCountInString(pv.Notes), err)
 	}
 }

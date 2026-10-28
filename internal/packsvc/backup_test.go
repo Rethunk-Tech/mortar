@@ -1,6 +1,7 @@
 package packsvc
 
 import (
+	"archive/zip"
 	"context"
 	"os"
 	"path/filepath"
@@ -193,5 +194,24 @@ func TestBackupOfAFolderGameProfileCarriesTheSplitArchiveOnceAndReplacesTray(t *
 	}
 	if b, err := fsx.ReadFile(filepath.Join(freshTray, "Smith.trayitem")); err != nil || string(b) != "t" {
 		t.Fatalf("tray file: %q, %v", b, err)
+	}
+}
+
+func TestReadBackupFoldsAnOldDescriptionIntoNotes(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "old.zip")
+	f, err := os.Create(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	zw := zip.NewWriter(f)
+	w, _ := zw.Create(backupDoc)
+	_, _ = w.Write([]byte(`{"version":1,"game":"stardew","profile":{"name":"Farm","notes":"mine","description":"co-op Fridays"}}`))
+	if err := zw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	_ = f.Close()
+	doc, _, err := readBackup(path, t.TempDir())
+	if err != nil || doc.Profile.Notes != "co-op Fridays\n\nmine" {
+		t.Fatalf("notes %q, %v", doc.Profile.Notes, err)
 	}
 }
