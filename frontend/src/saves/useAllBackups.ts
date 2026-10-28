@@ -1,3 +1,4 @@
+import { Events } from '@wailsio/runtime'
 import { useEffect, useRef } from 'react'
 import type { Backup } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/backup/models.ts'
 import { ListBackups } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts'
@@ -22,5 +23,7 @@ export function useAllBackups(game: string, stamp: string) {
       reload()
     }
   }, [game, stamp, reload])
+  // A scheduled pass or `mortar backups create` makes backups without changing the saves.
+  useEffect(() => Events.On('saves:scheduled', reload), [reload])
   return { all, reload }
 }

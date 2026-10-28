@@ -19,7 +19,7 @@ import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { gameArt, HERO_ASPECT } from './art.ts'
 import { listedGames } from './hidden.ts'
-import { useGameInfo, useGames } from './info.ts'
+import { reloadGames, useGameInfo, useGames } from './info.ts'
 import { gameOrder } from './order.ts'
 import { formatPlaytime } from './playtime.ts'
 import { useOpenGame } from './useOpenGame.ts'
@@ -149,10 +149,12 @@ export const GameMenu = memo(function GameMenuView() {
   const profiles = useSettings((s) => s.lastProfile)
   const hidden = useSettings((s) => s.hiddenGames)
   const { anchor, close, trigger } = useTitleMenu('game')
-  // Read each time the menu opens: the folders are counted, no profile is read.
+  // Read each time the menu opens: the folders are counted, no profile is read. A game installed or given a folder
+  // since the list was read moves into the found section.
   const open = anchor !== null
   useEffect(() => {
     if (open) {
+      reloadGames()
       profileCounts()
         .then((got) => useCounts.setState(got ?? {}, true))
         .catch(reportUnexpected)

@@ -23,6 +23,13 @@ export function LaunchMenu({ game, profile }: { game: string; profile: Profile }
       load(game).catch(reportUnexpected)
     }
   }, [game, load])
+  // Read again as the menu opens, so a tool added from the command line is listed.
+  const open = anchor !== null
+  useEffect(() => {
+    if (game && open) {
+      load(game).catch(reportUnexpected)
+    }
+  }, [game, load, open])
   const close = useCallback(() => setAnchor(null), [])
   // Built once per tool list and profile: opening and closing the menu re-renders this view, and the same items and
   // closed dialog let React skip them.
