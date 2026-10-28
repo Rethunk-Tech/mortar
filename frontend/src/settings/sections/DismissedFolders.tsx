@@ -4,6 +4,7 @@ import { UndismissGameModsFolders } from '../../../bindings/github.com/Rethunk-T
 import { useCurrentGame } from '../../nav/currentGame.ts'
 import { reportError } from '../../toasts/report.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
+import { SharedOnProfile } from '../SharedOnProfile.tsx'
 import { useSettings } from '../store.ts'
 
 const NONE: string[] = []
@@ -18,24 +19,26 @@ export function DismissedFolders() {
   }
   return (
     <SettingsSection title={t`Dismissed folders`}>
-      {folders.map((folder) => (
-        <SettingRow
-          key={folder}
-          label={folder}
-          description={t`Not offered for moving into a profile.`}
-        >
-          <Button
-            variant="outlined"
-            onClick={() =>
-              UndismissGameModsFolders(game, [folder]).catch(
-                reportError(t`Could not offer the folder again`),
-              )
-            }
+      <SharedOnProfile>
+        {folders.map((folder) => (
+          <SettingRow
+            key={folder}
+            label={folder}
+            description={t`Not offered for moving into a profile.`}
           >
-            {t`Offer again`}
-          </Button>
-        </SettingRow>
-      ))}
+            <Button
+              variant="outlined"
+              onClick={() =>
+                UndismissGameModsFolders(game, [folder]).catch(
+                  reportError(t`Could not offer the folder again`),
+                )
+              }
+            >
+              {t`Offer again`}
+            </Button>
+          </SettingRow>
+        ))}
+      </SharedOnProfile>
     </SettingsSection>
   )
 }

@@ -50,10 +50,7 @@ function HistoryRow({
     )
   const events = plural({ count: usage.events }, { one: '# change', other: '# changes' })
   return (
-    <SettingRow
-      label={t`Profile history: ${{ profile: usage.profileName }}`}
-      description={`${formatBytes(sizeOf(usage))} · ${events}`}
-    >
+    <SettingRow label={usage.profileName} description={`${formatBytes(sizeOf(usage))} · ${events}`}>
       <DisabledReason title={t`Nothing to trim yet.`} disabled={usage.events <= 1}>
         <Button variant="outlined" disabled={usage.events <= 1} onClick={() => setOpen(true)}>
           {t`Trim…`}

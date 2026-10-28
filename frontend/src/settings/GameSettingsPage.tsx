@@ -217,12 +217,12 @@ function GamePages({
                 <HiddenMods />
               </SharedOnProfile>
             </SettingsSection>
-            <SharedOnProfile>
-              <DismissedFolders />
-              <SettingsSection title={t`${name} profile history`}>
+            <DismissedFolders />
+            <SettingsSection title={t`${name} profile history`}>
+              <SharedOnProfile>
                 <HistoryUsageRows />
-              </SettingsSection>
-            </SharedOnProfile>
+              </SharedOnProfile>
+            </SettingsSection>
           </>
         )
       case 'backups':

@@ -11,12 +11,21 @@ export function SharedOnProfile({ children }: { children: ReactNode }) {
   if (!profile) {
     return children
   }
+  // Contents, so each wrapped setting stays its own tile inside a section rather than one tile holding them all.
   return (
-    <Box>
-      <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary', mb: 1 }}>
+    <Box className="settings-contents" sx={{ display: 'contents' }}>
+      <Typography
+        className="settings-caption"
+        sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}
+      >
         {t`Every profile of this game shares these. Switch to all profiles to change them.`}
       </Typography>
-      <Box inert={true} sx={{ opacity: 0.6 }}>
+      {/* The tile keeps its surface; only what is on it fades. */}
+      <Box
+        className="settings-contents"
+        inert={true}
+        sx={{ display: 'contents', '& > * > *': { opacity: 0.6 } }}
+      >
         {children}
       </Box>
     </Box>

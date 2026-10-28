@@ -204,5 +204,22 @@ export function gameSettingsCases(h: Helpers): Case[] {
       },
       run: (p) => p.getByRole('button', { name: /^All .* profiles$/ }).click(),
     },
+    {
+      // Mods holds the settings every profile shares, greyed under one line on the profile's scope.
+      name: 'game-settings-mods',
+      setup: async (p) => {
+        await toWorkspace(p)
+        await tab(p, 'Home')
+        await p
+          .getByRole('button', { name: / settings$/ })
+          .last()
+          .click()
+        await p.getByRole('button', { name: /^This profile: / }).waitFor()
+      },
+      run: async (p) => {
+        await p.getByRole('button', { name: 'Mods', exact: true }).click()
+        await p.getByText('Preferred source').scrollIntoViewIfNeeded()
+      },
+    },
   ]
 }

@@ -66,15 +66,17 @@ export function SettingsSection({
             containerType: 'inline-size',
             // Every setting is its own tile; a section is the heading above a stack of tiles.
             // Light mode uses opaque paper: a dark tint over the wallpaper reads as grey.
-            // Paper on a light wallpaper needs an edge to read as a tile.
-            '& > *': (theme) =>
-              theme.palette.mode === 'light'
-                ? {
-                    bgcolor: theme.palette.background.paper,
-                    border: '1px solid var(--mortar-hairline-muted)',
-                    borderRadius: '6px',
-                  }
-                : { bgcolor: 'var(--mortar-overlay-45)', borderRadius: '6px' },
+            // Paper on a light wallpaper needs an edge to read as a tile. A settings-contents wrapper (SharedOnProfile)
+            // is looked through, so what it wraps still tiles one by one.
+            '& > :not(.settings-contents), & .settings-contents > :not(.settings-contents, .settings-caption)':
+              (theme) =>
+                theme.palette.mode === 'light'
+                  ? {
+                      bgcolor: theme.palette.background.paper,
+                      border: '1px solid var(--mortar-hairline-muted)',
+                      borderRadius: '6px',
+                    }
+                  : { bgcolor: 'var(--mortar-overlay-45)', borderRadius: '6px' },
           }}
         >
           {children}
