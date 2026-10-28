@@ -321,7 +321,7 @@ export function StatusBar({
           </Pill>
         ))}
         {summary.leftOut > 0 ? (
-          <Pill {...SHARE_CARD.leftOut}>{t`${{ leftOut: summary.leftOut }} left out`}</Pill>
+          <Pill {...SHARE_CARD.leftOut}>{t`${{ count: summary.leftOut }} left out`}</Pill>
         ) : null}
       </Box>
     </Box>

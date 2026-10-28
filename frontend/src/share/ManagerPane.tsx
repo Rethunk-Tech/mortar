@@ -224,5 +224,5 @@ export function useManagerPane({
       ) : null}
     </DialogFooter>
   )
-  return { active, body, footer }
+  return { active, body, footer, busy }
 }

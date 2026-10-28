@@ -43,6 +43,8 @@ export function useShareBuild() {
   const [info, setInfo] = useState<ShownInfo | null>(null)
   const [include, setInclude] = useState(() => shareIncludeDefaults(useSettings.getState()))
   const pickTab = useRef<boolean>(true)
+  // The .mortar file save: the dialog's footer starts it and the File view shows where it went.
+  const [saved, setSaved] = useState<Saved | null>(null)
   useEffect(() => {
     if (!profileId) {
       return
@@ -54,6 +56,7 @@ export function useShareBuild() {
     setFormat('link')
     setLastUsed(null)
     setInfo(null)
+    setSaved(null)
     pickTab.current = true
   }, [profileId])
   useEffect(() => {
@@ -98,8 +101,6 @@ export function useShareBuild() {
       stale = true
     }
   }, [profileId, keys, game, close, include, t, thunderstore])
-  // The .mortar file save: the dialog's footer starts it and the File view shows where it went.
-  const [saved, setSaved] = useState<Saved | null>(null)
   const [saving, runSave] = usePending()
   const saveFile = () =>
     runSave(

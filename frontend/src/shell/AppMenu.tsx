@@ -210,7 +210,7 @@ const AppMenuItems = memo(function AppMenuItemsView() {
       />
       <TitleMenuItem
         icon={<Settings size={ICON_PX} />}
-        label={t`Mortar settings…`}
+        label={t`Mortar settings`}
         hint={settingsKeys}
         onClick={() => {
           close()

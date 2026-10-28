@@ -175,6 +175,17 @@ function dialogFooter(
   )
 }
 
+// A share sent from a nearby Mortar, a collection update or a handed-over profile has no earlier step to go back to.
+function canGoBack(
+  request: ImportRequest,
+  flow: { preview: unknown; tab: TabId; external: unknown },
+) {
+  if (flow.preview === null) {
+    return flow.tab !== 'choose' && !flow.external
+  }
+  return !(request.tab === 'data' || request.collectionUpdate || request.external)
+}
+
 function Body({ request }: { request: ImportRequest }) {
   const { t } = useLingui()
   const close = useImportDialog((s) => s.close)
@@ -195,6 +206,8 @@ function Body({ request }: { request: ImportRequest }) {
   })
 
   const { preview } = flow
+  // Closing mid-import would fail the profile in flight, which has no preview left.
+  const working = flow.busy || managers.busy
   const hasMods = preview !== null && preview.mods.length > 0
   const steps: Record<TabId, string> = {
     choose: '',
@@ -214,14 +227,14 @@ function Body({ request }: { request: ImportRequest }) {
       setTab('choose')
     }
   }
-  const canBack = preview !== null || (flow.tab !== 'choose' && !flow.external)
+  const canBack = canGoBack(request, flow)
   const footer = dialogFooter(managers, flow, targetName ?? '', signedIn)
   return (
     <AppDialog
       closeButton={true}
       open={true}
-      onClose={flow.busy ? () => undefined : flow.dismiss}
-      onBack={canBack && !flow.busy ? back : undefined}
+      onClose={working ? () => undefined : flow.dismiss}
+      onBack={canBack && !working ? back : undefined}
       title={manager ? t`Import from ${manager}` : t`Import a profile`}
       subtitle={step}
       // A link or file to choose needs a narrow dialog; the preview's tiles need the room.

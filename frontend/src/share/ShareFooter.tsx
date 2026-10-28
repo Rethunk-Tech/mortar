@@ -59,7 +59,7 @@ export function MortarFooter({
         <Button
           variant="contained"
           startIcon={<Save size={16} />}
-          disabled={saving || empty}
+          disabled={saving || (empty && info.leftOut.length === 0)}
           onClick={saveFile}
         >
           {t`Save…`}

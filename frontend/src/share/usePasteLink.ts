@@ -26,7 +26,7 @@ export function usePasteLink(profileId: string) {
       if (locked) {
         useToasts.getState().push({
           kind: 'warning',
-          title: t`Stop the game to change mods.`,
+          title: t`Stop the game to change mods`,
         })
         return
       }
@@ -61,7 +61,7 @@ export function usePasteLink(profileId: string) {
       }
       e.preventDefault()
       if (locked) {
-        useToasts.getState().push({ kind: 'warning', title: t`Stop the game to change mods.` })
+        useToasts.getState().push({ kind: 'warning', title: t`Stop the game to change mods` })
         return
       }
       openImport({ profileId, link: text })

@@ -15,7 +15,7 @@ import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { openPage } from '../mods/menu.ts'
 import { openPageLabel } from '../mods/modActions.ts'
 import { copyText } from '../share/copyText.ts'
-import { reportUnexpected } from '../toasts/report.ts'
+import { usePending } from '../toasts/usePending.ts'
 import { type Destination, GO, getDestination, REPORT_KEY, setDestination } from './destination.ts'
 import { Field, FormDialog, TextInput } from './dialog/FormDialog.tsx'
 import { openWeb } from './openWeb.ts'
@@ -42,28 +42,25 @@ export function BugReportDialog() {
     value: form[key],
     onChange: (value: string) => setForm({ ...form, [key]: value }),
   })
-  const submit = () => {
-    // The zip is saved first so the destination opens after the user has a file to attach to it.
-    const attach = diagnostics ? saveDiagnostics(game ?? '', '', true) : Promise.resolve(false)
-    const report = { ...form, diagnostics }
-    if (discord) {
-      attach
-        .then(() => BugText(game ?? '', report))
-        .then(
-          (text) =>
-            copyText(text, t`Report copied`, () => {
-              openPage(`${GO}bug-reports/`)
-              close()
-            }),
-          reportUnexpected,
-        )
-      return
-    }
-    attach
-      .then(() => BugURL(game ?? '', report))
-      .then((url) => openWeb(url))
-      .then(close, reportUnexpected)
-  }
+  const [busy, run] = usePending()
+  const submit = () =>
+    run(async () => {
+      // The zip is saved first so the destination opens after the user has a file to attach to it.
+      if (diagnostics) {
+        await saveDiagnostics(game ?? '', '', true)
+      }
+      const report = { ...form, diagnostics }
+      if (discord) {
+        const text = await BugText(game ?? '', report)
+        copyText(text, t`Report copied`, () => {
+          openPage(`${GO}bug-reports/`)
+          close()
+        })
+        return
+      }
+      await openWeb(await BugURL(game ?? '', report))
+      close()
+    })
   return (
     <FormDialog
       open={game !== null}
@@ -76,6 +73,7 @@ export function BugReportDialog() {
       }
       issue={form.happened.trim() === '' ? t`Say what happened.` : ''}
       dirty={Object.values(form).some((v) => v.trim() !== '')}
+      busy={busy}
       onSubmit={submit}
     >
       <Field label={t`Post on`}>

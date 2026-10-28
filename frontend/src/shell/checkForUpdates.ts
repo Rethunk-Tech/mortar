@@ -61,7 +61,7 @@ export async function checkForUpdates() {
     )
   }
   if (mortar.status === 'fulfilled' && phase !== 'error') {
-    parts.push(mortarNews ? i18n._(msg`a new Mortar is ready`) : i18n._(msg`Mortar is up to date`))
+    parts.push(mortarNews ? i18n._(msg`A new Mortar is ready`) : i18n._(msg`Mortar is up to date`))
   }
   const fail = failReason(mods, mortar)
   toasts.dismiss(checking)

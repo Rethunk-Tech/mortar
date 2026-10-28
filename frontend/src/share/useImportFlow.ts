@@ -34,24 +34,42 @@ import { trackImport } from './importCompletion.ts'
 import { importErrorMessage } from './importError.ts'
 import { type ShownPreview, shownPreview } from './logic.ts'
 import { promptSaveImported } from './savePrompt.ts'
-import { type ImportOptions, importAfterSignIn, useImportDialog } from './store.ts'
+import {
+  type ImportOptions,
+  type ImportRequest,
+  importAfterSignIn,
+  useImportDialog,
+} from './store.ts'
 
 function shouldOpenQueueAfterImport(queued: number): boolean {
   return queued > 0
 }
 
+// What reopens the same preview after the Nexus sign-in detour.
 function signInOptions(options: {
   profileId: string
   external: ProfilePreview | undefined
+  folder: string
   tab: Tab
   path: string
   text: string
+  request: ImportRequest | null
 }): ImportOptions {
-  const { profileId, external, tab, path, text } = options
+  const { profileId, external, folder, tab, path, text, request } = options
+  const lan = request?.lan ? { lan: request.lan } : {}
   if (external) {
-    return { profileId, external }
+    return { profileId, external, ...lan }
   }
-  return tab === 'file' ? { profileId, file: path } : { profileId, link: text }
+  if (folder) {
+    return { profileId, managers: true }
+  }
+  if (request?.collectionUpdate) {
+    return { profileId, collectionUpdate: true, ...lan }
+  }
+  if (request?.tab === 'data') {
+    return { profileId, data: request.seed, ...lan }
+  }
+  return tab === 'file' ? { profileId, file: path, ...lan } : { profileId, link: text, ...lan }
 }
 
 function toggleExcluded(previous: ReadonlySet<string>, key: string): ReadonlySet<string> {
@@ -251,16 +269,59 @@ function skipped(
   return [...excluded, ...deps]
 }
 
+// The preview actions the dialog's controls call; the external and local ones also remember what was previewed, for
+// the sign-in detour and Back.
+function useRememberedPreviews(
+  sources: ReturnType<typeof usePreviewSources>,
+  setters: {
+    setText: (text: string) => void
+    setExternal: (value: ProfilePreview | undefined) => void
+    setFolder: (folder: string) => void
+  },
+) {
+  const { setText, setExternal, setFolder } = setters
+  const { previewLink, previewFile } = sources
+  const { previewExternal: showExternal, previewLocalProfile: showLocal } = sources
+  const previewExternal = useCallback(
+    (value: ProfilePreview) => {
+      setExternal(value)
+      return showExternal(value)
+    },
+    [showExternal, setExternal],
+  )
+  const previewLocalProfile = useCallback(
+    (picked: string) => {
+      setFolder(picked)
+      return showLocal(picked)
+    },
+    [showLocal, setFolder],
+  )
+  const paste = async () => {
+    const clip = await ReadClipboard()
+    setText(clip)
+    await previewLink(clip)
+  }
+  const pick = async () => {
+    const file = await PickFile()
+    if (file) {
+      await previewFile(file)
+    }
+  }
+  return { previewExternal, previewLocalProfile, paste, pick }
+}
+
 // The import dialog's state: what was typed or picked, the preview it produced and the mods unticked.
 export function useImportFlow(
   game: string,
   profileId: string,
   close: () => void,
-  external: ProfilePreview | undefined,
+  seedExternal: ProfilePreview | undefined,
 ) {
   const [tab, setTab] = useState<Tab>('choose')
   const [text, setText] = useState('')
   const [path, setPath] = useState('')
+  const [external, setExternal] = useState(seedExternal)
+  const [folder, setFolder] = useState('')
   const [preview, setPreview] = useState<ShownPreview | null>(null)
   const [excluded, setExcluded] = useState<ReadonlySet<string>>(new Set())
   const [asIs, setAsIs] = useState(false)
@@ -274,25 +335,12 @@ export function useImportFlow(
       showPreview(pending, { latest, setPreviewBusy, setError, setPreview, setExcluded }),
     [],
   )
-  const {
-    previewLink,
-    previewFile,
-    previewData,
-    previewCollectionUpdate,
-    previewExternal,
-    previewLocalProfile,
-  } = usePreviewSources(game, profileId, show, setPath)
-  const paste = async () => {
-    const clip = await ReadClipboard()
-    setText(clip)
-    await previewLink(clip)
-  }
-  const pick = async () => {
-    const file = await PickFile()
-    if (file) {
-      await previewFile(file)
-    }
-  }
+  const sources = usePreviewSources(game, profileId, show, setPath)
+  const { previewExternal, previewLocalProfile, paste, pick } = useRememberedPreviews(sources, {
+    setText,
+    setExternal,
+    setFolder,
+  })
   const reset = () => {
     latest.current += 1
     setPreviewBusy(false)
@@ -303,6 +351,8 @@ export function useImportFlow(
     setError('')
     setText('')
     setPath('')
+    setExternal(undefined)
+    setFolder('')
   }
   const toggle = (key: string) => setExcluded((prev) => toggleExcluded(prev, key))
   const run = async (intoOpen: boolean, replace = false) => {
@@ -342,7 +392,17 @@ export function useImportFlow(
   }
   const signIn = () => {
     close()
-    importAfterSignIn(signInOptions({ profileId, external, tab, path, text }))
+    importAfterSignIn(
+      signInOptions({
+        profileId,
+        external,
+        folder,
+        tab,
+        path,
+        text,
+        request: useImportDialog.getState().request,
+      }),
+    )
   }
 
   return {
@@ -358,12 +418,9 @@ export function useImportFlow(
     setAsIs,
     error,
     busy: previewBusy || importBusy,
-    previewLink,
-    previewFile,
+    ...sources,
     previewExternal,
     previewLocalProfile,
-    previewData,
-    previewCollectionUpdate,
     paste,
     pick,
     reset,

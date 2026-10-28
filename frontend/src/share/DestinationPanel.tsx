@@ -85,7 +85,7 @@ export function DestinationPanel({
   if (!info) {
     return null
   }
-  if (info.count === 0) {
+  if (info.count === 0 && info.leftOut.length === 0) {
     return (
       <Typography role="status" sx={{ fontSize: 'medium.fontSize', color: 'warning.light' }}>
         {t`There are no mods to share.`}

@@ -11,7 +11,7 @@ const ICONS: Record<DialogTone, ReactNode> = {
 }
 
 /**
- * Asks before an action: the title is the question, the body says what happens, .
+ * Asks before an action: the title is the question, the body says what happens.
  * The action's button names the action ("Delete profile"), never "OK"; a dangerous one is red and Cancel takes focus.
  */
 export function ConfirmationDialog({

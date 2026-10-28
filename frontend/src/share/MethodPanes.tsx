@@ -22,8 +22,9 @@ import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { Field } from '../shell/dialog/FormDialog.tsx'
 import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
-import { reportError, reportUnexpected, toastError } from '../toasts/report.ts'
+import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { usePending } from '../toasts/usePending.ts'
 import { copyText } from './copyText.ts'
 import { Included } from './Included.tsx'
 import { type MeterLevel, meter, type ShownInfo, suggestFile } from './logic.ts'
@@ -50,14 +51,11 @@ function Meter({ info }: { info: ShownInfo }) {
   const { ratio, level } = meter(info.length, info.limit)
   const length = info.length.toLocaleString(i18n.locale)
   const limit = info.limit.toLocaleString(i18n.locale)
-  const verdict = [
-    t`${length} of ${limit} characters`,
-    {
-      ok: t`fits one ${{ app: sourceLabel('discord') }} message`,
-      warn: t`close to the ${{ app: sourceLabel('discord') }} message limit`,
-      over: t`too long for one ${{ app: sourceLabel('discord') }} message`,
-    }[level],
-  ].join(' · ')
+  const verdict = {
+    ok: t`${length} of ${limit} characters · fits one ${{ app: sourceLabel('discord') }} message`,
+    warn: t`${length} of ${limit} characters · close to the ${{ app: sourceLabel('discord') }} message limit`,
+    over: t`${length} of ${limit} characters · too long for one ${{ app: sourceLabel('discord') }} message`,
+  }[level]
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
       <Box
@@ -221,19 +219,24 @@ export function ThunderstorePane({ game, profileId }: { game: string; profileId:
   const { t } = useLingui()
   const [asking, setAsking] = useState(false)
   const [packing, setPacking] = useState(false)
-  const publish = () => {
-    setAsking(false)
-    ExportCode(game, profileId, true)
-      .then((code) =>
-        useToasts.getState().push({
-          kind: 'success',
-          title: t`Code published`,
-          body: code,
-          action: { label: t`Copy code`, run: () => copyText(code, t`Code copied`) },
-        }),
-      )
-      .catch((error: unknown) => toastError(t`Could not publish the code`, error))
-  }
+  const [publishing, runPublish] = usePending()
+  const publish = () =>
+    runPublish(
+      async () => {
+        try {
+          const code = await ExportCode(game, profileId, true)
+          useToasts.getState().push({
+            kind: 'success',
+            title: t`Code published`,
+            body: code,
+            action: { label: t`Copy code`, run: () => copyText(code, t`Code copied`) },
+          })
+        } finally {
+          setAsking(false)
+        }
+      },
+      { errorTitle: t`Could not publish the code` },
+    )
   const saveR2z = async () => {
     const path = await ExportR2zDialog(game, profileId)
     if (!path) {
@@ -290,6 +293,7 @@ export function ThunderstorePane({ game, profileId }: { game: string; profileId:
         title={t`Share as ${{ manager: R2MODMAN }} code?`}
         body={t`This uploads the profile to ${{ source: sourceLabel('thunderstore') }} and gives a public code.`}
         confirmLabel={t`Upload`}
+        busy={publishing}
         onCancel={() => setAsking(false)}
         onConfirm={publish}
       />

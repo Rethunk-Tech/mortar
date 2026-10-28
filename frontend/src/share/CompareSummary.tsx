@@ -36,7 +36,7 @@ export function CompareSummary({ preview, targetName }: { preview: Preview; targ
       }}
     >
       <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
-        {t`${plural({ count: matching.length }, { one: '# mod already matches', other: '# mods already match' })} ${{ name: targetName }}.`}
+        {t`${plural({ count: matching.length }, { one: `# mod already matches ${targetName}.`, other: `# mods already match ${targetName}.` })}`}
       </Typography>
       {rows
         .filter((r) => r.items.length > 0)
