@@ -36,3 +36,10 @@ func TestFieldsAndSetFieldReachABepInExFile(t *testing.T) {
 		t.Fatal("a content pack path is not a typed file")
 	}
 }
+
+func TestPathEscapesDotsInKeys(t *testing.T) {
+	t.Parallel()
+	if got := path("Keys", "Open.Menu"); got != `Keys.Open\.Menu` {
+		t.Fatalf("path = %q", got)
+	}
+}

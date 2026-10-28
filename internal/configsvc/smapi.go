@@ -45,10 +45,7 @@ func flattenObject(raw []byte, section string) ([]flat, error) {
 			return nil, err
 		}
 		if len(val) > 0 && val[0] == '{' {
-			sub := key
-			if section != "" {
-				sub = section + "." + key
-			}
+			sub := path(section, key)
 			inner, err := flattenObject(val, sub)
 			if err != nil {
 				return nil, err
@@ -207,7 +204,10 @@ func typeFromDefault(cur, def Entry) string {
 	return cur.Type
 }
 
+// path joins a section and key into the dotted field path profile.SetConfigValue takes; a "." or backslash inside a key is
+// escaped with a backslash so the key stays one step.
 func path(section, key string) string {
+	key = strings.NewReplacer(`\`, `\\`, ".", `\.`).Replace(key)
 	if section == "" {
 		return key
 	}

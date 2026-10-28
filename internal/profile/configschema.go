@@ -153,6 +153,25 @@ func SetJSONValue(raw []byte, field, value string) ([]byte, error) {
 	return applyConfigSet(raw, field, value, modconfig.Schema{}, "")
 }
 
+// splitField splits a dotted field path into its keys; a backslash escapes a "." or "\\" inside one.
+func splitField(field string) []string {
+	var parts []string
+	var cur strings.Builder
+	for i := 0; i < len(field); i++ {
+		switch c := field[i]; {
+		case c == '\\' && i+1 < len(field) && (field[i+1] == '.' || field[i+1] == '\\'):
+			i++
+			cur.WriteByte(field[i])
+		case c == '.':
+			parts = append(parts, cur.String())
+			cur.Reset()
+		default:
+			cur.WriteByte(c)
+		}
+	}
+	return append(parts, cur.String())
+}
+
 // applyConfigSet writes one value. shipped is the mod's own config.json, whose value kinds type a setting that is
 // null in the file.
 func applyConfigSet(raw []byte, field, value string, schema modconfig.Schema, shipped string) ([]byte, error) {
@@ -164,7 +183,7 @@ func applyConfigSet(raw []byte, field, value string, schema modconfig.Schema, sh
 	if shipped != "" {
 		defaults, _ = decodeConfigBytes([]byte(shipped))
 	}
-	parts := strings.Split(field, ".")
+	parts := splitField(field)
 	for i := range parts {
 		parts[i] = strings.TrimSpace(parts[i])
 		if parts[i] == "" {
