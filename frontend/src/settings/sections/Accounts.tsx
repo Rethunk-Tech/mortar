@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
-import { Chip } from '@mui/material'
+import { Alert, Chip } from '@mui/material'
 import { useEffect, useState } from 'react'
+import { KeysUnencrypted } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { githubLoggedIn } from '../../shell/sharedReads.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
@@ -43,9 +44,26 @@ function GitHubAccount() {
   )
 }
 
+function UnencryptedKeys() {
+  const { t } = useLingui()
+  const [plain, setPlain] = useState(false)
+  useEffect(() => {
+    KeysUnencrypted().then(setPlain).catch(reportUnexpected)
+  }, [])
+  if (!plain) {
+    return null
+  }
+  return (
+    <Alert variant="compact" severity="warning">
+      {t`Mortar can't reach a keyring, so your account keys are stored unencrypted on this computer.`}
+    </Alert>
+  )
+}
+
 export function Accounts() {
   return (
     <>
+      <UnencryptedKeys />
       <NexusMods />
       <GitHubAccount />
       <ItchAccount />

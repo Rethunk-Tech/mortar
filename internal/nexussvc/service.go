@@ -17,6 +17,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/nexussso"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/secret"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
@@ -88,6 +89,11 @@ func (s *Service) Account() Account {
 // GitHub sign-in of its own.
 func (s *Service) GitHubLoggedIn(ctx context.Context) bool {
 	return github.DefaultAuth.LoggedIn(ctx)
+}
+
+// KeysUnencrypted reports whether account keys sit in a plain file because no keyring is reachable.
+func (s *Service) KeysUnencrypted() bool {
+	return secret.Plaintext()
 }
 
 // GitHubRate is the quota GitHub last reported; Known is false until a request has been made.
