@@ -1,4 +1,5 @@
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { useTab } from '../game/tab.ts'
 import { localId } from '../mods/dependents.ts'
 import { useDetail } from '../mods/detail.ts'
 import { sameId } from '../mods/lookup.ts'
@@ -49,6 +50,7 @@ export function openModInProfile(hit: Pick<ModHit, 'profileId' | 'key' | 'id'>):
   useDetail.getState().showAfterLoad({ key: hit.key, id: hit.id })
   useProfiles.getState().open(hit.profileId)
   useNav.getState().closeProfiles()
+  useTab.getState().setTab('mods')
 }
 
 export function requestFindAllFocus() {

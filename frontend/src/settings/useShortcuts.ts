@@ -6,6 +6,7 @@ import { useSidebarCollapsed } from '../game/sidebarCollapsed.ts'
 import { useTab } from '../game/tab.ts'
 import { playOpenProfile, playVanillaOpen } from '../launch/playOpen.ts'
 import { requestFilterFocus } from '../mods/filterFocus.ts'
+import { go } from '../nav/history.ts'
 import { routeGame, useNav } from '../nav/store.ts'
 import { requestFindAllFocus } from '../profiles/findMod.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -89,17 +90,8 @@ export function runShortcut(id: ShortcutId) {
       return openImport()
     case 'export-profile':
       return openShare(profiles.openId)
-    case 'back': {
-      const nav = useNav.getState()
-      if (nav.route.name === 'settings') {
-        nav.closeSettings()
-      } else if (nav.route.name === 'profiles') {
-        nav.closeProfiles()
-      } else if (nav.route.name === 'game-settings') {
-        nav.closeGameSettings()
-      }
-      return
-    }
+    case 'back':
+      return go(-1)
     case 'help':
       return useConsole.getState().setHelping(true)
     case 'downloads': {

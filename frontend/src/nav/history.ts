@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { type TabId, useTab } from '../game/tab.ts'
+import { dialogOpen, isTypingTarget } from '../settings/shortcuts.ts'
 import { sameValue } from '../shell/sameValue.ts'
 import { type Route, useNav } from './store.ts'
 
@@ -83,18 +84,21 @@ function initNavHistory() {
   }
   document.addEventListener('mouseup', onMouse)
   document.addEventListener('auxclick', onMouse)
+  // Alt+Left is the rebindable back shortcut (settings/useShortcuts.ts), which also keeps it quiet while typing or in a dialog.
   document.addEventListener('keydown', (e) => {
     if (
+      e.key === 'ArrowRight' &&
       e.altKey &&
       !e.ctrlKey &&
       !e.metaKey &&
       !e.shiftKey &&
-      (e.key === 'ArrowLeft' || e.key === 'ArrowRight')
+      !isTypingTarget(e.target instanceof HTMLElement ? e.target : null) &&
+      !dialogOpen()
     ) {
       e.preventDefault()
-      go(e.key === 'ArrowLeft' ? -1 : 1)
+      go(1)
     }
   })
 }
 
-export { type History, initNavHistory, move, visit }
+export { go, type History, initNavHistory, move, visit }

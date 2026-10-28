@@ -170,3 +170,14 @@ test('a sticky toast stays until an update releases it, then clears after 8s', (
   jest.advanceTimersByTime(1)
   expect(useToasts.getState().toasts).toHaveLength(0)
 })
+
+test('a repeat right after the toast was dismissed shows it again and times out', () => {
+  const { push, dismiss } = useToasts.getState()
+  const id = push({ kind: 'error', title: 'again' })
+  dismiss(id)
+  push({ kind: 'error', title: 'again' })
+  expect(useToasts.getState().toasts.map((t) => t.title)).toEqual(['again'])
+  expect(useToasts.getState().history).toHaveLength(1)
+  jest.advanceTimersByTime(10_000)
+  expect(useToasts.getState().toasts).toHaveLength(0)
+})

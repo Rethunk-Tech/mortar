@@ -45,34 +45,42 @@ function gameId(): GameId | null {
   return id && isGameId(id) ? id : null
 }
 
-function openProfile(id: string): void {
+function showGame(): void {
   const game = gameId()
   if (game) {
     useNav.getState().openGame(game)
   }
-  useProfiles.getState().open(id)
   leaveShellPages()
+}
+
+function openProfile(id: string): void {
+  useProfiles.getState().open(id)
+  showGame()
 }
 
 function runAction(id: string): void {
   if (id.startsWith('tab:')) {
+    showGame()
     useTab.getState().setTab(id.slice(TAB_PREFIX_LENGTH) as TabId)
     return
   }
   if (id.startsWith('configure-mod:')) {
     const target = parseModId(id.slice('configure-mod:'.length))
     if (target) {
+      showGame()
       openConfigPage(target.id)
     }
     return
   }
   if (id.startsWith('toggle-mod:')) {
     const target = parseModId(id.slice('toggle-mod:'.length))
-    const mod = useMods
-      .getState()
-      .mods.find((candidate) => candidate.key === target?.key && candidate.id === target.id)
+    const { mods, modsFor, setEnabled } = useMods.getState()
+    const mod =
+      modsFor === useProfiles.getState().openId
+        ? mods.find((candidate) => candidate.key === target?.key && candidate.id === target.id)
+        : undefined
     if (mod) {
-      useMods.getState().setEnabled(mod, !mod.enabled).catch(reportUnexpected)
+      setEnabled(mod, !mod.enabled).catch(reportUnexpected)
     }
     return
   }
@@ -139,7 +147,7 @@ export function runPaletteItem(id: string): void {
       return
     }
     openModInProfile({ profileId: useProfiles.getState().openId, ...target })
-    leaveShellPages()
+    showGame()
     return
   }
   if (id.startsWith('settings:')) {
@@ -152,6 +160,9 @@ export function runPaletteItem(id: string): void {
   if (id.startsWith('shortcut:')) {
     const shortcut = id.slice('shortcut:'.length)
     if (SHORTCUTS.some((row) => row.id === shortcut)) {
+      if (shortcut === 'help') {
+        showGame()
+      }
       runShortcut(shortcut as ShortcutId)
     }
     return

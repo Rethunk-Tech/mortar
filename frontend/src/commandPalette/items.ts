@@ -10,6 +10,7 @@ const ACTION_OF_SHORTCUT: Partial<Record<ShortcutId, string>> = {
   'new-profile': 'action:new-profile',
   import: 'action:import',
   downloads: 'action:downloads',
+  notifications: 'action:recent-changes',
   'export-profile': 'action:share',
   'tab-browse': 'tab:browse',
   'tab-mods': 'tab:mods',
@@ -89,6 +90,8 @@ export function buildPaletteItems(input: {
   collectionReview?: boolean
   streamOverlay?: boolean
   crashCheckBlocked?: string | null
+  // Sections the open profile's loader lacks get no Switch row.
+  tabHidden?: (tab: string) => boolean
   profileOpen: boolean
 }): PaletteItem[] {
   const {
@@ -102,6 +105,7 @@ export function buildPaletteItems(input: {
     collectionReview,
     streamOverlay,
     crashCheckBlocked,
+    tabHidden,
     profileOpen,
   } = input
   const items: PaletteItem[] = []
@@ -178,12 +182,14 @@ export function buildPaletteItems(input: {
       : []),
     { id: 'action:recent-changes', kind: 'action', label: labels.recentChanges },
     { id: 'settings:about', kind: 'settings', label: labels.diagnostics },
-    ...Object.entries(labels.tabs).map(([id, label]) => ({
-      id: `tab:${id}`,
-      kind: 'action' as const,
-      label,
-      ...needsProfile(`tab:${id}`),
-    })),
+    ...Object.entries(labels.tabs)
+      .filter(([id]) => !tabHidden?.(id))
+      .map(([id, label]) => ({
+        id: `tab:${id}`,
+        kind: 'action' as const,
+        label,
+        ...needsProfile(`tab:${id}`),
+      })),
   )
   for (const row of shortcuts) {
     const action = ACTION_OF_SHORTCUT[row.id]
