@@ -181,7 +181,7 @@ export function BackupsDialog({
           <EmptyState
             compact={true}
             icon={<FolderOpen size={28} />}
-            title={t`No save backups yet.`}
+            title={t`No save backups yet`}
           >{t`Mortar backs up your saves before playing and before updates. Use Back up now on a save to make one yourself.`}</EmptyState>
         ) : null}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>

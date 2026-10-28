@@ -141,7 +141,7 @@ export function EverywhereDialog({
   return (
     <ConfirmationDialog
       open={open}
-      title={t`Update in all profiles (${{ count: n }})`}
+      title={t`Update in all profiles?`}
       confirmLabel={t`Update`}
       busy={pending}
       confirmDisabled={n === 0}

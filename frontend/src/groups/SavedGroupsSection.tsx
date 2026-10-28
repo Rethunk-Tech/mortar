@@ -41,7 +41,7 @@ function holderNamesOf(profiles: Profile[], group: SavedGroup) {
 function NoSavedGroups() {
   const { t } = useLingui()
   return (
-    <EmptyState compact={true} icon={<PackagePlus size={28} />} title={t`No saved groups yet.`}>
+    <EmptyState compact={true} icon={<PackagePlus size={28} />} title={t`No saved groups yet`}>
       {t`Save a group from the Mods tab to reuse it in other profiles.`}
     </EmptyState>
   )

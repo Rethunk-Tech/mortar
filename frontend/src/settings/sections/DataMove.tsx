@@ -66,7 +66,7 @@ export function MoveDialog({
   return (
     <ConfirmationDialog
       open={move !== null}
-      title={t`Move data folder`}
+      title={t`Move the data folder?`}
       confirmLabel={t`Move`}
       busy={moving}
       confirmDisabled={move === null || short}

@@ -135,7 +135,7 @@ function ApplySavedGroupDialog({
           <EmptyState
             compact={true}
             icon={<PackagePlus size={28} />}
-            title={t`No saved groups yet.`}
+            title={t`No saved groups yet`}
           >
             {t`Open a group's menu on the Mods tab and choose Save to library.`}
           </EmptyState>

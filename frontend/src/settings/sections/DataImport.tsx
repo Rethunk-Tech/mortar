@@ -68,7 +68,7 @@ export function ImportSettingsDialog({
   return (
     <ConfirmationDialog
       open={preview !== null}
-      title={t`Import settings`}
+      title={t`Import settings?`}
       confirmLabel={plural(count, { one: 'Import # change', other: 'Import # changes' })}
       confirmDisabled={count === 0}
       onCancel={onClose}

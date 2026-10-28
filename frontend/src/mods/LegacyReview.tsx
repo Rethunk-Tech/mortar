@@ -31,7 +31,7 @@ export function LegacyReview({
   return (
     <ConfirmationDialog
       open={true}
-      title={t`Libraries and supporting mods`}
+      title={t`Mark libraries and supporting mods as implicit?`}
       confirmLabel={plural(
         { count: chosen.length },
         { one: 'Mark # implicit', other: 'Mark # implicit' },

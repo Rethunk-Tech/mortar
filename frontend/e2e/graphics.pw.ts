@@ -97,7 +97,7 @@ test('Play asks for a graphics API, saves the answer and launches with its argum
   await expect(dialog.getByRole('button', { name: 'Vulkan' })).toBeVisible()
   await expect(dialog.getByRole('button', { name: /^The BepInEx pack for PEAK/ })).toBeVisible()
   await expect(dialog.getByText('https://')).toHaveCount(0)
-  await dialog.getByRole('button', { name: 'DirectX 12 (Recommended)' }).click()
+  await dialog.getByRole('button', { name: 'DirectX 12 (recommended)' }).click()
   await expect.poll(graphicsSetting).toBe('dx12')
   await expect
     .poll(

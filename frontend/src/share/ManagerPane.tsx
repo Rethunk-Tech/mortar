@@ -158,7 +158,7 @@ export function useManagerPane({
         />
       ) : null}
       {folders !== null && all.length === 0 ? (
-        <EmptyState compact={true} icon={<Inbox size={28} />} title={t`No profiles found.`}>
+        <EmptyState compact={true} icon={<Inbox size={28} />} title={t`No profiles found`}>
           {t`Mortar found no other mod manager's profiles for this game on this computer.`}
         </EmptyState>
       ) : (

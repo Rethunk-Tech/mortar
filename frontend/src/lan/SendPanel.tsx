@@ -308,7 +308,7 @@ export function SendPanel({
           <EmptyState
             compact={true}
             icon={<Inbox size={28} />}
-            title={t`No Mortar users found nearby.`}
+            title={t`No Mortar users found nearby`}
           >{t`Ask another Mortar user to open sharing nearby.`}</EmptyState>
         ) : (
           <List disablePadding={true}>

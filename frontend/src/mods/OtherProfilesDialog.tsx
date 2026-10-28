@@ -31,7 +31,7 @@ const DISABLED_OPACITY = 0.55
 function NoOtherProfiles() {
   const { t } = useLingui()
   return (
-    <EmptyState compact={true} icon={<Inbox size={28} />} title={t`No other profile of this game.`}>
+    <EmptyState compact={true} icon={<Inbox size={28} />} title={t`No other profile of this game`}>
       {t`Create another profile to use this mod there.`}
     </EmptyState>
   )

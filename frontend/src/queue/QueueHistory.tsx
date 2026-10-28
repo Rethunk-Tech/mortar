@@ -219,7 +219,7 @@ export function HistoryList({
         />
       </Box>
       {entries !== null && rows.length === 0 ? (
-        <EmptyState compact={true} icon={<Download />} title={t`No downloads in history.`}>
+        <EmptyState compact={true} icon={<Download />} title={t`No downloads in history`}>
           {t`Completed downloads will appear here.`}
         </EmptyState>
       ) : (

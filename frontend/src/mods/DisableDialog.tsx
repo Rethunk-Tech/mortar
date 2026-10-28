@@ -47,8 +47,20 @@ function DisableDialogBody({ disabling }: { disabling: Mod[] }) {
       }
       subtitle={
         dependents.length > 0
-          ? t`Mods that need it stop working while it is off.`
-          : t`Nothing else needs the libraries it brought in.`
+          ? plural(
+              { count: disabling.length },
+              {
+                one: 'Mods that need it stop working while it is off.',
+                other: 'Mods that need them stop working while they are off.',
+              },
+            )
+          : plural(
+              { count: disabling.length },
+              {
+                one: 'Nothing else needs the libraries it brought in.',
+                other: 'Nothing else needs the libraries they brought in.',
+              },
+            )
       }
       icon={
         <ToneIcon tone="warning">

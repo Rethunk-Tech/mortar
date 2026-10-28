@@ -197,7 +197,7 @@ export function CleanupSection({
         title={plural(
           { count: cleanup.length },
           {
-            one: 'Remove all # mod from this profile?',
+            one: 'Remove # mod from this profile?',
             other: 'Remove all # mods from this profile?',
           },
         )}
