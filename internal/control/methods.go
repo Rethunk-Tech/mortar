@@ -885,11 +885,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			return s.Profiles.SetModsEnabled(p.Game, id, refs, method == "mods.enable")
 		})
 	case "mods.pin", "mods.unpin":
-		keys, err := keysFor(prof, p.IDs)
-		if err != nil {
-			return nil, err
-		}
-		return s.setEach(p.Game, id, prof, keys, func(k string) error {
+		return s.setEach(p.Game, id, prof, p.IDs, func(k string) error {
 			_, err := s.Profiles.SetPinned(p.Game, id, k, method == "mods.pin", p.Value)
 			return err
 		})
@@ -940,11 +936,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			return modRows(s.reload(p.Game, id, prof)), nil
 		})
 	case "mods.skip-version":
-		keys, err := keysFor(prof, p.IDs)
-		if err != nil {
-			return nil, err
-		}
-		return s.setEach(p.Game, id, prof, keys, func(k string) error {
+		return s.setEach(p.Game, id, prof, p.IDs, func(k string) error {
 			_, err := s.Profiles.SetSkipVersion(p.Game, id, k, p.Value)
 			return err
 		})

@@ -13,32 +13,38 @@ import (
 // devAdd puts the mod project folder p.Path in the Develop tab, installing its builds into profile p.Profile (an id or
 // a name).
 func (s *Services) devAdd(ctx context.Context, p Params) (settings.DevProject, error) {
-	id, err := s.optionalProfile(p.Game, p.Profile)
+	id, err := s.devProfile(p)
 	if err != nil {
 		return settings.DevProject{}, err
-	}
-	if s.Dev == nil {
-		return settings.DevProject{}, errors.New("mod development is unavailable")
 	}
 	return s.Dev.Add(ctx, p.Game, p.Path, id)
 }
 
 // devClone clones the GitHub repository p.ID into the folder p.Path and adds it as devAdd does.
 func (s *Services) devClone(ctx context.Context, p Params) (settings.DevProject, error) {
-	id, err := s.optionalProfile(p.Game, p.Profile)
+	id, err := s.devProfile(p)
 	if err != nil {
 		return settings.DevProject{}, err
 	}
-	if s.Dev == nil {
-		return settings.DevProject{}, errors.New("mod development is unavailable")
-	}
 	return s.Dev.Clone(ctx, p.Game, p.ID, p.Path, id)
+}
+
+var errNoDev = errors.New("mod development is unavailable")
+
+// devProfile is the profile p names for a project's builds (an id or a name; empty is none), once development is
+// available.
+func (s *Services) devProfile(p Params) (string, error) {
+	id, err := s.optionalProfile(p.Game, p.Profile)
+	if err == nil && s.Dev == nil {
+		err = errNoDev
+	}
+	return id, err
 }
 
 // devList lists the game's mod projects.
 func (s *Services) devList(p Params) ([]settings.DevProject, error) {
 	if s.Dev == nil {
-		return nil, errors.New("mod development is unavailable")
+		return nil, errNoDev
 	}
 	return s.Dev.Projects(p.Game), nil
 }
@@ -46,7 +52,7 @@ func (s *Services) devList(p Params) ([]settings.DevProject, error) {
 // devRemove takes the project whose folder is p.Path, or whose name is p.ID, off the Develop tab; its folder stays.
 func (s *Services) devRemove(p Params) (settings.DevProject, error) {
 	if s.Dev == nil {
-		return settings.DevProject{}, errors.New("mod development is unavailable")
+		return settings.DevProject{}, errNoDev
 	}
 	for _, d := range s.Dev.Projects(p.Game) {
 		if d.Dir == p.Path || strings.EqualFold(d.Name, p.ID) {
