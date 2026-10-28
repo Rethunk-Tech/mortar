@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-var nexusArchive = regexp.MustCompile(`(?i)^(.+?)-(\d+)-(\d+(?:-\d+)*)-(\d{9,})\.(zip|7z|rar)$`)
+var nexusArchive = regexp.MustCompile(`(?i)^(.+?)-(\d+)-([0-9a-z]+(?:-[0-9a-z]+)*)-(\d{9,})\.(zip|7z|rar)$`)
 
 // Info is what Mortar knows about a noticed archive before install.
 type Info struct {

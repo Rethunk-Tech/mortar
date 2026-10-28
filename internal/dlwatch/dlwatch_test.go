@@ -20,6 +20,10 @@ func TestParseNexusFilename(t *testing.T) {
 	if !ok || inf.ModID != 42 || inf.Name != "A Mod-Name" {
 		t.Fatalf("got %+v ok=%v", inf, ok)
 	}
+	inf, ok = ParseNexusFilename("Mod-1234-1-0-0-beta-1700000000.zip")
+	if !ok || inf.ModID != 1234 || inf.Name != "Mod" {
+		t.Fatalf("beta version: %+v ok=%v", inf, ok)
+	}
 	if _, ok := ParseNexusFilename("random.zip"); ok {
 		t.Fatal("plain zip is not a nexus name")
 	}
