@@ -21,7 +21,7 @@ Mortar is a desktop mod manager for several games (`mortar games` lists the cata
 
 ## Decided
 
-- The frontend ships as one bundle read from disk: no code splitting, `lazy()` routes or chunk-size work; component names are kept.
+- The frontend ships as one bundle read from disk: no code splitting, `lazy()` routes or chunk-size work; component names are kept. The one exception is the Lingui locale catalogs, loaded per locale so the bundle does not grow with each language.
 - Wails v3, pinned in `go.mod` (the Rethunk-AI fork), upgraded on purpose ([pin](docs/architecture.md#stack)). React, TypeScript and MUI on Vite; never Next.js.
 - Solid window with a wallpaper backdrop under a tint, frameless with a themed title bar unless the player picks the system one, MUI dark and light themes (`frontend/src/theme/`).
 - Games, stores, runtimes, sources and hosts are registries joined by the signed catalog; a game normally needs no code ([architecture](docs/architecture.md#games-and-the-catalog), [adding one](HUMANS.md#adding-a-game)).
