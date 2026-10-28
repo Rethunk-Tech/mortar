@@ -949,3 +949,24 @@ func TestJoiningRequestsOnlyPromoteTheInstallReason(t *testing.T) {
 		}
 	}
 }
+
+func TestEverywhereUpdateAppliesToOtherProfilesWhenTheDownloadFinishes(t *testing.T) {
+	t.Parallel()
+	f := newFixture(t)
+	var mu sync.Mutex
+	var calls []string
+	f.s.d.Everywhere = func(game, modKey string) error {
+		mu.Lock()
+		defer mu.Unlock()
+		calls = append(calls, game+"|"+modKey)
+		return nil
+	}
+	f.start()
+	f.add(Request{Kind: KindUpdate, Game: "stardew", Profile: "p1", ModID: 1, Version: "2.0", CurrentKey: "nexus-1-10", Everywhere: true})
+	f.wait("done", f.item(StateDone))
+	mu.Lock()
+	defer mu.Unlock()
+	if !slices.Equal(calls, []string{"stardew|nexus-1-10"}) {
+		t.Fatalf("other profiles updated by %q, want one call for nexus-1-10", calls)
+	}
+}

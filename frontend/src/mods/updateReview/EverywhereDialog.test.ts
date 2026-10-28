@@ -7,13 +7,16 @@ describe('mergePreviews', () => {
     const a: EverywherePreview = {
       affected: [{ profileId: 'ok', name: 'Ok', oldKey: 'a-1' }],
       skipped: [{ profileId: 'pin', name: 'Pin', reason: 'pinned' }],
+      inStore: true,
     }
     const b: EverywherePreview = {
       affected: [{ profileId: 'ok', name: 'Ok', oldKey: 'a-1' }],
       skipped: [{ profileId: 'lock', name: 'Lock', reason: 'locked' }],
+      inStore: false,
     }
     const got = mergePreviews([a, b])
     expect(got.affected?.map((r) => r.profileId)).toEqual(['ok'])
     expect(got.skipped?.map((r) => r.reason).sort()).toEqual(['locked', 'pinned'])
+    expect(got.inStore).toBe(false)
   })
 })

@@ -41,6 +41,9 @@ type EverywhereSkip struct {
 type EverywherePreview struct {
 	Affected []EverywhereHit  `json:"affected"`
 	Skipped  []EverywhereSkip `json:"skipped"`
+	// InStore is whether the store already holds a later version for the affected profiles; when it does not, the
+	// update downloads it first.
+	InStore bool `json:"inStore"`
 }
 
 // EverywhereResult is what UpdateEverywhere changed and skipped.
@@ -77,6 +80,12 @@ func (s *Store) PreviewEverywhere(game, modKeyOrID string) (EverywherePreview, e
 			continue
 		}
 		out.Affected = append(out.Affected, EverywhereHit{ProfileID: p.ID, Name: p.Name, OldKey: e.Key})
+	}
+	for _, hit := range out.Affected {
+		if _, err := s.latestStoreKey(game, hit.OldKey, modKeyOrID); err == nil {
+			out.InStore = true
+			break
+		}
 	}
 	return out, nil
 }

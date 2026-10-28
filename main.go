@@ -701,9 +701,13 @@ func run() error {
 		Dir:            dataDir,
 		Changed:        func(st queue.State) { shareSvc.QueueChanged(st) },
 		HistoryBatch:   profiles.RecordHistoryBatch,
-		Parallel:       func() int { return store.Get().ParallelDownloads },
-		KeepArchives:   func() bool { return store.Get().KeepDownloadArchives },
-		DownloadDir:    func() string { return store.Get().ArchiveDir() },
+		Everywhere: func(game, modKey string) error {
+			_, err := profiles.UpdateEverywhere(game, modKey, "latest")
+			return err
+		},
+		Parallel:     func() int { return store.Get().ParallelDownloads },
+		KeepArchives: func() bool { return store.Get().KeepDownloadArchives },
+		DownloadDir:  func() string { return store.Get().ArchiveDir() },
 		RetryFetches: func() int {
 			switch store.Get().AutoRetryDownloads {
 			case settings.AutoRetry1:

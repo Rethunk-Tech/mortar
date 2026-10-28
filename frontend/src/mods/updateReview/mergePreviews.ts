@@ -18,5 +18,5 @@ export function mergePreviews(parts: EverywherePreview[]): EverywherePreview {
       }
     }
   }
-  return { affected, skipped }
+  return { affected, skipped, inStore: parts.every((part) => part.inStore) }
 }

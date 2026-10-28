@@ -765,6 +765,11 @@ func (s *Service) finish(id string, err error, unverified bool, change string) e
 	s.publish(true)
 	s.recordHistory(rec, StateDone)
 	notifyDesktopDownload(rec.Name, rec.Game, rec.Profile, true)
+	if rec.Everywhere != "" && s.d.Everywhere != nil {
+		if err := s.d.Everywhere(rec.Game, rec.Everywhere); err != nil {
+			log.Printf("queue: update %s in the other profiles: %v", rec.Everywhere, err)
+		}
+	}
 	if s.Landed != nil && rec.Profile != "" {
 		s.Landed(rec.Game)
 	}

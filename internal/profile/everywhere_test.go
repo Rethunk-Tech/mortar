@@ -148,3 +148,15 @@ func TestLatestStoreKeyOrdersBySourceVersion(t *testing.T) {
 		}
 	}
 }
+
+func TestPreviewEverywhereReportsNoLaterVersionInTheStore(t *testing.T) {
+	t.Parallel()
+	e, _, _ := everywhereEnv(t)
+	got, err := e.PreviewEverywhere("stardew", "smapi:me.a")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got.Affected) != 2 || got.InStore {
+		t.Fatalf("preview %+v, want two affected and nothing later in the store", got)
+	}
+}

@@ -35,6 +35,7 @@ export type Want = Pick<Request, 'kind'> &
       | 'latest'
       | 'exact'
       | 'batchId'
+      | 'everywhere'
     >
   >
 

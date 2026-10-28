@@ -183,6 +183,8 @@ type Item struct {
 	MergeAdd     bool              `json:"mergeAdd,omitempty"`
 	// Change is the profile history event a finished install recorded, or the bulk event of its batch.
 	Change string `json:"change,omitempty"`
+	// Everywhere is the entry key whose mod the other profiles take the finished update for (Request.Everywhere).
+	Everywhere string `json:"everywhere,omitempty"`
 
 	// fallbackTried stops a Nexus item from asking GitHub again once its fallback was looked up.
 	fallbackTried bool
@@ -275,6 +277,8 @@ type Request struct {
 	// AsIs installs a Thunderstore package at exactly its Version and without its dependencies, as an imported list
 	// shared it; a dependency the list left out stays out.
 	AsIs bool `json:"asIs,omitempty"`
+	// Everywhere makes an update, once installed, also update every other profile holding CurrentKey's mod.
+	Everywhere bool `json:"everywhere,omitempty"`
 	// Implicit creates the entry as one brought in for another mod, for a request that copies an entry's flag
 	// (undo, a template, a share); a dependency request is implicit by its kind.
 	Implicit bool `json:"implicit,omitempty"`
@@ -362,7 +366,9 @@ type Deps struct {
 	// HistoryBatch records a completed install in the profile's bulk history event and returns that event's id; an
 	// empty batch closes it.
 	HistoryBatch func(game, profileID, batchID string) (string, error)
-	HTTP         *http.Client
+	// Everywhere updates the other profiles holding modKey's mod to the newest version in the store; nil means none.
+	Everywhere func(game, modKey string) error
+	HTTP       *http.Client
 	// Dir is the data folder holding queue.json and the downloads folder; it must be on the store's volume.
 	Dir string
 	Now func() time.Time
@@ -781,6 +787,9 @@ func (s *Service) add(ctx context.Context, reqs []Request) ([]Item, error) {
 			Name: r.Name, FileName: r.FileName, Version: r.Version, State: StateQueued, key: r.key, expires: r.expires,
 			Package: r.Package, Source: r.Source, PackageFile: r.PackageFile, Digest: r.digest, URL: r.url, SizeKB: r.sizeKB, Picture: cmp.Or(r.picture, r.Picture), Category: r.category, Needs: r.needs, Repo: r.Repo, Tag: r.Tag, Asset: r.Asset, FallbackRepo: r.FallbackRepo, FallbackID: r.FallbackID, Latest: r.Latest, Exact: r.Exact, Disabled: slices.Clone(r.Disabled), Fomod: r.Fomod, fomod: r.Fomod, Overlay: r.Overlay,
 			Implicit: r.implicit(), FromLink: r.fromLink,
+		}
+		if r.Everywhere && r.Kind == KindUpdate {
+			it.Everywhere = r.CurrentKey
 		}
 		if it.Repo != "" {
 			it.Name = cmp.Or(it.Name, it.Repo)

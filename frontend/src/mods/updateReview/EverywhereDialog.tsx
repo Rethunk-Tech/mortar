@@ -10,6 +10,8 @@ import {
   UpdateEverywhere,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { lowerFirst } from '../../i18n/lowerFirst.ts'
+import { openProfileOf, useProfiles } from '../../profiles/store.ts'
+import { download } from '../../queue/actions.ts'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
 import { ErrorRetry } from '../../shell/ErrorRetry.tsx'
 import { useLoaded } from '../../shell/useLoaded.ts'
@@ -17,7 +19,10 @@ import { space } from '../../theme/density.ts'
 import { type InlineError, inlineError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { usePending } from '../../toasts/usePending.ts'
+import { sameId, visibleUpdates } from '../lookup.ts'
+import { useUpdates } from '../updates.ts'
 import { mergePreviews } from './mergePreviews.ts'
+import { withOptionalLoaded } from './wants.ts'
 
 function PreviewLists({ preview }: { preview: EverywherePreview }) {
   const { t } = useLingui()
@@ -121,7 +126,30 @@ export function EverywhereDialog({
   )
   const loadError = error === null ? null : inlineError(error)
   const n = preview?.affected?.length ?? 0
+  // The new version is not in the store yet: queue its download once; when it lands, the queue updates the other profiles.
+  const downloadFirst = async () => {
+    const profile = openProfileOf(useProfiles.getState())
+    const updates = visibleUpdates(useUpdates.getState().updates, profile)
+    const wants = await Promise.all(
+      mods.map(async (m) => {
+        const update = updates.find((u) => sameId(u.id, m.id))
+        if (!update) {
+          return []
+        }
+        const [main, ...rest] = await withOptionalLoaded(game, update, profile)
+        return main ? [{ ...main, everywhere: true }, ...rest] : []
+      }),
+    )
+    await download(wants.flat())
+  }
   const apply = () => {
+    if (preview && !preview.inStore) {
+      run(async () => {
+        await downloadFirst()
+        onClose()
+      })
+      return
+    }
     run(async () => {
       const parts = await Promise.all(
         mods.map((m) => UpdateEverywhere(game, m.id, m.newKey || 'latest')),
