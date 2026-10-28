@@ -42,7 +42,13 @@ func (c clamd) candidates() []string {
 	if c.socket != "" {
 		return []string{c.socket}
 	}
-	return defaultSockets
+	var out []string
+	for _, p := range defaultSockets {
+		if trustedSocketOwner(p) {
+			out = append(out, p)
+		}
+	}
+	return out
 }
 
 func (c clamd) connect(ctx context.Context) (net.Conn, error) {

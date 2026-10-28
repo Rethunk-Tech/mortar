@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"net"
+	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -206,5 +207,26 @@ func TestStatusSaysWhetherTheScannerCanRun(t *testing.T) {
 	}
 	if st := StatusOf(t.Context(), Config{Mode: ModeClamd, Socket: filepath.Join(t.TempDir(), "none.sock")}); st.Ready || st.Problem == "" {
 		t.Fatalf("clamd without a daemon is not ready: %+v", st)
+	}
+}
+
+func TestClamdSkipsDefaultSocketOwnedByAnotherUser(t *testing.T) {
+	if os.Geteuid() == 0 {
+		t.Skip("root owns the socket")
+	}
+	path := filepath.Join(t.TempDir(), "clamd.sock")
+	l, err := net.Listen("unix", path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = l.Close() }()
+	old := defaultSockets
+	defaultSockets = []string{path}
+	defer func() { defaultSockets = old }()
+	if got := (clamd{}).candidates(); len(got) != 0 {
+		t.Fatalf("a socket owned by this user is trusted: %v", got)
+	}
+	if got := (clamd{socket: path}).candidates(); len(got) != 1 {
+		t.Fatalf("a configured socket is trusted as given: %v", got)
 	}
 }
