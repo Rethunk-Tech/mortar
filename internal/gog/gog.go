@@ -172,11 +172,12 @@ func heroicInstalls(cfg, productID string) []string {
 	}
 	var games []heroicGame
 	var asList struct {
-		Games []heroicGame `json:"games"`
+		Installed []heroicGame `json:"installed"`
+		Games     []heroicGame `json:"games"`
 	}
 	switch {
-	case json.Unmarshal(b, &asList) == nil && len(asList.Games) > 0:
-		games = asList.Games
+	case json.Unmarshal(b, &asList) == nil && len(asList.Installed)+len(asList.Games) > 0:
+		games = append(asList.Installed, asList.Games...)
 	case json.Unmarshal(b, &games) == nil:
 	default:
 		var keyed map[string]heroicGame

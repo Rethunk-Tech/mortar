@@ -30,7 +30,7 @@ func TestLocateLinuxOfflineAndHeroic(t *testing.T) {
 	if err := os.MkdirAll(filepath.Dir(cfg), 0o700); err != nil {
 		t.Fatal(err)
 	}
-	body := `{"games":[{"appName":"1453375253","install_path":"` + filepath.ToSlash(heroicRoot) + `"},{"appName":"1","install_path":"/nope"}]}`
+	body := `{"installed":[{"appName":"1453375253","install_path":"` + filepath.ToSlash(heroicRoot) + `"},{"appName":"1","install_path":"/nope"}]}`
 	if err := os.WriteFile(cfg, []byte(body), 0o600); err != nil {
 		t.Fatal(err)
 	}
