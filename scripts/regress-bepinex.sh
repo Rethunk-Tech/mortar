@@ -287,8 +287,14 @@ JS
   bun "$ROOT/events.js" "$PORT" "$ROOT/events-$1.jsonl" >/dev/null 2>&1 &
   mx_events=$!
 }
-mx_events_stop() { [ -z "${mx_events:-}" ] || kill "$mx_events" 2>/dev/null; mx_events=''; }
-mx_relay_stop() { [ -z "${mx_relay:-}" ] || kill "$mx_relay" 2>/dev/null; mx_relay=''; }
+mx_events_stop() {
+  [ -z "${mx_events:-}" ] || kill "$mx_events" 2>/dev/null
+  mx_events=''
+}
+mx_relay_stop() {
+  [ -z "${mx_relay:-}" ] || kill "$mx_relay" 2>/dev/null
+  mx_relay=''
+}
 
 # mx_startup_rows PROFILE LOG checks the measured launch's startup timing: the bridge's patcher deployed and timing,
 # its report written at MainMenu with every loaded plugin and monotonic phases, and Mortar naming its rows by package.
@@ -550,7 +556,8 @@ mx_build_probes() {
   core="$(mx_dir "$mx_base")/BepInEx/core"
   local csc=${MORTAR_REGRESS_CSC:-}
   if [ -z "$csc" ]; then
-    csc=$(dotnet --list-sdks 2>/dev/null | sed -n 's/^\([^ ]*\) \[\(.*\)\]$/\2\/\1\/Roslyn\/bincore\/csc.dll/p' | tail -1)
+    # Every dotnet command leaves empty folders in its temp folder, so it gets the run's own.
+    csc=$(TMPDIR=$ROOT TMP=$ROOT TEMP=$ROOT dotnet --list-sdks 2>/dev/null | sed -n 's/^\([^ ]*\) \[\(.*\)\]$/\2\/\1\/Roslyn\/bincore\/csc.dll/p' | tail -1)
   fi
   [ -f "$csc" ] || {
     echo "no Roslyn csc.dll (install the .NET SDK or set MORTAR_REGRESS_CSC)"
