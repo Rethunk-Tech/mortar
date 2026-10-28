@@ -3,20 +3,15 @@ package cli
 import (
 	"fmt"
 
-	"github.com/Rethunk-Tech/mortar/internal/control"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 )
 
 func (c *cmd) logFixes() error {
-	a, err := c.need(2, "a game", "a profile")
+	p, err := c.runParams()
 	if err != nil {
 		return err
 	}
-	run := c.run
-	if run == "" && len(c.args) > 4 {
-		run = c.args[4]
-	}
-	return show(c, "logs.fixes", control.Params{Game: a[0], Profile: a[1], Run: run}, func(found []launch.SMAPIProblem) {
+	return show(c, "logs.fixes", p, func(found []launch.SMAPIProblem) {
 		if len(found) == 0 {
 			fmt.Fprintln(c.out, "No recognised problems.")
 			return

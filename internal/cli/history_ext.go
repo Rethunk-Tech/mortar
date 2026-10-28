@@ -60,13 +60,7 @@ func (c *cmd) profileGood() error {
 	}
 	p := control.Params{Game: a[0], Profile: a[1], All: c.mark, Force: c.restore}
 	if !c.mark && !c.restore {
-		return show(c, "profile.good", p, func(rows []profile.HistoryEvent) {
-			t := [][]string{}
-			for _, row := range rows {
-				t = append(t, []string{row.At.Local().Format("2006-01-02 15:04"), historySummary(row)})
-			}
-			c.table("TIME\tSUMMARY", t)
-		})
+		return show(c, "profile.good", p, c.historyTable)
 	}
 	if c.restore {
 		return show(c, "profile.good", p, func(prof profile.Profile) { fmt.Fprintf(c.out, "%s\t%s\n", prof.ID, prof.Name) })
@@ -94,4 +88,13 @@ func playGroupsBlocking(groups []control.PlayIssueGroup) int {
 		}
 	}
 	return n
+}
+
+// historyTable prints history events, one row each.
+func (c *cmd) historyTable(rows []profile.HistoryEvent) {
+	t := [][]string{}
+	for _, row := range rows {
+		t = append(t, []string{row.At.Local().Format("2006-01-02 15:04"), historySummary(row)})
+	}
+	c.table("TIME\tSUMMARY", t)
 }

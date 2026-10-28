@@ -1276,13 +1276,7 @@ func (c *cmd) profile() error {
 		if err != nil {
 			return err
 		}
-		return show(c, "profile.history", control.Params{Game: a[0], Profile: a[1]}, func(rows []profile.HistoryEvent) {
-			t := [][]string{}
-			for _, row := range rows {
-				t = append(t, []string{row.At.Local().Format("2006-01-02 15:04"), historySummary(row)})
-			}
-			c.table("TIME\tSUMMARY", t)
-		})
+		return show(c, "profile.history", control.Params{Game: a[0], Profile: a[1]}, c.historyTable)
 	case "health":
 		return c.profileHealth()
 	case "revert":
@@ -1524,11 +1518,7 @@ func (c *cmd) modsChange(sub string) error {
 		} else {
 			p.IDs = a[2:]
 		}
-		var rows []control.ModRow
-		if err := c.call("mods."+sub, p, &rows, readTimeout); err != nil {
-			return err
-		}
-		return c.emit(rows, func() { c.modTable(rows) })
+		return c.modRows(sub, p)
 	case "enable", "disable":
 		var res profile.EnableResult
 		if err := c.call("mods."+sub, p, &res, readTimeout); err != nil {
@@ -1549,11 +1539,7 @@ func (c *cmd) modsChange(sub string) error {
 			p.Value = c.reasonFlag
 		}
 	}
-	var rows []control.ModRow
-	if err := c.call("mods."+sub, p, &rows, readTimeout); err != nil {
-		return err
-	}
-	return c.emit(rows, func() { c.modTable(rows) })
+	return c.modRows(sub, p)
 }
 
 func (c *cmd) mod(p control.Params) error {
@@ -1957,15 +1943,10 @@ func (c *cmd) logs(p control.Params) error {
 }
 
 func (c *cmd) shareLog() error {
-	a, err := c.need(2, "a game", "a profile")
+	p, err := c.runParams()
 	if err != nil {
 		return err
 	}
-	run := c.run
-	if run == "" && len(c.args) > 4 {
-		run = c.args[4]
-	}
-	p := control.Params{Game: a[0], Profile: a[1], Run: run}
 	var l control.RunLog
 	if err := c.call("logs", p, &l, readTimeout); err != nil {
 		return err
@@ -2594,4 +2575,26 @@ func (c *cmd) confirm(what, prompt string) error {
 		return errors.New("cancelled")
 	}
 	return nil
+}
+
+// modRows runs mods.<sub> and prints the mod rows it returns.
+func (c *cmd) modRows(sub string, p control.Params) error {
+	var rows []control.ModRow
+	if err := c.call("mods."+sub, p, &rows, readTimeout); err != nil {
+		return err
+	}
+	return c.emit(rows, func() { c.modTable(rows) })
+}
+
+// runParams names a game, a profile and one of its runs, from --run or the argument after the profile.
+func (c *cmd) runParams() (control.Params, error) {
+	a, err := c.need(2, "a game", "a profile")
+	if err != nil {
+		return control.Params{}, err
+	}
+	run := c.run
+	if run == "" && len(c.args) > 4 {
+		run = c.args[4]
+	}
+	return control.Params{Game: a[0], Profile: a[1], Run: run}, nil
 }
