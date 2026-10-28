@@ -162,15 +162,15 @@ func (s *Service) gameIDs() []string {
 }
 
 // savesDirFor is the saves folder profileID reads: its own when it keeps its saves separate, else its pinned install's
-// or the game's selected one. cache names the scan cache beside the selected folder's, "" for that folder itself.
-func (s *Service) savesDirFor(gameID, profileID string) (dir, cache string, err error) {
+// or the game's selected one, selectedDir. cache names the scan cache beside the selected folder's, "" for that folder itself.
+func (s *Service) savesDirFor(gameID, profileID, selectedDir string) (dir, cache string, err error) {
 	if profileID != "" && s.profiles.SeparateSaves(gameID, profileID) {
 		dir, err := s.profiles.SavesFolder(gameID, profileID)
 		return dir, "profile-" + profileID, err
 	}
 	pin := s.profiles.InstallOf(gameID, profileID)
 	if pin == "" {
-		return s.scanner(gameID).Dir, "", nil
+		return selectedDir, "", nil
 	}
 	dir, err = game.SavesDir(s.home, s.settings.Get(), gameID, pin)
 	return dir, "install-" + pin, err
@@ -182,7 +182,7 @@ func (s *Service) scannerFor(gameID, profileID string) (*saves.Scanner, error) {
 	if selected == nil || s.profiles == nil {
 		return selected, nil
 	}
-	dir, cache, err := s.savesDirFor(gameID, profileID)
+	dir, cache, err := s.savesDirFor(gameID, profileID, selected.Dir)
 	if err != nil || cache == "" {
 		return selected, err
 	}
