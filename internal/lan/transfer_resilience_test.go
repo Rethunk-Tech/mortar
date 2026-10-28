@@ -242,6 +242,8 @@ func TestASilentSenderIsGivenUpOnAndRetried(t *testing.T) {
 	var hits atomic.Int32
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		hits.Add(1)
+		// A fresh connection per try, so no retry lands on the one the server is still closing and goes uncounted.
+		w.Header().Set("Connection", "close")
 		w.Header().Set("Content-Length", "100000")
 		_, _ = w.Write([]byte("partial"))
 		_ = http.NewResponseController(w).Flush()
