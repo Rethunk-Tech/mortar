@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"github.com/Rethunk-Tech/mortar/internal/opener"
-	"github.com/Rethunk-Tech/mortar/internal/settings"
 
 	"github.com/Rethunk-Tech/mortar/internal/nexussso"
 )
@@ -136,7 +135,5 @@ func (s *Service) signInOAuth(ctx context.Context, o nexussso.OAuth) (Account, e
 	if err := nexussso.Save(t); err != nil {
 		return Account{}, err
 	}
-	return s.update(func(v *settings.Settings) {
-		v.NexusUserID, v.NexusName, v.NexusPremium = user.ID, user.Name, user.IsPremium
-	})
+	return s.signedIn(user)
 }

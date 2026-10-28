@@ -42,9 +42,7 @@ func (s *Service) SignIn(ctx context.Context, key string) (Account, error) {
 	if err := secret.Set(keyName, key); err != nil {
 		return Account{}, err
 	}
-	return s.update(func(v *settings.Settings) {
-		v.NexusUserID, v.NexusName, v.NexusPremium = user.ID, user.Name, user.IsPremium
-	})
+	return s.signedIn(user)
 }
 
 func forgetKey() error { return secret.Delete(keyName) }
@@ -60,4 +58,11 @@ func keyClient(c *nexus.Client) (*nexus.Client, error) {
 		return nil, err
 	}
 	return c.WithKey(key), nil
+}
+
+// signedIn records the account the player signed in as.
+func (s *Service) signedIn(user nexus.User) (Account, error) {
+	return s.update(func(v *settings.Settings) {
+		v.NexusUserID, v.NexusName, v.NexusPremium = user.ID, user.Name, user.IsPremium
+	})
 }
