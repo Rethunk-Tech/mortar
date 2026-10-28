@@ -276,3 +276,18 @@ func TestMoveRepointsAProjectAtAnotherProfile(t *testing.T) {
 		t.Errorf("project %+v, folder profile %q", gp.DevProjects[0], gp.ExtraModsProfile(p.Output))
 	}
 }
+
+func TestCreateAssetRefusesATeamTheRecordWouldRejectBeforeWritingAnything(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	parent := t.TempDir()
+	_, err := svc.Create(t.Context(), NewMod{
+		Game: "lethal-company", Kind: "sounds", Name: "Quacks", Parent: parent, Repo: "quacks",
+		Values: map[string]string{"description": "Ducks.", "modAuthor": "Me", "team": "_Ab"},
+	})
+	if usererr.KindOf(err) != usererr.Invalid {
+		t.Fatalf("err = %v", err)
+	}
+	if entries, _ := os.ReadDir(parent); len(entries) != 0 {
+		t.Errorf("a refused project left %v", entries)
+	}
+}

@@ -14,6 +14,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // A fake Thunderstore that splits a 10-byte package in two parts, checks each part's bytes and MD5, and records the
@@ -68,5 +69,19 @@ func TestThunderstoreUploadFollowsTheCLIProtocol(t *testing.T) {
 	}
 	if !slices.Equal(auth, []string{"Bearer tok", "Bearer tok"}) {
 		t.Errorf("auth = %q", auth)
+	}
+}
+
+func TestUploadRefusesAnUntrustedProject(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	dir := fixtureProject(t, svc)
+	p := svc.Settings.Get().GamePrefs("lethal-company").DevProjects[0]
+	next := p
+	next.Untrusted = true
+	if err := svc.Settings.ReplaceDevProject("lethal-company", p, next); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := svc.UploadThunderstore(t.Context(), "lethal-company", dir); usererr.KindOf(err) != usererr.Unconfirmed {
+		t.Errorf("err = %v", err)
 	}
 }

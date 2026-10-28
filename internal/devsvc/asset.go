@@ -71,12 +71,15 @@ func (s *Service) createAsset(ctx context.Context, m NewMod) (_ settings.DevProj
 	if err != nil {
 		return settings.DevProject{}, err
 	}
+	author := cmp.Or(m.Values["modAuthor"], m.Owner)
+	if err := (ProjectEdit{Name: m.Name, Description: m.Values["description"], Author: author, Team: m.Values["team"]}).checkDetails(); err != nil {
+		return settings.DevProject{}, err
+	}
 	dest, url, err := m.destination()
 	if err != nil {
 		return settings.DevProject{}, err
 	}
 	defer removeIfFailed(dest, &err)
-	author := cmp.Or(m.Values["modAuthor"], m.Owner)
 	manifest, err := json.MarshalIndent(thunderstoreManifest{
 		Name: m.Name, VersionNumber: "0.1.0", Description: m.Values["description"], WebsiteURL: &url, Dependencies: []string{},
 	}, "", "  ")
@@ -368,7 +371,7 @@ func (s *Service) AssetForm(gameID, id string) (Form, error) {
 	return Form{Name: kind.Label, Recommends: recommends, Parameters: []Param{
 		{ID: "description", Label: "Description", Description: "What the mod does, in one line.", Kind: "string", Required: true, MaxLength: maxDescription},
 		{ID: "modAuthor", Label: "Author", Description: "Who holds the copyright.", Kind: "string", Required: true, Remember: true},
-		{ID: "team", Label: "Thunderstore team", Description: "The team the mod is published under.", Kind: "string", Required: true, Remember: true, Pattern: `^[A-Za-z0-9_]+$`},
+		{ID: "team", Label: "Thunderstore team", Description: "The team the mod is published under.", Kind: "string", Required: true, Remember: true, Pattern: teamPattern.String()},
 	}}, nil
 }
 

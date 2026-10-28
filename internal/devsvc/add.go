@@ -24,17 +24,23 @@ var githubRepo = regexp.MustCompile(`^(?:https://github\.com/|git@github\.com:)?
 // enroll makes dir's build output an extra mods folder of the project's profile (created as "<game> Development"
 // when profileID is empty, filled from copyFrom) and records the project. An asset project (kind set) has no build:
 // its folder itself is what installs.
-func (s *Service) enroll(gameID, dir, name, profileID, copyFrom, kind string, untrusted bool) (settings.DevProject, error) {
+func (s *Service) enroll(gameID, dir, name, profileID, copyFrom, kind string, untrusted bool) (_ settings.DevProject, err error) {
 	if profileID == "" {
 		gameName := gameID
 		if info, ok := components.Game(gameID); ok {
 			gameName = info.Name
 		}
-		p, err := s.Profiles.Create(gameID, gameName+" Development")
-		if err != nil {
-			return settings.DevProject{}, err
+		p, createErr := s.Profiles.Create(gameID, gameName+" Development")
+		if createErr != nil {
+			return settings.DevProject{}, createErr
 		}
 		profileID = p.ID
+		// The profile this call made goes again when a later step fails, so a retry does not leave a second one.
+		defer func() {
+			if err != nil {
+				_ = s.Profiles.Delete(gameID, p.ID)
+			}
+		}()
 		// Test runs host games, and a host writes its save; the player's own saves stay out of it.
 		if _, err := s.Profiles.SetSeparateSaves(gameID, profileID, true, false); err != nil {
 			return settings.DevProject{}, err

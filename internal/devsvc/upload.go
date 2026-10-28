@@ -107,6 +107,9 @@ func (s *Service) UploadThunderstore(ctx context.Context, gameID, dir string) (s
 	if err != nil {
 		return "", err
 	}
+	if err := requireTrust(p); err != nil {
+		return "", err
+	}
 	community := thunderstoreCommunity(gameID)
 	if community == "" {
 		return "", usererr.Wrap(usererr.Invalid, errors.New("this game has no Thunderstore community"))

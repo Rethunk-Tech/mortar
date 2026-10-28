@@ -675,3 +675,17 @@ func TestAddReplacesACommittedGameRootDir(t *testing.T) {
 		t.Errorf("props = %s", body)
 	}
 }
+
+func TestAFailedEnrollLeavesNoDevelopmentProfile(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	const game = "lethal-company"
+	dir := projectDir(t, "Twice", false)
+	// A cache path that is a file makes the untrusted output folder impossible, after the profile was made.
+	svc.CacheDir = filepath.Join(dir, "src", "Twice", "Twice.csproj")
+	if _, err := svc.Add(t.Context(), game, dir, ""); err == nil {
+		t.Fatal("add succeeded")
+	}
+	if all, err := svc.Profiles.List(game); err != nil || len(all) != 0 {
+		t.Errorf("profiles left behind: %v %v", all, err)
+	}
+}
