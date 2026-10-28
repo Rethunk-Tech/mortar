@@ -117,7 +117,7 @@ func TestWireFoldsOnlyItsOwnChangesIntoTheStartCommit(t *testing.T) {
 	git("commit", "-q", "-m", "Start Mod")
 	write("Mine.cs", "player's own")
 	wired := func() error { write("Compat.cs", "c"); write("Plugin.cs", "b"); return nil }
-	if err := svc.wire(t.Context(), dir, "Mod", wired); err != nil {
+	if err := svc.wire(t.Context(), settings.DevProject{Dir: dir, Name: "Mod"}, wired); err != nil {
 		t.Fatal(err)
 	}
 	if n, status := git("rev-list", "--count", "HEAD"), git("status", "--porcelain"); n != "1" || status != "?? Mine.cs" {
@@ -126,7 +126,7 @@ func TestWireFoldsOnlyItsOwnChangesIntoTheStartCommit(t *testing.T) {
 	// Once the player commits, wiring stays a change for them to commit.
 	git("add", "Mine.cs")
 	git("commit", "-q", "-m", "Mine")
-	if err := svc.wire(t.Context(), dir, "Mod", func() error { write("Plugin.cs", "d"); return nil }); err != nil {
+	if err := svc.wire(t.Context(), settings.DevProject{Dir: dir, Name: "Mod"}, func() error { write("Plugin.cs", "d"); return nil }); err != nil {
 		t.Fatal(err)
 	}
 	if status := git("status", "--porcelain"); status != "M Plugin.cs" {
@@ -154,7 +154,7 @@ func TestWireLeavesAPlayersStartCommitAlone(t *testing.T) {
 	}
 	git("add", "-A")
 	git("commit", "-q", "-m", "Start menu rework")
-	err := svc.wire(t.Context(), dir, "Mod", func() error { return os.WriteFile(filepath.Join(dir, "Plugin.cs"), []byte("b"), 0o600) })
+	err := svc.wire(t.Context(), settings.DevProject{Dir: dir, Name: "Mod"}, func() error { return os.WriteFile(filepath.Join(dir, "Plugin.cs"), []byte("b"), 0o600) })
 	out, _ := svc.run(t.Context(), dir, "git", "status", "--porcelain")
 	if err != nil || strings.TrimSpace(string(out)) != "M Plugin.cs" {
 		t.Errorf("status %q, %v", out, err)

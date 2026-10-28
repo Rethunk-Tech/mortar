@@ -373,8 +373,11 @@ func TestAddTakesAnExistingTemplateProject(t *testing.T) {
 	if _, err := svc.Build(t.Context(), game, recorded); err != nil || !built() {
 		t.Errorf("a trusted project does not build: %v %v", err, run.calls)
 	}
-	if got := svc.Projects(game)[0]; got.Untrusted {
-		t.Errorf("trust was not kept: %+v", got)
+	if !strings.HasSuffix(added.Output, filepath.Join(".mortar", "untrusted")) {
+		t.Errorf("an untrusted project's committed output is an installed mods folder: %q", added.Output)
+	}
+	if got := svc.Projects(game)[0]; got.Untrusted || got.Output != filepath.Join(recorded, "artifacts", "bin", got.Name, "debug") {
+		t.Errorf("trust was not kept or did not move the output: %+v", got)
 	}
 	for _, c := range []struct {
 		name, dir string
@@ -392,7 +395,7 @@ func TestAddTakesAnExistingTemplateProject(t *testing.T) {
 			t.Errorf("%s: err = %v", c.name, err)
 			continue
 		}
-		if c.ok && (p.Dir != c.dir || p.Profile == "" || p.Output != filepath.Join(c.dir, "artifacts", "bin", p.Name, "debug")) {
+		if c.ok && (p.Dir != c.dir || p.Profile == "" || p.Output != filepath.Join(c.dir, ".mortar", "untrusted")) {
 			t.Errorf("%s: project %+v", c.name, p)
 		}
 	}

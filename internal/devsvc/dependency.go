@@ -44,13 +44,13 @@ func (s *Service) AddDependency(gameID, dir, pkg, version string, soft bool) err
 	}
 	if p.Kind != "" {
 		// A soft dependency means nothing to a package of files; the loader it needs is required.
-		return s.wire(context.Background(), p.Dir, p.Name, func() error { return setManifestDependency(p.Dir, pkg, version) })
+		return s.wire(context.Background(), p, func() error { return setManifestDependency(p.Dir, pkg, version) })
 	}
 	csproj, raw, err := readCsproj(p.Dir)
 	if err != nil {
 		return err
 	}
-	return s.wire(context.Background(), p.Dir, p.Name, func() error {
+	return s.wire(context.Background(), p, func() error {
 		if err := fsx.WriteFile(csproj, []byte(withDependency(string(raw), pkg, version, soft)), 0o644); err != nil { // #nosec G306 -- a tracked project file
 			return err
 		}
@@ -61,12 +61,17 @@ func (s *Service) AddDependency(gameID, dir, pkg, version string, soft bool) err
 // wire runs fn, which writes a project's dependency wiring, and while Mortar's own "Start" commit is still the latest
 // one and on no remote, folds the files fn changed into it: New mod adds its dependencies as they install, after that
 // commit, and a new project should start with nothing to commit. Files changed before fn ran are left alone.
-func (s *Service) wire(ctx context.Context, dir, name string, fn func() error) error {
+func (s *Service) wire(ctx context.Context, p settings.DevProject, fn func() error) error {
+	if p.Untrusted {
+		// Git in an untrusted repository can run a filter driver from its own .git/config.
+		return fn()
+	}
+	dir := p.Dir
 	before, ok := s.dirty(ctx, dir)
 	if err := fn(); err != nil {
 		return err
 	}
-	if ok && s.startIsLatest(ctx, dir, name) {
+	if ok && s.startIsLatest(ctx, dir, p.Name) {
 		s.foldIntoStart(ctx, dir, before)
 	}
 	return nil

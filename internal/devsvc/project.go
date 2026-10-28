@@ -139,7 +139,7 @@ func (s *Service) Inspect(ctx context.Context, gameID, dir string) (ProjectInfo,
 		info.ClientOnly = json.Unmarshal(body, &rec) == nil && rec.Values["audience"] == "client"
 	}
 	base := strings.TrimSuffix(filepath.Base(csproj), ".csproj")
-	if base != p.Name {
+	if base != p.Name && !p.Untrusted {
 		if err := s.follow(gameID, p, base); err != nil {
 			return ProjectInfo{}, err
 		}
@@ -320,7 +320,7 @@ func (s *Service) Edit(ctx context.Context, gameID, dir string, e ProjectEdit) (
 		return ProjectInfo{}, err
 	}
 	if e.Name != old.Name {
-		if csproj, err = s.rename(ctx, p.Dir, csproj, old.Name, e.Name); err != nil {
+		if csproj, err = s.rename(ctx, p, csproj, old.Name, e.Name); err != nil {
 			return ProjectInfo{}, err
 		}
 	}
@@ -366,7 +366,7 @@ func (s *Service) Edit(ctx context.Context, gameID, dir string, e ProjectEdit) (
 	}
 	if old.Author != "" && old.Author != e.Author {
 		_ = editFile(filepath.Join(p.Dir, "LICENSE"), func(body string) string {
-			return regexp.MustCompile(`(Copyright \(c\) \d{4} )`+regexp.QuoteMeta(old.Author)).ReplaceAllString(body, "${1}"+e.Author)
+			return regexp.MustCompile(`(Copyright \(c\) \d{4} )`+regexp.QuoteMeta(old.Author)).ReplaceAllString(body, "${1}"+strings.ReplaceAll(e.Author, "$", "$$"))
 		})
 	}
 	return s.Inspect(ctx, gameID, dir)
@@ -385,9 +385,11 @@ func editFile(path string, fn func(string) string) error {
 
 // rename moves the project from old to name: its folder, project and solution files (with git when the project is a
 // repository, so history follows), the namespace in its code, its README heading and its bundle's name.
-func (s *Service) rename(ctx context.Context, dir, csproj, old, name string) (string, error) {
+func (s *Service) rename(ctx context.Context, p settings.DevProject, csproj, old, name string) (string, error) {
+	dir := p.Dir
 	move := func(from, to string) error {
-		if _, err := os.Stat(filepath.Join(dir, ".git")); err == nil {
+		// An untrusted repository's .git/config can run a program on git commands.
+		if _, err := os.Stat(filepath.Join(dir, ".git")); err == nil && !p.Untrusted {
 			if _, err := s.run(ctx, dir, "git", "mv", "--", from, to); err == nil {
 				return nil
 			}

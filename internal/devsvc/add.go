@@ -46,7 +46,7 @@ func (s *Service) enroll(gameID, dir, name, profileID, copyFrom, kind string, un
 		}
 	}
 	output := dir
-	if kind != "" && untrusted {
+	if untrusted {
 		// Its files install as they are, so a repository not yet trusted has an empty folder installed instead; Trust moves it.
 		output = filepath.Join(dir, ".mortar", "untrusted")
 		if err := os.MkdirAll(output, 0o750); err != nil {
@@ -54,6 +54,7 @@ func (s *Service) enroll(gameID, dir, name, profileID, copyFrom, kind string, un
 		}
 	} else if kind == "" {
 		// The template builds an unpacked package here; it exists before the first build so the folder watch can start.
+		// A committed DLL in it would install, so an untrusted project keeps the empty folder above until Trust.
 		output = filepath.Join(dir, "artifacts", "bin", name, "debug")
 		if err := os.MkdirAll(output, 0o750); err != nil {
 			return settings.DevProject{}, err

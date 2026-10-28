@@ -275,6 +275,18 @@ func TestInspectRunsNoGitForAnUntrustedProject(t *testing.T) {
 	}
 }
 
+func TestWireRunsNoGitForAnUntrustedProject(t *testing.T) {
+	svc, run := testService(t, testTemplate)
+	dir := t.TempDir()
+	ran := false
+	if err := svc.wire(t.Context(), settings.DevProject{Dir: dir, Name: "Mod", Untrusted: true}, func() error { ran = true; return nil }); err != nil || !ran {
+		t.Fatalf("wire: %v ran=%v", err, ran)
+	}
+	if slices.ContainsFunc(run.calls, func(c []string) bool { return c[0] == "git" }) {
+		t.Errorf("git ran for an untrusted project: %v", run.calls)
+	}
+}
+
 func TestEditingOnlyTheIDPrefixDropsTheOldAssembly(t *testing.T) {
 	svc, _ := testService(t, testTemplate)
 	dir := fixtureProject(t, svc)

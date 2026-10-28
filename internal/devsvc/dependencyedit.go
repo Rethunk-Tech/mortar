@@ -65,7 +65,7 @@ func (s *Service) RemoveDependency(gameID, dir, pkg string) error {
 		return usererr.Wrap(usererr.Invalid, fmt.Errorf("%s is not a dependency the project can drop", pkg))
 	}
 	if p.Kind != "" {
-		return s.wire(context.Background(), p.Dir, p.Name, func() error { return setManifestDependency(p.Dir, pkg, "") })
+		return s.wire(context.Background(), p, func() error { return setManifestDependency(p.Dir, pkg, "") })
 	}
 	csproj, raw, err := readCsproj(p.Dir)
 	if err != nil {
@@ -75,7 +75,7 @@ func (s *Service) RemoveDependency(gameID, dir, pkg string) error {
 	userProps, _ := fsx.ReadFile(props)
 	folder := msbuild.Property(string(userProps), depProp(pkg))
 	soft := projectDependencies(string(raw))[pkg]
-	return s.wire(context.Background(), p.Dir, p.Name, func() error {
+	return s.wire(context.Background(), p, func() error {
 		project, err := withoutDependency(string(raw), pkg)
 		if err != nil {
 			return err
