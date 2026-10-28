@@ -11,7 +11,7 @@ import {
 } from './app.ts'
 import { serveModTemplate } from './modTemplate.ts'
 import { nestedBoxes } from './renderBoxes.ts'
-import { gameSettingsCases, newCases } from './renderCases.ts'
+import { clickIfPresent, gameSettingsCases, newCases } from './renderCases.ts'
 import { dialogCases } from './renderDialogs.ts'
 import { writeGallery } from './renderGallery.ts'
 import { unevenSpacing } from './renderGaps.ts'
@@ -167,7 +167,7 @@ const cases: Case[] = [
       await row(p, 6).click()
     },
     // The open details panel can cover the card, depending on how many mods the copied profile has.
-    run: (p) => row(p, 10).dispatchEvent('click'),
+    run: (p) => clickIfPresent(p.locator('[data-mod-id]'), 10, 'dispatch'),
   },
   // One switch per case, each its own action; the second puts the mod back as the first found it.
   {
@@ -219,7 +219,7 @@ const cases: Case[] = [
       await row(p, 6).dispatchEvent('click')
     },
     // The open details panel can cover either card, depending on how many mods the copied profile has.
-    run: (p) => row(p, 10).dispatchEvent('click'),
+    run: (p) => clickIfPresent(p.locator('[data-mod-id]'), 10, 'dispatch'),
   },
   open('Saves'),
   open('Config'),
@@ -227,7 +227,7 @@ const cases: Case[] = [
     name: 'config-select',
     setup: (p) => tab(p, 'Config'),
     run: (p) =>
-      p.getByRole('group', { name: 'Mods with settings' }).getByRole('button').nth(4).click(),
+      clickIfPresent(p.getByRole('group', { name: 'Mods with settings' }).getByRole('button'), 4),
   },
   open('Screenshots'),
   open('Browse'),

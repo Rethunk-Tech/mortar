@@ -1,9 +1,8 @@
 import type { Page } from '@playwright/test'
-import { openGameSelect, openProfile, openSettings } from './app.ts'
+import { openGameSelect, openSettings } from './app.ts'
 import type { Case } from './render-budget.ts'
 import type { Helpers } from './renderCases.ts'
 
-const PROFILE = 'Guided Test'
 const CLOSE_TRIES = 4
 const CLOSE_WAIT_MS = 1000
 const WIZARD_BUDGET = { updates: 3000 }
@@ -14,7 +13,7 @@ const TYPING_BUDGET = { updates: 2000 }
  * Each case is named dialog-…, so MORTAR_RENDER_ONLY=dialog runs only these.
  */
 function dialogKit(h: Helpers) {
-  const { toWorkspace, tab, tabs } = h
+  const { toWorkspace, tab } = h
 
   async function closeAll(page: Page) {
     for (let i = 0; i < CLOSE_TRIES && (await page.getByRole('dialog').count()) > 0; i++) {
@@ -30,11 +29,6 @@ function dialogKit(h: Helpers) {
   async function ready(page: Page) {
     await closeAll(page)
     await toWorkspace(page)
-    const current = page.getByRole('button', { name: /^Switch profile/ })
-    if (!((await current.textContent()) ?? '').includes(PROFILE)) {
-      await openProfile(page, PROFILE)
-      await tabs(page).waitFor()
-    }
   }
   const shown = (page: Page) => page.getByRole('dialog').last().waitFor()
   const pick = (page: Page, item: RegExp) => page.getByRole('menuitem', { name: item }).click()

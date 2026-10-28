@@ -69,6 +69,19 @@ export async function switchProfile(page: Page, name: string) {
   await page.getByRole('menuitemradio', { name: new RegExp(`^${name}`) }).click()
 }
 
+/** Switches to the first profile of the open game other than the open one; false when the game has only one. */
+export async function switchToOtherProfile(page: Page): Promise<boolean> {
+  await page.getByRole('button', { name: /^Switch profile/ }).click()
+  const other = page.getByRole('menuitemradio', { checked: false }).first()
+  if (!(await other.isVisible({ timeout: 1500 }).catch(() => false))) {
+    await page.keyboard.press('Escape')
+    return false
+  }
+  await other.click()
+  await page.getByRole('tablist', { name: 'Profile sections' }).waitFor()
+  return true
+}
+
 /** Opens the open game's settings from the Home tab. */
 export async function openGameSettings(page: Page, game = 'Stardew Valley') {
   await page.getByRole('tab', { name: 'Home' }).click()

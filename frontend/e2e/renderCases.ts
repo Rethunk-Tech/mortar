@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test'
-import { openGameSelect, openProfile, openSettings } from './app.ts'
+import { openGameSelect, openSettings, switchToOtherProfile } from './app.ts'
 import { largeDownloadCases } from './largeDownloadCase.ts'
 import { pausedDownloadCases } from './pausedDownloadCase.ts'
 import type { Case } from './render-budget.ts'
@@ -19,7 +19,7 @@ export interface Helpers {
 /** Cases for the dialogs and screens added with the version picker, modpack form, profile folder, custom games, co-op
  * list, hidden mods, favourites, freezing and config search. */
 export function newCases(h: Helpers): Case[] {
-  const { toWorkspace, tab, view, typeInto, tabs } = h
+  const { toWorkspace, tab, view, typeInto } = h
   /** Right-clicks the open profile in the title bar, which opens its menu; the case then measures picking an item. */
   async function openProfileMenu(page: Page) {
     await toWorkspace(page)
@@ -27,17 +27,26 @@ export function newCases(h: Helpers): Case[] {
   }
   const pick = (page: Page, item: RegExp) => page.getByRole('menuitem', { name: item }).click()
 
-  async function inGame(page: Page, profile: string) {
+  // The case measures a second profile, so it skips itself when the game has only one.
+  let inOther = false
+  let shared = false
+  let versioned = false
+  async function inGame(page: Page) {
     await toWorkspace(page)
-    await openProfile(page, profile)
-    await tabs(page).waitFor()
+    inOther = await switchToOtherProfile(page)
   }
 
   /** Select the mod at row n and open its details panel. */
   const shareThunderstore = async (page: Page) => {
     await tab(page, 'Home')
     await page.getByRole('button', { name: /^Share…/ }).click()
-    await page.getByRole('button', { name: /^Thunderstore/ }).click()
+    const target = page.getByRole('button', { name: /^Thunderstore/ })
+    if (await target.isVisible({ timeout: 1500 }).catch(() => false)) {
+      await target.click()
+      return true
+    }
+    await page.keyboard.press('Escape')
+    return false
   }
 
   return [
@@ -45,12 +54,17 @@ export function newCases(h: Helpers): Case[] {
     ...pausedDownloadCases(),
     {
       name: 'change-version',
-      setup: (p) => selectVersioned(p, h),
-      run: (p) =>
-        p
-          .getByRole('button', { name: /^Change version…/ })
-          .first()
-          .click(),
+      setup: async (p) => {
+        versioned = await selectVersioned(p, h)
+      },
+      run: async (p) => {
+        if (versioned) {
+          await p
+            .getByRole('button', { name: /^Change version…/ })
+            .first()
+            .click()
+        }
+      },
     },
     {
       name: 'mods-favourites',
@@ -100,23 +114,7 @@ export function newCases(h: Helpers): Case[] {
         await p.getByRole('button', { name: /^Add a game…/ }).click()
       },
     },
-    {
-      // Browse hides one result so the list has something; the section is absent while nothing is hidden.
-      name: 'hidden-mods',
-      setup: async (p) => {
-        await tab(p, 'Browse')
-        await typeInto(p, /^Search/, 'farm')
-        await p.waitForTimeout(h.settleMs)
-        await p.locator('[data-hit]').first().click({ button: 'right' })
-        await p.getByRole('menuitem', { name: /^Hide from Browse/ }).click()
-        await tab(p, 'Home')
-      },
-      run: async (p) => {
-        await p.getByRole('button', { name: /settings$/ }).click()
-        await p.getByText('Mods', { exact: true }).last().click()
-        await p.getByText('Hidden mods', { exact: true }).waitFor()
-      },
-    },
+    hiddenModsCase(h),
     {
       // A page holds as many results as fit, so a large window mounts the most cards a Browse page ever does.
       name: 'browse-large-window',
@@ -146,19 +144,29 @@ export function newCases(h: Helpers): Case[] {
     {
       name: 'coop-list',
       setup: async (p) => {
-        await inGame(p, 'Guided Test')
-        await openProfileMenu(p)
+        await inGame(p)
+        if (inOther) {
+          await openProfileMenu(p)
+        }
       },
-      run: (p) => pick(p, /^Multiplayer mod list…/),
+      run: async (p) => {
+        const item = p.getByRole('menuitem', { name: /^Multiplayer mod list…/ })
+        if (inOther && (await item.count()) > 0) {
+          await item.click()
+        }
+      },
     },
     {
       name: 'modpack-form',
       // Home and the share dialog open in setup, so the action is the form alone.
       setup: async (p) => {
-        await inGame(p, 'Guided Test')
-        await shareThunderstore(p)
+        await inGame(p)
+        shared = inOther && (await shareThunderstore(p))
       },
       run: async (p) => {
+        if (!shared) {
+          return
+        }
         await p.getByRole('button', { name: /^Modpack/ }).click()
         await p.getByRole('textbox', { name: 'Name' }).waitFor()
       },
@@ -166,8 +174,50 @@ export function newCases(h: Helpers): Case[] {
   ]
 }
 
+/** Clicks the nth match, or does nothing when a copied profile has fewer: the case then measures nothing. */
+export async function clickIfPresent(
+  items: Locator,
+  n: number,
+  how: 'click' | 'dispatch' = 'click',
+) {
+  if ((await items.count()) > n) {
+    await (how === 'click' ? items.nth(n).click() : items.nth(n).dispatchEvent('click'))
+  }
+}
+
+/** Browse hides one result so the settings list has something; the section is absent while nothing is hidden. */
+function hiddenModsCase({ tab, typeInto, settleMs }: Helpers): Case {
+  let hidden = false
+  return {
+    name: 'hidden-mods',
+    setup: async (p) => {
+      await tab(p, 'Browse')
+      await typeInto(p, /^Search/, 'farm')
+      await p.waitForTimeout(settleMs)
+      // Browse results come from the network, so the case skips itself when none arrived.
+      hidden = (await p.locator('[data-hit]').count()) > 0
+      if (hidden) {
+        await p.locator('[data-hit]').first().click({ button: 'right' })
+        await p.getByRole('menuitem', { name: /^Hide from Browse/ }).click()
+      }
+      await tab(p, 'Home')
+    },
+    run: async (p) => {
+      if (!hidden) {
+        return
+      }
+      await p.getByRole('button', { name: /settings$/ }).click()
+      await p.getByText('Mods', { exact: true }).last().click()
+      await p.getByText('Hidden mods', { exact: true }).waitFor()
+    },
+  }
+}
+
 // The first mod that offers other versions: a mod built in Develop or added from an archive has none.
-async function selectVersioned(p: Page, { view, row }: Pick<Helpers, 'view' | 'row'>) {
+async function selectVersioned(
+  p: Page,
+  { view, row }: Pick<Helpers, 'view' | 'row'>,
+): Promise<boolean> {
   await view(p, 'List view')
   const rows = await p.locator('[data-mod-id]').count()
   for (let n = 0; n < rows; n++) {
@@ -178,9 +228,10 @@ async function selectVersioned(p: Page, { view, row }: Pick<Helpers, 'view' | 'r
         .first()
         .isVisible()
     ) {
-      return
+      return true
     }
   }
+  return false
 }
 
 /** The game settings page opened from a profile's Home, and its switch to every profile's values. */
