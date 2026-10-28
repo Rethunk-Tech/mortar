@@ -146,14 +146,24 @@ func TestAnOldChangedCopyOfADroppedTypeIsSkipped(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		r, _ := f.Open()
-		if _, err := io.Copy(w, r); err != nil {
+		r, err := f.Open()
+		if err != nil {
 			t.Fatal(err)
 		}
-		r.Close()
+		if _, err := io.CopyN(w, r, int64(f.UncompressedSize64)); err != nil {
+			t.Fatal(err)
+		}
+		if err := r.Close(); err != nil {
+			t.Fatal(err)
+		}
 	}
-	w, _ := zw.Create(changedPrefix + "Mods/mc/pic.png")
-	w.Write([]byte("png"))
+	w, err := zw.Create(changedPrefix + "Mods/mc/pic.png")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := w.Write([]byte("png")); err != nil {
+		t.Fatal(err)
+	}
 	if err := zw.Close(); err != nil {
 		t.Fatal(err)
 	}
