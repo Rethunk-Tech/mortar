@@ -9,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -166,23 +165,11 @@ func storeKey(prefix string) (string, bool) {
 // walkFiles calls fn with the slash path, full path and size of every regular file below root, in walk order. A store
 // item's completion marker is the store's own and is skipped when item is set.
 func walkFiles(root string, item bool, fn func(rel, path string, size int64) error) error {
-	return filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
-		if err != nil || !d.Type().IsRegular() {
-			return err
-		}
-		rel, err := filepath.Rel(root, path)
-		if err != nil {
-			return err
-		}
-		rel = filepath.ToSlash(rel)
+	return fsx.WalkFiles(root, func(rel, path string, size int64) error {
 		if item && rel == store.CompleteMarker {
 			return nil
 		}
-		info, err := d.Info()
-		if err != nil {
-			return err
-		}
-		return fn(rel, path, info.Size())
+		return fn(rel, path, size)
 	})
 }
 

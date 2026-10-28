@@ -301,16 +301,9 @@ func (s *Service) configFiles(gameID, profileID string) ([]pack.File, error) {
 	}
 	root := filepath.Join(dir, "BepInEx", "config")
 	var out []pack.File
-	err = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
-		if err != nil || !d.Type().IsRegular() {
-			return err
-		}
-		rel, err := filepath.Rel(root, path)
-		if err != nil {
-			return err
-		}
+	err = fsx.WalkFiles(root, func(rel, path string, _ int64) error {
 		data, err := fsx.ReadFile(path)
-		out = append(out, pack.File{Path: "config/" + filepath.ToSlash(rel), Data: data})
+		out = append(out, pack.File{Path: "config/" + rel, Data: data})
 		return err
 	})
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {

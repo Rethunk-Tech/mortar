@@ -59,20 +59,12 @@ func (s *Store) Backup(game, id string) (Profile, map[string][]byte, error) {
 		}
 	}
 	walk := func(root, prefix string, keep func(rel string, size int64) bool) error {
-		err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
-			if err != nil || !d.Type().IsRegular() {
-				return err
-			}
-			rel, err := filepath.Rel(root, path)
-			if err != nil {
-				return err
-			}
-			info, err := d.Info()
-			if err != nil || !keep(filepath.ToSlash(rel), info.Size()) {
-				return err
+		err := fsx.WalkFiles(root, func(rel, path string, size int64) error {
+			if !keep(rel, size) {
+				return nil
 			}
 			b, err := fsx.ReadFile(path)
-			files[prefix+filepath.ToSlash(rel)] = b
+			files[prefix+rel] = b
 			return err
 		})
 		if errors.Is(err, fs.ErrNotExist) {
