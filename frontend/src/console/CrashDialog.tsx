@@ -28,7 +28,6 @@ import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { BisectConfirm } from './BisectConfirm.tsx'
 import { BisectDialog } from './BisectDialog.tsx'
-import { crashCauseDetailLine } from './crashCause.ts'
 import { useConsole } from './store.ts'
 
 type Crash = NonNullable<ReturnType<typeof useLaunch.getState>['crash']>
@@ -219,7 +218,7 @@ export function CrashDialog() {
     }
   }
   const causeBody = crash.cause
-    ? reasonText(crash.cause.reason, crash.cause.params, crashCauseDetailLine(crash.cause.detail))
+    ? reasonText(crash.cause.reason, crash.cause.params, crash.cause.detail.split('\n')[0] ?? '')
     : ''
   return (
     <>
