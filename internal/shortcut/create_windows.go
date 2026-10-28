@@ -121,20 +121,28 @@ func linkArguments(path string) (string, error) {
 	return arguments, err
 }
 
-func matchingLinks(dir, arg string) ([]string, error) {
+// lnkFiles lists the shortcut files in dir; a missing dir holds none.
+func lnkFiles(dir string) ([]string, error) {
 	entries, err := os.ReadDir(dir)
 	if errors.Is(err, os.ErrNotExist) {
 		return nil, nil
 	}
+	var paths []string
+	for _, entry := range entries {
+		if !entry.IsDir() && strings.EqualFold(filepath.Ext(entry.Name()), ".lnk") {
+			paths = append(paths, filepath.Join(dir, entry.Name()))
+		}
+	}
+	return paths, err
+}
+
+func matchingLinks(dir, arg string) ([]string, error) {
+	paths, err := lnkFiles(dir)
 	if err != nil {
 		return nil, err
 	}
 	var matches []string
-	for _, entry := range entries {
-		if entry.IsDir() || !strings.EqualFold(filepath.Ext(entry.Name()), ".lnk") {
-			continue
-		}
-		path := filepath.Join(dir, entry.Name())
+	for _, path := range paths {
 		got, err := linkArguments(path)
 		if errors.Is(err, os.ErrNotExist) {
 			continue
@@ -151,14 +159,7 @@ func matchingLinks(dir, arg string) ([]string, error) {
 
 // Renamed renames the Start menu shortcut for a profile whose name changed.
 func Renamed(game, profile, profileName, gameName string) error {
-	if !validID(game) || !validID(profile) {
-		return errors.New("a shortcut needs a game and a profile")
-	}
-	dir, err := startMenuDir()
-	if err != nil {
-		return err
-	}
-	matches, err := matchingLinks(dir, Arg(game, profile))
+	dir, matches, err := profileLinks(game, profile)
 	if err != nil || len(matches) == 0 {
 		return err
 	}
@@ -171,14 +172,7 @@ func Renamed(game, profile, profileName, gameName string) error {
 
 // Removed removes the Start menu shortcuts for a deleted profile.
 func Removed(game, profile string) error {
-	if !validID(game) || !validID(profile) {
-		return errors.New("a shortcut needs a game and a profile")
-	}
-	dir, err := startMenuDir()
-	if err != nil {
-		return err
-	}
-	matches, err := matchingLinks(dir, Arg(game, profile))
+	_, matches, err := profileLinks(game, profile)
 	if err != nil {
 		return err
 	}
@@ -191,15 +185,20 @@ func Removed(game, profile string) error {
 }
 
 func exists(game, profile string) (bool, error) {
-	if !validID(game) || !validID(profile) {
-		return false, errors.New("a shortcut needs a game and a profile")
-	}
-	dir, err := startMenuDir()
-	if err != nil {
-		return false, err
-	}
-	matches, err := matchingLinks(dir, Arg(game, profile))
+	_, matches, err := profileLinks(game, profile)
 	return len(matches) > 0, err
+}
+
+// profileLinks are the Start menu folder and the shortcuts in it that play the profile.
+func profileLinks(game, profile string) (dir string, matches []string, err error) {
+	if !validID(game) || !validID(profile) {
+		return "", nil, errors.New("a shortcut needs a game and a profile")
+	}
+	if dir, err = startMenuDir(); err != nil {
+		return "", nil, err
+	}
+	matches, err = matchingLinks(dir, Arg(game, profile))
+	return dir, matches, err
 }
 
 // fileName keeps a shortcut's name to characters every file system accepts.
@@ -226,19 +225,12 @@ func Repoint(exe string) error {
 	if err != nil {
 		return err
 	}
-	entries, err := os.ReadDir(dir)
-	if errors.Is(err, os.ErrNotExist) {
-		return nil
-	}
+	paths, err := lnkFiles(dir)
 	if err != nil {
 		return err
 	}
 	var errs []error
-	for _, entry := range entries {
-		if entry.IsDir() || !strings.EqualFold(filepath.Ext(entry.Name()), ".lnk") {
-			continue
-		}
-		path := filepath.Join(dir, entry.Name())
+	for _, path := range paths {
 		var target, arg string
 		if err := withLink(path, func(link *ole.IDispatch) error {
 			for prop, dst := range map[string]*string{"TargetPath": &target, "Arguments": &arg} {
