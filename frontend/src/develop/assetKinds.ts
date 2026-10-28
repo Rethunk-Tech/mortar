@@ -12,6 +12,7 @@ import { useProjectInfo } from './builds.ts'
 import { findPackage } from './dependencies.ts'
 import { type Draft, firstDraft, isRemembered, REMEMBERED } from './draft.ts'
 
+// A lookup that fails (offline) leaves the kind offered; only a loader the source does not list hides it.
 // A kind whose loader is neither on Thunderstore nor one of the player's projects makes a pack nothing loads.
 async function offered(game: string, kinds: AssetKind[]): Promise<AssetKind[]> {
   const own = new Set(Object.values(useProjectInfo.getState().byDir).map((info) => info.package))
@@ -21,7 +22,7 @@ async function offered(game: string, kinds: AssetKind[]): Promise<AssetKind[]> {
         ? true
         : findPackage(game, '', k.dependency).then(
             (item) => item !== undefined,
-            () => false,
+            () => true,
           ),
     ),
   )

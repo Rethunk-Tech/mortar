@@ -11,6 +11,7 @@ import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { FormDialog, SelectField, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { errorKind } from '../toasts/errorKind.ts'
+import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { useTrustAsk } from './builds.ts'
@@ -46,8 +47,11 @@ export function ReleaseDialog({
         setDrafted(draft)
         setNotes((n) => n || draft)
       })
-      .catch(() => setVersions(null))
-  }, [game, dir])
+      .catch((e: unknown) => {
+        setVersions(null)
+        reportError(t`Could not read the next versions`)(e)
+      })
+  }, [game, dir, t])
   const choices = versions ? [...new Set([versions.patch, versions.minor, versions.major])] : []
   const lines = notes.split('\n').filter((l) => l.trim() !== '')
   const release = () =>
@@ -95,7 +99,7 @@ export function ReleaseDialog({
       subtitle={
         versions?.github
           ? t`Commits the changelog, tags the version and pushes both to ${{ remote: versions.github }}, whose CI publishes it.`
-          : t`Commits the changelog and tags the version here, then offers to upload it.`
+          : t`Commits the changelog and tags the version (pushing both when the folder has a GitHub remote), then offers to upload it.`
       }
       icon={
         <ToneIcon tone="neutral">

@@ -33,15 +33,17 @@ export async function findPackage(
   return (page.items ?? []).find((i) => i.id === pkg)
 }
 
-/** Records each package in the new project and installs it into the open (development) profile. */
+/** Records each package in the new project and installs it into the open (development) profile; returns the ids it
+ * skipped for having no known version. */
 export async function startDependencies(
   game: string,
   dir: string,
   { ids, optional }: { ids: string[]; optional: string[] },
   known: Known,
-) {
+): Promise<string[]> {
+  const skipped: string[] = []
   if (ids.length === 0) {
-    return
+    return skipped
   }
   const projects = Object.values(useProjectInfo.getState().byDir)
   for (const id of ids) {
@@ -52,14 +54,17 @@ export async function startDependencies(
       projects.find((info) => info.package === id)?.version
     if (version) {
       await AddDependency(game, dir, id, version, optional.includes(id))
+    } else {
+      skipped.push(id)
     }
   }
   // A package another project here publishes is built from that project, so it is not downloaded.
   const local = new Set(projects.map((info) => info.package))
-  const fetched = ids.filter((id) => !local.has(id))
+  const fetched = ids.filter((id) => !(local.has(id) || skipped.includes(id)))
   if (fetched.length > 0) {
     await download(fetched.map((id) => ({ kind: 'install', package: id })))
   }
+  return skipped
 }
 
 export type Shown = Pick<Item, 'name' | 'author'> & { picture?: string }

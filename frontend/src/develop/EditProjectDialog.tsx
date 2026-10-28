@@ -106,6 +106,7 @@ export function EditProjectDialog({
         </ToneIcon>
       }
       submitLabel={t`Save`}
+      issue={deps.loading ? t`Reading the dependencies…` : ''}
       dirty={dirty}
       busy={saving}
       onSubmit={dirty ? save : onClose}
@@ -155,7 +156,15 @@ export function EditProjectDialog({
           />
         )}
       </FormSection>
-      <ProjectDependencies game={game} rows={deps.rows} setRows={deps.setRows} required={files} />
+      <ProjectDependencies
+        game={game}
+        rows={deps.rows}
+        setRows={deps.setRows}
+        required={files}
+        loading={deps.loading}
+        error={deps.error}
+        onRetry={deps.retry}
+      />
       <FormSection title={t`Credits`}>
         <FieldRow>
           <TextInput label={t`Author`} value={edit.author} onChange={(author) => set({ author })} />

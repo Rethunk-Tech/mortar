@@ -4,6 +4,8 @@ import { useCallback, useRef } from 'react'
 import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/source/models.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { FormSection } from '../shell/dialog/FormDialog.tsx'
+import { LoadErrorRow, LoadingRow } from '../shell/LoadingRow.tsx'
+import type { InlineError } from '../toasts/report.ts'
 import { useProjectInfo } from './builds.ts'
 import { AddAnother, PackageRow } from './DependenciesStep.tsx'
 import { knowPackage, ownProject, useKnownPackages, usePackageDetails } from './dependencies.ts'
@@ -15,12 +17,18 @@ export function ProjectDependencies({
   rows,
   setRows,
   required = false,
+  loading,
+  error,
+  onRetry,
 }: {
   game: string
   rows: DependencyRow[]
   setRows: (update: (rows: DependencyRow[]) => DependencyRow[]) => void
   // A mod of files needs every dependency it lists, so none is offered as optional.
   required?: boolean
+  loading: boolean
+  error: InlineError | null
+  onRetry: () => void
 }) {
   const { t } = useLingui()
   const profile = useProfiles((s) => s.openId)
@@ -52,7 +60,9 @@ export function ProjectDependencies({
       title={t`Dependencies`}
       description={t`Untick one to drop it; new ones install into the mod's profile.`}
     >
-      {rows.length === 0 ? (
+      {loading ? <LoadingRow>{t`Reading the dependencies…`}</LoadingRow> : null}
+      {error ? <LoadErrorRow error={error} onRetry={onRetry} /> : null}
+      {!(loading || error) && rows.length === 0 ? (
         <Typography
           sx={{ color: 'text.secondary' }}
         >{t`The mod depends on nothing but the loader.`}</Typography>
@@ -69,7 +79,9 @@ export function ProjectDependencies({
           {...(required ? {} : { onOptional: setOptional })}
         />
       ))}
-      <AddAnother game={game} profile={profile} taken={ids.join(',')} onAdd={add} />
+      {error ? null : (
+        <AddAnother game={game} profile={profile} taken={ids.join(',')} onAdd={add} />
+      )}
     </FormSection>
   )
 }

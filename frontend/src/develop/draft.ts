@@ -104,6 +104,16 @@ function paramIssue(p: Param, raw: string): string {
 const STEPS = ['kind', 'mod', 'author', 'features', 'dependencies', 'project'] as const
 export type Step = (typeof STEPS)[number]
 
+/** Where a step sits among the steps shown now; one that is gone (the template had no features) falls to the next. */
+export function stepIndex(steps: Step[], step: Step | null): number {
+  if (!step) {
+    return 0
+  }
+  const from = STEPS.indexOf(step)
+  const i = steps.findIndex((s) => STEPS.indexOf(s) >= from)
+  return i < 0 ? steps.length - 1 : i
+}
+
 /** The steps this wizard shows: the kind only when the game offers asset kinds, the features only when the form asks
  * any. */
 export function wizardSteps(hasKinds: boolean, form: Form | null): Step[] {

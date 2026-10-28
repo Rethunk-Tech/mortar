@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Dependency } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import {
   AddDependency,
@@ -6,6 +6,7 @@ import {
   RemoveDependency,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import { sameValue } from '../shell/sameValue.ts'
+import { type InlineError, inlineError } from '../toasts/report.ts'
 import { startDependencies, useKnownPackages } from './dependencies.ts'
 
 /** A dependency as the dialog edits it: unticked ones are dropped on save, new ones added. */
@@ -18,16 +19,44 @@ export interface DependencyRow extends Dependency {
 export function useDependencyRows(game: string, dir: string) {
   const [loaded, setLoaded] = useState<DependencyRow[]>([])
   const [rows, setRows] = useState<DependencyRow[]>([])
-  useEffect(() => {
+  const [error, setError] = useState<InlineError | null>(null)
+  const [ready, setReady] = useState(false)
+  const latest = useRef(0)
+  const load = useCallback(() => {
+    latest.current += 1
+    const id = latest.current
+    setError(null)
     Dependencies(game, dir)
       .then((deps) => {
+        if (id !== latest.current) {
+          return
+        }
         const read = (deps ?? []).map((d) => ({ ...d, keep: true, added: false }))
         setLoaded(read)
-        setRows(read)
+        // Rows added before the read finished stay.
+        setRows((now) => [
+          ...read,
+          ...now.filter((r) => r.added && !read.some((d) => d.package === r.package)),
+        ])
+        setReady(true)
       })
-      .catch(() => undefined)
+      .catch((e: unknown) => id === latest.current && setError(inlineError(e)))
   }, [game, dir])
-  return { loaded, rows, setRows, dirty: !sameValue(loaded, rows) }
+  useEffect(() => {
+    load()
+    return () => {
+      latest.current += 1
+    }
+  }, [load])
+  return {
+    loaded,
+    rows,
+    setRows,
+    dirty: !sameValue(loaded, rows),
+    loading: !ready && error === null,
+    error,
+    retry: load,
+  }
 }
 
 /** Writes the edited dependencies into the project and installs the new ones into its profile. */

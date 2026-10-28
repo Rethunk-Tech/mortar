@@ -30,7 +30,7 @@ import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { Field, FieldRow, FormDialog, SelectField, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { readStored, writeStored } from '../shell/useStoredState.ts'
 import { space } from '../theme/density.ts'
-import { reportError } from '../toasts/report.ts'
+import { reportError, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { useAssetKinds } from './assetKinds.ts'
@@ -47,6 +47,8 @@ import {
   REMEMBERED,
   rememberedOf,
   requirementIssue,
+  type Step,
+  stepIndex,
   stepIssue,
   stepParams,
   validModName,
@@ -283,7 +285,8 @@ function ProjectStep({ draft, owners, set }: { draft: Draft; owners: GitHubOwner
       set({ parent: dir })
     }
   }
-  const where = draft.parent ? `${draft.parent}/${draft.repo || draft.name}` : ''
+  const sep = draft.parent.includes('\\') ? '\\' : '/'
+  const where = draft.parent ? `${draft.parent}${sep}${draft.repo || draft.name}` : ''
   return (
     <>
       <Field label={t`Projects folder`} htmlFor={folderId} hint={where}>
@@ -355,7 +358,6 @@ function useStepLabels() {
 // Reads the template's questions and the tools each time the dialog opens; the profile starts as the open one.
 function useWizardData(open: boolean, game: string, setDraft: (fn: (d: Draft) => Draft) => void) {
   const { t } = useLingui()
-  const openId = useProfiles((s) => s.openId)
   const [tools, setTools] = useState<Tools | null>(null)
   const [form, setForm] = useState<Form | null>(null)
   const [failed, setFailed] = useState(false)
@@ -379,7 +381,7 @@ function useWizardData(open: boolean, game: string, setDraft: (fn: (d: Draft) =>
             repo: d.repo,
             parent: fresh.parent || d.parent,
             values: { ...fresh.values, ...typed },
-            profile: openId || NEW_PROFILE,
+            profile: useProfiles.getState().openId || NEW_PROFILE,
             github: d.github,
             owner: d.owner,
             kind: d.kind,
@@ -401,7 +403,7 @@ function useWizardData(open: boolean, game: string, setDraft: (fn: (d: Draft) =>
         }))
       })
       .catch(() => setTools(null))
-  }, [open, game, openId, setDraft, t])
+  }, [open, game, setDraft, t])
   return { tools, form, failed }
 }
 
@@ -421,12 +423,15 @@ export function NewModDialog({
   const { kinds, form: assetForm } = useAssetKinds(open, game, draft.kind, setDraft)
   const form = draft.kind ? assetForm : templateForm
   const steps = wizardSteps(kinds.length > 0, form)
-  const [at, setAt] = useState(0)
+  // Kept by name: the kind and the template's form arrive late and change which steps exist.
+  const [stepName, setStepName] = useState<Step | null>(null)
+  const at = stepIndex(steps, stepName)
+  const setAt = (i: number) => setStepName(steps[i] ?? null)
   const openId = useProfiles((s) => s.openId)
   const [pending, run] = usePending()
   useEffect(() => {
     if (open) {
-      setAt(0)
+      setStepName(null)
     }
   }, [open])
   const set: Set = useCallback((next) => setDraft((d) => ({ ...d, ...next })), [])
@@ -453,16 +458,27 @@ export function NewModDialog({
         // The mod lives in its profile: open that one, so Mods and Play show it.
         await useProfiles.getState().load(game, project.profile)
         useProfiles.getState().open(project.profile)
-        await startDependencies(
-          game,
-          project.dir,
-          { ids: chosenDependencies(draft, form), optional: draft.optional },
-          useKnownPackages.getState(),
-        )
         useToasts
           .getState()
           .push({ kind: 'success', title: t`Started ${{ name: project.name }}`, body: project.dir })
         onClose()
+        try {
+          const skipped = await startDependencies(
+            game,
+            project.dir,
+            { ids: chosenDependencies(draft, form), optional: draft.optional },
+            useKnownPackages.getState(),
+          )
+          if (skipped.length > 0) {
+            useToasts.getState().push({
+              kind: 'warning',
+              title: t`No version found for some dependencies, so they were not added`,
+              body: skipped.join(', '),
+            })
+          }
+        } catch (e) {
+          toastError(t`Could not add the dependencies`, e)
+        }
         if (!draft.kind) {
           await buildProject(game, project.dir)
         }

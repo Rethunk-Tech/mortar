@@ -12,7 +12,7 @@ import {
   Typography,
 } from '@mui/material'
 import { CircleAlert, Code, Copy, FileSearch, Search } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type {
   Mapped,
   Usage,
@@ -111,6 +111,8 @@ function Source({
   const [failure, setFailure] = useState<InlineError | null>(null)
   const il = mode === 'il'
   const [installing, install] = usePending()
+  // Counts loads, so only the newest one's result lands.
+  const latest = useRef(0)
   useEffect(() => {
     HasDecompiler()
       .then(setHas)
@@ -123,16 +125,27 @@ function Source({
     setSource('')
     setMapped(null)
     setFailure(null)
-    const failed = (e: unknown) => setFailure(inlineError(e))
+    latest.current += 1
+    const id = latest.current
+    const live =
+      <T,>(set: (v: T) => void) =>
+      (v: T) =>
+        id === latest.current && set(v)
+    const failed = live((e: unknown) => setFailure(inlineError(e)))
     if (mode === 'both') {
-      DecompileMapped(game, dir, assembly, type).then(setMapped).catch(failed)
+      DecompileMapped(game, dir, assembly, type).then(live(setMapped)).catch(failed)
     } else {
       Decompile(game, dir, assembly, type, mode === 'il')
-        .then(setSource)
+        .then(live(setSource))
         .catch(failed)
     }
   }, [game, dir, assembly, type, mode, has])
-  useEffect(load, [load])
+  useEffect(() => {
+    load()
+    return () => {
+      latest.current += 1
+    }
+  }, [load])
   if (has === false) {
     return (
       <EmptyState
@@ -259,7 +272,13 @@ function UsagesDrawer({
             component="button"
             type="button"
             onClick={() => onOpen(u)}
-            sx={{ all: 'unset', display: 'block', cursor: 'pointer', py: 0.25 }}
+            sx={{
+              all: 'unset',
+              display: 'block',
+              cursor: 'pointer',
+              py: 0.25,
+              '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main' },
+            }}
           >
             <Typography noWrap={true} sx={{ fontFamily: MONO, fontSize: 'small.fontSize' }}>
               {u.caller}
@@ -340,6 +359,8 @@ export function GameCodeDialog({
   const [assembly, setAssembly] = useState('')
   const [mode, setMode] = useState<CodeMode>('cs')
   const [usages, setUsages] = useState(false)
+  // A member opened from Usages has only a name, so a hook for it would carry a made-up signature.
+  const [exact, setExact] = useState(true)
   const assemblies =
     useLoaded(() => Assemblies(game, dir), [game, dir], null, reportUnexpected).data ?? []
   const target = picked ? `${picked.type}::${picked.method}` : ''
@@ -362,7 +383,16 @@ export function GameCodeDialog({
           </MenuItem>
         ))}
       </TextField>
-      <MemberSearch game={game} dir={dir} assembly={assembly} picked={picked} onPick={setPicked} />
+      <MemberSearch
+        game={game}
+        dir={dir}
+        assembly={assembly}
+        picked={picked}
+        onPick={(m) => {
+          setExact(true)
+          setPicked(m)
+        }}
+      />
       <ToggleButtonGroup
         exclusive={true}
         size="small"
@@ -384,8 +414,9 @@ export function GameCodeDialog({
       </Button>
       <TipIconButton
         label={t`Copy a ${{ library: MONOMOD }} hook`}
+        tip={exact ? undefined : t`Pick the member in the search to copy its hook.`}
         size="medium"
-        disabled={!picked || picked.kind === 'field'}
+        disabled={!picked || picked.kind === 'field' || !exact}
         onClick={() => picked && copyText(hookSnippet(picked), t`Hook copied`)}
       >
         <Copy size={16} />
@@ -425,6 +456,7 @@ export function GameCodeDialog({
         onOpen={(u) => {
           const [type = '', method = ''] = u.caller.split('::')
           setAssembly(u.assembly === assemblies[0]?.path ? '' : u.assembly)
+          setExact(false)
           setPicked({ type, kind: 'method', method, static: false, void: true, params: [] })
           setUsages(false)
         }}

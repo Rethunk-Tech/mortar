@@ -212,7 +212,7 @@ export function DependenciesStep({
             checked={chosen.includes(id)}
             onToggle={toggle}
             optional={draft.optional.includes(id)}
-            onOptional={setOptional}
+            {...(draft.kind ? {} : { onOptional: setOptional })}
           />
         )
       })}

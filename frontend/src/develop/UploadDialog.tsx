@@ -15,7 +15,7 @@ import { openWeb } from '../shell/openWeb.ts'
 import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
-import { packProject } from './builds.ts'
+import { packProject, runOf, useDevRuns } from './builds.ts'
 
 const TEAMS_PAGE = 'https://thunderstore.io/settings/teams/'
 
@@ -130,6 +130,12 @@ export function UploadDialog({
       onConfirm={() =>
         upload(
           async () => {
+            if (runOf(useDevRuns.getState().byDir, dir).running) {
+              useToasts
+                .getState()
+                .push({ kind: 'info', title: t`Wait for the running build to finish` })
+              return
+            }
             const pack = await packProject(game, dir)
             // The card shows why a package was refused.
             if (!pack?.zip || (pack.issues ?? []).length > 0) {

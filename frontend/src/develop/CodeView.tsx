@@ -3,7 +3,7 @@ import { Box, IconButton } from '@mui/material'
 import type { Theme } from '@mui/material/styles'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Copy } from 'lucide-react'
-import { memo, useEffect, useMemo, useRef } from 'react'
+import { type KeyboardEvent, memo, useEffect, useMemo, useRef } from 'react'
 import { copyText } from '../share/copyText.ts'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { MONO } from '../theme/theme.ts'
@@ -134,8 +134,25 @@ export function CodeView({
               ref={virtualizer.measureElement}
               data-index={v.index}
               onClick={onPick ? () => onPick(v.index) : undefined}
+              {...(onPick
+                ? {
+                    role: 'button',
+                    tabIndex: 0,
+                    onKeyDown: (e: KeyboardEvent<HTMLElement>) => {
+                      if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+                        e.preventDefault()
+                        onPick(v.index)
+                      }
+                    },
+                  }
+                : {})}
               sx={{
                 cursor: onPick ? 'pointer' : undefined,
+                '&:focus-visible': {
+                  outline: '2px solid',
+                  outlineColor: 'primary.main',
+                  outlineOffset: -2,
+                },
                 bgcolor: marked.has(v.index) ? MARK_BG : undefined,
                 position: 'absolute',
                 top: 0,

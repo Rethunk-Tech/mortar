@@ -53,11 +53,11 @@ export async function buildProject(game: string, dir: string, quiet = false) {
   patch(dir, { running: 'build' })
   try {
     patch(dir, { build: await Build(game, dir), builtAt: Date.now() })
-    await refreshInfo(game, dir)
+    await refreshInfo(game, dir, quiet)
   } catch (e) {
     if (errorKind(e) === 'unconfirmed') {
       if (quiet) {
-        await refreshInfo(game, dir)
+        await refreshInfo(game, dir, true)
       } else {
         useTrustAsk.setState({ ask: { game, dir, pack: false } })
       }
@@ -94,13 +94,16 @@ export async function packProject(game: string, dir: string): Promise<PackResult
 // What each project's files say, by folder: read on show, after a build, and when the window comes back.
 export const useProjectInfo = create<{ byDir: Record<string, ProjectInfo> }>(() => ({ byDir: {} }))
 
-/** Rereads the project's details from its files; a rename made outside Mortar is followed there. */
-export async function refreshInfo(game: string, dir: string) {
+/** Rereads the project's details from its files; a rename made outside Mortar is followed there. A background read
+ * (quiet) that fails stays silent, so a broken project does not toast on every window focus. */
+export async function refreshInfo(game: string, dir: string, quiet = false) {
   try {
     const info = await Inspect(game, dir)
     useProjectInfo.setState((s) => ({ byDir: { ...s.byDir, [dir]: info } }))
   } catch (e) {
-    toastError(i18n._(msg`Could not read the mod project`), e)
+    if (!quiet) {
+      toastError(i18n._(msg`Could not read the mod project`), e)
+    }
   }
 }
 
@@ -122,7 +125,7 @@ export function initDevWatch() {
       if (p.watch) {
         buildProject(game, p.dir, true).catch(() => undefined)
       } else {
-        refreshInfo(game, p.dir).catch(() => undefined)
+        refreshInfo(game, p.dir, true).catch(() => undefined)
       }
     }
   })

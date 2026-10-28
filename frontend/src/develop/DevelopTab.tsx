@@ -1,7 +1,17 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ButtonGroup, Menu, Typography } from '@mui/material'
-import { Check, ChevronDown, Code, FolderPlus, GitBranch, Hammer, Plus, Users } from 'lucide-react'
+import {
+  Check,
+  ChevronDown,
+  Code,
+  FolderPlus,
+  GitBranch,
+  Hammer,
+  Plus,
+  SearchX,
+  Users,
+} from 'lucide-react'
 import { useEffect, useState } from 'react'
 import {
   Add,
@@ -15,7 +25,7 @@ import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { installExtraFolder } from '../downloads/autoInstall.ts'
 import { PageActions } from '../game/PageActions.tsx'
 import { useProfiles } from '../profiles/store.ts'
-import { saveSetting } from '../settings/persist.ts'
+import { persist } from '../settings/persist.ts'
 import { useSettings } from '../settings/store.ts'
 import { CardsView } from '../shell/CardsView.tsx'
 import { ControlsRow } from '../shell/ControlsRow.tsx'
@@ -36,13 +46,16 @@ import { NewModDialog } from './NewModDialog.tsx'
 import { ProjectCard } from './ProjectCard.tsx'
 import { TrustDialog } from './TrustDialog.tsx'
 
+const profileNameOf = (list: { id: string; name: string }[], id: string) =>
+  list.find((p) => p.id === id)?.name ?? ''
+
 // A project in another profile: its builds install there, so it is worked on from that profile. One whose profile
 // was deleted can be moved into the open profile or dropped from the list.
 function ElsewhereRow({ game, project }: { game: string; project: DevProject }) {
   const { t } = useLingui()
   const openId = useProfiles((s) => s.openId)
   const profileName = useProfiles(
-    (s) => s.profiles.find((p) => p.id === project.profile)?.name ?? '',
+    (s) => profileNameOf(s.profiles, project.profile) || profileNameOf(s.damaged, project.profile),
   )
   const gone = useProfiles((s) => s.profiles.length > 0 && profileName === '')
   return (
@@ -53,15 +66,17 @@ function ElsewhereRow({ game, project }: { game: string; project: DevProject }) 
       {gone ? (
         <>
           <Button
-            onClick={() => saveSetting(() => Forget(game, project.dir))}
+            onClick={() =>
+              persist(() => Forget(game, project.dir), t`Could not remove the project`)
+            }
           >{t`Remove from list`}</Button>
           <Button
             disabled={openId === ''}
             onClick={() =>
-              saveSetting(async () => {
+              persist(async () => {
                 await Move(game, project.dir, openId)
                 installExtraFolder(game, project.output)
-              })
+              }, t`Could not move the project`)
             }
           >{t`Move here`}</Button>
         </>
@@ -135,15 +150,42 @@ function TestCopies({ game, profile, dirs }: { game: string; profile: string; di
   )
 }
 
-/** The open profile's own mods in development: start one from the template, then build, test, pack and release it. */
-export function DevelopTab({ game }: { game: string }) {
+function ProjectGrid({
+  game,
+  projects,
+  filtering,
+  list,
+  onClear,
+}: {
+  game: string
+  projects: DevProject[]
+  filtering: boolean
+  list: boolean
+  onClear: () => void
+}) {
   const { t } = useLingui()
-  const projects = useSettings((s) => s.games?.[game]?.devProjects) ?? []
-  const openId = useProfiles((s) => s.openId)
-  const [creating, setCreating] = useState(false)
-  const [cloning, setCloning] = useState(false)
-  const [reading, setReading] = useState(false)
-  const [addMenu, setAddMenu] = useState<HTMLElement | null>(null)
+  if (projects.length === 0 && filtering) {
+    return (
+      <EmptyState
+        icon={<SearchX />}
+        title={t`No projects match`}
+        action={<Button onClick={onClear}>{t`Show all projects`}</Button>}
+      >
+        {t`Try a different search.`}
+      </EmptyState>
+    )
+  }
+  return (
+    <CardsView list={list}>
+      {projects.map((p) => (
+        <ProjectCard key={p.dir} game={game} project={p} list={list} />
+      ))}
+    </CardsView>
+  )
+}
+
+function useAddFolder(game: string, openId: string) {
+  const { t } = useLingui()
   const [adding, run] = usePending()
   const addFolder = () =>
     run(
@@ -159,6 +201,19 @@ export function DevelopTab({ game }: { game: string }) {
       },
       { errorTitle: t`Could not add the project` },
     )
+  return [adding, addFolder] as const
+}
+
+/** The open profile's own mods in development: start one from the template, then build, test, pack and release it. */
+export function DevelopTab({ game }: { game: string }) {
+  const { t } = useLingui()
+  const projects = useSettings((s) => s.games?.[game]?.devProjects) ?? []
+  const openId = useProfiles((s) => s.openId)
+  const [creating, setCreating] = useState(false)
+  const [cloning, setCloning] = useState(false)
+  const [reading, setReading] = useState(false)
+  const [addMenu, setAddMenu] = useState<HTMLElement | null>(null)
+  const [adding, addFolder] = useAddFolder(game, openId)
   const [query, setQuery] = useState('')
   const [view, setView] = useStoredState<ViewMode>(`mortar.developView.${game}`, 'list', isViewMode)
   const here = projects.filter((p) => p.profile === openId)
@@ -171,7 +226,7 @@ export function DevelopTab({ game }: { game: string }) {
   useEffect(() => {
     const reread = () => {
       for (const dir of dirs.split('\n').filter(Boolean)) {
-        refreshInfo(game, dir).catch(() => undefined)
+        refreshInfo(game, dir, true).catch(() => undefined)
       }
     }
     globalThis.addEventListener('focus', reread)
@@ -266,11 +321,13 @@ export function DevelopTab({ game }: { game: string }) {
           />
         </ControlsRow>
       )}
-      <CardsView list={view === 'list'}>
-        {shown.map((p) => (
-          <ProjectCard key={p.dir} game={game} project={p} list={view === 'list'} />
-        ))}
-      </CardsView>
+      <ProjectGrid
+        game={game}
+        projects={shown}
+        filtering={needle !== ''}
+        list={view === 'list'}
+        onClear={() => setQuery('')}
+      />
       {elsewhere.length > 0 ? (
         <Box sx={{ px: space.gutter, pb: space.gutter }}>
           <Typography sx={{ fontWeight: 600, mb: 0.5 }}>{t`In other profiles`}</Typography>
