@@ -136,7 +136,7 @@ func FetchReleases(ctx context.Context, hc *http.Client, url string) ([]Release,
 	if hc == nil {
 		hc = http.DefaultClient
 	}
-	resp, err := hc.Do(req)
+	resp, err := noDowngrade(hc).Do(req)
 	netstate.Record("github", err)
 	if err != nil {
 		return nil, fmt.Errorf("could not reach GitHub: %w", err)
@@ -270,7 +270,7 @@ func downloadOnce(ctx context.Context, hc *http.Client, url, dest string, limit 
 		}
 	}
 	DefaultAuth.Apply(req)
-	resp, err := hc.Do(req)
+	resp, err := noDowngrade(hc).Do(req)
 	if err != nil {
 		return err, false
 	}

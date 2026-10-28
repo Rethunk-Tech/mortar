@@ -80,3 +80,14 @@ func TestDownloadErrorOmitsToken(t *testing.T) {
 type roundTripFunc func(*http.Request) (*http.Response, error)
 
 func (f roundTripFunc) RoundTrip(r *http.Request) (*http.Response, error) { return f(r) }
+
+func TestNoDowngradeRefusesAPlainHTTPRedirect(t *testing.T) {
+	first := req(t, "https://api.github.com/x")
+	next := req(t, "http://api.github.com/y")
+	if err := noDowngrade(&http.Client{}).CheckRedirect(next, []*http.Request{first}); err == nil {
+		t.Fatal("redirect to http allowed")
+	}
+	if err := noDowngrade(&http.Client{}).CheckRedirect(req(t, "https://objects.githubusercontent.com/z"), []*http.Request{first}); err != nil {
+		t.Fatal(err)
+	}
+}

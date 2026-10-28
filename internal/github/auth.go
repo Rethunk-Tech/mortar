@@ -2,6 +2,8 @@ package github
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	"os/exec"
 	"strings"
@@ -74,4 +76,23 @@ func (a *Auth) Apply(req *http.Request) {
 	if t := a.get(req.Context()); t != "" {
 		req.Header.Set("Authorization", "Bearer "+t)
 	}
+}
+
+// noDowngrade is hc, or a copy of it when it has no redirect policy, that refuses a redirect to plain http: net/http
+// keeps the Authorization header across a same-host redirect, scheme change included.
+func noDowngrade(hc *http.Client) *http.Client {
+	if hc.CheckRedirect != nil {
+		return hc
+	}
+	secured := *hc
+	secured.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		if len(via) >= 10 {
+			return errors.New("stopped after 10 redirects")
+		}
+		if req.URL.Scheme != "https" && via[0].URL.Scheme == "https" {
+			return fmt.Errorf("refusing a redirect to %s://", req.URL.Scheme)
+		}
+		return nil
+	}
+	return &secured
 }

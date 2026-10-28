@@ -44,7 +44,7 @@ func (c *Client) ReleaseNotes(ctx context.Context, owner, repo, tag string) (str
 	}
 	req.Header.Set("Accept", "application/vnd.github+json")
 	DefaultAuth.Apply(req)
-	hc := cmp.Or(c.HTTP, http.DefaultClient)
+	hc := noDowngrade(cmp.Or(c.HTTP, http.DefaultClient))
 	resp, err := hc.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("could not reach GitHub: %w", err)

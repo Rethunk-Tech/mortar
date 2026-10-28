@@ -235,3 +235,18 @@ func TestTransportErrorDropsTheLinkKey(t *testing.T) {
 		t.Fatalf("error = %v", err)
 	}
 }
+
+func TestRedirectsStayOnTheAPIOrigin(t *testing.T) {
+	t.Parallel()
+	first, _ := http.NewRequest(http.MethodGet, "https://api.nexusmods.com/v1/x", nil)
+	for target, ok := range map[string]bool{
+		"https://api.nexusmods.com/v1/y": true,
+		"https://evil.example/v1/y":      false,
+		"http://api.nexusmods.com/v1/y":  false,
+	} {
+		req, _ := http.NewRequest(http.MethodGet, target, nil)
+		if err := sameOriginRedirect(req, []*http.Request{first}); (err == nil) != ok {
+			t.Errorf("%s: err = %v", target, err)
+		}
+	}
+}
