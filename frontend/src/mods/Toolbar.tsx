@@ -189,20 +189,18 @@ const ShowFilterControl = memo(function ShowFilterMenu({
       : []),
   ])
   return (
-    <>
-      <MenuButton
-        anchor={anchor}
-        setAnchor={setAnchor}
-        icon={<Filter size={14} />}
-        label={<span className="label">{active ? active.label(i18n) : t`Show`}</span>}
-        ariaLabel={showLabel}
-        tooltip={showLabel}
-        color={active || tagged ? 'primary' : 'inherit'}
-        sx={iconWhenCompact}
-      >
-        {items}
-      </MenuButton>
-    </>
+    <MenuButton
+      anchor={anchor}
+      setAnchor={setAnchor}
+      icon={<Filter size={14} />}
+      label={<span className="label">{active ? active.label(i18n) : t`Show`}</span>}
+      ariaLabel={showLabel}
+      tooltip={showLabel}
+      color={active || tagged ? 'primary' : 'inherit'}
+      sx={iconWhenCompact}
+    >
+      {items}
+    </MenuButton>
   )
 })
 

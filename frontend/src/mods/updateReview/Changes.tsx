@@ -109,4 +109,4 @@ export function Changes({ update }: { update: Update }) {
   )
 }
 
-export { ChangelogEntryBody, ChangelogText }
+export { ChangelogEntryBody }

@@ -109,28 +109,26 @@ const ShowMenu = memo(function ShowMenuView({
     waiting: t`Waiting for next launch`,
   }
   return (
-    <>
-      <MenuButton
-        anchor={anchor}
-        setAnchor={setAnchor}
-        icon={<Filter size={14} />}
-        label={show === 'all' ? t`Show` : labels[show]}
-        color={show === 'all' ? 'inherit' : 'primary'}
-      >
-        {SHOWS.map((item) => (
-          <MenuCheck
-            key={item}
-            radio={true}
-            checked={show === item}
-            label={labels[item]}
-            onClick={() => {
-              onChange(item)
-              setAnchor(null)
-            }}
-          />
-        ))}
-      </MenuButton>
-    </>
+    <MenuButton
+      anchor={anchor}
+      setAnchor={setAnchor}
+      icon={<Filter size={14} />}
+      label={show === 'all' ? t`Show` : labels[show]}
+      color={show === 'all' ? 'inherit' : 'primary'}
+    >
+      {SHOWS.map((item) => (
+        <MenuCheck
+          key={item}
+          radio={true}
+          checked={show === item}
+          label={labels[item]}
+          onClick={() => {
+            onChange(item)
+            setAnchor(null)
+          }}
+        />
+      ))}
+    </MenuButton>
   )
 })
 
