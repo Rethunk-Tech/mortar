@@ -302,7 +302,7 @@ export function OtherProfilesDialog({
     ids: ids ?? [id],
   })
   // Once the player ticks or unticks a profile, later reads (a game starting, a profile saved) leave the choice alone.
-  const touched = useRef(false)
+  const touched = useRef<boolean>(false)
   useEffect(() => {
     if (!open) {
       touched.current = false
