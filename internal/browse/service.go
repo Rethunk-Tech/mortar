@@ -46,9 +46,7 @@ func (s *Service) Search(ctx context.Context, game, sourceID, text string, page 
 	if s.SourceOrder != nil {
 		c.Prefer = s.SourceOrder(game)
 	}
-	if s.SourcesOff != nil {
-		c.Off = s.SourcesOff(game)
-	}
+	c.Off = s.off(game)
 	if s.HiddenMod != nil {
 		c.Hidden = func(it Item) bool { return s.HiddenMod(game, it) }
 	}
@@ -63,14 +61,36 @@ func (s *Service) Search(ctx context.Context, game, sourceID, text string, page 
 
 // Categories lists the category names of sourceID (or of every source) for the filter pickers.
 func (s *Service) Categories(ctx context.Context, game, sourceID string) ([]string, error) {
-	return (&Client{}).Categories(ctx, game, sourceID)
+	return (&Client{Off: s.off(game)}).Categories(ctx, game, sourceID)
 }
 
 // DefaultExcludes is the modpack, translation and cheat categories of sourceID (or of every source), which the
 // exclude picker starts with.
 func (s *Service) DefaultExcludes(ctx context.Context, game, sourceID string) ([]string, error) {
-	names, err := (&Client{}).Categories(ctx, game, sourceID)
+	names, err := (&Client{Off: s.off(game)}).Categories(ctx, game, sourceID)
 	return noisyNames(names), err
+}
+
+func (s *Service) off(game string) []string {
+	if s.SourcesOff == nil {
+		return nil
+	}
+	return SourcesOff(game, s.SourcesOff(game))
+}
+
+// SourcesOff is the game's sources the player turned off, or none when that would leave Browse no available source
+// to search (a settings edit outside the window can turn every one off).
+func SourcesOff(game string, off []string) []string {
+	info, ok := catalogGame(game)
+	if !ok || len(off) == 0 {
+		return off
+	}
+	for _, src := range source.Searchable(info) {
+		if source.Unavailable(src) == "" && !slices.Contains(off, src.ID()) {
+			return off
+		}
+	}
+	return nil
 }
 
 // SourceInfo names a source for the window's source chips.
@@ -88,10 +108,7 @@ type SourceInfo struct {
 // SearchableSources lists the game's sources that can be searched, in catalog order.
 func (s *Service) SearchableSources(game string) []SourceInfo {
 	out := []SourceInfo{}
-	var off []string
-	if s.SourcesOff != nil {
-		off = s.SourcesOff(game)
-	}
+	off := s.off(game)
 	if info, ok := catalogGame(game); ok {
 		for _, src := range source.Searchable(info) {
 			out = append(out, SourceInfo{ID: src.ID(), Name: src.Name(), Unavailable: source.Unavailable(src), Sorts: source.SortsOf(src), Off: slices.Contains(off, src.ID())})

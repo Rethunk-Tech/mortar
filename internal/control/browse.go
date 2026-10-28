@@ -11,6 +11,12 @@ import (
 // Browse searches a game's mod sources (or all of them) for mods of game and marks hits already on profileID.
 func (s *Services) Browse(ctx context.Context, game, source, text string, page int, profileID string) (browse.Page, error) {
 	c := &browse.Client{Version: s.Version}
+	if s.Settings != nil {
+		// The same source choices the window's Browse honours.
+		gp := s.Settings.Get().GamePrefs(game)
+		c.Prefer = strings.FieldsFunc(gp.SourceOrder, func(r rune) bool { return r == ',' })
+		c.Off = browse.SourcesOff(game, strings.FieldsFunc(gp.SourcesOff, func(r rune) bool { return r == ',' }))
+	}
 	if profileID != "" && s.Profiles != nil {
 		if prof, err := s.resolve(game, profileID); err == nil {
 			c.Installed = browse.InstalledOn(prof)

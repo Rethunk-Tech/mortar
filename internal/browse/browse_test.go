@@ -552,3 +552,12 @@ func TestAPageAskedBeforeThePageBeforeItStartsWhereThatPageEnds(t *testing.T) {
 		t.Fatalf("page 11 starts %s, want 201", first)
 	}
 }
+
+func TestSourcesOffNeverTurnsEveryAvailableSourceOff(t *testing.T) {
+	if got := SourcesOff("stardew", []string{"github"}); fmt.Sprint(got) != "[github]" {
+		t.Fatalf("one off: %v", got)
+	}
+	if got := SourcesOff("stardew", []string{"nexus", "curseforge", "github"}); got != nil {
+		t.Fatalf("all off must turn none off: %v", got)
+	}
+}

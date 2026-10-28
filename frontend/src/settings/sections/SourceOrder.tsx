@@ -15,7 +15,7 @@ import { useSettings } from '../store.ts'
 import { useSettingsRelevant } from '../useSettingsSearch.ts'
 
 // The game's sources in the player's order: the saved ids first, then the rest in catalog order.
-function ordered(all: { id: string; name: string }[], saved: string) {
+function ordered<S extends { id: string }>(all: S[], saved: string): S[] {
   const first = saved.split(',').flatMap((id) => all.filter((s) => s.id === id))
   return [...new Set([...first, ...all])]
 }
@@ -30,7 +30,7 @@ function SourceOrder() {
     .split(',')
     .filter(Boolean)
   const relevant = useSettingsRelevant(label, description)
-  const { data: all } = useLoaded<{ id: string; name: string }[]>(
+  const { data: all } = useLoaded<{ id: string; name: string; unavailable: string }[]>(
     relevant ? () => SearchableSources(game).then((found) => found ?? []) : null,
     [game, relevant],
     [],
@@ -57,7 +57,7 @@ function SourceOrder() {
         SetByKey('sourcesOff', (on ? off.filter((o) => o !== id) : [...off, id]).join(','), game),
       t`Could not save that setting`,
     )
-  const onCount = list.filter((s) => !off.includes(s.id)).length
+  const searchable = list.filter((s) => s.unavailable === '' && !off.includes(s.id))
   return (
     <SettingRow label={label} description={description} block={true}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
@@ -66,8 +66,8 @@ function SourceOrder() {
             <Switch
               size="small"
               checked={!off.includes(s.id)}
-              // The last source on stays on, or Browse would have nothing to search.
-              disabled={onCount === 1 && !off.includes(s.id)}
+              // The last searchable source stays on (one missing its API key searches nothing), or Browse would have none.
+              disabled={searchable.length === 1 && searchable[0]?.id === s.id}
               onChange={(_, on) => toggle(s.id, on)}
               slotProps={{ input: { 'aria-label': t`Search ${{ source: s.name }}` } }}
             />

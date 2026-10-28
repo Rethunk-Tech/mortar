@@ -501,6 +501,8 @@ func (c *Client) Categories(ctx context.Context, game, sourceID string) ([]strin
 	sources := source.Searchable(info)
 	if id := strings.ToLower(strings.TrimSpace(sourceID)); id != AllSources {
 		sources = slices.DeleteFunc(sources, func(s source.Source) bool { return s.ID() != id })
+	} else {
+		sources = slices.DeleteFunc(sources, func(s source.Source) bool { return slices.Contains(c.Off, s.ID()) })
 	}
 	return categoriesOf(ctx, info, sources)
 }
