@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
@@ -93,11 +94,9 @@ func profileExists(store *profile.Store, game, id string) bool {
 	if store == nil || id == "" {
 		return false
 	}
-	all, err := store.List(game)
-	if err != nil {
-		return false
-	}
-	return slices.ContainsFunc(all, func(p profile.Profile) bool { return p.ID == id })
+	// A damaged profile still exists.
+	_, err := store.Get(game, id)
+	return err == nil || usererr.KindOf(err) == usererr.Damaged
 }
 
 func (s *Service) fillLast(game string, fit *Fit, present, enabled map[string]bool) {

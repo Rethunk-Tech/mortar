@@ -97,14 +97,9 @@ func (s *Service) profileOverrides(gameID, profileID string) map[string]string {
 	if s.profiles == nil || profileID == "" {
 		return nil
 	}
-	all, err := s.profiles.List(gameID)
+	p, err := s.profiles.Get(gameID, profileID)
 	if err != nil {
 		return nil
 	}
-	for _, p := range all {
-		if p.ID == profileID {
-			return p.PrefOverrides()
-		}
-	}
-	return nil
+	return p.PrefOverrides()
 }

@@ -37,7 +37,7 @@ func (s *Service) FindSources(ctx context.Context, gameID, profileID string) (Fo
 	if s.Profiles == nil {
 		return FoundSources{}, errors.New("profiles are unavailable")
 	}
-	p, err := s.profileByID(gameID, profileID)
+	p, err := s.Profiles.Get(gameID, profileID)
 	if err != nil {
 		return FoundSources{}, err
 	}
@@ -144,7 +144,7 @@ func (s *Service) SetNexusPage(ctx context.Context, gameID, profileID, key, link
 		fileID = 0
 	}
 	if fileID == 0 && info.HasMetadata(metadata.StardewDataset) {
-		p, err := s.profileByID(gameID, profileID)
+		p, err := s.Profiles.Get(gameID, profileID)
 		if err != nil {
 			return profile.Profile{}, err
 		}

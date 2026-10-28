@@ -4,11 +4,7 @@ package savedgroups
 //
 //wails:ignore
 func (s *Service) ProfileMods(gameID, profileID string) ([]Mod, error) {
-	profiles, err := s.profiles.List(gameID)
-	if err != nil {
-		return nil, err
-	}
-	p, err := profileFor(profiles, profileID)
+	p, err := s.profiles.Get(gameID, profileID)
 	if err != nil {
 		return nil, err
 	}

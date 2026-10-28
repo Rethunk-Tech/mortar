@@ -15,7 +15,6 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/backup"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/saves"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -275,12 +274,9 @@ func (s *Service) target(gameID, profileID string) (backup.Target, error) {
 	}
 	var overrides map[string]string
 	if s.profiles != nil && profileID != "" {
-		all, err := s.profiles.List(gameID)
-		if err != nil {
-			return backup.Target{}, err
-		}
-		if i := slices.IndexFunc(all, func(p profile.Profile) bool { return p.ID == profileID }); i >= 0 {
-			overrides = all[i].PrefOverrides()
+		// A missing or damaged profile has no overrides.
+		if p, err := s.profiles.Get(gameID, profileID); err == nil {
+			overrides = p.PrefOverrides()
 		}
 	}
 	return backup.TargetFor(dir, set, gameID, overrides)

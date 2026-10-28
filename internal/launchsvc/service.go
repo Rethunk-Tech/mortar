@@ -1264,16 +1264,11 @@ func launchOverrides(profiles *profile.Store, gameID, profileID string) map[stri
 	if profiles == nil || profileID == "" {
 		return nil
 	}
-	all, err := profiles.List(gameID)
+	p, err := profiles.Get(gameID, profileID)
 	if err != nil {
 		return nil
 	}
-	for _, p := range all {
-		if p.ID == profileID {
-			return p.PrefOverrides()
-		}
-	}
-	return nil
+	return p.PrefOverrides()
 }
 
 func backupNeeded(mode string, events []profile.HistoryEvent, lastRun time.Time, gameUpdated bool) bool {

@@ -221,15 +221,11 @@ type Info struct {
 }
 
 func (s *Service) find(game, id string) (profile.Profile, error) {
-	all, err := s.d.Profiles.List(game)
+	p, err := s.d.Profiles.Get(game, id)
 	if err != nil {
 		return profile.Profile{}, err
 	}
-	i := slices.IndexFunc(all, func(p profile.Profile) bool { return p.Error == "" && p.ID == id })
-	if i < 0 {
-		return profile.Profile{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("profile %s not found", id))
-	}
-	return s.d.Profiles.Current(game, all[i]), nil
+	return s.d.Profiles.Current(game, p), nil
 }
 
 func entryNames(e profile.Entry, withDisabled bool) []string {

@@ -15,7 +15,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/msbuild"
-	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -122,12 +121,9 @@ func (s *Service) Add(ctx context.Context, gameID, dir, profileID string) (setti
 		return bad("%s is already in the Develop tab", dir)
 	}
 	if profileID != "" {
-		profiles, err := s.Profiles.List(gameID)
-		if err != nil {
+		// A damaged profile is still one to install into once repaired.
+		if _, err := s.Profiles.Get(gameID, profileID); err != nil && usererr.KindOf(err) != usererr.Damaged {
 			return settings.DevProject{}, err
-		}
-		if !slices.ContainsFunc(profiles, func(p profile.Profile) bool { return p.ID == profileID }) {
-			return settings.DevProject{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("no profile %q", profileID))
 		}
 	}
 	if asset {

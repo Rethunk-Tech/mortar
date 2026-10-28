@@ -3,13 +3,11 @@ package nexussvc
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
-	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // TrackedMissing lists tracked mods for the game's Nexus domain that no Nexus entry in the profile uses.
@@ -26,7 +24,7 @@ func (s *Service) TrackedMissing(ctx context.Context, gameID, profileID string) 
 	if s.Profiles == nil {
 		return nil, errors.New("profiles are unavailable")
 	}
-	p, err := s.profileByID(gameID, profileID)
+	p, err := s.Profiles.Get(gameID, profileID)
 	if err != nil {
 		return nil, err
 	}
@@ -46,22 +44,6 @@ func (s *Service) TrackedMissing(ctx context.Context, gameID, profileID string) 
 		out = append(out, mod)
 	}
 	return out, nil
-}
-
-func (s *Service) profileByID(gameID, profileID string) (profile.Profile, error) {
-	profiles, err := s.Profiles.List(gameID)
-	if err != nil {
-		return profile.Profile{}, err
-	}
-	for _, p := range profiles {
-		if p.ID == profileID {
-			if p.Error != "" {
-				return profile.Profile{}, fmt.Errorf("profile %q is damaged", profileID)
-			}
-			return p, nil
-		}
-	}
-	return profile.Profile{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("profile %q not found", profileID))
 }
 
 func profileNexusModIDs(p profile.Profile) map[int]bool {

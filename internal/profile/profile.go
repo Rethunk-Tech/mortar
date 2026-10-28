@@ -609,8 +609,15 @@ func (s *Store) ListDamaged(game string) ([]Profile, error) {
 	return out, nil
 }
 
-// Get returns one profile, read without listing the game's others.
-func (s *Store) Get(game, id string) (Profile, error) { return s.read(game, id) }
+// Get returns one profile, read without listing the game's others: a missing one is a usererr NotFound and an
+// unreadable one a usererr Damaged.
+func (s *Store) Get(game, id string) (Profile, error) {
+	p, err := s.read(game, id)
+	if errors.Is(err, os.ErrNotExist) {
+		return Profile{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("profile %q not found", id))
+	}
+	return p, err
+}
 
 func (s *Store) read(game, id string) (Profile, error) {
 	p, _, err := s.readDir(game, id)

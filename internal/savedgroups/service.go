@@ -160,15 +160,6 @@ func newID(groups []SavedGroup) string {
 
 func historyBatchID(label string) string { return label + "-" + ids.New() }
 
-func profileFor(profiles []profile.Profile, id string) (profile.Profile, error) {
-	for _, p := range profiles {
-		if p.Error == "" && p.ID == id {
-			return p, nil
-		}
-	}
-	return profile.Profile{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("profile %q was not found", id))
-}
-
 // key identifies a mod within a saved group: its id, or for an optional file without one, its entry.
 func (m Mod) key() string { return cmp.Or(m.ID.Fold(), m.EntryKey) }
 
@@ -245,11 +236,7 @@ func withOverlays(p profile.Profile, mods []Mod) []Mod {
 
 // modsFromProfile snapshots the named mods of a profile, or every mod of it when none are named.
 func (s *Service) modsFromProfile(gameID, profileID string, uniqueIDs []mod.ID) ([]Mod, error) {
-	profiles, err := s.profiles.List(gameID)
-	if err != nil {
-		return nil, err
-	}
-	p, err := profileFor(profiles, profileID)
+	p, err := s.profiles.Get(gameID, profileID)
 	if err != nil {
 		return nil, err
 	}
@@ -365,11 +352,7 @@ func (s *Service) SaveGroup(gameID, profileID, profileGroup, name string, replac
 	if err != nil {
 		return SavedGroup{}, err
 	}
-	profiles, err := s.profiles.List(gameID)
-	if err != nil {
-		return SavedGroup{}, err
-	}
-	p, err := profileFor(profiles, profileID)
+	p, err := s.profiles.Get(gameID, profileID)
 	if err != nil {
 		return SavedGroup{}, err
 	}
@@ -540,11 +523,7 @@ func (s *Service) ApplyMods(gameID, label string, mods []Mod, profileID string) 
 
 // applyLocked adds mods' entries to the profile in one history batch and, when group is not empty, creates it there.
 func (s *Service) applyLocked(gameID, label, group string, mods []Mod, profileID string) (ApplyResult, error) {
-	profiles, err := s.profiles.List(gameID)
-	if err != nil {
-		return ApplyResult{}, err
-	}
-	current, err := profileFor(profiles, profileID)
+	current, err := s.profiles.Get(gameID, profileID)
 	if err != nil {
 		return ApplyResult{}, err
 	}

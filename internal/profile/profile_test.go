@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 func newStore(t *testing.T) *Store {
@@ -182,5 +184,16 @@ func TestInModsHoldsTheStoreLock(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestGetReportsAMissingProfileAsNotFound(t *testing.T) {
+	s := newStore(t)
+	p := mustCreate(t, s, "A")
+	if got, err := s.Get("stardew", p.ID); err != nil || got.ID != p.ID {
+		t.Fatalf("Get = %+v, %v", got, err)
+	}
+	if _, err := s.Get("stardew", "0123456789abcdef"); usererr.KindOf(err) != usererr.NotFound {
+		t.Fatalf("Get missing = %v (%s)", err, usererr.KindOf(err))
 	}
 }
