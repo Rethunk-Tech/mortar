@@ -6,7 +6,8 @@ import { HideLogSource } from '../../bindings/github.com/Rethunk-Tech/mortar/int
 import { copyText } from '../share/copyText.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { reportError } from '../toasts/report.ts'
-import { formatFull } from './filter.ts'
+import { formatAll } from './filter.ts'
+import { useLineText } from './lineText.ts'
 import { sourceOf } from './logSource.ts'
 
 // Type::Method without the type's namespace, as people read it: PlayerControllerB.GrabObjectClientRpc.
@@ -32,6 +33,7 @@ export function LineMenu({
 }) {
   const { t } = useLingui()
   const source = sourceOf(group)
+  const lineText = useLineText()
   const hide = (about: string, text = source?.text ?? '') => {
     if (source) {
       HideLogSource(game, { ...source, text, object: about }).catch(
@@ -55,7 +57,7 @@ export function LineMenu({
         icon={<Copy size={16} aria-hidden={true} />}
         label={selection.length > 0 ? t`Copy the selected lines` : t`Copy this message`}
         onClick={() => {
-          const lines = (selection.length > 0 ? selection : group).map(formatFull).join('\n')
+          const lines = formatAll([...(selection.length > 0 ? selection : group)], lineText)
           copyText(lines, selection.length > 0 ? t`Selected lines copied` : t`Message copied`)
           onClose()
         }}

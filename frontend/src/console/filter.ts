@@ -70,13 +70,14 @@ export function modsOf(entries: Entry[]): string[] {
   )
 }
 
-export function isFiltered(f: Filters): boolean {
+// defaults are the levels the console starts with (levelsFromFloor of the open profile's floor).
+export function isFiltered(f: Filters, defaults: Level[]): boolean {
   return (
     f.search.trim() !== '' ||
     f.mods.length > 0 ||
     f.excludeMods.length > 0 ||
-    f.levels.length !== DEFAULT_FILTERS.levels.length ||
-    DEFAULT_FILTERS.levels.some((l) => !f.levels.includes(l))
+    f.levels.length !== defaults.length ||
+    defaults.some((l) => !f.levels.includes(l))
   )
 }
 
@@ -125,28 +126,19 @@ export function firstError(rows: Entry[]): number {
 }
 
 // SMAPI pads the level to five characters; a continuation line, or the log's headerless first line, is written bare.
-// A BepInEx line has a level and source but no time; a headerless line has neither.
-export function format(e: Entry): string {
+// A BepInEx line has a level and source but no time; a headerless line has neither. text is the message as the
+// Console words it, and a line written several times in a row ends with its count.
+export function format(e: Entry, text: string = e.message): string {
   if (e.cont || (e.time === '' && e.mod === '')) {
-    return e.message
+    return text
   }
   const time = e.time === '' ? '' : `${e.time} `
-  return `[${time}${e.level.padEnd(LEVEL_WIDTH)} ${e.mod}] ${e.message}`
+  const times = repeatCount(e)
+  return `[${time}${e.level.padEnd(LEVEL_WIDTH)} ${e.mod}] ${text}${times > 1 ? ` ×${times}` : ''}`
 }
 
-// A line as the Console shows it, with the method that logged it and the object it named, which the window resolves
-// out of the message.
-export function formatFull(e: Entry): string {
-  const line = format(e)
-  if (e.cont || !e.source) {
-    return line
-  }
-  const object = e.object ? ` (${e.object})` : ''
-  return `${line.slice(0, line.length - e.message.length)}${e.source}${object}: ${e.message}`
-}
-
-export function formatAll(rows: Entry[]): string {
-  return rows.map(format).join('\n')
+export function formatAll(rows: Entry[], textOf: (e: Entry) => string = (e) => e.message): string {
+  return rows.map((e) => format(e, textOf(e))).join('\n')
 }
 
 export function incompatibleSMAPI(message: string): boolean {

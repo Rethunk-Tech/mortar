@@ -49,13 +49,7 @@ const Pills = memo(function PillsView({ counts: joined }: { counts: string }) {
             <ToggleButton
               key={level}
               value={level}
-              aria-label={plural(
-                { count: n },
-                {
-                  one: `${{ level: names[level] }}: # line`,
-                  other: `${{ level: names[level] }}: # lines`,
-                },
-              )}
+              aria-label={t`${{ level: names[level] }}: ${plural({ count: n }, { one: '# line', other: '# lines' })}`}
               onClick={() => toggle(level)}
               sx={{
                 ...pillButtonSx('var(--mortar-ink-dim)', {

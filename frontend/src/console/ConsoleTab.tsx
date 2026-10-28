@@ -30,7 +30,7 @@ import { space } from '../theme/density.ts'
 import { MONO, PAD_FOCUS } from '../theme/theme.ts'
 import { TipBanner } from '../tips/TipBanner.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
-import { hiddenBy, incompatibleSMAPI, isFiltered, modsOf } from './filter.ts'
+import { hiddenBy, incompatibleSMAPI, isFiltered, levelsFromFloor, modsOf } from './filter.ts'
 import { stepHistory } from './history.ts'
 import { LevelToggles } from './LevelToggles.tsx'
 import { LinkedLog } from './LinkedLog.tsx'
@@ -40,6 +40,7 @@ import { RunProblemsStrip } from './RunProblems.tsx'
 import { RunsPicker } from './RunsPicker.tsx'
 import { canSendTo, useConsole } from './store.ts'
 import { useConsoleEmpty } from './useConsoleEmpty.ts'
+import { useJumpToSearchHit } from './useJumpToSearchHit.ts'
 
 function ModPicker() {
   const { t } = useLingui()
@@ -310,26 +311,27 @@ function FilteredEmpty() {
       hidden.levels.map((l) => names[l]),
       hidden.levels.length,
     )
-    reasons.push(
-      plural(
-        { count: hidden.levels.length },
-        {
-          one: `the ${levels} level is off`,
-          other: `the ${levels} levels are off`,
-        },
-      ),
+    const off = plural(
+      { count: hidden.levels.length },
+      { one: 'level is off', other: 'levels are off' },
     )
+    reasons.push(t`the ${levels} ${off}`)
   }
   if (hidden.search !== '') {
     reasons.push(t`the search is "${{ search: hidden.search }}"`)
   }
   if (hidden.mods.length > 0) {
     const mods = listNames(hidden.mods)
-    reasons.push(t`only ${mods} is shown`)
+    const verb = plural({ count: hidden.mods.length }, { one: 'is shown', other: 'are shown' })
+    reasons.push(t`only ${mods} ${verb}`)
   }
   if (hidden.excludeMods.length > 0) {
     const mods = listNames(hidden.excludeMods)
-    reasons.push(t`${mods} is hidden`)
+    const verb = plural(
+      { count: hidden.excludeMods.length },
+      { one: 'is hidden', other: 'are hidden' },
+    )
+    reasons.push(t`${mods} ${verb}`)
   }
   const why = listNames(reasons, reasons.length)
   return (
@@ -388,6 +390,8 @@ const ConsoleControls = memo(function ConsoleControlsView({
 }) {
   const { t } = useLingui()
   const filters = useConsole((s) => s.filters)
+  const floor = useConsole((s) => s.floor)
+  const defaultLevels = useMemo(() => levelsFromFloor(floor), [floor])
   const { setMods, clearFilters } = useConsole.getState()
   return (
     <>
@@ -409,7 +413,7 @@ const ConsoleControls = memo(function ConsoleControlsView({
         <ModPicker />
         <RunsPicker game={game} />
         <ViewToggles game={game} />
-        {isFiltered(filters) ? (
+        {isFiltered(filters, defaultLevels) ? (
           <IconAction
             label={t`Clear filters`}
             icon={<FilterX size={16} />}
@@ -465,6 +469,17 @@ export function ConsoleTab({ game }: { game: string }) {
     ? { game: shown.game || game, profile: shown.profile }
     : { game, profile: openId }
   const rows = useVisible()
+  useJumpToSearchHit()
+  // Opening another profile leaves the past run being read; a run opened from a crash summary stays until then.
+  const openedBefore = useRef(openId)
+  useEffect(() => {
+    if (openedBefore.current !== openId) {
+      openedBefore.current = openId
+      if (useConsole.getState().viewingRun !== '') {
+        useConsole.getState().reset(game, openId ?? '')
+      }
+    }
+  }, [game, openId])
   const offerReinstall = entries.some((e) => incompatibleSMAPI(e.message))
   // Launching another profile resets the log to it; this one's history is read again once that launch settles.
   const launchingOther = useLaunch(

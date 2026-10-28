@@ -21,7 +21,7 @@ const wait = (ms: number) =>
     await Promise.resolve()
   })
 const answer = (line: string): RunSearch => ({
-  hits: [{ runId: 'r', lineNumber: 1, line, started: '', outcome: '' }],
+  hits: [{ runId: 'r', lineNumber: 1, line, seq: 1, started: '', outcome: '' }],
   truncated: false,
 })
 

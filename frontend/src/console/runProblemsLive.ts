@@ -7,7 +7,10 @@ type LiveMod = Pick<Mod, 'id' | 'name' | 'version' | 'enabled'>
 
 // SMAPI names a mod as "<name> <version>" in its log, so the match tries the id, the bare name, then the
 // longest profile mod name that the logged name starts with.
-function matchMod(problem: SMAPIProblem, mods: readonly LiveMod[]): LiveMod | undefined {
+export function matchMod<M extends Pick<Mod, 'id' | 'name'>>(
+  problem: SMAPIProblem,
+  mods: readonly M[],
+): M | undefined {
   if (problem.modId !== '') {
     const byId = mods.find((m) => sameId(localId(m.id), problem.modId))
     if (byId) {
@@ -22,7 +25,7 @@ function matchMod(problem: SMAPIProblem, mods: readonly LiveMod[]): LiveMod | un
   if (exact) {
     return exact
   }
-  let best: LiveMod | undefined
+  let best: M | undefined
   for (const m of mods) {
     if (
       m.name !== '' &&
@@ -35,7 +38,7 @@ function matchMod(problem: SMAPIProblem, mods: readonly LiveMod[]): LiveMod | un
   return best
 }
 
-function loggedVersion(problem: SMAPIProblem, mod: LiveMod): string {
+function loggedVersion(problem: SMAPIProblem, mod: Pick<Mod, 'name'>): string {
   const rest = problem.modName.startsWith(`${mod.name} `)
     ? problem.modName.slice(mod.name.length + 1).trim()
     : ''

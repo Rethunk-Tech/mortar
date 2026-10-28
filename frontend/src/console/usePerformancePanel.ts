@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type {
   PerformanceRow,
   SavedReport,
@@ -52,7 +52,7 @@ function useSavedReports(game: string, openId: string) {
 
 function useReportLines(reportAfter: number | null) {
   const entries = useConsole((s) => s.entries)
-  return useMemo(() => {
+  const lines = useMemo(() => {
     if (reportAfter === null) {
       return []
     }
@@ -74,7 +74,16 @@ function useReportLines(reportAfter: number | null) {
       )
       .map((entry) => entry.message)
   }, [entries, reportAfter])
+  // Every log line changes entries; the report is parsed and saved again only when its own lines change.
+  const stable = useRef(lines)
+  if (!sameLines(stable.current, lines)) {
+    stable.current = lines
+  }
+  return stable.current
 }
+
+const sameLines = (a: string[], b: string[]) =>
+  a.length === b.length && a.every((l, i) => l === b[i])
 
 function useParsedReport(
   reportLines: string[],

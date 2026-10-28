@@ -5,11 +5,13 @@ import type { HiddenLogSource } from '../../bindings/github.com/Rethunk-Tech/mor
 const SCENE_PATH = /Scene hierarchy path "([^"]+)"/
 const UNITY_LOG = 'Unity Log'
 // The bridge masks numbers the same way (LogTag.Mask), so a hidden line drops in the game too.
+// Go's strings.TrimSpace, which the backend masks with: it trims U+0085 and keeps U+FEFF, unlike String.trim.
+const GO_TRIM = /^\p{White_Space}+|\p{White_Space}+$/gu
 const NUMBER = /-?[0-9]+(?:[.,:][0-9]+)*/g
 
 /** A message's first line with every number as "#": what one call keeps from line to line. */
 export function mask(message: string): string {
-  return (message.split('\n')[0] ?? '').replace(NUMBER, '#').trim()
+  return (message.split('\n')[0] ?? '').replace(NUMBER, '#').replace(GO_TRIM, '')
 }
 
 /** Where a message (its header line and continuation lines) came from: the method the BepInEx bridge tagged it with

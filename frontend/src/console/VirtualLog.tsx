@@ -5,6 +5,7 @@ import {
   memo,
   type ReactNode,
   useCallback,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -95,8 +96,11 @@ const Row = memo(function RowView({
   onMenu,
   selected,
   note,
+  repeat,
 }: {
   entry: Entry
+  // How many back-to-back copies the row stands for; read by the parent so a count that grows redraws the row.
+  repeat: number
   note: UpdateNote | undefined
   // The line belongs to the message a right-click menu is open on.
   selected: boolean
@@ -111,7 +115,6 @@ const Row = memo(function RowView({
   const theme = useTheme()
   const text = useLineText()(entry)
   const look = levelChrome(theme, entry.level)
-  const repeat = repeatCount(entry)
   const modLinks = useMemo(
     () => (entry.cont ? [] : linksForModColumn(entry.mod, mods)),
     [entry.cont, entry.mod, mods],
@@ -252,9 +255,25 @@ export function VirtualLog({
     left: number
     ends: [number, number] | null
   } | null>(null)
+  // A long selection loses its rows from the DOM as they scroll away, so its ends are kept as they change.
+  const selectedRange = useRef<[number, number] | null>(null)
+  useEffect(() => {
+    const keep = () => {
+      const root = ref.current
+      const sel = globalThis.getSelection()
+      const ends = selectedEnds(root)
+      if (ends) {
+        selectedRange.current = ends
+      } else if (!sel || sel.isCollapsed || !root?.contains(sel.anchorNode)) {
+        selectedRange.current = null
+      }
+    }
+    document.addEventListener('selectionchange', keep)
+    return () => document.removeEventListener('selectionchange', keep)
+  }, [])
   const onMenu = useCallback(
     (seq: number, y: number, x: number) =>
-      setMenu({ seq, top: y, left: x, ends: selectedEnds(ref.current) }),
+      setMenu({ seq, top: y, left: x, ends: selectedEnds(ref.current) ?? selectedRange.current }),
     [],
   )
   const menuIndex = menu ? rows.findIndex((r) => r.seq === menu.seq) : -1
@@ -337,6 +356,7 @@ export function VirtualLog({
             <Row
               key={entry.seq}
               entry={entry}
+              repeat={repeatCount(entry)}
               note={notes.get(entry.seq)}
               timestamps={timestamps}
               mods={mods}

@@ -9,7 +9,6 @@ import {
   DEFAULT_FILTERS,
   firstError,
   formatAll,
-  formatFull,
   hiddenBy,
   incompatibleSMAPI,
   isFiltered,
@@ -76,11 +75,13 @@ test('filters complete stack-trace entries and can exclude a mod', () => {
 })
 
 test('isFiltered is false only for the defaults', () => {
-  expect(isFiltered(DEFAULT_FILTERS)).toBe(false)
-  expect(isFiltered({ ...DEFAULT_FILTERS, levels: [...DEFAULT_FILTERS.levels, Level.Trace] })).toBe(
+  expect(isFiltered(DEFAULT_FILTERS, DEFAULT_FILTERS.levels)).toBe(false)
+  const defaults = DEFAULT_FILTERS.levels
+  expect(isFiltered({ ...DEFAULT_FILTERS, levels: [...defaults, Level.Trace] }, defaults)).toBe(
     true,
   )
-  expect(isFiltered({ ...DEFAULT_FILTERS, search: 'x' })).toBe(true)
+  expect(isFiltered({ ...DEFAULT_FILTERS, search: 'x' }, defaults)).toBe(true)
+  expect(isFiltered(DEFAULT_FILTERS, levelsFromFloor('info'))).toBe(true)
 })
 
 test('firstError skips continuation lines and reports -1 when none', () => {
@@ -183,18 +184,4 @@ test('the console level is one level and those above, or the levels ticked', () 
   expect(levelsFromFloor('warn')).toEqual([Level.Warn, Level.Error, Level.Alert])
   expect(levelsFromFloor('info,error')).toEqual([Level.Info, Level.Error])
   expect(levelsFromFloor('alert')).toEqual([Level.Alert])
-})
-
-test('formatFull puts the resolved method and object back on the line', () => {
-  const line = {
-    ...e(Level.Warn, 'Unity Log', 'damageTrigger is disabled!'),
-    source: 'NetworkObject::Spawn',
-    object: 'Ship/Door',
-  }
-  expect(formatFull(line)).toBe(
-    '[19:43:50 WARN  Unity Log] NetworkObject::Spawn (Ship/Door): damageTrigger is disabled!',
-  )
-  expect(formatFull(e(Level.Info, 'SMAPI', 'Loaded 42 mods'))).toBe(
-    '[19:43:50 INFO  SMAPI] Loaded 42 mods',
-  )
 })

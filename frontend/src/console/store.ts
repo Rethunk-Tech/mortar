@@ -50,6 +50,8 @@ const useConsole = create<{
   shown: { game: string; profile: string }
   entries: Entry[]
   filters: Filters
+  // The level floor the console starts with, which the filters are compared against.
+  floor: string
   timestamps: boolean
   follow: boolean
   // Lines up to this seq were cleared from the view and stay hidden when the history is read again.
@@ -62,12 +64,14 @@ const useConsole = create<{
   helping: boolean
   // A recorded run's id, or empty while showing the live session.
   viewingRun: string
+  // The entry a search hit named, scrolled to once the run's lines are shown; 0 when none.
+  pendingSeq: number
   add: (batch: Batch) => void
   reset: (game: string, profile: string) => void
   clear: () => void
   jumpTo: (index: number) => void
   load: (game: string, profile: string) => Promise<void>
-  viewRun: (game: string, profile: string, runId: string) => void
+  viewRun: (game: string, profile: string, runId: string, seq?: number) => void
   send: (game: string, command: string) => Promise<boolean>
   setSearch: (search: string) => void
   toggleLevel: (level: Level) => void
@@ -84,6 +88,7 @@ const useConsole = create<{
     shown: { game: '', profile: '' },
     entries: [],
     filters: initial.filters,
+    floor: consoleFloor(),
     timestamps: initial.timestamps,
     follow: initial.follow,
     cleared: 0,
@@ -91,6 +96,7 @@ const useConsole = create<{
     jump: null,
     helping: false,
     viewingRun: '',
+    pendingSeq: 0,
     add: ({ game, profile, entries }) => {
       const { shown, viewingRun } = get()
       if (
@@ -106,15 +112,19 @@ const useConsole = create<{
         set((s) => ({ entries: [...s.entries, ...fresh].slice(-MAX_CONSOLE_LINES) }))
       }
     },
-    reset: (game, profile) =>
+    reset: (game, profile) => {
+      const defaults = consoleDefaults()
       set({
         shown: { game, profile },
         entries: [],
         cleared: 0,
         jump: null,
-        follow: consoleDefaults().follow,
+        timestamps: defaults.timestamps,
+        follow: defaults.follow,
         viewingRun: '',
-      }),
+        pendingSeq: 0,
+      })
+    },
     clear: () =>
       set((s) => ({ entries: [], jump: null, cleared: Math.max(s.cleared, lastSeq(s.entries)) })),
     jumpTo: (index) => set((s) => ({ follow: false, jump: { index, n: (s.jump?.n ?? 0) + 1 } })),
@@ -152,10 +162,11 @@ const useConsole = create<{
         })
       }
     },
-    viewRun: (game, profile, runId) => {
+    viewRun: (game, profile, runId, seq = 0) => {
       set({
         shown: { game, profile },
         viewingRun: runId,
+        pendingSeq: seq,
         entries: [],
         cleared: 0,
         jump: null,
@@ -211,12 +222,27 @@ function followFloor() {
   }
   const before = levelsFromFloor(appliedFloor)
   appliedFloor = floor
+  useConsole.setState({ floor })
   const { levels } = useConsole.getState().filters
   if (levels.length === before.length && before.every((l) => levels.includes(l))) {
     useConsole.setState((s) => ({ filters: { ...s.filters, levels: levelsFromFloor(floor) } }))
   }
 }
-useSettings.subscribe(followFloor)
-useProfiles.subscribe(followFloor)
+
+// The times setting is read once at creation too, before the saved settings load.
+let appliedTimestamps = consoleDefaults().timestamps
+function followTimestamps() {
+  const { timestamps } = consoleDefaults()
+  if (timestamps !== appliedTimestamps) {
+    appliedTimestamps = timestamps
+    useConsole.setState({ timestamps })
+  }
+}
+const followSettings = () => {
+  followFloor()
+  followTimestamps()
+}
+useSettings.subscribe(followSettings)
+useProfiles.subscribe(followSettings)
 
 export { canSendTo, useConsole }

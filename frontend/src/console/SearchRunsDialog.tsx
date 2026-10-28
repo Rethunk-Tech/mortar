@@ -53,7 +53,6 @@ export function SearchRunsDialog({ open, onClose }: { open: boolean; onClose: ()
   const outcome = useOutcomeLabel()
   const shown = useConsole((s) => s.shown)
   const viewRun = useConsole((s) => s.viewRun)
-  const jumpTo = useConsole((s) => s.jumpTo)
   const [query, setQuery] = useState('')
   const search = useCallback(
     (text: string) => SearchRuns(shown.game, shown.profile, text),
@@ -72,8 +71,7 @@ export function SearchRunsDialog({ open, onClose }: { open: boolean; onClose: ()
   }, [result.hits])
 
   const choose = (hit: RunHit) => {
-    viewRun(shown.game, shown.profile, hit.runId)
-    jumpTo(hit.lineNumber - 1)
+    viewRun(shown.game, shown.profile, hit.runId, hit.seq)
     onClose()
   }
 

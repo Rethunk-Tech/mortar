@@ -29,17 +29,11 @@ import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
-import { stillApplies } from './runProblemsLive.ts'
+import { matchMod, stillApplies } from './runProblemsLive.ts'
 import { runProblemMod, runProblemToken } from './runProblemToken.ts'
 
 function findMod(problem: SMAPIProblem): Mod | undefined {
-  return useMods
-    .getState()
-    .mods.find(
-      (m) =>
-        (problem.modId !== '' && sameId(localId(m.id), problem.modId)) ||
-        (problem.modName !== '' && m.name === problem.modName),
-    )
+  return matchMod(problem, useMods.getState().mods)
 }
 
 async function installDependency(i18n: I18n, id: string) {
@@ -108,11 +102,7 @@ async function applyFix(i18n: I18n, problem: SMAPIProblem, game: string) {
       return
     }
     case 'removeDuplicate': {
-      const dup = (useMods.getState().problems?.duplicates ?? []).find(
-        (d) =>
-          (problem.modId !== '' && sameId(localId(d.id), problem.modId)) ||
-          (problem.modName !== '' && d.name === problem.modName),
-      )
+      const dup = matchMod(problem, useMods.getState().problems?.duplicates ?? [])
       if (dup) {
         useMods.getState().resolve(dup)
       }
@@ -217,6 +207,7 @@ export function RunProblemsStrip({
     NO_PROBLEMS,
   )
   const mods = useMods((s) => s.mods)
+  const locked = useLocked()
   // The problems service keeps dismissals with the profile's other dismissed problems; this strip reads them itself,
   // as the Problems page does, and again after each change it makes.
   const { data: dismissed, reload: reloadDismissed } = useLoaded(
@@ -294,18 +285,21 @@ export function RunProblemsStrip({
           sx={{ fontSize: 'base.fontSize', fontWeight: 700, flex: 1 }}
         >{t`Problems in this run`}</Typography>
         {bulk.length > 0 ? (
-          <Button
-            size="small"
-            variant="contained"
-            color="warning"
-            onClick={() =>
-              Promise.all(bulk.map((problem) => applyFix(i18n, problem, game))).catch(
-                reportUnexpected,
-              )
-            }
-          >
-            {t`Fix all`}
-          </Button>
+          <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+            <Button
+              size="small"
+              variant="contained"
+              color="warning"
+              disabled={locked}
+              onClick={() =>
+                Promise.all(bulk.map((problem) => applyFix(i18n, problem, game))).catch(
+                  reportUnexpected,
+                )
+              }
+            >
+              {t`Fix all`}
+            </Button>
+          </DisabledReason>
         ) : null}
       </Box>
       {live.map((problem) => (

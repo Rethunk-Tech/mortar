@@ -22,6 +22,7 @@ import { IconAction } from '../shell/IconAction.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { firstError, formatAll } from './filter.ts'
+import { useLineText } from './lineText.ts'
 import { listRuns } from './listRuns.ts'
 import { useShownEntries, useVisible } from './logHooks.ts'
 import { SearchRunsDialog } from './SearchRunsDialog.tsx'
@@ -124,6 +125,7 @@ export function LogActions({ game }: { game: string }) {
   const entries = useShownEntries()
   const shown = useConsole((s) => s.shown)
   const viewingRun = useConsole((s) => s.viewingRun)
+  const jumpedTo = useConsole((s) => s.jump?.index ?? -1)
   const cleared = useConsole((s) => s.cleared)
   const profileName = useProfiles(
     (s) => s.profiles.find((p) => p.id === shown.profile)?.name ?? shown.profile,
@@ -147,12 +149,10 @@ export function LogActions({ game }: { game: string }) {
   const errorRows = rows.flatMap((row, index) =>
     row.level === Level.Error && !row.cont ? [index] : [],
   )
-  const firstErrorPosition = errorRows.indexOf(firstErr)
-  const previousErr = firstErrorPosition > 0 ? (errorRows[firstErrorPosition - 1] ?? -1) : -1
-  const nextErr =
-    firstErrorPosition >= 0 && firstErrorPosition < errorRows.length - 1
-      ? (errorRows[firstErrorPosition + 1] ?? -1)
-      : -1
+  // Previous and Next step from the row last jumped to; before any jump, Next is the first error.
+  const position = errorRows.indexOf(jumpedTo)
+  const previousErr = position > 0 ? (errorRows[position - 1] ?? -1) : -1
+  const nextErr = errorRows[position + 1] ?? -1
   const canSave = entries.length > 0 || cleared > 0
   const saveLog = () => {
     const rawLog = viewingRun
@@ -172,9 +172,13 @@ export function LogActions({ game }: { game: string }) {
       })
       .catch(reportUnexpected)
   }
-  const latest = useRef({ rows, saveLog })
-  latest.current = { rows, saveLog }
-  const onCopy = useCallback(() => copyText(formatAll(latest.current.rows), t`Log copied`), [t])
+  const lineText = useLineText()
+  const latest = useRef({ rows, saveLog, lineText })
+  latest.current = { rows, saveLog, lineText }
+  const onCopy = useCallback(
+    () => copyText(formatAll(latest.current.rows, latest.current.lineText), t`Log copied`),
+    [t],
+  )
   const onSave = useCallback(() => latest.current.saveLog(), [])
   if (empty) {
     return null
