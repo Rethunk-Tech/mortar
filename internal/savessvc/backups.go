@@ -57,34 +57,36 @@ func (s *Service) ListBackups(game, profile string) ([]backup.Backup, error) {
 
 // DeleteBackup removes an unpinned backup, wherever the backups folders hold it.
 func (s *Service) DeleteBackup(game, name string) error {
-	if err := backupNameOK(name); err != nil {
-		return err
-	}
-	id, err := s.saveGame(game)
+	dir, err := s.backupDir(game, name)
 	if err != nil {
 		return err
 	}
-	reads, err := s.backupReads(id)
-	if err != nil {
-		return err
-	}
-	return backup.Delete(filepath.Dir(findBackup(reads, name)), name)
+	return backup.Delete(dir, name)
 }
 
 // SetBackupPinned keeps or unkeeps a backup during rotation.
 func (s *Service) SetBackupPinned(game, name string, pinned bool) error {
-	if err := backupNameOK(name); err != nil {
+	dir, err := s.backupDir(game, name)
+	if err != nil {
 		return err
+	}
+	return backup.SetPinned(dir, name, pinned)
+}
+
+// backupDir is the backups folder that holds the backup name.
+func (s *Service) backupDir(game, name string) (string, error) {
+	if err := backupNameOK(name); err != nil {
+		return "", err
 	}
 	id, err := s.saveGame(game)
 	if err != nil {
-		return err
+		return "", err
 	}
 	reads, err := s.backupReads(id)
 	if err != nil {
-		return err
+		return "", err
 	}
-	return backup.SetPinned(filepath.Dir(findBackup(reads, name)), name, pinned)
+	return filepath.Dir(findBackup(reads, name)), nil
 }
 
 // RestoreBackup copies folders from the named zip into the saves folder profile reads after zipping its current saves.
