@@ -18,6 +18,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/modname"
 )
 
 // driverThunderstore is the installer driver for Thunderstore packages, whose files go to the profile target and are
@@ -224,18 +225,7 @@ const folderLoader = "folder"
 // replaces it; an archive with no DLL is named for its store key.
 // It has no version of its own; the entry's source gives it one.
 func pluginComponent(key, dir string) Component {
-	name := key
-	var dlls []string
-	_ = filepath.WalkDir(dir, func(p string, d fs.DirEntry, err error) error {
-		if err == nil && !d.IsDir() && strings.EqualFold(filepath.Ext(p), ".dll") {
-			dlls = append(dlls, p)
-		}
-		return nil
-	})
-	if len(dlls) > 0 {
-		slices.Sort(dlls)
-		name = strings.TrimSuffix(filepath.Base(dlls[0]), filepath.Ext(dlls[0]))
-	}
+	name := cmp.Or(modname.FirstDLL(dir), key)
 	return Component{ID: mod.NewID(mod.FormatBepInEx, name), Name: name, Folder: "."}
 }
 

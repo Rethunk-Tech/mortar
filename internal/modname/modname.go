@@ -52,6 +52,16 @@ func packageInfo(dir string) Info {
 			return Info{ID: mod.NewID(mod.FormatThunderstore, publisher+"-"+m.Name), Name: m.Name, Version: m.Version}
 		}
 	}
+	name := FirstDLL(dir)
+	if name == "" {
+		return Info{}
+	}
+	return Info{ID: mod.NewID(mod.FormatBepInEx, name), Name: name}
+}
+
+// FirstDLL names the first DLL under dir by path, without its extension, or is empty when dir holds none. A BepInEx
+// mod without a Thunderstore manifest is named for it, since it is the plugin's assembly in nearly every archive.
+func FirstDLL(dir string) string {
 	var dlls []string
 	_ = filepath.WalkDir(dir, func(p string, d fs.DirEntry, err error) error {
 		if err == nil && !d.IsDir() && strings.EqualFold(filepath.Ext(p), ".dll") {
@@ -60,9 +70,8 @@ func packageInfo(dir string) Info {
 		return nil
 	})
 	if len(dlls) == 0 {
-		return Info{}
+		return ""
 	}
 	slices.Sort(dlls)
-	name := strings.TrimSuffix(filepath.Base(dlls[0]), filepath.Ext(dlls[0]))
-	return Info{ID: mod.NewID(mod.FormatBepInEx, name), Name: name}
+	return strings.TrimSuffix(filepath.Base(dlls[0]), filepath.Ext(dlls[0]))
 }
