@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -345,46 +346,94 @@ func entriesStoreKeys(entries []Entry) []string {
 	return keys
 }
 
-// snapshotKeysFile caches, per snapshot hash, the store keys its entries name. A snapshot never changes under its
-// hash, so decoding a long history's gzipped snapshots happens once instead of on every launch.
+// snapshotKeysFile caches the store keys a history's snapshots name. A snapshot never changes under its hash, so
+// decoding a long history's gzipped snapshots happens once instead of on every launch.
 const snapshotKeysFile = "history-keys.json"
+
+// snapshotKeys is the cache file: the snapshots it covers and the union of their keys. Releases through 0.3.x wrote a
+// map of snapshot hash to its own key list instead, which is still read.
+type snapshotKeys struct {
+	Format    int      `json:"format"`
+	Snapshots []string `json:"snapshots"`
+	Keys      []string `json:"keys"`
+	old       bool     // read from the earlier shape, so rewritten even when nothing changed
+}
+
+const snapshotKeysFormat = 2
+
+// readSnapshotKeys returns the cache file's content in the current shape, empty when absent or unreadable.
+func readSnapshotKeys(path string) snapshotKeys {
+	b, err := fsx.ReadFile(path)
+	if err != nil {
+		return snapshotKeys{}
+	}
+	var cur snapshotKeys
+	if json.Unmarshal(b, &cur) == nil && cur.Format == snapshotKeysFormat {
+		return cur
+	}
+	var old map[string][]string
+	if json.Unmarshal(b, &old) != nil {
+		return snapshotKeys{}
+	}
+	cur = snapshotKeys{Format: snapshotKeysFormat, old: true}
+	for id, ks := range old {
+		cur.Snapshots = append(cur.Snapshots, id)
+		cur.Keys = append(cur.Keys, ks...)
+	}
+	slices.Sort(cur.Keys)
+	cur.Keys = slices.Compact(cur.Keys)
+	return cur
+}
 
 func historyStoreKeys(dir string) ([]string, error) {
 	data, err := readHistory(dir)
 	if err != nil {
 		return nil, err
 	}
-	cached := map[string][]string{}
-	if _, err := datadir.ReadJSON(filepath.Join(dir, snapshotKeysFile), &cached); err != nil {
-		cached = map[string][]string{}
-	}
-	next := make(map[string][]string, len(data.Events))
-	seen := map[string]struct{}{}
-	var keys []string
+	path := filepath.Join(dir, snapshotKeysFile)
+	cached := readSnapshotKeys(path)
+	current := map[string]struct{}{}
+	var ids []string
 	for _, ev := range data.Events {
-		if _, done := next[ev.SnapshotID]; done {
-			continue
+		if _, dup := current[ev.SnapshotID]; !dup {
+			current[ev.SnapshotID] = struct{}{}
+			ids = append(ids, ev.SnapshotID)
 		}
-		k, ok := cached[ev.SnapshotID]
-		if !ok {
-			entries, found := snapshotEntries(&data, ev.SnapshotID)
-			if !found {
-				return nil, fmt.Errorf("history snapshot %s not found", ev.SnapshotID)
-			}
-			k = entriesStoreKeys(entries)
+	}
+	// A snapshot the history dropped leaves its keys in the union, so the union is rebuilt rather than trimmed.
+	if !slices.ContainsFunc(cached.Snapshots, func(id string) bool { _, ok := current[id]; return !ok }) {
+		covered := map[string]struct{}{}
+		for _, id := range cached.Snapshots {
+			covered[id] = struct{}{}
 		}
-		next[ev.SnapshotID] = k
-		for _, key := range k {
-			if _, dup := seen[key]; !dup {
-				seen[key] = struct{}{}
-				keys = append(keys, key)
+		ids = slices.DeleteFunc(ids, func(id string) bool { _, ok := covered[id]; return ok })
+	} else {
+		cached = snapshotKeys{}
+		ids = slices.Clone(ids)
+	}
+	if len(ids) == 0 && !cached.old && len(cached.Snapshots) == len(current) {
+		return cached.Keys, nil
+	}
+	seen := make(map[string]struct{}, len(cached.Keys))
+	keys := slices.Clone(cached.Keys)
+	for _, k := range keys {
+		seen[k] = struct{}{}
+	}
+	for _, id := range ids {
+		entries, found := snapshotEntries(&data, id)
+		if !found {
+			return nil, fmt.Errorf("history snapshot %s not found", id)
+		}
+		for _, k := range entriesStoreKeys(entries) {
+			if _, dup := seen[k]; !dup {
+				seen[k] = struct{}{}
+				keys = append(keys, k)
 			}
 		}
 	}
-	if !maps.EqualFunc(cached, next, slices.Equal) {
-		if err := datadir.WriteJSON(filepath.Join(dir, snapshotKeysFile), next); err != nil {
-			log.Printf("history key cache: %v", err)
-		}
+	next := snapshotKeys{Format: snapshotKeysFormat, Snapshots: slices.Sorted(maps.Keys(current)), Keys: keys}
+	if err := datadir.WriteJSON(path, next); err != nil {
+		log.Printf("history key cache: %v", err)
 	}
 	return keys, nil
 }
