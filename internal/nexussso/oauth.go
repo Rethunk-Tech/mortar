@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -37,6 +38,12 @@ const (
 	refreshMargin = time.Minute
 	maxTokenBody  = 64 << 10
 )
+
+// ErrRevoked means Nexus refused the stored refresh token, so the account has to sign in again.
+var ErrRevoked = errors.New("nexus sign-in expired")
+
+// refreshMu keeps concurrent callers from spending one refresh token twice; Nexus rotates it on use.
+var refreshMu sync.Mutex
 
 // ErrPortBusy means the fixed callback port could not be opened.
 var ErrPortBusy error = portBusy{}
@@ -178,6 +185,9 @@ func (o OAuth) exchange(ctx context.Context, form url.Values) (Tokens, error) {
 		return Tokens{}, err
 	}
 	defer func() { _ = resp.Body.Close() }()
+	if form.Get("grant_type") == "refresh_token" && (resp.StatusCode == http.StatusBadRequest || resp.StatusCode == http.StatusUnauthorized) {
+		return Tokens{}, fmt.Errorf("nexus token endpoint answered %s: %w", resp.Status, ErrRevoked)
+	}
 	if resp.StatusCode != http.StatusOK {
 		return Tokens{}, fmt.Errorf("nexus token endpoint answered %s", resp.Status)
 	}
@@ -218,6 +228,14 @@ func Forget() error { return secret.Delete(keyringItem) }
 func (o OAuth) Fresh(ctx context.Context) (Tokens, error) {
 	t, err := Load()
 	if err != nil {
+		return Tokens{}, err
+	}
+	if o.now().Add(refreshMargin).Before(t.Expires) {
+		return t, nil
+	}
+	refreshMu.Lock()
+	defer refreshMu.Unlock()
+	if t, err = Load(); err != nil {
 		return Tokens{}, err
 	}
 	if o.now().Add(refreshMargin).Before(t.Expires) {

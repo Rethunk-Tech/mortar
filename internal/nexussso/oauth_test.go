@@ -135,3 +135,19 @@ func TestBusyPortFailsWithoutFallingBack(t *testing.T) {
 		t.Fatal("the browser opened although the callback could not listen")
 	}
 }
+
+func TestFreshMapsARefusedRefreshToSignedOut(t *testing.T) {
+	keyring.MockInit()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusBadRequest)
+	}))
+	defer srv.Close()
+	now := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	if err := Save(Tokens{Access: "A", Refresh: "R", Expires: now.Add(-time.Hour)}); err != nil {
+		t.Fatal(err)
+	}
+	o := OAuth{ClientID: "cid", AuthBase: srv.URL, Now: func() time.Time { return now }}
+	if _, err := o.Fresh(context.Background()); !errors.Is(err, ErrRevoked) {
+		t.Fatalf("err = %v", err)
+	}
+}

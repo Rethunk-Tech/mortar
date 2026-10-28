@@ -30,7 +30,7 @@ func Authed(store *settings.Store, c *nexus.Client) (*nexus.Client, error) {
 	}
 	return c.WithBearer(func(ctx context.Context) (string, error) {
 		t, err := nexussso.OAuth{ClientID: nexussso.ClientID}.Fresh(ctx)
-		if errors.Is(err, secret.ErrNotFound) {
+		if errors.Is(err, secret.ErrNotFound) || errors.Is(err, nexussso.ErrRevoked) {
 			return "", ErrSignedOut
 		}
 		return t.Access, err
