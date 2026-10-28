@@ -118,7 +118,12 @@ function wantsOf(missing: Missing[]): Want[] {
   for (const item of missing) {
     const want = wantOf(item)
     if (want) {
-      const key = want.repo ? `gh:${want.repo}` : `nx:${want.modId}`
+      let key = `nx:${want.modId}`
+      if (want.package) {
+        key = `pk:${want.source ?? ''}:${want.package}`
+      } else if (want.repo) {
+        key = `gh:${want.repo}`
+      }
       if (!seen.has(key)) {
         seen.add(key)
         out.push(want)

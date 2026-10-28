@@ -5,6 +5,7 @@ import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/interna
 import { LetterTile } from '../mods/LetterTile.tsx'
 import { accent } from '../mods/paper.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { space } from '../theme/density.ts'
 import { profileOf, tile } from './totals.ts'
 
 // The item's name with the profile it installs into under it; the sheet is too narrow to fit both on one line.
@@ -52,15 +53,15 @@ export function Callout({
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        gap: '10px',
-        p: '14px',
+        gap: space.gap,
+        p: space.pad,
         bgcolor: accent.fill,
         border: '1px solid',
         borderColor: 'primary.main',
         borderRadius: '8px',
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
         <LetterTile mod={tile(item)} size={44} />
         <Box sx={{ flexGrow: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
           <Typography

@@ -37,14 +37,16 @@ async function undoBatchInstall(game: string, profileId: string, landed: Landed[
 export interface Landed {
   key: string
   updated: boolean
-  mods: string[]
+  names: string[]
+  // The profile ids of the mods, which Undo checks against the profile's entries.
+  ids: string[]
 }
 
 export function pushBatchSummary(game: string, profile: Profile, landed: Landed[], failed: number) {
   if (landed.length === 0) {
     return
   }
-  const names = landed.flatMap((l) => l.mods)
+  const names = landed.flatMap((l) => l.names)
   useToasts.getState().push({
     kind: failed > 0 ? 'warning' : 'success',
     title: plural(
@@ -63,7 +65,7 @@ export function pushBatchSummary(game: string, profile: Profile, landed: Landed[
       live: () => {
         const current = getProfile(profile.id)
         for (const l of landed) {
-          const state = changeStillLatest(current, l.key, l.mods)
+          const state = changeStillLatest(current, l.key, l.ids)
           if (state.disabled) {
             return state
           }

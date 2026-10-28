@@ -34,6 +34,7 @@ import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { Callout, Title } from './Callout.tsx'
 import { Fold } from './QueueFold.tsx'
+import { QueueNeedsFomod } from './QueueNeedsFomod.tsx'
 import { MoveButtons, NowButton, PauseButton, Paused, Row, SectionTitle } from './QueueRows.tsx'
 import { detail, ROW } from './rowStyle.ts'
 import { displayName, downloadedKb, isActive, tile } from './totals.ts'
@@ -298,7 +299,9 @@ function Active({ item }: { item: Item }) {
   return (
     <Box sx={{ ...ROW, bgcolor: 'var(--mortar-raised)' }}>
       <LetterTile mod={tile(item)} size={36} />
-      <Box sx={{ flexGrow: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '5px' }}>
+      <Box
+        sx={{ flexGrow: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: space.gap }}
+      >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: space.gap }}>
           <Title item={item} size={14} />
           <Typography sx={{ ...detail, flexShrink: 0 }}>{text}</Typography>
@@ -359,9 +362,10 @@ function Skipped({ items }: { items: Item[] }) {
     if (i.state === 'cancelled') {
       return t`Cancelled`
     }
-    return i.error === 'Already the newest file'
-      ? t`Already the newest file`
-      : i.error || t`Skipped`
+    if (i.error === 'Already the newest file') {
+      return t`Already the newest file`
+    }
+    return i.error ? errorMessage(i.error) : t`Skipped`
   }
   if (items.length === 0) {
     return null
@@ -395,6 +399,7 @@ export function Body({ items, onBrowse }: { items: Item[]; onBrowse: () => void 
   const confirm = items.filter((i) => i.state === 'needs-confirm' || i.state === 'confirm-large')
   const needsRoot = items.some((i) => i.state === 'needs-root')
   const needsMerge = items.some((i) => i.state === 'needs-merge')
+  const fomod = items.filter((i) => i.state === 'needs-fomod')
   const failed = items.filter((i) => i.state === 'failed')
   const active = items.filter(isActive)
   const next = items.filter((i) => i.state === 'queued')
@@ -407,6 +412,7 @@ export function Body({ items, onBrowse }: { items: Item[]; onBrowse: () => void 
       confirm.length +
       (needsRoot ? 1 : 0) +
       (needsMerge ? 1 : 0) +
+      fomod.length +
       failed.length +
       active.length +
       paused.length +
@@ -441,6 +447,7 @@ export function Body({ items, onBrowse }: { items: Item[]; onBrowse: () => void 
       <Confirmations items={confirm} />
       <QueueNeedsRoot items={items} />
       <QueueNeedsMerge items={items} />
+      <QueueNeedsFomod items={fomod} />
       <Failed items={failed} />
       {active.length > 0 ? (
         <SectionTitle>{t`In progress (${{ count: active.length }})`}</SectionTitle>
@@ -490,7 +497,7 @@ export function Body({ items, onBrowse }: { items: Item[]; onBrowse: () => void 
             <Row
               key={i.id}
               item={i}
-              sx={{ px: '10px' }}
+              sx={{ px: space.gap }}
               sub={
                 i.unverified ? (
                   <Typography sx={{ ...detail, color: 'text.secondary' }}>

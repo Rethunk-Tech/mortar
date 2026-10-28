@@ -21,7 +21,6 @@ import {
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { i18n } from '../i18n/index.ts'
 import { sentence } from '../i18n/sentence.ts'
-import { considerMissing } from '../install/store.ts'
 import { idKey } from '../mods/dependents.ts'
 import { openPage } from '../mods/menu.ts'
 import { nexusEntryOf, useNexusDetails } from '../mods/nexusDetails.ts'
@@ -38,7 +37,7 @@ import { sameValue } from '../shell/sameValue.ts'
 import { errorDetails, errorKind } from '../toasts/errorKind.ts'
 import { changeStillLatest, type HistoryActionState } from '../toasts/history.ts'
 import { type ToastInput, useToasts } from '../toasts/store.ts'
-import { displayName } from './totals.ts'
+import { displayName, isActive } from './totals.ts'
 
 // The binding types a Go slice as nullable; the store keeps it a list.
 type Snapshot = Omit<State, 'items'> & { items: Item[] }
@@ -69,6 +68,8 @@ function showLive(): HistoryActionState {
         i.state === 'needs-confirm' ||
         i.state === 'confirm-large' ||
         i.state === 'needs-merge' ||
+        i.state === 'needs-root' ||
+        i.state === 'needs-fomod' ||
         i.state === 'failed',
     )
   ) {
@@ -133,6 +134,16 @@ function downloadFailCopy(error: string): { body: string; detail?: string } {
   }
 }
 
+function siteOf(item: Item): string {
+  if (item.source) {
+    return item.source
+  }
+  if (item.repo) {
+    return 'github'
+  }
+  return item.package ? 'thunderstore' : 'nexus'
+}
+
 function failureToast(item: Item): Pick<ToastInput, 'title' | 'body' | 'action'> {
   if (item.errorKind === 'auth') {
     return {
@@ -169,7 +180,7 @@ function failureToast(item: Item): Pick<ToastInput, 'title' | 'body' | 'action'>
   }
   if (item.errorKind === 'network') {
     return {
-      title: i18n._(msg`Could not reach ${{ source: sourceLabel('nexus') }}`),
+      title: i18n._(msg`Could not reach ${{ source: sourceLabel(siteOf(item)) }}`),
       action: {
         label: i18n._(msg`Retry`),
         run: () => Retry(item.id),
@@ -267,16 +278,32 @@ function pushRateLimitPause(prev: Snapshot, next: Snapshot) {
   }
 }
 
-function debounceProfileRefresh(games: string[]) {
+// Games and installs gathered while the refresh timer waits, so a later batch does not drop an earlier one.
+const refreshGames = new Set<string>()
+let landedItems: { done: Item[]; shown: Item[] } = { done: [], shown: [] }
+
+// Another game's profiles load fresh when the player opens it; only the open game's list is refreshed here.
+function debounceProfileRefresh(done: Item[], shown: Item[]) {
+  for (const item of done) {
+    refreshGames.add(item.game)
+  }
+  landedItems = { done: [...landedItems.done, ...done], shown: [...landedItems.shown, ...shown] }
   clearTimeout(refreshTimer)
   refreshTimer = setTimeout(async () => {
     refreshTimer = undefined
-    const { game, refresh, load } = useProfiles.getState()
-    for (const id of games) {
-      await (id === game?.id ? refresh() : load(id))
+    const landed = landedItems
+    const open = useProfiles.getState().game?.id
+    const refreshing = open !== undefined && refreshGames.has(open)
+    refreshGames.clear()
+    landedItems = { done: [], shown: [] }
+    if (refreshing) {
+      await useProfiles
+        .getState()
+        .refresh()
         .then(() => useMods.getState().load())
         .catch(() => undefined)
     }
+    announceInstalls(landed.done, landed.shown)
   }, REFRESH_DEBOUNCE_MS)
 }
 
@@ -333,6 +360,27 @@ function toastInstalls(shownDone: Item[], unblocked: string | undefined) {
   }
 }
 
+// Set by the install store, which this module cannot import: it queues downloads through this one.
+const queueHooks = { installed: (_ids: readonly string[]): void => undefined }
+
+const busy = (items: Item[]) => items.some((i) => i.state === 'queued' || isActive(i))
+
+// Run once the profile has been refreshed, so the toast's Undo and the missing-dependency check see the new entries.
+function announceInstalls(done: Item[], shownDone: Item[]) {
+  const blocked = useMods.getState().problems?.missing
+  const dependentIds: string[] = []
+  for (const item of done) {
+    const profile = getProfile(item.profileId)
+    for (const mod of entryForItem(profile, item)?.mods ?? []) {
+      if (mod.id) {
+        dependentIds.push(mod.id)
+      }
+    }
+  }
+  queueHooks.installed(dependentIds)
+  toastInstalls(shownDone, unblockedDependent(blocked, dependentIds))
+}
+
 function announce(prev: Snapshot, next: Snapshot) {
   const before = new Map(prev.items.map((i) => [i.id, i.state]))
   const changed = (state: string) =>
@@ -343,28 +391,19 @@ function announce(prev: Snapshot, next: Snapshot) {
     ...changed('needs-choice'),
     ...changed('needs-confirm'),
     ...changed('needs-merge'),
+    ...changed('needs-root'),
+    ...changed('needs-fomod'),
   ]
-  const blocked = useMods.getState().problems?.missing
-  const games = [...new Set(done.map((i) => i.game))]
   // A summarized batch reports its installs and failures in one toast; a download waiting on a decision still asks.
   const shown = (items: Item[]) => items.filter((item) => !isSummarizedBatch(item.batchId ?? ''))
   const shownDone = shown(done)
   const shownFailed = shown(failed)
-  if (games.length > 0) {
-    debounceProfileRefresh(games)
+  if (!busy(prev.items) && busy(next.items)) {
+    installToast = undefined
   }
-  const dependentIds: string[] = []
-  for (const item of done) {
-    const profile = getProfile(item.profileId)
-    for (const mod of entryForItem(profile, item)?.mods ?? []) {
-      if (mod.id) {
-        dependentIds.push(mod.id)
-      }
-    }
+  if (done.length > 0) {
+    debounceProfileRefresh(done, shownDone)
   }
-  considerMissing(dependentIds)
-  const unblocked = unblockedDependent(blocked, dependentIds)
-  toastInstalls(shownDone, unblocked)
   if (waiting.length > 0) {
     useToasts.getState().push({
       kind: 'info',
@@ -431,6 +470,7 @@ export {
   entryForItem,
   installUndo,
   queueErrorDetail,
+  queueHooks,
   retryWaitSeconds,
   shouldRollBack,
   singleNexusFailure,

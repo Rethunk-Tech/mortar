@@ -10,6 +10,7 @@ export interface HistoryEntry {
   modId: number
   fileId: number
   kind: string
+  package?: string
   repo?: string
   tag?: string
   asset?: string
@@ -89,6 +90,7 @@ export function loadHistory(): Promise<HistoryEntry[]> {
       modId: e.modId ?? 0,
       fileId: e.fileId ?? 0,
       kind: e.kind ?? 'install',
+      package: e.package ?? '',
       repo: e.repo ?? '',
       tag: e.tag ?? '',
       asset: e.asset ?? '',

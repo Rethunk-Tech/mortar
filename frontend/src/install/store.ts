@@ -15,11 +15,7 @@ import {
   RemoveEntry,
   RollBack,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
-import {
-  Add,
-  AnswerRoot,
-  FailRoot,
-} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
+import { AnswerRoot } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
 import { useFomod } from '../fomod/store.ts'
 import { i18n } from '../i18n/index.ts'
 import { listNames } from '../i18n/list.ts'
@@ -30,6 +26,8 @@ import { profileLocked } from '../mods/useLocked.ts'
 import { routeGame, useNav } from '../nav/store.ts'
 import { openOverride } from '../profiles/openOverrides.ts'
 import { getProfile, openProfileOf, useProfiles } from '../profiles/store.ts'
+import { queueWants } from '../queue/actions.ts'
+import { queueHooks } from '../queue/store.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
 import { baseName } from '../shell/baseName.ts'
@@ -153,7 +151,12 @@ async function installOne(
   }
   if (batch) {
     if (landed) {
-      batch.push({ key: landed.key, updated, mods: names })
+      batch.push({
+        key: landed.key,
+        updated,
+        names,
+        ids: landed.mods?.map((m) => m.id) ?? [],
+      })
     }
     return
   }
@@ -196,9 +199,9 @@ async function afterDroppedRemap(
   res: Awaited<ReturnType<typeof InstallRemap>>,
 ) {
   if (res.remap) {
-    useInstall.setState({
-      remap: { ...session, key: res.remap.key, source: res.remap.source, ask: res.remap },
-    })
+    useInstall
+      .getState()
+      .openRemap({ ...session, key: res.remap.key, source: res.remap.source, ask: res.remap })
     return
   }
   if (res.fomod) {
@@ -270,9 +273,7 @@ async function runInstalls(
     return
   }
   if (gate === 'locked') {
-    useToasts
-      .getState()
-      .push({ kind: 'warning', title: i18n._(msg`Stop the game to change mods.`) })
+    useToasts.getState().push({ kind: 'warning', title: i18n._(msg`Stop the game to change mods`) })
     return
   }
   if (!(game && profile)) {
@@ -283,14 +284,19 @@ async function runInstalls(
   let failed = 0
   set((s) => ({ pending: s.pending + items.length }))
   for (const item of items) {
-    const install = () =>
+    const installWith = (track: { dependentIds: string[]; batch: Landed[] | null }) =>
       installOne(game, profile, callFor(game.id, profile.id, item), {
-        dependentIds,
-        batch,
+        ...track,
         ...(archives ? { archivePath: item } : {}),
       })
+    // The batch is summarised by the time the player answers, so the retry reports and finishes on its own.
+    const retryAlone = async () => {
+      const ids: string[] = []
+      await installWith({ dependentIds: ids, batch: null })
+      await maybeFinishInstall(profile.id, ids)
+    }
     try {
-      await install()
+      await installWith({ dependentIds, batch })
     } catch (e) {
       failed += 1
       const flagged = detectionOf(e)
@@ -302,7 +308,7 @@ async function runInstalls(
           flagged,
           game: game.id,
           profile: profile.id,
-          install,
+          install: retryAlone,
         })
       } else {
         toastError(title, e)
@@ -317,10 +323,17 @@ async function runInstalls(
   await maybeFinishInstall(profile.id, dependentIds)
 }
 
+const nextRemap = (s: { remapQueue: RemapSession[] }) => ({
+  remap: s.remapQueue[0] ?? null,
+  remapQueue: s.remapQueue.slice(1),
+})
+
 export const useInstall = create<{
   pending: number
   offers: MissingOffer[]
   remap: RemapSession | null
+  // Sessions that arrived while one was open, opened in turn.
+  remapQueue: RemapSession[]
   dismissOffer: () => void
   openRemap: (s: RemapSession) => void
   closeRemap: () => void
@@ -332,21 +345,17 @@ export const useInstall = create<{
   pending: 0,
   offers: [],
   remap: null,
+  remapQueue: [],
   dismissOffer: () => set((s) => ({ offers: s.offers.slice(1) })),
-  openRemap: (remap) => set({ remap }),
-  closeRemap: () => {
-    const session = get().remap
-    if (session?.queueId) {
-      FailRoot(session.queueId).catch(reportUnexpected)
-    }
-    set({ remap: null })
-  },
+  openRemap: (remap) =>
+    set((s) => (s.remap ? { remapQueue: [...s.remapQueue, remap] } : { remap })),
+  closeRemap: () => set(nextRemap),
   chooseRoot: (root) => {
     const session = get().remap
     if (!session) {
       return
     }
-    set({ remap: null })
+    set(nextRemap)
     if (session.queueId) {
       AnswerRoot(session.queueId, root).catch(
         reportError(i18n._(msg`Could not add the chosen folder`)),
@@ -421,31 +430,15 @@ export function considerMissing(dependentIds: readonly string[]) {
   }
   if (mode === 'autodownload') {
     const wants = next.flatMap((o) => wantsOf(o.missing))
-    const { game, openId } = useProfiles.getState()
-    if (wants.length > 0 && game && openId) {
-      Add(
-        wants.map((r) => ({
-          kind: r.kind,
-          modId: r.modId ?? 0,
-          repo: r.repo ?? '',
-          tag: r.tag ?? '',
-          asset: r.asset ?? '',
-          fileId: r.fileId ?? 0,
-          name: r.name ?? '',
-          fileName: r.fileName ?? '',
-          version: r.version ?? '',
-          currentKey: r.currentKey ?? '',
-          batchId: '',
-          latest: r.latest ?? false,
-          game: game.id,
-          profileId: openId,
-        })),
-      ).catch(reportUnexpected)
+    if (wants.length > 0) {
+      queueWants(wants).catch(reportUnexpected)
     }
     return
   }
   useInstall.setState((s) => ({ offers: [...s.offers, ...next] }))
 }
+
+queueHooks.installed = considerMissing
 
 export type { RemapSession }
 export { dropInstallGate, entryForNames, shouldConsiderMissing, undoArchiveInstall }

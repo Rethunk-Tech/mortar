@@ -159,6 +159,8 @@ export function QueueSheet() {
   const [history, setHistory] = useState<HistoryEntry[] | null>(null)
   const [filters, setFilters] = useState<HistoryFilters>(emptyFilters)
   const gen = useRef(makeGen())
+  // History gains a row whenever a download settles.
+  const settled = items.filter((i) => i.state === 'failed' || isClearableFinished(i.state)).length
   const close = () => {
     setView('queue')
     setOpen(false)
@@ -171,7 +173,7 @@ export function QueueSheet() {
     }
   }, [open, historyBatchId])
   useEffect(() => {
-    if (!open || view !== 'history') {
+    if (!open || view !== 'history' || settled < 0) {
       return
     }
     const id = gen.current.stamp()
@@ -185,7 +187,7 @@ export function QueueSheet() {
     return () => {
       gen.current.drop()
     }
-  }, [open, view])
+  }, [open, view, settled])
   return (
     <Drawer
       anchor="right"

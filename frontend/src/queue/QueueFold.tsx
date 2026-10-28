@@ -28,7 +28,7 @@ export function Fold({
           justifyContent: 'space-between',
           gap: space.gap,
           minHeight: 40,
-          px: '10px',
+          px: space.gap,
           borderRadius: '6px',
           bgcolor: bg,
           color: color ?? 'inherit',

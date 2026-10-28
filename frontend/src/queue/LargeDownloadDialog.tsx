@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Typography } from '@mui/material'
 import {
@@ -42,7 +43,7 @@ export function LargeDownloadDialog() {
     >
       {more > 0 ? (
         <Typography sx={{ color: 'text.secondary' }}>
-          {t`${more} more large downloads are waiting after this one.`}
+          {t`${plural(more, { one: '# more large download is waiting after this one.', other: '# more large downloads are waiting after this one.' })}`}
         </Typography>
       ) : null}
     </ConfirmationDialog>

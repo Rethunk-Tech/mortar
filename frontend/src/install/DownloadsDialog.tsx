@@ -233,6 +233,8 @@ export function DownloadsDialog() {
     }
   }, [open])
   const shown = listArchives(archives ?? [], query)
+  // The archive can vanish from the folder while picked.
+  const picked = (archives ?? []).some((a) => a.path === selected) ? selected : ''
   return (
     <AppDialog
       open={open}
@@ -244,16 +246,16 @@ export function DownloadsDialog() {
           <Button onClick={close}>{t`Cancel`}</Button>
           <DisabledReason
             title={hasProfile ? t`Choose an archive first.` : t`Open profile first.`}
-            disabled={!(selected && hasProfile)}
+            disabled={!(picked && hasProfile)}
           >
             <Button
               variant="contained"
-              disabled={!(selected && hasProfile)}
+              disabled={!(picked && hasProfile)}
               onClick={() => {
                 close()
                 useInstall
                   .getState()
-                  .installDownloads((archives ?? []).filter((a) => a.path === selected))
+                  .installDownloads((archives ?? []).filter((a) => a.path === picked))
                   .catch(reportError(t`Could not add the archive`))
               }}
             >
@@ -272,7 +274,7 @@ export function DownloadsDialog() {
           shown={shown}
           query={query}
           onQuery={setQuery}
-          selected={selected}
+          selected={picked}
           onSelect={setSelected}
           onClose={close}
         />

@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { listNames } from '../i18n/list.ts'
@@ -12,7 +13,7 @@ export function UnmoderatedDialog() {
   return (
     <ConfirmationDialog
       open={ask !== null}
-      title={t`${sites} is not moderated`}
+      title={t`${plural((ask?.sources ?? []).length, { one: `${{ sites }} is not moderated`, other: `${{ sites }} are not moderated` })}`}
       body={t`Anyone can publish files on ${sites}, and nobody reviews or scans them for malware. Download only from authors you trust. Mortar asks once per site.`}
       confirmLabel={t`Download`}
       onCancel={() => ask?.answer(false)}
