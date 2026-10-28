@@ -2,8 +2,6 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Checkbox, Chip, Typography } from '@mui/material'
 import {
   ArrowUpCircle,
-  ChevronDown,
-  ChevronRight,
   CircleDot,
   MinusCircle,
   PlusCircle,
@@ -22,6 +20,7 @@ import { Tooltip } from '../shell/Tooltip.tsx'
 import { space } from '../theme/density.ts'
 import { itemLabel, itemModKey } from './historyDiff.ts'
 import { type HistoryKind, historyKind, historySummary } from './historyTimeline.ts'
+import { ShowModsToggle } from './ShowModsToggle.tsx'
 
 const ICON_SIZE = 18
 const REVEAL = '&:hover, &:focus-within'
@@ -104,16 +103,7 @@ const RowMain = memo(function RowMainView({
             </span>
           </Tooltip>
         )}
-        {detailed ? (
-          <Button
-            size="small"
-            aria-expanded={open}
-            onClick={() => setOpen(!open)}
-            startIcon={open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-          >
-            {open ? t`Hide mods` : t`Show mods`}
-          </Button>
-        ) : null}
+        {detailed ? <ShowModsToggle open={open} onToggle={() => setOpen(!open)} /> : null}
       </Box>
       {open ? (
         <Box component="ul" sx={{ m: 0, mt: 0.5, p: 0, pl: 5.5 }}>

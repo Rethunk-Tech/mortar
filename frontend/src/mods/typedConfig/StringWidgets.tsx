@@ -10,6 +10,7 @@ import {
 } from '@mui/material'
 import { Circle, Plus, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { labelledInput } from '../../shell/labelledInput.tsx'
 import { space } from '../../theme/density.ts'
 import { isNumericItem, listSeparator, splitItems } from './entries.ts'
 import { clearedKeybind, formatKeypress, usesInputSystem } from './keybind.ts'
@@ -112,15 +113,7 @@ function ChipsWidget({ entry, label, onChange }: WidgetProps) {
           return <Chip key={key} size="small" label={item} {...itemProps} />
         })
       }
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          slotProps={{
-            ...params.slotProps,
-            htmlInput: { ...params.slotProps.htmlInput, 'aria-label': label },
-          }}
-        />
-      )}
+      renderInput={labelledInput(label)}
       // The theme pins small inputs to one control height; chips wrap onto more lines, so this field grows.
       sx={{
         width: TEXT_WIDTH_PX,

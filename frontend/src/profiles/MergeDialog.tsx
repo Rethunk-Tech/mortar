@@ -2,7 +2,6 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Box,
-  Button,
   FormControl,
   FormControlLabel,
   FormLabel,
@@ -11,7 +10,6 @@ import {
   RadioGroup,
   Typography,
 } from '@mui/material'
-import { ChevronDown, ChevronRight } from 'lucide-react'
 import { useId, useState } from 'react'
 import type {
   MergePreview as Merged,
@@ -29,13 +27,13 @@ import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
+import { ShowModsToggle } from './ShowModsToggle.tsx'
 import { useProfiles } from './store.ts'
 
 // The binding types a Go slice as nullable.
 type Preview = { [K in keyof Merged]-?: NonNullable<Merged[K]> }
 
 function AddsLine({ adds, targetName }: { adds: Preview['adds']; targetName: string }) {
-  const { t } = useLingui()
   const [open, setOpen] = useState(false)
   return (
     <Box>
@@ -49,16 +47,7 @@ function AddsLine({ adds, targetName }: { adds: Preview['adds']; targetName: str
             },
           )}
         </Typography>
-        {adds.length > 0 ? (
-          <Button
-            size="small"
-            aria-expanded={open}
-            onClick={() => setOpen(!open)}
-            startIcon={open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-          >
-            {open ? t`Hide mods` : t`Show mods`}
-          </Button>
-        ) : null}
+        {adds.length > 0 ? <ShowModsToggle open={open} onToggle={() => setOpen(!open)} /> : null}
       </Box>
       {open ? (
         <Box component="ul" sx={{ m: 0, p: 0, pl: 2.5, maxHeight: 160, overflowY: 'auto' }}>

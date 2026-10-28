@@ -32,6 +32,7 @@ import { copyText } from '../share/copyText.ts'
 import { AppDialog, ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
+import { labelledInput } from '../shell/labelledInput.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { useDebouncedLoad } from '../shell/useDebouncedLoad.ts'
 import { useLoaded } from '../shell/useLoaded.ts'
@@ -308,15 +309,9 @@ function MemberSearch({
           </Typography>
         </Box>
       )}
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          placeholder={t`Type or method, such as player update`}
-          slotProps={{
-            ...params.slotProps,
-            htmlInput: { ...params.slotProps.htmlInput, 'aria-label': t`Search the game's code` },
-          }}
-        />
+      renderInput={labelledInput(
+        t`Search the game's code`,
+        t`Type or method, such as player update`,
       )}
     />
   )

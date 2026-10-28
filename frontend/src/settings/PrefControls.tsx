@@ -13,6 +13,7 @@ import {
   ToggleButtonGroup,
 } from '@mui/material'
 import { useEffect, useState } from 'react'
+import { blurOnEnter } from '../shell/blurOnEnter.ts'
 import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
 
@@ -210,11 +211,7 @@ export function PrefText({
       slotProps={{ htmlInput: { 'aria-label': label } }}
       onChange={(e) => setDraft(e.target.value)}
       onBlur={commit}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
-          e.target.blur()
-        }
-      }}
+      onKeyDown={blurOnEnter}
       sx={{ minWidth: 180 }}
     />
   )
@@ -269,11 +266,7 @@ export function PrefNumber({
       helperText={invalid ? range : undefined}
       onChange={(e) => setDraft(e.target.value)}
       onBlur={commit}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
-          e.target.blur()
-        }
-      }}
+      onKeyDown={blurOnEnter}
       slotProps={{
         htmlInput: { min, max, step: 1, 'aria-label': label },
         ...(suffix

@@ -15,6 +15,7 @@ import {
 import { Plus, X } from 'lucide-react'
 import { useState } from 'react'
 import { HexColorPicker } from 'react-colorful'
+import { labelledInput } from '../../shell/labelledInput.tsx'
 import { space } from '../../theme/density.ts'
 import {
   commaListKind,
@@ -261,15 +262,7 @@ function TextWidget(props: WidgetProps) {
           onChange(value)
         }
       }}
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          slotProps={{
-            ...params.slotProps,
-            htmlInput: { ...params.slotProps.htmlInput, 'aria-label': label },
-          }}
-        />
-      )}
+      renderInput={labelledInput(label)}
       sx={{ width: TEXT_WIDTH_PX }}
     />
   )

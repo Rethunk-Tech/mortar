@@ -10,6 +10,7 @@ import {
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { OBS } from '../../brand/productNames.ts'
 import { copyText } from '../../share/copyText.ts'
+import { blurOnEnter } from '../../shell/blurOnEnter.ts'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
 import { TipIconButton } from '../../shell/TipIconButton.tsx'
 import { space } from '../../theme/density.ts'
@@ -300,11 +301,7 @@ function OverlayConnection({ port, token, push }: { port: number; token: string;
           helperText={portError ? portRange : undefined}
           onChange={(e) => setDraft(e.target.value)}
           onBlur={commitPort}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
-              e.target.blur()
-            }
-          }}
+          onKeyDown={blurOnEnter}
           slotProps={{
             htmlInput: { min: MIN_PORT, max: MAX_PORT, step: 1, 'aria-label': t`Port` },
           }}

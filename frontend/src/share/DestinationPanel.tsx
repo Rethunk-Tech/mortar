@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material'
 import { userModCount } from '../profiles/count.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { profileById, useProfiles } from '../profiles/store.ts'
 import { space } from '../theme/density.ts'
 import { TipBanner } from '../tips/TipBanner.tsx'
 import { ListFormat } from './ListFormat.tsx'
@@ -9,13 +9,18 @@ import { FilePane, LinkPane, NearbyPane, NexusPane, ThunderstorePane } from './M
 import type { Destination } from './methods.ts'
 import type { useShareBuild } from './useShareBuild.ts'
 
-function MortarPanel({ built }: { built: ReturnType<typeof useShareBuild> }) {
-  const { t } = useLingui()
-  const { profileId, format, setFormat, info, include, setInclude } = built
-  const total = useProfiles((s) => {
-    const p = s.profiles.find((x) => x.id === profileId)
+// The profile's own mod count, or the built list's while the profile is not loaded.
+function useShareTotal({ profileId, info }: ReturnType<typeof useShareBuild>) {
+  return useProfiles((s) => {
+    const p = profileById(profileId)(s)
     return p ? userModCount(p) : (info?.count ?? 0)
   })
+}
+
+function MortarPanel({ built }: { built: ReturnType<typeof useShareBuild> }) {
+  const { t } = useLingui()
+  const { format, setFormat, info, include, setInclude } = built
+  const total = useShareTotal(built)
   if (!info) {
     return null
   }
@@ -76,10 +81,7 @@ export function DestinationPanel({
 }) {
   const { t } = useLingui()
   const { profileId, game, info, include, setInclude } = built
-  const total = useProfiles((s) => {
-    const p = s.profiles.find((x) => x.id === profileId)
-    return p ? userModCount(p) : (info?.count ?? 0)
-  })
+  const total = useShareTotal(built)
   if (!info) {
     return null
   }
