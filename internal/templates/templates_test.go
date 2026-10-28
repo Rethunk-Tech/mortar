@@ -237,3 +237,40 @@ func TestTemplateFileFormats(t *testing.T) {
 		t.Error("a newer file must not be overwritten")
 	}
 }
+
+func TestApplyTemplateWithoutGameSettingsLeavesTheProfilesAlone(t *testing.T) {
+	tmp := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", tmp)
+	t.Setenv("LOCALAPPDATA", tmp)
+	_, profiles := testenv.Stores(t)
+	dataDir, err := datadir.Dir()
+	if err != nil {
+		t.Fatal(err)
+	}
+	p, err := profiles.Create("stardew", "P")
+	if err != nil {
+		t.Fatal(err)
+	}
+	mode := "borderless"
+	have := gamesettings.Settings{WindowMode: &mode}
+	svc := NewService(Deps{
+		Profiles: profiles, SavedGroups: savedgroups.NewService(profiles, dataDir),
+		GameSettings: func(string, string) (gamesettings.Settings, error) { return have, nil },
+		SetGameSettings: func(_, _ string, s gamesettings.Settings) error {
+			have = s
+			return nil
+		},
+	}, dataDir)
+	if err := svc.RestoreTemplate("stardew", Template{Name: "Bare"}); err != nil {
+		t.Fatal(err)
+	}
+	if pre, err := svc.PreviewApplyTemplate("stardew", "Bare", p.ID); err != nil || len(pre.SettingsChanges) != 0 {
+		t.Fatalf("preview = %+v, %v", pre, err)
+	}
+	if _, err := svc.ApplyTemplate("stardew", "Bare", p.ID); err != nil {
+		t.Fatal(err)
+	}
+	if have.WindowMode == nil {
+		t.Fatal("an empty template cleared the profile's game settings")
+	}
+}

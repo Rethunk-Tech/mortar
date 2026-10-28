@@ -133,7 +133,9 @@ func (s *Service) PreviewApplyTemplate(game, templateName, profileID string) (Pr
 	if err != nil {
 		return Preview{}, err
 	}
-	out.SettingsChanges = append(out.SettingsChanges, settingsDiff(cur, t.GameSettings)...)
+	if t.GameSettings != (gamesettings.Settings{}) {
+		out.SettingsChanges = append(out.SettingsChanges, settingsDiff(cur, t.GameSettings)...)
+	}
 	if opts, err := s.d.Profiles.LaunchOptions(game, profileID); err != nil {
 		return Preview{}, err
 	} else if t.LaunchOptions != "" && strings.TrimSpace(opts) != strings.TrimSpace(t.LaunchOptions) {
@@ -184,11 +186,9 @@ func (s *Service) ApplyTemplate(game, templateName, profileID string) (Applied, 
 	}
 	add, _, _ := split(p, t.Mods)
 	res, err := s.fill(game, profileID, t, add)
-	if err != nil {
-		return Applied{}, err
-	}
+	// A step after the mods went in can fail: the caller still gets the means to undo what did apply.
 	undo.ModsChanged = res.Added > 0
-	return Applied{ApplyResult: res, Undo: undo}, nil
+	return Applied{ApplyResult: res, Undo: undo}, err
 }
 
 // UndoApplyTemplate reverts the mods an ApplyTemplate added and restores the game settings and launch options it
@@ -260,27 +260,29 @@ func (s *Service) fill(game, id string, t Template, mods []savedgroups.Mod) (sav
 	if err != nil {
 		return savedgroups.ApplyResult{}, err
 	}
-	if err := s.d.SetGameSettings(game, id, t.GameSettings); err != nil {
-		return savedgroups.ApplyResult{}, err
+	if t.GameSettings != (gamesettings.Settings{}) {
+		if err := s.d.SetGameSettings(game, id, t.GameSettings); err != nil {
+			return res, err
+		}
 	}
 	if t.LaunchOptions != "" {
 		if res.Profile, err = s.d.Profiles.SetLaunchOptions(game, id, t.LaunchOptions); err != nil {
-			return savedgroups.ApplyResult{}, err
+			return res, err
 		}
 	}
 	if t.LaunchPrefix != "" || t.LaunchEnv != "" {
 		if res.Profile, err = s.d.Profiles.SetLaunchSettings(game, id, t.LaunchPrefix, t.LaunchEnv); err != nil {
-			return savedgroups.ApplyResult{}, err
+			return res, err
 		}
 	}
 	if len(t.Overrides) > 0 {
 		if res.Profile, err = s.d.Profiles.SetOverrides(game, id, t.Overrides); err != nil {
-			return savedgroups.ApplyResult{}, err
+			return res, err
 		}
 	}
 	if len(t.LaunchPresets) > 0 {
 		if res.Profile, err = s.d.Profiles.SetLaunchPresets(game, id, t.LaunchPresets, t.DefaultLaunchPreset); err != nil {
-			return savedgroups.ApplyResult{}, err
+			return res, err
 		}
 	}
 	return res, nil
