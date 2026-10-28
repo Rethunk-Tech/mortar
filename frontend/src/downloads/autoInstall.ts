@@ -54,10 +54,11 @@ function whenIdle(game: string, dir: string, run: () => void) {
 // The profile the folder installs into: the one picked for it, else the open profile of the open game.
 function targetOf(game: string, dir: string) {
   const picked = useSettings.getState().games?.[game]?.extraModsProfiles?.[dir]
+  const { game: open, openId, profiles } = useProfiles.getState()
   if (picked) {
-    return picked
+    // A profile deleted since it was picked installs nothing, rather than failing on every change in the folder.
+    return open?.id === game && !profiles.some((p) => p.id === picked) ? '' : picked
   }
-  const { game: open, openId } = useProfiles.getState()
   return open?.id === game ? openId : ''
 }
 
