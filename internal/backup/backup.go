@@ -93,7 +93,7 @@ func savesZip(l saves.Layout, backupsDir string, keep int, now time.Time, cause 
 	}
 	name := nextStamp(zips, now)
 	for _, n := range slices.Backward(zips) {
-		if !readCause(filepath.Join(backupsDir, n)).wholeSaves() {
+		if c := readCause(filepath.Join(backupsDir, n)); !c.wholeSaves() || c.Profile != cause.Profile {
 			continue
 		}
 		if t, err := time.Parse(stamp, strings.TrimSuffix(n, ".zip")); err == nil {

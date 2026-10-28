@@ -246,3 +246,24 @@ func TestKindsRotateSeparately(t *testing.T) {
 		t.Fatalf("zips = %v, %v: each kind keeps its own newest", zips, err)
 	}
 }
+
+func TestSavesDoesNotReuseAnotherProfilesZip(t *testing.T) {
+	saves := filepath.Join(t.TempDir(), "Saves")
+	testfs.WriteFile(t, saves, "Farm_1/Farm_1", "save")
+	out := t.TempDir()
+	now := time.Now().Add(time.Hour)
+	a, err := Saves(t.Context(), layout(saves), out, 5, now, Cause{Kind: KindLaunch, Profile: "a"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := Saves(t.Context(), layout(saves), out, 5, now.Add(time.Minute), Cause{Kind: KindLaunch, Profile: "b"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if a == b {
+		t.Fatal("profile b was handed profile a's backup")
+	}
+	if c := readCause(b); c.Profile != "b" {
+		t.Fatalf("cause %+v", c)
+	}
+}
