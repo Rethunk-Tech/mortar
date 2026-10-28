@@ -156,6 +156,10 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 				params.Add("tagids[]", id)
 			}
 		}
+		// An included category the site has no tag for matches nothing; searching without one would match everything.
+		if len(params["tagids[]"]) == 0 {
+			return source.Page{Items: []source.Item{}}, nil
+		}
 	}
 	var parsed struct {
 		Mods []listedMod `json:"mods"`

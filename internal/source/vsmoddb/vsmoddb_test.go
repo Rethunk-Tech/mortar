@@ -87,3 +87,13 @@ func TestCategoriesHandsOutACopyOfTheCachedTags(t *testing.T) {
 		t.Fatalf("the cache changed: %v", again)
 	}
 }
+
+func TestSearchOfAnUnknownCategoryIsEmpty(t *testing.T) {
+	tags.Lock()
+	tags.ids, tags.names = map[string]string{"library": "1"}, []string{"Library"}
+	tags.Unlock()
+	got, err := fake(t).Search(context.Background(), source.Query{Page: source.FirstPage, Categories: []string{"nope"}})
+	if err != nil || len(got.Items) != 0 || got.Total != 0 {
+		t.Fatalf("page = %+v, %v", got, err)
+	}
+}
