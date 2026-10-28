@@ -569,7 +569,7 @@ func normalizeLAN(s *Settings) {
 
 // NewModsEnabled is whether newly installed profile entries should start enabled.
 func (s Settings) NewModsEnabled() bool {
-	return s.EnableModsWhenInstalled == nil || *s.EnableModsWhenInstalled
+	return ToggleOn(s.EnableModsWhenInstalled)
 }
 
 func validLastPlayed(in map[string]Played) map[string]Played {

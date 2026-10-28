@@ -154,14 +154,13 @@ type Include struct {
 // IncludeOf is what the player's share settings say a share or export carries: switched-off mods only when asked
 // for, the rest unless switched off.
 func IncludeOf(set settings.Settings) Include {
-	on := func(v *bool) bool { return v == nil || *v }
 	return Include{
 		DisabledMods:   set.ShareIncludeDisabledMods != nil && *set.ShareIncludeDisabledMods,
-		FomodChoices:   on(set.ShareIncludeFomodChoices),
-		Notes:          on(set.ShareIncludeNotes),
-		ConfigFiles:    on(set.ShareIncludeConfigFiles),
-		ProblemChoices: on(set.ShareIncludeProblemChoices),
-		Libraries:      on(set.ShareIncludeLibraries),
+		FomodChoices:   settings.ToggleOn(set.ShareIncludeFomodChoices),
+		Notes:          settings.ToggleOn(set.ShareIncludeNotes),
+		ConfigFiles:    settings.ToggleOn(set.ShareIncludeConfigFiles),
+		ProblemChoices: settings.ToggleOn(set.ShareIncludeProblemChoices),
+		Libraries:      settings.ToggleOn(set.ShareIncludeLibraries),
 	}
 }
 
