@@ -987,6 +987,16 @@ type launchTarget struct {
 	profileID, install, preset, dir, modsDir string
 }
 
+// specKey carries the launch fields a caller shows, which a launch uses instead of resolving a preset.
+type specKey struct{}
+
+func (s *Service) launchSpec(ctx context.Context, gameID, profileID, preset string) (profile.LaunchSpec, error) {
+	if spec, ok := ctx.Value(specKey{}).(profile.LaunchSpec); ok {
+		return spec, nil
+	}
+	return s.profiles.LaunchSpec(gameID, profileID, preset)
+}
+
 // begin starts the launch once the loader is in place.
 func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct, vanilla bool) error {
 	gameID := g.ID()
@@ -994,7 +1004,7 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 	var spec profile.LaunchSpec
 	if !vanilla && profileID != "" {
 		var err error
-		if spec, err = s.profiles.LaunchSpec(gameID, profileID, t.preset); err != nil {
+		if spec, err = s.launchSpec(ctx, gameID, profileID, t.preset); err != nil {
 			return err
 		}
 	}
