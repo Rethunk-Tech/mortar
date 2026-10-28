@@ -141,6 +141,7 @@ export function samePageSiblings(profile: Profile | undefined, entry: Entry | un
   return (profile.entries ?? []).filter((other) => {
     if (
       other.key === entry.key ||
+      other.package ||
       other.source?.kind !== 'nexus' ||
       (other.source.modId ?? 0) !== pageId
     ) {

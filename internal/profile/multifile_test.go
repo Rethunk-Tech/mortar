@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -352,5 +353,25 @@ func TestSamePageAskOffersNoMergeIntoAPackage(t *testing.T) {
 	}
 	if ask, _, ok := SamePageAsk(res.Profile, IncomingFile{ModID: 7, FileID: 2, Category: "OPTIONAL"}); ok {
 		t.Fatalf("a package was offered a merge: %+v", ask)
+	}
+}
+
+func TestCombineEntriesRefusesPackages(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p := mustCreate(t, e, "P")
+	if _, err := e.CombineEntries("stardew", p.ID, "a", "b"); err == nil {
+		t.Fatal("combined unknown entries")
+	}
+	p.Entries = []Entry{
+		{Key: "a", Package: true, Source: Source{Kind: KindNexus, ModID: 7}},
+		{Key: "b", Source: Source{Kind: KindNexus, ModID: 7}},
+	}
+	dir, _ := e.ProfileDir("stardew", p.ID)
+	if err := writeProfile(dir, p); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.CombineEntries("stardew", p.ID, "a", "b"); err == nil || !strings.Contains(err.Error(), "package") {
+		t.Fatalf("err = %v", err)
 	}
 }
