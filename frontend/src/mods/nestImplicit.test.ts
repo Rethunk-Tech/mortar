@@ -69,3 +69,14 @@ test('implicit mods follow their requirer into another group, and a group left e
     nested.map((g) => `${g.key}=${g.items.map((r) => `${r.mod.id}:${r.depth ?? 0}`).join(',')}`),
   ).toEqual(['problems=Me.Bingo:0,Lib.Canvas:1,Lib.Wav:2', 'disabled=Me.Detour5:0,Lib.Detour:1'])
 })
+
+test('a parent group with no mods of its own survives nesting; a group emptied by nesting does not', () => {
+  const libs = [row('Lib', [], true)]
+  const user = [row('Me', ['Lib'])]
+  const out = nestImplicit([
+    { key: 'Looks', items: [] },
+    { key: 'Looks/Hats', items: user },
+    { key: 'Libs', items: libs },
+  ])
+  expect(out.map((g) => g.key)).toEqual(['Looks', 'Looks/Hats'])
+})

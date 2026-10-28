@@ -2,7 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Switch, Typography } from '@mui/material'
 import { ChevronDown, ChevronRight, Search } from 'lucide-react'
 import { memo, type ReactNode } from 'react'
-import { useProfiles } from '../profiles/store.ts'
+import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { CoverButton } from '../shell/CoverButton.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -126,10 +126,16 @@ interface HeaderRowProps {
   groups: readonly { key: string; items: readonly ListRow[] }[]
 }
 
-// Whether every mod of the group and of the groups inside it is on; a group with no mods at all reads as off.
-function subtreeEnabled(groups: HeaderRowProps['groups'], key: string) {
-  const rows = groups.filter((g) => inGroup(g.key, key)).flatMap((g) => g.items)
-  return rows.length > 0 && rows.every((r) => r.mod.enabled)
+// Whether every mod of the group and of the groups inside it is on; a group with no mods at all reads as off. Read from
+// the profile's membership, since a library nested under a mod in another group is not in this group's rows.
+function subtreeEnabled(key: string) {
+  const held = new Set(
+    (openProfileOf(useProfiles.getState())?.groups ?? [])
+      .filter((g) => inGroup(g.name ?? '', key))
+      .flatMap((g) => g.keys ?? []),
+  )
+  const mods = useMods.getState().mods.filter((m) => held.has(m.key))
+  return mods.length > 0 && mods.every((m) => m.enabled)
 }
 
 function GroupHeaderRowView({
@@ -154,7 +160,7 @@ function GroupHeaderRowView({
       {...(groupBy === 'tag' ? { hint: tagHint } : {})}
       {...(groupBy === 'group' && groupKey !== ''
         ? {
-            enabled: subtreeEnabled(groups, groupKey),
+            enabled: subtreeEnabled(groupKey),
             menu: <GroupMenu name={groupKey} />,
             onEnabled: (on: boolean) => {
               setGroupEnabled(groupKey, on)
@@ -178,7 +184,7 @@ const headerFlags = (p: HeaderRowProps) => {
   const group = p.groups.find((g) => g.key === p.groupKey)
   return [
     p.collapsed[p.groupKey] === true,
-    subtreeEnabled(p.groups, p.groupKey),
+    subtreeEnabled(p.groupKey),
     group?.items.some((r) => r.unsourced === true) === true,
   ].join()
 }

@@ -14,11 +14,11 @@ import {
 import { SMAPI } from '../brand/productNames.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
-import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
+import { LockedReason } from './LockedReason.tsx'
 import { heading } from './paper.ts'
 import { useMods } from './store.ts'
 import { useLocked } from './useLocked.ts'
@@ -70,7 +70,7 @@ export function HiddenInside({ mod, profile }: { mod: Mod; profile: Profile }) {
             >
               {t`Open folder`}
             </Button>
-            <DisabledReason title={t`Stop the game first.`} disabled={locked}>
+            <LockedReason locked={locked}>
               <Button
                 size="small"
                 variant="text"
@@ -80,7 +80,7 @@ export function HiddenInside({ mod, profile }: { mod: Mod; profile: Profile }) {
               >
                 {t`Unhide`}
               </Button>
-            </DisabledReason>
+            </LockedReason>
           </ListItem>
         ))}
       </List>

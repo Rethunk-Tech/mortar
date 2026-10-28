@@ -10,6 +10,7 @@ import { useCustomCategories } from './customCategories.ts'
 import {
   customCategoryById,
   groupSorted,
+  hiddenByAncestor,
   installedNames,
   loadCollapsed,
   rowGroupKey,
@@ -120,14 +121,22 @@ export function useModGroups(mods: Mod[], profile: Profile, fold = false) {
   // Rows are memoised on this list's identity, so an unchanged order keeps the previous array.
   const lastIds = useRef<string[]>([])
   const orderedIds = useMemo(() => {
-    const next = groups.flatMap((g) => g.items.map((r) => modId(r.mod)))
+    // The rows a shift-click range can span are the visible ones, so a collapsed group's mods are left out.
+    const next = groups
+      .filter(
+        (g) =>
+          groupBy === 'none' ||
+          (collapsed[g.key] !== true &&
+            !(groupBy === 'group' && hiddenByAncestor(collapsed, g.key))),
+      )
+      .flatMap((g) => g.items.map((r) => modId(r.mod)))
     const last = lastIds.current
     if (next.length === last.length && next.every((id, i) => id === last[i])) {
       return last
     }
     lastIds.current = next
     return next
-  }, [groups])
+  }, [groups, groupBy, collapsed])
   return { groupBy, sort, gameId, collapsed, setCollapsed, groups, orderedIds }
 }
 

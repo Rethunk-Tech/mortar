@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Button } from '@mui/material'
 import { memo } from 'react'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 import { setFrozen } from './freeze.ts'
 import { isFrozen } from './frozen.ts'
 import { ListCallout } from './ListCallout.tsx'
@@ -17,7 +18,11 @@ export const FrozenCallout = memo(function FrozenCalloutView() {
     <ListCallout
       text={t`This profile is frozen: its mods stay on their versions and no updates are offered.`}
       actions={
-        <Button size="small" variant="text" onClick={() => setFrozen(false)}>
+        <Button
+          size="small"
+          variant="text"
+          onClick={() => setFrozen(false).catch(reportUnexpected)}
+        >
           {t`Unfreeze`}
         </Button>
       }

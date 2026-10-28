@@ -18,15 +18,43 @@ import {
   Workflow,
   X,
 } from 'lucide-react'
-import { type ReactNode, useState } from 'react'
+import { type ReactNode, useMemo, useState } from 'react'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { IconAction } from '../shell/IconAction.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { partKey, supportParts } from './installReason.ts'
 import { LockedReason } from './LockedReason.tsx'
 import { markImplicit } from './markImplicit.ts'
 import type { SourceGroups } from './skipSources.ts'
+import { useMods } from './store.ts'
+
+// Mortar's own loader and bridge entries and the parts another mod requires cannot be marked, as in the mod's menu.
+function useMarkable(selected: Mod[]) {
+  const open = useProfiles(openProfileOf)
+  const all = useMods((s) => s.mods)
+  const markable = useMemo(
+    () =>
+      selected.filter((mod) => {
+        const kind = open?.entries?.find((entry) => entry.key === mod.key)?.source.kind
+        return (
+          kind !== 'smapi' &&
+          kind !== 'mortar' &&
+          !supportParts(
+            all.filter((m) => m.key === mod.key),
+            all,
+          ).has(partKey(mod))
+        )
+      }),
+    [selected, open, all],
+  )
+  const implicit = markable.every(
+    (mod) => open?.entries?.find((entry) => entry.key === mod.key)?.implicit,
+  )
+  return { markable, implicit }
+}
 
 export function SelectionBarActions({
   selected,
@@ -70,9 +98,7 @@ export function SelectionBarActions({
   const pinned = selected.every(
     (mod) => profile?.entries?.find((entry) => entry.key === mod.key)?.pinned,
   )
-  const implicit = selected.every(
-    (mod) => profile?.entries?.find((entry) => entry.key === mod.key)?.implicit,
-  )
+  const { markable, implicit } = useMarkable(selected)
   const pick = (run: () => void) => () => {
     setMenu(null)
     run()
@@ -86,12 +112,16 @@ export function SelectionBarActions({
       run: () => setPinnedMany(selected, !pinned).catch(reportUnexpected),
       edits: true,
     },
-    {
-      label: implicit ? t`Mark explicit` : t`Mark implicit`,
-      icon: implicit ? <UserCheck size={16} /> : <Workflow size={16} />,
-      run: () => markImplicit(selected, !implicit).catch(reportUnexpected),
-      edits: true,
-    },
+    ...(markable.length > 0
+      ? [
+          {
+            label: implicit ? t`Mark explicit` : t`Mark implicit`,
+            icon: implicit ? <UserCheck size={16} /> : <Workflow size={16} />,
+            run: () => markImplicit(markable, !implicit).catch(reportUnexpected),
+            edits: true,
+          },
+        ]
+      : []),
     ...(selected.some((mod) => latest.has(mod.key))
       ? [
           {

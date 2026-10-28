@@ -5,7 +5,7 @@ import type { ListRow } from './listColumns.ts'
  * Implicit mods placed beneath the first mod that requires them, deeper for what those require in turn, even when
  * that mod sits in another group (a mod with a disabled requirement moves to Mods with problems, its libraries do
  * not), so the top level matches what Hidden shows. An implicit mod nothing requires keeps its place, with its own
- * requirements beneath it; a group left with no mods is dropped.
+ * requirements beneath it; a group left with no mods by the nesting is dropped, one that never had any (a parent of nested groups) stays.
  */
 export function nestImplicit<G extends { items: readonly ListRow[] }>(groups: readonly G[]): G[] {
   const rows = groups.flatMap((g) => g.items)
@@ -48,7 +48,7 @@ export function nestImplicit<G extends { items: readonly ListRow[] }>(groups: re
       }
       return { ...group, items }
     })
-    .filter((group) => group.items.length > 0)
+    .filter((group, i) => group.items.length > 0 || groups[i]?.items.length === 0)
 }
 
 /**
