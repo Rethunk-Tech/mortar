@@ -125,6 +125,7 @@ function AddToGroupDialog({
             onChange={setName}
             maxLength={MAX_GROUP_NAME}
             autoFocus={true}
+            disabled={locked}
           />
         </Box>
         {needed.length > 0 ? (

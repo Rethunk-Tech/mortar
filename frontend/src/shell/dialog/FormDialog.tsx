@@ -210,6 +210,7 @@ export function TextInput({
   multiline = false,
   placeholder,
   autoFocus = false,
+  disabled = false,
 }: {
   label: string
   value: string
@@ -220,6 +221,7 @@ export function TextInput({
   multiline?: boolean
   placeholder?: string
   autoFocus?: boolean
+  disabled?: boolean
 }) {
   const id = useId()
   return (
@@ -242,6 +244,7 @@ export function TextInput({
         minRows={multiline ? MULTILINE_ROWS : undefined}
         placeholder={placeholder}
         autoFocus={autoFocus}
+        disabled={disabled}
         error={Boolean(error)}
         inputProps={maxLength === undefined ? undefined : { maxLength }}
       />
