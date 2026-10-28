@@ -3,10 +3,13 @@ package datadir
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
@@ -24,6 +27,23 @@ func ReadJSON(path string, v any) (found bool, err error) {
 		return true, err
 	}
 	return true, nil
+}
+
+// ReadJSONOrQuarantine is ReadJSON for a file whose loss is cheaper than a Mortar that will not start: an unreadable
+// JSON file is moved beside itself as <path>.corrupt-<unixnano> and v is left for the caller to reset.
+func ReadJSONOrQuarantine(path string, v any) (found bool, err error) {
+	found, err = ReadJSON(path, v)
+	var syn *json.SyntaxError
+	var typ *json.UnmarshalTypeError
+	if !found || err == nil || !(errors.As(err, &syn) || errors.As(err, &typ) || errors.Is(err, io.ErrUnexpectedEOF)) {
+		return found, err
+	}
+	aside := fmt.Sprintf("%s.corrupt-%d", path, time.Now().UnixNano())
+	if rerr := fsx.Rename(path, aside); rerr != nil {
+		return true, err
+	}
+	slog.Warn("moved an unreadable file aside", "file", path, "to", aside, "error", err)
+	return false, nil
 }
 
 // WriteJSON marshals v and replaces path with it through a temp file and rename.

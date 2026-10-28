@@ -1,6 +1,7 @@
 package nexussvc
 
 import (
+	"os"
 	"path/filepath"
 	"strconv"
 	"testing"
@@ -42,5 +43,17 @@ func TestPromptStoreCountsCleanRunsAndRetriesLater(t *testing.T) {
 	}
 	if got, err := store.record("run-10", mod, true); err != nil || len(got) != 1 {
 		t.Fatalf("retry threshold = %v, %v", got, err)
+	}
+}
+
+func TestOpenPromptStoreMovesCorruptFileAside(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, promptFileName), []byte("[1,"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	p, err := openPromptStore(dir)
+	if err != nil || len(p.mods) != 0 {
+		t.Fatalf("p=%v err=%v", p, err)
 	}
 }

@@ -47,11 +47,12 @@ type promptStore struct {
 
 func openPromptStore(dir string) (*promptStore, error) {
 	p := &promptStore{path: filepath.Join(dir, promptFileName), mods: map[string]promptProgress{}}
-	found, err := datadir.ReadJSON(p.path, &p.mods)
+	found, err := datadir.ReadJSONOrQuarantine(p.path, &p.mods)
 	if err != nil {
 		return nil, err
 	}
 	if !found {
+		p.mods = map[string]promptProgress{}
 		return p, nil
 	}
 	if p.mods == nil {

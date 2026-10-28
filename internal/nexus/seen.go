@@ -47,11 +47,12 @@ func OpenSeenStore(dataDir string) (*SeenStore, error) {
 		path: filepath.Join(dataDir, seenFileName),
 		data: seenFile{Mods: map[string]SeenEntry{}},
 	}
-	found, err := datadir.ReadJSON(s.path, &s.data)
+	found, err := datadir.ReadJSONOrQuarantine(s.path, &s.data)
 	if err != nil {
 		return nil, err
 	}
 	if !found {
+		s.data = seenFile{Mods: map[string]SeenEntry{}}
 		return s, nil
 	}
 	if s.data.Mods == nil {

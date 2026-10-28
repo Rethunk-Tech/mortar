@@ -76,3 +76,21 @@ func TestMarkSeenRejectsEmptyID(t *testing.T) {
 		t.Fatal("expected error")
 	}
 }
+
+func TestOpenSeenStoreMovesCorruptFileAside(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, seenFileName), []byte("{not json"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	s, err := OpenSeenStore(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(s.Snapshot()) != 0 {
+		t.Fatal("expected empty store")
+	}
+	if m, _ := filepath.Glob(filepath.Join(dir, seenFileName+".corrupt-*")); len(m) != 1 {
+		t.Fatalf("corrupt copy: %v", m)
+	}
+}
