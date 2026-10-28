@@ -34,6 +34,8 @@ func (s *Services) dismissProblem(ctx context.Context, gameID, profileID string,
 		return s.Problems.DismissLoadFailure(ctx, gameID, profileID, f.Kind, f.Plugin, f.Message)
 	case "runError":
 		return s.Problems.DismissRunError(ctx, gameID, profileID, row.Key)
+	case "redundant":
+		return s.Problems.DismissRedundant(ctx, gameID, profileID, row.ConflictKind, row.Key, row.By)
 	default:
 		return fmt.Errorf("cannot dismiss problem at index %d", index)
 	}

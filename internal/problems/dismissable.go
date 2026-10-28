@@ -10,7 +10,7 @@ import (
 
 // Dismissable is one counted problem a user can dismiss, in the order the CLI numbers them.
 type Dismissable struct {
-	Kind         string // "listed", "abandoned", "conflict", "setting", "loadFailure" or "runError"
+	Kind         string // "listed", "abandoned", "conflict", "setting", "loadFailure", "runError" or "redundant"
 	ID           mod.ID
 	Field        string
 	ConflictKind string
@@ -19,11 +19,13 @@ type Dismissable struct {
 	Failure LoadFailure
 	// Key names a runError row's mod, whose errors in the newest run Service.DismissRunError hides.
 	Key string
+	// By names a "redundant" row's covering mods (keys), with Key and ConflictKind (its kind).
+	By []string
 }
 
 // DismissableRows lists the result's dismissable problems: listed requirements, abandoned, deprecated and
-// compatibility-listed mods, counted conflicts, compatibility settings, the rows read from a run's log and a run's
-// errors per mod.
+// compatibility-listed mods, counted conflicts, compatibility settings, the rows read from a run's log, a run's
+// errors per mod and redundant mods.
 func DismissableRows(r Result) []Dismissable {
 	var out []Dismissable
 	for _, x := range r.Missing {
@@ -57,6 +59,13 @@ func DismissableRows(r Result) []Dismissable {
 	}
 	for _, x := range r.RunErrors {
 		out = append(out, Dismissable{Kind: "runError", Key: x.Key})
+	}
+	for _, x := range r.Redundant {
+		by := make([]string, len(x.By))
+		for i, b := range x.By {
+			by[i] = b.Key
+		}
+		out = append(out, Dismissable{Kind: "redundant", Key: x.Key, ConflictKind: x.Kind, By: by})
 	}
 	return out
 }

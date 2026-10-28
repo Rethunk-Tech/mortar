@@ -44,3 +44,11 @@ func TestDismissableRowsIncludeTheRunLogFailures(t *testing.T) {
 		t.Fatalf("rows = %+v", rows)
 	}
 }
+
+func TestDismissableRowsIncludeRedundantMods(t *testing.T) {
+	r := Result{Redundant: []framework.Redundant{{Kind: "replaced", Key: "a", By: []framework.ModRef{{Key: "b"}}}}}
+	got := DismissableRows(r)
+	if len(got) != 1 || got[0].Kind != "redundant" || got[0].Key != "a" || got[0].ConflictKind != "replaced" || got[0].By[0] != "b" {
+		t.Fatalf("rows = %+v", got)
+	}
+}
