@@ -346,6 +346,7 @@ const SITE: Scene[] = [
     desk: DESK,
     wide: WIDE,
     profile: LETHAL_MEASURED,
+    developing: { game: 'Lethal Company', name: 'ConfigSync Test' },
     stepMs: STEP_MS,
   }),
 ]
