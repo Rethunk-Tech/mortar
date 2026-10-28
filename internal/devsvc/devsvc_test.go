@@ -628,3 +628,27 @@ func TestAnOversizedTemplateZipIsRefused(t *testing.T) {
 		t.Fatalf("the refused template was cached: %v", entries)
 	}
 }
+
+func TestCreateLeavesNoFolderBehindWhenDotnetNewFails(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	svc.Run = func(_ context.Context, _, name string, args ...string) ([]byte, error) {
+		if len(args) > 1 && args[0] == "new" && args[1] != "install" {
+			if err := os.MkdirAll(args[slices.Index(args, "-o")+1], 0o750); err != nil {
+				return nil, err
+			}
+			return nil, errors.New("template failed")
+		}
+		return nil, nil
+	}
+	parent := t.TempDir()
+	m := NewMod{
+		Game: "lethal-company", Name: "ShopDrop", Parent: parent, Repo: "shop-drop",
+		Values: map[string]string{"description": "Lands somewhere.", "team": "Ab", "categories": "items|misc", "netcode": "true"},
+	}
+	if _, err := svc.Create(t.Context(), m); err == nil {
+		t.Fatal("create succeeded")
+	}
+	if _, err := os.Lstat(filepath.Join(parent, "shop-drop")); err == nil {
+		t.Error("the failed project's folder was left behind")
+	}
+}

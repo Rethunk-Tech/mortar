@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -352,7 +353,15 @@ func (s *Service) Create(ctx context.Context, m NewMod) (settings.DevProject, er
 
 // instantiate runs `dotnet new` on the template in raw, in Mortar's own template hive so nothing is installed for
 // the player's own `dotnet new`. A GitHub copy is generated beside the clone and replaces its files.
-func (s *Service) instantiate(ctx context.Context, tpl components.DevTemplate, raw string, form Form, m NewMod, dest string, args []string) error {
+func (s *Service) instantiate(ctx context.Context, tpl components.DevTemplate, raw string, form Form, m NewMod, dest string, args []string) (err error) {
+	if _, statErr := os.Lstat(dest); errors.Is(statErr, fs.ErrNotExist) {
+		// A retry would fail on a folder left behind. A GitHub repository made by now stays.
+		defer func() {
+			if err != nil {
+				_ = fsx.RemoveAll(dest)
+			}
+		}()
+	}
 	hive := filepath.Join(s.CacheDir, "dev-template-hive")
 	if _, err := s.run(ctx, "", "dotnet", "new", "install", raw, "--force", "--debug:custom-hive", hive); err != nil {
 		if _, missing := errors.AsType[*exec.Error](err); missing {
