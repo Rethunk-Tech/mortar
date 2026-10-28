@@ -283,6 +283,8 @@ func resetContentPackCaches() {
 	packDiskState.Lock()
 	packDiskState.loaded = false
 	packDiskState.path = ""
+	// The data folder too: a later test would otherwise write its caches into this test's removed temp folder.
+	packDiskState.base = ""
 	packDiskState.entries = nil
 	packDiskState.dirty = false
 	packDiskState.Unlock()
