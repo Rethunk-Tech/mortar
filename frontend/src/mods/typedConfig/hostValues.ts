@@ -18,11 +18,15 @@ export function useHostValues(asks: boolean): Map<string, HostValue> {
       return
     }
     let live = true
+    // The poll mostly finds what it found last time; only a change redraws the editor.
+    let last = ''
     const ask = () => {
       configApi
         .hostValues(target, file)
         .then((rows) => {
-          if (live) {
+          const seen = JSON.stringify(rows)
+          if (live && seen !== last) {
+            last = seen
             setValues(new Map(rows.map((r) => [`${r.section}/${r.key}`, r])))
           }
         })
