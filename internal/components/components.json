@@ -1,5 +1,5 @@
 {
-  "serial": 1793226625,
+  "serial": 1793226891,
   "components": [
     {
       "game": "melonloader",
@@ -53,10 +53,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-bepinex-bridge"
       },
-      "tag": "v0.3.5",
-      "asset": "MortarBepInExBridge_LethalCompany-0.3.5.zip",
-      "version": "0.3.5",
-      "sha256": "9d82d6be680275aa27fedd71f06f3bcebac328dc852552f60a8c3246ec7d4e2a"
+      "tag": "v0.3.6",
+      "asset": "MortarBepInExBridge_LethalCompany-0.3.6.zip",
+      "version": "0.3.6",
+      "sha256": "075b58006ed78ece908931dbc1c0b8511009f215507b107f4bd6a20162a894b6"
     },
     {
       "game": "valheim",
@@ -67,10 +67,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-bepinex-bridge"
       },
-      "tag": "v0.3.5",
-      "asset": "MortarBepInExBridge_Valheim-0.3.5.zip",
-      "version": "0.3.5",
-      "sha256": "f4746be9dad9fb2000302e99e72630d9f16118ebfc3b49a178730c4dc85b30ea"
+      "tag": "v0.3.6",
+      "asset": "MortarBepInExBridge_Valheim-0.3.6.zip",
+      "version": "0.3.6",
+      "sha256": "5cdd880704d95faf578b058e2ac3d699e408c977bf7cef8f10958ebd25c96922"
     },
     {
       "game": "repo",
@@ -81,10 +81,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-bepinex-bridge"
       },
-      "tag": "v0.3.5",
-      "asset": "MortarBepInExBridge-0.3.5.zip",
-      "version": "0.3.5",
-      "sha256": "08d465e6ca9e8a94197dccd769a565abc7f9d9a9b55f3745f280bf83f6c8389a"
+      "tag": "v0.3.6",
+      "asset": "MortarBepInExBridge-0.3.6.zip",
+      "version": "0.3.6",
+      "sha256": "6ff02ff0c88f1cbc6c70a83fec0414cc33c943bc13970c38c6bb07764266a7a9"
     },
     {
       "game": "peak",
@@ -95,10 +95,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-bepinex-bridge"
       },
-      "tag": "v0.3.5",
-      "asset": "MortarBepInExBridge-0.3.5.zip",
-      "version": "0.3.5",
-      "sha256": "08d465e6ca9e8a94197dccd769a565abc7f9d9a9b55f3745f280bf83f6c8389a"
+      "tag": "v0.3.6",
+      "asset": "MortarBepInExBridge-0.3.6.zip",
+      "version": "0.3.6",
+      "sha256": "6ff02ff0c88f1cbc6c70a83fec0414cc33c943bc13970c38c6bb07764266a7a9"
     },
     {
       "game": "riskofrain2",
@@ -109,10 +109,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-bepinex-bridge"
       },
-      "tag": "v0.3.5",
-      "asset": "MortarBepInExBridge-0.3.5.zip",
-      "version": "0.3.5",
-      "sha256": "08d465e6ca9e8a94197dccd769a565abc7f9d9a9b55f3745f280bf83f6c8389a"
+      "tag": "v0.3.6",
+      "asset": "MortarBepInExBridge-0.3.6.zip",
+      "version": "0.3.6",
+      "sha256": "6ff02ff0c88f1cbc6c70a83fec0414cc33c943bc13970c38c6bb07764266a7a9"
     },
     {
       "game": "content-warning",
@@ -123,10 +123,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-bepinex-bridge"
       },
-      "tag": "v0.3.5",
-      "asset": "MortarBepInExBridge-0.3.5.zip",
-      "version": "0.3.5",
-      "sha256": "08d465e6ca9e8a94197dccd769a565abc7f9d9a9b55f3745f280bf83f6c8389a"
+      "tag": "v0.3.6",
+      "asset": "MortarBepInExBridge-0.3.6.zip",
+      "version": "0.3.6",
+      "sha256": "6ff02ff0c88f1cbc6c70a83fec0414cc33c943bc13970c38c6bb07764266a7a9"
     }
   ],
   "games": [
