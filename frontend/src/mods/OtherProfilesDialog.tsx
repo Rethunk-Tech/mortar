@@ -2,7 +2,7 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ButtonBase, Checkbox, Typography } from '@mui/material'
 import { Inbox } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type {
   DiffSide,
   ModInProfile,
@@ -224,24 +224,32 @@ function useRows(open: boolean, game: string, currentProfileId: string, which: s
   const key = typeof which === 'string' ? which : which.join('\n')
   useEffect(() => {
     if (!open) {
+      setRows([])
       return
     }
+    // A reply for an earlier opening (another mod) is dropped.
+    let live = true
     Promise.all(key.split('\n').map((one) => ProfilesWithMod(game, one)))
-      .then((lists) =>
-        keep(
-          setRows,
-          lists
-            .flatMap((next) => next ?? [])
-            .filter(
-              (row, index, all) =>
-                row.profileId !== currentProfileId &&
-                all.findIndex(
-                  (other) => other.profileId === row.profileId && other.key === row.key,
-                ) === index,
-            ),
-        ),
+      .then(
+        (lists) =>
+          live &&
+          keep(
+            setRows,
+            lists
+              .flatMap((next) => next ?? [])
+              .filter(
+                (row, index, all) =>
+                  row.profileId !== currentProfileId &&
+                  all.findIndex(
+                    (other) => other.profileId === row.profileId && other.key === row.key,
+                  ) === index,
+              ),
+          ),
       )
       .catch(reportError(t`Could not read profiles`))
+    return () => {
+      live = false
+    }
   }, [currentProfileId, game, open, t, key])
   return rows
 }
@@ -293,8 +301,14 @@ export function OtherProfilesDialog({
     to: selected,
     ids: ids ?? [id],
   })
+  // Once the player ticks or unticks a profile, later reads (a game starting, a profile saved) leave the choice alone.
+  const touched = useRef(false)
   useEffect(() => {
     if (!open) {
+      touched.current = false
+      return
+    }
+    if (touched.current) {
       return
     }
     const unavailable = new Set(
@@ -314,7 +328,10 @@ export function OtherProfilesDialog({
         : profiles.map((profile) => profile.id).filter((profileId) => !unavailable.has(profileId)),
     )
   }, [launch, mode, open, profiles, rows, update])
-  const choose = (profileId: string) => setSelected((current) => toggleSelected(current, profileId))
+  const choose = (profileId: string) => {
+    touched.current = true
+    setSelected((current) => toggleSelected(current, profileId))
+  }
   const locked = (profile: Profile) => lockedIn(launch, profile.id)
   const pinned = (profile: Profile, row: ModInProfile) => profileHasPinned(profile, row, update)
   const confirm = () => {
