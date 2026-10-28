@@ -27,13 +27,20 @@ func changedRoots(game string) []string {
 // be a program, so a changed copy never carries one.
 var changedDataExts = map[string]bool{".dat": true, ".sav": true, ".bin": true}
 
+// ChangedTypeAllowed reports whether a changed copy may be of rel's file type: editable text or a known data type.
+func ChangedTypeAllowed(rel string) bool {
+	return datadir.EditableText(rel) || changedDataExts[strings.ToLower(filepath.Ext(rel))]
+}
+
 // ValidChangedPath reports whether rel, a slash path, is a place a changed copy may be written: a clean relative path
 // inside the game's content folder or under changed/, of an editable text or known data type, with no empty, dot or dot-dot segment and no backslash.
 func ValidChangedPath(game, rel string) bool {
+	return ChangedTypeAllowed(rel) && ValidChangedLocation(game, rel)
+}
+
+// ValidChangedLocation is ValidChangedPath without the file type check.
+func ValidChangedLocation(game, rel string) bool {
 	if rel == "" || strings.Contains(rel, `\`) || !filepath.IsLocal(filepath.FromSlash(rel)) {
-		return false
-	}
-	if ext := strings.ToLower(filepath.Ext(rel)); !datadir.EditableText(rel) && !changedDataExts[ext] {
 		return false
 	}
 	for seg := range strings.SplitSeq(rel, "/") {

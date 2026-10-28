@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"errors"
+	"io"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -125,4 +126,39 @@ func mustRead(t *testing.T, rc interface {
 		t.Fatal(err)
 	}
 	return b.Bytes()
+}
+
+// A file from an older release may carry a changed copy of a type no longer carried; the rest of the file still reads.
+func TestAnOldChangedCopyOfADroppedTypeIsSkipped(t *testing.T) {
+	dir, p := changedProfile(t)
+	var buf bytes.Buffer
+	if _, err := Write(&buf, "sims4", p, filepath.Join(dir, "mods"), OwnInclude()); err != nil {
+		t.Fatal(err)
+	}
+	zr, err := zip.NewReader(bytes.NewReader(buf.Bytes()), int64(buf.Len()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var out bytes.Buffer
+	zw := zip.NewWriter(&out)
+	for _, f := range zr.File {
+		w, err := zw.CreateHeader(&zip.FileHeader{Name: f.Name, Method: zip.Deflate})
+		if err != nil {
+			t.Fatal(err)
+		}
+		r, _ := f.Open()
+		if _, err := io.Copy(w, r); err != nil {
+			t.Fatal(err)
+		}
+		r.Close()
+	}
+	w, _ := zw.Create(changedPrefix + "Mods/mc/pic.png")
+	w.Write([]byte("png"))
+	if err := zw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	pv, err := ReadBytes(out.Bytes())
+	if err != nil || len(pv.ChangedFiles) != 2 {
+		t.Fatalf("%d changed files, %v", len(pv.ChangedFiles), err)
+	}
 }

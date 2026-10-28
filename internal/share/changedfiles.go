@@ -28,7 +28,13 @@ var unsafeName = regexp.MustCompile(`[<>:"|?*\\\x00-\x1f]`)
 // validChangedPath accepts a clean relative slash path of ordinary file names, short enough to write on any system,
 // inside the game's content folder or changed/. The receiving side checks it again before it writes.
 func validChangedPath(game, p string) bool {
-	if len(p) > maxRelPath || path.Clean(p) != p || !utf8.ValidString(p) || !profile.ValidChangedPath(game, p) {
+	return profile.ChangedTypeAllowed(p) && validChangedLocation(game, p)
+}
+
+// validChangedLocation is validChangedPath without the file type check, which a file from an older release may fail
+// on a path that is otherwise safe.
+func validChangedLocation(game, p string) bool {
+	if len(p) > maxRelPath || path.Clean(p) != p || !utf8.ValidString(p) || !profile.ValidChangedLocation(game, p) {
 		return false
 	}
 	for seg := range strings.SplitSeq(p, "/") {

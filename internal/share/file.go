@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"log/slog"
 	"os"
 	"path"
 	"path/filepath"
@@ -409,8 +410,13 @@ func readZip(zr *zip.Reader) (Preview, error) {
 			continue
 		}
 		if rel, ok := strings.CutPrefix(f.Name, changedPrefix); ok {
-			if !validChangedPath(pv.Game, rel) {
+			if !validChangedLocation(pv.Game, rel) {
 				return Preview{}, fmt.Errorf("%w: unsafe path %q", ErrBadFile, f.Name)
+			}
+			// An older release let a copy of any non-program type travel; the file is still good without it.
+			if !profile.ChangedTypeAllowed(rel) {
+				slog.Warn("share: skipped a changed copy of a type no longer carried", "path", rel)
+				continue
 			}
 			data, err := read(f, strings.ToLower(f.Name))
 			if err != nil {
