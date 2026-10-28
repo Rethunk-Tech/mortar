@@ -214,11 +214,7 @@ var registry = withDefaults([]pref{
 	boolPref("includePrereleaseModVersions", ScopeApp, func(s Settings, _ string) bool { return s.IncludePrereleaseModVersions }, func(s *Settings, _ string, on bool) { s.IncludePrereleaseModVersions = on }),
 	boolPref("checkOnlyEnabledMods", ScopeApp, func(s Settings, _ string) bool { return s.CheckOnlyEnabledMods }, func(s *Settings, _ string, on bool) { s.CheckOnlyEnabledMods = on }),
 	ptrPref("enableModsWhenInstalled", ScopeApp, func(s Settings, _ string) *bool { return s.EnableModsWhenInstalled }, func(s *Settings, _ string, on bool) { s.EnableModsWhenInstalled = &on }),
-	ptrPref("tellWhenLoaderOut", ScopeGame, func(s Settings, g string) *bool { return s.GamePrefs(g).TellWhenLoaderOut }, func(s *Settings, g string, on bool) {
-		gp := s.GamePrefs(g)
-		gp.TellWhenLoaderOut = &on
-		putGame(s, g, gp)
-	}),
+	gamePtr("tellWhenLoaderOut", func(g *GameSettings) **bool { return &g.TellWhenLoaderOut }),
 	ptrPref("askEndorseMods", ScopeApp, func(s Settings, _ string) *bool { return s.AskEndorseMods }, func(s *Settings, _ string, on bool) { s.AskEndorseMods = &on }),
 	listColumnsPref(),
 	boolPref("launchAtLogin", ScopeApp, func(s Settings, _ string) bool { return s.LaunchAtLogin }, func(s *Settings, _ string, on bool) {
@@ -230,22 +226,18 @@ var registry = withDefaults([]pref{
 	boolPref("systemTitleBar", ScopeApp, func(s Settings, _ string) bool { return s.SystemTitleBar }, func(s *Settings, _ string, on bool) { s.SystemTitleBar = on }),
 	enumPref("extensionConnection", ScopeApp, extensionConnectionValues, func(s Settings, _ string) string { return s.ExtensionConnection }, func(s *Settings, _, v string) { s.ExtensionConnection = v }),
 
-	overridable(enumPref("backupBeforePlay", ScopeGame, backupBeforePlayValues, func(s Settings, g string) string { return s.GamePrefs(g).BackupBeforePlay }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.BackupBeforePlay = v; putGame(s, g, gp) })),
-	overridable(intPref("saveBackupsKept", ScopeGame, MinSaveBackupsKept, MaxSaveBackupsKept, func(s Settings, g string) int { return s.GamePrefs(g).SaveBackupsKept }, func(s *Settings, g string, n int) { gp := s.GamePrefs(g); gp.SaveBackupsKept = n; putGame(s, g, gp) })),
-	overridable(boolPref("updateModsBeforePlayDefault", ScopeGame, func(s Settings, g string) bool { return s.GamePrefs(g).UpdateModsBeforePlayDefault }, func(s *Settings, g string, on bool) {
-		gp := s.GamePrefs(g)
-		gp.UpdateModsBeforePlayDefault = on
-		putGame(s, g, gp)
-	})),
-	overridable(intPref("saveBackupHours", ScopeGame, MinSaveBackupHours, MaxSaveBackupHours, func(s Settings, g string) int { return s.GamePrefs(g).SaveBackupHours }, func(s *Settings, g string, n int) { gp := s.GamePrefs(g); gp.SaveBackupHours = n; putGame(s, g, gp) })),
-	overridable(intPref("saveBackupKeep", ScopeGame, MinSaveBackupsKept, MaxSaveBackupsKept, func(s Settings, g string) int { return s.GamePrefs(g).SaveBackupKeep }, func(s *Settings, g string, n int) { gp := s.GamePrefs(g); gp.SaveBackupKeep = n; putGame(s, g, gp) })),
-	overridable(intPref("runsKept", ScopeGame, MinRunsKept, MaxRunsKept, func(s Settings, g string) int { return s.GamePrefs(g).RunsKept }, func(s *Settings, g string, n int) { gp := s.GamePrefs(g); gp.RunsKept = n; putGame(s, g, gp) })),
-	overridable(intPref("consoleLogCap", ScopeGame, MinConsoleLogCap, MaxConsoleLogCap, func(s Settings, g string) int { return s.GamePrefs(g).ConsoleLogCap }, func(s *Settings, g string, n int) { gp := s.GamePrefs(g); gp.ConsoleLogCap = n; putGame(s, g, gp) })),
-	strPref("nxmDefaultProfile", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).NxmDefaultProfile }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.NxmDefaultProfile = v; putGame(s, g, gp) }),
-	overridable(enumPref("cosmeticConflicts", ScopeGame, cosmeticValues, func(s Settings, g string) string { return s.GamePrefs(g).CosmeticConflicts }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.CosmeticConflicts = v; putGame(s, g, gp) })),
-	overridable(enumPref("enableRequirements", ScopeGame, enableReqValues, func(s Settings, g string) string { return s.GamePrefs(g).EnableRequirements }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.EnableRequirements = v; putGame(s, g, gp) })),
-	overridable(enumPref("disableDependencies", ScopeGame, enableReqValues, func(s Settings, g string) string { return s.GamePrefs(g).DisableDependencies }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.DisableDependencies = v; putGame(s, g, gp) })),
-	overridable(enumPref("missingRequirements", ScopeGame, missingReqValues, func(s Settings, g string) string { return s.GamePrefs(g).MissingRequirements }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.MissingRequirements = v; putGame(s, g, gp) })),
+	overridable(gameEnum("backupBeforePlay", backupBeforePlayValues, func(g *GameSettings) *string { return &g.BackupBeforePlay })),
+	overridable(gameInt("saveBackupsKept", MinSaveBackupsKept, MaxSaveBackupsKept, func(g *GameSettings) *int { return &g.SaveBackupsKept })),
+	overridable(gameBool("updateModsBeforePlayDefault", func(g *GameSettings) *bool { return &g.UpdateModsBeforePlayDefault })),
+	overridable(gameInt("saveBackupHours", MinSaveBackupHours, MaxSaveBackupHours, func(g *GameSettings) *int { return &g.SaveBackupHours })),
+	overridable(gameInt("saveBackupKeep", MinSaveBackupsKept, MaxSaveBackupsKept, func(g *GameSettings) *int { return &g.SaveBackupKeep })),
+	overridable(gameInt("runsKept", MinRunsKept, MaxRunsKept, func(g *GameSettings) *int { return &g.RunsKept })),
+	overridable(gameInt("consoleLogCap", MinConsoleLogCap, MaxConsoleLogCap, func(g *GameSettings) *int { return &g.ConsoleLogCap })),
+	gameStr("nxmDefaultProfile", func(g *GameSettings) *string { return &g.NxmDefaultProfile }),
+	overridable(gameEnum("cosmeticConflicts", cosmeticValues, func(g *GameSettings) *string { return &g.CosmeticConflicts })),
+	overridable(gameEnum("enableRequirements", enableReqValues, func(g *GameSettings) *string { return &g.EnableRequirements })),
+	overridable(gameEnum("disableDependencies", enableReqValues, func(g *GameSettings) *string { return &g.DisableDependencies })),
+	overridable(gameEnum("missingRequirements", missingReqValues, func(g *GameSettings) *string { return &g.MissingRequirements })),
 	loaderPref("smapi", enumPref("smapiBuilds", ScopeLoader, smapiBuildsValues, func(s Settings, _ string) string { return s.SmapiBuilds }, func(s *Settings, _, v string) { s.SmapiBuilds = v })),
 	loaderPref("smapi", pinPref("smapiPin", "smapi")),
 	loaderPref("bepinex5", pinPref("bepinex5Pin", "bepinex5")),
@@ -257,59 +249,35 @@ var registry = withDefaults([]pref{
 	loaderPref("rivet", pinPref("rivetPin", "rivet")),
 	loaderPref("umm", pinPref("ummPin", "umm")),
 	loaderPref("shimloader", pinPref("shimloaderPin", "shimloader")),
-	overridable(enumPref("startFirst", ScopeGame, startFirstValues, func(s Settings, g string) string { return s.GamePrefs(g).StartFirst }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.StartFirst = v; putGame(s, g, gp) })),
+	overridable(gameEnum("startFirst", startFirstValues, func(g *GameSettings) *string { return &g.StartFirst })),
 	strPref("alvrProgram", ScopeApp, func(s Settings, _ string) string { return s.ALVRProgram }, func(s *Settings, _, v string) { s.ALVRProgram = v }),
-	overridable(enumPref("defaultLaunchMethod", ScopeGame, launchMethodValues, func(s Settings, g string) string { return s.GamePrefs(g).DefaultLaunchMethod }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.DefaultLaunchMethod = v; putGame(s, g, gp) })),
-	overridable(intPref("instances", ScopeGame, MinInstances, MaxInstances, func(s Settings, g string) int { return s.GamePrefs(g).Instances }, func(s *Settings, g string, n int) { gp := s.GamePrefs(g); gp.Instances = n; putGame(s, g, gp) })),
-	overridable(intPref("delaySeconds", ScopeGame, MinDelaySeconds, MaxDelaySeconds, func(s Settings, g string) int { return s.GamePrefs(g).DelaySeconds }, func(s *Settings, g string, n int) { gp := s.GamePrefs(g); gp.DelaySeconds = n; putGame(s, g, gp) })),
+	overridable(gameEnum("defaultLaunchMethod", launchMethodValues, func(g *GameSettings) *string { return &g.DefaultLaunchMethod })),
+	overridable(gameInt("instances", MinInstances, MaxInstances, func(g *GameSettings) *int { return &g.Instances })),
+	overridable(gameInt("delaySeconds", MinDelaySeconds, MaxDelaySeconds, func(g *GameSettings) *int { return &g.DelaySeconds })),
 	overridable(loaderPref("smapi", ptrPref("showSmapiConsole", ScopeLoader, func(s Settings, _ string) *bool { return s.ShowSmapiConsole }, func(s *Settings, _ string, on bool) { s.ShowSmapiConsole = &on }))),
-	overridable(boolPref("skipPlayCheck", ScopeGame, func(s Settings, g string) bool { return s.GamePrefs(g).SkipPlayCheck }, func(s *Settings, g string, on bool) {
-		gp := s.GamePrefs(g)
-		gp.SkipPlayCheck = on
-		putGame(s, g, gp)
-	})),
-	overridable(boolPref("pauseDownloadsWhilePlaying", ScopeGame, func(s Settings, g string) bool { return s.GamePrefs(g).PauseDownloadsWhilePlaying }, func(s *Settings, g string, on bool) {
-		gp := s.GamePrefs(g)
-		gp.PauseDownloadsWhilePlaying = on
-		putGame(s, g, gp)
-	})),
-	overridable(boolPref("skipIntro", ScopeGame, func(s Settings, g string) bool { return s.GamePrefs(g).SkipIntro }, func(s *Settings, g string, on bool) {
-		gp := s.GamePrefs(g)
-		gp.SkipIntro = on
-		putGame(s, g, gp)
-	})),
-	overridable(strPref("graphicsApi", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).GraphicsAPI }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.GraphicsAPI = v; putGame(s, g, gp) })),
-	overridable(strPref("protonVersion", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).ProtonVersion }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.ProtonVersion = v; putGame(s, g, gp) })),
+	overridable(gameBool("skipPlayCheck", func(g *GameSettings) *bool { return &g.SkipPlayCheck })),
+	overridable(gameBool("pauseDownloadsWhilePlaying", func(g *GameSettings) *bool { return &g.PauseDownloadsWhilePlaying })),
+	overridable(gameBool("skipIntro", func(g *GameSettings) *bool { return &g.SkipIntro })),
+	overridable(gameStr("graphicsApi", func(g *GameSettings) *string { return &g.GraphicsAPI })),
+	overridable(gameStr("protonVersion", func(g *GameSettings) *string { return &g.ProtonVersion })),
 	overridable(consoleLevelPref()),
-	overridable(ptrPref("consoleTimestamps", ScopeGame, func(s Settings, g string) *bool { return s.GamePrefs(g).ConsoleTimestamps }, func(s *Settings, g string, on bool) {
-		gp := s.GamePrefs(g)
-		gp.ConsoleTimestamps = &on
-		putGame(s, g, gp)
-	})),
-	overridable(ptrPref("consoleFollow", ScopeGame, func(s Settings, g string) *bool { return s.GamePrefs(g).ConsoleFollow }, func(s *Settings, g string, on bool) { gp := s.GamePrefs(g); gp.ConsoleFollow = &on; putGame(s, g, gp) })),
-	strPref("backupLocation", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).BackupLocation }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.BackupLocation = v; putGame(s, g, gp) }),
-	overridable(enumPref("conflictScanDepth", ScopeGame, conflictScanValues, func(s Settings, g string) string { return s.GamePrefs(g).ConflictScanDepth }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.ConflictScanDepth = v; putGame(s, g, gp) })),
-	ptrPref("offerNewDownloads", ScopeGame, func(s Settings, g string) *bool { return s.GamePrefs(g).OfferNewDownloads }, func(s *Settings, g string, on bool) {
-		gp := s.GamePrefs(g)
-		gp.OfferNewDownloads = &on
-		putGame(s, g, gp)
-	}),
-	strPref("extraModsFolder", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).ExtraModsFolder }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.ExtraModsFolder = v; putGame(s, g, gp) }),
-	boolPref("showDotHiddenMods", ScopeGame, func(s Settings, g string) bool { return s.GamePrefs(g).ShowDotHiddenMods }, func(s *Settings, g string, on bool) {
-		gp := s.GamePrefs(g)
-		gp.ShowDotHiddenMods = on
-		putGame(s, g, gp)
-	}),
-	strPref("browseFilters", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).BrowseFilters }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.BrowseFilters = v; putGame(s, g, gp) }),
-	strPref("browsePicks", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).BrowsePicks }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.BrowsePicks = v; putGame(s, g, gp) }),
-	strPref("sourcesOff", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).SourcesOff }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.SourcesOff = v; putGame(s, g, gp) }),
-	strPref("sourceOrder", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).SourceOrder }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.SourceOrder = v; putGame(s, g, gp) }),
-	overridable(enumPref("gameSettingsMode", ScopeGame, gameSettingsModeValues, func(s Settings, g string) string { return s.GamePrefs(g).GameSettingsMode }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.GameSettingsMode = v; putGame(s, g, gp) })),
-	overridable(enumPref("cacheClearing", ScopeGame, cacheClearingValues, func(s Settings, g string) string { return s.GamePrefs(g).CacheClearing }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.CacheClearing = v; putGame(s, g, gp) })),
-	overridable(enumPref("dependencyVersions", ScopeGame, dependencyVersionValues, func(s Settings, g string) string { return s.GamePrefs(g).DependencyVersions }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.DependencyVersions = v; putGame(s, g, gp) })),
-	enumPref("syncMode", ScopeGame, syncModeValues, func(s Settings, g string) string { return s.GamePrefs(g).SyncMode }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.SyncMode = v; putGame(s, g, gp) }),
-	strPref("syncOwnFolder", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).SyncOwnFolder }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.SyncOwnFolder = v; putGame(s, g, gp) }),
-	enumPref("oldFilesOnUpdate", ScopeGame, oldFilesValues, func(s Settings, g string) string { return s.GamePrefs(g).OldFilesOnUpdate }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.OldFilesOnUpdate = v; putGame(s, g, gp) }),
+	overridable(gamePtr("consoleTimestamps", func(g *GameSettings) **bool { return &g.ConsoleTimestamps })),
+	overridable(gamePtr("consoleFollow", func(g *GameSettings) **bool { return &g.ConsoleFollow })),
+	gameStr("backupLocation", func(g *GameSettings) *string { return &g.BackupLocation }),
+	overridable(gameEnum("conflictScanDepth", conflictScanValues, func(g *GameSettings) *string { return &g.ConflictScanDepth })),
+	gamePtr("offerNewDownloads", func(g *GameSettings) **bool { return &g.OfferNewDownloads }),
+	gameStr("extraModsFolder", func(g *GameSettings) *string { return &g.ExtraModsFolder }),
+	gameBool("showDotHiddenMods", func(g *GameSettings) *bool { return &g.ShowDotHiddenMods }),
+	gameStr("browseFilters", func(g *GameSettings) *string { return &g.BrowseFilters }),
+	gameStr("browsePicks", func(g *GameSettings) *string { return &g.BrowsePicks }),
+	gameStr("sourcesOff", func(g *GameSettings) *string { return &g.SourcesOff }),
+	gameStr("sourceOrder", func(g *GameSettings) *string { return &g.SourceOrder }),
+	overridable(gameEnum("gameSettingsMode", gameSettingsModeValues, func(g *GameSettings) *string { return &g.GameSettingsMode })),
+	overridable(gameEnum("cacheClearing", cacheClearingValues, func(g *GameSettings) *string { return &g.CacheClearing })),
+	overridable(gameEnum("dependencyVersions", dependencyVersionValues, func(g *GameSettings) *string { return &g.DependencyVersions })),
+	gameEnum("syncMode", syncModeValues, func(g *GameSettings) *string { return &g.SyncMode }),
+	gameStr("syncOwnFolder", func(g *GameSettings) *string { return &g.SyncOwnFolder }),
+	gameEnum("oldFilesOnUpdate", oldFilesValues, func(g *GameSettings) *string { return &g.OldFilesOnUpdate }),
 })
 
 // gameLaunchDefaults are the games whose default launch method is not Steam's.
@@ -389,6 +357,45 @@ func (s Settings) GamePrefs(gameID string) GameSettings {
 	}
 	mergeGame(&out, *got)
 	return out
+}
+
+// gameField reads and writes the GameSettings field pick points at.
+func gameField[T any](pick func(*GameSettings) *T) (get func(Settings, string) T, set func(*Settings, string, T)) {
+	get = func(s Settings, g string) T {
+		gp := s.GamePrefs(g)
+		return *pick(&gp)
+	}
+	set = func(s *Settings, g string, v T) {
+		gp := s.GamePrefs(g)
+		*pick(&gp) = v
+		putGame(s, g, gp)
+	}
+	return get, set
+}
+
+func gameEnum(key string, values []string, pick func(*GameSettings) *string) pref {
+	get, set := gameField(pick)
+	return enumPref(key, ScopeGame, values, get, set)
+}
+
+func gameStr(key string, pick func(*GameSettings) *string) pref {
+	get, set := gameField(pick)
+	return strPref(key, ScopeGame, get, set)
+}
+
+func gameInt(key string, lo, hi int, pick func(*GameSettings) *int) pref {
+	get, set := gameField(pick)
+	return intPref(key, ScopeGame, lo, hi, get, set)
+}
+
+func gameBool(key string, pick func(*GameSettings) *bool) pref {
+	get, set := gameField(pick)
+	return boolPref(key, ScopeGame, get, set)
+}
+
+func gamePtr(key string, pick func(*GameSettings) **bool) pref {
+	get, set := gameField(pick)
+	return ptrPref(key, ScopeGame, get, func(s *Settings, g string, on bool) { set(s, g, &on) })
 }
 
 func putGame(s *Settings, gameID string, g GameSettings) {

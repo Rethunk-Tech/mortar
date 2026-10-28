@@ -217,3 +217,15 @@ func TestPauseDownloadsWhilePlayingIsPerGameWithProfileOverride(t *testing.T) {
 		t.Fatalf("profile override: %q", got)
 	}
 }
+
+func TestGameFieldWritesOnlyTheNamedGame(t *testing.T) {
+	get, set := gameField(func(g *GameSettings) *string { return &g.SourceOrder })
+	s := Defaults()
+	set(&s, "stardew", "nexus")
+	if v := get(s, "stardew"); v != "nexus" {
+		t.Fatalf("stardew = %q", v)
+	}
+	if v := get(s, "valheim"); v != "" {
+		t.Fatalf("valheim picked up stardew's value: %q", v)
+	}
+}
