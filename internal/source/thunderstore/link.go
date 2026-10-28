@@ -54,6 +54,8 @@ type Resolved struct {
 	Size int64
 	// Dependencies are Namespace-Name-Version strings.
 	Dependencies []string
+	// Missing lists the "Namespace-Name" dependencies the index no longer has, which Closure left out.
+	Missing []string
 	Look
 }
 

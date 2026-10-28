@@ -55,7 +55,8 @@ func TestClosure(t *testing.T) {
 		{"another loader major is refused", []Ref{{"Ns", "Old", ""}}, "", "ns-old 1.0.0 -> bepinex-bepinexpack"},
 		{"an IL2CPP pack's dependents take its newest BepInEx 6", []Ref{{"Ns", "Cat", ""}}, "BepInExPack_IL2CPP 6.0.788, Cat 1.0.0", ""},
 		{"another loader's pack is not held to BepInEx's series", []Ref{{"Ns", "Mel", ""}}, "MelonLoader 0.7.1, Mel 1.0.0", ""},
-		{"a missing package names the chain", []Ref{{"Ns", "Lost", ""}}, "", "ghost-pkg is not in the index (requested by ns-lost 1.0.0 -> ghost-pkg)"},
+		{"a missing dependency is left out", []Ref{{"Ns", "Lost", ""}}, "Lost 1.0.0", ""},
+		{"a missing root names the chain", []Ref{{"Ghost", "Pkg", ""}}, "", "ghost-pkg is not in the index (requested by ghost-pkg)"},
 		{"packages that list each other install together", []Ref{{"Ns", "X", ""}}, "Y 1.0.0, X 1.0.0", ""},
 		{"an older pack version of the same major is served by the newest", []Ref{{"Ns", "OldPin", ""}}, "BepInExPack 5.4.2305, OldPin 1.0.0", ""},
 		{"a mod manager listed as a dependency is left out", []Ref{{"Ns", "Managed", ""}}, "D 1.0.0, Managed 1.0.0", ""},
@@ -205,5 +206,15 @@ func TestClosureLoaderPackUnderAnotherNamespace(t *testing.T) {
 	got, err := d.Closure(t.Context(), "lethal-company", []Ref{{"Ns", "Mod", ""}}, "1.2.3", DepsNewest)
 	if err != nil || len(got) != 1 || got[0].Name != "Mod" {
 		t.Fatalf("got %v, %v; want Mod alone: the pack is the loader's, not the mod's to install", got, err)
+	}
+}
+
+func TestClosureNamesTheMissingDependency(t *testing.T) {
+	f := newFake(t)
+	f.chunk0 = append(f.chunk0, custom("Ns", "Lost", v("1.0.0", "Ghost-Pkg-1.0.0")))
+	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
+	got, err := d.Closure(t.Context(), "lethal-company", []Ref{{"Ns", "Lost", ""}}, "1.2.3", DepsNewest)
+	if err != nil || len(got) != 1 || len(got[0].Missing) != 1 || got[0].Missing[0] != "Ghost-Pkg" {
+		t.Fatalf("got %+v, %v", got, err)
 	}
 }

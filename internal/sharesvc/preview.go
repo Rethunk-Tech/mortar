@@ -93,6 +93,8 @@ type Mod struct {
 	Repo   string `json:"repo"`
 	Tag    string `json:"tag"`
 	Asset  string `json:"asset"`
+	// missing lines the import leaves out because a dependency is gone from the index (see unavailableNote).
+	missing []string
 	// fileName is the Nexus archive's name, which its entry records as the source name.
 	fileName string
 	// Package is a Thunderstore "Namespace-Name"; Version then names the version, or the newest when empty.
@@ -214,8 +216,10 @@ const (
 // a lookup that fails leaves the mod as the link named it rather than failing the preview.
 type resolver struct {
 	// unresolvable names the Thunderstore packages the index cannot resolve (see Deps.Unresolvable); unresolved is its answer.
-	unresolvable func(ctx context.Context, reqs []queue.Request) map[string]string
+	unresolvable func(ctx context.Context, reqs []queue.Request) (map[string]string, map[string][]string)
 	unresolved   map[string]string
+	// missingDeps is, per package, what its closure leaves out because the index no longer lists it.
+	missingDeps map[string][]string
 	// packageIcons reads Thunderstore icons from the cached index in one pass; nil asks nothing. icons holds its answer.
 	packageIcons func(names []string) map[string]string
 	icons        map[string]string
@@ -538,6 +542,7 @@ func (r *resolver) thunderstore(ref share.Ref) Mod {
 	} else if ref.Version != "" && r.storedKey(store.PackageKey(ref.Package, ref.Version)) {
 		m.State, r.storedKeys[m.Key] = StateInstalled, true
 	}
+	m.missing = r.missingDeps[ref.Package]
 	return m
 }
 
@@ -851,6 +856,6 @@ func (r *resolver) checkPackages(ctx context.Context, refs []share.Ref) {
 		}
 	}
 	if len(reqs) > 0 {
-		r.unresolved = r.unresolvable(ctx, reqs)
+		r.unresolved, r.missingDeps = r.unresolvable(ctx, reqs)
 	}
 }

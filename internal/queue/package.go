@@ -96,12 +96,13 @@ func (s *Service) expandPackages(ctx context.Context, reqs []Request) ([]Request
 }
 
 // Unresolvable maps each Thunderstore package of reqs whose closure fails on its own (not in the community's index,
-// a loader pack outside the series Mortar runs, a dependency that is gone) to the reason, so a caller can leave it
-// out instead of failing the whole request.
-func (s *Service) Unresolvable(ctx context.Context, gameID, profileID string, reqs []Request) map[string]string {
-	out := map[string]string{}
+// a loader pack outside the series Mortar runs) to the reason, so a caller can leave it out instead of failing the
+// whole request. A dependency the index no longer lists does not fail its package: missing maps the package to the
+// "Name needs Dependency" lines of what its closure leaves out.
+func (s *Service) Unresolvable(ctx context.Context, gameID, profileID string, reqs []Request) (unavailable map[string]string, missing map[string][]string) {
+	unavailable, missing = map[string]string{}, map[string][]string{}
 	if s.d.Closure == nil {
-		return out
+		return
 	}
 	for _, q := range reqs {
 		if q.Package == "" || q.Source != "" {
@@ -109,13 +110,19 @@ func (s *Service) Unresolvable(ctx context.Context, gameID, profileID string, re
 		}
 		ns, name, _ := strings.Cut(q.Package, "-")
 		cctx, cancel := context.WithTimeout(ctx, closureTimeout)
-		_, err := s.d.Closure(cctx, gameID, []thunderstore.Ref{{Namespace: ns, Name: name, Version: q.Version}}, s.depsFor(gameID, profileID, q.AsIs))
+		list, err := s.d.Closure(cctx, gameID, []thunderstore.Ref{{Namespace: ns, Name: name, Version: q.Version}}, s.depsFor(gameID, profileID, q.AsIs))
 		cancel()
 		if err != nil {
-			out[q.Package] = err.Error()
+			unavailable[q.Package] = err.Error()
+			continue
+		}
+		for _, p := range list {
+			for _, dep := range p.Missing {
+				missing[q.Package] = append(missing[q.Package], p.Name+" needs "+dep)
+			}
 		}
 	}
-	return out
+	return
 }
 
 // depsFor is how a profile's Thunderstore requests take their dependencies: none for a list installed as it was shared,

@@ -121,7 +121,7 @@ func (d Driver) Closure(ctx context.Context, key string, roots []Ref, mortarVers
 	// A later request can raise a version that an earlier visit used, so walk again until nothing rises; versions only
 	// go up, so this ends.
 	for {
-		w := &walk{byID: byID, exact: exact, deps: deps, chosen: chosen, state: map[string]int{}, dropIns: d.DropIns}
+		w := &walk{byID: byID, exact: exact, deps: deps, chosen: chosen, state: map[string]int{}, dropIns: d.DropIns, missing: map[string][]string{}}
 		for _, r := range roots {
 			if err := w.visit(r, nil); err != nil {
 				return nil, err
@@ -133,7 +133,9 @@ func (d Driver) Closure(ctx context.Context, key string, roots []Ref, mortarVers
 				p := byID[id]
 				for _, v := range p.Versions {
 					if v.Number == chosen[id] {
-						out = append(out, d.resolved(p, v))
+						r := d.resolved(p, v)
+						r.Missing = w.missing[id]
+						out = append(out, r)
 					}
 				}
 			}
@@ -150,6 +152,8 @@ type walk struct {
 	state  map[string]int // 1 visiting, 2 done
 	order  []string
 	raised bool
+	// missing is, per package, the dependencies the index no longer lists; they are left out rather than failing the package.
+	missing map[string][]string
 	// dropIns swaps a dependency for its outright replacement; a root the user asked for stays as asked.
 	dropIns map[string]string
 }
@@ -208,6 +212,11 @@ func (w *walk) visit(ref Ref, chain []string) error {
 				if ns, name, cut := strings.Cut(to, "-"); cut {
 					r = Ref{Namespace: ns, Name: name}
 				}
+			}
+			if dep := packageID(r.Namespace, r.Name); w.byID[dep].Name == "" && !isManager(r.Namespace, r.Name) &&
+				!components.IsBepInExPackage(r.Namespace+"-"+r.Name) {
+				w.missing[id] = append(w.missing[id], r.Namespace+"-"+r.Name)
+				continue
 			}
 			if err := w.visit(r, append(chain, id+" "+ver.Number)); err != nil {
 				return err

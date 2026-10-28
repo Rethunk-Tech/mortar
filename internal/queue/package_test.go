@@ -245,9 +245,21 @@ func TestUnresolvableNamesOnlyThePackagesWhoseClosureFails(t *testing.T) {
 		}
 		return nil, nil
 	}
-	got := f.s.Unresolvable(t.Context(), "riskofrain2", "p1", []Request{{Package: "Me-Gone", Version: "1.0.0"}, {Package: "Me-Fine"}, {Kind: KindInstall}})
+	got, _ := f.s.Unresolvable(t.Context(), "riskofrain2", "p1", []Request{{Package: "Me-Gone", Version: "1.0.0"}, {Package: "Me-Fine"}, {Kind: KindInstall}})
 	if len(got) != 1 || got["Me-Gone"] != "me-gone 1.0.0 is not in the index" {
 		t.Errorf("got %v", got)
+	}
+}
+
+func TestUnresolvableReportsADependencyTheIndexLost(t *testing.T) {
+	t.Parallel()
+	f := newFixture(t)
+	f.s.d.Closure = func(context.Context, string, []thunderstore.Ref, thunderstore.Deps) ([]thunderstore.Resolved, error) {
+		return []thunderstore.Resolved{{Namespace: "Me", Name: "Driver", Missing: []string{"rob_gaming-driver"}}}, nil
+	}
+	gone, missing := f.s.Unresolvable(t.Context(), "riskofrain2", "p1", []Request{{Package: "Me-Driver"}})
+	if len(gone) != 0 || !slices.Equal(missing["Me-Driver"], []string{"Driver needs rob_gaming-driver"}) {
+		t.Errorf("gone %v missing %v", gone, missing)
 	}
 }
 

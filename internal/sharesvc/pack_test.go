@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -69,14 +70,14 @@ func packService(t *testing.T) (*Service, *recorder) {
 		Profiles: profiles, Queue: rec, Meta: r.meta, Files: r.files, PackCode: pack.Code{URL: srv.URL},
 		SignedIn: func() bool { return true }, Premium: func() bool { return false },
 		Env: func(string) problems.Environment { return problems.Environment{} },
-		Unresolvable: func(_ context.Context, _, _ string, reqs []queue.Request) map[string]string {
+		Unresolvable: func(_ context.Context, _, _ string, reqs []queue.Request) (map[string]string, map[string][]string) {
 			out := map[string]string{}
 			for _, r := range reqs {
 				if r.Package == "Bob-Gone" {
 					out[r.Package] = "bob-gone 9.9.9 is not in the index"
 				}
 			}
-			return out
+			return out, nil
 		},
 	}), rec
 }
@@ -369,5 +370,13 @@ func TestImportKeepsAProfilesOwnConfigUnlessReplaceIsChosen(t *testing.T) {
 	}
 	if got := read(); got != "[General]\n" {
 		t.Fatalf("a Replace kept the profile's config: %q", got)
+	}
+}
+
+func TestUnavailableNoteListsADependencyTheIndexLost(t *testing.T) {
+	t.Parallel()
+	got := unavailableNote([]Mod{{Name: "Driver", State: StateDownload, missing: []string{"Driver needs rob_gaming-driver"}}})
+	if !strings.Contains(got, "- Driver needs rob_gaming-driver") || strings.Contains(got, "Not imported") {
+		t.Fatalf("%q", got)
 	}
 }

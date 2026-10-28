@@ -102,7 +102,7 @@ type Deps struct {
 	Queue      Queue
 	// Unresolvable maps each Thunderstore package of reqs the community's index cannot resolve to why, so the preview
 	// shows it as unavailable instead of the import failing; nil checks nothing.
-	Unresolvable func(ctx context.Context, game, profileID string, reqs []queue.Request) map[string]string
+	Unresolvable func(ctx context.Context, game, profileID string, reqs []queue.Request) (unavailable map[string]string, missing map[string][]string)
 	// PackageIcons gives the icon address of each Thunderstore package (Namespace-Name) the game's cached index holds,
 	// keyed by lower-case name; nil leaves previewed packages without icons.
 	PackageIcons func(game string, names []string) map[string]string
@@ -674,7 +674,7 @@ func (s *Service) resolverFor(game, profileID string) (*resolver, error) {
 		vsmoddbRelease: vsmoddb.Driver{}.Resolve, paradoxVersion: paradox.Driver{}.Resolve,
 	}
 	if s.d.Unresolvable != nil {
-		r.unresolvable = func(ctx context.Context, reqs []queue.Request) map[string]string {
+		r.unresolvable = func(ctx context.Context, reqs []queue.Request) (map[string]string, map[string][]string) {
 			return s.d.Unresolvable(ctx, game, profileID, reqs)
 		}
 	}
@@ -838,7 +838,16 @@ func unavailableNote(mods []Mod) string {
 		}
 		fmt.Fprintf(&b, "\n- %s (%s)", m.Name, m.PageURL)
 	}
-	return b.String()
+	var gone strings.Builder
+	for _, m := range mods {
+		for _, line := range m.missing {
+			if gone.Len() == 0 {
+				gone.WriteString("Imported without a missing dependency, no longer on Thunderstore:")
+			}
+			fmt.Fprintf(&gone, "\n- %s", line)
+		}
+	}
+	return joinNotes(b.String(), gone.String())
 }
 
 func joinNotes(parts ...string) string {
