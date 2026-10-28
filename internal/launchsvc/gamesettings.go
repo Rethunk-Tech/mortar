@@ -241,6 +241,7 @@ var startupSection = map[string]string{
 	"preferredResolutionX": startupOptions, "preferredResolutionY": startupOptions,
 	"zoomLevel": startupOptions, "uiScale": startupOptions,
 	"musicVolumeLevel": startupOptions, "soundVolumeLevel": startupOptions,
+	"fullscreen": startupOptions, "windowedBorderlessFullscreen": startupOptions,
 }
 
 // The game writes these as fractions (0.75); Mortar's settings hold percent.
@@ -251,6 +252,11 @@ var (
 	windowModeCodes = map[string]string{"windowed": "0", "borderless": "1", "fullscreen": "2"}
 	windowModeNames = map[string]string{"0": "windowed", "1": "borderless", "2": "fullscreen"}
 )
+
+// The game also keeps the window mode as these two flags, in the same order as windowModeCodes.
+var windowModeFlags = map[string][2]string{
+	"windowed": {"false", "false"}, "borderless": {"false", "true"}, "fullscreen": {"true", "false"},
+}
 
 type startupElement struct {
 	name       string
@@ -316,7 +322,11 @@ func patchStartupSettings(data []byte, value gamesettings.Settings) ([]byte, err
 	if err := value.Validate(); err != nil {
 		return nil, err
 	}
-	elements, err := scanStartup(data, settingNames(value))
+	names := settingNames(value)
+	if value.WindowMode != nil {
+		names["fullscreen"], names["windowedBorderlessFullscreen"] = true, true
+	}
+	elements, err := scanStartup(data, names)
 	if err != nil {
 		return nil, err
 	}
@@ -357,6 +367,8 @@ func startupValues(value gamesettings.Settings) map[string]string {
 	out := map[string]string{}
 	if value.WindowMode != nil {
 		out["windowMode"] = windowModeCodes[*value.WindowMode]
+		flags := windowModeFlags[*value.WindowMode]
+		out["fullscreen"], out["windowedBorderlessFullscreen"] = flags[0], flags[1]
 	}
 	if value.StartMuted != nil {
 		out["startMuted"] = strconv.FormatBool(*value.StartMuted)

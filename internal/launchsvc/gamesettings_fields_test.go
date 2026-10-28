@@ -536,6 +536,8 @@ func TestPatchChangesOnlyTheManagedText(t *testing.T) {
 	want := fixture
 	for _, r := range [][2]string{
 		{"<windowMode>1<", "<windowMode>2<"},
+		{"<fullscreen>false<", "<fullscreen>true<"},
+		{"<windowedBorderlessFullscreen>true<", "<windowedBorderlessFullscreen>false<"},
 		{"<musicVolumeLevel>0.75<", "<musicVolumeLevel>0.4<"},
 		{"<displayIndex>0<", "<displayIndex>2<"},
 		{"<startMuted>false<", "<startMuted>true<"},
