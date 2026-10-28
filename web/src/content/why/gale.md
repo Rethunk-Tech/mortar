@@ -14,7 +14,7 @@ Gale is an open-source Thunderstore manager; Mortar reads its profiles. Use Mort
 
 ## Where Gale is stronger
 
-- Translated into ten languages; Mortar is open for translation on Weblate, but only English is finished.
+- Translated into more languages; Mortar is open for translation on Weblate, but only English is finished.
 - Uploads a profile to Thunderstore as a modpack; Mortar exports the modpack zip for you to upload.
 - A zoom setting ([preferences page](https://github.com/Kesomannen/gale/blob/master/src/routes/prefs/%2Bpage.svelte)).
 
