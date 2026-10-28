@@ -26,14 +26,20 @@ function CopyOption({ copy, dup, differ }: { copy: Copy; dup: Duplicate; differ:
     if (copy.nexus) {
       return t`From ${{ source: sourceLabel('nexus') }}`
     }
-    return copy.source === 'smapi' ? t`Bundled with ${{ loader: SMAPI }}` : t`From an archive`
+    if (copy.source === 'smapi') {
+      return t`Bundled with ${{ loader: SMAPI }}`
+    }
+    return copy.source === 'local'
+      ? t`From an archive`
+      : t`From ${{ source: sourceLabel(copy.source) }}`
   })()
+  const checked = copy.source !== 'local' && copy.source !== 'smapi'
   const needed = copy.needed ?? []
   const tooOld = copy.tooOld ?? []
   const lines = [
     differ && copy.newest ? t`Newer.` : '',
     differ && !copy.newest ? t`Older.` : '',
-    copy.nexus ? t`Gets update checks.` : t`No update checks, and it cannot go in a share link.`,
+    checked ? t`Gets update checks.` : t`No update checks, and it cannot go in a share link.`,
     needed.length > 0 ? t`${{ names: listNames(needed) }} needs this version or newer.` : '',
     tooOld.length > 0 ? t`${{ names: listNames(tooOld) }} needs a newer version than this.` : '',
   ].filter(Boolean)

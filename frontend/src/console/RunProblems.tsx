@@ -2,7 +2,7 @@ import type { I18n } from '@lingui/core'
 import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 import type { SMAPIProblem } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import { RunProblems as FetchRunProblems } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import {
@@ -24,13 +24,11 @@ import { useLocked } from '../mods/useLocked.ts'
 import { download } from '../queue/actions.ts'
 import { refWant } from '../queue/refWant.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
-import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
-import { duplicateCopies } from './runProblemsFix.ts'
 import { stillApplies } from './runProblemsLive.ts'
 import { runProblemMod, runProblemToken } from './runProblemToken.ts'
 
@@ -110,18 +108,13 @@ async function applyFix(i18n: I18n, problem: SMAPIProblem, game: string) {
       return
     }
     case 'removeDuplicate': {
-      const mods = useMods
-        .getState()
-        .mods.filter(
-          (m) =>
-            (problem.modId !== '' && sameId(localId(m.id), problem.modId)) ||
-            (problem.modName !== '' && m.name === problem.modName),
-        )
-      const { remove } = duplicateCopies(mods)
-      if (remove.length === 1 && remove[0]) {
-        await useMods.getState().remove(remove[0])
-      } else if (remove.length > 1) {
-        await useMods.getState().removeMany(remove)
+      const dup = (useMods.getState().problems?.duplicates ?? []).find(
+        (d) =>
+          (problem.modId !== '' && sameId(localId(d.id), problem.modId)) ||
+          (problem.modName !== '' && d.name === problem.modName),
+      )
+      if (dup) {
+        useMods.getState().resolve(dup)
       }
       return
     }
@@ -145,7 +138,6 @@ function ProblemRow({
   const loaderName = useGameLoader(game) || lowerFirst(t`Mod loader`)
   const locked = useLocked()
   const lockHint = t`Stop the game to change mods.`
-  const [confirmDup, setConfirmDup] = useState(false)
   let label = ''
   if (problem.fix === 'installDependency') {
     label = t`Add`
@@ -154,24 +146,13 @@ function ProblemRow({
   } else if (problem.fix === 'disable') {
     label = t`Disable`
   } else if (problem.fix === 'removeDuplicate') {
-    label = t`Remove duplicate`
+    label = t`Resolve`
   } else if (problem.fix === 'updateLoader') {
     label = t`Update ${{ loader: loaderName }}`
   } else if (problem.fix === 'remove') {
     label = t`Remove`
   }
-  const copies = duplicateCopies(
-    useMods((s) => s.mods).filter(
-      (m) =>
-        (problem.modId !== '' && sameId(localId(m.id), problem.modId)) ||
-        (problem.modName !== '' && m.name === problem.modName),
-    ),
-  )
   const run = () => {
-    if (problem.fix === 'removeDuplicate') {
-      setConfirmDup(true)
-      return
-    }
     applyFix(i18n, problem, game).catch(reportUnexpected)
   }
   return (
@@ -209,28 +190,6 @@ function ProblemRow({
       >
         {t`Dismiss`}
       </Button>
-      <ConfirmationDialog
-        open={confirmDup}
-        tone="danger"
-        title={t`Remove duplicate?`}
-        body={
-          copies.keep
-            ? plural(
-                { count: copies.remove.length },
-                {
-                  one: `Keep ${{ name: copies.keep.name }} and remove ${{ other: copies.remove[0]?.name ?? '' }}.`,
-                  other: `Keep ${{ name: copies.keep.name }} and remove # other copies.`,
-                },
-              )
-            : t`Remove ${{ name: copies.remove[0]?.name ?? '' }}`
-        }
-        confirmLabel={t`Remove`}
-        onCancel={() => setConfirmDup(false)}
-        onConfirm={() => {
-          setConfirmDup(false)
-          applyFix(i18n, problem, game).catch(reportUnexpected)
-        }}
-      />
     </Box>
   )
 }
