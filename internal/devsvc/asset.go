@@ -40,7 +40,8 @@ type assetRecord struct {
 func readAssetRecord(dir string) (assetRecord, bool) {
 	body, err := fsx.ReadFile(filepath.Join(dir, ".mortar", assetRecordFile))
 	var rec assetRecord
-	if err != nil || json.Unmarshal(body, &rec) != nil || rec.Kind == "" || !modName.MatchString(rec.Name) {
+	if err != nil || json.Unmarshal(body, &rec) != nil || rec.Kind == "" || !modName.MatchString(rec.Name) ||
+		rec.Team != "" && !teamPattern.MatchString(rec.Team) {
 		return assetRecord{}, false
 	}
 	return rec, true
@@ -222,6 +223,9 @@ func assetInfo(dir string, rec assetRecord) ProjectInfo {
 // packAsset zips an asset project the way Thunderstore takes it: manifest.json (at the version given), icon, README,
 // CHANGELOG, LICENSE and every folder but Mortar's and git's own, into artifacts/thunderstore/release.
 func packAsset(p settings.DevProject, team, version string) (string, error) {
+	if !packageVersion.MatchString(version) {
+		return "", usererr.Wrap(usererr.Invalid, fmt.Errorf("%q is not a version like 1.2.3; fix manifest.json", version))
+	}
 	manifest, err := fsx.ReadFile(filepath.Join(p.Dir, "manifest.json"))
 	if err != nil {
 		return "", err

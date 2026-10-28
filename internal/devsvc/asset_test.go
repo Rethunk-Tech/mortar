@@ -149,3 +149,25 @@ func TestAnAddedAssetProjectInstallsOnlyOnceTrusted(t *testing.T) {
 		t.Errorf("trusted = %+v", got)
 	}
 }
+
+func TestAnAssetRecordCannotNameAPathOutsideTheProject(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	const game = "lethal-company"
+	if _, err := svc.Add(t.Context(), game, assetDir(t, `{"kind":"sounds","name":"Quacks","team":"../../x"}`), ""); err == nil {
+		t.Error("a team with path parts was accepted")
+	}
+	dir := assetDir(t, `{"kind":"sounds","name":"Quacks","team":"Ab"}`)
+	if err := writeAll(filepath.Join(dir, "manifest.json"), []byte(`{"version_number":"../../1"}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	p, err := svc.Add(t.Context(), game, dir, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := svc.Trust(game, dir); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := svc.Pack(t.Context(), game, p.Dir); err == nil {
+		t.Error("a manifest version with path parts was packed")
+	}
+}
