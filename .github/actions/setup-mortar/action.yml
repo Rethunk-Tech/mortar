@@ -131,6 +131,13 @@ runs:
       if: inputs.frontend == 'true'
       uses: Rethunk-Tech/gh-actions/setup-bun@67ec8bd68343d915462729ad119c355740cf6205 # v1.22
 
+    # Astro runs under Node, and the runner image's Node can trail the version it requires.
+    - name: Setup Node
+      if: inputs.frontend == 'true'
+      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: "24"
+
     # main.go embeds frontend/dist, so Go's typecheck in the gate needs it built.
     - name: Install dependencies and build the frontend
       if: inputs.frontend == 'true'
