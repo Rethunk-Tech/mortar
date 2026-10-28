@@ -29,6 +29,16 @@ type helloResponse struct {
 	Name    string `json:"name"`
 	Version string `json:"version"`
 	Nonce   string `json:"nonce"`
+	// Proof answers the caller's challenge with the pairing key, so a host merely claiming a paired id is treated as
+	// unpaired. A peer that predates it sends none.
+	Proof string `json:"proof,omitempty"`
+	// challenge is what this computer sent; it never travels back.
+	challenge string
+}
+
+// helloProof binds a /hello answer to the caller's challenge and both ids in a fixed order (caller, then answerer).
+func helloProof(key []byte, challenge, callerID, answererID string) string {
+	return hmacProof(key, challenge, "hello|"+callerID+"|"+answererID)
 }
 
 type shareResponse struct {

@@ -850,3 +850,29 @@ func TestRateLimitedPeerNamingAPairedSenderIsRefusedBeforeItsBody(t *testing.T) 
 		t.Fatalf("status = %d, body read = %v", response.Code, body.read)
 	}
 }
+
+func TestHelloProvesPairingKey(t *testing.T) {
+	t.Parallel()
+	receiver, receiverAddr := pairedService(t, nil, nil)
+	sender, _ := pairedService(t, nil, nil)
+	pair(t, receiver, sender, receiverAddr)
+
+	hello, err := sender.hello(t.Context(), receiverAddr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if key, err := sender.provenKey(hello); err != nil || key == nil {
+		t.Fatalf("real paired peer: key %v, err %v", key, err)
+	}
+	// Claiming the paired id without the key: no proof, or a proof recorded for another challenge.
+	spoof := hello
+	spoof.Proof = ""
+	if key, _ := sender.provenKey(spoof); key != nil {
+		t.Fatal("a peer sending no proof was treated as paired")
+	}
+	replay := hello
+	replay.challenge = "another-challenge"
+	if key, _ := sender.provenKey(replay); key != nil {
+		t.Fatal("a replayed proof was accepted for a new challenge")
+	}
+}

@@ -546,7 +546,10 @@ func (s *Service) sendPayload(ctx context.Context, peerID, game, profileID strin
 	if err != nil {
 		return err
 	}
-	key := s.book.key(hello.ID)
+	key, err := s.provenKey(hello)
+	if err != nil {
+		return err
+	}
 	payload, err := build(key != nil)
 	if err != nil {
 		return err
@@ -639,11 +642,37 @@ func (s *Service) entryDigests(key []byte, game string, items []transferItem) ma
 	return out
 }
 
+// provenKey returns the pairing key for the peer that answered, or nil when it is not paired or did not prove it
+// holds the key.
+func (s *Service) provenKey(hello helloResponse) ([]byte, error) {
+	key := s.book.key(hello.ID)
+	if key == nil {
+		return nil, nil
+	}
+	selfID, err := s.book.self()
+	if err != nil {
+		return nil, err
+	}
+	if !proofMatches(key, hello.challenge, "hello|"+selfID+"|"+hello.ID, hello.Proof) {
+		return nil, nil
+	}
+	return key, nil
+}
+
 func (s *Service) hello(ctx context.Context, peerID string) (helloResponse, error) {
 	endpoint, err := shareEndpoint(peerID, "/hello")
 	if err != nil {
 		return helloResponse{}, err
 	}
+	challenge, err := randomToken()
+	if err != nil {
+		return helloResponse{}, err
+	}
+	selfID, err := s.book.self()
+	if err != nil {
+		return helloResponse{}, err
+	}
+	endpoint += "?" + url.Values{"challenge": {challenge}, "id": {selfID}}.Encode()
 	ctx, cancel := context.WithTimeout(ctx, httpTimeout)
 	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
@@ -662,6 +691,7 @@ func (s *Service) hello(ctx context.Context, peerID string) (helloResponse, erro
 	if err := json.NewDecoder(fsx.CapReader(resp.Body, 16<<10)).Decode(&hello); err != nil {
 		return helloResponse{}, fmt.Errorf("read LAN peer handshake: %w", err)
 	}
+	hello.challenge = challenge
 	if hello.Nonce == "" {
 		return helloResponse{}, errors.New("LAN peer returned no handshake nonce")
 	}
@@ -802,7 +832,14 @@ func (s *Service) handleHello(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "could not create handshake", http.StatusInternalServerError)
 		return
 	}
-	_ = json.NewEncoder(w).Encode(helloResponse{ID: id, Name: s.deviceName(), Version: protocolVersion, Nonce: nonce})
+	resp := helloResponse{ID: id, Name: s.deviceName(), Version: protocolVersion, Nonce: nonce}
+	// The caller's challenge is answered only for a paired caller, so an unpaired one learns nothing about the book.
+	query := r.URL.Query()
+	callerID, challenge := query.Get("id"), query.Get("challenge")
+	if key := s.book.key(callerID); key != nil && challenge != "" {
+		resp.Proof = helloProof(key, challenge, callerID, id)
+	}
+	_ = json.NewEncoder(w).Encode(resp)
 }
 
 func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
