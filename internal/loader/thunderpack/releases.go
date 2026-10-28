@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -17,11 +18,24 @@ import (
 // lastReleases bounds the version list a picker shows.
 const lastReleases = 10
 
-// thunderstoreDriver is the registered Thunderstore source, so the pack is read from the index the rest of Mortar
-// shares; Index overrides it for tests.
-func (l Loader) thunderstoreDriver() thunderstore.Driver {
-	if l.Index != nil {
-		return *l.Index
+// Releases lists and downloads a game's loader package from its Thunderstore community index.
+type Releases struct {
+	// Name is the loader's name in errors.
+	Name string
+	// Index is the Thunderstore driver the pack is looked up in; nil means the registered one, so the pack is read
+	// from the index the rest of Mortar shares.
+	Index *thunderstore.Driver
+	// HTTP downloads the pack.
+	HTTP *http.Client
+	// Keep picks the releases offered; nil keeps every one.
+	Keep func(version string) bool
+}
+
+func (l Loader) releases() Releases { return Releases{Name: l.Name, Index: l.Index, HTTP: l.HTTP} }
+
+func (r Releases) driver() thunderstore.Driver {
+	if r.Index != nil {
+		return *r.Index
 	}
 	d, _ := thunderstore.Registered()
 	return d
@@ -41,49 +55,73 @@ func pack(g components.GameInfo) (community, namespace, name string, err error) 
 	return s.Key, namespace, name, nil
 }
 
-// Versions are the releases of the game's loader package in its community index, newest first.
-func (l Loader) Versions(ctx context.Context, g components.GameInfo) ([]string, error) {
+// Versions are the kept releases of the game's loader package in its community index, newest first.
+func (r Releases) Versions(ctx context.Context, g components.GameInfo) ([]string, error) {
 	key, namespace, name, err := pack(g)
 	if err != nil {
 		return nil, err
 	}
-	all, err := l.thunderstoreDriver().Versions(ctx, key, namespace, name, "")
+	all, err := r.driver().Versions(ctx, key, namespace, name, "")
 	if err != nil {
-		return nil, fmt.Errorf("look up %s releases: %w", l.Name, err)
+		return nil, fmt.Errorf("look up %s releases: %w", r.Name, err)
 	}
-	return all[:min(len(all), lastReleases)], nil
+	var out []string
+	for _, v := range all {
+		if len(out) == lastReleases {
+			break
+		}
+		if r.Keep == nil || r.Keep(v) {
+			out = append(out, v)
+		}
+	}
+	return out, nil
 }
 
-// Latest is the package's newest release.
-func (l Loader) Latest(ctx context.Context, g components.GameInfo) (string, error) {
-	all, err := l.Versions(ctx, g)
+// Latest is the package's newest kept release.
+func (r Releases) Latest(ctx context.Context, g components.GameInfo) (string, error) {
+	all, err := r.Versions(ctx, g)
 	if err != nil {
 		return "", err
 	}
 	if len(all) == 0 {
-		return "", errors.New("the Thunderstore index lists no " + l.Name + " release")
+		return "", errors.New("the Thunderstore index lists no " + r.Name + " release")
 	}
 	return all[0], nil
 }
 
 // Fetch downloads the game's loader package zip of version to dst.
-func (l Loader) Fetch(ctx context.Context, g components.GameInfo, version, dst string) error {
+func (r Releases) Fetch(ctx context.Context, g components.GameInfo, version, dst string) error {
 	key, namespace, name, err := pack(g)
 	if err != nil {
 		return err
 	}
-	r, err := l.thunderstoreDriver().Resolve(ctx, key, namespace, name, version, "")
+	res, err := r.driver().Resolve(ctx, key, namespace, name, version, "")
 	if err != nil {
-		return fmt.Errorf("find %s %s: %w", l.Name, version, err)
+		return fmt.Errorf("find %s %s: %w", r.Name, version, err)
 	}
 	work, err := os.MkdirTemp(filepath.Dir(dst), ".thunderpack-fetch-*")
 	if err != nil {
 		return err
 	}
 	defer func() { _ = fsx.RemoveAll(work) }()
-	got, err := (&host.Direct{HTTP: l.HTTP}).Fetch(ctx, r.URL, work)
+	got, err := (&host.Direct{HTTP: r.HTTP}).Fetch(ctx, res.URL, work)
 	if err != nil {
-		return fmt.Errorf("download %s %s: %w", l.Name, version, err)
+		return fmt.Errorf("download %s %s: %w", r.Name, version, err)
 	}
 	return fsx.Rename(got, dst)
+}
+
+// Versions are the releases of the game's loader package in its community index, newest first.
+func (l Loader) Versions(ctx context.Context, g components.GameInfo) ([]string, error) {
+	return l.releases().Versions(ctx, g)
+}
+
+// Latest is the package's newest release.
+func (l Loader) Latest(ctx context.Context, g components.GameInfo) (string, error) {
+	return l.releases().Latest(ctx, g)
+}
+
+// Fetch downloads the game's loader package zip of version to dst.
+func (l Loader) Fetch(ctx context.Context, g components.GameInfo, version, dst string) error {
+	return l.releases().Fetch(ctx, g, version, dst)
 }
