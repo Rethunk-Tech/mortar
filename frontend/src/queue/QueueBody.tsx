@@ -37,6 +37,7 @@ import { Fold } from './QueueFold.tsx'
 import { QueueNeedsFomod } from './QueueNeedsFomod.tsx'
 import { MoveButtons, NowButton, PauseButton, Paused, Row, SectionTitle } from './QueueRows.tsx'
 import { detail, ROW } from './rowStyle.ts'
+import { siteOf } from './store.ts'
 import { displayName, downloadedKb, isActive, tile } from './totals.ts'
 
 const DONE_FILL = 0.08
@@ -252,6 +253,9 @@ function Failed({ items }: { items: Item[] }) {
 function FailureText({ item }: { item: Item }) {
   const { t } = useLingui()
   const det = item.detection
+  if (!det && item.errorKind === 'network') {
+    return t`Could not reach ${{ source: sourceLabel(siteOf(item)) }}`
+  }
   if (!det) {
     return errorMessage(item.error)
   }

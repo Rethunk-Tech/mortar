@@ -134,7 +134,7 @@ function downloadFailCopy(error: string): { body: string; detail?: string } {
   }
 }
 
-function siteOf(item: Item): string {
+export function siteOf(item: Item): string {
   if (item.source) {
     return item.source
   }
