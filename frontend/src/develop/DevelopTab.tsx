@@ -136,6 +136,7 @@ export function DevelopTab({ game }: { game: string }) {
   const [query, setQuery] = useState('')
   const [view, setView] = useStoredState<ViewMode>(`mortar.developView.${game}`, 'list', isViewMode)
   const here = projects.filter((p) => p.profile === openId)
+  const codeHere = here.find((p) => !p.kind)
   const needle = query.trim().toLowerCase()
   const shown = here.filter((p) => p.name.toLowerCase().includes(needle))
   const elsewhere = projects.filter((p) => p.profile !== openId)
@@ -161,7 +162,7 @@ export function DevelopTab({ game }: { game: string }) {
       }}
     >
       <PageActions>
-        {here[0] ? (
+        {codeHere ? (
           <Button
             variant="outlined"
             startIcon={<Code size={14} />}
@@ -255,8 +256,8 @@ export function DevelopTab({ game }: { game: string }) {
       <CloneDialog open={cloning} game={game} onClose={() => setCloning(false)} />
       <NewModDialog open={creating} game={game} onClose={() => setCreating(false)} />
       <TrustDialog />
-      {reading && here[0] ? (
-        <GameCodeDialog game={game} dir={here[0].dir} onClose={() => setReading(false)} />
+      {reading && codeHere ? (
+        <GameCodeDialog game={game} dir={codeHere.dir} onClose={() => setReading(false)} />
       ) : null}
     </Box>
   )

@@ -382,6 +382,8 @@ function useWizardData(open: boolean, game: string, setDraft: (fn: (d: Draft) =>
             profile: openId || NEW_PROFILE,
             github: d.github,
             owner: d.owner,
+            kind: d.kind,
+            dependencies: d.dependencies,
           }
         })
       })

@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Trust } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
+import { installExtraFolder } from '../downloads/autoInstall.ts'
 import { saveSetting } from '../settings/persist.ts'
 import { useSettings } from '../settings/store.ts'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
@@ -11,7 +12,8 @@ export function TrustDialog() {
   const ask = useTrustAsk((s) => s.ask)
   const close = () => useTrustAsk.setState({ ask: null })
   const projects = useSettings((s) => (ask ? s.games?.[ask.game]?.devProjects : undefined))
-  const asset = !ask?.pack && (projects ?? []).some((p) => p.dir === ask?.dir && p.kind)
+  const isAsset = (projects ?? []).some((p) => p.dir === ask?.dir && p.kind)
+  const asset = !ask?.pack && isAsset
   return (
     <ConfirmationDialog
       open={ask !== null}
@@ -31,6 +33,10 @@ export function TrustDialog() {
         close()
         saveSetting(async () => {
           await Trust(ask.game, ask.dir)
+          if (isAsset) {
+            // The folder watch does not fire for a folder that already exists, so the swap to the project folder installs here.
+            installExtraFolder(ask.game, ask.dir)
+          }
           await (ask.pack ? packProject(ask.game, ask.dir) : buildProject(ask.game, ask.dir))
         })
       }}

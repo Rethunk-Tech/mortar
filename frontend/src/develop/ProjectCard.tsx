@@ -319,13 +319,11 @@ function MoreMenu({
           />
         ) : null}
         {code ? <MenuRule /> : null}
-        {code ? (
-          <MenuAction
-            icon={<Pencil size={16} aria-hidden={true} />}
-            label={t`Edit details…`}
-            onClick={act(onEdit)}
-          />
-        ) : null}
+        <MenuAction
+          icon={<Pencil size={16} aria-hidden={true} />}
+          label={t`Edit details…`}
+          onClick={act(onEdit)}
+        />
         <MenuAction
           icon={<SquareCode size={16} aria-hidden={true} />}
           label={t`Open in editor`}

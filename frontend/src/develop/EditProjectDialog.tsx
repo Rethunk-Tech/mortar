@@ -72,7 +72,9 @@ export function EditProjectDialog({
   const deps = useDependencyRows(game, dir)
   const dirty = details || deps.dirty
   const set = (next: Partial<ProjectEdit>) => setEdit((e) => ({ ...e, ...next }))
-  const renames = edit.name !== info.name || edit.idPrefix !== info.idPrefix
+  // A mod of files has no project file to rename or build: only its listing, credits and dependencies change.
+  const files = Boolean(info.kind)
+  const renames = !files && (edit.name !== info.name || edit.idPrefix !== info.idPrefix)
   const save = () =>
     run(
       async () => {
@@ -83,9 +85,9 @@ export function EditProjectDialog({
         const next = details ? await Edit(game, dir, edit) : info
         useProjectInfo.setState((s) => ({ byDir: { ...s.byDir, [dir]: next } }))
         onClose()
-        // A new name builds to a new output folder, installing the renamed mod in place of the old one; changed
+        // A new name or id builds to a new assembly, installing the renamed mod in place of the old one; changed
         // dependencies are referenced and declared on the plugin as it builds.
-        if (next.name !== info.name || deps.dirty) {
+        if (!files && (renames || deps.dirty)) {
           await buildProject(game, dir)
         }
       },
@@ -108,29 +110,31 @@ export function EditProjectDialog({
       busy={saving}
       onSubmit={dirty ? save : onClose}
     >
-      <FormSection
-        title={t`Identity`}
-        description={t`Renaming moves the project's folder, files and namespace.`}
-      >
-        {renames && info.released ? (
-          <Alert severity="warning">
-            {t`Players already have ${{ version: info.released }}: a new name or id makes their game see a different mod, with fresh settings.`}
-          </Alert>
-        ) : null}
-        <FieldRow>
-          <TextInput label={t`Mod name`} value={edit.name} onChange={(name) => set({ name })} />
-          <TextInput
-            label={t`Id prefix`}
-            value={edit.idPrefix}
-            onChange={(idPrefix) => set({ idPrefix })}
+      {files ? null : (
+        <FormSection
+          title={t`Identity`}
+          description={t`Renaming moves the project's folder, files and namespace.`}
+        >
+          {renames && info.released ? (
+            <Alert severity="warning">
+              {t`Players already have ${{ version: info.released }}: a new name or id makes their game see a different mod, with fresh settings.`}
+            </Alert>
+          ) : null}
+          <FieldRow>
+            <TextInput label={t`Mod name`} value={edit.name} onChange={(name) => set({ name })} />
+            <TextInput
+              label={t`Id prefix`}
+              value={edit.idPrefix}
+              onChange={(idPrefix) => set({ idPrefix })}
+            />
+          </FieldRow>
+          <DerivedValue
+            label={t`Plugin id`}
+            value={`${edit.idPrefix}.${edit.name}`}
+            hint={t`Other mods know it by this.`}
           />
-        </FieldRow>
-        <DerivedValue
-          label={t`Plugin id`}
-          value={`${edit.idPrefix}.${edit.name}`}
-          hint={t`Other mods know it by this.`}
-        />
-      </FormSection>
+        </FormSection>
+      )}
       <FormSection
         title={t`Listing`}
         description={t`What players see on ${{ source: thunderstore }}.`}
@@ -142,14 +146,16 @@ export function EditProjectDialog({
           maxLength={MAX_DESCRIPTION}
           multiline={true}
         />
-        <ChoicePicker
-          label={t`Categories`}
-          choices={categories}
-          value={edit.categories ?? []}
-          onChange={(next) => set({ categories: next })}
-        />
+        {files ? null : (
+          <ChoicePicker
+            label={t`Categories`}
+            choices={categories}
+            value={edit.categories ?? []}
+            onChange={(next) => set({ categories: next })}
+          />
+        )}
       </FormSection>
-      <ProjectDependencies game={game} rows={deps.rows} setRows={deps.setRows} />
+      <ProjectDependencies game={game} rows={deps.rows} setRows={deps.setRows} required={files} />
       <FormSection title={t`Credits`}>
         <FieldRow>
           <TextInput label={t`Author`} value={edit.author} onChange={(author) => set({ author })} />

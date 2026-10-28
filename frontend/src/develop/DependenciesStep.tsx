@@ -49,7 +49,8 @@ export const PackageRow = memo(function PackageRowView({
   checked: boolean
   onToggle: (id: string, on: boolean) => void
   optional: boolean
-  onOptional: (id: string, on: boolean) => void
+  // Left out for a mod of files, whose dependencies are all required.
+  onOptional?: (id: string, on: boolean) => void
 }) {
   const { t } = useLingui()
   const name = item?.name ?? id.slice(id.indexOf('-') + 1).replaceAll('_', ' ')
@@ -71,18 +72,20 @@ export const PackageRow = memo(function PackageRowView({
           {[item?.author, why].filter(Boolean).join(' · ')}
         </Typography>
       </Box>
-      <TextField
-        select={true}
-        size="small"
-        disabled={!checked}
-        value={optional ? 'soft' : 'hard'}
-        onChange={(e) => onOptional(id, e.target.value === 'soft')}
-        slotProps={{ htmlInput: { 'aria-label': t`How ${{ name }} is needed` } }}
-        sx={{ width: 140 }}
-      >
-        <MenuItem value="hard">{t`Required`}</MenuItem>
-        <MenuItem value="soft">{t`Optional`}</MenuItem>
-      </TextField>
+      {onOptional ? (
+        <TextField
+          select={true}
+          size="small"
+          disabled={!checked}
+          value={optional ? 'soft' : 'hard'}
+          onChange={(e) => onOptional(id, e.target.value === 'soft')}
+          slotProps={{ htmlInput: { 'aria-label': t`How ${{ name }} is needed` } }}
+          sx={{ width: 140 }}
+        >
+          <MenuItem value="hard">{t`Required`}</MenuItem>
+          <MenuItem value="soft">{t`Optional`}</MenuItem>
+        </TextField>
+      ) : null}
     </Box>
   )
 })

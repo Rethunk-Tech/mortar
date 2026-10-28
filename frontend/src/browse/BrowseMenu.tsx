@@ -2,11 +2,12 @@ import { useLingui } from '@lingui/react/macro'
 import { Menu } from '@mui/material'
 import { ExternalLink, EyeOff, Info, Link2, PackagePlus, Plus } from 'lucide-react'
 import { memo, useState } from 'react'
+import type { DevProject } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import {
   HideBrowseAuthor,
   HideBrowseMod,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
-import { useDependencyAsk } from '../develop/dependencyAsk.ts'
+import { addDependency, type DependencyAsk, useDependencyAsk } from '../develop/dependencyAsk.ts'
 import { useCurrentGame } from '../nav/currentGame.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
@@ -18,6 +19,29 @@ import type { BrowseItem } from './browseTypes.ts'
 import { useBrowseSelection } from './selection.ts'
 import { type ActionProps, useCardAction } from './useCardAction.tsx'
 import { useBrowseView } from './view.ts'
+
+// A mod of files has no optional dependency, so there is nothing to ask.
+function askDependency(
+  game: string,
+  p: DevProject,
+  item: BrowseItem,
+  install: DependencyAsk['install'],
+) {
+  const ask = {
+    game,
+    dir: p.dir,
+    project: p.name,
+    pkg: item.id,
+    name: item.name,
+    version: item.version,
+    install,
+  }
+  if (p.kind) {
+    addDependency(ask, false)
+  } else {
+    useDependencyAsk.setState({ ask })
+  }
+}
 
 function Items({
   item,
@@ -42,18 +66,7 @@ function Items({
     (p) => p.profile === openId,
   )
   // A development profile's mod declares what it needs; the player says whether it needs it or only uses it.
-  const depend = (dir: string, project: string) =>
-    useDependencyAsk.setState({
-      ask: {
-        game,
-        dir,
-        project,
-        pkg: item.id,
-        name: item.name,
-        version: item.version,
-        install: installed ? null : add,
-      },
-    })
+  const depend = (p: DevProject) => askDependency(game, p, item, installed ? null : add)
   const choices = [{ source: item.source, url: item.url }, ...(item.alts ?? [])]
   const run = (fn: () => void) => () => {
     close()
@@ -96,7 +109,7 @@ function Items({
             key={`depend-${p.dir}`}
             icon={<PackagePlus size={16} />}
             label={t`Add as dependency of ${{ name: p.name }}…`}
-            onClick={run(() => depend(p.dir, p.name))}
+            onClick={run(() => depend(p))}
           />
         ))
       : []),

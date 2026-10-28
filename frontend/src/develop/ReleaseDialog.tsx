@@ -10,8 +10,10 @@ import {
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { FormDialog, SelectField, TextInput } from '../shell/dialog/FormDialog.tsx'
+import { errorKind } from '../toasts/errorKind.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
+import { useTrustAsk } from './builds.ts'
 
 /** Picks the next version, takes what changed, and records both: a CHANGELOG entry, its commit, and the tag. */
 export function ReleaseDialog({
@@ -51,7 +53,17 @@ export function ReleaseDialog({
   const release = () =>
     run(
       async () => {
-        const remote = await Release(game, dir, version, lines)
+        let remote: string
+        try {
+          remote = await Release(game, dir, version, lines)
+        } catch (e) {
+          if (errorKind(e) !== 'unconfirmed') {
+            throw e
+          }
+          useTrustAsk.setState({ ask: { game, dir, pack: false } })
+          onClose()
+          return
+        }
         useToasts.getState().push({
           kind: 'success',
           title: t`Released ${{ name }} ${{ version }}`,

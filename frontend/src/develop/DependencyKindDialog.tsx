@@ -1,11 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
 import { Link2, Link2Off } from 'lucide-react'
-import { AddDependency } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import { type Tile, TileGrid } from '../share/TileGrid.tsx'
 import { AppDialog } from '../shell/dialog/AppDialog.tsx'
-import { reportError } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
-import { useDependencyAsk } from './dependencyAsk.ts'
+import { addDependency, useDependencyAsk } from './dependencyAsk.ts'
 
 const ICON_PX = 32
 
@@ -33,18 +30,7 @@ export function DependencyKindDialog() {
   ]
   const choose = (kind: 'hard' | 'soft') => {
     close()
-    ask.install?.()
-    AddDependency(ask.game, ask.dir, ask.pkg, ask.version, kind === 'soft')
-      .then(() =>
-        useToasts.getState().push({
-          kind: 'success',
-          title:
-            kind === 'soft'
-              ? t`${{ mod: ask.name }} is an optional dependency of ${{ name: ask.project }}`
-              : t`${{ mod: ask.name }} is a dependency of ${{ name: ask.project }}`,
-        }),
-      )
-      .catch(reportError(t`Could not add the dependency`))
+    addDependency(ask, kind === 'soft')
   }
   return (
     <AppDialog

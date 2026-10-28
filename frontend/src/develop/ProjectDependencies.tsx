@@ -14,10 +14,13 @@ export function ProjectDependencies({
   game,
   rows,
   setRows,
+  required = false,
 }: {
   game: string
   rows: DependencyRow[]
   setRows: (update: (rows: DependencyRow[]) => DependencyRow[]) => void
+  // A mod of files needs every dependency it lists, so none is offered as optional.
+  required?: boolean
 }) {
   const { t } = useLingui()
   const profile = useProfiles((s) => s.openId)
@@ -63,7 +66,7 @@ export function ProjectDependencies({
           checked={r.keep}
           onToggle={toggle}
           optional={r.soft}
-          onOptional={setOptional}
+          {...(required ? {} : { onOptional: setOptional })}
         />
       ))}
       <AddAnother game={game} profile={profile} taken={ids.join(',')} onAdd={add} />
