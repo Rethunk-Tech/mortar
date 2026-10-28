@@ -122,7 +122,7 @@ export function ChangeVersionDialog({
         </ToneIcon>
       }
       footer={
-        <DialogFooter aside={choice || asking ? null : t`Pick a version.`}>
+        <DialogFooter aside={choice || asking ? null : t`Pick the version.`}>
           <Button onClick={asking ? () => setAsking(false) : onClose}>
             {asking ? t`Back` : t`Cancel`}
           </Button>

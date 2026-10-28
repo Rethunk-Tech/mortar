@@ -22,7 +22,7 @@ export function GraphicsApiRow({ game }: { game: string }) {
         { value: '', label: t`Ask when I press Play` },
         ...(graphics.choices ?? []).map((c) => ({
           value: c.id,
-          label: c.id === graphics.recommended ? t`${{ name: c.label }} (Recommended)` : c.label,
+          label: c.id === graphics.recommended ? t`${{ name: c.label }} (recommended)` : c.label,
         })),
       ]}
     />

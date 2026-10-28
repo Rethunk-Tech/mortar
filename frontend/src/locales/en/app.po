@@ -443,10 +443,6 @@ msgstr "Host {host}"
 msgid "A network request failed."
 msgstr "A network request failed."
 
-#: src/install/HandoffDialog.tsx
-msgid "No"
-msgstr "No"
-
 #: src/share/ModpackDialog.tsx
 msgid "The website must start with http:// or https://."
 msgstr "The website must start with http:// or https://."
@@ -540,6 +536,11 @@ msgstr "Only links"
 #: src/lan/SendPanel.tsx
 msgid "Send only links to {name}?"
 msgstr "Send only links to {name}?"
+
+#: src/groups/dialogs.tsx
+#: src/groups/SavedGroupsSection.tsx
+msgid "No saved groups yet"
+msgstr "No saved groups yet"
 
 #: src/browse/BrowseShow.tsx
 msgid "Broken"
@@ -1118,6 +1119,10 @@ msgstr "Building runs this repository's code on your computer. Build it?"
 msgid "These will be removed ({count})"
 msgstr "These will be removed ({count})"
 
+#: src/develop/NewModDialog.tsx
+msgid "MIT (recommended)"
+msgstr "MIT (recommended)"
+
 #: src/firstrun/ProfileStep.tsx
 msgid "Enter a name for the profile."
 msgstr "Enter a name for the profile."
@@ -1257,6 +1262,10 @@ msgstr "Try a different search."
 #: src/shell/AppMenu.tsx
 msgid "Not signed in"
 msgstr "Not signed in"
+
+#: src/tools/ToolsManageDialog.tsx
+msgid "The program itself is not touched."
+msgstr "The program itself is not touched."
 
 #: src/develop/ProjectCard.tsx
 msgid "Could not move the folder to the trash"
@@ -2006,6 +2015,10 @@ msgstr "Changelog"
 msgid "Try my Mortar profile \"{name}\" for {game} ({count, plural, one {# mod} other {# mods}}): {web}"
 msgstr "Try my Mortar profile \"{name}\" for {game} ({count, plural, one {# mod} other {# mods}}): {web}"
 
+#: src/saves/BackupsDialog.tsx
+msgid "Restore {name}?"
+msgstr "Restore {name}?"
+
 #: src/lan/IncomingPrompt.tsx
 #: src/queue/QueueBody.tsx
 msgid "{rate}/s"
@@ -2079,7 +2092,6 @@ msgid "Mortar already named the likely mod for the last crash."
 msgstr "Mortar already named the likely mod for the last crash."
 
 #: src/fomod/Dialog.tsx
-#: src/groups/dialogs.tsx
 #: src/install/DownloadsDialog.tsx
 #: src/install/OverlayPlaceDialog.tsx
 #: src/install/RemapDialog.tsx
@@ -2097,6 +2109,10 @@ msgstr "Mortar already named the likely mod for the last crash."
 #: src/shell/dialog/FormDialog.tsx
 msgid "Cancel"
 msgstr "Cancel"
+
+#: src/templates/TemplateDialogs.tsx
+msgid "Delete template"
+msgstr "Delete template"
 
 #: src/share/ImportProblems.tsx
 #: src/share/useImportFlow.ts
@@ -2164,6 +2180,10 @@ msgstr "Done"
 #: src/saves/SaveRow.tsx
 msgid "{name} is no longer in the saves folder"
 msgstr "{name} is no longer in the saves folder"
+
+#: src/lan/SendPanel.tsx
+msgid "No Mortar users found nearby"
+msgstr "No Mortar users found nearby"
 
 #: src/nxm/store.ts
 msgid "{name}'s author only allows downloads from its {source} page. Choose Download there instead of Install, then drop the file on Mortar."
@@ -2546,6 +2566,10 @@ msgstr "Library"
 msgid "{loader} not installed yet"
 msgstr "{loader} not installed yet"
 
+#: src/develop/DevelopTab.tsx
+msgid "Move here"
+msgstr "Move here"
+
 #: src/groups/SavedGroupRow.tsx
 msgid "{name} (optional file)"
 msgstr "{name} (optional file)"
@@ -2760,6 +2784,7 @@ msgid "Sort: most followed"
 msgstr "Sort: most followed"
 
 #: src/groups/SaveGroupToLibrary.tsx
+#: src/templates/TemplateDialogs.tsx
 msgid "Replace"
 msgstr "Replace"
 
@@ -2808,10 +2833,6 @@ msgstr "Search {source}"
 msgid "Released {name} {version}"
 msgstr "Released {name} {version}"
 
-#: src/queue/QueueHistory.tsx
-msgid "No downloads in history."
-msgstr "No downloads in history."
-
 #: src/browse/BrowseDetails.tsx
 msgid "{latest} (latest)"
 msgstr "{latest} (latest)"
@@ -2847,10 +2868,6 @@ msgstr "Asking {launcher}"
 #: src/screenshots/ScreenshotsTab.tsx
 msgid "Screenshots you take while playing show here, newest first."
 msgstr "Screenshots you take while playing show here, newest first."
-
-#: src/lan/SendPanel.tsx
-msgid "No Mortar users found nearby."
-msgstr "No Mortar users found nearby."
 
 #: src/launch/LaunchScreen.tsx
 msgid "{launcher} has not started {name} yet"
@@ -2907,10 +2924,6 @@ msgstr "The files will download from each mod's source."
 #: src/groups/SavedGroupRow.tsx
 msgid "Profiles: {holderNames}"
 msgstr "Profiles: {holderNames}"
-
-#: src/launch/GraphicsDialog.tsx
-msgid "{name} (Recommended)"
-msgstr "{name} (Recommended)"
 
 #: src/develop/UploadDialog.tsx
 msgid "Upload {name} {version} to {source}?"
@@ -3013,6 +3026,10 @@ msgstr "{source} mod {id}"
 msgid "Where to share"
 msgstr "Where to share"
 
+#: src/queue/QueueHistory.tsx
+msgid "No downloads in history"
+msgstr "No downloads in history"
+
 #: src/share/ImportProblems.tsx
 msgid "Ready to import"
 msgstr "Ready to import"
@@ -3102,7 +3119,7 @@ msgstr "Settings changes {count}"
 msgid "Collapse"
 msgstr "Collapse"
 
-#: src/develop/DependencyKindDialog.tsx
+#: src/develop/dependencyAsk.ts
 msgid "{mod} is an optional dependency of {name}"
 msgstr "{mod} is an optional dependency of {name}"
 
@@ -3240,10 +3257,6 @@ msgstr "Edit profile…"
 #: src/game/Home.tsx
 msgid "{name} settings"
 msgstr "{name} settings"
-
-#: src/share/ManagerPane.tsx
-msgid "No profiles found."
-msgstr "No profiles found."
 
 #: src/firstrun/FirstRun.tsx
 msgid "{found} of {count, plural, one {# launcher} other {# launchers}} found."
@@ -3645,10 +3658,6 @@ msgstr "Reading the template…"
 msgid "Choose icon"
 msgstr "Choose icon"
 
-#: src/install/HandoffDialog.tsx
-msgid "Mortar records the file against that page, so the mod's page link and shares point there. Choose No to add it as a plain local file."
-msgstr "Mortar records the file against that page, so the mod's page link and shares point there. Choose No to add it as a plain local file."
-
 #: src/share/DestinationGrid.tsx
 msgid "Text for {app} or a forum"
 msgstr "Text for {app} or a forum"
@@ -3899,6 +3908,10 @@ msgstr "Add a game"
 msgid "Looking in the downloads folder…"
 msgstr "Looking in the downloads folder…"
 
+#: src/saves/BackupsDialog.tsx
+msgid "No save backups yet"
+msgstr "No save backups yet"
+
 #: src/commandPalette/paletteLabels.ts
 msgid "Find the mod that crashes the game…"
 msgstr "Find the mod that crashes the game…"
@@ -4051,10 +4064,6 @@ msgstr "Completed downloads will appear here."
 msgid "Starting"
 msgstr "Starting"
 
-#: src/install/HandoffDialog.tsx
-msgid "Yes"
-msgstr "Yes"
-
 #: src/tools/ToolEditorDialog.tsx
 msgid "Edit tool"
 msgstr "Edit tool"
@@ -4199,10 +4208,6 @@ msgstr "{count, plural, one {# result} other {# results}}"
 #: src/commandPalette/CommandPalette.tsx
 msgid "Go to"
 msgstr "Go to"
-
-#: src/develop/NewModDialog.tsx
-msgid "MIT (Recommended)"
-msgstr "MIT (Recommended)"
 
 #: src/launchers/LauncherList.tsx
 msgid "Add folder…"
@@ -4631,6 +4636,7 @@ msgstr "Before playing"
 msgid "The game's Mods folder"
 msgstr "The game's Mods folder"
 
+#: src/develop/DevelopTab.tsx
 #: src/develop/ProjectCard.tsx
 msgid "Remove from list"
 msgstr "Remove from list"
@@ -4790,6 +4796,10 @@ msgstr "Arguments"
 #: src/launch/VanillaPlay.tsx
 msgid "Set default preset…"
 msgstr "Set default preset…"
+
+#: src/install/HandoffDialog.tsx
+msgid "Add as local file"
+msgstr "Add as local file"
 
 #: src/i18n/reasonText.ts
 msgid "Tilesheets not used by any installed mod"
@@ -5150,6 +5160,10 @@ msgstr "{done} of {total}"
 msgid "Downloading {name} into {profile}"
 msgstr "Downloading {name} into {profile}"
 
+#: src/install/HandoffDialog.tsx
+msgid "Link to page"
+msgstr "Link to page"
+
 #: src/shell/BugReportDialog.tsx
 msgid "Steps to reproduce"
 msgstr "Steps to reproduce"
@@ -5331,6 +5345,10 @@ msgstr "Sell it"
 msgid "Preview"
 msgstr "Preview"
 
+#: src/share/ManagerPane.tsx
+msgid "No profiles found"
+msgstr "No profiles found"
+
 #: src/lan/SendPanel.tsx
 msgid "Recent address"
 msgstr "Recent address"
@@ -5422,18 +5440,9 @@ msgstr "Not played yet"
 msgid "This runs the command below once for your user, so {launcher} can read Mortar's data folder."
 msgstr "This runs the command below once for your user, so {launcher} can read Mortar's data folder."
 
-#: src/groups/dialogs.tsx
-#: src/groups/SavedGroupsSection.tsx
-msgid "No saved groups yet."
-msgstr "No saved groups yet."
-
 #: src/lan/OutgoingProgress.tsx
 msgid "{peer} cancelled it"
 msgstr "{peer} cancelled it"
-
-#: src/saves/BackupsDialog.tsx
-msgid "No save backups yet."
-msgstr "No save backups yet."
 
 #: src/game/Home.tsx
 #: src/saves/SaveListRow.tsx
@@ -5550,6 +5559,10 @@ msgstr "Install git to keep your mod's history."
 msgid "Kept forever: allow cleanup"
 msgstr "Kept forever: allow cleanup"
 
+#: src/launch/GraphicsDialog.tsx
+msgid "{name} (recommended)"
+msgstr "{name} (recommended)"
+
 #: src/firstrun/FirstRun.tsx
 msgid "Join our {app}"
 msgstr "Join our {app}"
@@ -5606,6 +5619,10 @@ msgstr "Creative Building"
 #: src/QuitPrompt.tsx
 msgid "Quit"
 msgstr "Quit"
+
+#: src/lan/IncomingPrompt.tsx
+msgid "Update an existing profile"
+msgstr "Update an existing profile"
 
 #: src/develop/LicenseChart.tsx
 msgid "Remove your copyright notice"
@@ -5778,7 +5795,7 @@ msgstr "Choose folder"
 msgid "Place here"
 msgstr "Place here"
 
-#: src/develop/DependencyKindDialog.tsx
+#: src/develop/dependencyAsk.ts
 msgid "Could not add the dependency"
 msgstr "Could not add the dependency"
 
@@ -5873,10 +5890,6 @@ msgstr "{loader} is the loader every {game} mod needs. It goes into the game fol
 #: src/game/Sidebar.tsx
 msgid "Expand sidebar"
 msgstr "Expand sidebar"
-
-#: src/groups/SavedGroupsSection.tsx
-msgid "This saved group will be deleted. Groups already added to profiles stay."
-msgstr "This saved group will be deleted. Groups already added to profiles stay."
 
 #: src/lan/SendPanel.tsx
 msgid "Sent {profile} to {name}; they will copy the files from you"
@@ -6340,6 +6353,10 @@ msgstr "Games"
 msgid "Could not create the profile"
 msgstr "Could not create the profile"
 
+#: src/install/HandoffDialog.tsx
+msgid "Mortar records the file against that page, so the mod's page link and shares point there."
+msgstr "Mortar records the file against that page, so the mod's page link and shares point there."
+
 #: src/queue/Callout.tsx
 msgid "Into a deleted profile"
 msgstr "Into a deleted profile"
@@ -6444,6 +6461,10 @@ msgstr "{count, plural, one {# copy running} other {# copies running}}"
 #: src/loader/InstallSteps.tsx
 msgid "Launcher replaced"
 msgstr "Launcher replaced"
+
+#: src/groups/SavedGroupsSection.tsx
+msgid "Groups already added to profiles stay."
+msgstr "Groups already added to profiles stay."
 
 #: src/lan/OutgoingProgress.tsx
 msgid "{peer} has all the files for {profile}"
@@ -6647,7 +6668,7 @@ msgstr "{count, plural, one {# superseded by a newer download} other {# supersed
 msgid "Name the tool."
 msgstr "Name the tool."
 
-#: src/develop/DependencyKindDialog.tsx
+#: src/develop/dependencyAsk.ts
 msgid "{mod} is a dependency of {name}"
 msgstr "{mod} is a dependency of {name}"
 
@@ -6932,6 +6953,7 @@ msgid "{count, plural, one {# update} other {# updates}}"
 msgstr "{count, plural, one {# update} other {# updates}}"
 
 #: src/game/FarmMenuItem.tsx
+#: src/groups/dialogs.tsx
 #: src/launch/LaunchButtons.tsx
 #: src/launch/LaunchLayer.tsx
 #: src/launch/SweepDialog.tsx
@@ -7181,10 +7203,6 @@ msgstr "Template deleted"
 #: src/shell/offlineText.ts
 msgid "{sources} cannot sort this way: pick it as the source to see its mods"
 msgstr "{sources} cannot sort this way: pick it as the source to see its mods"
-
-#: src/tools/ToolsManageDialog.tsx
-msgid "This tool will be removed from Mortar."
-msgstr "This tool will be removed from Mortar."
 
 #: src/develop/EditProjectDialog.tsx
 msgid "Renaming moves the project's folder, files and namespace."

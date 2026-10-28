@@ -112,6 +112,10 @@ msgstr ""
 msgid "Type a command, for example help"
 msgstr ""
 
+#: src/console/RunProblems.tsx
+msgid "Resolve"
+msgstr ""
+
 #: src/console/CrashDialog.tsx
 msgid "More"
 msgstr ""
@@ -161,7 +165,6 @@ msgid "Play this profile to measure."
 msgstr ""
 
 #: src/console/CrashDialog.tsx
-#: src/console/HelpDialog.tsx
 #: src/console/LogActions.tsx
 msgid "Share log…"
 msgstr ""
@@ -527,10 +530,6 @@ msgstr ""
 msgid "{name} takes {own} of your {total} start; {count, plural, one {# content pack causes} other {# content packs cause}} most of it."
 msgstr ""
 
-#: src/console/RunProblems.tsx
-msgid "Remove duplicate"
-msgstr ""
-
 #: src/console/ConsoleTab.tsx
 msgid "Filter by level or mod, and use Share log to upload this run to smapi.io."
 msgstr ""
@@ -581,10 +580,6 @@ msgstr ""
 
 #: src/console/logHooks.ts
 msgid "Trace"
-msgstr ""
-
-#: src/console/RunProblems.tsx
-msgid "Remove {name}"
 msgstr ""
 
 #: src/console/StartupTable.tsx
@@ -856,10 +851,6 @@ msgstr ""
 msgid "Report copied"
 msgstr ""
 
-#: src/console/RunProblems.tsx
-msgid "{count, plural, one {Keep {name} and remove {other}.} other {Keep {name} and remove # other copies.}}"
-msgstr ""
-
 #: src/console/PerformanceCards.tsx
 #: src/console/PerformancePanelParts.tsx
 msgid "Measuring"
@@ -895,10 +886,6 @@ msgstr ""
 
 #: src/console/StartupTable.tsx
 msgid "Mortar's own {loader} mod; it records these timings"
-msgstr ""
-
-#: src/console/RunProblems.tsx
-msgid "Remove duplicate?"
 msgstr ""
 
 #: src/console/HelpDialog.tsx
@@ -1215,6 +1202,10 @@ msgstr ""
 
 #: src/console/StartupTable.tsx
 msgid "{count, plural, one {# more pack} other {# more packs}}"
+msgstr ""
+
+#: src/console/HelpDialog.tsx
+msgid "Share log"
 msgstr ""
 
 #: src/console/BisectDialog.tsx

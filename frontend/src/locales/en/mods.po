@@ -181,6 +181,10 @@ msgstr "Could not open config.json of {name}"
 msgid "{count, plural, one {# imported} other {# imported}}"
 msgstr "{count, plural, one {# imported} other {# imported}}"
 
+#: src/mods/AddToGroupDialog.tsx
+msgid "Add to group"
+msgstr "Add to group"
+
 #: src/mods/updateReview/updateAll.ts
 msgid "{count, plural, one {# update failed} other {# updates failed}}"
 msgstr "{count, plural, one {# update failed} other {# updates failed}}"
@@ -294,10 +298,6 @@ msgstr "Resize details"
 #: src/mods/GroupMenu.tsx
 msgid "Delete group (mods stay)"
 msgstr "Delete group (mods stay)"
-
-#: src/mods/ConfigPresets.tsx
-msgid "This preset will be deleted."
-msgstr "This preset will be deleted."
 
 #: src/mods/SetNexusPageDialog.tsx
 msgid "Paste the page address."
@@ -486,6 +486,10 @@ msgstr "Missing requirements"
 msgid "Roll back"
 msgstr "Roll back"
 
+#: src/mods/SelectionBar.tsx
+msgid "Also add selected mods to"
+msgstr "Also add selected mods to"
+
 #: src/mods/storeProblems.ts
 msgid "Could not dismiss the warning"
 msgstr "Could not dismiss the warning"
@@ -592,10 +596,6 @@ msgstr "These come from a different site than you installed them from. Update al
 msgid "{name}'s {field} is {current}, made for {currentFor}, which this profile lacks."
 msgstr "{name}'s {field} is {current}, made for {currentFor}, which this profile lacks."
 
-#: src/mods/AuthorDialog.tsx
-msgid "No installed mods for this author."
-msgstr "No installed mods for this author."
-
 #: src/mods/OtherProfilesDialog.tsx
 msgid "Already has it"
 msgstr "Already has it"
@@ -659,10 +659,6 @@ msgstr "Show"
 msgid "In-game menu"
 msgstr "In-game menu"
 
-#: src/mods/DisableDialog.tsx
-msgid "Mods that need it stop working while it is off."
-msgstr "Mods that need it stop working while it is off."
-
 #: src/mods/ModDependencyTree.tsx
 #: src/mods/problemFix/WhereButtons.tsx
 #: src/mods/updateReview/UpdateActions.tsx
@@ -696,6 +692,10 @@ msgstr "Copy load order"
 #: src/mods/Sidebar.tsx
 msgid "Installed as a dependency"
 msgstr "Installed as a dependency"
+
+#: src/mods/updateReview/EverywhereDialog.tsx
+msgid "Update in all profiles?"
+msgstr "Update in all profiles?"
 
 #: src/mods/ModDisplayEdit.tsx
 msgid "Edit name, author and version…"
@@ -878,6 +878,10 @@ msgstr "{name} now comes from that {source} page"
 msgid "Update in every profile…"
 msgstr "Update in every profile…"
 
+#: src/mods/problemFix/LoadFailureFix.tsx
+msgid "Delete old copy"
+msgstr "Delete old copy"
+
 #: src/mods/parts.tsx
 msgid "Not loaded in the running game"
 msgstr "Not loaded in the running game"
@@ -936,10 +940,6 @@ msgstr "Remove from {name}"
 msgid "{name}'s {source} page lists {dep} as a requirement: {note}"
 msgstr "{name}'s {source} page lists {dep} as a requirement: {note}"
 
-#: src/mods/CleanupSection.tsx
-msgid "{count, plural, one {Remove all # mod from this profile?} other {Remove all # mods from this profile?}}"
-msgstr "{count, plural, one {Remove all # mod from this profile?} other {Remove all # mods from this profile?}}"
-
 #: src/mods/describe.ts
 msgid "{who} both edit {target}.{winner}"
 msgstr "{who} both edit {target}.{winner}"
@@ -995,10 +995,6 @@ msgstr "Updated tags"
 #: src/mods/describe.ts
 msgid "{name} is marked abandoned and may no longer be maintained."
 msgstr "{name} is marked abandoned and may no longer be maintained."
-
-#: src/mods/problemFix/LoadFailureFix.tsx
-msgid "Remove old copy"
-msgstr "Remove old copy"
 
 #: src/mods/LegacyReview.tsx
 msgid "Other mods require it"
@@ -1094,10 +1090,6 @@ msgstr "Size"
 msgid "Use the mod's own"
 msgstr "Use the mod's own"
 
-#: src/mods/LegacyReview.tsx
-msgid "Libraries and supporting mods"
-msgstr "Libraries and supporting mods"
-
 #: src/mods/FrozenCallout.tsx
 msgid "This profile is frozen: its mods stay on their versions and no updates are offered."
 msgstr "This profile is frozen: its mods stay on their versions and no updates are offered."
@@ -1108,7 +1100,7 @@ msgstr "Custom categories"
 
 #: src/mods/CategoryEditor.tsx
 #: src/mods/OldFilesCallouts.tsx
-#: src/mods/problemFixButtons.tsx
+#: src/mods/problemFix/LoadFailureFix.tsx
 #: src/mods/typedConfig/ConfigPane.tsx
 msgid "Delete"
 msgstr "Delete"
@@ -1323,6 +1315,10 @@ msgstr "Disabled"
 msgid "Could not enable the selected mods"
 msgstr "Could not enable the selected mods"
 
+#: src/mods/problemFixButtons.tsx
+msgid "Mortar did not install this folder. You can restore it from the trash."
+msgstr "Mortar did not install this folder. You can restore it from the trash."
+
 #: src/mods/SelectionBarDialogs.tsx
 msgid "Add or remove the tag"
 msgstr "Add or remove the tag"
@@ -1416,10 +1412,6 @@ msgstr "Unknown download"
 msgid "Installed"
 msgstr "Installed"
 
-#: src/mods/problemFixButtons.tsx
-msgid "Mortar did not install this folder. It moves to Mortar's trash."
-msgstr "Mortar did not install this folder. It moves to Mortar's trash."
-
 #: src/mods/Toolbar.tsx
 msgid "Browse mods"
 msgstr "Browse mods"
@@ -1431,10 +1423,6 @@ msgstr "Set category"
 #: src/mods/useListHeading.ts
 msgid "Ungrouped"
 msgstr "Ungrouped"
-
-#: src/mods/ConfigPresets.tsx
-msgid "Save as preset"
-msgstr "Save as preset"
 
 #: src/mods/PackageKind.tsx
 msgid "Library"
@@ -1496,13 +1484,13 @@ msgstr "Clear selection"
 msgid ", at {file} line {line}."
 msgstr ", at {file} line {line}."
 
+#: src/mods/OtherProfilesDialog.tsx
+msgid "No other profile of this game"
+msgstr "No other profile of this game"
+
 #: src/mods/GroupMenu.tsx
 msgid "Rename…"
 msgstr "Rename…"
-
-#: src/mods/DisableDialog.tsx
-msgid "Nothing else needs the libraries it brought in."
-msgstr "Nothing else needs the libraries it brought in."
 
 #: src/mods/updateReview/EverywhereDialog.tsx
 #: src/mods/updateReview/UpdateActions.tsx
@@ -1523,7 +1511,6 @@ msgstr "{plugin} failed to load."
 
 #: src/mods/CategoryEditor.tsx
 #: src/mods/ConfigPresets.tsx
-#: src/mods/problemFixButtons.tsx
 #: src/mods/typedConfig/ConfigPane.tsx
 msgid "Delete {name}?"
 msgstr "Delete {name}?"
@@ -1576,9 +1563,17 @@ msgstr "Plugin"
 msgid "Two enabled packages ship a file at the same path. The one later in the package order replaces the other's copy, so only its version is in the game."
 msgstr "Two enabled packages ship a file at the same path. The one later in the package order replaces the other's copy, so only its version is in the game."
 
+#: src/mods/ConfigPresets.tsx
+msgid "Save current settings"
+msgstr "Save current settings"
+
 #: src/mods/ModMenu.tsx
 msgid "Reinstall with options…"
 msgstr "Reinstall with options…"
+
+#: src/mods/ConfigPresets.tsx
+msgid "Replace"
+msgstr "Replace"
 
 #: src/mods/columnLabel.ts
 #: src/mods/ModDependencyTree.tsx
@@ -1649,6 +1644,10 @@ msgstr "{count, plural, one {{winner} wins # file over {losers}.} other {{winner
 #: src/mods/parts.tsx
 msgid "Pinned at this version"
 msgstr "Pinned at this version"
+
+#: src/mods/ChangeVersionDialog.tsx
+msgid "Pick the version."
+msgstr "Pick the version."
 
 #: src/mods/GameModsReviewDialog.tsx
 msgid "Move into profile"
@@ -1902,6 +1901,10 @@ msgstr "New"
 #: src/mods/UpdateReview.tsx
 msgid "Load all changes"
 msgstr "Load all changes"
+
+#: src/mods/CleanupSection.tsx
+msgid "{count, plural, one {Remove # mod from this profile?} other {Remove all # mods from this profile?}}"
+msgstr "{count, plural, one {Remove # mod from this profile?} other {Remove all # mods from this profile?}}"
 
 #: src/mods/problemWhy.ts
 msgid "The loader's log shows this plugin did not start, so its features are missing in the game. A wrong game version or a missing requirement is the usual cause."
@@ -2270,10 +2273,6 @@ msgstr "About {key}"
 msgid "Its folder is removed from this profile. You can undo this."
 msgstr "Its folder is removed from this profile. You can undo this."
 
-#: src/mods/OtherProfilesDialog.tsx
-msgid "No other profile of this game."
-msgstr "No other profile of this game."
-
 #: src/mods/updateReview/UpdateBar.tsx
 msgid "{count, plural, one {# update ready} other {# updates ready}}"
 msgstr "{count, plural, one {# update ready} other {# updates ready}}"
@@ -2361,11 +2360,6 @@ msgstr "Removed from {source}"
 #: src/mods/NewSince.tsx
 msgid "New since you last looked"
 msgstr "New since you last looked"
-
-#: src/mods/AlsoAdd.tsx
-#: src/mods/ModMenu.tsx
-msgid "Also add {name} to…"
-msgstr "Also add {name} to…"
 
 #: src/mods/problemFix/SettingFix.tsx
 msgid "Set to {value}"
@@ -2573,6 +2567,10 @@ msgstr "Could not untrack mods"
 msgid "Could not read the details of {name}"
 msgstr "Could not read the details of {name}"
 
+#: src/mods/problemFixButtons.tsx
+msgid "Move {name} to Mortar's trash?"
+msgstr "Move {name} to Mortar's trash?"
+
 #: src/mods/Toolbar.tsx
 msgid "Added this week"
 msgstr "Added this week"
@@ -2674,10 +2672,6 @@ msgstr "Browse for mods, add an archive, or paste a share or collection link wit
 #: src/mods/EndorsePrompt.tsx
 msgid "Not now"
 msgstr "Not now"
-
-#: src/mods/SelectionBar.tsx
-msgid "Also add selected mods to…"
-msgstr "Also add selected mods to…"
 
 #: src/mods/describe.ts
 msgid "{names} both ship the plugin {guid}, and {loader} loads only one."
@@ -2933,6 +2927,10 @@ msgstr "Combine with…"
 msgid "Abstain"
 msgstr "Abstain"
 
+#: src/mods/problemFixButtons.tsx
+msgid "Move to trash"
+msgstr "Move to trash"
+
 #: src/mods/typedConfig/Widgets.tsx
 msgid "Add an item"
 msgstr "Add an item"
@@ -3033,6 +3031,10 @@ msgstr "Reading the {source} page…"
 msgid "Change it in the game"
 msgstr "Change it in the game"
 
+#: src/mods/DisableDialog.tsx
+msgid "{count, plural, one {Mods that need it stop working while it is off.} other {Mods that need them stop working while they are off.}}"
+msgstr "{count, plural, one {Mods that need it stop working while it is off.} other {Mods that need them stop working while they are off.}}"
+
 #: src/mods/describe.ts
 #: src/mods/problemText.ts
 msgid "Deprecated"
@@ -3045,7 +3047,6 @@ msgstr "Checked in {duration}: {parts}"
 #: src/mods/CleanupSection.tsx
 #: src/mods/ModMenu.tsx
 #: src/mods/parts.tsx
-#: src/mods/problemFix/LoadFailureFix.tsx
 #: src/mods/SelectionBarActions.tsx
 #: src/mods/SelectionBarDialogs.tsx
 msgid "Remove"
@@ -3064,8 +3065,8 @@ msgid "Add one to group your mods your own way."
 msgstr "Add one to group your mods your own way."
 
 #: src/mods/problemFix/LoadFailureFix.tsx
-msgid "Remove the older copy?"
-msgstr "Remove the older copy?"
+msgid "Delete the older copy?"
+msgstr "Delete the older copy?"
 
 #: src/mods/Toolbar.tsx
 #: src/mods/typedConfig/ConfigTab.tsx
@@ -3213,7 +3214,6 @@ msgid "Restore {name}"
 msgstr "Restore {name}"
 
 #: src/mods/EverywhereMenuItem.tsx
-#: src/mods/updateReview/EverywhereDialog.tsx
 #: src/mods/updateReview/UpdateActions.tsx
 msgid "Update in all profiles ({count})"
 msgstr "Update in all profiles ({count})"
@@ -3335,7 +3335,6 @@ msgid "Author"
 msgstr "Author"
 
 #: src/mods/CleanupSection.tsx
-#: src/mods/EnableRequirementsDialog.tsx
 #: src/mods/LoadOrderTab.tsx
 #: src/mods/ProblemsTab.tsx
 msgid "Unknown mod"
@@ -3446,6 +3445,10 @@ msgstr "{count, plural, one {Changed by # mod} other {Changed by # mods}}"
 #: src/mods/typedConfig/StringWidgets.tsx
 msgid "Record"
 msgstr "Record"
+
+#: src/mods/DisableDialog.tsx
+msgid "{count, plural, one {Nothing else needs the libraries it brought in.} other {Nothing else needs the libraries they brought in.}}"
+msgstr "{count, plural, one {Nothing else needs the libraries it brought in.} other {Nothing else needs the libraries they brought in.}}"
 
 #: src/mods/GroupMenu.tsx
 msgid "Group name"
@@ -3574,6 +3577,10 @@ msgstr "Two enabled copies of the same mod are in this profile. The game loads o
 #: src/mods/storeEntries.ts
 msgid "This is no longer the latest change."
 msgstr "This is no longer the latest change."
+
+#: src/mods/AuthorDialog.tsx
+msgid "No installed mods for this author"
+msgstr "No installed mods for this author"
 
 #: src/mods/storeEntries.ts
 msgid "Could not update tags for the selected mods"
@@ -3727,6 +3734,10 @@ msgstr "Save current as…"
 msgid "Make win"
 msgstr "Make win"
 
+#: src/mods/LegacyReview.tsx
+msgid "Mark libraries and supporting mods as implicit?"
+msgstr "Mark libraries and supporting mods as implicit?"
+
 #: src/mods/NewFoldersCallout.tsx
 msgid "{count, plural, one {Stopped asking about # folder} other {Stopped asking about # folders}}"
 msgstr "{count, plural, one {Stopped asking about # folder} other {Stopped asking about # folders}}"
@@ -3797,6 +3808,11 @@ msgstr "Every mod has what it needs and nothing clashes."
 #: src/mods/updateReview/Changes.tsx
 msgid "What is new"
 msgstr "What is new"
+
+#: src/mods/AlsoAdd.tsx
+#: src/mods/ModMenu.tsx
+msgid "Also add {name} to"
+msgstr "Also add {name} to"
 
 #: src/mods/storeGroups.ts
 msgid "Could not delete the group"

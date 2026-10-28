@@ -539,6 +539,10 @@ msgstr "Disabled"
 msgid "Profile changes will appear here."
 msgstr "Profile changes will appear here."
 
+#: src/profiles/LaunchPresetTemplatesDialog.tsx
+msgid "Presets already copied into profiles stay."
+msgstr "Presets already copied into profiles stay."
+
 #: src/profiles/HistoryTimeline.tsx
 msgid "Today"
 msgstr "Today"
@@ -687,10 +691,6 @@ msgstr "Changed profile settings"
 msgid "New profile…"
 msgstr "New profile…"
 
-#: src/profiles/MergeDialog.tsx
-msgid "Add {name}'s mods to…"
-msgstr "Add {name}'s mods to…"
-
 #: src/profiles/HealthDialog.tsx
 msgid "Mortar found nothing to repair in this profile."
 msgstr "Mortar found nothing to repair in this profile."
@@ -779,6 +779,10 @@ msgstr "Could not save the profile order"
 #: src/profiles/ProfileRow.tsx
 msgid "Edit profile…"
 msgstr "Edit profile…"
+
+#: src/profiles/MergeDialog.tsx
+msgid "Add {name}'s mods to"
+msgstr "Add {name}'s mods to"
 
 #: src/profiles/ProfilesPage.tsx
 msgid "No profiles yet"
@@ -1405,10 +1409,6 @@ msgstr "While this profile runs, Mortar sets your shared saves aside and shows t
 msgid "Hide"
 msgstr "Hide"
 
-#: src/profiles/LaunchPresetsBlock.tsx
-msgid "This launch preset will be deleted."
-msgstr "This launch preset will be deleted."
-
 #: src/profiles/MergeDialog.tsx
 msgid "{name} stays as it is."
 msgstr "{name} stays as it is."
@@ -1502,10 +1502,6 @@ msgstr "Import from the game's Mods folder"
 #: src/profiles/AppearancePickers.tsx
 msgid "Leaf"
 msgstr "Leaf"
-
-#: src/profiles/LaunchPresetTemplatesDialog.tsx
-msgid "This template will be deleted. Presets already copied into profiles stay."
-msgstr "This template will be deleted. Presets already copied into profiles stay."
 
 #: src/profiles/HistoryTimeline.tsx
 msgid "Yesterday"

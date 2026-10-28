@@ -375,6 +375,10 @@ msgstr ""
 msgid "In use"
 msgstr ""
 
+#: src/settings/sections/DataMove.tsx
+msgid "Move the data folder?"
+msgstr ""
+
 #: src/settings/sections/DataMods.tsx
 msgid "Clears cached {source} and {loader} details and problem scans, for a revoked API key or wrong details. Mortar fetches them again, so the next problem check is slower."
 msgstr ""
@@ -1537,10 +1541,6 @@ msgstr ""
 
 #: src/settings/prefCopy.ts
 msgid "Start minimised to tray"
-msgstr ""
-
-#: src/settings/GraphicsApiRow.tsx
-msgid "{name} (Recommended)"
 msgstr ""
 
 #: src/settings/sections/StreamOverlay.tsx
@@ -3012,6 +3012,10 @@ msgstr ""
 msgid "Mortar uses your gh login for {source} requests, which raises the rate limit."
 msgstr ""
 
+#: src/settings/GraphicsApiRow.tsx
+msgid "{name} (recommended)"
+msgstr ""
+
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Show labels"
 msgstr ""
@@ -3165,6 +3169,10 @@ msgstr ""
 msgid "Mining skill"
 msgstr ""
 
+#: src/settings/sections/DataImport.tsx
+msgid "Import settings?"
+msgstr ""
+
 #: src/settings/sections/Sources.tsx
 msgid "Not contacted yet"
 msgstr ""
@@ -3313,20 +3321,12 @@ msgstr ""
 msgid "Reinstall {game} from your game launcher."
 msgstr ""
 
-#: src/settings/sections/DataImport.tsx
-msgid "Import settings"
-msgstr ""
-
 #: src/settings/sections/ProfileScopeSections.tsx
 msgid "Warnings and errors"
 msgstr ""
 
 #: src/settings/sections/GameSettings.tsx
 msgid "Chosen in the game's {launcher} properties."
-msgstr ""
-
-#: src/settings/sections/DataMove.tsx
-msgid "Move data folder"
 msgstr ""
 
 #: src/settings/sections/StreamOverlay.tsx

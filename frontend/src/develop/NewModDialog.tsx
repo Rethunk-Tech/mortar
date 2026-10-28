@@ -329,7 +329,7 @@ function ProjectStep({ draft, owners, set }: { draft: Draft; owners: GitHubOwner
         value={draft.license}
         onChange={(license) => set({ license })}
       >
-        <MenuItem value="">{t`MIT (Recommended)`}</MenuItem>
+        <MenuItem value="">{t`MIT (recommended)`}</MenuItem>
         <MenuItem value="apache-2.0">Apache 2.0</MenuItem>
         <MenuItem value="gpl-3.0">GNU GPL 3.0</MenuItem>
         <MenuItem value="mpl-2.0">Mozilla Public License 2.0</MenuItem>

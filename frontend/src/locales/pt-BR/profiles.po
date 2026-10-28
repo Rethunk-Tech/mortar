@@ -539,6 +539,10 @@ msgstr ""
 msgid "Profile changes will appear here."
 msgstr ""
 
+#: src/profiles/LaunchPresetTemplatesDialog.tsx
+msgid "Presets already copied into profiles stay."
+msgstr ""
+
 #: src/profiles/HistoryTimeline.tsx
 msgid "Today"
 msgstr ""
@@ -687,10 +691,6 @@ msgstr ""
 msgid "New profile…"
 msgstr ""
 
-#: src/profiles/MergeDialog.tsx
-msgid "Add {name}'s mods to…"
-msgstr ""
-
 #: src/profiles/HealthDialog.tsx
 msgid "Mortar found nothing to repair in this profile."
 msgstr ""
@@ -778,6 +778,10 @@ msgstr ""
 
 #: src/profiles/ProfileRow.tsx
 msgid "Edit profile…"
+msgstr ""
+
+#: src/profiles/MergeDialog.tsx
+msgid "Add {name}'s mods to"
 msgstr ""
 
 #: src/profiles/ProfilesPage.tsx
@@ -1405,10 +1409,6 @@ msgstr ""
 msgid "Hide"
 msgstr ""
 
-#: src/profiles/LaunchPresetsBlock.tsx
-msgid "This launch preset will be deleted."
-msgstr ""
-
 #: src/profiles/MergeDialog.tsx
 msgid "{name} stays as it is."
 msgstr ""
@@ -1501,10 +1501,6 @@ msgstr ""
 
 #: src/profiles/AppearancePickers.tsx
 msgid "Leaf"
-msgstr ""
-
-#: src/profiles/LaunchPresetTemplatesDialog.tsx
-msgid "This template will be deleted. Presets already copied into profiles stay."
 msgstr ""
 
 #: src/profiles/HistoryTimeline.tsx

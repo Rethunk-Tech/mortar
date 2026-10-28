@@ -375,6 +375,10 @@ msgstr "Take them back for Mortar?"
 msgid "In use"
 msgstr "In use"
 
+#: src/settings/sections/DataMove.tsx
+msgid "Move the data folder?"
+msgstr "Move the data folder?"
+
 #: src/settings/sections/DataMods.tsx
 msgid "Clears cached {source} and {loader} details and problem scans, for a revoked API key or wrong details. Mortar fetches them again, so the next problem check is slower."
 msgstr "Clears cached {source} and {loader} details and problem scans, for a revoked API key or wrong details. Mortar fetches them again, so the next problem check is slower."
@@ -1538,10 +1542,6 @@ msgstr "Lavender"
 #: src/settings/prefCopy.ts
 msgid "Start minimised to tray"
 msgstr "Start minimised to tray"
-
-#: src/settings/GraphicsApiRow.tsx
-msgid "{name} (Recommended)"
-msgstr "{name} (Recommended)"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Show live game info in {app}. Changes apply the next time you press Play."
@@ -3012,6 +3012,10 @@ msgstr "{count, plural, one {# has damaged files} other {# have damaged files}}"
 msgid "Mortar uses your gh login for {source} requests, which raises the rate limit."
 msgstr "Mortar uses your gh login for {source} requests, which raises the rate limit."
 
+#: src/settings/GraphicsApiRow.tsx
+msgid "{name} (recommended)"
+msgstr "{name} (recommended)"
+
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Show labels"
 msgstr "Show labels"
@@ -3165,6 +3169,10 @@ msgstr "nxm:// links: Mortar (other games go to {app})"
 msgid "Mining skill"
 msgstr "Mining skill"
 
+#: src/settings/sections/DataImport.tsx
+msgid "Import settings?"
+msgstr "Import settings?"
+
 #: src/settings/sections/Sources.tsx
 msgid "Not contacted yet"
 msgstr "Not contacted yet"
@@ -3313,10 +3321,6 @@ msgstr "Author"
 msgid "Reinstall {game} from your game launcher."
 msgstr "Reinstall {game} from your game launcher."
 
-#: src/settings/sections/DataImport.tsx
-msgid "Import settings"
-msgstr "Import settings"
-
 #: src/settings/sections/ProfileScopeSections.tsx
 msgid "Warnings and errors"
 msgstr "Warnings and errors"
@@ -3324,10 +3328,6 @@ msgstr "Warnings and errors"
 #: src/settings/sections/GameSettings.tsx
 msgid "Chosen in the game's {launcher} properties."
 msgstr "Chosen in the game's {launcher} properties."
-
-#: src/settings/sections/DataMove.tsx
-msgid "Move data folder"
-msgstr "Move data folder"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Quota"
