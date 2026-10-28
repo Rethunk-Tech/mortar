@@ -851,12 +851,9 @@ func (s *Service) installStored(ctx context.Context, c *nexus.Client, it Item, i
 			return true, nil
 		}
 	}
-	s.mu.Lock()
-	if cur := s.find(it.ID); cur != nil {
-		cur.State, cur.Progress, cur.Speed = StateInstalling, 100, 0
+	if !s.markInstalling(it.ID, nil) {
+		return true, context.Canceled
 	}
-	s.mu.Unlock()
-	s.publish(true)
 	key := store.NexusKey(it.ModID, it.FileID)
 	log.Printf("queue: mod %d file %d installs from the store (%s)", it.ModID, it.FileID, key)
 	s.installMu.Lock()

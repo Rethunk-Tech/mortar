@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
@@ -81,5 +82,22 @@ func TestNextInstallsStagedPackage(t *testing.T) {
 	s.items = []*Item{{ID: "p", Package: "A-B", State: StateQueued, staged: "k"}}
 	if it, act, _ := s.next(nil); it == nil || act != install {
 		t.Fatalf("next = %v %v, want install", it, act)
+	}
+}
+
+// A stored install of an item cancelled meanwhile neither installs nor revives it.
+func TestInstallStoredSkipsACancelledItem(t *testing.T) {
+	t.Parallel()
+	called := false
+	s := &Service{d: Deps{
+		InstallStaged: func(_, _, _ string, _ profile.Source) (profile.InstallResult, error) {
+			called = true
+			return profile.InstallResult{}, nil
+		},
+	}}
+	s.items = []*Item{{ID: "a", ModID: 1, FileID: 2, Kind: KindUpdate, State: StateCancelled}}
+	done, err := s.installStored(context.Background(), nil, *s.items[0], nexus.Mod{})
+	if !done || err == nil || called || s.items[0].State != StateCancelled {
+		t.Fatalf("done %v err %v called %v state %s", done, err, called, s.items[0].State)
 	}
 }
