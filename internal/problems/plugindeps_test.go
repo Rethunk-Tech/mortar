@@ -304,7 +304,7 @@ func TestAPluginsAttributesAddItsDependenciesSoItsLibrariesAreNotOfferedForRemov
 	if len(deps) != 2 || !mod.Equal(deps[0].ModID(), lib.ID) || !deps[0].Required || !mod.Equal(deps[1].ModID(), extra.ID) || deps[1].Required {
 		t.Fatalf("local mod's dependencies = %+v, want LethalLib required and Extra optional", deps)
 	}
-	if hints := cleanupHints(mods, nil, nil, nil); len(hints) != 0 {
+	if hints := cleanupHints(mods, nil, nil, nil, nil); len(hints) != 0 {
 		t.Fatalf("cleanup = %+v, want LethalLib kept for the local mod", hints)
 	}
 }

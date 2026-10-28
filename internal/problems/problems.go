@@ -302,7 +302,7 @@ func Check(ctx context.Context, m Meta, env Environment, mods []framework.Mod, r
 	otherStart := time.Now()
 	r.Duplicates = duplicatesWithNexus(ctx, m, env.VersionScheme, enabled)
 	r.Settings = found.Settings
-	r.Cleanup = cleanupHints(mods, found.Cleanup, append(found.Mentioned, listedNeeded...), env.DevPackages)
+	r.Cleanup = cleanupHints(mods, found.Cleanup, append(found.Mentioned, listedNeeded...), env.DevPackages, env.DropIns)
 	r.Supporting = found.Supporting
 	broken, unknown := brokenMods(ctx, m, env, enabled)
 	broken = append(broken, dependencyCycles(enabled)...)
@@ -423,7 +423,7 @@ func missingDeps(scheme string, dropIns map[string]string, enabled []framework.M
 			}
 			miss := Missing{DependentID: d.ModID(), DependentName: d.Name, ID: dep.ModID(), MinimumVersion: dep.MinimumVersion}
 			reason, installedVersion := depState(scheme, byID, dep)
-			if reason == "" || reason == "absent" && replacedBy(dropIns, byID, dep.ModID()) {
+			if reason == "" || replacedBy(dropIns, byID, dep.ModID()) {
 				continue
 			}
 			miss.Reason, miss.InstalledVersion = reason, installedVersion

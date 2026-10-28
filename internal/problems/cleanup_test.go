@@ -51,13 +51,13 @@ func TestCleanupHintsFindsUnusedFrameworkNeededOnlyByDisabledMod(t *testing.T) {
 		},
 	}
 
-	got := cleanupHints(mods, nil, nil, nil)
+	got := cleanupHints(mods, nil, nil, nil, nil)
 	if len(got) != 2 || got[0].Key != "content-framework" || got[1].Key != "spacecore" {
 		t.Fatalf("cleanupHints() = %#v, want both unused frameworks", got)
 	}
 	// A framework the player builds in a Develop project stays, even when only switched-off mods need it.
 	mods[0].SourceFolder = "/projects/SpaceCore/artifacts/bin/SpaceCore/debug"
-	if got := cleanupHints(mods, nil, nil, nil); len(got) != 1 || got[0].Key != "content-framework" {
+	if got := cleanupHints(mods, nil, nil, nil, nil); len(got) != 1 || got[0].Key != "content-framework" {
 		t.Fatalf("cleanupHints() = %#v, want the developed framework kept", got)
 	}
 }
@@ -72,7 +72,7 @@ func TestCleanupHintsIgnoresOptionalDependents(t *testing.T) {
 		{Key: "a", Enabled: true, Manifest: worldMaps},
 		{Key: "b", Enabled: false, Manifest: earthyMaps},
 	}
-	if got := cleanupHints(mods, nil, nil, nil); len(got) != 0 {
+	if got := cleanupHints(mods, nil, nil, nil, nil); len(got) != 0 {
 		t.Fatalf("cleanupHints() = %#v, want none", got)
 	}
 }
@@ -94,7 +94,7 @@ func TestCleanupHintsFindsOrphanedImplicitMods(t *testing.T) {
 	built.SourceFolder = "/projects/Built/bin/debug"
 	published := lib("Me.Published", true)
 	published.SourceName = "Me-Published"
-	got := cleanupHints([]framework.Mod{user, lib("Lib.Used", true), lib("Lib.Optional", true), lib("Lib.Named", true), lib("Lib.Orphan", true), lib("Me.Chosen", false), pack, built, published}, nil, []string{"smapi:lib.named"}, []string{"me-published"})
+	got := cleanupHints([]framework.Mod{user, lib("Lib.Used", true), lib("Lib.Optional", true), lib("Lib.Named", true), lib("Lib.Orphan", true), lib("Me.Chosen", false), pack, built, published}, nil, []string{"smapi:lib.named"}, []string{"me-published"}, nil)
 	if len(got) != 1 || got[0].Key != "Lib.Orphan" || got[0].Reason != orphanReason {
 		t.Fatalf("cleanup = %+v", got)
 	}
@@ -135,6 +135,7 @@ func TestADropInReplacementMeetsTheDependency(t *testing.T) {
 		"replacement enabled":   {[]framework.Mod{pack, ts("Mortar-Loader", true)}, 0},
 		"replacement disabled":  {[]framework.Mod{pack, ts("Mortar-Loader", false)}, 1},
 		"replacement not there": {[]framework.Mod{pack}, 1},
+		"original disabled":     {[]framework.Mod{pack, ts("Old-Loader", false), ts("Mortar-Loader", true)}, 0},
 	} {
 		if got := missingDeps("", dropIns, []framework.Mod{pack}, indexByID(c.mods)); len(got) != c.want {
 			t.Errorf("%s: missing = %+v", name, got)
@@ -149,7 +150,7 @@ func TestCleanupHintsKeepsDevelopedModsFrameworksFound(t *testing.T) {
 	other := framework.Mod{Key: "other", Enabled: true}
 	other.Name, other.UniqueID = "Other", "Someone.Other"
 	found := []framework.Cleanup{{Key: "built", ID: built.ModID(), Name: "Tiles"}, {Key: "other", ID: other.ModID(), Name: "Other"}}
-	got := cleanupHints([]framework.Mod{built, other}, found, nil, nil)
+	got := cleanupHints([]framework.Mod{built, other}, found, nil, nil, nil)
 	if len(got) != 1 || got[0].Key != "other" {
 		t.Fatalf("cleanup = %+v", got)
 	}
@@ -162,5 +163,20 @@ func TestAThunderstoreDependencyIsFetchedFromItsPackagePage(t *testing.T) {
 	}
 	if thunderstoreRef("", mod.ID("thunderstore:a-b")) != nil || thunderstoreRef("lethal-company", mod.ID("smapi:Pathoschild.ContentPatcher")) != nil {
 		t.Fatal("a ref with no community or for another format")
+	}
+}
+
+func TestCleanupHintsKeepsTheDropInReplacementOfANeededPackage(t *testing.T) {
+	user := framework.Mod{Key: "user", Enabled: true}
+	user.Format, user.UniqueID = mod.FormatThunderstore, "Ns-User"
+	user.Dependencies = []mod.Dependency{{Format: mod.FormatThunderstore, UniqueID: "Ns-Old", Required: true}}
+	repl := framework.Mod{Key: "new", Enabled: true, Implicit: true}
+	repl.Format, repl.UniqueID = mod.FormatThunderstore, "Ns-New"
+	mods := []framework.Mod{user, repl}
+	if got := cleanupHints(mods, nil, nil, nil, nil); len(got) != 1 {
+		t.Fatalf("without the drop-in the replacement is an orphan: %+v", got)
+	}
+	if got := cleanupHints(mods, nil, nil, nil, map[string]string{"ns-old": "ns-new"}); len(got) != 0 {
+		t.Fatalf("cleanup = %+v", got)
 	}
 }
