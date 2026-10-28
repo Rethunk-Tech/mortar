@@ -13,6 +13,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/github"
+	"github.com/Rethunk-Tech/mortar/internal/ids"
 )
 
 func (s *Service) downloadRoot() string {
@@ -59,9 +60,12 @@ func (s *Service) sweepDownloads() {
 	s.mu.Unlock()
 	for _, e := range entries {
 		name := e.Name()
-		id := strings.TrimSuffix(name, github.ResumeSuffix)
-		id = archive.SavedID(id)
-		if keep[id] {
+		if !e.Type().IsRegular() {
+			continue
+		}
+		id := archive.SavedID(strings.TrimSuffix(name, github.ResumeSuffix))
+		// The download folder may be the user's own: only names SavedName makes are Mortar's.
+		if !ids.Is(id) || keep[id] {
 			continue
 		}
 		_ = fsx.Remove(filepath.Join(root, name))

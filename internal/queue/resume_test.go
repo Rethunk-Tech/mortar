@@ -20,6 +20,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/github"
+	"github.com/Rethunk-Tech/mortar/internal/ids"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/nxmsvc"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -255,24 +257,31 @@ func TestExpiredNexusLinkRefetchesThenRanges(t *testing.T) {
 func TestSweepKeepsPartialsForQueuedItems(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
-	if err := os.MkdirAll(filepath.Join(f.dir, downloadsDir), 0o700); err != nil {
+	root := filepath.Join(f.dir, downloadsDir)
+	if err := os.MkdirAll(filepath.Join(root, "My Folder"), 0o700); err != nil {
 		t.Fatal(err)
 	}
-	keep := filepath.Join(f.dir, downloadsDir, "keepme"+filepath.Ext("a.zip"))
-	drop := filepath.Join(f.dir, downloadsDir, "gone"+filepath.Ext("a.zip"))
-	if err := os.WriteFile(keep, []byte("x"), 0o600); err != nil {
-		t.Fatal(err)
+	live, gone := ids.New(), ids.New()
+	keep := filepath.Join(root, live+".zip")
+	drop := filepath.Join(root, gone+".zip")
+	sidecar := github.ResumeSidecar(drop)
+	foreign := []string{filepath.Join(root, "holiday.jpg"), filepath.Join(root, "My Folder", "x.txt")}
+	for _, p := range append([]string{keep, drop, sidecar}, foreign...) {
+		if err := os.WriteFile(p, []byte("x"), 0o600); err != nil {
+			t.Fatal(err)
+		}
 	}
-	if err := os.WriteFile(drop, []byte("y"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	f.s.items = []*Item{{ID: "keepme", State: StateQueued}}
+	f.s.items = []*Item{{ID: live, State: StateQueued}}
 	f.s.sweepDownloads()
-	if _, err := os.Stat(keep); err != nil {
-		t.Fatal("kept partial was removed")
+	for _, p := range append([]string{keep}, foreign...) {
+		if _, err := os.Stat(p); err != nil {
+			t.Fatalf("%s was removed", p)
+		}
 	}
-	if _, err := os.Stat(drop); !os.IsNotExist(err) {
-		t.Fatal("orphan partial was kept")
+	for _, p := range []string{drop, sidecar} {
+		if _, err := os.Stat(p); !os.IsNotExist(err) {
+			t.Fatalf("%s was kept", p)
+		}
 	}
 }
 
