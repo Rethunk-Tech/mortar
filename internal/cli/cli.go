@@ -943,7 +943,7 @@ func (c *cmd) profiles(gameID string) error {
 		t := [][]string{}
 		for _, p := range list {
 			if p.Error != "" {
-				t = append(t, []string{p.Name, "Could not read this profile", "", ""})
+				t = append(t, []string{p.ID, p.Name, "Could not read this profile", ""})
 				continue
 			}
 			on, total := 0, 0

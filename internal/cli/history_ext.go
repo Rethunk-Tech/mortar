@@ -56,7 +56,7 @@ func (c *cmd) profileGood() error {
 		return err
 	}
 	if c.mark == c.restore && (c.mark || c.restore) {
-		return usageError{"profile good needs --mark or --restore"}
+		return usageError{"profile good takes --mark or --restore, not both"}
 	}
 	p := control.Params{Game: a[0], Profile: a[1], All: c.mark, Force: c.restore}
 	if !c.mark && !c.restore {

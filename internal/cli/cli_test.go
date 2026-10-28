@@ -943,3 +943,10 @@ func TestProblemsNumbersRunErrorsAndRedundantRowsLikeTheDismissList(t *testing.T
 		t.Fatalf("rows: %+v", rows)
 	}
 }
+
+func TestProfilesListShowsTheIDOfADamagedProfile(t *testing.T) {
+	r := invoke(t, map[string]any{"profiles": []profile.Profile{{ID: "abc123", Error: "bad json"}}}, "profiles", "stardew")
+	if r.code != 0 || !strings.Contains(r.out, "abc123") {
+		t.Fatalf("damaged profile row: %q", r.out)
+	}
+}

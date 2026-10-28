@@ -288,7 +288,12 @@ func (c *cmd) lanPair() error {
 	if err := c.call("lan.paircode", control.Params{}, &code, readTimeout); err != nil {
 		return err
 	}
-	fmt.Fprintf(c.out, "Code: %s (works once, for 5 minutes). On the other computer run: mortar lan pair --code %s\n", code, code)
+	if c.json {
+		// stdout carries the one result, so the code a person must read goes to stderr.
+		fmt.Fprintf(c.errOut, "Code: %s (works once, for 5 minutes). On the other computer run: mortar lan pair --code %s\n", code, code)
+	} else {
+		fmt.Fprintf(c.out, "Code: %s (works once, for 5 minutes). On the other computer run: mortar lan pair --code %s\n", code, code)
+	}
 	for deadline := time.Now().Add(pairWait); time.Now().Before(deadline); time.Sleep(2 * time.Second) {
 		var now []struct{ ID, Name string }
 		if err := c.call("lan.paired", control.Params{}, &now, readTimeout); err != nil {
@@ -296,8 +301,7 @@ func (c *cmd) lanPair() error {
 		}
 		for _, peer := range now {
 			if !slices.ContainsFunc(before, func(known struct{ ID, Name string }) bool { return known.ID == peer.ID }) {
-				fmt.Fprintf(c.out, "Paired with %s.\n", peer.Name)
-				return nil
+				return c.emit(map[string]string{"id": peer.ID, "name": peer.Name}, func() { fmt.Fprintf(c.out, "Paired with %s.\n", peer.Name) })
 			}
 		}
 	}

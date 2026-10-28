@@ -1,9 +1,13 @@
 package cli
 
 import (
+	"bytes"
+	"encoding/json"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/control"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 )
 
@@ -84,5 +88,32 @@ func TestMoreVerbsMapOntoControlMethods(t *testing.T) {
 	}
 	if r = invoke(t, results, "lan", "unpair", "abc"); r.calls[0].method != "lan.unpair" || r.calls[0].params.Name != "abc" {
 		t.Fatalf("lan unpair: %+v", r)
+	}
+}
+
+func TestLanPairJSONPrintsOneJSONResult(t *testing.T) {
+	paired := 0
+	call := func(method string, _ control.Params, out any, _ time.Duration) error {
+		var v any
+		switch method {
+		case "lan.paircode":
+			v = "ABCD-EFGH"
+		case "lan.paired":
+			paired++
+			v = []map[string]string{}
+			if paired > 1 {
+				v = []map[string]string{{"ID": "p1", "Name": "Laptop"}}
+			}
+		}
+		b, _ := json.Marshal(v)
+		return json.Unmarshal(b, out)
+	}
+	var o, e bytes.Buffer
+	if code := run("9.9.9", call, []string{"--json", "lan", "pair"}, &o, &e); code != 0 {
+		t.Fatalf("code %d: %s", code, e.String())
+	}
+	var got map[string]string
+	if err := json.Unmarshal(o.Bytes(), &got); err != nil || got["name"] != "Laptop" || !strings.Contains(e.String(), "ABCD-EFGH") {
+		t.Fatalf("stdout %q stderr %q: %v", o.String(), e.String(), err)
 	}
 }
