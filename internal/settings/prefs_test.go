@@ -605,3 +605,13 @@ func TestAutoInstallFoldersSurviveWithoutALastGame(t *testing.T) {
 		t.Fatalf("auto-install folders = %q", s.AutoInstallFolders)
 	}
 }
+
+func TestSourceIDListsSplitOnCommasAndDropEmpties(t *testing.T) {
+	g := GameSettings{SourceOrder: "nexus,,thunderstore", SourcesOff: ""}
+	if got := g.SourceOrderIDs(); !slices.Equal(got, []string{"nexus", "thunderstore"}) {
+		t.Fatalf("SourceOrderIDs = %q", got)
+	}
+	if got := g.SourcesOffIDs(); len(got) != 0 {
+		t.Fatalf("SourcesOffIDs = %q", got)
+	}
+}

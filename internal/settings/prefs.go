@@ -612,6 +612,20 @@ func (g GameSettings) ExtraModsFolderList() []string {
 	return pathList(g.ExtraModsFolder)
 }
 
+// SourceOrderIDs lists the game's preferred source ids, first first.
+func (g GameSettings) SourceOrderIDs() []string {
+	return commaList(g.SourceOrder)
+}
+
+// SourcesOffIDs lists the source ids the player turned off for the game.
+func (g GameSettings) SourcesOffIDs() []string {
+	return commaList(g.SourcesOff)
+}
+
+func commaList(s string) []string {
+	return strings.FieldsFunc(s, func(r rune) bool { return r == ',' })
+}
+
 // ExtraModsProfile is the id of the profile the extra mods folder dir installs into; empty is the open profile.
 func (g GameSettings) ExtraModsProfile(dir string) string {
 	return g.ExtraModsProfiles[dir]

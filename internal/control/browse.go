@@ -8,23 +8,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/browse"
 )
 
-// Browse searches a game's mod sources (or all of them) for mods of game and marks hits already on profileID.
-func (s *Services) Browse(ctx context.Context, game, source, text string, page int, profileID string) (browse.Page, error) {
-	c := &browse.Client{Version: s.Version}
-	if s.Settings != nil {
-		// The same source choices the window's Browse honours.
-		gp := s.Settings.Get().GamePrefs(game)
-		c.Prefer = strings.FieldsFunc(gp.SourceOrder, func(r rune) bool { return r == ',' })
-		c.Off = browse.SourcesOff(game, strings.FieldsFunc(gp.SourcesOff, func(r rune) bool { return r == ',' }))
-	}
-	if profileID != "" && s.Profiles != nil {
-		if prof, err := s.resolve(game, profileID); err == nil {
-			c.Installed = browse.InstalledOn(prof)
-		}
-	}
-	return c.Search(ctx, game, source, text, page, browse.Filter{})
-}
-
 func (s *Services) browseFromParams(ctx context.Context, p Params) (browse.Page, error) {
 	text := strings.TrimSpace(p.Query)
 	text = cmp.Or(text, strings.TrimSpace(p.Name))
@@ -34,7 +17,7 @@ func (s *Services) browseFromParams(ctx context.Context, p Params) (browse.Page,
 	if p.Page > 0 {
 		page = p.Page
 	}
-	return s.Browse(ctx, p.Game, source, text, page, p.Profile)
+	return s.Browse.Search(ctx, p.Game, source, text, page, p.Profile, browse.Filter{})
 }
 
 const defaultPage = 1

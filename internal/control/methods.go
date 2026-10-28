@@ -20,6 +20,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/avscan"
 	"github.com/Rethunk-Tech/mortar/internal/backup"
 	"github.com/Rethunk-Tech/mortar/internal/bisect"
+	"github.com/Rethunk-Tech/mortar/internal/browse"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/datasvc"
 	"github.com/Rethunk-Tech/mortar/internal/game"
@@ -91,6 +92,8 @@ type Services struct {
 	Dev         *devsvc.Service
 	Templates   *templates.Service
 	Archives    *archivesvc.Service
+	// Browse is the window's browse service, so a search honours the same settings and holdings as the window.
+	Browse *browse.Service
 	// Bisect and StoreCheck are the window's services; nil in tests that do not need them.
 	Bisect     *bisect.Service
 	StoreCheck *storecheck.Service

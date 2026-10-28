@@ -976,10 +976,10 @@ func run() error {
 		return gp.HidesMod(it.Source, it.ID) || gp.HidesAuthor(it.Author)
 	}
 	browseSvc.SourceOrder = func(game string) []string {
-		return strings.FieldsFunc(store.Get().GamePrefs(game).SourceOrder, func(r rune) bool { return r == ',' })
+		return store.Get().GamePrefs(game).SourceOrderIDs()
 	}
 	browseSvc.SourcesOff = func(game string) []string {
-		return strings.FieldsFunc(store.Get().GamePrefs(game).SourcesOff, func(r rune) bool { return r == ',' })
+		return store.Get().GamePrefs(game).SourcesOffIDs()
 	}
 	configSvc := &configsvc.Service{
 		Profiles: profiles,
@@ -1078,7 +1078,7 @@ func run() error {
 	ctl := &control.Services{
 		Version: version, Settings: store, SettingsSvc: svc, Games: gamesSvc, Store: profiles, Profiles: profileSvc,
 		Problems: problemsSvc, Launches: launches, Saves: savesSvc, Queue: queueSvc, Tools: toolsSvc, SavedGroups: savedGroupsSvc,
-		Nexus: nexusSvc, Shares: shareSvc, Data: dataSvc, Plays: plays, Loaders: loaders, Dev: devSvc, Templates: templatesSvc, Archives: archivesSvc, Bisect: bisectSvc, StoreCheck: checkSvc, Lan: lanSvc, Sync: syncSvc, Updates: updates, Nxm: nxmSvc, Support: supportSvc, Packs: packs,
+		Nexus: nexusSvc, Shares: shareSvc, Data: dataSvc, Plays: plays, Loaders: loaders, Dev: devSvc, Templates: templatesSvc, Archives: archivesSvc, Browse: browseSvc, Bisect: bisectSvc, StoreCheck: checkSvc, Lan: lanSvc, Sync: syncSvc, Updates: updates, Nxm: nxmSvc, Support: supportSvc, Packs: packs,
 		Emit: func(name string, data any) {
 			if name == control.InstallAskEvent {
 				toPage(name, data)

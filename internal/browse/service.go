@@ -141,8 +141,3 @@ func (s *Service) holdings(game, profileID string) *Holdings {
 	}
 	return nil
 }
-
-// InstalledOn reports what prof has by its entries' sources alone.
-func InstalledOn(prof profile.Profile) InstalledFunc {
-	return Hold(components.GameInfo{}, prof, nil).Has
-}
