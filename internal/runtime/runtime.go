@@ -289,12 +289,5 @@ func (p proton) Resolve(inst Install, t components.PathTemplate) (string, error)
 		steamapps = parent
 	}
 	user := filepath.Join(steamapps, "compatdata", inst.AppID, "pfx", "drive_c", "users", "steamuser")
-	return expand(tmpl, map[string]string{
-		"home":         user,
-		"install":      inst.Dir,
-		"documents":    filepath.Join(user, "Documents"),
-		"appData":      filepath.Join(user, "AppData", "Roaming"),
-		"localAppData": filepath.Join(user, "AppData", "Local"),
-		"localLow":     filepath.Join(user, "AppData", "LocalLow"),
-	})
+	return expand(tmpl, userTokens(user, inst.Dir))
 }

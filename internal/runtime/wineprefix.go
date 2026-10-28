@@ -35,10 +35,14 @@ func (w winePrefix) Resolve(inst Install, t components.PathTemplate) (string, er
 }
 
 func prefixTokens(inst Install) map[string]string {
-	user := prefixUser(inst.Prefix)
+	return userTokens(prefixUser(inst.Prefix), inst.Dir)
+}
+
+// userTokens are the Windows known folders of the profile folder user, for a game installed in dir.
+func userTokens(user, dir string) map[string]string {
 	return map[string]string{
 		"home":         user,
-		"install":      inst.Dir,
+		"install":      dir,
 		"documents":    filepath.Join(user, "Documents"),
 		"appData":      filepath.Join(user, "AppData", "Roaming"),
 		"localAppData": filepath.Join(user, "AppData", "Local"),
