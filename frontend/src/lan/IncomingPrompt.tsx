@@ -31,6 +31,7 @@ import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { space } from '../theme/density.ts'
 import { type InlineError, inlineError, reportUnexpected, toastError } from '../toasts/report.ts'
+import { usePending } from '../toasts/usePending.ts'
 import { useIncomingShares } from './incoming.ts'
 import { choose, lanOriginOf, mappedProfile } from './resume.ts'
 
@@ -160,6 +161,7 @@ function OfferButtons({
   incomingGame,
   sender,
   hasProfiles,
+  busy,
   choice,
   onDecline,
   onChoose,
@@ -168,37 +170,35 @@ function OfferButtons({
   incomingGame: string
   sender: string
   hasProfiles: boolean
+  busy: boolean
   choice: Choice
   onDecline: () => void
   onChoose: () => void
-  onAccept: (profileId?: string) => Promise<void>
+  onAccept: (profileId?: string) => void
 }) {
   const { t } = useLingui()
   return (
     <>
-      <Button onClick={onDecline}>{t`Decline`}</Button>
+      <Button onClick={onDecline} disabled={busy}>{t`Decline`}</Button>
       <DisabledReason title={t`Create a profile first.`} disabled={!hasProfiles}>
         <Button
           onClick={() => openGameOf(incomingGame).then(onChoose).catch(reportUnexpected)}
-          disabled={!hasProfiles}
+          disabled={!hasProfiles || busy}
         >
           {t`Update an existing profile…`}
         </Button>
       </DisabledReason>
       {choice.kind === 'update' ? (
         <>
-          <Button onClick={() => onAccept().catch(reportUnexpected)}>
+          <Button onClick={() => onAccept()} disabled={busy}>
             {t`Import as new profile`}
           </Button>
-          <Button
-            variant="contained"
-            onClick={() => onAccept(choice.profileId).catch(reportUnexpected)}
-          >
+          <Button variant="contained" onClick={() => onAccept(choice.profileId)} disabled={busy}>
             {t`Update ${{ name: choice.name }} from ${sender}`}
           </Button>
         </>
       ) : (
-        <Button variant="contained" onClick={() => onAccept().catch(reportUnexpected)}>
+        <Button variant="contained" onClick={() => onAccept()} disabled={busy}>
           {t`Import as new profile`}
         </Button>
       )}
@@ -210,7 +210,8 @@ function useAutoAccept({
   paired,
   autoAccept,
   incomingId,
-  removeFirst,
+  removeById,
+  cancelledTransfer,
   setChoosing,
   setTransferring,
   setTransferError,
@@ -218,7 +219,8 @@ function useAutoAccept({
   paired: boolean
   autoAccept: boolean
   incomingId: number | string
-  removeFirst: () => void
+  removeById: (id: number) => void
+  cancelledTransfer: { current: boolean }
   setChoosing: (on: boolean) => void
   setTransferring: (on: boolean) => void
   setTransferError: (error: InlineError | null) => void
@@ -235,6 +237,7 @@ function useAutoAccept({
     setChoosing(false)
     setTransferError(null)
     setTransferring(true)
+    cancelledTransfer.current = false
     Transfer(incomingId)
       .then(() => openGameOf(item.game))
       .then(() => {
@@ -248,26 +251,38 @@ function useAutoAccept({
           data: item.payload,
           ...lanOf(item),
         })
-        removeFirst()
+        removeById(item.id)
       })
       .catch((error: unknown) => {
         if (cancelled) {
           return
         }
         setTransferring(false)
-        setTransferError(inlineError(error))
+        if (!cancelledTransfer.current) {
+          setTransferError(inlineError(error))
+        }
       })
     return () => {
       cancelled = true
     }
-  }, [autoAccept, incomingId, removeFirst, paired, setChoosing, setTransferring, setTransferError])
+  }, [
+    autoAccept,
+    incomingId,
+    removeById,
+    cancelledTransfer,
+    paired,
+    setChoosing,
+    setTransferring,
+    setTransferError,
+  ])
 }
 
 export function IncomingPrompt() {
   const { t } = useLingui()
   const incoming = useIncomingShares((state) => state.items[0])
-  const removeFirst = useIncomingShares((state) => state.removeFirst)
+  const removeById = useIncomingShares((state) => state.removeById)
   const profiles = useProfiles((state) => state.profiles)
+  const loadedGame = useProfiles((state) => state.game?.id)
   const incomingGame = incoming?.game ?? ''
   const gameName = useGameName(incomingGame)
   const progress = useIncomingShares((state) =>
@@ -283,13 +298,16 @@ export function IncomingPrompt() {
 
   // The profile the player chose to update, so a retry after a failed transfer updates it too.
   const chosenId = useRef('')
+  // A cancelled copy ends the transfer with an error that is the player's own doing, not a failure to retry.
+  const cancelledTransfer = useRef(false)
+  const [answering, answer] = usePending()
   const accept = async (profileId = '') => {
     if (!incoming) {
       return
     }
     // Accepted or dismissed elsewhere (`mortar lan accept`) since it arrived: importing it again would make a copy.
     if (!((await Pending()) ?? []).some((a) => a.id === incoming.id)) {
-      removeFirst()
+      removeById(incoming.id)
       return
     }
     chosenId.current = profileId
@@ -297,25 +315,29 @@ export function IncomingPrompt() {
     setTransferError(null)
     if (incoming.paired) {
       setTransferring(true)
+      cancelledTransfer.current = false
       try {
         await Transfer(incoming.id)
       } catch (error) {
         setTransferring(false)
-        setTransferError(inlineError(error))
+        if (!cancelledTransfer.current) {
+          setTransferError(inlineError(error))
+        }
         return
       }
       setTransferring(false)
     }
     await openGameOf(incoming.game)
     openImport({ ...(profileId ? { profileId } : {}), data: incoming.payload, ...lanOf(incoming) })
-    removeFirst()
+    removeById(incoming.id)
   }
 
   useAutoAccept({
     paired,
     autoAccept,
     incomingId,
-    removeFirst,
+    removeById,
+    cancelledTransfer,
     setChoosing,
     setTransferring,
     setTransferError,
@@ -326,13 +348,11 @@ export function IncomingPrompt() {
   }
   const decline = () => {
     setChoosing(false)
-    removeFirst()
+    removeById(incoming.id)
   }
   const choice = choose(mapped)
   const { sender } = incoming
-  const compare = (profileId: string) => {
-    accept(profileId).catch(reportUnexpected)
-  }
+  const compare = (profileId: string) => answer(() => accept(profileId))
   return (
     <>
       <AppDialog
@@ -350,11 +370,12 @@ export function IncomingPrompt() {
             <OfferButtons
               incomingGame={incomingGame}
               sender={sender}
-              hasProfiles={profiles.length > 0}
+              hasProfiles={loadedGame !== incomingGame || profiles.length > 0}
+              busy={answering}
               choice={choice}
               onDecline={decline}
               onChoose={() => setChoosing(true)}
-              onAccept={accept}
+              onAccept={(profileId) => answer(() => accept(profileId))}
             />
           </DialogFooter>
         }
@@ -375,6 +396,7 @@ export function IncomingPrompt() {
         open={transferring}
         progress={progress}
         onCancel={() => {
+          cancelledTransfer.current = true
           CancelTransfer(incoming.id).catch((error: unknown) => {
             toastError(t`Could not cancel transfer`, error)
           })

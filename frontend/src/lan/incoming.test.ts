@@ -38,9 +38,10 @@ test('removing an expired share reports whether it was still waiting', () => {
 test('answering a share drops it from the service so a reload does not bring it back', () => {
   useIncomingShares.getState().add(arrival(1))
   useIncomingShares.getState().add(arrival(2))
-  useIncomingShares.getState().removeFirst()
-  expect(dismissed).toEqual([1])
-  expect(useIncomingShares.getState().items.map((a) => a.id)).toEqual([2])
+  useIncomingShares.getState().removeById(2)
+  useIncomingShares.getState().removeById(2)
+  expect(dismissed).toEqual([2])
+  expect(useIncomingShares.getState().items.map((a) => a.id)).toEqual([1])
 })
 
 test('an outgoing transfer keeps its latest progress', () => {

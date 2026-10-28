@@ -15,7 +15,9 @@ function lineOf(transfer: OutgoingTransfer): string {
   }
   if (state !== 'sending') {
     const why = state === 'cancelled' ? i18n._(msg`${peer} cancelled it`) : (reason ?? '')
-    return i18n._(msg`Sending to ${peer} stopped: ${why}`)
+    return why
+      ? i18n._(msg`Sending to ${peer} stopped: ${why}`)
+      : i18n._(msg`Sending to ${peer} stopped`)
   }
   const line = i18n._(msg`Sending to ${peer}: ${current} of ${total} files`)
   return totalBytes > 0 ? `${line} · ${formatBytes(bytes)} of ${formatBytes(totalBytes)}` : line

@@ -381,7 +381,7 @@ export function SendPanel({
       ) : (
         <>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Typography sx={{ fontWeight: 600 }}>{t`Send to…`}</Typography>
+            <Typography sx={{ fontWeight: 600 }}>{t`Send to`}</Typography>
             <IconButton aria-label={t`Refresh`} onClick={refresh} disabled={refreshing}>
               {refreshing ? <CircularProgress size={18} /> : <RefreshCw size={18} />}
             </IconButton>

@@ -9,8 +9,8 @@ import type {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/models.ts'
 import {
   Dismiss,
-  Pending,
   OutgoingTransfers,
+  Pending,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -20,7 +20,7 @@ interface IncomingState {
   items: Arrival[]
   progress: Record<number, TransferProgress>
   add: (arrival: Arrival) => void
-  removeFirst: () => void
+  removeById: (id: number) => void
   remove: (id: number) => boolean
   setProgress: (progress: TransferProgress) => void
   // What paired computers are pulling from this one, by transfer id.
@@ -75,16 +75,18 @@ const useIncomingShares = create<IncomingState>((set, get) => ({
   outgoing: {},
   add: (arrival) =>
     set((state) =>
-      state.items.some((item) => item.id === arrival.id) ? state : { items: [...state.items, arrival] },
+      state.items.some((item) => item.id === arrival.id)
+        ? state
+        : { items: [...state.items, arrival] },
     ),
   // Answering a share also drops it from the service, which keeps it until then and would hand it to the window
   // again after a reload.
-  removeFirst: () => {
-    const [first] = get().items
-    if (first) {
-      Dismiss(first.id).catch(reportUnexpected)
+  removeById: (id) => {
+    if (!get().items.some((item) => item.id === id)) {
+      return
     }
-    set((state) => ({ items: state.items.slice(1) }))
+    Dismiss(id).catch(reportUnexpected)
+    set((state) => ({ items: state.items.filter((item) => item.id !== id) }))
   },
   remove: (id) => {
     const present = get().items.some((item) => item.id === id)

@@ -47,12 +47,18 @@ function EnterCodeDialog({ open, onClose }: { open: boolean; onClose: () => void
       setPeers(null)
       return
     }
+    let live = true
     Peers()
-      .then((next) => setPeers(next ?? []))
+      .then((next) => live && setPeers(next ?? []))
       .catch((error: unknown) => {
-        setPeers([])
-        toastError(t`Could not find Mortar users`, error)
+        if (live) {
+          setPeers([])
+          toastError(t`Could not find Mortar users`, error)
+        }
       })
+    return () => {
+      live = false
+    }
   }, [open, t])
   const address = manual.trim() === '' ? target : manual.trim()
   let issue = ''
@@ -120,12 +126,18 @@ export function ShowCodeDialog({ open, onClose }: { open: boolean; onClose: () =
       setCode('')
       return
     }
+    let live = true
     PairCode()
-      .then(setCode)
+      .then((next) => live && setCode(next))
       .catch((error: unknown) => {
-        toastError(t`Could not start pairing`, error)
-        onCloseRef.current()
+        if (live) {
+          toastError(t`Could not start pairing`, error)
+          onCloseRef.current()
+        }
       })
+    return () => {
+      live = false
+    }
   }, [open, t])
   return (
     <AppDialog
