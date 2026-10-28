@@ -992,6 +992,18 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 	if slices.ContainsFunc(reqs, func(r queue.Request) bool { return r.Repo == "" && r.Package == "" }) && !s.d.SignedIn() {
 		return Result{}, ErrSignedOut
 	}
+	// Entries leave only once nothing that can refuse the import is left to run.
+	if replace {
+		p, err := s.find(game, profileID)
+		if err != nil {
+			return Result{}, err
+		}
+		if remove := PlanReplace(p, cur.preview.Mods).RemoveKeys; len(remove) > 0 {
+			if _, err := s.d.Profiles.RemoveEntries(game, profileID, remove); err != nil {
+				return Result{}, err
+			}
+		}
+	}
 	configs := cur.configs
 	if profileID == "" {
 		existing, err := s.d.Profiles.List(game)
@@ -1199,21 +1211,9 @@ func (s *Service) Replace(ctx context.Context, game, session, profileID string, 
 		}
 		return Result{}, ErrStalePreview
 	}
-	mods := cur.preview.Mods
-	p, err := s.find(game, profileID)
-	if err != nil {
-		return Result{}, err
-	}
-	plan := PlanReplace(p, mods)
 	batchID := historyBatchID()
 	if err := s.d.Profiles.OpenHistoryBatch(game, profileID, batchID); err != nil {
 		return Result{}, err
-	}
-	if len(plan.RemoveKeys) > 0 {
-		if _, err := s.d.Profiles.RemoveEntries(game, profileID, plan.RemoveKeys); err != nil {
-			_ = s.d.Profiles.CloseHistoryBatch(game, profileID)
-			return Result{}, err
-		}
 	}
 	return s.importWithBatch(ctx, game, session, profileID, exclude, batchID, true, asIs)
 }
