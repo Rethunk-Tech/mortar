@@ -85,11 +85,13 @@ const useNav = create<{
     set(({ route }) =>
       route.name === 'game-settings' ? { route: { name: 'game', game: route.game } } : {},
     ),
-  searchGameSettings: (query) =>
+  searchGameSettings: (query) => {
+    useSettingsScope.setState({ profile: false })
     set(({ route }) => {
       const game = routeGame(route)
       return game ? { route: { name: 'game-settings', game, query } } : {}
-    }),
+    })
+  },
   openSettings: (section) =>
     set(({ route }) => {
       if (route.name !== 'settings') {

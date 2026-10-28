@@ -39,6 +39,7 @@ import { StreamOverlay } from './sections/StreamOverlay.tsx'
 import { useSettingsScope } from './settingsScope.ts'
 import { useSettings } from './store.ts'
 import { usePerProfileRelated } from './usePerProfileRelated.tsx'
+import { useProfileScope } from './useProfileScope.ts'
 
 type GamePage = 'install' | 'loader' | 'play' | 'mods' | 'backups' | 'console' | 'streaming'
 
@@ -140,7 +141,7 @@ function GamePages({
     setPage('play')
   })
   // On the open profile's scope the page also shows what is only ever per profile.
-  const profileScope = useSettingsScope((s) => s.profile)
+  const profileScope = useProfileScope()
   const openId = useProfiles((s) => s.openId ?? '')
   const ownProfile = profileScope && openId !== '' ? openId : ''
   const pages: ShellPage<GamePage>[] = [

@@ -2,12 +2,13 @@ import { useLingui } from '@lingui/react/macro'
 import { ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { useSettingsScope } from './settingsScope.ts'
+import { useProfileScope } from './useProfileScope.ts'
 
 /** Switches a game's settings between every profile's values and the open profile's own. */
 export function ScopeSwitch({ gameName }: { gameName: string }) {
   const { t } = useLingui()
   const profileName = useProfiles((s) => openProfileOf(s)?.name ?? '')
-  const profile = useSettingsScope((s) => s.profile)
+  const profile = useProfileScope()
   if (profileName === '') {
     return null
   }

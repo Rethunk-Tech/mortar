@@ -1,13 +1,13 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
 import type { ReactNode } from 'react'
-import { useSettingsScope } from './settingsScope.ts'
+import { useProfileScope } from './useProfileScope.ts'
 
 /** Settings every profile of the game shares, held on the open profile's scope with a line saying so, so a change
  * there is never mistaken for this profile's own. */
 export function SharedOnProfile({ children }: { children: ReactNode }) {
   const { t } = useLingui()
-  const profile = useSettingsScope((s) => s.profile)
+  const profile = useProfileScope()
   if (!profile) {
     return children
   }

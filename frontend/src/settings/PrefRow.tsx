@@ -21,8 +21,8 @@ import { prefCopy } from './prefCopy.ts'
 import { specByKey, usePrefSpecs } from './prefSpecs.ts'
 import { prefAsBool, prefAsNumber, prefAsString, prefRaw, specGameArg } from './prefValue.ts'
 import { SettingRow } from './SettingsSection.tsx'
-import { useSettingsScope } from './settingsScope.ts'
 import { useSettings } from './store.ts'
+import { useProfileScope } from './useProfileScope.ts'
 
 type Options = { value: string; label: string }[]
 
@@ -91,7 +91,7 @@ function prefControlNode(o: {
 // shows the game's, held.
 function useScopedPref(spec: PrefSpec, game: string | undefined) {
   const gameRaw = useSettings((s) => prefRaw(s, spec, game))
-  const profileScope = useSettingsScope((s) => s.profile) && spec.scope === 'game'
+  const profileScope = useProfileScope() && spec.scope === 'game'
   const own = useProfiles((s) =>
     profileScope ? openProfileOf(s)?.overrides?.[spec.key] : undefined,
   )
