@@ -217,40 +217,35 @@ function ChoicesFooter({
 const keep = <T,>(set: (update: (prev: T[]) => T[]) => void, next: T[]) =>
   set((prev) => (sameValue(prev, next) ? prev : next))
 
+const NO_ROWS: ModInProfile[] = []
+
 // The other profiles that have the mods, read as the dialog opens.
 function useRows(open: boolean, game: string, currentProfileId: string, which: string | string[]) {
   const { t } = useLingui()
-  const [rows, setRows] = useState<ModInProfile[]>([])
   const key = typeof which === 'string' ? which : which.join('\n')
-  useEffect(() => {
-    if (!open) {
-      setRows([])
-      return
-    }
-    // A reply for an earlier opening (another mod) is dropped.
-    let live = true
-    Promise.all(key.split('\n').map((one) => ProfilesWithMod(game, one)))
-      .then(
-        (lists) =>
-          live &&
-          keep(
-            setRows,
-            lists
-              .flatMap((next) => next ?? [])
+  const shown = useRef(NO_ROWS)
+  const { data: rows } = useLoaded(
+    open
+      ? () =>
+          Promise.all(key.split('\n').map((one) => ProfilesWithMod(game, one))).then((lists) => {
+            const next = lists
+              .flatMap((list) => list ?? [])
               .filter(
                 (row, index, all) =>
                   row.profileId !== currentProfileId &&
                   all.findIndex(
                     (other) => other.profileId === row.profileId && other.key === row.key,
                   ) === index,
-              ),
-          ),
-      )
-      .catch(reportError(t`Could not read profiles`))
-    return () => {
-      live = false
-    }
-  }, [currentProfileId, game, open, t, key])
+              )
+            // A read that finds what the dialog already shows redraws nothing.
+            return sameValue(shown.current, next) ? shown.current : next
+          })
+      : null,
+    [currentProfileId, game, open, key],
+    NO_ROWS,
+    reportError(t`Could not read profiles`),
+  )
+  shown.current = rows
   return rows
 }
 

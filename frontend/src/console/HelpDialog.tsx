@@ -15,6 +15,7 @@ import { useProfileLoader } from '../profiles/store.ts'
 import { copyText } from '../share/copyText.ts'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
 import { reportError } from '../toasts/report.ts'
@@ -136,45 +137,35 @@ export function HelpDialog({ game }: { game: string }) {
   const openFor = useRef({ game, profile })
   openFor.current = { game, profile }
   const uploadGen = useRef(0)
-  const [log, setLog] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const [link, setLink] = useState('')
   const [hideUserName, setHideUserName] = useState(true)
   const close = () => setHelping(false)
+  const { data: log } = useLoaded<string | null>(
+    open
+      ? () =>
+          profile
+            ? shareLogText(viewingRun, paste !== '', {
+                live: () => Log(game, profile),
+                run: (id) => RunLog(game, profile, id),
+                runs: () => Runs(game, profile),
+              })
+            : Promise.resolve('')
+      : null,
+    [open, game, profile, viewingRun, paste],
+    null,
+    (e) => {
+      reportError(t`Could not read the game log`)(e)
+      setHelping(false)
+    },
+  )
+  // The log goes back to null whenever what it was read for changes: a pending upload and its link are stale then.
   useEffect(() => {
-    uploadGen.current += 1
-    if (!open) {
-      return
+    if (log === null) {
+      uploadGen.current += 1
+      setLink('')
     }
-    setLog(null)
-    setLink('')
-    if (!profile) {
-      setLog('')
-      return
-    }
-    let live = true
-    shareLogText(viewingRun, paste !== '', {
-      live: () => Log(game, profile),
-      run: (id) => RunLog(game, profile, id),
-      runs: () => Runs(game, profile),
-    }).then(
-      (text) => {
-        if (live) {
-          setLog(text)
-        }
-      },
-      (e: unknown) => {
-        if (!live) {
-          return
-        }
-        reportError(t`Could not read the game log`)(e)
-        setHelping(false)
-      },
-    )
-    return () => {
-      live = false
-    }
-  }, [open, game, profile, viewingRun, paste, setHelping, t])
+  }, [log])
 
   const copy = (text: string) => copyText(text, t`Link copied`)
 

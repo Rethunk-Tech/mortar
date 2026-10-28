@@ -1,12 +1,13 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Checkbox, MenuItem, TextField, Typography } from '@mui/material'
-import { memo, useCallback, useEffect, useRef, useState } from 'react'
+import { memo, useCallback, useRef, useState } from 'react'
 import { Search } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/browse/service.ts'
 import type { Form } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/source/models.ts'
 import { LetterTile } from '../mods/LetterTile.tsx'
 import { FormSection } from '../shell/dialog/FormDialog.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
+import { useDebouncedLoad } from '../shell/useDebouncedLoad.ts'
 import { space } from '../theme/density.ts'
 import { useProjectInfo } from './builds.ts'
 import {
@@ -90,24 +91,19 @@ export const PackageRow = memo(function PackageRowView({
 const NO_HITS: Item[] = []
 
 function useSearch(game: string, profile: string, query: string) {
-  const [hits, setHits] = useState<Item[]>(NO_HITS)
-  useEffect(() => {
-    if (query.trim().length < 2) {
-      setHits(NO_HITS)
-      return
-    }
-    let alive = true
-    const timer = setTimeout(() => {
-      Search(game, THUNDERSTORE, query, 1, profile, NO_FILTER)
-        .then((page) => alive && setHits((page.items ?? []).slice(0, SEARCH_HITS)))
-        .catch(() => alive && setHits(NO_HITS))
-    }, SEARCH_DELAY_MS)
-    return () => {
-      alive = false
-      clearTimeout(timer)
-    }
-  }, [game, profile, query])
-  return hits
+  const searching = query.trim().length >= 2
+  // A failed search shows no hits and stays quiet: the field is a suggestion list, not an action.
+  return useDebouncedLoad<Item[]>(
+    searching
+      ? () =>
+          Search(game, THUNDERSTORE, query, 1, profile, NO_FILTER).then(
+            (page) => (page.items ?? []).slice(0, SEARCH_HITS),
+            () => NO_HITS,
+          )
+      : null,
+    [game, profile, query, searching],
+    { initial: NO_HITS, delayMs: SEARCH_DELAY_MS },
+  ).data
 }
 
 // The search for more packages, memoised so a package's details arriving above leave it alone. `taken` lists the ids

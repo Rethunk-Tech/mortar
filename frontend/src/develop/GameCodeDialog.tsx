@@ -33,10 +33,17 @@ import { AppDialog, ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
+import { useDebouncedLoad } from '../shell/useDebouncedLoad.ts'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
-import { type InlineError, inlineError, reportError, reportUnexpected } from '../toasts/report.ts'
+import {
+  errorMessage,
+  type InlineError,
+  inlineError,
+  reportError,
+  reportUnexpected,
+} from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { CodeView } from './CodeView.tsx'
 import { hookSnippet } from './hook.ts'
@@ -57,34 +64,13 @@ const IL = 'IL'
 type CodeMode = 'cs' | 'il' | 'both'
 
 function useHits(game: string, dir: string, assembly: string, query: string) {
-  const [hits, setHits] = useState<Member[]>([])
-  const [error, setError] = useState('')
-  useEffect(() => {
-    if (query.trim().length < 2) {
-      setHits([])
-      return
-    }
-    let alive = true
-    const timer = setTimeout(() => {
-      GameCode(game, dir, assembly, query)
-        .then((found) => {
-          if (alive) {
-            setHits(found ?? [])
-            setError('')
-          }
-        })
-        .catch((e: unknown) => {
-          if (alive) {
-            setError(e instanceof Error ? e.message : String(e))
-          }
-        })
-    }, SEARCH_DELAY_MS)
-    return () => {
-      alive = false
-      clearTimeout(timer)
-    }
-  }, [game, dir, assembly, query])
-  return { hits, error }
+  const searching = query.trim().length >= 2
+  const { data, error } = useDebouncedLoad<Member[]>(
+    searching ? () => GameCode(game, dir, assembly, query).then((found) => found ?? []) : null,
+    [game, dir, assembly, query, searching],
+    { initial: [], delayMs: SEARCH_DELAY_MS },
+  )
+  return { hits: data, error: error === null ? '' : errorMessage(error) }
 }
 
 // The line declaring method in decompiled source: its name before a parameter list, on a line that is not a call.
@@ -228,21 +214,12 @@ function UsagesDrawer({
   onOpen: (u: Usage) => void
 }) {
   const { t } = useLingui()
-  const [usages, setUsages] = useState<Usage[] | null>(null)
-  useEffect(() => {
-    if (!open || target === '') {
-      return
-    }
-    setUsages(null)
-    let alive = true
-    const failed = reportError(t`Could not find usages`)
-    Usages(game, dir, target)
-      .then((found) => alive && setUsages(found))
-      .catch((e: unknown) => alive && failed(e))
-    return () => {
-      alive = false
-    }
-  }, [open, game, dir, target, t])
+  const { data: usages } = useLoaded<Usage[] | null>(
+    open && target !== '' ? () => Usages(game, dir, target) : null,
+    [open, game, dir, target],
+    null,
+    reportError(t`Could not find usages`),
+  )
   return (
     <Drawer
       anchor="right"
