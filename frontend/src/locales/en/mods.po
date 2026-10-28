@@ -623,10 +623,6 @@ msgid "{name}'s {field} is {current}, made for {currentFor}, which this profile 
 msgstr "{name}'s {field} is {current}, made for {currentFor}, which this profile lacks."
 
 #: src/mods/OtherProfilesDialog.tsx
-msgid "Pinned in {name}"
-msgstr "Pinned in {name}"
-
-#: src/mods/OtherProfilesDialog.tsx
 msgid "Already has it"
 msgstr "Already has it"
 
@@ -1824,6 +1820,10 @@ msgstr "{path} wait for each other in a loop, so {loader} skips at least one of 
 msgid "Older copy skipped"
 msgstr "Older copy skipped"
 
+#: src/mods/typedConfig/TextFile.tsx
+msgid "Reload"
+msgstr "Reload"
+
 #: src/mods/enableRequirementsApply.ts
 #: src/mods/EnableRequirementsDialog.tsx
 msgid "Could not enable required mods"
@@ -2326,6 +2326,10 @@ msgstr "More details"
 #: src/mods/problemWhy.ts
 msgid "This mod wrote errors to the game's log the last time you played. It may be broken, out of date, or missing something it needs."
 msgstr "This mod wrote errors to the game's log the last time you played. It may be broken, out of date, or missing something it needs."
+
+#: src/mods/typedConfig/TextFile.tsx
+msgid "The file changed outside Mortar."
+msgstr "The file changed outside Mortar."
 
 #: src/mods/typedConfig/ConfigPane.tsx
 msgid "About {key}"

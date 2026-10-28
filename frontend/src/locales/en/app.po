@@ -1562,6 +1562,10 @@ msgstr "All mods present"
 msgid "Get help"
 msgstr "Get help"
 
+#: src/queue/everywhereFailed.ts
+msgid "game running"
+msgstr "game running"
+
 #: src/lan/PairedComputers.tsx
 #: src/lan/SendPanel.tsx
 msgid "Pair"
@@ -3653,6 +3657,10 @@ msgstr "Built {when}"
 #: src/tools/ToolsManageDialog.tsx
 msgid "Edit {name}"
 msgstr "Edit {name}"
+
+#: src/queue/everywhereFailed.ts
+msgid "Could not update {mod} in the other profiles"
+msgstr "Could not update {mod} in the other profiles"
 
 #: src/shell/AppMenu.tsx
 msgid "Sign out of {source}"
@@ -6160,6 +6168,10 @@ msgstr "No archives to add"
 msgid "Pair the two computers to send whole files instead. Pairing takes a one-time code shown here and typed on {name}."
 msgstr "Pair the two computers to send whole files instead. Pairing takes a one-time code shown here and typed on {name}."
 
+#: src/queue/everywhereFailed.ts
+msgid "needs install choices"
+msgstr "needs install choices"
+
 #: src/develop/GameCodeDialog.tsx
 msgid "Copy a {library} hook"
 msgstr "Copy a {library} hook"
@@ -7091,6 +7103,10 @@ msgstr "Link"
 #: src/groups/SavedGroupRow.tsx
 msgid "Show mods of {name}"
 msgstr "Show mods of {name}"
+
+#: src/queue/everywhereFailed.ts
+msgid "Could not update {mod} in {profiles}"
+msgstr "Could not update {mod} in {profiles}"
 
 #: src/launch/PrePlayDialog.tsx
 msgid "Update and play"
