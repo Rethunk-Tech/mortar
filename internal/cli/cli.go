@@ -301,8 +301,8 @@ func (c *cmd) parse(args []string) error {
 			continue
 		}
 		switch {
-		case a == "--version" && i == 0:
-			// Leading, it is the usual spelling of the version command; later, it picks a mod version.
+		case a == "--version" && len(c.args) == 0:
+			// Before any command word (output flags may precede it), it is the usual spelling of the version command; later, it picks a mod version.
 			c.args = append(c.args, "version")
 		case a == "--set":
 			c.setFlag = true
@@ -383,6 +383,9 @@ func (c *cmd) table(header string, rows [][]string) {
 }
 
 func (c *cmd) dispatch() error {
+	if len(c.args) == 0 {
+		return usageError{"missing command"}
+	}
 	verb := c.args[0]
 	if verbs[verb] {
 		if handled, err := c.more(); handled {

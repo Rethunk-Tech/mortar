@@ -562,6 +562,12 @@ func TestIsTakesVerbsAndBareWordsButNotLinksOrFiles(t *testing.T) {
 	if r := invoke(t, nil, "--version"); !Is([]string{"--version"}) || r.code != 0 || r.out != "mortar 9.9.9\n" || len(r.calls) != 0 {
 		t.Errorf("--version: %+v", r)
 	}
+	if r := invoke(t, nil, "--json", "--version"); r.code != 0 || !strings.Contains(r.out, `"version": "9.9.9"`) {
+		t.Errorf("--json --version: %+v", r)
+	}
+	if r := invoke(t, nil, "--json"); r.code != 2 {
+		t.Errorf("no command: %+v", r)
+	}
 	if r := invoke(t, nil, "nonsense"); r.code != 2 || !strings.Contains(r.errOut, "unknown command") {
 		t.Errorf("unknown verb: %d %q", r.code, r.errOut)
 	}
