@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/klauspost/compress/zstd"
 	"github.com/ulikunitz/xz"
 	"github.com/ulikunitz/xz/lzma"
@@ -66,26 +67,15 @@ func isTarHeader(head []byte) bool {
 }
 
 // capReader fails with ErrArchiveTooLarge once more than its budget has been read, whatever the stream claims.
-type capReader struct {
-	r    io.Reader
-	left int64
-}
+type capReader struct{ r io.Reader }
 
-func (c *capReader) Read(p []byte) (int, error) {
-	if c.left <= 0 {
-		var one [1]byte
-		if n, err := c.r.Read(one[:]); n > 0 {
-			return 0, &Error{Reason: ErrArchiveTooLarge}
-		} else if err != nil {
-			return 0, err
-		}
-		return 0, nil
-	}
-	if int64(len(p)) > c.left {
-		p = p[:c.left]
-	}
+func newCapReader(r io.Reader, budget int64) capReader { return capReader{fsx.CapReader(r, budget)} }
+
+func (c capReader) Read(p []byte) (int, error) {
 	n, err := c.r.Read(p)
-	c.left -= int64(n)
+	if errors.Is(err, fsx.ErrTooLarge) {
+		return n, &Error{Reason: ErrArchiveTooLarge}
+	}
 	return n, err
 }
 
@@ -134,7 +124,7 @@ func openPayload(r io.Reader, kind int, opts options) (*payload, error) {
 		plain = bzip2.NewReader(r)
 	}
 	budget := opts.MaxTotalBytes + int64(opts.MaxEntries)*tarOverhead + 1<<20
-	br := bufio.NewReaderSize(&capReader{r: plain, left: budget}, 4096)
+	br := bufio.NewReaderSize(newCapReader(plain, budget), 4096)
 	head, err := br.Peek(512)
 	if err != nil && !errors.Is(err, io.EOF) && !errors.Is(err, bufio.ErrBufferFull) && len(head) == 0 {
 		closeFn()
