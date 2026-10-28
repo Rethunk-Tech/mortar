@@ -1047,25 +1047,6 @@ func (s *Service) AnswerMerge(id string, add bool) {
 	s.poke()
 }
 
-// FailRoot marks an item waiting in StateNeedsRoot as failed when the user cancels the folder picker.
-func (s *Service) FailRoot(id string) {
-	const msg = "No mod folder was chosen for this archive"
-	s.mu.Lock()
-	var rec *Item
-	if it := s.find(id); it != nil && it.State == StateNeedsRoot {
-		snap := *it
-		rec = &snap
-		it.State, it.Error, it.ErrorKind = StateFailed, msg, FailOther
-		it.staged, it.Remap, it.chosenRoot, it.chosenTo, it.chosenOverlay = "", nil, "", "", false
-	}
-	s.mu.Unlock()
-	s.publish(true)
-	if rec != nil {
-		s.recordHistory(rec, StateFailed)
-		notifyDesktopDownload(rec.Name, rec.Game, rec.Profile, false)
-	}
-}
-
 func notifyDesktopDownload(name, game, profile string, ok bool) {
 	title, key := i18n.T("Download failed"), "desktopDownloadFailed"
 	if ok {

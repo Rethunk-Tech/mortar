@@ -9,7 +9,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
-func TestNeedsRootAnswerAndFail(t *testing.T) {
+func TestNeedsRootAnswer(t *testing.T) {
 	t.Parallel()
 	ask := &profile.RemapAsk{Key: "store-key", Source: profile.Source{Kind: profile.KindNexus, ModID: 1, FileID: 2}}
 	s := &Service{
@@ -29,11 +29,6 @@ func TestNeedsRootAnswerAndFail(t *testing.T) {
 		t.Fatalf("after AnswerRoot: %+v", it)
 	}
 
-	s.items[0].State, s.items[0].chosenRoot = StateNeedsRoot, ""
-	s.FailRoot("a")
-	if it := s.find("a"); it.State != StateFailed || it.Error == "" || it.staged != "" || it.Remap != nil {
-		t.Fatalf("after FailRoot: %+v", it)
-	}
 }
 
 // A chosen root installs from the store even when the item's archive is still on disk, and a Nexus or package item
