@@ -233,11 +233,10 @@ func (s *Store) installKey(game, id, key string, source Source) (InstallResult, 
 // placeKey adds key to the profile, or swaps it in for the one entry already holding its mods. The decision and the
 // change share one lock, so two concurrent installs of the same mod cannot both add an entry.
 func (s *Store) placeKey(game, id, key string, source Source) (Profile, bool, bool, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if err := s.unlocked(game, id); err != nil {
+	if err := s.lockUnlocked(game, id); err != nil {
 		return Profile{}, false, false, err
 	}
+	defer s.mu.Unlock()
 	if over, err := s.isOverlayItem(game, key, source); err != nil {
 		return Profile{}, false, false, err
 	} else if over {

@@ -343,11 +343,10 @@ func commitPlaced(placed, final string) {
 
 // AddEntry copies the store item key into the profile and records the mods it holds.
 func (s *Store) AddEntry(game, id, key string, source Source) (Profile, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if err := s.unlocked(game, id); err != nil {
+	if err := s.lockUnlocked(game, id); err != nil {
 		return Profile{}, err
 	}
+	defer s.mu.Unlock()
 	return s.addEntryLocked(game, id, key, source)
 }
 
@@ -548,11 +547,10 @@ func (s *Store) updateModsRecorded(game, id string, fn func(p *Profile, dir stri
 // updateMods is update for changes to the mods/ folder, refused while the game runs the profile. The check holds the
 // lock so that a launch, which reads the profile under it, sees either the whole change or none of it.
 func (s *Store) updateMods(game, id string, fn func(p *Profile, dir string) error) (Profile, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if err := s.unlocked(game, id); err != nil {
+	if err := s.lockUnlocked(game, id); err != nil {
 		return Profile{}, err
 	}
+	defer s.mu.Unlock()
 	return s.updateLocked(game, id, fn)
 }
 

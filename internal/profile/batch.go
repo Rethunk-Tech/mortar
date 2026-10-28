@@ -19,11 +19,10 @@ func (s *Store) updateEntries(game, id string, keys []string, fn func(*Entry, st
 // updateEntriesAs is updateEntries with the history event the change is recorded as; an empty kind lets the
 // change name itself.
 func (s *Store) updateEntriesAs(game, id, kind string, note HistoryEvent, keys []string, fn func(*Entry, string) error) (Profile, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if err := s.unlocked(game, id); err != nil {
+	if err := s.lockUnlocked(game, id); err != nil {
 		return Profile{}, err
 	}
+	defer s.mu.Unlock()
 	return s.updateLockedAs(game, id, kind, note, func(p *Profile, _ string) error {
 		seen := make(map[string]bool, len(keys))
 		for _, key := range keys {

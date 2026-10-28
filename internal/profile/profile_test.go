@@ -197,3 +197,15 @@ func TestGetReportsAMissingProfileAsNotFound(t *testing.T) {
 		t.Fatalf("Get missing = %v (%s)", err, usererr.KindOf(err))
 	}
 }
+
+func TestLockUnlockedRefusesARunningProfileAndReleasesTheLock(t *testing.T) {
+	s := newStore(t)
+	s.Running = func(_, id string) bool { return id == "busy" }
+	if err := s.lockUnlocked("stardew", "busy"); err == nil {
+		t.Fatal("a running profile was not refused")
+	}
+	if err := s.lockUnlocked("stardew", "idle"); err != nil {
+		t.Fatal(err)
+	}
+	s.mu.Unlock()
+}

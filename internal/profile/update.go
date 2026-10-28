@@ -48,11 +48,10 @@ type EntryMove struct {
 // repeated for the same entry, as a store item holding several mods yields, apply once; two different targets for
 // one entry are refused.
 func (s *Store) UpdateEntries(game, id string, moves []EntryMove) (Profile, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if err := s.unlocked(game, id); err != nil {
+	if err := s.lockUnlocked(game, id); err != nil {
 		return Profile{}, err
 	}
+	defer s.mu.Unlock()
 	target := map[string]string{}
 	var uniq []EntryMove
 	for _, m := range moves {
@@ -114,11 +113,10 @@ func (s *Store) UpdateEntries(game, id string, moves []EntryMove) (Profile, erro
 
 // RollBack swaps the entry key back to its previous version, carrying over what the user and the mod wrote.
 func (s *Store) RollBack(game, id, key string) (Profile, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if err := s.unlocked(game, id); err != nil {
+	if err := s.lockUnlocked(game, id); err != nil {
 		return Profile{}, err
 	}
+	defer s.mu.Unlock()
 	if p, ok, err := s.rollBackFolderLocked(game, id, key); err != nil || ok {
 		return p, err
 	}
@@ -128,11 +126,10 @@ func (s *Store) RollBack(game, id, key string) (Profile, error) {
 // moveTo switches an entry to another store item. An empty newKey means the entry's previous key. A source
 // replaces the entry's own.
 func (s *Store) moveTo(game, id, oldKey, newKey string, source *Source) (Profile, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if err := s.unlocked(game, id); err != nil {
+	if err := s.lockUnlocked(game, id); err != nil {
 		return Profile{}, err
 	}
+	defer s.mu.Unlock()
 	return s.moveToLocked(game, id, oldKey, newKey, source)
 }
 

@@ -61,19 +61,12 @@ func dropKeyFromGroups(p *Profile, key string) {
 	p.Groups = out
 }
 
-func (s *Store) unlockedGroupName(game, id, name string) (string, error) {
-	if err := s.unlocked(game, id); err != nil {
-		return "", err
-	}
-	return CleanGroupName(name)
-}
-
 func (s *Store) mutateGroup(game, id, name string, fn func(p *Profile, idx int) error) (Profile, error) {
-	name, err := s.unlockedGroupName(game, id, name)
+	name, err := CleanGroupName(name)
 	if err != nil {
 		return Profile{}, err
 	}
-	return s.update(game, id, func(p *Profile, _ string) error {
+	return s.updateMods(game, id, func(p *Profile, _ string) error {
 		idx := p.groupIndex(name)
 		if idx < 0 {
 			return usererr.Wrap(usererr.NotFound, fmt.Errorf("group %q not found", name))
@@ -84,11 +77,11 @@ func (s *Store) mutateGroup(game, id, name string, fn func(p *Profile, idx int) 
 
 // CreateGroup adds an empty group to the profile.
 func (s *Store) CreateGroup(game, id, name string) (Profile, error) {
-	name, err := s.unlockedGroupName(game, id, name)
+	name, err := CleanGroupName(name)
 	if err != nil {
 		return Profile{}, err
 	}
-	return s.update(game, id, func(p *Profile, _ string) error {
+	return s.updateMods(game, id, func(p *Profile, _ string) error {
 		if p.groupIndex(name) >= 0 {
 			return usererr.Wrap(usererr.Invalid, fmt.Errorf("group %q already exists", name))
 		}
@@ -118,12 +111,12 @@ func (p Profile) freeGroupName(name string) string {
 // AddGroup creates a group holding those of keys that name entries of the profile, under the first free name from
 // freeGroupName, and returns the profile and the name it took.
 func (s *Store) AddGroup(game, id, name string, keys []string) (Profile, string, error) {
-	name, err := s.unlockedGroupName(game, id, name)
+	name, err := CleanGroupName(name)
 	if err != nil {
 		return Profile{}, "", err
 	}
 	var used string
-	p, err := s.update(game, id, func(p *Profile, _ string) error {
+	p, err := s.updateMods(game, id, func(p *Profile, _ string) error {
 		used = p.freeGroupName(name)
 		held := make([]string, 0, len(keys))
 		for _, key := range keys {
@@ -154,11 +147,11 @@ func (s *Store) RenameGroup(game, id, name, next string) (Profile, error) {
 	if err != nil {
 		return Profile{}, err
 	}
-	name, err = s.unlockedGroupName(game, id, name)
+	name, err = CleanGroupName(name)
 	if err != nil {
 		return Profile{}, err
 	}
-	return s.update(game, id, func(p *Profile, _ string) error {
+	return s.updateMods(game, id, func(p *Profile, _ string) error {
 		inside := p.groupsInside(name)
 		if len(inside) == 0 {
 			return usererr.Wrap(usererr.NotFound, fmt.Errorf("group %q not found", name))
@@ -186,11 +179,11 @@ func (s *Store) RenameGroup(game, id, name, next string) (Profile, error) {
 
 // DeleteGroup removes a group and the groups inside it. Entries stay in the profile.
 func (s *Store) DeleteGroup(game, id, name string) (Profile, error) {
-	name, err := s.unlockedGroupName(game, id, name)
+	name, err := CleanGroupName(name)
 	if err != nil {
 		return Profile{}, err
 	}
-	return s.update(game, id, func(p *Profile, _ string) error {
+	return s.updateMods(game, id, func(p *Profile, _ string) error {
 		inside := p.groupsInside(name)
 		if len(inside) == 0 {
 			return usererr.Wrap(usererr.NotFound, fmt.Errorf("group %q not found", name))
@@ -202,7 +195,7 @@ func (s *Store) DeleteGroup(game, id, name string) (Profile, error) {
 
 // AddToGroup records an entry key in the named group, creating the group if needed.
 func (s *Store) AddToGroup(game, id, name, key string) (Profile, error) {
-	name, err := s.unlockedGroupName(game, id, name)
+	name, err := CleanGroupName(name)
 	if err != nil {
 		return Profile{}, err
 	}
@@ -210,7 +203,7 @@ func (s *Store) AddToGroup(game, id, name, key string) (Profile, error) {
 	if key == "" {
 		return Profile{}, usererr.Wrap(usererr.Invalid, fmt.Errorf("entry key is empty"))
 	}
-	return s.update(game, id, func(p *Profile, _ string) error {
+	return s.updateMods(game, id, func(p *Profile, _ string) error {
 		if entryIndex(p.Entries, key) < 0 {
 			return usererr.Wrap(usererr.NotFound, fmt.Errorf("entry %q not found", key))
 		}
@@ -238,7 +231,7 @@ func (s *Store) RemoveFromGroup(game, id, name, key string) (Profile, error) {
 
 // SetGroupEnabled switches every mod of every entry in the group, and in the groups inside it, in one history event.
 func (s *Store) SetGroupEnabled(game, id, name string, on bool) (Profile, error) {
-	name, err := s.unlockedGroupName(game, id, name)
+	name, err := CleanGroupName(name)
 	if err != nil {
 		return Profile{}, err
 	}
@@ -246,11 +239,10 @@ func (s *Store) SetGroupEnabled(game, id, name string, on bool) (Profile, error)
 	if !on {
 		kind, change = historyDisabled, ChangeDisabled
 	}
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if err := s.unlocked(game, id); err != nil {
+	if err := s.lockUnlocked(game, id); err != nil {
 		return Profile{}, err
 	}
+	defer s.mu.Unlock()
 	return s.updateLockedAs(game, id, kind, HistoryEvent{Change: change, Name: name}, func(p *Profile, dir string) error {
 		inside := p.groupsInside(name)
 		if len(inside) == 0 {

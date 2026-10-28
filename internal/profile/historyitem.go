@@ -109,11 +109,10 @@ func (s *Store) revertItemUpdate(game, id string, hit HistoryItem) (Profile, err
 }
 
 func (s *Store) revertItemConfig(game, id, beforeSnap string, hit HistoryItem) (Profile, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if err := s.unlocked(game, id); err != nil {
+	if err := s.lockUnlocked(game, id); err != nil {
 		return Profile{}, err
 	}
+	defer s.mu.Unlock()
 	dir, err := s.profileDir(game, id)
 	if err != nil {
 		return Profile{}, err

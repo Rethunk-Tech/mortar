@@ -21,11 +21,10 @@ func (s *Store) ProfileDir(game, id string) (string, error) {
 // starts; a value equal to the captured one drops the option's edit instead. Each change is a history event, so Undo
 // takes it back like a config.json edit.
 func (s *Store) SetGmcmOption(game, id string, uniqueID mod.ID, page string, index int, value string) (gmcm.Pending, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if err := s.unlocked(game, id); err != nil {
+	if err := s.lockUnlocked(game, id); err != nil {
 		return gmcm.Pending{}, err
 	}
+	defer s.mu.Unlock()
 	_, dir, err := s.readDir(game, id)
 	if err != nil {
 		return gmcm.Pending{}, err

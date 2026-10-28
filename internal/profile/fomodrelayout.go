@@ -69,11 +69,10 @@ var errNoArchive = errors.New("archive not in the store")
 func (s *Store) relayoutEntry(game, id, key string) (relayoutResult, error) {
 	s.setHistoryQuiet(id, true)
 	defer s.setHistoryQuiet(id, false)
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if err := s.unlocked(game, id); err != nil {
+	if err := s.lockUnlocked(game, id); err != nil {
 		return 0, err
 	}
+	defer s.mu.Unlock()
 	res := relayoutUnchanged
 	var sw swapped
 	_, err := s.updateLocked(game, id, func(p *Profile, dir string) error {

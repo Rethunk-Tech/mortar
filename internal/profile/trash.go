@@ -51,11 +51,10 @@ func (s *Store) trashDir(gameID, id string) (string, error) {
 
 // Delete moves the profile folder to <datadir>/trash/<game>/<id>/ and stamps it with the deletion time.
 func (s *Store) Delete(gameID, id string) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if err := s.unlocked(gameID, id); err != nil {
+	if err := s.lockUnlocked(gameID, id); err != nil {
 		return err
 	}
+	defer s.mu.Unlock()
 	src, err := s.profileDir(gameID, id)
 	if err != nil {
 		return err

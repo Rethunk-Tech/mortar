@@ -401,6 +401,16 @@ func (s *Store) unlocked(game, id string) error {
 	return nil
 }
 
+// lockUnlocked takes s.mu and refuses a profile the game is running; on success the caller unlocks s.mu.
+func (s *Store) lockUnlocked(game, id string) error {
+	s.mu.Lock()
+	if err := s.unlocked(game, id); err != nil {
+		s.mu.Unlock()
+		return err
+	}
+	return nil
+}
+
 // AnyRunning reports whether the game is running any of its profiles.
 func (s *Store) AnyRunning(game string) bool {
 	all, err := s.listOK(game)

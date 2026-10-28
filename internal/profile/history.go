@@ -280,11 +280,10 @@ func (e *MissingKeys) Error() string {
 
 // Revert restores the profile's entries to the snapshot stored with eventID.
 func (s *Store) Revert(game, id, eventID string) (Profile, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if err := s.unlocked(game, id); err != nil {
+	if err := s.lockUnlocked(game, id); err != nil {
 		return Profile{}, err
 	}
+	defer s.mu.Unlock()
 	dir, err := s.profileDir(game, id)
 	if err != nil {
 		return Profile{}, err

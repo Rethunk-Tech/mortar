@@ -114,11 +114,10 @@ func (s *Store) PendingOldFiles(game, id string) ([]OldFiles, error) {
 // ResolveOldFiles answers the question for entry key: keep puts the set-aside files back in their mod folders (a
 // file the mod folder has again stays as it is), otherwise they move to Mortar's trash.
 func (s *Store) ResolveOldFiles(game, id, key string, keep bool) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if err := s.unlocked(game, id); err != nil {
+	if err := s.lockUnlocked(game, id); err != nil {
 		return err
 	}
+	defer s.mu.Unlock()
 	if _, err := safeFolder(key); err != nil {
 		return err
 	}

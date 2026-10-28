@@ -146,11 +146,10 @@ func (s *Store) previousVersion(game string, e Entry, uniqueID mod.ID) string {
 
 // ResetConfig deletes the mod's config.json so the mod writes a fresh one the next time it runs.
 func (s *Store) ResetConfig(game, id, key string, uniqueID mod.ID) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if err := s.unlocked(game, id); err != nil {
+	if err := s.lockUnlocked(game, id); err != nil {
 		return err
 	}
+	defer s.mu.Unlock()
 	folder, err := s.modFolderLocked(game, id, key, uniqueID)
 	if err != nil {
 		return err
@@ -205,11 +204,10 @@ func (s *Store) WriteConfig(game, id, key string, uniqueID mod.ID, contents stri
 }
 
 func (s *Store) writeConfig(game, id, key string, uniqueID mod.ID, contents string, note HistoryEvent) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if err := s.unlocked(game, id); err != nil {
+	if err := s.lockUnlocked(game, id); err != nil {
 		return err
 	}
+	defer s.mu.Unlock()
 	folder, err := s.modFolderLocked(game, id, key, uniqueID)
 	if err != nil {
 		return err

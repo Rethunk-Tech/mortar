@@ -10,11 +10,10 @@ const historyGood = "good"
 
 // MarkKnownGood records the current entries as a known-good restore point.
 func (s *Store) MarkKnownGood(game, id string) (HistoryEvent, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if err := s.unlocked(game, id); err != nil {
+	if err := s.lockUnlocked(game, id); err != nil {
 		return HistoryEvent{}, err
 	}
+	defer s.mu.Unlock()
 	p, dir, err := s.readDir(game, id)
 	if err != nil {
 		return HistoryEvent{}, err
