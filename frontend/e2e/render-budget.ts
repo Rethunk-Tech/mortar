@@ -166,7 +166,8 @@ const cases: Case[] = [
       await view(p, 'List view')
       await row(p, 6).click()
     },
-    run: (p) => row(p, 10).click(),
+    // The open details panel can cover the card, depending on how many mods the copied profile has.
+    run: (p) => row(p, 10).dispatchEvent('click'),
   },
   // One switch per case, each its own action; the second puts the mod back as the first found it.
   {
@@ -215,9 +216,10 @@ const cases: Case[] = [
     name: 'mods-grid-switch',
     setup: async (p) => {
       await view(p, 'Grid view')
-      await row(p, 6).click()
+      await row(p, 6).dispatchEvent('click')
     },
-    run: (p) => row(p, 10).click(),
+    // The open details panel can cover either card, depending on how many mods the copied profile has.
+    run: (p) => row(p, 10).dispatchEvent('click'),
   },
   open('Saves'),
   open('Config'),
