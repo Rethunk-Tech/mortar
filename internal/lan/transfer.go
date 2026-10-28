@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/scratch"
 
 	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -291,7 +292,7 @@ func (s *Service) fetchOnce(
 	if response.StatusCode < http.StatusOK || response.StatusCode >= http.StatusMultipleChoices {
 		return 0, usererr.Wrap(usererr.Network, refusedError{sender: incoming.Sender, status: response.StatusCode})
 	}
-	temp, err := os.MkdirTemp("", "mortar-lan-transfer-")
+	temp, err := scratch.Dir("mortar-lan-transfer-")
 	if err != nil {
 		return 0, installError("prepare room for", item, incoming.Sender, err)
 	}

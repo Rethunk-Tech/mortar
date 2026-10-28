@@ -34,7 +34,15 @@ import (
 func TestMain(m *testing.M) {
 	pairIterations = 1_000
 	retryDelay = time.Millisecond
-	os.Exit(m.Run())
+	data, err := os.MkdirTemp("", "mortar-lan-test-")
+	if err != nil {
+		panic(err)
+	}
+	_ = os.Setenv("XDG_DATA_HOME", data)
+	_ = os.Setenv("LOCALAPPDATA", data)
+	code := m.Run()
+	_ = os.RemoveAll(data)
+	os.Exit(code)
 }
 
 func testPayload(t *testing.T) string {

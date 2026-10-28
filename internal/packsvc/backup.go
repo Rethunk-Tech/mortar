@@ -18,6 +18,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
+	"github.com/Rethunk-Tech/mortar/internal/scratch"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"github.com/Rethunk-Tech/mortar/internal/winhost"
@@ -202,7 +203,7 @@ func (s *Service) BackupDialog(gameID, profileID string, mods bool) (string, err
 // the store once their hashes match, its saves become the profile's, and the mods this computer still lacks are queued
 // from their sources. gameID may be empty; when given it must be the backup's game.
 func (s *Service) Restore(ctx context.Context, path, gameID string) (RestoreResult, error) {
-	tmp, err := os.MkdirTemp("", "mortar-restore-")
+	tmp, err := scratch.Dir("mortar-restore-")
 	if err != nil {
 		return RestoreResult{}, err
 	}

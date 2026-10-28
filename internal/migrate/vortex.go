@@ -16,6 +16,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/scratch"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/opt"
 
@@ -163,7 +164,7 @@ func readVortexState(root string) (map[string]json.RawMessage, error) {
 	if !info.IsDir() {
 		return nil, fmt.Errorf("read Vortex state %s: not a LevelDB directory", src)
 	}
-	tmp, err := os.MkdirTemp("", "mortar-vortex-")
+	tmp, err := scratch.Dir("mortar-vortex-")
 	if err != nil {
 		return nil, err
 	}
