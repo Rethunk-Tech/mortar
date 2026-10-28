@@ -1,6 +1,7 @@
 package launchsvc
 
 import (
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -97,6 +98,11 @@ func (s *Service) owner(g game.Game, p launch.Process) (id string, ok bool) {
 		return selected.ID, true
 	}
 	if p.ExeIs(game.ProcessNames(g)...) {
+		return "", false
+	}
+	// A dedicated server with no install of its own shares its client's executable name, and must not adopt the
+	// client running under Wine or Proton.
+	if info, _ := components.Game(g.ID()); selected.Dir == "" && info.Server != nil {
 		return "", false
 	}
 	return selected.ID, true

@@ -242,3 +242,18 @@ func TestBusyAmongNamesTheBusyGamesFromOneScan(t *testing.T) {
 		t.Fatalf("a game running outside Mortar: %v", got)
 	}
 }
+
+func TestGameWithoutInstallAdoptsNoProcess(t *testing.T) {
+	pair := twoInstalls(t)
+	svc := pair.svc
+	svc.procDir = t.TempDir()
+	fakeProc(t, svc, "7", "/proton/files/bin/wine64-preloader", `Z:\home\u\Risk of Rain 2\Risk of Rain 2.exe`)
+	server := game.Find("riskofrain2-server")
+	if server == nil {
+		t.Fatal("no riskofrain2-server in the catalog")
+	}
+	svc.poll(server)
+	if st := svc.statusOf(slot{server, ""}); st.State != Idle {
+		t.Fatalf("the dedicated server with no install adopted the client's process: %+v", st)
+	}
+}
