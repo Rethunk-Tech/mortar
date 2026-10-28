@@ -270,3 +270,19 @@ func TestALocalIconIsReadFromTheStoreItemItNames(t *testing.T) {
 		t.Fatal("an item without an icon was served one")
 	}
 }
+
+func TestFetchRefusesARedirectOffTheAllowlist(t *testing.T) {
+	var hosts []string
+	client := &http.Client{Transport: roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		hosts = append(hosts, r.URL.Host)
+		h := http.Header{"Location": {"https://example.com/x.png"}}
+		return &http.Response{StatusCode: http.StatusFound, Header: h, Body: http.NoBody, Request: r}, nil
+	})}
+	c := New(t.TempDir(), client)
+	if _, _, err := c.get(t.Context(), pictureURL("staticdelivery.nexusmods.com", "/a.png"), Thumb); err == nil {
+		t.Fatal("followed a redirect to a host off the allowlist")
+	}
+	if len(hosts) != 1 {
+		t.Fatalf("requested %v", hosts)
+	}
+}

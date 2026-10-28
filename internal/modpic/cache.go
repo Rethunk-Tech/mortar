@@ -103,6 +103,18 @@ func New(dataDir string, client *http.Client) *Cache {
 	if client == nil {
 		client = http.DefaultClient
 	}
+	if client.CheckRedirect == nil {
+		// A redirect must land on an allowed https host as well, or the allowlist covers only the first hop.
+		secured := *client
+		secured.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+			if len(via) >= 5 {
+				return errors.New("too many redirects")
+			}
+			_, err := parsePicture(req.URL.String())
+			return err
+		}
+		client = &secured
+	}
 	c := &Cache{
 		dir:   filepath.Join(dataDir, "cache", "modpic"),
 		http:  client,
@@ -189,8 +201,6 @@ func sizeOf(px int) int {
 	return Thumb
 }
 
-// key names one size variant of a picture; the prefix keeps full-size pictures cached before variants existed from
-// being served.
 // key names a cached copy; its prefix changes when the copies change, so older ones (an animated picture frozen on its
 // first frame) are fetched again and the old files age out under the budget.
 func key(picture string, px int) string {
