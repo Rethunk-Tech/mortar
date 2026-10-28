@@ -1,5 +1,5 @@
 {
-  "serial": 1793226557,
+  "serial": 1793226625,
   "components": [
     {
       "game": "melonloader",
@@ -592,7 +592,7 @@
         }
       },
       "titleScene": "title",
-      "readySignal": "RoR2.RoR2Application.onLoad",
+      "readySignal": "BaseMainMenuScreen: OnEnter()",
       "deploy": "profile",
       "targets": [
         {

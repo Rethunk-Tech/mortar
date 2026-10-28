@@ -559,7 +559,7 @@
         }
       },
       "titleScene": "title",
-      "readySignal": "RoR2.RoR2Application.onLoad",
+      "readySignal": "BaseMainMenuScreen: OnEnter()",
       "deploy": "profile",
       "targets": [
         {
