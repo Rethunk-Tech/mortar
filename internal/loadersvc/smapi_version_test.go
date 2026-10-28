@@ -63,6 +63,7 @@ func TestEnsureHonoursPin(t *testing.T) {
 	}
 }
 
+// A version the store holds is still installed when the game folder runs another one.
 func TestInstallVersionUsesCache(t *testing.T) {
 	svc, fake := testServiceWithReleases(t, []string{"4.1.0", "4.0.0"})
 	dir := t.TempDir()
@@ -73,8 +74,8 @@ func TestInstallVersionUsesCache(t *testing.T) {
 	if _, err := svc.InstallVersion(context.Background(), "stardew", "", "4.0.0"); err != nil {
 		t.Fatal(err)
 	}
-	if fake.downloads != 0 {
-		t.Fatalf("downloads %d, want cached apply", fake.downloads)
+	if fake.downloads != 1 {
+		t.Fatalf("downloads %d, want the installer to run for a version that is not the current one", fake.downloads)
 	}
 }
 

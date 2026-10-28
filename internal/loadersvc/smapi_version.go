@@ -107,7 +107,7 @@ func (s *Service) installVersion(ctx context.Context, g game.Game, dir, id, load
 	cur, _ := l.Status(loader.Target{InstallDir: dir})
 	_, err = s.items.Path(id, store.LoaderKey(l.ID(), version))
 	switch {
-	case err == nil && !cur.Shared:
+	case err == nil && !cur.Shared && cur.Version == version:
 		if err := s.recordLoader(id, l, version, fromStart); err != nil {
 			return loader.Status{}, err
 		}
