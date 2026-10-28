@@ -5,6 +5,8 @@ import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/inte
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { modsLabel, problemsLabel, updatesLabel } from '../i18n/counts.ts'
 import { useBadges } from '../mods/badges.ts'
+import { problemCount } from '../mods/lookup.ts'
+import { useMods } from '../mods/store.ts'
 import { unlinkCollection } from '../profiles/collectionUnlink.ts'
 import { userModCount } from '../profiles/count.ts'
 import { ProfileMark } from '../profiles/ProfileMark.tsx'
@@ -166,7 +168,9 @@ function HeroName({
 export function Hero({ profile, game }: { profile: Profile; game: string }) {
   const mods = userModCount(profile)
   const updates = useBadges((s) => s.byProfile[profile.id]?.updates ?? 0)
-  const problems = useBadges((s) => s.byProfile[profile.id]?.problems ?? 0)
+  const problems = useMods((s) =>
+    s.problems === null || s.problemsFor !== profile.id ? 0 : problemCount(s.problems),
+  )
   const hero = useSettings((s) => s.profileHero) || 'full'
   const meta = compactMeta(mods, updates, problems).map((part) => {
     if (part.kind === 'mods') {

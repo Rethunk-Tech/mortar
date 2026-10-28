@@ -71,7 +71,9 @@ export const TabHeader = memo(function TabHeaderView() {
   const fits = useSaves((s) => s.fits)
   const setSlot = usePageActionsSlot((s) => s.setSlot)
   const updates = badges?.updates ?? 0
-  const problems = useMods((s) => (s.problems === null ? 0 : problemCount(s.problems)))
+  const problems = useMods((s) =>
+    s.problems === null || s.problemsFor !== id ? 0 : problemCount(s.problems),
+  )
   const saves = saveFits(fits)
   const go = (tab: TabId) => () => setTab(tab)
   // A save that records no mod list cannot fit or miss, so a game with only those shows the plain count.

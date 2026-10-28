@@ -29,7 +29,9 @@ export function HeroGlance({
   const setTab = useTab((s) => s.setTab)
   const setReviewing = useUpdates((s) => s.setReviewing)
   const updates = useBadges((s) => s.byProfile[profile.id]?.updates ?? 0)
-  const problems = useMods((s) => (s.problems === null ? null : problemCount(s.problems)))
+  const problems = useMods((s) =>
+    s.problems === null || s.problemsFor !== profile.id ? null : problemCount(s.problems),
+  )
   const lastRun = useLastRun(game, profile.id, String(profile.updated))
   const when = formatWhen(lastRun)
   const parts = [

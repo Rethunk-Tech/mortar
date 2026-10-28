@@ -3,6 +3,7 @@ import { Menu } from '@mui/material'
 import { ChevronDown, Play, Settings2, Wrench } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import type { Tool } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/tools/models.ts'
 import { MenuAction, MenuNote } from '../shell/MenuAction.tsx'
 import { MenuHeading, MenuRule } from '../shell/TitleMenu.tsx'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
@@ -11,11 +12,13 @@ import { ToolsManageDialog } from '../tools/ToolsManageDialog.tsx'
 import { HomeButton } from './HomeButton.tsx'
 import { ShortcutMenuItems } from './ProfileMenuItems.tsx'
 
+const NO_TOOLS: Tool[] = []
+
 export function LaunchMenu({ game, profile }: { game: string; profile: Profile }) {
   const { t } = useLingui()
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const [manageOpen, setManageOpen] = useState(false)
-  const tools = useTools((s) => s.tools)
+  const tools = useTools((s) => (s.loadedGame === game ? s.tools : NO_TOOLS))
   const load = useTools((s) => s.load)
   const launch = useTools((s) => s.launch)
   useEffect(() => {

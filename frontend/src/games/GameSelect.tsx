@@ -13,6 +13,7 @@ import {
 import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
 import { hasSourceLogo } from '../brand/sources/sourceIcons.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
+import { orderProfiles } from '../game/profileOrder.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { useNowValue } from '../i18n/useNow.ts'
 import { playDirect } from '../launch/directPref.ts'
@@ -215,7 +216,10 @@ function RowView({
   const openGameTile = useOpenGame()
   const open = () => openGameTile(game)
   // A game never played yet still gets Play, for its first profile.
-  const first = cards?.profiles[0]
+  const profileOrder = useSettings((s) => s.profileOrder)
+  const first = cards
+    ? orderProfiles(cards.profiles, profileOrder, cards.lastPlayed?.profile ?? '')[0]
+    : undefined
   const playId = lastPlayedId || first?.id || ''
   const playName = lastPlayedName || first?.name || ''
   const playLast = usePlayLast(game, playId)

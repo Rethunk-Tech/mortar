@@ -18,11 +18,18 @@ interface State {
   launch: (game: string, profileID: string, id: string) => Promise<void>
 }
 
+// The game of the newest load, so a slow list for a game since left never replaces the current one.
+let wanted = ''
+
 export const useTools = create<State>((set, get) => ({
   tools: [],
   loadedGame: '',
   load: async (game) => {
+    wanted = game
     const listed = await List(game)
+    if (wanted !== game) {
+      return
+    }
     set({ tools: listed ?? [], loadedGame: game })
   },
   add: async (game, tool) => {

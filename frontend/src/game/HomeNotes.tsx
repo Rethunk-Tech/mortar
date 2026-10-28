@@ -10,7 +10,7 @@ import { MarkdownView } from '../mods/MarkdownView.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { space } from '../theme/density.ts'
 import { errorDetails } from '../toasts/errorKind.ts'
-import { errorMessage } from '../toasts/report.ts'
+import { errorMessage, reportError } from '../toasts/report.ts'
 import { HomePanel } from './HomePanel.tsx'
 
 const DEBOUNCE_MS = 800
@@ -23,7 +23,7 @@ const STATUS_TEXT: Record<'idle' | 'saving' | 'saved', () => string> = {
   saved: () => i18n._(msg`Saved`),
 }
 
-type Status = 'idle' | 'saving' | 'saved' | { error: string }
+type Status = 'idle' | 'saving' | 'saved' | { error: unknown }
 
 function NotesEditor({ profile, onDone }: { profile: Profile; onDone: () => void }) {
   const { t } = useLingui()
@@ -34,6 +34,7 @@ function NotesEditor({ profile, onDone }: { profile: Profile; onDone: () => void
   const latest = useRef(profile.notes)
   const saved = useRef(profile.notes)
   const inflight = useRef<boolean>(false)
+  const alive = useRef<boolean>(true)
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   const save = useCallback((): void => {
@@ -54,15 +55,21 @@ function NotesEditor({ profile, onDone }: { profile: Profile; onDone: () => void
       },
       (error) => {
         inflight.current = false
-        setStatus({ error: errorDetails(error) })
+        if (alive.current) {
+          setStatus({ error })
+        } else {
+          reportError(i18n._(msg`Could not save the notes`))(error)
+        }
       },
     )
   }, [game, profile.id, replace])
 
   useEffect(() => {
     globalThis.addEventListener('blur', save)
+    alive.current = true
     return () => {
       globalThis.removeEventListener('blur', save)
+      alive.current = false
       save()
     }
   }, [save])

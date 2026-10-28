@@ -1,3 +1,4 @@
+import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { FolderOpen, Package } from 'lucide-react'
@@ -12,6 +13,7 @@ import { PickExecutable } from '../../bindings/github.com/Rethunk-Tech/mortar/in
 import { SetGameFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { SHIMLOADER, UNITY } from '../brand/productNames.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
+import { i18n } from '../i18n/index.ts'
 import { TileGrid } from '../share/TileGrid.tsx'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { Field, FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
@@ -124,6 +126,11 @@ function RemoveGameConfirm({
     />
   )
 }
+
+const addIssue = (basicsDone: boolean): string =>
+  basicsDone
+    ? i18n._(msg`Give the Thunderstore community first.`)
+    : i18n._(msg`Choose the game's program and give it a name first.`)
 
 export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useLingui()
@@ -246,7 +253,8 @@ export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () =>
       </>
     )
   }, [exe, loader, community, guessed, loaders, round, suggested, mine, t])
-  const ready = exe !== '' && hasName && (loader !== 'shimloader' || community.trim() !== '')
+  const needsCommunity = loader === 'shimloader' && community.trim() === ''
+  const ready = exe !== '' && hasName && !needsCommunity
   return (
     <FormDialog
       open={open}
@@ -254,7 +262,7 @@ export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () =>
       size="md"
       title={t`Add a game`}
       submitLabel={t`Add`}
-      issue={ready ? '' : t`Choose the game's program and give it a name first.`}
+      issue={ready ? '' : addIssue(exe !== '' && hasName)}
       dirty={hasName || exe !== ''}
       busy={busy}
       onSubmit={add}

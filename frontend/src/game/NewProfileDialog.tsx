@@ -116,8 +116,9 @@ function StartFromSelect({
 }
 
 // Creates an empty profile, then queues the starter's mods for it through the normal download path.
-async function createFromStarter(name: string, starter: StarterTemplate) {
+async function createFromStarter(name: string, starter: StarterTemplate, onCreated: () => void) {
   await useProfiles.getState().create(name)
+  onCreated()
   const queued = await download(starterWants(starter))
   const mods = starter.packages ?? []
   useToasts.getState().push({
@@ -148,8 +149,15 @@ interface Start {
 }
 
 // Creates the profile from a template and reports what is still to download.
-async function createFromTemplate(game: string, template: Template, name: string, created: string) {
+async function createFromTemplate(
+  game: string,
+  template: Template,
+  names: { name: string; created: string },
+  onCreated: () => void,
+) {
+  const { name, created } = names
   const result = await NewProfileFromTemplate(game, template.name, name)
+  onCreated()
   await useProfiles.getState().refresh()
   useProfiles.getState().open(result.profile.id)
   const missing = result.missing ?? []
@@ -180,23 +188,33 @@ async function createFromTemplate(game: string, template: Template, name: string
   })
 }
 
-async function createFrom(game: string, name: string, start: Start, created: string) {
+// onCreated runs as soon as the profile exists, so a later step that fails never leaves the dialog open to create it twice.
+async function createFrom(
+  game: string,
+  name: string,
+  start: Start,
+  done: { created: string; onCreated: () => void },
+) {
+  const { created, onCreated } = done
   const { template, copyOf, starter, savedGroup } = start
   if (starter) {
-    await createFromStarter(name, starter)
+    await createFromStarter(name, starter, onCreated)
   } else if (savedGroup) {
     await useProfiles.getState().create(name)
+    onCreated()
     const profileId = useProfiles.getState().openId
     savedGroupApplied(await Apply(game, savedGroup, profileId), profileId)
   } else if (copyOf !== '') {
     const copy = await Duplicate(game, copyOf)
+    onCreated()
     await Rename(game, copy.id, name)
     await useProfiles.getState().refresh()
     useProfiles.getState().open(copy.id)
   } else if (template) {
-    await createFromTemplate(game, template, name, created)
+    await createFromTemplate(game, template, { name, created }, onCreated)
   } else {
     await useProfiles.getState().create(name)
+    onCreated()
   }
 }
 
@@ -206,8 +224,7 @@ function useCreate(game: string, onClose: () => void) {
   const submit = (name: string, start: Start) => {
     run(
       async () => {
-        await createFrom(game, name, start, t`Created ${name}`)
-        onClose()
+        await createFrom(game, name, start, { created: t`Created ${name}`, onCreated: onClose })
       },
       { errorTitle: t`Could not create the profile` },
     )

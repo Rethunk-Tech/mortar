@@ -236,7 +236,9 @@ function Sections({ rail }: { rail: boolean }) {
   const setTab = useTab((s) => s.setTab)
   const openId = useProfiles((s) => s.openId)
   const updates = useBadges((s) => s.byProfile[openId]?.updates ?? 0)
-  const problems = useMods((s) => (s.problems === null ? null : problemCount(s.problems)))
+  const problems = useMods((s) =>
+    s.problems === null || s.problemsFor !== openId ? null : problemCount(s.problems),
+  )
   const caps = {
     order: Boolean(loader?.order),
     console: Boolean(loader?.console),

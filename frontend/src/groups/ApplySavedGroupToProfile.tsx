@@ -27,9 +27,10 @@ export function ApplySavedGroupToProfile({
   const open = group !== null
   useEffect(() => {
     if (open) {
-      setProfileId(useProfiles.getState().openId || (profiles[0]?.id ?? ''))
+      const state = useProfiles.getState()
+      setProfileId(state.openId || (state.profiles[0]?.id ?? ''))
     }
-  }, [open, profiles])
+  }, [open])
   const apply = () => {
     if (!group) {
       return

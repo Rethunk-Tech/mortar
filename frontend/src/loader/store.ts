@@ -46,7 +46,7 @@ export const useLoader = create<{
   errorDetail: '',
   check: async (game) => {
     if (get().game !== game) {
-      set({ status: null, game })
+      set({ status: null, game, installing: false, steps: [], error: '', errorDetail: '' })
     }
     try {
       // What is installed is read from disk at once; the newest release, which can take seconds on a cold start, follows.
@@ -93,6 +93,10 @@ export const useLoader = create<{
 export function initLoader() {
   Events.On('loader:state', (event) => {
     const { game, installing, error } = event.data
+    const shown = useLoader.getState().game
+    if (shown !== '' && game !== shown) {
+      return
+    }
     if (installing) {
       useLoader.setState({ installing: true, steps: [], error: '', errorDetail: '' })
       return

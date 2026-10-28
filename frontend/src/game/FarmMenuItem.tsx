@@ -76,7 +76,7 @@ export function FarmDialog({
           const count = result.queued
           push({
             kind: manual.length > 0 ? 'warning' : 'success',
-            title: t`${count} to download`,
+            title: count === 0 ? t`Nothing to download` : t`${count} to download`,
             ...(manual.length > 0
               ? { body: t`Install by hand: ${{ names: listNames(manual) }}` }
               : {}),
