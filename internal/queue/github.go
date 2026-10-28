@@ -286,24 +286,25 @@ func (s *Service) installStaged(ctx context.Context, it Item) error {
 		s.installMu.Lock()
 		res, err := s.d.InstallRemap(it.Game, it.Profile, it.staged, it.chosenRoot, src)
 		s.installMu.Unlock()
-		if errors.Is(err, store.ErrNotFound) {
-			s.mu.Lock()
-			if cur := s.find(it.ID); cur != nil {
-				cur.staged, cur.chosenRoot = "", ""
-			}
-			s.mu.Unlock()
-		}
+		s.dropStagedIfGone(it.ID, err)
 		return s.afterInstall(it.ID, res, err, false)
 	}
 	s.installMu.Lock()
 	res, err := s.d.InstallStaged(it.Game, it.Profile, it.staged, src)
 	s.installMu.Unlock()
-	if errors.Is(err, store.ErrNotFound) {
-		s.mu.Lock()
-		if cur := s.find(it.ID); cur != nil {
-			cur.staged = ""
-		}
-		s.mu.Unlock()
-	}
+	s.dropStagedIfGone(it.ID, err)
 	return s.afterInstall(it.ID, res, err, false)
+}
+
+// dropStagedIfGone forgets the item's staged copy, and the root chosen in it, when the install found it gone from the
+// store, so a retry downloads again.
+func (s *Service) dropStagedIfGone(id string, err error) {
+	if !errors.Is(err, store.ErrNotFound) {
+		return
+	}
+	s.mu.Lock()
+	if cur := s.find(id); cur != nil {
+		cur.staged, cur.chosenRoot = "", ""
+	}
+	s.mu.Unlock()
 }
