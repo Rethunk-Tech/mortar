@@ -75,3 +75,20 @@ func TestWriteStreamErrorLeavesNoTempAndKeepsTarget(t *testing.T) {
 		}
 	}
 }
+
+func TestReadJournalSkipsMissingAndBusyAndReadsTheRest(t *testing.T) {
+	dir := filepath.Join(t.TempDir(), "journal")
+	var v struct{ N int }
+	if found, err := ReadJournal(filepath.Join(dir, "j.json"), nil, &v); found || err != nil {
+		t.Fatalf("missing: %v, %v", found, err)
+	}
+	if err := WriteJSONIn(dir, "j.json", struct{ N int }{7}); err != nil {
+		t.Fatal(err)
+	}
+	if found, err := ReadJournal(filepath.Join(dir, "j.json"), func() bool { return true }, &v); found || err != nil || v.N != 0 {
+		t.Fatalf("busy: %v, %v, %d", found, err, v.N)
+	}
+	if found, err := ReadJournal(filepath.Join(dir, "j.json"), func() bool { return false }, &v); !found || err != nil || v.N != 7 {
+		t.Fatalf("read: %v, %v, %d", found, err, v.N)
+	}
+}

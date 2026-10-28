@@ -602,11 +602,7 @@ func seedConfigs(dir string, files map[string]packageFile) error {
 }
 
 func writePlaced(dir string, rec map[string]placedRec) error {
-	b, err := json.Marshal(rec)
-	if err != nil {
-		return err
-	}
-	return datadir.WriteFile(filepath.Join(dir, placedFile), b, 0o600)
+	return datadir.WriteJSON(filepath.Join(dir, placedFile), rec)
 }
 
 // placedCurrent reports a placed file that still matches its source: same size and not older.

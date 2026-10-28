@@ -3,7 +3,6 @@ package deploy
 import (
 	"cmp"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -82,14 +81,7 @@ func HasJournal(dir string) bool {
 }
 
 func persist(m Manifest) error {
-	b, err := json.Marshal(m)
-	if err != nil {
-		return err
-	}
-	if err := os.MkdirAll(m.View.JournalDir, 0o700); err != nil {
-		return err
-	}
-	return datadir.WriteFile(journalPath(m.View.JournalDir), b, 0o600)
+	return datadir.WriteJSONIn(m.View.JournalDir, journalFile, m)
 }
 
 // ErrUnrecovered is Apply's refusal to deploy over the journal of a deploy that was never taken back: a second
@@ -353,19 +345,13 @@ func writeBackFile(o Placed, i int, log *opLog) (bool, error) {
 // Recover finishes an unfinished deploy found at journalDir: it does nothing while alive reports the game running,
 // else it purges.
 func (p Place) Recover(ctx context.Context, journalDir string, alive func() bool) error {
-	b, err := fsx.ReadFile(journalPath(journalDir))
-	if errors.Is(err, fs.ErrNotExist) {
-		return nil
-	}
-	if err != nil {
-		return err
-	}
-	if alive != nil && alive() {
-		return nil
-	}
 	var m Manifest
-	if err := json.Unmarshal(b, &m); err != nil {
+	found, err := datadir.ReadJournal(journalPath(journalDir), alive, &m)
+	if err != nil {
 		return fmt.Errorf("read the deploy journal: %w", err)
+	}
+	if !found {
+		return nil
 	}
 	if strings.TrimSpace(m.View.JournalDir) == "" {
 		m.View.JournalDir = journalDir

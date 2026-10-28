@@ -200,11 +200,7 @@ func (l Loader) Install(_ context.Context, t loader.Target, pkg loader.Package, 
 	if progress != nil {
 		progress(loader.StepFiles)
 	}
-	b, err := json.Marshal(marker{Version: pkg.Version, Placed: placed})
-	if err != nil {
-		return "", err
-	}
-	if err := datadir.WriteFile(filepath.Join(t.ProfileDir, l.markerFile()), b, 0o600); err != nil {
+	if err := datadir.WriteJSON(filepath.Join(t.ProfileDir, l.markerFile()), marker{Version: pkg.Version, Placed: placed}); err != nil {
 		return "", err
 	}
 	return pkg.Version, nil

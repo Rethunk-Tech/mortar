@@ -116,14 +116,7 @@ func (b *peerBook) saveLocked() error {
 	if b.dir == "" {
 		return nil
 	}
-	raw, err := json.MarshalIndent(b.file, "", "  ")
-	if err != nil {
-		return err
-	}
-	if err := os.MkdirAll(b.dir, 0o700); err != nil {
-		return err
-	}
-	return datadir.WriteFile(filepath.Join(b.dir, "peers.json"), raw, 0o600)
+	return datadir.WriteJSONIn(b.dir, "peers.json", b.file)
 }
 
 func (b *peerBook) self() (string, error) {

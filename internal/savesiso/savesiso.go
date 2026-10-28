@@ -4,10 +4,8 @@
 package savesiso
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io/fs"
 	"os"
 	"path/filepath"
 
@@ -49,14 +47,7 @@ func HasJournal(dir string) bool {
 }
 
 func persist(m Manifest) error {
-	b, err := json.Marshal(m)
-	if err != nil {
-		return err
-	}
-	if err := os.MkdirAll(m.Journal, 0o700); err != nil {
-		return err
-	}
-	return datadir.WriteFile(journalPath(m.Journal), b, 0o600)
+	return datadir.WriteJSONIn(m.Journal, journalFile, m)
 }
 
 func isLink(p string) bool {
@@ -172,18 +163,8 @@ func Purge(m Manifest) error {
 
 // Recover finishes an unfinished swap found at journal: nothing while alive reports the game running, else Purge.
 func Recover(journal string, alive func() bool) error {
-	b, err := fsx.ReadFile(journalPath(journal))
-	if errors.Is(err, fs.ErrNotExist) {
-		return nil
-	}
-	if err != nil {
-		return err
-	}
-	if alive != nil && alive() {
-		return nil
-	}
 	var m Manifest
-	if err := json.Unmarshal(b, &m); err != nil {
+	if found, err := datadir.ReadJournal(journalPath(journal), alive, &m); !found || err != nil {
 		return err
 	}
 	return Purge(m)

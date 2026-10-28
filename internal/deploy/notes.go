@@ -48,11 +48,7 @@ func writeNotes(journalDir string, notes []Note) error {
 		}
 		return err
 	}
-	b, err := json.Marshal(notes)
-	if err != nil {
-		return err
-	}
-	return datadir.WriteFile(notesPath(journalDir), b, 0o600)
+	return datadir.WriteJSON(notesPath(journalDir), notes)
 }
 
 // Notes lists the files an earlier purge left in the shared folder that are still there, with their current size; a

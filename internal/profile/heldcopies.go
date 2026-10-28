@@ -36,11 +36,7 @@ func writeHeld(dir string, held map[string]int64) error {
 		}
 		return err
 	}
-	b, err := json.Marshal(held)
-	if err != nil {
-		return err
-	}
-	return datadir.WriteFile(filepath.Join(dir, heldIndex), b, 0o600)
+	return datadir.WriteJSON(filepath.Join(dir, heldIndex), held)
 }
 
 // markHeld notes that rel was held at now; a copy that comes back is forgotten.

@@ -2,7 +2,6 @@ package melonloader
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"net/http"
 	"path/filepath"
@@ -41,18 +40,12 @@ type marker struct {
 
 func readMarker(profileDir string) marker {
 	var m marker
-	if b, err := fsx.ReadFile(filepath.Join(profileDir, markerFile)); err == nil {
-		_ = json.Unmarshal(b, &m)
-	}
+	_, _ = datadir.ReadJSON(filepath.Join(profileDir, markerFile), &m)
 	return m
 }
 
 func writeMarker(profileDir string, m marker) error {
-	b, err := json.Marshal(m)
-	if err != nil {
-		return err
-	}
-	return datadir.WriteFile(filepath.Join(profileDir, markerFile), b, 0o600)
+	return datadir.WriteJSON(filepath.Join(profileDir, markerFile), m)
 }
 
 func (Loader) ID() string { return ID }

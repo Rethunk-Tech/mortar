@@ -1,10 +1,8 @@
 package savesiso
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io/fs"
 	"os"
 	"path/filepath"
 
@@ -34,14 +32,7 @@ func fileJournalPath(dir string) string { return filepath.Join(dir, fileJournal)
 func HasFileJournal(dir string) bool { return exists(fileJournalPath(dir)) }
 
 func persistFile(m FileManifest) error {
-	b, err := json.Marshal(m)
-	if err != nil {
-		return err
-	}
-	if err := os.MkdirAll(m.Journal, 0o700); err != nil {
-		return err
-	}
-	return datadir.WriteFile(fileJournalPath(m.Journal), b, 0o600)
+	return datadir.WriteJSONIn(m.Journal, fileJournal, m)
 }
 
 // SeedFile copies the player's file to profile when the profile has none yet, so a profile starts from the player's
@@ -125,18 +116,8 @@ func PurgeFile(m FileManifest) error {
 
 // RecoverFile finishes an unfinished file swap found at journal: nothing while alive reports the game running.
 func RecoverFile(journal string, alive func() bool) error {
-	b, err := fsx.ReadFile(fileJournalPath(journal))
-	if errors.Is(err, fs.ErrNotExist) {
-		return nil
-	}
-	if err != nil {
-		return err
-	}
-	if alive != nil && alive() {
-		return nil
-	}
 	var m FileManifest
-	if err := json.Unmarshal(b, &m); err != nil {
+	if found, err := datadir.ReadJournal(fileJournalPath(journal), alive, &m); !found || err != nil {
 		return err
 	}
 	return PurgeFile(m)

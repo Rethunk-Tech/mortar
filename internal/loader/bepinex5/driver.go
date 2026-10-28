@@ -2,7 +2,6 @@ package bepinex5
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"io/fs"
 	"log"
@@ -49,17 +48,12 @@ type marker struct {
 }
 
 func writeMarker(profileDir string, m marker) error {
-	b, err := json.Marshal(m)
-	if err != nil {
-		return err
-	}
-	return datadir.WriteFile(filepath.Join(profileDir, markerFile), b, 0o600)
+	return datadir.WriteJSON(filepath.Join(profileDir, markerFile), m)
 }
 
 func readMarker(profileDir string) marker {
 	var m marker
-	b, err := fsx.ReadFile(filepath.Join(profileDir, markerFile))
-	if err != nil || json.Unmarshal(b, &m) != nil {
+	if found, err := datadir.ReadJSON(filepath.Join(profileDir, markerFile), &m); !found || err != nil {
 		return marker{Doorstop: defaultDoorstop}
 	}
 	return m

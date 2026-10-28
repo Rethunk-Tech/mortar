@@ -35,6 +35,30 @@ func WriteJSON(path string, v any) error {
 	return WriteFile(path, b, 0o600)
 }
 
+// WriteJSONIn is WriteJSON to name inside dir, making dir first.
+func WriteJSONIn(dir, name string, v any) error {
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		return err
+	}
+	return WriteJSON(filepath.Join(dir, name), v)
+}
+
+// ReadJournal reads the JSON journal at path into v unless the file is missing or busy reports that it must be left
+// alone for now; found says whether v was read.
+func ReadJournal(path string, busy func() bool, v any) (found bool, err error) {
+	b, err := fsx.ReadFile(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	if busy != nil && busy() {
+		return false, nil
+	}
+	return true, json.Unmarshal(b, v)
+}
+
 // WriteFile replaces path with data through a temp file and rename, so a crash never leaves it truncated.
 func WriteFile(path string, data []byte, perm os.FileMode) error {
 	return WriteStream(path, perm, func(w io.Writer) error {
