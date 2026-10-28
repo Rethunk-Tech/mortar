@@ -155,8 +155,8 @@ func (c clamd) scanFile(ctx context.Context, path string) (string, error) {
 // error.
 func replyOnWriteError(conn net.Conn, writeErr error) (string, error) {
 	name, err := parseReply(conn)
-	if err == nil {
-		return name, nil
+	if err == nil || errors.Is(err, errTooLarge) {
+		return name, err
 	}
 	return "", writeErr
 }
