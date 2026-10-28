@@ -604,16 +604,20 @@ func run() error {
 		app.Event.Emit(nexussvc.ChangedEvent, nil)
 	}
 	plays.Emit = emit
+	// warmDetails fills the detail dialog's cache after an install, while the account is known to be signed in and
+	// online.
+	warmDetails := func(ctx context.Context, game string, src profile.Source, err error) {
+		if err == nil {
+			go func() { _, _ = nexusSvc.Details(context.WithoutCancel(ctx), game, src.ModID) }()
+			go pictures.Ensure(context.WithoutCancel(ctx), src.Picture)
+		}
+	}
 	queueSvc, err := queue.New(queue.Deps{
 		Client:  func() (*nexus.Client, error) { return nexussvc.Authed(store, nexusClient) },
 		Premium: func() bool { return store.Get().NexusPremium },
 		Install: func(ctx context.Context, game, profileID, path string, src profile.Source) (profile.InstallResult, error) {
 			res, err := profiles.InstallSource(ctx, game, profileID, path, src)
-			if err == nil {
-				// Warm the detail dialog's cache while the account is known to be signed in and online.
-				go func() { _, _ = nexusSvc.Details(context.WithoutCancel(ctx), game, src.ModID) }()
-				go pictures.Ensure(context.WithoutCancel(ctx), src.Picture)
-			}
+			warmDetails(ctx, game, src, err)
 			return res, err
 		},
 		Stored: func(game, key string) bool {
@@ -642,10 +646,7 @@ func run() error {
 		},
 		InstallExtra: func(ctx context.Context, game, profileID, entryKey, path string, src profile.Source) (profile.InstallResult, error) {
 			res, err := profiles.InstallNexusExtra(ctx, game, profileID, entryKey, path, src)
-			if err == nil {
-				go func() { _, _ = nexusSvc.Details(context.WithoutCancel(ctx), game, src.ModID) }()
-				go pictures.Ensure(context.WithoutCancel(ctx), src.Picture)
-			}
+			warmDetails(ctx, game, src, err)
 			return res, err
 		},
 		Verify: func(ctx context.Context, id mod.ID, owner, repo string) (bool, error) {
