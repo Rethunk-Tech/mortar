@@ -977,6 +977,9 @@ func run() error {
 	browseSvc.SourceOrder = func(game string) []string {
 		return strings.FieldsFunc(store.Get().GamePrefs(game).SourceOrder, func(r rune) bool { return r == ',' })
 	}
+	browseSvc.SourcesOff = func(game string) []string {
+		return strings.FieldsFunc(store.Get().GamePrefs(game).SourcesOff, func(r rune) bool { return r == ',' })
+	}
 	configSvc := &configsvc.Service{
 		Profiles: profiles,
 		SetJSON: func(game, profileID string, uniqueID mod.ID, field, value string) error {

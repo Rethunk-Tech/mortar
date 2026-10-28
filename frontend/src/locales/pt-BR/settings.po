@@ -1477,6 +1477,10 @@ msgstr ""
 msgid "{launcher} library {path} is not reachable: unmounted, or outside the folders Mortar's {app} may read"
 msgstr ""
 
+#: src/settings/sections/SourceOrder.tsx
+msgid "Search {source}"
+msgstr ""
+
 #: src/settings/GameSettingsPage.tsx
 msgid "{name} profile history"
 msgstr ""
@@ -1603,6 +1607,10 @@ msgstr ""
 
 #: src/settings/PrefRow.tsx
 msgid "Every profile of this game shares this one."
+msgstr ""
+
+#: src/settings/sections/SourceOrder.tsx
+msgid "When a mod is on several sites, its card installs from the first one here. Browse leaves out a source that is off."
 msgstr ""
 
 #: src/settings/sections/StreamOverlay.tsx
@@ -2791,10 +2799,6 @@ msgstr ""
 msgid "Reset game install"
 msgstr ""
 
-#: src/settings/sections/DataHistory.tsx
-msgid "Profile history: {profile}"
-msgstr ""
-
 #: src/settings/prefCopy.ts
 msgid "Save backup folder"
 msgstr ""
@@ -3076,10 +3080,6 @@ msgstr ""
 
 #: src/settings/prefCopyModsView.ts
 msgid "Author on cards"
-msgstr ""
-
-#: src/settings/sections/SourceOrder.tsx
-msgid "When a mod is on several sites, its card installs from the first one here."
 msgstr ""
 
 #: src/settings/sections/Appearance.tsx

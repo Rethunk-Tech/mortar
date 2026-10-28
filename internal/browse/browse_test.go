@@ -121,6 +121,10 @@ func TestSearchAllInterleavesAndNamesFailedSources(t *testing.T) {
 	if _, err := (&Client{}).searchAll(context.Background(), components.GameInfo{ID: "z", Sources: []components.GameSource{{ID: "broken"}}}, "x", 1, Filter{}); err == nil {
 		t.Fatal("all sources failing must be an error")
 	}
+	off, err := (&Client{Off: []string{"alpha", "broken"}}).searchAll(context.Background(), game, "x", 1, Filter{})
+	if err != nil || len(off.Items) != 1 || off.Items[0].ID != "b1" || len(off.Failed) != 0 {
+		t.Fatalf("sources turned off are still searched: %+v %v", off, err)
+	}
 }
 
 type adultSource struct{}

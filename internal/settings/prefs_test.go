@@ -128,7 +128,7 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		"shareIncludeConfigFiles": "false", "shareIncludeProblemChoices": "false", "shareIncludeLibraries": "false", "verifyNexusMD5": "true", "launchAtLogin": "true",
 		"startMinimised": "true", "rememberWindow": "true", "systemTitleBar": "true", "extensionConnection": "off",
 		"offerNewDownloads": "false", "updateDigest": "each", "extraModsFolder": "/var/tmp/mortar-extra", "showDotHiddenMods": "true", "oldFilesOnUpdate": "keep", "gameSettingsMode": "warn", "font": "Open Sans", "cacheClearing": "off", "dependencyVersions": "exact", "thunderstoreHost": "gcdn.thunderstore.io",
-		"saveBackupHours": "6", "saveBackupKeep": "3", "sourceOrder": "github,nexus", "watchFolders": "/var/tmp/mortar-watch", "syncFolder": "/var/tmp/mortar-sync", "browseFilters": "installed=hide", "browsePicks": `{"include":["Maps"],"exclude":[],"sort":"downloads"}`, "showAdultContent": "true",
+		"saveBackupHours": "6", "saveBackupKeep": "3", "sourceOrder": "github,nexus", "sourcesOff": "curseforge", "watchFolders": "/var/tmp/mortar-watch", "syncFolder": "/var/tmp/mortar-sync", "browseFilters": "installed=hide", "browsePicks": `{"include":["Maps"],"exclude":[],"sort":"downloads"}`, "showAdultContent": "true",
 		"keepInTray": "false", "includeBetaReleases": "false", "includePrereleaseModVersions": "true", "askEndorseMods": "true", "listColumns": "on,name,version",
 		"checkOnlyEnabledMods": "true", "enableModsWhenInstalled": "false", "tellWhenLoaderOut": "false", "syncMode": "own", "syncOwnFolder": "/var/tmp/mortar-sync-own",
 	}

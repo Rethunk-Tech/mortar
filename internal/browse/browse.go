@@ -69,6 +69,8 @@ type Client struct {
 	Hidden func(Item) bool
 	// Prefer lists source ids that rank ahead of the rest of the game's sources, which keep catalog order.
 	Prefer []string
+	// Off lists source ids the player turned off, which the all-sources search skips.
+	Off []string
 	// Compat is the game's compatibility list; nil when the game has none, so nothing is marked broken.
 	Compat func(ctx context.Context) (meta.CompatIndex, error)
 	// Identity gives a hit's package identity from what the open profile holds; nil or "" falls back to the
@@ -121,7 +123,9 @@ func (c *Client) Search(ctx context.Context, game, sourceID, text string, page i
 // interleaves the answers, so each keeps its own ranking. Sources that fail, and parts of a source that did not answer,
 // are named in Failed; only when all fail is it an error.
 func (c *Client) searchAll(ctx context.Context, info components.GameInfo, text string, page int, f Filter) (Page, error) {
-	sources := slices.DeleteFunc(source.Searchable(info), func(s source.Source) bool { return source.Unavailable(s) != "" })
+	sources := slices.DeleteFunc(source.Searchable(info), func(s source.Source) bool {
+		return source.Unavailable(s) != "" || slices.Contains(c.Off, s.ID())
+	})
 	if len(f.Include) > 0 {
 		// A source with no categories cannot match an include list.
 		sources = slices.DeleteFunc(sources, func(s source.Source) bool {

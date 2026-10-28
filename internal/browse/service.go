@@ -2,6 +2,7 @@ package browse
 
 import (
 	"context"
+	"slices"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -20,6 +21,8 @@ type Service struct {
 	HiddenMod func(game string, it Item) bool
 	// SourceOrder is the game's preferred source ids, first first; nil means catalog order.
 	SourceOrder func(game string) []string
+	// SourcesOff is the game's source ids the player turned off; nil means none.
+	SourcesOff func(game string) []string
 	// Installed reads the manifests of a profile's mods, whose update keys name the pages they came from; nil skips them.
 	Installed func(game, profileID string) ([]profile.Installed, error)
 	// Compat returns the game's compatibility list lookup, or nil when the game has none.
@@ -42,6 +45,9 @@ func (s *Service) Search(ctx context.Context, game, sourceID, text string, page 
 	c := &Client{Version: s.Version, ShowAdult: s.ShowAdult != nil && s.ShowAdult()}
 	if s.SourceOrder != nil {
 		c.Prefer = s.SourceOrder(game)
+	}
+	if s.SourcesOff != nil {
+		c.Off = s.SourcesOff(game)
 	}
 	if s.HiddenMod != nil {
 		c.Hidden = func(it Item) bool { return s.HiddenMod(game, it) }
@@ -75,14 +81,20 @@ type SourceInfo struct {
 	Unavailable string `json:"unavailable"`
 	// Sorts are the Sort values the source orders by on its own server, besides best match.
 	Sorts []string `json:"sorts"`
+	// Off is true when the player turned the source off for the game.
+	Off bool `json:"off"`
 }
 
 // SearchableSources lists the game's sources that can be searched, in catalog order.
 func (s *Service) SearchableSources(game string) []SourceInfo {
 	out := []SourceInfo{}
+	var off []string
+	if s.SourcesOff != nil {
+		off = s.SourcesOff(game)
+	}
 	if info, ok := catalogGame(game); ok {
 		for _, src := range source.Searchable(info) {
-			out = append(out, SourceInfo{ID: src.ID(), Name: src.Name(), Unavailable: source.Unavailable(src), Sorts: source.SortsOf(src)})
+			out = append(out, SourceInfo{ID: src.ID(), Name: src.Name(), Unavailable: source.Unavailable(src), Sorts: source.SortsOf(src), Off: slices.Contains(off, src.ID())})
 		}
 	}
 	return out

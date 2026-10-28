@@ -1477,6 +1477,10 @@ msgstr "Browser extension cannot reach Mortar in {app} (manifest points elsewher
 msgid "{launcher} library {path} is not reachable: unmounted, or outside the folders Mortar's {app} may read"
 msgstr "{launcher} library {path} is not reachable: unmounted, or outside the folders Mortar's {app} may read"
 
+#: src/settings/sections/SourceOrder.tsx
+msgid "Search {source}"
+msgstr "Search {source}"
+
 #: src/settings/GameSettingsPage.tsx
 msgid "{name} profile history"
 msgstr "{name} profile history"
@@ -1604,6 +1608,10 @@ msgstr "Portable copy: data is kept in {portableDir}"
 #: src/settings/PrefRow.tsx
 msgid "Every profile of this game shares this one."
 msgstr "Every profile of this game shares this one."
+
+#: src/settings/sections/SourceOrder.tsx
+msgid "When a mod is on several sites, its card installs from the first one here. Browse leaves out a source that is off."
+msgstr "When a mod is on several sites, its card installs from the first one here. Browse leaves out a source that is off."
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Crew"
@@ -2791,10 +2799,6 @@ msgstr "Every Play"
 msgid "Reset game install"
 msgstr "Reset game install"
 
-#: src/settings/sections/DataHistory.tsx
-msgid "Profile history: {profile}"
-msgstr "Profile history: {profile}"
-
 #: src/settings/prefCopy.ts
 msgid "Save backup folder"
 msgstr "Save backup folder"
@@ -3077,10 +3081,6 @@ msgstr "{size} used"
 #: src/settings/prefCopyModsView.ts
 msgid "Author on cards"
 msgstr "Author on cards"
-
-#: src/settings/sections/SourceOrder.tsx
-msgid "When a mod is on several sites, its card installs from the first one here."
-msgstr "When a mod is on several sites, its card installs from the first one here."
 
 #: src/settings/sections/Appearance.tsx
 msgid "Window background"

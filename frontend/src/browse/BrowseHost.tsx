@@ -62,7 +62,11 @@ function BrowseHost({ game, profileID }: { game: string; profileID: string }) {
   const premium = useNexus((state) => state.premium)
   // Both answers arrive before the page mounts, so it renders once with them rather than once per answer.
   const { data, loading } = useLoaded(
-    () => Promise.all([SearchableSources(game), HasCompat(game)]),
+    () =>
+      Promise.all([
+        SearchableSources(game).then((found) => (found ?? []).filter((s) => !s.off)),
+        HasCompat(game),
+      ]),
     [game],
     null,
     reportUnexpected,

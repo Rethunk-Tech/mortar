@@ -87,6 +87,8 @@ type GameSettings struct {
 	// SourceOrder is the comma-separated source ids the player prefers, first first; sources it omits follow in
 	// catalog order.
 	SourceOrder string `json:"sourceOrder,omitempty"`
+	// SourcesOff is the comma-separated source ids the player turned off; Browse neither shows nor searches them.
+	SourcesOff string `json:"sourcesOff,omitempty"`
 	// BrowseFilters is Browse's "Show" choice for this game: space-separated row=mode pairs (installed, obsolete,
 	// broken; off, gray or hide).
 	BrowseFilters string `json:"browseFilters,omitempty"`
@@ -300,6 +302,7 @@ var registry = withDefaults([]pref{
 	}),
 	strPref("browseFilters", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).BrowseFilters }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.BrowseFilters = v; putGame(s, g, gp) }),
 	strPref("browsePicks", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).BrowsePicks }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.BrowsePicks = v; putGame(s, g, gp) }),
+	strPref("sourcesOff", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).SourcesOff }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.SourcesOff = v; putGame(s, g, gp) }),
 	strPref("sourceOrder", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).SourceOrder }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.SourceOrder = v; putGame(s, g, gp) }),
 	overridable(enumPref("gameSettingsMode", ScopeGame, gameSettingsModeValues, func(s Settings, g string) string { return s.GamePrefs(g).GameSettingsMode }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.GameSettingsMode = v; putGame(s, g, gp) })),
 	overridable(enumPref("cacheClearing", ScopeGame, cacheClearingValues, func(s Settings, g string) string { return s.GamePrefs(g).CacheClearing }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.CacheClearing = v; putGame(s, g, gp) })),
@@ -399,6 +402,9 @@ func putGame(s *Settings, gameID string, g GameSettings) {
 func mergeGame(dst *GameSettings, src GameSettings) {
 	if src.SourceOrder != "" {
 		dst.SourceOrder = src.SourceOrder
+	}
+	if src.SourcesOff != "" {
+		dst.SourcesOff = src.SourcesOff
 	}
 	if src.ProtonVersion != "" {
 		dst.ProtonVersion = src.ProtonVersion

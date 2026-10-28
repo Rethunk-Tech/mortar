@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Typography } from '@mui/material'
+import { Box, Switch, Typography } from '@mui/material'
 import { ArrowDown, ArrowUp } from 'lucide-react'
 import { SearchableSources } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/browse/service.ts'
 import { SetByKey } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
@@ -24,8 +24,11 @@ function SourceOrder() {
   const { t } = useLingui()
   const game = useCurrentGame()
   const label = t`Preferred source`
-  const description = t`When a mod is on several sites, its card installs from the first one here.`
+  const description = t`When a mod is on several sites, its card installs from the first one here. Browse leaves out a source that is off.`
   const saved = useSettings((s) => s.games?.[game]?.sourceOrder ?? '')
+  const off = useSettings((s) => s.games?.[game]?.sourcesOff ?? '')
+    .split(',')
+    .filter(Boolean)
   const relevant = useSettingsRelevant(label, description)
   const { data: all } = useLoaded<{ id: string; name: string }[]>(
     relevant ? () => SearchableSources(game).then((found) => found ?? []) : null,
@@ -48,13 +51,35 @@ function SourceOrder() {
       t`Could not save that setting`,
     )
   }
+  const toggle = (id: string, on: boolean) =>
+    persist(
+      () =>
+        SetByKey('sourcesOff', (on ? off.filter((o) => o !== id) : [...off, id]).join(','), game),
+      t`Could not save that setting`,
+    )
+  const onCount = list.filter((s) => !off.includes(s.id)).length
   return (
-    <SettingRow label={label} description={description}>
+    <SettingRow label={label} description={description} block={true}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
         {list.map((s, i) => (
           <Box key={s.id} sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
+            <Switch
+              size="small"
+              checked={!off.includes(s.id)}
+              // The last source on stays on, or Browse would have nothing to search.
+              disabled={onCount === 1 && !off.includes(s.id)}
+              onChange={(_, on) => toggle(s.id, on)}
+              slotProps={{ input: { 'aria-label': t`Search ${{ source: s.name }}` } }}
+            />
             <SourceLogo id={s.id} size={16} />
-            <Typography sx={{ minWidth: 120 }}>{s.name}</Typography>
+            <Typography
+              sx={{
+                minWidth: 120,
+                color: off.includes(s.id) ? 'text.disabled' : 'text.primary',
+              }}
+            >
+              {s.name}
+            </Typography>
             <IconAction
               label={t`Move up`}
               icon={<ArrowUp size={14} />}
