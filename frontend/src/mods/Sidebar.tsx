@@ -426,10 +426,7 @@ function LowerSectionsView({ mod, profile }: { mod: Mod; profile: Profile }) {
         />
       ) : null}
       <OptionalFiles mod={mod} profile={profile} />
-      <ProblemLine mod={mod} />
-      <LastRunLine mod={mod} profile={profile} />
-      <ModDependencyTree mod={mod} />
-      <ModSettings mod={mod} profile={profile} />
+      <ModHealth mod={mod} profile={profile} />
       <CompatDetail mod={mod} />
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, alignItems: 'flex-start' }}>
         <ActionRows
@@ -495,6 +492,15 @@ function DevelopedSections({ mod, profile }: { mod: Mod; profile: Profile }) {
       >
         {t`Built from your project; edit it in Develop.`}
       </Alert>
+      <ModHealth mod={mod} profile={profile} />
+    </>
+  )
+}
+
+// What the mod's last run and its needs say, then its settings: the same block for every kind of mod.
+function ModHealth({ mod, profile }: { mod: Mod; profile: Profile }) {
+  return (
+    <>
       <ProblemLine mod={mod} />
       <LastRunLine mod={mod} profile={profile} />
       <ModDependencyTree mod={mod} />

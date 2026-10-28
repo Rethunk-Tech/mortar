@@ -8,12 +8,11 @@ import { EmptyState } from '../shell/EmptyState.tsx'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { space } from '../theme/density.ts'
-import { changelogNoteIsRisky } from './changelogRange.ts'
 import { MarkdownView } from './MarkdownView.tsx'
 import { useNexusEntry } from './nexusDetails.ts'
 import { isNewer, isSameVersion } from './nexusFormat.ts'
 import { useReleases } from './releases.ts'
-import { ChangelogText } from './updateReview/Changes.tsx'
+import { ChangelogEntryBody } from './updateReview/Changes.tsx'
 
 function Version({ entry, installed }: { entry: Changelog; installed: string }) {
   const { t } = useLingui()
@@ -38,10 +37,7 @@ function Version({ entry, installed }: { entry: Changelog; installed: string }) 
         {current ? <Chip size="small" color="success" label={t`Installed`} /> : null}
         {fresh ? <Chip size="small" color="primary" label={t`New`} /> : null}
       </Box>
-      {entry.body ? <MarkdownView source={entry.body} /> : null}
-      {(entry.notes ?? []).map((n) => (
-        <ChangelogText key={n} text={`• ${n}`} risky={changelogNoteIsRisky(n)} />
-      ))}
+      <ChangelogEntryBody entry={entry} />
     </Box>
   )
 }

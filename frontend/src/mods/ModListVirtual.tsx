@@ -104,14 +104,7 @@ function ListShell({
   setMenu,
   stuck,
   children,
-}: {
-  grid: string
-  cols: readonly ListColumnId[]
-  sort: ReturnType<typeof sanitizeListSort>
-  onMenu: (e: MouseEvent) => void
-  onPreview: (order: ListColumnId[]) => void
-  onCommit: () => void
-  onCancel: () => void
+}: HeaderProps & {
   label: string
   parentRef: Ref<HTMLDivElement>
   total: number
@@ -248,14 +241,7 @@ export function ModListTable({
   menu,
   setMenu,
   renderRow,
-}: {
-  grid: string
-  cols: readonly ListColumnId[]
-  sort: ReturnType<typeof sanitizeListSort>
-  onMenu: (e: MouseEvent) => void
-  onPreview: (order: ListColumnId[]) => void
-  onCommit: () => void
-  onCancel: () => void
+}: HeaderProps & {
   groups: { key: string; items: ListRow[] }[]
   items: VirtualRow<ListRow>[]
   groupBy: ReturnType<typeof sanitizeListGroupBy>

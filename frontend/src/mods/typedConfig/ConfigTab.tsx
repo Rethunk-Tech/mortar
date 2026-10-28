@@ -1,16 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Chip,
-  List,
-  ListItemButton,
-  ListItemText,
-  Menu,
-  Typography,
-} from '@mui/material'
-import { ChevronDown, Filter, Play, SlidersHorizontal } from 'lucide-react'
+import { Box, Button, Chip, List, ListItemButton, ListItemText, Typography } from '@mui/material'
+import { Filter, Play, SlidersHorizontal } from 'lucide-react'
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import type {
   Hit,
@@ -23,6 +14,7 @@ import { ControlsRow } from '../../shell/ControlsRow.tsx'
 import { EmptyState } from '../../shell/EmptyState.tsx'
 import { LoadErrorRow, LoadingRow } from '../../shell/LoadingRow.tsx'
 import { MenuCheck } from '../../shell/MenuAction.tsx'
+import { MenuButton } from '../../shell/MenuButton.tsx'
 import { useDebouncedLoad } from '../../shell/useDebouncedLoad.ts'
 import { space } from '../../theme/density.ts'
 import { type InlineError, inlineError } from '../../toasts/report.ts'
@@ -118,18 +110,13 @@ const ShowMenu = memo(function ShowMenuView({
   }
   return (
     <>
-      <Button
-        variant="outlined"
+      <MenuButton
+        anchor={anchor}
+        setAnchor={setAnchor}
+        icon={<Filter size={14} />}
+        label={show === 'all' ? t`Show` : labels[show]}
         color={show === 'all' ? 'inherit' : 'primary'}
-        startIcon={<Filter size={14} />}
-        endIcon={<ChevronDown size={14} aria-hidden={true} />}
-        aria-haspopup="menu"
-        aria-expanded={anchor !== null}
-        onClick={(e) => setAnchor(e.currentTarget)}
       >
-        {show === 'all' ? t`Show` : labels[show]}
-      </Button>
-      <Menu open={anchor !== null} anchorEl={anchor} onClose={() => setAnchor(null)}>
         {SHOWS.map((item) => (
           <MenuCheck
             key={item}
@@ -142,7 +129,7 @@ const ShowMenu = memo(function ShowMenuView({
             }}
           />
         ))}
-      </Menu>
+      </MenuButton>
     </>
   )
 })

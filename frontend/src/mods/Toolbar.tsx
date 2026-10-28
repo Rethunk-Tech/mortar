@@ -1,10 +1,9 @@
 import type { I18n } from '@lingui/core'
 import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Chip, CircularProgress, Menu, useMediaQuery } from '@mui/material'
+import { Box, Button, Chip, CircularProgress, useMediaQuery } from '@mui/material'
 import {
   Ban,
-  ChevronDown,
   Download,
   Filter,
   Folder,
@@ -35,9 +34,9 @@ import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { useKeptWhileClosed } from '../shell/keptWhileClosed.ts'
 import { MenuAction, MenuCheck } from '../shell/MenuAction.tsx'
+import { MenuButton } from '../shell/MenuButton.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { MenuHeading, MenuRule } from '../shell/TitleMenu.tsx'
-import { Tooltip } from '../shell/Tooltip.tsx'
 import { ViewToggle } from '../shell/ViewToggle.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -191,24 +190,18 @@ const ShowFilterControl = memo(function ShowFilterMenu({
   ])
   return (
     <>
-      <Tooltip title={showLabel}>
-        <Button
-          variant="outlined"
-          color={active || tagged ? 'primary' : 'inherit'}
-          aria-label={showLabel}
-          startIcon={<Filter size={14} />}
-          endIcon={<ChevronDown size={14} aria-hidden={true} />}
-          aria-haspopup="menu"
-          aria-expanded={anchor !== null}
-          onClick={(e) => setAnchor(e.currentTarget)}
-          sx={iconWhenCompact}
-        >
-          <span className="label">{active ? active.label(i18n) : t`Show`}</span>
-        </Button>
-      </Tooltip>
-      <Menu open={anchor !== null} anchorEl={anchor} onClose={() => setAnchor(null)}>
+      <MenuButton
+        anchor={anchor}
+        setAnchor={setAnchor}
+        icon={<Filter size={14} />}
+        label={<span className="label">{active ? active.label(i18n) : t`Show`}</span>}
+        ariaLabel={showLabel}
+        tooltip={showLabel}
+        color={active || tagged ? 'primary' : 'inherit'}
+        sx={iconWhenCompact}
+      >
         {items}
-      </Menu>
+      </MenuButton>
     </>
   )
 })
@@ -224,19 +217,14 @@ const GroupByControl = memo(function GroupByMenu() {
   const tagHint = t`A mod with several tags appears under its first tag.`
   return (
     <>
-      <Button
-        variant="outlined"
-        aria-label={t`Group by`}
-        startIcon={<FolderTree size={14} />}
-        endIcon={<ChevronDown size={14} aria-hidden={true} />}
-        aria-haspopup="menu"
-        aria-expanded={anchor !== null}
-        onClick={(e) => setAnchor(e.currentTarget)}
+      <MenuButton
+        anchor={anchor}
+        setAnchor={setAnchor}
+        icon={<FolderTree size={14} />}
+        label={<span className="label">{t`Group by`}</span>}
+        ariaLabel={t`Group by`}
         sx={iconWhenCompact}
       >
-        <span className="label">{t`Group by`}</span>
-      </Button>
-      <Menu open={anchor !== null} anchorEl={anchor} onClose={() => setAnchor(null)}>
         {[
           { id: 'none' as const, label: t`None`, Icon: Ban, hint: undefined },
           ...[
@@ -275,7 +263,7 @@ const GroupByControl = memo(function GroupByMenu() {
             setEditorOpen(true)
           }}
         />
-      </Menu>
+      </MenuButton>
       <CategoryEditorDialog open={editorOpen} onClose={() => setEditorOpen(false)} />
     </>
   )

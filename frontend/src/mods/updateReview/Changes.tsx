@@ -32,16 +32,25 @@ function ChangelogText({ text, risky }: { text: string; risky?: boolean }) {
   )
 }
 
+// A version's notes: its Markdown body, then its listed notes with risky ones marked.
+function ChangelogEntryBody({ entry }: { entry: Changelog }) {
+  return (
+    <>
+      {entry.body ? <MarkdownView source={entry.body} /> : null}
+      {(entry.notes ?? []).map((n) => (
+        <ChangelogText key={n} text={`• ${n}`} risky={changelogNoteIsRisky(n)} />
+      ))}
+    </>
+  )
+}
+
 function Version({ entry }: { entry: Changelog }) {
   return (
     <Box>
       <Typography variant="subtitle2">
         {entry.date ? `${entry.version} · ${entry.date}` : entry.version}
       </Typography>
-      {entry.body ? <MarkdownView source={entry.body} /> : null}
-      {(entry.notes ?? []).map((n) => (
-        <ChangelogText key={n} text={`• ${n}`} risky={changelogNoteIsRisky(n)} />
-      ))}
+      <ChangelogEntryBody entry={entry} />
     </Box>
   )
 }
@@ -100,4 +109,4 @@ export function Changes({ update }: { update: Update }) {
   )
 }
 
-export { ChangelogText }
+export { ChangelogEntryBody, ChangelogText }

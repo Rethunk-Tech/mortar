@@ -42,7 +42,16 @@ interface BrowseFilter {
 
 type BrowseSearch = (query: BrowseQuery) => Promise<BrowsePageResult>
 
-interface BrowsePageProps {
+// What a result can do: open its page or add it to the profile.
+interface BrowseActions {
+  openUrl: (url: string) => void
+  downloadNexus: (modID: string) => void
+  addGitHub: (repo: string) => void
+  addPackage: (id: string) => void
+  addDirect: (source: string, id: string, picture: string) => void
+}
+
+interface BrowsePageProps extends BrowseActions {
   game: string
   profileID: string
   premium: boolean
@@ -53,22 +62,12 @@ interface BrowsePageProps {
   categories: (game: string, source: string) => Promise<string[]>
   // The categories the exclude picker starts with: modpacks, translations and cheats.
   defaultExcludes: (game: string, source: string) => Promise<string[]>
-  openUrl: (url: string) => void
-  downloadNexus: (modID: string) => void
-  addGitHub: (repo: string) => void
-  addPackage: (id: string) => void
-  addDirect: (source: string, id: string, picture: string) => void
 }
 
-interface ResultCardProps {
+interface ResultCardProps extends BrowseActions {
   row: boolean
   item: BrowseItem
   premium: boolean
-  openUrl: (url: string) => void
-  downloadNexus: (modID: string) => void
-  addGitHub: (repo: string) => void
-  addPackage: (id: string) => void
-  addDirect: (source: string, id: string, picture: string) => void
   profileID: string
   modes: BrowseModes
   sourceNames: Map<string, string>
