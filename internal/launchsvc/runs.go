@@ -499,7 +499,7 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 		_ = fsx.Remove(runPlayerLogPath(dir, old.ID))
 	}
 	if !failed && s.settings != nil {
-		_, _ = s.settings.AddPlaytime(g.ID(), ended.Sub(started))
+		s.settingsChanged(s.settings.AddPlaytime(g.ID(), ended.Sub(started)))
 	}
 	if title, body, crashed := RunEndNotificationText(g.Name(), stats); crashed && !failed && s.NotifyRunEnd != nil {
 		s.NotifyRunEnd(RunEndNotice{Game: g.ID(), Profile: profileID, Title: title, Body: body})

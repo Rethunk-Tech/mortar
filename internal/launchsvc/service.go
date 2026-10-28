@@ -238,6 +238,14 @@ func SetLife(s *Service, ctx context.Context) {
 	s.quit = ctx.Done()
 }
 
+// settingsChanged tells the window about a launch's own settings write (last played, playtime), which the game switcher
+// shows and orders by.
+func (s *Service) settingsChanged(next settings.Settings, err error) {
+	if err == nil {
+		s.emit(settings.ChangedEvent, next)
+	}
+}
+
 func (s *Service) emit(name string, data any) {
 	if s.App != nil {
 		s.App.Emit(name, data)
@@ -287,7 +295,7 @@ func (s *Service) set(st Status) {
 		go s.OnState()
 	}
 	if st.State == Running && st.Profile != "" && !profile.IsScratch(st.Profile) && s.settings != nil {
-		_, _ = s.settings.RecordLastPlayed(st.Game, st.Profile, time.Now(), launchGameVersion(s, key))
+		s.settingsChanged(s.settings.RecordLastPlayed(st.Game, st.Profile, time.Now(), launchGameVersion(s, key)))
 		_, _ = s.settings.RecordBuild(st.Game, s.installBuild(st.Game, st.Install))
 	}
 	if stored.State == Idle && had && prev.State != Idle && s.Unlocked != nil {

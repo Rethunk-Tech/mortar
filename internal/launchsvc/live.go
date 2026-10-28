@@ -100,7 +100,7 @@ func (s *Service) noteGameVersion(g game.Game, profileID, v string) {
 	}
 	s.mu.Unlock()
 	if fresh && s.settings != nil && !profile.IsScratch(profileID) {
-		_, _ = s.settings.RecordLastPlayed(g.ID(), profileID, time.Now(), v)
+		s.settingsChanged(s.settings.RecordLastPlayed(g.ID(), profileID, time.Now(), v))
 	}
 }
 
