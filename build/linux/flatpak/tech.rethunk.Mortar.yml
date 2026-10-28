@@ -31,6 +31,8 @@ finish-args:
   # Desktop notifications and the tray icon talk to these names directly, not through a portal.
   - --talk-name=org.freedesktop.Notifications
   - --talk-name=org.kde.StatusNotifierWatcher
+  # The host's Secret Service keeps account keys when the Secret portal is missing.
+  - --talk-name=org.freedesktop.secrets
   # The tray item's name carries the process id, which is 2 inside the sandbox.
   - --own-name=org.kde.StatusNotifierItem-2-1
   - --talk-name=org.freedesktop.Flatpak
