@@ -14,6 +14,6 @@ export function honourReducedMotion(mode: string, os: boolean) {
 
 export function useReducedMotion(): boolean {
   const mode = useSettings((s) => s.reduceMotion)
-  const os = useMediaQuery('(prefers-reduced-motion: reduce)')
+  const os = useMediaQuery('(prefers-reduced-motion: reduce)', { noSsr: true })
   return honourReducedMotion(mode || 'system', os)
 }

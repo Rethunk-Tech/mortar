@@ -1,11 +1,11 @@
-import { ThemeProvider } from '@mui/material'
+import { ThemeProvider, useMediaQuery } from '@mui/material'
 import { Window } from '@wailsio/runtime'
 import React from 'react'
 import { useSettings } from './settings/store.ts'
 import { accentColour, isAccent, useSystemAccent } from './settings/theme.ts'
 import { defaultAccent } from './theme/accents.ts'
 import { honourTheme } from './theme/palette.ts'
-import { honourReducedMotion } from './theme/reducedMotion.ts'
+import { useReducedMotion } from './theme/reducedMotion.ts'
 import { useRoomy } from './theme/roomy.ts'
 import { createMortarTheme } from './theme/theme.ts'
 
@@ -18,7 +18,7 @@ export function Themed({ children }: { children: React.ReactNode }) {
   const font = useSettings((s) => s.font)
   const density = useSettings((s) => s.density)
   const roomy = useRoomy((s) => s.roomy)
-  const reduceMotion = useSettings((s) => s.reduceMotion)
+  const reduceMotion = useReducedMotion()
   const touchRipples = useSettings((s) => s.touchRipples)
   const colourTheme = useSettings((s) => s.theme)
   const uiScale = useSettings((s) => s.uiScale)
@@ -30,32 +30,7 @@ export function Themed({ children }: { children: React.ReactNode }) {
       document.documentElement.style.zoom = String(zoom)
     })
   }, [uiScale])
-  const [osReduce, setOsReduce] = React.useState(() =>
-    typeof matchMedia === 'function'
-      ? matchMedia('(prefers-reduced-motion: reduce)').matches
-      : false,
-  )
-  const [osLight, setOsLight] = React.useState(() =>
-    typeof matchMedia === 'function' ? matchMedia('(prefers-color-scheme: light)').matches : false,
-  )
-  React.useEffect(() => {
-    if (typeof matchMedia !== 'function') {
-      return
-    }
-    const mq = matchMedia('(prefers-reduced-motion: reduce)')
-    const onChange = () => setOsReduce(mq.matches)
-    mq.addEventListener('change', onChange)
-    return () => mq.removeEventListener('change', onChange)
-  }, [])
-  React.useEffect(() => {
-    if (typeof matchMedia !== 'function') {
-      return
-    }
-    const mq = matchMedia('(prefers-color-scheme: light)')
-    const onChange = () => setOsLight(mq.matches)
-    mq.addEventListener('change', onChange)
-    return () => mq.removeEventListener('change', onChange)
-  }, [])
+  const osLight = useMediaQuery('(prefers-color-scheme: light)', { noSsr: true })
   const theme = React.useMemo(
     () =>
       createMortarTheme(isAccent(accent) ? accent : defaultAccent, {
@@ -63,22 +38,11 @@ export function Themed({ children }: { children: React.ReactNode }) {
         accentHex: accentColour(accent, systemAccent),
         compact: density === 'compact' && !roomy,
         roomy,
-        reduceMotion: honourReducedMotion(reduceMotion || 'system', osReduce),
+        reduceMotion,
         ripples: touchRipples === true,
         mode: honourTheme(colourTheme || 'dark', osLight),
       }),
-    [
-      accent,
-      font,
-      systemAccent,
-      colourTheme,
-      density,
-      osLight,
-      osReduce,
-      reduceMotion,
-      roomy,
-      touchRipples,
-    ],
+    [accent, font, systemAccent, colourTheme, density, osLight, reduceMotion, roomy, touchRipples],
   )
   return <ThemeProvider theme={theme}>{children}</ThemeProvider>
 }
