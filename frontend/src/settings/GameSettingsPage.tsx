@@ -110,6 +110,17 @@ function InstallPage({
   )
 }
 
+// Whether the game starts directly: its own choice, an install that has no launcher, or a profile's override.
+function useLaunchesDirect(game: string, directInstall: boolean) {
+  const gameDirect = useSettings((s) => gamePrefs(s, game).defaultLaunchMethod === 'direct')
+  const profileDirect = useProfiles((s) =>
+    s.game?.id === game
+      ? s.profiles.some((p) => p.overrides?.defaultLaunchMethod === 'direct')
+      : false,
+  )
+  return gameDirect || profileDirect || directInstall
+}
+
 function GamePages({
   page,
   setPage,
@@ -128,9 +139,7 @@ function GamePages({
   const [folderChanges, folderChanged] = useReducer((n: number) => n + 1, 0)
   const info = useGameInfo(game)
   const loader = useProfiles((s) => s.game?.loaders?.[0])
-  const launchDirect =
-    useSettings((s) => gamePrefs(s, game).defaultLaunchMethod === 'direct') ||
-    info?.directInstall === true
+  const launchDirect = useLaunchesDirect(game, info?.directInstall === true)
   // The ALVR program row shows wherever ALVR can start first: the game's choice or a profile's override.
   const gameALVR = useSettings((s) => gamePrefs(s, game).startFirst === 'alvr')
   const profileALVR = useProfiles((s) =>
