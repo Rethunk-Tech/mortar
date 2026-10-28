@@ -5,6 +5,7 @@ import {
   Dependencies,
   RemoveDependency,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
+import { sameValue } from '../shell/sameValue.ts'
 import { startDependencies, useKnownPackages } from './dependencies.ts'
 
 /** A dependency as the dialog edits it: unticked ones are dropped on save, new ones added. */
@@ -12,8 +13,6 @@ export interface DependencyRow extends Dependency {
   keep: boolean
   added: boolean
 }
-
-const same = (a: DependencyRow[], b: DependencyRow[]) => JSON.stringify(a) === JSON.stringify(b)
 
 /** The project's dependencies as loaded, the rows being edited, and whether they differ. */
 export function useDependencyRows(game: string, dir: string) {
@@ -28,7 +27,7 @@ export function useDependencyRows(game: string, dir: string) {
       })
       .catch(() => undefined)
   }, [game, dir])
-  return { loaded, rows, setRows, dirty: !same(loaded, rows) }
+  return { loaded, rows, setRows, dirty: !sameValue(loaded, rows) }
 }
 
 /** Writes the edited dependencies into the project and installs the new ones into its profile. */

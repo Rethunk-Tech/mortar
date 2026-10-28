@@ -7,6 +7,7 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { ModFacts } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { sameValue } from '../shell/sameValue.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import type { ListRow } from './listColumns.ts'
 import { useUpdates } from './updates.ts'
@@ -38,7 +39,7 @@ export function keepSameFacts(prev: FactsById, next: FactsById): FactsById {
   const kept: Record<string, ModFact | undefined> = {}
   for (const [id, fact] of Object.entries(next)) {
     const old = prev[id]
-    const same = old !== undefined && JSON.stringify(old) === JSON.stringify(fact)
+    const same = old !== undefined && sameValue(old, fact)
     kept[id] = same ? old : fact
     changed ||= !same
   }

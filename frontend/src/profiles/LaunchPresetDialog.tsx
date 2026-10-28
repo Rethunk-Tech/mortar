@@ -5,6 +5,7 @@ import type { LaunchPreset } from '../../bindings/github.com/Rethunk-Tech/mortar
 import { SMAPI } from '../brand/productNames.ts'
 import { useGameInfo } from '../games/info.ts'
 import { Field, FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
+import { sameValue } from '../shell/sameValue.ts'
 import { presetNameError } from './profilePresets.ts'
 
 const FOLLOW = 'follow'
@@ -48,7 +49,7 @@ export function LaunchPresetDialog({
       title={preset.id === '' && preset.name === '' ? t`New launch preset` : t`Edit launch preset`}
       submitLabel={t`Save`}
       issue={issue}
-      dirty={JSON.stringify(draft) !== JSON.stringify(preset)}
+      dirty={!sameValue(draft, preset)}
       onSubmit={() => onSave({ ...draft, name: draft.name.trim() })}
     >
       <TextInput label={t`Name`} value={draft.name} onChange={set('name')} autoFocus={true} />

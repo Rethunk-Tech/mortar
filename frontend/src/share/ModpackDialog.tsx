@@ -18,6 +18,7 @@ import { Field, FieldRow, FormDialog, FormSection, TextInput } from '../shell/di
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { Fold } from '../shell/Fold.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
+import { sameValue } from '../shell/sameValue.ts'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
@@ -267,7 +268,7 @@ function Fields({
       title={t`Export as ${{ source: sourceLabel('thunderstore') }} modpack`}
       submitLabel={t`Export…`}
       issue={issue}
-      dirty={JSON.stringify(o) !== JSON.stringify(form.options)}
+      dirty={!sameValue(o, form.options)}
       busy={busy}
       onSubmit={save}
     >

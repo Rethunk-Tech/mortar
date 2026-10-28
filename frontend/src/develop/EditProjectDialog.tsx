@@ -20,6 +20,7 @@ import {
   FormSection,
   TextInput,
 } from '../shell/dialog/FormDialog.tsx'
+import { sameValue } from '../shell/sameValue.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { buildProject, useProjectInfo } from './builds.ts'
 import { ChoicePicker } from './ChoicePicker.tsx'
@@ -67,7 +68,7 @@ export function EditProjectDialog({
   const [edit, setEdit] = useState<ProjectEdit>(() => editOf(info))
   const [saving, run] = usePending()
   const categories = useCategoryChoices(game, edit.categories ?? [])
-  const details = JSON.stringify(edit) !== JSON.stringify(editOf(info))
+  const details = !sameValue(edit, editOf(info))
   const deps = useDependencyRows(game, dir)
   const dirty = details || deps.dirty
   const set = (next: Partial<ProjectEdit>) => setEdit((e) => ({ ...e, ...next }))
