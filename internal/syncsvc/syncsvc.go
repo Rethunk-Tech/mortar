@@ -282,7 +282,13 @@ func (s *Service) Scan(ctx context.Context) ([]Offer, error) {
 	defer s.mu.Unlock()
 	var offers []Offer
 	var errs []error
+	// A profile deleted here keeps its state, so its remote is never offered back as a new one.
 	known := map[string]bool{}
+	for k, t := range s.st.Profiles {
+		if game, local, ok := strings.Cut(k, "/"); ok {
+			known[key(game, cmp.Or(t.Remote, local))] = true
+		}
+	}
 	lagSeen := map[string]bool{}
 	s.stalled = nil
 	for _, game := range s.d.Source.Games() {

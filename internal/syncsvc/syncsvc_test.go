@@ -296,3 +296,17 @@ func TestGameWithoutFolderIsNotSynced(t *testing.T) {
 		t.Fatalf("stat = %v", err)
 	}
 }
+
+func TestADeletedSyncedProfileIsNotOfferedBack(t *testing.T) {
+	folder := t.TempDir()
+	clock := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	a, ma := newMachine(t, folder, "Desktop", &clock)
+	ma.set("main", "v1")
+	scan(t, a)
+	if err := ma.Delete("stardew", "main"); err != nil {
+		t.Fatal(err)
+	}
+	if offers := scan(t, a); len(offers) != 0 {
+		t.Fatalf("offers after deleting here: %+v", offers)
+	}
+}
