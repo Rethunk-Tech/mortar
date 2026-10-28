@@ -22,3 +22,14 @@ func TestWalkFilesGivesSlashPathsAndSizesOfRegularFilesOnly(t *testing.T) {
 		t.Fatalf("WalkFiles = %v", got)
 	}
 }
+
+func TestSHA512HashesTheFile(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "f")
+	if err := os.WriteFile(path, []byte("abc"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	got, err := SHA512(path)
+	if err != nil || got[:16] != "ddaf35a193617aba" {
+		t.Fatalf("SHA512 = %s, %v", got, err)
+	}
+}

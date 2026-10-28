@@ -1,10 +1,7 @@
 package queue
 
 import (
-	"crypto/sha512"
-	"encoding/hex"
 	"fmt"
-	"io"
 	"path/filepath"
 	"strings"
 
@@ -30,16 +27,11 @@ func verifyDigest(path, digest string) error {
 }
 
 func compareSHA512(path, want string) error {
-	f, err := fsx.Open(path)
+	got, err := fsx.SHA512(path)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = f.Close() }()
-	h := sha512.New()
-	if _, err := io.Copy(h, f); err != nil {
-		return err
-	}
-	if got := hex.EncodeToString(h.Sum(nil)); got != want {
+	if got != want {
 		return usererr.New(usererr.Damaged, "download is damaged or changed: SHA-512 does not match the one the site published")
 	}
 	return nil

@@ -2,11 +2,8 @@ package melonloader
 
 import (
 	"context"
-	"crypto/sha512"
-	"encoding/hex"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"regexp"
 	"strings"
@@ -170,16 +167,11 @@ func (l Loader) verify(ctx context.Context, pack github.Asset, sumURL, file stri
 	if err != nil {
 		return err
 	}
-	f, err := fsx.Open(file)
+	got, err := fsx.SHA512(file)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = f.Close() }()
-	h := sha512.New()
-	if _, err := io.Copy(h, f); err != nil {
-		return err
-	}
-	if !strings.EqualFold(hex.EncodeToString(h.Sum(nil)), want) {
+	if !strings.EqualFold(got, want) {
 		return errors.New("the download does not match the release's SHA-512 file")
 	}
 	return nil
