@@ -19,7 +19,7 @@ export interface Helpers {
 /** Cases for the dialogs and screens added with the version picker, modpack form, profile folder, custom games, co-op
  * list, hidden mods, favourites, freezing and config search. */
 export function newCases(h: Helpers): Case[] {
-  const { toWorkspace, tab, view, row, typeInto, tabs } = h
+  const { toWorkspace, tab, view, typeInto, tabs } = h
   /** Right-clicks the open profile in the title bar, which opens its menu; the case then measures picking an item. */
   async function openProfileMenu(page: Page) {
     await toWorkspace(page)
