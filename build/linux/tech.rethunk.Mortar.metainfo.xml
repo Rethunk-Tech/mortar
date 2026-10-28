@@ -52,6 +52,43 @@
     <content_attribute id="social-info">mild</content_attribute>
   </content_rating>
   <releases>
+    <release version="0.3.15" date="2026-10-28">
+      <description>
+        <p>New</p>
+        <ul>
+          <li>Simplified Chinese is open for translation on Weblate, and joins the language picker once part of it is translated</li>
+          <li>Update in all profiles downloads a version you have not downloaded yet, then updates every profile that had the old one, and says which profiles it could not update</li>
+          <li>In the Flatpak, account keys go to your desktop's keyring when the Secret portal is missing, and Settings › Accounts warns when neither is there and keys are kept unencrypted</li>
+          <li>Add game shows each loader's own icon</li>
+        </ul>
+        <p>Changed</p>
+        <ul>
+          <li>Paired computers must both run 0.3.15 to keep syncing configs and local archives: a computer now proves it holds the pairing key before Mortar sends it anything</li>
+          <li>The command line's backups trim, history trim, data cleanup and store remove need --yes; data cleanup --preview still lists without it</li>
+          <li>The Problems badge counts only the problems you need to fix</li>
+          <li>Startup timing for Risk of Rain 2 runs until the main menu is ready, and shows the loading after the title screen</li>
+          <li>A download that loses its connection tries again on its own before it fails, and a failed one says which site it could not reach</li>
+          <li>Replace with on a deprecated mod removes the old one once its replacement installs; one Undo brings both back</li>
+          <li>Merge offers Undo, and counts version changes as updates</li>
+          <li>On a narrow window, Home's buttons turn into icons</li>
+          <li>clamd scans trust only a clamd socket that root or the clamav user owns</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>Importing a Gale or r2modman profile no longer marks mods as no longer available when they ask for an old BepInExPack, depend on each other, or name BepInEx's pack another way; a mod whose dependency is gone imports without it and the profile's notes say so</li>
+          <li>Mortar sees Risk of Rain 2 running, so its in-game performance can be measured</li>
+          <li>Stardew Valley's per-profile game settings apply: Mortar reads and writes the file the game uses, and the window mode keeps the fullscreen settings in step</li>
+          <li>Test launch uses the launch options shown, and cancelling the dialog no longer saves them</li>
+          <li>The config text editor picks up a file the game rewrote, and asks before dropping unsaved edits when you switch mods</li>
+          <li>New badges on Nexus mods stay until you have looked at the mod</li>
+          <li>Two local archives with the same name each have their own favourite star</li>
+          <li>Endorse and Abstain show your choice when you reopen a mod</li>
+          <li>The Steam folders you added are searched when Mortar looks for Proton</li>
+          <li>A file over clamd's size limit is reported as too large instead of failing the scan</li>
+          <li>The New mod form's own fields are translated</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.3.14" date="2026-10-28">
       <description>
         <p>New</p>
