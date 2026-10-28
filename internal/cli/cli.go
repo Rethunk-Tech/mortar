@@ -237,7 +237,46 @@ func (c *cmd) fail(err error) int {
 	return code
 }
 
+// strFlag is a flag that takes a value, as "--x value" or "--x=value"; need is the error when the value is missing.
+type strFlag struct {
+	dst  *string
+	need string
+}
+
 func (c *cmd) parse(args []string) error {
+	bools := map[string]*bool{
+		"--json": &c.json, "-v": &c.verbose, "--verbose": &c.verbose, "--all": &c.all,
+		"--unused": &c.unused, "--missing": &c.missing, "--by-mod": &c.byMod, "--yes": &c.yesFlag,
+		"--force": &c.force, "--allow-unscanned": &c.allowUnscanned, "--mark": &c.mark,
+		"--restore": &c.restore, "--check": &c.check, "--wait": &c.wait, "--vanilla": &c.vanilla,
+		"--update": &c.updateFlag, "--unlink": &c.unlinkFlag, "--undo": &c.undoFlag,
+		"--changelog": &c.changelogFlag, "--everywhere": &c.everywhere, "--remove": &c.removeFlag,
+		"--clear": &c.clearFlag, "--test": &c.testFlag, "--no-configs": &c.noConfigs,
+		"--no-mods": &c.noMods, "--preview": &c.previewFlag,
+	}
+	strs := map[string]strFlag{
+		"--filter":  {&c.filter, "--filter needs a value"},
+		"--preset":  {&c.presetFlag, "--preset needs a name"},
+		"--item":    {&c.item, "--item needs a mod"},
+		"--reason":  {&c.reasonFlag, "--reason needs a value"},
+		"--format":  {&c.format, "--format needs md or text"},
+		"--run":     {&c.run, "--run needs a run id"},
+		"--profile": {&c.profileFlag, "--profile needs a profile name"},
+		"--name":    {&c.nameFlag, "--name needs a name"},
+		"--game":    {&c.game, "--game needs a game id"},
+		"--loader":  {&c.loaderFlag, "--loader needs a loader id"},
+		"--install": {&c.installFlag, "--install needs an install id"},
+		"--dir":     {&c.dirFlag, "--dir needs a folder"},
+		"--file":    {&c.fileFlag, "--file needs a value"},
+		"--version": {&c.versionFlag, "--version needs a value"},
+		"--from":    {&c.fromFlag, "--from needs a mod manager (vortex or mo2)"},
+		"--source":  {&c.sourceFlag, "--source needs a source id"},
+		"--code":    {&c.codeFlag, "--code needs a value"},
+		"--peer":    {&c.peerFlag, "--peer needs a value"},
+		"--keep":    {&c.keepFlag, "--keep needs a value"},
+		"--delete":  {&c.deleteFlag, "--delete needs a value"},
+		"--dismiss": {&c.dismissFlag, "--dismiss needs a value"},
+	}
 	complete := false
 	for i := 0; i < len(args); i++ {
 		a := args[i]
@@ -245,249 +284,56 @@ func (c *cmd) parse(args []string) error {
 			c.args = append(c.args, a)
 			continue
 		}
+		name, val, hasVal := strings.Cut(a, "=")
+		// value takes the flag's value from "=value" or the next argument.
+		value := func(need string) (string, error) {
+			if hasVal {
+				return val, nil
+			}
+			if i+1 >= len(args) {
+				return "", usageError{need}
+			}
+			i++
+			return args[i], nil
+		}
+		if p, ok := bools[a]; ok {
+			*p = true
+			continue
+		}
 		switch {
-		case a == "--json":
-			c.json = true
-		case a == "-v", a == "--verbose":
-			c.verbose = true
-		case a == "--all":
-			c.all = true
-		case a == "--filter":
-			if i+1 >= len(args) {
-				return usageError{"--filter needs a value"}
-			}
-			i++
-			c.filter = args[i]
-		case strings.HasPrefix(a, "--filter="):
-			c.filter = strings.TrimPrefix(a, "--filter=")
-		case a == "--unused":
-			c.unused = true
-		case a == "--missing":
-			c.missing = true
-		case a == "--by-mod":
-			c.byMod = true
-		case a == "--yes":
-			c.yesFlag = true
-		case a == "--force":
-			c.force = true
-		case a == "--allow-unscanned":
-			c.allowUnscanned = true
-		case a == "--preset":
-			if i+1 >= len(args) {
-				return usageError{"--preset needs a name"}
-			}
-			i++
-			c.presetFlag = args[i]
-		case strings.HasPrefix(a, "--preset="):
-			c.presetFlag = strings.TrimPrefix(a, "--preset=")
-		case a == "--item":
-			if i+1 >= len(args) {
-				return usageError{"--item needs a mod"}
-			}
-			i++
-			c.item = args[i]
-		case strings.HasPrefix(a, "--item="):
-			c.item = strings.TrimPrefix(a, "--item=")
-		case a == "--mark":
-			c.mark = true
-		case a == "--restore":
-			c.restore = true
-		case a == "--check":
-			c.check = true
-		case a == "--wait":
-			c.wait = true
-		case a == "--vanilla":
-			c.vanilla = true
-		case a == "--update":
-			c.updateFlag = true
-		case a == "--unlink":
-			c.unlinkFlag = true
-		case a == "--reason":
-			if i+1 >= len(args) {
-				return usageError{"--reason needs a value"}
-			}
-			i++
-			c.reasonFlag = args[i]
-		case strings.HasPrefix(a, "--reason="):
-			c.reasonFlag = strings.TrimPrefix(a, "--reason=")
-		case a == "--undo":
-			c.undoFlag = true
-		case a == "--changelog":
-			c.changelogFlag = true
-		case a == "--everywhere":
-			c.everywhere = true
-		case a == "--remove":
-			c.removeFlag = true
-		case a == "--set":
-			c.setFlag = true
-		case strings.HasPrefix(a, "--set="):
-			c.setFlag = true
-			c.setEquals = true
-			c.setSpec = strings.TrimPrefix(a, "--set=")
-		case a == "--clear":
-			c.clearFlag = true
-		case a == "--test":
-			c.testFlag = true
-		case a == "--format":
-			if i+1 >= len(args) {
-				return usageError{"--format needs md or text"}
-			}
-			i++
-			c.format = args[i]
-		case strings.HasPrefix(a, "--format="):
-			c.format = strings.TrimPrefix(a, "--format=")
-		case a == "--run":
-			if i+1 >= len(args) {
-				return usageError{"--run needs a run id"}
-			}
-			i++
-			c.run = args[i]
-		case strings.HasPrefix(a, "--run="):
-			c.run = strings.TrimPrefix(a, "--run=")
-		case a == "--profile":
-			if i+1 >= len(args) {
-				return usageError{"--profile needs a profile name"}
-			}
-			i++
-			c.profileFlag = args[i]
-		case strings.HasPrefix(a, "--profile="):
-			c.profileFlag = strings.TrimPrefix(a, "--profile=")
-		case a == "--no-configs":
-			c.noConfigs = true
-		case a == "--no-mods":
-			c.noMods = true
-		case a == "--name":
-			if i+1 >= len(args) {
-				return usageError{"--name needs a name"}
-			}
-			i++
-			c.nameFlag = args[i]
-		case strings.HasPrefix(a, "--name="):
-			c.nameFlag = strings.TrimPrefix(a, "--name=")
-		case a == "--game":
-			if i+1 >= len(args) {
-				return usageError{"--game needs a game id"}
-			}
-			i++
-			c.game = args[i]
-		case strings.HasPrefix(a, "--game="):
-			c.game = strings.TrimPrefix(a, "--game=")
-		case a == "--loader":
-			if i+1 >= len(args) {
-				return usageError{"--loader needs a loader id"}
-			}
-			i++
-			c.loaderFlag = args[i]
-		case strings.HasPrefix(a, "--loader="):
-			c.loaderFlag = strings.TrimPrefix(a, "--loader=")
-		case a == "--install":
-			if i+1 >= len(args) {
-				return usageError{"--install needs an install id"}
-			}
-			i++
-			c.installFlag = args[i]
-		case strings.HasPrefix(a, "--install="):
-			c.installFlag = strings.TrimPrefix(a, "--install=")
-		case a == "--preview":
-			c.previewFlag = true
-		case a == "--dir":
-			if i+1 >= len(args) {
-				return usageError{"--dir needs a folder"}
-			}
-			i++
-			c.dirFlag = args[i]
-		case strings.HasPrefix(a, "--dir="):
-			c.dirFlag = strings.TrimPrefix(a, "--dir=")
-		case a == "--file":
-			if i+1 >= len(args) {
-				return usageError{"--file needs a value"}
-			}
-			i++
-			c.fileFlag = args[i]
-		case strings.HasPrefix(a, "--file="):
-			c.fileFlag = strings.TrimPrefix(a, "--file=")
 		case a == "--version" && i == 0:
 			// Leading, it is the usual spelling of the version command; later, it picks a mod version.
 			c.args = append(c.args, "version")
-		case a == "--version":
-			if i+1 >= len(args) {
-				return usageError{"--version needs a value"}
+		case a == "--set":
+			c.setFlag = true
+		case name == "--set" && hasVal:
+			c.setFlag = true
+			c.setEquals = true
+			c.setSpec = val
+		case name == "--page":
+			v, err := value("--page needs a number")
+			if err != nil {
+				return err
 			}
-			i++
-			c.versionFlag = args[i]
-		case strings.HasPrefix(a, "--version="):
-			c.versionFlag = strings.TrimPrefix(a, "--version=")
-		case a == "--from":
-			if i+1 >= len(args) {
-				return usageError{"--from needs a mod manager (vortex or mo2)"}
-			}
-			i++
-			c.fromFlag = args[i]
-		case strings.HasPrefix(a, "--from="):
-			c.fromFlag = strings.TrimPrefix(a, "--from=")
-		case a == "--source":
-			if i+1 >= len(args) {
-				return usageError{"--source needs a source id"}
-			}
-			i++
-			c.sourceFlag = args[i]
-		case strings.HasPrefix(a, "--source="):
-			c.sourceFlag = strings.TrimPrefix(a, "--source=")
-		case a == "--code" || a == "--peer":
-			if i+1 >= len(args) {
-				return usageError{a + " needs a value"}
-			}
-			i++
-			if a == "--code" {
-				c.codeFlag = args[i]
-			} else {
-				c.peerFlag = args[i]
-			}
-		case strings.HasPrefix(a, "--code="):
-			c.codeFlag = strings.TrimPrefix(a, "--code=")
-		case strings.HasPrefix(a, "--peer="):
-			c.peerFlag = strings.TrimPrefix(a, "--peer=")
-		case a == "--page":
-			if i+1 >= len(args) {
-				return usageError{"--page needs a number"}
-			}
-			i++
-			n, err := strconv.Atoi(args[i])
+			n, err := strconv.Atoi(v)
 			if err != nil {
 				return usageError{"--page needs a number"}
 			}
 			c.pageFlag = n
-		case strings.HasPrefix(a, "--page="):
-			n, err := strconv.Atoi(strings.TrimPrefix(a, "--page="))
+		case name == "--move":
+			v, err := value("--move needs a value")
 			if err != nil {
-				return usageError{"--page needs a number"}
+				return err
 			}
-			c.pageFlag = n
-		case a == "--keep" || a == "--delete" || a == "--dismiss" || a == "--move":
-			if i+1 >= len(args) {
-				return usageError{a + " needs a value"}
-			}
-			i++
-			switch a {
-			case "--keep":
-				c.keepFlag = args[i]
-			case "--delete":
-				c.deleteFlag = args[i]
-			case "--dismiss":
-				c.dismissFlag = args[i]
-			default:
-				c.moveFlag = append(c.moveFlag, args[i])
-			}
-		case strings.HasPrefix(a, "--keep="):
-			c.keepFlag = strings.TrimPrefix(a, "--keep=")
-		case strings.HasPrefix(a, "--delete="):
-			c.deleteFlag = strings.TrimPrefix(a, "--delete=")
-		case strings.HasPrefix(a, "--dismiss="):
-			c.dismissFlag = strings.TrimPrefix(a, "--dismiss=")
-		case strings.HasPrefix(a, "--move="):
-			c.moveFlag = append(c.moveFlag, strings.TrimPrefix(a, "--move="))
+			c.moveFlag = append(c.moveFlag, v)
 		case a == "--help" || a == "-h":
 			c.args = append(c.args, "help")
+		case strs[name].dst != nil:
+			v, err := value(strs[name].need)
+			if err != nil {
+				return err
+			}
+			*strs[name].dst = v
 		case strings.HasPrefix(a, "--"):
 			return usageError{"unknown flag " + a}
 		default:
