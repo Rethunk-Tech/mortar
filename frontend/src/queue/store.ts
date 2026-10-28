@@ -30,7 +30,7 @@ import { nexusModUrl } from '../mods/nexusUrl.ts'
 import { useMods } from '../mods/store.ts'
 import { profileLocked } from '../mods/useLocked.ts'
 import { openSettings } from '../nav/store.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { getProfile, useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { isSummarizedBatch, observeImportState } from '../share/importCompletion.ts'
 import { follow } from '../shell/follow.ts'
@@ -289,7 +289,7 @@ function toastInstalls(shownDone: Item[], unblocked: string | undefined) {
     if (!item) {
       return
     }
-    const profile = useProfiles.getState().profiles.find((p) => p.id === item.profileId)
+    const profile = getProfile(item.profileId)
     const entry = entryForItem(profile, item)
     const extra = installUndo(item, entry)
     const first = item.name
@@ -309,7 +309,7 @@ function toastInstalls(shownDone: Item[], unblocked: string | undefined) {
               profileId: extra.profileId,
               live: () =>
                 changeStillLatest(
-                  useProfiles.getState().profiles.find((p) => p.id === extra.profileId),
+                  getProfile(extra.profileId),
                   extra.entry.key,
                   (extra.entry.mods ?? []).map((m) => m.id),
                 ),
@@ -355,7 +355,7 @@ function announce(prev: Snapshot, next: Snapshot) {
   }
   const dependentIds: string[] = []
   for (const item of done) {
-    const profile = useProfiles.getState().profiles.find((p) => p.id === item.profileId)
+    const profile = getProfile(item.profileId)
     for (const mod of entryForItem(profile, item)?.mods ?? []) {
       if (mod.id) {
         dependentIds.push(mod.id)

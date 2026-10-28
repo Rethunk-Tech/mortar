@@ -5,7 +5,7 @@ import { TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { modsLabel } from '../i18n/counts.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { profileById, useProfiles } from '../profiles/store.ts'
 import { space } from '../theme/density.ts'
 import { IncludeOptions } from './IncludeOptions.tsx'
 import { type ShownInfo, sharedMods } from './logic.ts'
@@ -87,7 +87,7 @@ export function Included({
   const [which, setWhich] = useState(false)
   const [showMods, setShowMods] = useState(false)
   const profileId = useShareDialog((s) => s.profileId)
-  const profile = useProfiles((s) => s.profiles.find((p) => p.id === profileId))
+  const profile = useProfiles(profileById(profileId))
   const fomod = offersFomod(profile?.entries)
   const labels = {
     notes: (file ? t`Notes` : t`Mod notes`).toLocaleLowerCase(i18n.locale),

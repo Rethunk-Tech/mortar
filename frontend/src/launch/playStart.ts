@@ -17,7 +17,7 @@ import { useTab } from '../game/tab.ts'
 import { i18n } from '../i18n/index.ts'
 import { isGameId, useNav } from '../nav/store.ts'
 import { foldedOverrides, resolveOverride } from '../profiles/overrideValue.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { getProfile, useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { reportError, reportUnexpected, toastError } from '../toasts/report.ts'
 import {
@@ -182,7 +182,7 @@ async function startWithWarning(opts: {
     return
   }
   if (!opts.skipPrePlay) {
-    const listed = useProfiles.getState().profiles.find((p) => p.id === opts.profile)
+    const listed = getProfile(opts.profile)
     const skipCheck =
       resolveOverride(
         'skipPlayCheck',
@@ -300,7 +300,7 @@ async function answerGraphics(get: LaunchGet, set: LaunchSet, choice: string) {
   try {
     await SetByKey('graphicsApi', choice, ask.game)
     await GraphicsAnswered(ask.game, ask.profile, choice)
-    const listed = useProfiles.getState().profiles.find((p) => p.id === ask.profile)
+    const listed = getProfile(ask.profile)
     const overrides = listed ? foldedOverrides(listed) : undefined
     if (answerTargets(overrides).profileOverride) {
       useProfiles

@@ -8,7 +8,7 @@ import { HealthDialog } from '../profiles/HealthDialog.tsx'
 import { HistoryDialog } from '../profiles/HistoryDialog.tsx'
 import { MergeDialog } from '../profiles/MergeDialog.tsx'
 import { ProfileFolderDialog } from '../profiles/ProfileFolderDialog.tsx'
-import { useProfiles } from '../profiles/store.ts'
+import { profileById, useProfiles } from '../profiles/store.ts'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { ApplyTemplateDialog } from '../templates/ApplyTemplateDialog.tsx'
 import { ManageTemplatesDialog, SaveTemplateDialog } from '../templates/TemplateDialogs.tsx'
@@ -134,7 +134,7 @@ export function ProfileDialogHost() {
   const open = useProfileDialog((s) => s.open)
   const seq = useProfileDialog((s) => s.seq)
   const profileId = useProfileDialog((s) => s.profileId)
-  const profile = useProfiles((s) => s.profiles.find((p) => p.id === profileId))
+  const profile = useProfiles(profileById(profileId))
   const game = useProfiles((s) => s.game?.id ?? '')
   if (kind === null || profile === undefined) {
     return null

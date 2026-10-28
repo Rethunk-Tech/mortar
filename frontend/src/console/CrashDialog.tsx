@@ -18,7 +18,7 @@ import { nexusModUrl } from '../mods/nexusUrl.ts'
 import { openMod } from '../mods/openMod.ts'
 import { ReportToAuthorButton } from '../mods/ReportToAuthorButton.tsx'
 import { useMods } from '../mods/store.ts'
-import { useProfileLoader, useProfiles } from '../profiles/store.ts'
+import { profileById, useProfileLoader, useProfiles } from '../profiles/store.ts'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
@@ -190,7 +190,7 @@ export function CrashDialog() {
   )
   const [bisectError, setBisectError] = useState<string | null>(null)
   const [asking, setAsking] = useState(false)
-  const profile = useProfiles((s) => s.profiles.find((p) => p.id === crash?.profile))
+  const profile = useProfiles(profileById(crash?.profile))
   const mod = useMods((s) => s.mods.find((m) => m.key === crash?.cause?.modKey))
   const reasonText = useReasonText()
   if (!crash) {

@@ -14,7 +14,7 @@ import {
   RollBack,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { i18n } from '../i18n/index.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { getProfile, useProfiles } from '../profiles/store.ts'
 import { changeStillLatest } from '../toasts/history.ts'
 import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -113,7 +113,7 @@ export const useDetail = create<{
       fail(i18n._(msg`Could not roll back ${{ name: mod.name }}`))(e)
       return
     }
-    const next = useProfiles.getState().profiles.find((p) => p.id === target.id)
+    const next = getProfile(target.id)
     const backTo = versionAfterRollBack(next?.entries, mod.id)
     const key = keyAfterRollBack(next?.entries, mod.id, mod.key)
     useToasts.getState().push({
@@ -125,12 +125,7 @@ export const useDetail = create<{
         label: i18n._(msg`Redo update`),
         run: () => redoUpdate(target.game, target.id, key),
         profileId: target.id,
-        live: () =>
-          changeStillLatest(
-            useProfiles.getState().profiles.find((p) => p.id === target.id),
-            key,
-            [mod.id],
-          ),
+        live: () => changeStillLatest(getProfile(target.id), key, [mod.id]),
       },
     })
     set({ extras: null })

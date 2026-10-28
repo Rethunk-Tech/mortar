@@ -20,7 +20,7 @@ import { useTemplates } from '../templates/useTemplates.ts'
 import { space } from '../theme/density.ts'
 import { userModCount } from './count.ts'
 import { ProfileDot } from './ProfileDot.tsx'
-import { openProfileOf, useProfiles } from './store.ts'
+import { openProfileOf, profileById, useProfiles } from './store.ts'
 
 const ICON_PX = 16
 
@@ -226,7 +226,7 @@ const hideContext = () => useProfileContext.setState({ position: null })
 const ContextHost = memo(function ContextHostView({ game }: { game: string }) {
   const id = useProfileContext((s) => s.id)
   const position = useProfileContext((s) => s.position)
-  const profile = useProfiles((s) => s.profiles.find((p) => p.id === id))
+  const profile = useProfiles(profileById(id))
   return profile ? (
     <ProfileContextMenu game={game} profile={profile} position={position} onClose={hideContext} />
   ) : null

@@ -22,7 +22,7 @@ import { sameId, visibleUpdates } from '../mods/lookup.ts'
 import { useMods } from '../mods/store.ts'
 import { changesSinceCache } from '../profiles/changesSinceCache.ts'
 import { diffLines } from '../profiles/historyDiff.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { getProfile } from '../profiles/store.ts'
 import { saveName } from '../saves/saveName.ts'
 
 const PLAY_ISSUE_NAME_CAP = 5
@@ -157,11 +157,10 @@ async function gatherPlayIssues(game: string, profileId: string): Promise<PlayIs
     Updates(game, profileId),
     LastSaveGap(game, profileId).catch(() => null),
   ])
-  const profile = useProfiles.getState().profiles.find((p) => p.id === profileId)
+  const profile = getProfile(profileId)
   const fit = lastFit?.[0]
   const lastName = fit?.lastProfileId
-    ? (useProfiles.getState().profiles.find((p) => p.id === fit.lastProfileId)?.name ??
-      fit.lastProfileId)
+    ? (getProfile(fit.lastProfileId)?.name ?? fit.lastProfileId)
     : ''
   const groups = playIssueSummary({
     missing: problems.missing,

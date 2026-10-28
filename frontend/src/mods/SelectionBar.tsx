@@ -3,7 +3,7 @@ import { useLingui } from '@lingui/react/macro'
 import { useState } from 'react'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { CopyModsWithNeeds } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { getProfile, profileById, useProfiles } from '../profiles/store.ts'
 import { openShare } from '../share/store.ts'
 import { AddToGroupDialog } from './AddToGroupDialog.tsx'
 import { useCustomCategories } from './customCategories.ts'
@@ -41,11 +41,11 @@ function SelectionBar({ profileId, mods }: { profileId: string; mods: Mod[] }) {
   const count = plural({ count: ids.length }, { one: '# mod selected', other: '# mods selected' })
   const updates = visibleUpdates(
     useUpdates((s) => s.updates),
-    useProfiles.getState().profiles.find((p) => p.id === profileId),
+    getProfile(profileId),
   )
   const latest = new Map(updates.map((update) => [update.key, update.version]))
   const categories = useCustomCategories((s) => s.categories)
-  const profile = useProfiles((s) => s.profiles.find((p) => p.id === profileId))
+  const profile = useProfiles(profileById(profileId))
   const tags = [...new Set((profile?.entries ?? []).flatMap((entry) => entry.tags ?? []))].sort(
     (a, b) => Number(a > b) - Number(a < b),
   )

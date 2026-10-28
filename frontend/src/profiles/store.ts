@@ -441,9 +441,7 @@ export const useProfiles = create<{
 
 // The command line changes profiles through the running app, which then names the game; reload it when it is open.
 export function initProfilesChanged() {
-  setLatestChange(
-    (id) => useProfiles.getState().profiles.find((p) => p.id === id)?.lastChange ?? '',
-  )
+  setLatestChange((id) => getProfile(id)?.lastChange ?? '')
   if (typeof Events.On !== 'function') {
     return
   }
@@ -457,6 +455,11 @@ export function initProfilesChanged() {
 
 export const openProfileOf = (s: { profiles: Profile[]; openId: string }) =>
   s.profiles.find((p) => p.id === s.openId)
+
+export const profileById = (id: string | undefined) => (s: { profiles: Profile[] }) =>
+  s.profiles.find((p) => p.id === id)
+
+export const getProfile = (id: string | undefined) => profileById(id)(useProfiles.getState())
 
 // useProfileLoader is the loader of the profile with this id (the open one by default), whose flags say which tabs
 // and tools apply to it.

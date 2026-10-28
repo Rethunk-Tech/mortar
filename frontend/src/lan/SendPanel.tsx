@@ -19,7 +19,7 @@ import type { Peer } from '../../bindings/github.com/Rethunk-Tech/mortar/interna
 import { Peers, Send } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/service.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { lowerFirst } from '../i18n/lowerFirst.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { getProfile } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { includeAvailability } from '../share/methods.ts'
 import { type ShareInclude, toShareInclude } from '../share/shareDefaults.ts'
@@ -183,7 +183,7 @@ function useSend(game: string, profileId: string, include: ShareInclude, onSent:
   const { t } = useLingui()
   const [sending, setSending] = useState<string | null>(null)
   const send = (target: SendTarget) => {
-    const profileName = useProfiles.getState().profiles.find((p) => p.id === profileId)?.name ?? ''
+    const profileName = getProfile(profileId)?.name ?? ''
     setSending(target.id)
     Send(target.id, game, profileId, toShareInclude(include))
       .then(() => {

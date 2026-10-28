@@ -9,7 +9,7 @@ import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal
 import { useTab } from '../game/tab.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { i18n } from '../i18n/index.ts'
-import { openProfileOf, useProfiles } from '../profiles/store.ts'
+import { getProfile, openProfileOf, useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { sameValue } from '../shell/sameValue.ts'
 import { toastError } from '../toasts/report.ts'
@@ -37,7 +37,7 @@ const inFlight = new Map<string, Promise<UpdatesResult>>()
 const countFor = (updates: UpdatesResult, id: string) =>
   updateCount(
     updates,
-    useProfiles.getState().profiles.find((p) => p.id === id),
+    getProfile(id),
     detailsFor(useNexusDetails.getState().byKey, useProfiles.getState().game?.id ?? ''),
   )
 

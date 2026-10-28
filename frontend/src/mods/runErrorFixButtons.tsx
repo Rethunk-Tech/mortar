@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 import type { RunError } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { DismissRunError } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import { useConsole } from '../console/store.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { profileById, useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { installableUpdate, sameId, updateFor } from './lookup.ts'
@@ -29,7 +29,7 @@ export function RunErrorButtons({
   const mod = mods.find((m) => m.key === runError.key && sameId(m.id, runError.id))
   const current =
     mod ?? (runError.updated ? mods.find((m) => sameId(m.id, runError.id)) : undefined)
-  const profile = useProfiles((s) => s.profiles.find((p) => p.id === profileId))
+  const profile = useProfiles(profileById(profileId))
   const updates = useUpdates((s) => s.updates)
   const update = runError.updated && current ? updateFor(updates, current, profile) : undefined
   const installable = update && installableUpdate(update) ? update : undefined

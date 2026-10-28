@@ -20,7 +20,7 @@ import { i18n } from '../i18n/index.ts'
 import { useReasonText } from '../i18n/reasonText.ts'
 import { useMods } from '../mods/store.ts'
 import { userModCount } from '../profiles/count.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { profileById, useProfiles } from '../profiles/store.ts'
 import { controlsCutout } from '../shell/controlsCutout.ts'
 import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
@@ -410,9 +410,7 @@ export function LaunchScreen({ game }: { game: string }) {
   const hidden = useLaunch((s) => s.hidden)
   const failure = useLaunch((s) => s.failure)
   const info = useGameInfo(game)
-  const profile = useProfiles((s) =>
-    s.profiles.find((p) => p.id === (progress?.profile ?? status?.profile)),
-  )
+  const profile = useProfiles(profileById(progress?.profile ?? status?.profile))
   const open = phase !== 'closed' && viewGame === game && !hidden
   const failed = phase === 'failed'
   const now = useNow(open && !failed && phase !== 'running')

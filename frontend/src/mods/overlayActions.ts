@@ -10,7 +10,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { listNames } from '../i18n/list.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { getProfile, useProfiles } from '../profiles/store.ts'
 import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { overlayLabel } from './overlayRows.ts'
@@ -44,7 +44,7 @@ function toastSwitchedOff(row: OverlayRow, before: Entry[], after: Profile, prof
         }
       },
       live: () => {
-        const cur = useProfiles.getState().profiles.find((p) => p.id === profileId)
+        const cur = getProfile(profileId)
         return overlaysOn(cur, row.baseKey).some((e) => e.key === row.key)
           ? { disabled: false }
           : { disabled: true, reason: i18n._(msg`This is no longer the latest change.`) }
@@ -58,10 +58,7 @@ export async function setOverlayEnabled(row: OverlayRow, enabled: boolean) {
   if (!target) {
     return
   }
-  const before = overlaysOn(
-    useProfiles.getState().profiles.find((p) => p.id === target.id),
-    row.baseKey,
-  )
+  const before = overlaysOn(getProfile(target.id), row.baseKey)
   try {
     const after = await SetOverlayEnabled(target.game, target.id, row.key, enabled)
     useProfiles.getState().replace(after)
@@ -82,7 +79,7 @@ export async function removeOverlay(row: OverlayRow) {
   if (!target) {
     return
   }
-  const profile = useProfiles.getState().profiles.find((p) => p.id === target.id)
+  const profile = getProfile(target.id)
   const entry = (profile?.entries ?? []).find((e) => e.key === row.key)
   try {
     useProfiles.getState().replace(await RemoveEntries(target.game, target.id, [row.key]))
@@ -106,7 +103,7 @@ export async function removeOverlay(row: OverlayRow) {
         }
       },
       live: () => {
-        const cur = useProfiles.getState().profiles.find((p) => p.id === target.id)
+        const cur = getProfile(target.id)
         const entries = cur?.entries ?? []
         if (entries.some((e) => e.key === row.key)) {
           return { disabled: true, reason: i18n._(msg`This is no longer the latest change.`) }

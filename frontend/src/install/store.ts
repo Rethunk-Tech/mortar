@@ -29,7 +29,7 @@ import { useMods } from '../mods/store.ts'
 import { profileLocked } from '../mods/useLocked.ts'
 import { routeGame, useNav } from '../nav/store.ts'
 import { openOverride } from '../profiles/openOverrides.ts'
-import { openProfileOf, useProfiles } from '../profiles/store.ts'
+import { getProfile, openProfileOf, useProfiles } from '../profiles/store.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
 import { detectionOf } from '../toasts/avOverride.ts'
@@ -172,7 +172,7 @@ async function installOne(
             profileId: profile.id,
             live: () =>
               changeStillLatest(
-                useProfiles.getState().profiles.find((p) => p.id === profile.id),
+                getProfile(profile.id),
                 landed.key,
                 (landed.mods ?? []).map((m) => m.id),
               ),
@@ -236,7 +236,7 @@ async function afterDroppedRemap(
             profileId: session.profileId,
             live: () =>
               changeStillLatest(
-                useProfiles.getState().profiles.find((p) => p.id === session.profileId),
+                getProfile(session.profileId),
                 landed.key,
                 (landed.mods ?? []).map((m) => m.id),
               ),
@@ -397,8 +397,7 @@ export function initInstallAsks() {
       return
     }
     if (remap) {
-      const profileName =
-        useProfiles.getState().profiles.find((p) => p.id === profileId)?.name ?? ''
+      const profileName = getProfile(profileId)?.name ?? ''
       useInstall.getState().openRemap({
         game,
         profileName,

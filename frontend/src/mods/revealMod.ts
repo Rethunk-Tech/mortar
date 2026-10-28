@@ -1,6 +1,6 @@
 import { useTab } from '../game/tab.ts'
 import { isGameId, useNav } from '../nav/store.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { getProfile, useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { nexusIdOf } from './lookup.ts'
 import { focusMod } from './openMod.ts'
@@ -19,7 +19,7 @@ async function revealMod(game: string, profileId: string, nexusId: number, name:
   useProfiles.getState().open(profileId)
   useTab.getState().setTab('mods')
   await useMods.getState().load()
-  const profile = useProfiles.getState().profiles.find((p) => p.id === profileId)
+  const profile = getProfile(profileId)
   const { mods } = useMods.getState()
   const mod =
     (profile && nexusId > 0 ? mods.find((m) => nexusIdOf(profile, m) === nexusId) : undefined) ??

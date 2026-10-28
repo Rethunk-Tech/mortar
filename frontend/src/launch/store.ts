@@ -19,7 +19,7 @@ import { gameName } from '../games/info.ts'
 import { i18n } from '../i18n/index.ts'
 import { listNames } from '../i18n/list.ts'
 import { isGameId, useNav } from '../nav/store.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { getProfile, useProfiles } from '../profiles/store.ts'
 import { errorDetails } from '../toasts/errorKind.ts'
 import { reportError, reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -113,9 +113,7 @@ function rollbackAction(point: AutoUpdateRestorePoint) {
 }
 
 function profileName(rollback: UpdateRollback): string {
-  return (
-    useProfiles.getState().profiles.find((p) => p.id === rollback.profile)?.name ?? rollback.profile
-  )
+  return getProfile(rollback.profile)?.name ?? rollback.profile
 }
 
 async function erroredMods(game: string, profile: string): Promise<string> {

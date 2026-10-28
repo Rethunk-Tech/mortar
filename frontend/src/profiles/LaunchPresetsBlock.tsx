@@ -19,7 +19,7 @@ import { useToasts } from '../toasts/store.ts'
 import { LaunchPresetDialog } from './LaunchPresetDialog.tsx'
 import { LaunchPresetTemplatesDialog } from './LaunchPresetTemplatesDialog.tsx'
 import { duplicatePreset } from './profilePresets.ts'
-import { useProfiles } from './store.ts'
+import { profileById, useProfiles } from './store.ts'
 
 const NEW_PRESET: LaunchPreset = { id: '', name: '' }
 
@@ -117,7 +117,7 @@ function LaunchPresetsBlock({
   launchEnv: string
 }) {
   const { t } = useLingui()
-  const profile = useProfiles((s) => s.profiles.find((p) => p.id === profileId))
+  const profile = useProfiles(profileById(profileId))
   const [editing, setEditing] = useState<LaunchPreset | null>(null)
   const [templates, setTemplates] = useState(false)
   const [removing, setRemoving] = useState<LaunchPreset | null>(null)

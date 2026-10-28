@@ -25,7 +25,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import { PickFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import { useGameInfo } from '../games/info.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { Field, FieldRow, FormDialog, SelectField, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { readStored, writeStored } from '../shell/useStoredState.ts'
@@ -273,7 +273,7 @@ const ModStep = memo(
 function ProjectStep({ draft, owners, set }: { draft: Draft; owners: GitHubOwner[]; set: Set }) {
   const { t } = useLingui()
   const profiles = useProfiles((s) => s.profiles)
-  const openName = useProfiles((s) => s.profiles.find((p) => p.id === s.openId)?.name ?? '')
+  const openName = useProfiles((s) => openProfileOf(s)?.name ?? '')
   const gameName = useGameInfo()?.name ?? ''
   const folderId = useId()
   const pick = async () => {

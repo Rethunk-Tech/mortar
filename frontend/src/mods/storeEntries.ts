@@ -25,7 +25,7 @@ import {
   ShowFiles,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { i18n } from '../i18n/index.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { getProfile, useProfiles } from '../profiles/store.ts'
 import { changeStillLatest } from '../toasts/history.ts'
 import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -62,7 +62,7 @@ function pushFieldsUndo(
         await useUpdates.getState().load()
       },
       live: () => {
-        const profile = useProfiles.getState().profiles.find((p) => p.id === profileId)
+        const profile = getProfile(profileId)
         if (!profile) {
           return { disabled: true, reason: i18n._(msg`That profile is gone.`) }
         }
@@ -102,7 +102,7 @@ function pushRemovedUndo(
         await load()
       },
       live: () => {
-        const profile = useProfiles.getState().profiles.find((p) => p.id === profileId)
+        const profile = getProfile(profileId)
         if (!(profile && first)) {
           return { disabled: true, reason: i18n._(msg`That profile is gone.`) }
         }
@@ -126,7 +126,7 @@ export async function batchProfile(
     return
   }
   const keys = mods.map((mod) => mod.key)
-  const profile = useProfiles.getState().profiles.find((p) => p.id === target.id)
+  const profile = getProfile(target.id)
   const fields = entryFieldsOf((profile?.entries ?? []) as UndoEntry[], keys)
   try {
     useProfiles.getState().replace(await call(target.game, target.id, keys))
@@ -216,7 +216,7 @@ export async function dropMods(
     return
   }
   const keys = [...new Set(mods.map((m) => m.key))]
-  const profile = useProfiles.getState().profiles.find((p) => p.id === target.id)
+  const profile = getProfile(target.id)
   const removed = entriesForKeys(profile?.entries ?? [], keys)
   try {
     useProfiles.getState().replace(await RemoveEntries(target.game, target.id, keys))

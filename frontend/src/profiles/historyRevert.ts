@@ -24,7 +24,7 @@ import {
   undoRevertTarget,
   unfetchableNames,
 } from '../toasts/undo.ts'
-import { useProfiles } from './store.ts'
+import { getProfile, useProfiles } from './store.ts'
 
 interface RevertOutcome {
   events: HistoryEvent[]
@@ -119,7 +119,7 @@ function pushRevertUndo(game: string, profileId: string, beforeId: string, next:
         useProfiles.getState().replace(await Revert(game, profileId, beforeId))
       },
       live: () => {
-        const current = useProfiles.getState().profiles.find((p) => p.id === profileId)
+        const current = getProfile(profileId)
         if (!current) {
           return { disabled: true, reason: i18n._(msg`That profile is gone.`) }
         }

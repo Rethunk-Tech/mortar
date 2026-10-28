@@ -7,7 +7,7 @@ import { SaveFile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { safeFileName } from '../console/save.ts'
 import { listNames } from '../i18n/list.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { profileById, useProfiles } from '../profiles/store.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
@@ -101,7 +101,7 @@ export function ListFormat() {
   const chosenFormat = useShareDialog((s) => s.listFormat)
   const format = chosenFormat === 'thunderstore' && !thunderstore ? 'markdown' : chosenFormat
   const setFormat = useShareDialog((s) => s.setListFormat)
-  const profile = useProfiles((s) => s.profiles.find((p) => p.id === profileId))
+  const profile = useProfiles(profileById(profileId))
   const [copied, setCopied] = useState(0)
   const items = listItems(profile, keys)
   const labels = { enabled: t`Enabled`, disabled: t`Disabled` }

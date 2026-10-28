@@ -2,7 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Button } from '@mui/material'
 import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/models.ts'
 import { Skip } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { profileById, useProfiles } from '../profiles/store.ts'
 import { Callout } from '../queue/Callout.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useNoModText } from './noModText.ts'
@@ -11,7 +11,7 @@ import { useInstall } from './store.ts'
 export function NeedsRootCallout({ item }: { item: Item }) {
   const { t } = useLingui()
   const openRemap = useInstall((s) => s.openRemap)
-  const profile = useProfiles((s) => s.profiles.find((p) => p.id === item.profileId))
+  const profile = useProfiles(profileById(item.profileId))
   const noModText = useNoModText(item.profileId)
   const ask = item.remap
   if (!ask) {

@@ -1,7 +1,7 @@
 import { CopyMods } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import type { Fit } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/models.ts'
 import { FromSave } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { getProfile, useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
 import { useSaves } from './store.ts'
 import { wantFor } from './wantFor.ts'
@@ -12,7 +12,7 @@ export async function enableRecordedMods(
   profileId: string,
   fit: Fit,
 ): Promise<{ enabled: number; changes: string[] }> {
-  const profile = useProfiles.getState().profiles.find((p) => p.id === profileId)
+  const profile = getProfile(profileId)
   const off = ((fit.lastMissing?.length ? fit.lastMissing : fit.missing) ?? []).filter(
     (m) => m.disabled,
   )
@@ -33,7 +33,7 @@ export async function addRecordedMods(
   fit: Fit,
   enable = true,
 ): Promise<void> {
-  const profile = useProfiles.getState().profiles.find((p) => p.id === profileId)
+  const profile = getProfile(profileId)
   if (!profile) {
     return
   }

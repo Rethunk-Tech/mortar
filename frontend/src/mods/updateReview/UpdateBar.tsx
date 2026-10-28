@@ -3,7 +3,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { ArrowUp } from 'lucide-react'
 import { memo, useState } from 'react'
-import { useProfiles } from '../../profiles/store.ts'
+import { profileById, useProfiles } from '../../profiles/store.ts'
 import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { useBadges } from '../badges.ts'
@@ -19,7 +19,7 @@ export const UpdateBar = memo(function UpdateBarView() {
   const setReviewing = useUpdates((s) => s.setReviewing)
   const openId = useProfiles((s) => s.openId)
   const count = useBadges((s) => s.byProfile[openId]?.updates ?? 0)
-  const profile = useProfiles((s) => s.profiles.find((p) => p.id === openId))
+  const profile = useProfiles(profileById(openId))
   const checkNow = useUpdates((s) => s.checkNow)
   const [first] = visibleUpdates(updates, profile)
   // Dismissed for this answer only: the next check's answer brings the notice back if it is still incomplete.
