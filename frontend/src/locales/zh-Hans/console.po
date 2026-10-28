@@ -848,6 +848,10 @@ msgstr ""
 msgid "Source skipped"
 msgstr ""
 
+#: src/console/StartupSections.tsx
+msgid "The title screen is up but the game is still loading its own content, including content packs from mods; the menu is not usable until this ends"
+msgstr ""
+
 #: src/console/UpdateNoteTag.tsx
 msgid "Mortar offers prereleases only when Settings allows them."
 msgstr ""
@@ -939,6 +943,10 @@ msgstr ""
 
 #: src/console/RunProblems.tsx
 msgid "Mortar does not know where to get {id}"
+msgstr ""
+
+#: src/console/StartupSections.tsx
+msgid "Loading after the title"
 msgstr ""
 
 #: src/console/BisectDialog.tsx
@@ -1042,6 +1050,10 @@ msgstr ""
 
 #: src/console/StartupSections.tsx
 msgid "The game loads its own content"
+msgstr ""
+
+#: src/console/StartupSections.tsx
+msgid "The game was still loading after the title screen showed"
 msgstr ""
 
 #: src/console/PerformanceCards.tsx
