@@ -512,3 +512,22 @@ func TestAnIgnoredThunderstoreLinkIsTakenAgain(t *testing.T) {
 		t.Fatalf("%d arrivals after the ignored link came again", n)
 	}
 }
+
+func TestTakenAndYieldCoverCurseForge(t *testing.T) {
+	h := &fakeHandler{owner: nxm.Owner{ID: "other.desktop", Name: "Other"}}
+	s := newService(t, h)
+	t.Cleanup(func() { source.SetHandleLinks(nil) })
+	if err := ClaimLinks(s.store, h, "curseforge"); err != nil {
+		t.Fatal(err)
+	}
+	h.owner = nxm.Owner{ID: "other.desktop", Name: "Other"}
+	if got, _ := s.Taken(); len(got) != 1 || got[0].Source != "curseforge" {
+		t.Fatalf("Taken: %v", got)
+	}
+	if err := s.Yield([]string{"curseforge"}); err != nil {
+		t.Fatal(err)
+	}
+	if on := s.store.Get().CurseForgeHandleLinks; on == nil || *on {
+		t.Fatalf("after Yield: %v", on)
+	}
+}

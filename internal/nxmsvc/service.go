@@ -675,7 +675,7 @@ func claimed(v settings.Settings) map[string][]string {
 func (s *Service) Taken() ([]Takeover, error) {
 	byID := claimed(s.store.Get())
 	out := []Takeover{}
-	for _, id := range []string{"nexus", "thunderstore"} {
+	for _, id := range append([]string{"nexus"}, optInSources...) {
 		for _, scheme := range byID[id] {
 			o, err := s.handler.Owner(scheme)
 			if err != nil {
@@ -728,9 +728,11 @@ func (s *Service) Yield(sources []string) error {
 			switch id {
 			case "nexus":
 				v.NxmHandled, v.NxmPreviousName = false, ""
-			case "thunderstore":
-				source.SetHandleLink(id, false)
-				setHandleLinks(v, id, false)
+			default:
+				if hasOptInSetting(id) {
+					source.SetHandleLink(id, false)
+					setHandleLinks(v, id, false)
+				}
 			}
 		}
 	})
