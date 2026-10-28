@@ -1,5 +1,6 @@
 // The playable games in the bundled catalog and the facts the site shows about each.
 import { readFileSync } from 'node:fs'
+import type { GetStaticPaths } from 'astro'
 import type { SteamArt } from './art.ts'
 import { listed, repo } from './site.ts'
 
@@ -49,6 +50,13 @@ export function playableGames(): Game[] {
   }
   return playable
 }
+
+/** getStaticPaths for a page per playable game, handing each its Game as `game`. */
+export const gameStaticPaths = (() =>
+  playableGames().map((g) => ({
+    params: { game: g.id },
+    props: { game: g },
+  }))) satisfies GetStaticPaths
 
 const LOADER_VERSION = /\s+\d.*$/
 

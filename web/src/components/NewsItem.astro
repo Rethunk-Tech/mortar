@@ -1,0 +1,17 @@
+---
+// A post's kind, date, title and summary, as every news list shows them.
+import { longDate, type Post } from '../lib/news.ts'
+
+interface Props {
+  post: Post
+}
+
+const { post } = Astro.props
+---
+
+<span class="meta">
+  {post.release ? <span class="vtag hot">{post.release.version}</span> : <span class="howto-tag">How-to</span>}
+  <time datetime={post.date.toISOString().slice(0, 10)}>{longDate(post.date)}</time>
+</span>
+<h2>{post.title}</h2>
+<p>{post.summary}</p>

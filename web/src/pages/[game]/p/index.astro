@@ -1,18 +1,13 @@
 ---
-import type { GetStaticPaths } from 'astro'
 import Base from '../../../layouts/Base.astro'
 import { steamArt } from '../../../lib/art.ts'
 import { shareMarks } from '../../../lib/brands.ts'
-import { artOf, type Game, playableGames } from '../../../lib/games.ts'
+import { artOf, type Game, gameStaticPaths } from '../../../lib/games.ts'
 import '../../../styles/page.css'
 import '../../../styles/page-lists.css'
 import '../../../styles/share.css'
 
-export const getStaticPaths = (() =>
-  playableGames().map((g) => ({
-    params: { game: g.id },
-    props: { game: g },
-  }))) satisfies GetStaticPaths
+export const getStaticPaths = gameStaticPaths
 
 interface Props {
   game: Game

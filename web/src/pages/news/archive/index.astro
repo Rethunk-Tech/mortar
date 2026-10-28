@@ -1,6 +1,7 @@
 ---
+import NewsItem from '../../../components/NewsItem.astro'
 import Page from '../../../layouts/Page.astro'
-import { longDate, posts } from '../../../lib/news.ts'
+import { posts } from '../../../lib/news.ts'
 
 const all = await posts()
 ---
@@ -22,12 +23,7 @@ const all = await posts()
       all.map((p) => (
         <li>
           <a class="post" href={`/news/${p.slug}/`}>
-            <span class="meta">
-              {p.release ? <span class="vtag hot">{p.release.version}</span> : <span class="howto-tag">How-to</span>}
-              <time datetime={p.date.toISOString().slice(0, 10)}>{longDate(p.date)}</time>
-            </span>
-            <h2>{p.title}</h2>
-            <p>{p.summary}</p>
+            <NewsItem post={p} />
           </a>
         </li>
       ))

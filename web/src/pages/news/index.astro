@@ -1,6 +1,7 @@
 ---
+import NewsItem from '../../components/NewsItem.astro'
 import Page from '../../layouts/Page.astro'
-import { longDate, type Post, posts } from '../../lib/news.ts'
+import { type Post, posts } from '../../lib/news.ts'
 import '../../styles/news.css'
 
 const RECENT = 6
@@ -8,7 +9,6 @@ const all = await posts()
 const [lead, ...rest] = all
 const recent = rest.slice(0, RECENT)
 const picture = (p: Post) => p.image ?? p.highlights[0]?.image
-const iso = (d: Date) => d.toISOString().slice(0, 10)
 ---
 
 <Page
@@ -26,12 +26,7 @@ const iso = (d: Date) => d.toISOString().slice(0, 10)
       <a class="news-lead" href={`/news/${lead.slug}/`}>
         {picture(lead) && <img src={picture(lead)} alt="" width="1280" height="800" />}
         <div class="news-lead-text">
-          <span class="meta">
-            {lead.release ? <span class="vtag hot">{lead.release.version}</span> : <span class="howto-tag">How-to</span>}
-            <time datetime={iso(lead.date)}>{longDate(lead.date)}</time>
-          </span>
-          <h2>{lead.title}</h2>
-          <p>{lead.summary}</p>
+          <NewsItem post={lead} />
           {lead.highlights.length > 0 && (
             <ul class="news-chips">
               {lead.highlights.map((h) => (
@@ -53,12 +48,7 @@ const iso = (d: Date) => d.toISOString().slice(0, 10)
             ) : (
               <span class="news-blank" aria-hidden="true">{p.release?.version ?? 'How-to'}</span>
             )}
-            <span class="meta">
-              {p.release ? <span class="vtag hot">{p.release.version}</span> : <span class="howto-tag">How-to</span>}
-              <time datetime={iso(p.date)}>{longDate(p.date)}</time>
-            </span>
-            <h2>{p.title}</h2>
-            <p>{p.summary}</p>
+            <NewsItem post={p} />
           </a>
         </li>
       ))
