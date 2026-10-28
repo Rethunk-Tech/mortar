@@ -18,8 +18,7 @@ import { useTab } from '../game/tab.ts'
 import { gameName } from '../games/info.ts'
 import { i18n } from '../i18n/index.ts'
 import { listNames } from '../i18n/list.ts'
-import { isGameId, useNav } from '../nav/store.ts'
-import { getProfile, useProfiles } from '../profiles/store.ts'
+import { getProfile } from '../profiles/store.ts'
 import { errorDetails } from '../toasts/errorKind.ts'
 import { reportError, reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -30,6 +29,7 @@ import {
   answerGraphics,
   type GraphicsPrompt,
   openProblems,
+  openWarnTab,
   type PlayCheck,
   playAnyway,
   type SaveWarn,
@@ -332,14 +332,7 @@ export const useLaunch = create<{
   openSaves: () => {
     const warn = get().saveWarn
     set({ saveWarn: null })
-    if (!warn) {
-      return
-    }
-    if (isGameId(warn.game)) {
-      useNav.getState().openGame(warn.game)
-    }
-    useProfiles.getState().open(warn.profile)
-    useTab.getState().setTab('saves')
+    openWarnTab(warn, 'saves')
   },
   playAnyway: () => playAnyway(get, set),
   updateAndPlay: () => updateAndPlay(get, set),

@@ -13,7 +13,7 @@ import {
   LastSaveGap,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts'
 import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
-import { useTab } from '../game/tab.ts'
+import { type TabId, useTab } from '../game/tab.ts'
 import { i18n } from '../i18n/index.ts'
 import { isGameId, useNav } from '../nav/store.ts'
 import { foldedOverrides, resolveOverride } from '../profiles/overrideValue.ts'
@@ -370,19 +370,8 @@ async function updateAndPlay(get: LaunchGet, set: LaunchSet) {
   })
 }
 
-function openProblems(get: LaunchGet, set: LaunchSet) {
-  const check = get().playCheck
-  if (check) {
-    set({ playCheck: null })
-    if (isGameId(check.game)) {
-      useNav.getState().openGame(check.game)
-    }
-    useProfiles.getState().open(check.profile)
-    useTab.getState().setTab('problems')
-    return
-  }
-  const warn = get().updateWarn
-  set({ updateWarn: null })
+// Opens the tab a launch warning points at, on the warning's game and profile.
+function openWarnTab(warn: { game: string; profile: string } | null, tab: TabId) {
   if (!warn) {
     return
   }
@@ -390,13 +379,20 @@ function openProblems(get: LaunchGet, set: LaunchSet) {
     useNav.getState().openGame(warn.game)
   }
   useProfiles.getState().open(warn.profile)
-  useTab.getState().setTab('problems')
+  useTab.getState().setTab(tab)
+}
+
+function openProblems(get: LaunchGet, set: LaunchSet) {
+  const { playCheck, updateWarn } = get()
+  set(playCheck ? { playCheck: null } : { updateWarn: null })
+  openWarnTab(playCheck ?? updateWarn, 'problems')
 }
 
 export type { GraphicsPrompt, PlayCheck, SaveWarn, UpdateContext, UpdateRollback, UpdateWarn }
 export {
   answerGraphics,
   openProblems,
+  openWarnTab,
   playAnyway,
   setPendingPreset,
   startProfile,
