@@ -41,15 +41,21 @@ func (p Process) Named(names ...string) bool {
 
 // imagePath is the executable path of pid, or "" when the process cannot be opened.
 func imagePath(pid uint32) string {
+	path, _ := ImagePath(pid)
+	return path
+}
+
+// ImagePath is the executable path of pid.
+func ImagePath(pid uint32) (string, error) {
 	h, err := windows.OpenProcess(windows.PROCESS_QUERY_LIMITED_INFORMATION, false, pid)
 	if err != nil {
-		return ""
+		return "", err
 	}
 	defer func() { _ = windows.CloseHandle(h) }()
 	var buf [windows.MAX_LONG_PATH]uint16
 	n := uint32(windows.MAX_LONG_PATH)
 	if err := windows.QueryFullProcessImageName(h, 0, &buf[0], &n); err != nil {
-		return ""
+		return "", err
 	}
-	return windows.UTF16ToString(buf[:n])
+	return windows.UTF16ToString(buf[:n]), nil
 }

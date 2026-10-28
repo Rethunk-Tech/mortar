@@ -8,25 +8,15 @@ import (
 	"os"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/wailsapp/wails/v3/pkg/w32"
-	"golang.org/x/sys/windows"
 )
 
 func processExe(pid int) (string, error) {
 	if pid <= 0 || pid > math.MaxUint32 {
 		return "", errors.New("not a process id")
 	}
-	h, err := windows.OpenProcess(windows.PROCESS_QUERY_LIMITED_INFORMATION, false, uint32(pid))
-	if err != nil {
-		return "", err
-	}
-	defer func() { _ = windows.CloseHandle(h) }()
-	var buf [windows.MAX_LONG_PATH]uint16
-	n := uint32(windows.MAX_LONG_PATH)
-	if err := windows.QueryFullProcessImageName(h, 0, &buf[0], &n); err != nil {
-		return "", err
-	}
-	return windows.UTF16ToString(buf[:n]), nil
+	return launch.ImagePath(uint32(pid))
 }
 
 // waitGone waits up to 5 seconds for an ended process to exit.
