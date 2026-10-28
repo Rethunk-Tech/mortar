@@ -52,7 +52,7 @@ function whenIdle(game: string, dir: string, run: () => void) {
 }
 
 // The profile the folder installs into: the one picked for it, else the open profile of the open game.
-function targetOf(game: string, dir: string) {
+export function targetOf(game: string, dir: string) {
   const picked = useSettings.getState().games?.[game]?.extraModsProfiles?.[dir]
   const { game: open, openId, profiles } = useProfiles.getState()
   if (picked) {
@@ -62,7 +62,7 @@ function targetOf(game: string, dir: string) {
   return open?.id === game ? openId : ''
 }
 
-const inFolder = (folder: string, dir: string) =>
+export const inFolder = (folder: string, dir: string) =>
   folder === dir || folder.startsWith(`${dir}/`) || folder.startsWith(`${dir}\\`)
 
 async function installFolder(game: string, dir: string) {
