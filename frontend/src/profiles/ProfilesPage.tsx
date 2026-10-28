@@ -273,7 +273,7 @@ const FindModSearch = memo(function FindModSearchView({ profiles }: { profiles: 
         </EmptyState>
       ) : null}
       {hits.length > 0 ? (
-        <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+        <Box sx={{ mt: space.gap, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
           {hits.map((h) => (
             <Button
               key={`${h.profileId}/${modId(h)}`}

@@ -45,7 +45,7 @@ export function LaunchPresetTemplatesDialog({
         </DialogFooter>
       }
     >
-      <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary', mb: 1 }}>
+      <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary', mb: space.gap }}>
         {t`Templates are shared by every profile of this game. Adding one copies it into this profile's launch presets.`}
       </Typography>
       {templates?.length === 0 ? (

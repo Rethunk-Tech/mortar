@@ -102,7 +102,7 @@ export function CompareTop({
   const game = useProfiles((s) => s.game)
   const gameId = game?.id ?? ''
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, px: 3, py: 2 }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, px: 3, py: space.pad }}>
       <Box
         sx={{
           display: 'flex',

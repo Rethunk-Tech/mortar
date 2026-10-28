@@ -165,7 +165,7 @@ function Summary({
       component="div"
       sx={{
         px: 3,
-        pb: 2,
+        pb: space.pad,
         display: 'flex',
         alignItems: 'baseline',
         flexWrap: 'wrap',
@@ -298,7 +298,7 @@ function ComparePair({
         onHost={onHost}
       />
       {filterOpen ? (
-        <Box sx={{ px: 3, pb: 2 }}>
+        <Box sx={{ px: 3, pb: space.pad }}>
           <SearchField
             label={t`Filter mods`}
             fullWidth={true}

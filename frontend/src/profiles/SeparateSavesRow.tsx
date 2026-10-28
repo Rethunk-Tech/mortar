@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { SetSeparateSaves } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { useGameInfo } from '../games/info.ts'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useProfiles } from './store.ts'
 
@@ -32,7 +33,7 @@ export function SeparateSavesRow({
       .catch(reportUnexpected)
   }
   return (
-    <Box sx={{ mt: 1 }}>
+    <Box sx={{ mt: space.gap }}>
       <FormControlLabel
         control={
           <Switch

@@ -14,6 +14,7 @@ import type { GameId } from '../nav/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
+import { space } from '../theme/density.ts'
 import { type InlineError, inlineError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { GameModsProgressLine } from './GameModsProgress.tsx'
@@ -211,7 +212,7 @@ export function GameModsDialog({
           <Typography sx={{ color: 'error.main' }} title={error.details}>
             {error.message}
           </Typography>
-          <Button onClick={loadPreview} sx={{ mt: 1 }}>
+          <Button onClick={loadPreview} sx={{ mt: space.gap }}>
             {t`Retry`}
           </Button>
         </>

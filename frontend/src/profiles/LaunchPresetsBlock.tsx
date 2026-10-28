@@ -171,7 +171,7 @@ function LaunchPresetsBlock({
           }}
         />
       ))}
-      <Box sx={{ display: 'flex', gap: 1 }}>
+      <Box sx={{ display: 'flex', gap: space.gap }}>
         <Button onClick={() => setEditing(NEW_PRESET)}>{t`Add preset`}</Button>
         <Button onClick={() => setTemplates(true)}>{t`Add from game presets…`}</Button>
       </Box>

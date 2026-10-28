@@ -6,6 +6,7 @@ import { listNames } from '../i18n/list.ts'
 import { download } from '../queue/actions.ts'
 import { AppDialog } from '../shell/dialog/AppDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { space } from '../theme/density.ts'
 import { errorDetails } from '../toasts/errorKind.ts'
 import { undoTarget } from '../toasts/history.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
@@ -104,7 +105,7 @@ export function HistoryPanel({
         />
       )}
       {h.error !== '' && (
-        <Box sx={{ mt: 1 }}>
+        <Box sx={{ mt: space.gap }}>
           <Typography
             sx={{ fontSize: 'base.fontSize', color: 'error.main' }}
             title={h.missingNames.length > 0 ? undefined : errorDetails(h.error)}
@@ -114,7 +115,7 @@ export function HistoryPanel({
           {h.missingEvent !== '' && h.missingWants.length > 0 && (
             <Button
               size="small"
-              sx={{ mt: 1 }}
+              sx={{ mt: space.gap }}
               disabled={h.busy !== ''}
               onClick={() => download(h.missingWants).catch(reportUnexpected)}
             >

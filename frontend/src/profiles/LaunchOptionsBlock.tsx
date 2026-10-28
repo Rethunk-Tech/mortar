@@ -37,7 +37,14 @@ function TestLaunchRow({
   const [result, setResult] = useState('')
   return (
     <Box
-      sx={{ mt: 1, mb: 1, display: 'flex', alignItems: 'center', gap: space.gap, flexWrap: 'wrap' }}
+      sx={{
+        mt: space.gap,
+        mb: space.gap,
+        display: 'flex',
+        alignItems: 'center',
+        gap: space.gap,
+        flexWrap: 'wrap',
+      }}
     >
       <DisabledReason title={t`Stop the game to test a launch.`} disabled={playing}>
         <Button
@@ -80,7 +87,7 @@ function TestLaunchRow({
         sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}
       >{t`Uses the saved options`}</Typography>
       {result ? (
-        <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary', mt: 1 }}>
+        <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary', mt: space.gap }}>
           {result}
         </Typography>
       ) : null}

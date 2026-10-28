@@ -62,7 +62,7 @@ function ProfileButton({
       }}
       sx={{
         '--wails-draggable': 'no-drag',
-        gap: '8px',
+        gap: space.gap,
         height: space.control,
         minWidth: 0,
         px: '10px',

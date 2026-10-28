@@ -52,7 +52,7 @@ export function LaunchPreview({
   }
 
   return (
-    <Box sx={{ mt: 1, mb: 1 }}>
+    <Box sx={{ mt: space.gap, mb: space.gap }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
         <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary', flex: 1 }}>
           {t`Direct launch preview`}

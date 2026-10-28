@@ -28,10 +28,10 @@ export function HistoryDiffView({
       >{t`Snapshot diff`}</Typography>
       {lines.length === 0 ? (
         <Typography
-          sx={{ mt: 1, fontSize: 'base.fontSize', color: 'text.secondary' }}
+          sx={{ mt: space.gap, fontSize: 'base.fontSize', color: 'text.secondary' }}
         >{t`No differences.`}</Typography>
       ) : (
-        <Box component="ul" sx={{ m: 0, mt: 1, pl: space.pad, fontSize: 'base.fontSize' }}>
+        <Box component="ul" sx={{ m: 0, mt: space.gap, pl: space.pad, fontSize: 'base.fontSize' }}>
           {lines.map((line) => (
             <li key={line}>{line}</li>
           ))}

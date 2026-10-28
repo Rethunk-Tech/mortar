@@ -43,11 +43,11 @@ function CoverField({
   const pickedName = typeof staged === 'string' ? baseName(staged) : ''
   return (
     <Field label={t`Cover image`}>
-      <Box sx={{ width: 160, height: 90, borderRadius: '6px', overflow: 'hidden', mb: 1 }}>
+      <Box sx={{ width: 160, height: 90, borderRadius: '6px', overflow: 'hidden', mb: space.gap }}>
         {gameId ? <HeroCover game={gameId} profile={profile} /> : null}
       </Box>
       {staged === undefined ? null : (
-        <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary', mb: 1 }}>
+        <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary', mb: space.gap }}>
           {staged === null
             ? t`The automatic cover is used after Save.`
             : t`${{ name: pickedName }} is used after Save.`}
