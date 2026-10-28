@@ -114,13 +114,24 @@ export function ProfileGameOptions({ game, profileId }: { game: string; profileI
   const [value, setValue] = useState<GameSettingsValues | null>(null)
   useEffect(() => setValue(data), [data])
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
-  useEffect(() => () => clearTimeout(timer.current), [])
+  // A save still waiting out its pause when the page closes runs then, so the last edit is not lost.
+  const pending = useRef<(() => void) | undefined>(undefined)
+  useEffect(
+    () => () => {
+      clearTimeout(timer.current)
+      pending.current?.()
+    },
+    [],
+  )
   const change = (next: GameSettingsValues | null) => {
     setValue(next)
     clearTimeout(timer.current)
-    timer.current = setTimeout(() => {
+    const save = () => {
+      pending.current = undefined
       SetGameSettings(game, profileId, next ?? {}).catch(reportUnexpected)
-    }, SAVE_PAUSE_MS)
+    }
+    pending.current = save
+    timer.current = setTimeout(save, SAVE_PAUSE_MS)
   }
   if (!(startup && profileId)) {
     return null
