@@ -41,6 +41,17 @@ func (s *ListedStore) Get(k VersionRef) ([]string, bool) {
 	return v, ok
 }
 
+// GetAll is the dependencies of each of refs the store holds.
+func (s *ListedStore) GetAll(refs []VersionRef) map[VersionRef][]string {
+	out := map[VersionRef][]string{}
+	for _, r := range refs {
+		if ids, ok := s.Get(r); ok {
+			out[r] = ids
+		}
+	}
+	return out
+}
+
 func (s *ListedStore) len() int {
 	s.mu.Lock()
 	defer s.mu.Unlock()

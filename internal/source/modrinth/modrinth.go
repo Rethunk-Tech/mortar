@@ -437,13 +437,7 @@ func (d Driver) rememberInstalled(ctx context.Context, hashes []string, mortarVe
 
 // Dependencies answers from the versions update checks read: each known version's required projects, by id.
 func (Driver) Dependencies(_ context.Context, _, _ string, refs []source.VersionRef) (map[source.VersionRef][]string, error) {
-	out := map[source.VersionRef][]string{}
-	for _, r := range refs {
-		if ids, ok := listed.Get(r); ok {
-			out[r] = ids
-		}
-	}
-	return out, nil
+	return listed.GetAll(refs), nil
 }
 
 // versionTypes are Modrinth's version types from the most to the least stable, which a channel's stability cuts off.

@@ -24,3 +24,12 @@ func TestListedStopsGrowingPastTheCap(t *testing.T) {
 		t.Fatal("newest version missing")
 	}
 }
+
+func TestListedGetAllSkipsUnknownRefs(t *testing.T) {
+	var s ListedStore
+	a, b := VersionRef{ID: "a", Version: "1"}, VersionRef{ID: "b", Version: "1"}
+	s.Put(a, []string{"x"})
+	if got := s.GetAll([]VersionRef{a, b}); len(got) != 1 || got[a][0] != "x" {
+		t.Fatalf("GetAll = %v", got)
+	}
+}

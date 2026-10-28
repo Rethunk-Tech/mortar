@@ -883,13 +883,7 @@ func (d Driver) Latest(ctx context.Context, src components.GameSource, _ string,
 
 // Dependencies answers from the files update checks read: each known file's required mods, by id.
 func (Driver) Dependencies(_ context.Context, _, _ string, refs []source.VersionRef) (map[source.VersionRef][]string, error) {
-	out := map[source.VersionRef][]string{}
-	for _, r := range refs {
-		if ids, ok := listed.Get(r); ok {
-			out[r] = ids
-		}
-	}
-	return out, nil
+	return listed.GetAll(refs), nil
 }
 
 // Changelog reads the file changelogs of the files published after the installed one, up to latest, newest first. The
