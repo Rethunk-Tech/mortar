@@ -82,14 +82,7 @@ func TestDetailsRoundTrip(t *testing.T) {
 		Key: "n", Source: profile.Source{Kind: profile.KindNexus, ModID: 4, FileID: 5},
 		Mods: []profile.Component{{ID: "smapi:A.On", Folder: "."}, {ID: "smapi:A.Off", Folder: "."}}, Disabled: []mod.ID{"smapi:A.Off"}, Fomod: choices,
 	}}}
-	res, err := Encode("stardew", p, profile.ShareFacts{})
-	if err != nil {
-		t.Fatal(err)
-	}
-	got, err := Parse(res.Payload)
-	if err != nil {
-		t.Fatal(err)
-	}
+	got := roundTrip(t, p)
 	if len(got.Entries) != 1 || !slices.Equal(got.Entries[0].Disabled, []mod.ID{"smapi:A.Off"}) ||
 		fmt.Sprint(got.Entries[0].Fomod) != fmt.Sprint(choices) {
 		t.Fatalf("link details = %+v", got.Entries)
@@ -100,14 +93,7 @@ func TestDetailsRoundTrip(t *testing.T) {
 	if _, err := Write(&buf, "stardew", p, dir); err != nil {
 		t.Fatal(err)
 	}
-	file := filepath.Join(t.TempDir(), "details.mortar")
-	if err := os.WriteFile(file, buf.Bytes(), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	pv, err := Read(file)
-	if err != nil {
-		t.Fatal(err)
-	}
+	pv := readBack(t, &buf)
 	if pv.Game != "stardew" || pv.SourceKeys["nexus"] != "stardewvalley" {
 		t.Fatalf("file origin = %q %v", pv.Game, pv.SourceKeys)
 	}
@@ -327,6 +313,48 @@ func TestLeftOutReasons(t *testing.T) {
 	}
 }
 
+// roundTrip encodes p as a Stardew share link and parses the link back.
+func roundTrip(t *testing.T, p profile.Profile) Shared {
+	t.Helper()
+	res, err := Encode("stardew", p, profile.ShareFacts{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := Parse(res.Payload)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return got
+}
+
+// readBack saves a written .mortar file and reads it back.
+func readBack(t *testing.T, buf *bytes.Buffer) Preview {
+	t.Helper()
+	file := filepath.Join(t.TempDir(), "x.mortar")
+	if err := os.WriteFile(file, buf.Bytes(), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	pv, err := Read(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return pv
+}
+
+// writeRead writes p as a .mortar file and reads the bytes back.
+func writeRead(t *testing.T, game string, p profile.Profile, modsDir string, include ...Include) Preview {
+	t.Helper()
+	var buf bytes.Buffer
+	if _, err := Write(&buf, game, p, modsDir, include...); err != nil {
+		t.Fatal(err)
+	}
+	pv, err := ReadBytes(buf.Bytes())
+	if err != nil {
+		t.Fatal(err)
+	}
+	return pv
+}
+
 func modsDirWith(t *testing.T, files map[string]string) string {
 	t.Helper()
 	dir := t.TempDir()
@@ -363,14 +391,7 @@ func TestMortarFileRoundTrip(t *testing.T) {
 	if len(skipped) != 2 {
 		t.Errorf("skipped = %v", skipped)
 	}
-	file := filepath.Join(t.TempDir(), "x.mortar")
-	if err := os.WriteFile(file, buf.Bytes(), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	pv, err := Read(file)
-	if err != nil {
-		t.Fatal(err)
-	}
+	pv := readBack(t, &buf)
 	if pv.Name != "Farm 🌾" || pv.Notes != "n" || len(pv.Entries) != 3 {
 		t.Errorf("preview = %+v", pv)
 	}
@@ -397,14 +418,7 @@ func TestEntryNotesRoundTrip(t *testing.T) {
 	p.Entries[0].Tags = []string{"QoL", "UI"}
 	p.Entries[0].Implicit, p.Entries[0].Pinned, p.Entries[0].PinReason = true, true, "breaks on 2.0"
 	p.Groups = []profile.Group{{Name: "Core", Keys: []string{"one"}}}
-	res, err := Encode("stardew", p, profile.ShareFacts{})
-	if err != nil {
-		t.Fatal(err)
-	}
-	got, err := Parse(res.Payload)
-	if err != nil {
-		t.Fatal(err)
-	}
+	got := roundTrip(t, p)
 	if len(got.Entries) != 2 || got.Entries[0].Note != p.Entries[0].Note || !slices.Equal(got.Entries[0].Tags, []string{"QoL", "UI"}) ||
 		got.Entries[1].Note != "gh note" || !slices.Equal(got.Entries[1].Tags, []string{"git"}) {
 		t.Fatalf("link notes = %+v", got.Entries)
@@ -416,14 +430,7 @@ func TestEntryNotesRoundTrip(t *testing.T) {
 	if gs := RefGroups(got.Entries); len(gs) != 1 || gs[0].Name != "Core" || len(gs[0].Refs) != 1 || gs[0].Refs[0].ModID != 541 {
 		t.Fatalf("link groups = %+v", gs)
 	}
-	var buf bytes.Buffer
-	if _, err := Write(&buf, "stardew", p, t.TempDir()); err != nil {
-		t.Fatal(err)
-	}
-	pv, err := ReadBytes(buf.Bytes())
-	if err != nil {
-		t.Fatal(err)
-	}
+	pv := writeRead(t, "stardew", p, t.TempDir())
 	if pv.Entries[0].Note != p.Entries[0].Note || !slices.Equal(pv.Entries[0].Tags, []string{"QoL", "UI"}) || !pv.Entries[0].Implicit || !pv.Entries[0].Pinned {
 		t.Fatalf("file notes = %+v", pv.Entries[0])
 	}
@@ -436,14 +443,7 @@ func TestGroupsFileRoundTrip(t *testing.T) {
 		nexus("two", 2, 3),
 		{Key: "gh", Source: profile.Source{Kind: profile.KindGitHub, Repo: "o/r", Tag: "v1", Asset: "a.zip"}},
 	}, Groups: []profile.Group{{Name: "Core", Keys: []string{"one", "two", "gh"}}}}
-	var buf bytes.Buffer
-	if _, err := Write(&buf, "stardew", p, t.TempDir()); err != nil {
-		t.Fatal(err)
-	}
-	pv, err := ReadBytes(buf.Bytes())
-	if err != nil {
-		t.Fatal(err)
-	}
+	pv := writeRead(t, "stardew", p, t.TempDir())
 	if len(pv.Groups) != 1 || pv.Groups[0].Name != "Core" || len(pv.Groups[0].Refs) != 3 || pv.Groups[0].Refs[2].GitHub != "o/r@v1/a.zip" {
 		t.Fatalf("groups = %+v", pv.Groups)
 	}
@@ -456,14 +456,7 @@ func TestGroupsFileRoundTrip(t *testing.T) {
 	if !slices.Equal(keys, []string{"alpha", "beta", "gamma"}) {
 		t.Fatalf("resolved = %v", keys)
 	}
-	var omit bytes.Buffer
-	if _, err := Write(&omit, "stardew", p, t.TempDir(), Include{Notes: false, FomodChoices: true}); err != nil {
-		t.Fatal(err)
-	}
-	off, err := ReadBytes(omit.Bytes())
-	if err != nil {
-		t.Fatal(err)
-	}
+	off := writeRead(t, "stardew", p, t.TempDir(), Include{Notes: false, FomodChoices: true})
 	if len(off.Groups) != 1 {
 		t.Fatalf("a file without notes dropped its groups, which every share carries: %+v", off.Groups)
 	}
@@ -816,13 +809,8 @@ func TestFileCarriesTheFavouriteStarAndLinksDoNot(t *testing.T) {
 	if _, err := Write(&buf, "stardew", p, t.TempDir()); err != nil {
 		t.Fatal(err)
 	}
-	file := filepath.Join(t.TempDir(), "x.mortar")
-	if err := os.WriteFile(file, buf.Bytes(), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	pv, err := Read(file)
-	if err != nil || !pv.Favourite {
-		t.Fatalf("favourite = %v, err %v", pv.Favourite, err)
+	if pv := readBack(t, &buf); !pv.Favourite {
+		t.Fatalf("favourite = %v", pv.Favourite)
 	}
 	starred, err := Encode("stardew", p, profile.ShareFacts{})
 	if err != nil {

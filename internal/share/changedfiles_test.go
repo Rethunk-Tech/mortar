@@ -51,14 +51,7 @@ func TestChangedCopiesTravelUnderTheConfigSwitch(t *testing.T) {
 func TestAChangedCopyThatDiffersIsADifferenceForSync(t *testing.T) {
 	dir, p := changedProfile(t)
 	read := func() Preview {
-		var buf bytes.Buffer
-		if _, err := Write(&buf, "sims4", p, filepath.Join(dir, "mods"), OwnInclude()); err != nil {
-			t.Fatal(err)
-		}
-		pv, err := ReadBytes(buf.Bytes())
-		if err != nil {
-			t.Fatal(err)
-		}
+		pv := writeRead(t, "sims4", p, filepath.Join(dir, "mods"), OwnInclude())
 		return pv
 	}
 	base := read()

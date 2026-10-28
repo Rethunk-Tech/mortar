@@ -91,13 +91,9 @@ func TestSplitArchiveNotesTravelPerFile(t *testing.T) {
 	a, b, c := splitEntry("pkg-1", "a.package", src, false), splitEntry("pkg-1", "sub/b.package", src, false), splitEntry("pkg-1", "c.package", src, false)
 	a.Note, b.Note, b.Tags = "first", "second", []string{"hair"}
 	p := profile.Profile{Name: "P", Entries: []profile.Entry{a, b, c}}
-	res, err := Encode("stardew", p, profile.ShareFacts{})
-	if err != nil {
-		t.Fatal(err)
-	}
-	got, err := Parse(res.Payload)
-	if err != nil || len(got.Entries) != 1 {
-		t.Fatalf("decode: %v, %+v", err, got.Entries)
+	got := roundTrip(t, p)
+	if len(got.Entries) != 1 {
+		t.Fatalf("decode: %+v", got.Entries)
 	}
 	ref := got.Entries[0]
 	if note, _ := ref.EntryNote(a); note != "first" {

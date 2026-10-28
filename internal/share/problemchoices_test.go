@@ -1,7 +1,6 @@
 package share
 
 import (
-	"bytes"
 	"errors"
 	"strings"
 	"testing"
@@ -18,14 +17,7 @@ func TestProblemChoicesRoundTripAndAreDroppedWhenNotIncluded(t *testing.T) {
 	}}}
 	inc := OwnInclude()
 	inc.Dismissed = []string{"broken\tme.old", "no tab", strings.Repeat("x\t", 400)}
-	var buf bytes.Buffer
-	if _, err := Write(&buf, "stardew", p, t.TempDir(), inc); err != nil {
-		t.Fatal(err)
-	}
-	pv, err := ReadBytes(buf.Bytes())
-	if err != nil {
-		t.Fatal(err)
-	}
+	pv := writeRead(t, "stardew", p, t.TempDir(), inc)
 	if len(pv.Choices.Dismissed) != 1 || pv.Choices.Dismissed[0] != "broken\tme.old" {
 		t.Fatalf("dismissed = %q, want only the well-formed token", pv.Choices.Dismissed)
 	}
@@ -33,12 +25,8 @@ func TestProblemChoicesRoundTripAndAreDroppedWhenNotIncluded(t *testing.T) {
 		t.Fatalf("wins = %+v", pv.Choices.Wins)
 	}
 	inc.ProblemChoices = false
-	buf.Reset()
-	if _, err := Write(&buf, "stardew", p, t.TempDir(), inc); err != nil {
-		t.Fatal(err)
-	}
-	if pv, err = ReadBytes(buf.Bytes()); err != nil || !pv.Choices.Empty() {
-		t.Fatalf("choices = %+v, %v; want none when not included", pv.Choices, err)
+	if pv := writeRead(t, "stardew", p, t.TempDir(), inc); !pv.Choices.Empty() {
+		t.Fatalf("choices = %+v; want none when not included", pv.Choices)
 	}
 }
 
