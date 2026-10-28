@@ -15,6 +15,7 @@ import { reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { usePending } from '../../toasts/usePending.ts'
 import { SettingRow } from '../SettingsSection.tsx'
+import { SharedOnProfile } from '../SharedOnProfile.tsx'
 import { TrimDialog } from './DataBackups.tsx'
 
 const sizeOf = (u: HistoryUsage) => u.snapshotBytes + u.fileBytes
@@ -78,17 +79,22 @@ export function HistoryUsageRows() {
     [],
     reportUnexpected,
   )
-  if (!gameId) {
+  // Nothing at all, not even the shared line, so a game without history hides the section.
+  if (!gameId || rows.length === 0) {
     return null
   }
-  return rows.map((u) => (
-    <HistoryRow
-      key={u.profileId}
-      usage={u}
-      gameId={gameId}
-      onTrimmed={(next) =>
-        setRows((all) => all.map((r) => (r.profileId === next.profileId ? next : r)))
-      }
-    />
-  ))
+  return (
+    <SharedOnProfile>
+      {rows.map((u) => (
+        <HistoryRow
+          key={u.profileId}
+          usage={u}
+          gameId={gameId}
+          onTrimmed={(next) =>
+            setRows((all) => all.map((r) => (r.profileId === next.profileId ? next : r)))
+          }
+        />
+      ))}
+    </SharedOnProfile>
+  )
 }

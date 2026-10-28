@@ -219,9 +219,7 @@ function GamePages({
             </SettingsSection>
             <DismissedFolders />
             <SettingsSection title={t`${name} profile history`}>
-              <SharedOnProfile>
-                <HistoryUsageRows />
-              </SharedOnProfile>
+              <HistoryUsageRows />
             </SettingsSection>
           </>
         )
