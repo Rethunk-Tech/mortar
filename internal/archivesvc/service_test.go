@@ -177,3 +177,22 @@ func TestAHandoffPageIsRebuiltFromItsIDAndAFileIsRecordedUnderIt(t *testing.T) {
 		t.Fatal("one site's id must not pass as another's")
 	}
 }
+
+func TestNewDownloadsOffersTheFirstArchiveOfAnEmptyFolder(t *testing.T) {
+	dir := t.TempDir()
+	var seen int64
+	s := NewService(Deps{
+		Dirs:    func() []string { return []string{dir} },
+		Offer:   func(string) bool { return true },
+		Seen:    func(string) int64 { return seen },
+		SetSeen: func(_ string, m int64) error { seen = m; return nil },
+	})
+	if got, err := s.NewDownloads("stardew"); err != nil || len(got) != 0 || seen == 0 {
+		t.Fatalf("empty folder sets the mark: %v %v %d", got, err, seen)
+	}
+	time.Sleep(5 * time.Millisecond)
+	writeZip(t, dir, "first.zip", `{"UniqueID":"A.First"}`)
+	if got, err := s.NewDownloads("stardew"); err != nil || len(got) != 1 {
+		t.Fatalf("first archive not offered: %+v %v", got, err)
+	}
+}

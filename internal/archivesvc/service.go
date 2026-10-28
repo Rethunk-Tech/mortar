@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -185,10 +186,16 @@ func (s *Service) NewDownloads(game string) ([]DownloadArchive, error) {
 		return []DownloadArchive{}, nil
 	}
 	all, err := s.DownloadsArchives(game)
-	if err != nil || len(all) == 0 {
+	if err != nil {
 		return []DownloadArchive{}, err
 	}
 	seen := s.d.Seen(game)
+	if len(all) == 0 {
+		if seen == 0 {
+			return []DownloadArchive{}, s.d.SetSeen(game, time.Now().UnixMilli())
+		}
+		return []DownloadArchive{}, nil
+	}
 	newest := all[0].Mtime
 	if newest <= seen {
 		return []DownloadArchive{}, nil
