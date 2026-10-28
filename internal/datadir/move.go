@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -305,6 +304,32 @@ func removeOld(src, def string) error {
 	return fsx.RemoveAll(src)
 }
 
+// relinkSkipped recreates, in dest, each linked folder the copy skipped (a profile kept in a custom folder) so removing
+// src does not lose it. A link that points inside src would dangle once src is gone, so it refuses the move.
+func relinkSkipped(src, dest string, skipped []string) error {
+	root, err := fsx.EvalSymlinks(src)
+	if err != nil {
+		return err
+	}
+	for _, p := range skipped {
+		target, err := fsx.EvalSymlinks(p)
+		if err != nil {
+			return err
+		}
+		if UnderRoot(root, target) {
+			return fmt.Errorf("%s links to a folder inside the data folder; move its contents out first", p)
+		}
+		rel, err := filepath.Rel(src, p)
+		if err != nil {
+			return err
+		}
+		if err := LinkDir(filepath.Join(dest, rel), target); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // Relocate copies src into dest (which must be empty), verifies the copy, writes the pointer at def, then removes src.
 // shared sizes the copy where dest can clone files (nil sizes it by file length); the store is copied first so the
 // profile files that clone it can clone it again.
@@ -333,8 +358,9 @@ func Relocate(src, dest, def string, shared ExtentSizer, reports ...func(CopyPro
 		_ = fsx.RemoveAll(dest)
 		return err
 	}
-	if len(skipped) > 0 {
-		slog.Warn("data move left linked folders behind", "folders", skipped)
+	if err := relinkSkipped(src, dest, skipped); err != nil {
+		_ = fsx.RemoveAll(dest)
+		return err
 	}
 	if err := r.verifyCopy(); err != nil {
 		_ = fsx.RemoveAll(dest)
