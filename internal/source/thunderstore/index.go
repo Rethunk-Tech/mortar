@@ -303,8 +303,8 @@ func listingPath(dir, key, hash string) string {
 	return filepath.Join(dir, key+"-"+listingTag+"-"+hash+".json")
 }
 
-// dropOtherListings removes every stored listing of the community but keep: an earlier index hash's, and one built
-// under an earlier tag, which nothing would read again. A community whose key merely starts with this one is left.
+// dropOtherListings removes every stored listing of the community but keep: an earlier index hash's, one built
+// under an earlier tag, which nothing would read again, and a build's interrupted temp file. A community whose key merely starts with this one is left.
 func dropOtherListings(dir, key, keep string) {
 	ents, err := os.ReadDir(dir)
 	if err != nil {
@@ -314,11 +314,17 @@ func dropOtherListings(dir, key, keep string) {
 		rest, ok := strings.CutPrefix(e.Name(), key+"-c")
 		tag, _, tagged := strings.Cut(rest, "-")
 		path := filepath.Join(dir, e.Name())
-		if !ok || !tagged || tag == "" || strings.Trim(tag, "0123456789") != "" || !strings.HasSuffix(rest, ".json") || path == keep {
+		if !ok || !tagged || tag == "" || strings.Trim(tag, "0123456789") != "" || !listingOrTemp(rest) || path == keep {
 			continue
 		}
 		_ = fsx.Remove(path)
 	}
+}
+
+// listingOrTemp reports a listing file or a build's interrupted temp file, "<listing>.json.<n>.tmp"
+// (datadir.WriteStream).
+func listingOrTemp(rest string) bool {
+	return strings.HasSuffix(rest, ".json") || strings.HasSuffix(rest, ".tmp") && strings.Contains(rest, ".json.")
 }
 
 func (d Driver) packages(ctx context.Context, key, ua string) ([]pkg, error) {

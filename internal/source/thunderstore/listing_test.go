@@ -17,7 +17,9 @@ func TestABuildRemovesTheCommunitysOtherListings(t *testing.T) {
 	}
 	stale := filepath.Join(dir, "lethal-company-c1-0123abcd.json")
 	otherKey := filepath.Join(dir, "lethal-company-custom-c2-0123abcd.json")
-	for _, p := range []string{stale, otherKey} {
+	crashed := filepath.Join(dir, "lethal-company-c4-0123abcd.json.987.tmp")
+	otherTemp := filepath.Join(dir, "lethal-company-custom-c4-0123abcd.json.987.tmp")
+	for _, p := range []string{stale, otherKey, crashed, otherTemp} {
 		if err := os.WriteFile(p, []byte("[]"), 0o600); err != nil {
 			t.Fatal(err)
 		}
@@ -28,6 +30,12 @@ func TestABuildRemovesTheCommunitysOtherListings(t *testing.T) {
 	}
 	if _, err := os.Stat(stale); !os.IsNotExist(err) {
 		t.Fatalf("a listing built under an earlier tag stayed: %v", err)
+	}
+	if _, err := os.Stat(crashed); !os.IsNotExist(err) {
+		t.Fatalf("an interrupted build's temp file stayed: %v", err)
+	}
+	if _, err := os.Stat(otherTemp); err != nil {
+		t.Fatalf("another community's temp file was removed: %v", err)
 	}
 	if _, err := os.Stat(otherKey); err != nil {
 		t.Fatalf("another community's listing was removed: %v", err)
