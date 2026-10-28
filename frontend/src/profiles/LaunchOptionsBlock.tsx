@@ -2,7 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { System } from '@wailsio/runtime'
 import { useState } from 'react'
-import { TestLaunch } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
+import { TestLaunchWith } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { STEAM } from '../brand/productNames.ts'
 import { useGameBusy } from '../launch/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
@@ -10,7 +10,6 @@ import { TextInput } from '../shell/dialog/FormDialog.tsx'
 import { space } from '../theme/density.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { LaunchPreview } from './LaunchPreview.tsx'
-import { useProfiles } from './store.ts'
 
 type LaunchError = { field: 'options' | 'settings'; message: string } | null
 
@@ -20,18 +19,14 @@ function TestLaunchRow({
   launchOptions,
   launchPrefix,
   launchEnv,
-  onLaunchError,
 }: {
   gameId: string
   profileId: string
   launchOptions: string
   launchPrefix: string
   launchEnv: string
-  onLaunchError: (value: LaunchError) => void
 }) {
   const { t } = useLingui()
-  const setLaunchOptions = useProfiles((s) => s.setLaunchOptions)
-  const setLaunchSettings = useProfiles((s) => s.setLaunchSettings)
   const playing = useGameBusy()
   const [busy, setBusy] = useState(false)
   const [result, setResult] = useState('')
@@ -52,22 +47,15 @@ function TestLaunchRow({
           onClick={() => {
             setBusy(true)
             setResult('')
-            onLaunchError(null)
             const run = async () => {
               try {
-                await setLaunchOptions(profileId, launchOptions)
-              } catch (error) {
-                onLaunchError({ field: 'options', message: errorMessage(error) })
-                return
-              }
-              try {
-                await setLaunchSettings(profileId, launchPrefix, launchEnv)
-              } catch (error) {
-                onLaunchError({ field: 'settings', message: errorMessage(error) })
-                return
-              }
-              try {
-                const outcome = await TestLaunch(gameId, profileId, '')
+                const outcome = await TestLaunchWith(
+                  gameId,
+                  profileId,
+                  launchOptions,
+                  launchPrefix,
+                  launchEnv,
+                )
                 if (outcome.reachedTitle) {
                   setResult(t`Reached the title screen`)
                   return
@@ -85,7 +73,7 @@ function TestLaunchRow({
       </DisabledReason>
       <Typography
         sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}
-      >{t`Uses the saved options`}</Typography>
+      >{t`Uses the options shown`}</Typography>
       {result ? (
         <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary', mt: space.gap }}>
           {result}
@@ -167,7 +155,6 @@ function LaunchOptionsBlock({
         launchOptions={launchOptions}
         launchPrefix={launchPrefix}
         launchEnv={launchEnv}
-        onLaunchError={onLaunchError}
       />
     </>
   )
