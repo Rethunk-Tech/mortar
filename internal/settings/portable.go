@@ -105,20 +105,27 @@ func overlayPortable(cur Settings, raw map[string]json.RawMessage, present map[s
 		return Settings{}, err
 	}
 	out = sanitizePortable(out)
-	keepLocalOnly(&out, cur)
+	keepLocalOnly(&out, cur, has(present, "games"))
 	return out, nil
 }
 
 // keepLocalOnly puts back, from cur, the per-game fields that name a program, a build or a place Mortar reads mods
 // from or writes to. An imported file never sets them, so what a file carries there is dropped and the player's own
 // stay. A launch preset keeps its name and options but loses its prefix command and environment.
-func keepLocalOnly(out *Settings, cur Settings) {
+func keepLocalOnly(out *Settings, cur Settings, gamesImported bool) {
+	fromFile := map[string]bool{}
+	if gamesImported {
+		for id := range out.Games {
+			fromFile[id] = true
+		}
+	}
 	for id, g := range cur.Games {
 		if g != nil && out.Games[id] == nil {
 			if out.Games == nil {
 				out.Games = map[string]*GameSettings{}
 			}
 			c := *g
+			c.LaunchPresetTemplates = slices.Clone(g.LaunchPresetTemplates)
 			out.Games[id] = &c
 		}
 	}
@@ -135,6 +142,9 @@ func keepLocalOnly(out *Settings, cur Settings) {
 		dst.ExtraModsProfiles = local.ExtraModsProfiles
 		dst.SyncOwnFolder = local.SyncOwnFolder
 		dst.BackupLocation = local.BackupLocation
+		if !fromFile[id] {
+			continue
+		}
 		for i := range dst.LaunchPresetTemplates {
 			dst.LaunchPresetTemplates[i].Prefix = ""
 			dst.LaunchPresetTemplates[i].Env = ""

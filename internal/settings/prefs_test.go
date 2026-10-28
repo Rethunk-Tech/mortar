@@ -572,3 +572,25 @@ func TestSyncFolderForFollowsOwnOrOff(t *testing.T) {
 		t.Errorf("untouched game = %q", got)
 	}
 }
+
+// An import without the games block leaves the player's launch prefix and environment alone.
+func TestImportWithoutGamesKeepsLaunchPrefix(t *testing.T) {
+	b, err := MarshalExport(Defaults())
+	if err != nil {
+		t.Fatal(err)
+	}
+	parsed, present, err := ParseExport(b)
+	if err != nil {
+		t.Fatal(err)
+	}
+	delete(present, "games")
+	cur := Defaults()
+	mine := cur.GamePrefs("stardew")
+	mine.LaunchPresetTemplates = []LaunchPresetTemplate{{Name: "G", Prefix: "gamemoderun", Env: "A=1"}}
+	cur.Games = map[string]*GameSettings{"stardew": &mine}
+	ApplyExport(&cur, parsed, present)
+	got := cur.GamePrefs("stardew").LaunchPresetTemplates
+	if len(got) != 1 || got[0].Prefix != "gamemoderun" || got[0].Env != "A=1" {
+		t.Fatalf("preset = %+v", got)
+	}
+}
