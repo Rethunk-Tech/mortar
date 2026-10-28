@@ -9,7 +9,7 @@ import type {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/models.ts'
 import {
   Dismiss,
-  Inbox,
+  Pending,
   OutgoingTransfers,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/service.ts'
 import { i18n } from '../i18n/index.ts'
@@ -63,7 +63,8 @@ async function initIncoming(): Promise<void> {
   for (const transfer of (await OutgoingTransfers()) ?? []) {
     useIncomingShares.getState().setOutgoing(transfer)
   }
-  for (const arrival of (await Inbox()) ?? []) {
+  // The service keeps a share until it is answered (Dismiss), so the window reads without taking.
+  for (const arrival of (await Pending()) ?? []) {
     useIncomingShares.getState().add(arrival)
   }
 }
@@ -72,7 +73,10 @@ const useIncomingShares = create<IncomingState>((set, get) => ({
   items: [],
   progress: {},
   outgoing: {},
-  add: (arrival) => set((state) => ({ items: [...state.items, arrival] })),
+  add: (arrival) =>
+    set((state) =>
+      state.items.some((item) => item.id === arrival.id) ? state : { items: [...state.items, arrival] },
+    ),
   // Answering a share also drops it from the service, which keeps it until then and would hand it to the window
   // again after a reload.
   removeFirst: () => {

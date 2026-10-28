@@ -17,7 +17,7 @@ beforeEach(() => {
   stubBinding(lan, 'Dismiss', (id: number) => {
     dismissed.push(id)
   })
-  stubBinding(lan, 'Inbox', () => [])
+  stubBinding(lan, 'Pending', () => [])
   stubBinding(lan, 'OutgoingTransfers', () => [])
 })
 afterEach(() => {

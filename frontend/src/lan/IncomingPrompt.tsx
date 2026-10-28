@@ -18,7 +18,7 @@ import type {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/models.ts'
 import {
   CancelTransfer,
-  Inbox,
+  Pending,
   Transfer,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/service.ts'
 import { formatBytes } from '../i18n/bytes.ts'
@@ -288,7 +288,7 @@ export function IncomingPrompt() {
       return
     }
     // Accepted or dismissed elsewhere (`mortar lan accept`) since it arrived: importing it again would make a copy.
-    if (!((await Inbox()) ?? []).some((a) => a.id === incoming.id)) {
+    if (!((await Pending()) ?? []).some((a) => a.id === incoming.id)) {
       removeFirst()
       return
     }
