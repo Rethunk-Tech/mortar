@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, TextField, Typography } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useProfiles } from '../../profiles/store.ts'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
 import { space } from '../../theme/density.ts'
 import { MONO } from '../../theme/theme.ts'
@@ -45,6 +46,11 @@ export function TextFile({
       live = false
     }
   }, [game, profile, key, id, name])
+  const adopt = (onDisk: string) => {
+    setSaved(onDisk)
+    setText(onDisk)
+  }
+  const [outside, setOutside] = useOutsideChange(target, name, { saved, text }, adopt)
   // A file edited elsewhere since it was read is not overwritten unseen: its new contents become the baseline.
   const save = () => {
     setError(null)
@@ -61,6 +67,7 @@ export function TextFile({
         }
         await configApi.setText(target, name, text)
         setSaved(text)
+        setOutside(null)
       })
       .catch((e: unknown) => setError(inlineError(e)))
   }
@@ -92,6 +99,20 @@ export function TextFile({
             : t`Could not save: ${{ error: error.message }}`}
         </Typography>
       ) : null}
+      {outside === null ? null : (
+        <Typography role="status" sx={{ fontSize: 'small.fontSize', color: 'warning.main' }}>
+          {t`The file changed outside Mortar.`}{' '}
+          <Button
+            size="small"
+            onClick={() => {
+              adopt(outside)
+              setOutside(null)
+            }}
+          >
+            {t`Reload`}
+          </Button>
+        </Typography>
+      )}
       {/* MUI sizes a multiline textarea inline to its rows; it is forced to fill the pane instead and scrolls. */}
       <TextField
         multiline={true}
@@ -143,6 +164,52 @@ export function TextFile({
       </Box>
     </Box>
   )
+}
+
+// The game rewrites its files while Mortar is open: look again when the window regains focus or the profile changes.
+// Unedited text takes the new contents; edited text keeps them, and the returned pair holds the contents on offer.
+function useOutsideChange(
+  target: Target,
+  name: string,
+  shown: { saved: string | null; text: string },
+  adopt: (onDisk: string) => void,
+) {
+  const [outside, setOutside] = useState<string | null>(null)
+  const { game, profile, key, id } = target
+  const latest = useRef({ shown, adopt })
+  latest.current = { shown, adopt }
+  const updated = useProfiles((s) => s.profiles.find((p) => p.id === profile)?.updated)
+  useEffect(() => {
+    const at = { game, profile, key, id }
+    let live = true
+    setOutside(null)
+    const look = () => {
+      configApi
+        .text(at, name)
+        .then((onDisk) => {
+          const { shown: now, adopt: take } = latest.current
+          if (!live || now.saved === null || onDisk === now.saved) {
+            return
+          }
+          if (now.text === now.saved) {
+            take(onDisk)
+            setOutside(null)
+          } else {
+            setOutside(onDisk)
+          }
+        })
+        .catch(() => undefined)
+    }
+    if (updated !== undefined) {
+      look()
+    }
+    window.addEventListener('focus', look)
+    return () => {
+      live = false
+      window.removeEventListener('focus', look)
+    }
+  }, [game, profile, key, id, name, updated])
+  return [outside, setOutside] as const
 }
 
 /** Asks before a file switch drops a text file's unsaved edits. */

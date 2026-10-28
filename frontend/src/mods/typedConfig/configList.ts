@@ -70,7 +70,12 @@ const useConfigList = create<{
   // Reads the list unless one is held for this stamp; `force` reads it again (after an edit).
   load: (game: string, profile: string, stamp: string, force?: boolean) => Promise<void>
   select: (profile: string, selection: string) => void
+  // The text file with unsaved edits in the open editor, '' when none.
+  textDirty: string
+  setTextDirty: (file: string) => void
 }>((set, get) => ({
+  textDirty: '',
+  setTextDirty: (textDirty) => set({ textDirty }),
   byProfile: {},
   selected: {},
   jump: null,

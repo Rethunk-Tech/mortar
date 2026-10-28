@@ -38,6 +38,7 @@ import {
   useConfigList,
 } from './configList.ts'
 import { OtherFiles } from './OtherFiles.tsx'
+import { DiscardTextDialog } from './TextFile.tsx'
 
 const LIST_WIDTH_PX = 300
 const MIN_SETTING_QUERY = 2
@@ -291,7 +292,7 @@ function useSettingHits(game: string, profile: string, query: string): Hit[] {
 // A search can match hundreds of settings; the list shows the first ones and says how many it left out.
 const MAX_SHOWN_HITS = 40
 
-function SettingHits({ profileId, hits }: { profileId: string; hits: Hit[] }) {
+function SettingHits({ profileId, hits, guard }: { profileId: string; hits: Hit[]; guard: Guard }) {
   const { t } = useLingui()
   const jumpTo = useConfigList((s) => s.jumpTo)
   if (hits.length === 0) {
@@ -307,7 +308,7 @@ function SettingHits({ profileId, hits }: { profileId: string; hits: Hit[] }) {
       {hits.slice(0, MAX_SHOWN_HITS).map((h) => (
         <ListItemButton
           key={`${h.modId}/${h.file}/${h.section}/${h.key}`}
-          onClick={() => jumpTo(profileId, h.modId, h.file, h.key)}
+          onClick={() => guard(() => jumpTo(profileId, h.modId, h.file, h.key))}
           sx={{ minHeight: space.row }}
         >
           <ListItemText
@@ -345,6 +346,9 @@ function NoSettings() {
   )
 }
 
+// Runs a switch of mod, after asking when the open text file has unsaved edits.
+type Guard = (run: () => void) => void
+
 function ModsColumn({
   profileId,
   view,
@@ -356,6 +360,7 @@ function ModsColumn({
   filtered,
   showOther,
   hits,
+  guard,
 }: {
   profileId: string
   view: GroupsView
@@ -367,12 +372,16 @@ function ModsColumn({
   filtered: boolean
   showOther: boolean
   hits: Hit[]
+  guard: Guard
 }) {
   const { t } = useLingui()
   const choose = useConfigList((s) => s.select)
   const heading = useListHeading(view.groupBy)
   const { listed, headerGroups } = useListed(view, shown)
-  const onChoose = useCallback((sel: string) => choose(profileId, sel), [choose, profileId])
+  const onChoose = useCallback(
+    (sel: string) => guard(() => choose(profileId, sel)),
+    [choose, profileId, guard],
+  )
   const mods = useMods((s) => s.mods)
   const pictures = useMemo(() => new Map(mods.map((m) => [m.id, m.picture])), [mods])
   // Hundreds of mods can have settings; only the rows in view are mounted.
@@ -426,7 +435,7 @@ function ModsColumn({
             {t`No mods match`}
           </Typography>
         ) : null}
-        <SettingHits profileId={profileId} hits={hits} />
+        <SettingHits profileId={profileId} hits={hits} guard={guard} />
         {other.length > 0 && showOther && !filtered ? (
           <OtherFiles view={view} other={other} selection={selection} onChoose={onChoose} />
         ) : null}
@@ -459,6 +468,15 @@ export function ConfigTab({ profile, game }: { profile: Profile; game: string })
   const shown = useMemo(() => filterConfigMods(all, query, show), [all, query, show])
   const selection = selectionOf(list, stored, profile.id)
   const hits = useSettingHits(game, profile.id, query)
+  const [held, setHeld] = useState<(() => void) | null>(null)
+  const dirtyFile = useConfigList((s) => s.textDirty)
+  const guard = useCallback<Guard>((run) => {
+    if (useConfigList.getState().textDirty === '') {
+      run()
+    } else {
+      setHeld(() => run)
+    }
+  }, [])
   if (!list) {
     return failure ? (
       <LoadErrorRow error={failure} onRetry={reload} />
@@ -491,9 +509,19 @@ export function ConfigTab({ profile, game }: { profile: Profile; game: string })
           filtered={query.trim() !== ''}
           showOther={show === 'all'}
           hits={hits}
+          guard={guard}
         />
         <Editor profile={profile} game={game} selection={selection} all={all} other={other} />
       </Box>
+      <DiscardTextDialog
+        open={held !== null}
+        name={dirtyFile}
+        onCancel={() => setHeld(null)}
+        onConfirm={() => {
+          held?.()
+          setHeld(null)
+        }}
+      />
     </Box>
   )
 }

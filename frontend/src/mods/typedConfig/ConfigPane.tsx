@@ -10,7 +10,15 @@ import {
   Typography,
 } from '@mui/material'
 import { CircleHelp, RotateCcw } from 'lucide-react'
-import { type RefObject, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import {
+  type RefObject,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import type { HostValue } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/configsvc/models.ts'
 import type { Mod } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { openProfileOf, useProfiles } from '../../profiles/store.ts'
@@ -371,6 +379,20 @@ function Sections({
   )
 }
 
+// Whether the shown text file has unsaved edits; the Config page's list asks the store before it switches mods.
+function useTextDirty(file: string): [boolean, (dirty: boolean) => void] {
+  const [dirty, setDirty] = useState(false)
+  const setDirtyFile = useConfigList((s) => s.setTextDirty)
+  const onDirty = useCallback(
+    (d: boolean) => {
+      setDirty(d)
+      setDirtyFile(d ? file : '')
+    },
+    [file, setDirtyFile],
+  )
+  return [dirty, onDirty]
+}
+
 // The editor of one selection's config files, beside the Config page's list. A selection without a mod (the unowned
 // .cfg files) opens on `file` and offers no presets.
 export function ConfigPane({
@@ -404,7 +426,7 @@ export function ConfigPane({
   const [query, setQuery] = useState(landing?.query ?? '')
   const [confirming, setConfirming] = useState(false)
   const [deleting, setDeleting] = useState(false)
-  const [textDirty, setTextDirty] = useState(false)
+  const [textDirty, onDirty] = useTextDirty(current)
   const [switchTo, setSwitchTo] = useState<string | null>(null)
   // A preset applied from here rewrites the file, so the profile's change time rereads it.
   const updated = useProfiles((st) => openProfileOf(st)?.updated)
@@ -461,7 +483,7 @@ export function ConfigPane({
       ) : null}
       <Box sx={{ flex: 1, minHeight: 0, display: 'flex' }}>
         {file?.format === 'text' ? (
-          <TextFile key={file.name} target={target} name={file.name} onDirty={setTextDirty} />
+          <TextFile key={file.name} target={target} name={file.name} onDirty={onDirty} />
         ) : (
           <Sections shown={file ? filterFile(file, query) : null} all={file} />
         )}
