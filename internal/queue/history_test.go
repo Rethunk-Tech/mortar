@@ -1,6 +1,8 @@
 package queue
 
 import (
+	"bytes"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"testing"
@@ -134,5 +136,22 @@ func TestHistoryReadsFileOnceAndWritesThrough(t *testing.T) {
 	got[0].Name = "mutated"
 	if f.s.History()[0].Name != "a" {
 		t.Fatal("History handed out the cached slice")
+	}
+}
+
+func TestHistoryReadsAnIndentedFileAndWritesItCompact(t *testing.T) {
+	t.Parallel()
+	f := newFixture(t)
+	old, _ := json.MarshalIndent([]HistoryEntry{{Name: "old", Outcome: StateDone}}, "", "  ")
+	if err := os.WriteFile(f.s.historyPath(), old, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	f.s.recordHistory(&Item{Name: "new", started: f.now()}, StateDone)
+	if got := f.s.History(); len(got) != 2 || got[0].Name != "old" {
+		t.Fatalf("history %+v", got)
+	}
+	b, err := os.ReadFile(f.s.historyPath())
+	if err != nil || bytes.Contains(b, []byte("\n")) {
+		t.Fatalf("history file not compact: %v %s", err, b)
 	}
 }

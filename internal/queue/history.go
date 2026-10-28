@@ -3,6 +3,7 @@ package queue
 import (
 	"cmp"
 	"context"
+	"encoding/json"
 	"fmt"
 	"path/filepath"
 	"slices"
@@ -63,7 +64,10 @@ func (s *Service) writeHistory(entries []HistoryEntry) {
 	if entries == nil {
 		entries = []HistoryEntry{}
 	}
-	_ = datadir.WriteJSON(s.historyPath(), entries)
+	// Compact: at the cap each write is rewritten whole, and an indented file is 4x the bytes. Readers accept both.
+	if b, err := json.Marshal(entries); err == nil {
+		_ = datadir.WriteFile(s.historyPath(), b, 0o600)
+	}
 }
 
 func (s *Service) recordHistory(it *Item, outcome string) {
