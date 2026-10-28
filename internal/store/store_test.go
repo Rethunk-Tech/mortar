@@ -752,3 +752,33 @@ func addAnyDir(t *testing.T, s *Store, game, key, dir string) error {
 	}
 	return s.AddDir(t.Context(), game, key, dir)
 }
+
+// A corrupt index starts empty, so the blobs it named look unused: Collect must not delete them by age.
+func TestCorruptIndexCollectKeepsReferencedBlob(t *testing.T) {
+	t.Parallel()
+	s := newStore(t)
+	src := t.TempDir()
+	if err := os.WriteFile(filepath.Join(src, "a.txt"), []byte("hi"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := addAnyDir(t, s, "stardew", "nexus-1-1", src); err != nil {
+		t.Fatal(err)
+	}
+	dir, err := s.Dir("stardew", "nexus-1-1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	old := time.Now().Add(-40 * 24 * time.Hour)
+	if err := os.Chtimes(filepath.Join(dir, CompleteMarker), old, old); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(s.indexPath(), []byte("{not json"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Collect(map[string][]string{"stardew": {"nexus-1-1"}}, time.Now()); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(dir); err != nil {
+		t.Errorf("a referenced item's blob was deleted after a corrupt index: %v", err)
+	}
+}

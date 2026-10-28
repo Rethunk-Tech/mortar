@@ -22,6 +22,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
@@ -91,6 +92,8 @@ type Store struct {
 	idxMu   sync.Mutex
 	idx     index
 	idxFile os.FileInfo
+	// idxReset is set when a corrupt index was replaced by an empty one: until Collect has run, no blob is known to be unused.
+	idxReset atomic.Bool
 	// UnusedFor is unused-item lifetime; 0 uses the built-in 30 days, negative means keep forever.
 	UnusedFor time.Duration
 	scan      scanning
@@ -696,6 +699,7 @@ func (s *Store) viewIndex() (index, error) {
 		if err := fsx.Rename(s.indexPath(), s.indexPath()+".corrupt"); err != nil {
 			return nil, err
 		}
+		s.idxReset.Store(true)
 		return index{}, nil
 	}
 	if idx == nil {
@@ -904,7 +908,9 @@ func (s *Store) Collect(referenced map[string][]string, now time.Time) error {
 			next[game][key] = r
 		}
 	}
-	errs = append(errs, s.collectBlobs(next, dropped, now))
+	if !s.idxReset.Swap(false) {
+		errs = append(errs, s.collectBlobs(next, dropped, now))
+	}
 	errs = append(errs, s.saveIndex(next))
 	return errors.Join(errs...)
 }
