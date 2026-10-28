@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"maps"
-	"os"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -97,18 +96,9 @@ func flushParts() {
 	if err != nil {
 		return
 	}
-	raw, err := json.Marshal(diskParts{Version: partsCacheVersion, Check: parts.check, Entries: parts.entries})
-	if err != nil {
-		return
+	if writePackedCache(path, diskParts{Version: partsCacheVersion, Check: parts.check, Entries: parts.entries}) {
+		parts.dirty = false
 	}
-	packed, err := zipPackCache(raw)
-	if err != nil {
-		return
-	}
-	if os.MkdirAll(filepath.Dir(path), 0o700) != nil || datadir.WriteFile(path, packed, 0o600) != nil {
-		return
-	}
-	parts.dirty = false
 }
 
 func dropParts() {

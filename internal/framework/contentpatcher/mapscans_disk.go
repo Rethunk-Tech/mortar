@@ -2,7 +2,6 @@ package contentpatcher
 
 import (
 	"encoding/json"
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -94,16 +93,7 @@ func flushMapScans(mods []framework.Mod) {
 	if err != nil {
 		return
 	}
-	raw, err := json.Marshal(diskMapScans{Version: mapScanCacheVersion, Scans: mapScans.byPath, Folders: mapScans.folders})
-	if err != nil {
-		return
+	if writePackedCache(path, diskMapScans{Version: mapScanCacheVersion, Scans: mapScans.byPath, Folders: mapScans.folders}) {
+		mapScans.dirty = false
 	}
-	packed, err := zipPackCache(raw)
-	if err != nil {
-		return
-	}
-	if os.MkdirAll(filepath.Dir(path), 0o700) != nil || datadir.WriteFile(path, packed, 0o600) != nil {
-		return
-	}
-	mapScans.dirty = false
 }

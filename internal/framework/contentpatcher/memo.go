@@ -137,21 +137,13 @@ func storeAnalysis(key string, files []packFileStamp, f framework.Findings) {
 	if err != nil {
 		return
 	}
-	raw, err := json.Marshal(analysisMemo{
+	memo := analysisMemo{
 		Files: files, AssetConflicts: f.AssetConflicts, Settings: f.Settings, Cleanup: f.Cleanup, Redundant: f.Redundant,
 		Supporting: f.Supporting, Mentioned: f.Mentioned,
-	})
-	if err != nil {
-		return
 	}
-	packed, err := zipPackCache(raw)
-	if err != nil || os.MkdirAll(dir, 0o700) != nil {
-		return
+	if writePackedCache(filepath.Join(dir, key+".json.gz"), memo) {
+		pruneAnalysisMemos(dir)
 	}
-	if datadir.WriteFile(filepath.Join(dir, key+".json.gz"), packed, 0o600) != nil {
-		return
-	}
-	pruneAnalysisMemos(dir)
 }
 
 func pruneAnalysisMemos(dir string) {

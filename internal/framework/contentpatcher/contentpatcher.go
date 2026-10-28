@@ -859,6 +859,16 @@ func zipPackCache(raw []byte) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// writePackedCache writes v as gzipped JSON to path, reporting whether it did.
+func writePackedCache(path string, v any) bool {
+	raw, err := json.Marshal(v)
+	if err != nil {
+		return false
+	}
+	packed, err := zipPackCache(raw)
+	return err == nil && os.MkdirAll(filepath.Dir(path), 0o700) == nil && datadir.WriteFile(path, packed, 0o600) == nil
+}
+
 func unzipPackCache(raw []byte) ([]byte, bool) {
 	if len(raw) >= 2 && raw[0] == 0x1f && raw[1] == 0x8b {
 		reader, err := gzip.NewReader(bytes.NewReader(raw))
@@ -1443,23 +1453,8 @@ func parseWhenDepth(raw map[string]json.RawMessage, mentions map[string]bool, sc
 			continue
 		}
 		if arg = strings.TrimSpace(arg); arg != "" {
-			// "Field |contains=A, B": true accepts A or B; false accepts every other allowed value.
-			param, list, ok := strings.Cut(arg, "=")
-			if !ok || !strings.EqualFold(strings.TrimSpace(param), "contains") || hasToken(list) || len(values) != 1 {
-				continue
-			}
-			named := splitTargets(list)
-			switch strings.ToLower(values[0]) {
-			case "true":
-				values = named
-			case "false":
-				values = slices.DeleteFunc(slices.Clone(field.allowValues), func(a string) bool {
-					return slices.ContainsFunc(named, func(n string) bool { return strings.EqualFold(n, a) })
-				})
-			default:
-				continue
-			}
-			if len(values) == 0 {
+			var ok bool
+			if values, ok = containsValues(field, arg, values); !ok {
 				continue
 			}
 		}
@@ -1834,17 +1829,12 @@ func hasModConditionState(arg string, raw json.RawMessage, present map[string]bo
 	}
 }
 
-func configCondition(field cpSchema, arg string, raw json.RawMessage) (cpConfig, bool) {
-	var values []string
-	if !condValues(raw, &values) {
-		return cpConfig{}, false
-	}
-	if strings.TrimSpace(arg) == "" {
-		return cpConfig{field: field.key, values: values, allowMultiple: field.allowMultiple}, true
-	}
+// containsValues applies a "Field |contains=A, B" argument to a condition's one true or false value: true accepts A or
+// B, false every other value the field allows. It fails on any other argument or when no value is left.
+func containsValues(field cpSchema, arg string, values []string) ([]string, bool) {
 	param, list, ok := strings.Cut(arg, "=")
 	if !ok || !strings.EqualFold(strings.TrimSpace(param), "contains") || hasToken(list) || len(values) != 1 {
-		return cpConfig{}, false
+		return nil, false
 	}
 	named := splitTargets(list)
 	switch strings.ToLower(values[0]) {
@@ -1855,9 +1845,21 @@ func configCondition(field cpSchema, arg string, raw json.RawMessage) (cpConfig,
 			return slices.ContainsFunc(named, func(n string) bool { return strings.EqualFold(n, a) })
 		})
 	default:
+		return nil, false
+	}
+	return values, len(values) > 0
+}
+
+func configCondition(field cpSchema, arg string, raw json.RawMessage) (cpConfig, bool) {
+	var values []string
+	if !condValues(raw, &values) {
 		return cpConfig{}, false
 	}
-	if len(values) == 0 {
+	if strings.TrimSpace(arg) == "" {
+		return cpConfig{field: field.key, values: values, allowMultiple: field.allowMultiple}, true
+	}
+	values, ok := containsValues(field, arg, values)
+	if !ok {
 		return cpConfig{}, false
 	}
 	return cpConfig{field: field.key, values: values, allowMultiple: field.allowMultiple}, true
