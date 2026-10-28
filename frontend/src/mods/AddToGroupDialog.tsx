@@ -1,14 +1,14 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Button, Checkbox, FormControlLabel, MenuItem, MenuList, TextField } from '@mui/material'
+import { Box, Button, Checkbox, FormControlLabel, MenuItem, MenuList } from '@mui/material'
 import { FolderPlus } from 'lucide-react'
-import { useId, useState } from 'react'
+import { useState } from 'react'
 import type {
   Mod,
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { AppDialog, DialogFooter, ToneIcon } from '../shell/dialog/AppDialog.tsx'
-import { Field } from '../shell/dialog/FormDialog.tsx'
+import { TextInput } from '../shell/dialog/FormDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -50,7 +50,6 @@ function AddToGroupDialog({
   const { t } = useLingui()
   const locked = useLocked()
   const [name, setName] = useState('')
-  const nameId = useId()
   const [withNeeds, setWithNeeds] = useState(true)
   const all = useMods((s) => s.mods)
   const needed = open ? requirementKeys(all, mods) : []
@@ -111,24 +110,23 @@ function AddToGroupDialog({
             ))}
           </MenuList>
         )}
-        <Field label={t`New group`} htmlFor={nameId}>
-          <TextField
-            id={nameId}
-            autoFocus={true}
-            size="small"
-            fullWidth={true}
+        {/* Enter in the field submits; the keydown bubbles up from the input. */}
+        <Box
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              add(name).catch(reportUnexpected)
+            }
+          }}
+        >
+          <TextInput
+            label={t`New group`}
             value={name}
-            disabled={locked}
-            slotProps={{ htmlInput: { maxLength: MAX_GROUP_NAME } }}
-            onChange={(e) => setName(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault()
-                add(name).catch(reportUnexpected)
-              }
-            }}
+            onChange={setName}
+            maxLength={MAX_GROUP_NAME}
+            autoFocus={true}
           />
-        </Field>
+        </Box>
         {needed.length > 0 ? (
           <FormControlLabel
             control={<Checkbox checked={withNeeds} onChange={(_, on) => setWithNeeds(on)} />}
