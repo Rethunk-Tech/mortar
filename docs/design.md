@@ -4,7 +4,7 @@ Decided work, short enough to build cold. Delete an item in the change that land
 
 ## Release
 
-- Drop the `Rethunk-AI/wails` replace in `go.mod` and pin a tagged beta once one carries what branch `mortar/v3-next` adds to upstream master: #6202 (OnUpdateApplied, with WEP #6203), #6199 (service methods fall back to `Options.MarshalError`; `errorkind_test.go` relies on it), #6240 (single-instance lock released at the start of shutdown), #6197 (GTK4 transparency), #6281 and #6282 (session-bus fallbacks), #6283 (GTK4 drop motion), #6284 (tray Menu property), #6285 (server-mode shutdown hooks), #6287 (pre-Run main-thread queue), WEPs #6243 (local linuxdeploy) and #6244 (`-nopack`), and the fork-only apply-on-exit.
+- Drop the `Rethunk-AI/wails` replace in `go.mod` (now `v3.0.0-mortar.1`, branch `mortar/v3-next` rebuilt on v3.0.0) and pin an upstream release once one carries what the branch adds: #6202 (OnUpdateApplied, with WEP #6203), #6199 (service methods fall back to `Options.MarshalError`; `errorkind_test.go` relies on it), #6240 (single-instance lock released at the start of shutdown), #6197 (GTK4 transparency), #6281 and #6282 (session-bus fallbacks), #6283 (GTK4 drop motion), #6285 (server-mode shutdown hooks), #6284 and #6287 (merged on upstream master after v3.0.0), WEPs #6243 (local linuxdeploy) and #6244 (`-nopack`), and the fork-only apply-on-exit.
 
 ## Ready to build
 

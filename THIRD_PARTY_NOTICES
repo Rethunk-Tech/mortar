@@ -583,7 +583,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-@lingui/core@6.10.0
+@lingui/core@6.10.1
 licence: MIT
 https://lingui.dev
 
@@ -611,7 +611,7 @@ THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-@lingui/message-utils@6.10.0
+@lingui/message-utils@6.10.1
 licence: MIT
 https://lingui.dev
 
@@ -639,7 +639,7 @@ THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-@lingui/react@6.10.0
+@lingui/react@6.10.1
 licence: MIT
 https://lingui.dev
 
@@ -888,7 +888,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-@tanstack/react-virtual@3.14.21
+@tanstack/react-virtual@3.14.23
 licence: MIT
 https://tanstack.com/virtual
 
@@ -916,7 +916,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-@tanstack/virtual-core@3.19.6
+@tanstack/virtual-core@3.19.8
 licence: MIT
 https://tanstack.com/virtual
 
@@ -966,7 +966,7 @@ PERFORMANCE OF THIS SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-@wailsio/runtime@3.0.0-beta.34
+@wailsio/runtime@3.0.0
 licence: MIT
 https://v3.wails.io
 
@@ -1381,7 +1381,7 @@ THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/andybalholm/brotli@v1.2.6
+github.com/andybalholm/brotli@v1.2.7
 licence: MIT
 https://github.com/andybalholm/brotli
 
@@ -1745,7 +1745,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 
-github.com/google/pprof@v0.0.0-20260802141513-ef3492d7dac3
+github.com/google/pprof@v0.0.0-20261026192309-dbd0ed30aa88
 licence: Apache-2.0
 https://github.com/google/pprof
 
@@ -3174,7 +3174,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 
-github.com/wailsapp/wails/v3@v3.0.0-beta.34
+github.com/wailsapp/wails/v3@v3.0.0
 licence: MIT
 https://github.com/wailsapp/wails
 
@@ -3264,7 +3264,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 
-go4.org@v0.0.0-20261019143151-5b882263cdaf
+go4.org@v0.0.0-20261028031214-ed6929a230fe
 licence: Apache-2.0
 https://pkg.go.dev/go4.org
 
@@ -3896,7 +3896,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-lucide-react@1.61.0
+lucide-react@1.62.0
 licence: MIT
 https://lucide.dev
 
@@ -3975,7 +3975,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-mdast-util-find-and-replace@3.0.3
+mdast-util-find-and-replace@3.0.4
 licence: MIT
 https://github.com/syntax-tree/mdast-util-find-and-replace
 
@@ -4266,7 +4266,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-mdast-util-to-markdown@2.2.0
+mdast-util-to-markdown@2.2.1
 licence: MIT
 https://github.com/syntax-tree/mdast-util-to-markdown
 
@@ -5094,7 +5094,7 @@ Bundled launcher icon (frontend/src/brand/vendor/minigalaxy.png) from Minigalaxy
 
 --------------------------------------------------------------------------------
 
-modernc.org/libc@v1.79.0
+modernc.org/libc@v1.79.1
 licence: BSD-3-Clause
 https://pkg.go.dev/modernc.org/libc
 
@@ -5196,7 +5196,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 
-modernc.org/sqlite@v1.60.1
+modernc.org/sqlite@v1.61.0
 licence: BSD-3-Clause
 https://pkg.go.dev/modernc.org/sqlite
 
@@ -5705,7 +5705,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-simple-icons@16.35.0
+simple-icons@16.36.0
 licence: CC0-1.0
 https://simpleicons.org
 
@@ -6037,13 +6037,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-unist-util-visit-parents@6.0.2
+unist-util-visit-parents@6.1.0
 licence: MIT
 https://github.com/syntax-tree/unist-util-visit-parents
 
 (The MIT License)
 
-Copyright (c) 2016 Titus Wormer <tituswormer@gmail.com>
+Copyright (c) Titus Wormer <tituswormer@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -6066,13 +6066,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-unist-util-visit@5.1.0
+unist-util-visit@5.2.0
 licence: MIT
 https://github.com/syntax-tree/unist-util-visit
 
 (The MIT License)
 
-Copyright (c) 2015 Titus Wormer <tituswormer@gmail.com>
+Copyright (c) Titus Wormer <tituswormer@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -6188,7 +6188,7 @@ Bundled source icon (frontend/src/brand/vendor/vsmoddb.png) from the Vintage Sto
 
 --------------------------------------------------------------------------------
 
-zustand@5.0.15
+zustand@5.0.16
 licence: MIT
 https://github.com/pmndrs/zustand
 
