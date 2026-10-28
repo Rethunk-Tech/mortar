@@ -3,8 +3,9 @@ package source
 import (
 	"context"
 	"errors"
-	"net/url"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
 // Details is the fuller page of one mod, read when the player opens it in Browse.
@@ -27,13 +28,7 @@ type Details struct {
 
 // WebLink is raw when it is an http or https address with a host, else empty: a site's own link field is remote data,
 // shown to the player as a link and never followed by Mortar.
-func WebLink(raw string) string {
-	u, err := url.Parse(raw)
-	if err != nil || (u.Scheme != "https" && u.Scheme != "http") || u.Host == "" {
-		return ""
-	}
-	return raw
-}
+func WebLink(raw string) string { return meta.WebLink(raw) }
 
 // Detailer is a source that reads one mod's Details; key is the source's name for the game.
 type Detailer interface {

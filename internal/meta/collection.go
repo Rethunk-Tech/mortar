@@ -55,7 +55,7 @@ func (c *Client) Collection(ctx context.Context, domain, slug string, revision i
 	})
 	// A collection cached before links were limited to web pages still holds whatever scheme the curator wrote.
 	for i := range col.External {
-		col.External[i].URL = webPage(col.External[i].URL)
+		col.External[i].URL = WebLink(col.External[i].URL)
 	}
 	return col, err
 }
@@ -119,9 +119,10 @@ type collectionGQL struct {
 	} `json:"data"`
 }
 
-// webPage keeps a curator's resource link only when it is an http or https page, since the import dialog opens it
-// with the system's URL handler, which would also launch other schemes' apps.
-func webPage(raw string) string {
+// WebLink is raw when it is an http or https address with a host, else empty: a remote link field is shown to the
+// player as a link and never followed by Mortar, and the import dialog opens it with the system's URL handler, which
+// would launch other schemes' apps.
+func WebLink(raw string) string {
 	u, err := url.Parse(raw)
 	if err != nil || (u.Scheme != "https" && u.Scheme != "http") || u.Host == "" {
 		return ""
@@ -149,7 +150,7 @@ func decodeCollection(slug string, raw []byte) (Collection, error) {
 	}
 	for _, r := range rev.ExternalResources {
 		out.External = append(out.External, CollectionExternal{
-			Name: r.Name, Type: r.ResourceType, URL: webPage(r.ResourceURL), Version: r.Version, Author: r.Author, Optional: r.Optional,
+			Name: r.Name, Type: r.ResourceType, URL: WebLink(r.ResourceURL), Version: r.Version, Author: r.Author, Optional: r.Optional,
 		})
 	}
 	for _, mf := range rev.ModFiles {
