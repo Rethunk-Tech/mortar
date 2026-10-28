@@ -1970,18 +1970,8 @@ func (c *cmd) shareLog() error {
 	if err := c.call("logs", p, &l, readTimeout); err != nil {
 		return err
 	}
-	if !c.yesFlag {
-		if info, err := os.Stdin.Stat(); err != nil || info.Mode()&os.ModeCharDevice == 0 {
-			return refusedError{"sharing a log needs --yes when stdin is not a terminal"}
-		}
-		fmt.Fprintf(c.errOut, "This log is %s. Sharing uploads it to smapi.io, where it becomes public at a link. Continue? [y/N] ", bytefmt.Format(int64(len(l.Text))))
-		var answer string
-		if _, err := fmt.Fscan(os.Stdin, &answer); err != nil {
-			return err
-		}
-		if strings.ToLower(answer) != "y" && strings.ToLower(answer) != "yes" {
-			return errors.New("cancelled")
-		}
+	if err := c.confirm("sharing a log", fmt.Sprintf("This log is %s. Sharing uploads it to smapi.io, where it becomes public at a link. Continue?", bytefmt.Format(int64(len(l.Text))))); err != nil {
+		return err
 	}
 	return show(c, "logs.share", p, func(result map[string]string) { fmt.Fprintln(c.out, result["url"]) })
 }
@@ -2584,4 +2574,24 @@ func winnerText(x framework.AssetConflict) string {
 	default:
 		return "unclear"
 	}
+}
+
+// confirm asks prompt on the terminal unless --yes was given; what names the action in the refusal when stdin is no
+// terminal to ask on.
+func (c *cmd) confirm(what, prompt string) error {
+	if c.yesFlag {
+		return nil
+	}
+	if info, err := os.Stdin.Stat(); err != nil || info.Mode()&os.ModeCharDevice == 0 {
+		return refusedError{what + " needs --yes when stdin is not a terminal"}
+	}
+	fmt.Fprintf(c.errOut, "%s [y/N] ", prompt)
+	var answer string
+	if _, err := fmt.Fscan(os.Stdin, &answer); err != nil {
+		return err
+	}
+	if strings.ToLower(answer) != "y" && strings.ToLower(answer) != "yes" {
+		return errors.New("cancelled")
+	}
+	return nil
 }

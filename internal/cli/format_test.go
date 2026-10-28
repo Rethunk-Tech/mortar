@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"errors"
+	"os"
 	"reflect"
 	"testing"
 	"time"
@@ -44,5 +46,22 @@ func TestWinnerText(t *testing.T) {
 		if got := winnerText(framework.AssetConflict{WinnerKind: tc.kind, WinnerName: tc.name}); got != tc.want {
 			t.Errorf("winnerText(%q) = %q, want %q", tc.kind, got, tc.want)
 		}
+	}
+}
+
+func TestConfirmSkipsWithYesAndRefusesWithoutATerminal(t *testing.T) {
+	if err := (&cmd{yesFlag: true}).confirm("x", "?"); err != nil {
+		t.Fatal(err)
+	}
+	stdin := os.Stdin
+	t.Cleanup(func() { os.Stdin = stdin })
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = r.Close(); _ = w.Close() })
+	os.Stdin = r
+	if err := (&cmd{}).confirm("x", "?"); !errors.As(err, new(refusedError)) {
+		t.Fatalf("confirm on a pipe = %v", err)
 	}
 }
