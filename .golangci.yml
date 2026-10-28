@@ -71,7 +71,7 @@ linters:
     forbidigo:
       analyze-types: true
       forbid:
-        - pattern: ^os\.(Remove|RemoveAll|ReadFile|WriteFile)$
+        - pattern: ^os\.(Remove|RemoveAll|ReadFile|WriteFile|Rename)$
           msg: use the fsx equivalent
     # canon go-golangci-lint-00008
     govet:

@@ -358,7 +358,7 @@ func (s *Service) rename(ctx context.Context, dir, csproj, old, name string) (st
 				return nil
 			}
 		}
-		return os.Rename(filepath.Join(dir, from), filepath.Join(dir, to))
+		return fsx.Rename(filepath.Join(dir, from), filepath.Join(dir, to))
 	}
 	srcOld, srcNew := filepath.Join("src", filepath.Base(filepath.Dir(csproj))), filepath.Join("src", name)
 	if _, err := os.Lstat(filepath.Join(dir, srcNew)); err == nil {

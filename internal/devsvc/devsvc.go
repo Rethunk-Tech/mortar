@@ -405,7 +405,7 @@ func replaceTree(dest, generated string) error {
 		return err
 	}
 	for _, e := range made {
-		if err := os.Rename(filepath.Join(generated, e.Name()), filepath.Join(dest, e.Name())); err != nil {
+		if err := fsx.Rename(filepath.Join(generated, e.Name()), filepath.Join(dest, e.Name())); err != nil {
 			return err
 		}
 	}
@@ -524,7 +524,7 @@ func (s *Service) templateDir(ctx context.Context, tpl components.DevTemplate) (
 		root = filepath.Join(unpacked, entries[0].Name())
 	}
 	_ = fsx.RemoveAll(dir)
-	return dir, os.Rename(root, dir)
+	return dir, fsx.Rename(root, dir)
 }
 
 // localTemplate copies a template folder, or unpacks a .zip of one, into the cache fresh.
@@ -554,7 +554,7 @@ func (s *Service) localTemplate(path string) (string, error) {
 		if entries, readErr := os.ReadDir(dir); err == nil && readErr == nil && len(entries) == 1 && entries[0].IsDir() {
 			inner := filepath.Join(dir, entries[0].Name())
 			moved := dir + ".unpacked"
-			err = errors.Join(fsx.RemoveAll(moved), os.Rename(inner, moved), fsx.RemoveAll(dir), os.Rename(moved, dir))
+			err = errors.Join(fsx.RemoveAll(moved), fsx.Rename(inner, moved), fsx.RemoveAll(dir), fsx.Rename(moved, dir))
 		}
 	}
 	if err != nil {
