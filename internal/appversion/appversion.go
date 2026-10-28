@@ -36,18 +36,8 @@ func FromConfig(config []byte) (string, error) {
 // Build names this exact build, so a cache another build wrote is known to be stale: the commit for a clean tree,
 // with the executable's size and time added otherwise, since every local build shares the commit.
 var Build = sync.OnceValue(func() string {
-	rev, modified := "", true
-	if info, ok := debug.ReadBuildInfo(); ok {
-		for _, s := range info.Settings {
-			switch s.Key {
-			case "vcs.revision":
-				rev = s.Value
-			case "vcs.modified":
-				modified = s.Value == "true"
-			}
-		}
-	}
-	if rev != "" && !modified {
+	rev, modified := vcs()
+	if rev != "" && modified == "false" {
 		return rev
 	}
 	if exe, err := os.Executable(); err == nil {
@@ -58,6 +48,22 @@ var Build = sync.OnceValue(func() string {
 	return rev
 })
 
+// vcs is Go's VCS stamp: the commit, and "true" or "false" for whether the tree had uncommitted changes ("" when the
+// build has no stamp).
+func vcs() (rev, modified string) {
+	if info, ok := debug.ReadBuildInfo(); ok {
+		for _, s := range info.Settings {
+			switch s.Key {
+			case "vcs.revision":
+				rev = s.Value
+			case "vcs.modified":
+				modified = s.Value
+			}
+		}
+	}
+	return rev, modified
+}
+
 // stamped is set with -ldflags -X by the release build, which turns off Go's own VCS stamp (-buildvcs=false).
 var stamped string
 
@@ -67,21 +73,11 @@ var Commit = sync.OnceValue(func() string {
 	if stamped != "" {
 		return stamped
 	}
-	rev, modified := "", false
-	if info, ok := debug.ReadBuildInfo(); ok {
-		for _, s := range info.Settings {
-			switch s.Key {
-			case "vcs.revision":
-				rev = s.Value
-			case "vcs.modified":
-				modified = s.Value == "true"
-			}
-		}
-	}
+	rev, modified := vcs()
 	if len(rev) > 8 {
 		rev = rev[:8]
 	}
-	if rev != "" && modified {
+	if rev != "" && modified == "true" {
 		rev += "-modified"
 	}
 	return rev
