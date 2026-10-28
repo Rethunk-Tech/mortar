@@ -468,13 +468,14 @@ func OpenIn(dir string, items *store.Store) *Store {
 	}
 }
 
-func cleanName(name string) (string, error) {
+// CleanName trims the name of a profile or template (what), refusing an empty or overlong one.
+func CleanName(what, name string) (string, error) {
 	name = strings.TrimSpace(name)
 	if name == "" {
-		return "", errors.New("profile name is empty")
+		return "", errors.New(what + " name is empty")
 	}
 	if utf8.RuneCountInString(name) > maxName {
-		return "", fmt.Errorf("profile name is longer than %d characters", maxName)
+		return "", fmt.Errorf("%s name is longer than %d characters", what, maxName)
 	}
 	return name, nil
 }
@@ -717,7 +718,7 @@ func (s *Store) createBundled(game, name string) (Profile, error) {
 func (s *Store) create(game, name string) (Profile, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	name, err := cleanName(name)
+	name, err := CleanName("profile", name)
 	if err != nil {
 		return Profile{}, err
 	}
@@ -749,7 +750,7 @@ func (s *Store) create(game, name string) (Profile, error) {
 
 // Rename changes a profile's name and touches its updated time.
 func (s *Store) Rename(gameID, id, name string) (Profile, error) {
-	name, err := cleanName(name)
+	name, err := CleanName("profile", name)
 	if err != nil {
 		return Profile{}, err
 	}

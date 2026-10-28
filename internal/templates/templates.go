@@ -10,7 +10,6 @@ import (
 	"slices"
 	"strings"
 	"sync"
-	"unicode/utf8"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -19,10 +18,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/savedgroups"
-	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
-
-const maxName = 60
 
 // LaunchConfig is the per-profile launch state a template carries beyond game settings and launch options.
 type LaunchConfig struct {
@@ -109,17 +105,6 @@ func (s *Service) write(game string, list []Template) error {
 	return datadir.WriteVersioned(path, templatesFile{FormatVersion: datadir.FormatVersion, Templates: list})
 }
 
-func cleanName(name string) (string, error) {
-	name = strings.TrimSpace(name)
-	if name == "" {
-		return "", errors.New("template name is empty")
-	}
-	if utf8.RuneCountInString(name) > maxName {
-		return "", fmt.Errorf("template name is longer than %d characters", maxName)
-	}
-	return name, nil
-}
-
 func indexOf(list []Template, name string) int {
 	return slices.IndexFunc(list, func(t Template) bool { return strings.EqualFold(t.Name, name) })
 }
@@ -144,7 +129,7 @@ func (s *Service) Templates(game string) ([]Template, error) {
 // SaveTemplateFromProfile captures a profile's mods (with which are off), game settings and launch configuration under name, replacing a
 // template of the same name.
 func (s *Service) SaveTemplateFromProfile(game, profileID, name string) (Template, error) {
-	name, err := cleanName(name)
+	name, err := profile.CleanName("template", name)
 	if err != nil {
 		return Template{}, err
 	}
@@ -181,17 +166,9 @@ func (s *Service) SaveTemplateFromProfile(game, profileID, name string) (Templat
 
 // DeleteTemplate removes a template.
 func (s *Service) DeleteTemplate(game, name string) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	list, err := s.read(game)
-	if err != nil {
-		return err
-	}
-	i := indexOf(list, name)
-	if i < 0 {
-		return usererr.Wrap(usererr.NotFound, fmt.Errorf("template %q was not found", name))
-	}
-	return s.write(game, slices.Delete(list, i, i+1))
+	return s.editTemplate(game, name, func(list []Template, i int) ([]Template, error) {
+		return slices.Delete(list, i, i+1), nil
+	})
 }
 
 // NewProfileFromTemplate creates a profile and fills it from the template. Mods the store lacks come back in Missing
