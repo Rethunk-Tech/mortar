@@ -188,11 +188,7 @@ func (s *Service) NextVersions(ctx context.Context, gameID, dir string) (Version
 	if err != nil {
 		return Versions{}, err
 	}
-	// Before the first release git finds no tag, and the template's version stands.
-	latest := ""
-	if out, err := s.run(ctx, p.Dir, "git", "describe", "--tags", "--abbrev=0", "--match", "v*"); err == nil {
-		latest = strings.TrimPrefix(strings.TrimSpace(string(out)), "v")
-	}
+	latest := s.latestRelease(ctx, p.Dir)
 	v := nextVersions(latest)
 	v.GitHub = s.githubRemote(ctx, p.Dir)
 	since := "HEAD"
@@ -204,6 +200,16 @@ func (s *Service) NextVersions(ctx context.Context, gameID, dir string) (Version
 		v.Changes = changeLines(string(out))
 	}
 	return v, nil
+}
+
+// latestRelease is the newest released version's tag, without the v. Before the first release git finds no tag, and
+// the template's version stands.
+func (s *Service) latestRelease(ctx context.Context, dir string) string {
+	out, err := s.run(ctx, dir, "git", "describe", "--tags", "--abbrev=0", "--match", "v*")
+	if err != nil {
+		return ""
+	}
+	return nextVersions(strings.TrimPrefix(strings.TrimSpace(string(out)), "v")).Current
 }
 
 // changeLines keeps git log's subjects, dropping blanks and the "Release X.Y.Z" commits Release makes.

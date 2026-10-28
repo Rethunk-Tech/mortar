@@ -6,6 +6,7 @@ import (
 	"image/png"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -54,11 +55,14 @@ func read(t *testing.T, path string) string {
 }
 
 func TestInspectReadsTheProjectFiles(t *testing.T) {
-	svc, _ := testService(t, testTemplate)
+	svc, run := testService(t, testTemplate)
 	dir := fixtureProject(t, svc)
 	info, err := svc.Inspect(t.Context(), "lethal-company", dir)
 	if err != nil {
 		t.Fatal(err)
+	}
+	if slices.ContainsFunc(run.calls, func(c []string) bool { return len(c) > 1 && c[0] == "git" && c[1] == "log" }) {
+		t.Errorf("a card refresh read the whole history: %v", run.calls)
 	}
 	if info.Name != "ShopDrop" || info.GUID != "com.ab.ShopDrop" || info.IDPrefix != "com.ab" || info.Author != "A" ||
 		info.Team != "Ab" || info.Description != "Lands & drops." || strings.Join(info.Categories, ",") != "mods,items" || info.Missing ||

@@ -108,9 +108,7 @@ func (s *Service) Inspect(ctx context.Context, gameID, dir string) (ProjectInfo,
 	}
 	if rec, ok := readAssetRecord(p.Dir); ok && p.Kind != "" {
 		info := assetInfo(p.Dir, rec)
-		if v, err := s.NextVersions(ctx, gameID, dir); err == nil {
-			info.Released = v.Current
-		}
+		info.Released = s.latestRelease(ctx, p.Dir)
 		info.Icon = iconData(p.Dir)
 		info.Git = s.gitState(ctx, p.Dir)
 		return info, nil
@@ -124,9 +122,7 @@ func (s *Service) Inspect(ctx context.Context, gameID, dir string) (ProjectInfo,
 	if err != nil {
 		return ProjectInfo{}, err
 	}
-	if v, err := s.NextVersions(ctx, gameID, dir); err == nil {
-		info.Released = v.Current
-	}
+	info.Released = s.latestRelease(ctx, p.Dir)
 	info.Icon = iconData(p.Dir)
 	info.Git = s.gitState(ctx, p.Dir)
 	info.BuiltAt, info.Stale = buildState(p)
