@@ -146,7 +146,7 @@ func (c clamd) scanFile(ctx context.Context, path string) (string, error) {
 		}
 	}
 	if _, err := conn.Write([]byte{0, 0, 0, 0}); err != nil {
-		return "", err
+		return replyOnWriteError(conn, err)
 	}
 	return parseReply(conn)
 }
