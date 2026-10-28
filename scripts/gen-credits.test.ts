@@ -1,8 +1,8 @@
 import { afterAll, describe, expect, test } from 'bun:test'
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
-import { classifyLicenceText, collectNotices } from './gen-credits.ts'
+import { classifyLicenceText, collectNotices, goLicencePath } from './gen-credits.ts'
 
 describe('classifyLicenceText', () => {
   test('finds licence text after a copyright header', () => {
@@ -20,6 +20,18 @@ of this software and associated documentation files.`
     expect(
       classifyLicenceText('Permission to use, copy, modify, and/or distribute this software'),
     ).toBe('ISC')
+  })
+})
+
+describe('goLicencePath', () => {
+  test("finds Arch's licences folder when GOROOT has no LICENSE", () => {
+    const at = '/usr/share/licenses/go/LICENSE'
+    expect(goLicencePath('/usr/lib/go', (path) => path === at)).toBe(at)
+  })
+
+  test('falls back to the committed copy when no toolchain copy exists', () => {
+    const path = goLicencePath('/usr/lib/go', () => false)
+    expect(existsSync(path)).toBe(true)
   })
 })
 
