@@ -3,13 +3,19 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ButtonGroup, Menu, Typography } from '@mui/material'
 import { Check, ChevronDown, Code, FolderPlus, GitBranch, Hammer, Plus, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Add } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
+import {
+  Add,
+  Forget,
+  Move,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import { StartInstances } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { PickFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import type { DevProject } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
+import { installExtraFolder } from '../downloads/autoInstall.ts'
 import { PageActions } from '../game/PageActions.tsx'
 import { useProfiles } from '../profiles/store.ts'
+import { saveSetting } from '../settings/persist.ts'
 import { useSettings } from '../settings/store.ts'
 import { CardsView } from '../shell/CardsView.tsx'
 import { ControlsRow } from '../shell/ControlsRow.tsx'
@@ -30,20 +36,40 @@ import { NewModDialog } from './NewModDialog.tsx'
 import { ProjectCard } from './ProjectCard.tsx'
 import { TrustDialog } from './TrustDialog.tsx'
 
-// A project in another profile: its builds install there, so it is worked on from that profile.
-function ElsewhereRow({ project }: { project: DevProject }) {
+// A project in another profile: its builds install there, so it is worked on from that profile. One whose profile
+// was deleted can be moved into the open profile or dropped from the list.
+function ElsewhereRow({ game, project }: { game: string; project: DevProject }) {
   const { t } = useLingui()
+  const openId = useProfiles((s) => s.openId)
   const profileName = useProfiles(
     (s) => s.profiles.find((p) => p.id === project.profile)?.name ?? '',
   )
+  const gone = useProfiles((s) => s.profiles.length > 0 && profileName === '')
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
       <Typography sx={{ flex: 1, minWidth: 0 }} noWrap={true}>
-        {t`${{ name: project.name }} in ${{ profile: profileName }}`}
+        {gone ? project.name : t`${{ name: project.name }} in ${{ profile: profileName }}`}
       </Typography>
-      <Button
-        onClick={() => useProfiles.getState().open(project.profile)}
-      >{t`Open profile`}</Button>
+      {gone ? (
+        <>
+          <Button
+            onClick={() => saveSetting(() => Forget(game, project.dir))}
+          >{t`Remove from list`}</Button>
+          <Button
+            disabled={openId === ''}
+            onClick={() =>
+              saveSetting(async () => {
+                await Move(game, project.dir, openId)
+                installExtraFolder(game, project.output)
+              })
+            }
+          >{t`Move here`}</Button>
+        </>
+      ) : (
+        <Button
+          onClick={() => useProfiles.getState().open(project.profile)}
+        >{t`Open profile`}</Button>
+      )}
     </Box>
   )
 }
@@ -249,7 +275,7 @@ export function DevelopTab({ game }: { game: string }) {
         <Box sx={{ px: space.gutter, pb: space.gutter }}>
           <Typography sx={{ fontWeight: 600, mb: 0.5 }}>{t`In other profiles`}</Typography>
           {elsewhere.map((p) => (
-            <ElsewhereRow key={p.dir} project={p} />
+            <ElsewhereRow key={p.dir} game={game} project={p} />
           ))}
         </Box>
       ) : null}

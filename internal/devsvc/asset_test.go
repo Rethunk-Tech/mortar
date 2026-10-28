@@ -252,3 +252,27 @@ func TestAnAssetProjectReleasesHereAndEditsItsDetails(t *testing.T) {
 		t.Errorf("packages = %v", pkgs)
 	}
 }
+
+func TestMoveRepointsAProjectAtAnotherProfile(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	const game = "lethal-company"
+	dir := assetDir(t, `{"kind":"sounds","name":"Quacks","team":"Ab"}`)
+	p, err := svc.Add(t.Context(), game, dir, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	other, err := svc.Profiles.Create(game, "Other")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := svc.Move(game, dir, "missing"); err == nil {
+		t.Error("a profile that does not exist was accepted")
+	}
+	if err := svc.Move(game, dir, other.ID); err != nil {
+		t.Fatal(err)
+	}
+	gp := svc.Settings.Get().GamePrefs(game)
+	if gp.DevProjects[0].Profile != other.ID || gp.ExtraModsProfile(p.Output) != other.ID {
+		t.Errorf("project %+v, folder profile %q", gp.DevProjects[0], gp.ExtraModsProfile(p.Output))
+	}
+}

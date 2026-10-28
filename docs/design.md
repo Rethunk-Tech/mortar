@@ -15,10 +15,6 @@ Decided work, short enough to build cold. Delete an item in the change that land
 - top mods from the sources' APIs, cached in a data file under `web/src/data/` that `bun run site:refresh` writes (`web/scripts/refresh.ts`);
 - an optional hand-written note per game.
 
-### Asset kinds for the Mortar loaders
-
-New mod's asset kinds (`assetKinds` in `components.source.json`) gain one per Mortar loader (`mortar-mods`: `mortar-lc-boombox`, `mortar-lc-posters`, `mortar-lc-television`), each added once its package is on Thunderstore (folders sit below `plugins/`, since BepInEx flattens any other top-level folder): Boombox (`plugins/Custom Songs`, `*.mp3` `*.ogg` `*.wav`, `Mortar-Boombox`), Posters (`plugins/LethalPosters/posters`, `*.png` `*.jpg`, `Mortar-Posters`, starter `README.txt` files in `plugins/LethalPosters/tips` and `plugins/LethalPaintings/paintings`), Television (`plugins/Television Videos`, `*.webm` `*.mp4`, `Mortar-Television`).
-
 ### mod.io as a source
 
 **Why:** mod.io is an official mod channel for Blade & Sorcery, BONELAB, Ready or Not, S.T.A.L.K.E.R. 2 and Timberborn, and the only one for Gladio Mori. Outside the catalog it is how Baldur's Gate 3 and Deep Rock Galactic ship mods, and it would bring back Core Keeper (no live source today). Neither r2modman (declined) nor Gale supports it.

@@ -257,6 +257,22 @@ func (s *Service) Packages(gameID string) []string {
 // Forget drops the project in dir from the Develop tab; its files stay, and so does its last build in the profile.
 func (s *Service) Forget(gameID, dir string) error { return s.Settings.ForgetDevProject(gameID, dir) }
 
+// Move makes profileID the profile the project in dir installs into, as when its profile was deleted; its extra mods
+// folder follows.
+func (s *Service) Move(gameID, dir, profileID string) error {
+	p, err := s.project(gameID, dir)
+	if err != nil {
+		return err
+	}
+	// A damaged profile is still one to install into once repaired.
+	if _, err := s.Profiles.Get(gameID, profileID); err != nil && usererr.KindOf(err) != usererr.Damaged {
+		return err
+	}
+	next := p
+	next.Profile = profileID
+	return s.Settings.ReplaceDevProject(gameID, p, next)
+}
+
 // Trash moves the project's folder to the system trash, where the file manager can restore it, takes its build out of
 // its profile, and drops the project from the Develop tab. Only a folder the Develop tab lists is moved.
 func (s *Service) Trash(gameID, dir string) error {
