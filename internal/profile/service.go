@@ -42,14 +42,13 @@ type Service struct {
 func (s *Service) ShareFacts(game string, p Profile) ShareFacts { return s.store.ShareFacts(game, p) }
 
 func NewService(store *Store, home string, settings *settings.Store) *Service {
-	store.NewModsEnabled = func() bool { return settings.Get().NewModsEnabled() }
+	// Without settings NewModsEnabled stays nil, which starts new mods enabled.
 	if settings != nil {
+		store.NewModsEnabled = func() bool { return settings.Get().NewModsEnabled() }
 		store.OldFilesMode = func(game string) string { return settings.Get().GamePrefs(game).OldFilesOnUpdate }
-	}
-	store.home, store.settings = home, settings
-	if settings != nil {
 		store.TrayFolder = func(id, role string) (string, error) { return game.PathFor(home, settings.Get(), id, "", role) }
 	}
+	store.home, store.settings = home, settings
 	svc := &Service{store: store, home: home, settings: settings}
 	store.GameModsProgress = func(p GameModsProgress) {
 		if svc.Emit != nil {

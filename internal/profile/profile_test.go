@@ -209,3 +209,11 @@ func TestLockUnlockedRefusesARunningProfileAndReleasesTheLock(t *testing.T) {
 	}
 	s.mu.Unlock()
 }
+
+func TestNewServiceWithoutSettingsStartsNewModsEnabled(t *testing.T) {
+	s := newStore(t)
+	NewService(s, t.TempDir(), nil)
+	if s.NewModsEnabled != nil && !s.NewModsEnabled() {
+		t.Fatal("new mods start disabled without settings")
+	}
+}
