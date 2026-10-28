@@ -14,6 +14,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/msbuild"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -136,14 +137,32 @@ func (s *Service) Add(ctx context.Context, gameID, dir, profileID string) (setti
 		// A cloned folder can hold plugin DLLs that load on the next launch, so it installs only once trusted.
 		return s.enroll(gameID, dir, name, profileID, "", rec.Kind, true)
 	}
-	props := filepath.Join(dir, "Config.Build.user.props")
-	if _, err := os.Lstat(props); errors.Is(err, os.ErrNotExist) {
-		if err := writeUserProps(dir, s.Tools(ctx, gameID).GameDir); err != nil {
-			return settings.DevProject{}, err
-		}
+	if err := pinGameRoot(dir, s.Tools(ctx, gameID).GameDir); err != nil {
+		return settings.DevProject{}, err
 	}
 	// A foreign repository's build files run code, so nothing builds until the user agrees (see Trust).
 	return s.enroll(gameID, dir, name, profileID, "", "", true)
+}
+
+// pinGameRoot points the project's GameRootDir at this computer's game folder, so a committed Config.Build.user.props
+// cannot choose which DLLs Game code reads. The file's other settings stay.
+func pinGameRoot(dir, gameDir string) error {
+	props := filepath.Join(dir, "Config.Build.user.props")
+	body, err := fsx.ReadFile(props)
+	if errors.Is(err, os.ErrNotExist) {
+		return writeUserProps(dir, gameDir)
+	}
+	if err != nil {
+		return err
+	}
+	root := ""
+	if gameDir != "" {
+		root = filepath.Clean(gameDir) + string(filepath.Separator)
+	}
+	if root == "" && msbuild.Property(string(body), "GameRootDir") == "" {
+		return nil
+	}
+	return fsx.WriteFile(props, []byte(setProp(string(body), "GameRootDir", root)), 0o600)
 }
 
 // ParseRepo reads owner/name, or a github.com address (https or git@), as owner and name.

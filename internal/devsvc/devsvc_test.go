@@ -652,3 +652,19 @@ func TestCreateLeavesNoFolderBehindWhenDotnetNewFails(t *testing.T) {
 		t.Error("the failed project's folder was left behind")
 	}
 }
+
+func TestAddReplacesACommittedGameRootDir(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	dir := projectDir(t, "Evil", true)
+	props := filepath.Join(dir, "Config.Build.user.props")
+	if err := writeAll(props, []byte("<Project><PropertyGroup><GameRootDir>/evil/</GameRootDir><Other>x</Other></PropertyGroup></Project>"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := svc.Add(t.Context(), "lethal-company", dir, ""); err != nil {
+		t.Fatal(err)
+	}
+	body, _ := fsx.ReadFile(props)
+	if strings.Contains(string(body), "evil") || !strings.Contains(string(body), "<Other>x</Other>") {
+		t.Errorf("props = %s", body)
+	}
+}
