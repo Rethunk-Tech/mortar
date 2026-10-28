@@ -33,6 +33,7 @@ func TestClosure(t *testing.T) {
 		custom("LavaGang", "MelonLoader", v("0.7.1"), v("0.6.0")),
 		custom("Ns", "Mel", v("1.0.0", "LavaGang-MelonLoader-0.6.0")),
 		custom("ebkr", "r2modman", v("3.0.0")),
+		custom("Ns", "OldPin", v("1.0.0", "BepInEx-BepInExPack-5.3.1")),
 		custom("Ns", "Managed", v("1.0.0", "ebkr-r2modman-3.0.0", "Ns-D-1.0.0")),
 	)
 	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
@@ -55,7 +56,8 @@ func TestClosure(t *testing.T) {
 		{"an IL2CPP pack's dependents take its newest BepInEx 6", []Ref{{"Ns", "Cat", ""}}, "BepInExPack_IL2CPP 6.0.788, Cat 1.0.0", ""},
 		{"another loader's pack is not held to BepInEx's series", []Ref{{"Ns", "Mel", ""}}, "MelonLoader 0.7.1, Mel 1.0.0", ""},
 		{"a missing package names the chain", []Ref{{"Ns", "Lost", ""}}, "", "ghost-pkg is not in the index (requested by ns-lost 1.0.0 -> ghost-pkg)"},
-		{"a cycle is an error", []Ref{{"Ns", "X", ""}}, "", "dependency cycle: ns-x 1.0.0 -> ns-y 1.0.0 -> ns-x"},
+		{"packages that list each other install together", []Ref{{"Ns", "X", ""}}, "Y 1.0.0, X 1.0.0", ""},
+		{"an older pack version of the same major is served by the newest", []Ref{{"Ns", "OldPin", ""}}, "BepInExPack 5.4.2305, OldPin 1.0.0", ""},
 		{"a mod manager listed as a dependency is left out", []Ref{{"Ns", "Managed", ""}}, "D 1.0.0, Managed 1.0.0", ""},
 		{"a mod manager asked for by name is refused", []Ref{{"ebkr", "r2modman", ""}}, "", "ebkr-r2modman is a mod manager, not a mod"},
 	}
@@ -189,5 +191,19 @@ func TestClosureSwapsADependencyForItsDropIn(t *testing.T) {
 		if strings.Join(names, ", ") != want {
 			t.Errorf("%v: %s, want %s", roots, strings.Join(names, ", "), want)
 		}
+	}
+}
+
+func TestClosureLoaderPackUnderAnotherNamespace(t *testing.T) {
+	f := newFake(t)
+	f.chunk0 = append(f.chunk0,
+		custom("bbepis", "BepInExPack", v("5.4.2122", "Ns-Back-1.0.0")),
+		custom("Ns", "Back", v("1.0.0", "bbepis-BepInExPack-5.4.2122")),
+		custom("Ns", "Mod", v("1.0.0", "BepInEx-BepInExPack-5.4.2100")),
+	)
+	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
+	got, err := d.Closure(t.Context(), "lethal-company", []Ref{{"Ns", "Mod", ""}}, "1.2.3", DepsNewest)
+	if err != nil || len(got) != 1 || got[0].Name != "Mod" {
+		t.Fatalf("got %v, %v; want Mod alone: the pack is the loader's, not the mod's to install", got, err)
 	}
 }

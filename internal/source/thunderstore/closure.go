@@ -36,8 +36,8 @@ func newer(a, b string) bool {
 
 // pick is the version of p that ref asks for: the newest when it names none or, unless exactDeps, when it is a
 // dependency's pin, which r2modman treats as a minimum; for a BepInEx loader pack the newest of the series Mortar runs it as (5.4.x, or the
-// whole major the catalog names, 6 for BepInExPack_IL2CPP), since mods name old pack versions that the newest one
-// still serves; else exactly the named one.
+// whole major the catalog names, 6 for BepInExPack_IL2CPP), since mods name old pack versions of the same major (5.3.1)
+// that the newest one still serves; else exactly the named one.
 func pick(p pkg, ref Ref, minimum bool) (string, error) {
 	id := packageID(p.Owner, p.Name)
 	if components.IsBepInExPackage(p.Owner + "-" + p.Name) {
@@ -46,7 +46,7 @@ func pick(p pkg, ref Ref, minimum bool) (string, error) {
 		if major != 5 {
 			series, inSeries = strconv.Itoa(major)+".x", func(v [3]int) bool { return v[0] == major }
 		}
-		if ref.Version != "" && !inSeries(versionParts(ref.Version)) {
+		if ref.Version != "" && versionParts(ref.Version)[0] != major {
 			return "", fmt.Errorf("%s asks for %s %s, but Mortar runs BepInEx %s", id, p.Name, ref.Version, series)
 		}
 		best := ""
@@ -173,6 +173,10 @@ func (w *walk) visit(ref Ref, chain []string) error {
 	}
 	via := strings.Join(append(append([]string{}, chain...), id), " -> ")
 	p, ok := w.byID[id]
+	if !ok && chain != nil && components.IsBepInExPackage(ref.Namespace+"-"+ref.Name) {
+		// A mod names the pack under the default namespace where the community lists its own; Mortar installs the loader itself.
+		return nil
+	}
 	if !ok {
 		return fmt.Errorf("%s is not in the index (requested by %s)", id, via)
 	}
@@ -184,15 +188,15 @@ func (w *walk) visit(ref Ref, chain []string) error {
 		w.chosen[id] = v
 		w.raised = w.raised || cur != ""
 	}
-	switch w.state[id] {
-	case 1:
-		return fmt.Errorf("dependency cycle: %s", via)
-	case 2:
+	if w.state[id] != 0 {
+		// Packages that list each other (a mod and its compat pack) install together, in either order.
 		return nil
 	}
 	w.state[id] = 1
+	// A loader pack's own dependencies are other mods that depend back on it; Mortar installs the loader itself.
+	loader := components.IsBepInExPackage(p.Owner + "-" + p.Name)
 	for _, ver := range p.Versions {
-		if ver.Number != w.chosen[id] || w.deps == DepsNone {
+		if ver.Number != w.chosen[id] || w.deps == DepsNone || loader {
 			continue
 		}
 		for _, dep := range p.depsOf(ver) {
