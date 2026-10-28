@@ -22,12 +22,8 @@ func TestSetWinnerRewritesManifestIdempotent(t *testing.T) {
 	e.item(t, "win", map[string]string{"manifest.json": manifestJSON("Me.Win")})
 	e.item(t, "lose", map[string]string{"manifest.json": manifestJSON("Me.Lose")})
 	p := mustCreate(t, e, "Farm")
-	if _, err := e.AddEntry("stardew", p.ID, "win", Source{Kind: KindLocal, Name: "win.zip"}); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := e.AddEntry("stardew", p.ID, "lose", Source{Kind: KindLocal, Name: "lose.zip"}); err != nil {
-		t.Fatal(err)
-	}
+	e.addZip(t, p.ID, "win")
+	e.addZip(t, p.ID, "lose")
 	got, err := e.SetWinner("stardew", p.ID, "win", "smapi:Me.Win", "smapi:Me.Lose", true)
 	if err != nil {
 		t.Fatal(err)

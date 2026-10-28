@@ -153,9 +153,7 @@ func TestToggleNestedAndRoot(t *testing.T) {
 	if !slices.Equal(names(t, mods), []string{".local-r", "local-n"}) {
 		t.Fatalf("mods = %v", names(t, mods))
 	}
-	if _, err := e.SetModEnabled("stardew", p.ID, "", "smapi:X.R", false); err != nil {
-		t.Fatal(err)
-	}
+	e.disable(t, p.ID, "smapi:X.R")
 	if _, err := e.RemoveEntry("stardew", p.ID, "local-r"); err != nil {
 		t.Fatal(err)
 	}
@@ -680,9 +678,7 @@ func TestRunningProfileIsLocked(t *testing.T) {
 	}
 
 	running = false
-	if _, err := e.SetModEnabled("stardew", p.ID, "", "smapi:me.a", false); err != nil {
-		t.Fatal(err)
-	}
+	e.disable(t, p.ID, "smapi:me.a")
 	dir, err := e.ModsDir("stardew", p.ID)
 	if err != nil || dir != e.mods(p.ID) {
 		t.Fatalf("mods dir = %q, %v", dir, err)

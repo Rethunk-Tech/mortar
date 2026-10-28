@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
@@ -78,6 +79,22 @@ func editProfileJSON(t *testing.T, path string, edit func(doc map[string]any)) {
 		t.Fatal(err)
 	}
 	if err := fsx.WriteFile(path, raw, 0o600); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// addZip adds the store item key to the Stardew profile as a local archive named key.zip.
+func (e env) addZip(t *testing.T, profileID, key string) {
+	t.Helper()
+	if _, err := e.AddEntry("stardew", profileID, key, Source{Kind: KindLocal, Name: key + ".zip"}); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// disable turns the mod id off wherever the Stardew profile holds it.
+func (e env) disable(t *testing.T, profileID string, id mod.ID) {
+	t.Helper()
+	if _, err := e.SetModEnabled("stardew", profileID, "", id, false); err != nil {
 		t.Fatal(err)
 	}
 }

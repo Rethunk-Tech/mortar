@@ -229,9 +229,7 @@ func TestSwitchingAModOffIsNotDrift(t *testing.T) {
 	if _, err := e.ScanModsDrift("stardew", p.ID); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := e.SetModEnabled("stardew", p.ID, "", "smapi:X.A", false); err != nil {
-		t.Fatal(err)
-	}
+	e.disable(t, p.ID, "smapi:X.A")
 	got := e.mustScanDrift(t, p.ID)
 	if len(got) != 0 {
 		t.Fatalf("after switching a mod off: %#v", got)

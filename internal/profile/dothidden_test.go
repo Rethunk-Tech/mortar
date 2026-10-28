@@ -19,9 +19,7 @@ func TestDotHiddenModsListsOnlyDotsMortarDidNotAdd(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := e.AddEntry("stardew", p.ID, "pack", Source{Kind: KindLocal, Name: "pack.zip"}); err != nil {
-		t.Fatal(err)
-	}
+	e.addZip(t, p.ID, "pack")
 	if _, err := e.SetModEnabled("stardew", p.ID, "pack", "smapi:me.off", false); err != nil {
 		t.Fatal(err)
 	}
@@ -62,9 +60,7 @@ func TestUnhideModRenamesDottedFoldersAndRegistersTheMod(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := e.AddEntry("stardew", p.ID, "pack", Source{Kind: KindLocal, Name: "pack.zip"}); err != nil {
-		t.Fatal(err)
-	}
+	e.addZip(t, p.ID, "pack")
 	if _, err := svc.UnhideMod("stardew", p.ID, "pack", "Nope"); err == nil {
 		t.Fatal("unknown folder accepted")
 	}

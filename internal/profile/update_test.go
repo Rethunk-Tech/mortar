@@ -99,9 +99,7 @@ func TestUpdateKeepsDisabledFolderAndRollsBack(t *testing.T) {
 	e, p := updEnv(t,
 		map[string]string{"Pack/A/manifest.json": m, "Pack/A/cfg.json": "v1"},
 		map[string]string{"Pack/Moved/A/manifest.json": m, "Pack/Moved/A/cfg.json": "v2"})
-	if _, err := e.SetModEnabled("stardew", p.ID, "", "smapi:me.a", false); err != nil {
-		t.Fatal(err)
-	}
+	e.disable(t, p.ID, "smapi:me.a")
 	writeFile(t, e.mods(p.ID), "a-1/Pack/.A/data.json", "save")
 	if _, err := e.AddToGroup("stardew", p.ID, "G", "a-1"); err != nil {
 		t.Fatal(err)

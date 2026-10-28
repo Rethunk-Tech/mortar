@@ -18,9 +18,7 @@ func TestMoveGameModsMovesNewFoldersAndSkipsHeldOnes(t *testing.T) {
 	writeFile(t, game, "Held/manifest.json", manifestJSON("me.held"))
 	e.item(t, "held", map[string]string{"manifest.json": manifestJSON("me.held")})
 	p := mustCreate(t, e, "P")
-	if _, err := e.AddEntry("stardew", p.ID, "held", Source{Kind: KindLocal, Name: "held.zip"}); err != nil {
-		t.Fatal(err)
-	}
+	e.addZip(t, p.ID, "held")
 	if _, err := e.MoveGameMods(t.Context(), "stardew", p.ID, game, []string{"../escape"}); err == nil {
 		t.Fatal("moved a folder outside the Mods folder")
 	}
