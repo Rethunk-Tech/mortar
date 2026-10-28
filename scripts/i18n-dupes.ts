@@ -97,7 +97,6 @@ function variants(ids: string[]): string[] {
   return ids.filter((id) => VARIANT.test(id))
 }
 
-// Errors read "Could not …" and a setting or mod is enabled or disabled; no "Please".
 // Errors read "Could not …" (another program's failure, "{plugin} failed to load", is a fact, not Mortar's error), a
 // setting or mod is enabled or disabled, and no "Please".
 const ERROR_OPENING = /^(?:Failed to|Unable to|Cannot)\b/
