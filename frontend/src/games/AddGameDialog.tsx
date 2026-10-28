@@ -12,6 +12,7 @@ import { PickExecutable } from '../../bindings/github.com/Rethunk-Tech/mortar/in
 import { SetGameFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { SHIMLOADER, UNITY } from '../brand/productNames.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
@@ -109,6 +110,34 @@ function NameField({
   return <TextInput label={t`Name`} value={name} onChange={change} maxLength={MAX_NAME} />
 }
 
+function RemoveGameConfirm({
+  removing,
+  onDone,
+}: {
+  removing: { id: string; name: string } | null
+  onDone: () => void
+}) {
+  const { t } = useLingui()
+  return (
+    <ConfirmationDialog
+      open={removing !== null}
+      tone="danger"
+      title={t`Remove ${{ name: removing?.name ?? '' }}?`}
+      body={t`Mortar forgets this game. Its files stay where they are.`}
+      confirmLabel={t`Remove`}
+      onCancel={onDone}
+      onConfirm={() => {
+        onDone()
+        if (removing) {
+          RemoveCustomGame(removing.id)
+            .then(reloadGames)
+            .catch(reportError(t`Could not remove the game`))
+        }
+      }}
+    />
+  )
+}
+
 export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useLingui()
   const name = useRef('')
@@ -122,6 +151,7 @@ export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () =>
   // The loader the game's own files point to, once a program is chosen.
   const [guessed, setGuessed] = useState('')
   const [busy, run] = usePending()
+  const [removing, setRemoving] = useState<{ id: string; name: string } | null>(null)
   const { data: loaders } = useLoaded(() => CustomLoaders(), [], [])
   const games = useGames()
   const mine = useMemo(() => games.filter((g) => g.id.startsWith(CUSTOM_PREFIX)), [games])
@@ -159,8 +189,6 @@ export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () =>
           }
         })
         .catch(reportError(t`Could not open the file dialog`))
-    const remove = (id: string) =>
-      RemoveCustomGame(id).then(reloadGames).catch(reportError(t`Could not remove the game`))
     return (
       <>
         <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
@@ -217,7 +245,11 @@ export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () =>
             {mine.map((g) => (
               <Box key={g.id} sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
                 <Typography sx={{ flex: 1, fontSize: 'medium.fontSize' }}>{g.name}</Typography>
-                <Button size="small" color="error" onClick={() => remove(g.id)}>
+                <Button
+                  size="small"
+                  color="error"
+                  onClick={() => setRemoving({ id: g.id, name: g.name })}
+                >
                   {t`Remove`}
                 </Button>
               </Box>
@@ -241,6 +273,7 @@ export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () =>
       onSubmit={add}
     >
       {body}
+      <RemoveGameConfirm removing={removing} onDone={() => setRemoving(null)} />
     </FormDialog>
   )
 }
