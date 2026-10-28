@@ -80,12 +80,12 @@ export function LaunchMenu({ game, profile }: { game: string; profile: Profile }
     <>
       <HomeButton
         icon={<Wrench size={16} />}
+        endIcon={<ChevronDown size={14} aria-hidden={true} />}
         aria-haspopup="menu"
         aria-expanded={anchor !== null}
         onClick={(e) => setAnchor(e.currentTarget)}
       >
         {t`Tools`}
-        <ChevronDown size={14} aria-hidden={true} />
       </HomeButton>
       <Menu open={anchor !== null} anchorEl={anchor} onClose={close}>
         {items}

@@ -28,3 +28,14 @@ export function saveFits(fits: { missing?: unknown[] | null; unrecorded?: boolea
     total: fits.length,
   }
 }
+
+// At the minimum size the toolbar buttons fold into icon buttons.
+export const iconWhenCompact = {
+  [compact]: {
+    minWidth: 36,
+    px: 0,
+    '& .MuiButton-startIcon': { m: 0 },
+    '& .MuiButton-endIcon': { display: 'none' },
+    '& .label': { display: 'none' },
+  },
+}

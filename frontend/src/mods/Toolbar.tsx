@@ -23,7 +23,7 @@ import {
   SetByKey,
   SetListGroupBy,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
-import { compact, compactQuery, searchFieldOpen } from '../game/compact.ts'
+import { compactQuery, iconWhenCompact, searchFieldOpen } from '../game/compact.ts'
 import { useTab } from '../game/tab.ts'
 import { useInstall } from '../install/store.ts'
 import { useProfileLoader } from '../profiles/store.ts'
@@ -60,17 +60,6 @@ const FILTERS: readonly {
   { id: 'local', label: (i18n) => i18n._(msg`Local`) },
   { id: 'recent', label: (i18n) => i18n._(msg`Added this week`) },
 ]
-
-// At the minimum size the toolbar buttons fold into icon buttons.
-const iconWhenCompact = {
-  [compact]: {
-    minWidth: 36,
-    px: 0,
-    '& .MuiButton-startIcon': { m: 0 },
-    '& .MuiButton-endIcon': { display: 'none' },
-    '& .label': { display: 'none' },
-  },
-}
 
 function persistImplicitView(view: string) {
   useSettings.setState({ implicitModsView: view })

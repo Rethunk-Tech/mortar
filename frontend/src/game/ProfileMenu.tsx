@@ -35,12 +35,12 @@ export function ProfileMenu({ profile }: { profile: Profile }) {
     <>
       <HomeButton
         icon={<UserCog size={16} />}
+        endIcon={<ChevronDown size={14} aria-hidden={true} />}
         aria-haspopup="menu"
         aria-expanded={anchor !== null}
         onClick={(e) => setAnchor(e.currentTarget)}
       >
         {t`Profile`}
-        <ChevronDown size={14} aria-hidden={true} />
       </HomeButton>
       <Menu open={anchor !== null} anchorEl={anchor} onClose={close}>
         <MenuHeading>{t`This profile`}</MenuHeading>
