@@ -55,7 +55,11 @@ func cleanupHints(mods []framework.Mod, found []framework.Cleanup, mentioned, de
 		}
 		out = append(out, framework.Cleanup{Key: im.Key, ID: im.ModID(), Name: im.Name, Reason: orphanReason, Code: "orphan"})
 	}
-	out = append(out, found...)
+	for _, c := range found {
+		if !slices.ContainsFunc(mods, func(im framework.Mod) bool { return im.Key == c.Key && isDeveloped(im, developed) }) {
+			out = append(out, c)
+		}
+	}
 	slices.SortFunc(out, func(a, b framework.Cleanup) int {
 		if c := strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name)); c != 0 {
 			return c
