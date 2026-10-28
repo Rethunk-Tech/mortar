@@ -238,7 +238,16 @@ const cases: Case[] = [
   open('Load order'),
   open('Performance'),
   open('Console'),
-  open('Develop'),
+  {
+    name: 'develop',
+    setup: (p) => tab(p, 'Home'),
+    // Only a loader with a devTemplate has the tab.
+    run: async (p) => {
+      if (await tabs(p).getByRole('tab', { name: /^Develop/ }).count()) {
+        await tab(p, 'Develop')
+      }
+    },
+  },
   { name: 'settings', setup: toWorkspace, run: openSettings },
   { name: 'settings-search', setup: openSettings, run: (p) => typeInto(p, /^Search/, 'theme') },
   {
