@@ -136,7 +136,11 @@ func (m *listMemo[T]) get(ctx context.Context, l signedList[T], game string) T {
 	if v, ok := m.lists[game]; ok && time.Since(m.at[game]) < time.Hour {
 		return v
 	}
-	v, _ := l.load(ctx, c, cache, key, "", game)
+	v, err := l.load(ctx, c, cache, key, "", game)
+	if err != nil && ctx.Err() != nil {
+		// A cancelled caller says nothing about the list: the next one fetches again.
+		return v
+	}
 	m.lists[game], m.at[game] = v, time.Now()
 	return v
 }
