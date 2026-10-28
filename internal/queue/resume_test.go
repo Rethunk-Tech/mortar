@@ -265,7 +265,7 @@ func TestSweepKeepsPartialsForQueuedItems(t *testing.T) {
 	keep := filepath.Join(root, live+".zip")
 	drop := filepath.Join(root, gone+".zip")
 	sidecar := github.ResumeSidecar(drop)
-	foreign := []string{filepath.Join(root, "holiday.jpg"), filepath.Join(root, "My Folder", "x.txt")}
+	foreign := []string{filepath.Join(root, "holiday.jpg"), filepath.Join(root, "0123456789abcdef.pdf"), filepath.Join(root, "My Folder", "x.txt")}
 	for _, p := range append([]string{keep, drop, sidecar}, foreign...) {
 		if err := os.WriteFile(p, []byte("x"), 0o600); err != nil {
 			t.Fatal(err)
