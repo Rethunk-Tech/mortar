@@ -53,6 +53,7 @@ func (s *Service) Pack(ctx context.Context, gameID, dir string) (PackResult, err
 	if p.Kind != "" {
 		return s.packAssetProject(ctx, gameID, p)
 	}
+	defer s.lockedBuild(ctx, gameID, p)()
 	started := time.Now()
 	out, err := s.run(ctx, p.Dir, "dotnet", "build", "-c", "Release", "-nologo")
 	r := PackResult{OK: err == nil, Problems: ParseProblems(string(out)), Log: tail(string(out)), Issues: []string{}}
@@ -307,7 +308,11 @@ func (s *Service) tagRelease(ctx context.Context, dir, version string, notes []s
 	} else if strings.TrimSpace(string(out)) != "" {
 		return usererr.Wrap(usererr.Invalid, errors.New("commit your changes first, so the release holds what you tested"))
 	}
-	if _, err := s.run(ctx, dir, "git", "rev-parse", "-q", "--verify", "refs/tags/v"+version); err == nil {
+	if tagged, err := s.run(ctx, dir, "git", "rev-parse", "-q", "--verify", "refs/tags/v"+version+"^{commit}"); err == nil {
+		// A release whose push failed is tagged on HEAD; trying again goes on to the push.
+		if head, err := s.run(ctx, dir, "git", "rev-parse", "HEAD"); err == nil && strings.TrimSpace(string(head)) == strings.TrimSpace(string(tagged)) {
+			return nil
+		}
 		return usererr.Wrap(usererr.Invalid, fmt.Errorf("v%s is already released", version))
 	}
 	log := filepath.Join(dir, "CHANGELOG.md")
@@ -320,10 +325,17 @@ func (s *Service) tagRelease(ctx context.Context, dir, version string, notes []s
 		if err := fsx.WriteFile(log, []byte(next), 0o644); err != nil { // #nosec G306 -- a tracked text file
 			return err
 		}
-		if _, err := s.run(ctx, dir, "git", "add", "CHANGELOG.md"); err != nil {
-			return err
+		_, err = s.run(ctx, dir, "git", "add", "CHANGELOG.md")
+		if err == nil {
+			_, err = s.run(ctx, dir, "git", "commit", "-q", "-m", "Release "+version)
 		}
-		if _, err := s.run(ctx, dir, "git", "commit", "-q", "-m", "Release "+version); err != nil {
+		if err != nil {
+			_, _ = s.run(ctx, dir, "git", "reset", "-q", "--", "CHANGELOG.md")
+			if len(body) == 0 {
+				_ = fsx.Remove(log)
+			} else {
+				_ = fsx.WriteFile(log, body, 0o644) // #nosec G306 -- a tracked text file
+			}
 			return err
 		}
 	}

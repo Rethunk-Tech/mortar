@@ -15,6 +15,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/msbuild"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // fixtureProject writes a filled template's files that Inspect and Edit read and change, and records the project.
@@ -272,6 +273,29 @@ func TestInspectRunsNoGitForAnUntrustedProject(t *testing.T) {
 	}
 	if slices.ContainsFunc(run.calls, func(c []string) bool { return c[0] == "git" }) {
 		t.Errorf("git ran in a project the user has not trusted: %v", run.calls)
+	}
+}
+
+func TestGitRefusesToRunInAnUntrustedProject(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	dir := fixtureProject(t, svc)
+	if err := os.Mkdir(filepath.Join(dir, ".git"), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	p := svc.Settings.Get().GamePrefs("lethal-company").DevProjects[0]
+	next := p
+	next.Untrusted = true
+	if err := svc.Settings.ReplaceDevProject("lethal-company", p, next); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := svc.run(t.Context(), dir, "git", "status"); usererr.KindOf(err) != usererr.Unconfirmed {
+		t.Fatalf("git ran in an untrusted project: %v", err)
+	}
+	if _, err := svc.Edit(t.Context(), "lethal-company", dir, ProjectEdit{Name: "LandDrop", Description: "d", Author: "A", Team: "Ab", IDPrefix: "com.ab", Categories: []string{"misc"}}); err != nil {
+		t.Fatalf("rename without git: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(dir, "src", "LandDrop", "LandDrop.csproj")); err != nil {
+		t.Errorf("project not renamed: %v", err)
 	}
 }
 

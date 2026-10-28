@@ -116,7 +116,26 @@ func guardGit(name string, args []string) []string {
 	return append([]string{"-c", "core.fsmonitor=false", "-c", "core.hooksPath=" + os.DevNull}, args...)
 }
 
+// untrustedDir reports whether dir is the folder of a project the user has not trusted.
+func (s *Service) untrustedDir(dir string) bool {
+	for _, g := range s.Settings.Get().Games {
+		if g == nil {
+			continue
+		}
+		for _, p := range g.DevProjects {
+			if p.Untrusted && filepath.Clean(p.Dir) == filepath.Clean(dir) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func (s *Service) run(ctx context.Context, dir, name string, args ...string) ([]byte, error) {
+	if name == "git" && s.untrustedDir(dir) {
+		// The repository's own .git/config can name a filter driver that runs on git commands.
+		return nil, usererr.Wrap(usererr.Unconfirmed, fmt.Errorf("git does not run in %s until you trust it", dir))
+	}
 	if s.Run != nil {
 		return s.Run(ctx, dir, name, args...)
 	}

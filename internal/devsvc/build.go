@@ -112,15 +112,7 @@ func (s *Service) Build(ctx context.Context, gameID, dir string) (BuildResult, e
 		// An asset project's folder is what installs; there is nothing to compile.
 		return BuildResult{OK: true}, nil
 	}
-	stored, _ := building.LoadOrStore(p.Dir, &sync.Mutex{})
-	if mu, ok := stored.(*sync.Mutex); ok {
-		mu.Lock()
-		defer mu.Unlock()
-	}
-	// Dependencies installed since they were added are declared on the plugin before it compiles.
-	if err := s.wire(ctx, p, func() error { return s.syncDependencies(gameID, p) }); err != nil {
-		log.Printf("devsvc: declaring %s's dependencies: %v", p.Name, err)
-	}
+	defer s.lockedBuild(ctx, gameID, p)()
 	out, err := s.run(ctx, p.Dir, "dotnet", "build", "-c", "Debug", "-nologo")
 	if _, missing := errors.AsType[*exec.Error](err); missing {
 		return BuildResult{}, usererr.Wrap(usererr.NotFound, errors.New("install the .NET SDK to build mods"))
@@ -129,6 +121,21 @@ func (s *Service) Build(ctx context.Context, gameID, dir string) (BuildResult, e
 		removeStaleBundles(p)
 	}
 	return BuildResult{OK: err == nil, Problems: ParseProblems(string(out)), Log: tail(string(out))}, nil
+}
+
+// lockedBuild takes the project's build lock and declares the dependencies installed since they were added on the
+// plugin, so it compiles with them; the returned func releases the lock.
+func (s *Service) lockedBuild(ctx context.Context, gameID string, p settings.DevProject) func() {
+	stored, _ := building.LoadOrStore(p.Dir, &sync.Mutex{})
+	unlock := func() {}
+	if mu, ok := stored.(*sync.Mutex); ok {
+		mu.Lock()
+		unlock = mu.Unlock
+	}
+	if err := s.wire(ctx, p, func() error { return s.syncDependencies(gameID, p) }); err != nil {
+		log.Printf("devsvc: declaring %s's dependencies: %v", p.Name, err)
+	}
+	return unlock
 }
 
 // removeStaleBundles deletes bundles from the output that assets/ no longer holds: the template's CopyAssetBundles only

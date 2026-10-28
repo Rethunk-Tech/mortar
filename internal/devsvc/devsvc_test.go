@@ -17,6 +17,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -367,14 +368,14 @@ func TestAddTakesAnExistingTemplateProject(t *testing.T) {
 	if built() {
 		t.Fatalf("a refused build ran dotnet: %v", run.calls)
 	}
+	if datadir.UnderRoot(recorded, added.Output) || slices.ContainsFunc(svc.Settings.Get().GamePrefs(game).ExtraModsFolderList(), func(d string) bool { return datadir.UnderRoot(recorded, d) }) {
+		t.Errorf("an untrusted project's committed output is an installed mods folder: %q", added.Output)
+	}
 	if err := svc.Trust(game, recorded); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := svc.Build(t.Context(), game, recorded); err != nil || !built() {
 		t.Errorf("a trusted project does not build: %v %v", err, run.calls)
-	}
-	if !strings.HasSuffix(added.Output, filepath.Join(".mortar", "untrusted")) {
-		t.Errorf("an untrusted project's committed output is an installed mods folder: %q", added.Output)
 	}
 	if got := svc.Projects(game)[0]; got.Untrusted || got.Output != filepath.Join(recorded, "artifacts", "bin", got.Name, "debug") {
 		t.Errorf("trust was not kept or did not move the output: %+v", got)
@@ -395,7 +396,7 @@ func TestAddTakesAnExistingTemplateProject(t *testing.T) {
 			t.Errorf("%s: err = %v", c.name, err)
 			continue
 		}
-		if c.ok && (p.Dir != c.dir || p.Profile == "" || p.Output != filepath.Join(c.dir, ".mortar", "untrusted")) {
+		if c.ok && (p.Dir != c.dir || p.Profile == "" || datadir.UnderRoot(c.dir, p.Output)) {
 			t.Errorf("%s: project %+v", c.name, p)
 		}
 	}
@@ -609,6 +610,9 @@ func TestReleasePushesOnlyToGitHub(t *testing.T) {
 		t.Fatalf("github release = %q, %v", remote, err)
 	}
 	git(hub, "rev-parse", "-q", "--verify", "refs/tags/v0.1.0")
+	if remote, err := svc.Release(t.Context(), "lethal-company", shared, "0.1.0", []string{"First"}); err != nil || remote != "origin" {
+		t.Fatalf("retried release = %q, %v", remote, err)
+	}
 }
 
 func TestAnOversizedTemplateZipIsRefused(t *testing.T) {
