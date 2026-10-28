@@ -35,6 +35,14 @@ var errNoDev = errors.New("mod development is unavailable")
 // available.
 func (s *Services) devProfile(p Params) (string, error) {
 	id, err := s.optionalProfile(p.Game, p.Profile)
+	// No profile named: the one open in the game, as the Develop tab adds to.
+	if p.Profile == "" && s.Settings != nil {
+		if open := s.Settings.Get().LastProfile[p.Game]; open != "" {
+			if _, getErr := s.Profiles.Get(p.Game, open); getErr == nil {
+				id = open
+			}
+		}
+	}
 	if err == nil && s.Dev == nil {
 		err = errNoDev
 	}

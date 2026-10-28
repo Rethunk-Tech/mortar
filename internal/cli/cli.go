@@ -2356,7 +2356,7 @@ takes --game <id>, which may be left out when exactly one game is installed. Out
   loader versions <game> [--loader id]    loader versions in the store and upstream
   loader install <game> <version> [--loader id]  install that loader version
   loader pin <game> <version|latest> [--loader id]  pin the loader, or follow latest
-  dev add <game> <dir> [--profile id]     add a mod project folder made from the game's template to the Develop tab
+  dev add <game> <dir> [--profile id]     add a mod project folder made from the game's template to the Develop tab (default: the open profile)
   dev clone <game> <owner/name|url> [--dir parent] [--profile id]  clone a GitHub mod project into parent and add it
   dev list <game>                         the game's mod projects: name and folder
   dev remove <game> <dir|name>            take a project off the Develop tab; its folder stays
