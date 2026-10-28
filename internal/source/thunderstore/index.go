@@ -490,10 +490,7 @@ func slim(w *wirePackage, names *depNames) pkg {
 	p.Versions = make([]version, len(w.Versions))
 	for i, v := range w.Versions {
 		p.Downloads += v.Downloads
-		p.Versions[i] = version{Number: v.VersionNumber, Size: v.FileSize, Deps: names.ids(v.Dependencies)}
-		if t, err := time.Parse(time.RFC3339, v.DateCreated); err == nil {
-			p.Versions[i].Created = t.Unix()
-		}
+		p.Versions[i] = version{Number: v.VersionNumber, Size: v.FileSize, Deps: names.ids(v.Dependencies), Created: source.Released(v.DateCreated)}
 	}
 	return p
 }

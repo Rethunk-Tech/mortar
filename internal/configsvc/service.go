@@ -15,7 +15,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"unicode"
 
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -239,8 +238,8 @@ func (d cfgOnDisk) ownedBy(names []string) bool {
 		return slices.ContainsFunc(names, func(n string) bool {
 			// A Thunderstore id is source:Namespace-Name; the package's folder is Namespace-Name, its file the Name.
 			pkg, name := packageNames(n)
-			for _, k := range []string{squash(n), squash(pkg), squash(name)} {
-				if len(k) >= minConfigName && (squash(d.folder) == k || strings.Contains(squash(d.stem), k)) {
+			for _, k := range []string{mod.LooseName(n), mod.LooseName(pkg), mod.LooseName(name)} {
+				if len(k) >= minConfigName && (mod.LooseName(d.folder) == k || strings.Contains(mod.LooseName(d.stem), k)) {
 					return true
 				}
 			}
@@ -249,9 +248,9 @@ func (d cfgOnDisk) ownedBy(names []string) bool {
 	}
 	if d.json {
 		// Mods name their file after their mod id in their own spelling ("CarryOnConfig.json" for carryon).
-		stem := squash(d.stem)
+		stem := mod.LooseName(d.stem)
 		return slices.ContainsFunc(names, func(n string) bool {
-			n = squash(n)
+			n = mod.LooseName(n)
 			return len(n) >= minConfigName && strings.Contains(stem, n)
 		})
 	}
@@ -264,16 +263,6 @@ func (d cfgOnDisk) ownedBy(names []string) bool {
 		_, name := packageNames(n)
 		return d.doc.guid == "" && name != "" && strings.EqualFold(d.stem, name)
 	})
-}
-
-// squash lower-cases s and drops everything but letters and digits.
-func squash(s string) string {
-	return strings.Map(func(r rune) rune {
-		if unicode.IsLetter(r) || unicode.IsDigit(r) {
-			return unicode.ToLower(r)
-		}
-		return -1
-	}, s)
 }
 
 func (d cfgOnDisk) file() ConfigFile {

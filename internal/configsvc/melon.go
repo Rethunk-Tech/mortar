@@ -10,6 +10,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 // MelonLoader keeps every melon's settings in UserData/MelonPreferences.cfg, a TOML file (MelonLoader/Preferences,
@@ -295,14 +296,14 @@ func (d melonDoc) schema(file ConfigFile, keep func(section string) bool) Schema
 // ownsMelonCategory reports whether a category is the settings of a mod known by names: the category's name and the
 // mod's name or package name contain one another once case and punctuation are dropped.
 func ownsMelonCategory(names []string, section string) bool {
-	c := squash(section)
+	c := mod.LooseName(section)
 	if len(c) < minConfigName {
 		return false
 	}
 	for _, n := range names {
 		_, pkg, _ := strings.Cut(n, ":")
 		_, name, _ := strings.Cut(pkg, "-")
-		for _, k := range []string{squash(pkg), squash(name)} {
+		for _, k := range []string{mod.LooseName(pkg), mod.LooseName(name)} {
 			if len(k) >= minConfigName && (strings.Contains(k, c) || strings.Contains(c, k)) {
 				return true
 			}
