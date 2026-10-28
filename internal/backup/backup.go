@@ -57,8 +57,7 @@ func (c Cause) wholeSaves() bool {
 // DefaultKeep is how many backups of one kind a caller without a setting retains.
 const DefaultKeep = 5
 
-// MinGap is how recent the newest backup must be to stand in for a new one, so a run of updates cannot
-// evict every older backup with copies of the same saves.
+// MinGap is how old a crashed temp file must be before prune removes it.
 const MinGap = 10 * time.Minute
 
 const stamp = "2006-01-02T15-04-05.000"
@@ -68,7 +67,7 @@ func FileName(t time.Time) string { return t.UTC().Format(stamp) + ".zip" }
 
 // Saves zips every save in l into backupsDir/<timestamp>.zip through a temp file and rename, then deletes all but
 // the newest keep backups and temp files a crash left. It returns the zip's path (the newest existing one when that
-// is under MinGap old and no save changed since), or "" when l holds no save.
+// is newer than every save's last change), or "" when l holds no save.
 func Saves(ctx context.Context, l saves.Layout, backupsDir string, keep int, now time.Time, cause Cause) (string, error) {
 	return savesZip(l, backupsDir, keep, now, cause, func(name string) []string { return l.LinkedOf(ctx, name) })
 }
@@ -104,14 +103,12 @@ func savesZip(l saves.Layout, backupsDir string, keep int, now time.Time, cause 
 			continue
 		}
 		if t, err := time.Parse(stamp, strings.TrimSuffix(n, ".zip")); err == nil {
-			if age := now.Sub(t); age >= 0 && age < MinGap {
-				changed, err := lastChangeOf(l, names)
-				if err != nil {
-					return "", err
-				}
-				if changed.Before(t) {
-					return filepath.Join(backupsDir, n), nil
-				}
+			changed, err := lastChangeOf(l, names)
+			if err != nil {
+				return "", err
+			}
+			if changed.Before(t) {
+				return filepath.Join(backupsDir, n), nil
 			}
 		}
 		break

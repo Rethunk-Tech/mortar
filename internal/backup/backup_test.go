@@ -107,11 +107,11 @@ func TestSavesSkipsWhileTheNewestIsRecent(t *testing.T) {
 			t.Fatalf("backup %d = %q, %v; want the existing %q", i, got, err, first)
 		}
 	}
-	if _, err := Saves(t.Context(), layout(saves), out, DefaultKeep, start.Add(MinGap), Cause{}); err != nil {
+	if _, err := Saves(t.Context(), layout(saves), out, DefaultKeep, start.Add(24*time.Hour), Cause{}); err != nil {
 		t.Fatal(err)
 	}
-	if items, _ := os.ReadDir(out); len(items) != 2 {
-		t.Fatalf("%d backups, want 2", len(items))
+	if items, _ := os.ReadDir(out); len(items) != 1 {
+		t.Fatalf("%d backups, want 1: unchanged saves make no new zip at any age", len(items))
 	}
 }
 
