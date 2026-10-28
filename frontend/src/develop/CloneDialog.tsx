@@ -9,6 +9,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { Field, FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { readStored, writeStored } from '../shell/useStoredState.ts'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -88,7 +89,7 @@ export function CloneDialog({
         autoFocus={true}
       />
       <Field label={t`Projects folder`}>
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: space.gap }}>
           <TextField
             size="small"
             fullWidth={true}

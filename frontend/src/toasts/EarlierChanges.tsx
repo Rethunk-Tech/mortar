@@ -117,7 +117,7 @@ export function EarlierChanges({ panel, hide }: { panel: Panel; hide: ReadonlySe
         }}
       >
         <Typography
-          sx={{ fontSize: 'base.fontSize', mb: 1 }}
+          sx={{ fontSize: 'base.fontSize', mb: space.gap }}
         >{t`These changes will be reverted too:`}</Typography>
         {later.map((e) => (
           <Typography key={e.id} sx={{ fontSize: 'base.fontSize' }} color="text.secondary">

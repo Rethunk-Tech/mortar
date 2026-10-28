@@ -14,6 +14,7 @@ import { CheckRepo } from '../../bindings/github.com/Rethunk-Tech/mortar/interna
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { LetterTile } from '../mods/LetterTile.tsx'
 import { Field } from '../shell/dialog/FormDialog.tsx'
+import { space } from '../theme/density.ts'
 import { type Draft, OWNER } from './draft.ts'
 
 const CHECK_DELAY_MS = 400
@@ -91,7 +92,7 @@ function OwnerField({
       renderOption={({ key, ...props }, login) => {
         const owner = owners.find((o) => o.login === login)
         return (
-          <Box component="li" key={key} {...props} sx={{ display: 'flex', gap: 1 }}>
+          <Box component="li" key={key} {...props} sx={{ display: 'flex', gap: space.gap }}>
             {owner ? <Avatar owner={owner} /> : null}
             {login}
           </Box>
@@ -154,7 +155,7 @@ export function RepositoryChoice({
         />
       </RadioGroup>
       {draft.github ? (
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', pl: 4, mt: 1 }}>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', pl: 4, mt: space.gap }}>
           <OwnerField draft={draft} owners={owners} set={set} />
           <FormControlLabel
             control={

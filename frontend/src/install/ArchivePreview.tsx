@@ -59,7 +59,7 @@ function Tree({ preview }: { preview: Preview }) {
       sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}
     >
       {groups.map((group) => (
-        <Box key={group.folder} sx={{ mb: 1 }}>
+        <Box key={group.folder} sx={{ mb: space.gap }}>
           {group.rows.map((row) => (
             <Row key={row.path} row={row} />
           ))}

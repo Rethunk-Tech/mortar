@@ -6,6 +6,7 @@ import { PickExecutable } from '../../bindings/github.com/Rethunk-Tech/mortar/in
 import type { Tool } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/tools/models.ts'
 import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 
@@ -104,7 +105,7 @@ export function ToolEditorDialog({ open, initial, onClose, onSave }: Props) {
       onSubmit={save}
     >
       <TextInput label={t`Name`} value={name} onChange={setName} />
-      <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-end' }}>
+      <Box sx={{ display: 'flex', gap: space.gap, alignItems: 'flex-end' }}>
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <TextInput label={t`Executable`} value={executable} onChange={setExecutable} />
         </Box>

@@ -234,7 +234,15 @@ function UsagesDrawer({
         },
       }}
     >
-      <Box sx={{ width: USAGES_PX, p: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <Box
+        sx={{
+          width: USAGES_PX,
+          p: space.pad,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: space.gap,
+        }}
+      >
         <Typography sx={{ fontWeight: 600 }}>{t`Usages`}</Typography>
         <Typography noWrap={true} sx={{ fontFamily: MONO, fontSize: 'small.fontSize' }}>
           {target}

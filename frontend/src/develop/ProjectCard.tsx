@@ -488,7 +488,7 @@ export function ProjectCard({
           size={40}
         />
         <Box sx={{ minWidth: 0, flex: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, flexWrap: 'wrap' }}>
             <Typography sx={{ fontSize: 'large.fontSize', fontWeight: 600 }}>{name}</Typography>
             <Status dir={project.dir} />
           </Box>

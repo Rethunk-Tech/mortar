@@ -137,7 +137,7 @@ function ArchiveContents({ path }: { path: string }) {
   const { t } = useLingui()
   const [open, setOpen] = useState(false)
   return (
-    <Box sx={{ mb: 1 }}>
+    <Box sx={{ mb: space.gap }}>
       <Button size="small" onClick={() => setOpen(!open)} aria-expanded={open}>
         {open ? t`Hide archive contents` : t`Show archive contents`}
       </Button>
@@ -185,7 +185,7 @@ function RemapBody() {
         </DialogFooter>
       }
     >
-      <Typography variant="body2" sx={{ mb: 1 }}>
+      <Typography variant="body2" sx={{ mb: space.gap }}>
         {intro}
       </Typography>
       {session.archivePath ? <ArchiveContents path={session.archivePath} /> : null}

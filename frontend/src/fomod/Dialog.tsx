@@ -63,7 +63,7 @@ function PluginImage({ game, itemKey, rel }: { game: string; itemKey: string; re
       component="img"
       src={url}
       alt=""
-      sx={{ maxWidth: 240, maxHeight: 160, objectFit: 'contain', display: 'block', mb: 1 }}
+      sx={{ maxWidth: 240, maxHeight: 160, objectFit: 'contain', display: 'block', mb: space.gap }}
     />
   )
 }
@@ -121,6 +121,8 @@ function nextExclusive(groupType: string, plugin: string, on: boolean): string[]
   }
   return []
 }
+
+const descriptionSx = { pl: 4, mb: space.gap }
 
 function FomodWizard({ session }: { session: FomodSession }) {
   const { t } = useLingui()
@@ -238,7 +240,7 @@ function FomodWizard({ session }: { session: FomodSession }) {
                     <PluginImage game={session.game} itemKey={session.key} rel={p.image} />
                   ) : null}
                   {p.description ? (
-                    <Typography variant="body2" color="text.secondary" sx={{ pl: 4, mb: 1 }}>
+                    <Typography variant="body2" color="text.secondary" sx={descriptionSx}>
                       {p.description}
                     </Typography>
                   ) : null}

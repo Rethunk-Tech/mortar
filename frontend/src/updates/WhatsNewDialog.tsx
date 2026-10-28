@@ -90,8 +90,8 @@ function AreaSection({ area }: { area: NoteArea }) {
     ? KIND_ICONS[area.title as NoteKind]
     : (AREA_ICONS[area.title] ?? Sparkles)
   return (
-    <Box component="section" sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
+    <Box component="section" sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, color: 'text.secondary' }}>
         <Icon size={16} aria-hidden={true} />
         <Typography
           component="h3"
@@ -108,7 +108,14 @@ function AreaSection({ area }: { area: NoteArea }) {
       </Box>
       <Box
         component="ul"
-        sx={{ m: 0, p: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 1 }}
+        sx={{
+          m: 0,
+          p: 0,
+          listStyle: 'none',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: space.gap,
+        }}
       >
         {area.items.map((item) => (
           <Box

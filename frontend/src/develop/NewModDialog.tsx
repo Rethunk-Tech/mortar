@@ -29,6 +29,7 @@ import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { Field, FieldRow, FormDialog, SelectField, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { readStored, writeStored } from '../shell/useStoredState.ts'
+import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -175,7 +176,7 @@ function ParamField({
   if (param.kind === 'bool') {
     return (
       <FormControlLabel
-        sx={{ m: 0, alignItems: 'flex-start', gap: 1 }}
+        sx={{ m: 0, alignItems: 'flex-start', gap: space.gap }}
         control={
           <Switch
             checked={value === 'true'}
@@ -286,7 +287,7 @@ function ProjectStep({ draft, owners, set }: { draft: Draft; owners: GitHubOwner
   return (
     <>
       <Field label={t`Projects folder`} htmlFor={folderId} hint={where}>
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: space.gap }}>
           <TextField
             id={folderId}
             size="small"

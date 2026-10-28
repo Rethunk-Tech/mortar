@@ -229,7 +229,7 @@ export function ScreenshotsTab({ game }: { game: string }) {
               sx={{
                 display: 'flex',
                 justifyContent: 'space-between',
-                gap: 1,
+                gap: space.gap,
                 px: 1,
                 py: 0.5,
                 fontSize: 'small.fontSize',
