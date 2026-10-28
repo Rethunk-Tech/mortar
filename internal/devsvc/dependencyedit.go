@@ -32,11 +32,7 @@ func (s *Service) Dependencies(gameID, dir string) ([]Dependency, error) {
 	if err != nil {
 		return nil, err
 	}
-	csproj, ok := csprojOf(p.Dir)
-	if !ok {
-		return nil, usererr.Wrap(usererr.NotFound, errors.New("the project file is missing"))
-	}
-	raw, err := fsx.ReadFile(csproj)
+	_, raw, err := readCsproj(p.Dir)
 	if err != nil {
 		return nil, err
 	}
@@ -68,11 +64,7 @@ func (s *Service) RemoveDependency(gameID, dir, pkg string) error {
 	if p.Kind != "" {
 		return setManifestDependency(p.Dir, pkg, "")
 	}
-	csproj, ok := csprojOf(p.Dir)
-	if !ok {
-		return usererr.Wrap(usererr.NotFound, errors.New("the project file is missing"))
-	}
-	raw, err := fsx.ReadFile(csproj)
+	csproj, raw, err := readCsproj(p.Dir)
 	if err != nil {
 		return err
 	}
@@ -111,12 +103,10 @@ func (s *Service) RemoveDependency(gameID, dir, pkg string) error {
 // dropUntouchedCompat deletes a soft dependency's compatibility class only while it is exactly what writeCompat made,
 // for any guid; a class the player has written into stays, theirs to rework.
 func dropUntouchedCompat(src, pkg string) error {
-	_, name, _ := strings.Cut(pkg, "-")
-	class := notIdent.ReplaceAllString(name, "")
+	name, class, path := compatFile(src, pkg)
 	if class == "" {
 		return nil
 	}
-	path := filepath.Join(src, "Compat", class+"Compat.cs")
 	raw, err := fsx.ReadFile(path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {

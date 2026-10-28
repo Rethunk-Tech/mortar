@@ -46,11 +46,7 @@ func (s *Service) AddDependency(gameID, dir, pkg, version string, soft bool) err
 		// A soft dependency means nothing to a package of files; the loader it needs is required.
 		return setManifestDependency(p.Dir, pkg, version)
 	}
-	csproj, ok := csprojOf(p.Dir)
-	if !ok {
-		return usererr.Wrap(usererr.NotFound, errors.New("the project file is missing"))
-	}
-	raw, err := fsx.ReadFile(csproj)
+	csproj, raw, err := readCsproj(p.Dir)
 	if err != nil {
 		return err
 	}
@@ -296,4 +292,14 @@ func (s *Service) syncDependencies(gameID string, p settings.DevProject) error {
 		}
 	}
 	return nil
+}
+
+// readCsproj reads the project file of the project in dir.
+func readCsproj(dir string) (path string, raw []byte, err error) {
+	path, ok := csprojOf(dir)
+	if !ok {
+		return "", nil, usererr.Wrap(usererr.NotFound, errors.New("the project file is missing"))
+	}
+	raw, err = fsx.ReadFile(path)
+	return path, raw, err
 }

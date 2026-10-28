@@ -71,13 +71,9 @@ func (s *Service) createAsset(ctx context.Context, m NewMod) (settings.DevProjec
 	if err != nil {
 		return settings.DevProject{}, err
 	}
-	dest := filepath.Join(m.Parent, m.Repo)
-	if _, err := os.Lstat(dest); err == nil {
-		return settings.DevProject{}, usererr.Wrap(usererr.Invalid, fmt.Errorf("%s already exists", dest))
-	}
-	url := ""
-	if m.GitHub {
-		url = "https://github.com/" + m.Owner + "/" + m.Repo
+	dest, url, err := m.destination()
+	if err != nil {
+		return settings.DevProject{}, err
 	}
 	author := cmp.Or(m.Values["modAuthor"], m.Owner)
 	manifest, err := json.MarshalIndent(thunderstoreManifest{
@@ -374,4 +370,16 @@ func AssetSubfolders(cur settings.Settings, games []string) []AssetFolder {
 		}
 	}
 	return out
+}
+
+// destination is the new project's folder, which must not exist yet, and its GitHub address when it gets one.
+func (m NewMod) destination() (dest, url string, err error) {
+	dest = filepath.Join(m.Parent, m.Repo)
+	if _, err := os.Lstat(dest); err == nil {
+		return "", "", usererr.Wrap(usererr.Invalid, fmt.Errorf("%s already exists", dest))
+	}
+	if m.GitHub {
+		url = "https://github.com/" + m.Owner + "/" + m.Repo
+	}
+	return dest, url, nil
 }

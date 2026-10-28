@@ -102,12 +102,10 @@ func writeCompat(src, namespace, pkg, guid string) error {
 	if !csNamespace.MatchString(namespace) || !pluginGUID.MatchString(guid) {
 		return nil
 	}
-	_, name, _ := strings.Cut(pkg, "-")
-	class := notIdent.ReplaceAllString(name, "")
+	name, class, path := compatFile(src, pkg)
 	if class == "" {
 		return nil
 	}
-	path := filepath.Join(src, "Compat", class+"Compat.cs")
 	if _, err := os.Stat(path); err == nil || !errors.Is(err, os.ErrNotExist) {
 		return err
 	}
@@ -115,4 +113,12 @@ func writeCompat(src, namespace, pkg, guid string) error {
 		return err
 	}
 	return fsx.WriteFile(path, []byte(fmt.Sprintf(compatTemplate, namespace, name, class, guid)), 0o644) // #nosec G306 -- a tracked source file
+}
+
+// compatFile is a soft dependency's compatibility class: the package's name, the class named after it (empty when the
+// name has no identifier characters) and the class's file under src.
+func compatFile(src, pkg string) (name, class, path string) {
+	_, name, _ = strings.Cut(pkg, "-")
+	class = notIdent.ReplaceAllString(name, "")
+	return name, class, filepath.Join(src, "Compat", class+"Compat.cs")
 }

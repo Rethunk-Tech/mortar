@@ -323,13 +323,9 @@ func (s *Service) Create(ctx context.Context, m NewMod) (settings.DevProject, er
 	if err != nil {
 		return settings.DevProject{}, err
 	}
-	dest := filepath.Join(m.Parent, m.Repo)
-	if _, err := os.Lstat(dest); err == nil {
-		return settings.DevProject{}, usererr.Wrap(usererr.Invalid, fmt.Errorf("%s already exists", dest))
-	}
-	url := ""
-	if m.GitHub {
-		url = "https://github.com/" + m.Owner + "/" + m.Repo
+	dest, url, err := m.destination()
+	if err != nil {
+		return settings.DevProject{}, err
 	}
 	args, used, err := form.args(m.Values, map[string]string{fillRepositoryURL: url, fillLoaderPackVersion: s.loaderPackVersion(ctx, m.Game)})
 	if err != nil {
