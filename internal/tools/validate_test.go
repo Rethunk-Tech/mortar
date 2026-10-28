@@ -3,6 +3,7 @@ package tools
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 )
 
@@ -32,5 +33,18 @@ func TestValidateToolExpandsGame(t *testing.T) {
 	}
 	if err := validateTool(Tool{Name: "a", Executable: "{game}/tool"}, Context{Game: dir}); err != nil {
 		t.Fatalf("placeholder executable: %v", err)
+	}
+}
+
+func TestValidateRefusesAWindowsProgramOnLinux(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		t.Skip("Linux only")
+	}
+	file := filepath.Join(t.TempDir(), "Tool.EXE")
+	if err := os.WriteFile(file, []byte("x"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := validateTool(Tool{Name: "a", Executable: file}, Context{}); err == nil {
+		t.Fatal(".exe accepted on Linux")
 	}
 }

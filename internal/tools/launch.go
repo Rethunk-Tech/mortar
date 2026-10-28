@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/Rethunk-Tech/mortar/internal/launch"
+	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
 func launchTool(t Tool, ctx Context) error {
@@ -14,7 +15,15 @@ func launchTool(t Tool, ctx Context) error {
 	args := expandArgs(t.Arguments, ctx)
 	exe := expand(t.Executable, ctx)
 	log.Printf("tools: starting %q (%s)", t.Name, exe)
-	exited, err := launch.Start(dir, exe, args...)
+	if err := refuseWindowsProgram(exe); err != nil {
+		return err
+	}
+	name := exe
+	if sandbox.InFlatpak() {
+		name, args = sandbox.HostArgv(dir, nil, exe, args...)
+		dir = ""
+	}
+	exited, err := launch.Start(dir, name, args...)
 	if err != nil {
 		return err
 	}
