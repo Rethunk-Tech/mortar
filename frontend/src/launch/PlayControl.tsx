@@ -19,7 +19,6 @@ import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
 import { usePlayDirect } from './directPref.ts'
-import { PlayInstances } from './PlayInstances.tsx'
 import { PLAY_HEIGHT_PX } from './playHeight.ts'
 import { StopDialog } from './StopDialog.tsx'
 import { useLaunch } from './store.ts'
@@ -211,16 +210,6 @@ export function PlayControl({ game, rail }: { game: string; rail: boolean }) {
       rail={rail}
       play={() => start(game, openId, direct, '')}
       presets={presets}
-      options={(close) => (
-        <PlayInstances
-          game={game}
-          direct={direct}
-          onLaunch={() => {
-            close()
-            start(game, openId, direct, '')
-          }}
-        />
-      )}
       playWith={(key) => start(game, openId, direct, key)}
       launchOptions={openId === '' ? undefined : () => openProfileDialog('editLaunch', openId)}
       setDefault={(key) =>

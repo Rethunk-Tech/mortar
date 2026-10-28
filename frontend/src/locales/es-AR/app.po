@@ -1505,10 +1505,6 @@ msgstr ""
 msgid "Get help"
 msgstr ""
 
-#: src/launch/PlayInstances.tsx
-msgid "Instances"
-msgstr ""
-
 #: src/lan/PairedComputers.tsx
 #: src/lan/SendPanel.tsx
 msgid "Pair"
@@ -1529,10 +1525,6 @@ msgstr ""
 
 #: src/browse/BrowseShow.tsx
 msgid "Off"
-msgstr ""
-
-#: src/launch/PlayInstances.tsx
-msgid "s"
 msgstr ""
 
 #: src/queue/QueueSheet.tsx
@@ -1893,10 +1885,6 @@ msgstr ""
 #: src/games/gameList.ts
 #: src/games/GameMenu.tsx
 msgid "On this computer"
-msgstr ""
-
-#: src/launch/PlayInstances.tsx
-msgid "Delay seconds"
 msgstr ""
 
 #: src/share/ModpackDialog.tsx
@@ -2468,7 +2456,6 @@ msgstr ""
 #: src/firstrunTour/TourAgainButton.tsx
 #: src/firstrunTour/useFirstRunTour.ts
 #: src/games/GameRowMenu.tsx
-#: src/launch/PlayInstances.tsx
 #: src/tips/TipBanner.tsx
 msgid "Could not save that setting"
 msgstr ""
@@ -3603,10 +3590,6 @@ msgstr ""
 msgid "{count, plural, one {{current} of # mod} other {{current} of # mods}}"
 msgstr ""
 
-#: src/launch/PlayInstances.tsx
-msgid "This game starts through its store, which runs one copy. A Direct launch can start several."
-msgstr ""
-
 #: src/i18n/reasonText.ts
 msgid "Antivirus scanning is off"
 msgstr ""
@@ -4515,10 +4498,6 @@ msgstr ""
 msgid "Could not read profiles"
 msgstr ""
 
-#: src/launch/PlayInstances.tsx
-msgid "Delay between"
-msgstr ""
-
 #: src/firstrun/GameSetup.tsx
 #: src/queue/store.ts
 msgid "{name} installed"
@@ -4973,10 +4952,6 @@ msgstr ""
 msgid "Copy and open {app}"
 msgstr ""
 
-#: src/launch/PlayInstances.tsx
-msgid "Copies of the game"
-msgstr ""
-
 #: src/screenshots/ScreenshotsTab.tsx
 msgid "Use as profile cover"
 msgstr ""
@@ -5159,10 +5134,6 @@ msgstr ""
 
 #: src/nxm/store.ts
 msgid "Downloading {name} into {profile}"
-msgstr ""
-
-#: src/launch/PlayInstances.tsx
-msgid "{count, plural, one {Launch # copy} other {Launch all # copies}}"
 msgstr ""
 
 #: src/shell/BugReportDialog.tsx
@@ -5751,10 +5722,6 @@ msgstr ""
 msgid "Show changes"
 msgstr ""
 
-#: src/launch/PlayInstances.tsx
-msgid "Use Direct launch"
-msgstr ""
-
 #: src/tools/ToolsManageDialog.tsx
 msgid "Remove {name}?"
 msgstr ""
@@ -6056,7 +6023,6 @@ msgstr ""
 
 #: src/game/ProfileMenu.tsx
 #: src/game/ProfileMenuItems.tsx
-#: src/launch/PlayInstances.tsx
 msgid "Copies"
 msgstr ""
 

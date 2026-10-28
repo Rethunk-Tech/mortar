@@ -1505,10 +1505,6 @@ msgstr "All mods present"
 msgid "Get help"
 msgstr "Get help"
 
-#: src/launch/PlayInstances.tsx
-msgid "Instances"
-msgstr "Instances"
-
 #: src/lan/PairedComputers.tsx
 #: src/lan/SendPanel.tsx
 msgid "Pair"
@@ -1530,10 +1526,6 @@ msgstr "Combine it with closed code"
 #: src/browse/BrowseShow.tsx
 msgid "Off"
 msgstr "Off"
-
-#: src/launch/PlayInstances.tsx
-msgid "s"
-msgstr "s"
 
 #: src/queue/QueueSheet.tsx
 msgid "Queue"
@@ -1894,10 +1886,6 @@ msgstr "Copy message {count}"
 #: src/games/GameMenu.tsx
 msgid "On this computer"
 msgstr "On this computer"
-
-#: src/launch/PlayInstances.tsx
-msgid "Delay seconds"
-msgstr "Delay seconds"
 
 #: src/share/ModpackDialog.tsx
 msgid "The name may hold only letters, digits and underscores."
@@ -2468,7 +2456,6 @@ msgstr "Installed"
 #: src/firstrunTour/TourAgainButton.tsx
 #: src/firstrunTour/useFirstRunTour.ts
 #: src/games/GameRowMenu.tsx
-#: src/launch/PlayInstances.tsx
 #: src/tips/TipBanner.tsx
 msgid "Could not save that setting"
 msgstr "Could not save that setting"
@@ -3603,10 +3590,6 @@ msgstr "Retrying in {count} s."
 msgid "{count, plural, one {{current} of # mod} other {{current} of # mods}}"
 msgstr "{count, plural, one {{current} of # mod} other {{current} of # mods}}"
 
-#: src/launch/PlayInstances.tsx
-msgid "This game starts through its store, which runs one copy. A Direct launch can start several."
-msgstr "This game starts through its store, which runs one copy. A Direct launch can start several."
-
 #: src/i18n/reasonText.ts
 msgid "Antivirus scanning is off"
 msgstr "Antivirus scanning is off"
@@ -4515,10 +4498,6 @@ msgstr "All"
 msgid "Could not read profiles"
 msgstr "Could not read profiles"
 
-#: src/launch/PlayInstances.tsx
-msgid "Delay between"
-msgstr "Delay between"
-
 #: src/firstrun/GameSetup.tsx
 #: src/queue/store.ts
 msgid "{name} installed"
@@ -4973,10 +4952,6 @@ msgstr "Details copied"
 msgid "Copy and open {app}"
 msgstr "Copy and open {app}"
 
-#: src/launch/PlayInstances.tsx
-msgid "Copies of the game"
-msgstr "Copies of the game"
-
 #: src/screenshots/ScreenshotsTab.tsx
 msgid "Use as profile cover"
 msgstr "Use as profile cover"
@@ -5160,10 +5135,6 @@ msgstr "{done} of {total}"
 #: src/nxm/store.ts
 msgid "Downloading {name} into {profile}"
 msgstr "Downloading {name} into {profile}"
-
-#: src/launch/PlayInstances.tsx
-msgid "{count, plural, one {Launch # copy} other {Launch all # copies}}"
-msgstr "{count, plural, one {Launch # copy} other {Launch all # copies}}"
 
 #: src/shell/BugReportDialog.tsx
 msgid "Steps to reproduce"
@@ -5751,10 +5722,6 @@ msgstr "Open {name}"
 msgid "Show changes"
 msgstr "Show changes"
 
-#: src/launch/PlayInstances.tsx
-msgid "Use Direct launch"
-msgstr "Use Direct launch"
-
 #: src/tools/ToolsManageDialog.tsx
 msgid "Remove {name}?"
 msgstr "Remove {name}?"
@@ -6056,7 +6023,6 @@ msgstr "From the {source} collection \"{name}\""
 
 #: src/game/ProfileMenu.tsx
 #: src/game/ProfileMenuItems.tsx
-#: src/launch/PlayInstances.tsx
 msgid "Copies"
 msgstr "Copies"
 

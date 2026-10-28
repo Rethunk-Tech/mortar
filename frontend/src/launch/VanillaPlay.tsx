@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, ButtonGroup, FormControlLabel, Menu, Radio, RadioGroup } from '@mui/material'
+import { Button, ButtonGroup, FormControlLabel, Menu, Radio, RadioGroup } from '@mui/material'
 import { ChevronDown, Gamepad2, Play, SlidersHorizontal, Star } from 'lucide-react'
-import { type MouseEvent, type ReactNode, useState } from 'react'
+import { type MouseEvent, useState } from 'react'
 import { STEAM } from '../brand/productNames.ts'
 import { routeGame, useNav } from '../nav/store.ts'
 import type { PlayPreset } from '../profiles/profilePresets.ts'
@@ -145,7 +145,6 @@ export function VanillaPlay({
   playWith,
   setDefault,
   launchOptions,
-  options,
 }: {
   game: string
   playDisabled: boolean
@@ -158,8 +157,6 @@ export function VanillaPlay({
   setDefault: (key: string) => void
   // Opens the profile's launch options, arguments, prefix and environment; absent where there is no profile.
   launchOptions?: (() => void) | undefined
-  // Settings for the next launch, shown under the menu's actions; close shuts the menu.
-  options?: (close: () => void) => ReactNode
 }) {
   const { t } = useLingui()
   const [menu, setMenu] = useState<HTMLElement | null>(null)
@@ -244,11 +241,6 @@ export function VanillaPlay({
             />,
           ]
         })}
-        {options ? <MenuRule /> : null}
-        {options ? (
-          // The fields take their own arrow keys and typing; the menu would move focus on them.
-          <Box onKeyDown={(e) => e.stopPropagation()}>{options(() => setMenu(null))}</Box>
-        ) : null}
       </Menu>
       <AppDialog
         open={choosing}
