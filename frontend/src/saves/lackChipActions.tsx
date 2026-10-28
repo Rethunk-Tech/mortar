@@ -10,6 +10,7 @@ import type {
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { LockedReason } from '../mods/LockedReason.tsx'
 import { openPage } from '../mods/menu.ts'
+import { useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -69,7 +70,13 @@ export function LackChipActions(p: {
             disabled={copying || locked}
             title={source.name}
             aria-label={t`Copy ${{ name: source.name }}`}
-            onClick={() => runCopy(() => CopyMods(game, source.id, profile.id, [lack.id]))}
+            onClick={() =>
+              runCopy(async () =>
+                useProfiles
+                  .getState()
+                  .replace(await CopyMods(game, source.id, profile.id, [lack.id])),
+              )
+            }
             sx={{ minWidth: 0, px: 0.5, ...nowrap }}
           >
             {t`Copy`}

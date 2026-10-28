@@ -8,11 +8,13 @@ import { playDirect } from './directPref.ts'
 import { useLaunch } from './store.ts'
 
 // A desktop shortcut asks to play a profile: open it and play through the usual Play path, warnings included.
-function play(r: Request) {
+async function play(r: Request) {
   if (!isGameId(r.game)) {
     return
   }
   useNav.getState().openGame(r.game)
+  // Opening the profile before its game has loaded would record it as the other game's last profile.
+  await useProfiles.getState().load(r.game, r.profile)
   useProfiles.getState().open(r.profile)
   useLaunch.getState().start(r.game, r.profile, playDirect()).catch(reportUnexpected)
 }
@@ -31,7 +33,7 @@ export function initPlayRequests() {
       }
       seen.add(r.id)
     }
-    play(r)
+    play(r).catch(reportUnexpected)
   }
   const drain = () =>
     Take()

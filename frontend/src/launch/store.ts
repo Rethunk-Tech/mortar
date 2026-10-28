@@ -24,6 +24,7 @@ import { reportError, reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { type AutoUpdateRestorePoint, rollbackAutoUpdate } from './autoUpdate.ts'
 import { gameBusy } from './busy.ts'
+import { playDirect } from './directPref.ts'
 import { applyOnPlayWindow } from './onPlay.ts'
 import {
   answerGraphics,
@@ -262,6 +263,8 @@ export const useLaunch = create<{
   refresh: (game: string) => Promise<void>
   /** preset names the launch preset for this Play only; omitted keeps the one a resumed launch already carries. */
   start: (game: string, profile: string, direct: boolean, preset?: string) => Promise<void>
+  // retry starts again the way Play does: the game's launch method, and without mods when the profile is empty.
+  retry: (game: string, profile: string) => Promise<void>
   startVanilla: (game: string, direct: boolean) => Promise<void>
   hide: () => void
   dismissFailure: () => void
@@ -307,6 +310,10 @@ export const useLaunch = create<{
     }
     return startWithWarning({ get, set, game, profile, direct })
   },
+  retry: (game, profile) =>
+    profile
+      ? startWithWarning({ get, set, game, profile, direct: playDirect() })
+      : startVanillaGame({ get, set, game, direct: playDirect() }),
   startVanilla: (game, direct) => startVanillaGame({ get, set, game, direct }),
   hide: () => set({ hidden: true }),
   dismissFailure: () => set({ failure: null }),

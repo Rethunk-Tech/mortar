@@ -114,7 +114,8 @@ export function PrePlayDialog() {
   )
   const [adding, runAdding] = usePending()
   const persistThen = (fn: () => void) => {
-    if (check) {
+    // The dialog only opens with the check on, so a true value is the box ticked here.
+    if (check?.skipPlayCheck) {
       persistSkip(check.game, check.profile, check.skipPlayCheck)
     }
     fn()

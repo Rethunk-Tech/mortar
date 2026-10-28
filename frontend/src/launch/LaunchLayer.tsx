@@ -39,7 +39,7 @@ function Failure({ game }: { game: string }) {
   const failure = useLaunch((s) => s.failure)
   const dismiss = useLaunch((s) => s.dismissFailure)
   const close = cancelling(dismiss)
-  const start = useLaunch((s) => s.start)
+  const retry = useLaunch((s) => s.retry)
   const cause = failure?.cause
   const mod = useMods((s) => s.mods.find((m) => m.key === cause?.modKey))
   const profile = useProfiles(openProfileOf)
@@ -88,7 +88,7 @@ function Failure({ game }: { game: string }) {
             variant="contained"
             onClick={() => {
               dismiss()
-              start(game, failure.profile, false)
+              retry(game, failure.profile)
             }}
           >
             {t`Retry`}

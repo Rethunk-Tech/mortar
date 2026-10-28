@@ -21,9 +21,12 @@ export async function enableRecordedMods(
   }
   const changes: string[] = []
   for (const lack of off) {
-    changes.push(await useSaves.getState().enable(game, profile, lack.id))
+    const change = await useSaves.getState().enable(game, profile, lack.id)
+    if (change) {
+      changes.push(change)
+    }
   }
-  return { enabled: off.length, changes }
+  return { enabled: changes.length, changes }
 }
 
 // Adds the recorded mods the profile lacks, and with `enable` also switches on the ones it has disabled.

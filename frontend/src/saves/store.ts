@@ -57,7 +57,6 @@ export const useSaves = create<State>((set, get) => ({
     }
   },
   dismiss: async (folder, id) => {
-    const previous = get().fits
     try {
       await Dismiss(folder, id)
       set({ fits: dropMissing(get().fits, id, folder) })
@@ -68,7 +67,7 @@ export const useSaves = create<State>((set, get) => ({
           label: i18n._(msg`Undo`),
           run: async () => {
             await RestoreDismissed(folder, id)
-            set({ fits: previous })
+            await get().reload()
           },
         },
       })

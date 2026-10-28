@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Button, List, ListItem, ListItemText, Typography } from '@mui/material'
 import { localId } from '../mods/dependents.ts'
+import { saveName } from '../saves/saveName.ts'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -32,7 +33,9 @@ export function SaveWarnDialog() {
       }
     >
       <Typography sx={{ color: 'text.secondary' }}>
-        {t`${{ farmer: save?.farmer ?? '' }}'s farm (${{ path: save?.folder ?? '' }}) was last played with mods this profile lacks or has disabled. Playing without them can lose their items or break the save.`}
+        {save?.farmer
+          ? t`${{ farmer: save.farmer }}'s farm (${{ path: save.folder }}) was last played with mods this profile lacks or has disabled. Playing without them can lose their items or break the save.`
+          : t`${{ name: save ? saveName(save) : '' }} (${{ path: save?.folder ?? '' }}) was last played with mods this profile lacks or has disabled. Playing without them can lose their items or break the save.`}
       </Typography>
       <List dense={true} sx={{ mt: space.gap }}>
         {missing.map((m) => (

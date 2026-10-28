@@ -84,7 +84,13 @@ function playIssueSummary(input: {
   longPaths?: LongPath[] | null
   updates?: Update[] | null
   currentProfileId?: string
-  lastPlayed?: { folder: string; farm: string; profileId: string; profileName: string } | null
+  lastPlayed?: {
+    folder: string
+    farm: string
+    name?: string | undefined
+    profileId: string
+    profileName: string
+  } | null
   saveMods?: { name: string; disabled?: boolean }[]
   switchProfileId?: string
 }): PlayIssueGroup[] {
@@ -175,6 +181,7 @@ async function gatherPlayIssues(game: string, profileId: string): Promise<PlayIs
         ? {
             folder: fit.folder,
             farm: fit.farm,
+            name: fit.name,
             profileId: fit.lastProfileId,
             profileName: lastName,
           }

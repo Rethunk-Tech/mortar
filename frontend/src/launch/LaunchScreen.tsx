@@ -273,7 +273,7 @@ function FailurePanel({ game }: { game: string }) {
   const reasonText = useReasonText()
   const failure = useLaunch((s) => s.failure)
   const dismiss = useLaunch((s) => s.dismissFailure)
-  const start = useLaunch((s) => s.start)
+  const retry = useLaunch((s) => s.retry)
   const close = useLaunchView((s) => s.close)
   const cause = failure?.cause
   const mod = useMods((s) => s.mods.find((m) => m.key === cause?.modKey))
@@ -311,7 +311,7 @@ function FailurePanel({ game }: { game: string }) {
           onClick={() => {
             dismiss()
             close()
-            start(game, failure.profile, false)
+            retry(game, failure.profile)
           }}
         >
           {t`Retry`}

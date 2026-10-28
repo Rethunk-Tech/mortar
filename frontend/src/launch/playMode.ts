@@ -23,6 +23,7 @@ const blocked = (s: Launch) =>
   s.updateWarn !== null ||
   s.saveWarn !== null ||
   s.askDirect !== null ||
+  s.graphicsAsk !== null ||
   s.failure !== null
 
 function leave() {

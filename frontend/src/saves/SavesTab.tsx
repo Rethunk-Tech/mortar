@@ -5,7 +5,6 @@ import { History, Search, Sprout } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { PageActions } from '../game/PageActions.tsx'
-import { useGameInfo } from '../games/info.ts'
 import { CardsView } from '../shell/CardsView.tsx'
 import { ControlsRow } from '../shell/ControlsRow.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
@@ -32,8 +31,8 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
   const detail = useSaves((s) => s.error)
   const load = useSaves((s) => s.load)
   const { name } = profile
-  // Only SMAPI writes the mods a save was played with into the save, so only its saves can be matched to a profile.
-  const recordsMods = useGameInfo(game)?.loaderId === 'smapi'
+  // A save whose format names no mods (Lethal Company) has nothing to match against a profile.
+  const recordsMods = fits.some((f) => !f.unrecorded)
   const [backupsOpen, setBackupsOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [view, setView] = useStoredState<ViewMode>(`mortar.savesView.${game}`, 'grid', isViewMode)

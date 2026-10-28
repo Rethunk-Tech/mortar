@@ -263,6 +263,17 @@ async function startWithWarning(opts: {
     reportError(i18n._(msg`Could not check the game version`))(e)
     return
   }
+  await saveCheckThenStart({ ...opts, update })
+}
+
+async function saveCheckThenStart(opts: {
+  set: LaunchSet
+  game: string
+  profile: string
+  direct: boolean
+  update: UpdateContext | undefined
+}) {
+  const update = opts.update
   try {
     const [save, gap] = await LastSaveGap(opts.game, opts.profile)
     if (gap) {
@@ -337,8 +348,20 @@ async function playAnyway(get: LaunchGet, set: LaunchSet) {
     })
     return
   }
-  const warn = get().updateWarn ?? get().saveWarn
-  set({ updateWarn: null, saveWarn: null })
+  const updateWarn = get().updateWarn
+  if (updateWarn) {
+    set({ updateWarn: null, starting: true, startingProfile: updateWarn.profile })
+    await saveCheckThenStart({
+      set,
+      game: updateWarn.game,
+      profile: updateWarn.profile,
+      direct: updateWarn.direct,
+      update: updateWarn.update,
+    })
+    return
+  }
+  const warn = get().saveWarn
+  set({ saveWarn: null })
   if (!warn) {
     return
   }
