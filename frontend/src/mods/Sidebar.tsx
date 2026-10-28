@@ -56,7 +56,7 @@ import { openPage } from './menu.ts'
 import { hostOf, openPageLabel } from './modActions.ts'
 import { useModFresh, useSourceLooked } from './modFresh.ts'
 import { NexusDetails } from './NexusDetails.tsx'
-import { useLookedSnapshot, useNexusEntry } from './nexusDetails.ts'
+import { useNexusEntry } from './nexusDetails.ts'
 import { formatCount, isNewer } from './nexusFormat.ts'
 import { goneCaption, nexusPageMark } from './nexusMark.ts'
 import { OptionalFiles } from './OptionalFiles.tsx'
@@ -132,7 +132,6 @@ function NexusFields({
   const customById = customCategoryById(useCustomCategories((s) => s.categories))
   const game = useProfiles((s) => s.game?.id ?? '')
   const details = useNexusEntry(game, nexusId)?.details
-  useLookedSnapshot(game, nexusId, details)
   if (!details) {
     return null
   }
