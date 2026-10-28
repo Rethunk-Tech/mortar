@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { type TabId, useTab } from '../game/tab.ts'
+import { sameValue } from '../shell/sameValue.ts'
 import { type Route, useNav } from './store.ts'
 
 interface Visit {
@@ -17,7 +18,7 @@ const MAX_VISITS = 50
 // The tab only tells visits to a game's page apart; other pages are one visit however the tab was left.
 function same(a: Visit, b: Visit): boolean {
   const tab = a.route.name !== 'game' || a.tab === b.tab
-  return tab && JSON.stringify(a.route) === JSON.stringify(b.route)
+  return tab && sameValue(a.route, b.route)
 }
 
 /** The history after visiting a page: forward visits are dropped, and a repeat of the current page adds nothing. */

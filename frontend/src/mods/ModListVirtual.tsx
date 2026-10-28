@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Table, TableBody, TableHead, TableRow } from '@mui/material'
 import { type MouseEvent, memo, type ReactNode, type Ref, useCallback, useRef } from 'react'
+import { sameValue } from '../shell/sameValue.ts'
 import { space } from '../theme/density.ts'
 import { showModId } from './detail.ts'
 import type { sanitizeListGroupBy } from './group.ts'
@@ -84,10 +85,7 @@ function ListHeaderView({ grid, cols, sort, onMenu, onPreview, onCommit, onCance
 // Its handlers capture nothing beyond those, so a skipped render never leaves them stale.
 const ListHeader = memo(
   ListHeaderView,
-  (a, b) =>
-    a.grid === b.grid &&
-    a.cols.join() === b.cols.join() &&
-    JSON.stringify(a.sort) === JSON.stringify(b.sort),
+  (a, b) => a.grid === b.grid && a.cols.join() === b.cols.join() && sameValue(a.sort, b.sort),
 )
 
 function ListShell({
