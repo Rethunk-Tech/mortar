@@ -7,7 +7,7 @@ export function refWant(where: Ref, kind: 'dependency' | 'install', name?: strin
     return { kind, repo: where.github, name: where.github }
   }
   if (where.site === 'thunderstore' && where.package) {
-    return { kind, source: 'thunderstore', package: where.package, name: name ?? where.pageName }
+    return { kind, package: where.package, name: name ?? where.pageName }
   }
   if (where.site === 'vsmoddb' && where.package) {
     return { kind, source: 'vsmoddb', package: where.package, name: name ?? where.pageName }
