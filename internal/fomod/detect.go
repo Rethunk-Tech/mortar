@@ -1,6 +1,7 @@
 package fomod
 
 import (
+	"encoding/binary"
 	"os"
 	"path/filepath"
 	"strings"
@@ -73,38 +74,25 @@ func readXMLBytes(path string) ([]byte, error) {
 
 func decodeXML(raw []byte) []byte {
 	if len(raw) >= 2 && raw[0] == 0xFF && raw[1] == 0xFE {
-		return utf16LEToUTF8(raw[2:])
+		return utf16ToUTF8(raw[2:], binary.LittleEndian)
 	}
 	if len(raw) >= 2 && raw[0] == 0xFE && raw[1] == 0xFF {
-		return utf16BEToUTF8(raw[2:])
+		return utf16ToUTF8(raw[2:], binary.BigEndian)
 	}
 	if len(raw) >= 3 && raw[0] == 0xEF && raw[1] == 0xBB && raw[2] == 0xBF {
 		return raw[3:]
 	}
 	if len(raw) >= 2 && raw[1] == 0 && !utf8.Valid(raw) {
-		return utf16LEToUTF8(raw)
+		return utf16ToUTF8(raw, binary.LittleEndian)
 	}
 	return raw
 }
 
-func utf16LEToUTF8(b []byte) []byte {
-	if len(b)%2 == 1 {
-		b = b[:len(b)-1]
-	}
+// utf16ToUTF8 decodes UTF-16 in order's byte order, dropping a trailing odd byte.
+func utf16ToUTF8(b []byte, order binary.ByteOrder) []byte {
 	u := make([]uint16, len(b)/2)
 	for i := range u {
-		u[i] = uint16(b[i*2]) | uint16(b[i*2+1])<<8
-	}
-	return []byte(string(utf16.Decode(u)))
-}
-
-func utf16BEToUTF8(b []byte) []byte {
-	if len(b)%2 == 1 {
-		b = b[:len(b)-1]
-	}
-	u := make([]uint16, len(b)/2)
-	for i := range u {
-		u[i] = uint16(b[i*2+1]) | uint16(b[i*2])<<8
+		u[i] = order.Uint16(b[i*2:])
 	}
 	return []byte(string(utf16.Decode(u)))
 }
