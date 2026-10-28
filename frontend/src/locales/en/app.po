@@ -2454,9 +2454,6 @@ msgid "Installed"
 msgstr "Installed"
 
 #: src/browse/BrowsePage.tsx
-#: src/browse/BrowseShow.tsx
-#: src/develop/ProjectCard.tsx
-#: src/develop/TrustDialog.tsx
 #: src/firstrunTour/TourAgainButton.tsx
 #: src/firstrunTour/useFirstRunTour.ts
 #: src/games/GameRowMenu.tsx

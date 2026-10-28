@@ -1288,28 +1288,14 @@ msgstr "Edit"
 msgid "{name} version"
 msgstr "{name} version"
 
-#: src/settings/GraphicsApiRow.tsx
+#: src/settings/persist.ts
 #: src/settings/PrefControls.tsx
-#: src/settings/PrefRow.tsx
-#: src/settings/ProtonRow.tsx
-#: src/settings/sections/ALVRProgram.tsx
 #: src/settings/sections/Appearance.tsx
-#: src/settings/sections/ConsoleLevels.tsx
 #: src/settings/sections/Downloads.tsx
-#: src/settings/sections/ExtraModsFolders.tsx
 #: src/settings/sections/GameSettings.tsx
 #: src/settings/sections/GameSync.tsx
 #: src/settings/sections/General.tsx
-#: src/settings/sections/HiddenLogSources.tsx
-#: src/settings/sections/HiddenMods.tsx
-#: src/settings/sections/LoaderRow.tsx
-#: src/settings/sections/ModsProfiles.tsx
-#: src/settings/sections/Notifications.tsx
-#: src/settings/sections/SourceOrder.tsx
-#: src/settings/sections/StreamOverlay.tsx
 #: src/settings/sections/SyncFolder.tsx
-#: src/settings/sections/Updates.tsx
-#: src/settings/sections/WatchFolders.tsx
 msgid "Could not save that setting"
 msgstr "Could not save that setting"
 
@@ -1769,8 +1755,7 @@ msgstr "Enter 1 or more"
 msgid "Endorsements"
 msgstr "Endorsements"
 
-#: src/settings/sections/ExtraModsFolders.tsx
-#: src/settings/sections/WatchFolders.tsx
+#: src/settings/sections/FolderListRow.tsx
 msgid "Remove {name}"
 msgstr "Remove {name}"
 
@@ -2217,8 +2202,7 @@ msgstr "The {alvr} dashboard program, started before a game set to start it firs
 msgid "A download fails"
 msgstr "A download fails"
 
-#: src/settings/sections/ExtraModsFolders.tsx
-#: src/settings/sections/WatchFolders.tsx
+#: src/settings/sections/FolderListRow.tsx
 msgid "Add folder…"
 msgstr "Add folder…"
 
@@ -3124,8 +3108,7 @@ msgstr "Set them aside and ask whether to keep or delete them."
 msgid "Switch to Saves"
 msgstr "Switch to Saves"
 
-#: src/settings/sections/ExtraModsFolders.tsx
-#: src/settings/sections/WatchFolders.tsx
+#: src/settings/sections/FolderListRow.tsx
 msgid "Remove"
 msgstr "Remove"
 

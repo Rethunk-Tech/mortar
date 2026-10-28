@@ -1171,8 +1171,7 @@ msgstr "The {manager} folder {path} has no profiles."
 msgid "Use my normal settings"
 msgstr "Use my normal settings"
 
-#: src/profiles/HistoryEventRow.tsx
-#: src/profiles/MergeDialog.tsx
+#: src/profiles/ShowModsToggle.tsx
 msgid "Show mods"
 msgstr "Show mods"
 
@@ -1361,8 +1360,7 @@ msgstr "{name} is in use by the running game. Close the game to change its mods.
 msgid "Reading the Mods folder…"
 msgstr "Reading the Mods folder…"
 
-#: src/profiles/HistoryEventRow.tsx
-#: src/profiles/MergeDialog.tsx
+#: src/profiles/ShowModsToggle.tsx
 msgid "Hide mods"
 msgstr "Hide mods"
 

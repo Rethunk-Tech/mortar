@@ -1171,8 +1171,7 @@ msgstr ""
 msgid "Use my normal settings"
 msgstr ""
 
-#: src/profiles/HistoryEventRow.tsx
-#: src/profiles/MergeDialog.tsx
+#: src/profiles/ShowModsToggle.tsx
 msgid "Show mods"
 msgstr ""
 
@@ -1361,8 +1360,7 @@ msgstr ""
 msgid "Reading the Mods folder…"
 msgstr ""
 
-#: src/profiles/HistoryEventRow.tsx
-#: src/profiles/MergeDialog.tsx
+#: src/profiles/ShowModsToggle.tsx
 msgid "Hide mods"
 msgstr ""
 
