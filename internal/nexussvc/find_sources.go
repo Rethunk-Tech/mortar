@@ -167,7 +167,7 @@ func installedFile(mods []profile.Component, p meta.Page) int {
 		held, differs := 0, false
 		for _, published := range f.Mods {
 			i := slices.IndexFunc(mods, func(m profile.Component) bool {
-				return m.ID.Format() == mod.FormatSMAPI && strings.EqualFold(m.ID.Local(), published.UniqueID)
+				return mod.Equal(m.ID, mod.SMAPI(published.UniqueID))
 			})
 			if i < 0 {
 				continue
@@ -286,7 +286,7 @@ func publishesInstalled(p meta.Page, mods []profile.Component) bool {
 	for _, f := range p.Downloads {
 		for _, published := range f.Mods {
 			if slices.ContainsFunc(mods, func(m profile.Component) bool {
-				return strings.EqualFold(m.ID.Local(), published.UniqueID) && m.Version == published.Version
+				return mod.Equal(m.ID, mod.SMAPI(published.UniqueID)) && sameVersion(m.Version, published.Version)
 			}) {
 				return true
 			}
