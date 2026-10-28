@@ -17,6 +17,7 @@ import {
   FolderOpen,
   FolderPlus,
   Hammer,
+  PackagePlus,
   Pencil,
   ScrollText,
   SquareCode,
@@ -131,7 +132,8 @@ function Outcome({ game, project }: { game: string; project: DevProject }) {
   )
 }
 
-function Status({ dir }: { dir: string }) {
+function Status({ project }: { project: DevProject }) {
+  const dir = project.dir
   const { t, i18n } = useLingui()
   const run = useDevRuns((s) => runOf(s.byDir, dir))
   // The files remember a build from before Mortar started; this session's result adds its errors.
@@ -157,6 +159,14 @@ function Status({ dir }: { dir: string }) {
         color="error"
         label={plural(count, { one: '# error', other: '# errors' })}
       />
+    )
+  }
+  if (project.kind) {
+    // Nothing compiles: once trusted, the project's folder is what installs.
+    return project.untrusted ? (
+      <Chip size="small" sx={statusSx} variant="outlined" label={t`Not installed`} />
+    ) : (
+      <Chip size="small" sx={statusSx} color="success" variant="outlined" label={t`Installed`} />
     )
   }
   if (!builtAt) {
@@ -414,6 +424,18 @@ function BuildButton({
   const { t } = useLingui()
   const running = useDevRuns((s) => runOf(s.byDir, project.dir).running)
   const build = () => buildProject(game, project.dir).catch(() => undefined)
+  if (project.kind && project.untrusted) {
+    // Added from a folder: its files install only once trusted, which the build's refusal asks for.
+    return compact ? (
+      <TipIconButton label={t`Install`} onClick={build}>
+        <PackagePlus size={18} />
+      </TipIconButton>
+    ) : (
+      <Button variant="outlined" startIcon={<PackagePlus size={16} />} onClick={build}>
+        {t`Install`}
+      </Button>
+    )
+  }
   if (project.kind) {
     // A project made only of files installs as it is; its button opens the folder the loader reads.
     const open = () =>
@@ -490,7 +512,7 @@ export function ProjectCard({
         <Box sx={{ minWidth: 0, flex: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, flexWrap: 'wrap' }}>
             <Typography sx={{ fontSize: 'large.fontSize', fontWeight: 600 }}>{name}</Typography>
-            <Status dir={project.dir} />
+            <Status project={project} />
           </Box>
           <Typography
             noWrap={true}

@@ -843,6 +843,10 @@ msgstr "Link length"
 msgid "See load errors, missing dependencies, and other issues before you play."
 msgstr "See load errors, missing dependencies, and other issues before you play."
 
+#: src/develop/ProjectCard.tsx
+msgid "Not installed"
+msgstr "Not installed"
+
 #: src/develop/draft.ts
 msgid "Fill in: {name}"
 msgstr "Fill in: {name}"
@@ -2449,6 +2453,7 @@ msgid "Working directory"
 msgstr "Working directory"
 
 #: src/browse/CardProgress.tsx
+#: src/develop/ProjectCard.tsx
 #: src/share/ImportPreview.tsx
 msgid "Installed"
 msgstr "Installed"
@@ -3560,6 +3565,10 @@ msgstr "Mod list format"
 #: src/share/ListFormat.tsx
 msgid "Mod list saved"
 msgstr "Mod list saved"
+
+#: src/develop/TrustDialog.tsx
+msgid "Install this project?"
+msgstr "Install this project?"
 
 #: src/launch/store.ts
 msgid "Could not check whether the game is running"
@@ -5786,6 +5795,8 @@ msgstr "The backup from {when} is deleted for good, with every save in it."
 msgid "Could not verify its source"
 msgstr "Could not verify its source"
 
+#: src/develop/ProjectCard.tsx
+#: src/develop/TrustDialog.tsx
 #: src/fomod/Dialog.tsx
 #: src/loader/Banner.tsx
 msgid "Install"
@@ -6744,6 +6755,10 @@ msgstr "Choose a version…"
 #: src/queue/QueueSheet.tsx
 msgid "Download history"
 msgstr "Download history"
+
+#: src/develop/TrustDialog.tsx
+msgid "Its files install into the profile as they are, and a plugin among them runs when the game starts. Install it?"
+msgstr "Its files install into the profile as they are, and a plugin among them runs when the game starts. Install it?"
 
 #: src/browse/BrowseFilters.tsx
 msgid "Include categories"
