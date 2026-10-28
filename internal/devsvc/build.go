@@ -160,7 +160,11 @@ func WatchedSources(cur settings.Settings, games []string) map[string][]string {
 			out[g] = append(out[g], src, filepath.Join(src, "Compat"), assets)
 			for _, root := range []string{src, assets} {
 				_ = filepath.WalkDir(root, func(dir string, d fs.DirEntry, err error) error {
-					if err != nil || !d.IsDir() {
+					if err != nil {
+						// A folder not made yet, or one that cannot be read, is skipped like build output.
+						return fs.SkipDir
+					}
+					if !d.IsDir() {
 						return nil
 					}
 					if dir != root && slices.Contains([]string{"bin", "obj"}, d.Name()) {
