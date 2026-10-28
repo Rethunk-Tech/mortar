@@ -60,6 +60,9 @@ func (c *cmd) storeRemove() error {
 	if err != nil {
 		return err
 	}
+	if !c.yesFlag {
+		return refusedError{"removing store items deletes them; pass --yes"}
+	}
 	if err := c.call("store.remove", control.Params{Game: a[0], IDs: a[1:]}, nil, readTimeout); err != nil {
 		return err
 	}

@@ -102,6 +102,9 @@ func (c *cmd) historyTrim() error {
 	if err != nil {
 		return err
 	}
+	if !c.yesFlag {
+		return refusedError{"trimming history deletes events; pass --yes"}
+	}
 	keep, err := c.keepCount()
 	if err != nil {
 		return err
@@ -121,6 +124,9 @@ func (c *cmd) backupsUsage(game string) error {
 }
 
 func (c *cmd) backupsTrim(game string) error {
+	if !c.yesFlag {
+		return refusedError{"trimming backups deletes them; pass --yes"}
+	}
 	keep, err := c.keepCount()
 	if err != nil {
 		return err

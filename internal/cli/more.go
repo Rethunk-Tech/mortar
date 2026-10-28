@@ -130,7 +130,12 @@ var moreVerbs = map[string]moreVerb{
 	},
 	"data cleanup": {
 		method: "data.cleanup", timeout: installTimeout,
-		params: func(_ []string, c *cmd) (control.Params, error) { return control.Params{Preview: c.previewFlag}, nil },
+		params: func(_ []string, c *cmd) (control.Params, error) {
+			if !c.yesFlag && !c.previewFlag {
+				return control.Params{}, refusedError{"data cleanup deletes unused store items and caches; pass --yes (or --preview to list them)"}
+			}
+			return control.Params{Preview: c.previewFlag}, nil
+		},
 	},
 	"app update check":   {method: "app.update.check", timeout: installTimeout},
 	"app update install": {method: "app.update.install", msg: "Installed the update; restart Mortar to use it.", timeout: installTimeout},

@@ -2493,13 +2493,13 @@ takes --game <id>, which may be left out when exactly one game is installed. Out
   backups list [--game <id>] [--json]     list save backups
   backups create <save>                   pin a Manual backup of one save (its folder or its name); --profile P for P's own saves
   backups usage                           disk used by save backups, per save
-  backups trim --keep N                   delete all but the newest N backups of each save (kept ones stay)
+  backups trim --keep N --yes             delete all but the newest N backups of each save (kept ones stay)
   cache size                              analysis cache size
   cache clear                             delete the analysis cache
   data usage --by-mod                     store items with size on disk
   data location                           the data folder in use, and whether it is portable
   history usage <game>                    events and disk used by each profile's history
-  history trim <game> <profile> --keep N  keep a profile's newest N history events
+  history trim <game> <profile> --keep N --yes  keep a profile's newest N history events
   templates list <game> | delete <game> <name>
   templates save <game> <profile> <name>  capture a profile as a template
   templates apply <game> <template> <profile> [--preview]  merge it into a profile; --json holds the undo object
@@ -2513,7 +2513,7 @@ takes --game <id>, which may be left out when exactly one game is installed. Out
   archive preview <path>                  what an archive holds, without extracting it
   archive downloads <game>                archives in the download folder no profile or store item accounts for
   store report [--game G]                 unused and duplicate store items
-  store remove <game> <key>...            delete store items no profile uses
+  store remove <game> <key>... --yes      delete store items no profile uses
   store check <game>                      verify store files; lists damaged items
   store repair <game> <profile> <key>     fetch a damaged item again through the queue
   bisect start <game> <profile>           crash check on a copy; prints its id
@@ -2532,7 +2532,7 @@ takes --game <id>, which may be left out when exactly one game is installed. Out
   lan pair --code <code> [--peer host:port]  enter the code another computer shows
   lan paired | unpair <id>                computers you paired; forget one
   data move <dir> [--preview]             move the data folder
-  data cleanup [--preview]                remove unused store items and caches
+  data cleanup --yes | --preview          remove unused store items and caches
   support diagnostics save <path.zip> [--game id] [--profile name]  write a redacted diagnostics zip
   app update check|install                Mortar's own updates
   links [list]                            who the system opens each source's links with

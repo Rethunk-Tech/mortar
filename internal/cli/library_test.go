@@ -42,11 +42,11 @@ func TestWaveCommandsSendTheirArguments(t *testing.T) {
 		{[]string{"templates", "list", "stardew"}, "templates", func(p control.Params) bool { return p.Game == "stardew" }, "Base"},
 		{[]string{"templates", "save", "stardew", "Farm", "My", "Base"}, "templates.save", func(p control.Params) bool { return p.Profile == "Farm" && p.Name == "My Base" }, "Saved template"},
 		{[]string{"history", "usage", "stardew"}, "history.usage", func(p control.Params) bool { return p.Game == "stardew" }, "Farm"},
-		{[]string{"history", "trim", "stardew", "Farm", "--keep", "2"}, "history.trim", func(p control.Params) bool { return p.Keep == 2 && p.Profile == "Farm" }, "keeps 2"},
-		{[]string{"history", "trim", "stardew", "Farm", "--keep=2"}, "history.trim", func(p control.Params) bool { return p.Keep == 2 && p.Profile == "Farm" }, "keeps 2"},
+		{[]string{"history", "trim", "stardew", "Farm", "--keep", "2", "--yes"}, "history.trim", func(p control.Params) bool { return p.Keep == 2 && p.Profile == "Farm" }, "keeps 2"},
+		{[]string{"history", "trim", "stardew", "Farm", "--keep=2", "--yes"}, "history.trim", func(p control.Params) bool { return p.Keep == 2 && p.Profile == "Farm" }, "keeps 2"},
 		{[]string{"backups", "usage"}, "backups.usage", func(p control.Params) bool { return true }, "Farm_1"},
-		{[]string{"backups", "trim", "--keep", "1"}, "backups.trim", func(p control.Params) bool { return p.Keep == 1 }, "Deleted 3"},
-		{[]string{"backups", "trim", "--keep=1"}, "backups.trim", func(p control.Params) bool { return p.Keep == 1 }, "Deleted 3"},
+		{[]string{"backups", "trim", "--keep", "1", "--yes"}, "backups.trim", func(p control.Params) bool { return p.Keep == 1 }, "Deleted 3"},
+		{[]string{"backups", "trim", "--keep=1", "--yes"}, "backups.trim", func(p control.Params) bool { return p.Keep == 1 }, "Deleted 3"},
 		{[]string{"library", "old-files", "stardew", "Farm"}, "library.old-files", func(p control.Params) bool { return p.Profile == "Farm" }, "Mod"},
 		{[]string{"library", "old-files", "stardew", "Farm", "--delete", "k"}, "library.old-files.resolve", func(p control.Params) bool { return p.Key == "k" && !p.Set }, "Deleted"},
 		{[]string{"library", "old-files", "stardew", "Farm", "--delete=k"}, "library.old-files.resolve", func(p control.Params) bool { return p.Key == "k" && !p.Set }, "Deleted"},
@@ -73,5 +73,19 @@ func TestWaveCommandsSendTheirArguments(t *testing.T) {
 	r := invoke(t, results, "backups", "usage", "--json")
 	if r.code != 0 || !strings.Contains(r.out, `"totalBytes": 10`) {
 		t.Errorf("--json: %+v", r)
+	}
+}
+
+func TestDestructiveVerbsNeedYes(t *testing.T) {
+	for _, args := range [][]string{
+		{"backups", "trim", "--keep", "1"},
+		{"history", "trim", "stardew", "Farm", "--keep", "2"},
+		{"data", "cleanup"},
+		{"store", "remove", "stardew", "k1"},
+	} {
+		r := invoke(t, nil, args...)
+		if r.code != 2 || len(r.calls) != 0 || !strings.Contains(r.errOut, "--yes") {
+			t.Errorf("%v: code %d, calls %v, stderr %q", args, r.code, r.calls, r.errOut)
+		}
 	}
 }
