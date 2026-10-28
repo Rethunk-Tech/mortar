@@ -72,14 +72,19 @@ func TestRecentLaunchesSkipsAProfileThatNoLongerExists(t *testing.T) {
 		t.Fatal(err)
 	}
 	svc, p, _, _ := runEnv(t)
-	_ = p
 	svc.settings = set
 	if _, err := set.RecordLastPlayed("stardew", "deleted-profile", time.Now(), ""); err != nil {
 		t.Fatal(err)
 	}
 	got, err := svc.RecentLaunches("stardew", 3)
 	if err != nil || len(got) != 0 {
-		t.Fatalf("got %#v, %v", got, err)
+		t.Fatalf("deleted profile: got %#v, %v", got, err)
+	}
+	if _, err := set.RecordLastPlayed("stardew", p.ID, time.Now(), ""); err != nil {
+		t.Fatal(err)
+	}
+	if got, err = svc.RecentLaunches("stardew", 3); err != nil || len(got) != 1 || got[0].ProfileID != p.ID {
+		t.Fatalf("existing profile: got %#v, %v", got, err)
 	}
 }
 
