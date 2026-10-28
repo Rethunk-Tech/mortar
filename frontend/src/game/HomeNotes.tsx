@@ -136,7 +136,7 @@ export function HomeNotes({ profile }: { profile: Profile }) {
           ) : (
             <Typography
               sx={{ lineHeight: 1.5, color: 'text.secondary' }}
-            >{t`No notes yet.`}</Typography>
+            >{t`No notes yet`}</Typography>
           )}
           <Button
             size="small"

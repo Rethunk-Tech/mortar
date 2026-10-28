@@ -172,8 +172,13 @@ function GitHubQuota() {
   const detail = rate?.known
     ? [
         t`${{ remaining: rate.remaining }} of ${{ limit: rate.limit }} requests left`,
-        t`resets ${{ when: formatWhen(rate.reset) }}`,
-      ].join(' · ')
+        // A reset already past means the count shown is stale; the next request refreshes it.
+        new Date(rate.reset).getTime() > Date.now()
+          ? t`resets ${{ when: formatWhen(rate.reset) }}`
+          : '',
+      ]
+        .filter(Boolean)
+        .join(' · ')
     : unknown
   return (
     <SettingRow label={t`Requests`} description={detail}>

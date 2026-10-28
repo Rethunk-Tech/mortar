@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
-import { Users } from 'lucide-react'
+import { CircleAlert, Users } from 'lucide-react'
 import { useState } from 'react'
 import type { FarmRow } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/packsvc/models.ts'
 import {
@@ -107,7 +107,16 @@ export function FarmDialog({
       size="md"
       title={t`Multiplayer mod list`}
       footer={
-        <DialogFooter>
+        <DialogFooter
+          aside={
+            fixable || text.trim() !== '' ? null : (
+              <span className="app-dialog-issue">
+                <CircleAlert size={14} aria-hidden={true} />
+                {t`Paste a mod list first`}
+              </span>
+            )
+          }
+        >
           <Button onClick={done}>{t`Close`}</Button>
           {fixable ? (
             <Button variant="contained" disabled={busy} onClick={() => fix(null)}>

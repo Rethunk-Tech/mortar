@@ -85,7 +85,7 @@ export function Storage() {
   const [cleaning, setCleaning] = useState(false)
   return (
     <>
-      <span ref={sentinel} />
+      <span ref={sentinel} style={{ position: 'absolute' }} />
       <Location usage={usage} onPicked={move.prepare} />
       {error ? (
         <Box

@@ -13,7 +13,7 @@ const chartSx = {
 } as const
 const ChartRoot = styled('div')({})
 
-/** What others may and may not do with the mod's code under the chosen license, side by side. */
+/** What others may and may not do with the mod's code under the chosen licence, side by side. */
 export function LicenseChart({ license }: { license: string }) {
   const { t } = useLingui()
   const useShare = t`Use, change and share it`
@@ -32,7 +32,7 @@ export function LicenseChart({ license }: { license: string }) {
       [useShare, t`Sell it`],
       [
         t`Share a changed or built-on mod without its source`,
-        t`Release that mod under another license`,
+        t`Release that mod under another licence`,
       ],
     ],
     'mpl-2.0': [

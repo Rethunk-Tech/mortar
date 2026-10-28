@@ -85,7 +85,7 @@ function paramIssue(p: Param, raw: string): string {
   const v = raw.trim()
   const name = p.label
   if (v === '') {
-    return p.required ? i18n._(msg`Fill in: ${{ name }}`) : ''
+    return p.required ? i18n._(msg`Fill in: ${{ name }}.`) : ''
   }
   if (v.startsWith('-')) {
     return i18n._(msg`${{ name }}: cannot start with a dash.`)

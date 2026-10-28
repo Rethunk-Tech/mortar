@@ -4,6 +4,7 @@ import { memo, useCallback, useRef, useState } from 'react'
 import { Search } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/browse/service.ts'
 import type { Form } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/source/models.ts'
+import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { LetterTile } from '../mods/LetterTile.tsx'
 import { FormSection } from '../shell/dialog/FormDialog.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
@@ -208,7 +209,7 @@ export function DependenciesStep({
             key={id}
             id={id}
             item={known[id] ?? ownProject(projects, id)}
-            why={rec ? t`Suggested for ${{ answer: answerLabel(form, rec) }}` : ''}
+            why={rec ? t`Suggested for ${{ answer: lowerFirst(answerLabel(form, rec)) }}` : ''}
             checked={chosen.includes(id)}
             onToggle={toggle}
             optional={draft.optional.includes(id)}

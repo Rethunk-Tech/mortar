@@ -127,10 +127,18 @@ function RemoveGameConfirm({
   )
 }
 
-const addIssue = (basicsDone: boolean): string =>
-  basicsDone
-    ? i18n._(msg`Give the Thunderstore community first.`)
-    : i18n._(msg`Choose the game's program and give it a name first.`)
+const addIssue = (hasExe: boolean, hasName: boolean): string => {
+  if (!(hasExe || hasName)) {
+    return i18n._(msg`Choose the game's program and give it a name first.`)
+  }
+  if (!hasExe) {
+    return i18n._(msg`Choose the game's program first.`)
+  }
+  if (!hasName) {
+    return i18n._(msg`Give the game a name first.`)
+  }
+  return i18n._(msg`Give the Thunderstore community first.`)
+}
 
 export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useLingui()
@@ -262,7 +270,7 @@ export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () =>
       size="md"
       title={t`Add a game`}
       submitLabel={t`Add`}
-      issue={ready ? '' : addIssue(exe !== '' && hasName)}
+      issue={ready ? '' : addIssue(exe !== '', hasName)}
       dirty={hasName || exe !== ''}
       busy={busy}
       onSubmit={add}

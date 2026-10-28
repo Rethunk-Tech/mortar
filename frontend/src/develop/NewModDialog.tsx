@@ -327,7 +327,7 @@ function ProjectStep({ draft, owners, set }: { draft: Draft; owners: GitHubOwner
       ) : null}
       <RepositoryChoice draft={draft} owners={owners} set={set} />
       <SelectField
-        label={t`License`}
+        label={t`Licence`}
         displayEmpty={true}
         value={draft.license}
         onChange={(license) => set({ license })}

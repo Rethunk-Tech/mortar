@@ -105,7 +105,7 @@ function FixedRow({ launcher, heading }: { launcher: StoreApp; heading: Heading 
         <Typography
           title={summary}
           sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}
-          noWrap={true}
+          noWrap={!other}
         >
           {summary}
         </Typography>

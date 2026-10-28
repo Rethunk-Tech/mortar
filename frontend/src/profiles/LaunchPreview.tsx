@@ -3,6 +3,7 @@ import { Box, Button, IconButton, Typography } from '@mui/material'
 import { Copy } from 'lucide-react'
 import type { CommandPreview } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { PreviewCommand } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
+import { sentence } from '../i18n/sentence.ts'
 import { copyText } from '../share/copyText.ts'
 import { useDebouncedLoad } from '../shell/useDebouncedLoad.ts'
 import { space } from '../theme/density.ts'
@@ -70,7 +71,7 @@ export function LaunchPreview({
       </Box>
       {preview.error || loadError ? (
         <Typography color="error" sx={{ fontSize: 'small.fontSize' }}>
-          {preview.error || loadError}
+          {preview.error ? sentence(preview.error) : loadError}
           {loadError && !preview.error ? (
             <Button size="small" onClick={read}>
               {t`Retry`}

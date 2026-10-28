@@ -267,13 +267,21 @@ export function PrefNumber({
       onChange={(e) => setDraft(e.target.value)}
       onBlur={commit}
       onKeyDown={blurOnEnter}
+      sx={{
+        width,
+        // WebKitGTK draws spin buttons Chromium hides here.
+        '& input[type=number]': { MozAppearance: 'textfield', appearance: 'textfield' },
+        '& input::-webkit-inner-spin-button, & input::-webkit-outer-spin-button': {
+          WebkitAppearance: 'none',
+          margin: 0,
+        },
+      }}
       slotProps={{
         htmlInput: { min, max, step: 1, 'aria-label': label },
         ...(suffix
           ? { input: { endAdornment: <InputAdornment position="end">{suffix}</InputAdornment> } }
           : {}),
       }}
-      sx={{ width }}
     />
   )
 }
