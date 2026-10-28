@@ -168,10 +168,6 @@ msgstr ""
 msgid "Orange"
 msgstr ""
 
-#: src/profiles/MergeDialog.tsx
-msgid "{count, plural, one {Added # mod from {profile} to {name}} other {Added # mods from {profile} to {name}}}"
-msgstr ""
-
 #: src/profiles/ProfileRow.tsx
 msgid "{size} of saves"
 msgstr ""
@@ -268,13 +264,13 @@ msgstr ""
 msgid "Restored as {name}"
 msgstr ""
 
-#: src/profiles/LaunchOptionsBlock.tsx
-msgid "Uses the saved options"
-msgstr ""
-
 #: src/profiles/CompareDialog.tsx
 #: src/profiles/CompareTop.tsx
 msgid "Filter mods"
+msgstr ""
+
+#: src/profiles/LaunchOptionsBlock.tsx
+msgid "Uses the options shown"
 msgstr ""
 
 #: src/profiles/CompareDialog.tsx
@@ -329,6 +325,7 @@ msgstr ""
 #: src/profiles/collectionUnlink.ts
 #: src/profiles/CompareDialog.tsx
 #: src/profiles/historyRevert.ts
+#: src/profiles/MergeDialog.tsx
 #: src/profiles/store.ts
 msgid "Undo"
 msgstr ""
@@ -861,6 +858,10 @@ msgstr ""
 msgid "Folder of {name}"
 msgstr ""
 
+#: src/profiles/MergeDialog.tsx
+msgid "Updated {updated} in {name} from {profile}"
+msgstr ""
+
 #: src/profiles/GameModsDialog.tsx
 msgid "Nothing to import"
 msgstr ""
@@ -949,6 +950,7 @@ msgid "Created {name}"
 msgstr ""
 
 #: src/profiles/GameModsDialog.tsx
+#: src/profiles/MergeDialog.tsx
 msgid "{count, plural, one {# mod} other {# mods}}"
 msgstr ""
 
@@ -1086,6 +1088,10 @@ msgstr ""
 msgid "Enable"
 msgstr ""
 
+#: src/profiles/MergeDialog.tsx
+msgid "Added {added} from {profile} to {name}"
+msgstr ""
+
 #: src/profiles/HealthDialog.tsx
 msgid "Could not check profile"
 msgstr ""
@@ -1165,6 +1171,10 @@ msgstr ""
 
 #: src/profiles/historyLabel.ts
 msgid "Marked {name} explicit"
+msgstr ""
+
+#: src/profiles/MergeDialog.tsx
+msgid "Added {added} and updated {updated} from {profile} to {name}"
 msgstr ""
 
 #: src/profiles/VortexFolderPrompt.tsx

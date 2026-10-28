@@ -103,6 +103,10 @@ msgstr "This uploads the profile to {source} and gives a public code."
 msgid "Local-only mods kept ({count})"
 msgstr "Local-only mods kept ({count})"
 
+#: src/develop/ownParams.ts
+msgid "The team the mod is published under."
+msgstr "The team the mod is published under."
+
 #: src/firstrunTour/TourPopover.tsx
 msgid "Launch the game with this profile's mods. Mortar applies your list before the game starts."
 msgstr "Launch the game with this profile's mods. Mortar applies your list before the game starts."
@@ -1113,6 +1117,10 @@ msgstr "Could not quit Mortar"
 msgid "Paste a mod list first"
 msgstr "Paste a mod list first"
 
+#: src/groups/SaveGroupToLibrary.tsx
+msgid "Saved to library"
+msgstr "Saved to library"
+
 #: src/shell/BugReportDialog.tsx
 msgid "A short summary"
 msgstr "A short summary"
@@ -1436,6 +1444,10 @@ msgstr "Mods and profiles"
 msgid "Imported {name}"
 msgstr "Imported {name}"
 
+#: src/develop/ownParams.ts
+msgid "Who holds the copyright."
+msgstr "Who holds the copyright."
+
 #: src/sync/SyncOffers.tsx
 msgid "Both sides changed it, so Mortar will not merge them. Pick one side."
 msgstr "Both sides changed it, so Mortar will not merge them. Pick one side."
@@ -1687,6 +1699,10 @@ msgstr "Place the optional file"
 #: src/browse/BrowseShow.tsx
 msgid "Gray out"
 msgstr "Gray out"
+
+#: src/develop/ownParams.ts
+msgid "What the mod does, in one line."
+msgstr "What the mod does, in one line."
 
 #: src/game/Sidebar.tsx
 msgid "Profile sections"
@@ -2429,10 +2445,6 @@ msgstr "Apply a template…"
 msgid "Sign in to {source} to download"
 msgstr "Sign in to {source} to download"
 
-#: src/groups/applied.ts
-msgid "Added the group {group}"
-msgstr "Added the group {group}"
-
 #: src/firstrun/FindStep.tsx
 msgid "Folder chosen by you"
 msgstr "Folder chosen by you"
@@ -2998,10 +3010,6 @@ msgstr "Sort: recently updated"
 #: src/launch/store.ts
 msgid "{launcher} must be installed and signed in for this game. Install {launcher}, sign in once and try again."
 msgstr "{launcher} must be installed and signed in for this game. Install {launcher}, sign in once and try again."
-
-#: src/groups/SaveGroupToLibrary.tsx
-msgid "Saved to the library"
-msgstr "Saved to the library"
 
 #: src/develop/LicenseChart.tsx
 msgid "Share a changed or built-on mod without its source"
@@ -3965,6 +3973,10 @@ msgstr "Only on this computer"
 msgid "Sign in to import"
 msgstr "Sign in to import"
 
+#: src/develop/ownParams.ts
+msgid "Team"
+msgstr "Team"
+
 #: src/develop/ProjectCard.tsx
 msgid "Last run: {frame} ms a frame"
 msgstr "Last run: {frame} ms a frame"
@@ -4209,6 +4221,7 @@ msgstr "Mod list"
 
 #: src/develop/CloneDialog.tsx
 #: src/develop/DevelopTab.tsx
+#: src/groups/applied.ts
 msgid "Added {name}"
 msgstr "Added {name}"
 
@@ -4691,6 +4704,7 @@ msgstr "That request was not valid."
 
 #: src/browse/BrowseDetails.tsx
 #: src/develop/EditProjectDialog.tsx
+#: src/develop/ownParams.ts
 #: src/share/ModpackDialog.tsx
 msgid "Description"
 msgstr "Description"
@@ -6253,6 +6267,7 @@ msgstr "Clear search"
 
 #: src/develop/EditProjectDialog.tsx
 #: src/develop/NewModDialog.tsx
+#: src/develop/ownParams.ts
 #: src/share/ModpackDialog.tsx
 msgid "Author"
 msgstr "Author"

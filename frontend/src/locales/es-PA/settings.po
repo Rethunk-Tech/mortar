@@ -2471,6 +2471,10 @@ msgstr ""
 msgid "Last scheduled backup {when}"
 msgstr ""
 
+#: src/settings/sections/Accounts.tsx
+msgid "Mortar cannot reach a keyring, so your account keys are stored unencrypted on this computer."
+msgstr ""
+
 #: src/settings/prefCopy.ts
 msgid "What Mortar shows when it opens."
 msgstr ""

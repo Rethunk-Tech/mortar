@@ -103,6 +103,10 @@ msgstr ""
 msgid "Local-only mods kept ({count})"
 msgstr ""
 
+#: src/develop/ownParams.ts
+msgid "The team the mod is published under."
+msgstr ""
+
 #: src/firstrunTour/TourPopover.tsx
 msgid "Launch the game with this profile's mods. Mortar applies your list before the game starts."
 msgstr ""
@@ -1113,6 +1117,10 @@ msgstr ""
 msgid "Paste a mod list first"
 msgstr ""
 
+#: src/groups/SaveGroupToLibrary.tsx
+msgid "Saved to library"
+msgstr ""
+
 #: src/shell/BugReportDialog.tsx
 msgid "A short summary"
 msgstr ""
@@ -1436,6 +1444,10 @@ msgstr ""
 msgid "Imported {name}"
 msgstr ""
 
+#: src/develop/ownParams.ts
+msgid "Who holds the copyright."
+msgstr ""
+
 #: src/sync/SyncOffers.tsx
 msgid "Both sides changed it, so Mortar will not merge them. Pick one side."
 msgstr ""
@@ -1686,6 +1698,10 @@ msgstr ""
 
 #: src/browse/BrowseShow.tsx
 msgid "Gray out"
+msgstr ""
+
+#: src/develop/ownParams.ts
+msgid "What the mod does, in one line."
 msgstr ""
 
 #: src/game/Sidebar.tsx
@@ -2429,10 +2445,6 @@ msgstr ""
 msgid "Sign in to {source} to download"
 msgstr ""
 
-#: src/groups/applied.ts
-msgid "Added the group {group}"
-msgstr ""
-
 #: src/firstrun/FindStep.tsx
 msgid "Folder chosen by you"
 msgstr ""
@@ -2997,10 +3009,6 @@ msgstr ""
 
 #: src/launch/store.ts
 msgid "{launcher} must be installed and signed in for this game. Install {launcher}, sign in once and try again."
-msgstr ""
-
-#: src/groups/SaveGroupToLibrary.tsx
-msgid "Saved to the library"
 msgstr ""
 
 #: src/develop/LicenseChart.tsx
@@ -3965,6 +3973,10 @@ msgstr ""
 msgid "Sign in to import"
 msgstr ""
 
+#: src/develop/ownParams.ts
+msgid "Team"
+msgstr ""
+
 #: src/develop/ProjectCard.tsx
 msgid "Last run: {frame} ms a frame"
 msgstr ""
@@ -4209,6 +4221,7 @@ msgstr ""
 
 #: src/develop/CloneDialog.tsx
 #: src/develop/DevelopTab.tsx
+#: src/groups/applied.ts
 msgid "Added {name}"
 msgstr ""
 
@@ -4691,6 +4704,7 @@ msgstr ""
 
 #: src/browse/BrowseDetails.tsx
 #: src/develop/EditProjectDialog.tsx
+#: src/develop/ownParams.ts
 #: src/share/ModpackDialog.tsx
 msgid "Description"
 msgstr ""
@@ -6253,6 +6267,7 @@ msgstr ""
 
 #: src/develop/EditProjectDialog.tsx
 #: src/develop/NewModDialog.tsx
+#: src/develop/ownParams.ts
 #: src/share/ModpackDialog.tsx
 msgid "Author"
 msgstr ""

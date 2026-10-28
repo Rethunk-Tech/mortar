@@ -168,10 +168,6 @@ msgstr "Stack frame: {evidence}"
 msgid "Orange"
 msgstr "Orange"
 
-#: src/profiles/MergeDialog.tsx
-msgid "{count, plural, one {Added # mod from {profile} to {name}} other {Added # mods from {profile} to {name}}}"
-msgstr "{count, plural, one {Added # mod from {profile} to {name}} other {Added # mods from {profile} to {name}}}"
-
 #: src/profiles/ProfileRow.tsx
 msgid "{size} of saves"
 msgstr "{size} of saves"
@@ -268,14 +264,14 @@ msgstr "Fullscreen resolution width"
 msgid "Restored as {name}"
 msgstr "Restored as {name}"
 
-#: src/profiles/LaunchOptionsBlock.tsx
-msgid "Uses the saved options"
-msgstr "Uses the saved options"
-
 #: src/profiles/CompareDialog.tsx
 #: src/profiles/CompareTop.tsx
 msgid "Filter mods"
 msgstr "Filter mods"
+
+#: src/profiles/LaunchOptionsBlock.tsx
+msgid "Uses the options shown"
+msgstr "Uses the options shown"
 
 #: src/profiles/CompareDialog.tsx
 msgid "{count} selected"
@@ -329,6 +325,7 @@ msgstr "For mods in both"
 #: src/profiles/collectionUnlink.ts
 #: src/profiles/CompareDialog.tsx
 #: src/profiles/historyRevert.ts
+#: src/profiles/MergeDialog.tsx
 #: src/profiles/store.ts
 msgid "Undo"
 msgstr "Undo"
@@ -861,6 +858,10 @@ msgstr "Edited the settings of {name}"
 msgid "Folder of {name}"
 msgstr "Folder of {name}"
 
+#: src/profiles/MergeDialog.tsx
+msgid "Updated {updated} in {name} from {profile}"
+msgstr "Updated {updated} in {name} from {profile}"
+
 #: src/profiles/GameModsDialog.tsx
 msgid "Nothing to import"
 msgstr "Nothing to import"
@@ -949,6 +950,7 @@ msgid "Created {name}"
 msgstr "Created {name}"
 
 #: src/profiles/GameModsDialog.tsx
+#: src/profiles/MergeDialog.tsx
 msgid "{count, plural, one {# mod} other {# mods}}"
 msgstr "{count, plural, one {# mod} other {# mods}}"
 
@@ -1086,6 +1088,10 @@ msgstr "{count, plural, one {Updated # mod} other {Updated # mods}}"
 msgid "Enable"
 msgstr "Enable"
 
+#: src/profiles/MergeDialog.tsx
+msgid "Added {added} from {profile} to {name}"
+msgstr "Added {added} from {profile} to {name}"
+
 #: src/profiles/HealthDialog.tsx
 msgid "Could not check profile"
 msgstr "Could not check profile"
@@ -1166,6 +1172,10 @@ msgstr "Changed groups"
 #: src/profiles/historyLabel.ts
 msgid "Marked {name} explicit"
 msgstr "Marked {name} explicit"
+
+#: src/profiles/MergeDialog.tsx
+msgid "Added {added} and updated {updated} from {profile} to {name}"
+msgstr "Added {added} and updated {updated} from {profile} to {name}"
 
 #: src/profiles/VortexFolderPrompt.tsx
 msgid "The {manager} folder {path} has no profiles."
