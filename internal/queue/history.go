@@ -19,25 +19,27 @@ const (
 
 // HistoryEntry is one finished download, kept in a bounded file under the data dir.
 type HistoryEntry struct {
-	Name     string `json:"name"`
-	Version  string `json:"version"`
-	Source   string `json:"source"`
-	Profile  string `json:"profileId"`
-	BatchID  string `json:"batchId,omitempty"`
-	Game     string `json:"game"`
-	ModID    int    `json:"modId"`
-	FileID   int    `json:"fileId"`
-	Kind     string `json:"kind"`
-	Package  string `json:"package,omitempty"`
-	Repo     string `json:"repo,omitempty"`
-	Tag      string `json:"tag,omitempty"`
-	Asset    string `json:"asset,omitempty"`
-	Latest   bool   `json:"latest,omitempty"`
-	Size     int64  `json:"size"`
-	Started  int64  `json:"started"`
-	Finished int64  `json:"finished"`
-	Outcome  string `json:"outcome"`
-	Error    string `json:"error,omitempty"`
+	Name    string `json:"name"`
+	Version string `json:"version"`
+	Source  string `json:"source"`
+	Profile string `json:"profileId"`
+	BatchID string `json:"batchId,omitempty"`
+	Game    string `json:"game"`
+	ModID   int    `json:"modId"`
+	FileID  int    `json:"fileId"`
+	Kind    string `json:"kind"`
+	Package string `json:"package,omitempty"`
+	// PackageFile is the site file of a Package, so a retry fetches the same file.
+	PackageFile int    `json:"packageFile,omitempty"`
+	Repo        string `json:"repo,omitempty"`
+	Tag         string `json:"tag,omitempty"`
+	Asset       string `json:"asset,omitempty"`
+	Latest      bool   `json:"latest,omitempty"`
+	Size        int64  `json:"size"`
+	Started     int64  `json:"started"`
+	Finished    int64  `json:"finished"`
+	Outcome     string `json:"outcome"`
+	Error       string `json:"error,omitempty"`
 	// Override is the antivirus detection the player chose to install despite.
 	Override string `json:"override,omitempty"`
 }
@@ -90,7 +92,7 @@ func (s *Service) recordHistory(it *Item, outcome string) {
 	size := it.SizeKB << 10
 	entry := HistoryEntry{
 		Name: name, Version: it.Version, Source: src, Profile: it.Profile, BatchID: it.BatchID,
-		Game: it.Game, ModID: it.ModID, FileID: it.FileID, Kind: it.Kind, Package: it.Package, Repo: it.Repo, Tag: it.Tag, Asset: it.Asset,
+		Game: it.Game, ModID: it.ModID, FileID: it.FileID, Kind: it.Kind, Package: it.Package, PackageFile: it.PackageFile, Repo: it.Repo, Tag: it.Tag, Asset: it.Asset,
 		Latest: it.Latest, Size: size, Started: started, Finished: now, Outcome: outcome, Error: it.Error, Override: installedOverride(it, outcome),
 	}
 	s.hist.Lock()
@@ -127,7 +129,7 @@ func directSource(e HistoryEntry) string {
 func (e HistoryEntry) request() Request {
 	return Request{
 		Kind: e.Kind, Game: e.Game, Profile: e.Profile, ModID: e.ModID, FileID: e.FileID,
-		Name: e.Name, Version: e.Version, Package: e.Package, Source: directSource(e), Repo: e.Repo, Tag: e.Tag, Asset: e.Asset, Latest: e.Latest,
+		Name: e.Name, Version: e.Version, Package: e.Package, PackageFile: e.PackageFile, Source: directSource(e), Repo: e.Repo, Tag: e.Tag, Asset: e.Asset, Latest: e.Latest,
 	}
 }
 
@@ -154,7 +156,7 @@ func (s *Service) RetryAllFailed(ctx context.Context) (RetryAllResult, error) {
 	s.mu.Lock()
 	for _, e := range slices.Backward(entries) {
 		r := e.request()
-		id := fmt.Sprint(r.Game, "|", r.Profile, "|", r.ModID, "|", r.FileID, "|", r.Package, "|", r.Repo, "|", r.Tag, "|", r.Asset)
+		id := fmt.Sprint(r.Game, "|", r.Profile, "|", r.ModID, "|", r.FileID, "|", r.Package, "|", r.PackageFile, "|", r.Repo, "|", r.Tag, "|", r.Asset)
 		if seen[id] {
 			if e.Outcome == StateFailed {
 				res.Skipped["superseded"]++

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 func TestHistoryRecordsAFinishedDownload(t *testing.T) {
@@ -153,5 +154,15 @@ func TestHistoryReadsAnIndentedFileAndWritesItCompact(t *testing.T) {
 	b, err := os.ReadFile(f.s.historyPath())
 	if err != nil || bytes.Contains(b, []byte("\n")) {
 		t.Fatalf("history file not compact: %v %s", err, b)
+	}
+}
+
+func TestHistoryRetryKeepsThePackageFile(t *testing.T) {
+	t.Parallel()
+	f := newFixture(t)
+	f.s.recordHistory(&Item{Kind: KindInstall, Package: "mod", Source: profile.KindCurseForge, PackageFile: 77}, StateFailed)
+	e := f.s.History()[0]
+	if got := e.request().PackageFile; got != 77 {
+		t.Fatalf("retry PackageFile = %d, want 77", got)
 	}
 }
