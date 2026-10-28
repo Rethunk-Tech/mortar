@@ -366,3 +366,32 @@ func TestKeptHostValuesWaitForTheGameToClose(t *testing.T) {
 		}
 	}
 }
+
+func TestKeptHostValuesSurviveARestartAndFlushWhenTheGameCloses(t *testing.T) {
+	testfs.DataHome(t)
+	s, path := newService(t)
+	files, err := s.Files("lc", "p", "com.example.betterstuff")
+	if err != nil {
+		t.Fatal(err)
+	}
+	s.hostMu.Lock()
+	s.loadKept()
+	s.hostKept[hostKey{"lc", "p", "com.example.betterstuff", files[0].Name}] = []edit{{"General", "LeaveDelay", "60"}}
+	s.saveKept()
+	s.hostMu.Unlock()
+
+	running := true
+	next := &Service{Profiles: s.Profiles, Running: func(string, string) bool { return running }}
+	next.FlushKept()
+	if got, _ := os.ReadFile(filepath.Clean(path)); !strings.Contains(string(got), "LeaveDelay = 120") {
+		t.Fatal("a kept value was written while the game ran")
+	}
+	running = false
+	next.FlushKept()
+	if got, _ := os.ReadFile(filepath.Clean(path)); !strings.Contains(string(got), "LeaveDelay = 60") {
+		t.Fatalf("the kept value was not written on unlock:\n%s", got)
+	}
+	if again := (&Service{Profiles: s.Profiles}); len(func() map[hostKey][]edit { again.loadKept(); return again.hostKept }()) != 0 {
+		t.Fatal("a written value stayed kept")
+	}
+}

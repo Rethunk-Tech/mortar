@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"math"
 	"path/filepath"
 	"regexp"
@@ -14,6 +15,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
@@ -381,11 +383,101 @@ func (s *Service) SaveHostValues(game, profileID, modID, file string) (int, erro
 	}
 	s.hostMu.Lock()
 	defer s.hostMu.Unlock()
-	if s.hostKept == nil {
-		s.hostKept = map[hostKey][]edit{}
-	}
+	s.loadKept()
 	s.hostKept[hostKey{game, profileID, modID, file}] = edits
+	s.saveKept()
 	return len(edits), nil
+}
+
+type keptRecord struct {
+	Game    string     `json:"game"`
+	Profile string     `json:"profile"`
+	Mod     string     `json:"mod"`
+	File    string     `json:"file"`
+	Edits   []keptEdit `json:"edits"`
+}
+
+type keptEdit struct {
+	Section string `json:"section"`
+	Key     string `json:"key"`
+	Value   string `json:"value"`
+}
+
+const keptFile = "host-kept.json"
+
+// loadKept reads the kept values the first time they are needed, so they survive a restart; callers hold hostMu.
+func (s *Service) loadKept() {
+	if s.hostKept != nil {
+		return
+	}
+	s.hostKept = map[hostKey][]edit{}
+	dir, err := datadir.Dir()
+	if err != nil {
+		return
+	}
+	var recs []keptRecord
+	if _, err := datadir.ReadJSON(filepath.Join(dir, keptFile), &recs); err != nil {
+		return
+	}
+	for _, r := range recs {
+		edits := make([]edit, 0, len(r.Edits))
+		for _, e := range r.Edits {
+			edits = append(edits, edit{e.Section, e.Key, e.Value})
+		}
+		s.hostKept[hostKey{r.Game, r.Profile, r.Mod, r.File}] = edits
+	}
+}
+
+// saveKept persists the kept values; callers hold hostMu.
+func (s *Service) saveKept() {
+	dir, err := datadir.Dir()
+	if err != nil {
+		return
+	}
+	recs := make([]keptRecord, 0, len(s.hostKept))
+	for k, edits := range s.hostKept {
+		r := keptRecord{Game: k.game, Profile: k.profile, Mod: k.mod, File: k.file}
+		for _, e := range edits {
+			r.Edits = append(r.Edits, keptEdit{e.section, e.key, e.value})
+		}
+		recs = append(recs, r)
+	}
+	slices.SortFunc(recs, func(a, b keptRecord) int {
+		return strings.Compare(a.Game+"\x00"+a.Profile+"\x00"+a.Mod+"\x00"+a.File, b.Game+"\x00"+b.Profile+"\x00"+b.Mod+"\x00"+b.File)
+	})
+	if b, err := json.Marshal(recs); err == nil {
+		_ = datadir.WriteFile(filepath.Join(dir, keptFile), b, 0o600)
+	}
+}
+
+// FlushKept writes the kept host values of every profile whose game is no longer running; the app calls it when a
+// profile unlocks, so the values land without the config page being opened.
+func (s *Service) FlushKept() {
+	s.hostMu.Lock()
+	s.loadKept()
+	keys := make([]hostKey, 0, len(s.hostKept))
+	for k := range s.hostKept {
+		keys = append(keys, k)
+	}
+	s.hostMu.Unlock()
+	for _, k := range keys {
+		if s.Running != nil && s.Running(k.game, k.profile) {
+			continue
+		}
+		files, err := s.Files(k.game, k.profile, k.mod)
+		if err != nil {
+			log.Printf("config: kept values of %s: %v", k.file, err)
+			continue
+		}
+		for _, f := range files {
+			if f.Name != k.file {
+				continue
+			}
+			if _, err := s.writeKept(k.game, k.profile, k.mod, f); err != nil {
+				log.Printf("config: kept values of %s: %v", k.file, err)
+			}
+		}
+	}
 }
 
 // writeKept writes the host's values kept for f, once the game is no longer running.
@@ -395,8 +487,12 @@ func (s *Service) writeKept(game, profileID, modID string, f ConfigFile) (bool, 
 	}
 	k := hostKey{game, profileID, modID, f.Name}
 	s.hostMu.Lock()
+	s.loadKept()
 	edits, ok := s.hostKept[k]
-	delete(s.hostKept, k)
+	if ok {
+		delete(s.hostKept, k)
+		s.saveKept()
+	}
 	s.hostMu.Unlock()
 	if !ok {
 		return false, nil
