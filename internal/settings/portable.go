@@ -23,7 +23,7 @@ var portableFields = []string{
 	"density", "uiScale", "theme", "gridCardSize", "showAuthorOnCards", "markLocalMods", "centerConfigControls", "browseCardStats", "reduceMotion", "touchRipples", "profileHero",
 	"reuseFomodChoices", "driftChecks",
 	"autoInstallMortarUpdates", "autoTrackNexus",
-	"lanSharing", "lanPort", "lanAllowAnyAddress", "lanName", "lanAutoAcceptPaired", "downloadFolder", "watchFolders", "syncFolder", "vortexFolder", "packFolder",
+	"lanSharing", "lanPort", "lanName", "lanAutoAcceptPaired",
 	"profileOrder", "autoRetryDownloads", "thunderstoreHost", "sidebarBadges",
 	"shareIncludeDisabledMods", "shareIncludeFomodChoices", "shareIncludeNotes", "shareIncludeConfigFiles", "shareIncludeProblemChoices", "shareIncludeLibraries",
 	"updateDigest", "verifyNexusMD5", "showAdultContent", "launchAtLogin", "startMinimised", "rememberWindow", "systemTitleBar", "extensionConnection",
@@ -105,8 +105,22 @@ func overlayPortable(cur Settings, raw map[string]json.RawMessage, present map[s
 		return Settings{}, err
 	}
 	out = sanitizePortable(out)
+	if avRank(out.Antivirus) < avRank(cur.Antivirus) {
+		out.Antivirus = cur.Antivirus
+	}
 	keepLocalOnly(&out, cur, has(present, "games"))
 	return out, nil
+}
+
+// avRank orders the antivirus modes by strictness: an imported file may raise the mode, never lower it.
+func avRank(mode string) int {
+	switch mode {
+	case AntivirusOff:
+		return 0
+	case AntivirusAutomatic:
+		return 1
+	}
+	return 2
 }
 
 // keepLocalOnly puts back, from cur, the per-game fields that name a program, a build or a place Mortar reads mods

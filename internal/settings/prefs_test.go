@@ -92,7 +92,7 @@ func TestAutoEnableRequirementsAlwaysOnly(t *testing.T) {
 	}
 }
 
-var localOnlyKeys = []string{"antivirusSocket", "antivirusCommand", "alvrProgram", "extraModsFolder", "syncOwnFolder", "backupLocation"}
+var localOnlyKeys = []string{"antivirusSocket", "antivirusCommand", "alvrProgram", "extraModsFolder", "syncOwnFolder", "backupLocation", "downloadFolder", "watchFolders", "syncFolder", "vortexFolder", "packFolder", "lanAllowAnyAddress"}
 
 func TestPrefsExportImportRoundTrip(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
@@ -179,7 +179,8 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 			if key.spec.Scope == ScopeGame {
 				game = "stardew"
 			}
-			if have, _ := got.LookupGame(key.spec.Key, game); have != "" {
+			def, _ := Defaults().LookupGame(key.spec.Key, game)
+			if have, _ := got.LookupGame(key.spec.Key, game); have != def {
 				t.Fatalf("%s travelled in the export: %q", key.spec.Key, have)
 			}
 			continue

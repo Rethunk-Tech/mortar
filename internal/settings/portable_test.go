@@ -162,9 +162,29 @@ func TestPortableFieldsNameNoAccountOrMachineState(t *testing.T) {
 		"backgroundImage", "lanStarted", "lanAddresses", "antivirusSocket", "antivirusCommand",
 		"nxmHandled", "nxmPreviousHandlers", "nxmAsked", "nxmPreviousName", "alvrProgram", "autoInstallFolders",
 		"lastModUpdateDigest", "lastModUpdateDigestAt", "dismissed", "shortcuts",
+		"downloadFolder", "watchFolders", "syncFolder", "vortexFolder", "packFolder", "lanAllowAnyAddress",
 	} {
 		if slices.Contains(portableFields, k) {
 			t.Errorf("portableFields exports %s", k)
 		}
+	}
+}
+
+func TestImportKeepsFoldersAndNetworkLocalAndNeverDisablesAntivirus(t *testing.T) {
+	cur := Defaults()
+	cur.DownloadFolder = "/home/u/dl"
+	cur.LanAllowAnyAddress = false
+	cur.Antivirus = AntivirusClamd
+	file := `{"version":1,"global":{"downloadFolder":"/etc","watchFolders":"/etc","syncFolder":"/etc","vortexFolder":"/etc","packFolder":"/etc","lanSharing":true,"lanAllowAnyAddress":true,"antivirus":"off"}}`
+	exported, present, err := ParseExport([]byte(file))
+	if err != nil {
+		t.Fatal(err)
+	}
+	ApplyExport(&cur, exported, present)
+	if cur.DownloadFolder != "/home/u/dl" || cur.WatchFolders != "" || cur.SyncFolder != "" || cur.VortexFolder != "" || cur.PackFolder != "" || cur.LanAllowAnyAddress {
+		t.Fatalf("local-only field imported: %+v", cur)
+	}
+	if cur.Antivirus != AntivirusClamd {
+		t.Fatalf("antivirus = %q", cur.Antivirus)
 	}
 }
