@@ -4057,6 +4057,10 @@ msgstr "Edit tool"
 msgid "Starting dependencies"
 msgstr "Starting dependencies"
 
+#: src/develop/ReleaseItems.tsx
+msgid "Release…"
+msgstr "Release…"
+
 #: src/firstrun/FindStep.tsx
 msgid "Found a copy outside your launchers:"
 msgstr "Found a copy outside your launchers:"
@@ -4317,6 +4321,10 @@ msgstr "Results of installs, updates and launches appear here."
 #: src/launch/GraphicsDialog.tsx
 msgid "You can change this later in {name}'s settings, under Play."
 msgstr "You can change this later in {name}'s settings, under Play."
+
+#: src/develop/ReleaseItems.tsx
+msgid "Upload v{version}…"
+msgstr "Upload v{version}…"
 
 #: src/queue/QueueSheet.tsx
 msgid "{downloading} downloading"
