@@ -36,11 +36,16 @@ export function useStoredState<T>(
   fallback: T,
   valid: (value: unknown) => value is T,
 ): [T, (value: T) => void] {
-  const [value, setValue] = useState<T>(() => read(key, fallback, valid))
+  const [stored, setStored] = useState(() => ({ key, value: read(key, fallback, valid) }))
+  let value = stored.value
+  if (stored.key !== key) {
+    value = read(key, fallback, valid)
+    setStored({ key, value })
+  }
   return [
     value,
     (next) => {
-      setValue(next)
+      setStored({ key, value: next })
       write(key, next)
     },
   ]
