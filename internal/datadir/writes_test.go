@@ -16,8 +16,6 @@ var writersOutsideDatadir = map[string]string{
 	"components/components.go": "temp file beside the catalog cache, renamed over it",
 	"launch/output.go":         "a throwaway game log in the OS temp folder",
 	"sampler/ipc.go":           "a throwaway trace in the OS temp folder",
-	"profile/folder.go":        "an empty probe that tests a folder is writable, then removed",
-	"deploy/oplog.go":          "an append-only log, never replaced",
 	"cli/console_windows.go":   "opens the console device, creates nothing",
 }
 
