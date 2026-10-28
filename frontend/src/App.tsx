@@ -35,7 +35,7 @@ import { BugReportDialog } from './shell/BugReportDialog.tsx'
 import { ErrorBoundary } from './shell/ErrorBoundary.tsx'
 import { SuggestDialog } from './shell/SuggestDialog.tsx'
 import { AvOverrideDialog } from './toasts/AvOverrideDialog.tsx'
-import { toastError } from './toasts/report.ts'
+import { reportError } from './toasts/report.ts'
 import { ToastHost } from './toasts/ToastHost.tsx'
 import { UpdateReadyBanner } from './updates/UpdateReadyBanner.tsx'
 import { WhatsNewDialog } from './updates/WhatsNewDialog.tsx'
@@ -75,7 +75,7 @@ function useBoot(): boolean {
           useNav.getState().openGame(last.id)
         }
       })
-      .catch((e: unknown) => toastError(t`Could not read your games`, e, { retry: boot }))
+      .catch(reportError(t`Could not read your games`, boot))
       .finally(() => setReady(true))
   }, [t])
   useEffect(boot, [boot])

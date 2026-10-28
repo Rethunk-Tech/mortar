@@ -12,7 +12,7 @@ import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
-import { reportUnexpected, toastError } from '../toasts/report.ts'
+import { reportError, reportUnexpected } from '../toasts/report.ts'
 import type { InstalledMod } from './consoleLinks.ts'
 import { smapiUpdateNotes } from './smapiUpdateNotes.ts'
 import { VirtualLog } from './VirtualLog.tsx'
@@ -63,9 +63,7 @@ export function LinkedLog({
   }, [])
   const onPath = useCallback(
     (path: string) => {
-      OpenConsolePath(game, profile, path).catch((e: unknown) => {
-        toastError(t`Could not open the folder`, e)
-      })
+      OpenConsolePath(game, profile, path).catch(reportError(t`Could not open the folder`))
     },
     [game, profile, t],
   )

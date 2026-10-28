@@ -34,7 +34,7 @@ import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
 import { detectionOf } from '../toasts/avOverride.ts'
 import { changeStillLatest } from '../toasts/history.ts'
-import { reportUnexpected, toastError } from '../toasts/report.ts'
+import { reportError, reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { type Landed, pushBatchSummary } from './batchSummary.ts'
 import { downloadInstaller } from './handoff.ts'
@@ -351,16 +351,14 @@ export const useInstall = create<{
     }
     set({ remap: null })
     if (session.queueId) {
-      AnswerRoot(session.queueId, root).catch((e) => {
-        toastError(i18n._(msg`Could not add the chosen folder`), e)
-      })
+      AnswerRoot(session.queueId, root).catch(
+        reportError(i18n._(msg`Could not add the chosen folder`)),
+      )
       return
     }
     InstallRemap(session.game, session.profileId, session.key, root, session.source)
       .then((res) => afterDroppedRemap(session, res))
-      .catch((e) => {
-        toastError(i18n._(msg`Could not add the chosen folder`), e)
-      })
+      .catch(reportError(i18n._(msg`Could not add the chosen folder`)))
   },
   install: (paths) =>
     runInstalls(paths, set, (g, p, file) => () => InstallArchive(g, p, file), true),

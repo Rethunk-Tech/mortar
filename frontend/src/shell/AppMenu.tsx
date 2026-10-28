@@ -34,7 +34,7 @@ import { useNexus } from '../settings/nexus.ts'
 import { useMortarUpdate } from '../settings/updates.ts'
 import { useShortcutHint } from '../settings/useShortcutHint.ts'
 import { space } from '../theme/density.ts'
-import { reportUnexpected, toastError } from '../toasts/report.ts'
+import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { showWhatsNew } from '../updates/whatsNew.ts'
 import { checkForUpdates } from './checkForUpdates.ts'
 import { GO } from './destination.ts'
@@ -150,9 +150,7 @@ function ProjectLinks({ close }: { close: () => void }) {
         label={t`Restart and record startup profile`}
         onClick={() => {
           close()
-          RestartProfilingStartup().catch((e: unknown) =>
-            toastError(t`Could not restart Mortar`, e),
-          )
+          RestartProfilingStartup().catch(reportError(t`Could not restart Mortar`))
         }}
       />
     </>
@@ -189,9 +187,7 @@ const AppMenuItems = memo(function AppMenuItemsView() {
   const downloadsKeys = useShortcutHint('downloads')
   const quit = (): void => {
     close()
-    Application.Quit().catch((e: unknown) =>
-      toastError(t`Could not quit Mortar`, e, { retry: quit }),
-    )
+    Application.Quit().catch(reportError(t`Could not quit Mortar`, quit))
   }
   return (
     <>
