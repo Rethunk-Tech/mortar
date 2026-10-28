@@ -478,13 +478,22 @@ func (s *Service) find(game, remote string) (Offer, bool) {
 	return Offer{}, false
 }
 
+// profilesChangedEvent is control.ChangedEvent, which the window reloads its profiles on; control imports this package.
+const profilesChangedEvent = "profiles:changed"
+
 var errNotArrived = errors.New("the other machine's change has not fully arrived in the sync folder yet")
 
 // Resolve answers the offer for the profile whose sync id is remote, as shown at revision: Theirs applies the other revision, Mine keeps
 // the local profile and writes it over it. Neither merges anything.
-func (s *Service) Resolve(ctx context.Context, game, remote, revision, choice string) error {
+func (s *Service) Resolve(ctx context.Context, game, remote, revision, choice string) (err error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	// Applying theirs can change a profile's mods without adding or renaming one, so the window is told either way.
+	defer func() {
+		if err == nil {
+			s.d.Emit(profilesChangedEvent, game)
+		}
+	}()
 	folder := s.d.Folder(game)
 	o, ok := s.find(game, remote)
 	if folder == "" || !ok {

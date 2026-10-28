@@ -1364,16 +1364,21 @@ func run() error {
 		left   int
 		recent map[string][]launchsvc.RecentLaunch
 	}
+	downloadsLeft := func() int {
+		left := 0
+		for _, item := range queueSvc.State().Items {
+			if item.State != queue.StateDone && item.State != queue.StateSkipped && item.State != queue.StateCancelled {
+				left++
+			}
+		}
+		return left
+	}
 	readTray := func() trayView {
 		v := trayView{ids: game.Implemented(), busy: map[string]bool{}, recent: map[string][]launchsvc.RecentLaunch{}}
 		for _, id := range launches.BusyAmong(v.ids) {
 			v.busy[id] = true
 		}
-		for _, item := range queueSvc.State().Items {
-			if item.State != queue.StateDone && item.State != queue.StateSkipped && item.State != queue.StateCancelled {
-				v.left++
-			}
-		}
+		v.left = downloadsLeft()
 		for _, id := range v.ids {
 			if recent, _ := launches.RecentLaunches(id, 3); len(recent) > 0 {
 				v.recent[id] = recent
@@ -1459,9 +1464,13 @@ func run() error {
 		v := readTray()
 		gate.run(func() { buildTray(v) })
 	}
-	// The Play submenus name each game's profiles. The store calls this under its lock, and reading the profiles takes
-	// it again, so the rebuild runs apart.
-	profiles.ListChanged = func(string) { go rebuild() }
+	// The Play submenus and the window's profile list name each game's profiles, whichever path changed them (the
+	// window, the command line, a share or sync). The store calls this under its lock, and reading the profiles takes it
+	// again, so the rebuild runs apart.
+	profiles.ListChanged = func(game string) {
+		go rebuild()
+		emit(control.ChangedEvent, game)
+	}
 	syncTray := func() {
 		if !trayWanted(store.Get(), inTray) {
 			trayOn.Store(false)
@@ -1491,6 +1500,13 @@ func run() error {
 			// Menus are GTK objects: rebuilding one off the main thread, or twice at once from a burst of
 			// events, leaves items without their native handle and panics.
 			app.Event.On(launchsvc.StateEvent, func(*application.CustomEvent) { rebuild() })
+			// The queue reports every progress step; only a change in how many are left changes the menu.
+			var shownLeft atomic.Int64
+			app.Event.On(queue.ChangedEvent, func(*application.CustomEvent) {
+				if left := int64(downloadsLeft()); shownLeft.Swap(left) != left {
+					rebuild()
+				}
+			})
 		}
 		trayOn.Store(true)
 		refreshTrayMenu()
@@ -1498,6 +1514,7 @@ func run() error {
 	syncTray()
 	trayShown := trayWanted(store.Get(), inTray)
 	systemTitleBar := store.Get().SystemTitleBar
+	trayLanguage := store.Get().Language
 	app.Event.On(settings.ChangedEvent, func(*application.CustomEvent) {
 		if want := store.Get().SystemTitleBar; want != systemTitleBar {
 			systemTitleBar = want
@@ -1510,6 +1527,10 @@ func run() error {
 		if want := trayWanted(store.Get(), inTray); want != trayShown {
 			trayShown = want
 			gate.run(syncTray)
+		} else if lang := store.Get().Language; lang != trayLanguage {
+			// The menu's words are translated when it is built.
+			trayLanguage = lang
+			go rebuild()
 		}
 		applyLinkChoices(store.Get())
 		if err := lanSvc.Apply(); err != nil {
