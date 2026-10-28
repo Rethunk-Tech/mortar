@@ -166,6 +166,10 @@ msgstr "Play this profile to measure."
 msgid "Share log…"
 msgstr "Share log…"
 
+#: src/console/UpdateNoteTag.tsx
+msgid "This mod is one of your Develop projects, so Mortar does not offer its updates."
+msgstr "This mod is one of your Develop projects, so Mortar does not offer its updates."
+
 #: src/console/PerformanceCards.tsx
 msgid "Waiting for the first results"
 msgstr "Waiting for the first results"
@@ -1140,6 +1144,10 @@ msgstr "Clear"
 #: src/console/StartupTable.tsx
 msgid "Game and {loader}"
 msgstr "Game and {loader}"
+
+#: src/console/UpdateNoteTag.tsx
+msgid "You develop this"
+msgstr "You develop this"
 
 #: src/console/PerformancePanelParts.tsx
 msgid "Compare with…"

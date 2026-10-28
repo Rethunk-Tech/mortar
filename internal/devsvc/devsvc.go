@@ -240,6 +240,17 @@ func (s *Service) Projects(gameID string) []settings.DevProject {
 	return slices.Clone(s.Settings.Get().GamePrefs(gameID).DevProjects)
 }
 
+// Packages lists the Thunderstore packages (Team-Name) the game's projects publish, so updates to them are not offered.
+func (s *Service) Packages(gameID string) []string {
+	var out []string
+	for _, p := range s.Settings.Get().GamePrefs(gameID).DevProjects {
+		if pkg := packageOf(p.Dir); pkg != "" {
+			out = append(out, pkg)
+		}
+	}
+	return out
+}
+
 // Forget drops the project in dir from the Develop tab; its files stay, and so does its last build in the profile.
 func (s *Service) Forget(gameID, dir string) error { return s.Settings.ForgetDevProject(gameID, dir) }
 

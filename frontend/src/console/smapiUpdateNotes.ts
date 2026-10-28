@@ -10,6 +10,7 @@ type UpdateNoteKind =
   | 'source'
   | 'prerelease'
   | 'unofficial'
+  | 'develop'
   | 'listed'
   | 'elsewhere'
 

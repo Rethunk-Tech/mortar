@@ -115,6 +115,8 @@ const (
 	// HeldPrerelease: a prerelease while prereleases are off; HeldUnofficial: an unofficial SMAPI build while those are off.
 	HeldPrerelease = "prerelease"
 	HeldUnofficial = "unofficial"
+	// HeldDevelop: the mod is one of the player's Develop projects, which they build themselves.
+	HeldDevelop = "develop"
 )
 
 // Held is one suggested version Mortar holds back. Have is the version of the download installed.
@@ -257,6 +259,23 @@ func HideHeld(r UpdatesResult, mods []framework.Mod, includePrerelease bool, sma
 		}
 	}
 	r.Updates, r.Held = kept, held
+	return r
+}
+
+// holdDeveloped holds back updates to the packages the player develops.
+func holdDeveloped(r UpdatesResult, packages []string) UpdatesResult {
+	if len(packages) == 0 {
+		return r
+	}
+	kept := make([]Update, 0, len(r.Updates))
+	for _, u := range r.Updates {
+		if u.Package != "" && slices.ContainsFunc(packages, func(p string) bool { return strings.EqualFold(p, u.Package) }) {
+			r.Held = append(r.Held, Held{Key: u.Key, ID: u.ID, Name: u.Name, Version: u.Version, Have: u.Installed, Reason: HeldDevelop})
+			continue
+		}
+		kept = append(kept, u)
+	}
+	r.Updates = kept
 	return r
 }
 

@@ -28,6 +28,10 @@ export function UpdateNoteTag({ note }: { note: UpdateNote }) {
       t`Unofficial build`,
       t`Unofficial ${{ loader: SMAPI }}-compatible builds are off in Settings.`,
     ],
+    develop: [
+      t`You develop this`,
+      t`This mod is one of your Develop projects, so Mortar does not offer its updates.`,
+    ],
     listed: [t`In Mortar's updates`, t`Mortar offers this update in the profile's update list.`],
     elsewhere: [
       t`Not downloadable here`,

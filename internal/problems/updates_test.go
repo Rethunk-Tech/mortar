@@ -309,3 +309,17 @@ func TestSourcePageForALinkOnlySourceNeedsNoCatalogKey(t *testing.T) {
 		}
 	}
 }
+
+func TestHoldDevelopedHoldsTheirPackagesOnly(t *testing.T) {
+	r := holdDeveloped(UpdatesResult{Updates: []Update{
+		{Key: "a", Package: "Mortar-DevLaunch", Version: "0.1.1"},
+		{Key: "b", Package: "BepInEx-BepInExPack", Version: "5.4.2305"},
+		{Key: "c", Version: "1.0.0"},
+	}}, []string{"mortar-devlaunch"})
+	if len(r.Updates) != 2 || r.Updates[0].Key != "b" || r.Updates[1].Key != "c" {
+		t.Fatalf("updates: %+v", r.Updates)
+	}
+	if len(r.Held) != 1 || r.Held[0].Key != "a" || r.Held[0].Reason != HeldDevelop {
+		t.Fatalf("held: %+v", r.Held)
+	}
+}

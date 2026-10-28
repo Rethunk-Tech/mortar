@@ -166,6 +166,10 @@ msgstr ""
 msgid "Share log…"
 msgstr ""
 
+#: src/console/UpdateNoteTag.tsx
+msgid "This mod is one of your Develop projects, so Mortar does not offer its updates."
+msgstr ""
+
 #: src/console/PerformanceCards.tsx
 msgid "Waiting for the first results"
 msgstr ""
@@ -1139,6 +1143,10 @@ msgstr ""
 
 #: src/console/StartupTable.tsx
 msgid "Game and {loader}"
+msgstr ""
+
+#: src/console/UpdateNoteTag.tsx
+msgid "You develop this"
 msgstr ""
 
 #: src/console/PerformancePanelParts.tsx

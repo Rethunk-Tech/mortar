@@ -47,6 +47,8 @@ type Service struct {
 	NexusPages NexusPagesOf
 	// GitHub reads the releases of GitHub-installed mods' repositories; nil leaves them to SMAPI's update keys.
 	GitHub *github.Client
+	// DevPackages lists the Thunderstore packages the player develops for the game; updates to them are held back.
+	DevPackages func(gameID string) []string
 	// Throttle waits for a source's turn to be asked (the download queue's per-source limit) and returns the func that
 	// ends it; nil asks without waiting.
 	Throttle func(ctx context.Context, source string) (release func(), err error)
@@ -801,7 +803,7 @@ func (s *Service) updatesFor(ctx context.Context, gameID, id string, fresh bool)
 	s.mu.Unlock()
 	cachedSMAPI := ok && !fresh && c.fingerprint == fp && time.Since(c.at) < updatesTTL
 	if cachedSMAPI && !c.smapiOnly {
-		return withKnownBroken(components.KnownBrokenFor(ctx, gameID), env.GameVersion, withCautions(hideUpdates(c.result, mods, s.settings.Get()), mods)), nil
+		return withKnownBroken(components.KnownBrokenFor(ctx, gameID), env.GameVersion, withCautions(s.hideDeveloped(gameID, hideUpdates(c.result, mods, s.settings.Get())), mods)), nil
 	}
 	set := s.settings.Get()
 	var r UpdatesResult
@@ -819,7 +821,7 @@ func (s *Service) updatesFor(ctx context.Context, gameID, id string, fresh bool)
 		s.updates[key] = cachedUpdates{fingerprint: fp, at: time.Now(), result: r}
 		s.mu.Unlock()
 	}
-	return withKnownBroken(components.KnownBrokenFor(ctx, gameID), env.GameVersion, withCautions(hideUpdates(r, mods, set), mods)), nil
+	return withKnownBroken(components.KnownBrokenFor(ctx, gameID), env.GameVersion, withCautions(s.hideDeveloped(gameID, hideUpdates(r, mods, set)), mods)), nil
 }
 
 // fixStaleManifests sets each manifest whose download is already the suggested version to that version, so SMAPI
@@ -843,6 +845,13 @@ func (s *Service) fixStaleManifests(gameID, id string, held []Held) {
 	if fixed > 0 {
 		log.Printf("updates: %s: set %d stale manifest versions to their download's version", id, fixed)
 	}
+}
+
+func (s *Service) hideDeveloped(gameID string, r UpdatesResult) UpdatesResult {
+	if s.DevPackages == nil {
+		return r
+	}
+	return holdDeveloped(r, s.DevPackages(gameID))
 }
 
 func hideUpdates(r UpdatesResult, mods []framework.Mod, set settings.Settings) UpdatesResult {
