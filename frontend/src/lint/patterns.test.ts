@@ -1,8 +1,7 @@
 import { expect, test } from 'bun:test'
-import { readdirSync, readFileSync } from 'node:fs'
-import { join, relative } from 'node:path'
-
-const SRC = join(import.meta.dir, '..')
+import { readFileSync } from 'node:fs'
+import { relative } from 'node:path'
+import { SRC, srcFiles } from '../../test/srcFiles.ts'
 
 const SKIP_HOOKS = new Set([
   'useCallback',
@@ -23,19 +22,6 @@ const SKIP_HOOKS = new Set([
   'useTransition',
   'useMediaQuery',
 ])
-
-function walk(dir: string): string[] {
-  return readdirSync(dir, { withFileTypes: true }).flatMap((ent) => {
-    const p = join(dir, ent.name)
-    if (ent.isDirectory()) {
-      return walk(p)
-    }
-    if (/\.tsx?$/.test(ent.name) && !/\.test\.tsx?$/.test(ent.name)) {
-      return [p]
-    }
-    return []
-  })
-}
 
 function rel(path: string): string {
   return relative(SRC, path).replaceAll('\\', '/')
@@ -210,7 +196,7 @@ function unstableSelector(body: string): boolean {
   return /\breturn\s*(\{|\[)/.test(body)
 }
 
-const files = walk(SRC).map((path) => ({ path, src: readFileSync(path, 'utf8') }))
+const files = srcFiles().map((path) => ({ path, src: readFileSync(path, 'utf8') }))
 
 test('Lingui t is not taken as a helper parameter or argument', () => {
   const hits = files.flatMap(({ path, src }) => linguiTHits(path, src))

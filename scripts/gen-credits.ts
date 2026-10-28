@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { bundledArtwork } from './bundled-artwork.ts'
+import { type CreditEntry, isCreditList } from './creditList.ts'
 
 const LICENCE_ERROR_CHARS = 280
 const PACKAGE_IN_PATH = /^.*node_modules\/((?:@[^/]+\/)?[^/]+)/
@@ -164,34 +165,11 @@ function classifyLicenceText(text: string): string {
   return hit.id
 }
 
-interface CreditEntry {
-  name: string
-  licence: string
-  url: string
-}
-
 interface NoticeEntry {
   name: string
   licence: string
   url: string
   texts: string[]
-}
-
-function isCreditList(v: unknown): v is CreditEntry[] {
-  if (!Array.isArray(v) || v.length === 0) {
-    return false
-  }
-  return v.every((item) => {
-    const rec = asRecord(item)
-    return (
-      typeof rec.name === 'string' &&
-      rec.name.length > 0 &&
-      typeof rec.licence === 'string' &&
-      rec.licence.length > 0 &&
-      typeof rec.url === 'string' &&
-      /^https?:\/\//.test(rec.url)
-    )
-  })
 }
 
 function dirTexts(dir: string): { licence: string; texts: string[] } | null {

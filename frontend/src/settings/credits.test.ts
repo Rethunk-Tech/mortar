@@ -1,25 +1,6 @@
 import { expect, test } from 'bun:test'
+import { isCreditList } from '../../../scripts/creditList.ts'
 import credits from './generated/credits.json' with { type: 'json' }
-
-function isCreditList(v: unknown): v is { name: string; licence: string; url: string }[] {
-  if (!Array.isArray(v) || v.length === 0) {
-    return false
-  }
-  return v.every((item) => {
-    if (item === null || typeof item !== 'object' || Array.isArray(item)) {
-      return false
-    }
-    const rec = item as Record<string, unknown>
-    return (
-      typeof rec.name === 'string' &&
-      rec.name.length > 0 &&
-      typeof rec.licence === 'string' &&
-      rec.licence.length > 0 &&
-      typeof rec.url === 'string' &&
-      /^https?:\/\//.test(rec.url)
-    )
-  })
-}
 
 test('credits list has name, licence, and project url on every entry', () => {
   expect(isCreditList(credits)).toBe(true)
