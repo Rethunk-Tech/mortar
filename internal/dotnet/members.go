@@ -1,10 +1,8 @@
 package dotnet
 
 import (
-	"fmt"
+	"iter"
 	"strings"
-
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // Member is one method or field an assembly defines: its type as a stack frame names it ("Namespace.Outer+Inner"),
@@ -27,16 +25,11 @@ const (
 
 // Members lists the fields and methods of every type the assembly at path defines, skipping compiler-generated types
 // and members (names holding '<'), in table order.
-func Members(path string) (out []Member, err error) {
-	data, err := fsx.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	defer malformed(path, &out, &err)
-	m, err := open(data)
-	if err != nil {
-		return nil, fmt.Errorf("%s: %w", path, err)
-	}
+func Members(path string) ([]Member, error) {
+	return withModule(path, members)
+}
+
+func members(m *module) (out []Member, err error) {
 	outer := map[int]int{}
 	for row := 1; row <= m.rows[tNested]; row++ {
 		outer[int(m.cell(tNested, row, 0))] = int(m.cell(tNested, row, 1))
@@ -46,20 +39,12 @@ func Members(path string) (out []Member, err error) {
 		if strings.Contains(typ, "<") {
 			continue
 		}
-		lastField := m.rows[tField] + 1
-		if t < m.rows[tTypeDef] {
-			lastField = int(m.cell(tTypeDef, t+1, 4))
-		}
-		for f := int(m.cell(tTypeDef, t, 4)); f < lastField && f <= m.rows[tField]; f++ {
+		for f := range m.fieldsOf(t) {
 			if name := m.str(m.cell(tField, f, 1)); !strings.Contains(name, "<") {
 				out = append(out, Member{Type: typ, Kind: "field", Method: name, Static: m.cell(tField, f, 0)&fieldStatic != 0, Params: []string{}})
 			}
 		}
-		last := m.rows[tMethodDef] + 1
-		if t < m.rows[tTypeDef] {
-			last = int(m.cell(tTypeDef, t+1, 5))
-		}
-		for md := int(m.cell(tTypeDef, t, 5)); md < last && md <= m.rows[tMethodDef]; md++ {
+		for md := range m.methodsOf(t) {
 			name := m.str(m.cell(tMethodDef, md, 3))
 			if strings.Contains(name, "<") {
 				continue
@@ -69,7 +54,7 @@ func Members(path string) (out []Member, err error) {
 				Kind:   "method",
 				Method: name,
 				Static: m.cell(tMethodDef, md, 2)&methodStatic != 0,
-				Void:   returnsVoid(m.blob(m.cell(tMethodDef, md, 4))),
+				Void:   returnType(m.blob(m.cell(tMethodDef, md, 4))) == elementVoid,
 				Params: m.paramNames(md),
 			})
 		}
@@ -77,11 +62,16 @@ func Members(path string) (out []Member, err error) {
 	return out, nil
 }
 
-// returnsVoid reads a method signature's return type: after the calling convention, a generic method's type
-// parameter count and the parameter count.
-func returnsVoid(sig []byte) bool {
+const (
+	elementVoid = 0x01
+	elementBool = 0x02
+)
+
+// returnType is the element type a method signature returns, read after the calling convention, a generic method's
+// type parameter count and the parameter count; 0 when the signature is too short.
+func returnType(sig []byte) byte {
 	if len(sig) < 2 {
-		return false
+		return 0
 	}
 	p := 1
 	if sig[0]&0x10 != 0 {
@@ -89,8 +79,31 @@ func returnsVoid(sig []byte) bool {
 		p += n
 	}
 	_, n := compressed(sig[p:])
-	p += n
-	return p < len(sig) && sig[p] == 0x01
+	if p += n; p < len(sig) {
+		return sig[p]
+	}
+	return 0
+}
+
+// methodsOf is the MethodDef rows type t owns.
+func (m *module) methodsOf(t int) iter.Seq[int] { return m.ownedRows(t, 5, tMethodDef) }
+
+// fieldsOf is the Field rows type t owns.
+func (m *module) fieldsOf(t int) iter.Seq[int] { return m.ownedRows(t, 4, tField) }
+
+// ownedRows is the rows of table a TypeDef's list column col starts, up to where the next type's list starts.
+func (m *module) ownedRows(t, col, table int) iter.Seq[int] {
+	return func(yield func(int) bool) {
+		last := m.rows[table] + 1
+		if t < m.rows[tTypeDef] {
+			last = int(m.cell(tTypeDef, t+1, col))
+		}
+		for row := int(m.cell(tTypeDef, t, col)); row < last && row <= m.rows[table]; row++ {
+			if !yield(row) {
+				return
+			}
+		}
+	}
 }
 
 // nestedName is typeDefName with the nesting read once for the whole module.

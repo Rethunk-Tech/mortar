@@ -2,11 +2,8 @@ package dotnet
 
 import (
 	"cmp"
-	"fmt"
 	"slices"
 	"strings"
-
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // Kinds of Patch.
@@ -83,16 +80,11 @@ func PatchKindByName(method string) string {
 // HookGen hooks it subscribes: On.Type.add_Method as a hook, IL.Type.add_Method as a transpiler. Patches a plugin
 // applies by calling Harmony.Patch or new Hook(...) at run time name their target only through reflection and are not
 // seen.
-func Patches(path string) (out []Patch, err error) {
-	data, err := fsx.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	defer malformed(path, &out, &err)
-	m, err := open(data)
-	if err != nil {
-		return nil, fmt.Errorf("%s: %w", path, err)
-	}
+func Patches(path string) ([]Patch, error) {
+	return withModule(path, patches)
+}
+
+func patches(m *module) (out []Patch, err error) {
 	typeInfo := map[int]patchInfo{}
 	methodInfo := map[int]patchInfo{}
 	methodKind := map[int]string{}
@@ -115,13 +107,8 @@ func Patches(path string) (out []Patch, err error) {
 	}
 	seen := map[Patch]bool{}
 	for t := 1; t <= m.rows[tTypeDef]; t++ {
-		first := int(m.cell(tTypeDef, t, 5))
-		last := m.rows[tMethodDef] + 1
-		if t < m.rows[tTypeDef] {
-			last = int(m.cell(tTypeDef, t+1, 5))
-		}
 		class, patchClass := typeInfo[t]
-		for md := first; md < last && md <= m.rows[tMethodDef]; md++ {
+		for md := range m.methodsOf(t) {
 			kind := methodKind[md]
 			if kind == "" && patchClass {
 				kind = patchKinds[m.str(m.cell(tMethodDef, md, 3))]
@@ -133,7 +120,7 @@ func Patches(path string) (out []Patch, err error) {
 			if !ok {
 				continue
 			}
-			if kind == PatchPrefix && returnsBool(m.blob(m.cell(tMethodDef, md, 4))) {
+			if kind == PatchPrefix && returnType(m.blob(m.cell(tMethodDef, md, 4))) == elementBool {
 				kind = PatchSkip
 			}
 			if p := (Patch{Target: target, Kind: kind, Method: m.typeDefName(t) + "::" + m.str(m.cell(tMethodDef, md, 3))}); !seen[p] {
@@ -191,20 +178,6 @@ func (m *module) typeDefName(t int) string {
 		return ns + "." + name
 	}
 	return name
-}
-
-// returnsBool reads a method signature's return type.
-func returnsBool(sig []byte) bool {
-	if len(sig) < 2 {
-		return false
-	}
-	p := 1
-	if sig[0]&0x10 != 0 {
-		_, n := compressed(sig[p:])
-		p += n
-	}
-	_, n := compressed(sig[p:])
-	return p+n < len(sig) && sig[p+n] == 0x02
 }
 
 // harmonyPatchArgs reads a [HarmonyPatch] attribute's fixed arguments, typed by its constructor's signature: a Type is

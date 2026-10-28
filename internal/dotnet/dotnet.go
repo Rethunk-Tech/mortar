@@ -158,27 +158,35 @@ type module struct {
 // references. A set_Value call on a type in namespace wrapper (a field wrapper such as Netcode's NetInt) counts as
 // assigning the game member that loaded the wrapper. Instance writes to an object the same method built (an object
 // initializer, or a local only ever assigned a new object) configure the mod's own object and are left out.
-func Writes(path, game, wrapper string) (out []string, err error) {
+func Writes(path, game, wrapper string) ([]string, error) {
+	return withModule(path, func(m *module) ([]string, error) {
+		s := scan{m: m, game: game, wrapper: wrapper, written: map[string]bool{}, refs: map[uint32]ref{}}
+		for i := 1; i <= m.rows[tMethodDef]; i++ {
+			if rva := m.cell(tMethodDef, i, 0); rva != 0 {
+				s.body(m.at(int(rva)))
+			}
+		}
+		var out []string
+		for member := range s.written {
+			out = append(out, member)
+		}
+		slices.Sort(out)
+		return out, nil
+	})
+}
+
+// withModule reads the assembly at path and runs fn on it, turning a malformed assembly into an error for path.
+func withModule[T any](path string, fn func(m *module) (T, error)) (out T, err error) {
 	data, err := fsx.ReadFile(path)
 	if err != nil {
-		return nil, err
+		return out, err
 	}
 	defer malformed(path, &out, &err)
 	m, err := open(data)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", path, err)
+		return out, fmt.Errorf("%s: %w", path, err)
 	}
-	s := scan{m: m, game: game, wrapper: wrapper, written: map[string]bool{}, refs: map[uint32]ref{}}
-	for i := 1; i <= m.rows[tMethodDef]; i++ {
-		if rva := m.cell(tMethodDef, i, 0); rva != 0 {
-			s.body(m.at(int(rva)))
-		}
-	}
-	for member := range s.written {
-		out = append(out, member)
-	}
-	slices.Sort(out)
-	return out, nil
+	return fn(m)
 }
 
 // malformed turns an index out of range, which the readers below hit on a truncated or crafted assembly instead of
@@ -533,14 +541,8 @@ type slot struct {
 // A local counts as built only when every store to it is, so the walk repeats until no more locals turn out to hold
 // something else.
 func (s *scan) body(b []byte) {
-	var code []byte
-	switch b[0] & 3 {
-	case 2:
-		code = b[1 : 1+int(b[0]>>2)]
-	case 3:
-		header := int(b[1]>>4) * 4
-		code = b[header : header+int(le32(b[4:]))]
-	default:
+	code := ilCode(b)
+	if code == nil {
 		return
 	}
 	other := map[int]bool{}
@@ -552,6 +554,59 @@ func (s *scan) body(b []byte) {
 				s.written[w] = true
 			}
 			return
+		}
+	}
+}
+
+// ilCode is a method body's IL, after its tiny or fat header; nil for a body with neither.
+func ilCode(b []byte) []byte {
+	switch b[0] & 3 {
+	case 2:
+		return b[1 : 1+int(b[0]>>2)]
+	case 3:
+		header := int(b[1]>>4) * 4
+		return b[header : header+int(le32(b[4:]))]
+	}
+	return nil
+}
+
+// instr is one IL instruction: where it starts, its opcode (0xFExx for two-byte opcodes), where its operand starts,
+// the operand when it is 1, 2 or 4 bytes, and where the next instruction starts.
+type instr struct {
+	start, op, at, next int
+	arg                 uint32
+}
+
+// ops decodes code's instructions in order, stopping at an opcode it does not know.
+func ops(code []byte) iter.Seq[instr] {
+	return func(yield func(instr) bool) {
+		for p := 0; p < len(code); {
+			in := instr{start: p, op: int(code[p])}
+			p++
+			if in.op == 0xFE {
+				in.op = 0xFE00 | int(code[p])
+				p++
+			}
+			size, ok := operand(in.op)
+			if !ok {
+				return
+			}
+			if in.op == 0x45 {
+				size = 4 + 4*int(le32(code[p:]))
+			}
+			switch size {
+			case 1:
+				in.arg = uint32(code[p])
+			case 2:
+				in.arg = uint32(le16(code[p:]))
+			case 4:
+				in.arg = le32(code[p:])
+			}
+			in.at, in.next = p, p+size
+			if !yield(in) {
+				return
+			}
+			p = in.next
 		}
 	}
 }
@@ -581,10 +636,10 @@ func (s *scan) walk(code []byte, other map[int]bool) []string {
 		}
 	}
 	dead := false
-	for p := 0; p < len(code); {
+	for in := range ops(code) {
 		j, ok := []slot(nil), false
 		if len(joins) > 0 {
-			j, ok = joins[p]
+			j, ok = joins[in.start]
 		}
 		switch {
 		case ok && dead:
@@ -595,30 +650,7 @@ func (s *scan) walk(code []byte, other map[int]bool) []string {
 			stack = stack[:0]
 		}
 		dead = false
-		op := int(code[p])
-		p++
-		if op == 0xFE {
-			op = 0xFE00 | int(code[p])
-			p++
-		}
-		size, ok := operand(op)
-		if !ok {
-			return writes
-		}
-		if op == 0x45 {
-			size = 4 + 4*int(le32(code[p:]))
-		}
-		var arg uint32
-		switch size {
-		case 1:
-			arg = uint32(code[p])
-		case 2:
-			arg = uint32(le16(code[p:]))
-		case 4:
-			arg = le32(code[p:])
-		}
-		at := p
-		p += size
+		op, arg, at, p := in.op, in.arg, in.at, in.next
 		switch op {
 		case 0x28, 0x29, 0x6F, 0x73: // call, calli, callvirt, newobj
 			r := s.ref(arg)
@@ -698,7 +730,7 @@ func (s *scan) walk(code []byte, other map[int]bool) []string {
 			}
 			switch {
 			case op >= 0x2B && op <= 0x37 || op == 0xDE:
-				branch(p + int(int8(arg)))
+				branch(p + int(code[at]^0x80) - 0x80)
 			case op >= 0x38 && op <= 0x44 || op == 0xDD:
 				branch(p + signed(arg))
 			case op == 0x45:
@@ -825,16 +857,11 @@ type Declared struct {
 const maxRelations = 1024
 
 // Scan reads the plugins the assembly at path declares and the dependencies and incompatibilities they carry.
-func Scan(path string) (out Declared, err error) {
-	data, err := fsx.ReadFile(path)
-	if err != nil {
-		return Declared{}, err
-	}
-	defer malformed(path, &out, &err)
-	m, err := open(data)
-	if err != nil {
-		return Declared{}, fmt.Errorf("%s: %w", path, err)
-	}
+func Scan(path string) (Declared, error) {
+	return withModule(path, scanDeclared)
+}
+
+func scanDeclared(m *module) (out Declared, err error) {
 	type pending struct {
 		def int
 		r   Relation

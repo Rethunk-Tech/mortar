@@ -93,11 +93,7 @@ func (m *module) methodRow(method string, params int) int {
 		if m.typeDefName(t) != typ {
 			continue
 		}
-		last := m.rows[tMethodDef] + 1
-		if t < m.rows[tTypeDef] {
-			last = int(m.cell(tTypeDef, t+1, 5))
-		}
-		for md := int(m.cell(tTypeDef, t, 5)); md < last && md <= m.rows[tMethodDef]; md++ {
+		for md := range m.methodsOf(t) {
 			if m.str(m.cell(tMethodDef, md, 3)) != name || params >= 0 && paramCount(m.blob(m.cell(tMethodDef, md, 4))) != params {
 				continue
 			}

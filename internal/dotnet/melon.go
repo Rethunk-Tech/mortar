@@ -3,12 +3,9 @@ package dotnet
 import (
 	"cmp"
 	"encoding/binary"
-	"fmt"
 	"math"
 	"slices"
 	"strings"
-
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // Melon is what a MelonLoader mod or plugin assembly says about itself: its [assembly: MelonInfo], [MelonPriority],
@@ -27,16 +24,11 @@ type Melon struct {
 }
 
 // ScanMelon reads the MelonLoader attributes of the assembly at path; HasInfo is false for a library that is no melon.
-func ScanMelon(path string) (out Melon, err error) {
-	data, err := fsx.ReadFile(path)
-	if err != nil {
-		return Melon{}, err
-	}
-	defer malformed(path, &out, &err)
-	m, err := open(data)
-	if err != nil {
-		return Melon{}, fmt.Errorf("%s: %w", path, err)
-	}
+func ScanMelon(path string) (Melon, error) {
+	return withModule(path, scanMelon)
+}
+
+func scanMelon(m *module) (out Melon, err error) {
 	if m.rows[tAssembly] > 0 {
 		out.Assembly = m.str(m.cell(tAssembly, 1, 7))
 	}
