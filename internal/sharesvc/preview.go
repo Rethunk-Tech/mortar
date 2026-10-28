@@ -470,17 +470,7 @@ func (r *resolver) curseforge(ctx context.Context, ref share.Ref) Mod {
 
 // vsmoddb resolves a shared Mod DB release: installed when the profile or the store holds it, else downloaded.
 func (r *resolver) vsmoddb(ctx context.Context, ref share.Ref) Mod {
-	m := Mod{
-		Key: "vsmoddb:" + ref.VSModDB + ":" + strconv.Itoa(ref.FileID), Site: SiteVSModDB, Name: "Mod DB mod " + ref.VSModDB,
-		Package: ref.VSModDB, FileID: ref.FileID, Version: ref.Version, PageURL: vsmoddb.Driver{}.ModPageURL("", ref.VSModDB),
-		State: StateDownload, IDs: []mod.ID{}, Disabled: append([]mod.ID{}, ref.Disabled...),
-	}
-	switch {
-	case slices.ContainsFunc(r.target, ref.MatchesEntry):
-		m.State = StateInstalled
-	case r.storedKey(store.PackageKey(profile.KindVSModDB+":"+ref.VSModDB, ref.Version)):
-		m.State, r.storedKeys[m.Key] = StateInstalled, true
-	}
+	m := r.fileRow(ref, SiteVSModDB, ref.VSModDB, "Mod DB mod "+ref.VSModDB, vsmoddb.Driver{}.ModPageURL("", ref.VSModDB))
 	if r.vsmoddbRelease != nil {
 		if found, err := r.vsmoddbRelease(ctx, ref.VSModDB, strconv.Itoa(ref.FileID)); err == nil && found.Name != "" {
 			m.Name, m.Icon = found.Name, found.Picture
@@ -491,21 +481,28 @@ func (r *resolver) vsmoddb(ctx context.Context, ref share.Ref) Mod {
 
 // paradox resolves a shared Paradox Mods version: installed when the profile or the store holds it, else downloaded.
 func (r *resolver) paradox(ctx context.Context, ref share.Ref) Mod {
+	m := r.fileRow(ref, SiteParadox, ref.Paradox, "Paradox mod "+ref.Paradox, paradox.Driver{}.ModPageURL("", ref.Paradox))
+	if r.paradoxVersion != nil {
+		if found, err := r.paradoxVersion(ctx, ref.Paradox, strconv.Itoa(ref.FileID)); err == nil && found.Name != "" {
+			m.Name = found.Name
+		}
+	}
+	return m
+}
+
+// fileRow is the row for a shared release of site's mod pkg, named by its file id: installed when the profile or the
+// store holds it, else to download. The site id is also the entry's source kind.
+func (r *resolver) fileRow(ref share.Ref, site, pkg, name, page string) Mod {
 	m := Mod{
-		Key: "paradox:" + ref.Paradox + ":" + strconv.Itoa(ref.FileID), Site: SiteParadox, Name: "Paradox mod " + ref.Paradox,
-		Package: ref.Paradox, FileID: ref.FileID, Version: ref.Version, PageURL: paradox.Driver{}.ModPageURL("", ref.Paradox),
+		Key: site + ":" + pkg + ":" + strconv.Itoa(ref.FileID), Site: site, Name: name,
+		Package: pkg, FileID: ref.FileID, Version: ref.Version, PageURL: page,
 		State: StateDownload, IDs: []mod.ID{}, Disabled: append([]mod.ID{}, ref.Disabled...),
 	}
 	switch {
 	case slices.ContainsFunc(r.target, ref.MatchesEntry):
 		m.State = StateInstalled
-	case r.storedKey(store.PackageKey(profile.KindParadox+":"+ref.Paradox, ref.Version)):
+	case r.storedKey(store.PackageKey(site+":"+pkg, ref.Version)):
 		m.State, r.storedKeys[m.Key] = StateInstalled, true
-	}
-	if r.paradoxVersion != nil {
-		if found, err := r.paradoxVersion(ctx, ref.Paradox, strconv.Itoa(ref.FileID)); err == nil && found.Name != "" {
-			m.Name = found.Name
-		}
 	}
 	return m
 }
