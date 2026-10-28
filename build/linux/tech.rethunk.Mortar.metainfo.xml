@@ -133,6 +133,17 @@
           <li>Profiles added, renamed or deleted from the command line, a share or sync show in the window and the tray at once</li>
           <li>A missing Thunderstore requirement links to its page and can be added in one click</li>
           <li>Duplicates found after a run open the same chooser as Problems, and each copy names where it came from</li>
+          <li>Moving the data folder keeps profiles you moved to another folder</li>
+          <li>The backup before Play or an update holds the profile's own saves, never another profile's</li>
+          <li>Removing a mod keeps its settings for Undo, and a mod named BepInEx never takes the loader's own settings with it</li>
+          <li>A damaged Nexus cache file no longer stops Mortar from starting</li>
+          <li>FOMOD installers packed in a subfolder or naming files in another letter case install</li>
+          <li>Heroic's GOG games are found, and so are games and Steam libraries behind a symlink</li>
+          <li>Find the cause no longer blames a framework when one of its content packs crashes the game</li>
+          <li>All sources sorted by downloads or by updated no longer skips mods or shows empty pages</li>
+          <li>Play from a Steam shortcut no longer waits forever when the graphics question is due</li>
+          <li>Bug reports and diagnostics files write your home folder as ~</li>
+          <li>Command palette actions work from Settings and the other full pages</li>
           <li>The Flatpak finds r2modman and Gale profiles in their usual folders</li>
           <li>Find the cause asks before it starts relaunching a crashed game</li>
           <li>Removing a custom game, unpairing a computer and restoring over saves ask first</li>
