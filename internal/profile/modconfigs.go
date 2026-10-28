@@ -23,8 +23,11 @@ func (s *Store) modConfigNames(game string, p Profile, id mod.ID) []string {
 	if _, name, ok := strings.Cut(id.Local(), "-"); ok && id.Format() != "" {
 		names = append(names, name)
 	}
-	return names
+	// BepInEx.cfg is the loader's own, whatever a mod is called.
+	return slices.DeleteFunc(names, func(n string) bool { return strings.EqualFold(n, loaderConfigName) })
 }
+
+const loaderConfigName = "BepInEx"
 
 // ownedConfigs is the .cfg files in folder named after one of names.
 func ownedConfigs(folder string, names []string) []string {

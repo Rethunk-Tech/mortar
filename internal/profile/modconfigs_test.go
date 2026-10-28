@@ -97,3 +97,32 @@ func TestModConfigStaysWithTheEnabledOwnerAndAFailedRemoveKeepsIt(t *testing.T) 
 		t.Fatalf("removing the disabled one took the enabled one's config: %v", err)
 	}
 }
+
+// A package named BepInEx (or a plugin with that GUID) never takes the loader's own BepInEx.cfg with it.
+func TestTheLoadersConfigIsNoModsOwn(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, err := e.Create("lethal-company", "LC")
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, err := e.InstallSource(t.Context(), "lethal-company", p.ID, tsZip(t, "1.0.0"), Source{Kind: KindThunderstore, Name: "AnyTeam-BepInEx", Version: "1.0.0"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	en := res.Profile.Entries[0]
+	dir, _ := e.ProfileDir("lethal-company", p.ID)
+	writeFile(t, dir, "BepInEx/config/BepInEx.cfg", "[Logging]\nA = 1\n")
+	if _, _, err := e.enableMod("lethal-company", p.ID, en.Key, en.Mods[0].ID, false); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.SyncPackages("lethal-company", p.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.RemoveEntries("lethal-company", p.ID, []string{en.Key}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := fsx.Stat(filepath.Join(dir, "BepInEx", "config", "BepInEx.cfg")); err != nil {
+		t.Fatalf("BepInEx.cfg went with the mod: %v", err)
+	}
+}
