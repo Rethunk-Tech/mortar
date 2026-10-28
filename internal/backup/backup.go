@@ -91,13 +91,7 @@ func savesZip(l saves.Layout, backupsDir string, keep int, now time.Time, cause 
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return "", err
 	}
-	name := now.UTC().Truncate(time.Millisecond)
-	if len(zips) > 0 {
-		// A clock that went back must not name the new zip older than the rest, where prune would take it.
-		if t, err := time.Parse(stamp, strings.TrimSuffix(zips[len(zips)-1], ".zip")); err == nil && !name.After(t) {
-			name = t.Add(time.Millisecond)
-		}
-	}
+	name := nextStamp(zips, now)
 	for _, n := range slices.Backward(zips) {
 		if !readCause(filepath.Join(backupsDir, n)).wholeSaves() {
 			continue
@@ -144,17 +138,23 @@ func Folder(ctx context.Context, l saves.Layout, backupsDir, folder string, keep
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return "", err
 	}
-	name := now.UTC().Truncate(time.Millisecond)
-	if len(zips) > 0 {
-		newest := zips[len(zips)-1]
-		if t, err := time.Parse(stamp, strings.TrimSuffix(newest, ".zip")); err == nil && !name.After(t) {
-			name = t.Add(time.Millisecond)
-		}
-	}
+	name := nextStamp(zips, now)
 	if err := os.MkdirAll(backupsDir, 0o700); err != nil {
 		return "", err
 	}
 	return finishZip(backupsDir, l, []string{folder}, keep, now, name, cause, func(name string) []string { return l.LinkedOf(ctx, name) })
+}
+
+// nextStamp names a new zip after now, and after the newest of zips: a clock that went back must not name the new zip
+// older than the rest, where prune would take it.
+func nextStamp(zips []string, now time.Time) time.Time {
+	name := now.UTC().Truncate(time.Millisecond)
+	if len(zips) > 0 {
+		if t, err := time.Parse(stamp, strings.TrimSuffix(zips[len(zips)-1], ".zip")); err == nil && !name.After(t) {
+			name = t.Add(time.Millisecond)
+		}
+	}
+	return name
 }
 
 func finishZip(backupsDir string, l saves.Layout, names []string, keep int, now, name time.Time, cause Cause, linked linker) (string, error) {
