@@ -928,3 +928,18 @@ func TestFreezeFavouriteAndQueueMoveCallTheirMethods(t *testing.T) {
 		}
 	}
 }
+
+func TestProblemsNumbersRunErrorsAndRedundantRowsLikeTheDismissList(t *testing.T) {
+	res := problems.Result{
+		Settings:  []framework.SettingHint{{ID: "smapi:A.Mod", Name: "Alpha", Field: "Enabled", Current: "false", ForNames: []string{"Beta"}}},
+		RunErrors: []problems.RunError{{Key: "b", Name: "Beta", ID: "smapi:B.Mod"}},
+		Redundant: []framework.Redundant{{Kind: "replaced", Key: "c", Name: "Gamma", By: []framework.ModRef{{Key: "d", Name: "Delta"}}}},
+	}
+	r := invoke(t, map[string]any{"problems": res}, "problems", "stardew", "Farm")
+	if !strings.Contains(r.out, " 2  run error  Beta") || !strings.Contains(r.out, " 3  redundant  Gamma") {
+		t.Fatalf("numbering: %q", r.out)
+	}
+	if rows := problems.DismissableRows(res); len(rows) != 3 || rows[1].Kind != "runError" || rows[2].Kind != "redundant" {
+		t.Fatalf("rows: %+v", rows)
+	}
+}

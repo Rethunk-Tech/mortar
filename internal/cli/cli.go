@@ -1721,7 +1721,11 @@ func (c *cmd) printProblems(r problems.Result) {
 		}
 	}
 	for _, x := range r.RunErrors {
-		fmt.Fprintf(c.out, "run error  %s (%s)\n", x.Name, x.ID)
+		fmt.Fprintf(c.out, "%s  run error  %s (%s)\n", next(), x.Name, x.ID)
+	}
+	for _, x := range r.Redundant {
+		_, text := dismissedKindText(problems.DismissedProblem{Redundant: &x})
+		fmt.Fprintf(c.out, "%s  redundant  %s\n", next(), text)
 	}
 	for _, x := range r.Drift {
 		fmt.Fprintf(c.out, "edited     %s %s\n", x.Kind, x.Folder)

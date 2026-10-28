@@ -41,6 +41,9 @@ func dismissedKindText(d problems.DismissedProblem) (kind, text string) {
 	if d.LoadFailure != nil {
 		return "loadFailure", fmt.Sprintf("%s: %s", d.LoadFailure.Name, d.LoadFailure.Message)
 	}
+	if d.RunError != nil {
+		return "runError", fmt.Sprintf("%s (%s)", d.RunError.Name, d.RunError.ID)
+	}
 	return "unknown", d.Token
 }
 
