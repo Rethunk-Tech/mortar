@@ -72,13 +72,36 @@ func flatpakEnv(t *testing.T, portal func() ([]byte, error)) (dir string) {
 	t.Setenv("FLATPAK_ID", "tech.rethunk.Mortar")
 	dir = filepath.Join(t.TempDir(), "mortar")
 	prevPortal, prevDir := portalSecret, storeDir
+	prevGet, prevSet, prevDel := keyringGet, keyringSet, keyringDelete
 	portalSecret, storeDir = portal, func() string { return dir }
-	keyDone = false
+	setHostRing(nil)
 	t.Cleanup(func() {
 		portalSecret, storeDir = prevPortal, prevDir
-		keyDone = false
+		keyringGet, keyringSet, keyringDelete = prevGet, prevSet, prevDel
+		keyDone, hostDone = false, false
 	})
 	return dir
+}
+
+// setHostRing stubs the host Secret Service with ring, or as unreachable when ring is nil, and re-probes it.
+func setHostRing(ring map[string]string) {
+	hostDone = false
+	keyDone = false
+	if ring == nil {
+		down := errors.New("org.freedesktop.DBus.Error.ServiceUnknown")
+		keyringGet = func(string, string) (string, error) { return "", down }
+		keyringSet = func(string, string, string) error { return down }
+		keyringDelete = func(string, string) error { return down }
+		return
+	}
+	keyringGet = func(_, name string) (string, error) {
+		if v, ok := ring[name]; ok {
+			return v, nil
+		}
+		return "", ErrNotFound
+	}
+	keyringSet = func(_, name, v string) error { ring[name] = v; return nil }
+	keyringDelete = func(_, name string) error { delete(ring, name); return nil }
 }
 
 func fixedPortal(secret string) func() ([]byte, error) {
@@ -141,6 +164,52 @@ func TestFlatpakStore(t *testing.T) {
 		raw, err := readFile(filepath.Join(dir, "secrets"))
 		if err != nil || bytes.Contains(raw, []byte("key-123")) {
 			t.Fatalf("the moved secrets must be sealed: %v", err)
+		}
+	})
+
+	t.Run("no portal uses the host keyring and writes no file", func(t *testing.T) {
+		dir := flatpakEnv(t, func() ([]byte, error) { return nil, errors.New("no portal") })
+		ring := map[string]string{}
+		setHostRing(ring)
+		if err := Set("nexus", "key-1"); err != nil {
+			t.Fatal(err)
+		}
+		if v, err := Get("nexus"); err != nil || v != "key-1" || ring["nexus"] != "key-1" {
+			t.Fatalf("got %q, %v, ring %v", v, err, ring)
+		}
+		if _, err := os.Stat(dir); !errors.Is(err, fs.ErrNotExist) {
+			t.Fatalf("no store folder expected: %v", err)
+		}
+		if Plaintext() {
+			t.Fatal("the keyring is not plain text")
+		}
+		if err := Delete("nexus"); err != nil || len(ring) != 0 {
+			t.Fatalf("delete: %v %v", err, ring)
+		}
+	})
+
+	t.Run("neither portal nor keyring is plain text", func(t *testing.T) {
+		dir := flatpakEnv(t, func() ([]byte, error) { return nil, errors.New("no portal") })
+		if err := Set("itch", "tok"); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := os.Stat(filepath.Join(dir, "secrets.json")); err != nil || !Plaintext() {
+			t.Fatalf("plain file: %v, Plaintext %v", err, Plaintext())
+		}
+	})
+
+	t.Run("a plain file moves to the keyring once it answers", func(t *testing.T) {
+		dir := flatpakEnv(t, func() ([]byte, error) { return nil, errors.New("no portal") })
+		if err := Set("nexus", "key-1"); err != nil {
+			t.Fatal(err)
+		}
+		ring := map[string]string{}
+		setHostRing(ring)
+		if v, err := Get("nexus"); err != nil || v != "key-1" || ring["nexus"] != "key-1" {
+			t.Fatalf("got %q, %v, ring %v", v, err, ring)
+		}
+		if _, err := os.Stat(filepath.Join(dir, "secrets.json")); !errors.Is(err, fs.ErrNotExist) {
+			t.Fatalf("the plain file is still there: %v", err)
 		}
 	})
 

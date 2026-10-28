@@ -1,5 +1,5 @@
 // Package secret keeps credentials in the operating system's keyring (Secret Service on Linux, Credential Manager
-// on Windows), never in Mortar's data folder. Inside a Flatpak they live in a sealed file instead (flatpak.go).
+// on Windows), never in Mortar's data folder. Inside a Flatpak they live in a sealed file or the host's keyring instead (flatpak.go).
 package secret
 
 import (
@@ -27,7 +27,11 @@ var getTimeout = 3 * time.Second
 var ErrWaitingForUnlock = usererr.New(usererr.Locked, "Waiting for you to unlock the keyring.")
 
 // keyringGet is the backend read, replaced in tests.
-var keyringGet = keyring.Get
+var (
+	keyringGet    = keyring.Get
+	keyringSet    = keyring.Set
+	keyringDelete = keyring.Delete
+)
 
 // OnUnlocked is called after a read that outlived getTimeout completes, so the app can retry what it deferred.
 var OnUnlocked = func() {}
@@ -120,7 +124,7 @@ func SetIn(svc, name, value string) error {
 	if sandbox.InFlatpak() {
 		return flatpakSet(flatpakName(svc, name), value)
 	}
-	return explain(keyring.Set(svc, name, value))
+	return explain(keyringSet(svc, name, value))
 }
 
 func forget(svc, name string) {
@@ -146,7 +150,7 @@ func DeleteIn(svc, name string) error {
 	if sandbox.InFlatpak() {
 		return flatpakDelete(flatpakName(svc, name))
 	}
-	if err := keyring.Delete(svc, name); err != nil && !errors.Is(err, ErrNotFound) {
+	if err := keyringDelete(svc, name); err != nil && !errors.Is(err, ErrNotFound) {
 		return explain(err)
 	}
 	return nil

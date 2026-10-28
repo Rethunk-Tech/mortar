@@ -17,10 +17,12 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/portal"
+	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
-// Inside a Flatpak the Secret Service is not reachable once the sandbox drops its bus name, so secrets live in one
-// file in the sandbox's own data folder, sealed with the XDG Secret portal's per-app master secret.
+// Inside a Flatpak secrets live in one file in the sandbox's own data folder, sealed with the XDG Secret portal's
+// per-app master secret. Without the portal they go to the host's Secret Service (the manifest grants its bus name),
+// and with neither to a plain 0600 file.
 
 const (
 	sealedFile = "secrets"
@@ -48,6 +50,9 @@ var (
 	keyDone bool
 	keyVal  []byte
 	keyErr  error
+	// The host keyring is probed once per process too.
+	hostDone bool
+	hostVal  bool
 )
 
 // masterKey returns the AES key derived from the portal secret.
@@ -65,21 +70,71 @@ func masterKey() ([]byte, error) {
 	return keyVal, keyErr
 }
 
-// location picks the sealed file when the portal answers, else the plain one. A sealed file with no portal is an
-// error: falling back would hide its contents and let the next write start a second store.
-func location() (path string, key []byte, err error) {
+// hostProbeName is a name no secret uses: asking for it only shows whether a Secret Service answers.
+const hostProbeName = ".probe"
+
+// hostKeyring reports whether the host's Secret Service answers.
+func hostKeyring() bool {
+	if !hostDone {
+		hostDone = true
+		_, err := keyringGet(service, hostProbeName)
+		hostVal = err == nil || errors.Is(err, ErrNotFound)
+	}
+	return hostVal
+}
+
+// location picks the sealed file when the portal answers, else the host keyring, else the plain file. A sealed file
+// with no portal is an error: falling back would hide its contents and let the next write start a second store.
+// host is true when the keyring holds the secrets and path and key are unused.
+func location() (path string, key []byte, host bool, err error) {
 	dir := storeDir()
 	key, kerr := masterKey()
 	if kerr == nil {
 		if err := sealPlain(dir, key); err != nil {
-			return "", nil, err
+			return "", nil, false, err
 		}
-		return filepath.Join(dir, sealedFile), key, nil
+		return filepath.Join(dir, sealedFile), key, false, nil
 	}
 	if _, err := os.Stat(filepath.Join(dir, sealedFile)); err == nil {
-		return "", nil, fmt.Errorf("secrets are sealed and the secret portal is unavailable: %w", kerr)
+		return "", nil, false, fmt.Errorf("secrets are sealed and the secret portal is unavailable: %w", kerr)
 	}
-	return filepath.Join(dir, plainFile), nil, nil
+	if hostKeyring() {
+		return "", nil, true, keyringPlain(dir)
+	}
+	return filepath.Join(dir, plainFile), nil, false, nil
+}
+
+// keyringPlain moves the secrets of a plain file into the host keyring and removes the file, so none is lost or
+// left readable on disk. The file stays when any write fails.
+func keyringPlain(dir string) error {
+	plain := filepath.Join(dir, plainFile)
+	if _, err := os.Lstat(plain); errors.Is(err, fs.ErrNotExist) {
+		return nil
+	} else if err != nil {
+		return err
+	}
+	m, err := load(plain, nil)
+	if err != nil {
+		return err
+	}
+	for name, v := range m {
+		if err := keyringSet(service, name, v); err != nil {
+			return explain(err)
+		}
+	}
+	return fsx.Remove(plain)
+}
+
+// Plaintext reports whether secrets are kept in the unencrypted fallback file: inside a Flatpak with neither the
+// secret portal nor a host keyring.
+func Plaintext() bool {
+	if !sandbox.InFlatpak() {
+		return false
+	}
+	storeMu.Lock()
+	defer storeMu.Unlock()
+	_, key, host, err := location()
+	return err == nil && !host && key == nil
 }
 
 // sealPlain moves the secrets of a plain file, written while the portal was missing, into the sealed file once the
@@ -207,9 +262,12 @@ func unseal(key, sealed []byte) ([]byte, error) {
 func update(fn func(m map[string]string) bool) error {
 	storeMu.Lock()
 	defer storeMu.Unlock()
-	path, key, err := location()
+	path, key, host, err := location()
 	if err != nil {
 		return err
+	}
+	if host {
+		return errors.New("update called on the host keyring")
 	}
 	m, err := load(path, key)
 	if err != nil {
@@ -222,25 +280,52 @@ func update(fn func(m map[string]string) bool) error {
 }
 
 func flatpakSet(name, value string) error {
+	if host, err := onHost(); err != nil || host {
+		if err != nil {
+			return err
+		}
+		return explain(keyringSet(service, name, value))
+	}
 	return update(func(m map[string]string) bool { m[name] = value; return true })
 }
 
 func flatpakDelete(name string) error {
-	err := update(func(m map[string]string) bool {
+	if host, err := onHost(); err != nil || host {
+		if err != nil {
+			return err
+		}
+		if err := keyringDelete(service, name); err != nil && !errors.Is(err, ErrNotFound) {
+			return explain(err)
+		}
+		return nil
+	}
+	return update(func(m map[string]string) bool {
 		_, ok := m[name]
 		delete(m, name)
 		return ok
 	})
-	return err
 }
 
-// flatpakGet reads the file store.
+// onHost resolves the backend and reports whether the host keyring holds the secrets.
+func onHost() (bool, error) {
+	storeMu.Lock()
+	defer storeMu.Unlock()
+	_, _, host, err := location()
+	return host, err
+}
+
+// flatpakGet reads the active store.
 func flatpakGet(name string) (string, error) {
 	var v string
 	var ok bool
 	storeMu.Lock()
-	path, key, err := location()
-	if err == nil {
+	path, key, host, err := location()
+	switch {
+	case err != nil:
+	case host:
+		storeMu.Unlock()
+		return keyringGet(service, name)
+	default:
 		var m map[string]string
 		if m, err = load(path, key); err == nil {
 			v, ok = m[name]
