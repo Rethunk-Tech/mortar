@@ -125,7 +125,7 @@ const TrackedNotInProfile = memo(function TrackedNotInProfileView({
       disableGutters={true}
       sx={{
         mx: space.gutter,
-        mb: 1,
+        mb: space.gap,
         bgcolor: 'transparent',
         boxShadow: 'none',
         '&:before': { display: 'none' },

@@ -6,6 +6,7 @@ import { useState } from 'react'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { listNames } from '../i18n/list.ts'
 import { AppDialog, DialogFooter, ToneIcon } from '../shell/dialog/AppDialog.tsx'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { disableFallout } from './disableUnneeded.ts'
 import { LockedReason } from './LockedReason.tsx'
@@ -73,7 +74,7 @@ function DisableDialogBody({ disabling }: { disabling: Mod[] }) {
         </DialogFooter>
       }
     >
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
         {dependents.length > 0 ? (
           <FormControlLabel
             control={

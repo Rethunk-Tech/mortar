@@ -285,7 +285,15 @@ export function RunProblemsStrip({
   )
   if (live.length === 0) {
     return hidden > 0 ? (
-      <Box sx={{ mx: space.gutter, mb: 1, display: 'flex', alignItems: 'center', gap: space.gap }}>
+      <Box
+        sx={{
+          mx: space.gutter,
+          mb: space.gap,
+          display: 'flex',
+          alignItems: 'center',
+          gap: space.gap,
+        }}
+      >
         <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
           {plural(hidden, {
             one: '# problem in this run is dismissed',
@@ -310,7 +318,7 @@ export function RunProblemsStrip({
     <Box
       sx={{
         mx: space.gutter,
-        mb: 1,
+        mb: space.gap,
         px: space.pad,
         py: space.gap,
         display: 'flex',

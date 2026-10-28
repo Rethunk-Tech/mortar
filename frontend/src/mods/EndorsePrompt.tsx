@@ -119,7 +119,7 @@ export function EndorsePrompt({ profile }: { profile: Profile }) {
       anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
     >
       <Card sx={{ p: space.pad, maxWidth: 460, bgcolor: 'var(--mortar-toast)' }}>
-        <Typography sx={{ mb: 1, fontSize: 'medium.fontSize', fontWeight: 700 }}>
+        <Typography sx={{ mb: space.gap, fontSize: 'medium.fontSize', fontWeight: 700 }}>
           {t`Enjoying these mods? Endorse them on ${{ source: sourceLabel('nexus') }}`}
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>

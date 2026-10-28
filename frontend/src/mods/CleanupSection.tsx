@@ -179,7 +179,11 @@ export function CleanupSection({
   return (
     <Box>
       {removeAll && cleanup.length > 1 ? (
-        <Button size="small" sx={{ mb: 1, height: 26 }} onClick={() => setConfirmCleanup(true)}>
+        <Button
+          size="small"
+          sx={{ mb: space.gap, height: 26 }}
+          onClick={() => setConfirmCleanup(true)}
+        >
           {t`Remove all`}
         </Button>
       ) : null}

@@ -3,6 +3,7 @@ import { Button, List, ListItem, ListItemText, Typography } from '@mui/material'
 import { useGameName } from '../games/info.ts'
 import { modId } from '../mods/lookup.ts'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { cancelling } from './playModeState.ts'
 import { useLaunch } from './store.ts'
@@ -34,7 +35,7 @@ export function UpdateWarnDialog() {
         {t`${{ game: gameName }} is now ${{ installed: warn?.installed ?? '' }}. This profile last launched on ${{ recorded: warn?.recorded ?? '' }}.`}
       </Typography>
       {(warn?.broken.length ?? 0) > 0 ? (
-        <List dense={true} sx={{ mt: 1 }}>
+        <List dense={true} sx={{ mt: space.gap }}>
           {warn?.broken.map((mod) => (
             <ListItem key={modId(mod)} disableGutters={true}>
               <ListItemText
@@ -47,7 +48,7 @@ export function UpdateWarnDialog() {
           ))}
         </List>
       ) : (
-        <Typography sx={{ mt: 1, color: 'text.secondary' }}>
+        <Typography sx={{ mt: space.gap, color: 'text.secondary' }}>
           {t`None of this profile's mods are marked broken for the new version.`}
         </Typography>
       )}

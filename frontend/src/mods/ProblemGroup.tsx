@@ -30,9 +30,9 @@ export function ProblemGroup({ tab }: { tab: ProblemTab }) {
       component="section"
       aria-label={tab.label}
       data-section={tab.id}
-      sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
+      sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
         <Typography component="h2" sx={{ fontSize: 'large.fontSize', fontWeight: 600 }}>
           {tab.label}
         </Typography>

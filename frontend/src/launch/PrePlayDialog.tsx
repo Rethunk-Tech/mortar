@@ -18,6 +18,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { useQueue } from '../queue/store.ts'
 import { addRecordedMods, enableRecordedMods } from '../saves/recordedActions.ts'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
+import { space } from '../theme/density.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -212,7 +213,7 @@ export function PrePlayDialog() {
         <Group key={group.kind} group={group} />
       ))}
       <FormControlLabel
-        sx={{ mt: 1 }}
+        sx={{ mt: space.gap }}
         control={
           <Checkbox
             checked={skip}

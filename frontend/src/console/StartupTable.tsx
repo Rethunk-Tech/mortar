@@ -41,7 +41,7 @@ const SHARE_BAR_PX = 100
 function Share({ part, largest }: { part: number; largest: number }) {
   const { i18n } = useLingui()
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
       <Box
         sx={{
           width: Math.max(2, Math.round((largest > 0 ? part / largest : 0) * SHARE_BAR_PX)),

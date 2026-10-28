@@ -124,7 +124,7 @@ function Panel({ children, error }: { children: ReactNode; error?: boolean }) {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 1,
+        gap: space.gap,
         px: 3,
         textAlign: 'center',
         bgcolor: 'var(--mortar-panel-solid)',

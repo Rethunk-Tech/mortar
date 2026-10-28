@@ -323,7 +323,7 @@ function Sections({ shown }: { shown: ReturnType<typeof filterFile> | null }) {
             {section.name ? (
               <Typography
                 component="h2"
-                sx={{ fontSize: 'large.fontSize', fontWeight: 600, mt: 1 }}
+                sx={{ fontSize: 'large.fontSize', fontWeight: 600, mt: space.gap }}
               >
                 {section.name}
               </Typography>

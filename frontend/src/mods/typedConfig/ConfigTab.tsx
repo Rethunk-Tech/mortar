@@ -71,7 +71,7 @@ const ModRow = memo(function ConfigModRow({
     <ListItemButton
       selected={selected}
       onClick={() => onChoose(modSelection(config.id))}
-      sx={{ minHeight: space.row, gap: 1, opacity: config.enabled ? 1 : DIMMED }}
+      sx={{ minHeight: space.row, gap: space.gap, opacity: config.enabled ? 1 : DIMMED }}
     >
       <LetterTile
         mod={{ id: config.id, name: config.name, ...(picture ? { picture } : {}) }}

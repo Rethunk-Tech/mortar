@@ -68,7 +68,7 @@ export function ReplacedSection({ files }: { files: ReplacedFile[] }) {
   }
   return (
     <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, mb: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, mb: space.gap }}>
         <Typography sx={{ flex: 1, fontSize: 'medium.fontSize' }}>
           {plural(
             { count: files.length },

@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Button, List, ListItem, ListItemText, Typography } from '@mui/material'
 import { localId } from '../mods/dependents.ts'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { cancelling } from './playModeState.ts'
 import { useLaunch } from './store.ts'
@@ -33,7 +34,7 @@ export function SaveWarnDialog() {
       <Typography sx={{ color: 'text.secondary' }}>
         {t`${{ farmer: save?.farmer ?? '' }}'s farm (${{ path: save?.folder ?? '' }}) was last played with mods this profile lacks or has disabled. Playing without them can lose their items or break the save.`}
       </Typography>
-      <List dense={true} sx={{ mt: 1 }}>
+      <List dense={true} sx={{ mt: space.gap }}>
         {missing.map((m) => (
           <ListItem key={m.id} disableGutters={true}>
             <ListItemText

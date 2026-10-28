@@ -159,7 +159,7 @@ function RemoveDialogBody({ removing }: { removing: Mod[] }) {
       }
     >
       {hasBody ? (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
           {removing.length > 1 ? (
             <Typography sx={{ color: 'text.secondary' }}>
               {listNames(

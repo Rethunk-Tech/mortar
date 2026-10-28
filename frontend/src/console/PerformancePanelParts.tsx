@@ -203,7 +203,7 @@ function PanelHeader(props: HeaderProps) {
       {measuring ? (
         <Box
           role="status"
-          sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 'small.fontSize' }}
+          sx={{ display: 'flex', alignItems: 'center', gap: space.gap, fontSize: 'small.fontSize' }}
         >
           <Box
             aria-hidden={true}

@@ -3,6 +3,7 @@ import { Typography } from '@mui/material'
 import { useState } from 'react'
 import { historyLabel } from '../../profiles/historyLabel.ts'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
+import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { restoreBatch, useUndoAll } from './undoAll.ts'
 
@@ -33,7 +34,7 @@ export function UndoAllConfirm() {
           })
       }}
     >
-      <Typography sx={{ fontSize: 'base.fontSize', mb: 1 }}>
+      <Typography sx={{ fontSize: 'base.fontSize', mb: space.gap }}>
         {t`Restoring from before Update all also reverts these later changes:`}
       </Typography>
       {(target?.later ?? []).map((e) => (
