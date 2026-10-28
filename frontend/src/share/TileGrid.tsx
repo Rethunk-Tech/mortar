@@ -44,12 +44,15 @@ export function TileGrid<Id extends string>({
   tiles,
   lastUsed,
   onChoose,
+  selected,
   padded = true,
 }: {
   label: string
   tiles: Tile<Id>[]
   lastUsed: Id | null
   onChoose: (id: Id) => void
+  // The tile a wizard step already holds, outlined and focused.
+  selected?: Id
   // False inside a body that already pads its content.
   padded?: boolean
 }) {
@@ -72,19 +75,22 @@ export function TileGrid<Id extends string>({
         <Box key={tile.id} sx={{ display: 'flex' }}>
           <ButtonBase
             disabled={tile.disabled !== undefined}
-            autoFocus={tile.id === lastUsed}
+            autoFocus={tile.id === (selected ?? lastUsed)}
+            aria-pressed={selected === undefined ? undefined : tile.id === selected}
             onClick={() => onChoose(tile.id)}
             sx={{
               flex: 1,
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'flex-start',
+              justifyContent: 'flex-start',
               position: 'relative',
               gap: space.gap,
               p: space.pad,
               textAlign: 'left',
               borderRadius: '10px',
-              border: '1px solid var(--mortar-hairline-12)',
+              border: '1px solid',
+              borderColor: tile.id === selected ? 'primary.main' : 'var(--mortar-hairline-12)',
               bgcolor: 'var(--mortar-card-hover)',
               opacity: tile.disabled === undefined ? 1 : DISABLED_OPACITY,
               '&:hover, &:focus-visible': { borderColor: 'primary.main' },

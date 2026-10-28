@@ -225,16 +225,9 @@ function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
     {
       ...dialog(
         '',
-        (p) => inDialog(p, /^Next$/),
+        (p) => p.getByRole('dialog').last().getByRole('button', { name: /^Suits/ }).click(),
         WIZARD_BUDGET,
-        async (p) => {
-          await newModTo(p, 0)
-          await p
-            .getByRole('dialog')
-            .last()
-            .getByRole('radio', { name: /^Suits/ })
-            .click()
-        },
+        (p) => newModTo(p, 0),
       ),
       name: 'develop-new-mod-asset',
     },

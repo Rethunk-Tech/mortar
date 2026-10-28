@@ -490,7 +490,10 @@ export function NewModDialog({
         <KindStep
           kinds={kinds}
           kind={draft.kind}
-          set={(kind) => set({ kind, dependencies: null })}
+          choose={(kind) => {
+            set({ kind, dependencies: null })
+            setAt(at + 1)
+          }}
         />
       ) : null}
       {step === 'mod' ? <ModStep draft={draft} form={form} set={set} /> : null}
