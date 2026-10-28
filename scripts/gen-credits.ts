@@ -371,7 +371,10 @@ function npmNotices(inputs: string[]): NoticeEntry[] {
 // The Go standard library is compiled into every build; its licence is the toolchain's own LICENSE. Distributions
 // move it out of GOROOT into their licences folder (Fedora's golang, Arch's go), and some drop it, so a copy of the
 // same text, which has not changed since 2009, stands in when no toolchain copy is found.
-export function goLicencePath(goroot: string, exists: (path: string) => boolean = existsSync): string {
+export function goLicencePath(
+  goroot: string,
+  exists: (path: string) => boolean = existsSync,
+): string {
   const candidates = [
     join(goroot, 'LICENSE'),
     '/usr/share/licenses/golang/LICENSE',
