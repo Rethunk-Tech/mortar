@@ -150,7 +150,7 @@ func TestAnOldChangedCopyOfADroppedTypeIsSkipped(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if _, err := io.CopyN(w, r, int64(f.UncompressedSize64)); err != nil {
+		if _, err := io.Copy(w, io.LimitReader(r, 1<<20)); err != nil {
 			t.Fatal(err)
 		}
 		if err := r.Close(); err != nil {
