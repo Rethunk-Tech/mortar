@@ -725,7 +725,6 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	launches.Unlocked = func() { queue.NotifyUnlocked(queueSvc) }
 	launches.OnState = func() { queueSvc.HoldForPlay(launches.PausesDownloads()) }
 	launches.InstallPackage = func(ctx context.Context, gameID, profileID, pkg string) error {
 		return queueSvc.AddAndWait(ctx, []queue.Request{{Kind: queue.KindInstall, Game: gameID, Profile: profileID, Package: pkg}})
@@ -999,6 +998,11 @@ func run() error {
 			return err
 		},
 		Running: profiles.Running,
+	}
+	// Host values the player kept are written into a config once its game has closed.
+	launches.Unlocked = func() {
+		queue.NotifyUnlocked(queueSvc)
+		configSvc.FlushKept()
 	}
 	gate := &startGate{}
 	for _, s := range []application.Service{

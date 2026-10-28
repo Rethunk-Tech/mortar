@@ -38,6 +38,6 @@ func Sentence(kind usererr.Kind) string {
 	case usererr.Unknown:
 		fallthrough
 	default:
-		return "Something went wrong."
+		return "Something went wrong"
 	}
 }
