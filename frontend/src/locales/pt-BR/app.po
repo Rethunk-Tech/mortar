@@ -4057,10 +4057,6 @@ msgstr ""
 msgid "Starting dependencies"
 msgstr ""
 
-#: src/develop/ProjectCard.tsx
-msgid "Release…"
-msgstr ""
-
 #: src/firstrun/FindStep.tsx
 msgid "Found a copy outside your launchers:"
 msgstr ""

@@ -20,7 +20,6 @@ import {
   Pencil,
   ScrollText,
   SquareCode,
-  Tag,
   Trash2,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -55,6 +54,7 @@ import { buildProject, refreshInfo, runOf, useDevRuns, useProjectInfo } from './
 import { EditProjectDialog } from './EditProjectDialog.tsx'
 import { showModLog, useModCosts } from './modCosts.ts'
 import { ReleaseDialog } from './ReleaseDialog.tsx'
+import { releaseItems } from './releaseItems.tsx'
 import { UploadDialog } from './UploadDialog.tsx'
 
 // A problem's file below the project, as the editor would show it.
@@ -267,11 +267,13 @@ function MoreMenu({
   game,
   project,
   onRelease,
+  onUpload,
   onEdit,
 }: {
   game: string
   project: DevProject
   onRelease: () => void
+  onUpload: (version: string) => void
   onEdit: () => void
 }) {
   const { t } = useLingui()
@@ -353,11 +355,7 @@ function MoreMenu({
           />
         ) : null}
         <MenuRule />
-        <MenuAction
-          icon={<Tag size={16} aria-hidden={true} />}
-          label={t`Release…`}
-          onClick={act(onRelease)}
-        />
+        {releaseItems(act, info?.released, onRelease, onUpload, t)}
         <MenuRule />
         <MenuAction
           icon={<Trash2 size={16} aria-hidden={true} />}
@@ -510,6 +508,7 @@ export function ProjectCard({
           game={game}
           project={project}
           onRelease={() => setReleasing(true)}
+          onUpload={setUploading}
           onEdit={() => setEditing(true)}
         />
       </Box>
