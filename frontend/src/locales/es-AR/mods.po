@@ -23,6 +23,10 @@ msgstr ""
 msgid "Keep the game's current value"
 msgstr ""
 
+#: src/mods/EnableRequirementsDialog.tsx
+msgid "Enable what {name} needs?"
+msgstr ""
+
 #: src/mods/SelectionBarActions.tsx
 msgid "Make a group…"
 msgstr ""
@@ -1818,6 +1822,10 @@ msgstr ""
 msgid "Open page"
 msgstr ""
 
+#: src/mods/EnableRequirementsDialog.tsx
+msgid "It does not work while they are off."
+msgstr ""
+
 #: src/mods/storeEntries.ts
 msgid "Could not remove the selected mods"
 msgstr ""
@@ -2549,6 +2557,10 @@ msgstr ""
 msgid "Unpin"
 msgstr ""
 
+#: src/mods/EnableRequirementsDialog.tsx
+msgid "{count, plural, one {Enable # mod} other {Enable # mods}}"
+msgstr ""
+
 #: src/mods/ModDependencyTree.tsx
 msgid "already listed"
 msgstr ""
@@ -2751,6 +2763,10 @@ msgstr ""
 
 #: src/mods/parts.tsx
 msgid "Their folders are removed from this profile. You can undo this."
+msgstr ""
+
+#: src/mods/EnableRequirementsDialog.tsx
+msgid "{count, plural, one {Also enable # mod it needs} other {Also enable # mods it needs}}: {names}"
 msgstr ""
 
 #: src/mods/updateReview/RowCopy.tsx
@@ -3303,10 +3319,6 @@ msgstr ""
 msgid "Ignore updates from {source}"
 msgstr ""
 
-#: src/mods/EnableRequirementsDialog.tsx
-msgid "{name} needs {names}"
-msgstr ""
-
 #: src/mods/describe.ts
 msgid "{name} is obsolete: {summary}"
 msgstr ""
@@ -3552,10 +3564,6 @@ msgstr ""
 
 #: src/mods/GameModsReviewDialog.tsx
 msgid "{count, plural, one {# mod matches.} other {# mods match.}}"
-msgstr ""
-
-#: src/mods/EnableRequirementsDialog.tsx
-msgid "Enable them too"
 msgstr ""
 
 #: src/mods/problemWhy.ts

@@ -23,6 +23,10 @@ msgstr "Now needs {names}"
 msgid "Keep the game's current value"
 msgstr "Keep the game's current value"
 
+#: src/mods/EnableRequirementsDialog.tsx
+msgid "Enable what {name} needs?"
+msgstr "Enable what {name} needs?"
+
 #: src/mods/SelectionBarActions.tsx
 msgid "Make a group…"
 msgstr "Make a group…"
@@ -1818,6 +1822,10 @@ msgstr "Pin {name}"
 msgid "Open page"
 msgstr "Open page"
 
+#: src/mods/EnableRequirementsDialog.tsx
+msgid "It does not work while they are off."
+msgstr "It does not work while they are off."
+
 #: src/mods/storeEntries.ts
 msgid "Could not remove the selected mods"
 msgstr "Could not remove the selected mods"
@@ -2549,6 +2557,10 @@ msgstr "{plugin} declares itself incompatible with {dependency}, which is also e
 msgid "Unpin"
 msgstr "Unpin"
 
+#: src/mods/EnableRequirementsDialog.tsx
+msgid "{count, plural, one {Enable # mod} other {Enable # mods}}"
+msgstr "{count, plural, one {Enable # mod} other {Enable # mods}}"
+
 #: src/mods/ModDependencyTree.tsx
 msgid "already listed"
 msgstr "already listed"
@@ -2752,6 +2764,10 @@ msgstr "Save to library…"
 #: src/mods/parts.tsx
 msgid "Their folders are removed from this profile. You can undo this."
 msgstr "Their folders are removed from this profile. You can undo this."
+
+#: src/mods/EnableRequirementsDialog.tsx
+msgid "{count, plural, one {Also enable # mod it needs} other {Also enable # mods it needs}}: {names}"
+msgstr "{count, plural, one {Also enable # mod it needs} other {Also enable # mods it needs}}: {names}"
 
 #: src/mods/updateReview/RowCopy.tsx
 msgid "Mortar's known-broken list flags the installed version; this one is past it"
@@ -3303,10 +3319,6 @@ msgstr "{name}'s {field} is {current}; it can match {installed} instead."
 msgid "Ignore updates from {source}"
 msgstr "Ignore updates from {source}"
 
-#: src/mods/EnableRequirementsDialog.tsx
-msgid "{name} needs {names}"
-msgstr "{name} needs {names}"
-
 #: src/mods/describe.ts
 msgid "{name} is obsolete: {summary}"
 msgstr "{name} is obsolete: {summary}"
@@ -3553,10 +3565,6 @@ msgstr "Download and add on top"
 #: src/mods/GameModsReviewDialog.tsx
 msgid "{count, plural, one {# mod matches.} other {# mods match.}}"
 msgstr "{count, plural, one {# mod matches.} other {# mods match.}}"
-
-#: src/mods/EnableRequirementsDialog.tsx
-msgid "Enable them too"
-msgstr "Enable them too"
 
 #: src/mods/problemWhy.ts
 msgid "Two enabled copies of the same mod are in this profile. The game loads only one of them, and you do not choose which."

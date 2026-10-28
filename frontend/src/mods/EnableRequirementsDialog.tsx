@@ -1,15 +1,17 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { List, ListItem } from '@mui/material'
+import { Button, Typography } from '@mui/material'
+import { Power } from 'lucide-react'
 import { SetModsEnabled } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { listNames } from '../i18n/list.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
+import { AppDialog, DialogFooter, ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { reportError } from '../toasts/report.ts'
-import { localId } from './dependents.ts'
 import { useEnableAsk } from './enableAsk.ts'
 import { useMods } from './store.ts'
 import { announceAlso, openTarget } from './storeView.ts'
 
+// Offers to switch on what a mod just switched on needs, laid out like DisableDialog.
 export function EnableRequirementsDialog() {
   const { t } = useLingui()
   const offer = useEnableAsk((s) => s.offers[0])
@@ -38,24 +40,28 @@ export function EnableRequirementsDialog() {
       .catch(reportError(t`Could not enable required mods`))
   }
   return (
-    <ConfirmationDialog
+    <AppDialog
       open={true}
-      title={t`${{ name: offer.dependentName }} needs ${{ names: listNames(names) }}`}
-      confirmLabel={t`Enable them too`}
-      cancelLabel={t`Just this mod`}
-      onCancel={dismiss}
-      onConfirm={enableThem}
+      onClose={dismiss}
+      title={t`Enable what ${{ name: offer.dependentName }} needs?`}
+      subtitle={t`It does not work while they are off.`}
+      icon={
+        <ToneIcon tone="neutral">
+          <Power size={22} />
+        </ToneIcon>
+      }
+      footer={
+        <DialogFooter>
+          <Button onClick={dismiss}>{t`Just this mod`}</Button>
+          <Button variant="contained" onClick={enableThem}>
+            {plural({ count: names.length }, { one: 'Enable # mod', other: 'Enable # mods' })}
+          </Button>
+        </DialogFooter>
+      }
     >
-      <List dense={true}>
-        {offer.mods.map((m) => (
-          <ListItem
-            key={`${m.key}:${m.id}`}
-            title={(m.name ?? '').trim() === '' ? localId(m.id) : undefined}
-          >
-            {(m.name ?? '').trim() === '' ? t`Unknown mod` : m.name}
-          </ListItem>
-        ))}
-      </List>
-    </ConfirmationDialog>
+      <Typography>
+        {t`${plural({ count: names.length }, { one: 'Also enable # mod it needs', other: 'Also enable # mods it needs' })}: ${{ names: listNames(names) }}`}
+      </Typography>
+    </AppDialog>
   )
 }
