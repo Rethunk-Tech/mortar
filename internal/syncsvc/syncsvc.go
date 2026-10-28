@@ -490,7 +490,7 @@ func (s *Service) Resolve(ctx context.Context, game, remote, revision, choice st
 	defer s.mu.Unlock()
 	// Applying theirs can change a profile's mods without adding or renaming one, so the window is told either way.
 	defer func() {
-		if err == nil {
+		if err == nil && s.d.Emit != nil {
 			s.d.Emit(profilesChangedEvent, game)
 		}
 	}()
