@@ -815,10 +815,11 @@ func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	peer := remotePeer(r)
-	// Only a sender naming a paired device can prove itself paired, so any other has its rate limit charged before its
-	// body is read. The body's own proof still decides pairing.
+	// A peer inside its rate limit is refused whatever sender it names. Only a sender naming a paired device can prove
+	// itself paired, so any other has its rate limit charged before its body is read. The body's own proof still
+	// decides pairing.
 	charged := s.book.key(r.Header.Get(senderHeader)) == nil
-	if charged && !s.allowReceive(peer) {
+	if s.receiveLimited(peer) || charged && !s.allowReceive(peer) {
 		http.Error(w, "profile shares from this peer are temporarily rate limited", http.StatusTooManyRequests)
 		return
 	}
@@ -1072,6 +1073,14 @@ func (s *Service) allowReceive(peer string) bool {
 	}
 	s.lastReceive[peer] = now
 	return true
+}
+
+// receiveLimited reports whether peer is still inside the window a charge opened, without charging it.
+func (s *Service) receiveLimited(peer string) bool {
+	s.rateMu.Lock()
+	defer s.rateMu.Unlock()
+	at, ok := s.lastReceive[peer]
+	return ok && time.Now().Before(at.Add(rateLimit))
 }
 
 func remotePeer(r *http.Request) string {

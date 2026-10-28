@@ -830,3 +830,23 @@ func TestShareRequestsInFlightAreLimited(t *testing.T) {
 		t.Fatal("released slot not reusable")
 	}
 }
+
+// A peer inside its rate limit is refused before its body is read, even when it names a paired device.
+func TestRateLimitedPeerNamingAPairedSenderIsRefusedBeforeItsBody(t *testing.T) {
+	service := NewService(Deps{})
+	if err := service.book.add(PairedPeer{ID: "laptop", Name: "Laptop"}, make([]byte, 32)); err != nil {
+		t.Fatal(err)
+	}
+	if !service.allowReceive("192.0.2.20") {
+		t.Fatal("first receive refused")
+	}
+	body := &trackedBody{}
+	request := httptest.NewRequestWithContext(context.Background(), "POST", "http://mortar.test/share", body)
+	request.RemoteAddr = "192.0.2.20:4000"
+	request.Header.Set(senderHeader, "laptop")
+	response := httptest.NewRecorder()
+	service.handleShare(response, request)
+	if body.read || response.Code != 429 {
+		t.Fatalf("status = %d, body read = %v", response.Code, body.read)
+	}
+}
