@@ -79,7 +79,7 @@ func TestAnAssetProjectIsItsOwnPackage(t *testing.T) {
 	if !strings.Contains(manifest, `"loaforc-loaforcsSoundAPI-2.0.13"`) {
 		t.Errorf("manifest = %s", manifest)
 	}
-	if _, err := svc.Create(t.Context(), NewMod{Game: "lethal-company", Kind: "posters", Name: "Art", Parent: parent, Repo: "art"}); err == nil {
+	if _, err := svc.Create(t.Context(), NewMod{Game: "lethal-company", Kind: "no-such-kind", Name: "Art", Parent: parent, Repo: "art"}); err == nil {
 		t.Error("a kind the catalog does not offer was made")
 	}
 }

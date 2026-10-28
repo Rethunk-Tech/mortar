@@ -335,6 +335,37 @@
                   "plugins/replacers/README.txt": "Each .json file here maps game sounds to files in sounds/. See https://soundapi.loaforc.me/soundpack-tutorials/guide/getting-started.html\n",
                   "plugins/sound_pack.json": "{\n  \"name\": \"{name}\"\n}\n"
                 }
+              },
+              {
+                "id": "posters",
+                "label": "Posters",
+                "folder": "plugins/LethalPosters/posters",
+                "patterns": ["*.png", "*.jpg", "*.jpeg"],
+                "dependency": "Mortar-Posters",
+                "files": {
+                  "plugins/LethalPosters/tips/README.txt": "A picture here goes on the ship's tips board, as posters/ does for its posters.\n"
+                }
+              },
+              {
+                "id": "paintings",
+                "label": "Paintings",
+                "folder": "plugins/LethalPaintings/paintings",
+                "patterns": ["*.png", "*.jpg", "*.jpeg"],
+                "dependency": "Mortar-Posters"
+              },
+              {
+                "id": "television",
+                "label": "TV videos",
+                "folder": "plugins/Television Videos",
+                "patterns": ["*.webm", "*.mp4"],
+                "dependency": "Mortar-Television"
+              },
+              {
+                "id": "boombox",
+                "label": "Boombox songs",
+                "folder": "plugins/Custom Songs",
+                "patterns": ["*.mp3", "*.ogg", "*.wav"],
+                "dependency": "Mortar-Boombox"
               }
             ]
           }
