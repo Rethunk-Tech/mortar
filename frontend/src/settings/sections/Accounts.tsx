@@ -55,7 +55,7 @@ function UnencryptedKeys() {
   }
   return (
     <Alert variant="compact" severity="warning">
-      {t`Mortar can't reach a keyring, so your account keys are stored unencrypted on this computer.`}
+      {t`Mortar cannot reach a keyring, so your account keys are stored unencrypted on this computer.`}
     </Alert>
   )
 }

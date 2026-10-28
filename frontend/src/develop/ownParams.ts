@@ -4,10 +4,10 @@ import type { Param } from '../../bindings/github.com/Rethunk-Tech/mortar/intern
 
 // Text of the questions Mortar adds itself (a Param with `own` set), keyed by id. Template questions keep the
 // template author's words. internal/devsvc/asset_test.go fails when an own id is missing here.
-export const OWN_PARAMS: Record<string, { label: MessageDescriptor; hint: MessageDescriptor }> = {
+const OWN_PARAMS: Record<string, { label: MessageDescriptor; hint: MessageDescriptor }> = {
   description: { label: msg`Description`, hint: msg`What the mod does, in one line.` },
   modAuthor: { label: msg`Author`, hint: msg`Who holds the copyright.` },
-  team: { label: msg`Thunderstore team`, hint: msg`The team the mod is published under.` },
+  team: { label: msg`Team`, hint: msg`The team the mod is published under.` },
 }
 
 export function localizedParam(p: Param): Param {

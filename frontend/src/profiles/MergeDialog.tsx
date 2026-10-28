@@ -174,7 +174,7 @@ function MergeBody({ source, onClose }: { source: Profile; onClose: () => void }
     if (updated === 0) {
       title = t`Added ${{ added: addedMods }} from ${{ profile: from }} to ${{ name: targetName }}`
     } else if (added === 0) {
-      title = t`Updated ${{ updated: updatedMods }} from ${{ profile: from }} to ${{ name: targetName }}`
+      title = t`Updated ${{ updated: updatedMods }} in ${{ name: targetName }} from ${{ profile: from }}`
     }
     run(
       async () => {
