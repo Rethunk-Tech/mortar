@@ -11,6 +11,7 @@ import {
 import { useLaunch } from '../launch/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { copyText } from '../share/copyText.ts'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { canSendTo, useConsole } from './store.ts'
 
@@ -35,18 +36,18 @@ function usePerformanceRunning(game: string) {
   return viewingRun === '' && canSendTo(status, game, openId)
 }
 
+const NO_REPORTS: SavedReport[] = []
+
 function useSavedReports(game: string, openId: string) {
-  const [savedReports, setSavedReports] = useState<SavedReport[]>([])
-  useEffect(() => {
-    if (openId === '') {
-      return
-    }
-    PerformanceReports(game, openId).then(
-      (reports) => setSavedReports(reports ?? []),
-      reportUnexpected,
-    )
-  }, [game, openId])
-  return [savedReports, setSavedReports] as const
+  const { data, setData } = useLoaded<SavedReport[]>(
+    openId === ''
+      ? null
+      : () => PerformanceReports(game, openId).then((reports) => reports ?? NO_REPORTS),
+    [game, openId],
+    NO_REPORTS,
+    reportUnexpected,
+  )
+  return [data, setData] as const
 }
 
 function useReportLines(reportAfter: number | null) {

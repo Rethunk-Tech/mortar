@@ -25,6 +25,7 @@ import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { MenuCheck, MenuNote } from '../shell/MenuAction.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { MONO, PAD_FOCUS } from '../theme/theme.ts'
 import { TipBanner } from '../tips/TipBanner.tsx'
@@ -111,14 +112,11 @@ const NO_HISTORY: string[] = []
 function CauseBanner({ game, profile, run }: { game: string; profile: string; run: string }) {
   const { t } = useLingui()
   const reasonText = useReasonText()
-  const [cause, setCause] = useState<Awaited<ReturnType<typeof RunCause>> | null>(null)
-  useEffect(() => {
-    if (!run) {
-      setCause(null)
-      return
-    }
-    RunCause(game, profile, run).then(setCause, () => setCause(null))
-  }, [game, profile, run])
+  const { data: cause } = useLoaded(
+    run ? () => RunCause(game, profile, run).catch(() => null) : null,
+    [game, profile, run],
+    null,
+  )
   return cause?.modName ? (
     <Alert variant="compact" severity="error" sx={{ mx: space.gutter, mb: space.gap }}>
       <strong>{t`Caused by ${{ name: cause.modName }}`}</strong>

@@ -10,7 +10,7 @@ import {
   FileSearch,
   LifeBuoy,
 } from 'lucide-react'
-import { memo, useCallback, useEffect, useRef, useState } from 'react'
+import { memo, useCallback, useRef, useState } from 'react'
 import { Level } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import { RunLog } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { SaveFile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
@@ -19,6 +19,7 @@ import { PageActions } from '../game/PageActions.tsx'
 import { useProfileLoader, useProfiles } from '../profiles/store.ts'
 import { copyText } from '../share/copyText.ts'
 import { IconAction } from '../shell/IconAction.tsx'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { firstError, formatAll } from './filter.ts'
 import { listRuns } from './listRuns.ts'
@@ -128,19 +129,20 @@ export function LogActions({ game }: { game: string }) {
     (s) => s.profiles.find((p) => p.id === shown.profile)?.name ?? shown.profile,
   )
   const loaderName = useProfileLoader()?.name ?? ''
-  const [viewedStart, setViewedStart] = useState<Date | null>(null)
-  useEffect(() => {
-    if (!viewingRun) {
-      setViewedStart(null)
-      return
-    }
-    listRuns(shown.game, shown.profile)
-      .then((runs) => {
-        const run = runs.find((item) => item.id === viewingRun)
-        setViewedStart(run?.started ? new Date(run.started) : null)
-      })
-      .catch(() => setViewedStart(null))
-  }, [shown.game, shown.profile, viewingRun])
+  const { data: viewedStart } = useLoaded<Date | null>(
+    viewingRun
+      ? () =>
+          listRuns(shown.game, shown.profile).then(
+            (runs) => {
+              const run = runs.find((item) => item.id === viewingRun)
+              return run?.started ? new Date(run.started) : null
+            },
+            () => null,
+          )
+      : null,
+    [shown.game, shown.profile, viewingRun],
+    null,
+  )
   const firstErr = firstError(rows)
   const errorRows = rows.flatMap((row, index) =>
     row.level === Level.Error && !row.cont ? [index] : [],

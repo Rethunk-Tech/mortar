@@ -1,7 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { Plus } from 'lucide-react'
-import { useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { ProfilesWithMod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import type {
@@ -14,6 +13,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { download, type Want } from '../queue/actions.ts'
 import { useQueue } from '../queue/store.ts'
 import { pendingFor } from '../queue/totals.ts'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -36,18 +36,19 @@ function LackChip({
   const { t } = useLingui()
   const { name } = lack
   const locked = useLocked()
-  const [source, setSource] = useState<{ id: string; name: string } | null>(null)
-  useEffect(() => {
-    ProfilesWithMod(game, lack.id)
-      .then((rows) => {
+  const { data: source } = useLoaded<{ id: string; name: string } | null>(
+    () =>
+      ProfilesWithMod(game, lack.id).then((rows) => {
         const row = (rows ?? []).find((candidate) => candidate.profileId !== profile.id)
         const sourceName = useProfiles
           .getState()
           .profiles.find((candidate) => candidate.id === row?.profileId)?.name
-        setSource(row && sourceName ? { id: row.profileId, name: sourceName } : null)
-      })
-      .catch(reportUnexpected)
-  }, [game, lack.id, profile.id])
+        return row && sourceName ? { id: row.profileId, name: sourceName } : null
+      }),
+    [game, lack.id, profile.id],
+    null,
+    reportUnexpected,
+  )
   const want = lack.disabled ? null : wantFor(lack)
   const queued = useQueue((s) =>
     want ? pendingFor(s.state.items, profile.id, want.modId ?? 0, want.repo ?? '') : false,

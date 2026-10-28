@@ -21,7 +21,7 @@ import { When } from '../../i18n/When.tsx'
 import { openPage } from '../../mods/menu.ts'
 import { listProfiles } from '../../profiles/listProfiles.ts'
 import { useProfiles } from '../../profiles/store.ts'
-import { sameValue } from '../../shell/sameValue.ts'
+import { useLoaded } from '../../shell/useLoaded.ts'
 import { reportUnexpected, toastError } from '../../toasts/report.ts'
 import { PrefSelect, PrefSwitch } from '../PrefControls.tsx'
 import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
@@ -45,23 +45,22 @@ function NxmDefaultProfile({ game, gameName }: { game: string; gameName: string 
   const { t, i18n } = useLingui()
   // Names only, started from the open game's profiles when this is that game, so the read below changes nothing on
   // screen unless a profile was added, removed or renamed.
-  const [profiles, setProfiles] = useState<Named[]>(() => {
-    const s = useProfiles.getState()
-    return s.game?.id === game ? namesOf(s.profiles) : []
-  })
   const value = useSettings((s) => s.games?.[game]?.nxmDefaultProfile ?? '')
   const copy = prefCopy(i18n, 'nxmDefaultProfile')
   const label = t`${{ name: copy.label }} (${{ game: gameName }})`
   const relevant = useSettingsRelevant(label, copy.description ?? '')
-  useEffect(() => {
-    if (!relevant) {
-      return
-    }
-    const keep = (next: Named[]) => setProfiles((prev) => (sameValue(prev, next) ? prev : next))
-    listProfiles(game)
-      .then((ps) => keep(namesOf(ps ?? [])))
-      .catch(() => keep([]))
-  }, [game, relevant])
+  const open = useProfiles.getState()
+  const { data: profiles } = useLoaded<Named[]>(
+    relevant
+      ? () =>
+          listProfiles(game).then(
+            (ps) => namesOf(ps ?? []),
+            () => [],
+          )
+      : null,
+    [game, relevant],
+    open.game?.id === game ? namesOf(open.profiles) : [],
+  )
   const options = [
     { value: '', label: t`Last opened profile` },
     ...profiles.map((p) => ({ value: p.id, label: p.name })),

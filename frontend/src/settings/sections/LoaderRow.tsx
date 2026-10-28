@@ -12,6 +12,7 @@ import { useLoader } from '../../loader/store.ts'
 import { useCurrentGame } from '../../nav/currentGame.ts'
 import { DisabledReason } from '../../shell/DisabledReason.tsx'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
+import { useLoaded } from '../../shell/useLoaded.ts'
 import { space } from '../../theme/density.ts'
 import { PrefSelect } from '../PrefControls.tsx'
 import { persist } from '../persist.ts'
@@ -21,6 +22,8 @@ import { useSettingsMatch } from '../useSettingsSearch.ts'
 import { type SmapiAction, smapiAction } from './smapiAction.ts'
 
 const LATEST = 'latest'
+
+const NO_VERSIONS: string[] = []
 
 function versionChoices(i18n: I18n, versions: string[]): { value: string; label: string }[] {
   const seen = new Set<string>([LATEST])
@@ -60,7 +63,6 @@ function LoaderRow({
   const steps = useLoader((s) => s.steps)
   const refreshLaunch = useLaunch((s) => s.refresh)
   const playing = useGameBusy(game)
-  const [versions, setVersions] = useState<string[]>([])
   const [confirm, setConfirm] = useState(false)
   const [busy, setBusy] = useState(false)
   const selected = pinValue(pin)
@@ -107,10 +109,18 @@ function LoaderRow({
       return
     }
     refreshLaunch(game)
-    ListVersions(game, loader.id)
-      .then((rows) => setVersions(rows ?? []))
-      .catch(() => setVersions([]))
-  }, [relevant, refreshLaunch, game, loader.id])
+  }, [relevant, refreshLaunch, game])
+  const { data: versions } = useLoaded(
+    relevant
+      ? () =>
+          ListVersions(game, loader.id).then(
+            (rows) => rows ?? NO_VERSIONS,
+            () => NO_VERSIONS,
+          )
+      : null,
+    [relevant, game, loader.id],
+    NO_VERSIONS,
+  )
   const run = () => {
     setBusy(true)
     install(game, action.version || undefined).finally(() => {

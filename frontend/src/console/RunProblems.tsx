@@ -2,7 +2,7 @@ import type { I18n } from '@lingui/core'
 import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import type { SMAPIProblem } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import { RunProblems as FetchRunProblems } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import {
@@ -25,6 +25,7 @@ import { download } from '../queue/actions.ts'
 import { refWant } from '../queue/refWant.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -234,6 +235,9 @@ function ProblemRow({
   )
 }
 
+const NO_PROBLEMS: SMAPIProblem[] = []
+const NO_TOKENS: string[] = []
+
 export function RunProblemsStrip({
   game,
   profile,
@@ -244,24 +248,27 @@ export function RunProblemsStrip({
   run: string
 }) {
   const { t, i18n } = useLingui()
-  const [found, setFound] = useState<SMAPIProblem[]>([])
-  useEffect(() => {
-    FetchRunProblems(game, profile, run).then(
-      (rows) => setFound(rows ?? []),
-      () => setFound([]),
-    )
-  }, [game, profile, run])
+  const { data: found } = useLoaded(
+    () =>
+      FetchRunProblems(game, profile, run).then(
+        (rows) => rows ?? [],
+        () => NO_PROBLEMS,
+      ),
+    [game, profile, run],
+    NO_PROBLEMS,
+  )
   const mods = useMods((s) => s.mods)
   // The problems service keeps dismissals with the profile's other dismissed problems; this strip reads them itself,
   // as the Problems page does, and again after each change it makes.
-  const [dismissed, setDismissed] = useState<string[]>([])
-  const reloadDismissed = useCallback(() => {
-    DismissedTokens(game, profile).then(
-      (tokens) => setDismissed(tokens ?? []),
-      () => setDismissed([]),
-    )
-  }, [game, profile])
-  useEffect(reloadDismissed, [reloadDismissed])
+  const { data: dismissed, reload: reloadDismissed } = useLoaded(
+    () =>
+      DismissedTokens(game, profile).then(
+        (tokens) => tokens ?? NO_TOKENS,
+        () => NO_TOKENS,
+      ),
+    [game, profile],
+    NO_TOKENS,
+  )
   const dismiss = useCallback(
     (p: SMAPIProblem) => {
       DismissRunProblem(game, profile, p.kind, runProblemMod(p))
