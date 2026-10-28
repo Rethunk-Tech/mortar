@@ -218,7 +218,7 @@ export function HelpDialog({ game }: { game: string }) {
       open={open}
       onClose={uploading ? () => undefined : close}
       size="lg"
-      title={t`Share log…`}
+      title={t`Share log`}
       footer={
         <DialogFooter>
           <Button disabled={uploading} onClick={close} sx={button}>

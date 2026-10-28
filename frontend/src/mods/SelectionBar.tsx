@@ -111,7 +111,7 @@ function SelectionBar({ profileId, mods }: { profileId: string; mods: Mod[] }) {
         currentProfileId={profileId}
         id={selected[0]?.id ?? ''}
         ids={[...new Set(selected.map((mod) => mod.id))]}
-        title={t`Also add selected mods to…`}
+        title={t`Also add selected mods to`}
         withNeeds={true}
         confirmLabel={t`Add`}
         onConfirm={async (profiles) => {

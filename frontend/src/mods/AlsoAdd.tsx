@@ -26,7 +26,7 @@ export function AlsoAdd({ mod, profile }: { mod: Mod; profile: Profile }) {
         game={game}
         currentProfileId={profile.id}
         id={mod.id}
-        title={t`Also add ${{ name: mod.name }} to…`}
+        title={t`Also add ${{ name: mod.name }} to`}
         withNeeds={true}
         confirmLabel={t`Add`}
         onConfirm={async (profiles) => {

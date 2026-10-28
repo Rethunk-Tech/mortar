@@ -122,7 +122,7 @@ function ApplySavedGroupDialog({
       footer={
         <DialogFooter>
           <Button type="button" onClick={onClose} disabled={busy}>
-            {t`Cancel`}
+            {t`Close`}
           </Button>
         </DialogFooter>
       }

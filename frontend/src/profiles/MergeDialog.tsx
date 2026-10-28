@@ -195,7 +195,7 @@ function MergeBody({ source, onClose }: { source: Profile; onClose: () => void }
     <FormDialog
       open={true}
       onClose={onClose}
-      title={t`Add ${{ name: source.name }}'s mods to…`}
+      title={t`Add ${{ name: source.name }}'s mods to`}
       subtitle={target ? t`${{ name: source.name }} stays as it is.` : undefined}
       size="sm"
       submitLabel={t`Add mods`}

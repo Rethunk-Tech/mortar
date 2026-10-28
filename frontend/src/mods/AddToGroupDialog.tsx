@@ -69,7 +69,7 @@ function AddToGroupDialog({
       open={open}
       onClose={onClose}
       size="sm"
-      title={t`Add to group…`}
+      title={t`Add to group`}
       icon={
         <ToneIcon tone="neutral">
           <FolderPlus size={22} />

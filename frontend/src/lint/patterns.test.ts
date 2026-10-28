@@ -352,3 +352,11 @@ test('layout spacing reads the density tokens, not 8px or 16px literals', () => 
   }
   expect(hits).toEqual([])
 })
+
+// "…" marks a control that opens further input; the dialog it opens is titled without it.
+test('a title prop does not end in an ellipsis', () => {
+  const hits = files.flatMap(({ path, src }) =>
+    [...src.matchAll(/\btitle=\{t`[^`]*…`\}/g)].map((m) => `${rel(path)}:${lineOf(src, m.index)}`),
+  )
+  expect(hits, hits.join('\n')).toEqual([])
+})

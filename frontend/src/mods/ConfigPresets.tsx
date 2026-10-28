@@ -139,7 +139,7 @@ function PresetsButton({ mod }: { mod: Mod }) {
       </Menu>
       <PromptDialog
         open={saveOpen}
-        title={t`Save current as…`}
+        title={t`Save current settings`}
         label={t`Preset name`}
         maxLength={maxPresetName}
         confirmLabel={t`Save`}

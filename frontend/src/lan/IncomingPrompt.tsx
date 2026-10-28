@@ -112,7 +112,7 @@ function ChooseDialog({
       open={open}
       onClose={onClose}
       size="sm"
-      title={t`Update an existing profile…`}
+      title={t`Update an existing profile`}
       footer={
         <DialogFooter>
           <Button onClick={onClose}>{t`Cancel`}</Button>

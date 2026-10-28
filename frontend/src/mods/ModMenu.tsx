@@ -390,7 +390,7 @@ function ModActionMenu({
         game={game}
         currentProfileId={currentProfileId}
         id={mod.id}
-        title={t`Also add ${{ name: mod.name }} to…`}
+        title={t`Also add ${{ name: mod.name }} to`}
         confirmLabel={t`Add`}
         onConfirm={async (profiles) => {
           await Promise.all(
