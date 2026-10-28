@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
@@ -53,7 +54,7 @@ func (s *Service) AddDependency(gameID, dir, pkg, version string, soft bool) err
 	if err != nil {
 		return err
 	}
-	return s.wire(context.Background(), p.Dir, func() error {
+	return s.wire(context.Background(), p.Dir, p.Name, func() error {
 		if err := fsx.WriteFile(csproj, []byte(withDependency(string(raw), pkg, version, soft)), 0o644); err != nil { // #nosec G306 -- a tracked project file
 			return err
 		}
@@ -64,21 +65,25 @@ func (s *Service) AddDependency(gameID, dir, pkg, version string, soft bool) err
 // wire runs fn, which writes a project's dependency wiring, and while Mortar's own "Start" commit is still the latest
 // one and on no remote, folds the files fn changed into it: New mod adds its dependencies as they install, after that
 // commit, and a new project should start with nothing to commit. Files changed before fn ran are left alone.
-func (s *Service) wire(ctx context.Context, dir string, fn func() error) error {
+func (s *Service) wire(ctx context.Context, dir, name string, fn func() error) error {
 	before, ok := s.dirty(ctx, dir)
 	if err := fn(); err != nil {
 		return err
 	}
-	if ok && s.startIsLatest(ctx, dir) {
+	if ok && s.startIsLatest(ctx, dir, name) {
 		s.foldIntoStart(ctx, dir, before)
 	}
 	return nil
 }
 
-// startIsLatest reports whether the project's latest commit is Mortar's "Start" commit and no remote has it.
-func (s *Service) startIsLatest(ctx context.Context, dir string) bool {
+// startIsLatest reports whether the project's latest commit is Mortar's "Start" commit and no remote has it. That
+// commit is the first one, or the second after the initial commit GitHub makes when it copies the template.
+func (s *Service) startIsLatest(ctx context.Context, dir, name string) bool {
 	subject, err := s.run(ctx, dir, "git", "log", "-1", "--format=%s")
-	if err != nil || !strings.HasPrefix(string(subject), "Start ") {
+	if err != nil || strings.TrimSpace(string(subject)) != "Start "+name {
+		return false
+	}
+	if count, err := s.run(ctx, dir, "git", "rev-list", "--count", "HEAD"); err != nil || !slices.Contains([]string{"1", "2"}, strings.TrimSpace(string(count))) {
 		return false
 	}
 	remote, err := s.run(ctx, dir, "git", "branch", "-r", "--contains", "HEAD")

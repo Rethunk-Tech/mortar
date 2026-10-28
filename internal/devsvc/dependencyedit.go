@@ -80,7 +80,7 @@ func (s *Service) RemoveDependency(gameID, dir, pkg string) error {
 	userProps, _ := fsx.ReadFile(props)
 	folder := msbuild.Property(string(userProps), depProp(pkg))
 	soft := projectDependencies(string(raw))[pkg]
-	return s.wire(context.Background(), p.Dir, func() error {
+	return s.wire(context.Background(), p.Dir, p.Name, func() error {
 		project, err := withoutDependency(string(raw), pkg)
 		if err != nil {
 			return err

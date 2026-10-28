@@ -116,7 +116,7 @@ func TestWireFoldsOnlyItsOwnChangesIntoTheStartCommit(t *testing.T) {
 	git("commit", "-q", "-m", "Start Mod")
 	write("Mine.cs", "player's own")
 	wired := func() error { write("Compat.cs", "c"); write("Plugin.cs", "b"); return nil }
-	if err := svc.wire(t.Context(), dir, wired); err != nil {
+	if err := svc.wire(t.Context(), dir, "Mod", wired); err != nil {
 		t.Fatal(err)
 	}
 	if n, status := git("rev-list", "--count", "HEAD"), git("status", "--porcelain"); n != "1" || status != "?? Mine.cs" {
@@ -125,11 +125,38 @@ func TestWireFoldsOnlyItsOwnChangesIntoTheStartCommit(t *testing.T) {
 	// Once the player commits, wiring stays a change for them to commit.
 	git("add", "Mine.cs")
 	git("commit", "-q", "-m", "Mine")
-	if err := svc.wire(t.Context(), dir, func() error { write("Plugin.cs", "d"); return nil }); err != nil {
+	if err := svc.wire(t.Context(), dir, "Mod", func() error { write("Plugin.cs", "d"); return nil }); err != nil {
 		t.Fatal(err)
 	}
 	if status := git("status", "--porcelain"); status != "M Plugin.cs" {
 		t.Fatalf("after the player's commit, status %q", status)
+	}
+}
+
+func TestWireLeavesAPlayersStartCommitAlone(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	svc.Run = nil
+	t.Setenv("GIT_AUTHOR_NAME", "t")
+	t.Setenv("GIT_AUTHOR_EMAIL", "t@t")
+	t.Setenv("GIT_COMMITTER_NAME", "t")
+	t.Setenv("GIT_COMMITTER_EMAIL", "t@t")
+	dir := t.TempDir()
+	git := func(args ...string) {
+		t.Helper()
+		if _, err := svc.run(t.Context(), dir, "git", args...); err != nil {
+			t.Fatal(err)
+		}
+	}
+	git("init", "-q")
+	if err := os.WriteFile(filepath.Join(dir, "Plugin.cs"), []byte("a"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	git("add", "-A")
+	git("commit", "-q", "-m", "Start menu rework")
+	err := svc.wire(t.Context(), dir, "Mod", func() error { return os.WriteFile(filepath.Join(dir, "Plugin.cs"), []byte("b"), 0o600) })
+	out, _ := svc.run(t.Context(), dir, "git", "status", "--porcelain")
+	if err != nil || strings.TrimSpace(string(out)) != "M Plugin.cs" {
+		t.Errorf("status %q, %v", out, err)
 	}
 }
 

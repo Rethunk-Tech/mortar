@@ -109,7 +109,7 @@ func (s *Service) Build(ctx context.Context, gameID, dir string) (BuildResult, e
 		defer mu.Unlock()
 	}
 	// Dependencies installed since they were added are declared on the plugin before it compiles.
-	if err := s.wire(ctx, p.Dir, func() error { return s.syncDependencies(gameID, p) }); err != nil {
+	if err := s.wire(ctx, p.Dir, p.Name, func() error { return s.syncDependencies(gameID, p) }); err != nil {
 		log.Printf("devsvc: declaring %s's dependencies: %v", p.Name, err)
 	}
 	out, err := s.run(ctx, p.Dir, "dotnet", "build", "-c", "Debug", "-nologo")
