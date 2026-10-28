@@ -6,6 +6,7 @@ import { openDownloadsDialog } from '../install/downloadsDialog.ts'
 import { useInstall } from '../install/store.ts'
 import { gameBusy } from '../launch/busy.ts'
 import { useLaunch } from '../launch/store.ts'
+import { isGameId, useNav } from '../nav/store.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -23,11 +24,21 @@ async function offer(game: string) {
   const profile = openProfileOf(useProfiles.getState())
   const { push } = useToasts.getState()
   if (found.length === 1 && profile) {
-    const add = (): Promise<void> =>
-      useInstall
+    const target = profile.id
+    // The install goes into the open profile, which may have changed since the toast named this one.
+    const add = async (): Promise<void> => {
+      if (isGameId(game)) {
+        useNav.getState().openGame(game)
+      }
+      if (useProfiles.getState().game?.id !== game) {
+        await useProfiles.getState().load(game)
+      }
+      useProfiles.getState().open(target)
+      await useInstall
         .getState()
         .installDownloads([first])
         .catch(reportError(i18n._(msg`Could not add the archive`), add))
+    }
     push({
       kind: 'info',
       title: i18n._(msg`Add ${{ name: first.name }} to ${{ profile: profile.name }}?`),

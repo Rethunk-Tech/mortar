@@ -32,8 +32,9 @@ export function UpdateReadyBanner() {
         </Button>
       }
     >
-      {t`Update ready: applies when you close Mortar.`}
-      {release?.version ? ` (${release.version})` : ''}
+      {release?.version
+        ? t`Update ready (${{ version: release.version }}): applies when you close Mortar.`
+        : t`Update ready: applies when you close Mortar.`}
     </Alert>
   )
 }

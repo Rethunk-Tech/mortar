@@ -2,6 +2,7 @@ import { msg, plural } from '@lingui/core/macro'
 import { Events } from '@wailsio/runtime'
 import { Take } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/tidy/service.ts'
 import { i18n } from '../i18n/index.ts'
+import { listNames } from '../i18n/list.ts'
 import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -45,7 +46,7 @@ async function show() {
     return
   }
   const lines = (report.entries ?? []).map((entry) => {
-    const names = (entry.names ?? []).join(', ')
+    const names = listNames(entry.names ?? [])
     const label = what(entry.code, entry.what)
     const line = entry.count > 1 ? `${label} (${entry.count})` : label
     return names === '' ? `${line}: ${where(entry)}` : `${line}: ${where(entry)}: ${names}`

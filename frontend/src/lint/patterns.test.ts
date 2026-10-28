@@ -149,10 +149,17 @@ function splitArgs(args: string): string[] {
   return parts
 }
 
+// A named import from '@mui/material' or a default import from its per-component path.
+const MUI_IMPORT = (name: string, flags = '') =>
+  new RegExp(
+    `import \\{[^}]*\\b${name}\\b[^}]*\\} from '@mui/material'|import ${name} from '@mui/material/${name}'`,
+    flags,
+  )
+
 function selectorHits(path: string, src: string): string[] {
   const hits: string[] = []
   const file = rel(path)
-  const re = /\b(use[A-Z]\w*)\s*\(\s*\(\s*s\s*\)\s*=>/g
+  const re = /\b(use[A-Z]\w*)\s*\(\s*(?:\(\s*(?:s|st|state)\s*\)|s|st|state)\s*=>/g
   for (const m of src.matchAll(re)) {
     const [, hook] = m
     if (hook !== undefined && !SKIP_HOOKS.has(hook)) {
@@ -207,7 +214,7 @@ test('Lingui t is not taken as a helper parameter or argument', () => {
 test('tooltips come from shell/Tooltip.tsx', () => {
   const hits = files
     .filter(({ path }) => rel(path) !== 'shell/Tooltip.tsx')
-    .filter(({ src }) => /import \{[^}]*\bTooltip\b[^}]*\} from '@mui\/material'/.test(src))
+    .filter(({ src }) => MUI_IMPORT('Tooltip').test(src))
     .map(({ path }) => rel(path))
   expect(hits, hits.join('\n')).toEqual([])
 })
@@ -271,9 +278,7 @@ test('dialogs are built on shell/dialog', () => {
   const hits = hitsOf((file, src) =>
     file.startsWith('shell/dialog/')
       ? []
-      : [...src.matchAll(/import \{[^}]*\bDialog\b[^}]*\} from '@mui\/material'/g)].map(
-          (m) => m.index ?? 0,
-        ),
+      : [...src.matchAll(MUI_IMPORT('Dialog', 'g'))].map((m) => m.index ?? 0),
   )
   expect(hits, hits.join('\n')).toEqual([])
 })
@@ -341,6 +346,10 @@ test('a compact Alert takes its size and colour from the theme', () => {
 const LITERAL_SPACING =
   /\b(?:(?:gap|rowGap|columnGap|mt|mb): *(?:1|'8px')|(?:p|px|py|pt|pb|padding|paddingTop|paddingBottom): *(?:2|'16px'))(?![\d.\w])/g
 
+const STACK_SPACING = /<Stack\b[^>]*\bspacing=\{(?:1|2)\}/g
+// Files whose Stack spacing is still the MUI unit.
+const STACK_SPACING_ALLOWED = new Set(['profiles/GameSettings.tsx'])
+
 test('layout spacing reads the density tokens, not 8px or 16px literals', () => {
   const hits: string[] = []
   for (const path of srcFiles().filter((p) => p.endsWith('.tsx') && !rel(p).startsWith('theme/'))) {
@@ -348,6 +357,11 @@ test('layout spacing reads the density tokens, not 8px or 16px literals', () => 
     const src = readFileSync(path, 'utf8')
     for (const m of src.matchAll(LITERAL_SPACING)) {
       hits.push(`${name}:${lineOf(src, m.index)} ${m[0]}`)
+    }
+    if (!STACK_SPACING_ALLOWED.has(name)) {
+      for (const m of src.matchAll(STACK_SPACING)) {
+        hits.push(`${name}:${lineOf(src, m.index)} Stack spacing`)
+      }
     }
   }
   expect(hits).toEqual([])

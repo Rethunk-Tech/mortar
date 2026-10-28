@@ -110,7 +110,7 @@ export function ToolEditorDialog({ open, initial, onClose, onSave }: Props) {
           <TextInput label={t`Executable`} value={executable} onChange={setExecutable} />
         </Box>
         <Button type="button" variant="outlined" onClick={browse} sx={{ flexShrink: 0 }}>
-          {t`Choose folder…`}
+          {t`Choose program…`}
         </Button>
       </Box>
       <TextInput

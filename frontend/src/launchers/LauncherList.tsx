@@ -18,7 +18,9 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { LauncherLogo } from '../brand/launchers/LauncherLogo.tsx'
 import { BOTTLES, HEROIC, LUTRIS, WINDOWS } from '../brand/productNames.ts'
+import { listNames } from '../i18n/list.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
+import { useWidth } from '../shell/useWidth.ts'
 import { space } from '../theme/density.ts'
 import { type InlineError, inlineError } from '../toasts/report.ts'
 
@@ -79,7 +81,7 @@ function FixedRow({ launcher, heading }: { launcher: StoreApp; heading: Heading 
   const other = Boolean(launcher.platform)
   const summary = other
     ? t`${{ os: WINDOWS }} only. On this computer its games come in through ${{ launcher: HEROIC }}, ${{ otherLauncher: LUTRIS }} or ${{ thirdLauncher: BOTTLES }}.`
-    : (launcher.games ?? []).map((g) => g.name).join(', ')
+    : listNames((launcher.games ?? []).map((g) => g.name))
   return (
     <Box
       sx={{
@@ -133,8 +135,9 @@ function LauncherRow({
   const ok = success.main
   const [error, setError] = useState<InlineError | null>(null)
   const games = (launcher.games ?? []).map((g) => g.name)
-  const roots = launcher.roots ?? []
   const custom = launcher.custom ?? []
+  const detected = launcher.roots ?? []
+  const roots = detected.filter((dir) => !custom.includes(dir))
   const looked = launcher.looked ?? []
   const fixed = Boolean(launcher.platform) || launcher.id === 'installers'
   const run = (p: Promise<void>) =>
@@ -160,7 +163,7 @@ function LauncherRow({
   }
   let summary = t`Not found`
   if (launcher.found) {
-    summary = games.length > 0 ? games.join(', ') : t`Found, with no supported games yet`
+    summary = games.length > 0 ? listNames(games) : t`Found, with no supported games yet`
   }
   return (
     <Accordion
@@ -219,7 +222,7 @@ function LauncherRow({
           {roots.map((dir) => (
             <FolderRow key={dir} dir={dir} note={t`Found`} found={true} />
           ))}
-          {roots.length === 0
+          {detected.length === 0
             ? looked.map((dir) => (
                 <FolderRow key={dir} dir={dir} note={t`Not found`} found={false} />
               ))
@@ -229,7 +232,7 @@ function LauncherRow({
               key={dir}
               dir={dir}
               note={t`Added by you`}
-              found={roots.includes(dir)}
+              found={detected.includes(dir)}
               onRemove={() => run(RemoveLauncherRoot(launcher.id, dir))}
             />
           ))}
@@ -271,7 +274,8 @@ function LauncherRow({
 }
 
 // The launchers Mortar reads, one row each. When the list is wide enough for two columns they stack independently,
-// so opening a row only pushes down the rows below it in its own column; otherwise one column in order.
+// so opening a row only pushes down the rows below it in its own column; otherwise one column in order. Each row is
+// mounted once, so its open state survives a resize.
 // Each launcher's name is a heading one level under the page's own: h3 below a Settings page's h2, h2 on the
 // first-run welcome screen.
 type Heading = 'h2' | 'h3'
@@ -285,23 +289,26 @@ export function LauncherList({
   refresh: () => void
   heading?: Heading
 }) {
-  const columns = [
-    { side: 'left', rows: launchers.filter((_, i) => i % 2 === 0) },
-    { side: 'right', rows: launchers.filter((_, i) => i % 2 === 1) },
-  ]
+  const [box, width] = useWidth<HTMLDivElement>()
+  const two = width >= 2 * COLUMN_MIN
+  const columns = two
+    ? [
+        { side: 'left', rows: launchers.filter((_, i) => i % 2 === 0) },
+        { side: 'right', rows: launchers.filter((_, i) => i % 2 === 1) },
+      ]
+    : [{ side: 'only', rows: launchers }]
   // With nothing found at all, the first row starts open so a new user lands on Add folder.
   const first = launchers.every((l) => !l.found) ? launchers[0]?.id : undefined
   const stack = { display: 'flex', flexDirection: 'column', gap: space.gap, minWidth: 0 } as const
   return (
-    <Box sx={{ containerType: 'inline-size' }}>
+    <Box ref={box}>
       <Box
         sx={{
-          display: 'none',
+          display: 'grid',
           // Each column may shrink below its longest line, so a long game list is cut short instead of widening the page.
-          gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
+          gridTemplateColumns: two ? 'minmax(0, 1fr) minmax(0, 1fr)' : 'minmax(0, 1fr)',
           alignItems: 'start',
           gap: space.gap,
-          [`@container (min-width: ${2 * COLUMN_MIN}px)`]: { display: 'grid' },
         }}
       >
         {columns.map(({ side, rows }) => (
@@ -316,17 +323,6 @@ export function LauncherList({
               />
             ))}
           </Box>
-        ))}
-      </Box>
-      <Box sx={{ ...stack, [`@container (min-width: ${2 * COLUMN_MIN}px)`]: { display: 'none' } }}>
-        {launchers.map((l) => (
-          <LauncherRow
-            key={l.id}
-            launcher={l}
-            refresh={refresh}
-            open={l.id === first}
-            heading={heading}
-          />
         ))}
       </Box>
     </Box>

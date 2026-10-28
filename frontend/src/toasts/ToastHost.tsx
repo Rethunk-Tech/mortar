@@ -17,7 +17,6 @@ import { useProfileLocked } from '../mods/useLocked.ts'
 import { copyText } from '../share/copyText.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { space } from '../theme/density.ts'
-import { HistoryFallback } from './HistoryButton.tsx'
 import { reportUnexpected } from './report.ts'
 import { type Toast, type ToastKind, useToasts } from './store.ts'
 
@@ -250,7 +249,6 @@ export function ToastHost() {
       {toasts.map((toast) => (
         <ToastCard key={toast.id} toast={toast} />
       ))}
-      <HistoryFallback />
     </Box>
   )
 }

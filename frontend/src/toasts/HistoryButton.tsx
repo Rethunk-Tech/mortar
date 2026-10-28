@@ -2,13 +2,14 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Badge, Box, Button, IconButton, Popover, Typography } from '@mui/material'
 import { Bell } from 'lucide-react'
-import { memo, type ReactNode, useEffect, useRef, useState } from 'react'
+import { memo, type ReactNode, useRef, useState } from 'react'
 import { When } from '../i18n/When.tsx'
 import { useProfileLocked } from '../mods/useLocked.ts'
 import { HistoryDialog } from '../profiles/HistoryDialog.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { useHistoryPanel } from '../profiles/useHistoryPanel.ts'
 import { useQueue } from '../queue/store.ts'
+import { copyText } from '../share/copyText.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { closeTitleMenu } from '../shell/titleMenus.ts'
@@ -65,6 +66,32 @@ function HistoryRow({ item }: { item: ToastHistoryItem }) {
             {item.body}
           </Typography>
         ) : null}
+        {item.detail ? (
+          <>
+            <Box
+              component="pre"
+              sx={{
+                m: 0,
+                maxHeight: 120,
+                overflow: 'auto',
+                fontSize: 'small.fontSize',
+                fontFamily: 'inherit',
+                whiteSpace: 'pre-wrap',
+                overflowWrap: 'anywhere',
+                color: 'text.secondary',
+              }}
+            >
+              {item.detail}
+            </Box>
+            <Button
+              size="small"
+              onClick={() => copyText(item.detail ?? '', t`Details copied`)}
+              sx={{ alignSelf: 'flex-start' }}
+            >
+              {t`Copy details`}
+            </Button>
+          </>
+        ) : null}
         <Typography sx={{ fontSize: 'tiny.fontSize', color: 'text.secondary' }}>
           <When value={item.at} withTime={true} />
         </Typography>
@@ -82,8 +109,6 @@ function HistoryRow({ item }: { item: ToastHistoryItem }) {
     </Box>
   )
 }
-
-let bellMounted = false
 
 function SectionLabel({ children }: { children: ReactNode }) {
   return (
@@ -124,7 +149,9 @@ function HistoryPopover({
   // A change to the profile is listed once: while unread under New, then in the history under Earlier.
   const fresh = history.slice(0, freshCount)
   const reported = new Set(fresh.flatMap((item) => item.changes ?? []))
-  const readNotes = history.slice(freshCount).filter((item) => item.action?.profileId === undefined)
+  const readNotes = history
+    .slice(freshCount)
+    .filter((item) => item.action?.profileId === undefined && !item.changes?.length)
   return (
     <Popover
       open={open}
@@ -241,12 +268,6 @@ export const HistoryButton = memo(function HistoryButtonView() {
   if (!historyOpen) {
     unreadBefore.current = unread
   }
-  useEffect(() => {
-    bellMounted = true
-    return () => {
-      bellMounted = false
-    }
-  }, [])
   const open = (el: HTMLElement) => {
     closeTitleMenu()
     setAnchor(el)
@@ -304,21 +325,3 @@ export const HistoryButton = memo(function HistoryButtonView() {
     </>
   )
 })
-
-export function HistoryFallback() {
-  const historyOpen = useToasts((s) => s.historyOpen)
-  const setHistoryOpen = useToasts((s) => s.setHistoryOpen)
-  const history = useToasts((s) => s.history)
-  const clearHistory = useToasts((s) => s.clearHistory)
-  return (
-    <HistoryPopover
-      open={historyOpen && !bellMounted}
-      anchorEl={null}
-      history={history}
-      freshCount={0}
-      onClose={() => setHistoryOpen(false)}
-      onClear={clearHistory}
-      onAll={() => setHistoryOpen(false)}
-    />
-  )
-}

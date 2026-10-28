@@ -94,9 +94,16 @@ export function SyncOffers() {
   const stalled = useSync((s) => s.stalled)
   const open = useSync((s) => s.open)
   const setOpen = useSync((s) => s.setOpen)
+  const empty = offers.length + stalled.length === 0
+  // An emptied list closes the dialog for good, so a later offer does not pop it open uninvited.
+  useEffect(() => {
+    if (open && empty) {
+      setOpen(false)
+    }
+  }, [open, empty, setOpen])
   return (
     <AppDialog
-      open={open && offers.length + stalled.length > 0}
+      open={open && !empty}
       onClose={() => setOpen(false)}
       title={t`Changes from your other machines`}
       footer={

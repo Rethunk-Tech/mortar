@@ -17,13 +17,13 @@ import { useCommandPalette } from './store.ts'
 function blockText(block: BisectBlock, lang: I18n): string {
   switch (block) {
     case 'no-profile':
-      return lang._(msg`Open profile first.`)
+      return lang._(msg`Open profile first`)
     case 'no-runs':
-      return lang._(msg`Start the game once so Mortar can see the crash.`)
+      return lang._(msg`Start the game once so Mortar can see the crash`)
     case 'ended-normally':
-      return lang._(msg`No crash to investigate: the last run ended normally.`)
+      return lang._(msg`No crash to investigate: the last run ended normally`)
     default:
-      return lang._(msg`Mortar already named the likely mod for the last crash.`)
+      return lang._(msg`Mortar already named the likely mod for the last crash`)
   }
 }
 

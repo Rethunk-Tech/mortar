@@ -172,13 +172,13 @@ function TourPopover({
                 </Typography>
                 <Stack
                   direction="row"
-                  spacing={1}
+                  spacing={space.gap}
                   sx={{ justifyContent: 'space-between', alignItems: 'center' }}
                 >
                   <Button size="small" color="inherit" onClick={close}>
                     {t`Skip tour`}
                   </Button>
-                  <Stack direction="row" spacing={1}>
+                  <Stack direction="row" spacing={space.gap}>
                     <Button
                       size="small"
                       disabled={step === 0}
