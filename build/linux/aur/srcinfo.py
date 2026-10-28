@@ -16,7 +16,7 @@ for m in re.finditer(r"^(\w+)=(\(.*?\)|'[^']*'|\S+)$", text, re.M | re.S):
 ver = fields["pkgver"][0]
 subst = lambda v: v.replace("${pkgver}", ver).replace("$pkgver", ver)
 arches = fields["arch"]
-order = ["pkgdesc", "pkgver", "pkgrel", "url", "arch", "license", "depends", "provides", "conflicts"]
+order = ["pkgdesc", "pkgver", "pkgrel", "url", "arch", "license", "depends", "provides", "conflicts", "options"]
 order += ["source", "sha256sums"]
 for a in arches:
     order += [f"source_{a}", f"sha256sums_{a}"]
