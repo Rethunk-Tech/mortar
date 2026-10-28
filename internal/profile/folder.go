@@ -84,10 +84,11 @@ func (s *Store) MoveToFolder(game, id, parent string) (Profile, error) {
 	if !filepath.IsAbs(parent) {
 		return Profile{}, usererr.New(usererr.Invalid, "choose a folder by its full path")
 	}
-	if err := s.lockUnlocked(game, id); err != nil {
+	unlock, err := s.lockLayout(game, id, true)
+	if err != nil {
 		return Profile{}, err
 	}
-	defer s.mu.Unlock()
+	defer unlock()
 	home, err := s.profileDir(game, id)
 	if err != nil {
 		return Profile{}, err
@@ -110,10 +111,11 @@ func (s *Store) MoveToFolder(game, id, parent string) (Profile, error) {
 
 // MoveHome brings a profile kept in another folder back under the data folder.
 func (s *Store) MoveHome(game, id string) (Profile, error) {
-	if err := s.lockUnlocked(game, id); err != nil {
+	unlock, err := s.lockLayout(game, id, true)
+	if err != nil {
 		return Profile{}, err
 	}
-	defer s.mu.Unlock()
+	defer unlock()
 	home, err := s.profileDir(game, id)
 	if err != nil {
 		return Profile{}, err

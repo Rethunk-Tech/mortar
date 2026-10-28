@@ -51,10 +51,11 @@ func (s *Store) trashDir(gameID, id string) (string, error) {
 
 // Delete moves the profile folder to <datadir>/trash/<game>/<id>/ and stamps it with the deletion time.
 func (s *Store) Delete(gameID, id string) error {
-	if err := s.lockUnlocked(gameID, id); err != nil {
+	unlock, err := s.lockLayout(gameID, id, true)
+	if err != nil {
 		return err
 	}
-	defer s.mu.Unlock()
+	defer unlock()
 	src, err := s.profileDir(gameID, id)
 	if err != nil {
 		return err
@@ -162,11 +163,8 @@ func (s *Store) Restore(gameID, id string) (Profile, error) {
 	if err := fsx.Rename(src, dst); err != nil {
 		return Profile{}, err
 	}
-	p, err := s.replaceTrayLocked(gameID, id)
-	if err == nil {
-		s.listChanged(gameID)
-	}
-	return p, err
+	s.listChanged(gameID)
+	return s.replaceTrayLocked(gameID, id)
 }
 
 // Purge permanently removes one trashed profile.
@@ -279,9 +277,13 @@ func (s *Store) StoreKeys(history bool) (map[string][]string, error) {
 		}
 	}
 	for g := range games {
-		profiles, err := s.listOK(g)
+		profiles, err := s.List(g)
 		if err != nil {
 			return nil, err
+		}
+		// A damaged profile's keys are unknown, so a collection run from this list would delete what it still names.
+		if bad := len(profiles) - len(skipDamaged(profiles)); bad > 0 {
+			return nil, fmt.Errorf("%d %s profile(s) are damaged: repair or delete them before collecting the store", bad, g)
 		}
 		dirs, err := os.ReadDir(filepath.Join(s.trash, g))
 		if err != nil && !errors.Is(err, fs.ErrNotExist) {

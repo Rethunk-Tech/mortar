@@ -69,7 +69,7 @@ func TestListReturnsDamagedProfiles(t *testing.T) {
 	}
 }
 
-func TestStoreKeysSkipsDamagedAndListDamaged(t *testing.T) {
+func TestStoreKeysRefusesDamagedAndListDamaged(t *testing.T) {
 	t.Parallel()
 	s := newStore(t)
 	s.trash = filepath.Join(t.TempDir(), "trash")
@@ -77,12 +77,8 @@ func TestStoreKeysSkipsDamagedAndListDamaged(t *testing.T) {
 	badID := damagedID
 	writeDamaged(t, s.root)
 
-	keys, err := s.StoreKeys(true)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(keys["stardew"]) != 0 {
-		t.Fatalf("StoreKeys used a damaged profile: %v", keys)
+	if keys, err := s.StoreKeys(true); err == nil {
+		t.Fatalf("StoreKeys ignored a damaged profile: %v", keys)
 	}
 	damaged, err := s.ListDamaged("stardew")
 	if err != nil || len(damaged) != 1 || damaged[0].ID != badID || damaged[0].Error == "" {

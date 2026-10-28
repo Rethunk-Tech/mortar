@@ -37,3 +37,23 @@ func TestBackgroundSyncCoalescesAndWaits(t *testing.T) {
 		t.Fatalf("runs = %d, want 2", n)
 	}
 }
+
+// Delete waits for a layout that holds the profile's layout lock, so the layout cannot recreate the folder after.
+func TestDeleteWaitsForLayout(t *testing.T) {
+	t.Parallel()
+	s := newStore(t)
+	p := mustCreate(t, s, "Busy")
+	l := s.bg.lock(syncKey("stardew", p.ID))
+	l.Lock()
+	done := make(chan error, 1)
+	go func() { done <- s.Delete("stardew", p.ID) }()
+	select {
+	case <-done:
+		t.Fatal("Delete returned while a layout was under way")
+	case <-time.After(30 * time.Millisecond):
+	}
+	l.Unlock()
+	if err := <-done; err != nil {
+		t.Fatal(err)
+	}
+}

@@ -785,8 +785,8 @@ func (s *Store) applyOrder(game string, all []Profile, ids []string) error {
 
 // Duplicate copies a profile, mods/ included exactly as it is, and places the copy right after the source.
 func (s *Store) Duplicate(game, id string) (Profile, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	unlock, _ := s.lockLayout(game, id, false)
+	defer unlock()
 	src, srcDir, err := s.readDir(game, id)
 	if err != nil {
 		return Profile{}, err

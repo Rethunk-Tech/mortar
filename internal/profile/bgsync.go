@@ -118,3 +118,22 @@ func (s *Store) SyncPackagesFor(gameID, id string, testCopies bool) error {
 
 // WaitSyncs returns once every background layout has finished.
 func (s *Store) WaitSyncs() { s.bg.waitAll() }
+
+// lockLayout waits out the profile's background layout and holds its layout lock and s.mu (in syncPackages' order) so
+// no layout recreates a folder the caller is about to move or remove. With checkRunning it also refuses while the
+// game runs the profile. The returned func releases both.
+func (s *Store) lockLayout(game, id string, checkRunning bool) (func(), error) {
+	key := syncKey(game, id)
+	s.bg.wait(key)
+	l := s.bg.lock(key)
+	l.Lock()
+	s.mu.Lock()
+	if checkRunning {
+		if err := s.unlocked(game, id); err != nil {
+			s.mu.Unlock()
+			l.Unlock()
+			return nil, err
+		}
+	}
+	return func() { s.mu.Unlock(); l.Unlock() }, nil
+}
