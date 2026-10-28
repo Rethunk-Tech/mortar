@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, FormControlLabel, Radio, RadioGroup, Typography } from '@mui/material'
-import { FolderOpen } from 'lucide-react'
+import { Box, Button, Typography } from '@mui/material'
+import { FolderOpen, Package } from 'lucide-react'
 import { memo, type RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   AddCustomGame,
@@ -12,8 +12,9 @@ import { PickExecutable } from '../../bindings/github.com/Rethunk-Tech/mortar/in
 import { SetGameFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { SHIMLOADER, UNITY } from '../brand/productNames.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
+import { TileGrid } from '../share/TileGrid.tsx'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
-import { FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
+import { Field, FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
@@ -45,38 +46,24 @@ const LoaderChoice = memo(function LoaderChoiceView({
     folder: t`Any game whose mods are files in a Mods folder`,
   }
   return (
-    <>
-      <Box>
-        <Typography sx={{ fontSize: 'base.fontSize', fontWeight: 700 }}>
-          {t`How it is modded`}
-        </Typography>
-        {guessed ? (
-          <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
-            {t`Mortar chose this from the game's files.`}
-          </Typography>
-        ) : null}
-      </Box>
-      <RadioGroup value={loader} onChange={(_, v) => onLoader(v)}>
-        {loaders.map((l) => (
-          <FormControlLabel
-            key={l.id}
-            value={l.id}
-            control={<Radio size="small" />}
-            sx={{ alignItems: 'flex-start', '& .MuiRadio-root': { mt: -0.5 } }}
-            label={
-              <Box>
-                <Typography sx={{ fontSize: 'base.fontSize' }}>{l.name}</Typography>
-                {hints[l.id] ? (
-                  <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
-                    {hints[l.id]}
-                  </Typography>
-                ) : null}
-              </Box>
-            }
-          />
-        ))}
-      </RadioGroup>
-    </>
+    <Field
+      label={t`How it is modded`}
+      hint={guessed ? t`Mortar chose this from the game's files.` : undefined}
+    >
+      <TileGrid
+        label={t`How it is modded`}
+        tiles={loaders.map((l) => ({
+          id: l.id,
+          icon: <Package size={32} />,
+          name: l.name,
+          hint: hints[l.id] ?? '',
+        }))}
+        lastUsed={null}
+        selected={loader}
+        onChoose={onLoader}
+        padded={false}
+      />
+    </Field>
   )
 })
 

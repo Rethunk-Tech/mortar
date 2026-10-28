@@ -86,12 +86,12 @@ function LoadFailureAction({
       }
       return (
         <>
-          {button(t`Remove old copy`, () => setRemoving(true))}
+          {button(t`Delete old copy`, () => setRemoving(true))}
           <ConfirmationDialog
             open={removing}
-            title={t`Remove the older copy?`}
+            title={t`Delete the older copy?`}
             body={t`${{ loader: BEPINEX }} skipped ${path} because a newer copy of the plugin loaded. Mortar deletes the file.`}
-            confirmLabel={t`Remove`}
+            confirmLabel={t`Delete`}
             tone="danger"
             onCancel={() => setRemoving(false)}
             onConfirm={() => {
