@@ -360,3 +360,39 @@ func hostValuesOf(raw json.RawMessage, guid string) ([]HostValue, error) {
 	}
 	return out, nil
 }
+
+// SaveHostValues keeps the host's current values of the settings the file's mod shares, to write into the player's own
+// .cfg once the game is closed: Mortar writes no config while the game runs, which may rewrite it. It returns how many.
+func (s *Service) SaveHostValues(game, profileID, modID, file string) (int, error) {
+	values, err := s.HostValues(game, profileID, file)
+	if err != nil || len(values) == 0 {
+		return 0, err
+	}
+	edits := make([]edit, 0, len(values))
+	for _, v := range values {
+		edits = append(edits, edit{v.Section, v.Key, v.Value})
+	}
+	s.hostMu.Lock()
+	defer s.hostMu.Unlock()
+	if s.hostKept == nil {
+		s.hostKept = map[hostKey][]edit{}
+	}
+	s.hostKept[hostKey{game, profileID, modID, file}] = edits
+	return len(edits), nil
+}
+
+// writeKept writes the host's values kept for f, once the game is no longer running.
+func (s *Service) writeKept(game, profileID, modID string, f ConfigFile) (bool, error) {
+	if s.Running != nil && s.Running(game, profileID) {
+		return false, nil
+	}
+	k := hostKey{game, profileID, modID, f.Name}
+	s.hostMu.Lock()
+	edits, ok := s.hostKept[k]
+	delete(s.hostKept, k)
+	s.hostMu.Unlock()
+	if !ok {
+		return false, nil
+	}
+	return true, s.write(game, profileID, modID, f, edits)
+}

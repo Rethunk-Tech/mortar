@@ -71,7 +71,13 @@ type Service struct {
 	// view read every file of the profile again.
 	parsedMu sync.Mutex
 	parsed   map[string]parsedCfg
+
+	// hostKept is the host's values a player chose to keep, written into the .cfg once the game is closed.
+	hostMu   sync.Mutex
+	hostKept map[hostKey][]edit
 }
+
+type hostKey struct{ game, profile, mod, file string }
 
 type parsedCfg struct {
 	size int64
@@ -542,6 +548,13 @@ func (s *Service) schemaOf(game, profileID, modID string, f ConfigFile) (Schema,
 		info, err := os.Stat(path)
 		if err != nil {
 			return Schema{}, err
+		}
+		if kept, err := s.writeKept(game, profileID, modID, f); err != nil {
+			return Schema{}, err
+		} else if kept {
+			if info, err = os.Stat(path); err != nil {
+				return Schema{}, err
+			}
 		}
 		doc, err := s.parseCached(path, info)
 		if err != nil {

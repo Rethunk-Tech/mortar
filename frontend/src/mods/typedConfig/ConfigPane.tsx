@@ -29,6 +29,7 @@ import { showsOneFile, useConfigList } from './configList.ts'
 import { formatValue } from './convert.ts'
 import { filterFile, humanizeKey, isModified, modifiedCount } from './entries.ts'
 import { useHostValues } from './hostValues.ts'
+import { SaveHostValues } from './SaveHostValues.tsx'
 import { SectionNav } from './SectionNav.tsx'
 import { type Target, useTypedConfig } from './store.ts'
 import type { ConfigEntry } from './types.ts'
@@ -311,6 +312,7 @@ function Sections({ shown }: { shown: ReturnType<typeof filterFile> | null }) {
           ...(centred ? { [CENTRED_FROM]: { '& .entry-row': { pr: '45%' } } } : {}),
         }}
       >
+        <SaveHostValues host={host} />
         {shown?.sections.map((section) => (
           <Box
             key={section.name}

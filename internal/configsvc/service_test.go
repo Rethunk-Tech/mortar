@@ -334,3 +334,35 @@ func TestTextFilesAreMatchedByPackageAndEditedWhole(t *testing.T) {
 		t.Fatal("a running game's file was written")
 	}
 }
+
+func TestKeptHostValuesWaitForTheGameToClose(t *testing.T) {
+	s, path := newService(t)
+	running := true
+	s.Running = func(string, string) bool { return running }
+	files, err := s.Files("lc", "p", "com.example.betterstuff")
+	if err != nil {
+		t.Fatal(err)
+	}
+	s.hostKept = map[hostKey][]edit{{"lc", "p", "com.example.betterstuff", files[0].Name}: {{"General", "LeaveDelay", "60"}}}
+	if _, err := s.Schema("lc", "p", "com.example.betterstuff", files[0].Name); err != nil {
+		t.Fatal(err)
+	}
+	if got, _ := os.ReadFile(filepath.Clean(path)); !strings.Contains(string(got), "LeaveDelay = 120") {
+		t.Fatal("a kept value was written while the game ran")
+	}
+	running = false
+	schema, err := s.Schema("lc", "p", "com.example.betterstuff", files[0].Name)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, _ := os.ReadFile(filepath.Clean(path)); !strings.Contains(string(got), "LeaveDelay = 60") {
+		t.Fatalf("the kept value was not written once the game closed:\n%s", got)
+	}
+	for _, sec := range schema.Sections {
+		for _, e := range sec.Entries {
+			if e.Key == "LeaveDelay" && e.Value != "60" {
+				t.Fatalf("schema after writing shows %+v", e)
+			}
+		}
+	}
+}

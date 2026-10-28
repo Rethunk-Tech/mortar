@@ -2565,6 +2565,10 @@ msgstr ""
 msgid "Added this week"
 msgstr ""
 
+#: src/mods/typedConfig/SaveHostValues.tsx
+msgid "Saved the host's values"
+msgstr ""
+
 #: src/mods/ChangeVersionDialog.tsx
 msgid "{name} is pinned at {installed}. Install {version} anyway? The pin stays on the new version."
 msgstr ""
@@ -3118,6 +3122,10 @@ msgstr ""
 msgid "Config file"
 msgstr ""
 
+#: src/mods/typedConfig/SaveHostValues.tsx
+msgid "They are written to your config when the game closes."
+msgstr ""
+
 #: src/mods/describeLoadFailure.ts
 msgid "It was thrown in {thrown}"
 msgstr ""
@@ -3192,6 +3200,10 @@ msgstr ""
 #: src/mods/updateReview/EverywhereDialog.tsx
 #: src/mods/updateReview/UpdateActions.tsx
 msgid "Update in all profiles ({count})"
+msgstr ""
+
+#: src/mods/typedConfig/SaveHostValues.tsx
+msgid "Save host's values"
 msgstr ""
 
 #: src/mods/updateReview/Row.tsx
