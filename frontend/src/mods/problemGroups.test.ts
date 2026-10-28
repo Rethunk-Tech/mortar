@@ -49,7 +49,7 @@ test('problemCount is zero while result is null', () => {
   expect(problemCount(null)).toBe(0)
 })
 
-test('settings are an info-level group and count as problems', () => {
+test('settings are an info-level group and are not counted', () => {
   const result: Result = {
     ...emptyResult(),
     settings: [
@@ -69,7 +69,7 @@ test('settings are an info-level group and count as problems', () => {
     ],
   }
   expect(problemSections(result).map((s) => s.id)).toEqual(['settings'])
-  expect(problemCount(result)).toBe(1)
+  expect(problemCount(result)).toBe(0)
 })
 
 test('cosmetic conflicts get their own section and are not counted', () => {
@@ -235,4 +235,41 @@ test('information rows are listed but not counted: optional or outside needs, er
   }
   expect(problemSections(result).flatMap((s) => s.rows)).toHaveLength(7)
   expect(problemCount(result)).toBe(3)
+})
+
+test('problemCount counts the must-fix kinds and leaves advice, info and footer kinds out', () => {
+  const result = {
+    ...emptyResult(),
+    // Counted: a missing requirement, a real file conflict, a broken mod, a severe run error, a load failure that
+    // did not run, a SMAPI-broken mod.
+    missing: [{ dependentId: 'd', id: 'a', optional: false, listed: false }],
+    assetConflicts: [{ kind: 'replace', packIds: ['x'], fixes: [], cosmetic: false }],
+    broken: [
+      { key: 'b', id: 'b', status: 'incompatible' },
+      { key: 'c', id: 'c', status: 'abandoned' },
+    ],
+    runErrors: [
+      { key: 'r', id: 'r', severe: true },
+      { key: 's', id: 's', severe: false },
+    ],
+    loadFailures: [
+      { key: 'l', ran: false },
+      { key: 'm', ran: true },
+    ],
+    compat: [
+      { key: 'k', status: 'broken' },
+      { key: 'u', status: 'unofficial' },
+    ],
+    // Not counted: cosmetic conflict, edit overlap, setting hint, deprecated, drift, redundant, dismissed.
+    settings: [{ key: 'z', id: 'z' }],
+    deprecated: [{ key: 'd' }],
+    drift: [{ kind: 'changed', folder: 'f', key: 'f' }],
+    redundant: [{ key: 'q' }],
+    dismissed: [{ token: 't' }],
+  } as unknown as Result
+  result.assetConflicts = [
+    ...(result.assetConflicts ?? []),
+    { kind: 'replace', packIds: ['y'], fixes: [], cosmetic: true },
+  ] as unknown as Result['assetConflicts']
+  expect(problemCount(result)).toBe(6)
 })

@@ -27,8 +27,8 @@ import { useSettings } from '../settings/store.ts'
 import { idKey } from './dependents.ts'
 import type { ConflictGroup } from './fileConflicts.ts'
 import { offersNexusDownload } from './nexusMark.ts'
-import { assetRows } from './problemGroups.ts'
-import { redundantRowCount } from './sameJobGroups.ts'
+import { assetRows, isInfoRow } from './problemGroups.ts'
+import { MUST_FIX_COMPAT } from './problemSection.ts'
 
 type Entry = NonNullable<Profile['entries']>[number]
 
@@ -67,6 +67,9 @@ const counts = (p: Problem): boolean =>
   (p.kind !== 'missing' || countsAsMissing(p.missing)) &&
   (p.kind !== 'loadFailure' || !p.loadFailure.ran) &&
   (p.kind !== 'runError' || p.runError.severe)
+const mustFix = (p: Problem): boolean =>
+  counts(p) && (p.kind === 'missing' || p.kind === 'asset' || !isInfoRow(p))
+
 export const siblingsOf = (mods: Mod[], mod: Mod) =>
   mods.filter((m) => m.key === mod.key && m.id !== mod.id)
 
@@ -260,13 +263,12 @@ export function nexusKeepKey(copies: Copy[]): string | null {
 export const missingCount = (result: Result | null): number =>
   (result?.missing ?? []).filter(countsAsMissing).length
 
-// The one count the Problems chip, the sidebar badge, Home and the badges share: every item the Problems tab lists
-// except the low-priority ones it sets apart, harmless (cosmetic) asset conflicts and cleanup, which never need a fix.
+// The one count the Problems chip, the sidebar badge, Home and the badges share: only what the player has to fix. Not
+// counted: the FOOTER_SECTIONS kinds, cosmetic asset conflicts, info rows (advice, a listed or
+// deprecated note, but a non-cosmetic file conflict always counts), drift, and SMAPI compatibility advice other than a mod marked broken.
 export const problemCount = (result: Result | null): number =>
-  problemsOf(result).filter(counts).length +
-  (result?.drift?.length ?? 0) +
-  (result?.compat?.length ?? 0) +
-  redundantRowCount(result?.redundant ?? [])
+  problemsOf(result).filter(mustFix).length +
+  (result?.compat ?? []).filter((c) => MUST_FIX_COMPAT.has(c.status)).length
 
 export const offersUpdate = (
   entry: { pinned?: boolean; skipVersion?: string; skipSources?: string[] | null } | undefined,

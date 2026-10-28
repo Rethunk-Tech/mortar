@@ -116,7 +116,7 @@ test('problems and updates are counted per finding', () => {
       dismissed: [],
       unknown: false,
     }),
-  ).toBe(4)
+  ).toBe(3)
   expect(updateCount(null)).toBe(0)
 })
 

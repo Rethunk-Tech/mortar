@@ -9,6 +9,9 @@ const FOOTER_SECTIONS: ReadonlySet<string> = new Set([
   'dismissed',
 ])
 
+/** SMAPI compatibility statuses that count toward the Problems badge: the rest is advice. */
+const MUST_FIX_COMPAT: ReadonlySet<string> = new Set(['broken'])
+
 // The footer section opened in each profile, kept for the session; choosing the open one closes it.
 const useProblemFooter = create<{
   byProfile: Record<string, string | undefined>
@@ -21,4 +24,4 @@ const useProblemFooter = create<{
     })),
 }))
 
-export { FOOTER_SECTIONS, useProblemFooter }
+export { FOOTER_SECTIONS, MUST_FIX_COMPAT, useProblemFooter }
