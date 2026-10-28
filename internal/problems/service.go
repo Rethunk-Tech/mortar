@@ -99,14 +99,18 @@ func (s *Service) shareCheck(ctx context.Context, key string, check func() Resul
 	s.checks[key] = call
 	s.mu.Unlock()
 
-	r := check()
-	s.mu.Lock()
-	call.once.Do(func() {
-		call.result = r
-		delete(s.checks, key)
-		close(call.done)
-	})
-	s.mu.Unlock()
+	var r Result
+	// A check that panics still ends the call, so the key is not stranded for joiners and the next check.
+	defer func() {
+		s.mu.Lock()
+		call.once.Do(func() {
+			call.result = r
+			delete(s.checks, key)
+			close(call.done)
+		})
+		s.mu.Unlock()
+	}()
+	r = check()
 	return r, nil
 }
 

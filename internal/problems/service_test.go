@@ -66,3 +66,14 @@ func TestUnknownResultExpires(t *testing.T) {
 		t.Fatal("complete results stay until the fingerprint changes")
 	}
 }
+
+func TestShareCheckFreesTheKeyWhenTheCheckPanics(t *testing.T) {
+	s := &Service{checks: map[string]*problemCall{}}
+	func() {
+		defer func() { _ = recover() }()
+		_, _ = s.shareCheck(context.Background(), "k", func() Result { panic("boom") })
+	}()
+	if len(s.checks) != 0 {
+		t.Fatalf("checks = %v", s.checks)
+	}
+}
