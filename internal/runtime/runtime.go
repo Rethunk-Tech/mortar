@@ -47,6 +47,8 @@ type Install struct {
 	Home string
 	// GOOS is the host OS; empty means this process's.
 	GOOS string
+	// SteamRoots are the Steam folders the user added, searched for Proton builds before the usual ones.
+	SteamRoots []string
 	// Proton is the folder name of the Proton build Mortar's own Proton runs the install with; empty takes the best.
 	Proton string
 }
@@ -280,13 +282,9 @@ func (p proton) Resolve(inst Install, t components.PathTemplate) (string, error)
 	if tmpl == "" {
 		return "", errors.New("no path for a windows build")
 	}
-	steamapps := inst.Dir
-	for filepath.Base(steamapps) != "steamapps" {
-		parent := filepath.Dir(steamapps)
-		if parent == steamapps {
-			return "", fmt.Errorf("%q is not inside a Steam library", inst.Dir)
-		}
-		steamapps = parent
+	steamapps, ok := steamappsOf(inst.Dir)
+	if !ok {
+		return "", fmt.Errorf("%q is not inside a Steam library", inst.Dir)
 	}
 	user := filepath.Join(steamapps, "compatdata", inst.AppID, "pfx", "drive_c", "users", "steamuser")
 	return expand(tmpl, userTokens(user, inst.Dir))

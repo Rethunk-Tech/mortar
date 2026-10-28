@@ -8,6 +8,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -100,12 +101,12 @@ func padNumbers(s string) string {
 
 // ProtonBuilds are the Proton builds a native Steam on this computer has, in its libraries' steamapps/common or its
 // compatibilitytools.d, best first. Flatpak Steam's builds need Flatpak's runtime, so they are left out.
-func ProtonBuilds(home string) []ProtonBuild {
+func ProtonBuilds(home string, steamRoots ...string) []ProtonBuild {
 	if home == "" {
 		home, _ = os.UserHomeDir()
 	}
 	var found []ProtonBuild
-	for _, st := range steam.LocateAll(home) {
+	for _, st := range steam.LocateAll(home, steamRoots...) {
 		if st.Kind != steam.KindNative {
 			continue
 		}
@@ -129,10 +130,34 @@ func ProtonBuilds(home string) []ProtonBuild {
 }
 
 // FindProton is the build named want (its folder name) when Steam has it, else the best one.
-func FindProton(home, want string) (ProtonBuild, bool) {
-	found := ProtonBuilds(home)
-	if i := slices.IndexFunc(found, func(b ProtonBuild) bool { return filepath.Base(b.Dir) == want }); i >= 0 {
+func FindProton(home, want string, steamRoots ...string) (ProtonBuild, bool) {
+	return pickProton(ProtonBuilds(home, steamRoots...), want, "")
+}
+
+// foldTool reduces a Proton build's folder name or a Steam compatibility tool name to letters and digits, so
+// "proton_9" and "Proton 9.0" compare as a prefix.
+func foldTool(s string) string {
+	return strings.Map(func(r rune) rune {
+		if unicode.IsLetter(r) || unicode.IsDigit(r) {
+			return unicode.ToLower(r)
+		}
+		return -1
+	}, s)
+}
+
+// pickProton is the build named want, else the build matching tool (the compatibility tool Steam runs the game with),
+// else the best one.
+func pickProton(found []ProtonBuild, want, tool string) (ProtonBuild, bool) {
+	if i := slices.IndexFunc(found, func(b ProtonBuild) bool { return want != "" && filepath.Base(b.Dir) == want }); i >= 0 {
 		return found[i], true
+	}
+	if t := foldTool(tool); t != "" {
+		if i := slices.IndexFunc(found, func(b ProtonBuild) bool { return foldTool(filepath.Base(b.Dir)) == t }); i >= 0 {
+			return found[i], true
+		}
+		if i := slices.IndexFunc(found, func(b ProtonBuild) bool { return strings.HasPrefix(foldTool(filepath.Base(b.Dir)), t) }); i >= 0 {
+			return found[i], true
+		}
 	}
 	if len(found) == 0 {
 		return ProtonBuild{}, false
@@ -155,7 +180,11 @@ func ProtonCommand(inst Install, exe string, args ...string) (argv, env []string
 	case !(mortarProton{}).Detect(inst):
 		return nil, nil, errors.New("install does not run under Mortar's Proton")
 	}
-	build, ok := FindProton(inst.Home, inst.Proton)
+	tool := ""
+	if inst.Proton == "" && inst.Store == storeSteam {
+		tool = Version(inst)
+	}
+	build, ok := pickProton(ProtonBuilds(inst.Home, inst.SteamRoots...), inst.Proton, tool)
 	if !ok {
 		return nil, nil, ErrNoProton
 	}
