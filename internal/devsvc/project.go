@@ -99,6 +99,16 @@ func csprojOf(dir string) (string, bool) {
 	return found[0], true
 }
 
+// readGit fills the release and repository state. An untrusted project's own .git/config can name a filter driver that
+// runs on `git status`, so no git runs there until the user trusts it.
+func (s *Service) readGit(ctx context.Context, p settings.DevProject, info *ProjectInfo) {
+	if p.Untrusted {
+		return
+	}
+	info.Released = s.latestRelease(ctx, p.Dir)
+	info.Git = s.gitState(ctx, p.Dir)
+}
+
 // Inspect reads the project's details from its files. When the project was renamed outside Mortar, the record and the
 // extra mods folder follow the new build output, and the install from the old one leaves its profile.
 func (s *Service) Inspect(ctx context.Context, gameID, dir string) (ProjectInfo, error) {
@@ -108,9 +118,8 @@ func (s *Service) Inspect(ctx context.Context, gameID, dir string) (ProjectInfo,
 	}
 	if rec, ok := readAssetRecord(p.Dir); ok && p.Kind != "" {
 		info := assetInfo(p.Dir, rec)
-		info.Released = s.latestRelease(ctx, p.Dir)
 		info.Icon = iconData(p.Dir)
-		info.Git = s.gitState(ctx, p.Dir)
+		s.readGit(ctx, p, &info)
 		return info, nil
 	}
 	csproj, ok := csprojOf(p.Dir)
@@ -122,9 +131,8 @@ func (s *Service) Inspect(ctx context.Context, gameID, dir string) (ProjectInfo,
 	if err != nil {
 		return ProjectInfo{}, err
 	}
-	info.Released = s.latestRelease(ctx, p.Dir)
 	info.Icon = iconData(p.Dir)
-	info.Git = s.gitState(ctx, p.Dir)
+	s.readGit(ctx, p, &info)
 	info.BuiltAt, info.Stale = buildState(p)
 	if body, err := fsx.ReadFile(filepath.Join(p.Dir, ".mortar", "template.json")); err == nil {
 		var rec projectRecord

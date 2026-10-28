@@ -188,6 +188,9 @@ func (s *Service) NextVersions(ctx context.Context, gameID, dir string) (Version
 	if err != nil {
 		return Versions{}, err
 	}
+	if p.Untrusted {
+		return nextVersions(""), nil
+	}
 	latest := s.latestRelease(ctx, p.Dir)
 	v := nextVersions(latest)
 	v.GitHub = s.githubRemote(ctx, p.Dir)

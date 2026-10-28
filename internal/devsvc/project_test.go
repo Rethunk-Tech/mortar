@@ -264,3 +264,21 @@ func TestEditMovesTheTeamInDevelopingMd(t *testing.T) {
 		t.Errorf("DEVELOPING.md = %s", got)
 	}
 }
+
+func TestInspectRunsNoGitForAnUntrustedProject(t *testing.T) {
+	svc, run := testService(t, testTemplate)
+	dir := fixtureProject(t, svc)
+	out := filepath.Join(dir, "artifacts", "bin", "ShopDrop", "debug")
+	if err := svc.Settings.AddDevProject("lethal-company", settings.DevProject{Dir: dir, Name: "ShopDrop", Profile: "p", Output: out, Untrusted: true}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := svc.Inspect(t.Context(), "lethal-company", dir); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := svc.NextVersions(t.Context(), "lethal-company", dir); err != nil {
+		t.Fatal(err)
+	}
+	if slices.ContainsFunc(run.calls, func(c []string) bool { return c[0] == "git" }) {
+		t.Errorf("git ran in a project the user has not trusted: %v", run.calls)
+	}
+}
