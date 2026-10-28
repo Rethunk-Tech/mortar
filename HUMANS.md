@@ -139,11 +139,11 @@ A game on a loader, store and sources Mortar already has needs no Go: `game.Find
 
 A new store, site, runtime, provider, host, installer, deployer, framework or loader is one Go package or file plus its registration. A game that uses only existing ones needs none of this. Each driver implements the interface named here, which documents its optional capabilities (type assertions):
 
-- Store: `Store` in `internal/gamestore/drivers.go`; add to `All()` and give `components.GameStores` the matching field.
+- Store: `Store` in `internal/gamestore/gamestore.go`; add to `All()` and give `components.GameStores` the matching field.
 - Source: `Source` in `internal/source/<id>/`; `source.Register`; import in `internal/source/all/all.go`. A searcher sets `Item.Adult` from the site's flag, since browse hides adult hits unless opted in. Tests serve the site from a fake HTTP server.
 - Runtime: `Runtime` in `internal/runtime`, in `drivers` before `native`, which claims whatever nothing else does.
 - Metadata provider: `internal/metadata`; add the id's case in `For`.
-- Host: `Host` in `internal/host`, in `For` ahead of the direct host, which takes any HTTPS URL.
+- Host: `Direct` (any HTTPS URL) and `GitHub` in `internal/host`, built where a download starts.
 - Pack format: `Format` in `internal/pack`; pass it to `pack.Read` where the importer lists formats. It writes nothing.
 - Installer: `Installer` in `internal/installer`; `installer.Register`; id in `detectionOrder` before `plain`. Every `Layout` path is validated to stay inside its target.
 - Framework: `Framework` in `internal/framework`; `framework.Register`.

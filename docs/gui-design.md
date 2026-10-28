@@ -93,7 +93,7 @@ Mortar's own setup finds launchers, not games, and opens until finished once (`l
 
 ## Settings
 
-Only what is Mortar-wide, never one game's (the exception: Downloads' default profile for Nexus links, labelled with its game). Code: `frontend/src/settings/SettingsPage.tsx` and `sections/`; the registry is `internal/settings/registry.go`. Per-game settings are their own page (`GameSettingsPage.tsx`), opened by the last icon button in the game screen's tab row.
+Only what is Mortar-wide, never one game's (the exception: Downloads' default profile for Nexus links, labelled with its game). Code: `frontend/src/settings/SettingsPage.tsx` and `sections/`; the registry is `internal/settings/registry.go`. Per-game settings are their own page (`GameSettingsPage.tsx`), opened by the **<game> settings** button on Home (`frontend/src/game/Home.tsx`) or the command palette.
 - A flagged download is refused with **Install anyway**, which asks in an error-coloured confirm, records the override in the profile's History and installs unscanned; a scan that could not finish installs the mod and warns it was unscanned. **Settings file** import lists changes by section and applies only the ticked ones.
 - GitHub uses the `gh` login when present; the itch.io API key is kept in the system keyring and **Test** stores nothing on rejection.
 - In a game's profile scope, a row a profile may override shows the profile's value, the game's beside it and **Use the game's**; other rows show the game's value, held. Values only ever per profile (the loader's options in the profile's files, the game's startup options) show only in that scope.
