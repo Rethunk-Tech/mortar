@@ -124,7 +124,7 @@ func TestPrepareStartupArmsTheBepInExPatcherOnlyForAMeasuredLaunch(t *testing.T)
 	if measure, err := prepareStartup(bepinex5.Loader{}, "lethal-company", mods); err != nil || !measure {
 		t.Fatalf("measure %v err %v", measure, err)
 	}
-	if b, err := fsx.ReadFile(filepath.Join(dir, ".measure-launch")); err != nil || string(b) != "MainMenu" {
+	if b, err := fsx.ReadFile(filepath.Join(dir, ".measure-launch")); err != nil || string(b) != "MainMenu\n" {
 		t.Fatalf("request %q err %v", b, err)
 	}
 	if _, err := os.Stat(filepath.Join(mods, smapiGroupConfig)); !os.IsNotExist(err) {
@@ -160,5 +160,14 @@ func TestBepInExReportRowsBecomeTheirPackages(t *testing.T) {
 	}
 	if got[0].SampledOtherMs != 4200 || got[0].Phases.TitleScreen != 9000 || !got[0].EntryTimed {
 		t.Fatalf("%+v", got[0])
+	}
+}
+
+func TestStartupPhasesTotalEndsAtReadyWhenTheBridgeSawOne(t *testing.T) {
+	if got := (StartupPhases{TitleScreen: 9000}).Total(); got != 9000 {
+		t.Fatalf("no ready mark: total = %d", got)
+	}
+	if got := (StartupPhases{TitleScreen: 9000, Ready: 12000}).Total(); got != 12000 {
+		t.Fatalf("ready mark: total = %d", got)
 	}
 }

@@ -11,7 +11,7 @@ import (
 )
 
 // measureFile, in the profile's startup folder, asks the bridge's preloader patcher to time this launch. It holds the
-// game's title scene, where the measurement ends; the patcher deletes it as it starts.
+// game's title scene and, on a second line, its ready signal, where the measurement ends; the patcher deletes it as it starts.
 const measureFile = ".measure-launch"
 
 // ReportsStartup is true: on a measured launch the Mortar BepInEx Bridge's patcher times each plugin's load.
@@ -31,5 +31,5 @@ func RequestStartup(startupDir, gameID string, measure bool) error {
 		return err
 	}
 	g, _ := components.Game(gameID)
-	return fsx.WriteFile(path, []byte(g.TitleScene), 0o600)
+	return fsx.WriteFile(path, []byte(g.TitleScene+"\n"+g.ReadySignal), 0o600)
 }

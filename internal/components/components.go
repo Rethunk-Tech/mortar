@@ -167,6 +167,10 @@ type GameInfo struct {
 	// TitleScene is the Unity scene of the game's main menu, where a BepInEx startup measurement ends; without it the
 	// first scene ends it.
 	TitleScene string `json:"titleScene,omitempty"`
+	// ReadySignal names a static event or Action field ("Namespace.Type.member") the game raises when its own loading
+	// is done, which can be well after the title scene shows; the BepInEx startup measurement then ends there. An older
+	// Mortar ignores the field, and a bridge that cannot find the member ends at the title scene.
+	ReadySignal string `json:"readySignal,omitempty"`
 	// Graphics offers the player a choice of graphics API for the game, each passed as launch arguments; an older
 	// Mortar ignores the field.
 	Graphics *Graphics `json:"graphics,omitempty"`

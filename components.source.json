@@ -558,6 +558,8 @@
           "windows": "{localLow}/Hopoo Games, LLC/Risk of Rain 2/Player.log"
         }
       },
+      "titleScene": "title",
+      "readySignal": "RoR2.RoR2Application.onLoad",
       "deploy": "profile",
       "targets": [
         {

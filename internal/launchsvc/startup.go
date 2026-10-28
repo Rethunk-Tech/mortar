@@ -37,7 +37,13 @@ type StartupPhases struct {
 	GameLaunched int64 `json:"gameLaunched"`
 	TitleMenu    int64 `json:"titleMenu"`
 	TitleScreen  int64 `json:"titleScreen"`
+	// Ready is when the game finished its own loading after the title screen showed; 0 when the game has no ready
+	// signal, and then the title screen ends the startup.
+	Ready int64 `json:"ready"`
 }
+
+// Total is the time to a usable game: the ready mark when the bridge saw one, else the title screen.
+func (p StartupPhases) Total() int64 { return max(p.TitleScreen, p.Ready) }
 
 // StartupPack is one content pack's share of its framework's startup time.
 type StartupPack struct {
