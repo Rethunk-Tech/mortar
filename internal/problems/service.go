@@ -836,7 +836,7 @@ func (s *Service) updatesFor(ctx context.Context, gameID, id string, fresh bool)
 	s.mu.Unlock()
 	cachedSMAPI := ok && !fresh && c.fingerprint == fp && time.Since(c.at) < updatesTTL
 	if cachedSMAPI && !c.smapiOnly {
-		return withKnownBroken(components.KnownBrokenFor(ctx, gameID), env.GameVersion, withCautions(s.hideDeveloped(gameID, hideUpdates(c.result, mods, s.settings.Get())), mods)), nil
+		return withKnownBroken(components.KnownBrokenFor(ctx, gameID), env.GameVersion, withCautions(s.hideDeveloped(gameID, mods, hideUpdates(c.result, mods, s.settings.Get())), mods)), nil
 	}
 	set := s.settings.Get()
 	var r UpdatesResult
@@ -854,7 +854,7 @@ func (s *Service) updatesFor(ctx context.Context, gameID, id string, fresh bool)
 		s.updates[key] = cachedUpdates{fingerprint: fp, at: time.Now(), result: r}
 		s.mu.Unlock()
 	}
-	return withKnownBroken(components.KnownBrokenFor(ctx, gameID), env.GameVersion, withCautions(s.hideDeveloped(gameID, hideUpdates(r, mods, set)), mods)), nil
+	return withKnownBroken(components.KnownBrokenFor(ctx, gameID), env.GameVersion, withCautions(s.hideDeveloped(gameID, mods, hideUpdates(r, mods, set)), mods)), nil
 }
 
 // fixStaleManifests sets each manifest whose download is already the suggested version to that version, so SMAPI
@@ -880,11 +880,12 @@ func (s *Service) fixStaleManifests(gameID, id string, held []Held) {
 	}
 }
 
-func (s *Service) hideDeveloped(gameID string, r UpdatesResult) UpdatesResult {
-	if s.DevPackages == nil {
-		return r
+func (s *Service) hideDeveloped(gameID string, mods []framework.Mod, r UpdatesResult) UpdatesResult {
+	var packages []string
+	if s.DevPackages != nil {
+		packages = s.DevPackages(gameID)
 	}
-	return holdDeveloped(r, s.DevPackages(gameID))
+	return holdDeveloped(r, packages, mods)
 }
 
 func hideUpdates(r UpdatesResult, mods []framework.Mod, set settings.Settings) UpdatesResult {

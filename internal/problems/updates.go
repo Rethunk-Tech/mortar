@@ -262,14 +262,12 @@ func HideHeld(r UpdatesResult, mods []framework.Mod, includePrerelease bool, sma
 	return r
 }
 
-// holdDeveloped holds back updates to the packages the player develops.
-func holdDeveloped(r UpdatesResult, packages []string) UpdatesResult {
-	if len(packages) == 0 {
-		return r
-	}
+// holdDeveloped holds back updates to the packages the player develops and to the mods built from their own folder.
+func holdDeveloped(r UpdatesResult, packages []string, mods []framework.Mod) UpdatesResult {
 	kept := make([]Update, 0, len(r.Updates))
 	for _, u := range r.Updates {
-		if u.Package != "" && slices.ContainsFunc(packages, func(p string) bool { return strings.EqualFold(p, u.Package) }) {
+		built := slices.ContainsFunc(mods, func(m framework.Mod) bool { return m.Key == u.Key && m.SourceFolder != "" })
+		if built || u.Package != "" && slices.ContainsFunc(packages, func(p string) bool { return strings.EqualFold(p, u.Package) }) {
 			r.Held = append(r.Held, Held{Key: u.Key, ID: u.ID, Name: u.Name, Version: u.Version, Have: u.Installed, Reason: HeldDevelop})
 			continue
 		}
