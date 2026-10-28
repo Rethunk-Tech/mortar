@@ -78,8 +78,16 @@ function SearchStatus({ related, elsewhere }: { related: Related; elsewhere: Els
   useLayoutEffect(() => {
     // Only whether there are none and whether there are few matters, so a larger count stays one value.
     const results = marker.current?.parentElement
-    const found = query ? (results?.querySelectorAll(SEARCH_HIT).length ?? 0) : 0
-    setHits(Math.min(found, FEW_HITS + 1))
+    const count = () =>
+      setHits(query ? Math.min(results?.querySelectorAll(SEARCH_HIT).length ?? 0, FEW_HITS + 1) : 0)
+    count()
+    // Rows that render after an async read arrive later than the query.
+    if (!(query && results)) {
+      return
+    }
+    const watch = new MutationObserver(count)
+    watch.observe(results, { childList: true, subtree: true })
+    return () => watch.disconnect()
   }, [query])
   const relatedLabels = query && related ? related.match(query) : []
   return (
@@ -147,8 +155,6 @@ export function SettingsShell<Id extends string>({
   // Whether a search runs, not its text: the rows follow the text themselves, so typing re-renders only them.
   const searching = useSettingsSearching()
   const pane = useRef<HTMLDivElement>(null)
-  // State, not a ref: SearchStatus sits inside this box, and a parent's ref is only set after its children's layout
-  // effects run, so the first count would find no box.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && settingsQuery()) {

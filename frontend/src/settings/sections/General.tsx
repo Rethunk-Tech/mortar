@@ -262,7 +262,7 @@ function Sharing() {
           <span />
         </SettingRow>
       ) : null}
-      {firewallBlocked ? (
+      {lanSharing && firewallBlocked ? (
         <SettingRow label={firewallLabel} description={firewallText}>
           <Button
             variant="outlined"

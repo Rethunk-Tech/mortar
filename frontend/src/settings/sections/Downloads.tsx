@@ -94,6 +94,9 @@ const EXTENSION_RELEASE =
 const EXTENSION_ZIP = `${EXTENSION_RELEASE}/mortar-browser-extension.zip`
 const EXTENSION_XPI = `${EXTENSION_RELEASE}/mortar-browser-extension.xpi`
 
+// The extension may connect while this page is open.
+const EXTENSION_POLL_MS = 5000
+
 // Until the browser stores list the extension, it is installed from its own repo's latest release.
 function ExtensionConnection() {
   const { t } = useLingui()
@@ -104,9 +107,13 @@ function ExtensionConnection() {
   } | null>(null)
   const relevant = useSettingsRelevant(t`Connection`)
   useEffect(() => {
-    if (relevant) {
-      ExtensionContact().then(setContact).catch(reportUnexpected)
+    if (!relevant) {
+      return
     }
+    const read = () => ExtensionContact().then(setContact).catch(reportUnexpected)
+    read()
+    const timer = setInterval(read, EXTENSION_POLL_MS)
+    return () => clearInterval(timer)
   }, [relevant])
   const connected = contact !== null && contact.browser !== ''
   const mismatchText: Partial<Record<string, string>> = {
@@ -114,18 +121,18 @@ function ExtensionConnection() {
     extensionTooNew: t`The browser extension is too new for this Mortar`,
   }
   const mismatch = mismatchText[contact?.mismatch ?? '']
+  const status = connected ? (
+    <>
+      {t`Connected from ${{ browser: contact.browser }}, last seen `}
+      <When value={contact.lastSeen} withTime={true} />
+    </>
+  ) : (
+    t`Not connected yet`
+  )
   return (
     <SettingRow label={t`Connection`}>
       <Box sx={{ fontSize: 'medium.fontSize' }}>
-        {mismatch ??
-          (connected ? (
-            <>
-              {t`Connected from ${{ browser: contact.browser }}, last seen `}
-              <When value={contact.lastSeen} withTime={true} />
-            </>
-          ) : (
-            t`Not connected yet`
-          ))}
+        {contact === null ? null : (mismatch ?? status)}
       </Box>
     </SettingRow>
   )

@@ -91,7 +91,8 @@ function prefControlNode(o: {
 // shows the game's, held.
 function useScopedPref(spec: PrefSpec, game: string | undefined) {
   const gameRaw = useSettings((s) => prefRaw(s, spec, game))
-  const profileScope = useProfileScope() && spec.scope === 'game'
+  const profileScope =
+    useProfileScope() && (spec.scope === 'game' || spec.profileOverridable === true)
   const own = useOpenOverride(spec.key, profileScope)
   const ownValue = profileScope && spec.profileOverridable === true
   const gameArg = specGameArg(spec, game)
@@ -177,6 +178,7 @@ function PrefRow({
       onReset={() => game && saveSetting(() => setOpenOverride(game, spec.key, undefined))}
     />
   ) : null
+  const shownExtra = reason === '' ? extra : null
   return (
     <SettingRow
       label={copy.label}
@@ -185,10 +187,10 @@ function PrefRow({
       hideTitle={hideTitle}
     >
       <DisabledReason title={reason} disabled={reason !== ''}>
-        {extra || note ? (
+        {shownExtra || note ? (
           <Box sx={{ display: 'flex', gap: space.gap, alignItems: 'center' }}>
             {control}
-            {extra}
+            {shownExtra}
             {note}
           </Box>
         ) : (

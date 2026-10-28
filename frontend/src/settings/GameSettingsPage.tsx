@@ -40,6 +40,7 @@ import { useSettingsScope } from './settingsScope.ts'
 import { useSettings } from './store.ts'
 import { usePerProfileRelated } from './usePerProfileRelated.tsx'
 import { useProfileScope } from './useProfileScope.ts'
+import { setSettingsQuery } from './useSettingsSearch.ts'
 
 type GamePage = 'install' | 'loader' | 'play' | 'mods' | 'backups' | 'console' | 'streaming'
 
@@ -137,6 +138,7 @@ function GamePages({
   )
   const startsALVR = gameALVR || profileALVR
   const related = usePerProfileRelated(game, () => {
+    setSettingsQuery('')
     useSettingsScope.setState({ profile: true })
     setPage('play')
   })

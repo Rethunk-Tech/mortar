@@ -11,10 +11,7 @@ import {
   TrackedCount,
   UntrackAll,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
-import {
-  Get as GetSettings,
-  SetAskEndorseMods,
-} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { SetAskEndorseMods } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
@@ -28,6 +25,7 @@ import { useNexus } from '../nexus.ts'
 import { PrefSwitch } from '../PrefControls.tsx'
 import { PrefByKey } from '../PrefRow.tsx'
 import { Searchable, SettingRow, SettingsSection } from '../SettingsSection.tsx'
+import { useSettings } from '../store.ts'
 import { useSettingsRelevant } from '../useSettingsSearch.ts'
 import { NexusSSO } from './NexusSSO.tsx'
 import { useNxmHandler } from './nxmHandler.tsx'
@@ -323,21 +321,9 @@ export function NexusMods() {
   const signedIn = useNexus((s) => s.signedIn)
   const name = useNexus((s) => s.name)
   const premium = useNexus((s) => s.premium)
-  const [askEndorse, setAskEndorse] = useState(false)
-  const relevant = useSettingsRelevant(t`Ask me to endorse mods I keep using`)
-  useEffect(() => {
-    if (relevant) {
-      GetSettings()
-        .then((settings) => setAskEndorse(settings.askEndorseMods ?? false))
-        .catch(reportUnexpected)
-    }
-  }, [relevant])
+  const askEndorse = useSettings((st) => st.askEndorseMods ?? false)
   const onAskEndorse = (on: boolean) => {
-    setAskEndorse(on)
-    SetAskEndorseMods(on).catch((err: unknown) => {
-      setAskEndorse(!on)
-      reportUnexpected(err)
-    })
+    SetAskEndorseMods(on).catch(reportUnexpected)
   }
   return (
     <SettingsSection title={t`${{ source: sourceLabel('nexus') }}`} tiles={false}>

@@ -209,10 +209,15 @@ export function Shortcuts() {
                   setRecording(row.id)
                 }}
                 onReset={() => {
+                  const keys = defaultBindings()[row.id]
+                  const other = keys ? conflictFor(row.id, keys, bindings) : null
+                  if (other) {
+                    const takeable = takeableFrom(row.id, keys, bindings) !== null
+                    setConflict({ id: row.id, other, keys: takeable ? keys : null })
+                    return
+                  }
                   setConflict(null)
-                  SetShortcuts({ ...bindings, [row.id]: defaultBindings()[row.id] }).catch(
-                    reportUnexpected,
-                  )
+                  SetShortcuts({ ...bindings, [row.id]: keys }).catch(reportUnexpected)
                 }}
               />
             ))}

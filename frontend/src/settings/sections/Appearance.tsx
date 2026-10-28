@@ -33,6 +33,7 @@ import { reportError, reportUnexpected } from '../../toasts/report.ts'
 import { PrefSegmented, PrefSelect } from '../PrefControls.tsx'
 import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
 import { saveSetting } from '../persist.ts'
+import { usePrefValue } from '../prefValue.ts'
 import { Searchable, SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import { accentColour, isAccent, SYSTEM_ACCENT, useSystemAccent } from '../theme.ts'
@@ -100,14 +101,13 @@ function DefaultSort() {
 // The accent swatch's height: a picture of the colour, not a control, so it does not follow the density scale.
 const SWATCH_PX = 44
 
-// The Size choices, within the setting's 80 to 150 per cent.
-const DEFAULT_UI_SCALE = 100
+// The Size choices; a stored value between them is added to the list.
 const UI_SCALES = ['80', '90', '100', '110', '125', '150']
 
 function FontPicker() {
   const { t } = useLingui()
   const font = useSettings((s) => s.font)
-  const uiScale = useSettings((s) => s.uiScale)
+  const uiScale = usePrefValue('uiScale')
   const [families, setFamilies] = useState<string[] | null>(null)
   // The installed fonts are listed when the picker opens, not whenever settings mount.
   const loadFamilies = () => {
@@ -155,9 +155,11 @@ function FontPicker() {
       <SettingRow label={t`Size`} description={t`Scales text, controls and spacing together`}>
         <PrefSelect
           label={t`Size`}
-          value={String(uiScale || DEFAULT_UI_SCALE)}
+          value={uiScale}
           onChange={(v) => saveSetting(() => SetByKey('uiScale', v, ''))}
-          options={UI_SCALES.map((n) => ({ value: n, label: `${n}%` }))}
+          options={(UI_SCALES.includes(uiScale) ? UI_SCALES : [...UI_SCALES, uiScale])
+            .toSorted((a, b) => Number(a) - Number(b))
+            .map((n) => ({ value: n, label: `${n}%` }))}
         />
       </SettingRow>
     </Searchable>

@@ -29,6 +29,7 @@ import { useToasts } from '../../toasts/store.ts'
 import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
 import { pickFolderSetting } from '../persist.ts'
 import { Searchable, SettingRow, SettingsSection } from '../SettingsSection.tsx'
+import { useScopedKey } from '../scopedKey.ts'
 import { useSettings } from '../store.ts'
 import { BackupsUsageRow } from './DataBackups.tsx'
 import { LoaderRow } from './LoaderRow.tsx'
@@ -353,7 +354,8 @@ function LoaderPage({
 function BackupsPage() {
   const { t } = useLingui()
   const game = useCurrentGame()
-  const scheduleOff = useSettings((s) => (s.games?.[game]?.saveBackupHours ?? 0) === 0)
+  const gameHours = useSettings((s) => String(s.games?.[game]?.saveBackupHours ?? 0))
+  const scheduleOff = Number(useScopedKey('saveBackupHours', game, gameHours).value) === 0
   const chooseBackupLocation = () =>
     pickFolderSetting(t`Backup location`, 'backupLocation', game, t`Could not save that setting`)
   return (
