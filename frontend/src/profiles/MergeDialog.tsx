@@ -9,7 +9,6 @@ import {
   MenuItem,
   Radio,
   RadioGroup,
-  TextField,
   Typography,
 } from '@mui/material'
 import { ChevronDown, ChevronRight } from 'lucide-react'
@@ -24,7 +23,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { useOrderedProfiles } from '../game/useSidebarProfiles.ts'
 import { lockedIn, useLaunchLocks } from '../mods/useLocked.ts'
-import { Field, FormDialog } from '../shell/dialog/FormDialog.tsx'
+import { FormDialog, SelectField } from '../shell/dialog/FormDialog.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -152,7 +151,6 @@ function MergeBody({ source, onClose }: { source: Profile; onClose: () => void }
   const [newerWins, setNewerWins] = useState(false)
   const [pending, run] = usePending()
   const launch = useLaunchLocks()
-  const targetFieldId = useId()
   const target = others.find((p) => p.id === targetId)
   const { data: preview } = useLoaded<Preview | null>(
     targetId
@@ -217,23 +215,18 @@ function MergeBody({ source, onClose }: { source: Profile; onClose: () => void }
       busy={pending}
       onSubmit={merge}
     >
-      <Field label={t`Profile to add them to`} htmlFor={targetFieldId}>
-        <TextField
-          id={targetFieldId}
-          select={true}
-          size="small"
-          fullWidth={true}
-          value={targetId}
-          onChange={(e) => setTargetId(e.target.value)}
-          disabled={pending}
-        >
-          {others.map((p) => (
-            <MenuItem key={p.id} value={p.id}>
-              {p.name}
-            </MenuItem>
-          ))}
-        </TextField>
-      </Field>
+      <SelectField
+        label={t`Profile to add them to`}
+        value={targetId}
+        onChange={setTargetId}
+        disabled={pending}
+      >
+        {others.map((p) => (
+          <MenuItem key={p.id} value={p.id}>
+            {p.name}
+          </MenuItem>
+        ))}
+      </SelectField>
       {preview && target ? (
         <Summary
           preview={preview}

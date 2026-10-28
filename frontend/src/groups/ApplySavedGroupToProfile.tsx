@@ -1,11 +1,11 @@
 import { useLingui } from '@lingui/react/macro'
-import { MenuItem, TextField } from '@mui/material'
-import { useEffect, useId, useState } from 'react'
+import { MenuItem } from '@mui/material'
+import { useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import type { SavedGroup } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savedgroups/models.ts'
 import { Apply } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savedgroups/service.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { Field, FormDialog } from '../shell/dialog/FormDialog.tsx'
+import { FormDialog, SelectField } from '../shell/dialog/FormDialog.tsx'
 import { usePending } from '../toasts/usePending.ts'
 import { savedGroupApplied } from './applied.ts'
 
@@ -25,7 +25,6 @@ export function ApplySavedGroupToProfile({
   const [profileId, setProfileId] = useState('')
   const [busy, run] = usePending()
   const open = group !== null
-  const profileFieldId = useId()
   useEffect(() => {
     if (open) {
       setProfileId(useProfiles.getState().openId || (profiles[0]?.id ?? ''))
@@ -56,22 +55,13 @@ export function ApplySavedGroupToProfile({
       busy={busy}
       onSubmit={apply}
     >
-      <Field label={t`Profile`} htmlFor={profileFieldId}>
-        <TextField
-          id={profileFieldId}
-          select={true}
-          fullWidth={true}
-          size="small"
-          value={profileId}
-          onChange={(e) => setProfileId(e.target.value)}
-        >
-          {profiles.map((profile) => (
-            <MenuItem key={profile.id} value={profile.id}>
-              {profile.name}
-            </MenuItem>
-          ))}
-        </TextField>
-      </Field>
+      <SelectField label={t`Profile`} value={profileId} onChange={setProfileId}>
+        {profiles.map((profile) => (
+          <MenuItem key={profile.id} value={profile.id}>
+            {profile.name}
+          </MenuItem>
+        ))}
+      </SelectField>
     </FormDialog>
   )
 }

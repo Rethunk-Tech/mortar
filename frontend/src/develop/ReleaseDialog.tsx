@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
-import { MenuItem, TextField } from '@mui/material'
+import { MenuItem } from '@mui/material'
 import { Tag } from 'lucide-react'
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Versions } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import {
   NextVersions,
@@ -9,7 +9,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
-import { Field, FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
+import { FormDialog, SelectField, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 
@@ -34,7 +34,6 @@ export function ReleaseDialog({
   const [notes, setNotes] = useState('')
   const [drafted, setDrafted] = useState('')
   const [pending, run] = usePending()
-  const versionId = useId()
   useEffect(() => {
     NextVersions(game, dir)
       .then((v) => {
@@ -98,30 +97,22 @@ export function ReleaseDialog({
       busy={pending}
       onSubmit={release}
     >
-      <Field
+      <SelectField
         label={t`Version`}
-        htmlFor={versionId}
+        value={version}
+        onChange={setVersion}
         hint={
           versions?.current
             ? t`Last released: ${{ version: versions.current }}`
             : t`Not released yet`
         }
       >
-        <TextField
-          id={versionId}
-          select={true}
-          size="small"
-          fullWidth={true}
-          value={version}
-          onChange={(e) => setVersion(e.target.value)}
-        >
-          {choices.map((v) => (
-            <MenuItem key={v} value={v}>
-              {v}
-            </MenuItem>
-          ))}
-        </TextField>
-      </Field>
+        {choices.map((v) => (
+          <MenuItem key={v} value={v}>
+            {v}
+          </MenuItem>
+        ))}
+      </SelectField>
       <TextInput
         label={t`What changed, one line each`}
         value={notes}

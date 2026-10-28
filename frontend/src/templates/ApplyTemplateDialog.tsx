@@ -1,8 +1,8 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { MenuItem, TextField, Typography } from '@mui/material'
+import { MenuItem, Typography } from '@mui/material'
 import { LayoutTemplate } from 'lucide-react'
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type {
   Preview,
   Template,
@@ -16,7 +16,7 @@ import { savedGroupWants } from '../groups/missingWants.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
 import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
-import { Field, FormDialog } from '../shell/dialog/FormDialog.tsx'
+import { FormDialog, SelectField } from '../shell/dialog/FormDialog.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -130,7 +130,6 @@ export function ApplyTemplateDialog({
 }) {
   const { t } = useLingui()
   const [name, setName] = useState('')
-  const nameId = useId()
   const { busy, apply } = useApply(game, profileId, onClose)
   const { data: preview } = useLoaded<Preview | null>(
     open && name ? () => PreviewApplyTemplate(game, name, profileId) : null,
@@ -160,23 +159,13 @@ export function ApplyTemplateDialog({
       busy={busy}
       onSubmit={() => apply(name)}
     >
-      <Field label={t`Template`} htmlFor={nameId}>
-        <TextField
-          id={nameId}
-          select={true}
-          fullWidth={true}
-          size="small"
-          value={name}
-          disabled={busy}
-          onChange={(e) => setName(e.target.value)}
-        >
-          {templates.map((template) => (
-            <MenuItem key={template.name} value={template.name}>
-              {template.name}
-            </MenuItem>
-          ))}
-        </TextField>
-      </Field>
+      <SelectField label={t`Template`} value={name} onChange={setName} disabled={busy}>
+        {templates.map((template) => (
+          <MenuItem key={template.name} value={template.name}>
+            {template.name}
+          </MenuItem>
+        ))}
+      </SelectField>
       {preview ? <PreviewGroups preview={preview} /> : null}
     </FormDialog>
   )

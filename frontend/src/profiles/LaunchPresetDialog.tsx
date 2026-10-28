@@ -1,10 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
-import { MenuItem, TextField } from '@mui/material'
-import { useEffect, useId, useState } from 'react'
+import { MenuItem } from '@mui/material'
+import { useEffect, useState } from 'react'
 import type { LaunchPreset } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { SMAPI } from '../brand/productNames.ts'
 import { useGameInfo } from '../games/info.ts'
-import { Field, FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
+import { FormDialog, SelectField, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { sameValue } from '../shell/sameValue.ts'
 import { presetNameError } from './profilePresets.ts'
 
@@ -33,7 +33,6 @@ export function LaunchPresetDialog({
     }
   }, [open, preset])
   const error = presetNameError(draft.name, all, preset.id)
-  const consoleId = useId()
   const set = (key: 'name' | 'launchOptions' | 'launchPrefix' | 'launchEnv') => (value: string) =>
     setDraft({ ...draft, [key]: value })
   let issue = ''
@@ -70,22 +69,15 @@ export function LaunchPresetDialog({
         multiline={true}
       />
       {smapi ? (
-        <Field label={t`${{ loader: SMAPI }} console window`} htmlFor={consoleId}>
-          <TextField
-            id={consoleId}
-            select={true}
-            fullWidth={true}
-            size="small"
-            value={draft.showConsole || FOLLOW}
-            onChange={(e) =>
-              setDraft({ ...draft, showConsole: e.target.value === FOLLOW ? '' : e.target.value })
-            }
-          >
-            <MenuItem value={FOLLOW}>{t`Follow the setting`}</MenuItem>
-            <MenuItem value="true">{t`Show`}</MenuItem>
-            <MenuItem value="false">{t`Hide`}</MenuItem>
-          </TextField>
-        </Field>
+        <SelectField
+          label={t`${{ loader: SMAPI }} console window`}
+          value={draft.showConsole || FOLLOW}
+          onChange={(v) => setDraft({ ...draft, showConsole: v === FOLLOW ? '' : v })}
+        >
+          <MenuItem value={FOLLOW}>{t`Follow the setting`}</MenuItem>
+          <MenuItem value="true">{t`Show`}</MenuItem>
+          <MenuItem value="false">{t`Hide`}</MenuItem>
+        </SelectField>
       ) : null}
     </FormDialog>
   )
