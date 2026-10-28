@@ -53,6 +53,8 @@ type Live struct {
 	Environment    map[string]problems.Environment
 	NxmHandled     bool
 	NxmPrevious    string
+	// SteamRoots are the Steam folders the user added.
+	SteamRoots []string
 }
 
 // FromLive turns the running app's environment into the checks the CLI prints.
@@ -83,7 +85,7 @@ func FromLive(in Live) Report {
 	}
 	for _, g := range in.Games {
 		checks = append(checks, gameCheck(g, env[g.ID], anyInstalled))
-		checks = append(checks, protonChecks(g)...)
+		checks = append(checks, protonChecks(g, in.SteamRoots)...)
 	}
 	checks = append(checks, deckChecks()...)
 	checks = append(checks, flatpakLibraryChecks()...)

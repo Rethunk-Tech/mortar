@@ -23,12 +23,12 @@ var LoaderOf = func(string) OverrideLoader { return nil }
 // Replaced by tests.
 var (
 	flatpakOverrides = steam.ShowOverride
-	launchOptions    = func(appID string) string {
+	launchOptions    = func(appID string, steamRoots []string) string {
 		home, err := os.UserHomeDir()
 		if err != nil {
 			return ""
 		}
-		st, status := steam.Locate(home)
+		st, status := steam.Locate(home, steamRoots...)
 		if status != steam.Found {
 			return ""
 		}
@@ -45,7 +45,7 @@ func nativeOverride(dll string) *regexp.Regexp {
 	return regexp.MustCompile(`(?i)"?` + regexp.QuoteMeta(dll) + `"?\s*=\s*"?(n|native)\b`)
 }
 
-func protonChecks(g game.GameInfo) []Check {
+func protonChecks(g game.GameInfo, steamRoots []string) []Check {
 	var checks []Check
 	for _, in := range g.Installs {
 		if in.Runtime != runtime.Proton {
@@ -57,7 +57,7 @@ func protonChecks(g game.GameInfo) []Check {
 			continue
 		}
 		if l := LoaderOf(g.ID); l != nil && l.OverrideDLL(g.ID) != "" {
-			checks = append(checks, overrideCheck(g, compat, l.OverrideDLL(g.ID)))
+			checks = append(checks, overrideCheck(g, compat, l.OverrideDLL(g.ID), steamRoots))
 		}
 		if in.Store == "flatpak-steam" {
 			checks = append(checks, flatpakCheck(g, compat))
@@ -66,13 +66,13 @@ func protonChecks(g game.GameInfo) []Check {
 	return checks
 }
 
-func overrideCheck(g game.GameInfo, compat, dll string) Check {
+func overrideCheck(g game.GameInfo, compat, dll string, steamRoots []string) Check {
 	c := Check{
 		ID: dll + ":" + g.ID, Status: Pass, Detail: g.Name + ": " + dll + " is overridden to native in the Proton prefix",
 		Code: "protonOverride", Params: params("game", g.Name, "name", dll),
 	}
 	reg, err := fsx.ReadFile(filepath.Join(compat, "pfx", "user.reg"))
-	if re := nativeOverride(dll); re.Match(reg) || re.MatchString(launchOptions(g.AppID)) {
+	if re := nativeOverride(dll); re.Match(reg) || re.MatchString(launchOptions(g.AppID, steamRoots)) {
 		return c
 	}
 	c.Status = Warn

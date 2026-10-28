@@ -15,7 +15,7 @@ func (s *Service) LaunchOptions(id string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	st, status := steam.Locate(s.home)
+	st, status := LocateSteam(s.home, s.store.Get())
 	if status != steam.Found {
 		return "", nil
 	}
@@ -67,7 +67,7 @@ func (s *Service) ClearLaunchOption(id string) (string, error) {
 // closedSteam is the Steam whose config holds launch options, refused while it runs: Steam rewrites its config when it
 // exits.
 func (s *Service) closedSteam() (steam.Steam, error) {
-	st, status := steam.Locate(s.home, roots(s.store.Get(), LauncherSteam)...)
+	st, status := LocateSteam(s.home, s.store.Get())
 	if status != steam.Found {
 		return steam.Steam{}, errors.New("steam was not found")
 	}

@@ -307,6 +307,9 @@ func (st Starter) command(goos string, inst Install, plan *launchplan.Plan, env 
 			info, _ := catalogGame(inst.Game)
 			rt := inst.runtime(info, "")
 			rt.Proton = env.Proton
+			if env.Steam != nil {
+				rt.SteamRoots = []string{env.Steam.Root}
+			}
 			argv, penv, err := gameruntime.ProtonCommand(rt, exe, args...)
 			if err != nil {
 				return launch.Command{}, err

@@ -48,7 +48,7 @@ func ScreenshotDirs(home string, s settings.Settings, id string) map[string]stri
 	}
 	info, _ := catalogGame(id)
 	if app := info.SteamAppID(); app != "" {
-		if st, status := steam.Locate(home); status == steam.Found {
+		if st, status := LocateSteam(home, s); status == steam.Found {
 			if dir, err := st.ScreenshotsDir(app); err == nil {
 				out[shots.SourceSteam] = dir
 			}

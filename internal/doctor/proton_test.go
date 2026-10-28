@@ -26,11 +26,11 @@ func TestProtonChecks(t *testing.T) {
 	}}
 	launch, show := "", ""
 	flatpakOverrides = func() (string, error) { return show, nil }
-	launchOptions = func(string) string { return launch }
+	launchOptions = func(string, []string) string { return launch }
 
 	status := func() map[string]string {
 		out := map[string]string{}
-		for _, c := range protonChecks(g) {
+		for _, c := range protonChecks(g, nil) {
 			out[c.ID] = c.Status
 		}
 		return out
@@ -47,7 +47,7 @@ func TestProtonChecks(t *testing.T) {
 		}
 		return nil
 	}
-	for _, c := range protonChecks(g) {
+	for _, c := range protonChecks(g, nil) {
 		if c.ID == "winhttp:lc" && !strings.Contains(c.Detail, "has not created its prefix") {
 			t.Fatalf("no registry yet: %+v", c)
 		}

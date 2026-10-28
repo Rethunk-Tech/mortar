@@ -149,6 +149,11 @@ const (
 // roots are the folders the user added for a launcher.
 func roots(s settings.Settings, launcher string) []string { return s.LauncherRoots[launcher] }
 
+// LocateSteam finds Steam, searching the Steam folders the user added before the usual ones.
+func LocateSteam(home string, s settings.Settings) (steam.Steam, steam.Status) {
+	return steam.Locate(home, roots(s, LauncherSteam)...)
+}
+
 // installs keeps each game's discovered installs once CacheInstalls turns it on: discovery reads every store's files
 // (and on Windows the Xbox package list) per game, and startup and the library ask for every game several times.
 var installs struct {

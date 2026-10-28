@@ -180,7 +180,7 @@ func (s *Service) ResetInstall(id string) error {
 
 // SteamStatus reports whether a usable Steam was found.
 func (s *Service) SteamStatus() steam.Status {
-	_, st := steam.Locate(s.home)
+	_, st := LocateSteam(s.home, s.store.Get())
 	return st
 }
 
@@ -372,7 +372,7 @@ func (s *Service) ProtonBuilds(gameID string) []string {
 		return []string{}
 	}
 	out := []string{}
-	for _, b := range runtime.ProtonBuilds(s.home) {
+	for _, b := range runtime.ProtonBuilds(s.home, roots(s.store.Get(), LauncherSteam)...) {
 		out = append(out, filepath.Base(b.Dir))
 	}
 	return out

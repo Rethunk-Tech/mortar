@@ -71,6 +71,8 @@ type Service struct {
 	// Emit is nil in tests that do not watch events.
 	Emit   func(name string, data any)
 	Covers func(game, profile string) ([]string, error)
+	// SteamRoots returns the Steam folders the user added; nil searches only the usual ones.
+	SteamRoots func() []string
 	// Window shows, hides or restores the window for play mode; nil in tests.
 	Window  func(WindowMode)
 	mu      sync.Mutex
@@ -176,7 +178,11 @@ func (s *Service) AddToSteam(game, gameName, profile, profileName string) (steam
 	if err != nil {
 		return "", err
 	}
-	st, status := steam.Locate(home)
+	var extra []string
+	if s.SteamRoots != nil {
+		extra = s.SteamRoots()
+	}
+	st, status := steam.Locate(home, extra...)
 	if status != steam.Found || st.Kind != steam.KindNative {
 		return "", errors.New("no Steam was found that can start Mortar: Steam (Flatpak) cannot run programs outside its sandbox")
 	}

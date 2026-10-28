@@ -851,7 +851,7 @@ func (s *Service) ForcesLoader(gameID string) (bool, error) {
 	if runtime.GOOS != "windows" {
 		return false, nil
 	}
-	st, status := steam.Locate(s.home)
+	st, status := game.LocateSteam(s.home, s.settings.Get())
 	if status != steam.Found {
 		return false, nil
 	}
@@ -1075,7 +1075,7 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 		}
 		env.DelaySeconds, _ = strconv.Atoi(settings.ResolveAt(s.settings.Get(), "delaySeconds", scope, ov))
 	}
-	if st, status := steam.Locate(s.home); status == steam.Found {
+	if st, status := game.LocateSteam(s.home, s.settings.Get()); status == steam.Found {
 		env.Steam = &st
 	}
 	if store == game.StoreFlatpakSteam {
