@@ -2,7 +2,7 @@ import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { Square } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import {
   State,
   type Status,
@@ -10,8 +10,10 @@ import {
 import { SetDefaultLaunchPreset } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { openProfileDialog } from '../game/profileDialog.ts'
 import { useGameLoader } from '../games/info.ts'
+import { formatElapsed } from '../i18n/formatElapsed.ts'
 import { i18n } from '../i18n/index.ts'
 import { lowerFirst } from '../i18n/lowerFirst.ts'
+import { useSecondValue } from '../i18n/useNow.ts'
 import { useLoader } from '../loader/store.ts'
 import { BASE_PRESET, playPresets } from '../profiles/profilePresets.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
@@ -24,43 +26,11 @@ import { StopDialog } from './StopDialog.tsx'
 import { useLaunch } from './store.ts'
 import { VanillaPlay } from './VanillaPlay.tsx'
 
-const MS = 1000
-const MINUTE = 60
-const HOUR = 3600
-const DIGITS = 2
-
-function pad(n: number, width: number): string {
-  return String(n).padStart(width, '0')
-}
-
-function elapsed(ms: number): string {
-  const total = Math.max(0, Math.floor(ms / MS))
-  const hours = Math.floor(total / HOUR)
-  const minutes = Math.floor((total % HOUR) / MINUTE)
-  const seconds = pad(total % MINUTE, DIGITS)
-  if (hours > 0) {
-    return `${hours}:${pad(minutes, DIGITS)}:${seconds}`
-  }
-  return `${minutes}:${seconds}`
-}
-
 function stateOf(status: Status | null, game: string): State {
   if (status?.game === game) {
     return status.state
   }
   return State.Idle
-}
-
-function useElapsed(since: number, active: boolean): string {
-  const [now, setNow] = useState(() => Date.now())
-  useEffect(() => {
-    if (!active) {
-      return
-    }
-    const id = setInterval(() => setNow(Date.now()), MS)
-    return () => clearInterval(id)
-  }, [active])
-  return elapsed(now - since)
 }
 
 // The open profile's play presets from its two preset fields, so a save that changes neither leaves Play alone.
@@ -125,7 +95,8 @@ export function PlayControl({ game, rail }: { game: string; rail: boolean }) {
   const [confirming, setConfirming] = useState(false)
   const state = stateOf(status, game)
   const running = state === State.Running
-  const time = useElapsed(status?.since ?? 0, running)
+  const since = status?.since ?? 0
+  const time = useSecondValue((now) => (running ? formatElapsed(now - since) : ''), running)
   // Fields, not the profiles: a save of the open profile re-renders this only when what it shows changed.
   const runningName = useProfiles((s) => s.profiles.find((p) => p.id === status?.profile)?.name)
   const presets = useOpenPresets()

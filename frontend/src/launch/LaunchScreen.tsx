@@ -16,8 +16,10 @@ import { useConsole } from '../console/store.ts'
 import { gameArt } from '../games/art.ts'
 import { useGameInfo } from '../games/info.ts'
 import { modsLabel } from '../i18n/counts.ts'
+import { formatElapsed } from '../i18n/formatElapsed.ts'
 import { i18n } from '../i18n/index.ts'
 import { useReasonText } from '../i18n/reasonText.ts'
+import { useSecondValue } from '../i18n/useNow.ts'
 import { useMods } from '../mods/store.ts'
 import { userModCount } from '../profiles/count.ts'
 import { profileById, useProfiles } from '../profiles/store.ts'
@@ -64,24 +66,6 @@ const launcherNames: Record<string, string> = {
   heroic: HEROIC,
   lutris: LUTRIS,
   epic: EPIC_GAMES,
-}
-
-// useNow is the time, refreshed every second while on.
-function useNow(on: boolean): number {
-  const [now, setNow] = useState(() => Date.now())
-  useEffect(() => {
-    if (!on) {
-      return
-    }
-    const timer = setInterval(() => setNow(Date.now()), SECOND)
-    return () => clearInterval(timer)
-  }, [on])
-  return now
-}
-
-function clock(ms: number): string {
-  const s = Math.max(0, Math.floor(ms / SECOND))
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 }
 
 // Art is the first of srcs that loads, else fallback.
@@ -413,7 +397,14 @@ export function LaunchScreen({ game }: { game: string }) {
   const profile = useProfiles(profileById(progress?.profile ?? status?.profile))
   const open = phase !== 'closed' && viewGame === game && !hidden
   const failed = phase === 'failed'
-  const now = useNow(open && !failed && phase !== 'running')
+  const ticking = open && !failed && phase !== 'running'
+  const slowAt = status?.slowAt ?? 0
+  const since = status?.since ?? 0
+  const pastSlowAt = useSecondValue((now) => ticking && now >= slowAt, ticking)
+  const elapsed = useSecondValue(
+    (now) => (ticking && since > 0 ? formatElapsed(now - since) : ''),
+    ticking,
+  )
   const [settled, setSettled] = useState(false)
   const [keptWaiting, setKeptWaiting] = useState(0)
   const onSettled = useCallback(() => setSettled(true), [])
@@ -442,14 +433,12 @@ export function LaunchScreen({ game }: { game: string }) {
   const name = info?.name ?? ''
   const stages = launchStages(progress, failed)
   const stuck = stages.find((s) => s.state === 'active')
-  const slowAt = status?.slowAt ?? 0
-  const since = status?.since ?? 0
   const slow =
     !failed &&
     phase !== 'running' &&
     stuck !== undefined &&
     slowAt > 0 &&
-    now >= slowAt &&
+    pastSlowAt &&
     keptWaiting !== slowAt
   const failedMod = failed ? (failure?.cause?.modName ?? '') : ''
   const marks = marksFor(progress, failedMod, info)
@@ -466,7 +455,6 @@ export function LaunchScreen({ game }: { game: string }) {
     progress.usualMs > 0
       ? t`Usually starts in about ${{ seconds: Math.round(progress.usualMs / SECOND) }} s`
       : ''
-  const elapsed = since > 0 && !failed && phase !== 'running' ? clock(now - since) : ''
   return (
     <Modal
       open={true}
