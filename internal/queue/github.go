@@ -224,15 +224,9 @@ func (s *Service) downloadGitHub(ctx context.Context, it Item) error {
 		dropDownload(path)
 		return fmt.Errorf("%s: %w", it.Asset, err)
 	}
-	s.mu.Lock()
-	cur := s.find(it.ID)
-	if cur == nil || cur.State != StateDownloading {
-		s.mu.Unlock()
+	if !s.markInstalling(it.ID, nil) {
 		return context.Canceled
 	}
-	cur.State, cur.Progress, cur.Speed = StateInstalling, 100, 0
-	s.mu.Unlock()
-	s.publish(true)
 	source := sourceOf(it)
 	key, ids, err := s.d.Stage(ctx, it.Game, source, path)
 	if err != nil {

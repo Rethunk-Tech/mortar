@@ -290,15 +290,9 @@ func (s *Service) downloadPackage(ctx context.Context, it Item) error {
 		dropDownload(path)
 		return err
 	}
-	s.mu.Lock()
-	cur := s.find(it.ID)
-	if cur == nil || cur.State != StateDownloading {
-		s.mu.Unlock()
+	if !s.markInstalling(it.ID, nil) {
 		return context.Canceled
 	}
-	cur.State, cur.Progress, cur.Speed = StateInstalling, 100, 0
-	s.mu.Unlock()
-	s.publish(true)
 	s.installMu.Lock()
 	res, err := s.d.InstallPackage(ctx, it.Game, it.Profile, path, packageSource(it))
 	s.installMu.Unlock()

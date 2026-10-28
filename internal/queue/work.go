@@ -648,25 +648,42 @@ func (s *Service) download(ctx context.Context, it Item) error {
 			ask, updates, merge = s.d.SamePage(it.Game, it.Profile, it.incoming(category, pageFiles(ctx, c, it), ids))
 		}
 	}
-	s.mu.Lock()
-	cur := s.find(it.ID)
-	if cur == nil || cur.State != StateDownloading {
-		s.mu.Unlock()
+	marked := s.markInstalling(it.ID, func(cur *Item) {
+		cur.readyZip, cur.Category = true, category
+		if merge {
+			cur.State, cur.Merge, cur.MergeAdd = StateNeedsMerge, &ask, false
+		} else if updates > 0 {
+			cur.Current = updates
+		}
+	})
+	switch {
+	case !marked:
 		return context.Canceled
-	}
-	cur.State, cur.Progress, cur.Speed, cur.readyZip, cur.Category = StateInstalling, 100, 0, true, category
-	if merge {
-		cur.State, cur.Merge, cur.MergeAdd = StateNeedsMerge, &ask, false
-		s.mu.Unlock()
-		s.publish(true)
+	case merge:
 		return nil
 	}
 	if updates > 0 {
-		cur.Current, it.Current = updates, updates
+		it.Current = updates
+	}
+	return s.contentPatcherHint(ctx, it, s.installNexusPath(ctx, it, path, im))
+}
+
+// markInstalling moves an item still downloading to installing, then runs extra on it under the lock; false means it
+// was cancelled or removed meanwhile.
+func (s *Service) markInstalling(id string, extra func(cur *Item)) bool {
+	s.mu.Lock()
+	cur := s.find(id)
+	if cur == nil || cur.State != StateDownloading {
+		s.mu.Unlock()
+		return false
+	}
+	cur.State, cur.Progress, cur.Speed = StateInstalling, 100, 0
+	if extra != nil {
+		extra(cur)
 	}
 	s.mu.Unlock()
 	s.publish(true)
-	return s.contentPatcherHint(ctx, it, s.installNexusPath(ctx, it, path, im))
+	return true
 }
 
 func (s *Service) pauseFomod(id, key string) {
