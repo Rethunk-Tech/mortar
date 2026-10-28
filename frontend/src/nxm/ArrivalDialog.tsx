@@ -64,6 +64,8 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<InlineError | null>(null)
   const [applyAll, setApplyAll] = useState(false)
+  const [picked, setPicked] = useState<string | null>(null)
+  const sameGame = arrivals.filter((a) => arrivalGame(a, openGameId) === game)
   const listed = useLoaded<Profile[] | null>(
     () => listProfiles(game).then((list) => list ?? []),
     [game],
@@ -75,13 +77,14 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
   const profiles = listed.error === null ? listed.data : (listed.data ?? [])
   const open = profiles?.find((p) => p.id === lastId) ?? profiles?.[0]
   const others = profiles?.filter((p) => p.id !== open?.id) ?? []
-  const pick = (profile: string) => {
-    if (busy) {
+  const pick = (profile: string | undefined) => {
+    if (busy || !profile) {
       return
     }
     setBusy(true)
     setError(null)
-    const ids = applyAll ? arrivals.map((a) => a.id) : [arrival.id]
+    setPicked(profile)
+    const ids = applyAll ? sameGame.map((a) => a.id) : [arrival.id]
     Promise.all(ids.map((id) => choose(id, profile)))
       .catch((e: unknown) => setError(inlineError(e)))
       .finally(() => setBusy(false))
@@ -125,7 +128,7 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
             ) : null}
             {open ? (
               <Button variant="contained" disabled={busy} onClick={() => pick(open.id)}>
-                {t`Install into ${{ name: open.name }}`}
+                {t`Install into ${{ profile: open.name }}`}
               </Button>
             ) : null}
             {profiles?.length === 0 && canCreate ? (
@@ -147,17 +150,8 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
           ) : (
             <Typography sx={{ color: 'text.secondary' }}>{text}</Typography>
           )}
-          {error ? (
-            <ErrorRetry
-              error={error}
-              onRetry={() => {
-                if (open) {
-                  pick(open.id)
-                }
-              }}
-            />
-          ) : null}
-          {arrivals.length > 1 ? (
+          {error ? <ErrorRetry error={error} onRetry={() => pick(picked ?? open?.id)} /> : null}
+          {sameGame.length > 1 ? (
             <FormControlLabel
               control={
                 <Checkbox checked={applyAll} onChange={(_, checked) => setApplyAll(checked)} />

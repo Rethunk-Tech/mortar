@@ -13,12 +13,14 @@ import {
   UndoApplyTemplate,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/templates/service.ts'
 import { savedGroupWants } from '../groups/missingWants.ts'
+import { listNames } from '../i18n/list.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
 import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { FormDialog, SelectField } from '../shell/dialog/FormDialog.tsx'
+import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
-import { reportError } from '../toasts/report.ts'
+import { inlineError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 
@@ -52,7 +54,7 @@ function PreviewGroups({ preview }: { preview: Preview }) {
           <Typography sx={{ mt: 1.5, fontWeight: 600 }}>{group.title}</Typography>
           {group.names.length > 0 ? (
             <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
-              {group.names.join(', ')}
+              {listNames(group.names)}
             </Typography>
           ) : null}
         </div>
@@ -74,30 +76,20 @@ function useApply(game: string, profileId: string, onClose: () => void) {
         const wants = savedGroupWants(result.missingMods)
         const queued = wants.length > 0 && (await download(wants))
         const left = missing.length
-        let title = plural(
+        const added = plural(
           { count: result.added },
           {
             one: `Added # mod from ${name}`,
             other: `Added # mods from ${name}`,
           },
         )
+        let rest = ''
         if (left > 0) {
-          title = queued
-            ? plural(
-                { count: result.added },
-                {
-                  one: `Added # mod from ${name}; downloading ${plural(left, { one: '# mod', other: '# mods' })}`,
-                  other: `Added # mods from ${name}; downloading ${plural(left, { one: '# mod', other: '# mods' })}`,
-                },
-              )
-            : plural(
-                { count: result.added },
-                {
-                  one: `Added # mod from ${name}; ${plural(left, { one: '# mod', other: '# mods' })} still to download`,
-                  other: `Added # mods from ${name}; ${plural(left, { one: '# mod', other: '# mods' })} still to download`,
-                },
-              )
+          rest = queued
+            ? plural(left, { one: 'downloading # mod', other: 'downloading # mods' })
+            : plural(left, { one: '# mod still to download', other: '# mods still to download' })
         }
+        const title = rest ? t`${added}; ${rest}` : added
         useToasts.getState().push({
           kind: missing.length > 0 && !queued ? 'warning' : 'success',
           title,
@@ -131,12 +123,19 @@ export function ApplyTemplateDialog({
   const { t } = useLingui()
   const [name, setName] = useState('')
   const { busy, apply } = useApply(game, profileId, onClose)
-  const { data: preview } = useLoaded<Preview | null>(
+  const {
+    data: preview,
+    error,
+    reload,
+  } = useLoaded<Preview | null>(
     open && name ? () => PreviewApplyTemplate(game, name, profileId) : null,
     [open, game, name, profileId],
     null,
-    reportError(t`Could not preview the template`),
   )
+  let issue = ''
+  if (!preview && name !== '') {
+    issue = error ? t`Could not preview the template` : t`Reading the template…`
+  }
   useEffect(() => {
     if (open) {
       setName(templates[0]?.name ?? '')
@@ -154,7 +153,7 @@ export function ApplyTemplateDialog({
         </ToneIcon>
       }
       submitLabel={t`Apply`}
-      issue={preview || name === '' ? '' : t`Reading the template…`}
+      issue={issue}
       dirty={false}
       busy={busy}
       onSubmit={() => apply(name)}
@@ -166,6 +165,7 @@ export function ApplyTemplateDialog({
           </MenuItem>
         ))}
       </SelectField>
+      {error ? <ErrorRetry error={inlineError(error)} onRetry={reload} /> : null}
       {preview ? <PreviewGroups preview={preview} /> : null}
     </FormDialog>
   )

@@ -9,11 +9,13 @@ import {
   Typography,
 } from '@mui/material'
 import { useEffect, useMemo, useState } from 'react'
+import type { FomodStep } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { FomodImage } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { usePending } from '../toasts/usePending.ts'
 import { type FomodSession, useFomod, watchFomodQueue } from './store.ts'
 
 function bytesOf(data: unknown): Uint8Array {
@@ -78,10 +80,12 @@ function savedChoices(ask: FomodSession['ask']): Record<string, Record<string, s
   for (const step of ask.steps ?? []) {
     for (const group of step.groups ?? []) {
       const current = out[step.name]?.[group.name] ?? []
-      const required = (group.plugins ?? []).filter((p) => p.type === 'Required').map((p) => p.name)
+      const required = (group.plugins ?? [])
+        .filter((p) => is(p.type, 'Required'))
+        .map((p) => p.name)
       const recommended =
         current.length === 0
-          ? (group.plugins ?? []).filter((p) => p.type === 'Recommended').map((p) => p.name)
+          ? (group.plugins ?? []).filter((p) => is(p.type, 'Recommended')).map((p) => p.name)
           : []
       const seeded = [...new Set([...current, ...required, ...recommended])]
       if (seeded.length > 0) {
@@ -101,22 +105,32 @@ function setGroup(
   return { ...choices, [step]: { ...choices[step], [group]: names } }
 }
 
+// Packs write these in any case; the installer compares them case-insensitively.
+const is = (type: string, expected: string): boolean =>
+  type.toLowerCase() === expected.toLowerCase()
+
 function groupOK(type: string, names: string[]): boolean {
   const n = names.length
-  if (type === 'SelectExactlyOne') {
+  if (is(type, 'SelectExactlyOne')) {
     return n === 1
   }
-  if (type === 'SelectAtLeastOne') {
+  if (is(type, 'SelectAtLeastOne')) {
     return n >= 1
   }
-  if (type === 'SelectAtMostOne') {
+  if (is(type, 'SelectAtMostOne')) {
     return n <= 1
   }
   return true
 }
 
+type Choices = Record<string, Record<string, string[]>>
+
+function invalidGroupOf(step: FomodStep, choices: Choices): string | undefined {
+  return (step.groups ?? []).find((g) => !groupOK(g.type, choices[step.name]?.[g.name] ?? []))?.name
+}
+
 function nextExclusive(groupType: string, plugin: string, on: boolean): string[] {
-  if (on || groupType === 'SelectExactlyOne') {
+  if (on || is(groupType, 'SelectExactlyOne')) {
     return [plugin]
   }
   return []
@@ -129,6 +143,7 @@ function FomodWizard({ session }: { session: FomodSession }) {
   const close = useFomod((s) => s.close)
   const install = useFomod((s) => s.install)
   const refresh = useFomod((s) => s.refresh)
+  const [pending, run] = usePending()
   const [index, setIndex] = useState(0)
   const [choices, setChoices] = useState(() => savedChoices(session.ask))
   const [changed] = useState(Boolean(session.ask.changed))
@@ -139,15 +154,10 @@ function FomodWizard({ session }: { session: FomodSession }) {
   const step = steps[index]
   const last = index >= steps.length - 1 || steps.length === 0
   const valid = useMemo(
-    () =>
-      (session.ask.steps ?? []).every((st) =>
-        (st.groups ?? []).every((g) => groupOK(g.type, choices[st.name]?.[g.name] ?? [])),
-      ),
-    [session, choices],
+    () => steps.every((st) => invalidGroupOf(st, choices) === undefined),
+    [steps, choices],
   )
-  const invalidGroup = (step?.groups ?? []).find(
-    (g) => !groupOK(g.type, choices[step?.name ?? '']?.[g.name] ?? []),
-  )?.name
+  const invalidGroup = step && invalidGroupOf(step, choices)
 
   const pick = (groupType: string, groupName: string, plugin: string, on: boolean) => {
     if (!step) {
@@ -155,7 +165,7 @@ function FomodWizard({ session }: { session: FomodSession }) {
     }
     const current = choices[step.name]?.[groupName] ?? []
     let next: string[]
-    if (groupType === 'SelectExactlyOne' || groupType === 'SelectAtMostOne') {
+    if (is(groupType, 'SelectExactlyOne') || is(groupType, 'SelectAtMostOne')) {
       next = nextExclusive(groupType, plugin, on)
     } else if (on) {
       next = [...current.filter((n) => n !== plugin), plugin]
@@ -183,8 +193,8 @@ function FomodWizard({ session }: { session: FomodSession }) {
           {last ? (
             <Button
               variant="contained"
-              disabled={!valid}
-              onClick={() => install(choices).catch(reportUnexpected)}
+              disabled={!valid || pending}
+              onClick={() => run(() => install(choices))}
             >
               {t`Install`}
             </Button>
@@ -212,10 +222,11 @@ function FomodWizard({ session }: { session: FomodSession }) {
           </Typography>
           {(step.groups ?? []).map((g) => {
             const selected = choices[step.name]?.[g.name] ?? []
-            const exclusive = g.type === 'SelectExactlyOne' || g.type === 'SelectAtMostOne'
+            const exclusive = is(g.type, 'SelectExactlyOne') || is(g.type, 'SelectAtMostOne')
+            const all = is(g.type, 'SelectAll')
             const body = (g.plugins ?? []).map((p) => {
-              const blocked = p.type === 'NotUsable'
-              const checked = selected.includes(p.name) || p.type === 'Required'
+              const blocked = is(p.type, 'NotUsable')
+              const checked = selected.includes(p.name) || is(p.type, 'Required') || all
               const control = (
                 <DisabledReason title={t`This option cannot be used.`} disabled={blocked}>
                   {exclusive ? (
@@ -223,11 +234,16 @@ function FomodWizard({ session }: { session: FomodSession }) {
                       checked={checked}
                       disabled={blocked}
                       onChange={() => pick(g.type, g.name, p.name, true)}
+                      onClick={() => {
+                        if (checked && is(g.type, 'SelectAtMostOne')) {
+                          pick(g.type, g.name, p.name, false)
+                        }
+                      }}
                     />
                   ) : (
                     <Checkbox
                       checked={checked}
-                      disabled={blocked || p.type === 'Required'}
+                      disabled={blocked || all || is(p.type, 'Required')}
                       onChange={(_, on) => pick(g.type, g.name, p.name, on)}
                     />
                   )}

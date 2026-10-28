@@ -180,7 +180,7 @@ async function initNxm(): Promise<void> {
           a,
           `Mortar · ${i18n._(msg`Install ${name}?`)}`,
           i18n._(
-            msg`You started this download on ${{ source: sourceLabel('nexus') }}. Show Mortar to choose the profile it goes into.`,
+            msg`You started this download on ${{ source: arrivalSite(a) }}. Show Mortar to choose the profile it goes into.`,
           ),
           true,
         ),
