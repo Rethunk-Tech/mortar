@@ -63,12 +63,9 @@ func (s *Store) CheckFolder(game, id string) (FolderCheck, error) {
 	if _, err := os.Stat(filepath.Join(home, fileName)); err != nil {
 		return fail("the folder %s holds no profile", cmpFolder(out.Folder, home))
 	}
-	probe, err := os.CreateTemp(home, ".mortar-write-check-*")
-	if err != nil {
+	if err := fsx.CheckWritable(home); err != nil {
 		return fail("Mortar cannot write to %s", cmpFolder(out.Folder, home))
 	}
-	_ = probe.Close()
-	_ = fsx.Remove(probe.Name())
 	out.OK = true
 	return out, nil
 }
