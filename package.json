@@ -1,7 +1,7 @@
 {
   "name": "mortar",
   "private": true,
-  "packageManager": "bun@1.4.3",
+  "packageManager": "bun@1.4.4",
   "workspaces": [
     "frontend",
     "web"
