@@ -114,11 +114,7 @@ func gameBySourceKey(source, key string) (components.GameInfo, bool) {
 
 // openProfile is the game's last open profile id, or "" when there is none.
 func openProfile(info components.GameInfo) string {
-	store, err := settings.Open()
-	if err != nil {
-		return ""
-	}
-	id := store.Get().LastProfile[info.ID]
+	id := settings.Peek().LastProfile[info.ID]
 	if filepath.Base(id) != id {
 		return ""
 	}

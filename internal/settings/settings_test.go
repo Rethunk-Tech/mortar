@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
@@ -293,5 +294,24 @@ func TestLanguageAcceptsOnlyShippedLocales(t *testing.T) {
 	}
 	if _, err := s.Update(func(v *Settings) { v.Language = "de" }); err == nil {
 		t.Error("language de accepted")
+	}
+}
+
+func TestPeekLeavesACorruptFileInPlace(t *testing.T) {
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	t.Setenv("LOCALAPPDATA", t.TempDir())
+	dir, err := datadir.Dir()
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(dir, FileName)
+	if err := os.WriteFile(path, []byte("{broken"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if got := Peek(); got.LastProfile == nil {
+		t.Fatalf("Peek = %+v", got)
+	}
+	if b, _ := os.ReadFile(path); string(b) != "{broken" {
+		t.Fatalf("settings file changed: %q", b)
 	}
 }

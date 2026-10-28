@@ -509,11 +509,7 @@ func nexusModProblems(domain string, modID int) []modProblem {
 	if err != nil || !mortarRunning(dataDir) {
 		return []modProblem{}
 	}
-	store, err := settings.Open()
-	if err != nil {
-		return []modProblem{}
-	}
-	profileID := store.Get().LastProfile[info.ID]
+	profileID := settings.Peek().LastProfile[info.ID]
 	if profileID == "" || filepath.Base(profileID) != profileID {
 		return []modProblem{}
 	}
@@ -538,9 +534,7 @@ func brokenNexusModIDs(domain string) []int {
 		return nil
 	}
 	gameVersion := ""
-	if store, err := settings.Open(); err == nil {
-		gameVersion = store.Get().LastPlayed[info.ID].GameVersion
-	}
+	gameVersion = settings.Peek().LastPlayed[info.ID].GameVersion
 	ids := []int{}
 	for id, e := range idx.ByNexus {
 		if e.BrokenOn(gameVersion) {
@@ -695,11 +689,7 @@ func stateOf(info components.GameInfo) (string, string) {
 	if err != nil {
 		return stateNotRunning, ""
 	}
-	store, err := settings.Open()
-	if err != nil {
-		return stateNotRunning, ""
-	}
-	cur := store.Get()
+	cur := settings.Peek()
 	if conn, err := cur.Lookup("extensionConnection"); err == nil && conn == settings.ExtensionOff {
 		return stateOff, ""
 	}
@@ -728,11 +718,7 @@ func nexusModProfiles(domain string, modID int) (modInProfile, []modInProfile) {
 	if err != nil || !mortarRunning(dataDir) {
 		return openProfile, nil
 	}
-	store, err := settings.Open()
-	if err != nil {
-		return openProfile, nil
-	}
-	openID := store.Get().LastProfile[info.ID]
+	openID := settings.Peek().LastProfile[info.ID]
 	root, err := os.OpenRoot(dataDir)
 	if err != nil {
 		return openProfile, nil

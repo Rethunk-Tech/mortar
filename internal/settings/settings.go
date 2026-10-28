@@ -334,6 +334,21 @@ func OpenIn(dir string) (*Store, error) {
 	return openFile(filepath.Join(dir, FileName))
 }
 
+// Peek is a read-only Open: a missing or corrupt file yields defaults and nothing on disk changes. For processes
+// that run beside Mortar, such as the native host, and must not move its settings file aside.
+func Peek() Settings {
+	s := &Store{cur: Defaults()}
+	if dir, err := datadir.Dir(); err == nil {
+		if b, err := fsx.ReadFile(filepath.Join(dir, FileName)); err == nil {
+			if loaded, err := decodeFile(b); err == nil {
+				s.cur = loaded
+			}
+		}
+	}
+	s.normalize()
+	return s.Get()
+}
+
 func openFile(path string) (*Store, error) {
 	s := &Store{path: path, cur: Defaults()}
 	if b, err := fsx.ReadFile(s.path); err == nil {
