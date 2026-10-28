@@ -53,8 +53,6 @@ type Service struct {
 	Profiles *profile.Store
 	// GitHub serves release notes for updates that come from GitHub.
 	GitHub *github.Client
-	// ModDB looks mods up on the Vintage Story Mod DB; nil means the real site.
-	ModDB ModDBResolver
 
 	sso   nexussso.Legacy
 	oauth nexussso.OAuth

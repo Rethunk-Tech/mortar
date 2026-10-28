@@ -10,8 +10,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/source/vsmoddb"
 )
 
-// ModDBResolver finds a mod on the Vintage Story Mod DB by the mod id its modinfo.json names.
-type ModDBResolver interface {
+// modDBResolver finds a mod on the Vintage Story Mod DB by the mod id its modinfo.json names.
+type modDBResolver interface {
 	Resolve(ctx context.Context, id, version string) (vsmoddb.Resolved, error)
 }
 
@@ -23,11 +23,7 @@ func (s *Service) findOnSites(ctx context.Context, gameID, profileID string, p p
 		maps.Copy(found, thunderstoreSources(p.Entries, s.Profiles.PluginTwins(gameID, func(dir string) []dotnet.Plugin { return dotnet.ScanDir(dir).Plugins })))
 	}
 	if slices.Contains(sites, "vsmoddb") {
-		var r ModDBResolver = vsmoddb.Driver{}
-		if s.ModDB != nil {
-			r = s.ModDB
-		}
-		maps.Copy(found, modDBSources(ctx, p.Entries, r))
+		maps.Copy(found, modDBSources(ctx, p.Entries, vsmoddb.Driver{}))
 	}
 	left := 0
 	for _, e := range p.Entries {
@@ -55,7 +51,7 @@ func thunderstoreSources(entries []profile.Entry, twins map[string]string) map[s
 
 // modDBSources is the Mod DB source of each source-less entry whose mods name one mod id on the site. An entry whose
 // mods resolve to several pages, or whose id the site does not know, stays as it is.
-func modDBSources(ctx context.Context, entries []profile.Entry, r ModDBResolver) map[string]profile.Source {
+func modDBSources(ctx context.Context, entries []profile.Entry, r modDBResolver) map[string]profile.Source {
 	out := map[string]profile.Source{}
 	for _, e := range entries {
 		if !e.Source.Unsourced() {
