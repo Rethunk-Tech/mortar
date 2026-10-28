@@ -47,14 +47,8 @@ func TestListReturnsDamagedProfiles(t *testing.T) {
 	t.Parallel()
 	s := newStore(t)
 	good := mustCreate(t, s, "Good")
-	badID := "0123456789abcdef"
-	badDir := filepath.Join(s.root, "stardew", badID)
-	if err := os.MkdirAll(filepath.Join(badDir, "mods"), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(badDir, fileName), []byte("{"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	badID := damagedID
+	writeDamaged(t, s.root)
 
 	got, err := s.List("stardew")
 	if err != nil {
@@ -80,14 +74,8 @@ func TestStoreKeysSkipsDamagedAndListDamaged(t *testing.T) {
 	s := newStore(t)
 	s.trash = filepath.Join(t.TempDir(), "trash")
 	good := mustCreate(t, s, "Good")
-	badID := "0123456789abcdef"
-	badDir := filepath.Join(s.root, "stardew", badID)
-	if err := os.MkdirAll(filepath.Join(badDir, "mods"), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(badDir, fileName), []byte("{"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	badID := damagedID
+	writeDamaged(t, s.root)
 
 	keys, err := s.StoreKeys(true)
 	if err != nil {

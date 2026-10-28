@@ -50,14 +50,8 @@ func TestRepairRebuildsFromSnapshotAndKeepsMods(t *testing.T) {
 func TestRepairNoSnapshot(t *testing.T) {
 	t.Parallel()
 	s := newStore(t)
-	id := "0123456789abcdef"
-	dir := filepath.Join(s.root, "stardew", id)
-	if err := os.MkdirAll(filepath.Join(dir, "mods"), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(dir, fileName), []byte("{"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	id := damagedID
+	dir := writeDamaged(t, s.root)
 	_, err := s.Repair("stardew", id)
 	if err == nil || !strings.Contains(err.Error(), "no history snapshot") {
 		t.Fatalf("Repair = %v", err)
@@ -96,14 +90,7 @@ func TestRepairKeepsDamagedFileAsideAndUndoRestoresIt(t *testing.T) {
 func TestListDamagedSetsRepairErrorWithoutSnapshot(t *testing.T) {
 	t.Parallel()
 	s := newStore(t)
-	id := "0123456789abcdef"
-	dir := filepath.Join(s.root, "stardew", id)
-	if err := os.MkdirAll(filepath.Join(dir, "mods"), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(dir, fileName), []byte("{"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	writeDamaged(t, s.root)
 	got, err := s.ListDamaged("stardew")
 	if err != nil || len(got) != 1 || got[0].RepairError == "" {
 		t.Fatalf("ListDamaged = %+v, %v", got, err)

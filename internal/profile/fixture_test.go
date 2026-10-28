@@ -2,6 +2,7 @@ package profile
 
 import (
 	"encoding/json"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -120,4 +121,19 @@ func (e env) disable(t *testing.T, profileID string, id mod.ID) {
 	if _, err := e.SetModEnabled("stardew", profileID, "", id, false); err != nil {
 		t.Fatal(err)
 	}
+}
+
+// damagedID names the profile writeDamaged lays out.
+const damagedID = "0123456789abcdef"
+
+// writeDamaged lays out the Stardew profile damagedID under root, its profile.json unreadable and no history to repair
+// it from, and returns its folder.
+func writeDamaged(t *testing.T, root string) string {
+	t.Helper()
+	dir := filepath.Join(root, "stardew", damagedID)
+	if err := os.MkdirAll(filepath.Join(dir, "mods"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	testfs.WriteFile(t, dir, fileName, "{")
+	return dir
 }

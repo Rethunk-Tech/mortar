@@ -566,14 +566,7 @@ func TestRecentHistoryOrdersAndSkipsDamaged(t *testing.T) {
 	e := newEnv(t)
 	alpha := mustCreate(t, e, "Alpha")
 	beta := mustCreate(t, e, "Beta")
-	badID := "0123456789abcdef"
-	badDir := filepath.Join(e.root, "stardew", badID)
-	if err := os.MkdirAll(filepath.Join(badDir, "mods"), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(badDir, fileName), []byte("{"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	badDir := writeDamaged(t, e.root)
 	t1 := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 	t2 := t1.Add(time.Hour)
 	t3 := t2.Add(time.Hour)
