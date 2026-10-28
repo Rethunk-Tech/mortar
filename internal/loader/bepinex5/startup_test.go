@@ -1,9 +1,10 @@
 package bepinex5
 
 import (
-	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 func TestRequestStartupNamesTheTitleSceneAndReadySignal(t *testing.T) {
@@ -11,7 +12,7 @@ func TestRequestStartupNamesTheTitleSceneAndReadySignal(t *testing.T) {
 	if err := RequestStartup(dir, "riskofrain2", true); err != nil {
 		t.Fatal(err)
 	}
-	b, err := os.ReadFile(filepath.Join(dir, measureFile))
+	b, err := fsx.ReadFile(filepath.Join(dir, measureFile))
 	if err != nil || string(b) != "title\nBaseMainMenuScreen: OnEnter()" {
 		t.Fatalf("request %q err %v", b, err)
 	}
