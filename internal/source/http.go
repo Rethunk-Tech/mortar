@@ -28,7 +28,8 @@ const FirstPage = 1
 // GitHubRepo reads "owner/repo" from a github.com repository address, or "" when raw is not one.
 func GitHubRepo(raw string) string {
 	u, err := url.Parse(strings.TrimSpace(raw))
-	if err != nil || (u.Hostname() != "github.com" && u.Hostname() != "www.github.com") {
+	host := strings.ToLower(u.Hostname())
+	if err != nil || (host != "github.com" && host != "www.github.com") {
 		return ""
 	}
 	parts := strings.Split(strings.Trim(u.Path, "/"), "/")
