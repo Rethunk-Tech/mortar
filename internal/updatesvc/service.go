@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/updater"
 	"github.com/wailsapp/wails/v3/pkg/updater/providers/endpoint"
@@ -299,12 +300,12 @@ func classifyCheckError(err error) error {
 }
 
 func checkPublished(ctx context.Context) error {
-	return probePublished(ctx, http.DefaultClient, manifestURL())
+	return probePublished(ctx, nil, manifestURL())
 }
 
 func probePublished(ctx context.Context, client *http.Client, rawURL string) error {
 	if client == nil {
-		client = http.DefaultClient
+		client = &http.Client{Timeout: 30 * time.Second}
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, rawURL, nil)
 	if err != nil {
