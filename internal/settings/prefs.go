@@ -574,10 +574,14 @@ func (s Settings) WatchedFolders() []string {
 // had open, the one it installed into, and drops it from the archive folders it could also be in.
 func moveAutoInstallFolders(s *Settings) {
 	auto := pathList(s.AutoInstallFolders)
-	s.AutoInstallFolders = ""
+	// With no game open yet the folders stay until one is.
 	if len(auto) == 0 || s.LastGame == "" {
+		if len(auto) == 0 {
+			s.AutoInstallFolders = ""
+		}
 		return
 	}
+	s.AutoInstallFolders = ""
 	gp := s.GamePrefs(s.LastGame)
 	extra := gp.ExtraModsFolderList()
 	for _, d := range auto {

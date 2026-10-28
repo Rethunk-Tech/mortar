@@ -594,3 +594,13 @@ func TestImportWithoutGamesKeepsLaunchPrefix(t *testing.T) {
 		t.Fatalf("preset = %+v", got)
 	}
 }
+
+// With no game opened yet the auto-install folders are kept, not dropped.
+func TestAutoInstallFoldersSurviveWithoutALastGame(t *testing.T) {
+	build := filepath.Join(t.TempDir(), "build")
+	s := Settings{AutoInstallFolders: build}
+	normalizePrefs(&s)
+	if s.AutoInstallFolders != build {
+		t.Fatalf("auto-install folders = %q", s.AutoInstallFolders)
+	}
+}
