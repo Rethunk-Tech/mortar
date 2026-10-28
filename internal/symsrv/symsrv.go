@@ -228,6 +228,9 @@ func (r *Resolver) fetch(ctx context.Context, dir, path string, urls []string) c
 	return done
 }
 
+// partMaxAge is how long a .part may sit before prune treats it as abandoned (a download is capped at 10 minutes).
+const partMaxAge = time.Hour
+
 var errMissing = errors.New("the symbol server has no such PDB")
 
 func (r *Resolver) download(ctx context.Context, dir, path string, urls []string) {
@@ -270,6 +273,8 @@ func (r *Resolver) get(ctx context.Context, url, path string) error {
 	case resp.ContentLength > maxPDBBytes:
 		return fmt.Errorf("%s: %d bytes is over the cap", url, resp.ContentLength)
 	}
+	// Only the in-flight download of this path gets here, so a .part already present is a crash's leftover.
+	_ = fsx.Remove(path + ".part")
 	tmp, err := fsx.CreateExcl(path+".part", 0o600)
 	if err != nil {
 		return err
@@ -301,7 +306,16 @@ func (r *Resolver) prune() {
 		if err != nil {
 			return err
 		}
-		if !d.Type().IsRegular() || !strings.HasSuffix(p, ".pdb") {
+		if !d.Type().IsRegular() {
+			return nil
+		}
+		if strings.HasSuffix(p, ".pdb.part") {
+			if info, err := d.Info(); err == nil && time.Since(info.ModTime()) > partMaxAge {
+				_ = fsx.Remove(p)
+			}
+			return nil
+		}
+		if !strings.HasSuffix(p, ".pdb") {
 			return nil
 		}
 		if info, err := d.Info(); err == nil {

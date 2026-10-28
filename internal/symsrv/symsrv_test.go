@@ -86,6 +86,13 @@ func TestResolverFetchesOnceAndCaches(t *testing.T) {
 	t.Cleanup(func() { unityServers = saved })
 	online := true
 	r := &Resolver{HTTP: srv.Client(), Dir: t.TempDir(), Online: func() bool { return online }, Wait: 10 * time.Second}
+	dir := filepath.Join(r.Dir, cv.PDB, cv.Key())
+	if err := os.MkdirAll(dir, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, cv.PDB+".part"), []byte("left by a crash"), 0o600); err != nil {
+		t.Fatal(err)
+	}
 	for range 2 {
 		if name, off, ok := r.Name(context.Background(), cv, 0x101c); !ok || name != "GfxDeviceD3D11::DrawBuffers" || off != 0x1c {
 			t.Fatalf("%q +%#x %v", name, off, ok)
