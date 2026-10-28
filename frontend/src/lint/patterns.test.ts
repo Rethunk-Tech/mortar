@@ -336,3 +336,19 @@ test('a compact Alert takes its size and colour from the theme', () => {
   )
   expect(hits, hits.join('\n')).toEqual([])
 })
+
+// A MUI unit is 8px, so 1 is the Comfortable gap token and 2 the pad and gutter tokens.
+const LITERAL_SPACING =
+  /\b(?:(?:gap|rowGap|columnGap|mt|mb): *(?:1|'8px')|(?:p|px|py|pt|pb|padding|paddingTop|paddingBottom): *(?:2|'16px'))(?![\d.\w])/g
+
+test('layout spacing reads the density tokens, not 8px or 16px literals', () => {
+  const hits: string[] = []
+  for (const path of srcFiles().filter((p) => p.endsWith('.tsx') && !rel(p).startsWith('theme/'))) {
+    const name = rel(path)
+    const src = readFileSync(path, 'utf8')
+    for (const m of src.matchAll(LITERAL_SPACING)) {
+      hits.push(`${name}:${lineOf(src, m.index)} ${m[0]}`)
+    }
+  }
+  expect(hits).toEqual([])
+})
