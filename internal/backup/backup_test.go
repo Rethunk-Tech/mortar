@@ -247,7 +247,32 @@ func TestKindsRotateSeparately(t *testing.T) {
 	}
 }
 
-func TestSavesDoesNotReuseAnotherProfilesZip(t *testing.T) {
+// A profile with saves of its own never gets another saves folder's backup, though both share the game's backups.
+func TestSavesDoesNotReuseAnotherSavesFoldersZip(t *testing.T) {
+	saves := filepath.Join(t.TempDir(), "Saves")
+	testfs.WriteFile(t, saves, "Farm_1/Farm_1", "save")
+	own := filepath.Join(t.TempDir(), "Saves")
+	testfs.WriteFile(t, own, "Farm_2/Farm_2", "save")
+	out := t.TempDir()
+	now := time.Now().Add(time.Hour)
+	a, err := Saves(t.Context(), layout(saves), out, 5, now, Cause{Kind: KindLaunch, Profile: "a"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := Saves(t.Context(), layout(own), out, 5, now.Add(time.Minute), Cause{Kind: KindLaunch, Profile: "b"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if a == b {
+		t.Fatal("profile b was handed profile a's backup")
+	}
+	if c := readCause(b); c.Profile != "b" {
+		t.Fatalf("cause %+v", c)
+	}
+}
+
+// Profiles that share the game's saves folder share its backup.
+func TestSavesReusesASharedFoldersZipAcrossProfiles(t *testing.T) {
 	saves := filepath.Join(t.TempDir(), "Saves")
 	testfs.WriteFile(t, saves, "Farm_1/Farm_1", "save")
 	out := t.TempDir()
@@ -257,13 +282,7 @@ func TestSavesDoesNotReuseAnotherProfilesZip(t *testing.T) {
 		t.Fatal(err)
 	}
 	b, err := Saves(t.Context(), layout(saves), out, 5, now.Add(time.Minute), Cause{Kind: KindLaunch, Profile: "b"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if a == b {
-		t.Fatal("profile b was handed profile a's backup")
-	}
-	if c := readCause(b); c.Profile != "b" {
-		t.Fatalf("cause %+v", c)
+	if err != nil || a != b {
+		t.Fatalf("b = %q, %v; want a's %q", b, err, a)
 	}
 }

@@ -38,6 +38,8 @@ type Cause struct {
 	Pinned  bool   `json:"pinned,omitempty"`
 	// Save is the one save folder a scheduled backup holds.
 	Save string `json:"save,omitempty"`
+	// Saves is the saves folder a whole-saves backup was taken from; profiles that share the game's saves share it.
+	Saves string `json:"saves,omitempty"`
 }
 
 // group is the retention pool a backup counts against: each kind rotates on its own, and each save's scheduled
@@ -93,7 +95,7 @@ func savesZip(l saves.Layout, backupsDir string, keep int, now time.Time, cause 
 	}
 	name := nextStamp(zips, now)
 	for _, n := range slices.Backward(zips) {
-		if c := readCause(filepath.Join(backupsDir, n)); !c.wholeSaves() || c.Profile != cause.Profile {
+		if c := readCause(filepath.Join(backupsDir, n)); !c.wholeSaves() || !sameSaves(c, l.Dir, cause.Profile) {
 			continue
 		}
 		if t, err := time.Parse(stamp, strings.TrimSuffix(n, ".zip")); err == nil {
@@ -110,7 +112,19 @@ func savesZip(l saves.Layout, backupsDir string, keep int, now time.Time, cause 
 	if err := os.MkdirAll(backupsDir, 0o700); err != nil {
 		return "", err
 	}
+	if cause != (Cause{}) {
+		cause.Saves = l.Dir
+	}
 	return finishZip(backupsDir, l, names, keep, now, name, cause, linked)
+}
+
+// sameSaves reports whether backup c holds the saves folder dir. A backup from before the folder was recorded is
+// trusted only for the profile that took it.
+func sameSaves(c Cause, dir, profile string) bool {
+	if c.Saves != "" {
+		return c.Saves == dir
+	}
+	return c.Profile == profile
 }
 
 // ErrNoSaves is returned when a requested backup finds nothing to back up.
