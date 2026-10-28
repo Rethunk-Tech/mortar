@@ -100,3 +100,26 @@ func TestTestCopiesAddTheDevHelperAndOnlyTheyLaunchWithIt(t *testing.T) {
 		}
 	}
 }
+
+func TestStartInstancesTouchesNothingWhileTheInstallIsBusy(t *testing.T) {
+	datadirtest.Use(t, t.TempDir())
+	const lc = "lethal-company"
+	_, ps := testenv.Stores(t)
+	p := testenv.Profile(t, ps, lc, "Friends")
+	set, err := settings.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	svc := NewService(t.TempDir(), set, ps)
+	helped := false
+	svc.InstallPackage = func(context.Context, string, string, string) error { helped = true; return nil }
+	g := game.Find(lc)
+	svc.preparing[keyOf(svc.profileSlot(g, p.ID))] = "other"
+	before := ps.SeparateSaves(lc, p.ID)
+	if err := svc.StartInstances(t.Context(), lc, p.ID, 2); err == nil {
+		t.Fatal("a busy install was started")
+	}
+	if helped || ps.SeparateSaves(lc, p.ID) != before {
+		t.Fatalf("a refused start changed the profile (helper %v, separate saves %v -> %v)", helped, before, ps.SeparateSaves(lc, p.ID))
+	}
+}

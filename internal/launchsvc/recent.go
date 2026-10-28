@@ -1,7 +1,6 @@
 package launchsvc
 
 import (
-	"cmp"
 	"fmt"
 	"slices"
 	"time"
@@ -80,7 +79,10 @@ func (s *Service) RecentLaunches(gameID string, limit int) ([]RecentLaunch, erro
 			continue
 		}
 		seen[c.id] = true
-		name := cmp.Or(names[c.id], c.id)
+		name, ok := names[c.id]
+		if !ok {
+			continue
+		}
 		out = append(out, RecentLaunch{ProfileID: c.id, Name: name, When: c.when})
 		if len(out) >= limit {
 			break

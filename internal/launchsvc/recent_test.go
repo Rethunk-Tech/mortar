@@ -65,6 +65,23 @@ func TestRecentLaunchesIncludesLastPlayedBeforeRuns(t *testing.T) {
 	}
 }
 
+func TestRecentLaunchesSkipsAProfileThatNoLongerExists(t *testing.T) {
+	datadirtest.Use(t, t.TempDir())
+	set, err := settings.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	svc, _, _, _ := runEnv(t)
+	svc.settings = set
+	if _, err := set.RecordLastPlayed("stardew", "deleted-profile", time.Now(), ""); err != nil {
+		t.Fatal(err)
+	}
+	got, err := svc.RecentLaunches("stardew", 3)
+	if err != nil || len(got) != 0 {
+		t.Fatalf("got %#v, %v", got, err)
+	}
+}
+
 func TestRecentLaunchesUnknownGame(t *testing.T) {
 	svc := NewService(t.TempDir(), nil, nil)
 	if _, err := svc.RecentLaunches("nope", 3); err == nil {

@@ -692,6 +692,14 @@ func (s *Service) StartInstances(ctx context.Context, gameID, profileID string, 
 	if n < 1 || n > profile.MaxTestCopies {
 		return usererr.Wrap(usererr.Invalid, fmt.Errorf("start 1 to %d copies", profile.MaxTestCopies))
 	}
+	g, err := game.Require(gameID)
+	if err != nil {
+		return err
+	}
+	// Refused before the profile is touched; start claims the install itself.
+	if err := s.checkIdle(g, keyOf(s.profileSlot(g, profileID))); err != nil {
+		return err
+	}
 	// A test host writes its save as it starts, which must not be the player's own game.
 	if game.HasSaves(gameID) && !s.profiles.SeparateSaves(gameID, profileID) {
 		if _, err := s.profiles.SetSeparateSaves(gameID, profileID, true, false); err != nil {
@@ -944,10 +952,17 @@ func (s *Service) PreviewCommand(gameID, profileID, options, prefix, env string)
 // claimPreparing marks the install key as preparing a launch of profileID, refusing one that is preparing or running
 // already. The check and the claim share the lock, so two starts of one install cannot both pass.
 func (s *Service) claimPreparing(g game.Game, key, profileID string) error {
+	return s.claim(g, key, profileID, true)
+}
+
+// checkIdle is claimPreparing without the claim.
+func (s *Service) checkIdle(g game.Game, key string) error { return s.claim(g, key, "", false) }
+
+func (s *Service) claim(g game.Game, key, profileID string, take bool) error {
 	s.mu.Lock()
 	_, busy := s.preparing[key]
 	busy = busy || s.status[key].State.Active()
-	if !busy {
+	if !busy && take {
 		s.preparing[key] = profileID
 	}
 	s.mu.Unlock()
