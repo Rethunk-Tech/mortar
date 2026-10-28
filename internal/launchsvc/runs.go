@@ -374,26 +374,6 @@ func readIndex(dir string) (runIndex, error) {
 	return idx, nil
 }
 
-func (s *Service) profileModRefs(gameID, profileID string) []launch.ModRef {
-	if profileID == "" {
-		return nil
-	}
-	installed, err := s.profiles.Installed(gameID, profileID)
-	if err != nil {
-		return nil
-	}
-	refs := make([]launch.ModRef, 0, len(installed))
-	for _, im := range installed {
-		if !im.Enabled {
-			continue
-		}
-		refs = append(refs, launch.ModRef{
-			Name: im.Name, ID: im.ModID(), Key: im.Key, Version: im.Version, SourceVersion: im.Source.Version,
-		})
-	}
-	return refs
-}
-
 func (s *Service) record(g game.Game, profileID string, started time.Time, failed bool, refs ...[]launch.ModRef) {
 	if s.profiles == nil || profileID == "" {
 		return

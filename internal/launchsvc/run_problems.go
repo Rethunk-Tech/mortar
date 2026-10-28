@@ -31,7 +31,7 @@ func (s *Service) RunProblems(gameID, profileID, runID string) ([]launch.SMAPIPr
 	}
 	found := launch.ParseSMAPIProblems(text)
 	found = append(found, s.loaderProblems(gameID, profileID, text, player)...)
-	refs := s.installedModRefs(gameID, profileID)
+	refs := s.modRefs(gameID, profileID, false)
 	return launch.ResolveSMAPIProblemMods(found, refs), nil
 }
 
@@ -170,7 +170,8 @@ func (s *Service) pluginOwners(gameID, profileID string) map[string]profile.Inst
 	return owners
 }
 
-func (s *Service) installedModRefs(gameID, profileID string) []launch.ModRef {
+// modRefs names the profile's installed mods, or only its enabled ones.
+func (s *Service) modRefs(gameID, profileID string, enabledOnly bool) []launch.ModRef {
 	if s.profiles == nil || profileID == "" {
 		return nil
 	}
@@ -180,6 +181,9 @@ func (s *Service) installedModRefs(gameID, profileID string) []launch.ModRef {
 	}
 	refs := make([]launch.ModRef, 0, len(installed))
 	for _, im := range installed {
+		if enabledOnly && !im.Enabled {
+			continue
+		}
 		refs = append(refs, launch.ModRef{
 			Name: im.Name, ID: im.ModID(), Key: im.Key, Version: im.Version, SourceVersion: im.Source.Version,
 		})

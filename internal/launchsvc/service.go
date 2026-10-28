@@ -1119,7 +1119,7 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 	logCap, _ := strconv.Atoi(settings.ResolveAt(s.settings.Get(), "consoleLogCap", settings.Scope{Game: gameID, Profile: profileID}, launchOverrides(s.profiles, gameID, profileID)))
 	buf := &launch.Buffer{Cap: logCap}
 	started := time.Now()
-	mods := s.profileModRefs(gameID, profileID)
+	mods := s.modRefs(gameID, profileID, true)
 	copies := 1
 	if env.Direct {
 		copies = min(max(env.Instances, 1), 8)
