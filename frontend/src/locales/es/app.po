@@ -296,6 +296,10 @@ msgstr ""
 msgid "Switch to Console"
 msgstr ""
 
+#: src/lan/PairedComputers.tsx
+msgid "Unpair {name}?"
+msgstr ""
+
 #: src/queue/QueueHistory.tsx
 #: src/saves/SaveRow.tsx
 msgid "Deleted profile"
@@ -5722,6 +5726,7 @@ msgstr ""
 msgid "Show changes"
 msgstr ""
 
+#: src/games/AddGameDialog.tsx
 #: src/tools/ToolsManageDialog.tsx
 msgid "Remove {name}?"
 msgstr ""
@@ -6185,6 +6190,10 @@ msgstr ""
 
 #: src/queue/store.ts
 msgid "{count, plural, one {# download needs your decision} other {# downloads need your decision}}"
+msgstr ""
+
+#: src/games/AddGameDialog.tsx
+msgid "Mortar forgets this game. Its files stay where they are."
 msgstr ""
 
 #: src/launch/LaunchScreen.tsx
@@ -6856,6 +6865,10 @@ msgstr ""
 
 #: src/game/ProfileMenuItems.tsx
 msgid "Could not add the shortcut"
+msgstr ""
+
+#: src/lan/PairedComputers.tsx
+msgid "Profiles sent between you will no longer carry their mod files directly, and you will need a new code to pair again."
 msgstr ""
 
 #: src/share/ModpackDialog.tsx

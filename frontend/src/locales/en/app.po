@@ -296,6 +296,10 @@ msgstr "Use a file"
 msgid "Switch to Console"
 msgstr "Switch to Console"
 
+#: src/lan/PairedComputers.tsx
+msgid "Unpair {name}?"
+msgstr "Unpair {name}?"
+
 #: src/queue/QueueHistory.tsx
 #: src/saves/SaveRow.tsx
 msgid "Deleted profile"
@@ -5722,6 +5726,7 @@ msgstr "Open {name}"
 msgid "Show changes"
 msgstr "Show changes"
 
+#: src/games/AddGameDialog.tsx
 #: src/tools/ToolsManageDialog.tsx
 msgid "Remove {name}?"
 msgstr "Remove {name}?"
@@ -6186,6 +6191,10 @@ msgstr "{done} done"
 #: src/queue/store.ts
 msgid "{count, plural, one {# download needs your decision} other {# downloads need your decision}}"
 msgstr "{count, plural, one {# download needs your decision} other {# downloads need your decision}}"
+
+#: src/games/AddGameDialog.tsx
+msgid "Mortar forgets this game. Its files stay where they are."
+msgstr "Mortar forgets this game. Its files stay where they are."
 
 #: src/launch/LaunchScreen.tsx
 msgid "Loading mods"
@@ -6857,6 +6866,10 @@ msgstr "Could not reach {source}"
 #: src/game/ProfileMenuItems.tsx
 msgid "Could not add the shortcut"
 msgstr "Could not add the shortcut"
+
+#: src/lan/PairedComputers.tsx
+msgid "Profiles sent between you will no longer carry their mod files directly, and you will need a new code to pair again."
+msgstr "Profiles sent between you will no longer carry their mod files directly, and you will need a new code to pair again."
 
 #: src/share/ModpackDialog.tsx
 msgid "The version must look like 1.0.0."

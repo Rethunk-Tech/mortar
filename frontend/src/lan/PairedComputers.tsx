@@ -23,6 +23,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/service.ts'
 import { SettingRow } from '../settings/SettingsSection.tsx'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
+import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { sameValue } from '../shell/sameValue.ts'
 import { space } from '../theme/density.ts'
@@ -152,6 +153,7 @@ export function PairedComputers() {
   const { t } = useLingui()
   const [paired, setPaired] = useState<PairedPeer[]>([])
   const [dialog, setDialog] = useState<'show' | 'enter' | null>(null)
+  const [unpairing, setUnpairing] = useState<PairedPeer | null>(null)
   const close = useCallback(() => setDialog(null), [])
   const refresh = useCallback(() => {
     Paired()
@@ -185,18 +187,28 @@ export function PairedComputers() {
       </SettingRow>
       {paired.map((peer) => (
         <SettingRow key={peer.id} label={peer.name}>
-          <Button
-            color="error"
-            onClick={() => {
-              Unpair(peer.id)
-                .then(refresh)
-                .catch((error: unknown) => toastError(t`Could not unpair`, error))
-            }}
-          >
+          <Button color="error" onClick={() => setUnpairing(peer)}>
             {t`Unpair`}
           </Button>
         </SettingRow>
       ))}
+      <ConfirmationDialog
+        open={unpairing !== null}
+        tone="danger"
+        title={t`Unpair ${{ name: unpairing?.name ?? '' }}?`}
+        body={t`Profiles sent between you will no longer carry their mod files directly, and you will need a new code to pair again.`}
+        confirmLabel={t`Unpair`}
+        onCancel={() => setUnpairing(null)}
+        onConfirm={() => {
+          const id = unpairing?.id
+          setUnpairing(null)
+          if (id) {
+            Unpair(id)
+              .then(refresh)
+              .catch((error: unknown) => toastError(t`Could not unpair`, error))
+          }
+        }}
+      />
       <ShowCodeDialog open={dialog === 'show'} onClose={close} />
       <EnterCodeDialog open={dialog === 'enter'} onClose={close} />
     </>
