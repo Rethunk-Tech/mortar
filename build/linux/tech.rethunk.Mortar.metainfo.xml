@@ -129,6 +129,9 @@
           <li>Several copies of a game each keep their own log, so their errors count</li>
           <li>Merging profiles carries Thunderstore packages, and a merge that fails takes back what it added</li>
           <li>Cleanup never offers to remove a mod you develop, built or published, and no longer counts toward the Problems badge</li>
+          <li>Profiles added, renamed or deleted from the command line, a share or sync show in the window and the tray at once</li>
+          <li>A missing Thunderstore requirement links to its page and can be added in one click</li>
+          <li>Duplicates found after a run open the same chooser as Problems, and each copy names where it came from</li>
           <li>The Flatpak finds r2modman and Gale profiles in their usual folders</li>
           <li>Find the cause asks before it starts relaunching a crashed game</li>
           <li>Removing a custom game, unpairing a computer and restoring over saves ask first</li>
