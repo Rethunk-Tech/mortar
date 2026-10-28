@@ -12,6 +12,7 @@ import {
   slowStartups,
   startupFindings,
   startupRegressions,
+  startupTotal,
   whyOf,
 } from './startupView.ts'
 
@@ -33,6 +34,19 @@ const mod = (
     ...rest,
   }) as StartupMod
 
+test('loading after the title is its own last phase and the total', () => {
+  const phases = {
+    bridgeEntry: 0,
+    entryDone: 0,
+    gameLaunched: 0,
+    titleMenu: 0,
+    titleScreen: 9000,
+    ready: 12_000,
+  }
+  expect(phaseSegments(phases).at(-1)).toEqual({ id: 'afterTitle', ms: 3000 })
+  expect(startupTotal(phases)).toBe(12_000)
+})
+
 test('phases run back to back and skip one the bridge did not see', () => {
   const segs = phaseSegments({
     bridgeEntry: 10_452,
@@ -40,6 +54,7 @@ test('phases run back to back and skip one the bridge did not see', () => {
     gameLaunched: 20_910,
     titleMenu: 57_108,
     titleScreen: 57_108,
+    ready: 0,
   })
   expect(segs).toEqual([
     { id: 'smapi', ms: 10_452 },
@@ -112,7 +127,7 @@ test('slow startup names plain mods and slow packs, never the framework that loa
 
 const report = (titleScreen: number, mods: StartupMod[], bridgeEntry = 0): StartupReport =>
   ({
-    phases: { bridgeEntry, entryDone: 0, gameLaunched: 0, titleMenu: 0, titleScreen },
+    phases: { bridgeEntry, entryDone: 0, gameLaunched: 0, titleMenu: 0, titleScreen, ready: 0 },
     mods,
   }) as StartupReport
 

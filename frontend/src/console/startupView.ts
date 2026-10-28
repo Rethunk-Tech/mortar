@@ -4,7 +4,7 @@ import type {
   StartupReport,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 
-type PhaseId = 'smapi' | 'entry' | 'content' | 'firstTicks' | 'intro'
+type PhaseId = 'smapi' | 'entry' | 'content' | 'firstTicks' | 'intro' | 'afterTitle'
 
 interface PhaseSegment {
   id: PhaseId
@@ -116,7 +116,7 @@ function packsBehind(mod: StartupMod): number {
  * since the launch before, and SMAPI's own loading when it is large. */
 function startupFindings(report: StartupReport, previous: StartupReport | undefined): Finding[] {
   const out: Finding[] = []
-  const titleMs = report.phases.titleScreen
+  const titleMs = startupTotal(report.phases)
   const [heaviest] = [...(report.mods ?? [])].sort((a, b) => modTotal(b) - modTotal(a))
   if (heaviest && modTotal(heaviest) >= SLOW_MOD_MS) {
     out.push({
@@ -127,7 +127,7 @@ function startupFindings(report: StartupReport, previous: StartupReport | undefi
       packs: packsBehind(heaviest),
     })
   }
-  const before = previous?.phases.titleScreen ?? 0
+  const before = previous ? startupTotal(previous.phases) : 0
   if (titleMs > 0 && before > 0 && titleMs - before >= REGRESSION_MIN_MS) {
     out.push({ kind: 'slower', ms: titleMs - before })
   }
@@ -174,6 +174,11 @@ function slowestEvent(mod: StartupMod): [string, number] | null {
   return best
 }
 
+/** When the game was usable: after its own loading when the bridge saw that finish, else at the title screen. */
+export function startupTotal(p: StartupPhases): number {
+  return Math.max(p.titleScreen, p.ready)
+}
+
 /** Consecutive phases from process start to the title screen; a phase the bridge did not see joins the next one. */
 function phaseSegments(p: StartupPhases): PhaseSegment[] {
   const marks: [PhaseId, number][] = [
@@ -182,6 +187,7 @@ function phaseSegments(p: StartupPhases): PhaseSegment[] {
     ['content', p.gameLaunched],
     ['firstTicks', p.titleMenu],
     ['intro', p.titleScreen],
+    ['afterTitle', p.ready],
   ]
   const out: PhaseSegment[] = []
   let at = 0

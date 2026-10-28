@@ -7,7 +7,7 @@ import type { StartupReport } from '../../bindings/github.com/Rethunk-Tech/morta
 import { space } from '../theme/density.ts'
 import { usePerfLive } from './perfLive.ts'
 import { useDuration, useSmapiStartup } from './startupHooks.ts'
-import { modsMs } from './startupView.ts'
+import { modsMs, startupTotal } from './startupView.ts'
 
 export type PerformanceView = 'startup' | 'inGame'
 
@@ -121,7 +121,7 @@ export function PerformanceCards({
   let value = t`Not measured yet`
   let note = t`Play this profile to time how long each mod adds to the start`
   if (report) {
-    const total = duration(report.phases.titleScreen)
+    const total = duration(startupTotal(report.phases))
     const mods = duration(modsMs(report))
     value = smapi ? t`${total} to the title screen` : t`${total} to the main menu`
     note = calm ? t`Mods add ${mods}. Nothing stands out in this start.` : t`Mods add ${mods}.`
