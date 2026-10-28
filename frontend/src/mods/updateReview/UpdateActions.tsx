@@ -72,8 +72,14 @@ export function UpdateActions({
   if (offline !== '') {
     everywhereWhy = offline
   }
-  const missingWhy = t`This mod is not in the profile.`
   const blocked = queued || (caution !== '' && !acked)
+  let everywhereReason = everywhereWhy
+  if (!everywhereBlocked) {
+    everywhereReason = queued
+      ? t`This update is already queued.`
+      : t`Tick "Update despite this" first.`
+  }
+  const missingWhy = t`This mod is not in the profile.`
   const act = (fn: () => Promise<unknown>) => () => {
     setAnchor(null)
     fn().catch(reportUnexpected)
@@ -120,7 +126,7 @@ export function UpdateActions({
           />
         ) : null}
         {installableUpdate(update) ? (
-          <DisabledReason title={everywhereWhy} disabled={everywhereBlocked}>
+          <DisabledReason title={everywhereReason} disabled={everywhereBlocked || blocked}>
             <MenuAction
               icon={<RefreshCcw size={ICON_SIZE} />}
               label={t`Update in all profiles (${{ count: n }})`}

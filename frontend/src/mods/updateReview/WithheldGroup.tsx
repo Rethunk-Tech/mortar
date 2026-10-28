@@ -52,7 +52,7 @@ export function WithheldGroup({ withheld, mods }: { withheld: Update[]; mods: Mo
               ) : null}
               {mod ? (
                 <Button onClick={() => setSkipVersion(mod, u.version).catch(reportUnexpected)}>
-                  {t`Skip this version`}
+                  {t`Skip this update`}
                 </Button>
               ) : null}
             </ListItem>

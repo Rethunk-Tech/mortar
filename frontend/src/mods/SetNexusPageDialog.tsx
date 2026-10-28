@@ -12,6 +12,7 @@ import { FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { type InlineError, inlineError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { LockedReason } from './LockedReason.tsx'
 import { useLocked } from './useLocked.ts'
 
 interface Target {
@@ -42,17 +43,19 @@ export function NexusPageMenuItem({ mod, close }: { mod: Mod; close: () => void 
     return null
   }
   return (
-    <MenuAction
-      disabled={locked}
-      icon={<Link2 size={16} />}
-      label={t`Set ${{ source: sourceLabel('nexus') }} page…`}
-      onClick={() => {
-        close()
-        useNexusPage
-          .getState()
-          .show({ game: game.id, profileId: profile.id, modKey: mod.key, name: mod.name })
-      }}
-    />
+    <LockedReason locked={locked}>
+      <MenuAction
+        disabled={locked}
+        icon={<Link2 size={16} />}
+        label={t`Set ${{ source: sourceLabel('nexus') }} page…`}
+        onClick={() => {
+          close()
+          useNexusPage
+            .getState()
+            .show({ game: game.id, profileId: profile.id, modKey: mod.key, name: mod.name })
+        }}
+      />
+    </LockedReason>
   )
 }
 

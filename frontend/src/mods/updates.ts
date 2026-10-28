@@ -101,12 +101,13 @@ const useUpdates = create<{
       const updates = await loadUpdates(at.game, at.id)
       // Every mod change reloads the updates; only an answer that differs from the shown one is news.
       const unchanged = sameValue(get().updates, updates)
-      if (useProfiles.getState().openId === at.id) {
+      const stillOpen = useProfiles.getState().openId === at.id
+      if (stillOpen) {
         set({ updates: unchanged ? get().updates : updates, checkedAt: Date.now() })
       }
       syncBadge()
       const count = countFor(updates, at.id)
-      if (!unchanged && count > 0 && useSettings.getState().notifyModUpdates) {
+      if (stillOpen && !unchanged && count > 0 && useSettings.getState().notifyModUpdates) {
         useToasts.getState().push({
           kind: 'info',
           title: i18n._(

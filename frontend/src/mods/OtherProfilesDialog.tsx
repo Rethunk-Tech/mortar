@@ -64,7 +64,7 @@ function ProfileChoice({
   if (isLockedProfile) {
     status = t`Stop the game to change mods.`
   } else if (isPinned) {
-    status = t`pinned in ${{ name: profile.name }}`
+    status = t`Pinned in ${{ name: profile.name }}`
   } else if (has && mode !== 'remove') {
     status = t`Already has it`
   }

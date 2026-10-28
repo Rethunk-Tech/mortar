@@ -73,11 +73,12 @@ export function ChangelogDialog({
 }) {
   const { t } = useLingui()
   const game = useProfiles((s) => s.game?.id ?? '')
-  const nexusLogs = useNexusEntry(game, nexusId)?.details?.changelogs
+  const nexusEntry = useNexusEntry(game, nexusId)
   const { state, retry } = useReleases(open, nexusId > 0 ? '' : githubRepo)
   let logs: Changelog[] | null = null
   if (nexusId > 0) {
-    logs = nexusLogs ?? []
+    // Without details yet the entry is still loading, unless its read failed.
+    logs = nexusEntry?.details || nexusEntry?.error ? (nexusEntry.details?.changelogs ?? []) : null
   } else if (state !== null && 'logs' in state) {
     ;({ logs } = state)
   }

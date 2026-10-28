@@ -9,14 +9,17 @@ import { AppDialog, DialogFooter, ToneIcon } from '../shell/dialog/AppDialog.tsx
 import { reportError } from '../toasts/report.ts'
 import { localId } from './dependents.ts'
 import { useEnableAsk } from './enableAsk.ts'
+import { LockedReason } from './LockedReason.tsx'
 import { useMods } from './store.ts'
 import { announceAlso, openTarget } from './storeView.ts'
+import { useLocked } from './useLocked.ts'
 
 // Offers to switch on what a mod just switched on needs, laid out like DisableDialog.
 export function EnableRequirementsDialog() {
   const { t } = useLingui()
   const offer = useEnableAsk((s) => s.offers[0])
   const dismiss = useEnableAsk((s) => s.dismiss)
+  const locked = useLocked()
   if (!offer) {
     return null
   }
@@ -45,7 +48,10 @@ export function EnableRequirementsDialog() {
       open={true}
       onClose={dismiss}
       title={t`Enable what ${{ name: offer.dependentName }} needs?`}
-      subtitle={t`It does not work while they are off.`}
+      subtitle={plural(
+        { count: offer.mods.length },
+        { one: 'It does not work while it is off.', other: 'It does not work while they are off.' },
+      )}
       icon={
         <ToneIcon tone="neutral">
           <Power size={22} />
@@ -54,9 +60,11 @@ export function EnableRequirementsDialog() {
       footer={
         <DialogFooter>
           <Button onClick={dismiss}>{t`Just this mod`}</Button>
-          <Button variant="contained" onClick={enableThem}>
-            {plural({ count: names.length }, { one: 'Enable # mod', other: 'Enable # mods' })}
-          </Button>
+          <LockedReason locked={locked}>
+            <Button variant="contained" disabled={locked} onClick={enableThem}>
+              {plural({ count: names.length }, { one: 'Enable # mod', other: 'Enable # mods' })}
+            </Button>
+          </LockedReason>
         </DialogFooter>
       }
     >

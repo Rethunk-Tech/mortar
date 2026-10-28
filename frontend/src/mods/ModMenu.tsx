@@ -32,6 +32,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { useFomod } from '../fomod/store.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
+import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { OnlyHereMenuItem } from '../sync/pins.tsx'
@@ -240,21 +241,28 @@ function PackageMoveItems({ mod, close }: { mod: Mod; close: () => void }) {
       .then((p) => useProfiles.getState().replace(p))
       .catch(reportUnexpected)
   }
+  const upBlocked = locked || place <= 0
+  const downBlocked = locked || place < 0 || place === packages.length - 1
+  const stopGame = t`Stop the game to change mods.`
+  const reasonUp = locked ? stopGame : t`Already loads first.`
+  const reasonDown = locked ? stopGame : t`Already loads last.`
   return [
-    <MenuAction
-      key="package-up"
-      disabled={locked || place <= 0}
-      icon={<ArrowUp size={ICON_SIZE} />}
-      label={t`Load earlier`}
-      onClick={() => move(-1)}
-    />,
-    <MenuAction
-      key="package-down"
-      disabled={locked || place < 0 || place === packages.length - 1}
-      icon={<ArrowDown size={ICON_SIZE} />}
-      label={t`Load later`}
-      onClick={() => move(1)}
-    />,
+    <DisabledReason key="package-up" title={reasonUp} disabled={upBlocked}>
+      <MenuAction
+        disabled={upBlocked}
+        icon={<ArrowUp size={ICON_SIZE} />}
+        label={t`Load earlier`}
+        onClick={() => move(-1)}
+      />
+    </DisabledReason>,
+    <DisabledReason key="package-down" title={reasonDown} disabled={downBlocked}>
+      <MenuAction
+        disabled={downBlocked}
+        icon={<ArrowDown size={ICON_SIZE} />}
+        label={t`Load later`}
+        onClick={() => move(1)}
+      />
+    </DisabledReason>,
   ]
 }
 

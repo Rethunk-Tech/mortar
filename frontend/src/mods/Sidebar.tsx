@@ -400,7 +400,7 @@ function LowerSectionsView({ mod, profile }: { mod: Mod; profile: Profile }) {
                 variant="outlined"
                 onClick={() => setSkipSource(mod, ignoredSource, false).catch(reportUnexpected)}
               >
-                {t`Stop ignoring ${ignoredSource} updates`}
+                {t`Stop ignoring ${{ source: sourceLabel(ignoredSource) }} updates`}
               </Button>
             ))}
           </>

@@ -112,7 +112,7 @@ function ModTouches({ target, onChanged }: { target: AssetTarget; onChanged: () 
               <Chip size="small" variant="outlined" label={mod.priority} sx={chipSx} />
             ) : null}
             {mod.winner ? (
-              <Chip size="small" color="success" label={t`winner`} sx={chipSx} />
+              <Chip size="small" color="success" label={t`Winner`} sx={chipSx} />
             ) : null}
             {many ? <TouchActions target={target} mod={mod} onChanged={onChanged} /> : null}
           </Box>

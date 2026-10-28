@@ -49,14 +49,8 @@ export function SplitCombineItems({
         <MenuAction
           key={`split-${extraKey}`}
           icon={<Split size={ICON_SIZE} />}
-          label={
-            <>
-              {extraLabel(extraKey)}
-              {extraArchive(extraKey) ? (
-                <span className="menu-action-reason">{extraArchive(extraKey)}</span>
-              ) : null}
-            </>
-          }
+          label={extraLabel(extraKey)}
+          detail={extraArchive(extraKey) || undefined}
           disabled={locked}
           reason={lockedTip}
           onClick={() => {
@@ -70,7 +64,7 @@ export function SplitCombineItems({
           }}
         />
       ))}
-      {siblings.length > 0 ? <MenuHeading>{t`Combine with…`}</MenuHeading> : null}
+      {siblings.length > 0 ? <MenuHeading>{t`Combine with`}</MenuHeading> : null}
       {siblings.map((other) => (
         <MenuAction
           key={`combine-${other.key}`}
