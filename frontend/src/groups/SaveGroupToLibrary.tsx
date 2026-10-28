@@ -31,7 +31,7 @@ export function SaveGroupToLibrary({
     run(
       () =>
         SaveGroup(game, profileId, group, name, replace).then(() => {
-          useToasts.getState().push({ kind: 'success', title: t`Saved to the library` })
+          useToasts.getState().push({ kind: 'success', title: t`Saved to library` })
           setReplacing(null)
           onClose()
         }),

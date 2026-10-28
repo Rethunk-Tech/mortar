@@ -22,7 +22,7 @@ export function savedGroupApplied(result: ApplyResult, profileId: string): void 
   const { group } = result
   useToasts.getState().push({
     kind: missing.length > 0 ? 'warning' : 'success',
-    title: group ? i18n._(msg`Added the group ${group}`) : i18n._(msg`Saved group added`),
+    title: group ? i18n._(msg`Added ${group}`) : i18n._(msg`Saved group added`),
     changes: [result.profile.lastChange ?? ''],
     body:
       missing.length > 0
