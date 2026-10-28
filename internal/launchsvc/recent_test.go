@@ -71,7 +71,8 @@ func TestRecentLaunchesSkipsAProfileThatNoLongerExists(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	svc, _, _, _ := runEnv(t)
+	svc, p, _, _ := runEnv(t)
+	_ = p
 	svc.settings = set
 	if _, err := set.RecordLastPlayed("stardew", "deleted-profile", time.Now(), ""); err != nil {
 		t.Fatal(err)

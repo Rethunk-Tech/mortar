@@ -455,6 +455,6 @@ func copyWithout(src, dst string, skip ...string) error {
 		if err != nil {
 			return err
 		}
-		return os.WriteFile(to, b, 0o600)
+		return fsx.WriteFile(to, b, 0o600)
 	})
 }

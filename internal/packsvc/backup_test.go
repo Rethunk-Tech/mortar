@@ -199,7 +199,7 @@ func TestBackupOfAFolderGameProfileCarriesTheSplitArchiveOnceAndReplacesTray(t *
 
 func TestReadBackupFoldsAnOldDescriptionIntoNotes(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "old.zip")
-	f, err := os.Create(path)
+	f, err := fsx.Create(path)
 	if err != nil {
 		t.Fatal(err)
 	}

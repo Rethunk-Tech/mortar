@@ -63,7 +63,7 @@ func TestModConfigFollowsTheMod(t *testing.T) {
 	if err := e.SyncPackages("lethal-company", p.ID); err != nil {
 		t.Fatal(err)
 	}
-	if b, _ := os.ReadFile(live); string(b) != "[General]\nA = 1\n" || exists(aside) {
+	if b, _ := fsx.ReadFile(live); string(b) != "[General]\nA = 1\n" || exists(aside) {
 		t.Fatalf("undone: live %q, aside %v", b, exists(aside))
 	}
 }

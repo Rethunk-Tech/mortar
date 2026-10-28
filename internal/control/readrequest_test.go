@@ -1,6 +1,7 @@
 package control
 
 import (
+	"errors"
 	"net"
 	"strings"
 	"testing"
@@ -24,7 +25,7 @@ func TestReadRequestBoundsAConnectionUntilItShowsTheToken(t *testing.T) {
 	if _, err := readOver(t, `{"method":"m","pad":"`+strings.Repeat("x", 1<<20)+`"}`, time.Second); err == nil {
 		t.Fatal("a large body without the token was read")
 	}
-	if _, err := readOver(t, `{"token":"bad","method":"m"}`, time.Second); err != errUnauthorized {
+	if _, err := readOver(t, `{"token":"bad","method":"m"}`, time.Second); !errors.Is(err, errUnauthorized) {
 		t.Fatalf("wrong token: %v", err)
 	}
 	client, server := net.Pipe()

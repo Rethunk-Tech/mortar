@@ -117,7 +117,7 @@ func foldedPath(fsys fs.FS, p string) (string, error) {
 		return p, nil
 	}
 	dir := "."
-	for _, part := range strings.Split(p, "/") {
+	for part := range strings.SplitSeq(p, "/") {
 		ents, err := fs.ReadDir(fsys, dir)
 		if err != nil {
 			return "", err

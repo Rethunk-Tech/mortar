@@ -35,7 +35,7 @@ func ReadJSONOrQuarantine(path string, v any) (found bool, err error) {
 	found, err = ReadJSON(path, v)
 	var syn *json.SyntaxError
 	var typ *json.UnmarshalTypeError
-	if !found || err == nil || !(errors.As(err, &syn) || errors.As(err, &typ) || errors.Is(err, io.ErrUnexpectedEOF)) {
+	if !found || err == nil || (!errors.As(err, &syn) && !errors.As(err, &typ) && !errors.Is(err, io.ErrUnexpectedEOF)) {
 		return found, err
 	}
 	aside := fmt.Sprintf("%s.corrupt-%d", path, time.Now().UnixNano())

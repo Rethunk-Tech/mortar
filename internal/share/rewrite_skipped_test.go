@@ -21,7 +21,7 @@ func TestRewritesDropChangedCopiesReadingSkips(t *testing.T) {
 	for _, f := range zr.File {
 		w, _ := zw.CreateHeader(&zip.FileHeader{Name: f.Name, Method: zip.Deflate})
 		r, _ := f.Open()
-		_, _ = io.Copy(w, r)
+		_, _ = io.Copy(w, io.LimitReader(r, 1<<20))
 		_ = r.Close()
 	}
 	zeros := make([]byte, 30<<20)

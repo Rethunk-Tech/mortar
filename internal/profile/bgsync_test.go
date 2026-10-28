@@ -48,8 +48,8 @@ func TestDeleteWaitsForLayout(t *testing.T) {
 	done := make(chan error, 1)
 	go func() { done <- s.Delete("stardew", p.ID) }()
 	select {
-	case <-done:
-		t.Fatal("Delete returned while a layout was under way")
+	case err := <-done:
+		t.Fatalf("Delete returned while a layout was under way: %v", err)
 	case <-time.After(30 * time.Millisecond):
 	}
 	l.Unlock()

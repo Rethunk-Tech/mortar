@@ -30,6 +30,9 @@ msgstr ""
 msgid "Close"
 msgstr ""
 
+msgid "Could not stop {game}"
+msgstr ""
+
 msgid "Download failed"
 msgstr ""
 

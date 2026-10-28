@@ -533,8 +533,7 @@ func brokenNexusModIDs(domain string) []int {
 	if !ok {
 		return nil
 	}
-	gameVersion := ""
-	gameVersion = settings.Peek().LastPlayed[info.ID].GameVersion
+	gameVersion := settings.Peek().LastPlayed[info.ID].GameVersion
 	ids := []int{}
 	for id, e := range idx.ByNexus {
 		if e.BrokenOn(gameVersion) {

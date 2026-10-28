@@ -55,7 +55,7 @@ func (s *Service) ReadTextFile(title string) (string, error) {
 	if err != nil || path == "" {
 		return "", err
 	}
-	f, err := os.Open(path) // follows a picked symlink, which fsx.Open refuses
+	f, err := os.Open(path) //nolint:gosec // G304: the user picked this path; it follows a picked symlink, which fsx.Open refuses
 	if err != nil {
 		return "", err
 	}

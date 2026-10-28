@@ -177,7 +177,7 @@ func heroicInstalls(cfg, productID string) []string {
 	}
 	switch {
 	case json.Unmarshal(b, &asList) == nil && len(asList.Installed)+len(asList.Games) > 0:
-		games = append(asList.Installed, asList.Games...)
+		games = slices.Concat(asList.Installed, asList.Games)
 	case json.Unmarshal(b, &games) == nil:
 	default:
 		var keyed map[string]heroicGame

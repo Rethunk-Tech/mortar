@@ -311,7 +311,7 @@ func TestPeekLeavesACorruptFileInPlace(t *testing.T) {
 	if got := Peek(); got.LastProfile == nil {
 		t.Fatalf("Peek = %+v", got)
 	}
-	if b, _ := os.ReadFile(path); string(b) != "{broken" {
+	if b, _ := fsx.ReadFile(path); string(b) != "{broken" {
 		t.Fatalf("settings file changed: %q", b)
 	}
 }

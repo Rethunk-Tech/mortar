@@ -29,6 +29,9 @@ msgstr "Choose the data folder…"
 msgid "Close"
 msgstr "Close"
 
+msgid "Could not stop {game}"
+msgstr "Could not stop {game}"
+
 msgid "Download failed"
 msgstr "Download failed"
 

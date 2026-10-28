@@ -67,7 +67,7 @@ func (s *Service) sweepDownloads() {
 		id := archive.SavedID(base)
 		// The download folder may be the user's own: only names SavedName makes are Mortar's, an id with an archive
 		// ending or the "~~" separator.
-		if !ids.Is(id) || keep[id] || !(archive.HasExtension(base) || strings.Contains(base, "~~")) {
+		if !ids.Is(id) || keep[id] || (!archive.HasExtension(base) && !strings.Contains(base, "~~")) {
 			continue
 		}
 		_ = fsx.Remove(filepath.Join(root, name))
