@@ -3,7 +3,7 @@ import { Box, Chip, Link, Typography } from '@mui/material'
 import type { Compat } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { space } from '../theme/density.ts'
-import { compatOf, showCompatChip } from './compatChip.ts'
+import { compatOf, compatStatusLabel, showCompatChip } from './compatChip.ts'
 import { openPage } from './menu.ts'
 import { heading } from './paper.ts'
 import { useMods } from './store.ts'
@@ -42,22 +42,11 @@ function useCompatRow(mod: Mod): Compat | undefined {
 const MORTAR_LIST = 'Mortar'
 
 export function CompatChip({ mod }: { mod: Mod }) {
-  const { t } = useLingui()
   const row = useCompatRow(mod)
   if (!showCompatChip(row?.status)) {
     return null
   }
-  const labels: Record<string, string> = {
-    optional: t`Optional`,
-    unofficial: t`Unofficial`,
-    broken: t`Broken`,
-    obsolete: t`Obsolete`,
-    abandoned: t`Abandoned`,
-    superseded: t`Superseded`,
-    notRecommended: t`Not recommended`,
-  }
-  const status = (row?.status ?? '').toLowerCase()
-  const label = labels[status] ?? status
+  const label = compatStatusLabel(row?.status)
   return <Chip size="small" label={label} title={row?.summary || label} />
 }
 

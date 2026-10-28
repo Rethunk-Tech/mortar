@@ -106,11 +106,11 @@ function OldFilesCallout({
               size="small"
               variant="contained"
               color="error"
-              aria-label={t`Delete ${{ name: set.label }}'s old files`}
+              aria-label={t`Move ${{ name: set.label }}'s old files to the trash`}
               disabled={pending || locked}
               onClick={trash}
             >
-              {t`Delete`}
+              {t`Move to trash`}
             </Button>
           </LockedReason>
         </>
@@ -239,7 +239,7 @@ export const OldFilesCallouts = memo(function OldFilesCalloutsView({
           disabled={pending || locked}
           onClick={trashAll}
         >
-          {t`Delete all`}
+          {t`Move all to trash`}
         </Button>
       </LockedReason>
     </>

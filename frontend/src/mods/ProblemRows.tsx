@@ -5,6 +5,7 @@ import { useState } from 'react'
 import type { AssetConflict } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/framework/models.ts'
 import { useTab } from '../game/tab.ts'
 import { useReasonText } from '../i18n/reasonText.ts'
+import { useProfileLoader } from '../profiles/store.ts'
 import { space } from '../theme/density.ts'
 import { AssetMapDialog } from './AssetMapDialog.tsx'
 import { ConflictWhy } from './ConflictWhy.tsx'
@@ -71,6 +72,7 @@ function ProblemRow({ row, dismissed }: { row: Row; dismissed?: DismissedRow }) 
   const info = isInfoRow(row)
   const { text, note: authorNote } = useRowText()(row)
   const [why, setWhy] = useState(false)
+  const hasLoadOrder = useProfileLoader()?.order === true
   return (
     <Box
       sx={{
@@ -100,7 +102,7 @@ function ProblemRow({ row, dismissed }: { row: Row; dismissed?: DismissedRow }) 
           )}
         </Box>
         <Box sx={{ minWidth: 0 }}>
-          {row.kind === 'missing' ? (
+          {row.kind === 'missing' && hasLoadOrder ? (
             <Link
               component="button"
               color="inherit"

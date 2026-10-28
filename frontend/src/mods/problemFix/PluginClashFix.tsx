@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { SetModsEnabled } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { useProfiles } from '../../profiles/store.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import type { Problem } from '../lookup.ts'
 import { useMods } from '../store.ts'
@@ -28,7 +29,10 @@ export function PluginClashFix({
       losingRefs(copies ?? [], keep, useMods.getState().mods),
       false,
     )
-      .then(() => useMods.getState().load())
+      .then((result) => {
+        useProfiles.getState().replace(result.profile)
+        return useMods.getState().load()
+      })
       .catch(reportUnexpected)
   })
 }

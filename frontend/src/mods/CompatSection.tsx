@@ -3,6 +3,7 @@ import { Box, Link, Typography } from '@mui/material'
 import type { Compat } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { space } from '../theme/density.ts'
+import { compatStatusLabel } from './compatChip.ts'
 import { modId } from './lookup.ts'
 import { LinkedText } from './ModLinks.tsx'
 import { openPage } from './menu.ts'
@@ -55,7 +56,7 @@ function CompatInfoRow({
       <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
         <Typography sx={{ fontSize: 'medium.fontSize', flex: 1, minWidth: 0 }}>
           <LinkedText
-            text={`${row.name}: ${row.status}${summary}`}
+            text={`${row.name}: ${compatStatusLabel(row.status)}${summary}`}
             links={[{ name: row.name, key: row.key, id: row.id }]}
           />
         </Typography>
