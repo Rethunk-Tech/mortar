@@ -259,14 +259,8 @@ func (s *Service) Saves(ctx context.Context, game, profileID string) ([]Fit, err
 	wanted := map[mod.ID]bool{}
 	for i, in := range infos {
 		lacks := saves.Lacking(asProfileIDs(in.Used, mods), enabled, asIDs(dismissed[in.Folder]))
-		fits[i] = Fit{
-			Folder: in.Folder, Farm: in.Farm, Farmer: in.Farmer, Season: in.Season, Day: in.Day, Year: in.Year,
-			Played: in.Played, WhichFarm: in.WhichFarm, MillisecondsPlayed: in.MillisecondsPlayed, Money: in.Money,
-			Name: in.Name, PlayStyle: in.PlayStyle, GameVersion: in.GameVersion,
-			Missing: make([]Lack, len(lacks)), Unrecorded: in.Unrecorded,
-		}
-		for j, l := range lacks {
-			fits[i].Missing[j] = Lack{ID: l.ID, Name: l.ID.Local(), Disabled: l.Disabled}
+		fits[i] = fitOf(in, lacks)
+		for _, l := range lacks {
 			wanted[l.ID] = true
 		}
 		s.fillLast(game, &fits[i], present, enabled)
@@ -292,6 +286,11 @@ func (s *Service) Saves(ctx context.Context, game, profileID string) ([]Fit, err
 
 func fitFor(in saves.Info, have map[string]bool, dismissed []mod.ID) (Fit, bool) {
 	lacks := saves.Lacking(in.Used, have, dismissed)
+	return fitOf(in, lacks), len(lacks) > 0
+}
+
+// fitOf is the save in with the mods it lacks, named by id until describe names them.
+func fitOf(in saves.Info, lacks []saves.Lack) Fit {
 	fit := Fit{
 		Folder: in.Folder, Farm: in.Farm, Farmer: in.Farmer, Season: in.Season, Day: in.Day, Year: in.Year,
 		Played: in.Played, WhichFarm: in.WhichFarm, MillisecondsPlayed: in.MillisecondsPlayed, Money: in.Money,
@@ -301,7 +300,7 @@ func fitFor(in saves.Info, have map[string]bool, dismissed []mod.ID) (Fit, bool)
 	for i, l := range lacks {
 		fit.Missing[i] = Lack{ID: l.ID, Name: l.ID.Local(), Disabled: l.Disabled}
 	}
-	return fit, len(lacks) > 0
+	return fit
 }
 
 type described struct {
