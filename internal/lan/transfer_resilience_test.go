@@ -133,7 +133,11 @@ type flakyStore struct {
 
 func (f *flakyStore) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	key := r.URL.Path[strings.LastIndex(r.URL.Path, "/")+1:]
-	hit := f.hits[key]
+	hit, ok := f.hits[key]
+	if !ok {
+		http.NotFound(w, r)
+		return
+	}
 	n := int(hit.Add(1))
 	if refused, _ := f.refuse.Load().(string); refused == key {
 		http.Error(w, "no", http.StatusForbidden)
