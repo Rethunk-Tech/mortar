@@ -9,6 +9,7 @@ import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { modByKey } from './lookup.ts'
 import { LinkedText } from './ModLinks.tsx'
 import { useMods } from './store.ts'
 
@@ -71,7 +72,7 @@ function CleanupRow({ cleanup }: { cleanup: CleanupItem }) {
   const { t } = useLingui()
   const reasonText = useReasonText()
   const remove = useMods((s) => s.remove)
-  const mod = useMods((s) => s.mods.find((candidate) => candidate.key === cleanup.key))
+  const mod = useMods((s) => modByKey(s.mods, cleanup.key))
   const who = cleanup.name.trim() === '' ? t`Unknown mod` : cleanup.name
   const reason = reasonText(
     cleanup.code,

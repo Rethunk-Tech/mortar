@@ -11,14 +11,14 @@ import { Tooltip } from '../shell/Tooltip.tsx'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
-import { sameId } from './lookup.ts'
+import { modById } from './lookup.ts'
 import { LinkedText } from './ModLinks.tsx'
 import { useSlowStartups } from './slowStartups.ts'
 import { useMods } from './store.ts'
 
 function SlowRow({ row }: { row: SlowStartup }) {
   const { t, i18n } = useLingui()
-  const mod = useMods((s) => s.mods.find((m) => sameId(m.id, row.id)))
+  const mod = useMods((s) => modById(s.mods, row.id))
   const setEnabled = useMods((s) => s.setEnabled)
   const time = formatDuration(row.ms, i18n.locale)
   let text = t`${{ name: row.name }} adds ${time} to startup`

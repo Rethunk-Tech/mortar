@@ -174,6 +174,36 @@ export const modStatusProblem = (result: Result | null, mod: Mod): boolean =>
 
 export const sameId = (a: string, b: string) => idKey(a) === idKey(b)
 
+// Rows subscribe to their mod by id or key, and a framework's list runs to hundreds of rows, so the mods are indexed
+// once per list (the first mod wins, as find did); a new list is a new index.
+const modIndexes = new WeakMap<
+  readonly Mod[],
+  { byId: Map<string, Mod>; byKey: Map<string, Mod> }
+>()
+
+function modIndex(mods: readonly Mod[]) {
+  let index = modIndexes.get(mods)
+  if (!index) {
+    index = { byId: new Map(), byKey: new Map() }
+    for (const m of mods) {
+      if (!index.byId.has(idKey(m.id))) {
+        index.byId.set(idKey(m.id), m)
+      }
+      if (!index.byKey.has(m.key)) {
+        index.byKey.set(m.key, m)
+      }
+    }
+    modIndexes.set(mods, index)
+  }
+  return index
+}
+
+export const modById = (mods: readonly Mod[], id: string): Mod | undefined =>
+  modIndex(mods).byId.get(idKey(id))
+
+export const modByKey = (mods: readonly Mod[], key: string): Mod | undefined =>
+  modIndex(mods).byKey.get(key)
+
 // A card is flagged for a broken mod, for each copy of a duplicate, and for the dependent of a missing dependency.
 export function concerns(p: Problem, mod: Mod): boolean {
   if (p.kind === 'broken') {

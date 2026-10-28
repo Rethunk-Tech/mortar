@@ -11,7 +11,7 @@ import { useTab } from '../../game/tab.ts'
 import { useLoader } from '../../loader/store.ts'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
-import type { Problem } from '../lookup.ts'
+import { modByKey, type Problem } from '../lookup.ts'
 import { useMods } from '../store.ts'
 import { openTarget } from '../storeView.ts'
 import { useUpdates } from '../updates.ts'
@@ -70,7 +70,7 @@ function LoadFailureAction({
   const { t } = useLingui()
   const failure = problem.loadFailure
   const [removing, setRemoving] = useState(false)
-  const owner = useMods((s) => s.mods.find((m) => failure.key !== '' && m.key === failure.key))
+  const owner = useMods((s) => (failure.key === '' ? undefined : modByKey(s.mods, failure.key)))
   const disable = () =>
     owner
       ? button(t`Disable`, () =>

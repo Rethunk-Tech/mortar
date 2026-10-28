@@ -29,7 +29,7 @@ import {
 } from './dependencyTree.ts'
 import { localId } from './dependents.ts'
 import { useDetail } from './detail.ts'
-import { problemsOf, sameId } from './lookup.ts'
+import { modById, problemsOf, sameId } from './lookup.ts'
 import { openPage } from './menu.ts'
 import { heading } from './paper.ts'
 import { useRequirementName } from './requirementName.ts'
@@ -128,7 +128,7 @@ const NodeRow = memo(
     const { t } = useLingui()
     const show = useDetail((s) => s.show)
     // Whether it is listed, not the mod itself: the store rebuilds every mod on each switch, and a node shows none of it.
-    const listed = useMods((s) => s.mods.some((m) => sameId(m.id, node.id)))
+    const listed = useMods((s) => modById(s.mods, node.id) !== undefined)
     const label = useRequirementName(node.id)
     const mark = node.required ? t`Required` : t`Optional`
     const already = t`already listed`
@@ -172,7 +172,7 @@ const NodeRow = memo(
               <Link
                 component="button"
                 onClick={() => {
-                  const mod = useMods.getState().mods.find((m) => sameId(m.id, node.id))
+                  const mod = modById(useMods.getState().mods, node.id)
                   if (mod) {
                     show(mod)
                   }
