@@ -1,7 +1,7 @@
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
-import { FolderOpen, Package } from 'lucide-react'
+import { FolderOpen } from 'lucide-react'
 import { memo, type RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   AddCustomGame,
@@ -22,6 +22,7 @@ import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { reloadGames, useGames } from './info.ts'
+import { loaderIcon } from './loaderIcons.ts'
 
 const CUSTOM_PREFIX = 'custom-'
 const MAX_NAME = 60
@@ -54,12 +55,15 @@ const LoaderChoice = memo(function LoaderChoiceView({
     >
       <TileGrid
         label={t`How it is modded`}
-        tiles={loaders.map((l) => ({
-          id: l.id,
-          icon: <Package size={32} />,
-          name: l.name,
-          hint: hints[l.id] ?? '',
-        }))}
+        tiles={loaders.map((l) => {
+          const Icon = loaderIcon(l.id)
+          return {
+            id: l.id,
+            icon: <Icon size={32} />,
+            name: l.name,
+            hint: hints[l.id] ?? '',
+          }
+        })}
         lastUsed={null}
         selected={loader}
         onChoose={onLoader}
