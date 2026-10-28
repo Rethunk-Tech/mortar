@@ -100,7 +100,7 @@ const ld = [appLd(), ...(crumbs ? [breadcrumbLd(crumbs)] : []), ...jsonLd]
       }
     </script>
     <script is:inline>document.documentElement.classList.remove('no-js')</script>
-    {ld.map((o) => <script type="application/ld+json" set:html={JSON.stringify(o)} />)}
+    {ld.map((o) => <script type="application/ld+json" set:html={JSON.stringify(o).replaceAll('<', '\\u003c')} />)}
     <slot name="head" />
   </head>
   <body id="top">

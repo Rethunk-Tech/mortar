@@ -223,7 +223,7 @@ const features = [
         }
       </ul>
     </div>
-    <script type="application/json" id="picker-games" set:html={JSON.stringify(picker)} />
+    <script type="application/json" id="picker-games" set:html={JSON.stringify(picker).replaceAll('<', '\\u003c')} />
   </div>
 
   <div class="wrap sec" id="features">

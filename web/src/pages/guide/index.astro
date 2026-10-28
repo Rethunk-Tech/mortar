@@ -105,7 +105,7 @@ if (loose.length > 0) {
   </div>
 
   <div class="about prose" set:html={guideIntro()} />
-  <script is:inline type="application/json" id="guide-anchors" set:html={JSON.stringify(guideAnchors())} />
+  <script is:inline type="application/json" id="guide-anchors" set:html={JSON.stringify(guideAnchors()).replaceAll('<', '\\u003c')} />
 </Page>
 
 <script>
