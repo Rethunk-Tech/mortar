@@ -18,6 +18,7 @@ import type {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/models.ts'
 import {
   CancelTransfer,
+  Inbox,
   Transfer,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/service.ts'
 import { formatBytes } from '../i18n/bytes.ts'
@@ -284,6 +285,11 @@ export function IncomingPrompt() {
   const chosenId = useRef('')
   const accept = async (profileId = '') => {
     if (!incoming) {
+      return
+    }
+    // Accepted or dismissed elsewhere (`mortar lan accept`) since it arrived: importing it again would make a copy.
+    if (!((await Inbox()) ?? []).some((a) => a.id === incoming.id)) {
+      removeFirst()
       return
     }
     chosenId.current = profileId
