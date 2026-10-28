@@ -13,6 +13,7 @@ import { ProblemsTab } from '../mods/ProblemsTab.tsx'
 import { RemoveDialog } from '../mods/parts.tsx'
 import { ConfigTab } from '../mods/typedConfig/ConfigTab.tsx'
 import { useConfigListLoaded } from '../mods/typedConfig/configList.ts'
+import { UndoAllConfirm } from '../mods/updateReview/UndoAllConfirm.tsx'
 import { entriesKey } from '../profiles/entriesKey.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { SavesTab } from '../saves/SavesTab.tsx'
@@ -97,6 +98,7 @@ export function ProfileWorkspace({ game, gameName }: { game: string; gameName: s
         {/* Mods and Problems both open these, so they live above either tab. */}
         <RemoveDialog />
         <DisableDialog />
+        <UndoAllConfirm />
         <DuplicateDialog profileName={name} />
       </ErrorBoundary>
     </Box>

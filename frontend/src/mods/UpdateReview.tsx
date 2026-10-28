@@ -23,7 +23,6 @@ import { keptUpdates } from './updateReview/kept.ts'
 import { loadAllDetails } from './updateReview/loadAll.ts'
 import { NeedsChoice } from './updateReview/NeedsChoice.tsx'
 import { SourceGroups } from './updateReview/SourceGroups.tsx'
-import { UndoAllConfirm } from './updateReview/UndoAllConfirm.tsx'
 import {
   listedBySource,
   needChoiceUpdates,
@@ -177,7 +176,6 @@ function UpdateReviewDialog({ profile }: { profile: Profile }) {
           <KeptGroup kept={keptUpdates(updates, profile)} mods={mods} />
         </Box>
       </AppDialog>
-      <UndoAllConfirm />
       <EverywhereDialog
         open={everywhereAll}
         game={gameId}

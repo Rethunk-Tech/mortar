@@ -183,7 +183,7 @@ let reviewedProfile = useProfiles.getState().openId
 useProfiles.subscribe((s) => {
   if (s.openId !== reviewedProfile) {
     reviewedProfile = s.openId
-    useUpdates.setState({ reviewing: false })
+    useUpdates.setState({ reviewing: false, updates: null })
   }
 })
 useSettings.subscribe(syncHourlyRecheck)

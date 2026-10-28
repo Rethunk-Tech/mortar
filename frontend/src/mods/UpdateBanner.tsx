@@ -14,6 +14,7 @@ import { offersNexusDownload } from './nexusMark.ts'
 import { accent } from './paper.ts'
 import { useMods } from './store.ts'
 import { EverywhereDialog } from './updateReview/EverywhereDialog.tsx'
+import { installedCaution } from './updateReview/wants.ts'
 import { useUpdates } from './updates.ts'
 
 export function UpdateBanner({ mod }: { mod: Mod }) {
@@ -91,11 +92,13 @@ export function UpdateBanner({ mod }: { mod: Mod }) {
             {t`Skip this update`}
           </Button>
         ) : null}
-        <OfflineGate reason={offline}>
-          <Button size="small" variant="outlined" onClick={() => setEverywhere(true)}>
-            {t`Update in all profiles that have it`}
-          </Button>
-        </OfflineGate>
+        {update && installedCaution(update) === '' ? (
+          <OfflineGate reason={offline}>
+            <Button size="small" variant="outlined" onClick={() => setEverywhere(true)}>
+              {t`Update in all profiles that have it`}
+            </Button>
+          </OfflineGate>
+        ) : null}
       </Box>
       <EverywhereDialog
         open={everywhere}

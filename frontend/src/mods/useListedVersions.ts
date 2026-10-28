@@ -32,6 +32,7 @@ function useNexusVersions(game: string, modId: number): Listed {
       state: 'ready',
       versions: files
         .filter((f) => f.category !== 'ARCHIVED')
+        .toSorted((a, b) => Date.parse(b.uploaded) - Date.parse(a.uploaded))
         .map((f) => ({
           version: f.version || f.name,
           fileId: f.fileId,
