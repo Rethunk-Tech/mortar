@@ -201,7 +201,16 @@ function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
     },
     {
       name: 'develop-game-code',
-      setup: (p) => tab(p, 'Develop'),
+      // Game code… is in the header only while the open profile has a project; an earlier case may have opened one
+      // without, so this opens the first profile the Develop tab lists a project in.
+      setup: async (p) => {
+        await tab(p, 'Develop')
+        const game = p.getByRole('button', { name: 'Game code…' })
+        if (!(await game.isVisible())) {
+          await p.getByRole('button', { name: 'Open profile' }).first().click()
+          await tab(p, 'Develop')
+        }
+      },
       run: (p) => p.getByRole('button', { name: 'Game code…' }).click(),
     },
     {
