@@ -769,17 +769,8 @@ func (s *Service) start(parent context.Context, gameID, profileID, installID, pr
 		}
 	}
 	key := keyOf(sl)
-	// preparing is claimed under the same lock as the check, so two Starts of one install cannot both pass it.
-	s.mu.Lock()
-	cur := s.status[key]
-	_, busy := s.preparing[key]
-	busy = busy || cur.State.Active()
-	if !busy {
-		s.preparing[key] = profileID
-	}
-	s.mu.Unlock()
-	if busy {
-		return usererr.Wrap(usererr.Busy, fmt.Errorf("%s is already running", g.Name()))
+	if err := s.claimPreparing(g, key, profileID); err != nil {
+		return err
 	}
 	dir, modsDir, err := s.target(g, profileID, installID)
 	if err == nil {
@@ -873,16 +864,8 @@ func (s *Service) StartVanilla(parent context.Context, gameID string, direct boo
 	}
 	sl := s.selectedSlot(g)
 	key := keyOf(sl)
-	s.mu.Lock()
-	cur := s.status[key]
-	_, busy := s.preparing[key]
-	busy = busy || cur.State.Active()
-	if !busy {
-		s.preparing[key] = ""
-	}
-	s.mu.Unlock()
-	if busy {
-		return usererr.Wrap(usererr.Busy, fmt.Errorf("%s is already running", g.Name()))
+	if err := s.claimPreparing(g, key, ""); err != nil {
+		return err
 	}
 	dir, err := game.InstallDir(s.home, s.settings.Get(), g.ID())
 	if err != nil {
@@ -948,6 +931,22 @@ func (s *Service) PreviewCommand(gameID, profileID, options, prefix, env string)
 	preview.Env = cmd.Env
 	preview.Argv = append([]string{cmd.Name}, cmd.Args...)
 	return preview
+}
+
+// claimPreparing marks the install key as preparing a launch of profileID, refusing one that is preparing or running
+// already. The check and the claim share the lock, so two starts of one install cannot both pass.
+func (s *Service) claimPreparing(g game.Game, key, profileID string) error {
+	s.mu.Lock()
+	_, busy := s.preparing[key]
+	busy = busy || s.status[key].State.Active()
+	if !busy {
+		s.preparing[key] = profileID
+	}
+	s.mu.Unlock()
+	if busy {
+		return usererr.Wrap(usererr.Busy, fmt.Errorf("%s is already running", g.Name()))
+	}
+	return nil
 }
 
 func (s *Service) donePreparing(g game.Game) {
