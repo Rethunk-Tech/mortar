@@ -116,24 +116,13 @@ func snapshotHash(data historyFileData, id string) string {
 // DiffSnapshots compares two entry lists and optional config maps keyed by entry identity.
 func DiffSnapshots(a, b string, before, after []Entry, cfgA, cfgB map[string]map[string][]byte) HistoryDiff {
 	out := HistoryDiff{A: a, B: b}
-	bMap := indexEntries(before)
-	aMap := indexEntries(after)
-	seen := map[string]struct{}{}
-	for id, ae := range aMap {
-		seen[id] = struct{}{}
-		be, ok := bMap[id]
-		if !ok {
-			out.Added = append(out.Added, diffMod(ae))
-			continue
-		}
-		appendEntryPair(&out, uniqueIDOf(ae, id), be, ae, cfgA[id], cfgB[id])
-	}
-	for id, be := range bMap {
-		if _, ok := seen[id]; ok {
-			continue
-		}
+	diffEntries(before, after, func(ae Entry) {
+		out.Added = append(out.Added, diffMod(ae))
+	}, func(be Entry) {
 		out.Removed = append(out.Removed, diffMod(be))
-	}
+	}, func(id string, be, ae Entry) {
+		appendEntryPair(&out, uniqueIDOf(ae, id), be, ae, cfgA[id], cfgB[id])
+	})
 	slices.SortFunc(out.Added, cmpDiffMod)
 	slices.SortFunc(out.Removed, cmpDiffMod)
 	slices.SortFunc(out.Versions, cmpDiffVersion)

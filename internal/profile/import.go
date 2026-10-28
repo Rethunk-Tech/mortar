@@ -298,14 +298,7 @@ func scanModsOf(game, modsDir string) ([]gameModSlot, error) {
 }
 
 func scanGameMods(modsDir string) ([]gameModSlot, error) {
-	entries, err := os.ReadDir(modsDir)
-	if errors.Is(err, fs.ErrNotExist) {
-		return nil, nil
-	}
-	if err != nil {
-		return nil, err
-	}
-	root, err := fsx.EvalSymlinks(modsDir)
+	entries, root, err := readModsDir(modsDir)
 	if err != nil {
 		return nil, err
 	}
@@ -323,6 +316,20 @@ func scanGameMods(modsDir string) ([]gameModSlot, error) {
 	}
 	resolveDuplicates(slots)
 	return slots, nil
+}
+
+// readModsDir lists a game's mods folder with its real path, so a child can be checked to sit inside it; a missing
+// folder lists nothing.
+func readModsDir(modsDir string) (entries []os.DirEntry, root string, err error) {
+	entries, err = os.ReadDir(modsDir)
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil, "", nil
+	}
+	if err != nil {
+		return nil, "", err
+	}
+	root, err = fsx.EvalSymlinks(modsDir)
+	return entries, root, err
 }
 
 func previewMod(f gameModFolder, m smapimanifest.Mod) GameModPreview {

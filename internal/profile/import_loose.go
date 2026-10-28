@@ -2,7 +2,6 @@ package profile
 
 import (
 	"context"
-	"errors"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -104,14 +103,7 @@ func switchStagedOn(staged string, kinds, keepWhole []string) (off map[string]bo
 // scanLooseMods lists what a folder game's mods folder holds at its top level as one slot each: a mod file, or a
 // folder that holds one at any depth. Links and the game's own files (its Resource.cfg) are not mods.
 func scanLooseMods(modsDir string, kinds []string) ([]gameModSlot, error) {
-	entries, err := os.ReadDir(modsDir)
-	if errors.Is(err, fs.ErrNotExist) {
-		return nil, nil
-	}
-	if err != nil {
-		return nil, err
-	}
-	root, err := fsx.EvalSymlinks(modsDir)
+	entries, root, err := readModsDir(modsDir)
 	if err != nil {
 		return nil, err
 	}

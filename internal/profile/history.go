@@ -1092,46 +1092,44 @@ func appendHistory(dir string, ev HistoryEvent, after []Entry, keep int) (Histor
 
 // ModDiffCounts reports how many mods were added, removed, or updated between two snapshots.
 func ModDiffCounts(before, after []Entry) (added, removed, updated int) {
-	bMap := indexEntries(before)
-	aMap := indexEntries(after)
-	seen := map[string]struct{}{}
-	for id, ae := range aMap {
-		seen[id] = struct{}{}
-		be, ok := bMap[id]
-		if !ok {
-			added++
-			continue
-		}
+	diffEntries(before, after, func(Entry) { added++ }, func(Entry) { removed++ }, func(_ string, be, ae Entry) {
 		if be.Key != ae.Key || entryVersion(be) != entryVersion(ae) {
 			updated++
 		}
-	}
-	for id := range bMap {
-		if _, ok := seen[id]; ok {
-			continue
-		}
-		if _, ok := aMap[id]; !ok {
-			removed++
-		}
-	}
+	})
 	return added, removed, updated
 }
 
-func classifyHistory(before, after []Entry) HistoryEvent {
+// diffEntries calls added for each entry only after holds, removed for each only before holds, and both for each
+// entry identity the two share, in no particular order.
+func diffEntries(before, after []Entry, added, removed func(Entry), both func(id string, be, ae Entry)) {
 	bMap := indexEntries(before)
 	aMap := indexEntries(after)
+	for id, ae := range aMap {
+		if be, ok := bMap[id]; ok {
+			both(id, be, ae)
+		} else {
+			added(ae)
+		}
+	}
+	for id, be := range bMap {
+		if _, ok := aMap[id]; !ok {
+			removed(be)
+		}
+	}
+}
+
+func classifyHistory(before, after []Entry) HistoryEvent {
 	var added, removed, updated, enabled, disabled, pinned, tagged, noted int
 	var from, to, name, tag string
 	pinChange, tagChange := ChangePinned, ChangeTags
-	seen := map[string]struct{}{}
-	for id, ae := range aMap {
-		seen[id] = struct{}{}
-		be, ok := bMap[id]
-		if !ok {
-			added++
-			name = entryName(ae)
-			continue
-		}
+	diffEntries(before, after, func(ae Entry) {
+		added++
+		name = entryName(ae)
+	}, func(be Entry) {
+		removed++
+		name = entryName(be)
+	}, func(_ string, be, ae Entry) {
 		switch {
 		case be.Key != ae.Key || entryVersion(be) != entryVersion(ae):
 			updated++
@@ -1166,16 +1164,7 @@ func classifyHistory(before, after []Entry) HistoryEvent {
 			noted++
 			name = entryName(ae)
 		}
-	}
-	for id := range bMap {
-		if _, ok := seen[id]; ok {
-			continue
-		}
-		if _, ok := aMap[id]; !ok {
-			removed++
-			name = entryName(bMap[id])
-		}
-	}
+	})
 	count := added + removed + updated + enabled + disabled + pinned + tagged + noted
 	switch {
 	case count > 1:
