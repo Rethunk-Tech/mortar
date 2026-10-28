@@ -171,3 +171,15 @@ func TestAnAssetRecordCannotNameAPathOutsideTheProject(t *testing.T) {
 		t.Error("a manifest version with path parts was packed")
 	}
 }
+
+func TestAnAssetProjectUploadsUnderItsRecordsTeam(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	const game = "lethal-company"
+	dir := assetDir(t, `{"kind":"sounds","name":"Quacks","team":"Ab"}`)
+	if _, err := svc.Add(t.Context(), game, dir, ""); err != nil {
+		t.Fatal(err)
+	}
+	if team, err := svc.projectTeam(game, dir); err != nil || team != "Ab" {
+		t.Errorf("team = %q, %v", team, err)
+	}
+}

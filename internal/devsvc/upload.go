@@ -16,6 +16,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/secret"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -61,11 +62,7 @@ func (s *Service) projectTeam(gameID, dir string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	csproj, ok := csprojOf(p.Dir)
-	if !ok {
-		return "", usererr.Wrap(usererr.NotFound, errors.New("the project file is missing"))
-	}
-	info, err := readInfo(p.Dir, csproj)
+	info, err := projectInfo(p)
 	if err != nil {
 		return "", err
 	}
@@ -73,6 +70,22 @@ func (s *Service) projectTeam(gameID, dir string) (string, error) {
 		return "", usererr.Wrap(usererr.Invalid, errors.New("the project names no Thunderstore team"))
 	}
 	return info.Team, nil
+}
+
+// projectInfo reads the team and categories an upload needs: from the record of an asset project, else the project file.
+func projectInfo(p settings.DevProject) (ProjectInfo, error) {
+	if p.Kind != "" {
+		rec, ok := readAssetRecord(p.Dir)
+		if !ok {
+			return ProjectInfo{}, usererr.Wrap(usererr.NotFound, errors.New("the project's record is missing"))
+		}
+		return assetInfo(p.Dir, rec), nil
+	}
+	csproj, ok := csprojOf(p.Dir)
+	if !ok {
+		return ProjectInfo{}, usererr.Wrap(usererr.NotFound, errors.New("the project file is missing"))
+	}
+	return readInfo(p.Dir, csproj)
 }
 
 type uploadPart struct {
@@ -102,11 +115,7 @@ func (s *Service) UploadThunderstore(ctx context.Context, gameID, dir string) (s
 	if zipPath == "" {
 		return "", usererr.Wrap(usererr.NotFound, errors.New("pack the mod first"))
 	}
-	csproj, ok := csprojOf(p.Dir)
-	if !ok {
-		return "", usererr.Wrap(usererr.NotFound, errors.New("the project file is missing"))
-	}
-	info, err := readInfo(p.Dir, csproj)
+	info, err := projectInfo(p)
 	if err != nil {
 		return "", err
 	}
