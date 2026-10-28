@@ -46,25 +46,15 @@ func ArtURL(appID string) string { return artPrefix + appID }
 // IconURL is where the frontend loads Steam's square icon for appID from; ArtMiddleware serves it.
 func IconURL(appID string) string { return iconPrefix + appID }
 
-// Game is what a game needs code for: its identity and install folder. How it is modded and started belongs to its
+// Game is what a game needs code for: its identity (where its process and mods come from) and install folder. How it is modded and started belongs to its
 // loaders and stores.
 type Game interface {
-	Identity
-	Installs
-}
-
-// Identity names a game and where its process and mods come from.
-type Identity interface {
 	ID() string
 	Name() string
 	SteamAppID() string
 	ModSources() []string
 	// GameProcesses are the game's own executables; any of them running blocks a loader install, whoever started it.
 	GameProcesses() []string
-}
-
-// Installs finds and validates a game's install folder.
-type Installs interface {
 	// ValidInstall reports why dir is not this game's install folder, or nil.
 	ValidInstall(dir string) error
 }
