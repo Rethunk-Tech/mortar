@@ -15,7 +15,7 @@ import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
 import { useLoaded } from '../../shell/useLoaded.ts'
 import { space } from '../../theme/density.ts'
 import { PrefSelect } from '../PrefControls.tsx'
-import { persist } from '../persist.ts'
+import { saveSetting } from '../persist.ts'
 import { SettingRow } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import { useSettingsMatch } from '../useSettingsSearch.ts'
@@ -52,7 +52,6 @@ function LoaderRow({
   onVersion: (v: string) => void
 }) {
   const { t, i18n } = useLingui()
-  const fail = t`Could not save that setting`
   const game = useCurrentGame()
   const pin = useSettings((s) => s.loaderPrefs?.[`${game}/${loader.id}`]?.pin ?? '')
   const status = useLoader((s) => s.status)
@@ -129,7 +128,7 @@ function LoaderRow({
     })
   }
   const savePin = (value: string) => {
-    persist(() => SetByKey(`${loader.id}Pin`, value === LATEST ? '' : value, game), fail)
+    saveSetting(() => SetByKey(`${loader.id}Pin`, value === LATEST ? '' : value, game))
   }
   return (
     <>

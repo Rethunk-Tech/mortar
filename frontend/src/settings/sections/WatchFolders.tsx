@@ -3,7 +3,7 @@ import { Box, Button, Typography } from '@mui/material'
 import { PickFolder } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import { SetByKey } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { space } from '../../theme/density.ts'
-import { persist } from '../persist.ts'
+import { saveSetting } from '../persist.ts'
 import { SettingRow } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import { separator, split } from './pathList.ts'
@@ -12,14 +12,13 @@ function WatchFolders() {
   const { t } = useLingui()
   const folders = split(useSettings((s) => s.watchFolders ?? ''))
   const save = (next: string[]) => SetByKey('watchFolders', next.join(separator), '')
-  const failed = t`Could not save that setting`
   const add = () =>
-    persist(async () => {
+    saveSetting(async () => {
       const dir = await PickFolder(t`Folder to watch`)
       if (dir && !folders.includes(dir)) {
         await save([...folders, dir])
       }
-    }, failed)
+    })
   return (
     <SettingRow
       label={t`Also watch these folders`}
@@ -34,7 +33,7 @@ function WatchFolders() {
             <Button
               size="small"
               aria-label={t`Remove ${{ name: dir }}`}
-              onClick={() => persist(() => save(folders.filter((d) => d !== dir)), failed)}
+              onClick={() => saveSetting(() => save(folders.filter((d) => d !== dir)))}
             >
               {t`Remove`}
             </Button>

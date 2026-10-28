@@ -32,7 +32,7 @@ import { PAD_FOCUS } from '../../theme/theme.ts'
 import { reportError, reportUnexpected } from '../../toasts/report.ts'
 import { PrefSegmented, PrefSelect } from '../PrefControls.tsx'
 import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
-import { persist } from '../persist.ts'
+import { saveSetting } from '../persist.ts'
 import { Searchable, SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import { accentColour, isAccent, SYSTEM_ACCENT, useSystemAccent } from '../theme.ts'
@@ -88,7 +88,7 @@ function DefaultSort() {
         value={`${stored.column}:${stored.dir}`}
         onChange={(v) => {
           const [column = 'name', dir = 'asc'] = v.split(':')
-          persist(() => SetListSort(column, dir), t`Could not save that setting`)
+          saveSetting(() => SetListSort(column, dir))
         }}
         options={options}
         label={t`Default sort`}
@@ -129,7 +129,7 @@ function FontPicker() {
           onOpen={loadFamilies}
           value={font === '' ? null : font}
           onChange={(_, family) => {
-            persist(() => SetByKey('font', family ?? '', ''), t`Could not save that setting`)
+            saveSetting(() => SetByKey('font', family ?? '', ''))
           }}
           // Each face is drawn in itself; content-visibility lays out, and so loads, only the faces in view.
           renderOption={(props, family) => {
@@ -156,9 +156,7 @@ function FontPicker() {
         <PrefSelect
           label={t`Size`}
           value={String(uiScale || DEFAULT_UI_SCALE)}
-          onChange={(v) =>
-            persist(() => SetByKey('uiScale', v, ''), t`Could not save that setting`)
-          }
+          onChange={(v) => saveSetting(() => SetByKey('uiScale', v, ''))}
           options={UI_SCALES.map((n) => ({ value: n, label: `${n}%` }))}
         />
       </SettingRow>

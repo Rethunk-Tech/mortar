@@ -5,7 +5,7 @@ import { ShowLogSource } from '../../../bindings/github.com/Rethunk-Tech/mortar/
 import { sameSource, useHiddenSources } from '../../console/hiddenSources.ts'
 import { useCurrentGame } from '../../nav/currentGame.ts'
 import { space } from '../../theme/density.ts'
-import { persist } from '../persist.ts'
+import { saveSetting } from '../persist.ts'
 import { Searchable, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import { useSettingsRelevant } from '../useSettingsSearch.ts'
@@ -96,10 +96,7 @@ export function HiddenLogSources() {
                   sx={{ flexShrink: 0 }}
                   aria-label={t`Show ${{ name: h.label || h.source }} again`}
                   onClick={() =>
-                    persist(
-                      () => ShowLogSource(game, h.source, h.text ?? '', h.object ?? ''),
-                      t`Could not save that setting`,
-                    )
+                    saveSetting(() => ShowLogSource(game, h.source, h.text ?? '', h.object ?? ''))
                   }
                 >
                   {t`Show again`}

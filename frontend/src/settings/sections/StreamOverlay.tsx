@@ -16,7 +16,7 @@ import { space } from '../../theme/density.ts'
 import { reportError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { PrefSwitch } from '../PrefControls.tsx'
-import { persist } from '../persist.ts'
+import { saveSetting } from '../persist.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import {
@@ -263,17 +263,7 @@ function OverlayRegenDialog({
   )
 }
 
-function OverlayConnection({
-  port,
-  token,
-  push,
-  fail,
-}: {
-  port: number
-  token: string
-  push: Push
-  fail: string
-}) {
+function OverlayConnection({ port, token, push }: { port: number; token: string; push: Push }) {
   const { t } = useLingui()
   const copied = t`Copied`
   const [draft, setDraft] = useState(String(port))
@@ -293,7 +283,7 @@ function OverlayConnection({
     }
     setPortError(false)
     if (n !== port) {
-      persist(() => SetOverlayPort(n), fail)
+      saveSetting(() => SetOverlayPort(n))
     }
   }
   return (
@@ -366,12 +356,10 @@ function OverlayConnection({
         onClose={() => setConfirm(false)}
         onConfirm={() => {
           setConfirm(false)
-          persist(
-            () =>
-              RegenerateOverlayToken().then(() => {
-                push({ kind: 'success', title: t`Token regenerated` })
-              }),
-            fail,
+          saveSetting(() =>
+            RegenerateOverlayToken().then(() => {
+              push({ kind: 'success', title: t`Token regenerated` })
+            }),
           )
         }}
       />
@@ -423,7 +411,6 @@ export function StreamOverlay({ game }: { game: string }) {
   const port = useSettings((s) => s.overlayPort)
   const token = useSettings((s) => s.overlayToken)
   const push = useToasts((s) => s.push)
-  const fail = t`Could not save that setting`
   const idle = t`Load a save to see values`
   const wait = t`Start the game to see values`
   const copied = t`Copied`
@@ -439,7 +426,7 @@ export function StreamOverlay({ game }: { game: string }) {
       >
         <PrefSwitch
           checked={enabled}
-          onChange={(on) => persist(() => SetOverlayEnabled(on), fail)}
+          onChange={(on) => saveSetting(() => SetOverlayEnabled(on))}
           label={t`Stream overlay`}
         />
       </SettingRow>
@@ -463,7 +450,7 @@ export function StreamOverlay({ game }: { game: string }) {
           <OverlayHowTo copied={copied} />
         </Box>
       ) : null}
-      {enabled ? <OverlayConnection port={port} token={token} push={push} fail={fail} /> : null}
+      {enabled ? <OverlayConnection port={port} token={token} push={push} /> : null}
     </SettingsSection>
   )
 }

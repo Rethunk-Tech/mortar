@@ -6,7 +6,7 @@ import {
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { useCurrentGame } from '../../nav/currentGame.ts'
 import { space } from '../../theme/density.ts'
-import { persist } from '../persist.ts'
+import { saveSetting } from '../persist.ts'
 import { SettingRow } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 
@@ -32,9 +32,7 @@ function HiddenMods() {
             <Typography sx={{ minWidth: 160 }}>{h.name || h.id}</Typography>
             <Button
               size="small"
-              onClick={() =>
-                persist(() => UnhideBrowseMod(game, h.source, h.id), t`Could not save that setting`)
-              }
+              onClick={() => saveSetting(() => UnhideBrowseMod(game, h.source, h.id))}
             >
               {t`Unhide`}
             </Button>
@@ -43,12 +41,7 @@ function HiddenMods() {
         {authors.map((a) => (
           <Box key={`author:${a}`} sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
             <Typography sx={{ minWidth: 160 }}>{t`Everything by ${a}`}</Typography>
-            <Button
-              size="small"
-              onClick={() =>
-                persist(() => UnhideBrowseAuthor(game, a), t`Could not save that setting`)
-              }
-            >
+            <Button size="small" onClick={() => saveSetting(() => UnhideBrowseAuthor(game, a))}>
               {t`Unhide`}
             </Button>
           </Box>

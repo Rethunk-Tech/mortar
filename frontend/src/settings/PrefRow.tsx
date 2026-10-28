@@ -15,7 +15,7 @@ import {
   PrefSwitch,
   PrefText,
 } from './PrefControls.tsx'
-import { persist } from './persist.ts'
+import { saveSetting } from './persist.ts'
 import { choiceStyle, prefControl } from './prefControl.ts'
 import { prefCopy } from './prefCopy.ts'
 import { specByKey, usePrefSpecs } from './prefSpecs.ts'
@@ -150,13 +150,12 @@ function PrefRow({
   hideTitle?: boolean
 }) {
   const { t, i18n } = useLingui()
-  const fail = t`Could not save that setting`
   const copy = prefCopy(i18n, spec.key)
   const scoped = useScopedPref(spec, game)
   if (spec.scope === 'game' && !game) {
     return null
   }
-  const save = (value: string) => persist(() => scoped.commit(value), fail)
+  const save = (value: string) => saveSetting(() => scoped.commit(value))
   const reason =
     disabledReason || (scoped.held ? t`Every profile of this game shares this one.` : '')
   const options = copy.options ?? (spec.values ?? []).map((value) => ({ value, label: value }))
@@ -177,7 +176,7 @@ function PrefRow({
     <ScopeNote
       own={scoped.own}
       gameLabel={options.find((o) => o.value === gameValue)?.label ?? gameValue}
-      onReset={() => game && persist(() => setOpenOverride(game, spec.key, undefined), fail)}
+      onReset={() => game && saveSetting(() => setOpenOverride(game, spec.key, undefined))}
     />
   ) : null
   return (

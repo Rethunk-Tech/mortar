@@ -4,7 +4,7 @@ import { Filter } from 'lucide-react'
 import { useState } from 'react'
 import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { PrefSegmented } from '../settings/PrefControls.tsx'
-import { persist } from '../settings/persist.ts'
+import { saveSetting } from '../settings/persist.ts'
 import { useSettings } from '../settings/store.ts'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { space } from '../theme/density.ts'
@@ -41,10 +41,7 @@ function BrowseShow({
   }
   const toggleStat = (stat: CardStat, on: boolean) => {
     const next = on ? [...cardStats, stat] : cardStats.filter((s) => s !== stat)
-    persist(
-      () => SetByKey('browseCardStats', formatCardStats(next), ''),
-      t`Could not save that setting`,
-    )
+    saveSetting(() => SetByKey('browseCardStats', formatCardStats(next), ''))
   }
   const choices: { value: Mode; label: string }[] = [
     { value: 'off', label: t`Off` },

@@ -42,7 +42,7 @@ import type { DevProject } from '../../bindings/github.com/Rethunk-Tech/mortar/i
 import { useNowValue } from '../i18n/useNow.ts'
 import { relativeWhen } from '../i18n/when.ts'
 import { LetterTile } from '../mods/LetterTile.tsx'
-import { persist } from '../settings/persist.ts'
+import { saveSetting } from '../settings/persist.ts'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { MenuAction, MenuCheck } from '../shell/MenuAction.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
@@ -250,10 +250,7 @@ function MissingCard({ game, project }: { game: string; project: DevProject }) {
       variant="compact"
       severity="warning"
       action={
-        <Button
-          size="small"
-          onClick={() => persist(() => Forget(game, project.dir), t`Could not save that setting`)}
-        >
+        <Button size="small" onClick={() => saveSetting(() => Forget(game, project.dir))}>
           {t`Remove from list`}
         </Button>
       }
@@ -308,12 +305,7 @@ function MoreMenu({
           <MenuCheck
             checked={Boolean(project.watch)}
             label={t`Build on save`}
-            onClick={() =>
-              persist(
-                () => SetWatch(game, project.dir, !project.watch),
-                t`Could not save that setting`,
-              )
-            }
+            onClick={() => saveSetting(() => SetWatch(game, project.dir, !project.watch))}
           />
         ) : null}
         {code ? <MenuRule /> : null}
@@ -391,7 +383,7 @@ function MoreMenu({
               reportError(t`Could not move the folder to the trash`),
             )
           } else {
-            persist(() => Forget(game, project.dir), t`Could not save that setting`)
+            saveSetting(() => Forget(game, project.dir))
           }
         }}
         checkbox={{

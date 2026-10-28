@@ -13,7 +13,7 @@ import { errorMessage, reportUnexpected } from '../../toasts/report.ts'
 import { showWhatsNew } from '../../updates/whatsNew.ts'
 import { PrefSwitch } from '../PrefControls.tsx'
 import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
-import { persist } from '../persist.ts'
+import { saveSetting } from '../persist.ts'
 import { usePrefValue } from '../prefValue.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
@@ -167,7 +167,6 @@ export function Updates() {
   const includeBetaReleases = useSettings((s) => s.includeBetaReleases)
   const includePrereleaseModVersions = useSettings((s) => s.includePrereleaseModVersions)
   const checkOnlyEnabledMods = useSettings((s) => s.checkOnlyEnabledMods)
-  const fail = t`Could not save that setting`
   return (
     <>
       <SettingsSection title={t`Mortar`}>
@@ -175,7 +174,7 @@ export function Updates() {
         <SettingRow label={t`Include beta releases`}>
           <PrefSwitch
             checked={includeBetaReleases}
-            onChange={(on) => persist(() => SetIncludeBetaReleases(on), fail)}
+            onChange={(on) => saveSetting(() => SetIncludeBetaReleases(on))}
             label={t`Include beta releases`}
           />
         </SettingRow>
@@ -195,14 +194,14 @@ export function Updates() {
         <SettingRow label={t`Check only enabled mods`}>
           <PrefSwitch
             checked={checkOnlyEnabledMods}
-            onChange={(on) => persist(() => SetCheckOnlyEnabledMods(on), fail)}
+            onChange={(on) => saveSetting(() => SetCheckOnlyEnabledMods(on))}
             label={t`Check only enabled mods`}
           />
         </SettingRow>
         <SettingRow label={t`Include pre-release mod versions`}>
           <PrefSwitch
             checked={includePrereleaseModVersions}
-            onChange={(on) => persist(() => SetIncludePrereleaseModVersions(on), fail)}
+            onChange={(on) => saveSetting(() => SetIncludePrereleaseModVersions(on))}
             label={t`Include pre-release mod versions`}
           />
         </SettingRow>

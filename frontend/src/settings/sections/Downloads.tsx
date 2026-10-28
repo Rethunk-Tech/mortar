@@ -25,7 +25,7 @@ import { useLoaded } from '../../shell/useLoaded.ts'
 import { reportUnexpected, toastError } from '../../toasts/report.ts'
 import { PrefSelect, PrefSwitch } from '../PrefControls.tsx'
 import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
-import { persist, pickFolderSetting } from '../persist.ts'
+import { pickFolderSetting, saveSetting } from '../persist.ts'
 import { prefCopy } from '../prefCopy.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
@@ -69,9 +69,7 @@ function NxmDefaultProfile({ game, gameName }: { game: string; gameName: string 
     <SettingRow label={label} description={copy.description}>
       <PrefSelect
         value={options.some((o) => o.value === value) ? value : ''}
-        onChange={(v) =>
-          persist(() => SetByKey('nxmDefaultProfile', v, game), t`Could not save that setting`)
-        }
+        onChange={(v) => saveSetting(() => SetByKey('nxmDefaultProfile', v, game))}
         options={options}
         label={copy.label}
       />
@@ -240,9 +238,7 @@ function NxmLinks() {
         >
           <PrefSwitch
             checked={redirectOther}
-            onChange={(on) =>
-              persist(() => SetNxmRedirectOtherGames(on), t`Could not save that setting`)
-            }
+            onChange={(on) => saveSetting(() => SetNxmRedirectOtherGames(on))}
             label={t`Send other games' links to ${{ name: redirectName }}`}
           />
         </SettingRow>
@@ -271,9 +267,7 @@ function PreferredServer() {
     >
       <PrefSelect
         value={options.some((o) => o.value === preferred) ? preferred : ''}
-        onChange={(v) =>
-          persist(() => SetNexusPreferredDownloadServer(v), t`Could not save that setting`)
-        }
+        onChange={(v) => saveSetting(() => SetNexusPreferredDownloadServer(v))}
         options={options}
         label={t`Preferred download server`}
       />

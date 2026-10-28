@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Trust } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
-import { persist } from '../settings/persist.ts'
+import { saveSetting } from '../settings/persist.ts'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { buildProject, packProject, useTrustAsk } from './builds.ts'
 
@@ -22,10 +22,10 @@ export function TrustDialog() {
           return
         }
         close()
-        persist(async () => {
+        saveSetting(async () => {
           await Trust(ask.game, ask.dir)
           await (ask.pack ? packProject(ask.game, ask.dir) : buildProject(ask.game, ask.dir))
-        }, t`Could not save that setting`)
+        })
       }}
     />
   )

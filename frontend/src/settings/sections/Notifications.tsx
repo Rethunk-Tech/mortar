@@ -5,7 +5,7 @@ import { DisabledReason } from '../../shell/DisabledReason.tsx'
 import { space } from '../../theme/density.ts'
 import { PrefSwitch } from '../PrefControls.tsx'
 import { PrefKeys } from '../PrefRow.tsx'
-import { persist } from '../persist.ts'
+import { saveSetting } from '../persist.ts'
 import { specByKey, usePrefSpecs } from '../prefSpecs.ts'
 import { prefAsBool, prefRaw, usePrefValue } from '../prefValue.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
@@ -30,7 +30,6 @@ function ChannelSwitch({
   label: string
   disabledReason?: string
 }) {
-  const { t } = useLingui()
   const spec = specByKey(usePrefSpecs(), prefKey)
   const raw = useSettings((s) => (spec ? prefRaw(s, spec) : undefined))
   if (!spec) {
@@ -43,9 +42,7 @@ function ChannelSwitch({
           checked={prefAsBool(raw, spec)}
           label={label}
           disabled={disabledReason !== ''}
-          onChange={(on) =>
-            persist(() => SetByKey(prefKey, String(on), ''), t`Could not save that setting`)
-          }
+          onChange={(on) => saveSetting(() => SetByKey(prefKey, String(on), ''))}
         />
       </DisabledReason>
     </Box>

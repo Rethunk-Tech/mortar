@@ -5,7 +5,7 @@ import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { DependencyKindDialog } from '../develop/DependencyKindDialog.tsx'
 import { DETAILS_HOST_SX } from '../mods/panelWidth.ts'
-import { persist } from '../settings/persist.ts'
+import { saveSetting } from '../settings/persist.ts'
 import { useOfflineEmpty } from '../shell/offlineText.ts'
 import { space } from '../theme/density.ts'
 import { BrowseBody, ResultFooter } from './BrowseBody.tsx'
@@ -159,13 +159,10 @@ function useBrowseHandlers(
   )
   const onModes = useCallback(
     (next: BrowseModes) => {
-      persist(
-        () => SetByKey('browseFilters', formatModes(next), game),
-        t`Could not save that setting`,
-      )
+      saveSetting(() => SetByKey('browseFilters', formatModes(next), game))
       setPage(FIRST_PAGE)
     },
-    [game, t, setPage],
+    [game, setPage],
   )
   return { onSource, onText, onFilter, onModes }
 }

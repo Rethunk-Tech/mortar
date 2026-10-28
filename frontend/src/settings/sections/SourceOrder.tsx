@@ -9,7 +9,7 @@ import { IconAction } from '../../shell/IconAction.tsx'
 import { useLoaded } from '../../shell/useLoaded.ts'
 import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
-import { persist } from '../persist.ts'
+import { saveSetting } from '../persist.ts'
 import { SettingRow } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import { useSettingsRelevant } from '../useSettingsSearch.ts'
@@ -46,16 +46,11 @@ function SourceOrder() {
     if (item) {
       next.splice(to, 0, item)
     }
-    persist(
-      () => SetByKey('sourceOrder', next.map((s) => s.id).join(','), game),
-      t`Could not save that setting`,
-    )
+    saveSetting(() => SetByKey('sourceOrder', next.map((s) => s.id).join(','), game))
   }
   const toggle = (id: string, on: boolean) =>
-    persist(
-      () =>
-        SetByKey('sourcesOff', (on ? off.filter((o) => o !== id) : [...off, id]).join(','), game),
-      t`Could not save that setting`,
+    saveSetting(() =>
+      SetByKey('sourcesOff', (on ? off.filter((o) => o !== id) : [...off, id]).join(','), game),
     )
   const searchable = list.filter((s) => s.unavailable === '' && !off.includes(s.id))
   return (

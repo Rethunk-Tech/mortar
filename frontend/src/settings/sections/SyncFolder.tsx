@@ -3,15 +3,14 @@ import { Box, Button, Typography } from '@mui/material'
 import { SetByKey } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { DROPBOX, SYNCTHING } from '../../brand/productNames.ts'
 import { space } from '../../theme/density.ts'
-import { persist, pickFolderSetting } from '../persist.ts'
+import { pickFolderSetting, saveSetting } from '../persist.ts'
 import { SettingRow } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 
 export function SyncFolder() {
   const { t } = useLingui()
   const folder = useSettings((s) => s.syncFolder ?? '')
-  const save = (dir: string) =>
-    persist(() => SetByKey('syncFolder', dir, ''), t`Could not save that setting`)
+  const save = (dir: string) => saveSetting(() => SetByKey('syncFolder', dir, ''))
   return (
     <SettingRow
       label={t`Sync folder`}

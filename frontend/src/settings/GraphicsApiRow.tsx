@@ -2,7 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { useGameInfo } from '../games/info.ts'
 import { PrefSelect } from './PrefControls.tsx'
 import { ScopeNote } from './PrefRow.tsx'
-import { persist } from './persist.ts'
+import { saveSetting } from './persist.ts'
 import { SettingRow } from './SettingsSection.tsx'
 import { useScopedKey } from './scopedKey.ts'
 import { useSettings } from './store.ts'
@@ -33,13 +33,13 @@ export function GraphicsApiRow({ game }: { game: string }) {
         value={scoped.value}
         options={options}
         label={label}
-        onChange={(v) => persist(() => scoped.save(v), t`Could not save that setting`)}
+        onChange={(v) => saveSetting(() => scoped.save(v))}
       />
       {scoped.profileScope ? (
         <ScopeNote
           own={scoped.own}
           gameLabel={options.find((o) => o.value === scoped.gameValue)?.label ?? scoped.gameValue}
-          onReset={() => persist(scoped.reset, t`Could not save that setting`)}
+          onReset={() => saveSetting(scoped.reset)}
         />
       ) : null}
     </SettingRow>

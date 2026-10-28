@@ -3,7 +3,7 @@ import { Box, Checkbox, FormControlLabel } from '@mui/material'
 import { LEVELS, levelsFromFloor } from '../../console/filter.ts'
 import { useLevelNames } from '../../console/logHooks.ts'
 import { gamePrefs } from '../gamePrefs.ts'
-import { persist } from '../persist.ts'
+import { saveSetting } from '../persist.ts'
 import { SettingRow } from '../SettingsSection.tsx'
 import { useScopedKey } from '../scopedKey.ts'
 import { useSettings } from '../store.ts'
@@ -18,8 +18,7 @@ export function ConsoleLevels({ game }: { game: string }) {
     useSettings((s) => gamePrefs(s, game).consoleLevel),
   )
   const shown = levelsFromFloor(scoped.value)
-  const save = (next: typeof shown) =>
-    persist(() => scoped.save(next.join(',')), t`Could not save that setting`)
+  const save = (next: typeof shown) => saveSetting(() => scoped.save(next.join(',')))
   return (
     <SettingRow label={t`Levels shown`} description={t`The Console opens showing these levels`}>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end' }}>

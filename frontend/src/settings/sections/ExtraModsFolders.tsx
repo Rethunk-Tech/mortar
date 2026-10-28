@@ -9,7 +9,7 @@ import { installExtraFolder } from '../../downloads/autoInstall.ts'
 import { useCurrentGame } from '../../nav/currentGame.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { space } from '../../theme/density.ts'
-import { persist } from '../persist.ts'
+import { saveSetting } from '../persist.ts'
 import { SettingRow } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import { separator, split } from './pathList.ts'
@@ -24,20 +24,19 @@ function ExtraModsFolders() {
   const targets = useSettings((s) => s.games?.[game]?.extraModsProfiles)
   const profiles = useProfiles((s) => (s.game?.id === game ? s.profiles : null))
   const save = (next: string[]) => SetByKey('extraModsFolder', next.join(separator), game)
-  const failed = t`Could not save that setting`
   const add = () =>
-    persist(async () => {
+    saveSetting(async () => {
       const dir = await PickFolder(t`Extra mods folder`)
       if (dir && !folders.includes(dir)) {
         await save([...folders, dir])
         installExtraFolder(game, dir)
       }
-    }, failed)
+    })
   const target = (dir: string, profile: string) =>
-    persist(async () => {
+    saveSetting(async () => {
       await SetExtraModsProfile(game, dir, profile === OPEN ? '' : profile)
       installExtraFolder(game, dir)
-    }, failed)
+    })
   return (
     <SettingRow
       label={t`Extra mods folders`}
@@ -68,7 +67,7 @@ function ExtraModsFolders() {
             <Button
               size="small"
               aria-label={t`Remove ${{ name: dir }}`}
-              onClick={() => persist(() => save(folders.filter((d) => d !== dir)), failed)}
+              onClick={() => saveSetting(() => save(folders.filter((d) => d !== dir)))}
             >
               {t`Remove`}
             </Button>
