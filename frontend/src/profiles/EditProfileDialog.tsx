@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Tab, Tabs, TextField, Typography } from '@mui/material'
-import { type ReactNode, useEffect, useId, useState } from 'react'
+import { type ReactNode, useEffect, useId, useRef, useState } from 'react'
 import { PickImage } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { hasPickedCover, type StagedCover } from '../game/cover.ts'
@@ -308,8 +308,16 @@ export function EditProfileDialog(props: EditProfileDialogProps) {
   const [busy, setBusy] = useState(false)
   const [touched, setTouched] = useState(false)
   const edited = <A,>(set: (value: A) => void) => touching(setTouched, set)
+  // Fields fill once per opening: each save step hands back a new profile, and refilling then would wipe text a later
+  // step rejected.
+  const filledFor = useRef('')
   useEffect(() => {
-    if (open) {
+    if (!open) {
+      filledFor.current = ''
+      return
+    }
+    if (filledFor.current !== profile.id) {
+      filledFor.current = profile.id
       setTouched(false)
       setColor(profile.color ?? '')
       setIcon(profile.icon ?? '')
