@@ -37,6 +37,7 @@ import { sameValue } from '../shell/sameValue.ts'
 import { errorDetails, errorKind } from '../toasts/errorKind.ts'
 import { changeStillLatest, type HistoryActionState } from '../toasts/history.ts'
 import { type ToastInput, useToasts } from '../toasts/store.ts'
+import { reportEverywhereFailed } from './everywhereFailed.ts'
 import { displayName, isActive } from './totals.ts'
 
 // The binding types a Go slice as nullable; the store keeps it a list.
@@ -448,6 +449,7 @@ export function applyProgress(snap: Snapshot, p: Progress): Snapshot {
 
 // The first state seen, fetched or evented, is the silent baseline: items finished before startup are not news.
 export const initQueue = () => {
+  Events.On('queue:everywhereFailed', (event) => reportEverywhereFailed(event.data))
   Events.On('queue:progress', (event) => {
     useQueue.setState((cur) => ({ state: applyProgress(cur.state, event.data) }))
   })

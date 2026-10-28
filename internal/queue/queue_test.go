@@ -955,18 +955,58 @@ func TestEverywhereUpdateAppliesToOtherProfilesWhenTheDownloadFinishes(t *testin
 	f := newFixture(t)
 	var mu sync.Mutex
 	var calls []string
-	f.s.d.Everywhere = func(game, modKey string) error {
+	var emitted []EverywhereFailed
+	f.s.d.Emit = func(name string, data any) {
+		if name == EverywhereFailedEvent {
+			mu.Lock()
+			emitted = append(emitted, data.(EverywhereFailed))
+			mu.Unlock()
+		}
+	}
+	f.s.d.Everywhere = func(game, modKey string) []EverywhereFailure {
 		mu.Lock()
 		defer mu.Unlock()
 		calls = append(calls, game+"|"+modKey)
-		return nil
+		return []EverywhereFailure{{Profile: "B", Reason: "locked"}}
 	}
 	f.start()
 	f.add(Request{Kind: KindUpdate, Game: "stardew", Profile: "p1", ModID: 1, Version: "2.0", CurrentKey: "nexus-1-10", Everywhere: true})
 	f.wait("done", f.item(StateDone))
+	f.wait("failure reported", func(State) bool {
+		mu.Lock()
+		defer mu.Unlock()
+		return len(emitted) > 0
+	})
 	mu.Lock()
 	defer mu.Unlock()
 	if !slices.Equal(calls, []string{"stardew|nexus-1-10"}) {
 		t.Fatalf("other profiles updated by %q, want one call for nexus-1-10", calls)
+	}
+	if len(emitted) != 1 || emitted[0].Failed[0].Profile != "B" {
+		t.Fatalf("failure reported as %+v, want profile B", emitted)
+	}
+}
+
+func TestReplacesRemovesTheEntryInTheInstallsBatchOnceItLands(t *testing.T) {
+	t.Parallel()
+	f := newFixture(t)
+	var mu sync.Mutex
+	var calls []string
+	f.s.d.Remove = func(game, profileID, key string) error {
+		mu.Lock()
+		defer mu.Unlock()
+		calls = append(calls, game+"|"+profileID+"|"+key)
+		return nil
+	}
+	f.start()
+	got := f.add(Request{Kind: KindUpdate, Game: "stardew", Profile: "p1", ModID: 1, Version: "2.0", Replaces: "thunderstore-old-1.0.0"})
+	if got[0].BatchID == "" {
+		t.Fatal("a replacing install needs a history batch so its removal shares the event")
+	}
+	f.wait("done", f.item(StateDone))
+	mu.Lock()
+	defer mu.Unlock()
+	if !slices.Equal(calls, []string{"stardew|p1|thunderstore-old-1.0.0"}) {
+		t.Fatalf("removed %q", calls)
 	}
 }

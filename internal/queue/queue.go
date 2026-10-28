@@ -44,6 +44,21 @@ const ChangedEvent = "queue:changed"
 // ProgressEvent carries one download's transfer figures between full states, so a tick does not resend the queue.
 const ProgressEvent = "queue:progress"
 
+// EverywhereFailedEvent is emitted with an EverywhereFailed when a finished update could not reach some other profiles.
+const EverywhereFailedEvent = "queue:everywhereFailed"
+
+// EverywhereFailure is a profile an Everywhere update did not reach; Profile is empty when the whole attempt failed.
+type EverywhereFailure struct {
+	Profile string `json:"profile"`
+	Reason  string `json:"reason"`
+}
+
+// EverywhereFailed names the mod and the profiles its update did not reach.
+type EverywhereFailed struct {
+	Mod    string              `json:"mod"`
+	Failed []EverywhereFailure `json:"failed"`
+}
+
 // Progress is the part of an Item that changes on a progress tick.
 type Progress struct {
 	ID       string  `json:"id"`
@@ -185,6 +200,8 @@ type Item struct {
 	Change string `json:"change,omitempty"`
 	// Everywhere is the entry key whose mod the other profiles take the finished update for (Request.Everywhere).
 	Everywhere string `json:"everywhere,omitempty"`
+	// Replaces is the entry key removed from the profile once the item has installed (Request.Replaces).
+	Replaces string `json:"replaces,omitempty"`
 
 	// fallbackTried stops a Nexus item from asking GitHub again once its fallback was looked up.
 	fallbackTried bool
@@ -277,6 +294,9 @@ type Request struct {
 	// AsIs installs a Thunderstore package at exactly its Version and without its dependencies, as an imported list
 	// shared it; a dependency the list left out stays out.
 	AsIs bool `json:"asIs,omitempty"`
+	// Replaces is the key of the profile entry removed once this install lands, in the install's own history event so
+	// one Undo restores both.
+	Replaces string `json:"replaces,omitempty"`
 	// Everywhere makes an update, once installed, also update every other profile holding CurrentKey's mod.
 	Everywhere bool `json:"everywhere,omitempty"`
 	// Implicit creates the entry as one brought in for another mod, for a request that copies an entry's flag
@@ -366,9 +386,12 @@ type Deps struct {
 	// HistoryBatch records a completed install in the profile's bulk history event and returns that event's id; an
 	// empty batch closes it.
 	HistoryBatch func(game, profileID, batchID string) (string, error)
-	// Everywhere updates the other profiles holding modKey's mod to the newest version in the store; nil means none.
-	Everywhere func(game, modKey string) error
-	HTTP       *http.Client
+	// Everywhere updates the other profiles holding modKey's mod to the newest version in the store and returns the
+	// ones it could not change; nil means none.
+	Everywhere func(game, modKey string) []EverywhereFailure
+	// Remove drops an entry from a profile, for a request that replaces it; nil means the entry stays.
+	Remove func(game, profileID, key string) error
+	HTTP   *http.Client
 	// Dir is the data folder holding queue.json and the downloads folder; it must be on the store's volume.
 	Dir string
 	Now func() time.Time
@@ -787,6 +810,10 @@ func (s *Service) add(ctx context.Context, reqs []Request) ([]Item, error) {
 			Name: r.Name, FileName: r.FileName, Version: r.Version, State: StateQueued, key: r.key, expires: r.expires,
 			Package: r.Package, Source: r.Source, PackageFile: r.PackageFile, Digest: r.digest, URL: r.url, SizeKB: r.sizeKB, Picture: cmp.Or(r.picture, r.Picture), Category: r.category, Needs: r.needs, Repo: r.Repo, Tag: r.Tag, Asset: r.Asset, FallbackRepo: r.FallbackRepo, FallbackID: r.FallbackID, Latest: r.Latest, Exact: r.Exact, Disabled: slices.Clone(r.Disabled), Fomod: r.Fomod, fomod: r.Fomod, Overlay: r.Overlay,
 			Implicit: r.implicit(), FromLink: r.fromLink,
+		}
+		if r.Replaces != "" {
+			it.Replaces = r.Replaces
+			it.BatchID = cmp.Or(it.BatchID, ids.New())
 		}
 		if r.Everywhere && r.Kind == KindUpdate {
 			it.Everywhere = r.CurrentKey

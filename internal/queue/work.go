@@ -757,6 +757,12 @@ func (s *Service) finish(id string, err error, unverified bool, change string) e
 			change = bulk
 		}
 	}
+	// After the batch is recorded, so the removal joins the install's event.
+	if rec.Replaces != "" && s.d.Remove != nil {
+		if rmErr := s.d.Remove(rec.Game, rec.Profile, rec.Replaces); rmErr != nil {
+			log.Printf("queue: remove %s replaced by %s: %v", rec.Replaces, rec.Name, rmErr)
+		}
+	}
 	s.mu.Lock()
 	if cur := s.find(id); cur != nil {
 		cur.State, cur.Progress, cur.key, cur.staged, cur.Unverified, cur.Change = StateDone, 100, "", "", unverified, change
@@ -766,8 +772,11 @@ func (s *Service) finish(id string, err error, unverified bool, change string) e
 	s.recordHistory(rec, StateDone)
 	notifyDesktopDownload(rec.Name, rec.Game, rec.Profile, true)
 	if rec.Everywhere != "" && s.d.Everywhere != nil {
-		if err := s.d.Everywhere(rec.Game, rec.Everywhere); err != nil {
-			log.Printf("queue: update %s in the other profiles: %v", rec.Everywhere, err)
+		if failed := s.d.Everywhere(rec.Game, rec.Everywhere); len(failed) > 0 {
+			log.Printf("queue: update %s did not reach %d other profiles: %+v", rec.Everywhere, len(failed), failed)
+			if s.d.Emit != nil {
+				s.d.Emit(EverywhereFailedEvent, EverywhereFailed{Mod: rec.Name, Failed: failed})
+			}
 		}
 	}
 	if s.Landed != nil && rec.Profile != "" {

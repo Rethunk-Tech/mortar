@@ -52,6 +52,17 @@ type EverywhereResult struct {
 	Skipped []EverywhereSkip `json:"skipped"`
 }
 
+// Failed is the profiles the update meant to change and could not: running, or needing install choices.
+func (r EverywhereResult) Failed() []EverywhereSkip {
+	var out []EverywhereSkip
+	for _, sk := range r.Skipped {
+		if sk.Reason == skipLocked || sk.Reason == skipChoices {
+			out = append(out, sk)
+		}
+	}
+	return out
+}
+
 // PreviewEverywhere reports which profiles hold modKeyOrID (entry key, mod id, or the same Nexus mod)
 // and which are excluded because they are pinned, skip-version, or locked (game running).
 func (s *Store) PreviewEverywhere(game, modKeyOrID string) (EverywherePreview, error) {

@@ -137,6 +137,7 @@ func registerEvents() {
 	application.RegisterEvent[nexussvc.SSOState](nexussvc.SSOEvent)
 	application.RegisterEvent[queue.State](queue.ChangedEvent)
 	application.RegisterEvent[queue.Progress](queue.ProgressEvent)
+	application.RegisterEvent[queue.EverywhereFailed](queue.EverywhereFailedEvent)
 	application.RegisterEvent[nxmsvc.Arrival](nxmsvc.ArrivedEvent)
 	application.RegisterEvent[nxmsvc.Rejection](nxmsvc.RejectedEvent)
 	application.RegisterEvent[string](folderwatch.ModsFolderEvent)
@@ -701,9 +702,20 @@ func run() error {
 		Dir:            dataDir,
 		Changed:        func(st queue.State) { shareSvc.QueueChanged(st) },
 		HistoryBatch:   profiles.RecordHistoryBatch,
-		Everywhere: func(game, modKey string) error {
-			_, err := profiles.UpdateEverywhere(game, modKey, "latest")
+		Remove: func(game, profileID, key string) error {
+			_, err := profiles.RemoveEntry(game, profileID, key)
 			return err
+		},
+		Everywhere: func(game, modKey string) []queue.EverywhereFailure {
+			res, err := profiles.UpdateEverywhere(game, modKey, "latest")
+			var failed []queue.EverywhereFailure
+			for _, sk := range res.Failed() {
+				failed = append(failed, queue.EverywhereFailure{Profile: sk.Name, Reason: sk.Reason})
+			}
+			if err != nil {
+				failed = append(failed, queue.EverywhereFailure{Reason: err.Error()})
+			}
+			return failed
 		},
 		Parallel:     func() int { return store.Get().ParallelDownloads },
 		KeepArchives: func() bool { return store.Get().KeepDownloadArchives },
