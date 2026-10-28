@@ -67,8 +67,8 @@ func declaredIn(dir string) dotnet.Declared {
 }
 
 // pluginClashes finds GUIDs shipped by two or more of the enabled packages, sorted by GUID. deprecated holds the keys
-// of packages their author deprecated.
-func pluginClashes(pkgs []profile.PackageRef, deprecated map[string]bool) []PluginClash {
+// of packages their author deprecated, developed those the player builds, whose copy is the one kept.
+func pluginClashes(pkgs []profile.PackageRef, deprecated, developed map[string]bool) []PluginClash {
 	type owner struct {
 		pkg    profile.PackageRef
 		plugin string
@@ -93,15 +93,21 @@ func pluginClashes(pkgs []profile.PackageRef, deprecated map[string]bool) []Plug
 			continue
 		}
 		c := PluginClash{GUID: display[g]}
-		newest := 0
-		for i, o := range owners {
+		for _, o := range owners {
 			c.Copies = append(c.Copies, PluginCopy{Key: o.pkg.Key, ID: o.pkg.ID, Name: o.pkg.Name, Version: o.pkg.Version, PluginVersion: o.plugin})
-			cmp, ok := meta.CompareVersions(o.plugin, owners[newest].plugin)
-			if ok && (cmp > 0 || cmp == 0 && deprecated[owners[newest].pkg.Key] && !deprecated[o.pkg.Key]) {
+		}
+		pool := owners
+		if own := slices.DeleteFunc(slices.Clone(owners), func(o owner) bool { return !developed[o.pkg.Key] }); len(own) > 0 {
+			pool = own
+		}
+		newest := 0
+		for i, o := range pool {
+			cmp, ok := meta.CompareVersions(o.plugin, pool[newest].plugin)
+			if ok && (cmp > 0 || cmp == 0 && deprecated[pool[newest].pkg.Key] && !deprecated[o.pkg.Key]) {
 				newest = i
 			}
 		}
-		c.Keep = owners[newest].pkg.Key
+		c.Keep = pool[newest].pkg.Key
 		slices.SortFunc(c.Copies, func(a, b PluginCopy) int { return strings.Compare(a.Key, b.Key) })
 		out = append(out, c)
 	}

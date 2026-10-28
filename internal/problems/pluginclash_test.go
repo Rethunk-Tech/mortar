@@ -21,7 +21,7 @@ func TestPluginClashNamesTheGUIDAndKeepsTheNewestPlugin(t *testing.T) {
 		{Key: "a", Name: "Ann-Cheats", Version: "1.2.0", Dir: "/a"},
 		{Key: "b", Name: "Bob-Cheats", Version: "1.10.0", Dir: "/b"},
 		{Key: "c", Name: "Cy-Other", Version: "1.0.0", Dir: "/c"},
-	}, nil)
+	}, nil, nil)
 	if len(got) != 1 || got[0].GUID != "com.x.Cheats" || len(got[0].Copies) != 2 {
 		t.Fatalf("got %+v", got)
 	}
@@ -39,9 +39,20 @@ func TestPluginClashKeepsTheCopyThatIsNotDeprecatedBetweenEqualVersions(t *testi
 	got := pluginClashes([]profile.PackageRef{
 		{Key: "old", Name: "Ann-OpenDoorsOld", Version: "1.0.1", Dir: "/old"},
 		{Key: "new", Name: "Ann-OpenDoors", Version: "1.0.1", Dir: "/new"},
-	}, map[string]bool{"old": true})
+	}, map[string]bool{"old": true}, nil)
 	if len(got) != 1 || got[0].Keep != "new" {
 		t.Fatalf("got %+v", got)
+	}
+	// The copy the player builds is the one kept, even when the other is newer.
+	pluginMu.Lock()
+	pluginCache[pluginKey{"/new"}] = dotnet.Declared{Plugins: []dotnet.Plugin{{GUID: "OpenDoors", Version: "2.0.0"}}}
+	pluginMu.Unlock()
+	got = pluginClashes([]profile.PackageRef{
+		{Key: "old", Name: "Me-OpenDoors", Dir: "/old"},
+		{Key: "new", Name: "Ann-OpenDoors", Dir: "/new"},
+	}, nil, map[string]bool{"old": true})
+	if len(got) != 1 || got[0].Keep != "old" {
+		t.Fatalf("developed copy not kept: %+v", got)
 	}
 }
 

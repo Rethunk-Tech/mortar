@@ -461,7 +461,16 @@ func (s *Service) problems(ctx context.Context, gameID, id string, wait bool) (R
 		for _, d := range r.Deprecated {
 			deprecated[d.Key] = true
 		}
-		r.PluginClashes = pluginClashes(pkgs, deprecated)
+		developed := map[string]bool{}
+		var devNames []string
+		if s.DevPackages != nil {
+			devNames = s.DevPackages(gameID)
+		}
+		for _, p := range pkgs {
+			developed[p.Key] = slices.ContainsFunc(devNames, func(n string) bool { return strings.EqualFold(n, p.Name) }) ||
+				slices.ContainsFunc(mods, func(m framework.Mod) bool { return m.Key == p.Key && m.SourceFolder != "" })
+		}
+		r.PluginClashes = pluginClashes(pkgs, deprecated, developed)
 		r.Broken = append(r.Broken, knownBrokenMods(ctx, gameID, env.GameVersion, pkgs, enabledMods)...)
 		if all, err := s.profiles.Packages(gameID, id); err == nil {
 			missing, incompatible := pluginDeps(all, mods)
