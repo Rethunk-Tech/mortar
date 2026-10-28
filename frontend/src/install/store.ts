@@ -32,6 +32,7 @@ import { openOverride } from '../profiles/openOverrides.ts'
 import { getProfile, openProfileOf, useProfiles } from '../profiles/store.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
+import { baseName } from '../shell/baseName.ts'
 import { detectionOf } from '../toasts/avOverride.ts'
 import { changeStillLatest } from '../toasts/history.ts'
 import { reportError, reportUnexpected, toastError } from '../toasts/report.ts'
@@ -50,10 +51,6 @@ function dropInstallGate(hasRoute: boolean, hasTarget: boolean, locked: boolean)
   }
   return 'ok' as const
 }
-
-const PATH_SEPARATOR = /[\\/]/
-
-const fileName = (path: string) => path.split(PATH_SEPARATOR).pop() ?? path
 
 function entryForNames(profile: Profile, names: string[]) {
   return (profile.entries ?? []).find((e) => (e.mods ?? []).some((m) => names.includes(m.name)))
@@ -297,11 +294,11 @@ async function runInstalls(
     } catch (e) {
       failed += 1
       const flagged = detectionOf(e)
-      const title = i18n._(msg`Could not add ${{ name: fileName(item) }}`)
+      const title = i18n._(msg`Could not add ${{ name: baseName(item) }}`)
       if (flagged) {
         offerInstallAnyway({
           title,
-          name: fileName(item),
+          name: baseName(item),
           flagged,
           game: game.id,
           profile: profile.id,

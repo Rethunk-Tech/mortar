@@ -5,6 +5,7 @@ import { PickImage } from '../../bindings/github.com/Rethunk-Tech/mortar/interna
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { hasPickedCover, type StagedCover } from '../game/cover.ts'
 import { HeroCover } from '../game/HeroCover.tsx'
+import { baseName } from '../shell/baseName.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { Field, FormDialog, FormSection } from '../shell/dialog/FormDialog.tsx'
 import { space } from '../theme/density.ts'
@@ -19,8 +20,6 @@ import { ServerSettings } from './ServerSettings.tsx'
 import { saveProfile } from './saveProfile.ts'
 import { useProfiles } from './store.ts'
 import { useNameField } from './useNameField.ts'
-
-const PATH_SEPARATORS = /[\\/]/
 
 type FieldsTab = 'appearance' | 'launch'
 
@@ -41,7 +40,7 @@ function CoverField({
 }) {
   const { t } = useLingui()
   const picked = hasPickedCover(profile.cover, staged)
-  const pickedName = typeof staged === 'string' ? (staged.split(PATH_SEPARATORS).pop() ?? '') : ''
+  const pickedName = typeof staged === 'string' ? baseName(staged) : ''
   return (
     <Field label={t`Cover image`}>
       <Box sx={{ width: 160, height: 90, borderRadius: '6px', overflow: 'hidden', mb: 1 }}>

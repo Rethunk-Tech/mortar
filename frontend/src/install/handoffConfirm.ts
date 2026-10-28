@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { baseName } from '../shell/baseName.ts'
 
 /** A saved file waiting for the player's answer to "Install <file> as from <page>?". */
 export interface HandoffAsk {
@@ -17,10 +18,6 @@ export const useHandoffAsk = create<{
   push: (ask) => set((s) => ({ queue: [...s.queue, ask] })),
   shift: () => set((s) => ({ queue: s.queue.slice(1) })),
 }))
-
-const PATH_SEPARATOR = /[\\/]/
-
-const baseName = (path: string) => path.split(PATH_SEPARATOR).pop() ?? path
 
 /** Whether to record the saved file against the page it was saved from; false installs it as a plain local file. */
 export const askHandoff = (file: string, page: string) =>

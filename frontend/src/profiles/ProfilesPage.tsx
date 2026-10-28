@@ -42,6 +42,7 @@ import { useNav } from '../nav/store.ts'
 import { dialogOpen, isTypingTarget } from '../settings/shortcuts.ts'
 import { shouldLeavePageOnEscape } from '../settings/shouldLeavePageOnEscape.ts'
 import { openImport } from '../share/store.ts'
+import { baseName } from '../shell/baseName.ts'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
@@ -157,7 +158,7 @@ const Damaged = memo(function DamagedView() {
               title={item.id}
               sx={{ fontSize: 'lead.fontSize', fontWeight: 600 }}
             >
-              {item.id.slice(Math.max(item.id.lastIndexOf('/'), item.id.lastIndexOf('\\')) + 1)}
+              {baseName(item.id)}
             </Typography>
             <Typography
               sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}
