@@ -57,3 +57,43 @@ func TestModConfigFollowsTheMod(t *testing.T) {
 		t.Fatalf("removed: live %v, aside %v", exists(live), exists(aside))
 	}
 }
+
+// A fork that shares a package name with a mod still switched on does not take that mod's config, and a removal that
+// fails leaves every config where it was.
+func TestModConfigStaysWithTheEnabledOwnerAndAFailedRemoveKeepsIt(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, err := e.Create("lethal-company", "LC")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var keys []Entry
+	for _, name := range []string{"Ns-Mod", "Fork-Mod"} {
+		res, err := e.InstallSource(t.Context(), "lethal-company", p.ID, tsZip(t, "1.0.0"), Source{Kind: KindThunderstore, Name: name, Version: "1.0.0"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		keys = append(keys, res.Profile.Entries[len(res.Profile.Entries)-1])
+	}
+	dir, _ := e.ProfileDir("lethal-company", p.ID)
+	writeFile(t, dir, "BepInEx/config/Mod.cfg", "[General]\nA = 1\n")
+	live := filepath.Join(dir, "BepInEx", "config", "Mod.cfg")
+	if _, _, err := e.enableMod("lethal-company", p.ID, keys[0].Key, keys[0].Mods[0].ID, false); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.SyncPackages("lethal-company", p.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := fsx.Stat(live); err != nil {
+		t.Fatalf("the enabled fork's config was parked: %v", err)
+	}
+	if _, err := e.RemoveEntries("lethal-company", p.ID, []string{keys[0].Key, "no-such-key"}); err == nil {
+		t.Fatal("a missing key removed")
+	}
+	if _, err := e.RemoveEntries("lethal-company", p.ID, []string{keys[0].Key}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := fsx.Stat(live); err != nil {
+		t.Fatalf("removing the disabled one took the enabled one's config: %v", err)
+	}
+}

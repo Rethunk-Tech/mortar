@@ -415,6 +415,7 @@ func (s *Store) applyBundled(game string, b Bundle, duringStart bool) error {
 			s.historyQuietIDs = map[string]int{}
 		}
 		s.historyQuietIDs[prof.ID]++
+		var dropped []string
 		_, err := s.updateLocked(game, prof.ID, func(p *Profile, dir string) (err error) {
 			var disabled []mod.ID
 			for _, e := range slices.Backward(slices.Clone(p.Entries)) {
@@ -422,9 +423,11 @@ func (s *Store) applyBundled(game string, b Bundle, duringStart bool) error {
 					continue
 				}
 				disabled = append(disabled, e.Disabled...)
-				if err := s.removeFrom(game, p, dir, e.Key); err != nil {
+				configs, err := s.removeFrom(game, p, dir, e.Key)
+				if err != nil {
 					return err
 				}
+				dropped = append(dropped, configs...)
 			}
 			if slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.Key == b.Key }) {
 				return nil
@@ -438,6 +441,9 @@ func (s *Store) applyBundled(game string, b Bundle, duringStart bool) error {
 		}
 		if err != nil && placed != "" {
 			err = errors.Join(err, fsx.RemoveAll(placed))
+		}
+		if err == nil {
+			removeConfigPaths(dropped)
 		}
 		errs = append(errs, err)
 	}
@@ -463,22 +469,23 @@ func entryLabel(e Entry) string {
 
 // removeFrom deletes the entry's folder and drops it from the profile, with the optional files laid over it.
 // Removing an optional file puts its main entry's own files back.
-func (s *Store) removeFrom(game string, p *Profile, dir, key string) error {
+// The mod's config files to delete are returned, for the caller to delete once the profile is written.
+func (s *Store) removeFrom(game string, p *Profile, dir, key string) (configs []string, err error) {
 	i, err := requireEntry(p.Entries, key)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if base := p.Entries[i].OverlayOf; base != "" {
 		was := overlaysOf(p.Entries, base)
 		p.Entries = slices.Delete(p.Entries, i, i+1)
 		dropKeyFromGroups(p, key)
-		return s.relayBase(game, p, dir, base, was)
+		return nil, s.relayBase(game, p, dir, base, was)
 	}
 	modsDir := filepath.Join(dir, "mods")
+	configs = s.modConfigPaths(game, *p, dir, p.Entries[i])
 	if err := removeEntryFolders(modsDir, key); err != nil {
-		return err
+		return nil, err
 	}
-	s.dropModConfigs(game, *p, dir, p.Entries[i])
 	tray := p.Entries[i].TrayFiles
 	p.Entries = slices.Delete(p.Entries, i, i+1)
 	s.releaseTray(game, p, tray)
@@ -487,12 +494,14 @@ func (s *Store) removeFrom(game string, p *Profile, dir, key string) error {
 		p.Entries = slices.DeleteFunc(p.Entries, func(e Entry) bool { return e.Key == o.Key })
 		dropKeyFromGroups(p, o.Key)
 	}
-	return nil
+	return configs, nil
 }
 
 // RemoveEntries deletes each named entry's folder and drops it from the profile, one write.
 func (s *Store) RemoveEntries(game, id string, keys []string) (Profile, error) {
+	var dropped []string
 	p, err := s.updateModsRecorded(game, id, func(p *Profile, dir string) error {
+		dropped = nil
 		seen := map[string]bool{}
 		for _, e := range p.Entries {
 			// Removing the main entry takes its optional files with it.
@@ -508,15 +517,18 @@ func (s *Store) RemoveEntries(game, id string, keys []string) (Profile, error) {
 			if slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.Key == key && e.Source.Bundled() }) {
 				return errors.New("the bundled mods are needed by every profile and cannot be removed")
 			}
-			if err := s.removeFrom(game, p, dir, key); err != nil {
+			configs, err := s.removeFrom(game, p, dir, key)
+			if err != nil {
 				return err
 			}
+			dropped = append(dropped, configs...)
 		}
 		return nil
 	})
 	if err != nil {
 		return Profile{}, err
 	}
+	removeConfigPaths(dropped)
 	s.syncDropped(game, id)
 	return p, nil
 }
@@ -614,15 +626,18 @@ func (s *Store) RestoreEntries(game, id string, entries []Entry) (Profile, error
 
 // RemoveEntry deletes the entry's folder and drops it from the profile.
 func (s *Store) RemoveEntry(game, id, key string) (Profile, error) {
-	p, err := s.updateModsRecorded(game, id, func(p *Profile, dir string) error {
+	var dropped []string
+	p, err := s.updateModsRecorded(game, id, func(p *Profile, dir string) (err error) {
 		if slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.Key == key && e.Source.Bundled() }) {
 			return errors.New("the bundled mods are needed by every profile and cannot be removed")
 		}
-		return s.removeFrom(game, p, dir, key)
+		dropped, err = s.removeFrom(game, p, dir, key)
+		return err
 	})
 	if err != nil {
 		return Profile{}, err
 	}
+	removeConfigPaths(dropped)
 	s.syncDropped(game, id)
 	return p, nil
 }
