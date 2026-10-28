@@ -49,3 +49,19 @@ func TestBackupsUsageAndTrimKeepNewestPerSaveAndPinned(t *testing.T) {
 		t.Fatal("keep 0 must be refused")
 	}
 }
+
+func TestTrimBackupsKeepsEachProfilesNewestOfASharedFolderName(t *testing.T) {
+	s, savesDir := backupService(t)
+	testfs.WriteFarm(t, savesDir, "Farm_1", "Sunny", "v1")
+	dir := filepath.Join(mustData(t), "mortar", "backups", "stardew")
+	for i, p := range []string{"a", "b"} {
+		at := time.Date(2026, 7, 1+i, 0, 0, 0, 0, time.UTC)
+		if _, err := backup.Folder(t.Context(), saves.Layout{Dir: savesDir}, dir, "Farm_1", 50, at, backup.Cause{Kind: backup.KindScheduled, Save: "Farm_1", Profile: p}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	res, err := s.TrimBackups("stardew", 1)
+	if err != nil || res.Removed != 0 {
+		t.Fatalf("trim = %+v, %v", res, err)
+	}
+}

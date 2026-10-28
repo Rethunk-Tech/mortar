@@ -81,10 +81,12 @@ func (s *Service) TrimBackups(game string, keepPerSave int) (TrimResult, error) 
 			continue
 		}
 		for _, sv := range b.Saves {
-			if seen[sv.Folder] < keepPerSave {
+			// Two profiles can hold a folder of the same name; each keeps its own newest backups.
+			k := b.Profile + "\x00" + sv.Folder
+			if seen[k] < keepPerSave {
 				kept[b.Name] = true
 			}
-			seen[sv.Folder]++
+			seen[k]++
 		}
 	}
 	var out TrimResult
