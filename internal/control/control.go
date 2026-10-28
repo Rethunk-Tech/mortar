@@ -186,20 +186,90 @@ func Serve(ctx context.Context, dir, version string, h Handler) error {
 	}
 }
 
+const (
+	// preAuthWait and preAuthBytes bound what a connection may take before it has shown the token.
+	preAuthWait  = 10 * time.Second
+	preAuthBytes = 64 << 10
+)
+
+// gateReader reads r until left bytes are used, then fails; the budget grows once the sender is known.
+type gateReader struct {
+	r    io.Reader
+	left int64
+}
+
+func (g *gateReader) Read(p []byte) (int, error) {
+	if g.left <= 0 {
+		return 0, fsx.ErrTooLarge
+	}
+	if int64(len(p)) > g.left {
+		p = p[:g.left]
+	}
+	n, err := g.r.Read(p)
+	g.left -= int64(n)
+	return n, err
+}
+
+var errUnauthorized = errors.New("unauthorized")
+
+// readRequest decodes one request, checking the token as soon as it is read: until then the connection has wait to
+// finish and a small body to do it in, and the token comes first on the wire from every client Mortar ships.
+func readRequest(conn net.Conn, r io.Reader, token string, wait time.Duration) (request, error) {
+	var req request
+	_ = conn.SetReadDeadline(time.Now().Add(wait))
+	gate := &gateReader{r: r, left: preAuthBytes}
+	dec := json.NewDecoder(gate)
+	if t, err := dec.Token(); err != nil || t != json.Delim('{') {
+		return req, errors.New("control: not a request")
+	}
+	verified := false
+	for dec.More() {
+		keyTok, err := dec.Token()
+		if err != nil {
+			return req, err
+		}
+		switch keyTok {
+		case "token":
+			if err = dec.Decode(&req.Token); err != nil {
+				return req, err
+			}
+			if subtle.ConstantTimeCompare([]byte(req.Token), []byte(token)) != 1 {
+				return req, errUnauthorized
+			}
+			verified = true
+			gate.left += controlwire.MaxLine
+			_ = conn.SetReadDeadline(time.Time{})
+		case "method":
+			err = dec.Decode(&req.Method)
+		case "params":
+			err = dec.Decode(&req.Params)
+		default:
+			var skip json.RawMessage
+			err = dec.Decode(&skip)
+		}
+		if err != nil {
+			return req, err
+		}
+	}
+	if !verified {
+		return req, errUnauthorized
+	}
+	return req, nil
+}
+
 func serveConn(ctx context.Context, conn net.Conn, token, version string, h Handler) {
 	defer func() { _ = conn.Close() }()
 	r := bufio.NewReaderSize(conn, 64<<10)
-	var req request
-	if err := json.NewDecoder(fsx.CapReader(r, controlwire.MaxLine)).Decode(&req); err != nil {
+	req, err := readRequest(conn, r, token, preAuthWait)
+	if errors.Is(err, errUnauthorized) {
+		writeReply(conn, controlwire.Reply{Error: "unauthorized"})
 		return
 	}
-	if subtle.ConstantTimeCompare([]byte(req.Token), []byte(token)) != 1 {
-		writeReply(conn, controlwire.Reply{Error: "unauthorized"})
+	if err != nil {
 		return
 	}
 	log.Printf("control: %s %s %s", req.Method, req.Params.Game, req.Params.Profile)
 	var res any
-	var err error
 	if req.Method == "hello" {
 		res = controlwire.Hello{Version: version, Protocol: controlwire.Protocol}
 	} else {
