@@ -265,13 +265,20 @@ func (d cfgDoc) set(section, key, value string) (string, error) {
 func (d cfgDoc) schema(file ConfigFile) Schema {
 	s := Schema{File: file}
 	for _, e := range d.entries {
-		if n := len(s.Sections); n == 0 || s.Sections[n-1].Name != e.section {
-			s.Sections = append(s.Sections, Section{Name: e.section})
-		}
-		last := &s.Sections[len(s.Sections)-1]
-		last.Entries = append(last.Entries, e.Entry)
+		s.Sections = addToSection(s.Sections, e.section, e.Entry)
 	}
 	return s
+}
+
+// addToSection appends e to the last section when it is named section, else to a new one: entries read in file order
+// group by the section run they sit in.
+func addToSection(sections []Section, section string, e Entry) []Section {
+	if n := len(sections); n == 0 || sections[n-1].Name != section {
+		sections = append(sections, Section{Name: section})
+	}
+	last := &sections[len(sections)-1]
+	last.Entries = append(last.Entries, e)
+	return sections
 }
 
 // withSync marks the entries ConfigSync shares from the host, read from the sidecar beside the .cfg at path. A

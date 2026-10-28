@@ -284,11 +284,7 @@ func (d melonDoc) schema(file ConfigFile, keep func(section string) bool) Schema
 		if !keep(e.section) {
 			continue
 		}
-		if n := len(s.Sections); n == 0 || s.Sections[n-1].Name != e.section {
-			s.Sections = append(s.Sections, Section{Name: e.section})
-		}
-		last := &s.Sections[len(s.Sections)-1]
-		last.Entries = append(last.Entries, e.Entry)
+		s.Sections = addToSection(s.Sections, e.section, e.Entry)
 	}
 	return s
 }
