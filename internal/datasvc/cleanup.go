@@ -1,6 +1,7 @@
 package datasvc
 
 import (
+	"bufio"
 	"encoding/json"
 	"errors"
 	"io/fs"
@@ -217,12 +218,41 @@ func cacheTTL(rel string) (time.Duration, bool) {
 	}
 }
 
-func fileAge(path string, now time.Time) time.Duration {
-	if b, err := fsx.ReadFile(path); err == nil {
-		var wrap fetchedFile
-		if json.Unmarshal(b, &wrap) == nil && !wrap.Fetched.IsZero() {
-			return now.Sub(wrap.Fetched)
+// fetchedAt is the "fetched" time of a cache file, read by scanning keys so a large payload is skipped, not parsed
+// into memory.
+func fetchedAt(path string) (time.Time, bool) {
+	f, err := fsx.Open(path)
+	if err != nil {
+		return time.Time{}, false
+	}
+	defer func() { _ = f.Close() }()
+	dec := json.NewDecoder(bufio.NewReader(f))
+	if t, err := dec.Token(); err != nil || t != json.Delim('{') {
+		return time.Time{}, false
+	}
+	for dec.More() {
+		k, err := dec.Token()
+		if err != nil {
+			return time.Time{}, false
 		}
+		if k == "fetched" {
+			var at time.Time
+			if dec.Decode(&at) != nil || at.IsZero() {
+				return time.Time{}, false
+			}
+			return at, true
+		}
+		var skip json.RawMessage
+		if dec.Decode(&skip) != nil {
+			return time.Time{}, false
+		}
+	}
+	return time.Time{}, false
+}
+
+func fileAge(path string, now time.Time) time.Duration {
+	if at, ok := fetchedAt(path); ok {
+		return now.Sub(at)
 	}
 	info, err := os.Stat(filepath.Clean(path))
 	if err != nil {
