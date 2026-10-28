@@ -7,7 +7,6 @@ import { SaveFile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { safeFileName } from '../console/save.ts'
 import { listNames } from '../i18n/list.ts'
-import { hasThunderstore } from '../profiles/hasThunderstore.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { space } from '../theme/density.ts'
@@ -98,7 +97,7 @@ export function ListFormat() {
   const { t, i18n } = useLingui()
   const profileId = useShareDialog((s) => s.profileId)
   const keys = useShareDialog((s) => s.keys)
-  const thunderstore = useProfiles((s) => hasThunderstore(s.game))
+  const thunderstore = useProfiles((s) => s.game?.sources?.includes('thunderstore') === true)
   const chosenFormat = useShareDialog((s) => s.listFormat)
   const format = chosenFormat === 'thunderstore' && !thunderstore ? 'markdown' : chosenFormat
   const setFormat = useShareDialog((s) => s.setListFormat)

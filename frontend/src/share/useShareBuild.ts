@@ -6,7 +6,6 @@ import {
   Share,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/service.ts'
 import { useCurrentGame } from '../nav/currentGame.ts'
-import { hasThunderstore } from '../profiles/hasThunderstore.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { sameValue } from '../shell/sameValue.ts'
@@ -32,7 +31,7 @@ export function useShareBuild() {
   const keys = useShareDialog((s) => s.keys)
   const close = useShareDialog((s) => s.close)
   const game = useCurrentGame()
-  const thunderstore = useProfiles((s) => hasThunderstore(s.game))
+  const thunderstore = useProfiles((s) => s.game?.sources?.includes('thunderstore') === true)
   // null is the destination grid.
   const [destination, setDestination] = useState<Destination | null>(null)
   const [format, setFormat] = useState<MortarFormat>('link')
