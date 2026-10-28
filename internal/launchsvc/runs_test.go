@@ -227,7 +227,7 @@ func TestSearchRuns(t *testing.T) {
 		t.Fatal(err)
 	}
 	if got.Truncated || len(got.Hits) != 2 || got.Hits[0].RunID != "new" || got.Hits[0].LineNumber != 2 ||
-		got.Hits[0].Line != "Target NEW" || got.Hits[1].RunID != "old" {
+		got.Hits[0].Line != "Target NEW" || got.Hits[0].Seq != 2 || got.Hits[1].RunID != "old" {
 		t.Fatalf("search = %#v", got)
 	}
 	empty, err := svc.SearchRuns("stardew", p.ID, "  ")

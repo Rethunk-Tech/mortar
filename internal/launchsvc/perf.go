@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -124,6 +125,11 @@ func (s *Service) savePerformanceReport(gameID, profileID string, rows []Perform
 	index, err := readPerformanceReports(dir)
 	if err != nil {
 		return SavedReport{}, err
+	}
+	// The console panel saves whatever the log currently parses to; the same rows again would only push history out.
+	if latest := index.Reports; frame == nil && len(latest) > 0 && latest[0].Frame == nil &&
+		latest[0].RunID == report.RunID && slices.Equal(latest[0].Rows, rows) {
+		return latest[0], nil
 	}
 	index.Reports = append([]SavedReport{report}, index.Reports...)
 	if len(index.Reports) > maxPerformanceReports {

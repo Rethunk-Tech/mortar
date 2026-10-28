@@ -81,6 +81,8 @@ type RunHit struct {
 	Outcome    launch.Outcome `json:"outcome"`
 	LineNumber int            `json:"lineNumber"`
 	Line       string         `json:"line"`
+	// Seq is the console entry the line belongs to in RunLines, 0 when the log shows none before it.
+	Seq int64 `json:"seq"`
 }
 
 type RunSearch struct {
@@ -182,7 +184,14 @@ func (s *Service) SearchRuns(gameID, profileID, query string) (RunSearch, error)
 		if err != nil {
 			return RunSearch{}, err
 		}
+		var parser launch.Parser
+		var seq int64
 		for number, line := range strings.Split(text, "\n") {
+			if bare := strings.TrimRight(line, "\r"); bare != "" {
+				if _, shown := parser.Parse(bare); shown {
+					seq++
+				}
+			}
 			if !strings.Contains(strings.ToLower(line), needle) {
 				continue
 			}
@@ -192,7 +201,7 @@ func (s *Service) SearchRuns(gameID, profileID, query string) (RunSearch, error)
 			}
 			result.Hits = append(result.Hits, RunHit{
 				RunID: run.ID, Started: run.Started, Outcome: run.Outcome,
-				LineNumber: number + 1, Line: trimRunSearchLine(line),
+				LineNumber: number + 1, Line: trimRunSearchLine(line), Seq: seq,
 			})
 		}
 	}

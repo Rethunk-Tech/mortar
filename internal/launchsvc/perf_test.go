@@ -43,7 +43,8 @@ func TestParsePerformanceReportSummary(t *testing.T) {
 func TestPerformanceReportsPersistAndPrune(t *testing.T) {
 	svc, profile, _, _ := runEnv(t)
 	rows := []PerformanceRow{{Name: "A", AverageMs: 1.25, PeakMs: 2, Calls: 3}}
-	for range 21 {
+	for i := range 21 {
+		rows = []PerformanceRow{{Name: "A", AverageMs: 1.25, PeakMs: 2, Calls: float64(i + 1)}}
 		saved, err := svc.SavePerformanceReport("stardew", profile.ID, rows)
 		if err != nil {
 			t.Fatal(err)
@@ -61,5 +62,9 @@ func TestPerformanceReportsPersistAndPrune(t *testing.T) {
 	}
 	if !reflect.DeepEqual(reports[0].Rows, rows) {
 		t.Fatalf("rows = %#v, want %#v", reports[0].Rows, rows)
+	}
+	again, err := svc.SavePerformanceReport("stardew", profile.ID, rows)
+	if err != nil || again.ID != reports[0].ID {
+		t.Fatalf("saving the same rows again made a new report: %#v, %v", again, err)
 	}
 }
