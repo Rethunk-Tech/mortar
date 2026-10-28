@@ -127,16 +127,9 @@ func openProfile(info components.GameInfo) string {
 
 // activePackages lists the Thunderstore packages the community's game holds in its open profile.
 func activePackages(key string) (state, profile string, packages []string) {
-	info, ok := gameBySourceKey("thunderstore", key)
+	info, found := gameBySourceKey("thunderstore", key)
+	state, profile, dataDir, ok := readyProfile(info, found)
 	if !ok {
-		return stateNoProfile, "", nil
-	}
-	state, profile = stateOf(info)
-	if state != stateReady {
-		return state, profile, nil
-	}
-	dataDir, err := datadir.Dir()
-	if err != nil {
 		return state, profile, nil
 	}
 	p, ok := readOpenProfile(dataDir, info)
@@ -160,22 +153,17 @@ func activePackages(key string) (state, profile string, packages []string) {
 // queuePackage asks the running app to queue the newest version of the package, with its dependencies, into the
 // community's open profile.
 func queuePackage(key, pkg string) error {
-	info, ok := gameBySourceKey("thunderstore", key)
-	if !ok {
-		return os.ErrNotExist
-	}
-	dataDir, err := datadir.Dir()
-	if err != nil {
-		return err
-	}
-	return controlwire.CallDir(dataDir, "installPackage", map[string]any{
-		"game": info.ID, "profile": openProfile(info), "name": pkg,
-	}, nil, installTimeout)
+	return installVia("thunderstore", key, map[string]any{"name": pkg})
 }
 
 // queueProject asks the running app to queue the project's newest version, with its dependencies, into the source's
 // game's open profile.
 func queueProject(src, key, project string) error {
+	return installVia(src, key, map[string]any{"name": project, "source": src})
+}
+
+// installVia asks the running app to install args' package into the open profile of the source's game.
+func installVia(src, key string, args map[string]any) error {
 	info, ok := gameBySourceKey(src, key)
 	if !ok {
 		return os.ErrNotExist
@@ -184,25 +172,31 @@ func queueProject(src, key, project string) error {
 	if err != nil {
 		return err
 	}
-	return controlwire.CallDir(dataDir, "installPackage", map[string]any{
-		"game": info.ID, "profile": openProfile(info), "name": project, "source": src,
-	}, nil, installTimeout)
+	args["game"], args["profile"] = info.ID, openProfile(info)
+	return controlwire.CallDir(dataDir, "installPackage", args, nil, installTimeout)
+}
+
+// readyProfile says whether the game has an open profile ready to read, with the data folder when it has; state and
+// profile are what the extension shows either way.
+func readyProfile(info components.GameInfo, found bool) (state, profile, dataDir string, ok bool) {
+	if !found {
+		return stateNoProfile, "", "", false
+	}
+	state, profile = stateOf(info)
+	if state != stateReady {
+		return state, profile, "", false
+	}
+	dataDir, err := datadir.Dir()
+	return state, profile, dataDir, err == nil
 }
 
 // activeProjects lists the CurseForge, Mod DB, Paradox or Modrinth projects the source's game holds in its open
 // profile. A CurseForge entry's Name is the project id; a Mod DB entry's is "<modid>-<assetid>", which pages are
 // addressed by; a Paradox entry's is the mod id and a Modrinth entry's the project id.
 func activeProjects(src, key string) (state, profile string, projects []hostProject) {
-	info, ok := gameBySourceKey(src, key)
+	info, found := gameBySourceKey(src, key)
+	state, profile, dataDir, ok := readyProfile(info, found)
 	if !ok {
-		return stateNoProfile, "", nil
-	}
-	state, profile = stateOf(info)
-	if state != stateReady {
-		return state, profile, nil
-	}
-	dataDir, err := datadir.Dir()
-	if err != nil {
 		return state, profile, nil
 	}
 	p, ok := readOpenProfile(dataDir, info)

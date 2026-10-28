@@ -8,7 +8,6 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
@@ -32,19 +31,12 @@ type appUpdate struct {
 
 // activeProfileUpdates is the app's own update list for the open profile of the source's game, every source included.
 func activeProfileUpdates(src, key string) (state, profile string, rows []modUpdate) {
-	info, ok := gameBySourceKey(src, key)
+	info, found := gameBySourceKey(src, key)
+	if !found {
+		info, found = components.GameByNexusDomain(key)
+	}
+	state, profile, dataDir, ok := readyProfile(info, found)
 	if !ok {
-		info, ok = components.GameByNexusDomain(key)
-	}
-	if !ok {
-		return stateNoProfile, "", nil
-	}
-	state, profile = stateOf(info)
-	if state != stateReady {
-		return state, profile, nil
-	}
-	dataDir, err := datadir.Dir()
-	if err != nil {
 		return state, profile, nil
 	}
 	var res struct {
