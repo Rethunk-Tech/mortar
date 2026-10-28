@@ -10,6 +10,7 @@ import { useOfflineReason } from '../shell/offlineText.ts'
 import { pillButtonSx, pillGroupSx } from '../shell/pillToggle.ts'
 import { SearchField } from '../shell/SearchField.tsx'
 import { Tooltip } from '../shell/Tooltip.tsx'
+import { useDebouncedValue } from '../shell/useDebouncedValue.ts'
 import { ViewToggle } from '../shell/ViewToggle.tsx'
 import { space } from '../theme/density.ts'
 import { ALL } from './browseConstants.ts'
@@ -97,10 +98,10 @@ function BrowseSearch({ label, onText }: { label: string; onText: (text: string)
   useEffect(() => {
     latest.current = onText
   })
+  const settled = useDebouncedValue(draft, DEBOUNCE_MS)
   useEffect(() => {
-    const timer = setTimeout(() => latest.current(draft), DEBOUNCE_MS)
-    return () => clearTimeout(timer)
-  }, [draft])
+    latest.current(settled)
+  }, [settled])
   return (
     <SearchField
       autoFocus={true}

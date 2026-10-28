@@ -1,5 +1,6 @@
 import { memo, useEffect, useState } from 'react'
 import { SearchField } from '../../shell/SearchField.tsx'
+import { useDebouncedValue } from '../../shell/useDebouncedValue.ts'
 
 // How long typing pauses before the mods and settings re-filter, so a word typed at speed filters them once.
 const SEARCH_SETTLE_MS = 150
@@ -15,10 +16,8 @@ export const ConfigSearch = memo(function ConfigSearchView({
   onQuery: (query: string) => void
 }) {
   const [text, setText] = useState('')
-  useEffect(() => {
-    const id = setTimeout(() => onQuery(text), SEARCH_SETTLE_MS)
-    return () => clearTimeout(id)
-  }, [text, onQuery])
+  const settled = useDebouncedValue(text, SEARCH_SETTLE_MS)
+  useEffect(() => onQuery(settled), [settled, onQuery])
   return (
     <SearchField
       label={label}

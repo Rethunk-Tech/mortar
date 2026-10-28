@@ -3,6 +3,7 @@ import { Box, ButtonBase, Typography } from '@mui/material'
 import { ArrowLeft } from 'lucide-react'
 import { memo, type ReactElement, useEffect, useState } from 'react'
 import { SearchField } from '../shell/SearchField.tsx'
+import { useDebouncedValue } from '../shell/useDebouncedValue.ts'
 import { space } from '../theme/density.ts'
 import type { ShellPage } from './SettingsShell.tsx'
 import { setSettingsQuery, settingsQuery, useSettingsSearch } from './useSettingsSearch.ts'
@@ -20,13 +21,12 @@ function NavSearch() {
   const query = useSettingsSearch()
   const [text, setText] = useState(query)
   useEffect(() => setText((typed) => (typed.trim() === query.trim() ? typed : query)), [query])
+  const settled = useDebouncedValue(text, SEARCH_SETTLE_MS)
   useEffect(() => {
-    if (text === settingsQuery()) {
-      return
+    if (settled !== settingsQuery()) {
+      setSettingsQuery(settled)
     }
-    const id = setTimeout(() => setSettingsQuery(text), SEARCH_SETTLE_MS)
-    return () => clearTimeout(id)
-  }, [text])
+  }, [settled])
   return (
     <SearchField
       label={t`Search settings`}

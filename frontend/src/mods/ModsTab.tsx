@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Skeleton, Typography } from '@mui/material'
 import { SearchX } from 'lucide-react'
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef } from 'react'
 import type {
   Entry,
   Mod,
@@ -16,6 +16,7 @@ import { boundShortcut, dialogOpen } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
 import { AfterDelay } from '../shell/AfterDelay.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { useDebouncedValue } from '../shell/useDebouncedValue.ts'
 import { space } from '../theme/density.ts'
 import { TipBanner } from '../tips/TipBanner.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -221,15 +222,7 @@ const FILTER_PAUSE_MS = 150
 
 function useSettledQuery(query: string): string {
   const typed = query.trim().toLowerCase()
-  const [settled, setSettled] = useState(typed)
-  useEffect(() => {
-    if (typed === '') {
-      setSettled('')
-      return
-    }
-    const timer = setTimeout(() => setSettled(typed), FILTER_PAUSE_MS)
-    return () => clearTimeout(timer)
-  }, [typed])
+  const settled = useDebouncedValue(typed, FILTER_PAUSE_MS)
   return typed === '' ? '' : settled
 }
 
