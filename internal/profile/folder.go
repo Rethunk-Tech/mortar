@@ -159,12 +159,9 @@ func (s *Store) relocate(game, id, home, target string) error {
 			return err
 		}
 	}
-	tmp := datadir.CopyTempName(target)
-	if err := fsx.RemoveAll(tmp); err != nil {
+	tmp, err := copyBeside(cur, target)
+	if err != nil {
 		return err
-	}
-	if err := datadir.CopyTreeResolvingLinks(cur, tmp); err != nil {
-		return errors.Join(err, fsx.RemoveAll(tmp))
 	}
 	if err := fsx.Rename(tmp, target); err != nil {
 		return errors.Join(err, fsx.RemoveAll(tmp))
@@ -200,12 +197,9 @@ func (s *Store) bringHome(game, id, home string) error {
 	if err := madeForProfile(cur, game, id); err != nil {
 		return err
 	}
-	tmp := datadir.CopyTempName(home)
-	if err := fsx.RemoveAll(tmp); err != nil {
+	tmp, err := copyBeside(cur, home)
+	if err != nil {
 		return err
-	}
-	if err := datadir.CopyTreeResolvingLinks(cur, tmp); err != nil {
-		return errors.Join(err, fsx.RemoveAll(tmp))
 	}
 	forgetProfile(filepath.Join(home, fileName))
 	if err := fsx.Remove(home); err != nil {
@@ -215,4 +209,17 @@ func (s *Store) bringHome(game, id, home string) error {
 		return errors.Join(err, datadir.LinkDir(home, cur))
 	}
 	return fsx.RemoveAll(cur)
+}
+
+// copyBeside copies the folder cur, links resolved, into a fresh temp folder beside to, for the caller to rename over
+// to.
+func copyBeside(cur, to string) (string, error) {
+	tmp := datadir.CopyTempName(to)
+	if err := fsx.RemoveAll(tmp); err != nil {
+		return "", err
+	}
+	if err := datadir.CopyTreeResolvingLinks(cur, tmp); err != nil {
+		return "", errors.Join(err, fsx.RemoveAll(tmp))
+	}
+	return tmp, nil
 }

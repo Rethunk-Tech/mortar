@@ -349,9 +349,7 @@ func (s *Store) holding(game, id, key string, choices map[string]map[string][]st
 		if e.Key == key {
 			return nil, &DuplicateError{Key: key, Label: entryLabel(e)}
 		}
-		if slices.ContainsFunc(e.Mods, func(m Component) bool {
-			return slices.ContainsFunc(found, func(f smapimanifest.Mod) bool { return mod.Equal(f.ModID(), m.ID) })
-		}) {
+		if holdsAny(e, found) {
 			held = append(held, e)
 		}
 	}
@@ -407,4 +405,11 @@ func installError(err error) error {
 		return err
 	}
 	return &InstallError{Msg: msg, Err: err}
+}
+
+// holdsAny reports whether e holds any of the mods found.
+func holdsAny(e Entry, found []smapimanifest.Mod) bool {
+	return slices.ContainsFunc(e.Mods, func(m Component) bool {
+		return slices.ContainsFunc(found, func(f smapimanifest.Mod) bool { return mod.Equal(f.ModID(), m.ID) })
+	})
 }

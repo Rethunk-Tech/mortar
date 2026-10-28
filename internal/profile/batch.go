@@ -68,26 +68,9 @@ func (s *Store) SetPinnedMany(game, id string, keys []string, pinned bool, pinRe
 
 // SetEntryCategoryMany changes the category override of each named entry in one profile write.
 func (s *Store) SetEntryCategoryMany(game, id string, keys []string, override string) (Profile, error) {
-	override = strings.TrimSpace(override)
-	if override != "" {
-		if idPattern.MatchString(override) {
-			cats, err := readCategories(s.dataDir, game)
-			if err != nil {
-				return Profile{}, err
-			}
-			found := false
-			for _, category := range cats {
-				if category.ID == override {
-					found = true
-					break
-				}
-			}
-			if !found {
-				return Profile{}, fmt.Errorf("unknown custom category %q", override)
-			}
-		} else if err := cleanCategoryName(override); err != nil {
-			return Profile{}, err
-		}
+	override, err := s.categoryOverride(game, override)
+	if err != nil {
+		return Profile{}, err
 	}
 	return s.updateEntries(game, id, keys, func(e *Entry, _ string) error {
 		e.CategoryOverride = override

@@ -204,22 +204,31 @@ func (s *Store) clearCategoryOverridesLocked(game string, customIDs []string) er
 
 // SetEntryCategory sets or clears the entry's primary category override (custom category id or Nexus category name).
 func (s *Store) SetEntryCategory(game, id, key, override string) (Profile, error) {
-	override = strings.TrimSpace(override)
-	if override != "" {
-		if idPattern.MatchString(override) {
-			cats, err := readCategories(s.dataDir, game)
-			if err != nil {
-				return Profile{}, err
-			}
-			if !slices.ContainsFunc(cats, func(c CustomCategory) bool { return c.ID == override }) {
-				return Profile{}, fmt.Errorf("unknown custom category %q", override)
-			}
-		} else if err := cleanCategoryName(override); err != nil {
-			return Profile{}, err
-		}
+	override, err := s.categoryOverride(game, override)
+	if err != nil {
+		return Profile{}, err
 	}
 	return s.patchEntry(game, id, key, func(e *Entry) error {
 		e.CategoryOverride = override
 		return nil
 	})
+}
+
+// categoryOverride checks a category override: a custom category's id, a category name, or "" for none.
+func (s *Store) categoryOverride(game, override string) (string, error) {
+	override = strings.TrimSpace(override)
+	if override == "" {
+		return "", nil
+	}
+	if !idPattern.MatchString(override) {
+		return override, cleanCategoryName(override)
+	}
+	cats, err := readCategories(s.dataDir, game)
+	if err != nil {
+		return "", err
+	}
+	if !slices.ContainsFunc(cats, func(c CustomCategory) bool { return c.ID == override }) {
+		return "", fmt.Errorf("unknown custom category %q", override)
+	}
+	return override, nil
 }

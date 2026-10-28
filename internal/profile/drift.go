@@ -830,7 +830,7 @@ func (s *Store) refreshSnapshotKey(game, id, key string) error {
 }
 
 func (s *Store) restoreDriftEntry(game, id, key string) (Profile, error) {
-	return s.updateMods(game, id, func(p *Profile, dir string) error {
+	return s.updateModsRecorded(game, id, func(p *Profile, dir string) error {
 		i, err := requireEntry(p.Entries, key)
 		if err != nil {
 			return err
@@ -847,7 +847,7 @@ func (s *Store) restoreDriftEntry(game, id, key string) (Profile, error) {
 }
 
 func (s *Store) revertDriftEntry(game, id, key string) (Profile, error) {
-	return s.updateMods(game, id, func(p *Profile, dir string) error {
+	return s.updateModsRecorded(game, id, func(p *Profile, dir string) error {
 		i, err := requireEntry(p.Entries, key)
 		if err != nil {
 			return err
@@ -1020,25 +1020,11 @@ func (s *Service) ForgetDriftEntry(game, id, key string) (Profile, error) {
 }
 
 func (s *Service) RestoreDriftEntry(game, id, key string) (Profile, error) {
-	p, err := s.store.restoreDriftEntry(game, id, key)
-	if err != nil {
-		return Profile{}, err
-	}
-	if err := s.store.RecordModsSnapshot(game, id); err != nil {
-		return Profile{}, err
-	}
-	return p, nil
+	return s.store.restoreDriftEntry(game, id, key)
 }
 
 func (s *Service) RevertDriftEntry(game, id, key string) (Profile, error) {
-	p, err := s.store.revertDriftEntry(game, id, key)
-	if err != nil {
-		return Profile{}, err
-	}
-	if err := s.store.RecordModsSnapshot(game, id); err != nil {
-		return Profile{}, err
-	}
-	return p, nil
+	return s.store.revertDriftEntry(game, id, key)
 }
 
 func (s *Service) AdoptDriftFolder(ctx context.Context, game, id, folder string) (Profile, error) {

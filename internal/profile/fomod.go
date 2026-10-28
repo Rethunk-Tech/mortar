@@ -5,7 +5,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"slices"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/fomod"
@@ -239,9 +238,7 @@ func (s *Store) replacing(game, id, key string) (Entry, bool, error) {
 	}
 	var held []Entry
 	for _, e := range p.Entries {
-		if slices.ContainsFunc(e.Mods, func(m Component) bool {
-			return slices.ContainsFunc(found, func(f smapimanifest.Mod) bool { return mod.Equal(f.ModID(), m.ID) })
-		}) {
+		if holdsAny(e, found) {
 			held = append(held, e)
 		}
 	}
