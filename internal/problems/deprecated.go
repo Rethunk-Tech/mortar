@@ -26,16 +26,15 @@ type deprecationSource interface {
 }
 
 // deprecatedPackages matches the installed packages against the community's deprecated ones. A failed index read
-// finds none: this is advice, never an error.
-func deprecatedPackages(ctx context.Context, src deprecationSource, key, version string, pkgs []profile.PackageRef) []DeprecatedPackage {
+// finds none, flagged as failed so the result is retried: this is advice, never an error.
+func deprecatedPackages(ctx context.Context, src deprecationSource, key, version string, pkgs []profile.PackageRef) (out []DeprecatedPackage, failed bool) {
 	if key == "" || len(pkgs) == 0 {
-		return nil
+		return nil, false
 	}
 	dep, err := src.Deprecated(ctx, key, version)
 	if err != nil {
-		return nil
+		return nil, true
 	}
-	var out []DeprecatedPackage
 	for _, p := range pkgs {
 		if p.Source != profile.KindThunderstore {
 			continue
@@ -44,7 +43,7 @@ func deprecatedPackages(ctx context.Context, src deprecationSource, key, version
 			out = append(out, DeprecatedPackage{Key: p.Key, ID: p.ID, Name: p.Name, Version: p.Version, Replacement: d.Replacement})
 		}
 	}
-	return out
+	return out, false
 }
 
 // thunderstoreKey is the game's Thunderstore community, empty when the catalog lists none.

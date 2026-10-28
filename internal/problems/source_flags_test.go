@@ -81,7 +81,7 @@ func TestSiteFlaggedRowsNameTheSiteAndAreCached(t *testing.T) {
 		}
 		checker := &fakeStandings{flags: map[string]source.Standing{id: {State: "archived"}}}
 		for range 2 {
-			rows := s.siteFlagged(context.Background(), cl, "", kind, site, checker, mods)
+			rows, _ := s.siteFlagged(context.Background(), cl, "", kind, site, checker, mods)
 			if len(rows) != 1 || rows[0].Key != "k1" || rows[0].Source != site || rows[0].Status != "archived" {
 				t.Fatalf("%s rows = %+v", kind, rows)
 			}
@@ -95,8 +95,8 @@ func TestSiteFlaggedRowsNameTheSiteAndAreCached(t *testing.T) {
 func TestSiteFlaggedSkipsWhenTheSiteCannotAnswer(t *testing.T) {
 	t.Parallel()
 	s, cl := flagService(t)
-	rows := s.siteFlagged(context.Background(), cl, "", profile.KindGitHub, "GitHub", &fakeStandings{err: errors.New("busy")}, siteMods(profile.KindGitHub))
-	if len(rows) != 0 {
+	rows, failed := s.siteFlagged(context.Background(), cl, "", profile.KindGitHub, "GitHub", &fakeStandings{err: errors.New("busy")}, siteMods(profile.KindGitHub))
+	if len(rows) != 0 || !failed {
 		t.Fatalf("rows = %+v", rows)
 	}
 }

@@ -435,7 +435,9 @@ func (s *Service) problems(ctx context.Context, gameID, id string, wait bool) (R
 		owners := sync.OnceValue(func() map[string]framework.Mod { return pluginOwners(mods) })
 		enabledMods := slices.DeleteFunc(slices.Clone(mods), func(x framework.Mod) bool { return !x.Enabled })
 		r.Broken = append(r.Broken, authorMarkedMods(s.home, env.Nexus.Domain, enabledMods)...)
-		r.Broken = append(r.Broken, s.sourceFlagged(ctx, gameID, env.Nexus.Domain, enabledMods)...)
+		flagged, flagsFailed := s.sourceFlagged(ctx, gameID, env.Nexus.Domain, enabledMods)
+		r.Broken = append(r.Broken, flagged...)
+		r.Unknown = r.Unknown || flagsFailed
 		if l, ok := game.LoaderOf(gameID, s.profiles.LoaderID(gameID, id)); ok {
 			if dir, err := s.profiles.ProfileDir(gameID, id); err == nil {
 				r.LoadFailures = loaderFailures(l, loader.ProfileView{Game: gameID, Dir: dir}, s.playerLog(gameID, id, l), owners, packagePatchers(pkgs, mods))
@@ -451,7 +453,9 @@ func (s *Service) problems(ctx context.Context, gameID, id string, wait bool) (R
 		}
 		r.LoadFailures = append(r.LoadFailures, settingRows...)
 		if src, ok := thunderstore.Registered(); ok {
-			r.Deprecated = deprecatedPackages(ctx, src, thunderstoreKey(gameID), "", pkgs)
+			var failed bool
+			r.Deprecated, failed = deprecatedPackages(ctx, src, thunderstoreKey(gameID), "", pkgs)
+			r.Unknown = r.Unknown || failed
 		}
 		deprecated := map[string]bool{}
 		for _, d := range r.Deprecated {
