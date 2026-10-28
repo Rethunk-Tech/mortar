@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"log"
-	"net"
 	"net/http"
 	"strings"
 	"sync"
@@ -280,13 +279,6 @@ func classifyCheckError(err error) error {
 	}
 	if errors.Is(err, errUnreachable) || errors.Is(err, errNoRelease) || errors.Is(err, errCheckFailed) {
 		return err
-	}
-	var ne net.Error
-	if errors.As(err, &ne) && ne.Timeout() {
-		return errUnreachable
-	}
-	if _, ok := errors.AsType[*net.DNSError](err); ok {
-		return errUnreachable
 	}
 	if usererr.KindOf(err) == usererr.Network {
 		return errUnreachable
