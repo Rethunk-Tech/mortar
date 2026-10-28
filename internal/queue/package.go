@@ -197,6 +197,13 @@ func packageSource(it Item) profile.Source {
 	if len(it.Disabled) > 0 {
 		src = src.WithDisabled(it.Disabled)
 	}
+	choices := it.fomod
+	if choices == nil {
+		choices = it.Fomod
+	}
+	if len(choices) > 0 {
+		src = src.WithFomod(choices)
+	}
 	return withIntent(it, src)
 }
 

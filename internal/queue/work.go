@@ -58,6 +58,9 @@ func (s *Service) next(running map[string]bool) (it *Item, act action, held bool
 		case it.overlay && s.waitsForSameMod(it):
 		case running[it.Game+"\n"+it.Profile]:
 			held = true
+		case it.Package != "" && it.staged != "":
+			// A package paused for a question installs from its staged copy, not a second download.
+			return it, install, held
 		case it.Package != "":
 			if pauseFetch {
 				held = true

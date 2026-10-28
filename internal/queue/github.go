@@ -17,6 +17,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -266,13 +267,27 @@ func (s *Service) downloadGitHub(ctx context.Context, it Item) error {
 	return s.afterInstall(it.ID, res, err, unverified)
 }
 
+// stagedSource is the source of an item whose download is staged: a release, a package or a Nexus file.
+func stagedSource(it Item) profile.Source {
+	switch {
+	case it.Repo != "":
+		return sourceOf(it)
+	case it.Package != "":
+		return packageSource(it)
+	}
+	return nexusSource(it, nexus.Mod{PictureURL: "", EndorsementCount: 0})
+}
+
 // installStaged installs what Confirm released. The user has decided, so nothing is verified again.
 // A staged key the store no longer holds is dropped, so Retry downloads the file again.
 func (s *Service) installStaged(ctx context.Context, it Item) error {
-	if ok, err := s.installReadyZip(ctx, it); ok || err != nil {
-		return s.contentPatcherHint(ctx, it, err)
+	// A chosen root answers the question the ready archive's install raised, so it installs from the store.
+	if it.chosenRoot == "" && !it.chosenOverlay {
+		if ok, err := s.installReadyZip(ctx, it); ok || err != nil {
+			return s.contentPatcherHint(ctx, it, err)
+		}
 	}
-	src := sourceOf(it)
+	src := stagedSource(it)
 	if it.chosenOverlay && it.Remap != nil {
 		s.installMu.Lock()
 		res, err := s.d.InstallStaged(it.Game, it.Profile, it.staged, it.Remap.Source.WithOverlay(it.chosenRoot, it.chosenTo))
