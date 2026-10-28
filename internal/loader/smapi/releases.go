@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 
@@ -154,7 +155,7 @@ func (l Loader) Versions(ctx context.Context, _ components.GameInfo) ([]string, 
 	var out []string
 	for _, r := range all {
 		v := strings.TrimPrefix(r.Tag, "v")
-		if r.Draft || !versionPattern.MatchString(v) {
+		if r.Draft || !versionPattern.MatchString(v) || !hasDigest(r, l.installerAsset(v)) {
 			continue
 		}
 		out = append(out, v)
@@ -163,6 +164,14 @@ func (l Loader) Versions(ctx context.Context, _ components.GameInfo) ([]string, 
 		}
 	}
 	return out, nil
+}
+
+// hasDigest reports whether r lists asset with a SHA-256, which Fetch needs before it runs the installer. The older
+// releases GitHub never hashed are left out of the choices rather than offered and refused.
+func hasDigest(r github.Release, asset string) bool {
+	return slices.ContainsFunc(r.Assets, func(a github.Asset) bool {
+		return a.Name == asset && strings.HasPrefix(a.Digest, "sha256:") && len(a.Digest) > len("sha256:")
+	})
 }
 
 // Fetch saves the release installer of version to dest.

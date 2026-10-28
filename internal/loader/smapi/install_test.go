@@ -349,3 +349,16 @@ func TestFetchRefusesUnverifiedInstaller(t *testing.T) {
 		}
 	}
 }
+
+// Versions offers only releases whose installer GitHub hashed, since Fetch refuses the rest.
+func TestVersionsLeaveOutReleasesWithoutADigest(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte(`[{"tag_name":"4.5.2","assets":[{"name":"SMAPI-4.5.2-installer.zip","digest":"sha256:ab"}]},{"tag_name":"4.2.1","assets":[{"name":"SMAPI-4.2.1-installer.zip"}]}]`))
+	}))
+	t.Cleanup(srv.Close)
+	l := Loader{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip"}
+	got, err := l.Versions(context.Background(), components.GameInfo{})
+	if err != nil || len(got) != 1 || got[0] != "4.5.2" {
+		t.Fatalf("versions = %v, %v", got, err)
+	}
+}
