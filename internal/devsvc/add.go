@@ -115,7 +115,7 @@ func (s *Service) Add(ctx context.Context, gameID, dir, profileID string) (setti
 		name, ok = rec.Name, true
 	}
 	if !ok {
-		return bad("%s is not a mod project from the template: it has no src/<Name>/<Name>.csproj", dir)
+		return bad("%s is not a mod project: it has no src/<Name>/<Name>.csproj from the template and no .mortar/project.json of an asset project", dir)
 	}
 	if slices.ContainsFunc(s.Projects(gameID), func(p settings.DevProject) bool { return filepath.Clean(p.Dir) == dir }) {
 		return bad("%s is already in the Develop tab", dir)

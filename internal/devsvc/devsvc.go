@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -248,8 +247,8 @@ func (s *Service) Projects(gameID string) []settings.DevProject {
 func (s *Service) Packages(gameID string) []string {
 	var out []string
 	for _, p := range s.Settings.Get().GamePrefs(gameID).DevProjects {
-		if pkg := packageOf(p.Dir); pkg != "" {
-			out = append(out, pkg)
+		if info, err := projectInfo(p); err == nil && info.Package != "" {
+			out = append(out, info.Package)
 		}
 	}
 	return out
@@ -307,7 +306,7 @@ func (s *Service) TemplateForm(ctx context.Context, gameID string) (Form, error)
 // Create starts a mod project from the game's template with `dotnet new`, points it at the game, records the values
 // it used, and makes its build output an extra mods folder of the development profile (created when none is picked).
 // Nothing is pushed after a GitHub repository is created.
-func (s *Service) Create(ctx context.Context, m NewMod) (settings.DevProject, error) {
+func (s *Service) Create(ctx context.Context, m NewMod) (_ settings.DevProject, err error) {
 	if err := m.check(); err != nil {
 		return settings.DevProject{}, err
 	}
@@ -330,6 +329,7 @@ func (s *Service) Create(ctx context.Context, m NewMod) (settings.DevProject, er
 	if err != nil {
 		return settings.DevProject{}, err
 	}
+	defer removeIfFailed(dest, &err)
 	args, used, err := form.args(m.Values, map[string]string{fillRepositoryURL: url, fillLoaderPackVersion: s.loaderPackVersion(ctx, m.Game)})
 	if err != nil {
 		return settings.DevProject{}, err
@@ -353,14 +353,7 @@ func (s *Service) Create(ctx context.Context, m NewMod) (settings.DevProject, er
 // instantiate runs `dotnet new` on the template in raw, in Mortar's own template hive so nothing is installed for
 // the player's own `dotnet new`. A GitHub copy is generated beside the clone and replaces its files.
 func (s *Service) instantiate(ctx context.Context, tpl components.DevTemplate, raw string, form Form, m NewMod, dest string, args []string) (err error) {
-	if _, statErr := os.Lstat(dest); errors.Is(statErr, fs.ErrNotExist) {
-		// A retry would fail on a folder left behind. A GitHub repository made by now stays.
-		defer func() {
-			if err != nil {
-				_ = fsx.RemoveAll(dest)
-			}
-		}()
-	}
+	defer removeIfFailed(dest, &err)
 	hive := filepath.Join(s.CacheDir, "dev-template-hive")
 	if _, err := s.run(ctx, "", "dotnet", "new", "install", raw, "--force", "--debug:custom-hive", hive); err != nil {
 		if _, missing := errors.AsType[*exec.Error](err); missing {
@@ -384,6 +377,14 @@ func (s *Service) instantiate(ctx context.Context, tpl components.DevTemplate, r
 		return replaceTree(dest, out)
 	}
 	return nil
+}
+
+// removeIfFailed deletes dest, a folder this call made, when the call failed: a retry meets no "already exists". A
+// GitHub repository made by then stays.
+func removeIfFailed(dest string, err *error) {
+	if *err != nil {
+		_ = fsx.RemoveAll(dest)
+	}
 }
 
 // replaceTree swaps everything in dest but its .git for what generated holds.

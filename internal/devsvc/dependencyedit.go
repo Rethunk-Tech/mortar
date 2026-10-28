@@ -32,6 +32,9 @@ func (s *Service) Dependencies(gameID, dir string) ([]Dependency, error) {
 	if err != nil {
 		return nil, err
 	}
+	if p.Kind != "" {
+		return manifestDependencies(p.Dir)
+	}
 	_, raw, err := readCsproj(p.Dir)
 	if err != nil {
 		return nil, err
@@ -62,7 +65,7 @@ func (s *Service) RemoveDependency(gameID, dir, pkg string) error {
 		return usererr.Wrap(usererr.Invalid, fmt.Errorf("%s is not a dependency the project can drop", pkg))
 	}
 	if p.Kind != "" {
-		return setManifestDependency(p.Dir, pkg, "")
+		return s.wire(context.Background(), p.Dir, p.Name, func() error { return setManifestDependency(p.Dir, pkg, "") })
 	}
 	csproj, raw, err := readCsproj(p.Dir)
 	if err != nil {

@@ -13,6 +13,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 func TestAnAssetProjectIsItsOwnPackage(t *testing.T) {
@@ -181,5 +182,73 @@ func TestAnAssetProjectUploadsUnderItsRecordsTeam(t *testing.T) {
 	}
 	if team, err := svc.projectTeam(game, dir); err != nil || team != "Ab" {
 		t.Errorf("team = %q, %v", team, err)
+	}
+}
+
+func TestAnAssetProjectReleasesHereAndEditsItsDetails(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	svc.Run = nil
+	const game = "lethal-company"
+	t.Setenv("GIT_AUTHOR_NAME", "t")
+	t.Setenv("GIT_AUTHOR_EMAIL", "t@t")
+	t.Setenv("GIT_COMMITTER_NAME", "t")
+	t.Setenv("GIT_COMMITTER_EMAIL", "t@t")
+	git := func(dir string, args ...string) {
+		t.Helper()
+		if _, err := svc.run(t.Context(), dir, "git", args...); err != nil {
+			t.Fatal(err)
+		}
+	}
+	dir := assetDir(t, `{"kind":"sounds","name":"Quacks","author":"A","team":"Ab"}`)
+	if err := writeAll(filepath.Join(dir, "manifest.json"), []byte(`{"name":"Quacks","version_number":"0.1.0","description":"d","dependencies":["BepInEx-BepInExPack-5.4.2100"]}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	hub := filepath.Join(t.TempDir(), "github.com", "o", "quacks.git")
+	if err := os.MkdirAll(hub, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	git(hub, "init", "-q", "--bare")
+	git(dir, "init", "-q")
+	git(dir, "add", ".")
+	git(dir, "commit", "-q", "-m", "start")
+	git(dir, "remote", "add", "origin", hub)
+	if _, err := svc.Add(t.Context(), game, dir, ""); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := svc.Release(t.Context(), game, dir, "0.1.0", []string{"First"}); usererr.KindOf(err) != usererr.Unconfirmed {
+		t.Fatalf("untrusted release = %v", err)
+	}
+	if err := svc.Trust(game, dir); err != nil {
+		t.Fatal(err)
+	}
+	if v, err := svc.NextVersions(t.Context(), game, dir); err != nil || v.GitHub != "" {
+		t.Fatalf("versions = %+v, %v: no workflow publishes an asset project", v, err)
+	}
+	if remote, err := svc.Release(t.Context(), game, dir, "0.1.0", []string{"First"}); err != nil || remote != "" {
+		t.Fatalf("release = %q, %v", remote, err)
+	}
+	git(hub, "rev-parse", "-q", "--verify", "refs/tags/v0.1.0")
+
+	if err := svc.AddDependency(game, dir, "Ab-Other", "1.0.0", false); err != nil {
+		t.Fatal(err)
+	}
+	if deps, err := svc.Dependencies(game, dir); err != nil || len(deps) != 1 || deps[0].Package != "Ab-Other" || deps[0].Version != "1.0.0" {
+		t.Fatalf("dependencies = %+v, %v", deps, err)
+	}
+	if err := svc.RemoveDependency(game, dir, "Ab-Other"); err != nil {
+		t.Fatal(err)
+	}
+	if deps, _ := svc.Dependencies(game, dir); len(deps) != 0 {
+		t.Errorf("dependencies = %+v", deps)
+	}
+	info, err := svc.Edit(t.Context(), game, dir, ProjectEdit{Name: "Quacks", Description: "Loud.", Author: "B", Team: "Bc"})
+	if err != nil || info.Description != "Loud." || info.Author != "B" || info.Team != "Bc" {
+		t.Fatalf("edited = %+v, %v", info, err)
+	}
+	if _, err := svc.Edit(t.Context(), game, dir, ProjectEdit{Name: "Other", Description: "d", Author: "B", Team: "Bc"}); err == nil {
+		t.Error("a rename of a project of files was accepted")
+	}
+	if pkgs := svc.Packages(game); !slices.Equal(pkgs, []string{"Bc-Quacks"}) {
+		t.Errorf("packages = %v", pkgs)
 	}
 }

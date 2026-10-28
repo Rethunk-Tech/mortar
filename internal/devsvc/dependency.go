@@ -44,7 +44,7 @@ func (s *Service) AddDependency(gameID, dir, pkg, version string, soft bool) err
 	}
 	if p.Kind != "" {
 		// A soft dependency means nothing to a package of files; the loader it needs is required.
-		return setManifestDependency(p.Dir, pkg, version)
+		return s.wire(context.Background(), p.Dir, p.Name, func() error { return setManifestDependency(p.Dir, pkg, version) })
 	}
 	csproj, raw, err := readCsproj(p.Dir)
 	if err != nil {

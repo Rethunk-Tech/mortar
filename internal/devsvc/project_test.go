@@ -274,3 +274,30 @@ func TestInspectRunsNoGitForAnUntrustedProject(t *testing.T) {
 		t.Errorf("git ran in a project the user has not trusted: %v", run.calls)
 	}
 }
+
+func TestEditingOnlyTheIDPrefixDropsTheOldAssembly(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	dir := fixtureProject(t, svc)
+	out := svc.Settings.Get().GamePrefs("lethal-company").DevProjects[0].Output
+	if err := os.MkdirAll(out, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	oldDLL := filepath.Join(out, "com.ab.ShopDrop.dll")
+	other := filepath.Join(out, "Dependency.dll")
+	for _, f := range []string{oldDLL, other} {
+		if err := fsx.WriteFile(f, []byte("MZ"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if _, err := svc.Edit(t.Context(), "lethal-company", dir, ProjectEdit{
+		Name: "ShopDrop", Description: "d", Author: "A", Team: "Ab", IDPrefix: "com.cd", Categories: []string{"mods"},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(oldDLL); err == nil {
+		t.Error("the old assembly stayed")
+	}
+	if _, err := os.Stat(other); err != nil {
+		t.Errorf("another file went: %v", err)
+	}
+}

@@ -262,7 +262,8 @@ func (s *Service) dropBuild(gameID string, p settings.DevProject) error {
 	return err
 }
 
-func (e ProjectEdit) check() error {
+// checkDetails checks what every project has: its name, description, author and team.
+func (e ProjectEdit) checkDetails() error {
 	bad := func(what string) error { return usererr.Wrap(usererr.Invalid, errors.New(what)) }
 	oneLine := func(v string) bool { return strings.TrimSpace(v) != "" && !strings.ContainsAny(v, "\r\n") }
 	switch {
@@ -274,6 +275,16 @@ func (e ProjectEdit) check() error {
 		return bad("name the author")
 	case !teamPattern.MatchString(e.Team):
 		return bad("the team holds only letters, digits and underscores")
+	}
+	return nil
+}
+
+func (e ProjectEdit) check() error {
+	if err := e.checkDetails(); err != nil {
+		return err
+	}
+	bad := func(what string) error { return usererr.Wrap(usererr.Invalid, errors.New(what)) }
+	switch {
 	case !guidPattern.MatchString(e.IDPrefix):
 		return bad("the id prefix holds lower-case letters and digits between dots, such as com.yourname")
 	case slices.ContainsFunc(e.Categories, func(c string) bool { return !categorySlug.MatchString(c) }):
@@ -284,11 +295,20 @@ func (e ProjectEdit) check() error {
 
 // Edit writes new details into the project's files, renaming the project first when the name changed.
 func (s *Service) Edit(ctx context.Context, gameID, dir string, e ProjectEdit) (ProjectInfo, error) {
-	if err := e.check(); err != nil {
-		return ProjectInfo{}, err
-	}
 	p, err := s.project(gameID, dir)
 	if err != nil {
+		return ProjectInfo{}, err
+	}
+	if p.Kind != "" {
+		if err := e.checkDetails(); err != nil {
+			return ProjectInfo{}, err
+		}
+		if err := editAsset(p, e); err != nil {
+			return ProjectInfo{}, err
+		}
+		return s.Inspect(ctx, gameID, dir)
+	}
+	if err := e.check(); err != nil {
 		return ProjectInfo{}, err
 	}
 	csproj, ok := csprojOf(p.Dir)
@@ -318,6 +338,12 @@ func (s *Service) Edit(ctx context.Context, gameID, dir string, e ProjectEdit) (
 		return body
 	}); err != nil {
 		return ProjectInfo{}, err
+	}
+	if guid := e.IDPrefix + "." + e.Name; old.GUID != guid && e.Name == old.Name {
+		// The build only adds files, so the old assembly would load beside the renamed one.
+		for _, ext := range []string{".dll", ".pdb"} {
+			_ = fsx.Remove(filepath.Join(p.Output, old.GUID+ext))
+		}
 	}
 	if err := editFile(filepath.Join(p.Dir, propsFile), func(body string) string {
 		body = setProp(body, "ThunderstoreTeam", e.Team)

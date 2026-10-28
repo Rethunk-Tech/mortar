@@ -193,7 +193,10 @@ func (s *Service) NextVersions(ctx context.Context, gameID, dir string) (Version
 	}
 	latest := s.latestRelease(ctx, p.Dir)
 	v := nextVersions(latest)
-	v.GitHub = s.githubRemote(ctx, p.Dir)
+	if p.Kind == "" {
+		// An asset project has no CI workflow; its release is uploaded from here.
+		v.GitHub = s.githubRemote(ctx, p.Dir)
+	}
 	since := "HEAD"
 	if latest != "" {
 		since = "v" + latest + "..HEAD"
@@ -272,6 +275,9 @@ func (s *Service) Release(ctx context.Context, gameID, dir, version string, note
 	if err != nil {
 		return "", err
 	}
+	if err := requireTrust(p); err != nil {
+		return "", err
+	}
 	if err := s.tagRelease(ctx, p.Dir, version, notes); err != nil {
 		return "", err
 	}
@@ -281,6 +287,9 @@ func (s *Service) Release(ctx context.Context, gameID, dir, version string, note
 	}
 	if _, err := s.run(ctx, p.Dir, "git", "push", remote, "HEAD", "refs/tags/v"+version); err != nil {
 		return "", fmt.Errorf("v%s is tagged here, but pushing it to %s failed: %w", version, remote, err)
+	}
+	if p.Kind != "" {
+		return "", nil
 	}
 	return remote, nil
 }

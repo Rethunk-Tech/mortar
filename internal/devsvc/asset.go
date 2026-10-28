@@ -66,7 +66,7 @@ func (s *Service) assetKind(gameID, id string) (components.AssetKind, error) {
 
 // createAsset starts a project of the kind m.Kind: a package folder Mortar packs itself, so no SDK is needed. Its
 // dependency joins later through AddDependency, as the wizard's choices do for code.
-func (s *Service) createAsset(ctx context.Context, m NewMod) (settings.DevProject, error) {
+func (s *Service) createAsset(ctx context.Context, m NewMod) (_ settings.DevProject, err error) {
 	kind, err := s.assetKind(m.Game, m.Kind)
 	if err != nil {
 		return settings.DevProject{}, err
@@ -75,6 +75,7 @@ func (s *Service) createAsset(ctx context.Context, m NewMod) (settings.DevProjec
 	if err != nil {
 		return settings.DevProject{}, err
 	}
+	defer removeIfFailed(dest, &err)
 	author := cmp.Or(m.Values["modAuthor"], m.Owner)
 	manifest, err := json.MarshalIndent(thunderstoreManifest{
 		Name: m.Name, VersionNumber: "0.1.0", Description: m.Values["description"], WebsiteURL: &url, Dependencies: []string{},
@@ -100,7 +101,6 @@ func (s *Service) createAsset(ctx context.Context, m NewMod) (settings.DevProjec
 		files[name] = []byte(strings.ReplaceAll(body, "{name}", m.Name))
 	}
 	if err := writeFiles(dest, files); err != nil {
-		_ = fsx.RemoveAll(dest)
 		return settings.DevProject{}, err
 	}
 	if err := s.applyLicense(ctx, dest, m.License); err != nil {
@@ -173,6 +173,24 @@ SOFTWARE.
 // setManifestDependency adds pkg at version to an asset project's manifest.json, replacing any version of it, or
 // removes it when version is empty.
 func setManifestDependency(dir, pkg, version string) error {
+	return editManifest(dir, func(raw map[string]any) {
+		deps := []string{}
+		if list, ok := raw["dependencies"].([]any); ok {
+			for _, d := range list {
+				if s, ok := d.(string); ok && !strings.HasPrefix(s, pkg+"-") {
+					deps = append(deps, s)
+				}
+			}
+		}
+		if version != "" {
+			deps = append(deps, pkg+"-"+version)
+		}
+		raw["dependencies"] = deps
+	})
+}
+
+// editManifest rewrites manifest.json with edit applied, keeping the fields Mortar does not know.
+func editManifest(dir string, edit func(raw map[string]any)) error {
 	file := filepath.Join(dir, "manifest.json")
 	body, err := fsx.ReadFile(file)
 	if err != nil {
@@ -182,23 +200,52 @@ func setManifestDependency(dir, pkg, version string) error {
 	if err := json.Unmarshal(body, &raw); err != nil {
 		return usererr.Wrap(usererr.Damaged, fmt.Errorf("manifest.json: %w", err))
 	}
-	deps := []string{}
-	if list, ok := raw["dependencies"].([]any); ok {
-		for _, d := range list {
-			if s, ok := d.(string); ok && !strings.HasPrefix(s, pkg+"-") {
-				deps = append(deps, s)
-			}
-		}
-	}
-	if version != "" {
-		deps = append(deps, pkg+"-"+version)
-	}
-	raw["dependencies"] = deps
+	edit(raw)
 	out, err := json.MarshalIndent(raw, "", "  ")
 	if err != nil {
 		return err
 	}
 	return fsx.WriteFile(file, append(out, '\n'), 0o644) // #nosec G306 -- a tracked project file
+}
+
+// manifestDependencies lists manifest.json's dependencies as packages and versions, the loader left out.
+func manifestDependencies(dir string) ([]Dependency, error) {
+	body, err := fsx.ReadFile(filepath.Join(dir, "manifest.json"))
+	if err != nil {
+		return nil, err
+	}
+	var m thunderstoreManifest
+	if err := json.Unmarshal(body, &m); err != nil {
+		return nil, usererr.Wrap(usererr.Damaged, fmt.Errorf("manifest.json: %w", err))
+	}
+	out := []Dependency{}
+	for _, d := range m.Dependencies {
+		if i := strings.LastIndex(d, "-"); i > 0 && d[:i] != loaderPackage {
+			out = append(out, Dependency{Package: d[:i], Version: d[i+1:]})
+		}
+	}
+	return out, nil
+}
+
+// editAsset writes an asset project's description into manifest.json and its author and team into its record; the
+// name stays, since the folder, the record and the package are named by it.
+func editAsset(p settings.DevProject, e ProjectEdit) error {
+	rec, ok := readAssetRecord(p.Dir)
+	if !ok {
+		return usererr.Wrap(usererr.NotFound, errors.New("the project's record is missing"))
+	}
+	if e.Name != rec.Name {
+		return usererr.Wrap(usererr.Invalid, errors.New("a project of files keeps its name"))
+	}
+	rec.Author, rec.Team = e.Author, e.Team
+	body, err := json.MarshalIndent(rec, "", "  ")
+	if err != nil {
+		return err
+	}
+	if err := fsx.WriteFile(filepath.Join(p.Dir, ".mortar", assetRecordFile), append(body, '\n'), 0o644); err != nil { // #nosec G306 -- a tracked project file
+		return err
+	}
+	return editManifest(p.Dir, func(raw map[string]any) { raw["description"] = e.Description })
 }
 
 // assetInfo reads an asset project's details from manifest.json and its record.
