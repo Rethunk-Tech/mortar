@@ -176,17 +176,22 @@ function useBrowseQuery({
   const known = sources.some((s) => s.id === chosen) || (chosen === ALL && merged)
   const fallback = merged ? ALL : (sources[0]?.id ?? '')
   const source = known ? chosen : fallback
-  const defaults = useLoaded<string[]>(
-    chosenFilter || source === '' ? null : () => defaultExcludes(game, source),
+  // The loaded excludes carry their source: right after a source switch they still belong to the previous one.
+  const defaults = useLoaded<{ source: string; exclude: string[] }>(
+    chosenFilter || source === ''
+      ? null
+      : () => defaultExcludes(game, source).then((exclude) => ({ source, exclude })),
     [defaultExcludes, game, source, chosenFilter !== undefined],
-    [],
+    { source: '', exclude: [] },
   )
   // Until the player edits the filter, it starts with the default excludes; the first search waits for them.
   const stored = useMemo(
-    () => chosenFilter ?? { ...NO_FILTER, exclude: defaults.data },
-    [chosenFilter, defaults.data],
+    () => chosenFilter ?? { ...NO_FILTER, exclude: defaults.data.exclude },
+    [chosenFilter, defaults.data.exclude],
   )
-  const waiting = chosenFilter === undefined && defaults.loading
+  const waiting =
+    chosenFilter === undefined &&
+    (defaults.loading || (defaults.data.source !== source && defaults.error === null))
   const sorts = sortsFor(source, sources)
   const filter = useMemo(
     () => ({ ...stored, ...modes, sort: effectiveSort(stored.sort, sorts) }),
@@ -217,7 +222,11 @@ function useBrowseQuery({
   useEffect(() => () => useBrowseView.getState().setDraft(''), [])
 
   useEffect(() => {
-    if (source === '' || waiting || retry + hides < 0) {
+    if (waiting && source !== '') {
+      setStatus('loading')
+      return
+    }
+    if (source === '' || retry + hides < 0) {
       setResult(EMPTY_RESULT)
       setStatus('idle')
       return

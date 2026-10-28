@@ -32,6 +32,9 @@ function searchHint(source: string, premium: boolean): string {
       msg`Search ${{ source: sourceLabel('nexus') }}. Download installs the mod into this profile.`,
     )
   }
+  if (source !== NEXUS) {
+    return i18n._(msg`Search ${{ source: sourceLabel(source) }}. Add puts the mod in this profile.`)
+  }
   return i18n._(
     msg`Search ${{ source: sourceLabel('nexus') }}. Free accounts download from the mod's page with Mod Manager Download.`,
   )
