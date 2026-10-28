@@ -64,15 +64,25 @@ function useHits(game: string, dir: string, assembly: string, query: string) {
       setHits([])
       return
     }
+    let alive = true
     const timer = setTimeout(() => {
       GameCode(game, dir, assembly, query)
         .then((found) => {
-          setHits(found ?? [])
-          setError('')
+          if (alive) {
+            setHits(found ?? [])
+            setError('')
+          }
         })
-        .catch((e: unknown) => setError(e instanceof Error ? e.message : String(e)))
+        .catch((e: unknown) => {
+          if (alive) {
+            setError(e instanceof Error ? e.message : String(e))
+          }
+        })
     }, SEARCH_DELAY_MS)
-    return () => clearTimeout(timer)
+    return () => {
+      alive = false
+      clearTimeout(timer)
+    }
   }, [game, dir, assembly, query])
   return { hits, error }
 }
@@ -224,7 +234,14 @@ function UsagesDrawer({
       return
     }
     setUsages(null)
-    Usages(game, dir, target).then(setUsages).catch(reportError(t`Could not find usages`))
+    let alive = true
+    const failed = reportError(t`Could not find usages`)
+    Usages(game, dir, target)
+      .then((found) => alive && setUsages(found))
+      .catch((e: unknown) => alive && failed(e))
+    return () => {
+      alive = false
+    }
   }, [open, game, dir, target, t])
   return (
     <Drawer

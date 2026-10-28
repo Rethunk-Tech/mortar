@@ -96,12 +96,16 @@ function useSearch(game: string, profile: string, query: string) {
       setHits(NO_HITS)
       return
     }
+    let alive = true
     const timer = setTimeout(() => {
       Search(game, THUNDERSTORE, query, 1, profile, NO_FILTER)
-        .then((page) => setHits((page.items ?? []).slice(0, SEARCH_HITS)))
-        .catch(() => setHits(NO_HITS))
+        .then((page) => alive && setHits((page.items ?? []).slice(0, SEARCH_HITS)))
+        .catch(() => alive && setHits(NO_HITS))
     }, SEARCH_DELAY_MS)
-    return () => clearTimeout(timer)
+    return () => {
+      alive = false
+      clearTimeout(timer)
+    }
   }, [game, profile, query])
   return hits
 }
