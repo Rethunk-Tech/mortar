@@ -50,7 +50,7 @@ func Pin(dst, src []byte, mods []mod.ID, files []string) ([]byte, error) {
 	}
 	srcFile := map[string]*zip.File{}
 	for _, f := range sz.File {
-		if f.Name != profileFile && pinned(f.Name) {
+		if f.Name != profileFile && pinned(f.Name) && !skippedChanged(f.Name) {
 			srcFile[f.Name] = f
 		}
 	}
@@ -71,6 +71,7 @@ func Pin(dst, src []byte, mods []mod.ID, files []string) ([]byte, error) {
 	written := map[string]bool{}
 	for _, f := range dz.File {
 		switch {
+		case skippedChanged(f.Name):
 		case f.Name == profileFile:
 			err = put(f, f.Name, func(d []byte) ([]byte, error) { return withEntries(d, entries) })
 		case pinned(f.Name):

@@ -414,7 +414,7 @@ func readZip(zr *zip.Reader) (Preview, error) {
 				return Preview{}, fmt.Errorf("%w: unsafe path %q", ErrBadFile, f.Name)
 			}
 			// An older release let a copy of any non-program type travel; the file is still good without it.
-			if !profile.ChangedTypeAllowed(rel) {
+			if skippedChanged(f.Name) {
 				slog.Warn("share: skipped a changed copy of a type no longer carried", "path", rel)
 				continue
 			}
@@ -488,4 +488,11 @@ func parseFileDoc(raw []byte) (Preview, error) {
 		pv.Choices = *d.Problems
 	}
 	return pv, nil
+}
+
+// skippedChanged reports a changed/ entry of a type no longer carried: reading leaves it out, so every rewrite of the
+// file must too.
+func skippedChanged(name string) bool {
+	rel, ok := strings.CutPrefix(name, changedPrefix)
+	return ok && !profile.ChangedTypeAllowed(rel)
 }

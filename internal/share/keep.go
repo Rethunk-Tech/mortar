@@ -48,6 +48,9 @@ func WithRefs(raw []byte, base, add []Ref) ([]byte, error) {
 	var out bytes.Buffer
 	zw := zip.NewWriter(&out)
 	for _, f := range zr.File {
+		if skippedChanged(f.Name) {
+			continue
+		}
 		data, err := readBounded(f, MaxFileBytes)
 		if err != nil {
 			return nil, err
