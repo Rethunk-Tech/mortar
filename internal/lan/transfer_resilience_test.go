@@ -232,3 +232,24 @@ func TestReceiveFailuresNameTheModAndTheCause(t *testing.T) {
 		}
 	}
 }
+
+func TestASilentSenderIsGivenUpOnAndRetried(t *testing.T) {
+	t.Parallel()
+	var hits atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hits.Add(1)
+		w.Header().Set("Content-Length", "100000")
+		_, _ = w.Write([]byte("partial"))
+		_ = http.NewResponseController(w).Flush()
+		<-r.Context().Done()
+	}))
+	t.Cleanup(server.Close)
+	receiver := NewService(Deps{Store: store.OpenAt(t.TempDir())})
+	receiver.receiveIdle = 50 * time.Millisecond
+	incoming := incomingTransfer{Peer: strings.TrimPrefix(server.URL, "http://"), Sender: "Desk", Game: "stardew", Token: "t"}
+	item := transferItem{Key: store.NexusKey(7, 1), Package: "Mod"}
+	_, err := receiver.fetchEntry(t.Context(), incoming, item, 1, 0, 1, 0, time.Now())
+	if usererr.KindOf(err) != usererr.Network || hits.Load() != fetchAttempts {
+		t.Fatalf("err = %v, requests = %d, want a network error after %d tries", err, hits.Load(), fetchAttempts)
+	}
+}

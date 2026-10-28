@@ -151,6 +151,8 @@ type Service struct {
 	lastReceive map[string]time.Time
 	// sharesInFlight counts /share requests being read or decoded.
 	sharesInFlight int
+	// receiveIdle overrides storeIdle for a receiving copy; tests shorten it.
+	receiveIdle time.Duration
 }
 
 type peerRecord struct {

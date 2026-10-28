@@ -15,6 +15,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -264,6 +265,10 @@ func (s *Service) fetchOnce(
 	if err != nil {
 		return 0, err
 	}
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	idle := newIdleWatch(cmp.Or(s.receiveIdle, storeIdle), cancel)
+	defer idle.stop()
 	request, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return 0, err
@@ -271,6 +276,9 @@ func (s *Service) fetchOnce(
 	request.Header.Set("Authorization", "Bearer "+incoming.Token)
 	response, err := (&http.Client{}).Do(request)
 	if err != nil {
+		if idle.stalled.Load() {
+			return 0, idle.err(incoming.Sender)
+		}
 		if errors.Is(err, context.Canceled) {
 			return 0, err
 		}
@@ -290,7 +298,7 @@ func (s *Service) fetchOnce(
 	defer func() { _ = fsx.RemoveAll(temp) }()
 	var received int64
 	var last time.Time
-	if err := extractTar(ctx, response.Body, temp, &received, func(n int64) {
+	if err := extractTar(ctx, idle.reader(response.Body), temp, &received, func(n int64) {
 		if now := time.Now(); now.Sub(last) >= progressEvery {
 			last = now
 		} else {
@@ -300,6 +308,9 @@ func (s *Service) fetchOnce(
 			ID: id, Current: current, Total: total, Bytes: bytes + n, Rate: transferRate(bytes+n, started),
 		})
 	}); err != nil {
+		if idle.stalled.Load() {
+			return 0, idle.err(incoming.Sender)
+		}
 		return 0, receiveError(incoming.Sender, err)
 	}
 	got, err := store.HashDir(temp)
@@ -320,6 +331,40 @@ func (s *Service) fetchOnce(
 	}
 	log.Printf("lan: %s from %s", modName(item), incoming.Sender)
 	return received, nil
+}
+
+// idleWatch cancels a download whose sender goes silent: the timer restarts on every read and on the request's start.
+type idleWatch struct {
+	d       time.Duration
+	timer   *time.Timer
+	stalled atomic.Bool
+}
+
+func newIdleWatch(d time.Duration, cancel context.CancelFunc) *idleWatch {
+	w := &idleWatch{d: d}
+	w.timer = time.AfterFunc(d, func() { w.stalled.Store(true); cancel() })
+	return w
+}
+
+func (w *idleWatch) stop() { w.timer.Stop() }
+
+func (w *idleWatch) err(sender string) error {
+	return usererr.Wrap(usererr.Network, fmt.Errorf("%s stopped sending a file: nothing arrived for %s", sender, w.d))
+}
+
+func (w *idleWatch) reader(r io.Reader) io.Reader { return idleReader{r, w} }
+
+type idleReader struct {
+	io.Reader
+	w *idleWatch
+}
+
+func (r idleReader) Read(p []byte) (int, error) {
+	n, err := r.Reader.Read(p)
+	if n > 0 {
+		r.w.timer.Reset(r.w.d)
+	}
+	return n, err
 }
 
 // receiveError says what stopped a file's copy: the disk, the sender going away, or a file that cannot be unpacked.
