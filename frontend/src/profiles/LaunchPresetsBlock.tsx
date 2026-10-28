@@ -50,7 +50,7 @@ function PresetRow({
       <Button onClick={onTemplate}>{t`Save as template`}</Button>
       {actions ? (
         <>
-          <Button onClick={actions.edit}>{t`Edit`}</Button>
+          <Button onClick={actions.edit}>{t`Edit…`}</Button>
           <Button onClick={actions.copy}>{t`Duplicate`}</Button>
           <Button color="error" onClick={actions.remove}>{t`Delete`}</Button>
         </>
@@ -172,7 +172,7 @@ function LaunchPresetsBlock({
         />
       ))}
       <Box sx={{ display: 'flex', gap: space.gap }}>
-        <Button onClick={() => setEditing(NEW_PRESET)}>{t`Add preset`}</Button>
+        <Button onClick={() => setEditing(NEW_PRESET)}>{t`Add preset…`}</Button>
         <Button onClick={() => setTemplates(true)}>{t`Add from game presets…`}</Button>
       </Box>
       <LaunchPresetTemplatesDialog

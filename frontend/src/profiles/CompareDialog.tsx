@@ -337,7 +337,7 @@ function ComparePair({
           <EmptyState
             compact={true}
             icon={<ListChecks size={28} />}
-            title={needle ? t`No matching mods` : t`These profiles have the same mods.`}
+            title={needle ? t`No matching mods` : t`These profiles have the same mods`}
           >
             {needle ? t`Neither profile has a mod that matches the filter.` : ''}
           </EmptyState>

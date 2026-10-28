@@ -18,6 +18,7 @@ export async function restoreBackup(): Promise<void> {
       return
     }
     await useProfiles.getState().refresh()
+    useProfiles.getState().open(r.profile)
     const missing = r.unavailable ?? []
     let body = i18n._(msg`Every mod is in place.`)
     if (missing.length > 0) {

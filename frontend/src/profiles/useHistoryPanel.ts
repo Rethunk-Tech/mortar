@@ -106,6 +106,8 @@ export function useHistoryPanel(
     setMissingNames([])
     setMissingWants([])
     setPicked([])
+    setEvents([])
+    setItems({})
     History(game.id, profileId)
       .then(async (list) => {
         const rows = list ?? []

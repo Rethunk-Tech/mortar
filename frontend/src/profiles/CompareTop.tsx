@@ -3,6 +3,7 @@ import { Box, Button, IconButton, Menu, Typography } from '@mui/material'
 import { ChevronDown, Search, Users } from 'lucide-react'
 import { useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { hasModList } from '../game/modList.ts'
 import { modsLabel } from '../i18n/counts.ts'
 import { MenuAction, MenuCheck } from '../shell/MenuAction.tsx'
 import { MenuHeading } from '../shell/TitleMenu.tsx'
@@ -14,7 +15,7 @@ import { useProfiles } from './store.ts'
 function OtherPicker({
   profileA,
   profileB,
-  gameId,
+  hosted,
   disabled,
   onPick,
   onFriend,
@@ -22,7 +23,7 @@ function OtherPicker({
 }: {
   profileA: Profile
   profileB: Profile | null
-  gameId: string
+  hosted: boolean
   disabled: boolean
   onPick: (id: string) => void
   onFriend: () => void
@@ -67,7 +68,7 @@ function OtherPicker({
           label={t`A friend's link or file…`}
           onClick={choose(onFriend)}
         />
-        {gameId === 'stardew' ? (
+        {hosted ? (
           <MenuAction
             icon={<Users size={16} />}
             label={t`A multiplayer host's list…`}
@@ -99,8 +100,7 @@ export function CompareTop({
   onHost: () => void
 }) {
   const { t } = useLingui()
-  const game = useProfiles((s) => s.game)
-  const gameId = game?.id ?? ''
+  const hosted = useProfiles((s) => hasModList(s.game ?? undefined))
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, px: 3, py: space.pad }}>
       <Box
@@ -121,7 +121,7 @@ export function CompareTop({
       <OtherPicker
         profileA={profileA}
         profileB={profileB}
-        gameId={gameId}
+        hosted={hosted}
         disabled={pending}
         onPick={onPick}
         onFriend={onFriend}

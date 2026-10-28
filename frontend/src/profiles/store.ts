@@ -448,7 +448,12 @@ export function initProfilesChanged() {
   Events.On('profiles:changed', (event) => {
     const s = useProfiles.getState()
     if (s.game?.id === event.data) {
-      s.refresh().catch(() => undefined)
+      s.refresh()
+        .then(() => {
+          s.ensureOpen()
+          return s.loadTrash()
+        })
+        .catch(() => undefined)
     }
   })
 }
