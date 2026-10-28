@@ -9,13 +9,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/secret"
 )
 
@@ -186,7 +186,7 @@ func (o OAuth) exchange(ctx context.Context, form url.Values) (Tokens, error) {
 		Refresh   string `json:"refresh_token"`
 		ExpiresIn int    `json:"expires_in"`
 	}
-	if err := json.NewDecoder(io.LimitReader(resp.Body, maxTokenBody)).Decode(&raw); err != nil {
+	if err := json.NewDecoder(fsx.CapReader(resp.Body, maxTokenBody)).Decode(&raw); err != nil {
 		return Tokens{}, err
 	}
 	if raw.Access == "" {

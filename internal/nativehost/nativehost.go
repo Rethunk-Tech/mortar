@@ -459,7 +459,7 @@ func serveHandlers(r io.Reader, w io.Writer, h handlers) error {
 			return fmt.Errorf("message of %d bytes is too large", n)
 		}
 		var req request
-		if err := json.NewDecoder(io.LimitReader(r, int64(n))).Decode(&req); err != nil {
+		if err := json.NewDecoder(fsx.CapReader(r, int64(n))).Decode(&req); err != nil {
 			return err
 		}
 		mismatch := protocolMismatch(req.Protocol)

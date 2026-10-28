@@ -122,7 +122,7 @@ func Validate(path string) []string {
 	if err != nil {
 		return append(issues, err.Error())
 	}
-	body, err := io.ReadAll(io.LimitReader(rc, maxManifest))
+	body, err := fsx.ReadCapped(rc, maxManifest)
 	_ = rc.Close()
 	var m thunderstoreManifest
 	if err != nil || json.Unmarshal(body, &m) != nil {
@@ -161,7 +161,7 @@ func zipFileHash(path, name string) string {
 	}
 	defer func() { _ = rc.Close() }()
 	h := sha256.New()
-	if _, err := io.Copy(h, io.LimitReader(rc, maxManifest)); err != nil {
+	if _, err := io.Copy(h, fsx.CapReader(rc, maxManifest)); err != nil {
 		return ""
 	}
 	return fmt.Sprintf("%x", h.Sum(nil))

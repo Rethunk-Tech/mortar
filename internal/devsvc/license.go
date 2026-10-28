@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"path/filepath"
 	"slices"
@@ -49,7 +48,7 @@ func (s *Service) applyLicense(ctx context.Context, dir, key string) error {
 	var license struct {
 		Body string `json:"body"`
 	}
-	if err := json.NewDecoder(io.LimitReader(res.Body, 1<<20)).Decode(&license); err != nil || license.Body == "" {
+	if err := json.NewDecoder(fsx.CapReader(res.Body, 1<<20)).Decode(&license); err != nil || license.Body == "" {
 		return usererr.Wrap(usererr.Network, errors.New("the license text could not be read"))
 	}
 	return fsx.WriteFile(filepath.Join(dir, "LICENSE"), []byte(license.Body), 0o644) // #nosec G306 -- a tracked text file

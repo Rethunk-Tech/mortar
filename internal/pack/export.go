@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -90,7 +89,7 @@ func (c Code) ExportCode(ctx context.Context, d Draft) (string, error) {
 	var out struct {
 		Key string `json:"key"`
 	}
-	if err := json.NewDecoder(io.LimitReader(resp.Body, 1<<20)).Decode(&out); err != nil || out.Key == "" {
+	if err := json.NewDecoder(fsx.CapReader(resp.Body, 1<<20)).Decode(&out); err != nil || out.Key == "" {
 		return "", errors.New("thunderstore returned no profile key")
 	}
 	return out.Key, nil

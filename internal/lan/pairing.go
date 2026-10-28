@@ -536,5 +536,5 @@ func (s *Service) postJSON(ctx context.Context, peerID, endpointPath string, bod
 		message, _ := io.ReadAll(io.LimitReader(resp.Body, 4<<10))
 		return fmt.Errorf("the other computer refused: %s", strings.TrimSpace(string(message)))
 	}
-	return json.NewDecoder(io.LimitReader(resp.Body, 16<<10)).Decode(into)
+	return json.NewDecoder(fsx.CapReader(resp.Body, 16<<10)).Decode(into)
 }

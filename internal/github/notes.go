@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -60,7 +59,7 @@ func (c *Client) ReleaseNotes(ctx context.Context, owner, repo, tag string) (str
 	var rel struct {
 		Body string `json:"body"`
 	}
-	if err := json.NewDecoder(io.LimitReader(resp.Body, maxNotes)).Decode(&rel); err != nil {
+	if err := json.NewDecoder(fsx.CapReader(resp.Body, maxNotes)).Decode(&rel); err != nil {
 		return "", fmt.Errorf("read GitHub's release response: %w", err)
 	}
 	notes := strings.TrimSpace(rel.Body)

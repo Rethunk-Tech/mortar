@@ -2,7 +2,6 @@ package lan
 
 import (
 	"encoding/json"
-	"io"
 	"io/fs"
 	"log"
 	"net/http"
@@ -10,6 +9,8 @@ import (
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 const (
@@ -165,7 +166,7 @@ func (s *Service) handleOutgoing(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var report outgoingReport
-	if err := json.NewDecoder(io.LimitReader(r.Body, 1<<20)).Decode(&report); err != nil {
+	if err := json.NewDecoder(fsx.CapReader(r.Body, 1<<20)).Decode(&report); err != nil {
 		http.Error(w, "invalid report", http.StatusBadRequest)
 		return
 	}

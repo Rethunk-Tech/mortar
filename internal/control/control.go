@@ -190,7 +190,7 @@ func serveConn(ctx context.Context, conn net.Conn, token, version string, h Hand
 	defer func() { _ = conn.Close() }()
 	r := bufio.NewReaderSize(conn, 64<<10)
 	var req request
-	if err := json.NewDecoder(io.LimitReader(r, controlwire.MaxLine)).Decode(&req); err != nil {
+	if err := json.NewDecoder(fsx.CapReader(r, controlwire.MaxLine)).Decode(&req); err != nil {
 		return
 	}
 	if subtle.ConstantTimeCompare([]byte(req.Token), []byte(token)) != 1 {

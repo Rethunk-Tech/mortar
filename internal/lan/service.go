@@ -26,6 +26,7 @@ import (
 	"time"
 	"unicode"
 
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/share"
@@ -607,7 +608,7 @@ func (s *Service) sendPayload(ctx context.Context, peerID, game, profileID strin
 		return refused(fmt.Sprintf("HTTP %d", resp.StatusCode))
 	}
 	var result shareResponse
-	if err := json.NewDecoder(io.LimitReader(resp.Body, 64<<10)).Decode(&result); err != nil && !errors.Is(err, io.EOF) {
+	if err := json.NewDecoder(fsx.CapReader(resp.Body, 64<<10)).Decode(&result); err != nil && !errors.Is(err, io.EOF) {
 		return fmt.Errorf("read profile share response: %w", err)
 	}
 	if result.Paired && result.TransferToken != "" && proofMatches(key, hello.Nonce, "response|"+result.TransferToken+"|"+strings.Join(result.EntryKeys, ","), result.Proof) {
@@ -656,7 +657,7 @@ func (s *Service) hello(ctx context.Context, peerID string) (helloResponse, erro
 		return helloResponse{}, usererr.New(usererr.Network, fmt.Sprintf("LAN peer handshake failed: HTTP %d", resp.StatusCode))
 	}
 	var hello helloResponse
-	if err := json.NewDecoder(io.LimitReader(resp.Body, 16<<10)).Decode(&hello); err != nil {
+	if err := json.NewDecoder(fsx.CapReader(resp.Body, 16<<10)).Decode(&hello); err != nil {
 		return helloResponse{}, fmt.Errorf("read LAN peer handshake: %w", err)
 	}
 	if hello.Nonce == "" {

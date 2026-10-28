@@ -150,7 +150,7 @@ func FetchReleases(ctx context.Context, hc *http.Client, url string) ([]Release,
 		return nil, fmt.Errorf("GitHub's releases API answered %s", resp.Status)
 	}
 	var all []Release
-	if err := json.NewDecoder(io.LimitReader(resp.Body, maxList)).Decode(&all); err != nil {
+	if err := json.NewDecoder(fsx.CapReader(resp.Body, maxList)).Decode(&all); err != nil {
 		return nil, fmt.Errorf("read GitHub's releases response: %w", err)
 	}
 	return all, nil
