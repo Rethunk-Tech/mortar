@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/backup"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
@@ -124,8 +125,11 @@ func Select(root string, items *store.Store, referenced map[string][]string, now
 			return relErr
 		}
 		slash := filepath.ToSlash(rel)
+		if d.IsDir() && (slash == "profiles" || slash == "store") {
+			return fs.SkipDir
+		}
 		name := d.Name()
-		if d.Type().IsRegular() && tempName(name) {
+		if d.Type().IsRegular() && tempName(name) && fileAge(path, now) > backup.MinGap {
 			if info, infoErr := d.Info(); infoErr == nil {
 				out.Items = append(out.Items, Item{Kind: "temp", Label: slash, Rel: slash, Size: info.Size()})
 				out.Total += info.Size()

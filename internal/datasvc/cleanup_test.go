@@ -40,6 +40,16 @@ func TestSelectKeepsReferencedAndApplyRemovesTheRest(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(root, "cache", "write.tmp"), []byte("partial"), 0o600); err != nil {
 		t.Fatal(err)
 	}
+	if err := os.Chtimes(filepath.Join(root, "cache", "write.tmp"), now.Add(-time.Hour), now.Add(-time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	put("cache/young.tmp", []byte("in flight"))
+	put("profiles/g/p/notes.tmp", []byte("player's"))
+	for _, rel := range []string{"cache/young.tmp", "profiles/g/p/notes.tmp"} {
+		if err := os.Chtimes(filepath.Join(root, filepath.FromSlash(rel)), now, now); err != nil {
+			t.Fatal(err)
+		}
+	}
 	preview, err := Select(root, items, map[string][]string{"stardew": {"keep"}}, now, nil)
 	if err != nil {
 		t.Fatal(err)
@@ -77,6 +87,11 @@ func TestSelectKeepsReferencedAndApplyRemovesTheRest(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(root, "cache", "write.tmp")); !os.IsNotExist(err) {
 		t.Fatal("tmp file remains")
+	}
+	for _, rel := range []string{"cache/young.tmp", "profiles/g/p/notes.tmp"} {
+		if _, err := os.Stat(filepath.Join(root, filepath.FromSlash(rel))); err != nil {
+			t.Fatalf("%s was removed", rel)
+		}
 	}
 }
 
