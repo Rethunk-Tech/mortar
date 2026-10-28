@@ -145,9 +145,8 @@ func (s *Service) SetWatch(gameID, dir string, on bool) error {
 }
 
 // WatchedSources are every project's source folders, by game, for the folder watch: a change rebuilds a project with
-// build on save on and marks the others changed since their last build. The folder watch is not recursive, so Mortar's
-// own src/<Name>/Compat and the assets/ folder, whose bundles the build copies into the output, are listed beside the
-// source folder.
+// build on save on and marks the others changed since their last build. The folder watch is not recursive, so every
+// folder below src/<Name> and assets/ (build output aside) is listed, and Compat and assets/ even before they exist.
 func WatchedSources(cur settings.Settings, games []string) map[string][]string {
 	out := map[string][]string{}
 	for _, g := range games {
@@ -156,7 +155,23 @@ func WatchedSources(cur settings.Settings, games []string) map[string][]string {
 				continue
 			}
 			src := filepath.Join(p.Dir, "src", p.Name)
-			out[g] = append(out[g], src, filepath.Join(src, "Compat"), filepath.Join(p.Dir, "assets"))
+			assets := filepath.Join(p.Dir, "assets")
+			// Compat and assets are listed even before they exist, so a folder made later is watched from the next refresh.
+			out[g] = append(out[g], src, filepath.Join(src, "Compat"), assets)
+			for _, root := range []string{src, assets} {
+				_ = filepath.WalkDir(root, func(dir string, d fs.DirEntry, err error) error {
+					if err != nil || !d.IsDir() {
+						return nil
+					}
+					if dir != root && slices.Contains([]string{"bin", "obj"}, d.Name()) {
+						return fs.SkipDir
+					}
+					if dir != root && dir != filepath.Join(src, "Compat") {
+						out[g] = append(out[g], dir)
+					}
+					return nil
+				})
+			}
 		}
 	}
 	return out

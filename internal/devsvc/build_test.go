@@ -21,6 +21,21 @@ func TestWatchedSourcesCoverCompatAndAssets(t *testing.T) {
 	}
 }
 
+func TestWatchedSourcesIncludeSubfoldersButNotBuildOutput(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	dir := fixtureProject(t, svc)
+	src := filepath.Join(dir, "src", "ShopDrop")
+	for _, d := range []string{"Patches", "obj/x"} {
+		if err := os.MkdirAll(filepath.Join(src, d), 0o750); err != nil {
+			t.Fatal(err)
+		}
+	}
+	got := WatchedSources(svc.Settings.Get(), []string{"lethal-company"})["lethal-company"]
+	if !slices.Contains(got, filepath.Join(src, "Patches")) || slices.Contains(got, filepath.Join(src, "obj")) || slices.Contains(got, filepath.Join(src, "obj", "x")) {
+		t.Errorf("watched %v", got)
+	}
+}
+
 func TestBuildRemovesBundlesAssetsNoLongerHolds(t *testing.T) {
 	svc, _ := testService(t, testTemplate)
 	dir := fixtureProject(t, svc)
