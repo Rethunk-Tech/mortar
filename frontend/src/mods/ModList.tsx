@@ -49,14 +49,13 @@ import { figureNumber, figureText } from './listFigures.ts'
 import { entryOf, modId, useLocalMark } from './lookup.ts'
 import { ModListTable } from './ModListVirtual.tsx'
 import { useMarked, useRowFocus, useTabStop } from './marked.ts'
-import { contextMenuProps, openModPage } from './menu.ts'
+import { contextMenuProps } from './menu.ts'
 import { useModFresh } from './modFresh.ts'
 import { cellsSx } from './modListCells.ts'
 import { formatCount, isNewer } from './nexusFormat.ts'
 import { OverlayCountChip } from './OverlayRow.tsx'
 import { cardSlice, nestOverlays, overlaysByBase } from './overlayRows.ts'
 import { PackageKind } from './PackageKind.tsx'
-import { MIDDLE, opensPage } from './pageClick.ts'
 import {
   LastRunBadge,
   LiveBadge,
@@ -66,7 +65,7 @@ import {
   ProblemBadge,
   UpdateBadge,
 } from './parts.tsx'
-import { useSelection } from './selection.ts'
+import { rowPointerHandlers } from './rowPointer.ts'
 import { useMods } from './store.ts'
 import { useListHeading } from './useListHeading.ts'
 import { useModGroups } from './useModGroups.ts'
@@ -318,15 +317,18 @@ function sameField(k: keyof ListRow, a: ListRow, b: ListRow) {
   return a[k] === b[k]
 }
 
-const sameRow = (a: ModRowProps, b: ModRowProps) =>
+type CellProps = Pick<ModRowProps, 'locale' | 'cols' | 'row' | 'profile'>
+
+// What a row's cells show: a profile change elsewhere leaves the row's own slice alone.
+const sameCells = (a: CellProps, b: CellProps) =>
   a.locale === b.locale &&
-  a.first === b.first &&
-  a.orderedRef === b.orderedRef &&
-  a.onArrow === b.onArrow &&
   a.cols.join() === b.cols.join() &&
   sameRowFields(a.row, b.row) &&
   (a.profile === b.profile ||
     cardSlice(a.profile, a.row.mod.key) === cardSlice(b.profile, b.row.mod.key))
+
+const sameRow = (a: ModRowProps, b: ModRowProps) =>
+  a.first === b.first && a.orderedRef === b.orderedRef && a.onArrow === b.onArrow && sameCells(a, b)
 
 function ModRowView({ row, cols, locale, first, orderedRef, profile, onArrow }: ModRowProps) {
   const show = useDetail((s) => s.show)
@@ -343,20 +345,7 @@ function ModRowView({ row, cols, locale, first, orderedRef, profile, onArrow }: 
       role="row"
       hover={true}
       selected={marked}
-      onMouseDown={(e) => {
-        if (e.shiftKey || e.button === MIDDLE) {
-          e.preventDefault()
-        }
-      }}
-      onAuxClick={(e) => {
-        if (opensPage(e, false)) {
-          openModPage(m)
-        }
-      }}
-      onClick={(e) => {
-        useSelection.getState().click(orderedRef.current, rowId, e)
-        show(m)
-      }}
+      {...rowPointerHandlers(m, rowId, orderedRef, show)}
       data-mod-row="true"
       data-mod-id={rowId}
       tabIndex={tabStop ? 0 : -1}
@@ -430,16 +419,7 @@ function RowCellsView({ row, cols, locale, profile, fresh }: RowCellsProps) {
 }
 
 // Selecting or focusing a row changes only the row's own highlight, so its cells skip that render.
-const RowCells = memo(
-  RowCellsView,
-  (a, b) =>
-    a.locale === b.locale &&
-    a.fresh === b.fresh &&
-    a.cols.join() === b.cols.join() &&
-    sameRowFields(a.row, b.row) &&
-    (a.profile === b.profile ||
-      cardSlice(a.profile, a.row.mod.key) === cardSlice(b.profile, b.row.mod.key)),
-)
+const RowCells = memo(RowCellsView, (a, b) => a.fresh === b.fresh && sameCells(a, b))
 
 const ModRow = memo(ModRowView, sameRow)
 

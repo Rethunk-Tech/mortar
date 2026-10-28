@@ -23,12 +23,11 @@ import { sameLibraries } from './listRows.ts'
 import { entryOf, modId, useLocalMark } from './lookup.ts'
 import { GroupHeaderRow, StickyGroupSlot } from './ModsGroupHeader.tsx'
 import { useMarked, useRowFocus, useTabStop } from './marked.ts'
-import { contextMenuProps, openModPage } from './menu.ts'
+import { contextMenuProps } from './menu.ts'
 import { useModFresh } from './modFresh.ts'
 import { cardSlice } from './overlayRows.ts'
-import { MIDDLE, opensPage } from './pageClick.ts'
 import { ProfileModTile } from './parts.tsx'
-import { useSelection } from './selection.ts'
+import { rowPointerHandlers } from './rowPointer.ts'
 import { useMods } from './store.ts'
 import { useListHeading } from './useListHeading.ts'
 import { useModGroups } from './useModGroups.ts'
@@ -199,20 +198,7 @@ function ModCardView({
                 action()
               }
             }}
-            onMouseDown={(e) => {
-              if (e.shiftKey || e.button === MIDDLE) {
-                e.preventDefault()
-              }
-            }}
-            onAuxClick={(e) => {
-              if (opensPage(e, false)) {
-                openModPage(m)
-              }
-            }}
-            onClick={(e) => {
-              useSelection.getState().click(orderedRef.current, id, e)
-              openDetail(m)
-            }}
+            {...rowPointerHandlers(m, id, orderedRef, openDetail)}
             sx={{
               position: 'static',
               display: 'block',
