@@ -1386,26 +1386,45 @@ func run() error {
 		trayMenu.Add(i18n.T("Show Mortar")).OnClick(func(*application.Context) {
 			showWindow()
 		})
+		// A divider opens each group under Show Mortar; Quit's own divider closes the last one.
+		group := func(open *bool) {
+			if !*open {
+				trayMenu.AddSeparator()
+				*open = true
+			}
+		}
+		gameName := func(id string) string {
+			if g := game.Find(id); g != nil {
+				return g.Name()
+			}
+			return id
+		}
+		running := false
 		for _, id := range v.ids {
 			if !v.busy[id] {
 				continue
 			}
-			name := id
-			if g := game.Find(id); g != nil {
-				name = g.Name()
-			}
-			trayMenu.Add(i18n.T("Stop {game}", "game", name)).OnClick(func(*application.Context) {
+			group(&running)
+			trayMenu.Add(i18n.T("Stop {game}", "game", gameName(id))).OnClick(func(*application.Context) {
 				_ = launches.Stop(context.Background(), id)
 			})
 		}
 		if v.left > 0 {
+			group(&running)
 			trayMenu.Add(i18n.T("Downloads: {count}", "count", strconv.Itoa(v.left))).OnClick(func(*application.Context) {
 				toPage("queue:open", nil)
 			})
 		}
+		// Each game's recent profiles sit under that game, so two games' "Main" profiles cannot be confused.
+		played := false
 		for _, id := range v.ids {
+			if len(v.recent[id]) == 0 {
+				continue
+			}
+			group(&played)
+			profiles := trayMenu.AddSubmenu(i18n.T("Play {game}", "game", gameName(id)))
 			for _, row := range v.recent[id] {
-				item := trayMenu.Add(i18n.T("Play {profile}", "profile", row.Name))
+				item := profiles.Add(row.Name)
 				if v.busy[id] {
 					item.SetEnabled(false)
 				} else {

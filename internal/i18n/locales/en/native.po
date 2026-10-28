@@ -113,8 +113,8 @@ msgstr "Open the folder that holds the log? (Ctrl+C copies this message.)"
 msgid "Open the log folder"
 msgstr "Open the log folder"
 
-msgid "Play {profile}"
-msgstr "Play {profile}"
+msgid "Play {game}"
+msgstr "Play {game}"
 
 msgid "Profile (.mortar, .r2z, .zip)"
 msgstr "Profile (.mortar, .r2z, .zip)"

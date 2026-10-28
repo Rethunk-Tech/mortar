@@ -114,7 +114,7 @@ msgstr ""
 msgid "Open the log folder"
 msgstr ""
 
-msgid "Play {profile}"
+msgid "Play {game}"
 msgstr ""
 
 msgid "Profile (.mortar, .r2z, .zip)"
