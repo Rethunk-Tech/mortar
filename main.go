@@ -1414,7 +1414,10 @@ func run() error {
 			}
 			group(&running)
 			trayMenu.Add(i18n.T("Stop {game}", "game", gameName(id))).OnClick(func(*application.Context) {
-				_ = launches.Stop(context.Background(), id)
+				if err := launches.Stop(context.Background(), id); err != nil {
+					log.Printf("tray: stop %s: %v", id, err)
+					desktopnotify.Send(desktopnotify.KindOther, i18n.T("Could not stop {game}", "game", gameName(id)), err.Error(), nil)
+				}
 			})
 		}
 		if v.left > 0 {
@@ -1467,6 +1470,23 @@ func run() error {
 	// The Play submenus and the window's profile list name each game's profiles, whichever path changed them (the
 	// window, the command line, a share or sync). The store calls this under its lock, and reading the profiles takes it
 	// again, so the rebuild runs apart.
+	// Registered once, whether or not a tray is shown: rebuild does nothing without one. Menus are GTK objects, and
+	// rebuild builds them on the main thread one at a time.
+	app.Event.On(launchsvc.StateEvent, func(*application.CustomEvent) { rebuild() })
+	// The queue reports every progress step; only a change in how many are left changes the menu.
+	var shownLeft atomic.Int64
+	app.Event.On(queue.ChangedEvent, func(*application.CustomEvent) {
+		if left := int64(downloadsLeft()); shownLeft.Swap(left) != left {
+			rebuild()
+		}
+	})
+	// A crash notice depends only on its own setting, not on the tray.
+	launches.NotifyRunEnd = func(n launchsvc.RunEndNotice) {
+		if !desktopnotify.Pref("desktopRunCrashed") {
+			return
+		}
+		desktopnotify.Send(desktopnotify.KindRunEnd, n.Title, n.Body, map[string]any{"game": n.Game, "profile": n.Profile})
+	}
 	profiles.ListChanged = func(game string) {
 		go rebuild()
 		emit(control.ChangedEvent, game)
@@ -1491,22 +1511,6 @@ func run() error {
 			tray.OnClick(func() {
 				showWindow()
 			})
-			launches.NotifyRunEnd = func(n launchsvc.RunEndNotice) {
-				if !desktopnotify.Pref("desktopRunCrashed") {
-					return
-				}
-				desktopnotify.Send(desktopnotify.KindRunEnd, n.Title, n.Body, map[string]any{"game": n.Game, "profile": n.Profile})
-			}
-			// Menus are GTK objects: rebuilding one off the main thread, or twice at once from a burst of
-			// events, leaves items without their native handle and panics.
-			app.Event.On(launchsvc.StateEvent, func(*application.CustomEvent) { rebuild() })
-			// The queue reports every progress step; only a change in how many are left changes the menu.
-			var shownLeft atomic.Int64
-			app.Event.On(queue.ChangedEvent, func(*application.CustomEvent) {
-				if left := int64(downloadsLeft()); shownLeft.Swap(left) != left {
-					rebuild()
-				}
-			})
 		}
 		trayOn.Store(true)
 		refreshTrayMenu()
@@ -1515,7 +1519,11 @@ func run() error {
 	trayShown := trayWanted(store.Get(), inTray)
 	systemTitleBar := store.Get().SystemTitleBar
 	trayLanguage := store.Get().Language
+	// Wails runs each listener call on its own goroutine; the remembered values above are read and written in turn.
+	var settingsSeen sync.Mutex
 	app.Event.On(settings.ChangedEvent, func(*application.CustomEvent) {
+		settingsSeen.Lock()
+		defer settingsSeen.Unlock()
 		if want := store.Get().SystemTitleBar; want != systemTitleBar {
 			systemTitleBar = want
 			// A window closed to the tray is rebuilt with the setting when shown.
