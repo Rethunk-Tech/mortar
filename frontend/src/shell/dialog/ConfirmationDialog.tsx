@@ -9,6 +9,7 @@ import {
 } from '@mui/material'
 import { Info, OctagonAlert, TriangleAlert } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { space } from '../../theme/density.ts'
 import { AppDialog, DialogFooter, type DialogTone, ToneIcon } from './AppDialog.tsx'
 
 const ICONS: Record<DialogTone, ReactNode> = {
@@ -65,7 +66,7 @@ export function ConfirmationDialog({
         component="ul"
         sx={{
           m: 0,
-          px: 2,
+          px: space.pad,
           py: 1.25,
           listStyle: 'none',
           borderRadius: '8px',

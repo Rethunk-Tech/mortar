@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, CircularProgress, OutlinedInput, styled, TextField } from '@mui/material'
 import { CircleAlert } from 'lucide-react'
 import { type ReactNode, useId } from 'react'
+import { space } from '../../theme/density.ts'
 import { useDiscardGuard } from '../useDiscardGuard.tsx'
 import { AppDialog, DialogFooter, type DialogSize } from './AppDialog.tsx'
 
@@ -159,7 +160,7 @@ const fieldSx = {
   '& > .field-label': {
     display: 'flex',
     justifyContent: 'space-between',
-    gap: 1,
+    gap: space.gap,
     fontSize: 'medium.fontSize',
     fontWeight: 500,
     mb: 0.75,

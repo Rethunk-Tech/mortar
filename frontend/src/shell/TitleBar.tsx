@@ -7,6 +7,7 @@ import { routeGame, useNav } from '../nav/store.ts'
 import { ProfileMenu } from '../profiles/ProfileMenu.tsx'
 import { DownloadsPill } from '../queue/DownloadsPill.tsx'
 import { useSettings } from '../settings/store.ts'
+import { space } from '../theme/density.ts'
 import { HistoryButton } from '../toasts/HistoryButton.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { AppMenu } from './AppMenu.tsx'
@@ -94,7 +95,7 @@ export function TitleBar({ maximised }: { maximised: boolean }) {
         flexShrink: 0,
         display: 'flex',
         alignItems: 'center',
-        gap: '8px',
+        gap: space.gap,
         pl: '14px',
         pr: systemTitleBar ? '8px' : 0,
         bgcolor: 'var(--mortar-title-bar)',

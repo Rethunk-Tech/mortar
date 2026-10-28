@@ -269,7 +269,7 @@ export const AppMenu = memo(function AppMenuView() {
         {...trigger}
         sx={{
           '--wails-draggable': 'no-drag',
-          gap: '8px',
+          gap: space.gap,
           height: space.control,
           px: '10px',
           borderRadius: '8px',

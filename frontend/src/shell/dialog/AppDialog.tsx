@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Dialog, IconButton } from '@mui/material'
 import { ArrowLeft, X } from 'lucide-react'
 import { type ReactNode, useId } from 'react'
+import { space } from '../../theme/density.ts'
 import { paperSx } from './frame.ts'
 
 export type DialogSize = 'sm' | 'md' | 'lg' | 'xl' | 'full'
@@ -57,7 +58,7 @@ const frameSx = {
     alignItems: 'center',
     gap: 1.75,
     px: PAD_X,
-    py: 2,
+    py: space.pad,
     // The dialog's own header stands apart from any headings in its body.
     '&.app-dialog-ruled': { borderBottom: '1px solid var(--mortar-hairline-muted)' },
   },
@@ -89,7 +90,7 @@ const frameSx = {
   '& .app-dialog-footer': {
     display: 'flex',
     alignItems: 'center',
-    gap: 1,
+    gap: space.gap,
     px: PAD_X,
     py: 1.75,
     borderTop: '1px solid var(--mortar-hairline-muted)',
