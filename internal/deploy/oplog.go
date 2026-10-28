@@ -47,7 +47,7 @@ func openLog(dir string) (*opLog, error) {
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return nil, err
 	}
-	f, err := os.OpenFile(logPath(dir), os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0o600)
+	f, err := fsx.OpenFile(logPath(dir), os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0o600)
 	if err != nil {
 		return nil, err
 	}
