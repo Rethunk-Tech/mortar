@@ -2,12 +2,9 @@
 package gamesettings
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
-	"regexp"
-	"strconv"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
@@ -27,9 +24,8 @@ type Settings struct {
 }
 
 var (
-	elementPattern = regexp.MustCompile(`(<([A-Za-z_][A-Za-z0-9_.:-]*)(?:\s[^>]*)?>)([^<]*)(</([A-Za-z_][A-Za-z0-9_.:-]*)>)`)
-	readFile       = os.ReadFile
-	writeFile      = datadir.WriteFile
+	readFile  = os.ReadFile
+	writeFile = datadir.WriteFile
 )
 
 func (s Settings) Validate() error {
@@ -85,60 +81,4 @@ func Save(path string, settings Settings) error {
 	}
 	data = append(data, '\n')
 	return writeFile(path, data, 0o600)
-}
-
-func Patch(data []byte, settings Settings) ([]byte, error) {
-	if err := settings.Validate(); err != nil {
-		return nil, err
-	}
-	values := map[string]string{}
-	if settings.WindowMode != nil {
-		values["windowMode"] = *settings.WindowMode
-	}
-	if settings.DisplayIndex != nil {
-		values["displayIndex"] = strconv.Itoa(*settings.DisplayIndex)
-	}
-	if settings.PreferredResolutionX != nil {
-		values["preferredResolutionX"] = strconv.Itoa(*settings.PreferredResolutionX)
-	}
-	if settings.PreferredResolutionY != nil {
-		values["preferredResolutionY"] = strconv.Itoa(*settings.PreferredResolutionY)
-	}
-	if settings.FullscreenResolutionX != nil {
-		values["fullscreenResolutionX"] = strconv.Itoa(*settings.FullscreenResolutionX)
-	}
-	if settings.FullscreenResolutionY != nil {
-		values["fullscreenResolutionY"] = strconv.Itoa(*settings.FullscreenResolutionY)
-	}
-	if settings.ZoomLevel != nil {
-		values["zoomLevel"] = strconv.Itoa(*settings.ZoomLevel)
-	}
-	if settings.UIScale != nil {
-		values["uiScale"] = strconv.Itoa(*settings.UIScale)
-	}
-	if settings.StartMuted != nil {
-		values["startMuted"] = strconv.FormatBool(*settings.StartMuted)
-	}
-	if settings.MusicVolumeLevel != nil {
-		values["musicVolumeLevel"] = strconv.Itoa(*settings.MusicVolumeLevel)
-	}
-	if settings.SoundVolumeLevel != nil {
-		values["soundVolumeLevel"] = strconv.Itoa(*settings.SoundVolumeLevel)
-	}
-	result := elementPattern.ReplaceAllFunc(data, func(element []byte) []byte {
-		matches := elementPattern.FindSubmatch(element)
-		if len(matches) == 0 {
-			return element
-		}
-		name := string(matches[2])
-		if name != string(matches[5]) {
-			return element
-		}
-		value, ok := values[name]
-		if !ok {
-			return element
-		}
-		return bytes.Join([][]byte{matches[1], []byte(value), matches[4]}, nil)
-	})
-	return result, nil
 }
