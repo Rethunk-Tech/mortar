@@ -116,10 +116,7 @@ func TestPendingAppliesWhenTheDoneSetChangesAndSavesOnlyOnChange(t *testing.T) {
 
 func TestPendingIsDroppedWhenItsProfileIsDeleted(t *testing.T) {
 	s, prof := pendingService(t)
-	s.pending = []*pending{{
-		Game: "stardew", Profile: prof.ID, Wanted: []wantedFile{{ModID: 100, FileID: 1}},
-		Configs: []share.Config{{ID: "smapi:A.Mod", Path: "config.json", Data: []byte("a")}},
-	}}
+	pendingConfigA(s, prof)
 	s.savePending()
 	if err := s.d.Profiles.Delete("stardew", prof.ID); err != nil {
 		t.Fatal(err)
@@ -135,15 +132,8 @@ func TestPendingIsDroppedWhenItsProfileIsDeleted(t *testing.T) {
 
 func TestPendingWaitsWhileTheGameRunsTheProfile(t *testing.T) {
 	s, prof := pendingService(t)
-	s.pending = []*pending{{
-		Game: "stardew", Profile: prof.ID,
-		Wanted:  []wantedFile{{ModID: 100, FileID: 1}},
-		Configs: []share.Config{{ID: "smapi:A.Mod", Path: "config.json", Data: []byte("a")}},
-	}}
-	res, err := s.d.Profiles.InstallSource(t.Context(), "stardew", prof.ID, modZip(t, "A.Mod"), profile.Source{Kind: profile.KindNexus, ModID: 100, FileID: 1})
-	if err != nil {
-		t.Fatal(err)
-	}
+	pendingConfigA(s, prof)
+	res := installA(t, s, prof)
 	done := queue.State{Items: []queue.Item{{ID: "a", Game: "stardew", Profile: prof.ID, ModID: 100, FileID: 1, State: queue.StateDone}}}
 	var running atomic.Bool
 	running.Store(true)
@@ -173,15 +163,8 @@ func TestPendingWaitsWhileTheGameRunsTheProfile(t *testing.T) {
 
 func TestPendingRetriesAfterInModsWriteError(t *testing.T) {
 	s, prof := pendingService(t)
-	s.pending = []*pending{{
-		Game: "stardew", Profile: prof.ID,
-		Wanted:  []wantedFile{{ModID: 100, FileID: 1}},
-		Configs: []share.Config{{ID: "smapi:A.Mod", Path: "config.json", Data: []byte("a")}},
-	}}
-	res, err := s.d.Profiles.InstallSource(t.Context(), "stardew", prof.ID, modZip(t, "A.Mod"), profile.Source{Kind: profile.KindNexus, ModID: 100, FileID: 1})
-	if err != nil {
-		t.Fatal(err)
-	}
+	pendingConfigA(s, prof)
+	res := installA(t, s, prof)
 	dir, err := s.d.Profiles.ModsDir("stardew", prof.ID)
 	if err != nil {
 		t.Fatal(err)
@@ -225,15 +208,8 @@ func TestPendingKeepsUnappliedConfigsAfterTheQueueDrains(t *testing.T) {
 
 func TestPendingAppliesAfterFinishedQueueRowsAreGone(t *testing.T) {
 	s, prof := pendingService(t)
-	s.pending = []*pending{{
-		Game: "stardew", Profile: prof.ID,
-		Wanted:  []wantedFile{{ModID: 100, FileID: 1}},
-		Configs: []share.Config{{ID: "smapi:A.Mod", Path: "config.json", Data: []byte("a")}},
-	}}
-	res, err := s.d.Profiles.InstallSource(t.Context(), "stardew", prof.ID, modZip(t, "A.Mod"), profile.Source{Kind: profile.KindNexus, ModID: 100, FileID: 1})
-	if err != nil {
-		t.Fatal(err)
-	}
+	pendingConfigA(s, prof)
+	res := installA(t, s, prof)
 	var running atomic.Bool
 	running.Store(true)
 	s.d.Profiles.Running = func(string, string) bool { return running.Load() }
@@ -328,4 +304,23 @@ func TestSharedArrivalKeepsThePlayersReorder(t *testing.T) {
 	if got := ids(); !slices.Equal(got, want) {
 		t.Fatalf("after the second arrival: %v, want the player's order kept %v", got, want)
 	}
+}
+
+// pendingConfigA waits to give A.Mod (Nexus mod 100, file 1) its config once that file installs.
+func pendingConfigA(s *Service, prof profile.Profile) {
+	s.pending = []*pending{{
+		Game: "stardew", Profile: prof.ID,
+		Wanted:  []wantedFile{{ModID: 100, FileID: 1}},
+		Configs: []share.Config{{ID: "smapi:A.Mod", Path: "config.json", Data: []byte("a")}},
+	}}
+}
+
+// installA installs A.Mod as Nexus mod 100, file 1.
+func installA(t *testing.T, s *Service, prof profile.Profile) profile.InstallResult {
+	t.Helper()
+	res, err := s.d.Profiles.InstallSource(t.Context(), "stardew", prof.ID, modZip(t, "A.Mod"), profile.Source{Kind: profile.KindNexus, ModID: 100, FileID: 1})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return res
 }

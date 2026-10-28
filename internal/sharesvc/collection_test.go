@@ -46,9 +46,7 @@ func TestParseCollectionURL(t *testing.T) {
 }
 
 func TestPreviewLinkCollection(t *testing.T) {
-	testfs.DataHome(t)
-	_, profiles := testenv.Stores(t)
-	fm := fakeMeta{
+	s, _ := collectionService(t, fakeMeta{
 		pages: map[int]meta.Page{
 			100: page(100, "One", dsFile(1, "1.0", meta.Mod{UniqueID: "A.One", Version: "1.0"})),
 			200: page(200, "Two", dsFile(2, "1.0", meta.Mod{UniqueID: "A.Two", Version: "1.0"})),
@@ -63,14 +61,6 @@ func TestPreviewLinkCollection(t *testing.T) {
 				{ModID: 300, FileID: 3},
 			},
 		},
-	}
-	s := NewService(Deps{
-		Profiles: profiles, Meta: fm,
-		Files: func(_ context.Context, _ nexus.Title, id int) ([]nexus.File, error) {
-			return []nexus.File{nf(id%100, "1.0", "MAIN", true)}, nil
-		},
-		SignedIn: func() bool { return true }, Premium: func() bool { return true },
-		Env: func(string) problems.Environment { return stardewEnv }, Queue: &recorder{},
 	})
 	pv, err := s.PreviewLink(context.Background(), "stardew", "https://www.nexusmods.com/games/stardewvalley/collections/cozy-farm", "")
 	if err != nil {
@@ -98,9 +88,7 @@ func TestPreviewLinkCollectionWrongGame(t *testing.T) {
 
 func cozyCollectionService(t *testing.T, revision int) (*Service, *profile.Store) {
 	t.Helper()
-	testfs.DataHome(t)
-	_, profiles := testenv.Stores(t)
-	fm := fakeMeta{
+	return collectionService(t, fakeMeta{
 		pages: map[int]meta.Page{
 			100: page(100, "One", dsFile(1, "1.0", meta.Mod{UniqueID: "A.One", Version: "1.0"})),
 		},
@@ -108,7 +96,15 @@ func cozyCollectionService(t *testing.T, revision int) (*Service, *profile.Store
 			Name: "Cozy Farm", Slug: "cozy-farm", Revision: revision,
 			Files: []meta.CollectionFile{{ModID: 100, FileID: 1}},
 		},
-	}
+	})
+}
+
+// collectionService is a signed-in Premium service whose metadata is fm and whose Nexus files are each mod's one
+// main file.
+func collectionService(t *testing.T, fm fakeMeta) (*Service, *profile.Store) {
+	t.Helper()
+	testfs.DataHome(t)
+	_, profiles := testenv.Stores(t)
 	s := NewService(Deps{
 		Profiles: profiles, Meta: fm,
 		Files: func(_ context.Context, _ nexus.Title, id int) ([]nexus.File, error) {
