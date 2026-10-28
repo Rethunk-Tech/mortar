@@ -69,7 +69,7 @@ const tours: Partial<Record<TabId, string>> = {
 }
 
 function Badge({ badge, rail }: { badge: NonNullable<SidebarEntry['badge']>; rail: boolean }) {
-  const tone = badge.tone === 'warning' ? 'warning' : 'primary'
+  // Every count on the rail wears the accent, so no badge reads as more urgent than another.
   return (
     <Box
       component="span"
@@ -84,8 +84,8 @@ function Badge({ badge, rail }: { badge: NonNullable<SidebarEntry['badge']>; rai
         fontSize: rail ? BADGE_FONT_RAIL_PX : BADGE_FONT_PX,
         fontWeight: 700,
         lineHeight: 1.5,
-        color: `${tone}.contrastText`,
-        bgcolor: `${tone}.main`,
+        color: 'primary.contrastText',
+        bgcolor: 'primary.main',
       }}
     >
       {badge.n}
@@ -180,8 +180,7 @@ const Item = memo(
     a.label === b.label &&
     a.active === b.active &&
     a.rail === b.rail &&
-    a.badge?.n === b.badge?.n &&
-    a.badge?.tone === b.badge?.tone,
+    a.badge?.n === b.badge?.n,
 )
 
 function GroupHeading({ children }: { children: ReactNode }) {

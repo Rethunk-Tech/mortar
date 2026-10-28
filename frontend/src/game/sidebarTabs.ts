@@ -21,7 +21,7 @@ interface SidebarCounts {
 
 interface SidebarEntry {
   id: TabId
-  badge: { n: number; tone: 'primary' | 'warning' } | null
+  badge: { n: number } | null
 }
 
 interface SidebarGroup {
@@ -29,8 +29,7 @@ interface SidebarGroup {
   entries: SidebarEntry[]
 }
 
-const count = (n: number | null, tone: 'primary' | 'warning'): SidebarEntry['badge'] =>
-  n !== null && n > 0 ? { n, tone } : null
+const count = (n: number | null): SidebarEntry['badge'] => (n !== null && n > 0 ? { n } : null)
 
 // The sidebar's groups under Home, in order: Mods carries the update count and Problems the problem count; a group
 // whose sections the loader lacks is left out, header and all.
@@ -40,7 +39,7 @@ function sidebarGroups(caps: SidebarCaps, counts: SidebarCounts): SidebarGroup[]
       id: 'library',
       entries: [
         { id: 'config', badge: null },
-        { id: 'mods', badge: count(counts.updates, 'primary') },
+        { id: 'mods', badge: count(counts.updates) },
         ...(caps.order ? [{ id: 'load-order' as const, badge: null }] : []),
       ],
     },
@@ -55,7 +54,7 @@ function sidebarGroups(caps: SidebarCaps, counts: SidebarCounts): SidebarGroup[]
     {
       id: 'health',
       entries: [
-        { id: 'problems', badge: count(counts.problems, 'warning') },
+        { id: 'problems', badge: count(counts.problems) },
         ...(caps.startup ? [{ id: 'performance' as const, badge: null }] : []),
         ...(caps.console ? [{ id: 'console' as const, badge: null }] : []),
       ],

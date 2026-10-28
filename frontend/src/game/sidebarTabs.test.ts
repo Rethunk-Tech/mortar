@@ -48,8 +48,8 @@ test('Mods carries the update count and Problems the problem count, each only wh
         .map((e) => [e.id, e.badge]),
     )
   expect(badges(4, 3)).toMatchObject({
-    mods: { n: 4, tone: 'primary' },
-    problems: { n: 3, tone: 'warning' },
+    mods: { n: 4 },
+    problems: { n: 3 },
     saves: null,
   })
   expect(badges(0, null)).toMatchObject({ mods: null, problems: null })
