@@ -108,11 +108,15 @@ func TestClamdProtocolFlagsOnlyTheInfectedFile(t *testing.T) {
 	}
 }
 
-func TestClamdStreamLimitIsSkippedNotAnError(t *testing.T) {
+func TestClamdStreamLimitIsAFailedScan(t *testing.T) {
 	t.Parallel()
-	dir := writeTree(t, map[string]string{"big.bin": strings.Repeat("x", 200_000)})
-	if got, found, err := fakeClamd(t, 100_000).Scan(context.Background(), dir); found || err != nil {
-		t.Fatalf("got %+v, %v", got, err)
+	dir := writeTree(t, map[string]string{"big.bin": strings.Repeat("x", 200_000), "bad.dll": eicar()})
+	if got, found, err := fakeClamd(t, 100_000).Scan(context.Background(), dir); !found || got.File != "bad.dll" || err != nil {
+		t.Fatalf("a detection after the big file: %+v, %v", got, err)
+	}
+	dir = writeTree(t, map[string]string{"big.bin": strings.Repeat("x", 200_000)})
+	if _, found, err := fakeClamd(t, 100_000).Scan(context.Background(), dir); found || !errors.Is(err, errTooLarge) {
+		t.Fatalf("found=%v err=%v", found, err)
 	}
 }
 

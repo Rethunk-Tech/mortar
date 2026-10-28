@@ -2,6 +2,7 @@ package avscan
 
 import (
 	"bufio"
+	"cmp"
 	"context"
 	"encoding/binary"
 	"errors"
@@ -64,8 +65,13 @@ func (c clamd) Scan(ctx context.Context, dir string) (Detection, bool, error) {
 	var found Detection
 	var hit bool
 	errStop := errors.New("stop")
+	var tooLarge error
 	err := files(ctx, dir, func(abs, rel string) error {
 		name, err := c.scanFile(ctx, abs)
+		if errors.Is(err, errTooLarge) {
+			tooLarge = cmp.Or(tooLarge, fmt.Errorf("%s: %w", rel, err))
+			return nil
+		}
 		if err != nil {
 			return err
 		}
@@ -78,10 +84,16 @@ func (c clamd) Scan(ctx context.Context, dir string) (Detection, bool, error) {
 	if err != nil && !errors.Is(err, errStop) {
 		return Detection{}, false, err
 	}
+	if !hit && tooLarge != nil {
+		return Detection{}, false, tooLarge
+	}
 	return found, hit, nil
 }
 
-// scanFile returns the threat clamd names for the file, or "" when it is clean or too large for clamd's stream limit.
+var errTooLarge = errors.New("too large for the antivirus to scan")
+
+// scanFile returns the threat clamd names for the file, or "" when it is clean; errTooLarge when the file is over
+// clamd's stream limit.
 func (c clamd) scanFile(ctx context.Context, path string) (string, error) {
 	conn, err := c.connect(ctx)
 	if err != nil {
@@ -155,7 +167,7 @@ func parseReply(r io.Reader) (string, error) {
 		name := strings.TrimSuffix(line, " FOUND")
 		return strings.TrimSpace(strings.TrimPrefix(name, "stream:")), nil
 	case strings.HasSuffix(line, "size limit exceeded. ERROR"):
-		return "", nil
+		return "", errTooLarge
 	case strings.HasSuffix(line, " OK"):
 		return "", nil
 	}
