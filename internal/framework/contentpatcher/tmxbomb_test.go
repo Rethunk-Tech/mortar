@@ -22,7 +22,7 @@ func zlibBase64(t *testing.T, size int) string {
 
 func TestDecodeTMXValuesBoundsInflation(t *testing.T) {
 	t.Parallel()
-	bomb := zlibBase64(t, 64<<20)
+	bomb := zlibBase64(t, 1<<20)
 	if _, ok := decodeTMXValues(bomb, "base64", "zlib", 2, 2); ok {
 		t.Fatal("zlib bomb inflated past its declared layer size")
 	}

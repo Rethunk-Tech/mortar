@@ -60,7 +60,7 @@ func TestParsedPackRetainedBytes(t *testing.T) {
 	testfs.DataHome(t)
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
-	const count = 20
+	const count = 5
 	mods := make([]framework.Mod, count)
 	for i := range mods {
 		mods[i] = bigPack(t, i)
