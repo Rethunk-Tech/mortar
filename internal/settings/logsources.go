@@ -3,8 +3,10 @@ package settings
 import (
 	"context"
 	"slices"
+	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/launch"
 )
 
 // HiddenLogSource is a source of game log lines hidden from the Console: the method that logged them (Type::Method,
@@ -31,7 +33,7 @@ func (h HiddenLogSource) same(o HiddenLogSource) bool {
 // HideLogSource hides a source of the game's log lines from the Console, and from the game's log where its bridge can.
 // A source already hidden by a broader one adds nothing; a broader one replaces the narrower ones it covers.
 func (s *Service) HideLogSource(game string, src HiddenLogSource) error {
-	return s.set(func(v *Settings) {
+	return s.setHiddenSources(game, func(v *Settings) {
 		gp := v.GamePrefs(game)
 		covered := slices.ContainsFunc(gp.HiddenLogSources, func(h HiddenLogSource) bool { return h.covers(src) })
 		if src.Source != "" && !covered {
@@ -46,7 +48,7 @@ func (s *Service) HideLogSource(game string, src HiddenLogSource) error {
 // default suppressions hide joins the list of defaults shown again.
 func (s *Service) ShowLogSource(game, source, text, object string) error {
 	show := HiddenLogSource{Source: source, Text: text, Object: object}
-	return s.set(func(v *Settings) {
+	return s.setHiddenSources(game, func(v *Settings) {
 		gp := v.GamePrefs(game)
 		n := len(gp.HiddenLogSources)
 		gp.HiddenLogSources = slices.DeleteFunc(slices.Clone(gp.HiddenLogSources), show.same)
@@ -80,4 +82,24 @@ func HiddenLogSources(gp GameSettings, defaults []HiddenLogSource) []HiddenLogSo
 		return slices.ContainsFunc(gp.ShownLogSources, d.same) || slices.ContainsFunc(gp.HiddenLogSources, d.same)
 	})
 	return append(out, gp.HiddenLogSources...)
+}
+
+// setHiddenSources saves a change to the game's hidden sources, then hands the log parser the new hidden mod messages.
+func (s *Service) setHiddenSources(game string, fn func(*Settings)) error {
+	if err := s.set(fn); err != nil {
+		return err
+	}
+	HideModMessages(game, HiddenLogSources(s.Get().GamePrefs(game), LogSuppressionDefaults(context.Background(), game)))
+	return nil
+}
+
+// HideModMessages gives the log parser the game's hidden mod messages (sources "mod:<Mod>"), which no bridge drops.
+func HideModMessages(game string, hidden []HiddenLogSource) {
+	var msgs []launch.ModMessage
+	for _, h := range hidden {
+		if mod, ok := strings.CutPrefix(h.Source, launch.ModMessagePrefix); ok {
+			msgs = append(msgs, launch.ModMessage{Mod: mod, Text: h.Text})
+		}
+	}
+	launch.SetHiddenMessages(game, msgs)
 }
