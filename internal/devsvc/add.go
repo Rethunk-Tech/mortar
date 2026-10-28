@@ -46,7 +46,13 @@ func (s *Service) enroll(gameID, dir, name, profileID, copyFrom, kind string, un
 		}
 	}
 	output := dir
-	if kind == "" {
+	if kind != "" && untrusted {
+		// Its files install as they are, so a repository not yet trusted has an empty folder installed instead; Trust moves it.
+		output = filepath.Join(dir, ".mortar", "untrusted")
+		if err := os.MkdirAll(output, 0o750); err != nil {
+			return settings.DevProject{}, err
+		}
+	} else if kind == "" {
 		// The template builds an unpacked package here; it exists before the first build so the folder watch can start.
 		output = filepath.Join(dir, "artifacts", "bin", name, "debug")
 		if err := os.MkdirAll(output, 0o750); err != nil {
@@ -127,8 +133,8 @@ func (s *Service) Add(ctx context.Context, gameID, dir, profileID string) (setti
 		if _, err := s.assetKind(gameID, rec.Kind); err != nil {
 			return settings.DevProject{}, err
 		}
-		// Nothing in a package of files runs, so it needs no trust before installing.
-		return s.enroll(gameID, dir, name, profileID, "", rec.Kind, false)
+		// A cloned folder can hold plugin DLLs that load on the next launch, so it installs only once trusted.
+		return s.enroll(gameID, dir, name, profileID, "", rec.Kind, true)
 	}
 	props := filepath.Join(dir, "Config.Build.user.props")
 	if _, err := os.Lstat(props); errors.Is(err, os.ErrNotExist) {

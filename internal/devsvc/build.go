@@ -78,8 +78,14 @@ func requireTrust(p settings.DevProject) error {
 
 // Trust records the user's yes to building the project in dir; builds, packs and watched rebuilds refuse until then.
 func (s *Service) Trust(gameID, dir string) error {
-	if _, err := s.project(gameID, dir); err != nil {
+	p, err := s.project(gameID, dir)
+	if err != nil {
 		return err
+	}
+	if p.Kind != "" && p.Untrusted {
+		next := p
+		next.Untrusted, next.Output = false, p.Dir
+		return s.Settings.ReplaceDevProject(gameID, p, next)
 	}
 	return s.Settings.TrustDevProject(gameID, dir)
 }

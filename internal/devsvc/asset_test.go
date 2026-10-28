@@ -120,3 +120,32 @@ func TestEveryAssetKindKeepsItsFolderWhenInstalled(t *testing.T) {
 		}
 	}
 }
+
+func assetDir(t *testing.T, record string) string {
+	t.Helper()
+	dir := t.TempDir()
+	if err := writeAll(filepath.Join(dir, ".mortar", assetRecordFile), []byte(record), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	return dir
+}
+
+func TestAnAddedAssetProjectInstallsOnlyOnceTrusted(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	const game = "lethal-company"
+	dir := assetDir(t, `{"kind":"sounds","name":"Quacks","team":"Ab"}`)
+	p, err := svc.Add(t.Context(), game, dir, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !p.Untrusted || p.Output == dir || !slices.Contains(svc.Settings.Get().GamePrefs(game).ExtraModsFolderList(), p.Output) {
+		t.Fatalf("added = %+v", p)
+	}
+	if err := svc.Trust(game, dir); err != nil {
+		t.Fatal(err)
+	}
+	got := svc.Projects(game)[0]
+	if got.Untrusted || got.Output != dir || !slices.Contains(svc.Settings.Get().GamePrefs(game).ExtraModsFolderList(), dir) || slices.Contains(svc.Settings.Get().GamePrefs(game).ExtraModsFolderList(), p.Output) {
+		t.Errorf("trusted = %+v", got)
+	}
+}
