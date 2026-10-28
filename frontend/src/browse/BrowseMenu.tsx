@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Menu } from '@mui/material'
 import { ExternalLink, EyeOff, Info, Link2, PackagePlus, Plus } from 'lucide-react'
-import { memo } from 'react'
+import { memo, useState } from 'react'
 import {
   HideBrowseAuthor,
   HideBrowseMod,
@@ -25,16 +25,18 @@ function Items({
   card,
   sourceNames,
   close,
+  cardAction,
 }: {
   item: BrowseItem
   source: string
   card: ActionProps
   sourceNames: Map<string, string>
   close: () => void
+  cardAction: Pick<ReturnType<typeof useCardAction>, 'shownItem' | 'url' | 'installed' | 'add'>
 }) {
   const { t } = useLingui()
   const game = useCurrentGame()
-  const { shownItem, url, installed, add } = useCardAction(card, item, source)
+  const { shownItem, url, installed, add } = cardAction
   const openId = useProfiles((s) => s.openId)
   const projects = (useSettings((s) => s.games?.[game]?.devProjects) ?? []).filter(
     (p) => p.profile === openId,
@@ -144,6 +146,48 @@ function Items({
   ]
 }
 
+type MenuState = NonNullable<ReturnType<typeof useBrowseSelection.getState>['menu']>
+
+// Stays mounted after the menu closes so the known-broken confirmation an Add opens has somewhere to render.
+function MenuHost({
+  menu,
+  open,
+  card,
+  sourceNames,
+  close,
+}: {
+  menu: MenuState
+  open: boolean
+  card: ActionProps
+  sourceNames: Map<string, string>
+  close: () => void
+}) {
+  const cardAction = useCardAction(card, menu.item, menu.source)
+  const { anchor } = menu
+  const position =
+    'el' in anchor ? {} : { anchorReference: 'anchorPosition' as const, anchorPosition: anchor }
+  return (
+    <>
+      <Menu
+        open={open}
+        onClose={close}
+        anchorEl={'el' in anchor ? anchor.el : undefined}
+        {...position}
+      >
+        <Items
+          item={menu.item}
+          source={menu.source}
+          card={card}
+          sourceNames={sourceNames}
+          close={close}
+          cardAction={cardAction}
+        />
+      </Menu>
+      {cardAction.action}
+    </>
+  )
+}
+
 /** The right-click menu of a Browse hit, in the Mods tab's menu style. */
 export const BrowseMenu = memo(function BrowseMenuView({
   card,
@@ -154,26 +198,22 @@ export const BrowseMenu = memo(function BrowseMenuView({
 }) {
   const menu = useBrowseSelection((s) => s.menu)
   const close = useBrowseSelection((s) => s.closeMenu)
-  if (!menu) {
+  const [last, setLast] = useState(menu)
+  if (menu && menu !== last) {
+    setLast(menu)
+  }
+  const shown = menu ?? last
+  if (!shown) {
     return null
   }
-  const { anchor } = menu
-  const position =
-    'el' in anchor ? {} : { anchorReference: 'anchorPosition' as const, anchorPosition: anchor }
   return (
-    <Menu
-      open={true}
-      onClose={close}
-      anchorEl={'el' in anchor ? anchor.el : undefined}
-      {...position}
-    >
-      <Items
-        item={menu.item}
-        source={menu.source}
-        card={card}
-        sourceNames={sourceNames}
-        close={close}
-      />
-    </Menu>
+    <MenuHost
+      key={`${shown.item.source}:${shown.item.id}:${shown.source}`}
+      menu={shown}
+      open={menu !== null}
+      card={card}
+      sourceNames={sourceNames}
+      close={close}
+    />
   )
 })
