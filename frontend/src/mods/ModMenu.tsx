@@ -291,7 +291,7 @@ function RemoveFromOthersDialog({
       title={t`Remove ${{ name: mod.name }} from other profiles`}
       helper={t`Where it came in one download with other mods, it is disabled instead.`}
       confirmLabel={t`Remove`}
-      onConfirm={async (profiles, _pinned, rows) => {
+      onConfirm={async (profiles, rows) => {
         const changed = await Promise.all(
           profiles.map((other) => {
             const row = rows.find((candidate) => candidate.profileId === other.id)

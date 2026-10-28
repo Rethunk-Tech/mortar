@@ -42,7 +42,6 @@ function ProfileChoice({
   profile,
   row,
   mode,
-  isPinned,
   isLockedProfile,
   selected,
   choose,
@@ -50,21 +49,17 @@ function ProfileChoice({
   profile: Profile
   row: ModInProfile | undefined
   mode: 'add' | 'remove'
-  isPinned: boolean
   isLockedProfile: boolean
   selected: boolean
   choose: (id: string) => void
 }) {
   const { t } = useLingui()
   const has = row !== undefined
-  const disabled =
-    mode === 'remove' ? !has || isPinned || isLockedProfile : has || isPinned || isLockedProfile
+  const disabled = mode === 'remove' ? !has || isLockedProfile : has || isLockedProfile
   const checked = mode === 'remove' ? selected : has || selected
   let status = modsLabel(userModCount(profile))
   if (isLockedProfile) {
     status = t`Stop the game to change mods.`
-  } else if (isPinned) {
-    status = t`Pinned in ${{ name: profile.name }}`
   } else if (has && mode !== 'remove') {
     status = t`Already has it`
   }
@@ -129,8 +124,6 @@ function useNeeds(
 
 const toggleSelected = (current: string[], id: string) =>
   current.includes(id) ? current.filter((value) => value !== id) : [...current, id]
-const profileHasPinned = (profile: Profile, row: ModInProfile, update?: { oldKey: string }) =>
-  Boolean(update && profile.entries?.some((entry) => entry.key === row.key && entry.pinned))
 
 function ProfileChoices({
   profiles,
@@ -138,7 +131,6 @@ function ProfileChoices({
   mode,
   selected,
   choose,
-  pinned,
   locked,
 }: {
   profiles: Profile[]
@@ -146,21 +138,18 @@ function ProfileChoices({
   mode: 'add' | 'remove'
   selected: string[]
   choose: (id: string) => void
-  pinned: (profile: Profile, row: ModInProfile) => boolean
   locked: (profile: Profile) => boolean
 }) {
   return (
     <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
       {profiles.map((profile) => {
         const row = rows.find((candidate) => candidate.profileId === profile.id)
-        const isPinned = row !== undefined && pinned(profile, row)
         return (
           <ProfileChoice
             key={profile.id}
             profile={profile}
             row={row}
             mode={mode}
-            isPinned={isPinned}
             isLockedProfile={locked(profile)}
             selected={selected.includes(profile.id)}
             choose={choose}
@@ -259,7 +248,6 @@ export function OtherProfilesDialog({
   title,
   helper,
   confirmLabel,
-  update,
   withNeeds = false,
   onClose,
   onConfirm,
@@ -273,11 +261,10 @@ export function OtherProfilesDialog({
   title: string
   helper?: string
   confirmLabel: string
-  update?: { oldKey: string } | undefined
   // The add brings the mods' requirements along, and the dialog names them.
   withNeeds?: boolean
   onClose: () => void
-  onConfirm: (profiles: Profile[], pinned: Profile[], rows: ModInProfile[]) => Promise<void>
+  onConfirm: (profiles: Profile[], rows: ModInProfile[]) => Promise<void>
 }) {
   const { t } = useLingui()
   const listed = useProfiles((s) => s.profiles)
@@ -307,14 +294,7 @@ export function OtherProfilesDialog({
       return
     }
     const unavailable = new Set([
-      ...rows
-        .filter((row) => {
-          const profile = profiles.find((p) => p.id === row.profileId)
-          const pinned =
-            update && profile?.entries?.some((entry) => entry.key === row.key && entry.pinned)
-          return mode === 'add' || pinned
-        })
-        .map((row) => row.profileId),
+      ...(mode === 'add' ? rows.map((row) => row.profileId) : []),
       ...profiles.filter((profile) => lockedIn(launch, profile.id)).map((profile) => profile.id),
     ])
     keep(
@@ -323,26 +303,18 @@ export function OtherProfilesDialog({
         ? []
         : profiles.map((profile) => profile.id).filter((profileId) => !unavailable.has(profileId)),
     )
-  }, [launch, mode, open, profiles, rows, update])
+  }, [launch, mode, open, profiles, rows])
   const choose = (profileId: string) => {
     touched.current = true
     setSelected((current) => toggleSelected(current, profileId))
   }
   const locked = (profile: Profile) => lockedIn(launch, profile.id)
-  const pinned = (profile: Profile, row: ModInProfile) => profileHasPinned(profile, row, update)
   const confirm = () => {
     run(
       async () => {
         const chosen = profiles.filter((profile) => selected.includes(profile.id))
-        const skipped = rows
-          .filter((row) => {
-            const profile = profiles.find((p) => p.id === row.profileId)
-            return profile !== undefined && pinned(profile, row)
-          })
-          .flatMap((row) => profiles.filter((profile) => profile.id === row.profileId))
         await onConfirm(
           chosen,
-          skipped,
           rows.filter((row) => selected.includes(row.profileId)),
         )
         onClose()
@@ -382,7 +354,6 @@ export function OtherProfilesDialog({
         mode={mode}
         selected={selected}
         choose={choose}
-        pinned={pinned}
         locked={locked}
       />
     </AppDialog>
