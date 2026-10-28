@@ -7,6 +7,7 @@ import { listNames } from '../i18n/list.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { AppDialog, DialogFooter, ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { reportError } from '../toasts/report.ts'
+import { localId } from './dependents.ts'
 import { useEnableAsk } from './enableAsk.ts'
 import { useMods } from './store.ts'
 import { announceAlso, openTarget } from './storeView.ts'
@@ -19,7 +20,7 @@ export function EnableRequirementsDialog() {
   if (!offer) {
     return null
   }
-  const names = offer.mods.map((m) => ((m.name ?? '').trim() === '' ? t`Unknown mod` : m.name))
+  const names = offer.mods.map((m) => ((m.name ?? '').trim() === '' ? localId(m.id) : m.name))
   const enableThem = () => {
     const target = openTarget()
     dismiss()
