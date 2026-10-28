@@ -337,13 +337,9 @@ func (s *Service) Shutdown() {
 		return
 	}
 	s.closed = true
-	s.enabled = false
-	server, listener, advertiser, cancel := s.resourcesLocked()
-	s.clearResourcesLocked()
-	s.peers = map[string]peerRecord{}
-	s.configuredPort = 0
+	stop := s.stopLocked()
 	s.mu.Unlock()
-	stopResources(server, listener, advertiser, cancel)
+	stop()
 	s.wg.Wait()
 }
 
@@ -444,26 +440,22 @@ func (s *Service) stop() error {
 		s.mu.Unlock()
 		return nil
 	}
-	s.enabled = false
-	server, listener, advertiser, cancel := s.resourcesLocked()
-	s.clearResourcesLocked()
-	s.peers = map[string]peerRecord{}
-	s.configuredPort = 0
+	stop := s.stopLocked()
 	s.mu.Unlock()
-	stopResources(server, listener, advertiser, cancel)
+	stop()
 	s.wg.Wait()
 	return nil
 }
 
-func (s *Service) resourcesLocked() (*http.Server, net.Listener, *mdns.Server, context.CancelFunc) {
-	return s.server, s.listener, s.mdns, s.cancel
-}
-
-func (s *Service) clearResourcesLocked() {
-	s.server = nil
-	s.listener = nil
-	s.mdns = nil
-	s.cancel = nil
+// stopLocked turns sharing off and detaches its server, listener and advertiser; the caller unlocks s.mu and then
+// runs stop, so shutting them down waits on no lock.
+func (s *Service) stopLocked() (stop func()) {
+	s.enabled = false
+	server, listener, advertiser, cancel := s.server, s.listener, s.mdns, s.cancel
+	s.server, s.listener, s.mdns, s.cancel = nil, nil, nil, nil
+	s.peers = map[string]peerRecord{}
+	s.configuredPort = 0
+	return func() { stopResources(server, listener, advertiser, cancel) }
 }
 
 func stopResources(server *http.Server, listener net.Listener, advertiser *mdns.Server, cancel context.CancelFunc) {
@@ -519,7 +511,7 @@ func (s *Service) Peers(ctx context.Context) ([]Peer, error) {
 		peer.Paired = s.book.key(record.instance) != nil
 		out = append(out, peer)
 	}
-	slicesSortPeers(out)
+	slices.SortStableFunc(out, func(a, b Peer) int { return strings.Compare(a.Name, b.Name) })
 	return out, nil
 }
 
@@ -1288,14 +1280,6 @@ func cleanName(name string) string {
 		}
 		return r
 	}, name))
-}
-
-func slicesSortPeers(peers []Peer) {
-	for i := 1; i < len(peers); i++ {
-		for j := i; j > 0 && peers[j].Name < peers[j-1].Name; j-- {
-			peers[j], peers[j-1] = peers[j-1], peers[j]
-		}
-	}
 }
 
 func postRaw(ctx context.Context, endpoint string, body []byte) (*http.Response, error) {
