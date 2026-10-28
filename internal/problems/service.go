@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"context"
 	"errors"
+	"io"
 	"log"
 	"maps"
 	"os"
@@ -22,6 +23,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
+	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
@@ -180,8 +182,7 @@ func (s *Service) playerLog(gameID, profileID string, l loader.Loader) string {
 	if err != nil {
 		return ""
 	}
-	b, _ := fsx.ReadFile(path)
-	return string(b)
+	return readLogTail(path)
 }
 
 // gameLog is the text of the game's own log, empty when it keeps none or has not written it.
@@ -193,8 +194,36 @@ func (s *Service) gameLog(gameID, profileID string) string {
 	if err != nil {
 		return ""
 	}
-	b, _ := fsx.ReadFile(path)
-	return string(b)
+	return readLogTail(path)
+}
+
+// readLogTail is the last launch.MaxLogBytes of the log at path from a line start, empty when it cannot be read: a
+// game's log can grow without bound and the analyzers only need the latest run.
+func readLogTail(path string) string {
+	f, err := fsx.Open(path)
+	if err != nil {
+		return ""
+	}
+	defer func() { _ = f.Close() }()
+	st, err := f.Stat()
+	if err != nil {
+		return ""
+	}
+	trimmed := st.Size() > launch.MaxLogBytes
+	if trimmed {
+		if _, err := f.Seek(-int64(launch.MaxLogBytes), io.SeekEnd); err != nil {
+			return ""
+		}
+	}
+	b, err := io.ReadAll(f)
+	if err != nil {
+		return ""
+	}
+	text := string(b)
+	if trimmed {
+		_, text, _ = strings.Cut(text, "\n")
+	}
+	return strings.ToValidUTF8(text, "")
 }
 
 // ranLastHere is false when another profile of the game ran after this one, whose game-wide log is then not this
