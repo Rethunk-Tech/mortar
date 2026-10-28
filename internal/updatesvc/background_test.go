@@ -17,7 +17,13 @@ func TestBackgroundTick(t *testing.T) {
 		s := signedService(t, f)
 		s.AutoInstall = autoInstall
 		var got []emitted
-		emit := func(name string, data any) { got = append(got, emitted{name, data.(Release)}) }
+		emit := func(name string, data any) {
+			r, ok := data.(Release)
+			if !ok {
+				t.Errorf("event %s carried a %T", name, data)
+			}
+			got = append(got, emitted{name, r})
+		}
 		return f, s, func() []emitted {
 			s.backgroundTick(context.Background(), emit)
 			return got
