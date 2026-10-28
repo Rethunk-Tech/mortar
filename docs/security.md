@@ -83,7 +83,7 @@ Extraction stops at the first failure and leaves its output in a temp folder the
 | Input and threat | Guard | Test |
 | --- | --- | --- |
 | Screenshot requests: a `/screenshot/` URL names a file outside the game's screenshot folders | `game/game.go#ScreenshotMiddleware`, `shots/shots.go#IsPicture` | `TestListReadsPicturesNewestFirstAndSkipsTheRest` (`shots`) |
-| Mod pictures: a `/mod-picture/` request names a host or a file other than a mod site's picture | `modpic/cache.go#parsePicture`, `modpic/cache.go#parseLocalIcon` | `TestFetchRejectsDisallowedHost`, `TestALocalIconIsReadFromTheStoreItemItNames` (`modpic`) |
+| Mod pictures: a `/mod-picture/` request names a host or a file other than a mod site's picture, or a picture host redirects off the allowlist | `modpic/cache.go#parsePicture` (also each redirect hop), `modpic/cache.go#parseLocalIcon` | `TestFetchRejectsDisallowedHost`, `TestFetchRefusesARedirectOffTheAllowlist`, `TestALocalIconIsReadFromTheStoreItemItNames` (`modpic`) |
 | Config editor writes: a path outside the config folder, or a mod manifest | `configsvc/service.go#cfgPath`, `configsvc/service.go#jsonPath`, `share/apply.go`, `share/file.go` | `TestSetRefusesNamesOutsideTheConfigFolder` (`configsvc`); `TestApplyWritesOnlyValidConfigsInsideModFolders` (`share`) |
 | The download folder is the user's own (e.g. `~/Downloads`): the startup sweep of unkept archives deletes their files | `queue/resume.go#sweepDownloads` removes only regular files named like `archive.SavedName` (a `ids.New` id stem) and their resume sidecars | `TestSweepKeepsPartialsForQueuedItems` |
 | A Tiled map layer whose zlib or gzip data inflates far past its declared size, or a content-pack file of unbounded size | `contentpatcher/footprint.go#decodeTMXValues` (declared tile cap, inflation capped at width×height×4), `contentpatcher.go#readPackPath` (`fsx.ReadCapped`) | `TestDecodeTMXValuesBoundsInflation` |
@@ -95,7 +95,7 @@ Extraction stops at the first failure and leaves its output in a temp folder the
 
 ## Antivirus scanners
 
-`avscan` runs Windows AMSI, clamd over a unix socket, a custom command (no shell; `{path}` replaced by the folder; exit 0 clean, any other code a detection named by the first stdout line) or nothing. A scan that fails or times out is not a detection: the mod installs and an `avscan:failed` event says so. A file Windows blocks while Mortar writes it reaches the same refusal through `store.RealTimeBlock`, which has no Install anyway.
+`avscan` runs Windows AMSI, clamd over a unix socket, a custom command (no shell; `{path}` replaced by the folder; exit 0 clean, any other code a detection named by the first stdout line) or nothing. A scan that fails or times out, or meets a file over clamd's stream limit, is not a detection: the mod installs and an `avscan:failed` event says so. A file Windows blocks while Mortar writes it reaches the same refusal through `store.RealTimeBlock`, which has no Install anyway.
 
 ## Out of scope
 
