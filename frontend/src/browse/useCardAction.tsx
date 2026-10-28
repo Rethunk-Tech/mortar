@@ -22,8 +22,11 @@ interface CardActionState {
   url: string
   installed: boolean
   // Add (or download, or open the files page) from the picked source, as the action button does.
-  add: () => void
+  // then runs once the install starts: right away, or after the player accepts a known-broken warning.
+  add: (then?: () => void) => void
   action: ReactNode
+  // The known-broken warning, rendered outside the card so its events do not reach the card's click.
+  dialog: ReactNode
 }
 
 /** The Add, Download or Open files page action of a hit from source, shared by its card and its details panel. */
@@ -78,23 +81,28 @@ function useCardAction(props: ActionProps, item: BrowseItem, source: string): Ca
       ? props.addPackage(id)
       : props.addDirect(source, id, shownItem.picture)
   }
-  // The note is about the hit's own site's newest version, not another site's copy of the mod.
-  const listed = source === item.source ? item.knownBroken : undefined
   // A hit on the game's known-broken list asks before it installs.
-  const askFirst = (install: () => void) => () => (listed ? setAsking(() => install) : install())
+  const askFirst = (install: () => void) => (then?: () => void) => {
+    const go = () => {
+      install()
+      then?.()
+    }
+    return shownItem.knownBroken ? setAsking(() => go) : go()
+  }
   const onAdd = askFirst(() => run(() => Promise.resolve(addFromSource())))
   const onDownload = askFirst(() => run(() => Promise.resolve(props.downloadNexus(id))))
-  const onOpenFiles = () => {
+  const onOpenFiles = askFirst(() => {
     setOpenedFiles(true)
     openUrl(`${url}?tab=files`)
-  }
-  const add = () => {
+  })
+  const listed = shownItem.knownBroken ?? undefined
+  const add = (then?: () => void) => {
     if (source !== NEXUS) {
-      onAdd()
+      onAdd(then)
     } else if (premium) {
-      onDownload()
+      onDownload(then)
     } else {
-      onOpenFiles()
+      onOpenFiles(then)
     }
   }
   return {
@@ -103,35 +111,35 @@ function useCardAction(props: ActionProps, item: BrowseItem, source: string): Ca
     installed,
     add,
     action: (
-      <>
-        <CardAction
-          item={shownItem}
-          source={source}
-          state={shown}
-          installed={installed}
-          premium={premium}
-          pending={pending}
-          onAdd={onAdd}
-          onDownload={onDownload}
-          onOpenFiles={onOpenFiles}
-        />
-        <ConfirmationDialog
-          open={asking !== null && listed !== undefined}
-          title={listedTitle(listed?.kind, shownItem.name)}
-          body={
-            listed?.replacement
-              ? t`${{ reason: listed.reason }} Use ${{ replacement: listed.replacement }} instead.`
-              : listed?.reason
-          }
-          confirmLabel={t`Install anyway`}
-          tone="warning"
-          onCancel={() => setAsking(null)}
-          onConfirm={() => {
-            asking?.()
-            setAsking(null)
-          }}
-        />
-      </>
+      <CardAction
+        item={shownItem}
+        source={source}
+        state={shown}
+        installed={installed}
+        premium={premium}
+        pending={pending}
+        onAdd={() => onAdd()}
+        onDownload={() => onDownload()}
+        onOpenFiles={() => onOpenFiles()}
+      />
+    ),
+    dialog: (
+      <ConfirmationDialog
+        open={asking !== null && listed !== undefined}
+        title={listedTitle(listed?.kind, shownItem.name)}
+        body={
+          listed?.replacement
+            ? t`${{ reason: listed.reason }} Use ${{ replacement: listed.replacement }} instead.`
+            : listed?.reason
+        }
+        confirmLabel={t`Install anyway`}
+        tone="warning"
+        onCancel={() => setAsking(null)}
+        onConfirm={() => {
+          asking?.()
+          setAsking(null)
+        }}
+      />
     ),
   }
 }

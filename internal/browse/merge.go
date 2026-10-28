@@ -146,7 +146,7 @@ func mergeSame(items []Item, order []string, ident identityOf, people aliases) [
 			if i != best {
 				card.Alts = append(card.Alts, source.Alt{
 					Source: m.Source, ID: m.ID, URL: m.URL, Installed: m.Installed,
-					Obsolete: m.Obsolete, Broken: m.Broken,
+					Obsolete: m.Obsolete, Broken: m.Broken, KnownBroken: m.KnownBroken, External: m.External,
 					Endorsements: m.Endorsements, Stars: m.Stars, Downloads: m.Downloads,
 					Version: m.Version, Updated: m.Updated, Size: m.Size,
 				})

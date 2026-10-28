@@ -356,7 +356,7 @@ const ResultCard = memo(function BrowseResultCard(props: ResultCardProps) {
   const [picked, setPicked] = useState(item.source)
   const source = sources.includes(picked) ? picked : item.source
   const mark = { id: source, name: sourceNames.get(source) ?? source }
-  const { shownItem, installed, action } = useCardAction(props, item, source)
+  const { shownItem, installed, action, dialog } = useCardAction(props, item, source)
   const shownStats = parseCardStats(useSettings((s) => s.browseCardStats))
   const stats = useCardStats(shownItem, shownStats)
   const selected = useBrowseSelection(
@@ -365,82 +365,90 @@ const ResultCard = memo(function BrowseResultCard(props: ResultCardProps) {
   const dim = isGray(modes, shownItem, installed) ? GRAY_OPACITY : 1
   const flag = flagOf(modes, shownItem)
   return (
-    <Card
-      data-hit={hitKey(item)}
-      aria-current={selected ? 'true' : undefined}
-      onMouseDown={(e) => {
-        if (e.button === MIDDLE) {
+    <>
+      <Card
+        data-hit={hitKey(item)}
+        aria-current={selected ? 'true' : undefined}
+        onMouseDown={(e) => {
+          if (e.button === MIDDLE) {
+            e.preventDefault()
+          }
+        }}
+        onAuxClick={(e) => {
+          if (opensPage(e, true) && !onControl(e)) {
+            props.openUrl(shownItem.url)
+          }
+        }}
+        onClick={(e) => {
+          if (onControl(e)) {
+            return
+          }
+          if (opensPage(e, true)) {
+            props.openUrl(shownItem.url)
+            return
+          }
+          useBrowseSelection.getState().select({ item, source })
+        }}
+        onContextMenu={(e) => {
           e.preventDefault()
-        }
-      }}
-      onAuxClick={(e) => {
-        if (opensPage(e, true) && !onControl(e)) {
-          props.openUrl(shownItem.url)
-        }
-      }}
-      onClick={(e) => {
-        if (onControl(e)) {
-          return
-        }
-        if (opensPage(e, true)) {
-          props.openUrl(shownItem.url)
-          return
-        }
-        useBrowseSelection.getState().select({ item, source })
-      }}
-      onContextMenu={(e) => {
-        e.preventDefault()
-        useBrowseSelection
-          .getState()
-          .openMenu({ item, source }, { top: e.clientY, left: e.clientX })
-      }}
-      className={row ? 'card-row' : undefined}
-      sx={[
-        cardSx,
-        selected ? { outline: '2px solid', outlineColor: 'primary.main' } : { outline: 'none' },
-      ]}
-    >
-      {row ? (
-        <CardPicture
-          picture={item.picture}
-          size={PICTURE_PX}
-          dim={dim}
-          source={mark}
-          starKey={favouriteKey(item.source, item.id)}
-        />
-      ) : (
-        <div className="card-under">
+          useBrowseSelection
+            .getState()
+            .openMenu({ item, source }, { top: e.clientY, left: e.clientX })
+        }}
+        className={row ? 'card-row' : undefined}
+        sx={[
+          cardSx,
+          selected ? { outline: '2px solid', outlineColor: 'primary.main' } : { outline: 'none' },
+        ]}
+      >
+        {row ? (
           <CardPicture
             picture={item.picture}
             size={PICTURE_PX}
             dim={dim}
             source={mark}
-            pick={{ sources, names: sourceNames, onPick: setPicked }}
             starKey={favouriteKey(item.source, item.id)}
           />
-          {action}
+        ) : (
+          <div className="card-under">
+            <CardPicture
+              picture={item.picture}
+              size={PICTURE_PX}
+              dim={dim}
+              source={mark}
+              pick={{ sources, names: sourceNames, onPick: setPicked }}
+              starKey={favouriteKey(item.source, item.id)}
+            />
+            {action}
+          </div>
+        )}
+        <div className="card-body" style={{ opacity: dim }}>
+          <div className="card-head">
+            <CardTitle
+              name={name}
+              flag={flag}
+              onOpen={() => useBrowseSelection.getState().select({ item, source })}
+            />
+            <ReuploadMark reuploadOf={item.reuploadOf ?? ''} />
+          </div>
+          <Byline author={author} />
+          <p className="card-summary" title={summary}>
+            {summary}
+          </p>
+          <StatsLine stats={stats} />
+          {row ? (
+            <SourceBadges
+              sources={sources}
+              picked={source}
+              names={sourceNames}
+              onPick={setPicked}
+            />
+          ) : null}
         </div>
-      )}
-      <div className="card-body" style={{ opacity: dim }}>
-        <div className="card-head">
-          <CardTitle
-            name={name}
-            flag={flag}
-            onOpen={() => useBrowseSelection.getState().select({ item, source })}
-          />
-          <ReuploadMark reuploadOf={item.reuploadOf ?? ''} />
-        </div>
-        <Byline author={author} />
-        <p className="card-summary" title={summary}>
-          {summary}
-        </p>
-        <StatsLine stats={stats} />
-        {row ? (
-          <SourceBadges sources={sources} picked={source} names={sourceNames} onPick={setPicked} />
-        ) : null}
-      </div>
-      {row ? action : null}
-    </Card>
+        {row ? action : null}
+      </Card>
+      {dialog}
+    </>
   )
 })
 

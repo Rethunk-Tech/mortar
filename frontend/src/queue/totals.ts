@@ -46,6 +46,13 @@ export const pendingFor = (items: Item[], profileId: string, modId: number, repo
     (i) => isPending(i) && i.profileId === profileId && i.modId === modId && i.repo === repo,
   )
 
+// A package (Thunderstore, or another site's id under source) has modId 0 and no repo, so it matches on its own name.
+export const pendingPackage = (items: Item[], profileId: string, pkg: string, source = '') =>
+  items.some(
+    (i) =>
+      isPending(i) && i.profileId === profileId && i.package === pkg && (i.source ?? '') === source,
+  )
+
 export function totals(items: Item[]): Totals {
   const counted = items.filter((i) => i.state !== 'skipped' && i.state !== 'cancelled')
   const done = counted.filter((i) => i.state === 'done').length

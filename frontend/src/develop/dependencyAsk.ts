@@ -13,15 +13,23 @@ export interface DependencyAsk {
   pkg: string
   name: string
   version: string
-  // Installs the package into the development profile; null when it is already there.
-  install: (() => void) | null
+  // Installs the package into the development profile and calls then once the install is accepted; null when it
+  // is already there.
+  install: ((then: () => void) => void) | null
 }
 
 export const useDependencyAsk = create<{ ask: DependencyAsk | null }>(() => ({ ask: null }))
 
 /** Makes the package a dependency of the project the ask names, installing it first when it is not there yet. */
 export function addDependency(ask: DependencyAsk, soft: boolean) {
-  ask.install?.()
+  if (ask.install) {
+    ask.install(() => record(ask, soft))
+  } else {
+    record(ask, soft)
+  }
+}
+
+function record(ask: DependencyAsk, soft: boolean) {
   AddDependency(ask.game, ask.dir, ask.pkg, ask.version, soft)
     .then(() =>
       useToasts.getState().push({

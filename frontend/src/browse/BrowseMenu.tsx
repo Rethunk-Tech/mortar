@@ -10,9 +10,11 @@ import {
 import { addDependency, type DependencyAsk, useDependencyAsk } from '../develop/dependencyAsk.ts'
 import { useCurrentGame } from '../nav/currentGame.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { useNexus } from '../settings/nexus.ts'
 import { useSettings } from '../settings/store.ts'
 import { copyText } from '../share/copyText.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
+import { useOfflineReason } from '../shell/offlineText.ts'
 import { reportError } from '../toasts/report.ts'
 import { NEXUS, THUNDERSTORE } from './browseConstants.ts'
 import type { BrowseItem } from './browseTypes.ts'
@@ -66,18 +68,24 @@ function Items({
     (p) => p.profile === openId,
   )
   // A development profile's mod declares what it needs; the player says whether it needs it or only uses it.
-  const depend = (p: DevProject) => askDependency(game, p, item, installed ? null : add)
+  const depend = (p: DevProject) => askDependency(game, p, shownItem, installed ? null : add)
   const choices = [{ source: item.source, url: item.url }, ...(item.alts ?? [])]
   const run = (fn: () => void) => () => {
     close()
     fn()
   }
   const opensFiles = source === NEXUS && !card.premium
+  const signedIn = useNexus((state) => state.signedIn)
+  const offline = useOfflineReason([source])
   let addWhy: string | undefined
   if (installed) {
     addWhy = t`Already in this profile.`
   } else if (shownItem.bundled) {
     addWhy = t`Mortar installs this itself.`
+  } else if (source === NEXUS && !signedIn) {
+    addWhy = t`Sign in to download`
+  } else if (offline !== '') {
+    addWhy = offline
   }
   return [
     <MenuAction
@@ -103,7 +111,7 @@ function Items({
         onClick={run(add)}
       />
     ),
-    ...(item.source === THUNDERSTORE && item.version
+    ...(source === THUNDERSTORE && shownItem.version
       ? projects.map((p) => (
           <MenuAction
             key={`depend-${p.dir}`}
@@ -196,7 +204,7 @@ function MenuHost({
           cardAction={cardAction}
         />
       </Menu>
-      {cardAction.action}
+      {cardAction.dialog}
     </>
   )
 }

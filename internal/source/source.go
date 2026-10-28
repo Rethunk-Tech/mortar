@@ -182,6 +182,10 @@ type Alt struct {
 	Installed bool   `json:"installed"`
 	Obsolete  bool   `json:"obsolete"`
 	Broken    bool   `json:"broken"`
+	// KnownBroken and External are that site's own: the note is about its newest version, and only it says whether
+	// downloads are limited to its page.
+	KnownBroken *KnownBrokenNote `json:"knownBroken,omitempty"`
+	External    bool             `json:"external,omitempty"`
 	// Endorsements, Stars, Downloads, Version, Updated and Size are that site's own values for the mod.
 	Endorsements int    `json:"endorsements"`
 	Stars        int    `json:"stars"`

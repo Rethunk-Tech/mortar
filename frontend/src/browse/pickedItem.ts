@@ -15,6 +15,8 @@ function pickedItem(item: BrowseItem, source: string): BrowseItem {
     installed: alt.installed,
     obsolete: alt.obsolete,
     broken: alt.broken,
+    knownBroken: alt.knownBroken ?? null,
+    external: alt.external ?? false,
     endorsements: alt.endorsements,
     stars: alt.stars,
     downloads: alt.downloads,

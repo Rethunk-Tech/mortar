@@ -217,7 +217,7 @@ function Panel({
   const sources = [item.source, ...(item.alts ?? []).map((a) => a.source)]
   const [picked, setPicked] = useState(initial)
   const source = sources.includes(picked) ? picked : item.source
-  const { shownItem, action } = useCardAction(card, item, source)
+  const { shownItem, action, dialog } = useCardAction(card, item, source)
   const stats = useStats(shownItem)
   const profile = useProfiles(openProfileOf)
   const held = entryIn(profile, source, shownItem.id)
@@ -248,7 +248,8 @@ function Panel({
       <SourceBadges sources={sources} picked={source} names={sourceNames} onPick={setPicked} />
       <Box sx={{ alignSelf: 'flex-start', display: 'flex', gap: space.gap }}>
         {action}
-        {listsVersions(source) ? (
+        {dialog}
+        {listsVersions(source) && shownItem.external !== true ? (
           <Button size="small" variant="outlined" onClick={() => setChoosing(true)}>
             {held ? t`Change version…` : t`Choose a version…`}
           </Button>

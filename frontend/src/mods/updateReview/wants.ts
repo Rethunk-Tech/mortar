@@ -5,7 +5,7 @@ import type { Profile } from '../../../bindings/github.com/Rethunk-Tech/mortar/i
 import type { Item } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/models.ts'
 import { i18n } from '../../i18n/index.ts'
 import type { Want } from '../../queue/actions.ts'
-import { pendingFor } from '../../queue/totals.ts'
+import { pendingFor, pendingPackage } from '../../queue/totals.ts'
 import { isFull, loadDetails, nexusEntryOf, useNexusDetails } from '../nexusDetails.ts'
 import { optionalUpdateWants, useOptionalSkips } from '../optionalFiles.ts'
 
@@ -80,7 +80,11 @@ export const installedCaution = (u: Update): string =>
     .filter((part) => part !== '')
     .join(' ')
 
-export const pendingUpdate = (items: Item[], profileId: string, u: Update) =>
-  u.githubRepo
+export function pendingUpdate(items: Item[], profileId: string, u: Update) {
+  if (u.package) {
+    return pendingPackage(items, profileId, u.package, u.packageSource ?? '')
+  }
+  return u.githubRepo
     ? pendingFor(items, profileId, 0, u.githubRepo)
     : pendingFor(items, profileId, u.nexusId)
+}
