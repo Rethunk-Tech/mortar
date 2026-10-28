@@ -61,6 +61,8 @@ the game through that launcher. Each exception below is the game library or laun
   the same for Flatpak Lutris and Heroic, whose game folders live in their app data.
 - `finish-args-unnecessary-xdg-data-bottles-rw-access`, `finish-args-flatpak-appdata-folder-com.usebottles.bottles-rw-access`:
   native and Flatpak Bottles bottles, where a Windows build of the game lives and SMAPI's Windows installer writes.
+- `finish-args-unnecessary-xdg-config-r2modmanPlus-local-ro-access`, `finish-args-unnecessary-xdg-data-com.kesomannen.gale-ro-access`:
+  read-only r2modman and Gale data folders, which Import reads for their profiles.
 - `finish-args-flatpak-spawn-access`: `flatpak-spawn --host` starts the game through the user's host Steam or
   launcher, which cannot run inside this sandbox; there is no portal for starting another launcher's game.
 ```
