@@ -422,3 +422,13 @@ func TestNewerOrdersPrereleasesAndPrefixes(t *testing.T) {
 		}
 	}
 }
+
+func TestDoRefusesABodyOverTheLimit(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write([]byte("0123456789")) }))
+	t.Cleanup(srv.Close)
+	c := &Client{HTTP: srv.Client(), CacheDir: t.TempDir()}
+	req, _ := http.NewRequestWithContext(t.Context(), http.MethodGet, srv.URL, nil)
+	if _, err := c.do(req, 9); err == nil {
+		t.Fatal("a body over the limit was returned")
+	}
+}

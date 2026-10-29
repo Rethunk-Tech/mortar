@@ -295,6 +295,11 @@ func (c *Client) askUpdates(ctx context.Context, req UpdateRequest, mods []Insta
 	if err != nil {
 		return nil, err
 	}
+	return decodeUpdateAnswers(b)
+}
+
+// decodeUpdateAnswers keys SMAPI's answer by lowercased mod ID.
+func decodeUpdateAnswers(b []byte) (map[string]UpdateResult, error) {
 	var answers []apiMod
 	if err := json.Unmarshal(b, &answers); err != nil {
 		return nil, err
