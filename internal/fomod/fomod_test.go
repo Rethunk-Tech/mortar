@@ -306,6 +306,20 @@ func TestParseDeclaredAndUndeclaredLegacyEncodings(t *testing.T) {
 	}
 }
 
+func TestParseDecidesEncodingByBytes(t *testing.T) {
+	for _, c := range []struct{ doc, want string }{
+		{"<?xml version=\"1.0\" encoding=\"windows-1252\"?><config><moduleName>W\u00efde</moduleName></config>", "W\u00efde"},
+		{"<?xml version=\"1.0\" encoding=\"utf-8\"?><config><moduleName>Caf\xe9</moduleName></config>", "Caf\u00e9"},
+		{"<?xml version=\"1.0\" encoding=\"us-ascii\"?><config><moduleName>Plain</moduleName></config>", "Plain"},
+		{"<?xml version=\"1.0\" encoding=\"windows-1252\"?><config><moduleName>Caf\xe9</moduleName></config>", "Caf\u00e9"},
+	} {
+		cfg, err := Parse([]byte(c.doc))
+		if err != nil || cfg.ModuleName != c.want {
+			t.Fatalf("%q: %+v %v", c.doc, cfg, err)
+		}
+	}
+}
+
 func TestLoadRefusesOversizedConfig(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "ModuleConfig.xml")
 	if err := os.WriteFile(path, make([]byte, maxConfigBytes+1), 0o600); err != nil {

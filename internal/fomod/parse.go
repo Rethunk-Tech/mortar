@@ -15,7 +15,7 @@ import (
 // Parse reads a ModuleConfig.xml document.
 func Parse(data []byte) (Config, error) {
 	var raw xmlConfig
-	if !utf8.Valid(data) && !declaresEncoding(data) {
+	if !utf8.Valid(data) {
 		if b, err := charmap.Windows1252.NewDecoder().Bytes(data); err == nil {
 			data = b
 		}
@@ -61,27 +61,10 @@ func Parse(data []byte) (Config, error) {
 	return cfg, nil
 }
 
-// charsetReader serves an XML declaration other than UTF-8. UTF-16 is already UTF-8 by the time Parse runs
-// (decodeXML), so only the declaration is left to accept.
-func charsetReader(label string, input io.Reader) (io.Reader, error) {
-	switch strings.ToLower(label) {
-	case "utf-16", "utf-16le", "utf-16be", "utf16":
-		return input, nil
-	case "windows-1252", "cp1252":
-		return charmap.Windows1252.NewDecoder().Reader(input), nil
-	case "iso-8859-1", "iso8859-1", "latin1", "latin-1":
-		return charmap.ISO8859_1.NewDecoder().Reader(input), nil
-	}
-	return nil, fmt.Errorf("unsupported encoding %q", label)
-}
-
-// declaresEncoding reports whether the XML declaration names an encoding.
-func declaresEncoding(data []byte) bool {
-	if !bytes.HasPrefix(data, []byte("<?xml")) {
-		return false
-	}
-	decl, _, ok := bytes.Cut(data, []byte("?>"))
-	return ok && bytes.Contains(decl, []byte("encoding"))
+// charsetReader accepts any declared label: Parse has already made the bytes UTF-8 (decodeXML, then the
+// Windows-1252 fallback), and real declarations are often wrong.
+func charsetReader(_ string, input io.Reader) (io.Reader, error) {
+	return input, nil
 }
 
 func flagSets(flags []xmlFlag) []FlagSet {
