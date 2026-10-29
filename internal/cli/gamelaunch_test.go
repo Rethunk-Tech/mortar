@@ -32,7 +32,7 @@ func TestGameFolderSendsAnAbsolutePathAndPrintsTheStoredOne(t *testing.T) {
 		"game.folder": control.GameFolderResult{Game: "stardew", Folder: "/games/Stardew"},
 	}, "game", "folder", "stardew", "rel/dir")
 	if r.code != 0 || r.calls[0].method != "game.folder" || r.calls[0].params.Game != "stardew" ||
-		!filepath.IsAbs(r.calls[0].params.Path) || !strings.HasSuffix(r.calls[0].params.Path, "rel/dir") ||
+		!filepath.IsAbs(r.calls[0].params.Path) || !strings.HasSuffix(r.calls[0].params.Path, filepath.FromSlash("rel/dir")) ||
 		!strings.Contains(r.out, "/games/Stardew") {
 		t.Fatalf("folder: %+v %q", r, r.out)
 	}

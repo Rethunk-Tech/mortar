@@ -11,7 +11,8 @@ import (
 )
 
 func TestDoctorPrintsSharedChecks(t *testing.T) {
-	// The report also lists browsers found on this machine; an empty home has none.
+	// The report also lists the browsers found on this machine: none under an empty home on Linux, whatever the
+	// registry holds on Windows, so the expectation asks for the same rows.
 	home := t.TempDir()
 	t.Setenv("HOME", home)
 	t.Setenv("XDG_CONFIG_HOME", home)
@@ -26,7 +27,7 @@ func TestDoctorPrintsSharedChecks(t *testing.T) {
 		},
 		NxmHandled: true,
 	}
-	want := doctor.PlainText(doctor.FromLive(doctor.Live{
+	want := doctor.PlainText(doctor.LiveWithNativeHosts(doctor.Live{
 		Version: d.Version, CommandVersion: "9.9.9", DataDir: d.DataDir,
 		Games: d.Games, Environment: d.Environment, NxmHandled: d.NxmHandled, NxmPrevious: d.NxmPrevious,
 	}))
