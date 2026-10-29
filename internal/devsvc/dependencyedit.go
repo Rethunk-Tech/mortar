@@ -133,8 +133,8 @@ func lineOf(pattern string) *regexp.Regexp {
 func withoutDependency(project, pkg string) (string, error) {
 	ref := depReference(pkg).Include
 	return msbuild.Remove(project, func(e msbuild.Elem, parent string) bool {
-		return parent == "ItemGroup" && (e.Name == hardItem || e.Name == softItem) && e.Attrs["Include"] == pkg ||
-			parent == "ItemGroup" && e.Name == "Reference" && e.Attrs["Include"] == ref
+		return parent == "ItemGroup" && (strings.EqualFold(e.Name, hardItem) || strings.EqualFold(e.Name, softItem)) && strings.EqualFold(e.Attrs["Include"], pkg) ||
+			parent == "ItemGroup" && strings.EqualFold(e.Name, "Reference") && strings.EqualFold(e.Attrs["Include"], ref)
 	})
 }
 
@@ -144,7 +144,7 @@ func withoutUserDependency(props, pkg string) (string, error) {
 		return props, err
 	}
 	return msbuild.Remove(props, func(e msbuild.Elem, parent string) bool {
-		return parent == "ItemGroup" && e.Name == "MortarDependencyFolder" && e.Attrs["Include"] == pkg
+		return parent == "ItemGroup" && strings.EqualFold(e.Name, "MortarDependencyFolder") && strings.EqualFold(e.Attrs["Include"], pkg)
 	})
 }
 

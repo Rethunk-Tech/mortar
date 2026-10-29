@@ -273,3 +273,11 @@ func TestDirtyListsARenamesNewPathOnly(t *testing.T) {
 		t.Errorf("dirty = %v", got)
 	}
 }
+
+func TestWithoutDependencyMatchesWithoutCase(t *testing.T) {
+	project := "<Project>\n  <ItemGroup>\n    <ThunderstoreDependency Include=\"evaisa-lethallib\" Version=\"1.1.1\" />\n  </ItemGroup>\n</Project>\n"
+	out, err := withoutDependency(project, "Evaisa-LethalLib")
+	if err != nil || strings.Contains(out, "evaisa-lethallib") {
+		t.Errorf("entry kept: %q, %v", out, err)
+	}
+}
