@@ -224,6 +224,10 @@ msgstr ""
 msgid "{source} hides or has removed these pages, so there is no download to offer."
 msgstr ""
 
+#: src/mods/typedConfig/valueError.ts
+msgid "This setting is no longer in the file."
+msgstr ""
+
 #: src/mods/EndorsePrompt.tsx
 msgid "Never for this mod"
 msgstr ""
@@ -2050,10 +2054,6 @@ msgstr ""
 
 #: src/mods/describe.ts
 msgid " You chose which mod wins each clash."
-msgstr ""
-
-#: src/mods/typedConfig/valueError.ts
-msgid "This is not a value the file can hold."
 msgstr ""
 
 #: src/mods/describe.ts

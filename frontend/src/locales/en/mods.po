@@ -224,6 +224,10 @@ msgstr "Could not show the skipped update for {name}"
 msgid "{source} hides or has removed these pages, so there is no download to offer."
 msgstr "{source} hides or has removed these pages, so there is no download to offer."
 
+#: src/mods/typedConfig/valueError.ts
+msgid "This setting is no longer in the file."
+msgstr "This setting is no longer in the file."
+
 #: src/mods/EndorsePrompt.tsx
 msgid "Never for this mod"
 msgstr "Never for this mod"
@@ -2051,10 +2055,6 @@ msgstr "Revert"
 #: src/mods/describe.ts
 msgid " You chose which mod wins each clash."
 msgstr " You chose which mod wins each clash."
-
-#: src/mods/typedConfig/valueError.ts
-msgid "This is not a value the file can hold."
-msgstr "This is not a value the file can hold."
 
 #: src/mods/describe.ts
 msgid "{name}'s {field} is {current}: {description}"
