@@ -3,11 +3,15 @@ package pack
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"testing"
 )
 
 func TestManagerDataDirsFollowHostXDGHomes(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("the host XDG homes are a Flatpak sandbox escape, which Linux alone has")
+	}
 	home := t.TempDir()
 	host := t.TempDir()
 	r2 := filepath.Join(host, "config", "r2modmanPlus-local")
