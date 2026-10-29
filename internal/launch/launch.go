@@ -131,27 +131,19 @@ func startCmd(ctx context.Context, env []string, dir, name string, args []string
 		return startOwnConsole(env, dir, name, args)
 	}
 	hideWindow(cmd, hide)
-	var stdin, hold *os.File
-	var out *capture
-	if !ownsConsole(hide) {
-		// Stdin is a pipe held open until the process exits: SMAPI reads console commands in a loop that spins a whole
-		// core on an input already at end of file (/dev/null, NUL), and blocks quietly on an open one.
-		var err error
-		if stdin, hold, err = os.Pipe(); err != nil {
-			return nil, err
-		}
-		cmd.Stdin = stdin
-		out = newCapture(cmd)
-	}
-	holdStart(cmd)
-	err := cmd.Start()
-	if stdin != nil {
-		_ = stdin.Close()
-	}
+	// Stdin is a pipe held open until the process exits: SMAPI reads console commands in a loop that spins a whole
+	// core on an input already at end of file (/dev/null, NUL), and blocks quietly on an open one.
+	stdin, hold, err := os.Pipe()
 	if err != nil {
-		if hold != nil {
-			_ = hold.Close()
-		}
+		return nil, err
+	}
+	cmd.Stdin = stdin
+	out := newCapture(cmd)
+	holdStart(cmd)
+	err = cmd.Start()
+	_ = stdin.Close()
+	if err != nil {
+		_ = hold.Close()
 		out.release()
 		return nil, err
 	}
@@ -161,9 +153,7 @@ func startCmd(ctx context.Context, env []string, dir, name string, args []string
 		killTree(pid)
 		_ = cmd.Wait()
 		untrackTree(pid)
-		if hold != nil {
-			_ = hold.Close()
-		}
+		_ = hold.Close()
 		out.release()
 		return nil, err
 	}
@@ -171,16 +161,12 @@ func startCmd(ctx context.Context, env []string, dir, name string, args []string
 	go func() {
 		err := cmd.Wait()
 		untrackTree(pid)
-		if hold != nil {
-			_ = hold.Close()
-		}
+		_ = hold.Close()
 		out.removeIfReleased()
 		done <- err
 	}()
 	exited := (<-chan error)(done)
-	if out != nil {
-		captured.Store(exited, out)
-	}
+	captured.Store(exited, out)
 	return exited, nil
 }
 
