@@ -8,8 +8,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // LocalMod is a mod the other manager added from disk rather than from a site, so its files come with the pack.
@@ -35,7 +35,7 @@ func switchedOn(name string) string {
 // Size is the bytes the mod's files take.
 func (m LocalMod) Size() int64 {
 	if m.Dir != "" {
-		n, _ := datadir.Size(m.Dir)
+		n, _ := safefs.Size(m.Dir)
 		return n
 	}
 	var n int64
@@ -57,7 +57,7 @@ func (m LocalMod) Stage(dir string) error {
 		for _, f := range m.Files {
 			p, err := dest(f.Path)
 			if err == nil {
-				err = fsx.WriteFile(p, f.Data, 0o600)
+				err = safefs.WriteFile(p, f.Data, 0o600)
 			}
 			if err != nil {
 				return err

@@ -12,8 +12,8 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 )
@@ -55,7 +55,7 @@ func buildPackWithProxy(t *testing.T, root, doorstop, proxy string) string {
 	if err := zw.Close(); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(p, buf.Bytes(), 0o600); err != nil {
+	if err := safefs.WriteFile(p, buf.Bytes(), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	return p
@@ -70,7 +70,7 @@ func TestInstallPackAndDoorstopFiles(t *testing.T) {
 			t.Fatalf("%s: got %+v, %v", packDir, got, err)
 		}
 	}
-	if !fsx.IsDir(filepath.Join(root, "BepInEx", "core")) {
+	if !safefs.IsDir(filepath.Join(root, "BepInEx", "core")) {
 		t.Fatal("BepInEx/core missing")
 	}
 	if _, err := os.Stat(filepath.Join(root, "manifest.json")); err == nil {
@@ -110,7 +110,7 @@ func TestAnOlderPackOverANewerOneKeepsNoneOfItsFiles(t *testing.T) {
 			t.Fatalf("%s: %v", kept, err)
 		}
 	}
-	if b, _ := fsx.ReadFile(filepath.Join(root, "BepInEx", "config", "BepInEx.cfg")); !strings.Contains(string(b), "Enabled = true") {
+	if b, _ := safefs.ReadFile(filepath.Join(root, "BepInEx", "config", "BepInEx.cfg")); !strings.Contains(string(b), "Enabled = true") {
 		t.Fatalf("the player's BepInEx.cfg was replaced: %q", b)
 	}
 }
@@ -135,7 +135,7 @@ func TestAnIL2CPPPackStartsThroughItsRuntime(t *testing.T) {
 	if err := zw.Close(); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(p, buf.Bytes(), 0o600); err != nil {
+	if err := safefs.WriteFile(p, buf.Bytes(), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	ctx := t.Context()
@@ -218,7 +218,7 @@ func TestPacksWithTheirOwnRuntimeFolders(t *testing.T) {
 				t.Fatal(err)
 			}
 			zipPath := filepath.Join(t.TempDir(), "pack.zip")
-			if err := fsx.WriteFile(zipPath, buf.Bytes(), 0o600); err != nil {
+			if err := safefs.WriteFile(zipPath, buf.Bytes(), 0o600); err != nil {
 				t.Fatal(err)
 			}
 			tgt := loader.Target{ProfileDir: filepath.Join(t.TempDir(), "profile")}
@@ -232,7 +232,7 @@ func TestPacksWithTheirOwnRuntimeFolders(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			cfg, _ := fsx.ReadFile(cfgPath)
+			cfg, _ := safefs.ReadFile(cfgPath)
 			abs := filepath.ToSlash(tgt.ProfileDir)
 			for _, line := range c.want {
 				if !strings.Contains(strings.ReplaceAll(string(cfg), `\`, "/"), fmt.Sprintf(line, abs)) {
@@ -356,7 +356,7 @@ func TestLaunchSettingsEditOnlyTheirLines(t *testing.T) {
 	if err := l.SetLaunchSetting(dir, "logLevel", "debug"); err != nil {
 		t.Fatal(err)
 	}
-	b, _ := fsx.ReadFile(cfg)
+	b, _ := safefs.ReadFile(cfg)
 	want := "## kept\r\n[Logging.Console]\r\n\r\nEnabled = false\r\nLogLevels = Fatal, Error, Warning, Message, Info, Debug\r\n\r\n[Other]\r\nX = 1\r\n\r\n[Logging.Disk]\r\n\r\nLogLevels = Fatal, Error, Warning, Message, Info, Debug\r\n"
 	if string(b) != want {
 		t.Fatalf("cfg = %q\nwant %q", b, want)
@@ -428,7 +428,7 @@ func TestAPackWhoseProxyIsVersionDllLoadsThatOne(t *testing.T) {
 	if _, err := (Loader{}).Install(t.Context(), loader.Target{ProfileDir: profile}, loader.Package{Archive: buildPack(t, "4.3.0.0")}, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := strings.Join(DoorstopFiles(profile), " "); got != "doorstop_config.ini winhttp.dll" || fsx.IsFile(filepath.Join(profile, "version.dll")) {
+	if got := strings.Join(DoorstopFiles(profile), " "); got != "doorstop_config.ini winhttp.dll" || safefs.IsFile(filepath.Join(profile, "version.dll")) {
 		t.Fatalf("placed %q after the swap", got)
 	}
 }

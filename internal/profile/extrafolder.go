@@ -10,8 +10,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/installer"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -53,11 +52,11 @@ func (s *Service) InstallExtraFolderMod(ctx context.Context, game, id, folder st
 		if (!self || !buildOutput(game, root)) && !child {
 			continue
 		}
-		resolved, err := fsx.EvalSymlinks(root)
+		resolved, err := safefs.EvalSymlinks(root)
 		if err != nil {
 			return InstallResult{}, err
 		}
-		if !datadir.RealDirUnder(resolved, folder) {
+		if !safefs.RealDirUnder(resolved, folder) {
 			continue
 		}
 		res, err := s.store.InstallExtraFolder(ctx, game, id, folder)
@@ -72,7 +71,7 @@ func (s *Service) InstallExtraFolderMod(ctx context.Context, game, id, folder st
 
 // placeIn reports whether folder is root itself or a folder directly in it, ignoring case where the file system does.
 func placeIn(folder, root string) (self, child bool) {
-	return fsx.SamePath(folder, root), fsx.SamePath(filepath.Dir(filepath.Clean(folder)), root)
+	return safefs.SamePath(folder, root), safefs.SamePath(filepath.Dir(filepath.Clean(folder)), root)
 }
 
 // previewExtraFolder lists the mods in dir the way the game's loader keeps them: a game modded through Thunderstore
@@ -119,7 +118,7 @@ func packagePreview(folder string, g installer.Game, top bool) (GameModPreview, 
 	if inst, ok := installer.Pick(arch, g); !ok || inst.ID() != driverThunderstore {
 		return GameModPreview{}, false
 	}
-	if b, err := fsx.ReadFile(filepath.Join(arch.Dir, "manifest.json")); err == nil {
+	if b, err := safefs.ReadFile(filepath.Join(arch.Dir, "manifest.json")); err == nil {
 		if m, err := bepinex5.ParseManifest(b); err == nil && m.Name != "" {
 			id := mod.NewID(mod.FormatThunderstore, cmp.Or(m.Namespace, m.Author, unknownPublisher)+"-"+m.Name)
 			return GameModPreview{ID: id, Name: m.Name, Version: m.Version, Status: outcomeImported, Folder: folder}, true

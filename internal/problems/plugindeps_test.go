@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -106,12 +106,12 @@ func TestPluginDepsSkipsTheLoaderAndAModShippedUnderAnotherGUID(t *testing.T) {
 }
 
 func TestPluginDepsReadsTheAttributesOfARealAssembly(t *testing.T) {
-	dll, err := fsx.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
+	dll, err := safefs.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
 	if err != nil {
 		t.Fatal(err)
 	}
 	dir := t.TempDir()
-	if err := fsx.WriteFile(filepath.Join(dir, "Plugin.dll"), dll, 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(dir, "Plugin.dll"), dll, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	pkg := profile.PackageRef{Key: "fixture", Enabled: true, ID: "bepinex:fixture", Name: "Fixture", Dir: dir}
@@ -131,7 +131,7 @@ func TestProblemsCountsAnInstalledPluginsMissingHardDependency(t *testing.T) {
 	testfs.DataHome(t)
 	_, profiles := testenv.Stores(t)
 	p := testenv.Profile(t, profiles, "lethal-company", "LC")
-	dll, err := fsx.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
+	dll, err := safefs.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -249,7 +249,7 @@ func TestProblemsReportsAMissingPackageOnceWhenManifestAndAssemblyBothNameIt(t *
 	testfs.DataHome(t)
 	_, profiles := testenv.Stores(t)
 	p := testenv.Profile(t, profiles, "lethal-company", "LC")
-	dll, err := fsx.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
+	dll, err := safefs.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
 	if err != nil {
 		t.Fatal(err)
 	}

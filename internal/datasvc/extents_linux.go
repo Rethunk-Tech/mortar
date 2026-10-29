@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"strconv"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"golang.org/x/sys/unix"
 )
 
@@ -70,7 +70,7 @@ type fileProbe struct {
 }
 
 func probeFile(path string) fileProbe {
-	f, err := fsx.Open(path)
+	f, err := safefs.Open(path)
 	if err != nil {
 		return fileProbe{}
 	}

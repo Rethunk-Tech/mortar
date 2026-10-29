@@ -18,9 +18,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/netstate"
 )
@@ -260,7 +260,7 @@ func (c *Client) roundTrip(ctx context.Context, method, path string, body any) (
 	if resp.StatusCode == http.StatusTooManyRequests {
 		return 0, "", nil, c.rateLimited(resp.Header)
 	}
-	raw, err := fsx.ReadCapped(resp.Body, maxBody)
+	raw, err := safefs.ReadCapped(resp.Body, maxBody)
 	if err != nil {
 		return 0, "", nil, err
 	}

@@ -8,18 +8,18 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 func fakeExe(t *testing.T, marker bool) string {
 	t.Helper()
 	dir := t.TempDir()
 	exe := filepath.Join(dir, "mortar")
-	if err := fsx.WriteFile(exe, nil, 0o700); err != nil {
+	if err := safefs.WriteFile(exe, nil, 0o700); err != nil {
 		t.Fatal(err)
 	}
 	if marker {
-		if err := fsx.WriteFile(filepath.Join(dir, PortableMarker), nil, 0o600); err != nil {
+		if err := safefs.WriteFile(filepath.Join(dir, PortableMarker), nil, 0o600); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -63,10 +63,10 @@ func TestPortableDirRefusesAReadOnlyFolder(t *testing.T) {
 	t.Setenv("FLATPAK_ID", "")
 	exe := fakeExe(t, true)
 	dir := filepath.Dir(exe)
-	if err := fsx.Chmod(dir, 0o500); err != nil {
+	if err := safefs.Chmod(dir, 0o500); err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = fsx.Chmod(dir, 0o700) })
+	t.Cleanup(func() { _ = safefs.Chmod(dir, 0o700) })
 	got, err := portableDir(exe)
 	var pe *PortableError
 	if got != "" || !errors.As(err, &pe) {
@@ -85,7 +85,7 @@ func TestPortableModeIgnoresThePointer(t *testing.T) {
 	if err := os.MkdirAll(d, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(filepath.Join(d, PointerName), []byte(t.TempDir()), 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(d, PointerName), []byte(t.TempDir()), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	want := filepath.Join(t.TempDir(), "data")

@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/configsvc"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
@@ -39,7 +39,7 @@ func TestAPackagesShippedConfigIsEditableBeforeTheFirstLaunch(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	b, err := fsx.ReadFile(filepath.Join(root, "BepInEx", "config", "ns.a.plugin.cfg"))
+	b, err := safefs.ReadFile(filepath.Join(root, "BepInEx", "config", "ns.a.plugin.cfg"))
 	if err != nil || !strings.Contains(string(b), "Value = edited") {
 		t.Fatalf("after the launch's sync the file reads %q, %v; want the edit kept", b, err)
 	}

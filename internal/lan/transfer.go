@@ -18,7 +18,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/scratch"
 
 	"github.com/Rethunk-Tech/mortar/internal/store"
@@ -296,7 +296,7 @@ func (s *Service) fetchOnce(
 	if err != nil {
 		return 0, installError("prepare room for", item, incoming.Sender, err)
 	}
-	defer func() { _ = fsx.RemoveAll(temp) }()
+	defer func() { _ = safefs.RemoveAll(temp) }()
 	var received int64
 	var last time.Time
 	if err := extractTar(ctx, idle.reader(response.Body), temp, &received, func(n int64) {
@@ -511,7 +511,7 @@ func (r contextReader) Read(p []byte) (int, error) {
 }
 
 func extractTar(ctx context.Context, source io.Reader, root string, total *int64, progress func(int64)) error {
-	reader := tar.NewReader(fsx.CapReader(source, maxTarBytes))
+	reader := tar.NewReader(safefs.CapReader(source, maxTarBytes))
 	rootHandle, err := os.OpenRoot(root)
 	if err != nil {
 		return err

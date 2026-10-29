@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // iconName is the content hash Steam names an app's icon by, in the library cache and in steam/games.
@@ -27,12 +27,12 @@ func (s Steam) ClientIcon(appID string) []byte {
 		if !iconName.MatchString(name) {
 			continue
 		}
-		if ico, err := fsx.ReadFile(filepath.Join(s.Root, "steam", "games", name[:40]+".ico")); err == nil {
+		if ico, err := safefs.ReadFile(filepath.Join(s.Root, "steam", "games", name[:40]+".ico")); err == nil {
 			if png := largestPNG(ico); png != nil {
 				return png
 			}
 		}
-		if b, err := fsx.ReadFile(jpg); err == nil {
+		if b, err := safefs.ReadFile(jpg); err == nil {
 			return b
 		}
 	}

@@ -19,7 +19,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -650,13 +650,13 @@ func (s *Store) readDir(game, id string) (Profile, string, error) {
 
 func readAt(dir, id string) (Profile, error) {
 	path := filepath.Join(dir, fileName)
-	fi, statErr := fsx.Stat(path)
+	fi, statErr := safefs.Stat(path)
 	if statErr == nil {
 		if p, ok := cachedProfile(path, fi); ok {
 			return p, nil
 		}
 	}
-	b, err := fsx.ReadFile(path)
+	b, err := safefs.ReadFile(path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return Profile{}, usererr.Wrap(usererr.NotFound, err)
@@ -720,7 +720,7 @@ func (s *Store) createBundled(game, name string) (Profile, error) {
 		}
 		if err != nil {
 			dir, _ := s.profileDir(game, p.ID)
-			return Profile{}, errors.Join(err, fsx.RemoveAll(dir))
+			return Profile{}, errors.Join(err, safefs.RemoveAll(dir))
 		}
 	}
 	return s.Get(game, p.ID)
@@ -754,7 +754,7 @@ func (s *Store) create(game, name string) (Profile, error) {
 		p.Order = existing[len(existing)-1].Order + 1
 	}
 	if err := writeProfile(dir, p); err != nil {
-		return Profile{}, errors.Join(err, fsx.RemoveAll(dir))
+		return Profile{}, errors.Join(err, safefs.RemoveAll(dir))
 	}
 	return p, nil
 }
@@ -841,7 +841,7 @@ func (s *Store) updateLockedCommit(game, id string, fn func(p *Profile, dir stri
 	if commit != nil {
 		commit()
 	}
-	_ = fsx.RemoveAll(filepath.Join(dir, "mods") + ".old")
+	_ = safefs.RemoveAll(filepath.Join(dir, "mods") + ".old")
 	kind, note, configs := s.historyKind, s.historyNote, s.historyConfigs
 	s.historyKind, s.historyNote, s.historyConfigs = "", HistoryEvent{}, nil
 	if s.historyQuietIDs[id] == 0 {

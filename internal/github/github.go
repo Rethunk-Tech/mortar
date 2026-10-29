@@ -23,10 +23,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/netstate"
 
@@ -168,7 +168,7 @@ func FetchReleases(ctx context.Context, hc *http.Client, url string) ([]Release,
 		return nil, fmt.Errorf("GitHub's releases API answered %s", resp.Status)
 	}
 	var all []Release
-	if err := json.NewDecoder(fsx.CapReader(resp.Body, maxList)).Decode(&all); err != nil {
+	if err := json.NewDecoder(safefs.CapReader(resp.Body, maxList)).Decode(&all); err != nil {
 		return nil, fmt.Errorf("read GitHub's releases response: %w", err)
 	}
 	return all, nil
@@ -230,8 +230,8 @@ func (m resumeMeta) ifRange() string {
 }
 
 func dropDownload(path string) {
-	_ = fsx.Remove(path)
-	_ = fsx.Remove(ResumeSidecar(path))
+	_ = safefs.Remove(path)
+	_ = safefs.Remove(ResumeSidecar(path))
 }
 
 // Download streams url to dest, appending with Range when a partial and the server allow it, and
@@ -358,9 +358,9 @@ func downloadOnce(ctx context.Context, hc *http.Client, url, dest string, limit 
 
 	var f *os.File
 	if offset > 0 {
-		f, err = fsx.OpenFile(dest, os.O_WRONLY|os.O_APPEND, 0o600)
+		f, err = safefs.OpenFile(dest, os.O_WRONLY|os.O_APPEND, 0o600)
 	} else {
-		f, err = fsx.Create(dest)
+		f, err = safefs.Create(dest)
 	}
 	if err != nil {
 		return err, false
@@ -373,12 +373,12 @@ func downloadOnce(ctx context.Context, hc *http.Client, url, dest string, limit 
 		total := meta.ExpectedSize
 		w = &progressWriter{w: f, done: offset, total: total, fn: progress}
 	}
-	_, err = copyIdle(ctx, w, &throttled{done: ctx.Done(), err: ctx.Err, r: fsx.CapReader(resp.Body, limit-offset)}, downloadIdle)
+	_, err = copyIdle(ctx, w, &throttled{done: ctx.Done(), err: ctx.Err, r: safefs.CapReader(resp.Body, limit-offset)}, downloadIdle)
 	if err != nil {
 		if ctx.Err() != nil {
 			return ctx.Err(), false
 		}
-		if errors.Is(err, fsx.ErrTooLarge) {
+		if errors.Is(err, safefs.ErrTooLarge) {
 			return tooLarge, false
 		}
 		return err, false
@@ -440,7 +440,7 @@ func verifyDownload(path string, meta resumeMeta) error {
 		}
 		wantMD5 = b
 	}
-	f, err := fsx.Open(path)
+	f, err := safefs.Open(path)
 	if err != nil {
 		return err
 	}

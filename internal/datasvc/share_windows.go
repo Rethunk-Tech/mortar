@@ -7,13 +7,13 @@ import (
 
 	"golang.org/x/sys/windows"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // fileAlloc identifies the file by volume serial and file index, so the names of a hard link count once. Windows
 // reports no cheap allocated size, so the logical size stands in for it.
 func fileAlloc(path string, info os.FileInfo) (dev, ino uint64, allocated int64, ok bool) {
-	p, err := windows.UTF16PtrFromString(fsx.ExtendedPath(path))
+	p, err := windows.UTF16PtrFromString(safefs.ExtendedPath(path))
 	if err != nil {
 		return 0, 0, 0, false
 	}

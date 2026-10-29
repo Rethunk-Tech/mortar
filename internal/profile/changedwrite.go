@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
@@ -85,7 +86,7 @@ func (s *Store) WriteChangedFiles(game, id string, files map[string][]byte, over
 			return err
 		}
 		// Replaced, never written in place: the file there may be a hardlink to the store's copy.
-		if err := datadir.WriteFileAtomic(to, data, 0o600); err != nil {
+		if err := safefs.WriteFileAtomic(to, data, 0o600); err != nil {
 			return err
 		}
 		written = append(written, rel)

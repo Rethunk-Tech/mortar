@@ -11,8 +11,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/msbuild"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -51,7 +51,7 @@ func (s *Service) AddDependency(gameID, dir, pkg, version string, soft bool) err
 		return err
 	}
 	return s.wire(context.Background(), p, func() error {
-		if err := fsx.WriteFile(csproj, []byte(withDependency(string(raw), pkg, version, soft)), 0o644); err != nil { // #nosec G306 -- a tracked project file
+		if err := safefs.WriteFile(csproj, []byte(withDependency(string(raw), pkg, version, soft)), 0o644); err != nil { // #nosec G306 -- a tracked project file
 			return err
 		}
 		return s.syncDependencies(gameID, p)
@@ -175,7 +175,7 @@ func depProp(pkg string) string { return depPropPrefix + strings.ReplaceAll(pkg,
 // editUserProps changes the player's own Config.Build.user.props, kept out of the repository, starting one when there is none.
 func editUserProps(dir string, fn func(string) (string, error)) error {
 	path := filepath.Join(dir, "Config.Build.user.props")
-	raw, err := fsx.ReadFile(path)
+	raw, err := safefs.ReadFile(path)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return err
 	}
@@ -187,7 +187,7 @@ func editUserProps(dir string, fn func(string) (string, error)) error {
 	if err != nil || out == string(raw) {
 		return err
 	}
-	return fsx.WriteFile(path, []byte(out), 0o600)
+	return safefs.WriteFile(path, []byte(out), 0o600)
 }
 
 // setUserDependency points pkg's folder property at folder and lists pkg as a MortarDependencyFolder, so the template
@@ -209,8 +209,8 @@ func packageOf(dir string) string {
 	if !ok {
 		return ""
 	}
-	project, _ := fsx.ReadFile(csproj)
-	props, _ := fsx.ReadFile(filepath.Join(dir, propsFile))
+	project, _ := safefs.ReadFile(csproj)
+	props, _ := safefs.ReadFile(filepath.Join(dir, propsFile))
 	team := msbuild.Property(string(props), "ThunderstoreTeam")
 	if team == "" {
 		return ""
@@ -236,7 +236,7 @@ func (s *Service) syncDependencies(gameID string, p settings.DevProject) error {
 	if !ok {
 		return nil
 	}
-	raw, err := fsx.ReadFile(csproj)
+	raw, err := safefs.ReadFile(csproj)
 	if err != nil {
 		return err
 	}
@@ -273,7 +273,7 @@ func (s *Service) syncDependencies(gameID string, p settings.DevProject) error {
 		}
 	}
 	if referenced != string(raw) {
-		if err := fsx.WriteFile(csproj, []byte(referenced), 0o644); err != nil { // #nosec G306 -- a tracked project file
+		if err := safefs.WriteFile(csproj, []byte(referenced), 0o644); err != nil { // #nosec G306 -- a tracked project file
 			return err
 		}
 	}
@@ -305,6 +305,6 @@ func readCsproj(dir string) (path string, raw []byte, err error) {
 	if !ok {
 		return "", nil, usererr.Wrap(usererr.NotFound, errors.New("the project file is missing"))
 	}
-	raw, err = fsx.ReadFile(path)
+	raw, err = safefs.ReadFile(path)
 	return path, raw, err
 }

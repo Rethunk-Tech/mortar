@@ -19,8 +19,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/pack"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -279,7 +279,7 @@ func (s *Service) ExportModpack(gameID, profileID, dest string, o ModpackOptions
 	if err != nil {
 		return res, err
 	}
-	if err := fsx.WriteFile(dest, zipped, 0o600); err != nil {
+	if err := safefs.WriteFile(dest, zipped, 0o600); err != nil {
 		return res, err
 	}
 	_, err = s.Profiles.SetModpackDraft(gameID, profileID, profile.ModpackDraft{
@@ -297,8 +297,8 @@ func (s *Service) configFiles(gameID, profileID string) ([]pack.File, error) {
 	}
 	root := filepath.Join(dir, "BepInEx", "config")
 	var out []pack.File
-	err = fsx.WalkFiles(root, func(rel, path string, _ int64) error {
-		data, err := fsx.ReadFile(path)
+	err = safefs.WalkFiles(root, func(rel, path string, _ int64) error {
+		data, err := safefs.ReadFile(path)
 		out = append(out, pack.File{Path: "config/" + rel, Data: data})
 		return err
 	})
@@ -377,7 +377,7 @@ func iconFile(path string) ([]byte, error) {
 	} else if fi.Size() > maxIconBytes {
 		return nil, usererr.New(usererr.Invalid, "the icon is larger than 4 MB")
 	}
-	data, err := fsx.ReadFile(path)
+	data, err := safefs.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}

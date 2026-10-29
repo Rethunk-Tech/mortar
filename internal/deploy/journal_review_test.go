@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 )
 
@@ -42,7 +42,7 @@ func TestRecoverAfterACrashBetweenCheckpointsRemovesTheFoldersApplyMade(t *testi
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(filepath.Join(r.view.JournalDir, journalFile), b, 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(r.view.JournalDir, journalFile), b, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	d := Place{}

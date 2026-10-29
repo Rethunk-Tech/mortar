@@ -25,8 +25,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
@@ -217,7 +216,7 @@ func (d Driver) get(ctx context.Context, url, ua string) ([]byte, error) {
 		return nil, err
 	}
 	defer done()
-	return fsx.ReadCapped(body, source.MaxBody)
+	return safefs.ReadCapped(body, source.MaxBody)
 }
 
 // maxUnpacked is the most a gzipped answer may unpack to; a variable so a test can lower it.
@@ -248,7 +247,7 @@ func (d Driver) streamPackages(ctx context.Context, url, ua string, fn func(*wir
 		if err != nil {
 			return err
 		}
-		r = fsx.CapReader(zr, maxUnpacked)
+		r = safefs.CapReader(zr, maxUnpacked)
 	}
 	dec := json.NewDecoder(r)
 	if err := expectArray(dec); err != nil {
@@ -281,7 +280,7 @@ func (d Driver) getJSON(ctx context.Context, url, ua string, out any) (hash stri
 		if err != nil {
 			return "", err
 		}
-		if body, err = fsx.ReadCapped(zr, maxUnpacked); err != nil {
+		if body, err = safefs.ReadCapped(zr, maxUnpacked); err != nil {
 			return "", err
 		}
 	}
@@ -317,12 +316,12 @@ func dropOtherListings(dir, key, keep string) {
 		if !ok || !tagged || tag == "" || strings.Trim(tag, "0123456789") != "" || !listingOrTemp(rest) || path == keep {
 			continue
 		}
-		_ = fsx.Remove(path)
+		_ = safefs.Remove(path)
 	}
 }
 
 // listingOrTemp reports a listing file or a build's interrupted temp file, "<listing>.json.<n>.tmp"
-// (datadir.WriteStreamAtomic).
+// (safefs.WriteStreamAtomic).
 func listingOrTemp(rest string) bool {
 	return strings.HasSuffix(rest, ".json") || strings.HasSuffix(rest, ".tmp") && strings.Contains(rest, ".json.")
 }
@@ -344,7 +343,7 @@ func (d Driver) listingFile(ctx context.Context, key, ua string) (string, error)
 	}
 	dir := filepath.Join(d.cacheRoot(), "thunderstore")
 	var meta cacheMeta
-	if b, err := fsx.ReadFile(filepath.Join(dir, key+".meta.json")); err == nil {
+	if b, err := safefs.ReadFile(filepath.Join(dir, key+".meta.json")); err == nil {
 		_ = json.Unmarshal(b, &meta)
 	}
 	path := listingPath(dir, key, meta.Hash)
@@ -374,7 +373,7 @@ func (d Driver) buildListing(ctx context.Context, key, ua string) (string, error
 	dir := filepath.Join(d.cacheRoot(), "thunderstore")
 	metaPath := filepath.Join(dir, key+".meta.json")
 	var meta cacheMeta
-	if b, err := fsx.ReadFile(metaPath); err == nil {
+	if b, err := safefs.ReadFile(metaPath); err == nil {
 		_ = json.Unmarshal(b, &meta)
 	}
 	cached := func() (string, bool) {
@@ -415,7 +414,7 @@ func (d Driver) buildListing(ctx context.Context, key, ua string) (string, error
 	if err != nil {
 		return "", err
 	}
-	if err := datadir.WriteFileAtomic(metaPath, nm, 0o644); err != nil {
+	if err := safefs.WriteFileAtomic(metaPath, nm, 0o644); err != nil {
 		return "", err
 	}
 	refreshSide(dir, key, hash, path)
@@ -429,7 +428,7 @@ func (d Driver) buildListing(ctx context.Context, key, ua string) (string, error
 // A changed index rebuilds the listing from every chunk (~35 MB downloaded, ~63 MB rewritten per refresh): chunks are
 // content-addressed, so none survive an index change. The lever is refreshAfter.
 func (d Driver) build(ctx context.Context, chunks []string, path, ua string) error {
-	return datadir.WriteStreamAtomic(path, 0o644, func(w io.Writer) error {
+	return safefs.WriteStreamAtomic(path, 0o644, func(w io.Writer) error {
 		bw := bufio.NewWriter(w)
 		enc := json.NewEncoder(bw)
 		if err := bw.WriteByte('['); err != nil {
@@ -547,7 +546,7 @@ func eachPackage(key, path string, fn func(*pkg)) error {
 
 // readPackages decodes the stored listing at path.
 func readPackages(path string) ([]pkg, error) {
-	f, err := fsx.Open(path)
+	f, err := safefs.Open(path)
 	if err != nil {
 		return nil, err
 	}

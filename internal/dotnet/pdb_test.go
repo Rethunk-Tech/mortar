@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // The expected lines are what System.Reflection.Metadata's sequence points give for testdata/src/Mod/Mod.cs: the
@@ -14,11 +14,11 @@ import (
 // visible point or in a method without points. A PDB whose id is not the DLL's is refused.
 func TestSourceLineReadsPortableSymbols(t *testing.T) {
 	stale := filepath.Join(t.TempDir(), "Mod.dll")
-	dll, err := fsx.ReadFile(filepath.Join("testdata", "portable", "Mod.dll"))
+	dll, err := safefs.ReadFile(filepath.Join("testdata", "portable", "Mod.dll"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	pdb, err := fsx.ReadFile(filepath.Join("testdata", "portable", "Mod.pdb"))
+	pdb, err := safefs.ReadFile(filepath.Join("testdata", "portable", "Mod.pdb"))
 	if err != nil {
 		t.Fatal(err)
 	}

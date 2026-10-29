@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
@@ -18,10 +18,10 @@ func TestAnUnrecordedDifferingCopyIsReplacedAndKept(t *testing.T) {
 	if err := e.SyncPackages(folderGame, p.ID); err != nil {
 		t.Fatal(err)
 	}
-	if got, _ := fsx.ReadFile(copyPath); string(got) != "store bytes" {
+	if got, _ := safefs.ReadFile(copyPath); string(got) != "store bytes" {
 		t.Fatalf("the stale copy still blocks the package: %q", got)
 	}
-	if got, _ := fsx.ReadFile(filepath.Join(dir, replacedDir, "Mods", "mc.package")); string(got) != "stale bytes" {
+	if got, _ := safefs.ReadFile(filepath.Join(dir, replacedDir, "Mods", "mc.package")); string(got) != "stale bytes" {
 		t.Fatalf("the replaced bytes were not kept: %q", got)
 	}
 	if rec, ok := readPlaced(dir)["Mods/mc.package"]; !ok || rec.Size < 0 {
@@ -42,7 +42,7 @@ func TestAnUnrecordedDifferingCopyIsReplacedAndKept(t *testing.T) {
 	if err := e.SyncPackages(folderGame, p.ID); err != nil {
 		t.Fatal(err)
 	}
-	if got, _ := fsx.ReadFile(copyPath); string(got) != "store bytes" {
+	if got, _ := safefs.ReadFile(copyPath); string(got) != "store bytes" {
 		t.Fatalf("the replaced copy came back: %q", got)
 	}
 }
@@ -65,7 +65,7 @@ func TestReplacedFilesCanBeRestoredAsAChangedCopyOrDeleted(t *testing.T) {
 		if err := e.SyncPackages(folderGame, p.ID); err != nil {
 			t.Fatal(err)
 		}
-		if b, _ := fsx.ReadFile(copyPath); string(b) != "old bytes" {
+		if b, _ := safefs.ReadFile(copyPath); string(b) != "old bytes" {
 			t.Fatalf("a restored file was replaced again: %q", b)
 		}
 	}

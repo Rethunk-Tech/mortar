@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 )
 
@@ -145,7 +145,7 @@ func TestDiagnosticsRedactsSecrets(t *testing.T) {
 	if got, err := s.WriteDiagnostics("stardew", "a", target); err != nil || got != target {
 		t.Fatalf("WriteDiagnostics = %q, %v", got, err)
 	}
-	written, err := fsx.ReadFile(target)
+	written, err := safefs.ReadFile(target)
 	if err != nil {
 		t.Fatal(err)
 	}

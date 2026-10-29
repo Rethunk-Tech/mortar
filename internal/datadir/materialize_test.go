@@ -1,16 +1,14 @@
 package datadir
 
 import (
-	"errors"
 	"io/fs"
 	"os"
 	"path/filepath"
-	"syscall"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 func seedTree(t *testing.T, dir string) {
@@ -51,9 +49,9 @@ func readAll(t *testing.T, root string) map[string]string {
 			if linkErr != nil {
 				return linkErr
 			}
-			b, err = fsx.ReadFile(target)
+			b, err = safefs.ReadFile(target)
 		} else {
-			b, err = fsx.ReadFile(p)
+			b, err = safefs.ReadFile(p)
 		}
 		if err != nil {
 			return err
@@ -83,64 +81,12 @@ func linked(t *testing.T, a, b string) bool {
 	return os.SameFile(ia, ib)
 }
 
-func opsFor(t *testing.T, tier Tier) Ops {
-	t.Helper()
-	fail := func(error) func(string, string) error {
-		return func(string, string) error { return syscall.EOPNOTSUPP }
-	}
-	switch tier {
-	case TierClone:
-		return Ops{Tiers: []Tier{TierClone}, Clone: CopyFile, DisableCache: true}
-	case TierHardlink:
-		return Ops{Tiers: []Tier{TierHardlink, TierCopy}, Hardlink: os.Link, Copy: CopyFile, DisableCache: true}
-	case TierSymlink:
-		return Ops{
-			Tiers: []Tier{TierSymlink, TierCopy},
-			Symlink: func(src, dst string) error {
-				abs, err := filepath.Abs(src)
-				if err != nil {
-					return err
-				}
-				return os.Symlink(abs, dst)
-			},
-			Copy:         CopyFile,
-			DisableCache: true,
-		}
-	case TierCopy:
-		return Ops{Tiers: []Tier{TierCopy}, Copy: CopyFile, Clone: fail(nil), Hardlink: fail(nil), Symlink: fail(nil), DisableCache: true}
-	default:
-		t.Fatalf("tier %d", tier)
-		return Ops{}
-	}
-}
-
-func TestMaterializeTiersMatchContent(t *testing.T) {
-	src := t.TempDir()
-	seedTree(t, src)
-	want := readAll(t, src)
-	for _, tier := range []Tier{TierClone, TierHardlink, TierSymlink, TierCopy} {
-		dst := t.TempDir()
-		if err := MaterializeTreeOps(src, dst, opsFor(t, tier)); err != nil {
-			t.Fatalf("tier %d: %v", tier, err)
-		}
-		got := readAll(t, dst)
-		if len(got) != len(want) {
-			t.Fatalf("tier %d files %d want %d", tier, len(got), len(want))
-		}
-		for k, v := range want {
-			if got[k] != v {
-				t.Fatalf("tier %d %s = %q want %q", tier, k, got[k], v)
-			}
-		}
-	}
-}
-
 func TestConfigJSONNeverHardlinkedOrSymlinked(t *testing.T) {
 	src := t.TempDir()
 	seedTree(t, src)
-	for _, tier := range []Tier{TierHardlink, TierSymlink} {
+	for _, tier := range []safefs.Tier{safefs.TierHardlink, safefs.TierSymlink} {
 		dst := t.TempDir()
-		if err := MaterializeTreeOps(src, dst, opsFor(t, tier)); err != nil {
+		if err := onTier(tier).Tree(src, dst); err != nil {
 			t.Fatal(err)
 		}
 		for _, rel := range []string{"A/config.json", "A/nested/config.json", "A/data/save.json", "A/saves/slot.dat", "A/readme.txt", "A/mod.dll.mortar-old"} {
@@ -160,14 +106,14 @@ func TestWriteConfigLeavesStoreAndPeerUnchanged(t *testing.T) {
 	src := t.TempDir()
 	seedTree(t, src)
 	orig := readAll(t, src)
-	for _, tier := range []Tier{TierClone, TierHardlink, TierSymlink, TierCopy} {
+	for _, tier := range []safefs.Tier{safefs.TierClone, safefs.TierHardlink, safefs.TierSymlink, safefs.TierCopy} {
 		a := t.TempDir()
 		b := t.TempDir()
-		ops := opsFor(t, tier)
-		if err := MaterializeTreeOps(src, a, ops); err != nil {
+		m := onTier(tier)
+		if err := m.Tree(src, a); err != nil {
 			t.Fatal(err)
 		}
-		if err := MaterializeTreeOps(src, b, ops); err != nil {
+		if err := m.Tree(src, b); err != nil {
 			t.Fatal(err)
 		}
 		cfg := filepath.Join(a, "A", "config.json")
@@ -187,9 +133,9 @@ func TestRemoveProfileLeavesStore(t *testing.T) {
 	src := t.TempDir()
 	seedTree(t, src)
 	orig := readAll(t, src)
-	for _, tier := range []Tier{TierClone, TierHardlink, TierSymlink, TierCopy} {
+	for _, tier := range []safefs.Tier{safefs.TierClone, safefs.TierHardlink, safefs.TierSymlink, safefs.TierCopy} {
 		dst := t.TempDir()
-		if err := MaterializeTreeOps(src, dst, opsFor(t, tier)); err != nil {
+		if err := onTier(tier).Tree(src, dst); err != nil {
 			t.Fatal(err)
 		}
 		if err := os.RemoveAll(dst); err != nil {
@@ -204,59 +150,6 @@ func TestRemoveProfileLeavesStore(t *testing.T) {
 			}
 		}
 	}
-}
-
-func TestMaterializeFallbackChain(t *testing.T) {
-	src := t.TempDir()
-	dst := t.TempDir()
-	testfs.WriteFile(t, src, "f.bin", "x")
-	var seq []string
-	track := func(name string, err error) func(string, string) error {
-		return func(s, d string) error {
-			seq = append(seq, name)
-			if err != nil {
-				return err
-			}
-			return CopyFile(s, d)
-		}
-	}
-	ops := Ops{
-		Tiers:        []Tier{TierClone, TierHardlink, TierSymlink, TierCopy},
-		Clone:        track("clone", errNoClone),
-		Hardlink:     track("hardlink", errCrossDevice),
-		Symlink:      track("symlink", errBadLink),
-		Copy:         track("copy", nil),
-		DisableCache: true,
-	}
-	if err := MaterializeTreeOps(src, dst, ops); err != nil {
-		t.Fatal(err)
-	}
-	if string(mustRead(t, filepath.Join(dst, "f.bin"))) != "x" {
-		t.Fatal("missing copy")
-	}
-	if len(seq) != 4 || seq[0] != "clone" || seq[1] != "hardlink" || seq[2] != "symlink" || seq[3] != "copy" {
-		t.Fatalf("seq %v", seq)
-	}
-	cfgSrc := t.TempDir()
-	testfs.WriteFile(t, cfgSrc, "config.json", "{}")
-	seq = nil
-	if err := MaterializeTreeOps(cfgSrc, t.TempDir(), ops); err != nil {
-		t.Fatal(err)
-	}
-	for _, s := range seq {
-		if s == "hardlink" || s == "symlink" {
-			t.Fatalf("writable used %s: %v", s, seq)
-		}
-	}
-}
-
-func mustRead(t *testing.T, p string) []byte {
-	t.Helper()
-	b, err := fsx.ReadFile(p)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return b
 }
 
 func TestWritableRel(t *testing.T) {
@@ -281,37 +174,9 @@ func TestEditableTextNeverSharesAnInode(t *testing.T) {
 	}
 }
 
-func TestMaterializeFallbackNonFallbackError(t *testing.T) {
-	src := t.TempDir()
-	testfs.WriteFile(t, src, "f.bin", "x")
-	want := errors.New("disk")
-	err := MaterializeTreeOps(src, t.TempDir(), Ops{
-		Tiers:        []Tier{TierClone},
-		Clone:        func(string, string) error { return want },
-		DisableCache: true,
-	})
-	if !errors.Is(err, want) {
-		t.Fatalf("err %v", err)
-	}
-}
-
-// MaterializeTreeOps is MaterializeTree with injectable tiers.
-func MaterializeTreeOps(src, dst string, ops Ops) error {
-	if len(ops.Tiers) == 0 {
-		ops.Tiers = defaultOps().Tiers
-	}
-	if ops.Clone == nil {
-		ops.Clone = cloneFile
-	}
-	if ops.Hardlink == nil {
-		ops.Hardlink = os.Link
-	}
-	if ops.Symlink == nil {
-		ops.Symlink = defaultOps().Symlink
-	}
-	if ops.Copy == nil {
-		ops.Copy = CopyFile
-	}
-	_, err := copyTree(src, dst, ops.put)
-	return err
+// onTier is Mortar's materializer limited to tier, falling back to a copy as every tier does.
+func onTier(tier safefs.Tier) safefs.Materializer {
+	m := materializer
+	m.Tiers = []safefs.Tier{tier}
+	return m
 }

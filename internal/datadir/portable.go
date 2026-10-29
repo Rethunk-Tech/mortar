@@ -7,7 +7,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
@@ -63,11 +63,11 @@ func portableDir(exe string) (string, error) {
 		return "", &PortableError{Dir: dir, Err: err}
 	}
 	_ = probe.Close()
-	_ = fsx.Remove(probe.Name())
+	_ = safefs.Remove(probe.Name())
 	return filepath.Join(dir, "data"), nil
 }
 
 func hasMarker(dir string) bool {
-	info, err := fsx.Stat(filepath.Join(dir, PortableMarker))
+	info, err := safefs.Stat(filepath.Join(dir, PortableMarker))
 	return err == nil && info.Mode().IsRegular()
 }

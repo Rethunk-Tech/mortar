@@ -19,7 +19,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/winname"
 )
@@ -295,7 +295,7 @@ func ReadConfigs(modsDir, key string, m profile.Component) (found []Config, skip
 			return nil
 		}
 		data, err := readCapped(p)
-		if errors.Is(err, fsx.ErrTooLarge) || !ValidConfigPath(rel) {
+		if errors.Is(err, safefs.ErrTooLarge) || !ValidConfigPath(rel) {
 			skipped = append(skipped, m.ID.Local()+"/"+rel)
 			return nil
 		}
@@ -316,12 +316,12 @@ func ReadConfigs(modsDir, key string, m profile.Component) (found []Config, skip
 }
 
 func readCapped(p string) ([]byte, error) {
-	f, err := fsx.Open(p)
+	f, err := safefs.Open(p)
 	if err != nil {
 		return nil, err
 	}
 	defer func() { _ = f.Close() }()
-	return fsx.ReadCapped(f, MaxConfigBytes)
+	return safefs.ReadCapped(f, MaxConfigBytes)
 }
 
 // Read opens a .mortar file and returns its preview. Any entry outside the layout, any unsafe path, and any
@@ -334,7 +334,7 @@ func Read(file string) (Preview, error) {
 	if info.Size() > MaxFileBytes {
 		return Preview{}, fmt.Errorf("%w: file is larger than %s", ErrBadFile, bytefmt.Format(MaxFileBytes))
 	}
-	f, err := fsx.Open(file)
+	f, err := safefs.Open(file)
 	if err != nil {
 		return Preview{}, err
 	}
@@ -367,7 +367,7 @@ func readBounded(f *zip.File, limit int64) ([]byte, error) {
 		return nil, fmt.Errorf("%w: %s: %w", ErrBadFile, f.Name, err)
 	}
 	defer func() { _ = rc.Close() }()
-	b, err := fsx.ReadCapped(rc, limit)
+	b, err := safefs.ReadCapped(rc, limit)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %s: %w", ErrBadFile, f.Name, err)
 	}

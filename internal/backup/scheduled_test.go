@@ -10,7 +10,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 func writeSave(t *testing.T, saves, folder string, at time.Time) {
@@ -20,7 +20,7 @@ func writeSave(t *testing.T, saves, folder string, at time.Time) {
 		t.Fatal(err)
 	}
 	p := filepath.Join(dir, folder)
-	if err := fsx.WriteFile(p, []byte(at.String()), 0o600); err != nil {
+	if err := safefs.WriteFile(p, []byte(at.String()), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	for _, x := range []string{p, dir} {

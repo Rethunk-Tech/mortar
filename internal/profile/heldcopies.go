@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // heldIndex records when each copy under changed/ was held, by slash path (a copy under replaced/ by its path below
@@ -20,7 +20,7 @@ const heldIndex = ".mortar-held.json"
 
 func readHeld(dir string) map[string]int64 {
 	held := map[string]int64{}
-	if b, err := fsx.ReadFile(filepath.Join(dir, heldIndex)); err == nil {
+	if b, err := safefs.ReadFile(filepath.Join(dir, heldIndex)); err == nil {
 		if json.Unmarshal(b, &held) != nil {
 			return map[string]int64{}
 		}
@@ -30,7 +30,7 @@ func readHeld(dir string) map[string]int64 {
 
 func writeHeld(dir string, held map[string]int64) error {
 	if len(held) == 0 {
-		err := fsx.Remove(filepath.Join(dir, heldIndex))
+		err := safefs.Remove(filepath.Join(dir, heldIndex))
 		if errors.Is(err, fs.ErrNotExist) {
 			return nil
 		}

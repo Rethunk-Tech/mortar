@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 func TestOverlayDefaultsAndPortRange(t *testing.T) {
@@ -96,7 +96,7 @@ func TestOverlayTokenStaysOutOfJSONLogsShape(t *testing.T) {
 	if err := svc.SetOverlayEnabled(true); err != nil {
 		t.Fatal(err)
 	}
-	raw, err := fsx.ReadFile(filepath.Join(dir, FileName))
+	raw, err := safefs.ReadFile(filepath.Join(dir, FileName))
 	if err != nil {
 		t.Fatal(err)
 	}

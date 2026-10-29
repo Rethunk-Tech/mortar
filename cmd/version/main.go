@@ -12,8 +12,8 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 type copyOf struct {
@@ -40,7 +40,7 @@ func main() {
 }
 
 func run(check, show bool) error {
-	config, err := fsx.ReadFile("build/config.yml")
+	config, err := safefs.ReadFile("build/config.yml")
 	if err != nil {
 		return err
 	}
@@ -54,7 +54,7 @@ func run(check, show bool) error {
 	}
 	var stale []string
 	for _, c := range copies {
-		b, err := fsx.ReadFile(c.path)
+		b, err := safefs.ReadFile(c.path)
 		if err != nil {
 			return err
 		}
@@ -73,7 +73,7 @@ func run(check, show bool) error {
 		if err != nil {
 			return err
 		}
-		if err := fsx.WriteFile(c.path, out, info.Mode().Perm()); err != nil {
+		if err := safefs.WriteFile(c.path, out, info.Mode().Perm()); err != nil {
 			return err
 		}
 		fmt.Printf("%s: %s\n", c.path, want)

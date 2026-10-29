@@ -18,7 +18,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"github.com/Rethunk-Tech/mortar/internal/winname"
 
@@ -209,7 +209,7 @@ func loadDirListingsLocked() {
 	if err != nil {
 		return
 	}
-	raw, err := fsx.ReadFile(path)
+	raw, err := safefs.ReadFile(path)
 	if err != nil {
 		return
 	}
@@ -277,7 +277,7 @@ func saveDirListings() {
 	if err != nil || pathErr != nil {
 		return
 	}
-	if os.MkdirAll(filepath.Dir(path), 0o700) != nil || datadir.WriteFileAtomic(path, buf.Bytes(), 0o600) != nil {
+	if os.MkdirAll(filepath.Dir(path), 0o700) != nil || safefs.WriteFileAtomic(path, buf.Bytes(), 0o600) != nil {
 		dirListings.Lock()
 		dirListings.dirty = true
 		dirListings.Unlock()
@@ -324,7 +324,7 @@ func loadStoreListingsLocked() {
 	if err != nil {
 		return
 	}
-	raw, err := fsx.ReadFile(path)
+	raw, err := safefs.ReadFile(path)
 	if err != nil {
 		return
 	}
@@ -375,7 +375,7 @@ func saveStoreListings() {
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return
 	}
-	err = datadir.WriteFileAtomic(path, buf.Bytes(), 0o600)
+	err = safefs.WriteFileAtomic(path, buf.Bytes(), 0o600)
 	storeListings.Lock()
 	defer storeListings.Unlock()
 	if err != nil {
@@ -611,7 +611,7 @@ func (s *Store) parkUnknownModsLocked(dir string, p Profile) error {
 			return err
 		}
 		dst := uniqueHoldPath(hold, e.Name())
-		if err := fsx.Rename(filepath.Join(modsDir, e.Name()), dst); err != nil {
+		if err := safefs.Rename(filepath.Join(modsDir, e.Name()), dst); err != nil {
 			return err
 		}
 	}
@@ -866,13 +866,13 @@ func (s *Store) revertDriftEntry(game, id, key string) (Profile, error) {
 			return err
 		}
 		if err := datadir.MaterializeTree(src, scratch); err != nil {
-			return errors.Join(err, fsx.RemoveAll(scratch))
+			return errors.Join(err, safefs.RemoveAll(scratch))
 		}
 		none := filepath.Join(scratch, ".no-old")
 		for _, m := range e.Mods {
 			plain, dotted, err := ModPaths(modsDir, e.Key, m.Folder)
 			if err != nil {
-				return errors.Join(err, fsx.RemoveAll(scratch))
+				return errors.Join(err, safefs.RemoveAll(scratch))
 			}
 			cur := plain
 			if !exists(cur) {
@@ -882,16 +882,16 @@ func (s *Store) revertDriftEntry(game, id, key string) (Profile, error) {
 				continue
 			}
 			if err := carryOver(cur, none, filepath.Join(scratch, filepath.FromSlash(m.Folder))); err != nil {
-				return errors.Join(err, fsx.RemoveAll(scratch))
+				return errors.Join(err, safefs.RemoveAll(scratch))
 			}
 		}
 		final, err := materialize(scratch, e)
 		if err != nil {
-			return errors.Join(err, fsx.RemoveAll(scratch))
+			return errors.Join(err, safefs.RemoveAll(scratch))
 		}
 		w, err := replaceFolder(modsDir, e.Key, scratch, final)
 		if err != nil {
-			return errors.Join(err, fsx.RemoveAll(scratch))
+			return errors.Join(err, safefs.RemoveAll(scratch))
 		}
 		w.commit()
 		return s.relayBase(game, p, dir, key, overlaysOf(p.Entries, key))
@@ -918,7 +918,7 @@ func (s *Store) adoptDriftFolder(ctx context.Context, game, id, folder string) (
 	if err != nil {
 		return Profile{}, err
 	}
-	_ = fsx.RemoveAll(src)
+	_ = safefs.RemoveAll(src)
 	if err := s.RecordModsSnapshot(game, id); err != nil {
 		return Profile{}, err
 	}
@@ -958,7 +958,7 @@ func (s *Store) trashModsFolder(game, id, folder string) (string, error) {
 	if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
 		return "", err
 	}
-	if err := fsx.Rename(src, dst); err != nil {
+	if err := safefs.Rename(src, dst); err != nil {
 		return "", renameBusy(err)
 	}
 	return token, s.RecordModsSnapshot(game, id)
@@ -988,10 +988,10 @@ func (s *Store) RestoreModsFolder(game, id, token string) error {
 	if exists(dst) {
 		return fmt.Errorf("mods already has a folder named %q", folder)
 	}
-	if err := fsx.Rename(src, dst); err != nil {
+	if err := safefs.Rename(src, dst); err != nil {
 		return renameBusy(err)
 	}
-	_ = fsx.Remove(filepath.Dir(src))
+	_ = safefs.Remove(filepath.Dir(src))
 	return s.RecordModsSnapshot(game, id)
 }
 

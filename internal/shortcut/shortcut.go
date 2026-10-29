@@ -12,8 +12,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
@@ -159,7 +159,7 @@ func firstLocalFile(paths []string) string {
 		if path == "" || strings.Contains(path, "://") {
 			continue
 		}
-		if fsx.IsFile(path) {
+		if safefs.IsFile(path) {
 			return path
 		}
 	}

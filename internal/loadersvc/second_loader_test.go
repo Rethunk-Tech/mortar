@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
@@ -21,12 +21,12 @@ func (fakeLoader) ID() string             { return "w6fake" }
 func (fakeLoader) Formats() []string      { return nil }
 func (fakeLoader) ProfileFiles() []string { return []string{"w6fake"} }
 func (fakeLoader) Status(t loader.Target) (loader.Status, error) {
-	b, err := fsx.ReadFile(filepath.Join(t.ProfileDir, "w6fake"))
+	b, err := safefs.ReadFile(filepath.Join(t.ProfileDir, "w6fake"))
 	return loader.Status{Installed: err == nil, Version: string(b)}, nil
 }
 
 func (fakeLoader) Install(_ context.Context, t loader.Target, p loader.Package, _ func(loader.Step)) (string, error) {
-	return p.Version, fsx.WriteFile(filepath.Join(t.ProfileDir, "w6fake"), []byte(p.Version), 0o600)
+	return p.Version, safefs.WriteFile(filepath.Join(t.ProfileDir, "w6fake"), []byte(p.Version), 0o600)
 }
 
 func (fakeLoader) Contribute(context.Context, *launchplan.Plan, loader.ProfileView) error {
@@ -40,7 +40,7 @@ func (fakeLoader) Versions(context.Context, components.GameInfo) ([]string, erro
 }
 
 func (fakeLoader) Fetch(_ context.Context, _ components.GameInfo, _, dst string) error {
-	return fsx.WriteFile(dst, []byte("zip"), 0o600)
+	return safefs.WriteFile(dst, []byte("zip"), 0o600)
 }
 
 var _ = loader.Register(fakeLoader{})

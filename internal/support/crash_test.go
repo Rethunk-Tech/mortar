@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/doctor"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
@@ -163,7 +163,7 @@ func TestDetectLastRunCrashedTruncatedResetsSeen(t *testing.T) {
 	if DetectLastRunCrashed(dir) {
 		t.Fatal("a truncated crash.log must not count as a new crash")
 	}
-	got, err := fsx.ReadFile(filepath.Join(dir, crashSeenName))
+	got, err := safefs.ReadFile(filepath.Join(dir, crashSeenName))
 	if err != nil {
 		t.Fatal(err)
 	}

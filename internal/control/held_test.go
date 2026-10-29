@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 func echoHandler(context.Context, string, Params) (any, error) { return true, nil }
@@ -34,12 +34,12 @@ func TestAnEndingSecondServerGivesTheControlFileBackToTheRunningApp(t *testing.T
 	go func() { _ = Serve(ctx, dir, "a", echoHandler) }()
 	waitLive(t, dir)
 	path := filepath.Join(dir, controlwire.FileName)
-	first, _ := fsx.ReadFile(path)
+	first, _ := safefs.ReadFile(path)
 	ctxB, stopB := context.WithCancel(t.Context())
 	doneB := make(chan error, 1)
 	go func() { doneB <- Serve(ctxB, dir, "b", echoHandler) }()
 	for range 200 {
-		if cur, _ := fsx.ReadFile(path); len(cur) > 0 && string(cur) != string(first) {
+		if cur, _ := safefs.ReadFile(path); len(cur) > 0 && string(cur) != string(first) {
 			break
 		}
 		time.Sleep(10 * time.Millisecond)

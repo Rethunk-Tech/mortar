@@ -14,7 +14,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/pack"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -155,11 +155,11 @@ func TestImportFromACodeWritesConfigsAndQueuesWhatResolves(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got, err := fsx.ReadFile(filepath.Join(dir, "BepInEx", "config", "alice.cfg")); err != nil || string(got) != "[General]\n" {
+	if got, err := safefs.ReadFile(filepath.Join(dir, "BepInEx", "config", "alice.cfg")); err != nil || string(got) != "[General]\n" {
 		t.Fatalf("config = %q, %v", got, err)
 	}
 	e, files := localEntry(t, s, res.Profile.ID, "Mine")
-	if len(e.Mods) != 1 || !e.Enabled(e.Mods[0].ID) || !fsx.IsFile(filepath.Join(files, "BepInEx", "plugins", "Mine.dll")) {
+	if len(e.Mods) != 1 || !e.Enabled(e.Mods[0].ID) || !safefs.IsFile(filepath.Join(files, "BepInEx", "plugins", "Mine.dll")) {
 		t.Fatalf("Mine = %+v in %s", e, files)
 	}
 }
@@ -227,8 +227,8 @@ func TestImportFromAGaleProfileBringsItsLocalModAndItsDependencies(t *testing.T)
 		t.Errorf("queued %+v", rec.reqs)
 	}
 	e, files := localEntry(t, s, res.Profile.ID, "Mine")
-	if len(e.Mods) != 1 || e.Enabled(e.Mods[0].ID) || !fsx.IsFile(filepath.Join(files, "BepInEx", "plugins", "Mine.dll")) ||
-		!fsx.IsFile(filepath.Join(files, "BepInEx", "plugins", "data", "a.bin")) {
+	if len(e.Mods) != 1 || e.Enabled(e.Mods[0].ID) || !safefs.IsFile(filepath.Join(files, "BepInEx", "plugins", "Mine.dll")) ||
+		!safefs.IsFile(filepath.Join(files, "BepInEx", "plugins", "data", "a.bin")) {
 		t.Fatalf("Mine = %+v in %s", e, files)
 	}
 }
@@ -312,7 +312,7 @@ func TestImportFromAnR2modmanFolderBringsAHandAddedModAsLocal(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, files := localEntry(t, s, res.Profile.ID, "Gone"); !fsx.IsFile(filepath.Join(files, "BepInEx", "plugins", "Gone.dll")) {
+	if _, files := localEntry(t, s, res.Profile.ID, "Gone"); !safefs.IsFile(filepath.Join(files, "BepInEx", "plugins", "Gone.dll")) {
 		t.Errorf("the local mod's files are not in %s", files)
 	}
 }
@@ -345,7 +345,7 @@ func TestImportKeepsAProfilesOwnConfigUnlessReplaceIsChosen(t *testing.T) {
 	cfg := filepath.Join(dir, "BepInEx", "config", "alice.cfg")
 	testfs.WriteAt(t, cfg, []byte("mine\n"))
 	read := func() string {
-		b, err := fsx.ReadFile(cfg)
+		b, err := safefs.ReadFile(cfg)
 		if err != nil {
 			t.Fatal(err)
 		}

@@ -18,10 +18,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
 	_ "github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher" // registers the frameworks LoaderRef reads
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	_ "github.com/Rethunk-Tech/mortar/internal/loader/all"
@@ -364,12 +364,12 @@ func ArtMiddleware(home string, current func() settings.Settings) func(http.Hand
 				}
 				return
 			}
-			info, err := fsx.Stat(path)
+			info, err := safefs.Stat(path)
 			if err != nil {
 				http.NotFound(w, r)
 				return
 			}
-			b, err := fsx.ReadFile(path)
+			b, err := safefs.ReadFile(path)
 			if err != nil {
 				http.NotFound(w, r)
 				return
@@ -414,7 +414,7 @@ func InstallArtMiddleware(home string, current func() settings.Settings) func(ht
 				http.NotFound(w, r)
 				return
 			}
-			art, err := fsx.Open(filepath.Join(dir, filepath.FromSlash(info.Art)))
+			art, err := safefs.Open(filepath.Join(dir, filepath.FromSlash(info.Art)))
 			if err != nil {
 				http.NotFound(w, r)
 				return
@@ -538,7 +538,7 @@ func ScreenshotMiddleware(home string, current func() settings.Settings) func(ht
 				http.NotFound(w, r)
 				return
 			}
-			f, err := fsx.Open(filepath.Join(dir, parts[2]))
+			f, err := safefs.Open(filepath.Join(dir, parts[2]))
 			if err != nil {
 				http.NotFound(w, r)
 				return

@@ -9,7 +9,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/nxmsvc"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -60,7 +60,7 @@ func TestManifestLess(t *testing.T) {
 	t.Parallel()
 	write := func(name string, files ...string) string {
 		p := filepath.Join(t.TempDir(), name)
-		f, err := fsx.Create(p)
+		f, err := safefs.Create(p)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -80,7 +80,7 @@ func TestManifestLess(t *testing.T) {
 	}
 	// A Thunderstore manifest is no SMAPI manifest: a Stardew archive holding only that is still an optional file.
 	tsPath := filepath.Join(t.TempDir(), "ts.zip")
-	f, err := fsx.Create(tsPath)
+	f, err := safefs.Create(tsPath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -177,7 +177,7 @@ func TestStoredOptionalFileInstallsOverItsMainFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if b, err := fsx.ReadFile(filepath.Join(modsDir, mainKey, "Mod", "a.png")); err != nil || string(b) != "opt" {
+	if b, err := safefs.ReadFile(filepath.Join(modsDir, mainKey, "Mod", "a.png")); err != nil || string(b) != "opt" {
 		t.Fatalf("laid file = %q, %v", b, err)
 	}
 }

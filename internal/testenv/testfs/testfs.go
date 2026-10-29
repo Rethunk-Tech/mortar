@@ -1,4 +1,4 @@
-// Package testfs holds file, zip and data-home helpers for tests; it imports no mortar package above fsx, so any test package may use it.
+// Package testfs holds file, zip and data-home helpers for tests; it imports no mortar package, so any test package may use it.
 package testfs
 
 import (
@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // ZipBytes returns a zip holding files (name to body).
@@ -36,7 +36,7 @@ func ZipBytes(t testing.TB, files map[string]string) []byte {
 // WriteZip writes a zip of files to path and returns path.
 func WriteZip(t testing.TB, path string, files map[string]string) string {
 	t.Helper()
-	if err := fsx.WriteFile(path, ZipBytes(t, files), 0o600); err != nil {
+	if err := safefs.WriteFile(path, ZipBytes(t, files), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	return path
@@ -56,7 +56,7 @@ func WriteAt(t testing.TB, path string, body []byte) {
 	if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(path, body, 0o600); err != nil {
+	if err := safefs.WriteFile(path, body, 0o600); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -64,7 +64,7 @@ func WriteAt(t testing.TB, path string, body []byte) {
 // Read is the file at path as a string.
 func Read(t testing.TB, path string) string {
 	t.Helper()
-	b, err := fsx.ReadFile(path)
+	b, err := safefs.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -75,7 +75,7 @@ func Read(t testing.TB, path string) string {
 // not trusted. The file's bytes and time come back when the test ends.
 func Touch(t testing.TB, path string) {
 	t.Helper()
-	raw, err := fsx.ReadFile(path)
+	raw, err := safefs.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -84,10 +84,10 @@ func Touch(t testing.TB, path string) {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() {
-		_ = fsx.WriteFile(path, raw, info.Mode())
+		_ = safefs.WriteFile(path, raw, info.Mode())
 		_ = os.Chtimes(path, info.ModTime(), info.ModTime())
 	})
-	if err := fsx.WriteFile(path, append(slices.Clone(raw), '\n'), info.Mode()); err != nil {
+	if err := safefs.WriteFile(path, append(slices.Clone(raw), '\n'), info.Mode()); err != nil {
 		t.Fatal(err)
 	}
 	at := time.Now().Add(-time.Minute)

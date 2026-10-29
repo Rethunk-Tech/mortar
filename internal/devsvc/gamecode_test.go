@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 func TestGameCodeSearchesAndDecompilesTheGamesAssembly(t *testing.T) {
@@ -21,7 +21,7 @@ func TestGameCodeSearchesAndDecompilesTheGamesAssembly(t *testing.T) {
 		t.Fatal("searched without a game folder")
 	}
 	game := t.TempDir()
-	dll, err := fsx.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
+	dll, err := safefs.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -29,7 +29,7 @@ func TestGameCodeSearchesAndDecompilesTheGamesAssembly(t *testing.T) {
 	if err := os.MkdirAll(managed, 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(filepath.Join(managed, "Assembly-CSharp.dll"), dll, 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(managed, "Assembly-CSharp.dll"), dll, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if err := writeUserProps(dir, game); err != nil {
@@ -53,7 +53,7 @@ func TestGameCodeSearchesAndDecompilesTheGamesAssembly(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		tool += ".exe"
 	}
-	if err := fsx.WriteFile(filepath.Join(tools, tool), nil, 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(tools, tool), nil, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := svc.Decompile(t.Context(), "lethal-company", dir, "", "-o /tmp", false); err == nil {
@@ -86,13 +86,13 @@ func TestLicenseAndSDKNeed(t *testing.T) {
 	if err := svc.applyLicense(t.Context(), dir, "apache-2.0"); err != nil {
 		t.Fatal(err)
 	}
-	if body, _ := fsx.ReadFile(filepath.Join(dir, "LICENSE")); string(body) != "Apache License\nVersion 2.0" {
+	if body, _ := safefs.ReadFile(filepath.Join(dir, "LICENSE")); string(body) != "Apache License\nVersion 2.0" {
 		t.Fatalf("LICENSE = %q", body)
 	}
 	if err := svc.applyLicense(t.Context(), dir, "../x"); err == nil {
 		t.Fatal("wrote a license New mod does not offer")
 	}
-	if err := fsx.WriteFile(filepath.Join(dir, "global.json"), []byte(`{"sdk":{"version":"10.0.100","rollForward":"latestMajor"}}`), 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(dir, "global.json"), []byte(`{"sdk":{"version":"10.0.100","rollForward":"latestMajor"}}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if got := readSDKNeed(dir); got != (SDKNeed{Version: "10.0.100", RollForward: "latestMajor"}) {
@@ -117,7 +117,7 @@ func TestUsagesSearchesTheListedAssemblies(t *testing.T) {
 	svc, _ := testService(t, testTemplate)
 	dir := fixtureProject(t, svc)
 	game := t.TempDir()
-	dll, err := fsx.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
+	dll, err := safefs.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -125,7 +125,7 @@ func TestUsagesSearchesTheListedAssemblies(t *testing.T) {
 	if err := os.MkdirAll(managed, 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(filepath.Join(managed, "Assembly-CSharp.dll"), dll, 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(managed, "Assembly-CSharp.dll"), dll, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if err := writeUserProps(dir, game); err != nil {
@@ -142,7 +142,7 @@ func TestWriteUserPropsEscapesTheGamePathForMSBuild(t *testing.T) {
 	if err := writeUserProps(dir, filepath.Join(t.TempDir(), "50%25 off")); err != nil {
 		t.Fatal(err)
 	}
-	if body, _ := fsx.ReadFile(filepath.Join(dir, "Config.Build.user.props")); !strings.Contains(string(body), "50%2525 off") {
+	if body, _ := safefs.ReadFile(filepath.Join(dir, "Config.Build.user.props")); !strings.Contains(string(body), "50%2525 off") {
 		t.Errorf("props = %s", body)
 	}
 }

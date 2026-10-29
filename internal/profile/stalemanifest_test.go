@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 func TestFixStaleManifestSetsOnlyTheVersionInStoreAndProfile(t *testing.T) {
@@ -28,7 +28,7 @@ func TestFixStaleManifestSetsOnlyTheVersionInStoreAndProfile(t *testing.T) {
 	}
 	storeDir, _ := e.items.Path("stardew", "nexus-1-2")
 	for _, root := range []string{storeDir, filepath.Join(e.mods(p.ID), "nexus-1-2")} {
-		b, err := fsx.ReadFile(filepath.Join(root, "Pack/A/manifest.json"))
+		b, err := safefs.ReadFile(filepath.Join(root, "Pack/A/manifest.json"))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -37,7 +37,7 @@ func TestFixStaleManifestSetsOnlyTheVersionInStoreAndProfile(t *testing.T) {
 			!strings.Contains(got, `"MinimumVersion": "1.0.0"`) {
 			t.Fatalf("%s manifest:\n%s", root, got)
 		}
-		other, _ := fsx.ReadFile(filepath.Join(root, "Pack/B/manifest.json"))
+		other, _ := safefs.ReadFile(filepath.Join(root, "Pack/B/manifest.json"))
 		if !strings.Contains(string(other), `"Version":"1.0.0"`) {
 			t.Fatalf("another mod's manifest changed: %s", other)
 		}
@@ -62,7 +62,7 @@ func TestFixStaleManifestLeavesAManifestFromAnotherFile(t *testing.T) {
 	if err := e.FixStaleManifest("stardew", p.ID, "nexus-1-2", "smapi:X.Missing", "9.9.9"); err != nil {
 		t.Fatalf("a mod the download does not hold is skipped, not an error: %v", err)
 	}
-	b, _ := fsx.ReadFile(filepath.Join(e.mods(p.ID), "nexus-1-2", "Pack/A/manifest.json"))
+	b, _ := safefs.ReadFile(filepath.Join(e.mods(p.ID), "nexus-1-2", "Pack/A/manifest.json"))
 	if strings.Contains(string(b), "9.9.9") {
 		t.Fatalf("changed: %s", b)
 	}
@@ -88,7 +88,7 @@ func TestFixStaleManifestLeavesAModFromAnExtraFile(t *testing.T) {
 	if err := e.FixStaleManifest("stardew", p.ID, "nexus-1-2", "smapi:X.Optional", "2.5.0"); err != nil {
 		t.Fatal(err)
 	}
-	b, _ := fsx.ReadFile(filepath.Join(extra, "manifest.json"))
+	b, _ := safefs.ReadFile(filepath.Join(extra, "manifest.json"))
 	if strings.Contains(string(b), "2.5.0") {
 		t.Fatalf("the main download's version was written into another file's mod: %s", b)
 	}

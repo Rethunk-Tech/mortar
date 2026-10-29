@@ -15,8 +15,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/nxm"
@@ -122,7 +122,7 @@ func newFixture(t *testing.T) *fixture {
 					return profile.InstallResult{}, err
 				}
 			}
-			b, err := fsx.ReadFile(path)
+			b, err := safefs.ReadFile(path)
 			if err != nil || string(b) != payload {
 				return profile.InstallResult{}, fmt.Errorf("installer read %q: %w", b, err)
 			}

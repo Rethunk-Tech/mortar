@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 func writeGrid(dir string, appID uint32, source string) error {
@@ -17,7 +17,7 @@ func writeGrid(dir string, appID uint32, source string) error {
 	if ext == "" {
 		return nil
 	}
-	body, err := fsx.ReadFile(source)
+	body, err := safefs.ReadFile(source)
 	if err != nil {
 		return err
 	}
@@ -27,7 +27,7 @@ func writeGrid(dir string, appID uint32, source string) error {
 	}
 	base := strconv.FormatUint(uint64(appID), 10)
 	for _, suffix := range []string{"p", "", "_hero"} {
-		if err := fsx.WriteFile(filepath.Join(grid, base+suffix+ext), body, 0o600); err != nil {
+		if err := safefs.WriteFile(filepath.Join(grid, base+suffix+ext), body, 0o600); err != nil {
 			return err
 		}
 	}

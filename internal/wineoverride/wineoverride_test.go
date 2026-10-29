@@ -5,11 +5,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 func TestEnsure(t *testing.T) {
-	fixture, err := fsx.ReadFile("testdata/user.reg")
+	fixture, err := safefs.ReadFile("testdata/user.reg")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -22,21 +22,21 @@ func TestEnsure(t *testing.T) {
 	for name, content := range cases {
 		t.Run(name, func(t *testing.T) {
 			reg := filepath.Join(t.TempDir(), "user.reg")
-			if err := fsx.WriteFile(reg, []byte(content), 0o600); err != nil {
+			if err := safefs.WriteFile(reg, []byte(content), 0o600); err != nil {
 				t.Fatal(err)
 			}
 			if err := Ensure(reg, "winhttp"); err != nil {
 				t.Fatal(err)
 			}
-			once, _ := fsx.ReadFile(reg)
+			once, _ := safefs.ReadFile(reg)
 			if err := Ensure(reg, "winhttp"); err != nil {
 				t.Fatal(err)
 			}
-			twice, _ := fsx.ReadFile(reg)
+			twice, _ := safefs.ReadFile(reg)
 			if string(once) != string(twice) || strings.Count(string(once), `"winhttp"="native,builtin"`) != 1 {
 				t.Fatalf("not idempotent or duplicated:\n%s", once)
 			}
-			if backup, _ := fsx.ReadFile(reg + ".mortar-backup"); string(backup) != content {
+			if backup, _ := safefs.ReadFile(reg + ".mortar-backup"); string(backup) != content {
 				t.Fatal("backup is not the original")
 			}
 			// Every other line survives, in order, with the file's own line ending.

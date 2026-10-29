@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 func TestParseTakesOnlyAWellFormedPlayArgument(t *testing.T) {
@@ -137,7 +137,7 @@ func TestRepointMovesOnlyShortcutsWhoseProgramIsGone(t *testing.T) {
 	if err := os.MkdirAll(filepath.Dir(live), 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(live, nil, 0o600); err != nil {
+	if err := safefs.WriteFile(live, nil, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	gone, err := create(filepath.Join(dir, "qa", "mortar"), Arg("stardew", "a"), "A (Stardew Valley)")
@@ -148,15 +148,15 @@ func TestRepointMovesOnlyShortcutsWhoseProgramIsGone(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	keptBefore, _ := fsx.ReadFile(kept)
+	keptBefore, _ := safefs.ReadFile(kept)
 	exe := filepath.Join(dir, "Apps", `mor"tar.appimage`)
 	if err := Repoint(exe); err != nil {
 		t.Fatal(err)
 	}
-	if b, _ := fsx.ReadFile(gone); !strings.Contains(string(b), "Exec=\""+strings.ReplaceAll(exe, `"`, `\\"`)+"\" "+Arg("stardew", "a")+"\n") {
+	if b, _ := safefs.ReadFile(gone); !strings.Contains(string(b), "Exec=\""+strings.ReplaceAll(exe, `"`, `\\"`)+"\" "+Arg("stardew", "a")+"\n") {
 		t.Errorf("stale shortcut not repointed:\n%s", b)
 	}
-	if b, _ := fsx.ReadFile(kept); string(b) != string(keptBefore) {
+	if b, _ := safefs.ReadFile(kept); string(b) != string(keptBefore) {
 		t.Errorf("a live copy's shortcut changed:\n%s", b)
 	}
 }

@@ -18,7 +18,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // These tests build two server-mode copies of testdata/fixture (0.1.1 and 0.1.2), serve a manifest from a local HTTP
@@ -64,7 +64,7 @@ func run(t *testing.T, name string, args ...string) {
 
 func readFile(t *testing.T, path string) []byte {
 	t.Helper()
-	b, err := fsx.ReadFile(path)
+	b, err := safefs.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -196,12 +196,12 @@ func waitLog(t *testing.T, logPath, want string) string {
 	t.Helper()
 	deadline := time.Now().Add(30 * time.Second)
 	for time.Now().Before(deadline) {
-		if b, err := fsx.ReadFile(logPath); err == nil && strings.Contains(string(b), want) {
+		if b, err := safefs.ReadFile(logPath); err == nil && strings.Contains(string(b), want) {
 			return string(b)
 		}
 		time.Sleep(100 * time.Millisecond)
 	}
-	b, _ := fsx.ReadFile(logPath)
+	b, _ := safefs.ReadFile(logPath)
 	t.Fatalf("log never contained %q:\n%s", want, b)
 	return ""
 }

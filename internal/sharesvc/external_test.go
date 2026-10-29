@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/migrate"
 	"github.com/Rethunk-Tech/mortar/internal/share"
 )
@@ -37,10 +37,10 @@ func TestExternalImportWritesEachModsOwnConfigWithinTheCap(t *testing.T) {
 			t.Fatal(err)
 		}
 		manifest := `{"Name":"` + id + `","Author":"a","Version":"1.0.0","UniqueID":"Me.` + id + `","EntryDll":"m.dll"}`
-		if err := fsx.WriteFile(filepath.Join(dir, "manifest.json"), []byte(manifest), 0o600); err != nil {
+		if err := safefs.WriteFile(filepath.Join(dir, "manifest.json"), []byte(manifest), 0o600); err != nil {
 			t.Fatal(err)
 		}
-		if err := fsx.WriteFile(filepath.Join(dir, "config.json"), []byte(`"folder"`), 0o600); err != nil {
+		if err := safefs.WriteFile(filepath.Join(dir, "config.json"), []byte(`"folder"`), 0o600); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -74,7 +74,7 @@ func TestExternalImportWritesEachModsOwnConfigWithinTheCap(t *testing.T) {
 	want := map[string]string{"Me.A": `"profile"`, "Me.B": `"folder"`}
 	for _, e := range res.Profile.Entries {
 		for _, m := range e.Mods {
-			got, err := fsx.ReadFile(filepath.Join(dir, e.Key, filepath.FromSlash(m.Folder), "config.json"))
+			got, err := safefs.ReadFile(filepath.Join(dir, e.Key, filepath.FromSlash(m.Folder), "config.json"))
 			if err != nil || string(got) != want[m.ID.Local()] {
 				t.Fatalf("%s config = %q, %v", m.ID, got, err)
 			}

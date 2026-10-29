@@ -8,7 +8,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/share"
 )
 
@@ -43,7 +43,7 @@ func readIn(t *testing.T, s *Service, id, rel string) (string, bool) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	b, err := fsx.ReadFile(filepath.Join(dir, filepath.FromSlash(rel)))
+	b, err := safefs.ReadFile(filepath.Join(dir, filepath.FromSlash(rel)))
 	return string(b), err == nil
 }
 

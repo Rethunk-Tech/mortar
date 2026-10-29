@@ -8,9 +8,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
@@ -18,7 +17,7 @@ import (
 func Scan(dir string) Report {
 	var checks []Check
 	settingsPath := filepath.Join(dir, settings.FileName)
-	if b, err := fsx.ReadFile(settingsPath); err != nil {
+	if b, err := safefs.ReadFile(settingsPath); err != nil {
 		checks = append(checks, Check{
 			ID: "settings", Status: Fail, Detail: "settings.json is unreadable or missing", Code: "settingsUnreadable",
 			Fix: "restore settings.json from a known-good copy",
@@ -44,7 +43,7 @@ func Scan(dir string) Report {
 	var damaged []string
 	_ = filepath.WalkDir(filepath.Join(dir, "profiles"), func(path string, entry os.DirEntry, walkErr error) error {
 		if walkErr == nil && !entry.IsDir() && entry.Name() == "profile.json" {
-			if b, readErr := fsx.ReadFile(path); readErr != nil || !json.Valid(b) {
+			if b, readErr := safefs.ReadFile(path); readErr != nil || !json.Valid(b) {
 				damaged = append(damaged, path)
 			}
 		}
@@ -71,7 +70,7 @@ func Scan(dir string) Report {
 	} else {
 		checks = append(checks, Check{ID: "control", Status: Pass, Detail: "control.json is absent", Code: "controlAbsent"})
 	}
-	free, freeErr := datadir.FreeBytes(dir)
+	free, freeErr := safefs.FreeBytes(dir)
 	if freeErr == nil {
 		if free == 0 {
 			checks = append(checks, Check{
@@ -82,7 +81,7 @@ func Scan(dir string) Report {
 			checks = append(checks, Check{ID: "disk", Status: Pass, Detail: "data folder has free space", Code: "diskFree"})
 		}
 	}
-	if b, err := fsx.ReadFile(filepath.Join(dir, "store", "index.json")); err != nil || !json.Valid(b) {
+	if b, err := safefs.ReadFile(filepath.Join(dir, "store", "index.json")); err != nil || !json.Valid(b) {
 		checks = append(checks, Check{
 			ID: "store", Status: Fail, Detail: "store index.json is unreadable or corrupt", Code: "storeBad",
 			Fix: "restore the store index or let Mortar rebuild it",

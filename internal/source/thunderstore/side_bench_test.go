@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // benchLoaderVersions times the first Versions of the loader package against a real cached listing, named by
@@ -24,7 +24,7 @@ func benchLoaderVersions(b *testing.B, side bool) {
 		b.Fatal(err)
 	}
 	var meta cacheMeta
-	raw, err := fsx.ReadFile(filepath.Join(dir, "lethal-company.meta.json"))
+	raw, err := safefs.ReadFile(filepath.Join(dir, "lethal-company.meta.json"))
 	if err != nil || json.Unmarshal(raw, &meta) != nil {
 		b.Fatal("no lethal-company.meta.json in the cache")
 	}

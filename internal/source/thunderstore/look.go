@@ -7,8 +7,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // Look is how the Mods tab shows a package: its icon's address and its category.
@@ -39,7 +38,7 @@ func (d Driver) cachedMeta(key string) (dir string, meta cacheMeta, err error) {
 		return "", meta, errors.New("not a Thunderstore community key")
 	}
 	dir = filepath.Join(d.cacheRoot(), "thunderstore")
-	b, err := fsx.ReadFile(filepath.Join(dir, key+".meta.json"))
+	b, err := safefs.ReadFile(filepath.Join(dir, key+".meta.json"))
 	if err != nil {
 		return "", meta, err
 	}
@@ -91,7 +90,7 @@ func (d Driver) CachedLooks(key string, names []string) (map[string]Look, error)
 	}
 	markPath := filepath.Join(dir, key+".looked.json")
 	var mark lookedUp
-	if b, err := fsx.ReadFile(markPath); err == nil {
+	if b, err := safefs.ReadFile(markPath); err == nil {
 		_ = json.Unmarshal(b, &mark)
 	}
 	if mark.Hash != meta.Hash {
@@ -121,7 +120,7 @@ func (d Driver) CachedLooks(key string, names []string) (map[string]Look, error)
 	}
 	slices.Sort(mark.Names)
 	if b, err := json.Marshal(mark); err == nil {
-		_ = datadir.WriteFileAtomic(markPath, b, 0o644)
+		_ = safefs.WriteFileAtomic(markPath, b, 0o644)
 	}
 	return out, nil
 }

@@ -14,10 +14,10 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/doctor"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
@@ -87,7 +87,7 @@ func (s *Service) Log(gameID, profileID string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	data, err := fsx.ReadFile(path)
+	data, err := safefs.ReadFile(path)
 	if errors.Is(err, os.ErrNotExist) {
 		return "", nil
 	}

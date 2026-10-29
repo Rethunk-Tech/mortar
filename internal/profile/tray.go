@@ -12,8 +12,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/installer"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -63,7 +63,7 @@ func (e *TrayRestoreError) Error() string {
 
 // trayFold folds a Tray file's relative path as the file system does, so on Windows `House.trayitem` and
 // `house.trayitem` are one file with one set of owners. Tests replace it to fold on any system.
-var trayFold = fsx.FoldCase
+var trayFold = safefs.FoldCase
 
 // trayOwners maps each Tray file an entry of the game's profiles holds to the hash it recorded. p is the profile
 // being changed, taken as it stands in memory.
@@ -119,15 +119,15 @@ func (s *Store) placeTray(game string, p *Profile, arch installer.Archive, files
 	pl := trayPlacement{
 		undo: func() {
 			for _, r := range placed {
-				_ = fsx.Remove(r)
+				_ = safefs.Remove(r)
 			}
 			for _, a := range asides {
-				_ = fsx.Rename(a.held, a.dst)
+				_ = safefs.Rename(a.held, a.dst)
 			}
 		},
 		commit: func() {
 			for _, a := range asides {
-				_ = fsx.Remove(a.held)
+				_ = safefs.Remove(a.held)
 			}
 		},
 	}
@@ -148,7 +148,7 @@ func (s *Store) placeTray(game string, p *Profile, arch installer.Archive, files
 		held := TrayFile{Rel: f.Rel, Role: role}
 		key := held.folded()
 		src := filepath.Join(arch.Dir, filepath.FromSlash(f.Src))
-		h, err := fsx.HashFile(src, sha256.New())
+		h, err := safefs.HashFile(src, sha256.New())
 		if err != nil {
 			return fail(err)
 		}
@@ -161,7 +161,7 @@ func (s *Store) placeTray(game string, p *Profile, arch installer.Archive, files
 			continue
 		}
 		if _, err := os.Lstat(dst); err == nil {
-			dh, herr := fsx.HashFile(dst, sha256.New())
+			dh, herr := safefs.HashFile(dst, sha256.New())
 			rec, mine := replace[key]
 			switch {
 			case herr == nil && mine && dh == rec && dh == h:
@@ -169,7 +169,7 @@ func (s *Store) placeTray(game string, p *Profile, arch installer.Archive, files
 				continue
 			case herr == nil && mine && dh == rec:
 				setAside := dst + ".mortar-replaced"
-				if err := fsx.Rename(dst, setAside); err != nil {
+				if err := safefs.Rename(dst, setAside); err != nil {
 					return fail(err)
 				}
 				asides = append(asides, aside{dst, setAside})
@@ -214,7 +214,7 @@ func (s *Store) releaseTray(game string, p *Profile, files []TrayFile) {
 			continue
 		}
 		dst := filepath.Join(dir, filepath.FromSlash(f.Rel))
-		if h, err := fsx.HashFile(dst, sha256.New()); err == nil && h == f.Hash {
+		if h, err := safefs.HashFile(dst, sha256.New()); err == nil && h == f.Hash {
 			removeUp(dir, dst)
 		}
 	}

@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/runtime"
 	"github.com/Rethunk-Tech/mortar/internal/steam"
@@ -71,7 +71,7 @@ func overrideCheck(g game.GameInfo, compat, dll string, steamRoots []string) Che
 		ID: dll + ":" + g.ID, Status: Pass, Detail: g.Name + ": " + dll + " is overridden to native in the Proton prefix",
 		Code: "protonOverride", Params: params("game", g.Name, "name", dll),
 	}
-	reg, err := fsx.ReadFile(filepath.Join(compat, "pfx", "user.reg"))
+	reg, err := safefs.ReadFile(filepath.Join(compat, "pfx", "user.reg"))
 	if re := nativeOverride(dll); re.Match(reg) || re.MatchString(launchOptions(g.AppID, steamRoots)) {
 		return c
 	}

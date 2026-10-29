@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 func TestWriteBridgeConfigUsesPascalCaseAndMode(t *testing.T) {
@@ -27,7 +27,7 @@ func TestWriteBridgeConfigUsesPascalCaseAndMode(t *testing.T) {
 	if runtime.GOOS != "windows" && info.Mode().Perm() != 0o600 {
 		t.Fatalf("mode = %o", info.Mode().Perm())
 	}
-	raw, err := fsx.ReadFile(path)
+	raw, err := safefs.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -54,7 +54,7 @@ func TestWriteBridgeConfigOffClearsEnabled(t *testing.T) {
 	if err := WriteBridgeConfig(mod, BridgeConfig{OverlayEnabled: false, OverlayPort: 9000, OverlayToken: "keep"}); err != nil {
 		t.Fatal(err)
 	}
-	raw, err := fsx.ReadFile(filepath.Join(mod, "config.json"))
+	raw, err := safefs.ReadFile(filepath.Join(mod, "config.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -103,7 +103,7 @@ func TestWritePageLaysOutIndex(t *testing.T) {
 	if err := WritePage(dir); err != nil {
 		t.Fatal(err)
 	}
-	raw, err := fsx.ReadFile(PagePath(dir))
+	raw, err := safefs.ReadFile(PagePath(dir))
 	if err != nil {
 		t.Fatal(err)
 	}

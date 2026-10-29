@@ -10,7 +10,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/nativehost"
 )
 
@@ -25,7 +25,7 @@ func flatpakLinux(t *testing.T, current string) (*System, string) {
 	bin := t.TempDir()
 	launched := filepath.Join(bin, "launched")
 	gio := "#!/bin/sh\nprintf '%s\\n' \"$@\" > " + launched + "\n"
-	if err := fsx.WriteFile(filepath.Join(bin, "gio"), []byte(gio), 0o700); err != nil {
+	if err := safefs.WriteFile(filepath.Join(bin, "gio"), []byte(gio), 0o700); err != nil {
 		t.Fatal(err)
 	}
 	l.run = func(name string, args ...string) (string, error) {
@@ -56,7 +56,7 @@ func TestFlatpakRestoreDropsOurDefaultFromTheHostsMimeapps(t *testing.T) {
 	}
 	target := filepath.Join(hostConfig(l), "dotfiles.list")
 	list := filepath.Join(hostConfig(l), "mimeapps.list")
-	if err := fsx.WriteFile(target, []byte("[Default Applications]\nx-scheme-handler/nxm="+desktopID+";\ntext/html=a.desktop\n"), 0o600); err != nil {
+	if err := safefs.WriteFile(target, []byte("[Default Applications]\nx-scheme-handler/nxm="+desktopID+";\ntext/html=a.desktop\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.Symlink(target, list); err != nil {
@@ -68,7 +68,7 @@ func TestFlatpakRestoreDropsOurDefaultFromTheHostsMimeapps(t *testing.T) {
 	if fi, err := os.Lstat(list); err != nil || fi.Mode()&os.ModeSymlink == 0 {
 		t.Errorf("mimeapps.list symlink replaced: %v", err)
 	}
-	if b, _ := fsx.ReadFile(target); string(b) != "[Default Applications]\ntext/html=a.desktop\n" {
+	if b, _ := safefs.ReadFile(target); string(b) != "[Default Applications]\ntext/html=a.desktop\n" {
 		t.Errorf("host mimeapps.list: %q", b)
 	}
 	if _, err := os.Stat(filepath.Join(l.configHome, "mimeapps.list")); !os.IsNotExist(err) {
@@ -83,7 +83,7 @@ func TestFlatpakForwardsToThePreviousHandlerOnTheHost(t *testing.T) {
 	if err := l.ForwardOther("nxm://stardewvalley/mods/1", "other.desktop"); err != nil {
 		t.Fatal(err)
 	}
-	b, err := fsx.ReadFile(launched)
+	b, err := safefs.ReadFile(launched)
 	if err != nil || string(b) != "launch\n"+entry+"\nnxm://stardewvalley/mods/1\n" {
 		t.Fatalf("host gio got %q, %v", b, err)
 	}
@@ -104,7 +104,7 @@ func TestFlatpakWritesHostManifestsThatStartMortarThroughFlatpak(t *testing.T) {
 		t.Fatal(err)
 	}
 	wrapper := filepath.Join(l.home, ".var", "app", "tech.rethunk.Mortar", "native-host")
-	if b, err := fsx.ReadFile(wrapper); err != nil || !strings.Contains(string(b), `exec flatpak run --command=mortar tech.rethunk.Mortar "$@"`) {
+	if b, err := safefs.ReadFile(wrapper); err != nil || !strings.Contains(string(b), `exec flatpak run --command=mortar tech.rethunk.Mortar "$@"`) {
 		t.Fatalf("wrapper %q, %v", b, err)
 	}
 	chromium := filepath.Join(vivaldi, "NativeMessagingHosts", nativehost.Name+".json")
@@ -113,7 +113,7 @@ func TestFlatpakWritesHostManifestsThatStartMortarThroughFlatpak(t *testing.T) {
 		var m struct {
 			Path string `json:"path"`
 		}
-		if b, err := fsx.ReadFile(p); err != nil || json.Unmarshal(b, &m) != nil || m.Path != wrapper {
+		if b, err := safefs.ReadFile(p); err != nil || json.Unmarshal(b, &m) != nil || m.Path != wrapper {
 			t.Fatalf("%s: %s, %v", p, b, err)
 		}
 	}

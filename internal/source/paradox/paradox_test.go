@@ -10,13 +10,13 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
 func fixture(t *testing.T, name string) []byte {
 	t.Helper()
-	raw, err := fsx.ReadFile(filepath.Join("testdata", name))
+	raw, err := safefs.ReadFile(filepath.Join("testdata", name))
 	if err != nil {
 		t.Fatal(err)
 	}

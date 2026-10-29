@@ -9,7 +9,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/installer"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi"
@@ -46,7 +46,7 @@ func Of(gameID, dir string) Info {
 
 func packageInfo(dir string) Info {
 	root := installer.Open(dir, "").PackageRoot()
-	if b, err := fsx.ReadFile(filepath.Join(root.Dir, "manifest.json")); err == nil {
+	if b, err := safefs.ReadFile(filepath.Join(root.Dir, "manifest.json")); err == nil {
 		if m, err := bepinex5.ParseManifest(b); err == nil && m.Name != "" {
 			publisher := cmp.Or(m.Namespace, m.Author, unknownPublisher)
 			return Info{ID: mod.NewID(mod.FormatThunderstore, publisher+"-"+m.Name), Name: m.Name, Version: m.Version}

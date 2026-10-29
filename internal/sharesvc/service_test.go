@@ -16,7 +16,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -163,7 +163,7 @@ func TestImportFromMortarFileRecordsOrigin(t *testing.T) {
 		},
 	}
 	file := filepath.Join(t.TempDir(), "from.mortar")
-	f, err := fsx.Create(file)
+	f, err := safefs.Create(file)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/msbuild"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
@@ -78,7 +78,7 @@ func TestInspectReadsTheProjectFiles(t *testing.T) {
 	if err := png.Encode(&icon, image.NewRGBA(image.Rect(0, 0, 1, 1))); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(filepath.Join(dir, "icon.png"), icon.Bytes(), 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(dir, "icon.png"), icon.Bytes(), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if info, err = svc.Inspect(t.Context(), "lethal-company", dir); err != nil || !strings.HasPrefix(info.Icon, "data:image/png;base64,") {
@@ -93,7 +93,7 @@ func TestInspectReadsTheProjectFiles(t *testing.T) {
 	if err := os.MkdirAll(p.Output, 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(dll, nil, 0o600); err != nil {
+	if err := safefs.WriteFile(dll, nil, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	old := time.Now().Add(-time.Hour)
@@ -163,7 +163,7 @@ func TestInspectFollowsARenameMadeOutsideAndSeesAMissingProject(t *testing.T) {
 	if p := svc.Projects("lethal-company")[0]; p.Name != "Other" || !strings.HasSuffix(p.Output, filepath.Join("bin", "Other", "debug")) {
 		t.Errorf("record = %+v", p)
 	}
-	if err := fsx.RemoveAll(filepath.Join(dir, "src")); err != nil {
+	if err := safefs.RemoveAll(filepath.Join(dir, "src")); err != nil {
 		t.Fatal(err)
 	}
 	if info, err := svc.Inspect(t.Context(), "lethal-company", dir); err != nil || !info.Missing {
@@ -226,7 +226,7 @@ func TestEditMatchesAndWritesTheAuthorEscapedLikeTheTemplate(t *testing.T) {
 	svc, _ := testService(t, testTemplate)
 	dir := fixtureProject(t, svc)
 	propsPath := filepath.Join(dir, "Directory.Build.props")
-	if err := fsx.WriteFile(propsPath, []byte(`<Project><PropertyGroup><ThunderstoreTeam>Ab</ThunderstoreTeam><Authors>O%27Brien</Authors><Company>O%27Brien</Company><Copyright>Copyright (c) 2026 O%27Brien</Copyright></PropertyGroup></Project>`), 0o600); err != nil {
+	if err := safefs.WriteFile(propsPath, []byte(`<Project><PropertyGroup><ThunderstoreTeam>Ab</ThunderstoreTeam><Authors>O%27Brien</Authors><Company>O%27Brien</Company><Copyright>Copyright (c) 2026 O%27Brien</Copyright></PropertyGroup></Project>`), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := svc.Edit(t.Context(), "lethal-company", dir, ProjectEdit{
@@ -243,7 +243,7 @@ func TestEditMovesTheTeamInDevelopingMd(t *testing.T) {
 	svc, _ := testService(t, testTemplate)
 	dir := fixtureProject(t, svc)
 	doc := filepath.Join(dir, "DEVELOPING.md")
-	if err := fsx.WriteFile(doc, []byte("- Linux: `secret-tool store --label \"Thunderstore Ab\" service thunderstore username Ab`\n  `New-StoredCredential -Target 'thunderstore:Ab' -Password <token>`\n- Other: username Abc\n"), 0o600); err != nil {
+	if err := safefs.WriteFile(doc, []byte("- Linux: `secret-tool store --label \"Thunderstore Ab\" service thunderstore username Ab`\n  `New-StoredCredential -Target 'thunderstore:Ab' -Password <token>`\n- Other: username Abc\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := svc.Edit(t.Context(), "lethal-company", dir, ProjectEdit{
@@ -321,7 +321,7 @@ func TestEditingOnlyTheIDPrefixDropsTheOldAssembly(t *testing.T) {
 	oldDLL := filepath.Join(out, "com.ab.ShopDrop.dll")
 	other := filepath.Join(out, "Dependency.dll")
 	for _, f := range []string{oldDLL, other} {
-		if err := fsx.WriteFile(f, []byte("MZ"), 0o600); err != nil {
+		if err := safefs.WriteFile(f, []byte("MZ"), 0o600); err != nil {
 			t.Fatal(err)
 		}
 	}

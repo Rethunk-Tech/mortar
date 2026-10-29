@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
@@ -38,7 +38,7 @@ func TestWithDependency(t *testing.T) {
 func TestDeclareSoftDependency(t *testing.T) {
 	src := t.TempDir()
 	plugin := filepath.Join(src, "Plugin.cs")
-	if err := fsx.WriteFile(plugin, []byte("namespace Shop;\n\n[BepInPlugin(PluginInfo.Id, PluginInfo.Name, PluginInfo.Version)]\npublic class Plugin {}\n"), 0o600); err != nil {
+	if err := safefs.WriteFile(plugin, []byte("namespace Shop;\n\n[BepInPlugin(PluginInfo.Id, PluginInfo.Name, PluginInfo.Version)]\npublic class Plugin {}\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if err := declareDependency(src, "evaisa.lethallib", false); err != nil {
@@ -47,7 +47,7 @@ func TestDeclareSoftDependency(t *testing.T) {
 	if err := declareDependency(src, "evaisa.lethallib", true); err != nil {
 		t.Fatal(err)
 	}
-	got, _ := fsx.ReadFile(plugin)
+	got, _ := safefs.ReadFile(plugin)
 	if want := "namespace Shop;\n\n[BepInDependency(\"evaisa.lethallib\", BepInDependency.DependencyFlags.SoftDependency)]\n[BepInPlugin("; !strings.HasPrefix(string(got), want) {
 		t.Fatalf("plugin:\n%s", got)
 	}
@@ -55,17 +55,17 @@ func TestDeclareSoftDependency(t *testing.T) {
 		t.Fatal(err)
 	}
 	compat := filepath.Join(src, "Compat", "LethalLibCompat.cs")
-	body, err := fsx.ReadFile(compat)
+	body, err := safefs.ReadFile(compat)
 	if err != nil || !strings.Contains(string(body), `Chainloader.PluginInfos.ContainsKey("evaisa.lethallib")`) || !strings.Contains(string(body), "MethodImplOptions.NoInlining") || !strings.Contains(string(body), "namespace Shop.Compat;\n") {
 		t.Fatalf("compat %v:\n%s", err, body)
 	}
-	if err := fsx.WriteFile(compat, []byte("edited"), 0o600); err != nil {
+	if err := safefs.WriteFile(compat, []byte("edited"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if err := writeCompat(src, "Shop", "Evaisa-LethalLib", "evaisa.lethallib"); err != nil {
 		t.Fatal(err)
 	}
-	if body, _ := fsx.ReadFile(compat); string(body) != "edited" {
+	if body, _ := safefs.ReadFile(compat); string(body) != "edited" {
 		t.Fatal("the player's compatibility class was overwritten")
 	}
 }
@@ -190,8 +190,8 @@ func TestSyncReferencesADependencyAnotherProjectBuilds(t *testing.T) {
 	if err := svc.syncDependencies("lethal-company", settings.DevProject{Dir: mod, Name: "Mod", Profile: prof.ID}); err != nil {
 		t.Fatal(err)
 	}
-	project, _ := fsx.ReadFile(csproj)
-	props, _ := fsx.ReadFile(filepath.Join(mod, "Config.Build.user.props"))
+	project, _ := safefs.ReadFile(csproj)
+	props, _ := safefs.ReadFile(filepath.Join(mod, "Config.Build.user.props"))
 	if !strings.Contains(string(project), "$(MortarDependency_Mortar_ConfigSync)**/*.dll") ||
 		!strings.Contains(string(props), "<MortarDependency_Mortar_ConfigSync>"+output+string(filepath.Separator)+"<") {
 		t.Fatalf("project:\n%s\nprops:\n%s", project, props)
@@ -231,10 +231,10 @@ func TestRemoveDependencyUndoesWhatAddingWrote(t *testing.T) {
 	if err := svc.RemoveDependency("lethal-company", dir, "BepInEx-BepInExPack"); err == nil {
 		t.Error("the loader was dropped")
 	}
-	left, _ := fsx.ReadFile(filepath.Join(dir, "src", "Mod", "Mod.csproj"))
-	props, _ := fsx.ReadFile(filepath.Join(dir, "Config.Build.user.props"))
+	left, _ := safefs.ReadFile(filepath.Join(dir, "src", "Mod", "Mod.csproj"))
+	props, _ := safefs.ReadFile(filepath.Join(dir, "Config.Build.user.props"))
 	if string(left) != withDependency("<Project>\n  <ItemGroup>\n    <ThunderstoreDependency Include=\"BepInEx-BepInExPack\" Version=\"5.4.2305\" />\n  </ItemGroup>\n</Project>\n", "Evaisa-LethalLib", "1.1.1", false) ||
-		strings.Contains(string(props), "LethalConfig") || fsx.IsFile(filepath.Join(dir, "src", "Mod", "Compat", "LethalConfigCompat.cs")) {
+		strings.Contains(string(props), "LethalConfig") || safefs.IsFile(filepath.Join(dir, "src", "Mod", "Compat", "LethalConfigCompat.cs")) {
 		t.Fatalf("project:\n%s\nprops:\n%s", left, props)
 	}
 	// A class the player wrote into is theirs, and stays.
@@ -243,9 +243,9 @@ func TestRemoveDependencyUndoesWhatAddingWrote(t *testing.T) {
 		t.Fatal(err)
 	}
 	edited := filepath.Join(src, "Compat", "LethalLibCompat.cs")
-	body, _ := fsx.ReadFile(edited)
+	body, _ := safefs.ReadFile(edited)
 	write("src/Mod/Compat/LethalLibCompat.cs", strings.Replace(string(body), "// Calls into", "Register();\n        // Calls into", 1))
-	if err := dropUntouchedCompat(src, "Evaisa-LethalLib"); err != nil || !fsx.IsFile(edited) {
+	if err := dropUntouchedCompat(src, "Evaisa-LethalLib"); err != nil || !safefs.IsFile(edited) {
 		t.Fatalf("an edited compat class was dropped (%v)", err)
 	}
 }

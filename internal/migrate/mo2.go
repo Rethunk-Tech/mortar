@@ -11,7 +11,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 )
 
@@ -64,7 +64,7 @@ func mo2Installations(home, chosen, modsPath, gameName, gameID string) ([]instal
 	if ok {
 		out = append(out, portable)
 	}
-	if chosen != "" && !slices.ContainsFunc(out, func(found installation) bool { return fsx.SamePath(found.root, chosen) }) {
+	if chosen != "" && !slices.ContainsFunc(out, func(found installation) bool { return safefs.SamePath(found.root, chosen) }) {
 		inst, ok, err := mo2Installation(chosen, mo2Name+" ("+filepath.Base(chosen)+")", modsPath, gameName, gameID)
 		if err != nil {
 			return nil, err
@@ -79,7 +79,7 @@ func mo2Installations(home, chosen, modsPath, gameName, gameID string) ([]instal
 func mo2LocalAppData(home string) string {
 	if runtime.GOOS == "windows" {
 		actual, _ := os.UserHomeDir()
-		if fsx.SamePath(home, actual) {
+		if safefs.SamePath(home, actual) {
 			if dir := os.Getenv("LOCALAPPDATA"); dir != "" {
 				return dir
 			}
@@ -143,7 +143,7 @@ func mo2Profiles(root, fallbackModsPath, gameName, gameID string) ([]ProfilePrev
 }
 
 func mo2IsGameInstance(root, gameName string) bool {
-	data, err := fsx.ReadFile(filepath.Join(root, "ModOrganizer.ini"))
+	data, err := safefs.ReadFile(filepath.Join(root, "ModOrganizer.ini"))
 	if err != nil {
 		return false
 	}
@@ -153,7 +153,7 @@ func mo2IsGameInstance(root, gameName string) bool {
 func mo2Preview(root, modsPath, gameID, id string) (ProfilePreview, error) {
 	_, profilesPath := mo2Dirs(root)
 	listPath := filepath.Join(profilesPath, id, "modlist.txt")
-	data, err := fsx.ReadFile(listPath)
+	data, err := safefs.ReadFile(listPath)
 	if err != nil {
 		return ProfilePreview{}, err
 	}
@@ -217,7 +217,7 @@ func localMO2Path(modID int, path string) string {
 }
 
 func readMO2Meta(modDir string) mo2Meta {
-	data, err := fsx.ReadFile(filepath.Join(modDir, "meta.ini"))
+	data, err := safefs.ReadFile(filepath.Join(modDir, "meta.ini"))
 	if err != nil {
 		return mo2Meta{}
 	}
@@ -262,7 +262,7 @@ func parseMO2Modlist(data []byte) []mo2Listed {
 // to %BASE_DIR%/mods and %BASE_DIR%/profiles, and %BASE_DIR% expands to the base.
 func mo2Dirs(root string) (mods, profiles string) {
 	var settings map[string]string
-	if data, err := fsx.ReadFile(filepath.Join(root, "ModOrganizer.ini")); err == nil {
+	if data, err := safefs.ReadFile(filepath.Join(root, "ModOrganizer.ini")); err == nil {
 		settings = iniSection(data, "settings")
 	}
 	// MO2 leaves a relative path relative to its own working directory, which is

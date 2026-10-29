@@ -12,8 +12,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/modpic"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 )
 
@@ -58,7 +57,7 @@ func removeCover(dir, name string) error {
 	if coverType(name) == "" {
 		return nil
 	}
-	if err := fsx.Remove(filepath.Join(dir, name)); err != nil && !errors.Is(err, os.ErrNotExist) {
+	if err := safefs.Remove(filepath.Join(dir, name)); err != nil && !errors.Is(err, os.ErrNotExist) {
 		return err
 	}
 	return nil
@@ -76,7 +75,7 @@ func (s *Store) SetCover(game, id, path string) (Profile, error) {
 	if err != nil {
 		return Profile{}, err
 	}
-	if err := datadir.WriteFileAtomic(filepath.Join(dir, name), b, 0o600); err != nil {
+	if err := safefs.WriteFileAtomic(filepath.Join(dir, name), b, 0o600); err != nil {
 		return Profile{}, err
 	}
 	if s.coverAfterWrite != nil {
@@ -169,7 +168,7 @@ func CoverMiddleware(store func() *Store) func(http.Handler) http.Handler {
 				http.NotFound(w, r)
 				return
 			}
-			f, err := fsx.Open(filepath.Join(dir, p.Cover))
+			f, err := safefs.Open(filepath.Join(dir, p.Cover))
 			if err != nil {
 				http.NotFound(w, r)
 				return

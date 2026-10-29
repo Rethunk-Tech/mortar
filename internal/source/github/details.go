@@ -8,8 +8,8 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	ghauth "github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
@@ -48,7 +48,7 @@ func (d *Driver) Details(ctx context.Context, _, id, mortarVersion string) (sour
 	default:
 		return source.Details{}, fmt.Errorf("github answered %s", resp.Status)
 	}
-	body, err := fsx.ReadCapped(resp.Body, source.MaxBody)
+	body, err := safefs.ReadCapped(resp.Body, source.MaxBody)
 	if err != nil {
 		return source.Details{}, err
 	}

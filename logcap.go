@@ -9,8 +9,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/support"
 )
 
@@ -67,7 +66,7 @@ func capCrashLogAt(dataDir string, limit int64) bool {
 	if err != nil || info.Size() <= limit {
 		return false
 	}
-	seenRaw, err := fsx.ReadFile(filepath.Join(dataDir, "crash.seen"))
+	seenRaw, err := safefs.ReadFile(filepath.Join(dataDir, "crash.seen"))
 	if err != nil {
 		return false
 	}
@@ -78,6 +77,6 @@ func capCrashLogAt(dataDir string, limit int64) bool {
 	if err := os.Truncate(path, 0); err != nil {
 		return false
 	}
-	_ = datadir.WriteFileAtomic(filepath.Join(dataDir, "crash.seen"), []byte("0\n"), 0o600)
+	_ = safefs.WriteFileAtomic(filepath.Join(dataDir, "crash.seen"), []byte("0\n"), 0o600)
 	return true
 }

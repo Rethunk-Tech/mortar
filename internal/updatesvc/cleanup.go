@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // RemoveOldExecutables deletes the <exe>.old.<n> copies a Windows self-update leaves beside the running exe, since
@@ -19,7 +19,7 @@ func RemoveOldExecutables(exe string) {
 	}
 	for _, e := range entries {
 		if !e.IsDir() && old.MatchString(e.Name()) {
-			_ = fsx.RemoveAll(filepath.Join(dir, e.Name()))
+			_ = safefs.RemoveAll(filepath.Join(dir, e.Name()))
 		}
 	}
 }

@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // measureFile, in the profile's startup folder, asks the bridge's preloader patcher to time this launch. It holds the
@@ -22,7 +22,7 @@ func (Loader) ReportsStartup() {}
 func RequestStartup(startupDir, gameID string, measure bool) error {
 	path := filepath.Join(startupDir, measureFile)
 	if !measure {
-		if err := fsx.Remove(path); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		if err := safefs.Remove(path); err != nil && !errors.Is(err, fs.ErrNotExist) {
 			return err
 		}
 		return nil
@@ -31,5 +31,5 @@ func RequestStartup(startupDir, gameID string, measure bool) error {
 		return err
 	}
 	g, _ := components.Game(gameID)
-	return fsx.WriteFile(path, []byte(g.TitleScene+"\n"+g.ReadySignal), 0o600)
+	return safefs.WriteFile(path, []byte(g.TitleScene+"\n"+g.ReadySignal), 0o600)
 }

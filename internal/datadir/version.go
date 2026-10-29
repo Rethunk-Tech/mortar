@@ -5,7 +5,7 @@ import (
 	"errors"
 	"os"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -26,7 +26,7 @@ func CheckVersion(v int) error {
 // WriteVersioned writes v like WriteJSON, unless the file on disk was written by a newer Mortar. Then it copies
 // that file to path+".newer" once and leaves it untouched. Callers set the struct's FormatVersion to FormatVersion.
 func WriteVersioned(path string, v any) error {
-	b, err := fsx.ReadFile(path)
+	b, err := safefs.ReadFile(path)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return err
 	}
@@ -36,7 +36,7 @@ func WriteVersioned(path string, v any) error {
 	if json.Unmarshal(b, &head) == nil {
 		if verr := CheckVersion(head.FormatVersion); verr != nil {
 			if _, statErr := os.Stat(path + ".newer"); statErr != nil {
-				if werr := WriteFileAtomic(path+".newer", b, 0o600); werr != nil {
+				if werr := safefs.WriteFileAtomic(path+".newer", b, 0o600); werr != nil {
 					return errors.Join(verr, werr)
 				}
 			}

@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
@@ -253,7 +253,7 @@ func TestDuplicateIsIndependent(t *testing.T) {
 		t.Fatalf("original changed: %q", b)
 	}
 	itemDir, _ := e.items.Path("stardew", "local-a")
-	if b, _ := fsx.ReadFile(filepath.Join(itemDir, "manifest.json")); !strings.Contains(string(b), "X.A") {
+	if b, _ := safefs.ReadFile(filepath.Join(itemDir, "manifest.json")); !strings.Contains(string(b), "X.A") {
 		t.Fatal("store item changed")
 	}
 	long, _ := e.Create("stardew", strings.Repeat("é", 60))
@@ -564,19 +564,19 @@ func TestApplyBundledLeavesAProfileAlreadyOnTheBundleUnwritten(t *testing.T) {
 		t.Fatal(err)
 	}
 	path := filepath.Join(filepath.Dir(e.mods(a.ID)), "profile.json")
-	b, err := fsx.ReadFile(path)
+	b, err := safefs.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
 	}
 	// An old updated time, so a rewrite shows even within the same second.
 	before := regexp.MustCompile(`"updated": *"[^"]*"`).ReplaceAll(b, []byte(`"updated": "2000-01-01T00:00:00Z"`))
-	if err := fsx.WriteFile(path, before, 0o600); err != nil {
+	if err := safefs.WriteFile(path, before, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if err := e.ApplyBundled("stardew", smapiBundle("smapi-1.0.0")); err != nil {
 		t.Fatal(err)
 	}
-	if after, _ := fsx.ReadFile(path); string(after) != string(before) {
+	if after, _ := safefs.ReadFile(path); string(after) != string(before) {
 		t.Fatalf("profile rewritten by a bundle it already holds:\n%s\n%s", before, after)
 	}
 }

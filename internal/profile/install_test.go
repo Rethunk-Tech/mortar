@@ -10,7 +10,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/github"
@@ -50,7 +50,7 @@ func TestInstallArchive(t *testing.T) {
 	}
 
 	txt := filepath.Join(t.TempDir(), "notes.txt")
-	if err := fsx.WriteFile(txt, []byte("not an archive at all"), 0o600); err != nil {
+	if err := safefs.WriteFile(txt, []byte("not an archive at all"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	_, err = e.InstallArchive(t.Context(), "stardew", p.ID, txt)
@@ -394,14 +394,14 @@ func TestSeedConfigsCopiesAPackagesConfigOnceUntilTheProfileChanges(t *testing.T
 		t.Fatal(err)
 	}
 	cfg := filepath.Join(dir, "BepInEx", "config", "Foo.cfg")
-	if err := e.SeedConfigs("lethal-company", p.ID); err != nil || !fsx.IsFile(cfg) {
+	if err := e.SeedConfigs("lethal-company", p.ID); err != nil || !safefs.IsFile(cfg) {
 		t.Fatalf("the package's config was not seeded: %v", err)
 	}
 	// Unchanged packages are not laid out again, so a seed right after one copies nothing.
 	if err := os.Remove(cfg); err != nil {
 		t.Fatal(err)
 	}
-	if err := e.SeedConfigs("lethal-company", p.ID); err != nil || fsx.IsFile(cfg) {
+	if err := e.SeedConfigs("lethal-company", p.ID); err != nil || safefs.IsFile(cfg) {
 		t.Fatalf("a profile that had not changed was seeded again: %v", err)
 	}
 	bar := testfs.WriteZip(t, filepath.Join(t.TempDir(), "Ns-Bar-1.0.0.zip"), map[string]string{
@@ -411,7 +411,7 @@ func TestSeedConfigsCopiesAPackagesConfigOnceUntilTheProfileChanges(t *testing.T
 	if _, err := e.InstallArchive(t.Context(), "lethal-company", p.ID, bar); err != nil {
 		t.Fatal(err)
 	}
-	if err := e.SeedConfigs("lethal-company", p.ID); err != nil || !fsx.IsFile(cfg) {
+	if err := e.SeedConfigs("lethal-company", p.ID); err != nil || !safefs.IsFile(cfg) {
 		t.Fatalf("a changed profile was not seeded: %v", err)
 	}
 }

@@ -12,8 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 const (
@@ -28,7 +27,7 @@ const (
 // keeps the file's line endings and other sections, and copies the file to user.reg.mortar-backup once before the
 // first change. Run it while Wine is not running, or wineserver writes its own copy back over it.
 func Ensure(userReg, dll string) error {
-	raw, err := fsx.ReadFile(userReg)
+	raw, err := safefs.ReadFile(userReg)
 	if err != nil {
 		return err
 	}
@@ -44,11 +43,11 @@ func Ensure(userReg, dll string) error {
 	}
 	backup := userReg + backupSuffix
 	if _, err := os.Stat(backup); errors.Is(err, fs.ErrNotExist) {
-		if err := fsx.WriteFile(backup, raw, 0o600); err != nil {
+		if err := safefs.WriteFile(backup, raw, 0o600); err != nil {
 			return err
 		}
 	}
-	return datadir.WriteFileAtomic(userReg, []byte(strings.Join(updated, eol)), 0o600)
+	return safefs.WriteFileAtomic(userReg, []byte(strings.Join(updated, eol)), 0o600)
 }
 
 // withOverride returns lines with the override for dll in the DllOverrides section, adding the section when it is missing.

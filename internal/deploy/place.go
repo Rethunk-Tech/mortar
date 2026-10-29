@@ -13,8 +13,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 )
 
@@ -40,7 +40,7 @@ func (Place) Plan(view View, dir string, files []launchplan.PlanFile) (Plan, err
 		}
 		dst := filepath.Join(base, f.Dst)
 		// Folded so a later file wins over an earlier one that differs only in case, as the file system would.
-		byDst[fsx.FoldCase(dst)] = Op{Src: f.Src, Dst: dst, WriteBack: f.Root != ""}
+		byDst[safefs.FoldCase(dst)] = Op{Src: f.Src, Dst: dst, WriteBack: f.Root != ""}
 		if o, ok := ownedOf(base, f); ok && !slices.Contains(owned, o) {
 			owned = append(owned, o)
 		}
@@ -95,14 +95,14 @@ func (Place) Apply(ctx context.Context, p Plan) (Manifest, error) {
 		return Manifest{}, fmt.Errorf("%w: recover %s first", ErrUnrecovered, p.View.JournalDir)
 	}
 	// A plan that places only into a folder outside the install (a mods folder in Documents) needs no write access to it.
-	if slices.ContainsFunc(p.Ops, func(o Op) bool { return datadir.UnderRoot(p.Dir, o.Dst) }) {
+	if slices.ContainsFunc(p.Ops, func(o Op) bool { return safefs.UnderRoot(p.Dir, o.Dst) }) {
 		if err := datadir.CheckWritable(p.Dir); err != nil {
 			return Manifest{}, err
 		}
 	}
 	m := Manifest{Dir: p.Dir, View: p.View, Owned: p.Owned, Existing: listOwned(p.Owned)}
 	for i, op := range p.Ops {
-		hash, err := fsx.HashFile(op.Src, sha256.New())
+		hash, err := safefs.HashFile(op.Src, sha256.New())
 		if err != nil {
 			return Manifest{}, err
 		}
@@ -113,7 +113,7 @@ func (Place) Apply(ctx context.Context, p Plan) (Manifest, error) {
 		m.Ops = append(m.Ops, pl)
 	}
 	// The record comes first: from here a crash is recoverable.
-	_ = fsx.Remove(logPath(p.View.JournalDir))
+	_ = safefs.Remove(logPath(p.View.JournalDir))
 	if err := persist(m); err != nil {
 		return Manifest{}, err
 	}
@@ -190,13 +190,13 @@ func mkdirTracked(m *Manifest, dir string, log *opLog, n string) error {
 
 // move renames, falling back to copy and remove across file systems.
 func move(src, dst string) error {
-	if err := fsx.Rename(src, dst); err == nil {
+	if err := safefs.Rename(src, dst); err == nil {
 		return nil
 	}
 	if err := datadir.CopyFile(src, dst); err != nil {
 		return err
 	}
-	return fsx.Remove(src)
+	return safefs.Remove(src)
 }
 
 // Purge removes the placed files and restores what they displaced, then drops the journal.
@@ -218,12 +218,12 @@ func (Place) Purge(ctx context.Context, m Manifest) error {
 	at("adopted")
 	// Deepest first: a folder made for one file may hold a sibling's folder made later.
 	for _, d := range slices.SortedFunc(slices.Values(m.Created), func(a, b string) int { return len(b) - len(a) }) {
-		_ = fsx.Remove(d)
+		_ = safefs.Remove(d)
 		at("folder:" + d)
 	}
 	err := log.close()
 	at("journal")
-	return errors.Join(err, saveNotes(m.View.JournalDir, m.notes), fsx.RemoveAll(m.View.JournalDir))
+	return errors.Join(err, saveNotes(m.View.JournalDir, m.notes), safefs.RemoveAll(m.View.JournalDir))
 }
 
 func undoOps(ctx context.Context, m *Manifest, log *opLog) error {
@@ -236,7 +236,7 @@ func undoOps(ctx context.Context, m *Manifest, log *opLog) error {
 			continue
 		}
 		// A crashed copy leaves its temp file; the name is Mortar's, so it goes whatever else is known of the operation.
-		if err := fsx.Remove(tmpName(o.Dst)); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		if err := safefs.Remove(tmpName(o.Dst)); err != nil && !errors.Is(err, fs.ErrNotExist) {
 			return err
 		}
 		_, backupErr := os.Lstat(o.Displaced)
@@ -246,7 +246,7 @@ func undoOps(ctx context.Context, m *Manifest, log *opLog) error {
 			if err := writeBackOrRescue(m, o, i, log); err != nil {
 				return err
 			}
-			if err := fsx.Remove(o.Dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
+			if err := safefs.Remove(o.Dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
 				return err
 			}
 			if err := move(o.Displaced, o.Dst); err != nil {
@@ -256,10 +256,10 @@ func undoOps(ctx context.Context, m *Manifest, log *opLog) error {
 			// Nothing was displaced, so Dst is ours only while it still holds our content. A file changed since holds
 			// the player's or a mod's own data (a script mod's settings): one placed from the profile's copy goes back
 			// into that copy, and any other stays.
-			if h, err := fsx.HashFile(o.Dst, sha256.New()); err == nil {
+			if h, err := safefs.HashFile(o.Dst, sha256.New()); err == nil {
 				switch {
 				case h == o.Hash:
-					if err := fsx.Remove(o.Dst); err != nil {
+					if err := safefs.Remove(o.Dst); err != nil {
 						return err
 					}
 				case o.WriteBack:
@@ -268,7 +268,7 @@ func undoOps(ctx context.Context, m *Manifest, log *opLog) error {
 						return err
 					}
 					if wrote {
-						if err := fsx.Remove(o.Dst); err != nil {
+						if err := safefs.Remove(o.Dst); err != nil {
 							return err
 						}
 					} else {
@@ -296,7 +296,7 @@ func writeBackOrRescue(m *Manifest, o Placed, i int, l *opLog) error {
 	if st, err := os.Lstat(o.Dst); !o.WriteBack || (err == nil && !st.Mode().IsRegular()) {
 		return nil
 	}
-	h, err := fsx.HashFile(o.Dst, sha256.New())
+	h, err := safefs.HashFile(o.Dst, sha256.New())
 	if errors.Is(err, fs.ErrNotExist) || (err == nil && h == o.Hash) {
 		return nil
 	}
@@ -304,7 +304,7 @@ func writeBackOrRescue(m *Manifest, o Placed, i int, l *opLog) error {
 		return err
 	}
 	// Dst holding the backup's bytes is the player's file half moved (a copy across file systems cut short), not ours.
-	if b, err := fsx.HashFile(o.Displaced, sha256.New()); err == nil && b == h {
+	if b, err := safefs.HashFile(o.Displaced, sha256.New()); err == nil && b == h {
 		return nil
 	}
 	wrote, err := writeBackFile(o, i, l)
@@ -317,7 +317,7 @@ func writeBackOrRescue(m *Manifest, o Placed, i int, l *opLog) error {
 	}
 	at(fmt.Sprintf("rescue-logged:%d", i))
 	log.Printf("deploy: %s could not go back into its profile; its bytes are kept as %s", o.Dst, rescue)
-	if err := fsx.Rename(o.Dst, rescue); err != nil {
+	if err := safefs.Rename(o.Dst, rescue); err != nil {
 		return err
 	}
 	at(fmt.Sprintf("rescued:%d", i))

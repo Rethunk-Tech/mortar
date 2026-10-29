@@ -5,7 +5,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // testdata/mod.dll is compiled from testdata/src (rebuild with testdata/src/build.sh). Its BuffEffects writes and the
@@ -31,14 +31,14 @@ func TestWritesListsGameMembersTheAssemblyAssigns(t *testing.T) {
 }
 
 func TestWritesRejectsFilesThatAreNotAssemblies(t *testing.T) {
-	full, err := fsx.ReadFile(filepath.Join("testdata", "mod.dll"))
+	full, err := safefs.ReadFile(filepath.Join("testdata", "mod.dll"))
 	if err != nil {
 		t.Fatal(err)
 	}
 	dir := t.TempDir()
 	for i, data := range [][]byte{[]byte("not a PE file"), full[:len(full)/2]} {
 		path := filepath.Join(dir, "mod.dll")
-		if err := fsx.WriteFile(path, data, 0o600); err != nil {
+		if err := safefs.WriteFile(path, data, 0o600); err != nil {
 			t.Fatal(err)
 		}
 		if got, err := Writes(path, "StardewValley", "Netcode"); err == nil {

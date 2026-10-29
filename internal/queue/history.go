@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"slices"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
@@ -68,7 +69,7 @@ func (s *Service) writeHistory(entries []HistoryEntry) {
 	}
 	// Compact: at the cap each write is rewritten whole, and an indented file is 4x the bytes. Readers accept both.
 	if b, err := json.Marshal(entries); err == nil {
-		_ = datadir.WriteFileAtomic(s.historyPath(), b, 0o600)
+		_ = safefs.WriteFileAtomic(s.historyPath(), b, 0o600)
 	}
 }
 

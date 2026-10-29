@@ -13,8 +13,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/secret"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -208,7 +208,7 @@ func (t thunderstoreAPI) call(ctx context.Context, path string, body, out any) e
 // uploadFile sends the package in the parts Thunderstore's storage asks for, each to its presigned URL with its MD5,
 // and returns the upload's id.
 func (t thunderstoreAPI) uploadFile(ctx context.Context, path string) (string, error) {
-	data, err := fsx.ReadFile(path)
+	data, err := safefs.ReadFile(path)
 	if err != nil {
 		return "", err
 	}

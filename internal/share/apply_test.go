@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
@@ -48,7 +48,7 @@ func TestApplyWritesOnlyValidConfigsInsideModFolders(t *testing.T) {
 		"nexus-1-2/Inner/config.json": `{"a":1}`, "nexus-1-2/Inner/data/deep.json": `{"b":2}`,
 		"nexus-1-2/Pack/.Off/config.json": "off", ".nexus-3-4/config.json": "root",
 	} {
-		got, err := fsx.ReadFile(filepath.Join(mods, path))
+		got, err := safefs.ReadFile(filepath.Join(mods, path))
 		if err != nil || string(got) != want {
 			t.Errorf("%s = %q, %v", path, got, err)
 		}

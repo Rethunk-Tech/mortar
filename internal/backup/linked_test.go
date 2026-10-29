@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/saves"
 
 	_ "modernc.org/sqlite"
@@ -44,7 +44,7 @@ func TestBackupCarriesAndRestoresAWorldsMinimap(t *testing.T) {
 		t.Fatal(err)
 	}
 	mapFile := filepath.Join(data, "Maps", id+".db")
-	if err := fsx.WriteFile(mapFile, []byte("map then"), 0o600); err != nil {
+	if err := safefs.WriteFile(mapFile, []byte("map then"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	l := saves.Layout{Dir: dir, Files: []string{"*.vcdbs"}, Linked: []string{"Maps/{uuid}.db"}}
@@ -57,13 +57,13 @@ func TestBackupCarriesAndRestoresAWorldsMinimap(t *testing.T) {
 	if got := zipNames(t, whole); !slices.Contains(got, "Maps/"+id+".db") {
 		t.Fatalf("zip = %v, want the minimap beside Saves/", got)
 	}
-	if err := fsx.WriteFile(mapFile, []byte("map now"), 0o600); err != nil {
+	if err := safefs.WriteFile(mapFile, []byte("map now"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if err := Restore(t.Context(), whole, l, out, []string{"w.vcdbs"}, DefaultKeep, start.Add(time.Hour)); err != nil {
 		t.Fatal(err)
 	}
-	if b, err := fsx.ReadFile(mapFile); err != nil || string(b) != "map then" {
+	if b, err := safefs.ReadFile(mapFile); err != nil || string(b) != "map then" {
 		t.Fatalf("minimap after restore = %q, %v", b, err)
 	}
 }

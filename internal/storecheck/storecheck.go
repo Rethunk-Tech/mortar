@@ -14,10 +14,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/dlwatch"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
 	"github.com/Rethunk-Tech/mortar/internal/store"
@@ -369,7 +369,7 @@ func (s *Service) findArchive(key string) (string, bool) {
 			continue
 		}
 		path := filepath.Join(dir, e.Name())
-		if sum, err := fsx.HashFile(path, sha256.New()); err == nil && store.LocalKey(sum) == key {
+		if sum, err := safefs.HashFile(path, sha256.New()); err == nil && store.LocalKey(sum) == key {
 			return path, true
 		}
 	}

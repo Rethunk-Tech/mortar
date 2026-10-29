@@ -7,7 +7,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/share"
 
 	_ "github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
@@ -57,7 +57,7 @@ func TestLoaderConfigsRoundTripThroughAMortarFile(t *testing.T) {
 		"BepInEx/config/Sigurd.CSync.cfg": true, "BepInEx/config/Sub/more.json": true,
 		"BepInEx/config/mortar-bepinex-bridge.json": false, "BepInEx/config/cache.dll": false, "BepInEx/plugins/stray.cfg": false,
 	} {
-		b, err := fsx.ReadFile(filepath.Join(got, filepath.FromSlash(rel)))
+		b, err := safefs.ReadFile(filepath.Join(got, filepath.FromSlash(rel)))
 		if (err == nil) != want || (want && string(b) != files[rel]) {
 			t.Errorf("%s arrived %v (%q), want %v", rel, err == nil, b, want)
 		}
@@ -70,7 +70,7 @@ func TestLoaderConfigsRoundTripThroughAMortarFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if b, err := fsx.ReadFile(filepath.Join(lanDir, "BepInEx", "config", "Sigurd.CSync.cfg")); err != nil || string(b) != files["BepInEx/config/Sigurd.CSync.cfg"] {
+	if b, err := safefs.ReadFile(filepath.Join(lanDir, "BepInEx", "config", "Sigurd.CSync.cfg")); err != nil || string(b) != files["BepInEx/config/Sigurd.CSync.cfg"] {
 		t.Errorf("a LAN accept's import left the config behind: %q, %v", b, err)
 	}
 }

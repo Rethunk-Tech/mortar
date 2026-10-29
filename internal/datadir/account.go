@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // accountHome is the home folder the OS account records, which HOME (USERPROFILE on Windows) can override.
@@ -25,7 +25,7 @@ func SharesAccountData() bool {
 	if err != nil {
 		return true
 	}
-	if home, err := os.UserHomeDir(); err != nil || fsx.SamePath(home, acct) {
+	if home, err := os.UserHomeDir(); err != nil || safefs.SamePath(home, acct) {
 		return true
 	}
 	def, err := DefaultDir()

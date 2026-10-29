@@ -5,8 +5,8 @@ import (
 	"os"
 	"slices"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // Note kinds: a file that stays in the shared folder because it was too large to adopt, and a file that holds changed
@@ -42,7 +42,7 @@ func saveNotes(journalDir string, notes []Note) error {
 
 func writeNotes(journalDir string, notes []Note) error {
 	if len(notes) == 0 {
-		err := fsx.Remove(notesPath(journalDir))
+		err := safefs.Remove(notesPath(journalDir))
 		if os.IsNotExist(err) {
 			return nil
 		}
@@ -54,7 +54,7 @@ func writeNotes(journalDir string, notes []Note) error {
 // Notes lists the files an earlier purge left in the shared folder that are still there, with their current size; a
 // note whose file is gone is dropped.
 func Notes(journalDir string) []Note {
-	b, err := fsx.ReadFile(notesPath(journalDir))
+	b, err := safefs.ReadFile(notesPath(journalDir))
 	if err != nil {
 		return nil
 	}

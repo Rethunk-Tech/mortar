@@ -12,8 +12,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 	"github.com/Rethunk-Tech/mortar/internal/steam"
 )
@@ -246,7 +246,7 @@ func Version(inst Install) string {
 	if !ok {
 		return ""
 	}
-	if b, err := fsx.ReadFile(filepath.Join(steamapps, "compatdata", inst.AppID, "config_info")); err == nil {
+	if b, err := safefs.ReadFile(filepath.Join(steamapps, "compatdata", inst.AppID, "config_info")); err == nil {
 		if line, _, _ := strings.Cut(string(b), "\n"); strings.TrimSpace(line) != "" {
 			return strings.TrimSpace(line)
 		}
@@ -258,7 +258,7 @@ func Version(inst Install) string {
 	}
 	var configs []string
 	for _, dir := range dirs {
-		if b, err := fsx.ReadFile(filepath.Join(dir, "config", "config.vdf")); err == nil {
+		if b, err := safefs.ReadFile(filepath.Join(dir, "config", "config.vdf")); err == nil {
 			configs = append(configs, string(b))
 		}
 	}

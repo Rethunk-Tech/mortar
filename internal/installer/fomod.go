@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/fomod"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 var _ = Register(fomodInstaller{})
@@ -84,7 +84,7 @@ func (fomodInstaller) Layout(a Archive, g Game, choices Choices) (Layout, error)
 		if dest == ".." || strings.HasPrefix(dest, "../") {
 			return Layout{}, fmt.Errorf("%w: %q", ErrUnsafe, dest)
 		}
-		src, err := fsx.ResolveFold(base.FS, src)
+		src, err := safefs.ResolveFold(base.FS, src)
 		if err != nil {
 			return Layout{}, err
 		}

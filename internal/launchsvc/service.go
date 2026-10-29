@@ -20,10 +20,10 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/backup"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
@@ -1386,7 +1386,7 @@ func (s *Service) Lines(gameID, profileID string) ([]launch.Entry, error) {
 	if err != nil {
 		return nil, err
 	}
-	data, err := fsx.ReadFile(path)
+	data, err := safefs.ReadFile(path)
 	if errors.Is(err, os.ErrNotExist) {
 		return []launch.Entry{}, nil
 	}

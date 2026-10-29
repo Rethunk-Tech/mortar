@@ -17,8 +17,8 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/nexussso"
@@ -56,7 +56,7 @@ func serveFixtures(t *testing.T) (*httptest.Server, *atomic.Int32) {
 			_, _ = w.Write([]byte(`{"data":{"legacyModsByDomain":{"nodes":[{"modId":541,"gameId":1303,"modRequirements":{"nexusRequirements":{"nodes":[{"modId":"2400","modName":"SMAPI","url":"","externalRequirement":false,"notes":"","gameId":"1303"}]}}}]}}}`))
 			return
 		}
-		b, err := fsx.ReadFile(filepath.Join("..", "nexus", "testdata", files[r.URL.Path]))
+		b, err := safefs.ReadFile(filepath.Join("..", "nexus", "testdata", files[r.URL.Path]))
 		if err != nil {
 			w.WriteHeader(http.StatusNotFound)
 			return
@@ -74,7 +74,7 @@ func keepsOutOfSettings(t *testing.T, secrets ...string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	b, err := fsx.ReadFile(filepath.Join(dir, settings.FileName))
+	b, err := safefs.ReadFile(filepath.Join(dir, settings.FileName))
 	if err != nil {
 		t.Fatal(err)
 	}

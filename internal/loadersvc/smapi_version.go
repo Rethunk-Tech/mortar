@@ -10,7 +10,7 @@ import (
 	"slices"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -142,7 +142,7 @@ func (s *Service) installVersion(ctx context.Context, g game.Game, dir, id, load
 	if err != nil {
 		return loader.Status{}, err
 	}
-	defer func() { _ = fsx.RemoveAll(work) }()
+	defer func() { _ = safefs.RemoveAll(work) }()
 	pkg := loader.Package{ID: l.ID(), Version: version, Archive: filepath.Join(work, "installer.zip")}
 	if err := rel.Fetch(ctx, catalogGame(id), version, pkg.Archive); err != nil {
 		return loader.Status{}, err
@@ -358,7 +358,7 @@ func (s *Service) fetchIntoStore(ctx context.Context, id, loaderID string, rel l
 	if err != nil {
 		return "", err
 	}
-	defer func() { _ = fsx.RemoveAll(work) }()
+	defer func() { _ = safefs.RemoveAll(work) }()
 	if err := rel.Fetch(ctx, catalogGame(id), version, filepath.Join(work, installerFile)); err != nil {
 		return "", err
 	}

@@ -16,7 +16,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/backup"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // updEnv is an env with a profile holding entry "a-1" of mod me.a, and store items a-1 and a-2.
@@ -270,11 +270,11 @@ func TestUpdateThatCannotRecordRestoresTheOldFolder(t *testing.T) {
 	e, p := updEnv(t, map[string]string{"A/manifest.json": m}, map[string]string{"A/manifest.json": m})
 	writeFile(t, e.mods(p.ID), "a-1/A/config.json", "mine")
 	dir := filepath.Dir(e.mods(p.ID))
-	if err := fsx.Chmod(dir, 0o500); err != nil {
+	if err := safefs.Chmod(dir, 0o500); err != nil {
 		t.Fatal(err)
 	}
 	_, err := e.UpdateEntry("stardew", p.ID, "a-1", "a-2")
-	if cerr := fsx.Chmod(dir, 0o700); cerr != nil {
+	if cerr := safefs.Chmod(dir, 0o700); cerr != nil {
 		t.Fatal(cerr)
 	}
 	if err == nil {

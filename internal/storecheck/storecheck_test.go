@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
 	"github.com/Rethunk-Tech/mortar/internal/store"
@@ -21,7 +21,7 @@ import (
 func zipFile(t *testing.T, dir, name string, files map[string]string) string {
 	t.Helper()
 	p := filepath.Join(dir, name)
-	f, err := fsx.Create(p)
+	f, err := safefs.Create(p)
 	if err != nil {
 		t.Fatal(err)
 	}

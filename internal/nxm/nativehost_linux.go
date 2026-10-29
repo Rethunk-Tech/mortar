@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/nativehost"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
@@ -31,7 +31,7 @@ func (l *System) WriteNativeHosts() error {
 		if err := os.MkdirAll(filepath.Dir(exe), 0o700); err != nil {
 			return err
 		}
-		if err := fsx.WriteFile(exe, []byte(flatpakHostWrapper), 0o700); err != nil {
+		if err := safefs.WriteFile(exe, []byte(flatpakHostWrapper), 0o700); err != nil {
 			return err
 		}
 	}

@@ -10,7 +10,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 
 	"github.com/andygrunwald/vdf"
 )
@@ -23,11 +23,11 @@ func fixture(t *testing.T) string {
 		t.Fatal(err)
 	}
 	vdfPath := filepath.Join(root, "steamapps", "libraryfolders.vdf")
-	b, err := fsx.ReadFile(vdfPath)
+	b, err := safefs.ReadFile(vdfPath)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(vdfPath, []byte(strings.ReplaceAll(string(b), "@ROOT@", strings.ReplaceAll(root, `\`, `\\`))), 0o600); err != nil {
+	if err := safefs.WriteFile(vdfPath, []byte(strings.ReplaceAll(string(b), "@ROOT@", strings.ReplaceAll(root, `\`, `\\`))), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	return root

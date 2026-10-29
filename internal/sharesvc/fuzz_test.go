@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/share"
 )
@@ -42,7 +42,7 @@ func FuzzParseCollectionURL(f *testing.F) {
 // FuzzCollectionArchive feeds the curator's collection 7z, which a Premium import downloads and reads.
 func FuzzCollectionArchive(f *testing.F) {
 	for _, p := range []string{"testdata/collection-archive.7z", "testdata/valid.7z", "testdata/traversal.7z"} {
-		b, err := fsx.ReadFile(p)
+		b, err := safefs.ReadFile(p)
 		if err != nil {
 			f.Fatal(err)
 		}

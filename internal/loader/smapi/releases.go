@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
@@ -146,12 +146,12 @@ func (l Loader) Fetch(ctx context.Context, _ components.GameInfo, version, dest 
 	if err := github.Download(ctx, l.Client, url, dest, maxInstaller, nil); err != nil {
 		return fmt.Errorf("download SMAPI %s: %w", version, err)
 	}
-	got, err := fsx.HashFile(dest, sha256.New())
+	got, err := safefs.HashFile(dest, sha256.New())
 	if err == nil && !strings.EqualFold(got, want) {
 		err = errors.New("the download does not match GitHub's SHA-256 for it")
 	}
 	if err != nil {
-		_ = fsx.Remove(dest)
+		_ = safefs.Remove(dest)
 		return fmt.Errorf("download SMAPI %s: %w", version, err)
 	}
 	return nil

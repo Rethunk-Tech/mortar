@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/backup"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/saves"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -27,13 +27,13 @@ func TestServiceListsAndRestoresWithTempDataDirs(t *testing.T) {
 	if err != nil || len(listed) != 1 || listed[0].Profile != "p1" {
 		t.Fatalf("list = %+v, %v", listed, err)
 	}
-	if err := fsx.WriteFile(filepath.Join(savesDir, "Farm_1", "Farm_1"), []byte("v2"), 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(savesDir, "Farm_1", "Farm_1"), []byte("v2"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if err := s.RestoreBackup(t.Context(), "stardew", "", listed[0].Name, []string{"Farm_1"}); err != nil {
 		t.Fatal(err)
 	}
-	got, err := fsx.ReadFile(filepath.Join(savesDir, "Farm_1", "Farm_1"))
+	got, err := safefs.ReadFile(filepath.Join(savesDir, "Farm_1", "Farm_1"))
 	if err != nil || string(got) != "v1" {
 		t.Fatalf("restored %q, %v", got, err)
 	}

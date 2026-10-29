@@ -10,10 +10,10 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fomod"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/installer"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
@@ -107,7 +107,7 @@ func (s *Store) layoutItem(game, id, key string, choices map[string]map[string][
 		return "", "", err
 	}
 	if err := writeLayout(arch, l, tmp); err != nil {
-		_ = fsx.RemoveAll(tmp)
+		_ = safefs.RemoveAll(tmp)
 		return "", "", err
 	}
 	return tmp, tmp, nil
@@ -126,7 +126,7 @@ func (s *Store) namePackage(game, key, fileName, fallback string) error {
 	if err != nil || inst.ID() != driverThunderstore || arch.Key != "" {
 		return err
 	}
-	b, err := fsx.ReadFile(filepath.Join(arch.Dir, "manifest.json"))
+	b, err := safefs.ReadFile(filepath.Join(arch.Dir, "manifest.json"))
 	if err != nil {
 		return err
 	}
@@ -168,7 +168,7 @@ func (s *Store) packageMods(game, key, title string) (mods []Component, ok bool,
 	if err == nil && inst.ID() == "plain" && slices.Contains(g.Loaders, folderLoader) {
 		c := Component{ID: mod.NewID(mod.FormatFolder, key), Name: cmp.Or(title, key), Folder: "."}
 		if file, ok := installer.ModRootFile(arch, g); ok {
-			if b, rerr := fsx.ReadFile(filepath.Join(arch.Dir, filepath.FromSlash(file))); rerr == nil {
+			if b, rerr := safefs.ReadFile(filepath.Join(arch.Dir, filepath.FromSlash(file))); rerr == nil {
 				if info, perr := smapimanifest.ParseModInfo(b); perr == nil {
 					c.Name, c.Version, c.Author = cmp.Or(info.Name, info.ModID, title, key), info.Version, strings.Join(info.Authors, ", ")
 					c.ModID, c.Requires, c.MinGame = strings.ToLower(info.ModID), info.Dependencies, info.GameVersion
@@ -180,7 +180,7 @@ func (s *Store) packageMods(game, key, title string) (mods []Component, ok bool,
 	if err != nil || inst.ID() != driverThunderstore {
 		return nil, false, err
 	}
-	b, err := fsx.ReadFile(filepath.Join(arch.Dir, "manifest.json"))
+	b, err := safefs.ReadFile(filepath.Join(arch.Dir, "manifest.json"))
 	if errors.Is(err, fs.ErrNotExist) {
 		return []Component{pluginComponent(key, arch.Dir)}, true, nil
 	}
@@ -296,7 +296,7 @@ func (s *Store) WriteFiles(game, id string, files map[string][]byte) error {
 			return err
 		}
 		// Replaced, never written in place: the file there may be a hardlink to the store's copy.
-		if err := datadir.WriteFileAtomic(to, data, 0o600); err != nil {
+		if err := safefs.WriteFileAtomic(to, data, 0o600); err != nil {
 			return err
 		}
 	}

@@ -5,8 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/gmcm"
 )
 
@@ -16,14 +15,14 @@ func TestSetGmcmOptionIsPendingHistoryAndUndoable(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	capture, err := fsx.ReadFile(filepath.Join("..", "gmcm", "testdata", "gmcm-capture.json"))
+	capture, err := safefs.ReadFile(filepath.Join("..", "gmcm", "testdata", "gmcm-capture.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
 	if err := os.MkdirAll(filepath.Join(dir, "gmcm"), 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if err := datadir.WriteFileAtomic(gmcm.CapturePath(dir, "smapi:demo.Mod"), capture, 0o600); err != nil {
+	if err := safefs.WriteFileAtomic(gmcm.CapturePath(dir, "smapi:demo.Mod"), capture, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	before, err := e.History("stardew", p.ID)

@@ -8,8 +8,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/installer"
 )
 
@@ -83,12 +83,12 @@ func switchStagedOn(staged string, kinds, keepWhole []string) (off map[string]bo
 	off = map[string]bool{}
 	for _, f := range offFiles {
 		if _, statErr := os.Lstat(f.on); statErr == nil {
-			if err := fsx.Remove(f.path); err != nil {
+			if err := safefs.Remove(f.path); err != nil {
 				return nil, false, err
 			}
 			continue
 		}
-		if err := fsx.Rename(f.path, f.on); err != nil {
+		if err := safefs.Rename(f.path, f.on); err != nil {
 			return nil, false, err
 		}
 		rel, err := filepath.Rel(staged, f.on)
@@ -115,7 +115,7 @@ func scanLooseMods(modsDir string, kinds []string) ([]gameModSlot, error) {
 			if !isLooseMod(it.Name(), kinds) {
 				continue
 			}
-		case datadir.RealDirUnder(root, child):
+		case safefs.RealDirUnder(root, child):
 			if !holdsLooseMod(child, kinds) {
 				continue
 			}
@@ -147,7 +147,7 @@ func (s *Store) importLoose(ctx context.Context, game, id string, f gameModFolde
 	if err != nil {
 		return "", "", err
 	}
-	defer func() { _ = fsx.RemoveAll(scratch) }()
+	defer func() { _ = safefs.RemoveAll(scratch) }()
 	staged := filepath.Join(scratch, "mod")
 	dest := filepath.Join(staged, f.label)
 	info, err := os.Stat(f.dir)

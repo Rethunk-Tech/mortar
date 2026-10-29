@@ -4,7 +4,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // FuzzDecodeCollection feeds Nexus's answer for a collection revision: its mod list, curator instructions and the
@@ -33,7 +33,7 @@ func FuzzDecodeCollection(f *testing.F) {
 
 func seedFile(f *testing.F, name string) {
 	f.Helper()
-	b, err := fsx.ReadFile("testdata/" + name)
+	b, err := safefs.ReadFile("testdata/" + name)
 	if err != nil {
 		f.Fatal(err)
 	}

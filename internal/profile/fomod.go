@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/fomod"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -254,7 +254,7 @@ func (s *Store) scanItem(game, id, key string, choices map[string]map[string][]s
 	src, tmp, err := s.layoutItem(game, id, key, choices, false)
 	done = func() {
 		if tmp != "" {
-			_ = fsx.RemoveAll(tmp)
+			_ = safefs.RemoveAll(tmp)
 		}
 	}
 	if err != nil {
@@ -394,9 +394,9 @@ func (s *Store) FomodImage(game, key, rel string) ([]byte, error) {
 		return nil, fmt.Errorf("image path leaves the item")
 	}
 	p := filepath.Join(root, rel)
-	info, err := fsx.Stat(p)
+	info, err := safefs.Stat(p)
 	if err != nil || !info.Mode().IsRegular() {
 		return nil, store.ErrNotFound
 	}
-	return fsx.ReadFile(p)
+	return safefs.ReadFile(p)
 }

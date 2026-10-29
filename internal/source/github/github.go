@@ -18,9 +18,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	ghauth "github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
@@ -397,7 +397,7 @@ func (d *Driver) searchREST(ctx context.Context, q source.Query, terms string, p
 	if resp.StatusCode != http.StatusOK {
 		return topicPage{}, fmt.Errorf("github answered %s", resp.Status)
 	}
-	body, err := fsx.ReadCapped(resp.Body, source.MaxBody)
+	body, err := safefs.ReadCapped(resp.Body, source.MaxBody)
 	if err != nil {
 		return topicPage{}, err
 	}

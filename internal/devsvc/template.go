@@ -13,8 +13,8 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -115,7 +115,7 @@ func bad(format string, args ...any) error {
 // ReadForm reads the template in dir. Its placeholders (the source name and every symbol's replaces) must each be
 // unique ignoring case, none inside another, so one value can never land inside another's text.
 func ReadForm(dir string) (Form, error) {
-	body, err := fsx.ReadFile(filepath.Join(dir, filepath.FromSlash(templateFile)))
+	body, err := safefs.ReadFile(filepath.Join(dir, filepath.FromSlash(templateFile)))
 	if err != nil || len(body) > maxTemplateJSON {
 		return Form{}, bad("no %s", templateFile)
 	}
@@ -184,7 +184,7 @@ func cmpOr(a, b string) string {
 
 // applyHost sets what Mortar's host file says about each parameter in all.
 func applyHost(dir string, all []Param) error {
-	body, err := fsx.ReadFile(filepath.Join(dir, filepath.FromSlash(hostFile)))
+	body, err := safefs.ReadFile(filepath.Join(dir, filepath.FromSlash(hostFile)))
 	if errors.Is(err, fs.ErrNotExist) {
 		// A template without Mortar's host file asks for every parameter.
 		return nil

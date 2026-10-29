@@ -11,7 +11,7 @@ import (
 )
 
 // writersOutsideDatadir are the non-test files that create files directly. State under the data folder goes through
-// WriteFileAtomic, WriteJSON or fsx so a crash never leaves it truncated; these write something else.
+// safefs.WriteFileAtomic, datadir.WriteJSON or another safefs call so a crash never leaves it truncated; these write something else.
 var writersOutsideDatadir = map[string]string{
 	"components/components.go": "temp file beside the catalog cache, renamed over it",
 	"launch/output.go":         "a throwaway game log in the OS temp folder",
@@ -19,9 +19,9 @@ var writersOutsideDatadir = map[string]string{
 	"cli/console_windows.go":   "opens the console device, creates nothing",
 }
 
-// TestFilesAreCreatedOnlyThroughDatadirOrFsx fails when non-test code under internal/ calls os.WriteFile, os.Create,
-// os.CreateTemp or os.OpenFile outside datadir, fsx and the files above.
-func TestFilesAreCreatedOnlyThroughDatadirOrFsx(t *testing.T) {
+// TestFilesAreCreatedOnlyThroughDatadirOrSafefs fails when non-test code under internal/ calls os.WriteFile, os.Create,
+// os.CreateTemp or os.OpenFile outside datadir and the files above.
+func TestFilesAreCreatedOnlyThroughDatadirOrSafefs(t *testing.T) {
 	t.Parallel()
 	creators := map[string]bool{"WriteFile": true, "Create": true, "CreateTemp": true, "OpenFile": true}
 	seen := map[string]bool{}
@@ -31,7 +31,7 @@ func TestFilesAreCreatedOnlyThroughDatadirOrFsx(t *testing.T) {
 			return err
 		}
 		rel := filepath.ToSlash(strings.TrimPrefix(path, ".."+string(filepath.Separator)))
-		if strings.HasPrefix(rel, "datadir/") || strings.HasPrefix(rel, "fsx/") || strings.Contains(rel, "/testdata/") {
+		if strings.HasPrefix(rel, "datadir/") || strings.Contains(rel, "/testdata/") {
 			return nil
 		}
 		f, err := parser.ParseFile(fset, path, nil, 0)
@@ -54,7 +54,7 @@ func TestFilesAreCreatedOnlyThroughDatadirOrFsx(t *testing.T) {
 				seen[rel] = true
 				return true
 			}
-			t.Errorf("%s: os.%s creates a file; write state through datadir.WriteFileAtomic or fsx, or list the file in writersOutsideDatadir with why", fset.Position(call.Pos()), sel.Sel.Name)
+			t.Errorf("%s: os.%s creates a file; write state through safefs.WriteFileAtomic or datadir.WriteJSON, or list the file in writersOutsideDatadir with why", fset.Position(call.Pos()), sel.Sel.Name)
 			return true
 		})
 		return nil

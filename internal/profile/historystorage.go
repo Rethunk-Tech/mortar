@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 const historyTrimmed = "trimmed"
@@ -19,8 +19,8 @@ type HistoryUsage struct {
 }
 
 func historyUsageAt(dir string, p Profile, events int) HistoryUsage {
-	snaps, _ := datadir.Size(filepath.Join(dir, snapshotsDir))
-	files, _ := datadir.Size(filepath.Join(dir, historyFilesDir))
+	snaps, _ := safefs.Size(filepath.Join(dir, snapshotsDir))
+	files, _ := safefs.Size(filepath.Join(dir, historyFilesDir))
 	return HistoryUsage{ProfileID: p.ID, ProfileName: p.Name, Events: events, SnapshotBytes: snaps, FileBytes: files}
 }
 

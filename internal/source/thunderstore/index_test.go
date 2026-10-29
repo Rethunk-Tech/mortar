@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
@@ -17,7 +17,7 @@ func TestAnOversizeAnswerIsRefusedNotCutShort(t *testing.T) {
 	body := make([]byte, source.MaxBody+1)
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write(body) }))
 	defer srv.Close()
-	if _, err := (Driver{}).get(context.Background(), srv.URL, "ua"); !errors.Is(err, fsx.ErrTooLarge) {
+	if _, err := (Driver{}).get(context.Background(), srv.URL, "ua"); !errors.Is(err, safefs.ErrTooLarge) {
 		t.Fatalf("got %v", err)
 	}
 }

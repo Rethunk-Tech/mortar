@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // mapScanCacheVersion changes whenever what mapScan records changes, so an older file is ignored.
@@ -40,7 +40,7 @@ func loadMapScans() {
 	if err != nil {
 		return
 	}
-	raw, err := fsx.ReadFile(path)
+	raw, err := safefs.ReadFile(path)
 	if err != nil {
 		return
 	}

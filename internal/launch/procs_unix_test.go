@@ -15,7 +15,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 func TestProcesses(t *testing.T) {
@@ -150,7 +150,7 @@ func TestStopAsksAWineGameToCloseFirst(t *testing.T) {
 	dir := t.TempDir()
 	pidFile, closeLog := filepath.Join(dir, "pid"), filepath.Join(dir, "close")
 	wine := "#!/bin/sh\necho \"$@\" $WINESERVERSOCKET >\"$CLOSE_LOG\"\nkill \"$(cat \"$PID_FILE\")\"\n"
-	if err := fsx.WriteFile(filepath.Join(dir, "wine"), []byte(wine), 0o700); err != nil {
+	if err := safefs.WriteFile(filepath.Join(dir, "wine"), []byte(wine), 0o700); err != nil {
 		t.Fatal(err)
 	}
 	game := exec.CommandContext(t.Context(), "sh", "-c", `echo $$ >"$PID_FILE"; trap "exit 0" TERM; while :; do sleep 0.1; done`)
@@ -169,7 +169,7 @@ func TestStopAsksAWineGameToCloseFirst(t *testing.T) {
 	if err := Stop(t.Context(), p, 5*time.Second); err != nil {
 		t.Fatal(err)
 	}
-	got, _ := fsx.ReadFile(closeLog)
+	got, _ := safefs.ReadFile(closeLog)
 	if strings.TrimSpace(string(got)) != "taskkill /im My Game.exe" {
 		t.Fatalf("wine ran with %q", got)
 	}

@@ -17,7 +17,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -123,7 +123,7 @@ func Validate(path string) []string {
 	if err != nil {
 		return append(issues, err.Error())
 	}
-	body, err := fsx.ReadCapped(rc, maxManifest)
+	body, err := safefs.ReadCapped(rc, maxManifest)
 	_ = rc.Close()
 	var m thunderstoreManifest
 	if err != nil || json.Unmarshal(body, &m) != nil {
@@ -162,7 +162,7 @@ func zipFileHash(path, name string) string {
 	}
 	defer func() { _ = rc.Close() }()
 	h := sha256.New()
-	if _, err := io.Copy(h, fsx.CapReader(rc, maxManifest)); err != nil {
+	if _, err := io.Copy(h, safefs.CapReader(rc, maxManifest)); err != nil {
 		return ""
 	}
 	return fmt.Sprintf("%x", h.Sum(nil))
@@ -316,13 +316,13 @@ func (s *Service) tagRelease(ctx context.Context, dir, version string, notes []s
 		return usererr.Wrap(usererr.Invalid, fmt.Errorf("v%s is already released", version))
 	}
 	log := filepath.Join(dir, "CHANGELOG.md")
-	body, err := fsx.ReadFile(log)
+	body, err := safefs.ReadFile(log)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return err
 	}
 	next := AddChangelogEntry(string(body), version, notes)
 	if next != string(body) {
-		if err := fsx.WriteFile(log, []byte(next), 0o644); err != nil { // #nosec G306 -- a tracked text file
+		if err := safefs.WriteFile(log, []byte(next), 0o644); err != nil { // #nosec G306 -- a tracked text file
 			return err
 		}
 		_, err = s.run(ctx, dir, "git", "add", "CHANGELOG.md")
@@ -332,9 +332,9 @@ func (s *Service) tagRelease(ctx context.Context, dir, version string, notes []s
 		if err != nil {
 			_, _ = s.run(ctx, dir, "git", "reset", "-q", "--", "CHANGELOG.md")
 			if len(body) == 0 {
-				_ = fsx.Remove(log)
+				_ = safefs.Remove(log)
 			} else {
-				_ = fsx.WriteFile(log, body, 0o644) // #nosec G306 -- a tracked text file
+				_ = safefs.WriteFile(log, body, 0o644) // #nosec G306 -- a tracked text file
 			}
 			return err
 		}

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // keptCacheFiles are cached names Clean up deliberately leaves alone: the compatibility list serves offline and the
@@ -88,7 +88,7 @@ func TestEveryCacheWriteIsRegistered(t *testing.T) {
 		if err != nil || d.IsDir() || !strings.HasSuffix(path, ".go") || strings.HasSuffix(path, "_test.go") {
 			return err
 		}
-		src, readErr := fsx.ReadFile(path)
+		src, readErr := safefs.ReadFile(path)
 		if readErr != nil || !strings.Contains(string(src), "Cached") {
 			return readErr
 		}

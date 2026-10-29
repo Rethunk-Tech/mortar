@@ -13,9 +13,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/serverargs"
@@ -124,7 +124,7 @@ func TestANativeLinuxBuildStartsDirectlyWithDoorstopPreloaded(t *testing.T) {
 		t.Fatal("a pack without a Linux Doorstop library started")
 	}
 	lib := filepath.Join(profile, "doorstop_libs", "libdoorstop_x64.so")
-	if err := fsx.WriteFile(lib, []byte("so"), 0o600); err != nil {
+	if err := safefs.WriteFile(lib, []byte("so"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	plan := launchplan.New(launchplan.ModeProfile)

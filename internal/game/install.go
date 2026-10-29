@@ -11,8 +11,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/runtime"
 	"github.com/Rethunk-Tech/mortar/internal/steam"
@@ -78,7 +78,7 @@ func newInstall(info components.GameInfo, store, dir, prefix, origin string) Ins
 // platformOf is the OS the build in dir is for: the native Linux build when dir holds the catalog's LinuxMarker and not
 // its Marker, else the platform Marker implies.
 func platformOf(info components.GameInfo, dir string) string {
-	if info.LinuxMarker != "" && goruntime.GOOS == "linux" && !fsx.IsFile(filepath.Join(dir, info.Marker)) && fsx.IsFile(filepath.Join(dir, info.LinuxMarker)) {
+	if info.LinuxMarker != "" && goruntime.GOOS == "linux" && !safefs.IsFile(filepath.Join(dir, info.Marker)) && safefs.IsFile(filepath.Join(dir, info.LinuxMarker)) {
 		return "linux"
 	}
 	return runtime.PlatformOf(info.Marker, goruntime.GOOS)
@@ -230,7 +230,7 @@ func pick(all []Install, override, preferred string, g Game) (dir, store string)
 	}
 	if override != "" && g.ValidInstall(override) == nil {
 		for _, in := range all {
-			if fsx.SamePath(in.Dir, override) {
+			if safefs.SamePath(in.Dir, override) {
 				return override, in.Store
 			}
 		}
@@ -282,7 +282,7 @@ func ResolveInstall(home string, s settings.Settings, id, pin string) (Install, 
 		return Install{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("install %q of %s is no longer found", pin, id))
 	}
 	for _, in := range all {
-		if fsx.SamePath(in.Dir, dir) {
+		if safefs.SamePath(in.Dir, dir) {
 			return in, nil
 		}
 	}

@@ -3,7 +3,7 @@ package profile
 import (
 	"path/filepath"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -71,10 +71,10 @@ func (s *Store) installed(game, id string) ([]Installed, []UnreadableManifest, e
 			if !enabled {
 				folder = dotted
 			}
-			b, err := fsx.ReadFile(filepath.Join(folder, smapimanifest.FileName))
+			b, err := safefs.ReadFile(filepath.Join(folder, smapimanifest.FileName))
 			if err != nil {
 				// A folder that is gone altogether is drift, which offers Restore.
-				if _, statErr := fsx.Stat(folder); statErr == nil {
+				if _, statErr := safefs.Stat(folder); statErr == nil {
 					bad = append(bad, UnreadableManifest{Key: e.Key, Folder: folder, Missing: true})
 				}
 				continue
@@ -102,7 +102,7 @@ func (s *Store) packageInstalled(game string, e Entry) []Installed {
 	}
 	var needs []mod.Dependency
 	if dir != "" {
-		if b, err := fsx.ReadFile(filepath.Join(dir, "manifest.json")); err == nil {
+		if b, err := safefs.ReadFile(filepath.Join(dir, "manifest.json")); err == nil {
 			if m, err := bepinex5.ParseManifest(b); err == nil {
 				needs = m.Needs()
 			}

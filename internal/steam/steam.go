@@ -13,7 +13,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 
 	"github.com/andygrunwald/vdf"
@@ -76,11 +76,11 @@ func Roots(home string, extra ...string) []string {
 func LocateAll(home string, extra ...string) []Steam {
 	var out []Steam
 	for _, root := range Roots(home, extra...) {
-		if fsx.IsDir(filepath.Join(root, "steamapps")) {
+		if safefs.IsDir(filepath.Join(root, "steamapps")) {
 			out = append(out, Steam{Root: root, Kind: KindNative})
 		}
 	}
-	if fp := FlatpakRoot(home); fsx.IsDir(filepath.Join(fp, "steamapps")) {
+	if fp := FlatpakRoot(home); safefs.IsDir(filepath.Join(fp, "steamapps")) {
 		out = append(out, Steam{Root: fp, Kind: KindFlatpak})
 	}
 	return out
@@ -91,7 +91,7 @@ func Locate(home string, extra ...string) (Steam, Status) {
 	if all := LocateAll(home, extra...); len(all) > 0 {
 		return all[0], Found
 	}
-	if fsx.IsDir(FlatpakRoot(home)) {
+	if safefs.IsDir(FlatpakRoot(home)) {
 		return Steam{}, FlatpakOnly
 	}
 	return Steam{}, NotFound
@@ -121,7 +121,7 @@ func HasFilesystem(show, dataDir string) bool {
 			case "home", "host":
 				return true
 			}
-			if fsx.SamePath(path, dataDir) {
+			if safefs.SamePath(path, dataDir) {
 				return true
 			}
 		}
@@ -192,7 +192,7 @@ func (s Steam) InstallDir(appID string) (string, error) {
 			continue
 		}
 		dir := filepath.Join(lib, "steamapps", "common", name)
-		if fsx.IsDir(dir) {
+		if safefs.IsDir(dir) {
 			return dir, nil
 		}
 	}
@@ -274,7 +274,7 @@ func (s Steam) HeroArt(appID string) string {
 		filepath.Join(cache, appID, "library_hero.jpg"),
 		filepath.Join(cache, appID+"_library_hero.jpg"),
 	}, nested...) {
-		if fsx.IsFile(p) {
+		if safefs.IsFile(p) {
 			return p
 		}
 	}
@@ -289,7 +289,7 @@ const (
 )
 
 func parseVDF(path string) (map[string]any, error) {
-	f, err := fsx.Open(path)
+	f, err := safefs.Open(path)
 	if err != nil {
 		return nil, err
 	}

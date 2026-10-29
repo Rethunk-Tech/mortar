@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 )
@@ -30,8 +30,8 @@ func (s *Service) dest(id, fileName string) string {
 }
 
 func dropDownload(path string) {
-	_ = fsx.Remove(path)
-	_ = fsx.Remove(github.ResumeSidecar(path))
+	_ = safefs.Remove(path)
+	_ = safefs.Remove(github.ResumeSidecar(path))
 }
 
 func (s *Service) dropDownloadUnlessKept(path string) {
@@ -75,7 +75,7 @@ func (s *Service) sweepDownloads() {
 		if !ids.Is(id) || keep[id] || (!archive.HasExtension(base) && !strings.Contains(base, "~~")) {
 			continue
 		}
-		_ = fsx.Remove(filepath.Join(root, name))
+		_ = safefs.Remove(filepath.Join(root, name))
 	}
 }
 

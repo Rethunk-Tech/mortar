@@ -15,7 +15,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
@@ -244,7 +244,7 @@ func TestHistoryDeduplicatesSnapshots(t *testing.T) {
 	if len(data.Events) != 3 || len(sidecars) != 2 {
 		t.Fatalf("history events=%d snapshots=%d, want 3 and 2", len(data.Events), len(sidecars))
 	}
-	raw, err := fsx.ReadFile(filepath.Join(dir, historyFile))
+	raw, err := safefs.ReadFile(filepath.Join(dir, historyFile))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -262,7 +262,7 @@ func TestCorruptHistoryIsQuarantined(t *testing.T) {
 		t.Fatal(err)
 	}
 	path := filepath.Join(dir, historyFile)
-	if err := fsx.WriteFile(path, []byte("{"), 0o600); err != nil {
+	if err := safefs.WriteFile(path, []byte("{"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 

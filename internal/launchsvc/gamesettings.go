@@ -15,8 +15,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/gamesettings"
 )
@@ -80,7 +80,7 @@ func (s *Service) prepareGameSettings(gameID, id, installID string) (*settingsRe
 	if err != nil {
 		return nil, false, err
 	}
-	data, err := fsx.ReadFile(path)
+	data, err := safefs.ReadFile(path)
 	if errors.Is(err, os.ErrNotExist) {
 		return nil, true, nil
 	}
@@ -113,8 +113,8 @@ func (s *Service) prepareGameSettings(gameID, id, installID string) (*settingsRe
 	if err := writeSettingsRestore(recordPath, restore); err != nil {
 		return nil, false, err
 	}
-	if err := datadir.WriteFileAtomic(path, patched, 0o600); err != nil {
-		return nil, false, errors.Join(err, fsx.Remove(recordPath))
+	if err := safefs.WriteFileAtomic(path, patched, 0o600); err != nil {
+		return nil, false, errors.Join(err, safefs.Remove(recordPath))
 	}
 	return restore, false, nil
 }
@@ -124,7 +124,7 @@ func writeSettingsRestore(path string, restore *settingsRestore) error {
 }
 
 func readSettingsRestore(path string) (*settingsRestore, error) {
-	body, err := fsx.ReadFile(path)
+	body, err := safefs.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
@@ -138,7 +138,7 @@ func readSettingsRestore(path string) (*settingsRestore, error) {
 }
 
 func removeSettingsRestore(path string) error {
-	if err := fsx.Remove(path); !errors.Is(err, os.ErrNotExist) {
+	if err := safefs.Remove(path); !errors.Is(err, os.ErrNotExist) {
 		return err
 	}
 	return nil
@@ -150,7 +150,7 @@ func (s *Service) restoreGameSettings(restore *settingsRestore) error {
 	}
 	var restoreErr error
 	restore.once.Do(func() {
-		data, err := fsx.ReadFile(restore.path)
+		data, err := safefs.ReadFile(restore.path)
 		if errors.Is(err, os.ErrNotExist) {
 			restoreErr = err
 			return
@@ -178,7 +178,7 @@ func (s *Service) restoreGameSettings(restore *settingsRestore) error {
 			restoreErr = removeSettingsRestore(restore.recordPath)
 			return
 		}
-		if err := datadir.WriteFileAtomic(restore.path, patched, 0o600); err != nil {
+		if err := safefs.WriteFileAtomic(restore.path, patched, 0o600); err != nil {
 			restoreErr = err
 			return
 		}

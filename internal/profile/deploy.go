@@ -16,9 +16,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
@@ -62,7 +62,7 @@ func (s *Store) packageFilesWith(gameID, id string, withDev bool) (files map[str
 				return nil, nil, fmt.Errorf("%s: %s leaves the profile", entryLabel(e), f.Rel)
 			}
 			// A later entry's file replaces an earlier one that differs only in case: both are one file on Windows.
-			fold := fsx.FoldCase(rel)
+			fold := safefs.FoldCase(rel)
 			var beaten []string
 			if prev, taken := byFold[fold]; taken {
 				beaten = append(slices.Clone(files[prev].beaten), files[prev].key)
@@ -152,7 +152,7 @@ type placedRec struct {
 
 func readPlaced(dir string) map[string]placedRec {
 	prev := map[string]placedRec{}
-	if b, err := fsx.ReadFile(filepath.Join(dir, placedFile)); err == nil {
+	if b, err := safefs.ReadFile(filepath.Join(dir, placedFile)); err == nil {
 		if json.Unmarshal(b, &prev) != nil {
 			prev = map[string]placedRec{}
 		}
@@ -169,7 +169,7 @@ func changedSince(rec placedRec, dst string) bool {
 	if st.Size() == rec.Size && st.ModTime().UnixNano() == rec.MTime {
 		return false
 	}
-	h, err := fsx.HashFile(dst, sha256.New())
+	h, err := safefs.HashFile(dst, sha256.New())
 	return err != nil || h != rec.Hash
 }
 
@@ -256,7 +256,7 @@ func (s *Store) syncPackages(gameID, id string, withDev bool) error {
 		if h, ok := srcHash[rel]; ok {
 			return h, nil
 		}
-		h, err := fsx.HashFile(files[rel].src, sha256.New())
+		h, err := safefs.HashFile(files[rel].src, sha256.New())
 		srcHash[rel] = h
 		return h, err
 	}
@@ -299,7 +299,7 @@ func (s *Store) syncPackages(gameID, id string, withDev bool) error {
 			if err != nil {
 				return err
 			}
-			if mine, err := fsx.HashFile(dst, sha256.New()); err == nil && mine == h {
+			if mine, err := safefs.HashFile(dst, sha256.New()); err == nil && mine == h {
 				if next[rel], err = recordOf(h, dst); err != nil {
 					return err
 				}
@@ -330,7 +330,7 @@ func (s *Store) syncPackages(gameID, id string, withDev bool) error {
 				continue
 			}
 		}
-		if err := fsx.Remove(dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		if err := safefs.Remove(dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
 			return err
 		}
 		if err := datadir.CopyFile(files[rel].src, dst); err != nil {
@@ -444,7 +444,7 @@ func setAsideDropped(dir, key, rel string) error {
 	if err := os.MkdirAll(filepath.Dir(to), 0o700); err != nil {
 		return err
 	}
-	return fsx.Rename(filepath.Join(dir, filepath.FromSlash(rel)), to)
+	return safefs.Rename(filepath.Join(dir, filepath.FromSlash(rel)), to)
 }
 
 // restoreDropped puts back a file an update set aside for the Keep or Delete question, when a roll back lays its
@@ -463,7 +463,7 @@ func restoreDropped(dir, rel string) (bool, error) {
 		if _, err := os.Lstat(from); err != nil {
 			continue
 		}
-		if err := fsx.Rename(from, filepath.Join(dir, filepath.FromSlash(rel))); err != nil {
+		if err := safefs.Rename(from, filepath.Join(dir, filepath.FromSlash(rel))); err != nil {
 			return false, err
 		}
 		removeUp(filepath.Join(dir, oldFilesDir), from)
@@ -488,7 +488,7 @@ func holdDropped(dir, key string) error {
 		if err := os.MkdirAll(filepath.Dir(to), 0o750); err != nil {
 			return err
 		}
-		if err := fsx.Rename(filepath.Join(root, rel), to); err != nil {
+		if err := safefs.Rename(filepath.Join(root, rel), to); err != nil {
 			return err
 		}
 		if err := markHeld(dir, filepath.ToSlash(rel), time.Now(), true); err != nil {
@@ -505,7 +505,7 @@ func holdChanged(dir, rel string) error {
 	if err := os.MkdirAll(filepath.Dir(to), 0o750); err != nil {
 		return err
 	}
-	if err := fsx.Rename(from, to); err != nil {
+	if err := safefs.Rename(from, to); err != nil {
 		return err
 	}
 	return markHeld(dir, rel, time.Now(), true)
@@ -518,7 +518,7 @@ func holdReplaced(dir, rel string) error {
 	if err := os.MkdirAll(filepath.Dir(to), 0o750); err != nil {
 		return err
 	}
-	if err := fsx.Rename(filepath.Join(dir, filepath.FromSlash(rel)), to); err != nil {
+	if err := safefs.Rename(filepath.Join(dir, filepath.FromSlash(rel)), to); err != nil {
 		return err
 	}
 	return markHeld(dir, replacedDir+"/"+rel, time.Now(), true)
@@ -532,7 +532,7 @@ func restoreChanged(dir, rel string) (bool, error) {
 	} else if err != nil {
 		return false, err
 	}
-	if err := fsx.Rename(from, filepath.Join(dir, filepath.FromSlash(rel))); err != nil {
+	if err := safefs.Rename(from, filepath.Join(dir, filepath.FromSlash(rel))); err != nil {
 		return false, err
 	}
 	removeUp(filepath.Join(dir, changedDir), from)
@@ -622,10 +622,10 @@ func placedCurrent(src, dst string) bool {
 
 // removeUp removes a file, then the folders it leaves empty below root.
 func removeUp(root, file string) {
-	if fsx.Remove(file) != nil {
+	if safefs.Remove(file) != nil {
 		return
 	}
-	for d := filepath.Dir(file); d != root && datadir.UnderRoot(root, d) && fsx.Remove(d) == nil; d = filepath.Dir(d) {
+	for d := filepath.Dir(file); d != root && safefs.UnderRoot(root, d) && safefs.Remove(d) == nil; d = filepath.Dir(d) {
 	}
 }
 

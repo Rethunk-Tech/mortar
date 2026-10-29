@@ -18,8 +18,8 @@ import (
 
 	"go.yaml.in/yaml/v3"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -150,7 +150,7 @@ func (c Code) fetch(ctx context.Context, key string) (string, error) {
 	if resp.StatusCode != http.StatusOK {
 		return "", usererr.Wrap(usererr.Network, fmt.Errorf("thunderstore answered %s for profile code %s", resp.Status, key))
 	}
-	b, err := fsx.ReadCapped(resp.Body, 64<<20)
+	b, err := safefs.ReadCapped(resp.Body, 64<<20)
 	return string(b), err
 }
 
@@ -258,7 +258,7 @@ func bepinexConfigs(profileDir string) ([]File, error) {
 // (~/.config on Linux, %AppData% on Windows).
 func DataDirs(extra string) []string {
 	var out []string
-	if extra != "" && fsx.IsDir(extra) {
+	if extra != "" && safefs.IsDir(extra) {
 		out = append(out, extra)
 	}
 	var bases []string
@@ -274,7 +274,7 @@ func DataDirs(extra string) []string {
 			filepath.Join(base, "r2modmanPlus-local"),
 			filepath.Join(base, "Thunderstore Mod Manager", "DataFolder"),
 		} {
-			if fsx.IsDir(p) && !slices.Contains(out, p) {
+			if safefs.IsDir(p) && !slices.Contains(out, p) {
 				out = append(out, p)
 			}
 		}
@@ -291,12 +291,12 @@ func (p Profile) lookup(folder string) (string, bool) {
 
 // readCapped reads a file of at most limit bytes.
 func readCapped(file string, limit int64) ([]byte, error) {
-	st, err := fsx.Stat(file)
+	st, err := safefs.Stat(file)
 	if err != nil {
 		return nil, err
 	}
 	if st.Size() > limit {
 		return nil, fmt.Errorf("%s is larger than %s", filepath.Base(file), bytefmt.Format(limit))
 	}
-	return fsx.ReadFile(file)
+	return safefs.ReadFile(file)
 }

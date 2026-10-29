@@ -14,7 +14,7 @@ import (
 	"time"
 	"unicode/utf16"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 func loadFixture(t *testing.T, name string) Config {
@@ -331,7 +331,7 @@ func TestLoadRefusesOversizedConfig(t *testing.T) {
 	if err := os.WriteFile(path, make([]byte, maxConfigBytes+1), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := Load(path); !errors.Is(err, fsx.ErrTooLarge) {
+	if _, err := Load(path); !errors.Is(err, safefs.ErrTooLarge) {
 		t.Fatalf("err = %v", err)
 	}
 }

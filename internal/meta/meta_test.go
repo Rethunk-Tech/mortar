@@ -10,13 +10,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 func fixture(t *testing.T, name string) []byte {
 	t.Helper()
-	b, err := fsx.ReadFile("testdata/" + name)
+	b, err := safefs.ReadFile("testdata/" + name)
 	if err != nil {
 		t.Fatal(err)
 	}

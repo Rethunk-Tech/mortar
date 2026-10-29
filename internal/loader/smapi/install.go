@@ -18,8 +18,8 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	gamert "github.com/Rethunk-Tech/mortar/internal/runtime"
 
@@ -57,7 +57,7 @@ func (l Loader) logVersions() (smapi, game string) {
 	if err != nil {
 		return "", ""
 	}
-	f, err := fsx.Open(filepath.Join(dir, "SMAPI-latest.txt"))
+	f, err := safefs.Open(filepath.Join(dir, "SMAPI-latest.txt"))
 	if err != nil {
 		return "", ""
 	}
@@ -73,7 +73,7 @@ func (l Loader) logVersions() (smapi, game string) {
 }
 
 func launcherHasSMAPI(dir string) bool {
-	f, err := fsx.Open(filepath.Join(dir, linuxLauncher))
+	f, err := safefs.Open(filepath.Join(dir, linuxLauncher))
 	if err != nil {
 		return false
 	}
@@ -85,7 +85,7 @@ func launcherHasSMAPI(dir string) bool {
 // buildOS is the OS of the game build in dir: a Windows build on a Linux host (one in a Bottles bottle) is
 // recognised by its executable and is run and installed into the Windows way.
 func buildOS(dir string) string {
-	if hostOS == "linux" && fsx.IsFile(filepath.Join(dir, "Stardew Valley.exe")) {
+	if hostOS == "linux" && safefs.IsFile(filepath.Join(dir, "Stardew Valley.exe")) {
 		return "windows"
 	}
 	return hostOS
@@ -98,10 +98,10 @@ var hostOS = runtime.GOOS
 // StardewValley-original and installs its own in its place, which a game update overwrites.
 func loaderState(dir, goos string) (installed, broken bool) {
 	if goos == "windows" {
-		return fsx.IsFile(filepath.Join(dir, smapiMarker+".exe")), false
+		return safefs.IsFile(filepath.Join(dir, smapiMarker+".exe")), false
 	}
-	original := fsx.IsFile(filepath.Join(dir, linuxOriginal))
-	smapiFiles := fsx.IsFile(filepath.Join(dir, smapiMarker+".dll"))
+	original := safefs.IsFile(filepath.Join(dir, linuxOriginal))
+	smapiFiles := safefs.IsFile(filepath.Join(dir, smapiMarker+".dll"))
 	if !original && !smapiFiles {
 		return false, false
 	}
@@ -131,11 +131,11 @@ func (l Loader) Status(t loader.Target) (loader.Status, error) {
 func sharedSMAPI(dir string) (bool, string) {
 	for _, name := range []string{smapiMarker + ".exe", smapiMarker + ".dll"} {
 		path := filepath.Join(dir, name)
-		if !fsx.Shared(path) {
+		if !safefs.Shared(path) {
 			continue
 		}
-		target, err := fsx.EvalSymlinks(path)
-		if err != nil || fsx.SamePath(filepath.Dir(target), dir) {
+		target, err := safefs.EvalSymlinks(path)
+		if err != nil || safefs.SamePath(filepath.Dir(target), dir) {
 			return true, ""
 		}
 		return true, filepath.Dir(target)
@@ -152,23 +152,23 @@ func unshareTree(tree string) error {
 	if err != nil {
 		return err
 	}
-	if !datadir.LinkedDir(tree, fi) {
+	if !safefs.LinkedDir(tree, fi) {
 		return nil
 	}
-	target, err := fsx.EvalSymlinks(tree)
+	target, err := safefs.EvalSymlinks(tree)
 	if err != nil {
 		return err
 	}
 	tmp := tree + ".mortar-unshare"
 	if err := datadir.CopyTreeResolvingLinks(target, tmp); err != nil {
-		_ = fsx.RemoveAll(tmp)
+		_ = safefs.RemoveAll(tmp)
 		return err
 	}
-	if err := fsx.Remove(tree); err != nil {
-		_ = fsx.RemoveAll(tmp)
+	if err := safefs.Remove(tree); err != nil {
+		_ = safefs.RemoveAll(tmp)
 		return err
 	}
-	return fsx.Rename(tmp, tree)
+	return safefs.Rename(tmp, tree)
 }
 
 // unshareSMAPI gives every file the installer rewrites (the game folder's own files, smapi-internal and SMAPI's
@@ -181,7 +181,7 @@ func unshareSMAPI(dir string) error {
 	}
 	for _, e := range entries {
 		if !e.IsDir() {
-			if err := fsx.Unshare(filepath.Join(dir, e.Name())); err != nil {
+			if err := safefs.Unshare(filepath.Join(dir, e.Name())); err != nil {
 				return err
 			}
 		}
@@ -204,7 +204,7 @@ func unshareSMAPI(dir string) error {
 			if d.IsDir() {
 				return nil
 			}
-			return fsx.Unshare(path)
+			return safefs.Unshare(path)
 		})
 		if err != nil {
 			return err
@@ -218,7 +218,7 @@ var bundledMods = []string{"ConsoleCommands", "SaveBackup"}
 
 // bundledVersion reads the version from Console Commands' manifest, which the installer sets to SMAPI's own.
 func bundledVersion(dir string) string {
-	b, err := fsx.ReadFile(filepath.Join(dir, "Mods", bundledMods[0], smapimanifest.FileName))
+	b, err := safefs.ReadFile(filepath.Join(dir, "Mods", bundledMods[0], smapimanifest.FileName))
 	if err != nil {
 		return ""
 	}
@@ -267,7 +267,7 @@ func (Loader) Install(ctx context.Context, t loader.Target, pkg loader.Package, 
 	if err != nil {
 		return "", err
 	}
-	defer func() { _ = fsx.RemoveAll(work) }()
+	defer func() { _ = safefs.RemoveAll(work) }()
 
 	unpacked := filepath.Join(work, "installer")
 	if err := os.Mkdir(unpacked, 0o700); err != nil {
@@ -278,7 +278,7 @@ func (Loader) Install(ctx context.Context, t loader.Target, pkg loader.Package, 
 	}
 
 	folder := filepath.Join(unpacked, instDir)
-	if err := fsx.Chmod(filepath.Join(folder, exe), 0o700); err != nil {
+	if err := safefs.Chmod(filepath.Join(folder, exe), 0o700); err != nil {
 		return "", fmt.Errorf("SMAPI %s installer is missing %s: %w", version, exe, err)
 	}
 	if err := datadir.CheckWritable(dir); err != nil {

@@ -15,7 +15,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 
 	"github.com/andybalholm/brotli"
@@ -917,8 +917,8 @@ func decode(payload string) (Shared, error) {
 	if err != nil {
 		return Shared{}, ErrNotLink
 	}
-	raw, err := fsx.ReadCapped(brotli.NewReader(bytes.NewReader(packed)), MaxDecoded)
-	if errors.Is(err, fsx.ErrTooLarge) {
+	raw, err := safefs.ReadCapped(brotli.NewReader(bytes.NewReader(packed)), MaxDecoded)
+	if errors.Is(err, safefs.ErrTooLarge) {
 		return Shared{}, ErrTooLarge
 	}
 	if err != nil {

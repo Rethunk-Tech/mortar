@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 func TestParserReadsBepInExLevelsSourcesAndWrappedLines(t *testing.T) {
@@ -66,7 +66,7 @@ func TestParserSplitsALoggerModsStampFromBepInExLines(t *testing.T) {
 // buffer every so often, which can end mid-line.
 func fakeBepInEx(t *testing.T, path string, chunks []string) {
 	t.Helper()
-	f, err := fsx.Create(path)
+	f, err := safefs.Create(path)
 	if err != nil {
 		t.Error(err)
 		return

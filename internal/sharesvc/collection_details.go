@@ -7,8 +7,8 @@ import (
 	"path"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/share"
@@ -136,7 +136,7 @@ func readCapped(l *archive.Listing, limit int64) ([]byte, error) {
 		return nil, err
 	}
 	defer func() { _ = rc.Close() }()
-	return fsx.ReadCapped(rc, limit)
+	return safefs.ReadCapped(rc, limit)
 }
 
 // parseChoices keeps Vortex's FOMOD choices (step, group and plugin names; the index is redundant) for Nexus mods.

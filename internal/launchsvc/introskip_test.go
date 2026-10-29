@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -34,7 +34,7 @@ func TestALaunchArmsTheBridgesIntroSkipFromTheSettingOrACrashCheck(t *testing.T)
 		if err := svc.armIntroSkip(g, l, p.ID, dir, false); err != nil {
 			t.Fatal(err)
 		}
-		b, err := fsx.ReadFile(filepath.Join(dir, filepath.FromSlash(loader.IntroSkipFile)))
+		b, err := safefs.ReadFile(filepath.Join(dir, filepath.FromSlash(loader.IntroSkipFile)))
 		if os.IsNotExist(err) {
 			return ""
 		}
@@ -61,7 +61,7 @@ func TestALaunchArmsTheBridgesIntroSkipFromTheSettingOrACrashCheck(t *testing.T)
 	if err := svc.armIntroSkip(g, l, p.ID, dir, true); err != nil {
 		t.Fatal(err)
 	}
-	if b, err := fsx.ReadFile(filepath.Join(dir, filepath.FromSlash(loader.IntroSkipFile))); err == nil && len(b) > 0 {
+	if b, err := safefs.ReadFile(filepath.Join(dir, filepath.FromSlash(loader.IntroSkipFile))); err == nil && len(b) > 0 {
 		t.Fatalf("test copies asked for %q", b)
 	}
 	if _, err := profiles.SetOverride(lc, p.ID, "skipIntro", "false"); err != nil {

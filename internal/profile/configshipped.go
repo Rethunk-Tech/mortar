@@ -4,8 +4,8 @@ import (
 	"path/filepath"
 	"slices"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -28,7 +28,7 @@ func (s *Store) shippedConfigOf(game string, p Profile, key string, uniqueID mod
 	if err != nil {
 		return "", false
 	}
-	b, err := fsx.ReadFile(filepath.Join(src, filepath.FromSlash(m.Folder), configFile))
+	b, err := safefs.ReadFile(filepath.Join(src, filepath.FromSlash(m.Folder), configFile))
 	if err != nil {
 		return "", false
 	}

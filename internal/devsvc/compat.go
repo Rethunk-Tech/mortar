@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 var (
@@ -30,7 +30,7 @@ func pluginSource(src string) string {
 			return filepath.SkipDir
 		}
 		if !d.IsDir() && strings.HasSuffix(path, ".cs") {
-			if raw, err := fsx.ReadFile(path); err == nil && strings.Contains(string(raw), "[BepInPlugin(") {
+			if raw, err := safefs.ReadFile(path); err == nil && strings.Contains(string(raw), "[BepInPlugin(") {
 				found = path
 			}
 		}
@@ -49,7 +49,7 @@ func declareDependency(src, guid string, soft bool) error {
 	if path == "" {
 		return nil
 	}
-	raw, err := fsx.ReadFile(path)
+	raw, err := safefs.ReadFile(path)
 	if err != nil {
 		return err
 	}
@@ -70,7 +70,7 @@ func declareDependency(src, guid string, soft bool) error {
 	if body == string(raw) {
 		return nil
 	}
-	return fsx.WriteFile(path, []byte(body), 0o644) // #nosec G306 -- a tracked source file
+	return safefs.WriteFile(path, []byte(body), 0o644) // #nosec G306 -- a tracked source file
 }
 
 // compatTemplate keeps every use of a soft dependency's types in one class. The runtime resolves the types a method
@@ -112,7 +112,7 @@ func writeCompat(src, namespace, pkg, guid string) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
 		return err
 	}
-	return fsx.WriteFile(path, []byte(fmt.Sprintf(compatTemplate, namespace, name, class, guid)), 0o644) // #nosec G306 -- a tracked source file
+	return safefs.WriteFile(path, []byte(fmt.Sprintf(compatTemplate, namespace, name, class, guid)), 0o644) // #nosec G306 -- a tracked source file
 }
 
 // compatFile is a soft dependency's compatibility class: the package's name, the class named after it (empty when the

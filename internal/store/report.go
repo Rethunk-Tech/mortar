@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/modname"
 )
@@ -70,7 +70,7 @@ func (s *Store) gameReport(game string, keys map[string]record, keep map[string]
 			info := modname.Of(game, dir)
 			name, id, version = info.Name, info.ID, info.Version
 		}
-		size, _ := datadir.Size(dir)
+		size, _ := safefs.Size(dir)
 		entry := Item{Key: key, Name: name, Version: version, LastUsed: r.Used, Size: size, InUse: keep[key]}
 		if !keep[key] {
 			unused = append(unused, entry)

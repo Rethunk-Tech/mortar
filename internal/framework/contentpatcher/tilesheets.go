@@ -13,7 +13,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // mapFileList is one mod folder's .tmx and .tbin files for its store key. A store item never changes after it is
@@ -352,7 +352,7 @@ func mapScanFor(path string, entry os.DirEntry, ext string) (mapScan, error) {
 	if hit && cached.Size == info.Size() && cached.ModTime == info.ModTime().UnixNano() {
 		return cached, nil
 	}
-	raw, err := fsx.ReadFile(path)
+	raw, err := safefs.ReadFile(path)
 	if err != nil {
 		return mapScan{}, err
 	}

@@ -10,10 +10,10 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
@@ -115,7 +115,7 @@ func (Loader) Prelaunch(p loader.ProfileView) error {
 		return nil
 	}
 	for _, name := range startupMarkers {
-		if err := fsx.RemoveAll(filepath.Join(p.InstallDir, "smapi-internal", name)); err != nil {
+		if err := safefs.RemoveAll(filepath.Join(p.InstallDir, "smapi-internal", name)); err != nil {
 			return err
 		}
 	}
@@ -147,10 +147,10 @@ func (Loader) Owns(p loader.Process, prof loader.ProfileView) bool {
 func usesModsPath(args []string, modsDir string) bool {
 	want := filepath.Clean(modsDir)
 	for i, a := range args {
-		if v, ok := strings.CutPrefix(a, "--mods-path="); ok && fsx.SamePath(v, want) {
+		if v, ok := strings.CutPrefix(a, "--mods-path="); ok && safefs.SamePath(v, want) {
 			return true
 		}
-		if a == "--mods-path" && i+1 < len(args) && fsx.SamePath(args[i+1], want) {
+		if a == "--mods-path" && i+1 < len(args) && safefs.SamePath(args[i+1], want) {
 			return true
 		}
 	}
@@ -222,7 +222,7 @@ func (Loader) SharesLog() {}
 func (Loader) Order(p loader.ProfileView) ([]loadorder.Row, error) {
 	var mods []loadorder.Mod
 	for _, dir := range p.Enabled {
-		b, err := fsx.ReadFile(filepath.Join(dir, smapimanifest.FileName))
+		b, err := safefs.ReadFile(filepath.Join(dir, smapimanifest.FileName))
 		if err != nil {
 			continue
 		}

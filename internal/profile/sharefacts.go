@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 
 	"github.com/Rethunk-Tech/go-semverish"
@@ -46,9 +46,9 @@ func (s *Store) ShareFacts(game string, p Profile) ShareFacts {
 			if err != nil {
 				continue
 			}
-			b, err := fsx.ReadFile(filepath.Join(plain, smapimanifest.FileName))
+			b, err := safefs.ReadFile(filepath.Join(plain, smapimanifest.FileName))
 			if err != nil {
-				b, err = fsx.ReadFile(filepath.Join(dotted, smapimanifest.FileName))
+				b, err = safefs.ReadFile(filepath.Join(dotted, smapimanifest.FileName))
 			}
 			if err != nil {
 				continue

@@ -8,8 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
@@ -63,7 +62,7 @@ func (l *System) hostResolve(path string) string {
 
 func (l *System) hostRead(path string) ([]byte, error) {
 	if !sandbox.InFlatpak() {
-		return fsx.ReadFile(path)
+		return safefs.ReadFile(path)
 	}
 	out, err := l.onHost("sh", "-c", `[ -e "$1" ] || exit 3; cat "$1"`, "sh", path)
 	if exit := (*exec.ExitError)(nil); errors.As(err, &exit) && exit.ExitCode() == errHostMissing {
@@ -77,7 +76,7 @@ func (l *System) hostWrite(path string, b []byte) error {
 		if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 			return err
 		}
-		return datadir.WriteFileAtomic(path, b, desktopPerm)
+		return safefs.WriteFileAtomic(path, b, desktopPerm)
 	}
 	_, err := l.onHost("sh", "-c", `mkdir -p "$(dirname "$1")" && printf %s "$2" >"$1.mortar-new" && mv "$1.mortar-new" "$1"`,
 		"sh", path, string(b))
@@ -86,7 +85,7 @@ func (l *System) hostWrite(path string, b []byte) error {
 
 func (l *System) hostRemove(path string) error {
 	if !sandbox.InFlatpak() {
-		if err := fsx.Remove(path); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		if err := safefs.Remove(path); err != nil && !errors.Is(err, fs.ErrNotExist) {
 			return err
 		}
 		return nil
@@ -97,7 +96,7 @@ func (l *System) hostRemove(path string) error {
 
 func (l *System) hostIsDir(path string) bool {
 	if !sandbox.InFlatpak() {
-		return fsx.IsDir(path)
+		return safefs.IsDir(path)
 	}
 	_, err := l.onHost("sh", "-c", `[ -d "$1" ]`, "sh", path)
 	return err == nil

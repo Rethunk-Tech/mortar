@@ -8,7 +8,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -97,7 +97,7 @@ func setConfigsAside(paths []string) {
 		if err := os.MkdirAll(aside, 0o750); err != nil {
 			continue
 		}
-		_ = fsx.Rename(f, filepath.Join(aside, filepath.Base(f)))
+		_ = safefs.Rename(f, filepath.Join(aside, filepath.Base(f)))
 	}
 }
 
@@ -127,12 +127,12 @@ func (s *Store) parkModConfigs(game string, p Profile, dir string) error {
 			for _, f := range files {
 				dst := filepath.Join(to, f)
 				// A file already where it would go is newer than the copy set aside: the mod wrote it since.
-				if _, err := fsx.Stat(dst); err == nil {
+				if _, err := safefs.Stat(dst); err == nil {
 					continue
 				} else if !errors.Is(err, fs.ErrNotExist) {
 					return err
 				}
-				if err := fsx.Rename(filepath.Join(from, f), dst); err != nil {
+				if err := safefs.Rename(filepath.Join(from, f), dst); err != nil {
 					return err
 				}
 			}

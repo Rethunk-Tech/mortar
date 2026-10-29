@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
@@ -14,7 +14,7 @@ import (
 // Both packages ship testdata/mod.dll, which skips and hooks Farmer.Update, transpiles Game1.Draw and Game1.Update, and
 // also only adds a prefix and postfixes, which say nothing about the job.
 func TestPackageFootprintsKeepTakeoversAndPairShippingOnePlugin(t *testing.T) {
-	dll, err := fsx.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
+	dll, err := safefs.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
 	if err != nil {
 		t.Fatal(err)
 	}

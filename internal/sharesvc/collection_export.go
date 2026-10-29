@@ -10,9 +10,9 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
@@ -189,7 +189,7 @@ func buildCollection(p profile.Profile, domain, modsDir string, facts fileFacts)
 			if m.Folder != "." {
 				mf = filepath.Join(mf, filepath.FromSlash(m.Folder))
 			}
-			raw, err := fsx.ReadFile(filepath.Join(mf, smapimanifest.FileName))
+			raw, err := safefs.ReadFile(filepath.Join(mf, smapimanifest.FileName))
 			if err != nil {
 				skipped = append(skipped, m.ID.Local()+"/"+smapimanifest.FileName)
 				continue
@@ -272,7 +272,7 @@ func (s *Service) writeCollection(ctx context.Context, p profile.Profile, t nexu
 	if err != nil {
 		return ExportedCollection{}, err
 	}
-	if err := datadir.WriteFileAtomic(dest, packed, filePerm); err != nil {
+	if err := safefs.WriteFileAtomic(dest, packed, filePerm); err != nil {
 		return ExportedCollection{}, err
 	}
 	external := 0

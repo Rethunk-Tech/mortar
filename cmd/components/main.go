@@ -19,9 +19,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 )
 
@@ -89,7 +89,7 @@ func run(ctx context.Context, o options) error {
 		return err
 	}
 	body := buf.Bytes()
-	if err := fsx.WriteFile(o.output, body, 0o600); err != nil {
+	if err := safefs.WriteFile(o.output, body, 0o600); err != nil {
 		return fmt.Errorf("write component manifest: %w", err)
 	}
 	if keyPath := os.Getenv("MORTAR_UPDATE_KEY"); keyPath != "" {
@@ -98,10 +98,10 @@ func run(ctx context.Context, o options) error {
 			return err
 		}
 		signature := ed25519.Sign(private, body)
-		if err := fsx.WriteFile(o.signature, signature, 0o600); err != nil {
+		if err := safefs.WriteFile(o.signature, signature, 0o600); err != nil {
 			return fmt.Errorf("write component signature: %w", err)
 		}
-		public, err := fsx.ReadFile(o.public)
+		public, err := safefs.ReadFile(o.public)
 		if err != nil {
 			return fmt.Errorf("read component public key: %w", err)
 		}
@@ -113,7 +113,7 @@ func run(ctx context.Context, o options) error {
 	if err := json.Indent(&bundled, body, "", "  "); err != nil {
 		return err
 	}
-	if err := fsx.WriteFile(o.bundled, bundled.Bytes(), 0o600); err != nil {
+	if err := safefs.WriteFile(o.bundled, bundled.Bytes(), 0o600); err != nil {
 		return fmt.Errorf("write bundled component manifest: %w", err)
 	}
 	return nil
@@ -138,7 +138,7 @@ func (t bearerTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 func readSource(file string) (components.SourceFile, error) {
-	body, err := fsx.ReadFile(file)
+	body, err := safefs.ReadFile(file)
 	if err != nil {
 		return components.SourceFile{}, fmt.Errorf("read component source: %w", err)
 	}
@@ -185,14 +185,14 @@ func resolve(ctx context.Context, client *github.Client, source components.Sourc
 	}
 	tempPath := temp.Name()
 	if err := temp.Close(); err != nil {
-		_ = fsx.Remove(tempPath)
+		_ = safefs.Remove(tempPath)
 		return components.Component{}, err
 	}
-	defer func() { _ = fsx.Remove(tempPath) }()
+	defer func() { _ = safefs.Remove(tempPath) }()
 	if err := downloadAsset(ctx, client.HTTP, downloadURL(client, source, asset), tempPath); err != nil {
 		return components.Component{}, fmt.Errorf("download %s: %w", asset.Name, err)
 	}
-	sum, err := fsx.HashFile(tempPath, sha256.New())
+	sum, err := safefs.HashFile(tempPath, sha256.New())
 	if err != nil {
 		return components.Component{}, err
 	}
@@ -231,13 +231,13 @@ func downloadAsset(ctx context.Context, client *http.Client, address, dest strin
 	if resp.ContentLength > maxAsset {
 		return fmt.Errorf("larger than %s", bytefmt.Format(maxAsset))
 	}
-	file, err := fsx.OpenFile(dest, os.O_WRONLY|os.O_TRUNC, 0o600)
+	file, err := safefs.OpenFile(dest, os.O_WRONLY|os.O_TRUNC, 0o600)
 	if err != nil {
 		return err
 	}
-	_, copyErr := io.Copy(file, fsx.CapReader(resp.Body, maxAsset))
+	_, copyErr := io.Copy(file, safefs.CapReader(resp.Body, maxAsset))
 	closeErr := file.Close()
-	if errors.Is(copyErr, fsx.ErrTooLarge) {
+	if errors.Is(copyErr, safefs.ErrTooLarge) {
 		return fmt.Errorf("larger than %s", bytefmt.Format(maxAsset))
 	}
 	if copyErr != nil {
@@ -278,7 +278,7 @@ func normalizeVersion(version string) string {
 
 func nextSerial(output string) (uint64, error) {
 	var previous components.Manifest
-	if body, err := fsx.ReadFile(output); err == nil {
+	if body, err := safefs.ReadFile(output); err == nil {
 		if json.Unmarshal(body, &previous) != nil {
 			previous.Serial = 0
 		}
@@ -296,7 +296,7 @@ func nextSerial(output string) (uint64, error) {
 }
 
 func readPrivateKey(path string) (ed25519.PrivateKey, error) {
-	body, err := fsx.ReadFile(path)
+	body, err := safefs.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("read signing key: %w", err)
 	}

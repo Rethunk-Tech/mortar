@@ -21,10 +21,10 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexussvc"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -459,7 +459,7 @@ func serveHandlers(r io.Reader, w io.Writer, h handlers) error {
 			return fmt.Errorf("message of %d bytes is too large", n)
 		}
 		var req request
-		if err := json.NewDecoder(fsx.CapReader(r, int64(n))).Decode(&req); err != nil {
+		if err := json.NewDecoder(safefs.CapReader(r, int64(n))).Decode(&req); err != nil {
 			return err
 		}
 		mismatch := protocolMismatch(req.Protocol)
@@ -866,7 +866,7 @@ func accentColor() string {
 		} `json:"global"`
 	}
 	if dir, err := datadir.Dir(); err == nil {
-		if b, err := fsx.ReadFile(filepath.Join(dir, settings.FileName)); err == nil {
+		if b, err := safefs.ReadFile(filepath.Join(dir, settings.FileName)); err == nil {
 			_ = json.Unmarshal(b, &s)
 		}
 	}

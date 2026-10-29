@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 )
 
@@ -56,7 +56,7 @@ func TestProtonChecks(t *testing.T) {
 			t.Fatalf("no registry yet: %+v", c)
 		}
 	}
-	if err := fsx.WriteFile(filepath.Join(compat, "pfx", "user.reg"), []byte("WINE REGISTRY\n"), 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(compat, "pfx", "user.reg"), []byte("WINE REGISTRY\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if got := status(); got["winhttp:lc"] != Warn {
@@ -68,7 +68,7 @@ func TestProtonChecks(t *testing.T) {
 		t.Fatalf("launch option and grant: %v", got)
 	}
 	launch = ""
-	if err := fsx.WriteFile(filepath.Join(compat, "pfx", "user.reg"), []byte(`"winhttp"="native,builtin"`), 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(compat, "pfx", "user.reg"), []byte(`"winhttp"="native,builtin"`), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if got := status(); got["winhttp:lc"] != Pass {

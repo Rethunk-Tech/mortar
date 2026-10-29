@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 func TestRemoveDesktopUndoesRegistration(t *testing.T) {
@@ -21,7 +21,7 @@ func TestRemoveDesktopUndoesRegistration(t *testing.T) {
 		t.Fatal(err)
 	}
 	body := "[Default Applications]\n" + mortarMime + "=" + desktopID + "\n" + fileMime + "=" + desktopID + ";\ntext/html=a.desktop\n"
-	if err := fsx.WriteFile(list, []byte(body), 0o600); err != nil {
+	if err := safefs.WriteFile(list, []byte(body), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if err := l.RemoveDesktop(); err != nil {
@@ -32,7 +32,7 @@ func TestRemoveDesktopUndoesRegistration(t *testing.T) {
 			t.Errorf("%s still there: %v", p, err)
 		}
 	}
-	if b, _ := fsx.ReadFile(list); string(b) != "[Default Applications]\ntext/html=a.desktop\n" {
+	if b, _ := safefs.ReadFile(list); string(b) != "[Default Applications]\ntext/html=a.desktop\n" {
 		t.Errorf("mimeapps.list: %q", b)
 	}
 }
@@ -40,7 +40,7 @@ func TestRemoveDesktopUndoesRegistration(t *testing.T) {
 func TestRemoveDesktopKeepsAnotherCopysEntry(t *testing.T) {
 	l, _ := newLinux(t, "")
 	other := filepath.Join(t.TempDir(), "Mortar.AppImage")
-	if err := fsx.WriteFile(other, []byte("x"), 0o600); err != nil {
+	if err := safefs.WriteFile(other, []byte("x"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	l.exe = other

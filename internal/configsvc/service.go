@@ -17,10 +17,10 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-lenientjson"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/gmcm"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/modconfig"
@@ -92,7 +92,7 @@ func (s *Service) parseCached(path string, info fs.FileInfo) (cfgDoc, error) {
 	if ok && hit.size == info.Size() && hit.at.Equal(info.ModTime()) {
 		return hit.doc, nil
 	}
-	raw, err := fsx.ReadFile(path)
+	raw, err := safefs.ReadFile(path)
 	if err != nil {
 		return cfgDoc{}, err
 	}
@@ -374,7 +374,7 @@ func (s *Service) Text(game, profileID, modID, file string) (string, error) {
 	} else if st.Size() > maxTextFile {
 		return "", fmt.Errorf("%s is %s, too big to edit here; open its folder instead", file, bytefmt.Format(st.Size()))
 	}
-	raw, err := fsx.ReadFile(p)
+	raw, err := safefs.ReadFile(p)
 	return string(bytes.TrimPrefix(raw, utf8BOM)), err
 }
 
@@ -395,10 +395,10 @@ func (s *Service) SetText(game, profileID, modID, file, text string) error {
 		return usererr.Wrap(usererr.Invalid, err)
 	}
 	out := []byte(text)
-	if old, err := fsx.ReadFile(p); err == nil && bytes.HasPrefix(old, utf8BOM) {
+	if old, err := safefs.ReadFile(p); err == nil && bytes.HasPrefix(old, utf8BOM) {
 		out = append(slices.Clone(utf8BOM), out...)
 	}
-	return datadir.WriteFileAtomic(p, out, 0o600)
+	return safefs.WriteFileAtomic(p, out, 0o600)
 }
 
 // OpenText opens one of a mod's text config files in the system's editor for it.
@@ -523,7 +523,7 @@ func (s *Service) schemaOf(game, profileID, modID string, f ConfigFile) (Schema,
 		if err != nil {
 			return Schema{}, err
 		}
-		raw, err := fsx.ReadFile(path)
+		raw, err := safefs.ReadFile(path)
 		if err != nil {
 			return Schema{}, err
 		}
@@ -660,7 +660,7 @@ func (s *Service) write(game, profileID, modID string, f ConfigFile, edits []edi
 	if err != nil {
 		return err
 	}
-	raw, err := fsx.ReadFile(p)
+	raw, err := safefs.ReadFile(p)
 	if err != nil {
 		return err
 	}
@@ -670,7 +670,7 @@ func (s *Service) write(game, profileID, modID string, f ConfigFile, edits []edi
 			return err
 		}
 	}
-	return datadir.WriteFileAtomic(p, []byte(text), 0o600)
+	return safefs.WriteFileAtomic(p, []byte(text), 0o600)
 }
 
 // writeJSON applies edits to one JSON file of the profile's mod config folder, keeping its key order.
@@ -679,7 +679,7 @@ func (s *Service) writeJSON(game, profileID, name string, edits []edit) error {
 	if err != nil {
 		return err
 	}
-	raw, err := fsx.ReadFile(p)
+	raw, err := safefs.ReadFile(p)
 	if err != nil {
 		return err
 	}
@@ -688,5 +688,5 @@ func (s *Service) writeJSON(game, profileID, name string, edits []edit) error {
 			return err
 		}
 	}
-	return datadir.WriteFileAtomic(p, raw, 0o600)
+	return safefs.WriteFileAtomic(p, raw, 0o600)
 }

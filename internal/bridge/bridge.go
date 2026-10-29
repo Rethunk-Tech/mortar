@@ -16,7 +16,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // Companion is a loader's companion mod: its folder and id as the loader spells them, and the state file it writes.
@@ -73,7 +73,7 @@ type State struct {
 // ReadState reads the companion's state file. A missing or unreadable file is ErrNotReady. Whether the game behind it
 // still runs only a connection can tell: the pid a companion records is the game's own, a Wine PID under Proton.
 func ReadState(stateFile string) (State, error) {
-	b, err := fsx.ReadFile(stateFile)
+	b, err := safefs.ReadFile(stateFile)
 	if errors.Is(err, os.ErrNotExist) {
 		return State{}, ErrNotReady
 	}

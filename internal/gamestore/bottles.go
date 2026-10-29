@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/gog"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
@@ -43,7 +43,7 @@ func (bottlesStore) Launchers(goos string) []LauncherSpec {
 		return nil
 	}
 	return []LauncherSpec{{
-		ID: LauncherBottles, Name: "Bottles", Usable: fsx.IsDir,
+		ID: LauncherBottles, Name: "Bottles", Usable: safefs.IsDir,
 		Looked: func(home string, added map[string][]string) []string {
 			return bottlesDirs(home, added[LauncherBottles]...)
 		},
@@ -63,7 +63,7 @@ func (bottlesStore) Discover(home string, roots map[string][]string, g component
 		}
 		for _, ent := range entries {
 			bottle := filepath.Join(dir, ent.Name())
-			if !fsx.IsDir(bottle) || !fsx.IsFile(filepath.Join(bottle, "bottle.yml")) {
+			if !safefs.IsDir(bottle) || !safefs.IsFile(filepath.Join(bottle, "bottle.yml")) {
 				continue
 			}
 			for _, cand := range bottleGameDirs(bottle, g.Stores.Bottles.Folder) {
@@ -80,7 +80,7 @@ func (bottlesStore) Discover(home string, roots map[string][]string, g component
 // BottleOf is the bottle that holds dir, found by walking up to a folder with bottle.yml; "" when dir is in none.
 func BottleOf(dir string) string {
 	for d := filepath.Clean(dir); ; d = filepath.Dir(d) {
-		if fsx.IsFile(filepath.Join(d, "bottle.yml")) {
+		if safefs.IsFile(filepath.Join(d, "bottle.yml")) {
 			return d
 		}
 		if filepath.Dir(d) == d {

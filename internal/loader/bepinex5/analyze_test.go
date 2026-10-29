@@ -4,18 +4,18 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 func TestAnalyze(t *testing.T) {
 	// The first log is a trimmed public LogOutput.log (Sanunez/LethalPack); the rest use the format strings of BepInEx 5.4.x's
 	// BaseChainloader and AssemblyPatcher.
-	sample, err := fsx.ReadFile("testdata/logoutput-missing-dependency.log")
+	sample, err := safefs.ReadFile("testdata/logoutput-missing-dependency.log")
 	if err != nil {
 		t.Fatal(err)
 	}
 	// Lines of a sandbox regress run of Lethal Company with Mask Fixes and Host Fixes.
-	regress, err := fsx.ReadFile("testdata/logoutput-regress.log")
+	regress, err := safefs.ReadFile("testdata/logoutput-regress.log")
 	if err != nil {
 		t.Fatal(err)
 	}

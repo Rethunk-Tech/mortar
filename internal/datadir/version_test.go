@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 type versioned struct {
@@ -22,7 +22,7 @@ func TestWriteVersionedAddsVersionAndReadsMissingAsCurrent(t *testing.T) {
 	if err := WriteVersioned(path, versioned{FormatVersion: FormatVersion, Name: "new"}); err != nil {
 		t.Fatalf("a file without a version must be writable: %v", err)
 	}
-	b, _ := fsx.ReadFile(path)
+	b, _ := safefs.ReadFile(path)
 	if !strings.Contains(string(b), `"formatVersion": 1`) {
 		t.Fatalf("version not written: %s", b)
 	}
@@ -38,7 +38,7 @@ func TestWriteVersionedRefusesNewerAndKeepsFile(t *testing.T) {
 		t.Fatal("expected refusal")
 	}
 	for _, p := range []string{path, path + ".newer"} {
-		if b, _ := fsx.ReadFile(p); string(b) != newer {
+		if b, _ := safefs.ReadFile(p); string(b) != newer {
 			t.Fatalf("%s = %q", p, b)
 		}
 	}

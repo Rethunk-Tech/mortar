@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // FileName is the discovery file the app writes in its data folder while it runs.
@@ -149,7 +149,7 @@ func callDir(ctx context.Context, dir, method string, params, out any, timeout t
 		return err
 	}
 	var rep Reply
-	if err := json.NewDecoder(fsx.CapReader(conn, MaxLine)).Decode(&rep); err != nil {
+	if err := json.NewDecoder(safefs.CapReader(conn, MaxLine)).Decode(&rep); err != nil {
 		return fmt.Errorf("control: reading the reply: %w", err)
 	}
 	if rep.Error != "" {

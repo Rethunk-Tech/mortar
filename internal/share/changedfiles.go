@@ -10,7 +10,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/winname"
 )
@@ -90,7 +90,7 @@ func readChangedFiles(profileDir, gameID string) (found []ChangedFile, skipped [
 		}
 		folded[strings.ToLower(rel)] = true
 		data, err := readCapped(filepath.Join(profileDir, filepath.FromSlash(rel)))
-		if errors.Is(err, fsx.ErrTooLarge) {
+		if errors.Is(err, safefs.ErrTooLarge) {
 			skipped = append(skipped, rel)
 			continue
 		}

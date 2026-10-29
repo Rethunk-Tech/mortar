@@ -15,8 +15,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
@@ -105,7 +104,7 @@ func (s *Service) Backup(gameID, profileID, dest string, mods bool) (err error) 
 	if err != nil {
 		return err
 	}
-	return datadir.WriteStreamAtomic(dest, 0o600, func(out io.Writer) error {
+	return safefs.WriteStreamAtomic(dest, 0o600, func(out io.Writer) error {
 		zw := zip.NewWriter(out)
 		doc := backupJSON{Version: backupVersion, Game: gameID, Profile: p, Store: map[string]string{}}
 		for prefix, dir := range dirs {
@@ -115,7 +114,7 @@ func (s *Service) Backup(gameID, profileID, dest string, mods bool) (err error) 
 				if err != nil {
 					return err
 				}
-				src, err := fsx.Open(path)
+				src, err := safefs.Open(path)
 				if err != nil {
 					return err
 				}
@@ -168,7 +167,7 @@ func storeKey(prefix string) (string, bool) {
 // walkFiles calls fn with the slash path, full path and size of every regular file below root, in walk order. A store
 // item's completion marker is the store's own and is skipped when item is set.
 func walkFiles(root string, item bool, fn func(rel, path string, size int64) error) error {
-	return fsx.WalkFiles(root, func(rel, path string, size int64) error {
+	return safefs.WalkFiles(root, func(rel, path string, size int64) error {
 		if item && rel == store.CompleteMarker {
 			return nil
 		}
@@ -180,7 +179,7 @@ func walkFiles(root string, item bool, fn func(rel, path string, size int64) err
 func treeHash(root string) (string, error) {
 	h := sha256.New()
 	err := walkFiles(root, true, func(rel, path string, _ int64) error {
-		sum, err := fsx.HashFile(path, sha256.New())
+		sum, err := safefs.HashFile(path, sha256.New())
 		if err != nil {
 			return err
 		}
@@ -209,7 +208,7 @@ func (s *Service) Restore(ctx context.Context, path, gameID string) (RestoreResu
 	if err != nil {
 		return RestoreResult{}, err
 	}
-	defer func() { _ = fsx.RemoveAll(tmp) }()
+	defer func() { _ = safefs.RemoveAll(tmp) }()
 	doc, files, err := readBackup(path, tmp)
 	if err != nil {
 		return RestoreResult{}, err
@@ -326,9 +325,9 @@ func readBackup(path, tmp string) (backupJSON, map[string][]byte, error) {
 		if err != nil {
 			return backupJSON{}, nil, err
 		}
-		data, err := fsx.ReadCapped(rc, maxBackupBytes-inMemory)
+		data, err := safefs.ReadCapped(rc, maxBackupBytes-inMemory)
 		_ = rc.Close()
-		if errors.Is(err, fsx.ErrTooLarge) {
+		if errors.Is(err, safefs.ErrTooLarge) {
 			return backupJSON{}, nil, usererr.New(usererr.Damaged, "the backup unpacks to too much")
 		}
 		if err != nil {
@@ -402,9 +401,9 @@ func unpack(f *zip.File, root *os.Root, folded map[string]string, total *int64) 
 	if err != nil {
 		return err
 	}
-	n, err := io.Copy(out, fsx.CapReader(rc, maxBackupDisk-*total))
+	n, err := io.Copy(out, safefs.CapReader(rc, maxBackupDisk-*total))
 	closeErr := out.Close()
-	if errors.Is(err, fsx.ErrTooLarge) {
+	if errors.Is(err, safefs.ErrTooLarge) {
 		return usererr.New(usererr.Damaged, "the backup unpacks to too much")
 	}
 	*total += n

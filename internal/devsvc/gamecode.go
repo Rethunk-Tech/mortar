@@ -14,8 +14,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/msbuild"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -51,7 +51,7 @@ func (s *Service) Assemblies(gameID, dir string) ([]Assembly, error) {
 	if err != nil {
 		return nil, err
 	}
-	props, _ := fsx.ReadFile(filepath.Join(p.Dir, "Config.Build.user.props"))
+	props, _ := safefs.ReadFile(filepath.Join(p.Dir, "Config.Build.user.props"))
 	root := msbuild.Property(string(props), "GameRootDir")
 	out := []Assembly{}
 	if root != "" {

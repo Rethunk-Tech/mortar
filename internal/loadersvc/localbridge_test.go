@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
@@ -22,7 +22,7 @@ func TestALocalBridgeBuildStandsInForTheRelease(t *testing.T) {
 	t.Setenv("MORTAR_ENABLE_GAMES", "lethal-company")
 	folder := t.TempDir()
 	zipPath := filepath.Join(folder, "lethal-company.zip")
-	f, err := fsx.Create(zipPath)
+	f, err := safefs.Create(zipPath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -53,7 +53,7 @@ func TestALocalBridgeBuildStandsInForTheRelease(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	sum, err := fsx.HashFile(zipPath, sha256.New())
+	sum, err := safefs.HashFile(zipPath, sha256.New())
 	if err != nil {
 		t.Fatal(err)
 	}

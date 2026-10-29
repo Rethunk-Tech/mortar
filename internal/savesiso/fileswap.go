@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 const fileJournal = "file.json"
@@ -71,8 +71,8 @@ func ApplyFile(journal, target, profile string) (FileManifest, error) {
 		return FileManifest{}, err
 	}
 	if m.Held != "" {
-		if err := fsx.Rename(target, m.Held); err != nil {
-			_ = fsx.RemoveAll(journal)
+		if err := safefs.Rename(target, m.Held); err != nil {
+			_ = safefs.RemoveAll(journal)
 			return FileManifest{}, err
 		}
 	}
@@ -102,16 +102,16 @@ func PurgeFile(m FileManifest) error {
 		if err := datadir.CopyFile(m.Target, m.Profile); err != nil {
 			return err
 		}
-		if err := fsx.RemoveAll(m.Target); err != nil {
+		if err := safefs.RemoveAll(m.Target); err != nil {
 			return err
 		}
 	}
 	if m.Held != "" && exists(m.Held) {
-		if err := fsx.Rename(m.Held, m.Target); err != nil {
+		if err := safefs.Rename(m.Held, m.Target); err != nil {
 			return err
 		}
 	}
-	return fsx.RemoveAll(m.Journal)
+	return safefs.RemoveAll(m.Journal)
 }
 
 // RecoverFile finishes an unfinished file swap found at journal: nothing while alive reports the game running.

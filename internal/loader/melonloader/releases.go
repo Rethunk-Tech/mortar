@@ -10,8 +10,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 )
 
@@ -145,7 +145,7 @@ func (l Loader) download(ctx context.Context, r github.Release, dst string) erro
 		return err
 	}
 	if err := l.verify(ctx, pack, sum, dst); err != nil {
-		_ = fsx.Remove(dst)
+		_ = safefs.Remove(dst)
 		return err
 	}
 	return nil
@@ -153,7 +153,7 @@ func (l Loader) download(ctx context.Context, r github.Release, dst string) erro
 
 func (l Loader) verify(ctx context.Context, pack github.Asset, sumURL, file string) error {
 	if want, ok := strings.CutPrefix(pack.Digest, "sha256:"); ok {
-		got, err := fsx.HashFile(file, sha256.New())
+		got, err := safefs.HashFile(file, sha256.New())
 		if err != nil {
 			return err
 		}
@@ -169,7 +169,7 @@ func (l Loader) verify(ctx context.Context, pack github.Asset, sumURL, file stri
 	if err != nil {
 		return err
 	}
-	got, err := fsx.HashFile(file, sha512.New())
+	got, err := safefs.HashFile(file, sha512.New())
 	if err != nil {
 		return err
 	}
@@ -197,7 +197,7 @@ func (l Loader) checksum(ctx context.Context, url string) (string, error) {
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("the checksum file answered %s", resp.Status)
 	}
-	b, err := fsx.ReadCapped(resp.Body, maxChecksum)
+	b, err := safefs.ReadCapped(resp.Body, maxChecksum)
 	if err != nil {
 		return "", err
 	}

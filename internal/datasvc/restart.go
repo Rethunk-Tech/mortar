@@ -7,8 +7,8 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 )
 
@@ -39,7 +39,7 @@ func logCleanShutdown() {
 	if err != nil {
 		return
 	}
-	f, err := fsx.OpenFile(filepath.Join(dir, "mortar.log"), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o600)
+	f, err := safefs.OpenFile(filepath.Join(dir, "mortar.log"), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o600)
 	if err != nil {
 		return
 	}

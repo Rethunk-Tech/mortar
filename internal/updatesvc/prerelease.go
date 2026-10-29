@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/wailsapp/wails/v3/pkg/updater"
 	"github.com/wailsapp/wails/v3/pkg/updater/providers/endpoint"
@@ -72,7 +72,7 @@ func (p *prereleaseProvider) latestPrereleaseTag(ctx context.Context, current st
 		Prerelease bool   `json:"prerelease"`
 		Draft      bool   `json:"draft"`
 	}
-	if err := json.NewDecoder(fsx.CapReader(resp.Body, 8<<20)).Decode(&releases); err != nil {
+	if err := json.NewDecoder(safefs.CapReader(resp.Body, 8<<20)).Decode(&releases); err != nil {
 		return "", err
 	}
 	for _, r := range releases {

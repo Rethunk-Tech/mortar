@@ -8,8 +8,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
@@ -67,7 +67,7 @@ var reBottleName = regexp.MustCompile(`(?m)^Name:\s*(.+?)\s*$`)
 
 // bottleName is the name bottles-cli knows the bottle by: bottle.yml's Name, else its folder's name.
 func bottleName(bottle string) string {
-	if b, err := fsx.ReadFile(filepath.Join(bottle, "bottle.yml")); err == nil {
+	if b, err := safefs.ReadFile(filepath.Join(bottle, "bottle.yml")); err == nil {
 		if m := reBottleName.FindSubmatch(b); m != nil {
 			if n := strings.Trim(string(m[1]), `"'`); n != "" {
 				return n

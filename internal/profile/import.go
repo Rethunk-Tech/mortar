@@ -14,8 +14,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 
@@ -306,7 +306,7 @@ func scanGameMods(modsDir string) ([]gameModSlot, error) {
 	var slots []gameModSlot
 	for _, it := range entries {
 		child := filepath.Join(modsDir, it.Name())
-		if !datadir.RealDirUnder(root, child) {
+		if !safefs.RealDirUnder(root, child) {
 			continue
 		}
 		slot, keep := classifyFolder(child, it.Name())
@@ -329,7 +329,7 @@ func readModsDir(modsDir string) (entries []os.DirEntry, root string, err error)
 	if err != nil {
 		return nil, "", err
 	}
-	root, err = fsx.EvalSymlinks(modsDir)
+	root, err = safefs.EvalSymlinks(modsDir)
 	return entries, root, err
 }
 
@@ -396,14 +396,14 @@ func carryConfig(srcRoot, destDir, folder string) error {
 		rel = ""
 	}
 	from := filepath.Join(srcRoot, filepath.FromSlash(rel), configFileName)
-	b, err := fsx.ReadFile(from)
+	b, err := safefs.ReadFile(from)
 	if errors.Is(err, fs.ErrNotExist) {
 		return nil
 	}
 	if err != nil {
 		return err
 	}
-	return fsx.WriteFile(filepath.Join(destDir, configFileName), b, 0o600)
+	return safefs.WriteFile(filepath.Join(destDir, configFileName), b, 0o600)
 }
 
 // addResolvingLinks stores dir with every file link replaced by the file it points to, so a mod another manager deployed
@@ -413,7 +413,7 @@ func (s *Store) addResolvingLinks(ctx context.Context, game, dir string) (string
 	if err != nil {
 		return "", err
 	}
-	defer func() { _ = fsx.RemoveAll(scratch) }()
+	defer func() { _ = safefs.RemoveAll(scratch) }()
 	copied := filepath.Join(scratch, "mod")
 	if err := datadir.CopyTreeResolvingLinks(dir, copied); err != nil {
 		return "", err

@@ -29,8 +29,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 
@@ -1649,7 +1648,7 @@ func (c *Client) get(ctx context.Context, address string, limit int64) ([]byte, 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("component manifest request returned %s", resp.Status)
 	}
-	body, err := fsx.ReadCapped(resp.Body, limit)
+	body, err := safefs.ReadCapped(resp.Body, limit)
 	if err != nil {
 		return nil, fmt.Errorf("component manifest response: %w", err)
 	}
@@ -1676,27 +1675,27 @@ func (c *Client) Download(ctx context.Context, component Component, dest string)
 	}
 	tmpPath := tmp.Name()
 	if err := tmp.Close(); err != nil {
-		_ = fsx.Remove(tmpPath)
+		_ = safefs.Remove(tmpPath)
 		return err
 	}
 	defer func() {
-		_ = fsx.Remove(tmpPath)
-		_ = fsx.Remove(github.ResumeSidecar(tmpPath))
+		_ = safefs.Remove(tmpPath)
+		_ = safefs.Remove(github.ResumeSidecar(tmpPath))
 	}()
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
 	defer cancel()
 	if err := github.Download(ctx, c.HTTP, address, tmpPath, maxComponent, nil); err != nil {
 		return fmt.Errorf("download component %s: %w", component.Name, err)
 	}
-	sum, err := fsx.HashFile(tmpPath, sha256.New())
+	sum, err := safefs.HashFile(tmpPath, sha256.New())
 	if err != nil {
 		return err
 	}
 	if !strings.EqualFold(sum, component.SHA256) {
 		return fmt.Errorf("component %s has sha256 %s, want %s", component.Name, sum, component.SHA256)
 	}
-	return datadir.WriteStreamAtomic(dest, 0o600, func(w io.Writer) error {
-		f, err := fsx.Open(tmpPath)
+	return safefs.WriteStreamAtomic(dest, 0o600, func(w io.Writer) error {
+		f, err := safefs.Open(tmpPath)
 		if err != nil {
 			return err
 		}

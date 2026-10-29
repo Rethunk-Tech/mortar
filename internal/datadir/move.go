@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 var (
@@ -38,18 +38,20 @@ type ExtentSizer func(root string) (int64, error)
 // can hold links; FAT, exFAT and SMB targets refuse them, so each name is copied in full there.
 func EstimateRelocate(src, dest string, shared ExtentSizer) (RelocateEstimate, error) {
 	where := dest
-	free, err := FreeBytes(where)
+	free, err := safefs.FreeBytes(where)
 	if err != nil {
 		where = filepath.Dir(dest)
-		if free, err = FreeBytes(where); err != nil {
+		if free, err = safefs.FreeBytes(where); err != nil {
 			return RelocateEstimate{}, err
 		}
 	}
 	var need int64
 	if shared != nil && clonesSupported(where) {
 		need, err = shared(src)
+	} else if linksSupported(where) {
+		need, err = safefs.Size(src)
 	} else {
-		need, err = size(src, linksSupported(where))
+		need, err = safefs.SizeEachName(src)
 	}
 	if err != nil {
 		return RelocateEstimate{}, err
@@ -65,12 +67,12 @@ func clonesSupported(dir string) bool {
 	}
 	_, _ = a.WriteString("probe")
 	_ = a.Close()
-	defer func() { _ = fsx.Remove(a.Name()) }()
+	defer func() { _ = safefs.Remove(a.Name()) }()
 	b := a.Name() + ".c"
-	if cloneFile(a.Name(), b) != nil {
+	if safefs.Clone(a.Name(), b) != nil {
 		return false
 	}
-	_ = fsx.Remove(b)
+	_ = safefs.Remove(b)
 	return true
 }
 
@@ -81,12 +83,12 @@ func linksSupported(dir string) bool {
 		return true
 	}
 	_ = a.Close()
-	defer func() { _ = fsx.Remove(a.Name()) }()
+	defer func() { _ = safefs.Remove(a.Name()) }()
 	b := a.Name() + ".l"
 	if os.Link(a.Name(), b) != nil {
 		return false
 	}
-	_ = fsx.Remove(b)
+	_ = safefs.Remove(b)
 	return true
 }
 
@@ -111,17 +113,17 @@ type relocator struct {
 	// source's extents and is only checked by length.
 	sums    map[string]string
 	sizes   map[string]int64
-	linked  map[fileKey]copied
+	linked  map[safefs.FileID]copied
 	noClone bool
 	// same reports whether a file and its target folder share a filesystem; tests replace it.
 	same func(from, to string) bool
 }
 
 func newRelocator(dest string) *relocator {
-	return &relocator{dest: dest, sums: map[string]string{}, sizes: map[string]int64{}, linked: map[fileKey]copied{}, same: sameFS}
+	return &relocator{dest: dest, sums: map[string]string{}, sizes: map[string]int64{}, linked: map[safefs.FileID]copied{}, same: sameFS}
 }
 
-// put is the copyTree callback; rel is relative to the data folder.
+// put is the CopyTree callback; rel is relative to the data folder.
 func (r *relocator) put(from, to, rel string) error {
 	info, err := os.Stat(from)
 	if err != nil {
@@ -129,7 +131,7 @@ func (r *relocator) put(from, to, rel string) error {
 	}
 	slash := filepath.ToSlash(rel)
 	r.sizes[slash] = info.Size()
-	key, linked := linkedKey(from, info)
+	key, linked := safefs.HardLinkID(from, info)
 	if linked {
 		if first, ok := r.linked[key]; ok && os.Link(first.to, to) == nil {
 			r.sums[slash] = first.sum
@@ -151,10 +153,10 @@ func (r *relocator) put(from, to, rel string) error {
 func (r *relocator) place(from, to, rel string, size int64) (string, error) {
 	if !r.noClone {
 		if r.same(from, to) {
-			switch err := cloneFile(from, to); {
+			switch err := safefs.Clone(from, to); {
 			case err == nil:
 				return "", nil
-			case !isLinkFallback(err):
+			case !safefs.LinkUnsupported(err):
 				return "", err
 			}
 			r.noClone = true
@@ -166,8 +168,8 @@ func (r *relocator) place(from, to, rel string, size int64) (string, error) {
 }
 
 func sameFS(from, to string) bool {
-	a, errA := fileDevice(from)
-	b, errB := fileDevice(filepath.Dir(to))
+	a, errA := safefs.Device(from)
+	b, errB := safefs.Device(filepath.Dir(to))
 	return errA == nil && errB == nil && a == b
 }
 
@@ -179,18 +181,18 @@ func (r *relocator) cloneFromStore(from, to, rel string, size int64) (string, er
 		if !ok || want == "" || r.sizes[twin] != size {
 			continue
 		}
-		sum, err := fsx.HashFile(from, sha256.New())
+		sum, err := safefs.HashFile(from, sha256.New())
 		if err != nil {
 			return "", err
 		}
 		if sum != want {
 			return "", nil
 		}
-		err = cloneFile(filepath.Join(r.dest, filepath.FromSlash(twin)), to)
+		err = safefs.Clone(filepath.Join(r.dest, filepath.FromSlash(twin)), to)
 		if err == nil {
 			return sum, nil
 		}
-		if !isLinkFallback(err) {
+		if !safefs.LinkUnsupported(err) {
 			return "", err
 		}
 		r.noClone = true
@@ -217,12 +219,12 @@ func storeTwins(rel string) []string {
 
 // copyHashing is CopyFile that also returns the hex SHA-256 of what it read.
 func copyHashing(src, dst string) (sum string, err error) {
-	in, err := fsx.Open(src)
+	in, err := safefs.Open(src)
 	if err != nil {
 		return "", err
 	}
 	defer func() { _ = in.Close() }()
-	out, err := fsx.CreateExcl(dst, 0o600)
+	out, err := safefs.CreateExcl(dst, 0o600)
 	if err != nil {
 		return "", err
 	}
@@ -249,7 +251,7 @@ func (r *relocator) verifyCopy() error {
 			}
 			continue
 		}
-		got, err := fsx.HashFile(path, sha256.New())
+		got, err := safefs.HashFile(path, sha256.New())
 		if err != nil {
 			return err
 		}
@@ -286,7 +288,7 @@ func emptyDir(path string) error {
 }
 
 func removeOld(src, def string) error {
-	if fsx.SamePath(src, def) {
+	if safefs.SamePath(src, def) {
 		ents, err := os.ReadDir(src)
 		if err != nil {
 			return err
@@ -295,35 +297,35 @@ func removeOld(src, def string) error {
 			if e.Name() == PointerName {
 				continue
 			}
-			if err := fsx.RemoveAll(filepath.Join(src, e.Name())); err != nil {
+			if err := safefs.RemoveAll(filepath.Join(src, e.Name())); err != nil {
 				return err
 			}
 		}
 		return nil
 	}
-	return fsx.RemoveAll(src)
+	return safefs.RemoveAll(src)
 }
 
 // relinkSkipped recreates, in dest, each linked folder the copy skipped (a profile kept in a custom folder) so removing
 // src does not lose it. A link that points inside src would dangle once src is gone, so it refuses the move.
 func relinkSkipped(src, dest string, skipped []string) error {
-	root, err := fsx.EvalSymlinks(src)
+	root, err := safefs.EvalSymlinks(src)
 	if err != nil {
 		return err
 	}
 	for _, p := range skipped {
-		target, err := fsx.EvalSymlinks(p)
+		target, err := safefs.EvalSymlinks(p)
 		if err != nil {
 			return err
 		}
-		if UnderRoot(root, target) {
+		if safefs.UnderRoot(root, target) {
 			return fmt.Errorf("%s links to a folder inside the data folder; move its contents out first", p)
 		}
 		rel, err := filepath.Rel(src, p)
 		if err != nil {
 			return err
 		}
-		if err := LinkDir(filepath.Join(dest, rel), target); err != nil {
+		if err := safefs.LinkDir(filepath.Join(dest, rel), target); err != nil {
 			return err
 		}
 	}
@@ -339,7 +341,7 @@ func Relocate(src, dest, def string, shared ExtentSizer, reports ...func(CopyPro
 	if len(reports) > 0 {
 		report = reports[0]
 	}
-	if UnderRoot(src, dest) {
+	if safefs.UnderRoot(src, dest) {
 		return ErrInside
 	}
 	if err := emptyDir(dest); err != nil {
@@ -353,23 +355,23 @@ func Relocate(src, dest, def string, shared ExtentSizer, reports ...func(CopyPro
 		return &SpaceError{Need: estimate.Bytes}
 	}
 	r := newRelocator(dest)
-	skipped, err := copyTreeFirst(src, dest, "store", clampProgress(report), r.put)
+	skipped, err := safefs.CopyTree(src, dest, safefs.CopyOptions{First: "store", Progress: clampProgress(report), Put: r.put, TempSuffix: copyTempSuffix})
 	if err != nil {
-		_ = fsx.RemoveAll(dest)
+		_ = safefs.RemoveAll(dest)
 		return err
 	}
 	if err := relinkSkipped(src, dest, skipped); err != nil {
-		_ = fsx.RemoveAll(dest)
+		_ = safefs.RemoveAll(dest)
 		return err
 	}
 	if err := r.verifyCopy(); err != nil {
-		_ = fsx.RemoveAll(dest)
+		_ = safefs.RemoveAll(dest)
 		return err
 	}
 	if err := os.MkdirAll(def, 0o700); err != nil {
 		return err
 	}
-	if err := WriteFileAtomic(filepath.Join(def, PointerName), []byte(dest+"\n"), 0o600); err != nil {
+	if err := safefs.WriteFileAtomic(filepath.Join(def, PointerName), []byte(dest+"\n"), 0o600); err != nil {
 		return err
 	}
 	return removeOld(src, def)

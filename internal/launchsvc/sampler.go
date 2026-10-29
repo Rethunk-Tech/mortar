@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
@@ -59,11 +59,11 @@ func (s *Service) sampleStartup(parent context.Context, g game.Game, profileID, 
 	stopCancel()
 	stopped()
 	if stopErr != nil {
-		_ = fsx.Remove(tracePath)
+		_ = safefs.Remove(tracePath)
 		log.Printf("startup sampler: %s: %v", g.ID(), stopErr)
 		return
 	}
-	defer func() { _ = fsx.Remove(tracePath) }()
+	defer func() { _ = safefs.Remove(tracePath) }()
 	if !reportFound {
 		return
 	}
@@ -197,7 +197,7 @@ func assembliesToMods(modsDir string) (map[string]string, error) {
 		if entry.IsDir() || !strings.EqualFold(entry.Name(), smapimanifest.FileName) {
 			return nil
 		}
-		data, err := fsx.ReadFile(path)
+		data, err := safefs.ReadFile(path)
 		if err != nil {
 			return err
 		}

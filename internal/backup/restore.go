@@ -10,9 +10,9 @@ import (
 	"slices"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/saves"
 )
 
@@ -27,7 +27,7 @@ func Restore(ctx context.Context, zipPath string, l saves.Layout, backupsDir str
 	if err != nil {
 		return err
 	}
-	defer func() { _ = fsx.RemoveAll(tmp) }()
+	defer func() { _ = safefs.RemoveAll(tmp) }()
 	got := saves.Layout{Dir: filepath.Join(tmp, "Saves"), Files: l.Files, Companions: l.Companions, CompanionPaths: l.CompanionPaths, Linked: l.Linked, UserFolders: l.UserFolders}
 	want, err := extractSaves(zipPath, got, folders)
 	if err != nil {
@@ -92,7 +92,7 @@ func RestoreCopy(ctx context.Context, l saves.Layout, backupsDir, save, kept str
 func dropCompanions(l saves.Layout, save string, restored []string) error {
 	for _, p := range l.Paths(save)[1:] {
 		if !slices.Contains(restored, p) && !slices.Contains(l.CompanionPathsOf(save), p) {
-			if err := fsx.RemoveAll(filepath.Join(l.Dir, filepath.FromSlash(p))); err != nil {
+			if err := safefs.RemoveAll(filepath.Join(l.Dir, filepath.FromSlash(p))); err != nil {
 				return err
 			}
 		}
@@ -107,18 +107,18 @@ func replace(src, dst string) error {
 	}
 	if _, err := os.Stat(dst); err == nil {
 		old := dst + ".mortar-restore"
-		if err := fsx.Rename(dst, old); err != nil {
+		if err := safefs.Rename(dst, old); err != nil {
 			return err
 		}
-		if err := fsx.Rename(src, dst); err != nil {
-			_ = fsx.Rename(old, dst)
+		if err := safefs.Rename(src, dst); err != nil {
+			_ = safefs.Rename(old, dst)
 			return err
 		}
-		return fsx.RemoveAll(old)
+		return safefs.RemoveAll(old)
 	} else if !errors.Is(err, fs.ErrNotExist) {
 		return err
 	}
-	return fsx.Rename(src, dst)
+	return safefs.Rename(src, dst)
 }
 
 // extractSaves unpacks zipPath beside got.Dir, its Saves folder, and lists the saves in it that folders names (all

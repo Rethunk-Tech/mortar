@@ -13,7 +13,7 @@ import (
 	"github.com/go-ole/go-ole"
 	"github.com/go-ole/go-ole/oleutil"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/winname"
 )
 
@@ -167,7 +167,7 @@ func Renamed(game, profile, profileName, gameName string) error {
 	if strings.EqualFold(matches[0], target) {
 		return nil
 	}
-	return fsx.Rename(matches[0], target)
+	return safefs.Rename(matches[0], target)
 }
 
 // Removed removes the Start menu shortcuts for a deleted profile.
@@ -177,7 +177,7 @@ func Removed(game, profile string) error {
 		return err
 	}
 	for _, path := range matches {
-		if err := fsx.Remove(path); err != nil && !errors.Is(err, os.ErrNotExist) {
+		if err := safefs.Remove(path); err != nil && !errors.Is(err, os.ErrNotExist) {
 			return err
 		}
 	}
@@ -215,7 +215,7 @@ func RemoveStartMenu() error {
 	if err != nil {
 		return err
 	}
-	return fsx.RemoveAll(dir)
+	return safefs.RemoveAll(dir)
 }
 
 // Repoint retargets each profile shortcut in the Start menu whose program no longer exists to exe, so shortcuts

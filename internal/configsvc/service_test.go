@@ -10,7 +10,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/modconfig"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -314,7 +314,7 @@ func TestTextFilesAreMatchedByPackageAndEditedWhole(t *testing.T) {
 	if err := s.SetText("g", "p", id, "Ex-BetterStuff/rules.yaml", "speed: 3\n"); err != nil {
 		t.Fatal(err)
 	}
-	if b, _ := fsx.ReadFile(filepath.Join(cfg, "Ex-BetterStuff", "rules.yaml")); string(b) != "speed: 3\n" {
+	if b, _ := safefs.ReadFile(filepath.Join(cfg, "Ex-BetterStuff", "rules.yaml")); string(b) != "speed: 3\n" {
 		t.Fatalf("written %q", b)
 	}
 	if got, _ := s.Text("g", "p", "", "Unrelated.xml"); got != "<x/>" {
@@ -323,7 +323,7 @@ func TestTextFilesAreMatchedByPackageAndEditedWhole(t *testing.T) {
 	if err := s.SetText("g", "p", "", "Unrelated.xml", "<y/>"); err != nil {
 		t.Fatal(err)
 	}
-	if b, _ := fsx.ReadFile(filepath.Join(cfg, "Unrelated.xml")); string(b) != "\ufeff<y/>" {
+	if b, _ := safefs.ReadFile(filepath.Join(cfg, "Unrelated.xml")); string(b) != "\ufeff<y/>" {
 		t.Fatalf("the BOM was not kept: %q", b)
 	}
 	if err := s.SetText("g", "p", id, "../escape.yaml", "x"); err == nil {

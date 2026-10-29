@@ -10,8 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
@@ -32,7 +31,7 @@ func sideID(namespace, name string) string { return strings.ToLower(namespace + 
 
 func readSide(dir, key string) sideFile {
 	var s sideFile
-	if b, err := fsx.ReadFile(sidePath(dir, key)); err == nil {
+	if b, err := safefs.ReadFile(sidePath(dir, key)); err == nil {
 		_ = json.Unmarshal(b, &s)
 	}
 	return s
@@ -40,7 +39,7 @@ func readSide(dir, key string) sideFile {
 
 func writeSide(dir, key string, s sideFile) {
 	if b, err := json.Marshal(s); err == nil {
-		_ = datadir.WriteFileAtomic(sidePath(dir, key), b, 0o644)
+		_ = safefs.WriteFileAtomic(sidePath(dir, key), b, 0o644)
 	}
 }
 
@@ -53,7 +52,7 @@ func (d Driver) sideVersions(ctx context.Context, key, namespace, name, mortarVe
 	}
 	dir := filepath.Join(d.cacheRoot(), "thunderstore")
 	var meta cacheMeta
-	if b, err := fsx.ReadFile(filepath.Join(dir, key+".meta.json")); err != nil || json.Unmarshal(b, &meta) != nil {
+	if b, err := safefs.ReadFile(filepath.Join(dir, key+".meta.json")); err != nil || json.Unmarshal(b, &meta) != nil {
 		return nil, false
 	}
 	if meta.Hash == "" {
@@ -103,7 +102,7 @@ const refreshTimeout = 5 * time.Minute
 func (d Driver) rememberVersions(key, namespace, name string, versions []string) {
 	dir := filepath.Join(d.cacheRoot(), "thunderstore")
 	var meta cacheMeta
-	if b, err := fsx.ReadFile(filepath.Join(dir, key+".meta.json")); err != nil || json.Unmarshal(b, &meta) != nil || meta.Hash == "" {
+	if b, err := safefs.ReadFile(filepath.Join(dir, key+".meta.json")); err != nil || json.Unmarshal(b, &meta) != nil || meta.Hash == "" {
 		return
 	}
 	sideMu.Lock()
@@ -149,7 +148,7 @@ func refreshSide(dir, key, hash, path string) {
 
 // eachListed hands fn each package of the stored listing at path in turn, keeping none of them.
 func eachListed(path string, fn func(*pkg)) error {
-	f, err := fsx.Open(path)
+	f, err := safefs.Open(path)
 	if err != nil {
 		return err
 	}

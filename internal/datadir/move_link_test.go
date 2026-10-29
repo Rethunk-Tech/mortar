@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 func TestRelocateKeepsLinkedProfile(t *testing.T) {
@@ -18,7 +20,7 @@ func TestRelocateKeepsLinkedProfile(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(ext, "profile.json"), []byte("{}"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := LinkDir(filepath.Join(src, "profiles", "g", "p1"), ext); err != nil {
+	if err := safefs.LinkDir(filepath.Join(src, "profiles", "g", "p1"), ext); err != nil {
 		t.Skip(err)
 	}
 	dest := filepath.Join(base, "new")

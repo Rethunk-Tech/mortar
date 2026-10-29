@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -61,7 +61,7 @@ func (s *Service) DecompileMapped(ctx context.Context, gameID, dir, assembly, ty
 
 // withPDB is a copy of the assembly beside a PDB ILSpy generated for it, kept in the cache by the file's size and time.
 func (s *Service) withPDB(ctx context.Context, tool, path string) (string, error) {
-	st, err := fsx.Stat(path)
+	st, err := safefs.Stat(path)
 	if err != nil {
 		return "", err
 	}
@@ -69,17 +69,17 @@ func (s *Service) withPDB(ctx context.Context, tool, path string) (string, error
 	dir := filepath.Join(s.CacheDir, "game-code-pdb", hex.EncodeToString(sum[:8]))
 	dll := filepath.Join(dir, filepath.Base(path))
 	pdb := strings.TrimSuffix(dll, filepath.Ext(dll)) + ".pdb"
-	if fsx.IsFile(dll) && fsx.IsFile(pdb) {
+	if safefs.IsFile(dll) && safefs.IsFile(pdb) {
 		return dll, nil
 	}
-	body, err := fsx.ReadFile(path)
+	body, err := safefs.ReadFile(path)
 	if err != nil {
 		return "", err
 	}
 	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return "", err
 	}
-	if err := fsx.WriteFile(dll, body, 0o600); err != nil {
+	if err := safefs.WriteFile(dll, body, 0o600); err != nil {
 		return "", err
 	}
 	if _, err := s.run(ctx, dir, tool, "-genpdb", "-o", dir, dll); err != nil {

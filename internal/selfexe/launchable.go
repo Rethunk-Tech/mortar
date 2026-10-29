@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // Launchable is the path a desktop entry, shortcut or handler should run to start this Mortar: $APPIMAGE when exe
@@ -17,7 +17,7 @@ func Launchable(exe string) string {
 	if img == "" || mount == "" || !strings.HasPrefix(exe, filepath.Clean(mount)+string(filepath.Separator)) {
 		return exe
 	}
-	if info, err := fsx.Stat(img); err != nil || !info.Mode().IsRegular() {
+	if info, err := safefs.Stat(img); err != nil || !info.Mode().IsRegular() {
 		return exe
 	}
 	return img

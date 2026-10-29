@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
@@ -72,7 +72,7 @@ func Processes(procDir string, names ...string) ([]Process, error) {
 		if err != nil {
 			continue
 		}
-		raw, err := fsx.ReadFile(filepath.Join(procDir, e.Name(), "cmdline"))
+		raw, err := safefs.ReadFile(filepath.Join(procDir, e.Name(), "cmdline"))
 		if err != nil {
 			continue
 		}
@@ -100,7 +100,7 @@ const clockTicks = 100
 // startTime is when the process began, from its /proc/<pid>/stat start tick and the boot time in /proc/stat;
 // the zero time when either is unreadable.
 func startTime(procDir, pid string) time.Time {
-	stat, err := fsx.ReadFile(filepath.Join(procDir, pid, "stat"))
+	stat, err := safefs.ReadFile(filepath.Join(procDir, pid, "stat"))
 	if err != nil {
 		return time.Time{}
 	}
@@ -113,7 +113,7 @@ func startTime(procDir, pid string) time.Time {
 	if err != nil {
 		return time.Time{}
 	}
-	sys, err := fsx.ReadFile(filepath.Join(procDir, "stat"))
+	sys, err := safefs.ReadFile(filepath.Join(procDir, "stat"))
 	if err != nil {
 		return time.Time{}
 	}

@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/modpic"
 	"github.com/Rethunk-Tech/mortar/internal/msbuild"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -134,7 +134,7 @@ func (s *Service) Inspect(ctx context.Context, gameID, dir string) (ProjectInfo,
 	info.Icon = iconData(p.Dir)
 	s.readGit(ctx, p, &info)
 	info.BuiltAt, info.Stale = buildState(p)
-	if body, err := fsx.ReadFile(filepath.Join(p.Dir, ".mortar", "template.json")); err == nil {
+	if body, err := safefs.ReadFile(filepath.Join(p.Dir, ".mortar", "template.json")); err == nil {
 		var rec projectRecord
 		info.ClientOnly = json.Unmarshal(body, &rec) == nil && rec.Values["audience"] == "client"
 	}
@@ -187,7 +187,7 @@ const iconPx = 96
 
 // iconData is the project's icon.png, shrunk, as a data URL; a project without one, or with a broken one, has none.
 func iconData(dir string) string {
-	b, err := fsx.ReadFile(filepath.Join(dir, "icon.png"))
+	b, err := safefs.ReadFile(filepath.Join(dir, "icon.png"))
 	if err != nil {
 		return ""
 	}
@@ -199,11 +199,11 @@ func iconData(dir string) string {
 }
 
 func readInfo(dir, csproj string) (ProjectInfo, error) {
-	project, err := fsx.ReadFile(csproj)
+	project, err := safefs.ReadFile(csproj)
 	if err != nil {
 		return ProjectInfo{}, err
 	}
-	props, _ := fsx.ReadFile(filepath.Join(dir, propsFile))
+	props, _ := safefs.ReadFile(filepath.Join(dir, propsFile))
 	base := strings.TrimSuffix(filepath.Base(csproj), ".csproj")
 	info := ProjectInfo{
 		Name:        cmpOr(msbuild.Property(string(project), "AssemblyTitle"), base),
@@ -342,7 +342,7 @@ func (s *Service) Edit(ctx context.Context, gameID, dir string, e ProjectEdit) (
 	if guid := e.IDPrefix + "." + e.Name; old.GUID != guid && e.Name == old.Name {
 		// The build only adds files, so the old assembly would load beside the renamed one.
 		for _, ext := range []string{".dll", ".pdb"} {
-			_ = fsx.Remove(filepath.Join(p.Output, old.GUID+ext))
+			_ = safefs.Remove(filepath.Join(p.Output, old.GUID+ext))
 		}
 	}
 	if err := editFile(filepath.Join(p.Dir, propsFile), func(body string) string {
@@ -373,12 +373,12 @@ func (s *Service) Edit(ctx context.Context, gameID, dir string, e ProjectEdit) (
 }
 
 func editFile(path string, fn func(string) string) error {
-	body, err := fsx.ReadFile(path)
+	body, err := safefs.ReadFile(path)
 	if err != nil {
 		return err
 	}
 	if next := fn(string(body)); next != string(body) {
-		return fsx.WriteFile(path, []byte(next), 0o644) // #nosec G306 -- a tracked project file
+		return safefs.WriteFile(path, []byte(next), 0o644) // #nosec G306 -- a tracked project file
 	}
 	return nil
 }
@@ -394,7 +394,7 @@ func (s *Service) rename(ctx context.Context, p settings.DevProject, csproj, old
 				return nil
 			}
 		}
-		return fsx.Rename(filepath.Join(dir, from), filepath.Join(dir, to))
+		return safefs.Rename(filepath.Join(dir, from), filepath.Join(dir, to))
 	}
 	srcOld, srcNew := filepath.Join("src", filepath.Base(filepath.Dir(csproj))), filepath.Join("src", name)
 	if _, err := os.Lstat(filepath.Join(dir, srcNew)); err == nil {

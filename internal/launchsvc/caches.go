@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
@@ -65,7 +65,7 @@ func (s *Service) clearCaches(gameID, profileID, installID string) {
 }
 
 // cacheFold folds a path as the file system does; tests replace it to fold on any system.
-var cacheFold = fsx.FoldCase
+var cacheFold = safefs.FoldCase
 
 // sameDir reports whether a resolved folder is the folder the catalog path names: on a case-insensitive file system a
 // catalog path whose folder case differs from disk resolves to the disk's case, which is the same folder. A folder
@@ -109,7 +109,7 @@ func clearCache(root, rel string) (int, error) {
 	case info.Mode()&os.ModeSymlink != 0:
 		return 0, fmt.Errorf("%q is a link", rel)
 	case info.Mode().IsRegular():
-		if err := fsx.Remove(target); err != nil {
+		if err := safefs.Remove(target); err != nil {
 			return 0, err
 		}
 		return 1, nil
@@ -136,12 +136,12 @@ func clearFolder(dir string) (int, error) {
 				errs = append(errs, err)
 				continue
 			}
-			if err := fsx.Remove(p); err != nil {
+			if err := safefs.Remove(p); err != nil {
 				errs = append(errs, err)
 			}
 			continue
 		}
-		if err := fsx.Remove(p); err != nil {
+		if err := safefs.Remove(p); err != nil {
 			errs = append(errs, err)
 			continue
 		}

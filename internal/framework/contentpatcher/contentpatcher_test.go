@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/go-lenientjson"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/packs"
 )
@@ -21,7 +21,7 @@ func testdataPack(t *testing.T, name string) framework.Mod {
 		t.Fatal("no caller")
 	}
 	folder := filepath.Join(filepath.Dir(file), "testdata", name)
-	raw, err := fsx.ReadFile(filepath.Join(folder, "manifest.json"))
+	raw, err := safefs.ReadFile(filepath.Join(folder, "manifest.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -135,10 +135,10 @@ func TestContentPatcherJSONNoise(t *testing.T) {
 	if err := os.MkdirAll(filepath.Join(folder, "patches"), 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(filepath.Join(folder, "manifest.json"), []byte(`{"Name":"N","UniqueID":"Pack.Noise","Version":"1","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`), 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(folder, "manifest.json"), []byte(`{"Name":"N","UniqueID":"Pack.Noise","Version":"1","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(filepath.Join(folder, "content.json"), []byte(`{
+	if err := safefs.WriteFile(filepath.Join(folder, "content.json"), []byte(`{
 		// comment
 		"Changes": [
 			{ "Action": "Include", "FromFile": "patches/extra.json", },
@@ -146,7 +146,7 @@ func TestContentPatcherJSONNoise(t *testing.T) {
 	}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(filepath.Join(folder, "patches", "extra.json"), []byte(`{"Changes":[{"Action":"Load","Target":"Maps/springobjects"}]}`), 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(folder, "patches", "extra.json"), []byte(`{"Changes":[{"Action":"Load","Target":"Maps/springobjects"}]}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	peer := testdataPack(t, "include_b")

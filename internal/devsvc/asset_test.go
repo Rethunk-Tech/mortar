@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -33,7 +33,7 @@ func TestAnAssetProjectIsItsOwnPackage(t *testing.T) {
 	if p.Kind != "sounds" || p.Output != dir || p.Untrusted || p.TemplateIcon == "" {
 		t.Fatalf("project %+v", p)
 	}
-	if body, err := fsx.ReadFile(filepath.Join(dir, "plugins", "sound_pack.json")); err != nil || !strings.Contains(string(body), `"name": "Quacks"`) {
+	if body, err := safefs.ReadFile(filepath.Join(dir, "plugins", "sound_pack.json")); err != nil || !strings.Contains(string(body), `"name": "Quacks"`) {
 		t.Errorf("starter file = %s (%v)", body, err)
 	}
 	var watched []string

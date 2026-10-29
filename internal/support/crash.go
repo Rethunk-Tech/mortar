@@ -9,8 +9,7 @@ import (
 	"strings"
 	"sync/atomic"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 const (
@@ -53,7 +52,7 @@ func crashLogGrew(crashPath, seenPath string) bool {
 }
 
 func readSeenSize(seenPath string) (int64, bool) {
-	b, err := fsx.ReadFile(seenPath)
+	b, err := safefs.ReadFile(seenPath)
 	if err != nil {
 		return 0, false
 	}
@@ -69,14 +68,14 @@ func writeCrashSeen(seenPath, crashPath string) {
 	if info, err := os.Stat(crashPath); err == nil {
 		size = info.Size()
 	}
-	_ = datadir.WriteFileAtomic(seenPath, []byte(strconv.FormatInt(size, 10)+"\n"), 0o600)
+	_ = safefs.WriteFileAtomic(seenPath, []byte(strconv.FormatInt(size, 10)+"\n"), 0o600)
 }
 
 // maxLogLine is the longest log line prevLogUnclean reads.
 const maxLogLine = 4 << 20
 
 func prevLogUnclean(prevPath string) bool {
-	f, err := fsx.Open(prevPath)
+	f, err := safefs.Open(prevPath)
 	if err != nil {
 		return false
 	}
@@ -109,7 +108,7 @@ func logTailSections(dataDir, home string, budget int) string {
 	var bodies []string
 	var names []string
 	for _, name := range []string{prevLogName, crashLogName} {
-		b, err := fsx.ReadFile(filepath.Join(dataDir, name))
+		b, err := safefs.ReadFile(filepath.Join(dataDir, name))
 		if err != nil {
 			continue
 		}

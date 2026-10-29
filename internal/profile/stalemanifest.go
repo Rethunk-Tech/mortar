@@ -10,7 +10,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
@@ -79,7 +79,7 @@ var errNotFixable = errors.New("manifest not in the entry's own download")
 // setManifestVersion rewrites the file only when it is uniqueID's manifest; a missing file means the folder came
 // from another file of the entry.
 func setManifestVersion(path string, uniqueID mod.ID, version string) error {
-	b, err := fsx.ReadFile(path)
+	b, err := safefs.ReadFile(path)
 	if errors.Is(err, fs.ErrNotExist) {
 		return errNotFixable
 	}
@@ -106,5 +106,5 @@ func setManifestVersion(path string, uniqueID mod.ID, version string) error {
 		return err
 	}
 	// Writing a new file breaks any reflink to the store copy, which is rewritten the same way.
-	return fsx.WriteFile(path, out, info.Mode().Perm())
+	return safefs.WriteFile(path, out, info.Mode().Perm())
 }

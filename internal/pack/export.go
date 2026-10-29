@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 	"go.yaml.in/yaml/v3"
 )
@@ -89,7 +89,7 @@ func (c Code) ExportCode(ctx context.Context, d Draft) (string, error) {
 	var out struct {
 		Key string `json:"key"`
 	}
-	if err := json.NewDecoder(fsx.CapReader(resp.Body, 1<<20)).Decode(&out); err != nil || out.Key == "" {
+	if err := json.NewDecoder(safefs.CapReader(resp.Body, 1<<20)).Decode(&out); err != nil || out.Key == "" {
 		return "", errors.New("thunderstore returned no profile key")
 	}
 	return out.Key, nil
@@ -101,5 +101,5 @@ func WriteR2z(dest string, d Draft) error {
 	if err != nil {
 		return err
 	}
-	return fsx.WriteFile(dest, z, 0o600)
+	return safefs.WriteFile(dest, z, 0o600)
 }

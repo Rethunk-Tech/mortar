@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/share"
 	"github.com/Rethunk-Tech/mortar/internal/store"
@@ -65,7 +65,7 @@ func newModMachine(t *testing.T, folder, name string, clock *time.Time) (*Servic
 
 func payloadMods(t *testing.T, folder string) []int {
 	t.Helper()
-	raw, err := fsx.ReadFile(filepath.Join(folder, "stardew", "main.mortar"))
+	raw, err := safefs.ReadFile(filepath.Join(folder, "stardew", "main.mortar"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -127,7 +127,7 @@ func TestAnEditWhileDownloadsFinishSyncsAndKeepsTheMissingMod(t *testing.T) {
 	if got := payloadMods(t, folder); !slices.Equal(got, []int{1, 2, 3}) {
 		t.Fatalf("pushed mods = %v, want the missing one kept", got)
 	}
-	raw, err := fsx.ReadFile(filepath.Join(folder, "stardew", "main.mortar"))
+	raw, err := safefs.ReadFile(filepath.Join(folder, "stardew", "main.mortar"))
 	if err != nil {
 		t.Fatal(err)
 	}

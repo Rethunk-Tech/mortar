@@ -10,8 +10,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/msbuild"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -72,7 +72,7 @@ func (s *Service) RemoveDependency(gameID, dir, pkg string) error {
 		return err
 	}
 	props := filepath.Join(p.Dir, "Config.Build.user.props")
-	userProps, _ := fsx.ReadFile(props)
+	userProps, _ := safefs.ReadFile(props)
 	folder := msbuild.Property(string(userProps), depProp(pkg))
 	soft := projectDependencies(string(raw))[pkg]
 	return s.wire(context.Background(), p, func() error {
@@ -80,7 +80,7 @@ func (s *Service) RemoveDependency(gameID, dir, pkg string) error {
 		if err != nil {
 			return err
 		}
-		if err := fsx.WriteFile(csproj, []byte(project), 0o644); err != nil { // #nosec G306 -- a tracked project file
+		if err := safefs.WriteFile(csproj, []byte(project), 0o644); err != nil { // #nosec G306 -- a tracked project file
 			return err
 		}
 		src := filepath.Dir(csproj)
@@ -110,7 +110,7 @@ func dropUntouchedCompat(src, pkg string) error {
 	if class == "" {
 		return nil
 	}
-	raw, err := fsx.ReadFile(path)
+	raw, err := safefs.ReadFile(path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return nil
@@ -122,7 +122,7 @@ func dropUntouchedCompat(src, pkg string) error {
 	if guid == nil || namespace == nil || string(raw) != fmt.Sprintf(compatTemplate, namespace[1], name, class, guid[1]) {
 		return nil
 	}
-	return fsx.Remove(path)
+	return safefs.Remove(path)
 }
 
 // lineOf matches a whole line holding pattern, its line break included.
@@ -154,7 +154,7 @@ func undeclareDependency(src, guid string) error {
 	if path == "" || !pluginGUID.MatchString(guid) {
 		return nil
 	}
-	raw, err := fsx.ReadFile(path)
+	raw, err := safefs.ReadFile(path)
 	if err != nil {
 		return err
 	}
@@ -162,5 +162,5 @@ func undeclareDependency(src, guid string) error {
 	if body == string(raw) {
 		return nil
 	}
-	return fsx.WriteFile(path, []byte(body), 0o644) // #nosec G306 -- a tracked source file
+	return safefs.WriteFile(path, []byte(body), 0o644) // #nosec G306 -- a tracked source file
 }

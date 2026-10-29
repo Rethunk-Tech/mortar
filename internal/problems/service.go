@@ -16,11 +16,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
@@ -208,7 +208,7 @@ func (s *Service) gameLog(gameID, profileID string) string {
 // readLogTail is the last launch.MaxLogBytes of the log at path from a line start, empty when it cannot be read: a
 // game's log can grow without bound and the analyzers only need the latest run.
 func readLogTail(path string) string {
-	f, err := fsx.Open(path)
+	f, err := safefs.Open(path)
 	if err != nil {
 		return ""
 	}

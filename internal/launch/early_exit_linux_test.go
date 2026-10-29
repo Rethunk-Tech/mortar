@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // runFake runs script as the launched process, a stand-in for a Proton or Wine runtime.
@@ -79,7 +79,7 @@ func TestAStalledLaunchIsEndedWithItsChildren(t *testing.T) {
 	if took > 5*time.Second {
 		t.Fatalf("took %v, want the failure before the timeout", took)
 	}
-	raw, readErr := fsx.ReadFile(pidFile)
+	raw, readErr := safefs.ReadFile(pidFile)
 	if readErr != nil {
 		t.Fatal(readErr)
 	}

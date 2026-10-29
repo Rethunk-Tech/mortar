@@ -13,9 +13,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // A check after a change recomputes only what the change touches. Each conflict target's outcome is kept under a key
@@ -72,7 +72,7 @@ func loadParts() {
 	if err != nil {
 		return
 	}
-	raw, err := fsx.ReadFile(path)
+	raw, err := safefs.ReadFile(path)
 	if err != nil {
 		return
 	}

@@ -5,13 +5,13 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // The MVIDs are what System.Reflection.Metadata's ModuleVersionId.ToString("N") prints for each fixture, the form a
 // Mono stack frame without symbols shows. A Windows PDB beside a DLL is told apart by its magic.
 func TestIdentityReadsTheMVIDAndWhichSymbolsShip(t *testing.T) {
-	dll, err := fsx.ReadFile(filepath.Join("testdata", "mod.dll"))
+	dll, err := safefs.ReadFile(filepath.Join("testdata", "mod.dll"))
 	if err != nil {
 		t.Fatal(err)
 	}

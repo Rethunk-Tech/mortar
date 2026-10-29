@@ -8,7 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 func TestDoJSON(t *testing.T) {
@@ -58,7 +58,7 @@ func TestDoJSON(t *testing.T) {
 	if err := call("/bad", &out); err == nil {
 		t.Fatal("a 200 with a body that is not JSON should fail")
 	}
-	if err := call("/big", &out); !errors.Is(err, fsx.ErrTooLarge) {
+	if err := call("/big", &out); !errors.Is(err, safefs.ErrTooLarge) {
 		t.Fatalf("an oversize body should be refused, not truncated: %v", err)
 	}
 }

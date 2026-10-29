@@ -12,8 +12,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/store"
@@ -95,7 +94,7 @@ func (s *Store) ModState(game, id, key string, uniqueID mod.ID) (ModState, error
 	if err != nil {
 		return ModState{}, err
 	}
-	mine, err := fsx.ReadFile(filepath.Join(folder, configFile))
+	mine, err := safefs.ReadFile(filepath.Join(folder, configFile))
 	if errors.Is(err, fs.ErrNotExist) {
 		return st, nil
 	}
@@ -110,7 +109,7 @@ func (s *Store) ModState(game, id, key string, uniqueID mod.ID) (ModState, error
 	if err != nil {
 		return ModState{}, err
 	}
-	shipped, err := fsx.ReadFile(filepath.Join(src, filepath.FromSlash(m.Folder), configFile))
+	shipped, err := safefs.ReadFile(filepath.Join(src, filepath.FromSlash(m.Folder), configFile))
 	switch {
 	case errors.Is(err, fs.ErrNotExist):
 		st.Config = ConfigGenerated
@@ -158,7 +157,7 @@ func (s *Store) ResetConfig(game, id, key string, uniqueID mod.ID) error {
 		return nil
 	}
 	return s.editConfigLocked(game, id, HistoryEvent{Change: ChangeConfigReset, Name: uniqueID.Local()}, func() error {
-		return fsx.Remove(filepath.Join(folder, configFile))
+		return safefs.Remove(filepath.Join(folder, configFile))
 	})
 }
 
@@ -187,7 +186,7 @@ func (s *Store) ReadConfig(game, id, key string, uniqueID mod.ID) (string, error
 }
 
 func readConfigAt(path string) (string, error) {
-	b, err := fsx.ReadFile(path)
+	b, err := safefs.ReadFile(path)
 	if err != nil {
 		return "", err
 	}
@@ -221,7 +220,7 @@ func (s *Store) writeConfig(game, id, key string, uniqueID mod.ID, contents stri
 		return fmt.Errorf("config.json is not valid JSON: %w", err)
 	}
 	return s.editConfigLocked(game, id, note, func() error {
-		return datadir.WriteFileAtomic(path, rewritten, 0o600)
+		return safefs.WriteFileAtomic(path, rewritten, 0o600)
 	})
 }
 

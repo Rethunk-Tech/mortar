@@ -6,8 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
@@ -28,7 +27,7 @@ func derivedPath(dir, key string) string { return filepath.Join(dir, key+".deriv
 
 func readDerived(dir, key string) derivedFile {
 	var s derivedFile
-	if b, err := fsx.ReadFile(derivedPath(dir, key)); err == nil {
+	if b, err := safefs.ReadFile(derivedPath(dir, key)); err == nil {
 		_ = json.Unmarshal(b, &s)
 	}
 	return s
@@ -48,7 +47,7 @@ func derivedFor(dir, key, path string) (derivedFile, error) {
 		return s, err
 	}
 	if b, err := json.Marshal(s); err == nil {
-		_ = datadir.WriteFileAtomic(derivedPath(dir, key), b, 0o644)
+		_ = safefs.WriteFileAtomic(derivedPath(dir, key), b, 0o644)
 	}
 	return s, nil
 }

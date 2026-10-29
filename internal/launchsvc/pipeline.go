@@ -11,10 +11,10 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/deploy"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/iniedit"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
@@ -202,10 +202,10 @@ func (s *Service) gameSettingsMode(gameID, profileID, installID string) string {
 // without a copy (the player had no file yet) is left for the game to create.
 func (s *Service) applyRequiredSettings(gameID, own string) error {
 	info, ok := components.Game(gameID)
-	if !ok || !fsx.IsFile(own) {
+	if !ok || !safefs.IsFile(own) {
 		return nil
 	}
-	b, err := fsx.ReadFile(own)
+	b, err := safefs.ReadFile(own)
 	if err != nil {
 		return err
 	}
@@ -226,7 +226,7 @@ func (s *Service) applyRequiredSettings(gameID, own string) error {
 	if text == string(b) {
 		return nil
 	}
-	return datadir.WriteFileAtomic(own, []byte(text), 0o600)
+	return safefs.WriteFileAtomic(own, []byte(text), 0o600)
 }
 
 // swapSaves points the game's save folder at the profile's own for this launch when the profile keeps its saves

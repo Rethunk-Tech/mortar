@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 const damagedAsidePrefix = fileName + ".damaged-"
@@ -33,16 +33,16 @@ func (s *Store) Repair(game, id string) (Profile, error) {
 		return Profile{}, errNoSnapshot
 	}
 	src := filepath.Join(dir, fileName)
-	broken, _ := fsx.ReadFile(src)
+	broken, _ := safefs.ReadFile(src)
 	aside := filepath.Join(dir, fmt.Sprintf("%s%d", damagedAsidePrefix, time.Now().UnixNano()))
-	if err := fsx.Rename(src, aside); err != nil && !errors.Is(err, os.ErrNotExist) {
+	if err := safefs.Rename(src, aside); err != nil && !errors.Is(err, os.ErrNotExist) {
 		return Profile{}, err
 	}
 	p := salvageProfile(broken, id)
 	p.Entries = entries
 	p.Updated = time.Now().UTC().Truncate(time.Second)
 	if err := writeProfile(dir, p); err != nil {
-		_ = fsx.Rename(aside, src)
+		_ = safefs.Rename(aside, src)
 		return Profile{}, err
 	}
 	return p, nil
@@ -61,8 +61,8 @@ func (s *Store) UndoRepair(game, id string) error {
 		return err
 	}
 	src := filepath.Join(dir, fileName)
-	_ = fsx.Remove(src)
-	return fsx.Rename(aside, src)
+	_ = safefs.Remove(src)
+	return safefs.Rename(aside, src)
 }
 
 func salvageProfile(b []byte, id string) Profile {

@@ -6,6 +6,8 @@ require (
 	github.com/BurntSushi/toml v1.6.0
 	github.com/Rethunk-Tech/go-archive v0.1.1
 	github.com/Rethunk-Tech/go-lenientjson v0.1.0
+	github.com/Rethunk-Tech/go-safefs v0.1.0
+	github.com/Rethunk-Tech/go-semverish v0.1.0
 	github.com/andybalholm/brotli v1.2.7
 	github.com/andygrunwald/vdf v1.1.0
 	github.com/coder/websocket v1.8.15
@@ -28,7 +30,6 @@ require (
 
 require (
 	git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3 // indirect
-	github.com/Rethunk-Tech/go-semverish v0.1.0 // indirect
 	github.com/adrg/xdg v0.5.3 // indirect
 	github.com/bodgit/plumbing v1.3.0 // indirect
 	github.com/bodgit/sevenzip v1.6.5 // indirect

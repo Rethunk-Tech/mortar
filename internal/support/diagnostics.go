@@ -20,9 +20,9 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/doctor"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
@@ -77,7 +77,7 @@ func (s *Service) WriteDiagnostics(gameID, profileID, path string) (string, erro
 	if err != nil {
 		return "", err
 	}
-	if err := fsx.WriteFile(path, data, 0o600); err != nil {
+	if err := safefs.WriteFile(path, data, 0o600); err != nil {
 		return "", err
 	}
 	return path, nil
@@ -255,7 +255,7 @@ func webkitVersion() string {
 
 func mortarLog(dir, recent string) (string, string) {
 	for _, rel := range []string{"mortar.log", filepath.Join("logs", "mortar.log")} {
-		b, err := fsx.ReadFile(filepath.Join(dir, rel))
+		b, err := safefs.ReadFile(filepath.Join(dir, rel))
 		if err != nil {
 			continue
 		}
@@ -290,12 +290,12 @@ func (s *Service) loaderTail(gameID, profileID string) (name, body string) {
 	if err != nil {
 		return "", ""
 	}
-	data, err := fsx.ReadFile(path)
+	data, err := safefs.ReadFile(path)
 	if err != nil {
 		return "", ""
 	}
 	text := strings.ToValidUTF8(string(data), "")
-	if !datadir.UnderRoot(profileDir, path) {
+	if !safefs.UnderRoot(profileDir, path) {
 		if !launch.LogOwnedBy(text, s.home, modsDir) {
 			return "", ""
 		}
@@ -313,7 +313,7 @@ func lastLines(text string, n int) string {
 }
 
 func readFile(path string) []byte {
-	b, err := fsx.ReadFile(path)
+	b, err := safefs.ReadFile(path)
 	if err != nil {
 		return nil
 	}
@@ -446,7 +446,7 @@ func collectProfiles(root string) []bundleProfile {
 		return []bundleProfile{}
 	}
 	for _, d := range dirs {
-		raw, err := fsx.ReadFile(filepath.Join(d.Dir, "profile.json"))
+		raw, err := safefs.ReadFile(filepath.Join(d.Dir, "profile.json"))
 		if err != nil {
 			continue
 		}

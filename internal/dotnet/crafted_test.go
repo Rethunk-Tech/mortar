@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // craftedDLL copies testdata/mod.dll, lets edit rewrite its metadata, and returns the file's path.
@@ -22,7 +22,7 @@ func craftedDLL(t *testing.T, edit func(m *module)) string {
 	}
 	edit(m)
 	path := filepath.Join(t.TempDir(), "mod.dll")
-	if err := fsx.WriteFile(path, data, 0o600); err != nil {
+	if err := safefs.WriteFile(path, data, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	return path
@@ -65,7 +65,7 @@ func TestATypeSpecNamingItselfIsMalformedNotAStackOverflow(t *testing.T) {
 
 func TestAnAssemblyOverTheSizeCapIsRefusedUnread(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "big.dll")
-	if err := fsx.WriteFile(path, nil, 0o600); err != nil {
+	if err := safefs.WriteFile(path, nil, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.Truncate(path, maxAssembly+1); err != nil {

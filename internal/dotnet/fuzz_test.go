@@ -5,18 +5,18 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // FuzzAssembly feeds plugin DLLs, as a downloaded mod ships them, through each metadata reader: the BepInEx plugin
 // scan every install runs, the member-write, member, usage, MelonLoader and Harmony patch scans, the identity a ran error's stack is matched by,
 // and the source line read from an embedded PDB.
 func FuzzAssembly(f *testing.F) {
-	dll, err := fsx.ReadFile(filepath.Join("testdata", "mod.dll"))
+	dll, err := safefs.ReadFile(filepath.Join("testdata", "mod.dll"))
 	if err != nil {
 		f.Fatal(err)
 	}
-	embedded, err := fsx.ReadFile(filepath.Join("testdata", "embedded.dll"))
+	embedded, err := safefs.ReadFile(filepath.Join("testdata", "embedded.dll"))
 	if err != nil {
 		f.Fatal(err)
 	}
@@ -70,11 +70,11 @@ func FuzzRelationArgs(f *testing.F) {
 // FuzzPortablePDB feeds a PDB as a mod ships it beside its DLL to the sequence point reader, with the id the fixture
 // DLL expects so mutations get past the stale check.
 func FuzzPortablePDB(f *testing.F) {
-	pdb, err := fsx.ReadFile(filepath.Join("testdata", "portable", "Mod.pdb"))
+	pdb, err := safefs.ReadFile(filepath.Join("testdata", "portable", "Mod.pdb"))
 	if err != nil {
 		f.Fatal(err)
 	}
-	dll, err := fsx.ReadFile(filepath.Join("testdata", "portable", "Mod.dll"))
+	dll, err := safefs.ReadFile(filepath.Join("testdata", "portable", "Mod.dll"))
 	if err != nil {
 		f.Fatal(err)
 	}

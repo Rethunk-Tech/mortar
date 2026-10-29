@@ -18,10 +18,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
@@ -299,7 +299,7 @@ func (s *Service) Trash(gameID, dir string) error {
 	if err != nil {
 		return err
 	}
-	if err := fsx.Trash(p.Dir); err != nil {
+	if err := safefs.Trash(p.Dir); err != nil {
 		return err
 	}
 	if err := s.dropBuild(gameID, p); err != nil {
@@ -402,7 +402,7 @@ func (s *Service) instantiate(ctx context.Context, tpl components.DevTemplate, r
 			return err
 		}
 		out = filepath.Join(m.Parent, ".mortar-new-"+m.Repo)
-		defer func() { _ = fsx.RemoveAll(out) }()
+		defer func() { _ = safefs.RemoveAll(out) }()
 	}
 	newArgs := append([]string{"new", form.shortName, "--debug:custom-hive", hive, "-n", m.Name, "-o", out}, args...)
 	if _, err := s.run(ctx, "", "dotnet", newArgs...); err != nil {
@@ -418,7 +418,7 @@ func (s *Service) instantiate(ctx context.Context, tpl components.DevTemplate, r
 // GitHub repository made by then stays.
 func removeIfFailed(dest string, err *error) {
 	if *err != nil {
-		_ = fsx.RemoveAll(dest)
+		_ = safefs.RemoveAll(dest)
 	}
 }
 
@@ -430,7 +430,7 @@ func replaceTree(dest, generated string) error {
 	}
 	for _, e := range old {
 		if e.Name() != ".git" {
-			if err := fsx.RemoveAll(filepath.Join(dest, e.Name())); err != nil {
+			if err := safefs.RemoveAll(filepath.Join(dest, e.Name())); err != nil {
 				return err
 			}
 		}
@@ -440,7 +440,7 @@ func replaceTree(dest, generated string) error {
 		return err
 	}
 	for _, e := range made {
-		if err := fsx.Rename(filepath.Join(generated, e.Name()), filepath.Join(dest, e.Name())); err != nil {
+		if err := safefs.Rename(filepath.Join(generated, e.Name()), filepath.Join(dest, e.Name())); err != nil {
 			return err
 		}
 	}
@@ -464,7 +464,7 @@ func record(dir string, tpl components.DevTemplate, name string, values map[stri
 	if err := os.MkdirAll(filepath.Join(dir, ".mortar"), 0o750); err != nil {
 		return err
 	}
-	return fsx.WriteFile(filepath.Join(dir, ".mortar", "template.json"), append(body, '\n'), 0o644) // #nosec G306 -- a tracked project file
+	return safefs.WriteFile(filepath.Join(dir, ".mortar", "template.json"), append(body, '\n'), 0o644) // #nosec G306 -- a tracked project file
 }
 
 // loaderPackVersion is the newest release of the game's loader, empty when it cannot be looked up (the template's
@@ -503,7 +503,7 @@ func (s *Service) fromGitHub(ctx context.Context, tpl components.DevTemplate, m 
 				return nil
 			}
 		}
-		_ = fsx.RemoveAll(dest)
+		_ = safefs.RemoveAll(dest)
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -541,7 +541,7 @@ func (s *Service) templateDir(ctx context.Context, tpl components.DevTemplate) (
 	if err != nil {
 		return "", err
 	}
-	defer func() { _ = fsx.RemoveAll(work) }()
+	defer func() { _ = safefs.RemoveAll(work) }()
 	zip := filepath.Join(work, "template.zip")
 	if err := github.Download(ctx, s.HTTP, url, zip, maxTemplateZip, nil); err != nil {
 		return "", fmt.Errorf("downloading the template %s %s: %w", tpl.Repo, tpl.Ref, err)
@@ -558,8 +558,8 @@ func (s *Service) templateDir(ctx context.Context, tpl components.DevTemplate) (
 	if entries, err := os.ReadDir(unpacked); err == nil && len(entries) == 1 && entries[0].IsDir() {
 		root = filepath.Join(unpacked, entries[0].Name())
 	}
-	_ = fsx.RemoveAll(dir)
-	return dir, fsx.Rename(root, dir)
+	_ = safefs.RemoveAll(dir)
+	return dir, safefs.Rename(root, dir)
 }
 
 // localTemplate copies a template folder, or unpacks a .zip of one, into the cache fresh.
@@ -568,12 +568,12 @@ func (s *Service) localTemplate(path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	info, err := fsx.Stat(abs)
+	info, err := safefs.Stat(abs)
 	if err != nil {
 		return "", fmt.Errorf("%s names no template: %w", TemplateEnv, err)
 	}
 	dir := filepath.Join(s.CacheDir, "dev-templates", "local")
-	if err := fsx.RemoveAll(dir); err != nil {
+	if err := safefs.RemoveAll(dir); err != nil {
 		return "", err
 	}
 	if err := os.MkdirAll(dir, 0o750); err != nil {
@@ -582,14 +582,14 @@ func (s *Service) localTemplate(path string) (string, error) {
 	if info.IsDir() {
 		err = datadir.CopyTree(abs, dir)
 		// The template's git history isn't part of the template.
-		err = errors.Join(err, fsx.RemoveAll(filepath.Join(dir, ".git")))
+		err = errors.Join(err, safefs.RemoveAll(filepath.Join(dir, ".git")))
 	} else {
 		err = archive.Extract(abs, dir)
 		// A GitHub-style archive holds one folder.
 		if entries, readErr := os.ReadDir(dir); err == nil && readErr == nil && len(entries) == 1 && entries[0].IsDir() {
 			inner := filepath.Join(dir, entries[0].Name())
 			moved := dir + ".unpacked"
-			err = errors.Join(fsx.RemoveAll(moved), fsx.Rename(inner, moved), fsx.RemoveAll(dir), fsx.Rename(moved, dir))
+			err = errors.Join(safefs.RemoveAll(moved), safefs.Rename(inner, moved), safefs.RemoveAll(dir), safefs.Rename(moved, dir))
 		}
 	}
 	if err != nil {
@@ -644,5 +644,5 @@ func writeUserProps(dir, gameDir string) error {
 		return fmt.Errorf("the game folder %w", err)
 	}
 	body := "<Project>\n  <PropertyGroup>\n    <GameRootDir>" + msbuild.Escape(filepath.Clean(gameDir)+string(filepath.Separator)) + "</GameRootDir>\n  </PropertyGroup>\n</Project>\n"
-	return fsx.WriteFile(filepath.Join(dir, "Config.Build.user.props"), []byte(body), 0o600)
+	return safefs.WriteFile(filepath.Join(dir, "Config.Build.user.props"), []byte(body), 0o600)
 }

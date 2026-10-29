@@ -30,8 +30,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/go-lenientjson"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/modconfig"
 )
 
@@ -323,7 +323,7 @@ var packDiskState struct {
 // packKey names a pack folder in the disk cache: the path under the data folder when it is inside, so a moved or
 // copied data folder still finds its packs, else the absolute path.
 func packKey(base, root string) string {
-	if base != "" && datadir.UnderRoot(base, root) {
+	if base != "" && safefs.UnderRoot(base, root) {
 		if rel, err := filepath.Rel(base, root); err == nil {
 			return filepath.ToSlash(rel)
 		}
@@ -801,7 +801,7 @@ func readContentPackWithEnabled(im framework.Mod, requireEnabled, skip bool) cac
 }
 
 func (p *cachedPack) recordPackFile(root, abs string) {
-	if !datadir.UnderRoot(root, abs) {
+	if !safefs.UnderRoot(root, abs) {
 		return
 	}
 	relative, err := filepath.Rel(root, abs)
@@ -871,7 +871,7 @@ func writePackedCache(path string, v any) bool {
 		return false
 	}
 	packed, err := zipPackCache(raw)
-	return err == nil && os.MkdirAll(filepath.Dir(path), 0o700) == nil && datadir.WriteFileAtomic(path, packed, 0o600) == nil
+	return err == nil && os.MkdirAll(filepath.Dir(path), 0o700) == nil && safefs.WriteFileAtomic(path, packed, 0o600) == nil
 }
 
 func unzipPackCache(raw []byte) ([]byte, bool) {
@@ -903,7 +903,7 @@ func loadPackDiskCache() string {
 	packDiskState.base = base
 	packDiskState.entries = map[string]diskPackEntry{}
 	packDiskState.dirty = false
-	f, err := fsx.Open(path)
+	f, err := safefs.Open(path)
 	if err != nil {
 		return path
 	}
@@ -1018,7 +1018,7 @@ func flushPackDiskCache(mods []framework.Mod) {
 		packDiskState.Unlock()
 		return
 	}
-	err := datadir.WriteStreamAtomic(path, 0o600, func(w io.Writer) error {
+	err := safefs.WriteStreamAtomic(path, 0o600, func(w io.Writer) error {
 		bw := bufio.NewWriter(w)
 		if err := writePackCache(bw, diskPackCache{Version: contentPackParserVersion, Packs: entries}); err != nil {
 			return err
@@ -1052,7 +1052,7 @@ type cpSchema struct {
 }
 
 func readConfigSchema(root string) map[string]cpSchema {
-	raw, err := fsx.ReadFile(filepath.Join(root, "content.json"))
+	raw, err := safefs.ReadFile(filepath.Join(root, "content.json"))
 	if err != nil {
 		return nil
 	}
@@ -1099,7 +1099,7 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 		return
 	}
 	pack.recordPackFile(root, abs)
-	raw, err := fsx.ReadFile(abs)
+	raw, err := safefs.ReadFile(abs)
 	if err != nil {
 		return
 	}
@@ -2021,7 +2021,7 @@ func inside(root, rel string) (string, bool) {
 		return "", false
 	}
 	joined := filepath.Join(root, filepath.FromSlash(rel))
-	if !datadir.UnderRoot(root, joined) {
+	if !safefs.UnderRoot(root, joined) {
 		return "", false
 	}
 	return joined, true
@@ -3115,7 +3115,7 @@ func readPackPath(root, rel string) ([]byte, bool) {
 		return nil, false
 	}
 	defer func() { _ = file.Close() }()
-	raw, err := fsx.ReadCapped(file, maxPackFileBytes)
+	raw, err := safefs.ReadCapped(file, maxPackFileBytes)
 	return raw, err == nil
 }
 
@@ -3150,7 +3150,7 @@ func foldedRel(root, rel string) (string, bool) {
 			kept = append(kept, part)
 		}
 	}
-	got, err := fsx.ResolveFold(os.DirFS(root), cmp.Or(strings.Join(kept, "/"), "."))
+	got, err := safefs.ResolveFold(os.DirFS(root), cmp.Or(strings.Join(kept, "/"), "."))
 	return got, err == nil
 }
 

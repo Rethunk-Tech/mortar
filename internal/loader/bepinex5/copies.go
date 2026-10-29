@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/wineoverride"
@@ -54,11 +54,11 @@ func BuildCopyRoot(profileDir, root string) error {
 			continue
 		}
 		from, to := filepath.Join(src, e.Name()), filepath.Join(dst, e.Name())
-		if err := fsx.RemoveAll(to); err != nil {
+		if err := safefs.RemoveAll(to); err != nil {
 			return err
 		}
 		if e.IsDir() {
-			err = datadir.LinkDir(to, from)
+			err = safefs.LinkDir(to, from)
 		} else {
 			err = datadir.CopyFile(from, to)
 		}

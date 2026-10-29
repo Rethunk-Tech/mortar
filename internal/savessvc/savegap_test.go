@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -21,13 +21,13 @@ func TestRestoreSaveCopyRefusedWhileBusy(t *testing.T) {
 	s, savesDir := backupService(t)
 	s.busy = func() bool { return true }
 	testfs.WriteFarm(t, savesDir, "Farm_1", "Sunny", "current")
-	if err := fsx.WriteFile(filepath.Join(savesDir, "Farm_1", "Farm_1_old"), []byte("older"), 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(savesDir, "Farm_1", "Farm_1_old"), []byte("older"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if err := s.RestoreSaveCopy(t.Context(), "stardew", "", "Farm_1", "Farm_1_old"); !errors.Is(err, ErrBusy) {
 		t.Fatalf("err = %v, want ErrBusy", err)
 	}
-	got, err := fsx.ReadFile(filepath.Join(savesDir, "Farm_1", "Farm_1"))
+	got, err := safefs.ReadFile(filepath.Join(savesDir, "Farm_1", "Farm_1"))
 	if err != nil || string(got) != "current" {
 		t.Fatalf("save after a refused restore: %q %v", got, err)
 	}

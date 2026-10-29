@@ -10,7 +10,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/store"
@@ -188,7 +188,7 @@ func (s *Store) priorVariant(game, id string, found []smapimanifest.Mod, vars []
 }
 
 func contentRootFile(dir string) string {
-	b, err := fsx.ReadFile(filepath.Join(dir, store.RootFile))
+	b, err := safefs.ReadFile(filepath.Join(dir, store.RootFile))
 	if err != nil {
 		return ""
 	}

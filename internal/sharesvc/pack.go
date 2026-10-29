@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/pack"
@@ -136,7 +136,7 @@ func adoptLocalPlugins(out *Preview, d *pack.Draft, importedFrom string) {
 	kept := out.Mods[:0]
 	for _, m := range out.Mods {
 		dir := filepath.Join(importedFrom, "BepInEx", "plugins", m.Package)
-		if m.Reason != ReasonNotInIndex || !winname.Valid(m.Package) || !fsx.IsDir(dir) {
+		if m.Reason != ReasonNotInIndex || !winname.Valid(m.Package) || !safefs.IsDir(dir) {
 			kept = append(kept, m)
 			continue
 		}
@@ -175,7 +175,7 @@ func (s *Service) installCarried(ctx context.Context, game, profileID string, m 
 	if err != nil {
 		return "", err
 	}
-	defer func() { _ = fsx.RemoveAll(scratch) }()
+	defer func() { _ = safefs.RemoveAll(scratch) }()
 	dir := filepath.Join(scratch, m.Name)
 	if err := m.Stage(dir); err != nil {
 		return "", err

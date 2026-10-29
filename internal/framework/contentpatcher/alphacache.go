@@ -13,8 +13,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // The alpha mask of an overlay image is the slow part of a cold check (a recolour pack overlays hundreds of large
@@ -51,13 +50,13 @@ func pruneAlphaDir(dir string) {
 	cutoff := time.Now().Add(-alphaKeepFor)
 	for _, e := range entries {
 		if info, err := e.Info(); err == nil && info.ModTime().Before(cutoff) {
-			_ = fsx.Remove(filepath.Join(dir, e.Name()))
+			_ = safefs.Remove(filepath.Join(dir, e.Name()))
 		}
 	}
 }
 
 func readAlphaDisk(path string) (pngAlpha, bool) {
-	f, err := fsx.Open(path)
+	f, err := safefs.Open(path)
 	if err != nil {
 		return pngAlpha{}, false
 	}
@@ -95,7 +94,7 @@ func writeAlphaDisk(path string, pix pngAlpha) {
 	if os.MkdirAll(filepath.Dir(path), 0o700) != nil {
 		return
 	}
-	_ = datadir.WriteStreamNoSync(path, 0o600, func(w io.Writer) error {
+	_ = safefs.WriteStreamNoSync(path, 0o600, func(w io.Writer) error {
 		zw, err := gzip.NewWriterLevel(w, gzip.BestSpeed)
 		if err != nil {
 			return err

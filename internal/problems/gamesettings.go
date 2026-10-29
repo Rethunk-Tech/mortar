@@ -4,8 +4,8 @@ import (
 	"bufio"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/iniedit"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -65,7 +65,7 @@ func (s *Service) gameSettingFailures(gameID, profileID string) []LoadFailure {
 		if err != nil {
 			continue
 		}
-		b, err := fsx.ReadFile(path)
+		b, err := safefs.ReadFile(path)
 		if err != nil {
 			continue
 		}

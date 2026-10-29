@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
@@ -25,10 +25,10 @@ func Apply(modsDir string, entries []profile.Entry, configs []Config) (written [
 				continue
 			}
 			folder := plain
-			if !fsx.IsDir(folder) {
+			if !safefs.IsDir(folder) {
 				folder = dotted
 			}
-			if !fsx.IsDir(folder) {
+			if !safefs.IsDir(folder) {
 				continue
 			}
 			for _, c := range configs {
@@ -42,7 +42,7 @@ func Apply(modsDir string, entries []profile.Entry, configs []Config) (written [
 				if err := os.MkdirAll(filepath.Dir(dest), 0o750); err != nil {
 					return written, err
 				}
-				if err := fsx.WriteFile(dest, c.Data, configPerm); err != nil {
+				if err := safefs.WriteFile(dest, c.Data, configPerm); err != nil {
 					return written, err
 				}
 				if !done[m.ID.Fold()] {

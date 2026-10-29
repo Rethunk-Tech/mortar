@@ -8,7 +8,7 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // An IL2CPP game's Unity base libraries are fetched once, kept, and placed in each profile from the kept copy.
@@ -38,7 +38,7 @@ func TestPlaceUnityLibs(t *testing.T) {
 		if err := placeUnityLibs(t.Context(), game, profile); err != nil {
 			t.Fatal(err)
 		}
-		if b, err := fsx.ReadFile(filepath.Join(profile, "BepInEx", "unity-libs", "2022.3.21.zip")); err != nil || string(b) != "PK\x03\x04zip" {
+		if b, err := safefs.ReadFile(filepath.Join(profile, "BepInEx", "unity-libs", "2022.3.21.zip")); err != nil || string(b) != "PK\x03\x04zip" {
 			t.Fatalf("placed = %q, %v", b, err)
 		}
 	}

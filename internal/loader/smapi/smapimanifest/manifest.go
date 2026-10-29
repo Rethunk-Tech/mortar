@@ -15,8 +15,7 @@ import (
 	"sync"
 
 	"github.com/Rethunk-Tech/go-lenientjson"
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/ghrepo"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
@@ -299,11 +298,11 @@ func version(v json.RawMessage) string {
 // to) leave it as a link into their own staging folder, so the link is resolved first and the target read through its
 // own folder; a dangling link reads as not existing.
 func ReadFile(dir string) ([]byte, error) {
-	resolved, err := fsx.EvalSymlinks(filepath.Join(dir, FileName))
+	resolved, err := safefs.EvalSymlinks(filepath.Join(dir, FileName))
 	if err != nil {
 		return nil, err
 	}
-	return fsx.ReadFile(resolved)
+	return safefs.ReadFile(resolved)
 }
 
 // Mod is a manifest found by Scan.
@@ -341,7 +340,7 @@ func Scan(root string) ([]Mod, error) {
 
 // ScanInvalid is Scan that also returns the first manifest it skipped for not parsing, nil when there was none.
 func ScanInvalid(root string) ([]Mod, *Invalid, error) {
-	base, err := fsx.EvalSymlinks(root)
+	base, err := safefs.EvalSymlinks(root)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -370,7 +369,7 @@ func ScanInvalid(root string) ([]Mod, *Invalid, error) {
 				continue
 			}
 			child := filepath.Join(dir, it.Name())
-			if !datadir.RealDirUnder(base, child) {
+			if !safefs.RealDirUnder(base, child) {
 				continue
 			}
 			next := it.Name()

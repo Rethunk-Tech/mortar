@@ -15,8 +15,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	gameruntime "github.com/Rethunk-Tech/mortar/internal/runtime"
@@ -384,7 +384,7 @@ func dotnetRoot(planEnv map[string]string) []string {
 		return nil
 	}
 	home, err := os.UserHomeDir()
-	if err != nil || !fsx.IsFile(filepath.Join(home, ".dotnet", "dotnet")) {
+	if err != nil || !safefs.IsFile(filepath.Join(home, ".dotnet", "dotnet")) {
 		return nil
 	}
 	return []string{"DOTNET_ROOT=" + filepath.Join(home, ".dotnet")}

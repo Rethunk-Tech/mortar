@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 func TestRepairRebuildsFromSnapshotAndKeepsMods(t *testing.T) {
@@ -38,7 +38,7 @@ func TestRepairRebuildsFromSnapshotAndKeepsMods(t *testing.T) {
 	if err != nil || len(matches) != 1 {
 		t.Fatalf("aside = %v, %v", matches, err)
 	}
-	aside, err := fsx.ReadFile(matches[0])
+	aside, err := safefs.ReadFile(matches[0])
 	if err != nil || string(aside) != string(broken) {
 		t.Fatalf("aside body = %q, %v", aside, err)
 	}
@@ -56,7 +56,7 @@ func TestRepairNoSnapshot(t *testing.T) {
 	if err == nil || !strings.Contains(err.Error(), "no history snapshot") {
 		t.Fatalf("Repair = %v", err)
 	}
-	raw, err := fsx.ReadFile(filepath.Join(dir, fileName))
+	raw, err := safefs.ReadFile(filepath.Join(dir, fileName))
 	if err != nil || string(raw) != "{" {
 		t.Fatalf("left damaged file: %q %v", raw, err)
 	}
@@ -77,7 +77,7 @@ func TestRepairKeepsDamagedFileAsideAndUndoRestoresIt(t *testing.T) {
 	if err := e.UndoRepair("stardew", p.ID); err != nil {
 		t.Fatal(err)
 	}
-	raw, err := fsx.ReadFile(filepath.Join(dir, fileName))
+	raw, err := safefs.ReadFile(filepath.Join(dir, fileName))
 	if err != nil || string(raw) != "{" {
 		t.Fatalf("restored = %q %v", raw, err)
 	}

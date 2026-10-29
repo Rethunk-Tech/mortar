@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -78,8 +78,8 @@ func (g GaleCode) Parse(ctx context.Context, in Input) (Draft, error) {
 	if resp.StatusCode != http.StatusOK {
 		return Draft{}, usererr.Wrap(usererr.Network, fmt.Errorf("gale answered %s for profile code %s", resp.Status, id))
 	}
-	b, err := fsx.ReadCapped(resp.Body, maxInput)
-	if errors.Is(err, fsx.ErrTooLarge) {
+	b, err := safefs.ReadCapped(resp.Body, maxInput)
+	if errors.Is(err, safefs.ErrTooLarge) {
 		return Draft{}, errors.New("profile code is too large")
 	}
 	if err != nil {

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 
 	"github.com/Rethunk-Tech/go-semverish"
 )
@@ -70,7 +70,7 @@ func TestRealBepInExRun(t *testing.T) {
 	if dir == "" {
 		t.Skip("pass -bepinex-profile with a launched BepInEx profile folder")
 	}
-	raw, err := fsx.ReadFile(filepath.Join(dir, "BepInEx", "LogOutput.log"))
+	raw, err := safefs.ReadFile(filepath.Join(dir, "BepInEx", "LogOutput.log"))
 	if err != nil {
 		t.Fatal(err)
 	}

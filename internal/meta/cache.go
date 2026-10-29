@@ -14,9 +14,9 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -78,7 +78,7 @@ type entry[T any] struct {
 }
 
 func readEntry[T any](path string) (entry[T], bool) {
-	b, err := fsx.ReadFile(path)
+	b, err := safefs.ReadFile(path)
 	if err != nil {
 		return entry[T]{}, false
 	}
@@ -106,7 +106,7 @@ func writeEntry[T any](path string, e entry[T]) {
 	if err != nil || os.MkdirAll(filepath.Dir(path), 0o700) != nil {
 		return
 	}
-	_ = datadir.WriteStreamNoSync(path, 0o600, func(w io.Writer) error {
+	_ = safefs.WriteStreamNoSync(path, 0o600, func(w io.Writer) error {
 		_, err := w.Write(b)
 		return err
 	})
@@ -203,7 +203,7 @@ func (c *Client) do(req *http.Request, limit int64) ([]byte, error) {
 	if resp.StatusCode != http.StatusOK {
 		return nil, usererr.Wrap(usererr.Network, &StatusError{Code: resp.StatusCode, Status: resp.Status})
 	}
-	return fsx.ReadCapped(resp.Body, limit)
+	return safefs.ReadCapped(resp.Body, limit)
 }
 
 // StatusError is a non-200 answer.

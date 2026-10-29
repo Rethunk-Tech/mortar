@@ -15,7 +15,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/scratch"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/opt"
@@ -168,7 +168,7 @@ func readVortexState(root string) (map[string]json.RawMessage, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer func() { _ = fsx.RemoveAll(tmp) }()
+	defer func() { _ = safefs.RemoveAll(tmp) }()
 	if err := copyLevelDB(src, tmp); err != nil {
 		return nil, err
 	}
@@ -205,7 +205,7 @@ func copyLevelDB(src, dst string) error {
 	}
 	slices.SortStableFunc(names, func(a, b string) int { return cmp.Compare(rank(a), rank(b)) })
 	for _, name := range names {
-		data, err := fsx.ReadFile(filepath.Join(src, name))
+		data, err := safefs.ReadFile(filepath.Join(src, name))
 		if errors.Is(err, os.ErrNotExist) {
 			continue
 		}
@@ -215,7 +215,7 @@ func copyLevelDB(src, dst string) error {
 		if err != nil {
 			return err
 		}
-		if err := fsx.WriteFile(filepath.Join(dst, name), data, 0o600); err != nil {
+		if err := safefs.WriteFile(filepath.Join(dst, name), data, 0o600); err != nil {
 			return err
 		}
 	}

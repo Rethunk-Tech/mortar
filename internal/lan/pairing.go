@@ -22,8 +22,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // Pairing makes two of the user's own machines trust each other. One shows a short code, the other types it, and both
@@ -88,7 +88,7 @@ func (b *peerBook) loadLocked() error {
 		return nil
 	}
 	if b.dir != "" {
-		raw, err := fsx.ReadFile(filepath.Join(b.dir, "peers.json"))
+		raw, err := safefs.ReadFile(filepath.Join(b.dir, "peers.json"))
 		switch {
 		case err == nil:
 			if err := json.Unmarshal(raw, &b.file); err != nil {
@@ -529,5 +529,5 @@ func (s *Service) postJSON(ctx context.Context, peerID, endpointPath string, bod
 		message, _ := io.ReadAll(io.LimitReader(resp.Body, 4<<10))
 		return fmt.Errorf("the other computer refused: %s", strings.TrimSpace(string(message)))
 	}
-	return json.NewDecoder(fsx.CapReader(resp.Body, 16<<10)).Decode(into)
+	return json.NewDecoder(safefs.CapReader(resp.Body, 16<<10)).Decode(into)
 }

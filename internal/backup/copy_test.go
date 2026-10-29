@@ -7,7 +7,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/saves"
 )
 
@@ -18,7 +18,7 @@ func TestRestoreCopyPutsTheGamesOwnCopyBack(t *testing.T) {
 		testfs.WriteAt(t, p, []byte(body))
 	}
 	read := func(name string) string {
-		b, err := fsx.ReadFile(filepath.Join(dir, filepath.FromSlash(name)))
+		b, err := safefs.ReadFile(filepath.Join(dir, filepath.FromSlash(name)))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -45,7 +45,7 @@ func TestRestoreCopyPutsTheGamesOwnCopyBack(t *testing.T) {
 		t.Fatal(err)
 	}
 	if read("worlds_local/W.fwl") != "then" || read("worlds_local/W.db") != "then db" || read("worlds_local/W_backup_auto-1.fwl") != "then" ||
-		fsx.IsFile(filepath.Join(dir, "worlds_local", "W.db-wal")) {
+		safefs.IsFile(filepath.Join(dir, "worlds_local", "W.db-wal")) {
 		t.Fatal("world not restored from its copy, the copy was moved, or the current write-ahead log was left")
 	}
 	if err := RestoreCopy(t.Context(), l, backups, "Slot_00000002.save", "Slot_00000002.save.ver0", 5, now.Add(time.Second)); err != nil || read("Slot_00000002.save") != "slot then" {

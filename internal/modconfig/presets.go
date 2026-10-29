@@ -9,8 +9,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -65,7 +64,7 @@ func SavePreset(dataDir, game string, id mod.ID, name string, contents []byte) e
 	if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
 		return err
 	}
-	return datadir.WriteFileAtomic(path, normalized, 0o600)
+	return safefs.WriteFileAtomic(path, normalized, 0o600)
 }
 
 // LoadPreset returns a saved preset's JSON.
@@ -74,7 +73,7 @@ func LoadPreset(dataDir, game string, id mod.ID, name string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	b, err := fsx.ReadFile(path)
+	b, err := safefs.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, fmt.Errorf("preset %q is not saved", name)
@@ -90,7 +89,7 @@ func DeletePreset(dataDir, game string, id mod.ID, name string) error {
 	if err != nil {
 		return err
 	}
-	if err := fsx.Remove(path); err != nil {
+	if err := safefs.Remove(path); err != nil {
 		if os.IsNotExist(err) {
 			return fmt.Errorf("preset %q is not saved", name)
 		}

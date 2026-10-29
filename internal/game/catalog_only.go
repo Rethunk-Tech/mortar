@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // catalogOnly is a game its catalog entry describes in full: names, store ids, sources and the marker file.
@@ -56,7 +56,7 @@ func (g catalogOnly) GameProcesses() []string {
 func (g catalogOnly) ValidInstall(dir string) error {
 	info, _ := catalogGame(string(g))
 	for _, m := range []string{info.MarkerPath(), info.LinuxMarker} {
-		if m != "" && fsx.IsFile(filepath.Join(dir, m)) {
+		if m != "" && safefs.IsFile(filepath.Join(dir, m)) {
 			return nil
 		}
 	}

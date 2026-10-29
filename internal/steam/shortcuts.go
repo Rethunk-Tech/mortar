@@ -14,8 +14,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // Binary VDF node types, as Steam writes shortcuts.vdf.
@@ -249,7 +248,7 @@ func (s Steam) AddShortcut(sc Shortcut) (AddResult, error) {
 		return "", err
 	}
 	path := filepath.Join(dir, "shortcuts.vdf")
-	body, err := fsx.ReadFile(path)
+	body, err := safefs.ReadFile(path)
 	if err != nil && !errors.Is(err, os.ErrNotExist) && !errors.Is(err, io.EOF) {
 		return "", err
 	}
@@ -264,7 +263,7 @@ func (s Steam) AddShortcut(sc Shortcut) (AddResult, error) {
 		if err := backupBeforeEdit(path, next, 0o600); err != nil {
 			return "", err
 		}
-		if err := datadir.WriteFileAtomic(path, next, 0o600); err != nil {
+		if err := safefs.WriteFileAtomic(path, next, 0o600); err != nil {
 			return "", err
 		}
 	}
@@ -317,7 +316,7 @@ func (s Steam) RemoveShortcuts(exe, optionsPrefix string) (int, error) {
 	total := 0
 	var errs []error
 	for _, path := range files {
-		body, err := fsx.ReadFile(path)
+		body, err := safefs.ReadFile(path)
 		if err != nil {
 			errs = append(errs, err)
 			continue
@@ -325,7 +324,7 @@ func (s Steam) RemoveShortcuts(exe, optionsPrefix string) (int, error) {
 		next, n, err := removeShortcuts(body, match)
 		if err == nil && n > 0 {
 			if err = backupBeforeEdit(path, next, 0o600); err == nil {
-				err = datadir.WriteFileAtomic(path, next, 0o600)
+				err = safefs.WriteFileAtomic(path, next, 0o600)
 			}
 		}
 		if err != nil {

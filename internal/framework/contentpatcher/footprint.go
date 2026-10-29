@@ -25,8 +25,8 @@ import (
 	"sync"
 
 	"github.com/Rethunk-Tech/go-lenientjson"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -649,16 +649,16 @@ func maskSet(mask []byte, i int) bool {
 var footprintReadCap int64 = maxPackFileBytes
 
 func readCappedFile(path string) ([]byte, error) {
-	file, err := fsx.Open(path)
+	file, err := safefs.Open(path)
 	if err != nil {
 		return nil, err
 	}
 	defer func() { _ = file.Close() }()
-	return fsx.ReadCapped(file, footprintReadCap)
+	return safefs.ReadCapped(file, footprintReadCap)
 }
 
 func decodePNGAlpha(r io.Reader) (pngAlpha, bool) {
-	raw, err := fsx.ReadCapped(r, footprintReadCap)
+	raw, err := safefs.ReadCapped(r, footprintReadCap)
 	if err != nil || len(raw) < 8 || string(raw[:8]) != "\x89PNG\r\n\x1a\n" {
 		return pngAlpha{}, false
 	}
@@ -886,7 +886,7 @@ func pngDecodable(raw []byte) bool {
 }
 
 func decodePNGAlphaStd(r io.Reader) (pngAlpha, bool) {
-	raw, err := fsx.ReadCapped(r, footprintReadCap)
+	raw, err := safefs.ReadCapped(r, footprintReadCap)
 	if err != nil || !pngDecodable(raw) {
 		return pngAlpha{}, false
 	}
@@ -1326,7 +1326,7 @@ func decodeTMXValues(text, encoding, compression string, width, height int) ([]i
 		if err != nil {
 			return nil, false
 		}
-		data, err = fsx.ReadCapped(reader, limit)
+		data, err = safefs.ReadCapped(reader, limit)
 		_ = reader.Close()
 		if err != nil {
 			return nil, false
@@ -1336,7 +1336,7 @@ func decodeTMXValues(text, encoding, compression string, width, height int) ([]i
 		if err != nil {
 			return nil, false
 		}
-		data, err = fsx.ReadCapped(reader, limit)
+		data, err = safefs.ReadCapped(reader, limit)
 		_ = reader.Close()
 		if err != nil {
 			return nil, false

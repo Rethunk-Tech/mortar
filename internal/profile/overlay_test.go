@@ -9,7 +9,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -35,7 +35,7 @@ func mainZip(t *testing.T, version, art string) string {
 
 func readLive(t *testing.T, e env, profileID, key, rel string) string {
 	t.Helper()
-	b, err := fsx.ReadFile(filepath.Join(e.mods(profileID), key, filepath.FromSlash(rel)))
+	b, err := safefs.ReadFile(filepath.Join(e.mods(profileID), key, filepath.FromSlash(rel)))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -70,7 +70,7 @@ func TestOverlayInstallsOverItsMainFile(t *testing.T) {
 		t.Fatalf("overlaid file = %q", got)
 	}
 	storeDir, _ := e.items.Path("stardew", baseKey)
-	if b, _ := fsx.ReadFile(filepath.Join(storeDir, overlayDir, "assets", "a.png")); string(b) != "A-main" {
+	if b, _ := safefs.ReadFile(filepath.Join(storeDir, overlayDir, "assets", "a.png")); string(b) != "A-main" {
 		t.Fatalf("store item written: %q", b)
 	}
 	if exists(filepath.Join(e.mods(p.ID), optKey)) {

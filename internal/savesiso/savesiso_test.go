@@ -8,7 +8,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 func write(t *testing.T, p, body string) {
@@ -92,13 +92,13 @@ func TestPurgeRunAgainKeepsTheWrittenBackSaves(t *testing.T) {
 	}
 	locked := filepath.Join(saves, "locked")
 	// A read-only folder stands in for a save file held open on Windows.
-	if err := fsx.Chmod(locked, 0o500); err != nil {
+	if err := safefs.Chmod(locked, 0o500); err != nil {
 		t.Fatal(err)
 	}
 	if err := Purge(m); err == nil {
 		t.Fatal("the working copy was removed from a read-only folder")
 	}
-	if err := fsx.Chmod(locked, 0o700); err != nil {
+	if err := safefs.Chmod(locked, 0o700); err != nil {
 		t.Fatal(err)
 	}
 	if err := Recover(journal, nil); err != nil {

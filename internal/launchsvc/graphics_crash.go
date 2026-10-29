@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -82,7 +82,7 @@ func (s *Service) writeGraphicsMarker(gameID, profileID string, m graphicsMarker
 		return err
 	}
 	if m == (graphicsMarker{}) {
-		if err := fsx.Remove(path); err != nil && !os.IsNotExist(err) {
+		if err := safefs.Remove(path); err != nil && !os.IsNotExist(err) {
 			return err
 		}
 		return nil

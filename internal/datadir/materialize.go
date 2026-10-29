@@ -1,71 +1,31 @@
 package datadir
 
 import (
-	"os"
 	"path/filepath"
 	"strings"
-	"sync"
-	"sync/atomic"
+
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
-// Tier is one way to put a store file into a profile folder.
-type Tier int
-
-const (
-	TierClone    Tier = 1
-	TierHardlink Tier = 2
-	TierSymlink  Tier = 3
-	TierCopy     Tier = 4
-)
-
-// Ops is the per-file materialiser. Tests replace Tiers and the four funcs.
-type Ops struct {
-	Tiers                          []Tier
-	Clone, Hardlink, Symlink, Copy func(src, dst string) error
-	DisableCache                   bool
-}
-
-type devCaps struct {
-	clone, hardlink, symlink atomic.Int32
-}
-
-var capCache sync.Map // uint64 device -> *devCaps
-
-func defaultOps() Ops {
-	return Ops{
-		Tiers:    []Tier{TierClone, TierHardlink, TierSymlink, TierCopy},
-		Clone:    cloneFile,
-		Hardlink: os.Link,
-		Symlink: func(src, dst string) error {
-			abs, err := filepath.Abs(src)
-			if err != nil {
-				return err
-			}
-			return os.Symlink(abs, dst)
-		},
-		Copy: CopyFile,
-	}
+// materializer shares a store file with a profile folder by the cheapest tier the disk allows, except the files a
+// mod or player writes, which never share an inode with the store.
+var materializer = safefs.Materializer{
+	Shareable: func(rel string) bool { return !WritableRel(rel) && !EditableText(rel) },
+	Copy:      mortarCopy,
 }
 
 // MaterializeTree puts src's files into dst using clone, hardlink, symlink, then copy.
-func MaterializeTree(src, dst string) error {
-	ops := defaultOps()
-	_, err := copyTree(src, dst, ops.put)
-	return err
-}
+func MaterializeTree(src, dst string) error { return materializer.Tree(src, dst) }
 
 // MaterializeFile puts one store file at dst the way MaterializeTree would; rel is its path inside the mod, which
 // decides whether it may share an inode with the store.
-func MaterializeFile(src, dst, rel string) error {
-	return defaultOps().put(src, dst, rel)
-}
+func MaterializeFile(src, dst, rel string) error { return materializer.File(src, dst, rel) }
 
 // MaterializeTreeExclusive clones or copies only, so two profiles never share an inode.
 func MaterializeTreeExclusive(src, dst string) error {
-	ops := defaultOps()
-	ops.Tiers = []Tier{TierClone, TierCopy}
-	_, err := copyTree(src, dst, ops.put)
-	return err
+	m := materializer
+	m.Tiers = []safefs.Tier{safefs.TierClone, safefs.TierCopy}
+	return m.Tree(src, dst)
 }
 
 // textExts are files mods and players edit in place; a hardlinked or symlinked copy would carry that edit into the
@@ -96,109 +56,4 @@ func WritableRel(rel string) bool {
 		}
 	}
 	return false
-}
-
-func (ops Ops) put(src, dst, rel string) error {
-	writable := WritableRel(rel) || EditableText(rel)
-	srcDev, srcErr := fileDevice(src)
-	dstDev, dstErr := fileDevice(filepath.Dir(dst))
-	sameDev := srcErr == nil && dstErr == nil && srcDev == dstDev
-	var caps *devCaps
-	if !ops.DisableCache && dstErr == nil {
-		if v, ok := capCache.Load(dstDev); ok {
-			c, ok := v.(*devCaps)
-			if !ok {
-				c = &devCaps{}
-				capCache.Store(dstDev, c)
-			}
-			caps = c
-		} else {
-			caps = &devCaps{}
-			capCache.Store(dstDev, caps)
-		}
-	}
-	for _, t := range ops.Tiers {
-		switch t {
-		case TierHardlink, TierSymlink:
-			if writable {
-				continue
-			}
-		case TierClone, TierCopy:
-		default:
-			continue
-		}
-		if !sameDev && (t == TierClone || t == TierHardlink) {
-			continue
-		}
-		if caps != nil {
-			switch t {
-			case TierClone:
-				if caps.clone.Load() < 0 {
-					continue
-				}
-			case TierHardlink:
-				if caps.hardlink.Load() < 0 {
-					continue
-				}
-			case TierSymlink:
-				if caps.symlink.Load() < 0 {
-					continue
-				}
-			case TierCopy:
-			default:
-				continue
-			}
-		}
-		fn := ops.fn(t)
-		if fn == nil {
-			continue
-		}
-		err := fn(src, dst)
-		if err == nil {
-			if caps != nil {
-				switch t {
-				case TierClone:
-					caps.clone.Store(1)
-				case TierHardlink:
-					caps.hardlink.Store(1)
-				case TierSymlink:
-					caps.symlink.Store(1)
-				case TierCopy:
-				default:
-				}
-			}
-			return nil
-		}
-		if !isLinkFallback(err) {
-			return err
-		}
-		if caps != nil && !isCrossDevice(err) {
-			switch t {
-			case TierClone:
-				caps.clone.Store(-1)
-			case TierHardlink:
-				caps.hardlink.Store(-1)
-			case TierSymlink:
-				caps.symlink.Store(-1)
-			case TierCopy:
-			default:
-			}
-		}
-	}
-	return CopyFile(src, dst)
-}
-
-func (ops Ops) fn(t Tier) func(src, dst string) error {
-	switch t {
-	case TierClone:
-		return ops.Clone
-	case TierHardlink:
-		return ops.Hardlink
-	case TierSymlink:
-		return ops.Symlink
-	case TierCopy:
-		return ops.Copy
-	default:
-		return nil
-	}
 }

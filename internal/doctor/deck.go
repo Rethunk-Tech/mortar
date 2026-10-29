@@ -4,14 +4,14 @@ import (
 	"os"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // Replaced by tests.
 var (
 	environ   = os.Environ
 	osRelease = func() []byte {
-		b, _ := fsx.ReadFile("/etc/os-release")
+		b, _ := safefs.ReadFile("/etc/os-release")
 		return b
 	}
 )

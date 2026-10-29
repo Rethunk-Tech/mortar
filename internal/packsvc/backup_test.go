@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
@@ -89,7 +89,7 @@ func TestRestoreOnAnotherComputerQueuesTheModsFromTheirSources(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if b, err := fsx.ReadFile(filepath.Join(dir, "manifest.json")); err != nil || !strings.Contains(string(b), "X.B") {
+	if b, err := safefs.ReadFile(filepath.Join(dir, "manifest.json")); err != nil || !strings.Contains(string(b), "X.B") {
 		t.Fatalf("restored store item: %q, %v", b, err)
 	}
 	modsDir, err := fresh.ProfileDir("stardew", res.Profile)
@@ -103,7 +103,7 @@ func TestRestoreOnAnotherComputerQueuesTheModsFromTheirSources(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if b, err := fsx.ReadFile(filepath.Join(restored, "Farm_1", "Farm_1")); err != nil || string(b) != "save" {
+	if b, err := safefs.ReadFile(filepath.Join(restored, "Farm_1", "Farm_1")); err != nil || string(b) != "save" {
 		t.Fatalf("restored save: %q, %v", b, err)
 	}
 }
@@ -193,14 +193,14 @@ func TestBackupOfAFolderGameProfileCarriesTheSplitArchiveOnceAndReplacesTray(t *
 	if err != nil || len(owners) != 2 {
 		t.Fatalf("owners = %v, %v", owners, err)
 	}
-	if b, err := fsx.ReadFile(filepath.Join(freshTray, "Smith.trayitem")); err != nil || string(b) != "t" {
+	if b, err := safefs.ReadFile(filepath.Join(freshTray, "Smith.trayitem")); err != nil || string(b) != "t" {
 		t.Fatalf("tray file: %q, %v", b, err)
 	}
 }
 
 func TestReadBackupFoldsAnOldDescriptionIntoNotes(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "old.zip")
-	f, err := fsx.Create(path)
+	f, err := safefs.Create(path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -219,7 +219,7 @@ func TestReadBackupFoldsAnOldDescriptionIntoNotes(t *testing.T) {
 
 func TestReadBackupRefusesAnEntryHeldTwice(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "twice.zip")
-	f, err := fsx.Create(path)
+	f, err := safefs.Create(path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -239,7 +239,7 @@ func TestReadBackupRefusesAnEntryHeldTwice(t *testing.T) {
 
 func TestReadBackupRefusesCaseOnlyTwinsOnACaseInsensitiveHost(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "case.zip")
-	f, err := fsx.Create(path)
+	f, err := safefs.Create(path)
 	if err != nil {
 		t.Fatal(err)
 	}

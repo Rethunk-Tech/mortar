@@ -6,8 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -26,7 +25,7 @@ func (s *Service) armIntroSkip(g game.Game, l loader.Loader, profileID, dir stri
 	if !ok {
 		return nil
 	}
-	err := fsx.Remove(filepath.Join(dir, startupDir, menuMarker))
+	err := safefs.Remove(filepath.Join(dir, startupDir, menuMarker))
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return err
 	}
@@ -52,8 +51,8 @@ func (s *Service) launchToMenu(gameID, profileID string) (func(), error) {
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return nil, err
 	}
-	if err := datadir.WriteFileAtomic(path, nil, 0o600); err != nil {
+	if err := safefs.WriteFileAtomic(path, nil, 0o600); err != nil {
 		return nil, err
 	}
-	return func() { _ = fsx.Remove(path) }, nil
+	return func() { _ = safefs.Remove(path) }, nil
 }

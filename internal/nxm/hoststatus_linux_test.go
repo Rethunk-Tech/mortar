@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/nativehost"
 )
 
@@ -34,7 +34,7 @@ func TestNativeHostStatusOkMissingAndStale(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(okPath, okBody, 0o644); err != nil {
+	if err := safefs.WriteFile(okPath, okBody, 0o644); err != nil {
 		t.Fatal(err)
 	}
 
@@ -43,7 +43,7 @@ func TestNativeHostStatusOkMissingAndStale(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(stalePath, staleBody, 0o644); err != nil {
+	if err := safefs.WriteFile(stalePath, staleBody, 0o644); err != nil {
 		t.Fatal(err)
 	}
 
@@ -81,7 +81,7 @@ func TestRepairNativeHostsWritesMissingManifest(t *testing.T) {
 	if err := l.WriteNativeHosts(); err != nil {
 		t.Fatal(err)
 	}
-	b, err := fsx.ReadFile(path)
+	b, err := safefs.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
 	}

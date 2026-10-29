@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
@@ -115,7 +115,7 @@ func TestSavesBacksUpAgainWhenASaveChangedAndSweepsCrashedTemps(t *testing.T) {
 		t.Fatal(err)
 	}
 	crashed := filepath.Join(out, "backup-1.tmp")
-	if err := fsx.WriteFile(crashed, []byte("x"), 0o600); err != nil {
+	if err := safefs.WriteFile(crashed, []byte("x"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.Chtimes(crashed, start.Add(-time.Hour), start.Add(-time.Hour)); err != nil {
@@ -129,7 +129,7 @@ func TestSavesBacksUpAgainWhenASaveChangedAndSweepsCrashedTemps(t *testing.T) {
 		t.Fatal("a crashed temp file survived")
 	}
 	farm := filepath.Join(saves, "Farm_1")
-	if err := fsx.WriteFile(farm, []byte("day 2"), 0o600); err != nil {
+	if err := safefs.WriteFile(farm, []byte("day 2"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.Chtimes(farm, start.Add(time.Minute), start.Add(time.Minute)); err != nil {
@@ -147,7 +147,7 @@ func TestFolderZipsOnlyThatSaveAndStaysPinned(t *testing.T) {
 		if err := os.MkdirAll(filepath.Join(saves, folder), 0o750); err != nil {
 			t.Fatal(err)
 		}
-		if err := fsx.WriteFile(filepath.Join(saves, folder, folder), []byte(folder), 0o600); err != nil {
+		if err := safefs.WriteFile(filepath.Join(saves, folder, folder), []byte(folder), 0o600); err != nil {
 			t.Fatal(err)
 		}
 	}

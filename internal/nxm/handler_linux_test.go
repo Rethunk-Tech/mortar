@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 type recorder struct {
@@ -66,15 +66,15 @@ func TestRegisterThenRestorePreviousHandler(t *testing.T) {
 	if r.current != desktopID {
 		t.Fatalf("default is %q after Register", r.current)
 	}
-	b, err := fsx.ReadFile(l.desktopPath())
+	b, err := safefs.ReadFile(l.desktopPath())
 	if err != nil || !strings.Contains(string(b), `Exec="/opt/mortar/mortar" %u`) || !strings.Contains(string(b), "MimeType=x-scheme-handler/nxm;x-scheme-handler/mortar;application/x-mortar;") {
 		t.Fatalf("desktop file: %s, %v", b, err)
 	}
-	png, err := fsx.ReadFile(l.iconPNGPath())
+	png, err := safefs.ReadFile(l.iconPNGPath())
 	if err != nil || len(png) == 0 || string(png) != string(iconPNG) {
 		t.Fatalf("hicolor png: %d, %v", len(png), err)
 	}
-	svg, err := fsx.ReadFile(l.iconSVGPath())
+	svg, err := safefs.ReadFile(l.iconSVGPath())
 	if err != nil || !strings.Contains(string(svg), `viewBox="0 0 1024 1024"`) {
 		t.Fatalf("hicolor svg: %s, %v", svg, err)
 	}
@@ -90,7 +90,7 @@ func TestRegisterThenRestorePreviousHandler(t *testing.T) {
 	if r.current != "vortex.desktop" {
 		t.Errorf("default is %q after Restore", r.current)
 	}
-	b, _ = fsx.ReadFile(l.desktopPath())
+	b, _ = safefs.ReadFile(l.desktopPath())
 	if strings.Contains(string(b), schemeMime("nxm")) {
 		t.Errorf("desktop file still lists nxm after Restore: %s", b)
 	}
@@ -106,7 +106,7 @@ func TestRestoreWithoutPreviousDropsOurDefault(t *testing.T) {
 		t.Fatal(err)
 	}
 	target := filepath.Join(l.configHome, "dotfiles.list")
-	if err := fsx.WriteFile(target, []byte("[Default Applications]\nx-scheme-handler/nxm="+desktopID+";\ntext/html=a.desktop\n"), 0o600); err != nil {
+	if err := safefs.WriteFile(target, []byte("[Default Applications]\nx-scheme-handler/nxm="+desktopID+";\ntext/html=a.desktop\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.Symlink(target, list); err != nil {
@@ -118,7 +118,7 @@ func TestRestoreWithoutPreviousDropsOurDefault(t *testing.T) {
 	if fi, err := os.Lstat(list); err != nil || fi.Mode()&os.ModeSymlink == 0 {
 		t.Errorf("mimeapps.list symlink replaced: %v", err)
 	}
-	b, _ := fsx.ReadFile(target)
+	b, _ := safefs.ReadFile(target)
 	if string(b) != "[Default Applications]\ntext/html=a.desktop\n" {
 		t.Errorf("mimeapps.list: %q", b)
 	}
@@ -142,11 +142,11 @@ func TestRegisterLinksIsIdempotentAndKeepsNxm(t *testing.T) {
 	if err := l.RegisterLinks(); err != nil {
 		t.Fatal(err)
 	}
-	xml, err := fsx.ReadFile(filepath.Join(l.dataHome, "mime", "packages", "mortar.xml"))
+	xml, err := safefs.ReadFile(filepath.Join(l.dataHome, "mime", "packages", "mortar.xml"))
 	if err != nil || !strings.Contains(string(xml), `<glob pattern="*.mortar"/>`) {
 		t.Fatalf("mime xml: %s, %v", xml, err)
 	}
-	desktop, _ := fsx.ReadFile(l.desktopPath())
+	desktop, _ := safefs.ReadFile(l.desktopPath())
 	if strings.Contains(string(desktop), schemeMime("nxm")) || !strings.Contains(string(desktop), "MimeType=x-scheme-handler/mortar;application/x-mortar;") {
 		t.Fatalf("desktop file: %s", desktop)
 	}
@@ -175,7 +175,7 @@ func TestRegisterLinksIsIdempotentAndKeepsNxm(t *testing.T) {
 	if err := l.RegisterLinks(); err != nil {
 		t.Fatal(err)
 	}
-	if desktop, _ = fsx.ReadFile(l.desktopPath()); !strings.Contains(string(desktop), schemeMime("nxm")) {
+	if desktop, _ = safefs.ReadFile(l.desktopPath()); !strings.Contains(string(desktop), schemeMime("nxm")) {
 		t.Errorf("RegisterLinks dropped nxm: %s", desktop)
 	}
 }
@@ -199,7 +199,7 @@ func TestAnAppImageRegistersItselfAndMovesItsEntry(t *testing.T) {
 	t.Setenv("XDG_DATA_HOME", filepath.Join(dir, "data"))
 	t.Setenv("XDG_CONFIG_HOME", filepath.Join(dir, "config"))
 	img := filepath.Join(dir, "Mortar.AppImage")
-	if err := fsx.WriteFile(img, nil, 0o700); err != nil {
+	if err := safefs.WriteFile(img, nil, 0o700); err != nil {
 		t.Fatal(err)
 	}
 	t.Setenv("APPIMAGE", img)
@@ -216,20 +216,20 @@ func TestAnAppImageRegistersItselfAndMovesItsEntry(t *testing.T) {
 	if err := l.refresh(); err != nil {
 		t.Fatal(err)
 	}
-	if desktop, err := fsx.ReadFile(l.desktopPath()); err != nil || strings.Contains(string(desktop), schemeMime("nxm")) {
+	if desktop, err := safefs.ReadFile(l.desktopPath()); err != nil || strings.Contains(string(desktop), schemeMime("nxm")) {
 		t.Fatalf("links entry before Register: %s, %v", desktop, err)
 	}
 	if err := l.Register(); err != nil {
 		t.Fatal(err)
 	}
-	registered, _ := fsx.ReadFile(l.desktopPath())
+	registered, _ := safefs.ReadFile(l.desktopPath())
 
 	// Another copy of Mortar, such as a dev build, leaves the entry to the one it names.
 	l.exe = filepath.Join(dir, "dev", "mortar")
 	if err := l.refresh(); err != nil {
 		t.Fatal(err)
 	}
-	if desktop, _ := fsx.ReadFile(l.desktopPath()); string(desktop) != string(registered) {
+	if desktop, _ := safefs.ReadFile(l.desktopPath()); string(desktop) != string(registered) {
 		t.Errorf("another copy took the entry: %s", desktop)
 	}
 
@@ -240,7 +240,7 @@ func TestAnAppImageRegistersItselfAndMovesItsEntry(t *testing.T) {
 	if err := l.refresh(); err != nil {
 		t.Fatal(err)
 	}
-	desktop, _ := fsx.ReadFile(l.desktopPath())
+	desktop, _ := safefs.ReadFile(l.desktopPath())
 	if !strings.Contains(string(desktop), `Exec="`+l.exe+`" %u`) || !strings.Contains(string(desktop), schemeMime("nxm")) {
 		t.Errorf("moved entry: %s", desktop)
 	}
@@ -251,11 +251,11 @@ func TestRefreshRegistersLinksWhenMissing(t *testing.T) {
 	if err := l.refresh(); err != nil {
 		t.Fatal(err)
 	}
-	xml, err := fsx.ReadFile(filepath.Join(l.dataHome, "mime", "packages", "mortar.xml"))
+	xml, err := safefs.ReadFile(filepath.Join(l.dataHome, "mime", "packages", "mortar.xml"))
 	if err != nil || !strings.Contains(string(xml), `<glob pattern="*.mortar"/>`) {
 		t.Fatalf("mime xml: %s, %v", xml, err)
 	}
-	desktop, err := fsx.ReadFile(l.desktopPath())
+	desktop, err := safefs.ReadFile(l.desktopPath())
 	if err != nil || strings.Contains(string(desktop), schemeMime("nxm")) || !strings.Contains(string(desktop), "MimeType=x-scheme-handler/mortar;application/x-mortar;") {
 		t.Fatalf("desktop file: %s, %v", desktop, err)
 	}
@@ -274,14 +274,14 @@ func TestRefreshRegistersLinksWhenMissing(t *testing.T) {
 func TestRefreshLeavesAnotherCopy(t *testing.T) {
 	l, _ := newLinux(t, "")
 	other := filepath.Join(t.TempDir(), "other-mortar")
-	if err := fsx.WriteFile(other, nil, 0o700); err != nil {
+	if err := safefs.WriteFile(other, nil, 0o700); err != nil {
 		t.Fatal(err)
 	}
 	l.exe = other
 	if err := l.Register(); err != nil {
 		t.Fatal(err)
 	}
-	registered, err := fsx.ReadFile(l.desktopPath())
+	registered, err := safefs.ReadFile(l.desktopPath())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -289,7 +289,7 @@ func TestRefreshLeavesAnotherCopy(t *testing.T) {
 	if err := l.refresh(); err != nil {
 		t.Fatal(err)
 	}
-	desktop, _ := fsx.ReadFile(l.desktopPath())
+	desktop, _ := safefs.ReadFile(l.desktopPath())
 	if string(desktop) != string(registered) {
 		t.Errorf("another copy took the entry: %s", desktop)
 	}
@@ -336,7 +336,7 @@ func TestRegisterLinksWritesReverseDNSDesktop(t *testing.T) {
 	if filepath.Base(l.desktopPath()) != desktopID {
 		t.Fatalf("desktop path %s", l.desktopPath())
 	}
-	b, err := fsx.ReadFile(l.desktopPath())
+	b, err := safefs.ReadFile(l.desktopPath())
 	if err != nil || !strings.Contains(string(b), "StartupWMClass="+appversion.AppID) {
 		t.Fatalf("desktop file: %s, %v", b, err)
 	}
@@ -430,21 +430,21 @@ func TestFlatpakSetsTheHostsDefault(t *testing.T) {
 func TestRefreshUpdatesIconsWhenAnotherCopyOwnsTheEntry(t *testing.T) {
 	l, _ := newLinux(t, "")
 	other := filepath.Join(t.TempDir(), "other-mortar")
-	if err := fsx.WriteFile(other, nil, 0o700); err != nil {
+	if err := safefs.WriteFile(other, nil, 0o700); err != nil {
 		t.Fatal(err)
 	}
 	l.exe = other
 	if err := l.Register(); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(l.iconSVGPath(), []byte("<svg/>"), desktopPerm); err != nil {
+	if err := safefs.WriteFile(l.iconSVGPath(), []byte("<svg/>"), desktopPerm); err != nil {
 		t.Fatal(err)
 	}
 	l.exe = filepath.Join(t.TempDir(), "this-mortar")
 	if err := l.Refresh(); err != nil {
 		t.Fatal(err)
 	}
-	if svg, _ := fsx.ReadFile(l.iconSVGPath()); !bytes.Equal(svg, iconSVG) {
+	if svg, _ := safefs.ReadFile(l.iconSVGPath()); !bytes.Equal(svg, iconSVG) {
 		t.Errorf("stale icon kept: %s", svg)
 	}
 }
@@ -456,7 +456,7 @@ func writeApp(t *testing.T, l *System, name, body string) {
 	if err := os.MkdirAll(apps, 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(filepath.Join(apps, name), []byte(body), 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(apps, name), []byte(body), 0o600); err != nil {
 		t.Fatal(err)
 	}
 }

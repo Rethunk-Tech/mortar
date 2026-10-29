@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 func modJSON(id, version string) map[string]string {
@@ -84,7 +84,7 @@ func TestMergeIntoAddsAndKeepsDuplicates(t *testing.T) {
 		t.Fatalf("entries = %v", keys)
 	}
 	dir, _ := e.ModFolder("stardew", dst.ID, "only-1", "smapi:Me.Only")
-	if b, err := fsx.ReadFile(filepath.Join(dir, "config.json")); err != nil || string(b) != `{"a":1}` {
+	if b, err := safefs.ReadFile(filepath.Join(dir, "config.json")); err != nil || string(b) != `{"a":1}` {
 		t.Fatalf("config = %q, %v", b, err)
 	}
 	if after, _ := e.load("stardew", src.ID); !reflect.DeepEqual(after.Entries, srcBefore.Entries) {

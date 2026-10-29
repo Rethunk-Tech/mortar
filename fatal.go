@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
@@ -49,7 +49,7 @@ func panicHandler(dataDir string) func(*application.PanicDetails) {
 }
 
 func appendCrash(dataDir string, d *application.PanicDetails) error {
-	f, err := fsx.OpenFile(filepath.Join(dataDir, "crash.log"), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o600)
+	f, err := safefs.OpenFile(filepath.Join(dataDir, "crash.log"), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o600)
 	if err != nil {
 		return err
 	}

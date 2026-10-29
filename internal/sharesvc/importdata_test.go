@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 
@@ -52,7 +52,7 @@ func TestImportDataPlacesAPairedComputersLocalArchiveFromTheStore(t *testing.T) 
 	s, rec := newService(t, true)
 	items, _ := testenv.Stores(t)
 	src := t.TempDir()
-	if err := fsx.WriteFile(filepath.Join(src, "manifest.json"), []byte(`{"Name":"Mine","Author":"a","Version":"1.0.0","UniqueID":"Me.Mine","EntryDll":"m.dll"}`), 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(src, "manifest.json"), []byte(`{"Name":"Mine","Author":"a","Version":"1.0.0","UniqueID":"Me.Mine","EntryDll":"m.dll"}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	key, err := store.HashDir(src)

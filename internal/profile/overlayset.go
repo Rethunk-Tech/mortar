@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
@@ -35,7 +35,7 @@ func (s *Store) overlayFileSets(game, id string, entries []Entry, baseKey string
 	}
 	baseSrc, tmp, err := s.layoutItem(game, id, baseKey, entries[bi].Fomod, !entries[bi].FomodSpec)
 	if tmp != "" {
-		defer func() { _ = fsx.RemoveAll(tmp) }()
+		defer func() { _ = safefs.RemoveAll(tmp) }()
 	}
 	if err != nil {
 		return nil, err

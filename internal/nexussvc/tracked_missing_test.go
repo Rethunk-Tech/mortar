@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 
 	"github.com/Rethunk-Tech/mortar/internal/meta"
@@ -46,7 +46,7 @@ func TestTrackedMissingFiltersDomainAndProfileMods(t *testing.T) {
 		t.Fatal(err)
 	}
 	profPath := filepath.Join(root, "profiles", "stardew", p.ID, "profile.json")
-	b, err := fsx.ReadFile(profPath)
+	b, err := safefs.ReadFile(profPath)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 func TestReadWriteCaptureAndPending(t *testing.T) {
@@ -127,14 +127,14 @@ func TestReadsTheBridgeFixtures(t *testing.T) {
 		"gmcm-capture.json": CapturePath(dir, "smapi:demo.Mod"),
 		"gmcm-result.json":  ResultPath(dir, "smapi:demo.Mod"),
 	} {
-		raw, err := fsx.ReadFile(filepath.Join("testdata", name))
+		raw, err := safefs.ReadFile(filepath.Join("testdata", name))
 		if err != nil {
 			t.Fatal(err)
 		}
 		if err := os.MkdirAll(filepath.Dir(dest), 0o750); err != nil {
 			t.Fatal(err)
 		}
-		if err := datadir.WriteFileAtomic(dest, raw, 0o600); err != nil {
+		if err := safefs.WriteFileAtomic(dest, raw, 0o600); err != nil {
 			t.Fatal(err)
 		}
 	}

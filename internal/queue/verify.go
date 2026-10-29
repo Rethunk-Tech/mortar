@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -29,7 +29,7 @@ func verifyDigest(path, digest string) error {
 }
 
 func compareSHA512(path, want string) error {
-	got, err := fsx.HashFile(path, sha512.New())
+	got, err := safefs.HashFile(path, sha512.New())
 	if err != nil {
 		return err
 	}
@@ -49,7 +49,7 @@ func (s *Service) checkPackage(it Item, path string) error {
 }
 
 func compareSHA256(path, want string) error {
-	got, err := fsx.HashFile(path, sha256.New())
+	got, err := safefs.HashFile(path, sha256.New())
 	if err != nil {
 		return err
 	}
@@ -75,7 +75,7 @@ func (s *Service) checkPackageHash(it Item, path string) error {
 	if want, ok := s.hashes[key]; ok {
 		return compareSHA256(path, want)
 	}
-	got, err := fsx.HashFile(path, sha256.New())
+	got, err := safefs.HashFile(path, sha256.New())
 	if err != nil {
 		return err
 	}

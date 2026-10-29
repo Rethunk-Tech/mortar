@@ -11,8 +11,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/source/curseforge"
 	"github.com/Rethunk-Tech/mortar/internal/source/modrinth"
 	"github.com/Rethunk-Tech/mortar/internal/source/vsmoddb"
@@ -31,7 +31,7 @@ var (
 
 func readPages(dir string) map[string]string {
 	pages := map[string]string{}
-	if b, err := fsx.ReadFile(filepath.Join(dir, pagesCacheRel)); err == nil {
+	if b, err := safefs.ReadFile(filepath.Join(dir, pagesCacheRel)); err == nil {
 		_ = json.Unmarshal(b, &pages)
 	}
 	return pages
@@ -102,7 +102,7 @@ func fillPages(dir, src string, ids []string) {
 			pages[src+":"+id] = page
 			if b, err := json.Marshal(pages); err == nil {
 				_ = os.MkdirAll(filepath.Join(dir, "cache"), 0o700)
-				_ = fsx.WriteFile(filepath.Join(dir, pagesCacheRel), b, 0o600)
+				_ = safefs.WriteFile(filepath.Join(dir, pagesCacheRel), b, 0o600)
 			}
 			pagesMu.Unlock()
 		}

@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -25,7 +25,7 @@ func snapshotTree(t *testing.T, dir string) map[string]string {
 		if d.IsDir() {
 			out[rel+"/"] = ""
 		} else {
-			b, _ := fsx.ReadFile(p)
+			b, _ := safefs.ReadFile(p)
 			out[rel] = string(b)
 		}
 		return nil
@@ -96,12 +96,12 @@ func TestALethalCompanyLaunchKeepsBepInExInTheProfile(t *testing.T) {
 	if _, err := svc.launchPlan(t.Context(), g, inst, p.ID, launchplan.ModeProfile, "", "", ""); err != nil {
 		t.Fatal(err)
 	}
-	if b, _ := fsx.ReadFile(cfg); string(b) != "[Logging.Console]\nEnabled = true\n" {
+	if b, _ := safefs.ReadFile(cfg); string(b) != "[Logging.Console]\nEnabled = true\n" {
 		t.Fatalf("building the plan, as the launch preview does, rewrote BepInEx.cfg: %q", b)
 	}
 
 	dep := launch()
-	if b, _ := fsx.ReadFile(cfg); string(b) != "[Logging.Console]\nEnabled = false\n" {
+	if b, _ := safefs.ReadFile(cfg); string(b) != "[Logging.Console]\nEnabled = false\n" {
 		t.Errorf("the launch left BepInEx's console window on: %q", b)
 	}
 	for rel, want := range map[string]string{
@@ -110,12 +110,12 @@ func TestALethalCompanyLaunchKeepsBepInExInTheProfile(t *testing.T) {
 		"BepInEx/config/Ns-A.cfg":    "default Ns-A",
 		"BepInEx/config/Ns-B.cfg":    "tuned Ns-B",
 	} {
-		if b, _ := fsx.ReadFile(filepath.Join(profileDir, rel)); string(b) != want {
+		if b, _ := safefs.ReadFile(filepath.Join(profileDir, rel)); string(b) != want {
 			t.Errorf("profile %s = %q, want %q", rel, b, want)
 		}
 	}
 	for rel, want := range map[string]string{"winhttp.dll": "proxy", "doorstop_config.ini": "ini"} {
-		if b, _ := fsx.ReadFile(filepath.Join(install, rel)); string(b) != want {
+		if b, _ := safefs.ReadFile(filepath.Join(install, rel)); string(b) != want {
 			t.Errorf("install %s = %q, want %q", rel, b, want)
 		}
 	}
@@ -148,7 +148,7 @@ func TestALethalCompanyLaunchKeepsBepInExInTheProfile(t *testing.T) {
 	if _, err := os.Lstat(filepath.Join(profileDir, "BepInEx", "plugins", "Ns-A")); err == nil {
 		t.Error("a removed package's plugin stays in the profile")
 	}
-	if b, _ := fsx.ReadFile(filepath.Join(profileDir, "BepInEx", "plugins", "Ns-B", "B.dll")); string(b) != "Ns-B" {
+	if b, _ := safefs.ReadFile(filepath.Join(profileDir, "BepInEx", "plugins", "Ns-B", "B.dll")); string(b) != "Ns-B" {
 		t.Errorf("the other package lost its plugin: %q", b)
 	}
 }

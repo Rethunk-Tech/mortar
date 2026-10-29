@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
@@ -52,7 +52,7 @@ func sameState(a, b Profile) bool {
 }
 
 func liveConfig(e env, p Profile) string {
-	b, err := fsx.ReadFile(e.mods(p.ID) + "/local-a/config.json")
+	b, err := safefs.ReadFile(e.mods(p.ID) + "/local-a/config.json")
 	if err != nil {
 		return "<absent>"
 	}
@@ -275,7 +275,7 @@ func TestRevertToAnEventWithoutStateKeepsCurrentSettings(t *testing.T) {
 		t.Fatal(err)
 	}
 	path := filepath.Join(dir, historyFile)
-	raw, err := fsx.ReadFile(path)
+	raw, err := safefs.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -294,7 +294,7 @@ func TestRevertToAnEventWithoutStateKeepsCurrentSettings(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(path, raw, 0o600); err != nil {
+	if err := safefs.WriteFile(path, raw, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := e.AddEntry("stardew", p.ID, "local-c", Source{Kind: KindLocal, Name: "c.zip"}); err != nil {

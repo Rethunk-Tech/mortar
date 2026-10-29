@@ -9,7 +9,7 @@ import (
 
 	"golang.org/x/sys/windows/registry"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 func deleteTree(t *testing.T, path string) {
@@ -51,7 +51,7 @@ func TestWriteNativeHostsPointsEveryBrowserAtItsManifestAndRemoveUndoesIt(t *tes
 			AllowedOrigins    []string `json:"allowed_origins"`
 			AllowedExtensions []string `json:"allowed_extensions"`
 		}
-		b, err := fsx.ReadFile(path)
+		b, err := safefs.ReadFile(path)
 		if err != nil || json.Unmarshal(b, &m) != nil || m.Path != w.exe {
 			t.Fatalf("%s -> %s: %s, %v", key, path, b, err)
 		}

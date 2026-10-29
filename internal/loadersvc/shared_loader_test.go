@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
@@ -23,12 +23,12 @@ func (sharedLoader) ID() string             { return "w7shared" }
 func (sharedLoader) Formats() []string      { return nil }
 func (sharedLoader) ProfileFiles() []string { return []string{"w7shared"} }
 func (sharedLoader) Status(t loader.Target) (loader.Status, error) {
-	b, err := fsx.ReadFile(filepath.Join(t.ProfileDir, "w7shared"))
+	b, err := safefs.ReadFile(filepath.Join(t.ProfileDir, "w7shared"))
 	return loader.Status{Installed: err == nil, Version: string(b)}, nil
 }
 
 func (sharedLoader) Install(_ context.Context, t loader.Target, p loader.Package, _ func(loader.Step)) (string, error) {
-	return p.Version, fsx.WriteFile(filepath.Join(t.ProfileDir, "w7shared"), []byte(p.Version), 0o600)
+	return p.Version, safefs.WriteFile(filepath.Join(t.ProfileDir, "w7shared"), []byte(p.Version), 0o600)
 }
 
 func (sharedLoader) Contribute(context.Context, *launchplan.Plan, loader.ProfileView) error {
@@ -47,7 +47,7 @@ func (sharedLoader) Versions(context.Context, components.GameInfo) ([]string, er
 }
 
 func (sharedLoader) Fetch(_ context.Context, g components.GameInfo, _, dst string) error {
-	return fsx.WriteFile(dst, []byte("pack for "+g.ID), 0o600)
+	return safefs.WriteFile(dst, []byte("pack for "+g.ID), 0o600)
 }
 
 var _ = loader.Register(sharedLoader{})
@@ -106,7 +106,7 @@ func TestTwoGamesOnOneLoaderKeepTheirOwnInstall(t *testing.T) {
 		matches, _ := filepath.Glob(filepath.Join(dir, "*"))
 		found := false
 		for _, m := range matches {
-			if b, err := fsx.ReadFile(m); err == nil && string(b) == "pack for "+id {
+			if b, err := safefs.ReadFile(m); err == nil && string(b) == "pack for "+id {
 				found = true
 			}
 		}

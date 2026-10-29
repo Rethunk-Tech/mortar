@@ -17,9 +17,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
@@ -94,7 +94,7 @@ func TestFetchStartsOverWhenTheServerIgnoresRange(t *testing.T) {
 	if err := s.fetch(context.Background(), Item{ID: "item"}, srv.URL, path); err != nil {
 		t.Fatal(err)
 	}
-	got, err := fsx.ReadFile(path)
+	got, err := safefs.ReadFile(path)
 	if err != nil || string(got) != rangeBody {
 		t.Fatalf("got %q err %v", got, err)
 	}
@@ -216,7 +216,7 @@ func TestExpiredNexusLinkRefetchesThenRanges(t *testing.T) {
 		Client:  func() (*nexus.Client, error) { return client, nil },
 		Premium: func() bool { return true },
 		Install: func(_ context.Context, _, _, path string, _ profile.Source) (profile.InstallResult, error) {
-			b, err := fsx.ReadFile(path)
+			b, err := safefs.ReadFile(path)
 			if err != nil || string(b) != body {
 				return profile.InstallResult{}, fmt.Errorf("installer read %q: %w", b, err)
 			}
@@ -342,7 +342,7 @@ func TestDestKeepsABareCompressedDownloadsName(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(got, src, 0o600); err != nil {
+	if err := safefs.WriteFile(got, src, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	out := t.TempDir()

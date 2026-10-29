@@ -16,8 +16,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/secret"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
@@ -147,7 +147,7 @@ func (d Driver) downloadURL(ctx context.Context, key, uploadID string) (string, 
 	var env struct {
 		Errors []string `json:"errors"`
 	}
-	if json.NewDecoder(fsx.CapReader(resp.Body, source.MaxBody)).Decode(&env) == nil && len(env.Errors) > 0 {
+	if json.NewDecoder(safefs.CapReader(resp.Body, source.MaxBody)).Decode(&env) == nil && len(env.Errors) > 0 {
 		if slices.Contains(env.Errors, "invalid key") {
 			return "", ErrBadKey
 		}

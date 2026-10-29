@@ -8,7 +8,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/share"
@@ -30,7 +30,7 @@ func storeMod(t *testing.T, items *store.Store, uniqueID string) string {
 	t.Helper()
 	src := t.TempDir()
 	body := `{"Name":"` + uniqueID + `","Author":"a","Version":"1.0.0","UniqueID":"` + uniqueID + `","EntryDll":"m.dll"}`
-	if err := fsx.WriteFile(filepath.Join(src, "manifest.json"), []byte(body), 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(src, "manifest.json"), []byte(body), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	key, err := store.HashDir(src)
@@ -117,7 +117,7 @@ func TestShareNamesTheFileOfTheEntrysKeyNotItsStaleSource(t *testing.T) {
 	s, _ := newService(t, true)
 	items, profiles := testenv.Stores(t)
 	src := t.TempDir()
-	if err := fsx.WriteFile(filepath.Join(src, "manifest.json"), []byte(`{"Name":"Cursors","Author":"a","Version":"1.0.1","UniqueID":"Me.Cursors","EntryDll":"m.dll"}`), 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(src, "manifest.json"), []byte(`{"Name":"Cursors","Author":"a","Version":"1.0.1","UniqueID":"Me.Cursors","EntryDll":"m.dll"}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if err := items.AddDir(t.Context(), "stardew", "nexus-5-11", src); err != nil {

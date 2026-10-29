@@ -60,19 +60,19 @@ linters:
   exclusions:
     generated: lax
     rules:
-      # fsx wraps these calls; tests, build tools, /proc reads, a file the user names on the CLI and a game's own
+      # safefs wraps these calls; tests, build tools, /proc reads, a file the user names on the CLI and a game's own
       # options file are not Mortar's own data, so they keep the plain calls.
-      - path: (_test\.go$|^internal/fsx/|^cmd/|^graphics_linux\.go$|^internal/launch/term_unix\.go$|^internal/sampler/ipc\.go$|^internal/cli/farm\.go$|^internal/gamesettings/types\.go$)
+      - path: (_test\.go$|^cmd/|^graphics_linux\.go$|^internal/launch/term_unix\.go$|^internal/sampler/ipc\.go$|^internal/cli/farm\.go$|^internal/gamesettings/types\.go$)
         linters:
           - forbidigo
   settings:
-    # Mortar's own files go through fsx: Windows antivirus and indexer locks are retried, and a symlinked last path
+    # Mortar's own files go through safefs: Windows antivirus and indexer locks are retried, and a symlinked last path
     # element is refused.
     forbidigo:
       analyze-types: true
       forbid:
         - pattern: ^os\.(Remove|RemoveAll|ReadFile|WriteFile|Rename)$
-          msg: use the fsx equivalent
+          msg: use the safefs equivalent
     # canon go-golangci-lint-00008
     govet:
       enable-all: true

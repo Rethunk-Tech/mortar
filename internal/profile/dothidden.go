@@ -12,8 +12,8 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -154,7 +154,7 @@ func (s *Store) UnhideMod(game, id, key, folder string) (Profile, error) {
 		if err != nil {
 			return err
 		}
-		b, err := fsx.ReadFile(filepath.Join(root, filepath.FromSlash(newRel), smapimanifest.FileName))
+		b, err := safefs.ReadFile(filepath.Join(root, filepath.FromSlash(newRel), smapimanifest.FileName))
 		if err != nil {
 			return err
 		}
@@ -179,7 +179,7 @@ func stripDots(root, rel string, ours map[string]bool) (string, error) {
 			if next == "" || exists(filepath.Join(cur, next)) {
 				return "", usererr.Wrap(usererr.Invalid, fmt.Errorf("cannot rename %s: %q is taken", name, next))
 			}
-			if err := fsx.Rename(filepath.Join(cur, name), filepath.Join(cur, next)); err != nil {
+			if err := safefs.Rename(filepath.Join(cur, name), filepath.Join(cur, next)); err != nil {
 				return "", err
 			}
 		}
@@ -190,7 +190,7 @@ func stripDots(root, rel string, ours map[string]bool) (string, error) {
 }
 
 func hiddenUnder(root string, ours map[string]bool) ([]HiddenMod, error) {
-	base, err := fsx.EvalSymlinks(root)
+	base, err := safefs.EvalSymlinks(root)
 	if errors.Is(err, fs.ErrNotExist) {
 		return nil, nil
 	}
@@ -200,7 +200,7 @@ func hiddenUnder(root string, ours map[string]bool) ([]HiddenMod, error) {
 	var out []HiddenMod
 	var walk func(dir, rel string, hidden bool) error
 	walk = func(dir, rel string, hidden bool) error {
-		b, err := fsx.ReadFile(filepath.Join(dir, smapimanifest.FileName))
+		b, err := safefs.ReadFile(filepath.Join(dir, smapimanifest.FileName))
 		if err == nil {
 			if m, perr := smapimanifest.Parse(b); perr == nil && hidden {
 				out = append(out, HiddenMod{Folder: rel, ID: m.ModID(), Name: m.Name, Author: m.Author, Version: m.Version})
@@ -216,7 +216,7 @@ func hiddenUnder(root string, ours map[string]bool) ([]HiddenMod, error) {
 		}
 		for _, it := range items {
 			child := filepath.Join(dir, it.Name())
-			if !datadir.RealDirUnder(base, child) {
+			if !safefs.RealDirUnder(base, child) {
 				continue
 			}
 			next := path.Join(rel, it.Name())

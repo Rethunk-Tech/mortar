@@ -14,8 +14,8 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
@@ -75,7 +75,7 @@ func (s *Store) PendingOldFiles(game, id string) ([]OldFiles, error) {
 			if err := holdDropped(dir, k.Name()); err != nil {
 				return nil, err
 			}
-			if err := fsx.RemoveAll(filepath.Join(root, k.Name())); err != nil {
+			if err := safefs.RemoveAll(filepath.Join(root, k.Name())); err != nil {
 				return nil, err
 			}
 			continue
@@ -151,7 +151,7 @@ func (s *Store) ResolveOldFiles(game, id, key string, keep bool) error {
 				if err := os.MkdirAll(filepath.Dir(to), 0o700); err != nil {
 					return err
 				}
-				if err := fsx.Rename(filepath.Join(src, rel), to); err != nil {
+				if err := safefs.Rename(filepath.Join(src, rel), to); err != nil {
 					return err
 				}
 			}
@@ -161,7 +161,7 @@ func (s *Store) ResolveOldFiles(game, id, key string, keep bool) error {
 		}
 	}
 	if keep {
-		return fsx.RemoveAll(set)
+		return safefs.RemoveAll(set)
 	}
 	_, err = s.trashOldFilesLocked(game, id, key)
 	return err
@@ -194,11 +194,11 @@ func (s *Store) trashOldFilesLocked(game, id, key string) (string, error) {
 	if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
 		return "", err
 	}
-	if err := fsx.Rename(src, dst); err != nil {
+	if err := safefs.Rename(src, dst); err != nil {
 		if err := datadir.CopyTree(src, dst); err != nil {
 			return "", err
 		}
-		if err := fsx.RemoveAll(src); err != nil {
+		if err := safefs.RemoveAll(src); err != nil {
 			return "", err
 		}
 	}
@@ -242,15 +242,15 @@ func (s *Store) RestoreOldFiles(game, id, token string) error {
 	if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
 		return err
 	}
-	if err := fsx.Rename(src, dst); err != nil {
+	if err := safefs.Rename(src, dst); err != nil {
 		if err := datadir.CopyTree(src, dst); err != nil {
 			return err
 		}
-		if err := fsx.RemoveAll(src); err != nil {
+		if err := safefs.RemoveAll(src); err != nil {
 			return err
 		}
 	}
-	_ = fsx.Remove(filepath.Dir(src))
+	_ = safefs.Remove(filepath.Dir(src))
 	return nil
 }
 

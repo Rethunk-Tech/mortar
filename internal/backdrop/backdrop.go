@@ -20,8 +20,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/modpic"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
@@ -63,8 +62,8 @@ func open(path string) (*os.File, string, error) {
 	if typ == "" {
 		return nil, "", fmt.Errorf("%q is not a PNG, JPEG, GIF, WebP or JPEG XL image", path)
 	}
-	f, err := fsx.OpenRegular(path)
-	if errors.Is(err, fsx.ErrNotRegular) {
+	f, err := safefs.OpenRegular(path)
+	if errors.Is(err, safefs.ErrNotRegular) {
 		err = fmt.Errorf("%q is not a regular file", path)
 	}
 	if err != nil {
@@ -162,7 +161,7 @@ func serve(w http.ResponseWriter, r *http.Request, src io.ReadSeeker, typ, id st
 	if px, err := strconv.Atoi(query); err == nil && px >= minWidthPx && px <= maxWidthPx && typ != "image/jxl" {
 		cached := filepath.Join(cacheDir, name)
 		if cacheDir != "" {
-			if b, err := fsx.ReadFile(cached); err == nil {
+			if b, err := safefs.ReadFile(cached); err == nil {
 				w.Header().Set("Content-Type", http.DetectContentType(b))
 				http.ServeContent(w, r, "", mod, bytes.NewReader(b))
 				return
@@ -192,7 +191,7 @@ const keptCopies = 8
 
 // keep writes one shrunk copy and drops the oldest beyond keptCopies.
 func keep(dir, path string, b []byte) {
-	if os.MkdirAll(dir, 0o700) != nil || datadir.WriteFileAtomic(path, b, 0o600) != nil {
+	if os.MkdirAll(dir, 0o700) != nil || safefs.WriteFileAtomic(path, b, 0o600) != nil {
 		return
 	}
 	entries, err := os.ReadDir(dir)
@@ -208,7 +207,7 @@ func keep(dir, path string, b []byte) {
 		return ai.ModTime().Compare(bi.ModTime())
 	})
 	for _, e := range entries[:len(entries)-keptCopies] {
-		_ = fsx.Remove(filepath.Join(dir, e.Name()))
+		_ = safefs.Remove(filepath.Join(dir, e.Name()))
 	}
 }
 

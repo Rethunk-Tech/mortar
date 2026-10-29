@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 var pngHeader = []byte("\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR")
@@ -77,7 +77,7 @@ func TestSetCoverValidatesAndCopies(t *testing.T) {
 		t.Fatal(err)
 	}
 	dir := filepath.Join(s.root, "stardew", p.ID)
-	if b, err := fsx.ReadFile(filepath.Join(dir, "cover.png")); err != nil || !bytes.Equal(b, pngHeader) {
+	if b, err := safefs.ReadFile(filepath.Join(dir, "cover.png")); err != nil || !bytes.Equal(b, pngHeader) {
 		t.Fatalf("copied cover = %q, %v", b, err)
 	}
 
@@ -117,7 +117,7 @@ func TestSetCoverKeepsTheOldFileWhenTheProfileCannotBeSaved(t *testing.T) {
 		t.Fatal(err)
 	}
 	dir := filepath.Join(s.root, "stardew", p.ID)
-	saved, err := fsx.ReadFile(filepath.Join(dir, fileName))
+	saved, err := safefs.ReadFile(filepath.Join(dir, fileName))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -134,7 +134,7 @@ func TestSetCoverKeepsTheOldFileWhenTheProfileCannotBeSaved(t *testing.T) {
 		t.Fatal("set succeeded after the profile could not be saved")
 	}
 	_ = os.RemoveAll(filepath.Join(dir, fileName))
-	if err := fsx.WriteFile(filepath.Join(dir, fileName), saved, 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(dir, fileName), saved, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	got, err := s.read("stardew", p.ID)

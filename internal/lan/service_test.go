@@ -23,7 +23,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/share"
@@ -329,7 +329,7 @@ func TestLoopbackTransfer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	got, err := fsx.ReadFile(filepath.Join(installed, "mod.dll"))
+	got, err := safefs.ReadFile(filepath.Join(installed, "mod.dll"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -346,7 +346,7 @@ func TestLoopbackTransfer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got, err := fsx.ReadFile(filepath.Join(dir, "alt.png")); err != nil || string(got) != "optional" {
+	if got, err := safefs.ReadFile(filepath.Join(dir, "alt.png")); err != nil || string(got) != "optional" {
 		t.Fatalf("optional file did not transfer: %q %v", got, err)
 	}
 }
@@ -407,7 +407,7 @@ func TestLethalCompanyProfileOverLAN(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if got, err := fsx.ReadFile(filepath.Join(dir, p.name+".dll")); err != nil || string(got) != p.name {
+		if got, err := safefs.ReadFile(filepath.Join(dir, p.name+".dll")); err != nil || string(got) != p.name {
 			t.Fatalf("%s files = %q, %v", p.name, got, err)
 		}
 		if src, pkg, version, _ := receiverStore.Meta("lethal-company", store.PackageKey(p.name, p.version)); src != profile.KindThunderstore || pkg != p.name || version != p.version {

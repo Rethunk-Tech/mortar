@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/winhost"
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
@@ -165,7 +165,7 @@ func (s *Service) ensureBridge(ctx context.Context, id string) (profile.Bundle, 
 	if err != nil {
 		return profile.Bundle{}, err
 	}
-	defer func() { _ = fsx.RemoveAll(tmp) }()
+	defer func() { _ = safefs.RemoveAll(tmp) }()
 	archivePath := filepath.Join(tmp, "bridge.zip")
 	if local {
 		archivePath = localZip
@@ -220,7 +220,7 @@ func (s *Service) ensureBundled(ctx context.Context, id string) (string, error) 
 	if err != nil {
 		return "", err
 	}
-	defer func() { _ = fsx.RemoveAll(tmp) }()
+	defer func() { _ = safefs.RemoveAll(tmp) }()
 	copier, canCopy := l.(loader.BundledCopier)
 	if !canCopy {
 		return "", fmt.Errorf("%s ships no mods of its own", g.Name())

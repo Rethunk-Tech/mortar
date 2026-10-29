@@ -4,8 +4,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loadorder"
@@ -23,7 +23,7 @@ func (l Loader) Order(p loader.ProfileView) ([]loadorder.Row, error) {
 	}
 	order := dotnet.LoadOrder(asms)
 	path, _ := l.Path(p)
-	raw, _ := fsx.ReadFile(path)
+	raw, _ := safefs.ReadFile(path)
 	moved := asLastRun(order, string(raw))
 	return rows(order, moved), nil
 }

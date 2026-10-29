@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // maxManifestBytes bounds one manifest.json read: this peek runs before the capped extractor,
@@ -15,7 +15,7 @@ import (
 const maxManifestBytes = 1 << 20
 
 func readManifestName(r io.Reader) string {
-	b, err := fsx.ReadCapped(r, maxManifestBytes)
+	b, err := safefs.ReadCapped(r, maxManifestBytes)
 	if err != nil {
 		return ""
 	}

@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 	"github.com/Rethunk-Tech/mortar/internal/steam"
 )
@@ -404,7 +404,7 @@ func (t *tailer) pollFile(path string) bool {
 	if err != nil || !st.ModTime().After(t.since) {
 		return false
 	}
-	f, err := fsx.Open(path)
+	f, err := safefs.Open(path)
 	if err != nil {
 		return false
 	}

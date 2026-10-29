@@ -7,11 +7,11 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/customgame"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/runtime"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -175,7 +175,7 @@ func (s *Service) ResetInstall(id string) error {
 	if clean == string(filepath.Separator) || clean == home {
 		return fmt.Errorf("refusing to remove protected path %q", clean)
 	}
-	return fsx.RemoveAll(clean)
+	return safefs.RemoveAll(clean)
 }
 
 // SteamStatus reports whether a usable Steam was found.
@@ -257,7 +257,7 @@ func List(home string, cur settings.Settings) ([]GameInfo, error) {
 			}
 			info.Installed, info.InstallDir, info.Store = dir != "", dir, store
 			// A folder the player chose that no store lists starts as a plain folder install.
-			picked := dir != "" && !slices.ContainsFunc(all, func(in Install) bool { return fsx.SamePath(in.Dir, dir) })
+			picked := dir != "" && !slices.ContainsFunc(all, func(in Install) bool { return safefs.SamePath(in.Dir, dir) })
 			info.DirectInstall = picked && !(Install{Store: store}).StoreStarts() ||
 				slices.ContainsFunc(all, func(in Install) bool { return !in.StoreStarts() })
 			if all != nil {

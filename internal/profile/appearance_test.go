@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 func TestSetAppearance(t *testing.T) {
@@ -20,7 +20,7 @@ func TestSetAppearance(t *testing.T) {
 	if err != nil || listed[0].Color != "teal" || listed[0].Icon != "sprout" {
 		t.Fatalf("list = %+v, %v", listed, err)
 	}
-	raw, err := fsx.ReadFile(filepath.Join(s.root, "stardew", p.ID, fileName))
+	raw, err := safefs.ReadFile(filepath.Join(s.root, "stardew", p.ID, fileName))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -80,7 +80,7 @@ func TestLoadFoldsDescriptionIntoNotes(t *testing.T) {
 		if _, err := s.SetAppearance("stardew", p.ID, "teal", ""); err != nil {
 			t.Fatal(err)
 		}
-		raw, err := fsx.ReadFile(path)
+		raw, err := safefs.ReadFile(path)
 		if err != nil {
 			t.Fatal(err)
 		}

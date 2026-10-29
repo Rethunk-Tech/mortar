@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
@@ -47,7 +47,7 @@ func (c *Client) ReleaseNotes(ctx context.Context, owner, repo, tag string) (str
 	var rel struct {
 		Body string `json:"body"`
 	}
-	if err := json.NewDecoder(fsx.CapReader(resp.Body, maxNotes)).Decode(&rel); err != nil {
+	if err := json.NewDecoder(safefs.CapReader(resp.Body, maxNotes)).Decode(&rel); err != nil {
 		return "", fmt.Errorf("read GitHub's release response: %w", err)
 	}
 	notes := strings.TrimSpace(rel.Body)

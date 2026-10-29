@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
@@ -69,7 +69,7 @@ func (s *Service) storedRunLogs(gameID, profileID, runID string) (string, string
 	if err != nil {
 		return "", "", err
 	}
-	b, err := fsx.ReadFile(runPlayerLogPath(filepath.Dir(path), runID))
+	b, err := safefs.ReadFile(runPlayerLogPath(filepath.Dir(path), runID))
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return "", "", err
 	}

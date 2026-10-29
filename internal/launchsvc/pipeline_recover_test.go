@@ -10,8 +10,8 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/deploy"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/savesiso"
@@ -64,10 +64,10 @@ func TestRecoverGameDeploysPutsBackWhatACrashedLaunchChanged(t *testing.T) {
 	if err != nil || !found {
 		t.Fatalf("found %v, err %v", found, err)
 	}
-	if b, _ := fsx.ReadFile(c.dll); string(b) != "the player's own" {
+	if b, _ := safefs.ReadFile(c.dll); string(b) != "the player's own" {
 		t.Fatalf("the player's file = %q", b)
 	}
-	if b, _ := fsx.ReadFile(filepath.Join(c.saves, "shared.sav")); string(b) != "shared" {
+	if b, _ := safefs.ReadFile(filepath.Join(c.saves, "shared.sav")); string(b) != "shared" {
 		t.Fatalf("the shared saves = %q", b)
 	}
 	if deploy.HasJournal(c.deployDir) || savesiso.HasJournal(c.savesDir) {
@@ -121,10 +121,10 @@ func TestUnwindTakesBackTheDeployAndTheSaveSwap(t *testing.T) {
 	dep.unwind(context.Background())
 	var nilDep *deployment
 	nilDep.unwind(context.Background())
-	if b, _ := fsx.ReadFile(c.dll); string(b) != "the player's own" {
+	if b, _ := safefs.ReadFile(c.dll); string(b) != "the player's own" {
 		t.Fatalf("the player's file = %q", b)
 	}
-	if b, _ := fsx.ReadFile(filepath.Join(c.saves, "shared.sav")); string(b) != "shared" {
+	if b, _ := safefs.ReadFile(filepath.Join(c.saves, "shared.sav")); string(b) != "shared" {
 		t.Fatalf("the shared saves = %q", b)
 	}
 	if deploy.HasJournal(c.deployDir) || savesiso.HasJournal(c.savesDir) {
@@ -204,7 +204,7 @@ func TestAFailedDeployTakesBackWhatItPlaced(t *testing.T) {
 	if _, err := startDeploy(context.Background(), inst, missingPlan, nil); err == nil {
 		t.Fatal("a deploy with a missing source succeeded")
 	}
-	if b, _ := fsx.ReadFile(filepath.Join(inst.Dir, "a.dll")); string(b) != "the player's own" {
+	if b, _ := safefs.ReadFile(filepath.Join(inst.Dir, "a.dll")); string(b) != "the player's own" {
 		t.Fatalf("the player's file after a failed deploy = %q", b)
 	}
 	if dir, _ := journalDir(inst.ID); deploy.HasJournal(dir) {
@@ -226,7 +226,7 @@ func TestSwapSavesGivesTheProfileItsOwnAndUndoesIt(t *testing.T) {
 	if err := os.MkdirAll(shared, 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(filepath.Join(shared, "shared.sav"), []byte("shared"), 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(shared, "shared.sav"), []byte("shared"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	_, selected := svc.installs(g)
@@ -246,7 +246,7 @@ func TestSwapSavesGivesTheProfileItsOwnAndUndoesIt(t *testing.T) {
 		t.Fatalf("a launch after a crashed one: %v", err)
 	}
 	again.unwind(context.Background())
-	if b, _ := fsx.ReadFile(filepath.Join(shared, "shared.sav")); string(b) != "shared" {
+	if b, _ := safefs.ReadFile(filepath.Join(shared, "shared.sav")); string(b) != "shared" {
 		t.Fatalf("the shared saves after the undo = %q", b)
 	}
 	// A profile that keeps no saves of its own is not swapped.

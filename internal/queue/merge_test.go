@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
@@ -19,7 +19,7 @@ func TestNexusOptionalFileOffersMergeIntoTheSamePageEntry(t *testing.T) {
 	}
 	var extras []string
 	f.installExtra = func(_, _, entryKey, path string, src profile.Source) (profile.InstallResult, error) {
-		b, err := fsx.ReadFile(path)
+		b, err := safefs.ReadFile(path)
 		if err != nil || string(b) != payload || entryKey != "nexus-1-9" || src.ModID != 1 {
 			t.Errorf("extra install %s %q %+v %v", entryKey, b, src, err)
 		}

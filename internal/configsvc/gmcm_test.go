@@ -5,8 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/gmcm"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
@@ -15,14 +14,14 @@ func TestTheInGameMenuIsAFileWhoseEditsWaitForTheNextStart(t *testing.T) {
 	s, _ := newService(t)
 	dir := s.Profiles.ProfileDir
 	pdir, _ := dir("stardew", "p")
-	capture, err := fsx.ReadFile(filepath.Join("..", "gmcm", "testdata", "gmcm-capture.json"))
+	capture, err := safefs.ReadFile(filepath.Join("..", "gmcm", "testdata", "gmcm-capture.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
 	if err := os.MkdirAll(filepath.Dir(gmcm.CapturePath(pdir, "Author.Mod")), 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := datadir.WriteFileAtomic(gmcm.CapturePath(pdir, "Author.Mod"), capture, 0o600); err != nil {
+	if err := safefs.WriteFileAtomic(gmcm.CapturePath(pdir, "Author.Mod"), capture, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	type set struct {

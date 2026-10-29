@@ -9,7 +9,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
@@ -76,7 +76,7 @@ func hashTree(t *testing.T, dir string) map[string][32]byte {
 		if err != nil || d.IsDir() {
 			return err
 		}
-		data, err := fsx.ReadFile(path)
+		data, err := safefs.ReadFile(path)
 		out[path] = sha256.Sum256(data)
 		return err
 	})
@@ -91,7 +91,7 @@ func TestDetectsVortexLevelDBAndPreviewsMods(t *testing.T) {
 	before := hashTree(t, state)
 
 	// A second handle holding the source LOCK must not block the read.
-	holder, err := fsx.OpenFile(filepath.Join(state, "LOCK"), os.O_RDWR, 0)
+	holder, err := safefs.OpenFile(filepath.Join(state, "LOCK"), os.O_RDWR, 0)
 	if err != nil {
 		t.Fatal(err)
 	}

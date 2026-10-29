@@ -9,7 +9,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // staleCapture is how old an orphaned capture file must be before a later launch sweeps it.
@@ -33,7 +33,7 @@ func sweepStale() {
 	names, _ := filepath.Glob(filepath.Join(os.TempDir(), "mortar-launch-*.log"))
 	for _, n := range names {
 		if st, err := os.Stat(n); err == nil && time.Since(st.ModTime()) > staleCapture {
-			_ = fsx.Remove(n)
+			_ = safefs.Remove(n)
 		}
 	}
 }
@@ -41,7 +41,7 @@ func sweepStale() {
 // removeIfReleased unlinks the file once the process holding it has exited.
 func (c *capture) removeIfReleased() {
 	if c != nil && c.released.Load() {
-		_ = fsx.Remove(c.file.Name())
+		_ = safefs.Remove(c.file.Name())
 	}
 }
 
@@ -81,7 +81,7 @@ func (c *capture) release() {
 	}
 	c.released.Store(true)
 	_ = c.file.Close()
-	_ = fsx.Remove(c.file.Name())
+	_ = safefs.Remove(c.file.Name())
 }
 
 // stop ends the launched process and everything it started.

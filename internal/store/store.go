@@ -25,8 +25,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -321,7 +321,7 @@ func (s *Store) dirReady(game, key, dir string) (bool, error) {
 		return true, nil
 	}
 	if exists(dir) {
-		if err := fsx.RemoveAll(dir); err != nil {
+		if err := safefs.RemoveAll(dir); err != nil {
 			return false, &Error{Game: game, Key: key, Err: err}
 		}
 	}
@@ -349,7 +349,7 @@ func (s *Store) AddArchiveKey(ctx context.Context, game, key, archivePath string
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	return s.admit(ctx, game, key, func() (string, error) { return fsx.HashFile(archivePath, sha256.New()) }, func(tmp string) error {
+	return s.admit(ctx, game, key, func() (string, error) { return safefs.HashFile(archivePath, sha256.New()) }, func(tmp string) error {
 		return archive.Extract(archivePath, tmp)
 	}, func() int64 {
 		n, _ := archive.DeclaredSize(archivePath)
@@ -401,7 +401,7 @@ func (s *Store) addDir(ctx context.Context, game, key, srcDir string) error {
 		h, err := HashDir(srcDir)
 		return strings.TrimPrefix(h, "local-"), err
 	}, func(tmp string) error { return datadir.CopyTree(srcDir, tmp) }, func() int64 {
-		n, _ := datadir.Size(srcDir)
+		n, _ := safefs.Size(srcDir)
 		return n
 	})
 }
@@ -450,7 +450,7 @@ func (s *Store) install(ctx context.Context, game, key, final string, fill func(
 	}
 	defer func() {
 		if err != nil {
-			_ = fsx.RemoveAll(tmp)
+			_ = safefs.RemoveAll(tmp)
 		}
 	}()
 	if err = fill(tmp); err == nil {
@@ -459,7 +459,7 @@ func (s *Store) install(ctx context.Context, game, key, final string, fill func(
 	}
 	if err == nil {
 		marker := filepath.Join(tmp, CompleteMarker)
-		if removeErr := fsx.Remove(marker); removeErr != nil && !errors.Is(removeErr, fs.ErrNotExist) {
+		if removeErr := safefs.Remove(marker); removeErr != nil && !errors.Is(removeErr, fs.ErrNotExist) {
 			err = removeErr
 		}
 	}
@@ -470,7 +470,7 @@ func (s *Store) install(ctx context.Context, game, key, final string, fill func(
 		err = writeCompleteMarker(tmp)
 	}
 	if err == nil {
-		err = fsx.Rename(tmp, final)
+		err = safefs.Rename(tmp, final)
 	}
 	if err == nil {
 		err = syncPath(parent)
@@ -505,7 +505,7 @@ func (s *Store) completeItem(dir string) bool {
 
 func writeCompleteMarker(dir string) error {
 	marker := filepath.Join(dir, CompleteMarker)
-	if err := datadir.WriteFileAtomic(marker, nil, 0o600); err != nil {
+	if err := safefs.WriteFileAtomic(marker, nil, 0o600); err != nil {
 		return err
 	}
 	if err := syncPath(marker); err != nil {
@@ -552,7 +552,7 @@ func exists(p string) bool {
 
 // HashDir is the content key of a folder: a hash of its file paths and bytes.
 func HashDir(root string) (string, error) {
-	base, err := fsx.EvalSymlinks(root)
+	base, err := safefs.EvalSymlinks(root)
 	if err != nil {
 		return "", err
 	}
@@ -567,19 +567,19 @@ func HashDir(root string) (string, error) {
 			return err
 		}
 		if info.IsDir() {
-			if p != root && !datadir.RealDirUnder(base, p) {
+			if p != root && !safefs.RealDirUnder(base, p) {
 				return fs.SkipDir
 			}
 			return nil
 		}
-		if datadir.LinkedDir(p, info) {
+		if safefs.LinkedDir(p, info) {
 			return nil
 		}
-		resolved, err := fsx.EvalSymlinks(p)
+		resolved, err := safefs.EvalSymlinks(p)
 		if err != nil {
 			return err
 		}
-		if !datadir.UnderRoot(base, resolved) {
+		if !safefs.UnderRoot(base, resolved) {
 			return fmt.Errorf("%s escapes %s", p, root)
 		}
 		rel, err := filepath.Rel(root, p)
@@ -609,7 +609,7 @@ func HashDir(root string) (string, error) {
 			return "", err
 		}
 		h.Write([]byte{0})
-		f, err := fsx.Open(file.open)
+		f, err := safefs.Open(file.open)
 		if err != nil {
 			return "", err
 		}
@@ -624,7 +624,7 @@ func HashDir(root string) (string, error) {
 }
 
 func hashKey(path string) (string, error) {
-	sum, err := fsx.HashFile(path, sha256.New())
+	sum, err := safefs.HashFile(path, sha256.New())
 	if err != nil {
 		return "", err
 	}
@@ -696,7 +696,7 @@ func (s *Store) viewIndex() (index, error) {
 			return nil, err
 		}
 		log.Printf("store index is corrupt, starting a new one: %v", err)
-		if err := fsx.Rename(s.indexPath(), s.indexPath()+".corrupt"); err != nil {
+		if err := safefs.Rename(s.indexPath(), s.indexPath()+".corrupt"); err != nil {
 			return nil, err
 		}
 		s.idxReset.Store(true)
@@ -749,7 +749,7 @@ func (s *Store) bind(game, key, blob string) error {
 	r := idx[game][key]
 	r.Blob, r.Used = blob, time.Now().UTC()
 	if dir, err := s.destOf(game, key, blob); err == nil {
-		r.Size, _ = datadir.Size(dir)
+		r.Size, _ = safefs.Size(dir)
 	}
 	if r.Source == "" {
 		r.Source, r.Package, r.Version = describe(key)
@@ -966,7 +966,7 @@ func (s *Store) drop(game, key string, r record) error {
 	if err != nil {
 		return err
 	}
-	return fsx.RemoveAll(dir)
+	return safefs.RemoveAll(dir)
 }
 
 // collectBlobs deletes the blobs no record of idx names when their last name was just dropped, or when they are older
@@ -996,7 +996,7 @@ func (s *Store) collectBlobs(idx index, dropped map[string]bool, now time.Time) 
 				continue
 			}
 		}
-		errs = append(errs, fsx.RemoveAll(filepath.Join(s.root, blobsDir, e.Name())))
+		errs = append(errs, safefs.RemoveAll(filepath.Join(s.root, blobsDir, e.Name())))
 	}
 	return errors.Join(errs...)
 }
@@ -1123,7 +1123,7 @@ func (s *Store) Cleanup() ([]string, error) {
 		return nil, err
 	}
 	for _, l := range loaders {
-		if fsx.IsDir(l) {
+		if safefs.IsDir(l) {
 			parents = append(parents, l)
 		}
 	}
@@ -1142,7 +1142,7 @@ func (s *Store) Cleanup() ([]string, error) {
 			if !strings.HasPrefix(it.Name(), tempPrefix) {
 				continue
 			}
-			if err := fsx.RemoveAll(filepath.Join(parent, it.Name())); err != nil {
+			if err := safefs.RemoveAll(filepath.Join(parent, it.Name())); err != nil {
 				errs = append(errs, err)
 			} else {
 				rel, _ := filepath.Rel(s.root, filepath.Join(parent, it.Name()))

@@ -5,8 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
@@ -17,7 +16,7 @@ func lastRunPath(dir string) string {
 }
 
 func readLastRun(dir string) (string, error) {
-	b, err := fsx.ReadFile(lastRunPath(dir))
+	b, err := safefs.ReadFile(lastRunPath(dir))
 	if err != nil {
 		if os.IsNotExist(err) {
 			return "", nil
@@ -31,7 +30,7 @@ func writeLastRun(dir, version string) error {
 	if dir == "" || version == "" {
 		return nil
 	}
-	return datadir.WriteFileAtomic(lastRunPath(dir), []byte(version), 0o600)
+	return safefs.WriteFileAtomic(lastRunPath(dir), []byte(version), 0o600)
 }
 
 // upgraded reports whether current is semver-newer than last.

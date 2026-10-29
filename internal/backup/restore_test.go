@@ -12,8 +12,8 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 func TestSavesRecordsCauseBesideTheZip(t *testing.T) {
@@ -76,11 +76,11 @@ func TestRestoreOneLeavesTheOtherSave(t *testing.T) {
 	if err := Restore(t.Context(), zipPath, layout(saves), filepath.Dir(zipPath), []string{"Alpha_1"}, DefaultKeep, later); err != nil {
 		t.Fatal(err)
 	}
-	a, err := fsx.ReadFile(filepath.Join(saves, "Alpha_1", "Alpha_1"))
+	a, err := safefs.ReadFile(filepath.Join(saves, "Alpha_1", "Alpha_1"))
 	if err != nil || string(a) != "old-a" {
 		t.Fatalf("alpha = %q, %v", a, err)
 	}
-	b, err := fsx.ReadFile(filepath.Join(saves, "Beta_1", "Beta_1"))
+	b, err := safefs.ReadFile(filepath.Join(saves, "Beta_1", "Beta_1"))
 	if err != nil || string(b) != "new-b" {
 		t.Fatalf("beta = %q, %v", b, err)
 	}
@@ -108,8 +108,8 @@ func TestRestoreAllAndPreRestoreBackup(t *testing.T) {
 	if after[0].Kind != KindRestore {
 		t.Fatalf("newest kind = %q", after[0].Kind)
 	}
-	a, _ := fsx.ReadFile(filepath.Join(saves, "Alpha_1", "Alpha_1"))
-	b, _ := fsx.ReadFile(filepath.Join(saves, "Beta_1", "Beta_1"))
+	a, _ := safefs.ReadFile(filepath.Join(saves, "Alpha_1", "Alpha_1"))
+	b, _ := safefs.ReadFile(filepath.Join(saves, "Beta_1", "Beta_1"))
 	if string(a) != "old-a" || string(b) != "old-b" {
 		t.Fatalf("restored %q %q", a, b)
 	}
@@ -154,7 +154,7 @@ func TestRestoreRejectsReservedName(t *testing.T) {
 	if err := zw.Close(); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(zipPath, buf.Bytes(), 0o600); err != nil {
+	if err := safefs.WriteFile(zipPath, buf.Bytes(), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	err = Restore(t.Context(), zipPath, layout(saves), filepath.Dir(zipPath), nil, DefaultKeep, time.Date(2026, 6, 1, 0, 0, 0, 0, time.UTC))
@@ -176,7 +176,7 @@ func writeSlipZip(path string) error {
 	if err := zw.Close(); err != nil {
 		return err
 	}
-	return fsx.WriteFile(path, buf.Bytes(), 0o600)
+	return safefs.WriteFile(path, buf.Bytes(), 0o600)
 }
 
 // twoFarmsBackedUp is a saves folder holding Alpha_1 ("old-a") and Beta_1 ("old-b"), the backups folder beside it,

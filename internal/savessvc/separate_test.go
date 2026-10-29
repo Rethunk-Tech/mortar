@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/backup"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/store"
@@ -84,12 +84,12 @@ func TestSeparateSavesBackupRestoreAndOpenActOnTheProfilesOwn(t *testing.T) {
 		byFolder[b.Saves[0].Folder] = b.Name
 	}
 	write := func(dir, folder, body string) {
-		if err := fsx.WriteFile(filepath.Join(dir, folder, folder), []byte(body), 0o600); err != nil {
+		if err := safefs.WriteFile(filepath.Join(dir, folder, folder), []byte(body), 0o600); err != nil {
 			t.Fatal(err)
 		}
 	}
 	read := func(dir, folder string) string {
-		got, err := fsx.ReadFile(filepath.Join(dir, folder, folder))
+		got, err := safefs.ReadFile(filepath.Join(dir, folder, folder))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -103,7 +103,7 @@ func TestSeparateSavesBackupRestoreAndOpenActOnTheProfilesOwn(t *testing.T) {
 	if got := read(ownDir, "Farm_2"); got != "own-v1" {
 		t.Fatalf("own Farm_2 = %q after restore", got)
 	}
-	if fsx.IsDir(filepath.Join(shared, "Farm_2")) {
+	if safefs.IsDir(filepath.Join(shared, "Farm_2")) {
 		t.Fatal("restore for the separate profile wrote into the shared saves")
 	}
 	if err := s.RestoreBackup(t.Context(), "stardew", plain.ID, byFolder["Farm_1"], nil); err != nil {
@@ -112,7 +112,7 @@ func TestSeparateSavesBackupRestoreAndOpenActOnTheProfilesOwn(t *testing.T) {
 	if got := read(shared, "Farm_1"); got != "shared-v1" {
 		t.Fatalf("shared Farm_1 = %q after restore", got)
 	}
-	if fsx.IsDir(filepath.Join(ownDir, "Farm_1")) {
+	if safefs.IsDir(filepath.Join(ownDir, "Farm_1")) {
 		t.Fatal("restore for the shared profile wrote into the separate saves")
 	}
 

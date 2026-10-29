@@ -6,7 +6,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // DeleteUnowned deletes a config file that no mod of the profile owns (one the Config page lists under Loader and
@@ -40,7 +40,7 @@ func (s *Service) DeleteUnowned(game, profileID, file string) error {
 	if err != nil {
 		return err
 	}
-	return fsx.Remove(path)
+	return safefs.Remove(path)
 }
 
 // cfgGUID is the plugin GUID a .cfg's header names, "" when it has none.

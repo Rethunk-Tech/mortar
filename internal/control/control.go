@@ -21,9 +21,9 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -99,7 +99,7 @@ func removeStaleTemps(path string, now time.Time) {
 	temps, _ := filepath.Glob(path + ".*.tmp")
 	for _, temp := range temps {
 		if info, err := os.Stat(temp); err == nil && now.Sub(info.ModTime()) > staleTempAge {
-			_ = fsx.Remove(temp)
+			_ = safefs.Remove(temp)
 		}
 	}
 }
@@ -115,7 +115,7 @@ func republish(ctx context.Context, every time.Duration, dir, path string, b []b
 			return
 		case <-tick.C:
 			if _, err := os.Stat(path); errors.Is(err, fs.ErrNotExist) && !answers(ctx, dir) {
-				_ = datadir.WriteFileAtomic(path, b, 0o600)
+				_ = safefs.WriteFileAtomic(path, b, 0o600)
 			}
 		}
 	}
@@ -124,14 +124,14 @@ func republish(ctx context.Context, every time.Duration, dir, path string, b []b
 // release ends this app's claim on the discovery file b. Another instance may have taken the file over since, and
 // removing its file would hide it from the CLI; the app this one replaced gets its own file back if it still answers.
 func release(ctx context.Context, dir, path string, b, prev []byte) {
-	cur, err := fsx.ReadFile(path)
+	cur, err := safefs.ReadFile(path)
 	if err != nil || !bytes.Equal(cur, b) {
 		return
 	}
-	if len(prev) > 0 && datadir.WriteFileAtomic(path, prev, 0o600) == nil && answers(ctx, dir) {
+	if len(prev) > 0 && safefs.WriteFileAtomic(path, prev, 0o600) == nil && answers(ctx, dir) {
 		return
 	}
-	_ = fsx.Remove(path)
+	_ = safefs.Remove(path)
 }
 
 // Serve listens until ctx ends, then removes the discovery file. It takes the file over from an app still running
@@ -155,13 +155,13 @@ func Serve(ctx context.Context, dir, version string, h Handler) error {
 	}
 	path := filepath.Join(dir, controlwire.FileName)
 	removeStaleTemps(path, time.Now())
-	prev, _ := fsx.ReadFile(path)
+	prev, _ := safefs.ReadFile(path)
 	b, err := json.Marshal(controlwire.Discovery{Port: tcp.Port, Token: token, PID: os.Getpid(), Version: version, Protocol: controlwire.Protocol})
 	if err != nil {
 		_ = ln.Close()
 		return err
 	}
-	if err := datadir.WriteFileAtomic(path, b, 0o600); err != nil {
+	if err := safefs.WriteFileAtomic(path, b, 0o600); err != nil {
 		_ = ln.Close()
 		return err
 	}
@@ -200,7 +200,7 @@ type gateReader struct {
 
 func (g *gateReader) Read(p []byte) (int, error) {
 	if g.left <= 0 {
-		return 0, fsx.ErrTooLarge
+		return 0, safefs.ErrTooLarge
 	}
 	if int64(len(p)) > g.left {
 		p = p[:g.left]

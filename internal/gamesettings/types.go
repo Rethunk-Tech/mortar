@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 type Settings struct {
@@ -25,7 +25,7 @@ type Settings struct {
 
 var (
 	readFile  = os.ReadFile
-	writeFile = datadir.WriteFileAtomic
+	writeFile = safefs.WriteFileAtomic
 )
 
 func (s Settings) Validate() error {

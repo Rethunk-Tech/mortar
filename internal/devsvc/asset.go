@@ -20,9 +20,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -38,7 +38,7 @@ type assetRecord struct {
 }
 
 func readAssetRecord(dir string) (assetRecord, bool) {
-	body, err := fsx.ReadFile(filepath.Join(dir, ".mortar", assetRecordFile))
+	body, err := safefs.ReadFile(filepath.Join(dir, ".mortar", assetRecordFile))
 	var rec assetRecord
 	if err != nil || json.Unmarshal(body, &rec) != nil || rec.Kind == "" || !modName.MatchString(rec.Name) ||
 		rec.Team != "" && !teamPattern.MatchString(rec.Team) {
@@ -128,7 +128,7 @@ func writeFiles(dir string, files map[string][]byte) error {
 		if err := os.MkdirAll(filepath.Dir(p), 0o750); err != nil {
 			return err
 		}
-		if err := fsx.WriteFile(p, body, 0o644); err != nil { // #nosec G306 -- a tracked project file
+		if err := safefs.WriteFile(p, body, 0o644); err != nil { // #nosec G306 -- a tracked project file
 			return err
 		}
 	}
@@ -195,7 +195,7 @@ func setManifestDependency(dir, pkg, version string) error {
 // editManifest rewrites manifest.json with edit applied, keeping the fields Mortar does not know.
 func editManifest(dir string, edit func(raw map[string]any)) error {
 	file := filepath.Join(dir, "manifest.json")
-	body, err := fsx.ReadFile(file)
+	body, err := safefs.ReadFile(file)
 	if err != nil {
 		return err
 	}
@@ -208,12 +208,12 @@ func editManifest(dir string, edit func(raw map[string]any)) error {
 	if err != nil {
 		return err
 	}
-	return fsx.WriteFile(file, append(out, '\n'), 0o644) // #nosec G306 -- a tracked project file
+	return safefs.WriteFile(file, append(out, '\n'), 0o644) // #nosec G306 -- a tracked project file
 }
 
 // manifestDependencies lists manifest.json's dependencies as packages and versions, the loader left out.
 func manifestDependencies(dir string) ([]Dependency, error) {
-	body, err := fsx.ReadFile(filepath.Join(dir, "manifest.json"))
+	body, err := safefs.ReadFile(filepath.Join(dir, "manifest.json"))
 	if err != nil {
 		return nil, err
 	}
@@ -245,7 +245,7 @@ func editAsset(p settings.DevProject, e ProjectEdit) error {
 	if err != nil {
 		return err
 	}
-	if err := fsx.WriteFile(filepath.Join(p.Dir, ".mortar", assetRecordFile), append(body, '\n'), 0o644); err != nil { // #nosec G306 -- a tracked project file
+	if err := safefs.WriteFile(filepath.Join(p.Dir, ".mortar", assetRecordFile), append(body, '\n'), 0o644); err != nil { // #nosec G306 -- a tracked project file
 		return err
 	}
 	return editManifest(p.Dir, func(raw map[string]any) { raw["description"] = e.Description })
@@ -254,7 +254,7 @@ func editAsset(p settings.DevProject, e ProjectEdit) error {
 // assetInfo reads an asset project's details from manifest.json and its record.
 func assetInfo(dir string, rec assetRecord) ProjectInfo {
 	info := ProjectInfo{Name: rec.Name, Author: rec.Author, Team: rec.Team, Kind: rec.Kind, Categories: []string{}}
-	if body, err := fsx.ReadFile(filepath.Join(dir, "manifest.json")); err == nil {
+	if body, err := safefs.ReadFile(filepath.Join(dir, "manifest.json")); err == nil {
 		var m thunderstoreManifest
 		if json.Unmarshal(body, &m) == nil {
 			info.Description, info.Version = m.Description, m.VersionNumber
@@ -272,7 +272,7 @@ func packAsset(p settings.DevProject, team, version string) (string, error) {
 	if !packageVersion.MatchString(version) {
 		return "", usererr.Wrap(usererr.Invalid, fmt.Errorf("%q is not a version like 1.2.3; fix manifest.json", version))
 	}
-	manifest, err := fsx.ReadFile(filepath.Join(p.Dir, "manifest.json"))
+	manifest, err := safefs.ReadFile(filepath.Join(p.Dir, "manifest.json"))
 	if err != nil {
 		return "", err
 	}
@@ -289,7 +289,7 @@ func packAsset(p settings.DevProject, team, version string) (string, error) {
 		return "", err
 	}
 	zipPath := filepath.Join(out, fmt.Sprintf("%s-%s-%s.zip", cmp.Or(team, "Team"), p.Name, version))
-	f, err := fsx.Create(zipPath)
+	f, err := safefs.Create(zipPath)
 	if err != nil {
 		return "", err
 	}

@@ -9,7 +9,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 func TestRelocateCopiesThenRemovesAndLeavesAPointer(t *testing.T) {
@@ -22,14 +22,14 @@ func TestRelocateCopiesThenRemovesAndLeavesAPointer(t *testing.T) {
 	if err := Relocate(src, dest, def, nil); err != nil {
 		t.Fatal(err)
 	}
-	got, err := fsx.ReadFile(filepath.Join(dest, "settings.json"))
+	got, err := safefs.ReadFile(filepath.Join(dest, "settings.json"))
 	if err != nil || string(got) != "{}" {
 		t.Fatalf("copied = %q %v", got, err)
 	}
 	if _, err := os.Stat(filepath.Join(src, "settings.json")); !os.IsNotExist(err) {
 		t.Fatalf("old copy remains: %v", err)
 	}
-	ptr, err := fsx.ReadFile(filepath.Join(def, PointerName))
+	ptr, err := safefs.ReadFile(filepath.Join(def, PointerName))
 	if err != nil || !strings.Contains(string(ptr), dest) {
 		t.Fatalf("pointer = %q %v", ptr, err)
 	}
@@ -75,7 +75,7 @@ func TestResolveFollowsThePointerFile(t *testing.T) {
 	if err := os.MkdirAll(def, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if err := WriteFileAtomic(filepath.Join(def, PointerName), []byte(dest+"\n"), 0o600); err != nil {
+	if err := safefs.WriteFileAtomic(filepath.Join(def, PointerName), []byte(dest+"\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	got, err := resolve()
@@ -97,10 +97,10 @@ func TestRelocatePreservesHardlinks(t *testing.T) {
 	if err := os.Link(a, b); err != nil {
 		t.Skipf("hard links unavailable: %v", err)
 	}
-	if _, ok := linkedKey(a, mustStat(t, a)); !ok {
+	if _, ok := safefs.HardLinkID(a, mustStat(t, a)); !ok {
 		t.Skip("link counts unavailable on this platform")
 	}
-	if n, err := Size(src); err != nil || n != 4096 {
+	if n, err := safefs.Size(src); err != nil || n != 4096 {
 		t.Fatalf("Size = %d, %v; want one inode counted once", n, err)
 	}
 	if err := Relocate(src, dest, def, nil); err != nil {

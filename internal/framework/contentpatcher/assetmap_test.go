@@ -10,7 +10,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/testenv/packs"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 func TestAssetIndexFromFixturePacks(t *testing.T) {
@@ -98,10 +98,10 @@ func TestAssetIndexReplacedXnb(t *testing.T) {
 	if err := os.MkdirAll(filepath.Join(root, "Characters"), 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(filepath.Join(root, "manifest.json"), []byte(`{"Name":"Xnb.Mod","UniqueID":"Xnb.Mod","Version":"1"}`), 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(root, "manifest.json"), []byte(`{"Name":"Xnb.Mod","UniqueID":"Xnb.Mod","Version":"1"}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(filepath.Join(root, "Characters", "Abigail.xnb"), []byte("xnb"), 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(root, "Characters", "Abigail.xnb"), []byte("xnb"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	page := AssetMapOf(BuildAssetIndex([]framework.Mod{{
@@ -136,7 +136,7 @@ func editPack(t *testing.T, id, priority string) framework.Mod {
 	root := t.TempDir()
 	testfs.WriteFile(t, root, "manifest.json", packs.Manifest(id))
 	content := `{"Changes":[{"Action":"EditData","Target":"Data/Objects","Priority":"` + priority + `","Entries":{"123":"` + id + `"}}]}`
-	if err := fsx.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	return packs.FromDisk(framework.Mod{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id})

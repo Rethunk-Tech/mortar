@@ -12,8 +12,8 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // unityLibsURL is where BepInEx 6 fetches a Unity version's base libraries on an IL2CPP game's first start.
@@ -29,7 +29,7 @@ const unityHeaderBytes = 1 << 16
 func unityVersion(installDir string) string {
 	dirs, _ := filepath.Glob(filepath.Join(installDir, "*_Data"))
 	for _, dir := range dirs {
-		f, err := fsx.Open(filepath.Join(dir, "globalgamemanagers"))
+		f, err := safefs.Open(filepath.Join(dir, "globalgamemanagers"))
 		if err != nil {
 			continue
 		}
@@ -59,7 +59,7 @@ func placeUnityLibs(ctx context.Context, installDir, profileDir string) error {
 			return err
 		}
 	}
-	b, err := fsx.ReadFile(kept)
+	b, err := safefs.ReadFile(kept)
 	if err != nil {
 		return err
 	}
@@ -70,7 +70,7 @@ func writeIn(path string, b []byte) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return err
 	}
-	return datadir.WriteFileAtomic(path, b, 0o600)
+	return safefs.WriteFileAtomic(path, b, 0o600)
 }
 
 func downloadUnityLibs(ctx context.Context, ver, dst string) error {
@@ -88,7 +88,7 @@ func downloadUnityLibs(ctx context.Context, ver, dst string) error {
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("unity libraries %s: %s", ver, resp.Status)
 	}
-	b, err := fsx.ReadCapped(resp.Body, 256<<20)
+	b, err := safefs.ReadCapped(resp.Body, 256<<20)
 	if err != nil {
 		return err
 	}

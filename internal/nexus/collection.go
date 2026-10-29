@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // MaxCollectionArchive caps the curator's collection archive Mortar reads into memory.
@@ -64,7 +64,7 @@ func (c *Client) CollectionArchive(ctx context.Context, downloadLink string) ([]
 	if resp.StatusCode != http.StatusOK {
 		return nil, &StatusError{Code: resp.StatusCode, Status: resp.Status}
 	}
-	b, err := fsx.ReadCapped(idleReader{resp.Body, stall}, MaxCollectionArchive)
+	b, err := safefs.ReadCapped(idleReader{resp.Body, stall}, MaxCollectionArchive)
 	// A stall cancels the request, and the mirror may then end the body cleanly before the read sees the cancel.
 	if err == nil {
 		err = context.Cause(ctx)

@@ -17,7 +17,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
@@ -247,7 +247,7 @@ func TestDownloadResumesFromThePartialWithIfRange(t *testing.T) {
 	if err := Download(context.Background(), srv.Client(), srv.URL, dest, 1<<20, nil); err != nil {
 		t.Fatal(err)
 	}
-	got, _ := fsx.ReadFile(dest)
+	got, _ := safefs.ReadFile(dest)
 	if string(got) != resumeBody || len(seen) != 1 || seen[0] != `bytes=10-|"v1"` {
 		t.Fatalf("got %q requests %v", got, seen)
 	}
@@ -262,7 +262,7 @@ func TestDownloadStartsOverWhenTheValidatorChanged(t *testing.T) {
 	if err := Download(context.Background(), srv.Client(), srv.URL, dest, 1<<20, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got, _ := fsx.ReadFile(dest); string(got) != resumeBody {
+	if got, _ := safefs.ReadFile(dest); string(got) != resumeBody {
 		t.Fatalf("got %q", got)
 	}
 }
@@ -276,7 +276,7 @@ func TestDownloadStartsOverWhenTheServerIgnoresRange(t *testing.T) {
 	if err := Download(context.Background(), srv.Client(), srv.URL, dest, 1<<20, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got, _ := fsx.ReadFile(dest); string(got) != resumeBody {
+	if got, _ := safefs.ReadFile(dest); string(got) != resumeBody {
 		t.Fatalf("got %q", got)
 	}
 }
@@ -290,7 +290,7 @@ func TestDownloadResumesOnANewAddressOfTheSameSize(t *testing.T) {
 	if err := Download(context.Background(), srv.Client(), srv.URL, dest, 1<<20, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got, _ := fsx.ReadFile(dest); string(got) != resumeBody || len(seen) != 1 || seen[0] != "bytes=10-|" {
+	if got, _ := safefs.ReadFile(dest); string(got) != resumeBody || len(seen) != 1 || seen[0] != "bytes=10-|" {
 		t.Fatalf("got %q requests %v", got, seen)
 	}
 }
@@ -304,7 +304,7 @@ func TestDownloadStartsOverWhenTheTotalChanged(t *testing.T) {
 	if err := Download(context.Background(), srv.Client(), srv.URL, dest, 1<<20, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got, _ := fsx.ReadFile(dest); string(got) != resumeBody+"MORE" {
+	if got, _ := safefs.ReadFile(dest); string(got) != resumeBody+"MORE" {
 		t.Fatalf("got %q", got)
 	}
 }
@@ -320,7 +320,7 @@ func TestDownloadDropsAPartialNothingVouchesFor(t *testing.T) {
 	if err := Download(context.Background(), srv.Client(), srv.URL, dest, 1<<20, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got, _ := fsx.ReadFile(dest); string(got) != resumeBody || seen[0] != "|" {
+	if got, _ := safefs.ReadFile(dest); string(got) != resumeBody || seen[0] != "|" {
 		t.Fatalf("got %q requests %v", got, seen)
 	}
 }
@@ -421,7 +421,7 @@ func TestDownloadHonoursTheSpeedLimit(t *testing.T) {
 	if took := time.Since(start); took < 250*time.Millisecond {
 		t.Fatalf("120 KiB arrived in %v under a 200 KiB/s limit", took)
 	}
-	if got, _ := fsx.ReadFile(dest); string(got) != body {
+	if got, _ := safefs.ReadFile(dest); string(got) != body {
 		t.Fatal("limited download is corrupt")
 	}
 }

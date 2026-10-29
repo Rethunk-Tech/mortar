@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
@@ -90,7 +90,7 @@ func installedFolderPackage(t *testing.T, files map[string]string) (env, Install
 // would have left it.
 func editProfileJSON(t *testing.T, path string, edit func(doc map[string]any)) {
 	t.Helper()
-	raw, err := fsx.ReadFile(path)
+	raw, err := safefs.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -102,7 +102,7 @@ func editProfileJSON(t *testing.T, path string, edit func(doc map[string]any)) {
 	if raw, err = json.Marshal(doc); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(path, raw, 0o600); err != nil {
+	if err := safefs.WriteFile(path, raw, 0o600); err != nil {
 		t.Fatal(err)
 	}
 }

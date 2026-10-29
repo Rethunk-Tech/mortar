@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fomod"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/installer"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -302,7 +302,7 @@ func (s *Store) layOverlays(game, id string, base Entry, entryDir string, was, o
 	}
 	baseSrc, tmp, err := s.layoutItem(game, id, base.Key, base.Fomod, !base.FomodSpec)
 	if tmp != "" {
-		defer func() { _ = fsx.RemoveAll(tmp) }()
+		defer func() { _ = safefs.RemoveAll(tmp) }()
 	}
 	if err != nil {
 		return err
@@ -338,7 +338,7 @@ func (s *Store) layOverlays(game, id string, base Entry, entryDir string, was, o
 		for _, f := range l.files {
 			rel := path.Join(l.to, f)
 			dst := livePath(entryDir, rel)
-			if err := fsx.Remove(dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
+			if err := safefs.Remove(dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
 				return err
 			}
 			if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
@@ -354,11 +354,11 @@ func (s *Store) layOverlays(game, id string, base Entry, entryDir string, was, o
 
 func restoreBaseFile(entryDir, baseSrc, rel string) error {
 	dst := livePath(entryDir, rel)
-	if err := fsx.Remove(dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
+	if err := safefs.Remove(dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return err
 	}
 	src := filepath.Join(baseSrc, filepath.FromSlash(rel))
-	if fsx.IsFile(src) {
+	if safefs.IsFile(src) {
 		if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
 			return err
 		}
@@ -372,7 +372,7 @@ func restoreBaseFile(entryDir, baseSrc, rel string) error {
 // leaves a folder that still holds anything.
 func pruneEmptyDirs(entryDir, d string) {
 	for ; d != entryDir && strings.HasPrefix(d, entryDir+string(filepath.Separator)); d = filepath.Dir(d) {
-		if fsx.Remove(d) != nil {
+		if safefs.Remove(d) != nil {
 			return
 		}
 	}
@@ -499,7 +499,7 @@ func (s *Store) overlayTarget(game, id, key string, source Source, base Entry, i
 	}
 	baseSrc, tmp, err := s.layoutItem(game, id, base.Key, base.Fomod, !base.FomodSpec)
 	if tmp != "" {
-		defer func() { _ = fsx.RemoveAll(tmp) }()
+		defer func() { _ = safefs.RemoveAll(tmp) }()
 	}
 	if err != nil {
 		return "", "", err

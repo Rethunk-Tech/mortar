@@ -14,7 +14,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 )
 
@@ -31,7 +31,7 @@ func write(t *testing.T, path, body string) {
 }
 
 func read(path string) string {
-	b, _ := fsx.ReadFile(path)
+	b, _ := safefs.ReadFile(path)
 	return string(b)
 }
 
@@ -197,7 +197,7 @@ func TestPurgeKeepsTheFileOfAnOpThatNeverRan(t *testing.T) {
 	dst := filepath.Join(r.install, "winhttp.dll")
 	// The player's file happens to equal ours, and the cancelled launch never got to displace or replace it.
 	write(t, dst, "proxy")
-	hash, _ := fsx.HashFile(dst, sha256.New())
+	hash, _ := safefs.HashFile(dst, sha256.New())
 	m := Manifest{Dir: r.install, View: r.view, Ops: []Placed{{Dst: dst, Src: filepath.Join(r.store, "winhttp.dll"), Hash: hash, Displaced: filepath.Join(r.view.JournalDir, "displaced", "0")}}}
 	d := Place{}
 	if err := d.Purge(t.Context(), m); err != nil || read(dst) != "proxy" {
@@ -249,14 +249,14 @@ func TestPurgeRunAgainKeepsWhatItRestored(t *testing.T) {
 	r.files[1].Dst = filepath.Join("sub", "doorstop_config.ini")
 	m := r.apply()
 	sub := filepath.Join(r.install, "sub")
-	if err := fsx.Chmod(sub, 0o500); err != nil {
+	if err := safefs.Chmod(sub, 0o500); err != nil {
 		t.Fatal(err)
 	}
 	d := Place{}
 	if err := d.Purge(t.Context(), m); err == nil {
 		t.Fatal("the purge removed a file from a read-only folder")
 	}
-	if err := fsx.Chmod(sub, 0o700); err != nil {
+	if err := safefs.Chmod(sub, 0o700); err != nil {
 		t.Fatal(err)
 	}
 	if err := d.Recover(t.Context(), r.view.JournalDir, nil); err != nil {

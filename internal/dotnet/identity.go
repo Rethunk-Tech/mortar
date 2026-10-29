@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // What Identity finds of an assembly's debug symbols.
@@ -86,7 +86,7 @@ func siblingPDB(dll string) string {
 	if info, err := os.Lstat(path); err != nil || !info.Mode().IsRegular() {
 		return ""
 	}
-	f, err := fsx.Open(path)
+	f, err := safefs.Open(path)
 	if err != nil {
 		return ""
 	}

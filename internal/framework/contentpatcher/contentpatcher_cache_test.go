@@ -23,7 +23,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/testenv/packs"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 )
 
@@ -179,7 +179,7 @@ func TestReadContentPackConcurrent(t *testing.T) {
 
 func readDiskPackCache(t *testing.T, path string) diskPackCache {
 	t.Helper()
-	raw, err := fsx.ReadFile(path)
+	raw, err := safefs.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -447,7 +447,7 @@ func contentPackManifest(folder string) (smapimanifest.Manifest, bool) {
 	if !isContentPatcherPack(im) {
 		return smapimanifest.Manifest{}, false
 	}
-	raw, err := fsx.ReadFile(filepath.Join(folder, smapimanifest.FileName))
+	raw, err := safefs.ReadFile(filepath.Join(folder, smapimanifest.FileName))
 	if err != nil {
 		return smapimanifest.Manifest{}, false
 	}
@@ -621,12 +621,12 @@ func TestOverlayAlphaMaskWithBadChecksumIsNotServed(t *testing.T) {
 		t.Fatal("loadPNGAlpha")
 	}
 	disk := alphaDiskPath(key)
-	raw, err := fsx.ReadFile(disk)
+	raw, err := safefs.ReadFile(disk)
 	if err != nil {
 		t.Fatal(err)
 	}
 	raw[len(raw)-8] ^= 0xff // the trailer's CRC
-	if err := fsx.WriteFile(disk, raw, 0o600); err != nil {
+	if err := safefs.WriteFile(disk, raw, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	info, err := os.Stat(pngPath)

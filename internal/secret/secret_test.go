@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/portal"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -263,7 +263,7 @@ func TestFlatpakStoreTightensAnExistingFolderAndRefusesALink(t *testing.T) {
 	if err := os.Mkdir(dir, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.Chmod(dir, 0o777); err != nil {
+	if err := safefs.Chmod(dir, 0o777); err != nil {
 		t.Fatal(err)
 	}
 	if err := Set("nexus", "k"); err != nil {

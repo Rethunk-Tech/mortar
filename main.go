@@ -24,6 +24,7 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/services/notifications"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/archivesvc"
 	"github.com/Rethunk-Tech/mortar/internal/avscan"
@@ -40,7 +41,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/devsvc"
 	"github.com/Rethunk-Tech/mortar/internal/doctor"
 	"github.com/Rethunk-Tech/mortar/internal/folderwatch"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
@@ -389,13 +389,13 @@ func run() error {
 	}
 	// A windowsgui build has no stderr, so logs and fatal panics would end without a trace; both also go to
 	// files in the data folder, the previous run's log kept beside the current one.
-	if crash, err := fsx.OpenFile(filepath.Join(dataDir, "crash.log"), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o600); err == nil {
+	if crash, err := safefs.OpenFile(filepath.Join(dataDir, "crash.log"), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o600); err == nil {
 		_ = debug.SetCrashOutput(crash, debug.CrashOptions{})
 		_ = crash.Close()
 	}
 	logPath := filepath.Join(dataDir, "mortar.log")
-	_ = fsx.Rename(logPath, filepath.Join(dataDir, "mortar.prev.log"))
-	if logFile, err := fsx.OpenFile(logPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600); err == nil {
+	_ = safefs.Rename(logPath, filepath.Join(dataDir, "mortar.prev.log"))
+	if logFile, err := safefs.OpenFile(logPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600); err == nil {
 		// The file comes first: MultiWriter stops at the first failing writer, and a GUI launch can have a dead
 		// stderr, which would otherwise leave mortar.log without the clean-shutdown line crash detection reads.
 		out := io.MultiWriter(&cappedWriter{w: logFile, left: maxLogBytes}, os.Stderr)
@@ -1284,7 +1284,7 @@ func run() error {
 	}()
 	go func() {
 		failurePath := filepath.Join(dataDir, "cache", "components-failure")
-		if b, err := fsx.ReadFile(failurePath); err == nil {
+		if b, err := safefs.ReadFile(failurePath); err == nil {
 			if at, err := time.Parse(time.RFC3339Nano, strings.TrimSpace(string(b))); err == nil && time.Since(at) < time.Hour {
 				log.Printf("catalog: not checked, the last check failed at %s; serial %d in use", at.Format(time.RFC3339), game.CatalogSerial())
 				return
@@ -1300,10 +1300,10 @@ func run() error {
 				log.Printf("components manifest unavailable; using bundled copy: %v", err)
 			}
 			_ = os.MkdirAll(filepath.Dir(failurePath), 0o700)
-			_ = fsx.WriteFile(failurePath, []byte(time.Now().Format(time.RFC3339Nano)), 0o600)
+			_ = safefs.WriteFile(failurePath, []byte(time.Now().Format(time.RFC3339Nano)), 0o600)
 			return
 		}
-		_ = fsx.Remove(failurePath)
+		_ = safefs.Remove(failurePath)
 		// What was built from the startup catalog follows the fetched one: save layouts, problems checked against it,
 		// a newer bridge than the one synced from the bundled copy, package looks, and the window's game list.
 		if err := savesSvc.Reload(); err != nil {

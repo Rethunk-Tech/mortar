@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"slices"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 const logFile = "deploy.log"
@@ -47,7 +47,7 @@ func openLog(dir string) (*opLog, error) {
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return nil, err
 	}
-	f, err := fsx.OpenFile(logPath(dir), os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0o600)
+	f, err := safefs.OpenFile(logPath(dir), os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0o600)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +86,7 @@ func replay(m *Manifest) error {
 	if m.View.JournalDir == "" {
 		return nil
 	}
-	b, err := fsx.ReadFile(logPath(m.View.JournalDir))
+	b, err := safefs.ReadFile(logPath(m.View.JournalDir))
 	if errors.Is(err, fs.ErrNotExist) {
 		return nil
 	}

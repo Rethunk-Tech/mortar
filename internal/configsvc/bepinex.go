@@ -15,9 +15,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -357,7 +357,7 @@ func addToSection(sections []Section, section string, e Entry) []Section {
 // withSync marks the entries ConfigSync shares from the host, read from the sidecar beside the .cfg at path. A
 // missing or malformed sidecar marks nothing.
 func withSync(s Schema, path string) Schema {
-	raw, err := fsx.ReadFile(strings.TrimSuffix(path, filepath.Ext(path)) + syncSidecar)
+	raw, err := safefs.ReadFile(strings.TrimSuffix(path, filepath.Ext(path)) + syncSidecar)
 	if err != nil {
 		return s
 	}
@@ -517,7 +517,7 @@ func (s *Service) saveKept() {
 		return strings.Compare(a.Game+"\x00"+a.Profile+"\x00"+a.Mod+"\x00"+a.File, b.Game+"\x00"+b.Profile+"\x00"+b.Mod+"\x00"+b.File)
 	})
 	if b, err := json.Marshal(recs); err == nil {
-		_ = datadir.WriteFileAtomic(filepath.Join(dir, keptFile), b, 0o600)
+		_ = safefs.WriteFileAtomic(filepath.Join(dir, keptFile), b, 0o600)
 	}
 }
 

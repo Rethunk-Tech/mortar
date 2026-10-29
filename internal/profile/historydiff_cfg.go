@@ -11,8 +11,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/gmcm"
 )
 
@@ -68,7 +68,7 @@ func gmcmPendingFiles(dir string) map[string][]byte {
 		if strings.HasSuffix(name, ".result.json") {
 			continue
 		}
-		if body, err := fsx.ReadFile(path); err == nil {
+		if body, err := safefs.ReadFile(path); err == nil {
 			files[name] = body
 		}
 	}
@@ -90,18 +90,18 @@ func restoreGmcmPending(dir, targetID, headID string) bool {
 	pendingDir := gmcm.PendingFolder(dir)
 	for name := range live[gmcmPendingKey] {
 		if _, keep := target[gmcmPendingKey][name]; !keep {
-			_ = fsx.Remove(filepath.Join(pendingDir, name))
+			_ = safefs.Remove(filepath.Join(pendingDir, name))
 		}
 	}
 	for name, hash := range target[gmcmPendingKey] {
-		body, err := fsx.ReadFile(filepath.Join(dir, historyFilesDir, historyBlobsDir, hash))
+		body, err := safefs.ReadFile(filepath.Join(dir, historyFilesDir, historyBlobsDir, hash))
 		if err != nil {
 			continue
 		}
 		if err := os.MkdirAll(pendingDir, 0o700); err != nil {
 			return false
 		}
-		_ = datadir.WriteFileAtomic(filepath.Join(pendingDir, name), body, 0o600)
+		_ = safefs.WriteFileAtomic(filepath.Join(pendingDir, name), body, 0o600)
 	}
 	return true
 }
@@ -116,7 +116,7 @@ func storeHistoryConfigs(dir, snapshotID string, idx map[string]map[string]strin
 			if err := os.MkdirAll(filepath.Dir(blob), 0o700); err != nil {
 				return
 			}
-			if err := datadir.WriteFileAtomic(blob, body, 0o600); err != nil {
+			if err := safefs.WriteFileAtomic(blob, body, 0o600); err != nil {
 				return
 			}
 		} else if err != nil {
@@ -124,7 +124,7 @@ func storeHistoryConfigs(dir, snapshotID string, idx map[string]map[string]strin
 		}
 	}
 	snapDir := filepath.Join(dir, historyFilesDir, snapshotID)
-	_ = fsx.RemoveAll(snapDir)
+	_ = safefs.RemoveAll(snapDir)
 	if err := os.MkdirAll(snapDir, 0o700); err != nil {
 		return
 	}
@@ -147,7 +147,7 @@ func loadHistoryConfigs(dir, snapshotID string, entries []Entry) map[string]map[
 		}
 		loaded := make(map[string][]byte, len(files))
 		for rel, hash := range files {
-			body, err := fsx.ReadFile(filepath.Join(dir, historyFilesDir, historyBlobsDir, hash))
+			body, err := safefs.ReadFile(filepath.Join(dir, historyFilesDir, historyBlobsDir, hash))
 			if err != nil {
 				continue
 			}
@@ -186,7 +186,7 @@ func addConfigFile(files map[string][]byte, root, path string) {
 	if !datadir.WritableRel(slash) {
 		return
 	}
-	if body, err := fsx.ReadFile(path); err == nil {
+	if body, err := safefs.ReadFile(path); err == nil {
 		files[slash] = body
 	}
 }
@@ -200,7 +200,7 @@ func restoreHistoryConfig(dir, snapshotID, key, file string) error {
 	if !ok || hash == "" {
 		return fmt.Errorf("history config %s/%s not found", key, file)
 	}
-	body, err := fsx.ReadFile(filepath.Join(dir, historyFilesDir, historyBlobsDir, hash))
+	body, err := safefs.ReadFile(filepath.Join(dir, historyFilesDir, historyBlobsDir, hash))
 	if err != nil {
 		return err
 	}
@@ -208,11 +208,11 @@ func restoreHistoryConfig(dir, snapshotID, key, file string) error {
 	if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
 		return err
 	}
-	return datadir.WriteFileAtomic(dst, body, 0o600)
+	return safefs.WriteFileAtomic(dst, body, 0o600)
 }
 
 func readSnapshotIndex(dir, snapshotID string) (map[string]map[string]string, error) {
-	raw, err := fsx.ReadFile(filepath.Join(dir, historyFilesDir, snapshotID, historySnapshotIndex))
+	raw, err := safefs.ReadFile(filepath.Join(dir, historyFilesDir, snapshotID, historySnapshotIndex))
 	if err != nil {
 		return nil, err
 	}
@@ -240,12 +240,12 @@ func pruneHistoryFiles(dir string, referenced map[string]struct{}) {
 		}
 		path := filepath.Join(root, name)
 		if _, ok := referenced[name]; !ok {
-			_ = fsx.RemoveAll(path)
+			_ = safefs.RemoveAll(path)
 			continue
 		}
 		idx, err := readSnapshotIndex(dir, name)
 		if err != nil {
-			_ = fsx.RemoveAll(path)
+			_ = safefs.RemoveAll(path)
 			continue
 		}
 		for _, files := range idx {
@@ -264,7 +264,7 @@ func pruneHistoryFiles(dir string, referenced map[string]struct{}) {
 		if _, ok := keepBlobs[ent.Name()]; ok {
 			continue
 		}
-		_ = fsx.RemoveAll(filepath.Join(root, historyBlobsDir, ent.Name()))
+		_ = safefs.RemoveAll(filepath.Join(root, historyBlobsDir, ent.Name()))
 	}
 }
 

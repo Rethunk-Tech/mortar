@@ -5,12 +5,12 @@ package store
 import (
 	"errors"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // syncPath flushes a file or directory to disk; a read-only handle is enough here.
 func syncPath(path string) error {
-	f, err := fsx.Open(path)
+	f, err := safefs.Open(path)
 	if err != nil {
 		return err
 	}

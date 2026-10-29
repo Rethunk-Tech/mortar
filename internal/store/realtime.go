@@ -6,8 +6,8 @@ import (
 	"runtime"
 	"syscall"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/avscan"
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -47,7 +47,7 @@ func vanishedFrom(err error, staging []string) bool {
 		return false
 	}
 	for _, dir := range staging {
-		if datadir.UnderRoot(dir, pe.Path) {
+		if safefs.UnderRoot(dir, pe.Path) {
 			return true
 		}
 	}

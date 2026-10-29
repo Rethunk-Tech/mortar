@@ -8,8 +8,8 @@ import (
 
 	"golang.org/x/sys/windows/registry"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/nativehost"
 )
 
@@ -55,7 +55,7 @@ func (w *System) WriteNativeHosts() error {
 		if err != nil {
 			return err
 		}
-		if err := fsx.WriteFile(hostManifestPath(dir, firefox), m, 0o600); err != nil {
+		if err := safefs.WriteFile(hostManifestPath(dir, firefox), m, 0o600); err != nil {
 			return err
 		}
 	}
@@ -87,7 +87,7 @@ func (w *System) removeNativeHosts() error {
 		return errors.Join(append(errs, err)...)
 	}
 	for _, firefox := range []bool{false, true} {
-		if err := fsx.Remove(hostManifestPath(dir, firefox)); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		if err := safefs.Remove(hostManifestPath(dir, firefox)); err != nil && !errors.Is(err, fs.ErrNotExist) {
 			errs = append(errs, err)
 		}
 	}

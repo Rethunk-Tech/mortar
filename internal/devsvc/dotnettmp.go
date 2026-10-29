@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // The .NET CLI leaves two empty folders from Directory.CreateTempSubdirectory in the temp folder on every command, and
@@ -57,7 +57,7 @@ func sweepDotnetTemp(dir string, before, msbuildBefore time.Time) {
 			continue
 		}
 		if info, err := e.Info(); err == nil && info.ModTime().Before(cutoff) {
-			_ = fsx.RemoveAll(filepath.Join(dir, e.Name()))
+			_ = safefs.RemoveAll(filepath.Join(dir, e.Name()))
 		}
 	}
 }

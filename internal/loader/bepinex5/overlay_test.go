@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/overlay"
 )
@@ -19,7 +19,7 @@ func TestArmOverlayWritesAndClearsTheBridgeConfig(t *testing.T) {
 		t.Fatal(err)
 	}
 	path := filepath.Join(dir, filepath.FromSlash(overlay.ProfileConfigFile))
-	raw, err := fsx.ReadFile(path)
+	raw, err := safefs.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
 	}

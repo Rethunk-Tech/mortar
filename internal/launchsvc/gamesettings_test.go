@@ -9,8 +9,8 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/gamesettings"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -68,7 +68,7 @@ func TestGameSettingsRestoreKeepsGameChanges(t *testing.T) {
 	if _, err := os.Stat(restore.recordPath); err != nil {
 		t.Fatalf("restore record was not persisted: %v", err)
 	}
-	patched, err := fsx.ReadFile(startup)
+	patched, err := safefs.ReadFile(startup)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -84,7 +84,7 @@ func TestGameSettingsRestoreKeepsGameChanges(t *testing.T) {
 	if err := svc.restoreGameSettings(restore); err != nil {
 		t.Fatal(err)
 	}
-	got, err := fsx.ReadFile(startup)
+	got, err := safefs.ReadFile(startup)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -117,7 +117,7 @@ func TestGameSettingsLeftoverRestoreRunsAtStartup(t *testing.T) {
 	if err := svc2.RecoverGameSettings(); err != nil {
 		t.Fatal(err)
 	}
-	got, err := fsx.ReadFile(startup)
+	got, err := safefs.ReadFile(startup)
 	if err != nil {
 		t.Fatal(err)
 	}

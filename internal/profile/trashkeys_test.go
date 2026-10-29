@@ -7,7 +7,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 func TestHistoryKeysCacheReadsTheOldShapeAndRewritesItCompact(t *testing.T) {
@@ -37,7 +37,7 @@ func TestHistoryKeysCacheReadsTheOldShapeAndRewritesItCompact(t *testing.T) {
 		t.Fatalf("old-shape cache not used: %v, %v", keys, err)
 	}
 	var cur snapshotKeys
-	raw, _ := fsx.ReadFile(path)
+	raw, _ := safefs.ReadFile(path)
 	if err := json.Unmarshal(raw, &cur); err != nil || cur.Format != snapshotKeysFormat || len(cur.Snapshots) != len(old) {
 		t.Fatalf("cache not rewritten in the new shape: %s", raw)
 	}

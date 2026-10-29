@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 )
 
@@ -319,7 +319,7 @@ func TestRecoveryAfterACrashMidRestoreLeavesTheProfilesCopyAlone(t *testing.T) {
 	if got := read(filepath.Join(rr.profile, "top.package")); got != "top" {
 		t.Fatalf("the profile's copy = %q", got)
 	}
-	if got := read(top); got != "the player's own" || fsx.IsFile(m.Ops[i].Displaced) {
+	if got := read(top); got != "the player's own" || safefs.IsFile(m.Ops[i].Displaced) {
 		t.Fatalf("the shared file = %q", got)
 	}
 }

@@ -5,8 +5,8 @@ import (
 	"slices"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 )
 
@@ -34,7 +34,7 @@ func (s *Service) readTracked() ([]nexus.TrackedMod, bool) {
 // forgetTracked drops the kept list: after a sign-out, and after a track or untrack that made it stale.
 func (s *Service) forgetTracked() {
 	if s.trackedPath != "" {
-		_ = fsx.Remove(s.trackedPath)
+		_ = safefs.Remove(s.trackedPath)
 	}
 }
 

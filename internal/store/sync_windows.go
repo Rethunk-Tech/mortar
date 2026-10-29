@@ -6,7 +6,7 @@ import (
 	"errors"
 	"os"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // syncPath flushes a file to disk. FlushFileBuffers needs a handle with write access, so a read-only
@@ -20,7 +20,7 @@ func syncPath(path string) error {
 	if info.IsDir() {
 		return nil
 	}
-	f, err := fsx.OpenFile(path, os.O_RDWR, 0)
+	f, err := safefs.OpenFile(path, os.O_RDWR, 0)
 	if err != nil {
 		return err
 	}

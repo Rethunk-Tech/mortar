@@ -15,7 +15,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	_ "github.com/Rethunk-Tech/mortar/internal/loader/smapi"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
@@ -65,7 +65,7 @@ func newGitHubFixture(t *testing.T) *ghFixture {
 	g.s.d.Client = func() (*nexus.Client, error) { return nil, fmt.Errorf("signed out") }
 	g.s.d.GitHub = &github.Client{HTTP: srv.Client(), CacheDir: t.TempDir(), APIBase: srv.URL, Now: g.now}
 	g.s.d.Stage = func(_ context.Context, _ string, src profile.Source, path string) (string, []mod.ID, error) {
-		if b, err := fsx.ReadFile(path); err != nil || string(b) != payload {
+		if b, err := safefs.ReadFile(path); err != nil || string(b) != payload {
 			return "", nil, fmt.Errorf("stage read %q: %w", b, err)
 		}
 		g.mu.Lock()

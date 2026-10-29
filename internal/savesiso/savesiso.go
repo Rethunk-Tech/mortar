@@ -9,8 +9,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // heldSuffix names the shared folder while it is set aside, beside the game's save path so the move is a rename.
@@ -79,8 +79,8 @@ func Apply(journal, saves, profile string, noLink bool) (Manifest, error) {
 		return Manifest{}, err
 	}
 	if m.Held != "" {
-		if err := fsx.Rename(saves, m.Held); err != nil {
-			_ = fsx.RemoveAll(journal)
+		if err := safefs.Rename(saves, m.Held); err != nil {
+			_ = safefs.RemoveAll(journal)
 			return Manifest{}, err
 		}
 	}
@@ -123,14 +123,14 @@ func Purge(m Manifest) error {
 	case m.Copied && m.Live && exists(m.Saves) && !isLink(m.Saves):
 		if !m.WrittenBack {
 			next := m.Profile + ".new"
-			_ = fsx.RemoveAll(next)
+			_ = safefs.RemoveAll(next)
 			if err := datadir.CopyTree(m.Saves, next); err != nil {
 				return err
 			}
-			if err := fsx.RemoveAll(m.Profile); err != nil {
+			if err := safefs.RemoveAll(m.Profile); err != nil {
 				return err
 			}
-			if err := fsx.Rename(next, m.Profile); err != nil {
+			if err := safefs.Rename(next, m.Profile); err != nil {
 				return err
 			}
 			m.WrittenBack = true
@@ -138,15 +138,15 @@ func Purge(m Manifest) error {
 				return err
 			}
 		}
-		if err := fsx.RemoveAll(m.Saves); err != nil {
+		if err := safefs.RemoveAll(m.Saves); err != nil {
 			return err
 		}
 	case m.Copied && exists(m.Saves) && !isLink(m.Saves):
-		if err := fsx.RemoveAll(m.Saves); err != nil {
+		if err := safefs.RemoveAll(m.Saves); err != nil {
 			return err
 		}
 	case isLink(m.Saves):
-		if err := fsx.Remove(m.Saves); err != nil {
+		if err := safefs.Remove(m.Saves); err != nil {
 			return err
 		}
 	}
@@ -154,11 +154,11 @@ func Purge(m Manifest) error {
 		if exists(m.Saves) {
 			return fmt.Errorf("%s is in the way of the shared saves kept at %s", m.Saves, m.Held)
 		}
-		if err := fsx.Rename(m.Held, m.Saves); err != nil {
+		if err := safefs.Rename(m.Held, m.Saves); err != nil {
 			return err
 		}
 	}
-	return fsx.RemoveAll(m.Journal)
+	return safefs.RemoveAll(m.Journal)
 }
 
 // Recover finishes an unfinished swap found at journal: nothing while alive reports the game running, else Purge.

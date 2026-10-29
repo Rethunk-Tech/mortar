@@ -8,14 +8,14 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 )
 
 func TestReleasesComeFromTheGamesThunderstoreCommunity(t *testing.T) {
-	pack, err := fsx.ReadFile(buildPack(t, "4.3.0.0"))
+	pack, err := safefs.ReadFile(buildPack(t, "4.3.0.0"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -49,7 +49,7 @@ func TestReleasesComeFromTheGamesThunderstoreCommunity(t *testing.T) {
 	if err := l.Fetch(ctx, g, "5.4.2304", dst); err != nil {
 		t.Fatal(err)
 	}
-	if got, _ := fsx.ReadFile(dst); string(got) != string(pack) {
+	if got, _ := safefs.ReadFile(dst); string(got) != string(pack) {
 		t.Fatal("downloaded file differs")
 	}
 	g.Loaders = []components.GameLoader{{ID: ID, Major: 6}}

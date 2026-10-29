@@ -9,7 +9,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -200,7 +200,7 @@ func (s *Store) SplitExtra(game, id, entryKey, extraKey string) (Profile, error)
 			e.PreviousExtraStoreKeys = slices.Delete(e.PreviousExtraStoreKeys, xi, xi+1)
 		}
 		entryDir := liveEntryDir(filepath.Join(dir, "mods"), e.Key)
-		if err := fsx.RemoveAll(filepath.Join(entryDir, extraKey)); err != nil {
+		if err := safefs.RemoveAll(filepath.Join(entryDir, extraKey)); err != nil {
 			return err
 		}
 		if err := s.refreshEntryMods(e, entryDir); err != nil {
@@ -322,7 +322,7 @@ func (s *Store) fillExtrasUpdate(game, id, modsDir, oldEntryKey, tmp string, e, 
 		if slices.Contains(ne.ExtraStoreKeys, stale) {
 			continue
 		}
-		_ = fsx.RemoveAll(filepath.Join(tmp, stale))
+		_ = safefs.RemoveAll(filepath.Join(tmp, stale))
 	}
 	return nil
 }
@@ -337,7 +337,7 @@ func (s *Store) fillOneExtraUpdate(game, id, oldDir, tmp, oldProfKey, newKey str
 	if err != nil {
 		return err
 	}
-	defer func() { _ = fsx.RemoveAll(scratch) }()
+	defer func() { _ = safefs.RemoveAll(scratch) }()
 	if err := datadir.MaterializeTree(extraSrc, scratch); err != nil {
 		return err
 	}
@@ -364,10 +364,10 @@ func (s *Store) fillOneExtraUpdate(game, id, oldDir, tmp, oldProfKey, newKey str
 		}
 	}
 	dest := filepath.Join(tmp, newKey)
-	if err := fsx.RemoveAll(dest); err != nil {
+	if err := safefs.RemoveAll(dest); err != nil {
 		return err
 	}
-	return fsx.Rename(scratch, dest)
+	return safefs.Rename(scratch, dest)
 }
 
 // InstallNexusExtra unpacks a Nexus archive into the store and adds it as an extra file of entryKey.
@@ -409,10 +409,10 @@ func (s *Store) copyExtraInto(game, id, entryDir, extraKey string, choices map[s
 		return err
 	}
 	if err := datadir.MaterializeTree(src, scratch); err != nil {
-		return errors.Join(err, fsx.RemoveAll(scratch))
+		return errors.Join(err, safefs.RemoveAll(scratch))
 	}
-	if err := fsx.Rename(scratch, dest); err != nil {
-		return errors.Join(err, fsx.RemoveAll(scratch))
+	if err := safefs.Rename(scratch, dest); err != nil {
+		return errors.Join(err, safefs.RemoveAll(scratch))
 	}
 	return nil
 }

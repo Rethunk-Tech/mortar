@@ -12,8 +12,8 @@ import (
 	"slices"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
@@ -78,7 +78,7 @@ func (s *Store) Delete(gameID, id string) error {
 	if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
 		return err
 	}
-	if err := fsx.Rename(src, dst); err != nil {
+	if err := safefs.Rename(src, dst); err != nil {
 		return err
 	}
 	s.listChanged(gameID)
@@ -160,7 +160,7 @@ func (s *Store) Restore(gameID, id string) (Profile, error) {
 	if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
 		return Profile{}, err
 	}
-	if err := fsx.Rename(src, dst); err != nil {
+	if err := safefs.Rename(src, dst); err != nil {
 		return Profile{}, err
 	}
 	s.listChanged(gameID)
@@ -186,7 +186,7 @@ func (s *Store) Purge(gameID, id string) error {
 	if info.Mode()&os.ModeSymlink != 0 {
 		return fmt.Errorf("refusing to purge symlink %q", id)
 	}
-	return fsx.RemoveAll(dir)
+	return safefs.RemoveAll(dir)
 }
 
 func (s *Store) purgeTrash(gameID string) error {
@@ -215,7 +215,7 @@ func (s *Store) purgeTrash(gameID string) error {
 			errs = append(errs, fmt.Errorf("refusing to purge symlink %q", item.Name()))
 			continue
 		}
-		errs = append(errs, fsx.RemoveAll(filepath.Join(dir, item.Name())))
+		errs = append(errs, safefs.RemoveAll(filepath.Join(dir, item.Name())))
 	}
 	return errors.Join(errs...)
 }
@@ -253,7 +253,7 @@ func (s *Store) PurgeTrash(target any) error {
 		}
 		for _, it := range items {
 			if now.Sub(it.DeletedAt) > s.trashKeep() {
-				errs = append(errs, fsx.RemoveAll(filepath.Join(s.trash, g.Name(), it.ID)))
+				errs = append(errs, safefs.RemoveAll(filepath.Join(s.trash, g.Name(), it.ID)))
 			}
 		}
 	}
@@ -369,7 +369,7 @@ const snapshotKeysFormat = 2
 
 // readSnapshotKeys returns the cache file's content in the current shape, empty when absent or unreadable.
 func readSnapshotKeys(path string) snapshotKeys {
-	b, err := fsx.ReadFile(path)
+	b, err := safefs.ReadFile(path)
 	if err != nil {
 		return snapshotKeys{}
 	}

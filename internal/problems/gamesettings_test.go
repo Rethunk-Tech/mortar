@@ -8,10 +8,10 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
@@ -45,7 +45,7 @@ func TestCheckingTheSettingsFileNeverChangesIt(t *testing.T) {
 	if got := settingFailures(body, modSettings); len(got) != 2 {
 		t.Fatalf("got %+v", got)
 	}
-	after, _ := fsx.ReadFile(path)
+	after, _ := safefs.ReadFile(path)
 	stat, _ := os.Stat(path)
 	if string(after) != body || !stat.ModTime().Equal(before.ModTime()) {
 		t.Fatal("the file must be untouched")

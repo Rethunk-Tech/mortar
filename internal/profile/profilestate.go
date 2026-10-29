@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"slices"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 const historySettings = "settings"
@@ -102,7 +102,7 @@ func capturedConfig(dir, snapshotID, key string) string {
 }
 
 func liveConfigHash(dir, key string) string {
-	body, err := fsx.ReadFile(filepath.Join(liveEntryDir(filepath.Join(dir, "mods"), key), configFile))
+	body, err := safefs.ReadFile(filepath.Join(liveEntryDir(filepath.Join(dir, "mods"), key), configFile))
 	return configHash(body, err == nil)
 }
 
@@ -121,7 +121,7 @@ func restoreConfigsTo(dir string, entries []Entry, targetID, headID string) []st
 			continue
 		}
 		if want == "" {
-			if fsx.Remove(filepath.Join(liveEntryDir(filepath.Join(dir, "mods"), e.Key), configFile)) == nil {
+			if safefs.Remove(filepath.Join(liveEntryDir(filepath.Join(dir, "mods"), e.Key), configFile)) == nil {
 				changed = append(changed, e.Key)
 			}
 			continue

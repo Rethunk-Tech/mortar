@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
@@ -299,7 +299,7 @@ func TestAChunkOverTheCapIsRefusedAsTooLarge(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write(packed.Bytes()) }))
 	defer srv.Close()
 	err := Driver{HTTP: srv.Client()}.streamPackages(t.Context(), srv.URL, "ua", func(*wirePackage) error { return nil })
-	if !errors.Is(err, fsx.ErrTooLarge) {
+	if !errors.Is(err, safefs.ErrTooLarge) {
 		t.Fatalf("err = %v, want ErrTooLarge", err)
 	}
 }

@@ -16,7 +16,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // Metadata table numbers this reader looks into.
@@ -206,7 +206,7 @@ const maxAssembly = 256 << 20
 // readAssembly reads the assembly at path unless it is over maxAssembly. The size is taken from the open handle and the
 // read itself is capped, so a file that grows after the check is still refused.
 func readAssembly(path string) ([]byte, error) {
-	f, err := fsx.Open(path)
+	f, err := safefs.Open(path)
 	if err != nil {
 		return nil, err
 	}

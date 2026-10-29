@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // Locations returns the folder new backups of game are written to and the folders to read from. Every location holds
@@ -18,7 +18,7 @@ func Locations(dataDir, custom, game string) (write string, reads []string, err 
 	}
 	custom = filepath.Join(custom, game)
 	reads = []string{custom}
-	if !fsx.SamePath(custom, def) {
+	if !safefs.SamePath(custom, def) {
 		reads = append(reads, def)
 	}
 	return custom, reads, nil

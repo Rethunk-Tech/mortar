@@ -9,14 +9,14 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"golang.org/x/sys/unix"
 )
 
 // firstPhysical is the disk address of f's first extent, via FS_IOC_FIEMAP; clones share it.
 func firstPhysical(t *testing.T, path string) uint64 {
 	t.Helper()
-	f, err := fsx.Open(path)
+	f, err := safefs.Open(path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -66,7 +66,7 @@ func TestRelocatorClonesProfileFilesFromTheCopiedStoreAcrossFilesystems(t *testi
 	}
 	r := newRelocator(dest)
 	r.same = func(string, string) bool { return false }
-	if _, err := copyTreeFirst(src, dest, "store", nil, r.put); err != nil {
+	if _, err := safefs.CopyTree(src, dest, safefs.CopyOptions{First: "store", Put: r.put}); err != nil {
 		t.Fatal(err)
 	}
 	if err := r.verifyCopy(); err != nil {

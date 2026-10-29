@@ -9,10 +9,10 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/avscan"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fonts"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/picker"
 	"github.com/Rethunk-Tech/mortar/internal/sysaccent"
@@ -429,7 +429,7 @@ func (s *Service) PickImportFile() (string, error) {
 
 // PreviewImport validates the export at path and lists, per section, what importing it would change.
 func (s *Service) PreviewImport(path string) (ImportPreview, error) {
-	b, err := fsx.ReadFile(path)
+	b, err := safefs.ReadFile(path)
 	if err != nil {
 		return ImportPreview{}, err
 	}
@@ -438,7 +438,7 @@ func (s *Service) PreviewImport(path string) (ImportPreview, error) {
 
 // ApplyImport applies the export at path, only the fields in the chosen sections.
 func (s *Service) ApplyImport(path string, sections []string) error {
-	b, err := fsx.ReadFile(path)
+	b, err := safefs.ReadFile(path)
 	if err != nil {
 		return err
 	}

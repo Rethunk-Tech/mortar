@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // machine is one machine's profiles: id to content.
@@ -81,7 +81,7 @@ func scan(t *testing.T, s *Service) []Offer {
 
 func shared1(t *testing.T, folder string) string {
 	t.Helper()
-	b, err := fsx.ReadFile(filepath.Join(folder, "stardew", "main.mortar"))
+	b, err := safefs.ReadFile(filepath.Join(folder, "stardew", "main.mortar"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -188,10 +188,10 @@ func TestVersionFileAheadOfPayloadIsNotOfferedUntilItArrives(t *testing.T) {
 	offers0 := scan(t, b)
 	_ = b.Resolve(context.Background(), "stardew", "main", offers0[0].Revision, Theirs)
 	// A writes v2; the sync tool delivers the version file to B before the payload.
-	old, _ := fsx.ReadFile(filepath.Join(folder, "stardew", "main.mortar"))
+	old, _ := safefs.ReadFile(filepath.Join(folder, "stardew", "main.mortar"))
 	ma.set("main", "v2")
 	scan(t, a)
-	_ = fsx.WriteFile(filepath.Join(folder, "stardew", "main.mortar"), old, 0o600)
+	_ = safefs.WriteFile(filepath.Join(folder, "stardew", "main.mortar"), old, 0o600)
 	if offers := scan(t, b); len(offers) != 0 {
 		t.Fatalf("offered before the payload arrived: %+v", offers)
 	}
@@ -199,7 +199,7 @@ func TestVersionFileAheadOfPayloadIsNotOfferedUntilItArrives(t *testing.T) {
 		t.Fatal("Resolve must wait for the payload")
 	}
 	// Payload v2 now arrives.
-	_ = fsx.WriteFile(filepath.Join(folder, "stardew", "main.mortar"), []byte("v2"), 0o600)
+	_ = safefs.WriteFile(filepath.Join(folder, "stardew", "main.mortar"), []byte("v2"), 0o600)
 	offers := scan(t, b)
 	if len(offers) != 1 {
 		t.Fatalf("want the real v2 offered, got %d", len(offers))
@@ -242,14 +242,14 @@ func TestAVersionFileAheadOfItsPayloadShowsAsStalled(t *testing.T) {
 	b, mb := newMachine(t, fb, "Laptop", &clock)
 	copyFile := func(from, to, name string) {
 		t.Helper()
-		raw, err := fsx.ReadFile(filepath.Join(from, "stardew", name))
+		raw, err := safefs.ReadFile(filepath.Join(from, "stardew", name))
 		if err != nil {
 			t.Fatal(err)
 		}
 		if err := os.MkdirAll(filepath.Join(to, "stardew"), 0o700); err != nil {
 			t.Fatal(err)
 		}
-		if err := fsx.WriteFile(filepath.Join(to, "stardew", name), raw, 0o600); err != nil {
+		if err := safefs.WriteFile(filepath.Join(to, "stardew", name), raw, 0o600); err != nil {
 			t.Fatal(err)
 		}
 	}

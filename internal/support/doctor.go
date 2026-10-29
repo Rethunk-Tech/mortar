@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"path/filepath"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/doctor"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -18,7 +18,7 @@ func (s *Service) Doctor() (doctor.Report, error) {
 		return doctor.Report{}, err
 	}
 	cur := settings.Defaults()
-	if b, readErr := fsx.ReadFile(filepath.Join(dir, settings.FileName)); readErr == nil {
+	if b, readErr := safefs.ReadFile(filepath.Join(dir, settings.FileName)); readErr == nil {
 		_ = json.Unmarshal(b, &cur)
 	}
 	games, err := game.List(s.home, cur)

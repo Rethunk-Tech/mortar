@@ -7,8 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // vdfToken is one token of a text VDF file with its byte span, so an edit can change one value and leave every
@@ -157,7 +156,7 @@ func (s Steam) SetLaunchOptions(appID string, merge func(current string) string)
 		return "", err
 	}
 	path := filepath.Join(dir, "localconfig.vdf")
-	b, err := fsx.ReadFile(path)
+	b, err := safefs.ReadFile(path)
 	if err != nil {
 		return "", err
 	}
@@ -172,5 +171,5 @@ func (s Steam) SetLaunchOptions(appID string, merge func(current string) string)
 	if err := backupBeforeEdit(path, next, info.Mode().Perm()); err != nil {
 		return "", err
 	}
-	return value, datadir.WriteFileAtomic(path, next, info.Mode().Perm())
+	return value, safefs.WriteFileAtomic(path, next, info.Mode().Perm())
 }

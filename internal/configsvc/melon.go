@@ -10,8 +10,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -343,11 +342,11 @@ func ownsMelonCategory(names []string, section string) bool {
 // when modID is empty.
 func (s *Service) melonFile(game, profileID, modID string, names []string) []ConfigFile {
 	path, err := s.melonPath(game, profileID)
-	if err != nil || !fsx.IsFile(path) {
+	if err != nil || !safefs.IsFile(path) {
 		return nil
 	}
 	if modID != "" {
-		raw, err := fsx.ReadFile(path)
+		raw, err := safefs.ReadFile(path)
 		if err != nil {
 			return nil
 		}
@@ -370,7 +369,7 @@ func (s *Service) melonSchema(game, profileID, modID string, f ConfigFile) (Sche
 	if err != nil {
 		return Schema{}, err
 	}
-	raw, err := fsx.ReadFile(path)
+	raw, err := safefs.ReadFile(path)
 	if err != nil {
 		return Schema{}, err
 	}
@@ -386,7 +385,7 @@ func (s *Service) writeMelon(game, profileID string, edits []edit) error {
 	if err != nil {
 		return err
 	}
-	raw, err := fsx.ReadFile(path)
+	raw, err := safefs.ReadFile(path)
 	if err != nil {
 		return err
 	}
@@ -396,5 +395,5 @@ func (s *Service) writeMelon(game, profileID string, edits []edit) error {
 			return err
 		}
 	}
-	return datadir.WriteFileAtomic(path, []byte(text), 0o600)
+	return safefs.WriteFileAtomic(path, []byte(text), 0o600)
 }

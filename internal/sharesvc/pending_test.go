@@ -12,7 +12,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
 	"github.com/Rethunk-Tech/mortar/internal/share"
@@ -58,7 +58,7 @@ func TestPendingConfigsSurviveARestart(t *testing.T) {
 		t.Fatal(err)
 	}
 	key := res.Profile.Entries[0].Key
-	got, err := fsx.ReadFile(filepath.Join(dir, key, "Mod", "config.json"))
+	got, err := safefs.ReadFile(filepath.Join(dir, key, "Mod", "config.json"))
 	if err != nil || string(got) != `{"a":1}` {
 		t.Fatalf("config = %q, %v", got, err)
 	}
@@ -109,7 +109,7 @@ func TestPendingAppliesWhenTheDoneSetChangesAndSavesOnlyOnChange(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got, err := fsx.ReadFile(filepath.Join(dir, bKey, "Mod", "config.json")); err != nil || string(got) != "b" {
+	if got, err := safefs.ReadFile(filepath.Join(dir, bKey, "Mod", "config.json")); err != nil || string(got) != "b" {
 		t.Fatalf("config of the later mod = %q, %v", got, err)
 	}
 }
@@ -156,7 +156,7 @@ func TestPendingWaitsWhileTheGameRunsTheProfile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got, err := fsx.ReadFile(filepath.Join(dir, res.Profile.Entries[0].Key, "Mod", "config.json")); err != nil || string(got) != "a" {
+	if got, err := safefs.ReadFile(filepath.Join(dir, res.Profile.Entries[0].Key, "Mod", "config.json")); err != nil || string(got) != "a" {
 		t.Fatalf("config after the game stopped = %q, %v", got, err)
 	}
 }
@@ -183,7 +183,7 @@ func TestPendingRetriesAfterInModsWriteError(t *testing.T) {
 		t.Fatal(err)
 	}
 	s.QueueChanged(done)
-	if got, err := fsx.ReadFile(block); err != nil || string(got) != "a" {
+	if got, err := safefs.ReadFile(block); err != nil || string(got) != "a" {
 		t.Fatalf("config after retry = %q, %v", got, err)
 	}
 }
@@ -223,7 +223,7 @@ func TestPendingAppliesAfterFinishedQueueRowsAreGone(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	got, err := fsx.ReadFile(filepath.Join(dir, res.Profile.Entries[0].Key, "Mod", "config.json"))
+	got, err := safefs.ReadFile(filepath.Join(dir, res.Profile.Entries[0].Key, "Mod", "config.json"))
 	if err != nil || string(got) != "a" {
 		t.Fatalf("config after empty-queue apply = %q, %v", got, err)
 	}

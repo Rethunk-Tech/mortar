@@ -9,8 +9,8 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 )
 
@@ -52,7 +52,7 @@ func TestMoveDataFolderRelocatesWhenIdle(t *testing.T) {
 	case <-time.After(10 * time.Second):
 		t.Fatal("did not restart")
 	}
-	got, err := fsx.ReadFile(filepath.Join(dest, "settings.json"))
+	got, err := safefs.ReadFile(filepath.Join(dest, "settings.json"))
 	if err != nil || string(got) != `{"accent":"sand"}` {
 		t.Fatalf("moved = %q %v", got, err)
 	}

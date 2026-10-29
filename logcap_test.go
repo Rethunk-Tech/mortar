@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/support"
 )
 
@@ -40,7 +40,7 @@ func TestCapCrashLogTruncatesWhenSeenCoversOverLimit(t *testing.T) {
 	if err != nil || info.Size() != 0 {
 		t.Fatalf("size %v %v", info, err)
 	}
-	seen, err := fsx.ReadFile(filepath.Join(dir, "crash.seen"))
+	seen, err := safefs.ReadFile(filepath.Join(dir, "crash.seen"))
 	if err != nil || strings.TrimSpace(string(seen)) != "0" {
 		t.Fatalf("seen %q %v", seen, err)
 	}
@@ -56,7 +56,7 @@ func TestCapCrashLogLeavesFileWhenSeenIsBehind(t *testing.T) {
 		t.Fatal(err)
 	}
 	capCrashLogAt(dir, 10)
-	got, err := fsx.ReadFile(path)
+	got, err := safefs.ReadFile(path)
 	if err != nil || string(got) != "crash-bytes-here" {
 		t.Fatalf("got %q %v", got, err)
 	}
@@ -64,7 +64,7 @@ func TestCapCrashLogLeavesFileWhenSeenIsBehind(t *testing.T) {
 
 func TestCappedLogReadsAsCleanShutdown(t *testing.T) {
 	dir := t.TempDir()
-	f, err := fsx.Create(filepath.Join(dir, "mortar.prev.log"))
+	f, err := safefs.Create(filepath.Join(dir, "mortar.prev.log"))
 	if err != nil {
 		t.Fatal(err)
 	}

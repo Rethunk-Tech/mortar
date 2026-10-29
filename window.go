@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -39,7 +39,7 @@ func windowGeomPath(dataDir string) string {
 }
 
 func loadWindowGeom(dataDir string, screens []screenRect) (windowGeom, bool) {
-	b, err := fsx.ReadFile(windowGeomPath(dataDir))
+	b, err := safefs.ReadFile(windowGeomPath(dataDir))
 	if err != nil {
 		return windowGeom{}, false
 	}

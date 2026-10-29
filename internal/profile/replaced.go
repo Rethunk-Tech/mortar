@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // ReplacedFile is a file SyncPackages moved under replaced/ for a package's own: its path below the profile folder
@@ -69,10 +69,10 @@ func (s *Store) RestoreReplaced(game, id, rel string) error {
 	if err := os.MkdirAll(filepath.Dir(to), 0o750); err != nil {
 		return err
 	}
-	if err := fsx.Remove(to); err != nil && !errors.Is(err, fs.ErrNotExist) {
+	if err := safefs.Remove(to); err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return err
 	}
-	if err := fsx.Rename(from, to); err != nil {
+	if err := safefs.Rename(from, to); err != nil {
 		return err
 	}
 	removeUp(filepath.Join(dir, replacedDir), from)
@@ -91,7 +91,7 @@ func (s *Store) DeleteReplaced(game, id string) error {
 	if err != nil {
 		return err
 	}
-	if err := fsx.RemoveAll(filepath.Join(dir, replacedDir)); err != nil {
+	if err := safefs.RemoveAll(filepath.Join(dir, replacedDir)); err != nil {
 		return err
 	}
 	held := readHeld(dir)

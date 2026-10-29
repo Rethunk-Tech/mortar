@@ -9,9 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/nxm"
 	"github.com/Rethunk-Tech/mortar/internal/portal"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
@@ -48,7 +47,7 @@ Icon=mortar
 Terminal=false
 Categories=Game;
 `, desktopValue(name), execLine, arg)
-	if err := datadir.WriteFileAtomic(path, []byte(entry), 0o600); err != nil {
+	if err := safefs.WriteFileAtomic(path, []byte(entry), 0o600); err != nil {
 		return "", err
 	}
 	return path, nil
@@ -82,7 +81,7 @@ func Renamed(game, profile, profileName, gameName string) error {
 	if err != nil {
 		return err
 	}
-	b, err := fsx.ReadFile(path)
+	b, err := safefs.ReadFile(path)
 	if errors.Is(err, os.ErrNotExist) {
 		return nil
 	}
@@ -105,7 +104,7 @@ func Renamed(game, profile, profileName, gameName string) error {
 	if !replaced {
 		return fmt.Errorf("desktop entry %s has no Name", path)
 	}
-	return datadir.WriteFileAtomic(path, []byte(strings.Join(lines, "")), 0o600)
+	return safefs.WriteFileAtomic(path, []byte(strings.Join(lines, "")), 0o600)
 }
 
 // Removed removes the desktop entry for a deleted profile.
@@ -120,7 +119,7 @@ func Removed(game, profile string) error {
 	if err != nil {
 		return err
 	}
-	err = fsx.Remove(path)
+	err = safefs.Remove(path)
 	if errors.Is(err, os.ErrNotExist) {
 		return nil
 	}
@@ -197,7 +196,7 @@ func RemoveStartMenu() error {
 	}
 	var errs []error
 	for _, p := range paths {
-		errs = append(errs, fsx.RemoveAll(p))
+		errs = append(errs, safefs.RemoveAll(p))
 	}
 	return errors.Join(errs...)
 }
@@ -220,7 +219,7 @@ func Repoint(exe string) error {
 	quoted := `"` + execArgEscaper.Replace(exe) + `"`
 	var errs []error
 	for _, p := range paths {
-		b, err := fsx.ReadFile(p)
+		b, err := safefs.ReadFile(p)
 		if err != nil {
 			errs = append(errs, err)
 			continue
@@ -248,7 +247,7 @@ func Repoint(exe string) error {
 			break
 		}
 		if changed {
-			errs = append(errs, datadir.WriteFileAtomic(p, []byte(strings.Join(lines, "")), 0o600))
+			errs = append(errs, safefs.WriteFileAtomic(p, []byte(strings.Join(lines, "")), 0o600))
 		}
 	}
 	return errors.Join(errs...)

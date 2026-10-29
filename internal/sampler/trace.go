@@ -13,7 +13,7 @@ import (
 	"unicode/utf16"
 	"unicode/utf8"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 const (
@@ -156,7 +156,7 @@ func Parse(r io.Reader) (*Trace, error) {
 
 // ParseFile parses a nettrace file produced by the sampler session.
 func ParseFile(path string) (*Trace, error) {
-	data, err := fsx.ReadFile(path)
+	data, err := safefs.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}

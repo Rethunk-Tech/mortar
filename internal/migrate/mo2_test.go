@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 func TestMO2DetectTwoProfiles(t *testing.T) {
@@ -102,7 +102,7 @@ func copyMO2Fixture(src, dest string) error {
 		if mkErr := os.MkdirAll(filepath.Dir(target), 0o750); mkErr != nil {
 			return mkErr
 		}
-		data, readErr := fsx.ReadFile(path)
+		data, readErr := safefs.ReadFile(path)
 		if readErr != nil {
 			return readErr
 		}

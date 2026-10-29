@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
@@ -40,7 +41,7 @@ func WritePage(dataDir string) error {
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return err
 	}
-	return datadir.WriteFileAtomic(PagePath(dataDir), page, 0o600)
+	return safefs.WriteFileAtomic(PagePath(dataDir), page, 0o600)
 }
 
 // FileURL is the OBS browser-source URL for the overlay page.

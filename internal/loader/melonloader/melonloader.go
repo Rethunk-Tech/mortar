@@ -10,9 +10,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // ID is the catalog's id for this loader.
@@ -50,7 +50,7 @@ func Route(relPath, pkg string, routes []components.LoaderRoute) string {
 // folder below it that does.
 func packRoot(dir string) (string, error) {
 	holds := func(d string) bool {
-		return fsx.IsDir(filepath.Join(d, loaderDir)) && fsx.IsFile(filepath.Join(d, proxyDLL))
+		return safefs.IsDir(filepath.Join(d, loaderDir)) && safefs.IsFile(filepath.Join(d, proxyDLL))
 	}
 	if holds(dir) {
 		return dir, nil
@@ -78,7 +78,7 @@ func InstallPack(zipPath, profileRoot string) error {
 	if err != nil {
 		return err
 	}
-	defer func() { _ = fsx.RemoveAll(tmp) }()
+	defer func() { _ = safefs.RemoveAll(tmp) }()
 	if err := archive.Extract(zipPath, tmp); err != nil {
 		return err
 	}
@@ -87,10 +87,10 @@ func InstallPack(zipPath, profileRoot string) error {
 		return err
 	}
 	for _, name := range []string{loaderDir, proxyDLL} {
-		if err := fsx.RemoveAll(filepath.Join(profileRoot, name)); err != nil {
+		if err := safefs.RemoveAll(filepath.Join(profileRoot, name)); err != nil {
 			return err
 		}
-		if err := fsx.Rename(filepath.Join(src, name), filepath.Join(profileRoot, name)); err != nil {
+		if err := safefs.Rename(filepath.Join(src, name), filepath.Join(profileRoot, name)); err != nil {
 			return err
 		}
 	}

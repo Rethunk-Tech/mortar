@@ -8,9 +8,8 @@ import (
 	"path/filepath"
 	"slices"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	gamereg "github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -202,7 +201,7 @@ func (s *Store) carryConfig(game, fromID, toID string, side DiffSide) error {
 	if err != nil {
 		return err
 	}
-	b, err := fsx.ReadFile(filepath.Join(srcDir, configFile))
+	b, err := safefs.ReadFile(filepath.Join(srcDir, configFile))
 	if errors.Is(err, os.ErrNotExist) {
 		return nil
 	}
@@ -213,5 +212,5 @@ func (s *Store) carryConfig(game, fromID, toID string, side DiffSide) error {
 	if err != nil {
 		return err
 	}
-	return datadir.WriteFileAtomic(filepath.Join(dstDir, configFile), b, 0o600)
+	return safefs.WriteFileAtomic(filepath.Join(dstDir, configFile), b, 0o600)
 }

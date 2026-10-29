@@ -4,8 +4,8 @@ import (
 	"os"
 	"slices"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 	"github.com/Rethunk-Tech/mortar/internal/steam"
 )
@@ -31,7 +31,7 @@ func flatpakLibraryChecks() []Check {
 			continue
 		}
 		for _, lib := range libs {
-			if slices.Contains(seen, lib) || fsx.IsDir(lib) {
+			if slices.Contains(seen, lib) || safefs.IsDir(lib) {
 				continue
 			}
 			seen = append(seen, lib)

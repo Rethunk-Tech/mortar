@@ -11,7 +11,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // StatusError is a site answering with an HTTP status that is not 200. Auth is true for 401 and 403, which a caller
@@ -83,7 +83,7 @@ func DoJSON(ctx context.Context, r Request, out any) error {
 	default:
 		return &StatusError{Service: r.Service, Code: resp.StatusCode, Status: resp.Status}
 	}
-	raw, err := fsx.ReadCapped(resp.Body, MaxBody)
+	raw, err := safefs.ReadCapped(resp.Body, MaxBody)
 	if err != nil {
 		return err
 	}

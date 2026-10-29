@@ -17,10 +17,9 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
 func newStore(t *testing.T) *Store {
@@ -60,7 +59,7 @@ func TestAddArchiveIsIdempotent(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if b, err := fsx.ReadFile(filepath.Join(dir, "Mod", "manifest.json")); err != nil || string(b) != "{}" {
+	if b, err := safefs.ReadFile(filepath.Join(dir, "Mod", "manifest.json")); err != nil || string(b) != "{}" {
 		t.Fatalf("extracted = %q, %v", b, err)
 	}
 	again, err := s.AddArchive(t.Context(), "stardew", p)
@@ -123,10 +122,10 @@ func TestAddArchiveFailureLeavesNothing(t *testing.T) {
 func TestDiskFullMessage(t *testing.T) {
 	s := newStore(t)
 	src := t.TempDir()
-	if err := fsx.WriteFile(filepath.Join(src, "a"), make([]byte, 3<<20), 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(src, "a"), make([]byte, 3<<20), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	n, _ := datadir.Size(src)
+	n, _ := safefs.Size(src)
 	err := s.install(t.Context(), "stardew", "smapi-1", filepath.Join(s.root, loadersDir, "stardew", "smapi", "1"), func(string) error { return syscall.ENOSPC }, func() int64 { return n })
 	if !errors.Is(err, syscall.ENOSPC) || !strings.Contains(err.Error(), "needs about 4.0 MB") {
 		t.Fatalf("err = %v", err)
@@ -157,7 +156,7 @@ func TestAddDir(t *testing.T) {
 	if err := os.MkdirAll(filepath.Join(src, "ConsoleCommands"), 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(filepath.Join(src, "ConsoleCommands", "manifest.json"), []byte("{}"), 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(src, "ConsoleCommands", "manifest.json"), []byte("{}"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if err := s.AddLoaderDir(t.Context(), "stardew", LoaderKey("smapi", "4.1.0"), src); err != nil {
@@ -205,7 +204,7 @@ func TestIncompleteItemIsReinstalled(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	got, err := fsx.ReadFile(filepath.Join(dir, "mod.dll"))
+	got, err := safefs.ReadFile(filepath.Join(dir, "mod.dll"))
 	if err != nil || string(got) != "new" {
 		t.Fatalf("reinstalled item = %q, %v", got, err)
 	}
@@ -240,7 +239,7 @@ func TestCorruptIndexIsSetAsideForInstall(t *testing.T) {
 	if err := os.MkdirAll(s.root, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(s.indexPath(), []byte("{"), 0o600); err != nil {
+	if err := safefs.WriteFile(s.indexPath(), []byte("{"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	src := t.TempDir()
@@ -372,14 +371,14 @@ func TestAddHashedDirCopiesInTreeSymlinksAndRejectsEscapes(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	got, err := fsx.ReadFile(filepath.Join(dir, "b.txt"))
+	got, err := safefs.ReadFile(filepath.Join(dir, "b.txt"))
 	if err != nil || string(got) != "a" {
 		t.Fatalf("hashed symlink = %q, %v", got, err)
 	}
 
 	escaped := t.TempDir()
 	outside := filepath.Join(t.TempDir(), "secret")
-	if err := fsx.WriteFile(outside, []byte("no"), 0o600); err != nil {
+	if err := safefs.WriteFile(outside, []byte("no"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.Symlink(outside, filepath.Join(escaped, "link")); err != nil {

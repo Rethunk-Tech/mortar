@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"slices"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 const (
@@ -45,11 +45,11 @@ func adopt(m *Manifest, l *opLog) error {
 	}
 	placed := map[string]bool{}
 	for _, o := range m.Ops {
-		placed[fsx.FoldCase(o.Dst)] = true
+		placed[safefs.FoldCase(o.Dst)] = true
 	}
 	existing := map[string]bool{}
 	for _, f := range m.Existing {
-		existing[fsx.FoldCase(f)] = true
+		existing[safefs.FoldCase(f)] = true
 	}
 	var total int64
 	for _, ow := range m.Owned {
@@ -74,7 +74,7 @@ func adopt(m *Manifest, l *opLog) error {
 			if err != nil {
 				return err
 			}
-			if !info.Mode().IsRegular() || placed[fsx.FoldCase(path)] || existing[fsx.FoldCase(path)] {
+			if !info.Mode().IsRegular() || placed[safefs.FoldCase(path)] || existing[safefs.FoldCase(path)] {
 				return nil
 			}
 			if info.Size() > maxAdoptFile || total+info.Size() > maxAdoptTotal {
@@ -97,7 +97,7 @@ func adopt(m *Manifest, l *opLog) error {
 			if err := l.add(step{A: path}, false); err != nil {
 				return err
 			}
-			if err := fsx.Remove(path); err != nil {
+			if err := safefs.Remove(path); err != nil {
 				return err
 			}
 			total += info.Size()
@@ -128,6 +128,6 @@ func removeEmptyBelow(root string, files []string) {
 	}
 	slices.SortFunc(dirs, func(a, b string) int { return len(b) - len(a) })
 	for _, d := range dirs {
-		_ = fsx.Remove(d)
+		_ = safefs.Remove(d)
 	}
 }

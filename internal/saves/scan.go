@@ -22,8 +22,8 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
@@ -257,7 +257,7 @@ func (l Layout) CopyPaths(save, kept string) [][2]string {
 	copyStem := strings.TrimSuffix(kept, path.Ext(kept))
 	saveStem := strings.TrimSuffix(save, path.Ext(save))
 	for _, ext := range l.Companions {
-		if fsx.IsFile(filepath.Join(l.Dir, filepath.FromSlash(copyStem+ext))) {
+		if safefs.IsFile(filepath.Join(l.Dir, filepath.FromSlash(copyStem+ext))) {
 			out = append(out, [2]string{copyStem + ext, saveStem + ext})
 		}
 	}
@@ -278,12 +278,12 @@ func (l Layout) IsSave(name string) bool {
 		if name != path.Base(name) {
 			return false
 		}
-		return fsx.IsFile(filepath.Join(l.Dir, name, name))
+		return safefs.IsFile(filepath.Join(l.Dir, name, name))
 	}
 	if !l.Matches(name) {
 		return false
 	}
-	return fsx.IsFile(filepath.Join(l.Dir, filepath.FromSlash(name)))
+	return safefs.IsFile(filepath.Join(l.Dir, filepath.FromSlash(name)))
 }
 
 // Matches reports whether name, a slash path under Dir, is named by Files, whether or not it exists.
@@ -317,7 +317,7 @@ func (l Layout) Paths(name string) []string {
 	stem := strings.TrimSuffix(name, path.Ext(name))
 	for _, ext := range l.Companions {
 		if c := stem + ext; c != name {
-			if fsx.IsFile(filepath.Join(l.Dir, filepath.FromSlash(c))) {
+			if safefs.IsFile(filepath.Join(l.Dir, filepath.FromSlash(c))) {
 				out = append(out, c)
 			}
 		}
@@ -467,7 +467,7 @@ func (s *Scanner) read(ctx context.Context, folder string, index map[string][]me
 	}
 	dir := filepath.Join(s.Dir, folder)
 	// A missing SaveGameInfo only costs the details it holds.
-	if b, err := fsx.ReadFile(filepath.Join(dir, infoFile)); err == nil {
+	if b, err := safefs.ReadFile(filepath.Join(dir, infoFile)); err == nil {
 		readInfo(b, &info)
 	}
 	if fi, err := os.Stat(filepath.Join(dir, infoFile)); err == nil {
@@ -475,7 +475,7 @@ func (s *Scanner) read(ctx context.Context, folder string, index map[string][]me
 	} else if fi, err := os.Stat(filepath.Join(dir, folder)); err == nil {
 		info.Played = fi.ModTime().UnixMilli()
 	}
-	f, err := fsx.Open(filepath.Join(dir, folder))
+	f, err := safefs.Open(filepath.Join(dir, folder))
 	if err != nil {
 		return info, err
 	}
@@ -570,7 +570,7 @@ func (s *Scanner) load() map[string]cached {
 	if p == "" {
 		return nil
 	}
-	b, err := fsx.ReadFile(p)
+	b, err := safefs.ReadFile(p)
 	if err != nil {
 		return nil
 	}

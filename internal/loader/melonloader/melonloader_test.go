@@ -16,8 +16,8 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
@@ -96,7 +96,7 @@ func buildRelease(t *testing.T, root string) string {
 		t.Fatal(err)
 	}
 	p := filepath.Join(t.TempDir(), "MelonLoader.x64.zip")
-	if err := fsx.WriteFile(p, buf.Bytes(), 0o600); err != nil {
+	if err := safefs.WriteFile(p, buf.Bytes(), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	return p
@@ -120,7 +120,7 @@ func TestInstallAndLaunch(t *testing.T) {
 		if st, _ := (Loader{}).Status(tgt); !st.Installed || st.Version != "0.7.3" {
 			t.Fatalf("status %+v", st)
 		}
-		if fsx.IsFile(filepath.Join(profile, loaderDir, "stale.dll")) || !fsx.IsFile(filepath.Join(profile, "Mods", "Mod.dll")) {
+		if safefs.IsFile(filepath.Join(profile, loaderDir, "stale.dll")) || !safefs.IsFile(filepath.Join(profile, "Mods", "Mod.dll")) {
 			t.Fatal("the loader folder was not replaced, or the profile's mods were")
 		}
 	}
@@ -199,7 +199,7 @@ func TestFetchOtherReleaseVerifies(t *testing.T) {
 		if (err == nil) != ok {
 			t.Errorf("Fetch(%s): %v, want ok=%v", version, err, ok)
 		}
-		if err != nil && fsx.IsFile(dst) {
+		if err != nil && safefs.IsFile(dst) {
 			t.Errorf("Fetch(%s) left a file it refused", version)
 		}
 	}

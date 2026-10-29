@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 func TestDirectFetch(t *testing.T) {
@@ -28,7 +28,7 @@ func TestDirectFetch(t *testing.T) {
 	if err != nil || filepath.Base(p) != "Mod.zip" {
 		t.Fatalf("fetch: %q %v", p, err)
 	}
-	if b, _ := fsx.ReadFile(p); string(b) != "0123456789" {
+	if b, _ := safefs.ReadFile(p); string(b) != "0123456789" {
 		t.Fatalf("body %q", b)
 	}
 

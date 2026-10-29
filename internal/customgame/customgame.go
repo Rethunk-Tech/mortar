@@ -13,9 +13,9 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -110,7 +110,7 @@ func List() ([]Entry, error) {
 	if err != nil {
 		return nil, err
 	}
-	b, err := fsx.ReadFile(p)
+	b, err := safefs.ReadFile(p)
 	if errors.Is(err, os.ErrNotExist) {
 		return []Entry{}, nil
 	}

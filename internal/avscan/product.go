@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/nowindow"
 )
 
@@ -97,7 +97,7 @@ func StatusOf(ctx context.Context, c Config) Status {
 		st.Problem = err.Error()
 		return st
 	}
-	defer func() { _ = fsx.RemoveAll(dir) }()
+	defer func() { _ = safefs.RemoveAll(dir) }()
 	ctx, cancel := context.WithTimeout(ctx, productTimeout)
 	defer cancel()
 	_, _, err = New(c).Scan(ctx, dir)

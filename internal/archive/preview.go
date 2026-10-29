@@ -10,7 +10,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 )
 
@@ -83,7 +83,7 @@ func (v *previewer) add(l *Listing, e Entry) {
 		return
 	}
 	defer func() { _ = rc.Close() }()
-	b, err := fsx.ReadCapped(rc, maxManifestBytes)
+	b, err := safefs.ReadCapped(rc, maxManifestBytes)
 	if err != nil {
 		return
 	}

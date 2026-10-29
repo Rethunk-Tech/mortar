@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 )
@@ -31,11 +31,11 @@ func (s *Service) playerLogSince(gameID, profileID string, since time.Time) (str
 	if err != nil {
 		return "", false
 	}
-	st, err := fsx.Stat(path)
+	st, err := safefs.Stat(path)
 	if err != nil || st.ModTime().Before(since.Add(-clockSlack)) {
 		return "", false
 	}
-	b, err := fsx.ReadFile(path)
+	b, err := safefs.ReadFile(path)
 	if err != nil {
 		return "", false
 	}

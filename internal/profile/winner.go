@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"slices"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
@@ -96,7 +96,7 @@ func applyLoadAfter(root string, e Entry) error {
 
 func rewriteLoadAfter(root string, e Entry, m Component, dropped []mod.ID) error {
 	path := componentManifest(root, m.Folder)
-	raw, err := fsx.ReadFile(path)
+	raw, err := safefs.ReadFile(path)
 	if err != nil {
 		return err
 	}
@@ -104,7 +104,7 @@ func rewriteLoadAfter(root string, e Entry, m Component, dropped []mod.ID) error
 	if err != nil {
 		return err
 	}
-	return fsx.WriteFile(path, rewritten, 0o644)
+	return safefs.WriteFile(path, rewritten, 0o644)
 }
 
 func componentManifest(root, folder string) string {

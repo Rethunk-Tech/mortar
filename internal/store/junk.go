@@ -7,7 +7,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 func junkDir(name string) bool {
@@ -57,7 +57,7 @@ func stripJunk(root string) {
 	slices.SortFunc(dirs, func(a, b string) int { return len(b) - len(a) })
 	for _, dir := range dirs {
 		if dir != root && thumbsOnly(dir) {
-			_ = fsx.RemoveAll(dir)
+			_ = safefs.RemoveAll(dir)
 		}
 	}
 }

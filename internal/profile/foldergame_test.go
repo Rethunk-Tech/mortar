@@ -15,7 +15,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
@@ -299,7 +299,7 @@ func trayTree(t *testing.T, dir string) map[string]string {
 	out := map[string]string{}
 	_ = filepath.WalkDir(dir, func(p string, d fs.DirEntry, _ error) error {
 		if d != nil && d.Type().IsRegular() {
-			b, _ := fsx.ReadFile(p)
+			b, _ := safefs.ReadFile(p)
 			rel, _ := filepath.Rel(dir, p)
 			out[rel] = string(b)
 		}

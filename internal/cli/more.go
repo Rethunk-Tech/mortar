@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/control"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/sharesvc"
 )
 
@@ -32,7 +32,7 @@ func rest(a []string, from int) []string {
 	return a[from:]
 }
 
-func readBody(path string) ([]byte, error) { return fsx.ReadFile(path) }
+func readBody(path string) ([]byte, error) { return safefs.ReadFile(path) }
 
 var moreVerbs = map[string]moreVerb{
 	"groups create": {

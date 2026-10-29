@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // A random run of two machines editing, scanning and answering offers must never lose or invent a change, and once
@@ -77,7 +77,7 @@ func (r *syncRun) stamp() {
 	for _, folder := range r.folders {
 		for _, name := range []string{"main.mortar", "main.sync.json"} {
 			path := folder + "/stardew/" + name
-			b, err := fsx.ReadFile(path)
+			b, err := safefs.ReadFile(path)
 			if err != nil || r.seen[path] == string(b) {
 				continue
 			}
@@ -97,7 +97,7 @@ func snapshot(m *machine) map[string]string { return maps.Clone(m.profiles) }
 // checkPayload: whatever the sync folder holds was written by a user edit, never made up.
 func (r *syncRun) checkPayload() {
 	for _, folder := range r.folders {
-		b, err := fsx.ReadFile(folder + "/stardew/main.mortar")
+		b, err := safefs.ReadFile(folder + "/stardew/main.mortar")
 		if err == nil && !r.written[string(b)] {
 			r.fail("the sync folder holds %q, which no one wrote", b)
 		}
@@ -133,7 +133,7 @@ func (r *syncRun) answer(i int, offers []Offer) {
 		r.stamp()
 		r.trace = append(r.trace, fmt.Sprintf("resolve%d:%s(conflict=%v A=%v B=%v)", i, choice, o.Conflict, r.machines[0].profiles, r.machines[1].profiles))
 		if choice == Theirs {
-			want, _ := fsx.ReadFile(r.folders[i] + "/stardew/" + o.Remote + ".mortar")
+			want, _ := safefs.ReadFile(r.folders[i] + "/stardew/" + o.Remote + ".mortar")
 			for id, got := range r.machines[i].profiles {
 				if got != string(want) && before[id] != got {
 					r.fail("taking theirs left %q, the offered revision is %q", got, want)
@@ -263,8 +263,8 @@ func (r *syncRun) settle() {
 func (r *syncRun) folderState() string {
 	var out string
 	for _, folder := range r.folders {
-		a, _ := fsx.ReadFile(folder + "/stardew/main.mortar")
-		b, _ := fsx.ReadFile(folder + "/stardew/main.sync.json")
+		a, _ := safefs.ReadFile(folder + "/stardew/main.mortar")
+		b, _ := safefs.ReadFile(folder + "/stardew/main.sync.json")
 		out += string(a) + "|" + string(b) + "||"
 	}
 	return out
@@ -274,7 +274,7 @@ func (r *syncRun) folderState() string {
 func (r *syncRun) sharedEdit() int {
 	best := -1
 	for _, folder := range r.folders {
-		b, err := fsx.ReadFile(folder + "/stardew/main.mortar")
+		b, err := safefs.ReadFile(folder + "/stardew/main.mortar")
 		if err != nil || len(b) < 2 {
 			continue
 		}
@@ -296,7 +296,7 @@ func (r *syncRun) deliver(from int, name string) {
 	if dst, err := os.Stat(r.folders[1-from] + "/stardew/" + name); err == nil && !dst.ModTime().Before(src.ModTime()) {
 		return
 	}
-	raw, err := fsx.ReadFile(r.folders[from] + "/stardew/" + name)
+	raw, err := safefs.ReadFile(r.folders[from] + "/stardew/" + name)
 	if err != nil {
 		return
 	}
@@ -308,7 +308,7 @@ func (r *syncRun) deliver(from int, name string) {
 	if err := os.MkdirAll(to, 0o700); err != nil {
 		r.fail("%v", err)
 	}
-	if err := fsx.WriteFile(to+"/"+name, raw, 0o600); err != nil {
+	if err := safefs.WriteFile(to+"/"+name, raw, 0o600); err != nil {
 		r.fail("%v", err)
 	}
 	if err := os.Chtimes(to+"/"+name, src.ModTime(), src.ModTime()); err != nil {

@@ -7,15 +7,14 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // RootFile is the sidecar beside extracted files that names the chosen mod folder.
 const RootFile = "mortar-root"
 
 func contentRoot(dir string) string {
-	b, err := fsx.ReadFile(filepath.Join(dir, RootFile))
+	b, err := safefs.ReadFile(filepath.Join(dir, RootFile))
 	if err != nil {
 		return ""
 	}
@@ -63,7 +62,7 @@ func (s *Store) SetRoot(game, key, rel string) error {
 	side := filepath.Join(dir, RootFile)
 	rel = CleanRoot(rel)
 	if rel == "" {
-		err := fsx.Remove(side)
+		err := safefs.Remove(side)
 		if err != nil && !os.IsNotExist(err) {
 			return &Error{Game: game, Key: key, Err: err}
 		}
@@ -72,7 +71,7 @@ func (s *Store) SetRoot(game, key, rel string) error {
 	if _, ok := resolveRoot(dir, rel); !ok {
 		return &Error{Game: game, Key: key, Err: fmt.Errorf("root %q is not in this item", rel)}
 	}
-	if err := datadir.WriteFileAtomic(side, []byte(rel+"\n"), 0o600); err != nil {
+	if err := safefs.WriteFileAtomic(side, []byte(rel+"\n"), 0o600); err != nil {
 		return &Error{Game: game, Key: key, Err: err}
 	}
 	return nil

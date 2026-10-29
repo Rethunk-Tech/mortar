@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // A package installed before its manifest.json and icon.png were placed gains them on the next sync, from the store's
@@ -28,7 +28,7 @@ func TestSyncPlacesMetaFilesAnEarlierInstallLeftOut(t *testing.T) {
 		if err := e.SyncPackages("lethal-company", p.ID); err != nil {
 			t.Fatal(err)
 		}
-		b, err := fsx.ReadFile(filepath.Join(dir, placedFile))
+		b, err := safefs.ReadFile(filepath.Join(dir, placedFile))
 		if err != nil {
 			t.Fatal(err)
 		}

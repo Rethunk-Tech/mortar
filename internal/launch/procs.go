@@ -5,8 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // Process is a running process. Args is nil where the platform cannot give a command line (Windows); Exe is empty
@@ -40,11 +39,11 @@ func (p Process) LinkedFrom(dir string) bool {
 	if p.Exe == "" || dir == "" {
 		return false
 	}
-	target, err := fsx.EvalSymlinks(filepath.Join(dir, filepath.Base(p.Exe)))
+	target, err := safefs.EvalSymlinks(filepath.Join(dir, filepath.Base(p.Exe)))
 	if err != nil {
 		return false
 	}
-	return fsx.SamePath(target, p.Exe)
+	return safefs.SamePath(target, p.Exe)
 }
 
 // ExeIs reports whether p's executable is one of the programs names, so its path is where the game itself runs
@@ -82,7 +81,7 @@ func within(path, dir string) bool {
 	if path == "" || dir == "" {
 		return false
 	}
-	return datadir.UnderRoot(dir, path)
+	return safefs.UnderRoot(dir, path)
 }
 
 // exitedWithin reports whether gone turns true within grace.

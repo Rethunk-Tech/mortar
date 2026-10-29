@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // A move keeps the profile files that clone the store as clones; it skips itself where the temp dir cannot clone.
@@ -53,7 +53,7 @@ func TestRelocateKeepsStoreClonesShared(t *testing.T) {
 	if after.Total > before.Total+size/4 {
 		t.Fatalf("clones were copied: %d bytes on disk after, %d before", after.Total, before.Total)
 	}
-	got, err := fsx.ReadFile(filepath.Join(dest, "profiles", "stardew", "p", "mods", "k", "b.dll"))
+	got, err := safefs.ReadFile(filepath.Join(dest, "profiles", "stardew", "p", "mods", "k", "b.dll"))
 	if err != nil || !bytes.Equal(got, bytes.Repeat([]byte("c"), size)) {
 		t.Fatalf("edited file changed: %v", err)
 	}

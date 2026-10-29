@@ -14,8 +14,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
@@ -227,7 +227,7 @@ func Measure(root string, report func(Progress)) (Usage, error) {
 					return fs.SkipDir
 				}
 				if info, infoErr := os.Stat(filepath.Clean(p)); infoErr == nil && info.Mode().IsRegular() {
-					if resolved, resErr := fsx.EvalSymlinks(p); resErr == nil && datadir.UnderRoot(root, resolved) {
+					if resolved, resErr := safefs.EvalSymlinks(p); resErr == nil && safefs.UnderRoot(root, resolved) {
 						batch = append(batch, batchFile{followed: info})
 					}
 				}
@@ -382,7 +382,7 @@ func profileMods(slash string) (game, id string, ok bool) {
 }
 
 func readProfile(path string) profileMeta {
-	b, err := fsx.ReadFile(path)
+	b, err := safefs.ReadFile(path)
 	if err != nil {
 		return profileMeta{}
 	}
@@ -518,7 +518,7 @@ func profileUse(root string) (names map[string]string, uses map[string]int, copi
 }
 
 func readProfileEntries(path string) profileEntries {
-	b, err := fsx.ReadFile(path)
+	b, err := safefs.ReadFile(path)
 	if err != nil {
 		return profileEntries{}
 	}
@@ -537,7 +537,7 @@ func clearCache(dir string) error {
 	}
 	var errs []error
 	for _, e := range ents {
-		errs = append(errs, fsx.RemoveAll(filepath.Clean(filepath.Join(dir, e.Name()))))
+		errs = append(errs, safefs.RemoveAll(filepath.Clean(filepath.Join(dir, e.Name()))))
 	}
 	return errors.Join(errs...)
 }

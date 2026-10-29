@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
@@ -26,11 +26,11 @@ import (
 )
 
 func TestLoaderFailuresAttributeLogFindingsToPackages(t *testing.T) {
-	log, err := fsx.ReadFile(filepath.Join("..", "loader", "bepinex5", "testdata", "logoutput-missing-dependency.log"))
+	log, err := safefs.ReadFile(filepath.Join("..", "loader", "bepinex5", "testdata", "logoutput-missing-dependency.log"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	dll, err := fsx.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
+	dll, err := safefs.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -78,7 +78,7 @@ func TestRanErrorNamesWhereItWasThrownAndWhoPatchesIt(t *testing.T) {
 	var pkgs []profile.PackageRef
 	var mods []framework.Mod
 	for _, p := range []struct{ key, name, dll string }{{"alpha", "Alpha", "embedded.dll"}, {"beta", "Beta", "mod.dll"}} {
-		dll, err := fsx.ReadFile(filepath.Join("..", "dotnet", "testdata", p.dll))
+		dll, err := safefs.ReadFile(filepath.Join("..", "dotnet", "testdata", p.dll))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -125,14 +125,14 @@ func TestGameVersionFailureNeedsAnOlderGameThanTheLoaderAccepts(t *testing.T) {
 }
 
 func TestPluginOwnersNameAPackageByItsPluginsNamespace(t *testing.T) {
-	dll, err := fsx.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
+	dll, err := safefs.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
 	if err != nil {
 		t.Fatal(err)
 	}
 	pkg := func(key string) framework.Mod {
 		m := inst(key, key, "1.0.0", true)
 		m.Folder = t.TempDir()
-		if err := fsx.WriteFile(filepath.Join(m.Folder, "Plugin.dll"), dll, 0o600); err != nil {
+		if err := safefs.WriteFile(filepath.Join(m.Folder, "Plugin.dll"), dll, 0o600); err != nil {
 			t.Fatal(err)
 		}
 		return m
@@ -157,7 +157,7 @@ func TestStartFailureIsALoadFailureOnlyForARunThatNeverStarted(t *testing.T) {
 }
 
 func TestSkippedOlderCopyNoPackageOwnsGetsARemovablePath(t *testing.T) {
-	dll, err := fsx.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
+	dll, err := safefs.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -253,7 +253,7 @@ func TestOrphanRowsOfNewDependenciesWaitForTheQueueToDrain(t *testing.T) {
 }
 
 func TestLoaderFailuresDropAnUnversionedPluginNoDllDeclaresAnyMore(t *testing.T) {
-	dll, err := fsx.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
+	dll, err := safefs.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -276,7 +276,7 @@ func TestLoaderFailuresDropAnUnversionedPluginNoDllDeclaresAnyMore(t *testing.T)
 }
 
 func TestLoaderFailuresDropWhatTheProfileHasSinceFixed(t *testing.T) {
-	dll, err := fsx.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
+	dll, err := safefs.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
 	if err != nil {
 		t.Fatal(err)
 	}

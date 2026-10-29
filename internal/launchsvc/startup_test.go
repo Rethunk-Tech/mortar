@@ -8,7 +8,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi"
@@ -28,7 +28,7 @@ func TestPrepareStartupLoadsTheBridgeEarlyAndKeepsUserKeys(t *testing.T) {
 			t.Fatalf("measure %v err %v", measure, err)
 		}
 	}
-	b, err := fsx.ReadFile(cfgPath)
+	b, err := safefs.ReadFile(cfgPath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -48,7 +48,7 @@ func TestPrepareStartupLeavesAFileItCannotParse(t *testing.T) {
 	if _, err := prepareStartup(smapi.Loader{}, "stardew", mods); err != nil {
 		t.Fatal(err)
 	}
-	if b, _ := fsx.ReadFile(cfgPath); string(b) != raw {
+	if b, _ := safefs.ReadFile(cfgPath); string(b) != raw {
 		t.Fatalf("rewrote %s", b)
 	}
 }
@@ -124,7 +124,7 @@ func TestPrepareStartupArmsTheBepInExPatcherOnlyForAMeasuredLaunch(t *testing.T)
 	if measure, err := prepareStartup(bepinex5.Loader{}, "lethal-company", mods); err != nil || !measure {
 		t.Fatalf("measure %v err %v", measure, err)
 	}
-	if b, err := fsx.ReadFile(filepath.Join(dir, ".measure-launch")); err != nil || string(b) != "MainMenu\n" {
+	if b, err := safefs.ReadFile(filepath.Join(dir, ".measure-launch")); err != nil || string(b) != "MainMenu\n" {
 		t.Fatalf("request %q err %v", b, err)
 	}
 	if _, err := os.Stat(filepath.Join(mods, smapiGroupConfig)); !os.IsNotExist(err) {

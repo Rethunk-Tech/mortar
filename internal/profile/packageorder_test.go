@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -77,7 +77,7 @@ func TestSyncStoppedPartWayStillTakesItsFilesBack(t *testing.T) {
 	if err := os.MkdirAll(filepath.Join(plugins, "z.dll"), 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(filepath.Join(plugins, "z.dll", "in-the-way"), []byte("x"), 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(plugins, "z.dll", "in-the-way"), []byte("x"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if err := ps.SyncPackages(lc, p.ID); err == nil {

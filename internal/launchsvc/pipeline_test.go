@@ -11,8 +11,8 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 )
@@ -65,7 +65,7 @@ func TestEnsureRuntimeEditsAnExistingProtonPrefix(t *testing.T) {
 	if err := svc.ensureRuntime(inst, reqs, false); err != nil {
 		t.Fatal(err)
 	}
-	if b, _ := fsx.ReadFile(reg); !strings.Contains(string(b), "winhttp") {
+	if b, _ := safefs.ReadFile(reg); !strings.Contains(string(b), "winhttp") {
 		t.Fatalf("user.reg = %q", b)
 	}
 }
@@ -91,7 +91,7 @@ func TestDeployRecoversALaunchNothingTookBack(t *testing.T) {
 	}
 	launch() // Mortar lost this one
 	launch().unwind(t.Context())
-	if b, _ := fsx.ReadFile(filepath.Join(install, "winhttp.dll")); string(b) != "the player's own" {
+	if b, _ := safefs.ReadFile(filepath.Join(install, "winhttp.dll")); string(b) != "the player's own" {
 		t.Fatalf("the player's file is now %q", b)
 	}
 }

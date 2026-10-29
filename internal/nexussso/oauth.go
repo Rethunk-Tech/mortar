@@ -17,7 +17,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/secret"
 	"github.com/zalando/go-keyring"
 )
@@ -205,7 +205,7 @@ func (o OAuth) exchange(ctx context.Context, form url.Values) (Tokens, error) {
 		Refresh   string `json:"refresh_token"`
 		ExpiresIn int    `json:"expires_in"`
 	}
-	if err := json.NewDecoder(fsx.CapReader(resp.Body, maxTokenBody)).Decode(&raw); err != nil {
+	if err := json.NewDecoder(safefs.CapReader(resp.Body, maxTokenBody)).Decode(&raw); err != nil {
 		return Tokens{}, err
 	}
 	if raw.Access == "" {

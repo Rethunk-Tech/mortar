@@ -7,7 +7,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -63,7 +63,7 @@ func TestScanReadsAVintageStoryWorld(t *testing.T) {
 	if err := conn.Close(); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(filepath.Join(dir, "Broken.vcdbs"), []byte("not sqlite"), 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(dir, "Broken.vcdbs"), []byte("not sqlite"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	s := &Scanner{Dir: dir, Files: []string{"*.vcdbs"}, Companions: []string{".vcdbs-shm", ".vcdbs-wal"}, CacheDir: t.TempDir()}

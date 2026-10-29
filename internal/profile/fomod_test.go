@@ -10,7 +10,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
@@ -18,7 +18,7 @@ func TestInstallArchiveAsksForFomodThenInstallsChoices(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)
 	p := mustCreate(t, e, "A")
-	xml, err := fsx.ReadFile(filepath.Join("..", "fomod", "testdata", "choose-one.xml"))
+	xml, err := safefs.ReadFile(filepath.Join("..", "fomod", "testdata", "choose-one.xml"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -62,7 +62,7 @@ func TestFomodReplayMismatchAsksAgain(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)
 	p := mustCreate(t, e, "A")
-	xml, err := fsx.ReadFile(filepath.Join("..", "fomod", "testdata", "choose-one.xml"))
+	xml, err := safefs.ReadFile(filepath.Join("..", "fomod", "testdata", "choose-one.xml"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -84,7 +84,7 @@ func TestFomodReplayMismatchAsksAgain(t *testing.T) {
 
 func TestFomodUpdateReplaysOnlyUnchangedOptions(t *testing.T) {
 	t.Parallel()
-	raw, err := fsx.ReadFile(filepath.Join("..", "fomod", "testdata", "choose-one.xml"))
+	raw, err := safefs.ReadFile(filepath.Join("..", "fomod", "testdata", "choose-one.xml"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -204,8 +204,8 @@ func TestAnEntryPlacedByTheOldFomodRuleUpdatesToTheSpecLayoutCleanly(t *testing.
 	}
 	ne := got.Entries[0]
 	dir := liveEntryDir(e.mods(p.ID), ne.Key)
-	dll, _ := fsx.ReadFile(filepath.Join(dir, "m.dll"))
-	cfg, _ := fsx.ReadFile(filepath.Join(dir, "config.json"))
+	dll, _ := safefs.ReadFile(filepath.Join(dir, "m.dll"))
+	cfg, _ := safefs.ReadFile(filepath.Join(dir, "config.json"))
 	if files := filesUnder(dir); !ne.FomodSpec || ne.Mods[0].Folder != "." || string(dll) != "two" || string(cfg) != "mine" ||
 		files != "config.json,m.dll,manifest.json" {
 		t.Fatalf("entry %+v, m.dll %q, config %q, files %v", ne, dll, cfg, files)

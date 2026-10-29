@@ -7,8 +7,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -67,7 +67,7 @@ func WritePending(profileDir string, id mod.ID, edits []Edit) error {
 		return err
 	}
 	if len(edits) == 0 {
-		if err := fsx.Remove(PendingPath(profileDir, id)); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		if err := safefs.Remove(PendingPath(profileDir, id)); err != nil && !errors.Is(err, fs.ErrNotExist) {
 			return err
 		}
 		return nil

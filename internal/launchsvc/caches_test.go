@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -175,7 +175,7 @@ func TestACacheThatCannotBeDeletedIsLoggedAndTheSetIsNotRecorded(t *testing.T) {
 
 func TestAResolvedFolderThatDiffersOnlyByCaseIsTheSameFolder(t *testing.T) {
 	cacheFold = strings.ToLower
-	t.Cleanup(func() { cacheFold = fsx.FoldCase })
+	t.Cleanup(func() { cacheFold = safefs.FoldCase })
 	if !sameDir("/g/Docs/Sub", "/g/docs/sub") {
 		t.Fatal("a folder whose case differs from disk is refused")
 	}

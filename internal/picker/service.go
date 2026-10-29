@@ -5,8 +5,8 @@ import (
 	"errors"
 	"os"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"github.com/Rethunk-Tech/mortar/internal/winhost"
@@ -55,13 +55,13 @@ func (s *Service) ReadTextFile(title string) (string, error) {
 	if err != nil || path == "" {
 		return "", err
 	}
-	f, err := os.Open(path) //nolint:gosec // G304: the user picked this path; it follows a picked symlink, which fsx.Open refuses
+	f, err := os.Open(path) //nolint:gosec // G304: the user picked this path; it follows a picked symlink, which safefs.Open refuses
 	if err != nil {
 		return "", err
 	}
 	defer func() { _ = f.Close() }()
-	text, err := fsx.ReadCapped(f, maxTextBytes)
-	if errors.Is(err, fsx.ErrTooLarge) {
+	text, err := safefs.ReadCapped(f, maxTextBytes)
+	if errors.Is(err, safefs.ErrTooLarge) {
 		return "", usererr.New(usererr.Invalid, "that file is too large")
 	}
 	return string(text), err
@@ -79,5 +79,5 @@ func SaveFile(app winhost.Host, title, filename, filterName, pattern string, dat
 	if err != nil || path == "" {
 		return path, err
 	}
-	return path, fsx.WriteFile(path, data, 0o600)
+	return path, safefs.WriteFile(path, data, 0o600)
 }

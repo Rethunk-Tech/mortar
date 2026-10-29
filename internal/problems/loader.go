@@ -7,11 +7,11 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
@@ -90,7 +90,7 @@ func loaderFailures(l loader.Loader, p loader.ProfileView, player string, owners
 	if err != nil {
 		return nil
 	}
-	raw, err := fsx.ReadFile(path)
+	raw, err := safefs.ReadFile(path)
 	if err != nil {
 		return nil
 	}
@@ -186,7 +186,7 @@ func (s *Service) RemoveSkippedPlugin(gameID, id, path string) error {
 	if info, err := os.Lstat(abs); err != nil || !info.Mode().IsRegular() {
 		return fmt.Errorf("%s is not a plugin file in this profile", path)
 	}
-	if err := fsx.Remove(abs); err != nil {
+	if err := safefs.Remove(abs); err != nil {
 		return err
 	}
 	s.ForgetCached()

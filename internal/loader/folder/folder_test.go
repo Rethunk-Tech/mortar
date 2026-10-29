@@ -8,9 +8,9 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/deploy"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	_ "github.com/Rethunk-Tech/mortar/internal/loader/folder"
@@ -52,7 +52,7 @@ func tree(t *testing.T, dir string) map[string]string {
 		if d.IsDir() {
 			out[rel+"/"] = ""
 		} else {
-			b, _ := fsx.ReadFile(p)
+			b, _ := safefs.ReadFile(p)
 			out[rel] = string(b)
 		}
 		return nil

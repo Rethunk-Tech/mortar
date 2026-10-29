@@ -13,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/fsnotify/fsnotify"
 )
 
@@ -247,7 +247,7 @@ func sizesOf(names []string) map[string]int64 {
 // read through a handle of our own (Go opens it shared with writers).
 func sizeOf(name string) (int64, bool) {
 	if runtime.GOOS == "windows" {
-		f, err := fsx.Open(name)
+		f, err := safefs.Open(name)
 		if err != nil {
 			return 0, false
 		}

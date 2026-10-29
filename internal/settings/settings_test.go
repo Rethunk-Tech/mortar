@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 func open(t *testing.T) (*Store, string) {
@@ -49,7 +49,7 @@ func TestDefaultsAndRoundTrip(t *testing.T) {
 	if len(entries) != 1 || entries[0].Name() != FileName {
 		t.Fatalf("leftover files: %v", entries)
 	}
-	raw, _ := fsx.ReadFile(filepath.Join(dir, FileName))
+	raw, _ := safefs.ReadFile(filepath.Join(dir, FileName))
 	if want := `"lastGame": "lethal"`; !strings.Contains(string(raw), want) {
 		t.Fatalf("json keys: %s", raw)
 	}
@@ -312,7 +312,7 @@ func TestPeekLeavesACorruptFileInPlace(t *testing.T) {
 	if got := Peek(); got.LastProfile == nil {
 		t.Fatalf("Peek = %+v", got)
 	}
-	if b, _ := fsx.ReadFile(path); string(b) != "{broken" {
+	if b, _ := safefs.ReadFile(path); string(b) != "{broken" {
 		t.Fatalf("settings file changed: %q", b)
 	}
 }

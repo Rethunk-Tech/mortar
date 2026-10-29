@@ -12,7 +12,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 var placeholder = regexp.MustCompile(`\{[a-zA-Z]+\}`)
@@ -215,7 +215,7 @@ func callSites(t *testing.T) []callSite {
 		if !strings.HasSuffix(name, ".go") || strings.HasSuffix(name, "_test.go") {
 			return nil
 		}
-		src, err := fsx.ReadFile(path)
+		src, err := safefs.ReadFile(path)
 		if err != nil {
 			return err
 		}

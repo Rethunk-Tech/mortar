@@ -28,7 +28,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/winhost"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/go-safefs"
 	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/migrate"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
@@ -377,7 +377,7 @@ func (s *Service) SaveFile(game, profileID string, keys []string, include share.
 	if err != nil {
 		return Saved{}, err
 	}
-	if err := datadir.WriteFileAtomic(dest, buf.Bytes(), filePerm); err != nil {
+	if err := safefs.WriteFileAtomic(dest, buf.Bytes(), filePerm); err != nil {
 		return Saved{}, err
 	}
 	return Saved{Path: dest, Skipped: append([]string{}, skipped...)}, nil

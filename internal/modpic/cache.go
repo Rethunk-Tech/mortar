@@ -19,8 +19,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // Path is the URL prefix cached mod pictures are served under.
@@ -175,7 +174,7 @@ func (c *Cache) pruneTo(budget int64) int64 {
 		if total <= budget {
 			break
 		}
-		if err := fsx.Remove(filepath.Join(c.dir, f.name)); err != nil {
+		if err := safefs.Remove(filepath.Join(c.dir, f.name)); err != nil {
 			continue
 		}
 		total -= f.size
@@ -272,8 +271,8 @@ func readFile(path string) ([]byte, string, error) {
 
 // OpenFile opens the picture at path, refusing anything but a regular file.
 func OpenFile(path string) (*os.File, error) {
-	f, err := fsx.OpenRegular(path)
-	if errors.Is(err, fsx.ErrNotRegular) {
+	f, err := safefs.OpenRegular(path)
+	if errors.Is(err, safefs.ErrNotRegular) {
 		return nil, fmt.Errorf("%s is not a regular file", filepath.Base(path))
 	}
 	return f, err
@@ -281,8 +280,8 @@ func OpenFile(path string) (*os.File, error) {
 
 // ReadCapped reads r whole, failing when it holds more than limit bytes.
 func ReadCapped(r io.Reader, limit int) ([]byte, error) {
-	b, err := fsx.ReadCapped(r, int64(limit))
-	if errors.Is(err, fsx.ErrTooLarge) {
+	b, err := safefs.ReadCapped(r, int64(limit))
+	if errors.Is(err, safefs.ErrTooLarge) {
 		return nil, fmt.Errorf("the image is larger than %d MB", limit>>20)
 	}
 	return b, err
@@ -332,7 +331,7 @@ func (c *Cache) fetch(ctx context.Context, picture, path string, px int) ([]byte
 	if err := os.MkdirAll(c.dir, 0o700); err != nil {
 		return nil, "", err
 	}
-	if err := datadir.WriteFileAtomic(path, b, 0o600); err != nil {
+	if err := safefs.WriteFileAtomic(path, b, 0o600); err != nil {
 		return nil, "", err
 	}
 	c.recordWrite(int64(len(b)))

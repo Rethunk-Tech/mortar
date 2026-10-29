@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -48,10 +48,10 @@ func (s *Service) applyLicense(ctx context.Context, dir, key string) error {
 	var license struct {
 		Body string `json:"body"`
 	}
-	if err := json.NewDecoder(fsx.CapReader(res.Body, 1<<20)).Decode(&license); err != nil || license.Body == "" {
+	if err := json.NewDecoder(safefs.CapReader(res.Body, 1<<20)).Decode(&license); err != nil || license.Body == "" {
 		return usererr.Wrap(usererr.Network, errors.New("the license text could not be read"))
 	}
-	return fsx.WriteFile(filepath.Join(dir, "LICENSE"), []byte(license.Body), 0o644) // #nosec G306 -- a tracked text file
+	return safefs.WriteFile(filepath.Join(dir, "LICENSE"), []byte(license.Body), 0o644) // #nosec G306 -- a tracked text file
 }
 
 // SDKNeed is the SDK a template's global.json pins and how far .NET may roll forward from it.
@@ -61,7 +61,7 @@ type SDKNeed struct {
 }
 
 func readSDKNeed(dir string) SDKNeed {
-	raw, err := fsx.ReadFile(filepath.Join(dir, "global.json"))
+	raw, err := safefs.ReadFile(filepath.Join(dir, "global.json"))
 	if err != nil {
 		return SDKNeed{}
 	}

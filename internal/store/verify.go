@@ -11,9 +11,9 @@ import (
 	"slices"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -115,7 +115,7 @@ func sumTreeUntil(stop func() error, dir string) (map[string]fileSum, error) {
 		if err != nil {
 			return err
 		}
-		sum, err := fsx.HashFile(p, sha256.New())
+		sum, err := safefs.HashFile(p, sha256.New())
 		if err != nil {
 			return err
 		}
@@ -164,7 +164,7 @@ func (s *Store) recordInstalled(game, key, dir string) {
 	}
 	if err != nil {
 		log.Printf("store %s/%s: record hashes: %v", game, key, err)
-		_ = fsx.Remove(s.manifestPath(game, key))
+		_ = safefs.Remove(s.manifestPath(game, key))
 	}
 	st := s.loadVerify()
 	if st.Items[game] != nil {
@@ -178,7 +178,7 @@ func (s *Store) recordInstalled(game, key, dir string) {
 // forget drops what is recorded about removed items.
 func (s *Store) forget(game string, keys ...string) {
 	for _, key := range keys {
-		_ = fsx.Remove(s.manifestPath(game, key))
+		_ = safefs.Remove(s.manifestPath(game, key))
 	}
 	st := s.loadVerify()
 	changed := false
@@ -219,7 +219,7 @@ func (s *Store) BaselineFromArchive(ctx context.Context, game, key, archivePath 
 	if err != nil {
 		return err
 	}
-	defer func() { _ = fsx.RemoveAll(tmp) }()
+	defer func() { _ = safefs.RemoveAll(tmp) }()
 	if err := archive.Extract(archivePath, tmp); err != nil {
 		return err
 	}
@@ -339,10 +339,10 @@ func (s *Store) Quarantine(game, key string) (restore func() error, err error) {
 		return nil, err
 	}
 	aside := filepath.Join(filepath.Dir(dir), tempPrefix+"damaged-"+key)
-	if err := fsx.RemoveAll(aside); err != nil {
+	if err := safefs.RemoveAll(aside); err != nil {
 		return nil, err
 	}
-	if err := fsx.Rename(dir, aside); err != nil {
+	if err := safefs.Rename(dir, aside); err != nil {
 		return nil, &Error{Game: game, Key: key, Err: err}
 	}
 	return func() error {
@@ -351,6 +351,6 @@ func (s *Store) Quarantine(game, key string) (restore func() error, err error) {
 		if exists(dir) {
 			return nil
 		}
-		return fsx.Rename(aside, dir)
+		return safefs.Rename(aside, dir)
 	}, nil
 }

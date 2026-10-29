@@ -17,7 +17,7 @@ Mortar finds a game, installs its mod loader, keeps each set of mods in its own 
 
 ## Storage
 
-Everything lives in the user data folder, `%LOCALAPPDATA%\Mortar` or `$XDG_DATA_HOME/mortar`, never under the Windows install folder (the uninstaller deletes that recursively). State is JSON written through a temp file and rename (`datadir.WriteFileAtomic`/`WriteJSON`/`WriteStreamAtomic`; `TestFilesAreCreatedOnlyThroughDatadirOrFsx`); no database. The Nexus key is in the OS keyring.
+Everything lives in the user data folder, `%LOCALAPPDATA%\Mortar` or `$XDG_DATA_HOME/mortar`, never under the Windows install folder (the uninstaller deletes that recursively). State is JSON written through a temp file and rename (`safefs.WriteFileAtomic`/`WriteStreamAtomic` from [go-safefs](https://github.com/Rethunk-Tech/go-safefs), and `datadir.WriteJSON`; `TestFilesAreCreatedOnlyThroughDatadirOrSafefs`); no database. The Nexus key is in the OS keyring.
 
 - **Move** (Settings › Storage): `datasvc.Measure` probes free space with a real clone or link because FAT, exFAT and SMB count every name. It never follows symlinked folders, junctions or mount points, and is refused while the game runs.
 - **Portable mode:** a `portable` file beside the executable (symlinks resolved) puts data at `<exe dir>/data`, ignores `data-location` and refuses Move. The marker is ignored inside a Flatpak and an AppImage mount; one beside an executable in an unwritable folder stops the start with `datadir.PortableError`. A portable copy has its own single-instance id (hash of its data folder).

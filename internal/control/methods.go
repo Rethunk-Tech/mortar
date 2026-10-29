@@ -16,6 +16,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archivesvc"
 	"github.com/Rethunk-Tech/mortar/internal/avscan"
 	"github.com/Rethunk-Tech/mortar/internal/backup"
@@ -384,7 +385,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		if err != nil {
 			return nil, err
 		}
-		if err := datadir.WriteFileAtomic(p.Path, body, 0o600); err != nil {
+		if err := safefs.WriteFileAtomic(p.Path, body, 0o600); err != nil {
 			return nil, err
 		}
 		return map[string]string{"path": p.Path}, nil

@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 var fast = Timing{Timeout: 300 * time.Millisecond, Poll: 5 * time.Millisecond}
@@ -126,7 +126,7 @@ func TestRunKeepsFollowingUntilContextDone(t *testing.T) {
 	}
 	// Appended, as the game writes its log: rewriting the file truncates it first, and a poll that lands between the
 	// truncate and the write rightly reads the refilled log from the start, emitting "one" again.
-	f, err := fsx.OpenFile(log, os.O_WRONLY|os.O_APPEND, 0)
+	f, err := safefs.OpenFile(log, os.O_WRONLY|os.O_APPEND, 0)
 	if err != nil {
 		t.Fatal(err)
 	}

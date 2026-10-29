@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 
 	"github.com/Rethunk-Tech/mortar/internal/installer"
 )
@@ -80,7 +80,7 @@ func TestARootFileNamedTrayAndTrayFilesAreTwoDistinctEntries(t *testing.T) {
 // profile leaves the file for the second.
 func TestTrayOwnersAreKeyedByFoldedCase(t *testing.T) {
 	trayFold = strings.ToLower
-	t.Cleanup(func() { trayFold = fsx.FoldCase })
+	t.Cleanup(func() { trayFold = safefs.FoldCase })
 	e, tray := trayEnv(t)
 	p1, _ := e.Create(folderGame, "A")
 	p2, _ := e.Create(folderGame, "B")

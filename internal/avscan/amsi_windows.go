@@ -11,7 +11,7 @@ import (
 
 	"golang.org/x/sys/windows"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 var (
@@ -79,7 +79,7 @@ func (amsi) Scan(ctx context.Context, dir string) (Detection, bool, error) {
 }
 
 func scanFileAMSI(ctx context.Context, actx, session uintptr, path, rel string) (bool, error) {
-	in, err := fsx.Open(path)
+	in, err := safefs.Open(path)
 	if errors.Is(err, windows.ERROR_VIRUS_INFECTED) || errors.Is(err, windows.ERROR_VIRUS_DELETED) {
 		return true, nil
 	}

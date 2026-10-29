@@ -12,8 +12,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/msbuild"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -68,7 +68,7 @@ func (s *Service) enroll(gameID, dir, name, profileID, copyFrom, kind string, un
 		}
 	}
 	p := settings.DevProject{Dir: dir, Name: name, Profile: profileID, Output: output, Untrusted: untrusted, Kind: kind}
-	if icon, err := fsx.ReadFile(filepath.Join(dir, "icon.png")); err == nil {
+	if icon, err := safefs.ReadFile(filepath.Join(dir, "icon.png")); err == nil {
 		p.TemplateIcon = fmt.Sprintf("%x", sha256.Sum256(icon))
 	}
 	return p, s.Settings.AddDevProject(gameID, p)
@@ -84,7 +84,7 @@ func projectName(dir string) (string, bool) {
 		_, err := os.Stat(filepath.Join(dir, "src", name, name+".csproj"))
 		return err == nil
 	}
-	if body, err := fsx.ReadFile(filepath.Join(dir, ".mortar", "template.json")); err == nil {
+	if body, err := safefs.ReadFile(filepath.Join(dir, ".mortar", "template.json")); err == nil {
 		var rec projectRecord
 		if json.Unmarshal(body, &rec) == nil && has(rec.Name) {
 			return rec.Name, true
@@ -152,7 +152,7 @@ func (s *Service) Add(ctx context.Context, gameID, dir, profileID string) (setti
 // cannot choose which DLLs Game code reads. The file's other settings stay.
 func pinGameRoot(dir, gameDir string) error {
 	props := filepath.Join(dir, "Config.Build.user.props")
-	body, err := fsx.ReadFile(props)
+	body, err := safefs.ReadFile(props)
 	if errors.Is(err, os.ErrNotExist) {
 		return writeUserProps(dir, gameDir)
 	}
@@ -166,7 +166,7 @@ func pinGameRoot(dir, gameDir string) error {
 	if root == "" && msbuild.Property(string(body), "GameRootDir") == "" {
 		return nil
 	}
-	return fsx.WriteFile(props, []byte(setProp(string(body), "GameRootDir", root)), 0o600)
+	return safefs.WriteFile(props, []byte(setProp(string(body), "GameRootDir", root)), 0o600)
 }
 
 // ParseRepo reads owner/name, or a github.com address (https or git@), as owner and name.
@@ -199,12 +199,12 @@ func (s *Service) Clone(ctx context.Context, gameID, repo, parentDir, profileID 
 		_, err = s.run(ctx, parentDir, "git", "clone", "--", "https://github.com/"+full+".git", name)
 	}
 	if err != nil {
-		_ = fsx.RemoveAll(dest)
+		_ = safefs.RemoveAll(dest)
 		return settings.DevProject{}, err
 	}
 	p, err := s.Add(ctx, gameID, dest, profileID)
 	if err != nil {
-		_ = fsx.RemoveAll(dest)
+		_ = safefs.RemoveAll(dest)
 	}
 	return p, err
 }

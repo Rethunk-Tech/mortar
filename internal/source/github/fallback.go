@@ -15,8 +15,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	ghauth "github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
@@ -185,7 +185,7 @@ func (d *Driver) graphQL(ctx context.Context, q source.Query, terms []string) (m
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("github GraphQL answered %s", resp.Status)
 	}
-	raw, err := fsx.ReadCapped(resp.Body, source.MaxBody)
+	raw, err := safefs.ReadCapped(resp.Body, source.MaxBody)
 	if err != nil {
 		return nil, err
 	}
@@ -309,7 +309,7 @@ func (d *Driver) webPage(ctx context.Context, q source.Query, terms string, page
 	if resp.StatusCode != http.StatusOK {
 		return topicPage{}, fmt.Errorf("github.com search answered %s", resp.Status)
 	}
-	raw, err := fsx.ReadCapped(resp.Body, source.MaxBody)
+	raw, err := safefs.ReadCapped(resp.Body, source.MaxBody)
 	if err != nil {
 		return topicPage{}, err
 	}

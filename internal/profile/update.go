@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/backup"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
@@ -235,14 +235,14 @@ func (s *Store) swapEntry(game, id, dir string, e Entry, newKey string, source *
 	}
 	oldSrc, oldTmp, err := s.layoutItem(game, id, e.Key, e.Fomod, !e.FomodSpec)
 	if oldTmp != "" {
-		defer func() { _ = fsx.RemoveAll(oldTmp) }()
+		defer func() { _ = safefs.RemoveAll(oldTmp) }()
 	}
 	if err != nil {
 		return Entry{}, swapped{}, err
 	}
 	newSrc, newTmp, err := s.layoutItem(game, id, newKey, choices, false)
 	if newTmp != "" {
-		defer func() { _ = fsx.RemoveAll(newTmp) }()
+		defer func() { _ = safefs.RemoveAll(newTmp) }()
 	}
 	if err != nil {
 		return Entry{}, swapped{}, err
@@ -289,7 +289,7 @@ func (s *Store) swapEntry(game, id, dir string, e Entry, newKey string, source *
 	}
 	sw, err := fillUpdate(s, game, id, tmp, modsDir, oldSrc, newSrc, e, &ne, found)
 	if err != nil {
-		return Entry{}, swapped{}, errors.Join(err, fsx.RemoveAll(tmp))
+		return Entry{}, swapped{}, errors.Join(err, safefs.RemoveAll(tmp))
 	}
 	return ne, sw, nil
 }
@@ -392,12 +392,12 @@ func (w swapped) commit() {
 	for _, h := range w.held {
 		dst := filepath.Join(w.heldDir, h.uniqueID, h.rel)
 		if os.MkdirAll(filepath.Dir(dst), 0o700) == nil {
-			_ = fsx.Rename(h.abs, dst)
+			_ = safefs.Rename(h.abs, dst)
 		}
 	}
 	if w.aside != "" {
 		// A failed delete leaves a temp-prefixed folder, which the next rebuild sweeps.
-		_ = fsx.RemoveAll(w.aside)
+		_ = safefs.RemoveAll(w.aside)
 	}
 }
 
@@ -405,9 +405,9 @@ func (w swapped) undo() error {
 	if w.placed == "" {
 		return nil
 	}
-	err := fsx.RemoveAll(w.placed)
+	err := safefs.RemoveAll(w.placed)
 	if w.aside != "" {
-		err = errors.Join(err, fsx.Rename(w.aside, w.old))
+		err = errors.Join(err, safefs.Rename(w.aside, w.old))
 	}
 	return err
 }
@@ -421,16 +421,16 @@ func replaceFolder(modsDir, oldKey, tmp, final string) (swapped, error) {
 	w := swapped{old: old, placed: filepath.Join(modsDir, final)}
 	if exists(old) {
 		w.aside = filepath.Join(modsDir, asidePrefix+filepath.Base(old))
-		if err := fsx.RemoveAll(w.aside); err != nil {
+		if err := safefs.RemoveAll(w.aside); err != nil {
 			return swapped{}, err
 		}
-		if err := fsx.Rename(old, w.aside); err != nil {
+		if err := safefs.Rename(old, w.aside); err != nil {
 			return swapped{}, err
 		}
 	}
-	if err := fsx.Rename(tmp, w.placed); err != nil {
+	if err := safefs.Rename(tmp, w.placed); err != nil {
 		if w.aside != "" {
-			err = errors.Join(err, fsx.Rename(w.aside, old))
+			err = errors.Join(err, safefs.Rename(w.aside, old))
 		}
 		return swapped{}, err
 	}
@@ -496,26 +496,26 @@ func sameFile(a, b string) (bool, error) {
 	if ia.Size() != ib.Size() {
 		return false, nil
 	}
-	ba, err := fsx.ReadFile(a)
+	ba, err := safefs.ReadFile(a)
 	if err != nil {
 		return false, err
 	}
-	bb, err := fsx.ReadFile(b)
+	bb, err := safefs.ReadFile(b)
 	return bytes.Equal(ba, bb), err
 }
 
 func copyOver(src, dst string) error {
-	b, err := fsx.ReadFile(src)
+	b, err := safefs.ReadFile(src)
 	if err != nil {
 		return err
 	}
 	if err := os.MkdirAll(filepath.Dir(dst), 0o750); err != nil {
 		return err
 	}
-	if err := fsx.Remove(dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
+	if err := safefs.Remove(dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return err
 	}
-	return fsx.WriteFile(dst, b, 0o600)
+	return safefs.WriteFile(dst, b, 0o600)
 }
 
 func deleteOldVersion(found []smapimanifest.Mod, uniqueID mod.ID) bool {

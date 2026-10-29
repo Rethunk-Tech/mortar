@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"slices"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 const pendingFile = "pending-configs.json"
@@ -17,7 +17,7 @@ func loadPending(dir string) []*pending {
 	if dir == "" {
 		return nil
 	}
-	b, err := fsx.ReadFile(filepath.Join(dir, pendingFile))
+	b, err := safefs.ReadFile(filepath.Join(dir, pendingFile))
 	if err != nil {
 		return nil
 	}
@@ -38,7 +38,7 @@ func (s *Service) savePending() {
 	s.mu.Unlock()
 	path := filepath.Join(s.d.Dir, pendingFile)
 	if len(list) == 0 {
-		_ = fsx.Remove(path)
+		_ = safefs.Remove(path)
 		return
 	}
 	// A pending list that cannot be saved still works this session; it only starts over after a restart.

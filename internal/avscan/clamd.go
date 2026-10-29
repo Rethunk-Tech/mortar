@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // defaultSockets are where distributions put clamd's socket.
@@ -108,7 +108,7 @@ func (c clamd) scanFile(ctx context.Context, path string) (string, error) {
 	defer func() { _ = conn.Close() }()
 	stop := bound(ctx, conn)
 	defer stop()
-	in, err := fsx.Open(path)
+	in, err := safefs.Open(path)
 	if err != nil {
 		return "", err
 	}

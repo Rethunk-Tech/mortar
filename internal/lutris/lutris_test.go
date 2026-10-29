@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 //go:embed testdata/gog-linux.yml
@@ -24,7 +24,7 @@ var testGame = Game{Slug: "stardew-valley", Keyword: "stardew", Marker: "Stardew
 
 func TestInstallFromFixture(t *testing.T) {
 	dir := t.TempDir()
-	if err := fsx.WriteFile(filepath.Join(dir, "Stardew Valley.dll"), nil, 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(dir, "Stardew Valley.dll"), nil, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	replaced := strings.ReplaceAll(string(fixtureGogLinux), "/home/player/Games/Stardew Valley", dir)
@@ -51,11 +51,11 @@ func TestLocateLinux(t *testing.T) {
 	if err := os.MkdirAll(install, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(filepath.Join(install, "Stardew Valley.dll"), nil, 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(install, "Stardew Valley.dll"), nil, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	yml := "game_slug: stardew-valley\nscript:\n  runner: linux\ngame:\n  working_dir: " + install + "\n"
-	if err := fsx.WriteFile(filepath.Join(games, "stardew.yml"), []byte(yml), 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(games, "stardew.yml"), []byte(yml), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	found := Locate(home, testGame)

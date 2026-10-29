@@ -11,9 +11,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -89,7 +89,7 @@ func (s *Store) InstallExtraFolder(ctx context.Context, game, id, path string) (
 	if err != nil {
 		return InstallResult{}, installError(err)
 	}
-	defer func() { _ = fsx.RemoveAll(scratch) }()
+	defer func() { _ = safefs.RemoveAll(scratch) }()
 	staged := filepath.Join(scratch, filepath.Base(path))
 	if err := copyWithout(path, staged, ".git", ".mortar", "artifacts"); err != nil {
 		return InstallResult{}, installError(err)
@@ -453,10 +453,10 @@ func copyWithout(src, dst string, skip ...string) error {
 		if !d.Type().IsRegular() {
 			return nil
 		}
-		b, err := fsx.ReadFile(p)
+		b, err := safefs.ReadFile(p)
 		if err != nil {
 			return err
 		}
-		return fsx.WriteFile(to, b, 0o600)
+		return safefs.WriteFile(to, b, 0o600)
 	})
 }

@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // A switched-off mod's config is set aside and comes back when it is switched on; removing the mod sets it aside, so Undo and adding it again bring it back.
@@ -28,7 +28,7 @@ func TestModConfigFollowsTheMod(t *testing.T) {
 	aside := filepath.Join(dir, configAsideDir, "Mod.cfg")
 	writeFile(t, dir, "BepInEx/config/Mod.cfg", "[General]\nA = 1\n")
 	exists := func(path string) bool {
-		_, err := fsx.Stat(path)
+		_, err := safefs.Stat(path)
 		if err != nil && !errors.Is(err, fs.ErrNotExist) {
 			t.Fatal(err)
 		}
@@ -63,7 +63,7 @@ func TestModConfigFollowsTheMod(t *testing.T) {
 	if err := e.SyncPackages("lethal-company", p.ID); err != nil {
 		t.Fatal(err)
 	}
-	if b, _ := fsx.ReadFile(live); string(b) != "[General]\nA = 1\n" || exists(aside) {
+	if b, _ := safefs.ReadFile(live); string(b) != "[General]\nA = 1\n" || exists(aside) {
 		t.Fatalf("undone: live %q, aside %v", b, exists(aside))
 	}
 }
@@ -94,7 +94,7 @@ func TestModConfigStaysWithTheEnabledOwnerAndAFailedRemoveKeepsIt(t *testing.T) 
 	if err := e.SyncPackages("lethal-company", p.ID); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := fsx.Stat(live); err != nil {
+	if _, err := safefs.Stat(live); err != nil {
 		t.Fatalf("the enabled fork's config was parked: %v", err)
 	}
 	if _, err := e.RemoveEntries("lethal-company", p.ID, []string{keys[0].Key, "no-such-key"}); err == nil {
@@ -103,7 +103,7 @@ func TestModConfigStaysWithTheEnabledOwnerAndAFailedRemoveKeepsIt(t *testing.T) 
 	if _, err := e.RemoveEntries("lethal-company", p.ID, []string{keys[0].Key}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := fsx.Stat(live); err != nil {
+	if _, err := safefs.Stat(live); err != nil {
 		t.Fatalf("removing the disabled one took the enabled one's config: %v", err)
 	}
 }
@@ -132,7 +132,7 @@ func TestTheLoadersConfigIsNoModsOwn(t *testing.T) {
 	if _, err := e.RemoveEntries("lethal-company", p.ID, []string{en.Key}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := fsx.Stat(filepath.Join(dir, "BepInEx", "config", "BepInEx.cfg")); err != nil {
+	if _, err := safefs.Stat(filepath.Join(dir, "BepInEx", "config", "BepInEx.cfg")); err != nil {
 		t.Fatalf("BepInEx.cfg went with the mod: %v", err)
 	}
 }

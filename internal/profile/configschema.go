@@ -12,7 +12,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/go-lenientjson"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/modconfig"
@@ -80,7 +80,7 @@ func (s *Service) SetConfigValue(game, id, key string, uniqueID mod.ID, field, v
 		return err
 	}
 	path := filepath.Join(folder, configFile)
-	raw, err := fsx.ReadFile(path)
+	raw, err := safefs.ReadFile(path)
 	if errors.Is(err, fs.ErrNotExist) {
 		raw = []byte("{}")
 	} else if err != nil {
@@ -112,7 +112,7 @@ func (s *Store) ContentSchema(game, id, key string, uniqueID mod.ID) (modconfig.
 	if err != nil {
 		return nil, err
 	}
-	man, err := fsx.ReadFile(filepath.Join(folder, smapimanifest.FileName))
+	man, err := safefs.ReadFile(filepath.Join(folder, smapimanifest.FileName))
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
 			return modconfig.Schema{}, nil
@@ -126,7 +126,7 @@ func (s *Store) ContentSchema(game, id, key string, uniqueID mod.ID) (modconfig.
 }
 
 func schemaFromDir(folder string) modconfig.Schema {
-	raw, err := fsx.ReadFile(filepath.Join(folder, "content.json"))
+	raw, err := safefs.ReadFile(filepath.Join(folder, "content.json"))
 	if err != nil {
 		return modconfig.Schema{}
 	}

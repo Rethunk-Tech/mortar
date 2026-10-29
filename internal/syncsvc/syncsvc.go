@@ -19,8 +19,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/share"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -183,7 +183,7 @@ func New(d Deps) (*Service, error) {
 	if d.Machine == "" {
 		s.d.Machine, _ = os.Hostname()
 	}
-	b, err := fsx.ReadFile(s.statePath())
+	b, err := safefs.ReadFile(s.statePath())
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return nil, err
 	}
@@ -220,7 +220,7 @@ func (s *Service) sharedPath(folder, game, remote string) string {
 }
 
 func (s *Service) readShared(folder, game, remote string) (shared, bool) {
-	b, err := fsx.ReadFile(s.sharedPath(folder, game, remote))
+	b, err := safefs.ReadFile(s.sharedPath(folder, game, remote))
 	var sh shared
 	if err != nil || json.Unmarshal(b, &sh) != nil || sh.Vector == nil {
 		return shared{}, false
@@ -230,7 +230,7 @@ func (s *Service) readShared(folder, game, remote string) (shared, bool) {
 
 // payload reads the payload sh names, and reports whether it is that payload rather than one still on its way.
 func (s *Service) payload(folder, game, remote string, sh shared) ([]byte, bool) {
-	b, err := fsx.ReadFile(s.payloadPath(folder, game, remote))
+	b, err := safefs.ReadFile(s.payloadPath(folder, game, remote))
 	if err != nil {
 		return nil, false
 	}
@@ -423,14 +423,14 @@ func (s *Service) push(folder string, ref Ref, t tracked, base Vector) error {
 		return err
 	}
 	// The version file goes last: another machine that sees it finds the payload it names.
-	if err := datadir.WriteFileAtomic(s.payloadPath(folder, ref.Game, t.Remote), payload, 0o600); err != nil {
+	if err := safefs.WriteFileAtomic(s.payloadPath(folder, ref.Game, t.Remote), payload, 0o600); err != nil {
 		return err
 	}
 	meta, err := json.Marshal(shared{Name: ref.Name, Machine: s.st.Machine, MachineName: s.d.Machine, Vector: vec, Payload: hashOf(payload)})
 	if err != nil {
 		return err
 	}
-	if err := datadir.WriteFileAtomic(s.sharedPath(folder, ref.Game, t.Remote), meta, 0o600); err != nil {
+	if err := safefs.WriteFileAtomic(s.sharedPath(folder, ref.Game, t.Remote), meta, 0o600); err != nil {
 		return err
 	}
 	t.Synced, t.Seen = vec, ref.Updated
@@ -643,7 +643,7 @@ func (s *Service) keepUnfetched(folder string, ref Ref, t *tracked, payload []by
 	if t.Applied == "" {
 		return payload, false
 	}
-	base, err := fsx.ReadFile(s.payloadPath(folder, ref.Game, t.Remote))
+	base, err := safefs.ReadFile(s.payloadPath(folder, ref.Game, t.Remote))
 	if err != nil || hashOf(base) != t.Applied {
 		t.Applied, t.Missing = "", nil
 		return payload, false

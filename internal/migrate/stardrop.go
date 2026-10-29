@@ -14,7 +14,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/modname"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 )
 
@@ -87,7 +87,7 @@ func stardropPreview(profilesDir, modsPath, id string) (ProfilePreview, error) {
 }
 
 func stardropPreviewFile(path, id, modsPath string) (ProfilePreview, error) {
-	data, err := fsx.ReadFile(path)
+	data, err := safefs.ReadFile(path)
 	if err != nil {
 		return ProfilePreview{}, err
 	}
@@ -124,7 +124,7 @@ func stardropPreviewFile(path, id, modsPath string) (ProfilePreview, error) {
 
 func stardropModsPath(dataDir, fallback string) string {
 	path := fallback
-	data, err := fsx.ReadFile(filepath.Join(dataDir, "Settings.json"))
+	data, err := safefs.ReadFile(filepath.Join(dataDir, "Settings.json"))
 	if err == nil {
 		var settings struct {
 			ModFolderPath   string `json:"ModFolderPath"`

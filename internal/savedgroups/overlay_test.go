@@ -8,7 +8,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	modstore "github.com/Rethunk-Tech/mortar/internal/store"
 )
@@ -61,7 +61,7 @@ func TestSavedGroupCarriesOptionalFiles(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got, _ := fsx.ReadFile(filepath.Join(dir, main, "Mod", "a.png")); string(got) != "opt" {
+	if got, _ := safefs.ReadFile(filepath.Join(dir, main, "Mod", "a.png")); string(got) != "opt" {
 		t.Fatalf("laid file = %q", got)
 	}
 }

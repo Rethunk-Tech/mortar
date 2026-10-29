@@ -11,9 +11,9 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // File is the profile's server settings, a JSON object of setting id to value.
@@ -25,7 +25,7 @@ const ConfigName = "server.cfg"
 // Load reads the profile's server settings; none are set when the file is missing or unreadable.
 func Load(profileDir string) map[string]string {
 	values := map[string]string{}
-	if b, err := fsx.ReadFile(filepath.Join(profileDir, File)); err == nil {
+	if b, err := safefs.ReadFile(filepath.Join(profileDir, File)); err == nil {
 		_ = json.Unmarshal(b, &values)
 	}
 	return values

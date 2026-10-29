@@ -10,9 +10,8 @@ import (
 	"path/filepath"
 	"slices"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	gamereg "github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
@@ -57,7 +56,7 @@ func (s *Store) SyncGameMods(ctx context.Context, game, id, modsDir string, fold
 	if s.GameRunning != nil && s.GameRunning(game) {
 		return GameModsResult{}, usererr.Wrap(usererr.Busy, errors.New("the game is running: close it before changing mods from its Mods folder"))
 	}
-	root, err := fsx.EvalSymlinks(modsDir)
+	root, err := safefs.EvalSymlinks(modsDir)
 	if err != nil {
 		return GameModsResult{}, err
 	}
@@ -68,7 +67,7 @@ func (s *Store) SyncGameMods(ctx context.Context, game, id, modsDir string, fold
 			return GameModsResult{}, err
 		}
 		child := filepath.Join(modsDir, name)
-		if !datadir.RealDirUnder(root, child) {
+		if !safefs.RealDirUnder(root, child) {
 			return GameModsResult{}, fmt.Errorf("%s is not a folder in the game's Mods folder", name)
 		}
 		if slot, keep := classifyFolder(child, name); keep {
@@ -187,15 +186,15 @@ func (s *Store) removeFromGameMods(game, id, dir string) error {
 	aside := filepath.Join(s.removedModsDir(game, id), "moved-"+ids.New(), filepath.Base(dir))
 	err := os.MkdirAll(filepath.Dir(aside), 0o700)
 	if err == nil {
-		err = fsx.Rename(dir, aside)
+		err = safefs.Rename(dir, aside)
 	}
 	if err != nil {
 		aside = filepath.Join(filepath.Dir(dir), ".mortar-moved-"+ids.New())
-		if err = fsx.Rename(dir, aside); err != nil {
+		if err = safefs.Rename(dir, aside); err != nil {
 			return err
 		}
 	}
-	if err := fsx.RemoveAll(aside); err != nil {
+	if err := safefs.RemoveAll(aside); err != nil {
 		log.Printf("moved mods folder %s: clearing %s: %v", dir, aside, err)
 	}
 	return nil

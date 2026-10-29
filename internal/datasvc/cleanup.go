@@ -10,9 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/backup"
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
@@ -187,7 +186,7 @@ func Apply(root string, items *store.Store, preview Preview, keep map[string][]s
 		if confErr != nil {
 			continue
 		}
-		_ = fsx.RemoveAll(filepath.Clean(abs))
+		_ = safefs.RemoveAll(filepath.Clean(abs))
 	}
 	return errors.Join(items.Remove(refs), items.PruneDangling(keep))
 }
@@ -224,7 +223,7 @@ func cacheTTL(rel string) (time.Duration, bool) {
 // fetchedAt is the "fetched" time of a cache file, read by scanning keys so a large payload is skipped, not parsed
 // into memory.
 func fetchedAt(path string) (time.Time, bool) {
-	f, err := fsx.Open(path)
+	f, err := safefs.Open(path)
 	if err != nil {
 		return time.Time{}, false
 	}
@@ -265,7 +264,7 @@ func fileAge(path string, now time.Time) time.Duration {
 }
 
 func dirSize(dir string) int64 {
-	n, _ := datadir.Size(dir)
+	n, _ := safefs.Size(dir)
 	return n
 }
 
@@ -287,7 +286,7 @@ func confined(root, rel string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if !datadir.UnderRoot(absRoot, abs) {
+	if !safefs.UnderRoot(absRoot, abs) {
 		return "", fs.ErrInvalid
 	}
 	return abs, nil

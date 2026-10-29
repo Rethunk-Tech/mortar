@@ -17,8 +17,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
@@ -151,7 +151,7 @@ func (s *Service) RunLog(gameID, profileID, runID string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	data, err := fsx.ReadFile(path)
+	data, err := safefs.ReadFile(path)
 	if errors.Is(err, os.ErrNotExist) {
 		return "", nil
 	}
@@ -451,11 +451,11 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return
 	}
-	if err := datadir.WriteFileAtomic(runLogPath(dir, id), []byte(text), 0o600); err != nil {
+	if err := safefs.WriteFileAtomic(runLogPath(dir, id), []byte(text), 0o600); err != nil {
 		return
 	}
 	if hasPlayer {
-		_ = datadir.WriteFileAtomic(runPlayerLogPath(dir, id), []byte(launch.CapLog(player, launch.MaxLogBytes)), 0o600)
+		_ = safefs.WriteFileAtomic(runPlayerLogPath(dir, id), []byte(launch.CapLog(player, launch.MaxLogBytes)), 0o600)
 	}
 	idx, err := readIndex(dir)
 	if err != nil {
@@ -504,8 +504,8 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 		return
 	}
 	for _, old := range drop {
-		_ = fsx.Remove(runLogPath(dir, old.ID))
-		_ = fsx.Remove(runPlayerLogPath(dir, old.ID))
+		_ = safefs.Remove(runLogPath(dir, old.ID))
+		_ = safefs.Remove(runPlayerLogPath(dir, old.ID))
 	}
 	if !failed && s.settings != nil {
 		s.settingsChanged(s.settings.AddPlaytime(g.ID(), ended.Sub(started)))
@@ -635,7 +635,7 @@ func pathWithin(path, dir string) bool {
 	if err1 != nil || err2 != nil {
 		return false
 	}
-	return datadir.UnderRoot(absDir, absPath)
+	return safefs.UnderRoot(absDir, absPath)
 }
 
 // playedSaves are the saves a run played: the one SMAPI's log says it loaded, else, for a loader whose log names none,
@@ -746,11 +746,11 @@ func (s *Service) logPath(gameID, profileID string) (path string, own bool, err 
 	if err != nil {
 		return "", false, err
 	}
-	return path, datadir.UnderRoot(dir, path), nil
+	return path, safefs.UnderRoot(dir, path), nil
 }
 
 func readOwnedLog(path string, own bool, home, modsDir string, since time.Time) (string, bool) {
-	f, err := fsx.Open(path)
+	f, err := safefs.Open(path)
 	if err != nil {
 		return "", false
 	}

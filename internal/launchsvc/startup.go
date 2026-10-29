@@ -10,10 +10,10 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi"
@@ -97,7 +97,7 @@ func prepareStartup(l loader.Loader, gameID, modsDir string) (bool, error) {
 		}
 	}
 	dir := filepath.Join(filepath.Dir(modsDir), startupDir)
-	err := fsx.Remove(filepath.Join(dir, measureMarker))
+	err := safefs.Remove(filepath.Join(dir, measureMarker))
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return false, err
 	}
@@ -139,7 +139,7 @@ func (s *Service) MeasureNextLaunch(gameID, profileID string) error {
 	if err := os.MkdirAll(filepath.Join(dir, startupDir), 0o700); err != nil {
 		return err
 	}
-	return datadir.WriteFileAtomic(filepath.Join(dir, startupDir, measureMarker), nil, 0o600)
+	return safefs.WriteFileAtomic(filepath.Join(dir, startupDir, measureMarker), nil, 0o600)
 }
 
 // CancelMeasureNextLaunch takes back a pending measured launch; the next launch is timed as usual.
@@ -148,7 +148,7 @@ func (s *Service) CancelMeasureNextLaunch(gameID, profileID string) error {
 	if err != nil {
 		return err
 	}
-	if err := fsx.Remove(filepath.Join(dir, startupDir, measureMarker)); err != nil && !errors.Is(err, fs.ErrNotExist) {
+	if err := safefs.Remove(filepath.Join(dir, startupDir, measureMarker)); err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return err
 	}
 	return nil

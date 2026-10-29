@@ -10,9 +10,9 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/steam"
 )
 
@@ -116,7 +116,7 @@ func ProtonBuilds(home string, steamRoots ...string) []ProtonBuild {
 			entries, _ := os.ReadDir(d)
 			for _, e := range entries {
 				p := filepath.Join(d, e.Name())
-				if fsx.IsFile(filepath.Join(p, "proton")) && !slices.ContainsFunc(found, func(b ProtonBuild) bool { return b.Dir == p }) {
+				if safefs.IsFile(filepath.Join(p, "proton")) && !slices.ContainsFunc(found, func(b ProtonBuild) bool { return b.Dir == p }) {
 					found = append(found, ProtonBuild{Dir: p, SteamRoot: st.Root})
 				}
 			}

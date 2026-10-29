@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 type locationChoice int
@@ -67,7 +67,7 @@ func logStartupFailure(err error) {
 	if derr != nil || os.MkdirAll(def, 0o700) != nil {
 		return
 	}
-	f, ferr := fsx.OpenFile(filepath.Join(def, "startup.log"), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o600)
+	f, ferr := safefs.OpenFile(filepath.Join(def, "startup.log"), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o600)
 	if ferr != nil {
 		return
 	}

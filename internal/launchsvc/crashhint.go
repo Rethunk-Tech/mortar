@@ -5,8 +5,8 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
@@ -119,7 +119,7 @@ func (s *Service) loaderFindings(gameID, profileID string) []loader.Finding {
 	in := loader.Logs{Loader: raw}
 	if w, ok := l.(loader.WithPlayerLog); ok && s.settings != nil {
 		if p, err := game.PathFor(s.home, s.settings.Get(), gameID, "", w.PlayerLogRole()); err == nil {
-			b, _ := fsx.ReadFile(p)
+			b, _ := safefs.ReadFile(p)
 			in.Player = string(b)
 		}
 	}
@@ -140,7 +140,7 @@ func (s *Service) loaderLog(logs loader.WithLogs, gameID, profileID string) (str
 	if err != nil {
 		return "", false
 	}
-	raw, err := fsx.ReadFile(path)
+	raw, err := safefs.ReadFile(path)
 	return string(raw), err == nil
 }
 
@@ -177,7 +177,7 @@ func (s *Service) gamePathText(gameID, role string) string {
 	if err != nil {
 		return ""
 	}
-	b, _ := fsx.ReadFile(path)
+	b, _ := safefs.ReadFile(path)
 	return strings.ToValidUTF8(string(b), "")
 }
 

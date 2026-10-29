@@ -17,8 +17,8 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
@@ -341,7 +341,7 @@ func (s *Store) Revert(game, id, eventID string) (Profile, error) {
 func (s *Store) applyEntrySnapshot(game string, p *Profile, dir string, entries []Entry) error {
 	modsDir := filepath.Join(dir, "mods")
 	staging := modsDir + ".new"
-	_ = fsx.RemoveAll(staging)
+	_ = safefs.RemoveAll(staging)
 	if err := os.MkdirAll(staging, 0o700); err != nil {
 		return err
 	}
@@ -355,21 +355,21 @@ func (s *Store) applyEntrySnapshot(game string, p *Profile, dir string, entries 
 			continue
 		}
 		if err := s.place(game, staging, e); err != nil {
-			_ = fsx.RemoveAll(staging)
+			_ = safefs.RemoveAll(staging)
 			return err
 		}
 		live := liveEntryDir(modsDir, e.Key)
 		if exists(live) {
 			old, tmp, err := s.layoutItem(game, p.ID, e.Key, e.Fomod, !e.FomodSpec)
 			if tmp != "" {
-				defer func() { _ = fsx.RemoveAll(tmp) }()
+				defer func() { _ = safefs.RemoveAll(tmp) }()
 			}
 			if err != nil {
-				_ = fsx.RemoveAll(staging)
+				_ = safefs.RemoveAll(staging)
 				return err
 			}
 			if err := carryOverWalk(live, old, liveEntryDir(staging, e.Key), false, nil); err != nil {
-				_ = fsx.RemoveAll(staging)
+				_ = safefs.RemoveAll(staging)
 				return err
 			}
 		}
@@ -385,26 +385,26 @@ func (s *Store) applyEntrySnapshot(game string, p *Profile, dir string, entries 
 			continue
 		}
 		if err := s.layOverlays(game, p.ID, e, liveEntryDir(staging, e.Key), was, overlaysOn(p.Entries, e.Key)); err != nil {
-			_ = fsx.RemoveAll(staging)
+			_ = safefs.RemoveAll(staging)
 			return err
 		}
 	}
 	old := modsDir + ".old"
-	_ = fsx.RemoveAll(old)
+	_ = safefs.RemoveAll(old)
 	if _, err := os.Stat(modsDir); err == nil {
-		if err := fsx.Rename(modsDir, old); err != nil {
-			_ = fsx.RemoveAll(staging)
+		if err := safefs.Rename(modsDir, old); err != nil {
+			_ = safefs.RemoveAll(staging)
 			return err
 		}
 	} else if !errors.Is(err, os.ErrNotExist) {
-		_ = fsx.RemoveAll(staging)
+		_ = safefs.RemoveAll(staging)
 		return err
 	}
-	if err := fsx.Rename(staging, modsDir); err != nil {
+	if err := safefs.Rename(staging, modsDir); err != nil {
 		if _, statErr := os.Stat(old); statErr == nil {
-			_ = fsx.Rename(old, modsDir)
+			_ = safefs.Rename(old, modsDir)
 		}
-		_ = fsx.RemoveAll(staging)
+		_ = safefs.RemoveAll(staging)
 		return err
 	}
 	if s.items != nil && len(keys) > 0 {
@@ -422,8 +422,8 @@ func restoreModsOld(dir string) {
 	if _, err := os.Stat(old); err != nil {
 		return
 	}
-	_ = fsx.RemoveAll(modsDir)
-	_ = fsx.Rename(old, modsDir)
+	_ = safefs.RemoveAll(modsDir)
+	_ = safefs.Rename(old, modsDir)
 }
 
 func entryUsesKey(e Entry, want map[string]struct{}) bool {
@@ -781,7 +781,7 @@ func (s *Store) loadHistory(game, id string) (historyFileData, error) {
 
 func readHistory(dir string) (historyFileData, error) {
 	path := filepath.Join(dir, historyFile)
-	b, err := fsx.ReadFile(path)
+	b, err := safefs.ReadFile(path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return emptyHistoryAt(dir), nil
@@ -823,7 +823,7 @@ func emptyHistoryAt(dir string) historyFileData {
 
 func quarantineHistory(path string, cause error) (historyFileData, error) {
 	corrupt := fmt.Sprintf("%s.corrupt-%d", path, time.Now().UnixNano())
-	if err := fsx.Rename(path, corrupt); err != nil {
+	if err := safefs.Rename(path, corrupt); err != nil {
 		return historyFileData{}, errors.Join(fmt.Errorf("read history: %w", cause), fmt.Errorf("quarantine history: %w", err))
 	}
 	return emptyHistory(), nil
@@ -904,7 +904,7 @@ func readSnapshotFile(dir, id string) ([]Entry, bool) {
 	if !ok {
 		return nil, false
 	}
-	f, err := fsx.Open(path)
+	f, err := safefs.Open(path)
 	if err != nil {
 		return migratePlainSnapshot(dir, id, strings.TrimSuffix(path, ".gz"))
 	}
@@ -932,7 +932,7 @@ func decodeSnapshot(dir string, raw []byte) ([]Entry, bool) {
 // migratePlainSnapshot reads an uncompressed snapshot and replaces it with the gzipped form when a read or prune
 // opens it. Writes are gzipped already.
 func migratePlainSnapshot(dir, id, path string) ([]Entry, bool) {
-	b, err := fsx.ReadFile(path)
+	b, err := safefs.ReadFile(path)
 	if err != nil {
 		return nil, false
 	}
@@ -941,7 +941,7 @@ func migratePlainSnapshot(dir, id, path string) ([]Entry, bool) {
 		return nil, false
 	}
 	if writeSnapshotFile(dir, id, entries) == nil {
-		_ = fsx.Remove(path)
+		_ = safefs.Remove(path)
 	}
 	return entries, true
 }
@@ -957,7 +957,7 @@ func writeSnapshotFile(dir, id string, entries []Entry) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return err
 	}
-	return datadir.WriteStreamAtomic(path, 0o600, func(w io.Writer) error {
+	return safefs.WriteStreamAtomic(path, 0o600, func(w io.Writer) error {
 		zw := gzip.NewWriter(w)
 		if err := json.NewEncoder(zw).Encode(entries); err != nil {
 			return err
@@ -985,7 +985,7 @@ func pruneSnapshotFiles(dir string, referenced map[string]struct{}) error {
 			}
 			continue
 		}
-		if err := fsx.Remove(filepath.Join(dir, snapshotsDir, ent.Name())); err != nil && !errors.Is(err, os.ErrNotExist) {
+		if err := safefs.Remove(filepath.Join(dir, snapshotsDir, ent.Name())); err != nil && !errors.Is(err, os.ErrNotExist) {
 			return err
 		}
 	}

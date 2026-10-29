@@ -8,10 +8,10 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/dotnetstack"
@@ -54,7 +54,7 @@ func (Loader) Formats() []string { return []string{"melon"} }
 
 // Status is installed when the profile holds the loader folder and its proxy.
 func (Loader) Status(t loader.Target) (loader.Status, error) {
-	if !fsx.IsDir(filepath.Join(t.ProfileDir, loaderDir)) || !fsx.IsFile(filepath.Join(t.ProfileDir, proxyDLL)) {
+	if !safefs.IsDir(filepath.Join(t.ProfileDir, loaderDir)) || !safefs.IsFile(filepath.Join(t.ProfileDir, proxyDLL)) {
 		return loader.Status{}, nil
 	}
 	return loader.Status{Installed: true, Version: readMarker(t.ProfileDir).Version}, nil

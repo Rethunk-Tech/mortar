@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 )
 
@@ -53,7 +53,7 @@ func (s *Store) DropScratch(game, id string) error {
 		return err
 	}
 	forgetProfile(filepath.Join(dir, fileName))
-	return fsx.RemoveAll(dir)
+	return safefs.RemoveAll(dir)
 }
 
 // PurgeScratch removes every game's scratch profiles. It runs at startup, before any check could make one.
@@ -65,7 +65,7 @@ func (s *Store) PurgeScratch() error {
 	for _, d := range dirs {
 		if scratchPattern.MatchString(filepath.Base(d)) {
 			forgetProfile(filepath.Join(d, fileName))
-			if err := fsx.RemoveAll(d); err != nil {
+			if err := safefs.RemoveAll(d); err != nil {
 				return err
 			}
 		}

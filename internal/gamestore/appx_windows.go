@@ -5,7 +5,7 @@ package gamestore
 import (
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"golang.org/x/sys/windows/registry"
 )
 
@@ -34,7 +34,7 @@ func appxRoot(pkg string) string {
 		}
 		dir, _, err := sub.GetStringValue("PackageRootFolder")
 		_ = sub.Close()
-		if err == nil && fsx.IsDir(dir) {
+		if err == nil && safefs.IsDir(dir) {
 			return dir
 		}
 	}

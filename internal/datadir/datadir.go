@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // PointerName is the file in the default data folder that names a relocated data folder.
@@ -68,7 +68,7 @@ func resolve() (string, error) {
 	if testing.Testing() && !underTemp(def) {
 		return "", errRealDataInTest
 	}
-	b, err := fsx.ReadFile(filepath.Join(def, PointerName))
+	b, err := safefs.ReadFile(filepath.Join(def, PointerName))
 	if err != nil {
 		if os.IsNotExist(err) {
 			return def, nil
@@ -99,7 +99,7 @@ func UseDefaultLocation() error {
 	if err != nil {
 		return err
 	}
-	err = fsx.Remove(filepath.Join(def, PointerName))
+	err = safefs.Remove(filepath.Join(def, PointerName))
 	if os.IsNotExist(err) {
 		return nil
 	}
@@ -115,7 +115,7 @@ func SetLocation(dir string) error {
 	if err := os.MkdirAll(def, 0o700); err != nil {
 		return err
 	}
-	return WriteFileAtomic(filepath.Join(def, PointerName), []byte(filepath.Clean(dir)+"\n"), 0o600)
+	return safefs.WriteFileAtomic(filepath.Join(def, PointerName), []byte(filepath.Clean(dir)+"\n"), 0o600)
 }
 
 // underTemp reports whether dir is inside a temp root; t.TempDir creates under GOTMPDIR when it is set.
@@ -124,7 +124,7 @@ func underTemp(dir string) bool {
 		if root == "" {
 			continue
 		}
-		if UnderRoot(root, dir) {
+		if safefs.UnderRoot(root, dir) {
 			return true
 		}
 	}

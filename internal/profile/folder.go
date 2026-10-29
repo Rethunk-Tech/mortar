@@ -8,8 +8,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -23,7 +23,7 @@ func isProfileDir(path string, d fs.DirEntry) bool {
 		return true
 	}
 	info, err := d.Info()
-	return err == nil && datadir.LinkedDir(path, info)
+	return err == nil && safefs.LinkedDir(path, info)
 }
 
 // folderOf is where the profile at its usual place really lives, empty when it lives there.
@@ -97,7 +97,7 @@ func (s *Store) MoveToFolder(game, id, parent string) (Profile, error) {
 	if fi, err := os.Stat(parent); err != nil || !fi.IsDir() {
 		return Profile{}, usererr.New(usererr.Invalid, "that folder does not exist")
 	}
-	if datadir.UnderRoot(s.dataDir, target) {
+	if safefs.UnderRoot(s.dataDir, target) {
 		return Profile{}, usererr.New(usererr.Invalid, "choose a folder outside Mortar's data folder")
 	}
 	if _, err := os.Lstat(target); err == nil {
@@ -136,7 +136,7 @@ func madeForProfile(dir, game, id string) error {
 	if filepath.Base(dir) != game+"-"+id {
 		return refuse()
 	}
-	b, err := fsx.ReadFile(filepath.Join(dir, fileName))
+	b, err := safefs.ReadFile(filepath.Join(dir, fileName))
 	if err != nil {
 		return refuse()
 	}
@@ -151,7 +151,7 @@ func madeForProfile(dir, game, id string) error {
 
 // relocate copies the profile's folder to target, then makes home a link to it.
 func (s *Store) relocate(game, id, home, target string) error {
-	cur, err := fsx.EvalSymlinks(home)
+	cur, err := safefs.EvalSymlinks(home)
 	if err != nil {
 		return err
 	}
@@ -165,29 +165,29 @@ func (s *Store) relocate(game, id, home, target string) error {
 	if err != nil {
 		return err
 	}
-	if err := fsx.Rename(tmp, target); err != nil {
-		return errors.Join(err, fsx.RemoveAll(tmp))
+	if err := safefs.Rename(tmp, target); err != nil {
+		return errors.Join(err, safefs.RemoveAll(tmp))
 	}
 	forgetProfile(filepath.Join(home, fileName))
 	if linked {
 		// Moving between two custom folders: the old link goes, the old folder after the new link stands.
-		if err := fsx.Remove(home); err != nil {
-			return errors.Join(err, fsx.RemoveAll(target))
+		if err := safefs.Remove(home); err != nil {
+			return errors.Join(err, safefs.RemoveAll(target))
 		}
-	} else if err := fsx.Rename(home, home+".moving"); err != nil {
-		return errors.Join(err, fsx.RemoveAll(target))
+	} else if err := safefs.Rename(home, home+".moving"); err != nil {
+		return errors.Join(err, safefs.RemoveAll(target))
 	}
-	if err := datadir.LinkDir(home, target); err != nil {
+	if err := safefs.LinkDir(home, target); err != nil {
 		if !linked {
-			_ = fsx.Rename(home+".moving", home)
+			_ = safefs.Rename(home+".moving", home)
 		}
-		return errors.Join(usererr.Wrap(usererr.Invalid, err), fsx.RemoveAll(target))
+		return errors.Join(usererr.Wrap(usererr.Invalid, err), safefs.RemoveAll(target))
 	}
 	forgetProfile(filepath.Join(home, fileName))
 	if linked {
-		return fsx.RemoveAll(cur)
+		return safefs.RemoveAll(cur)
 	}
-	return fsx.RemoveAll(home + ".moving")
+	return safefs.RemoveAll(home + ".moving")
 }
 
 // bringHome copies a linked profile back to its usual place and removes the other folder.
@@ -204,24 +204,24 @@ func (s *Store) bringHome(game, id, home string) error {
 		return err
 	}
 	forgetProfile(filepath.Join(home, fileName))
-	if err := fsx.Remove(home); err != nil {
-		return errors.Join(err, fsx.RemoveAll(tmp))
+	if err := safefs.Remove(home); err != nil {
+		return errors.Join(err, safefs.RemoveAll(tmp))
 	}
-	if err := fsx.Rename(tmp, home); err != nil {
-		return errors.Join(err, datadir.LinkDir(home, cur))
+	if err := safefs.Rename(tmp, home); err != nil {
+		return errors.Join(err, safefs.LinkDir(home, cur))
 	}
-	return fsx.RemoveAll(cur)
+	return safefs.RemoveAll(cur)
 }
 
 // copyBeside copies the folder cur, links resolved, into a fresh temp folder beside to, for the caller to rename over
 // to.
 func copyBeside(cur, to string) (string, error) {
 	tmp := datadir.CopyTempName(to)
-	if err := fsx.RemoveAll(tmp); err != nil {
+	if err := safefs.RemoveAll(tmp); err != nil {
 		return "", err
 	}
 	if err := datadir.CopyTreeResolvingLinks(cur, tmp); err != nil {
-		return "", errors.Join(err, fsx.RemoveAll(tmp))
+		return "", errors.Join(err, safefs.RemoveAll(tmp))
 	}
 	return tmp, nil
 }

@@ -8,15 +8,14 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
-	"testing"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // ReadJSON reads path into v. Missing files yield found=false and leave v unchanged.
 func ReadJSON(path string, v any) (found bool, err error) {
-	b, err := fsx.ReadFile(path)
+	b, err := safefs.ReadFile(path)
 	if errors.Is(err, os.ErrNotExist) {
 		return false, nil
 	}
@@ -39,7 +38,7 @@ func ReadJSONOrQuarantine(path string, v any) (found bool, err error) {
 		return found, err
 	}
 	aside := fmt.Sprintf("%s.corrupt-%d", path, time.Now().UnixNano())
-	if rerr := fsx.Rename(path, aside); rerr != nil {
+	if rerr := safefs.Rename(path, aside); rerr != nil {
 		return true, err
 	}
 	slog.Warn("moved an unreadable file aside", "file", path, "to", aside, "error", err)
@@ -52,7 +51,7 @@ func WriteJSON(path string, v any) error {
 	if err != nil {
 		return err
 	}
-	return WriteFileAtomic(path, b, 0o600)
+	return safefs.WriteFileAtomic(path, b, 0o600)
 }
 
 // WriteJSONIn is WriteJSON to name inside dir, making dir first.
@@ -66,7 +65,7 @@ func WriteJSONIn(dir, name string, v any) error {
 // WriteOrRemove writes data to path, making its folder, or removes path when data is empty.
 func WriteOrRemove(path string, data []byte) error {
 	if len(data) == 0 {
-		if err := fsx.Remove(path); err != nil && !errors.Is(err, os.ErrNotExist) {
+		if err := safefs.Remove(path); err != nil && !errors.Is(err, os.ErrNotExist) {
 			return err
 		}
 		return nil
@@ -74,13 +73,13 @@ func WriteOrRemove(path string, data []byte) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return err
 	}
-	return WriteFileAtomic(path, data, 0o600)
+	return safefs.WriteFileAtomic(path, data, 0o600)
 }
 
 // ReadJournal reads the JSON journal at path into v unless the file is missing or busy reports that it must be left
 // alone for now; found says whether v was read.
 func ReadJournal(path string, busy func() bool, v any) (found bool, err error) {
-	b, err := fsx.ReadFile(path)
+	b, err := safefs.ReadFile(path)
 	if errors.Is(err, os.ErrNotExist) {
 		return false, nil
 	}
@@ -91,62 +90,4 @@ func ReadJournal(path string, busy func() bool, v any) (found bool, err error) {
 		return false, nil
 	}
 	return true, json.Unmarshal(b, v)
-}
-
-// WriteFileAtomic replaces path with data through a temp file and rename, so a crash never leaves it truncated.
-func WriteFileAtomic(path string, data []byte, perm os.FileMode) error {
-	return WriteStreamAtomic(path, perm, func(w io.Writer) error {
-		_, err := w.Write(data)
-		return err
-	})
-}
-
-// WriteStreamAtomic replaces path with write's output through a temp file, fsync, and rename, so a crash never leaves it
-// truncated. write seeing a failure, or returning one, removes the temp file and leaves path unchanged.
-func WriteStreamAtomic(path string, perm os.FileMode, write func(io.Writer) error) error {
-	return writeStream(path, perm, true, write)
-}
-
-// WriteStreamNoSync is WriteStreamAtomic without the fsyncs, for a file that only memoises a computation: a crash may
-// leave it torn, so the reader must treat an unreadable file as absent. Thousands of small fsyncs cost seconds.
-func WriteStreamNoSync(path string, perm os.FileMode, write func(io.Writer) error) error {
-	return writeStream(path, perm, false, write)
-}
-
-// syncWrites is off under go test: a test cannot observe an fsync, and the thousands its fixtures write cost the
-// suite seconds on a real disk.
-var syncWrites = !testing.Testing()
-
-func writeStream(path string, perm os.FileMode, durable bool, write func(io.Writer) error) (err error) {
-	durable = durable && syncWrites
-	f, err := os.CreateTemp(filepath.Dir(path), filepath.Base(path)+".*.tmp")
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if err != nil {
-			err = errors.Join(err, fsx.Remove(f.Name()))
-		}
-	}()
-	if err = write(f); err != nil {
-		return errors.Join(err, f.Close())
-	}
-	if err = f.Chmod(perm); err != nil {
-		return errors.Join(err, f.Close())
-	}
-	if durable {
-		if err = f.Sync(); err != nil {
-			return errors.Join(err, f.Close())
-		}
-	}
-	if err = f.Close(); err != nil {
-		return err
-	}
-	if err = fsx.Rename(f.Name(), path); err != nil {
-		return err
-	}
-	if durable {
-		_ = fsx.SyncDir(filepath.Dir(path)) // best effort: the rename already landed
-	}
-	return nil
 }

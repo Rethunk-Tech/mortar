@@ -14,7 +14,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
@@ -72,7 +72,7 @@ func wineLoader(exe string) string {
 	}
 	for _, name := range []string{"wine", "wine64"} {
 		path := filepath.Join(filepath.Dir(exe), name)
-		if fsx.IsFile(path) {
+		if safefs.IsFile(path) {
 			return path
 		}
 	}

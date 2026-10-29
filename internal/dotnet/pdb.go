@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 const (
@@ -73,12 +73,12 @@ func (m *module) pdbBytes(dll string) ([]byte, error) {
 	if siblingPDB(dll) != SymbolsPortable {
 		return nil, nil
 	}
-	f, err := fsx.Open(path)
+	f, err := safefs.Open(path)
 	if err != nil {
 		return nil, err
 	}
 	defer func() { _ = f.Close() }()
-	return fsx.ReadCapped(f, maxPDBBytes)
+	return safefs.ReadCapped(f, maxPDBBytes)
 }
 
 // methodRow is the MethodDef row of the one method named "Namespace.Type::Method" with params parameters (any count

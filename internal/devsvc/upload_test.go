@@ -13,7 +13,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -21,7 +21,7 @@ import (
 // finish and submit bodies.
 func TestThunderstoreUploadFollowsTheCLIProtocol(t *testing.T) {
 	pkg := filepath.Join(t.TempDir(), "Ab-ShopDrop-0.1.0.zip")
-	if err := fsx.WriteFile(pkg, []byte("0123456789"), 0o600); err != nil {
+	if err := safefs.WriteFile(pkg, []byte("0123456789"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	var srv *httptest.Server

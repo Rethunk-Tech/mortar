@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"path/filepath"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // HeroicPrefix is the Wine prefix folder (the one holding drive_c) Heroic runs the game appName in, from the game's
@@ -15,7 +15,7 @@ func HeroicPrefix(heroicDir, appName string) string {
 	if !components.PlainAppName(appName) {
 		return ""
 	}
-	b, err := fsx.ReadFile(filepath.Join(heroicDir, "GamesConfig", appName+".json"))
+	b, err := safefs.ReadFile(filepath.Join(heroicDir, "GamesConfig", appName+".json"))
 	if err != nil {
 		return ""
 	}
@@ -36,7 +36,7 @@ func HeroicPrefix(heroicDir, appName string) string {
 	if game.Wine.Type == "proton" {
 		game.Prefix = filepath.Join(game.Prefix, "pfx")
 	}
-	if !fsx.IsDir(filepath.Join(game.Prefix, "drive_c")) {
+	if !safefs.IsDir(filepath.Join(game.Prefix, "drive_c")) {
 		return ""
 	}
 	return game.Prefix

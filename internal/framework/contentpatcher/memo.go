@@ -17,9 +17,9 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // A check's findings are kept on disk with a stamp of every file the check read. The next check of the same mods,
@@ -79,7 +79,7 @@ func lookupAnalysis(key string) (framework.Findings, bool) {
 		return framework.Findings{}, false
 	}
 	path := filepath.Join(dir, key+".json.gz")
-	raw, err := fsx.ReadFile(path)
+	raw, err := safefs.ReadFile(path)
 	if err != nil {
 		return framework.Findings{}, false
 	}
@@ -163,7 +163,7 @@ func pruneAnalysisMemos(dir string) {
 	}
 	slices.SortFunc(memos, func(a, b memoFile) int { return cmp.Compare(b.at, a.at) })
 	for _, m := range memos[min(len(memos), analysisMemoKeep):] {
-		_ = fsx.Remove(filepath.Join(dir, m.name))
+		_ = safefs.Remove(filepath.Join(dir, m.name))
 	}
 }
 

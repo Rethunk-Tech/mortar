@@ -16,8 +16,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/saves"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -136,7 +136,7 @@ func SaveDir(savesDir, folder string) (string, error) {
 		return "", fmt.Errorf("not a save folder: %q", folder)
 	}
 	dir := filepath.Join(savesDir, folder)
-	if !fsx.IsDir(dir) {
+	if !safefs.IsDir(dir) {
 		return "", fmt.Errorf("save %q not found", folder)
 	}
 	return dir, nil
@@ -173,7 +173,7 @@ func nextStamp(zips []string, now time.Time) time.Time {
 
 func finishZip(backupsDir string, l saves.Layout, names []string, keep int, now, name time.Time, cause Cause, linked linker) (string, error) {
 	dst := filepath.Join(backupsDir, FileName(name))
-	if err := datadir.WriteStreamAtomic(dst, 0o600, func(w io.Writer) error {
+	if err := safefs.WriteStreamAtomic(dst, 0o600, func(w io.Writer) error {
 		return writeZip(w, l, names, linked)
 	}); err != nil {
 		return "", err
@@ -196,7 +196,7 @@ func causePath(zipPath string) string {
 }
 
 func readCause(zipPath string) Cause {
-	b, err := fsx.ReadFile(causePath(zipPath))
+	b, err := safefs.ReadFile(causePath(zipPath))
 	if err != nil {
 		return Cause{}
 	}
@@ -307,7 +307,7 @@ func zipTree(zw *zip.Writer, prefix, root, top string) error {
 		if err != nil {
 			return err
 		}
-		in, err := fsx.Open(p)
+		in, err := safefs.Open(p)
 		if err != nil {
 			return err
 		}
@@ -344,7 +344,7 @@ func SetPinned(backupsDir, name string, pinned bool) error {
 	cause := readCause(path)
 	cause.Pinned = pinned
 	if cause.Profile == "" && cause.Kind == "" && !cause.Pinned {
-		if err := fsx.Remove(causePath(path)); !errors.Is(err, fs.ErrNotExist) {
+		if err := safefs.Remove(causePath(path)); !errors.Is(err, fs.ErrNotExist) {
 			return err
 		}
 		return nil
@@ -364,8 +364,8 @@ func Delete(backupsDir, name string) error {
 	if readCause(path).Pinned {
 		return usererr.New(usererr.Invalid, "this backup is kept; allow cleanup first")
 	}
-	err := fsx.Remove(path)
-	if cerr := fsx.Remove(causePath(path)); cerr != nil && !errors.Is(cerr, fs.ErrNotExist) {
+	err := safefs.Remove(path)
+	if cerr := safefs.Remove(causePath(path)); cerr != nil && !errors.Is(cerr, fs.ErrNotExist) {
 		err = errors.Join(err, cerr)
 	}
 	return err
@@ -391,8 +391,8 @@ func prune(dir string, keep int, now time.Time, group string) error {
 			break
 		}
 		p := filepath.Join(dir, n)
-		errs = append(errs, fsx.Remove(p))
-		if err := fsx.Remove(causePath(p)); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		errs = append(errs, safefs.Remove(p))
+		if err := safefs.Remove(causePath(p)); err != nil && !errors.Is(err, fs.ErrNotExist) {
 			errs = append(errs, err)
 		}
 		unpinned--
@@ -403,7 +403,7 @@ func prune(dir string, keep int, now time.Time, group string) error {
 	}
 	for _, p := range tmps {
 		if info, err := os.Stat(p); err == nil && now.Sub(info.ModTime()) > MinGap {
-			errs = append(errs, fsx.Remove(p))
+			errs = append(errs, safefs.Remove(p))
 		}
 	}
 	return errors.Join(errs...)

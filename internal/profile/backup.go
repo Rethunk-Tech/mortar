@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
@@ -42,7 +42,7 @@ func (s *Store) Backup(game, id string) (Profile, map[string][]byte, error) {
 	}
 	files := map[string][]byte{}
 	read := func(rel string) error {
-		b, err := fsx.ReadFile(filepath.Join(dir, filepath.FromSlash(rel)))
+		b, err := safefs.ReadFile(filepath.Join(dir, filepath.FromSlash(rel)))
 		if errors.Is(err, fs.ErrNotExist) {
 			return nil
 		}
@@ -59,11 +59,11 @@ func (s *Store) Backup(game, id string) (Profile, map[string][]byte, error) {
 		}
 	}
 	walk := func(root, prefix string, keep func(rel string, size int64) bool) error {
-		err := fsx.WalkFiles(root, func(rel, path string, size int64) error {
+		err := safefs.WalkFiles(root, func(rel, path string, size int64) error {
 			if !keep(rel, size) {
 				return nil
 			}
-			b, err := fsx.ReadFile(path)
+			b, err := safefs.ReadFile(path)
 			files[prefix+rel] = b
 			return err
 		})
@@ -154,7 +154,7 @@ func (s *Store) stageChanged(game, id string) (string, error) {
 		return "", err
 	}
 	stage := filepath.Join(dir, stagedChangedDir)
-	if err := fsx.RemoveAll(stage); err != nil {
+	if err := safefs.RemoveAll(stage); err != nil {
 		return "", err
 	}
 	for _, rel := range rels {
@@ -338,7 +338,7 @@ func (s *Store) restoreInto(game string, created, p Profile, files map[string][]
 		if err := os.MkdirAll(filepath.Dir(to), 0o700); err != nil {
 			return Profile{}, nil, err
 		}
-		if err := fsx.WriteFile(to, data, 0o600); err != nil {
+		if err := safefs.WriteFile(to, data, 0o600); err != nil {
 			return Profile{}, nil, err
 		}
 	}
@@ -397,7 +397,7 @@ func applyRestored(dir, modsDir, key string) error {
 		if err != nil {
 			return err
 		}
-		b, err := fsx.ReadFile(path)
+		b, err := safefs.ReadFile(path)
 		if err != nil {
 			return err
 		}
@@ -405,17 +405,17 @@ func applyRestored(dir, modsDir, key string) error {
 		if err := os.MkdirAll(filepath.Dir(to), 0o700); err != nil {
 			return err
 		}
-		return fsx.WriteFile(to, b, 0o600)
+		return safefs.WriteFile(to, b, 0o600)
 	})
 	if err != nil {
 		return err
 	}
-	if err := fsx.RemoveAll(src); err != nil {
+	if err := safefs.RemoveAll(src); err != nil {
 		return err
 	}
 	// The folder goes once the last mod it waited for is placed; until then it still holds the others.
 	if left, err := os.ReadDir(filepath.Join(dir, restoreDir)); err == nil && len(left) == 0 {
-		return fsx.RemoveAll(filepath.Join(dir, restoreDir))
+		return safefs.RemoveAll(filepath.Join(dir, restoreDir))
 	}
 	return nil
 }

@@ -13,10 +13,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/dlwatch"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source/itch"
@@ -126,7 +126,7 @@ func (s *Service) DownloadsArchives(game string) ([]DownloadArchive, error) {
 		if i < maxHashed {
 			h, ok := cache[a.Path]
 			if !ok || h.Size != a.Size || h.Mtime != a.Mtime {
-				sum, err := fsx.HashFile(a.Path, sha256.New())
+				sum, err := safefs.HashFile(a.Path, sha256.New())
 				if err != nil {
 					pending = append(pending, a)
 					continue

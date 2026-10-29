@@ -16,6 +16,7 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/avscan"
 	"github.com/Rethunk-Tech/mortar/internal/backup"
@@ -2331,8 +2332,8 @@ func offlineDoctor() error {
 	}
 	rep := doctor.Scan(dir)
 	findings, fixes := doctor.Findings(rep)
-	free, _ := datadir.FreeBytes(dir)
-	cacheBytes, _ := datadir.Size(filepath.Join(dir, "cache"))
+	free, _ := safefs.FreeBytes(dir)
+	cacheBytes, _ := safefs.Size(filepath.Join(dir, "cache"))
 	result := map[string]any{
 		"offline": true, "dataDir": dir, "freeBytes": free, "cacheBytes": cacheBytes,
 		"findings": findings, "fixes": fixes, "summary": fmt.Sprintf("Offline doctor: %d findings.", len(findings)),

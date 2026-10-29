@@ -13,10 +13,9 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/winname"
 )
 
@@ -92,9 +91,9 @@ func (d *Direct) Fetch(ctx context.Context, rawURL, dstDir string) (string, erro
 		return "", fmt.Errorf("larger than %s", bytefmt.Format(limit))
 	}
 	dst := filepath.Join(dstDir, fileName(u))
-	err = datadir.WriteStreamAtomic(dst, 0o600, func(w io.Writer) error {
-		_, err := io.Copy(w, fsx.CapReader(resp.Body, limit))
-		if errors.Is(err, fsx.ErrTooLarge) {
+	err = safefs.WriteStreamAtomic(dst, 0o600, func(w io.Writer) error {
+		_, err := io.Copy(w, safefs.CapReader(resp.Body, limit))
+		if errors.Is(err, safefs.ErrTooLarge) {
 			err = fmt.Errorf("larger than %s", bytefmt.Format(limit))
 		}
 		return err

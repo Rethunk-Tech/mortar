@@ -16,10 +16,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
@@ -171,7 +170,7 @@ func TestCreateRunsDotnetNewAndWiresTheProfile(t *testing.T) {
 			t.Errorf("dotnet new %v lacks %v", made, want)
 		}
 	}
-	body, err := fsx.ReadFile(filepath.Join(dir, ".mortar", "template.json"))
+	body, err := safefs.ReadFile(filepath.Join(dir, ".mortar", "template.json"))
 	if err != nil || !strings.Contains(string(body), `"team": "Ab"`) || !strings.Contains(string(body), `"ref": "v0.1.0"`) {
 		t.Errorf("record = %s (%v)", body, err)
 	}
@@ -183,8 +182,8 @@ func TestCreateRunsDotnetNewAndWiresTheProfile(t *testing.T) {
 		t.Error("a second project in the same folder was made")
 	}
 	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	if err := svc.Trash("lethal-company", dir); err != nil || len(svc.Projects("lethal-company")) != 0 || fsx.IsDir(dir) {
-		t.Errorf("trash left %+v, folder there %v (%v)", svc.Projects("lethal-company"), fsx.IsDir(dir), err)
+	if err := svc.Trash("lethal-company", dir); err != nil || len(svc.Projects("lethal-company")) != 0 || safefs.IsDir(dir) {
+		t.Errorf("trash left %+v, folder there %v (%v)", svc.Projects("lethal-company"), safefs.IsDir(dir), err)
 	}
 }
 
@@ -274,7 +273,7 @@ func TestNextVersionsAndChangelogEntries(t *testing.T) {
 
 func TestValidateNamesWhatThunderstoreWouldRefuse(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "p.zip")
-	f, err := fsx.Create(path)
+	f, err := safefs.Create(path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -368,7 +367,7 @@ func TestAddTakesAnExistingTemplateProject(t *testing.T) {
 	if built() {
 		t.Fatalf("a refused build ran dotnet: %v", run.calls)
 	}
-	if datadir.UnderRoot(recorded, added.Output) || slices.ContainsFunc(svc.Settings.Get().GamePrefs(game).ExtraModsFolderList(), func(d string) bool { return datadir.UnderRoot(recorded, d) }) {
+	if safefs.UnderRoot(recorded, added.Output) || slices.ContainsFunc(svc.Settings.Get().GamePrefs(game).ExtraModsFolderList(), func(d string) bool { return safefs.UnderRoot(recorded, d) }) {
 		t.Errorf("an untrusted project's committed output is an installed mods folder: %q", added.Output)
 	}
 	if err := svc.Trust(game, recorded); err != nil {
@@ -396,14 +395,14 @@ func TestAddTakesAnExistingTemplateProject(t *testing.T) {
 			t.Errorf("%s: err = %v", c.name, err)
 			continue
 		}
-		if c.ok && (p.Dir != c.dir || p.Profile == "" || datadir.UnderRoot(c.dir, p.Output)) {
+		if c.ok && (p.Dir != c.dir || p.Profile == "" || safefs.UnderRoot(c.dir, p.Output)) {
 			t.Errorf("%s: project %+v", c.name, p)
 		}
 	}
 	if all, err := svc.Profiles.List(game); err != nil || len(all) == 0 || !all[0].SeparateSaves {
 		t.Errorf("a development profile shares the player's saves: %v", err)
 	}
-	if got, _ := fsx.ReadFile(filepath.Join(kept, "Config.Build.user.props")); !bytes.Equal(got, props) {
+	if got, _ := safefs.ReadFile(filepath.Join(kept, "Config.Build.user.props")); !bytes.Equal(got, props) {
 		t.Errorf("user props rewritten: %s", got)
 	}
 	if _, err := svc.Add(t.Context(), game, projectDir(t, "Other", false), "missing"); err == nil {
@@ -503,7 +502,7 @@ func TestTemplateEnvTakesALocalFolderOrZip(t *testing.T) {
 	if dir, err = svc.templateDir(t.Context(), tpl); err != nil {
 		t.Fatal(err)
 	}
-	if b, _ := fsx.ReadFile(filepath.Join(dir, "README.md")); string(b) != "edited" {
+	if b, _ := safefs.ReadFile(filepath.Join(dir, "README.md")); string(b) != "edited" {
 		t.Fatalf("a local folder was not read again: %q", b)
 	}
 
@@ -670,7 +669,7 @@ func TestAddReplacesACommittedGameRootDir(t *testing.T) {
 	if _, err := svc.Add(t.Context(), "lethal-company", dir, ""); err != nil {
 		t.Fatal(err)
 	}
-	body, _ := fsx.ReadFile(props)
+	body, _ := safefs.ReadFile(props)
 	if strings.Contains(string(body), "evil") || !strings.Contains(string(body), "<Other>x</Other>") {
 		t.Errorf("props = %s", body)
 	}

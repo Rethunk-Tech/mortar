@@ -16,11 +16,11 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
@@ -86,7 +86,7 @@ func (l Loader) markerFile() string { return ".mortar-" + l.LoaderID + ".json" }
 
 func (l Loader) readMarker(dir string) marker {
 	var m marker
-	if b, err := fsx.ReadFile(filepath.Join(dir, l.markerFile())); err == nil {
+	if b, err := safefs.ReadFile(filepath.Join(dir, l.markerFile())); err == nil {
 		_ = json.Unmarshal(b, &m)
 	}
 	return m
@@ -115,7 +115,7 @@ func (l Loader) Status(t loader.Target) (loader.Status, error) {
 		return loader.Status{}, nil
 	}
 	for _, f := range m.Placed {
-		if !fsx.IsFile(filepath.Join(t.ProfileDir, filepath.FromSlash(f))) {
+		if !safefs.IsFile(filepath.Join(t.ProfileDir, filepath.FromSlash(f))) {
 			return loader.Status{}, nil
 		}
 	}
@@ -132,7 +132,7 @@ func (l Loader) Install(_ context.Context, t loader.Target, pkg loader.Package, 
 	if err != nil {
 		return "", err
 	}
-	defer func() { _ = fsx.RemoveAll(tmp) }()
+	defer func() { _ = safefs.RemoveAll(tmp) }()
 	if err := archive.Extract(pkg.Archive, tmp); err != nil {
 		return "", err
 	}
@@ -146,7 +146,7 @@ func (l Loader) Install(_ context.Context, t loader.Target, pkg loader.Package, 
 	}
 	// An earlier release's placed files may have other names (Lovely's proxy was version.dll before winmm.dll).
 	for _, f := range l.readMarker(t.ProfileDir).Placed {
-		if err := fsx.Remove(filepath.Join(t.ProfileDir, filepath.FromSlash(f))); err != nil && !errors.Is(err, os.ErrNotExist) {
+		if err := safefs.Remove(filepath.Join(t.ProfileDir, filepath.FromSlash(f))); err != nil && !errors.Is(err, os.ErrNotExist) {
 			return "", err
 		}
 	}
@@ -164,7 +164,7 @@ func (l Loader) Install(_ context.Context, t loader.Target, pkg loader.Package, 
 			if err != nil {
 				return "", err
 			}
-			if err := fsx.RemoveAll(filepath.Join(t.ProfileDir, filepath.FromSlash(dst))); err != nil {
+			if err := safefs.RemoveAll(filepath.Join(t.ProfileDir, filepath.FromSlash(dst))); err != nil {
 				return "", err
 			}
 		}
@@ -179,7 +179,7 @@ func (l Loader) Install(_ context.Context, t loader.Target, pkg loader.Package, 
 			continue
 		}
 		to := filepath.Join(t.ProfileDir, filepath.FromSlash(dst))
-		if l.seeded(rel) && fsx.IsFile(to) {
+		if l.seeded(rel) && safefs.IsFile(to) {
 			continue
 		}
 		if err := os.MkdirAll(filepath.Dir(to), 0o750); err != nil {

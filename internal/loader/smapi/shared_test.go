@@ -9,7 +9,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // Vortex deploys SMAPI into the game folder as links into its staging folder; Mortar's install must not write
@@ -31,7 +31,7 @@ func TestSharedSMAPIIsDetectedAndUnsharedBeforeInstall(t *testing.T) {
 	if err := os.Symlink(filepath.Join(staging, "smapi-internal"), filepath.Join(game, "smapi-internal")); err != nil {
 		t.Fatal(err)
 	}
-	if shared, from := sharedSMAPI(game); !shared || !fsx.SamePath(from, staging) {
+	if shared, from := sharedSMAPI(game); !shared || !safefs.SamePath(from, staging) {
 		t.Fatalf("sharedSMAPI = %v, %q", shared, from)
 	}
 	if err := unshareSMAPI(game); err != nil {
@@ -44,7 +44,7 @@ func TestSharedSMAPIIsDetectedAndUnsharedBeforeInstall(t *testing.T) {
 		write(filepath.Join(game, rel), "mortar")
 	}
 	for rel, want := range map[string]string{"StardewModdingAPI.dll": "dll", "StardewModdingAPI.deps.json": "deps", "smapi-internal/config.json": "cfg"} {
-		if b, _ := fsx.ReadFile(filepath.Join(staging, rel)); string(b) != want {
+		if b, _ := safefs.ReadFile(filepath.Join(staging, rel)); string(b) != want {
 			t.Fatalf("staging %s changed to %q", rel, b)
 		}
 	}

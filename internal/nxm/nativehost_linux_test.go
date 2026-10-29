@@ -7,7 +7,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/nativehost"
 )
 
@@ -29,12 +29,12 @@ func TestRegisterWritesHostManifestsForInstalledBrowsersAndRestoreRemovesThem(t 
 		AllowedOrigins    []string `json:"allowed_origins"`
 		AllowedExtensions []string `json:"allowed_extensions"`
 	}
-	b, err := fsx.ReadFile(chromium)
+	b, err := safefs.ReadFile(chromium)
 	if err != nil || json.Unmarshal(b, &m) != nil || m.Path != l.exe || !slices.Equal(m.AllowedOrigins, nativehost.ChromeOrigins()) {
 		t.Fatalf("chromium manifest %s, %v", b, err)
 	}
 	m.AllowedOrigins = nil
-	b, err = fsx.ReadFile(firefox)
+	b, err = safefs.ReadFile(firefox)
 	if err != nil || json.Unmarshal(b, &m) != nil || m.AllowedOrigins != nil || len(m.AllowedExtensions) != 1 {
 		t.Fatalf("firefox manifest %s, %v", b, err)
 	}

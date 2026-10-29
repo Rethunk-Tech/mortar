@@ -14,8 +14,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 	"github.com/Rethunk-Tech/mortar/internal/source"
@@ -129,7 +129,7 @@ func (l *System) appName(id string) string {
 }
 
 func desktopName(path string) string {
-	b, err := fsx.ReadFile(path)
+	b, err := safefs.ReadFile(path)
 	if err != nil {
 		return ""
 	}
@@ -145,7 +145,7 @@ func desktopName(path string) string {
 var desktopString = strings.NewReplacer(`\\`, `\`, `\s`, " ", `\n`, "\n", `\t`, "\t", `\r`, "\r")
 
 func desktopExec(path string) string {
-	b, err := fsx.ReadFile(path)
+	b, err := safefs.ReadFile(path)
 	if err != nil {
 		return ""
 	}
@@ -244,10 +244,10 @@ func (l *System) yieldTo(id string) error {
 		return err
 	}
 	path := l.desktopPath()
-	if _, err := fsx.Stat(path); errors.Is(err, fs.ErrNotExist) {
+	if _, err := safefs.Stat(path); errors.Is(err, fs.ErrNotExist) {
 		return nil
 	}
-	if err := fsx.RemoveAll(path); err != nil {
+	if err := safefs.RemoveAll(path); err != nil {
 		return err
 	}
 	_, _ = l.run(updateDB, filepath.Dir(path))
@@ -280,7 +280,7 @@ func (l *System) iconSVGPath() string {
 // NotificationIcon is the installed PNG, for notification attachments; empty until the desktop entry has been written.
 func (l *System) NotificationIcon() string {
 	path := l.iconPNGPath()
-	if _, err := fsx.Stat(path); err != nil {
+	if _, err := safefs.Stat(path); err != nil {
 		return ""
 	}
 	return path
@@ -297,10 +297,10 @@ func (l *System) installIcons() error {
 	if err := os.MkdirAll(filepath.Dir(svg), 0o750); err != nil {
 		return err
 	}
-	if err := fsx.WriteFile(png, iconPNG, desktopPerm); err != nil {
+	if err := safefs.WriteFile(png, iconPNG, desktopPerm); err != nil {
 		return err
 	}
-	if err := fsx.WriteFile(svg, iconSVG, desktopPerm); err != nil {
+	if err := safefs.WriteFile(svg, iconSVG, desktopPerm); err != nil {
 		return err
 	}
 	// GTK trusts an icon-theme.cache that is newer than the theme folder, and writing into its subfolders does not
@@ -311,7 +311,7 @@ func (l *System) installIcons() error {
 		return err
 	}
 	// A running shell may keep the cache it loaded; rebuilding it, when the tool exists, shows the icon at once.
-	if _, err := fsx.Stat(filepath.Join(theme, "icon-theme.cache")); err == nil {
+	if _, err := safefs.Stat(filepath.Join(theme, "icon-theme.cache")); err == nil {
 		_, _ = l.run(updateIcons, "-f", "-t", theme)
 	}
 	return nil
@@ -325,7 +325,7 @@ func (l *System) writeDesktop(withSchemes bool) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
 		return err
 	}
-	if err := fsx.WriteFile(path, []byte(l.desktopFile(withSchemes)), desktopPerm); err != nil {
+	if err := safefs.WriteFile(path, []byte(l.desktopFile(withSchemes)), desktopPerm); err != nil {
 		return err
 	}
 	if err := l.installIcons(); err != nil {
@@ -473,14 +473,14 @@ func (l *System) RegisterLinks() error {
 	if err := os.MkdirAll(filepath.Dir(xml), 0o750); err != nil {
 		return err
 	}
-	if b, err := fsx.ReadFile(xml); err != nil || string(b) != mimeXML {
-		if err := fsx.WriteFile(xml, []byte(mimeXML), desktopPerm); err != nil {
+	if b, err := safefs.ReadFile(xml); err != nil || string(b) != mimeXML {
+		if err := safefs.WriteFile(xml, []byte(mimeXML), desktopPerm); err != nil {
 			return err
 		}
 		// A missing tool leaves the type unknown until the next database update; the desktop entry still works.
 		_, _ = l.run(updateMIME, filepath.Join(l.dataHome, "mime"))
 	}
-	current, _ := fsx.ReadFile(l.desktopPath())
+	current, _ := safefs.ReadFile(l.desktopPath())
 	if err := l.rewrite(current); err != nil {
 		return err
 	}
@@ -500,7 +500,7 @@ func (l *System) Refresh() error {
 	if skipUserDesktop() {
 		return nil
 	}
-	if _, err := fsx.Stat(l.desktopPath()); err == nil {
+	if _, err := safefs.Stat(l.desktopPath()); err == nil {
 		if err := l.installIcons(); err != nil {
 			return err
 		}
@@ -514,7 +514,7 @@ func (l *System) Refresh() error {
 // refresh leaves an entry whose Exec target still exists to that copy of Mortar: a second one running beside it,
 // such as another AppImage, is not a move. When no entry exists it registers mortar:// and .mortar.
 func (l *System) refresh() error {
-	current, err := fsx.ReadFile(l.desktopPath())
+	current, err := safefs.ReadFile(l.desktopPath())
 	if errors.Is(err, fs.ErrNotExist) {
 		return l.RegisterLinks()
 	}
@@ -530,7 +530,7 @@ func (l *System) refresh() error {
 }
 
 func same(path string, want []byte) bool {
-	b, err := fsx.ReadFile(path)
+	b, err := safefs.ReadFile(path)
 	return err == nil && bytes.Equal(b, want)
 }
 

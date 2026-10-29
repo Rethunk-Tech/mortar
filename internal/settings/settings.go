@@ -12,8 +12,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
 )
 
@@ -342,7 +342,7 @@ func OpenIn(dir string) (*Store, error) {
 func Peek() Settings {
 	s := &Store{cur: Defaults()}
 	if dir, err := datadir.Dir(); err == nil {
-		if b, err := fsx.ReadFile(filepath.Join(dir, FileName)); err == nil {
+		if b, err := safefs.ReadFile(filepath.Join(dir, FileName)); err == nil {
 			if loaded, err := decodeFile(b); err == nil {
 				s.cur = loaded
 			}
@@ -354,11 +354,11 @@ func Peek() Settings {
 
 func openFile(path string) (*Store, error) {
 	s := &Store{path: path, cur: Defaults()}
-	if b, err := fsx.ReadFile(s.path); err == nil {
+	if b, err := safefs.ReadFile(s.path); err == nil {
 		loaded, err := decodeFile(b)
 		if err != nil {
 			corrupt := fmt.Sprintf("%s.corrupt-%d", s.path, time.Now().UnixNano())
-			if renameErr := fsx.Rename(s.path, corrupt); renameErr != nil {
+			if renameErr := safefs.Rename(s.path, corrupt); renameErr != nil {
 				return nil, fmt.Errorf("preserve corrupt settings: %w", renameErr)
 			}
 			s.corruptPath = corrupt
@@ -521,7 +521,7 @@ func (s *Store) Update(fn func(*Settings)) (Settings, error) {
 		return s.cur, err
 	}
 	s.cur = next
-	s.seen, _ = fsx.ReadFile(s.path)
+	s.seen, _ = safefs.ReadFile(s.path)
 	if s.changed != nil {
 		s.changed()
 	}
@@ -531,7 +531,7 @@ func (s *Store) Update(fn func(*Settings)) (Settings, error) {
 // adoptOutsideWrite reloads the file when something else saved it since this Store last did, so an update builds
 // on that write instead of overwriting it with a stale snapshot.
 func (s *Store) adoptOutsideWrite() {
-	b, err := fsx.ReadFile(s.path)
+	b, err := safefs.ReadFile(s.path)
 	if err != nil || bytes.Equal(b, s.seen) {
 		return
 	}

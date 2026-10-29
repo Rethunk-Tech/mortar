@@ -15,8 +15,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/portal"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
@@ -146,7 +145,7 @@ func keyringPlain(dir string) error {
 			return explain(err)
 		}
 	}
-	return fsx.Remove(plain)
+	return safefs.Remove(plain)
 }
 
 // sharedNamespaces are the services other programs read, which the plain file stores as "<service>.<name>".
@@ -191,7 +190,7 @@ func sealPlain(dir string, key []byte) error {
 	if err := save(sealed, key, m); err != nil {
 		return err
 	}
-	return fsx.Remove(plain)
+	return safefs.Remove(plain)
 }
 
 // readFile reads through os.Root so the name cannot leave the store folder.
@@ -235,7 +234,7 @@ func secureDir(dir string) error {
 		return fmt.Errorf("secrets folder %s is a link or belongs to another user", dir)
 	}
 	if info.Mode().Perm()&0o077 != 0 {
-		return fsx.Chmod(dir, 0o700)
+		return safefs.Chmod(dir, 0o700)
 	}
 	return nil
 }
@@ -255,7 +254,7 @@ func save(path string, key []byte, m map[string]string) error {
 	if err := secureDir(dir); err != nil {
 		return err
 	}
-	return datadir.WriteFileAtomic(path, b, 0o600)
+	return safefs.WriteFileAtomic(path, b, 0o600)
 }
 
 func gcm(key []byte) (cipher.AEAD, error) {

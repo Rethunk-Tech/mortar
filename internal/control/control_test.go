@@ -15,9 +15,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/avscan"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
@@ -455,12 +455,12 @@ func TestAnInstanceEndingLeavesTheControlFileOfTheOneThatReplacedIt(t *testing.T
 	if pid, ok := controlwire.Live(t.Context(), dir); !ok || pid != os.Getpid() {
 		t.Fatalf("Live = %d, %v", pid, ok)
 	}
-	first, _ := fsx.ReadFile(path)
+	first, _ := safefs.ReadFile(path)
 	ctxB, cancelB := context.WithCancel(context.Background())
 	doneB := make(chan error, 1)
 	go func() { doneB <- Serve(ctxB, dir, "b", echo) }()
 	for range 200 {
-		if cur, _ := fsx.ReadFile(path); len(cur) > 0 && string(cur) != string(first) {
+		if cur, _ := safefs.ReadFile(path); len(cur) > 0 && string(cur) != string(first) {
 			break
 		}
 		time.Sleep(10 * time.Millisecond)

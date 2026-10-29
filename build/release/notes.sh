@@ -19,7 +19,7 @@ subjects="$(git log --no-merges --format=%s "${prev:+$prev..}$ref")"
 
 # Scopes that name code, tooling or the automation CLI rather than something a user sees, and subjects that name code
 # (camelCase or snake_case identifiers, backticks) or tooling.
-internal='^([a-z-]*svc|main|release|gate|lint|deps|build|ci|tests?|selftest|regress|e2e|dotnet|taskfile|scripts|server|control|doctor|dev|fsx|datadir|data|meta|usererr|github|site|sampler|notices|credits|migrate|config|components|nativehost|errors|logs?|cli|opener|docs|docscheck|i18n)$'
+internal='^([a-z-]*svc|main|release|gate|lint|deps|build|ci|tests?|selftest|regress|e2e|dotnet|taskfile|scripts|server|control|doctor|dev|safefs|datadir|data|meta|usererr|github|site|sampler|notices|credits|migrate|config|components|nativehost|errors|logs?|cli|opener|docs|docscheck|i18n)$'
 codeish='[a-z][A-Z]|[A-Z]+_[A-Z]|[a-z]_[a-z]|`|(^|[^a-z])(selftest|gate|lint|biome|knip|golangci|gui-design|frontend build|api types)([^a-z]|$)'
 # Product names spelled in camel case are words a player knows, not identifiers.
 products='BepInEx|WebKit|GitHub|SpaceCore|ModConfig|PlayStation|YouTube|macOS|iOS'

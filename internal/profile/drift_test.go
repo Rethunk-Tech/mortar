@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
@@ -326,7 +326,7 @@ func TestRestoreModsFolderUndoesTrash(t *testing.T) {
 	if err := e.RestoreModsFolder("stardew", p.ID, token); err != nil {
 		t.Fatal(err)
 	}
-	if b, err := fsx.ReadFile(filepath.Join(im, "a.txt")); err != nil || string(b) != "x" {
+	if b, err := safefs.ReadFile(filepath.Join(im, "a.txt")); err != nil || string(b) != "x" {
 		t.Fatalf("restored file = %q, %v", b, err)
 	}
 }

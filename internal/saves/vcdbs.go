@@ -12,8 +12,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	_ "modernc.org/sqlite"
@@ -182,7 +182,7 @@ func (l Layout) LinkedOf(ctx context.Context, name string) []string {
 	var out []string
 	for _, p := range l.Linked {
 		rel := strings.ReplaceAll(p, "{uuid}", info.WorldID)
-		if fsx.IsFile(filepath.Join(filepath.Dir(l.Dir), filepath.FromSlash(rel))) {
+		if safefs.IsFile(filepath.Join(filepath.Dir(l.Dir), filepath.FromSlash(rel))) {
 			out = append(out, rel)
 		}
 	}

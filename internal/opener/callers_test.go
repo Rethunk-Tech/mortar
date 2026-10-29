@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // The system handler is reached from three places only, each with its own guard: the opener (web addresses),
@@ -53,7 +53,7 @@ func TestOnlyTheGuardedCallersStartTheSystemHandler(t *testing.T) {
 		if d.IsDir() || !strings.HasSuffix(path, ".go") || strings.HasSuffix(path, "_test.go") || allowed[rel] {
 			return nil
 		}
-		b, err := fsx.ReadFile(path)
+		b, err := safefs.ReadFile(path)
 		if err != nil {
 			return err
 		}

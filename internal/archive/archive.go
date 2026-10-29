@@ -9,7 +9,7 @@ import (
 
 	ga "github.com/Rethunk-Tech/go-archive"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 type (
@@ -73,7 +73,7 @@ func DeclaredSize(archivePath string) (int64, error) {
 }
 
 func openFile(archivePath string) (*os.File, int64, error) {
-	f, err := fsx.Open(archivePath)
+	f, err := safefs.Open(archivePath)
 	if err != nil {
 		return nil, 0, err
 	}

@@ -12,10 +12,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/dotnetstack"
@@ -298,7 +298,7 @@ func contributeServer(plan *launchplan.Plan, p loader.ProfileView) error {
 		return err
 	}
 	src := filepath.Join(p.Dir, serverargs.ConfigName)
-	if err := fsx.WriteFile(src, []byte(cfg), 0o600); err != nil {
+	if err := safefs.WriteFile(src, []byte(cfg), 0o600); err != nil {
 		return err
 	}
 	plan.AddFile(launchplan.PlanFile{Src: src, Dst: filepath.FromSlash(g.Server.ConfigFile)})

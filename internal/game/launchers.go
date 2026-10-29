@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"slices"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/gamestore"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
@@ -100,7 +100,7 @@ func ValidateLauncherRoot(launcher, dir string) error {
 		if spec.ID != launcher {
 			continue
 		}
-		if !fsx.IsDir(dir) {
+		if !safefs.IsDir(dir) {
 			return fmt.Errorf("%s is not a folder", dir)
 		}
 		if !spec.Usable(dir) {

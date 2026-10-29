@@ -15,10 +15,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/wineoverride"
 )
@@ -86,7 +86,7 @@ func InstallPack(zipPath, profileRoot string) (Installed, error) {
 	if err != nil {
 		return Installed{}, err
 	}
-	defer func() { _ = fsx.RemoveAll(tmp) }()
+	defer func() { _ = safefs.RemoveAll(tmp) }()
 	if err := archive.Extract(zipPath, tmp); err != nil {
 		return Installed{}, err
 	}
@@ -95,7 +95,7 @@ func InstallPack(zipPath, profileRoot string) (Installed, error) {
 		return Installed{}, err
 	}
 	var manifest Manifest
-	if b, err := fsx.ReadFile(filepath.Join(tmp, "manifest.json")); err == nil {
+	if b, err := safefs.ReadFile(filepath.Join(tmp, "manifest.json")); err == nil {
 		manifest, _ = ParseManifest(b)
 	}
 	if err := clearPack(profileRoot); err != nil {
@@ -119,7 +119,7 @@ func InstallPack(zipPath, profileRoot string) (Installed, error) {
 				return nil
 			}
 		}
-		return fsx.Rename(p, dst)
+		return safefs.Rename(p, dst)
 	})
 	if err != nil {
 		return Installed{}, err
@@ -133,7 +133,7 @@ func InstallPack(zipPath, profileRoot string) (Installed, error) {
 // folders below core and stay.
 func clearPack(profileRoot string) error {
 	for _, name := range append(append([]string{doorstopFile, "doorstop_config.ini", "doorstop_libs"}, components.DoorstopProxies...), packRuntimeDirs...) {
-		if err := fsx.RemoveAll(filepath.Join(profileRoot, name)); err != nil {
+		if err := safefs.RemoveAll(filepath.Join(profileRoot, name)); err != nil {
 			return err
 		}
 	}
@@ -146,7 +146,7 @@ func clearPack(profileRoot string) error {
 	}
 	for _, e := range ents {
 		if !e.IsDir() {
-			if err := fsx.RemoveAll(filepath.Join(core, e.Name())); err != nil {
+			if err := safefs.RemoveAll(filepath.Join(core, e.Name())); err != nil {
 				return err
 			}
 		}
@@ -187,7 +187,7 @@ func packRoot(dir string) (string, error) {
 }
 
 func doorstopMajor(profileRoot string) int {
-	b, err := fsx.ReadFile(filepath.Join(profileRoot, doorstopFile))
+	b, err := safefs.ReadFile(filepath.Join(profileRoot, doorstopFile))
 	if err != nil {
 		return defaultDoorstop
 	}
@@ -202,7 +202,7 @@ func doorstopMajor(profileRoot string) int {
 // names.
 func proxyDLL(profileRoot, gameID string) string {
 	for _, name := range components.DoorstopProxies {
-		if fsx.IsFile(filepath.Join(profileRoot, name)) {
+		if safefs.IsFile(filepath.Join(profileRoot, name)) {
 			return name
 		}
 	}
@@ -235,7 +235,7 @@ const (
 // start cannot pass Doorstop's flags, as the Epic Games Launcher's link cannot. Doorstop reads relative paths from
 // the game folder, where the profile's files are not.
 func absoluteDoorstopConfig(profileRoot string, doorstopMajor int, proton bool) (string, error) {
-	b, err := fsx.ReadFile(filepath.Join(profileRoot, doorstopConfig))
+	b, err := safefs.ReadFile(filepath.Join(profileRoot, doorstopConfig))
 	if err != nil {
 		return "", err
 	}
@@ -271,7 +271,7 @@ func absoluteDoorstopConfig(profileRoot string, doorstopMajor int, proton bool) 
 		lines = append(lines, key+"="+target)
 	}
 	out := filepath.Join(profileRoot, relayConfig)
-	return out, fsx.WriteFile(out, []byte(strings.Join(lines, "\n")), 0o600)
+	return out, safefs.WriteFile(out, []byte(strings.Join(lines, "\n")), 0o600)
 }
 
 // runtimePathKeys are the Doorstop settings (3 and 4) that name a pack's runtime folder or file relative to the game

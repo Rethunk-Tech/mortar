@@ -9,8 +9,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/gog"
 	"github.com/Rethunk-Tech/mortar/internal/lutris"
 	"github.com/Rethunk-Tech/mortar/internal/steam"
@@ -31,7 +31,7 @@ type steamStore struct{}
 func (steamStore) Key() string { return steamKey }
 
 func (steamStore) Launchers(goos string) []LauncherSpec {
-	steamDir := func(dir string) bool { return fsx.IsDir(filepath.Join(dir, "steamapps")) }
+	steamDir := func(dir string) bool { return safefs.IsDir(filepath.Join(dir, "steamapps")) }
 	specs := []LauncherSpec{{
 		ID: LauncherSteam, Name: "Steam", Usable: steamDir,
 		Looked: func(home string, added map[string][]string) []string {
@@ -70,7 +70,7 @@ func (gogStore) Key() string { return gogKey }
 func (gogStore) Launchers(goos string) []LauncherSpec {
 	specs := []LauncherSpec{{
 		ID: LauncherHeroic, Name: "Heroic", Usable: func(dir string) bool {
-			return fsx.IsDir(filepath.Join(dir, "gog_store")) || fsx.IsFile(heroicEpicList(dir))
+			return safefs.IsDir(filepath.Join(dir, "gog_store")) || safefs.IsFile(heroicEpicList(dir))
 		},
 		Looked: func(home string, added map[string][]string) []string {
 			return gog.HeroicDirs(home, added[LauncherHeroic]...)
@@ -78,14 +78,14 @@ func (gogStore) Launchers(goos string) []LauncherSpec {
 	}}
 	if goos == "linux" {
 		specs = append(specs, LauncherSpec{
-			ID: LauncherMinigalaxy, Name: "Minigalaxy", Usable: fsx.IsDir,
+			ID: LauncherMinigalaxy, Name: "Minigalaxy", Usable: safefs.IsDir,
 			Looked: func(home string, added map[string][]string) []string {
 				return withCustom(added[LauncherMinigalaxy], gog.MinigalaxyConfigDirs(home)...)
 			},
 		})
 	}
 	galaxy := LauncherSpec{
-		ID: LauncherGOG, Name: "GOG", Usable: fsx.IsDir,
+		ID: LauncherGOG, Name: "GOG", Usable: safefs.IsDir,
 		Looked: func(home string, added map[string][]string) []string {
 			return gog.OfflineDirs(home, gog.Roots{Games: added[LauncherGOG], Minigalaxy: added[LauncherMinigalaxy]})
 		},
@@ -122,7 +122,7 @@ func (lutrisStore) Launchers(goos string) []LauncherSpec {
 		return nil
 	}
 	return []LauncherSpec{{
-		ID: LauncherLutris, Name: "Lutris", Usable: fsx.IsDir,
+		ID: LauncherLutris, Name: "Lutris", Usable: safefs.IsDir,
 		Looked: func(home string, added map[string][]string) []string {
 			return lutris.ConfigDirs(home, added[LauncherLutris]...)
 		},
@@ -179,7 +179,7 @@ func (eaStore) Launchers(goos string) []LauncherSpec {
 		return nil
 	}
 	return []LauncherSpec{{
-		ID: LauncherEA, Name: "EA App", Usable: fsx.IsDir,
+		ID: LauncherEA, Name: "EA App", Usable: safefs.IsDir,
 		Looked: func(_ string, added map[string][]string) []string {
 			return eaDirs(goos, os.Getenv, added[LauncherEA]...)
 		},
@@ -195,7 +195,7 @@ func (eaStore) Discover(_ string, roots map[string][]string, g components.GameIn
 	}
 	// A game on another drive is in no library folder; its installer's registry entry names it.
 	if g.Stores.EA.Registry != "" {
-		if found := gog.GameDir(lookupEARegistry(g.Stores.EA.Registry), g.MarkerPath()); found != "" && !slices.ContainsFunc(out, func(in Install) bool { return fsx.SamePath(in.Dir, found) }) {
+		if found := gog.GameDir(lookupEARegistry(g.Stores.EA.Registry), g.MarkerPath()); found != "" && !slices.ContainsFunc(out, func(in Install) bool { return safefs.SamePath(in.Dir, found) }) {
 			out = append(out, Install{Store: StoreEA, Dir: found})
 		}
 	}
@@ -228,7 +228,7 @@ func (epicStore) Launchers(goos string) []LauncherSpec {
 		return nil
 	}
 	return []LauncherSpec{{
-		ID: LauncherEpic, Name: "Epic Games", Usable: func(dir string) bool { return fsx.IsFile(filepath.Join(dir, epicInstalled)) },
+		ID: LauncherEpic, Name: "Epic Games", Usable: func(dir string) bool { return safefs.IsFile(filepath.Join(dir, epicInstalled)) },
 		Looked: func(_ string, added map[string][]string) []string {
 			return epicDirs(goos, os.Getenv, added[LauncherEpic]...)
 		},
@@ -242,7 +242,7 @@ type epicInstall struct {
 
 // epicInstalls reads the install list in dir; an unreadable list holds nothing.
 func epicInstalls(dir string) []epicInstall {
-	b, err := fsx.ReadFile(filepath.Join(dir, epicInstalled))
+	b, err := safefs.ReadFile(filepath.Join(dir, epicInstalled))
 	if err != nil {
 		return nil
 	}
@@ -262,7 +262,7 @@ func heroicEpicList(heroicDir string) string {
 
 // heroicEpicInstalls reads the list in heroicDir; an unreadable list holds nothing.
 func heroicEpicInstalls(heroicDir string) []epicInstall {
-	b, err := fsx.ReadFile(heroicEpicList(heroicDir))
+	b, err := safefs.ReadFile(heroicEpicList(heroicDir))
 	if err != nil {
 		return nil
 	}
@@ -345,7 +345,7 @@ func (xboxStore) Launchers(goos string) []LauncherSpec {
 		return nil
 	}
 	return []LauncherSpec{{
-		ID: LauncherXbox, Name: "Xbox", Usable: fsx.IsDir,
+		ID: LauncherXbox, Name: "Xbox", Usable: safefs.IsDir,
 		Looked: func(_ string, added map[string][]string) []string {
 			return withCustom(added[LauncherXbox], filepath.Join(cmp.Or(os.Getenv("SystemDrive"), "C:")+`\`, "XboxGames"))
 		},

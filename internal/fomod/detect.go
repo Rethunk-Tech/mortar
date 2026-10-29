@@ -8,7 +8,7 @@ import (
 	"strings"
 	"unicode/utf16"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 const configName = "moduleconfig.xml"
@@ -68,12 +68,12 @@ func findAtDepth(dir string, depth int) (string, error) {
 }
 
 func readXMLBytes(path string) ([]byte, error) {
-	f, err := fsx.Open(path)
+	f, err := safefs.Open(path)
 	if err != nil {
 		return nil, err
 	}
 	defer func() { _ = f.Close() }()
-	raw, err := fsx.ReadCapped(f, maxConfigBytes)
+	raw, err := safefs.ReadCapped(f, maxConfigBytes)
 	if err != nil {
 		return nil, err
 	}

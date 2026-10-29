@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
@@ -197,7 +197,7 @@ func TestAnUpdateKeepsWhatThePlayerHasAndDropsWhatTheReleaseDid(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	have := func(rel string) bool { return fsx.IsFile(filepath.Join(dir, filepath.FromSlash(rel))) }
+	have := func(rel string) bool { return safefs.IsFile(filepath.Join(dir, filepath.FromSlash(rel))) }
 
 	// Lovely 0.9 shipped version.dll; the player edited the config and added a mod.
 	install("lovely", map[string]string{"version.dll": "old", "lovely/config.toml": "default"}, "0.9.0")
@@ -207,7 +207,7 @@ func TestAnUpdateKeepsWhatThePlayerHasAndDropsWhatTheReleaseDid(t *testing.T) {
 	if have("version.dll") || !have("winmm.dll") || !have("mods/Mine/lovely.toml") {
 		t.Fatal("the old proxy must go, the new one come, and the player's mod stay")
 	}
-	if b, _ := fsx.ReadFile(filepath.Join(dir, "mods", "lovely", "config.toml")); string(b) != "edited" {
+	if b, _ := safefs.ReadFile(filepath.Join(dir, "mods", "lovely", "config.toml")); string(b) != "edited" {
 		t.Fatalf("config = %q: the player's edit must survive an update", b)
 	}
 
@@ -229,7 +229,7 @@ func TestShimloaderLaysUEOut(t *testing.T) {
 		t.Fatal(err)
 	}
 	for rel, want := range map[string]string{"dwmapi.dll": "proxy", "ue4ss.dll": "ue4ss", "UE4SS-settings.ini": "ini", "shimloader/mod/shared/UEHelpers/UEHelpers.lua": "lua"} {
-		if b, _ := fsx.ReadFile(filepath.Join(dir, filepath.FromSlash(rel))); string(b) != want {
+		if b, _ := safefs.ReadFile(filepath.Join(dir, filepath.FromSlash(rel))); string(b) != want {
 			t.Errorf("%s = %q, want %q", rel, b, want)
 		}
 	}
@@ -274,7 +274,7 @@ func TestAMappedDestinationOutsideTheProfileIsRefused(t *testing.T) {
 	} else if !strings.Contains(err.Error(), "outside the profile") {
 		t.Fatalf("refused for another reason: %v", err)
 	}
-	if fsx.IsFile(filepath.Join(root, "x")) {
+	if safefs.IsFile(filepath.Join(root, "x")) {
 		t.Fatal("the file escaped the profile")
 	}
 }

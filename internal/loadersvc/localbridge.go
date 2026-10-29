@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // localBridgeEnv names a folder holding a game's bridge build as <game>.zip, standing in for the catalog's release. It
@@ -21,7 +21,7 @@ func localBridge(gameID string) (component components.Component, zip string, ok 
 		return components.Component{}, "", false
 	}
 	zip = filepath.Join(dir, gameID+".zip")
-	sum, err := fsx.HashFile(zip, sha256.New())
+	sum, err := safefs.HashFile(zip, sha256.New())
 	if err != nil {
 		return components.Component{}, "", false
 	}

@@ -7,7 +7,7 @@ import (
 	"slices"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	gamereg "github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
@@ -294,7 +294,7 @@ type readableSnapshot struct {
 func (s *Store) snapshotReadable(data *historyFileData, id string) bool {
 	var key readableSnapshot
 	if path, ok := snapshotFilePath(data.dir, id); ok {
-		if fi, err := fsx.Stat(path); err == nil {
+		if fi, err := safefs.Stat(path); err == nil {
 			key = readableSnapshot{path, fi.Size(), fi.ModTime().UnixNano()}
 			if _, seen := s.readableSnapshots[key]; seen {
 				return true

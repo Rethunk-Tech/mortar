@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 func TestFileIsSplitByScope(t *testing.T) {
@@ -22,7 +22,7 @@ func TestFileIsSplitByScope(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	b, err := fsx.ReadFile(filepath.Join(dir, FileName))
+	b, err := safefs.ReadFile(filepath.Join(dir, FileName))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -102,7 +102,7 @@ func TestHandleLinksLivesInItsSourceBlock(t *testing.T) {
 	if _, err := s.Update(func(v *Settings) { v.ThunderstoreHandleLinks = &on }); err != nil {
 		t.Fatal(err)
 	}
-	b, err := fsx.ReadFile(filepath.Join(dir, FileName))
+	b, err := safefs.ReadFile(filepath.Join(dir, FileName))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -150,7 +150,7 @@ func TestFileHoldsOnlyWhatDiffersFromTheDefaults(t *testing.T) {
 	if _, err := s.Update(func(*Settings) {}); err != nil {
 		t.Fatal(err)
 	}
-	b, err := fsx.ReadFile(filepath.Join(dir, FileName))
+	b, err := safefs.ReadFile(filepath.Join(dir, FileName))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -172,7 +172,7 @@ func TestFileHoldsOnlyWhatDiffersFromTheDefaults(t *testing.T) {
 	if _, err := s.Update(func(v *Settings) { v.Accent = Defaults().Accent }); err != nil {
 		t.Fatal(err)
 	}
-	if b2, _ := fsx.ReadFile(filepath.Join(dir, FileName)); string(b2) != string(b) {
+	if b2, _ := safefs.ReadFile(filepath.Join(dir, FileName)); string(b2) != string(b) {
 		t.Fatalf("setting a value back to its default left it in the file: %s", b2)
 	}
 }

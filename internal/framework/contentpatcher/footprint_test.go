@@ -15,7 +15,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 func change(t *testing.T, raw string) cpChange {
@@ -84,7 +84,7 @@ func TestOpaqueImageShapeMatchesBruteForceCells(t *testing.T) {
 	if err := png.Encode(&buf, img); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(filepath.Join(dir, "patch.png"), buf.Bytes(), 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(dir, "patch.png"), buf.Bytes(), 0o600); err != nil {
 		t.Fatal(err)
 	}
 
@@ -161,7 +161,7 @@ func TestSkipImageOverlapUsesRectangles(t *testing.T) {
 	if err := png.Encode(&buf, img); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(filepath.Join(dir, "patch.png"), buf.Bytes(), 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(dir, "patch.png"), buf.Bytes(), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	ch := change(t, `{"FromFile":"patch.png","PatchMode":"Overlay"}`)
@@ -183,7 +183,7 @@ func TestOpaqueImageShapeConcurrent(t *testing.T) {
 	if err := png.Encode(&buf, img); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(filepath.Join(dir, "patch.png"), buf.Bytes(), 0o600); err != nil {
+	if err := safefs.WriteFile(filepath.Join(dir, "patch.png"), buf.Bytes(), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	errCh := make(chan string, 16)

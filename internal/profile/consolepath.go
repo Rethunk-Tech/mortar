@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/game"
@@ -21,9 +21,9 @@ func ConsoleRevealDir(p string, roots []string) (string, error) {
 		return "", err
 	}
 	target := abs
-	if resolved, err := fsx.EvalSymlinks(abs); err == nil {
+	if resolved, err := safefs.EvalSymlinks(abs); err == nil {
 		target = resolved
-	} else if resolved, err := fsx.EvalSymlinks(filepath.Dir(abs)); err == nil {
+	} else if resolved, err := safefs.EvalSymlinks(filepath.Dir(abs)); err == nil {
 		target = filepath.Join(resolved, filepath.Base(abs))
 	}
 	dir := target
@@ -31,7 +31,7 @@ func ConsoleRevealDir(p string, roots []string) (string, error) {
 	if err != nil || !info.IsDir() {
 		dir = filepath.Dir(target)
 	}
-	if resolved, err := fsx.EvalSymlinks(dir); err == nil {
+	if resolved, err := safefs.EvalSymlinks(dir); err == nil {
 		dir = resolved
 	}
 	for _, root := range roots {
@@ -39,10 +39,10 @@ func ConsoleRevealDir(p string, roots []string) (string, error) {
 			continue
 		}
 		r := filepath.Clean(root)
-		if resolved, err := fsx.EvalSymlinks(r); err == nil {
+		if resolved, err := safefs.EvalSymlinks(r); err == nil {
 			r = resolved
 		}
-		if datadir.UnderRoot(r, dir) {
+		if safefs.UnderRoot(r, dir) {
 			return dir, nil
 		}
 	}

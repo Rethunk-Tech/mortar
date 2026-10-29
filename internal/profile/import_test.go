@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 func dumpTree(t *testing.T, root string) string {
@@ -28,7 +28,7 @@ func dumpTree(t *testing.T, root string) string {
 			fmt.Fprintf(&b, "D %s\n", rel)
 			return nil
 		}
-		body, err := fsx.ReadFile(p)
+		body, err := safefs.ReadFile(p)
 		if err != nil {
 			return err
 		}
@@ -118,14 +118,14 @@ func TestImportGameModsCopiesIntoAProfileAndLeavesTheGameFolderUnchanged(t *test
 	if err != nil {
 		t.Fatal(err)
 	}
-	if body, err := fsx.ReadFile(loudCfg); err != nil || string(body) != `{"on":true}` {
+	if body, err := safefs.ReadFile(loudCfg); err != nil || string(body) != `{"on":true}` {
 		t.Fatalf("loud config = %q %v", body, err)
 	}
 	quietCfg, err := e.ConfigPath("stardew", res.Profile.ID, byID["Me.Quiet"].Key, "smapi:Me.Quiet")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if body, err := fsx.ReadFile(quietCfg); err != nil || string(body) != `{"volume":3}` {
+	if body, err := safefs.ReadFile(quietCfg); err != nil || string(body) != `{"volume":3}` {
 		t.Fatalf("quiet config = %q %v", body, err)
 	}
 
@@ -338,7 +338,7 @@ func TestImportGameModsCopiesVortexLinkedFiles(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if body, err := fsx.ReadFile(filepath.Join(dir, "assets", "data.json")); err != nil || string(body) != `{"brew":1}` {
+	if body, err := safefs.ReadFile(filepath.Join(dir, "assets", "data.json")); err != nil || string(body) != `{"brew":1}` {
 		t.Fatalf("copied data = %q %v", body, err)
 	}
 	if _, err := os.Lstat(filepath.Join(dir, "__folder_managed_by_vortex")); !errors.Is(err, fs.ErrNotExist) {

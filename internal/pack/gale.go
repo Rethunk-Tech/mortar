@@ -12,9 +12,9 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 	"github.com/Rethunk-Tech/mortar/internal/winname"
 	_ "modernc.org/sqlite"
@@ -88,7 +88,7 @@ func GaleProfiles(ctx context.Context, db string) ([]GaleProfile, error) {
 	if db == "" {
 		return nil, nil
 	}
-	if _, err := fsx.Stat(db); err != nil {
+	if _, err := safefs.Stat(db); err != nil {
 		return nil, nil
 	}
 	conn, err := sql.Open("sqlite", datadir.ReadOnlySQLiteURI(db))
@@ -117,7 +117,7 @@ func GaleProfiles(ctx context.Context, db string) ([]GaleProfile, error) {
 // <data dir>/<game slug>; when that path is not here (a Flatpak reaching the data folder through the document portal,
 // or a data folder since moved) the same folder below the database's own folder is used.
 func reachablePath(path, slug, dataDir string) string {
-	if fsx.IsDir(path) {
+	if safefs.IsDir(path) {
 		return path
 	}
 	parts := strings.FieldsFunc(path, func(r rune) bool { return r == '/' || r == '\\' })
@@ -126,7 +126,7 @@ func reachablePath(path, slug, dataDir string) string {
 		return path
 	}
 	moved := filepath.Join(append([]string{dataDir}, parts[at:]...)...)
-	if fsx.IsDir(moved) {
+	if safefs.IsDir(moved) {
 		return moved
 	}
 	return path
@@ -138,7 +138,7 @@ func (g Gale) find(ctx context.Context, path string) (GaleProfile, bool) {
 		return GaleProfile{}, false
 	}
 	for _, p := range all {
-		if fsx.SamePath(p.Path, path) {
+		if safefs.SamePath(p.Path, path) {
 			return p, true
 		}
 	}
@@ -177,7 +177,7 @@ func (g Gale) Parse(ctx context.Context, in Input) (Draft, error) {
 		off := m.Enabled != nil && !*m.Enabled
 		if m.FullName == "" {
 			dir := filepath.Join(p.Path, "BepInEx", "plugins", m.Name)
-			if winname.Valid(m.Name) && fsx.IsDir(dir) {
+			if winname.Valid(m.Name) && safefs.IsDir(dir) {
 				d.Local = append(d.Local, LocalMod{Name: m.Name, Author: m.Author, Version: m.Version, Disabled: off, Dir: dir})
 				deps = append(deps, m.Dependencies...)
 			}
@@ -205,7 +205,7 @@ func (g Gale) Parse(ctx context.Context, in Input) (Draft, error) {
 // resolves it (XDG data home on Linux, %AppData% on Windows, Application Support on macOS).
 func GaleDataDirs(extra string) []string {
 	var out []string
-	if extra != "" && fsx.IsFile(filepath.Join(extra, galeDB)) {
+	if extra != "" && safefs.IsFile(filepath.Join(extra, galeDB)) {
 		out = append(out, extra)
 	}
 	var bases []string
@@ -222,7 +222,7 @@ func GaleDataDirs(extra string) []string {
 	}
 	for _, base := range bases {
 		p := filepath.Join(base, galeAppID)
-		if st, err := fsx.Stat(p); err == nil && st.IsDir() && !slices.Contains(out, p) {
+		if st, err := safefs.Stat(p); err == nil && st.IsDir() && !slices.Contains(out, p) {
 			out = append(out, p)
 		}
 	}
@@ -232,12 +232,12 @@ func GaleDataDirs(extra string) []string {
 // IsManagerFolder reports a folder r2modman or Gale could keep its data in: Gale's database, or r2modman's per-game
 // folders each holding profiles.
 func IsManagerFolder(dir string) bool {
-	if fsx.IsFile(filepath.Join(dir, galeDB)) {
+	if safefs.IsFile(filepath.Join(dir, galeDB)) {
 		return true
 	}
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		return false
 	}
-	return slices.ContainsFunc(entries, func(e os.DirEntry) bool { return fsx.IsDir(filepath.Join(dir, e.Name(), "profiles")) })
+	return slices.ContainsFunc(entries, func(e os.DirEntry) bool { return safefs.IsDir(filepath.Join(dir, e.Name(), "profiles")) })
 }

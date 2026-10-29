@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // healthEnv is a profile with one installed mod, its drift baseline recorded.
@@ -186,7 +186,7 @@ func TestHealthRevertKeepsConfigAndData(t *testing.T) {
 			t.Fatalf("%s lost: %v", rel, err)
 		}
 	}
-	b, err := fsx.ReadFile(filepath.Join(dir, "assets", "x.json"))
+	b, err := safefs.ReadFile(filepath.Join(dir, "assets", "x.json"))
 	if err != nil || string(b) != "{}" {
 		t.Fatalf("not reverted: %s %v", b, err)
 	}

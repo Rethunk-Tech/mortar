@@ -19,8 +19,8 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	gamereg "github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 )
@@ -92,7 +92,7 @@ func ModPaths(modsDir, key, folder string) (plain, dotted string, err error) {
 // removeEntryFolders deletes both the enabled and disabled folder of a mod entry.
 func removeEntryFolders(modsDir, key string) error {
 	for _, name := range []string{key, "." + key} {
-		if err := fsx.RemoveAll(filepath.Join(modsDir, name)); err != nil {
+		if err := safefs.RemoveAll(filepath.Join(modsDir, name)); err != nil {
 			return err
 		}
 	}
@@ -111,7 +111,7 @@ func flip(plain, dotted string, enabled bool) error {
 	if !exists(from) {
 		return fmt.Errorf("mod folder %s is missing", filepath.Base(plain))
 	}
-	return fsx.Rename(from, to)
+	return safefs.Rename(from, to)
 }
 
 // Enabled reports whether the entry's mod with this unique ID is switched on. A mod without an ID cannot be
@@ -123,7 +123,7 @@ func (e Entry) Enabled(uniqueID mod.ID) bool {
 // materialize prepares a fresh copy of an entry in tmp: disabled nested mods get their dot names.
 // It returns the folder name the entry belongs under in mods/.
 func materialize(tmp string, e Entry) (string, error) {
-	if err := fsx.Remove(filepath.Join(tmp, ".complete")); err != nil && !errors.Is(err, fs.ErrNotExist) {
+	if err := safefs.Remove(filepath.Join(tmp, ".complete")); err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return "", err
 	}
 	final := e.Key
@@ -176,10 +176,10 @@ func (s *Store) placeStaged(game, modsDir string, e Entry, stage func(final stri
 		return materialize(scratch, e)
 	}()
 	if err == nil {
-		err = fsx.Rename(scratch, filepath.Join(modsDir, stage(final)))
+		err = safefs.Rename(scratch, filepath.Join(modsDir, stage(final)))
 	}
 	if err != nil {
-		return "", errors.Join(err, fsx.RemoveAll(scratch))
+		return "", errors.Join(err, safefs.RemoveAll(scratch))
 	}
 	return final, nil
 }
@@ -279,7 +279,7 @@ func (s *Store) addToStaged(game string, p *Profile, dir, key string, source Sou
 	} else {
 		src, tmp, err := s.layoutItem(game, p.ID, key, source.fomodMap(), false)
 		if tmp != "" {
-			defer func() { _ = fsx.RemoveAll(tmp) }()
+			defer func() { _ = safefs.RemoveAll(tmp) }()
 		}
 		if err != nil {
 			return "", "", err
@@ -336,7 +336,7 @@ func commitPlaced(placed, final string) {
 	if placed == final {
 		return
 	}
-	if err := fsx.Rename(placed, final); err != nil {
+	if err := safefs.Rename(placed, final); err != nil {
 		log.Printf("profile: could not move %s into place; the next rebuild will: %v", filepath.Base(placed), err)
 	}
 }
@@ -369,7 +369,7 @@ func (s *Store) addEntryLocked(game, id, key string, source Source) (Profile, er
 	}, func() { commitPlaced(placed, final) })
 	if err != nil {
 		if placed != "" {
-			err = errors.Join(err, fsx.RemoveAll(placed))
+			err = errors.Join(err, safefs.RemoveAll(placed))
 		}
 		return Profile{}, err
 	}
@@ -439,7 +439,7 @@ func (s *Store) applyBundled(game string, b Bundle, duringStart bool) error {
 			delete(s.historyQuietIDs, prof.ID)
 		}
 		if err != nil && placed != "" {
-			err = errors.Join(err, fsx.RemoveAll(placed))
+			err = errors.Join(err, safefs.RemoveAll(placed))
 		}
 		if err == nil {
 			setConfigsAside(dropped)
@@ -858,10 +858,10 @@ func copyProfile(gdir, srcDir, dstDir string, dup Profile) error {
 		err = writeProfile(tmp, dup)
 	}
 	if err == nil {
-		err = fsx.Rename(tmp, dstDir)
+		err = safefs.Rename(tmp, dstDir)
 	}
 	if err != nil {
-		return errors.Join(err, fsx.RemoveAll(tmp))
+		return errors.Join(err, safefs.RemoveAll(tmp))
 	}
 	return nil
 }
@@ -937,7 +937,7 @@ func (s *Store) rebuild(game, dir string, p Profile) error {
 	}
 	for _, it := range items {
 		if strings.HasPrefix(it.Name(), tempPrefix) || (it.IsDir() && !known[it.Name()]) {
-			if err := fsx.RemoveAll(filepath.Join(modsDir, it.Name())); err != nil {
+			if err := safefs.RemoveAll(filepath.Join(modsDir, it.Name())); err != nil {
 				return err
 			}
 			s.tidied("leftoverModFolder", "Removed a leftover mod folder", p.Name, it.Name())
@@ -972,7 +972,7 @@ func (s *Store) finishInterrupted(modsDir, profileName, key string) error {
 			if !exists(left) {
 				continue
 			}
-			if err := fsx.Rename(left, filepath.Join(modsDir, name)); err != nil {
+			if err := safefs.Rename(left, filepath.Join(modsDir, name)); err != nil {
 				return err
 			}
 			s.tidied("putBackModFolder", "Put back a mod folder an interrupted install or update left aside", profileName, name)
@@ -1081,7 +1081,7 @@ func (s *Store) PackageIcon(game, key string) (string, error) {
 		return "", err
 	}
 	icon := filepath.Join(installer.Open(root, key).PackageRoot().Dir, "icon.png")
-	if !fsx.IsFile(icon) {
+	if !safefs.IsFile(icon) {
 		return "", fs.ErrNotExist
 	}
 	return icon, nil

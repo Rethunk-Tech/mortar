@@ -7,8 +7,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
 const (
@@ -40,7 +40,7 @@ func driveOf(p string) string {
 func (s *Service) freeAt(path string) (int64, bool) {
 	free := s.d.FreeBytes
 	if free == nil {
-		free = datadir.FreeBytes
+		free = safefs.FreeBytes
 	}
 	for {
 		n, err := free(path)
@@ -69,7 +69,7 @@ func (s *Service) checkSpace(it Item, size int64) error {
 		need int64
 	}
 	vols := []volume{{s.d.Dir, need + extracted + spaceMargin}}
-	if root := s.downloadRoot(); !datadir.UnderRoot(s.d.Dir, root) {
+	if root := s.downloadRoot(); !safefs.UnderRoot(s.d.Dir, root) {
 		vols = []volume{{root, need + spaceMargin}, {s.d.Dir, extracted + spaceMargin}}
 	}
 	for _, v := range vols {

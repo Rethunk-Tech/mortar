@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/host"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 )
@@ -103,12 +103,12 @@ func (r Releases) Fetch(ctx context.Context, g components.GameInfo, version, dst
 	if err != nil {
 		return err
 	}
-	defer func() { _ = fsx.RemoveAll(work) }()
+	defer func() { _ = safefs.RemoveAll(work) }()
 	got, err := (&host.Direct{HTTP: r.HTTP}).Fetch(ctx, res.URL, work)
 	if err != nil {
 		return fmt.Errorf("download %s %s: %w", r.Name, version, err)
 	}
-	return fsx.Rename(got, dst)
+	return safefs.Rename(got, dst)
 }
 
 // Versions are the releases of the game's loader package in its community index, newest first.

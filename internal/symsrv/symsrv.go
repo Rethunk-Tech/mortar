@@ -20,7 +20,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 const (
@@ -114,7 +114,7 @@ func PECodeView(path string) (CodeView, bool) {
 }
 
 func readAtFile(path string, b []byte, off int64) (int, error) {
-	f, err := fsx.Open(path)
+	f, err := safefs.Open(path)
 	if err != nil {
 		return 0, err
 	}
@@ -176,7 +176,7 @@ func (r *Resolver) Name(ctx context.Context, cv CodeView, rva uint64) (name stri
 	}
 	dir := filepath.Join(r.Dir, cv.PDB, cv.Key())
 	path := filepath.Join(dir, cv.PDB)
-	if !fsx.IsFile(path) {
+	if !safefs.IsFile(path) {
 		if freshMiss(dir) || r.Online != nil && !r.Online() {
 			return "", 0, false
 		}
@@ -188,7 +188,7 @@ func (r *Resolver) Name(ctx context.Context, cv CodeView, rva uint64) (name stri
 			return "", 0, false
 		}
 	}
-	f, err := fsx.Open(path)
+	f, err := safefs.Open(path)
 	if err != nil {
 		return "", 0, false
 	}
@@ -235,7 +235,7 @@ const partMaxAge = time.Hour
 const missMaxAge = 7 * 24 * time.Hour
 
 func freshMiss(dir string) bool {
-	info, err := fsx.Stat(filepath.Join(dir, missMarker))
+	info, err := safefs.Stat(filepath.Join(dir, missMarker))
 	return err == nil && time.Since(info.ModTime()) <= missMaxAge
 }
 
@@ -257,7 +257,7 @@ func (r *Resolver) download(ctx context.Context, dir, path string, urls []string
 		}
 	}
 	if missing == len(urls) {
-		_ = fsx.WriteFile(filepath.Join(dir, missMarker), nil, 0o600)
+		_ = safefs.WriteFile(filepath.Join(dir, missMarker), nil, 0o600)
 	}
 }
 
@@ -282,23 +282,23 @@ func (r *Resolver) get(ctx context.Context, url, path string) error {
 		return fmt.Errorf("%s: %d bytes is over the cap", url, resp.ContentLength)
 	}
 	// Only the in-flight download of this path gets here, so a .part already present is a crash's leftover.
-	_ = fsx.Remove(path + ".part")
-	tmp, err := fsx.CreateExcl(path+".part", 0o600)
+	_ = safefs.Remove(path + ".part")
+	tmp, err := safefs.CreateExcl(path+".part", 0o600)
 	if err != nil {
 		return err
 	}
-	_, err = io.Copy(tmp, fsx.CapReader(resp.Body, maxPDBBytes))
-	if errors.Is(err, fsx.ErrTooLarge) {
+	_, err = io.Copy(tmp, safefs.CapReader(resp.Body, maxPDBBytes))
+	if errors.Is(err, safefs.ErrTooLarge) {
 		err = fmt.Errorf("%s: over the %d-byte cap", url, maxPDBBytes)
 	}
 	if cerr := tmp.Close(); err == nil {
 		err = cerr
 	}
 	if err != nil {
-		_ = fsx.Remove(path + ".part")
+		_ = safefs.Remove(path + ".part")
 		return err
 	}
-	return fsx.Rename(path+".part", path)
+	return safefs.Rename(path+".part", path)
 }
 
 // prune deletes the least recently read PDBs until the cache is under its cap.
@@ -319,7 +319,7 @@ func (r *Resolver) prune() {
 		}
 		if strings.HasSuffix(p, ".pdb.part") {
 			if info, err := d.Info(); err == nil && time.Since(info.ModTime()) > partMaxAge {
-				_ = fsx.Remove(p)
+				_ = safefs.Remove(p)
 			}
 			return nil
 		}
@@ -338,7 +338,7 @@ func (r *Resolver) prune() {
 		if total <= maxCacheBytes {
 			return
 		}
-		if fsx.Remove(e.path) == nil {
+		if safefs.Remove(e.path) == nil {
 			total -= e.size
 		}
 	}
@@ -356,13 +356,13 @@ func (r *Resolver) pruneMisses() {
 		keys, _ := os.ReadDir(pdbDir)
 		for _, key := range keys {
 			keyDir := filepath.Join(pdbDir, key.Name())
-			if info, err := fsx.Stat(filepath.Join(keyDir, missMarker)); err == nil && time.Since(info.ModTime()) > missMaxAge {
-				_ = fsx.Remove(filepath.Join(keyDir, missMarker))
+			if info, err := safefs.Stat(filepath.Join(keyDir, missMarker)); err == nil && time.Since(info.ModTime()) > missMaxAge {
+				_ = safefs.Remove(filepath.Join(keyDir, missMarker))
 			}
-			if info, err := fsx.Stat(keyDir); err == nil && info.IsDir() && time.Since(info.ModTime()) > partMaxAge {
-				_ = fsx.Remove(keyDir)
+			if info, err := safefs.Stat(keyDir); err == nil && info.IsDir() && time.Since(info.ModTime()) > partMaxAge {
+				_ = safefs.Remove(keyDir)
 			}
 		}
-		_ = fsx.Remove(pdbDir)
+		_ = safefs.Remove(pdbDir)
 	}
 }

@@ -8,7 +8,7 @@ import (
 
 	"github.com/zalando/go-keyring"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/secret"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
@@ -31,7 +31,7 @@ func TestSignInOutKeepsKeyOutOfSettings(t *testing.T) {
 	if got, _ := secret.Get(keyName); got != "k1" {
 		t.Fatalf("keyring holds %q", got)
 	}
-	b, err := fsx.ReadFile(filepath.Join(dir, settings.FileName))
+	b, err := safefs.ReadFile(filepath.Join(dir, settings.FileName))
 	if err != nil || strings.Contains(string(b), "k1") {
 		t.Fatalf("settings.json holds the key (%v): %s", err, b)
 	}

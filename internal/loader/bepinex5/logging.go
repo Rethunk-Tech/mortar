@@ -8,7 +8,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 )
 
@@ -103,11 +103,11 @@ func writeConfig(profileDir, text string) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
 		return err
 	}
-	return fsx.WriteFile(path, []byte(text), 0o600)
+	return safefs.WriteFile(path, []byte(text), 0o600)
 }
 
 func readConfig(profileDir string) (string, error) {
-	b, err := fsx.ReadFile(configFile(profileDir))
+	b, err := safefs.ReadFile(configFile(profileDir))
 	if errors.Is(err, os.ErrNotExist) {
 		return "", nil
 	}

@@ -9,7 +9,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/gog"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
@@ -102,7 +102,7 @@ func ConfigDirs(home string, extra ...string) []string {
 }
 
 func (m matcher) installFromConfig(gamesDir, name string) (dir, text string, err error) {
-	b, err := fsx.ReadFile(filepath.Join(gamesDir, name))
+	b, err := safefs.ReadFile(filepath.Join(gamesDir, name))
 	if err != nil {
 		return "", "", err
 	}
@@ -120,7 +120,7 @@ func configValue(re *regexp.Regexp, text string) string {
 // the runner is Proton. "" when neither exists.
 func winePrefix(prefix string) string {
 	for _, p := range []string{filepath.Join(prefix, "pfx"), prefix} {
-		if prefix != "" && fsx.IsDir(filepath.Join(p, "drive_c")) {
+		if prefix != "" && safefs.IsDir(filepath.Join(p, "drive_c")) {
 			return p
 		}
 	}

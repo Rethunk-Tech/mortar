@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"slices"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
@@ -113,7 +113,7 @@ func MinigalaxyConfigDirs(home string) []string {
 func MinigalaxyInstallDirs(home string, custom ...string) []string {
 	out := slices.Clone(custom)
 	for _, cfg := range MinigalaxyConfigDirs(home) {
-		b, err := fsx.ReadFile(filepath.Join(cfg, "config.json"))
+		b, err := safefs.ReadFile(filepath.Join(cfg, "config.json"))
 		if err != nil {
 			continue
 		}
@@ -153,7 +153,7 @@ func GameDir(dir, marker string) string {
 	}
 	dir = filepath.Clean(dir)
 	for _, d := range []string{dir, filepath.Join(dir, "game")} {
-		if fsx.IsFile(filepath.Join(d, marker)) {
+		if safefs.IsFile(filepath.Join(d, marker)) {
 			return d
 		}
 	}
@@ -167,7 +167,7 @@ type heroicGame struct {
 
 func heroicInstalls(cfg, productID string) []string {
 	path := filepath.Join(cfg, "gog_store", "installed.json")
-	b, err := fsx.ReadFile(path)
+	b, err := safefs.ReadFile(path)
 	if err != nil {
 		return nil
 	}

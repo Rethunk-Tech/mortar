@@ -11,7 +11,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
@@ -33,7 +33,7 @@ func TestDownloadsArchivesSkipsInstalledByKeyAndByName(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(dir, "notes.txt"), []byte("x"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	sum, err := fsx.HashFile(stored, sha256.New())
+	sum, err := safefs.HashFile(stored, sha256.New())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -101,7 +101,7 @@ func TestNewDownloadsOffersOnlyArrivalsAfterTheMark(t *testing.T) {
 func TestDownloadsArchivesReusesCachedHashes(t *testing.T) {
 	dir := t.TempDir()
 	stored := writeZip(t, dir, "stored.zip", `{"UniqueID":"A.One"}`)
-	sum, err := fsx.HashFile(stored, sha256.New())
+	sum, err := safefs.HashFile(stored, sha256.New())
 	if err != nil {
 		t.Fatal(err)
 	}

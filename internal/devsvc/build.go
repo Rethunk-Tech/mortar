@@ -15,8 +15,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/nowindow"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -148,7 +148,7 @@ func removeStaleBundles(p settings.DevProject) {
 	built, _ := filepath.Glob(filepath.Join(p.Output, "*.bundle"))
 	for _, b := range built {
 		if _, err := os.Stat(filepath.Join(assets, filepath.Base(b))); errors.Is(err, fs.ErrNotExist) {
-			if err := fsx.Remove(b); err != nil {
+			if err := safefs.Remove(b); err != nil {
 				log.Printf("devsvc: removing stale bundle %s: %v", b, err)
 			}
 		}
@@ -216,7 +216,7 @@ func (s *Service) OpenAt(gameID, dir, file string, line, column int) error {
 	if !filepath.IsAbs(file) {
 		file = filepath.Join(p.Dir, file)
 	}
-	if !datadir.UnderRoot(p.Dir, file) {
+	if !safefs.UnderRoot(p.Dir, file) {
 		return usererr.Wrap(usererr.Invalid, fmt.Errorf("%s is not in the project", file))
 	}
 	at := fmt.Sprintf("%s:%d:%d", file, max(line, 1), max(column, 1))
