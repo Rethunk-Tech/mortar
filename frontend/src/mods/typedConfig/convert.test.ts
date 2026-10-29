@@ -9,6 +9,7 @@ test('wire text becomes typed values, with the default standing in when none is 
         { key: 'On', type: 'bool', value: 'true', default: 'false', hasDefault: true },
         { key: 'Speed', type: 'float', value: '1.5', hasDefault: false, min: 0, max: 3 },
         { key: 'Names', type: 'list', value: '["a","b"]', hasDefault: false },
+        { key: 'When', type: 'raw', value: '1979-05-27', hasDefault: false },
         {
           key: 'Mode',
           type: 'enum',
@@ -20,10 +21,11 @@ test('wire text becomes typed values, with the default standing in when none is 
       ],
     },
   ])
-  const [on, speed, names, mode] = section?.entries ?? []
+  const [on, speed, names, when, mode] = section?.entries ?? []
   expect([on?.value, on?.default]).toEqual([true, false])
   expect([speed?.value, speed?.default, speed?.max]).toEqual([1.5, 1.5, 3])
   expect(names?.value).toEqual(['a', 'b'])
+  expect([when?.type, when?.value]).toEqual(['raw', '1979-05-27'])
   expect(mode?.type).toBe('multi')
   expect(formatValue(['a'])).toBe('["a"]')
   expect(formatValue(false)).toBe('false')

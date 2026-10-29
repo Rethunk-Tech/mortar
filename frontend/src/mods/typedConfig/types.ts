@@ -1,6 +1,6 @@
 type ConfigValue = boolean | number | string | string[]
 
-type EntryType = 'bool' | 'int' | 'float' | 'enum' | 'string' | 'color' | 'list' | 'multi'
+type EntryType = 'bool' | 'int' | 'float' | 'enum' | 'string' | 'color' | 'list' | 'multi' | 'raw'
 
 interface ConfigEntry {
   key: string

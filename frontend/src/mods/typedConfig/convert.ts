@@ -35,6 +35,7 @@ const KNOWN: readonly EntryType[] = [
   'color',
   'list',
   'multi',
+  'raw',
 ]
 
 function parseValue(type: EntryType, text: string): ConfigValue {

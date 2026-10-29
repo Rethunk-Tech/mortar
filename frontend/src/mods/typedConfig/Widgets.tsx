@@ -304,8 +304,11 @@ function EntryWidget(props: WidgetProps) {
       return <ListWidget {...props} />
     case 'multi':
       return <MultiWidget {...props} />
-    default:
+    case 'string':
+    case 'raw':
       return <TextWidget {...props} />
+    default:
+      return entry.type satisfies never
   }
 }
 
