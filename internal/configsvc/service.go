@@ -398,7 +398,7 @@ func (s *Service) SetText(game, profileID, modID, file, text string) error {
 	if old, err := fsx.ReadFile(p); err == nil && bytes.HasPrefix(old, utf8BOM) {
 		out = append(slices.Clone(utf8BOM), out...)
 	}
-	return datadir.WriteFile(p, out, 0o600)
+	return datadir.WriteFileAtomic(p, out, 0o600)
 }
 
 // OpenText opens one of a mod's text config files in the system's editor for it.
@@ -670,7 +670,7 @@ func (s *Service) write(game, profileID, modID string, f ConfigFile, edits []edi
 			return err
 		}
 	}
-	return datadir.WriteFile(p, []byte(text), 0o600)
+	return datadir.WriteFileAtomic(p, []byte(text), 0o600)
 }
 
 // writeJSON applies edits to one JSON file of the profile's mod config folder, keeping its key order.
@@ -688,5 +688,5 @@ func (s *Service) writeJSON(game, profileID, name string, edits []edit) error {
 			return err
 		}
 	}
-	return datadir.WriteFile(p, raw, 0o600)
+	return datadir.WriteFileAtomic(p, raw, 0o600)
 }

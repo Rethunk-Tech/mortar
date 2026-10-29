@@ -505,7 +505,7 @@ func (s *Store) completeItem(dir string) bool {
 
 func writeCompleteMarker(dir string) error {
 	marker := filepath.Join(dir, CompleteMarker)
-	if err := datadir.WriteFile(marker, nil, 0o600); err != nil {
+	if err := datadir.WriteFileAtomic(marker, nil, 0o600); err != nil {
 		return err
 	}
 	if err := syncPath(marker); err != nil {

@@ -332,7 +332,7 @@ func assemblyMembers(dlls []string, read func(dll string) []string) [][]string {
 			}
 		}
 		if raw, err := json.Marshal(assemblyCacheFile{Version: assemblyCacheVersion, DLLs: assemblyCache.entries}); err == nil && os.MkdirAll(filepath.Dir(path), 0o700) == nil {
-			_ = datadir.WriteFile(path, raw, 0o600)
+			_ = datadir.WriteFileAtomic(path, raw, 0o600)
 		}
 	}
 	return out

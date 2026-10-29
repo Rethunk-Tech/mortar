@@ -25,7 +25,7 @@ type Settings struct {
 
 var (
 	readFile  = os.ReadFile
-	writeFile = datadir.WriteFile
+	writeFile = datadir.WriteFileAtomic
 )
 
 func (s Settings) Validate() error {

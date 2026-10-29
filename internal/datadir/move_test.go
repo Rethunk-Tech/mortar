@@ -75,7 +75,7 @@ func TestResolveFollowsThePointerFile(t *testing.T) {
 	if err := os.MkdirAll(def, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if err := WriteFile(filepath.Join(def, PointerName), []byte(dest+"\n"), 0o600); err != nil {
+	if err := WriteFileAtomic(filepath.Join(def, PointerName), []byte(dest+"\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	got, err := resolve()

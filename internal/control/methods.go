@@ -384,7 +384,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		if err != nil {
 			return nil, err
 		}
-		if err := datadir.WriteFile(p.Path, body, 0o600); err != nil {
+		if err := datadir.WriteFileAtomic(p.Path, body, 0o600); err != nil {
 			return nil, err
 		}
 		return map[string]string{"path": p.Path}, nil

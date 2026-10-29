@@ -22,7 +22,7 @@ func TestTheInGameMenuIsAFileWhoseEditsWaitForTheNextStart(t *testing.T) {
 	if err := os.MkdirAll(filepath.Dir(gmcm.CapturePath(pdir, "Author.Mod")), 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := datadir.WriteFile(gmcm.CapturePath(pdir, "Author.Mod"), capture, 0o600); err != nil {
+	if err := datadir.WriteFileAtomic(gmcm.CapturePath(pdir, "Author.Mod"), capture, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	type set struct {

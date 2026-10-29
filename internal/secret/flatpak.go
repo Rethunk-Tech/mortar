@@ -255,7 +255,7 @@ func save(path string, key []byte, m map[string]string) error {
 	if err := secureDir(dir); err != nil {
 		return err
 	}
-	return datadir.WriteFile(path, b, 0o600)
+	return datadir.WriteFileAtomic(path, b, 0o600)
 }
 
 func gcm(key []byte) (cipher.AEAD, error) {

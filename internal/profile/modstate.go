@@ -221,7 +221,7 @@ func (s *Store) writeConfig(game, id, key string, uniqueID mod.ID, contents stri
 		return fmt.Errorf("config.json is not valid JSON: %w", err)
 	}
 	return s.editConfigLocked(game, id, note, func() error {
-		return datadir.WriteFile(path, rewritten, 0o600)
+		return datadir.WriteFileAtomic(path, rewritten, 0o600)
 	})
 }
 

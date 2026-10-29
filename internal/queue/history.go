@@ -68,7 +68,7 @@ func (s *Service) writeHistory(entries []HistoryEntry) {
 	}
 	// Compact: at the cap each write is rewritten whole, and an indented file is 4x the bytes. Readers accept both.
 	if b, err := json.Marshal(entries); err == nil {
-		_ = datadir.WriteFile(s.historyPath(), b, 0o600)
+		_ = datadir.WriteFileAtomic(s.historyPath(), b, 0o600)
 	}
 }
 

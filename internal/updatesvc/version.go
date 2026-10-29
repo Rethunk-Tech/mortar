@@ -31,7 +31,7 @@ func writeLastRun(dir, version string) error {
 	if dir == "" || version == "" {
 		return nil
 	}
-	return datadir.WriteFile(lastRunPath(dir), []byte(version), 0o600)
+	return datadir.WriteFileAtomic(lastRunPath(dir), []byte(version), 0o600)
 }
 
 // upgraded reports whether current is semver-newer than last.

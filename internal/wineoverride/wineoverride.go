@@ -48,7 +48,7 @@ func Ensure(userReg, dll string) error {
 			return err
 		}
 	}
-	return datadir.WriteFile(userReg, []byte(strings.Join(updated, eol)), 0o600)
+	return datadir.WriteFileAtomic(userReg, []byte(strings.Join(updated, eol)), 0o600)
 }
 
 // withOverride returns lines with the override for dll in the DllOverrides section, adding the section when it is missing.

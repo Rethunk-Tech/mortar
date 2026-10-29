@@ -322,7 +322,7 @@ func dropOtherListings(dir, key, keep string) {
 }
 
 // listingOrTemp reports a listing file or a build's interrupted temp file, "<listing>.json.<n>.tmp"
-// (datadir.WriteStream).
+// (datadir.WriteStreamAtomic).
 func listingOrTemp(rest string) bool {
 	return strings.HasSuffix(rest, ".json") || strings.HasSuffix(rest, ".tmp") && strings.Contains(rest, ".json.")
 }
@@ -415,7 +415,7 @@ func (d Driver) buildListing(ctx context.Context, key, ua string) (string, error
 	if err != nil {
 		return "", err
 	}
-	if err := datadir.WriteFile(metaPath, nm, 0o644); err != nil {
+	if err := datadir.WriteFileAtomic(metaPath, nm, 0o644); err != nil {
 		return "", err
 	}
 	refreshSide(dir, key, hash, path)
@@ -429,7 +429,7 @@ func (d Driver) buildListing(ctx context.Context, key, ua string) (string, error
 // A changed index rebuilds the listing from every chunk (~35 MB downloaded, ~63 MB rewritten per refresh): chunks are
 // content-addressed, so none survive an index change. The lever is refreshAfter.
 func (d Driver) build(ctx context.Context, chunks []string, path, ua string) error {
-	return datadir.WriteStream(path, 0o644, func(w io.Writer) error {
+	return datadir.WriteStreamAtomic(path, 0o644, func(w io.Writer) error {
 		bw := bufio.NewWriter(w)
 		enc := json.NewEncoder(bw)
 		if err := bw.WriteByte('['); err != nil {

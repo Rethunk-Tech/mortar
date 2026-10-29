@@ -40,7 +40,7 @@ func WritePage(dataDir string) error {
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return err
 	}
-	return datadir.WriteFile(PagePath(dataDir), page, 0o600)
+	return datadir.WriteFileAtomic(PagePath(dataDir), page, 0o600)
 }
 
 // FileURL is the OBS browser-source URL for the overlay page.

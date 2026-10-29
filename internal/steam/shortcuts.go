@@ -264,7 +264,7 @@ func (s Steam) AddShortcut(sc Shortcut) (AddResult, error) {
 		if err := backupBeforeEdit(path, next, 0o600); err != nil {
 			return "", err
 		}
-		if err := datadir.WriteFile(path, next, 0o600); err != nil {
+		if err := datadir.WriteFileAtomic(path, next, 0o600); err != nil {
 			return "", err
 		}
 	}
@@ -325,7 +325,7 @@ func (s Steam) RemoveShortcuts(exe, optionsPrefix string) (int, error) {
 		next, n, err := removeShortcuts(body, match)
 		if err == nil && n > 0 {
 			if err = backupBeforeEdit(path, next, 0o600); err == nil {
-				err = datadir.WriteFile(path, next, 0o600)
+				err = datadir.WriteFileAtomic(path, next, 0o600)
 			}
 		}
 		if err != nil {

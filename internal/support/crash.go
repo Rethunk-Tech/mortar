@@ -69,7 +69,7 @@ func writeCrashSeen(seenPath, crashPath string) {
 	if info, err := os.Stat(crashPath); err == nil {
 		size = info.Size()
 	}
-	_ = datadir.WriteFile(seenPath, []byte(strconv.FormatInt(size, 10)+"\n"), 0o600)
+	_ = datadir.WriteFileAtomic(seenPath, []byte(strconv.FormatInt(size, 10)+"\n"), 0o600)
 }
 
 // maxLogLine is the longest log line prevLogUnclean reads.

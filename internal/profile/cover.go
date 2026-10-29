@@ -76,7 +76,7 @@ func (s *Store) SetCover(game, id, path string) (Profile, error) {
 	if err != nil {
 		return Profile{}, err
 	}
-	if err := datadir.WriteFile(filepath.Join(dir, name), b, 0o600); err != nil {
+	if err := datadir.WriteFileAtomic(filepath.Join(dir, name), b, 0o600); err != nil {
 		return Profile{}, err
 	}
 	if s.coverAfterWrite != nil {

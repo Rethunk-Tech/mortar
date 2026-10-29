@@ -70,7 +70,7 @@ func writeIn(path string, b []byte) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return err
 	}
-	return datadir.WriteFile(path, b, 0o600)
+	return datadir.WriteFileAtomic(path, b, 0o600)
 }
 
 func downloadUnityLibs(ctx context.Context, ver, dst string) error {

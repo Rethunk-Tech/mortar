@@ -423,14 +423,14 @@ func (s *Service) push(folder string, ref Ref, t tracked, base Vector) error {
 		return err
 	}
 	// The version file goes last: another machine that sees it finds the payload it names.
-	if err := datadir.WriteFile(s.payloadPath(folder, ref.Game, t.Remote), payload, 0o600); err != nil {
+	if err := datadir.WriteFileAtomic(s.payloadPath(folder, ref.Game, t.Remote), payload, 0o600); err != nil {
 		return err
 	}
 	meta, err := json.Marshal(shared{Name: ref.Name, Machine: s.st.Machine, MachineName: s.d.Machine, Vector: vec, Payload: hashOf(payload)})
 	if err != nil {
 		return err
 	}
-	if err := datadir.WriteFile(s.sharedPath(folder, ref.Game, t.Remote), meta, 0o600); err != nil {
+	if err := datadir.WriteFileAtomic(s.sharedPath(folder, ref.Game, t.Remote), meta, 0o600); err != nil {
 		return err
 	}
 	t.Synced, t.Seen = vec, ref.Updated

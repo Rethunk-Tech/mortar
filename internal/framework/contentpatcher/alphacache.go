@@ -95,7 +95,7 @@ func writeAlphaDisk(path string, pix pngAlpha) {
 	if os.MkdirAll(filepath.Dir(path), 0o700) != nil {
 		return
 	}
-	_ = datadir.WriteCacheStream(path, 0o600, func(w io.Writer) error {
+	_ = datadir.WriteStreamNoSync(path, 0o600, func(w io.Writer) error {
 		zw, err := gzip.NewWriterLevel(w, gzip.BestSpeed)
 		if err != nil {
 			return err

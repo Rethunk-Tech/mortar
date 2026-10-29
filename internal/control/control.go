@@ -115,7 +115,7 @@ func republish(ctx context.Context, every time.Duration, dir, path string, b []b
 			return
 		case <-tick.C:
 			if _, err := os.Stat(path); errors.Is(err, fs.ErrNotExist) && !answers(ctx, dir) {
-				_ = datadir.WriteFile(path, b, 0o600)
+				_ = datadir.WriteFileAtomic(path, b, 0o600)
 			}
 		}
 	}
@@ -128,7 +128,7 @@ func release(ctx context.Context, dir, path string, b, prev []byte) {
 	if err != nil || !bytes.Equal(cur, b) {
 		return
 	}
-	if len(prev) > 0 && datadir.WriteFile(path, prev, 0o600) == nil && answers(ctx, dir) {
+	if len(prev) > 0 && datadir.WriteFileAtomic(path, prev, 0o600) == nil && answers(ctx, dir) {
 		return
 	}
 	_ = fsx.Remove(path)
@@ -161,7 +161,7 @@ func Serve(ctx context.Context, dir, version string, h Handler) error {
 		_ = ln.Close()
 		return err
 	}
-	if err := datadir.WriteFile(path, b, 0o600); err != nil {
+	if err := datadir.WriteFileAtomic(path, b, 0o600); err != nil {
 		_ = ln.Close()
 		return err
 	}

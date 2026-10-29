@@ -396,5 +396,5 @@ func (s *Service) writeMelon(game, profileID string, edits []edit) error {
 			return err
 		}
 	}
-	return datadir.WriteFile(path, []byte(text), 0o600)
+	return datadir.WriteFileAtomic(path, []byte(text), 0o600)
 }

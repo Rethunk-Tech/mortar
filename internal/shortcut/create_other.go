@@ -48,7 +48,7 @@ Icon=mortar
 Terminal=false
 Categories=Game;
 `, desktopValue(name), execLine, arg)
-	if err := datadir.WriteFile(path, []byte(entry), 0o600); err != nil {
+	if err := datadir.WriteFileAtomic(path, []byte(entry), 0o600); err != nil {
 		return "", err
 	}
 	return path, nil
@@ -105,7 +105,7 @@ func Renamed(game, profile, profileName, gameName string) error {
 	if !replaced {
 		return fmt.Errorf("desktop entry %s has no Name", path)
 	}
-	return datadir.WriteFile(path, []byte(strings.Join(lines, "")), 0o600)
+	return datadir.WriteFileAtomic(path, []byte(strings.Join(lines, "")), 0o600)
 }
 
 // Removed removes the desktop entry for a deleted profile.
@@ -248,7 +248,7 @@ func Repoint(exe string) error {
 			break
 		}
 		if changed {
-			errs = append(errs, datadir.WriteFile(p, []byte(strings.Join(lines, "")), 0o600))
+			errs = append(errs, datadir.WriteFileAtomic(p, []byte(strings.Join(lines, "")), 0o600))
 		}
 	}
 	return errors.Join(errs...)

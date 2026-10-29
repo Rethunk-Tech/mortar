@@ -48,7 +48,7 @@ func derivedFor(dir, key, path string) (derivedFile, error) {
 		return s, err
 	}
 	if b, err := json.Marshal(s); err == nil {
-		_ = datadir.WriteFile(derivedPath(dir, key), b, 0o644)
+		_ = datadir.WriteFileAtomic(derivedPath(dir, key), b, 0o644)
 	}
 	return s, nil
 }

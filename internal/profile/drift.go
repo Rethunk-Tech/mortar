@@ -277,7 +277,7 @@ func saveDirListings() {
 	if err != nil || pathErr != nil {
 		return
 	}
-	if os.MkdirAll(filepath.Dir(path), 0o700) != nil || datadir.WriteFile(path, buf.Bytes(), 0o600) != nil {
+	if os.MkdirAll(filepath.Dir(path), 0o700) != nil || datadir.WriteFileAtomic(path, buf.Bytes(), 0o600) != nil {
 		dirListings.Lock()
 		dirListings.dirty = true
 		dirListings.Unlock()
@@ -375,7 +375,7 @@ func saveStoreListings() {
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return
 	}
-	err = datadir.WriteFile(path, buf.Bytes(), 0o600)
+	err = datadir.WriteFileAtomic(path, buf.Bytes(), 0o600)
 	storeListings.Lock()
 	defer storeListings.Unlock()
 	if err != nil {

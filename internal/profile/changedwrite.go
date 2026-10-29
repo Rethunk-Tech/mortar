@@ -85,7 +85,7 @@ func (s *Store) WriteChangedFiles(game, id string, files map[string][]byte, over
 			return err
 		}
 		// Replaced, never written in place: the file there may be a hardlink to the store's copy.
-		if err := datadir.WriteFile(to, data, 0o600); err != nil {
+		if err := datadir.WriteFileAtomic(to, data, 0o600); err != nil {
 			return err
 		}
 		written = append(written, rel)

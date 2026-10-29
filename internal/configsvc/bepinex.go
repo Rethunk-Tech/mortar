@@ -517,7 +517,7 @@ func (s *Service) saveKept() {
 		return strings.Compare(a.Game+"\x00"+a.Profile+"\x00"+a.Mod+"\x00"+a.File, b.Game+"\x00"+b.Profile+"\x00"+b.Mod+"\x00"+b.File)
 	})
 	if b, err := json.Marshal(recs); err == nil {
-		_ = datadir.WriteFile(filepath.Join(dir, keptFile), b, 0o600)
+		_ = datadir.WriteFileAtomic(filepath.Join(dir, keptFile), b, 0o600)
 	}
 }
 

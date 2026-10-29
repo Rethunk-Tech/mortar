@@ -377,7 +377,7 @@ func (s *Service) SaveFile(game, profileID string, keys []string, include share.
 	if err != nil {
 		return Saved{}, err
 	}
-	if err := datadir.WriteFile(dest, buf.Bytes(), filePerm); err != nil {
+	if err := datadir.WriteFileAtomic(dest, buf.Bytes(), filePerm); err != nil {
 		return Saved{}, err
 	}
 	return Saved{Path: dest, Skipped: append([]string{}, skipped...)}, nil

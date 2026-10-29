@@ -105,7 +105,7 @@ func (s *Service) Backup(gameID, profileID, dest string, mods bool) (err error) 
 	if err != nil {
 		return err
 	}
-	return datadir.WriteStream(dest, 0o600, func(out io.Writer) error {
+	return datadir.WriteStreamAtomic(dest, 0o600, func(out io.Writer) error {
 		zw := zip.NewWriter(out)
 		doc := backupJSON{Version: backupVersion, Game: gameID, Profile: p, Store: map[string]string{}}
 		for prefix, dir := range dirs {

@@ -172,5 +172,5 @@ func (s Steam) SetLaunchOptions(appID string, merge func(current string) string)
 	if err := backupBeforeEdit(path, next, info.Mode().Perm()); err != nil {
 		return "", err
 	}
-	return value, datadir.WriteFile(path, next, info.Mode().Perm())
+	return value, datadir.WriteFileAtomic(path, next, info.Mode().Perm())
 }

@@ -65,7 +65,7 @@ func SavePreset(dataDir, game string, id mod.ID, name string, contents []byte) e
 	if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
 		return err
 	}
-	return datadir.WriteFile(path, normalized, 0o600)
+	return datadir.WriteFileAtomic(path, normalized, 0o600)
 }
 
 // LoadPreset returns a saved preset's JSON.

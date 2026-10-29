@@ -11,7 +11,7 @@ import (
 )
 
 // writersOutsideDatadir are the non-test files that create files directly. State under the data folder goes through
-// WriteFile, WriteJSON or fsx so a crash never leaves it truncated; these write something else.
+// WriteFileAtomic, WriteJSON or fsx so a crash never leaves it truncated; these write something else.
 var writersOutsideDatadir = map[string]string{
 	"components/components.go": "temp file beside the catalog cache, renamed over it",
 	"launch/output.go":         "a throwaway game log in the OS temp folder",
@@ -54,7 +54,7 @@ func TestFilesAreCreatedOnlyThroughDatadirOrFsx(t *testing.T) {
 				seen[rel] = true
 				return true
 			}
-			t.Errorf("%s: os.%s creates a file; write state through datadir.WriteFile or fsx, or list the file in writersOutsideDatadir with why", fset.Position(call.Pos()), sel.Sel.Name)
+			t.Errorf("%s: os.%s creates a file; write state through datadir.WriteFileAtomic or fsx, or list the file in writersOutsideDatadir with why", fset.Position(call.Pos()), sel.Sel.Name)
 			return true
 		})
 		return nil

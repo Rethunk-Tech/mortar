@@ -173,7 +173,7 @@ func nextStamp(zips []string, now time.Time) time.Time {
 
 func finishZip(backupsDir string, l saves.Layout, names []string, keep int, now, name time.Time, cause Cause, linked linker) (string, error) {
 	dst := filepath.Join(backupsDir, FileName(name))
-	if err := datadir.WriteStream(dst, 0o600, func(w io.Writer) error {
+	if err := datadir.WriteStreamAtomic(dst, 0o600, func(w io.Writer) error {
 		return writeZip(w, l, names, linked)
 	}); err != nil {
 		return "", err

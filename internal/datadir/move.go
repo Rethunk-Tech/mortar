@@ -369,7 +369,7 @@ func Relocate(src, dest, def string, shared ExtentSizer, reports ...func(CopyPro
 	if err := os.MkdirAll(def, 0o700); err != nil {
 		return err
 	}
-	if err := WriteFile(filepath.Join(def, PointerName), []byte(dest+"\n"), 0o600); err != nil {
+	if err := WriteFileAtomic(filepath.Join(def, PointerName), []byte(dest+"\n"), 0o600); err != nil {
 		return err
 	}
 	return removeOld(src, def)

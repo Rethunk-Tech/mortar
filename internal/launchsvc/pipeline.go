@@ -226,7 +226,7 @@ func (s *Service) applyRequiredSettings(gameID, own string) error {
 	if text == string(b) {
 		return nil
 	}
-	return datadir.WriteFile(own, []byte(text), 0o600)
+	return datadir.WriteFileAtomic(own, []byte(text), 0o600)
 }
 
 // swapSaves points the game's save folder at the profile's own for this launch when the profile keeps its saves

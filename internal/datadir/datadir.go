@@ -115,7 +115,7 @@ func SetLocation(dir string) error {
 	if err := os.MkdirAll(def, 0o700); err != nil {
 		return err
 	}
-	return WriteFile(filepath.Join(def, PointerName), []byte(filepath.Clean(dir)+"\n"), 0o600)
+	return WriteFileAtomic(filepath.Join(def, PointerName), []byte(filepath.Clean(dir)+"\n"), 0o600)
 }
 
 // underTemp reports whether dir is inside a temp root; t.TempDir creates under GOTMPDIR when it is set.

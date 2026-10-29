@@ -451,11 +451,11 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return
 	}
-	if err := datadir.WriteFile(runLogPath(dir, id), []byte(text), 0o600); err != nil {
+	if err := datadir.WriteFileAtomic(runLogPath(dir, id), []byte(text), 0o600); err != nil {
 		return
 	}
 	if hasPlayer {
-		_ = datadir.WriteFile(runPlayerLogPath(dir, id), []byte(launch.CapLog(player, launch.MaxLogBytes)), 0o600)
+		_ = datadir.WriteFileAtomic(runPlayerLogPath(dir, id), []byte(launch.CapLog(player, launch.MaxLogBytes)), 0o600)
 	}
 	idx, err := readIndex(dir)
 	if err != nil {

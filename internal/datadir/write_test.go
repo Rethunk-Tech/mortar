@@ -16,7 +16,7 @@ func TestWriteFileRemovesTempOnRenameFailure(t *testing.T) {
 	if err := os.Mkdir(path, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if err := WriteFile(path, []byte("data"), 0o600); err == nil {
+	if err := WriteFileAtomic(path, []byte("data"), 0o600); err == nil {
 		t.Fatal("expected rename failure onto a directory")
 	}
 	ents, err := os.ReadDir(dir)
@@ -38,7 +38,7 @@ func TestWriteStreamReplacesExistingAtomically(t *testing.T) {
 	if err := os.WriteFile(path, []byte("old"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := WriteStream(path, 0o600, func(w io.Writer) error {
+	if err := WriteStreamAtomic(path, 0o600, func(w io.Writer) error {
 		_, err := w.Write([]byte("new-content"))
 		return err
 	}); err != nil {
@@ -56,7 +56,7 @@ func TestWriteStreamErrorLeavesNoTempAndKeepsTarget(t *testing.T) {
 	if err := os.WriteFile(path, []byte("keep"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := WriteStream(path, 0o600, func(io.Writer) error {
+	if err := WriteStreamAtomic(path, 0o600, func(io.Writer) error {
 		return errors.New("write failed")
 	}); err == nil {
 		t.Fatal("expected error")

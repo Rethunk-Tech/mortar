@@ -23,7 +23,7 @@ func TestSetGmcmOptionIsPendingHistoryAndUndoable(t *testing.T) {
 	if err := os.MkdirAll(filepath.Join(dir, "gmcm"), 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if err := datadir.WriteFile(gmcm.CapturePath(dir, "smapi:demo.Mod"), capture, 0o600); err != nil {
+	if err := datadir.WriteFileAtomic(gmcm.CapturePath(dir, "smapi:demo.Mod"), capture, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	before, err := e.History("stardew", p.ID)

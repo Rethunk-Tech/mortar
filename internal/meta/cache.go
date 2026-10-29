@@ -106,7 +106,7 @@ func writeEntry[T any](path string, e entry[T]) {
 	if err != nil || os.MkdirAll(filepath.Dir(path), 0o700) != nil {
 		return
 	}
-	_ = datadir.WriteCacheStream(path, 0o600, func(w io.Writer) error {
+	_ = datadir.WriteStreamNoSync(path, 0o600, func(w io.Writer) error {
 		_, err := w.Write(b)
 		return err
 	})

@@ -52,7 +52,7 @@ func WriteJSON(path string, v any) error {
 	if err != nil {
 		return err
 	}
-	return WriteFile(path, b, 0o600)
+	return WriteFileAtomic(path, b, 0o600)
 }
 
 // WriteJSONIn is WriteJSON to name inside dir, making dir first.
@@ -74,7 +74,7 @@ func WriteOrRemove(path string, data []byte) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return err
 	}
-	return WriteFile(path, data, 0o600)
+	return WriteFileAtomic(path, data, 0o600)
 }
 
 // ReadJournal reads the JSON journal at path into v unless the file is missing or busy reports that it must be left
@@ -93,23 +93,23 @@ func ReadJournal(path string, busy func() bool, v any) (found bool, err error) {
 	return true, json.Unmarshal(b, v)
 }
 
-// WriteFile replaces path with data through a temp file and rename, so a crash never leaves it truncated.
-func WriteFile(path string, data []byte, perm os.FileMode) error {
-	return WriteStream(path, perm, func(w io.Writer) error {
+// WriteFileAtomic replaces path with data through a temp file and rename, so a crash never leaves it truncated.
+func WriteFileAtomic(path string, data []byte, perm os.FileMode) error {
+	return WriteStreamAtomic(path, perm, func(w io.Writer) error {
 		_, err := w.Write(data)
 		return err
 	})
 }
 
-// WriteStream replaces path with write's output through a temp file, fsync, and rename, so a crash never leaves it
+// WriteStreamAtomic replaces path with write's output through a temp file, fsync, and rename, so a crash never leaves it
 // truncated. write seeing a failure, or returning one, removes the temp file and leaves path unchanged.
-func WriteStream(path string, perm os.FileMode, write func(io.Writer) error) error {
+func WriteStreamAtomic(path string, perm os.FileMode, write func(io.Writer) error) error {
 	return writeStream(path, perm, true, write)
 }
 
-// WriteCacheStream is WriteStream without the fsyncs, for a file that only memoises a computation: a crash may
+// WriteStreamNoSync is WriteStreamAtomic without the fsyncs, for a file that only memoises a computation: a crash may
 // leave it torn, so the reader must treat an unreadable file as absent. Thousands of small fsyncs cost seconds.
-func WriteCacheStream(path string, perm os.FileMode, write func(io.Writer) error) error {
+func WriteStreamNoSync(path string, perm os.FileMode, write func(io.Writer) error) error {
 	return writeStream(path, perm, false, write)
 }
 

@@ -40,7 +40,7 @@ func readSide(dir, key string) sideFile {
 
 func writeSide(dir, key string, s sideFile) {
 	if b, err := json.Marshal(s); err == nil {
-		_ = datadir.WriteFile(sidePath(dir, key), b, 0o644)
+		_ = datadir.WriteFileAtomic(sidePath(dir, key), b, 0o644)
 	}
 }
 

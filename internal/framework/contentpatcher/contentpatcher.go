@@ -871,7 +871,7 @@ func writePackedCache(path string, v any) bool {
 		return false
 	}
 	packed, err := zipPackCache(raw)
-	return err == nil && os.MkdirAll(filepath.Dir(path), 0o700) == nil && datadir.WriteFile(path, packed, 0o600) == nil
+	return err == nil && os.MkdirAll(filepath.Dir(path), 0o700) == nil && datadir.WriteFileAtomic(path, packed, 0o600) == nil
 }
 
 func unzipPackCache(raw []byte) ([]byte, bool) {
@@ -1018,7 +1018,7 @@ func flushPackDiskCache(mods []framework.Mod) {
 		packDiskState.Unlock()
 		return
 	}
-	err := datadir.WriteStream(path, 0o600, func(w io.Writer) error {
+	err := datadir.WriteStreamAtomic(path, 0o600, func(w io.Writer) error {
 		bw := bufio.NewWriter(w)
 		if err := writePackCache(bw, diskPackCache{Version: contentPackParserVersion, Packs: entries}); err != nil {
 			return err

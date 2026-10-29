@@ -92,7 +92,7 @@ func (d *Direct) Fetch(ctx context.Context, rawURL, dstDir string) (string, erro
 		return "", fmt.Errorf("larger than %s", bytefmt.Format(limit))
 	}
 	dst := filepath.Join(dstDir, fileName(u))
-	err = datadir.WriteStream(dst, 0o600, func(w io.Writer) error {
+	err = datadir.WriteStreamAtomic(dst, 0o600, func(w io.Writer) error {
 		_, err := io.Copy(w, fsx.CapReader(resp.Body, limit))
 		if errors.Is(err, fsx.ErrTooLarge) {
 			err = fmt.Errorf("larger than %s", bytefmt.Format(limit))

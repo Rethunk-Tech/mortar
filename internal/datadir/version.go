@@ -36,7 +36,7 @@ func WriteVersioned(path string, v any) error {
 	if json.Unmarshal(b, &head) == nil {
 		if verr := CheckVersion(head.FormatVersion); verr != nil {
 			if _, statErr := os.Stat(path + ".newer"); statErr != nil {
-				if werr := WriteFile(path+".newer", b, 0o600); werr != nil {
+				if werr := WriteFileAtomic(path+".newer", b, 0o600); werr != nil {
 					return errors.Join(verr, werr)
 				}
 			}

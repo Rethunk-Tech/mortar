@@ -272,7 +272,7 @@ func (s *Service) writeCollection(ctx context.Context, p profile.Profile, t nexu
 	if err != nil {
 		return ExportedCollection{}, err
 	}
-	if err := datadir.WriteFile(dest, packed, filePerm); err != nil {
+	if err := datadir.WriteFileAtomic(dest, packed, filePerm); err != nil {
 		return ExportedCollection{}, err
 	}
 	external := 0

@@ -213,5 +213,5 @@ func (s *Store) carryConfig(game, fromID, toID string, side DiffSide) error {
 	if err != nil {
 		return err
 	}
-	return datadir.WriteFile(filepath.Join(dstDir, configFile), b, 0o600)
+	return datadir.WriteFileAtomic(filepath.Join(dstDir, configFile), b, 0o600)
 }

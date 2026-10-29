@@ -77,7 +77,7 @@ func (l *System) hostWrite(path string, b []byte) error {
 		if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 			return err
 		}
-		return datadir.WriteFile(path, b, desktopPerm)
+		return datadir.WriteFileAtomic(path, b, desktopPerm)
 	}
 	_, err := l.onHost("sh", "-c", `mkdir -p "$(dirname "$1")" && printf %s "$2" >"$1.mortar-new" && mv "$1.mortar-new" "$1"`,
 		"sh", path, string(b))

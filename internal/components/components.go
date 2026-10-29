@@ -1695,7 +1695,7 @@ func (c *Client) Download(ctx context.Context, component Component, dest string)
 	if !strings.EqualFold(sum, component.SHA256) {
 		return fmt.Errorf("component %s has sha256 %s, want %s", component.Name, sum, component.SHA256)
 	}
-	return datadir.WriteStream(dest, 0o600, func(w io.Writer) error {
+	return datadir.WriteStreamAtomic(dest, 0o600, func(w io.Writer) error {
 		f, err := fsx.Open(tmpPath)
 		if err != nil {
 			return err

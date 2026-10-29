@@ -957,7 +957,7 @@ func writeSnapshotFile(dir, id string, entries []Entry) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return err
 	}
-	return datadir.WriteStream(path, 0o600, func(w io.Writer) error {
+	return datadir.WriteStreamAtomic(path, 0o600, func(w io.Writer) error {
 		zw := gzip.NewWriter(w)
 		if err := json.NewEncoder(zw).Encode(entries); err != nil {
 			return err

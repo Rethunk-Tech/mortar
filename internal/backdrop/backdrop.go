@@ -192,7 +192,7 @@ const keptCopies = 8
 
 // keep writes one shrunk copy and drops the oldest beyond keptCopies.
 func keep(dir, path string, b []byte) {
-	if os.MkdirAll(dir, 0o700) != nil || datadir.WriteFile(path, b, 0o600) != nil {
+	if os.MkdirAll(dir, 0o700) != nil || datadir.WriteFileAtomic(path, b, 0o600) != nil {
 		return
 	}
 	entries, err := os.ReadDir(dir)

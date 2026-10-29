@@ -101,7 +101,7 @@ func restoreGmcmPending(dir, targetID, headID string) bool {
 		if err := os.MkdirAll(pendingDir, 0o700); err != nil {
 			return false
 		}
-		_ = datadir.WriteFile(filepath.Join(pendingDir, name), body, 0o600)
+		_ = datadir.WriteFileAtomic(filepath.Join(pendingDir, name), body, 0o600)
 	}
 	return true
 }
@@ -116,7 +116,7 @@ func storeHistoryConfigs(dir, snapshotID string, idx map[string]map[string]strin
 			if err := os.MkdirAll(filepath.Dir(blob), 0o700); err != nil {
 				return
 			}
-			if err := datadir.WriteFile(blob, body, 0o600); err != nil {
+			if err := datadir.WriteFileAtomic(blob, body, 0o600); err != nil {
 				return
 			}
 		} else if err != nil {
@@ -208,7 +208,7 @@ func restoreHistoryConfig(dir, snapshotID, key, file string) error {
 	if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
 		return err
 	}
-	return datadir.WriteFile(dst, body, 0o600)
+	return datadir.WriteFileAtomic(dst, body, 0o600)
 }
 
 func readSnapshotIndex(dir, snapshotID string) (map[string]map[string]string, error) {

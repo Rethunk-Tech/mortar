@@ -121,7 +121,7 @@ func (d Driver) CachedLooks(key string, names []string) (map[string]Look, error)
 	}
 	slices.Sort(mark.Names)
 	if b, err := json.Marshal(mark); err == nil {
-		_ = datadir.WriteFile(markPath, b, 0o644)
+		_ = datadir.WriteFileAtomic(markPath, b, 0o644)
 	}
 	return out, nil
 }

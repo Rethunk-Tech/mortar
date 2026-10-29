@@ -139,7 +139,7 @@ func (s *Service) MeasureNextLaunch(gameID, profileID string) error {
 	if err := os.MkdirAll(filepath.Join(dir, startupDir), 0o700); err != nil {
 		return err
 	}
-	return datadir.WriteFile(filepath.Join(dir, startupDir, measureMarker), nil, 0o600)
+	return datadir.WriteFileAtomic(filepath.Join(dir, startupDir, measureMarker), nil, 0o600)
 }
 
 // CancelMeasureNextLaunch takes back a pending measured launch; the next launch is timed as usual.

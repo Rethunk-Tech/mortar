@@ -52,7 +52,7 @@ func (s *Service) launchToMenu(gameID, profileID string) (func(), error) {
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return nil, err
 	}
-	if err := datadir.WriteFile(path, nil, 0o600); err != nil {
+	if err := datadir.WriteFileAtomic(path, nil, 0o600); err != nil {
 		return nil, err
 	}
 	return func() { _ = fsx.Remove(path) }, nil

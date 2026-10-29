@@ -134,7 +134,7 @@ func TestReadsTheBridgeFixtures(t *testing.T) {
 		if err := os.MkdirAll(filepath.Dir(dest), 0o750); err != nil {
 			t.Fatal(err)
 		}
-		if err := datadir.WriteFile(dest, raw, 0o600); err != nil {
+		if err := datadir.WriteFileAtomic(dest, raw, 0o600); err != nil {
 			t.Fatal(err)
 		}
 	}
