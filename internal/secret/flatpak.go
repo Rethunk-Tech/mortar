@@ -12,6 +12,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -137,11 +138,27 @@ func keyringPlain(dir string) error {
 		return err
 	}
 	for name, v := range m {
-		if err := keyringSet(service, name, v); err != nil {
+		svc, item := service, name
+		if ns, rest, ok := sharedItem(name); ok {
+			svc, item = ns, rest
+		}
+		if err := keyringSet(svc, item, v); err != nil {
 			return explain(err)
 		}
 	}
 	return fsx.Remove(plain)
+}
+
+// sharedNamespaces are the services other programs read, which the plain file stores as "<service>.<name>".
+var sharedNamespaces = []string{"thunderstore"}
+
+func sharedItem(flat string) (svc, name string, ok bool) {
+	for _, ns := range sharedNamespaces {
+		if rest, found := strings.CutPrefix(flat, ns+"."); found && rest != "" {
+			return ns, rest, true
+		}
+	}
+	return "", "", false
 }
 
 // Plaintext reports whether secrets are kept in the unencrypted fallback file: inside a Flatpak with neither the
@@ -320,11 +337,14 @@ func flatpakDelete(svc, name string) error {
 	}
 	if !host {
 		fn := flatpakName(svc, name)
-		return update(func(m map[string]string) bool {
+		if err := update(func(m map[string]string) bool {
 			_, ok := m[fn]
 			delete(m, fn)
 			return ok
-		})
+		}); err != nil {
+			return err
+		}
+		return dropHost(svc, name)
 	}
 	if err := keyringDelete(svc, name); err != nil && !errors.Is(err, ErrNotFound) {
 		return explain(err)
@@ -377,7 +397,48 @@ func flatpakGet(svc, name string) (string, error) {
 		return "", err
 	}
 	if !ok {
+		if key != nil {
+			return adoptHost(svc, name)
+		}
 		return "", ErrNotFound
 	}
 	return v, nil
+}
+
+// hostItems is the host-keyring namings of a secret: its own, then the one an earlier release wrote.
+func hostItems(svc, name string) [][2]string {
+	items := [][2]string{{svc, name}}
+	if svc != service {
+		items = append(items, [2]string{service, flatpakName(svc, name)})
+	}
+	return items
+}
+
+// adoptHost moves a secret stored in the host keyring, while the portal was missing, into the sealed file. A host
+// with no Secret Service is a plain miss.
+func adoptHost(svc, name string) (string, error) {
+	for _, it := range hostItems(svc, name) {
+		v, err := keyringGet(it[0], it[1])
+		if errors.Is(err, ErrNotFound) || err != nil && noKeyringService(err) {
+			continue
+		}
+		if err != nil {
+			return "", explain(err)
+		}
+		if err := update(func(m map[string]string) bool { m[flatpakName(svc, name)] = v; return true }); err != nil {
+			return "", err
+		}
+		return v, dropHost(svc, name)
+	}
+	return "", ErrNotFound
+}
+
+// dropHost removes any host-keyring copy of a secret that lives in the sealed file.
+func dropHost(svc, name string) error {
+	for _, it := range hostItems(svc, name) {
+		if err := keyringDelete(it[0], it[1]); err != nil && !errors.Is(err, ErrNotFound) && !noKeyringService(err) {
+			return explain(err)
+		}
+	}
+	return nil
 }

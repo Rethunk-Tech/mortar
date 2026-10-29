@@ -108,8 +108,9 @@ func run(svc, name string, f *flight) {
 	if inflight[key] == f {
 		delete(inflight, key)
 	}
-	deliver := f.stuck && !f.stale && err == nil
-	if deliver {
+	// A stale read is not kept, but its caller was told to wait, so it still hears back and reads the new value.
+	deliver := f.stuck && (f.stale || err == nil)
+	if deliver && !f.stale {
 		late[key] = v
 	}
 	close(f.done)
@@ -182,7 +183,7 @@ func explain(err error) error {
 	case noKeyringService(err):
 		return usererr.New(usererr.Unknown, "No keyring service is running. Install or start gnome-keyring or KWallet, then try again.")
 	case strings.Contains(err.Error(), unlockFailed):
-		return usererr.New(usererr.Locked, "The keyring is locked. Unlock it, then try again.")
+		return usererr.New(usererr.Unknown, "The keyring is locked. Unlock it, then try again.")
 	}
 	return err
 }

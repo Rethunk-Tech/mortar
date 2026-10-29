@@ -13,6 +13,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/portal"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 func TestExplainMapsMissingProvider(t *testing.T) {
@@ -304,7 +305,8 @@ func TestSetAndDeleteDiscardAReadStillWaiting(t *testing.T) {
 		}
 		keyringSet = func(_, name, v string) error { ring[name] = v; return nil }
 		keyringDelete = func(_, name string) error { delete(ring, name); return nil }
-		OnUnlocked = func() { t.Error("OnUnlocked fired for a discarded read") }
+		fired := make(chan struct{}, 1)
+		OnUnlocked = func() { fired <- struct{}{} }
 		t.Cleanup(func() {
 			keyringGet = func(_, name string) (string, error) { return "", errors.New("unset " + name) }
 			OnUnlocked = func() {}
@@ -319,7 +321,11 @@ func TestSetAndDeleteDiscardAReadStillWaiting(t *testing.T) {
 			_ = Set("k", "new")
 		}
 		close(release)
-		time.Sleep(50 * time.Millisecond)
+		select {
+		case <-fired:
+		case <-time.After(5 * time.Second):
+			t.Fatalf("delete=%v: the caller told to wait never heard back", del)
+		}
 		keyringGet = func(_, name string) (string, error) {
 			if v, ok := ring[name]; ok {
 				return v, nil
@@ -428,4 +434,55 @@ func TestHostKeyringSharedItemNaming(t *testing.T) {
 			t.Fatalf("got %v", ring)
 		}
 	})
+}
+
+func TestDismissedUnlockIsAnErrorKind(t *testing.T) {
+	err := explain(errors.New("failed to unlock correct collection '/x'"))
+	var ue *usererr.Error
+	if !errors.As(err, &ue) || ue.Kind() != usererr.Unknown || !strings.Contains(err.Error(), "The keyring is locked. Unlock it, then try again.") {
+		t.Fatalf("got %v", err)
+	}
+}
+
+func TestHostItemsAdoptedWhenPortalAppears(t *testing.T) {
+	for _, legacy := range []bool{false, true} {
+		flatpakEnv(t, func() ([]byte, error) { return nil, errors.New("no portal") })
+		ring := map[[2]string]string{}
+		setHostRingBySvc(ring)
+		host := [2]string{"thunderstore", "team"}
+		if legacy {
+			host = [2]string{"mortar", "thunderstore.team"}
+		}
+		ring[host] = "tok"
+		portalSecret = fixedPortal("portal-secret")
+		keyDone, hostDone = false, false
+		if v, err := GetIn("thunderstore", "team"); err != nil || v != "tok" {
+			t.Fatalf("legacy=%v: got %q, %v", legacy, v, err)
+		}
+		if len(ring) != 0 {
+			t.Fatalf("legacy=%v: host copy left behind: %v", legacy, ring)
+		}
+		if v, err := GetIn("thunderstore", "team"); err != nil || v != "tok" {
+			t.Fatalf("legacy=%v: sealed copy missing: %q, %v", legacy, v, err)
+		}
+		ring[host] = "tok"
+		if err := DeleteIn("thunderstore", "team"); err != nil || len(ring) != 0 {
+			t.Fatalf("legacy=%v: delete left %v, %v", legacy, ring, err)
+		}
+	}
+}
+
+func TestPlainMigrationUsesSharedNaming(t *testing.T) {
+	dir := flatpakEnv(t, func() ([]byte, error) { return nil, errors.New("no portal") })
+	if err := save(filepath.Join(dir, plainFile), nil, map[string]string{"thunderstore.team.x": "t", "nexus": "k"}); err != nil {
+		t.Fatal(err)
+	}
+	ring := map[[2]string]string{}
+	setHostRingBySvc(ring)
+	if v, err := GetIn("thunderstore", "team.x"); err != nil || v != "t" {
+		t.Fatalf("got %q, %v", v, err)
+	}
+	if ring[[2]string{"thunderstore", "team.x"}] != "t" || ring[[2]string{"mortar", "nexus"}] != "k" || len(ring) != 2 {
+		t.Fatalf("ring %v", ring)
+	}
 }
