@@ -6,15 +6,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/http"
 	"net/url"
 	"os"
 	"runtime"
 	"strings"
-	"time"
 	"unicode/utf8"
 
-	"github.com/Rethunk-Tech/go-httpkit"
+	"github.com/Rethunk-Tech/go-smapiweb"
 
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
@@ -36,7 +34,6 @@ const (
 
 	smapiBase = "https://smapi.io"
 	issuesURL = "https://github.com/Rethunk-Tech/mortar/issues/new"
-	timeout   = 60 * time.Second
 )
 
 // Service reads and uploads the log, and builds the bug report link.
@@ -46,7 +43,6 @@ type Service struct {
 	env     func(gameID string) problems.Environment
 	home    string
 	modsDir func(gameID, profileID string) (string, error)
-	client  *http.Client
 
 	// Dir is the user data folder. Nil uses datadir.Dir. Tests point it at a temp fixture.
 	Dir func() (string, error)
@@ -72,12 +68,7 @@ func NewService(version string, env func(gameID string) problems.Environment, ho
 }
 
 func newService(base, version string, env func(string) problems.Environment) *Service {
-	return &Service{base: base, version: version, env: env, client: &http.Client{
-		Timeout: timeout,
-		// smapi.io answers success with a redirect to the log's page and failure with a 200 page, so the redirect
-		// itself is the answer.
-		CheckRedirect: httpkit.NoFollow,
-	}}
+	return &Service{base: base, version: version, env: env}
 }
 
 // Log returns the game's loader log as written on disk, or "" when there is none yet or it is another profile's.
@@ -115,14 +106,7 @@ func (s *Service) Upload(ctx context.Context, gameID, loaderID, log string) (str
 	if err := CanShare(gameID, loaderID); err != nil {
 		return "", err
 	}
-	if strings.TrimSpace(log) == "" {
-		return "", errors.New("the log is empty")
-	}
-	if len(log) > MaxLog {
-		return "", errors.New("the log is too large to upload")
-	}
-	c := &logshare.Client{BaseURL: strings.TrimRight(s.base, "/") + "/log", HTTP: s.client}
-	return c.Upload(ctx, log)
+	return logshare.Upload(ctx, &smapiweb.Client{LogURL: strings.TrimRight(s.base, "/") + "/log"}, log, MaxLog)
 }
 
 // BugReport is what the user wrote in Mortar's Report a bug dialog.

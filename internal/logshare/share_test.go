@@ -2,71 +2,29 @@ package logshare
 
 import (
 	"context"
-	"errors"
-	"io"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
-	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/go-httpkit"
+	"github.com/Rethunk-Tech/go-smapiweb"
 )
 
-func TestUploadPostsFormAndReturnsLocation(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	var gotBody string
-	var gotType string
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			t.Errorf("method %s", r.Method)
-		}
-		gotType = r.Header.Get("Content-Type")
-		b, _ := io.ReadAll(r.Body)
-		gotBody = string(b)
-		w.Header().Set("Location", "/log/abc123def")
-		w.WriteHeader(http.StatusFound)
-	}))
-	t.Cleanup(srv.Close)
-
-	c := &Client{BaseURL: srv.URL, HTTP: srv.Client()}
-	c.HTTP.CheckRedirect = httpkit.NoFollow
-	link, err := c.Upload(context.Background(), "SMAPI 4.0 for Stardew Valley")
-	if err != nil {
-		t.Fatal(err)
+func TestUploadWording(t *testing.T) {
+	cases := map[string]struct {
+		handler http.HandlerFunc
+		want    string
+	}{
+		"status": {func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusBadGateway) }, "smapi.io answered 502 Bad Gateway"},
+		"page":   {func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write([]byte("<html>")) }, "smapi.io did not accept the log"},
 	}
-	if !strings.HasSuffix(link, "/log/abc123def") {
-		t.Fatalf("link %q", link)
-	}
-	if !strings.HasPrefix(gotType, "application/x-www-form-urlencoded") {
-		t.Fatalf("content-type %q", gotType)
-	}
-	vals, err := url.ParseQuery(gotBody)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if vals.Get("input") != "SMAPI 4.0 for Stardew Valley" {
-		t.Fatalf("input %q", vals.Get("input"))
-	}
-}
-
-func TestUploadRejectsEmpty(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	c := New()
-	if _, err := c.Upload(context.Background(), "  \n"); !errors.Is(err, ErrEmpty) {
-		t.Fatalf("got %v", err)
-	}
-}
-
-func TestUploadNeedsLogPageRedirect(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	}))
-	t.Cleanup(srv.Close)
-	c := &Client{BaseURL: srv.URL, HTTP: srv.Client()}
-	c.HTTP.CheckRedirect = httpkit.NoFollow
-	if _, err := c.Upload(context.Background(), "not empty"); err == nil {
-		t.Fatal("expected error")
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			srv := httptest.NewServer(tc.handler)
+			t.Cleanup(srv.Close)
+			_, err := Upload(context.Background(), &smapiweb.Client{HTTP: srv.Client(), LogURL: srv.URL}, "log", 0)
+			if err == nil || err.Error() != tc.want {
+				t.Fatalf("got %v, want %q", err, tc.want)
+			}
+		})
 	}
 }

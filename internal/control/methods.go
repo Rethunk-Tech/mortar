@@ -17,6 +17,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/go-smapiweb"
 	"github.com/Rethunk-Tech/mortar/internal/archivesvc"
 	"github.com/Rethunk-Tech/mortar/internal/avscan"
 	"github.com/Rethunk-Tech/mortar/internal/backup"
@@ -26,6 +27,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datasvc"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/lan"
+	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
 	"github.com/Rethunk-Tech/mortar/internal/loadersvc"
 	"github.com/Rethunk-Tech/mortar/internal/logshare"
@@ -1564,7 +1566,7 @@ func (s *Services) shareLog(ctx context.Context, gameID, id, run string) (map[st
 	if err != nil {
 		return nil, err
 	}
-	link, err := logshare.New().Upload(ctx, l.Text)
+	link, err := logshare.Upload(ctx, &smapiweb.Client{}, l.Text, launch.MaxLogBytes)
 	if err != nil {
 		return nil, err
 	}
