@@ -5,6 +5,7 @@ package launch
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -102,10 +103,12 @@ func Terminate(pid int, grace time.Duration) error {
 	return nil
 }
 
-// Alive reports whether a process with this pid exists.
+// Alive reports whether a process with this pid exists. In a Flatpak a failure to ask the host reads as false; callers
+// that must tell the two apart (Stop, WaitPID) use hostProbe.
 func Alive(pid int) bool {
 	if sandbox.InFlatpak() {
-		return hostAlive(pid)
+		alive, err := hostProbe(pid)
+		return err == nil && alive
 	}
 	err := syscall.Kill(pid, 0)
 	return err == nil || errors.Is(err, syscall.EPERM)
@@ -127,29 +130,28 @@ func hostProbe(pid int) (bool, error) {
 	return strings.TrimSpace(string(out)) == "alive", nil
 }
 
-func hostAlive(pid int) bool {
-	alive, err := hostProbe(pid)
-	return err == nil && alive
-}
-
 func hostTerminate(pid int, grace time.Duration) error {
 	alive, err := hostProbe(pid)
-	if err != nil {
+	if err != nil || !alive {
 		return err
 	}
-	if !alive {
-		return nil
-	}
-	if hostKill("TERM", pid) != nil && !hostAlive(pid) {
-		return nil
+	if killErr := hostKill("TERM", pid); killErr != nil {
+		if alive, err := hostProbe(pid); err != nil || !alive {
+			return err
+		}
 	}
 	deadline := time.Now().Add(grace)
 	for time.Now().Before(deadline) {
-		if !hostAlive(pid) {
-			return nil
+		if alive, err := hostProbe(pid); err != nil || !alive {
+			return err
 		}
 		time.Sleep(100 * time.Millisecond)
 	}
-	_ = hostKill("KILL", pid)
+	killErr := hostKill("KILL", pid)
+	if alive, err := hostProbe(pid); err != nil {
+		return err
+	} else if alive {
+		return fmt.Errorf("process %d is still running after KILL: %w", pid, killErr)
+	}
 	return nil
 }

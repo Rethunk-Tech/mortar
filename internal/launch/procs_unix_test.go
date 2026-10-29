@@ -281,3 +281,22 @@ func TestProcessesSkipsAProgramWhoseExecutableIsTheSystems(t *testing.T) {
 		t.Fatalf("a game run by the system's Wine was not found: %+v, %v", got, err)
 	}
 }
+
+func TestHostTerminateReportsAProbeThatFailsAfterTERM(t *testing.T) {
+	old, oldEnv := sandbox.Output, sandbox.Getenv
+	t.Cleanup(func() { sandbox.Output, sandbox.Getenv = old, oldEnv })
+	sandbox.Getenv = func(string) string { return "x" }
+	probes := 0
+	sandbox.Output = func(args ...string) ([]byte, error) {
+		if args[len(args)-2] != "sh" {
+			return nil, nil
+		}
+		if probes++; probes == 1 {
+			return []byte("alive\n"), nil
+		}
+		return nil, errors.New("flatpak-spawn: gone")
+	}
+	if err := Terminate(42, time.Second); err == nil {
+		t.Fatal("a game that may still run was reported stopped")
+	}
+}
