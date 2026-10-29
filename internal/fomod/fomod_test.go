@@ -251,24 +251,29 @@ func TestRequiredPluginNotUsableUnderFlagsMatches(t *testing.T) {
 }
 
 func TestLargeGroupIsLinear(t *testing.T) {
-	const n = 40000
-	g := Group{Name: "G", Type: SelectAny}
-	names := make([]string, n)
-	for i := range n {
-		names[i] = "p" + strconv.Itoa(i)
-		g.Plugins = append(g.Plugins, Plugin{Name: names[i], TypeName: TypeOptional, Files: []Op{{Source: names[i]}}})
+	run := func(n int) time.Duration {
+		g := Group{Name: "G", Type: SelectAny}
+		names := make([]string, n)
+		for i := range n {
+			names[i] = "p" + strconv.Itoa(i)
+			g.Plugins = append(g.Plugins, Plugin{Name: names[i], TypeName: TypeOptional, Files: []Op{{Source: names[i]}}})
+		}
+		cfg := Config{Steps: []Step{{Name: "S", Groups: []Group{g}}}}
+		choices := Choices{"S": {"G": names}}
+		start := time.Now()
+		if !Match(cfg, choices, EvalContext{}) {
+			t.Fatal("no match")
+		}
+		if got := len(Resolve(cfg, choices, EvalContext{})); got != n {
+			t.Fatalf("ops = %d", got)
+		}
+		return time.Since(start)
 	}
-	cfg := Config{Steps: []Step{{Name: "S", Groups: []Group{g}}}}
-	choices := Choices{"S": {"G": names}}
-	start := time.Now()
-	if !Match(cfg, choices, EvalContext{}) {
-		t.Fatal("no match")
-	}
-	if got := len(Resolve(cfg, choices, EvalContext{})); got != n {
-		t.Fatalf("ops = %d", got)
-	}
-	if d := time.Since(start); d > 2*time.Second {
-		t.Fatalf("Match+Resolve took %v for %d plugins", d, n)
+	// A ratio rather than a wall-clock limit, so a loaded runner passes: 8x the plugins costs about 8x when linear
+	// and 64x when quadratic.
+	small, large := run(5000), run(40000)
+	if ratio := float64(large) / float64(small); ratio > 24 {
+		t.Fatalf("8x the plugins took %.1fx as long (%v vs %v)", ratio, large, small)
 	}
 }
 
