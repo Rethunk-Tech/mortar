@@ -151,7 +151,7 @@ func (c *Client) CheckUpdates(ctx context.Context, req UpdateRequest) []UpdateRe
 		e, ok := store[req.key(m)]
 		switch {
 		// Another build's answers are asked now, and serve only while the API cannot be reached.
-		case ok && !req.Fresh && e.Build == build && now.Sub(e.Fetched) < updatesTTL:
+		case ok && !req.Fresh && e.Build == build && c.young(e.Fetched, updatesTTL):
 			out[i] = e.Value
 		case ok && !req.Fresh && e.Build == build && e.Value.Known:
 			out[i] = e.Value
@@ -188,7 +188,7 @@ func (c *Client) CheckUpdates(ctx context.Context, req UpdateRequest) []UpdateRe
 	}
 	if dirty && pathErr == nil {
 		for k, e := range store {
-			if now.Sub(e.Fetched) > 24*updatesTTL {
+			if age := now.Sub(e.Fetched); age < 0 || age > 24*updatesTTL {
 				delete(store, k)
 			}
 		}

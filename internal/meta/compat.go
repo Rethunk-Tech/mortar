@@ -96,7 +96,7 @@ func (c *Client) CompatList(ctx context.Context) (CompatIndex, error) {
 		}
 		return info
 	}
-	if now := stamp(); now != nil && c.now().Sub(now.ModTime()) < compatTTL {
+	if now := stamp(); now != nil && c.young(now.ModTime(), compatTTL) {
 		c.compat.mu.Lock()
 		memo, index := c.compat.stamp, c.compat.index
 		c.compat.mu.Unlock()

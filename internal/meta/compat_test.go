@@ -213,3 +213,21 @@ func TestParseCompatJSONSplitsACommaSeparatedID(t *testing.T) {
 		}
 	}
 }
+
+func TestCompatListMemoIgnoresAFileStampedInTheFuture(t *testing.T) {
+	var asked atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		asked.Add(1)
+		_, _ = w.Write([]byte(compatSample))
+	}))
+	t.Cleanup(srv.Close)
+	now := time.Now()
+	c := &Client{HTTP: srv.Client(), CacheDir: t.TempDir(), CompatURL: srv.URL, Now: func() time.Time { return now }}
+	if _, err := c.CompatList(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+	now = now.Add(-30 * 24 * time.Hour) // clock set back a month: the file is now dated in the future
+	if _, err := c.CompatList(t.Context()); err != nil || asked.Load() != 2 {
+		t.Fatalf("asked %d times, %v; want the future-stamped memo refused", asked.Load(), err)
+	}
+}
