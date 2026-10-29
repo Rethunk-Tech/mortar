@@ -42,6 +42,8 @@ type flight struct {
 	err   error
 	// stuck is set once a caller gave up on it; later callers then fail at once instead of each waiting.
 	stuck bool
+	// stale is set when a Set or Delete of the name overtook the read: its value must not reach the cache.
+	stale bool
 }
 
 var (
@@ -103,14 +105,16 @@ func run(svc, name string, f *flight) {
 	}
 	mu.Lock()
 	f.value, f.err = v, err
-	delete(inflight, key)
-	wasStuck := f.stuck
-	if wasStuck && err == nil {
+	if inflight[key] == f {
+		delete(inflight, key)
+	}
+	deliver := f.stuck && !f.stale && err == nil
+	if deliver {
 		late[key] = v
 	}
 	close(f.done)
 	mu.Unlock()
-	if wasStuck && err == nil {
+	if deliver {
 		OnUnlocked()
 	}
 }
@@ -128,8 +132,13 @@ func SetIn(svc, name, value string) error {
 }
 
 func forget(svc, name string) {
+	key := svc + "\n" + name
 	mu.Lock()
-	delete(late, svc+"\n"+name)
+	delete(late, key)
+	if f, ok := inflight[key]; ok {
+		f.stale = true
+		delete(inflight, key)
+	}
 	mu.Unlock()
 }
 

@@ -287,3 +287,48 @@ func TestStoreDirNeedsAHome(t *testing.T) {
 		t.Fatalf("storeDir with no home = %q, want an error", d)
 	}
 }
+
+func TestSetAndDeleteDiscardAReadStillWaiting(t *testing.T) {
+	prev := getTimeout
+	getTimeout = 20 * time.Millisecond
+	t.Cleanup(func() { getTimeout = prev })
+	for _, del := range []bool{false, true} {
+		ring := map[string]string{"k": "old"}
+		release := make(chan struct{})
+		read := make(chan struct{})
+		keyringGet = func(_, name string) (string, error) {
+			v := ring[name]
+			close(read)
+			<-release
+			return v, nil
+		}
+		keyringSet = func(_, name, v string) error { ring[name] = v; return nil }
+		keyringDelete = func(_, name string) error { delete(ring, name); return nil }
+		OnUnlocked = func() { t.Error("OnUnlocked fired for a discarded read") }
+		t.Cleanup(func() {
+			keyringGet = func(_, name string) (string, error) { return "", errors.New("unset " + name) }
+			OnUnlocked = func() {}
+		})
+		if _, err := Get("k"); !errors.Is(err, ErrWaitingForUnlock) {
+			t.Fatal(err)
+		}
+		<-read
+		if del {
+			_ = Delete("k")
+		} else {
+			_ = Set("k", "new")
+		}
+		close(release)
+		time.Sleep(50 * time.Millisecond)
+		keyringGet = func(_, name string) (string, error) {
+			if v, ok := ring[name]; ok {
+				return v, nil
+			}
+			return "", ErrNotFound
+		}
+		v, err := Get("k")
+		if del && !errors.Is(err, ErrNotFound) || !del && v != "new" {
+			t.Fatalf("delete=%v: got %q, %v after the stale read finished", del, v, err)
+		}
+	}
+}
