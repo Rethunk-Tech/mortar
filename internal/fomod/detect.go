@@ -1,17 +1,20 @@
 package fomod
 
 import (
+	"bytes"
 	"encoding/binary"
 	"os"
 	"path/filepath"
 	"strings"
 	"unicode/utf16"
-	"unicode/utf8"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 const configName = "moduleconfig.xml"
+
+// maxConfigBytes bounds a ModuleConfig.xml from an archive; the largest real one is about 220 KB.
+const maxConfigBytes = 16 << 20
 
 // FindConfig returns the path of fomod/ModuleConfig.xml under root.
 // The fomod directory may sit at root or one level down; names are matched
@@ -65,7 +68,12 @@ func findAtDepth(dir string, depth int) (string, error) {
 }
 
 func readXMLBytes(path string) ([]byte, error) {
-	raw, err := fsx.ReadFile(path)
+	f, err := fsx.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = f.Close() }()
+	raw, err := fsx.ReadCapped(f, maxConfigBytes)
 	if err != nil {
 		return nil, err
 	}
@@ -82,8 +90,12 @@ func decodeXML(raw []byte) []byte {
 	if len(raw) >= 3 && raw[0] == 0xEF && raw[1] == 0xBB && raw[2] == 0xBF {
 		return raw[3:]
 	}
-	if len(raw) >= 2 && raw[1] == 0 && !utf8.Valid(raw) {
+	// XML appendix F: a BOM-less UTF-16 document starts with an encoded "<?".
+	switch {
+	case bytes.HasPrefix(raw, []byte("<\x00?\x00")):
 		return utf16ToUTF8(raw, binary.LittleEndian)
+	case bytes.HasPrefix(raw, []byte("\x00<\x00?")):
+		return utf16ToUTF8(raw, binary.BigEndian)
 	}
 	return raw
 }

@@ -2,6 +2,7 @@ package fomod
 
 import (
 	"encoding/binary"
+	"errors"
 	"io/fs"
 	"math"
 	"os"
@@ -11,6 +12,8 @@ import (
 	"testing"
 	"time"
 	"unicode/utf16"
+
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 func loadFixture(t *testing.T, name string) Config {
@@ -265,5 +268,48 @@ func TestLargeGroupIsLinear(t *testing.T) {
 	}
 	if d := time.Since(start); d > 2*time.Second {
 		t.Fatalf("Match+Resolve took %v for %d plugins", d, n)
+	}
+}
+
+func utf16Bytes(s string, order binary.AppendByteOrder) []byte {
+	var raw []byte
+	for _, u := range utf16.Encode([]rune(s)) {
+		raw = order.AppendUint16(raw, u)
+	}
+	return raw
+}
+
+func TestDecodeXMLBOMlessUTF16(t *testing.T) {
+	doc := `<?xml version="1.0" encoding="utf-16"?><config><moduleName>Wide</moduleName></config>`
+	for name, order := range map[string]binary.AppendByteOrder{"LE": binary.LittleEndian, "BE": binary.BigEndian} {
+		cfg, err := Parse(decodeXML(utf16Bytes(doc, order)))
+		if err != nil || cfg.ModuleName != "Wide" {
+			t.Fatalf("%s: %+v %v", name, cfg, err)
+		}
+	}
+}
+
+func TestParseDeclaredAndUndeclaredLegacyEncodings(t *testing.T) {
+	for _, decl := range []string{`encoding="utf-16"`, `encoding="UTF-16"`} {
+		cfg, err := Parse([]byte(`<?xml version="1.0" ` + decl + `?><config><moduleName>Caf` + "é" + `</moduleName></config>`))
+		if err != nil || cfg.ModuleName != "Café" {
+			t.Fatalf("%s: %+v %v", decl, cfg, err)
+		}
+	}
+	for _, decl := range []string{`<?xml version="1.0" encoding="windows-1252"?>`, `<?xml version="1.0" encoding="ISO-8859-1"?>`, ""} {
+		cfg, err := Parse([]byte(decl + "<config><moduleName>Caf\xe9</moduleName></config>"))
+		if err != nil || cfg.ModuleName != "Café" {
+			t.Fatalf("%q: %+v %v", decl, cfg, err)
+		}
+	}
+}
+
+func TestLoadRefusesOversizedConfig(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "ModuleConfig.xml")
+	if err := os.WriteFile(path, make([]byte, maxConfigBytes+1), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Load(path); !errors.Is(err, fsx.ErrTooLarge) {
+		t.Fatalf("err = %v", err)
 	}
 }

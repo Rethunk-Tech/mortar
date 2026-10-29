@@ -1,16 +1,28 @@
 package fomod
 
 import (
+	"bytes"
 	"encoding/xml"
 	"fmt"
+	"io"
 	"strconv"
 	"strings"
+	"unicode/utf8"
+
+	"golang.org/x/text/encoding/charmap"
 )
 
 // Parse reads a ModuleConfig.xml document.
 func Parse(data []byte) (Config, error) {
 	var raw xmlConfig
-	if err := xml.Unmarshal(data, &raw); err != nil {
+	if !utf8.Valid(data) && !declaresEncoding(data) {
+		if b, err := charmap.Windows1252.NewDecoder().Bytes(data); err == nil {
+			data = b
+		}
+	}
+	dec := xml.NewDecoder(bytes.NewReader(data))
+	dec.CharsetReader = charsetReader
+	if err := dec.Decode(&raw); err != nil {
 		return Config{}, fmt.Errorf("fomod: %w", err)
 	}
 	cfg := Config{ModuleName: strings.TrimSpace(raw.ModuleName)}
@@ -47,6 +59,29 @@ func Parse(data []byte) (Config, error) {
 		cfg.Conditionals = append(cfg.Conditionals, c)
 	}
 	return cfg, nil
+}
+
+// charsetReader serves an XML declaration other than UTF-8. UTF-16 is already UTF-8 by the time Parse runs
+// (decodeXML), so only the declaration is left to accept.
+func charsetReader(label string, input io.Reader) (io.Reader, error) {
+	switch strings.ToLower(label) {
+	case "utf-16", "utf-16le", "utf-16be", "utf16":
+		return input, nil
+	case "windows-1252", "cp1252":
+		return charmap.Windows1252.NewDecoder().Reader(input), nil
+	case "iso-8859-1", "iso8859-1", "latin1", "latin-1":
+		return charmap.ISO8859_1.NewDecoder().Reader(input), nil
+	}
+	return nil, fmt.Errorf("unsupported encoding %q", label)
+}
+
+// declaresEncoding reports whether the XML declaration names an encoding.
+func declaresEncoding(data []byte) bool {
+	if !bytes.HasPrefix(data, []byte("<?xml")) {
+		return false
+	}
+	decl, _, ok := bytes.Cut(data, []byte("?>"))
+	return ok && bytes.Contains(decl, []byte("encoding"))
 }
 
 func flagSets(flags []xmlFlag) []FlagSet {
