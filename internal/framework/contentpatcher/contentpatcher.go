@@ -198,7 +198,7 @@ type cachedPack struct {
 	farms map[string]string
 }
 
-const contentPackParserVersion = 25
+const contentPackParserVersion = 26
 
 // absentSize stamps a file that was not there, so the cache is dropped when it appears.
 const absentSize = -1
