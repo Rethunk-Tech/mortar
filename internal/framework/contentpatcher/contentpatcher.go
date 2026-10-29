@@ -3135,9 +3135,10 @@ func imageFileDigest(root, rel string, image bool) string {
 }
 
 // foldedRel resolves rel below root as a slash path, matching each element without regard to case: content packs are
-// written for Windows. A blank or absolute rel, or any ".." element, finds nothing.
+// written for Windows. A blank, rooted or absolute rel, or any ".." element, finds nothing.
 func foldedRel(root, rel string) (string, bool) {
-	if filepath.IsAbs(rel) || strings.TrimSpace(rel) == "" {
+	if filepath.IsAbs(rel) || filepath.VolumeName(rel) != "" || strings.TrimSpace(rel) == "" ||
+		os.IsPathSeparator(rel[0]) {
 		return "", false
 	}
 	var kept []string

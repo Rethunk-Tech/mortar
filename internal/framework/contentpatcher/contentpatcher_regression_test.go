@@ -949,6 +949,22 @@ func TestConfigGatedLowLoadUnderTwoExclusiveLoadsIsAFallback(t *testing.T) {
 	}
 }
 
+// A rooted path or one with a volume names nothing below the pack, on every OS.
+func TestFoldedRelRefusesRootedPaths(t *testing.T) {
+	root := t.TempDir()
+	testfs.WriteFile(t, root, "run.log", "x")
+	rels := []string{"/run.log", string(filepath.Separator) + "run.log"}
+	if vol := filepath.VolumeName(root); vol != "" {
+		rels = append(rels, vol+"run.log", vol+`
+un.log`)
+	}
+	for _, rel := range rels {
+		if got, ok := foldedRel(root, rel); ok {
+			t.Errorf("foldedRel(%q) = %q, true; want a refusal", rel, got)
+		}
+	}
+}
+
 // Every path the case-insensitive lookup found before must still be found, and a pack with Data/ beside data/ must
 // find files under either.
 func TestFoldedRelFindsWhatTheEarlierLookupFound(t *testing.T) {
