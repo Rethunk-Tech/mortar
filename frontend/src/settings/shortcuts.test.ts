@@ -5,6 +5,7 @@ import {
   conflictFor,
   defaultBindings,
   formatChord,
+  isTypingTarget,
   matchShortcut,
   mergeBindings,
   parseKeys,
@@ -55,6 +56,18 @@ describe('combo parse and match', () => {
     expect(conflictFor('downloads', 'Ctrl+K', bindings)).toBe('command-palette')
     expect(conflictFor('downloads', 'Ctrl+J', bindings)).toBeNull()
     expect(conflictFor('command-palette', 'Ctrl+K', bindings)).toBeNull()
+  })
+
+  test('the plus key round-trips and fires', () => {
+    for (const chord of [
+      { key: '+', ctrlKey: true },
+      { key: '+' },
+      { key: '+', ctrlKey: true, shiftKey: true },
+    ]) {
+      const keys = formatChord(chord) as string
+      expect(parseKeys(keys)).toMatchObject({ key: '+', ctrlKey: Boolean(chord.ctrlKey) })
+      expect(matchShortcut(chord, { play: keys })).toBe('play')
+    }
   })
 
   test('formatChord ignores modifier-only presses', () => {
@@ -110,4 +123,14 @@ test("a default's chord can be taken from it, a chord the user chose cannot", ()
   const chosen = mergeBindings({ 'command-palette': 'Ctrl+J' })
   expect(takeableFrom('play', 'Ctrl+J', chosen)).toBeNull()
   expect(takeableFrom('play', 'Ctrl+Alt+F12', defaultBindings())).toBeNull()
+})
+
+describe('isTypingTarget', () => {
+  test('text inputs type, checkboxes and switches do not', () => {
+    expect(isTypingTarget({ tagName: 'INPUT', type: 'text' })).toBe(true)
+    expect(isTypingTarget({ tagName: 'INPUT', type: '' })).toBe(true)
+    expect(isTypingTarget({ tagName: 'INPUT', type: 'checkbox' })).toBe(false)
+    expect(isTypingTarget({ tagName: 'INPUT', type: 'range' })).toBe(false)
+    expect(shortcutAllowed('filter-mods', { tagName: 'INPUT', type: 'checkbox' })).toBe(true)
+  })
 })

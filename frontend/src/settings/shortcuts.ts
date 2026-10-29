@@ -101,7 +101,21 @@ export interface Chord {
 export interface TypingTarget {
   tagName?: string
   isContentEditable?: boolean
+  type?: string
 }
+
+// Input types that take no typed text, so a shortcut or arrow key may pass through them.
+const nonTextInputs = new Set([
+  'checkbox',
+  'radio',
+  'range',
+  'button',
+  'submit',
+  'reset',
+  'image',
+  'color',
+  'file',
+])
 
 export type ShortcutBindings = Partial<Record<ShortcutId, string>>
 
@@ -148,14 +162,16 @@ export const SHORTCUTS: readonly Shortcut[] = [
 ]
 
 export function parseKeys(keys: string): Chord | null {
-  const parts = keys.split('+').filter(Boolean)
-  if (parts.length === 0) {
+  // A trailing "+" is the plus key itself ("Ctrl++"), not a separator.
+  const plus = keys === '+' || keys.endsWith('++')
+  const parts = (plus ? keys.slice(0, -1) : keys).split('+').filter(Boolean)
+  if (parts.length === 0 && !plus) {
     return null
   }
   let ctrlKey = false
   let shiftKey = false
   let altKey = false
-  let key = ''
+  let key = plus ? '+' : ''
   for (const part of parts) {
     if (part === 'Ctrl' || part === 'Cmd' || part === 'Meta') {
       ctrlKey = true
@@ -243,7 +259,10 @@ export function isTypingTarget(el: TypingTarget | null): boolean {
     return false
   }
   const tag = el.tagName
-  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+  if (tag === 'INPUT') {
+    return !nonTextInputs.has((el.type ?? '').toLowerCase())
+  }
+  if (tag === 'TEXTAREA' || tag === 'SELECT') {
     return true
   }
   return Boolean(el.isContentEditable)
