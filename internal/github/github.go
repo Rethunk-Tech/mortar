@@ -107,6 +107,22 @@ func noteRate(resp *http.Response) {
 	rateMu.Unlock()
 }
 
+// maxRetryAfter bounds a Retry-After in seconds so the Duration arithmetic cannot overflow.
+const maxRetryAfter = 365 * 24 * 3600
+
+// RetryAfter is when a Retry-After header (seconds or an HTTP date) says to try again; false when it is absent,
+// malformed, negative or zero seconds, or absurdly long.
+func RetryAfter(v string) (time.Time, bool) {
+	if n, err := strconv.ParseInt(v, 10, 64); err == nil {
+		if n <= 0 || n > maxRetryAfter {
+			return time.Time{}, false
+		}
+		return time.Now().Add(time.Duration(n) * time.Second), true
+	}
+	t, err := http.ParseTime(v)
+	return t, err == nil
+}
+
 // RateLimited returns a *RateLimitError when resp is GitHub's limit answer, else nil.
 func RateLimited(resp *http.Response) error {
 	if resp.StatusCode != http.StatusForbidden && resp.StatusCode != http.StatusTooManyRequests {
@@ -116,10 +132,10 @@ func RateLimited(resp *http.Response) error {
 		return nil
 	}
 	e := &RateLimitError{}
-	if secs, err := strconv.ParseInt(resp.Header.Get("X-Ratelimit-Reset"), 10, 64); err == nil {
+	if t, ok := RetryAfter(resp.Header.Get("Retry-After")); ok {
+		e.Reset = t
+	} else if secs, err := strconv.ParseInt(resp.Header.Get("X-Ratelimit-Reset"), 10, 64); err == nil {
 		e.Reset = time.Unix(secs, 0)
-	} else if secs, err := strconv.ParseInt(resp.Header.Get("Retry-After"), 10, 64); err == nil {
-		e.Reset = time.Now().Add(time.Duration(secs) * time.Second)
 	}
 	return e
 }

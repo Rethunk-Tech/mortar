@@ -8,7 +8,6 @@ import (
 	"maps"
 	"net/http"
 	"slices"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -16,6 +15,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -49,10 +49,7 @@ func (e *BusyError) Unwrap() error { return usererr.New(usererr.RateLimited, e.E
 // Busy is name refusing resp, waiting as long as its Retry-After asks (seconds or an HTTP date) when it says.
 func Busy(name string, resp *http.Response) *BusyError {
 	e := &BusyError{Source: name}
-	v := resp.Header.Get("Retry-After")
-	if n, err := strconv.Atoi(v); err == nil && n > 0 {
-		e.Reset = time.Now().Add(time.Duration(n) * time.Second)
-	} else if t, err := http.ParseTime(v); err == nil {
+	if t, ok := github.RetryAfter(resp.Header.Get("Retry-After")); ok {
 		e.Reset = t
 	}
 	return e

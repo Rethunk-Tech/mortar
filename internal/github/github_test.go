@@ -402,3 +402,32 @@ func TestDownloadHonoursTheSpeedLimit(t *testing.T) {
 		t.Fatal("limited download is corrupt")
 	}
 }
+
+func TestRateLimitedPrefersRetryAfter(t *testing.T) {
+	t.Parallel()
+	var e *RateLimitError
+	h := http.Header{
+		"X-Ratelimit-Remaining": {"4000"}, "Retry-After": {"60"},
+		"X-Ratelimit-Reset": {strconv.FormatInt(time.Now().Add(50*time.Minute).Unix(), 10)},
+	}
+	if !errors.As(RateLimited(&http.Response{StatusCode: http.StatusForbidden, Header: h}), &e) {
+		t.Fatal("not a rate limit")
+	}
+	if d := time.Until(e.Reset); d < 50*time.Second || d > 60*time.Second {
+		t.Fatalf("wait %v", d)
+	}
+	at := time.Now().Add(90 * time.Second).UTC().Truncate(time.Second)
+	h = http.Header{"Retry-After": {at.Format(http.TimeFormat)}}
+	if !errors.As(RateLimited(&http.Response{StatusCode: http.StatusTooManyRequests, Header: h}), &e) || !e.Reset.Equal(at) {
+		t.Fatalf("date reset %v", e.Reset)
+	}
+}
+
+func TestRetryAfterRefusesAnOverflowingValue(t *testing.T) {
+	t.Parallel()
+	for _, v := range []string{"27670116110", "9223372037", "-5", "0", "x", ""} {
+		if at, ok := RetryAfter(v); ok {
+			t.Errorf("%q accepted as %v", v, at)
+		}
+	}
+}
