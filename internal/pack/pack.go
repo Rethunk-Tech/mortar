@@ -3,17 +3,17 @@
 package pack
 
 import (
-	"archive/zip"
 	"bytes"
 	"context"
 	"errors"
 	"fmt"
-	"path"
+	"io"
 	"regexp"
 	"slices"
 	"strings"
 
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/mortar/internal/archive"
 )
 
 // Input is what a user handed Mortar: a file or folder path, a link, or pasted text. A format reads the field it
@@ -88,38 +88,28 @@ var nativeID = regexp.MustCompile(`^\w+-\w+$`)
 // versionNumber is a major.minor.patch version.
 var versionNumber = regexp.MustCompile(`^\d+\.\d+\.\d+$`)
 
-// readZip returns the zip's files by cleaned slash path; a path that leaves the archive is refused.
+// readZip returns the zip's files by cleaned slash path. Windows names are judged per file later, so one bad name
+// costs that file, not the pack.
 func readZip(data []byte) (map[string][]byte, error) {
-	zr, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
+	out := map[string][]byte{}
+	err := archive.ZipFunc(bytes.NewReader(data), int64(len(data)), archive.Options{MaxEntries: maxEntries, MaxTotalBytes: maxTotal},
+		func(name string, isDir bool, r io.Reader) error {
+			if isDir {
+				return nil
+			}
+			// A drive letter is no traversal inside the archive, but a Windows join would root the path at it.
+			if strings.Contains(name, ":") {
+				return fmt.Errorf("archive path %q leaves the archive", name)
+			}
+			b, err := safefs.ReadCapped(r, maxFile)
+			if err != nil {
+				return fmt.Errorf("archive file %q: %w", name, err)
+			}
+			out[name] = b
+			return nil
+		})
 	if err != nil {
 		return nil, err
-	}
-	if len(zr.File) > maxEntries {
-		return nil, fmt.Errorf("archive holds %d entries", len(zr.File))
-	}
-	out := map[string][]byte{}
-	total := 0
-	for _, f := range zr.File {
-		if f.FileInfo().IsDir() {
-			continue
-		}
-		name := path.Clean(strings.ReplaceAll(f.Name, `\`, "/"))
-		if name == "." || path.IsAbs(name) || name == ".." || strings.HasPrefix(name, "../") || strings.Contains(name, ":") {
-			return nil, fmt.Errorf("archive path %q leaves the archive", f.Name)
-		}
-		rc, err := f.Open()
-		if err != nil {
-			return nil, err
-		}
-		b, err := safefs.ReadCapped(rc, maxFile)
-		_ = rc.Close()
-		if err != nil {
-			return nil, fmt.Errorf("archive file %q: %w", f.Name, err)
-		}
-		if total += len(b); total > maxTotal {
-			return nil, errors.New("archive unpacks to too much data")
-		}
-		out[name] = b
 	}
 	return out, nil
 }

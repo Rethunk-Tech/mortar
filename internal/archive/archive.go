@@ -70,6 +70,19 @@ func ExtractReader(r io.Reader, baseName string, dest *os.Root, opts Options) er
 	return ga.ExtractReader(r, baseName, dest, opts)
 }
 
+// ZipFunc hands each entry of the zip src (size bytes) to fn under go-archive's admission rules, writing nothing.
+// Anything but a zip is ErrUnsupportedFormat, since a format whose contract is "a zip" must not take a tarball
+// because the bytes allow one. Every segment Windows refuses is admitted: each caller judges the names by its own
+// rules once it has them.
+func ZipFunc(src io.ReaderAt, size int64, opts Options, fn func(name string, isDir bool, r io.Reader) error) error {
+	var magic [4]byte
+	if _, err := src.ReadAt(magic[:], 0); err != nil || (string(magic[:]) != "PK\x03\x04" && string(magic[:]) != "PK\x05\x06") {
+		return &Error{Reason: ErrUnsupportedFormat}
+	}
+	opts.Segment = func(string) bool { return true }
+	return ga.ExtractFunc(src, size, "", opts, fn)
+}
+
 // DeclaredSize sums the uncompressed sizes the archive's headers declare. It is informational: an untrusted
 // archive can lie.
 func DeclaredSize(archivePath string) (int64, error) {
