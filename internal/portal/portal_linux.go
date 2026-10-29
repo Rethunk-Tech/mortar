@@ -26,8 +26,8 @@ var ErrCancelled = errors.New("cancelled in the system dialog")
 // answers would otherwise hold the caller forever.
 const requestTimeout = 5 * time.Minute
 
-// newToken is a handle token unique to one call, so two calls of one method never share a Request path and take
-// each other's Response.
+// newToken is a fresh handle token for one call. Each call already has its own connection, and so its own Request
+// path; a random token keeps the path from naming the app.
 func newToken(kind string) string {
 	return "mortar_" + kind + "_" + strings.ToLower(rand.Text())
 }
