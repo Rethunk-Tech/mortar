@@ -110,6 +110,6 @@ func DataHome(t testing.TB) string {
 	t.Helper()
 	dir := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", dir)
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	t.Setenv("LOCALAPPDATA", dir)
 	return dir
 }

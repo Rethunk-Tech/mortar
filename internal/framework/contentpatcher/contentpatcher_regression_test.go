@@ -7,6 +7,7 @@ import (
 	"image/png"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
 	"testing"
@@ -951,6 +952,9 @@ func TestConfigGatedLowLoadUnderTwoExclusiveLoadsIsAFallback(t *testing.T) {
 // Every path the case-insensitive lookup found before must still be found, and a pack with Data/ beside data/ must
 // find files under either.
 func TestFoldedRelFindsWhatTheEarlierLookupFound(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Data/ and data/ cannot sit side by side on a case-insensitive Windows folder")
+	}
 	root := t.TempDir()
 	for _, f := range []string{"Data/x.txt", "Data/sub/z.txt", "data/y.txt", "only/Sub/x.txt", "run.log"} {
 		testfs.WriteFile(t, root, f, "x")

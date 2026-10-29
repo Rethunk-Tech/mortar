@@ -17,6 +17,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/packs"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
@@ -25,10 +27,18 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 )
 
+// dataFolder is the data folder the test's environment resolves to: mortar on Linux, Mortar on Windows.
+func dataFolder(t *testing.T) string {
+	t.Helper()
+	dir, err := datadir.Dir()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return dir
+}
+
 func TestContentPackDiskCache(t *testing.T) {
-	dataHome := t.TempDir()
-	t.Setenv("XDG_DATA_HOME", dataHome)
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
 
@@ -38,7 +48,7 @@ func TestContentPackDiskCache(t *testing.T) {
 		t.Fatalf("initial pack = %#v", first.patches)
 	}
 	flushPackDiskCache([]framework.Mod{im})
-	cachePath := filepath.Join(dataHome, "mortar", "cache", "problems-content-packs.json")
+	cachePath := filepath.Join(dataFolder(t), "cache", "problems-content-packs.json")
 	cache := readDiskPackCache(t, cachePath)
 	entry, ok := cache.Packs[filepath.Clean(im.Folder)]
 	if !ok || cache.Version != contentPackParserVersion {
@@ -223,9 +233,7 @@ func BenchmarkPackDiskCacheLoad(b *testing.B) {
 }
 
 func TestPNGAlphaMemoIsBitMaskAndDroppedAfterPack(t *testing.T) {
-	dataHome := t.TempDir()
-	t.Setenv("XDG_DATA_HOME", dataHome)
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
 
@@ -257,9 +265,7 @@ func TestPNGAlphaMemoIsBitMaskAndDroppedAfterPack(t *testing.T) {
 }
 
 func TestPackMemoryCacheDropsFoldersNotInCurrentMods(t *testing.T) {
-	dataHome := t.TempDir()
-	t.Setenv("XDG_DATA_HOME", dataHome)
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
 
@@ -452,10 +458,10 @@ func contentPackManifest(folder string) (smapimanifest.Manifest, bool) {
 // A check reads switched-off packs for tilesheet cleanup, and a check of another profile's mods must not empty the
 // cached packs of this one: either would leave a pack to be parsed again, or read back as empty, on the next start.
 func TestPackDiskCacheKeepsEveryPackItRead(t *testing.T) {
-	dataHome := testfs.DataHome(t)
+	testfs.DataHome(t)
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
-	cachePath := filepath.Join(dataHome, "mortar", "cache", "problems-content-packs.json")
+	cachePath := filepath.Join(dataFolder(t), "cache", "problems-content-packs.json")
 	on, _, _ := diskCachePack(t)
 	off, _, _ := diskCachePack(t)
 	off.Enabled = false
@@ -516,14 +522,12 @@ func TestPackCacheNoticesAConfigThatAppearsLater(t *testing.T) {
 
 // A data folder that was moved or copied keeps its pack cache: packs are keyed by their path under the data folder.
 func TestPackDiskCacheSurvivesAMovedDataFolder(t *testing.T) {
-	t.Setenv("LOCALAPPDATA", t.TempDir())
-	oldHome := t.TempDir()
-	t.Setenv("XDG_DATA_HOME", oldHome)
+	testfs.DataHome(t)
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
 
 	im, _, _ := diskCachePack(t)
-	inside := filepath.Join(oldHome, "mortar", "profiles", "p", "mods", "pack")
+	inside := filepath.Join(dataFolder(t), "profiles", "p", "mods", "pack")
 	if err := os.MkdirAll(filepath.Dir(inside), 0o700); err != nil {
 		t.Fatal(err)
 	}
@@ -534,12 +538,17 @@ func TestPackDiskCacheSurvivesAMovedDataFolder(t *testing.T) {
 	readContentPack(im, false)
 	flushPackDiskCache([]framework.Mod{im})
 
+	oldData := dataFolder(t)
 	newHome := t.TempDir()
-	if err := os.Rename(filepath.Join(oldHome, "mortar"), filepath.Join(newHome, "mortar")); err != nil {
+	datadirtest.Use(t, newHome)
+	newData, err := datadir.DefaultDir()
+	if err != nil {
 		t.Fatal(err)
 	}
-	t.Setenv("XDG_DATA_HOME", newHome)
-	im.Folder = filepath.Join(newHome, "mortar", "profiles", "p", "mods", "pack")
+	if err := os.Rename(oldData, newData); err != nil {
+		t.Fatal(err)
+	}
+	im.Folder = filepath.Join(newData, "profiles", "p", "mods", "pack")
 
 	// Same size and mtime, different text: only a cache hit still reports the old patches.
 	content := filepath.Join(im.Folder, "content.json")
