@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
 	"testing"
@@ -374,7 +375,6 @@ func TestMortarFileRoundTrip(t *testing.T) {
 		"one/inner/data/deep.JSON": `{"b":2}`,
 		"one/inner/manifest.json":  `{"UniqueID":"A.one"}`,
 		"one/inner/readme.txt":     "x",
-		"one/inner/bad:name.json":  "{}",
 		"two/config.json":          `{"c":3}`,
 		"off/config.json":          `{"never":1}`,
 		"smapi-4.1/config.json":    `{"never":1}`,
@@ -382,13 +382,18 @@ func TestMortarFileRoundTrip(t *testing.T) {
 		"gh/config.json":           `{"g":1}`,
 		"one/inner/huge.json":      strings.Repeat(" ", MaxConfigBytes+1),
 	})
+	wantSkipped := 1
+	if runtime.GOOS != "windows" { // a colon in a Windows file name names a stream, so the file cannot exist there
+		testfs.WriteAt(t, filepath.Join(dir, "one", "inner", "bad:name.json"), []byte("{}"))
+		wantSkipped++
+	}
 	p.Entries[5].Mods = []profile.Component{{ID: "smapi:A.gh", Folder: "."}}
 	var buf bytes.Buffer
 	skipped, err := Write(&buf, "stardew", p, dir)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(skipped) != 2 {
+	if len(skipped) != wantSkipped {
 		t.Errorf("skipped = %v", skipped)
 	}
 	pv := readBack(t, &buf)

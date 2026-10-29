@@ -3,12 +3,16 @@ package share
 import (
 	"bytes"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 func TestWriteKeepsOneOfTwoConfigNamesDifferingByCase(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("two names differing only by case cannot sit side by side on a case-insensitive Windows folder")
+	}
 	dir := t.TempDir()
 	writeIn(t, dir, "mods/k/Config.json", []byte(`{"a":1}`))
 	writeIn(t, dir, "mods/k/config.json", []byte(`{"a":2}`))

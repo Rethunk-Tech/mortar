@@ -3,12 +3,16 @@ package share
 import (
 	"bytes"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 func TestWriteKeepsOneOfTwoLoaderConfigsDifferingByCase(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("two names differing only by case cannot sit side by side on a case-insensitive Windows folder")
+	}
 	dir := t.TempDir()
 	writeIn(t, dir, "BepInEx/config/A.cfg", []byte("1"))
 	writeIn(t, dir, "BepInEx/config/a.cfg", []byte("2"))
