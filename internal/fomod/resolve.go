@@ -237,7 +237,7 @@ func Resolve(cfg Config, choices Choices, ctx EvalContext) []Op {
 			ops = append(ops, c.Files...)
 		}
 	}
-	slices.SortStableFunc(ops, func(a, b Op) int { return a.Priority - b.Priority })
+	slices.SortStableFunc(ops, func(a, b Op) int { return cmp.Compare(a.Priority, b.Priority) })
 	return ops
 }
 

@@ -202,3 +202,18 @@ func TestGameDependencyMetWhenInstalledVersionSufficient(t *testing.T) {
 		t.Fatal("older game version should not satisfy minimum")
 	}
 }
+
+func TestResolveSortsExtremePriorities(t *testing.T) {
+	cfg := Config{Required: []Op{{Source: "high", Priority: math.MaxInt}, {Source: "low", Priority: -1}}}
+	ops := Resolve(cfg, nil, EvalContext{})
+	if ops[0].Source != "low" || ops[1].Source != "high" {
+		t.Fatalf("ops = %+v", ops)
+	}
+}
+
+func TestFolderElementSetsFolder(t *testing.T) {
+	cfg := loadFixture(t, "folder.xml")
+	if len(cfg.Required) != 1 || !cfg.Required[0].Folder || cfg.Required[0].Source != "pack" {
+		t.Fatalf("required = %+v", cfg.Required)
+	}
+}
