@@ -21,7 +21,8 @@ func TestHostArgv(t *testing.T) {
 func TestHostLookPath(t *testing.T) {
 	t.Cleanup(func(old func(...string) ([]byte, error)) func() { return func() { Output = old } }(Output))
 	Output = func(args ...string) ([]byte, error) {
-		if !reflect.DeepEqual(args, []string{"--host", "which", "steam"}) {
+		// The host's sh, not which: minimal hosts (Arch's base) have no which.
+		if !reflect.DeepEqual(args, []string{"--host", "sh", "-c", `command -v -- "$1"`, "sh", "steam"}) {
 			t.Fatalf("%v", args)
 		}
 		return []byte("/usr/bin/steam\n"), nil

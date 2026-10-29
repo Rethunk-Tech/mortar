@@ -1,12 +1,14 @@
 package portal
 
 import (
+	"crypto/rand"
 	"errors"
 	"fmt"
 	"io"
 	"math"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/godbus/dbus/v5"
 )
@@ -19,6 +21,16 @@ const (
 
 // ErrCancelled is returned when the user dismisses the portal's dialog.
 var ErrCancelled = errors.New("cancelled in the system dialog")
+
+// requestTimeout bounds the wait for a Response, which may sit behind a dialog the user answers; a portal that never
+// answers would otherwise hold the caller forever.
+const requestTimeout = 5 * time.Minute
+
+// newToken is a handle token unique to one call, so two calls of one method never share a Request path and take
+// each other's Response.
+func newToken(kind string) string {
+	return "mortar_" + kind + "_" + strings.ToLower(rand.Text())
+}
 
 // request calls a portal method that answers through a Request object, and returns the Response's results. It
 // subscribes to the Response before calling, since the portal may answer before the call returns.
@@ -40,7 +52,18 @@ func request(conn *dbus.Conn, method, token string, args ...any) (map[string]dbu
 	if err := conn.Object(busName, objectPath).Call(method, 0, args...).Err; err != nil {
 		return nil, err
 	}
-	for sig := range signals {
+	timeout := time.After(requestTimeout)
+	for {
+		var sig *dbus.Signal
+		select {
+		case <-timeout:
+			return nil, fmt.Errorf("%s: the portal did not answer", method)
+		case s, ok := <-signals:
+			if !ok {
+				return nil, errors.New("the portal connection closed")
+			}
+			sig = s
+		}
 		if sig.Path != handle || len(sig.Body) < 2 {
 			continue
 		}
@@ -55,7 +78,6 @@ func request(conn *dbus.Conn, method, token string, args ...any) (map[string]dbu
 			return nil, fmt.Errorf("%s failed", method)
 		}
 	}
-	return nil, errors.New("the portal connection closed")
 }
 
 // SetAutostart asks the Background portal to start command (run inside the sandbox) at sign-in, or to stop doing so.
@@ -65,9 +87,10 @@ func SetAutostart(enable bool, command []string) error {
 		return err
 	}
 	defer func() { _ = conn.Close() }()
-	results, err := request(conn, "org.freedesktop.portal.Background.RequestBackground", "mortar_autostart", "",
+	token := newToken("autostart")
+	results, err := request(conn, "org.freedesktop.portal.Background.RequestBackground", token, "",
 		map[string]dbus.Variant{
-			"handle_token":     dbus.MakeVariant("mortar_autostart"),
+			"handle_token":     dbus.MakeVariant(token),
 			"reason":           dbus.MakeVariant("Start Mortar when you sign in"),
 			"autostart":        dbus.MakeVariant(enable),
 			"commandline":      dbus.MakeVariant(command),
@@ -95,9 +118,10 @@ func InstallLauncher(id, name, command string, iconPNG []byte) error {
 		Kind string
 		Data dbus.Variant
 	}{"bytes", dbus.MakeVariant(iconPNG)})
-	results, err := request(conn, launcherIf+".PrepareInstall", "mortar_launcher", "", name, icon,
+	handleToken := newToken("launcher")
+	results, err := request(conn, launcherIf+".PrepareInstall", handleToken, "", name, icon,
 		map[string]dbus.Variant{
-			"handle_token":  dbus.MakeVariant("mortar_launcher"),
+			"handle_token":  dbus.MakeVariant(handleToken),
 			"launcher_type": dbus.MakeVariant(uint32(1)),
 		})
 	if err != nil {
@@ -111,7 +135,7 @@ func InstallLauncher(id, name, command string, iconPNG []byte) error {
 		name = chosen
 	}
 	entry := fmt.Sprintf("[Desktop Entry]\nType=Application\nName=%s\nComment=Play this Mortar profile\nExec=%s\nTerminal=false\nCategories=Game;\n",
-		strings.NewReplacer("\n", " ", "\r", " ").Replace(name), command)
+		desktopEntryText(name), command)
 	return conn.Object(busName, objectPath).Call(launcherIf+".Install", 0, token, id, entry,
 		map[string]dbus.Variant{}).Err
 }
@@ -171,8 +195,9 @@ func RetrieveSecret() ([]byte, error) {
 		_ = w.Close()
 		return nil, errors.New("pipe descriptor out of range")
 	}
-	_, err = request(conn, "org.freedesktop.portal.Secret.RetrieveSecret", "mortar_secret",
-		dbus.UnixFD(fd), map[string]dbus.Variant{"handle_token": dbus.MakeVariant("mortar_secret")})
+	token := newToken("secret")
+	_, err = request(conn, "org.freedesktop.portal.Secret.RetrieveSecret", token,
+		dbus.UnixFD(fd), map[string]dbus.Variant{"handle_token": dbus.MakeVariant(token)})
 	// Our copy of the write end must close or the read never sees EOF.
 	_ = w.Close()
 	if err != nil {
@@ -186,4 +211,10 @@ func RetrieveSecret() ([]byte, error) {
 		return nil, errors.New("the secret portal returned an empty secret")
 	}
 	return secret, nil
+}
+
+// desktopEntryText is name as a Desktop Entry string value: a backslash starts an escape there, so it is doubled,
+// and a line break would end the key, so it becomes a space.
+func desktopEntryText(name string) string {
+	return strings.NewReplacer("\\", `\\`, "\n", " ", "\r", " ").Replace(name)
 }

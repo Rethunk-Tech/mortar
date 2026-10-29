@@ -41,9 +41,10 @@ func HostOutput(name string, args ...string) ([]byte, error) {
 	return Output(a...)
 }
 
-// HostLookPath finds name on the host's PATH.
+// HostLookPath finds name on the host's PATH. It asks the host's sh rather than which, which minimal hosts (Arch's
+// base) do not install.
 func HostLookPath(name string) (string, error) {
-	out, err := HostOutput("which", name)
+	out, err := HostOutput("sh", "-c", `command -v -- "$1"`, "sh", name)
 	if err != nil {
 		return "", exec.ErrNotFound
 	}
