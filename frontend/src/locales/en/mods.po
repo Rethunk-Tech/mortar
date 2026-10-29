@@ -171,6 +171,10 @@ msgstr "Balance only: one mod's prices win."
 msgid "{names} needs a newer version than this."
 msgstr "{names} needs a newer version than this."
 
+#: src/mods/typedConfig/valueError.ts
+msgid "This is not one of the allowed values."
+msgstr "This is not one of the allowed values."
+
 #: src/mods/problemFix/PluginClashFix.tsx
 msgid "Keep newer"
 msgstr "Keep newer"
@@ -585,6 +589,10 @@ msgstr "Set to automatic"
 #: src/mods/ConflictWhy.tsx
 msgid "FromArea {fromArea}"
 msgstr "FromArea {fromArea}"
+
+#: src/mods/typedConfig/valueError.ts
+msgid "This needs to be a number."
+msgstr "This needs to be a number."
 
 #: src/mods/describe.ts
 msgid "{name} is marked broken for this game version."
@@ -1554,6 +1562,10 @@ msgstr "Mortar replaced these with the mods' own files. Deleting them cannot be 
 msgid "{plugin} failed to load."
 msgstr "{plugin} failed to load."
 
+#: src/mods/typedConfig/valueError.ts
+msgid "This needs to be between {min} and {max}."
+msgstr "This needs to be between {min} and {max}."
+
 #: src/mods/CategoryEditor.tsx
 #: src/mods/ConfigPresets.tsx
 #: src/mods/typedConfig/ConfigPane.tsx
@@ -2470,6 +2482,10 @@ msgstr "Mod ID"
 msgid "Remove one…"
 msgstr "Remove one…"
 
+#: src/mods/typedConfig/valueError.ts
+msgid "This needs to be a whole number."
+msgstr "This needs to be a whole number."
+
 #: src/mods/updateReview/UndoAllConfirm.tsx
 #: src/mods/updateReview/updateAll.ts
 msgid "Undo all"
@@ -2728,6 +2744,10 @@ msgstr "Browse for mods, add an archive, or paste a share or collection link wit
 msgid "Not now"
 msgstr "Not now"
 
+#: src/mods/typedConfig/valueError.ts
+msgid "This can be at most {max}."
+msgstr "This can be at most {max}."
+
 #: src/mods/describe.ts
 msgid "{names} both ship the plugin {guid}, and {loader} loads only one."
 msgstr "{names} both ship the plugin {guid}, and {loader} loads only one."
@@ -2818,6 +2838,10 @@ msgstr "Their folders are removed from this profile. You can undo this."
 #: src/mods/EnableRequirementsDialog.tsx
 msgid "{count, plural, one {Also enable # mod it needs} other {Also enable # mods it needs}}: {names}"
 msgstr "{count, plural, one {Also enable # mod it needs} other {Also enable # mods it needs}}: {names}"
+
+#: src/mods/typedConfig/valueError.ts
+msgid "This needs to be true or false."
+msgstr "This needs to be true or false."
 
 #: src/mods/updateReview/RowCopy.tsx
 msgid "Mortar's known-broken list flags the installed version; this one is past it"
@@ -3142,6 +3166,10 @@ msgstr "Explicit"
 #: src/mods/NexusDetails.tsx
 msgid "Changelog on {source}"
 msgstr "Changelog on {source}"
+
+#: src/mods/typedConfig/valueError.ts
+msgid "This can be at least {min}."
+msgstr "This can be at least {min}."
 
 #: src/mods/CategoryEditor.tsx
 #: src/mods/ConfigPresets.tsx

@@ -171,6 +171,10 @@ msgstr ""
 msgid "{names} needs a newer version than this."
 msgstr ""
 
+#: src/mods/typedConfig/valueError.ts
+msgid "This is not one of the allowed values."
+msgstr ""
+
 #: src/mods/problemFix/PluginClashFix.tsx
 msgid "Keep newer"
 msgstr ""
@@ -584,6 +588,10 @@ msgstr ""
 
 #: src/mods/ConflictWhy.tsx
 msgid "FromArea {fromArea}"
+msgstr ""
+
+#: src/mods/typedConfig/valueError.ts
+msgid "This needs to be a number."
 msgstr ""
 
 #: src/mods/describe.ts
@@ -1554,6 +1562,10 @@ msgstr ""
 msgid "{plugin} failed to load."
 msgstr ""
 
+#: src/mods/typedConfig/valueError.ts
+msgid "This needs to be between {min} and {max}."
+msgstr ""
+
 #: src/mods/CategoryEditor.tsx
 #: src/mods/ConfigPresets.tsx
 #: src/mods/typedConfig/ConfigPane.tsx
@@ -2470,6 +2482,10 @@ msgstr ""
 msgid "Remove one…"
 msgstr ""
 
+#: src/mods/typedConfig/valueError.ts
+msgid "This needs to be a whole number."
+msgstr ""
+
 #: src/mods/updateReview/UndoAllConfirm.tsx
 #: src/mods/updateReview/updateAll.ts
 msgid "Undo all"
@@ -2728,6 +2744,10 @@ msgstr ""
 msgid "Not now"
 msgstr ""
 
+#: src/mods/typedConfig/valueError.ts
+msgid "This can be at most {max}."
+msgstr ""
+
 #: src/mods/describe.ts
 msgid "{names} both ship the plugin {guid}, and {loader} loads only one."
 msgstr ""
@@ -2817,6 +2837,10 @@ msgstr ""
 
 #: src/mods/EnableRequirementsDialog.tsx
 msgid "{count, plural, one {Also enable # mod it needs} other {Also enable # mods it needs}}: {names}"
+msgstr ""
+
+#: src/mods/typedConfig/valueError.ts
+msgid "This needs to be true or false."
 msgstr ""
 
 #: src/mods/updateReview/RowCopy.tsx
@@ -3141,6 +3165,10 @@ msgstr ""
 
 #: src/mods/NexusDetails.tsx
 msgid "Changelog on {source}"
+msgstr ""
+
+#: src/mods/typedConfig/valueError.ts
+msgid "This can be at least {min}."
 msgstr ""
 
 #: src/mods/CategoryEditor.tsx
