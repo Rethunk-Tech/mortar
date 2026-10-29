@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -82,18 +83,24 @@ func TestOAuthTimeoutAndDeniedCallback(t *testing.T) {
 		t.Fatalf("timeout: %v", err)
 	}
 	o.Timeout = time.Second
+	page := make(chan string, 1)
 	o.OpenBrowser = func(raw string) error {
 		u, _ := url.Parse(raw)
 		go func() {
 			req, _ := http.NewRequestWithContext(context.Background(), http.MethodGet, u.Query().Get("redirect_uri")+"?error=access_denied&state="+u.Query().Get("state"), nil)
 			if resp, err := http.DefaultClient.Do(req); err == nil {
+				b, _ := io.ReadAll(resp.Body)
 				_ = resp.Body.Close()
+				page <- string(b)
 			}
 		}()
 		return nil
 	}
 	if _, err := o.Authorize(context.Background()); err == nil {
 		t.Fatal("denied callback succeeded")
+	}
+	if p := <-page; strings.Contains(p, "Signed in") {
+		t.Fatalf("denied sign-in page says %q", p)
 	}
 }
 

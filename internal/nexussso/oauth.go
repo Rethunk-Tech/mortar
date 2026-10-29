@@ -131,7 +131,11 @@ func (o OAuth) Authorize(ctx context.Context) (Tokens, error) {
 		if res.code == "" && res.err == "" {
 			res.err = "no code returned"
 		}
-		_, _ = w.Write([]byte("Signed in. You can close this tab and return to Mortar."))
+		if res.err != "" {
+			_, _ = w.Write([]byte("Sign-in did not finish. You can close this tab and try again in Mortar."))
+		} else {
+			_, _ = w.Write([]byte("Signed in. You can close this tab and return to Mortar."))
+		}
 		select {
 		case got <- res:
 		default:
