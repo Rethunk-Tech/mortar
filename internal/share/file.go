@@ -21,6 +21,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/winname"
 )
 
 // Caps on a .mortar file, enforced by counting bytes read rather than trusting declared sizes.
@@ -95,9 +96,22 @@ func validSegment(s string) bool {
 // ValidFomod reports whether recorded FOMOD choices are within the bounds a share link enforces.
 func ValidFomod(f map[string]map[string][]string) bool { return validDetails(Ref{Fomod: f}) }
 
+// winSafe reports whether every segment of the slash path p is a name Windows stores as written. It is checked apart
+// from the shape rules so reading can skip such a file, which an older release wrote, instead of refusing the share.
+func winSafe(p string) bool {
+	for s := range strings.SplitSeq(p, "/") {
+		if !winname.Valid(s) {
+			return false
+		}
+	}
+	return true
+}
+
 // ValidConfigPath reports whether p is a path Apply would write: a slash-separated relative .json path whose every
-// segment is plain.
-func ValidConfigPath(p string) bool {
+// segment is plain and valid on Windows.
+func ValidConfigPath(p string) bool { return validConfigShape(p) && winSafe(p) }
+
+func validConfigShape(p string) bool {
 	if len(p) > maxRelPath || !strings.HasSuffix(strings.ToLower(p), ".json") {
 		return false
 	}
@@ -408,8 +422,12 @@ func readZip(zr *zip.Reader) (Preview, error) {
 			continue
 		}
 		if rel, ok := strings.CutPrefix(f.Name, loaderPrefix); ok {
-			if !validLoaderConfigPath(rel) {
+			if !validLoaderConfigShape(rel) {
 				return Preview{}, fmt.Errorf("%w: unsafe path %q", ErrBadFile, f.Name)
+			}
+			if !winSafe(rel) {
+				slog.Warn("share: skipped a loader config whose name Windows cannot store", "path", f.Name)
+				continue
 			}
 			data, err := read(f, strings.ToLower(f.Name))
 			if err != nil {
@@ -423,8 +441,8 @@ func readZip(zr *zip.Reader) (Preview, error) {
 				return Preview{}, fmt.Errorf("%w: unsafe path %q", ErrBadFile, f.Name)
 			}
 			// An older release let a copy of any non-program type travel; the file is still good without it.
-			if skippedChanged(f.Name) {
-				slog.Warn("share: skipped a changed copy of a type no longer carried", "path", rel)
+			if skippedEntry(f.Name) {
+				slog.Warn("share: skipped a changed copy of a type no longer carried or a name Windows cannot store", "path", rel)
 				continue
 			}
 			data, err := read(f, strings.ToLower(f.Name))
@@ -444,8 +462,12 @@ func readZip(zr *zip.Reader) (Preview, error) {
 		if !ok {
 			return Preview{}, fmt.Errorf("%w: %q is for a mod the profile does not list", ErrBadFile, f.Name)
 		}
-		if path.Clean(rel) != rel || !ValidConfigPath(rel) {
+		if path.Clean(rel) != rel || !validConfigShape(rel) {
 			return Preview{}, fmt.Errorf("%w: unsafe path %q", ErrBadFile, f.Name)
+		}
+		if !winSafe(rel) {
+			slog.Warn("share: skipped a config whose name Windows cannot store", "path", f.Name)
+			continue
 		}
 		data, err := read(f, strings.ToLower(string(canon)+"/"+rel))
 		if err != nil {
@@ -499,9 +521,18 @@ func parseFileDoc(raw []byte) (Preview, error) {
 	return pv, nil
 }
 
-// skippedChanged reports a changed/ entry of a type no longer carried: reading leaves it out, so every rewrite of the
-// file must too.
-func skippedChanged(name string) bool {
-	rel, ok := strings.CutPrefix(name, changedPrefix)
-	return ok && !profile.ChangedTypeAllowed(rel)
+// skippedEntry reports an entry reading leaves out, so every rewrite of the file must too: a changed/ entry of a type
+// no longer carried, or any config, loader config or changed copy whose name Windows cannot store.
+func skippedEntry(name string) bool {
+	if rel, ok := strings.CutPrefix(name, changedPrefix); ok {
+		return !profile.ChangedTypeAllowed(rel) || !winSafe(rel)
+	}
+	if rel, ok := strings.CutPrefix(name, loaderPrefix); ok {
+		return !winSafe(rel)
+	}
+	if rest, ok := strings.CutPrefix(name, "configs/"); ok {
+		parts := strings.SplitN(rest, "/", 3)
+		return len(parts) == 3 && !winSafe(parts[2])
+	}
+	return false
 }

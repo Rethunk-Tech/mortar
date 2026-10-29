@@ -48,7 +48,9 @@ func UnderRoots(p string, roots []string) bool {
 }
 
 // validLoaderConfigPath accepts a clean relative slash path of plain segments ending in a text config extension.
-func validLoaderConfigPath(p string) bool {
+func validLoaderConfigPath(p string) bool { return validLoaderConfigShape(p) && winSafe(p) }
+
+func validLoaderConfigShape(p string) bool {
 	if len(p) > maxRelPath || path.Clean(p) != p || !slices.Contains(loaderConfigExts, strings.ToLower(path.Ext(p))) {
 		return false
 	}
