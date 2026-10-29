@@ -29,6 +29,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/go-httpkit/download"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/go-safefs/diskcache"
@@ -1644,15 +1645,7 @@ func (c *Client) get(ctx context.Context, address string, limit int64) ([]byte, 
 	if err != nil {
 		return nil, err
 	}
-	resp, err := c.httpClient().Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer func() { _ = resp.Body.Close() }()
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("component manifest request returned %s", resp.Status)
-	}
-	body, err := safefs.ReadCapped(resp.Body, limit)
+	body, err := httpkit.DoCapped(c.httpClient(), req, limit, nil)
 	if err != nil {
 		return nil, fmt.Errorf("component manifest response: %w", err)
 	}

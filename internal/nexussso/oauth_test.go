@@ -16,6 +16,8 @@ import (
 	"time"
 
 	"github.com/zalando/go-keyring"
+
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 func TestOAuthPKCEAndRefresh(t *testing.T) {
@@ -191,5 +193,15 @@ func TestListenFailureThatIsNotABusyPortKeepsItsCause(t *testing.T) {
 	_, err := o.Authorize(context.Background())
 	if err == nil || errors.Is(err, ErrPortBusy) || !strings.Contains(err.Error(), "256.0.0.1:0") {
 		t.Fatalf("error %v", err)
+	}
+}
+
+func TestExchangeKindsAServerFailureAsNetwork(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusBadGateway) }))
+	defer srv.Close()
+	o := OAuth{ClientID: "cid", AuthBase: srv.URL}
+	_, err := o.exchange(t.Context(), url.Values{"grant_type": {"refresh_token"}, "refresh_token": {"R"}})
+	if got := usererr.KindOf(err); got != usererr.Network || errors.Is(err, ErrRevoked) {
+		t.Fatalf("502 on refresh: kind %v, revoked %t (%v); want Network and not revoked", got, errors.Is(err, ErrRevoked), err)
 	}
 }

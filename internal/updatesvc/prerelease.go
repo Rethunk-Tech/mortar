@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/wailsapp/wails/v3/pkg/updater"
 	"github.com/wailsapp/wails/v3/pkg/updater/providers/endpoint"
@@ -59,20 +59,16 @@ func (p *prereleaseProvider) latestPrereleaseTag(ctx context.Context, current st
 		return "", err
 	}
 	req.Header.Set("Accept", "application/vnd.github+json")
-	resp, err := p.client.Do(req)
+	b, err := httpkit.DoCapped(p.client, req, 8<<20, nil)
 	if err != nil {
-		return "", err
-	}
-	defer func() { _ = resp.Body.Close() }()
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("github releases: HTTP %d", resp.StatusCode)
+		return "", fmt.Errorf("github releases: %w", err)
 	}
 	var releases []struct {
 		TagName    string `json:"tag_name"`
 		Prerelease bool   `json:"prerelease"`
 		Draft      bool   `json:"draft"`
 	}
-	if err := json.NewDecoder(safefs.CapReader(resp.Body, 8<<20)).Decode(&releases); err != nil {
+	if err := json.Unmarshal(b, &releases); err != nil {
 		return "", err
 	}
 	for _, r := range releases {

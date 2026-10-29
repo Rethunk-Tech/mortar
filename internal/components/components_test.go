@@ -22,6 +22,7 @@ import (
 	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 func signedManifest(t *testing.T, serial uint64, public ed25519.PrivateKey) ([]byte, []byte) {
@@ -845,5 +846,16 @@ func TestAStorelessGameNeedsManualFolder(t *testing.T) {
 	g.ManualFolder = false
 	if err := g.Validate(); err == nil {
 		t.Fatal("an enabled game with no store and no manualFolder passed")
+	}
+}
+
+func TestGetKindsAStatusAnswer(t *testing.T) {
+	for status, want := range map[int]usererr.Kind{http.StatusNotFound: usererr.NotFound, http.StatusServiceUnavailable: usererr.Network} {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(status) }))
+		_, err := NewClient(server.Client()).get(t.Context(), server.URL, 1<<10)
+		server.Close()
+		if got := usererr.KindOf(err); got != want {
+			t.Errorf("HTTP %d: kind %v, want %v (%v)", status, got, want, err)
+		}
 	}
 }

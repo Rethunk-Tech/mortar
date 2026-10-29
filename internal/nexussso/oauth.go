@@ -17,7 +17,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/mortar/internal/secret"
 )
 
@@ -188,23 +188,20 @@ func (o OAuth) exchange(ctx context.Context, form url.Values) (Tokens, error) {
 		return Tokens{}, err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	resp, err := o.client().Do(req)
+	body, err := httpkit.DoCapped(o.client(), req, maxTokenBody, nil)
+	if se, ok := errors.AsType[*httpkit.StatusError](err); ok && form.Get("grant_type") == "refresh_token" &&
+		(se.Code == http.StatusBadRequest || se.Code == http.StatusUnauthorized) {
+		return Tokens{}, fmt.Errorf("nexus token endpoint answered %s: %w", se.Status, ErrRevoked)
+	}
 	if err != nil {
-		return Tokens{}, err
-	}
-	defer func() { _ = resp.Body.Close() }()
-	if form.Get("grant_type") == "refresh_token" && (resp.StatusCode == http.StatusBadRequest || resp.StatusCode == http.StatusUnauthorized) {
-		return Tokens{}, fmt.Errorf("nexus token endpoint answered %s: %w", resp.Status, ErrRevoked)
-	}
-	if resp.StatusCode != http.StatusOK {
-		return Tokens{}, fmt.Errorf("nexus token endpoint answered %s", resp.Status)
+		return Tokens{}, fmt.Errorf("nexus token endpoint: %w", err)
 	}
 	var raw struct {
 		Access    string `json:"access_token"`
 		Refresh   string `json:"refresh_token"`
 		ExpiresIn int    `json:"expires_in"`
 	}
-	if err := json.NewDecoder(safefs.CapReader(resp.Body, maxTokenBody)).Decode(&raw); err != nil {
+	if err := json.Unmarshal(body, &raw); err != nil {
 		return Tokens{}, err
 	}
 	if raw.Access == "" {
