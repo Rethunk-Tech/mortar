@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
@@ -118,7 +119,7 @@ func TestExtractNamesFromTheOriginalName(t *testing.T) {
 	if err := Extract(stream, dest); err != nil {
 		t.Fatal(err)
 	}
-	if got, err := os.ReadFile(filepath.Join(dest, "notes.txt")); err != nil || string(got) != "notes" {
+	if got, err := safefs.ReadFile(filepath.Join(dest, "notes.txt")); err != nil || string(got) != "notes" {
 		t.Fatalf("notes.txt = %q, %v", got, err)
 	}
 	dest = t.TempDir()
