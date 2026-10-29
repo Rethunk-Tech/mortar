@@ -24,10 +24,21 @@ func fuzzZip(files map[string]string) []byte {
 	return buf.Bytes()
 }
 
+// yamlMergeCrash panicked gopkg.in/yaml.v3 v3.0.1: a merge key beside an unhashable key.
+const yamlMergeCrash = "base: &b {name: A-B}\nmods:\n- <<: *b\n  ? [x]\n  : 1\n"
+
+func TestR2ExportMergeKeyCrash(t *testing.T) {
+	t.Parallel()
+	if _, err := parseR2Zip(fuzzZip(map[string]string{exportFile: yamlMergeCrash})); err == nil {
+		t.Fatal("want an error")
+	}
+}
+
 func FuzzParseR2Zip(f *testing.F) {
 	f.Add(fuzzZip(map[string]string{exportFile: "profileName: p\ncommunity: c\nmods:\n- name: A-B-1.0.0\n  enabled: true\n", "config/a.cfg": "x"}))
 	f.Add(fuzzZip(map[string]string{exportFile: ":\n- ["}))
 	f.Add(fuzzZip(map[string]string{"../evil": "x"}))
+	f.Add(fuzzZip(map[string]string{exportFile: yamlMergeCrash}))
 	f.Add([]byte("PK"))
 	f.Fuzz(func(t *testing.T, data []byte) {
 		d, err := parseR2Zip(data)
@@ -104,6 +115,7 @@ func FuzzCode(f *testing.F) {
 	zipped := fuzzZip(map[string]string{exportFile: "profileName: p\ncommunity: lethal-company\nmods:\n- name: Alice-MoreCompany\n  enabled: true\n  version: {major: 1, minor: 2, patch: 3}\n", "BepInEx/config/a.cfg": "x"})
 	f.Add(codePrefix + "\n" + base64.StdEncoding.EncodeToString(zipped))
 	f.Add(codePrefix + "\n" + base64.StdEncoding.EncodeToString(fuzzZip(map[string]string{exportFile: "mods:\n- name: ../../x\n", "../a.cfg": "x"})))
+	f.Add(codePrefix + "\n" + base64.StdEncoding.EncodeToString(fuzzZip(map[string]string{exportFile: yamlMergeCrash})))
 	f.Add("018f0b1c-0000-7000-8000-000000000000")
 	f.Add(codePrefix + " not base64 ")
 	c := Code{URL: "http://127.0.0.1:1"}
