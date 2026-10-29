@@ -10,6 +10,7 @@ import (
 )
 
 func TestRewritesDropChangedCopiesReadingSkips(t *testing.T) {
+	t.Parallel()
 	dir, p := changedProfile(t)
 	var buf bytes.Buffer
 	if _, err := Write(&buf, "sims4", p, filepath.Join(dir, "mods"), OwnInclude()); err != nil {
@@ -24,7 +25,7 @@ func TestRewritesDropChangedCopiesReadingSkips(t *testing.T) {
 		_, _ = io.Copy(w, io.LimitReader(r, 1<<20))
 		_ = r.Close()
 	}
-	zeros := make([]byte, 30<<20)
+	zeros := make([]byte, 5<<20)
 	for i := range 8 {
 		w, _ := zw.Create(fmt.Sprintf("%sMods/mc/pic%d.png", changedPrefix, i))
 		_, _ = w.Write(zeros)
