@@ -1,7 +1,6 @@
 package dlwatch
 
 import (
-	"archive/zip"
 	"io"
 	"path/filepath"
 	"strings"
@@ -23,39 +22,38 @@ func readManifestName(r io.Reader) string {
 	return strings.TrimSpace(m.Name)
 }
 
-// PeekName reads a SMAPI or Thunderstore manifest.json Name from a zip, shortest path first.
+// PeekName reads a SMAPI or Thunderstore manifest.json Name from an archive of any format go-archive reads, shortest
+// path first. Every entry read is capped at maxManifestBytes.
 func PeekName(path string) string {
-	zr, err := zip.OpenReader(path)
+	l, err := archive.List(path, maxManifestBytes)
 	if err != nil {
 		return ""
 	}
-	defer func() { _ = zr.Close() }()
+	defer func() { _ = l.Close() }()
 	best := ""
 	bestDepth := 1 << 20
-	for _, f := range zr.File {
-		if !strings.EqualFold(filepath.Base(f.Name), archive.ManifestFile) {
+	for {
+		e, err := l.Next()
+		if err != nil {
+			return best
+		}
+		if e.IsDir || !strings.EqualFold(e.Name[strings.LastIndex(e.Name, "/")+1:], archive.ManifestFile) || e.Size > maxManifestBytes {
 			continue
 		}
-		depth := strings.Count(filepath.ToSlash(f.Name), "/")
+		depth := strings.Count(e.Name, "/")
 		if depth >= bestDepth {
 			continue
 		}
-		if f.UncompressedSize64 > maxManifestBytes {
-			continue
-		}
-		rc, err := f.Open()
+		rc, err := l.Open()
 		if err != nil {
 			continue
 		}
 		name := readManifestName(rc)
 		_ = rc.Close()
-		if name == "" {
-			continue
+		if name != "" {
+			best, bestDepth = name, depth
 		}
-		best = name
-		bestDepth = depth
 	}
-	return best
 }
 
 // Identify uses the Nexus file-name pattern, then a manifest peek, then the basename.

@@ -1,8 +1,10 @@
 package dlwatch
 
 import (
+	"archive/tar"
 	"archive/zip"
 	"bytes"
+	"compress/gzip"
 	"os"
 	"path/filepath"
 	"testing"
@@ -68,5 +70,32 @@ func TestPeekNameReadsAThunderstoreManifest(t *testing.T) {
 	}
 	if got := PeekName(path); got != "Pkg" {
 		t.Fatalf("PeekName = %q, want Pkg", got)
+	}
+}
+
+func TestPeekNameReadsATarGz(t *testing.T) {
+	t.Parallel()
+	path := filepath.Join(t.TempDir(), "pkg.tar.gz")
+	var buf bytes.Buffer
+	gz := gzip.NewWriter(&buf)
+	tw := tar.NewWriter(gz)
+	body := []byte(`{"Name":"Tarred","UniqueID":"a.b"}`)
+	if err := tw.WriteHeader(&tar.Header{Name: "Mod/manifest.json", Mode: 0o600, Size: int64(len(body))}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := tw.Write(body); err != nil {
+		t.Fatal(err)
+	}
+	if err := tw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if err := gz.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, buf.Bytes(), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if got := PeekName(path); got != "Tarred" {
+		t.Fatalf("PeekName = %q, want Tarred from a .tar.gz", got)
 	}
 }
