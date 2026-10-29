@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"slices"
 	"strings"
 	"testing"
@@ -186,8 +187,8 @@ func TestCreateRunsDotnetNewAndWiresTheProfile(t *testing.T) {
 	if err := svc.Trash("lethal-company", dir); err != nil || len(svc.Projects("lethal-company")) != 0 || safefs.IsDir(dir) {
 		t.Errorf("trash left %+v, folder there %v (%v)", svc.Projects("lethal-company"), safefs.IsDir(dir), err)
 	}
-	if !safefs.IsFile(filepath.Join(trash, "Trash", "files", filepath.Base(dir), ".mortar", "template.json")) || !safefs.IsFile(filepath.Join(trash, "Trash", "info", filepath.Base(dir)+".trashinfo")) {
-		t.Error("the project did not land in the trash with its .trashinfo, so the file manager cannot restore it")
+	if runtime.GOOS != "windows" && (!safefs.IsFile(filepath.Join(trash, "Trash", "files", filepath.Base(dir), ".mortar", "template.json")) || !safefs.IsFile(filepath.Join(trash, "Trash", "info", filepath.Base(dir)+".trashinfo"))) {
+		t.Error("the project did not land in the freedesktop trash with its .trashinfo, so the file manager cannot restore it")
 	}
 }
 

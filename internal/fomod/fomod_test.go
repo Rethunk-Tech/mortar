@@ -460,6 +460,9 @@ func TestFindConfigPrefersTheExactNameAmongCaseVariants(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+	if entries, _ := os.ReadDir(root); len(entries) < 2 {
+		t.Skip("this file system folds case, so it cannot hold both spellings")
+	}
 	got, err := FindConfig(root)
 	if err != nil {
 		t.Fatal(err)

@@ -2,6 +2,7 @@ package packsvc
 
 import (
 	"archive/zip"
+	"maps"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -40,11 +41,16 @@ func TestReadBackupReadsEveryNameBackupWrites(t *testing.T) {
 		"store/nexus-1-2/Mod.dll":       "dll",
 		"store/nexus-1-2/sub/data.json": "json",
 		"saves/Farm_1/Farm_1":           "save",
-		"saves/a:b.txt":                 "colon",
-		"saves/Dir/x":                   "upper",
-		"saves/dir/x":                   "lower",
-		"changed/Mods/con .cfg":         "con",
-		"changed/Mods/x?.json":          "q",
+	}
+	// A backup made on Linux holds these, and no Windows file system can: there the restore refuses them.
+	if runtime.GOOS != "windows" {
+		maps.Copy(disk, map[string]string{
+			"saves/a:b.txt":         "colon",
+			"saves/Dir/x":           "upper",
+			"saves/dir/x":           "lower",
+			"changed/Mods/con .cfg": "con",
+			"changed/Mods/x?.json":  "q",
+		})
 	}
 	files := map[string]string{"x?.json": "fq", "Cfg/a.cfg": "cfg", "cfg/A.cfg": "cfg2"}
 	var entries [][2]string
