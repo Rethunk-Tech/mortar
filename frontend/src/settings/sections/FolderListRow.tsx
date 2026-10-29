@@ -1,12 +1,18 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
+import { X } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { PickFolder } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
+import { TipIconButton } from '../../shell/TipIconButton.tsx'
 import { space } from '../../theme/density.ts'
 import { saveSetting } from '../persist.ts'
 import { SettingRow } from '../SettingsSection.tsx'
+import { distinctTails } from './pathList.ts'
 
-/** A setting that holds a list of folders: each with a Remove button (and `beside` before it), then Add folder…. */
+/**
+ * A setting that holds a list of folders, under its label: each shows the ending that tells it apart (the whole path on
+ * hover), then `beside` and a remove button, then Add folder….
+ */
 export function FolderListRow({
   label,
   description,
@@ -33,27 +39,33 @@ export function FolderListRow({
         onAdded?.(dir)
       }
     })
+  const tails = distinctTails(folders)
   return (
-    <SettingRow label={label} description={description}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: 'flex-start' }}>
-        {folders.map((dir) => (
-          <Box key={dir} sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-            <Typography noWrap={true} title={dir} sx={{ maxWidth: 360 }}>
-              {dir}
+    <SettingRow label={label} description={description} block={true}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+        {folders.map((dir, i) => (
+          <Box
+            key={dir}
+            sx={{ display: 'flex', alignItems: 'center', gap: space.gap, minWidth: 0 }}
+          >
+            <Typography noWrap={true} title={dir} sx={{ flex: 1, minWidth: 0 }}>
+              {tails[i]}
             </Typography>
             {beside?.(dir)}
-            <Button
-              size="small"
-              aria-label={t`Remove ${{ name: dir }}`}
+            <TipIconButton
+              label={t`Remove ${{ name: dir }}`}
+              tip={t`Remove`}
               onClick={() => saveSetting(() => save(folders.filter((d) => d !== dir)))}
             >
-              {t`Remove`}
-            </Button>
+              <X size={16} />
+            </TipIconButton>
           </Box>
         ))}
-        <Button variant="outlined" onClick={add}>
-          {t`Add folder…`}
-        </Button>
+        <Box>
+          <Button variant="outlined" onClick={add}>
+            {t`Add folder…`}
+          </Button>
+        </Box>
       </Box>
     </SettingRow>
   )

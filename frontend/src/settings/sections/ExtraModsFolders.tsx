@@ -38,6 +38,7 @@ function ExtraModsFolders() {
       beside={(dir) => (
         <Select
           size="small"
+          sx={{ width: 240, flexShrink: 0 }}
           value={targets?.[dir] || OPEN}
           inputProps={{ 'aria-label': t`Profile ${{ path: dir }} installs into` }}
           onChange={(e) => target(dir, e.target.value)}
