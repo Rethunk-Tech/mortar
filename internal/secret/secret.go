@@ -99,7 +99,7 @@ func run(svc, name string, f *flight) {
 	var v string
 	var err error
 	if sandbox.InFlatpak() {
-		v, err = flatpakGet(flatpakName(svc, name))
+		v, err = flatpakGet(svc, name)
 	} else {
 		v, err = keyringGet(svc, name)
 	}
@@ -126,7 +126,7 @@ func Set(name, value string) error { return SetIn(service, name, value) }
 func SetIn(svc, name, value string) error {
 	forget(svc, name)
 	if sandbox.InFlatpak() {
-		return flatpakSet(flatpakName(svc, name), value)
+		return flatpakSet(svc, name, value)
 	}
 	return explain(keyringSet(svc, name, value))
 }
@@ -157,7 +157,7 @@ func Delete(name string) error { return DeleteIn(service, name) }
 func DeleteIn(svc, name string) error {
 	forget(svc, name)
 	if sandbox.InFlatpak() {
-		return flatpakDelete(flatpakName(svc, name))
+		return flatpakDelete(svc, name)
 	}
 	if err := keyringDelete(svc, name); err != nil && !errors.Is(err, ErrNotFound) {
 		return explain(err)

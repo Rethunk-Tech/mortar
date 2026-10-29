@@ -297,31 +297,50 @@ func update(fn func(m map[string]string) bool) error {
 	return save(path, key, m)
 }
 
-func flatpakSet(name, value string) error {
-	if host, err := onHost(); err != nil || host {
-		if err != nil {
-			return err
-		}
-		return explain(keyringSet(service, name, value))
+// flatpakSet stores a secret. On the host keyring another program's item sits under its own service and name, as a
+// host-side reader (a mod template's build) looks it up; the name an earlier release wrote is removed.
+func flatpakSet(svc, name, value string) error {
+	host, err := onHost()
+	if err != nil {
+		return err
 	}
-	return update(func(m map[string]string) bool { m[name] = value; return true })
+	if !host {
+		return update(func(m map[string]string) bool { m[flatpakName(svc, name)] = value; return true })
+	}
+	if err := keyringSet(svc, name, value); err != nil {
+		return explain(err)
+	}
+	return dropLegacy(svc, name)
 }
 
-func flatpakDelete(name string) error {
-	if host, err := onHost(); err != nil || host {
-		if err != nil {
-			return err
-		}
-		if err := keyringDelete(service, name); err != nil && !errors.Is(err, ErrNotFound) {
-			return explain(err)
-		}
+func flatpakDelete(svc, name string) error {
+	host, err := onHost()
+	if err != nil {
+		return err
+	}
+	if !host {
+		fn := flatpakName(svc, name)
+		return update(func(m map[string]string) bool {
+			_, ok := m[fn]
+			delete(m, fn)
+			return ok
+		})
+	}
+	if err := keyringDelete(svc, name); err != nil && !errors.Is(err, ErrNotFound) {
+		return explain(err)
+	}
+	return dropLegacy(svc, name)
+}
+
+// dropLegacy removes the item releases before the host-visible naming stored as service "mortar", "<svc>.<name>".
+func dropLegacy(svc, name string) error {
+	if svc == service {
 		return nil
 	}
-	return update(func(m map[string]string) bool {
-		_, ok := m[name]
-		delete(m, name)
-		return ok
-	})
+	if err := keyringDelete(service, flatpakName(svc, name)); err != nil && !errors.Is(err, ErrNotFound) {
+		return explain(err)
+	}
+	return nil
 }
 
 // onHost resolves the backend and reports whether the host keyring holds the secrets.
@@ -332,8 +351,8 @@ func onHost() (bool, error) {
 	return host, err
 }
 
-// flatpakGet reads the active store.
-func flatpakGet(name string) (string, error) {
+// flatpakGet reads the active store; on the host keyring a missing item falls back to the legacy name.
+func flatpakGet(svc, name string) (string, error) {
 	var v string
 	var ok bool
 	storeMu.Lock()
@@ -342,11 +361,15 @@ func flatpakGet(name string) (string, error) {
 	case err != nil:
 	case host:
 		storeMu.Unlock()
-		return keyringGet(service, name)
+		v, err = keyringGet(svc, name)
+		if errors.Is(err, ErrNotFound) && svc != service {
+			return keyringGet(service, flatpakName(svc, name))
+		}
+		return v, err
 	default:
 		var m map[string]string
 		if m, err = load(path, key); err == nil {
-			v, ok = m[name]
+			v, ok = m[flatpakName(svc, name)]
 		}
 	}
 	storeMu.Unlock()

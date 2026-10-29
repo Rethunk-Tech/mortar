@@ -358,3 +358,74 @@ func TestPlaintextDoesNotWaitOnTheStore(t *testing.T) {
 		t.Fatal("a busy store is not reported as plain text")
 	}
 }
+
+// setHostRingBySvc stubs the host Secret Service keyed by service and name.
+func setHostRingBySvc(ring map[[2]string]string) {
+	hostDone, keyDone = false, false
+	keyringGet = func(svc, name string) (string, error) {
+		if v, ok := ring[[2]string{svc, name}]; ok {
+			return v, nil
+		}
+		return "", ErrNotFound
+	}
+	keyringSet = func(svc, name, v string) error { ring[[2]string{svc, name}] = v; return nil }
+	keyringDelete = func(svc, name string) error { delete(ring, [2]string{svc, name}); return nil }
+}
+
+func TestHostKeyringSharedItemNaming(t *testing.T) {
+	newEnv := func(t *testing.T) map[[2]string]string {
+		flatpakEnv(t, func() ([]byte, error) { return nil, errors.New("no portal") })
+		ring := map[[2]string]string{}
+		setHostRingBySvc(ring)
+		return ring
+	}
+	legacy := [2]string{"mortar", "thunderstore.team"}
+	shared := [2]string{"thunderstore", "team"}
+
+	t.Run("set writes the host-visible name and drops the old one", func(t *testing.T) {
+		ring := newEnv(t)
+		ring[legacy] = "old"
+		if err := SetIn("thunderstore", "team", "tok"); err != nil {
+			t.Fatal(err)
+		}
+		if ring[shared] != "tok" {
+			t.Fatalf("new name not written: %v", ring)
+		}
+		if _, ok := ring[legacy]; ok {
+			t.Fatalf("old name lingers: %v", ring)
+		}
+	})
+
+	t.Run("get falls back to the old name", func(t *testing.T) {
+		ring := newEnv(t)
+		ring[legacy], ring[shared] = "old", "new"
+		if v, err := GetIn("thunderstore", "team"); err != nil || v != "new" {
+			t.Fatalf("got %q, %v", v, err)
+		}
+		delete(ring, shared)
+		if v, err := GetIn("thunderstore", "team"); err != nil || v != "old" {
+			t.Fatalf("got %q, %v", v, err)
+		}
+	})
+
+	t.Run("delete removes both names", func(t *testing.T) {
+		ring := newEnv(t)
+		ring[legacy], ring[shared] = "old", "tok"
+		if err := DeleteIn("thunderstore", "team"); err != nil {
+			t.Fatal(err)
+		}
+		if len(ring) != 0 {
+			t.Fatalf("left behind: %v", ring)
+		}
+	})
+
+	t.Run("Mortar's own items keep their name", func(t *testing.T) {
+		ring := newEnv(t)
+		if err := Set("nexus", "k"); err != nil {
+			t.Fatal(err)
+		}
+		if ring[[2]string{"mortar", "nexus"}] != "k" || len(ring) != 1 {
+			t.Fatalf("got %v", ring)
+		}
+	})
+}
