@@ -8,15 +8,16 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-func FreeBytes(path string) (int64, error) {
-	var st unix.Statfs_t
-	if err := unix.Statfs(path, &st); err != nil {
-		return 0, err
-	}
-	if st.Bsize <= 0 {
+// freeBytes is the space available to an unprivileged writer: bavail blocks of bsize bytes. Each OS types the
+// statfs fields differently, so callers convert to int64 first.
+func freeBytes(bsize, bavail int64) (int64, error) {
+	if bsize <= 0 {
 		return 0, unix.EINVAL
 	}
-	total := st.Bavail * uint64(st.Bsize)
+	if bavail < 0 {
+		return 0, nil
+	}
+	total := uint64(bavail) * uint64(bsize)
 	if total > math.MaxInt64 {
 		return math.MaxInt64, nil
 	}
