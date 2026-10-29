@@ -2,20 +2,17 @@ package smapi
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
-	"path/filepath"
 	"regexp"
 	"slices"
 	"strings"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/github"
+	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
 const (
@@ -27,11 +24,6 @@ const (
 )
 
 var versionPattern = regexp.MustCompile(`^\d+(\.\d+)*$`)
-
-type cachedRelease struct {
-	Fetched time.Time `json:"fetched"`
-	Version string    `json:"version"`
-}
 
 func (l Loader) loaderComponent() (components.Component, bool) {
 	client := l.Components
@@ -60,36 +52,7 @@ func (l Loader) installerAsset(version string) string {
 	return strings.ReplaceAll(pattern, "{version}", version)
 }
 
-func (l Loader) cachePath() (string, error) {
-	dir := l.CacheDir
-	if dir == "" {
-		base, err := datadir.Dir()
-		if err != nil {
-			return "", err
-		}
-		dir = filepath.Join(base, "cache")
-	}
-	return filepath.Join(dir, cacheFile), nil
-}
-
-func readCache(path string) (cachedRelease, bool) {
-	b, err := fsx.ReadFile(path)
-	if err != nil {
-		return cachedRelease{}, false
-	}
-	var c cachedRelease
-	if json.Unmarshal(b, &c) != nil || !versionPattern.MatchString(c.Version) {
-		return cachedRelease{}, false
-	}
-	return c, true
-}
-
-func writeCache(path string, c cachedRelease) error {
-	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-		return err
-	}
-	return datadir.WriteJSON(path, c)
-}
+func (l Loader) cache() *meta.Client { return &meta.Client{CacheDir: l.CacheDir} }
 
 // Latest returns the newest stable SMAPI version that ships an installer. A response younger than an hour
 // is reused, and a stale one stands in when the lookup fails.
@@ -97,24 +60,7 @@ func (l Loader) Latest(ctx context.Context, _ components.GameInfo) (string, erro
 	if component, ok := l.loaderComponent(); ok {
 		return component.Version, nil
 	}
-	path, err := l.cachePath()
-	if err != nil {
-		return "", err
-	}
-	cached, ok := readCache(path)
-	if age := time.Since(cached.Fetched); ok && age >= 0 && age < cacheTTL {
-		return cached.Version, nil
-	}
-	version, err := l.fetchLatest(ctx)
-	if err != nil {
-		if ok {
-			return cached.Version, nil
-		}
-		return "", err
-	}
-	// A cache that cannot be written only costs a refetch.
-	_ = writeCache(path, cachedRelease{Fetched: time.Now().UTC(), Version: version})
-	return version, nil
+	return meta.Cached(l.cache(), cacheFile, cacheTTL, func() (string, error) { return l.fetchLatest(ctx) })
 }
 
 func (l Loader) fetchLatest(ctx context.Context) (string, error) {

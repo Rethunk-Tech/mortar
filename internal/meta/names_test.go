@@ -14,10 +14,10 @@ import (
 
 // keptCacheFiles are cached names Clean up deliberately leaves alone: the compatibility list serves offline and the
 // components manifest is replaced in place on each build.
-var keptCacheFiles = map[string]bool{"CompatCacheFile": true, "cacheName": true}
+var keptCacheFiles = map[string]bool{"CompatCacheFile": true, "cacheName": true, "cacheFile": true}
 
 // nameBuilders build a cache name from a names.go prefix inside their own package.
-var nameBuilders = map[string]bool{"DetailsName": true, "PageName": true, "listName": true}
+var nameBuilders = map[string]bool{"DetailsName": true, "PageName": true, "listName": true, "releasesName": true}
 
 func isCacheCall(call *ast.CallExpr) bool {
 	var name string
@@ -29,7 +29,7 @@ func isCacheCall(call *ast.CallExpr) bool {
 	case *ast.IndexExpr:
 		return isCacheCall(&ast.CallExpr{Fun: fn.X})
 	}
-	return name == "Cached" || name == "CachedForBuild"
+	return name == "Cached" || name == "CachedForBuild" || name == "CachedStamped"
 }
 
 // registered reports whether the cache name expression starts from a names.go prefix, a builder of one, or a kept file.

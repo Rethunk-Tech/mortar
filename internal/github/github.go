@@ -17,7 +17,6 @@ import (
 	"mime"
 	"net/http"
 	"os"
-	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -555,79 +554,37 @@ func Key(owner, repo, tag, asset string) string {
 	return "github-" + slug + "-" + hex.EncodeToString(sum[:6])
 }
 
-// cacheFormat is bumped when cacheEntry gains a field an older file lacks: that file is fetched again however young,
-// still stands in when the lookup fails, and is never read for the missing field. Format 2 added asset download counts.
+// cacheFormat stamps the release cache and is bumped when Release gains a field an older file lacks: that file is
+// fetched again however young, still stands in when the lookup fails, and is never read for the missing field. Format 2
+// added asset download counts.
 const cacheFormat = 2
 
 // releasesPerPage is how many releases one lookup reads, the newest ones.
 const releasesPerPage = 30
 
-type cacheEntry struct {
-	Format   int       `json:"format"`
-	Fetched  time.Time `json:"fetched"`
-	Releases []Release `json:"releases"`
+// cache is the release cache's handle; the clock is the client's, so tests can set it.
+func (c *Client) cache() *meta.Client {
+	return &meta.Client{CacheDir: c.CacheDir, Now: c.now}
 }
 
-func (c *Client) cacheDir() (string, error) {
-	if c.CacheDir != "" {
-		return c.CacheDir, nil
-	}
-	d, err := datadir.Dir()
-	if err != nil {
-		return "", err
-	}
-	return filepath.Join(d, "cache"), nil
-}
-
-func releasesPath(dir, owner, repo string) string {
-	return filepath.Join(dir, Key(owner, repo, "", "")+"-releases.json")
-}
-
-// readCache is the stored entry at path, empty when there is none or it is unreadable.
-func readCache(path string) cacheEntry {
-	var e cacheEntry
-	if b, err := fsx.ReadFile(path); err != nil || json.Unmarshal(b, &e) != nil {
-		return cacheEntry{}
-	}
-	return e
+func releasesName(owner, repo string) string {
+	return Key(owner, repo, "", "") + "-releases-v2.json"
 }
 
 // CachedReleases lists owner/repo's releases from the stored answer however old it is, never asking GitHub. all is
 // whether the list holds every release the repository has, which a full page may not.
 func (c *Client) CachedReleases(owner, repo string) (releases []Release, all, ok bool) {
-	dir, err := c.cacheDir()
-	if err != nil {
-		return nil, false, false
-	}
-	e := readCache(releasesPath(dir, owner, repo))
-	return e.Releases, len(e.Releases) < releasesPerPage, e.Format == cacheFormat && !e.Fetched.IsZero()
+	releases, stamp, ok := meta.PeekStamped[[]Release](c.cache(), releasesName(owner, repo))
+	return releases, len(releases) < releasesPerPage, ok && stamp == strconv.Itoa(cacheFormat)
 }
 
 // Releases lists owner/repo's releases, newest first. An answer younger than an hour comes from the cache and a
 // stale one stands in when the lookup fails, rate limit included.
 func (c *Client) Releases(ctx context.Context, owner, repo string) ([]Release, error) {
 	base := cmp.Or(c.APIBase, apiBase)
-	dir, err := c.cacheDir()
-	if err != nil {
-		return nil, err
-	}
-	path := releasesPath(dir, owner, repo)
-	old := readCache(path)
-	if age := c.now().Sub(old.Fetched); old.Format == cacheFormat && !old.Fetched.IsZero() && age >= 0 && age < cacheTTL {
-		return old.Releases, nil
-	}
-	all, err := FetchReleases(ctx, c.HTTP, base+"/repos/"+owner+"/"+repo+"/releases?per_page="+strconv.Itoa(releasesPerPage))
-	if err != nil {
-		if !old.Fetched.IsZero() {
-			return old.Releases, nil
-		}
-		return nil, err
-	}
-	// A cache that cannot be written only costs a refetch.
-	if os.MkdirAll(dir, 0o700) == nil {
-		_ = datadir.WriteJSON(path, cacheEntry{Format: cacheFormat, Fetched: c.now(), Releases: all})
-	}
-	return all, nil
+	return meta.CachedStamped(c.cache(), releasesName(owner, repo), strconv.Itoa(cacheFormat), cacheTTL, func() ([]Release, error) {
+		return FetchReleases(ctx, c.HTTP, base+"/repos/"+owner+"/"+repo+"/releases?per_page="+strconv.Itoa(releasesPerPage))
+	})
 }
 
 // ErrNoRelease and ErrNoArchive say why Select found nothing to install.

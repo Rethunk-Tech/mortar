@@ -7,7 +7,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"slices"
 	"strings"
 	"time"
 
@@ -195,7 +194,7 @@ func Apply(root string, items *store.Store, preview Preview, keep map[string][]s
 
 // cacheTTL is how long the cache file rel may sit; a retired file has none.
 func cacheTTL(rel string) (time.Duration, bool) {
-	if slices.ContainsFunc(meta.RetiredCachePrefixes, func(p string) bool { return strings.HasPrefix(rel, p) }) {
+	if meta.Retired(rel) {
 		return 0, true
 	}
 	switch {
@@ -215,7 +214,7 @@ func cacheTTL(rel string) (time.Duration, bool) {
 		return signedListTTL, true
 	case rel == "smapi-updates.json":
 		return updatesTTL, true
-	case strings.HasSuffix(rel, "-releases.json"):
+	case strings.HasSuffix(rel, "-releases-v2.json"):
 		return releasesTTL, true
 	default:
 		return 0, false

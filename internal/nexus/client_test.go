@@ -5,6 +5,8 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"reflect"
 	"slices"
 	"strings"
@@ -102,6 +104,24 @@ func TestModCachedOnDisk(t *testing.T) {
 	}
 	if hits.Load() != 1 {
 		t.Fatalf("hits = %d, want the second call served from disk", hits.Load())
+	}
+}
+
+// A bare Mod under the old name, or a value-less file under the new one, must not answer as an empty Mod forever.
+func TestModIgnoresEarlierCacheShapes(t *testing.T) {
+	var status, hits atomic.Int32
+	c := serve(t, &status, "1900", &hits)
+	for name, body := range map[string]string{
+		"mod-stardewvalley-541.json":    `{"name":"stale"}`,
+		"mod-v2-stardewvalley-541.json": `{"fetched":"2026-09-30T12:00:00Z","name":"stale"}`,
+	} {
+		if err := os.WriteFile(filepath.Join(c.CacheDir, name), []byte(body), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	m, err := c.Mod(context.Background(), stardew, 541)
+	if err != nil || m.Name != "Lookup Anything" || hits.Load() != 1 {
+		t.Fatalf("mod = %+v, hits %d, %v", m, hits.Load(), err)
 	}
 }
 

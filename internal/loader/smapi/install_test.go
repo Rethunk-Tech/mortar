@@ -76,20 +76,19 @@ func TestLatestSkipsPrereleaseAndUsesStaleCacheOnFailure(t *testing.T) {
 		t.Fatalf("latest = %q, %v", v, err)
 	}
 	fail = true
-	path, _ := g.cachePath()
-	old := time.Now().Add(-2 * cacheTTL)
-	c, _ := readCache(path)
-	c.Fetched = old
-	if err := writeCache(path, c); err != nil {
-		t.Fatal(err)
+	path := filepath.Join(g.CacheDir, cacheFile)
+	put := func(fetched time.Time) {
+		t.Helper()
+		b := `{"fetched":"` + fetched.UTC().Format(time.RFC3339) + `","value":"4.8.0"}`
+		if err := os.WriteFile(path, []byte(b), 0o600); err != nil {
+			t.Fatal(err)
+		}
 	}
+	put(time.Now().Add(-2 * cacheTTL))
 	if v, err := g.Latest(context.Background(), components.GameInfo{}); err != nil || v != "4.8.0" {
 		t.Fatalf("stale fallback = %q, %v", v, err)
 	}
-	c.Fetched = time.Now().Add(24 * time.Hour)
-	if err := writeCache(path, c); err != nil {
-		t.Fatal(err)
-	}
+	put(time.Now().Add(24 * time.Hour))
 	fail = false
 	body = `[{"tag_name":"4.9.1","assets":[{"name":"SMAPI-4.9.1-installer.zip"}]}]`
 	if v, err := g.Latest(context.Background(), components.GameInfo{}); err != nil || v != "4.9.1" {
@@ -98,6 +97,22 @@ func TestLatestSkipsPrereleaseAndUsesStaleCacheOnFailure(t *testing.T) {
 	fail = true
 	if _, err := (Loader{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir()}).Latest(context.Background(), components.GameInfo{}); err == nil {
 		t.Fatal("no cache and a failing API must error")
+	}
+}
+
+// The shape earlier builds wrote under the same name has no "value", so it must not answer as an empty version.
+func TestLatestIgnoresTheEarlierCacheShape(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte(`[{"tag_name":"4.8.0","assets":[{"name":"SMAPI-4.8.0-installer.zip"}]}]`))
+	}))
+	defer srv.Close()
+	g := Loader{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir()}
+	old := `{"fetched":"` + time.Now().UTC().Format(time.RFC3339) + `","version":"4.7.0"}`
+	if err := os.WriteFile(filepath.Join(g.CacheDir, cacheFile), []byte(old), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if v, err := g.Latest(context.Background(), components.GameInfo{}); err != nil || v != "4.8.0" {
+		t.Fatalf("latest = %q, %v", v, err)
 	}
 }
 

@@ -6,13 +6,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"html"
-	"os"
 	"path/filepath"
 	"slices"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
@@ -28,14 +25,13 @@ type Mod struct {
 // Mod returns a mod's page data. It is fetched once and kept on disk, since the picture and endorsement count are
 // only wanted at install time; a cache that cannot be read or written only costs a refetch.
 func (c *Client) Mod(ctx context.Context, t Title, modID int) (Mod, error) {
+	// The client's cache folder is already <cache>/nexus, so only the file part of the prefix names the entry.
+	name := fmt.Sprintf("%s%s-%d.json", filepath.Base(meta.NexusModPrefix), t.Domain, modID)
 	dir, dirErr := c.cacheDir()
-	path := filepath.Join(dir, fmt.Sprintf("mod-%s-%d.json", t.Domain, modID))
+	cache := &meta.Client{CacheDir: dir}
 	if dirErr == nil {
-		if b, err := fsx.ReadFile(path); err == nil {
-			var m Mod
-			if json.Unmarshal(b, &m) == nil {
-				return m, nil
-			}
+		if m, ok := meta.Peek[Mod](cache, name); ok {
+			return m, nil
 		}
 	}
 	p, err := c.Page(ctx, t, modID)
@@ -43,8 +39,8 @@ func (c *Client) Mod(ctx context.Context, t Title, modID int) (Mod, error) {
 		return Mod{}, err
 	}
 	m := Mod{Name: p.Name, Author: p.Author, PictureURL: p.PictureURL, EndorsementCount: p.Endorsements, Summary: p.Summary}
-	if dirErr == nil && os.MkdirAll(dir, 0o700) == nil {
-		_ = datadir.WriteJSON(path, m)
+	if dirErr == nil {
+		meta.Put(cache, name, m)
 	}
 	return m, nil
 }

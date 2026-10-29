@@ -114,9 +114,9 @@ func TestCachedReleasesNeverAsksAndOldFormatsAreFetchedAgain(t *testing.T) {
 	if !ok || !whole || len(got) != 5 || hits.Load() != 1 {
 		t.Fatalf("cached = %d releases, whole %v, ok %v, hits %d", len(got), whole, ok, hits.Load())
 	}
-	// A file an older release wrote lacks the format and the asset counts, so the list is read again however young.
-	path := releasesPath(c.CacheDir, "o", "r")
-	if err := os.WriteFile(path, []byte(`{"fetched":"`+time.Now().UTC().Format(time.RFC3339)+`","releases":[{"tag_name":"v0"}]}`), 0o600); err != nil {
+	// A file stamped with an older format lacks the asset counts, so the list is read again however young.
+	path := filepath.Join(c.CacheDir, releasesName("o", "r"))
+	if err := os.WriteFile(path, []byte(`{"fetched":"`+time.Now().UTC().Format(time.RFC3339)+`","value":[{"tag_name":"v0"}],"build":"1"}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if _, _, ok := c.CachedReleases("o", "r"); ok {
@@ -128,6 +128,37 @@ func TestCachedReleasesNeverAsksAndOldFormatsAreFetchedAgain(t *testing.T) {
 	c.Now = func() time.Time { return time.Now().UTC().Add(-24 * time.Hour) }
 	if _, err := c.Releases(context.Background(), "o", "r"); err != nil || hits.Load() != 3 {
 		t.Fatalf("an answer stamped after a clock set back was served: hits %d, err %v", hits.Load(), err)
+	}
+}
+
+// The unversioned names and shapes of earlier builds must never answer: a nil list would stand in for a failed fetch.
+func TestEarlierCacheShapesReadAsAbsent(t *testing.T) {
+	t.Parallel()
+	var hits atomic.Int32
+	c := server(t, &hits, serve)
+	now := time.Now().UTC().Format(time.RFC3339)
+	key := Key("o", "r", "", "")
+	for name, body := range map[string]string{
+		key + "-releases.json":                     `{"fetched":"` + now + `","releases":[{"tag_name":"v0"}]}`,
+		releasesName("o", "r"):                     `{"fetched":"` + now + `","releases":[{"tag_name":"v0"}]}`,
+		Key("o", "r", "v1", "") + "-notes.json":    `{"notes":"old"}`,
+		Key("o", "r", "v2", "") + "-notes-v2.json": `{"notes":"old"}`,
+	} {
+		if err := os.WriteFile(filepath.Join(c.CacheDir, name), []byte(body), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if _, _, ok := c.CachedReleases("o", "r"); ok {
+		t.Fatal("a release list without a value answered")
+	}
+	if got, err := c.Releases(context.Background(), "o", "r"); err != nil || len(got) != 5 || hits.Load() != 1 {
+		t.Fatalf("releases: %d, hits %d, err %v", len(got), hits.Load(), err)
+	}
+	if notes, ok := meta.Peek[string](c.cache(), Key("o", "r", "v2", "")+"-notes-v2.json"); ok {
+		t.Fatalf("notes without a value answered %q", notes)
+	}
+	if notes, ok := meta.Peek[string](c.cache(), Key("o", "r", "v1", "")+"-notes-v2.json"); ok {
+		t.Fatalf("an unversioned notes file answered %q", notes)
 	}
 }
 
@@ -144,8 +175,8 @@ func TestRateLimit(t *testing.T) {
 	if !errors.As(err, &rl) || !rl.Reset.Equal(time.Unix(1790000000, 0)) || !strings.Contains(err.Error(), "try again after") {
 		t.Fatalf("err = %v", err)
 	}
-	// A file an older release wrote still stands in when the lookup fails.
-	if err := os.WriteFile(releasesPath(c.CacheDir, "o", "r"), []byte(`{"fetched":"2025-01-01T00:00:00Z","releases":[{"tag_name":"v0"}]}`), 0o600); err != nil {
+	// A file stamped with an older format still stands in when the lookup fails.
+	if err := os.WriteFile(filepath.Join(c.CacheDir, releasesName("o", "r")), []byte(`{"fetched":"2025-01-01T00:00:00Z","value":[{"tag_name":"v0"}],"build":"1"}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if got, err := c.Releases(context.Background(), "o", "r"); err != nil || len(got) != 1 {

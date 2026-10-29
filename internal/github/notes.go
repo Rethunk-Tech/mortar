@@ -6,34 +6,21 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
 // maxNotes bounds a release body read from the API.
 const maxNotes = 1 << 20
 
-type notesEntry struct {
-	Notes string `json:"notes"`
-}
-
 // ReleaseNotes returns the markdown body of owner/repo's release tagged tag. A published release never changes
 // its notes, so a cached answer is final and never refetched; a failed lookup is not cached.
 func (c *Client) ReleaseNotes(ctx context.Context, owner, repo, tag string) (string, error) {
-	dir, err := c.cacheDir()
-	if err != nil {
-		return "", err
-	}
-	path := filepath.Join(dir, Key(owner, repo, tag, "")+"-notes.json")
-	if b, err := fsx.ReadFile(path); err == nil {
-		var hit notesEntry
-		if json.Unmarshal(b, &hit) == nil {
-			return hit.Notes, nil
-		}
+	name := Key(owner, repo, tag, "") + "-notes-v2.json"
+	if notes, ok := meta.Peek[string](c.cache(), name); ok {
+		return notes, nil
 	}
 	base := cmp.Or(c.APIBase, apiBase)
 	ctx, cancel := context.WithTimeout(ctx, apiTimeout)
@@ -64,8 +51,6 @@ func (c *Client) ReleaseNotes(ctx context.Context, owner, repo, tag string) (str
 		return "", fmt.Errorf("read GitHub's release response: %w", err)
 	}
 	notes := strings.TrimSpace(rel.Body)
-	if os.MkdirAll(dir, 0o700) == nil {
-		_ = datadir.WriteJSON(path, notesEntry{Notes: notes})
-	}
+	meta.Put(c.cache(), name, notes)
 	return notes, nil
 }

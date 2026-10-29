@@ -127,6 +127,12 @@ func TestSelectDropsRetiredCacheAndExpiresNexusPages(t *testing.T) {
 		"cache/nexus/page-absent-v1-stardewvalley-2.json": old,
 		"cache/nexus/page-v2-stardewvalley-3.json":        fresh,
 		"cache/smapi-compat.json":                         old,
+		"cache/github-o-r-0123456789ab-releases.json":     fresh,
+		"cache/github-o-r-v1-0123456789ab-notes.json":     fresh,
+		"cache/nexus/mod-stardewvalley-1.json":            fresh,
+		"cache/github-o-r-0123456789ab-releases-v2.json":  fresh,
+		"cache/github-o-r-v1-0123456789ab-notes-v2.json":  fresh,
+		"cache/nexus/mod-v2-stardewvalley-1.json":         fresh,
 	}
 	for rel, body := range files {
 		p := filepath.Join(root, filepath.FromSlash(rel))
@@ -143,6 +149,8 @@ func TestSelectDropsRetiredCacheAndExpiresNexusPages(t *testing.T) {
 	want := []string{
 		"cache/nexus-requirements-stardewvalley-1.json", "cache/nexus/page-v1-stardewvalley-1.json",
 		"cache/nexus/page-v2-stardewvalley-1.json", "cache/nexus/page-absent-v1-stardewvalley-2.json",
+		"cache/github-o-r-0123456789ab-releases.json", "cache/github-o-r-v1-0123456789ab-notes.json",
+		"cache/nexus/mod-stardewvalley-1.json",
 	}
 	if len(got) != len(want) {
 		t.Fatalf("listed %v, want %v", got, want)

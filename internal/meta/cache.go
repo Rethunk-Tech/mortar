@@ -82,8 +82,18 @@ func readEntry[T any](path string) (entry[T], bool) {
 	if err != nil {
 		return entry[T]{}, false
 	}
-	var e entry[T]
-	if json.Unmarshal(b, &e) != nil || e.Fetched.IsZero() {
+	// An entry with no "value" key is another shape under the same name (an older build's, or a foreign file), and
+	// decoding it would serve a zero value as a fresh answer. A stored "value": null is still a value.
+	var raw struct {
+		Fetched time.Time       `json:"fetched"`
+		Value   json.RawMessage `json:"value"`
+		Build   string          `json:"build"`
+	}
+	if json.Unmarshal(b, &raw) != nil || raw.Fetched.IsZero() || raw.Value == nil {
+		return entry[T]{}, false
+	}
+	e := entry[T]{Fetched: raw.Fetched, Build: raw.Build}
+	if json.Unmarshal(raw.Value, &e.Value) != nil {
 		return entry[T]{}, false
 	}
 	return e, true
@@ -112,6 +122,12 @@ func Cached[T any](c *Client, name string, ttl time.Duration, fetch func() (T, e
 // or one from before builds were stamped, is fetched again and serves only while the fetch fails.
 func CachedForBuild[T any](c *Client, name string, ttl time.Duration, fetch func() (T, error)) (T, error) {
 	return cached(c, name, ttl, appversion.Build(), fetch)
+}
+
+// CachedStamped is Cached that also fetches again an entry whose stamp is not stamp; that entry still stands in when
+// the fetch fails.
+func CachedStamped[T any](c *Client, name, stamp string, ttl time.Duration, fetch func() (T, error)) (T, error) {
+	return cached(c, name, ttl, stamp, fetch)
 }
 
 func cached[T any](c *Client, name string, ttl time.Duration, build string, fetch func() (T, error)) (T, error) {
@@ -144,6 +160,17 @@ func Peek[T any](c *Client, name string) (T, bool) {
 	}
 	e, ok := readEntry[T](path)
 	return e.Value, ok
+}
+
+// PeekStamped is Peek that also returns the stamp the entry was written with.
+func PeekStamped[T any](c *Client, name string) (T, string, bool) {
+	path, err := c.cachePath(name)
+	if err != nil {
+		var zero T
+		return zero, "", false
+	}
+	e, ok := readEntry[T](path)
+	return e.Value, e.Build, ok
 }
 
 // PeekFetched is Peek that also returns when the entry was fetched.
