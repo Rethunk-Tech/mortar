@@ -79,3 +79,11 @@ func mustOpen(t *testing.T) *Store {
 	}
 	return s
 }
+
+func TestAutostartEntryEscapesTheExecutable(t *testing.T) {
+	got := autostartEntry("/opt/50%off/$x `b` \\q \"z\" d")
+	want := "Exec=\"/opt/50%%off/\\\\$x \\\\`b\\\\` \\\\\\\\q \\\\\"z\\\\\" d\"\n"
+	if !strings.Contains(got, want) {
+		t.Fatalf("entry = %q, want it to contain %q", got, want)
+	}
+}

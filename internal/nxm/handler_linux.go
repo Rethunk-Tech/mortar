@@ -265,17 +265,13 @@ func (l *System) yieldTo(id string) error {
 	return nil
 }
 
+// quoteExec is path as the inside of a quoted Exec argument: the quoted-argument escapes first, then the string-value
+// escape that doubles each backslash, and %% so a percent is not read as a field code.
 func quoteExec(path string) string {
-	var b strings.Builder
-	for i := 0; i < len(path); i++ {
-		c := path[i]
-		if c == '"' || c == '`' || c == '$' || c == '\\' {
-			b.WriteByte('\\')
-		}
-		b.WriteByte(c)
-	}
-	return b.String()
+	return execArgEscaper.Replace(path)
 }
+
+var execArgEscaper = strings.NewReplacer(`\`, `\\\\`, `"`, `\\"`, "`", "\\\\`", `$`, `\\$`, `%`, `%%`)
 
 func (l *System) iconPNGPath() string {
 	return filepath.Join(l.dataHome, "icons", "hicolor", "256x256", "apps", "mortar.png")

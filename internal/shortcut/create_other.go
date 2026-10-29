@@ -28,7 +28,7 @@ func create(exe, arg, name string) (string, error) {
 		id := launcherID(arg)
 		return id, portal.InstallLauncher(id, name, "mortar "+arg, nxm.IconPNG())
 	}
-	execLine := `"` + strings.ReplaceAll(exe, `"`, `\"`) + `"`
+	execLine := `"` + execArgEscaper.Replace(exe) + `"`
 	base, err := dataHome()
 	if err != nil {
 		return "", err
@@ -148,6 +148,10 @@ func exists(game, profile string) (bool, error) {
 func desktopValue(s string) string {
 	return strings.NewReplacer(`\`, `\\`, "\n", " ", "\r", " ").Replace(s)
 }
+
+// execArgEscaper escapes a path for the inside of a quoted Exec argument: the quoted-argument escapes first, then the
+// string-value escape that doubles each backslash, and %% so a percent is not read as a field code.
+var execArgEscaper = strings.NewReplacer(`\`, `\\\\`, `"`, `\\"`, "`", "\\\\`", `$`, `\\$`, `%`, `%%`)
 
 func dataHome() (string, error) {
 	if v := os.Getenv("XDG_DATA_HOME"); v != "" {

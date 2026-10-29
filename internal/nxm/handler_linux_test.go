@@ -131,7 +131,7 @@ func TestRestoreWithoutPreviousDropsOurDefault(t *testing.T) {
 func TestQuoteExec(t *testing.T) {
 	path := `/opt/nexus mods/$app/mortar`
 	got := quoteExec(path)
-	if got != `/opt/nexus mods/\$app/mortar` {
+	if got != `/opt/nexus mods/\\$app/mortar` {
 		t.Fatalf("quoteExec = %q", got)
 	}
 }
@@ -552,5 +552,13 @@ func TestReleaseHandsBackOnlyTheGivenScheme(t *testing.T) {
 	}
 	if r.byMime[schemeMime("nxm")] != "vortex.desktop" {
 		t.Fatalf("the nxm default changed: %v", r.byMime)
+	}
+}
+
+func TestQuoteExecEscapesForTheExecValue(t *testing.T) {
+	got := quoteExec("/opt/50%off/$x `b` \\q \"z\" d")
+	want := "/opt/50%%off/\\\\$x \\\\`b\\\\` \\\\\\\\q \\\\\"z\\\\\" d"
+	if got != want {
+		t.Fatalf("quoteExec = %q, want %q", got, want)
 	}
 }

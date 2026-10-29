@@ -3,10 +3,8 @@
 package settings
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/portal"
@@ -51,7 +49,7 @@ func applyAutostart(enable bool) error {
 		if err != nil {
 			return err
 		}
-		body := fmt.Sprintf("[Desktop Entry]\nType=Application\nName=Mortar\nExec=%s\nX-GNOME-Autostart-enabled=true\n", desktopExec(selfexe.Launchable(exe)))
+		body := autostartEntry(selfexe.Launchable(exe))
 		return sub.WriteFile("mortar.desktop", []byte(body), 0o600)
 	}
 	sub, err := root.OpenRoot("autostart")
@@ -69,9 +67,11 @@ func applyAutostart(enable bool) error {
 	return nil
 }
 
-func desktopExec(exe string) string {
-	if strings.ContainsAny(exe, " \t") {
-		return strconv.Quote(exe)
-	}
-	return exe
+// autostartEntry is the autostart desktop entry for exe: the argument is quoted and escaped for the Exec value.
+func autostartEntry(exe string) string {
+	return "[Desktop Entry]\nType=Application\nName=Mortar\nExec=\"" + execArgEscaper.Replace(exe) + "\"\nX-GNOME-Autostart-enabled=true\n"
 }
+
+// execArgEscaper escapes a path for the inside of a quoted Exec argument: the quoted-argument escapes first, then the
+// string-value escape that doubles each backslash, and %% so a percent is not read as a field code.
+var execArgEscaper = strings.NewReplacer(`\`, `\\\\`, `"`, `\\"`, "`", "\\\\`", `$`, `\\$`, `%`, `%%`)
