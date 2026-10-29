@@ -280,11 +280,13 @@ func utf16Bytes(s string, order binary.AppendByteOrder) []byte {
 }
 
 func TestDecodeXMLBOMlessUTF16(t *testing.T) {
-	doc := `<?xml version="1.0" encoding="utf-16"?><config><moduleName>Wide</moduleName></config>`
-	for name, order := range map[string]binary.AppendByteOrder{"LE": binary.LittleEndian, "BE": binary.BigEndian} {
-		cfg, err := Parse(decodeXML(utf16Bytes(doc, order)))
-		if err != nil || cfg.ModuleName != "Wide" {
-			t.Fatalf("%s: %+v %v", name, cfg, err)
+	body := `<config><moduleName>Wide</moduleName></config>`
+	for _, doc := range []string{`<?xml version="1.0" encoding="utf-16"?>` + body, body, "\n  <?xml version=\"1.0\"?>" + body} {
+		for name, order := range map[string]binary.AppendByteOrder{"LE": binary.LittleEndian, "BE": binary.BigEndian} {
+			cfg, err := Parse(decodeXML(utf16Bytes(doc, order)))
+			if err != nil || cfg.ModuleName != "Wide" {
+				t.Fatalf("%s %q: %+v %v", name, doc, cfg, err)
+			}
 		}
 	}
 }

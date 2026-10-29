@@ -90,11 +90,11 @@ func decodeXML(raw []byte) []byte {
 	if len(raw) >= 3 && raw[0] == 0xEF && raw[1] == 0xBB && raw[2] == 0xBF {
 		return raw[3:]
 	}
-	// XML appendix F: a BOM-less UTF-16 document starts with an encoded "<?".
+	// NUL is illegal in XML, so a NUL in the first byte pair means BOM-less UTF-16 (with or without a declaration).
 	switch {
-	case bytes.HasPrefix(raw, []byte("<\x00?\x00")):
+	case bytes.HasPrefix(raw, []byte("<\x00?\x00")), len(raw) >= 2 && raw[0] != 0 && raw[1] == 0:
 		return utf16ToUTF8(raw, binary.LittleEndian)
-	case bytes.HasPrefix(raw, []byte("\x00<\x00?")):
+	case bytes.HasPrefix(raw, []byte("\x00<\x00?")), len(raw) >= 2 && raw[0] == 0 && raw[1] != 0:
 		return utf16ToUTF8(raw, binary.BigEndian)
 	}
 	return raw
