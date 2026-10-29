@@ -215,3 +215,23 @@ func TestReadBackupFoldsAnOldDescriptionIntoNotes(t *testing.T) {
 		t.Fatalf("notes %q, %v", doc.Profile.Notes, err)
 	}
 }
+
+func TestReadBackupRefusesAnEntryHeldTwice(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "twice.zip")
+	f, err := fsx.Create(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	zw := zip.NewWriter(f)
+	for _, body := range []string{"first", "second"} {
+		w, _ := zw.Create("saves/Farm/Farm")
+		_, _ = w.Write([]byte(body))
+	}
+	if err := zw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	_ = f.Close()
+	if _, _, err := readBackup(path, t.TempDir()); err == nil || !strings.Contains(err.Error(), "twice") {
+		t.Fatalf("err = %v", err)
+	}
+}

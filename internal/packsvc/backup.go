@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -378,7 +379,10 @@ func unpack(f *zip.File, tmp string, total *int64) error {
 	if err := os.MkdirAll(filepath.Dir(to), 0o700); err != nil {
 		return err
 	}
-	out, err := fsx.Create(to)
+	out, err := fsx.CreateExcl(to, 0o600)
+	if errors.Is(err, fs.ErrExist) {
+		return usererr.Wrap(usererr.Damaged, fmt.Errorf("the backup holds %q twice", name))
+	}
 	if err != nil {
 		return err
 	}
