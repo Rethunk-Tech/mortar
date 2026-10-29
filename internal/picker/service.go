@@ -24,7 +24,7 @@ type Service struct {
 // PickArchives asks for archives and returns the chosen paths, none when the dialog is cancelled.
 func (s *Service) PickArchives() ([]string, error) {
 	return s.App.OpenFiles(winhost.Dialog{Title: i18n.T("Add archive"), Filters: []winhost.Filter{
-		{Name: i18n.T("Archives (zip, RAR, 7z, tar, gz, xz, zst, bz2, lzma)"), Pattern: archive.PickerPattern()},
+		{Name: i18n.T("Archives (zip, RAR, 7z, tar, gz, xz, zst, bz2, lz4, lzma)"), Pattern: archive.PickerPattern()},
 		{Name: i18n.T("All files"), Pattern: "*"},
 	}})
 }
