@@ -418,6 +418,20 @@ func TestDownloadForgetsTheOldSizeWhenTheServerAnswers200(t *testing.T) {
 	}
 }
 
+func TestDownloadForgetsASidecarWhosePartialIsGone(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_ = http.NewResponseController(w).Flush() // chunked: no Content-Length
+		_, _ = io.WriteString(w, resumeBody+"-changed")
+	}))
+	t.Cleanup(srv.Close)
+	dest := filepath.Join(t.TempDir(), "m.zip")
+	saveResume(dest, resumeMeta{URL: srv.URL, ExpectedSize: int64(len(resumeBody))})
+	if err := Download(context.Background(), srv.Client(), srv.URL, dest, 1<<20, nil); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestRateLimitedPrefersRetryAfter(t *testing.T) {
 	t.Parallel()
 	var e *RateLimitError
