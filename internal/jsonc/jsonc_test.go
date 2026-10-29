@@ -127,3 +127,14 @@ func TestCleanKeepsLinesAcrossMultilineStrings(t *testing.T) {
 		t.Fatalf("error on line %d", line)
 	}
 }
+
+func TestCleanBareDecimalPoints(t *testing.T) {
+	for in, want := range map[string]string{`[.5,-.5,5.,1.5,5.e2]`: `[0.5,-0.5,5.0,1.5,5.0e2]`} {
+		if got := Clean([]byte(in)); string(got) != want {
+			t.Errorf("got %q want %q", got, want)
+		}
+	}
+	if json.Valid(Clean([]byte(`[+1]`))) {
+		t.Error("+1 accepted")
+	}
+}

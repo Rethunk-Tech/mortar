@@ -154,6 +154,17 @@ func normalise(b []byte) []byte {
 			}
 			out = appendWord(out, b, i, j)
 			i = j - 1
+		case c == '.':
+			digitBefore := len(out) > 0 && out[len(out)-1] >= '0' && out[len(out)-1] <= '9'
+			digitAfter := i+1 < len(b) && b[i+1] >= '0' && b[i+1] <= '9'
+			switch {
+			case !digitBefore && digitAfter:
+				out = append(out, '0', '.')
+			case digitBefore && !digitAfter:
+				out = append(out, '.', '0')
+			default:
+				out = append(out, c)
+			}
 		default:
 			out = append(out, c)
 		}
