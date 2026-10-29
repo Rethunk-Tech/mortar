@@ -97,5 +97,5 @@ Rows are item -> test or step id (`launch (a)` and so on name the launch; `offli
 | `config` flat, `plugins` per package | launch (a) `edge.config-placement`; `TestRoute` |
 | A package with its own `BepInEx/` layout | launch (a) `edge.own-layout`; `TestRoute` |
 | Case: `BEPINEX/Plugins` | launch (a) `edge.case`; `TestRoute`, `TestLayoutGoldens` |
-| Two names differing only in case are refused | `TestCaseCollision`, `TestInstallArchive` |
+| Two names differing only in case are refused | `TestInstallArchive`; [go-archive `archive_test.go`](https://github.com/Rethunk-Tech/go-archive/blob/v0.1.0/archive_test.go) |
 | Plugin path past 260 characters | launch (a) `edge.longpath` |
