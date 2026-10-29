@@ -6,6 +6,6 @@
     <Nullable>disable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../Game/Game.csproj" Private="false" />
+    <ProjectReference Include="$(GameProject)" Private="false" />
   </ItemGroup>
 </Project>
