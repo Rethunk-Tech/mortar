@@ -122,6 +122,7 @@ const (
 	keptFinished   = 100
 	progressEvery  = 250 * time.Millisecond
 	defaultBackoff = time.Minute
+	maxWait        = 24 * time.Hour
 	keyValidMargin = 5 * time.Second
 )
 

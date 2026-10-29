@@ -103,3 +103,13 @@ func TestAnErrorAfterPauseOrCancelKeepsTheItemPausedOrCancelled(t *testing.T) {
 		}
 	}
 }
+
+func TestWaitCapsAHugeReset(t *testing.T) {
+	t.Parallel()
+	now := time.Unix(1, 0).UTC()
+	s := &Service{d: Deps{Now: func() time.Time { return now }}}
+	s.wait("github", now.Add(50*24*time.Hour), defaultBackoff)
+	if got := s.until["github"]; !got.Equal(now.Add(maxWait)) {
+		t.Fatalf("until %v", got)
+	}
+}

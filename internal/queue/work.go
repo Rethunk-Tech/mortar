@@ -129,6 +129,9 @@ func (s *Service) wait(key string, reset time.Time, backoff time.Duration) {
 	if !reset.After(s.d.Now()) {
 		reset = s.d.Now().Add(backoff)
 	}
+	if limit := s.d.Now().Add(maxWait); reset.After(limit) {
+		reset = limit
+	}
 	if s.until == nil {
 		s.until = map[string]time.Time{}
 	}
