@@ -59,7 +59,8 @@ func TestLoaderContract(t *testing.T) {
 		t.Fatalf("plan %+v", plan)
 	}
 	// The game folder's config names the profile's preloader itself, for a start that passes no Doorstop flags.
-	if cfg, err := os.ReadFile(plan.Files[0].Src); err != nil || !strings.Contains(string(cfg), "target_assembly=Z:\\") {
+	// Windows never runs Proton, and its ZPath keeps the drive letter (Z:C:\...), so only the Linux spelling is checked.
+	if cfg, err := os.ReadFile(plan.Files[0].Src); err != nil || (runtime.GOOS != "windows" && !strings.Contains(string(cfg), "target_assembly=Z:\\")) {
 		t.Fatalf("config %q %v", cfg, err)
 	}
 	native := launchplan.New(launchplan.ModeProfile)
