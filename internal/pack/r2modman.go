@@ -20,9 +20,10 @@ import (
 
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
-	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
+
+	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
 )
 
 const (
@@ -279,7 +280,7 @@ func DataDirs(extra string) []string {
 	}
 	// Inside the Flatpak the config dir is the sandbox's own; the host's ~/.config folders are granted read-only.
 	if home, err := os.UserHomeDir(); err == nil && runtime.GOOS == "linux" {
-		bases = append(bases, sandbox.HostConfigHome(home))
+		bases = append(bases, userdirs.HostConfigHome(home))
 	}
 	for _, base := range bases {
 		for _, p := range []string{

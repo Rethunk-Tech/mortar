@@ -15,9 +15,10 @@ import (
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
-	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 	"github.com/Rethunk-Tech/mortar/internal/winname"
 	_ "modernc.org/sqlite"
+
+	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
 )
 
 // galeAppID is the folder Gale keeps its data in below the user's data directory
@@ -215,7 +216,7 @@ func GaleDataDirs(extra string) []string {
 			bases = append(bases, xdg)
 		}
 		if home, err := os.UserHomeDir(); err == nil {
-			bases = append(bases, sandbox.HostDataHome(home))
+			bases = append(bases, userdirs.HostDataHome(home))
 		}
 	} else if base, err := os.UserConfigDir(); err == nil {
 		bases = append(bases, base)
