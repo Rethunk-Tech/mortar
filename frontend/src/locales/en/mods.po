@@ -44,6 +44,10 @@ msgstr "prefix"
 msgid "Could not open the folder"
 msgstr "Could not open the folder"
 
+#: src/mods/typedConfig/valueError.ts
+msgid "This needs to be a hex color like FF8800 or FF8800CC."
+msgstr "This needs to be a hex color like FF8800 or FF8800CC."
+
 #: src/mods/parts.tsx
 msgid "Remove {name} from this profile?"
 msgstr "Remove {name} from this profile?"
@@ -1410,6 +1414,10 @@ msgstr "Version"
 msgid "Mark explicit"
 msgstr "Mark explicit"
 
+#: src/mods/typedConfig/valueError.ts
+msgid "This needs to be a list in [brackets]."
+msgstr "This needs to be a list in [brackets]."
+
 #: src/mods/ProblemRows.tsx
 msgid "Read more in the guide"
 msgstr "Read more in the guide"
@@ -2007,6 +2015,10 @@ msgstr "Edit {name}"
 msgid "More actions"
 msgstr "More actions"
 
+#: src/mods/typedConfig/valueError.ts
+msgid "This needs a value."
+msgstr "This needs a value."
+
 #: src/mods/describe.ts
 msgid "{who} all load {target}.{winner}"
 msgstr "{who} all load {target}.{winner}"
@@ -2039,6 +2051,10 @@ msgstr "Revert"
 #: src/mods/describe.ts
 msgid " You chose which mod wins each clash."
 msgstr " You chose which mod wins each clash."
+
+#: src/mods/typedConfig/valueError.ts
+msgid "This is not a value the file can hold."
+msgstr "This is not a value the file can hold."
 
 #: src/mods/describe.ts
 msgid "{name}'s {field} is {current}: {description}"
@@ -2831,6 +2847,10 @@ msgstr "overrides {count, plural, one {# file} other {# files}}"
 msgid "Save to library…"
 msgstr "Save to library…"
 
+#: src/mods/typedConfig/valueError.ts
+msgid "This would leave the file unreadable to the game."
+msgstr "This would leave the file unreadable to the game."
+
 #: src/mods/parts.tsx
 msgid "Their folders are removed from this profile. You can undo this."
 msgstr "Their folders are removed from this profile. You can undo this."
@@ -3288,6 +3308,10 @@ msgstr "Status"
 #: src/mods/describe.ts
 msgid "{name} was updated since this run and logged {errors}. First: {first}"
 msgstr "{name} was updated since this run and logged {errors}. First: {first}"
+
+#: src/mods/typedConfig/valueError.ts
+msgid "This needs to be on one line."
+msgstr "This needs to be on one line."
 
 #: src/mods/CleanupSection.tsx
 #: src/mods/ReplacedSection.tsx

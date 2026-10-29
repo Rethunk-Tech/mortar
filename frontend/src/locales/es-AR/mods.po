@@ -44,6 +44,10 @@ msgstr ""
 msgid "Could not open the folder"
 msgstr ""
 
+#: src/mods/typedConfig/valueError.ts
+msgid "This needs to be a hex color like FF8800 or FF8800CC."
+msgstr ""
+
 #: src/mods/parts.tsx
 msgid "Remove {name} from this profile?"
 msgstr ""
@@ -1410,6 +1414,10 @@ msgstr ""
 msgid "Mark explicit"
 msgstr ""
 
+#: src/mods/typedConfig/valueError.ts
+msgid "This needs to be a list in [brackets]."
+msgstr ""
+
 #: src/mods/ProblemRows.tsx
 msgid "Read more in the guide"
 msgstr ""
@@ -2007,6 +2015,10 @@ msgstr ""
 msgid "More actions"
 msgstr ""
 
+#: src/mods/typedConfig/valueError.ts
+msgid "This needs a value."
+msgstr ""
+
 #: src/mods/describe.ts
 msgid "{who} all load {target}.{winner}"
 msgstr ""
@@ -2038,6 +2050,10 @@ msgstr ""
 
 #: src/mods/describe.ts
 msgid " You chose which mod wins each clash."
+msgstr ""
+
+#: src/mods/typedConfig/valueError.ts
+msgid "This is not a value the file can hold."
 msgstr ""
 
 #: src/mods/describe.ts
@@ -2831,6 +2847,10 @@ msgstr ""
 msgid "Save to library…"
 msgstr ""
 
+#: src/mods/typedConfig/valueError.ts
+msgid "This would leave the file unreadable to the game."
+msgstr ""
+
 #: src/mods/parts.tsx
 msgid "Their folders are removed from this profile. You can undo this."
 msgstr ""
@@ -3287,6 +3307,10 @@ msgstr ""
 
 #: src/mods/describe.ts
 msgid "{name} was updated since this run and logged {errors}. First: {first}"
+msgstr ""
+
+#: src/mods/typedConfig/valueError.ts
+msgid "This needs to be on one line."
 msgstr ""
 
 #: src/mods/CleanupSection.tsx
