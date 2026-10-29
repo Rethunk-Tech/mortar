@@ -17,6 +17,10 @@ test('relativeWhen is relative within a week and a date before that', () => {
   expect(relativeWhen('nonsense', opts)).toBe('')
 })
 
+test('a time more than a minute ahead reads as a date, not just now', () => {
+  expect(relativeWhen(at(-3 * 60_000), opts)).toBe('Oct 2, 2026')
+})
+
 test('absoluteWhen uses a medium date and short time and skips a zero date', () => {
   expect(absoluteWhen('0001-01-01T00:00:00Z', 'en')).toBe('')
   expect(absoluteWhen('nonsense', 'en')).toBe('')

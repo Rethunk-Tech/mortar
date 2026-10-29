@@ -62,10 +62,10 @@ export function relativeWhen(
     }).format(d)
   }
   const elapsed = now - d.getTime()
-  if (elapsed < MINUTE) {
+  if (elapsed > -MINUTE && elapsed < MINUTE) {
     return fewSeconds
   }
-  if (elapsed < WEEK) {
+  if (elapsed >= MINUTE && elapsed < WEEK) {
     const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' })
     if (elapsed < HOUR) {
       return rtf.format(-Math.floor(elapsed / MINUTE), 'minute')
