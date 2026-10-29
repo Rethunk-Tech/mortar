@@ -5,8 +5,8 @@ import { errorMessage } from '../../toasts/report.ts'
 /** The refusal's `detail` (configsvc's valueError); min and max are absent for a bound the setting does not have. */
 interface ValueDetail {
   problem: string
-  min?: number
-  max?: number
+  min?: number | undefined
+  max?: number | undefined
 }
 
 function detailOf(e: unknown): ValueDetail | null {
