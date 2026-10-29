@@ -3,10 +3,13 @@
 package settings
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/Rethunk-Tech/go-desktopenv/portal"
 )
 
 func TestLaunchAtLoginWritesAutostartFile(t *testing.T) {
@@ -78,4 +81,23 @@ func mustOpen(t *testing.T) *Store {
 		t.Fatal(err)
 	}
 	return s
+}
+
+func TestFlatpakAutostartGivesPortalRefusalsMortarsWording(t *testing.T) {
+	t.Setenv("FLATPAK_ID", "tech.rethunk.Mortar")
+	old := portalAutostart
+	t.Cleanup(func() { portalAutostart = old })
+	for sentinel, want := range map[error]string{
+		portal.ErrCancelled:  "cancelled in the system dialog",
+		portal.ErrNotAllowed: "starting at sign-in was not allowed",
+	} {
+		portalAutostart = func(bool) error { return sentinel }
+		if err := applyAutostart(true); err == nil || err.Error() != want {
+			t.Fatalf("%v: got %v, want %q", sentinel, err, want)
+		}
+	}
+	portalAutostart = func(bool) error { return errors.New("bus down") }
+	if err := applyAutostart(true); err == nil || err.Error() != "bus down" {
+		t.Fatalf("other error: %v", err)
+	}
 }

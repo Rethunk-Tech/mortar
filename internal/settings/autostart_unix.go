@@ -15,8 +15,12 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 )
 
-// portalTimeout bounds a portal call, which waits on a dialog the user answers.
-const portalTimeout = 5 * time.Minute
+// portalAutostart asks the Background portal, bounded because it waits on a dialog the user answers; tests replace it.
+var portalAutostart = func(enable bool) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
+	return portal.SetAutostart(ctx, portal.Autostart{Enable: enable, Command: []string{"mortar"}, Reason: "Start Mortar when you sign in"})
+}
 
 // RemoveAutostart deletes the autostart entry that starts Mortar at sign-in.
 func RemoveAutostart() error { return applyAutostart(false) }
@@ -24,9 +28,7 @@ func RemoveAutostart() error { return applyAutostart(false) }
 func applyAutostart(enable bool) error {
 	if flatpak.Inside() {
 		// The sandbox cannot write the host's autostart folder; the Background portal writes the entry for it.
-		ctx, cancel := context.WithTimeout(context.Background(), portalTimeout)
-		defer cancel()
-		err := portal.SetAutostart(ctx, portal.Autostart{Enable: enable, Command: []string{"mortar"}, Reason: "Start Mortar when you sign in"})
+		err := portalAutostart(enable)
 		switch {
 		case errors.Is(err, portal.ErrCancelled):
 			return errors.New("cancelled in the system dialog")

@@ -59,8 +59,8 @@ Categories=Game;
 // portalTimeout bounds a portal call, which waits on a dialog the user answers.
 const portalTimeout = 5 * time.Minute
 
-// installLauncher asks the launcher portal to add a launcher that plays arg.
-func installLauncher(id, name, arg string) error {
+// installLauncher, uninstallLauncher and launcherExists ask the launcher portal; tests replace them.
+var installLauncher = func(id, name, arg string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), portalTimeout)
 	defer cancel()
 	return portalErr(portal.InstallLauncher(ctx, portal.Launcher{
@@ -73,7 +73,13 @@ func installLauncher(id, name, arg string) error {
 	}))
 }
 
-func launcherExists(id string) (bool, error) {
+var uninstallLauncher = func(id string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), portalTimeout)
+	defer cancel()
+	return portal.UninstallLauncher(ctx, id)
+}
+
+var launcherExists = func(id string) (bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), portalTimeout)
 	defer cancel()
 	ok, err := portal.LauncherExists(ctx, id)
@@ -148,9 +154,7 @@ func Removed(game, profile string) error {
 		if !validID(game) || !validID(profile) {
 			return fmt.Errorf("a shortcut needs a game and a profile")
 		}
-		ctx, cancel := context.WithTimeout(context.Background(), portalTimeout)
-		defer cancel()
-		return portalErr(portal.UninstallLauncher(ctx, launcherID(Arg(game, profile))))
+		return portalErr(uninstallLauncher(launcherID(Arg(game, profile))))
 	}
 	path, err := desktopPath(game, profile)
 	if err != nil {
