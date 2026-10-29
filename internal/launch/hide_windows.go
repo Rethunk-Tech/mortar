@@ -4,9 +4,8 @@ package launch
 
 import (
 	"os/exec"
-	"syscall"
 
-	"golang.org/x/sys/windows"
+	"github.com/Rethunk-Tech/go-desktopenv/nowindow"
 )
 
 // hideWindow starts a console program without a console. It must not also set HideWindow (STARTF_USESHOWWINDOW with
@@ -17,7 +16,7 @@ func hideWindow(cmd *exec.Cmd, hide bool) {
 	if !hide {
 		return
 	}
-	cmd.SysProcAttr = &syscall.SysProcAttr{CreationFlags: windows.CREATE_NO_WINDOW}
+	nowindow.Set(cmd)
 }
 
 // ownsConsole reports a start whose console window is shown: the program then reads and writes that console itself,
