@@ -1,6 +1,7 @@
 package sandbox
 
 import (
+	"context"
 	"errors"
 	"path/filepath"
 	"reflect"
@@ -72,5 +73,16 @@ func TestHostXDGHomes(t *testing.T) {
 	}
 	if got, want := HostDataHome(home), filepath.Join(home, ".local", "share"); got != want {
 		t.Fatalf("relative XDG_DATA_HOME %q, want %q", got, want)
+	}
+}
+
+func TestCommandContextHostTerm(t *testing.T) {
+	name, args := HostArgv("", nil, "sleep", "1")
+	cmd := CommandContext(context.Background(), name, args...)
+	if cmd.Cancel == nil || cmd.WaitDelay == 0 {
+		t.Fatalf("host command lacks Cancel/WaitDelay: %v %v", cmd.Cancel == nil, cmd.WaitDelay)
+	}
+	if plain := CommandContext(context.Background(), "sleep", "1"); plain.WaitDelay != 0 {
+		t.Fatal("non-host command should keep the default kill")
 	}
 }

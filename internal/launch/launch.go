@@ -10,12 +10,12 @@ import (
 	"io"
 	"log/slog"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 	"github.com/Rethunk-Tech/mortar/internal/steam"
 )
 
@@ -122,7 +122,7 @@ func StartHidden(ctx context.Context, env []string, dir, name string, args ...st
 }
 
 func startCmd(ctx context.Context, env []string, dir, name string, args []string, hide bool) (<-chan error, error) {
-	cmd := exec.CommandContext(ctx, name, args...) //nolint:gosec // G204: name is the game or loader path Mortar resolved from the install
+	cmd := sandbox.CommandContext(ctx, name, args...)
 	cmd.Dir = dir
 	if len(env) > 0 {
 		cmd.Env = append(os.Environ(), env...)

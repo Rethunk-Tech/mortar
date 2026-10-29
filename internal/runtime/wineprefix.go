@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -109,7 +108,7 @@ func ExecRunner(ctx context.Context, argv []string) error {
 	if sandbox.InFlatpak() {
 		name, args = sandbox.HostArgv("", nil, name, args...)
 	}
-	return exec.CommandContext(ctx, name, args...).Run() // #nosec G204 -- argv is built by Command: bottles-cli or flatpak with fixed leading arguments
+	return sandbox.CommandContext(ctx, name, args...).Run() // #nosec G204 -- argv is built by Command: bottles-cli or flatpak with fixed leading arguments
 }
 
 // Run runs exe with args in inst's bottle through run, which is how a Windows installer (SMAPI's) is run in it.

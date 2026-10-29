@@ -3,10 +3,13 @@
 package sandbox
 
 import (
+	"context"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
+	"time"
 )
 
 // AppID is Mortar's Flatpak application id.
@@ -56,6 +59,20 @@ func HostArgv(dir string, env []string, name string, args ...string) (string, []
 	}
 	out = append(out, name)
 	return "flatpak-spawn", append(out, args...)
+}
+
+// cancelGrace is how long a cancelled flatpak-spawn gets to forward SIGTERM and exit before Go gives up on it.
+const cancelGrace = 5 * time.Second
+
+// CommandContext is exec.CommandContext that ends a flatpak-spawn host command on cancel. flatpak-spawn forwards
+// SIGTERM to the host child but cannot forward the SIGKILL Go sends by default, which would leave the child running.
+func CommandContext(ctx context.Context, name string, args ...string) *exec.Cmd {
+	cmd := exec.CommandContext(ctx, name, args...) //nolint:gosec // G204: callers pass a resolved binary or flatpak-spawn
+	if name == "flatpak-spawn" {
+		cmd.Cancel = func() error { return cmd.Process.Signal(syscall.SIGTERM) }
+		cmd.WaitDelay = cancelGrace
+	}
+	return cmd
 }
 
 // HostOutput runs name on the host and returns its stdout.
