@@ -768,6 +768,10 @@ msgstr ""
 msgid "{game} save backups: {size}"
 msgstr ""
 
+#: src/settings/sections/General.tsx
+msgid "Players translate Mortar on Weblate, and any language can be added there."
+msgstr ""
+
 #: src/settings/prefCopy.ts
 msgid "Live log starts at this level and above"
 msgstr ""
@@ -2518,6 +2522,10 @@ msgstr ""
 
 #: src/settings/shortcutLabels.ts
 msgid "Play the game without mods"
+msgstr ""
+
+#: src/settings/sections/General.tsx
+msgid "Open Weblate"
 msgstr ""
 
 #: src/settings/sections/NexusSSO.tsx

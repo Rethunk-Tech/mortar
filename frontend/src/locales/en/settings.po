@@ -768,6 +768,10 @@ msgstr "Dismissed folders"
 msgid "{game} save backups: {size}"
 msgstr "{game} save backups: {size}"
 
+#: src/settings/sections/General.tsx
+msgid "Players translate Mortar on Weblate, and any language can be added there."
+msgstr "Players translate Mortar on Weblate, and any language can be added there."
+
 #: src/settings/prefCopy.ts
 msgid "Live log starts at this level and above"
 msgstr "Live log starts at this level and above"
@@ -2519,6 +2523,10 @@ msgstr "its address could not be looked up"
 #: src/settings/shortcutLabels.ts
 msgid "Play the game without mods"
 msgstr "Play the game without mods"
+
+#: src/settings/sections/General.tsx
+msgid "Open Weblate"
+msgstr "Open Weblate"
 
 #: src/settings/sections/NexusSSO.tsx
 msgid "Signed in to {source}"

@@ -128,8 +128,13 @@ function Language() {
             </MenuItem>
           ))}
         </Select>
-        <Button size="small" onClick={() => openPage(TRANSLATE_PROJECT)}>
-          {t`Help translate Mortar`}
+      </SettingRow>
+      <SettingRow
+        label={t`Help translate Mortar`}
+        description={t`Players translate Mortar on Weblate, and any language can be added there.`}
+      >
+        <Button variant="outlined" onClick={() => openPage(TRANSLATE_PROJECT)}>
+          {t`Open Weblate`}
         </Button>
       </SettingRow>
     </SettingsSection>
