@@ -181,9 +181,13 @@ func TestCreateRunsDotnetNewAndWiresTheProfile(t *testing.T) {
 	if _, err := svc.Create(t.Context(), NewMod{Game: "lethal-company", Name: "ShopDrop", Parent: parent, Repo: "shop-drop", Values: map[string]string{"description": "d", "team": "Ab"}}); err == nil {
 		t.Error("a second project in the same folder was made")
 	}
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	trash := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", trash)
 	if err := svc.Trash("lethal-company", dir); err != nil || len(svc.Projects("lethal-company")) != 0 || safefs.IsDir(dir) {
 		t.Errorf("trash left %+v, folder there %v (%v)", svc.Projects("lethal-company"), safefs.IsDir(dir), err)
+	}
+	if !safefs.IsFile(filepath.Join(trash, "Trash", "files", filepath.Base(dir), ".mortar", "template.json")) || !safefs.IsFile(filepath.Join(trash, "Trash", "info", filepath.Base(dir)+".trashinfo")) {
+		t.Error("the project did not land in the trash with its .trashinfo, so the file manager cannot restore it")
 	}
 }
 
