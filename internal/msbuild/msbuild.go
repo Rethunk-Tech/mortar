@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"unicode/utf8"
 )
 
 // Elem is one element of the file: its name, attributes, and where its bytes are.
@@ -128,6 +129,9 @@ func SetProperty(text, name, value string) (string, error) {
 
 // SetRawProperty is SetProperty for text already escaped, such as a list whose ; MSBuild must split on.
 func SetRawProperty(text, name, raw string) (string, error) {
+	if !utf8.ValidString(raw) || strings.ContainsFunc(raw, func(r rune) bool { return !xmlChar(r) }) {
+		return text, fmt.Errorf("the value of %s holds a character XML cannot carry", name)
+	}
 	elems, err := Parse(text)
 	if err != nil {
 		return text, err
@@ -349,6 +353,11 @@ var (
 	unescape      = strings.NewReplacer("%25", "%", "%24", "$", "%40", "@", "%3B", ";", "%27", "'", "%2A", "*", "%3F", "?")
 	escapeXML     = strings.NewReplacer("&", "&amp;", "<", "&lt;", ">", "&gt;")
 )
+
+// xmlChar reports whether XML 1.0 allows r in text.
+func xmlChar(r rune) bool {
+	return r == '\t' || r == '\n' || r == '\r' || r >= 0x20 && r <= 0xD7FF || r >= 0xE000 && r <= 0xFFFD && r != 0xFFFE && r != 0xFFFF || r >= 0x10000
+}
 
 // Escape writes value as a property's text: MSBuild's special characters as %XX, then XML's.
 func Escape(value string) string { return escapeXML.Replace(escapeMSBuild.Replace(value)) }

@@ -1,6 +1,7 @@
 package msbuild
 
 import (
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -103,4 +104,33 @@ func TestParseRefusesMismatchedEndTags(t *testing.T) {
 	if _, err := Parse("<a><b/></a>"); err != nil {
 		t.Error(err)
 	}
+}
+
+func TestSetPropertyRefusesCharactersXMLCannotCarry(t *testing.T) {
+	for _, v := range []string{"\x10", "a\x00b", "\xff"} {
+		if _, err := SetProperty(project, "Version", v); err == nil {
+			t.Errorf("%q accepted", v)
+		}
+	}
+	if _, err := SetProperty(project, "Version", "a\tb\nc"); err != nil {
+		t.Error(err)
+	}
+}
+
+func FuzzSetPropertyParses(f *testing.F) {
+	f.Add("Version", "2.0;x")
+	f.Add("New", "\x10")
+	f.Fuzz(func(t *testing.T, name, value string) {
+		// Callers pass fixed property names.
+		if !regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`).MatchString(name) {
+			return
+		}
+		out, err := SetProperty(project, name, value)
+		if err != nil {
+			return
+		}
+		if _, err := Parse(out); err != nil {
+			t.Fatalf("SetProperty(%q, %q) wrote a file that does not parse: %v", name, value, err)
+		}
+	})
 }
