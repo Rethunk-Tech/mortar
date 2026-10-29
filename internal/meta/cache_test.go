@@ -11,6 +11,8 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/go-smapiweb"
+
+	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 )
 
 func TestRetiredCacheNames(t *testing.T) {
@@ -35,7 +37,7 @@ func TestRetiredCacheNames(t *testing.T) {
 // treat an empty Dir as caching switched off.
 func TestEmptyCacheDirCachesUnderTheDataFolder(t *testing.T) {
 	dir := t.TempDir()
-	t.Setenv("XDG_DATA_HOME", dir)
+	datadirtest.Use(t, dir)
 	var hits atomic.Int32
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		hits.Add(1)
