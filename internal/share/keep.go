@@ -37,30 +37,23 @@ func (r Ref) Identity() string {
 // WithRefs returns the .mortar payload raw with add put back among its entries where base, the order add comes from,
 // has them: each after the nearest entry before it in base that raw holds. Everything else in raw is kept.
 func WithRefs(raw []byte, base, add []Ref) ([]byte, error) {
-	pv, err := ReadBytes(raw)
+	pv, entries, err := readPayload(raw)
 	if err != nil {
 		return nil, err
 	}
-	zr, err := zip.NewReader(bytes.NewReader(raw), int64(len(raw)))
-	if err != nil {
-		return nil, fmt.Errorf("%w: not a zip", ErrBadFile)
-	}
 	var out bytes.Buffer
 	zw := zip.NewWriter(&out)
-	for _, f := range zr.File {
-		if skippedEntry(f.Name) {
+	for _, e := range entries {
+		if skippedEntry(e.name) {
 			continue
 		}
-		data, err := readBounded(f, MaxFileBytes)
-		if err != nil {
-			return nil, err
-		}
-		if f.Name == profileFile {
+		data := e.data
+		if e.name == profileFile {
 			if data, err = withEntries(data, placeRefs(pv.Entries, base, add)); err != nil {
 				return nil, err
 			}
 		}
-		if err := putFile(zw, f.Name, data); err != nil {
+		if err := putFile(zw, e.name, data); err != nil {
 			return nil, err
 		}
 	}

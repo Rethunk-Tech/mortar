@@ -539,6 +539,29 @@ func zipOf(t *testing.T, files ...[2]string) string {
 	return file
 }
 
+// go-archive cleans each name before the layout judges it, and two folders differing only by case read as earlier
+// releases wrote them.
+func TestReadCleansNamesAndKeepsFolderCaseVariants(t *testing.T) {
+	t.Parallel()
+	head := [2]string{"profile.json", `{"version":3,"game":"stardew","sourceKeys":{"nexus":"stardewvalley"},"name":"x","notes":"","entries":[{"s":"nexus","mod":1,"file":2}],"ids":["smapi:A.one"]}`}
+	pv, err := Read(zipOf(t, head,
+		[2]string{"configs/smapi/A.one/Sub/a.json", "{}"},
+		[2]string{"configs/smapi/A.one/sub/b.json", "{}"},
+		[2]string{"configs/smapi/A.one/w\\x.json", "{}"},
+		[2]string{"configs/smapi/A.one//y.json", "{}"},
+	))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var got []string
+	for _, c := range pv.Configs {
+		got = append(got, c.Path)
+	}
+	if want := []string{"Sub/a.json", "sub/b.json", "w/x.json", "y.json"}; !slices.Equal(got, want) {
+		t.Fatalf("configs = %v, want %v", got, want)
+	}
+}
+
 func TestReadRejects(t *testing.T) {
 	t.Parallel()
 	head := [2]string{"profile.json", `{"version":3,"game":"stardew","sourceKeys":{"nexus":"stardewvalley"},"name":"x","notes":"","entries":[{"s":"nexus","mod":1,"file":2}],"ids":["smapi:A.one"]}`}
@@ -546,8 +569,6 @@ func TestReadRejects(t *testing.T) {
 		"no profile":         {{"configs/smapi/A.one/c.json", "{}"}},
 		"traversal":          {head, {"configs/smapi/A.one/../../x.json", "{}"}},
 		"traversal mid":      {head, {"configs/smapi/A.one/a/../../x.json", "{}"}},
-		"absolute":           {head, {"configs/smapi/A.one//etc/x.json", "{}"}},
-		"backslash":          {head, {"configs/smapi/A.one/a\\b.json", "{}"}},
 		"drive":              {head, {"configs/smapi/A.one/C:x.json", "{}"}},
 		"non-json":           {head, {"configs/smapi/A.one/run.exe", "MZ"}},
 		"json in name only":  {head, {"configs/smapi/A.one/x.json.dll", "MZ"}},
@@ -565,7 +586,6 @@ func TestReadRejects(t *testing.T) {
 		"not json":           {{"profile.json", `nope`}},
 		"oversized config":   {head, {"configs/smapi/A.one/c.json", strings.Repeat(" ", MaxConfigBytes+1)}},
 		"loader traversal":   {head, {"loader/BepInEx/config/../../x.cfg", "x"}},
-		"loader absolute":    {head, {"loader//etc/x.cfg", "x"}},
 		"loader binary":      {head, {"loader/BepInEx/config/run.dll", "MZ"}},
 		"loader dotfile":     {head, {"loader/BepInEx/.x/a.cfg", "x"}},
 		"loader duplicate":   {head, {"loader/BepInEx/config/a.cfg", "x"}, {"loader/BepInEx/config/a.cfg", "y"}},

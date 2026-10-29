@@ -13,9 +13,11 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"unicode/utf8"
 
+	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
@@ -339,59 +341,78 @@ func Read(file string) (Preview, error) {
 		return Preview{}, err
 	}
 	defer func() { _ = f.Close() }()
-	zr, err := zip.NewReader(f, info.Size())
+	entries, err := readEntries(f, info.Size())
 	if err != nil {
-		return Preview{}, fmt.Errorf("%w: not a zip", ErrBadFile)
+		return Preview{}, err
 	}
-	return readZip(zr)
+	return readZip(entries)
 }
 
 // ReadBytes reads a .mortar zip from memory.
 func ReadBytes(raw []byte) (Preview, error) {
+	pv, _, err := readPayload(raw)
+	return pv, err
+}
+
+// readPayload is ReadBytes that also returns the file's entries, for a caller that rewrites them.
+func readPayload(raw []byte) (Preview, []entry, error) {
 	if len(raw) > MaxFileBytes {
-		return Preview{}, fmt.Errorf("%w: file is larger than %s", ErrBadFile, bytefmt.Format(MaxFileBytes))
+		return Preview{}, nil, fmt.Errorf("%w: file is larger than %s", ErrBadFile, bytefmt.Format(MaxFileBytes))
 	}
-	zr, err := zip.NewReader(bytes.NewReader(raw), int64(len(raw)))
+	entries, err := readEntries(bytes.NewReader(raw), int64(len(raw)))
 	if err != nil {
-		return Preview{}, fmt.Errorf("%w: not a zip", ErrBadFile)
+		return Preview{}, nil, err
 	}
-	return readZip(zr)
+	pv, err := readZip(entries)
+	return pv, entries, err
 }
 
-func readBounded(f *zip.File, limit int64) ([]byte, error) {
-	if f.UncompressedSize64 > uint64(max(limit, 0)) {
-		return nil, fmt.Errorf("%w: %s is over its size cap", ErrBadFile, f.Name)
-	}
-	rc, err := f.Open()
-	if err != nil {
-		return nil, fmt.Errorf("%w: %s: %w", ErrBadFile, f.Name, err)
-	}
-	defer func() { _ = rc.Close() }()
-	b, err := safefs.ReadCapped(rc, limit)
-	if err != nil {
-		return nil, fmt.Errorf("%w: %s: %w", ErrBadFile, f.Name, err)
-	}
-	return b, nil
+// entry is one file of a .mortar zip under its cleaned name. data is nil for a skippedEntry, which is never read.
+type entry struct {
+	name string
+	data []byte
 }
 
-func readZip(zr *zip.Reader) (Preview, error) {
-	if len(zr.File) > MaxConfigFiles+1 {
-		return Preview{}, fmt.Errorf("%w: too many entries", ErrBadFile)
-	}
-	var head *zip.File
-	for _, f := range zr.File {
-		if f.Name == profileFile {
-			head = f
+// readEntries reads a .mortar zip's files in archive order under go-archive's admission rules. Names are judged by
+// the layout's own rules afterwards; case is too, since two folders differing only by case read in files earlier
+// releases wrote.
+func readEntries(src io.ReaderAt, size int64) ([]entry, error) {
+	var out []entry
+	opts := archive.Options{MaxEntries: MaxConfigFiles + 1, MaxTotalBytes: MaxConfigTotal + maxProfileBytes, CaseSensitive: true}
+	err := archive.ZipFunc(src, size, opts, func(name string, isDir bool, r io.Reader) error {
+		if isDir {
+			return nil
 		}
+		e := entry{name: name}
+		if !skippedEntry(name) {
+			limit := int64(MaxConfigBytes)
+			if name == profileFile {
+				limit = maxProfileBytes
+			}
+			b, err := safefs.ReadCapped(r, limit)
+			if err != nil {
+				return fmt.Errorf("%w: %s: %w", ErrBadFile, name, err)
+			}
+			e.data = b
+		}
+		out = append(out, e)
+		return nil
+	})
+	if ae, ok := errors.AsType[*archive.Error](err); ok {
+		if errors.Is(ae, archive.ErrUnsupportedFormat) {
+			return nil, fmt.Errorf("%w: not a zip", ErrBadFile)
+		}
+		return nil, fmt.Errorf("%w: %s: %w", ErrBadFile, ae.Entry, ae.Reason)
 	}
-	if head == nil {
+	return out, err
+}
+
+func readZip(entries []entry) (Preview, error) {
+	i := slices.IndexFunc(entries, func(e entry) bool { return e.name == profileFile })
+	if i < 0 {
 		return Preview{}, fmt.Errorf("%w: no %s", ErrBadFile, profileFile)
 	}
-	raw, err := readBounded(head, maxProfileBytes)
-	if err != nil {
-		return Preview{}, err
-	}
-	pv, err := parseFileDoc(raw)
+	pv, err := parseFileDoc(entries[i].data)
 	if err != nil {
 		return Preview{}, err
 	}
@@ -403,71 +424,67 @@ func readZip(zr *zip.Reader) (Preview, error) {
 	var total int64
 	// read returns one entry's bytes, refusing a second entry under the same key and a file whose entries together
 	// pass the size cap.
-	read := func(f *zip.File, key string) ([]byte, error) {
+	read := func(f entry, key string) ([]byte, error) {
 		if seen[key] {
-			return nil, fmt.Errorf("%w: duplicate %q", ErrBadFile, f.Name)
+			return nil, fmt.Errorf("%w: duplicate %q", ErrBadFile, f.name)
 		}
 		seen[key] = true
-		data, err := readBounded(f, MaxConfigBytes)
-		if err != nil {
-			return nil, err
-		}
-		if total += int64(len(data)); total > MaxConfigTotal {
+		if total += int64(len(f.data)); total > MaxConfigTotal {
 			return nil, fmt.Errorf("%w: configs exceed the size cap", ErrBadFile)
 		}
-		return data, nil
+		return f.data, nil
 	}
-	for _, f := range zr.File {
-		if f.Name == profileFile || strings.HasSuffix(f.Name, "/") && f.UncompressedSize64 == 0 {
+	for _, f := range entries {
+		if f.name == profileFile {
 			continue
 		}
-		if rel, ok := strings.CutPrefix(f.Name, loaderPrefix); ok {
+		if rel, ok := strings.CutPrefix(f.name, loaderPrefix); ok {
 			if !validLoaderConfigShape(rel) {
-				return Preview{}, fmt.Errorf("%w: unsafe path %q", ErrBadFile, f.Name)
+				return Preview{}, fmt.Errorf("%w: unsafe path %q", ErrBadFile, f.name)
 			}
 			if !winSafe(rel) {
-				slog.Warn("share: skipped a loader config whose name Windows cannot store", "path", f.Name)
+				slog.Warn("share: skipped a loader config whose name Windows cannot store", "path", f.name)
 				continue
 			}
-			data, err := read(f, strings.ToLower(f.Name))
+			data, err := read(f, strings.ToLower(f.name))
 			if err != nil {
 				return Preview{}, err
 			}
 			pv.LoaderConfigs = append(pv.LoaderConfigs, LoaderConfig{Path: rel, Data: data})
 			continue
 		}
-		if rel, ok := strings.CutPrefix(f.Name, changedPrefix); ok {
+		if rel, ok := strings.CutPrefix(f.name, changedPrefix); ok {
 			// On Windows IsLocal refuses a device name, which would fail the whole file; as on Linux the copy is skipped.
 			if !validChangedLocation(pv.Game, rel) && (!hasDeviceSegment(rel) || !validChangedLocation(pv.Game, devicesRenamed(rel))) {
-				return Preview{}, fmt.Errorf("%w: unsafe path %q", ErrBadFile, f.Name)
+				return Preview{}, fmt.Errorf("%w: unsafe path %q", ErrBadFile, f.name)
 			}
 			// An older release let a copy of any non-program type travel; the file is still good without it.
-			if skippedEntry(f.Name) {
+			if skippedEntry(f.name) {
 				slog.Warn("share: skipped a changed copy of a type no longer carried or a name Windows cannot store", "path", rel)
 				continue
 			}
-			data, err := read(f, strings.ToLower(f.Name))
+			data, err := read(f, strings.ToLower(f.name))
 			if err != nil {
 				return Preview{}, err
 			}
 			pv.ChangedFiles = append(pv.ChangedFiles, ChangedFile{Path: rel, Data: data})
 			continue
 		}
-		rest, ok := strings.CutPrefix(f.Name, "configs/")
+		rest, ok := strings.CutPrefix(f.name, "configs/")
 		fmtSeg, rest, ok2 := strings.Cut(rest, "/")
 		local, rel, ok3 := strings.Cut(rest, "/")
 		if !ok || !ok2 || !ok3 {
-			return Preview{}, fmt.Errorf("%w: unexpected entry %q", ErrBadFile, f.Name)
+			return Preview{}, fmt.Errorf("%w: unexpected entry %q", ErrBadFile, f.name)
 		}
 		canon, ok := known[mod.NewID(fmtSeg, local).Fold()]
 		if !ok {
-			return Preview{}, fmt.Errorf("%w: %q is for a mod the profile does not list", ErrBadFile, f.Name)
+			return Preview{}, fmt.Errorf("%w: %q is for a mod the profile does not list", ErrBadFile, f.name)
 		}
 		if path.Clean(rel) != rel || !validConfigShape(rel) {
-			return Preview{}, fmt.Errorf("%w: unsafe path %q", ErrBadFile, f.Name)
+			return Preview{}, fmt.Errorf("%w: unsafe path %q", ErrBadFile, f.name)
 		}
 		if !winSafe(rel) {
-			slog.Warn("share: skipped a config whose name Windows cannot store", "path", f.Name)
+			slog.Warn("share: skipped a config whose name Windows cannot store", "path", f.name)
 			continue
 		}
 		data, err := read(f, strings.ToLower(string(canon)+"/"+rel))
