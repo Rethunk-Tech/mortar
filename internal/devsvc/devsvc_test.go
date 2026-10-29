@@ -216,7 +216,7 @@ func TestCreateChecksValuesBeforeAnythingIsMade(t *testing.T) {
 }
 
 func TestNewModRefusesUnsafeNames(t *testing.T) {
-	ok := NewMod{Name: "ShopDrop", Parent: "/p", Repo: "r"}
+	ok := NewMod{Name: "ShopDrop", Parent: t.TempDir(), Repo: "r"}
 	if err := ok.check(); err != nil {
 		t.Fatal(err)
 	}

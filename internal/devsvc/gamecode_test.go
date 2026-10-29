@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
 	"testing"
@@ -48,7 +49,11 @@ func TestGameCodeSearchesAndDecompilesTheGamesAssembly(t *testing.T) {
 	if err := os.MkdirAll(tools, 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(filepath.Join(tools, "ilspycmd"), nil, 0o600); err != nil {
+	tool := "ilspycmd"
+	if runtime.GOOS == "windows" {
+		tool += ".exe"
+	}
+	if err := fsx.WriteFile(filepath.Join(tools, tool), nil, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := svc.Decompile(t.Context(), "lethal-company", dir, "", "-o /tmp", false); err == nil {
