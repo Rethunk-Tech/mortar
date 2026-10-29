@@ -78,10 +78,10 @@ func isBare(name string) bool {
 
 // SavedName is the file name a download of fileName is kept under for id. A compressed single file keeps its
 // original name after the id, because extraction names the one file it holds from that; every other download keeps
-// just its extension.
+// its whole archive ending (".tar.gz", not ".gz"), which picks the extractor.
 func SavedName(id, fileName string) string {
 	if !isBare(fileName) {
-		return id + filepath.Ext(fileName)
+		return id + fileName[len(StripExtension(fileName)):]
 	}
 	name := strings.Map(func(r rune) rune {
 		if r < 0x20 || strings.ContainsRune(`/\<>:"|?*`, r) {
@@ -100,6 +100,9 @@ func SavedName(id, fileName string) string {
 func SavedID(name string) string {
 	if id, _, ok := strings.Cut(name, nameSep); ok {
 		return id
+	}
+	if stem := StripExtension(name); stem != name {
+		return stem
 	}
 	return strings.TrimSuffix(name, filepath.Ext(name))
 }
