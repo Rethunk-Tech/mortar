@@ -23,6 +23,7 @@ import (
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/source"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 
 	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
 )
@@ -153,6 +154,9 @@ func (c Code) fetch(ctx context.Context, key string) (string, error) {
 	}
 	req.Header.Set("User-Agent", source.UserAgentWithSite(""))
 	b, err := httpkit.DoCapped(c.HTTP, req, 64<<20, nil)
+	if errors.Is(err, httpkit.ErrNotFound) {
+		return "", usererr.Wrap(usererr.NotFound, fmt.Errorf("thunderstore has no profile code %s", key))
+	}
 	if err != nil {
 		return "", fmt.Errorf("thunderstore profile code %s: %w", key, err)
 	}

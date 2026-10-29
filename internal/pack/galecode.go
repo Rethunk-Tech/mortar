@@ -15,6 +15,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/source"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // GaleBaseURL is the server behind Gale's profile sync, which hands out the short codes.
@@ -81,6 +82,9 @@ func (g GaleCode) Parse(ctx context.Context, in Input) (Draft, error) {
 	b, err := httpkit.DoCapped(g.HTTP, req, maxInput, nil)
 	if errors.Is(err, safefs.ErrTooLarge) {
 		return Draft{}, errors.New("profile code is too large")
+	}
+	if errors.Is(err, httpkit.ErrNotFound) {
+		return Draft{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("gale has no profile code %s", id))
 	}
 	if err != nil {
 		return Draft{}, fmt.Errorf("gale profile code %s: %w", id, err)

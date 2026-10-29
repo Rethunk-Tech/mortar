@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -199,8 +200,12 @@ func TestAnUnknownProfileCodeIsNotFound(t *testing.T) {
 	srv := httptest.NewServer(http.NotFoundHandler())
 	t.Cleanup(srv.Close)
 	_, err := Code{URL: srv.URL}.Parse(t.Context(), Input{Text: "0123abcd-0123-0123-0123-0123456789ab"})
-	if usererr.KindOf(err) != usererr.NotFound {
+	if usererr.KindOf(err) != usererr.NotFound || !strings.HasSuffix(err.Error(), "thunderstore has no profile code 0123abcd-0123-0123-0123-0123456789ab") {
 		t.Fatalf("err = %v", err)
+	}
+	_, err = GaleCode{URL: srv.URL}.Parse(t.Context(), Input{Text: "E5RG8F"})
+	if usererr.KindOf(err) != usererr.NotFound || !strings.HasSuffix(err.Error(), "gale has no profile code E5RG8F") {
+		t.Fatalf("gale err = %v", err)
 	}
 }
 
