@@ -6,8 +6,18 @@ import (
 	"testing"
 )
 
+// stardropHome copies the fixture's Stardrop folder to where this OS keeps application config under a temp home.
+func stardropHome(t *testing.T) string {
+	t.Helper()
+	home := t.TempDir()
+	if err := os.CopyFS(configDir(home), os.DirFS(filepath.Join("testdata", "stardrop", "home", ".config"))); err != nil {
+		t.Fatal(err)
+	}
+	return home
+}
+
 func TestDetectsStardropProfileAndReadsGameMods(t *testing.T) {
-	home := filepath.Join("testdata", "stardrop", "home")
+	home := stardropHome(t)
 	mods := filepath.Join("testdata", "stardrop", "game", "Mods")
 
 	sources, err := Detect(home, mods, "stardew", "", "")
@@ -37,7 +47,7 @@ func TestDetectsStardropProfileAndReadsGameMods(t *testing.T) {
 }
 
 func TestStardropProfileCarriesItsOwnConfigCopy(t *testing.T) {
-	home := filepath.Join("testdata", "stardrop", "home")
+	home := stardropHome(t)
 	mods := filepath.Join("testdata", "stardrop", "game", "Mods")
 
 	preview, err := Preview(home, mods, "stardew", "", "", KindStardrop, "Kept")
