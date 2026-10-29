@@ -86,6 +86,8 @@ func serveClamd(conn net.Conn, limit int) {
 		got = append(got, chunk...)
 		if limit > 0 && len(got) > limit {
 			_, _ = conn.Write([]byte("INSTREAM size limit exceeded. ERROR\x00"))
+			// Closing with unread input resets the connection on Windows and drops the reply.
+			_, _ = io.Copy(io.Discard, conn)
 			return
 		}
 	}
