@@ -33,14 +33,17 @@ const (
 // Replaced in tests.
 var (
 	portalSecret = portal.RetrieveSecret
-	storeDir     = func() string {
+	storeDir     = func() (string, error) {
 		base := os.Getenv("XDG_DATA_HOME")
 		if base == "" {
-			home, _ := os.UserHomeDir()
+			home, err := os.UserHomeDir()
+			if err != nil {
+				return "", err
+			}
 			base = filepath.Join(home, ".local", "share")
 		}
 		// Beside Mortar's data folder, never in it, so a backup, move or share of that folder carries no secret.
-		return filepath.Join(base, "mortar-secrets")
+		return filepath.Join(base, "mortar-secrets"), nil
 	}
 )
 
@@ -87,7 +90,10 @@ func hostKeyring() bool {
 // with no portal is an error: falling back would hide its contents and let the next write start a second store.
 // host is true when the keyring holds the secrets and path and key are unused.
 func location() (path string, key []byte, host bool, err error) {
-	dir := storeDir()
+	dir, err := storeDir()
+	if err != nil {
+		return "", nil, false, err
+	}
 	key, kerr := masterKey()
 	if kerr == nil {
 		if err := sealPlain(dir, key); err != nil {

@@ -73,7 +73,7 @@ func flatpakEnv(t *testing.T, portal func() ([]byte, error)) (dir string) {
 	dir = filepath.Join(t.TempDir(), "mortar")
 	prevPortal, prevDir := portalSecret, storeDir
 	prevGet, prevSet, prevDel := keyringGet, keyringSet, keyringDelete
-	portalSecret, storeDir = portal, func() string { return dir }
+	portalSecret, storeDir = portal, func() (string, error) { return dir, nil }
 	setHostRing(nil)
 	t.Cleanup(func() {
 		portalSecret, storeDir = prevPortal, prevDir
@@ -276,5 +276,14 @@ func TestFlatpakStoreTightensAnExistingFolderAndRefusesALink(t *testing.T) {
 	}
 	if err := Set("nexus", "k"); err == nil {
 		t.Fatal("a symlinked secrets folder was used")
+	}
+}
+
+func TestStoreDirNeedsAHome(t *testing.T) {
+	t.Setenv("HOME", "")
+	t.Setenv("USERPROFILE", "")
+	t.Setenv("XDG_DATA_HOME", "")
+	if d, err := storeDir(); err == nil {
+		t.Fatalf("storeDir with no home = %q, want an error", d)
 	}
 }
