@@ -142,8 +142,8 @@ func Measure(root string, report func(Progress)) (Usage, error) {
 	share := newShareAcc()
 	root = filepath.Clean(root)
 	account := func(path string, info os.FileInfo, probe fileProbe) {
-		share.addFollowed(info)
-		n, known := fileExclusive(info, probe, share)
+		share.addFollowed(path, info)
+		n, known := fileExclusive(path, info, probe, share)
 		if known {
 			share.allocated += n
 		}
@@ -268,7 +268,7 @@ func Measure(root string, report func(Progress)) (Usage, error) {
 			job.wg.Wait()
 			for i, f := range job.files {
 				if f.followed != nil {
-					share.addFollowed(f.followed)
+					share.addFollowed(f.path, f.followed)
 				} else if r := job.probes[i]; r.read {
 					account(f.path, r.info, r.probe)
 				}

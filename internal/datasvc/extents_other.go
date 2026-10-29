@@ -14,9 +14,9 @@ type fileProbe struct{}
 
 func probeFile(string) fileProbe { return fileProbe{} }
 
-func fileExclusive(info os.FileInfo, _ fileProbe, s *shareAcc) (int64, bool) {
+func fileExclusive(path string, info os.FileInfo, _ fileProbe, s *shareAcc) (int64, bool) {
 	_ = s.blocks
-	dev, ino, _, ok := fileAlloc(info)
+	dev, ino, _, ok := fileAlloc(path, info)
 	if !ok {
 		return info.Size(), false
 	}

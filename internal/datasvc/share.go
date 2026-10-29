@@ -19,12 +19,12 @@ func newShareAcc() *shareAcc {
 	return &shareAcc{seen: map[inodeKey]struct{}{}, blocks: newShareBlocks()}
 }
 
-func (s *shareAcc) addFollowed(info os.FileInfo) {
-	s.addSize(info, false)
+func (s *shareAcc) addFollowed(path string, info os.FileInfo) {
+	s.addSize(path, info, false)
 }
 
-func (s *shareAcc) addSize(info os.FileInfo, countAlloc bool) {
-	dev, ino, alloc, ok := fileAlloc(info)
+func (s *shareAcc) addSize(path string, info os.FileInfo, countAlloc bool) {
+	dev, ino, alloc, ok := fileAlloc(path, info)
 	if !ok {
 		return
 	}

@@ -78,8 +78,8 @@ func probeFile(path string) fileProbe {
 	return readExtents(f)
 }
 
-func fileExclusive(info os.FileInfo, p fileProbe, s *shareAcc) (int64, bool) {
-	dev, ino, alloc, ok := fileAlloc(info)
+func fileExclusive(_ string, info os.FileInfo, p fileProbe, s *shareAcc) (int64, bool) {
+	dev, ino, alloc, ok := fileAlloc("", info)
 	if !ok {
 		return info.Size(), false
 	}

@@ -27,10 +27,10 @@ func TestAHardLinkCostsNothingWhenItsFileWasCountedWithoutExtents(t *testing.T) 
 	}
 	s := newShareAcc()
 	// The file is read while its blocks await allocation, and its link once they have them.
-	if _, ok := fileExclusive(first, fileProbe{}, s); !ok {
+	if _, ok := fileExclusive(file, first, fileProbe{}, s); !ok {
 		t.Skip("the filesystem reports no inode")
 	}
-	if n, _ := fileExclusive(second, fileProbe{ok: true, runs: []extentRun{{physical: 4096, length: 8192}}}, s); n != 0 {
+	if n, _ := fileExclusive(link, second, fileProbe{ok: true, runs: []extentRun{{physical: 4096, length: 8192}}}, s); n != 0 {
 		t.Errorf("the link was charged %d bytes", n)
 	}
 }
