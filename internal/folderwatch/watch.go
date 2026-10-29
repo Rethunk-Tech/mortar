@@ -8,10 +8,12 @@ import (
 	"maps"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/fsnotify/fsnotify"
 )
 
@@ -223,9 +225,31 @@ func sizesOf(names []string) map[string]int64 {
 	out := make(map[string]int64, len(names))
 	for _, n := range names {
 		out[n] = -1
-		if st, err := os.Stat(n); err == nil {
-			out[n] = st.Size()
+		if size, ok := sizeOf(n); ok {
+			out[n] = size
 		}
 	}
 	return out
+}
+
+// sizeOf reads a file's size. On Windows the size by name lags behind a writer that holds the file open, so it is
+// read through a handle of our own (Go opens it shared with writers).
+func sizeOf(name string) (int64, bool) {
+	if runtime.GOOS == "windows" {
+		f, err := fsx.Open(name)
+		if err != nil {
+			return 0, false
+		}
+		defer func() { _ = f.Close() }()
+		st, err := f.Stat()
+		if err != nil {
+			return 0, false
+		}
+		return st.Size(), true
+	}
+	st, err := os.Stat(name)
+	if err != nil {
+		return 0, false
+	}
+	return st.Size(), true
 }
