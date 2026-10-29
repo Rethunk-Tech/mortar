@@ -4,7 +4,7 @@ go 1.27.3
 
 require (
 	github.com/BurntSushi/toml v1.6.0
-	github.com/Rethunk-Tech/go-archive v0.1.1
+	github.com/Rethunk-Tech/go-archive v0.2.0
 	github.com/Rethunk-Tech/go-desktopenv v0.1.0
 	github.com/Rethunk-Tech/go-lenientjson v0.1.0
 	github.com/Rethunk-Tech/go-safefs v0.1.0
@@ -57,5 +57,3 @@ require (
 )
 
 replace github.com/wailsapp/wails/v3 => github.com/Rethunk-AI/wails/v3 v3.0.0-mortar.1
-
-replace github.com/Rethunk-Tech/go-archive => ../go-archive
