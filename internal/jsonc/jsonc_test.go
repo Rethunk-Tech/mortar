@@ -82,3 +82,9 @@ func TestCleanKeepsBlockCommentNewlines(t *testing.T) {
 		t.Fatalf("newlines = %d", got)
 	}
 }
+
+func TestCleanUnclosedBlockCommentIsInvalid(t *testing.T) {
+	if json.Valid(Clean([]byte(`{"o":1} /* x`))) {
+		t.Fatal("unclosed block comment accepted")
+	}
+}

@@ -122,7 +122,8 @@ func normalise(b []byte) []byte {
 		case c == '/' && i+1 < len(b) && b[i+1] == '*':
 			end := bytes.Index(b[i+2:], []byte("*/"))
 			if end < 0 {
-				return out
+				// Json.NET rejects the input; a bare "/*" is invalid for encoding/json too.
+				return append(out, '/', '*')
 			}
 			// Newlines survive so a parse error's line number still matches the file.
 			out = append(out, bytes.Repeat([]byte("\n"), bytes.Count(b[i:i+end+4], []byte("\n")))...)
