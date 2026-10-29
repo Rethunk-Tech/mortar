@@ -306,7 +306,7 @@ export function NexusMods() {
           action={
             signedIn ? (
               <Button
-                color="inherit"
+                variant="outlined"
                 size="small"
                 startIcon={<LogOut size={16} />}
                 onClick={signOut}

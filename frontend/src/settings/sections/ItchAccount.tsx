@@ -75,7 +75,7 @@ export function ItchAccount() {
           action={
             name ? (
               <Button
-                color="inherit"
+                variant="outlined"
                 size="small"
                 startIcon={<LogOut size={16} />}
                 onClick={signOut}

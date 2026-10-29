@@ -1,10 +1,11 @@
 import { useLingui } from '@lingui/react/macro'
-import { Alert } from '@mui/material'
+import { Alert, Box } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { KeysUnencrypted } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { refresh } from '../../shell/offline.ts'
 import { githubLoggedIn } from '../../shell/sharedReads.ts'
+import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { SettingsSection } from '../SettingsSection.tsx'
 import { useSettingsRelevant } from '../useSettingsSearch.ts'
@@ -70,19 +71,19 @@ export function Accounts() {
       refresh().catch(reportUnexpected)
     }
   }, [relevant])
+  // Services sit further apart than the rows inside one, so each block reads as its own; the sites with no account
+  // are one row each and share a block.
   return (
-    <>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: `calc(${space.gutter} * 2)` }}>
       <UnencryptedKeys />
       <NexusMods />
       <GitHubAccount />
       <ItchAccount />
-      {NO_ACCOUNT.map((id) => (
-        <SettingsSection key={id}>
-          <ServiceBlock>
-            <ConnectionAccountRow source={id} />
-          </ServiceBlock>
-        </SettingsSection>
-      ))}
-    </>
+      <SettingsSection>
+        {NO_ACCOUNT.map((id) => (
+          <ConnectionAccountRow key={id} source={id} />
+        ))}
+      </SettingsSection>
+    </Box>
   )
 }
