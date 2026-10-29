@@ -2,6 +2,7 @@ package migrate
 
 import (
 	"crypto/sha256"
+	"encoding/json"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -273,5 +274,22 @@ func TestVortexContentsListsGamesMortarDoesNotKnow(t *testing.T) {
 	empty, err := VortexContents(t.TempDir(), "")
 	if err != nil || empty.Folder != "" || len(empty.Games) != 0 {
 		t.Fatalf("no vortex = %#v, %v", empty, err)
+	}
+}
+
+func TestVortexNestedProfilesDecodeIndependently(t *testing.T) {
+	state := map[string]json.RawMessage{
+		"persistent": json.RawMessage(`{"profiles":{"stardewvalley":{
+			"a":{"gameId":"stardewvalley","name":"A","modState":{"m1":{"enabled":true},"m2":{"enabled":true}}},
+			"b":{"gameId":"stardewvalley","modState":{"m3":{"enabled":true}}},
+			"c":{"name":"no game"}}}}`),
+	}
+	got := map[string]vortexProfile{}
+	for _, p := range vortexProfileList(state, "") {
+		got[p.ID] = p
+	}
+	if len(got) != 2 || got["a"].Name != "A" || len(got["a"].ModState) != 2 ||
+		got["b"].Name != "b" || len(got["b"].ModState) != 1 {
+		t.Fatalf("profiles = %#v", got)
 	}
 }

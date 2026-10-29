@@ -285,8 +285,8 @@ func vortexProfileList(state map[string]json.RawMessage, domain string) []vortex
 		if json.Unmarshal(value, &profile) != nil {
 			continue
 		}
-		profile.ID = cmp.Or(profile.ID, key)
 		if profile.GameID != "" {
+			profile.ID = cmp.Or(profile.ID, key)
 			if vortexGameMatches(profile.GameID, domain) {
 				profile.Name = cmp.Or(profile.Name, profile.ID)
 				out = append(out, profile)
@@ -298,15 +298,16 @@ func vortexProfileList(state map[string]json.RawMessage, domain string) []vortex
 			continue
 		}
 		for nestedID, nestedValue := range nested {
-			if err := json.Unmarshal(nestedValue, &profile); err != nil {
+			var np vortexProfile
+			if err := json.Unmarshal(nestedValue, &np); err != nil || np.GameID == "" {
 				continue
 			}
-			if !vortexGameMatches(profile.GameID, domain) {
+			if !vortexGameMatches(np.GameID, domain) {
 				continue
 			}
-			profile.ID = cmp.Or(profile.ID, nestedID)
-			profile.Name = cmp.Or(profile.Name, profile.ID)
-			out = append(out, profile)
+			np.ID = cmp.Or(np.ID, nestedID)
+			np.Name = cmp.Or(np.Name, np.ID)
+			out = append(out, np)
 		}
 	}
 	return out
