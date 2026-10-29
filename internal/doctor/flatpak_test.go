@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -11,6 +12,9 @@ import (
 )
 
 func TestFlatpakLibraryChecksNameLibrariesTheSandboxCannotSee(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Flatpak exists only on Linux")
+	}
 	home := t.TempDir()
 	root := filepath.Join(home, ".local", "share", "Steam")
 	gone := filepath.Join(t.TempDir(), "elsewhere")

@@ -3,6 +3,7 @@ package doctor
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -15,6 +16,9 @@ type bepinex struct{ dll string }
 func (b bepinex) OverrideDLL(string) string { return b.dll }
 
 func TestProtonChecks(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Proton's compatdata and the flatpak grant list (path:mode, split at the first colon) are Linux-only")
+	}
 	t.Setenv("HOME", t.TempDir())
 	library := filepath.Join(t.TempDir(), "Lib")
 	compat := filepath.Join(library, "steamapps", "compatdata", "1966720")
