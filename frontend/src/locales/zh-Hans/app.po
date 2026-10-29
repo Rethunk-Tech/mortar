@@ -2099,6 +2099,10 @@ msgstr ""
 msgid "Could not launch the game"
 msgstr ""
 
+#: src/share/ManagerPane.tsx
+msgid "That folder has no {manager} data. Choose the one holding ModOrganizer.ini or ModOrganizer.exe."
+msgstr ""
+
 #: src/firstrun/FindStep.tsx
 #: src/launchers/LauncherList.tsx
 msgid "Choose {name} folder"
@@ -2979,6 +2983,10 @@ msgstr ""
 
 #: src/firstrun/FindStep.tsx
 msgid "has {name}"
+msgstr ""
+
+#: src/share/ManagerPane.tsx
+msgid "{manager} folder"
 msgstr ""
 
 #: src/commandPalette/paletteLabels.ts
@@ -6439,6 +6447,10 @@ msgstr ""
 
 #: src/develop/TrustDialog.tsx
 msgid "Could not trust the project"
+msgstr ""
+
+#: src/share/ManagerPane.tsx
+msgid "Use {manager} from another folder?"
 msgstr ""
 
 #: src/develop/ProjectCard.tsx
