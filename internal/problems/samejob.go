@@ -275,6 +275,7 @@ func shortMembers(members map[string]bool, weight func(string) float64) string {
 	return strings.Join(names, ", ")
 }
 
+// assemblyCacheVersion keys the cached dotnet.Writes strings: a go-dotnet bump that changes Writes output bumps it.
 const assemblyCacheVersion = 3
 
 type assemblyEntry struct {

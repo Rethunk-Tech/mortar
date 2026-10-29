@@ -150,6 +150,21 @@
     "url": "https://github.com/Rethunk-Tech/go-desktopenv"
   },
   {
+    "name": "github.com/Rethunk-Tech/go-dotnet",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/go-dotnet"
+  },
+  {
+    "name": "github.com/Rethunk-Tech/go-httpkit",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/go-httpkit"
+  },
+  {
+    "name": "github.com/Rethunk-Tech/go-keyring",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/go-keyring"
+  },
+  {
     "name": "github.com/Rethunk-Tech/go-lenientjson",
     "licence": "MIT",
     "url": "https://github.com/Rethunk-Tech/go-lenientjson"
