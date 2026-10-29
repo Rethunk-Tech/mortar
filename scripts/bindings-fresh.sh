@@ -8,7 +8,10 @@ bun run --cwd frontend catalogs
 stamp=frontend/bindings/.inputs
 want=$({
   wails3 version 2>&1
-  git ls-files -co --exclude-standard -z -- '*.go' go.mod go.sum scripts/erasable-bindings.ts | xargs -0 sha1sum
+  # ls-files still lists a tracked file deleted in the working tree; hashing only what exists keeps an uncommitted
+  # deletion from failing the gate.
+  git ls-files -co --exclude-standard -z -- '*.go' go.mod go.sum scripts/erasable-bindings.ts |
+    while IFS= read -r -d '' f; do [ -e "$f" ] && printf '%s\0' "$f"; done | xargs -0 sha1sum
 } | sha1sum)
 if [ "$(cat "$stamp" 2>/dev/null)" = "$want" ]; then
   exit 0
