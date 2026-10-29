@@ -2,46 +2,22 @@ package archive
 
 import (
 	"path/filepath"
-	"slices"
 	"strings"
+
+	ga "github.com/Rethunk-Tech/go-archive"
 )
 
-// Extensions are the file name endings Mortar offers as archives, longest first so a compound ending wins over its
-// last part. Detection never trusts them: the magic bytes decide the format.
-var Extensions = []string{
-	".tar.gz", ".tar.xz", ".tar.zst", ".tar.bz2", ".tar.lzma", ".tar.lz4",
-	".tgz", ".txz", ".tzst", ".tbz2", ".tbz",
-	".zip", ".rar", ".7z", ".tar", ".gz", ".xz", ".zst", ".lzma", ".bz2", ".lz4",
-}
-
-// HasExtension reports whether name ends in one of Extensions, ignoring case.
-func HasExtension(name string) bool {
-	_, ok := cutExtension(name)
-	return ok
-}
+// HasExtension reports whether name ends in one of the archive endings Mortar offers, ignoring case.
+func HasExtension(name string) bool { return ga.HasExtension(name) }
 
 // StripExtension is name without its archive ending, or name itself when it has none.
-func StripExtension(name string) string {
-	if stem, ok := cutExtension(name); ok {
-		return stem
-	}
-	return name
-}
+func StripExtension(name string) string { return ga.StripExtension(name) }
 
-func cutExtension(name string) (string, bool) {
-	lower := strings.ToLower(name)
-	for _, ext := range Extensions {
-		if strings.HasSuffix(lower, ext) {
-			return name[:len(name)-len(ext)], true
-		}
-	}
-	return name, false
-}
-
-// PickerPattern is Extensions as a file dialog's semicolon-separated glob list.
+// PickerPattern is the archive endings as a file dialog's semicolon-separated glob list.
 func PickerPattern() string {
-	globs := make([]string, len(Extensions))
-	for i, ext := range Extensions {
+	exts := ga.Extensions()
+	globs := make([]string, len(exts))
+	for i, ext := range exts {
 		globs[i] = "*" + ext
 	}
 	return CaseGlobs(strings.Join(globs, ";"))
@@ -63,24 +39,11 @@ func CaseGlobs(pattern string) string {
 // nameSep splits a saved download's file name into the queue id before it and the file's original name after it.
 const nameSep = "~~"
 
-// bareSuffixes are the endings of a compressed single file (a tar is not one: its entries carry their own names).
-var bareSuffixes = []string{".gz", ".xz", ".zst", ".lzma", ".bz2", ".lz4"}
-
-func isBare(name string) bool {
-	lower := strings.ToLower(name)
-	for _, ext := range Extensions {
-		if strings.HasSuffix(lower, ext) {
-			return slices.Contains(bareSuffixes, ext)
-		}
-	}
-	return false
-}
-
 // SavedName is the file name a download of fileName is kept under for id. A compressed single file keeps its
 // original name after the id, because extraction names the one file it holds from that; every other download keeps
 // its whole archive ending (".tar.gz", not ".gz"), which picks the extractor.
 func SavedName(id, fileName string) string {
-	if !isBare(fileName) {
+	if !ga.IsStream(fileName) {
 		return id + fileName[len(StripExtension(fileName)):]
 	}
 	name := strings.Map(func(r rune) rune {
@@ -94,6 +57,19 @@ func SavedName(id, fileName string) string {
 		name = name[:maxSavedName-len(ext)] + ext
 	}
 	return id + nameSep + name
+}
+
+// IsSaved reports whether name is one SavedName could have made: an archive ending, or the id separator.
+func IsSaved(name string) bool { return HasExtension(name) || strings.Contains(name, nameSep) }
+
+// originalName is the name a saved download had before SavedName prefixed its queue id. Extraction names a bare
+// stream's one file from it.
+func originalName(archivePath string) string {
+	base := filepath.Base(archivePath)
+	if _, original, ok := strings.Cut(base, nameSep); ok {
+		return original
+	}
+	return base
 }
 
 // SavedID is the queue id a name from SavedName (or a resume sidecar's stem) belongs to.

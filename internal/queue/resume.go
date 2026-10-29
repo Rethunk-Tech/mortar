@@ -70,9 +70,8 @@ func (s *Service) sweepDownloads() {
 		}
 		base = strings.TrimSuffix(base, github.ResumeSuffix)
 		id := archive.SavedID(base)
-		// The download folder may be the user's own: only names SavedName makes are Mortar's, an id with an archive
-		// ending or the "~~" separator.
-		if !ids.Is(id) || keep[id] || (!archive.HasExtension(base) && !strings.Contains(base, "~~")) {
+		// The download folder may be the user's own: only names SavedName makes are Mortar's.
+		if !ids.Is(id) || keep[id] || !archive.IsSaved(base) {
 			continue
 		}
 		_ = safefs.Remove(filepath.Join(root, name))

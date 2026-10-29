@@ -5,7 +5,6 @@ package archive
 import (
 	"bytes"
 	"os"
-	"path/filepath"
 
 	ga "github.com/Rethunk-Tech/go-archive"
 
@@ -58,7 +57,7 @@ func Extract(archivePath, dest string) error {
 		return err
 	}
 	defer func() { _ = root.Close() }()
-	return ga.Extract(f, size, filepath.Base(archivePath), root, ga.Options{})
+	return ga.Extract(f, size, originalName(archivePath), root, ga.Options{})
 }
 
 // DeclaredSize sums the uncompressed sizes the archive's headers declare. It is informational: an untrusted
@@ -103,7 +102,7 @@ func List(archivePath string, maxEntryBytes int64) (*Listing, error) {
 
 // ListBytes is List for an archive already in memory.
 func ListBytes(raw []byte, name string, maxEntryBytes int64) (*Listing, error) {
-	l, err := ga.NewLister(bytes.NewReader(raw), int64(len(raw)), name, ga.ListerOptions{MaxEntryBytes: maxEntryBytes})
+	l, err := ga.NewLister(bytes.NewReader(raw), int64(len(raw)), originalName(name), ga.ListerOptions{MaxEntryBytes: maxEntryBytes})
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +110,7 @@ func ListBytes(raw []byte, name string, maxEntryBytes int64) (*Listing, error) {
 }
 
 func newListing(f *os.File, size int64, name string, maxEntryBytes int64) (*Listing, error) {
-	l, err := ga.NewLister(f, size, filepath.Base(name), ga.ListerOptions{MaxEntryBytes: maxEntryBytes})
+	l, err := ga.NewLister(f, size, originalName(name), ga.ListerOptions{MaxEntryBytes: maxEntryBytes})
 	if err != nil {
 		_ = f.Close()
 		return nil, err

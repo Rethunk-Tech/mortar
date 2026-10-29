@@ -1,8 +1,11 @@
 package archive
 
 import (
+	"bytes"
+	"compress/gzip"
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -90,5 +93,39 @@ func TestExtractAppliesWindowsNames(t *testing.T) {
 	err := Extract(zipAt(t, map[string]string{"CON.txt": "x"}), t.TempDir())
 	if !errors.Is(err, ErrUnsafeName) {
 		t.Fatalf("err = %v", err)
+	}
+}
+
+// A saved bare stream's file takes its original name, not the queue id SavedName put before it, and a saved empty
+// tar unpacks to nothing.
+func TestExtractNamesFromTheOriginalName(t *testing.T) {
+	t.Parallel()
+	var gz bytes.Buffer
+	zw := gzip.NewWriter(&gz)
+	_, _ = zw.Write([]byte("notes"))
+	if err := zw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	dir := t.TempDir()
+	stream := filepath.Join(dir, SavedName("0a1b2c", "notes.txt.gz"))
+	empty := filepath.Join(dir, SavedName("0d1e2f", "x.tar.gz"))
+	for p, b := range map[string][]byte{stream: gz.Bytes(), empty: make([]byte, 1024)} {
+		if err := os.WriteFile(p, b, 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	dest := t.TempDir()
+	if err := Extract(stream, dest); err != nil {
+		t.Fatal(err)
+	}
+	if got, err := os.ReadFile(filepath.Join(dest, "notes.txt")); err != nil || string(got) != "notes" {
+		t.Fatalf("notes.txt = %q, %v", got, err)
+	}
+	dest = t.TempDir()
+	if err := Extract(empty, dest); err != nil {
+		t.Fatal(err)
+	}
+	if got, _ := os.ReadDir(dest); len(got) != 0 {
+		t.Fatalf("an empty tar unpacked %d entries", len(got))
 	}
 }
