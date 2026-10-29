@@ -88,3 +88,19 @@ func TestCleanUnclosedBlockCommentIsInvalid(t *testing.T) {
 		t.Fatal("unclosed block comment accepted")
 	}
 }
+
+func TestCleanElisions(t *testing.T) {
+	for in, want := range map[string]string{
+		`[,]`: `[null]`, `[1,,2]`: `[1,null,2]`, `[,1]`: `[null,1]`, `[1,,]`: `[1,null]`, `[1,]`: `[1]`,
+		`{"o":,"s":"x"}`: `{"o":null,"s":"x"}`, `{"o":,}`: `{"o":null}`,
+	} {
+		if got := Clean([]byte(in)); string(got) != want {
+			t.Errorf("%s: got %q want %q", in, got, want)
+		}
+	}
+	for _, in := range []string{`{,}`, `{"o":1,,"s":"x"}`, `{"o":1,,}`} {
+		if json.Valid(Clean([]byte(in))) {
+			t.Errorf("%s accepted", in)
+		}
+	}
+}

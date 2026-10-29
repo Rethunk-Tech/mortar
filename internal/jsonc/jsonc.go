@@ -155,26 +155,56 @@ func stringEnd(b []byte, i int) int {
 	return min(j, len(b)-1)
 }
 
+// dropTrailingCommas drops trailing commas and applies Json.NET's elisions: a comma where an array element or an object
+// property value should be stands for null. A comma where a property name should be stays, so the result is invalid.
 func dropTrailingCommas(b []byte) []byte {
 	out := make([]byte, 0, len(b))
+	var stack []byte
+	empty, colon := false, false // empty: nothing yet in the current slot; colon: the slot is a property value
 	for i := 0; i < len(b); i++ {
-		switch b[i] {
+		c := b[i]
+		switch c {
+		case ' ', '\t', '\r', '\n':
+			out = append(out, c)
+			continue
 		case '"':
 			j := stringEnd(b, i)
 			out = append(out, b[i:j+1]...)
 			i = j
 		case ',':
+			inArray := len(stack) > 0 && stack[len(stack)-1] == '['
+			if empty && (inArray || colon) {
+				out = append(out, "null"...)
+			}
 			j := i + 1
 			for j < len(b) && slices.Contains([]byte(" \t\r\n"), b[j]) {
 				j++
 			}
-			if j < len(b) && (b[j] == '}' || b[j] == ']') {
+			if !(empty && !inArray && !colon) && j < len(b) && (b[j] == '}' || b[j] == ']') {
+				empty, colon = false, false
 				continue
 			}
 			out = append(out, ',')
+			empty, colon = true, false
+			continue
+		case '[', '{':
+			stack = append(stack, c)
+			out = append(out, c)
+			empty, colon = true, false
+			continue
+		case ']', '}':
+			if len(stack) > 0 {
+				stack = stack[:len(stack)-1]
+			}
+			out = append(out, c)
+		case ':':
+			out = append(out, c)
+			empty, colon = true, true
+			continue
 		default:
-			out = append(out, b[i])
+			out = append(out, c)
 		}
+		empty = false
 	}
 	return out
 }
