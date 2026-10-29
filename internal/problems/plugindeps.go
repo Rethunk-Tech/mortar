@@ -30,7 +30,7 @@ func pluginDeps(pkgs []profile.PackageRef, mods []framework.Mod) ([]Missing, []L
 		d := declaredIn(p.Dir)
 		declared[p.Key] = d
 		for _, pl := range d.Plugins {
-			if !pl.Loadable() {
+			if !dotnet.Loadable(pl) {
 				continue
 			}
 			g := strings.ToLower(pl.GUID)

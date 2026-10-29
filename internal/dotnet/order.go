@@ -18,7 +18,7 @@ type Loaded struct {
 
 // Loadable reports whether BepInEx would load the plugin: its version must parse as a System.Version
 // (Chainloader.cs, "version is invalid").
-func (p Plugin) Loadable() bool {
+func Loadable(p Plugin) bool {
 	_, ok := meta.CompareDotNet(p.Version, p.Version)
 	return ok
 }
@@ -35,7 +35,7 @@ func LoadOrder(assemblies []Declared) []Loaded {
 	newest := map[string]Loaded{}
 	for _, d := range assemblies {
 		for _, p := range d.Plugins {
-			if !p.Loadable() {
+			if !Loadable(p) {
 				continue
 			}
 			key := strings.ToLower(p.GUID)

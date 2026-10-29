@@ -79,7 +79,7 @@ func pluginClashes(pkgs []profile.PackageRef, deprecated, developed map[string]b
 		seen := map[string]bool{}
 		for _, pl := range pluginsIn(p.Dir) {
 			g := strings.ToLower(pl.GUID)
-			if g == "" || seen[g] || !pl.Loadable() {
+			if g == "" || seen[g] || !dotnet.Loadable(pl) {
 				continue
 			}
 			seen[g] = true
