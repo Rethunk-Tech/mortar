@@ -6,8 +6,8 @@
   "packageManager": "bun@1.4.3",
   "scripts": {
     "dev": "lingui compile --typescript && vite",
-    "build:dev": "bun ../scripts/gen-credits.ts && lingui compile --typescript && tsc && vite build --minify false --mode development",
-    "build": "bun ../scripts/gen-credits.ts && lingui extract --clean && lingui compile --typescript && bun ../scripts/i18n-completeness.ts && tsc && vite build --mode production",
+    "build:dev": "lingui compile --typescript && bun ../scripts/gen-credits.ts && tsc && vite build --minify false --mode development",
+    "build": "lingui extract --clean && lingui compile --typescript && bun ../scripts/gen-credits.ts && bun ../scripts/i18n-completeness.ts && tsc && vite build --mode production",
     "preview": "vite preview",
     "catalogs": "lingui compile --typescript",
     "i18n:extract": "lingui extract --clean",
