@@ -597,27 +597,17 @@ var (
 
 func tagVersion(tag string) string { return strings.TrimPrefix(strings.TrimPrefix(tag, "v"), "V") }
 
-var archiveTypes = map[string]bool{
-	"application/zip": true, "application/x-zip-compressed": true, "application/x-rar-compressed": true,
-	"application/vnd.rar": true, "application/x-7z-compressed": true, "application/octet-stream": true,
-	"application/x-tar": true, "application/gzip": true, "application/x-gzip": true, "application/x-xz": true,
-	"application/zstd": true, "application/x-zstd": true, "application/x-bzip2": true, "application/x-lzma": true,
-	"application/x-gtar": true, "application/x-lz4": true, "application/x-compressed-tar": true,
-	"application/x-gzip-compressed-tar": true, "application/x-bzip-compressed-tar": true,
-	"application/x-bzip2-compressed-tar": true, "application/x-xz-compressed-tar": true,
-	"application/x-zstd-compressed-tar": true, "application/x-lz4-compressed-tar": true,
-}
-
 // IsArchive reports whether a is an archive Mortar reads by name, and by content type where GitHub set one.
 func IsArchive(a Asset) bool {
 	if !archive.HasExtension(a.Name) {
 		return false
 	}
-	if a.ContentType == "" {
+	// GitHub labels an asset it cannot type application/octet-stream, so that counts as an archive here.
+	if a.ContentType == "" || archive.IsMediaType(a.ContentType) {
 		return true
 	}
 	mt, _, err := mime.ParseMediaType(a.ContentType)
-	return err == nil && archiveTypes[mt]
+	return err == nil && mt == "application/octet-stream"
 }
 
 // Select picks the newest non-draft release whose tag is version (any when version is empty) and returns it with its

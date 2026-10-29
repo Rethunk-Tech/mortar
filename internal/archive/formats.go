@@ -13,6 +13,9 @@ func HasExtension(name string) bool { return ga.HasExtension(name) }
 // StripExtension is name without its archive ending, or name itself when it has none.
 func StripExtension(name string) string { return ga.StripExtension(name) }
 
+// IsMediaType reports whether a Content-Type names a format go-archive reads.
+func IsMediaType(contentType string) bool { return ga.IsMediaType(contentType) }
+
 // PickerPattern is the archive endings as a file dialog's semicolon-separated glob list.
 func PickerPattern() string {
 	exts := ga.Extensions()
