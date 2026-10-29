@@ -3,6 +3,7 @@ module github.com/Rethunk-Tech/mortar
 go 1.27.3
 
 require (
+	github.com/BurntSushi/toml v1.6.0
 	github.com/Rethunk-Tech/go-archive v0.1.1
 	github.com/andybalholm/brotli v1.2.7
 	github.com/andygrunwald/vdf v1.1.0
@@ -19,6 +20,7 @@ require (
 	golang.org/x/mod v0.42.0
 	golang.org/x/net v0.62.0
 	golang.org/x/sys v0.49.0
+	golang.org/x/text v0.43.0
 	gopkg.in/yaml.v3 v3.0.1
 	modernc.org/sqlite v1.61.0
 )
@@ -45,7 +47,6 @@ require (
 	github.com/stangelandcl/ppmd v0.1.1 // indirect
 	github.com/ulikunitz/xz v0.5.17 // indirect
 	go4.org v0.0.0-20261028031214-ed6929a230fe // indirect
-	golang.org/x/text v0.43.0
 	modernc.org/libc v1.79.1 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.12.1 // indirect

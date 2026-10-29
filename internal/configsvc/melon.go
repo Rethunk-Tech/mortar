@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/BurntSushi/toml"
+
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -48,7 +50,9 @@ type melonDoc struct {
 const TypeRaw = "raw"
 
 var (
-	tomlInt = regexp.MustCompile(`^[+-]?\d+$`)
+	// leadingZero is a decimal integer TOML forbids: 007, but not 0, 0x1F or 0.
+	leadingZero = regexp.MustCompile(`^[+-]?0\d`)
+	tomlInt     = regexp.MustCompile(`^[+-]?\d+$`)
 	// tomlIntForms are the integers TOML spells: underscores between digits, and 0x, 0o and 0b without a sign.
 	tomlIntForms = regexp.MustCompile(`^([+-]?\d+(_\d+)*|0x[0-9a-fA-F]+(_[0-9a-fA-F]+)*|0o[0-7]+(_[0-7]+)*|0b[01]+(_[01]+)*)$`)
 	tomlFloat    = regexp.MustCompile(`^[+-]?(\d+(\.\d+)?([eE][+-]?\d+)?|inf|nan)$`)
@@ -217,7 +221,7 @@ func (e melonEntry) literal(value string) (string, error) {
 		}
 		return "", refuse("bool", "%s expects true or false", e.Key)
 	case TypeInt:
-		if !tomlIntForms.MatchString(value) {
+		if !tomlIntForms.MatchString(value) || leadingZero.MatchString(value) {
 			return "", refuse("whole_number", "%s expects a whole number", e.Key)
 		}
 		clean := strings.ReplaceAll(value, "_", "")
@@ -273,6 +277,12 @@ func tomlString(value string) string {
 	return b.String()
 }
 
+func parsesAsTOML(lines []string) bool {
+	var sink map[string]any
+	_, err := toml.Decode(strings.Join(lines, "\n"), &sink)
+	return err == nil
+}
+
 func (d melonDoc) set(section, key, value string) (string, error) {
 	for _, e := range d.entries {
 		if e.section != section || e.Key != key {
@@ -287,7 +297,12 @@ func (d melonDoc) set(section, key, value string) (string, error) {
 		// The value now ends where its last line did.
 		eols := slices.Delete(append([]string(nil), d.eols...), e.line+1, e.end+1)
 		eols[e.line] = d.eols[e.end]
-		return joinLines(lines, eols, d.bom), nil
+		out := joinLines(lines, eols, d.bom)
+		// One unparsable line makes MelonLoader run every melon on defaults and disable saving.
+		if parsesAsTOML(d.lines) && !parsesAsTOML(lines) {
+			return "", refuse("toml", "%s: that is not a TOML value", e.Key)
+		}
+		return out, nil
 	}
 	return "", fmt.Errorf("no setting %s in [%s]", key, section)
 }

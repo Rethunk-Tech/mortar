@@ -1,8 +1,12 @@
 package configsvc
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // The layout is what MelonPreferences_Entry.Save writes through Tomlet: the description as a preceding comment, the
@@ -149,5 +153,42 @@ func TestMelonRawAndTOMLIntegers(t *testing.T) {
 		if _, err := d.set("M", "I", in); err == nil {
 			t.Errorf("int %s accepted", in)
 		}
+	}
+}
+
+func TestMelonRefusesAValueThatBreaksTheFile(t *testing.T) {
+	d := parseMelon("[A]\nT = 2024-01-02\nL = [1]\nN = 5\nR = 1.5\n")
+	for key, value := range map[string]string{"T": "hello world", "L": "[a b]", "N": "007"} {
+		if out, err := d.set("A", key, value); err == nil {
+			t.Errorf("%s=%q accepted: %q", key, value, out)
+		}
+	}
+	d = parseMelon("[A]\nT = { a = 1 }\n")
+	_, err := d.set("A", "T", "{ x = ")
+	if detail, _ := usererr.DetailOf(err).(*valueError); detail == nil || detail.Problem != "toml" {
+		t.Errorf("raw: %v", err)
+	}
+	if out, err := parseMelon("[A]\nN = 5\n").set("A", "N", "0"); err != nil || out != "[A]\nN = 0\n" {
+		t.Errorf("zero: %q %v", out, err)
+	}
+}
+
+func TestMelonSchemaKeepsOnlyTheModsCategories(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(dir, "UserData"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "UserData", melonName), []byte(melonSample), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	s := &Service{Profiles: fakeProfiles{dir: dir}}
+	f := ConfigFile{Name: melonName, Format: FormatMelon}
+	mine, err := s.melonSchema("g", "p", "thunderstore:Ada-Better_Hands", f)
+	if err != nil || len(mine.Sections) != 1 || mine.Sections[0].Name != "BetterHands" {
+		t.Fatalf("one mod: %+v %v", mine.Sections, err)
+	}
+	all, err := s.melonSchema("g", "p", "", f)
+	if err != nil || len(all.Sections) != 2 {
+		t.Fatalf("whole profile: %+v %v", all.Sections, err)
 	}
 }
