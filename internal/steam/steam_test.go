@@ -210,10 +210,34 @@ func TestParseVDFRefusesWhatIsTooLargeOrTooDeep(t *testing.T) {
 	}
 	// Braces and escaped quotes inside a string are text, not nesting.
 	quoted := `"k" { "v" "` + strings.Repeat(`{ \" {`, 100) + `" }`
-	if d := textVDFDepth([]byte(quoted)); d != 1 {
+	if d, err := textVDFDepth([]byte(quoted)); err != nil || d != 1 {
 		t.Fatalf("depth %d", d)
+	}
+	// The parser skips a // comment, so a quote or braces in one must not hide or add nesting.
+	for name, body := range map[string][]byte{
+		"quote": []byte("// \"\n" + strings.Repeat(`"a"{`, 40)),
+		"brace": []byte("// " + strings.Repeat("{", 100) + "\n" + `"k" { "v" "1" }`),
+	} {
+		_, err := parseVDF(write(name+".vdf", body))
+		if (name == "quote") != (err != nil && strings.Contains(err.Error(), "deeper")) {
+			t.Fatalf("%s: %v", name, err)
+		}
 	}
 	if _, err := parseVDF(write("ok.vdf", []byte(quoted))); err != nil {
 		t.Fatalf("ok: %v", err)
 	}
+}
+
+func FuzzTextVDF(f *testing.F) {
+	f.Add([]byte("// \"\n" + strings.Repeat(`"a"{`, 40)))
+	f.Add([]byte(`"k" { "v" "1" }`))
+	f.Fuzz(func(t *testing.T, b []byte) {
+		d, err := textVDFDepth(b)
+		if err != nil || d > maxTextVDFDepth {
+			return
+		}
+		if m, err := vdf.NewParser(bytes.NewReader(b)).Parse(); err == nil && m == nil {
+			t.Fatal("nil map")
+		}
+	})
 }

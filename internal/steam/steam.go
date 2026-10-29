@@ -288,7 +288,11 @@ func parseVDF(path string) (map[string]any, error) {
 	if len(body) > maxTextVDFBytes {
 		return nil, fmt.Errorf("%s is larger than %d bytes", filepath.Base(path), maxTextVDFBytes)
 	}
-	if textVDFDepth(body) > maxTextVDFDepth {
+	depth, err := textVDFDepth(body)
+	if err != nil {
+		return nil, fmt.Errorf("parse %s: %w", filepath.Base(path), err)
+	}
+	if depth > maxTextVDFDepth {
 		return nil, fmt.Errorf("%s nests deeper than %d levels", filepath.Base(path), maxTextVDFDepth)
 	}
 	m, err := vdf.NewParser(bytes.NewReader(body)).Parse()
@@ -298,26 +302,25 @@ func parseVDF(path string) (map[string]any, error) {
 	return m, nil
 }
 
-// textVDFDepth is the deepest run of unclosed braces outside quoted strings, where a backslash escapes the next byte.
-func textVDFDepth(b []byte) int {
+// textVDFDepth is the deepest run of unclosed braces over the tokens the parser reads, so a comment or a quoted
+// brace never counts; a file scanVDF cannot tokenize is refused.
+func textVDFDepth(b []byte) (int, error) {
+	toks, err := scanVDF(b)
+	if err != nil {
+		return 0, err
+	}
 	depth, deepest := 0, 0
-	quoted := false
-	for i := 0; i < len(b); i++ {
-		switch c := b[i]; {
-		case c == '\\' && quoted:
-			i++
-		case c == '"':
-			quoted = !quoted
-		case quoted:
-		case c == '{':
+	for _, t := range toks {
+		switch {
+		case t.kind == '{':
 			if depth++; depth > deepest {
 				deepest = depth
 			}
-		case c == '}' && depth > 0:
+		case t.kind == '}' && depth > 0:
 			depth--
 		}
 	}
-	return deepest
+	return deepest, nil
 }
 
 // steamID64Base is the offset between a SteamID64 and the account number naming its userdata folder.
