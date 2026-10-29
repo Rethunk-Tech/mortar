@@ -12,7 +12,7 @@ msgstr ""
 msgid "All files"
 msgstr ""
 
-msgid "Archives (zip, RAR, 7z, tar, gz, xz, zst, bz2, lzma)"
+msgid "Archives (zip, RAR, 7z, tar, gz, xz, zst, bz2, lz4, lzma)"
 msgstr ""
 
 msgid "Choose background image"

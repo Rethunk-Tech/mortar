@@ -11,8 +11,8 @@ msgstr "Add archive"
 msgid "All files"
 msgstr "All files"
 
-msgid "Archives (zip, RAR, 7z, tar, gz, xz, zst, bz2, lzma)"
-msgstr "Archives (zip, RAR, 7z, tar, gz, xz, zst, bz2, lzma)"
+msgid "Archives (zip, RAR, 7z, tar, gz, xz, zst, bz2, lz4, lzma)"
+msgstr "Archives (zip, RAR, 7z, tar, gz, xz, zst, bz2, lz4, lzma)"
 
 msgid "Choose background image"
 msgstr "Choose background image"
