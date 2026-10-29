@@ -338,7 +338,7 @@ func TestDestKeepsABareCompressedDownloadsName(t *testing.T) {
 	if err := os.MkdirAll(filepath.Dir(got), 0o700); err != nil {
 		t.Fatal(err)
 	}
-	src, err := os.ReadFile(filepath.Join("..", "archive", "testdata", "bare.txt.gz"))
+	src, err := os.ReadFile(filepath.Join("testdata", "bare.txt.gz"))
 	if err != nil {
 		t.Fatal(err)
 	}

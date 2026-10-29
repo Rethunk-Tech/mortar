@@ -232,7 +232,7 @@ func TestReadCollectionArchive(t *testing.T) {
 
 // A crafted collection 7z that panics the 7z reader must fail the import, not reach the panic handler that exits Mortar.
 func TestCrashingCollectionArchiveIsMalformed(t *testing.T) {
-	raw, err := os.ReadFile("../archive/testdata/fuzz/FuzzExtract/d8ee12b539cf77b1")
+	raw, err := os.ReadFile("testdata/crash-7z-seed")
 	if err != nil {
 		t.Fatal(err)
 	}
