@@ -19,7 +19,7 @@ func TestFomodArchivePausesAndAnswerInstalls(t *testing.T) {
 	testfs.DataHome(t)
 	_, profiles := testenv.Stores(t)
 	p := testenv.Profile(t, profiles, "stardew", "P")
-	xml, err := os.ReadFile(filepath.Join("..", "fomod", "testdata", "choose-one.xml"))
+	xml, err := os.ReadFile(filepath.Join("..", "installer", "testdata", "fomod", "choose-one.xml"))
 	if err != nil {
 		t.Fatal(err)
 	}

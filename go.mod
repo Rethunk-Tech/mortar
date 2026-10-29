@@ -7,6 +7,7 @@ require (
 	github.com/Rethunk-Tech/go-archive v0.2.0
 	github.com/Rethunk-Tech/go-desktopenv v0.1.0
 	github.com/Rethunk-Tech/go-dotnet v0.1.0
+	github.com/Rethunk-Tech/go-fomod v0.1.0
 	github.com/Rethunk-Tech/go-gamelocator v0.1.0
 	github.com/Rethunk-Tech/go-github v0.1.0
 	github.com/Rethunk-Tech/go-httpkit v0.1.0
@@ -30,7 +31,6 @@ require (
 	golang.org/x/mod v0.42.0
 	golang.org/x/net v0.62.0
 	golang.org/x/sys v0.49.0
-	golang.org/x/text v0.43.0
 	modernc.org/sqlite v1.61.0
 )
 
@@ -57,6 +57,7 @@ require (
 	github.com/stangelandcl/ppmd v0.1.1 // indirect
 	github.com/ulikunitz/xz v0.5.17 // indirect
 	go4.org v0.0.0-20261028031214-ed6929a230fe // indirect
+	golang.org/x/text v0.43.0 // indirect
 	modernc.org/libc v1.79.1 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.12.1 // indirect

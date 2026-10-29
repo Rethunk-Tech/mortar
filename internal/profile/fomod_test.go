@@ -18,7 +18,7 @@ func TestInstallArchiveAsksForFomodThenInstallsChoices(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)
 	p := mustCreate(t, e, "A")
-	xml, err := safefs.ReadFile(filepath.Join("..", "fomod", "testdata", "choose-one.xml"))
+	xml, err := safefs.ReadFile(filepath.Join("..", "installer", "testdata", "fomod", "choose-one.xml"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -62,7 +62,7 @@ func TestFomodReplayMismatchAsksAgain(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)
 	p := mustCreate(t, e, "A")
-	xml, err := safefs.ReadFile(filepath.Join("..", "fomod", "testdata", "choose-one.xml"))
+	xml, err := safefs.ReadFile(filepath.Join("..", "installer", "testdata", "fomod", "choose-one.xml"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -84,7 +84,7 @@ func TestFomodReplayMismatchAsksAgain(t *testing.T) {
 
 func TestFomodUpdateReplaysOnlyUnchangedOptions(t *testing.T) {
 	t.Parallel()
-	raw, err := safefs.ReadFile(filepath.Join("..", "fomod", "testdata", "choose-one.xml"))
+	raw, err := safefs.ReadFile(filepath.Join("..", "installer", "testdata", "fomod", "choose-one.xml"))
 	if err != nil {
 		t.Fatal(err)
 	}

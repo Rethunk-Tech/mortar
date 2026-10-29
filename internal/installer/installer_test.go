@@ -32,7 +32,7 @@ func render(l Layout) string {
 }
 
 func TestLayoutGoldens(t *testing.T) {
-	choose, err := os.ReadFile("../fomod/testdata/choose-one.xml")
+	choose, err := os.ReadFile("testdata/fomod/choose-one.xml")
 	if err != nil {
 		t.Fatal(err)
 	}

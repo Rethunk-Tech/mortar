@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-fomod"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fomod"
 	"github.com/Rethunk-Tech/mortar/internal/installer"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -118,7 +118,7 @@ func (s *Store) isOverlayItem(game, key string, source Source) (bool, error) {
 	if contentRootFile(dir) != "" {
 		return false, nil
 	}
-	if _, _, ok, err := fomod.Open(dir); err != nil || ok {
+	if _, _, ok, err := fomod.Open(os.DirFS(dir)); err != nil || ok {
 		return false, err
 	}
 	has, err := hasManifestFile(dir)

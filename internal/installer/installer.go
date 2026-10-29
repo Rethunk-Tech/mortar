@@ -12,8 +12,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/go-fomod"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/fomod"
 	"github.com/Rethunk-Tech/mortar/internal/winname"
 )
 

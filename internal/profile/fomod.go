@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-fomod"
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/fomod"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -133,7 +133,7 @@ func (s *Store) fomodOf(game, key string) (fomod.Config, bool, error) {
 	if err != nil {
 		return fomod.Config{}, false, err
 	}
-	cfg, _, ok, err := fomod.Open(dir)
+	cfg, _, ok, err := fomod.Open(os.DirFS(dir))
 	return cfg, ok, err
 }
 

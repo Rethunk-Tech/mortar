@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"io/fs"
 	"path"
-	"path/filepath"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-fomod"
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/fomod"
 )
 
 var _ = Register(fomodInstaller{})
@@ -20,7 +19,7 @@ type fomodInstaller struct{}
 func (fomodInstaller) ID() string { return "fomod" }
 
 func (fomodInstaller) Detect(a Archive, _ Game) bool {
-	p, err := fomod.FindConfig(a.Dir)
+	p, err := fomod.Find(a.FS)
 	return err == nil && p != ""
 }
 
@@ -42,18 +41,15 @@ func destination(op fomod.Op, src string, legacy bool) string {
 }
 
 func (fomodInstaller) Layout(a Archive, g Game, choices Choices) (Layout, error) {
-	cfg, cfgPath, ok, err := fomod.Open(a.Dir)
+	cfg, cfgPath, ok, err := fomod.Open(a.FS)
 	if err != nil || !ok {
 		return Layout{}, fmt.Errorf("read the FOMOD config: %w", err)
 	}
 	// Sources are relative to the folder holding fomod/, which a wrapper folder puts below the archive root.
-	wrap, err := filepath.Rel(a.Dir, filepath.Dir(filepath.Dir(cfgPath)))
-	if err != nil {
-		return Layout{}, err
-	}
-	wrap = filepath.ToSlash(wrap)
+	wrap := path.Dir(path.Dir(cfgPath))
 	base := a
 	if wrap != "." {
+		var err error
 		if base.FS, err = fs.Sub(a.FS, wrap); err != nil {
 			return Layout{}, err
 		}

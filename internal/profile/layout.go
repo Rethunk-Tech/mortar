@@ -10,10 +10,10 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-fomod"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fomod"
 	"github.com/Rethunk-Tech/mortar/internal/installer"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
@@ -62,9 +62,8 @@ func (s *Store) layoutOf(game, id, key string, choices map[string]map[string][]s
 		return installer.Archive{}, installer.Layout{}, "", err
 	}
 	arch.LegacyFomod = legacy
-	root := arch.Dir
 	if inst.ID() == "fomod" {
-		cfg, _, _, err := fomod.Open(root)
+		cfg, _, _, err := fomod.Open(arch.FS)
 		if err != nil {
 			return arch, installer.Layout{}, "", err
 		}
