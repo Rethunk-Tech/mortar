@@ -595,7 +595,7 @@ func (c *Client) Releases(ctx context.Context, owner, repo string) ([]Release, e
 	}
 	path := releasesPath(dir, owner, repo)
 	old := readCache(path)
-	if old.Format == cacheFormat && !old.Fetched.IsZero() && c.now().Sub(old.Fetched) < cacheTTL {
+	if age := c.now().Sub(old.Fetched); old.Format == cacheFormat && !old.Fetched.IsZero() && age >= 0 && age < cacheTTL {
 		return old.Releases, nil
 	}
 	all, err := FetchReleases(ctx, c.HTTP, base+"/repos/"+owner+"/"+repo+"/releases?per_page="+strconv.Itoa(releasesPerPage))

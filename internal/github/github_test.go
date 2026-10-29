@@ -124,6 +124,10 @@ func TestCachedReleasesNeverAsksAndOldFormatsAreFetchedAgain(t *testing.T) {
 	if got, err := c.Releases(context.Background(), "o", "r"); err != nil || len(got) != 5 || hits.Load() != 2 {
 		t.Fatalf("old format: %d releases, hits %d, err %v", len(got), hits.Load(), err)
 	}
+	c.Now = func() time.Time { return time.Now().UTC().Add(-24 * time.Hour) }
+	if _, err := c.Releases(context.Background(), "o", "r"); err != nil || hits.Load() != 3 {
+		t.Fatalf("an answer stamped after a clock set back was served: hits %d, err %v", hits.Load(), err)
+	}
 }
 
 func TestRateLimit(t *testing.T) {

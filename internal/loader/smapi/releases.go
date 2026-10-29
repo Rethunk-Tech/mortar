@@ -102,7 +102,7 @@ func (l Loader) Latest(ctx context.Context, _ components.GameInfo) (string, erro
 		return "", err
 	}
 	cached, ok := readCache(path)
-	if ok && time.Since(cached.Fetched) < cacheTTL {
+	if age := time.Since(cached.Fetched); ok && age >= 0 && age < cacheTTL {
 		return cached.Version, nil
 	}
 	version, err := l.fetchLatest(ctx)

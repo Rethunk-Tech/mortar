@@ -86,6 +86,16 @@ func TestLatestSkipsPrereleaseAndUsesStaleCacheOnFailure(t *testing.T) {
 	if v, err := g.Latest(context.Background(), components.GameInfo{}); err != nil || v != "4.8.0" {
 		t.Fatalf("stale fallback = %q, %v", v, err)
 	}
+	c.Fetched = time.Now().Add(24 * time.Hour)
+	if err := writeCache(path, c); err != nil {
+		t.Fatal(err)
+	}
+	fail = false
+	body = `[{"tag_name":"4.9.1","assets":[{"name":"SMAPI-4.9.1-installer.zip"}]}]`
+	if v, err := g.Latest(context.Background(), components.GameInfo{}); err != nil || v != "4.9.1" {
+		t.Fatalf("an answer stamped after a clock set back was served: %q, %v", v, err)
+	}
+	fail = true
 	if _, err := (Loader{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir()}).Latest(context.Background(), components.GameInfo{}); err == nil {
 		t.Fatal("no cache and a failing API must error")
 	}
