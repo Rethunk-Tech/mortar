@@ -13,8 +13,9 @@ import (
 )
 
 func TestContributeAndVanilla(t *testing.T) {
-	dir := filepath.FromSlash("/games/Stardew Valley")
-	prof := loader.ProfileView{Dir: filepath.FromSlash("/data/profile"), InstallDir: dir}
+	root := t.TempDir()
+	dir := filepath.Join(root, "games", "Stardew Valley")
+	prof := loader.ProfileView{Dir: filepath.Join(root, "data", "profile"), InstallDir: dir}
 	mods := filepath.Join(prof.Dir, "mods")
 
 	linux := launchplan.New(launchplan.ModeProfile)
