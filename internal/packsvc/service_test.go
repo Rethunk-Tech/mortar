@@ -108,6 +108,7 @@ func TestLocalProfilesListsTheGamesR2modmanProfiles(t *testing.T) {
 
 func TestLocalProfilesReadsTheFolderThePlayerChose(t *testing.T) {
 	empty := t.TempDir()
+	t.Setenv("HOME", empty)
 	t.Setenv("XDG_CONFIG_HOME", empty)
 	t.Setenv("XDG_DATA_HOME", empty)
 	t.Setenv("APPDATA", empty)
