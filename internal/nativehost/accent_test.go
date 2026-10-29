@@ -4,15 +4,20 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func TestAccentColorFollowsMortarSettings(t *testing.T) {
-	base := t.TempDir()
-	t.Setenv("XDG_DATA_HOME", base)
+	testfs.DataHome(t)
 	if got := accentColor(); got != "#D6B17A" {
 		t.Fatalf("no settings: %s", got)
 	}
-	dir := filepath.Join(base, "mortar")
+	dir, err := datadir.Dir()
+	if err != nil {
+		t.Fatal(err)
+	}
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		t.Fatal(err)
 	}
