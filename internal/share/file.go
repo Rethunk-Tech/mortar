@@ -260,6 +260,8 @@ func ReadConfigs(modsDir, key string, m profile.Component) (found []Config, skip
 		}
 		folder = filepath.Join(folder, filepath.FromSlash(m.Folder))
 	}
+	// Read refuses two entries differing only by case, so a case variant of an earlier name is left out.
+	folded := map[string]bool{}
 	err = filepath.WalkDir(folder, func(p string, d fs.DirEntry, walkErr error) error {
 		if walkErr != nil {
 			if errors.Is(walkErr, fs.ErrNotExist) {
@@ -286,6 +288,13 @@ func ReadConfigs(modsDir, key string, m profile.Component) (found []Config, skip
 		if err != nil {
 			return err
 		}
+		key := strings.ToLower(rel)
+		if folded[key] {
+			slog.Warn("share: skipped a config whose name differs from an earlier one only by case", "mod", m.ID, "path", rel)
+			skipped = append(skipped, m.ID.Local()+"/"+rel)
+			return nil
+		}
+		folded[key] = true
 		found = append(found, Config{ID: m.ID, Path: rel, Data: data})
 		return nil
 	})
