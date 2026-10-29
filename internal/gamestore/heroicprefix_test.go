@@ -3,6 +3,7 @@ package gamestore
 import (
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 )
 
@@ -20,9 +21,9 @@ func TestHeroicPrefixIsThePfxFolderOfAProtonPrefix(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	write("proton1", `{"proton1":{"wineVersion":{"type":"proton"},"winePrefix":"`+prefix+`"},"version":"v0"}`)
-	write("wine1", `{"wine1":{"wineVersion":{"type":"wine"},"winePrefix":"`+filepath.Join(dir, "Wine")+`"}}`)
-	write("gone", `{"gone":{"winePrefix":"`+filepath.Join(dir, "missing")+`"}}`)
+	write("proton1", `{"proton1":{"wineVersion":{"type":"proton"},"winePrefix":`+strconv.Quote(prefix)+`},"version":"v0"}`)
+	write("wine1", `{"wine1":{"wineVersion":{"type":"wine"},"winePrefix":`+strconv.Quote(filepath.Join(dir, "Wine"))+`}}`)
+	write("gone", `{"gone":{"winePrefix":`+strconv.Quote(filepath.Join(dir, "missing"))+`}}`)
 	for app, want := range map[string]string{"proton1": filepath.Join(prefix, "pfx"), "wine1": filepath.Join(dir, "Wine"), "gone": "", "none": "", "../x": ""} {
 		if got := HeroicPrefix(dir, app); got != want {
 			t.Errorf("%s: %q, want %q", app, got, want)
