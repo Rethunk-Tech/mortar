@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -400,6 +401,20 @@ func TestDownloadHonoursTheSpeedLimit(t *testing.T) {
 	}
 	if got, _ := fsx.ReadFile(dest); string(got) != body {
 		t.Fatal("limited download is corrupt")
+	}
+}
+
+func TestDownloadForgetsTheOldSizeWhenTheServerAnswers200(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_ = http.NewResponseController(w).Flush() // chunked: no Content-Length
+		_, _ = io.WriteString(w, resumeBody+"-changed")
+	}))
+	t.Cleanup(srv.Close)
+	dest := filepath.Join(t.TempDir(), "m.zip")
+	seedPartial(t, dest, "STALEPARTI", resumeMeta{URL: srv.URL, ExpectedSize: int64(len(resumeBody))})
+	if err := Download(context.Background(), srv.Client(), srv.URL, dest, 1<<20, nil); err != nil {
+		t.Fatal(err)
 	}
 }
 

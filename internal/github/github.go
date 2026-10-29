@@ -302,6 +302,7 @@ func downloadOnce(ctx context.Context, hc *http.Client, url, dest string, limit 
 		if offset > 0 {
 			dropDownload(dest)
 			offset = 0
+			meta = resumeMeta{URL: url}
 		}
 	case http.StatusPartialContent:
 		start, total, ok := parseContentRange(resp.Header.Get("Content-Range"))
