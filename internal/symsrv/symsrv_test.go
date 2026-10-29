@@ -144,3 +144,15 @@ func TestMissExpires(t *testing.T) {
 		t.Fatal("a fresh miss was pruned")
 	}
 }
+
+func TestPruneKeepsStrayFiles(t *testing.T) {
+	r := &Resolver{Dir: t.TempDir()}
+	note := filepath.Join(r.Dir, "notes.txt")
+	if err := os.WriteFile(note, []byte("x"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	r.prune()
+	if _, err := os.Stat(note); err != nil {
+		t.Fatalf("prune removed a file it does not own: %v", err)
+	}
+}

@@ -349,6 +349,9 @@ func (r *Resolver) prune() {
 func (r *Resolver) pruneMisses() {
 	pdbs, _ := os.ReadDir(r.Dir)
 	for _, pdb := range pdbs {
+		if !pdb.IsDir() {
+			continue
+		}
 		pdbDir := filepath.Join(r.Dir, pdb.Name())
 		keys, _ := os.ReadDir(pdbDir)
 		for _, key := range keys {
