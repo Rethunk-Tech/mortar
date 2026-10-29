@@ -18,6 +18,7 @@ func TestDiagnosticsRedactsSecrets(t *testing.T) {
 	data := t.TempDir()
 	cfg := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", cfg)
+	t.Setenv("APPDATA", cfg)
 	home := t.TempDir()
 
 	apiKey := strings.Repeat("k", 24)

@@ -15,6 +15,7 @@ import (
 	_ "github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	_ "github.com/Rethunk-Tech/mortar/internal/loader/smapi"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func upload(t *testing.T, handler http.HandlerFunc, log string) (string, error) {
@@ -73,6 +74,7 @@ func TestUploadRejectsOversizeWithoutSending(t *testing.T) {
 func TestLogIsOnlyItsProfiles(t *testing.T) {
 	cfg := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", cfg)
+	t.Setenv("APPDATA", cfg)
 	dirs := map[string]string{"a": "/home/u/p/a/mods", "b": "/home/u/p/b/mods"}
 	s := NewService("1.2.3", func(string) problems.Environment { return problems.Environment{} }, "/home/u",
 		func(_, id string) (string, error) { return dirs[id], nil })
@@ -111,7 +113,7 @@ func TestDiagnosticsSectionHidesHomeAndStaysShort(t *testing.T) {
 }
 
 func TestBugURLCarriesTheReportAndDiagnosticsOnlyWhenAsked(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	testfs.DataHome(t)
 	s := NewService("1.2.3", func(string) problems.Environment { return problems.Environment{} }, t.TempDir(), nil)
 	parse := func(raw string) url.Values {
 		u, err := url.Parse(raw)
@@ -135,7 +137,7 @@ func TestBugURLCarriesTheReportAndDiagnosticsOnlyWhenAsked(t *testing.T) {
 }
 
 func TestBugTextFitsDiscordOnALineBoundaryWithoutDiagnostics(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	testfs.DataHome(t)
 	s := NewService("1.2.3", func(string) problems.Environment { return problems.Environment{} }, t.TempDir(), nil)
 	long := strings.Repeat("é line\n", 600)
 	for _, tc := range []struct {
@@ -178,6 +180,7 @@ func TestUploadRefusesALoaderSmapiIoCannotRead(t *testing.T) {
 func TestAnOversizeLogNamesItsSizeWithoutRoundingBelowTheCap(t *testing.T) {
 	cfg := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", cfg)
+	t.Setenv("APPDATA", cfg)
 	s := NewService("1.2.3", func(string) problems.Environment { return problems.Environment{} }, "/home/u",
 		func(string, string) (string, error) { return "", nil })
 	dir := filepath.Join(cfg, "StardewValley", "ErrorLogs")

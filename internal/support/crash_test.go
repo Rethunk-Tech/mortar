@@ -10,12 +10,12 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/doctor"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func mortarDataDir(t *testing.T) string {
 	t.Helper()
-	root := t.TempDir()
-	t.Setenv("XDG_DATA_HOME", root)
+	testfs.DataHome(t)
 	dir, err := datadir.Dir()
 	if err != nil {
 		t.Fatal(err)
