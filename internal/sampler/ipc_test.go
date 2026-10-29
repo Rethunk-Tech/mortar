@@ -122,3 +122,100 @@ func TestAnErrorReplyIsAnError(t *testing.T) {
 		t.Fatalf("error reply read as %v", err)
 	}
 }
+
+func TestStopHonoursItsContextAndIsIdempotent(t *testing.T) {
+	temp := t.TempDir()
+	t.Setenv("TMPDIR", temp)
+	pid := os.Getpid()
+	socket := filepath.Join(temp, "dotnet-diagnostic-"+strconv.Itoa(pid)+"-test-socket")
+	if len(socket) > maxUnixSocketPath {
+		t.Skipf("socket path is %d bytes, over the %d a unix socket holds", len(socket), maxUnixSocketPath)
+	}
+	var listenConfig net.ListenConfig
+	listener, err := listenConfig.Listen(context.Background(), "unix", socket)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = listener.Close() })
+	go func() {
+		first, err := listener.Accept()
+		if err != nil {
+			return
+		}
+		defer func() { _ = first.Close() }()
+		if _, _, _, err := readFrame(first); err != nil {
+			return
+		}
+		_ = writeMessage(first, 0, appendUint64(nil, 41))
+		// Every later connection is accepted and left silent.
+		for {
+			conn, err := listener.Accept()
+			if err != nil {
+				return
+			}
+			defer func() { _ = conn.Close() }()
+		}
+	}()
+
+	session, err := Start(context.Background(), pid)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Remove(session.path) })
+	for range 2 {
+		ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
+		returned := make(chan error, 1)
+		go func() {
+			_, err := session.Stop(ctx)
+			returned <- err
+		}()
+		select {
+		case err := <-returned:
+			if err == nil {
+				t.Fatal("Stop against a silent endpoint reported success")
+			}
+		case <-time.After(2 * time.Second):
+			t.Fatal("Stop ignored its context")
+		}
+		cancel()
+	}
+}
+
+func TestStartHonoursItsContext(t *testing.T) {
+	temp := t.TempDir()
+	t.Setenv("TMPDIR", temp)
+	pid := os.Getpid()
+	socket := filepath.Join(temp, "dotnet-diagnostic-"+strconv.Itoa(pid)+"-test-socket")
+	if len(socket) > maxUnixSocketPath {
+		t.Skipf("socket path is %d bytes, over the %d a unix socket holds", len(socket), maxUnixSocketPath)
+	}
+	var listenConfig net.ListenConfig
+	listener, err := listenConfig.Listen(context.Background(), "unix", socket)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = listener.Close() })
+	go func() {
+		conn, err := listener.Accept()
+		if err == nil {
+			defer func() { _ = conn.Close() }()
+			_, _, _, _ = readFrame(conn)
+			time.Sleep(3 * time.Second)
+		}
+	}()
+	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
+	defer cancel()
+	returned := make(chan error, 1)
+	go func() {
+		_, err := Start(ctx, pid)
+		returned <- err
+	}()
+	select {
+	case err := <-returned:
+		if err == nil {
+			t.Fatal("Start against a silent endpoint reported success")
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("Start ignored its context")
+	}
+}

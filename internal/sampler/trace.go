@@ -352,7 +352,7 @@ func parseV5Events(data []byte, metadata map[uint32]eventMetadata, metadataBlock
 				out = append(out, event)
 			}
 		}
-		offset += 4 + eventSize
+		offset += (4 + eventSize + 3) &^ 3
 	}
 	return out
 }
@@ -446,7 +446,8 @@ func parseUncompressedV5Event(body []byte, state *v5EventState) (rawEvent, bool)
 		return rawEvent{}, false
 	}
 	offset := 0
-	metadataID := binary.LittleEndian.Uint32(body[offset:])
+	// The runtime sets the high bit on the metadata id of an unsorted event.
+	metadataID := binary.LittleEndian.Uint32(body[offset:]) &^ (1 << 31)
 	offset += 4
 	offset += 4
 	thread := binary.LittleEndian.Uint64(body[offset:])
@@ -521,7 +522,8 @@ func parseV5StackBlock(block []byte, pointerSize int) []stackRecord {
 	cursor += 4
 	count := intFromUint64(uint64(binary.LittleEndian.Uint32(block[cursor:])))
 	cursor += 4
-	if count < 0 || count > 1_000_000 {
+	// Every stack takes at least its 4-byte size, so a larger count cannot be real.
+	if count < 0 || count > 1_000_000 || count > (len(block)-cursor)/4 {
 		return nil
 	}
 	if pointerSize != 4 && pointerSize != 8 {

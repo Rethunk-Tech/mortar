@@ -29,11 +29,10 @@ type Session struct {
 	conn      io.ReadWriteCloser
 	path      string
 	sessionID uint64
-	streamErr chan error
+	streamErr error
 	done      chan struct{}
 	stopOnce  sync.Once
 	stopErr   error
-	mu        sync.Mutex
 }
 
 // Start connects to a process's diagnostics endpoint and starts a nettrace
@@ -43,18 +42,28 @@ func Start(ctx context.Context, pid int) (*Session, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := writeMessage(conn, collectTracing2, collectPayload()); err != nil {
+	// A silent endpoint would block the handshake reads forever; closing the connection unblocks them.
+	unbind := context.AfterFunc(ctx, func() { _ = conn.Close() })
+	fail := func(err error) (*Session, error) {
+		unbind()
 		_ = conn.Close()
+		if ctxErr := ctx.Err(); ctxErr != nil {
+			return nil, ctxErr
+		}
 		return nil, err
+	}
+	if err := writeMessage(conn, collectTracing2, collectPayload()); err != nil {
+		return fail(err)
 	}
 	payload, err := readMessage(conn)
 	if err != nil {
-		_ = conn.Close()
-		return nil, err
+		return fail(err)
 	}
 	if len(payload) < 8 {
-		_ = conn.Close()
-		return nil, errors.New("sampler: diagnostics response has no session id")
+		return fail(errors.New("sampler: diagnostics response has no session id"))
+	}
+	if !unbind() {
+		return fail(ctx.Err())
 	}
 	file, err := os.CreateTemp("", "mortar-startup-*.nettrace")
 	if err != nil {
@@ -66,7 +75,6 @@ func Start(ctx context.Context, pid int) (*Session, error) {
 		conn:      conn,
 		path:      file.Name(),
 		sessionID: binary.LittleEndian.Uint64(payload[:8]),
-		streamErr: make(chan error, 1),
 		done:      make(chan struct{}),
 	}
 	go session.copyStream(file)
@@ -74,16 +82,16 @@ func Start(ctx context.Context, pid int) (*Session, error) {
 }
 
 // Stop requests rundown, waits for the stream to finish, and returns the
-// completed nettrace path.
+// completed nettrace path. It may be called again; ctx ends the wait, and
+// nothing is written after it returns.
 func (s *Session) Stop(ctx context.Context) (string, error) {
 	s.stopOnce.Do(func() {
 		s.stopErr = s.stop(ctx)
 	})
+	unbind := context.AfterFunc(ctx, func() { _ = s.conn.Close() })
 	<-s.done
-	s.mu.Lock()
-	err := errors.Join(s.stopErr, <-s.streamErr)
-	s.mu.Unlock()
-	return s.path, err
+	unbind()
+	return s.path, errors.Join(s.stopErr, s.streamErr)
 }
 
 func (s *Session) stop(ctx context.Context) error {
@@ -92,7 +100,9 @@ func (s *Session) stop(ctx context.Context) error {
 		_ = s.conn.Close()
 		return err
 	}
+	unbind := context.AfterFunc(ctx, func() { _ = conn.Close() })
 	defer func() {
+		unbind()
 		_ = conn.Close()
 	}()
 	if err := writeMessage(conn, stopTracing, stopPayload(s.sessionID)); err != nil {
@@ -116,7 +126,7 @@ func (s *Session) copyStream(file *os.File) {
 		copyErr = closeErr
 	}
 	_ = s.conn.Close()
-	s.streamErr <- copyErr
+	s.streamErr = copyErr
 	close(s.done)
 }
 

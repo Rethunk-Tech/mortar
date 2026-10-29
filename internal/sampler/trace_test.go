@@ -1,6 +1,7 @@
 package sampler
 
 import (
+	"encoding/binary"
 	"os"
 	"strings"
 	"testing"
@@ -141,4 +142,24 @@ func appendWideForTest(data []byte, value string) []byte {
 		data = append(data, byte(r&0xff), byte((r>>8)&0xff))
 	}
 	return append(data, 0, 0)
+}
+
+func TestUnsortedEventKeepsItsMetadataID(t *testing.T) {
+	body := make([]byte, 4+4+8+8+4+4+8+16+16+4+3+1)
+	binary.LittleEndian.PutUint32(body, 7|1<<31)
+	binary.LittleEndian.PutUint32(body[len(body)-8:], 3)
+	data := binary.LittleEndian.AppendUint32(nil, uint32FromInt(len(body)))
+	data = append(data, body...)
+	events := parseV5Events(data, nil, false, false)
+	if len(events) != 1 || events[0].metadata != 7 {
+		t.Fatalf("events = %+v, want one with metadata 7", events)
+	}
+}
+
+func TestStackBlockCountIsCheckedBeforeAllocating(t *testing.T) {
+	block := binary.LittleEndian.AppendUint32(nil, 0)
+	block = binary.LittleEndian.AppendUint32(block, 1_000_000)
+	if allocs := testing.AllocsPerRun(1, func() { _ = parseV5StackBlock(block, 8) }); allocs != 0 {
+		t.Fatalf("a lying stack count allocated %v times", allocs)
+	}
 }
