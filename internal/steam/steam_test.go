@@ -1,6 +1,7 @@
 package steam
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"strings"
@@ -188,5 +189,31 @@ func TestAppIDsThatLeaveTheLibraryAreRefused(t *testing.T) {
 	}
 	if got := BuildID(root, "../x"); got != "" {
 		t.Fatalf("BuildID = %q", got)
+	}
+}
+
+// A million levels (4 MB) overflowed the old parser's stack, a fatal error recover cannot catch.
+func TestParseVDFRefusesWhatIsTooLargeOrTooDeep(t *testing.T) {
+	dir := t.TempDir()
+	write := func(name string, body []byte) string {
+		p := filepath.Join(dir, name)
+		if err := os.WriteFile(p, body, 0o600); err != nil {
+			t.Fatal(err)
+		}
+		return p
+	}
+	if _, err := parseVDF(write("deep.vdf", bytes.Repeat([]byte(`"a"{`), 1_000_000))); err == nil || !strings.Contains(err.Error(), "deeper") {
+		t.Fatalf("deep: %v", err)
+	}
+	if _, err := parseVDF(write("big.vdf", bytes.Repeat([]byte(" "), maxTextVDFBytes+1))); err == nil || !strings.Contains(err.Error(), "larger") {
+		t.Fatalf("big: %v", err)
+	}
+	// Braces and escaped quotes inside a string are text, not nesting.
+	quoted := `"k" { "v" "` + strings.Repeat(`{ \" {`, 100) + `" }`
+	if d := textVDFDepth([]byte(quoted)); d != 1 {
+		t.Fatalf("depth %d", d)
+	}
+	if _, err := parseVDF(write("ok.vdf", []byte(quoted))); err != nil {
+		t.Fatalf("ok: %v", err)
 	}
 }

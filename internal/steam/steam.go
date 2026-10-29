@@ -2,8 +2,10 @@
 package steam
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -266,17 +268,56 @@ func (s Steam) HeroArt(appID string) string {
 	return ""
 }
 
+// The VDF parser has no size or depth limit, and a stack overflow cannot be recovered. Real files are under 100 KB
+// and nest under 8 levels.
+const (
+	maxTextVDFBytes = 8 << 20
+	maxTextVDFDepth = 32
+)
+
 func parseVDF(path string) (map[string]any, error) {
 	f, err := fsx.Open(path)
 	if err != nil {
 		return nil, err
 	}
 	defer func() { _ = f.Close() }()
-	m, err := vdf.NewParser(f).Parse()
+	body, err := io.ReadAll(io.LimitReader(f, maxTextVDFBytes+1))
+	if err != nil {
+		return nil, err
+	}
+	if len(body) > maxTextVDFBytes {
+		return nil, fmt.Errorf("%s is larger than %d bytes", filepath.Base(path), maxTextVDFBytes)
+	}
+	if textVDFDepth(body) > maxTextVDFDepth {
+		return nil, fmt.Errorf("%s nests deeper than %d levels", filepath.Base(path), maxTextVDFDepth)
+	}
+	m, err := vdf.NewParser(bytes.NewReader(body)).Parse()
 	if err != nil {
 		return nil, fmt.Errorf("parse %s: %w", filepath.Base(path), err)
 	}
 	return m, nil
+}
+
+// textVDFDepth is the deepest run of unclosed braces outside quoted strings, where a backslash escapes the next byte.
+func textVDFDepth(b []byte) int {
+	depth, deepest := 0, 0
+	quoted := false
+	for i := 0; i < len(b); i++ {
+		switch c := b[i]; {
+		case c == '\\' && quoted:
+			i++
+		case c == '"':
+			quoted = !quoted
+		case quoted:
+		case c == '{':
+			if depth++; depth > deepest {
+				deepest = depth
+			}
+		case c == '}' && depth > 0:
+			depth--
+		}
+	}
+	return deepest
 }
 
 // steamID64Base is the offset between a SteamID64 and the account number naming its userdata folder.
