@@ -30,6 +30,9 @@ func pluginDeps(pkgs []profile.PackageRef, mods []framework.Mod) ([]Missing, []L
 		d := declaredIn(p.Dir)
 		declared[p.Key] = d
 		for _, pl := range d.Plugins {
+			if !pl.Loadable() {
+				continue
+			}
 			g := strings.ToLower(pl.GUID)
 			byGUID[g] = append(byGUID[g], installedPlugin{p, pl.Version})
 		}
@@ -95,7 +98,7 @@ func enabledProvider(providers []installedPlugin, self string) (installedPlugin,
 // enabled mod of that name (the same mod shipped under another GUID) is met, as an outside requirement is.
 func unmetDependency(r dotnet.Relation, providers []installedPlugin, mods []framework.Mod, p profile.PackageRef, name string) (Missing, bool) {
 	meets := func(x installedPlugin) bool {
-		c, ok := meta.CompareVersions(x.version, r.MinVersion)
+		c, ok := meta.CompareDotNet(x.version, r.MinVersion)
 		return r.MinVersion == "" || !ok || c >= 0
 	}
 	if len(providers) == 0 {
@@ -125,7 +128,7 @@ func unmetDependency(r dotnet.Relation, providers []installedPlugin, mods []fram
 func highestPlugin(list []installedPlugin) string {
 	best := list[0].version
 	for _, x := range list[1:] {
-		if c, ok := meta.CompareVersions(x.version, best); ok && c > 0 {
+		if c, ok := meta.CompareDotNet(x.version, best); ok && c > 0 {
 			best = x.version
 		}
 	}

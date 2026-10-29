@@ -1,12 +1,14 @@
 package meta
 
 import (
+	"cmp"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 )
 
-var versionPattern = regexp.MustCompile(`^v?(\d+)\.(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:-([0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?$`)
+var versionPattern = regexp.MustCompile(`^[vV]?(\d+)\.(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:-([0-9A-Za-z]+(?:[.-][0-9A-Za-z]+)*))?(?:\+[0-9A-Za-z.-]+)?$`)
 
 type semver struct {
 	nums [4]int
@@ -29,7 +31,7 @@ func parseVersion(s string) (semver, bool) {
 		}
 	}
 	if m[5] != "" {
-		v.pre = strings.Split(m[5], ".")
+		v.pre = strings.FieldsFunc(m[5], func(r rune) bool { return r == '.' || r == '-' })
 	}
 	return v, true
 }
@@ -52,8 +54,9 @@ func NewerFile(a string, aID int64, b string, bID int64) bool {
 
 // CompareVersions orders two SMAPI semantic versions (major.minor, optional patch and fourth number,
 // optional -prerelease and +build): -1, 0 or 1. ok is false when either is not one. A release outranks its
-// prereleases, and build metadata is ignored.
-func CompareVersions(a, b string) (cmp int, ok bool) {
+// prereleases, build metadata is ignored, '.' and '-' both separate prerelease identifiers, and an "unofficial"
+// identifier ranks below any other.
+func CompareVersions(a, b string) (c int, ok bool) {
 	x, okA := parseVersion(a)
 	y, okB := parseVersion(b)
 	if !okA || !okB {
@@ -61,7 +64,7 @@ func CompareVersions(a, b string) (cmp int, ok bool) {
 	}
 	for i := range x.nums {
 		if x.nums[i] != y.nums[i] {
-			return sign(x.nums[i] - y.nums[i]), true
+			return cmp.Compare(x.nums[i], y.nums[i]), true
 		}
 	}
 	switch {
@@ -77,30 +80,67 @@ func CompareVersions(a, b string) (cmp int, ok bool) {
 			return c, true
 		}
 	}
-	return sign(len(x.pre) - len(y.pre)), true
+	return cmp.Compare(len(x.pre), len(y.pre)), true
 }
 
-// comparePre follows semver: numeric identifiers compare as numbers and rank below alphanumeric ones.
+// comparePre orders two prerelease identifiers: "unofficial" lowest, then numeric ones by value (any length), which
+// rank below alphanumeric ones, then text ignoring case.
 func comparePre(a, b string) int {
-	na, errA := strconv.Atoi(a)
-	nb, errB := strconv.Atoi(b)
+	a, b = strings.ToLower(a), strings.ToLower(b)
+	if a == b {
+		return 0
+	}
 	switch {
-	case errA == nil && errB == nil:
-		return sign(na - nb)
-	case errA == nil:
+	case b == "unofficial":
+		return 1
+	case a == "unofficial":
 		return -1
-	case errB == nil:
+	}
+	na, nb := isDigits(a), isDigits(b)
+	switch {
+	case na && nb:
+		a, b = strings.TrimLeft(a, "0"), strings.TrimLeft(b, "0")
+		return cmp.Or(cmp.Compare(len(a), len(b)), strings.Compare(a, b))
+	case na:
+		return -1
+	case nb:
 		return 1
 	}
-	return strings.Compare(strings.ToLower(a), strings.ToLower(b))
+	return strings.Compare(a, b)
 }
 
-func sign(n int) int {
-	switch {
-	case n < 0:
-		return -1
-	case n > 0:
-		return 1
+func isDigits(s string) bool {
+	return !strings.ContainsFunc(s, func(r rune) bool { return r < '0' || r > '9' })
+}
+
+// CompareDotNet orders two versions the way .NET's System.Version does, which BepInEx 5 uses: two to four plain
+// numbers, a part left out ranks below 0 (so 1.0 < 1.0.0), and anything else (a suffix, a leading v, one number) is
+// not a version. ok is false when either is not one.
+func CompareDotNet(a, b string) (c int, ok bool) {
+	x, okA := parseDotNet(a)
+	y, okB := parseDotNet(b)
+	if !okA || !okB {
+		return 0, false
 	}
-	return 0
+	return slices.Compare(x[:], y[:]), true
+}
+
+func parseDotNet(s string) (v [4]int, ok bool) {
+	parts := strings.Split(s, ".")
+	if len(parts) < 2 || len(parts) > 4 {
+		return v, false
+	}
+	for i := range v {
+		v[i] = -1
+		if i >= len(parts) {
+			continue
+		}
+		p := strings.TrimSpace(parts[i])
+		n, err := strconv.ParseInt(p, 10, 32)
+		if err != nil || n < 0 || strings.HasPrefix(p, "-") {
+			return v, false
+		}
+		v[i] = int(n)
+	}
+	return v, true
 }

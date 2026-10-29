@@ -34,3 +34,25 @@ func TestLoadOrderWalksGUIDsCaselessAndPutsDependenciesFirstInDeclaredOrder(t *t
 		t.Fatalf("order %v, want %v", got, want)
 	}
 }
+
+func TestLoadOrderReadsVersionsAsSystemVersion(t *testing.T) {
+	load := func(versions ...string) (out []string) {
+		var ds []Declared
+		for _, v := range versions {
+			ds = append(ds, Declared{Plugins: []Plugin{{GUID: "p", Name: v, Version: v}}})
+		}
+		for _, l := range LoadOrder(ds) {
+			out = append(out, l.Name)
+		}
+		return out
+	}
+	if got := load("1.0", "1.0.0"); !slices.Equal(got, []string{"1.0.0"}) {
+		t.Errorf("1.0 and 1.0.0: loaded %v, want 1.0.0", got)
+	}
+	if got := load("1.0.0-beta", "0.9"); !slices.Equal(got, []string{"0.9"}) {
+		t.Errorf("1.0.0-beta and 0.9: loaded %v, want 0.9", got)
+	}
+	if got := load("v1.0"); len(got) != 0 {
+		t.Errorf("an unparseable version loaded: %v", got)
+	}
+}

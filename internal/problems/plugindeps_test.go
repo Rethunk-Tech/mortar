@@ -308,3 +308,22 @@ func TestAPluginsAttributesAddItsDependenciesSoItsLibrariesAreNotOfferedForRemov
 		t.Fatalf("cleanup = %+v, want LethalLib kept for the local mod", hints)
 	}
 }
+
+func TestPluginDepsReadsPluginVersionsAsSystemVersion(t *testing.T) {
+	lib := pkgWith(t, "lib", "com.x.Lib", "1.0", true)
+	beta := pkgWith(t, "beta", "com.x.Beta", "1.0.0-beta", true)
+	a := pkgWith(t, "a", "com.x.A", "1.0.0", true, hard("com.x.lib", "1.0.0"))
+	b := pkgWith(t, "b", "com.x.B", "1.0.0", true, hard("com.x.beta", ""))
+
+	got, _ := pluginDeps([]profile.PackageRef{lib, beta, a, b}, nil)
+
+	if len(got) != 2 {
+		t.Fatalf("missing = %+v, want outdated and absent", got)
+	}
+	if r := got[0]; r.DependentName != "a" || r.Reason != "outdated" || r.InstalledVersion != "1.0" {
+		t.Fatalf("outdated row = %+v", r)
+	}
+	if r := got[1]; r.DependentName != "b" || r.Reason != "absent" {
+		t.Fatalf("absent row = %+v", r)
+	}
+}

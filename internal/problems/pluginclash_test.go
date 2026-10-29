@@ -71,3 +71,15 @@ func TestThePluginScanOfARemovedStoreFolderIsDropped(t *testing.T) {
 		t.Fatalf("removed folder kept %v, live folder kept %v", stale, fresh)
 	}
 }
+
+func TestPluginClashLeavesOutACopyBepInExNeverLoads(t *testing.T) {
+	for dir, v := range map[string]string{"/ok": "1.0.0", "/beta": "1.0.0-beta"} {
+		pluginMu.Lock()
+		pluginCache[pluginKey{dir}] = dotnet.Declared{Plugins: []dotnet.Plugin{{GUID: "com.x.P", Version: v}}}
+		pluginMu.Unlock()
+	}
+	got := pluginClashes([]profile.PackageRef{{Key: "ok", Dir: "/ok"}, {Key: "beta", Dir: "/beta"}}, nil, nil)
+	if len(got) != 0 {
+		t.Fatalf("got %+v, want no clash", got)
+	}
+}

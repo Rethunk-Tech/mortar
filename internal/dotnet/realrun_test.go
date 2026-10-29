@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
 // profileFlag names a profile folder the Lethal Company matrix regress launched (scripts/regress-bepinex.sh).
@@ -23,18 +24,8 @@ var (
 
 // sameVersion compares versions the way System.Version reads them, so "1.02" and "1.2" are one version.
 func sameVersion(a, b string) bool {
-	as, bs := strings.Split(a, "."), strings.Split(b, ".")
-	if len(as) != len(bs) {
-		return false
-	}
-	for i := range as {
-		x, errA := strconv.Atoi(as[i])
-		y, errB := strconv.Atoi(bs[i])
-		if errA != nil || errB != nil || x != y {
-			return false
-		}
-	}
-	return true
+	c, ok := meta.CompareDotNet(a, b)
+	return ok && c == 0
 }
 
 type runPlugin struct{ name, version string }

@@ -16,8 +16,15 @@ type Loaded struct {
 	Cycle bool
 }
 
+// Loadable reports whether BepInEx would load the plugin: its version must parse as a System.Version
+// (Chainloader.cs, "version is invalid").
+func (p Plugin) Loadable() bool {
+	_, ok := meta.CompareDotNet(p.Version, p.Version)
+	return ok
+}
+
 // LoadOrder is the order BepInEx 5's chainloader loads plugins in (Chainloader.Start and Utility.TopologicalSort,
-// BepInEx 5.4.23). Of several copies of one GUID only the newest version loads. The GUIDs are walked sorted without
+// BepInEx 5.4.23). A plugin whose version System.Version cannot read (a prerelease suffix, a leading v) is never loaded. Of several copies of one GUID only the newest version loads. The GUIDs are walked sorted without
 // regard to case, and each plugin's dependencies, hard and soft, go before it, depth first, in the order its attributes
 // declare them; that walk is the only tie-break. assemblies holds one Declared per DLL, so the dependencies are those of
 // the copy that loads.
@@ -28,9 +35,12 @@ func LoadOrder(assemblies []Declared) []Loaded {
 	newest := map[string]Loaded{}
 	for _, d := range assemblies {
 		for _, p := range d.Plugins {
+			if !p.Loadable() {
+				continue
+			}
 			key := strings.ToLower(p.GUID)
 			if have, ok := newest[key]; ok {
-				if c, ok := meta.CompareVersions(p.Version, have.Version); !ok || c <= 0 {
+				if c, ok := meta.CompareDotNet(p.Version, have.Version); !ok || c <= 0 {
 					continue
 				}
 			}

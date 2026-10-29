@@ -3,7 +3,6 @@ package launchsvc
 import (
 	"context"
 	"slices"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -11,6 +10,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
+	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
@@ -178,16 +178,6 @@ func liveMods(pkgs livePackages, loaded []loader.LivePlugin) []LiveMod {
 // sameVersion compares a [BepInPlugin] version as written with the one BepInEx reports, System.Version's form, which
 // drops leading zeros ("1.02" is 1.2).
 func sameVersion(declared, loaded string) bool {
-	a, b := strings.Split(declared, "."), strings.Split(loaded, ".")
-	if len(a) != len(b) {
-		return false
-	}
-	for i := range a {
-		x, errA := strconv.Atoi(strings.TrimSpace(a[i]))
-		y, errB := strconv.Atoi(b[i])
-		if errA != nil || errB != nil || x != y {
-			return false
-		}
-	}
-	return true
+	c, ok := meta.CompareDotNet(declared, loaded)
+	return ok && c == 0
 }

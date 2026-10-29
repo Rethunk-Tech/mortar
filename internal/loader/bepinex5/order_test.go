@@ -20,7 +20,7 @@ func TestLastRunOrderHoldsForThePluginsItLoaded(t *testing.T) {
 		plugin("new", "1.0.0"),
 		plugin("c", "2.0.0"),
 	}
-	log := "[Info   :   BepInEx] Loading [c Name 2.0]\r\n" +
+	log := "[Info   :   BepInEx] Loading [c Name 2.0.0]\r\n" +
 		"[14:35:39.1344735] [Info   :   BepInEx] Loading [b Name 1.1.0]\r\n" +
 		"[Info   :   BepInEx] Loading [a Name 1.0.0]\r\n" +
 		"[Info   :   BepInEx] Loading [Mortar BepInEx Bridge 0.1.0]\r\n"

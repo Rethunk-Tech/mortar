@@ -71,7 +71,7 @@ func names(p dotnet.Plugin, nameVersion string) bool {
 	if i < 0 || nameVersion[:i] != p.Name {
 		return false
 	}
-	c, ok := meta.CompareVersions(nameVersion[i+1:], p.Version)
+	c, ok := meta.CompareDotNet(nameVersion[i+1:], p.Version)
 	return ok && c == 0 || nameVersion[i+1:] == p.Version
 }
 

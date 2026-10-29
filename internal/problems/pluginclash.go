@@ -79,7 +79,7 @@ func pluginClashes(pkgs []profile.PackageRef, deprecated, developed map[string]b
 		seen := map[string]bool{}
 		for _, pl := range pluginsIn(p.Dir) {
 			g := strings.ToLower(pl.GUID)
-			if g == "" || seen[g] {
+			if g == "" || seen[g] || !pl.Loadable() {
 				continue
 			}
 			seen[g] = true
@@ -102,7 +102,7 @@ func pluginClashes(pkgs []profile.PackageRef, deprecated, developed map[string]b
 		}
 		newest := 0
 		for i, o := range pool {
-			cmp, ok := meta.CompareVersions(o.plugin, pool[newest].plugin)
+			cmp, ok := meta.CompareDotNet(o.plugin, pool[newest].plugin)
 			if ok && (cmp > 0 || cmp == 0 && deprecated[pool[newest].pkg.Key] && !deprecated[o.pkg.Key]) {
 				newest = i
 			}
