@@ -45,7 +45,6 @@ const PERCENT = 100
 const SKELETON_WIDTH = 64
 const LEGEND_SKELETON = 40
 const SEGMENT_ORDER: SegmentId[] = ['profiles', 'store', 'cache', 'backups', 'trash', 'other']
-const filled = { ...nowrap, bgcolor: 'var(--mortar-raised)', boxShadow: 'none' } as const
 
 function useSegmentColors() {
   return SEGMENT_COLORS[useTheme().palette.mode]
@@ -219,13 +218,13 @@ export function UsageRows({
   }
   const actions = (
     <>
-      <Button variant="outlined" color="inherit" onClick={onCleanUp} sx={filled}>
+      <Button variant="outlined" color="inherit" onClick={onCleanUp} sx={nowrap}>
         {t`Clean up…`}
       </Button>
-      <Button variant="outlined" color="inherit" onClick={onClearCache} sx={filled}>
+      <Button variant="outlined" color="inherit" onClick={onClearCache} sx={nowrap}>
         {t`Clear cache…`}
       </Button>
-      <Button variant="outlined" color="inherit" onClick={onDeletedProfiles} sx={filled}>
+      <Button variant="outlined" color="inherit" onClick={onDeletedProfiles} sx={nowrap}>
         {t`Open recently deleted`}
       </Button>
     </>

@@ -64,11 +64,20 @@ export function SettingsSection({
             flexDirection: 'column',
             gap: space.gap,
             containerType: 'inline-size',
+            // Controls inside a tile are filled blocks rather than outlined, so the tile reads as one surface.
+            '& .MuiOutlinedInput-notchedOutline': { borderColor: 'transparent' },
+            '& .MuiInputBase-root': { bgcolor: 'var(--mortar-raised)' },
+            '& .MuiButton-outlined': {
+              border: 0,
+              bgcolor: 'var(--mortar-raised)',
+              color: 'text.primary',
+              '&:hover': { border: 0, bgcolor: 'var(--mortar-hairline-16)' },
+            },
             // Every setting is its own tile; a section is the heading above a stack of tiles.
             // Light mode uses opaque paper: a dark tint over the wallpaper reads as grey.
             // Paper on a light wallpaper needs an edge to read as a tile. A settings-contents wrapper (SharedOnProfile)
             // is looked through, so what it wraps still tiles one by one.
-            '& > :not(.settings-contents), & .settings-contents > :not(.settings-contents, .settings-caption)':
+            '& > :not(.settings-contents, .settings-match), & > .settings-match > *, & .settings-contents > :not(.settings-contents, .settings-caption)':
               (theme) =>
                 theme.palette.mode === 'light'
                   ? {
@@ -136,15 +145,6 @@ export function SettingRow({
         minHeight: 64,
         px: space.pad,
         py: space.gap,
-        // Controls inside a row are filled blocks rather than outlined, so the tile reads as one surface.
-        '& .MuiOutlinedInput-notchedOutline': { borderColor: 'transparent' },
-        '& .MuiInputBase-root': { bgcolor: 'var(--mortar-raised)' },
-        '& .MuiButton-outlined': {
-          border: 0,
-          bgcolor: 'var(--mortar-raised)',
-          color: 'text.primary',
-          '&:hover': { border: 0, bgcolor: 'var(--mortar-hairline-16)' },
-        },
         // A narrow card puts the control under its label instead of squeezing the label.
         [`@container (max-width: ${STACK_BELOW}px)`]: {
           flexDirection: 'column',
@@ -171,7 +171,17 @@ export function SettingRow({
       {block ? (
         children
       ) : (
-        <Box sx={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>{children}</Box>
+        <Box
+          sx={{
+            flexShrink: 0,
+            display: 'flex',
+            alignItems: 'center',
+            // A Switch carries 12px of padding; pull it out so it ends where buttons and selects do.
+            '& .MuiSwitch-root:last-child': { mr: -1.5 },
+          }}
+        >
+          {children}
+        </Box>
       )}
     </Box>
   )
