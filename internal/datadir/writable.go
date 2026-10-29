@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -25,5 +26,5 @@ func CheckWritable(dir string) error {
 	}
 	name := f.Name()
 	_ = f.Close()
-	return os.Remove(name)
+	return fsx.Remove(name)
 }
