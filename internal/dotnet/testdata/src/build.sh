@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Rebuilds ../mod.dll and ../embedded.dll, the compiled mod other packages' tests read, and ../e2e/*.dll, the ones the e2e specs install. The sources are go-dotnet's game stand-in and mod, from the module version go.mod pins.
+# The build path feeds each DLL's MVID, which internal/problems/loader_test.go's crash logs pin: a rebuild means updating those MVIDs too.
 set -euo pipefail
 cd "$(dirname "$0")"
 repo=$(git rev-parse --show-toplevel)
