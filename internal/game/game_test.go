@@ -26,6 +26,21 @@ func testStore(t *testing.T) *settings.Store {
 	return store
 }
 
+// steamStore is a settings store that finds home's Steam on Windows, where Steam comes from the registry and so
+// the library is named as a folder the player added.
+func steamStore(t *testing.T, home string) *settings.Store {
+	t.Helper()
+	store := testStore(t)
+	if runtime.GOOS != "windows" {
+		return store
+	}
+	root := filepath.Join(home, ".local", "share", "Steam")
+	if _, err := store.Update(func(v *settings.Settings) { v.LauncherRoots = map[string][]string{LauncherSteam: {root}} }); err != nil {
+		t.Fatal(err)
+	}
+	return store
+}
+
 func home(t *testing.T) string {
 	t.Helper()
 	h := t.TempDir()
@@ -48,7 +63,7 @@ func home(t *testing.T) string {
 
 func TestListAndArt(t *testing.T) {
 	h0 := home(t)
-	svc := NewService(h0, testStore(t))
+	svc := NewService(h0, steamStore(t, h0))
 	list, err := svc.List()
 	if err != nil || len(list) != len(Catalog()) {
 		t.Fatalf("list = %v, %v", list, err)
@@ -152,7 +167,7 @@ func TestDiscoveryPrecedence(t *testing.T) {
 		"valid override":   {override, override},
 		"invalid override": {t.TempDir(), steamDir},
 	} {
-		store := testStore(t)
+		store := steamStore(t, h)
 		if tc.override != "" {
 			if _, err := store.Update(func(s *settings.Settings) { s.GameFolders["stardew"] = tc.override }); err != nil {
 				t.Fatal(err)
@@ -193,7 +208,7 @@ func TestGOGAndPreferredStore(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(gog2, "Stardew Valley.dll"), nil, 0o600); err != nil {
 		t.Fatal(err)
 	}
-	store2 := testStore(t)
+	store2 := steamStore(t, h2)
 	list, err = NewService(h2, store2).List()
 	if err != nil || list[0].InstallDir != steamDir || list[0].Store != StoreSteam || len(list[0].Installs) < 2 {
 		t.Fatalf("both default steam = %+v, %v", list[0], err)

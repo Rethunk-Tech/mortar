@@ -9,10 +9,11 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/customgame"
 	"github.com/Rethunk-Tech/mortar/internal/loader/thunderpack"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func TestACustomGameJoinsTheCatalogForEveryLoaderAndStaysLocal(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	testfs.DataHome(t)
 	t.Cleanup(func() { components.SetUserGames(nil) })
 	install := t.TempDir()
 	exe := filepath.Join(install, "My Game.exe")

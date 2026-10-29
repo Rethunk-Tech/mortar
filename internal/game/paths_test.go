@@ -3,6 +3,7 @@ package game
 import (
 	"os"
 	"path/filepath"
+	goruntime "runtime"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/runtime"
@@ -40,7 +41,11 @@ func TestStardewCatalogPathsMatchTheFolderStardewUses(t *testing.T) {
 		}
 	}
 	got, err := SavesDir(home, settings.Defaults(), "stardew", "")
-	if err != nil || got != filepath.Join(config, "StardewValley", "Saves") {
+	own := config
+	if goruntime.GOOS == "windows" {
+		own = appData
+	}
+	if err != nil || got != filepath.Join(own, "StardewValley", "Saves") {
 		t.Fatalf("SavesDir = %q, %v", got, err)
 	}
 }

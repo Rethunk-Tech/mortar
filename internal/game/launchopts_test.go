@@ -9,7 +9,7 @@ import (
 
 func TestLaunchOptions(t *testing.T) {
 	h := home(t)
-	svc := NewService(h, testStore(t))
+	svc := NewService(h, steamStore(t, h))
 	if _, err := svc.LaunchOptions("nope"); err == nil {
 		t.Fatal("unknown game should fail")
 	}

@@ -183,6 +183,10 @@ func TestCommand(t *testing.T) {
 			}
 		})
 	}
+	// flatpak override lists POSIX paths, so a drive letter's colon would read as a mode.
+	if runtime.GOOS == "windows" {
+		return
+	}
 	st.FlatpakShow = func() (string, error) { return "filesystems=" + st.DataDir + ":ro;", nil }
 	c, err := st.command("linux", inst, smapiPlan("linux", dir, mods), StartEnv{Steam: fp}, "", "/usr/bin/flatpak")
 	if err != nil || c.Failure != launch.HintSteam {
@@ -307,6 +311,9 @@ func TestAModdedStartWithNoLogIsUpWhenTheProcessAppears(t *testing.T) {
 }
 
 func TestStartInFlatpakGoesThroughFlatpakSpawn(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("a Windows build starts the loader directly, and Flatpak is Linux-only")
+	}
 	t.Setenv("FLATPAK_ID", appversion.AppID)
 	logFile := filepath.Join(t.TempDir(), "SMAPI-latest.txt")
 	var ran []string
