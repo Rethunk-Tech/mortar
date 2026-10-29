@@ -42,21 +42,17 @@ func (s *Service) sampleStartup(parent context.Context, g game.Game, profileID, 
 		log.Printf("startup sampler: %s: %v", g.ID(), err)
 		return
 	}
+	profileDir, err := s.profiles.ProfileDir(g.ID(), profileID)
+	if err != nil {
+		log.Printf("startup sampler: %s: %v", g.ID(), err)
+		return
+	}
 	session, err := startSampler(ctx, process.PID)
 	if err != nil {
 		log.Printf("startup sampler: %s: %v", g.ID(), err)
 		return
 	}
 	detached := context.WithoutCancel(ctx)
-	profileDir, err := s.profiles.ProfileDir(g.ID(), profileID)
-	if err != nil {
-		stopCtx, stopCancel := context.WithTimeout(detached, 30*time.Second)
-		tracePath, _ := session.Stop(stopCtx)
-		stopCancel()
-		_ = fsx.Remove(tracePath)
-		log.Printf("startup sampler: %s: %v", g.ID(), err)
-		return
-	}
 	reportID, reportFound := s.waitForSampleReport(ctx, g, profileID, modsDir, filepath.Join(profileDir, startupDir), before)
 	stopCtx, stopCancel := context.WithTimeout(detached, 30*time.Second)
 	tracePath, stopErr := session.Stop(stopCtx)
