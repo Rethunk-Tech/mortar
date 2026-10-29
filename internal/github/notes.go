@@ -50,6 +50,7 @@ func (c *Client) ReleaseNotes(ctx context.Context, owner, repo, tag string) (str
 		return "", fmt.Errorf("could not reach GitHub: %w", err)
 	}
 	defer func() { _ = resp.Body.Close() }()
+	noteRate(resp)
 	if err := RateLimited(resp); err != nil {
 		return "", err
 	}
