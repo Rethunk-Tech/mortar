@@ -124,3 +124,14 @@ func TestRemoveShortcutsDropsOnlyMortarEntriesAndRenumbers(t *testing.T) {
 		t.Fatal("a malformed file must be an error")
 	}
 }
+
+// On the unbounded recursion this kills the test binary with a fatal stack overflow, which recover cannot catch.
+func TestShortcutsVDFNestedPastTheLimitIsRefused(t *testing.T) {
+	deep := bytes.Repeat([]byte{vdfMap, 'a', 0}, 3_000_000)
+	if _, err := readVDFMap(bufio.NewReader(bytes.NewReader(deep))); err == nil || !strings.Contains(err.Error(), "deeper") {
+		t.Fatalf("want a depth error, got %v", err)
+	}
+	if _, _, _, err := addShortcut(deep, Shortcut{Name: "x", Exe: "/x"}); err == nil {
+		t.Fatal("addShortcut must refuse a deeply nested file")
+	}
+}

@@ -45,7 +45,16 @@ func readCString(r *bufio.Reader) (string, error) {
 	return s[:len(s)-1], nil
 }
 
-func readVDFMap(r *bufio.Reader) ([]vdfNode, error) {
+// maxBinaryVDFDepth bounds readVDFMap's recursion: a real shortcuts.vdf nests 3 or 4 deep, and a hostile one
+// nesting millions deep would overflow the stack, which cannot be recovered.
+const maxBinaryVDFDepth = 16
+
+func readVDFMap(r *bufio.Reader) ([]vdfNode, error) { return readVDFLevel(r, 0) }
+
+func readVDFLevel(r *bufio.Reader, depth int) ([]vdfNode, error) {
+	if depth > maxBinaryVDFDepth {
+		return nil, fmt.Errorf("binary VDF nests deeper than %d levels", maxBinaryVDFDepth)
+	}
 	var out []vdfNode
 	for {
 		kind, err := r.ReadByte()
@@ -62,7 +71,7 @@ func readVDFMap(r *bufio.Reader) ([]vdfNode, error) {
 		n := vdfNode{Kind: kind, Key: key}
 		switch kind {
 		case vdfMap:
-			if n.Child, err = readVDFMap(r); err != nil {
+			if n.Child, err = readVDFLevel(r, depth+1); err != nil {
 				return nil, err
 			}
 		case vdfString:
