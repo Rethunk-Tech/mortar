@@ -177,7 +177,7 @@ func (r *Resolver) Name(ctx context.Context, cv CodeView, rva uint64) (name stri
 	dir := filepath.Join(r.Dir, cv.PDB, cv.Key())
 	path := filepath.Join(dir, cv.PDB)
 	if !fsx.IsFile(path) {
-		if fsx.IsFile(filepath.Join(dir, missMarker)) || r.Online != nil && !r.Online() {
+		if freshMiss(dir) || r.Online != nil && !r.Online() {
 			return "", 0, false
 		}
 		select {
@@ -230,6 +230,14 @@ func (r *Resolver) fetch(ctx context.Context, dir, path string, urls []string) c
 
 // partMaxAge is how long a .part may sit before prune treats it as abandoned (a download is capped at 10 minutes).
 const partMaxAge = time.Hour
+
+// missMaxAge is how long a miss marker stands before the server is asked again (a symbol server may publish later).
+const missMaxAge = 7 * 24 * time.Hour
+
+func freshMiss(dir string) bool {
+	info, err := fsx.Stat(filepath.Join(dir, missMarker))
+	return err == nil && time.Since(info.ModTime()) <= missMaxAge
+}
 
 var errMissing = errors.New("the symbol server has no such PDB")
 
@@ -324,6 +332,7 @@ func (r *Resolver) prune() {
 		}
 		return nil
 	})
+	r.pruneMisses()
 	slices.SortFunc(all, func(a, b entry) int { return a.used.Compare(b.used) })
 	for _, e := range all {
 		if total <= maxCacheBytes {
@@ -332,5 +341,25 @@ func (r *Resolver) prune() {
 		if fsx.Remove(e.path) == nil {
 			total -= e.size
 		}
+	}
+}
+
+// pruneMisses removes expired miss markers, then the key and PDB folders left empty. An empty folder younger than
+// partMaxAge may belong to a download that has not written yet, so it stays.
+func (r *Resolver) pruneMisses() {
+	pdbs, _ := os.ReadDir(r.Dir)
+	for _, pdb := range pdbs {
+		pdbDir := filepath.Join(r.Dir, pdb.Name())
+		keys, _ := os.ReadDir(pdbDir)
+		for _, key := range keys {
+			keyDir := filepath.Join(pdbDir, key.Name())
+			if info, err := fsx.Stat(filepath.Join(keyDir, missMarker)); err == nil && time.Since(info.ModTime()) > missMaxAge {
+				_ = fsx.Remove(filepath.Join(keyDir, missMarker))
+			}
+			if info, err := fsx.Stat(keyDir); err == nil && info.IsDir() && time.Since(info.ModTime()) > partMaxAge {
+				_ = fsx.Remove(keyDir)
+			}
+		}
+		_ = fsx.Remove(pdbDir)
 	}
 }

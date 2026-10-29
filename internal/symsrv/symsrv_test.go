@@ -111,3 +111,36 @@ func TestResolverFetchesOnceAndCaches(t *testing.T) {
 		t.Fatalf("requests = %d, want one for the PDB and one for the miss", requests.Load())
 	}
 }
+
+// A miss marker is retried after missMaxAge, and prune clears expired markers and the folders they leave empty.
+func TestMissExpires(t *testing.T) {
+	r := &Resolver{Dir: t.TempDir()}
+	old := time.Now().Add(-missMaxAge - time.Hour)
+	stale := filepath.Join(r.Dir, "a.pdb", "KEY1")
+	fresh := filepath.Join(r.Dir, "b.pdb", "KEY2")
+	for _, d := range []string{stale, fresh} {
+		if err := os.MkdirAll(d, 0o750); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(d, missMarker), nil, 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := os.Chtimes(filepath.Join(stale, missMarker), old, old); err != nil {
+		t.Fatal(err)
+	}
+	if freshMiss(stale) || !freshMiss(fresh) {
+		t.Fatalf("freshMiss: stale %v, fresh %v", freshMiss(stale), freshMiss(fresh))
+	}
+	r.prune()
+	if err := os.Chtimes(stale, old, old); err != nil {
+		t.Fatal(err)
+	}
+	r.prune()
+	if _, err := os.Stat(filepath.Join(r.Dir, "a.pdb")); !os.IsNotExist(err) {
+		t.Fatalf("stale miss folders remain: %v", err)
+	}
+	if !freshMiss(fresh) {
+		t.Fatal("a fresh miss was pruned")
+	}
+}
