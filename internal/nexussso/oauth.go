@@ -18,6 +18,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/secret"
+	"github.com/zalando/go-keyring"
 )
 
 const (
@@ -205,10 +206,20 @@ func (o OAuth) exchange(ctx context.Context, form url.Values) (Tokens, error) {
 	return Tokens{Access: raw.Access, Refresh: raw.Refresh, Expires: o.now().Add(time.Duration(raw.ExpiresIn) * time.Second)}, nil
 }
 
-// Save keeps the tokens in the OS keyring.
+// setItem is the keyring write, replaced in tests.
+var setItem = secret.Set
+
+// Save keeps the tokens in the OS keyring. Windows refuses an item over 2,560 bytes: the access token, which a
+// refresh can always replace, is then left out rather than losing the refresh token Nexus has just rotated.
 func Save(t Tokens) error {
 	b, _ := json.Marshal(t)
-	return secret.Set(keyringItem, string(b))
+	err := setItem(keyringItem, string(b))
+	if errors.Is(err, keyring.ErrSetDataTooBig) {
+		t.Access = ""
+		b, _ = json.Marshal(t)
+		return setItem(keyringItem, string(b))
+	}
+	return err
 }
 
 // Load returns the stored tokens, or secret.ErrNotFound.
@@ -230,7 +241,7 @@ func (o OAuth) Fresh(ctx context.Context) (Tokens, error) {
 	if err != nil {
 		return Tokens{}, err
 	}
-	if o.now().Add(refreshMargin).Before(t.Expires) {
+	if t.Access != "" && o.now().Add(refreshMargin).Before(t.Expires) {
 		return t, nil
 	}
 	refreshMu.Lock()
@@ -238,7 +249,7 @@ func (o OAuth) Fresh(ctx context.Context) (Tokens, error) {
 	if t, err = Load(); err != nil {
 		return Tokens{}, err
 	}
-	if o.now().Add(refreshMargin).Before(t.Expires) {
+	if t.Access != "" && o.now().Add(refreshMargin).Before(t.Expires) {
 		return t, nil
 	}
 	if t.Refresh == "" {

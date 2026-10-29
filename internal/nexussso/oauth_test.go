@@ -151,3 +151,30 @@ func TestFreshMapsARefusedRefreshToSignedOut(t *testing.T) {
 		t.Fatalf("err = %v", err)
 	}
 }
+
+func TestSaveDropsTheAccessTokenWhenTheItemIsTooBig(t *testing.T) {
+	keyring.MockInit()
+	prev := setItem
+	t.Cleanup(func() { setItem = prev })
+	setItem = func(name, v string) error {
+		if len(v) > 100 {
+			return keyring.ErrSetDataTooBig
+		}
+		return prev(name, v)
+	}
+	now := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	if err := Save(Tokens{Access: strings.Repeat("A", 200), Refresh: "R", Expires: now.Add(time.Hour)}); err != nil {
+		t.Fatal(err)
+	}
+	var calls int
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		calls++
+		_, _ = w.Write([]byte(`{"access_token":"N","refresh_token":"R2","expires_in":3600}`))
+	}))
+	defer srv.Close()
+	o := OAuth{ClientID: "cid", AuthBase: srv.URL, Now: func() time.Time { return now }}
+	got, err := o.Fresh(context.Background())
+	if err != nil || got.Access != "N" || calls != 1 {
+		t.Fatalf("a stored refresh token with no access token must refresh: %+v, %v, %d calls", got, err, calls)
+	}
+}
