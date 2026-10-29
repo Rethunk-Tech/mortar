@@ -112,3 +112,31 @@ func TestRecordSortsWhyASourceCouldNotBeReached(t *testing.T) {
 		t.Fatalf("a success kept reason %q", got)
 	}
 }
+
+func TestRecordTransportCountsABadCertificateAsUnreachable(t *testing.T) {
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
+	defer srv.Close()
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, srv.URL, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp, err := (&http.Transport{}).RoundTrip(req)
+	if err == nil {
+		_ = resp.Body.Close()
+		t.Fatal("the test server's certificate should not verify")
+	}
+	states = map[string]State{}
+	Record("github", err)
+	if len((&Service{}).States()) != 0 {
+		t.Fatal("Record skips the bare certificate error, which is why RecordTransport exists")
+	}
+	RecordTransport("github", err)
+	if got := (&Service{}).States(); len(got) != 1 || !got[0].Unreachable {
+		t.Fatalf("a bad certificate must mark the source unreachable, got %+v", got)
+	}
+	RecordTransport("github", context.Canceled)
+	RecordTransport("github", nil)
+	if got := (&Service{}).States()[0]; got.Unreachable {
+		t.Fatalf("a nil error is a success, got %+v", got)
+	}
+}

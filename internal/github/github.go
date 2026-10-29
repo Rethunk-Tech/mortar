@@ -1,61 +1,51 @@
-// Package github reads a repository's public releases (60 calls an hour per IP without sign-in, more with the gh token
-// when gh is signed in), so lookups are cached on disk and a stale answer stands in when GitHub cannot be reached or
-// the limit is reached.
+// Package github is Mortar's face on go-github, which reads a repository's public releases (60 calls an hour per IP
+// without sign-in, more with the gh token when gh is signed in). It holds what is Mortar's own: the gh login, the
+// data-folder cache, reachability, the wording players read, and which assets count as an archive.
 package github
 
 import (
 	"cmp"
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"mime"
 	"net/http"
-	"regexp"
-	"strconv"
-	"strings"
-	"sync"
+	"net/url"
+	"path/filepath"
 	"time"
 
+	gh "github.com/Rethunk-Tech/go-github"
 	"github.com/Rethunk-Tech/go-httpkit"
-
-	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/netstate"
-
-	"github.com/Rethunk-Tech/go-semverish"
 )
 
-const (
-	apiBase    = "https://api.github.com"
-	cacheTTL   = time.Hour
-	apiTimeout = 8 * time.Second
-	maxList    = 8 << 20
+type (
+	Release = gh.Release
+	Asset   = gh.Asset
+	Rate    = gh.Rate
+	Auth    = gh.Auth
 )
 
-// Release is one entry of a repository's releases list.
-type Release struct {
-	Tag        string  `json:"tag_name"`
-	Draft      bool    `json:"draft"`
-	Prerelease bool    `json:"prerelease"`
-	Body       string  `json:"body,omitempty"`
-	Published  string  `json:"published_at,omitempty"`
-	Assets     []Asset `json:"assets"`
-}
+// DefaultAuth authorizes every request this package makes to GitHub. Mortar lends requests the token of the player's
+// `gh` login; the module sends none until told how to get one.
+var DefaultAuth = func() *Auth {
+	gh.DefaultAuth.Run = gh.GHCLI
+	return gh.DefaultAuth
+}()
 
-// Asset is one downloadable file of a release.
-type Asset struct {
-	ID          int64  `json:"id"`
-	Name        string `json:"name"`
-	ContentType string `json:"content_type"`
-	Size        int64  `json:"size"`
-	URL         string `json:"browser_download_url"`
-	Downloads   int    `json:"download_count"`
-	// Digest is "sha256:<hex>" when GitHub computed one for the asset.
-	Digest string `json:"digest,omitempty"`
+// MaxChangelog bounds how many releases ReleasesBetween returns.
+const MaxChangelog = gh.MaxChangelog
+
+func Key(owner, repo, tag, asset string) string       { return gh.Key(owner, repo, tag, asset) }
+func Shape(name string) string                        { return gh.Shape(name) }
+func Installable(assets []Asset, goos string) []Asset { return gh.Installable(assets, goos) }
+func CurrentRate() Rate                               { return gh.CurrentRate() }
+func Observe(resp *http.Response) error               { return gh.Observe(resp) }
+func IsGitHubHost(host string) bool                   { return gh.IsGitHubHost(host) }
+func ZipNames(ctx context.Context, hc *http.Client, a Asset) ([]string, error) {
+	return gh.ZipNames(ctx, hc, a)
 }
 
 // RateLimitError is GitHub's unauthenticated limit; Reset is when calls work again (zero when GitHub did not say).
@@ -72,89 +62,13 @@ func (e *RateLimitError) Error() string {
 // Unwrap lets errors.As find the module's *httpkit.RateLimitError behind GitHub's wording.
 func (e *RateLimitError) Unwrap() error { return &httpkit.RateLimitError{Reset: e.Reset} }
 
-// Rate is the quota GitHub last reported on a response, so Settings can show it without a request of its own.
-type Rate struct {
-	Known     bool      `json:"known"`
-	Limit     int       `json:"limit"`
-	Remaining int       `json:"remaining"`
-	Reset     time.Time `json:"reset"`
-}
-
+// ErrNoRelease and ErrNoArchive say why Select found nothing to install.
 var (
-	rateMu   sync.Mutex
-	lastRate Rate
+	ErrNoRelease = errors.New("GitHub lists no matching stable release")
+	ErrNoArchive = errors.New("the release has no archive asset (zip, rar, 7z, tar, gz, xz, zst, bz2, lz4 or lzma)")
 )
 
-// CurrentRate is the quota from the most recent GitHub response that carried one.
-func CurrentRate() Rate {
-	rateMu.Lock()
-	defer rateMu.Unlock()
-	return lastRate
-}
-
-func noteRate(resp *http.Response) {
-	limit, e1 := strconv.Atoi(resp.Header.Get("X-Ratelimit-Limit"))
-	left, e2 := strconv.Atoi(resp.Header.Get("X-Ratelimit-Remaining"))
-	reset, e3 := strconv.ParseInt(resp.Header.Get("X-Ratelimit-Reset"), 10, 64)
-	if e1 != nil || e2 != nil || e3 != nil {
-		return
-	}
-	rateMu.Lock()
-	lastRate = Rate{Known: true, Limit: limit, Remaining: left, Reset: time.Unix(reset, 0)}
-	rateMu.Unlock()
-}
-
-// RateLimited returns a *RateLimitError when resp is GitHub's limit answer, else nil.
-func RateLimited(resp *http.Response) error {
-	if resp.StatusCode != http.StatusForbidden && resp.StatusCode != http.StatusTooManyRequests {
-		return nil
-	}
-	if resp.Header.Get("X-Ratelimit-Remaining") != "0" && resp.Header.Get("Retry-After") == "" {
-		return nil
-	}
-	e := &RateLimitError{}
-	if t, ok := httpkit.RetryAfter(resp.Header.Get("Retry-After")); ok {
-		e.Reset = t
-	} else if secs, err := strconv.ParseInt(resp.Header.Get("X-Ratelimit-Reset"), 10, 64); err == nil {
-		e.Reset = time.Unix(secs, 0)
-	}
-	return e
-}
-
-// FetchReleases reads a releases list from url.
-func FetchReleases(ctx context.Context, hc *http.Client, url string) ([]Release, error) {
-	ctx, cancel := context.WithTimeout(ctx, apiTimeout)
-	defer cancel()
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Accept", "application/vnd.github+json")
-	DefaultAuth.Apply(req)
-	if hc == nil {
-		hc = http.DefaultClient
-	}
-	resp, err := httpkit.WithRedirect(hc, httpkit.NoDowngrade).Do(req)
-	netstate.Record("github", err)
-	if err != nil {
-		return nil, fmt.Errorf("could not reach GitHub: %w", err)
-	}
-	defer func() { _ = resp.Body.Close() }()
-	noteRate(resp)
-	if err := RateLimited(resp); err != nil {
-		return nil, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("GitHub's releases API answered %s", resp.Status)
-	}
-	var all []Release
-	if err := json.NewDecoder(safefs.CapReader(resp.Body, maxList)).Decode(&all); err != nil {
-		return nil, fmt.Errorf("read GitHub's releases response: %w", err)
-	}
-	return all, nil
-}
-
-// Client looks up and downloads releases. The zero value uses api.github.com and <datadir>/cache.
+// Client looks up releases. The zero value uses api.github.com and <datadir>/cache.
 type Client struct {
 	HTTP     *http.Client
 	CacheDir string
@@ -163,68 +77,71 @@ type Client struct {
 	Now     func() time.Time
 }
 
-func (c *Client) now() time.Time {
-	if c.Now != nil {
-		return c.Now()
+// prepared is the module's client with Mortar's policies applied.
+func (c *Client) prepared() *gh.Client {
+	dir := c.CacheDir
+	if dir == "" {
+		if data, err := datadir.Dir(); err == nil {
+			dir = filepath.Join(data, "cache")
+		}
 	}
-	return time.Now().UTC()
+	return &gh.Client{HTTP: recording(c.HTTP), CacheDir: dir, APIBase: c.APIBase, Now: c.Now}
 }
 
-var nonKey = regexp.MustCompile(`[^a-z0-9.]+`)
-
-// maxSlug bounds the readable part of a key, keeping the folder name under the file system's limit.
-const maxSlug = 100
-
-// Key is the store key of a GitHub asset: github-<owner>-<repo>-<tag>-<asset>, lower-cased with every other
-// character run folded to a dash so it satisfies the store's key rules, then a hash of the exact names, since the
-// folding alone maps a-b/c and a/b-c to one key.
-func Key(owner, repo, tag, asset string) string {
-	slug := nonKey.ReplaceAllString(strings.ToLower(strings.Join([]string{owner, repo, tag, asset}, "-")), "-")
-	slug = strings.Trim(slug[:min(len(slug), maxSlug)], "-")
-	sum := sha256.Sum256([]byte(strings.ToLower(owner+"/"+repo) + "@" + tag + "/" + asset))
-	return "github-" + slug + "-" + hex.EncodeToString(sum[:6])
+// recording makes every round trip of hc tell netstate whether GitHub was reached.
+func recording(hc *http.Client) *http.Client {
+	cp := *cmp.Or(hc, http.DefaultClient)
+	cp.Transport = &httpkit.Transport{Base: cp.Transport, OnResult: func(_ *http.Request, _ *http.Response, err error) {
+		netstate.RecordTransport("github", err)
+	}}
+	return &cp
 }
 
-// cacheFormat stamps the release cache and is bumped when Release gains a field an older file lacks: that file is
-// fetched again however young, still stands in when the lookup fails, and is never read for the missing field. Format 2
-// added asset download counts.
-const cacheFormat = 2
-
-// releasesPerPage is how many releases one lookup reads, the newest ones.
-const releasesPerPage = 30
-
-// cache is the release cache's handle; the clock is the client's, so tests can set it.
-func (c *Client) cache() *diskcache.Cache {
-	return &diskcache.Cache{Dir: c.CacheDir, Now: c.now}
+// words puts the module's errors in the wording players read. api names the endpoint in a status answer.
+func words(err error, api string) error {
+	if rl, ok := errors.AsType[*httpkit.RateLimitError](err); ok {
+		return &RateLimitError{Reset: rl.Reset}
+	}
+	if se, ok := errors.AsType[*httpkit.StatusError](err); ok {
+		return fmt.Errorf("GitHub's %s API answered %s", api, se.Status)
+	}
+	if _, ok := errors.AsType[*url.Error](err); ok {
+		return fmt.Errorf("could not reach GitHub: %w", err)
+	}
+	if errors.Is(err, gh.ErrNoRelease) {
+		return ErrNoRelease
+	}
+	return err
 }
 
-func releasesName(owner, repo string) string {
-	return Key(owner, repo, "", "") + "-releases-v2.json"
+// FetchReleases reads a releases list from url.
+func FetchReleases(ctx context.Context, hc *http.Client, url string) ([]Release, error) {
+	all, err := gh.FetchReleases(ctx, recording(hc), url)
+	return all, words(err, "releases")
 }
 
-// CachedReleases lists owner/repo's releases from the stored answer however old it is, never asking GitHub. all is
-// whether the list holds every release the repository has, which a full page may not.
+// CachedReleases lists owner/repo's releases from the stored answer however old it is, never asking GitHub.
 func (c *Client) CachedReleases(owner, repo string) (releases []Release, all, ok bool) {
-	e, ok := diskcache.Peek[[]Release](c.cache(), releasesName(owner, repo))
-	return e.Value, len(e.Value) < releasesPerPage, ok && e.Stamp == strconv.Itoa(cacheFormat)
+	return c.prepared().CachedReleases(owner, repo)
 }
 
-// Releases lists owner/repo's releases, newest first. An answer younger than an hour comes from the cache and a
-// stale one stands in when the lookup fails, rate limit included.
+// Releases lists owner/repo's releases, newest first.
 func (c *Client) Releases(ctx context.Context, owner, repo string) ([]Release, error) {
-	base := cmp.Or(c.APIBase, apiBase)
-	return diskcache.CachedStamped(c.cache(), releasesName(owner, repo), strconv.Itoa(cacheFormat), cacheTTL, func() ([]Release, error) {
-		return FetchReleases(ctx, c.HTTP, base+"/repos/"+owner+"/"+repo+"/releases?per_page="+strconv.Itoa(releasesPerPage))
-	})
+	all, err := c.prepared().Releases(ctx, owner, repo)
+	return all, words(err, "releases")
 }
 
-// ErrNoRelease and ErrNoArchive say why Select found nothing to install.
-var (
-	ErrNoRelease = errors.New("GitHub lists no matching stable release")
-	ErrNoArchive = errors.New("the release has no archive asset (zip, rar, 7z, tar, gz, xz, zst, bz2, lz4 or lzma)")
-)
+// ReleaseNotes returns the markdown body of owner/repo's release tagged tag.
+func (c *Client) ReleaseNotes(ctx context.Context, owner, repo, tag string) (string, error) {
+	notes, err := c.prepared().ReleaseNotes(ctx, owner, repo, tag)
+	return notes, words(err, "release")
+}
 
-func tagVersion(tag string) string { return strings.TrimPrefix(strings.TrimPrefix(tag, "v"), "V") }
+// ReleasesBetween returns owner/repo's published releases newer than installed and not newer than latest.
+func (c *Client) ReleasesBetween(ctx context.Context, owner, repo, installed, latest string) ([]Release, error) {
+	rels, err := c.prepared().ReleasesBetween(ctx, owner, repo, installed, latest)
+	return rels, words(err, "releases")
+}
 
 // IsArchive reports whether a is an archive Mortar reads by name, and by content type where GitHub set one.
 func IsArchive(a Asset) bool {
@@ -243,25 +160,12 @@ func IsArchive(a Asset) bool {
 // archive assets: one when the release ships one, several when the user must choose. A prerelease is picked only when
 // prereleases are asked for or its tag is named.
 func Select(all []Release, version string, prerelease bool) (Release, []Asset, error) {
-	for _, r := range all {
-		if r.Draft || (r.Prerelease && !prerelease && version == "") {
-			continue
-		}
-		if version != "" {
-			if cmp, ok := semverish.Compare(tagVersion(r.Tag), tagVersion(version)); !ok || cmp != 0 {
-				continue
-			}
-		}
-		var assets []Asset
-		for _, a := range r.Assets {
-			if IsArchive(a) {
-				assets = append(assets, a)
-			}
-		}
-		if len(assets) == 0 {
-			return r, nil, ErrNoArchive
-		}
-		return r, assets, nil
+	r, assets, err := gh.Select(all, version, prerelease, IsArchive)
+	switch {
+	case errors.Is(err, gh.ErrNoAsset):
+		err = ErrNoArchive
+	case errors.Is(err, gh.ErrNoRelease):
+		err = ErrNoRelease
 	}
-	return Release{}, nil, ErrNoRelease
+	return r, assets, err
 }

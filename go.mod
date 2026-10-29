@@ -34,6 +34,7 @@ require (
 
 require (
 	git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3 // indirect
+	github.com/Rethunk-Tech/go-github v0.1.0 // indirect
 	github.com/adrg/xdg v0.5.3 // indirect
 	github.com/bodgit/plumbing v1.3.0 // indirect
 	github.com/bodgit/sevenzip v1.6.5 // indirect

@@ -93,6 +93,20 @@ func Record(id string, err error) {
 	if err != nil && !isNetwork(err) {
 		return
 	}
+	record(id, err)
+}
+
+// RecordTransport is Record for an error a http.RoundTripper returned, which net/http has not yet wrapped in a
+// *url.Error: at that layer any failure but a cancellation means the host was not usefully reached (a bad
+// certificate included), since an HTTP answer arrives as a response.
+func RecordTransport(id string, err error) {
+	if errors.Is(err, context.Canceled) {
+		return
+	}
+	record(id, err)
+}
+
+func record(id string, err error) {
 	mu.Lock()
 	st := states[id]
 	was, seen := st.Unreachable, st.ID != ""

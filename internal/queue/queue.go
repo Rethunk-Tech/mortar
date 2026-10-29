@@ -29,10 +29,10 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 
+	gh "github.com/Rethunk-Tech/go-github"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/desktopnotify"
-	"github.com/Rethunk-Tech/mortar/internal/ghrepo"
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/nxm"
@@ -117,7 +117,7 @@ func (r Request) valid() bool {
 	if r.Source != "" {
 		pkg = directIDPattern.MatchString(r.Package)
 	}
-	return r.Game != "" && r.Profile != "" && (r.ModID > 0 || ghrepo.Valid(r.Repo) || pkg)
+	return r.Game != "" && r.Profile != "" && (r.ModID > 0 || gh.ValidRepo(r.Repo) || pkg)
 }
 
 const (

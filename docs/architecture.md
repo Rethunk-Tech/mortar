@@ -267,10 +267,10 @@ An import or a profile's missing files run one queue (`internal/queue`), persist
 
 ## GitHub releases
 
-`internal/github` reads `/repos/<owner>/<repo>/releases`, with the gh token when gh is signed in. Answers are cached on disk and served stale when GitHub is unreachable; the unauthenticated limit is per IP.
+[go-github](https://github.com/Rethunk-Tech/go-github) reads `/repos/<owner>/<repo>/releases`; `internal/github` is Mortar's face on it: the gh token when gh is signed in, the cache under the data folder, reachability for the status chip, Mortar's wording for errors, and which assets are archives. Answers are cached on disk and served stale when GitHub is unreachable; the unauthenticated limit is per IP.
 
 - **Trust** (`internal/github/verify.go`): a GitHub-sourced install counts as verified only when SMAPI's update API maps the manifest's `UniqueID` to the same repo. A known mismatch parks the item in `needs-confirm`; an unknown answer installs and marks it "could not verify"; nothing here blocks.
-- **Asset picker** (`internal/github/pick.go`): the first rule that leaves one archive wins; several left park the item in `needs-choice` (last choice kept in `github-choices.json`).
+- **Asset picker** (go-github's [`pick.go`](https://github.com/Rethunk-Tech/go-github/blob/v0.1.0/pick.go), narrowed to archives by `internal/github/github.go#IsArchive`): the first rule that leaves one archive wins; several left park the item in `needs-choice` (last choice kept in `github-choices.json`).
 - **GitHub vs Nexus for updates:** a free Nexus account must click for every file, so a Nexus update carries a GitHub fallback repo (`GitHubFallback`): the queue downloads a GitHub release at the same version with exactly one archive whose staged contents hold the mod's UniqueID (`FallbackID`), else the item goes back to Nexus.
 
 ## Sharing

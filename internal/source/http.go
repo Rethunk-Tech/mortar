@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
+	gh "github.com/Rethunk-Tech/go-github"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
-	"github.com/Rethunk-Tech/mortar/internal/ghrepo"
 )
 
 // Limits every searching driver shares.
@@ -37,7 +37,7 @@ func GitHubRepo(raw string) string {
 		return ""
 	}
 	repo := parts[0] + "/" + strings.TrimSuffix(parts[1], ".git")
-	if !ghrepo.Valid(repo) {
+	if !gh.ValidRepo(repo) {
 		return ""
 	}
 	return repo

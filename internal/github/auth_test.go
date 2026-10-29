@@ -4,63 +4,11 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"net/http/httptest"
 	"strings"
 	"testing"
 )
 
 const secret = "gho_testsecret123"
-
-func req(t *testing.T, url string) *http.Request {
-	t.Helper()
-	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return r
-}
-
-func TestAuthApply(t *testing.T) {
-	t.Parallel()
-	present := &Auth{Run: func(context.Context) ([]byte, error) { return []byte(secret + "\n"), nil }}
-	absent := &Auth{Run: func(context.Context) ([]byte, error) { return nil, nil }}
-	failing := &Auth{Run: func(context.Context) ([]byte, error) { return nil, errors.New("gh: not logged in " + secret) }}
-
-	r := req(t, "https://api.github.com/repos/o/r/releases")
-	present.Apply(r)
-	if got := r.Header.Get("Authorization"); got != "Bearer "+secret {
-		t.Fatalf("present: header %q", got)
-	}
-	for name, a := range map[string]*Auth{"absent": absent, "failing": failing} {
-		r := req(t, "https://github.com/o/r/releases/download/v1/a.zip")
-		a.Apply(r)
-		if got := r.Header.Get("Authorization"); got != "" {
-			t.Fatalf("%s: header %q", name, got)
-		}
-	}
-	other := req(t, "https://example.com/a.zip")
-	present.Apply(other)
-	if other.Header.Get("Authorization") != "" {
-		t.Fatal("token sent to a non-GitHub host")
-	}
-	plain := req(t, "http://api.github.com/repos/o/r/releases")
-	present.Apply(plain)
-	if plain.Header.Get("Authorization") != "" {
-		t.Fatal("token sent over http")
-	}
-}
-
-func TestAuthCachesTheAnswer(t *testing.T) {
-	t.Parallel()
-	n := 0
-	a := &Auth{Run: func(context.Context) ([]byte, error) { n++; return nil, errors.New("x") }}
-	for range 3 {
-		a.Apply(req(t, "https://api.github.com/x"))
-	}
-	if n != 1 {
-		t.Fatalf("gh ran %d times", n)
-	}
-}
 
 func TestDownloadErrorOmitsToken(t *testing.T) {
 	old := DefaultAuth
@@ -81,19 +29,3 @@ func TestDownloadErrorOmitsToken(t *testing.T) {
 type roundTripFunc func(*http.Request) (*http.Response, error)
 
 func (f roundTripFunc) RoundTrip(r *http.Request) (*http.Response, error) { return f(r) }
-
-func TestReleaseCallsRefuseARedirectToPlainHTTP(t *testing.T) {
-	plain := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write([]byte("[]")) }))
-	t.Cleanup(plain.Close)
-	secure := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, plain.URL, http.StatusFound)
-	}))
-	t.Cleanup(secure.Close)
-	if _, err := FetchReleases(context.Background(), secure.Client(), secure.URL); err == nil || !strings.Contains(err.Error(), "refusing a redirect") {
-		t.Fatalf("FetchReleases followed it: %v", err)
-	}
-	c := &Client{HTTP: secure.Client(), APIBase: secure.URL, CacheDir: t.TempDir()}
-	if _, err := c.ReleaseNotes(context.Background(), "o", "r", "v1"); err == nil || !strings.Contains(err.Error(), "refusing a redirect") {
-		t.Fatalf("ReleaseNotes followed it: %v", err)
-	}
-}

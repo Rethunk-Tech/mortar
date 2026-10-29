@@ -5,6 +5,8 @@ import (
 	"errors"
 	"net/http"
 
+	gh "github.com/Rethunk-Tech/go-github"
+	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/go-httpkit/download"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
@@ -31,11 +33,11 @@ func Download(ctx context.Context, hc *http.Client, url, dest string, limit int6
 		Progress:  progress,
 		Limiter:   Limiter,
 		Authorize: DefaultAuth.Apply,
-		Check: func(resp *http.Response) error {
-			noteRate(resp)
-			return RateLimited(resp)
-		},
+		Check:     gh.Observe,
 	})
+	if rl, ok := errors.AsType[*httpkit.RateLimitError](err); ok {
+		return &RateLimitError{Reset: rl.Reset}
+	}
 	switch {
 	case errors.Is(err, safefs.ErrTooLarge):
 		return tooLargeError("larger than " + bytefmt.Format(limit))

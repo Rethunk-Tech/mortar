@@ -18,6 +18,8 @@ import (
 	"sync"
 	"time"
 
+	gh "github.com/Rethunk-Tech/go-github"
+	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -325,7 +327,7 @@ func (d *Driver) held(refused **source.BusyError) error {
 func (d *Driver) refuse(refused **source.BusyError, resp *http.Response) error {
 	busy := source.Busy("GitHub", resp)
 	if busy.Reset.IsZero() {
-		if limit, ok := errors.AsType[*ghauth.RateLimitError](ghauth.RateLimited(resp)); ok {
+		if limit, ok := errors.AsType[*httpkit.RateLimitError](gh.RateLimited(resp)); ok {
 			busy.Reset = limit.Reset
 		}
 	}

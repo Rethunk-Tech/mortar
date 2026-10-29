@@ -14,9 +14,9 @@ import (
 	"strings"
 	"sync"
 
+	gh "github.com/Rethunk-Tech/go-github"
 	"github.com/Rethunk-Tech/go-lenientjson"
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/ghrepo"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/go-semverish"
@@ -423,7 +423,7 @@ func CurseForgeUpdateKey(key string) (string, bool) {
 func GitHubUpdateKey(key string) (string, bool) {
 	site, rest, ok := strings.Cut(key, ":")
 	rest = strings.TrimSpace(rest)
-	return rest, ok && strings.EqualFold(strings.TrimSpace(site), "github") && ghrepo.Valid(rest)
+	return rest, ok && strings.EqualFold(strings.TrimSpace(site), "github") && gh.ValidRepo(rest)
 }
 
 // ModID is the manifest's mod as a mod.ID.
