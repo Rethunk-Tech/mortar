@@ -52,14 +52,24 @@ type Account struct {
 	PersonaName string
 }
 
+// homeOr is home, or the user's own home when none was given: an empty home would make every candidate a path
+// relative to the working directory.
+func homeOr(home string) string {
+	if home == "" {
+		home, _ = os.UserHomeDir()
+	}
+	return home
+}
+
 // FlatpakRoot is Flatpak Steam's Steam directory under home.
 func FlatpakRoot(home string) string {
+	home = homeOr(home)
 	return filepath.Join(home, ".var", "app", FlatpakID, ".local", "share", "Steam")
 }
 
 // Roots are the native Steam folders searched, the user's own folders first.
 func Roots(home string, extra ...string) []string {
-	return append(slices.Clone(extra), candidates(home)...)
+	return append(slices.Clone(extra), candidates(homeOr(home))...)
 }
 
 // LocateAll returns every usable Steam, native first (the user's own folders before the usual ones), then Flatpak.

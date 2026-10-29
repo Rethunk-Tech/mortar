@@ -102,9 +102,6 @@ func padNumbers(s string) string {
 // ProtonBuilds are the Proton builds a native Steam on this computer has, in its libraries' steamapps/common or its
 // compatibilitytools.d, best first. Flatpak Steam's builds need Flatpak's runtime, so they are left out.
 func ProtonBuilds(home string, steamRoots ...string) []ProtonBuild {
-	if home == "" {
-		home, _ = os.UserHomeDir()
-	}
 	var found []ProtonBuild
 	for _, st := range steam.LocateAll(home, steamRoots...) {
 		if st.Kind != steam.KindNative {

@@ -11,6 +11,8 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
+
+	"github.com/andygrunwald/vdf"
 )
 
 // fixture copies testdata/lib into a temp Steam root, pointing the library list at it.
@@ -225,6 +227,18 @@ func TestParseVDFRefusesWhatIsTooLargeOrTooDeep(t *testing.T) {
 	}
 	if _, err := parseVDF(write("ok.vdf", []byte(quoted))); err != nil {
 		t.Fatalf("ok: %v", err)
+	}
+}
+
+func TestLocateAllEmptyHomeIsTheUsersHome(t *testing.T) {
+	home := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(home, ".steam", "steam", "steamapps"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("HOME", home)
+	t.Chdir(t.TempDir())
+	if got := LocateAll(""); len(got) != 1 || got[0].Root != filepath.Join(home, ".steam", "steam") {
+		t.Fatalf("got %v", got)
 	}
 }
 

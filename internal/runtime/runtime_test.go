@@ -108,7 +108,7 @@ func TestNativeRefusesForeignBuildAndMissingPath(t *testing.T) {
 func TestVersionReadsConfigInfoThenCompatToolMapping(t *testing.T) {
 	root := t.TempDir()
 	dir := filepath.Join(root, "steamapps", "common", "Lethal Company")
-	inst := Install{Store: "steam", Dir: dir, AppID: "1966720", Platform: "windows", GOOS: "linux"}
+	inst := Install{Store: "steam", Dir: dir, AppID: "1966720", Platform: "windows", Home: t.TempDir(), GOOS: "linux"}
 	write := func(rel, body string) {
 		p := filepath.Join(root, rel)
 		testfs.WriteAt(t, p, []byte(body))
