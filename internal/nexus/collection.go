@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -16,7 +17,8 @@ import (
 // MaxCollectionArchive caps the curator's collection archive Mortar reads into memory.
 const MaxCollectionArchive = 64 << 20
 
-// mirrorTimeout bounds the whole archive fetch from the mirror, which sits outside Nexus's API and can stall.
+// mirrorTimeout is how long the mirror, which sits outside Nexus's API and can stall, may stay silent: before the
+// headers and between body reads. A slow but steady link is never cut off.
 var mirrorTimeout = 2 * time.Minute
 
 // CollectionArchive downloads a collection revision's curator archive (collection.json plus bundled files).
@@ -44,8 +46,10 @@ func (c *Client) CollectionArchive(ctx context.Context, downloadLink string) ([]
 	if !strings.HasPrefix(uri, "https://") {
 		return nil, errors.New("nexus gave no collection download link")
 	}
-	ctx, cancel := context.WithTimeout(ctx, mirrorTimeout)
-	defer cancel()
+	ctx, cancel := context.WithCancelCause(ctx)
+	defer cancel(nil)
+	stall := time.AfterFunc(mirrorTimeout, func() { cancel(errMirrorStalled) })
+	defer stall.Stop()
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, uri, nil)
 	if err != nil {
 		return nil, err
@@ -54,15 +58,31 @@ func (c *Client) CollectionArchive(ctx context.Context, downloadLink string) ([]
 	hc := cmp.Or(c.HTTP, http.DefaultClient)
 	resp, err := hc.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, cmp.Or(context.Cause(ctx), err)
 	}
 	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
 		return nil, &StatusError{Code: resp.StatusCode, Status: resp.Status}
 	}
-	b, err := fsx.ReadCapped(resp.Body, MaxCollectionArchive)
+	b, err := fsx.ReadCapped(idleReader{resp.Body, stall}, MaxCollectionArchive)
 	if err != nil {
-		return nil, fmt.Errorf("the collection archive: %w", err)
+		return nil, fmt.Errorf("the collection archive: %w", cmp.Or(context.Cause(ctx), err))
 	}
 	return b, nil
+}
+
+var errMirrorStalled = errors.New("the collection mirror stopped sending data")
+
+// idleReader restarts the stall timer on every read that returns bytes.
+type idleReader struct {
+	r     io.Reader
+	timer *time.Timer
+}
+
+func (i idleReader) Read(p []byte) (int, error) {
+	n, err := i.r.Read(p)
+	if n > 0 {
+		i.timer.Reset(mirrorTimeout)
+	}
+	return n, err
 }
