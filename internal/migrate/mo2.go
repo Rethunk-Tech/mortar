@@ -104,13 +104,13 @@ func mo2Profiles(root, fallbackModsPath, gameName, gameID string) ([]ProfilePrev
 	if !mo2IsGameInstance(root, gameName) {
 		return nil, "", nil
 	}
-	modsPath := filepath.Join(root, "mods")
+	modsPath, profilesPath := mo2Dirs(root)
 	if fallbackModsPath != "" {
 		if _, err := os.Stat(modsPath); err != nil {
 			modsPath = filepath.Clean(fallbackModsPath)
 		}
 	}
-	entries, err := os.ReadDir(filepath.Join(root, "profiles"))
+	entries, err := os.ReadDir(profilesPath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, "", nil
@@ -136,11 +136,12 @@ func mo2IsGameInstance(root, gameName string) bool {
 	if err != nil {
 		return false
 	}
-	return gameName != "" && strings.EqualFold(iniGeneral(data)[mo2INIGameKey], gameName)
+	return gameName != "" && strings.EqualFold(iniSection(data, "general")[mo2INIGameKey], gameName)
 }
 
 func mo2Preview(root, modsPath, gameID, id string) (ProfilePreview, error) {
-	listPath := filepath.Join(root, "profiles", id, "modlist.txt")
+	_, profilesPath := mo2Dirs(root)
+	listPath := filepath.Join(profilesPath, id, "modlist.txt")
 	data, err := fsx.ReadFile(listPath)
 	if err != nil {
 		return ProfilePreview{}, err
@@ -209,7 +210,7 @@ func readMO2Meta(modDir string) mo2Meta {
 	if err != nil {
 		return mo2Meta{}
 	}
-	general := iniGeneral(data)
+	general := iniSection(data, "general")
 	id := parseModID(general[mo2MetaModID])
 	if id == 0 {
 		id = nexusIDFromURL(general[mo2MetaURL])
@@ -243,7 +244,59 @@ func parseMO2Modlist(data []byte) []mo2Listed {
 	return out
 }
 
-func iniGeneral(data []byte) map[string]string {
+// mo2Dirs resolves the instance's mods and profiles folders the way MO2's
+// PathSettings does (ModOrganizer2/modorganizer src/settings.cpp: base(),
+// getConfigurablePath(), resolve()): [Settings] base_directory defaults to the
+// folder holding ModOrganizer.ini, mod_directory and profiles_directory default
+// to %BASE_DIR%/mods and %BASE_DIR%/profiles, and %BASE_DIR% expands to the base.
+func mo2Dirs(root string) (mods, profiles string) {
+	var settings map[string]string
+	if data, err := fsx.ReadFile(filepath.Join(root, "ModOrganizer.ini")); err == nil {
+		settings = iniSection(data, "settings")
+	}
+	base := cmp.Or(mo2INIPath(settings["base_directory"]), root)
+	resolve := func(key, def string) string {
+		path := cmp.Or(mo2INIPath(settings[key]), "%BASE_DIR%/"+def)
+		path = strings.ReplaceAll(path, "%BASE_DIR%", filepath.ToSlash(base))
+		return filepath.Clean(filepath.FromSlash(strings.ReplaceAll(path, `\`, "/")))
+	}
+	return resolve("mod_directory", "mods"), resolve("profiles_directory", "profiles")
+}
+
+// mo2INIPath decodes a path value as QSettings wrote it: a QByteArray is
+// "@ByteArray(...)", and a QString with special characters is double-quoted,
+// both with backslash escapes (a Windows path's backslashes are doubled).
+func mo2INIPath(raw string) string {
+	if inner, ok := strings.CutPrefix(raw, "@ByteArray("); ok {
+		raw = strings.TrimSuffix(inner, ")")
+	}
+	raw = strings.TrimSpace(raw)
+	if len(raw) >= 2 && raw[0] == '"' && raw[len(raw)-1] == '"' {
+		raw = raw[1 : len(raw)-1]
+	}
+	var b strings.Builder
+	for i := 0; i < len(raw); i++ {
+		if raw[i] != '\\' || i+1 == len(raw) {
+			b.WriteByte(raw[i])
+			continue
+		}
+		i++
+		switch raw[i] {
+		case 'n':
+			b.WriteByte('\n')
+		case 't':
+			b.WriteByte('\t')
+		case 'r':
+			b.WriteByte('\r')
+		default:
+			b.WriteByte(raw[i])
+		}
+	}
+	return b.String()
+}
+
+// iniSection reads the key=value pairs of the named section (lowercase), keys lowercased.
+func iniSection(data []byte, want string) map[string]string {
 	out := map[string]string{}
 	section := ""
 	text := strings.TrimPrefix(string(data), "\ufeff")
@@ -257,7 +310,7 @@ func iniGeneral(data []byte) map[string]string {
 			continue
 		}
 		key, value, ok := strings.Cut(line, "=")
-		if !ok || section != "general" {
+		if !ok || section != want {
 			continue
 		}
 		out[strings.ToLower(strings.TrimSpace(key))] = strings.TrimSpace(value)

@@ -3,6 +3,7 @@ package migrate
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -122,4 +123,57 @@ func TestMO2PortableIsNamedForTheProductNotTheFolder(t *testing.T) {
 	if len(sources) != 1 || sources[0].Name != "Mod Organizer 2" {
 		t.Fatalf("sources: %#v", sources)
 	}
+}
+
+func TestMO2DirsFollowSettings(t *testing.T) {
+	t.Parallel()
+	write := func(root, ini string) {
+		t.Helper()
+		if err := os.WriteFile(filepath.Join(root, "ModOrganizer.ini"), []byte(ini), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	seed := func(base string) {
+		t.Helper()
+		if err := os.MkdirAll(filepath.Join(base, "profiles", "Default"), 0o750); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(base, "profiles", "Default", "modlist.txt"), []byte("+Some Mod\n"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	t.Run("moved base", func(t *testing.T) {
+		t.Parallel()
+		root, base := t.TempDir(), filepath.Join(t.TempDir(), "MO2 data")
+		write(root, "[General]\ngameName=Stardew Valley\n\n[Settings]\nbase_directory=@ByteArray("+filepath.ToSlash(base)+")\n")
+		seed(base)
+		profiles, mods, err := mo2Profiles(root, "", "Stardew Valley", "stardew")
+		if err != nil || len(profiles) != 1 || mods != filepath.Join(base, "mods") {
+			t.Fatalf("profiles=%d mods=%q err=%v", len(profiles), mods, err)
+		}
+	})
+
+	t.Run("moved mod_directory", func(t *testing.T) {
+		t.Parallel()
+		root, mods, game := t.TempDir(), filepath.Join(t.TempDir(), "staged"), t.TempDir()
+		if err := os.MkdirAll(mods, 0o750); err != nil {
+			t.Fatal(err)
+		}
+		write(root, "[General]\ngameName=Stardew Valley\n\n[Settings]\nmod_directory=\""+strings.ReplaceAll(filepath.ToSlash(mods), "/", `\\`)+"\"\n")
+		seed(root)
+		_, got, err := mo2Profiles(root, game, "Stardew Valley", "stardew")
+		if err != nil || got != mods {
+			t.Fatalf("mods=%q want %q err=%v", got, mods, err)
+		}
+	})
+
+	t.Run("BASE_DIR expands", func(t *testing.T) {
+		t.Parallel()
+		root := t.TempDir()
+		write(root, "[Settings]\nprofiles_directory=%BASE_DIR%/prof\n")
+		if _, profiles := mo2Dirs(root); profiles != filepath.Join(root, "prof") {
+			t.Fatalf("profiles = %q", profiles)
+		}
+	})
 }
