@@ -7,13 +7,15 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 // A Windows build Steam did not install runs through the best Proton a native Steam has, in Mortar's own prefix,
 // where its paths resolve too.
 func TestMortarProtonRunsAFolderCopyThroughSteamsBestProtonInMortarsPrefix(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("XDG_DATA_HOME", filepath.Join(home, "data"))
+	testfs.DataHome(t)
 	t.Setenv("HOME", home)
 	root := filepath.Join(home, ".local", "share", "Steam")
 	for _, d := range []string{
@@ -29,7 +31,7 @@ func TestMortarProtonRunsAFolderCopyThroughSteamsBestProtonInMortarsPrefix(t *te
 			t.Fatal(err)
 		}
 	}
-	inst := Install{Game: "x", Store: "", Dir: "/games/X", Platform: "windows", Home: home, GOOS: "linux"}
+	inst := Install{Game: "x", Store: "", Dir: "/games/X", Platform: "windows", Home: home, GOOS: "linux", SteamRoots: []string{root}}
 	if IDOf(inst) != MortarProton {
 		t.Fatalf("runtime = %q", IDOf(inst))
 	}
@@ -40,7 +42,11 @@ func TestMortarProtonRunsAFolderCopyThroughSteamsBestProtonInMortarsPrefix(t *te
 	if err != nil {
 		t.Fatal(err)
 	}
-	prefix := filepath.Join(home, "data", "mortar", "prefixes", "x")
+	mortarData, err := datadir.Dir()
+	if err != nil {
+		t.Fatal(err)
+	}
+	prefix := filepath.Join(mortarData, "prefixes", "x")
 	if want := []string{filepath.Join(root, "steamapps", "common", "Proton 9.0", "proton"), "waitforexitandrun", "/games/X/X.exe", "-a"}; !slices.Equal(argv, want) {
 		t.Fatalf("argv = %v, want %v", argv, want)
 	}
@@ -48,7 +54,7 @@ func TestMortarProtonRunsAFolderCopyThroughSteamsBestProtonInMortarsPrefix(t *te
 		t.Fatalf("env = %v, want %v", env, want)
 	}
 	// A Steam copy started directly (several test copies at once) runs in Steam's own prefix for the app.
-	steamCopy := Install{Game: "x", Store: storeSteam, AppID: "1", Dir: filepath.Join(root, "steamapps", "common", "X"), Platform: "windows", Home: home, GOOS: "linux"}
+	steamCopy := Install{Game: "x", Store: storeSteam, AppID: "1", Dir: filepath.Join(root, "steamapps", "common", "X"), Platform: "windows", Home: home, GOOS: "linux", SteamRoots: []string{root}}
 	if argv, env, err := ProtonCommand(steamCopy, "X.exe"); err != nil || argv[1] != "waitforexitandrun" ||
 		env[0] != "STEAM_COMPAT_DATA_PATH="+filepath.Join(root, "steamapps", "compatdata", "1") {
 		t.Fatalf("a Steam copy: %v %v %v", argv, env, err)

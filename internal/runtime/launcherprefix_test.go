@@ -17,7 +17,7 @@ func TestLauncherPrefixResolvesSavesInTheLaunchersPrefix(t *testing.T) {
 	if err != nil || got != want {
 		t.Fatalf("got %q (%v), want %q", got, err, want)
 	}
-	if c, ok := CompatDataOf(inst); !ok || c != "/g/Prefixes/X" {
+	if c, ok := CompatDataOf(inst); !ok || c != filepath.Dir(inst.Prefix) {
 		t.Fatalf("compat %q %v", c, ok)
 	}
 	inst.Prefix = ""
