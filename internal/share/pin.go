@@ -52,11 +52,10 @@ func Pin(dst, src []byte, mods []mod.ID, files []string) ([]byte, error) {
 		switch {
 		case skippedEntry(e.name):
 		case e.name == profileFile:
-			data, err := withEntries(e.data, entries)
-			if err != nil {
-				return nil, err
+			var data []byte
+			if data, err = withEntries(e.data, entries); err == nil {
+				err = putFile(zw, e.name, data)
 			}
-			err = putFile(zw, e.name, data)
 		case pinned(e.name):
 			// The pinned file keeps its place, with src's content; one src lacks is dropped.
 			if data, ok := srcFile[e.name]; ok {
