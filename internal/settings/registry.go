@@ -196,6 +196,7 @@ var registry = withDefaults([]pref{
 	strPref("downloadFolder", ScopeApp, func(s Settings, _ string) string { return s.DownloadFolder }, func(s *Settings, _, v string) { s.DownloadFolder = v }),
 	strPref("syncFolder", ScopeApp, func(s Settings, _ string) string { return s.SyncFolder }, func(s *Settings, _, v string) { s.SyncFolder = v }),
 	vortexFolderPref(),
+	mo2FolderPref(),
 	packFolderPref(),
 	strPref("watchFolders", ScopeApp, func(s Settings, _ string) string { return s.WatchFolders }, func(s *Settings, _, v string) { s.WatchFolders = v }),
 	enumPref("profileOrder", ScopeApp, profileOrderValues, func(s Settings, _ string) string { return s.ProfileOrder }, func(s *Settings, _, v string) { s.ProfileOrder = v }),
@@ -861,6 +862,21 @@ func vortexFolderPref() pref {
 	}
 }
 
+// mo2FolderPref accepts only an existing folder holding ModOrganizer.ini or ModOrganizer.exe, or "" to clear it.
+func mo2FolderPref() pref {
+	return pref{
+		spec: PrefSpec{Key: "mo2Folder", Scope: ScopeApp, Type: TypeString},
+		get:  func(s Settings, _ string) string { return s.MO2Folder },
+		set: func(s *Settings, _, raw string) error {
+			if raw != "" && !fileExists(filepath.Join(raw, "ModOrganizer.ini")) && !fileExists(filepath.Join(raw, "ModOrganizer.exe")) {
+				return fmt.Errorf("%s has no Mod Organizer 2 data (ModOrganizer.ini or ModOrganizer.exe)", raw)
+			}
+			s.MO2Folder = raw
+			return nil
+		},
+	}
+}
+
 // listColumnsPref is the global Mods list columns as a comma-separated list of column ids.
 func listColumnsPref() pref {
 	return pref{
@@ -877,4 +893,9 @@ func listColumnsPref() pref {
 			return nil
 		},
 	}
+}
+
+func fileExists(path string) bool {
+	info, err := os.Stat(path)
+	return err == nil && !info.IsDir()
 }

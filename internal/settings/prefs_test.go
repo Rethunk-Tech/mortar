@@ -92,7 +92,7 @@ func TestAutoEnableRequirementsAlwaysOnly(t *testing.T) {
 	}
 }
 
-var localOnlyKeys = []string{"antivirusSocket", "antivirusCommand", "alvrProgram", "extraModsFolder", "syncOwnFolder", "backupLocation", "downloadFolder", "watchFolders", "syncFolder", "vortexFolder", "packFolder", "lanAllowAnyAddress", "nxmDefaultProfile"}
+var localOnlyKeys = []string{"antivirusSocket", "antivirusCommand", "alvrProgram", "extraModsFolder", "syncOwnFolder", "backupLocation", "downloadFolder", "watchFolders", "syncFolder", "vortexFolder", "mo2Folder", "packFolder", "lanAllowAnyAddress", "nxmDefaultProfile"}
 
 func TestPrefsExportImportRoundTrip(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
@@ -137,6 +137,11 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		t.Fatal(err)
 	}
 	overrides["vortexFolder"] = vortex
+	mo2 := t.TempDir()
+	if err := os.WriteFile(filepath.Join(mo2, "ModOrganizer.ini"), nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	overrides["mo2Folder"] = mo2
 	managers := t.TempDir()
 	if err := os.WriteFile(filepath.Join(managers, "data.sqlite3"), nil, 0o600); err != nil {
 		t.Fatal(err)
@@ -374,6 +379,24 @@ func TestVortexFolderMustHoldState(t *testing.T) {
 	}
 	if err := p.set(&s, "", ""); err != nil || s.VortexFolder != "" {
 		t.Fatalf("clear: %v, %q", err, s.VortexFolder)
+	}
+}
+
+func TestMO2FolderMustHoldAnInstanceOrTheExe(t *testing.T) {
+	var s Settings
+	p := mo2FolderPref()
+	dir := t.TempDir()
+	if err := p.set(&s, "", dir); err == nil {
+		t.Fatal("empty folder accepted")
+	}
+	if err := os.WriteFile(filepath.Join(dir, "ModOrganizer.exe"), nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := p.set(&s, "", dir); err != nil || s.MO2Folder != dir {
+		t.Fatalf("exe folder: %v, %q", err, s.MO2Folder)
+	}
+	if err := p.set(&s, "", ""); err != nil || s.MO2Folder != "" {
+		t.Fatalf("clear: %v, %q", err, s.MO2Folder)
 	}
 }
 

@@ -45,11 +45,11 @@ func TestVortex28ProfileWithNestedZipMod(t *testing.T) {
 	if err := db.Close(); err != nil {
 		t.Fatal(err)
 	}
-	sources, err := Detect(home, t.TempDir(), "stardew", root)
+	sources, err := Detect(home, t.TempDir(), "stardew", root, "")
 	if err != nil || len(sources) != 1 || sources[0].Kind != KindVortex || sources[0].Profiles[0].Mods != 1 {
 		t.Fatalf("sources = %#v, %v", sources, err)
 	}
-	preview, err := Preview(home, t.TempDir(), "stardew", root, KindVortex, "6LuTh37Vu")
+	preview, err := Preview(home, t.TempDir(), "stardew", root, "", KindVortex, "6LuTh37Vu")
 	if err != nil || len(preview.Mods) != 1 || preview.Mods[0].ID != "smapi:Tester.TestRetexture" || !preview.Mods[0].Enabled {
 		t.Fatalf("preview = %#v, %v", preview, err)
 	}

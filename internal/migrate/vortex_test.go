@@ -97,14 +97,14 @@ func TestDetectsVortexLevelDBAndPreviewsMods(t *testing.T) {
 	}
 	defer func() { _ = holder.Close() }()
 
-	sources, err := Detect(home, "", "stardew", "")
+	sources, err := Detect(home, "", "stardew", "", "")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(sources) != 1 || sources[0].Kind != KindVortex || len(sources[0].Profiles) != 1 {
 		t.Fatalf("sources = %#v", sources)
 	}
-	preview, err := Preview(home, "", "stardew", "", KindVortex, "p1")
+	preview, err := Preview(home, "", "stardew", "", "", KindVortex, "p1")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -142,7 +142,7 @@ func TestVortexStagingFolderDefaultsAndPlaceholders(t *testing.T) {
 	for name, pattern := range cases {
 		t.Run(name, func(t *testing.T) {
 			home, _, mods := newVortexHome(t, pattern)
-			preview, err := Preview(home, "", "stardew", "", KindVortex, "p1")
+			preview, err := Preview(home, "", "stardew", "", "", KindVortex, "p1")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -174,14 +174,14 @@ func TestDetectUsesChosenVortexFolder(t *testing.T) {
 	if err := os.Rename(filepath.Dir(state), moved); err != nil {
 		t.Fatal(err)
 	}
-	if sources, err := Detect(home, "", "stardew", ""); err != nil || len(sources) != 0 {
+	if sources, err := Detect(home, "", "stardew", "", ""); err != nil || len(sources) != 0 {
 		t.Fatalf("default lookup after move = %#v, %v", sources, err)
 	}
-	sources, err := Detect(home, "", "stardew", moved)
+	sources, err := Detect(home, "", "stardew", moved, "")
 	if err != nil || len(sources) != 1 || sources[0].Kind != KindVortex {
 		t.Fatalf("chosen folder = %#v, %v", sources, err)
 	}
-	if _, err := Preview(home, "", "stardew", moved, KindVortex, "p1"); err != nil {
+	if _, err := Preview(home, "", "stardew", moved, "", KindVortex, "p1"); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -189,7 +189,7 @@ func TestDetectUsesChosenVortexFolder(t *testing.T) {
 func TestVortexStagingOutsideRootResolves(t *testing.T) {
 	other := filepath.Join(t.TempDir(), "Vortex Mods")
 	home, _, _ := newVortexHome(t, `"`+filepath.ToSlash(other)+`/{GAME}"`)
-	preview, err := Preview(home, "", "stardew", "", KindVortex, "p1")
+	preview, err := Preview(home, "", "stardew", "", "", KindVortex, "p1")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -268,7 +268,7 @@ func TestVortexContentsListsGamesMortarDoesNotKnow(t *testing.T) {
 	if got.Folder != filepath.Dir(state) || !slices.Equal(got.Games, want) {
 		t.Fatalf("contents = %#v", got)
 	}
-	if sources, err := Detect(home, "", "valheim", ""); err != nil || len(sources) != 0 {
+	if sources, err := Detect(home, "", "valheim", "", ""); err != nil || len(sources) != 0 {
 		t.Fatalf("valheim sources = %#v, %v", sources, err)
 	}
 	empty, err := VortexContents(t.TempDir(), "")

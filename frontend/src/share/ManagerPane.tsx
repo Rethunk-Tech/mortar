@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from 'react'
 import type { ProfilePreview } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/migrate/models.ts'
 import { LocalProfiles } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/packsvc/service.ts'
 import {
+  ExternalMO2Supported,
   ExternalPreview,
   ExternalVortexSupported,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
@@ -13,12 +14,12 @@ import {
   Import,
   PreviewLocalProfile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/service.ts'
-import { GALE, R2MODMAN } from '../brand/productNames.ts'
+import { GALE, MOD_ORGANIZER_2, R2MODMAN } from '../brand/productNames.ts'
 import { useExternalImportSources } from '../profiles/externalImportSources.ts'
 import { FoundProfileRow } from '../profiles/FoundProfileRow.tsx'
 import { ManagerFolderPrompt } from '../profiles/ManagerFolderPrompt.tsx'
 import { VortexFolderPrompt } from '../profiles/VortexFolderPrompt.tsx'
-import { offerVortexFolder } from '../profiles/vortexFolderOffer.ts'
+import { offerMO2Folder, offerVortexFolder } from '../profiles/vortexFolderOffer.ts'
 import { DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
@@ -109,6 +110,7 @@ export function useManagerPane({
   const { t } = useLingui()
   const { sources: external, reload } = useExternalImportSources(game, active)
   const [vortexSupported, setVortexSupported] = useState(false)
+  const [mo2Supported, setMO2Supported] = useState(false)
   // null until this game's profiles are listed, so opening never flashes "No profiles found".
   const [folders, setFolders] = useState<Found[] | null>(null)
   const [chosen, setChosen] = useState<string[]>([])
@@ -121,10 +123,11 @@ export function useManagerPane({
   // Read together, so the pane redraws once for both answers.
   useEffect(() => {
     if (active) {
-      Promise.all([LocalProfiles(game), ExternalVortexSupported(game)])
-        .then(([found, vortex]) => {
+      Promise.all([LocalProfiles(game), ExternalVortexSupported(game), ExternalMO2Supported(game)])
+        .then(([found, vortex, mo2]) => {
           setFolders(toFound(found))
           setVortexSupported(vortex)
+          setMO2Supported(mo2)
         })
         .catch(reportUnexpected)
     }
@@ -206,6 +209,15 @@ export function useManagerPane({
           />
           {offerVortexFolder(vortexSupported, external) ? (
             <VortexFolderPrompt game={game} onChosen={reload} />
+          ) : null}
+          {offerMO2Folder(mo2Supported, external) ? (
+            <ManagerFolderPrompt
+              settingKey="mo2Folder"
+              label={t`${{ manager: MOD_ORGANIZER_2 }} folder`}
+              note={t`Use ${{ manager: MOD_ORGANIZER_2 }} from another folder?`}
+              rejected={t`That folder has no ${{ manager: MOD_ORGANIZER_2 }} data. Choose the one holding ModOrganizer.ini or ModOrganizer.exe.`}
+              onChosen={reload}
+            />
           ) : null}
         </Box>
       }

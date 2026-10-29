@@ -23,7 +23,8 @@ func (s *Service) ExternalSources(gameID string) ([]migrate.SourceInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	return migrate.Detect("", modsDir, gameID, s.settings.Get().VortexFolder)
+	cur := s.settings.Get()
+	return migrate.Detect("", modsDir, gameID, cur.VortexFolder, cur.MO2Folder)
 }
 
 // ExternalPreview reads one detected external profile without changing either manager's files.
@@ -32,13 +33,20 @@ func (s *Service) ExternalPreview(gameID, kind, id string) (migrate.ProfilePrevi
 	if err != nil {
 		return migrate.ProfilePreview{}, err
 	}
-	return migrate.Preview("", modsDir, gameID, s.settings.Get().VortexFolder, kind, id)
+	cur := s.settings.Get()
+	return migrate.Preview("", modsDir, gameID, cur.VortexFolder, cur.MO2Folder, kind, id)
 }
 
 // ExternalVortexSupported is whether Vortex profiles can be imported for the game at all.
 func (s *Service) ExternalVortexSupported(gameID string) bool {
 	info, _ := components.Game(gameID)
 	return info.ImportIDs.Vortex != ""
+}
+
+// ExternalMO2Supported is whether Mod Organizer 2 profiles can be imported for the game at all.
+func (s *Service) ExternalMO2Supported(gameID string) bool {
+	info, _ := components.Game(gameID)
+	return info.ImportIDs.MO2 != ""
 }
 
 // ExternalVortexContents says which games the Vortex data folder holds profiles for, so the importer can explain

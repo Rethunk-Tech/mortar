@@ -16,7 +16,7 @@ func TestMO2DetectTwoProfiles(t *testing.T) {
 	if err := copyMO2Fixture(filepath.Join("testdata", "mo2"), inst); err != nil {
 		t.Fatal(err)
 	}
-	sources, err := Detect(home, "", "stardew", "")
+	sources, err := Detect(home, "", "stardew", "", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -34,11 +34,11 @@ func TestMO2DetectTwoProfiles(t *testing.T) {
 		t.Fatalf("profiles: got %d want 2 (%#v)", len(source.Profiles), source.Profiles)
 	}
 
-	def, err := Preview(home, "", "stardew", "", KindMO2, "Default")
+	def, err := Preview(home, "", "stardew", "", "", KindMO2, "Default")
 	if err != nil {
 		t.Fatal(err)
 	}
-	coop, err := Preview(home, "", "stardew", "", KindMO2, "Coop")
+	coop, err := Preview(home, "", "stardew", "", "", KindMO2, "Coop")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -116,7 +116,7 @@ func TestMO2PortableIsNamedForTheProductNotTheFolder(t *testing.T) {
 	if err := copyMO2Fixture(filepath.Join("testdata", "mo2"), home); err != nil {
 		t.Fatal(err)
 	}
-	sources, err := Detect(home, "", "stardew", "")
+	sources, err := Detect(home, "", "stardew", "", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -176,4 +176,23 @@ func TestMO2DirsFollowSettings(t *testing.T) {
 			t.Fatalf("profiles = %q", profiles)
 		}
 	})
+}
+
+func TestMO2DetectUsesChosenFolder(t *testing.T) {
+	t.Parallel()
+	home := t.TempDir()
+	portable := filepath.Join(t.TempDir(), "MO2 Portable")
+	if err := copyMO2Fixture(filepath.Join("testdata", "mo2"), portable); err != nil {
+		t.Fatal(err)
+	}
+	if sources, err := Detect(home, "", "stardew", "", ""); err != nil || len(sources) != 0 {
+		t.Fatalf("default lookup = %#v, %v", sources, err)
+	}
+	sources, err := Detect(home, "", "stardew", "", portable)
+	if err != nil || len(sources) != 1 || sources[0].Kind != KindMO2 || sources[0].Name != "Mod Organizer 2 (MO2 Portable)" {
+		t.Fatalf("chosen folder = %#v, %v", sources, err)
+	}
+	if _, err := Preview(home, "", "stardew", "", portable, KindMO2, "Default"); err != nil {
+		t.Fatal(err)
+	}
 }

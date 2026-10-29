@@ -232,6 +232,9 @@ type Settings struct {
 	SyncFolder string `json:"syncFolder,omitempty"`
 	// VortexFolder is the Vortex data folder (holding state.v2) to import from when it is not in a default place.
 	VortexFolder string `json:"vortexFolder,omitempty"`
+	// MO2Folder is a Mod Organizer 2 instance (holding ModOrganizer.ini) or its ModOrganizer.exe folder to import from
+	// when it is not in a default place.
+	MO2Folder string `json:"mo2Folder,omitempty"`
 	// PackFolder is the r2modman or Gale data folder to import profiles from when it is not in a default place.
 	PackFolder         string `json:"packFolder,omitempty"`
 	ProfileOrder       string `json:"profileOrder"`

@@ -28,9 +28,10 @@ type installation struct {
 
 // Detect lists the external mod managers whose profiles for the catalog game gameID can be imported.
 //
-// vortexFolder is the user-chosen Vortex data folder, tried before the default locations.
-func Detect(home, modsPath, gameID, vortexFolder string) ([]SourceInfo, error) {
-	installs, err := detect(home, modsPath, gameID, vortexFolder)
+// vortexFolder is the user-chosen Vortex data folder, tried before the default locations; mo2Folder is a
+// user-chosen Mod Organizer 2 instance, listed beside the ones found by default.
+func Detect(home, modsPath, gameID, vortexFolder, mo2Folder string) ([]SourceInfo, error) {
+	installs, err := detect(home, modsPath, gameID, vortexFolder, mo2Folder)
 	if err != nil {
 		return nil, err
 	}
@@ -41,8 +42,8 @@ func Detect(home, modsPath, gameID, vortexFolder string) ([]SourceInfo, error) {
 	return out, nil
 }
 
-func Preview(home, modsPath, gameID, vortexFolder, kind, id string) (ProfilePreview, error) {
-	installs, err := detect(home, modsPath, gameID, vortexFolder)
+func Preview(home, modsPath, gameID, vortexFolder, mo2Folder, kind, id string) (ProfilePreview, error) {
+	installs, err := detect(home, modsPath, gameID, vortexFolder, mo2Folder)
 	if err != nil {
 		return ProfilePreview{}, err
 	}
@@ -68,7 +69,7 @@ func Preview(home, modsPath, gameID, vortexFolder, kind, id string) (ProfilePrev
 	return ProfilePreview{}, fmt.Errorf("%s is not detected", kind)
 }
 
-func detect(home, modsPath, gameID, vortexFolder string) ([]installation, error) {
+func detect(home, modsPath, gameID, vortexFolder, mo2Folder string) ([]installation, error) {
 	ids := importIDs(gameID)
 	base, err := userHome(home)
 	if err != nil {
@@ -103,7 +104,7 @@ func detect(home, modsPath, gameID, vortexFolder string) ([]installation, error)
 		}
 	}
 
-	mo2, err := mo2Installations(base, modsPath, ids.MO2, gameID)
+	mo2, err := mo2Installations(base, mo2Folder, modsPath, ids.MO2, gameID)
 	if err != nil {
 		return nil, err
 	}

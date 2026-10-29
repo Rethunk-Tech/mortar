@@ -4,3 +4,8 @@ import type { SourceInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/i
 export function offerVortexFolder(supported: boolean, sources: SourceInfo[]): boolean {
   return supported && !sources.some((s) => s.kind === 'vortex')
 }
+
+// The same for Mod Organizer 2, whose instance may live anywhere.
+export function offerMO2Folder(supported: boolean, sources: SourceInfo[]): boolean {
+  return supported && !sources.some((s) => s.kind === 'mo2')
+}

@@ -162,7 +162,7 @@ func TestPortableFieldsNameNoAccountOrMachineState(t *testing.T) {
 		"backgroundImage", "lanStarted", "lanAddresses", "antivirusSocket", "antivirusCommand",
 		"nxmHandled", "nxmPreviousHandlers", "nxmAsked", "nxmPreviousName", "alvrProgram", "autoInstallFolders",
 		"lastModUpdateDigest", "lastModUpdateDigestAt", "dismissed", "shortcuts",
-		"downloadFolder", "watchFolders", "syncFolder", "vortexFolder", "packFolder", "lanAllowAnyAddress",
+		"downloadFolder", "watchFolders", "syncFolder", "vortexFolder", "mo2Folder", "packFolder", "lanAllowAnyAddress",
 	} {
 		if slices.Contains(portableFields, k) {
 			t.Errorf("portableFields exports %s", k)

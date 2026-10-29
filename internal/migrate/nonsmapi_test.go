@@ -63,7 +63,7 @@ func TestMO2ImportReadsNonSMAPIGameModsByTheirLoader(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(profile, "modlist.txt"), []byte("+Pkg-1\n+Raw-1\n+Loose-1\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	preview, err := Preview(home, "", "valheim", "", KindMO2, "Default")
+	preview, err := Preview(home, "", "valheim", "", "", KindMO2, "Default")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -98,7 +98,7 @@ func TestVortexImportReadsNonSMAPIGameModsByTheirLoader(t *testing.T) {
 	if err := db.Close(); err != nil {
 		t.Fatal(err)
 	}
-	preview, err := Preview(home, "", "valheim", "", KindVortex, "p1")
+	preview, err := Preview(home, "", "valheim", "", "", KindVortex, "p1")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -31,8 +31,9 @@ type mo2Meta struct {
 	version string
 }
 
-// mo2Installations finds the MO2 instances managing the game MO2 calls gameName.
-func mo2Installations(home, modsPath, gameName, gameID string) ([]installation, error) {
+// mo2Installations finds the MO2 instances managing the game MO2 calls gameName, plus the one in the chosen
+// folder (an instance root, or the folder holding ModOrganizer.exe, which for a portable instance is the same).
+func mo2Installations(home, chosen, modsPath, gameName, gameID string) ([]installation, error) {
 	if gameName == "" {
 		return nil, nil
 	}
@@ -61,6 +62,15 @@ func mo2Installations(home, modsPath, gameName, gameID string) ([]installation, 
 	}
 	if ok {
 		out = append(out, portable)
+	}
+	if chosen != "" && !fsx.SamePath(chosen, home) {
+		inst, ok, err := mo2Installation(chosen, mo2Name+" ("+filepath.Base(chosen)+")", modsPath, gameName, gameID)
+		if err != nil {
+			return nil, err
+		}
+		if ok {
+			out = append(out, inst)
+		}
 	}
 	return out, nil
 }
