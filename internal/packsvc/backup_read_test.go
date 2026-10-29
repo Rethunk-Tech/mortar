@@ -67,7 +67,7 @@ func TestReadBackupReadsEveryNameBackupWrites(t *testing.T) {
 		}
 	}
 	for n, b := range disk {
-		if data, err := os.ReadFile(filepath.Join(tmp, filepath.FromSlash(n))); err != nil || string(data) != b {
+		if data, err := safefs.ReadFile(filepath.Join(tmp, filepath.FromSlash(n))); err != nil || string(data) != b {
 			t.Errorf("%s = %q, %v", n, data, err)
 		}
 	}
