@@ -339,6 +339,8 @@ func TestCompareDotNet(t *testing.T) {
 		{"+1.2", "1.2", 0},
 		{"1. 2", "1.2", 0},
 		{"2.0", "10.0", -1},
+		{"1.-0", "1.0", 0},
+		{"1.2.3.-0", "1.2.3.0", 0},
 	} {
 		got, ok := CompareDotNet(c.a, c.b)
 		if !ok || got != c.want {
@@ -348,7 +350,7 @@ func TestCompareDotNet(t *testing.T) {
 			t.Errorf("CompareDotNet(%q, %q) = %d, not the mirror", c.b, c.a, rev)
 		}
 	}
-	for _, bad := range []string{"", "1", "1.0.0-beta", "v1.0", "1.2.3.4.5", "3000000000.0", "-1.0", "1.-1", "1..2"} {
+	for _, bad := range []string{"", "1", "1.0.0-beta", "v1.0", "1.2.3.4.5", "3000000000.0", "-1.0", "1.-1", "1..2", "1.2\u00a0", "1.2\u0085"} {
 		if _, ok := CompareDotNet(bad, "1.0"); ok {
 			t.Errorf("%q should not parse", bad)
 		}

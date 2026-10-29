@@ -135,9 +135,8 @@ func parseDotNet(s string) (v [4]int, ok bool) {
 		if i >= len(parts) {
 			continue
 		}
-		p := strings.TrimSpace(parts[i])
-		n, err := strconv.ParseInt(p, 10, 32)
-		if err != nil || n < 0 || strings.HasPrefix(p, "-") {
+		n, err := strconv.ParseInt(strings.Trim(parts[i], " \t\n\v\f\r"), 10, 32)
+		if err != nil || n < 0 {
 			return v, false
 		}
 		v[i] = int(n)
