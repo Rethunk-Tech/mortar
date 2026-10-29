@@ -281,7 +281,7 @@ func (Loader) Install(ctx context.Context, t loader.Target, pkg loader.Package, 
 	if err := fsx.Chmod(filepath.Join(folder, exe), 0o700); err != nil {
 		return "", fmt.Errorf("SMAPI %s installer is missing %s: %w", version, exe, err)
 	}
-	if err := fsx.CheckWritable(dir); err != nil {
+	if err := datadir.CheckWritable(dir); err != nil {
 		return "", err
 	}
 	if err := unshareSMAPI(dir); err != nil {

@@ -12,9 +12,8 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/game"
-
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
@@ -171,7 +170,7 @@ func (s *Service) checkNexusMD5(path, want string) error {
 	if want == "" {
 		return nil
 	}
-	got, err := fsx.MD5(path)
+	got, err := datadir.MD5(path)
 	if err != nil {
 		return err
 	}

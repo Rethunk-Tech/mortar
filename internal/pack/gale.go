@@ -12,6 +12,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
@@ -90,7 +91,7 @@ func GaleProfiles(ctx context.Context, db string) ([]GaleProfile, error) {
 	if _, err := fsx.Stat(db); err != nil {
 		return nil, nil
 	}
-	conn, err := sql.Open("sqlite", fsx.ReadOnlySQLiteURI(db))
+	conn, err := sql.Open("sqlite", datadir.ReadOnlySQLiteURI(db))
 	if err != nil {
 		return nil, err
 	}

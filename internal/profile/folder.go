@@ -63,7 +63,7 @@ func (s *Store) CheckFolder(game, id string) (FolderCheck, error) {
 	if _, err := os.Stat(filepath.Join(home, fileName)); err != nil {
 		return fail("the folder %s holds no profile", cmpFolder(out.Folder, home))
 	}
-	if err := fsx.CheckWritable(home); err != nil {
+	if err := datadir.CheckWritable(home); err != nil {
 		return fail("Mortar cannot write to %s", cmpFolder(out.Folder, home))
 	}
 	out.OK = true

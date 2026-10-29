@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
@@ -135,7 +136,7 @@ func TestPassWaitsWhileBusyThenVerifies(t *testing.T) {
 func TestCheckBaselinesANexusItemFromItsArchiveWhenTheMD5Matches(t *testing.T) {
 	s, downloads, _ := newService(t)
 	archive := zipFile(t, downloads, "Pack-5-1-0-1700000000.zip", map[string]string{"Mod/a.txt": "aaa"})
-	md5, err := fsx.MD5(archive)
+	md5, err := datadir.MD5(archive)
 	if err != nil {
 		t.Fatal(err)
 	}

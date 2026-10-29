@@ -3,7 +3,6 @@
 package fsx
 
 import (
-	"crypto/md5" // #nosec G501 -- Nexus file hashes are MD5
 	"encoding/hex"
 	"errors"
 	"hash"
@@ -88,12 +87,6 @@ func WriteFile(path string, data []byte, perm os.FileMode) error {
 		return struct{}{}, r.WriteFile(name, data, perm)
 	})
 	return err
-}
-
-// MD5 is the hex MD5 of path's contents; Nexus publishes its file hashes as MD5, so this is for comparing with them
-// and nothing else.
-func MD5(path string) (string, error) {
-	return HashFile(path, md5.New()) // #nosec G401 -- Nexus file hashes are MD5
 }
 
 // HashFile is the hex digest of path's contents under h.

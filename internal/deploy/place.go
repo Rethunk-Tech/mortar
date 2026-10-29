@@ -96,7 +96,7 @@ func (Place) Apply(ctx context.Context, p Plan) (Manifest, error) {
 	}
 	// A plan that places only into a folder outside the install (a mods folder in Documents) needs no write access to it.
 	if slices.ContainsFunc(p.Ops, func(o Op) bool { return datadir.UnderRoot(p.Dir, o.Dst) }) {
-		if err := fsx.CheckWritable(p.Dir); err != nil {
+		if err := datadir.CheckWritable(p.Dir); err != nil {
 			return Manifest{}, err
 		}
 	}

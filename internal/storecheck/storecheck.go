@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/dlwatch"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -229,7 +230,7 @@ func (s *Service) findNexusArchive(modID int, want string) (string, bool) {
 			continue
 		}
 		path := filepath.Join(dir, e.Name())
-		if sum, err := fsx.MD5(path); err == nil && sum == want {
+		if sum, err := datadir.MD5(path); err == nil && sum == want {
 			return path, true
 		}
 	}
