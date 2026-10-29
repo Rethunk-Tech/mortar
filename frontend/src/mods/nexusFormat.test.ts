@@ -51,12 +51,23 @@ test('a release outranks its pre-releases, matching SMAPI CompareVersions', () =
     ['v1.2.3+build5', '1.2.3', 0],
     ['1.2.3.4', '1.2.3', 1],
     ['3.0.0-unofficial.1-pathoschild', '3.0.0', -1],
+    ['1.0-beta-2', '1.0-beta-10', -1],
+    ['1.0-unofficial.1', '1.0-beta.1', -1],
+    ['1.0.0-unofficial.10-pathoschild', '1.0.0-unofficial.9-pathoschild', 1],
+    ['1.0.0-beta', '1.0.0-unofficial.1-pathoschild', 1],
+    ['1.0-5', '1.0-10a', -1],
+    ['1.0-3000000000', '1.0-9', 1],
+    ['1.0-99999999999999999999', '1.0-1', 1],
+    ['1.0-Beta.2', '1.0-beta.1', 1],
+    ['1.0-Unofficial.1', '1.0-unofficial.1', 0],
+    ['V1.0', '1.0', 0],
+    ['1.0-beta+build.001', '1.0-beta+build.006', 0],
   ]
   for (const [a, b, want] of cases) {
     expect(isNewer(a, b)).toBe(want > 0)
     expect(isNewer(b, a)).toBe(want < 0)
   }
-  for (const bad of ['', '1', 'abc', '1.x']) {
+  for (const bad of ['', '1', 'abc', '1.x', '1.0-a..b', '1.0-.a', '1.0-beta.', '1.0--1']) {
     expect(isNewer(bad, '1.0')).toBe(false)
   }
 })

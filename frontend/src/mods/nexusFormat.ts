@@ -5,13 +5,9 @@ import type { File } from '../../bindings/github.com/Rethunk-Tech/mortar/interna
 const current = new Set(['MAIN', 'UPDATE', 'OPTIONAL', 'MISCELLANEOUS'])
 
 const VERSION =
-  /^v?(\d+)\.(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:-([0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?$/
-
-const ATOI = /^[+-]?\d+$/
+  /^v?(\d+)\.(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:-([0-9A-Za-z]+(?:[.-][0-9A-Za-z]+)*))?(?:\+[0-9A-Za-z.-]+)?$/i
 
 const CHANGELOG_CAP = 5
-
-const atoi = (s: string) => (ATOI.test(s) ? Number(s) : null)
 
 const sign = (n: number) => {
   if (n < 0) {
@@ -23,19 +19,46 @@ const sign = (n: number) => {
   return 0
 }
 
+const DIGITS = /^\d+$/
+const LEADING_ZEROS = /^0+/
+const PRE_SEPARATOR = /[.-]/
+
+const cmpText = (a: string, b: string) => {
+  if (a === b) {
+    return 0
+  }
+  return a < b ? -1 : 1
+}
+
+const isDigits = (s: string) => DIGITS.test(s)
+
+// "unofficial" ranks lowest, numeric identifiers compare by value at any length and rank below text ones.
 const comparePre = (a: string, b: string) => {
-  const na = atoi(a)
-  const nb = atoi(b)
-  if (na !== null && nb !== null) {
-    return sign(na - nb)
+  const x = a.toLowerCase()
+  const y = b.toLowerCase()
+  if (x === y) {
+    return 0
   }
-  if (na !== null) {
-    return -1
-  }
-  if (nb !== null) {
+  if (y === 'unofficial') {
     return 1
   }
-  return sign(a.toLowerCase().localeCompare(b.toLowerCase()))
+  if (x === 'unofficial') {
+    return -1
+  }
+  const nx = isDigits(x)
+  const ny = isDigits(y)
+  if (nx && ny) {
+    const p = x.replace(LEADING_ZEROS, '')
+    const q = y.replace(LEADING_ZEROS, '')
+    return sign(p.length - q.length) || cmpText(p, q)
+  }
+  if (nx) {
+    return -1
+  }
+  if (ny) {
+    return 1
+  }
+  return cmpText(x, y)
 }
 
 const parseVersion = (s: string) => {
@@ -51,7 +74,7 @@ const parseVersion = (s: string) => {
       patch ? Number(patch) : 0,
       revision ? Number(revision) : 0,
     ],
-    pre: pre ? pre.split('.') : [],
+    pre: pre ? pre.split(PRE_SEPARATOR) : [],
   }
 }
 
