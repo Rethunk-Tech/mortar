@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"runtime"
 	"slices"
 	"strings"
 
@@ -209,19 +208,7 @@ func GaleDataDirs(extra string) []string {
 	if extra != "" && safefs.IsFile(filepath.Join(extra, galeDB)) {
 		out = append(out, extra)
 	}
-	var bases []string
-	if runtime.GOOS == "linux" {
-		// Inside the Flatpak XDG_DATA_HOME is the sandbox's own folder; the host's ~/.local/share is granted read-only.
-		if xdg := os.Getenv("XDG_DATA_HOME"); xdg != "" {
-			bases = append(bases, xdg)
-		}
-		if home, err := os.UserHomeDir(); err == nil {
-			bases = append(bases, userdirs.HostDataHome(home))
-		}
-	} else if base, err := os.UserConfigDir(); err == nil {
-		bases = append(bases, base)
-	}
-	for _, base := range bases {
+	for _, base := range managerBases(userdirs.HostDataHome) {
 		p := filepath.Join(base, galeAppID)
 		if st, err := safefs.Stat(p); err == nil && st.IsDir() && !slices.Contains(out, p) {
 			out = append(out, p)

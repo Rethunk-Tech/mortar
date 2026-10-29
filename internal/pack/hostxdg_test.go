@@ -27,8 +27,12 @@ func TestManagerDataDirsFollowHostXDGHomes(t *testing.T) {
 	t.Setenv("FLATPAK_ID", "tech.rethunk.Mortar")
 	t.Setenv("HOST_XDG_CONFIG_HOME", filepath.Join(host, "config"))
 	t.Setenv("HOST_XDG_DATA_HOME", filepath.Join(host, "data"))
-	if got := DataDirs(""); !slices.Contains(got, r2) {
-		t.Fatalf("r2modman dirs %v lack %s", got, r2)
+	sandboxR2 := filepath.Join(home, ".var", "app", "x", "config", "r2modmanPlus-local")
+	if err := os.MkdirAll(sandboxR2, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if got := DataDirs(""); !slices.Contains(got, r2) || slices.Contains(got, sandboxR2) {
+		t.Fatalf("r2modman dirs %v: want the host's %s and not the sandbox's own", got, r2)
 	}
 	if got := GaleDataDirs(""); !slices.Contains(got, gale) {
 		t.Fatalf("gale dirs %v lack %s", got, gale)

@@ -274,15 +274,7 @@ func DataDirs(extra string) []string {
 	if extra != "" && safefs.IsDir(extra) {
 		out = append(out, extra)
 	}
-	var bases []string
-	if base, err := os.UserConfigDir(); err == nil {
-		bases = append(bases, base)
-	}
-	// Inside the Flatpak the config dir is the sandbox's own; the host's ~/.config folders are granted read-only.
-	if home, err := os.UserHomeDir(); err == nil && runtime.GOOS == "linux" {
-		bases = append(bases, userdirs.HostConfigHome(home))
-	}
-	for _, base := range bases {
+	for _, base := range managerBases(userdirs.HostConfigHome) {
 		for _, p := range []string{
 			filepath.Join(base, "r2modmanPlus-local"),
 			filepath.Join(base, "Thunderstore Mod Manager", "DataFolder"),
@@ -312,4 +304,24 @@ func readCapped(file string, limit int64) ([]byte, error) {
 		return nil, fmt.Errorf("%s is larger than %s", filepath.Base(file), bytefmt.Format(limit))
 	}
 	return safefs.ReadFile(file)
+}
+
+// managerBases is the folder another mod manager keeps its data under: on Linux the host's XDG home (linuxHome, which
+// inside the Flatpak is the host's, since no other manager installs into Mortar's sandbox), on Windows %AppData%, and
+// on macOS the user config dir.
+func managerBases(linuxHome func(home string) string) []string {
+	home, _ := os.UserHomeDir()
+	var base string
+	switch runtime.GOOS {
+	case "linux":
+		base = linuxHome(home)
+	case "windows":
+		base = userdirs.AppData(home)
+	default:
+		base, _ = os.UserConfigDir()
+	}
+	if base == "" {
+		return nil
+	}
+	return []string{base}
 }
