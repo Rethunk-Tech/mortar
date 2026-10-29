@@ -65,6 +65,10 @@ func (c *Client) CollectionArchive(ctx context.Context, downloadLink string) ([]
 		return nil, &StatusError{Code: resp.StatusCode, Status: resp.Status}
 	}
 	b, err := fsx.ReadCapped(idleReader{resp.Body, stall}, MaxCollectionArchive)
+	// A stall cancels the request, and the mirror may then end the body cleanly before the read sees the cancel.
+	if err == nil {
+		err = context.Cause(ctx)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("the collection archive: %w", cmp.Or(context.Cause(ctx), err))
 	}
