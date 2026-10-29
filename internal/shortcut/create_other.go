@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/nxm"
@@ -18,7 +19,7 @@ import (
 
 // launcherID is the desktop file id of a profile's shortcut; it starts with the app id, as the launcher portal requires.
 func launcherID(arg string) string {
-	return sandbox.AppID + ".play-" + strings.ReplaceAll(strings.TrimPrefix(arg, playFlag), "/", "-") + ".desktop"
+	return appversion.AppID + ".play-" + strings.ReplaceAll(strings.TrimPrefix(arg, playFlag), "/", "-") + ".desktop"
 }
 
 // create writes a desktop entry under the user's applications folder, where launchers and app menus find it. Inside
@@ -190,7 +191,7 @@ func RemoveStartMenu() error {
 	if err != nil {
 		return err
 	}
-	paths, err := filepath.Glob(filepath.Join(base, "applications", "tech.rethunk.Mortar.play-*.desktop"))
+	paths, err := filepath.Glob(filepath.Join(base, "applications", appversion.AppID+".play-*.desktop"))
 	if err != nil {
 		return err
 	}
@@ -212,7 +213,7 @@ func Repoint(exe string) error {
 	if err != nil {
 		return err
 	}
-	paths, err := filepath.Glob(filepath.Join(base, "applications", "tech.rethunk.Mortar.play-*.desktop"))
+	paths, err := filepath.Glob(filepath.Join(base, "applications", appversion.AppID+".play-*.desktop"))
 	if err != nil {
 		return err
 	}

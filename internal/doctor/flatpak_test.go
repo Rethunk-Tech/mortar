@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
@@ -34,7 +35,7 @@ func TestFlatpakLibraryChecksNameLibrariesTheSandboxCannotSee(t *testing.T) {
 	if got := flatpakLibraryChecks(); len(got) != 0 {
 		t.Fatalf("outside a Flatpak: %+v", got)
 	}
-	flatpakID = sandbox.AppID
+	flatpakID = appversion.AppID
 	got := flatpakLibraryChecks()
 	if len(got) != 1 || got[0].Status != Warn || !strings.Contains(got[0].Fix, "--filesystem="+gone+" ") {
 		t.Fatalf("inside a Flatpak: %+v", got)

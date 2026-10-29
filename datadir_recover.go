@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
@@ -78,7 +79,7 @@ func logStartupFailure(err error) {
 // per data folder for a portable copy, so it can run beside the installed one. It is the app id because Wails owns
 // the D-Bus name <id>.SingleInstance, and a Flatpak may own names under its own app id without any permission.
 func singleInstanceID(dataDir string) string {
-	const id = "tech.rethunk.Mortar"
+	const id = appversion.AppID
 	if !datadir.Portable() {
 		return id
 	}

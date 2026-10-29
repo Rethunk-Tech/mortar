@@ -4,6 +4,7 @@ import (
 	"os"
 	"slices"
 
+	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 	"github.com/Rethunk-Tech/mortar/internal/steam"
@@ -40,7 +41,7 @@ func flatpakLibraryChecks() []Check {
 				Detail: "Steam library " + lib + " is not reachable: unmounted, or outside the folders Mortar's Flatpak may read",
 				Code:   "flatpakLibrary",
 				Params: params("path", lib),
-				Fix:    "flatpak override --user --filesystem=" + lib + " " + sandbox.AppID + ", then restart Mortar",
+				Fix:    "flatpak override --user --filesystem=" + lib + " " + appversion.AppID + ", then restart Mortar",
 			})
 		}
 	}

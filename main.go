@@ -347,7 +347,7 @@ func run() error {
 		// ApplicationID is the GtkApplication / Wayland app_id and the Linux desktop file id. It must not equal
 		// UniqueID: both become D-Bus names, and GApplication also owns ApplicationID on the session bus.
 		// Mortar decides itself whether closing the last window quits or leaves it in the tray.
-		Linux: application.LinuxOptions{ApplicationID: "tech.rethunk.Mortar", DisableQuitOnLastWindowClosed: true},
+		Linux: application.LinuxOptions{ApplicationID: appversion.AppID, DisableQuitOnLastWindowClosed: true},
 		Windows: application.WindowsOptions{
 			WebviewUserDataPath:           filepath.Join(dataDir, "webview"),
 			DisableQuitOnLastWindowClosed: true,

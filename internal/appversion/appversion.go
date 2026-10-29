@@ -16,6 +16,9 @@ import (
 // Taskfile schema version, not the app's.
 var infoVersion = regexp.MustCompile(`(?m)^info:\n(?:[ \t]+.*\n)*?[ \t]+version:[ \t]*"([^"]+)"`)
 
+// AppID is Mortar's application id: the Flatpak id, the desktop-entry basename and the single-instance id.
+const AppID = "tech.rethunk.Mortar"
+
 // UserAgent names Mortar to a site.
 func UserAgent(version string) string {
 	if version == "" {

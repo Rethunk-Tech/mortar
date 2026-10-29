@@ -7,8 +7,8 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
 func TestDriversRunOnlyForCatalogStores(t *testing.T) {
@@ -112,7 +112,7 @@ func TestBottlesDirsFollowCustomXDGData(t *testing.T) {
 		}
 	})
 	t.Run("flatpak", func(t *testing.T) {
-		t.Setenv("FLATPAK_ID", sandbox.AppID)
+		t.Setenv("FLATPAK_ID", appversion.AppID)
 		t.Setenv("XDG_DATA_HOME", filepath.Join(home, "own", "data"))
 		t.Setenv("HOST_XDG_DATA_HOME", data)
 		if got := bottlesDirs(home); !slices.Contains(got, want) {

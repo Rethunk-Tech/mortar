@@ -14,14 +14,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
 const (
-	desktopID   = "tech.rethunk.Mortar.desktop"
-	linuxAppID  = "tech.rethunk.Mortar"
+	desktopID   = appversion.AppID + ".desktop"
 	mortarMime  = "x-scheme-handler/mortar"
 	fileMime    = "application/x-mortar"
 	updateMIME  = "update-mime-database"
@@ -193,7 +193,7 @@ Categories=Game;Utility;
 Keywords=mod;manager;nexus;stardew;
 StartupWMClass=%s
 MimeType=%s
-`, quoteExec(l.exe), linuxAppID, mime)
+`, quoteExec(l.exe), appversion.AppID, mime)
 }
 
 // integrator is the id of an entry in the user's applications folder that an AppImage integrator (GearLever,
@@ -213,7 +213,7 @@ func (l *System) integrator() string {
 	for _, e := range entries {
 		name := e.Name()
 		// Mortar's own entry and its profile shortcuts all start with the app id.
-		if !strings.HasSuffix(name, ".desktop") || strings.HasPrefix(name, linuxAppID) {
+		if !strings.HasSuffix(name, ".desktop") || strings.HasPrefix(name, appversion.AppID) {
 			continue
 		}
 		argv := splitDesktopExec(desktopExec(filepath.Join(dir, name)))

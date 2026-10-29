@@ -7,7 +7,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/sandbox"
+	"github.com/Rethunk-Tech/mortar/internal/appversion"
 )
 
 // testGame is a game the way a Game implementation describes it to the GOG locators.
@@ -158,7 +158,7 @@ func TestHeroicAndMinigalaxyDirsFollowCustomXDGConfig(t *testing.T) {
 		check(t)
 	})
 	t.Run("flatpak", func(t *testing.T) {
-		t.Setenv("FLATPAK_ID", sandbox.AppID)
+		t.Setenv("FLATPAK_ID", appversion.AppID)
 		t.Setenv("XDG_CONFIG_HOME", filepath.Join(home, "own", "config"))
 		t.Setenv("HOST_XDG_CONFIG_HOME", cfg)
 		check(t)

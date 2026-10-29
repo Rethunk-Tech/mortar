@@ -12,6 +12,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 
 	"github.com/Rethunk-Tech/mortar/internal/launch"
@@ -148,7 +149,7 @@ func (s *Service) Remove(game, profile string) error {
 
 // ErrFlatpakSteamShortcut means the profile's shortcut cannot go into Steam from a Flatpak: Steam on the host
 // cannot start Mortar's /app/bin/mortar, and the sandbox cannot edit Steam's files without broad host access.
-var ErrFlatpakSteamShortcut = errors.New("adding to Steam is not available in the Flatpak: use the desktop shortcut, or add Mortar to Steam as a non-Steam game with the command `flatpak run tech.rethunk.Mortar --play=<game>/<profile> --steam-session`")
+var ErrFlatpakSteamShortcut = errors.New("adding to Steam is not available in the Flatpak: use the desktop shortcut, or add Mortar to Steam as a non-Steam game with the command `flatpak run " + appversion.AppID + " --play=<game>/<profile> --steam-session`")
 
 // ErrSteamRunning means Steam is open; it rewrites its shortcut list when it exits, which would drop the new entry.
 var ErrSteamRunning = errors.New("close Steam first: it rewrites its game list when it exits")

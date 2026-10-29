@@ -12,9 +12,6 @@ import (
 	"time"
 )
 
-// AppID is Mortar's Flatpak application id.
-const AppID = "tech.rethunk.Mortar"
-
 // Getenv and Output (flatpak-spawn's arguments) are replaced in tests.
 var (
 	Getenv = os.Getenv

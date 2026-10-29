@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
@@ -336,7 +337,7 @@ func TestRegisterLinksWritesReverseDNSDesktop(t *testing.T) {
 		t.Fatalf("desktop path %s", l.desktopPath())
 	}
 	b, err := fsx.ReadFile(l.desktopPath())
-	if err != nil || !strings.Contains(string(b), "StartupWMClass="+linuxAppID) {
+	if err != nil || !strings.Contains(string(b), "StartupWMClass="+appversion.AppID) {
 		t.Fatalf("desktop file: %s, %v", b, err)
 	}
 }
@@ -469,7 +470,7 @@ func gearLeverEntry(exe string) string {
 func TestNoIntegratorWritesOurEntry(t *testing.T) {
 	l, r := newLinux(t, "")
 	// Our own profile shortcut and an entry that cannot take a link do not count as an integrator's.
-	writeApp(t, l, linuxAppID+".play-stardew-x.desktop", "[Desktop Entry]\nExec=\""+l.exe+"\" --play=stardew/x\n")
+	writeApp(t, l, appversion.AppID+".play-stardew-x.desktop", "[Desktop Entry]\nExec=\""+l.exe+"\" --play=stardew/x\n")
 	writeApp(t, l, "other.desktop", "[Desktop Entry]\nExec="+l.exe+"\n")
 	if err := l.Register(); err != nil {
 		t.Fatal(err)

@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
@@ -310,7 +311,7 @@ func TestStartInFlatpakGoesThroughFlatpakSpawn(t *testing.T) {
 	old := sandbox.Getenv
 	sandbox.Getenv = func(k string) string {
 		if k == "FLATPAK_ID" {
-			return sandbox.AppID
+			return appversion.AppID
 		}
 		return ""
 	}

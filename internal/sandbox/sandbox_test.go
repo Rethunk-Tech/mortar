@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"reflect"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/appversion"
 )
 
 func TestHostArgv(t *testing.T) {
@@ -45,7 +47,7 @@ func TestInFlatpak(t *testing.T) {
 	if InFlatpak() {
 		t.Fatal("no FLATPAK_ID")
 	}
-	Getenv = func(k string) string { return map[string]string{"FLATPAK_ID": AppID}[k] }
+	Getenv = func(k string) string { return map[string]string{"FLATPAK_ID": appversion.AppID}[k] }
 	if !InFlatpak() {
 		t.Fatal("FLATPAK_ID set")
 	}
@@ -54,7 +56,7 @@ func TestInFlatpak(t *testing.T) {
 func TestHostXDGHomes(t *testing.T) {
 	home := t.TempDir()
 	custom := filepath.Join(t.TempDir(), "cfg")
-	t.Setenv("FLATPAK_ID", AppID)
+	t.Setenv("FLATPAK_ID", appversion.AppID)
 	t.Setenv("HOST_XDG_CONFIG_HOME", custom)
 	t.Setenv("HOST_XDG_DATA_HOME", "relative/data")
 	if got := HostConfigHome(home); got != custom {
