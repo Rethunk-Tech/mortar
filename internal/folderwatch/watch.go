@@ -71,6 +71,9 @@ type watch struct {
 	timer *time.Timer
 	// writing holds files that received write events since the last announcement; gen counts every event.
 	writing map[string]struct{}
+	// created holds files that appeared since the last announcement; the ones still held open by a writer join
+	// writing when the folder goes quiet.
+	created map[string]struct{}
 	gen     int
 }
 
@@ -155,9 +158,15 @@ func Run(ctx context.Context, d Deps) error {
 				log.Printf("folderwatch: %s: %v", dir, err)
 				continue
 			}
-			a := &watch{t: t, writing: map[string]struct{}{}}
+			a := &watch{t: t, writing: map[string]struct{}{}, created: map[string]struct{}{}}
 			a.timer = time.AfterFunc(quiet, func() {
 				mu.Lock()
+				for n := range a.created {
+					if held(n) {
+						a.writing[n] = struct{}{}
+					}
+				}
+				clear(a.created)
 				now := a.t
 				// A build still writing its output waits like a download does.
 				waits := (now.Event == DownloadsEvent || now.Event == ExtraFolderEvent) && len(a.writing) > 0
@@ -207,6 +216,9 @@ func Run(ctx context.Context, d Deps) error {
 				a.gen++
 				if ev.Has(fsnotify.Write) {
 					a.writing[ev.Name] = struct{}{}
+				}
+				if ev.Has(fsnotify.Create) {
+					a.created[ev.Name] = struct{}{}
 				}
 				a.timer.Reset(quiet)
 			}
