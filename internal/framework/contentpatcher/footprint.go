@@ -895,7 +895,16 @@ func absInt(n int) int {
 const maxOverlayPixels = 100_000_000
 
 func pngPixelsWithinCap(w, h int) bool {
-	return w >= 0 && h >= 0 && int64(w)*int64(h) <= maxOverlayPixels
+	return areaWithin(w, h, maxOverlayPixels)
+}
+
+// areaWithin reports whether a w by h area is at most limit. It divides rather than multiplies, since dimensions a
+// file declares can be large enough that the product wraps negative and passes.
+func areaWithin(w, h int, limit int64) bool {
+	if w < 0 || h < 0 || limit < 0 {
+		return false
+	}
+	return h == 0 || int64(w) <= limit/int64(h)
 }
 
 // pngDecodable reports whether raw's declared size is within the cap, reading only the header.
@@ -1286,11 +1295,11 @@ const maxTMXTiles = 4_000_000
 func tmxWithinTileCap(layers []tmxLayer) bool {
 	var total int64
 	add := func(width, height int) bool {
-		if width < 0 || height < 0 {
+		if !areaWithin(width, height, maxTMXTiles-total) {
 			return false
 		}
 		total += int64(width) * int64(height)
-		return total <= maxTMXTiles
+		return true
 	}
 	for _, layer := range layers {
 		if len(layer.Data.Chunks) == 0 {
@@ -1335,7 +1344,7 @@ func decodeTMXValues(text, encoding, compression string, width, height int) ([]i
 	if err != nil {
 		return nil, false
 	}
-	if width < 0 || height < 0 || int64(width)*int64(height) > maxTMXTiles {
+	if !areaWithin(width, height, maxTMXTiles) {
 		return nil, false
 	}
 	limit := int64(width) * int64(height) * 4

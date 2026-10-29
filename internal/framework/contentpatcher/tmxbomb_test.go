@@ -50,4 +50,28 @@ func TestTMXTileCapCoversTheWholeMap(t *testing.T) {
 	if tmxWithinTileCap([]tmxLayer{{Width: -1, Height: 10}}) {
 		t.Fatal("a negative width accepted")
 	}
+	// A declared size whose product wraps negative must not pay for the chunks after it.
+	wrap := tmxChunk{Width: 1 << 62, Height: 2}
+	if tmxWithinTileCap([]tmxLayer{{Data: tmxData{Chunks: []tmxChunk{wrap, chunk, chunk, chunk, chunk, chunk}}}}) {
+		t.Fatal("a chunk whose area overflows accepted")
+	}
+}
+
+func TestAreaWithinDoesNotWrap(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		w, h int
+		want bool
+	}{
+		{10_000, 10_000, true},
+		{10_001, 10_000, false},
+		{0, 1 << 62, true},
+		{0xffffffff, 0xffffffff, false},
+		{1 << 62, 2, false},
+		{-1, 1, false},
+	} {
+		if got := areaWithin(c.w, c.h, maxOverlayPixels); got != c.want {
+			t.Errorf("areaWithin(%d, %d) = %v, want %v", c.w, c.h, got, c.want)
+		}
+	}
 }

@@ -640,9 +640,16 @@ func TestOverlayAlphaMaskWithBadChecksumIsNotServed(t *testing.T) {
 // is refused before its claim is allocated.
 func TestAlphaDiskRefusesAnOversizedHeaderBeforeAllocating(t *testing.T) {
 	t.Parallel()
+	for _, header := range []string{"65536 65536\n", "4294967296 4294967296\n"} {
+		refusesAlphaHeader(t, header)
+	}
+}
+
+func refusesAlphaHeader(t *testing.T, header string) {
+	t.Helper()
 	var buf bytes.Buffer
 	zw := gzip.NewWriter(&buf)
-	if _, err := zw.Write([]byte("65536 65536\n")); err != nil {
+	if _, err := zw.Write([]byte(header)); err != nil {
 		t.Fatal(err)
 	}
 	if err := zw.Close(); err != nil {
@@ -655,7 +662,7 @@ func TestAlphaDiskRefusesAnOversizedHeaderBeforeAllocating(t *testing.T) {
 	var before, after runtime.MemStats
 	runtime.ReadMemStats(&before)
 	if _, ok := readAlphaDisk(path); ok {
-		t.Fatal("a 65536x65536 header read as a mask")
+		t.Fatalf("header %q read as a mask", header)
 	}
 	runtime.ReadMemStats(&after)
 	if grew := after.TotalAlloc - before.TotalAlloc; grew > 64<<20 {
