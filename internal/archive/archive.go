@@ -1,464 +1,132 @@
-// Package archive extracts zip, RAR, 7z, tar and gzip, xz, lzma, zstd or bzip2 files (alone or around a tar) from an
-// untrusted source into a directory.
+// Package archive is Mortar's face on github.com/Rethunk-Tech/go-archive, which reads every untrusted archive: it
+// opens files by path, applies Windows' name rules to extraction, and previews an archive's contents for the UI.
 package archive
 
 import (
-	"archive/zip"
 	"bytes"
-	"compress/gzip"
-	"errors"
-	"fmt"
-	"hash/crc32"
-	"io"
-	"io/fs"
 	"os"
-	"path"
 	"path/filepath"
-	"strings"
-	"unicode/utf8"
+
+	ga "github.com/Rethunk-Tech/go-archive"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/winname"
-	"golang.org/x/text/encoding/simplifiedchinese"
-
-	"github.com/bodgit/sevenzip"
-	"github.com/klauspost/compress/zstd"
-	"github.com/nwaples/rardecode/v2"
 )
 
-// Default caps, applied to every zero field of options. Thunderstore allows gigantic packages, so the byte caps sit far
-// above any real one and the ratio guard, not these, stops a small archive claiming them.
+type (
+	// Error names the entry that failed and why.
+	Error = ga.Error
+	// Entry is one archive entry.
+	Entry = ga.Entry
+)
+
 const (
-	DefaultMaxEntryBytes int64 = 32 << 30
-	DefaultMaxTotalBytes int64 = 64 << 30
-	DefaultMaxEntries          = 20000
-
-	// MaxDecoderBytes caps the window or dictionary a decompressor may allocate. It is separate from the entry cap
-	// because a bigger file must not mean a bigger in-memory dictionary.
-	MaxDecoderBytes int64 = 256 << 20
-
-	// Below DefaultRatioFloor an archive may unpack to any size within the caps; above it, to at most
-	// DefaultMaxRatio times its own size. Deflate tops out near 1030:1, so real packages stay well inside.
-	DefaultMaxRatio   int64 = 1024
-	DefaultRatioFloor int64 = 2 << 30
+	DefaultMaxEntryBytes = ga.DefaultMaxEntryBytes
+	DefaultMaxTotalBytes = ga.DefaultMaxTotalBytes
+	DefaultMaxEntries    = ga.DefaultMaxEntries
 )
 
-// options lowers or raises the extraction caps; a zero field means its default.
-type options struct {
-	MaxEntryBytes int64
-	MaxTotalBytes int64
-	MaxEntries    int
-	MaxRatio      int64
-	RatioFloor    int64
-}
-
-// ratioCap is the most an archive of srcSize bytes may unpack to, or MaxTotalBytes when its size is unknown.
-func (o options) ratioCap(srcSize int64) int64 {
-	if srcSize <= 0 {
-		return o.MaxTotalBytes
-	}
-	return min(o.MaxTotalBytes, max(o.RatioFloor, srcSize*o.MaxRatio))
-}
-
-func (o options) withDefaults() options {
-	if o.MaxEntryBytes == 0 {
-		o.MaxEntryBytes = DefaultMaxEntryBytes
-	}
-	if o.MaxTotalBytes == 0 {
-		o.MaxTotalBytes = DefaultMaxTotalBytes
-	}
-	if o.MaxEntries == 0 {
-		o.MaxEntries = DefaultMaxEntries
-	}
-	if o.MaxRatio == 0 {
-		o.MaxRatio = DefaultMaxRatio
-	}
-	if o.RatioFloor == 0 {
-		o.RatioFloor = DefaultRatioFloor
-	}
-	return o
-}
-
-// Reasons carried by Error. A disk-full write is reported as the underlying
-// error, so errors.Is(err, syscall.ENOSPC) holds.
 var (
-	ErrUnsupportedFormat = errors.New("not a zip, RAR, 7z, tar, gzip, xz, lzma, zstd or bzip2 archive")
-	ErrEncrypted         = errors.New("archive is encrypted")
-	ErrTraversal         = errors.New("path escapes the destination")
-	ErrUnsafeName        = errors.New("name is not allowed")
-	ErrCaseCollision     = errors.New("name collides with another entry")
-	ErrLink              = errors.New("symlinks and hardlinks are not allowed")
-	ErrSpecialFile       = errors.New("device, pipe and socket entries are not allowed")
-	ErrEntryTooLarge     = errors.New("entry exceeds the size cap")
-	ErrArchiveTooLarge   = errors.New("archive exceeds the extracted size cap")
-	ErrTooManyEntries    = errors.New("archive exceeds the entry cap")
-	ErrRatio             = errors.New("archive unpacks to far more than its size allows")
-	ErrChecksum          = errors.New("checksum mismatch")
-	ErrMalformed         = errors.New("archive is malformed")
+	ErrUnsupportedFormat = ga.ErrUnsupportedFormat
+	ErrEncrypted         = ga.ErrEncrypted
+	ErrTraversal         = ga.ErrTraversal
+	ErrUnsafeName        = ga.ErrUnsafeName
+	ErrCaseCollision     = ga.ErrCaseCollision
+	ErrLink              = ga.ErrLink
+	ErrSpecialFile       = ga.ErrSpecialFile
+	ErrEntryTooLarge     = ga.ErrEntryTooLarge
+	ErrArchiveTooLarge   = ga.ErrArchiveTooLarge
+	ErrTooManyEntries    = ga.ErrTooManyEntries
+	ErrRatio             = ga.ErrRatio
+	ErrChecksum          = ga.ErrChecksum
+	ErrMalformed         = ga.ErrMalformed
+	ErrDecoderMemory     = ga.ErrDecoderMemory
 )
 
-// Error names the entry that failed and why. Entry is empty for a failure of
-// the archive as a whole.
-type Error struct {
-	Entry  string
-	Reason error
-}
+// RecoverMalformed turns a panic in a format reader into ErrMalformed for *err.
+func RecoverMalformed(err *error) { ga.RecoverMalformed(err) }
 
-func (e *Error) Error() string {
-	if e.Entry == "" {
-		return "archive: " + e.Reason.Error()
-	}
-	return fmt.Sprintf("archive: entry %q: %v", e.Entry, e.Reason)
-}
-
-func (e *Error) Unwrap() error { return e.Reason }
-
-// Extract unpacks the archive at archivePath into dest, detecting the format
-// from its magic bytes. dest must exist. Extraction stops at the first
-// failure and leaves what it wrote in dest, so the caller passes a temp
-// directory and discards it on error.
+// Extract unpacks the archive at archivePath into dest, which must exist. It stops at the first failure and leaves
+// what it wrote, so the caller passes a temp directory and discards it on error.
 func Extract(archivePath, dest string) error {
-	return extractWith(archivePath, dest, options{})
-}
-
-// RecoverMalformed turns a panic in a format reader, which a crafted archive can cause, into ErrMalformed for *err, so an
-// untrusted download fails its item instead of ending the process.
-func RecoverMalformed(err *error) {
-	if r := recover(); r != nil {
-		*err = &Error{Reason: fmt.Errorf("%w: %v", ErrMalformed, r)}
-	}
-}
-
-// OpenSevenZip is sevenzip.NewReader with a panic from a crafted header returned as ErrMalformed. Reading a file
-// from the result can panic too, so a caller outside this package also defers RecoverMalformed.
-func OpenSevenZip(r io.ReaderAt, size int64) (zr *sevenzip.Reader, err error) {
-	defer RecoverMalformed(&err)
-	return sevenzip.NewReader(r, size)
-}
-
-// extractWith is Extract with lowered or raised caps, which the tests use.
-func extractWith(archivePath, dest string, opts options) (err error) {
-	defer RecoverMalformed(&err)
-	f, err := fsx.Open(archivePath)
+	f, size, err := openFile(archivePath)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = f.Close() }()
+	root, err := os.OpenRoot(dest)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = root.Close() }()
+	return ga.Extract(f, size, filepath.Base(archivePath), root, ga.Options{Segment: winname.Valid})
+}
+
+// DeclaredSize sums the uncompressed sizes the archive's headers declare. It is informational: an untrusted
+// archive can lie.
+func DeclaredSize(archivePath string) (int64, error) {
+	f, size, err := openFile(archivePath)
+	if err != nil {
+		return 0, err
+	}
+	defer func() { _ = f.Close() }()
+	return ga.DeclaredSize(f, size)
+}
+
+func openFile(archivePath string) (*os.File, int64, error) {
+	f, err := fsx.Open(archivePath)
+	if err != nil {
+		return nil, 0, err
+	}
 	info, err := f.Stat()
 	if err != nil {
-		return err
+		_ = f.Close()
+		return nil, 0, err
 	}
-
-	var magic [headLen]byte
-	n, _ := io.ReadFull(f, magic[:])
-	head := magic[:n]
-
-	x := &extractor{dest: dest, opts: opts.withDefaults(), seen: map[string]string{}, files: map[string]bool{}}
-	x.ratioMax = x.opts.ratioCap(info.Size())
-
-	switch detect(head) {
-	case fmtZip:
-		return x.zip(f, info.Size())
-	case fmtRAR:
-		if _, err := f.Seek(0, io.SeekStart); err != nil {
-			return err
-		}
-		return x.rar(f)
-	case fmtSevenZip:
-		return x.sevenZip(f, info.Size())
-	case fmtTar, fmtGzip, fmtXz, fmtLzma, fmtZstd, fmtBzip2:
-		if _, err := f.Seek(0, io.SeekStart); err != nil {
-			return err
-		}
-		return x.stream(f, detect(head), archivePath)
-	}
-	return &Error{Reason: ErrUnsupportedFormat}
+	return f, info.Size(), nil
 }
 
-const (
-	fmtNone = iota
-	fmtZip
-	fmtRAR
-	fmtSevenZip
-	fmtTar
-	fmtGzip
-	fmtXz
-	fmtLzma
-	fmtZstd
-	fmtBzip2
-)
-
-func detect(head []byte) int {
-	switch {
-	case bytes.HasPrefix(head, []byte("PK\x03\x04")), bytes.HasPrefix(head, []byte("PK\x05\x06")):
-		return fmtZip
-	case bytes.HasPrefix(head, []byte("Rar!\x1a\x07\x00")), bytes.HasPrefix(head, []byte("Rar!\x1a\x07\x01\x00")):
-		return fmtRAR
-	case bytes.HasPrefix(head, []byte("7z\xbc\xaf\x27\x1c")):
-		return fmtSevenZip
-	}
-	return detectStream(head)
+// Listing walks an archive's entries forward-only; Close releases the decoders and the file.
+type Listing struct {
+	*ga.Lister
+	f *os.File
 }
 
-type extractor struct {
-	dest    string
-	opts    options
-	entries int
-	// ratioMax is the most the archive may unpack to for its size.
-	ratioMax int64
-	total    int64
-	seen     map[string]string // lower-cased path -> spelling first used
-	files    map[string]bool
-}
-
-func (x *extractor) zip(r io.ReaderAt, size int64) error {
-	zr, err := zip.NewReader(r, size)
-	// The path check below is stricter than the reader's own.
-	if err != nil && (zr == nil || !errors.Is(err, zip.ErrInsecurePath)) {
-		return wrap("", err)
-	}
-	if len(zr.File) > x.opts.MaxEntries {
-		return &Error{Reason: ErrTooManyEntries}
-	}
-	for _, f := range zr.File {
-		f.Name = zipName(f)
-		mode := f.Mode()
-		if f.Flags&1 != 0 {
-			return &Error{Entry: f.Name, Reason: ErrEncrypted}
-		}
-		if err := checkKind(f.Name, mode); err != nil {
-			return err
-		}
-		// A writer that separates with backslashes ends a folder's name with one too, which the reader does not see as a folder.
-		isDir := mode.IsDir() || strings.HasSuffix(f.Name, `\`)
-		if err := x.entry(f.Name, isDir, func() (io.ReadCloser, error) { return f.Open() }, &f.CRC32); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// zipName is an entry's name as UTF-8. Zips written without the UTF-8 flag carry names in the writer's locale;
-// for Stardew mods that is most often GBK from Chinese-locale tools, and GB18030 decodes it. A name left as raw
-// bytes extracts to a folder the game's .NET runtime cannot open.
-func zipName(f *zip.File) string { return utf8Name(f.Name) }
-
-func utf8Name(name string) string {
-	if utf8.ValidString(name) {
-		return name
-	}
-	decoded, err := simplifiedchinese.GB18030.NewDecoder().String(name)
-	if err != nil || !utf8.ValidString(decoded) {
-		return strings.ToValidUTF8(name, "_")
-	}
-	return decoded
-}
-
-func (x *extractor) sevenZip(r io.ReaderAt, size int64) error {
-	zr, err := openCheckedSevenZip(r, size)
+// List opens the archive at archivePath for a forward walk, bounding what one entry may decompress to maxEntryBytes
+// (zero takes the module's default).
+func List(archivePath string, maxEntryBytes int64) (*Listing, error) {
+	f, size, err := openFile(archivePath)
 	if err != nil {
-		return wrap("", err)
+		return nil, err
 	}
-	if len(zr.File) > x.opts.MaxEntries {
-		return &Error{Reason: ErrTooManyEntries}
-	}
-	for _, f := range zr.File {
-		mode := f.Mode()
-		if err := checkKind(f.Name, mode); err != nil {
-			return err
-		}
-		if err := x.entry(f.Name, mode.IsDir(), f.Open, &f.CRC32); err != nil {
-			return err
-		}
-	}
-	return nil
+	return newListing(f, size, archivePath, maxEntryBytes)
 }
 
-func (x *extractor) rar(r io.Reader) error {
-	// A larger RAR window cannot produce an entry larger than the extraction cap.
-	rr, err := rardecode.NewReader(r, rardecode.MaxDictionarySize(MaxDecoderBytes))
+// ListBytes is List for an archive already in memory.
+func ListBytes(raw []byte, name string, maxEntryBytes int64) (*Listing, error) {
+	l, err := ga.NewLister(bytes.NewReader(raw), int64(len(raw)), name, ga.ListerOptions{MaxEntryBytes: maxEntryBytes})
 	if err != nil {
-		return wrap("", err)
+		return nil, err
 	}
-	for {
-		h, err := rr.Next()
-		if errors.Is(err, io.EOF) {
-			return nil
-		}
-		if err != nil {
-			return wrap("", err)
-		}
-		if h.Encrypted || h.HeaderEncrypted {
-			return &Error{Entry: h.Name, Reason: ErrEncrypted}
-		}
-		if h.LinkType != rardecode.LinkTypeNone {
-			return &Error{Entry: h.Name, Reason: ErrLink}
-		}
-		mode := h.Mode()
-		if h.HostOS == rardecode.HostOSUnix {
-			// Mode() reports only the symlink type bit; catch devices and pipes too.
-			switch h.Attributes & 0xF000 {
-			case 0, 0x4000, 0x8000:
-			case 0xA000:
-				return &Error{Entry: h.Name, Reason: ErrLink}
-			default:
-				return &Error{Entry: h.Name, Reason: ErrSpecialFile}
-			}
-		}
-		if err := checkKind(h.Name, mode); err != nil {
-			return err
-		}
-		// The reader verifies the RAR checksum itself when the entry ends.
-		open := func() (io.ReadCloser, error) { return io.NopCloser(rr), nil }
-		if err := x.entry(h.Name, h.IsDir, open, nil); err != nil {
-			return err
-		}
-	}
+	return &Listing{Lister: l}, nil
 }
 
-func checkKind(name string, mode fs.FileMode) error {
-	switch {
-	case mode&fs.ModeSymlink != 0:
-		return &Error{Entry: name, Reason: ErrLink}
-	case mode&(fs.ModeDevice|fs.ModeCharDevice|fs.ModeNamedPipe|fs.ModeSocket|fs.ModeIrregular) != 0:
-		return &Error{Entry: name, Reason: ErrSpecialFile}
-	}
-	return nil
-}
-
-// entry validates one entry's name and caps, then creates the directory or
-// writes the file. wantCRC is the CRC32 the archive declares, when it has one.
-func (x *extractor) entry(name string, isDir bool, open func() (io.ReadCloser, error), wantCRC *uint32) error {
-	rel, err := x.admit(name, isDir)
+func newListing(f *os.File, size int64, name string, maxEntryBytes int64) (*Listing, error) {
+	l, err := ga.NewLister(f, size, filepath.Base(name), ga.ListerOptions{MaxEntryBytes: maxEntryBytes})
 	if err != nil {
-		return err
+		_ = f.Close()
+		return nil, err
 	}
-	if rel == "" {
-		return nil
-	}
-	target := filepath.Join(x.dest, filepath.FromSlash(rel))
-	if isDir {
-		if err := os.MkdirAll(target, 0o750); err != nil {
-			return wrap(name, err)
-		}
-		return nil
-	}
-	if err := os.MkdirAll(filepath.Dir(target), 0o750); err != nil {
-		return wrap(name, err)
-	}
-	src, err := open()
-	if err != nil {
-		return wrap(name, err)
-	}
-	defer func() { _ = src.Close() }()
-	return x.write(name, target, src, wantCRC)
+	return &Listing{Lister: l, f: f}, nil
 }
 
-func (x *extractor) write(name, target string, src io.Reader, wantCRC *uint32) error {
-	// O_EXCL refuses to write through an existing symlink or over a duplicate.
-	out, err := fsx.CreateExcl(target, 0o600)
-	if err != nil {
-		return wrap(name, err)
-	}
-	limit := min(x.opts.MaxEntryBytes, x.opts.MaxTotalBytes-x.total, x.ratioMax-x.total)
-	h := crc32.NewIEEE()
-	// Reading past the limit proves the entry is over it without trusting declared sizes; the byte that
-	// proved it counts, so the checks below see n > limit.
-	n, err := io.Copy(io.MultiWriter(out, h), fsx.CapReader(src, limit))
-	if errors.Is(err, fsx.ErrTooLarge) {
-		err = nil
-		n++
-	}
-	x.total += n
-	if cerr := out.Close(); err == nil {
-		err = cerr
-	}
-	if err != nil {
-		return wrap(name, err)
-	}
-	if n > limit {
-		switch {
-		case n > x.opts.MaxEntryBytes:
-			return &Error{Entry: name, Reason: ErrEntryTooLarge}
-		case x.total > x.opts.MaxTotalBytes:
-			return &Error{Entry: name, Reason: ErrArchiveTooLarge}
+// Close releases the walk and the file.
+func (l *Listing) Close() error {
+	err := l.Lister.Close()
+	if l.f != nil {
+		if cerr := l.f.Close(); err == nil {
+			err = cerr
 		}
-		return &Error{Entry: name, Reason: ErrRatio}
 	}
-	if wantCRC != nil && h.Sum32() != *wantCRC {
-		return &Error{Entry: name, Reason: ErrChecksum}
-	}
-	return nil
-}
-
-// admit counts the entry and returns its clean slash-separated path, or ""
-// for an entry naming the destination itself.
-func (x *extractor) admit(name string, isDir bool) (string, error) {
-	rel, err := cleanName(name)
-	if err != nil {
-		return "", &Error{Entry: name, Reason: err}
-	}
-	if rel == "" {
-		return "", nil
-	}
-	x.entries++
-	if x.entries > x.opts.MaxEntries {
-		return "", &Error{Entry: name, Reason: ErrTooManyEntries}
-	}
-	segs := strings.Split(rel, "/")
-	for i := range segs {
-		p := strings.Join(segs[:i+1], "/")
-		if prev, ok := x.seen[strings.ToLower(p)]; ok && prev != p {
-			return "", &Error{Entry: name, Reason: ErrCaseCollision}
-		}
-		x.seen[strings.ToLower(p)] = p
-	}
-	if !isDir {
-		if x.files[rel] {
-			return "", &Error{Entry: name, Reason: ErrCaseCollision}
-		}
-		x.files[rel] = true
-	}
-	return rel, nil
-}
-
-func cleanName(name string) (string, error) {
-	name = strings.ReplaceAll(name, `\`, "/")
-	if strings.ContainsRune(name, 0) {
-		return "", ErrUnsafeName
-	}
-	if strings.HasPrefix(name, "/") {
-		return "", ErrTraversal
-	}
-	var segs []string
-	for s := range strings.SplitSeq(name, "/") {
-		switch s {
-		case "", ".":
-			continue
-		case "..":
-			return "", ErrTraversal
-		}
-		if !winname.Valid(s) {
-			return "", ErrUnsafeName
-		}
-		segs = append(segs, s)
-	}
-	return path.Join(segs...), nil
-}
-
-// wrap types a library or filesystem error as an *Error. Filesystem errors
-// stay in the chain, so errors.Is(err, syscall.ENOSPC) reports a full disk.
-func wrap(entry string, err error) error {
-	if _, typed := errors.AsType[*Error](err); typed {
-		return err
-	}
-	var re *sevenzip.ReadError
-	switch {
-	case errors.Is(err, zip.ErrChecksum), errors.Is(err, rardecode.ErrBadFileChecksum), errors.Is(err, gzip.ErrChecksum),
-		errors.Is(err, zstd.ErrCRCMismatch):
-		err = ErrChecksum
-	case errors.As(err, &re) && re.Encrypted:
-		err = ErrEncrypted
-	}
-	return &Error{Entry: entry, Reason: err}
+	return err
 }

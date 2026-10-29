@@ -1,13 +1,11 @@
 package sharesvc
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
+	"io"
 	"path"
 	"strings"
-
-	"github.com/bodgit/sevenzip"
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -36,19 +34,27 @@ type collectionDetails struct {
 // bundled/<mod>/. Only a bundled mod's config.json and config/*.json are taken, never its content.
 func readCollectionArchive(raw []byte) (_ collectionDetails, err error) {
 	defer archive.RecoverMalformed(&err)
-	zr, err := archive.OpenSevenZip(bytes.NewReader(raw), int64(len(raw)))
+	l, err := archive.ListBytes(raw, "collection.7z", maxCollectionJSON)
 	if err != nil {
 		return collectionDetails{}, err
 	}
+	defer func() { _ = l.Close() }()
 	var d collectionDetails
 	var found bool
 	bundles := map[string]*bundle{}
 	var total int64
-	for _, f := range zr.File {
-		name := path.Clean(strings.ReplaceAll(f.Name, "\\", "/"))
+	for {
+		f, err := l.Next()
+		if errors.Is(err, io.EOF) {
+			break
+		}
+		if err != nil {
+			return collectionDetails{}, err
+		}
+		name := path.Clean(f.Name)
 		switch {
 		case name == collectionManifestName:
-			b, err := readCapped(f, maxCollectionJSON)
+			b, err := readCapped(l, maxCollectionJSON)
 			if err != nil {
 				return collectionDetails{}, err
 			}
@@ -56,13 +62,13 @@ func readCollectionArchive(raw []byte) (_ collectionDetails, err error) {
 				return collectionDetails{}, err
 			}
 			found = true
-		case strings.HasPrefix(name, collectionBundleDir+"/") && !f.FileInfo().IsDir() && strings.HasSuffix(strings.ToLower(name), ".json"):
+		case strings.HasPrefix(name, collectionBundleDir+"/") && !f.IsDir && strings.HasSuffix(strings.ToLower(name), ".json"):
 			rest := strings.TrimPrefix(name, collectionBundleDir+"/")
 			dir, rel, ok := strings.Cut(rest, "/")
 			if !ok {
 				continue
 			}
-			b, err := readCapped(f, share.MaxConfigBytes)
+			b, err := readCapped(l, share.MaxConfigBytes)
 			if err != nil {
 				continue
 			}
@@ -124,8 +130,8 @@ func (b *bundle) configs() []share.Config {
 	return out
 }
 
-func readCapped(f *sevenzip.File, limit int64) ([]byte, error) {
-	rc, err := f.Open()
+func readCapped(l *archive.Listing, limit int64) ([]byte, error) {
+	rc, err := l.Open()
 	if err != nil {
 		return nil, err
 	}

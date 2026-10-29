@@ -14,7 +14,7 @@ Where the tests are, what each opt-in run proves and how to start it. The gate t
 | Layer | Location | Fixtures and helpers |
 | --- | --- | --- |
 | Go unit and service tests | `internal/<pkg>/*_test.go`, beside the code | `internal/testenv` opens stores for a service test, `testenv/testfs` points the data folder at a temp dir (`datadir` refuses the real one under `go test`), `testenv/packs` builds Content Patcher packs |
-| Archives and installers | `internal/archive`, `internal/installer`, `internal/fomod` | Crafted `.7z` and `.rar` files and golden layouts in each package's `testdata/`; zips are built in the test |
+| Archives and installers | `internal/archive`, `internal/installer`, `internal/fomod` | Golden layouts in each package's `testdata/`; zips are built in the test. The format readers, their caps and their crafted `.7z` and `.rar` fixtures are tested in the go-archive module; `internal/archive` tests only Mortar's face (preview, extensions, name policy) |
 | Share and sync | `internal/share`, `internal/sharesvc`, `internal/syncsvc`, `internal/lan` | A loopback LAN pair, golden share links, a 7z collection in `sharesvc/testdata` |
 | Catalog and sources | `internal/components`, `internal/source/...` | `go test ./internal/source/all ./internal/components ./internal/gamestore ./internal/runtime` is the check for a catalog edit ([HUMANS.md](../HUMANS.md#adding-a-game)) |
 | Updater | `internal/updatesvc` | `testdata/fixture`, two server-mode builds behind a signed manifest |
@@ -37,7 +37,7 @@ The default suite is `scripts/gate.sh` (its header lists the steps).
 
 | Run | Command | Proves |
 | --- | --- | --- |
-| Fuzz | `go test -fuzz=FuzzExtract -fuzztime=2m ./internal/archive` (each untrusted input's target is in [security.md](security.md), in its package's `fuzz_test.go`) | Hostile input never panics or writes outside its destination, and a round-tripping format survives it. The default run replays each seed and every file in `testdata/fuzz` |
+| Fuzz | `go test -fuzz=FuzzExtract -fuzztime=2m` in the go-archive checkout (archives), or `go test -fuzz=FuzzX -fuzztime=2m ./internal/<package>` (each untrusted input's target is in [security.md](security.md), in its package's `fuzz_test.go`) | Hostile input never panics or writes outside its destination, and a round-tripping format survives it. The default run replays each seed and every file in `testdata/fuzz` |
 | Property | `MORTAR_SYNC_SEEDS=2000 go test ./internal/syncsvc -run Property` | Two machines editing at random never lose or invent a change (`property_test.go`) |
 | Updater e2e | `wails3 task test:updater` | The self-updater swaps the binary through a signed manifest (`-tags updatetest`; skipped under `-short`) |
 | Real SMAPI installer | `MORTAR_SMOKE=1 go test ./internal/loader/smapi -run Smoke` | The real installer works on a copy of a Stardew install (needs the network) |

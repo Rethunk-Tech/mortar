@@ -1,12 +1,10 @@
 package archive
 
 import (
-	"archive/zip"
 	"bytes"
 	"encoding/json"
 	"errors"
 	"io"
-	"math"
 	"path"
 	"strings"
 
@@ -14,8 +12,6 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
-
-	"github.com/nwaples/rardecode/v2"
 )
 
 const (
@@ -54,14 +50,17 @@ type Preview struct {
 	Truncated bool `json:"truncated"`
 }
 
+// previewMaxEntryBytes bounds one entry's decompressed bytes in a listing; the largest Thunderstore package measured was 4.881 GiB.
+const previewMaxEntryBytes = 8 << 30
+
 type previewer struct {
 	p     Preview
 	count int
 }
 
-// add records one entry; open is called only for a manifest, so file bodies are otherwise never read.
-func (v *previewer) add(name string, size int64, isDir bool, open func() (io.ReadCloser, error)) {
-	name = strings.TrimSuffix(strings.ReplaceAll(name, "\\", "/"), "/")
+// add records the listing's current entry; its body is opened only for a manifest.
+func (v *previewer) add(l *Listing, e Entry) {
+	name, size, isDir := e.Name, max(e.Size, 0), e.IsDir
 	v.count++
 	v.p.TotalSize += size
 	if len(v.p.Entries) < MaxPreviewEntries {
@@ -79,7 +78,7 @@ func (v *previewer) add(name string, size int64, isDir bool, open func() (io.Rea
 	if path.Base(lower) != ManifestFile || size > maxManifestBytes || len(v.p.Manifests) >= maxPreviewManifests {
 		return
 	}
-	rc, err := open()
+	rc, err := l.Open()
 	if err != nil {
 		return
 	}
@@ -116,94 +115,28 @@ func ManifestInfo(b []byte) (PreviewManifest, bool) {
 	return PreviewManifest{Name: pkg.Name, Version: pkg.Version}, true
 }
 
-// full reports whether the archive is past the entry cap Extract would refuse.
-func (v *previewer) full() bool {
-	if v.count < DefaultMaxEntries {
-		return false
-	}
-	v.p.Truncated = true
-	return true
-}
-
 // PreviewArchive lists the archive at archivePath without extracting it.
 func PreviewArchive(archivePath string) (_ Preview, err error) {
 	defer RecoverMalformed(&err)
-	f, err := fsx.Open(archivePath)
+	l, err := List(archivePath, previewMaxEntryBytes)
 	if err != nil {
 		return Preview{}, err
 	}
-	defer func() { _ = f.Close() }()
-	info, err := f.Stat()
-	if err != nil {
-		return Preview{}, err
-	}
-	var magic [headLen]byte
-	n, _ := io.ReadFull(f, magic[:])
+	defer func() { _ = l.Close() }()
 	v := &previewer{p: Preview{Entries: []PreviewEntry{}, Manifests: []PreviewManifest{}}}
-	switch detect(magic[:n]) {
-	case fmtZip:
-		err = v.zip(f, info.Size())
-	case fmtSevenZip:
-		err = v.sevenZip(f, info.Size())
-	case fmtRAR:
-		if _, err = f.Seek(0, io.SeekStart); err == nil {
-			err = v.rar(f)
-		}
-	case fmtTar, fmtGzip, fmtXz, fmtLzma, fmtZstd, fmtBzip2:
-		if _, err = f.Seek(0, io.SeekStart); err == nil {
-			err = v.stream(f, detect(magic[:n]), archivePath, info.Size())
-		}
-	default:
-		err = &Error{Reason: ErrUnsupportedFormat}
-	}
-	if err != nil {
-		return Preview{}, err
-	}
-	return v.p, nil
-}
-
-func (v *previewer) zip(r io.ReaderAt, size int64) error {
-	zr, err := zip.NewReader(r, size)
-	if err != nil && (zr == nil || !errors.Is(err, zip.ErrInsecurePath)) {
-		return wrap("", err)
-	}
-	for _, f := range zr.File {
-		if v.full() {
+	for {
+		if v.count >= DefaultMaxEntries {
+			v.p.Truncated = true
 			break
 		}
-		v.add(zipName(f), int64(min(f.UncompressedSize64, math.MaxInt64)), f.Mode().IsDir(), func() (io.ReadCloser, error) { return f.Open() })
-	}
-	return nil
-}
-
-func (v *previewer) sevenZip(r io.ReaderAt, size int64) error {
-	zr, err := openCheckedSevenZip(r, size)
-	if err != nil {
-		return wrap("", err)
-	}
-	for _, f := range zr.File {
-		if v.full() {
-			break
-		}
-		v.add(f.Name, int64(min(f.UncompressedSize, math.MaxInt64)), f.Mode().IsDir(), f.Open)
-	}
-	return nil
-}
-
-func (v *previewer) rar(r io.Reader) error {
-	rr, err := rardecode.NewReader(r, rardecode.MaxDictionarySize(MaxDecoderBytes))
-	if err != nil {
-		return wrap("", err)
-	}
-	for !v.full() {
-		h, err := rr.Next()
+		e, err := l.Next()
 		if errors.Is(err, io.EOF) {
-			return nil
+			break
 		}
 		if err != nil {
-			return wrap("", err)
+			return Preview{}, err
 		}
-		v.add(h.Name, h.UnPackedSize, h.IsDir, func() (io.ReadCloser, error) { return io.NopCloser(rr), nil })
+		v.add(l, e)
 	}
-	return nil
+	return v.p, nil
 }

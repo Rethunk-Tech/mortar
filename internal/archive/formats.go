@@ -9,9 +9,9 @@ import (
 // Extensions are the file name endings Mortar offers as archives, longest first so a compound ending wins over its
 // last part. Detection never trusts them: the magic bytes decide the format.
 var Extensions = []string{
-	".tar.gz", ".tar.xz", ".tar.zst", ".tar.bz2", ".tar.lzma",
+	".tar.gz", ".tar.xz", ".tar.zst", ".tar.bz2", ".tar.lzma", ".tar.lz4",
 	".tgz", ".txz", ".tzst", ".tbz2", ".tbz",
-	".zip", ".rar", ".7z", ".tar", ".gz", ".xz", ".zst", ".lzma", ".bz2",
+	".zip", ".rar", ".7z", ".tar", ".gz", ".xz", ".zst", ".lzma", ".bz2", ".lz4",
 }
 
 // HasExtension reports whether name ends in one of Extensions, ignoring case.
@@ -64,7 +64,7 @@ func CaseGlobs(pattern string) string {
 const nameSep = "~~"
 
 // bareSuffixes are the endings of a compressed single file (a tar is not one: its entries carry their own names).
-var bareSuffixes = []string{".gz", ".xz", ".zst", ".lzma", ".bz2"}
+var bareSuffixes = []string{".gz", ".xz", ".zst", ".lzma", ".bz2", ".lz4"}
 
 func isBare(name string) bool {
 	lower := strings.ToLower(name)

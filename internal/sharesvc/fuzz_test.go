@@ -41,7 +41,7 @@ func FuzzParseCollectionURL(f *testing.F) {
 
 // FuzzCollectionArchive feeds the curator's collection 7z, which a Premium import downloads and reads.
 func FuzzCollectionArchive(f *testing.F) {
-	for _, p := range []string{"testdata/collection-archive.7z", "../archive/testdata/valid.7z", "../archive/testdata/traversal.7z"} {
+	for _, p := range []string{"testdata/collection-archive.7z", "testdata/valid.7z", "testdata/traversal.7z"} {
 		b, err := fsx.ReadFile(p)
 		if err != nil {
 			f.Fatal(err)
