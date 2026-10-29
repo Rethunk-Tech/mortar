@@ -16,12 +16,12 @@ require (
 	github.com/syndtr/goleveldb v1.0.0
 	github.com/wailsapp/wails/v3 v3.0.0
 	github.com/zalando/go-keyring v0.2.8
+	go.yaml.in/yaml/v3 v3.0.5
 	golang.org/x/image v0.47.0
 	golang.org/x/mod v0.42.0
 	golang.org/x/net v0.62.0
 	golang.org/x/sys v0.49.0
 	golang.org/x/text v0.43.0
-	gopkg.in/yaml.v3 v3.0.1
 	modernc.org/sqlite v1.61.0
 )
 
