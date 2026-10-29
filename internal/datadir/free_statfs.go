@@ -9,5 +9,5 @@ func FreeBytes(path string) (int64, error) {
 	if err := unix.Statfs(path, &st); err != nil {
 		return 0, err
 	}
-	return freeBytes(int64(st.Bsize), int64(st.Bavail))
+	return freeBytes(st.Bsize, st.Bavail)
 }
