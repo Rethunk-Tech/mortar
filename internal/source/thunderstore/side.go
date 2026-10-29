@@ -85,7 +85,7 @@ func (d Driver) refreshInBackground(ctx context.Context, key, ua string) {
 	tried := d.cacheRoot() + "|" + key
 	refreshMu.Lock()
 	defer refreshMu.Unlock()
-	if last, ok := refreshTried[tried]; ok && d.now().Sub(last) < refreshAfter {
+	if last, ok := refreshTried[tried]; ok && d.fresh(last) {
 		return
 	}
 	refreshTried[tried] = d.now()

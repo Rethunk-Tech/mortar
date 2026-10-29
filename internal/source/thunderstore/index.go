@@ -349,12 +349,19 @@ func (d Driver) listingFile(ctx context.Context, key, ua string) (string, error)
 	}
 	path := listingPath(dir, key, meta.Hash)
 	if _, err := os.Stat(path); meta.Hash != "" && err == nil {
-		if d.now().Sub(meta.Fetched) >= refreshAfter {
+		if !d.fresh(meta.Fetched) {
 			d.refreshInBackground(ctx, key, ua)
 		}
 		return path, nil
 	}
 	return d.buildListing(ctx, key, ua)
+}
+
+// fresh reports whether a listing fetched at t is younger than refreshAfter; one stamped in the future (a clock set
+// back) is not.
+func (d Driver) fresh(t time.Time) bool {
+	age := d.now().Sub(t)
+	return age >= 0 && age < refreshAfter
 }
 
 // buildListing is the community's stored listing, downloaded and built first when the cached one is older than
@@ -375,7 +382,7 @@ func (d Driver) buildListing(ctx context.Context, key, ua string) (string, error
 		_, err := os.Stat(path)
 		return path, meta.Hash != "" && err == nil
 	}
-	if path, ok := cached(); ok && d.now().Sub(meta.Fetched) < refreshAfter {
+	if path, ok := cached(); ok && d.fresh(meta.Fetched) {
 		return path, nil
 	}
 	if err := os.MkdirAll(dir, 0o700); err != nil {

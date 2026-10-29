@@ -161,6 +161,11 @@ func TestCacheHitThenRefresh(t *testing.T) {
 	if f.chunkHit.Load() != 2 {
 		t.Fatalf("unchanged index must not refetch chunks: chunks %d", f.chunkHit.Load())
 	}
+	now = now.Add(-24 * time.Hour)
+	if _, err := d.Search(t.Context(), q); err != nil {
+		t.Fatal(err)
+	}
+	waitFor(t, func() bool { return f.indexHits.Load() == 3 })
 }
 
 func waitFor(t *testing.T, ok func() bool) {
