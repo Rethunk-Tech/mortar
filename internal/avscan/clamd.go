@@ -106,13 +106,7 @@ func (c clamd) scanFile(ctx context.Context, path string) (string, error) {
 		return "", err
 	}
 	defer func() { _ = conn.Close() }()
-	deadline := time.Now().Add(clamdTimeout)
-	if d, ok := ctx.Deadline(); ok && d.Before(deadline.Add(clamdTimeout)) {
-		deadline = d
-	}
-	_ = conn.SetDeadline(deadline)
-	// A cancelled scan must not sit out a blocked read or write until the deadline.
-	stop := context.AfterFunc(ctx, func() { _ = conn.SetDeadline(time.Unix(1, 0)) })
+	stop := bound(ctx, conn)
 	defer stop()
 	in, err := fsx.Open(path)
 	if err != nil {
@@ -187,7 +181,8 @@ func (c clamd) Version(ctx context.Context) (string, error) {
 		return "", err
 	}
 	defer func() { _ = conn.Close() }()
-	_ = conn.SetDeadline(time.Now().Add(clamdTimeout))
+	stop := bound(ctx, conn)
+	defer stop()
 	if _, err := conn.Write([]byte("zVERSION\x00")); err != nil {
 		return "", err
 	}
@@ -196,4 +191,15 @@ func (c clamd) Version(ctx context.Context) (string, error) {
 		return "", err
 	}
 	return strings.TrimSpace(strings.TrimRight(line, "\x00")), nil
+}
+
+// bound gives conn clamdTimeout, or ctx's deadline when that is sooner, and ends a blocked read or write as soon as
+// ctx is cancelled rather than at the deadline. The returned func releases the cancellation hook.
+func bound(ctx context.Context, conn net.Conn) func() bool {
+	deadline := time.Now().Add(clamdTimeout)
+	if d, ok := ctx.Deadline(); ok && d.Before(deadline) {
+		deadline = d
+	}
+	_ = conn.SetDeadline(deadline)
+	return context.AfterFunc(ctx, func() { _ = conn.SetDeadline(time.Unix(1, 0)) })
 }

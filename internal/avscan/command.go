@@ -1,6 +1,7 @@
 package avscan
 
 import (
+	"time"
 	"context"
 	"errors"
 	"fmt"
@@ -41,6 +42,9 @@ func splitCommand(line string) []string {
 	return out
 }
 
+// commandWaitDelay is how long a cancelled scan waits for the scanner's leftover children to close its output.
+const commandWaitDelay = 2 * time.Second
+
 func (c command) Scan(ctx context.Context, dir string) (Detection, bool, error) {
 	parts := splitCommand(c.line)
 	if len(parts) == 0 {
@@ -51,6 +55,8 @@ func (c command) Scan(ctx context.Context, dir string) (Detection, bool, error) 
 	}
 	cmd := exec.CommandContext(ctx, parts[0], parts[1:]...) //nolint:gosec // G204: argv is the user's configured scanner command with {path} substituted
 	nowindow.Set(cmd)
+	// A scanner can leave a child holding stdout open after it is killed; WaitDelay ends the wait for it.
+	cmd.WaitDelay = commandWaitDelay
 	out, err := cmd.Output()
 	if err == nil {
 		return Detection{}, false, nil

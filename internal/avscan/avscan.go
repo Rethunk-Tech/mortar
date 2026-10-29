@@ -18,9 +18,6 @@ const (
 	ModeOff       = "off"
 )
 
-// Modes lists the values of the antivirus setting.
-var Modes = []string{ModeAutomatic, ModeClamd, ModeCommand, ModeOff}
-
 // ErrNoScanner is a scanner that is not there: no AMSI provider, no reachable clamd. It is not a failure to report,
 // since most Linux players run no daemon.
 var ErrNoScanner = errors.New("no antivirus scanner available")

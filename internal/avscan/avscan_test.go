@@ -1,6 +1,7 @@
 package avscan
 
 import (
+	"time"
 	"context"
 	"encoding/binary"
 	"errors"
@@ -193,6 +194,42 @@ func TestACancelledContextStopsEveryScanner(t *testing.T) {
 		if _, found, err := sc.Scan(ctx, dir); found || !errors.Is(err, context.Canceled) {
 			t.Errorf("%s: found=%v err=%v, want context.Canceled", name, found, err)
 		}
+	}
+}
+
+// A daemon that accepts and never answers must not hold a caller past its own deadline.
+func TestClamdVersionKeepsTheCallersDeadline(t *testing.T) {
+	t.Parallel()
+	sc := clamd{dial: func(context.Context, string) (net.Conn, error) {
+		c, _ := net.Pipe()
+		return c, nil
+	}, socket: "x"}
+	ctx, cancel := context.WithTimeout(t.Context(), 200*time.Millisecond)
+	defer cancel()
+	start := time.Now()
+	if _, err := sc.Version(ctx); err == nil {
+		t.Fatal("a silent daemon answered")
+	}
+	if took := time.Since(start); took > 5*time.Second {
+		t.Fatalf("Version took %v past a 200 ms deadline", took)
+	}
+}
+
+// A scanner whose child keeps stdout open must not outlive cancellation by the child's lifetime.
+func TestCustomCommandStopsWhenAChildKeepsItsOutputOpen(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("uses sh")
+	}
+	t.Parallel()
+	dir := writeTree(t, map[string]string{"a.dll": "x"})
+	ctx, cancel := context.WithTimeout(t.Context(), 200*time.Millisecond)
+	defer cancel()
+	start := time.Now()
+	if _, found, err := (command{line: `sh -c "sleep 30 & sleep 30" {path}`}).Scan(ctx, dir); found || err == nil {
+		t.Fatalf("found=%v err=%v, want an error", found, err)
+	}
+	if took := time.Since(start); took > 10*time.Second {
+		t.Fatalf("Scan took %v after a 200 ms deadline", took)
 	}
 }
 
