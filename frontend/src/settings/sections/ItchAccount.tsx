@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Alert, Box, Button, TextField } from '@mui/material'
+import { LogOut } from 'lucide-react'
 import { type SubmitEvent, useEffect, useId, useState } from 'react'
 import {
   SignIn,
@@ -73,7 +74,12 @@ export function ItchAccount() {
           status={itchStatus}
           action={
             name ? (
-              <Button size="small" onClick={signOut}>
+              <Button
+                color="inherit"
+                size="small"
+                startIcon={<LogOut size={16} />}
+                onClick={signOut}
+              >
                 {t`Remove key`}
               </Button>
             ) : null
