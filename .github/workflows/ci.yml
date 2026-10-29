@@ -81,3 +81,61 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: bun scripts/site-downloads.ts
+
+  # The Windows-only tests (*_windows_test.go and the !unix paths) never run on the Linux gate. Only internal/ is
+  # tested: main.go embeds the gitignored frontend/dist and only package main imports Wails.
+  windows:
+    if: github.actor != 'dependabot[bot]'
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Nothing the gate runs reads Markdown except docs/user-guide.md (problemWhy.test.ts checks its headings) and web/ (the site build reads its posts), so a docs-only change skips setup and gate unless it touches that file. The filter is a step rather than
+      # paths-ignore so the check still reports green for a required status check.
+      - name: Code changed
+        id: changes
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          code=true
+          site=true
+          if [ -n "$BASE" ] && [ "$BASE" != 0000000000000000000000000000000000000000 ]; then
+            files="$(gh api "repos/$GITHUB_REPOSITORY/compare/$BASE...$HEAD" --jq '.files[].filename')"
+            if [ -n "$files" ] && [ "$(printf '%s\n' "$files" | wc -l)" -lt 300 ] && ! printf '%s\n' "$files" | grep -q '^web/'; then
+              site=false
+            fi
+            # The compare API lists at most 300 files; a longer list runs the gate.
+            if [ -n "$files" ] && [ "$(printf '%s\n' "$files" | wc -l)" -lt 300 ] \
+              && ! printf '%s\n' "$files" | grep -qx 'docs/user-guide.md' \
+              && ! printf '%s\n' "$files" | grep -q '^web/' \
+              && ! printf '%s\n' "$files" | grep -qvE '(\.md$|^docs/|^\.github/ISSUE_TEMPLATE/)'; then
+              code=false
+              echo "Only documentation changed; skipping the gate"
+            fi
+          fi
+          echo "code=$code" >>"$GITHUB_OUTPUT"
+          echo "site=$site" >>"$GITHUB_OUTPUT"
+
+      - name: Setup Go
+        if: steps.changes.outputs.code == 'true'
+        uses: Rethunk-Tech/gh-actions/setup-go@67ec8bd68343d915462729ad119c355740cf6205 # v1.22
+        with:
+          go-version-file: go.mod
+
+      # -race needs cgo and gcc; the runner image ships mingw, and the step fails loudly if it does not.
+      - name: Go tests
+        if: steps.changes.outputs.code == 'true'
+        shell: bash
+        env:
+          CGO_ENABLED: "1"
+        run: |
+          gcc --version
+          GOTMPDIR=/var/tmp TMPDIR=/var/tmp go test -race ./internal/...
