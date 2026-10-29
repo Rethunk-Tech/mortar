@@ -13,12 +13,12 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path"
 	"strings"
 	"sync/atomic"
 	"time"
 
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/scratch"
 
 	"github.com/Rethunk-Tech/mortar/internal/store"
@@ -510,60 +510,33 @@ func (r contextReader) Read(p []byte) (int, error) {
 	}
 }
 
+// extractTar unpacks a store item's tar into root under go-archive's policy, counting received bytes into total.
 func extractTar(ctx context.Context, source io.Reader, root string, total *int64, progress func(int64)) error {
-	reader := tar.NewReader(safefs.CapReader(source, maxTarBytes))
 	rootHandle, err := os.OpenRoot(root)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = rootHandle.Close() }()
-	entries := 0
-	for {
-		header, err := reader.Next()
-		if errors.Is(err, io.EOF) {
-			return nil
-		}
-		if err != nil {
-			return err
-		}
-		entries++
-		if entries > maxTarEntries || header.Size < 0 {
-			return errors.New("store transfer has too many entries")
-		}
-		relative := path.Clean(strings.ReplaceAll(header.Name, `\`, "/"))
-		if relative == "." || path.IsAbs(relative) || relative == ".." || strings.HasPrefix(relative, "../") {
-			return errors.New("store transfer contains an invalid path")
-		}
-		switch header.Typeflag {
-		case tar.TypeDir:
-			if err := rootHandle.MkdirAll(relative, 0o700); err != nil {
-				return err
-			}
-		case tar.TypeReg:
-			if err := rootHandle.MkdirAll(path.Dir(relative), 0o700); err != nil {
-				return err
-			}
-			file, err := rootHandle.OpenFile(relative, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
-			if err != nil {
-				return err
-			}
-			n, copyErr := io.CopyN(file, contextReader{done: ctx.Done(), r: reader}, header.Size)
-			closeErr := file.Close()
-			if err := errors.Join(copyErr, closeErr); err != nil {
-				return err
-			}
-			if n != header.Size {
-				return errors.New("store transfer file ended early")
-			}
-			*total += n
-			if *total > maxTarBytes {
-				return errors.New("store transfer is too large")
-			}
-			progress(*total)
-		default:
-			return errors.New("store transfer contains a link or special file")
-		}
+	counted := &countingReader{r: contextReader{done: ctx.Done(), r: source}, total: total, progress: progress}
+	// The tar name is what lets an item holding no files, only the end marker, through as an empty tar.
+	return archive.ExtractReader(counted, "item.tar", rootHandle,
+		archive.Options{MaxEntries: maxTarEntries, MaxEntryBytes: maxTarBytes, MaxTotalBytes: maxTarBytes})
+}
+
+// countingReader adds every byte read to total and reports the running sum.
+type countingReader struct {
+	r        io.Reader
+	total    *int64
+	progress func(int64)
+}
+
+func (c *countingReader) Read(p []byte) (int, error) {
+	n, err := c.r.Read(p)
+	if n > 0 {
+		*c.total += int64(n)
+		c.progress(*c.total)
 	}
+	return n, err
 }
 
 func writeTar(ctx context.Context, output io.Writer, root string) error {

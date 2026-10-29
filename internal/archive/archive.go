@@ -4,6 +4,7 @@ package archive
 
 import (
 	"bytes"
+	"io"
 	"os"
 
 	ga "github.com/Rethunk-Tech/go-archive"
@@ -58,6 +59,15 @@ func Extract(archivePath, dest string) error {
 	}
 	defer func() { _ = root.Close() }()
 	return ga.Extract(f, size, originalName(archivePath), root, ga.Options{})
+}
+
+// Options lowers or raises extraction's caps; a zero field takes go-archive's default.
+type Options = ga.Options
+
+// ExtractReader is Extract for a stream with no random access, such as a network body: tar, RAR and the compressed
+// streams. A body cut short fails as io.ErrUnexpectedEOF.
+func ExtractReader(r io.Reader, baseName string, dest *os.Root, opts Options) error {
+	return ga.ExtractReader(r, baseName, dest, opts)
 }
 
 // DeclaredSize sums the uncompressed sizes the archive's headers declare. It is informational: an untrusted
