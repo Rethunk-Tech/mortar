@@ -149,3 +149,34 @@ func TestAttributesAndItemsRefuseCharactersXMLCannotCarry(t *testing.T) {
 		t.Errorf("SetItem attr: %v", err)
 	}
 }
+
+func TestInsertionsKeepTheFilesLineEndingAndIndent(t *testing.T) {
+	deps := []string{"Dep"}
+	isDep := func(it Item) bool { return it.Type == "Dep" }
+	for _, tc := range []struct{ name, nl, in string }{
+		{"crlf tab", "\r\n", "\t"},
+		{"lf two spaces", "\n", "  "},
+	} {
+		doc := strings.ReplaceAll("<Project>\n"+tc.in+"<Other />\n</Project>\n", "\n", tc.nl)
+		got, err := SetProperty(doc, "Version", "1")
+		if err != nil {
+			t.Fatal(err)
+		}
+		got, err = SetItem(got, Item{Type: "Dep", Include: "A"}, deps, isDep)
+		if err != nil {
+			t.Fatal(err)
+		}
+		want := strings.ReplaceAll("<Project>\n"+tc.in+"<Other />\n"+tc.in+"<PropertyGroup>\n"+tc.in+tc.in+"<Version>1</Version>\n"+tc.in+"</PropertyGroup>\n"+
+			tc.in+"<ItemGroup>\n"+tc.in+tc.in+`<Dep Include="A" />`+"\n"+tc.in+"</ItemGroup>\n</Project>\n", "\n", tc.nl)
+		if got != want {
+			t.Errorf("%s:\n%q\nwant\n%q", tc.name, got, want)
+		}
+		// A group that exists gains lines in the same style.
+		got, _ = SetProperty(got, "Company", "Me")
+		got, _ = SetItem(got, Item{Type: "Dep", Include: "B"}, deps, isDep)
+		if strings.Count(got, "\n") != strings.Count(got, tc.nl) || !strings.Contains(got, tc.in+tc.in+"<Company>Me</Company>"+tc.nl) ||
+			!strings.Contains(got, tc.in+tc.in+`<Dep Include="B" />`+tc.nl) {
+			t.Errorf("%s second round:\n%q", tc.name, got)
+		}
+	}
+}

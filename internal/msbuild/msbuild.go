@@ -209,8 +209,11 @@ func SetItem(text string, item Item, same []string, after func(Item) bool) (stri
 		at := last.End
 		if le := strings.IndexByte(text[at:], '\n'); le >= 0 && !strings.Contains(text[at:at+le], "</") {
 			at += le
+			if text[at-1] == '\r' {
+				at--
+			}
 		}
-		return text[:at] + "\n" + indentOf(text, last.Start) + xmlText + text[at:], nil
+		return text[:at] + lineEnding(text) + indentOf(text, last.Start) + xmlText + text[at:], nil
 	}
 	return appendGroup(text, elems, "ItemGroup", xmlText)
 }
@@ -324,9 +327,31 @@ func indentOf(text string, at int) string {
 	return text[ls : ls+len(text[ls:at])-len(strings.TrimLeft(text[ls:at], " \t"))]
 }
 
+// lineEnding is the file's own break, taken from its first line.
+func lineEnding(text string) string {
+	if i := strings.IndexByte(text, '\n'); i > 0 && text[i-1] == '\r' {
+		return "\r\n"
+	}
+	return "\n"
+}
+
+// indentStep is one level of the file's indent, read from the root's first child.
+func indentStep(text string, elems []Elem) string {
+	for _, e := range elems {
+		if e.Parent == 0 {
+			if in := indentOf(text, e.Start); in != "" {
+				return in
+			}
+			break
+		}
+	}
+	return "  "
+}
+
 // appendChild adds line as the last child of e, indented like its other children or one step past e.
 func appendChild(text string, elems []Elem, e Elem, line string) string {
-	indent := indentOf(text, e.Start) + "  "
+	nl := lineEnding(text)
+	indent := indentOf(text, e.Start) + indentStep(text, elems)
 	for _, c := range elems {
 		if c.Start > e.Start && c.End <= e.End && elems[c.Parent].Start == e.Start {
 			indent = indentOf(text, c.Start)
@@ -335,9 +360,9 @@ func appendChild(text string, elems []Elem, e Elem, line string) string {
 	at := e.InnerEnd
 	ls := strings.LastIndexByte(text[:at], '\n') + 1
 	if strings.TrimSpace(text[ls:at]) == "" && ls > e.InnerStart {
-		return text[:ls] + indent + line + "\n" + text[ls:]
+		return text[:ls] + indent + line + nl + text[ls:]
 	}
-	return text[:at] + "\n" + indent + line + "\n" + indentOf(text, e.Start) + text[at:]
+	return text[:at] + nl + indent + line + nl + indentOf(text, e.Start) + text[at:]
 }
 
 // appendGroup adds a new group of kind holding line at the end of the root element.
@@ -348,11 +373,12 @@ func appendGroup(text string, elems []Elem, kind, line string) (string, error) {
 	root := elems[0]
 	at := root.InnerEnd
 	ls := strings.LastIndexByte(text[:at], '\n') + 1
-	group := "  <" + kind + ">\n    " + line + "\n  </" + kind + ">\n"
+	nl, step := lineEnding(text), indentStep(text, elems)
+	group := step + "<" + kind + ">" + nl + step + step + line + nl + step + "</" + kind + ">" + nl
 	if strings.TrimSpace(text[ls:at]) == "" && ls > root.InnerStart {
 		return text[:ls] + group + text[ls:], nil
 	}
-	return text[:at] + "\n" + group + text[at:], nil
+	return text[:at] + nl + group + text[at:], nil
 }
 
 // MSBuild expands $(), @(), %XX and splits on ; in a property's text, so the characters it reads specially are written
