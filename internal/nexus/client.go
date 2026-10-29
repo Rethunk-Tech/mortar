@@ -267,14 +267,14 @@ func (c *Client) roundTrip(ctx context.Context, method, path string, body any) (
 	return resp.StatusCode, resp.Status, raw, nil
 }
 
-// rateLimited builds the error for a 429: the X-Rl-* reset when Nexus sent it, else Retry-After, else no reset (the
+// rateLimited builds the error for a 429: the X-Rl-* reset when Nexus sent one still in the future, else Retry-After, else no reset (the
 // queue then applies its own backoff).
 func (c *Client) rateLimited(h http.Header) error {
 	reset := c.Limits().Hourly.Reset
 	if d := c.Limits().Daily; d.Remaining <= 0 {
 		reset = d.Reset
 	}
-	if reset.IsZero() {
+	if !reset.After(c.now()) {
 		reset, _ = github.RetryAfter(h.Get("Retry-After"))
 	}
 	return &RateLimitError{Reset: reset}
