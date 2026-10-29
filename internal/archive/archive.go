@@ -10,7 +10,6 @@ import (
 	ga "github.com/Rethunk-Tech/go-archive"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/winname"
 )
 
 type (
@@ -59,7 +58,7 @@ func Extract(archivePath, dest string) error {
 		return err
 	}
 	defer func() { _ = root.Close() }()
-	return ga.Extract(f, size, filepath.Base(archivePath), root, ga.Options{Segment: winname.Valid})
+	return ga.Extract(f, size, filepath.Base(archivePath), root, ga.Options{})
 }
 
 // DeclaredSize sums the uncompressed sizes the archive's headers declare. It is informational: an untrusted
