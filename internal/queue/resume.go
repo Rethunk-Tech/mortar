@@ -65,8 +65,8 @@ func (s *Service) sweepDownloads() {
 		}
 		base := name
 		// A crash mid-sidecar-write leaves "<name>.resume.json.<rand>.tmp".
-		if i := strings.LastIndex(name, github.ResumeSuffix+"."); i >= 0 && strings.HasSuffix(name, ".tmp") {
-			base = name[:i]
+		if head, _, ok := strings.CutLast(name, github.ResumeSuffix+"."); ok && strings.HasSuffix(name, ".tmp") {
+			base = head
 		}
 		base = strings.TrimSuffix(base, github.ResumeSuffix)
 		id := archive.SavedID(base)
