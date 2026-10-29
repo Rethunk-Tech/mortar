@@ -163,3 +163,20 @@ func TestStackBlockCountIsCheckedBeforeAllocating(t *testing.T) {
 		t.Fatalf("a lying stack count allocated %v times", allocs)
 	}
 }
+
+func TestSpinLoaderEventsAreNotConflated(t *testing.T) {
+	trace, err := ParseFile("testdata/spin.nettrace")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for id, name := range trace.Assemblies {
+		if strings.ContainsAny(name, `/\`) || strings.HasSuffix(strings.ToLower(name), ".dll") {
+			t.Errorf("assembly %#x is a module path: %q", id, name)
+		}
+	}
+	for module, assembly := range trace.Modules {
+		if _, ok := trace.Assemblies[assembly]; !ok {
+			t.Errorf("module %#x maps to %#x, which is no assembly", module, assembly)
+		}
+	}
+}

@@ -829,21 +829,23 @@ func decodeRuntimeEvent(trace *Trace, provider, name string, eventID uint32, fie
 	case strings.Contains(strings.ToLower(provider), "dotnetruntime") && strings.Contains(lowerName, "method"):
 		decodeMethod(trace, fields, payload)
 	case strings.Contains(strings.ToLower(provider), "dotnetruntime"):
-		decodeRuntimeByID(trace, eventID, fields, payload)
+		decodeRuntimeByID(trace, provider, eventID, fields, payload)
 	}
 }
 
-func decodeRuntimeByID(trace *Trace, eventID uint32, fields []eventField, payload []byte) {
-	switch eventID {
-	case 143, 144:
+// decodeRuntimeByID dispatches on the event ID within its provider: the runtime and rundown providers number
+// their loader events differently (runtime 154 is AssemblyLoad, rundown 154 is ModuleDCEnd).
+func decodeRuntimeByID(trace *Trace, provider string, eventID uint32, fields []eventField, payload []byte) {
+	rundown := strings.HasSuffix(strings.ToLower(provider), "rundown")
+	switch {
+	case eventID == 143, rundown && eventID == 144:
 		decodeMethodRuntime(trace, payload)
-	case 152, 153:
+	case eventID == 152, rundown && eventID == 154:
 		decodeModuleRuntime(trace, payload)
-	case 154:
-		decodeModuleRuntime(trace, payload)
+	case !rundown && eventID == 154, rundown && eventID == 156:
 		decodeAssemblyRuntime(trace, payload)
-	case 155, 156:
-		decodeAssemblyRuntime(trace, payload)
+	case eventID == 144, eventID == 153, eventID == 155, eventID == 156:
+		// Unload events and the AppDomain event carry nothing the trace keeps.
 	default:
 		if len(fields) != 0 {
 			decodeMethod(trace, fields, payload)
@@ -902,11 +904,10 @@ func decodeAssemblyRuntime(trace *Trace, payload []byte) {
 	if assemblyID == 0 {
 		return
 	}
-	for _, found := range readableStrings(payload[8:]) {
-		if strings.Contains(found.value, ".") || strings.Contains(found.value, ",") {
-			trace.Assemblies[assemblyID] = found.value
-			return
-		}
+	// AssemblyID, AppDomainID, BindingID, AssemblyFlags u32, then the name.
+	offset := 28
+	if name, ok := readWideNull(payload, &offset); ok && name != "" {
+		trace.Assemblies[assemblyID] = name
 	}
 }
 
