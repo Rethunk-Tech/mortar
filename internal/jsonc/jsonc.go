@@ -1,5 +1,5 @@
 // Package jsonc turns the JSON Newtonsoft.Json accepts (SMAPI's reader) into strict JSON for encoding/json: it
-// decodes a UTF-8 or UTF-16 BOM and strips comments and trailing commas; accepts single-quoted strings, unquoted
+// decodes a UTF-8, UTF-16 or UTF-32 BOM and strips comments and trailing commas; accepts single-quoted strings, unquoted
 // property names and NaN/Infinity/undefined; and escapes control characters inside strings.
 package jsonc
 
@@ -8,6 +8,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"slices"
+	"strings"
 	"unicode/utf16"
 )
 
@@ -22,6 +23,10 @@ func decode(b []byte) []byte {
 	switch {
 	case bytes.HasPrefix(b, []byte("\xef\xbb\xbf")):
 		return b[3:]
+	case bytes.HasPrefix(b, []byte("\xff\xfe\x00\x00")):
+		return utf32Bytes(b[4:], binary.LittleEndian)
+	case bytes.HasPrefix(b, []byte("\x00\x00\xfe\xff")):
+		return utf32Bytes(b[4:], binary.BigEndian)
 	case bytes.HasPrefix(b, []byte("\xff\xfe")):
 		return utf16Bytes(b[2:], binary.LittleEndian)
 	case bytes.HasPrefix(b, []byte("\xfe\xff")):
@@ -36,6 +41,14 @@ func utf16Bytes(b []byte, order binary.ByteOrder) []byte {
 		units[i] = order.Uint16(b[2*i:])
 	}
 	return []byte(string(utf16.Decode(units)))
+}
+
+func utf32Bytes(b []byte, order binary.ByteOrder) []byte {
+	var sb strings.Builder
+	for ; len(b) >= 4; b = b[4:] {
+		sb.WriteRune(rune(order.Uint32(b))) // an invalid code point becomes U+FFFD
+	}
+	return []byte(sb.String())
 }
 
 func isIdent(c byte) bool {

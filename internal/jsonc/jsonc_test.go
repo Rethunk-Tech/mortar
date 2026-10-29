@@ -33,6 +33,14 @@ func utf16Of(s string, order binary.AppendByteOrder, bom []byte) []byte {
 	return out
 }
 
+func utf32Of(s string, order binary.AppendByteOrder, bom []byte) []byte {
+	out := slices.Clone(bom)
+	for _, r := range s {
+		out = order.AppendUint32(out, uint32(r))
+	}
+	return out
+}
+
 func TestCleanNewtonsoftForms(t *testing.T) {
 	const want = `{"a":"x y","b":[1,null]}`
 	for name, in := range map[string][]byte{
@@ -43,6 +51,8 @@ func TestCleanNewtonsoftForms(t *testing.T) {
 		"utf8 bom":           []byte("\xef\xbb\xbf" + `{"a":"x y","b":[1,null]}`),
 		"utf16 le bom":       utf16Of(`{"a":"x y","b":[1,null]}`, binary.LittleEndian, []byte{0xff, 0xfe}),
 		"utf16 be bom":       utf16Of(`{"a":"x y","b":[1,null]}`, binary.BigEndian, []byte{0xfe, 0xff}),
+		"utf32 le bom":       utf32Of(`{"a":"x y","b":[1,null]}`, binary.LittleEndian, []byte{0xff, 0xfe, 0, 0}),
+		"utf32 be bom":       utf32Of(`{"a":"x y","b":[1,null]}`, binary.BigEndian, []byte{0, 0, 0xfe, 0xff}),
 		"NaN and undefined":  []byte(`{a:"x y",b:[1,undefined]}`),
 		"infinity":           []byte(`{a:"x y",b:[1,-Infinity]}`),
 		"block comment keys": []byte(`{/* c */a:"x y",b:[1,NaN]}`),
