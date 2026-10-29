@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -251,7 +252,7 @@ func TestReceiveRoutesLinksAndFiles(t *testing.T) {
 	}})
 	args := []string{
 		"/usr/bin/mortar", "mortar://stardew/p/abc", "https://mortar.rethunk.tech/stardew/p#abc", "nxm://stardewvalley/mods/1/files/2",
-		file, "file://" + file, filepath.Join(dir, "missing.mortar"), "notes.txt", "https://evil.example/stardew/p#abc",
+		file, "file://" + path.Join("/", filepath.ToSlash(file)), filepath.Join(dir, "missing.mortar"), "notes.txt", "https://evil.example/stardew/p#abc",
 	}
 	if !s.Receive(args) {
 		t.Fatal("Receive found nothing")
