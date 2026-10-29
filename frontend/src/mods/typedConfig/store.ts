@@ -3,6 +3,7 @@ import { errorMessage, reportUnexpected } from '../../toasts/report.ts'
 import { configApi } from './api.ts'
 import { useConfigList } from './configList.ts'
 import type { ConfigFile, ConfigValue } from './types.ts'
+import { configValueMessage } from './valueError.ts'
 
 const SAVE_DELAY_MS = 500
 
@@ -56,7 +57,7 @@ const useTypedConfig = create<{
     try {
       await run()
     } catch (e) {
-      set((s) => ({ errors: { ...s.errors, [slot]: errorMessage(e) } }))
+      set((s) => ({ errors: { ...s.errors, [slot]: configValueMessage(e) } }))
       return
     }
     set((s) => ({ errors: { ...s.errors, [slot]: '' } }))

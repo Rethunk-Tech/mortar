@@ -17,6 +17,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // The layout parsed here is what BepInEx's ConfigFile.Save and ConfigEntryBase.WriteDescription write
@@ -172,7 +173,7 @@ func finishEntry(e *Entry) {
 // validate checks value against the entry's type, range and acceptable values and returns the text to write.
 func validate(e cfgEntry, value string) (string, error) {
 	if strings.ContainsAny(value, "\r\n") {
-		return "", fmt.Errorf("%s: a value is one line", e.Key)
+		return "", refuse("line", "%s: a value is one line", e.Key)
 	}
 	value = strings.TrimSpace(value)
 	switch e.Type {
@@ -181,19 +182,19 @@ func validate(e cfgEntry, value string) (string, error) {
 		case "true", "false":
 			return strings.ToLower(value), nil
 		}
-		return "", fmt.Errorf("%s expects true or false", e.Key)
+		return "", refuse("bool", "%s expects true or false", e.Key)
 	case TypeInt:
 		var n float64
 		if slices.Contains(unsignedTypes, e.netType) {
 			u, err := strconv.ParseUint(value, 10, 64)
 			if err != nil {
-				return "", fmt.Errorf("%s expects a whole number", e.Key)
+				return "", refuse("whole_number", "%s expects a whole number", e.Key)
 			}
 			n = float64(u)
 		} else {
 			i, err := strconv.ParseInt(value, 10, 64)
 			if err != nil {
-				return "", fmt.Errorf("%s expects a whole number", e.Key)
+				return "", refuse("whole_number", "%s expects a whole number", e.Key)
 			}
 			n = float64(i)
 		}
@@ -221,7 +222,7 @@ func validate(e cfgEntry, value string) (string, error) {
 			trimmed := strings.TrimSpace(p)
 			j := slices.IndexFunc(e.Values, func(v string) bool { return strings.EqualFold(v, trimmed) })
 			if j < 0 {
-				return "", fmt.Errorf("%s must be one of %s", e.Key, strings.Join(e.Values, ", "))
+				return "", refuse("enum", "%s must be one of %s", e.Key, strings.Join(e.Values, ", "))
 			}
 			parts[i] = strings.Replace(p, trimmed, e.Values[j], 1)
 		}
@@ -235,14 +236,25 @@ func validate(e cfgEntry, value string) (string, error) {
 func finite(key, value string) (float64, string, error) {
 	n, err := strconv.ParseFloat(value, 64)
 	if err != nil || math.IsInf(n, 0) || math.IsNaN(n) {
-		return 0, "", fmt.Errorf("%s expects a number", key)
+		return 0, "", refuse("number", "%s expects a number", key)
 	}
 	return n, strconv.FormatFloat(n, 'g', -1, 64), nil
 }
 
+// refuse is a value the editor will not write: Invalid, with the text opening on config_value:<problem> so the GUI
+// words its own sentence for the problem.
+func refuse(problem, format string, args ...any) error {
+	return usererr.New(usererr.Invalid, "config_value:"+problem+" "+fmt.Sprintf(format, args...))
+}
+
+// refuseRange carries the bounds as min:max, "any" for one the setting does not have.
+func refuseRange(key string, lo, hi any) error {
+	return refuse(fmt.Sprintf("range:%v:%v", lo, hi), "%s must be between %v and %v", key, lo, hi)
+}
+
 func inRange(e Entry, n float64) error {
 	if (e.Min != nil && n < *e.Min) || (e.Max != nil && n > *e.Max) {
-		return fmt.Errorf("%s must be between %v and %v", e.Key, bound(e.Min), bound(e.Max))
+		return refuseRange(e.Key, bound(e.Min), bound(e.Max))
 	}
 	return nil
 }
@@ -275,7 +287,7 @@ func (d cfgDoc) set(section, key, value string) (string, error) {
 	}
 	if lim, ok := netLimits[e.netType]; ok {
 		if n, _ := strconv.ParseFloat(val, 64); n < lim[0] || n > lim[1] {
-			return "", fmt.Errorf("%s must be between %v and %v", key, lim[0], lim[1])
+			return "", refuseRange(key, lim[0], lim[1])
 		}
 	}
 	lines := append([]string(nil), d.lines...)

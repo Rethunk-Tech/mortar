@@ -51,7 +51,7 @@ var (
 	tomlInt = regexp.MustCompile(`^[+-]?\d+$`)
 	// tomlIntForms are the integers TOML spells: underscores between digits, and 0x, 0o and 0b without a sign.
 	tomlIntForms = regexp.MustCompile(`^([+-]?\d+(_\d+)*|0x[0-9a-fA-F]+(_[0-9a-fA-F]+)*|0o[0-7]+(_[0-7]+)*|0b[01]+(_[01]+)*)$`)
-	tomlFloat = regexp.MustCompile(`^[+-]?(\d+(\.\d+)?([eE][+-]?\d+)?|inf|nan)$`)
+	tomlFloat    = regexp.MustCompile(`^[+-]?(\d+(\.\d+)?([eE][+-]?\d+)?|inf|nan)$`)
 )
 
 func parseMelon(text string) melonDoc {
@@ -207,7 +207,7 @@ func melonType(v string) (typ, shown string) {
 // literal is the TOML text for a value of the entry's type, or an error when the text is not one.
 func (e melonEntry) literal(value string) (string, error) {
 	if strings.ContainsAny(value, "\r\n") {
-		return "", fmt.Errorf("%s: a value is one line", e.Key)
+		return "", refuse("line", "%s: a value is one line", e.Key)
 	}
 	value = strings.TrimSpace(value)
 	switch e.Type {
@@ -215,10 +215,10 @@ func (e melonEntry) literal(value string) (string, error) {
 		if v := strings.ToLower(value); v == "true" || v == "false" {
 			return v, nil
 		}
-		return "", fmt.Errorf("%s expects true or false", e.Key)
+		return "", refuse("bool", "%s expects true or false", e.Key)
 	case TypeInt:
 		if !tomlIntForms.MatchString(value) {
-			return "", fmt.Errorf("%s expects a whole number", e.Key)
+			return "", refuse("whole_number", "%s expects a whole number", e.Key)
 		}
 		clean := strings.ReplaceAll(value, "_", "")
 		base := 10
@@ -226,12 +226,12 @@ func (e melonEntry) literal(value string) (string, error) {
 			base = 0
 		}
 		if _, err := strconv.ParseInt(clean, base, 64); err != nil {
-			return "", fmt.Errorf("%s expects a whole number", e.Key)
+			return "", refuse("whole_number", "%s expects a whole number", e.Key)
 		}
 		return value, nil
 	case TypeRaw:
 		if value == "" {
-			return "", fmt.Errorf("%s expects a value", e.Key)
+			return "", refuse("empty", "%s expects a value", e.Key)
 		}
 		return value, nil
 	case TypeFloat:
@@ -245,7 +245,7 @@ func (e melonEntry) literal(value string) (string, error) {
 		return value, nil
 	case TypeList:
 		if !strings.HasPrefix(value, "[") || !strings.HasSuffix(value, "]") {
-			return "", fmt.Errorf("%s expects a list in [brackets]", e.Key)
+			return "", refuse("list", "%s expects a list in [brackets]", e.Key)
 		}
 		return value, nil
 	}

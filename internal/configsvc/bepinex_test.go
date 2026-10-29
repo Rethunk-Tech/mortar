@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/gmcm"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 func fixture(t *testing.T) string {
@@ -204,5 +205,21 @@ func TestSetWritesDecimalsPlainAndAcceptsWhatDotNetReads(t *testing.T) {
 	}
 	if out, err := d.set("A", "M", "easy,WILD"); err != nil || !strings.Contains(out, "M = Easy,Wild\n") {
 		t.Errorf("flags case: %q %v", out, err)
+	}
+}
+
+func TestRefusedValueIsInvalidAndNamesItsProblem(t *testing.T) {
+	d := parseCfg(fixture(t))
+	for _, c := range []struct{ section, key, value, want string }{
+		{"General", "LeaveDelay", "5", "config_value:range:10:300 "},
+		{"General", "LeaveDelay", "1.5", "config_value:whole_number "},
+		{"General", "ShowHud", "maybe", "config_value:bool "},
+		{"Advanced", "Mode", "Nightmare", "config_value:enum "},
+		{"General", "ScrapMultiplier", "x", "config_value:number "},
+	} {
+		_, err := d.set(c.section, c.key, c.value)
+		if usererr.KindOf(err) != usererr.Invalid || err == nil || !strings.HasPrefix(strings.TrimPrefix(err.Error(), "[invalid] "), c.want) {
+			t.Errorf("%s=%s: %v", c.key, c.value, err)
+		}
 	}
 }
