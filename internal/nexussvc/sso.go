@@ -7,13 +7,13 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/opener"
 
-	"github.com/Rethunk-Tech/mortar/internal/nexussso"
+	"github.com/Rethunk-Tech/go-nexusmods/sso"
 )
 
 // SSOEvent carries an SSOState for each stage of a browser sign-in.
 const SSOEvent = "nexus:sso"
 
-// SSO sign-in stages sent in SSOState.State after the ones nexussso.State names.
+// SSO sign-in stages sent in SSOState.State after the ones sso.State names.
 const (
 	SSODone   = "done"
 	SSOFailed = "failed"
@@ -58,7 +58,7 @@ func (s *Service) StartSSO(ctx context.Context) (Account, error) {
 		s.run.mu.Unlock()
 	}()
 
-	onState := func(st nexussso.State) { s.emitSSO(SSOState{State: string(st)}) }
+	onState := func(st sso.State) { s.emitSSO(SSOState{State: string(st)}) }
 	var acct Account
 	var err error
 	if s.oauth.ClientID != "" {
@@ -109,7 +109,7 @@ func (s *Service) emitSSO(st SSOState) {
 
 // signInLegacy runs the slug-based SSO, whose result is a personal API key.
 // Remove with the API-key path once OAuth ships.
-func (s *Service) signInLegacy(ctx context.Context, onState func(nexussso.State)) (Account, error) {
+func (s *Service) signInLegacy(ctx context.Context, onState func(sso.State)) (Account, error) {
 	l := s.sso
 	if l.OpenBrowser == nil {
 		l.OpenBrowser = s.openBrowser
@@ -123,8 +123,11 @@ func (s *Service) signInLegacy(ctx context.Context, onState func(nexussso.State)
 }
 
 // signInOAuth authorizes in the browser, checks the access token against Nexus and keeps the grant in the keyring.
-func (s *Service) signInOAuth(ctx context.Context, o nexussso.OAuth) (Account, error) {
+func (s *Service) signInOAuth(ctx context.Context, o sso.OAuth) (Account, error) {
 	t, err := o.Authorize(ctx)
+	if errors.Is(err, sso.ErrPortBusy) {
+		return Account{}, portBusy{}
+	}
 	if err != nil {
 		return Account{}, err
 	}
@@ -132,7 +135,7 @@ func (s *Service) signInOAuth(ctx context.Context, o nexussso.OAuth) (Account, e
 	if err != nil {
 		return Account{}, err
 	}
-	if err := nexussso.Save(t); err != nil {
+	if err := tokenStore.Save(t); err != nil {
 		return Account{}, err
 	}
 	return s.signedIn(user)

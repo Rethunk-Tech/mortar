@@ -18,11 +18,11 @@ import (
 	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
+	"github.com/Rethunk-Tech/go-nexusmods/sso"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
-	"github.com/Rethunk-Tech/mortar/internal/nexussso"
 	"github.com/Rethunk-Tech/mortar/internal/secret"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/coder/websocket"
@@ -238,7 +238,7 @@ func TestStartSSOStoresKeyLikePasted(t *testing.T) {
 	if _, err := s.StartSSO(context.Background()); err == nil {
 		t.Fatal("StartSSO ran without a slug")
 	}
-	s.sso = nexussso.Legacy{Slug: "mortar", SocketURL: "ws" + strings.TrimPrefix(ws.URL, "http"), OpenBrowser: func(string) error { return nil }}
+	s.sso = sso.Legacy{Slug: "mortar", SocketURL: "ws" + strings.TrimPrefix(ws.URL, "http"), OpenBrowser: func(string) error { return nil }}
 	acct, err := s.StartSSO(context.Background())
 	if err != nil || !acct.SignedIn {
 		t.Fatalf("acct %+v err %v", acct, err)
@@ -258,8 +258,8 @@ func TestStartSSOPrefersOAuthWhenClientIDSet(t *testing.T) {
 	client := nexus.New("test")
 	client.BaseURL = api.URL
 	s := NewService(store, client, &meta.Client{})
-	s.sso = nexussso.Legacy{Slug: "mortar"}
-	s.oauth = nexussso.OAuth{ClientID: "cid", AuthBase: idp.URL, Addr: "127.0.0.1:0", OpenBrowser: func(raw string) error {
+	s.sso = sso.Legacy{Slug: "mortar"}
+	s.oauth = sso.OAuth{ClientID: "cid", Store: oauthStore{}, AuthBase: idp.URL, Addr: "127.0.0.1:0", OpenBrowser: func(raw string) error {
 		u, _ := url.Parse(raw)
 		go func() {
 			req, _ := http.NewRequestWithContext(context.Background(), http.MethodGet, u.Query().Get("redirect_uri")+"?code=C&state="+u.Query().Get("state"), nil)
@@ -275,18 +275,18 @@ func TestStartSSOPrefersOAuthWhenClientIDSet(t *testing.T) {
 	if acct, err := s.StartSSO(context.Background()); err != nil || !acct.SignedIn {
 		t.Fatalf("acct %+v err %v", acct, err)
 	}
-	if tok, err := nexussso.Load(); err != nil || tok.Refresh != "R1" {
+	if tok, err := tokenStore.Load(); err != nil || tok.Refresh != "R1" {
 		t.Fatalf("tokens %+v err %v", tok, err)
 	}
 	keepsOutOfSettings(t, "A1", "R1")
 	if _, err := s.SignOut(); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := nexussso.Load(); err == nil {
+	if _, err := tokenStore.Load(); err == nil {
 		t.Fatal("OAuth tokens survived sign-out")
 	}
-	s.oauth = nexussso.OAuth{}
-	s.sso = nexussso.Legacy{}
+	s.oauth = sso.OAuth{}
+	s.sso = sso.Legacy{}
 	if s.SSOAvailable() {
 		t.Fatal("SSO available with neither flag")
 	}

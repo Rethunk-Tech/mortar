@@ -4,9 +4,8 @@ import (
 	"context"
 	"errors"
 
+	"github.com/Rethunk-Tech/go-nexusmods/sso"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
-	"github.com/Rethunk-Tech/mortar/internal/nexussso"
-	"github.com/Rethunk-Tech/mortar/internal/secret"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
@@ -25,12 +24,12 @@ func Authed(store *settings.Store, c *nexus.Client) (*nexus.Client, error) {
 	if store.Get().NexusUserID == 0 {
 		return nil, ErrSignedOut
 	}
-	if nexussso.ClientID == "" {
+	if ClientID == "" {
 		return keyClient(c)
 	}
 	return c.WithBearer(func(ctx context.Context) (string, error) {
-		t, err := nexussso.OAuth{ClientID: nexussso.ClientID}.Fresh(ctx)
-		if errors.Is(err, secret.ErrNotFound) || errors.Is(err, nexussso.ErrRevoked) {
+		t, err := oauthConfig().Fresh(ctx)
+		if errors.Is(err, sso.ErrNoTokens) || errors.Is(err, sso.ErrRevoked) {
 			return "", ErrSignedOut
 		}
 		return t.Access, err

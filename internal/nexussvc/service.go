@@ -13,9 +13,9 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/winhost"
 
+	"github.com/Rethunk-Tech/go-nexusmods/sso"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
-	"github.com/Rethunk-Tech/mortar/internal/nexussso"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/secret"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -56,14 +56,14 @@ type Service struct {
 	// GitHub serves release notes for updates that come from GitHub.
 	GitHub *github.Client
 
-	sso   nexussso.Legacy
-	oauth nexussso.OAuth
+	sso   sso.Legacy
+	oauth sso.OAuth
 	run   ssoRun
 }
 
 // NewService keeps mod page details in m's cache.
 func NewService(store *settings.Store, client *nexus.Client, m *meta.Client) *Service {
-	s := &Service{store: store, client: client, meta: m, sso: nexussso.Legacy{Slug: nexussso.Slug}, oauth: nexussso.OAuth{ClientID: nexussso.ClientID}}
+	s := &Service{store: store, client: client, meta: m, sso: sso.Legacy{Slug: Slug}, oauth: oauthConfig()}
 	client.SetLimitsHook(func(lim nexus.Limits) {
 		if s.App != nil {
 			a := s.Account()
@@ -103,7 +103,7 @@ func (s *Service) GitHubRate() github.Rate {
 
 // SignOut deletes the key and forgets the account.
 func (s *Service) SignOut() (Account, error) {
-	if err := errors.Join(forgetKey(), nexussso.Forget()); err != nil {
+	if err := errors.Join(forgetKey(), forgetOAuth()); err != nil {
 		return Account{}, err
 	}
 	s.forgetTracked()

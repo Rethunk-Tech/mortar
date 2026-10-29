@@ -13,6 +13,7 @@ require (
 	github.com/Rethunk-Tech/go-httpkit v0.1.0
 	github.com/Rethunk-Tech/go-keyring v0.1.0
 	github.com/Rethunk-Tech/go-lenientjson v0.1.0
+	github.com/Rethunk-Tech/go-nexusmods v0.1.0
 	github.com/Rethunk-Tech/go-safefs v0.1.0
 	github.com/Rethunk-Tech/go-semverish v0.1.0
 	github.com/Rethunk-Tech/go-smapiweb v0.1.0

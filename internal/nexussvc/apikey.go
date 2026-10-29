@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
-	"github.com/Rethunk-Tech/mortar/internal/nexussso"
 	"github.com/Rethunk-Tech/mortar/internal/secret"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -21,11 +20,11 @@ const keyName = "nexus"
 var errAPIKeyOff = errors.New("this build signs in to Nexus Mods through the browser; personal API keys are not used")
 
 // APIKeyAvailable is whether a pasted personal API key can sign in; it cannot once OAuth is configured.
-func (s *Service) APIKeyAvailable() bool { return nexussso.ClientID == "" }
+func (s *Service) APIKeyAvailable() bool { return ClientID == "" }
 
 // SignIn checks the key against Nexus, then keeps it in the keyring. A rejected key stores nothing.
 func (s *Service) SignIn(ctx context.Context, key string) (Account, error) {
-	if nexussso.ClientID != "" {
+	if ClientID != "" {
 		return Account{}, errAPIKeyOff
 	}
 	key = strings.TrimSpace(key)
