@@ -107,6 +107,7 @@ func TestHostLookPathRejectsBuiltin(t *testing.T) {
 func TestHostHomesResolveEmptyHome(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
 	old := Getenv
 	t.Cleanup(func() { Getenv = old })
 	Getenv = func(string) string { return "" }

@@ -6,6 +6,7 @@ import (
 	"context"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"strings"
 	"syscall"
@@ -94,9 +95,10 @@ func HostLookPath(name string) (string, error) {
 	if err != nil {
 		return "", exec.ErrNotFound
 	}
-	// command -v prints a builtin or alias by its bare name, which is not a path.
+	// command -v prints a builtin or alias by its bare name, which is not a path. The host is Linux, so its paths
+	// are slash paths whatever OS Mortar itself runs on.
 	p := strings.TrimSpace(string(out))
-	if !filepath.IsAbs(p) {
+	if !path.IsAbs(p) {
 		return "", exec.ErrNotFound
 	}
 	return p, nil
