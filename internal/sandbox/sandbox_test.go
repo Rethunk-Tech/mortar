@@ -2,6 +2,7 @@ package sandbox
 
 import (
 	"errors"
+	"path/filepath"
 	"reflect"
 	"testing"
 )
@@ -45,5 +46,23 @@ func TestInFlatpak(t *testing.T) {
 	Getenv = func(k string) string { return map[string]string{"FLATPAK_ID": AppID}[k] }
 	if !InFlatpak() {
 		t.Fatal("FLATPAK_ID set")
+	}
+}
+
+func TestHostXDGHomes(t *testing.T) {
+	home := t.TempDir()
+	custom := filepath.Join(t.TempDir(), "cfg")
+	t.Setenv("FLATPAK_ID", AppID)
+	t.Setenv("HOST_XDG_CONFIG_HOME", custom)
+	t.Setenv("HOST_XDG_DATA_HOME", "relative/data")
+	if got := HostConfigHome(home); got != custom {
+		t.Fatalf("config %q", got)
+	}
+	if got, want := HostDataHome(home), filepath.Join(home, ".local", "share"); got != want {
+		t.Fatalf("relative data %q, want %q", got, want)
+	}
+	t.Setenv("FLATPAK_ID", "")
+	if got, want := HostConfigHome(home), filepath.Join(home, ".config"); got != want {
+		t.Fatalf("outside flatpak %q, want %q", got, want)
 	}
 }

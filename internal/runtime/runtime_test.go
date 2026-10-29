@@ -46,6 +46,23 @@ func TestNativeLinuxStores(t *testing.T) {
 	}
 }
 
+func TestNativeFlatpakUsesHostXDGHomes(t *testing.T) {
+	home := filepath.Join(t.TempDir(), "home")
+	config := filepath.Join(t.TempDir(), "hostcfg")
+	t.Setenv("FLATPAK_ID", "tech.rethunk.Mortar")
+	t.Setenv("HOST_XDG_CONFIG_HOME", config)
+	inst := Install{Store: "steam", Platform: "linux", Home: home, GOOS: "linux"}
+	got, err := Resolve(inst, stardewSaves)
+	if want := filepath.Join(config, "StardewValley", "Saves"); err != nil || got != want {
+		t.Fatalf("got %q, %v; want %q", got, err, want)
+	}
+	t.Setenv("HOST_XDG_CONFIG_HOME", "relative")
+	got, err = Resolve(inst, stardewSaves)
+	if want := filepath.Join(home, ".config", "StardewValley", "Saves"); err != nil || got != want {
+		t.Fatalf("relative: got %q, %v; want %q", got, err, want)
+	}
+}
+
 func TestNativeWindowsUsesAppData(t *testing.T) {
 	appData := filepath.Join(t.TempDir(), "Roaming")
 	t.Setenv("APPDATA", appData)

@@ -14,6 +14,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 	"github.com/Rethunk-Tech/mortar/internal/winname"
 	_ "modernc.org/sqlite"
 )
@@ -213,7 +214,7 @@ func GaleDataDirs(extra string) []string {
 			bases = append(bases, xdg)
 		}
 		if home, err := os.UserHomeDir(); err == nil {
-			bases = append(bases, filepath.Join(home, ".local", "share"))
+			bases = append(bases, sandbox.HostDataHome(home))
 		}
 	} else if base, err := os.UserConfigDir(); err == nil {
 		bases = append(bases, base)

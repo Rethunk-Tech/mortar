@@ -14,6 +14,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
 // Runtime ids.
@@ -175,8 +176,8 @@ func nativeTokens(inst Install) (map[string]string, error) {
 			tokens["xdgConfig"] = filepath.Join(sandbox, ".config")
 			tokens["xdgData"] = filepath.Join(sandbox, ".local", "share")
 		case os.Getenv("FLATPAK_ID") != "":
-			tokens["xdgConfig"] = filepath.Join(home, ".config")
-			tokens["xdgData"] = filepath.Join(home, ".local", "share")
+			tokens["xdgConfig"] = sandbox.HostConfigHome(home)
+			tokens["xdgData"] = sandbox.HostDataHome(home)
 		default:
 			config := os.Getenv("XDG_CONFIG_HOME")
 			if config == "" {
