@@ -38,7 +38,7 @@ The default suite is `scripts/gate.sh` (its header lists the steps).
 
 | Run | Command | Proves |
 | --- | --- | --- |
-| Fuzz | `go test -fuzz=FuzzExtract -fuzztime=2m` in the go-archive checkout (archives) the go-lenientjson checkout (lenient JSON) or the go-safefs checkout (case-folded paths), or `go test -fuzz=FuzzX -fuzztime=2m ./internal/<package>` (each untrusted input's target is in [security.md](security.md), in its package's `fuzz_test.go`) | Hostile input never panics or writes outside its destination, and a round-tripping format survives it. The default run replays each seed and every file in `testdata/fuzz` |
+| Fuzz | `go test -fuzz=FuzzExtract -fuzztime=2m` in the go-archive checkout (archives), the go-lenientjson checkout (lenient JSON) or the go-safefs checkout (case-folded paths), or `go test -fuzz=FuzzX -fuzztime=2m ./internal/<package>` (each untrusted input's target is in [security.md](security.md), in its package's `fuzz_test.go`) | Hostile input never panics or writes outside its destination, and a round-tripping format survives it. The default run replays each seed and every file in `testdata/fuzz` |
 | Property | `MORTAR_SYNC_SEEDS=2000 go test ./internal/syncsvc -run Property` | Two machines editing at random never lose or invent a change (`property_test.go`) |
 | Updater e2e | `wails3 task test:updater` | The self-updater swaps the binary through a signed manifest (`-tags updatetest`; skipped under `-short`) |
 | Real SMAPI installer | `MORTAR_SMOKE=1 go test ./internal/loader/smapi -run Smoke` | The real installer works on a copy of a Stardew install (needs the network) |
