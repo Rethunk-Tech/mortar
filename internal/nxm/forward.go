@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
-	"unicode"
+
+	"github.com/Rethunk-Tech/go-desktopenv/desktopentry"
 )
 
 // LinkGame is the nxm URL's game segment (the host), or an error when raw is not an nxm link.
@@ -45,7 +46,7 @@ func LinuxForwardArgv(previousDesktopID, link string, execLine func(string) (str
 	if strings.TrimSpace(exec) == "" {
 		return "", nil, fmt.Errorf("desktop entry %q has no Exec", previousDesktopID)
 	}
-	argv := splitDesktopExec(exec)
+	argv := desktopentry.SplitExec(exec)
 	if len(argv) == 0 || argv[0] == "" {
 		return "", nil, fmt.Errorf("desktop entry %q has no Exec", previousDesktopID)
 	}
@@ -71,7 +72,7 @@ func programAndArgs(argv []string, winField, link string) (string, []string, err
 			placed = true
 		case "%f", "%F", "%i", "%c", "%k":
 		default:
-			out = append(out, strings.ReplaceAll(a, "%%", "%"))
+			out = append(out, a)
 		}
 	}
 	if !placed {
@@ -132,53 +133,4 @@ func commandLineToArgv(cmd string) []string {
 		flush()
 	}
 	return args
-}
-
-func splitDesktopExec(exec string) []string {
-	var args []string
-	i := 0
-	n := len(exec)
-	quote := byte('"')
-	for i < n {
-		for i < n && unicode.IsSpace(rune(exec[i])) {
-			i++
-		}
-		if i >= n {
-			break
-		}
-		if exec[i] == quote {
-			arg, next := readQuotedExec(exec, i+1)
-			args = append(args, arg)
-			i = next
-			continue
-		}
-		start := i
-		for i < n && !unicode.IsSpace(rune(exec[i])) && exec[i] != quote {
-			i++
-		}
-		args = append(args, exec[start:i])
-	}
-	return args
-}
-
-func readQuotedExec(exec string, i int) (string, int) {
-	var b strings.Builder
-	quote := byte('"')
-	for i < len(exec) {
-		c := exec[i]
-		if c == '\\' && i+1 < len(exec) {
-			next := exec[i+1]
-			if next == quote || next == '`' || next == '$' || next == '\\' {
-				b.WriteByte(next)
-				i += 2
-				continue
-			}
-		}
-		if c == quote {
-			return b.String(), i + 1
-		}
-		b.WriteByte(c)
-		i++
-	}
-	return b.String(), i
 }

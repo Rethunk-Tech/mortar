@@ -84,6 +84,16 @@ func TestForwardArgvQuotedExecutableWithSpaces(t *testing.T) {
 	})
 }
 
+// The spec reads quoted and unquoted runs with no space between them as one argument.
+func TestForwardArgvJoinsAdjacentQuotedRuns(t *testing.T) {
+	link := "nxm://skyrim/mods/1"
+	lookup := func(string) (string, error) { return `"/home/u/My Apps"/Mortar.AppImage --nxm %u`, nil }
+	name, args, err := LinuxForwardArgv("mortar.desktop", link, lookup)
+	if err != nil || name != "/home/u/My Apps/Mortar.AppImage" || !reflect.DeepEqual(args, []string{"--nxm", link}) {
+		t.Fatalf("argv = %q %v, %v", name, args, err)
+	}
+}
+
 func TestForwardArgvAppendsWhenFieldCodeMissing(t *testing.T) {
 	link := "nxm://skyrim/mods/1"
 	t.Run("windows", func(t *testing.T) {

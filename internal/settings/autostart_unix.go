@@ -6,9 +6,9 @@ import (
 	"context"
 	"errors"
 	"os"
-	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-desktopenv/desktopentry"
 	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 	"github.com/Rethunk-Tech/go-desktopenv/portal"
 	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
@@ -79,11 +79,7 @@ func applyAutostart(enable bool) error {
 	return nil
 }
 
-// autostartEntry is the autostart desktop entry for exe: the argument is quoted and escaped for the Exec value.
+// autostartEntry is the autostart desktop entry for exe.
 func autostartEntry(exe string) string {
-	return "[Desktop Entry]\nType=Application\nName=Mortar\nExec=\"" + execArgEscaper.Replace(exe) + "\"\nX-GNOME-Autostart-enabled=true\n"
+	return "[Desktop Entry]\nType=Application\nName=Mortar\nExec=" + desktopentry.Exec(exe) + "\nX-GNOME-Autostart-enabled=true\n"
 }
-
-// execArgEscaper escapes a path for the inside of a quoted Exec argument: the quoted-argument escapes first, then the
-// string-value escape that doubles each backslash, and %% so a percent is not read as a field code.
-var execArgEscaper = strings.NewReplacer(`\`, `\\\\`, `"`, `\\"`, "`", "\\\\`", `$`, `\\$`, `%`, `%%`, "\n", `\n`, "\r", `\r`)

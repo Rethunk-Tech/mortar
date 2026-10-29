@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-desktopenv/desktopentry"
 	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 	"github.com/Rethunk-Tech/go-desktopenv/portal"
 	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
@@ -31,7 +32,6 @@ func create(exe, arg, name string) (string, error) {
 		id := launcherID(arg)
 		return id, installLauncher(id, name, arg)
 	}
-	execLine := `"` + execArgEscaper.Replace(exe) + `"`
 	base, err := dataHome()
 	if err != nil {
 		return "", err
@@ -45,11 +45,11 @@ func create(exe, arg, name string) (string, error) {
 Type=Application
 Name=%s
 Comment=Play this Mortar profile
-Exec=%s %s
+Exec=%s
 Icon=mortar
 Terminal=false
 Categories=Game;
-`, desktopValue(name), execLine, arg)
+`, desktopentry.Value(name), desktopentry.Exec(exe, arg))
 	if err := safefs.WriteFileAtomic(path, []byte(entry), 0o600); err != nil {
 		return "", err
 	}
@@ -131,7 +131,7 @@ func Renamed(game, profile, profileName, gameName string) error {
 			if strings.HasSuffix(line, "\n") {
 				suffix = "\n"
 			}
-			lines[i] = "Name=" + desktopValue(profileName+" ("+gameName+")") + suffix
+			lines[i] = "Name=" + desktopentry.Value(profileName+" ("+gameName+")") + suffix
 			replaced = true
 			break
 		}
@@ -181,35 +181,6 @@ func exists(game, profile string) (bool, error) {
 	return err == nil && info.Mode().IsRegular(), err
 }
 
-// desktopValue is s as a one-line Desktop Entry string value: a backslash starts an escape there, so it is doubled.
-func desktopValue(s string) string {
-	return strings.NewReplacer(`\`, `\\`, "\n", " ", "\r", " ").Replace(s)
-}
-
-// execArgEscaper escapes a path for the inside of a quoted Exec argument: the quoted-argument escapes first, then the
-// string-value escape that doubles each backslash, and %% so a percent is not read as a field code.
-var execArgEscaper = strings.NewReplacer(`\`, `\\\\`, `"`, `\\"`, "`", "\\\\`", `$`, `\\$`, `%`, `%%`, "\n", `\n`, "\r", `\r`)
-
-// desktopString undoes a key file's string escapes, which wrap the Exec quoting.
-var desktopString = strings.NewReplacer(`\\`, `\`, `\s`, " ", `\n`, "\n", `\t`, "\t", `\r`, "\r")
-
-// firstQuoted is the quoted argument an Exec value opens with, its leading quote already cut, and what follows it.
-func firstQuoted(s string) (arg, rest string, ok bool) {
-	var b strings.Builder
-	for i := 0; i < len(s); i++ {
-		switch s[i] {
-		case '\\':
-			if i+1 < len(s) {
-				i++
-			}
-		case '"':
-			return strings.ReplaceAll(b.String(), "%%", "%"), s[i+1:], true
-		}
-		b.WriteByte(s[i])
-	}
-	return "", "", false
-}
-
 func dataHome() (string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -250,7 +221,6 @@ func Repoint(exe string) error {
 	if err != nil {
 		return err
 	}
-	quoted := `"` + execArgEscaper.Replace(exe) + `"`
 	var errs []error
 	for _, p := range paths {
 		b, err := safefs.ReadFile(p)
@@ -266,14 +236,11 @@ func Repoint(exe string) error {
 				continue
 			}
 			body, nl := strings.CutSuffix(rest, "\n")
-			target, tail, ok := firstQuoted(desktopString.Replace(body))
-			if !ok {
+			argv := desktopentry.SplitExec(`"` + body)
+			if _, err := os.Stat(argv[0]); err == nil || argv[0] == exe {
 				break
 			}
-			if _, err := os.Stat(target); err == nil || target == exe {
-				break
-			}
-			lines[i] = "Exec=" + quoted + desktopValue(tail)
+			lines[i] = "Exec=" + desktopentry.Exec(append([]string{exe}, argv[1:]...)...)
 			if nl {
 				lines[i] += "\n"
 			}

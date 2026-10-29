@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-desktopenv/desktopentry"
 	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
 	"github.com/Rethunk-Tech/go-safefs"
@@ -142,9 +143,6 @@ func desktopName(path string) string {
 	return ""
 }
 
-// desktopString undoes a key file's string escapes, which wrap the Exec quoting.
-var desktopString = strings.NewReplacer(`\\`, `\`, `\s`, " ", `\n`, "\n", `\t`, "\t", `\r`, "\r")
-
 func desktopExec(path string) string {
 	b, err := safefs.ReadFile(path)
 	if err != nil {
@@ -152,7 +150,7 @@ func desktopExec(path string) string {
 	}
 	for line := range strings.SplitSeq(string(b), "\n") {
 		if exec, ok := strings.CutPrefix(line, "Exec="); ok {
-			return desktopString.Replace(exec)
+			return exec
 		}
 	}
 	return ""
@@ -180,14 +178,14 @@ func (l *System) desktopFile(withSchemes bool) string {
 Type=Application
 Name=Mortar
 Comment=Desktop mod manager for PC games
-Exec="%s" %%u
+Exec=%s %%u
 Icon=mortar
 Terminal=false
 Categories=Game;Utility;
 Keywords=mod;manager;nexus;stardew;
 StartupWMClass=%s
 MimeType=%s
-`, quoteExec(l.exe), appversion.AppID, mime)
+`, desktopentry.Exec(l.exe), appversion.AppID, mime)
 }
 
 // integrator is the id of an entry in the user's applications folder that an AppImage integrator (GearLever,
@@ -210,7 +208,7 @@ func (l *System) integrator() string {
 		if !strings.HasSuffix(name, ".desktop") || strings.HasPrefix(name, appversion.AppID) {
 			continue
 		}
-		argv := splitDesktopExec(desktopExec(filepath.Join(dir, name)))
+		argv := desktopentry.SplitExec(desktopExec(filepath.Join(dir, name)))
 		marked := false
 		if len(argv) > 0 && filepath.Base(argv[0]) == "env" {
 			argv = argv[1:]
@@ -219,7 +217,7 @@ func (l *System) integrator() string {
 				argv = argv[1:]
 			}
 		}
-		if len(argv) < 2 || strings.ReplaceAll(argv[0], "%%", "%") != l.exe || !slices.ContainsFunc(argv[1:], func(a string) bool { return a == "%u" || a == "%U" }) {
+		if len(argv) < 2 || argv[0] != l.exe || !slices.ContainsFunc(argv[1:], func(a string) bool { return a == "%u" || a == "%U" }) {
 			continue
 		}
 		if marked {
@@ -261,14 +259,6 @@ func (l *System) yieldTo(id string) error {
 	}
 	return nil
 }
-
-// quoteExec is path as the inside of a quoted Exec argument: the quoted-argument escapes first, then the string-value
-// escape that doubles each backslash, and %% so a percent is not read as a field code.
-func quoteExec(path string) string {
-	return execArgEscaper.Replace(path)
-}
-
-var execArgEscaper = strings.NewReplacer(`\`, `\\\\`, `"`, `\\"`, "`", "\\\\`", `$`, `\\$`, `%`, `%%`, "\n", `\n`, "\r", `\r`)
 
 func (l *System) iconPNGPath() string {
 	return filepath.Join(l.dataHome, "icons", "hicolor", "256x256", "apps", "mortar.png")
@@ -538,9 +528,8 @@ func same(path string, want []byte) bool {
 // execTarget is the program the desktop entry runs, as desktopFile writes it, or "" when it holds no such line.
 func execTarget(entry []byte) string {
 	for line := range strings.SplitSeq(string(entry), "\n") {
-		if rest, ok := strings.CutPrefix(line, `Exec="`); ok {
-			target, _ := readQuotedExec(desktopString.Replace(rest), 0)
-			return strings.ReplaceAll(target, "%%", "%")
+		if rest, ok := strings.CutPrefix(line, "Exec="); ok && strings.HasPrefix(rest, `"`) {
+			return desktopentry.SplitExec(rest)[0]
 		}
 	}
 	return ""
