@@ -142,7 +142,7 @@ func SetRawProperty(text, name, raw string) (string, error) {
 
 // RemoveProperty drops every property called name, with its line.
 func RemoveProperty(text, name string) (string, error) {
-	return Remove(text, func(e Elem, parent string) bool { return e.Name == name && parent == "PropertyGroup" })
+	return Remove(text, func(e Elem, parent string) bool { return strings.EqualFold(e.Name, name) && parent == "PropertyGroup" })
 }
 
 // Item is an item element: its type, its Include and its other attributes.
@@ -160,7 +160,7 @@ func Items(text string, types ...string) ([]Item, error) {
 	}
 	var out []Item
 	for _, e := range elems {
-		if slices.Contains(types, e.Name) && e.Parent >= 0 && elems[e.Parent].Name == "ItemGroup" {
+		if hasType(types, e.Name) && e.Parent >= 0 && elems[e.Parent].Name == "ItemGroup" {
 			out = append(out, Item{Type: e.Name, Include: e.Attrs["Include"], Attrs: e.Attrs})
 		}
 	}
@@ -180,7 +180,7 @@ func SetItem(text string, item Item, same []string, after func(Item) bool) (stri
 		if e.Parent < 0 || elems[e.Parent].Name != "ItemGroup" {
 			continue
 		}
-		if slices.Contains(same, e.Name) && strings.EqualFold(e.Attrs["Include"], item.Include) {
+		if hasType(same, e.Name) && strings.EqualFold(e.Attrs["Include"], item.Include) {
 			return text[:e.Start] + xmlText + text[e.End:], nil
 		}
 		if after(Item{Type: e.Name, Include: e.Attrs["Include"], Attrs: e.Attrs}) {
@@ -196,6 +196,11 @@ func SetItem(text string, item Item, same []string, after func(Item) bool) (stri
 		return text[:at] + "\n" + indentOf(text, last.Start) + xmlText + text[at:], nil
 	}
 	return appendGroup(text, elems, "ItemGroup", xmlText)
+}
+
+// hasType reports whether typ is one of types; MSBuild compares item types case-insensitively.
+func hasType(types []string, typ string) bool {
+	return slices.ContainsFunc(types, func(t string) bool { return strings.EqualFold(t, typ) })
 }
 
 // Remove drops every element match picks, given its parent's name, with the line it stands on when nothing else

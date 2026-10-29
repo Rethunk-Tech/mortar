@@ -84,3 +84,14 @@ func TestSetAttrRewritesOnlyThatAttribute(t *testing.T) {
 		t.Fatalf("added:\n%s", got)
 	}
 }
+
+func TestNamesMatchWithoutCase(t *testing.T) {
+	text := "<Project>\n  <PropertyGroup>\n    <nullable>enable</nullable>\n  </PropertyGroup>\n  <ItemGroup>\n    <packagereference Include=\"P\" />\n  </ItemGroup>\n</Project>\n"
+	out, err := RemoveProperty(text, "Nullable")
+	if err != nil || strings.Contains(out, "nullable") {
+		t.Errorf("RemoveProperty left %q, %v", out, err)
+	}
+	if items, _ := Items(text, "PackageReference"); len(items) != 1 {
+		t.Errorf("Items = %+v", items)
+	}
+}
