@@ -122,6 +122,8 @@ func TestSlowDirectWriterWaitsForStableSize(t *testing.T) {
 	// sleeps, but a file that changed since the last look is never announced.
 	for range 30 {
 		_, _ = f.WriteString("a")
+		// Windows publishes an open file's size to its directory entry (and to the watcher) only on a flush.
+		_ = f.Sync()
 		time.Sleep(20 * time.Millisecond)
 	}
 	_, _ = f.WriteString("b")
