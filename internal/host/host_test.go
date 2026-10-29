@@ -1,7 +1,6 @@
 package host
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -43,23 +42,6 @@ func TestDirectFetch(t *testing.T) {
 	entries, _ := os.ReadDir(dir)
 	if len(entries) != 1 {
 		t.Fatalf("failed fetches left files behind: %v", entries)
-	}
-}
-
-func TestGitHubFetchGoesThroughGitHubDownload(t *testing.T) {
-	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write([]byte("zip")) }))
-	defer srv.Close()
-	var asked string
-	g := &GitHub{HTTP: srv.Client(), Download: func(_ context.Context, _ *http.Client, url, dest string, _ int64, _ func(int64, int64)) error {
-		asked = url
-		return os.WriteFile(dest, []byte("zip"), 0o600)
-	}}
-	p, err := g.Fetch(t.Context(), srv.URL+"/o/r/releases/download/v1/a.zip", t.TempDir())
-	if err != nil {
-		t.Fatal(err)
-	}
-	if b, _ := fsx.ReadFile(p); string(b) != "zip" || !strings.HasSuffix(asked, "/a.zip") {
-		t.Fatalf("body %q", b)
 	}
 }
 

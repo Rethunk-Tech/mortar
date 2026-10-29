@@ -20,9 +20,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/winname"
 )
 
-// DownloadFunc is a resumable download of url into dest, capped at limit bytes, that reports progress.
-type DownloadFunc func(ctx context.Context, hc *http.Client, url, dest string, limit int64, progress func(done, total int64)) error
-
 // httpsOnly refuses a redirect off https, so a server cannot steer a download to a plain-HTTP or local address.
 func httpsOnly(req *http.Request, via []*http.Request) error {
 	if len(via) >= maxRedirects {
@@ -103,26 +100,6 @@ func (d *Direct) Fetch(ctx context.Context, rawURL, dstDir string) (string, erro
 		return err
 	})
 	if err != nil {
-		return "", err
-	}
-	return dst, nil
-}
-
-// GitHub fetches release assets with resume through Download, which uses the gh login's token when there is one.
-type GitHub struct {
-	HTTP     *http.Client
-	Download DownloadFunc
-	// Progress, when set, hears the transfer's figures.
-	Progress func(done, total int64)
-}
-
-func (g *GitHub) Fetch(ctx context.Context, rawURL, dstDir string) (string, error) {
-	u, ok := parseHTTPS(rawURL)
-	if !ok {
-		return "", fmt.Errorf("not an https address")
-	}
-	dst := filepath.Join(dstDir, fileName(u))
-	if err := g.Download(ctx, g.HTTP, rawURL, dst, archive.DefaultMaxTotalBytes, g.Progress); err != nil {
 		return "", err
 	}
 	return dst, nil

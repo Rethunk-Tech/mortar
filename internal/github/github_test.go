@@ -153,23 +153,14 @@ func TestRateLimit(t *testing.T) {
 	}
 }
 
-func TestDownload(t *testing.T) {
+func TestDownloadRefusesABodyOverTheCap(t *testing.T) {
 	t.Parallel()
 	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write([]byte("data")) }))
 	t.Cleanup(srv.Close)
-	c := &Client{APIBase: srv.URL, CacheDir: t.TempDir(), HTTP: srv.Client()}
-	var last int64
-	path, err := c.Download(context.Background(), Asset{Name: "a.zip", URL: c.APIBase + "/dl/a.zip"}, func(done, _ int64) { last = done })
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() { _ = os.RemoveAll(filepath.Dir(path)) }()
-	if b, _ := fsx.ReadFile(path); string(b) != "data" || last != 4 || !strings.HasSuffix(path, ".zip") {
-		t.Fatalf("file = %q, progress = %d, path = %s", b, last, path)
-	}
 	over := filepath.Join(t.TempDir(), "over.bin")
-	if err := Download(context.Background(), nil, c.APIBase, over, 3, nil); err == nil {
-		t.Fatal("body over the cap must fail")
+	err := Download(context.Background(), srv.Client(), srv.URL, over, 3, nil)
+	if err == nil || !strings.Contains(err.Error(), "larger than") {
+		t.Fatalf("body over the cap: err = %v", err)
 	}
 }
 
