@@ -615,7 +615,7 @@ func (c *Client) Releases(ctx context.Context, owner, repo string) ([]Release, e
 // ErrNoRelease and ErrNoArchive say why Select found nothing to install.
 var (
 	ErrNoRelease = errors.New("GitHub lists no matching stable release")
-	ErrNoArchive = errors.New("the release has no archive asset (zip, rar, 7z, tar, gz, xz, zst, bz2 or lzma)")
+	ErrNoArchive = errors.New("the release has no archive asset (zip, rar, 7z, tar, gz, xz, zst, bz2, lz4 or lzma)")
 )
 
 func tagVersion(tag string) string { return strings.TrimPrefix(strings.TrimPrefix(tag, "v"), "V") }
@@ -625,6 +625,10 @@ var archiveTypes = map[string]bool{
 	"application/vnd.rar": true, "application/x-7z-compressed": true, "application/octet-stream": true,
 	"application/x-tar": true, "application/gzip": true, "application/x-gzip": true, "application/x-xz": true,
 	"application/zstd": true, "application/x-zstd": true, "application/x-bzip2": true, "application/x-lzma": true,
+	"application/x-gtar": true, "application/x-lz4": true, "application/x-compressed-tar": true,
+	"application/x-gzip-compressed-tar": true, "application/x-bzip-compressed-tar": true,
+	"application/x-bzip2-compressed-tar": true, "application/x-xz-compressed-tar": true,
+	"application/x-zstd-compressed-tar": true, "application/x-lz4-compressed-tar": true,
 }
 
 // IsArchive reports whether a is an archive Mortar reads by name, and by content type where GitHub set one.
