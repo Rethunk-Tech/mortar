@@ -135,6 +135,11 @@
     "url": "https://github.com/pmndrs/zustand"
   },
   {
+    "name": "github.com/BurntSushi/toml",
+    "licence": "MIT",
+    "url": "https://github.com/BurntSushi/toml"
+  },
+  {
     "name": "github.com/Rethunk-Tech/go-archive",
     "licence": "MIT",
     "url": "https://github.com/Rethunk-Tech/go-archive"
@@ -195,6 +200,11 @@
     "url": "https://github.com/zalando/go-keyring"
   },
   {
+    "name": "go.yaml.in/yaml/v3",
+    "licence": "Apache-2.0",
+    "url": "https://pkg.go.dev/go.yaml.in/yaml/v3"
+  },
+  {
     "name": "golang.org/x/image",
     "licence": "BSD-3-Clause",
     "url": "https://pkg.go.dev/golang.org/x/image"
@@ -215,9 +225,9 @@
     "url": "https://pkg.go.dev/golang.org/x/sys"
   },
   {
-    "name": "gopkg.in/yaml.v3",
-    "licence": "Apache-2.0",
-    "url": "https://pkg.go.dev/gopkg.in/yaml.v3"
+    "name": "golang.org/x/text",
+    "licence": "BSD-3-Clause",
+    "url": "https://pkg.go.dev/golang.org/x/text"
   },
   {
     "name": "modernc.org/sqlite",
