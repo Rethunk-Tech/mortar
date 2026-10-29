@@ -111,11 +111,13 @@ func FlagsFrom(cfg Config, choices Choices, ctx EvalContext) map[string]string {
 			continue
 		}
 		for _, g := range s.Groups {
-			for _, name := range selected(choices, s.Name, g.Name, g) {
-				p, ok := plugin(g, name)
+			idx := pluginIndex(g)
+			for _, name := range selected(choices, s.Name, g.Name, g, flags, ctx) {
+				i, ok := idx[name]
 				if !ok {
 					continue
 				}
+				p := g.Plugins[i]
 				for _, f := range p.Flags {
 					flags[f.Name] = f.Value
 				}
@@ -125,15 +127,19 @@ func FlagsFrom(cfg Config, choices Choices, ctx EvalContext) map[string]string {
 	return flags
 }
 
-func plugin(g Group, name string) (Plugin, bool) {
-	i := slices.IndexFunc(g.Plugins, func(p Plugin) bool { return p.Name == name })
-	if i < 0 {
-		return Plugin{}, false
+// pluginIndex maps each plugin name of g to its position; a repeated name keeps the first.
+func pluginIndex(g Group) map[string]int {
+	idx := make(map[string]int, len(g.Plugins))
+	for i, p := range g.Plugins {
+		if _, dup := idx[p.Name]; !dup {
+			idx[p.Name] = i
+		}
 	}
-	return g.Plugins[i], true
+	return idx
 }
 
-func selected(choices Choices, step, group string, g Group) []string {
+// selected lists the chosen plugin names plus the plugins that are Required under flags.
+func selected(choices Choices, step, group string, g Group, flags map[string]string, ctx EvalContext) []string {
 	if strings.EqualFold(g.Type, SelectAll) {
 		names := make([]string, len(g.Plugins))
 		for i, p := range g.Plugins {
@@ -142,9 +148,14 @@ func selected(choices Choices, step, group string, g Group) []string {
 		return names
 	}
 	names := slices.Clone(choices[step][group])
+	have := make(map[string]bool, len(names))
+	for _, n := range names {
+		have[n] = true
+	}
 	for _, p := range g.Plugins {
-		if PluginType(p, nil, EvalContext{}) == TypeRequired && !slices.Contains(names, p.Name) {
+		if !have[p.Name] && PluginType(p, flags, ctx) == TypeRequired {
 			names = append(names, p.Name)
+			have[p.Name] = true
 		}
 	}
 	return names
@@ -158,22 +169,19 @@ func Match(cfg Config, choices Choices, ctx EvalContext) bool {
 			continue
 		}
 		for _, g := range s.Groups {
-			got := selected(choices, s.Name, g.Name, g)
+			got := selected(choices, s.Name, g.Name, g, flags, ctx)
 			if !groupOK(g, got) {
 				return false
 			}
+			idx := pluginIndex(g)
 			for _, name := range got {
-				p, ok := plugin(g, name)
-				if !ok {
-					return false
-				}
-				if PluginType(p, flags, ctx) == TypeNotUsable {
+				i, ok := idx[name]
+				if !ok || PluginType(g.Plugins[i], flags, ctx) == TypeNotUsable {
 					return false
 				}
 			}
 			for _, name := range got {
-				p, _ := plugin(g, name)
-				for _, f := range p.Flags {
+				for _, f := range g.Plugins[idx[name]].Flags {
 					flags[f.Name] = f.Value
 				}
 			}
@@ -208,19 +216,23 @@ func Resolve(cfg Config, choices Choices, ctx EvalContext) []Op {
 			continue
 		}
 		for _, g := range s.Groups {
-			chosen := selected(choices, s.Name, g.Name, g)
+			chosen := selected(choices, s.Name, g.Name, g, flags, ctx)
+			idx := pluginIndex(g)
+			chosenSet := make(map[string]bool, len(chosen))
 			for _, name := range chosen {
-				p, ok := plugin(g, name)
+				chosenSet[name] = true
+				i, ok := idx[name]
 				if !ok {
 					continue
 				}
+				p := g.Plugins[i]
 				ops = append(ops, p.Files...)
 				for _, f := range p.Flags {
 					flags[f.Name] = f.Value
 				}
 			}
 			for _, p := range g.Plugins {
-				if slices.Contains(chosen, p.Name) {
+				if chosenSet[p.Name] {
 					continue
 				}
 				usable := PluginType(p, flags, ctx) != TypeNotUsable
@@ -268,8 +280,9 @@ func Keep(cfg Config, choices Choices) Choices {
 	out := Choices{}
 	for _, s := range cfg.Steps {
 		for _, g := range s.Groups {
+			idx := pluginIndex(g)
 			for _, name := range choices[s.Name][g.Name] {
-				if _, ok := plugin(g, name); !ok {
+				if _, ok := idx[name]; !ok {
 					continue
 				}
 				if out[s.Name] == nil {

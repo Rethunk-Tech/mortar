@@ -3,10 +3,13 @@ package fomod
 import (
 	"encoding/binary"
 	"io/fs"
+	"math"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
+	"time"
 	"unicode/utf16"
 )
 
@@ -215,5 +218,52 @@ func TestFolderElementSetsFolder(t *testing.T) {
 	cfg := loadFixture(t, "folder.xml")
 	if len(cfg.Required) != 1 || !cfg.Required[0].Folder || cfg.Required[0].Source != "pack" {
 		t.Fatalf("required = %+v", cfg.Required)
+	}
+}
+
+func TestRequiredPluginNotUsableUnderFlagsMatches(t *testing.T) {
+	cfg, err := Parse([]byte(`<config><installSteps>
+		<installStep name="A"><optionalFileGroups><group name="G" type="SelectExactlyOne"><plugins>
+			<plugin name="On"><conditionFlags><flag name="f">1</flag></conditionFlags>
+				<typeDescriptor><type name="Optional"/></typeDescriptor></plugin>
+		</plugins></group></optionalFileGroups></installStep>
+		<installStep name="B"><optionalFileGroups><group name="H" type="SelectAny"><plugins>
+			<plugin name="R"><files><file source="r.txt"/></files><typeDescriptor><dependencyType>
+				<defaultType name="Required"/><patterns><pattern><dependencies><flagDependency flag="f" value="1"/></dependencies>
+				<type name="NotUsable"/></pattern></patterns></dependencyType></typeDescriptor></plugin>
+		</plugins></group></optionalFileGroups></installStep></installSteps></config>`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	choices := Choices{"A": {"G": {"On"}}}
+	if !Match(cfg, choices, EvalContext{}) {
+		t.Fatal("a plugin NotUsable under the flags must not be forced in, so the choices still match")
+	}
+	for _, op := range Resolve(cfg, choices, EvalContext{}) {
+		if op.Source == "r.txt" {
+			t.Fatal("NotUsable plugin installed")
+		}
+	}
+}
+
+func TestLargeGroupIsLinear(t *testing.T) {
+	const n = 40000
+	g := Group{Name: "G", Type: SelectAny}
+	names := make([]string, n)
+	for i := range n {
+		names[i] = "p" + strconv.Itoa(i)
+		g.Plugins = append(g.Plugins, Plugin{Name: names[i], TypeName: TypeOptional, Files: []Op{{Source: names[i]}}})
+	}
+	cfg := Config{Steps: []Step{{Name: "S", Groups: []Group{g}}}}
+	choices := Choices{"S": {"G": names}}
+	start := time.Now()
+	if !Match(cfg, choices, EvalContext{}) {
+		t.Fatal("no match")
+	}
+	if got := len(Resolve(cfg, choices, EvalContext{})); got != n {
+		t.Fatalf("ops = %d", got)
+	}
+	if d := time.Since(start); d > 2*time.Second {
+		t.Fatalf("Match+Resolve took %v for %d plugins", d, n)
 	}
 }
