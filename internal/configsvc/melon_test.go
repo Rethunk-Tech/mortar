@@ -120,3 +120,34 @@ func TestMelonSetKeepsEachLinesOwnEnding(t *testing.T) {
 		t.Fatalf("%q %v", out, err)
 	}
 }
+
+// Values the parser cannot type keep their TOML text when edited; integers take every TOML spelling.
+func TestMelonRawAndTOMLIntegers(t *testing.T) {
+	const text = "[M]\nV = { x = 1.0, y = 2.0 }\nH = 0x1F\nT = 1979-05-27\nN = 1_000\nI = 5\n"
+	d := parseMelon(text)
+	got := map[string]Entry{}
+	for _, e := range d.entries {
+		got[e.Key] = e.Entry
+	}
+	for _, k := range []string{"V", "H", "T", "N"} {
+		if got[k].Type != TypeRaw {
+			t.Errorf("%s type %q", k, got[k].Type)
+		}
+		if out, err := d.set("M", k, got[k].Value); err != nil || out != text {
+			t.Errorf("%s: untouched value changed: %q %v", k, out, err)
+		}
+	}
+	if out, err := d.set("M", "V", "{ x = 3.0 }"); err != nil || !strings.Contains(out, "V = { x = 3.0 }\n") {
+		t.Errorf("raw edit: %q %v", out, err)
+	}
+	for _, in := range []string{"1_000", "0x1F", "0o17", "0b101", "-7"} {
+		if out, err := d.set("M", "I", in); err != nil || !strings.Contains(out, "I = "+in+"\n") {
+			t.Errorf("int %s: %q %v", in, out, err)
+		}
+	}
+	for _, in := range []string{"1__0", "_1", "0x", "-0x1", "1.5"} {
+		if _, err := d.set("M", "I", in); err == nil {
+			t.Errorf("int %s accepted", in)
+		}
+	}
+}

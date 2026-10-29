@@ -43,9 +43,15 @@ type melonDoc struct {
 	entries []melonEntry
 }
 
+// TypeRaw is a value the parser cannot type (an inline table, a date, a hex integer): its TOML text is shown and
+// written as typed, never quoted.
+const TypeRaw = "raw"
+
 var (
-	tomlInt   = regexp.MustCompile(`^[+-]?\d[\d_]*$`)
-	tomlFloat = regexp.MustCompile(`^[+-]?(\d[\d_]*(\.\d[\d_]*)?([eE][+-]?\d+)?|inf|nan)$`)
+	tomlInt = regexp.MustCompile(`^[+-]?\d+$`)
+	// tomlIntForms are the integers TOML spells: underscores between digits, and 0x, 0o and 0b without a sign.
+	tomlIntForms = regexp.MustCompile(`^([+-]?\d+(_\d+)*|0x[0-9a-fA-F]+(_[0-9a-fA-F]+)*|0o[0-7]+(_[0-7]+)*|0b[01]+(_[01]+)*)$`)
+	tomlFloat = regexp.MustCompile(`^[+-]?(\d+(\.\d+)?([eE][+-]?\d+)?|inf|nan)$`)
 )
 
 func parseMelon(text string) melonDoc {
@@ -195,7 +201,7 @@ func melonType(v string) (typ, shown string) {
 	case strings.HasPrefix(v, "["):
 		return TypeList, v
 	}
-	return TypeString, v
+	return TypeRaw, v
 }
 
 // literal is the TOML text for a value of the entry's type, or an error when the text is not one.
@@ -211,8 +217,21 @@ func (e melonEntry) literal(value string) (string, error) {
 		}
 		return "", fmt.Errorf("%s expects true or false", e.Key)
 	case TypeInt:
-		if _, err := strconv.ParseInt(value, 10, 64); err != nil {
+		if !tomlIntForms.MatchString(value) {
 			return "", fmt.Errorf("%s expects a whole number", e.Key)
+		}
+		clean := strings.ReplaceAll(value, "_", "")
+		base := 10
+		if len(clean) > 1 && clean[0] == '0' && clean[1] >= 'a' {
+			base = 0
+		}
+		if _, err := strconv.ParseInt(clean, base, 64); err != nil {
+			return "", fmt.Errorf("%s expects a whole number", e.Key)
+		}
+		return value, nil
+	case TypeRaw:
+		if value == "" {
+			return "", fmt.Errorf("%s expects a value", e.Key)
 		}
 		return value, nil
 	case TypeFloat:
