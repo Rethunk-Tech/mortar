@@ -61,7 +61,11 @@ func appendString(out, b []byte, i int) ([]byte, int) {
 	quote := b[i]
 	out = append(out, '"')
 	j := i + 1
+	lines := 0
 	for j < len(b) && b[j] != quote {
+		if b[j] == '\n' || b[j] == '\\' && j+1 < len(b) && b[j+1] == '\n' {
+			lines++
+		}
 		switch c := b[j]; {
 		case c == '\\' && j+1 < len(b):
 			j++
@@ -85,7 +89,8 @@ func appendString(out, b []byte, i int) ([]byte, int) {
 	if j >= len(b) {
 		return out, len(b) - 1
 	}
-	return append(out, '"'), j
+	// The raw newlines became escapes; whitespace after the quote keeps a parse error's line number true to the file.
+	return append(append(out, '"'), bytes.Repeat([]byte("\n"), lines)...), j
 }
 
 func appendControl(out []byte, c byte) []byte {

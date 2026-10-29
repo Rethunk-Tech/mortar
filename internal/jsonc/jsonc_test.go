@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
+	"errors"
 	"reflect"
 	"slices"
 	"testing"
@@ -112,5 +113,17 @@ func TestCleanElisions(t *testing.T) {
 		if json.Valid(Clean([]byte(in))) {
 			t.Errorf("%s accepted", in)
 		}
+	}
+}
+
+func TestCleanKeepsLinesAcrossMultilineStrings(t *testing.T) {
+	var se *json.SyntaxError
+	err := json.Unmarshal(Clean([]byte("{\"a\":\"x\ny\nz\",\n\"b\": }")), new(any))
+	if !errors.As(err, &se) {
+		t.Fatal(err)
+	}
+	line := 1 + bytes.Count(Clean([]byte("{\"a\":\"x\ny\nz\",\n\"b\": }"))[:se.Offset], []byte("\n"))
+	if line != 4 {
+		t.Fatalf("error on line %d", line)
 	}
 }
