@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
@@ -77,7 +78,7 @@ func (s *Service) changelogs(ctx context.Context, gameID string, modID int) ([]n
 	if err != nil {
 		return nil, err
 	}
-	return meta.Cached(s.meta, fmt.Sprintf("%s%s-%d.json", meta.NexusChangelogsPrefix, t.Domain, modID), changelogTTL, func() ([]nexus.Changelog, error) {
+	return diskcache.Cached(s.meta.Cache(), fmt.Sprintf("%s%s-%d.json", meta.NexusChangelogsPrefix, t.Domain, modID), changelogTTL, func() ([]nexus.Changelog, error) {
 		c, err := Authed(s.store, s.client)
 		if err != nil {
 			return nil, err

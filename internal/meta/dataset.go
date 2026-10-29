@@ -11,6 +11,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/Rethunk-Tech/go-safefs/diskcache"
 )
 
 const (
@@ -52,7 +54,7 @@ func (c *Client) loadIndex(ctx context.Context) (map[string][]Ref, error) {
 	if c.index.byID != nil && c.now().Sub(c.index.fetched) < datasetTTL {
 		return c.index.byID, nil
 	}
-	byID, err := Cached(c, DatasetPrefix+"index.json", datasetTTL, func() (map[string][]Ref, error) { return c.fetchIndex(ctx) })
+	byID, err := diskcache.Cached(c.Cache(), DatasetPrefix+"index.json", datasetTTL, func() (map[string][]Ref, error) { return c.fetchIndex(ctx) })
 	if err != nil {
 		return nil, err
 	}
@@ -151,7 +153,7 @@ func (c *Client) Page(ctx context.Context, id int) (Page, error) {
 }
 
 func (c *Client) page(ctx context.Context, id int) (Page, error) {
-	return Cached(c, DatasetPrefix+"nexus-"+strconv.Itoa(id)+".json", datasetTTL, func() (Page, error) {
+	return diskcache.Cached(c.Cache(), DatasetPrefix+"nexus-"+strconv.Itoa(id)+".json", datasetTTL, func() (Page, error) {
 		base := cmp.Or(c.PageBase, defaultPageBase)
 		u, err := url.JoinPath(base, strconv.Itoa(id/1000), strconv.Itoa(id)+".json")
 		if err != nil {

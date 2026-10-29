@@ -7,6 +7,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs/diskcache"
+	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
@@ -45,14 +47,15 @@ func (l signedList[T]) load(ctx context.Context, c *Client, cache *meta.Client, 
 		v, serial, err := l.decode(e.List, game)
 		return v, serial, err == nil
 	}
-	floor, _ := meta.Peek[uint64](cache, l.floorName(game))
+	stored, _ := diskcache.Peek[uint64](cache.Cache(), l.floorName(game))
+	floor := stored.Value
 	oldSerial := floor
-	if old, ok := meta.Peek[cachedSignedList](cache, l.listName(game)); ok {
-		if _, serial, ok := trusted(old); ok {
+	if old, ok := diskcache.Peek[cachedSignedList](cache.Cache(), l.listName(game)); ok {
+		if _, serial, ok := trusted(old.Value); ok {
 			oldSerial = max(oldSerial, serial)
 		}
 	}
-	entry, err := meta.CachedForBuild(cache, l.listName(game), signedListTTL, func() (cachedSignedList, error) {
+	entry, err := diskcache.CachedStamped(cache.Cache(), l.listName(game), appversion.Build(), signedListTTL, func() (cachedSignedList, error) {
 		url := base + game + ".json"
 		if base == "" {
 			url = l.url + game + ".json"
@@ -74,7 +77,7 @@ func (l signedList[T]) load(ctx context.Context, c *Client, cache *meta.Client, 
 			return cachedSignedList{}, fmt.Errorf("%w: %s serial %d is older than %d", ErrRollback, url, serial, oldSerial)
 		}
 		if serial > floor {
-			meta.Put(cache, l.floorName(game), serial)
+			diskcache.Put(cache.Cache(), l.floorName(game), serial)
 		}
 		return e, nil
 	})

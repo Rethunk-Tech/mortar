@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/go-safefs/diskcache"
 )
 
 // maxNotes bounds a release body read from the API.
@@ -19,8 +19,8 @@ const maxNotes = 1 << 20
 // its notes, so a cached answer is final and never refetched; a failed lookup is not cached.
 func (c *Client) ReleaseNotes(ctx context.Context, owner, repo, tag string) (string, error) {
 	name := Key(owner, repo, tag, "") + "-notes-v2.json"
-	if notes, ok := meta.Peek[string](c.cache(), name); ok {
-		return notes, nil
+	if notes, ok := diskcache.Peek[string](c.cache(), name); ok {
+		return notes.Value, nil
 	}
 	base := cmp.Or(c.APIBase, apiBase)
 	ctx, cancel := context.WithTimeout(ctx, apiTimeout)
@@ -51,6 +51,6 @@ func (c *Client) ReleaseNotes(ctx context.Context, owner, repo, tag string) (str
 		return "", fmt.Errorf("read GitHub's release response: %w", err)
 	}
 	notes := strings.TrimSpace(rel.Body)
-	meta.Put(c.cache(), name, notes)
+	diskcache.Put(c.cache(), name, notes)
 	return notes, nil
 }

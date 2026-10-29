@@ -10,6 +10,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexussvc"
@@ -107,7 +108,7 @@ func (s *Service) siteFlagged(ctx context.Context, cl *meta.Client, gameID, kind
 	}
 	ids := slices.Sorted(maps.Keys(byID))
 	sum := sha256.Sum256([]byte(strings.Join(ids, "\n")))
-	flags, err := meta.Cached(cl, meta.StandingPrefix+kind+"-"+hex.EncodeToString(sum[:8])+".json", standingTTL, func() (map[string]source.Standing, error) {
+	flags, err := diskcache.Cached(cl.Cache(), meta.StandingPrefix+kind+"-"+hex.EncodeToString(sum[:8])+".json", standingTTL, func() (map[string]source.Standing, error) {
 		if s.Throttle != nil {
 			release, err := s.Throttle(ctx, kind)
 			if err != nil {

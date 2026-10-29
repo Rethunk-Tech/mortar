@@ -24,10 +24,10 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/netstate"
 
 	"github.com/Rethunk-Tech/go-semverish"
@@ -565,8 +565,8 @@ const cacheFormat = 2
 const releasesPerPage = 30
 
 // cache is the release cache's handle; the clock is the client's, so tests can set it.
-func (c *Client) cache() *meta.Client {
-	return &meta.Client{CacheDir: c.CacheDir, Now: c.now}
+func (c *Client) cache() *diskcache.Cache {
+	return &diskcache.Cache{Dir: c.CacheDir, Now: c.now}
 }
 
 func releasesName(owner, repo string) string {
@@ -576,15 +576,15 @@ func releasesName(owner, repo string) string {
 // CachedReleases lists owner/repo's releases from the stored answer however old it is, never asking GitHub. all is
 // whether the list holds every release the repository has, which a full page may not.
 func (c *Client) CachedReleases(owner, repo string) (releases []Release, all, ok bool) {
-	releases, stamp, ok := meta.PeekStamped[[]Release](c.cache(), releasesName(owner, repo))
-	return releases, len(releases) < releasesPerPage, ok && stamp == strconv.Itoa(cacheFormat)
+	e, ok := diskcache.Peek[[]Release](c.cache(), releasesName(owner, repo))
+	return e.Value, len(e.Value) < releasesPerPage, ok && e.Stamp == strconv.Itoa(cacheFormat)
 }
 
 // Releases lists owner/repo's releases, newest first. An answer younger than an hour comes from the cache and a
 // stale one stands in when the lookup fails, rate limit included.
 func (c *Client) Releases(ctx context.Context, owner, repo string) ([]Release, error) {
 	base := cmp.Or(c.APIBase, apiBase)
-	return meta.CachedStamped(c.cache(), releasesName(owner, repo), strconv.Itoa(cacheFormat), cacheTTL, func() ([]Release, error) {
+	return diskcache.CachedStamped(c.cache(), releasesName(owner, repo), strconv.Itoa(cacheFormat), cacheTTL, func() ([]Release, error) {
 		return FetchReleases(ctx, c.HTTP, base+"/repos/"+owner+"/"+repo+"/releases?per_page="+strconv.Itoa(releasesPerPage))
 	})
 }

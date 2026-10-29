@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/github"
-	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
 const (
@@ -53,7 +53,7 @@ func (l Loader) installerAsset(version string) string {
 	return strings.ReplaceAll(pattern, "{version}", version)
 }
 
-func (l Loader) cache() *meta.Client { return &meta.Client{CacheDir: l.CacheDir} }
+func (l Loader) cache() *diskcache.Cache { return &diskcache.Cache{Dir: l.CacheDir} }
 
 // Latest returns the newest stable SMAPI version that ships an installer. A response younger than an hour
 // is reused, and a stale one stands in when the lookup fails.
@@ -61,7 +61,7 @@ func (l Loader) Latest(ctx context.Context, _ components.GameInfo) (string, erro
 	if component, ok := l.loaderComponent(); ok {
 		return component.Version, nil
 	}
-	return meta.Cached(l.cache(), cacheFile, cacheTTL, func() (string, error) { return l.fetchLatest(ctx) })
+	return diskcache.Cached(l.cache(), cacheFile, cacheTTL, func() (string, error) { return l.fetchLatest(ctx) })
 }
 
 func (l Loader) fetchLatest(ctx context.Context) (string, error) {

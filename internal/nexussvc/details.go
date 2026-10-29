@@ -6,6 +6,7 @@ import (
 	"math"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
@@ -35,7 +36,7 @@ func (s *Service) Details(ctx context.Context, gameID string, modID int) (Detail
 	if err != nil {
 		return Details{}, err
 	}
-	return meta.Cached(s.meta, DetailsName(t.Domain, modID), detailsTTL, func() (Details, error) {
+	return diskcache.Cached(s.meta.Cache(), DetailsName(t.Domain, modID), detailsTTL, func() (Details, error) {
 		c, err := Authed(s.store, s.client)
 		if err != nil {
 			return Details{}, err
@@ -57,7 +58,7 @@ func (s *Service) Details(ctx context.Context, gameID string, modID int) (Detail
 			return Details{}, err
 		}
 		// The category name is a label only: a failed lookup leaves it out rather than losing the rest.
-		cats, _ := meta.Cached(s.meta, meta.NexusCategoriesPrefix+t.Domain+".json", categoriesTTL, func() (map[int]string, error) {
+		cats, _ := diskcache.Cached(s.meta.Cache(), meta.NexusCategoriesPrefix+t.Domain+".json", categoriesTTL, func() (map[int]string, error) {
 			return c.Categories(ctx, t)
 		})
 		return Details{Page: page, Category: cats[page.CategoryID], Files: files, Changelogs: logs}, nil

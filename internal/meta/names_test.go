@@ -29,7 +29,7 @@ func isCacheCall(call *ast.CallExpr) bool {
 	case *ast.IndexExpr:
 		return isCacheCall(&ast.CallExpr{Fun: fn.X})
 	}
-	return name == "Cached" || name == "CachedForBuild" || name == "CachedStamped"
+	return name == "Cached" || name == "CachedStamped"
 }
 
 // registered reports whether the cache name expression starts from a names.go prefix, a builder of one, or a kept file.

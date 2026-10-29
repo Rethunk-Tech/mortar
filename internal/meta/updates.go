@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/netstate"
 )
@@ -125,22 +126,20 @@ func (r UpdateRequest) key(m InstalledMod) string {
 func (c *Client) CheckUpdates(ctx context.Context, req UpdateRequest) []UpdateResult {
 	c.updatesMu.Lock()
 	defer c.updatesMu.Unlock()
-	path, pathErr := c.cachePath(updatesFile)
-	var store map[string]entry[UpdateResult]
-	if pathErr == nil {
-		if e, ok := readEntry[map[string]entry[UpdateResult]](path); ok {
-			store = e.Value
-			// An answer carries the build that fetched it; one written before answers carried it takes the file's.
-			for k, v := range store {
-				if v.Build == "" {
-					v.Build = e.Build
-					store[k] = v
-				}
+	cache := c.Cache()
+	var store map[string]diskcache.Entry[UpdateResult]
+	if e, ok := diskcache.Peek[map[string]diskcache.Entry[UpdateResult]](cache, updatesFile); ok {
+		store = e.Value
+		// An answer carries the build that fetched it; one written before answers carried it takes the file's.
+		for k, v := range store {
+			if v.Stamp == "" {
+				v.Stamp = e.Stamp
+				store[k] = v
 			}
 		}
 	}
 	if store == nil {
-		store = map[string]entry[UpdateResult]{}
+		store = map[string]diskcache.Entry[UpdateResult]{}
 	}
 	now := c.now()
 	build := appversion.Build()
@@ -151,9 +150,9 @@ func (c *Client) CheckUpdates(ctx context.Context, req UpdateRequest) []UpdateRe
 		e, ok := store[req.key(m)]
 		switch {
 		// Another build's answers are asked now, and serve only while the API cannot be reached.
-		case ok && !req.Fresh && e.Build == build && c.young(e.Fetched, updatesTTL):
+		case ok && !req.Fresh && e.Stamp == build && c.young(e.Fetched, updatesTTL):
 			out[i] = e.Value
-		case ok && !req.Fresh && e.Build == build && e.Value.Known:
+		case ok && !req.Fresh && e.Stamp == build && e.Value.Known:
 			out[i] = e.Value
 			later = append(later, req.Mods[i])
 		default:
@@ -177,7 +176,7 @@ func (c *Client) CheckUpdates(ctx context.Context, req UpdateRequest) []UpdateRe
 				out[i] = got[strings.ToLower(req.Mods[i].ID)]
 				out[i].ID = req.Mods[i].ID
 				out[i].Known = true
-				store[k] = entry[UpdateResult]{Fetched: now, Value: out[i], Build: build}
+				store[k] = diskcache.Entry[UpdateResult]{Fetched: now, Value: out[i], Stamp: build}
 				dirty = true
 			case store[k].Value.Known:
 				out[i] = store[k].Value
@@ -186,13 +185,13 @@ func (c *Client) CheckUpdates(ctx context.Context, req UpdateRequest) []UpdateRe
 			}
 		}
 	}
-	if dirty && pathErr == nil {
+	if dirty {
 		for k, e := range store {
 			if age := now.Sub(e.Fetched); age < 0 || age > 24*updatesTTL {
 				delete(store, k)
 			}
 		}
-		writeEntry(path, entry[map[string]entry[UpdateResult]]{Fetched: now, Value: store, Build: build})
+		diskcache.PutEntry(cache, updatesFile, diskcache.Entry[map[string]diskcache.Entry[UpdateResult]]{Fetched: now, Value: store, Stamp: build})
 	}
 	return out
 }

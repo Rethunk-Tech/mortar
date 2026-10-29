@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
@@ -17,7 +18,7 @@ func TestAuthorMarkedMods(t *testing.T) {
 	home := t.TempDir()
 	c := &meta.Client{CacheDir: filepath.Join(home, "cache")}
 	cache := func(id int, d nexussvc.Details) {
-		if _, err := meta.Cached(c, nexussvc.DetailsName("stardewvalley", id), time.Hour, func() (nexussvc.Details, error) { return d, nil }); err != nil {
+		if _, err := diskcache.Cached(c.Cache(), nexussvc.DetailsName("stardewvalley", id), time.Hour, func() (nexussvc.Details, error) { return d, nil }); err != nil {
 			t.Fatal(err)
 		}
 	}

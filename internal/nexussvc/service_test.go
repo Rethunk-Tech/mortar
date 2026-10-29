@@ -15,6 +15,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/go-safefs"
@@ -170,7 +171,7 @@ func TestDetailsCachedAndServedStaleWhenSignedOut(t *testing.T) {
 		hits.Load() != 5 {
 		t.Fatalf("cached details = %+v, hits %d", got, hits.Load())
 	}
-	meta.Put(s.meta, PageName("stardewvalley", 777), Details{Page: nexus.Page{Version: "3.0"}, Partial: true})
+	diskcache.Put(s.meta.Cache(), PageName("stardewvalley", 777), Details{Page: nexus.Page{Version: "3.0"}, Partial: true})
 	if got := s.CachedDetails("stardew", []int{777}); got[777].Page.Version != "3.0" || hits.Load() != 5 {
 		t.Fatalf("a mod known only from a batched page: %+v, hits %d", got, hits.Load())
 	}

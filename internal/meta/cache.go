@@ -4,17 +4,15 @@ package meta
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
-	"os"
 	"path/filepath"
 	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -58,130 +56,16 @@ func (c *Client) now() time.Time {
 	return time.Now().UTC()
 }
 
-func (c *Client) cachePath(name string) (string, error) {
+// Cache is the client's cache: CacheDir, else <datadir>/cache. With no data folder it is disabled, and every
+// answer is fetched.
+func (c *Client) Cache() *diskcache.Cache {
 	dir := c.CacheDir
 	if dir == "" {
-		base, err := datadir.Dir()
-		if err != nil {
-			return "", err
+		if base, err := datadir.Dir(); err == nil {
+			dir = filepath.Join(base, "cache")
 		}
-		dir = filepath.Join(base, "cache")
 	}
-	return filepath.Join(dir, name), nil
-}
-
-type entry[T any] struct {
-	Fetched time.Time `json:"fetched"`
-	Value   T         `json:"value"`
-	// Build is the Mortar build that wrote a cache whose answers depend on Mortar's own logic.
-	Build string `json:"build,omitempty"`
-}
-
-func readEntry[T any](path string) (entry[T], bool) {
-	b, err := safefs.ReadFile(path)
-	if err != nil {
-		return entry[T]{}, false
-	}
-	// An entry with no "value" key is another shape under the same name (an older build's, or a foreign file), and
-	// decoding it would serve a zero value as a fresh answer. A stored "value": null is still a value.
-	var raw struct {
-		Fetched time.Time       `json:"fetched"`
-		Value   json.RawMessage `json:"value"`
-		Build   string          `json:"build"`
-	}
-	if json.Unmarshal(b, &raw) != nil || raw.Fetched.IsZero() || raw.Value == nil {
-		return entry[T]{}, false
-	}
-	e := entry[T]{Fetched: raw.Fetched, Build: raw.Build}
-	if json.Unmarshal(raw.Value, &e.Value) != nil {
-		return entry[T]{}, false
-	}
-	return e, true
-}
-
-// writeEntry replaces path without fsync: a cache that cannot be written only costs a refetch, and one a crash cuts
-// short fails to parse and reads as absent, while a cold start writes hundreds of entries at once.
-func writeEntry[T any](path string, e entry[T]) {
-	b, err := json.Marshal(e)
-	if err != nil || os.MkdirAll(filepath.Dir(path), 0o700) != nil {
-		return
-	}
-	_ = safefs.WriteStreamNoSync(path, 0o600, func(w io.Writer) error {
-		_, err := w.Write(b)
-		return err
-	})
-}
-
-// Cached returns the entry at path while it is younger than ttl, else fetches; a failed fetch falls back to a
-// stale entry, and only errors when there is none.
-func Cached[T any](c *Client, name string, ttl time.Duration, fetch func() (T, error)) (T, error) {
-	return cached(c, name, ttl, "", fetch)
-}
-
-// CachedForBuild is Cached for an answer that depends on how Mortar reads its source, so a cache another build wrote,
-// or one from before builds were stamped, is fetched again and serves only while the fetch fails.
-func CachedForBuild[T any](c *Client, name string, ttl time.Duration, fetch func() (T, error)) (T, error) {
-	return cached(c, name, ttl, appversion.Build(), fetch)
-}
-
-// CachedStamped is Cached that also fetches again an entry whose stamp is not stamp; that entry still stands in when
-// the fetch fails.
-func CachedStamped[T any](c *Client, name, stamp string, ttl time.Duration, fetch func() (T, error)) (T, error) {
-	return cached(c, name, ttl, stamp, fetch)
-}
-
-func cached[T any](c *Client, name string, ttl time.Duration, build string, fetch func() (T, error)) (T, error) {
-	path, err := c.cachePath(name)
-	if err != nil {
-		return fetch()
-	}
-	old, ok := readEntry[T](path)
-	if ok && c.young(old.Fetched, ttl) && old.Build == build {
-		return old.Value, nil
-	}
-	v, err := fetch()
-	if err != nil {
-		if ok {
-			return old.Value, nil
-		}
-		var zero T
-		return zero, err
-	}
-	writeEntry(path, entry[T]{Fetched: c.now(), Value: v, Build: build})
-	return v, nil
-}
-
-// Peek returns the entry at path however old, without fetching.
-func Peek[T any](c *Client, name string) (T, bool) {
-	path, err := c.cachePath(name)
-	if err != nil {
-		var zero T
-		return zero, false
-	}
-	e, ok := readEntry[T](path)
-	return e.Value, ok
-}
-
-// PeekStamped is Peek that also returns the stamp the entry was written with.
-func PeekStamped[T any](c *Client, name string) (T, string, bool) {
-	path, err := c.cachePath(name)
-	if err != nil {
-		var zero T
-		return zero, "", false
-	}
-	e, ok := readEntry[T](path)
-	return e.Value, e.Build, ok
-}
-
-// PeekFetched is Peek that also returns when the entry was fetched.
-func PeekFetched[T any](c *Client, name string) (T, time.Time, bool) {
-	path, err := c.cachePath(name)
-	if err != nil {
-		var zero T
-		return zero, time.Time{}, false
-	}
-	e, ok := readEntry[T](path)
-	return e.Value, e.Fetched, ok
+	return &diskcache.Cache{Dir: dir, Now: c.Now}
 }
 
 // do sends req and returns at most limit bytes of a 200 response body.
@@ -214,25 +98,8 @@ type StatusError struct {
 
 func (e *StatusError) Error() string { return fmt.Sprintf("server answered %s", e.Status) }
 
-// Fresh reports whether the entry at name exists and is younger than ttl.
-func Fresh[T any](c *Client, name string, ttl time.Duration) bool {
-	path, err := c.cachePath(name)
-	if err != nil {
-		return false
-	}
-	e, ok := readEntry[T](path)
-	return ok && c.young(e.Fetched, ttl)
-}
-
 // young reports whether an entry fetched at t is younger than ttl; one stamped in the future (a clock set back) is not.
 func (c *Client) young(t time.Time, ttl time.Duration) bool {
 	age := c.now().Sub(t)
 	return age >= 0 && age < ttl
-}
-
-// Put stores value at name as if it had just been fetched.
-func Put[T any](c *Client, name string, value T) {
-	if path, err := c.cachePath(name); err == nil {
-		writeEntry(path, entry[T]{Fetched: c.now(), Value: value})
-	}
 }

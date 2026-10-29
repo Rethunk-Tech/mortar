@@ -6,8 +6,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/nexussvc"
 )
@@ -43,7 +43,8 @@ func authorMarkedMods(home, domain string, enabled []framework.Mod) []Broken {
 
 // readCachedNexusDetails reads the details Nexus pages left in the cache, never fetching.
 func readCachedNexusDetails(home, domain string, pageID int) (nexussvc.Details, bool) {
-	return meta.Peek[nexussvc.Details](&meta.Client{CacheDir: filepath.Join(home, "cache")}, nexussvc.DetailsName(domain, pageID))
+	e, ok := diskcache.Peek[nexussvc.Details](&diskcache.Cache{Dir: filepath.Join(home, "cache")}, nexussvc.DetailsName(domain, pageID))
+	return e.Value, ok
 }
 
 func markedManifest(im framework.Mod, domain string) *Broken {

@@ -10,6 +10,7 @@ import (
 	"slices"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 
 	"github.com/Rethunk-Tech/go-semverish"
@@ -30,10 +31,10 @@ func (c *Client) Mod(ctx context.Context, t Title, modID int) (Mod, error) {
 	// The client's cache folder is already <cache>/nexus, so only the file part of the prefix names the entry.
 	name := fmt.Sprintf("%s%s-%d.json", filepath.Base(meta.NexusModPrefix), t.Domain, modID)
 	dir, dirErr := c.cacheDir()
-	cache := &meta.Client{CacheDir: dir}
+	cache := &diskcache.Cache{Dir: dir}
 	if dirErr == nil {
-		if m, ok := meta.Peek[Mod](cache, name); ok {
-			return m, nil
+		if m, ok := diskcache.Peek[Mod](cache, name); ok {
+			return m.Value, nil
 		}
 	}
 	p, err := c.Page(ctx, t, modID)
@@ -42,7 +43,7 @@ func (c *Client) Mod(ctx context.Context, t Title, modID int) (Mod, error) {
 	}
 	m := Mod{Name: p.Name, Author: p.Author, PictureURL: p.PictureURL, EndorsementCount: p.Endorsements, Summary: p.Summary}
 	if dirErr == nil {
-		meta.Put(cache, name, m)
+		diskcache.Put(cache, name, m)
 	}
 	return m, nil
 }

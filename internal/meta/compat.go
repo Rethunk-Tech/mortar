@@ -13,7 +13,9 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-lenientjson"
+	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/go-semverish"
+	"github.com/Rethunk-Tech/mortar/internal/appversion"
 )
 
 // Wiki-backed compatibility list behind https://smapi.io/mods. SMAPI.Web (Pathoschild/SMAPI
@@ -86,9 +88,9 @@ type compatMemo struct {
 }
 
 func (c *Client) CompatList(ctx context.Context) (CompatIndex, error) {
-	path, pathErr := c.cachePath(CompatCacheFile)
+	path := c.Cache().Path(CompatCacheFile)
 	stamp := func() os.FileInfo {
-		if pathErr != nil {
+		if path == "" {
 			return nil
 		}
 		info, err := os.Stat(path)
@@ -105,7 +107,7 @@ func (c *Client) CompatList(ctx context.Context) (CompatIndex, error) {
 			return index, nil
 		}
 	}
-	index, err := CachedForBuild(c, CompatCacheFile, compatTTL, func() (CompatIndex, error) {
+	index, err := diskcache.CachedStamped(c.Cache(), CompatCacheFile, appversion.Build(), compatTTL, func() (CompatIndex, error) {
 		return c.fetchCompat(ctx)
 	})
 	if err == nil {

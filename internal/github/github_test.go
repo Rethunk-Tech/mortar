@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
@@ -154,11 +155,11 @@ func TestEarlierCacheShapesReadAsAbsent(t *testing.T) {
 	if got, err := c.Releases(context.Background(), "o", "r"); err != nil || len(got) != 5 || hits.Load() != 1 {
 		t.Fatalf("releases: %d, hits %d, err %v", len(got), hits.Load(), err)
 	}
-	if notes, ok := meta.Peek[string](c.cache(), Key("o", "r", "v2", "")+"-notes-v2.json"); ok {
-		t.Fatalf("notes without a value answered %q", notes)
+	if notes, ok := diskcache.Peek[string](c.cache(), Key("o", "r", "v2", "")+"-notes-v2.json"); ok {
+		t.Fatalf("notes without a value answered %q", notes.Value)
 	}
-	if notes, ok := meta.Peek[string](c.cache(), Key("o", "r", "v1", "")+"-notes-v2.json"); ok {
-		t.Fatalf("an unversioned notes file answered %q", notes)
+	if notes, ok := diskcache.Peek[string](c.cache(), Key("o", "r", "v1", "")+"-notes-v2.json"); ok {
+		t.Fatalf("an unversioned notes file answered %q", notes.Value)
 	}
 }
 

@@ -7,6 +7,8 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-Tech/go-safefs/diskcache"
 )
 
 // Canned sample of SmapiCompatibilityList data/mods.jsonc (and the wiki dump SMAPI.Web also served).
@@ -181,12 +183,8 @@ func TestCompatListFetchesAgainACacheWrittenWithoutThisBuildsStamp(t *testing.T)
 	}))
 	t.Cleanup(srv.Close)
 	c := &Client{HTTP: srv.Client(), CacheDir: t.TempDir(), CompatURL: srv.URL}
-	path, err := c.cachePath(CompatCacheFile)
-	if err != nil {
-		t.Fatal(err)
-	}
 	// An index cached before the unofficial version was kept: a day's TTL left, no build stamp, no version.
-	writeEntry(path, entry[CompatIndex]{Fetched: time.Now(), Value: CompatIndex{
+	diskcache.PutEntry(c.Cache(), CompatCacheFile, diskcache.Entry[CompatIndex]{Fetched: time.Now(), Value: CompatIndex{
 		ByID: map[string]CompatEntry{"hootless.buslocations": {Status: StatusUnofficial, UnofficialURL: "https://example.com/b"}},
 	}})
 

@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -52,11 +53,7 @@ func TestDecodeCollectionRevisionFixture(t *testing.T) {
 
 func TestCollectionDropsNonWebLinksFromAnOlderCache(t *testing.T) {
 	c := &Client{CacheDir: t.TempDir()}
-	path, err := c.cachePath("nexus-collection-stardewvalley-slug-0.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	writeEntry(path, entry[Collection]{Fetched: time.Now(), Value: Collection{External: []CollectionExternal{
+	diskcache.PutEntry(c.Cache(), "nexus-collection-stardewvalley-slug-0.json", diskcache.Entry[Collection]{Fetched: time.Now(), Value: Collection{External: []CollectionExternal{
 		{Name: "app", URL: "steam://run/1"}, {Name: "page", URL: "https://example.com/mod"},
 	}}})
 

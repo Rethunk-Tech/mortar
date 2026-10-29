@@ -30,6 +30,8 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/go-safefs/diskcache"
+	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 
@@ -1538,9 +1540,9 @@ func (c *Client) Load(ctx context.Context, cache *meta.Client, publicKey []byte)
 	// A fetched manifest older than the one this build ships or the one already cached is a rollback.
 	oldSerial := bundled.Serial
 	if cache != nil {
-		if old, ok := meta.Peek[cachedManifest](cache, cacheName); ok {
-			if err := Verify(old.Manifest, old.Signature, publicKey); err == nil {
-				if parsed, err := Decode(old.Manifest); err == nil {
+		if old, ok := diskcache.Peek[cachedManifest](cache.Cache(), cacheName); ok {
+			if err := Verify(old.Value.Manifest, old.Value.Signature, publicKey); err == nil {
+				if parsed, err := Decode(old.Value.Manifest); err == nil {
 					oldSerial = max(oldSerial, parsed.Serial)
 				}
 			}
@@ -1572,7 +1574,7 @@ func (c *Client) Load(ctx context.Context, cache *meta.Client, publicKey []byte)
 	var entry cachedManifest
 	var err error
 	if cache != nil {
-		entry, err = meta.CachedForBuild(cache, cacheName, day, fetch)
+		entry, err = diskcache.CachedStamped(cache.Cache(), cacheName, appversion.Build(), day, fetch)
 	} else {
 		entry, err = fetch()
 	}
@@ -1604,7 +1606,8 @@ func (c *Client) UseCached(cache *meta.Client, publicKey []byte) bool {
 	if err != nil {
 		return false
 	}
-	entry, ok := meta.Peek[cachedManifest](cache, cacheName)
+	cached, ok := diskcache.Peek[cachedManifest](cache.Cache(), cacheName)
+	entry := cached.Value
 	if !ok || Verify(entry.Manifest, entry.Signature, publicKey) != nil {
 		return false
 	}

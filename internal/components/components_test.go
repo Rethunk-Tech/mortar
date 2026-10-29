@@ -19,6 +19,8 @@ import (
 
 	"golang.org/x/mod/semver"
 
+	"github.com/Rethunk-Tech/go-safefs/diskcache"
+	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
@@ -179,7 +181,7 @@ func TestUseCachedSelectsAVerifiedCacheNoOlderThanTheBundledManifest(t *testing.
 	old := &meta.Client{CacheDir: t.TempDir()}
 	body, signature = signedManifest(t, base-1, private)
 	// Load refuses an older serial, so the stale entry is written as an earlier build would have left it.
-	if _, err := meta.CachedForBuild(old, cacheName, day, func() (cachedManifest, error) {
+	if _, err := diskcache.CachedStamped(old.Cache(), cacheName, appversion.Build(), day, func() (cachedManifest, error) {
 		return cachedManifest{Manifest: body, Signature: signature}, nil
 	}); err != nil {
 		t.Fatal(err)
@@ -299,7 +301,7 @@ func TestLoadRefusesACachedManifestOlderThanBundledWhenTheFetchFails(t *testing.
 	now := time.Now()
 	cache := &meta.Client{CacheDir: t.TempDir(), Now: func() time.Time { return now }}
 	body, signature := signedManifest(t, base-1, private)
-	if _, err := meta.CachedForBuild(cache, cacheName, day, func() (cachedManifest, error) {
+	if _, err := diskcache.CachedStamped(cache.Cache(), cacheName, appversion.Build(), day, func() (cachedManifest, error) {
 		return cachedManifest{Manifest: body, Signature: signature}, nil
 	}); err != nil {
 		t.Fatal(err)

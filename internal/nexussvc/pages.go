@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
@@ -62,8 +63,8 @@ func (s *Service) Prime(ctx context.Context, gameID string, modIDs []int) (map[i
 			continue
 		}
 		seen[id] = true
-		if !meta.Fresh[Details](s.meta, DetailsName(t.Domain, id), detailsTTL) && !meta.Fresh[Details](s.meta, PageName(t.Domain, id), detailsTTL) &&
-			!meta.Fresh[absent](s.meta, absentName(t.Domain, id), detailsTTL) {
+		if !diskcache.Fresh[Details](s.meta.Cache(), DetailsName(t.Domain, id), detailsTTL) && !diskcache.Fresh[Details](s.meta.Cache(), PageName(t.Domain, id), detailsTTL) &&
+			!diskcache.Fresh[absent](s.meta.Cache(), absentName(t.Domain, id), detailsTTL) {
 			missing = append(missing, id)
 		}
 	}
@@ -83,12 +84,12 @@ func (s *Service) Prime(ctx context.Context, gameID string, modIDs []int) (map[i
 // PeekDetails reads the page data Mortar keeps for a mod without fetching: the full details or the batched page,
 // whichever was fetched last.
 func PeekDetails(c *meta.Client, domain string, id int) (Details, bool) {
-	full, fullAt, fullOK := meta.PeekFetched[Details](c, DetailsName(domain, id))
-	page, pageAt, pageOK := meta.PeekFetched[Details](c, PageName(domain, id))
-	if fullOK && (!pageOK || !pageAt.After(fullAt)) {
-		return full, true
+	full, fullOK := diskcache.Peek[Details](c.Cache(), DetailsName(domain, id))
+	page, pageOK := diskcache.Peek[Details](c.Cache(), PageName(domain, id))
+	if fullOK && (!pageOK || !page.Fetched.After(full.Fetched)) {
+		return full.Value, true
 	}
-	return page, pageOK
+	return page.Value, pageOK
 }
 
 func (s *Service) fetchPages(ctx context.Context, domain string, ids []int) error {
@@ -105,12 +106,12 @@ func (s *Service) fetchPages(ctx context.Context, domain string, ids []int) erro
 		log.Printf("nexus pages: %d of %d %s mods in %d requests", len(infos), len(ids), domain, nexus.Requests(len(ids)))
 	}
 	for id, info := range infos {
-		meta.Put(s.meta, PageName(domain, id), Details{Page: info.Page(), Category: info.Category, Partial: true})
+		diskcache.Put(s.meta.Cache(), PageName(domain, id), Details{Page: info.Page(), Category: info.Category, Partial: true})
 	}
 	if err == nil {
 		for _, id := range ids {
 			if _, ok := infos[id]; !ok {
-				meta.Put(s.meta, absentName(domain, id), absent{})
+				diskcache.Put(s.meta.Cache(), absentName(domain, id), absent{})
 			}
 		}
 	}

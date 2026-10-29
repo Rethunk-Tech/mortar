@@ -8,6 +8,8 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-Tech/go-safefs/diskcache"
 )
 
 func TestCheckUpdatesReadsCompatibilitySummary(t *testing.T) {
@@ -45,35 +47,32 @@ func TestCheckUpdatesAsksAgainAfterAnotherBuildCached(t *testing.T) {
 	if n := asked.Load(); n != 1 {
 		t.Fatalf("this build's cache answers the second check: asked %d times", n)
 	}
-	path, err := c.cachePath(updatesFile)
-	if err != nil {
-		t.Fatal(err)
-	}
-	cached, ok := readEntry[map[string]entry[UpdateResult]](path)
-	if !ok || cached.Build == "" {
+	cache := c.Cache()
+	cached, ok := diskcache.Peek[map[string]diskcache.Entry[UpdateResult]](cache, updatesFile)
+	if !ok || cached.Stamp == "" {
 		t.Fatalf("the cache carries no build stamp: %+v", cached)
 	}
-	cached.Build = "another-build"
+	cached.Stamp = "another-build"
 	for k, v := range cached.Value {
-		v.Build = ""
+		v.Stamp = ""
 		cached.Value[k] = v
 	}
-	writeEntry(path, cached)
+	diskcache.PutEntry(cache, updatesFile, cached)
 	c.CheckUpdates(context.Background(), req)
 	if n := asked.Load(); n != 2 {
 		t.Fatalf("another build's cache is asked again: asked %d times", n)
 	}
-	cached, _ = readEntry[map[string]entry[UpdateResult]](path)
-	cached.Build = "another-build"
+	cached, _ = diskcache.Peek[map[string]diskcache.Entry[UpdateResult]](cache, updatesFile)
+	cached.Stamp = "another-build"
 	for k, v := range cached.Value {
-		v.Build = "another-build"
+		v.Stamp = "another-build"
 		cached.Value[k] = v
 	}
 	other := InstalledMod{ID: "B.Mod", Version: "2.0.0"}
-	cached.Value[req.key(other)] = entry[UpdateResult]{Fetched: time.Now(), Value: UpdateResult{ID: "B.Mod", Known: true}, Build: "another-build"}
-	writeEntry(path, cached)
+	cached.Value[req.key(other)] = diskcache.Entry[UpdateResult]{Fetched: time.Now(), Value: UpdateResult{ID: "B.Mod", Known: true}, Stamp: "another-build"}
+	diskcache.PutEntry(cache, updatesFile, cached)
 	c.CheckUpdates(context.Background(), req)
-	cached, _ = readEntry[map[string]entry[UpdateResult]](path)
+	cached, _ = diskcache.Peek[map[string]diskcache.Entry[UpdateResult]](cache, updatesFile)
 	if _, kept := cached.Value[req.key(other)]; !kept {
 		t.Fatal("a check of one mod dropped another build's answer for a mod it did not ask about")
 	}
