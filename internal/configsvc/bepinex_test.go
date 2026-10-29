@@ -69,6 +69,9 @@ func TestSetChangesOnlyTheEditedLine(t *testing.T) {
 			t.Fatalf("%v must be refused", bad)
 		}
 	}
+	if _, err := d.set("General", "Gone", "1"); usererr.KindOf(err) != usererr.NotFound {
+		t.Fatalf("a missing setting: %v", err)
+	}
 }
 
 func TestJSONSchemaKeepsOrderAndTakesDefaultsAndGMCM(t *testing.T) {

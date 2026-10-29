@@ -15,6 +15,9 @@ test('a refused value is worded by its problem, any other error keeps its generi
   for (const problem of ['line', 'list', 'empty', 'toml', 'color', 'bool', 'enum', 'number']) {
     expect(msg({ problem })).not.toBe('That request was not valid.')
   }
+  expect(configValueMessage(new Error('[not_found] no setting K in [S]'))).toBe(
+    'This setting is no longer in the file.',
+  )
   expect(configValueMessage(new Error('[invalid] something else'))).toBe(
     'That request was not valid.',
   )

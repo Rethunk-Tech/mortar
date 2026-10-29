@@ -312,7 +312,7 @@ func (d cfgDoc) find(section, key string) (cfgEntry, bool) {
 func (d cfgDoc) set(section, key, value string) (string, error) {
 	e, ok := d.find(section, key)
 	if !ok {
-		return "", fmt.Errorf("no setting %s in [%s]", key, section)
+		return "", usererr.Wrap(usererr.NotFound, fmt.Errorf("no setting %s in [%s]", key, section))
 	}
 	val, err := validate(e, value)
 	if err != nil {

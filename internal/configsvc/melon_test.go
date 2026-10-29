@@ -54,6 +54,9 @@ func TestMelonPreferencesAreTypedByTheirValuesAndEditedInPlace(t *testing.T) {
 	if _, err := d.set("BetterHands", "Count", "x"); err == nil {
 		t.Fatal("a non-number was accepted for an int")
 	}
+	if _, err := d.set("BetterHands", "Gone", "1"); usererr.KindOf(err) != usererr.NotFound {
+		t.Fatalf("a missing setting: %v", err)
+	}
 	if !ownsMelonCategory([]string{"thunderstore:Ada-Better_Hands"}, "BetterHands") || ownsMelonCategory([]string{"thunderstore:Ada-Other"}, "BetterHands") {
 		t.Fatal("category ownership")
 	}

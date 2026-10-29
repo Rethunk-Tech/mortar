@@ -1,5 +1,6 @@
 import { msg } from '@lingui/core/macro'
 import { i18n } from '../../i18n/index.ts'
+import { errorKind } from '../../toasts/errorKind.ts'
 import { errorMessage } from '../../toasts/report.ts'
 
 /** The refusal's `detail` (configsvc's valueError); min and max are absent for a bound the setting does not have. */
@@ -25,6 +26,9 @@ function detailOf(e: unknown): ValueDetail | null {
 
 /** The sentence for a refused config value, or the error's generic sentence when it is not one. */
 export function configValueMessage(e: unknown): string {
+  if (errorKind(e) === 'not_found') {
+    return i18n._(msg`This setting is no longer in the file.`)
+  }
   const d = detailOf(e)
   if (d === null) {
     return errorMessage(e)

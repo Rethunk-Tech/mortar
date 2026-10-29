@@ -13,6 +13,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // MelonLoader keeps every melon's settings in UserData/MelonPreferences.cfg, a TOML file (MelonLoader/Preferences,
@@ -304,7 +305,7 @@ func (d melonDoc) set(section, key, value string) (string, error) {
 		}
 		return out, nil
 	}
-	return "", fmt.Errorf("no setting %s in [%s]", key, section)
+	return "", usererr.Wrap(usererr.NotFound, fmt.Errorf("no setting %s in [%s]", key, section))
 }
 
 // schema lists the categories keep accepts, in file order.
