@@ -6,6 +6,8 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
+
+	"github.com/Rethunk-Tech/go-semverish"
 )
 
 const (
@@ -66,7 +68,7 @@ func sameVersion(f File, want string) bool {
 		if v == want {
 			return true
 		}
-		if c, ok := meta.CompareVersions(v, want); ok && c == 0 {
+		if c, ok := semverish.Compare(v, want); ok && c == 0 {
 			return true
 		}
 	}

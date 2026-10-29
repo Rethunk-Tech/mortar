@@ -6,7 +6,8 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
-	"github.com/Rethunk-Tech/mortar/internal/meta"
+
+	"github.com/Rethunk-Tech/go-semverish"
 )
 
 // ShareFacts are what a share link tells its viewer about a profile beyond its mods: the game version it was shared
@@ -57,7 +58,7 @@ func (s *Store) ShareFacts(game string, p Profile) ShareFacts {
 			if err != nil || v == "" {
 				continue
 			}
-			if c, ok := meta.CompareVersions(v, out.MinGame[e.Key]); out.MinGame[e.Key] == "" || ok && c > 0 {
+			if c, ok := semverish.Compare(v, out.MinGame[e.Key]); out.MinGame[e.Key] == "" || ok && c > 0 {
 				out.MinGame[e.Key] = v
 			}
 		}

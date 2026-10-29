@@ -18,6 +18,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source"
+
+	"github.com/Rethunk-Tech/go-semverish"
 )
 
 // updatesTTL bounds how long a profile's updates are served without asking again; meta.Client caches for the
@@ -519,7 +521,7 @@ func downloaded(x framework.Mod, version string) bool {
 	if x.SourceVersion == "" {
 		return false
 	}
-	c, ok := meta.CompareVersions(x.SourceVersion, version)
+	c, ok := semverish.Compare(x.SourceVersion, version)
 	return ok && c >= 0
 }
 
@@ -580,7 +582,7 @@ func nexusFileIsCurrent(ctx context.Context, m Meta, x framework.Mod, url, sugge
 	if latest.ID == installed.ID {
 		// The dataset trails Nexus: when SMAPI already knows a newer version than the newest file the page lists,
 		// the page is stale and the update is real.
-		if c, ok := meta.CompareVersions(latest.Version, suggested); ok && c < 0 {
+		if c, ok := semverish.Compare(latest.Version, suggested); ok && c < 0 {
 			return false
 		}
 		return !strings.EqualFold(installed.Type, "OLD_VERSION")
@@ -657,7 +659,7 @@ func liveFileIsCurrent(files []nexus.BatchFile, x framework.Mod, suggested strin
 			return false, true
 		}
 	}
-	if c, ok := meta.CompareVersions(installed.Version, suggested); ok && c < 0 {
+	if c, ok := semverish.Compare(installed.Version, suggested); ok && c < 0 {
 		return false, true
 	}
 	return true, true

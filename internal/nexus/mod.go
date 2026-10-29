@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/meta"
+
+	"github.com/Rethunk-Tech/go-semverish"
 )
 
 // Mod is the display data of a mod page.
@@ -163,10 +165,10 @@ func parseChangelogs(raw []byte, limit int) ([]Changelog, error) {
 	// version keeps its place after the ones that are.
 	slices.Reverse(all)
 	slices.SortStableFunc(all, func(a, b Changelog) int {
-		c, ok := meta.CompareVersions(b.Version, a.Version)
+		c, ok := semverish.Compare(b.Version, a.Version)
 		if !ok {
-			_, okA := meta.CompareVersions(a.Version, a.Version)
-			_, okB := meta.CompareVersions(b.Version, b.Version)
+			_, okA := semverish.Parse(a.Version)
+			_, okB := semverish.Parse(b.Version)
 			return boolRank(okB) - boolRank(okA)
 		}
 		return c

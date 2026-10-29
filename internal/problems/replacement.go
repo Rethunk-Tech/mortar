@@ -11,6 +11,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
+
+	"github.com/Rethunk-Tech/go-semverish"
 )
 
 var (
@@ -108,7 +110,7 @@ func refForNexusPage(ctx context.Context, m Meta, domain string, pageID int) *Re
 			if cand == nil {
 				continue
 			}
-			if c, isOrdered := meta.CompareVersions(top, bestTop); best == nil || (isOrdered && c > 0) {
+			if c, isOrdered := semverish.Compare(top, bestTop); best == nil || (isOrdered && c > 0) {
 				best, bestTop = cand, top
 			}
 		}

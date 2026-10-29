@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/go-semverish"
 )
 
 // PluginType is the effective type of a plugin under flags and file dependencies.
@@ -79,7 +79,7 @@ func gameDepOK(installed, minimum string) bool {
 	if installed == "" {
 		return false
 	}
-	c, ok := meta.CompareVersions(installed, minimum)
+	c, ok := semverish.Compare(installed, minimum)
 	return !ok || c >= 0
 }
 

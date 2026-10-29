@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-lenientjson"
+	"github.com/Rethunk-Tech/go-semverish"
 )
 
 // Wiki-backed compatibility list behind https://smapi.io/mods. SMAPI.Web (Pathoschild/SMAPI
@@ -71,7 +72,7 @@ func (e CompatEntry) BrokenOn(gameVersion string) bool {
 	if !ok || gameVersion == "" {
 		return true
 	}
-	c, ok := CompareVersions(strings.TrimSuffix(strings.TrimSpace(v), "?"), gameVersion)
+	c, ok := semverish.Compare(strings.TrimSuffix(strings.TrimSpace(v), "?"), gameVersion)
 	return !ok || c <= 0
 }
 

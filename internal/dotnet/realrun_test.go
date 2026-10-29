@@ -10,7 +10,8 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/meta"
+
+	"github.com/Rethunk-Tech/go-semverish"
 )
 
 // profileFlag names a profile folder the Lethal Company matrix regress launched (scripts/regress-bepinex.sh).
@@ -24,7 +25,7 @@ var (
 
 // sameVersion compares versions the way System.Version reads them, so "1.02" and "1.2" are one version.
 func sameVersion(a, b string) bool {
-	c, ok := meta.CompareDotNet(a, b)
+	c, ok := semverish.CompareDotNet(a, b)
 	return ok && c == 0
 }
 

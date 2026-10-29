@@ -10,9 +10,10 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
-	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+
+	"github.com/Rethunk-Tech/go-semverish"
 )
 
 // LiveEvent carries a LiveRun while the game runs.
@@ -178,6 +179,6 @@ func liveMods(pkgs livePackages, loaded []loader.LivePlugin) []LiveMod {
 // sameVersion compares a [BepInPlugin] version as written with the one BepInEx reports, System.Version's form, which
 // drops leading zeros ("1.02" is 1.2).
 func sameVersion(declared, loaded string) bool {
-	c, ok := meta.CompareDotNet(declared, loaded)
+	c, ok := semverish.CompareDotNet(declared, loaded)
 	return ok && c == 0
 }

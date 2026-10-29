@@ -7,9 +7,10 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
-	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+
+	"github.com/Rethunk-Tech/go-semverish"
 )
 
 // installedPlugin is one plugin a package ships.
@@ -98,7 +99,7 @@ func enabledProvider(providers []installedPlugin, self string) (installedPlugin,
 // enabled mod of that name (the same mod shipped under another GUID) is met, as an outside requirement is.
 func unmetDependency(r dotnet.Relation, providers []installedPlugin, mods []framework.Mod, p profile.PackageRef, name string) (Missing, bool) {
 	meets := func(x installedPlugin) bool {
-		c, ok := meta.CompareDotNet(x.version, r.MinVersion)
+		c, ok := semverish.CompareDotNet(x.version, r.MinVersion)
 		return r.MinVersion == "" || !ok || c >= 0
 	}
 	if len(providers) == 0 {
@@ -128,7 +129,7 @@ func unmetDependency(r dotnet.Relation, providers []installedPlugin, mods []fram
 func highestPlugin(list []installedPlugin) string {
 	best := list[0].version
 	for _, x := range list[1:] {
-		if c, ok := meta.CompareDotNet(x.version, best); ok && c > 0 {
+		if c, ok := semverish.CompareDotNet(x.version, best); ok && c > 0 {
 			best = x.version
 		}
 	}

@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/go-semverish"
 )
 
 // Loaded is a plugin in BepInEx's load order with the dependencies of the copy that loads.
@@ -19,7 +19,7 @@ type Loaded struct {
 // Loadable reports whether BepInEx would load the plugin: its version must parse as a System.Version
 // (Chainloader.cs, "version is invalid").
 func Loadable(p Plugin) bool {
-	_, ok := meta.CompareDotNet(p.Version, p.Version)
+	_, ok := semverish.CompareDotNet(p.Version, p.Version)
 	return ok
 }
 
@@ -40,7 +40,7 @@ func LoadOrder(assemblies []Declared) []Loaded {
 			}
 			key := strings.ToLower(p.GUID)
 			if have, ok := newest[key]; ok {
-				if c, ok := meta.CompareDotNet(p.Version, have.Version); !ok || c <= 0 {
+				if c, ok := semverish.CompareDotNet(p.Version, have.Version); !ok || c <= 0 {
 					continue
 				}
 			}

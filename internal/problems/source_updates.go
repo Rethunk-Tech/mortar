@@ -12,11 +12,12 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
-	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source"
+
+	"github.com/Rethunk-Tech/go-semverish"
 )
 
 // sourceUpdates offers the newer version each of the game's sources lists for the mods, one source after another, each
@@ -74,7 +75,7 @@ func (s *Service) githubUpdates(ctx context.Context, mods []framework.Mod, have 
 		}
 		version := strings.TrimLeft(r.Tag, "vV")
 		installed := strings.TrimLeft(cmp.Or(x.SourceVersion, x.Version), "vV")
-		if c, ok := meta.CompareVersions(version, installed); !ok || c <= 0 || coveredBy(append(slices.Clone(have), out...), x.Key, version) {
+		if c, ok := semverish.Compare(version, installed); !ok || c <= 0 || coveredBy(append(slices.Clone(have), out...), x.Key, version) {
 			continue
 		}
 		out = append(out, Update{
@@ -175,7 +176,7 @@ func (s *Service) searchUpdates(ctx context.Context, gameID string, src componen
 			if !sameMod(x, it) && (twin == "" || !strings.EqualFold(it.ID, twin)) {
 				continue
 			}
-			if c, ok := meta.CompareVersions(it.Version, installed); !ok || c <= 0 {
+			if c, ok := semverish.Compare(it.Version, installed); !ok || c <= 0 {
 				break
 			}
 			if coveredBy(append(slices.Clone(have), out...), x.Key, it.Version) {
@@ -344,7 +345,7 @@ func coveredBy(have []Update, key, version string) bool {
 		if itemOf(u.Key) != itemOf(key) {
 			continue
 		}
-		if c, ok := meta.CompareVersions(u.Version, version); ok && c >= 0 {
+		if c, ok := semverish.Compare(u.Version, version); ok && c >= 0 {
 			return true
 		}
 	}

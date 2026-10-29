@@ -2,10 +2,8 @@ package deps
 
 import (
 	"regexp"
-	"strconv"
-	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/go-semverish"
 )
 
 // Version scheme names a loader reports as its capability.
@@ -20,7 +18,7 @@ type compare func(a, b string) (cmp int, ok bool)
 
 var schemes = map[string]compare{
 	// SMAPI's lenient semver: two to four numbers, prerelease and build.
-	SemverSMAPI: meta.CompareVersions,
+	SemverSMAPI: semverish.Compare,
 	// Thunderstore's d.d.d.
 	SemverStrict: compareStrict,
 }
@@ -31,18 +29,7 @@ func compareStrict(a, b string) (int, bool) {
 	if !strictPattern.MatchString(a) || !strictPattern.MatchString(b) {
 		return 0, false
 	}
-	pa, pb := strings.Split(a, "."), strings.Split(b, ".")
-	for i := range pa {
-		x, _ := strconv.Atoi(pa[i])
-		y, _ := strconv.Atoi(pb[i])
-		if x != y {
-			if x < y {
-				return -1, true
-			}
-			return 1, true
-		}
-	}
-	return 0, true
+	return semverish.Compare(a, b)
 }
 
 // Compare orders two versions under the named scheme: -1, 0 or 1. ok is false when the scheme (opaque, or unknown) or

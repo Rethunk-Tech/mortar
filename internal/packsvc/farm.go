@@ -10,11 +10,12 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/game"
-	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
+
+	"github.com/Rethunk-Tech/go-semverish"
 )
 
 // farmGame is the game Share's mod list text is read for, and the one whose mods SMAPI tells apart by unique id.
@@ -309,7 +310,7 @@ func findComponent(p profile.Profile, m FarmMod) (profile.Entry, profile.Compone
 }
 
 func sameVersion(a, b string) bool {
-	if c, ok := meta.CompareVersions(a, b); ok {
+	if c, ok := semverish.Compare(a, b); ok {
 		return c == 0
 	}
 	return a == b

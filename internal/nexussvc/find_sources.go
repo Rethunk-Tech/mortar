@@ -17,6 +17,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
+
+	"github.com/Rethunk-Tech/go-semverish"
 )
 
 // pageFetches bounds the dataset pages read at once while telling candidate pages apart.
@@ -200,7 +202,7 @@ func sameVersion(a, b string) bool {
 	if a == b {
 		return true
 	}
-	c, ok := meta.CompareVersions(a, b)
+	c, ok := semverish.Compare(a, b)
 	return ok && c == 0
 }
 

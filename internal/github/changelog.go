@@ -3,7 +3,7 @@ package github
 import (
 	"context"
 
-	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/go-semverish"
 )
 
 // MaxChangelog bounds how many releases ReleasesBetween returns.
@@ -22,10 +22,10 @@ func (c *Client) ReleasesBetween(ctx context.Context, owner, repo, installed, la
 			continue
 		}
 		v := tagVersion(r.Tag)
-		if c, ok := meta.CompareVersions(v, installed); !ok || c <= 0 {
+		if c, ok := semverish.Compare(v, installed); !ok || c <= 0 {
 			continue
 		}
-		if c, ok := meta.CompareVersions(v, latest); latest != "" && ok && c > 0 {
+		if c, ok := semverish.Compare(v, latest); latest != "" && ok && c > 0 {
 			continue
 		}
 		out = append(out, r)

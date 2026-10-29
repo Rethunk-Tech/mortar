@@ -6,6 +6,8 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
+
+	"github.com/Rethunk-Tech/go-semverish"
 )
 
 const (
@@ -117,11 +119,11 @@ func prereleaseText(s string) bool {
 	case "stable", "release", "final", "ga", "rtm":
 		return false
 	}
-	_, ok := meta.CompareVersions(v[:i], v[:i])
+	_, ok := semverish.Parse(v[:i])
 	return ok
 }
 
 func sameVersion(a, b string) bool {
-	c, ok := meta.CompareVersions(a, b)
+	c, ok := semverish.Compare(a, b)
 	return ok && c == 0
 }

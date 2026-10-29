@@ -19,6 +19,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/ghrepo"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+
+	"github.com/Rethunk-Tech/go-semverish"
 )
 
 // FileName is the manifest file SMAPI looks for.
@@ -282,16 +284,15 @@ func version(v json.RawMessage) string {
 	if json.Unmarshal(v, &obj) != nil {
 		return ""
 	}
-	num := func(name string) string {
+	num := func(name string) int {
 		var n int
 		_ = json.Unmarshal(field(obj, name), &n)
-		return strconv.Itoa(n)
+		return n
 	}
-	out := num("majorversion") + "." + num("minorversion") + "." + num("patchversion")
-	if build := text(obj, "build"); build != "" {
-		out += "-" + build
-	}
-	return out
+	// SMAPI prints the legacy object's Build as a prerelease tag.
+	return semverish.Version{
+		Major: num("majorversion"), Minor: num("minorversion"), Patch: num("patchversion"), Pre: text(obj, "build"),
+	}.String()
 }
 
 // ReadFile reads dir's manifest.json. Mod managers that deploy by symlink (Vortex, on Linux and on Windows when set

@@ -24,6 +24,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	_ "github.com/Rethunk-Tech/mortar/internal/source/all"
+
+	"github.com/Rethunk-Tech/go-semverish"
 )
 
 // Meta is the slice of meta.Client the checks use.
@@ -757,7 +759,7 @@ func depState(scheme string, byID map[string][]framework.Mod, dep mod.Dependency
 func highest(mods []framework.Mod) string {
 	best := mods[0].Version
 	for _, x := range mods[1:] {
-		if c, ok := meta.CompareVersions(x.Version, best); ok && c > 0 {
+		if c, ok := semverish.Compare(x.Version, best); ok && c > 0 {
 			best = x.Version
 		}
 	}
@@ -787,7 +789,7 @@ func copies(scheme string, group, enabled []framework.Mod) []Copy {
 	out := make([]Copy, len(group))
 	for i, g := range group {
 		c := Copy{Key: g.Key, Name: g.Name, Version: g.Version, Source: g.SourceKind, Nexus: g.SourceKind == profile.KindNexus, Needed: []string{}, TooOld: []string{}}
-		if cmpv, ok := meta.CompareVersions(g.Version, top); ok && cmpv == 0 {
+		if cmpv, ok := semverish.Compare(g.Version, top); ok && cmpv == 0 {
 			c.Newest = true
 		}
 		for _, d := range enabled {
@@ -840,7 +842,7 @@ func needsNewerGame(have string, enabled []framework.Mod) []Broken {
 		return out
 	}
 	for _, x := range enabled {
-		if c, ok := meta.CompareVersions(x.MinimumGameVersion, have); ok && c > 0 {
+		if c, ok := semverish.Compare(x.MinimumGameVersion, have); ok && c > 0 {
 			out = append(out, Broken{Key: x.Key, ID: x.ModID(), Name: x.Name, Status: "needs-game", NeedsGame: x.MinimumGameVersion})
 		}
 	}
@@ -954,7 +956,7 @@ func Locate(ctx context.Context, m Meta, domain string, uniqueID mod.ID, minimum
 		if cand == nil {
 			continue
 		}
-		if c, isOrdered := meta.CompareVersions(top, bestTop); best == nil || (isOrdered && c > 0) {
+		if c, isOrdered := semverish.Compare(top, bestTop); best == nil || (isOrdered && c > 0) {
 			best, bestTop = cand, top
 		}
 	}
@@ -988,7 +990,7 @@ func fileIn(page meta.Page, domain string, r meta.Ref, uniqueID mod.ID, minimum 
 			if !mod.Equal(im.ModID(), uniqueID) {
 				continue
 			}
-			if c, ok := meta.CompareVersions(im.Version, top); !holds || (ok && c > 0) {
+			if c, ok := semverish.Compare(im.Version, top); !holds || (ok && c > 0) {
 				top = im.Version
 			}
 			holds = true

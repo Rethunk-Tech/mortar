@@ -17,8 +17,9 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
-	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
+
+	"github.com/Rethunk-Tech/go-semverish"
 )
 
 const importedProfileName = "Imported mods"
@@ -241,7 +242,7 @@ func preferFolder(a, b gameModFolder, id mod.ID) bool {
 		return !a.disabled
 	}
 	va, vb := modVersion(a, id), modVersion(b, id)
-	if c, ok := meta.CompareVersions(va, vb); ok && c != 0 {
+	if c, ok := semverish.Compare(va, vb); ok && c != 0 {
 		return c > 0
 	}
 	return false

@@ -29,6 +29,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/netstate"
+
+	"github.com/Rethunk-Tech/go-semverish"
 )
 
 const (
@@ -627,7 +629,7 @@ func Select(all []Release, version string, prerelease bool) (Release, []Asset, e
 			continue
 		}
 		if version != "" {
-			if cmp, ok := meta.CompareVersions(tagVersion(r.Tag), tagVersion(version)); !ok || cmp != 0 {
+			if cmp, ok := semverish.Compare(tagVersion(r.Tag), tagVersion(version)); !ok || cmp != 0 {
 				continue
 			}
 		}

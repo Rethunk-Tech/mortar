@@ -11,9 +11,10 @@ import (
 	"sync"
 
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
-	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+
+	"github.com/Rethunk-Tech/go-semverish"
 )
 
 // PluginCopy is one enabled package that ships a plugin with a GUID another enabled package also ships.
@@ -102,7 +103,7 @@ func pluginClashes(pkgs []profile.PackageRef, deprecated, developed map[string]b
 		}
 		newest := 0
 		for i, o := range pool {
-			cmp, ok := meta.CompareDotNet(o.plugin, pool[newest].plugin)
+			cmp, ok := semverish.CompareDotNet(o.plugin, pool[newest].plugin)
 			if ok && (cmp > 0 || cmp == 0 && deprecated[pool[newest].pkg.Key] && !deprecated[o.pkg.Key]) {
 				newest = i
 			}

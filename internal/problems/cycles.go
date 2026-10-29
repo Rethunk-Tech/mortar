@@ -8,9 +8,10 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+
+	"github.com/Rethunk-Tech/go-semverish"
 )
 
 // dependencyCycles finds enabled SMAPI mods that wait for each other. SMAPI's ModResolver orders a mod after every
@@ -91,7 +92,7 @@ func pluginCycles(pkgs []profile.PackageRef, declared map[string]dotnet.Declared
 			}
 			node := plugin{p, cmp.Or(pl.Name, p.Name), pl.Version}
 			if i, dup := index[g]; dup {
-				if c, ok := meta.CompareVersions(pl.Version, nodes[i].version); ok && c > 0 {
+				if c, ok := semverish.Compare(pl.Version, nodes[i].version); ok && c > 0 {
 					nodes[i], relations[i] = node, own
 				}
 				continue

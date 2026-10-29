@@ -7,6 +7,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+
+	"github.com/Rethunk-Tech/go-semverish"
 )
 
 func applyChannelFileOffers(ctx context.Context, m Meta, domain string, asked []framework.Mod, r *UpdatesResult) {
@@ -47,7 +49,7 @@ func upsertChannelOffer(r *UpdatesResult, x framework.Mod, version, pageURL stri
 		if u.Key != x.Key || u.ID != x.ModID() || u.Unofficial {
 			continue
 		}
-		c, ok := meta.CompareVersions(version, u.Version)
+		c, ok := semverish.Compare(version, u.Version)
 		if !ok || c <= 0 {
 			return
 		}

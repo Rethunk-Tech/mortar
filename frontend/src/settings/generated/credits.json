@@ -145,6 +145,11 @@
     "url": "https://github.com/Rethunk-Tech/go-archive"
   },
   {
+    "name": "github.com/Rethunk-Tech/go-lenientjson",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/go-lenientjson"
+  },
+  {
     "name": "github.com/andybalholm/brotli",
     "licence": "MIT",
     "url": "https://github.com/andybalholm/brotli"

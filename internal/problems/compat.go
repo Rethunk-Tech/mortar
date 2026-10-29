@@ -10,6 +10,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/metadata"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+
+	"github.com/Rethunk-Tech/go-semverish"
 )
 
 // Compat is one profile mod's SMAPI compatibility-list row: advice, counted until dismissed.
@@ -100,7 +102,7 @@ func installedMeetsUnofficial(installed, unofficial string) bool {
 	if unofficial == "" {
 		return false
 	}
-	c, ok := meta.CompareVersions(installed, unofficial)
+	c, ok := semverish.Compare(installed, unofficial)
 	return ok && c >= 0
 }
 

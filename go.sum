@@ -8,6 +8,8 @@ github.com/Rethunk-Tech/go-archive v0.1.1 h1:AldAJXZdMvDkZoBygKXIlPtR/g/JDXqrYD2
 github.com/Rethunk-Tech/go-archive v0.1.1/go.mod h1:CvcGZQvQOVK8RCKV+60Yijah6Y5P2/l6U0eKJGtvhjk=
 github.com/Rethunk-Tech/go-lenientjson v0.1.0 h1:z9tWTZtE6x1FNsUuZEFgbCnaMkYk/0QzPcbLiWrldcg=
 github.com/Rethunk-Tech/go-lenientjson v0.1.0/go.mod h1:wvcKB3J1GQTQpvVn/GHoGQ41yNMOu9rw6dw3+7k9WaQ=
+github.com/Rethunk-Tech/go-semverish v0.1.0 h1:FmDBEHtobafSLwzov50P2tvUMYSdoqqOTbLu8hUR7V4=
+github.com/Rethunk-Tech/go-semverish v0.1.0/go.mod h1:eWQ8e6P6yvghMZ+Sd/J4UBAKvoFcwr3fA/wGBRmGk0s=
 github.com/adrg/xdg v0.5.3 h1:xRnxJXne7+oWDatRhR1JLnvuccuIeCoBu2rtuLqQB78=
 github.com/adrg/xdg v0.5.3/go.mod h1:nlTsY+NNiCBGCK2tpm09vRqfVzrc2fLmXGpBLF0zlTQ=
 github.com/andybalholm/brotli v1.2.7 h1:UgafRPGMam5ySHfRkhthMqOFA6IFoeF3D7mWIDLjG5A=

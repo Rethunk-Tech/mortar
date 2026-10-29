@@ -9,8 +9,9 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loadorder"
-	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+
+	"github.com/Rethunk-Tech/go-semverish"
 )
 
 // Order is the order BepInEx loads the enabled packages' plugins in. Where the profile's last LogOutput.log loaded
@@ -71,7 +72,7 @@ func names(p dotnet.Plugin, nameVersion string) bool {
 	if i < 0 || nameVersion[:i] != p.Name {
 		return false
 	}
-	c, ok := meta.CompareDotNet(nameVersion[i+1:], p.Version)
+	c, ok := semverish.CompareDotNet(nameVersion[i+1:], p.Version)
 	return ok && c == 0 || nameVersion[i+1:] == p.Version
 }
 

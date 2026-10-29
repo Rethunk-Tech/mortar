@@ -7,10 +7,11 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
-	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 	"github.com/Rethunk-Tech/mortar/internal/source/curseforge"
+
+	"github.com/Rethunk-Tech/go-semverish"
 )
 
 // cfResolver is the CurseForge driver's file lookup, which also refuses a project that forbids outside downloads.
@@ -35,10 +36,10 @@ func cfProject(keys []string) string {
 // number is compared by it; one that does not is taken as newer only when SMAPI already reported suggested above installed.
 func cfFileIsNewer(name, installed, suggested string) bool {
 	if v := versionToken.FindString(name); v != "" {
-		c, ok := meta.CompareVersions(v, installed)
+		c, ok := semverish.Compare(v, installed)
 		return ok && c > 0
 	}
-	c, ok := meta.CompareVersions(suggested, installed)
+	c, ok := semverish.Compare(suggested, installed)
 	return ok && c > 0
 }
 
