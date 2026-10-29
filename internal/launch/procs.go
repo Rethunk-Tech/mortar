@@ -53,13 +53,21 @@ func (p Process) ExeIs(names ...string) bool {
 	if p.Exe == "" {
 		return false
 	}
-	base := strings.TrimSuffix(strings.TrimSuffix(filepath.Base(p.Exe), " (deleted)"), ".exe")
+	base := trimExe(strings.TrimSuffix(filepath.Base(p.Exe), " (deleted)"))
 	for _, name := range names {
 		if strings.EqualFold(base, name) {
 			return true
 		}
 	}
 	return false
+}
+
+// trimExe drops a trailing ".exe" in any case, since Windows lists GAME.EXE as readily as game.exe.
+func trimExe(s string) string {
+	if len(s) > 4 && strings.EqualFold(s[len(s)-4:], ".exe") {
+		return s[:len(s)-4]
+	}
+	return s
 }
 
 // wineHostPath maps a Wine Z: drive path to the Unix path it names, and returns anything else unchanged.

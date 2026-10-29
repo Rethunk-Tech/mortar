@@ -35,3 +35,9 @@ func TestExitedWithinWaitsForAProcessThatIsStillExiting(t *testing.T) {
 		t.Fatal("a process that never exits was reported gone")
 	}
 }
+
+func TestExeIsIgnoresTheCaseOfExe(t *testing.T) {
+	if !(Process{Exe: "/g/GAME.EXE"}).ExeIs("GAME") {
+		t.Fatal("GAME.EXE was not GAME")
+	}
+}

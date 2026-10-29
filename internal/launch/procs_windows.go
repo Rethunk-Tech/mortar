@@ -22,7 +22,7 @@ func Processes(_ string, names ...string) ([]Process, error) {
 	entry := windows.ProcessEntry32{Size: uint32(unsafe.Sizeof(windows.ProcessEntry32{}))}
 	var out []Process
 	for err = windows.Process32First(snap, &entry); err == nil; err = windows.Process32Next(snap, &entry) {
-		exe := strings.TrimSuffix(windows.UTF16ToString(entry.ExeFile[:]), ".exe")
+		exe := trimExe(windows.UTF16ToString(entry.ExeFile[:]))
 		if slices.ContainsFunc(names, func(name string) bool { return strings.EqualFold(exe, name) }) {
 			if path := imagePath(entry.ProcessID); !systemProgram(path) {
 				out = append(out, Process{PID: int(entry.ProcessID), Exe: path})
@@ -35,7 +35,7 @@ func Processes(_ string, names ...string) ([]Process, error) {
 // Named reports whether p is one of names, as Processes matched it. A process whose image path was unreadable may be
 // any of them.
 func (p Process) Named(names ...string) bool {
-	exe := strings.TrimSuffix(filepath.Base(p.Exe), ".exe")
+	exe := trimExe(filepath.Base(p.Exe))
 	return p.Exe == "" || slices.ContainsFunc(names, func(name string) bool { return strings.EqualFold(exe, name) })
 }
 
