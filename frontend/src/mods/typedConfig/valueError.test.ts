@@ -12,16 +12,7 @@ test('a refused value is worded by its problem, any other error keeps its generi
   )
   expect(msg({ problem: 'range', max: 5 })).toBe('This can be at most 5.')
   expect(msg({ problem: 'range', min: 2 })).toBe('This can be at least 2.')
-  for (const problem of [
-    'line',
-    'list',
-    'empty',
-    'toml',
-    'color',
-    'bool',
-    'enum',
-    'number',
-  ]) {
+  for (const problem of ['line', 'list', 'empty', 'toml', 'color', 'bool', 'enum', 'number']) {
     expect(msg({ problem })).not.toBe('That request was not valid.')
   }
   expect(configValueMessage(new Error('[invalid] something else'))).toBe(
