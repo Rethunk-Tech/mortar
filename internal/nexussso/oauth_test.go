@@ -185,3 +185,11 @@ func TestSaveDropsTheAccessTokenWhenTheItemIsTooBig(t *testing.T) {
 		t.Fatalf("a stored refresh token with no access token must refresh: %+v, %v, %d calls", got, err, calls)
 	}
 }
+
+func TestListenFailureThatIsNotABusyPortKeepsItsCause(t *testing.T) {
+	o := OAuth{ClientID: "c", Addr: "256.0.0.1:0"}
+	_, err := o.Authorize(context.Background())
+	if err == nil || errors.Is(err, ErrPortBusy) || !strings.Contains(err.Error(), "256.0.0.1:0") {
+		t.Fatalf("error %v", err)
+	}
+}

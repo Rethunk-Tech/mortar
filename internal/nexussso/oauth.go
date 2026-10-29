@@ -14,6 +14,7 @@ import (
 	"net/url"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -109,7 +110,10 @@ func (o OAuth) Authorize(ctx context.Context) (Tokens, error) {
 
 	ln, err := (&net.ListenConfig{}).Listen(runCtx, "tcp", cmp.Or(o.Addr, redirectAddr))
 	if err != nil {
-		return Tokens{}, ErrPortBusy
+		if isAddrInUse(err) {
+			return Tokens{}, ErrPortBusy
+		}
+		return Tokens{}, fmt.Errorf("could not listen on %s: %w", cmp.Or(o.Addr, redirectAddr), err)
 	}
 	redirect := RedirectURI
 	if o.Addr != "" {
@@ -265,4 +269,11 @@ func (o OAuth) Fresh(ctx context.Context) (Tokens, error) {
 	}
 	next.Refresh = cmp.Or(next.Refresh, t.Refresh)
 	return next, Save(next)
+}
+
+// wsaEADDRINUSE is Windows' WSAEADDRINUSE, which syscall.EADDRINUSE does not match there.
+const wsaEADDRINUSE = syscall.Errno(10048)
+
+func isAddrInUse(err error) bool {
+	return errors.Is(err, syscall.EADDRINUSE) || errors.Is(err, wsaEADDRINUSE)
 }
