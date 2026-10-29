@@ -96,7 +96,7 @@ wails3 task components:refresh
 
 ## Translations
 
-Translators work in Hosted Weblate, which opens pull requests against `main`. The Lingui catalogs are split for them: `frontend/src/locales/<locale>/{app,mods,settings,profiles,console}.po`, merged into one `messages.ts` per locale at compile (`frontend/lingui.config.ts`).
+Translators work in Hosted Weblate, which opens pull requests against `main`. The Lingui catalogs are split for them: `frontend/src/locales/<locale>/{app,mods,settings,profiles,console}.po`, merged into one `messages.ts` per locale at compile (`frontend/lingui.config.ts`). Those are generated and untracked: every build, dev server and gate compiles them, and `bun run --cwd frontend catalogs` does it by hand.
 
 Weblate project settings:
 

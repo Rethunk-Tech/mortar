@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
-# Generates the frontend bindings unless the Go sources and the generator are what the last generated set came from.
-# A frontend-only change, or a rerun on an unchanged tree, keeps the set instead of spending seconds regenerating it.
+# Generates what the frontend imports but git does not track: the Lingui catalogs, compiled from the .po files every
+# time (under a second), and the bindings, unless the Go sources and the generator are what the last set came from.
+# A frontend-only change, or a rerun on an unchanged tree, keeps the bindings instead of spending seconds on them.
 set -euo pipefail
 cd "$(dirname "$0")/.."
+bun run --cwd frontend catalogs
 stamp=frontend/bindings/.inputs
 want=$({
   wails3 version 2>&1

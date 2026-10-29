@@ -5,6 +5,8 @@ bin
 frontend/dist
 node_modules
 frontend/bindings
+# Compiled from the .po catalogs by `bun run --cwd frontend catalogs` (and every build, dev server and gate).
+frontend/src/locales/*/messages.ts
 build/linux/appimage/build
 build/windows/nsis/MicrosoftEdgeWebview2Setup.exe
 /mortar
