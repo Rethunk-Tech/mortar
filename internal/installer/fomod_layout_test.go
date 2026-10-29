@@ -2,6 +2,7 @@ package installer
 
 import (
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
@@ -37,6 +38,9 @@ func TestFomodSourcesResolveBesideTheConfigAndIgnoreCase(t *testing.T) {
 
 // A package packed on Linux can hold Data/ and data/ side by side; a source the exact folder lacks is found in the other.
 func TestFomodSourceBacktracksAcrossCaseVariantFolders(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Data/ and data/ cannot sit side by side on a case-insensitive Windows folder")
+	}
 	dir := t.TempDir()
 	cfg := `<config><moduleName>M</moduleName><requiredInstallFiles><file source="Data/y.txt" destination="y.txt"/></requiredInstallFiles></config>`
 	testfs.WriteAt(t, filepath.Join(dir, "fomod", "ModuleConfig.xml"), []byte(cfg))
