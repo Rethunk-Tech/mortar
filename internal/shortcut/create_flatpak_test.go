@@ -27,3 +27,12 @@ func TestFlatpakLaunchersUseAppIDAndRefuseSteam(t *testing.T) {
 		t.Fatalf("AddToSteam err = %v", err)
 	}
 }
+
+func TestDesktopEntryEscapesBackslashes(t *testing.T) {
+	if got := desktopValue(`Mods\new`); got != `Mods\\new` {
+		t.Fatalf("desktopValue = %q", got)
+	}
+	if got := execArgEscaper.Replace(`/a%b$c\d`); got != `/a%%b\\$c\\\\d` {
+		t.Fatalf("exec = %q", got)
+	}
+}
