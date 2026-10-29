@@ -3096,24 +3096,21 @@ func readPackPath(root, rel string) ([]byte, bool) {
 	if root == "" {
 		return nil, false
 	}
-	path, ok := caseInsensitivePath(root, rel)
+	relative, ok := foldedRel(root, rel)
 	if !ok {
 		if abs, inRoot := inside(root, rel); inRoot {
 			noteRead(abs, nil)
 		}
 		return nil, false
 	}
-	relative, err := filepath.Rel(root, path)
-	if err != nil || !filepath.IsLocal(relative) {
-		return nil, false
-	}
+	path := filepath.Join(root, filepath.FromSlash(relative))
 	info, err := os.Stat(path)
 	if err != nil {
 		noteUnstampable()
 		return nil, false
 	}
 	noteRead(path, info)
-	file, err := os.OpenInRoot(root, relative)
+	file, err := os.OpenInRoot(root, filepath.FromSlash(relative))
 	if err != nil {
 		return nil, false
 	}
@@ -3137,35 +3134,23 @@ func imageFileDigest(root, rel string, image bool) string {
 	return hex.EncodeToString(sum[:])
 }
 
-func caseInsensitivePath(root, rel string) (string, bool) {
+// foldedRel resolves rel below root as a slash path, matching each element without regard to case: content packs are
+// written for Windows. A blank or absolute rel, or any ".." element, finds nothing.
+func foldedRel(root, rel string) (string, bool) {
 	if filepath.IsAbs(rel) || strings.TrimSpace(rel) == "" {
 		return "", false
 	}
-	current := filepath.Clean(root)
+	var kept []string
 	for part := range strings.SplitSeq(filepath.ToSlash(rel), "/") {
-		if part == "" || part == "." || part == ".." {
-			if part == ".." {
-				return "", false
-			}
-			continue
-		}
-		entries, err := os.ReadDir(current)
-		if err != nil {
+		if part == ".." {
 			return "", false
 		}
-		next := ""
-		for _, entry := range entries {
-			if strings.EqualFold(entry.Name(), part) {
-				next = entry.Name()
-				break
-			}
+		if part != "" && part != "." {
+			kept = append(kept, part)
 		}
-		if next == "" {
-			return "", false
-		}
-		current = filepath.Join(current, next)
 	}
-	return current, true
+	got, err := fsx.ResolveFold(os.DirFS(root), cmp.Or(strings.Join(kept, "/"), "."))
+	return got, err == nil
 }
 
 func contentPatcherPriority(kind, priority string) int {

@@ -928,11 +928,8 @@ func sourceFiles(root, rel string) []string {
 		return nil
 	}
 	if !hasToken(rel) {
-		if path, ok := caseInsensitivePath(root, rel); ok {
-			relative, err := filepath.Rel(root, path)
-			if err == nil {
-				return []string{filepath.ToSlash(relative)}
-			}
+		if relative, ok := foldedRel(root, rel); ok {
+			return []string{relative}
 		}
 		return nil
 	}

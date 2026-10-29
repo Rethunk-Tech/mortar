@@ -947,3 +947,36 @@ func TestConfigGatedLowLoadUnderTwoExclusiveLoadsIsAFallback(t *testing.T) {
 		t.Fatalf("the setting that only turns on the dead load is named, got %#v", settings)
 	}
 }
+
+// Every path the case-insensitive lookup found before must still be found, and a pack with Data/ beside data/ must
+// find files under either.
+func TestFoldedRelFindsWhatTheEarlierLookupFound(t *testing.T) {
+	root := t.TempDir()
+	for _, f := range []string{"Data/x.txt", "Data/sub/z.txt", "data/y.txt", "only/Sub/x.txt", "run.log"} {
+		testfs.WriteFile(t, root, f, "x")
+	}
+	for rel, want := range map[string]string{
+		"data/x.txt":                           "Data/x.txt",
+		"Data/x.txt":                           "Data/x.txt",
+		"DATA/x.txt":                           "Data/x.txt",
+		"data/sub/z.txt":                       "Data/sub/z.txt",
+		"Data/y.txt":                           "data/y.txt",
+		"DATA/y.txt":                           "data/y.txt",
+		"ONLY/sub/x.txt":                       "only/Sub/x.txt",
+		"./Data//x.txt":                        "Data/x.txt",
+		"RUN.LOG":                              "run.log",
+		".":                                    ".",
+		"./":                                   ".",
+		"missing/x.txt":                        "",
+		"../run.log":                           "",
+		"Data/../run.log":                      "",
+		"":                                     "",
+		"  ":                                   "",
+		string(filepath.Separator) + "run.log": "",
+	} {
+		got, ok := foldedRel(root, rel)
+		if got != want || ok != (want != "") {
+			t.Errorf("foldedRel(%q) = %q, %v; want %q", rel, got, ok, want)
+		}
+	}
+}

@@ -34,3 +34,25 @@ func TestFomodSourcesResolveBesideTheConfigAndIgnoreCase(t *testing.T) {
 		})
 	}
 }
+
+// A package packed on Linux can hold Data/ and data/ side by side; a source the exact folder lacks is found in the other.
+func TestFomodSourceBacktracksAcrossCaseVariantFolders(t *testing.T) {
+	dir := t.TempDir()
+	cfg := `<config><moduleName>M</moduleName><requiredInstallFiles><file source="Data/y.txt" destination="y.txt"/></requiredInstallFiles></config>`
+	testfs.WriteAt(t, filepath.Join(dir, "fomod", "ModuleConfig.xml"), []byte(cfg))
+	testfs.WriteAt(t, filepath.Join(dir, "Data", "x.txt"), []byte("x"))
+	testfs.WriteAt(t, filepath.Join(dir, "data", "y.txt"), []byte("y"))
+	g := Game{Loaders: []string{"smapi"}, Targets: []Target{{ID: TargetMods}}}
+	a := Open(dir, "k")
+	i, ok := Pick(a, g)
+	if !ok {
+		t.Fatal("no installer")
+	}
+	l, err := i.Layout(a, g, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(l.Files) != 1 || l.Files[0].Src != "data/y.txt" || l.Files[0].Rel != "k/y.txt" {
+		t.Fatalf("layout %+v", l.Files)
+	}
+}

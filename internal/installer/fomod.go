@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/fomod"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 var _ = Register(fomodInstaller{})
@@ -83,7 +84,7 @@ func (fomodInstaller) Layout(a Archive, g Game, choices Choices) (Layout, error)
 		if dest == ".." || strings.HasPrefix(dest, "../") {
 			return Layout{}, fmt.Errorf("%w: %q", ErrUnsafe, dest)
 		}
-		src, err := foldedPath(base.FS, src)
+		src, err := fsx.ResolveFold(base.FS, src)
 		if err != nil {
 			return Layout{}, err
 		}
@@ -108,31 +109,4 @@ func (fomodInstaller) Layout(a Archive, g Game, choices Choices) (Layout, error)
 		}
 	}
 	return l, validate(l, g)
-}
-
-// foldedPath resolves p below fsys component by component, taking an exact name when there is one and else the one that
-// differs only in case: FOMOD authors wrote for Windows, where "Data" finds "data".
-func foldedPath(fsys fs.FS, p string) (string, error) {
-	if p == "." {
-		return p, nil
-	}
-	dir := "."
-	for part := range strings.SplitSeq(p, "/") {
-		ents, err := fs.ReadDir(fsys, dir)
-		if err != nil {
-			return "", err
-		}
-		name := part
-		for _, e := range ents {
-			if e.Name() == part {
-				name = part
-				break
-			}
-			if strings.EqualFold(e.Name(), part) {
-				name = e.Name()
-			}
-		}
-		dir = path.Join(dir, name)
-	}
-	return dir, nil
 }
