@@ -50,7 +50,10 @@ func (s *Service) sampleStartup(parent context.Context, g game.Game, profileID, 
 	detached := context.WithoutCancel(ctx)
 	profileDir, err := s.profiles.ProfileDir(g.ID(), profileID)
 	if err != nil {
-		_, _ = session.Stop(detached)
+		stopCtx, stopCancel := context.WithTimeout(detached, 30*time.Second)
+		tracePath, _ := session.Stop(stopCtx)
+		stopCancel()
+		_ = fsx.Remove(tracePath)
 		log.Printf("startup sampler: %s: %v", g.ID(), err)
 		return
 	}
