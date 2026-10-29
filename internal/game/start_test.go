@@ -20,7 +20,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/gamestore"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
-	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 	"github.com/Rethunk-Tech/mortar/internal/steam"
 )
 
@@ -308,14 +307,7 @@ func TestAModdedStartWithNoLogIsUpWhenTheProcessAppears(t *testing.T) {
 }
 
 func TestStartInFlatpakGoesThroughFlatpakSpawn(t *testing.T) {
-	old := sandbox.Getenv
-	sandbox.Getenv = func(k string) string {
-		if k == "FLATPAK_ID" {
-			return appversion.AppID
-		}
-		return ""
-	}
-	t.Cleanup(func() { sandbox.Getenv = old })
+	t.Setenv("FLATPAK_ID", appversion.AppID)
 	logFile := filepath.Join(t.TempDir(), "SMAPI-latest.txt")
 	var ran []string
 	st := Starter{

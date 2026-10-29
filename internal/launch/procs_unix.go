@@ -136,7 +136,7 @@ func startTime(procDir, pid string) time.Time {
 const hostScript = `cd /proc && stat -c '%n %Y' [0-9]* 2>/dev/null; printf '\0'; grep -Hasz '' [0-9]*/cmdline 2>/dev/null; exit 0`
 
 func hostProcesses(names []string) ([]Process, error) {
-	out, err := sandbox.HostOutput("sh", "-c", hostScript)
+	out, err := hostOutput("sh", "-c", hostScript)
 	if err != nil {
 		return nil, err
 	}

@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
-	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
 func TestFlatpakLibraryChecksNameLibrariesTheSandboxCannotSee(t *testing.T) {
@@ -22,20 +21,14 @@ func TestFlatpakLibraryChecksNameLibrariesTheSandboxCannotSee(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(root, "steamapps", "libraryfolders.vdf"), []byte(vdf), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	flatpakID := ""
-	prevHome, prevEnv := userHome, sandbox.Getenv
+	prevHome := userHome
 	userHome = func() (string, error) { return home, nil }
-	sandbox.Getenv = func(k string) string {
-		if k == "FLATPAK_ID" {
-			return flatpakID
-		}
-		return ""
-	}
-	t.Cleanup(func() { userHome, sandbox.Getenv = prevHome, prevEnv })
+	t.Cleanup(func() { userHome = prevHome })
+	t.Setenv("FLATPAK_ID", "")
 	if got := flatpakLibraryChecks(); len(got) != 0 {
 		t.Fatalf("outside a Flatpak: %+v", got)
 	}
-	flatpakID = appversion.AppID
+	t.Setenv("FLATPAK_ID", appversion.AppID)
 	got := flatpakLibraryChecks()
 	if len(got) != 1 || got[0].Status != Warn || !strings.Contains(got[0].Fix, "--filesystem="+gone+" ") {
 		t.Fatalf("inside a Flatpak: %+v", got)

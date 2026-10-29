@@ -114,16 +114,19 @@ func Alive(pid int) bool {
 	return err == nil || errors.Is(err, syscall.EPERM)
 }
 
+// hostOutput runs a command on the host and returns its stdout; tests replace it.
+var hostOutput = sandbox.HostOutput
+
 // Host PIDs mean nothing in the sandbox's PID namespace, so a Flatpak signals through the host's kill.
 func hostKill(sig string, pid int) error {
-	_, err := sandbox.HostOutput("kill", "-"+sig, strconv.Itoa(pid))
+	_, err := hostOutput("kill", "-"+sig, strconv.Itoa(pid))
 	return err
 }
 
 // hostProbe reports whether the host process pid exists. kill's "no such process" is told from a failure to run
 // flatpak-spawn at all by asking the host's sh to answer in its own stdout: any error here is the latter.
 func hostProbe(pid int) (bool, error) {
-	out, err := sandbox.HostOutput("sh", "-c", `if kill -0 "$1" 2>/dev/null; then echo alive; else echo gone; fi`, "sh", strconv.Itoa(pid))
+	out, err := hostOutput("sh", "-c", `if kill -0 "$1" 2>/dev/null; then echo alive; else echo gone; fi`, "sh", strconv.Itoa(pid))
 	if err != nil {
 		return false, err
 	}

@@ -8,18 +8,10 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
-	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
 func TestFlatpakLaunchersUseAppIDAndRefuseSteam(t *testing.T) {
-	old := sandbox.Getenv
-	sandbox.Getenv = func(k string) string {
-		if k == "FLATPAK_ID" {
-			return appversion.AppID
-		}
-		return ""
-	}
-	t.Cleanup(func() { sandbox.Getenv = old })
+	t.Setenv("FLATPAK_ID", appversion.AppID)
 	// The launcher portal only installs desktop ids that start with the app id.
 	if id := launcherID(Arg("stardew", "p1")); id != "tech.rethunk.Mortar.play-stardew-p1.desktop" || !strings.HasPrefix(id, appversion.AppID+".") {
 		t.Fatalf("launcher id = %s", id)

@@ -10,7 +10,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 
 	"github.com/andygrunwald/vdf"
 )
@@ -155,15 +154,18 @@ func TestLaunchOptions(t *testing.T) {
 }
 
 func TestRunFlatpakGoesThroughHostInFlatpak(t *testing.T) {
-	oldOut, oldEnv := sandbox.Output, sandbox.Getenv
-	t.Cleanup(func() { sandbox.Output, sandbox.Getenv = oldOut, oldEnv })
-	sandbox.Getenv = func(string) string { return "x" }
+	t.Setenv("FLATPAK_ID", "x")
+	old := hostOutput
+	t.Cleanup(func() { hostOutput = old })
 	var got []string
-	sandbox.Output = func(args ...string) ([]byte, error) { got = args; return nil, nil }
+	hostOutput = func(name string, args ...string) ([]byte, error) {
+		got = append([]string{name}, args...)
+		return nil, nil
+	}
 	if _, err := ShowOverride(); err != nil {
 		t.Fatal(err)
 	}
-	if strings.Join(got, " ") != "--host flatpak override --user --show "+FlatpakID {
+	if strings.Join(got, " ") != "flatpak override --user --show "+FlatpakID {
 		t.Fatalf("argv %v", got)
 	}
 }

@@ -129,9 +129,12 @@ func HasFilesystem(show, dataDir string) bool {
 	return false
 }
 
+// hostOutput runs a command on the host and returns its stdout; tests replace it.
+var hostOutput = sandbox.HostOutput
+
 var runFlatpak = func(args ...string) ([]byte, error) {
 	if sandbox.InFlatpak() {
-		return sandbox.HostOutput("flatpak", args...)
+		return hostOutput("flatpak", args...)
 	}
 	return exec.Command("flatpak", args...).Output() //nolint:gosec // G204: binary is flatpak; args are steam --install or --run
 }

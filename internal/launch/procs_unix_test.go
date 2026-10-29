@@ -16,7 +16,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
 func TestProcesses(t *testing.T) {
@@ -105,19 +104,23 @@ func TestHostScriptListsRealProcesses(t *testing.T) {
 
 func TestHostTerminateSignalsThroughHostKill(t *testing.T) {
 	var calls []string
-	old, oldEnv := sandbox.Output, sandbox.Getenv
-	t.Cleanup(func() { sandbox.Output, sandbox.Getenv = old, oldEnv })
-	sandbox.Getenv = func(string) string { return "x" }
+	t.Setenv("FLATPAK_ID", "x")
+	old := hostOutput
+	t.Cleanup(func() { hostOutput = old })
 	alive := true
-	sandbox.Output = func(args ...string) ([]byte, error) {
-		calls = append(calls, args[len(args)-2])
-		if args[len(args)-2] == "sh" {
+	hostOutput = func(name string, args ...string) ([]byte, error) {
+		call := name
+		if name != "sh" {
+			call = args[0]
+		}
+		calls = append(calls, call)
+		if name == "sh" {
 			if alive {
 				return []byte("alive\n"), nil
 			}
 			return []byte("gone\n"), nil
 		}
-		alive = args[len(args)-2] != "-TERM"
+		alive = call != "-TERM"
 		return nil, nil
 	}
 	if err := Terminate(42, time.Second); err != nil {
@@ -130,10 +133,10 @@ func TestHostTerminateSignalsThroughHostKill(t *testing.T) {
 }
 
 func TestHostTerminateReportsAFailureToRunFlatpakSpawn(t *testing.T) {
-	old, oldEnv := sandbox.Output, sandbox.Getenv
-	t.Cleanup(func() { sandbox.Output, sandbox.Getenv = old, oldEnv })
-	sandbox.Getenv = func(string) string { return "x" }
-	sandbox.Output = func(...string) ([]byte, error) { return nil, errors.New("flatpak-spawn: not found") }
+	t.Setenv("FLATPAK_ID", "x")
+	old := hostOutput
+	t.Cleanup(func() { hostOutput = old })
+	hostOutput = func(string, ...string) ([]byte, error) { return nil, errors.New("flatpak-spawn: not found") }
 	if err := Terminate(42, time.Second); err == nil {
 		t.Fatal("a game that may still run was reported stopped")
 	}
@@ -268,12 +271,12 @@ func TestProcessesSkipsAProgramWhoseExecutableIsTheSystems(t *testing.T) {
 }
 
 func TestHostTerminateReportsAProbeThatFailsAfterTERM(t *testing.T) {
-	old, oldEnv := sandbox.Output, sandbox.Getenv
-	t.Cleanup(func() { sandbox.Output, sandbox.Getenv = old, oldEnv })
-	sandbox.Getenv = func(string) string { return "x" }
+	t.Setenv("FLATPAK_ID", "x")
+	old := hostOutput
+	t.Cleanup(func() { hostOutput = old })
 	probes := 0
-	sandbox.Output = func(args ...string) ([]byte, error) {
-		if args[len(args)-2] != "sh" {
+	hostOutput = func(name string, _ ...string) ([]byte, error) {
+		if name != "sh" {
 			return nil, nil
 		}
 		if probes++; probes == 1 {
