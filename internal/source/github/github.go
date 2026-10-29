@@ -319,13 +319,14 @@ func (d *Driver) held(refused **source.BusyError) error {
 	return nil
 }
 
-// refuse records resp's refusal until GitHub's Retry-After, else its rate limit's reset, else a minute (the search
-// limit's window).
+// refuse records resp's refusal until GitHub's Retry-After, else the reset of an exhausted primary limit, else a
+// minute: a secondary limit without Retry-After asks for at least that
+// (https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api#about-secondary-rate-limits).
 func (d *Driver) refuse(refused **source.BusyError, resp *http.Response) error {
 	busy := source.Busy("GitHub", resp)
 	if busy.Reset.IsZero() {
-		if at, err := strconv.ParseInt(resp.Header.Get("X-Ratelimit-Reset"), 10, 64); err == nil {
-			busy.Reset = time.Unix(at, 0)
+		if limit, ok := errors.AsType[*ghauth.RateLimitError](ghauth.RateLimited(resp)); ok {
+			busy.Reset = limit.Reset
 		}
 	}
 	if !d.now().Before(busy.Reset) {
