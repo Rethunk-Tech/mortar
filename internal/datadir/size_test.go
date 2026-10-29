@@ -3,6 +3,7 @@ package datadir
 import (
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 )
 
@@ -35,7 +36,7 @@ func TestSizeCountsALinkAcrossFoldersOnce(t *testing.T) {
 	}
 	const folders = sizeWalkers * 4
 	for i := 1; i < folders; i++ {
-		link := filepath.Join(dir, "m"+string(rune('a'+i)), "f")
+		link := filepath.Join(dir, "m"+strconv.Itoa(i), "f")
 		if err := os.MkdirAll(filepath.Dir(link), 0o700); err != nil {
 			t.Fatal(err)
 		}

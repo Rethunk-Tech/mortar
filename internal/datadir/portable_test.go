@@ -32,7 +32,12 @@ func TestPortableDirNeedsTheMarkerBesideTheResolvedExecutable(t *testing.T) {
 		t.Fatalf("no marker = %q", got)
 	}
 	exe := fakeExe(t, true)
-	want := filepath.Join(filepath.Dir(exe), "data")
+	// portableDir resolves the executable's folder, which expands a Windows 8.3 short name such as RUNNER~1.
+	resolved, err := filepath.EvalSymlinks(filepath.Dir(exe))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := filepath.Join(resolved, "data")
 	if got, err := portableDir(exe); !strings.EqualFold(got, want) || err != nil {
 		t.Fatalf("marker = %q, want %q", got, want)
 	}
