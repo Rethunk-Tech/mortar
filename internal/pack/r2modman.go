@@ -88,16 +88,28 @@ type Code struct {
 // ID names the format.
 func (Code) ID() string { return "r2modman-code" }
 
-// Detect accepts a code, a bare key, or a .r2z path.
+// galeImportLink is the deep link Gale's exported code arrives in; the key after it is Thunderstore's.
+const galeImportLink = "gale://profile/import/"
+
+// codeText is the pasted text with Gale's import link taken off a bare key.
+func codeText(text string) string {
+	text = strings.TrimSpace(text)
+	if key, ok := strings.CutPrefix(text, galeImportLink); ok {
+		return strings.TrimSuffix(key, "/")
+	}
+	return text
+}
+
+// Detect accepts a code, a bare key (also inside Gale's import link), or a .r2z path.
 func (Code) Detect(in Input) bool {
-	text := strings.TrimSpace(in.Text)
+	text := codeText(in.Text)
 	return strings.HasPrefix(text, codePrefix) || codeKey.MatchString(text) || strings.EqualFold(filepath.Ext(in.Path), ".r2z")
 }
 
 // Parse reads the code, fetching it first when the input is a key.
 func (c Code) Parse(ctx context.Context, in Input) (Draft, error) {
 	var zipBytes []byte
-	text := strings.TrimSpace(in.Text)
+	text := codeText(in.Text)
 	switch {
 	case in.Path != "" && text == "":
 		b, err := readCapped(in.Path, maxInput)

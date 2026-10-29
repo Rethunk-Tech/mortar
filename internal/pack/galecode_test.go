@@ -31,6 +31,10 @@ func TestGaleCodeDetectsOnlyItsOwnShape(t *testing.T) {
 		"E5RG8F": true, "e5rg8f": true, "E5RG8": false, "E5RG8FX": false, "E5RG-8": false, "hello": false,
 		"0123abcd-0123-0123-0123-0123456789ab": false, "#r2modman": false,
 		"ASNFZ4mrze8BI0VniavN7w": true, "ASNFZ4mrze8BI0VniavN7": false, "ASNFZ4mrze8BI0VniavN7w=": false,
+		"https://gale.kesomannen.com/api/desktop/profile/sync/clone/E5RG8F": true,
+		"gale://profile/sync/clone/e5rg8f/":                                 true,
+		"https://gale.kesomannen.com/api/desktop/profile/sync/clone/hello":  false,
+		"https://example.com/E5RG8F":                                        false,
 	} {
 		if got := (GaleCode{}).Detect(Input{Text: text}); got != want {
 			t.Errorf("Detect(%q) = %v", text, got)
@@ -54,6 +58,20 @@ func TestGaleCodeRefusesAMalformedOrOversizedAnswer(t *testing.T) {
 		srv.Close()
 		if err == nil || !strings.Contains(err.Error(), tc.want) {
 			t.Errorf("%s: err = %v, want %q", name, err, tc.want)
+		}
+	}
+}
+
+func TestCodeReadsGalesImportLink(t *testing.T) {
+	const key = "0123abcd-0123-0123-0123-0123456789ab"
+	for text, want := range map[string]bool{
+		"gale://profile/import/" + key:       true,
+		"gale://profile/import/" + key + "/": true,
+		"gale://profile/import/E5RG8F":       false,
+		key:                                  true,
+	} {
+		if got := (Code{}).Detect(Input{Text: text}); got != want {
+			t.Errorf("Detect(%q) = %v", text, got)
 		}
 	}
 }

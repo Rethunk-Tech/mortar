@@ -28,9 +28,19 @@ func galeLegacyID(text string) bool {
 	return err == nil && len(text) == 22 && len(b) == 16
 }
 
-// galeID is pasted text as the id Gale's server knows it, or "" when it is neither shape.
+// galeLinks are the prefixes Gale puts before a sync id: its "Copy link" address and its own deep link.
+var galeLinks = []string{"https://gale.kesomannen.com/api/desktop/profile/sync/clone/", "gale://profile/sync/clone/"}
+
+// galeID is pasted text as the id Gale's server knows it, or "" when it is neither shape. A copied link is read for
+// the id at its end.
 func galeID(text string) string {
 	text = strings.TrimSpace(text)
+	for _, prefix := range galeLinks {
+		if id, ok := strings.CutPrefix(text, prefix); ok {
+			text = strings.TrimSuffix(id, "/")
+			break
+		}
+	}
 	if galeLegacyID(text) {
 		return text
 	}
