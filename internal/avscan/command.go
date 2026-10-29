@@ -1,13 +1,13 @@
 package avscan
 
 import (
-	"time"
 	"context"
 	"errors"
 	"fmt"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/nowindow"
 )

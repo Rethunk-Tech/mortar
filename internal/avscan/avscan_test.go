@@ -1,7 +1,6 @@
 package avscan
 
 import (
-	"time"
 	"context"
 	"encoding/binary"
 	"errors"
@@ -12,6 +11,7 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
