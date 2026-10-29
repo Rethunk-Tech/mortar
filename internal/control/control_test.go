@@ -9,6 +9,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
 	"testing"
@@ -94,7 +95,7 @@ func TestServeAnswersOnlyTokenHoldersAndCleansUp(t *testing.T) {
 	}()
 	path := filepath.Join(dir, controlwire.FileName)
 	waitFile(t, path, true)
-	if info, err := os.Stat(path); err == nil && info.Mode().Perm()&0o077 != 0 {
+	if info, err := os.Stat(path); err == nil && runtime.GOOS != "windows" && info.Mode().Perm()&0o077 != 0 {
 		t.Errorf("controlwire.Discovery file mode %v is readable by others", info.Mode().Perm())
 	}
 

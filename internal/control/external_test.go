@@ -3,6 +3,7 @@ package control
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/migrate"
@@ -15,7 +16,13 @@ func TestExternalImportFindsAnotherManagersProfileByName(t *testing.T) {
 	s := services(t)
 	home := t.TempDir()
 	t.Setenv("HOME", home)
-	if err := os.CopyFS(filepath.Join(home, "AppData", "Local", "ModOrganizer", "Stardew"), os.DirFS(filepath.Join("..", "migrate", "testdata", "mo2"))); err != nil {
+	t.Setenv("USERPROFILE", home)
+	// On Windows MO2's instances live under LOCALAPPDATA when the home is the real one, as it is here.
+	local := filepath.Join(home, "AppData", "Local")
+	if runtime.GOOS == "windows" {
+		local = os.Getenv("LOCALAPPDATA")
+	}
+	if err := os.CopyFS(filepath.Join(local, "ModOrganizer", "Stardew"), os.DirFS(filepath.Join("..", "migrate", "testdata", "mo2"))); err != nil {
 		t.Fatal(err)
 	}
 	gameDir := t.TempDir()
