@@ -1,67 +1,27 @@
 package queue
 
 import (
-	"context"
-	"crypto/md5" // #nosec G501 -- Content-MD5 is MD5 by RFC 1864
-	"crypto/sha256"
-	"encoding/base64"
-	"encoding/hex"
+	"context" // #nosec G501 -- Content-MD5 is MD5 by RFC 1864
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-httpkit/download"
+
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/nxmsvc"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
-
-func rangeSvc(t *testing.T, client *http.Client) *Service {
-	t.Helper()
-	dir := t.TempDir()
-	if err := os.MkdirAll(filepath.Join(dir, downloadsDir), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	return &Service{
-		d:     Deps{HTTP: client, Dir: dir, Now: func() time.Time { return time.Unix(1_000_000, 0).UTC() }},
-		items: []*Item{{ID: "item", State: StateDownloading}},
-	}
-}
-
-const rangeBody = "abcdefghij0123456789"
-
-// bodyServer serves rangeBody whole with hdr set, ignoring Range.
-func bodyServer(t *testing.T, hdr map[string]string) *httptest.Server {
-	t.Helper()
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		for k, v := range hdr {
-			w.Header().Set(k, v)
-		}
-		w.Header().Set("Content-Length", fmt.Sprint(len(rangeBody)))
-		_, _ = io.WriteString(w, rangeBody)
-	}))
-	t.Cleanup(srv.Close)
-	return srv
-}
-
-// fetchFrom runs one fetch of srv into a fresh service and returns its destination and the error.
-func fetchFrom(t *testing.T, srv *httptest.Server) (string, error) {
-	t.Helper()
-	s := rangeSvc(t, srv.Client())
-	path := s.dest("item", "m.zip")
-	return path, s.fetch(context.Background(), Item{ID: "item"}, srv.URL, path)
-}
 
 // serveRange answers only a resume from byte from, as the CDN does for a partial it handed out.
 func serveRange(w http.ResponseWriter, r *http.Request, body string, from int) {
@@ -82,60 +42,6 @@ func seedPartial(t *testing.T, path, partial string, resume map[string]any) {
 		t.Fatal(err)
 	}
 	_ = datadir.WriteJSON(path+".resume.json", resume)
-}
-
-func TestFetchStartsOverWhenTheServerIgnoresRange(t *testing.T) {
-	t.Parallel()
-	srv := bodyServer(t, nil)
-	s := rangeSvc(t, srv.Client())
-	path := s.dest("item", "m.zip")
-	seedPartial(t, path, "PARTIAL!!", map[string]any{"expectedSize": int64(len(rangeBody)), "url": srv.URL})
-
-	if err := s.fetch(context.Background(), Item{ID: "item"}, srv.URL, path); err != nil {
-		t.Fatal(err)
-	}
-	got, err := safefs.ReadFile(path)
-	if err != nil || string(got) != rangeBody {
-		t.Fatalf("got %q err %v", got, err)
-	}
-}
-
-func TestFetchVerifiesAChecksumFromTheSource(t *testing.T) {
-	t.Parallel()
-	sum := sha256.Sum256([]byte(rangeBody))
-	if _, err := fetchFrom(t, bodyServer(t, map[string]string{"X-Checksum-Sha256": hex.EncodeToString(sum[:])})); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestFetchContentMD5(t *testing.T) {
-	t.Parallel()
-	sum := md5.Sum([]byte(rangeBody)) // #nosec G401 -- Content-MD5 is MD5 by RFC 1864
-
-	t.Run("match", func(t *testing.T) {
-		t.Parallel()
-		if _, err := fetchFrom(t, bodyServer(t, map[string]string{"Content-MD5": base64.StdEncoding.EncodeToString(sum[:])})); err != nil {
-			t.Fatal(err)
-		}
-	})
-
-	t.Run("mismatch", func(t *testing.T) {
-		t.Parallel()
-		path, err := fetchFrom(t, bodyServer(t, map[string]string{"Content-MD5": base64.StdEncoding.EncodeToString(make([]byte, md5.Size))}))
-		if err == nil || !strings.Contains(err.Error(), "Content-MD5") {
-			t.Fatalf("err = %v", err)
-		}
-		if _, stat := os.Stat(path); !os.IsNotExist(stat) {
-			t.Fatal("mismatch left the partial on disk")
-		}
-	})
-
-	t.Run("absent", func(t *testing.T) {
-		t.Parallel()
-		if _, err := fetchFrom(t, bodyServer(t, nil)); err != nil {
-			t.Fatal(err)
-		}
-	})
 }
 
 func TestTruncatedPartialResumesAfterRestart(t *testing.T) {
@@ -264,7 +170,7 @@ func TestSweepKeepsPartialsForQueuedItems(t *testing.T) {
 	live, gone := ids.New(), ids.New()
 	keep := filepath.Join(root, live+".zip")
 	drop := filepath.Join(root, gone+".zip")
-	sidecar := github.ResumeSidecar(drop)
+	sidecar := download.Sidecar(drop)
 	foreign := []string{filepath.Join(root, "holiday.jpg"), filepath.Join(root, "0123456789abcdef.pdf"), filepath.Join(root, "My Folder", "x.txt")}
 	for _, p := range append([]string{keep, drop, sidecar}, foreign...) {
 		if err := os.WriteFile(p, []byte("x"), 0o600); err != nil {
@@ -282,30 +188,6 @@ func TestSweepKeepsPartialsForQueuedItems(t *testing.T) {
 		if _, err := os.Stat(p); !os.IsNotExist(err) {
 			t.Fatalf("%s was kept", p)
 		}
-	}
-}
-
-func TestFetchGivesUpOnALoopingPartialRange(t *testing.T) {
-	t.Parallel()
-	var n atomic.Int32
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		n.Add(1)
-		w.Header().Set("Content-Range", "bytes 1-9/10")
-		w.WriteHeader(http.StatusPartialContent)
-		_, _ = io.WriteString(w, "0123456789")
-	}))
-	t.Cleanup(srv.Close)
-	s := rangeSvc(t, srv.Client())
-	path := s.dest("item", "m.zip")
-	seedPartial(t, path, "PARTIAL!!", map[string]any{"expectedSize": 10, "etag": `"v1"`, "url": srv.URL})
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-	t.Cleanup(cancel)
-	err := s.fetch(ctx, Item{ID: "item"}, srv.URL, path)
-	if err == nil {
-		t.Fatal("expected a resume error")
-	}
-	if n.Load() > int32(fetchRestarts+2) {
-		t.Fatalf("requests = %d, livelock", n.Load())
 	}
 }
 
@@ -365,6 +247,12 @@ func TestSweepRemovesASidecarTempLeftByACrash(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+	// The temp file safefs.WriteFileAtomic leaves beside the sidecar download.File writes: "<base>.<random>.tmp".
+	crashed, err := os.CreateTemp(root, filepath.Base(download.Sidecar("0123456789abcdef.zip"))+".*.tmp")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = crashed.Close()
 	s.sweepDownloads()
 	left, _ := os.ReadDir(root)
 	if len(left) != 0 {

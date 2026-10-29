@@ -12,6 +12,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-httpkit/download"
+
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
@@ -222,7 +224,7 @@ func (s *Service) downloadGitHub(ctx context.Context, it Item) error {
 		return err
 	}
 	if err := verifyDigest(path, assets[i].Digest); err != nil {
-		dropDownload(path)
+		download.Remove(path)
 		return fmt.Errorf("%s: %w", it.Asset, err)
 	}
 	if !s.markInstalling(it.ID, nil) {
@@ -234,7 +236,7 @@ func (s *Service) downloadGitHub(ctx context.Context, it Item) error {
 		return err
 	}
 	if s.d.KeepArchives == nil || !s.d.KeepArchives() {
-		dropDownload(path)
+		download.Remove(path)
 	}
 	if it.FallbackID != "" && it.ModID != 0 && !slices.ContainsFunc(ids, func(id mod.ID) bool { return mod.Equal(id, it.FallbackID) }) {
 		s.backToNexus(it.ID)

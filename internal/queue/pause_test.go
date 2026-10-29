@@ -11,7 +11,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/github"
+	"github.com/Rethunk-Tech/go-httpkit/download"
+
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 )
 
@@ -46,7 +47,7 @@ func (f *fixture) partialSize(id string) int64 {
 	f.s.mu.Lock()
 	defer f.s.mu.Unlock()
 	it := f.s.find(id)
-	return github.Partial(f.s.dest(it.ID, it.FileName))
+	return download.Partial(f.s.dest(it.ID, it.FileName))
 }
 
 func (f *fixture) waitPartial(id string) {

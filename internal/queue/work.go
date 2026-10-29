@@ -11,6 +11,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-httpkit/download"
+
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/game"
@@ -349,7 +351,7 @@ func (s *Service) dropIfEnded(snap Item) {
 	ended := it != nil && (it.State == StateCancelled || it.State == StateSkipped)
 	s.mu.Unlock()
 	if ended {
-		dropDownload(s.dest(snap.ID, snap.FileName))
+		download.Remove(s.dest(snap.ID, snap.FileName))
 	}
 }
 
@@ -594,7 +596,7 @@ func (s *Service) download(ctx context.Context, it Item) error {
 		var ferr error
 		for attempt := range 2 {
 			ferr = s.fetch(ctx, it, uri, path)
-			if ferr == nil || !errors.Is(ferr, github.ErrLinkExpired) || attempt == 1 {
+			if ferr == nil || !errors.Is(ferr, download.ErrLinkExpired) || attempt == 1 {
 				break
 			}
 			next, lerr := c.DownloadLinks(ctx, t, it.ModID, it.FileID, key, expires)
@@ -641,7 +643,7 @@ func (s *Service) download(ctx context.Context, it Item) error {
 		wantMD5 = lookupMD5(ctx, c, t, it)
 	}
 	if err := s.checkNexusMD5(path, wantMD5); err != nil {
-		dropDownload(path)
+		download.Remove(path)
 		return err
 	}
 	optional := manifestLess(it.Game, path)

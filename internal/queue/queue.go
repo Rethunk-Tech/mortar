@@ -19,6 +19,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-httpkit/download"
+
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -605,7 +607,7 @@ func (s *Service) snapshot() State {
 	for i, it := range s.items {
 		st.Items[i] = *it
 		if it.State == StatePaused || it.State == StateFailed {
-			st.Items[i].Partial = github.Partial(s.dest(it.ID, it.FileName))
+			st.Items[i].Partial = download.Partial(s.dest(it.ID, it.FileName))
 		}
 	}
 	for _, u := range s.until {
@@ -1121,7 +1123,7 @@ func (s *Service) endWith(id, to, msg string, from ...string) {
 	s.publish(true)
 	if rec != nil {
 		if to == StateCancelled || to == StateSkipped {
-			dropDownload(s.dest(rec.ID, rec.FileName))
+			download.Remove(s.dest(rec.ID, rec.FileName))
 		}
 		s.recordHistory(rec, to)
 	}

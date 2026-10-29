@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-httpkit/download"
+
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
@@ -301,7 +303,7 @@ func (s *Service) downloadPackage(ctx context.Context, it Item) error {
 		return fmt.Errorf("%s: %w", it.Package, err)
 	}
 	if err := s.checkPackage(it, path); err != nil {
-		dropDownload(path)
+		download.Remove(path)
 		return err
 	}
 	if !s.markInstalling(it.ID, nil) {

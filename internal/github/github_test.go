@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -17,6 +15,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-httpkit/download"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
@@ -191,138 +190,34 @@ func TestDownloadRefusesABodyOverTheCap(t *testing.T) {
 	t.Cleanup(srv.Close)
 	over := filepath.Join(t.TempDir(), "over.bin")
 	err := Download(context.Background(), srv.Client(), srv.URL, over, 3, nil)
-	if err == nil || !strings.Contains(err.Error(), "larger than") {
+	if err == nil || !strings.Contains(err.Error(), "larger than 3 B") || !errors.Is(err, safefs.ErrTooLarge) {
 		t.Fatalf("body over the cap: err = %v", err)
 	}
 }
 
-func TestDownloadCancelsAStalledBody(t *testing.T) {
-	old := downloadIdle
-	downloadIdle = 80 * time.Millisecond
-	t.Cleanup(func() { downloadIdle = old })
-	r, w := io.Pipe()
-	t.Cleanup(func() { _ = w.Close() })
-	_, err := copyIdle(context.Background(), io.Discard, r, downloadIdle)
-	if err == nil {
-		t.Fatal("stalled body must fail")
-	}
-}
-
-const resumeBody = "abcdefghij0123456789"
-
-// rangeServer honours Range from the start of body (a validator mismatch in If-Range answers the whole body, as
-// HTTP says); seen collects each request's Range and If-Range.
-func rangeServer(t *testing.T, body, etag string, seen *[]string) *httptest.Server {
-	t.Helper()
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		*seen = append(*seen, r.Header.Get("Range")+"|"+r.Header.Get("If-Range"))
-		w.Header().Set("ETag", etag)
-		var from int
-		_, err := fmt.Sscanf(r.Header.Get("Range"), "bytes=%d-", &from)
-		if err != nil || (r.Header.Get("If-Range") != "" && r.Header.Get("If-Range") != etag) {
-			_, _ = io.WriteString(w, body)
-			return
-		}
-		w.Header().Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", from, len(body)-1, len(body)))
-		w.WriteHeader(http.StatusPartialContent)
-		_, _ = io.WriteString(w, body[from:])
+func TestDownloadReportsGitHubsLimitBeforeTheStatus(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("X-Ratelimit-Remaining", "0")
+		w.WriteHeader(http.StatusForbidden)
 	}))
 	t.Cleanup(srv.Close)
-	return srv
-}
-
-func seedPartial(t *testing.T, dest, partial string, m resumeMeta) {
-	t.Helper()
-	if err := os.WriteFile(dest, []byte(partial), 0o600); err != nil {
-		t.Fatal(err)
+	var limit *RateLimitError
+	err := Download(context.Background(), srv.Client(), srv.URL, filepath.Join(t.TempDir(), "m.zip"), 1<<20, nil)
+	if !errors.As(err, &limit) || errors.Is(err, download.ErrLinkExpired) {
+		t.Fatalf("a 403 with no calls left: err = %v", err)
 	}
-	saveResume(dest, m)
 }
 
-func TestDownloadResumesFromThePartialWithIfRange(t *testing.T) {
+func TestDownloadNamesMortarWhenNoRangeResumes(t *testing.T) {
 	t.Parallel()
-	var seen []string
-	srv := rangeServer(t, resumeBody, `"v1"`, &seen)
-	dest := filepath.Join(t.TempDir(), "m.zip")
-	seedPartial(t, dest, resumeBody[:10], resumeMeta{URL: srv.URL, ETag: `"v1"`, ExpectedSize: int64(len(resumeBody))})
-	if err := Download(context.Background(), srv.Client(), srv.URL, dest, 1<<20, nil); err != nil {
-		t.Fatal(err)
-	}
-	got, _ := safefs.ReadFile(dest)
-	if string(got) != resumeBody || len(seen) != 1 || seen[0] != `bytes=10-|"v1"` {
-		t.Fatalf("got %q requests %v", got, seen)
-	}
-}
-
-func TestDownloadStartsOverWhenTheValidatorChanged(t *testing.T) {
-	t.Parallel()
-	var seen []string
-	srv := rangeServer(t, resumeBody, `"v2"`, &seen)
-	dest := filepath.Join(t.TempDir(), "m.zip")
-	seedPartial(t, dest, "STALEPARTI", resumeMeta{URL: srv.URL, ETag: `"v1"`, ExpectedSize: int64(len(resumeBody))})
-	if err := Download(context.Background(), srv.Client(), srv.URL, dest, 1<<20, nil); err != nil {
-		t.Fatal(err)
-	}
-	if got, _ := safefs.ReadFile(dest); string(got) != resumeBody {
-		t.Fatalf("got %q", got)
-	}
-}
-
-func TestDownloadStartsOverWhenTheServerIgnoresRange(t *testing.T) {
-	t.Parallel()
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { _, _ = io.WriteString(w, resumeBody) }))
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusRequestedRangeNotSatisfiable)
+	}))
 	t.Cleanup(srv.Close)
-	dest := filepath.Join(t.TempDir(), "m.zip")
-	seedPartial(t, dest, "STALEPARTI", resumeMeta{URL: srv.URL, ExpectedSize: int64(len(resumeBody)), LastModified: "x"})
-	if err := Download(context.Background(), srv.Client(), srv.URL, dest, 1<<20, nil); err != nil {
-		t.Fatal(err)
-	}
-	if got, _ := safefs.ReadFile(dest); string(got) != resumeBody {
-		t.Fatalf("got %q", got)
-	}
-}
-
-func TestDownloadResumesOnANewAddressOfTheSameSize(t *testing.T) {
-	t.Parallel()
-	var seen []string
-	srv := rangeServer(t, resumeBody, `"other-cdn"`, &seen)
-	dest := filepath.Join(t.TempDir(), "m.zip")
-	seedPartial(t, dest, resumeBody[:10], resumeMeta{URL: "https://old.example/f", ETag: `"v1"`, ExpectedSize: int64(len(resumeBody))})
-	if err := Download(context.Background(), srv.Client(), srv.URL, dest, 1<<20, nil); err != nil {
-		t.Fatal(err)
-	}
-	if got, _ := safefs.ReadFile(dest); string(got) != resumeBody || len(seen) != 1 || seen[0] != "bytes=10-|" {
-		t.Fatalf("got %q requests %v", got, seen)
-	}
-}
-
-func TestDownloadStartsOverWhenTheTotalChanged(t *testing.T) {
-	t.Parallel()
-	var seen []string
-	srv := rangeServer(t, resumeBody+"MORE", `"v1"`, &seen)
-	dest := filepath.Join(t.TempDir(), "m.zip")
-	seedPartial(t, dest, resumeBody[:10], resumeMeta{URL: "https://old.example/f", ExpectedSize: int64(len(resumeBody))})
-	if err := Download(context.Background(), srv.Client(), srv.URL, dest, 1<<20, nil); err != nil {
-		t.Fatal(err)
-	}
-	if got, _ := safefs.ReadFile(dest); string(got) != resumeBody+"MORE" {
-		t.Fatalf("got %q", got)
-	}
-}
-
-func TestDownloadDropsAPartialNothingVouchesFor(t *testing.T) {
-	t.Parallel()
-	var seen []string
-	srv := rangeServer(t, resumeBody, `"v1"`, &seen)
-	dest := filepath.Join(t.TempDir(), "m.zip")
-	if err := os.WriteFile(dest, []byte("unknown"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	if err := Download(context.Background(), srv.Client(), srv.URL, dest, 1<<20, nil); err != nil {
-		t.Fatal(err)
-	}
-	if got, _ := safefs.ReadFile(dest); string(got) != resumeBody || seen[0] != "|" {
-		t.Fatalf("got %q requests %v", got, seen)
+	err := Download(context.Background(), srv.Client(), srv.URL, filepath.Join(t.TempDir(), "m.zip"), 1<<20, nil)
+	if err == nil || err.Error() != "the download server sent a range Mortar could not resume" {
+		t.Fatalf("err = %v", err)
 	}
 }
 
@@ -386,72 +281,6 @@ func TestReleasesBetween(t *testing.T) {
 	got, err := c.ReleasesBetween(context.Background(), "o", "r", "1.0.0", "2.1.0")
 	if err != nil || len(got) != 2 || got[0].Tag != "v2.1.0" || got[1].Tag != "v2.0.0" || got[0].Published != "2026-02-01T10:00:00Z" {
 		t.Fatalf("got %+v, %v", got, err)
-	}
-}
-
-func TestBucketSharesTheRateAcrossCallers(t *testing.T) {
-	t.Parallel()
-	var b bucket
-	now := time.Unix(1_000, 0)
-	const rate = 100 << 10
-	if w := b.reserve(rate/4, rate, now); w != 0 {
-		t.Fatalf("the burst waited %v", w)
-	}
-	// A second download draws on the same, now empty, bucket.
-	if w := b.reserve(rate/4, rate, now); w != 250*time.Millisecond {
-		t.Fatalf("second caller waits %v, want 250ms", w)
-	}
-	// Raising the limit at once shortens the wait for the same bytes.
-	if w := b.reserve(rate/4, 2*rate, now); w >= 250*time.Millisecond*2 {
-		t.Fatalf("a raised limit still waits %v", w)
-	}
-}
-
-func TestDownloadHonoursTheSpeedLimit(t *testing.T) {
-	body := strings.Repeat("x", 120<<10)
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { _, _ = io.WriteString(w, body) }))
-	t.Cleanup(srv.Close)
-	SpeedLimit = func() int64 { return 200 << 10 }
-	t.Cleanup(func() { SpeedLimit, shared = nil, bucket{} })
-	dest := filepath.Join(t.TempDir(), "m.zip")
-	start := time.Now()
-	if err := Download(context.Background(), srv.Client(), srv.URL, dest, 1<<20, nil); err != nil {
-		t.Fatal(err)
-	}
-	// 120 KiB at 200 KiB/s with a 50 KiB burst leaves 70 KiB, 0.35 s.
-	if took := time.Since(start); took < 250*time.Millisecond {
-		t.Fatalf("120 KiB arrived in %v under a 200 KiB/s limit", took)
-	}
-	if got, _ := safefs.ReadFile(dest); string(got) != body {
-		t.Fatal("limited download is corrupt")
-	}
-}
-
-func TestDownloadForgetsTheOldSizeWhenTheServerAnswers200(t *testing.T) {
-	t.Parallel()
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		_ = http.NewResponseController(w).Flush() // chunked: no Content-Length
-		_, _ = io.WriteString(w, resumeBody+"-changed")
-	}))
-	t.Cleanup(srv.Close)
-	dest := filepath.Join(t.TempDir(), "m.zip")
-	seedPartial(t, dest, "STALEPARTI", resumeMeta{URL: srv.URL, ExpectedSize: int64(len(resumeBody))})
-	if err := Download(context.Background(), srv.Client(), srv.URL, dest, 1<<20, nil); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestDownloadForgetsASidecarWhosePartialIsGone(t *testing.T) {
-	t.Parallel()
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		_ = http.NewResponseController(w).Flush() // chunked: no Content-Length
-		_, _ = io.WriteString(w, resumeBody+"-changed")
-	}))
-	t.Cleanup(srv.Close)
-	dest := filepath.Join(t.TempDir(), "m.zip")
-	saveResume(dest, resumeMeta{URL: srv.URL, ExpectedSize: int64(len(resumeBody))})
-	if err := Download(context.Background(), srv.Client(), srv.URL, dest, 1<<20, nil); err != nil {
-		t.Fatal(err)
 	}
 }
 

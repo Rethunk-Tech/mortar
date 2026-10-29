@@ -29,6 +29,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-httpkit/download"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
@@ -1683,7 +1684,7 @@ func (c *Client) Download(ctx context.Context, component Component, dest string)
 	}
 	defer func() {
 		_ = safefs.Remove(tmpPath)
-		_ = safefs.Remove(github.ResumeSidecar(tmpPath))
+		_ = safefs.Remove(download.Sidecar(tmpPath))
 	}()
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
 	defer cancel()

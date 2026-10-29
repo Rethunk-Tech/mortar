@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-httpkit/download"
+
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/github"
@@ -29,16 +31,11 @@ func (s *Service) dest(id, fileName string) string {
 	return filepath.Join(s.downloadRoot(), archive.SavedName(id, fileName))
 }
 
-func dropDownload(path string) {
-	_ = safefs.Remove(path)
-	_ = safefs.Remove(github.ResumeSidecar(path))
-}
-
 func (s *Service) dropDownloadUnlessKept(path string) {
 	if s.d.KeepArchives != nil && s.d.KeepArchives() {
 		return
 	}
-	dropDownload(path)
+	download.Remove(path)
 }
 
 func (s *Service) sweepDownloads() {
@@ -65,10 +62,10 @@ func (s *Service) sweepDownloads() {
 		}
 		base := name
 		// A crash mid-sidecar-write leaves "<name>.resume.json.<rand>.tmp".
-		if head, _, ok := strings.CutLast(name, github.ResumeSuffix+"."); ok && strings.HasSuffix(name, ".tmp") {
+		if head, _, ok := strings.CutLast(name, download.SidecarSuffix+"."); ok && strings.HasSuffix(name, ".tmp") {
 			base = head
 		}
-		base = strings.TrimSuffix(base, github.ResumeSuffix)
+		base = strings.TrimSuffix(base, download.SidecarSuffix)
 		id := archive.SavedID(base)
 		// The download folder may be the user's own: only names SavedName makes are Mortar's.
 		if !ids.Is(id) || keep[id] || !archive.IsSaved(base) {
@@ -77,8 +74,6 @@ func (s *Service) sweepDownloads() {
 		_ = safefs.Remove(filepath.Join(root, name))
 	}
 }
-
-const fetchRestarts = 3
 
 // fetch streams url to path, appending with Range when a partial and the server allow it.
 func (s *Service) fetch(ctx context.Context, it Item, url, path string) error {
@@ -97,7 +92,7 @@ func (s *Service) fetchTicking(ctx context.Context, it Item, url, path string, t
 			tick()
 		}
 	})
-	if err != nil && errors.Is(err, github.ErrLinkExpired) {
+	if err != nil && errors.Is(err, download.ErrLinkExpired) {
 		return err
 	}
 	if err == nil {

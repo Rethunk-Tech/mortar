@@ -4,13 +4,13 @@ import (
 	"archive/zip"
 	"context"
 	"errors"
-	"fmt"
-	"io"
 	"net/http"
 	"path"
 	"regexp"
 	"slices"
 	"strings"
+
+	"github.com/Rethunk-Tech/go-httpkit/download"
 )
 
 var (
@@ -69,46 +69,6 @@ func Shape(name string) string {
 	return strings.TrimSpace(nonWord.ReplaceAllString(versionRun.ReplaceAllString(name, " "), " "))
 }
 
-// peekChunk is how much one ranged read fetches; a zip's central directory usually fits in the first one.
-const peekChunk = 64 << 10
-
-// rangeReader reads a remote file of size bytes through get, a ranged request, keeping the last chunk it fetched.
-type rangeReader struct {
-	get      func(start, end int64) ([]byte, error)
-	size     int64
-	at       int64
-	buf      []byte
-	requests int
-}
-
-func (r *rangeReader) ReadAt(p []byte, off int64) (int, error) {
-	if off >= r.size {
-		return 0, io.EOF
-	}
-	if off < r.at || off+int64(len(p)) > r.at+int64(len(r.buf)) {
-		r.requests++
-		if r.requests > 8 {
-			return 0, errors.New("the archive's file list is too large to read remotely")
-		}
-		// A zip's directory is read from its end backwards, so a chunk ending at the file's end serves most reads.
-		n := max(int64(len(p)), peekChunk)
-		start := min(off, max(0, r.size-n))
-		b, err := r.get(start, min(r.size, start+n))
-		if err != nil {
-			return 0, err
-		}
-		r.at, r.buf = start, b
-	}
-	if off < r.at || off-r.at > int64(len(r.buf)) {
-		return 0, io.ErrUnexpectedEOF
-	}
-	n := copy(p, r.buf[off-r.at:])
-	if n < len(p) {
-		return n, io.EOF
-	}
-	return n, nil
-}
-
 // ZipNames lists the entry names of a zip asset without downloading it, reading only its central directory through
 // a few ranged requests. Other archive kinds answer nothing.
 func ZipNames(ctx context.Context, hc *http.Client, a Asset) ([]string, error) {
@@ -120,23 +80,7 @@ func ZipNames(ctx context.Context, hc *http.Client, a Asset) ([]string, error) {
 	}
 	ctx, cancel := context.WithTimeout(ctx, apiTimeout)
 	defer cancel()
-	get := func(start, end int64) ([]byte, error) {
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, a.URL, nil)
-		if err != nil {
-			return nil, err
-		}
-		req.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", start, end-1))
-		resp, err := hc.Do(req)
-		if err != nil {
-			return nil, err
-		}
-		defer func() { _ = resp.Body.Close() }()
-		if resp.StatusCode != http.StatusPartialContent {
-			return nil, fmt.Errorf("ranged read answered %s", resp.Status)
-		}
-		return io.ReadAll(io.LimitReader(resp.Body, end-start))
-	}
-	zr, err := zip.NewReader(&rangeReader{get: get, size: a.Size}, a.Size)
+	zr, err := zip.NewReader(download.NewRangeReader(ctx, hc, a.URL, a.Size), a.Size)
 	if err != nil {
 		return nil, err
 	}

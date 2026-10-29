@@ -71,7 +71,7 @@ func TestZipNamesReadsOnlyTheDirectory(t *testing.T) {
 	if err != nil || !slices.Equal(got, []string{"Mod/manifest.json", "Mod/Mod.dll"}) {
 		t.Fatalf("names %v %v", got, err)
 	}
-	if served > peekChunk {
+	if served > 64<<10 {
 		t.Errorf("read %d bytes of a %d byte zip", served, buf.Len())
 	}
 }
