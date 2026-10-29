@@ -176,14 +176,26 @@ var noProvider = []string{
 
 // explain replaces the raw D-Bus failure of a missing Secret Service provider with a sentence the user can act on.
 func explain(err error) error {
-	if err == nil {
+	switch {
+	case err == nil:
 		return nil
+	case noKeyringService(err):
+		return usererr.New(usererr.Unknown, "No keyring service is running. Install or start gnome-keyring or KWallet, then try again.")
+	case strings.Contains(err.Error(), unlockFailed):
+		return usererr.New(usererr.Locked, "The keyring is locked. Unlock it, then try again.")
 	}
+	return err
+}
+
+// unlockFailed is the text go-keyring gives when an unlock prompt is dismissed.
+const unlockFailed = "failed to unlock correct collection"
+
+func noKeyringService(err error) bool {
 	msg := err.Error()
 	for _, frag := range noProvider {
 		if strings.Contains(msg, frag) {
-			return usererr.New(usererr.Unknown, "No keyring service is running. Install or start gnome-keyring or KWallet, then try again.")
+			return true
 		}
 	}
-	return err
+	return false
 }

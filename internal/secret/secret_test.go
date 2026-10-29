@@ -332,3 +332,29 @@ func TestSetAndDeleteDiscardAReadStillWaiting(t *testing.T) {
 		}
 	}
 }
+
+func TestDismissedUnlockIsNotNoKeyring(t *testing.T) {
+	dir := flatpakEnv(t, func() ([]byte, error) { return nil, errors.New("no portal") })
+	dismissed := errors.New("failed to unlock correct collection '/org/freedesktop/secrets/aliases/default'")
+	keyringGet = func(string, string) (string, error) { return "", dismissed }
+	if err := Set("itch", "tok"); err == nil {
+		t.Fatal("a dismissed unlock prompt must not fall back to the plain file")
+	}
+	if _, err := os.Stat(filepath.Join(dir, "secrets.json")); err == nil {
+		t.Fatal("secret written in plain text")
+	}
+	ring := map[string]string{}
+	setHostRing(ring)
+	if err := Set("itch", "tok"); err != nil || ring["itch"] != "tok" {
+		t.Fatalf("the next call must retry the keyring: %v %v", err, ring)
+	}
+}
+
+func TestPlaintextDoesNotWaitOnTheStore(t *testing.T) {
+	flatpakEnv(t, fixedPortal("master"))
+	storeMu.Lock()
+	defer storeMu.Unlock()
+	if Plaintext() {
+		t.Fatal("a busy store is not reported as plain text")
+	}
+}

@@ -76,14 +76,23 @@ func masterKey() ([]byte, error) {
 // hostProbeName is a name no secret uses: asking for it only shows whether a Secret Service answers.
 const hostProbeName = ".probe"
 
-// hostKeyring reports whether the host's Secret Service answers.
-func hostKeyring() bool {
-	if !hostDone {
-		hostDone = true
-		_, err := keyringGet(service, hostProbeName)
-		hostVal = err == nil || errors.Is(err, ErrNotFound)
+// hostKeyring reports whether the host's Secret Service answers. Only a definite "nothing on the bus" is cached as
+// no: a locked or dismissed unlock prompt is an error to retry, never a reason to fall back to the plain file.
+func hostKeyring() (bool, error) {
+	if hostDone {
+		return hostVal, nil
 	}
-	return hostVal
+	_, err := keyringGet(service, hostProbeName)
+	switch {
+	case err == nil || errors.Is(err, ErrNotFound):
+		hostVal = true
+	case noKeyringService(err):
+		hostVal = false
+	default:
+		return false, explain(err)
+	}
+	hostDone = true
+	return hostVal, nil
 }
 
 // location picks the sealed file when the portal answers, else the host keyring, else the plain file. A sealed file
@@ -104,7 +113,11 @@ func location() (path string, key []byte, host bool, err error) {
 	if _, err := os.Stat(filepath.Join(dir, sealedFile)); err == nil {
 		return "", nil, false, fmt.Errorf("secrets are sealed and the secret portal is unavailable: %w", kerr)
 	}
-	if hostKeyring() {
+	host, herr := hostKeyring()
+	if herr != nil {
+		return "", nil, false, herr
+	}
+	if host {
 		return "", nil, true, keyringPlain(dir)
 	}
 	return filepath.Join(dir, plainFile), nil, false, nil
@@ -132,12 +145,11 @@ func keyringPlain(dir string) error {
 }
 
 // Plaintext reports whether secrets are kept in the unencrypted fallback file: inside a Flatpak with neither the
-// secret portal nor a host keyring.
+// secret portal nor a host keyring. A store busy with a keyring prompt reports false instead of waiting on it.
 func Plaintext() bool {
-	if !sandbox.InFlatpak() {
+	if !sandbox.InFlatpak() || !storeMu.TryLock() {
 		return false
 	}
-	storeMu.Lock()
 	defer storeMu.Unlock()
 	_, key, host, err := location()
 	return err == nil && !host && key == nil
