@@ -4,13 +4,14 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 // A game that is enabled but not installed has no saves folder to resolve; Mortar must still start.
 func TestNewServiceStartsWithAGameNotInstalled(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	testfs.DataHome(t)
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	store, err := settings.Open()
 	if err != nil {

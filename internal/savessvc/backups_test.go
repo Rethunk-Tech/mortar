@@ -20,7 +20,7 @@ import (
 func TestServiceListsAndRestoresWithTempDataDirs(t *testing.T) {
 	s, savesDir := backupService(t)
 	testfs.WriteFarm(t, savesDir, "Farm_1", "Sunny", "v1")
-	if _, err := backup.Saves(t.Context(), saves.Layout{Dir: savesDir}, filepath.Join(mustData(t), "mortar", "backups", "stardew"), backup.DefaultKeep, time.Date(2026, 7, 1, 0, 0, 0, 0, time.UTC), backup.Cause{Profile: "p1", Kind: backup.KindUpdate}); err != nil {
+	if _, err := backup.Saves(t.Context(), saves.Layout{Dir: savesDir}, filepath.Join(mustData(t), "backups", "stardew"), backup.DefaultKeep, time.Date(2026, 7, 1, 0, 0, 0, 0, time.UTC), backup.Cause{Profile: "p1", Kind: backup.KindUpdate}); err != nil {
 		t.Fatal(err)
 	}
 	listed, err := s.ListBackups("stardew", "")
@@ -51,9 +51,9 @@ func TestServiceRefusesRestoreWhileBusy(t *testing.T) {
 
 func mustData(t *testing.T) string {
 	t.Helper()
-	d := os.Getenv("XDG_DATA_HOME")
-	if d == "" {
-		t.Fatal("XDG_DATA_HOME")
+	d, err := datadir.Dir()
+	if err != nil {
+		t.Fatal(err)
 	}
 	return d
 }
@@ -150,7 +150,7 @@ func TestDeleteBackupRefusesPinned(t *testing.T) {
 	savesDir := filepath.Join(t.TempDir(), "Saves")
 	testfs.WriteFarm(t, savesDir, "Farm_1", "Sunny", "v1")
 	testfs.WriteFarm(t, savesDir, "Farm_2", "Rainy", "v1")
-	dir := filepath.Join(mustData(t), "mortar", "backups", "stardew")
+	dir := filepath.Join(mustData(t), "backups", "stardew")
 	t0 := time.Date(2026, 7, 1, 0, 0, 0, 0, time.UTC)
 	if _, err := backup.Saves(t.Context(), saves.Layout{Dir: savesDir}, dir, backup.DefaultKeep, t0, backup.Cause{Kind: backup.KindLaunch}); err != nil {
 		t.Fatal(err)
