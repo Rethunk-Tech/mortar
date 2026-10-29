@@ -11,6 +11,7 @@ import {
   useState,
 } from 'react'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { visuallyHidden } from '../shell/visuallyHidden.ts'
 import { space } from '../theme/density.ts'
 import { SEARCH_HIT } from './prefFilter.ts'
 import { SettingsNav } from './SettingsNav.tsx'
@@ -219,19 +220,23 @@ export function SettingsShell<Id extends string>({
           sx={{
             width: '100%',
             maxWidth: CONTENT_MAX,
-            display: 'flex',
+            // With nothing visible in it the row takes no room, so the first card sits at the top.
+            display: searching || actions[current] ? 'flex' : 'contents',
             alignItems: 'center',
             gap: space.pad,
           }}
         >
+          {/* The nav already marks the open page, so its name is shown only to screen readers; search results keep
+              a visible heading because no nav item is marked then. */}
           <Typography
             component="h2"
             sx={{
+              ...(searching ? {} : visuallyHidden),
               flex: 1,
               fontSize: 20,
               fontWeight: 700,
               minHeight: space.control,
-              display: 'flex',
+              display: searching ? 'flex' : undefined,
               alignItems: 'center',
             }}
           >
