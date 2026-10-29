@@ -446,6 +446,19 @@ func firstHostCheck(svc, name string) bool {
 	return true
 }
 
+// hostCheckedAlready reports whether the item has a definite host answer this run.
+func hostCheckedAlready(svc, name string) bool {
+	hostCheckedMu.Lock()
+	defer hostCheckedMu.Unlock()
+	return hostChecked[svc+"\x00"+name]
+}
+
+func markHostChecked(svc, name string) {
+	hostCheckedMu.Lock()
+	defer hostCheckedMu.Unlock()
+	hostChecked[svc+"\x00"+name] = true
+}
+
 // hostAbsent reports a host keyring that cannot answer (no Secret Service, or a locked collection or dismissed
 // prompt), which counts as the item not being there.
 func hostAbsent(err error) bool {
@@ -453,9 +466,10 @@ func hostAbsent(err error) bool {
 }
 
 // adoptHost moves a secret stored in the host keyring, while the portal was missing, into the sealed file. It looks
-// once per item per run; a host that cannot answer is a plain miss.
+// once per item per run; a host that cannot answer is a plain miss. Only a definite answer marks the item checked, so
+// any other error is retried by the next call.
 func adoptHost(svc, name string) (string, error) {
-	if !firstHostCheck(svc, name) {
+	if hostCheckedAlready(svc, name) {
 		return "", ErrNotFound
 	}
 	for _, it := range hostItems(svc, name) {
@@ -472,8 +486,10 @@ func adoptHost(svc, name string) (string, error) {
 		if err := update(func(m map[string]string) bool { m[flatpakName(svc, name)] = v; return true }); err != nil {
 			return "", err
 		}
+		markHostChecked(svc, name)
 		return v, purgeHost(svc, name)
 	}
+	markHostChecked(svc, name)
 	return "", ErrNotFound
 }
 

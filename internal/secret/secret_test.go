@@ -594,3 +594,25 @@ func TestSealedDeleteStaysDeleted(t *testing.T) {
 		}
 	}
 }
+
+// A host error that is neither locked nor absent is returned, and the next call asks the host again instead of
+// reading as signed out for the rest of the run.
+func TestAdoptHostRetriesAfterStrayError(t *testing.T) {
+	flatpakEnv(t, fixedPortal("master"))
+	setHostRing(map[string]string{"k": "old"})
+	get := keyringGet
+	fail := true
+	keyringGet = func(svc, name string) (string, error) {
+		if name != hostProbeName && fail {
+			return "", errors.New("boom")
+		}
+		return get(svc, name)
+	}
+	if _, err := Get("k"); err == nil || errors.Is(err, ErrNotFound) {
+		t.Fatalf("first get should fail with the host error, got %v", err)
+	}
+	fail = false
+	if v, err := Get("k"); err != nil || v != "old" {
+		t.Fatalf("retry get = %q, %v", v, err)
+	}
+}
