@@ -3,6 +3,7 @@ package serverargs
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"testing"
 
@@ -55,7 +56,8 @@ func TestSetValidatesStoresAndClears(t *testing.T) {
 	if got := Load(dir)["world"]; got != "Dedicated" {
 		t.Fatalf("world = %q", got)
 	}
-	if info, err := os.Stat(filepath.Join(dir, File)); err != nil || info.Mode().Perm() != 0o600 {
+	// Windows reports every file as 0666; only POSIX modes can show the file is private.
+	if info, err := os.Stat(filepath.Join(dir, File)); err != nil || runtime.GOOS != "windows" && info.Mode().Perm() != 0o600 {
 		t.Fatalf("file mode: %v %v", info, err)
 	}
 	if err := Set(dir, spec, "world", ""); err != nil || len(Load(dir)) != 0 {
