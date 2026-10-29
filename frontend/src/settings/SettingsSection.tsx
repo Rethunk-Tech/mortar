@@ -41,6 +41,8 @@ export function SettingsSection({
         // A section whose rows all filtered out (each row renders nothing) hides with its heading. Rows sit
         // inside components (PrefKeys, sub-sections), so only the rendered result says whether any matched.
         '&:has(> .settings-tiles:empty)': { display: 'none' },
+        // The heading's top margin separates it from the section above; the first section has none above it.
+        '&:first-of-type > h3': { mt: 0 },
         // A section a Searchable wraps whole is a match itself.
         ...(query
           ? { [`&:not(:has(${SEARCH_HIT})):not(.settings-match > *)`]: { display: 'none' } }
