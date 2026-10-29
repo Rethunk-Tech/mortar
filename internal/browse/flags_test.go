@@ -4,15 +4,16 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-smapiweb"
+
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 func TestMarkAndHide(t *testing.T) {
 	info := components.GameInfo{Loaders: []components.GameLoader{{ID: "smapi", NexusModID: 2400}}}
-	c := &Client{Compat: func(context.Context) (meta.CompatIndex, error) {
-		return meta.CompatIndex{ByNexus: map[int]meta.CompatEntry{7: {Status: meta.StatusBroken}, 8: {Status: meta.StatusOK}}}, nil
+	c := &Client{Compat: func(context.Context) (smapiweb.CompatIndex, error) {
+		return smapiweb.CompatIndex{ByNexus: map[int]smapiweb.CompatEntry{7: {Status: smapiweb.StatusBroken}, 8: {Status: smapiweb.StatusOK}}}, nil
 	}}
 	items := []Item{
 		{Source: "nexus", ID: "2400", Name: "SMAPI"},

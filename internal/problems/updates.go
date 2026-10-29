@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-smapiweb"
+
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -148,7 +150,7 @@ func checkUpdates(ctx context.Context, m Meta, env Environment, mods []framework
 			continue
 		}
 		asked = append(asked, x)
-		req.Mods = append(req.Mods, meta.InstalledMod{ID: x.ModID().Local(), UpdateKeys: x.UpdateKeys, Version: x.Version})
+		req.Mods = append(req.Mods, smapiweb.InstalledMod{ID: x.ModID().Local(), UpdateKeys: x.UpdateKeys, Version: x.Version})
 	}
 	if len(asked) == 0 {
 		return r
@@ -301,7 +303,7 @@ func heldChoice(e profile.Entry) string {
 	}
 }
 
-func updateSource(u meta.Update, nexusID int, githubRepo string) string {
+func updateSource(u smapiweb.Update, nexusID int, githubRepo string) string {
 	if site, _, ok := strings.Cut(u.Source, ":"); ok && strings.TrimSpace(site) != "" {
 		return strings.TrimSpace(site)
 	}
@@ -452,7 +454,7 @@ func sourcePage(gameID string, m framework.Mod) string {
 func pageURL(domain string, keys []string) string {
 	for _, k := range keys {
 		if n, ok := smapimanifest.NexusUpdateKey(k); ok {
-			return siteURL(domain, meta.Ref{Site: "Nexus", ID: n})
+			return siteURL(domain, smapiweb.Ref{Site: "Nexus", ID: n})
 		}
 		if repo, ok := smapimanifest.GitHubUpdateKey(k); ok {
 			return "https://github.com/" + repo
@@ -527,15 +529,15 @@ func downloaded(x framework.Mod, version string) bool {
 
 // sameNexusFileGroup prefers the manifests inside each file: two files carrying the same mod are versions of one
 // download. Archive names are the fallback; the dataset sometimes stores them as hashed paths.
-func sameNexusFileGroup(a, b meta.File) bool {
+func sameNexusFileGroup(a, b smapiweb.File) bool {
 	if len(a.Mods) > 0 && len(b.Mods) > 0 {
-		return slices.ContainsFunc(a.Mods, func(m meta.Mod) bool { return containsPreviewMod(b, m.ModID()) })
+		return slices.ContainsFunc(a.Mods, func(m smapiweb.Mod) bool { return containsPreviewMod(b, mod.SMAPI(m.UniqueID)) })
 	}
 	aStem, bStem := nexus.FileStem(a.FileName), nexus.FileStem(b.FileName)
 	return aStem == "" || bStem == "" || aStem == bStem
 }
 
-func newerPreviewFile(candidate, current meta.File) bool {
+func newerPreviewFile(candidate, current smapiweb.File) bool {
 	candidateOld := strings.EqualFold(candidate.Type, "OLD_VERSION")
 	currentOld := strings.EqualFold(current.Type, "OLD_VERSION")
 	if candidateOld != currentOld {
@@ -544,8 +546,8 @@ func newerPreviewFile(candidate, current meta.File) bool {
 	return meta.NewerFile(candidate.Version, candidate.ID, current.Version, current.ID)
 }
 
-func containsPreviewMod(file meta.File, uniqueID mod.ID) bool {
-	return slices.ContainsFunc(file.Mods, func(m meta.Mod) bool { return mod.Equal(m.ModID(), uniqueID) })
+func containsPreviewMod(file smapiweb.File, uniqueID mod.ID) bool {
+	return slices.ContainsFunc(file.Mods, func(m smapiweb.Mod) bool { return mod.Equal(mod.SMAPI(m.UniqueID), uniqueID) })
 }
 
 // nexusFileIsCurrent uses the cached SMAPI file preview to keep a stale manifest from making a file update itself.
@@ -563,7 +565,7 @@ func nexusFileIsCurrent(ctx context.Context, m Meta, x framework.Mod, url, sugge
 	if err != nil {
 		return false
 	}
-	var installed meta.File
+	var installed smapiweb.File
 	for _, file := range page.Downloads {
 		if file.ID == int64(fileID) {
 			installed = file
@@ -592,13 +594,13 @@ func nexusFileIsCurrent(ctx context.Context, m Meta, x framework.Mod, url, sugge
 
 // liveNexusFiles asks Nexus once for the current files of every flagged Nexus mod, so a stale dataset page cannot
 // hide a new file or invent one. It returns nothing when signed out or when the call fails.
-func liveNexusFiles(ctx context.Context, filesOf NexusFilesOf, t nexus.Title, asked []framework.Mod, results []meta.UpdateResult) map[int][]nexus.BatchFile {
+func liveNexusFiles(ctx context.Context, filesOf NexusFilesOf, t nexus.Title, asked []framework.Mod, results []smapiweb.UpdateResult) map[int][]nexus.BatchFile {
 	if filesOf == nil {
 		return nil
 	}
 	var ids []int
 	for i, res := range results {
-		for _, u := range []*meta.Update{res.Suggested, res.Unofficial} {
+		for _, u := range []*smapiweb.Update{res.Suggested, res.Unofficial} {
 			if u == nil || i >= len(asked) {
 				continue
 			}

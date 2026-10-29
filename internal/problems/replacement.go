@@ -8,7 +8,8 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/go-smapiweb"
+
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 
@@ -98,7 +99,7 @@ func refForNexusPage(ctx context.Context, m Meta, domain string, pageID int) *Re
 	if err != nil {
 		return &Ref{Site: "Nexus", PageID: pageID, URL: nexus.ModURL(domain, pageID)}
 	}
-	r := meta.Ref{Site: "Nexus", ID: pageID}
+	r := smapiweb.Ref{Site: "Nexus", ID: pageID}
 	var best *Ref
 	var bestTop string
 	for _, f := range page.Downloads {
@@ -106,7 +107,7 @@ func refForNexusPage(ctx context.Context, m Meta, domain string, pageID int) *Re
 			continue
 		}
 		for _, im := range f.Mods {
-			cand, top := fileIn(page, domain, r, im.ModID(), "")
+			cand, top := fileIn(page, domain, r, mod.SMAPI(im.UniqueID), "")
 			if cand == nil {
 				continue
 			}

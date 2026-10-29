@@ -13,9 +13,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-smapiweb"
+
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
-	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/netstate"
 	"github.com/Rethunk-Tech/mortar/internal/source"
@@ -72,7 +73,7 @@ type Client struct {
 	// Off lists source ids the player turned off, which the all-sources search skips.
 	Off []string
 	// Compat is the game's compatibility list; nil when the game has none, so nothing is marked broken.
-	Compat func(ctx context.Context) (meta.CompatIndex, error)
+	Compat func(ctx context.Context) (smapiweb.CompatIndex, error)
 	// Identity gives a hit's package identity from what the open profile holds; nil or "" falls back to the
 	// compatibility list. Hits that share an identity are one mod.
 	Identity func(source, id string) string
@@ -80,7 +81,7 @@ type Client struct {
 
 // identity resolves a hit to its package identity from the profile, then from the compatibility list's refs.
 func (c *Client) identity(ctx context.Context) identityOf {
-	var idx meta.CompatIndex
+	var idx smapiweb.CompatIndex
 	if c.Compat != nil {
 		idx, _ = c.Compat(ctx)
 	}

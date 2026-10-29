@@ -13,6 +13,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-smapiweb"
+
 	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
@@ -30,15 +32,16 @@ import (
 // noMeta is a mod dataset that knows nothing, so previews rest on the Nexus file list alone.
 type noMeta struct{}
 
-func (noMeta) Lookup(context.Context, string) ([]meta.Ref, error) { return nil, nil }
-func (noMeta) Page(context.Context, int) (meta.Page, error) {
-	return meta.Page{}, errors.New("no page")
+func (noMeta) Lookup(context.Context, string) ([]smapiweb.Ref, error) { return nil, nil }
+func (noMeta) Page(context.Context, int) (smapiweb.Page, error) {
+	return smapiweb.Page{}, errors.New("no page")
 }
 
 func (noMeta) Collection(context.Context, string, string, int) (meta.Collection, error) {
 	return meta.Collection{}, errors.New("no collection")
 }
-func (noMeta) CheckUpdates(context.Context, meta.UpdateRequest) []meta.UpdateResult { return nil }
+
+func (noMeta) CheckUpdates(context.Context, meta.UpdateRequest) []smapiweb.UpdateResult { return nil }
 
 type queueSpy struct{ reqs atomic.Int64 }
 

@@ -7,14 +7,15 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-smapiweb"
+
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
-	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
-var index = map[string][]meta.Ref{
+var index = map[string][]smapiweb.Ref{
 	"sonozuki.moregrass":     {{Site: "Nexus", ID: 1}},
 	"author.mod_with_under":  {{Site: "Nexus", ID: 2}},
 	"author.mod":             {{Site: "Nexus", ID: 3}},
@@ -84,7 +85,7 @@ func TestScanReadsSaveAndCachesByMtime(t *testing.T) {
 	}
 
 	// A different index size rescans; an unchanged one is served from the cache.
-	smaller := map[string][]meta.Ref{"sonozuki.moregrass": index["sonozuki.moregrass"]}
+	smaller := map[string][]smapiweb.Ref{"sonozuki.moregrass": index["sonozuki.moregrass"]}
 	if again, _ := s.Scan(t.Context(), smaller); len(again[0].Used) != 1 {
 		t.Fatalf("index change did not rescan: %+v", again[0].Used)
 	}

@@ -1,121 +1,36 @@
 package meta
 
 import (
-	"bytes"
-	"cmp"
 	"context"
-	"encoding/json"
-	"errors"
 	"log"
-	"maps"
-	"net/http"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/Rethunk-Tech/go-safefs/diskcache"
+	"github.com/Rethunk-Tech/go-smapiweb"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/netstate"
 )
 
 const (
-	defaultUpdatesURL = "https://smapi.io/api/v4.0.0/mods"
-	updatesTTL        = time.Hour
-	updatesFile       = "smapi-updates.json"
-	updatesBatch      = 100
-	updatesBackoff    = 5 * time.Minute
+	updatesTTL     = time.Hour
+	updatesFile    = "smapi-updates.json"
+	updatesBackoff = 5 * time.Minute
 	// updatesRefreshTimeout bounds a background refresh, which nobody waits on.
 	updatesRefreshTimeout = 2 * time.Minute
-	maxUpdates            = 16 << 20
 )
-
-// errUpdatesPaused stands in for a failed ask while smapi.io is being given a rest.
-var errUpdatesPaused = errors.New("update checks paused after a failed request")
 
 // UpdateRequest describes the installed environment and mods to check.
 type UpdateRequest struct {
 	APIVersion  string
 	GameVersion string
 	Platform    string // Android, Linux, Mac or Windows
-	Mods        []InstalledMod
+	Mods        []smapiweb.InstalledMod
 	// Fresh asks the API even for answers still young enough to come from cache, for an explicit check.
 	Fresh bool
 }
 
-// InstalledMod is one mod to check.
-type InstalledMod struct {
-	ID         string   `json:"id"`
-	UpdateKeys []string `json:"updateKeys,omitempty"`
-	Version    string   `json:"installedVersion,omitempty"`
-}
-
-// Update is SMAPI's suggested newer version.
-type Update struct {
-	Version string `json:"version"`
-	URL     string `json:"url"`
-	Source  string `json:"source,omitempty"`
-}
-
-// UpdateResult is the answer for one mod. Known is false when SMAPI's API could not be reached and no cached
-// answer exists: the caller shows "unknown", never an error. A known result with no Suggested has no update.
-type UpdateResult struct {
-	ID                   string  `json:"id"`
-	Known                bool    `json:"known"`
-	Suggested            *Update `json:"suggested,omitempty"`
-	Unofficial           *Update `json:"unofficial,omitempty"`
-	Compatibility        string  `json:"compatibility,omitempty"`
-	CompatibilitySummary string  `json:"compatibilitySummary,omitempty"`
-	BrokeIn              string  `json:"brokeIn,omitempty"`
-	GitHubRepo           string  `json:"gitHubRepo,omitempty"`
-}
-
-type apiRequest struct {
-	Mods                    []InstalledMod `json:"mods"`
-	APIVersion              string         `json:"apiVersion,omitempty"`
-	GameVersion             string         `json:"gameVersion,omitempty"`
-	Platform                string         `json:"platform,omitempty"`
-	IncludeExtendedMetadata bool           `json:"includeExtendedMetadata"`
-}
-
-type apiUpdate struct {
-	Version            string     `json:"version"`
-	URL                string     `json:"url"`
-	UpdateKey          string     `json:"updateKey"`
-	Unofficial         *apiUpdate `json:"unofficial"`
-	UnofficialForSmapi *apiUpdate `json:"unofficialForSmapi"`
-}
-
-func (u *apiUpdate) asUpdate() *Update {
-	if u == nil || strings.TrimSpace(u.Version) == "" {
-		return nil
-	}
-	return &Update{Version: u.Version, URL: u.URL, Source: u.UpdateKey}
-}
-
-func firstUnofficial(parts ...*apiUpdate) *Update {
-	for _, p := range parts {
-		if got := p.asUpdate(); got != nil {
-			return got
-		}
-	}
-	return nil
-}
-
-type apiMod struct {
-	ID              string     `json:"id"`
-	SuggestedUpdate *apiUpdate `json:"suggestedUpdate"`
-	Metadata        *struct {
-		GitHubRepo           string     `json:"gitHubRepo"`
-		CompatibilityStatus  string     `json:"compatibilityStatus"`
-		CompatibilitySummary string     `json:"compatibilitySummary"`
-		BrokeIn              string     `json:"brokeIn"`
-		Unofficial           *apiUpdate `json:"unofficial"`
-		UnofficialUpdate     *apiUpdate `json:"unofficialUpdate"`
-		UnofficialForSmapi   *apiUpdate `json:"unofficialForSmapi"`
-	} `json:"metadata"`
-}
-
-func (r UpdateRequest) key(m InstalledMod) string {
+func (r UpdateRequest) key(m smapiweb.InstalledMod) string {
 	return strings.ToLower(strings.Join([]string{m.ID, strings.Join(m.UpdateKeys, ","), m.Version, r.GameVersion, r.APIVersion, r.Platform}, "|"))
 }
 
@@ -123,12 +38,12 @@ func (r UpdateRequest) key(m InstalledMod) string {
 // answer this build cached is served at once and asked again in the background, so an unreachable smapi.io never
 // holds up a check that has something to show; mods with no answer, or every mod on an explicit Fresh check, are
 // asked in batches, and a batch that fails falls back to stale cache, else unknown.
-func (c *Client) CheckUpdates(ctx context.Context, req UpdateRequest) []UpdateResult {
+func (c *Client) CheckUpdates(ctx context.Context, req UpdateRequest) []smapiweb.UpdateResult {
 	c.updatesMu.Lock()
 	defer c.updatesMu.Unlock()
 	cache := c.Cache()
-	var store map[string]diskcache.Entry[UpdateResult]
-	if e, ok := diskcache.Peek[map[string]diskcache.Entry[UpdateResult]](cache, updatesFile); ok {
+	var store map[string]diskcache.Entry[smapiweb.UpdateResult]
+	if e, ok := diskcache.Peek[map[string]diskcache.Entry[smapiweb.UpdateResult]](cache, updatesFile); ok {
 		store = e.Value
 		// An answer carries the build that fetched it; one written before answers carried it takes the file's.
 		for k, v := range store {
@@ -139,13 +54,13 @@ func (c *Client) CheckUpdates(ctx context.Context, req UpdateRequest) []UpdateRe
 		}
 	}
 	if store == nil {
-		store = map[string]diskcache.Entry[UpdateResult]{}
+		store = map[string]diskcache.Entry[smapiweb.UpdateResult]{}
 	}
 	now := c.now()
 	build := appversion.Build()
-	out := make([]UpdateResult, len(req.Mods))
+	out := make([]smapiweb.UpdateResult, len(req.Mods))
 	var stale []int
-	var later []InstalledMod
+	var later []smapiweb.InstalledMod
 	for i, m := range req.Mods {
 		e, ok := store[req.key(m)]
 		switch {
@@ -160,29 +75,40 @@ func (c *Client) CheckUpdates(ctx context.Context, req UpdateRequest) []UpdateRe
 		}
 	}
 	defer c.refreshLater(ctx, req, later)
-	var batches [][]int
-	for start := 0; start < len(stale); start += updatesBatch {
-		batches = append(batches, stale[start:min(start+updatesBatch, len(stale))])
-	}
-	answers := c.askBatches(ctx, req, batches, now)
-	dirty := false
-	for b, batch := range batches {
-		got, err := answers[b].got, answers[b].err
-		for _, i := range batch {
-			k := req.key(req.Mods[i])
-			switch {
-			case err == nil:
-				// The API answered: a mod it does not list is known to have no data, not unknown.
-				out[i] = got[strings.ToLower(req.Mods[i].ID)]
-				out[i].ID = req.Mods[i].ID
-				out[i].Known = true
-				store[k] = diskcache.Entry[UpdateResult]{Fetched: now, Value: out[i], Stamp: build}
-				dirty = true
-			case store[k].Value.Known:
-				out[i] = store[k].Value
-			default:
-				out[i] = UpdateResult{ID: req.Mods[i].ID}
+	// A failed ask pauses asking: the stale answer, else unknown, is served until the pause ends.
+	var got []smapiweb.UpdateResult
+	if len(stale) > 0 && !now.Before(c.updatesPause) {
+		asked := make([]smapiweb.InstalledMod, len(stale))
+		for j, i := range stale {
+			asked[j] = req.Mods[i]
+		}
+		var err error
+		got, err = c.web().Updates(ctx, smapiweb.UpdateRequest{APIVersion: req.APIVersion, GameVersion: req.GameVersion, Platform: req.Platform, Mods: asked})
+		// The window's offline banner then names smapi.io, as it does any source that stops answering.
+		netstate.Record("smapi", smapiOutcome(got, err))
+		if err != nil {
+			unknown := 0
+			for _, r := range got {
+				if !r.Known {
+					unknown++
+				}
 			}
+			log.Printf("updates: smapi.io did not answer for %d of %d mods, pausing update checks for %s: %v", unknown, len(asked), updatesBackoff, err)
+			c.updatesPause = now.Add(updatesBackoff)
+		}
+	}
+	dirty := false
+	for j, i := range stale {
+		k := req.key(req.Mods[i])
+		switch {
+		case got != nil && got[j].Known:
+			out[i] = got[j]
+			store[k] = diskcache.Entry[smapiweb.UpdateResult]{Fetched: now, Value: out[i], Stamp: build}
+			dirty = true
+		case store[k].Value.Known:
+			out[i] = store[k].Value
+		default:
+			out[i] = smapiweb.UpdateResult{ID: req.Mods[i].ID}
 		}
 	}
 	if dirty {
@@ -191,14 +117,14 @@ func (c *Client) CheckUpdates(ctx context.Context, req UpdateRequest) []UpdateRe
 				delete(store, k)
 			}
 		}
-		diskcache.PutEntry(cache, updatesFile, diskcache.Entry[map[string]diskcache.Entry[UpdateResult]]{Fetched: now, Value: store, Stamp: build})
+		diskcache.PutEntry(cache, updatesFile, diskcache.Entry[map[string]diskcache.Entry[smapiweb.UpdateResult]]{Fetched: now, Value: store, Stamp: build})
 	}
 	return out
 }
 
 // refreshLater asks smapi.io about mods again in the background, one refresh at a time; the next check reads what it
 // cached. It outlives the check that started it, so it keeps ctx's values but not its cancellation.
-func (c *Client) refreshLater(ctx context.Context, req UpdateRequest, mods []InstalledMod) {
+func (c *Client) refreshLater(ctx context.Context, req UpdateRequest, mods []smapiweb.InstalledMod) {
 	if len(mods) == 0 || !c.updatesRefreshing.CompareAndSwap(false, true) {
 		return
 	}
@@ -211,111 +137,22 @@ func (c *Client) refreshLater(ctx context.Context, req UpdateRequest, mods []Ins
 	}()
 }
 
-type updatesAnswer struct {
-	got map[string]UpdateResult
-	err error
-}
-
-// updatesParallel bounds the batches asked of smapi.io at once: a cold profile of hundreds of mods is several
-// batches, which one after another cost about a second.
-const updatesParallel = 4
-
-// askBatches asks smapi.io about each batch of req's mods, a few at a time. A failed ask pauses asking: batches not
-// yet sent then answer errUpdatesPaused.
-func (c *Client) askBatches(ctx context.Context, req UpdateRequest, batches [][]int, now time.Time) []updatesAnswer {
-	answers := make([]updatesAnswer, len(batches))
-	var mu sync.Mutex
-	var wg sync.WaitGroup
-	slots := make(chan struct{}, updatesParallel)
-	for b, batch := range batches {
-		slots <- struct{}{}
-		mu.Lock()
-		paused := now.Before(c.updatesPause)
-		mu.Unlock()
-		if paused {
-			<-slots
-			answers[b].err = errUpdatesPaused
-			continue
+// smapiOutcome is what the offline banner learns from one check: smapi.io answered when any mod came back known,
+// otherwise the first failed batch's error, which is always a real failure. Not the joined error: one cancelled batch
+// beside a DNS failure would hide the network error, and the banner's tooltip shows the text on a single line.
+func smapiOutcome(got []smapiweb.UpdateResult, err error) error {
+	if err == nil {
+		return nil
+	}
+	for _, r := range got {
+		if r.Known {
+			return nil
 		}
-		asked := make([]InstalledMod, len(batch))
-		for j, i := range batch {
-			asked[j] = req.Mods[i]
+	}
+	if j, ok := err.(interface{ Unwrap() []error }); ok {
+		if errs := j.Unwrap(); len(errs) > 0 {
+			return errs[0]
 		}
-		wg.Go(func() {
-			defer func() { <-slots }()
-			got, err := c.askUpdatesRetrying(ctx, req, asked)
-			answers[b] = updatesAnswer{got, err}
-			// The window's offline banner then names smapi.io, as it does any source that stops answering.
-			netstate.Record("smapi", err)
-			if err != nil {
-				log.Printf("updates: smapi.io did not answer for %d mods, pausing update checks for %s: %v", len(asked), updatesBackoff, err)
-				mu.Lock()
-				c.updatesPause = now.Add(updatesBackoff)
-				mu.Unlock()
-			}
-		})
 	}
-	wg.Wait()
-	return answers
-}
-
-// askUpdatesRetrying asks once more, in two halves, when a batch fails: smapi.io sometimes runs past the request
-// timeout on a full batch, and one slow answer would otherwise leave every mod in it unknown and pause all checks.
-func (c *Client) askUpdatesRetrying(ctx context.Context, req UpdateRequest, mods []InstalledMod) (map[string]UpdateResult, error) {
-	got, err := c.askUpdates(ctx, req, mods)
-	if err == nil || ctx.Err() != nil || len(mods) < 2 {
-		return got, err
-	}
-	half := len(mods) / 2
-	first, err := c.askUpdates(ctx, req, mods[:half])
-	if err != nil {
-		return nil, err
-	}
-	second, err := c.askUpdates(ctx, req, mods[half:])
-	if err != nil {
-		return nil, err
-	}
-	maps.Copy(first, second)
-	return first, nil
-}
-
-func (c *Client) askUpdates(ctx context.Context, req UpdateRequest, mods []InstalledMod) (map[string]UpdateResult, error) {
-	body, err := json.Marshal(apiRequest{Mods: mods, APIVersion: req.APIVersion, GameVersion: req.GameVersion, Platform: req.Platform, IncludeExtendedMetadata: true})
-	if err != nil {
-		return nil, err
-	}
-	u := cmp.Or(c.UpdatesURL, defaultUpdatesURL)
-	hr, err := http.NewRequestWithContext(ctx, http.MethodPost, u, bytes.NewReader(body))
-	if err != nil {
-		return nil, err
-	}
-	hr.Header.Set("Content-Type", "application/json")
-	b, err := c.do(hr, maxUpdates)
-	if err != nil {
-		return nil, err
-	}
-	return decodeUpdateAnswers(b)
-}
-
-// decodeUpdateAnswers keys SMAPI's answer by lowercased mod ID.
-func decodeUpdateAnswers(b []byte) (map[string]UpdateResult, error) {
-	var answers []apiMod
-	if err := json.Unmarshal(b, &answers); err != nil {
-		return nil, err
-	}
-	out := make(map[string]UpdateResult, len(answers))
-	for _, a := range answers {
-		r := UpdateResult{ID: a.ID, Known: true, Suggested: a.SuggestedUpdate.asUpdate()}
-		if a.Metadata != nil {
-			r.Compatibility = a.Metadata.CompatibilityStatus
-			r.CompatibilitySummary = a.Metadata.CompatibilitySummary
-			r.BrokeIn, r.GitHubRepo = a.Metadata.BrokeIn, a.Metadata.GitHubRepo
-			r.Unofficial = firstUnofficial(a.Metadata.UnofficialUpdate, a.Metadata.Unofficial, a.Metadata.UnofficialForSmapi)
-		}
-		if r.Unofficial == nil && a.SuggestedUpdate != nil {
-			r.Unofficial = firstUnofficial(a.SuggestedUpdate.Unofficial, a.SuggestedUpdate.UnofficialForSmapi)
-		}
-		out[strings.ToLower(a.ID)] = r
-	}
-	return out, nil
+	return err
 }

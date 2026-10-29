@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-smapiweb"
+
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -17,7 +19,7 @@ type listedFakeMeta struct {
 	requirements map[int][]nexus.Requirement
 	// requirementErr fails the batched requirements lookup.
 	requirementErr error
-	pages          map[int]meta.Page
+	pages          map[int]smapiweb.Page
 	pageErr        map[int]error
 }
 
@@ -43,12 +45,12 @@ func listedCheck(f listedFakeMeta, mods []framework.Mod) Result {
 	return Check(context.Background(), f, testEnv, mods, f.reqs(&calls))
 }
 
-func (f listedFakeMeta) Lookup(_ context.Context, uniqueID string) ([]meta.Ref, error) {
+func (f listedFakeMeta) Lookup(_ context.Context, uniqueID string) ([]smapiweb.Ref, error) {
 	for _, ref := range f.pages {
 		for _, file := range ref.Downloads {
 			for _, im := range file.Mods {
-				if mod.Equal(im.ModID(), mod.SMAPI(uniqueID)) {
-					return []meta.Ref{{Site: "Nexus", ID: ref.ID}}, nil
+				if mod.Equal(mod.SMAPI(im.UniqueID), mod.SMAPI(uniqueID)) {
+					return []smapiweb.Ref{{Site: "Nexus", ID: ref.ID}}, nil
 				}
 			}
 		}
@@ -56,14 +58,14 @@ func (f listedFakeMeta) Lookup(_ context.Context, uniqueID string) ([]meta.Ref, 
 	return nil, nil
 }
 
-func (f listedFakeMeta) Page(_ context.Context, id int) (meta.Page, error) {
+func (f listedFakeMeta) Page(_ context.Context, id int) (smapiweb.Page, error) {
 	if err := f.pageErr[id]; err != nil {
-		return meta.Page{}, err
+		return smapiweb.Page{}, err
 	}
 	return f.pages[id], nil
 }
 
-func (listedFakeMeta) CheckUpdates(context.Context, meta.UpdateRequest) []meta.UpdateResult {
+func (listedFakeMeta) CheckUpdates(context.Context, meta.UpdateRequest) []smapiweb.UpdateResult {
 	return nil
 }
 
@@ -80,13 +82,13 @@ func listedDependent() framework.Mod {
 	}
 }
 
-func listedPage(id int, uniqueID string) meta.Page {
-	return meta.Page{
+func listedPage(id int, uniqueID string) smapiweb.Page {
+	return smapiweb.Page{
 		ID:   id,
 		Name: "Requirement Page",
-		Downloads: []meta.File{{
+		Downloads: []smapiweb.File{{
 			Type: "main",
-			Mods: []meta.Mod{{UniqueID: uniqueID, Name: "Requirement"}},
+			Mods: []smapiweb.Mod{{UniqueID: uniqueID, Name: "Requirement"}},
 		}},
 	}
 }
@@ -94,7 +96,7 @@ func listedPage(id int, uniqueID string) meta.Page {
 func TestListedRequirementSatisfiedByPageKey(t *testing.T) {
 	fake := listedFakeMeta{
 		requirements: map[int][]nexus.Requirement{520: {{ModID: 11148, Name: "Requirement"}}},
-		pages:        map[int]meta.Page{11148: listedPage(11148, "Requirement.Mod")},
+		pages:        map[int]smapiweb.Page{11148: listedPage(11148, "Requirement.Mod")},
 	}
 	mods := []framework.Mod{listedDependent(), {Key: "nexus-11148-200", Enabled: true}}
 
@@ -108,7 +110,7 @@ func TestListedRequirementSatisfiedByPageKey(t *testing.T) {
 func TestListedRequirementSatisfiedByDatasetUniqueID(t *testing.T) {
 	fake := listedFakeMeta{
 		requirements: map[int][]nexus.Requirement{520: {{ModID: 1915, Name: "Content Patcher"}}},
-		pages:        map[int]meta.Page{1915: listedPage(1915, "Pathoschild.ContentPatcher")},
+		pages:        map[int]smapiweb.Page{1915: listedPage(1915, "Pathoschild.ContentPatcher")},
 	}
 	mods := []framework.Mod{
 		listedDependent(),
@@ -125,7 +127,7 @@ func TestListedRequirementSatisfiedByDatasetUniqueID(t *testing.T) {
 func TestListedRequirementKeepsImplicitModOutOfCleanup(t *testing.T) {
 	fake := listedFakeMeta{
 		requirements: map[int][]nexus.Requirement{520: {{ModID: 3853, Name: "Content Patcher Animations"}}},
-		pages:        map[int]meta.Page{3853: listedPage(3853, "spacechase0.ContentPatcherAnimations")},
+		pages:        map[int]smapiweb.Page{3853: listedPage(3853, "spacechase0.ContentPatcherAnimations")},
 	}
 	mods := []framework.Mod{
 		listedDependent(),
@@ -142,7 +144,7 @@ func TestListedRequirementKeepsImplicitModOutOfCleanup(t *testing.T) {
 func TestListedRequirementMissing(t *testing.T) {
 	fake := listedFakeMeta{
 		requirements: map[int][]nexus.Requirement{520: {{ModID: 1915, Name: "Content Patcher"}}},
-		pages:        map[int]meta.Page{1915: listedPage(1915, "Pathoschild.ContentPatcher")},
+		pages:        map[int]smapiweb.Page{1915: listedPage(1915, "Pathoschild.ContentPatcher")},
 	}
 
 	result := listedCheck(fake, []framework.Mod{listedDependent()})
@@ -159,7 +161,7 @@ func TestListedRequirementMissing(t *testing.T) {
 func TestListedRequirementOptionalNote(t *testing.T) {
 	fake := listedFakeMeta{
 		requirements: map[int][]nexus.Requirement{520: {{ModID: 14426, Name: "Gender Neutrality Mod Tokens", Notes: "For Gender Neutral Version"}}},
-		pages:        map[int]meta.Page{14426: listedPage(14426, "GenderNeutrality.Tokens")},
+		pages:        map[int]smapiweb.Page{14426: listedPage(14426, "GenderNeutrality.Tokens")},
 	}
 
 	result := listedCheck(fake, []framework.Mod{listedDependent()})
@@ -187,7 +189,7 @@ func TestListedRequirementFetchFailureIsUnknown(t *testing.T) {
 func TestListedRequirementsAreOneBatchedLookup(t *testing.T) {
 	fake := listedFakeMeta{
 		requirements: map[int][]nexus.Requirement{520: {{ModID: 1915, Name: "Content Patcher"}}, 521: {{ModID: 1915}}},
-		pages:        map[int]meta.Page{1915: listedPage(1915, "Pathoschild.ContentPatcher")},
+		pages:        map[int]smapiweb.Page{1915: listedPage(1915, "Pathoschild.ContentPatcher")},
 	}
 	other := listedDependent()
 	other.Key, other.UniqueID = "nexus-521-1", "Example.Other"
@@ -271,7 +273,7 @@ func TestPageWideOutsideRequirementTheManifestOmitsIsOptional(t *testing.T) {
 func TestOptionalListedRequirementIsNotCounted(t *testing.T) {
 	fake := listedFakeMeta{
 		requirements: map[int][]nexus.Requirement{520: {{ModID: 14426, Name: "Gender Neutrality Mod Tokens", Notes: "For Gender Neutral Version"}}},
-		pages:        map[int]meta.Page{14426: listedPage(14426, "GenderNeutrality.Tokens")},
+		pages:        map[int]smapiweb.Page{14426: listedPage(14426, "GenderNeutrality.Tokens")},
 	}
 
 	result := listedCheck(fake, []framework.Mod{listedDependent()})
@@ -288,7 +290,7 @@ func TestListedRequirementJudgedAlikeForEveryDependent(t *testing.T) {
 			521: {{ModID: 1915, Name: "Content Patcher"}},
 			522: {{ModID: 1915, Name: "Content Patcher"}},
 		},
-		pages: map[int]meta.Page{1915: listedPage(1915, "Pathoschild.ContentPatcher")},
+		pages: map[int]smapiweb.Page{1915: listedPage(1915, "Pathoschild.ContentPatcher")},
 	}
 	named := framework.Mod{
 		Key: "nexus-522-102", Enabled: true, UniqueID: "Example.Third", Name: "Third",

@@ -8,6 +8,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-smapiweb"
+
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -82,7 +84,7 @@ func (s *Service) Sweep(ctx context.Context, gameID, installID string) (SweepRep
 	}
 	// The compatibility list and the update API are SMAPI's; another loader's profiles are swept for missing
 	// dependencies alone.
-	var idx meta.CompatIndex
+	var idx smapiweb.CompatIndex
 	updates := map[string]bool{}
 	if rep.Loader == smapi.ID {
 		if idx, err = s.sweepCompat(ctx); err != nil {
@@ -141,7 +143,7 @@ func (s *Service) sweepVersionsChanged(gameID, gameVer, smapiVer string) bool {
 	return loader.VersionChanged(set.GamePrefs(gameID).LastSweepGameVersion, gameVer) || set.LoaderPrefs[settings.LoaderKey(gameID, loaderID(gameID))].LastSweepVersion != smapiVer
 }
 
-func (s *Service) sweepCompat(ctx context.Context) (meta.CompatIndex, error) {
+func (s *Service) sweepCompat(ctx context.Context) (smapiweb.CompatIndex, error) {
 	if s.SweepCompat != nil {
 		return s.SweepCompat(ctx)
 	}
@@ -149,7 +151,7 @@ func (s *Service) sweepCompat(ctx context.Context) (meta.CompatIndex, error) {
 	return c.CompatList(ctx)
 }
 
-func (s *Service) scanSweepProfiles(gameID string, profiles []profile.Profile, idx meta.CompatIndex, known components.BrokenList, gameVer string, updates map[string]bool) []ProfileSweep {
+func (s *Service) scanSweepProfiles(gameID string, profiles []profile.Profile, idx smapiweb.CompatIndex, known components.BrokenList, gameVer string, updates map[string]bool) []ProfileSweep {
 	out := make([]ProfileSweep, 0, len(profiles))
 	for _, p := range profiles {
 		if p.Error != "" {
@@ -201,7 +203,7 @@ func (s *Service) sweepUpdateSet(ctx context.Context, gameID, gameVer, smapiVer 
 	if s.SweepHasUpdate != nil {
 		return nil
 	}
-	var installed []meta.InstalledMod
+	var installed []smapiweb.InstalledMod
 	for _, p := range profiles {
 		if p.Error != "" {
 			continue
@@ -212,7 +214,7 @@ func (s *Service) sweepUpdateSet(ctx context.Context, gameID, gameVer, smapiVer 
 		}
 		for _, m := range list {
 			if m.ID != "" {
-				installed = append(installed, meta.InstalledMod{ID: m.ID.Local(), Version: m.Version})
+				installed = append(installed, smapiweb.InstalledMod{ID: m.ID.Local(), Version: m.Version})
 			}
 		}
 	}
@@ -228,11 +230,11 @@ func (s *Service) sweepUpdateSet(ctx context.Context, gameID, gameVer, smapiVer 
 	return out
 }
 
-func sweepBroken(mods []profile.Mod, idx meta.CompatIndex, hasUpdate func(mod.ID, int) bool) []SweepMod {
+func sweepBroken(mods []profile.Mod, idx smapiweb.CompatIndex, hasUpdate func(mod.ID, int) bool) []SweepMod {
 	var out []SweepMod
 	for _, m := range mods {
 		e, ok := idx.Lookup(m.ID.Local(), 0)
-		if !ok || (e.Status != meta.StatusBroken && e.Status != meta.StatusObsolete) {
+		if !ok || (e.Status != smapiweb.StatusBroken && e.Status != smapiweb.StatusObsolete) {
 			continue
 		}
 		out = append(out, SweepMod{
@@ -266,8 +268,8 @@ func sweepKnownBroken(mods []profile.Mod, listed []SweepMod, known components.Br
 	return out
 }
 
-func sweepFix(e meta.CompatEntry, m profile.Mod, hasUpdate func(mod.ID, int) bool) string {
-	if e.Status == meta.StatusObsolete {
+func sweepFix(e smapiweb.CompatEntry, m profile.Mod, hasUpdate func(mod.ID, int) bool) string {
+	if e.Status == smapiweb.StatusObsolete {
 		return fixOff
 	}
 	if useLatest(e) && hasUpdate != nil && hasUpdate(m.ID, 0) {
@@ -276,7 +278,7 @@ func sweepFix(e meta.CompatEntry, m profile.Mod, hasUpdate func(mod.ID, int) boo
 	return fixNone
 }
 
-func useLatest(e meta.CompatEntry) bool {
+func useLatest(e smapiweb.CompatEntry) bool {
 	s := strings.ToLower(e.Summary)
 	return strings.Contains(s, "use latest") || strings.Contains(s, "use the latest")
 }

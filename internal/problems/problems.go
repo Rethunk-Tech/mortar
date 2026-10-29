@@ -14,6 +14,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-smapiweb"
+
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -30,10 +32,10 @@ import (
 
 // Meta is the slice of meta.Client the checks use.
 type Meta interface {
-	Lookup(ctx context.Context, uniqueID string) ([]meta.Ref, error)
-	Page(ctx context.Context, id int) (meta.Page, error)
+	Lookup(ctx context.Context, uniqueID string) ([]smapiweb.Ref, error)
+	Page(ctx context.Context, id int) (smapiweb.Page, error)
 	Collection(ctx context.Context, domain, slug string, revision int) (meta.Collection, error)
-	CheckUpdates(ctx context.Context, req meta.UpdateRequest) []meta.UpdateResult
+	CheckUpdates(ctx context.Context, req meta.UpdateRequest) []smapiweb.UpdateResult
 }
 
 // Environment says what the profile runs on, for the broken-mod check.
@@ -627,7 +629,7 @@ func isLoader(loaders []components.GameLoader, r nexus.Requirement) bool {
 	})
 }
 
-func listedDepState(all []framework.Mod, pageID int, page meta.Page, pageKnown bool) (string, bool) {
+func listedDepState(all []framework.Mod, pageID int, page smapiweb.Page, pageKnown bool) (string, bool) {
 	disabled := false
 	for _, x := range all {
 		if !listedMatch(x, pageID, page, pageKnown) {
@@ -646,7 +648,7 @@ func listedDepState(all []framework.Mod, pageID int, page meta.Page, pageKnown b
 
 // listedMatch reports whether an installed mod is the one a Nexus page requirement names: it came from that page, or
 // it is one of the mods the page's downloads hold.
-func listedMatch(x framework.Mod, pageID int, page meta.Page, pageKnown bool) bool {
+func listedMatch(x framework.Mod, pageID int, page smapiweb.Page, pageKnown bool) bool {
 	if entryPage, _, listed := nexusFile(x.Key); listed && entryPage == pageID {
 		return true
 	}
@@ -656,7 +658,7 @@ func listedMatch(x framework.Mod, pageID int, page meta.Page, pageKnown bool) bo
 	id := x.ModID()
 	for _, file := range page.Downloads {
 		for _, im := range file.Mods {
-			if mod.Equal(id, im.ModID()) {
+			if mod.Equal(id, mod.SMAPI(im.UniqueID)) {
 				return true
 			}
 		}
@@ -666,7 +668,7 @@ func listedMatch(x framework.Mod, pageID int, page meta.Page, pageKnown bool) bo
 
 // manifestHasRequirement reports whether a switched-on mod of one entry (its files share the entry's key) requires a
 // mod the page's downloads hold.
-func manifestHasRequirement(entryMods []framework.Mod, page meta.Page) bool {
+func manifestHasRequirement(entryMods []framework.Mod, page smapiweb.Page) bool {
 	for _, d := range entryMods {
 		for _, dep := range d.Dependencies {
 			if !dep.Required {
@@ -674,7 +676,7 @@ func manifestHasRequirement(entryMods []framework.Mod, page meta.Page) bool {
 			}
 			for _, file := range page.Downloads {
 				for _, im := range file.Mods {
-					if mod.Equal(dep.ModID(), im.ModID()) {
+					if mod.Equal(dep.ModID(), mod.SMAPI(im.UniqueID)) {
 						return true
 					}
 				}
@@ -704,14 +706,14 @@ func manifestOmits(all []framework.Mod, entryKey, name string) bool {
 	return declared
 }
 
-func mainID(page meta.Page) mod.ID {
+func mainID(page smapiweb.Page) mod.ID {
 	for _, file := range page.Downloads {
 		if !strings.EqualFold(file.Type, "main") {
 			continue
 		}
 		for _, im := range file.Mods {
-			if im.ModID() != "" {
-				return im.ModID()
+			if mod.SMAPI(im.UniqueID) != "" {
+				return mod.SMAPI(im.UniqueID)
 			}
 		}
 	}
@@ -816,7 +818,7 @@ func brokenMods(ctx context.Context, m Meta, env Environment, enabled []framewor
 	}
 	req := meta.UpdateRequest{APIVersion: env.APIVersion, GameVersion: env.GameVersion, Platform: env.Platform}
 	for _, x := range enabled {
-		req.Mods = append(req.Mods, meta.InstalledMod{ID: x.ModID().Local(), UpdateKeys: x.UpdateKeys, Version: x.Version})
+		req.Mods = append(req.Mods, smapiweb.InstalledMod{ID: x.ModID().Local(), UpdateKeys: x.UpdateKeys, Version: x.Version})
 	}
 	for i, res := range m.CheckUpdates(ctx, req) {
 		if !res.Known {
@@ -901,7 +903,7 @@ func thunderstoreRef(community string, id mod.ID) *Ref {
 	}
 }
 
-func siteURL(domain string, r meta.Ref) string {
+func siteURL(domain string, r smapiweb.Ref) string {
 	switch strings.ToLower(r.Site) {
 	case "nexus":
 		return nexus.ModURL(domain, r.ID)
@@ -918,7 +920,7 @@ func Locate(ctx context.Context, m Meta, domain string, uniqueID mod.ID, minimum
 	if err != nil {
 		return nil, false
 	}
-	var nexus, other []meta.Ref
+	var nexus, other []smapiweb.Ref
 	for _, r := range refs {
 		if strings.EqualFold(r.Site, "nexus") {
 			nexus = append(nexus, r)
@@ -937,8 +939,8 @@ func Locate(ctx context.Context, m Meta, domain string, uniqueID mod.ID, minimum
 	}
 	for _, k := range dependentKeys {
 		if n, ok := smapimanifest.NexusUpdateKey(k); ok {
-			if i := slices.IndexFunc(nexus, func(r meta.Ref) bool { return r.ID == n }); i >= 0 {
-				nexus = []meta.Ref{nexus[i]}
+			if i := slices.IndexFunc(nexus, func(r smapiweb.Ref) bool { return r.ID == n }); i >= 0 {
+				nexus = []smapiweb.Ref{nexus[i]}
 				break
 			}
 		}
@@ -968,7 +970,7 @@ func Locate(ctx context.Context, m Meta, domain string, uniqueID mod.ID, minimum
 
 // githubRepo is the repository SMAPI's update API records for uniqueID, or "".
 func githubRepo(ctx context.Context, m Meta, uniqueID mod.ID) string {
-	got := m.CheckUpdates(ctx, meta.UpdateRequest{Mods: []meta.InstalledMod{{ID: uniqueID.Local()}}})
+	got := m.CheckUpdates(ctx, meta.UpdateRequest{Mods: []smapiweb.InstalledMod{{ID: uniqueID.Local()}}})
 	if len(got) != 1 || !got[0].Known {
 		return ""
 	}
@@ -981,13 +983,13 @@ func githubRepo(ctx context.Context, m Meta, uniqueID mod.ID) string {
 // fileIn picks the newest MAIN file of the page that holds uniqueID at a version meeting minimum. With none,
 // it still returns the page when some file holds the mod, so its link is worth showing; otherwise nil.
 // top is the highest version of the mod on the page, which ranks pages against each other.
-func fileIn(page meta.Page, domain string, r meta.Ref, uniqueID mod.ID, minimum string) (ref *Ref, top string) {
+func fileIn(page smapiweb.Page, domain string, r smapiweb.Ref, uniqueID mod.ID, minimum string) (ref *Ref, top string) {
 	pageRef := Ref{Site: "Nexus", PageID: r.ID, PageName: page.Name, URL: cmp.Or(page.PageURL, siteURL(domain, r))}
 	var best *Ref
 	holds := false
 	for _, f := range page.Downloads {
 		for _, im := range f.Mods {
-			if !mod.Equal(im.ModID(), uniqueID) {
+			if !mod.Equal(mod.SMAPI(im.UniqueID), uniqueID) {
 				continue
 			}
 			if c, ok := semverish.Compare(im.Version, top); !holds || (ok && c > 0) {

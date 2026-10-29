@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/go-smapiweb"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -122,8 +122,8 @@ func TestHoldingsGiveAnIdentityToTheRefsOfWhatTheProfileHolds(t *testing.T) {
 }
 
 func TestCompatListTiesANexusAndAGitHubHitThroughTheirUniqueID(t *testing.T) {
-	c := &Client{Compat: func(context.Context) (meta.CompatIndex, error) {
-		return meta.CompatIndex{
+	c := &Client{Compat: func(context.Context) (smapiweb.CompatIndex, error) {
+		return smapiweb.CompatIndex{
 			NexusToID:  map[int]string{7: "Pathoschild.Cool"},
 			GitHubToID: map[string]string{"pathoschild/cool": "Pathoschild.Cool"},
 		}, nil

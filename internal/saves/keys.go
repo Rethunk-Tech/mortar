@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/go-smapiweb"
 )
 
 const modDataPrefix = "smapi/mod-data/"
@@ -119,7 +119,7 @@ func distinctKeys(r io.Reader) (map[string]struct{}, saveFarm, error) {
 
 // uniqueID maps a save key to the mod id it belongs to: the longest prefix ending at a '/', '_' or '.' that
 // index knows, ignoring case. SMAPI's own save data lives under smapi/mod-data/<uniqueid>/.
-func uniqueID(key string, index map[string][]meta.Ref) (string, bool) {
+func uniqueID(key string, index map[string][]smapiweb.Ref) (string, bool) {
 	k := strings.TrimPrefix(strings.ToLower(key), modDataPrefix)
 	for i := len(k) - 1; i > 0; i-- {
 		if c := k[i]; c == '/' || c == '_' || c == '.' {

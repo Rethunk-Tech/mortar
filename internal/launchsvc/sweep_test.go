@@ -8,11 +8,12 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-smapiweb"
+
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
-	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
@@ -30,8 +31,8 @@ func sweepEnv(t *testing.T) (*Service, *profile.Store) {
 	_, profiles := testenv.Stores(t)
 	svc := NewService(t.TempDir(), set, profiles)
 	svc.SweepVersions = func(string) (string, string, error) { return "1.6.15", "4.1.10", nil }
-	svc.SweepCompat = func(context.Context) (meta.CompatIndex, error) {
-		return meta.CompatIndex{ByID: map[string]meta.CompatEntry{}}, nil
+	svc.SweepCompat = func(context.Context) (smapiweb.CompatIndex, error) {
+		return smapiweb.CompatIndex{ByID: map[string]smapiweb.CompatEntry{}}, nil
 	}
 	svc.SweepHasUpdate = func(mod.ID, int) bool { return false }
 	return svc, profiles
@@ -79,10 +80,10 @@ func TestSweepBrokenWithAndWithoutFix(t *testing.T) {
 	addSweepMod(t, profiles, p.ID, "A.Fixable", "Fixable")
 	addSweepMod(t, profiles, p.ID, "A.Stuck", "Stuck")
 	svc.SweepVersions = func(string) (string, string, error) { return "1.6.16", "4.2.0", nil }
-	svc.SweepCompat = func(context.Context) (meta.CompatIndex, error) {
-		return meta.CompatIndex{ByID: map[string]meta.CompatEntry{
-			"a.fixable": {Status: meta.StatusBroken, Summary: "Use latest version"},
-			"a.stuck":   {Status: meta.StatusBroken, Summary: "Broken in 1.6.16"},
+	svc.SweepCompat = func(context.Context) (smapiweb.CompatIndex, error) {
+		return smapiweb.CompatIndex{ByID: map[string]smapiweb.CompatEntry{
+			"a.fixable": {Status: smapiweb.StatusBroken, Summary: "Use latest version"},
+			"a.stuck":   {Status: smapiweb.StatusBroken, Summary: "Broken in 1.6.16"},
 		}}, nil
 	}
 	svc.SweepHasUpdate = func(uniqueID mod.ID, _ int) bool {

@@ -5,6 +5,8 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-smapiweb"
+
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
@@ -14,7 +16,7 @@ var ErrUnknown = errors.New("SMAPI's update API is unreachable")
 // Verify reports whether SMAPI's update API maps uniqueID to owner/repo. A GitHub install is trusted only then;
 // (false, nil) is a known mismatch and ErrUnknown is not a verdict.
 func Verify(ctx context.Context, m *meta.Client, uniqueID, owner, repo string) (bool, error) {
-	got := m.CheckUpdates(ctx, meta.UpdateRequest{Mods: []meta.InstalledMod{{ID: uniqueID}}})
+	got := m.CheckUpdates(ctx, meta.UpdateRequest{Mods: []smapiweb.InstalledMod{{ID: uniqueID}}})
 	if len(got) != 1 || !got[0].Known {
 		return false, ErrUnknown
 	}

@@ -11,6 +11,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/go-smapiweb"
+
 	"github.com/Rethunk-Tech/go-httpkit"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -19,7 +21,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
-	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -253,7 +254,7 @@ type resolver struct {
 // modInfo is what is known about one Nexus mod page. checked means Nexus answered with the mod's files; failed
 // means it could not be asked.
 type modInfo struct {
-	page    *meta.Page
+	page    *smapiweb.Page
 	files   []nexus.File
 	checked bool
 	gone    bool
@@ -314,7 +315,7 @@ func (r *resolver) hasGitHub(repo, tag, asset string) bool {
 	})
 }
 
-func datasetFile(p *meta.Page, fileID int) *meta.File {
+func datasetFile(p *smapiweb.Page, fileID int) *smapiweb.File {
 	if p == nil {
 		return nil
 	}
@@ -403,7 +404,7 @@ func (r *resolver) nexus(modID, fileID int, state string) Mod {
 		m.Version = cmp.Or(m.Version, df.Version)
 		m.SizeKB = cmp.Or(m.SizeKB, df.SizeInBytes/1024)
 		for _, dm := range df.Mods {
-			m.IDs = append(m.IDs, dm.ModID())
+			m.IDs = append(m.IDs, mod.SMAPI(dm.UniqueID))
 		}
 	} else if m.State == StateDownload {
 		m.State = StateLater
@@ -651,12 +652,12 @@ func (r *resolver) resolve(ctx context.Context, refs []share.Ref) ([]Mod, []Prob
 }
 
 // asInstalled presents a resolved mod to the problem checks as installed.
-func asInstalled(m Mod, df *meta.File) []framework.Mod {
+func asInstalled(m Mod, df *smapiweb.File) []framework.Mod {
 	var out []framework.Mod
 	for _, dm := range df.Mods {
-		mf := smapimanifest.Manifest{Name: dm.Name, Version: dm.Version, UpdateKeys: dm.UpdateKeys}.WithModID(dm.ModID())
+		mf := smapimanifest.Manifest{Name: dm.Name, Version: dm.Version, UpdateKeys: dm.UpdateKeys}.WithModID(mod.SMAPI(dm.UniqueID))
 		for _, d := range dm.Dependencies {
-			mf.Dependencies = append(mf.Dependencies, mod.NewDependency(d.ModID(), d.MinimumVersion, d.Required))
+			mf.Dependencies = append(mf.Dependencies, mod.NewDependency(mod.SMAPI(d.UniqueID), d.MinimumVersion, d.Required))
 		}
 		out = append(out, framework.Mod{Key: m.Key, SourceKind: profile.KindNexus, Enabled: true, Manifest: mf})
 	}

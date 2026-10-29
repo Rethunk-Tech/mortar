@@ -10,6 +10,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-smapiweb"
+
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
@@ -47,10 +49,10 @@ func TestParseCollectionURL(t *testing.T) {
 
 func TestPreviewLinkCollection(t *testing.T) {
 	s, _ := collectionService(t, fakeMeta{
-		pages: map[int]meta.Page{
-			100: page(100, "One", dsFile(1, "1.0", meta.Mod{UniqueID: "A.One", Version: "1.0"})),
-			200: page(200, "Two", dsFile(2, "1.0", meta.Mod{UniqueID: "A.Two", Version: "1.0"})),
-			300: page(300, "Three", dsFile(3, "1.0", meta.Mod{UniqueID: "A.Three", Version: "1.0"})),
+		pages: map[int]smapiweb.Page{
+			100: page(100, "One", dsFile(1, "1.0", smapiweb.Mod{UniqueID: "A.One", Version: "1.0"})),
+			200: page(200, "Two", dsFile(2, "1.0", smapiweb.Mod{UniqueID: "A.Two", Version: "1.0"})),
+			300: page(300, "Three", dsFile(3, "1.0", smapiweb.Mod{UniqueID: "A.Three", Version: "1.0"})),
 		},
 		coll: meta.Collection{
 			Name: "Cozy Farm",
@@ -89,8 +91,8 @@ func TestPreviewLinkCollectionWrongGame(t *testing.T) {
 func cozyCollectionService(t *testing.T, revision int) (*Service, *profile.Store) {
 	t.Helper()
 	return collectionService(t, fakeMeta{
-		pages: map[int]meta.Page{
-			100: page(100, "One", dsFile(1, "1.0", meta.Mod{UniqueID: "A.One", Version: "1.0"})),
+		pages: map[int]smapiweb.Page{
+			100: page(100, "One", dsFile(1, "1.0", smapiweb.Mod{UniqueID: "A.One", Version: "1.0"})),
 		},
 		coll: meta.Collection{
 			Name: "Cozy Farm", Slug: "cozy-farm", Revision: revision,
@@ -151,8 +153,8 @@ func TestImportCollectionRecordsRefOnExistingProfile(t *testing.T) {
 		t.Fatalf("collection = %+v", ref)
 	}
 	s.d.Meta = fakeMeta{
-		pages: map[int]meta.Page{
-			100: page(100, "One", dsFile(1, "1.0", meta.Mod{UniqueID: "A.One", Version: "1.0"})),
+		pages: map[int]smapiweb.Page{
+			100: page(100, "One", dsFile(1, "1.0", smapiweb.Mod{UniqueID: "A.One", Version: "1.0"})),
 		},
 		coll: meta.Collection{
 			Name: "Cozy Farm", Slug: "cozy-farm", Revision: 4,
@@ -259,7 +261,7 @@ func TestCollectionImportAppliesArchiveForPremiumOnly(t *testing.T) {
 		s := NewService(Deps{
 			Profiles: profiles,
 			Meta: fakeMeta{
-				pages: map[int]meta.Page{100: page(100, "One", dsFile(11, "1.0", meta.Mod{UniqueID: "A.One", Version: "1.0"}))},
+				pages: map[int]smapiweb.Page{100: page(100, "One", dsFile(11, "1.0", smapiweb.Mod{UniqueID: "A.One", Version: "1.0"}))},
 				coll: meta.Collection{
 					Name: "Cozy Farm", Slug: "cozy-farm", Revision: 1, Instructions: "Start a new save.",
 					DownloadLink: "/v2/collections/1/revisions/2/download_link",

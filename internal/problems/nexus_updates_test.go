@@ -5,25 +5,26 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-smapiweb"
+
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 )
 
 func TestCheckUpdatesUsesTheNewestFileInTheInstalledGroup(t *testing.T) {
 	const id = "EvenMoreSecretWoods"
 	rm := fakeMeta{
-		compat: map[string]meta.UpdateResult{
-			id: {Known: true, Suggested: &meta.Update{Version: "1.2", URL: "https://www.nexusmods.com/stardewvalley/mods/2364"}},
+		compat: map[string]smapiweb.UpdateResult{
+			id: {Known: true, Suggested: &smapiweb.Update{Version: "1.2", URL: "https://www.nexusmods.com/stardewvalley/mods/2364"}},
 		},
-		pages: map[int]meta.Page{2364: {
-			Downloads: []meta.File{
+		pages: map[int]smapiweb.Page{2364: {
+			Downloads: []smapiweb.File{
 				{
 					ID:       9545,
 					Type:     "MAIN",
 					Version:  "1.2",
 					FileName: "EvenMoreSecretWoods - Content Patcher Version-2364-1-2.zip",
-					Mods:     []meta.Mod{{UniqueID: id, Version: "1.0.0"}},
+					Mods:     []smapiweb.Mod{{UniqueID: id, Version: "1.0.0"}},
 				},
 				{
 					ID:       9546,
@@ -46,24 +47,24 @@ func TestCheckUpdatesUsesTheNewestFileInTheInstalledGroup(t *testing.T) {
 func TestCheckUpdatesChoosesANewerFileFromTheSameStem(t *testing.T) {
 	const id = "Example.Mod"
 	rm := fakeMeta{
-		compat: map[string]meta.UpdateResult{
-			id: {Known: true, Suggested: &meta.Update{Version: "1.2", URL: "https://www.nexusmods.com/stardewvalley/mods/2364"}},
+		compat: map[string]smapiweb.UpdateResult{
+			id: {Known: true, Suggested: &smapiweb.Update{Version: "1.2", URL: "https://www.nexusmods.com/stardewvalley/mods/2364"}},
 		},
-		pages: map[int]meta.Page{2364: {
-			Downloads: []meta.File{
+		pages: map[int]smapiweb.Page{2364: {
+			Downloads: []smapiweb.File{
 				{
 					ID:       9544,
 					Type:     "OLD_VERSION",
 					Version:  "1.1",
 					FileName: "Example.Mod-2364-1-1.zip",
-					Mods:     []meta.Mod{{UniqueID: id, Version: "1.0.0"}},
+					Mods:     []smapiweb.Mod{{UniqueID: id, Version: "1.0.0"}},
 				},
 				{
 					ID:       9545,
 					Type:     "MAIN",
 					Version:  "1.2",
 					FileName: "Example.Mod-2364-1-2.zip",
-					Mods:     []meta.Mod{{UniqueID: id, Version: "1.2.0"}},
+					Mods:     []smapiweb.Mod{{UniqueID: id, Version: "1.2.0"}},
 				},
 				{
 					ID:       9546,
@@ -86,16 +87,16 @@ func TestCheckUpdatesChoosesANewerFileFromTheSameStem(t *testing.T) {
 func TestCheckUpdatesTrustsSMAPIOverAStaleDatasetPage(t *testing.T) {
 	const id = "Example.MachineControlPanel"
 	rm := fakeMeta{
-		compat: map[string]meta.UpdateResult{
-			id: {Known: true, Suggested: &meta.Update{Version: "2.5.0", URL: "https://www.nexusmods.com/stardewvalley/mods/28261"}},
+		compat: map[string]smapiweb.UpdateResult{
+			id: {Known: true, Suggested: &smapiweb.Update{Version: "2.5.0", URL: "https://www.nexusmods.com/stardewvalley/mods/28261"}},
 		},
-		pages: map[int]meta.Page{28261: {
-			Downloads: []meta.File{{
+		pages: map[int]smapiweb.Page{28261: {
+			Downloads: []smapiweb.File{{
 				ID:       179112,
 				Type:     "MAIN",
 				Version:  "2.4.1",
 				FileName: "Machine Control Panel-28261-2-4-1.zip",
-				Mods:     []meta.Mod{{UniqueID: id, Version: "2.4.1"}},
+				Mods:     []smapiweb.Mod{{UniqueID: id, Version: "2.4.1"}},
 			}},
 		}},
 	}
@@ -130,8 +131,8 @@ func TestLiveFileIsCurrentAcceptsAnUnbumpedManifest(t *testing.T) {
 func TestCheckUpdatesUsesOneLiveCallWhenAvailable(t *testing.T) {
 	const id = "Example.MachineControlPanel"
 	rm := fakeMeta{
-		compat: map[string]meta.UpdateResult{
-			id: {Known: true, Suggested: &meta.Update{Version: "2.5.0", URL: "https://www.nexusmods.com/stardewvalley/mods/28261"}},
+		compat: map[string]smapiweb.UpdateResult{
+			id: {Known: true, Suggested: &smapiweb.Update{Version: "2.5.0", URL: "https://www.nexusmods.com/stardewvalley/mods/28261"}},
 		},
 	}
 	installed := inst("nexus-28261-179112", id, "2.4.1", true)
@@ -167,8 +168,8 @@ func TestGitHubFallbackOnlyWhenTheUpdateIsNotOnGitHub(t *testing.T) {
 // is the main file's. The bundle pack's update must download its own newer file, or ask for a pick when it has none.
 func TestCheckUpdatesPicksTheBundlePacksOwnFile(t *testing.T) {
 	const id = "Morghoula.AlchemistryCCCBL.Easy"
-	rm := fakeMeta{compat: map[string]meta.UpdateResult{
-		id: {Known: true, Suggested: &meta.Update{Version: "2.0.2", URL: "https://www.nexusmods.com/stardewvalley/mods/22743"}},
+	rm := fakeMeta{compat: map[string]smapiweb.UpdateResult{
+		id: {Known: true, Suggested: &smapiweb.Update{Version: "2.0.2", URL: "https://www.nexusmods.com/stardewvalley/mods/22743"}},
 	}}
 	installed := inst("nexus-22743-178711", id, "2.0.1", true)
 	installed.UpdateKeys = []string{"Nexus:22743"}
@@ -218,8 +219,8 @@ func TestCheckUpdatesPicksTheBundlePacksOwnFile(t *testing.T) {
 // Earthy Cursor: the page says 1.0.1 but its only file is the installed 1.0.0.
 func TestCheckUpdatesIgnoresAPageVersionWithoutANewFile(t *testing.T) {
 	const id = "Example.EarthyCursor"
-	rm := fakeMeta{compat: map[string]meta.UpdateResult{
-		id: {Known: true, Suggested: &meta.Update{Version: "1.0.1", URL: "https://www.nexusmods.com/stardewvalley/mods/33076"}},
+	rm := fakeMeta{compat: map[string]smapiweb.UpdateResult{
+		id: {Known: true, Suggested: &smapiweb.Update{Version: "1.0.1", URL: "https://www.nexusmods.com/stardewvalley/mods/33076"}},
 	}}
 	installed := inst("nexus-33076-129465", id, "1.0.0", true)
 	installed.UpdateKeys = []string{"Nexus:33076"}
@@ -234,8 +235,8 @@ func TestCheckUpdatesIgnoresAPageVersionWithoutANewFile(t *testing.T) {
 // A file whose author uploaded a successor updates to that file's id, whatever the page says.
 func TestCheckUpdatesFollowsTheReplacedByChain(t *testing.T) {
 	const id = "Example.Chain"
-	rm := fakeMeta{compat: map[string]meta.UpdateResult{
-		id: {Known: true, Suggested: &meta.Update{Version: "3.0", URL: "https://www.nexusmods.com/stardewvalley/mods/5"}},
+	rm := fakeMeta{compat: map[string]smapiweb.UpdateResult{
+		id: {Known: true, Suggested: &smapiweb.Update{Version: "3.0", URL: "https://www.nexusmods.com/stardewvalley/mods/5"}},
 	}}
 	installed := inst("nexus-5-10", id, "1.0", true)
 	installed.UpdateKeys = []string{"Nexus:5"}

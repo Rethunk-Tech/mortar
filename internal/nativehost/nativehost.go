@@ -19,6 +19,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-smapiweb"
+
 	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
@@ -530,7 +532,7 @@ func brokenNexusModIDs(domain string) []int {
 	if !ok || !info.HasMetadata("smapi-compat") {
 		return nil
 	}
-	cached, ok := diskcache.Peek[meta.CompatIndex]((&meta.Client{}).Cache(), meta.CompatCacheFile)
+	cached, ok := diskcache.Peek[smapiweb.CompatIndex]((&meta.Client{}).Cache(), meta.CompatCacheFile)
 	idx := cached.Value
 	if !ok {
 		return nil

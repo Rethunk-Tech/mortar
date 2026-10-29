@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-smapiweb"
+
 	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
@@ -18,7 +20,7 @@ type recordingMeta struct {
 	got meta.UpdateRequest
 }
 
-func (r *recordingMeta) CheckUpdates(ctx context.Context, req meta.UpdateRequest) []meta.UpdateResult {
+func (r *recordingMeta) CheckUpdates(ctx context.Context, req meta.UpdateRequest) []smapiweb.UpdateResult {
 	r.got = req
 	return r.fakeMeta.CheckUpdates(ctx, req)
 }
@@ -28,9 +30,9 @@ func TestCheckUpdates(t *testing.T) {
 	bundled.SourceKind = "smapi"
 	off := inst("k2", "me.off", "1.0.0", false)
 	rm := &recordingMeta{}
-	rm.compat = map[string]meta.UpdateResult{
-		"me.a":   {Known: true, Suggested: &meta.Update{Version: "2.0.0", URL: "https://example.test/a"}},
-		"me.off": {Known: true, Suggested: &meta.Update{Version: "1.1.0", URL: "https://example.test/off"}},
+	rm.compat = map[string]smapiweb.UpdateResult{
+		"me.a":   {Known: true, Suggested: &smapiweb.Update{Version: "2.0.0", URL: "https://example.test/a"}},
+		"me.off": {Known: true, Suggested: &smapiweb.Update{Version: "1.1.0", URL: "https://example.test/off"}},
 		"me.b":   {Known: true},
 	}
 	env := Environment{GameVersion: "1.6.15", APIVersion: "4.3.2", Platform: "Linux"}
@@ -52,9 +54,9 @@ func TestCheckUpdatesNamesTheGitHubRepo(t *testing.T) {
 	gh.UpdateKeys = []string{"Nexus:5", "GitHub:me/a"}
 	elsewhere := inst("k2", "me.b", "1.0.0", true)
 	elsewhere.UpdateKeys = []string{"GitHub:me/b"}
-	rm := fakeMeta{compat: map[string]meta.UpdateResult{
-		"me.a": {Known: true, Suggested: &meta.Update{Version: "2.0.0", URL: "https://github.com/me/a/releases/tag/2.0.0"}},
-		"me.b": {Known: true, Suggested: &meta.Update{Version: "2.0.0", URL: "https://www.nexusmods.com/stardewvalley/mods/9"}},
+	rm := fakeMeta{compat: map[string]smapiweb.UpdateResult{
+		"me.a": {Known: true, Suggested: &smapiweb.Update{Version: "2.0.0", URL: "https://github.com/me/a/releases/tag/2.0.0"}},
+		"me.b": {Known: true, Suggested: &smapiweb.Update{Version: "2.0.0", URL: "https://www.nexusmods.com/stardewvalley/mods/9"}},
 	}}
 	got := CheckUpdates(context.Background(), rm, testEnv, []framework.Mod{gh, elsewhere}, false).Updates
 	if len(got) != 2 || got[0].GitHubRepo != "me/a" || got[0].NexusID != 5 || got[1].GitHubRepo != "" {
@@ -63,10 +65,10 @@ func TestCheckUpdatesNamesTheGitHubRepo(t *testing.T) {
 }
 
 func TestCheckUpdatesIncludesUnofficialWithoutReplacingSuggested(t *testing.T) {
-	rm := fakeMeta{compat: map[string]meta.UpdateResult{
+	rm := fakeMeta{compat: map[string]smapiweb.UpdateResult{
 		"me.a": {
-			Known: true, Suggested: &meta.Update{Version: "2.0.0", URL: "https://n.test/a"},
-			Unofficial: &meta.Update{Version: "2.1.0-unofficial.1-x", URL: "https://smapi.io/u"},
+			Known: true, Suggested: &smapiweb.Update{Version: "2.0.0", URL: "https://n.test/a"},
+			Unofficial: &smapiweb.Update{Version: "2.1.0-unofficial.1-x", URL: "https://smapi.io/u"},
 		},
 	}}
 	got := CheckUpdates(context.Background(), rm, testEnv, []framework.Mod{inst("k1", "me.a", "1.0.0", true)}, false).Updates
@@ -76,8 +78,8 @@ func TestCheckUpdatesIncludesUnofficialWithoutReplacingSuggested(t *testing.T) {
 }
 
 func TestCheckUpdatesOffersASuggestedUnofficialBuildOnce(t *testing.T) {
-	build := meta.Update{Version: "1.4.1-unofficial.1-x", URL: "https://smapi.io/mods#a"}
-	rm := fakeMeta{compat: map[string]meta.UpdateResult{
+	build := smapiweb.Update{Version: "1.4.1-unofficial.1-x", URL: "https://smapi.io/mods#a"}
+	rm := fakeMeta{compat: map[string]smapiweb.UpdateResult{
 		"me.a": {Known: true, Suggested: &build, Unofficial: &build},
 	}}
 	got := CheckUpdates(context.Background(), rm, testEnv, []framework.Mod{inst("k1", "me.a", "1.3.3", true)}, false).Updates
@@ -120,15 +122,15 @@ func TestHideHeldDropsSkippedSources(t *testing.T) {
 
 func TestUpdateSource(t *testing.T) {
 	tests := []struct {
-		update meta.Update
+		update smapiweb.Update
 		nexus  int
 		github string
 		want   string
 	}{
-		{meta.Update{Source: "CurseForge:123"}, 0, "", "CurseForge"},
-		{meta.Update{}, 0, "owner/repo", "GitHub"},
-		{meta.Update{}, 42, "", "Nexus"},
-		{meta.Update{URL: "https://www.moddrop.com/stardew/a"}, 0, "", "moddrop.com"},
+		{smapiweb.Update{Source: "CurseForge:123"}, 0, "", "CurseForge"},
+		{smapiweb.Update{}, 0, "owner/repo", "GitHub"},
+		{smapiweb.Update{}, 42, "", "Nexus"},
+		{smapiweb.Update{URL: "https://www.moddrop.com/stardew/a"}, 0, "", "moddrop.com"},
 	}
 	for _, test := range tests {
 		if got := updateSource(test.update, test.nexus, test.github); got != test.want {
@@ -150,9 +152,9 @@ func TestCheckUpdatesUnknownNeverBlocks(t *testing.T) {
 
 func TestCheckUpdatesEnabledOnlySkipsDisabled(t *testing.T) {
 	rm := &recordingMeta{}
-	rm.compat = map[string]meta.UpdateResult{
-		"me.on":  {Known: true, Suggested: &meta.Update{Version: "2.0.0", URL: "https://example.test/on"}},
-		"me.off": {Known: true, Suggested: &meta.Update{Version: "2.0.0", URL: "https://example.test/off"}},
+	rm.compat = map[string]smapiweb.UpdateResult{
+		"me.on":  {Known: true, Suggested: &smapiweb.Update{Version: "2.0.0", URL: "https://example.test/on"}},
+		"me.off": {Known: true, Suggested: &smapiweb.Update{Version: "2.0.0", URL: "https://example.test/off"}},
 	}
 	mods := []framework.Mod{
 		inst("k1", "me.on", "1.0.0", true),

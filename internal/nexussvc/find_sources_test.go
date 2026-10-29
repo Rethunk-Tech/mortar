@@ -4,13 +4,14 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/go-smapiweb"
+
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 func TestCandidatePagesAreThoseEveryKnownModShares(t *testing.T) {
-	index := map[string][]meta.Ref{
+	index := map[string][]smapiweb.Ref{
 		"a.one":    {{Site: "Nexus", ID: 10}},
 		"a.shared": {{Site: "Nexus", ID: 10}, {Site: "Nexus", ID: 20}},
 		"a.other":  {{Site: "Nexus", ID: 30}},
@@ -43,10 +44,10 @@ func TestCandidatePagesAreThoseEveryKnownModShares(t *testing.T) {
 
 func TestNarrowPagesPrefersTheInstalledVersionThenTheAuthor(t *testing.T) {
 	installed := []profile.Component{{ID: mod.SMAPI("a.shared"), Version: "1.2.0", Author: "Ada, Bo (original author)"}}
-	file := func(version string) []meta.File {
-		return []meta.File{{Mods: []meta.Mod{{UniqueID: "A.Shared", Version: version}}}}
+	file := func(version string) []smapiweb.File {
+		return []smapiweb.File{{Mods: []smapiweb.Mod{{UniqueID: "A.Shared", Version: version}}}}
 	}
-	listed := map[int]meta.Page{
+	listed := map[int]smapiweb.Page{
 		10: {Author: "ada", Downloads: file("1.2.0")},
 		20: {Author: "translator", Downloads: file("1.2.0")},
 		30: {Author: "ada", Downloads: file("1.0.0")},
@@ -65,14 +66,14 @@ func TestNarrowPagesPrefersTheInstalledVersionThenTheAuthor(t *testing.T) {
 }
 
 func TestInstalledFileIsTheOneHoldingEveryModAtItsVersion(t *testing.T) {
-	at := func(version string, ids ...string) []meta.Mod {
-		out := make([]meta.Mod, len(ids))
+	at := func(version string, ids ...string) []smapiweb.Mod {
+		out := make([]smapiweb.Mod, len(ids))
 		for i, id := range ids {
-			out[i] = meta.Mod{UniqueID: id, Version: version}
+			out[i] = smapiweb.Mod{UniqueID: id, Version: version}
 		}
 		return out
 	}
-	page := meta.Page{Downloads: []meta.File{
+	page := smapiweb.Page{Downloads: []smapiweb.File{
 		{ID: 1, Mods: at("1.0.0", "A.One")},
 		{ID: 2, Mods: at("1.2.0", "A.One")},
 		{ID: 3, Mods: at("1.2.0", "A.One", "a.extra")},

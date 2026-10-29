@@ -13,6 +13,7 @@ import (
 	"github.com/Rethunk-Tech/go-httpkit"
 
 	"github.com/Rethunk-Tech/go-safefs/diskcache"
+	"github.com/Rethunk-Tech/go-smapiweb"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
@@ -45,6 +46,11 @@ func (c *Client) client() *http.Client {
 		return c.HTTP
 	}
 	return http.DefaultClient
+}
+
+// web is the stateless client for the same endpoints; Mortar's own cache sits around its calls.
+func (c *Client) web() *smapiweb.Client {
+	return &smapiweb.Client{HTTP: c.client(), UpdatesURL: c.UpdatesURL, CompatURL: c.CompatURL, IndexURL: c.IndexURL, PageBase: c.PageBase}
 }
 
 func (c *Client) now() time.Time {

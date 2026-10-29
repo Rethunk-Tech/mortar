@@ -20,6 +20,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/Rethunk-Tech/go-smapiweb"
+
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/backup"
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -29,7 +31,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi"
-	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/netstate"
 	"github.com/Rethunk-Tech/mortar/internal/overlay"
@@ -199,7 +200,7 @@ type Service struct {
 	sampled map[string]chan struct{}
 	// SweepVersions, SweepCompat, SweepHasUpdate and SweepMissingDeps are replaced in tests.
 	SweepVersions    func(gameID string) (gameVer, smapiVer string, err error)
-	SweepCompat      func(ctx context.Context) (meta.CompatIndex, error)
+	SweepCompat      func(ctx context.Context) (smapiweb.CompatIndex, error)
 	SweepHasUpdate   func(uniqueID mod.ID, nexusID int) bool
 	SweepMissingDeps func(gameID, profileID string) int
 	// Symbols names native crash frames from symbol servers; nil names none.

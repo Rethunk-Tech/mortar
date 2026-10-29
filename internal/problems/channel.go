@@ -3,8 +3,9 @@ package problems
 import (
 	"context"
 
+	"github.com/Rethunk-Tech/go-smapiweb"
+
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 
@@ -40,7 +41,7 @@ func applyChannelFileOffers(ctx context.Context, m Meta, domain string, asked []
 		if !ok || downloaded(x, f.Version) {
 			continue
 		}
-		upsertChannelOffer(r, x, f.Version, siteURL(domain, meta.Ref{Site: "Nexus", ID: modID}), modID)
+		upsertChannelOffer(r, x, f.Version, siteURL(domain, smapiweb.Ref{Site: "Nexus", ID: modID}), modID)
 	}
 }
 

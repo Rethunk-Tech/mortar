@@ -9,9 +9,10 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/go-smapiweb"
+
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/game"
-	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/metadata"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
@@ -163,7 +164,7 @@ func (s *Service) SetNexusPage(ctx context.Context, gameID, profileID, key, link
 // installedFile is the page's file whose mods are the listed ones at their installed versions, or 0 when no file
 // or several fit equally. A file that holds a listed mod at another version is not it; of the rest, the one holding
 // the most listed mods wins, then the one holding the fewest others.
-func installedFile(mods []profile.Component, p meta.Page) int {
+func installedFile(mods []profile.Component, p smapiweb.Page) int {
 	best, bestHeld, bestOthers, tied := 0, 0, 0, false
 	for _, f := range p.Downloads {
 		held, differs := 0, false
@@ -207,10 +208,10 @@ func sameVersion(a, b string) bool {
 }
 
 // datasetPages reads the dataset's record of each page; one that cannot be read is left out.
-func (s *Service) datasetPages(ctx context.Context, ids []int) map[int]meta.Page {
+func (s *Service) datasetPages(ctx context.Context, ids []int) map[int]smapiweb.Page {
 	slices.Sort(ids)
 	ids = slices.Compact(ids)
-	out := make(map[int]meta.Page, len(ids))
+	out := make(map[int]smapiweb.Page, len(ids))
 	var mu sync.Mutex
 	var wg sync.WaitGroup
 	slots := make(chan struct{}, pageFetches)
@@ -232,7 +233,7 @@ func (s *Service) datasetPages(ctx context.Context, ids []int) map[int]meta.Page
 }
 
 // candidatePages are the Nexus pages that publish every listed mod the index knows, lowest id first.
-func candidatePages(mods []profile.Component, index map[string][]meta.Ref) []int {
+func candidatePages(mods []profile.Component, index map[string][]smapiweb.Ref) []int {
 	var pages []int
 	known := false
 	for _, m := range mods {
@@ -261,15 +262,15 @@ func candidatePages(mods []profile.Component, index map[string][]meta.Ref) []int
 // narrowPages keeps the candidates that publish one of the mods at its installed version, then those by an author
 // of one; a test no candidate passes is skipped. It returns ids unchanged when a candidate's page was not read,
 // since the page left out could be the right one.
-func narrowPages(mods []profile.Component, ids []int, listed map[int]meta.Page) []int {
+func narrowPages(mods []profile.Component, ids []int, listed map[int]smapiweb.Page) []int {
 	for _, id := range ids {
 		if _, ok := listed[id]; !ok {
 			return ids
 		}
 	}
-	for _, passes := range []func(meta.Page) bool{
-		func(p meta.Page) bool { return publishesInstalled(p, mods) },
-		func(p meta.Page) bool { return writtenBy(p, mods) },
+	for _, passes := range []func(smapiweb.Page) bool{
+		func(p smapiweb.Page) bool { return publishesInstalled(p, mods) },
+		func(p smapiweb.Page) bool { return writtenBy(p, mods) },
 	} {
 		var kept []int
 		for _, id := range ids {
@@ -284,7 +285,7 @@ func narrowPages(mods []profile.Component, ids []int, listed map[int]meta.Page) 
 	return ids
 }
 
-func publishesInstalled(p meta.Page, mods []profile.Component) bool {
+func publishesInstalled(p smapiweb.Page, mods []profile.Component) bool {
 	for _, f := range p.Downloads {
 		for _, published := range f.Mods {
 			if slices.ContainsFunc(mods, func(m profile.Component) bool {
@@ -299,7 +300,7 @@ func publishesInstalled(p meta.Page, mods []profile.Component) bool {
 
 // writtenBy matches names loosely, since a manifest's author is free text ("A, B (original author)") and a page's
 // is an account name.
-func writtenBy(p meta.Page, mods []profile.Component) bool {
+func writtenBy(p smapiweb.Page, mods []profile.Component) bool {
 	page := mod.LooseName(p.Author)
 	if page == "" {
 		return false

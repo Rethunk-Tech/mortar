@@ -20,6 +20,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/Rethunk-Tech/go-smapiweb"
+
 	"github.com/Rethunk-Tech/go-httpkit"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -979,7 +981,7 @@ func run() error {
 	packs := &packsvc.Service{Profiles: profiles, Queue: queueSvc, Folder: func() string { return store.Get().PackFolder }}
 	browseSvc.ShowAdult = func() bool { return store.Get().ShowAdultContent }
 	browseSvc.Installed = profiles.Installed
-	browseSvc.Compat = func(game string) func(ctx context.Context) (meta.CompatIndex, error) {
+	browseSvc.Compat = func(game string) func(ctx context.Context) (smapiweb.CompatIndex, error) {
 		info, ok := components.Game(game)
 		if !ok {
 			return nil

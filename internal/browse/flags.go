@@ -6,9 +6,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-smapiweb"
+
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -18,7 +19,7 @@ import (
 // mark sets each hit's Obsolete, Broken and Loader flags. The compatibility list is read only when the game has
 // one, and a failure to read it leaves nothing marked broken.
 func (c *Client) mark(ctx context.Context, info components.GameInfo, items []Item) {
-	var idx meta.CompatIndex
+	var idx smapiweb.CompatIndex
 	if c.Compat != nil {
 		idx, _ = c.Compat(ctx)
 	}
@@ -41,7 +42,7 @@ func (c *Client) mark(ctx context.Context, info components.GameInfo, items []Ite
 			if err != nil {
 				continue
 			}
-			it.Broken = it.Broken || idx.ByNexus[id].Status == meta.StatusBroken
+			it.Broken = it.Broken || idx.ByNexus[id].Status == smapiweb.StatusBroken
 			it.Loader = slices.ContainsFunc(info.Loaders, func(l components.GameLoader) bool { return l.NexusModID == id })
 		case "thunderstore":
 			it.Loader = strings.EqualFold(it.ID, info.LoaderPackage()) &&

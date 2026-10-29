@@ -17,6 +17,7 @@ import (
 
 const (
 	collectionTTL   = 15 * time.Minute
+	maxCollection   = 8 << 20
 	collectionQuery = `query($slug:String!,$domain:String,$revision:Int){collectionRevision(slug:$slug,domainName:$domain,revision:$revision,viewAdultContent:true){revisionNumber downloadLink installationInfo externalResources{name resourceType resourceUrl optional version author} collection{name slug user{name}} modFiles{fileId optional file{modId name version mod{name}}}}}`
 )
 
@@ -78,7 +79,7 @@ func (c *Client) fetchCollection(ctx context.Context, domain, slug string, revis
 	req.Header.Set("Application-Name", "Mortar")
 	req.Header.Set("Application-Version", c.Version)
 	req.Header.Set("Accept", "application/json")
-	raw, err := c.do(req, maxPage)
+	raw, err := c.do(req, maxCollection)
 	if err != nil {
 		return Collection{}, err
 	}

@@ -20,11 +20,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-smapiweb"
+
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
 const (
@@ -99,7 +100,7 @@ func (s *Scanner) Layout() Layout {
 
 // Scan returns every save in Dir, newest first. A save that cannot be read is left out and reported in the
 // error, which accompanies the readable ones.
-func (s *Scanner) Scan(ctx context.Context, index map[string][]meta.Ref) ([]Info, error) {
+func (s *Scanner) Scan(ctx context.Context, index map[string][]smapiweb.Ref) ([]Info, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	entries, err := s.Layout().Names()
@@ -155,7 +156,7 @@ func (s *Scanner) Scan(ctx context.Context, index map[string][]meta.Ref) ([]Info
 
 // Newest reads only the save folder most recently written. It is used by the launch warning, where the other saves
 // and their mod names are not needed until the user opens the Saves tab.
-func (s *Scanner) Newest(ctx context.Context, index map[string][]meta.Ref) (Info, error) {
+func (s *Scanner) Newest(ctx context.Context, index map[string][]smapiweb.Ref) (Info, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	entries, err := s.Layout().Names()
@@ -449,7 +450,7 @@ func (s *Scanner) stampOf(folder string, index int) (st stamp, ok bool, err erro
 	return st, true, nil
 }
 
-func (s *Scanner) read(ctx context.Context, folder string, index map[string][]meta.Ref) (Info, error) {
+func (s *Scanner) read(ctx context.Context, folder string, index map[string][]smapiweb.Ref) (Info, error) {
 	info := Info{Folder: folder, WhichFarm: -1, Used: []mod.ID{}}
 	if len(s.Files) > 0 {
 		// A save kept as one file (Lethal Company's encrypted ES3) names no mods, so its fit is unknown.

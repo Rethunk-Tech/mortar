@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-smapiweb"
+
 	"github.com/Rethunk-Tech/go-httpkit"
 
 	"github.com/Rethunk-Tech/mortar/internal/meta"
@@ -16,39 +18,39 @@ import (
 )
 
 type fakeMeta struct {
-	refs    map[string][]meta.Ref
-	pages   map[int]meta.Page
+	refs    map[string][]smapiweb.Ref
+	pages   map[int]smapiweb.Page
 	broken  map[string]string
 	coll    meta.Collection
 	collErr error
 }
 
-func (f fakeMeta) Lookup(_ context.Context, id string) ([]meta.Ref, error) {
+func (f fakeMeta) Lookup(_ context.Context, id string) ([]smapiweb.Ref, error) {
 	return f.refs[strings.ToLower(id)], nil
 }
 
-func (f fakeMeta) Page(_ context.Context, id int) (meta.Page, error) {
+func (f fakeMeta) Page(_ context.Context, id int) (smapiweb.Page, error) {
 	p, ok := f.pages[id]
 	if !ok {
-		return meta.Page{}, errors.New("no page")
+		return smapiweb.Page{}, errors.New("no page")
 	}
 	return p, nil
 }
 
-func (f fakeMeta) CheckUpdates(_ context.Context, req meta.UpdateRequest) []meta.UpdateResult {
-	out := make([]meta.UpdateResult, len(req.Mods))
+func (f fakeMeta) CheckUpdates(_ context.Context, req meta.UpdateRequest) []smapiweb.UpdateResult {
+	out := make([]smapiweb.UpdateResult, len(req.Mods))
 	for i, m := range req.Mods {
-		out[i] = meta.UpdateResult{ID: m.ID, Known: true, Compatibility: f.broken[m.ID], BrokeIn: "1.6.15"}
+		out[i] = smapiweb.UpdateResult{ID: m.ID, Known: true, Compatibility: f.broken[m.ID], BrokeIn: "1.6.15"}
 	}
 	return out
 }
 
-func dsFile(id int64, version string, mods ...meta.Mod) meta.File {
-	return meta.File{ID: id, Type: "Main", Version: version, SizeInBytes: 4096, Mods: mods}
+func dsFile(id int64, version string, mods ...smapiweb.Mod) smapiweb.File {
+	return smapiweb.File{ID: id, Type: "Main", Version: version, SizeInBytes: 4096, Mods: mods}
 }
 
-func page(id int, name string, files ...meta.File) meta.Page {
-	return meta.Page{ID: id, Name: name, Author: "someone", Downloads: files}
+func page(id int, name string, files ...smapiweb.File) smapiweb.Page {
+	return smapiweb.Page{ID: id, Name: name, Author: "someone", Downloads: files}
 }
 
 func nf(id int, version, category string, primary bool) nexus.File {
@@ -56,15 +58,15 @@ func nf(id int, version, category string, primary bool) nexus.File {
 }
 
 func testResolver(files map[int][]nexus.File, target []profile.Entry) *resolver {
-	dep := meta.Mod{UniqueID: "B.Dep", Version: "1.2"}
+	dep := smapiweb.Mod{UniqueID: "B.Dep", Version: "1.2"}
 	fm := fakeMeta{
-		refs: map[string][]meta.Ref{"b.dep": {{Site: "Nexus", ID: 900}}},
-		pages: map[int]meta.Page{
-			100:  page(100, "Main Mod", dsFile(1, "1.0", meta.Mod{UniqueID: "A.Main", Version: "1.0", Dependencies: []meta.Dependency{{UniqueID: "B.Dep", MinimumVersion: "1.0", Required: true}}})),
-			200:  page(200, "Gone File", dsFile(2, "2.0", meta.Mod{UniqueID: "A.Gone", Version: "2.0"}), dsFile(22, "2.0", meta.Mod{UniqueID: "A.Gone", Version: "2.0"})),
-			700:  page(700, "Later Mod", dsFile(70, "1.0", meta.Mod{UniqueID: "A.Later", Version: "1.0"})),
+		refs: map[string][]smapiweb.Ref{"b.dep": {{Site: "Nexus", ID: 900}}},
+		pages: map[int]smapiweb.Page{
+			100:  page(100, "Main Mod", dsFile(1, "1.0", smapiweb.Mod{UniqueID: "A.Main", Version: "1.0", Dependencies: []smapiweb.Dependency{{UniqueID: "B.Dep", MinimumVersion: "1.0", Required: true}}})),
+			200:  page(200, "Gone File", dsFile(2, "2.0", smapiweb.Mod{UniqueID: "A.Gone", Version: "2.0"}), dsFile(22, "2.0", smapiweb.Mod{UniqueID: "A.Gone", Version: "2.0"})),
+			700:  page(700, "Later Mod", dsFile(70, "1.0", smapiweb.Mod{UniqueID: "A.Later", Version: "1.0"})),
 			900:  page(900, "Dependency", dsFile(9, "1.2", dep)),
-			1000: page(1000, "Broken Mod", dsFile(10, "1.0", meta.Mod{UniqueID: "A.Broken", Name: "Broken Mod", Version: "1.0"})),
+			1000: page(1000, "Broken Mod", dsFile(10, "1.0", smapiweb.Mod{UniqueID: "A.Broken", Name: "Broken Mod", Version: "1.0"})),
 		},
 		broken: map[string]string{"A.Broken": "broken"},
 	}

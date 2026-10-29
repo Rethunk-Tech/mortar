@@ -4,8 +4,9 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-smapiweb"
+
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
 func TestNexusUpdateFollowsSuggestedSite(t *testing.T) {
@@ -35,9 +36,9 @@ func TestUnbumpedManifestInsideNewerDownloadIsNotAnUpdate(t *testing.T) {
 	part.SourceVersion = "2.0.9"
 	older := inst("k2", "Other.Mod", "1.0.0", true)
 	older.SourceVersion = "1.0.0"
-	rm := fakeMeta{compat: map[string]meta.UpdateResult{
-		"Haru.DesertExpansion": {Known: true, Suggested: &meta.Update{Version: "2.0.9", URL: "https://www.nexusmods.com/stardewvalley/mods/31595"}},
-		"Other.Mod":            {Known: true, Suggested: &meta.Update{Version: "1.1.0", URL: "https://www.nexusmods.com/stardewvalley/mods/9"}},
+	rm := fakeMeta{compat: map[string]smapiweb.UpdateResult{
+		"Haru.DesertExpansion": {Known: true, Suggested: &smapiweb.Update{Version: "2.0.9", URL: "https://www.nexusmods.com/stardewvalley/mods/31595"}},
+		"Other.Mod":            {Known: true, Suggested: &smapiweb.Update{Version: "1.1.0", URL: "https://www.nexusmods.com/stardewvalley/mods/9"}},
 	}}
 	got := CheckUpdates(context.Background(), rm, testEnv, []framework.Mod{part, older}, false).Updates
 	if len(got) != 1 || got[0].ID != "smapi:Other.Mod" {

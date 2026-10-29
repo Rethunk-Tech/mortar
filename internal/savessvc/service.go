@@ -12,6 +12,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-smapiweb"
+
 	"github.com/Rethunk-Tech/mortar/internal/source/vsmoddb"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -224,9 +226,9 @@ func (s *Service) FarmTypes(ctx context.Context, game, profileID string) []probl
 
 // index is the mod dataset index a scan matches save keys against; empty for a game whose saves the dataset does not
 // cover, which then needs no network to list its saves.
-func (s *Service) index(ctx context.Context, gameID string) (map[string][]meta.Ref, error) {
+func (s *Service) index(ctx context.Context, gameID string) (map[string][]smapiweb.Ref, error) {
 	if info, ok := components.Game(gameID); !ok || !info.HasMetadata(metadata.StardewDataset) {
-		return map[string][]meta.Ref{}, nil
+		return map[string][]smapiweb.Ref{}, nil
 	}
 	return s.meta.Index(ctx)
 }
@@ -337,7 +339,7 @@ func (s *Service) describe(ctx context.Context, gameID string, ids map[mod.ID]bo
 					d.name = cmp.Or(page.Name, id.Local())
 					for _, f := range page.Downloads {
 						for _, m := range f.Mods {
-							if mod.Equal(m.ModID(), id) && m.Name != "" {
+							if mod.Equal(mod.SMAPI(m.UniqueID), id) && m.Name != "" {
 								d.name = m.Name
 							}
 						}

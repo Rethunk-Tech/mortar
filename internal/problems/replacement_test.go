@@ -4,15 +4,16 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-smapiweb"
+
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
 func TestReplacementFromSummaryNexusLink(t *testing.T) {
 	m := fakeMeta{
-		pages: map[int]meta.Page{
-			5098: {ID: 5098, Name: "New Mod", Downloads: []meta.File{
-				{ID: 1, Type: "MAIN", FileName: "new.zip", Mods: []meta.Mod{{UniqueID: "Author.NewMod", Version: "1.0"}}},
+		pages: map[int]smapiweb.Page{
+			5098: {ID: 5098, Name: "New Mod", Downloads: []smapiweb.File{
+				{ID: 1, Type: "MAIN", FileName: "new.zip", Mods: []smapiweb.Mod{{UniqueID: "Author.NewMod", Version: "1.0"}}},
 			}},
 		},
 	}
@@ -30,7 +31,7 @@ func TestReplacementFromSummaryGitHubLink(t *testing.T) {
 }
 
 func TestBrokenIncludesAbandoned(t *testing.T) {
-	m := fakeMeta{compat: map[string]meta.UpdateResult{
+	m := fakeMeta{compat: map[string]smapiweb.UpdateResult{
 		"A": {Compatibility: "Abandoned", CompatibilitySummary: "unmaintained"},
 	}}
 	got := Check(context.Background(), m, testEnv, []framework.Mod{inst("a", "A", "1", true)}, nil)

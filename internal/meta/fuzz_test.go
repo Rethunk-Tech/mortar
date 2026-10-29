@@ -3,8 +3,6 @@ package meta
 import (
 	"net/url"
 	"testing"
-
-	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // FuzzDecodeCollection feeds Nexus's answer for a collection revision: its mod list, curator instructions and the
@@ -28,38 +26,5 @@ func FuzzDecodeCollection(f *testing.F) {
 				t.Fatalf("kept resource link %q", e.URL)
 			}
 		}
-	})
-}
-
-func seedFile(f *testing.F, name string) {
-	f.Helper()
-	b, err := safefs.ReadFile("testdata/" + name)
-	if err != nil {
-		f.Fatal(err)
-	}
-	f.Add(b)
-}
-
-// FuzzUpdateAnswer feeds smapi.io's answer to an update check.
-func FuzzUpdateAnswer(f *testing.F) {
-	seedFile(f, "smapi-mods.json")
-	f.Add([]byte(`[null,{"id":3,"suggestedUpdate":{"version":[]}}]`))
-	f.Fuzz(func(_ *testing.T, raw []byte) { _, _ = decodeUpdateAnswers(raw) })
-}
-
-// FuzzCompatList feeds the SMAPI compatibility list.
-func FuzzCompatList(f *testing.F) {
-	f.Add([]byte(compatSample))
-	f.Add([]byte(`{"mods":[{"id":[1,"a, b"],"nexus":"x"}]}`))
-	f.Fuzz(func(_ *testing.T, raw []byte) { _, _ = parseCompatJSON(raw) })
-}
-
-// FuzzDataset feeds the StardewModDataset's index and a mod page.
-func FuzzDataset(f *testing.F) {
-	seedFile(f, "index.json")
-	seedFile(f, "nexus-1915.json")
-	f.Fuzz(func(_ *testing.T, raw []byte) {
-		_, _ = parseIndex(raw)
-		_, _ = parsePage(raw)
 	})
 }

@@ -6,6 +6,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-smapiweb"
+
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -13,29 +15,29 @@ import (
 )
 
 type fakeMeta struct {
-	refs       map[string][]meta.Ref
-	pages      map[int]meta.Page
-	compat     map[string]meta.UpdateResult
+	refs       map[string][]smapiweb.Ref
+	pages      map[int]smapiweb.Page
+	compat     map[string]smapiweb.UpdateResult
 	lookupErr  error
 	pageErr    error
 	updatesOff bool
 }
 
-func (f fakeMeta) Lookup(_ context.Context, id string) ([]meta.Ref, error) {
+func (f fakeMeta) Lookup(_ context.Context, id string) ([]smapiweb.Ref, error) {
 	return f.refs[id], f.lookupErr
 }
 
-func (f fakeMeta) Page(_ context.Context, id int) (meta.Page, error) {
+func (f fakeMeta) Page(_ context.Context, id int) (smapiweb.Page, error) {
 	if f.pageErr != nil {
-		return meta.Page{}, f.pageErr
+		return smapiweb.Page{}, f.pageErr
 	}
 	return f.pages[id], nil
 }
 
-func (f fakeMeta) CheckUpdates(_ context.Context, req meta.UpdateRequest) []meta.UpdateResult {
-	out := make([]meta.UpdateResult, len(req.Mods))
+func (f fakeMeta) CheckUpdates(_ context.Context, req meta.UpdateRequest) []smapiweb.UpdateResult {
+	out := make([]smapiweb.UpdateResult, len(req.Mods))
 	for i, m := range req.Mods {
-		out[i] = meta.UpdateResult{ID: m.ID}
+		out[i] = smapiweb.UpdateResult{ID: m.ID}
 		if r, ok := f.compat[m.ID]; ok && !f.updatesOff {
 			out[i] = r
 			out[i].ID = m.ID
@@ -104,21 +106,21 @@ func TestContentPackForIsRequired(t *testing.T) {
 	}
 }
 
-func file(id int64, typ, version string) meta.File {
-	return meta.File{ID: id, Type: typ, FileName: "B-" + version + ".zip", Version: version, Mods: []meta.Mod{{UniqueID: "B", Version: version}}}
+func file(id int64, typ, version string) smapiweb.File {
+	return smapiweb.File{ID: id, Type: typ, FileName: "B-" + version + ".zip", Version: version, Mods: []smapiweb.Mod{{UniqueID: "B", Version: version}}}
 }
 
 func TestWhere(t *testing.T) {
-	pages := map[int]meta.Page{
-		10: {ID: 10, Name: "Old host", PageURL: "https://n/10", Downloads: []meta.File{file(1, "MAIN", "1.0"), file(2, "OPTIONAL", "1.5")}},
-		20: {ID: 20, Name: "New host", PageURL: "https://n/20", Downloads: []meta.File{file(3, "MAIN", "2.0"), file(4, "MAIN", "2.5"), file(5, "MAIN", "1.0")}},
+	pages := map[int]smapiweb.Page{
+		10: {ID: 10, Name: "Old host", PageURL: "https://n/10", Downloads: []smapiweb.File{file(1, "MAIN", "1.0"), file(2, "OPTIONAL", "1.5")}},
+		20: {ID: 20, Name: "New host", PageURL: "https://n/20", Downloads: []smapiweb.File{file(3, "MAIN", "2.0"), file(4, "MAIN", "2.5"), file(5, "MAIN", "1.0")}},
 	}
 	dependent := func(keys ...string) []framework.Mod {
 		a := inst("a", "A", "1.0", true, req("B", "2.0"))
 		a.UpdateKeys = keys
 		return []framework.Mod{a}
 	}
-	both := []meta.Ref{{Site: "Nexus", ID: 10}, {Site: "Nexus", ID: 20}}
+	both := []smapiweb.Ref{{Site: "Nexus", ID: 10}, {Site: "Nexus", ID: 20}}
 	cases := []struct {
 		name    string
 		meta    fakeMeta
@@ -128,34 +130,34 @@ func TestWhere(t *testing.T) {
 	}{
 		{
 			"highest version page, newest satisfying main file",
-			fakeMeta{refs: map[string][]meta.Ref{"B": both}, pages: pages},
+			fakeMeta{refs: map[string][]smapiweb.Ref{"B": both}, pages: pages},
 			dependent(),
 			&Ref{Site: "Nexus", PageID: 20, PageName: "New host", URL: "https://n/20", FileID: 4, FileName: "B-2.5.zip", Version: "2.5"}, false,
 		},
 		{
 			"dependent's update key wins",
-			fakeMeta{refs: map[string][]meta.Ref{"B": both}, pages: pages},
+			fakeMeta{refs: map[string][]smapiweb.Ref{"B": both}, pages: pages},
 			dependent("Nexus:10@x"),
 			&Ref{Site: "Nexus", PageID: 10, PageName: "Old host", URL: "https://n/10"}, false,
 		},
 		{
 			"curseforge only",
-			fakeMeta{refs: map[string][]meta.Ref{"B": {{Site: "CurseForge", ID: 7}}}},
+			fakeMeta{refs: map[string][]smapiweb.Ref{"B": {{Site: "CurseForge", ID: 7}}}},
 			dependent(),
 			&Ref{Site: "CurseForge", PageID: 7, URL: "https://www.curseforge.com/projects/7"}, false,
 		},
 		{
 			"github repo from SMAPI's API, ahead of other sites",
-			fakeMeta{refs: map[string][]meta.Ref{"B": {{Site: "CurseForge", ID: 7}}}, compat: map[string]meta.UpdateResult{"B": {GitHubRepo: "me/b"}}},
+			fakeMeta{refs: map[string][]smapiweb.Ref{"B": {{Site: "CurseForge", ID: 7}}}, compat: map[string]smapiweb.UpdateResult{"B": {GitHubRepo: "me/b"}}},
 			dependent(),
 			&Ref{Site: "GitHub", GitHub: "me/b", URL: "https://github.com/me/b"}, false,
 		},
 		{"not in dataset", fakeMeta{}, dependent(), nil, false},
-		{"only on a site with no driver", fakeMeta{refs: map[string][]meta.Ref{"B": {{Site: "ModDrop", ID: 7}}}}, dependent(), nil, false},
+		{"only on a site with no driver", fakeMeta{refs: map[string][]smapiweb.Ref{"B": {{Site: "ModDrop", ID: 7}}}}, dependent(), nil, false},
 		{"dataset unreachable", fakeMeta{lookupErr: errors.New("offline")}, dependent(), nil, true},
 		{
 			"page fetch fails, link only",
-			fakeMeta{refs: map[string][]meta.Ref{"B": {{Site: "Nexus", ID: 20}}}, pageErr: errors.New("offline")},
+			fakeMeta{refs: map[string][]smapiweb.Ref{"B": {{Site: "Nexus", ID: 20}}}, pageErr: errors.New("offline")},
 			dependent(),
 			&Ref{Site: "Nexus", PageID: 20, URL: "https://www.nexusmods.com/stardewvalley/mods/20"}, true,
 		},
@@ -195,8 +197,8 @@ func TestNexusFilesInDuplicate(t *testing.T) {
 	a.SourceKind = "nexus"
 	b := inst("nexus-21788-175477", "SVE.WorldMap", "1.0", true)
 	b.SourceKind = "nexus"
-	got := Check(context.Background(), fakeMeta{pages: map[int]meta.Page{21788: {
-		Downloads: []meta.File{
+	got := Check(context.Background(), fakeMeta{pages: map[int]smapiweb.Page{21788: {
+		Downloads: []smapiweb.File{
 			{ID: 116403, Type: "MAIN", FileName: "WorldMap-1.0.zip", Version: "1.0"},
 			{ID: 175477, Type: "MAIN", Version: "2.0"},
 		},
@@ -216,8 +218,8 @@ func TestOptionalNexusFileDuplicateIsMarkedOptional(t *testing.T) {
 	a.SourceKind = "nexus"
 	b := inst("nexus-21788-175477", "SVE.WorldMap", "1.0", true)
 	b.SourceKind = "nexus"
-	got := Check(context.Background(), fakeMeta{pages: map[int]meta.Page{21788: {
-		Downloads: []meta.File{
+	got := Check(context.Background(), fakeMeta{pages: map[int]smapiweb.Page{21788: {
+		Downloads: []smapiweb.File{
 			{ID: 116403, Type: "MAIN", FileName: "WorldMap-1.0.zip", Version: "1.0"},
 			{ID: 175477, Type: "MISCELLANEOUS", FileName: "WorldMap-addon.zip", Version: "1.0"},
 		},
@@ -228,7 +230,7 @@ func TestOptionalNexusFileDuplicateIsMarkedOptional(t *testing.T) {
 }
 
 func TestBroken(t *testing.T) {
-	m := fakeMeta{compat: map[string]meta.UpdateResult{
+	m := fakeMeta{compat: map[string]smapiweb.UpdateResult{
 		"A": {Compatibility: "Broken", BrokeIn: "Stardew Valley 1.6"},
 		"B": {Compatibility: "Ok"},
 		"C": {Compatibility: "Obsolete"},

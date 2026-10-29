@@ -7,13 +7,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/go-smapiweb"
 )
 
 func TestDependencyNamesUseTheNexusPage(t *testing.T) {
 	m := fakeMeta{
-		refs:  map[string][]meta.Ref{"Pathoschild.ContentPatcher": {{Site: "GitHub", ID: 1}, {Site: "Nexus", ID: 1915}}},
-		pages: map[int]meta.Page{1915: {Name: "Content Patcher"}},
+		refs:  map[string][]smapiweb.Ref{"Pathoschild.ContentPatcher": {{Site: "GitHub", ID: 1}, {Site: "Nexus", ID: 1915}}},
+		pages: map[int]smapiweb.Page{1915: {Name: "Content Patcher"}},
 	}
 	got := DependencyNames(context.Background(), m, []string{"smapi:Pathoschild.ContentPatcher", "No.Such"})
 	if len(got) != 1 || got["smapi:Pathoschild.ContentPatcher"] != "Content Patcher" {
@@ -26,7 +26,7 @@ type slowMeta struct {
 	inFlight, peak atomic.Int32
 }
 
-func (s *slowMeta) Page(ctx context.Context, id int) (meta.Page, error) {
+func (s *slowMeta) Page(ctx context.Context, id int) (smapiweb.Page, error) {
 	n := s.inFlight.Add(1)
 	defer s.inFlight.Add(-1)
 	for p := s.peak.Load(); n > p && !s.peak.CompareAndSwap(p, n); p = s.peak.Load() {
@@ -37,13 +37,13 @@ func (s *slowMeta) Page(ctx context.Context, id int) (meta.Page, error) {
 
 func TestDependencyNamesLookUpInParallelWithinTheBound(t *testing.T) {
 	m := &slowMeta{}
-	m.refs, m.pages = map[string][]meta.Ref{}, map[int]meta.Page{}
+	m.refs, m.pages = map[string][]smapiweb.Ref{}, map[int]smapiweb.Page{}
 	var ids []string
 	for i := 1; i <= 24; i++ {
 		id := fmt.Sprintf("smapi:Mod.N%d", i)
 		ids = append(ids, id)
-		m.refs[fmt.Sprintf("Mod.N%d", i)] = []meta.Ref{{Site: "Nexus", ID: i}}
-		m.pages[i] = meta.Page{Name: fmt.Sprintf("Name %d", i)}
+		m.refs[fmt.Sprintf("Mod.N%d", i)] = []smapiweb.Ref{{Site: "Nexus", ID: i}}
+		m.pages[i] = smapiweb.Page{Name: fmt.Sprintf("Name %d", i)}
 	}
 	start := time.Now()
 	got := DependencyNames(context.Background(), m, ids)

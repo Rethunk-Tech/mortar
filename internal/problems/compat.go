@@ -4,6 +4,8 @@ import (
 	"context"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-smapiweb"
+
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
@@ -52,19 +54,19 @@ func (s *Service) withCompat(ctx context.Context, r Result, gameID string, mods 
 	return withSameJob(superseded(r, nexusDomain(gameID), mods), sameJob)
 }
 
-func (s *Service) compatIndex(ctx context.Context, gameID string) (meta.CompatIndex, bool) {
+func (s *Service) compatIndex(ctx context.Context, gameID string) (smapiweb.CompatIndex, bool) {
 	st := s.providers(gameID).Status
 	if st == nil {
-		return meta.CompatIndex{}, false
+		return smapiweb.CompatIndex{}, false
 	}
 	idx, err := st.CompatList(ctx)
 	if err != nil {
-		return meta.CompatIndex{}, false
+		return smapiweb.CompatIndex{}, false
 	}
 	return idx, true
 }
 
-func matchCompat(idx meta.CompatIndex, mods []framework.Mod, skipOK bool) []Compat {
+func matchCompat(idx smapiweb.CompatIndex, mods []framework.Mod, skipOK bool) []Compat {
 	out := []Compat{}
 	seen := map[string]bool{}
 	for _, m := range mods {
@@ -76,10 +78,10 @@ func matchCompat(idx meta.CompatIndex, mods []framework.Mod, skipOK bool) []Comp
 		if !ok {
 			continue
 		}
-		if skipOK && e.Status == meta.StatusOK {
+		if skipOK && e.Status == smapiweb.StatusOK {
 			continue
 		}
-		if e.Status == meta.StatusUnofficial && installedMeetsUnofficial(m.Version, e.UnofficialVersion) {
+		if e.Status == smapiweb.StatusUnofficial && installedMeetsUnofficial(m.Version, e.UnofficialVersion) {
 			continue
 		}
 		key := strings.ToLower(m.Key) + "\x00" + m.ModID().Fold()
@@ -144,7 +146,7 @@ type providerMeta struct {
 	asIs bool
 }
 
-func (m providerMeta) CheckUpdates(ctx context.Context, req meta.UpdateRequest) []meta.UpdateResult {
+func (m providerMeta) CheckUpdates(ctx context.Context, req meta.UpdateRequest) []smapiweb.UpdateResult {
 	switch {
 	case m.asIs:
 		return m.Meta.CheckUpdates(ctx, req)
@@ -154,7 +156,7 @@ func (m providerMeta) CheckUpdates(ctx context.Context, req meta.UpdateRequest) 
 	return m.p.Updates.CheckUpdates(ctx, req)
 }
 
-func (m providerMeta) Lookup(ctx context.Context, uniqueID string) ([]meta.Ref, error) {
+func (m providerMeta) Lookup(ctx context.Context, uniqueID string) ([]smapiweb.Ref, error) {
 	switch {
 	case m.asIs:
 		return m.Meta.Lookup(ctx, uniqueID)

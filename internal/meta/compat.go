@@ -1,93 +1,31 @@
 package meta
 
 import (
-	"bytes"
-	"cmp"
 	"context"
-	"encoding/json"
-	"net/http"
 	"os"
-	"strconv"
-	"strings"
 	"sync"
 	"time"
 
-	"github.com/Rethunk-Tech/go-lenientjson"
 	"github.com/Rethunk-Tech/go-safefs/diskcache"
-	"github.com/Rethunk-Tech/go-semverish"
+	"github.com/Rethunk-Tech/go-smapiweb"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 )
-
-// Wiki-backed compatibility list behind https://smapi.io/mods. SMAPI.Web (Pathoschild/SMAPI
-// src/SMAPI.Web) loads Pathoschild/SmapiCompatibilityList rather than scraping the HTML table.
-const defaultCompatURL = "https://raw.githubusercontent.com/Pathoschild/SmapiCompatibilityList/develop/data/mods.jsonc"
 
 const (
 	compatTTL       = 24 * time.Hour
 	CompatCacheFile = "smapi-compat.json"
-	maxCompat       = 16 << 20
 )
 
-// CompatEntry is one SMAPI compatibility-list row, keyed later by UniqueID and Nexus id.
-type CompatEntry struct {
-	Status        string `json:"status"`
-	Summary       string `json:"summary"`
-	BrokeIn       string `json:"brokeIn"`
-	UnofficialURL string `json:"unofficialUrl"`
-	// UnofficialVersion is the version of the unofficial update, so an install at or past it is not flagged.
-	UnofficialVersion string `json:"unofficialVersion"`
-	Replacement       string `json:"replacement"`
-}
-
-// CompatIndex maps UniqueID (lowercased) and Nexus page id onto the same entry.
-type CompatIndex struct {
-	ByID    map[string]CompatEntry
-	ByNexus map[int]CompatEntry
-	// NexusToID and GitHubToID (repo lowercased) name the UniqueID a Nexus page or GitHub repository publishes, which
-	// ties one mod's pages on different sites together.
-	NexusToID  map[int]string
-	GitHubToID map[string]string
-}
-
-func (idx CompatIndex) Lookup(uniqueID string, nexusID int) (CompatEntry, bool) {
-	if uniqueID != "" {
-		if e, ok := idx.ByID[strings.ToLower(uniqueID)]; ok {
-			return e, true
-		}
-	}
-	if nexusID > 0 {
-		if e, ok := idx.ByNexus[nexusID]; ok {
-			return e, true
-		}
-	}
-	return CompatEntry{}, false
-}
-
-// BrokenOn reports whether a broken entry applies to this Stardew Valley version. A mod that broke in a later game
-// version (a beta the player does not run) is not broken for them; a break by anything else (SMAPI, Harmony), or an
-// unknown version on either side, counts.
-func (e CompatEntry) BrokenOn(gameVersion string) bool {
-	if e.Status != StatusBroken {
-		return false
-	}
-	v, ok := strings.CutPrefix(e.BrokeIn, "Stardew Valley ")
-	if !ok || gameVersion == "" {
-		return true
-	}
-	c, ok := semverish.Compare(strings.TrimSuffix(strings.TrimSpace(v), "?"), gameVersion)
-	return !ok || c <= 0
-}
-
-// CompatList fetches the SMAPI compatibility JSON (cached a day).
 // compatMemo keeps the parsed cache file, so asking again does not re-parse megabytes of JSON while the file on
 // disk is unchanged.
 type compatMemo struct {
 	mu    sync.Mutex
 	stamp os.FileInfo
-	index CompatIndex
+	index smapiweb.CompatIndex
 }
 
-func (c *Client) CompatList(ctx context.Context) (CompatIndex, error) {
+// CompatList returns the SMAPI compatibility list, cached a day.
+func (c *Client) CompatList(ctx context.Context) (smapiweb.CompatIndex, error) {
 	path := c.Cache().Path(CompatCacheFile)
 	stamp := func() os.FileInfo {
 		if path == "" {
@@ -107,8 +45,8 @@ func (c *Client) CompatList(ctx context.Context) (CompatIndex, error) {
 			return index, nil
 		}
 	}
-	index, err := diskcache.CachedStamped(c.Cache(), CompatCacheFile, appversion.Build(), compatTTL, func() (CompatIndex, error) {
-		return c.fetchCompat(ctx)
+	index, err := diskcache.CachedStamped(c.Cache(), CompatCacheFile, appversion.Build(), compatTTL, func() (smapiweb.CompatIndex, error) {
+		return c.web().CompatList(ctx)
 	})
 	if err == nil {
 		c.compat.mu.Lock()
@@ -116,286 +54,4 @@ func (c *Client) CompatList(ctx context.Context) (CompatIndex, error) {
 		c.compat.mu.Unlock()
 	}
 	return index, err
-}
-
-func (c *Client) fetchCompat(ctx context.Context) (CompatIndex, error) {
-	u := cmp.Or(c.CompatURL, defaultCompatURL)
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
-	if err != nil {
-		return CompatIndex{}, err
-	}
-	b, err := c.do(req, maxCompat)
-	if err != nil {
-		return CompatIndex{}, err
-	}
-	return parseCompatJSON(b)
-}
-
-type rawCompatMod struct {
-	ID               json.RawMessage `json:"id"`
-	IDs              json.RawMessage `json:"ids"`
-	GitHub           string          `json:"github"`
-	Nexus            flexInt         `json:"nexus"`
-	NexusID          flexInt         `json:"nexusID"`
-	Compatibility    json.RawMessage `json:"compatibility"`
-	UnofficialUpdate json.RawMessage `json:"unofficialUpdate"`
-	Status           string          `json:"status"`
-	Summary          string          `json:"summary"`
-	BrokeIn          string          `json:"brokeIn"`
-	UnofficialURL    string          `json:"unofficialUrl"`
-	Replacement      json.RawMessage `json:"replacement"`
-	Successor        json.RawMessage `json:"successor"`
-}
-
-type rawCompatBody struct {
-	Status        string          `json:"status"`
-	Summary       string          `json:"summary"`
-	BrokeIn       string          `json:"brokeIn"`
-	UnofficialURL string          `json:"unofficialUrl"`
-	Replacement   json.RawMessage `json:"replacement"`
-}
-
-type flexInt int
-
-func (n *flexInt) UnmarshalJSON(b []byte) error {
-	var i int
-	if json.Unmarshal(b, &i) == nil {
-		*n = flexInt(i)
-		return nil
-	}
-	var s string
-	if json.Unmarshal(b, &s) == nil {
-		i, err := strconv.Atoi(strings.TrimSpace(s))
-		if err == nil {
-			*n = flexInt(i)
-		}
-	}
-	return nil
-}
-
-func parseCompatJSON(b []byte) (CompatIndex, error) {
-	b = lenientjson.Clean(b)
-	mods, err := decodeCompatMods(b)
-	if err != nil {
-		return CompatIndex{}, err
-	}
-	idx := CompatIndex{
-		ByID:    make(map[string]CompatEntry, len(mods)),
-		ByNexus: make(map[int]CompatEntry, len(mods)),
-
-		NexusToID:  map[int]string{},
-		GitHubToID: map[string]string{},
-	}
-	for _, raw := range mods {
-		ids := uniqueIDsOf(raw)
-		nexus := int(raw.NexusID)
-		nexus = cmp.Or(nexus, int(raw.Nexus))
-		// A page that publishes several mods names no single identity.
-		if len(ids) == 1 {
-			if nexus > 0 {
-				tie(idx.NexusToID, nexus, ids[0])
-			}
-			if repo := strings.ToLower(strings.TrimSpace(raw.GitHub)); repo != "" {
-				tie(idx.GitHubToID, repo, ids[0])
-			}
-		}
-		e := entryFromRaw(raw)
-		if e.Status == "" {
-			continue
-		}
-		for _, id := range ids {
-			idx.ByID[strings.ToLower(id)] = e
-		}
-		if nexus > 0 {
-			idx.ByNexus[nexus] = e
-		}
-	}
-	dropAmbiguous(idx.NexusToID)
-	dropAmbiguous(idx.GitHubToID)
-	return idx, nil
-}
-
-// tie records that ref publishes id; a ref that publishes two ids (a repository of many mods) is marked ambiguous.
-func tie[K comparable](m map[K]string, ref K, id string) {
-	if prev, ok := m[ref]; ok && !strings.EqualFold(prev, id) {
-		id = ""
-	}
-	m[ref] = id
-}
-
-func dropAmbiguous[K comparable](m map[K]string) {
-	for k, v := range m {
-		if v == "" {
-			delete(m, k)
-		}
-	}
-}
-
-func decodeCompatMods(b []byte) ([]rawCompatMod, error) {
-	var mods []rawCompatMod
-	if json.Unmarshal(b, &mods) == nil && (len(mods) > 0 || bytes.Equal(bytes.TrimSpace(b), []byte("[]"))) {
-		return mods, nil
-	}
-	var wrap struct {
-		Mods []rawCompatMod `json:"mods"`
-		Data []rawCompatMod `json:"data"`
-	}
-	if err := json.Unmarshal(b, &wrap); err != nil {
-		return nil, err
-	}
-	if len(wrap.Mods) > 0 {
-		return wrap.Mods, nil
-	}
-	return wrap.Data, nil
-}
-
-func entryFromRaw(raw rawCompatMod) CompatEntry {
-	e := CompatEntry{
-		Status:        normalizeCompatStatus(raw.Status),
-		Summary:       strings.TrimSpace(raw.Summary),
-		BrokeIn:       strings.TrimSpace(raw.BrokeIn),
-		UnofficialURL: strings.TrimSpace(raw.UnofficialURL),
-		Replacement:   replacementOf(raw.Replacement),
-	}
-	if len(raw.Compatibility) > 0 {
-		var nested rawCompatBody
-		if json.Unmarshal(raw.Compatibility, &nested) == nil && (nested.Status != "" || nested.Summary != "") {
-			if s := normalizeCompatStatus(nested.Status); s != "" {
-				e.Status = s
-			}
-			if nested.Summary != "" {
-				e.Summary = strings.TrimSpace(nested.Summary)
-			}
-			if nested.BrokeIn != "" {
-				e.BrokeIn = strings.TrimSpace(nested.BrokeIn)
-			}
-			if nested.UnofficialURL != "" {
-				e.UnofficialURL = strings.TrimSpace(nested.UnofficialURL)
-			}
-			if r := replacementOf(nested.Replacement); r != "" {
-				e.Replacement = r
-			}
-		} else {
-			var status string
-			if json.Unmarshal(raw.Compatibility, &status) == nil {
-				if s := normalizeCompatStatus(status); s != "" {
-					e.Status = s
-				}
-			}
-		}
-	}
-	if len(raw.UnofficialUpdate) > 0 {
-		var u struct {
-			URL     string `json:"url"`
-			Version string `json:"version"`
-		}
-		if json.Unmarshal(raw.UnofficialUpdate, &u) == nil {
-			e.UnofficialURL = cmp.Or(e.UnofficialURL, strings.TrimSpace(u.URL))
-			e.UnofficialVersion = strings.TrimSpace(u.Version)
-		}
-	}
-	if e.Replacement == "" {
-		e.Replacement = replacementOf(raw.Successor)
-	}
-	// The list's schema leaves status out when it follows from the other fields.
-	if e.Status == "" {
-		switch {
-		case e.UnofficialURL != "":
-			e.Status = StatusUnofficial
-		case e.BrokeIn != "":
-			e.Status = StatusBroken
-		default:
-			e.Status = StatusOK
-		}
-	}
-	return e
-}
-
-const (
-	StatusOK         = "ok"
-	StatusOptional   = "optional"
-	StatusUnofficial = "unofficial"
-	StatusBroken     = "broken"
-	StatusObsolete   = "obsolete"
-	StatusAbandoned  = "abandoned"
-)
-
-func normalizeCompatStatus(s string) string {
-	switch strings.ToLower(strings.TrimSpace(s)) {
-	case "ok", "compatible":
-		return StatusOK
-	case "optional":
-		return StatusOptional
-	case "workaround":
-		// Not compatible; the summary names the alternative.
-		return StatusBroken
-	case "unofficial":
-		return StatusUnofficial
-	case "broken":
-		return StatusBroken
-	case "obsolete":
-		return StatusObsolete
-	case "abandoned":
-		return StatusAbandoned
-	default:
-		return ""
-	}
-}
-
-func uniqueIDsOf(raw rawCompatMod) []string {
-	ids := append(stringIDs(raw.ID), stringIDs(raw.IDs)...)
-	out := ids[:0]
-	seen := map[string]bool{}
-	for _, id := range ids {
-		id = strings.TrimSpace(id)
-		if id == "" || seen[strings.ToLower(id)] {
-			continue
-		}
-		seen[strings.ToLower(id)] = true
-		out = append(out, id)
-	}
-	return out
-}
-
-func stringIDs(raw json.RawMessage) []string {
-	if len(raw) == 0 {
-		return nil
-	}
-	var one string
-	if json.Unmarshal(raw, &one) == nil {
-		// The list writes a mod's former ids after its current one in one string, comma-separated.
-		return strings.Split(one, ",")
-	}
-	var many []string
-	if json.Unmarshal(raw, &many) == nil {
-		return many
-	}
-	return nil
-}
-
-func replacementOf(raw json.RawMessage) string {
-	if len(raw) == 0 {
-		return ""
-	}
-	var s string
-	if json.Unmarshal(raw, &s) == nil {
-		return strings.TrimSpace(s)
-	}
-	var obj struct {
-		Name string `json:"name"`
-		ID   string `json:"id"`
-		URL  string `json:"url"`
-	}
-	if json.Unmarshal(raw, &obj) == nil {
-		for _, v := range []string{obj.Name, obj.ID, obj.URL} {
-			if strings.TrimSpace(v) != "" {
-				return strings.TrimSpace(v)
-			}
-		}
-	}
-	var many []string
-	if json.Unmarshal(raw, &many) == nil && len(many) > 0 {
-		return strings.TrimSpace(many[0])
-	}
-	return ""
 }

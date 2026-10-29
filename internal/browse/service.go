@@ -5,8 +5,9 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-smapiweb"
+
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
@@ -26,7 +27,7 @@ type Service struct {
 	// Installed reads the manifests of a profile's mods, whose update keys name the pages they came from; nil skips them.
 	Installed func(game, profileID string) ([]profile.Installed, error)
 	// Compat returns the game's compatibility list lookup, or nil when the game has none.
-	Compat func(game string) func(ctx context.Context) (meta.CompatIndex, error)
+	Compat func(game string) func(ctx context.Context) (smapiweb.CompatIndex, error)
 }
 
 // HasCompat reports whether the game has a compatibility list or a known-broken list, so its mods can be marked
