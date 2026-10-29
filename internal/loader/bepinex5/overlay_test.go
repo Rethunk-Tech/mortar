@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -26,7 +27,7 @@ func TestArmOverlayWritesAndClearsTheBridgeConfig(t *testing.T) {
 	if err := json.Unmarshal(raw, &cfg); err != nil || cfg["OverlayEnabled"] != true || cfg["OverlayPort"] != float64(8123) || cfg["OverlayToken"] != "tok" {
 		t.Fatalf("config %s (%v)", raw, err)
 	}
-	if info, err := os.Stat(path); err != nil || info.Mode().Perm() != 0o600 {
+	if info, err := os.Stat(path); err != nil || (info.Mode().Perm() != 0o600 && runtime.GOOS != "windows") {
 		t.Fatalf("mode %v %v", info, err)
 	}
 	if err := l.ArmOverlay(dir, false, 8123, "tok"); err != nil {

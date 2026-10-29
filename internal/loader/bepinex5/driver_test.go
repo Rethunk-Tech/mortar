@@ -8,6 +8,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
 	"testing"
@@ -21,6 +22,10 @@ import (
 )
 
 func TestLoaderContract(t *testing.T) {
+	zDrive := `Z:\`
+	if runtime.GOOS == "windows" {
+		zDrive = "Z:" // a Windows host path already carries its own drive letter
+	}
 	ctx := t.Context()
 	l, ok := loader.Get("bepinex5")
 	if !ok {
@@ -47,7 +52,7 @@ func TestLoaderContract(t *testing.T) {
 	if err := l.Contribute(ctx, plan, view); err != nil {
 		t.Fatal(err)
 	}
-	if got := strings.Join(plan.Args, " "); !strings.HasPrefix(got, `--doorstop-enabled true --doorstop-target-assembly Z:\`) {
+	if got := strings.Join(plan.Args, " "); !strings.HasPrefix(got, "--doorstop-enabled true --doorstop-target-assembly "+zDrive) {
 		t.Fatalf("args %q", got)
 	}
 	if len(plan.Files) != 2 || plan.Files[0].Dst != "doorstop_config.ini" || len(plan.RuntimeReqs) != 1 {
@@ -126,7 +131,7 @@ func TestANativeLinuxBuildStartsDirectlyWithDoorstopPreloaded(t *testing.T) {
 		t.Fatal(err)
 	}
 	target := filepath.Join(profile, "BepInEx", "core", "BepInEx.Preloader.dll")
-	if plan.Exe != "/games/Valheim/valheim.x86_64" || len(plan.Files) != 0 || len(plan.RuntimeReqs) != 0 {
+	if plan.Exe != filepath.Join("/games/Valheim", "valheim.x86_64") || len(plan.Files) != 0 || len(plan.RuntimeReqs) != 0 {
 		t.Fatalf("plan %+v", plan)
 	}
 	for k, want := range map[string]string{"LD_PRELOAD": lib, "DOORSTOP_ENABLED": "1", "DOORSTOP_TARGET_ASSEMBLY": target, "SteamAppId": "892970"} {

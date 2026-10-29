@@ -72,7 +72,7 @@ func TestBuildCopyRootKeepsTheCopysOwnConfig(t *testing.T) {
 }
 
 func TestForCopyRootsTheCopyAndOwnsIt(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	testfs.DataHome(t)
 	profiles := t.TempDir()
 	mine, other := filepath.Join(profiles, "mine"), filepath.Join(profiles, "other")
 	for _, p := range []string{mine, other} {

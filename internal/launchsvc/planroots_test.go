@@ -48,6 +48,10 @@ func TestPlanRootsResolvesEachRoleOnceAndRefusesAnUnknownOne(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Steam is found by registry on Windows, so the library is named as a folder the player added.
+	if _, err := set.Update(func(v *settings.Settings) { v.LauncherRoots = map[string][]string{game.LauncherSteam: {steamRoot}} }); err != nil {
+		t.Fatal(err)
+	}
 	_, _, all, err := game.Resolve(home, set.Get(), "roots-game")
 	if err != nil || len(all) != 1 {
 		t.Fatalf("install = %v, %v", all, err)

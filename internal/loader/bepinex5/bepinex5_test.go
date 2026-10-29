@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -243,8 +244,8 @@ func TestPacksWithTheirOwnRuntimeFolders(t *testing.T) {
 }
 
 func TestLaunchArgs(t *testing.T) {
-	root := "/home/u/mortar/profile one"
-	pre := "/home/u/mortar/profile one/BepInEx/core/BepInEx.Preloader.dll"
+	root := filepath.Join(t.TempDir(), "profile one")
+	pre := filepath.Join(root, "BepInEx", "core", "BepInEx.Preloader.dll")
 	cases := []struct {
 		major  int
 		proton bool
@@ -252,7 +253,13 @@ func TestLaunchArgs(t *testing.T) {
 	}{
 		{3, false, "--doorstop-enable true --doorstop-target " + pre},
 		{4, false, "--doorstop-enabled true --doorstop-target-assembly " + pre},
-		{4, true, `--doorstop-enabled true --doorstop-target-assembly Z:\home\u\mortar\profile one\BepInEx\core\BepInEx.Preloader.dll`},
+	}
+	if runtime.GOOS != "windows" { // the Wine Z: drive maps the host's root, which only a Unix host has
+		cases = append(cases, struct {
+			major  int
+			proton bool
+			want   string
+		}{4, true, "--doorstop-enabled true --doorstop-target-assembly Z:" + strings.ReplaceAll(pre, "/", `\`)})
 	}
 	for _, c := range cases {
 		if got := strings.Join(LaunchArgs(root, c.major, c.proton), " "); got != c.want {
