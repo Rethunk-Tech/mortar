@@ -39,7 +39,7 @@ func validChangedLocation(game, p string) bool {
 		return false
 	}
 	for seg := range strings.SplitSeq(p, "/") {
-		if len(seg) > 2*maxSegment || unsafeName.MatchString(seg) || reserved.MatchString(seg) || strings.HasSuffix(seg, ".") || strings.HasSuffix(seg, " ") {
+		if len(seg) > 2*maxSegment || unsafeName.MatchString(seg) || strings.HasSuffix(seg, ".") || strings.HasSuffix(seg, " ") {
 			return false
 		}
 	}

@@ -45,7 +45,6 @@ var (
 	uniqueID = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]*$`)
 	format   = regexp.MustCompile(`^[a-z][a-z0-9]*$`)
 	segment  = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9 ._()+~-]*$`)
-	reserved = regexp.MustCompile(`(?i)^(con|prn|aux|nul|com[0-9]|lpt[0-9])(\..*)?$`)
 )
 
 // ErrBadFile means a .mortar file is not a valid share; the message names the offending entry.
@@ -90,7 +89,7 @@ type fileDoc struct {
 
 func validSegment(s string) bool {
 	return len(s) <= maxSegment && segment.MatchString(s) && !strings.HasSuffix(s, ".") &&
-		!strings.HasSuffix(s, " ") && !reserved.MatchString(s)
+		!strings.HasSuffix(s, " ")
 }
 
 // ValidFomod reports whether recorded FOMOD choices are within the bounds a share link enforces.
@@ -126,7 +125,7 @@ func validConfigShape(p string) bool {
 // validID accepts ids whose format and local part are safe to use as zip path segments.
 func validID(id mod.ID) bool {
 	local := id.Local()
-	return format.MatchString(id.Format()) && len(local) <= maxIDLen && uniqueID.MatchString(local) && !reserved.MatchString(local)
+	return format.MatchString(id.Format()) && len(local) <= maxIDLen && uniqueID.MatchString(local) && winname.Valid(local)
 }
 
 // Write writes the profile as a .mortar zip: profile.json with the link's entries plus name and notes,

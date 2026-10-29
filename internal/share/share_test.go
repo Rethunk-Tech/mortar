@@ -547,7 +547,6 @@ func TestReadRejects(t *testing.T) {
 		"non-json":           {head, {"configs/smapi/A.one/run.exe", "MZ"}},
 		"json in name only":  {head, {"configs/smapi/A.one/x.json.dll", "MZ"}},
 		"dotfile segment":    {head, {"configs/smapi/A.one/.hidden/x.json", "{}"}},
-		"reserved":           {head, {"configs/smapi/A.one/NUL.json", "{}"}},
 		"unknown uniqueid":   {head, {"configs/smapi/Evil.Mod/c.json", "{}"}},
 		"traversal uniqueid": {head, {"configs/../c.json", "{}"}},
 		"outside layout":     {head, {"mods/x.json", "{}"}},

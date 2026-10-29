@@ -40,6 +40,8 @@ func TestReadSkipsWindowsRefusedNames(t *testing.T) {
 	pv, err := Read(zipOf(t, head,
 		[2]string{"changed/Mods/x/CONIN$.ini", "x"},
 		[2]string{"configs/smapi/A.one/con .json", "{}"},
+		[2]string{"configs/smapi/A.one/NUL.json", "{}"},
+		[2]string{"changed/Mods/CON", "x"},
 		[2]string{"configs/smapi/A.one/ok.json", "{}"},
 	))
 	if err != nil {
