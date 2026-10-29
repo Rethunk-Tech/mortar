@@ -80,12 +80,14 @@ func flatpakEnv(t *testing.T, portal func() ([]byte, error)) (dir string) {
 		portalSecret, storeDir = prevPortal, prevDir
 		keyringGet, keyringSet, keyringDelete = prevGet, prevSet, prevDel
 		keyDone, hostDone = false, false
+		hostChecked = map[string]bool{}
 	})
 	return dir
 }
 
 // setHostRing stubs the host Secret Service with ring, or as unreachable when ring is nil, and re-probes it.
 func setHostRing(ring map[string]string) {
+	hostChecked = map[string]bool{}
 	hostDone = false
 	keyDone = false
 	if ring == nil {
@@ -367,6 +369,7 @@ func TestPlaintextDoesNotWaitOnTheStore(t *testing.T) {
 
 // setHostRingBySvc stubs the host Secret Service keyed by service and name.
 func setHostRingBySvc(ring map[[2]string]string) {
+	hostChecked = map[string]bool{}
 	hostDone, keyDone = false, false
 	keyringGet = func(svc, name string) (string, error) {
 		if v, ok := ring[[2]string{svc, name}]; ok {
@@ -466,6 +469,7 @@ func TestHostItemsAdoptedWhenPortalAppears(t *testing.T) {
 			t.Fatalf("legacy=%v: sealed copy missing: %q, %v", legacy, v, err)
 		}
 		ring[host] = "tok"
+		hostChecked = map[string]bool{}
 		if err := DeleteIn("thunderstore", "team"); err != nil || len(ring) != 0 {
 			t.Fatalf("legacy=%v: delete left %v, %v", legacy, ring, err)
 		}
@@ -485,4 +489,67 @@ func TestPlainMigrationUsesSharedNaming(t *testing.T) {
 	if ring[[2]string{"thunderstore", "team.x"}] != "t" || ring[[2]string{"mortar", "nexus"}] != "k" || len(ring) != 2 {
 		t.Fatalf("ring %v", ring)
 	}
+}
+
+func TestSealedHostLookupOncePerRun(t *testing.T) {
+	// The probe in location() must see a Secret Service, so only the item lookups are locked.
+	setup := func(t *testing.T, ring map[string]string, locked bool) (reads *int) {
+		flatpakEnv(t, fixedPortal("master"))
+		setHostRing(ring)
+		n := 0
+		get, del := keyringGet, keyringDelete
+		keyringGet = func(svc, name string) (string, error) {
+			if name == hostProbeName {
+				return get(svc, name)
+			}
+			n++
+			if locked {
+				return "", errors.New("failed to unlock correct collection '/x'")
+			}
+			return get(svc, name)
+		}
+		keyringDelete = func(svc, name string) error {
+			if locked {
+				return errors.New("failed to unlock correct collection '/x'")
+			}
+			return del(svc, name)
+		}
+		return &n
+	}
+
+	t.Run("locked host is not-found and read once", func(t *testing.T) {
+		reads := setup(t, map[string]string{"k": "v"}, true)
+		for range 2 {
+			if _, err := Get("k"); !errors.Is(err, ErrNotFound) {
+				t.Fatalf("got %v", err)
+			}
+		}
+		if *reads != 1 {
+			t.Fatalf("host read %d times", *reads)
+		}
+	})
+
+	t.Run("unlocked host is adopted", func(t *testing.T) {
+		ring := map[string]string{"k": "v"}
+		setup(t, ring, false)
+		if v, err := Get("k"); err != nil || v != "v" {
+			t.Fatalf("got %q, %v", v, err)
+		}
+		if _, ok := ring["k"]; ok {
+			t.Fatal("host copy not removed")
+		}
+		if v, err := Get("k"); err != nil || v != "v" {
+			t.Fatalf("sealed copy lost: %q, %v", v, err)
+		}
+	})
+
+	t.Run("delete with a locked host succeeds", func(t *testing.T) {
+		setup(t, map[string]string{}, true)
+		if err := Set("k", "v"); err != nil {
+			t.Fatal(err)
+		}
+		if err := Delete("k"); err != nil {
+			t.Fatal(err)
+		}
+	})
 }

@@ -414,13 +414,44 @@ func hostItems(svc, name string) [][2]string {
 	return items
 }
 
-// adoptHost moves a secret stored in the host keyring, while the portal was missing, into the sealed file. A host
-// with no Secret Service is a plain miss.
+// hostChecked holds the items already looked up in the host keyring this run: a locked host keyring raises an unlock
+// prompt on every lookup, so each item is asked about once and a later run tries again.
+var (
+	hostCheckedMu sync.Mutex
+	hostChecked   = map[string]bool{}
+)
+
+// firstHostCheck reports whether this is the run's first host lookup of the item, and marks it checked.
+func firstHostCheck(svc, name string) bool {
+	hostCheckedMu.Lock()
+	defer hostCheckedMu.Unlock()
+	k := svc + "\x00" + name
+	if hostChecked[k] {
+		return false
+	}
+	hostChecked[k] = true
+	return true
+}
+
+// hostAbsent reports a host keyring that cannot answer (no Secret Service, or a locked collection or dismissed
+// prompt), which counts as the item not being there.
+func hostAbsent(err error) bool {
+	return noKeyringService(err) || strings.Contains(err.Error(), unlockFailed)
+}
+
+// adoptHost moves a secret stored in the host keyring, while the portal was missing, into the sealed file. It looks
+// once per item per run; a host that cannot answer is a plain miss.
 func adoptHost(svc, name string) (string, error) {
+	if !firstHostCheck(svc, name) {
+		return "", ErrNotFound
+	}
 	for _, it := range hostItems(svc, name) {
 		v, err := keyringGet(it[0], it[1])
-		if errors.Is(err, ErrNotFound) || err != nil && noKeyringService(err) {
+		if errors.Is(err, ErrNotFound) {
 			continue
+		}
+		if err != nil && hostAbsent(err) {
+			break
 		}
 		if err != nil {
 			return "", explain(err)
@@ -428,17 +459,29 @@ func adoptHost(svc, name string) (string, error) {
 		if err := update(func(m map[string]string) bool { m[flatpakName(svc, name)] = v; return true }); err != nil {
 			return "", err
 		}
-		return v, dropHost(svc, name)
+		return v, purgeHost(svc, name)
 	}
 	return "", ErrNotFound
 }
 
-// dropHost removes any host-keyring copy of a secret that lives in the sealed file.
+// dropHost removes any host-keyring copy of a secret that lives in the sealed file, once per item per run.
 func dropHost(svc, name string) error {
+	if !firstHostCheck(svc, name) {
+		return nil
+	}
+	return purgeHost(svc, name)
+}
+
+func purgeHost(svc, name string) error {
 	for _, it := range hostItems(svc, name) {
-		if err := keyringDelete(it[0], it[1]); err != nil && !errors.Is(err, ErrNotFound) && !noKeyringService(err) {
-			return explain(err)
+		err := keyringDelete(it[0], it[1])
+		if err == nil || errors.Is(err, ErrNotFound) {
+			continue
 		}
+		if hostAbsent(err) {
+			return nil
+		}
+		return explain(err)
 	}
 	return nil
 }
