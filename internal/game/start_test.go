@@ -263,13 +263,21 @@ func TestStart(t *testing.T) {
 	env := StartEnv{Steam: &steam.Steam{Root: t.TempDir()}, LogFile: logFile}
 	inst := Install{Game: "stardew", Dir: dir}
 	ctx := t.Context()
-	if err := st.Start(ctx, inst, smapiPlan("linux", dir, mods), env, func(l []string) { lines = append(lines, l...) }); err != nil {
+	if err := st.Start(ctx, inst, smapiPlan(runtime.GOOS, dir, mods), env, func(l []string) { lines = append(lines, l...) }); err != nil {
 		t.Fatal(err)
 	}
-	if ran[0] != "/usr/bin/steam" || len(lines) != 1 {
+	// A Windows build starts the loader itself; Steam relays it elsewhere.
+	launcher := "/usr/bin/steam"
+	if runtime.GOOS == "windows" {
+		launcher = filepath.Join(dir, "StardewModdingAPI.exe")
+	}
+	if ran[0] != launcher || len(lines) != 1 {
 		t.Fatalf("ran %v, lines %q", ran, lines)
 	}
 
+	if runtime.GOOS == "windows" {
+		return // the stale-log failure names Steam, which a direct Windows start does not use
+	}
 	old := time.Now().Add(-time.Hour)
 	if err := os.Chtimes(logFile, old, old); err != nil {
 		t.Fatal(err)

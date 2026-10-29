@@ -54,7 +54,7 @@ func home(t *testing.T) string {
 	must(os.MkdirAll(filepath.Join(root, "steamapps", "common", "Stardew Valley"), 0o700))
 	must(os.MkdirAll(filepath.Join(root, "appcache", "librarycache", "413150"), 0o700))
 	must(os.WriteFile(filepath.Join(root, "steamapps", "libraryfolders.vdf"),
-		[]byte("\"libraryfolders\"\n{\n\"0\"\n{\n\"path\" \""+root+"\"\n}\n}\n"), 0o600))
+		[]byte("\"libraryfolders\"\n{\n\"0\"\n{\n\"path\" \""+strings.ReplaceAll(root, `\`, `\\`)+"\"\n}\n}\n"), 0o600))
 	must(os.WriteFile(filepath.Join(root, "steamapps", "appmanifest_413150.acf"),
 		[]byte("\"AppState\"\n{\n\"installdir\" \"Stardew Valley\"\n}\n"), 0o600))
 	must(os.WriteFile(filepath.Join(root, "appcache", "librarycache", "413150", "library_hero.jpg"), testJPEG(t, 640, 200), 0o600))

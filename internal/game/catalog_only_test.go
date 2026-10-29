@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -61,7 +62,7 @@ func TestACatalogOnlyGameNeedsNoCode(t *testing.T) {
 	dir := filepath.Join(root, "steamapps", "common", "Catalog Only")
 	for path, body := range map[string]string{
 		filepath.Join(dir, "Catalog Only.exe"):                     "",
-		filepath.Join(root, "steamapps", "libraryfolders.vdf"):     "\"libraryfolders\"\n{\n\"0\"\n{\n\"path\" \"" + root + "\"\n}\n}\n",
+		filepath.Join(root, "steamapps", "libraryfolders.vdf"):     "\"libraryfolders\"\n{\n\"0\"\n{\n\"path\" \"" + strings.ReplaceAll(root, `\`, `\\`) + "\"\n}\n}\n",
 		filepath.Join(root, "steamapps", "appmanifest_999999.acf"): "\"AppState\"\n{\n\"installdir\" \"Catalog Only\"\n}\n",
 	} {
 		testfs.WriteAt(t, path, []byte(body))
