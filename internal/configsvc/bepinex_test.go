@@ -228,3 +228,26 @@ func TestRefusedValueIsInvalidAndNamesItsProblem(t *testing.T) {
 		t.Errorf("range bounds: %+v", detail)
 	}
 }
+
+func TestDecimalAndColorAreCheckedTheWayBepInExParsesThem(t *testing.T) {
+	d := parseCfg("[A]\n# Setting type: Decimal\nD = 1\n# Setting type: Color\nC = FF0000FF\n")
+	const top = "79228162514264337593543950335"
+	if out, err := d.set("A", "D", top); err != nil || !strings.Contains(out, "D = "+top+"\n") {
+		t.Errorf("decimal max: %q %v", out, err)
+	}
+	for _, v := range []string{"79228162514264337593543950336", "-79228162514264337593543950336", "1e30"} {
+		if _, err := d.set("A", "D", v); err == nil {
+			t.Errorf("decimal %s accepted", v)
+		}
+	}
+	for _, v := range []string{"FF8800", "#ff880080", "f80"} {
+		if _, err := d.set("A", "C", v); err != nil {
+			t.Errorf("color %s: %v", v, err)
+		}
+	}
+	for _, v := range []string{"zzz", "FF880", "FF88000", ""} {
+		if _, err := d.set("A", "C", v); err == nil {
+			t.Errorf("color %q accepted", v)
+		}
+	}
+}

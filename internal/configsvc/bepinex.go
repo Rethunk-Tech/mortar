@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"math/big"
 	"path/filepath"
 	"regexp"
 	"slices"
@@ -76,6 +77,15 @@ var netLimits = map[string][2]float64{
 	"Int32": {math.MinInt32, math.MaxInt32}, "UInt32": {0, math.MaxUint32}, "UInt64": {0, math.MaxUint64},
 	"Single": {-math.MaxFloat32, math.MaxFloat32},
 }
+
+// decimalMax is .NET's decimal.MaxValue, which a float64 cannot hold exactly; decimalBound is it for the refusal's detail.
+var (
+	decimalMax, _ = new(big.Rat).SetString("79228162514264337593543950335")
+	decimalBound  = [2]float64{-79228162514264337593543950335, 79228162514264337593543950335}
+)
+
+// hexColor is what Unity's ColorUtility.TryParseHtmlString reads after BepInEx adds the "#": RGB, RGBA, RRGGBB or RRGGBBAA.
+var hexColor = regexp.MustCompile(`^#?([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$`)
 
 var (
 	unsignedTypes = []string{"Byte", "UInt16", "UInt32", "UInt64"}
@@ -212,6 +222,10 @@ func validate(e cfgEntry, value string) (string, error) {
 			}
 		}
 		return text, inRange(e.Entry, n)
+	case TypeColor:
+		if !hexColor.MatchString(value) {
+			return "", refuse("color", "%s expects a hex color such as FF8800 or FF8800CC", e.Key)
+		}
 	case TypeEnum:
 		parts := []string{value}
 		if e.Flags {
@@ -303,6 +317,11 @@ func (d cfgDoc) set(section, key, value string) (string, error) {
 	val, err := validate(e, value)
 	if err != nil {
 		return "", err
+	}
+	if e.netType == "Decimal" {
+		if r, ok := new(big.Rat).SetString(val); ok && r.Abs(r).Cmp(decimalMax) > 0 {
+			return "", refuseRange(key, &decimalBound[0], &decimalBound[1])
+		}
 	}
 	if lim, ok := netLimits[e.netType]; ok {
 		if n, _ := strconv.ParseFloat(val, 64); n < lim[0] || n > lim[1] {
