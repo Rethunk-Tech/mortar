@@ -314,16 +314,17 @@ func readBackup(path, tmp string) (backupJSON, map[string][]byte, error) {
 	defer func() { _ = root.Close() }()
 	files := map[string][]byte{}
 	var doc []byte
+	folded := map[string]string{}
 	var inMemory, onDisk int64
 	// The caps below are the module's backstop: the counters in the loop answer first and name the damage. A backup
-	// holds names straight from disk, so the module admits every segment and keeps case-only twins apart unless this
-	// computer's file system cannot.
+	// holds names straight from disk, so the module admits every segment and keeps case-only twins apart; unpack
+	// refuses them for the entries that reach this computer's disk.
 	opts := archive.Options{
 		MaxEntries:    math.MaxInt32,
 		MaxEntryBytes: maxBackupDisk,
 		MaxTotalBytes: maxBackupDisk + maxBackupBytes,
 		RatioFloor:    maxBackupDisk + maxBackupBytes,
-		CaseSensitive: !caseInsensitive,
+		CaseSensitive: true,
 	}
 	err = archive.ZipFunc(src, info.Size(), opts, func(name string, isDir bool, r io.Reader) error {
 		if isDir {
@@ -331,7 +332,7 @@ func readBackup(path, tmp string) (backupJSON, map[string][]byte, error) {
 		}
 		rel, inFiles := strings.CutPrefix(name, backupPrefix)
 		if name != backupDoc && !inFiles {
-			return unpack(name, r, root, &onDisk)
+			return unpack(name, r, root, folded, &onDisk)
 		}
 		data, err := safefs.ReadCapped(r, maxBackupBytes-inMemory)
 		if errors.Is(err, safefs.ErrTooLarge) {
@@ -402,11 +403,25 @@ func backupReadError(err error) error {
 	return err
 }
 
+// noteFolded remembers name by its lower-cased form and, on a host that folds case, refuses a second name that folds
+// to the same one, since the two could not both be written.
+func noteFolded(folded map[string]string, name string, fold bool) error {
+	key := strings.ToLower(name)
+	if other, ok := folded[key]; ok && other != name && fold {
+		return usererr.Wrap(usererr.Damaged, fmt.Errorf("the backup holds %q and %q, which this computer's file system cannot keep apart", other, name))
+	}
+	folded[key] = name
+	return nil
+}
+
 // unpack writes one store/, saves/ or changed/ entry of a backup below root, adding its size to total.
-func unpack(name string, r io.Reader, root *os.Root, total *int64) error {
+func unpack(name string, r io.Reader, root *os.Root, folded map[string]string, total *int64) error {
 	_, inStore := storeKeyOf(name)
 	if (!inStore && !strings.HasPrefix(name, savesPrefix) && !strings.HasPrefix(name, profile.ChangedPrefix)) || !filepath.IsLocal(filepath.FromSlash(name)) {
 		return usererr.Wrap(usererr.Invalid, fmt.Errorf("the backup holds %q, which Mortar does not write", name))
+	}
+	if err := noteFolded(folded, name, caseInsensitive); err != nil {
+		return err
 	}
 	to := filepath.FromSlash(name)
 	if err := root.MkdirAll(filepath.Dir(to), 0o700); err != nil {

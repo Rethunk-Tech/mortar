@@ -4,6 +4,8 @@ import (
 	"archive/zip"
 	"os"
 	"path/filepath"
+	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/go-safefs"
@@ -83,5 +85,31 @@ func TestReadBackupRefusesTraversal(t *testing.T) {
 		if _, err := os.Stat(filepath.Join(filepath.Dir(tmp), "x")); err == nil {
 			t.Errorf("%q escaped", name)
 		}
+	}
+}
+
+func TestNoteFoldedRefusesCaseTwinsOnlyOnAFoldingHost(t *testing.T) {
+	for _, fold := range []bool{true, false} {
+		folded := map[string]string{}
+		_ = noteFolded(folded, "saves/Farm/Farm", fold)
+		err := noteFolded(folded, "saves/farm/farm", fold)
+		if fold != (err != nil && strings.Contains(err.Error(), "cannot keep apart")) {
+			t.Errorf("fold=%v: err = %v", fold, err)
+		}
+	}
+}
+
+// files/ entries are held in memory, so case twins there restore on every host.
+func TestReadBackupKeepsFilesCaseTwinsOnAFoldingHost(t *testing.T) {
+	caseInsensitive = true
+	t.Cleanup(func() { caseInsensitive = runtime.GOOS == "windows" || runtime.GOOS == "darwin" })
+	path := writeZip(t, [][2]string{
+		{backupDoc, `{"version":1,"game":"g"}`},
+		{backupPrefix + "Config.json", "a"},
+		{backupPrefix + "config.json", "b"},
+	})
+	_, got, err := readBackup(path, t.TempDir())
+	if err != nil || string(got["Config.json"]) != "a" || string(got["config.json"]) != "b" {
+		t.Fatalf("files = %v, %v", got, err)
 	}
 }
