@@ -9,7 +9,9 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"unicode"
 	"unicode/utf16"
+	"unicode/utf8"
 )
 
 // Clean rewrites b as strict JSON where it can. Text that is not JSON in any form Newtonsoft reads is left to fail
@@ -46,7 +48,11 @@ func utf16Bytes(b []byte, order binary.ByteOrder) []byte {
 func utf32Bytes(b []byte, order binary.ByteOrder) []byte {
 	var sb strings.Builder
 	for ; len(b) >= 4; b = b[4:] {
-		sb.WriteRune(rune(order.Uint32(b))) // an invalid code point becomes U+FFFD
+		r := utf8.RuneError
+		if v := order.Uint32(b); v <= unicode.MaxRune {
+			r = rune(v)
+		}
+		sb.WriteRune(r) // a surrogate also becomes U+FFFD
 	}
 	return []byte(sb.String())
 }
@@ -209,7 +215,7 @@ func dropTrailingCommas(b []byte) []byte {
 			for j < len(b) && slices.Contains([]byte(" \t\r\n"), b[j]) {
 				j++
 			}
-			if !(empty && !inArray && !colon) && j < len(b) && (b[j] == '}' || b[j] == ']') {
+			if (!empty || inArray || colon) && j < len(b) && (b[j] == '}' || b[j] == ']') {
 				empty, colon = false, false
 				continue
 			}

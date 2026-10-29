@@ -36,8 +36,8 @@ func utf16Of(s string, order binary.AppendByteOrder, bom []byte) []byte {
 
 func utf32Of(s string, order binary.AppendByteOrder, bom []byte) []byte {
 	out := slices.Clone(bom)
-	for _, r := range s {
-		out = order.AppendUint32(out, uint32(r))
+	for _, c := range []byte(s) { // ASCII only
+		out = order.AppendUint32(out, uint32(c))
 	}
 	return out
 }
