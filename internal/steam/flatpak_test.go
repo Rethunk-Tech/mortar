@@ -2,11 +2,15 @@ package steam
 
 import (
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
 
 func TestHasFilesystem(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("flatpak override lists POSIX paths, and a drive letter's colon would split as a mode")
+	}
 	dir := filepath.Join(t.TempDir(), "mortar")
 	show := "[Context]\nfilesystems=" + dir + ":ro;xdg-download;\n"
 	if !HasFilesystem(show, dir) {

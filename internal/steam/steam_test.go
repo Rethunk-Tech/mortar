@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -26,10 +27,19 @@ func fixture(t *testing.T) string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(vdfPath, []byte(strings.ReplaceAll(string(b), "@ROOT@", root)), 0o600); err != nil {
+	if err := fsx.WriteFile(vdfPath, []byte(strings.ReplaceAll(string(b), "@ROOT@", strings.ReplaceAll(root, `\`, `\\`))), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	return root
+}
+
+// nativeRoots names home's native Steam folder as a player-added root on Windows, where Steam is found through the
+// registry and not under home.
+func nativeRoots(home string) []string {
+	if runtime.GOOS != "windows" {
+		return nil
+	}
+	return []string{filepath.Join(home, ".local", "share", "Steam")}
 }
 
 func TestLocate(t *testing.T) {
@@ -53,7 +63,14 @@ func TestLocate(t *testing.T) {
 		{"missing", t.TempDir(), NotFound, KindNative},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			s, got := Locate(tc.home)
+			if runtime.GOOS == "windows" && tc.name == "dot steam" {
+				t.Skip("the ~/.steam links are Linux's")
+			}
+			var extra []string
+			if tc.want == Found && tc.kind == KindNative {
+				extra = nativeRoots(tc.home)
+			}
+			s, got := Locate(tc.home, extra...)
 			if got != tc.want {
 				t.Fatalf("status = %s, want %s", got, tc.want)
 			}
@@ -72,11 +89,11 @@ func TestLocate(t *testing.T) {
 	if err := os.MkdirAll(filepath.Join(both, ".var/app/com.valvesoftware.Steam/.local/share/Steam/steamapps"), 0o700); err != nil {
 		t.Fatal(err)
 	}
-	s, st := Locate(both)
+	s, st := Locate(both, nativeRoots(both)...)
 	if st != Found || s.Kind != KindNative {
 		t.Fatalf("native wins: %+v %s", s, st)
 	}
-	all := LocateAll(both)
+	all := LocateAll(both, nativeRoots(both)...)
 	if len(all) != 2 || all[0].Kind != KindNative || all[1].Kind != KindFlatpak {
 		t.Fatalf("all = %#v", all)
 	}
@@ -233,6 +250,9 @@ func TestParseVDFRefusesWhatIsTooLargeOrTooDeep(t *testing.T) {
 }
 
 func TestLocateAllEmptyHomeIsTheUsersHome(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Windows finds Steam through the registry, not under the home folder")
+	}
 	home := t.TempDir()
 	if err := os.MkdirAll(filepath.Join(home, ".steam", "steam", "steamapps"), 0o700); err != nil {
 		t.Fatal(err)
