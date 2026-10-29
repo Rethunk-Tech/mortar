@@ -6,11 +6,13 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"unicode/utf8"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/winname"
 )
 
 // changedPrefix is where a .mortar file keeps a profile's changed copies (a file a mod rewrote or created while a
@@ -44,6 +46,27 @@ func validChangedLocation(game, p string) bool {
 		}
 	}
 	return true
+}
+
+// deviceSegment is a segment whose only fault is a Windows device name such as CON.
+func deviceSegment(seg string) bool {
+	return !winname.Valid(seg) && !unsafeName.MatchString(seg) && !strings.HasSuffix(seg, ".") && !strings.HasSuffix(seg, " ")
+}
+
+// hasDeviceSegment reports that p has a segment that is a device name.
+func hasDeviceSegment(p string) bool {
+	return slices.ContainsFunc(strings.Split(p, "/"), deviceSegment)
+}
+
+// devicesRenamed is p with each device-name segment made plain, so the rest of its checks can run on any OS.
+func devicesRenamed(p string) string {
+	segs := strings.Split(p, "/")
+	for i, seg := range segs {
+		if deviceSegment(seg) {
+			segs[i] = "_"
+		}
+	}
+	return strings.Join(segs, "/")
 }
 
 // readChangedFiles collects the profile's changed copies; a file over the per-file cap or with a name that cannot be

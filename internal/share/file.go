@@ -437,7 +437,8 @@ func readZip(zr *zip.Reader) (Preview, error) {
 			continue
 		}
 		if rel, ok := strings.CutPrefix(f.Name, changedPrefix); ok {
-			if !validChangedLocation(pv.Game, rel) {
+			// On Windows IsLocal refuses a device name, which would fail the whole file; as on Linux the copy is skipped.
+			if !validChangedLocation(pv.Game, rel) && (!hasDeviceSegment(rel) || !validChangedLocation(pv.Game, devicesRenamed(rel))) {
 				return Preview{}, fmt.Errorf("%w: unsafe path %q", ErrBadFile, f.Name)
 			}
 			// An older release let a copy of any non-program type travel; the file is still good without it.
