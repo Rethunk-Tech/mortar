@@ -60,7 +60,7 @@ export function ItchAccount() {
   }
   let itchStatus = ''
   if (name) {
-    itchStatus = t`${name} · API key in your system keyring`
+    itchStatus = `${name} · ${t`API key in your system keyring`}`
   } else if (name !== null) {
     itchStatus = t`Not signed in`
   }

@@ -772,6 +772,10 @@ msgstr ""
 msgid "Measuring… {size}"
 msgstr ""
 
+#: src/settings/sections/Accounts.tsx
+msgid "Your gh login"
+msgstr ""
+
 #: src/settings/shortcutLabels.ts
 msgid "Get help"
 msgstr ""
@@ -1277,6 +1281,10 @@ msgstr ""
 #: src/settings/sections/General.tsx
 #: src/settings/sections/SyncFolder.tsx
 msgid "Could not save that setting"
+msgstr ""
+
+#: src/settings/sections/ItchAccount.tsx
+msgid "API key in your system keyring"
 msgstr ""
 
 #: src/settings/sections/DataBackups.tsx
@@ -1855,10 +1863,6 @@ msgstr ""
 
 #: src/settings/prefCopy.ts
 msgid "Share FOMOD choices"
-msgstr ""
-
-#: src/settings/sections/Accounts.tsx
-msgid "Your gh login · higher rate limit"
 msgstr ""
 
 #: src/settings/prefCopyGame.ts
@@ -3450,12 +3454,12 @@ msgstr ""
 msgid "Leave them"
 msgstr ""
 
-#: src/settings/sections/Updates.tsx
-msgid "Check only enabled mods"
+#: src/settings/sections/Accounts.tsx
+msgid "higher rate limit"
 msgstr ""
 
-#: src/settings/sections/ItchAccount.tsx
-msgid "{name} · API key in your system keyring"
+#: src/settings/sections/Updates.tsx
+msgid "Check only enabled mods"
 msgstr ""
 
 #: src/settings/shortcutLabels.ts

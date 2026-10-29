@@ -772,6 +772,10 @@ msgstr "{game} with {loader} {version} in {path} ({where})"
 msgid "Measuring… {size}"
 msgstr "Measuring… {size}"
 
+#: src/settings/sections/Accounts.tsx
+msgid "Your gh login"
+msgstr "Your gh login"
+
 #: src/settings/shortcutLabels.ts
 msgid "Get help"
 msgstr "Get help"
@@ -1278,6 +1282,10 @@ msgstr "{name} version"
 #: src/settings/sections/SyncFolder.tsx
 msgid "Could not save that setting"
 msgstr "Could not save that setting"
+
+#: src/settings/sections/ItchAccount.tsx
+msgid "API key in your system keyring"
+msgstr "API key in your system keyring"
 
 #: src/settings/sections/DataBackups.tsx
 msgid "No backups to delete"
@@ -1856,10 +1864,6 @@ msgstr "API key"
 #: src/settings/prefCopy.ts
 msgid "Share FOMOD choices"
 msgstr "Share FOMOD choices"
-
-#: src/settings/sections/Accounts.tsx
-msgid "Your gh login · higher rate limit"
-msgstr "Your gh login · higher rate limit"
 
 #: src/settings/prefCopyGame.ts
 msgid "Delete the caches once after the mod set changes; the game rebuilds them."
@@ -3450,13 +3454,13 @@ msgstr "Right-click a line in the Console to hide every line from where it came 
 msgid "Leave them"
 msgstr "Leave them"
 
+#: src/settings/sections/Accounts.tsx
+msgid "higher rate limit"
+msgstr "higher rate limit"
+
 #: src/settings/sections/Updates.tsx
 msgid "Check only enabled mods"
 msgstr "Check only enabled mods"
-
-#: src/settings/sections/ItchAccount.tsx
-msgid "{name} · API key in your system keyring"
-msgstr "{name} · API key in your system keyring"
 
 #: src/settings/shortcutLabels.ts
 msgid "Close dialog or clear selection"

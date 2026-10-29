@@ -21,7 +21,7 @@ function GitHubAccount() {
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null)
   const relevant = useSettingsRelevant(
     sourceLabel('github'),
-    t`Your gh login · higher rate limit`,
+    `${t`Your gh login`} · ${t`higher rate limit`}`,
     t`Requests`,
   )
   useEffect(() => {
@@ -31,7 +31,7 @@ function GitHubAccount() {
   }, [relevant])
   let status = ''
   if (loggedIn) {
-    status = t`Your gh login · higher rate limit`
+    status = `${t`Your gh login`} · ${t`higher rate limit`}`
   } else if (loggedIn === false) {
     status = t`No login, so the lower rate limit applies. Run gh auth login to raise it.`
   }
