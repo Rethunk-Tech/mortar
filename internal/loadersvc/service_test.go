@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -74,8 +75,7 @@ func TestBundledBuiltFromGameFolder(t *testing.T) {
 	t.Setenv("LOCALAPPDATA", data)
 	game := t.TempDir()
 	put(t, filepath.Join(game, "Stardew Valley.dll"), "x")
-	put(t, filepath.Join(game, "StardewValley-original"), "x")
-	put(t, filepath.Join(game, "StardewValley"), "#!/bin/sh\nexec StardewModdingAPI\n")
+	installSMAPI(t, game)
 	put(t, filepath.Join(game, "Mods", "ConsoleCommands", "manifest.json"), `{"Name": "Console Commands", "Version": "4.5.2", "UniqueId": "SMAPI.ConsoleCommands", "EntryDll": "ConsoleCommands.dll"}`)
 	put(t, filepath.Join(game, "Mods", "SaveBackup", "manifest.json"), `{"Name": "Save Backup", "Version": "4.5.2", "UniqueId": "SMAPI.SaveBackup", "EntryDll": "SaveBackup.dll"}`)
 
@@ -194,14 +194,16 @@ func TestStartupInstallsAMissingLoaderOnlyWhenProfilesExist(t *testing.T) {
 
 func TestEnsureLeavesAWorkingLoaderAlone(t *testing.T) {
 	e := newEnsureEnv(t)
-	put(t, filepath.Join(e.game, "StardewValley-original"), "x")
-	put(t, filepath.Join(e.game, "StardewValley"), "#!/bin/sh\nexec StardewModdingAPI\n")
+	installSMAPI(t, e.game)
 	put(t, filepath.Join(e.game, "Mods", "ConsoleCommands", "manifest.json"), `{"Name": "Console Commands", "Version": "4.5.2", "UniqueId": "SMAPI.ConsoleCommands", "EntryDll": "ConsoleCommands.dll"}`)
 	if _, err := e.svc.Ensure(context.Background(), "stardew", "", false); err != nil {
 		t.Fatal(err)
 	}
 	if got := e.installs.Load(); got != 0 {
 		t.Fatalf("installs = %d, want 0", got)
+	}
+	if runtime.GOOS == "windows" {
+		t.Skip("a Windows build has no launcher a game update could replace")
 	}
 	// A game update replaces the launcher: SMAPI is broken and is reinstalled.
 	put(t, filepath.Join(e.game, "StardewValley"), "native launcher")
@@ -214,6 +216,9 @@ func TestEnsureLeavesAWorkingLoaderAlone(t *testing.T) {
 }
 
 func TestInstallRefusesWhileTheGameRunsOutsideMortar(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Windows lists processes through the system, not /proc")
+	}
 	e := newEnsureEnv(t)
 	e.svc.procDir = t.TempDir()
 	put(t, filepath.Join(e.svc.procDir, "4242", "cmdline"), "/games/Stardew Valley/Stardew Valley\x00")
@@ -229,4 +234,15 @@ func testService(t *testing.T, s *settings.Store, items *store.Store, profiles *
 	svc := NewService(t.TempDir(), s, items, profiles, clients...)
 	svc.procDir = t.TempDir()
 	return svc
+}
+
+// installSMAPI lays out what SMAPI's installer leaves in the game folder on this OS.
+func installSMAPI(t *testing.T, game string) {
+	t.Helper()
+	if runtime.GOOS == "windows" {
+		put(t, filepath.Join(game, "StardewModdingAPI.exe"), "x")
+		return
+	}
+	put(t, filepath.Join(game, "StardewValley-original"), "x")
+	put(t, filepath.Join(game, "StardewValley"), "#!/bin/sh\nexec StardewModdingAPI\n")
 }
