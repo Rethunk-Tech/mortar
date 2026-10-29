@@ -15,7 +15,7 @@ var userHome = os.UserHomeDir
 
 // flatpakLibraryChecks reports Steam libraries the Flatpak cannot see. The manifest grants the usual places; a
 // library anywhere else reads as missing from inside the sandbox, so its games look not installed.
-func flatpakLibraryChecks() []Check {
+func flatpakLibraryChecks(steamRoots []string) []Check {
 	if !flatpak.Inside() {
 		return nil
 	}
@@ -25,7 +25,7 @@ func flatpakLibraryChecks() []Check {
 	}
 	var seen []string
 	var checks []Check
-	for _, s := range steam.LocateAll(home) {
+	for _, s := range steam.LocateAll(home, steamRoots...) {
 		libs, err := s.Libraries()
 		if err != nil {
 			continue

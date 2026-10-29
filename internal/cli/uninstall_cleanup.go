@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/selfexe"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/steam"
 )
 
@@ -21,17 +23,17 @@ func (c *cmd) uninstallCleanup() error {
 	exe = selfexe.Launchable(exe)
 	errs := []error{removePlatformLeftovers()}
 	if home, err := os.UserHomeDir(); err == nil {
-		errs = append(errs, c.removeSteamShortcuts(home, exe))
+		errs = append(errs, c.removeSteamShortcuts(home, exe, settings.Peek().LauncherRoots[game.LauncherSteam]))
 	} else {
 		errs = append(errs, err)
 	}
 	return errors.Join(errs...)
 }
 
-func (c *cmd) removeSteamShortcuts(home, exe string) error {
+func (c *cmd) removeSteamShortcuts(home, exe string, steamRoots []string) error {
 	var errs []error
 	removed := 0
-	for _, st := range steam.LocateAll(home) {
+	for _, st := range steam.LocateAll(home, steamRoots...) {
 		n, err := st.RemoveShortcuts(exe, "--play=")
 		removed += n
 		errs = append(errs, err)

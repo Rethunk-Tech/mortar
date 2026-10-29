@@ -88,7 +88,7 @@ func FromLive(in Live) Report {
 		checks = append(checks, protonChecks(g, in.SteamRoots)...)
 	}
 	checks = append(checks, deckChecks()...)
-	checks = append(checks, flatpakLibraryChecks()...)
+	checks = append(checks, flatpakLibraryChecks(in.SteamRoots)...)
 	handler := "off"
 	nxm := Check{ID: "nxm", Status: Warn, Code: "nxmOff"}
 	if in.NxmHandled {

@@ -1104,7 +1104,7 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 		env.Steam = &st
 	}
 	if store == game.StoreFlatpakSteam {
-		for _, one := range steam.LocateAll(s.home) {
+		for _, one := range steam.LocateAll(s.home, s.settings.Get().LauncherRoots[game.LauncherSteam]...) {
 			if one.Kind == steam.KindFlatpak {
 				env.Steam = &one
 				break
