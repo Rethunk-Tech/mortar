@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// An answer cached by a clock that was later set back is served as fresh, with no request.
+// An answer cached by a clock that was later set back is not fresh: the next check asks again.
 func TestFutureStampedUpdateAnswerIsNotFresh(t *testing.T) {
 	var down atomic.Bool
 	var hits atomic.Int32
