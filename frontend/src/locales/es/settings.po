@@ -2469,7 +2469,6 @@ msgid "Could not update {launcher}'s launch options"
 msgstr ""
 
 #: src/settings/sections/GameSettings.tsx
-#: src/settings/sections/Shortcuts.tsx
 msgid "Reset"
 msgstr ""
 
