@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-desktopenv/nowindow"
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/nowindow"
 )
 
 const productTimeout = 5 * time.Second

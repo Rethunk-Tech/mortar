@@ -15,12 +15,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	gameruntime "github.com/Rethunk-Tech/mortar/internal/runtime"
-	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/steam"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -184,8 +184,8 @@ func (st Starter) lookPathOrDefault() func(string) (string, error) {
 	switch {
 	case st.LookPath != nil:
 		return st.LookPath
-	case sandbox.InFlatpak():
-		return sandbox.HostLookPath
+	case flatpak.Inside():
+		return func(name string) (string, error) { return flatpak.HostLookPath(context.Background(), name) }
 	}
 	return exec.LookPath
 }
@@ -198,7 +198,7 @@ func (st Starter) startOne(ctx context.Context, inst Install, plan *launchplan.P
 	if err != nil {
 		return err
 	}
-	if sandbox.InFlatpak() {
+	if flatpak.Inside() {
 		cmd = onHost(cmd)
 	}
 	cmd.OnExit = env.OnExit
@@ -246,7 +246,7 @@ func (st Starter) Command(goos string, inst Install, plan *launchplan.Plan) (lau
 // onHost reruns cmd through flatpak-spawn: the sandbox has no Steam, and a direct launch must not inherit its
 // permissions, which also spares the manifest an audio socket and --device=all.
 func onHost(cmd launch.Command) launch.Command {
-	cmd.Name, cmd.Args = sandbox.HostArgv(cmd.Dir, cmd.Env, cmd.Name, cmd.Args...)
+	cmd.Name, cmd.Args = flatpak.HostArgv(cmd.Dir, cmd.Env, cmd.Name, cmd.Args...)
 	cmd.Dir, cmd.Env = "", nil
 	return cmd
 }
@@ -450,7 +450,7 @@ func (st Starter) startVR(ctx context.Context, env StartEnv) error {
 	default:
 		return nil
 	}
-	if sandbox.InFlatpak() {
+	if flatpak.Inside() {
 		cmd = onHost(cmd)
 	}
 	run := st.Runner

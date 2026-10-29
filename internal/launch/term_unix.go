@@ -16,7 +16,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-safefs"
 
-	"github.com/Rethunk-Tech/mortar/internal/sandbox"
+	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 )
 
 // Stop ends a game process. A Wine game is first asked to close its windows, as quitting it would: one that registered
@@ -39,7 +39,7 @@ func Stop(ctx context.Context, p Process, grace time.Duration) error {
 // every process with that image name in its prefix. It reports whether taskkill ran.
 func closeWine(ctx context.Context, p Process, timeout time.Duration) bool {
 	wine := wineLoader(p.Exe)
-	if wine == "" || len(p.Args) == 0 || sandbox.InFlatpak() {
+	if wine == "" || len(p.Args) == 0 || flatpak.Inside() {
 		return false
 	}
 	image := filepath.Base(strings.ReplaceAll(p.Args[0], `\`, "/"))
@@ -81,7 +81,7 @@ func wineLoader(exe string) string {
 
 // Terminate asks the process to exit and kills it if it is still there after grace.
 func Terminate(pid int, grace time.Duration) error {
-	if sandbox.InFlatpak() {
+	if flatpak.Inside() {
 		return hostTerminate(pid, grace)
 	}
 	if err := syscall.Kill(pid, syscall.SIGTERM); err != nil {
@@ -106,7 +106,7 @@ func Terminate(pid int, grace time.Duration) error {
 // Alive reports whether a process with this pid exists. In a Flatpak a failure to ask the host reads as false; callers
 // that must tell the two apart (Stop, WaitPID) use hostProbe.
 func Alive(pid int) bool {
-	if sandbox.InFlatpak() {
+	if flatpak.Inside() {
 		alive, err := hostProbe(pid)
 		return err == nil && alive
 	}
@@ -115,7 +115,9 @@ func Alive(pid int) bool {
 }
 
 // hostOutput runs a command on the host and returns its stdout; tests replace it.
-var hostOutput = sandbox.HostOutput
+var hostOutput = func(name string, args ...string) ([]byte, error) {
+	return flatpak.Command(context.Background(), name, args...).Output()
+}
 
 // Host PIDs mean nothing in the sandbox's PID namespace, so a Flatpak signals through the host's kill.
 func hostKill(sig string, pid int) error {

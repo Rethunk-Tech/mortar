@@ -3,17 +3,19 @@
 package shortcut
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
+	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
+	"github.com/Rethunk-Tech/go-desktopenv/portal"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/nxm"
-	"github.com/Rethunk-Tech/mortar/internal/portal"
-	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
 // launcherID is the desktop file id of a profile's shortcut; it starts with the app id, as the launcher portal requires.
@@ -24,9 +26,9 @@ func launcherID(arg string) string {
 // create writes a desktop entry under the user's applications folder, where launchers and app menus find it. Inside
 // a Flatpak the launcher portal installs it instead, after the user confirms in a system dialog.
 func create(exe, arg, name string) (string, error) {
-	if sandbox.InFlatpak() {
+	if flatpak.Inside() {
 		id := launcherID(arg)
-		return id, portal.InstallLauncher(id, name, "mortar "+arg, nxm.IconPNG())
+		return id, installLauncher(id, name, arg)
 	}
 	execLine := `"` + execArgEscaper.Replace(exe) + `"`
 	base, err := dataHome()
@@ -53,6 +55,38 @@ Categories=Game;
 	return path, nil
 }
 
+// portalTimeout bounds a portal call, which waits on a dialog the user answers.
+const portalTimeout = 5 * time.Minute
+
+// installLauncher asks the launcher portal to add a launcher that plays arg.
+func installLauncher(id, name, arg string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), portalTimeout)
+	defer cancel()
+	return portalErr(portal.InstallLauncher(ctx, portal.Launcher{
+		ID:         id,
+		Name:       name,
+		IconPNG:    nxm.IconPNG(),
+		Exec:       []string{"mortar", arg},
+		Comment:    "Play this Mortar profile",
+		Categories: []string{"Game"},
+	}))
+}
+
+func launcherExists(id string) (bool, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), portalTimeout)
+	defer cancel()
+	ok, err := portal.LauncherExists(ctx, id)
+	return ok, portalErr(err)
+}
+
+// portalErr gives a dismissed portal dialog Mortar's wording.
+func portalErr(err error) error {
+	if errors.Is(err, portal.ErrCancelled) {
+		return errors.New("cancelled in the system dialog")
+	}
+	return err
+}
+
 func desktopPath(game, profile string) (string, error) {
 	if !validID(game) || !validID(profile) {
 		return "", fmt.Errorf("a shortcut needs a game and a profile")
@@ -67,15 +101,15 @@ func desktopPath(game, profile string) (string, error) {
 // Renamed updates the desktop entry for a profile whose name changed. Inside a Flatpak an existing launcher is
 // installed again under the new name, which the launcher portal confirms with the user.
 func Renamed(game, profile, profileName, gameName string) error {
-	if sandbox.InFlatpak() {
+	if flatpak.Inside() {
 		if !validID(game) || !validID(profile) {
 			return fmt.Errorf("a shortcut needs a game and a profile")
 		}
 		arg := Arg(game, profile)
-		if ok, err := portal.LauncherExists(launcherID(arg)); err != nil || !ok {
+		if ok, err := launcherExists(launcherID(arg)); err != nil || !ok {
 			return err
 		}
-		return portal.InstallLauncher(launcherID(arg), profileName+" ("+gameName+")", "mortar "+arg, nxm.IconPNG())
+		return installLauncher(launcherID(arg), profileName+" ("+gameName+")", arg)
 	}
 	path, err := desktopPath(game, profile)
 	if err != nil {
@@ -109,11 +143,13 @@ func Renamed(game, profile, profileName, gameName string) error {
 
 // Removed removes the desktop entry for a deleted profile.
 func Removed(game, profile string) error {
-	if sandbox.InFlatpak() {
+	if flatpak.Inside() {
 		if !validID(game) || !validID(profile) {
 			return fmt.Errorf("a shortcut needs a game and a profile")
 		}
-		return portal.UninstallLauncher(launcherID(Arg(game, profile)))
+		ctx, cancel := context.WithTimeout(context.Background(), portalTimeout)
+		defer cancel()
+		return portalErr(portal.UninstallLauncher(ctx, launcherID(Arg(game, profile))))
 	}
 	path, err := desktopPath(game, profile)
 	if err != nil {
@@ -127,11 +163,11 @@ func Removed(game, profile string) error {
 }
 
 func exists(game, profile string) (bool, error) {
-	if sandbox.InFlatpak() {
+	if flatpak.Inside() {
 		if !validID(game) || !validID(profile) {
 			return false, fmt.Errorf("a shortcut needs a game and a profile")
 		}
-		return portal.LauncherExists(launcherID(Arg(game, profile)))
+		return launcherExists(launcherID(Arg(game, profile)))
 	}
 	path, err := desktopPath(game, profile)
 	if err != nil {
@@ -205,7 +241,7 @@ func RemoveStartMenu() error {
 // (an AppImage an integrator renamed, a package replacing a portable copy). A shortcut whose program still exists
 // belongs to that copy of Mortar and is left alone.
 func Repoint(exe string) error {
-	if sandbox.InFlatpak() {
+	if flatpak.Inside() {
 		return nil // The launcher portal writes Flatpak launchers with a flatpak run line, not a path.
 	}
 	base, err := dataHome()

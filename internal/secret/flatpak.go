@@ -1,6 +1,7 @@
 package secret
 
 import (
+	"context"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/hkdf"
@@ -14,10 +15,11 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
+	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
+	"github.com/Rethunk-Tech/go-desktopenv/portal"
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/portal"
-	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
 // Inside a Flatpak secrets live in one file in the sandbox's own data folder, sealed with the XDG Secret portal's
@@ -32,8 +34,12 @@ const (
 
 // Replaced in tests.
 var (
-	portalSecret = portal.RetrieveSecret
-	storeDir     = func() (string, error) {
+	portalSecret = func() ([]byte, error) {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+		defer cancel()
+		return portal.RetrieveSecret(ctx)
+	}
+	storeDir = func() (string, error) {
 		base := os.Getenv("XDG_DATA_HOME")
 		if base == "" {
 			home, err := os.UserHomeDir()
@@ -163,7 +169,7 @@ func sharedItem(flat string) (svc, name string, ok bool) {
 // Plaintext reports whether secrets are kept in the unencrypted fallback file: inside a Flatpak with neither the
 // secret portal nor a host keyring. A store busy with a keyring prompt reports false instead of waiting on it.
 func Plaintext() bool {
-	if !sandbox.InFlatpak() || !storeMu.TryLock() {
+	if !flatpak.Inside() || !storeMu.TryLock() {
 		return false
 	}
 	defer storeMu.Unlock()

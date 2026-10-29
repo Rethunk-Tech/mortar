@@ -3,18 +3,18 @@ package steam
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"slices"
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 
 	"github.com/andygrunwald/vdf"
 )
@@ -129,14 +129,8 @@ func HasFilesystem(show, dataDir string) bool {
 	return false
 }
 
-// hostOutput runs a command on the host and returns its stdout; tests replace it.
-var hostOutput = sandbox.HostOutput
-
 var runFlatpak = func(args ...string) ([]byte, error) {
-	if sandbox.InFlatpak() {
-		return hostOutput("flatpak", args...)
-	}
-	return exec.Command("flatpak", args...).Output() //nolint:gosec // G204: binary is flatpak; args are steam --install or --run
+	return flatpak.Command(context.Background(), "flatpak", args...).Output()
 }
 
 // ShowOverride is `flatpak override --user --show` for Steam. Tests replace runFlatpak.

@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/nowindow"
+	"github.com/Rethunk-Tech/go-desktopenv/nowindow"
 	"golang.org/x/sys/windows"
 )
 

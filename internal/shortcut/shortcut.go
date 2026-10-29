@@ -15,8 +15,8 @@ import (
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 
+	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
-	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 	"github.com/Rethunk-Tech/mortar/internal/steam"
 )
@@ -121,8 +121,8 @@ type Capabilities struct {
 
 // Capabilities reports what shortcut actions are available; Add to Steam is unavailable inside a Flatpak.
 func (s *Service) Capabilities() Capabilities {
-	flatpak := sandbox.InFlatpak()
-	return Capabilities{Flatpak: flatpak, Shortcuts: true, AddToSteam: !flatpak}
+	inFlatpak := flatpak.Inside()
+	return Capabilities{Flatpak: inFlatpak, Shortcuts: true, AddToSteam: !inFlatpak}
 }
 
 // Create makes a shortcut named after the profile and game that plays it, and returns where it was written.
@@ -172,7 +172,7 @@ func (s *Service) AddToSteam(game, gameName, profile, profileName string) (steam
 	if !validID(game) || !validID(profile) {
 		return "", errors.New("a shortcut needs a game and a profile")
 	}
-	if sandbox.InFlatpak() {
+	if flatpak.Inside() {
 		return "", ErrFlatpakSteamShortcut
 	}
 	home, err := os.UserHomeDir()

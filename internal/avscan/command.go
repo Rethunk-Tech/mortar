@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/nowindow"
+	"github.com/Rethunk-Tech/go-desktopenv/nowindow"
 )
 
 // command runs the player's own scanner with {path} replaced by the folder: exit 0 is clean, any other code a

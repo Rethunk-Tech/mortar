@@ -4,8 +4,6 @@ package sysaccent
 import (
 	"fmt"
 	"math"
-
-	"github.com/godbus/dbus/v5"
 )
 
 // FromDWM is the "#rrggbb" of a Windows DWM AccentColor value, which stores the colour as 0xAABBGGRR.
@@ -14,15 +12,8 @@ func FromDWM(v uint64) string {
 }
 
 // FromPortal is the "#rrggbb" of the xdg-desktop-portal org.freedesktop.appearance accent-color answer, an (ddd) of
-// RGB in 0 to 1 inside one or two variants. A component outside that range means the desktop has no accent.
+// RGB in 0 to 1, as portal.ReadSetting returns it. A component outside that range means the desktop has no accent.
 func FromPortal(v any) (string, bool) {
-	for {
-		inner, ok := v.(dbus.Variant)
-		if !ok {
-			break
-		}
-		v = inner.Value()
-	}
 	rgb, ok := v.([]any)
 	if !ok || len(rgb) != 3 {
 		return "", false

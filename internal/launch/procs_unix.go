@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
 // runs reports whether args start the program name, directly or through dotnet or mono.
@@ -59,7 +59,7 @@ func (p Process) Named(names ...string) bool { return runsAny(p.Args, names) }
 // Processes lists running processes whose executable is one of names, from procDir (/proc) on Linux, in one pass
 // over the process table.
 func Processes(procDir string, names ...string) ([]Process, error) {
-	if procDir == "/proc" && sandbox.InFlatpak() {
+	if procDir == "/proc" && flatpak.Inside() {
 		return hostProcesses(names)
 	}
 	entries, err := os.ReadDir(procDir)

@@ -5,10 +5,10 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/gog"
-	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
 const bottlesKey = "bottles"
@@ -16,7 +16,7 @@ const bottlesKey = "bottles"
 // bottlesDirs are the folders Bottles keeps its bottles in, the user's own first: native, then Flatpak.
 func bottlesDirs(home string, extra ...string) []string {
 	return append(append([]string(nil), extra...),
-		filepath.Join(sandbox.HostDataHome(home), "bottles", "bottles"),
+		filepath.Join(userdirs.HostDataHome(home), "bottles", "bottles"),
 		filepath.Join(home, ".var", "app", "com.usebottles.bottles", "data", "bottles", "bottles"),
 	)
 }

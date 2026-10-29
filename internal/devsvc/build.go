@@ -15,9 +15,9 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/go-desktopenv/nowindow"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/nowindow"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )

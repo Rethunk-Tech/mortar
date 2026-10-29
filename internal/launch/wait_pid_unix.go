@@ -7,13 +7,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/sandbox"
+	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 )
 
 // WaitPID waits until pid exits and reports how. The exit status is only readable for Mortar's own child
 // processes; for any other process it waits for the exit and returns the wait error with an empty Exit.
 func WaitPID(pid int) (Exit, error) {
-	if sandbox.InFlatpak() {
+	if flatpak.Inside() {
 		// Host PIDs mean nothing in the sandbox's PID namespace.
 		for {
 			alive, err := hostProbe(pid)

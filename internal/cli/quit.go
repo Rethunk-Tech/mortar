@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 	"github.com/Rethunk-Tech/mortar/internal/control"
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
-	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
 // quitWait bounds how long quit waits for the app to exit; the Windows installer runs quit before it replaces or
@@ -20,7 +20,7 @@ var quitPoll = 200 * time.Millisecond
 
 // processAlive is how quit tells the app's process has ended. Each Flatpak run has its own PID namespace, so a pid
 // from the app means nothing to a CLI started by another flatpak run; there only the control channel can tell.
-var processAlive = func(pid int) bool { return !sandbox.InFlatpak() && launch.Alive(pid) }
+var processAlive = func(pid int) bool { return !flatpak.Inside() && launch.Alive(pid) }
 
 // quit asks the running app to close and returns once its process has exited, since the control channel closes
 // before the app finishes shutting down. With no app running it succeeds.

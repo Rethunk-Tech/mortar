@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/sandbox"
+	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"github.com/zalando/go-keyring"
 )
@@ -98,7 +98,7 @@ func run(svc, name string, f *flight) {
 	key := svc + "\n" + name
 	var v string
 	var err error
-	if sandbox.InFlatpak() {
+	if flatpak.Inside() {
 		v, err = flatpakGet(svc, name)
 	} else {
 		v, err = keyringGet(svc, name)
@@ -126,7 +126,7 @@ func Set(name, value string) error { return SetIn(service, name, value) }
 // SetIn stores value under another program's service and name, as GetIn reads it.
 func SetIn(svc, name, value string) error {
 	forget(svc, name)
-	if sandbox.InFlatpak() {
+	if flatpak.Inside() {
 		return flatpakSet(svc, name, value)
 	}
 	return explain(keyringSet(svc, name, value))
@@ -157,7 +157,7 @@ func Delete(name string) error { return DeleteIn(service, name) }
 // DeleteIn removes the secret under another program's service and name.
 func DeleteIn(svc, name string) error {
 	forget(svc, name)
-	if sandbox.InFlatpak() {
+	if flatpak.Inside() {
 		return flatpakDelete(svc, name)
 	}
 	if err := keyringDelete(svc, name); err != nil && !errors.Is(err, ErrNotFound) {

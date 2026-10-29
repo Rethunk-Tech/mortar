@@ -14,9 +14,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
-	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
@@ -404,7 +404,7 @@ func (l *System) handBack(schemes []string, previous map[string]string) error {
 
 // ForwardOther runs the previous handler's desktop entry on link.
 func (l *System) ForwardOther(link, previous string) error {
-	if sandbox.InFlatpak() {
+	if flatpak.Inside() {
 		if previous == "" {
 			return errors.New("no previous nxm handler")
 		}

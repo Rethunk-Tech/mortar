@@ -12,9 +12,10 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
+	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 	"github.com/Rethunk-Tech/mortar/internal/steam"
 )
 
@@ -176,9 +177,9 @@ func nativeTokens(inst Install) (map[string]string, error) {
 			sandbox := filepath.Join(home, ".var", "app", "com.valvesoftware.Steam")
 			tokens["xdgConfig"] = filepath.Join(sandbox, ".config")
 			tokens["xdgData"] = filepath.Join(sandbox, ".local", "share")
-		case sandbox.InFlatpak():
-			tokens["xdgConfig"] = sandbox.HostConfigHome(home)
-			tokens["xdgData"] = sandbox.HostDataHome(home)
+		case flatpak.Inside():
+			tokens["xdgConfig"] = userdirs.HostConfigHome(home)
+			tokens["xdgData"] = userdirs.HostDataHome(home)
 		default:
 			config := os.Getenv("XDG_CONFIG_HOME")
 			if config == "" {

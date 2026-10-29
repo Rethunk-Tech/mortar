@@ -9,8 +9,8 @@ import (
 	"runtime"
 	"slices"
 
+	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
 const (
@@ -103,7 +103,7 @@ func OfflineDirs(home string, r Roots) []string {
 // MinigalaxyConfigDirs are Minigalaxy's config folders (native, then Flatpak).
 func MinigalaxyConfigDirs(home string) []string {
 	return []string{
-		filepath.Join(sandbox.HostConfigHome(home), "minigalaxy"),
+		filepath.Join(userdirs.HostConfigHome(home), "minigalaxy"),
 		filepath.Join(home, ".var", "app", "io.github.sharkwouter.Minigalaxy", "config", "minigalaxy"),
 	}
 }
@@ -140,7 +140,7 @@ func HeroicDirs(home string, custom ...string) []string {
 		return out
 	}
 	return append(out,
-		filepath.Join(sandbox.HostConfigHome(home), "heroic"),
+		filepath.Join(userdirs.HostConfigHome(home), "heroic"),
 		filepath.Join(home, ".var", "app", "com.heroicgameslauncher.hgl", "config", "heroic"),
 		filepath.Join(home, "snap", "heroic", "current", ".config", "heroic"),
 	)

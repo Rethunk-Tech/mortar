@@ -3,22 +3,37 @@
 package settings
 
 import (
+	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/portal"
-	"github.com/Rethunk-Tech/mortar/internal/sandbox"
+	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
+	"github.com/Rethunk-Tech/go-desktopenv/portal"
 	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 )
+
+// portalTimeout bounds a portal call, which waits on a dialog the user answers.
+const portalTimeout = 5 * time.Minute
 
 // RemoveAutostart deletes the autostart entry that starts Mortar at sign-in.
 func RemoveAutostart() error { return applyAutostart(false) }
 
 func applyAutostart(enable bool) error {
-	if sandbox.InFlatpak() {
+	if flatpak.Inside() {
 		// The sandbox cannot write the host's autostart folder; the Background portal writes the entry for it.
-		return portal.SetAutostart(enable, []string{"mortar"})
+		ctx, cancel := context.WithTimeout(context.Background(), portalTimeout)
+		defer cancel()
+		err := portal.SetAutostart(ctx, portal.Autostart{Enable: enable, Command: []string{"mortar"}, Reason: "Start Mortar when you sign in"})
+		switch {
+		case errors.Is(err, portal.ErrCancelled):
+			return errors.New("cancelled in the system dialog")
+		case errors.Is(err, portal.ErrNotAllowed):
+			return errors.New("starting at sign-in was not allowed")
+		}
+		return err
 	}
 	cfg := os.Getenv("XDG_CONFIG_HOME")
 	if cfg == "" {

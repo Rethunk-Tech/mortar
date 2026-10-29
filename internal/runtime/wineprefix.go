@@ -8,9 +8,9 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
 const storeBottles = "bottles"
@@ -104,11 +104,7 @@ type Runner func(ctx context.Context, argv []string) error
 
 // ExecRunner runs argv as a host process, through flatpak-spawn from inside the Flatpak.
 func ExecRunner(ctx context.Context, argv []string) error {
-	name, args := argv[0], argv[1:]
-	if sandbox.InFlatpak() {
-		name, args = sandbox.HostArgv("", nil, name, args...)
-	}
-	return sandbox.CommandContext(ctx, name, args...).Run() // #nosec G204 -- argv is built by Command: bottles-cli or flatpak with fixed leading arguments
+	return flatpak.Command(ctx, argv[0], argv[1:]...).Run()
 }
 
 // Run runs exe with args in inst's bottle through run, which is how a Windows installer (SMAPI's) is run in it.

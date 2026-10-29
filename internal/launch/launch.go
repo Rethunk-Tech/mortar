@@ -14,8 +14,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 	"github.com/Rethunk-Tech/mortar/internal/steam"
 )
 
@@ -122,7 +122,7 @@ func StartHidden(ctx context.Context, env []string, dir, name string, args ...st
 }
 
 func startCmd(ctx context.Context, env []string, dir, name string, args []string, hide bool) (<-chan error, error) {
-	cmd := sandbox.CommandContext(ctx, name, args...)
+	cmd := flatpak.CommandContext(ctx, name, args...)
 	cmd.Dir = dir
 	if len(env) > 0 {
 		cmd.Env = append(os.Environ(), env...)

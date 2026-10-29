@@ -5,10 +5,10 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/nativehost"
-	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
 // flatpakHostWrapper starts Mortar's native host from a browser outside the sandbox, which cannot run /app/bin/mortar
@@ -18,7 +18,7 @@ const flatpakHostWrapper = "#!/bin/sh\nexec flatpak run --command=mortar " + app
 // nativeHostExe is what a host manifest runs: this executable, or inside a Flatpak the wrapper in the app's own
 // folder under ~/.var/app, which the sandbox and the host see at the same path.
 func (l *System) nativeHostExe() string {
-	if sandbox.InFlatpak() {
+	if flatpak.Inside() {
 		return filepath.Join(l.home, ".var", "app", appversion.AppID, "native-host")
 	}
 	return l.exe
@@ -27,7 +27,7 @@ func (l *System) nativeHostExe() string {
 // WriteNativeHosts lets the Mortar browser extension start this copy of Mortar.
 func (l *System) WriteNativeHosts() error {
 	exe := l.nativeHostExe()
-	if sandbox.InFlatpak() {
+	if flatpak.Inside() {
 		if err := os.MkdirAll(filepath.Dir(exe), 0o700); err != nil {
 			return err
 		}

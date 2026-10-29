@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/nowindow"
+	"github.com/Rethunk-Tech/go-desktopenv/nowindow"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/registry"

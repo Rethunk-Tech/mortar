@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/portal"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -239,20 +238,6 @@ func TestFlatpakStore(t *testing.T) {
 			t.Fatal("file changed")
 		}
 	})
-}
-
-func TestLivePortal(t *testing.T) {
-	if os.Getenv("MORTAR_LIVE_PORTAL") != "1" {
-		t.Skip("set MORTAR_LIVE_PORTAL=1 to call the real Secret portal")
-	}
-	a, err := portal.RetrieveSecret()
-	if err != nil || len(a) == 0 {
-		t.Fatalf("first call: %q, %v", a, err)
-	}
-	b, err := portal.RetrieveSecret()
-	if err != nil || !bytes.Equal(a, b) {
-		t.Fatalf("second call must return the same secret: %v", err)
-	}
 }
 
 func TestFlatpakStoreTightensAnExistingFolderAndRefusesALink(t *testing.T) {

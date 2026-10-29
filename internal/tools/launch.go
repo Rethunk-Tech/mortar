@@ -5,8 +5,8 @@ import (
 	"log"
 	"path/filepath"
 
+	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
-	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
 func launchTool(t Tool, ctx Context) error {
@@ -19,8 +19,8 @@ func launchTool(t Tool, ctx Context) error {
 		return err
 	}
 	name := exe
-	if sandbox.InFlatpak() {
-		name, args = sandbox.HostArgv(dir, nil, exe, args...)
+	if flatpak.Inside() {
+		name, args = flatpak.HostArgv(dir, nil, exe, args...)
 		dir = ""
 	}
 	exited, err := launch.Start(dir, name, args...)

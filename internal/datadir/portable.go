@@ -7,8 +7,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
 // PortableMarker is the file beside the executable that keeps the data folder in "data" next to it.
@@ -52,7 +52,7 @@ func portableDir(exe string) (string, error) {
 		exe = resolved
 	}
 	dir := filepath.Dir(exe)
-	if sandbox.InFlatpak() || dir == "/app" || strings.HasPrefix(dir, "/app/") {
+	if flatpak.Inside() || dir == "/app" || strings.HasPrefix(dir, "/app/") {
 		return "", nil
 	}
 	if !hasMarker(dir) {

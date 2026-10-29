@@ -145,9 +145,24 @@
     "url": "https://github.com/Rethunk-Tech/go-archive"
   },
   {
+    "name": "github.com/Rethunk-Tech/go-desktopenv",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/go-desktopenv"
+  },
+  {
     "name": "github.com/Rethunk-Tech/go-lenientjson",
     "licence": "MIT",
     "url": "https://github.com/Rethunk-Tech/go-lenientjson"
+  },
+  {
+    "name": "github.com/Rethunk-Tech/go-safefs",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/go-safefs"
+  },
+  {
+    "name": "github.com/Rethunk-Tech/go-semverish",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/go-semverish"
   },
   {
     "name": "github.com/andybalholm/brotli",

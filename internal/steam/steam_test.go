@@ -170,23 +170,6 @@ func TestLaunchOptions(t *testing.T) {
 	}
 }
 
-func TestRunFlatpakGoesThroughHostInFlatpak(t *testing.T) {
-	t.Setenv("FLATPAK_ID", "x")
-	old := hostOutput
-	t.Cleanup(func() { hostOutput = old })
-	var got []string
-	hostOutput = func(name string, args ...string) ([]byte, error) {
-		got = append([]string{name}, args...)
-		return nil, nil
-	}
-	if _, err := ShowOverride(); err != nil {
-		t.Fatal(err)
-	}
-	if strings.Join(got, " ") != "flatpak override --user --show "+FlatpakID {
-		t.Fatalf("argv %v", got)
-	}
-}
-
 func TestBuildIDReadsTheLibrariesAppManifest(t *testing.T) {
 	lib := t.TempDir()
 	if err := os.MkdirAll(filepath.Join(lib, "steamapps", "common", "Game"), 0o750); err != nil {

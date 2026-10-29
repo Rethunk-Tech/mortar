@@ -5,6 +5,7 @@ go 1.27.3
 require (
 	github.com/BurntSushi/toml v1.6.0
 	github.com/Rethunk-Tech/go-archive v0.1.1
+	github.com/Rethunk-Tech/go-desktopenv v0.1.0
 	github.com/Rethunk-Tech/go-lenientjson v0.1.0
 	github.com/Rethunk-Tech/go-safefs v0.1.0
 	github.com/Rethunk-Tech/go-semverish v0.1.0

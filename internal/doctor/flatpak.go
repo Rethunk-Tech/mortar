@@ -4,9 +4,9 @@ import (
 	"os"
 	"slices"
 
+	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
-	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 	"github.com/Rethunk-Tech/mortar/internal/steam"
 )
 
@@ -16,7 +16,7 @@ var userHome = os.UserHomeDir
 // flatpakLibraryChecks reports Steam libraries the Flatpak cannot see. The manifest grants the usual places; a
 // library anywhere else reads as missing from inside the sandbox, so its games look not installed.
 func flatpakLibraryChecks() []Check {
-	if !sandbox.InFlatpak() {
+	if !flatpak.Inside() {
 		return nil
 	}
 	home, err := userHome()
