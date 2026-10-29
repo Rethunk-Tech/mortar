@@ -21,6 +21,8 @@ func newGameSettingsService(t *testing.T) (*Service, profile.Profile, string) {
 	t.Helper()
 	datadirtest.Use(t, t.TempDir())
 	config := t.TempDir()
+	home := t.TempDir()
+	t.Setenv("HOME", home)
 	t.Setenv("XDG_CONFIG_HOME", config)
 	t.Setenv("APPDATA", config)
 
@@ -30,7 +32,7 @@ func newGameSettingsService(t *testing.T) (*Service, profile.Profile, string) {
 	}
 	_, profiles := testenv.Stores(t)
 	p := testenv.Profile(t, profiles, "stardew", "Settings")
-	return NewService("", set, profiles), p, config
+	return NewService(home, set, profiles), p, config
 }
 
 func TestGameSettingsRestoreKeepsGameChanges(t *testing.T) {

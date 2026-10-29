@@ -55,6 +55,7 @@ func TestInFlatpak(t *testing.T) {
 
 func TestHostXDGHomes(t *testing.T) {
 	home := t.TempDir()
+	t.Setenv("HOME", home)
 	custom := filepath.Join(t.TempDir(), "cfg")
 	t.Setenv("FLATPAK_ID", appversion.AppID)
 	t.Setenv("HOST_XDG_CONFIG_HOME", custom)

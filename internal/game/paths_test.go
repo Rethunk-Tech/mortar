@@ -13,6 +13,8 @@ func TestStardewCatalogPathsMatchTheFolderStardewUses(t *testing.T) {
 	home := filepath.Join(t.TempDir(), "home")
 	config := filepath.Join(t.TempDir(), "config")
 	appData := filepath.Join(t.TempDir(), "Roaming")
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
 	t.Setenv("XDG_CONFIG_HOME", config)
 	t.Setenv("APPDATA", appData)
 	t.Setenv("FLATPAK_ID", "")

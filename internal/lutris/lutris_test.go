@@ -66,6 +66,7 @@ func TestLocateLinux(t *testing.T) {
 
 func TestConfigDirsFollowCustomXDGHomes(t *testing.T) {
 	home := t.TempDir()
+	t.Setenv("HOME", home)
 	cfg, data := filepath.Join(t.TempDir(), "cfg"), filepath.Join(t.TempDir(), "data")
 	want := []string{filepath.Join(data, "lutris", "games"), filepath.Join(cfg, "lutris", "games")}
 	check := func(t *testing.T) {

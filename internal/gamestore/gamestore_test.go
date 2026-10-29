@@ -103,6 +103,7 @@ func TestBottleOfWalksUpToBottleYml(t *testing.T) {
 
 func TestBottlesDirsFollowCustomXDGData(t *testing.T) {
 	home := t.TempDir()
+	t.Setenv("HOME", home)
 	data := filepath.Join(t.TempDir(), "data")
 	want := filepath.Join(data, "bottles", "bottles")
 	t.Run("native", func(t *testing.T) {

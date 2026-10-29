@@ -218,9 +218,12 @@ func TestInstallArchiveSpanningEntriesFails(t *testing.T) {
 // The game's save folder comes from the process's config folder, so this test points it somewhere private and
 // cannot run in parallel.
 func TestUpdateBacksUpSavesAndHonoursLock(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	m := manifestJSON("me.a")
 	e, p := updEnv(t, map[string]string{"A/manifest.json": m}, map[string]string{"A/manifest.json": m})
+	e.home = home
 	cfg, _ := os.UserConfigDir()
 	writeFile(t, filepath.Join(cfg, "StardewValley", "Saves"), "Farm_1/Farm_1", "save")
 

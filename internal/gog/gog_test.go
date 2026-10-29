@@ -140,6 +140,7 @@ func TestGameDirFindsNestedMarker(t *testing.T) {
 
 func TestHeroicAndMinigalaxyDirsFollowCustomXDGConfig(t *testing.T) {
 	home := t.TempDir()
+	t.Setenv("HOME", home)
 	cfg := filepath.Join(t.TempDir(), "cfg")
 	check := func(t *testing.T) {
 		t.Helper()

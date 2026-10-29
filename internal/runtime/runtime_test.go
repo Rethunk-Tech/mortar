@@ -21,6 +21,7 @@ var stardewSaves = components.PathTemplate{
 func TestNativeLinuxStores(t *testing.T) {
 	home := filepath.Join(t.TempDir(), "home")
 	config := filepath.Join(t.TempDir(), "config")
+	t.Setenv("HOME", home)
 	t.Setenv("XDG_CONFIG_HOME", config)
 	t.Setenv("FLATPAK_ID", "")
 	inst := Install{Store: "steam", Platform: "linux", Home: home, GOOS: "linux"}
@@ -49,6 +50,7 @@ func TestNativeLinuxStores(t *testing.T) {
 func TestNativeFlatpakUsesHostXDGHomes(t *testing.T) {
 	home := filepath.Join(t.TempDir(), "home")
 	config := filepath.Join(t.TempDir(), "hostcfg")
+	t.Setenv("HOME", home)
 	t.Setenv("FLATPAK_ID", "tech.rethunk.Mortar")
 	t.Setenv("HOST_XDG_CONFIG_HOME", config)
 	inst := Install{Store: "steam", Platform: "linux", Home: home, GOOS: "linux"}
@@ -66,7 +68,10 @@ func TestNativeFlatpakUsesHostXDGHomes(t *testing.T) {
 func TestNativeWindowsUsesAppData(t *testing.T) {
 	appData := filepath.Join(t.TempDir(), "Roaming")
 	t.Setenv("APPDATA", appData)
-	inst := Install{Store: "steam", Platform: "windows", Home: t.TempDir(), GOOS: "windows"}
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
+	inst := Install{Store: "steam", Platform: "windows", Home: home, GOOS: "windows"}
 	if IDOf(inst) != Native {
 		t.Fatal("a Windows build on Windows must be native")
 	}
