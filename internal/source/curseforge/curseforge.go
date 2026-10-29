@@ -21,7 +21,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/source"
@@ -123,8 +122,7 @@ func (d Driver) do(ctx context.Context, method, path string, params url.Values, 
 	u := strings.TrimRight(cmp.Or(d.URL, BaseURL), "/") + path
 	return source.DoJSON(ctx, source.Request{
 		Service: "CurseForge", Client: d.HTTP, Method: method, URL: u, Params: params, Body: body,
-		UserAgent: appversion.UserAgent(""),
-		Header:    func(h http.Header) { h.Set("X-Api-Key", key) },
+		Header: func(h http.Header) { h.Set("X-Api-Key", key) },
 	}, out)
 }
 

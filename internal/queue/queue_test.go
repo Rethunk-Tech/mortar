@@ -15,6 +15,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/ids"
@@ -1008,5 +1009,18 @@ func TestReplacesRemovesTheEntryInTheInstallsBatchOnceItLands(t *testing.T) {
 	defer mu.Unlock()
 	if !slices.Equal(calls, []string{"stardew|p1|thunderstore-old-1.0.0"}) {
 		t.Fatalf("removed %q", calls)
+	}
+}
+
+func TestDownloadTransportKeepsTheUserAgentWrapAroundItsClone(t *testing.T) {
+	t.Parallel()
+	base := &http.Transport{}
+	got, ok := downloadTransport(&httpkit.Transport{Base: base, UserAgent: "Mortar/1"}).(*httpkit.Transport)
+	if !ok || got.UserAgent != "Mortar/1" {
+		t.Fatalf("not wrapped: %T", got)
+	}
+	clone, ok := got.Base.(*http.Transport)
+	if !ok || clone == base || clone.ResponseHeaderTimeout != 20*time.Second || clone.HTTP2 == nil {
+		t.Fatalf("base %T was not cloned and tuned", got.Base)
 	}
 }

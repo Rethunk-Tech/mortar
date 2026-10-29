@@ -19,6 +19,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-httpkit"
+
 	"github.com/Rethunk-Tech/go-httpkit/download"
 
 	"github.com/Rethunk-Tech/mortar/internal/game"
@@ -449,6 +451,29 @@ type Service struct {
 	stallTimer func(d time.Duration, f func()) *time.Timer
 }
 
+// downloadTransport clones base's transport for the queue's downloads, keeping the User-Agent wrap main puts on
+// http.DefaultTransport around the clone.
+func downloadTransport(base http.RoundTripper) http.RoundTripper {
+	outer, wrapped := base.(*httpkit.Transport)
+	if wrapped {
+		base = outer.Base
+	}
+	tr := &http.Transport{Proxy: http.ProxyFromEnvironment, ResponseHeaderTimeout: 20 * time.Second, TLSHandshakeTimeout: 10 * time.Second}
+	if dt, ok := base.(*http.Transport); ok {
+		tr = dt.Clone()
+		tr.ResponseHeaderTimeout = 20 * time.Second
+	}
+	// A CDN can stall one HTTP/2 connection that every download shares; pinging it lets the transport drop a dead
+	// one so the retry opens a fresh connection instead of timing out on the same one.
+	tr.HTTP2 = &http.HTTP2Config{SendPingTimeout: 15 * time.Second, PingTimeout: 10 * time.Second}
+	if wrapped {
+		clone := *outer
+		clone.Base = tr
+		return &clone
+	}
+	return tr
+}
+
 // New reads the saved queue: what was under way is queued again so a partial file can resume, and a file
 // waiting for a click is clicked again once the user resumes a queue that holds Nexus files.
 func New(d Deps) (*Service, error) {
@@ -456,15 +481,7 @@ func New(d Deps) (*Service, error) {
 		d.Now = time.Now
 	}
 	if d.HTTP == nil {
-		tr := &http.Transport{Proxy: http.ProxyFromEnvironment, ResponseHeaderTimeout: 20 * time.Second, TLSHandshakeTimeout: 10 * time.Second}
-		if dt, ok := http.DefaultTransport.(*http.Transport); ok {
-			tr = dt.Clone()
-			tr.ResponseHeaderTimeout = 20 * time.Second
-		}
-		// A CDN can stall one HTTP/2 connection that every download shares; pinging it lets the transport drop a dead
-		// one so the retry opens a fresh connection instead of timing out on the same one.
-		tr.HTTP2 = &http.HTTP2Config{SendPingTimeout: 15 * time.Second, PingTimeout: 10 * time.Second}
-		d.HTTP = &http.Client{Transport: tr, Timeout: 30 * time.Minute}
+		d.HTTP = &http.Client{Transport: downloadTransport(http.DefaultTransport), Timeout: 30 * time.Minute}
 	}
 	s := &Service{
 		d: d, kick: make(chan struct{}, 1), cancels: map[string]context.CancelFunc{},

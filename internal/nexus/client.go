@@ -21,7 +21,6 @@ import (
 	"github.com/Rethunk-Tech/go-httpkit"
 
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/netstate"
 )
@@ -224,7 +223,6 @@ func (c *Client) roundTrip(ctx context.Context, method, path string, body any) (
 	}
 	req.Header.Set("Application-Name", "Mortar")
 	req.Header.Set("Application-Version", c.version)
-	req.Header.Set("User-Agent", appversion.UserAgent(c.version))
 	req.Header.Set("Accept", "application/json")
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")

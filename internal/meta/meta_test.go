@@ -10,6 +10,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-httpkit"
+
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -214,7 +216,7 @@ func TestDoNamesMortarAndMapsTooManyRequestsToBusy(t *testing.T) {
 		w.WriteHeader(http.StatusTooManyRequests)
 	}))
 	defer srv.Close()
-	c := &Client{HTTP: srv.Client(), Version: "1.2.3"}
+	c := &Client{HTTP: &http.Client{Transport: &httpkit.Transport{Base: srv.Client().Transport, UserAgent: "Mortar/1.2.3"}}, Version: "1.2.3"}
 	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, srv.URL, nil)
 	if err != nil {
 		t.Fatal(err)

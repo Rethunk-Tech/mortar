@@ -13,7 +13,6 @@ import (
 	"github.com/Rethunk-Tech/go-httpkit"
 
 	"github.com/Rethunk-Tech/go-safefs/diskcache"
-	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
@@ -71,7 +70,6 @@ func (c *Client) Cache() *diskcache.Cache {
 func (c *Client) do(req *http.Request, limit int64) ([]byte, error) {
 	ctx, cancel := context.WithTimeout(req.Context(), requestTimeout)
 	defer cancel()
-	req.Header.Set("User-Agent", appversion.UserAgent(c.Version))
 	return httpkit.DoCapped(c.client(), req.WithContext(ctx), limit, nil)
 }
 

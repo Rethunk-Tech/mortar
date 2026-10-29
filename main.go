@@ -20,6 +20,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/Rethunk-Tech/go-httpkit"
+
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/services/notifications"
@@ -228,6 +230,8 @@ func run() error {
 	if len(os.Args) > 2 && os.Args[1] == "--handle-links" {
 		return claimLinks(os.Args[2])
 	}
+	// Every client that sets no User-Agent of its own, the CLI and the native host included, names Mortar.
+	http.DefaultTransport = &httpkit.Transport{Base: http.DefaultTransport, UserAgent: appversion.UserAgent(version)}
 	registerDoctorLoaders()
 	if cli.Is(os.Args[1:]) {
 		os.Exit(cli.Run(version, os.Args[1:], os.Stdout, os.Stderr))

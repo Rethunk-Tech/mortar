@@ -65,6 +65,7 @@ func serve(t *testing.T, status *atomic.Int32, hourly string, hits *atomic.Int32
 	}))
 	t.Cleanup(srv.Close)
 	c := New("9.9")
+	c.HTTP = &http.Client{Transport: &httpkit.Transport{UserAgent: "Mortar/9.9"}}
 	c.BaseURL, c.CacheDir, c.Now = srv.URL, t.TempDir(), func() time.Time { return t0 }
 	return c.WithKey("k")
 }
