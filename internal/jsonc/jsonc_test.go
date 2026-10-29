@@ -138,3 +138,12 @@ func TestCleanBareDecimalPoints(t *testing.T) {
 		t.Error("+1 accepted")
 	}
 }
+
+func TestCleanBackslashBeforeControlFails(t *testing.T) {
+	for _, in := range []string{"{\"a\":\"x\\\ny\"}", "{\"a\":\"x\\\ty\"}"} {
+		var v any
+		if err := json.Unmarshal(Clean([]byte(in)), &v); err == nil {
+			t.Errorf("%q parsed as %v", in, v)
+		}
+	}
+}

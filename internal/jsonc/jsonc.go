@@ -75,12 +75,10 @@ func appendString(out, b []byte, i int) ([]byte, int) {
 		switch c := b[j]; {
 		case c == '\\' && j+1 < len(b):
 			j++
-			switch n := b[j]; {
-			case n == '\'':
+			if n := b[j]; n == '\'' {
 				out = append(out, '\'')
-			case n < 0x20:
-				out = appendControl(out, n)
-			default:
+			} else {
+				// Other escapes pass through; a backslash before a raw control character stays invalid, as Json.NET does (bad escape) and encoding/json does.
 				out = append(out, '\\', n)
 			}
 		case c == '"':
@@ -161,6 +159,7 @@ func normalise(b []byte) []byte {
 			out = appendWord(out, b, i, j)
 			i = j - 1
 		case c == '.':
+			// Right for a numeric target; Json.NET reads {"s":.5} as the string ".5" for a string target, which Clean cannot see.
 			digitBefore := len(out) > 0 && out[len(out)-1] >= '0' && out[len(out)-1] <= '9'
 			digitAfter := i+1 < len(b) && b[i+1] >= '0' && b[i+1] <= '9'
 			switch {
