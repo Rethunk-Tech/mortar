@@ -17,6 +17,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
+
 	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 	"github.com/Rethunk-Tech/go-desktopenv/portal"
 	"github.com/Rethunk-Tech/go-safefs"
@@ -40,14 +42,11 @@ var (
 		return portal.RetrieveSecret(ctx)
 	}
 	storeDir = func() (string, error) {
-		base := os.Getenv("XDG_DATA_HOME")
-		if base == "" {
-			home, err := os.UserHomeDir()
-			if err != nil {
-				return "", err
-			}
-			base = filepath.Join(home, ".local", "share")
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return "", err
 		}
+		base := userdirs.DataHome(home)
 		// Beside Mortar's data folder, never in it, so a backup, move or share of that folder carries no secret.
 		return filepath.Join(base, "mortar-secrets"), nil
 	}

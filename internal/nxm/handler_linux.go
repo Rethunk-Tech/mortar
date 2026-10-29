@@ -14,6 +14,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
+
 	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
@@ -86,8 +88,8 @@ func New(exe string) (*System, error) {
 		return nil, err
 	}
 	l := &System{
-		exe: selfexe.Launchable(exe), home: home, dataHome: baseDir("XDG_DATA_HOME", filepath.Join(home, ".local", "share")),
-		configHome: baseDir("XDG_CONFIG_HOME", filepath.Join(home, ".config")), run: execRun,
+		exe: selfexe.Launchable(exe), home: home, dataHome: userdirs.DataHome(home),
+		configHome: userdirs.ConfigHome(home), run: execRun,
 	}
 	for d := range strings.SplitSeq(baseDir("XDG_DATA_DIRS", "/usr/local/share:/usr/share"), ":") {
 		l.dataDirs = append(l.dataDirs, filepath.Join(d, "applications"))

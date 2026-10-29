@@ -96,7 +96,7 @@ func Locate(home string, g Game, extra ...string) []Install {
 func ConfigDirs(home string, extra ...string) []string {
 	return append(slices.Clone(extra),
 		filepath.Join(userdirs.HostDataHome(home), "lutris", "games"),
-		filepath.Join(home, ".var", "app", "net.lutris.Lutris", "data", "lutris", "games"),
+		filepath.Join(userdirs.FlatpakApp(home, "net.lutris.Lutris"), "data", "lutris", "games"),
 		filepath.Join(userdirs.HostConfigHome(home), "lutris", "games"),
 	)
 }

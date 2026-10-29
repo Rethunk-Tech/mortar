@@ -6,9 +6,10 @@ import (
 	"context"
 	"errors"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
 
 	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 	"github.com/Rethunk-Tech/go-desktopenv/portal"
@@ -35,16 +36,13 @@ func applyAutostart(enable bool) error {
 		}
 		return err
 	}
-	cfg := os.Getenv("XDG_CONFIG_HOME")
-	if cfg == "" {
-		home, err := os.UserHomeDir()
-		if err != nil {
-			return err
-		}
-		cfg = filepath.Join(home, ".config")
-		if err := os.MkdirAll(cfg, 0o700); err != nil {
-			return err
-		}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+	cfg := userdirs.ConfigHome(home)
+	if err := os.MkdirAll(cfg, 0o700); err != nil {
+		return err
 	}
 	root, err := os.OpenRoot(cfg)
 	if err != nil {

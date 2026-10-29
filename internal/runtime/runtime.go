@@ -5,14 +5,12 @@ package runtime
 import (
 	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 	"regexp"
 	goruntime "runtime"
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -148,20 +146,16 @@ func (n native) Resolve(inst Install, t components.PathTemplate) (string, error)
 	if !n.Detect(inst) {
 		return "", fmt.Errorf("a %s build cannot run natively on %s", inst.Platform, inst.host())
 	}
-	tokens, err := nativeTokens(inst)
-	if err != nil {
-		return "", err
-	}
-	return expand(p, tokens)
+	return expand(p, nativeTokens(inst))
 }
 
-func nativeTokens(inst Install) (map[string]string, error) {
+func nativeTokens(inst Install) map[string]string {
 	home := inst.Home
 	tokens := map[string]string{"home": home, "install": inst.Dir, "documents": documentsDir(home)}
 	switch inst.host() {
 	case "windows":
-		tokens["appData"] = envOr("APPDATA", filepath.Join(home, "AppData", "Roaming"))
-		tokens["localAppData"] = envOr("LOCALAPPDATA", filepath.Join(home, "AppData", "Local"))
+		tokens["appData"] = userdirs.AppData(home)
+		tokens["localAppData"] = userdirs.LocalAppData(home)
 		tokens["localLow"] = filepath.Join(home, "AppData", "LocalLow")
 	case "darwin":
 		tokens["xdgConfig"] = filepath.Join(home, "Library", "Application Support")
@@ -170,35 +164,20 @@ func nativeTokens(inst Install) (map[string]string, error) {
 		switch {
 		case inst.FlatpakApp != "":
 			// Flatpak points an app's XDG_CONFIG_HOME and XDG_DATA_HOME into its folder under ~/.var/app.
-			sandbox := filepath.Join(home, ".var", "app", inst.FlatpakApp)
+			sandbox := userdirs.FlatpakApp(home, inst.FlatpakApp)
 			tokens["xdgConfig"] = filepath.Join(sandbox, "config")
 			tokens["xdgData"] = filepath.Join(sandbox, "data")
 		case inst.Store == storeFlatpakSteam:
-			sandbox := filepath.Join(home, ".var", "app", "com.valvesoftware.Steam")
+			sandbox := userdirs.FlatpakApp(home, "com.valvesoftware.Steam")
 			tokens["xdgConfig"] = filepath.Join(sandbox, ".config")
 			tokens["xdgData"] = filepath.Join(sandbox, ".local", "share")
-		case flatpak.Inside():
+		default:
+			// Inside Mortar's own Flatpak, these are the host's folders, where the game wrote.
 			tokens["xdgConfig"] = userdirs.HostConfigHome(home)
 			tokens["xdgData"] = userdirs.HostDataHome(home)
-		default:
-			config := os.Getenv("XDG_CONFIG_HOME")
-			if config == "" {
-				config = filepath.Join(home, ".config")
-			} else if !filepath.IsAbs(config) {
-				return nil, errors.New("XDG_CONFIG_HOME is not an absolute path")
-			}
-			tokens["xdgConfig"] = config
-			tokens["xdgData"] = envOr("XDG_DATA_HOME", filepath.Join(home, ".local", "share"))
 		}
 	}
-	return tokens, nil
-}
-
-func envOr(name, fallback string) string {
-	if v := os.Getenv(name); v != "" {
-		return v
-	}
-	return fallback
+	return tokens
 }
 
 type proton struct{}

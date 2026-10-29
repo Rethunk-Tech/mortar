@@ -17,7 +17,7 @@ const bottlesKey = "bottles"
 func bottlesDirs(home string, extra ...string) []string {
 	return append(append([]string(nil), extra...),
 		filepath.Join(userdirs.HostDataHome(home), "bottles", "bottles"),
-		filepath.Join(home, ".var", "app", "com.usebottles.bottles", "data", "bottles", "bottles"),
+		filepath.Join(userdirs.FlatpakApp(home, "com.usebottles.bottles"), "data", "bottles", "bottles"),
 	)
 }
 

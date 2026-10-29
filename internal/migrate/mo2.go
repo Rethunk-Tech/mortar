@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
+
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/go-safefs"
@@ -78,16 +80,7 @@ func mo2Installations(home, chosen, modsPath, gameName, gameID string) ([]instal
 
 func mo2LocalAppData(home string) string {
 	if runtime.GOOS == "windows" {
-		actual, _ := os.UserHomeDir()
-		if safefs.SamePath(home, actual) {
-			if dir := os.Getenv("LOCALAPPDATA"); dir != "" {
-				return dir
-			}
-		}
-		if dir := os.Getenv("LOCALAPPDATA"); dir != "" && home == "" {
-			return dir
-		}
-		return filepath.Join(home, "AppData", "Local")
+		return userdirs.LocalAppData(home)
 	}
 	return filepath.Join(home, "AppData", "Local")
 }

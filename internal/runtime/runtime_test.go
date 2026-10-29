@@ -65,6 +65,18 @@ func TestNativeFlatpakUsesHostXDGHomes(t *testing.T) {
 	}
 }
 
+// The XDG spec says to ignore a relative XDG_CONFIG_HOME, so saves resolve under ~/.config rather than failing.
+func TestNativeIgnoresRelativeXDGConfigHome(t *testing.T) {
+	home := filepath.Join(t.TempDir(), "home")
+	t.Setenv("HOME", home)
+	t.Setenv("FLATPAK_ID", "")
+	t.Setenv("XDG_CONFIG_HOME", "relative")
+	got, err := Resolve(Install{Store: "steam", Platform: "linux", Home: home, GOOS: "linux"}, stardewSaves)
+	if want := filepath.Join(home, ".config", "StardewValley", "Saves"); err != nil || got != want {
+		t.Fatalf("got %q, %v; want %q", got, err, want)
+	}
+}
+
 func TestNativeWindowsUsesAppData(t *testing.T) {
 	appData := filepath.Join(t.TempDir(), "Roaming")
 	t.Setenv("APPDATA", appData)

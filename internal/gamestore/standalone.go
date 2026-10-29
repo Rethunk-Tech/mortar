@@ -1,9 +1,10 @@
 package gamestore
 
 import (
-	"os"
 	"path/filepath"
 	goruntime "runtime"
+
+	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/gog"
@@ -49,11 +50,7 @@ func (standaloneStore) Discover(home string, _ map[string][]string, g components
 
 // flatpakRoots are the per-user and system-wide Flatpak installations.
 func flatpakRoots(home string) []string {
-	data := os.Getenv("XDG_DATA_HOME")
-	if data == "" || !filepath.IsAbs(data) {
-		data = filepath.Join(home, ".local", "share")
-	}
-	return []string{filepath.Join(data, "flatpak"), "/var/lib/flatpak"}
+	return []string{filepath.Join(userdirs.HostDataHome(home), "flatpak"), "/var/lib/flatpak"}
 }
 
 // flatpakStore finds a game installed as a Flatpak app, in the app's current deployment.

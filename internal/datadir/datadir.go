@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
+
 	"github.com/Rethunk-Tech/go-safefs"
 )
 
@@ -30,21 +32,14 @@ func Dir() (string, error) {
 
 // DefaultDir is the OS default location, ignoring a relocation pointer.
 func DefaultDir() (string, error) {
-	if runtime.GOOS == "windows" {
-		base := os.Getenv("LOCALAPPDATA")
-		if base == "" {
-			return "", fmt.Errorf("LOCALAPPDATA is not set")
-		}
-		return filepath.Join(base, "Mortar"), nil
-	}
-	if base := os.Getenv("XDG_DATA_HOME"); base != "" {
-		return filepath.Join(base, "mortar"), nil
-	}
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", fmt.Errorf("resolve home: %w", err)
 	}
-	return filepath.Join(home, ".local", "share", "mortar"), nil
+	if runtime.GOOS == "windows" {
+		return filepath.Join(userdirs.LocalAppData(home), "Mortar"), nil
+	}
+	return filepath.Join(userdirs.DataHome(home), "mortar"), nil
 }
 
 // errRealDataInTest stops a test from reading or writing the user's real Mortar data.

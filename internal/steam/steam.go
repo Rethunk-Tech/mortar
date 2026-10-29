@@ -13,6 +13,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
+
 	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 	"github.com/Rethunk-Tech/go-safefs"
 
@@ -63,8 +65,7 @@ func homeOr(home string) string {
 
 // FlatpakRoot is Flatpak Steam's Steam directory under home.
 func FlatpakRoot(home string) string {
-	home = homeOr(home)
-	return filepath.Join(home, ".var", "app", FlatpakID, ".local", "share", "Steam")
+	return filepath.Join(userdirs.FlatpakApp(homeOr(home), FlatpakID), ".local", "share", "Steam")
 }
 
 // Roots are the native Steam folders searched, the user's own folders first.

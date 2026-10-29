@@ -9,7 +9,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
+
 	"github.com/Rethunk-Tech/mortar/internal/installer"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi"
 
@@ -146,27 +147,9 @@ func userHome(home string) (string, error) {
 
 func configDir(home string) string {
 	if runtime.GOOS == "windows" {
-		actual, _ := os.UserHomeDir()
-		if safefs.SamePath(home, actual) {
-			if appData := os.Getenv("APPDATA"); appData != "" {
-				return appData
-			}
-		}
-		if appData := os.Getenv("APPDATA"); appData != "" && home == "" {
-			return appData
-		}
-		return filepath.Join(home, "AppData", "Roaming")
+		return userdirs.AppData(home)
 	}
-	actual, _ := os.UserHomeDir()
-	if safefs.SamePath(home, actual) {
-		if xdg := os.Getenv("XDG_CONFIG_HOME"); xdg != "" && filepath.IsAbs(xdg) {
-			return xdg
-		}
-	}
-	if xdg := os.Getenv("XDG_CONFIG_HOME"); xdg != "" && filepath.IsAbs(xdg) && home == "" {
-		return xdg
-	}
-	return filepath.Join(home, ".config")
+	return userdirs.HostConfigHome(home)
 }
 
 func importIDs(gameID string) components.ImportIDs {

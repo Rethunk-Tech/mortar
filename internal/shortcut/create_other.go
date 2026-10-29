@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
+
 	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 	"github.com/Rethunk-Tech/go-desktopenv/portal"
 	"github.com/Rethunk-Tech/go-safefs"
@@ -210,14 +212,11 @@ func firstQuoted(s string) (arg, rest string, ok bool) {
 }
 
 func dataHome() (string, error) {
-	if v := os.Getenv("XDG_DATA_HOME"); v != "" {
-		return v, nil
-	}
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(home, ".local", "share"), nil
+	return userdirs.DataHome(home), nil
 }
 
 // RemoveStartMenu deletes every profile's desktop entry, for an uninstall.

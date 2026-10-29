@@ -4,7 +4,6 @@ package gog
 import (
 	"cmp"
 	"encoding/json"
-	"os"
 	"path/filepath"
 	"runtime"
 	"slices"
@@ -104,7 +103,7 @@ func OfflineDirs(home string, r Roots) []string {
 func MinigalaxyConfigDirs(home string) []string {
 	return []string{
 		filepath.Join(userdirs.HostConfigHome(home), "minigalaxy"),
-		filepath.Join(home, ".var", "app", "io.github.sharkwouter.Minigalaxy", "config", "minigalaxy"),
+		filepath.Join(userdirs.FlatpakApp(home, "io.github.sharkwouter.Minigalaxy"), "config", "minigalaxy"),
 	}
 }
 
@@ -134,14 +133,11 @@ func MinigalaxyInstallDirs(home string, custom ...string) []string {
 func HeroicDirs(home string, custom ...string) []string {
 	out := slices.Clone(custom)
 	if runtime.GOOS == "windows" {
-		if appData := os.Getenv("APPDATA"); appData != "" {
-			out = append(out, filepath.Join(appData, "heroic"))
-		}
-		return out
+		return append(out, filepath.Join(userdirs.AppData(home), "heroic"))
 	}
 	return append(out,
 		filepath.Join(userdirs.HostConfigHome(home), "heroic"),
-		filepath.Join(home, ".var", "app", "com.heroicgameslauncher.hgl", "config", "heroic"),
+		filepath.Join(userdirs.FlatpakApp(home, "com.heroicgameslauncher.hgl"), "config", "heroic"),
 		filepath.Join(home, "snap", "heroic", "current", ".config", "heroic"),
 	)
 }

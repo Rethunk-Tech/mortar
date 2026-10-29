@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
+
 	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
@@ -19,7 +21,7 @@ const flatpakHostWrapper = "#!/bin/sh\nexec flatpak run --command=mortar " + app
 // folder under ~/.var/app, which the sandbox and the host see at the same path.
 func (l *System) nativeHostExe() string {
 	if flatpak.Inside() {
-		return filepath.Join(l.home, ".var", "app", appversion.AppID, "native-host")
+		return filepath.Join(userdirs.FlatpakApp(l.home, appversion.AppID), "native-host")
 	}
 	return l.exe
 }
