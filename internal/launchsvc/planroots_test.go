@@ -3,6 +3,7 @@ package launchsvc
 import (
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
@@ -39,7 +40,7 @@ func TestPlanRootsResolvesEachRoleOnceAndRefusesAnUnknownOne(t *testing.T) {
 	dir := filepath.Join(steamRoot, "steamapps", "common", "Roots Game")
 	for path, body := range map[string]string{
 		filepath.Join(dir, "R.x86_64"):                                "",
-		filepath.Join(steamRoot, "steamapps", "libraryfolders.vdf"):   "\"libraryfolders\"\n{\n\"0\"\n{\n\"path\" \"" + steamRoot + "\"\n}\n}\n",
+		filepath.Join(steamRoot, "steamapps", "libraryfolders.vdf"):   "\"libraryfolders\"\n{\n\"0\"\n{\n\"path\" \"" + strings.ReplaceAll(steamRoot, `\`, `\\`) + "\"\n}\n}\n",
 		filepath.Join(steamRoot, "steamapps", "appmanifest_4242.acf"): "\"AppState\"\n{\n\"installdir\" \"Roots Game\"\n}\n",
 	} {
 		testfs.WriteAt(t, path, []byte(body))
