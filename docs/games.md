@@ -58,7 +58,7 @@ Sources: SMAPI's repository (technical docs, manifest and scanner models, unix l
 - Steam app `413150`, through `libraryfolders.vdf`. Per-account files such as `localconfig.vdf` are read for the account marked `MostRecent` in `config/loginusers.vdf`. Native Steam is preferred over Flatpak Steam.
 - **Flatpak Steam:** its sandbox cannot read Mortar's data folder until `flatpak override --user --filesystem=<data dir>:ro com.valvesoftware.Steam`.
 - **Epic (Windows):** Play opens `com.epicgames.launcher://apps/<AppName>?action=launch&silent=true`, as r2modman and Gale do, so the launcher signs the game in.
-- **Xbox (Windows):** the catalog's package name is passed to PowerShell as an environment variable, never script text.
+- **Xbox (Windows):** the install folder of the catalog's package name is read from the per-user AppModel registry (`internal/gamestore/appx_windows.go`), after the name is checked as a plain package name; no PowerShell runs.
 - **Heroic and Lutris (Linux):** the game runs in the prefix its launcher names. Play hands off to the launcher when the plan needs only DLL overrides, which Mortar writes into the prefix's `user.reg` first. GOG, Minigalaxy, Heroic and Lutris start SMAPI directly with `--mods-path`.
 - **Reset game install** deletes the validated install folder (SMAPI and leftover mods included); saves and profiles stay. It is refused while the game runs and when the path is the filesystem root or the user's home.
 - **Steam Deck:** install in Desktop Mode; in Game Mode add Mortar as a non-Steam game and grant Flatpak Steam read access to Mortar's data folder.

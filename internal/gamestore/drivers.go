@@ -204,7 +204,8 @@ func (eaStore) Discover(_ string, roots map[string][]string, g components.GameIn
 
 const (
 	epicKey = "epic"
-	// epicInstalled is the Epic Games Launcher's list of the games it installed and where.
+	// epicInstalled is the Epic Games Launcher's list of the games it installed and where; r2modman reads it in
+	// src/providers/generic/game/directory_resolver/win/EGSDirectoryResolver.ts, Gale in src-tauri/src/profile/launch/platform.rs.
 	epicInstalled = "LauncherInstalled.dat"
 )
 
@@ -323,7 +324,9 @@ func EpicAppName(dir string, names []string) string {
 
 const xboxKey = "xbox"
 
-// appxLocation is the install folder of the Windows app package named pkg, as Gale finds an Xbox copy
+// appxLocation is the install folder of the Windows app package named pkg, as Gale
+// (src-tauri/src/profile/launch/platform.rs) and r2modman
+// (src/providers/generic/game/directory_resolver/win/XboxGamePassDirectoryResolver.ts) find an Xbox copy
 // (Get-AppxPackage), or "" when it is not installed or not on Windows. A test replaces it.
 var appxLocation = func(pkg string) string {
 	if !components.PlainPackage(pkg) {

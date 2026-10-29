@@ -8,7 +8,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 )
 
-// epicCommand starts an Epic Games copy through its launcher, as r2modman and Gale do, so the launcher signs the game in
+// epicCommand starts an Epic Games copy through its launcher, as r2modman (src/r2mm/launching/runners/multiplatform/EgsGameRunner.ts) and Gale
+// (src-tauri/src/profile/launch/platform.rs) do, so the launcher signs the game in
 // to Epic's online services; the game still loads its loader from its own folder. The link is the launcher's fixed
 // scheme around an AppName checked as a plain name, so the system handler is never handed anything else.
 func epicCommand(inst Install) (launch.Command, error) {
