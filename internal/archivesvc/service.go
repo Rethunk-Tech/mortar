@@ -4,6 +4,7 @@ package archivesvc
 
 import (
 	"context"
+	"crypto/sha256"
 	"errors"
 	"io/fs"
 	"os"
@@ -125,7 +126,7 @@ func (s *Service) DownloadsArchives(game string) ([]DownloadArchive, error) {
 		if i < maxHashed {
 			h, ok := cache[a.Path]
 			if !ok || h.Size != a.Size || h.Mtime != a.Mtime {
-				sum, err := fsx.SHA256(a.Path)
+				sum, err := fsx.HashFile(a.Path, sha256.New())
 				if err != nil {
 					pending = append(pending, a)
 					continue

@@ -1,6 +1,7 @@
 package loadersvc
 
 import (
+	"crypto/sha256"
 	"os"
 	"path/filepath"
 
@@ -20,7 +21,7 @@ func localBridge(gameID string) (component components.Component, zip string, ok 
 		return components.Component{}, "", false
 	}
 	zip = filepath.Join(dir, gameID+".zip")
-	sum, err := fsx.SHA256(zip)
+	sum, err := fsx.HashFile(zip, sha256.New())
 	if err != nil {
 		return components.Component{}, "", false
 	}

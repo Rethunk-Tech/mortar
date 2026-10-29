@@ -179,7 +179,7 @@ func (r *relocator) cloneFromStore(from, to, rel string, size int64) (string, er
 		if !ok || want == "" || r.sizes[twin] != size {
 			continue
 		}
-		sum, err := fsx.SHA256(from)
+		sum, err := fsx.HashFile(from, sha256.New())
 		if err != nil {
 			return "", err
 		}
@@ -249,7 +249,7 @@ func (r *relocator) verifyCopy() error {
 			}
 			continue
 		}
-		got, err := fsx.SHA256(path)
+		got, err := fsx.HashFile(path, sha256.New())
 		if err != nil {
 			return err
 		}

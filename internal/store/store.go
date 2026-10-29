@@ -349,7 +349,7 @@ func (s *Store) AddArchiveKey(ctx context.Context, game, key, archivePath string
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	return s.admit(ctx, game, key, func() (string, error) { return fsx.SHA256(archivePath) }, func(tmp string) error {
+	return s.admit(ctx, game, key, func() (string, error) { return fsx.HashFile(archivePath, sha256.New()) }, func(tmp string) error {
 		return archive.Extract(archivePath, tmp)
 	}, func() int64 {
 		n, _ := archive.DeclaredSize(archivePath)
@@ -624,7 +624,7 @@ func HashDir(root string) (string, error) {
 }
 
 func hashKey(path string) (string, error) {
-	sum, err := fsx.SHA256(path)
+	sum, err := fsx.HashFile(path, sha256.New())
 	if err != nil {
 		return "", err
 	}

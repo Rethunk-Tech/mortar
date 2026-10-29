@@ -2,6 +2,7 @@ package loadersvc
 
 import (
 	"archive/zip"
+	"crypto/sha256"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -52,7 +53,7 @@ func TestALocalBridgeBuildStandsInForTheRelease(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	sum, err := fsx.SHA256(zipPath)
+	sum, err := fsx.HashFile(zipPath, sha256.New())
 	if err != nil {
 		t.Fatal(err)
 	}

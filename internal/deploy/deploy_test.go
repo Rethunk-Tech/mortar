@@ -2,6 +2,7 @@ package deploy
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"io/fs"
@@ -195,7 +196,7 @@ func TestPurgeKeepsTheFileOfAnOpThatNeverRan(t *testing.T) {
 	dst := filepath.Join(r.install, "winhttp.dll")
 	// The player's file happens to equal ours, and the cancelled launch never got to displace or replace it.
 	write(t, dst, "proxy")
-	hash, _ := fsx.SHA256(dst)
+	hash, _ := fsx.HashFile(dst, sha256.New())
 	m := Manifest{Dir: r.install, View: r.view, Ops: []Placed{{Dst: dst, Src: filepath.Join(r.store, "winhttp.dll"), Hash: hash, Displaced: filepath.Join(r.view.JournalDir, "displaced", "0")}}}
 	d := Place{}
 	if err := d.Purge(t.Context(), m); err != nil || read(dst) != "proxy" {

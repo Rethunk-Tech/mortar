@@ -2,6 +2,7 @@ package smapi
 
 import (
 	"context"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"regexp"
@@ -145,7 +146,7 @@ func (l Loader) Fetch(ctx context.Context, _ components.GameInfo, version, dest 
 	if err := github.Download(ctx, l.Client, url, dest, maxInstaller, nil); err != nil {
 		return fmt.Errorf("download SMAPI %s: %w", version, err)
 	}
-	got, err := fsx.SHA256(dest)
+	got, err := fsx.HashFile(dest, sha256.New())
 	if err == nil && !strings.EqualFold(got, want) {
 		err = errors.New("the download does not match GitHub's SHA-256 for it")
 	}

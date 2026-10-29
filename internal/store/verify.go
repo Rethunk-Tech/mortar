@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"crypto/sha256"
 	"errors"
 	"io/fs"
 	"log"
@@ -114,7 +115,7 @@ func sumTreeUntil(stop func() error, dir string) (map[string]fileSum, error) {
 		if err != nil {
 			return err
 		}
-		sum, err := fsx.SHA256(p)
+		sum, err := fsx.HashFile(p, sha256.New())
 		if err != nil {
 			return err
 		}

@@ -3,6 +3,7 @@ package deploy
 import (
 	"cmp"
 	"context"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -101,7 +102,7 @@ func (Place) Apply(ctx context.Context, p Plan) (Manifest, error) {
 	}
 	m := Manifest{Dir: p.Dir, View: p.View, Owned: p.Owned, Existing: listOwned(p.Owned)}
 	for i, op := range p.Ops {
-		hash, err := fsx.SHA256(op.Src)
+		hash, err := fsx.HashFile(op.Src, sha256.New())
 		if err != nil {
 			return Manifest{}, err
 		}
@@ -255,7 +256,7 @@ func undoOps(ctx context.Context, m *Manifest, log *opLog) error {
 			// Nothing was displaced, so Dst is ours only while it still holds our content. A file changed since holds
 			// the player's or a mod's own data (a script mod's settings): one placed from the profile's copy goes back
 			// into that copy, and any other stays.
-			if h, err := fsx.SHA256(o.Dst); err == nil {
+			if h, err := fsx.HashFile(o.Dst, sha256.New()); err == nil {
 				switch {
 				case h == o.Hash:
 					if err := fsx.Remove(o.Dst); err != nil {
@@ -295,7 +296,7 @@ func writeBackOrRescue(m *Manifest, o Placed, i int, l *opLog) error {
 	if st, err := os.Lstat(o.Dst); !o.WriteBack || (err == nil && !st.Mode().IsRegular()) {
 		return nil
 	}
-	h, err := fsx.SHA256(o.Dst)
+	h, err := fsx.HashFile(o.Dst, sha256.New())
 	if errors.Is(err, fs.ErrNotExist) || (err == nil && h == o.Hash) {
 		return nil
 	}
@@ -303,7 +304,7 @@ func writeBackOrRescue(m *Manifest, o Placed, i int, l *opLog) error {
 		return err
 	}
 	// Dst holding the backup's bytes is the player's file half moved (a copy across file systems cut short), not ours.
-	if b, err := fsx.SHA256(o.Displaced); err == nil && b == h {
+	if b, err := fsx.HashFile(o.Displaced, sha256.New()); err == nil && b == h {
 		return nil
 	}
 	wrote, err := writeBackFile(o, i, l)

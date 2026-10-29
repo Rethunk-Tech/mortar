@@ -1,6 +1,8 @@
 package queue
 
 import (
+	"crypto/sha256"
+	"crypto/sha512"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -27,7 +29,7 @@ func verifyDigest(path, digest string) error {
 }
 
 func compareSHA512(path, want string) error {
-	got, err := fsx.SHA512(path)
+	got, err := fsx.HashFile(path, sha512.New())
 	if err != nil {
 		return err
 	}
@@ -47,7 +49,7 @@ func (s *Service) checkPackage(it Item, path string) error {
 }
 
 func compareSHA256(path, want string) error {
-	got, err := fsx.SHA256(path)
+	got, err := fsx.HashFile(path, sha256.New())
 	if err != nil {
 		return err
 	}
@@ -73,7 +75,7 @@ func (s *Service) checkPackageHash(it Item, path string) error {
 	if want, ok := s.hashes[key]; ok {
 		return compareSHA256(path, want)
 	}
-	got, err := fsx.SHA256(path)
+	got, err := fsx.HashFile(path, sha256.New())
 	if err != nil {
 		return err
 	}

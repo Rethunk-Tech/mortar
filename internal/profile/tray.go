@@ -2,6 +2,7 @@ package profile
 
 import (
 	"cmp"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -147,7 +148,7 @@ func (s *Store) placeTray(game string, p *Profile, arch installer.Archive, files
 		held := TrayFile{Rel: f.Rel, Role: role}
 		key := held.folded()
 		src := filepath.Join(arch.Dir, filepath.FromSlash(f.Src))
-		h, err := fsx.SHA256(src)
+		h, err := fsx.HashFile(src, sha256.New())
 		if err != nil {
 			return fail(err)
 		}
@@ -160,7 +161,7 @@ func (s *Store) placeTray(game string, p *Profile, arch installer.Archive, files
 			continue
 		}
 		if _, err := os.Lstat(dst); err == nil {
-			dh, herr := fsx.SHA256(dst)
+			dh, herr := fsx.HashFile(dst, sha256.New())
 			rec, mine := replace[key]
 			switch {
 			case herr == nil && mine && dh == rec && dh == h:
@@ -213,7 +214,7 @@ func (s *Store) releaseTray(game string, p *Profile, files []TrayFile) {
 			continue
 		}
 		dst := filepath.Join(dir, filepath.FromSlash(f.Rel))
-		if h, err := fsx.SHA256(dst); err == nil && h == f.Hash {
+		if h, err := fsx.HashFile(dst, sha256.New()); err == nil && h == f.Hash {
 			removeUp(dir, dst)
 		}
 	}

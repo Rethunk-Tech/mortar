@@ -2,6 +2,8 @@ package melonloader
 
 import (
 	"context"
+	"crypto/sha256"
+	"crypto/sha512"
 	"errors"
 	"fmt"
 	"net/http"
@@ -151,7 +153,7 @@ func (l Loader) download(ctx context.Context, r github.Release, dst string) erro
 
 func (l Loader) verify(ctx context.Context, pack github.Asset, sumURL, file string) error {
 	if want, ok := strings.CutPrefix(pack.Digest, "sha256:"); ok {
-		got, err := fsx.SHA256(file)
+		got, err := fsx.HashFile(file, sha256.New())
 		if err != nil {
 			return err
 		}
@@ -167,7 +169,7 @@ func (l Loader) verify(ctx context.Context, pack github.Asset, sumURL, file stri
 	if err != nil {
 		return err
 	}
-	got, err := fsx.SHA512(file)
+	got, err := fsx.HashFile(file, sha512.New())
 	if err != nil {
 		return err
 	}

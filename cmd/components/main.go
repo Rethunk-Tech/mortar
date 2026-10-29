@@ -5,6 +5,7 @@ import (
 	"cmp"
 	"context"
 	"crypto/ed25519"
+	"crypto/sha256"
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
@@ -191,7 +192,7 @@ func resolve(ctx context.Context, client *github.Client, source components.Sourc
 	if err := downloadAsset(ctx, client.HTTP, downloadURL(client, source, asset), tempPath); err != nil {
 		return components.Component{}, fmt.Errorf("download %s: %w", asset.Name, err)
 	}
-	sum, err := fsx.SHA256(tempPath)
+	sum, err := fsx.HashFile(tempPath, sha256.New())
 	if err != nil {
 		return components.Component{}, err
 	}

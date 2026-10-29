@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -168,7 +169,7 @@ func changedSince(rec placedRec, dst string) bool {
 	if st.Size() == rec.Size && st.ModTime().UnixNano() == rec.MTime {
 		return false
 	}
-	h, err := fsx.SHA256(dst)
+	h, err := fsx.HashFile(dst, sha256.New())
 	return err != nil || h != rec.Hash
 }
 
@@ -255,7 +256,7 @@ func (s *Store) syncPackages(gameID, id string, withDev bool) error {
 		if h, ok := srcHash[rel]; ok {
 			return h, nil
 		}
-		h, err := fsx.SHA256(files[rel].src)
+		h, err := fsx.HashFile(files[rel].src, sha256.New())
 		srcHash[rel] = h
 		return h, err
 	}
@@ -298,7 +299,7 @@ func (s *Store) syncPackages(gameID, id string, withDev bool) error {
 			if err != nil {
 				return err
 			}
-			if mine, err := fsx.SHA256(dst); err == nil && mine == h {
+			if mine, err := fsx.HashFile(dst, sha256.New()); err == nil && mine == h {
 				if next[rel], err = recordOf(h, dst); err != nil {
 					return err
 				}

@@ -3,6 +3,7 @@ package archivesvc
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"os"
 	"path/filepath"
 	"testing"
@@ -32,7 +33,7 @@ func TestDownloadsArchivesSkipsInstalledByKeyAndByName(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(dir, "notes.txt"), []byte("x"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	sum, err := fsx.SHA256(stored)
+	sum, err := fsx.HashFile(stored, sha256.New())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -100,7 +101,7 @@ func TestNewDownloadsOffersOnlyArrivalsAfterTheMark(t *testing.T) {
 func TestDownloadsArchivesReusesCachedHashes(t *testing.T) {
 	dir := t.TempDir()
 	stored := writeZip(t, dir, "stored.zip", `{"UniqueID":"A.One"}`)
-	sum, err := fsx.SHA256(stored)
+	sum, err := fsx.HashFile(stored, sha256.New())
 	if err != nil {
 		t.Fatal(err)
 	}

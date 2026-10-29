@@ -5,6 +5,7 @@ package storecheck
 import (
 	"cmp"
 	"context"
+	"crypto/sha256"
 	"log"
 	"os"
 	"path/filepath"
@@ -367,7 +368,7 @@ func (s *Service) findArchive(key string) (string, bool) {
 			continue
 		}
 		path := filepath.Join(dir, e.Name())
-		if sum, err := fsx.SHA256(path); err == nil && store.LocalKey(sum) == key {
+		if sum, err := fsx.HashFile(path, sha256.New()); err == nil && store.LocalKey(sum) == key {
 			return path, true
 		}
 	}

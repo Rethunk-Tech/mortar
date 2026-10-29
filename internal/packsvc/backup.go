@@ -180,7 +180,7 @@ func walkFiles(root string, item bool, fn func(rel, path string, size int64) err
 func treeHash(root string) (string, error) {
 	h := sha256.New()
 	err := walkFiles(root, true, func(rel, path string, _ int64) error {
-		sum, err := fsx.SHA256(path)
+		sum, err := fsx.HashFile(path, sha256.New())
 		if err != nil {
 			return err
 		}

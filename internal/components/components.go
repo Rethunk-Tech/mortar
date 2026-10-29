@@ -1688,7 +1688,7 @@ func (c *Client) Download(ctx context.Context, component Component, dest string)
 	if err := github.Download(ctx, c.HTTP, address, tmpPath, maxComponent, nil); err != nil {
 		return fmt.Errorf("download component %s: %w", component.Name, err)
 	}
-	sum, err := fsx.SHA256(tmpPath)
+	sum, err := fsx.HashFile(tmpPath, sha256.New())
 	if err != nil {
 		return err
 	}

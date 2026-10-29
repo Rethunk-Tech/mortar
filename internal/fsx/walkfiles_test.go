@@ -1,6 +1,7 @@
 package fsx
 
 import (
+	"crypto/sha512"
 	"os"
 	"path/filepath"
 	"testing"
@@ -23,13 +24,13 @@ func TestWalkFilesGivesSlashPathsAndSizesOfRegularFilesOnly(t *testing.T) {
 	}
 }
 
-func TestSHA512HashesTheFile(t *testing.T) {
+func TestHashFileHashesTheFile(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "f")
 	if err := os.WriteFile(path, []byte("abc"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	got, err := SHA512(path)
+	got, err := HashFile(path, sha512.New())
 	if err != nil || got[:16] != "ddaf35a193617aba" {
-		t.Fatalf("SHA512 = %s, %v", got, err)
+		t.Fatalf("HashFile = %s, %v", got, err)
 	}
 }
