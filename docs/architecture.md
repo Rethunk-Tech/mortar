@@ -68,7 +68,7 @@ Installing an item records the SHA-256 and size of every file beside the store (
 
 ## Profile operations
 
-**Materialising store items into a profile** (install, duplicate, rebuild, update) is per file, in order, falling through on `EXDEV`/`EOPNOTSUPP`/`EINVAL`/`ERROR_INVALID_FUNCTION`: copy-on-write clone, hardlink, symlink, copy (`internal/datadir/materialize.go`). Files a mod may write (`config.json`, `data/` and saves-like folders, `*.mortar-old`, editor-openable text files) use clone or copy only: SMAPI's `helper.Data.WriteJsonFile` truncates in place, so a link would leak one profile's write into the store and every other profile (`TestConfigJSONNeverHardlinkedOrSymlinked`). Drift ignores those paths. Duplicate never hardlinks or symlinks `mods/`. Deleting a profile unlinks its names and never removes store files.
+**Materialising store items into a profile** (install, duplicate, rebuild, update) is per file, in order, falling through on `EXDEV`/`EOPNOTSUPP`/`EINVAL`/`ERROR_INVALID_FUNCTION`: copy-on-write clone, hardlink, symlink, copy (go-safefs's `Materializer`). Which files may share an inode is Mortar's policy (`internal/datadir/materialize.go`): files a mod may write (`config.json`, `data/` and saves-like folders, `*.mortar-old`, editor-openable text files) use clone or copy only: SMAPI's `helper.Data.WriteJsonFile` truncates in place, so a link would leak one profile's write into the store and every other profile (`TestConfigJSONNeverHardlinkedOrSymlinked`). Drift ignores those paths. Duplicate never hardlinks or symlinks `mods/`. Deleting a profile unlinks its names and never removes store files.
 
 Each operation is a method of `internal/profile` `Store` or a named service; the tests state the edge cases. Traps:
 
