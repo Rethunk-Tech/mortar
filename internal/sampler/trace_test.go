@@ -148,7 +148,7 @@ func TestUnsortedEventKeepsItsMetadataID(t *testing.T) {
 	body := make([]byte, 4+4+8+8+4+4+8+16+16+4+3+1)
 	binary.LittleEndian.PutUint32(body, 7|1<<31)
 	binary.LittleEndian.PutUint32(body[len(body)-8:], 3)
-	data := binary.LittleEndian.AppendUint32(nil, uint32FromInt(len(body)))
+	data := binary.LittleEndian.AppendUint32(nil, uint32Length(len(body)))
 	data = append(data, body...)
 	events := parseV5Events(data, nil, false, false)
 	if len(events) != 1 || events[0].metadata != 7 {
