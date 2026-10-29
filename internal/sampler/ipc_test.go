@@ -123,7 +123,9 @@ func TestAnErrorReplyIsAnError(t *testing.T) {
 	}
 }
 
-func TestStopHonoursItsContextAndIsIdempotent(t *testing.T) {
+// startSilentSession starts a session whose endpoint answers the handshake and then ignores every later connection.
+func startSilentSession(t *testing.T) *Session {
+	t.Helper()
 	temp := t.TempDir()
 	t.Setenv("TMPDIR", temp)
 	pid := os.Getpid()
@@ -162,6 +164,11 @@ func TestStopHonoursItsContextAndIsIdempotent(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { _ = os.Remove(session.path) })
+	return session
+}
+
+func TestStopHonoursItsContextAndIsIdempotent(t *testing.T) {
+	session := startSilentSession(t)
 	for range 2 {
 		ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
 		returned := make(chan error, 1)
@@ -178,6 +185,23 @@ func TestStopHonoursItsContextAndIsIdempotent(t *testing.T) {
 			t.Fatal("Stop ignored its context")
 		}
 		cancel()
+	}
+}
+
+func TestConcurrentStopHonoursItsOwnContext(t *testing.T) {
+	session := startSilentSession(t)
+	long, cancelLong := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancelLong()
+	go func() { _, _ = session.Stop(long) }()
+	time.Sleep(100 * time.Millisecond)
+	short, cancelShort := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancelShort()
+	start := time.Now()
+	if _, err := session.Stop(short); err == nil {
+		t.Fatal("second Stop against a silent endpoint reported success")
+	}
+	if elapsed := time.Since(start); elapsed > time.Second {
+		t.Fatalf("second Stop took %v, ignoring its 100ms context", elapsed)
 	}
 }
 

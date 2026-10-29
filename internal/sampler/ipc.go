@@ -32,6 +32,7 @@ type Session struct {
 	streamErr error
 	done      chan struct{}
 	stopOnce  sync.Once
+	stopDone  chan struct{}
 	stopErr   error
 }
 
@@ -86,12 +87,23 @@ func Start(ctx context.Context, pid int) (*Session, error) {
 // nothing is written after it returns.
 func (s *Session) Stop(ctx context.Context) (string, error) {
 	s.stopOnce.Do(func() {
-		s.stopErr = s.stop(ctx)
+		s.stopDone = make(chan struct{})
+		go func() {
+			s.stopErr = s.stop(ctx)
+			close(s.stopDone)
+		}()
 	})
 	unbind := context.AfterFunc(ctx, func() { _ = s.conn.Close() })
+	defer unbind()
+	var stopErr error
+	select {
+	case <-s.stopDone:
+		stopErr = s.stopErr
+	case <-ctx.Done():
+		stopErr = ctx.Err()
+	}
 	<-s.done
-	unbind()
-	return s.path, errors.Join(s.stopErr, s.streamErr)
+	return s.path, errors.Join(stopErr, s.streamErr)
 }
 
 func (s *Session) stop(ctx context.Context) error {
