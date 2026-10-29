@@ -8,6 +8,8 @@ import (
 	"net/url"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-httpkit"
+
 	"github.com/Rethunk-Tech/go-httpkit/download"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/store"
@@ -27,6 +29,8 @@ func TestFailureKind(t *testing.T) {
 		{&url.Error{Op: "Get", URL: "https://x", Err: &net.OpError{Op: "dial", Err: errors.New("refused")}}, FailNetwork},
 		{fmt.Errorf("read: %w", io.ErrUnexpectedEOF), FailNetwork},
 		{fmt.Errorf("download: %w", download.ErrIdle), FailNetwork},
+		{fmt.Errorf("nexus: %w", &httpkit.StatusError{Code: 503}), FailNetwork},
+		{fmt.Errorf("nexus: %w", &httpkit.StatusError{Code: 403}), FailOther},
 		{errors.New("hash mismatch"), FailOther},
 	}
 	for _, c := range cases {

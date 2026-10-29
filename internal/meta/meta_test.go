@@ -224,6 +224,20 @@ func TestDoNamesMortarAndMapsTooManyRequestsToBusy(t *testing.T) {
 	}
 }
 
+// An untrusted certificate is a transport error, which classify reads as the network.
+func TestDoClassifiesATransportErrorAsNetwork(t *testing.T) {
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
+	defer srv.Close()
+	c := &Client{HTTP: &http.Client{}}
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, srv.URL, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := c.do(req, 1<<10); usererr.KindOf(err) != usererr.Network {
+		t.Fatalf("kind %v (%v)", usererr.KindOf(err), err)
+	}
+}
+
 func TestCheckUpdatesBatchesAndSendsRequest(t *testing.T) {
 	var batches atomic.Int32
 	var mu sync.Mutex

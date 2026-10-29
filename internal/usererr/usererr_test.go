@@ -10,6 +10,8 @@ import (
 	"os"
 	"syscall"
 	"testing"
+
+	"github.com/Rethunk-Tech/go-httpkit"
 )
 
 func TestKindTagged(t *testing.T) {
@@ -46,6 +48,12 @@ func TestKindStdlib(t *testing.T) {
 		{&net.DNSError{Name: "example", Err: "no such host"}, Network},
 		{&url.Error{Op: "Get", URL: "https://x", Err: &net.OpError{Op: "dial", Err: syscall.ECONNREFUSED}}, Network},
 		{&os.LinkError{Op: "rename", Old: "/var/tmp/a", New: "/home/u/a", Err: syscall.EXDEV}, Unknown},
+		{fmt.Errorf("x: %w", &httpkit.StatusError{Code: 404}), NotFound},
+		{&httpkit.StatusError{Code: 429}, RateLimited},
+		{&httpkit.RateLimitError{}, RateLimited},
+		{&httpkit.StatusError{Code: 502}, Network},
+		{&httpkit.StatusError{Code: 403}, Unknown},
+		{&httpkit.StatusError{Code: 400}, Unknown},
 		{errors.New("plain"), Unknown},
 	}
 	for _, c := range cases {

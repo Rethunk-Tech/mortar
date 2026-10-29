@@ -18,10 +18,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-httpkit"
+
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/netstate"
 )
 
@@ -63,13 +64,13 @@ func (e *RateLimitError) Error() string {
 	return "nexus rate limit reached until " + e.Reset.Format(time.RFC3339)
 }
 
-// StatusError is any other non-200 answer.
-type StatusError struct {
-	Code   int
-	Status string
-}
+// Unwrap lets errors.As find the module's *httpkit.RateLimitError behind Nexus's wording.
+func (e *RateLimitError) Unwrap() error { return &httpkit.RateLimitError{Reset: e.Reset} }
 
-func (e *StatusError) Error() string { return "nexus answered " + e.Status }
+// statusError is any other non-200 answer, named for Nexus in the message.
+func statusError(code int, status string) error {
+	return fmt.Errorf("nexus: %w", &httpkit.StatusError{Code: code, Status: status})
+}
 
 // Window is one rate-limit window as last reported by the API.
 type Window struct {
@@ -275,7 +276,7 @@ func (c *Client) rateLimited(h http.Header) error {
 		reset = d.Reset
 	}
 	if !reset.After(c.now()) {
-		reset, _ = github.RetryAfter(h.Get("Retry-After"))
+		reset, _ = httpkit.RetryAfter(h.Get("Retry-After"))
 	}
 	return &RateLimitError{Reset: reset}
 }
@@ -293,7 +294,7 @@ func (c *Client) get(ctx context.Context, path string, map403 bool, out any) err
 	case code == http.StatusForbidden && map403:
 		return ErrPremiumRequired
 	default:
-		return &StatusError{Code: code, Status: status}
+		return statusError(code, status)
 	}
 	return json.Unmarshal(raw, out)
 }
@@ -349,7 +350,7 @@ func (c *Client) graphql(ctx context.Context, query any) ([]byte, error) {
 	case http.StatusUnauthorized:
 		return nil, ErrUnauthorized
 	}
-	return nil, &StatusError{Code: code, Status: status}
+	return nil, statusError(code, status)
 }
 
 // ScanStatuses returns Nexus's v2 virus-scan status for each file. Results are cached for this client.

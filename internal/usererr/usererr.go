@@ -9,6 +9,8 @@ import (
 	"net"
 	"os"
 	"syscall"
+
+	"github.com/Rethunk-Tech/go-httpkit"
 )
 
 // Kind is a stable, frontend-parseable class for a user-facing error.
@@ -112,6 +114,16 @@ func classify(err error) Kind {
 	}
 	if IsDiskFull(err) {
 		return DiskFull
+	}
+	switch status, ok := errors.AsType[*httpkit.StatusError](err); {
+	case errors.Is(err, httpkit.ErrNotFound):
+		return NotFound
+	case errors.Is(err, httpkit.ErrRateLimited):
+		return RateLimited
+	case ok && status.Code >= 500:
+		return Network
+	case ok:
+		return Unknown
 	}
 	if IsNet(err) {
 		return Network

@@ -11,13 +11,14 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-httpkit"
+
 	"github.com/Rethunk-Tech/go-httpkit/download"
 
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 
-	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source"
@@ -366,8 +367,7 @@ func (s *Service) settle(id string, err error) {
 		return
 	}
 	err = store.RealTimeBlock(it.Game, "", err, s.downloadRoot())
-	var limit *nexus.RateLimitError
-	var ghLimit *github.RateLimitError
+	var limit *httpkit.RateLimitError
 	var busy *source.BusyError
 	var full *store.DiskFullError
 	var noSpace *NoSpaceError
@@ -375,12 +375,9 @@ func (s *Service) settle(id string, err error) {
 	switch {
 	case errors.Is(err, context.Canceled):
 		// Cancel already set the state; a shutdown leaves the item to start over next time.
-	case errors.As(err, &limit):
+	case errors.As(err, &limit): // through either site's wrapper
 		it.State, it.Progress, it.Speed = StateQueued, 0, 0
-		s.wait("nexus", limit.Reset, defaultBackoff)
-	case errors.As(err, &ghLimit):
-		it.State, it.Progress, it.Speed = StateQueued, 0, 0
-		s.wait("github", ghLimit.Reset, defaultBackoff)
+		s.wait(sourceKey(it), limit.Reset, defaultBackoff)
 	case errors.As(err, &busy):
 		it.busy++
 		if it.busy > maxBusy {

@@ -32,15 +32,8 @@ func TestRegistryContract(t *testing.T) {
 }
 
 func TestBusyKeepsTheRetryAfterWait(t *testing.T) {
-	at := time.Date(2030, 1, 2, 3, 4, 5, 0, time.UTC)
-	for v, ok := range map[string]func(time.Time) bool{
-		"120":                      func(r time.Time) bool { return time.Until(r) > 110*time.Second && time.Until(r) <= 120*time.Second },
-		at.Format(http.TimeFormat): func(r time.Time) bool { return r.Equal(at) },
-		"":                         time.Time.IsZero,
-	} {
-		e := Busy("Modrinth", &http.Response{Header: http.Header{"Retry-After": {v}}})
-		if !ok(e.Reset) || !errors.Is(e, ErrBusy) {
-			t.Errorf("Retry-After %q: reset %v", v, e.Reset)
-		}
+	e := Busy("Modrinth", &http.Response{Header: http.Header{"Retry-After": {"120"}}})
+	if d := time.Until(e.Reset); d < 110*time.Second || d > 120*time.Second || !errors.Is(e, ErrBusy) {
+		t.Errorf("reset %v", e.Reset)
 	}
 }

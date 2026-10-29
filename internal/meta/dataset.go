@@ -12,6 +12,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-httpkit"
+
 	"github.com/Rethunk-Tech/go-safefs/diskcache"
 )
 
@@ -164,7 +166,7 @@ func (c *Client) page(ctx context.Context, id int) (Page, error) {
 			return Page{}, err
 		}
 		b, err := c.do(req, maxPage)
-		if statusErr, ok := errors.AsType[*StatusError](err); ok && statusErr.Code == http.StatusNotFound {
+		if errors.Is(err, httpkit.ErrNotFound) {
 			// The dataset has no file for this page: an answer, so it is cached like one.
 			return Page{}, nil
 		}

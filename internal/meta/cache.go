@@ -4,18 +4,17 @@ package meta
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"path/filepath"
 	"sync"
 	"sync/atomic"
 	"time"
 
-	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/go-httpkit"
+
 	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 const requestTimeout = 20 * time.Second
@@ -73,30 +72,8 @@ func (c *Client) do(req *http.Request, limit int64) ([]byte, error) {
 	ctx, cancel := context.WithTimeout(req.Context(), requestTimeout)
 	defer cancel()
 	req.Header.Set("User-Agent", appversion.UserAgent(c.Version))
-	resp, err := c.client().Do(req.WithContext(ctx))
-	if err != nil {
-		return nil, usererr.Wrap(usererr.Network, err)
-	}
-	defer func() { _ = resp.Body.Close() }()
-	if resp.StatusCode == http.StatusNotFound {
-		return nil, usererr.Wrap(usererr.NotFound, &StatusError{Code: resp.StatusCode, Status: resp.Status})
-	}
-	if resp.StatusCode == http.StatusTooManyRequests {
-		return nil, usererr.Wrap(usererr.RateLimited, &StatusError{Code: resp.StatusCode, Status: resp.Status})
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, usererr.Wrap(usererr.Network, &StatusError{Code: resp.StatusCode, Status: resp.Status})
-	}
-	return safefs.ReadCapped(resp.Body, limit)
+	return httpkit.DoCapped(c.client(), req.WithContext(ctx), limit, nil)
 }
-
-// StatusError is a non-200 answer.
-type StatusError struct {
-	Code   int
-	Status string
-}
-
-func (e *StatusError) Error() string { return fmt.Sprintf("server answered %s", e.Status) }
 
 // young reports whether an entry fetched at t is younger than ttl; one stamped in the future (a clock set back) is not.
 func (c *Client) young(t time.Time, ttl time.Duration) bool {

@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
@@ -111,5 +112,22 @@ func TestWaitCapsAHugeReset(t *testing.T) {
 	s.wait("github", now.Add(50*24*time.Hour), defaultBackoff)
 	if got := s.until["github"]; !got.Equal(now.Add(maxWait)) {
 		t.Fatalf("until %v", got)
+	}
+}
+
+// A CDN's limit on a Nexus item holds the Nexus key, whichever site's wrapper carries it.
+func TestARateLimitHoldsTheItemsOwnSource(t *testing.T) {
+	t.Parallel()
+	now := time.Unix(1_000, 0).UTC()
+	reset := now.Add(time.Hour)
+	s := &Service{
+		d:       Deps{Now: func() time.Time { return now }, Dir: t.TempDir()},
+		kick:    make(chan struct{}, 1),
+		cancels: map[string]context.CancelFunc{},
+		items:   []*Item{{ID: "a", Game: "g", Profile: "p", State: StateDownloading}},
+	}
+	s.settle("a", &github.RateLimitError{Reset: reset})
+	if got := s.until["nexus"]; !got.Equal(reset) || !s.until["github"].IsZero() {
+		t.Fatalf("until %v", s.until)
 	}
 }

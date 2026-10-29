@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-httpkit"
+
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -72,7 +74,7 @@ func testResolver(files map[int][]nexus.File, target []profile.Entry) *resolver 
 			if f, ok := files[id]; ok {
 				return f, nil
 			}
-			return nil, &nexus.StatusError{Code: 404}
+			return nil, &httpkit.StatusError{Code: 404}
 		},
 	}
 }

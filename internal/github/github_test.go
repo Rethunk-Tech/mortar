@@ -303,12 +303,3 @@ func TestRateLimitedPrefersRetryAfter(t *testing.T) {
 		t.Fatalf("date reset %v", e.Reset)
 	}
 }
-
-func TestRetryAfterRefusesAnOverflowingValue(t *testing.T) {
-	t.Parallel()
-	for _, v := range []string{"27670116110", "9223372037", "-5", "0", "x", ""} {
-		if at, ok := RetryAfter(v); ok {
-			t.Errorf("%q accepted as %v", v, at)
-		}
-	}
-}

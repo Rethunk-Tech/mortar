@@ -19,6 +19,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-httpkit"
+
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
@@ -67,6 +69,9 @@ func (e *RateLimitError) Error() string {
 	return msg
 }
 
+// Unwrap lets errors.As find the module's *httpkit.RateLimitError behind GitHub's wording.
+func (e *RateLimitError) Unwrap() error { return &httpkit.RateLimitError{Reset: e.Reset} }
+
 // Rate is the quota GitHub last reported on a response, so Settings can show it without a request of its own.
 type Rate struct {
 	Known     bool      `json:"known"`
@@ -99,22 +104,6 @@ func noteRate(resp *http.Response) {
 	rateMu.Unlock()
 }
 
-// maxRetryAfter bounds a Retry-After in seconds so the Duration arithmetic cannot overflow.
-const maxRetryAfter = 365 * 24 * 3600
-
-// RetryAfter is when a Retry-After header (seconds or an HTTP date) says to try again; false when it is absent,
-// malformed, negative or zero seconds, or absurdly long.
-func RetryAfter(v string) (time.Time, bool) {
-	if n, err := strconv.ParseInt(v, 10, 64); err == nil {
-		if n <= 0 || n > maxRetryAfter {
-			return time.Time{}, false
-		}
-		return time.Now().Add(time.Duration(n) * time.Second), true
-	}
-	t, err := http.ParseTime(v)
-	return t, err == nil
-}
-
 // RateLimited returns a *RateLimitError when resp is GitHub's limit answer, else nil.
 func RateLimited(resp *http.Response) error {
 	if resp.StatusCode != http.StatusForbidden && resp.StatusCode != http.StatusTooManyRequests {
@@ -124,7 +113,7 @@ func RateLimited(resp *http.Response) error {
 		return nil
 	}
 	e := &RateLimitError{}
-	if t, ok := RetryAfter(resp.Header.Get("Retry-After")); ok {
+	if t, ok := httpkit.RetryAfter(resp.Header.Get("Retry-After")); ok {
 		e.Reset = t
 	} else if secs, err := strconv.ParseInt(resp.Header.Get("X-Ratelimit-Reset"), 10, 64); err == nil {
 		e.Reset = time.Unix(secs, 0)

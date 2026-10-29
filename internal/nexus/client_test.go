@@ -14,6 +14,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-httpkit"
+
 	"github.com/Rethunk-Tech/go-safefs"
 )
 
@@ -171,7 +173,7 @@ func TestErrors(t *testing.T) {
 	if _, err := c.DownloadLinks(ctx, stardew, 541, 3001, "", 0); !errors.Is(err, ErrPremiumRequired) {
 		t.Fatalf("403 = %v", err)
 	}
-	var se *StatusError
+	var se *httpkit.StatusError
 	if _, err := c.Files(ctx, stardew, 541); !errors.As(err, &se) || se.Code != http.StatusForbidden {
 		t.Fatalf("403 on files = %v", err)
 	}

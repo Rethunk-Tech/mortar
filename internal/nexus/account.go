@@ -65,7 +65,7 @@ func (c *Client) do(ctx context.Context, method, path string, body, out any) err
 		if msg.Message != "" {
 			return &MessageError{Code: code, Status: status, Message: msg.Message}
 		}
-		return &StatusError{Code: code, Status: status}
+		return statusError(code, status)
 	}
 	if out == nil || len(raw) == 0 {
 		return nil

@@ -548,7 +548,7 @@ func TestFailedRetrySkipAndCancel(t *testing.T) {
 			return
 		}
 		if fail.Load() {
-			http.Error(w, "no", http.StatusInternalServerError)
+			http.Error(w, "no", http.StatusNotFound)
 			return
 		}
 		fmt.Fprint(w, payload)
@@ -557,7 +557,7 @@ func TestFailedRetrySkipAndCancel(t *testing.T) {
 	f.start()
 	f.add(req(10))
 	st := f.wait("failure", f.item(StateFailed))
-	if !strings.Contains(st.Items[0].Error, "500") {
+	if !strings.Contains(st.Items[0].Error, "404") {
 		t.Errorf("error %q", st.Items[0].Error)
 	}
 	fail.Store(false)

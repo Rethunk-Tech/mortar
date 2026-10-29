@@ -62,7 +62,7 @@ func (c *Client) CollectionArchive(ctx context.Context, downloadLink string) ([]
 	}
 	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
-		return nil, &StatusError{Code: resp.StatusCode, Status: resp.Status}
+		return nil, statusError(resp.StatusCode, resp.Status)
 	}
 	b, err := safefs.ReadCapped(idleReader{resp.Body, stall}, MaxCollectionArchive)
 	// A stall cancels the request, and the mirror may then end the body cleanly before the read sees the cancel.

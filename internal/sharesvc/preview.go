@@ -11,6 +11,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/go-httpkit"
+
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/github"
@@ -285,7 +287,7 @@ func (r *resolver) load(ctx context.Context, modIDs []int) {
 				return
 			}
 			files, err := r.files(ctx, r.env.Nexus, id)
-			var status *nexus.StatusError
+			var status *httpkit.StatusError
 			switch {
 			case err == nil:
 				info.files, info.checked = files, true

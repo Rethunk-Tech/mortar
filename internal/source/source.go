@@ -14,8 +14,9 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/Rethunk-Tech/go-httpkit"
+
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -49,7 +50,7 @@ func (e *BusyError) Unwrap() error { return usererr.New(usererr.RateLimited, e.E
 // Busy is name refusing resp, waiting as long as its Retry-After asks (seconds or an HTTP date) when it says.
 func Busy(name string, resp *http.Response) *BusyError {
 	e := &BusyError{Source: name}
-	if t, ok := github.RetryAfter(resp.Header.Get("Retry-After")); ok {
+	if t, ok := httpkit.RetryAfter(resp.Header.Get("Retry-After")); ok {
 		e.Reset = t
 	}
 	return e
