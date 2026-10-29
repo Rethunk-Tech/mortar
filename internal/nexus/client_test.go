@@ -250,3 +250,21 @@ func TestRedirectsStayOnTheAPIOrigin(t *testing.T) {
 		}
 	}
 }
+
+func TestRetryAfterWhenNoResetHeaders(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Retry-After", "120")
+		w.WriteHeader(http.StatusTooManyRequests)
+	}))
+	t.Cleanup(srv.Close)
+	c := New("9.9")
+	c.BaseURL, c.CacheDir = srv.URL, t.TempDir()
+	c = c.WithKey("k")
+	var re *RateLimitError
+	if _, err := c.Validate(context.Background()); !errors.As(err, &re) || time.Until(re.Reset) < time.Minute {
+		t.Fatalf("Retry-After ignored: %v", err)
+	}
+	if got := (&RateLimitError{}).Error(); strings.Contains(got, "0001") {
+		t.Fatalf("zero reset printed: %s", got)
+	}
+}

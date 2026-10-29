@@ -57,8 +57,6 @@ func (c *Client) do(ctx context.Context, method, path string, body, out any) err
 	case http.StatusOK, http.StatusCreated, http.StatusNoContent:
 	case http.StatusUnauthorized:
 		return ErrUnauthorized
-	case http.StatusTooManyRequests:
-		return c.rateLimited()
 	default:
 		var msg struct {
 			Message string `json:"message"`

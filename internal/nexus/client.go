@@ -21,6 +21,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/netstate"
 )
 
@@ -56,6 +57,9 @@ var (
 type RateLimitError struct{ Reset time.Time }
 
 func (e *RateLimitError) Error() string {
+	if e.Reset.IsZero() {
+		return "nexus rate limit reached"
+	}
 	return "nexus rate limit reached until " + e.Reset.Format(time.RFC3339)
 }
 
@@ -253,6 +257,9 @@ func (c *Client) roundTrip(ctx context.Context, method, path string, body any) (
 	}
 	defer func() { _ = resp.Body.Close() }()
 	c.record(resp.Header)
+	if resp.StatusCode == http.StatusTooManyRequests {
+		return 0, "", nil, c.rateLimited(resp.Header)
+	}
 	raw, err := fsx.ReadCapped(resp.Body, maxBody)
 	if err != nil {
 		return 0, "", nil, err
@@ -260,10 +267,15 @@ func (c *Client) roundTrip(ctx context.Context, method, path string, body any) (
 	return resp.StatusCode, resp.Status, raw, nil
 }
 
-func (c *Client) rateLimited() error {
+// rateLimited builds the error for a 429: the X-Rl-* reset when Nexus sent it, else Retry-After, else no reset (the
+// queue then applies its own backoff).
+func (c *Client) rateLimited(h http.Header) error {
 	reset := c.Limits().Hourly.Reset
 	if d := c.Limits().Daily; d.Remaining <= 0 {
 		reset = d.Reset
+	}
+	if reset.IsZero() {
+		reset, _ = github.RetryAfter(h.Get("Retry-After"))
 	}
 	return &RateLimitError{Reset: reset}
 }
@@ -280,8 +292,6 @@ func (c *Client) get(ctx context.Context, path string, map403 bool, out any) err
 		return ErrUnauthorized
 	case code == http.StatusForbidden && map403:
 		return ErrPremiumRequired
-	case code == http.StatusTooManyRequests:
-		return c.rateLimited()
 	default:
 		return &StatusError{Code: code, Status: status}
 	}
@@ -338,8 +348,6 @@ func (c *Client) graphql(ctx context.Context, query any) ([]byte, error) {
 		return body, nil
 	case http.StatusUnauthorized:
 		return nil, ErrUnauthorized
-	case http.StatusTooManyRequests:
-		return nil, c.rateLimited()
 	}
 	return nil, &StatusError{Code: code, Status: status}
 }
