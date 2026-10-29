@@ -545,9 +545,8 @@ func same(path string, want []byte) bool {
 func execTarget(entry []byte) string {
 	for line := range strings.SplitSeq(string(entry), "\n") {
 		if rest, ok := strings.CutPrefix(line, `Exec="`); ok {
-			if target, _, ok := strings.Cut(rest, `"`); ok {
-				return target
-			}
+			target, _ := readQuotedExec(desktopString.Replace(rest), 0)
+			return strings.ReplaceAll(target, "%%", "%")
 		}
 	}
 	return ""

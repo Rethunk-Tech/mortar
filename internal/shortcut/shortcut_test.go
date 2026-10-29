@@ -133,7 +133,10 @@ func TestRepointMovesOnlyShortcutsWhoseProgramIsGone(t *testing.T) {
 	}
 	dir := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", dir)
-	live := filepath.Join(dir, "other-mortar")
+	live := filepath.Join(dir, "50%off $x", "other-mortar")
+	if err := os.MkdirAll(filepath.Dir(live), 0o700); err != nil {
+		t.Fatal(err)
+	}
 	if err := fsx.WriteFile(live, nil, 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -150,7 +153,7 @@ func TestRepointMovesOnlyShortcutsWhoseProgramIsGone(t *testing.T) {
 	if err := Repoint(exe); err != nil {
 		t.Fatal(err)
 	}
-	if b, _ := fsx.ReadFile(gone); !strings.Contains(string(b), "Exec=\""+strings.ReplaceAll(exe, `"`, `\"`)+"\" "+Arg("stardew", "a")+"\n") {
+	if b, _ := fsx.ReadFile(gone); !strings.Contains(string(b), "Exec=\""+strings.ReplaceAll(exe, `"`, `\\"`)+"\" "+Arg("stardew", "a")+"\n") {
 		t.Errorf("stale shortcut not repointed:\n%s", b)
 	}
 	if b, _ := fsx.ReadFile(kept); string(b) != string(keptBefore) {

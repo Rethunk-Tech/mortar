@@ -153,6 +153,26 @@ func desktopValue(s string) string {
 // string-value escape that doubles each backslash, and %% so a percent is not read as a field code.
 var execArgEscaper = strings.NewReplacer(`\`, `\\\\`, `"`, `\\"`, "`", "\\\\`", `$`, `\\$`, `%`, `%%`)
 
+// desktopString undoes a key file's string escapes, which wrap the Exec quoting.
+var desktopString = strings.NewReplacer(`\\`, `\`, `\s`, " ", `\n`, "\n", `\t`, "\t", `\r`, "\r")
+
+// firstQuoted is the quoted argument an Exec value opens with, its leading quote already cut, and what follows it.
+func firstQuoted(s string) (arg, rest string, ok bool) {
+	var b strings.Builder
+	for i := 0; i < len(s); i++ {
+		switch s[i] {
+		case '\\':
+			if i+1 < len(s) {
+				i++
+			}
+		case '"':
+			return strings.ReplaceAll(b.String(), "%%", "%"), s[i+1:], true
+		}
+		b.WriteByte(s[i])
+	}
+	return "", "", false
+}
+
 func dataHome() (string, error) {
 	if v := os.Getenv("XDG_DATA_HOME"); v != "" {
 		return v, nil
@@ -196,7 +216,7 @@ func Repoint(exe string) error {
 	if err != nil {
 		return err
 	}
-	quoted := `"` + strings.ReplaceAll(exe, `"`, `\"`) + `"`
+	quoted := `"` + execArgEscaper.Replace(exe) + `"`
 	var errs []error
 	for _, p := range paths {
 		b, err := fsx.ReadFile(p)
@@ -211,15 +231,18 @@ func Repoint(exe string) error {
 			if !ok {
 				continue
 			}
-			end := strings.Index(rest, `" `)
-			if end < 0 {
+			body, nl := strings.CutSuffix(rest, "\n")
+			target, tail, ok := firstQuoted(desktopString.Replace(body))
+			if !ok {
 				break
 			}
-			target := strings.ReplaceAll(rest[:end], `\"`, `"`)
 			if _, err := os.Stat(target); err == nil || target == exe {
 				break
 			}
-			lines[i] = "Exec=" + quoted + rest[end+1:]
+			lines[i] = "Exec=" + quoted + desktopValue(tail)
+			if nl {
+				lines[i] += "\n"
+			}
 			changed = true
 			break
 		}
