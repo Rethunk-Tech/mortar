@@ -88,5 +88,10 @@ func HostLookPath(name string) (string, error) {
 	if err != nil {
 		return "", exec.ErrNotFound
 	}
-	return strings.TrimSpace(string(out)), nil
+	// command -v prints a builtin or alias by its bare name, which is not a path.
+	p := strings.TrimSpace(string(out))
+	if !filepath.IsAbs(p) {
+		return "", exec.ErrNotFound
+	}
+	return p, nil
 }

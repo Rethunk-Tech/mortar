@@ -86,3 +86,16 @@ func TestCommandContextHostTerm(t *testing.T) {
 		t.Fatal("non-host command should keep the default kill")
 	}
 }
+
+func TestHostLookPathRejectsBuiltin(t *testing.T) {
+	old := Output
+	t.Cleanup(func() { Output = old })
+	Output = func(...string) ([]byte, error) { return []byte("cd\n"), nil }
+	if p, err := HostLookPath("cd"); !errors.Is(err, exec.ErrNotFound) {
+		t.Fatalf("HostLookPath(cd) = %q, %v; want ErrNotFound", p, err)
+	}
+	Output = func(...string) ([]byte, error) { return []byte("/usr/bin/ls\n"), nil }
+	if p, err := HostLookPath("ls"); err != nil || p != "/usr/bin/ls" {
+		t.Fatalf("HostLookPath(ls) = %q, %v", p, err)
+	}
+}
