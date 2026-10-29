@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"iter"
 	"math/bits"
+	"os"
 	"runtime"
 	"slices"
 	"strings"
@@ -177,7 +178,7 @@ func Writes(path, game, wrapper string) ([]string, error) {
 
 // withModule reads the assembly at path and runs fn on it, turning a malformed assembly into an error for path.
 func withModule[T any](path string, fn func(m *module) (T, error)) (out T, err error) {
-	data, err := fsx.ReadFile(path)
+	data, err := readAssembly(path)
 	if err != nil {
 		return out, err
 	}
@@ -188,6 +189,16 @@ func withModule[T any](path string, fn func(m *module) (T, error)) (out T, err e
 	}
 	return fn(m)
 }
+
+// maxDepth bounds a chain of TypeRef scopes and TypeSpec instantiations, which a crafted assembly can close into a
+// cycle that would overflow the stack, a fatal error no recover catches.
+const maxDepth = 32
+
+// tooDeep is the panic a chain past maxDepth raises; as a runtime.Error it takes malformed's path.
+type tooDeep struct{}
+
+func (tooDeep) Error() string { return "type chain too deep" }
+func (tooDeep) RuntimeError() {}
 
 // maxAssembly caps the file read into memory: a mod's DLL is megabytes, and an unbounded read lets one file exhaust it.
 const maxAssembly = 256 << 20
@@ -388,11 +399,16 @@ func decode(kind int, v uint32) (table, row int) {
 
 // typeRef names a referenced type as its namespace and "Outer+Inner" name; nested references take the outermost
 // type's namespace.
-func (m *module) typeRef(row int) (ns, name string) {
+func (m *module) typeRef(row int) (ns, name string) { return m.typeRefAt(row, 0) }
+
+func (m *module) typeRefAt(row, depth int) (ns, name string) {
+	if depth > maxDepth {
+		panic(tooDeep{})
+	}
 	name = m.str(m.cell(tTypeRef, row, 1))
 	scope, parent := decode(cResolutionScope, m.cell(tTypeRef, row, 0))
 	if scope == tTypeRef && parent > 0 && parent != row {
-		outerNS, outer := m.typeRef(parent)
+		outerNS, outer := m.typeRefAt(parent, depth+1)
 		return outerNS, outer + "+" + name
 	}
 	return m.str(m.cell(tTypeRef, row, 2)), name
@@ -434,21 +450,28 @@ func (m *module) value(a attribute) []byte { return m.blob(m.cell(tCustomAttr, a
 
 // typeOf names the referenced type a TypeDefOrRef-coded table/row points at, looking through a generic
 // instantiation; the module's own types have no name here.
-func (m *module) typeOf(table, row int) (ns, name string) {
+func (m *module) typeOf(table, row int) (ns, name string) { return m.typeOfAt(table, row, 0) }
+
+func (m *module) typeOfAt(table, row, depth int) (ns, name string) {
+	if depth > maxDepth {
+		panic(tooDeep{})
+	}
 	switch table {
 	case tTypeRef:
-		return m.typeRef(row)
+		return m.typeRefAt(row, depth)
 	case tTypeSpec:
 		sig := m.blob(m.cell(tTypeSpec, row, 0))
 		if len(sig) > 2 && sig[0] == 0x15 {
-			return m.sigType(sig[1:])
+			return m.sigTypeAt(sig[1:], depth+1)
 		}
 	}
 	return "", ""
 }
 
 // sigType names the class or value type at the start of a signature type, skipping custom modifiers.
-func (m *module) sigType(sig []byte) (ns, name string) {
+func (m *module) sigType(sig []byte) (ns, name string) { return m.sigTypeAt(sig, 0) }
+
+func (m *module) sigTypeAt(sig []byte, depth int) (ns, name string) {
 	for len(sig) > 1 && (sig[0] == 0x1F || sig[0] == 0x20) {
 		_, n := compressed(sig[1:])
 		sig = sig[1+n:]
@@ -461,7 +484,7 @@ func (m *module) sigType(sig []byte) (ns, name string) {
 	}
 	v, _ := compressed(sig[1:])
 	table, row := decode(cTypeDefOrRef, v)
-	return m.typeOf(table, row)
+	return m.typeOfAt(table, row, depth)
 }
 
 // ref is a resolved method or field token. A MemberRef also carries its declaring type's namespace, its name, the
