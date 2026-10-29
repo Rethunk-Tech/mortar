@@ -54,7 +54,7 @@ func TestInstallArchive(t *testing.T) {
 		t.Fatal(err)
 	}
 	_, err = e.InstallArchive(t.Context(), "stardew", p.ID, txt)
-	if !errors.As(err, &ie) || !strings.HasPrefix(ie.Msg, "Mortar reads zip") || !errors.Is(err, archive.ErrUnsupportedFormat) {
+	if !errors.As(err, &ie) || !strings.HasSuffix(ie.Msg, "bzip2 and lz4 archives") || !errors.Is(err, archive.ErrUnsupportedFormat) {
 		t.Fatalf("unsupported err = %v", err)
 	}
 
@@ -68,6 +68,14 @@ func TestInstallArchive(t *testing.T) {
 	_, err = e.InstallArchive(t.Context(), "stardew", p.ID, evil)
 	if !errors.As(err, &ie) || !errors.Is(err, archive.ErrTraversal) {
 		t.Fatalf("unsafe err = %v", err)
+	}
+}
+
+func TestInstallErrorExplainsADecoderThatNeedsTooMuchMemory(t *testing.T) {
+	t.Parallel()
+	var ie *InstallError
+	if !errors.As(installError(&archive.Error{Reason: archive.ErrDecoderMemory}), &ie) || !strings.Contains(ie.Msg, "dictionary larger than Mortar allows (256 MiB)") {
+		t.Fatalf("err = %v", ie)
 	}
 }
 

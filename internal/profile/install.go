@@ -380,7 +380,7 @@ func installError(err error) error {
 	var msg string
 	switch {
 	case errors.Is(err, archive.ErrUnsupportedFormat):
-		msg = "Mortar reads zip, RAR, 7z, tar, gzip, xz, lzma, zstd and bzip2 archives"
+		msg = "Mortar reads zip, RAR, 7z, tar, gzip, xz, lzma, zstd, bzip2 and lz4 archives"
 	case errors.Is(err, archive.ErrEncrypted):
 		msg = "The archive is encrypted, and Mortar cannot open it"
 	case errors.Is(err, archive.ErrChecksum):
@@ -396,6 +396,8 @@ func installError(err error) error {
 		msg = "The archive holds files that are not safe to unpack"
 	case errors.Is(err, archive.ErrEntryTooLarge):
 		msg = fmt.Sprintf("A file in the archive is over %d GB, more than Mortar unpacks", archive.DefaultMaxEntryBytes>>30)
+	case errors.Is(err, archive.ErrDecoderMemory):
+		msg = "The archive was made with a compression dictionary larger than Mortar allows (256 MiB). Ask for it to be repacked with a smaller one"
 	case errors.Is(err, archive.ErrRatio):
 		msg = "The archive unpacks to far more than its size should hold, so it is not safe to unpack"
 	case errors.Is(err, archive.ErrArchiveTooLarge):
