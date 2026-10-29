@@ -262,7 +262,7 @@ func refuseEnum(e cfgEntry) error {
 // valueError is a value the editor will not write. Its English sentence is the error text; Detail is what the GUI words
 // its own sentence from (usererr.Detailer).
 type valueError struct {
-	// Problem is one of line, bool, whole_number, number, enum, range, empty, list, raw, toml and color.
+	// Problem is one of line, bool, whole_number, number, enum, range, empty, list, toml and color.
 	Problem string   `json:"problem"`
 	Min     *float64 `json:"min,omitempty"`
 	Max     *float64 `json:"max,omitempty"`

@@ -16,7 +16,6 @@ test('a refused value is worded by its problem, any other error keeps its generi
     'line',
     'list',
     'empty',
-    'raw',
     'toml',
     'color',
     'bool',

@@ -46,8 +46,6 @@ export function configValueMessage(e: unknown): string {
       return i18n._(msg`This needs to be a list in [brackets].`)
     case 'empty':
       return i18n._(msg`This needs a value.`)
-    case 'raw':
-      return i18n._(msg`This is not a value the file can hold.`)
     case 'toml':
       return i18n._(msg`This would leave the file unreadable to the game.`)
     case 'range': {
