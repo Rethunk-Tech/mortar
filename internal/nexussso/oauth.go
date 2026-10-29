@@ -19,7 +19,6 @@ import (
 
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/secret"
-	"github.com/zalando/go-keyring"
 )
 
 const (
@@ -222,7 +221,7 @@ var setItem = secret.Set
 func Save(t Tokens) error {
 	b, _ := json.Marshal(t)
 	err := setItem(keyringItem, string(b))
-	if errors.Is(err, keyring.ErrSetDataTooBig) {
+	if errors.Is(err, secret.ErrTooBig) {
 		t.Access = ""
 		b, _ = json.Marshal(t)
 		return setItem(keyringItem, string(b))

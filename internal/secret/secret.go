@@ -1,202 +1,81 @@
-// Package secret keeps credentials in the operating system's keyring (Secret Service on Linux, Credential Manager
-// on Windows), never in Mortar's data folder. Inside a Flatpak they live in a sealed file or the host's keyring instead (flatpak.go).
+// Package secret keeps credentials in the operating system's keyring, never in Mortar's data folder. The store
+// itself is go-keyring; this package fixes Mortar's constants and gives its errors the wording users see.
 package secret
 
 import (
 	"errors"
-	"strings"
-	"sync"
 	"time"
 
-	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
+	"github.com/Rethunk-Tech/go-keyring"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
-	"github.com/zalando/go-keyring"
 )
 
-const service = "mortar"
-
-// ErrNotFound means no secret is stored for the name.
-var ErrNotFound = keyring.ErrNotFound
-
-// getTimeout bounds how long a caller waits on a read: Secret Service can hold an unlock prompt open for as long as
-// the user takes (or forever, headless), and a caller holding an HTTP request open on it starves every other one.
-var getTimeout = 3 * time.Second
-
-// ErrWaitingForUnlock is a read whose keyring prompt is still open. It is not a failure: the read keeps running
-// and OnUnlocked fires when it completes.
-var ErrWaitingForUnlock = usererr.New(usererr.Locked, "Waiting for you to unlock the keyring.")
-
-// keyringGet is the backend read, replaced in tests.
-var (
-	keyringGet    = keyring.Get
-	keyringSet    = keyring.Set
-	keyringDelete = keyring.Delete
+// The service, HKDF info and folder name where Mortar 0.3.8+ keeps every secret. Changing any of them makes every
+// stored key and token unreadable.
+const (
+	service  = "mortar"
+	sealInfo = "mortar secrets v1"
+	folder   = "mortar-secrets"
 )
-
-// OnUnlocked is called after a read that outlived getTimeout completes, so the app can retry what it deferred.
-var OnUnlocked = func() {}
-
-type flight struct {
-	done  chan struct{}
-	value string
-	err   error
-	// stuck is set once a caller gave up on it; later callers then fail at once instead of each waiting.
-	stuck bool
-	// stale is set when a Set or Delete of the name overtook the read: its value must not reach the cache.
-	stale bool
-}
 
 var (
-	mu       sync.Mutex
-	inflight = map[string]*flight{}
-	// late holds the values of reads that finished after their caller gave up, for the next Get of that name.
-	late = map[string]string{}
+	// ErrNotFound means no secret is stored for the name.
+	ErrNotFound = keyring.ErrNotFound
+	// ErrTooBig means the keyring refused the value as too large (Windows caps a credential at 2,560 bytes).
+	ErrTooBig = keyring.ErrTooBig
+	// ErrWaitingForUnlock is a read whose keyring prompt is still open. It is not a failure: the read keeps running
+	// and OnUnlocked fires when it completes.
+	ErrWaitingForUnlock = usererr.New(usererr.Locked, "Waiting for you to unlock the keyring.")
+	// OnUnlocked is called after a read that outlived the read timeout completes, so the app can retry what it deferred.
+	OnUnlocked = func() {}
 )
+
+var store = func() *keyring.Store {
+	s, err := keyring.New(keyring.Options{
+		Service:        service,
+		SealInfo:       sealInfo,
+		Folder:         folder,
+		SharedServices: []string{"thunderstore"},
+		PortalTimeout:  5 * time.Minute,
+		OnUnlocked:     func() { OnUnlocked() },
+	})
+	if err != nil {
+		panic(err) // constant options; TestStoreConstants fails first
+	}
+	return s
+}()
 
 // Get returns the secret stored under name.
-func Get(name string) (string, error) { return GetIn(service, name) }
+func Get(name string) (string, error) { v, err := store.Get(name); return v, mapErr(err) }
 
 // GetIn returns the secret another program shares under its own service and name, such as a token a mod
 // template's build reads too.
-func GetIn(svc, name string) (string, error) {
-	key := svc + "\n" + name
-	mu.Lock()
-	if v, ok := late[key]; ok {
-		delete(late, key)
-		mu.Unlock()
-		return v, nil
-	}
-	f, running := inflight[key]
-	if running && f.stuck {
-		mu.Unlock()
-		return "", ErrWaitingForUnlock
-	}
-	if !running {
-		f = &flight{done: make(chan struct{})}
-		inflight[key] = f
-		go run(svc, name, f)
-	}
-	mu.Unlock()
-	select {
-	case <-f.done:
-		return f.value, explain(f.err)
-	case <-time.After(getTimeout):
-		mu.Lock()
-		select {
-		case <-f.done:
-			mu.Unlock()
-			return f.value, explain(f.err)
-		default:
-		}
-		f.stuck = true
-		mu.Unlock()
-		return "", ErrWaitingForUnlock
-	}
-}
+func GetIn(svc, name string) (string, error) { v, err := store.GetIn(svc, name); return v, mapErr(err) }
 
-func run(svc, name string, f *flight) {
-	key := svc + "\n" + name
-	var v string
-	var err error
-	if flatpak.Inside() {
-		v, err = flatpakGet(svc, name)
-	} else {
-		v, err = keyringGet(svc, name)
-	}
-	mu.Lock()
-	f.value, f.err = v, err
-	if inflight[key] == f {
-		delete(inflight, key)
-	}
-	// A stale read is not kept, but its caller was told to wait, so it still hears back and reads the new value.
-	deliver := f.stuck && (f.stale || err == nil)
-	if deliver && !f.stale {
-		late[key] = v
-	}
-	close(f.done)
-	mu.Unlock()
-	if deliver {
-		OnUnlocked()
-	}
-}
+// Set stores value under name.
+func Set(name, value string) error { return mapErr(store.Set(name, value)) }
 
-// Set stores value under name, replacing any earlier one.
-func Set(name, value string) error { return SetIn(service, name, value) }
-
-// SetIn stores value under another program's service and name, as GetIn reads it.
-func SetIn(svc, name, value string) error {
-	forget(svc, name)
-	if flatpak.Inside() {
-		return flatpakSet(svc, name, value)
-	}
-	return explain(keyringSet(svc, name, value))
-}
-
-func forget(svc, name string) {
-	key := svc + "\n" + name
-	mu.Lock()
-	delete(late, key)
-	if f, ok := inflight[key]; ok {
-		f.stale = true
-		delete(inflight, key)
-	}
-	mu.Unlock()
-}
-
-// flatpakName is the sealed file's name for a secret: Mortar's own keep their bare name.
-func flatpakName(svc, name string) string {
-	if svc == service {
-		return name
-	}
-	return svc + "." + name
-}
+// SetIn stores a secret under another program's service and name.
+func SetIn(svc, name, value string) error { return mapErr(store.SetIn(svc, name, value)) }
 
 // Delete removes the secret under name; one that is already gone is not an error.
-func Delete(name string) error { return DeleteIn(service, name) }
+func Delete(name string) error { return mapErr(store.Delete(name)) }
 
 // DeleteIn removes the secret under another program's service and name.
-func DeleteIn(svc, name string) error {
-	forget(svc, name)
-	if flatpak.Inside() {
-		return flatpakDelete(svc, name)
-	}
-	if err := keyringDelete(svc, name); err != nil && !errors.Is(err, ErrNotFound) {
-		return explain(err)
-	}
-	return nil
-}
+func DeleteIn(svc, name string) error { return mapErr(store.DeleteIn(svc, name)) }
 
-// noProvider are the fragments of the D-Bus errors raised when nothing answers as the Secret Service.
-var noProvider = []string{
-	"org.freedesktop.DBus.Error.ServiceUnknown",
-	"org.freedesktop.DBus.Error.NameHasNoOwner",
-	"org.freedesktop.DBus.Error.NoServer",
-	"couldn't determine address of session bus",
-	"dbus-launch",
-}
+// Plaintext reports whether secrets sit in the unencrypted fallback file. It is false while the store is busy or
+// cannot be resolved.
+func Plaintext() bool { p, _ := store.Plaintext(); return p }
 
-// explain replaces the raw D-Bus failure of a missing Secret Service provider with a sentence the user can act on.
-func explain(err error) error {
+func mapErr(err error) error {
 	switch {
-	case err == nil:
-		return nil
-	case noKeyringService(err):
-		return usererr.New(usererr.Unknown, "No keyring service is running. Install or start gnome-keyring or KWallet, then try again.")
-	case strings.Contains(err.Error(), unlockFailed):
+	case errors.Is(err, keyring.ErrPending):
+		return ErrWaitingForUnlock
+	case errors.Is(err, keyring.ErrLocked):
 		return usererr.New(usererr.Unknown, "The keyring is locked. Unlock it, then try again.")
+	case errors.Is(err, keyring.ErrNoProvider):
+		return usererr.New(usererr.Unknown, "No keyring service is running. Install or start gnome-keyring or KWallet, then try again.")
 	}
 	return err
-}
-
-// unlockFailed is the text go-keyring gives when an unlock prompt is dismissed.
-const unlockFailed = "failed to unlock correct collection"
-
-func noKeyringService(err error) bool {
-	msg := err.Error()
-	for _, frag := range noProvider {
-		if strings.Contains(msg, frag) {
-			return true
-		}
-	}
-	return false
 }
