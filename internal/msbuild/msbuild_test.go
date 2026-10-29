@@ -95,3 +95,12 @@ func TestNamesMatchWithoutCase(t *testing.T) {
 		t.Errorf("Items = %+v", items)
 	}
 }
+
+func TestParseRefusesMismatchedEndTags(t *testing.T) {
+	if _, err := Parse("<a><b></a></b>"); err == nil {
+		t.Error("<a><b></a></b> parsed")
+	}
+	if _, err := Parse("<a><b/></a>"); err != nil {
+		t.Error(err)
+	}
+}

@@ -51,6 +51,7 @@ func Parse(text string) ([]Elem, error) {
 	d := xml.NewDecoder(strings.NewReader(text))
 	var out []Elem
 	var open []int
+	var names []xml.Name
 	for {
 		start := int(d.InputOffset())
 		tok, err := d.RawToken()
@@ -73,12 +74,18 @@ func Parse(text string) ([]Elem, error) {
 			at := int(d.InputOffset())
 			out = append(out, Elem{Name: t.Name.Local, Attrs: attrs, Start: start, InnerStart: at, InnerEnd: at, Parent: parent, text: text})
 			open = append(open, len(out)-1)
+			names = append(names, t.Name)
 		case xml.EndElement:
 			if len(open) == 0 {
 				return nil, fmt.Errorf("unexpected </%s>", t.Name.Local)
 			}
+			// RawToken does not pair tags; <a><b></a></b> would otherwise parse.
+			if want := names[len(names)-1]; want != t.Name {
+				return nil, fmt.Errorf("</%s> closes <%s>", t.Name.Local, want.Local)
+			}
 			e := &out[open[len(open)-1]]
 			open = open[:len(open)-1]
+			names = names[:len(names)-1]
 			e.End = int(d.InputOffset())
 			// A self-closing element's end comes with no bytes of its own.
 			if e.End != e.InnerStart {
