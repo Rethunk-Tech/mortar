@@ -122,10 +122,11 @@ func validConfigShape(p string) bool {
 	return true
 }
 
-// validID accepts ids whose format and local part are safe to use as zip path segments.
+// validID accepts ids whose format and local part are safe to use as zip path segments. Only a device name is
+// refused: 0.3.8 accepted an id ending in a dot or space, so share files holding one must still read.
 func validID(id mod.ID) bool {
 	local := id.Local()
-	return format.MatchString(id.Format()) && len(local) <= maxIDLen && uniqueID.MatchString(local) && winname.Valid(local)
+	return format.MatchString(id.Format()) && len(local) <= maxIDLen && uniqueID.MatchString(local) && winname.Valid(strings.TrimRight(local, ". "))
 }
 
 // Write writes the profile as a .mortar zip: profile.json with the link's entries plus name and notes,

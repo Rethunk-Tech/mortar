@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"slices"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 var winNames = []string{"CONIN$.ini", "CONOUT$.ini", "COM¹.ini", "lpt³.txt", "con .json"}
@@ -49,5 +51,20 @@ func TestReadSkipsWindowsRefusedNames(t *testing.T) {
 	}
 	if len(pv.ChangedFiles) != 0 || len(pv.Configs) != 1 || pv.Configs[0].Path != "ok.json" {
 		t.Errorf("changed %v, configs %v", pv.ChangedFiles, pv.Configs)
+	}
+}
+
+func TestValidIDKeepsTrailingDotsAndRefusesDevices(t *testing.T) {
+	for id, want := range map[mod.ID]bool{
+		"smapi:Author.Mod.":  true,
+		"smapi:Author.Mod..": true,
+		"smapi:CON":          false,
+		"smapi:con.":         false,
+		"smapi:nul.json":     false,
+		"smapi:Author.Mod":   true,
+	} {
+		if got := validID(id); got != want {
+			t.Errorf("validID(%q) = %v, want %v", id, got, want)
+		}
 	}
 }
