@@ -10,8 +10,17 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
-// samePath compares paths the way the OS does: Windows ignores case, and EvalSymlinks may normalise it.
+// samePath compares paths the way the OS does: Windows ignores case and a CI runner's temp folder spells its user in
+// the 8.3 short form that EvalSymlinks expands.
 func samePath(a, b string) bool {
+	if runtime.GOOS == "windows" {
+		if r, err := filepath.EvalSymlinks(a); err == nil {
+			a = r
+		}
+		if r, err := filepath.EvalSymlinks(b); err == nil {
+			b = r
+		}
+	}
 	if runtime.GOOS == "windows" {
 		return strings.EqualFold(filepath.Clean(a), filepath.Clean(b))
 	}

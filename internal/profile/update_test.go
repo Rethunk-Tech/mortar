@@ -9,7 +9,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/backup"
@@ -393,7 +395,22 @@ func lcSteamHome(t *testing.T, e *env) string {
 	writeFile(t, apps, "libraryfolders.vdf", "\"libraryfolders\"\n{\n\"0\"\n{\n\"path\" \""+root+"\"\n}\n}\n")
 	writeFile(t, apps, "appmanifest_1966720.acf", "\"AppState\"\n{\n\"installdir\" \"Lethal Company\"\n}\n")
 	writeFile(t, apps, "common/Lethal Company/Lethal Company.exe", "exe")
-	writeFile(t, apps, "compatdata/1966720/pfx/drive_c/users/steamuser/AppData/LocalLow/ZeekerssRBLX/Lethal Company/LCSaveFile1", "save")
+	save := "compatdata/1966720/pfx/drive_c/users/steamuser/AppData/LocalLow/ZeekerssRBLX/Lethal Company/LCSaveFile1"
+	if runtime.GOOS == "windows" {
+		// Steam is found by registry on Windows, so the library is named as a folder the player added, and the
+		// saves sit under the home with no prefix.
+		set, err := settings.OpenIn(e.dataDir)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := set.Update(func(v *settings.Settings) { v.LauncherRoots = map[string][]string{game.LauncherSteam: {root}} }); err != nil {
+			t.Fatal(err)
+		}
+		e.settings = set
+		writeFile(t, e.home, "AppData/LocalLow/ZeekerssRBLX/Lethal Company/LCSaveFile1", "save")
+	} else {
+		writeFile(t, apps, save, "save")
+	}
 	backups, _, err := backup.Locations(e.dataDir, "", "lethal-company")
 	if err != nil {
 		t.Fatal(err)
