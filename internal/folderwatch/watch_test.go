@@ -136,7 +136,7 @@ func TestSlowDirectWriterWaitsForStableSize(t *testing.T) {
 	}
 }
 
-func TestRenamedInFileIsAnnouncedAtOnce(t *testing.T) {
+func TestRenamedInFileIsAnnouncedAfterOneSettleWindow(t *testing.T) {
 	t.Parallel()
 	dir := t.TempDir()
 	g := start(t, func() []Target { return []Target{{Event: DownloadsEvent, Game: "stardew", Dir: dir}} })
@@ -147,11 +147,8 @@ func TestRenamedInFileIsAnnouncedAtOnce(t *testing.T) {
 	if err := os.Rename(part, filepath.Join(dir, "x.zip")); err != nil {
 		t.Fatal(err)
 	}
-	time.Sleep(200 * time.Millisecond) // well under the 300 ms stability wait
-	g.mu.Lock()
-	defer g.mu.Unlock()
-	if len(g.evs) != 1 {
-		t.Fatalf("events = %v", g.evs)
+	if evs := g.wait(t, 1); len(evs) != 1 {
+		t.Fatalf("events = %v", evs)
 	}
 }
 

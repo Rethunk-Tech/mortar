@@ -71,8 +71,7 @@ type watch struct {
 	timer *time.Timer
 	// writing holds files that received write events since the last announcement; gen counts every event.
 	writing map[string]struct{}
-	// created holds files that appeared since the last announcement; the ones still held open by a writer join
-	// writing when the folder goes quiet.
+	// created holds files that appeared since the last announcement; they join writing when the folder goes quiet.
 	created map[string]struct{}
 	gen     int
 }
@@ -161,10 +160,10 @@ func Run(ctx context.Context, d Deps) error {
 			a := &watch{t: t, writing: map[string]struct{}{}, created: map[string]struct{}{}}
 			a.timer = time.AfterFunc(quiet, func() {
 				mu.Lock()
+				// A file created in place may still be growing before its write events arrive (Windows delays them), so
+				// the size check decides whether it is done.
 				for n := range a.created {
-					if held(n) {
-						a.writing[n] = struct{}{}
-					}
+					a.writing[n] = struct{}{}
 				}
 				clear(a.created)
 				now := a.t
