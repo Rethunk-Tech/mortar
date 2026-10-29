@@ -74,4 +74,4 @@ func autostartEntry(exe string) string {
 
 // execArgEscaper escapes a path for the inside of a quoted Exec argument: the quoted-argument escapes first, then the
 // string-value escape that doubles each backslash, and %% so a percent is not read as a field code.
-var execArgEscaper = strings.NewReplacer(`\`, `\\\\`, `"`, `\\"`, "`", "\\\\`", `$`, `\\$`, `%`, `%%`)
+var execArgEscaper = strings.NewReplacer(`\`, `\\\\`, `"`, `\\"`, "`", "\\\\`", `$`, `\\$`, `%`, `%%`, "\n", `\n`, "\r", `\r`)

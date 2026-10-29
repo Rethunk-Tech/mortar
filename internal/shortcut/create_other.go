@@ -151,7 +151,7 @@ func desktopValue(s string) string {
 
 // execArgEscaper escapes a path for the inside of a quoted Exec argument: the quoted-argument escapes first, then the
 // string-value escape that doubles each backslash, and %% so a percent is not read as a field code.
-var execArgEscaper = strings.NewReplacer(`\`, `\\\\`, `"`, `\\"`, "`", "\\\\`", `$`, `\\$`, `%`, `%%`)
+var execArgEscaper = strings.NewReplacer(`\`, `\\\\`, `"`, `\\"`, "`", "\\\\`", `$`, `\\$`, `%`, `%%`, "\n", `\n`, "\r", `\r`)
 
 // desktopString undoes a key file's string escapes, which wrap the Exec quoting.
 var desktopString = strings.NewReplacer(`\\`, `\`, `\s`, " ", `\n`, "\n", `\t`, "\t", `\r`, "\r")

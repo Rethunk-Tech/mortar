@@ -274,7 +274,7 @@ func quoteExec(path string) string {
 	return execArgEscaper.Replace(path)
 }
 
-var execArgEscaper = strings.NewReplacer(`\`, `\\\\`, `"`, `\\"`, "`", "\\\\`", `$`, `\\$`, `%`, `%%`)
+var execArgEscaper = strings.NewReplacer(`\`, `\\\\`, `"`, `\\"`, "`", "\\\\`", `$`, `\\$`, `%`, `%%`, "\n", `\n`, "\r", `\r`)
 
 func (l *System) iconPNGPath() string {
 	return filepath.Join(l.dataHome, "icons", "hicolor", "256x256", "apps", "mortar.png")
