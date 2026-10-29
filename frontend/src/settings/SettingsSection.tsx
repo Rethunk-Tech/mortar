@@ -153,7 +153,8 @@ export function SettingRow({
         },
       }}
     >
-      <Box sx={{ flex: 1, minWidth: 0 }}>
+      {/* With nothing to show, the label box leaves the layout entirely, so a stacked row gets no gap above it. */}
+      <Box sx={hideTitle && !description ? visuallyHidden : { flex: 1, minWidth: 0 }}>
         <Box
           data-setting-label={true}
           sx={hideTitle ? visuallyHidden : { fontSize: 'large.fontSize' }}
