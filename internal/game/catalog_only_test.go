@@ -69,7 +69,12 @@ func TestACatalogOnlyGameNeedsNoCode(t *testing.T) {
 	if err := g.ValidInstall(dir); err != nil {
 		t.Fatal(err)
 	}
-	list, err := NewService(h, testStore(t)).List()
+	// Steam is found by registry on Windows, so the library is named as a folder the player added.
+	store := testStore(t)
+	if _, err := store.Update(func(v *settings.Settings) { v.LauncherRoots = map[string][]string{LauncherSteam: {root}} }); err != nil {
+		t.Fatal(err)
+	}
+	list, err := NewService(h, store).List()
 	if err != nil {
 		t.Fatal(err)
 	}
