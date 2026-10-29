@@ -3,7 +3,7 @@ package smapimanifest
 import (
 	"encoding/json"
 
-	"github.com/Rethunk-Tech/mortar/internal/jsonc"
+	"github.com/Rethunk-Tech/go-lenientjson"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -72,7 +72,7 @@ func idSet(ids []mod.ID) map[string]bool {
 
 func lenientObject(raw []byte) (map[string]json.RawMessage, error) {
 	var doc map[string]json.RawMessage
-	if err := json.Unmarshal(jsonc.Clean(raw), &doc); err != nil {
+	if err := json.Unmarshal(lenientjson.Clean(raw), &doc); err != nil {
 		return nil, err
 	}
 	return doc, nil

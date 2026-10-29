@@ -7,7 +7,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/jsonc"
+	"github.com/Rethunk-Tech/go-lenientjson"
 )
 
 type jsonPair struct {
@@ -34,7 +34,7 @@ const (
 )
 
 func rewriteConfigJSON(data []byte) ([]byte, error) {
-	dec := json.NewDecoder(bytes.NewReader(jsonc.Clean(data)))
+	dec := json.NewDecoder(bytes.NewReader(lenientjson.Clean(data)))
 	dec.UseNumber()
 	node, err := decodeJSON(dec)
 	if err != nil {

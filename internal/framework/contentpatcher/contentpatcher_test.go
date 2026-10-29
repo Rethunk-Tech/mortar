@@ -7,9 +7,9 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-lenientjson"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/jsonc"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/packs"
 )
@@ -27,7 +27,7 @@ func testdataPack(t *testing.T, name string) framework.Mod {
 	}
 	id := name
 	var doc map[string]any
-	if json.Unmarshal(jsonc.Clean(raw), &doc) == nil {
+	if json.Unmarshal(lenientjson.Clean(raw), &doc) == nil {
 		if u, ok := doc["UniqueID"].(string); ok {
 			id = u
 		}

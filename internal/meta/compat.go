@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/jsonc"
+	"github.com/Rethunk-Tech/go-lenientjson"
 )
 
 // Wiki-backed compatibility list behind https://smapi.io/mods. SMAPI.Web (Pathoschild/SMAPI
@@ -171,7 +171,7 @@ func (n *flexInt) UnmarshalJSON(b []byte) error {
 }
 
 func parseCompatJSON(b []byte) (CompatIndex, error) {
-	b = jsonc.Clean(b)
+	b = lenientjson.Clean(b)
 	mods, err := decodeCompatMods(b)
 	if err != nil {
 		return CompatIndex{}, err

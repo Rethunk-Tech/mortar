@@ -29,9 +29,9 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
+	"github.com/Rethunk-Tech/go-lenientjson"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/jsonc"
 	"github.com/Rethunk-Tech/mortar/internal/modconfig"
 )
 
@@ -1056,7 +1056,7 @@ func readConfigSchema(root string) map[string]cpSchema {
 	if err != nil {
 		return nil
 	}
-	entries, err := modconfig.Entries(jsonc.Clean(raw))
+	entries, err := modconfig.Entries(lenientjson.Clean(raw))
 	if err != nil {
 		return nil
 	}
@@ -1111,7 +1111,7 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 			When  map[string]json.RawMessage `json:"When"`
 		} `json:"DynamicTokens"`
 	}
-	if err := json.Unmarshal(jsonc.Clean(raw), &doc); err != nil {
+	if err := json.Unmarshal(lenientjson.Clean(raw), &doc); err != nil {
 		return
 	}
 	// A dynamic token's value gates content like a change does, so its conditions count for compatibility
@@ -1195,8 +1195,8 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 			pack.patches = append(pack.patches, cpPatch{kind: kind, when: when, source: intern(rel), index: i, action: intern(action)})
 			continue
 		}
-		fromArea := string(jsonc.Clean(ch.FromArea))
-		toArea := string(jsonc.Clean(ch.ToArea))
+		fromArea := string(lenientjson.Clean(ch.FromArea))
+		toArea := string(lenientjson.Clean(ch.ToArea))
 		priority, _ := scalarValue(ch.Priority)
 		extra := changeDoesMore(rawChange, ch)
 		for _, t := range splitTargets(ch.Target) {
@@ -2426,7 +2426,7 @@ func (p *cachedPack) recordFarms(raw json.RawMessage) {
 		ID      string `json:"Id"`
 		MapName string `json:"MapName"`
 	}
-	if json.Unmarshal(jsonc.Clean(raw), &entries) != nil {
+	if json.Unmarshal(lenientjson.Clean(raw), &entries) != nil {
 		return
 	}
 	for key, entry := range entries {
@@ -3011,7 +3011,7 @@ func loadFileBlank(hit packHit, load cpPatch, target string) bool {
 	if !ok {
 		return false
 	}
-	raw = bytes.TrimSpace(jsonc.Clean(raw))
+	raw = bytes.TrimSpace(lenientjson.Clean(raw))
 	var object map[string]json.RawMessage
 	if json.Unmarshal(raw, &object) == nil && object != nil && len(object) == 0 {
 		return true
@@ -3039,7 +3039,7 @@ func loadFilesEqual(a packHit, ap cpPatch, b packHit, bp cpPatch, target string)
 
 func loadJSONValue(raw []byte) (any, bool) {
 	var value any
-	if json.Unmarshal(jsonc.Clean(raw), &value) != nil {
+	if json.Unmarshal(lenientjson.Clean(raw), &value) != nil {
 		return nil, false
 	}
 	return value, true

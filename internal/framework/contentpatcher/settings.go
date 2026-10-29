@@ -9,9 +9,9 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-lenientjson"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/jsonc"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -184,7 +184,7 @@ func readPackConfig(folder string) map[string]string {
 		return map[string]string{}
 	}
 	var values map[string]json.RawMessage
-	if json.Unmarshal(jsonc.Clean(raw), &values) != nil {
+	if json.Unmarshal(lenientjson.Clean(raw), &values) != nil {
 		return map[string]string{}
 	}
 	out := make(map[string]string, len(values))

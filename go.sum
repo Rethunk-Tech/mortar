@@ -6,6 +6,8 @@ github.com/Rethunk-AI/wails/v3 v3.0.0-mortar.1 h1:OYY9D26hX9m3uxpfEDp6YsHa9wrVj+
 github.com/Rethunk-AI/wails/v3 v3.0.0-mortar.1/go.mod h1:U3p3/QfSer2XxXM3XWhwis9O7LvvuNKN/AcGoEFD+K8=
 github.com/Rethunk-Tech/go-archive v0.1.1 h1:AldAJXZdMvDkZoBygKXIlPtR/g/JDXqrYD2USfiCWdc=
 github.com/Rethunk-Tech/go-archive v0.1.1/go.mod h1:CvcGZQvQOVK8RCKV+60Yijah6Y5P2/l6U0eKJGtvhjk=
+github.com/Rethunk-Tech/go-lenientjson v0.1.0 h1:z9tWTZtE6x1FNsUuZEFgbCnaMkYk/0QzPcbLiWrldcg=
+github.com/Rethunk-Tech/go-lenientjson v0.1.0/go.mod h1:wvcKB3J1GQTQpvVn/GHoGQ41yNMOu9rw6dw3+7k9WaQ=
 github.com/adrg/xdg v0.5.3 h1:xRnxJXne7+oWDatRhR1JLnvuccuIeCoBu2rtuLqQB78=
 github.com/adrg/xdg v0.5.3/go.mod h1:nlTsY+NNiCBGCK2tpm09vRqfVzrc2fLmXGpBLF0zlTQ=
 github.com/andybalholm/brotli v1.2.7 h1:UgafRPGMam5ySHfRkhthMqOFA6IFoeF3D7mWIDLjG5A=

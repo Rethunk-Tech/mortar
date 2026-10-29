@@ -11,8 +11,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-lenientjson"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/jsonc"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/modconfig"
@@ -130,7 +130,7 @@ func schemaFromDir(folder string) modconfig.Schema {
 	if err != nil {
 		return modconfig.Schema{}
 	}
-	schema, err := modconfig.Parse(jsonc.Clean(raw))
+	schema, err := modconfig.Parse(lenientjson.Clean(raw))
 	if err != nil {
 		return modconfig.Schema{}
 	}

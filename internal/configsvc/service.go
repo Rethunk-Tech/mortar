@@ -16,12 +16,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-lenientjson"
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/gmcm"
-	"github.com/Rethunk-Tech/mortar/internal/jsonc"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/modconfig"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -415,7 +415,7 @@ func (s *Service) OpenText(game, profileID, modID, file string) error {
 func checkSyntax(file, text string) error {
 	switch strings.ToLower(filepath.Ext(file)) {
 	case jsonExt:
-		clean := jsonc.Clean([]byte(text))
+		clean := lenientjson.Clean([]byte(text))
 		var v any
 		if err := json.Unmarshal(clean, &v); err != nil {
 			if se, ok := errors.AsType[*json.SyntaxError](err); ok {

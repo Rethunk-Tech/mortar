@@ -24,9 +24,9 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/go-lenientjson"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/jsonc"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -322,7 +322,7 @@ func rawDataLiteral(raw json.RawMessage, values map[string]string) string {
 		}
 		return ""
 	}
-	clean := bytes.TrimSpace(jsonc.Clean(raw))
+	clean := bytes.TrimSpace(lenientjson.Clean(raw))
 	if len(clean) == 0 || clean[0] == '{' || clean[0] == '[' {
 		return string(clean)
 	}

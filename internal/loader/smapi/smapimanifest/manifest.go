@@ -14,10 +14,10 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/go-lenientjson"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/ghrepo"
-	"github.com/Rethunk-Tech/mortar/internal/jsonc"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -151,11 +151,11 @@ var curlyQuotes = strings.NewReplacer("\u201c", `"`, "\u201d", `"`)
 
 // readObject reads b as the JSON object Newtonsoft would, or says where it stops being one.
 func readObject(b []byte) (map[string]json.RawMessage, error) {
-	clean := jsonc.Clean(b)
+	clean := lenientjson.Clean(b)
 	var raw map[string]json.RawMessage
 	err := json.Unmarshal(clean, &raw)
 	if err != nil && bytes.ContainsAny(b, "\u201c\u201d") {
-		retry := jsonc.Clean([]byte(curlyQuotes.Replace(string(b))))
+		retry := lenientjson.Clean([]byte(curlyQuotes.Replace(string(b))))
 		if json.Unmarshal(retry, &raw) == nil {
 			return raw, nil
 		}
