@@ -63,7 +63,12 @@ func (s *Service) sweepDownloads() {
 		if !e.Type().IsRegular() {
 			continue
 		}
-		base := strings.TrimSuffix(name, github.ResumeSuffix)
+		base := name
+		// A crash mid-sidecar-write leaves "<name>.resume.json.<rand>.tmp".
+		if i := strings.LastIndex(name, github.ResumeSuffix+"."); i >= 0 && strings.HasSuffix(name, ".tmp") {
+			base = name[:i]
+		}
+		base = strings.TrimSuffix(base, github.ResumeSuffix)
 		id := archive.SavedID(base)
 		// The download folder may be the user's own: only names SavedName makes are Mortar's, an id with an archive
 		// ending or the "~~" separator.

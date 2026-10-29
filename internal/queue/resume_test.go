@@ -353,3 +353,21 @@ func TestDestKeepsABareCompressedDownloadsName(t *testing.T) {
 		t.Fatalf("extracted under the queue id, not the file's name: %v", err)
 	}
 }
+
+func TestSweepRemovesASidecarTempLeftByACrash(t *testing.T) {
+	s := &Service{d: Deps{Dir: t.TempDir()}}
+	root := s.downloadRoot()
+	if err := os.MkdirAll(root, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	for _, n := range []string{"0123456789abcdef.zip.resume.json.123456.tmp", "0123456789abcdef~~a.gz.resume.json.99.tmp"} {
+		if err := os.WriteFile(filepath.Join(root, n), []byte("x"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	s.sweepDownloads()
+	left, _ := os.ReadDir(root)
+	if len(left) != 0 {
+		t.Fatalf("sweep left %d files", len(left))
+	}
+}
