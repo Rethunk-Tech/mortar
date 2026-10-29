@@ -10,12 +10,14 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"math"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
@@ -296,42 +298,47 @@ func restoreRequest(game, profileID string, e profile.Entry) (queue.Request, boo
 
 // readBackup reads backup.json and the files under files/ into memory and unpacks store/ and saves/ below tmp.
 func readBackup(path, tmp string) (backupJSON, map[string][]byte, error) {
-	zr, err := zip.OpenReader(path)
+	src, err := safefs.Open(path)
 	if err != nil {
 		return backupJSON{}, nil, usererr.Wrap(usererr.Invalid, fmt.Errorf("not a Mortar profile backup: %w", err))
 	}
-	defer func() { _ = zr.Close() }()
+	defer func() { _ = src.Close() }()
+	info, err := src.Stat()
+	if err != nil {
+		return backupJSON{}, nil, err
+	}
 	root, err := os.OpenRoot(tmp)
 	if err != nil {
 		return backupJSON{}, nil, err
 	}
 	defer func() { _ = root.Close() }()
 	files := map[string][]byte{}
-	folded := map[string]string{}
 	var doc []byte
 	var inMemory, onDisk int64
-	for _, f := range zr.File {
-		if f.FileInfo().IsDir() {
-			continue
+	// The caps below are the module's backstop: the counters in the loop answer first and name the damage. A backup
+	// holds names straight from disk, so the module admits every segment and keeps case-only twins apart unless this
+	// computer's file system cannot.
+	opts := archive.Options{
+		MaxEntries:    math.MaxInt32,
+		MaxEntryBytes: maxBackupDisk,
+		MaxTotalBytes: maxBackupDisk + maxBackupBytes,
+		RatioFloor:    maxBackupDisk + maxBackupBytes,
+		CaseSensitive: !caseInsensitive,
+	}
+	err = archive.ZipFunc(src, info.Size(), opts, func(name string, isDir bool, r io.Reader) error {
+		if isDir {
+			return nil
 		}
-		rel, inFiles := strings.CutPrefix(f.Name, backupPrefix)
-		if f.Name != backupDoc && !inFiles {
-			if err := unpack(f, root, folded, &onDisk); err != nil {
-				return backupJSON{}, nil, err
-			}
-			continue
+		rel, inFiles := strings.CutPrefix(name, backupPrefix)
+		if name != backupDoc && !inFiles {
+			return unpack(name, r, root, &onDisk)
 		}
-		rc, err := f.Open()
-		if err != nil {
-			return backupJSON{}, nil, err
-		}
-		data, err := safefs.ReadCapped(rc, maxBackupBytes-inMemory)
-		_ = rc.Close()
+		data, err := safefs.ReadCapped(r, maxBackupBytes-inMemory)
 		if errors.Is(err, safefs.ErrTooLarge) {
-			return backupJSON{}, nil, usererr.New(usererr.Damaged, "the backup unpacks to too much")
+			return usererr.New(usererr.Damaged, "the backup unpacks to too much")
 		}
 		if err != nil {
-			return backupJSON{}, nil, err
+			return err
 		}
 		inMemory += int64(len(data))
 		if inFiles {
@@ -339,6 +346,10 @@ func readBackup(path, tmp string) (backupJSON, map[string][]byte, error) {
 		} else {
 			doc = data
 		}
+		return nil
+	})
+	if err != nil {
+		return backupJSON{}, nil, backupReadError(err)
 	}
 	var b backupJSON
 	if doc == nil {
@@ -373,23 +384,30 @@ func readBackup(path, tmp string) (backupJSON, map[string][]byte, error) {
 // entries that differ only by case, which only a case-sensitive file system can restore.
 var caseInsensitive = runtime.GOOS == "windows" || runtime.GOOS == "darwin"
 
-// unpack writes one store/, saves/ or changed/ entry of a backup below root, adding its size to total. folded
-// remembers each lower-cased entry name seen so far.
-func unpack(f *zip.File, root *os.Root, folded map[string]string, total *int64) error {
-	name := f.Name
-	_, inStore := storeKeyOf(name)
-	if (!inStore && !strings.HasPrefix(name, savesPrefix) && !strings.HasPrefix(name, profile.ChangedPrefix)) || strings.Contains(name, "\\") || !filepath.IsLocal(filepath.FromSlash(name)) {
-		return usererr.Wrap(usererr.Invalid, fmt.Errorf("the backup holds %q, which Mortar does not write", name))
-	}
-	if other, ok := folded[strings.ToLower(name)]; ok && other != name && caseInsensitive {
-		return usererr.Wrap(usererr.Damaged, fmt.Errorf("the backup holds %q and %q, which this computer's file system cannot keep apart", other, name))
-	}
-	folded[strings.ToLower(name)] = name
-	rc, err := f.Open()
-	if err != nil {
+// backupReadError types a module failure for the player; an error fn already typed passes through.
+func backupReadError(err error) error {
+	if _, typed := errors.AsType[*usererr.Error](err); typed {
 		return err
 	}
-	defer func() { _ = rc.Close() }()
+	switch {
+	case errors.Is(err, archive.ErrUnsupportedFormat), errors.Is(err, archive.ErrMalformed):
+		return usererr.Wrap(usererr.Invalid, fmt.Errorf("not a Mortar profile backup: %w", err))
+	case errors.Is(err, archive.ErrCaseCollision):
+		return usererr.Wrap(usererr.Damaged, fmt.Errorf("the backup holds an entry twice, or two this computer's file system cannot keep apart: %w", err))
+	case errors.Is(err, archive.ErrTraversal), errors.Is(err, archive.ErrUnsafeName), errors.Is(err, archive.ErrLink), errors.Is(err, archive.ErrSpecialFile):
+		return usererr.Wrap(usererr.Invalid, fmt.Errorf("the backup holds an entry Mortar does not write: %w", err))
+	case errors.Is(err, archive.ErrEntryTooLarge), errors.Is(err, archive.ErrArchiveTooLarge), errors.Is(err, archive.ErrTooManyEntries), errors.Is(err, archive.ErrRatio):
+		return usererr.Wrap(usererr.Damaged, fmt.Errorf("the backup unpacks to too much: %w", err))
+	}
+	return err
+}
+
+// unpack writes one store/, saves/ or changed/ entry of a backup below root, adding its size to total.
+func unpack(name string, r io.Reader, root *os.Root, total *int64) error {
+	_, inStore := storeKeyOf(name)
+	if (!inStore && !strings.HasPrefix(name, savesPrefix) && !strings.HasPrefix(name, profile.ChangedPrefix)) || !filepath.IsLocal(filepath.FromSlash(name)) {
+		return usererr.Wrap(usererr.Invalid, fmt.Errorf("the backup holds %q, which Mortar does not write", name))
+	}
 	to := filepath.FromSlash(name)
 	if err := root.MkdirAll(filepath.Dir(to), 0o700); err != nil {
 		return err
@@ -401,7 +419,7 @@ func unpack(f *zip.File, root *os.Root, folded map[string]string, total *int64) 
 	if err != nil {
 		return err
 	}
-	n, err := io.Copy(out, safefs.CapReader(rc, maxBackupDisk-*total))
+	n, err := io.Copy(out, safefs.CapReader(r, maxBackupDisk-*total))
 	closeErr := out.Close()
 	if errors.Is(err, safefs.ErrTooLarge) {
 		return usererr.New(usererr.Damaged, "the backup unpacks to too much")
