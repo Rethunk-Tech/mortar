@@ -7,7 +7,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -18,6 +17,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
@@ -438,15 +438,7 @@ func serveRemoteArt(w http.ResponseWriter, r *http.Request, src string) bool {
 	if err != nil {
 		return false
 	}
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return false
-	}
-	defer func() { _ = resp.Body.Close() }()
-	if resp.StatusCode != http.StatusOK {
-		return false
-	}
-	b, err := modpic.ReadCapped(resp.Body, maxHero)
+	b, err := httpkit.DoCapped(nil, req, maxHero, nil)
 	if err != nil {
 		return false
 	}
@@ -486,11 +478,10 @@ func lookupStoreHero(ctx context.Context, appID string) string {
 	if err != nil {
 		return ""
 	}
-	resp, err := http.DefaultClient.Do(req)
+	raw, err := httpkit.DoCapped(nil, req, 1<<20, nil)
 	if err != nil {
 		return ""
 	}
-	defer func() { _ = resp.Body.Close() }()
 	var body struct {
 		Response struct {
 			StoreItems []struct {
@@ -502,7 +493,7 @@ func lookupStoreHero(ctx context.Context, appID string) string {
 			} `json:"store_items"`
 		} `json:"response"`
 	}
-	if resp.StatusCode != http.StatusOK || json.NewDecoder(io.LimitReader(resp.Body, 1<<20)).Decode(&body) != nil || len(body.Response.StoreItems) == 0 {
+	if json.Unmarshal(raw, &body) != nil || len(body.Response.StoreItems) == 0 {
 		return ""
 	}
 	a := body.Response.StoreItems[0].Assets

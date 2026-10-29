@@ -165,41 +165,45 @@ func (d Driver) cacheRoot() string {
 	return filepath.Join(base, "mortar")
 }
 
-// open starts a GET and returns its body, which the caller reads before calling done.
-func (d Driver) open(ctx context.Context, url, ua string) (body io.Reader, done func(), err error) {
+// request builds a GET for url that gives up after source.RequestTimeout, with the client that sends it.
+func (d Driver) request(ctx context.Context, url, ua string) (*http.Request, *http.Client, context.CancelFunc, error) {
 	ctx, cancel := context.WithTimeout(ctx, source.RequestTimeout)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		cancel()
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	req.Header.Set("User-Agent", ua)
-	client := httpkit.WithRedirect(cmp.Or(d.HTTP, http.DefaultClient), httpkit.NoDowngrade)
+	return req, httpkit.WithRedirect(cmp.Or(d.HTTP, http.DefaultClient), httpkit.NoDowngrade), cancel, nil
+}
+
+// open starts a GET and returns its body, which the caller reads before calling done.
+func (d Driver) open(ctx context.Context, url, ua string) (body io.Reader, done func(), err error) {
+	req, client, cancel, err := d.request(ctx, url, ua)
+	if err != nil {
+		return nil, nil, err
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		cancel()
 		return nil, nil, err
 	}
 	done = func() { _ = resp.Body.Close(); cancel() }
-	if resp.StatusCode == http.StatusNotFound {
-		done()
-		return nil, nil, errNotFound
-	}
 	if resp.StatusCode != http.StatusOK {
 		done()
-		return nil, nil, fmt.Errorf("thunderstore answered %s", resp.Status)
+		return nil, nil, &httpkit.StatusError{Code: resp.StatusCode, Status: resp.Status}
 	}
 	// One byte past the cap lets get tell an oversize body from one that fits exactly.
 	return io.LimitReader(resp.Body, source.MaxBody+1), done, nil
 }
 
 func (d Driver) get(ctx context.Context, url, ua string) ([]byte, error) {
-	body, done, err := d.open(ctx, url, ua)
+	req, client, cancel, err := d.request(ctx, url, ua)
 	if err != nil {
 		return nil, err
 	}
-	defer done()
-	return safefs.ReadCapped(body, source.MaxBody)
+	defer cancel()
+	return httpkit.DoCapped(client, req, source.MaxBody, nil)
 }
 
 // maxUnpacked is the most a gzipped answer may unpack to; a variable so a test can lower it.

@@ -20,7 +20,6 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-httpkit"
-
 	"github.com/Rethunk-Tech/go-safefs"
 )
 
@@ -290,6 +289,10 @@ func readImage(r io.Reader) ([]byte, string, error) {
 	if err != nil {
 		return nil, "", err
 	}
+	return sniffImage(b)
+}
+
+func sniffImage(b []byte) ([]byte, string, error) {
 	typ := http.DetectContentType(b)
 	if _, ok := imageTypes[typ]; !ok {
 		return nil, "", errNotImage
@@ -308,18 +311,14 @@ func (c *Cache) fetch(ctx context.Context, picture, path string, px int) ([]byte
 	if err != nil {
 		return nil, "", err
 	}
-	resp, err := c.http.Do(req)
-	if err != nil {
-		return nil, "", err
-	}
-	defer func() { _ = resp.Body.Close() }()
-	if resp.StatusCode != http.StatusOK {
-		return nil, "", fmt.Errorf("the picture server answered %s", resp.Status)
-	}
-	if resp.ContentLength > MaxSize {
+	b, err := httpkit.DoCapped(c.http, req, MaxSize, nil)
+	if errors.Is(err, safefs.ErrTooLarge) {
 		return nil, "", fmt.Errorf("the image is larger than %d MB", MaxSize>>20)
 	}
-	b, typ, err := readImage(resp.Body)
+	if err != nil {
+		return nil, "", fmt.Errorf("the picture server: %w", err)
+	}
+	b, typ, err := sniffImage(b)
 	if err != nil {
 		return nil, "", err
 	}

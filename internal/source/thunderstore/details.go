@@ -9,11 +9,9 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
-
-// errNotFound is the site's 404, which for a README or CHANGELOG means the version has none.
-var errNotFound = errors.New("thunderstore answered 404 Not Found")
 
 // Details reads a package's versions, dependencies and categories from the community index, and its newest version's
 // README and CHANGELOG from the site.
@@ -37,7 +35,7 @@ func (d Driver) Details(ctx context.Context, key, id, mortarVersion string) (sou
 	wg.Go(func() { out.Changelog, changelogErr = d.doc(ctx, p, latest, "changelog", ua) })
 	wg.Wait()
 	for _, err := range []error{readmeErr, changelogErr} {
-		if err != nil && !errors.Is(err, errNotFound) {
+		if err != nil && !errors.Is(err, httpkit.ErrNotFound) {
 			return source.Details{}, err
 		}
 	}
@@ -62,7 +60,7 @@ func (d Driver) find(ctx context.Context, key, id, ua string) (pkg, error) {
 	return pkg{}, fmt.Errorf("%s is not in the %s index", id, key)
 }
 
-// doc is one version's README or CHANGELOG as Markdown; errNotFound when the version has none.
+// doc is one version's README or CHANGELOG as Markdown; a 404 (httpkit.ErrNotFound) when the version has none.
 func (d Driver) doc(ctx context.Context, p pkg, ver, kind, ua string) (string, error) {
 	base := cmp.Or(d.URL, BaseURL)
 	u := base + "/api/experimental/package/" + url.PathEscape(p.Owner) + "/" + url.PathEscape(p.Name) + "/" +
@@ -91,7 +89,7 @@ func (d Driver) Changelog(ctx context.Context, key, id, _, latest, mortarVersion
 		}
 	}
 	body, err := d.doc(ctx, p, ver, "changelog", ua)
-	if errors.Is(err, errNotFound) || (err == nil && strings.TrimSpace(body) == "") {
+	if errors.Is(err, httpkit.ErrNotFound) || (err == nil && strings.TrimSpace(body) == "") {
 		return []source.Note{}, nil
 	}
 	if err != nil {
