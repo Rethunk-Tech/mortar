@@ -479,7 +479,7 @@ func TestACrashWithFilesOutsideTheInstallIsRecovered(t *testing.T) {
 		t.Fatal(err)
 	}
 	after := snapshot(t, dir)
-	if len(after) != len(before) || after[filepath.Join("a", "x.package")] != "the player's copy" {
+	if len(after) != len(before) || after["a/x.package"] != "the player's copy" {
 		t.Fatalf("recover did not restore the root: %v", after)
 	}
 }
