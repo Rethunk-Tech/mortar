@@ -439,48 +439,12 @@ func editShapes(root string, ch cpChange, image, skip bool) []cpShape {
 var (
 	pngShapeCache sync.Map
 	pngAlphaCache sync.Map
-	pngPixPools   sync.Map
 	cellSetCache  sync.Map
 )
 
 type pngAlpha struct {
 	w, h int
 	a    []byte
-}
-
-func pngPixPool(n int) *sync.Pool {
-	actual, _ := pngPixPools.LoadOrStore(n, &sync.Pool{New: func() any {
-		b := make([]byte, n)
-		return &b
-	}})
-	p, ok := actual.(*sync.Pool)
-	if !ok {
-		p = &sync.Pool{New: func() any {
-			b := make([]byte, n)
-			return &b
-		}}
-		pngPixPools.Store(n, p)
-	}
-	return p
-}
-
-func acquireAlpha(n int) []byte {
-	p := pngPixPool(n)
-	got := p.Get()
-	buf, ok := got.(*[]byte)
-	if !ok || cap(*buf) < n {
-		b := make([]byte, n)
-		return b
-	}
-	*buf = (*buf)[:n]
-	return *buf
-}
-
-func releaseAlpha(b []byte) {
-	if b == nil {
-		return
-	}
-	pngPixPool(cap(b)).Put(&b)
 }
 
 func imagePatchShapes(root string, ch cpChange, x, y int, skip bool) []cpShape {
@@ -655,7 +619,6 @@ func loadPNGAlpha(root, rel, fileKey string) (pngAlpha, bool) {
 	}
 	actual, loaded := pngAlphaCache.LoadOrStore(fileKey, pix)
 	if loaded {
-		releaseAlpha(pix.a)
 		if kept, ok := actual.(pngAlpha); ok {
 			return kept, kept.a != nil
 		}
@@ -666,14 +629,12 @@ func loadPNGAlpha(root, rel, fileKey string) (pngAlpha, bool) {
 
 func packNonzeroMask(a []byte) []byte {
 	n := (len(a) + 7) / 8
-	mask := acquireAlpha(n)
-	clear(mask)
+	mask := make([]byte, n)
 	for i, v := range a {
 		if v != 0 {
 			mask[i>>3] |= 1 << (i & 7)
 		}
 	}
-	releaseAlpha(a)
 	return mask
 }
 
@@ -741,7 +702,7 @@ func decodePNGAlpha(r io.Reader) (pngAlpha, bool) {
 		return decodePNGAlphaStd(bytes.NewReader(raw))
 	}
 	n := w * h
-	alpha := acquireAlpha(n)
+	alpha := make([]byte, n)
 	opaque := colorType == 0 || colorType == 2
 	if opaque && len(trns) == 0 {
 		for i := range alpha {
@@ -750,7 +711,6 @@ func decodePNGAlpha(r io.Reader) (pngAlpha, bool) {
 		return pngAlpha{w: w, h: h, a: alpha}, true
 	}
 	if !inflatePNGAlpha(idat, alpha, w, h, colorType, trns) {
-		releaseAlpha(alpha)
 		return decodePNGAlphaStd(bytes.NewReader(raw))
 	}
 	return pngAlpha{w: w, h: h, a: alpha}, true
@@ -936,7 +896,7 @@ func decodePNGAlphaStd(r io.Reader) (pngAlpha, bool) {
 	}
 	b := decoded.Bounds()
 	n := b.Dx() * b.Dy()
-	alpha := acquireAlpha(n)
+	alpha := make([]byte, n)
 	i := 0
 	for y := b.Min.Y; y < b.Max.Y; y++ {
 		for x := b.Min.X; x < b.Max.X; x++ {

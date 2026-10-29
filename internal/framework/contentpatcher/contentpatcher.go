@@ -2058,10 +2058,7 @@ func preloadPacks(mods []framework.Mod, read func(framework.Mod) cachedPack) {
 }
 
 func dropPNGAlphaMemo() {
-	pngAlphaCache.Range(func(k, v any) bool {
-		if pix, ok := v.(pngAlpha); ok {
-			releaseAlpha(pix.a)
-		}
+	pngAlphaCache.Range(func(k, _ any) bool {
 		pngAlphaCache.Delete(k)
 		return true
 	})
@@ -2078,9 +2075,6 @@ func dropPNGAlphaUnder(root string) {
 		abs, _, _ := strings.Cut(key, "\x00")
 		if abs != root && !strings.HasPrefix(abs, sep) {
 			return true
-		}
-		if pix, ok := v.(pngAlpha); ok {
-			releaseAlpha(pix.a)
 		}
 		pngAlphaCache.Delete(k)
 		return true

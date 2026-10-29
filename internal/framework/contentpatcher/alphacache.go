@@ -76,14 +76,12 @@ func readAlphaDisk(path string) (pngAlpha, bool) {
 	if w <= 0 || h <= 0 || !pngPixelsWithinCap(w, h) {
 		return pngAlpha{}, false
 	}
-	mask := acquireAlpha((w*h + 7) / 8)
+	mask := make([]byte, (w*h+7)/8)
 	if _, err := io.ReadFull(br, mask); err != nil {
-		releaseAlpha(mask)
 		return pngAlpha{}, false
 	}
 	// The gzip trailer's checksum is read only at the end of the stream, and a write that never synced can be torn.
 	if _, err := io.Copy(io.Discard, br); err != nil {
-		releaseAlpha(mask)
 		return pngAlpha{}, false
 	}
 	if info, err := os.Stat(path); err == nil && time.Since(info.ModTime()) > alphaTouchAge {

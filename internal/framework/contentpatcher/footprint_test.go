@@ -362,3 +362,34 @@ func TestFootprintReadsAreCapped(t *testing.T) {
 		t.Fatal("oversized PNG decoded by std path")
 	}
 }
+
+func TestDroppedMemoLeavesHeldMaskIntact(t *testing.T) {
+	dir := t.TempDir()
+	write := func(name string, opaque bool) {
+		img := image.NewNRGBA(image.Rect(0, 0, 32, 16))
+		if opaque {
+			img.SetNRGBA(8, 8, color.NRGBA{A: 255})
+		}
+		var buf bytes.Buffer
+		if err := png.Encode(&buf, img); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(dir, name), buf.Bytes(), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("a.png", true)
+	write("b.png", false)
+	held, ok := loadPNGAlpha(dir, "a.png", "held-a")
+	if !ok {
+		t.Fatal("decode a")
+	}
+	before := bytes.Clone(held.a)
+	dropPNGAlphaMemo()
+	if _, ok := loadPNGAlpha(dir, "b.png", "held-b"); !ok {
+		t.Fatal("decode b")
+	}
+	if !bytes.Equal(before, held.a) {
+		t.Fatalf("held mask changed under its reader: %v -> %v", before, held.a)
+	}
+}
