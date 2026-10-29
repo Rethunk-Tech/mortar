@@ -57,7 +57,15 @@ function SourceOrder() {
     <SettingRow label={label} description={description} block={true}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
         {list.map((s, i) => (
-          <Box key={s.id} sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
+          <Box
+            key={s.id}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: space.gap,
+              '& .MuiIconButton-root': { border: 0, bgcolor: 'var(--mortar-raised)' },
+            }}
+          >
             <Switch
               size="small"
               checked={!off.includes(s.id)}

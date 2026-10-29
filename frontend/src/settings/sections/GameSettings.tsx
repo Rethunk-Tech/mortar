@@ -152,6 +152,16 @@ function ExtraInstalls({
   )
 }
 
+function FolderLines({ folder, detail }: { folder: string; detail: string[] }) {
+  const { t } = useLingui()
+  return (
+    <>
+      <Box sx={{ overflowWrap: 'anywhere' }}>{folder || t`Not found`}</Box>
+      <Box>{detail.filter(Boolean).join(' · ')}</Box>
+    </>
+  )
+}
+
 function GameFolder({
   folder,
   versionNote,
@@ -190,7 +200,7 @@ function GameFolder({
         <SettingRow
           label={t`Game folder`}
           hideTitle={true}
-          description={`${folder || t`Not found`} · ${source}${versionNote}`}
+          description={<FolderLines folder={folder} detail={[source, versionNote]} />}
         >
           <Box sx={{ display: 'flex', gap: space.gap }}>
             <Button

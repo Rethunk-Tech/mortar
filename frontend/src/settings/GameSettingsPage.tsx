@@ -177,7 +177,7 @@ function GamePages({
           <SharedOnProfile>
             <InstallPage
               game={game}
-              versionNote={version ? ` · ${name} ${version}` : ''}
+              versionNote={version ? `${name} ${version}` : ''}
               onFolderChanged={folderChanged}
             />
           </SharedOnProfile>

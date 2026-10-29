@@ -1,8 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ButtonBase } from '@mui/material'
+import { RotateCcw } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { SetShortcuts } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
+import { TipIconButton } from '../../shell/TipIconButton.tsx'
 import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
@@ -83,15 +85,11 @@ function ShortcutRow({
         >
           {chip}
         </ButtonBase>
-        <Button
-          size="small"
-          disabled={keys === defaultBindings()[id]}
-          onClick={onReset}
-          aria-label={t`Reset ${{ name: label }}`}
-          sx={{ minWidth: 0 }}
-        >
-          {t`Reset`}
-        </Button>
+        {keys === defaultBindings()[id] ? null : (
+          <TipIconButton label={t`Reset ${{ name: label }}`} onClick={onReset}>
+            <RotateCcw size={16} />
+          </TipIconButton>
+        )}
       </Box>
     </SettingRow>
   )

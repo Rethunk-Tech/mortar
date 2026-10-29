@@ -1,5 +1,4 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box } from '@mui/material'
 import { useCallback, useEffect, useState } from 'react'
 import type { StoreApp } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import { Launchers as ListLaunchers } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
@@ -8,7 +7,7 @@ import { LauncherList } from '../../launchers/LauncherList.tsx'
 import { SkeletonRows } from '../../shell/SkeletonRows.tsx'
 import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
-import { Searchable } from '../SettingsSection.tsx'
+import { Searchable, SettingsSection } from '../SettingsSection.tsx'
 
 const SKELETON_LAUNCHERS = 10
 const SKELETON_LAUNCHER_PX = 60
@@ -25,13 +24,14 @@ export function Launchers() {
   useEffect(refresh, [refresh])
   useRefreshOnFocus(refresh)
   return (
-    <Searchable
-      terms={`${t`Launchers`} Steam GOG Flatpak ${t`Game folder`} ${(launchers ?? []).map((l) => l.name).join(' ')}`}
+    <SettingsSection
+      title={t`Launchers`}
+      description={t`Mortar finds your games through these launchers. Choose a folder for a game it missed or you moved.`}
+      tiles={false}
     >
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
-        <Box sx={{ fontSize: 'base.fontSize', color: 'var(--mortar-ink-sec)' }}>
-          {t`Mortar finds your games through these launchers. Choose a folder for a game it missed or you moved.`}
-        </Box>
+      <Searchable
+        terms={`${t`Launchers`} Steam GOG Flatpak ${t`Game folder`} ${(launchers ?? []).map((l) => l.name).join(' ')}`}
+      >
         {launchers ? (
           <LauncherList launchers={launchers} refresh={refresh} />
         ) : (
@@ -46,7 +46,7 @@ export function Launchers() {
             }}
           />
         )}
-      </Box>
-    </Searchable>
+      </Searchable>
+    </SettingsSection>
   )
 }
