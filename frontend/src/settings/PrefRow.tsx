@@ -1,10 +1,13 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Typography } from '@mui/material'
+import { Box } from '@mui/material'
+import { RotateCcw } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { PrefSpec } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { setOpenOverride } from '../profiles/openOverrides.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { TipIconButton } from '../shell/TipIconButton.tsx'
+import { Tooltip } from '../shell/Tooltip.tsx'
 import { space } from '../theme/density.ts'
 import {
   PrefCards,
@@ -109,28 +112,35 @@ function useScopedPref(spec: PrefSpec, game: string | undefined) {
   }
 }
 
-// Beside a profile's own value: the game's, and a way back to it.
-export function ScopeNote({
-  own,
-  gameLabel,
-  onReset,
-}: {
-  own: string | undefined
-  gameLabel: string
-  onReset: () => void
-}) {
+// After the label of a row this profile changed.
+export function ScopeDot() {
+  const { t } = useLingui()
+  const label = t`This profile's own value`
+  return (
+    <Tooltip title={label}>
+      <Box
+        role="img"
+        aria-label={label}
+        sx={{
+          display: 'inline-block',
+          width: 8,
+          height: 8,
+          ml: 1,
+          borderRadius: '50%',
+          bgcolor: 'primary.main',
+        }}
+      />
+    </Tooltip>
+  )
+}
+
+// Beside the control of a row this profile changed: back to the game's value.
+export function ScopeReset({ gameLabel, onReset }: { gameLabel: string; onReset: () => void }) {
   const { t } = useLingui()
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, flexShrink: 0 }}>
-      <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }} noWrap={true}>
-        {own === undefined ? t`Same as the game` : t`Game: ${{ value: gameLabel }}`}
-      </Typography>
-      {own === undefined ? null : (
-        <Button size="small" onClick={onReset}>
-          {t`Use the game's`}
-        </Button>
-      )}
-    </Box>
+    <TipIconButton label={t`Reset to the game's: ${{ value: gameLabel }}`} onClick={onReset}>
+      <RotateCcw size={16} />
+    </TipIconButton>
   )
 }
 
@@ -171,9 +181,9 @@ function PrefRow({
     commit: scoped.commit,
   })
   const gameValue = prefAsString(scoped.gameRaw, spec)
-  const note = scoped.ownValue ? (
-    <ScopeNote
-      own={scoped.own}
+  const changed = scoped.ownValue && scoped.own !== undefined
+  const note = changed ? (
+    <ScopeReset
       gameLabel={options.find((o) => o.value === gameValue)?.label ?? gameValue}
       onReset={() => game && saveSetting(() => setOpenOverride(game, spec.key, undefined))}
     />
@@ -185,6 +195,7 @@ function PrefRow({
       description={copy.description}
       block={style === 'cards'}
       hideTitle={hideTitle}
+      {...(changed ? { mark: <ScopeDot /> } : {})}
     >
       <DisabledReason title={reason} disabled={reason !== ''}>
         {shownExtra || note ? (

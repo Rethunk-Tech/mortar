@@ -111,6 +111,7 @@ export function SettingRow({
   children,
   block = false,
   hideTitle = false,
+  mark,
 }: {
   label: ReactNode
   description?: ReactNode
@@ -119,6 +120,8 @@ export function SettingRow({
   // For a row that is the whole section: the heading already says what it is, so the title stays only for screen
   // readers and search.
   hideTitle?: boolean
+  // Rides after the label, outside the text search reads.
+  mark?: ReactNode
 }) {
   if (!useSettingsMatch(nodeText(label), nodeText(description))) {
     return null
@@ -156,6 +159,7 @@ export function SettingRow({
           sx={hideTitle ? visuallyHidden : { fontSize: 'large.fontSize' }}
         >
           {label}
+          {mark}
         </Box>
         {description ? (
           <Box sx={{ fontSize: 'medium.fontSize', color: 'text.secondary', mt: 0.25 }}>

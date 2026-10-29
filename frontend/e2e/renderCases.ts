@@ -268,6 +268,24 @@ export function gameSettingsCases(h: Helpers): Case[] {
       },
     },
     {
+      // A changed row shows the dot after its label and a reset beside its control.
+      name: 'game-settings-profile-changed',
+      setup: async (p) => {
+        await toWorkspace(p)
+        await tab(p, 'Home')
+        await p
+          .getByRole('button', { name: / settings$/ })
+          .last()
+          .click()
+        await p.getByRole('button', { name: /^This profile: / }).waitFor()
+      },
+      run: async (p) => {
+        await p.getByRole('button', { name: 'Play', exact: true }).click()
+        await p.getByRole('switch', { name: 'Update mods before Play on new profiles' }).click()
+        await p.getByRole('button', { name: /^Reset to the game's: / }).waitFor()
+      },
+    },
+    {
       // The switch to every profile's values redraws each row from the profile's to the game's.
       name: 'game-settings-all-profiles',
       setup: async (p) => {

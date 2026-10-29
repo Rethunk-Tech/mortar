@@ -1,6 +1,8 @@
+import { Box } from '@mui/material'
 import type { ReactNode } from 'react'
+import { space } from '../theme/density.ts'
 import { PrefSelect } from './PrefControls.tsx'
-import { ScopeNote } from './PrefRow.tsx'
+import { ScopeDot, ScopeReset } from './PrefRow.tsx'
 import { saveSetting } from './persist.ts'
 import { SettingRow } from './SettingsSection.tsx'
 import { useScopedKey } from './scopedKey.ts'
@@ -23,20 +25,25 @@ export function ScopedSelectRow({
 }) {
   const scoped = useScopedKey(settingKey, game, gameValue)
   return (
-    <SettingRow label={label} description={description}>
-      <PrefSelect
-        value={scoped.value}
-        options={options}
-        label={label}
-        onChange={(v) => saveSetting(() => scoped.save(v))}
-      />
-      {scoped.profileScope ? (
-        <ScopeNote
-          own={scoped.own}
-          gameLabel={options.find((o) => o.value === scoped.gameValue)?.label ?? scoped.gameValue}
-          onReset={() => saveSetting(scoped.reset)}
+    <SettingRow
+      label={label}
+      description={description}
+      {...(scoped.own === undefined ? {} : { mark: <ScopeDot /> })}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
+        <PrefSelect
+          value={scoped.value}
+          options={options}
+          label={label}
+          onChange={(v) => saveSetting(() => scoped.save(v))}
         />
-      ) : null}
+        {scoped.profileScope && scoped.own !== undefined ? (
+          <ScopeReset
+            gameLabel={options.find((o) => o.value === scoped.gameValue)?.label ?? scoped.gameValue}
+            onReset={() => saveSetting(scoped.reset)}
+          />
+        ) : null}
+      </Box>
     </SettingRow>
   )
 }
