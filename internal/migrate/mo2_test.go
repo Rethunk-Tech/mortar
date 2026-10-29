@@ -208,3 +208,16 @@ func TestMO2DetectUsesChosenFolder(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestMO2ChosenFolderThatIsADefaultInstanceIsListedOnce(t *testing.T) {
+	t.Parallel()
+	home := t.TempDir()
+	inst := filepath.Join(home, "AppData", "Local", "ModOrganizer", "Stardew")
+	if err := copyMO2Fixture(filepath.Join("testdata", "mo2"), inst); err != nil {
+		t.Fatal(err)
+	}
+	sources, err := Detect(home, "", "stardew", "", inst)
+	if err != nil || len(sources) != 1 {
+		t.Fatalf("sources = %#v, %v", sources, err)
+	}
+}

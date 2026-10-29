@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -63,7 +64,7 @@ func mo2Installations(home, chosen, modsPath, gameName, gameID string) ([]instal
 	if ok {
 		out = append(out, portable)
 	}
-	if chosen != "" && !fsx.SamePath(chosen, home) {
+	if chosen != "" && !slices.ContainsFunc(out, func(found installation) bool { return fsx.SamePath(found.root, chosen) }) {
 		inst, ok, err := mo2Installation(chosen, mo2Name+" ("+filepath.Base(chosen)+")", modsPath, gameName, gameID)
 		if err != nil {
 			return nil, err
