@@ -106,12 +106,8 @@ jobs:
         run: |
           set -euo pipefail
           code=true
-          site=true
           if [ -n "$BASE" ] && [ "$BASE" != 0000000000000000000000000000000000000000 ]; then
             files="$(gh api "repos/$GITHUB_REPOSITORY/compare/$BASE...$HEAD" --jq '.files[].filename')"
-            if [ -n "$files" ] && [ "$(printf '%s\n' "$files" | wc -l)" -lt 300 ] && ! printf '%s\n' "$files" | grep -q '^web/'; then
-              site=false
-            fi
             # The compare API lists at most 300 files; a longer list runs the gate.
             if [ -n "$files" ] && [ "$(printf '%s\n' "$files" | wc -l)" -lt 300 ] \
               && ! printf '%s\n' "$files" | grep -qx 'docs/user-guide.md' \
@@ -122,7 +118,6 @@ jobs:
             fi
           fi
           echo "code=$code" >>"$GITHUB_OUTPUT"
-          echo "site=$site" >>"$GITHUB_OUTPUT"
 
       - name: Setup Go
         if: steps.changes.outputs.code == 'true'
@@ -138,4 +133,4 @@ jobs:
           CGO_ENABLED: "1"
         run: |
           gcc --version
-          GOTMPDIR=/var/tmp TMPDIR=/var/tmp go test -race ./internal/...
+          go test -race ./internal/...
