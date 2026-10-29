@@ -26,6 +26,10 @@ var (
 // amsiDetected is AMSI_RESULT_DETECTED: results at or above it are malware (AmsiResultIsMalware).
 const amsiDetected = 32768
 
+// amsiNotReady is HRESULT_FROM_WIN32(ERROR_NOT_READY), which AmsiScanBuffer returns when no antivirus is registered
+// as the AMSI provider.
+const amsiNotReady = 0x80070015
+
 // amsiChunk is how much of a file one AmsiScanBuffer call sees.
 const amsiChunk = 32 << 20
 
@@ -97,6 +101,9 @@ func scanFileAMSI(ctx context.Context, actx, session uintptr, path, rel string) 
 			var result uint32
 			hr, _, _ := amsiScanBuffer.Call(actx, amsiPtr(&buf[0]), uintptr(n),
 				amsiPtr(name), session, amsiPtr(&result))
+			if hr&0xFFFFFFFF == amsiNotReady {
+				return false, fmt.Errorf("%w: AmsiScanBuffer: no provider answered", ErrNoScanner)
+			}
 			if hr != 0 {
 				return false, fmt.Errorf("AmsiScanBuffer: HRESULT 0x%x", hr)
 			}
