@@ -23,13 +23,24 @@ func writeGame(t *testing.T, dir string) {
 	}
 }
 
+// heroicConfig is Heroic's config folder under home on this OS: Heroic reads %APPDATA% on Windows.
+func heroicConfig(t *testing.T, home string) string {
+	t.Helper()
+	if runtime.GOOS != "windows" {
+		return filepath.Join(home, ".config", "heroic")
+	}
+	appData := filepath.Join(home, "AppData", "Roaming")
+	t.Setenv("APPDATA", appData)
+	return filepath.Join(appData, "heroic")
+}
+
 func TestLocateLinuxOfflineAndHeroic(t *testing.T) {
 	home := t.TempDir()
 	offline := filepath.Join(home, "GOG Games", "Stardew Valley", "game")
 	writeGame(t, offline)
 	heroicRoot := filepath.Join(home, "Games", "Heroic", "Stardew Valley")
 	writeGame(t, heroicRoot)
-	cfg := filepath.Join(home, ".config", "heroic", "gog_store", "installed.json")
+	cfg := filepath.Join(heroicConfig(t, home), "gog_store", "installed.json")
 	if err := os.MkdirAll(filepath.Dir(cfg), 0o700); err != nil {
 		t.Fatal(err)
 	}
@@ -59,7 +70,7 @@ func TestHeroicKeyedJSONAndNestedGame(t *testing.T) {
 	home := t.TempDir()
 	root := filepath.Join(home, "gog", "stardew")
 	writeGame(t, filepath.Join(root, "game"))
-	cfg := filepath.Join(home, ".config", "heroic", "gog_store", "installed.json")
+	cfg := filepath.Join(heroicConfig(t, home), "gog_store", "installed.json")
 	if err := os.MkdirAll(filepath.Dir(cfg), 0o700); err != nil {
 		t.Fatal(err)
 	}
@@ -104,6 +115,9 @@ func TestMinigalaxyInstallDirFromItsConfig(t *testing.T) {
 }
 
 func TestMinigalaxyFolderIsNotAlsoGOGs(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Minigalaxy is Linux-only, and Windows GOG lists Galaxy's folders, not ~/GOG Games")
+	}
 	home := t.TempDir()
 	writeGame(t, filepath.Join(home, "GOG Games", "Stardew Valley"))
 	cfg := filepath.Join(home, ".config", "minigalaxy")
