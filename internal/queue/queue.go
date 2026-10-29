@@ -19,6 +19,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/go-httpkit"
 
 	"github.com/Rethunk-Tech/go-httpkit/download"
@@ -35,7 +37,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/desktopnotify"
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
-	"github.com/Rethunk-Tech/mortar/internal/nxm"
 	"github.com/Rethunk-Tech/mortar/internal/nxmsvc"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
@@ -867,7 +868,7 @@ func (r Request) implicit() bool { return r.Implicit || r.Kind == KindDependency
 
 // Route gives a link's download key to the waiting item for the same file. It reports whether one took it; when
 // none did, the link is a download the user started on their own.
-func (s *Service) Route(link nxm.Link) bool {
+func (s *Service) Route(link nexusmods.NXMLink) bool {
 	s.mu.Lock()
 	i := slices.IndexFunc(s.items, func(it *Item) bool {
 		return (it.State == StateWaitingClick || it.State == StateQueued) && it.ModID == link.ModID && it.FileID == link.FileID && it.FileID != 0

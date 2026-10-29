@@ -239,7 +239,7 @@ Client `internal/nexus` (REST v1, GraphQL v2), service `internal/nexussvc`; endp
 
 ### `nxm://` links
 
-`nxm://<domain>/mods/<mod id>/files/<file id>?key=<key>&expires=<unix>&user_id=<id>`; Mortar takes this form only for a Nexus domain a catalog game maps to, unexpired and for the signed-in account's `user_id` (`internal/nxm/link.go` `Parse`; guards: [security.md](security.md#network-and-links)). A link Mortar was not waiting for asks which profile it is for before anything downloads.
+`nxm://<domain>/mods/<mod id>/files/<file id>?key=<key>&expires=<unix>&user_id=<id>`; Mortar takes this form only for a Nexus domain a catalog game maps to, unexpired and for the signed-in account's `user_id` (go-nexusmods `ParseNXM`; guards: [security.md](security.md#network-and-links)). A link Mortar was not waiting for asks which profile it is for before anything downloads.
 
 - **Registration:** only one app can own the scheme, and Wails' NSIS macro would delete and rewrite its key at install time without asking (`build/windows/nsis/wails_tools.nsh`), taking it from Vortex or Mod Organizer 2. So `nxm` is not in `build/config.yml`: Mortar registers it at runtime after the user agrees, records the previous handler in `settings.json` (`nxmPreviousHandlers`) and restores it when turned off or when uninstall runs `mortar.exe --release-links`.
 - **Bursts:** each `nxm://` launch is a second instance whose arguments the running one queues at once; a link that arrives again before its own `expires` is taken once.

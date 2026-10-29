@@ -3,20 +3,10 @@ package nxm
 import (
 	"errors"
 	"fmt"
-	"net/url"
 	"strings"
 
 	"github.com/Rethunk-Tech/go-desktopenv/desktopentry"
 )
-
-// LinkGame is the nxm URL's game segment (the host), or an error when raw is not an nxm link.
-func LinkGame(raw string) (string, error) {
-	u, err := url.Parse(raw)
-	if err != nil || u.Scheme != "nxm" || u.Host == "" {
-		return "", reject(ReasonForm)
-	}
-	return u.Host, nil
-}
 
 // WindowsForwardArgv is argv for the saved Windows handler, with link as one element in place of %1.
 func WindowsForwardArgv(previousSaved, link string) (string, []string, error) {

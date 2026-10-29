@@ -14,6 +14,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/nxm"
@@ -34,8 +36,8 @@ const (
 
 // Arrival is an accepted link waiting for the user to say which profile it is for.
 type Arrival struct {
-	ID   int      `json:"id"`
-	Link nxm.Link `json:"link"`
+	ID   int               `json:"id"`
+	Link nexusmods.NXMLink `json:"link"`
 	// Package and Version name the Thunderstore package of a ror2mm link, whose Link is empty.
 	Package string `json:"package,omitempty"`
 	Version string `json:"version,omitempty"`
@@ -67,13 +69,13 @@ type Inbox struct {
 
 // Assignment is a link the user matched to a profile. The download queue takes these from Service.Assigned.
 type Assignment struct {
-	Link    nxm.Link `json:"link"`
-	Package string   `json:"package,omitempty"`
-	Version string   `json:"version,omitempty"`
-	Source  string   `json:"source,omitempty"`
-	File    int      `json:"file,omitempty"`
-	Game    string   `json:"game"`
-	Profile string   `json:"profile"`
+	Link    nexusmods.NXMLink `json:"link"`
+	Package string            `json:"package,omitempty"`
+	Version string            `json:"version,omitempty"`
+	Source  string            `json:"source,omitempty"`
+	File    int               `json:"file,omitempty"`
+	Game    string            `json:"game"`
+	Profile string            `json:"profile"`
 }
 
 const assignedBuffer = 64
@@ -98,7 +100,7 @@ type Service struct {
 	Assigned chan Assignment
 	// Route is offered every accepted link first and reports whether the download queue was waiting for it; nil
 	// means never. A routed link never becomes an arrival.
-	Route func(nxm.Link) bool
+	Route func(nexusmods.NXMLink) bool
 
 	mu sync.Mutex
 	// recent maps each link taken to when it may be taken again.
@@ -137,7 +139,7 @@ func (s *Service) Receive(args []string) bool {
 		found = true
 		if s.duplicate(arg) {
 			log.Printf("nxm: duplicate link ignored")
-			if link, err := nxm.Parse(arg, s.store.Get().NexusUserID, s.now(), game.ByNexusDomain); err == nil {
+			if link, err := nexusmods.ParseNXM(arg, s.store.Get().NexusUserID, s.now(), game.ByNexusDomain); err == nil {
 				s.mu.Lock()
 				var waiting *Arrival
 				for _, arrival := range s.arrivals {
@@ -172,7 +174,7 @@ func (s *Service) Receive(args []string) bool {
 			go s.receiveVSModDB(arg, ref)
 			continue
 		}
-		if domain, gerr := nxm.LinkGame(arg); gerr == nil && !isMortarGame(domain) {
+		if domain, gerr := nexusmods.NXMDomain(arg); gerr == nil && !isMortarGame(domain) {
 			cur := s.store.Get()
 			if previous := cur.NxmPreviousHandlers[linkScheme(arg)]; previous != "" && cur.RedirectOtherGames() {
 				err := s.handler.ForwardOther(arg, previous)
@@ -183,7 +185,7 @@ func (s *Service) Receive(args []string) bool {
 				log.Printf("nxm: forward %s link: %v", domain, err)
 			}
 		}
-		link, err := nxm.Parse(arg, s.store.Get().NexusUserID, s.now(), game.ByNexusDomain)
+		link, err := nexusmods.ParseNXM(arg, s.store.Get().NexusUserID, s.now(), game.ByNexusDomain)
 		if err == nil && s.Route != nil && s.Route(link) {
 			log.Printf("nxm: mod %d file %d resumed a waiting download", link.ModID, link.FileID)
 			continue
@@ -191,7 +193,7 @@ func (s *Service) Receive(args []string) bool {
 		s.mu.Lock()
 		s.nextID++
 		id := s.nextID
-		if re, ok := errors.AsType[*nxm.RejectError](err); ok {
+		if re, ok := errors.AsType[*nexusmods.RejectError](err); ok {
 			s.mu.Unlock()
 			s.forget(arg)
 			s.mu.Lock()
@@ -253,7 +255,7 @@ func (s *Service) receiveCurseForge(raw string, ref curseforge.Ref) {
 			}
 		}
 		s.forget(raw)
-		r := Rejection{ID: id, Reason: nxm.ReasonGame}
+		r := Rejection{ID: id, Reason: nexusmods.ReasonGame}
 		log.Printf("nxm: link %d rejected: %s", id, r.Reason)
 		s.mu.Lock()
 		s.rejections = append(s.rejections, r)

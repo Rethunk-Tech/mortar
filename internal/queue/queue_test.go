@@ -15,12 +15,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
-	"github.com/Rethunk-Tech/mortar/internal/nxm"
 	"github.com/Rethunk-Tech/mortar/internal/nxmsvc"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
@@ -424,7 +425,7 @@ func TestAQueuedItemIsNamedBeforeItsTurn(t *testing.T) {
 		cancel()
 		wait()
 	})
-	assigned <- nxmsvc.Assignment{Link: nxm.Link{ModID: 1, FileID: 10, Key: "k", Expires: f.now().Unix() + 600}, Game: "stardew", Profile: "p1"}
+	assigned <- nxmsvc.Assignment{Link: nexusmods.NXMLink{ModID: 1, FileID: 10, Key: "k", Expires: f.now().Unix() + 600}, Game: "stardew", Profile: "p1"}
 	f.wait("the name", func(st State) bool {
 		return len(st.Items) == 1 && st.Items[0].State == StateQueued && st.Items[0].Name == "Alpha" && st.Items[0].Picture == "https://img/a.png"
 	})
@@ -449,10 +450,10 @@ func TestFreeAccountWaitsForTheClickThenTakesTheLink(t *testing.T) {
 	if len(opened) != 1 || opened[0] != want {
 		t.Fatalf("opened %v", opened)
 	}
-	if f.s.Route(nxm.Link{ModID: 1, FileID: 99, Key: "k", Expires: f.now().Unix() + 600}) {
+	if f.s.Route(nexusmods.NXMLink{ModID: 1, FileID: 99, Key: "k", Expires: f.now().Unix() + 600}) {
 		t.Error("a link for another file was taken")
 	}
-	if !f.s.Route(nxm.Link{ModID: 1, FileID: 10, Key: "k", Expires: f.now().Unix() + 600}) {
+	if !f.s.Route(nexusmods.NXMLink{ModID: 1, FileID: 10, Key: "k", Expires: f.now().Unix() + 600}) {
 		t.Fatal("the waiting item did not take its link")
 	}
 	f.wait("done", f.item(StateDone))
@@ -503,7 +504,7 @@ func TestExpiredKeyReopensThePage(t *testing.T) {
 	f.start()
 	f.add(req(10))
 	f.wait("the click", f.item(StateWaitingClick))
-	f.s.Route(nxm.Link{ModID: 1, FileID: 10, Key: "old", Expires: f.now().Unix() + 1})
+	f.s.Route(nexusmods.NXMLink{ModID: 1, FileID: 10, Key: "old", Expires: f.now().Unix() + 1})
 	f.wait("the page again", func(State) bool {
 		f.mu.Lock()
 		defer f.mu.Unlock()
@@ -699,7 +700,7 @@ func TestARejectedLinkCanBeRetried(t *testing.T) {
 		cancel()
 		wait()
 	})
-	assigned <- nxmsvc.Assignment{Link: nxm.Link{ModID: 1, FileID: 10}, Game: "stardew", Profile: "p1"}
+	assigned <- nxmsvc.Assignment{Link: nexusmods.NXMLink{ModID: 1, FileID: 10}, Game: "stardew", Profile: "p1"}
 	it := f.wait("the rejection", f.item(StateFailed)).Items[0]
 	if it.Game != "stardew" || it.Profile != "p1" || it.FileID != 10 {
 		t.Fatalf("rejected item %+v", it)
@@ -887,7 +888,7 @@ func TestRouteGivesAClickedFileToAPendingUpdate(t *testing.T) {
 	f.s.mu.Lock()
 	f.s.items = append(f.s.items, &Item{ID: "u", Kind: KindUpdate, ModID: 41150, State: StateFailed, Error: "That item could not be found."})
 	f.s.mu.Unlock()
-	if !f.s.Route(nxm.Link{ModID: 41150, FileID: 185334, Key: "k", Expires: f.now().Unix() + 600}) {
+	if !f.s.Route(nexusmods.NXMLink{ModID: 41150, FileID: 185334, Key: "k", Expires: f.now().Unix() + 600}) {
 		t.Fatal("the link should complete the pending update")
 	}
 	f.s.mu.Lock()

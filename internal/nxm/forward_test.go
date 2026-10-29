@@ -127,13 +127,3 @@ func TestForwardArgvEmptyCommand(t *testing.T) {
 		t.Fatal("expected error")
 	}
 }
-
-func TestLinkGame(t *testing.T) {
-	got, err := LinkGame("nxm://skyrim/mods/1/files/2?key=k&expires=1&user_id=1")
-	if err != nil || got != "skyrim" {
-		t.Fatalf("game = %q, %v", got, err)
-	}
-	if _, err := LinkGame("https://x"); err == nil {
-		t.Fatal("expected form error")
-	}
-}

@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/game"
@@ -209,7 +211,7 @@ func TestReceiveQueuesAcceptedAndReportsRefused(t *testing.T) {
 		t.Fatal("Receive misreported whether a link was present")
 	}
 	in := s.Inbox()
-	if len(in.Arrivals) != 1 || in.Arrivals[0].Link.ModID != 5 || len(in.Rejections) != 1 || in.Rejections[0].Reason != nxm.ReasonUser {
+	if len(in.Arrivals) != 1 || in.Arrivals[0].Link.ModID != 5 || len(in.Rejections) != 1 || in.Rejections[0].Reason != nexusmods.ReasonUser {
 		t.Fatalf("inbox %+v", in)
 	}
 	if again := s.Inbox(); len(again.Rejections) != 0 || len(again.Arrivals) != 1 {
@@ -246,7 +248,7 @@ func TestIgnoreDropsTheArrival(t *testing.T) {
 
 func TestReceiveRoutesALinkTheQueueWaitsFor(t *testing.T) {
 	s := newService(t, &fakeHandler{})
-	s.Route = func(l nxm.Link) bool { return l.FileID == 9 }
+	s.Route = func(l nexusmods.NXMLink) bool { return l.FileID == 9 }
 	s.Receive([]string{
 		"nxm://stardewvalley/mods/5/files/9?key=k&expires=1000600&user_id=42",
 		"nxm://stardewvalley/mods/5/files/8?key=k&expires=1000600&user_id=42",
@@ -290,7 +292,7 @@ func TestReceiveTakesALinkOnceUntilItExpires(t *testing.T) {
 	}
 	s.now = func() time.Time { return time.Unix(99999999999, 0).Add(time.Second) }
 	s.Receive([]string{link})
-	if in := s.Inbox(); len(in.Rejections) != 1 || in.Rejections[0].Reason != nxm.ReasonExpired {
+	if in := s.Inbox(); len(in.Rejections) != 1 || in.Rejections[0].Reason != nexusmods.ReasonExpired {
 		t.Fatalf("an expired link sent again was not refused as expired: %+v", in)
 	}
 }
