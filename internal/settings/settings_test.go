@@ -155,8 +155,9 @@ func TestSetBackgroundImageValidates(t *testing.T) {
 func TestSetGameFolderValidates(t *testing.T) {
 	s, _ := open(t)
 	svc := NewService(s)
+	bad, good := filepath.FromSlash("/bad"), filepath.FromSlash("/good")
 	svc.ValidateGameFolder = func(_, dir string) error {
-		if dir == "/bad" {
+		if dir == bad {
 			return os.ErrInvalid
 		}
 		return nil
@@ -167,7 +168,7 @@ func TestSetGameFolderValidates(t *testing.T) {
 	if len(s.Get().GameFolders) != 0 {
 		t.Fatal("a rejected folder must not be stored")
 	}
-	if err := svc.SetGameFolder("stardew", "/good"); err != nil || s.Get().GameFolders["stardew"] != "/good" {
+	if err := svc.SetGameFolder("stardew", "/good"); err != nil || s.Get().GameFolders["stardew"] != good {
 		t.Fatalf("set: %v %v", err, s.Get().GameFolders)
 	}
 	if err := svc.SetGameFolder("stardew", filepath.Join("good", "Stardew Valley")+string(filepath.Separator)); err != nil || s.Get().GameFolders["stardew"] != filepath.Join("good", "Stardew Valley") {
