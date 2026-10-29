@@ -5,6 +5,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -234,4 +235,29 @@ func TestReadBackupRefusesAnEntryHeldTwice(t *testing.T) {
 	if _, _, err := readBackup(path, t.TempDir()); err == nil || !strings.Contains(err.Error(), "twice") {
 		t.Fatalf("err = %v", err)
 	}
+}
+
+func TestReadBackupRefusesCaseOnlyTwinsOnACaseInsensitiveHost(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "case.zip")
+	f, err := fsx.Create(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	zw := zip.NewWriter(f)
+	for _, name := range []string{"saves/Farm/Farm", "saves/farm/farm"} {
+		w, _ := zw.Create(name)
+		_, _ = w.Write([]byte("x"))
+	}
+	if err := zw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	_ = f.Close()
+	for _, fold := range []bool{true, false} {
+		caseInsensitive = fold
+		_, _, err := readBackup(path, t.TempDir())
+		if fold != (err != nil && strings.Contains(err.Error(), "cannot keep apart")) {
+			t.Errorf("caseInsensitive=%v: err = %v", fold, err)
+		}
+	}
+	caseInsensitive = runtime.GOOS == "windows" || runtime.GOOS == "darwin"
 }

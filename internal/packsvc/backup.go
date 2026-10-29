@@ -12,6 +12,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -301,7 +302,13 @@ func readBackup(path, tmp string) (backupJSON, map[string][]byte, error) {
 		return backupJSON{}, nil, usererr.Wrap(usererr.Invalid, fmt.Errorf("not a Mortar profile backup: %w", err))
 	}
 	defer func() { _ = zr.Close() }()
+	root, err := os.OpenRoot(tmp)
+	if err != nil {
+		return backupJSON{}, nil, err
+	}
+	defer func() { _ = root.Close() }()
 	files := map[string][]byte{}
+	folded := map[string]string{}
 	var doc []byte
 	var inMemory, onDisk int64
 	for _, f := range zr.File {
@@ -310,7 +317,7 @@ func readBackup(path, tmp string) (backupJSON, map[string][]byte, error) {
 		}
 		rel, inFiles := strings.CutPrefix(f.Name, backupPrefix)
 		if f.Name != backupDoc && !inFiles {
-			if err := unpack(f, tmp, &onDisk); err != nil {
+			if err := unpack(f, root, folded, &onDisk); err != nil {
 				return backupJSON{}, nil, err
 			}
 			continue
@@ -363,23 +370,32 @@ func readBackup(path, tmp string) (backupJSON, map[string][]byte, error) {
 	return b, files, nil
 }
 
-// unpack writes one store/ or saves/ entry of a backup below tmp, adding its size to total.
-func unpack(f *zip.File, tmp string, total *int64) error {
+// caseInsensitive is whether this computer's file systems fold case by default; a backup made on Linux can hold two
+// entries that differ only by case, which only a case-sensitive file system can restore.
+var caseInsensitive = runtime.GOOS == "windows" || runtime.GOOS == "darwin"
+
+// unpack writes one store/, saves/ or changed/ entry of a backup below root, adding its size to total. folded
+// remembers each lower-cased entry name seen so far.
+func unpack(f *zip.File, root *os.Root, folded map[string]string, total *int64) error {
 	name := f.Name
 	_, inStore := storeKeyOf(name)
 	if (!inStore && !strings.HasPrefix(name, savesPrefix) && !strings.HasPrefix(name, profile.ChangedPrefix)) || strings.Contains(name, "\\") || !filepath.IsLocal(filepath.FromSlash(name)) {
 		return usererr.Wrap(usererr.Invalid, fmt.Errorf("the backup holds %q, which Mortar does not write", name))
 	}
+	if other, ok := folded[strings.ToLower(name)]; ok && other != name && caseInsensitive {
+		return usererr.Wrap(usererr.Damaged, fmt.Errorf("the backup holds %q and %q, which this computer's file system cannot keep apart", other, name))
+	}
+	folded[strings.ToLower(name)] = name
 	rc, err := f.Open()
 	if err != nil {
 		return err
 	}
 	defer func() { _ = rc.Close() }()
-	to := filepath.Join(tmp, filepath.FromSlash(name))
-	if err := os.MkdirAll(filepath.Dir(to), 0o700); err != nil {
+	to := filepath.FromSlash(name)
+	if err := root.MkdirAll(filepath.Dir(to), 0o700); err != nil {
 		return err
 	}
-	out, err := fsx.CreateExcl(to, 0o600)
+	out, err := root.OpenFile(to, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
 	if errors.Is(err, fs.ErrExist) {
 		return usererr.Wrap(usererr.Damaged, fmt.Errorf("the backup holds %q twice", name))
 	}
