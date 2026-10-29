@@ -79,7 +79,7 @@ func clearCache(root, rel string) (int, error) {
 	if rel == "" || strings.Contains(rel, `\`) || !filepath.IsLocal(filepath.FromSlash(rel)) {
 		return 0, fmt.Errorf("%q is not a path below its folder", rel)
 	}
-	realRoot, err := filepath.EvalSymlinks(root)
+	realRoot, err := safefs.EvalSymlinks(root)
 	if errors.Is(err, fs.ErrNotExist) {
 		return 0, nil
 	}
@@ -87,7 +87,7 @@ func clearCache(root, rel string) (int, error) {
 		return 0, err
 	}
 	target := filepath.Join(realRoot, filepath.FromSlash(rel))
-	resolved, err := filepath.EvalSymlinks(filepath.Dir(target))
+	resolved, err := safefs.EvalSymlinks(filepath.Dir(target))
 	if errors.Is(err, fs.ErrNotExist) {
 		return 0, nil
 	}

@@ -3,7 +3,6 @@ package game
 import (
 	"errors"
 	"fmt"
-	"path/filepath"
 	"runtime"
 	"slices"
 
@@ -65,7 +64,7 @@ func Launchers(home string, s settings.Settings) ([]StoreApp, error) {
 		}
 		seen := map[string]bool{}
 		for _, dir := range l.Looked {
-			resolved, err := filepath.EvalSymlinks(dir)
+			resolved, err := safefs.EvalSymlinks(dir)
 			if err != nil || dir == "" || seen[resolved] || !spec.Usable(dir) {
 				continue
 			}

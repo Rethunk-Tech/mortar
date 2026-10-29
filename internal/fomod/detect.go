@@ -3,6 +3,8 @@ package fomod
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -28,32 +30,18 @@ func findAtDepth(dir string, depth int) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	var fomodDir string
-	for _, e := range ents {
-		if e.IsDir() && strings.EqualFold(e.Name(), "fomod") {
-			fomodDir = filepath.Join(dir, e.Name())
-			break
-		}
+	rel, err := safefs.ResolveFold(os.DirFS(dir), "fomod/"+configName)
+	if err == nil {
+		return filepath.Join(dir, filepath.FromSlash(rel)), nil
 	}
-	if fomodDir != "" {
-		fents, err := os.ReadDir(fomodDir)
-		if err != nil {
-			return "", err
-		}
-		for _, e := range fents {
-			if !e.IsDir() && strings.EqualFold(e.Name(), configName) {
-				return filepath.Join(fomodDir, e.Name()), nil
-			}
-		}
+	if !errors.Is(err, fs.ErrNotExist) {
+		return "", err
 	}
 	if depth >= 1 {
 		return "", nil
 	}
 	for _, e := range ents {
-		if !e.IsDir() {
-			continue
-		}
-		if strings.EqualFold(e.Name(), "fomod") {
+		if !e.IsDir() || strings.EqualFold(e.Name(), "fomod") {
 			continue
 		}
 		p, err := findAtDepth(filepath.Join(dir, e.Name()), depth+1)

@@ -48,7 +48,7 @@ func (e *PortableError) Unwrap() error { return e.Err }
 // mount, and inside an AppImage in its read-only squashfs mount that vanishes on exit; both are ignored even if a
 // marker were baked in.
 func portableDir(exe string) (string, error) {
-	if resolved, err := filepath.EvalSymlinks(exe); err == nil {
+	if resolved, err := safefs.EvalSymlinks(exe); err == nil {
 		exe = resolved
 	}
 	dir := filepath.Dir(exe)
@@ -58,12 +58,9 @@ func portableDir(exe string) (string, error) {
 	if !hasMarker(dir) {
 		return "", nil
 	}
-	probe, err := os.CreateTemp(dir, ".mortar-write-*")
-	if err != nil {
+	if err := safefs.CheckWritable(dir); err != nil {
 		return "", &PortableError{Dir: dir, Err: err}
 	}
-	_ = probe.Close()
-	_ = safefs.Remove(probe.Name())
 	return filepath.Join(dir, "data"), nil
 }
 

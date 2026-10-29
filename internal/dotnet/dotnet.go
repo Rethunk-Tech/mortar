@@ -9,7 +9,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"io"
 	"iter"
 	"math/bits"
 	"runtime"
@@ -217,14 +216,11 @@ func readAssembly(path string) ([]byte, error) {
 	if fi, err := f.Stat(); err == nil && fi.Size() > maxAssembly {
 		return nil, tooBig(fi.Size())
 	}
-	data, err := io.ReadAll(io.LimitReader(f, maxAssembly+1))
-	if err != nil {
-		return nil, err
+	data, err := safefs.ReadCapped(f, maxAssembly)
+	if errors.Is(err, safefs.ErrTooLarge) {
+		return nil, tooBig(maxAssembly + 1)
 	}
-	if len(data) > maxAssembly {
-		return nil, tooBig(int64(len(data)))
-	}
-	return data, nil
+	return data, err
 }
 
 // malformed turns an index out of range, which the readers below hit on a truncated or crafted assembly instead of

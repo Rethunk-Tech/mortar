@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"slices"
@@ -288,12 +287,12 @@ func parseVDF(path string) (map[string]any, error) {
 		return nil, err
 	}
 	defer func() { _ = f.Close() }()
-	body, err := io.ReadAll(io.LimitReader(f, maxTextVDFBytes+1))
+	body, err := safefs.ReadCapped(f, maxTextVDFBytes)
+	if errors.Is(err, safefs.ErrTooLarge) {
+		return nil, fmt.Errorf("%s is larger than %d bytes", filepath.Base(path), maxTextVDFBytes)
+	}
 	if err != nil {
 		return nil, err
-	}
-	if len(body) > maxTextVDFBytes {
-		return nil, fmt.Errorf("%s is larger than %d bytes", filepath.Base(path), maxTextVDFBytes)
 	}
 	depth, err := textVDFDepth(body)
 	if err != nil {

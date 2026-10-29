@@ -448,3 +448,23 @@ func TestOrderDecidesResolveTie(t *testing.T) {
 		t.Fatalf("ops = %+v", ops)
 	}
 }
+
+func TestFindConfigPrefersTheExactNameAmongCaseVariants(t *testing.T) {
+	root := t.TempDir()
+	for _, rel := range []string{"FOMOD/ModuleConfig.xml", "fomod/moduleconfig.xml"} {
+		p := filepath.Join(root, filepath.FromSlash(rel))
+		if err := os.MkdirAll(filepath.Dir(p), 0o750); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte("<config/>"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	got, err := FindConfig(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := filepath.Join(root, "fomod", "moduleconfig.xml"); got != want {
+		t.Fatalf("FindConfig = %q, want %q", got, want)
+	}
+}
