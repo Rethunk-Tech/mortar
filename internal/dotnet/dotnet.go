@@ -9,9 +9,9 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"io"
 	"iter"
 	"math/bits"
-	"os"
 	"runtime"
 	"slices"
 	"strings"
@@ -203,12 +203,28 @@ func (tooDeep) RuntimeError() {}
 // maxAssembly caps the file read into memory: a mod's DLL is megabytes, and an unbounded read lets one file exhaust it.
 const maxAssembly = 256 << 20
 
-// readAssembly reads the assembly at path unless it is over maxAssembly.
+// readAssembly reads the assembly at path unless it is over maxAssembly. The size is taken from the open handle and the
+// read itself is capped, so a file that grows after the check is still refused.
 func readAssembly(path string) ([]byte, error) {
-	if fi, err := os.Stat(path); err == nil && fi.Size() > maxAssembly {
-		return nil, fmt.Errorf("%s: malformed assembly: %d bytes is over the %d-byte limit", path, fi.Size(), maxAssembly)
+	f, err := fsx.Open(path)
+	if err != nil {
+		return nil, err
 	}
-	return fsx.ReadFile(path)
+	defer func() { _ = f.Close() }()
+	tooBig := func(n int64) error {
+		return fmt.Errorf("%s: malformed assembly: %d bytes is over the %d-byte limit", path, n, maxAssembly)
+	}
+	if fi, err := f.Stat(); err == nil && fi.Size() > maxAssembly {
+		return nil, tooBig(fi.Size())
+	}
+	data, err := io.ReadAll(io.LimitReader(f, maxAssembly+1))
+	if err != nil {
+		return nil, err
+	}
+	if len(data) > maxAssembly {
+		return nil, tooBig(int64(len(data)))
+	}
+	return data, nil
 }
 
 // malformed turns an index out of range, which the readers below hit on a truncated or crafted assembly instead of
