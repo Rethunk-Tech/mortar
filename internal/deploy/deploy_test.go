@@ -57,6 +57,7 @@ func snapshot(t *testing.T, dir string) map[string]string {
 	out := map[string]string{}
 	_ = filepath.WalkDir(dir, func(p string, d fs.DirEntry, _ error) error {
 		rel, _ := filepath.Rel(dir, p)
+		rel = filepath.ToSlash(rel)
 		if d.IsDir() {
 			out[rel+"/"] = ""
 		} else {
