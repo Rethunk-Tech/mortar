@@ -4,9 +4,11 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
 func TestDriversRunOnlyForCatalogStores(t *testing.T) {
@@ -97,4 +99,24 @@ func TestBottleOfWalksUpToBottleYml(t *testing.T) {
 	if got := BottleOf(game); got != bottle {
 		t.Fatalf("BottleOf = %q, want %q", got, bottle)
 	}
+}
+
+func TestBottlesDirsFollowCustomXDGData(t *testing.T) {
+	home := t.TempDir()
+	data := filepath.Join(t.TempDir(), "data")
+	want := filepath.Join(data, "bottles", "bottles")
+	t.Run("native", func(t *testing.T) {
+		t.Setenv("XDG_DATA_HOME", data)
+		if got := bottlesDirs(home); !slices.Contains(got, want) {
+			t.Fatalf("%q missing from %v", want, got)
+		}
+	})
+	t.Run("flatpak", func(t *testing.T) {
+		t.Setenv("FLATPAK_ID", sandbox.AppID)
+		t.Setenv("XDG_DATA_HOME", filepath.Join(home, "own", "data"))
+		t.Setenv("HOST_XDG_DATA_HOME", data)
+		if got := bottlesDirs(home); !slices.Contains(got, want) {
+			t.Fatalf("%q missing from %v", want, got)
+		}
+	})
 }

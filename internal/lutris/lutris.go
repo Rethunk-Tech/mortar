@@ -11,6 +11,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/gog"
+	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
 const (
@@ -94,9 +95,9 @@ func Locate(home string, g Game, extra ...string) []Install {
 // ConfigDirs are the Lutris game-config folders searched, the user's own first.
 func ConfigDirs(home string, extra ...string) []string {
 	return append(slices.Clone(extra),
-		filepath.Join(home, ".local", "share", "lutris", "games"),
+		filepath.Join(sandbox.HostDataHome(home), "lutris", "games"),
 		filepath.Join(home, ".var", "app", "net.lutris.Lutris", "data", "lutris", "games"),
-		filepath.Join(home, ".config", "lutris", "games"),
+		filepath.Join(sandbox.HostConfigHome(home), "lutris", "games"),
 	)
 }
 

@@ -23,19 +23,23 @@ var (
 // InFlatpak reports whether Mortar runs inside a Flatpak sandbox.
 func InFlatpak() bool { return Getenv("FLATPAK_ID") != "" }
 
-// HostConfigHome is the host user's config home. Inside a Flatpak, XDG_CONFIG_HOME is the app's own folder and Flatpak
-// passes the host's custom one as HOST_XDG_CONFIG_HOME, where it mounts the filesystem grants.
+// HostConfigHome is the host user's config home: XDG_CONFIG_HOME when set and absolute, else ~/.config. Inside a
+// Flatpak, XDG_CONFIG_HOME is the app's own folder and Flatpak passes the host's custom one as HOST_XDG_CONFIG_HOME,
+// where it mounts the filesystem grants.
 func HostConfigHome(home string) string {
-	return hostXDG("HOST_XDG_CONFIG_HOME", filepath.Join(home, ".config"))
+	return hostXDG("XDG_CONFIG_HOME", filepath.Join(home, ".config"))
 }
 
-// HostDataHome is HostConfigHome for the data home (HOST_XDG_DATA_HOME).
+// HostDataHome is HostConfigHome for the data home (XDG_DATA_HOME).
 func HostDataHome(home string) string {
-	return hostXDG("HOST_XDG_DATA_HOME", filepath.Join(home, ".local", "share"))
+	return hostXDG("XDG_DATA_HOME", filepath.Join(home, ".local", "share"))
 }
 
 func hostXDG(name, fallback string) string {
-	if v := Getenv(name); InFlatpak() && filepath.IsAbs(v) {
+	if InFlatpak() {
+		name = "HOST_" + name
+	}
+	if v := Getenv(name); filepath.IsAbs(v) {
 		return v
 	}
 	return fallback

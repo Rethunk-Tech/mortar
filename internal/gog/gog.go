@@ -10,6 +10,7 @@ import (
 	"slices"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
 const (
@@ -102,7 +103,7 @@ func OfflineDirs(home string, r Roots) []string {
 // MinigalaxyConfigDirs are Minigalaxy's config folders (native, then Flatpak).
 func MinigalaxyConfigDirs(home string) []string {
 	return []string{
-		filepath.Join(home, ".config", "minigalaxy"),
+		filepath.Join(sandbox.HostConfigHome(home), "minigalaxy"),
 		filepath.Join(home, ".var", "app", "io.github.sharkwouter.Minigalaxy", "config", "minigalaxy"),
 	}
 }
@@ -139,7 +140,7 @@ func HeroicDirs(home string, custom ...string) []string {
 		return out
 	}
 	return append(out,
-		filepath.Join(home, ".config", "heroic"),
+		filepath.Join(sandbox.HostConfigHome(home), "heroic"),
 		filepath.Join(home, ".var", "app", "com.heroicgameslauncher.hgl", "config", "heroic"),
 		filepath.Join(home, "snap", "heroic", "current", ".config", "heroic"),
 	)

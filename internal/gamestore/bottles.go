@@ -8,6 +8,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/gog"
+	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
 const bottlesKey = "bottles"
@@ -15,7 +16,7 @@ const bottlesKey = "bottles"
 // bottlesDirs are the folders Bottles keeps its bottles in, the user's own first: native, then Flatpak.
 func bottlesDirs(home string, extra ...string) []string {
 	return append(append([]string(nil), extra...),
-		filepath.Join(home, ".local", "share", "bottles", "bottles"),
+		filepath.Join(sandbox.HostDataHome(home), "bottles", "bottles"),
 		filepath.Join(home, ".var", "app", "com.usebottles.bottles", "data", "bottles", "bottles"),
 	)
 }

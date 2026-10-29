@@ -4,7 +4,10 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
 // testGame is a game the way a Game implementation describes it to the GOG locators.
@@ -133,4 +136,31 @@ func TestGameDirFindsNestedMarker(t *testing.T) {
 	if got := GameDir(root, "TS4_x64.exe"); got != "" {
 		t.Fatalf("bare marker found %q", got)
 	}
+}
+
+func TestHeroicAndMinigalaxyDirsFollowCustomXDGConfig(t *testing.T) {
+	home := t.TempDir()
+	cfg := filepath.Join(t.TempDir(), "cfg")
+	check := func(t *testing.T) {
+		t.Helper()
+		if runtime.GOOS == "windows" {
+			t.Skip("Heroic reads %APPDATA% on Windows")
+		}
+		if got, want := HeroicDirs(home), filepath.Join(cfg, "heroic"); !slices.Contains(got, want) {
+			t.Fatalf("%q missing from %v", want, got)
+		}
+		if got, want := MinigalaxyConfigDirs(home), filepath.Join(cfg, "minigalaxy"); !slices.Contains(got, want) {
+			t.Fatalf("%q missing from %v", want, got)
+		}
+	}
+	t.Run("native", func(t *testing.T) {
+		t.Setenv("XDG_CONFIG_HOME", cfg)
+		check(t)
+	})
+	t.Run("flatpak", func(t *testing.T) {
+		t.Setenv("FLATPAK_ID", sandbox.AppID)
+		t.Setenv("XDG_CONFIG_HOME", filepath.Join(home, "own", "config"))
+		t.Setenv("HOST_XDG_CONFIG_HOME", cfg)
+		check(t)
+	})
 }

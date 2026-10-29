@@ -65,4 +65,12 @@ func TestHostXDGHomes(t *testing.T) {
 	if got, want := HostConfigHome(home), filepath.Join(home, ".config"); got != want {
 		t.Fatalf("outside flatpak %q, want %q", got, want)
 	}
+	t.Setenv("XDG_CONFIG_HOME", custom)
+	t.Setenv("XDG_DATA_HOME", "relative/data")
+	if got := HostConfigHome(home); got != custom {
+		t.Fatalf("custom XDG_CONFIG_HOME %q, want %q", got, custom)
+	}
+	if got, want := HostDataHome(home), filepath.Join(home, ".local", "share"); got != want {
+		t.Fatalf("relative XDG_DATA_HOME %q, want %q", got, want)
+	}
 }

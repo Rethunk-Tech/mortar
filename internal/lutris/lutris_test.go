@@ -5,10 +5,12 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
 //go:embed testdata/gog-linux.yml
@@ -60,4 +62,32 @@ func TestLocateLinux(t *testing.T) {
 	if len(found) != 1 || found[0].Dir != install {
 		t.Fatalf("Locate = %+v", found)
 	}
+}
+
+func TestConfigDirsFollowCustomXDGHomes(t *testing.T) {
+	home := t.TempDir()
+	cfg, data := filepath.Join(t.TempDir(), "cfg"), filepath.Join(t.TempDir(), "data")
+	want := []string{filepath.Join(data, "lutris", "games"), filepath.Join(cfg, "lutris", "games")}
+	check := func(t *testing.T) {
+		t.Helper()
+		got := ConfigDirs(home)
+		for _, w := range want {
+			if !slices.Contains(got, w) {
+				t.Fatalf("%q missing from %v", w, got)
+			}
+		}
+	}
+	t.Run("native", func(t *testing.T) {
+		t.Setenv("XDG_CONFIG_HOME", cfg)
+		t.Setenv("XDG_DATA_HOME", data)
+		check(t)
+	})
+	t.Run("flatpak", func(t *testing.T) {
+		t.Setenv("FLATPAK_ID", sandbox.AppID)
+		t.Setenv("XDG_CONFIG_HOME", filepath.Join(home, "own", "config"))
+		t.Setenv("XDG_DATA_HOME", filepath.Join(home, "own", "data"))
+		t.Setenv("HOST_XDG_CONFIG_HOME", cfg)
+		t.Setenv("HOST_XDG_DATA_HOME", data)
+		check(t)
+	})
 }
