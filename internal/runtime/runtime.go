@@ -15,6 +15,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
+	"github.com/Rethunk-Tech/mortar/internal/steam"
 )
 
 // Runtime ids.
@@ -250,14 +251,25 @@ func Version(inst Install) string {
 			return strings.TrimSpace(line)
 		}
 	}
-	b, err := fsx.ReadFile(filepath.Join(filepath.Dir(steamapps), "config", "config.vdf"))
-	if err != nil {
-		return ""
+	// Steam keeps config/ only in its own root, so a game in a second library finds it there.
+	dirs := []string{filepath.Dir(steamapps)}
+	for _, s := range steam.LocateAll(inst.Home, inst.SteamRoots...) {
+		dirs = append(dirs, s.Root)
 	}
-	if name := compatToolName(string(b), inst.AppID); name != "" {
-		return name
+	var configs []string
+	for _, dir := range dirs {
+		if b, err := fsx.ReadFile(filepath.Join(dir, "config", "config.vdf")); err == nil {
+			configs = append(configs, string(b))
+		}
 	}
-	return compatToolName(string(b), "0")
+	for _, id := range []string{inst.AppID, "0"} {
+		for _, c := range configs {
+			if name := compatToolName(c, id); name != "" {
+				return name
+			}
+		}
+	}
+	return ""
 }
 
 // compatToolName is the "name" of appID's entry in config.vdf's CompatToolMapping, which is the section's flat

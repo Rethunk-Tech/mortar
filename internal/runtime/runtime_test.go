@@ -175,3 +175,16 @@ func TestWinePrefixBottle(t *testing.T) {
 		t.Fatal("a non-bottle install must not be wrapped")
 	}
 }
+
+func TestVersionReadsTheSteamRootConfigForAGameInASecondLibrary(t *testing.T) {
+	root, lib := t.TempDir(), t.TempDir()
+	testfs.WriteAt(t, filepath.Join(root, "steamapps", "libraryfolders.vdf"), []byte("\"libraryfolders\"\n{\n}\n"))
+	testfs.WriteAt(t, filepath.Join(root, "config", "config.vdf"), []byte("\"CompatToolMapping\"\n{\n\t\"1966720\"\n\t{\n\t\t\"name\"\t\t\"GE-Proton9-5\"\n\t}\n}\n"))
+	inst := Install{
+		Store: "steam", Dir: filepath.Join(lib, "steamapps", "common", "Lethal Company"), AppID: "1966720",
+		Platform: "windows", GOOS: "linux", Home: t.TempDir(), SteamRoots: []string{root},
+	}
+	if got := Version(inst); got != "GE-Proton9-5" {
+		t.Fatalf("second library: %q", got)
+	}
+}
