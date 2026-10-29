@@ -32,6 +32,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/jsonc"
+	"github.com/Rethunk-Tech/mortar/internal/modconfig"
 )
 
 var contentPatcherID = mod.SMAPI("Pathoschild.ContentPatcher")
@@ -1055,24 +1056,12 @@ func readConfigSchema(root string) map[string]cpSchema {
 	if err != nil {
 		return nil
 	}
-	var doc struct {
-		ConfigSchema map[string]json.RawMessage `json:"ConfigSchema"`
-	}
-	if json.Unmarshal(jsonc.Clean(raw), &doc) != nil {
+	entries, err := modconfig.Entries(jsonc.Clean(raw))
+	if err != nil {
 		return nil
 	}
-	out := make(map[string]cpSchema, len(doc.ConfigSchema))
-	for key, raw := range doc.ConfigSchema {
-		var entry struct {
-			Default       json.RawMessage `json:"Default"`
-			AllowMultiple bool            `json:"AllowMultiple"`
-			AllowValues   string          `json:"AllowValues"`
-			AllowBlank    bool            `json:"AllowBlank"`
-			Description   string          `json:"Description"`
-		}
-		if json.Unmarshal(raw, &entry) != nil {
-			continue
-		}
+	out := make(map[string]cpSchema, len(entries))
+	for key, entry := range entries {
 		defaultValue, _ := scalarValue(entry.Default)
 		key = strings.TrimSpace(key)
 		if key == "" || hasToken(key) {

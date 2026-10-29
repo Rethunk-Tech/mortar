@@ -25,35 +25,56 @@ type Field struct {
 // Schema is ConfigSchema keyed by field name.
 type Schema map[string]Field
 
-// Parse reads ConfigSchema from a content.json document.
-func Parse(contentJSON []byte) (Schema, error) {
+// Entry is one ConfigSchema entry as written, before a caller applies its own reading of the values.
+type Entry struct {
+	Default       json.RawMessage `json:"Default"`
+	AllowValues   string          `json:"AllowValues"`
+	AllowMultiple bool            `json:"AllowMultiple"`
+	AllowBlank    bool            `json:"AllowBlank"`
+	Description   string          `json:"Description"`
+	Section       json.RawMessage `json:"Section"`
+}
+
+// Entries reads ConfigSchema from a content.json document, keyed by the raw field name. An entry that is not an
+// object of the expected shape is left out.
+func Entries(contentJSON []byte) (map[string]Entry, error) {
 	var doc struct {
 		ConfigSchema map[string]json.RawMessage `json:"ConfigSchema"`
 	}
 	if err := json.Unmarshal(contentJSON, &doc); err != nil {
 		return nil, fmt.Errorf("content.json: %w", err)
 	}
-	out := Schema{}
+	out := make(map[string]Entry, len(doc.ConfigSchema))
 	for name, raw := range doc.ConfigSchema {
-		var spec struct {
-			AllowValues   string          `json:"AllowValues"`
-			AllowMultiple bool            `json:"AllowMultiple"`
-			AllowBlank    bool            `json:"AllowBlank"`
-			Default       json.RawMessage `json:"Default"`
-			Description   string          `json:"Description"`
-			Section       string          `json:"Section"`
+		var e Entry
+		if json.Unmarshal(raw, &e) != nil {
+			continue
 		}
-		if json.Unmarshal(raw, &spec) != nil {
+		out[name] = e
+	}
+	return out, nil
+}
+
+// Parse reads ConfigSchema from a content.json document.
+func Parse(contentJSON []byte) (Schema, error) {
+	entries, err := Entries(contentJSON)
+	if err != nil {
+		return nil, err
+	}
+	out := Schema{}
+	for name, e := range entries {
+		var section string
+		if len(e.Section) > 0 && json.Unmarshal(e.Section, &section) != nil {
 			continue
 		}
 		out[name] = Field{
 			Name:          name,
-			AllowValues:   splitCSV(spec.AllowValues),
-			AllowMultiple: spec.AllowMultiple,
-			AllowBlank:    spec.AllowBlank,
-			Default:       rawString(spec.Default),
-			Description:   spec.Description,
-			Section:       spec.Section,
+			AllowValues:   splitCSV(e.AllowValues),
+			AllowMultiple: e.AllowMultiple,
+			AllowBlank:    e.AllowBlank,
+			Default:       rawString(e.Default),
+			Description:   e.Description,
+			Section:       section,
 		}
 	}
 	return out, nil
