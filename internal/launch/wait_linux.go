@@ -15,10 +15,16 @@ import (
 func WaitPID(pid int) (Exit, error) {
 	if sandbox.InFlatpak() {
 		// Host PIDs mean nothing in the sandbox's PID namespace.
-		for Alive(pid) {
+		for {
+			alive, err := hostProbe(pid)
+			if err != nil {
+				return Exit{}, err
+			}
+			if !alive {
+				return Exit{}, nil
+			}
 			time.Sleep(time.Second)
 		}
-		return Exit{}, nil
 	}
 	proc, err := os.FindProcess(pid)
 	if err == nil {

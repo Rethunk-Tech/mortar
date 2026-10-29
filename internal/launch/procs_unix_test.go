@@ -125,9 +125,12 @@ func TestHostTerminateSignalsThroughHostKill(t *testing.T) {
 	sandbox.Getenv = func(string) string { return "x" }
 	alive := true
 	sandbox.Output = func(args ...string) ([]byte, error) {
-		calls = append(calls, strings.Join(args, " "))
-		if !alive {
-			return nil, errors.New("no such process")
+		calls = append(calls, args[len(args)-2])
+		if args[len(args)-2] == "sh" {
+			if alive {
+				return []byte("alive\n"), nil
+			}
+			return []byte("gone\n"), nil
 		}
 		alive = args[len(args)-2] != "-TERM"
 		return nil, nil
@@ -135,9 +138,22 @@ func TestHostTerminateSignalsThroughHostKill(t *testing.T) {
 	if err := Terminate(42, time.Second); err != nil {
 		t.Fatal(err)
 	}
-	want := []string{"--host kill -0 42", "--host kill -TERM 42", "--host kill -0 42"}
+	want := []string{"sh", "-TERM", "sh"}
 	if !slices.Equal(calls, want) {
 		t.Fatalf("calls %q", calls)
+	}
+}
+
+func TestHostTerminateReportsAFailureToRunFlatpakSpawn(t *testing.T) {
+	old, oldEnv := sandbox.Output, sandbox.Getenv
+	t.Cleanup(func() { sandbox.Output, sandbox.Getenv = old, oldEnv })
+	sandbox.Getenv = func(string) string { return "x" }
+	sandbox.Output = func(...string) ([]byte, error) { return nil, errors.New("flatpak-spawn: not found") }
+	if err := Terminate(42, time.Second); err == nil {
+		t.Fatal("a game that may still run was reported stopped")
+	}
+	if _, err := WaitPID(42); err == nil {
+		t.Fatal("WaitPID reported a process gone when the host could not be asked")
 	}
 }
 

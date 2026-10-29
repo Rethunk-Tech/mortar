@@ -117,10 +117,27 @@ func hostKill(sig string, pid int) error {
 	return err
 }
 
-func hostAlive(pid int) bool { return hostKill("0", pid) == nil }
+// hostProbe reports whether the host process pid exists. kill's "no such process" is told from a failure to run
+// flatpak-spawn at all by asking the host's sh to answer in its own stdout: any error here is the latter.
+func hostProbe(pid int) (bool, error) {
+	out, err := sandbox.HostOutput("sh", "-c", `if kill -0 "$1" 2>/dev/null; then echo alive; else echo gone; fi`, "sh", strconv.Itoa(pid))
+	if err != nil {
+		return false, err
+	}
+	return strings.TrimSpace(string(out)) == "alive", nil
+}
+
+func hostAlive(pid int) bool {
+	alive, err := hostProbe(pid)
+	return err == nil && alive
+}
 
 func hostTerminate(pid int, grace time.Duration) error {
-	if !hostAlive(pid) {
+	alive, err := hostProbe(pid)
+	if err != nil {
+		return err
+	}
+	if !alive {
 		return nil
 	}
 	if hostKill("TERM", pid) != nil && !hostAlive(pid) {
