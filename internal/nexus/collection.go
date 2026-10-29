@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -14,6 +15,9 @@ import (
 
 // MaxCollectionArchive caps the curator's collection archive Mortar reads into memory.
 const MaxCollectionArchive = 64 << 20
+
+// mirrorTimeout bounds the whole archive fetch from the mirror, which sits outside Nexus's API and can stall.
+var mirrorTimeout = 2 * time.Minute
 
 // CollectionArchive downloads a collection revision's curator archive (collection.json plus bundled files).
 // downloadLink is the API path Nexus reports for the revision. The archive is the curator's manifest, not a mod
@@ -40,6 +44,8 @@ func (c *Client) CollectionArchive(ctx context.Context, downloadLink string) ([]
 	if !strings.HasPrefix(uri, "https://") {
 		return nil, errors.New("nexus gave no collection download link")
 	}
+	ctx, cancel := context.WithTimeout(ctx, mirrorTimeout)
+	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, uri, nil)
 	if err != nil {
 		return nil, err
