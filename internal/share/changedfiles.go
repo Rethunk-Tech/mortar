@@ -2,6 +2,7 @@ package share
 
 import (
 	"errors"
+	"log/slog"
 	"path"
 	"path/filepath"
 	"regexp"
@@ -52,11 +53,19 @@ func readChangedFiles(profileDir, gameID string) (found []ChangedFile, skipped [
 	if err != nil {
 		return nil, nil, err
 	}
+	// Read refuses two entries differing only by case, so a case variant of an earlier name is left out.
+	folded := map[string]bool{}
 	for _, rel := range rels {
 		if !validChangedPath(gameID, rel) {
 			skipped = append(skipped, rel)
 			continue
 		}
+		if folded[strings.ToLower(rel)] {
+			slog.Warn("share: skipped a changed copy whose name differs from an earlier one only by case", "path", rel)
+			skipped = append(skipped, rel)
+			continue
+		}
+		folded[strings.ToLower(rel)] = true
 		data, err := readCapped(filepath.Join(profileDir, filepath.FromSlash(rel)))
 		if errors.Is(err, fsx.ErrTooLarge) {
 			skipped = append(skipped, rel)
