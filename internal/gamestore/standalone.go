@@ -5,7 +5,6 @@ import (
 	goruntime "runtime"
 
 	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
-
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/gog"
 	"github.com/Rethunk-Tech/mortar/internal/runtime"

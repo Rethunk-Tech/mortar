@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
-
 	"github.com/Rethunk-Tech/go-safefs"
 )
 

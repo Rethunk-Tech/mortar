@@ -17,10 +17,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
-
 	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 	"github.com/Rethunk-Tech/go-desktopenv/portal"
+	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
 	"github.com/Rethunk-Tech/go-safefs"
 )
 

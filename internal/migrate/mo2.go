@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
-
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/go-safefs"

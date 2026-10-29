@@ -14,9 +14,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Rethunk-Tech/go-safefs"
-
 	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // Stop ends a game process. A Wine game is first asked to close its windows, as quitting it would: one that registered
