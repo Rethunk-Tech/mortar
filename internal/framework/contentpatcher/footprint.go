@@ -684,8 +684,20 @@ func maskSet(mask []byte, i int) bool {
 	return mask[i>>3]&(1<<(uint(i)&7)) != 0
 }
 
+// footprintReadCap bounds each map or overlay file read, matching the pack file cap.
+var footprintReadCap int64 = maxPackFileBytes
+
+func readCappedFile(path string) ([]byte, error) {
+	file, err := fsx.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = file.Close() }()
+	return fsx.ReadCapped(file, footprintReadCap)
+}
+
 func decodePNGAlpha(r io.Reader) (pngAlpha, bool) {
-	raw, err := io.ReadAll(r)
+	raw, err := fsx.ReadCapped(r, footprintReadCap)
 	if err != nil || len(raw) < 8 || string(raw[:8]) != "\x89PNG\r\n\x1a\n" {
 		return pngAlpha{}, false
 	}
@@ -914,7 +926,7 @@ func pngDecodable(raw []byte) bool {
 }
 
 func decodePNGAlphaStd(r io.Reader) (pngAlpha, bool) {
-	raw, err := io.ReadAll(r)
+	raw, err := fsx.ReadCapped(r, footprintReadCap)
 	if err != nil || !pngDecodable(raw) {
 		return pngAlpha{}, false
 	}
@@ -1194,7 +1206,7 @@ func decodeMap(root, rel string) (decodedMap, bool) {
 			return result.value, result.ok
 		}
 	}
-	raw, err := fsx.ReadFile(abs)
+	raw, err := readCappedFile(abs)
 	if err != nil {
 		return decodedMap{}, false
 	}
@@ -1536,7 +1548,7 @@ func mapSize(root, rel string) (w, h int, ok bool) {
 	if !inRoot {
 		return 0, 0, false
 	}
-	raw, err := fsx.ReadFile(abs)
+	raw, err := readCappedFile(abs)
 	if err != nil {
 		return 0, 0, false
 	}

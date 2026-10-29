@@ -338,3 +338,27 @@ func TestHugeIHDRPNGIsRefusedBeforeAllocation(t *testing.T) {
 		}
 	}
 }
+
+func TestFootprintReadsAreCapped(t *testing.T) {
+	old := footprintReadCap
+	footprintReadCap = 64
+	t.Cleanup(func() { footprintReadCap = old })
+	dir := t.TempDir()
+	tmj := `{"width":3,"height":2}` + strings.Repeat(" ", 64)
+	if err := os.WriteFile(filepath.Join(dir, "m.tmj"), []byte(tmj), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if w, h, ok := mapSize(dir, "m.tmj"); ok {
+		t.Fatalf("oversized map decoded: %d x %d", w, h)
+	}
+	var buf bytes.Buffer
+	if err := png.Encode(&buf, image.NewNRGBA(image.Rect(0, 0, 32, 32))); err != nil || buf.Len() <= 64 {
+		t.Fatalf("fixture: %v, %d bytes", err, buf.Len())
+	}
+	if _, ok := decodePNGAlpha(bytes.NewReader(buf.Bytes())); ok {
+		t.Fatal("oversized PNG decoded")
+	}
+	if _, ok := decodePNGAlphaStd(bytes.NewReader(buf.Bytes())); ok {
+		t.Fatal("oversized PNG decoded by std path")
+	}
+}
