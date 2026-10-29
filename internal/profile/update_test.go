@@ -222,6 +222,7 @@ func TestInstallArchiveSpanningEntriesFails(t *testing.T) {
 func TestUpdateBacksUpSavesAndHonoursLock(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home) // userdirs honours XDG and APPDATA only for os.UserHomeDir, which reads USERPROFILE on Windows
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	m := manifestJSON("me.a")
 	e, p := updEnv(t, map[string]string{"A/manifest.json": m}, map[string]string{"A/manifest.json": m})

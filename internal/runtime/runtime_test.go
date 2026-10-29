@@ -22,6 +22,7 @@ func TestNativeLinuxStores(t *testing.T) {
 	home := filepath.Join(t.TempDir(), "home")
 	config := filepath.Join(t.TempDir(), "config")
 	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home) // userdirs honours XDG and APPDATA only for os.UserHomeDir, which reads USERPROFILE on Windows
 	t.Setenv("XDG_CONFIG_HOME", config)
 	t.Setenv("FLATPAK_ID", "")
 	inst := Install{Store: "steam", Platform: "linux", Home: home, GOOS: "linux"}
@@ -51,6 +52,7 @@ func TestNativeFlatpakUsesHostXDGHomes(t *testing.T) {
 	home := filepath.Join(t.TempDir(), "home")
 	config := filepath.Join(t.TempDir(), "hostcfg")
 	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home) // userdirs honours XDG and APPDATA only for os.UserHomeDir, which reads USERPROFILE on Windows
 	t.Setenv("FLATPAK_ID", "tech.rethunk.Mortar")
 	t.Setenv("HOST_XDG_CONFIG_HOME", config)
 	inst := Install{Store: "steam", Platform: "linux", Home: home, GOOS: "linux"}
@@ -69,6 +71,7 @@ func TestNativeFlatpakUsesHostXDGHomes(t *testing.T) {
 func TestNativeIgnoresRelativeXDGConfigHome(t *testing.T) {
 	home := filepath.Join(t.TempDir(), "home")
 	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home) // userdirs honours XDG and APPDATA only for os.UserHomeDir, which reads USERPROFILE on Windows
 	t.Setenv("FLATPAK_ID", "")
 	t.Setenv("XDG_CONFIG_HOME", "relative")
 	got, err := Resolve(Install{Store: "steam", Platform: "linux", Home: home, GOOS: "linux"}, stardewSaves)
@@ -82,6 +85,7 @@ func TestNativeWindowsUsesAppData(t *testing.T) {
 	t.Setenv("APPDATA", appData)
 	home := t.TempDir()
 	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home) // userdirs honours XDG and APPDATA only for os.UserHomeDir, which reads USERPROFILE on Windows
 	t.Setenv("USERPROFILE", home)
 	inst := Install{Store: "steam", Platform: "windows", Home: home, GOOS: "windows"}
 	if IDOf(inst) != Native {

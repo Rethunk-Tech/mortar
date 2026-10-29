@@ -23,6 +23,7 @@ func newGameSettingsService(t *testing.T) (*Service, profile.Profile, string) {
 	config := t.TempDir()
 	home := t.TempDir()
 	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home) // userdirs honours XDG and APPDATA only for os.UserHomeDir, which reads USERPROFILE on Windows
 	t.Setenv("XDG_CONFIG_HOME", config)
 	t.Setenv("APPDATA", config)
 
