@@ -1522,6 +1522,7 @@ msgid "a newer copy loaded instead: {version}"
 msgstr "a newer copy loaded instead: {version}"
 
 #: src/firstrun/FindStep.tsx
+#: src/share/ManagerPane.tsx
 msgid "{name} folder"
 msgstr "{name} folder"
 
@@ -2984,10 +2985,6 @@ msgstr "Pick the version."
 #: src/firstrun/FindStep.tsx
 msgid "has {name}"
 msgstr "has {name}"
-
-#: src/share/ManagerPane.tsx
-msgid "{manager} folder"
-msgstr "{manager} folder"
 
 #: src/commandPalette/paletteLabels.ts
 msgid "Open mod"

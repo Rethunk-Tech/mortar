@@ -213,7 +213,7 @@ export function useManagerPane({
           {offerMO2Folder(mo2Supported, external) ? (
             <ManagerFolderPrompt
               settingKey="mo2Folder"
-              label={t`${{ manager: MOD_ORGANIZER_2 }} folder`}
+              label={t`${{ name: MOD_ORGANIZER_2 }} folder`}
               note={t`Use ${{ manager: MOD_ORGANIZER_2 }} from another folder?`}
               rejected={t`That folder has no ${{ manager: MOD_ORGANIZER_2 }} data. Choose the one holding ModOrganizer.ini or ModOrganizer.exe.`}
               onChosen={reload}
