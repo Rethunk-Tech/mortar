@@ -28,7 +28,7 @@ func TestRunningVortexIsReportedNotHidden(t *testing.T) {
 	if _, err := VortexContents(home, ""); !errors.Is(err, ErrVortexRunning) {
 		t.Fatalf("VortexContents error = %v", err)
 	}
-	sources, err := Detect(home, t.TempDir(), "stardew", "")
+	sources, err := Detect(home, t.TempDir(), "stardew", "", "")
 	if err != nil || len(sources) != 1 || sources[0].Kind != KindVortex || sources[0].Error != ErrVortexRunning.Error() {
 		t.Fatalf("sources = %#v, %v", sources, err)
 	}
