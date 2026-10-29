@@ -12,6 +12,7 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
@@ -80,17 +81,9 @@ func downloadUnityLibs(ctx context.Context, ver, dst string) error {
 	if err != nil {
 		return err
 	}
-	resp, err := http.DefaultClient.Do(req)
+	b, err := httpkit.DoCapped(nil, req, 256<<20, nil)
 	if err != nil {
-		return err
-	}
-	defer func() { _ = resp.Body.Close() }()
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("unity libraries %s: %s", ver, resp.Status)
-	}
-	b, err := safefs.ReadCapped(resp.Body, 256<<20)
-	if err != nil {
-		return err
+		return fmt.Errorf("unity libraries %s: %w", ver, err)
 	}
 	if !bytes.HasPrefix(b, []byte("PK")) {
 		return fmt.Errorf("unity libraries %s: not a zip", ver)

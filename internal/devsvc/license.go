@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -37,18 +38,14 @@ func (s *Service) applyLicense(ctx context.Context, dir, key string) error {
 		return err
 	}
 	req.Header.Set("Accept", "application/vnd.github+json")
-	res, err := s.httpClient().Do(req)
+	b, err := httpkit.DoCapped(s.httpClient(), req, 1<<20, nil)
 	if err != nil {
-		return usererr.Wrap(usererr.Network, err)
-	}
-	defer func() { _ = res.Body.Close() }()
-	if res.StatusCode != http.StatusOK {
-		return usererr.Wrap(usererr.Network, fmt.Errorf("the %s license text: %s", key, res.Status))
+		return usererr.Wrap(usererr.Network, fmt.Errorf("the %s license text: %w", key, err))
 	}
 	var license struct {
 		Body string `json:"body"`
 	}
-	if err := json.NewDecoder(safefs.CapReader(res.Body, 1<<20)).Decode(&license); err != nil || license.Body == "" {
+	if err := json.Unmarshal(b, &license); err != nil || license.Body == "" {
 		return usererr.Wrap(usererr.Network, errors.New("the license text could not be read"))
 	}
 	return safefs.WriteFile(filepath.Join(dir, "LICENSE"), []byte(license.Body), 0o644) // #nosec G306 -- a tracked text file

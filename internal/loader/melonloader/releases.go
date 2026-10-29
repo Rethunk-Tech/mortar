@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/github"
@@ -185,21 +186,9 @@ func (l Loader) checksum(ctx context.Context, url string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	hc := l.HTTP
-	if hc == nil {
-		hc = http.DefaultClient
-	}
-	resp, err := hc.Do(req)
+	b, err := httpkit.DoCapped(l.HTTP, req, maxChecksum, nil)
 	if err != nil {
-		return "", err
-	}
-	defer func() { _ = resp.Body.Close() }()
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("the checksum file answered %s", resp.Status)
-	}
-	b, err := safefs.ReadCapped(resp.Body, maxChecksum)
-	if err != nil {
-		return "", err
+		return "", fmt.Errorf("the checksum file: %w", err)
 	}
 	if fields := strings.Fields(string(b)); len(fields) > 0 {
 		return fields[0], nil
