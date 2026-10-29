@@ -211,15 +211,20 @@ func TestSetWritesDecimalsPlainAndAcceptsWhatDotNetReads(t *testing.T) {
 func TestRefusedValueIsInvalidAndNamesItsProblem(t *testing.T) {
 	d := parseCfg(fixture(t))
 	for _, c := range []struct{ section, key, value, want string }{
-		{"General", "LeaveDelay", "5", "config_value:range:10:300 "},
-		{"General", "LeaveDelay", "1.5", "config_value:whole_number "},
-		{"General", "ShowHud", "maybe", "config_value:bool "},
-		{"Advanced", "Mode", "Nightmare", "config_value:enum "},
-		{"General", "ScrapMultiplier", "x", "config_value:number "},
+		{"General", "LeaveDelay", "5", "range"},
+		{"General", "LeaveDelay", "1.5", "whole_number"},
+		{"General", "ShowHud", "maybe", "bool"},
+		{"Advanced", "Mode", "Nightmare", "enum"},
+		{"General", "ScrapMultiplier", "x", "number"},
 	} {
 		_, err := d.set(c.section, c.key, c.value)
-		if usererr.KindOf(err) != usererr.Invalid || err == nil || !strings.HasPrefix(strings.TrimPrefix(err.Error(), "[invalid] "), c.want) {
-			t.Errorf("%s=%s: %v", c.key, c.value, err)
+		detail, _ := usererr.DetailOf(err).(*valueError)
+		if usererr.KindOf(err) != usererr.Invalid || detail == nil || detail.Problem != c.want || strings.Contains(err.Error(), "config_value") {
+			t.Errorf("%s=%s: %v %+v", c.key, c.value, err, detail)
 		}
+	}
+	_, err := d.set("General", "LeaveDelay", "5")
+	if detail, _ := usererr.DetailOf(err).(*valueError); detail.Min == nil || *detail.Min != 10 || *detail.Max != 300 {
+		t.Errorf("range bounds: %+v", detail)
 	}
 }

@@ -222,7 +222,7 @@ func validate(e cfgEntry, value string) (string, error) {
 			trimmed := strings.TrimSpace(p)
 			j := slices.IndexFunc(e.Values, func(v string) bool { return strings.EqualFold(v, trimmed) })
 			if j < 0 {
-				return "", refuse("enum", "%s must be one of %s", e.Key, strings.Join(e.Values, ", "))
+				return "", refuseEnum(e)
 			}
 			parts[i] = strings.Replace(p, trimmed, e.Values[j], 1)
 		}
@@ -241,29 +241,48 @@ func finite(key, value string) (float64, string, error) {
 	return n, strconv.FormatFloat(n, 'g', -1, 64), nil
 }
 
-// refuse is a value the editor will not write: Invalid, with the text opening on config_value:<problem> so the GUI
-// words its own sentence for the problem.
-func refuse(problem, format string, args ...any) error {
-	return usererr.New(usererr.Invalid, "config_value:"+problem+" "+fmt.Sprintf(format, args...))
+func refuseEnum(e cfgEntry) error {
+	return usererr.Wrap(usererr.Invalid, &valueError{Problem: "enum", Values: e.Values, msg: fmt.Sprintf("%s must be one of %s", e.Key, strings.Join(e.Values, ", "))})
 }
 
-// refuseRange carries the bounds as min:max, "any" for one the setting does not have.
-func refuseRange(key string, lo, hi any) error {
-	return refuse(fmt.Sprintf("range:%v:%v", lo, hi), "%s must be between %v and %v", key, lo, hi)
+// valueError is a value the editor will not write. Its English sentence is the error text; Detail is what the GUI words
+// its own sentence from (usererr.Detailer).
+type valueError struct {
+	// Problem is one of line, bool, whole_number, number, enum, range, empty, list, raw, toml and color.
+	Problem string   `json:"problem"`
+	Min     *float64 `json:"min,omitempty"`
+	Max     *float64 `json:"max,omitempty"`
+	Values  []string `json:"values,omitempty"`
+	msg     string
+}
+
+func (e *valueError) Error() string { return e.msg }
+
+func (e *valueError) Detail() any { return e }
+
+func refuse(problem, format string, args ...any) error {
+	return usererr.Wrap(usererr.Invalid, &valueError{Problem: problem, msg: fmt.Sprintf(format, args...)})
+}
+
+func refuseRange(key string, lo, hi *float64) error {
+	f := func(p *float64) string { return strconv.FormatFloat(*p, 'f', -1, 64) }
+	var msg string
+	switch {
+	case lo == nil:
+		msg = fmt.Sprintf("%s must be at most %s", key, f(hi))
+	case hi == nil:
+		msg = fmt.Sprintf("%s must be at least %s", key, f(lo))
+	default:
+		msg = fmt.Sprintf("%s must be between %s and %s", key, f(lo), f(hi))
+	}
+	return usererr.Wrap(usererr.Invalid, &valueError{Problem: "range", Min: lo, Max: hi, msg: msg})
 }
 
 func inRange(e Entry, n float64) error {
 	if (e.Min != nil && n < *e.Min) || (e.Max != nil && n > *e.Max) {
-		return refuseRange(e.Key, bound(e.Min), bound(e.Max))
+		return refuseRange(e.Key, e.Min, e.Max)
 	}
 	return nil
-}
-
-func bound(p *float64) any {
-	if p == nil {
-		return "any"
-	}
-	return *p
 }
 
 func (d cfgDoc) find(section, key string) (cfgEntry, bool) {
@@ -287,7 +306,7 @@ func (d cfgDoc) set(section, key, value string) (string, error) {
 	}
 	if lim, ok := netLimits[e.netType]; ok {
 		if n, _ := strconv.ParseFloat(val, 64); n < lim[0] || n > lim[1] {
-			return "", refuseRange(key, lim[0], lim[1])
+			return "", refuseRange(key, &lim[0], &lim[1])
 		}
 	}
 	lines := append([]string(nil), d.lines...)
