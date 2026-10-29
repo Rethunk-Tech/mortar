@@ -27,7 +27,7 @@ Threat-model guards and the test that proves each: [security.md](security.md).
 
 ```sh
 bun run gate       # everything CI runs except e2e
-bun run test       # go test -race ./... && bun test
+bun run test       # go test -race ./... and bun test, in parallel
 go test -race ./internal/<pkg>
 ```
 
