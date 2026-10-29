@@ -141,3 +141,13 @@ func TestWriteUserPropsEscapesTheGamePathForMSBuild(t *testing.T) {
 		t.Errorf("props = %s", body)
 	}
 }
+
+func TestWriteUserPropsRefusesAGamePathXMLCannotCarry(t *testing.T) {
+	dir := t.TempDir()
+	if err := writeUserProps(dir, filepath.Join(t.TempDir(), "bad\x01")); err == nil {
+		t.Fatal("wrote a props file XML cannot parse")
+	}
+	if _, err := os.Stat(filepath.Join(dir, "Config.Build.user.props")); !os.IsNotExist(err) {
+		t.Errorf("props written: %v", err)
+	}
+}

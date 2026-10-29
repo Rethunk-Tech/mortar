@@ -1,6 +1,7 @@
 package msbuild
 
 import (
+	"errors"
 	"regexp"
 	"strings"
 	"testing"
@@ -133,4 +134,18 @@ func FuzzSetPropertyParses(f *testing.F) {
 			t.Fatalf("SetProperty(%q, %q) wrote a file that does not parse: %v", name, value, err)
 		}
 	})
+}
+
+func TestAttributesAndItemsRefuseCharactersXMLCannotCarry(t *testing.T) {
+	text := "<Project>\n  <ItemGroup>\n    <Reference Include=\"A\" />\n  </ItemGroup>\n</Project>\n"
+	all := func(Elem, string) bool { return true }
+	if _, err := SetAttr(text, all, "Private", "a\x10b"); !errors.Is(err, ErrBadChar) {
+		t.Errorf("SetAttr: %v", err)
+	}
+	if _, err := SetItem(text, Item{Type: "Reference", Include: "B\x01"}, []string{"Reference"}, nil); !errors.Is(err, ErrBadChar) {
+		t.Errorf("SetItem include: %v", err)
+	}
+	if _, err := SetItem(text, Item{Type: "Reference", Include: "B", Attrs: map[string]string{"HintPath": "x\x1f"}}, []string{"Reference"}, nil); !errors.Is(err, ErrBadChar) {
+		t.Errorf("SetItem attr: %v", err)
+	}
 }

@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 	"regexp"
 	"slices"
 	"strings"
@@ -129,8 +130,8 @@ func SetProperty(text, name, value string) (string, error) {
 
 // SetRawProperty is SetProperty for text already escaped, such as a list whose ; MSBuild must split on.
 func SetRawProperty(text, name, raw string) (string, error) {
-	if !utf8.ValidString(raw) || strings.ContainsFunc(raw, func(r rune) bool { return !xmlChar(r) }) {
-		return text, fmt.Errorf("the value of %s holds a character XML cannot carry", name)
+	if err := CheckValue(raw); err != nil {
+		return text, fmt.Errorf("the value of %s: %w", name, err)
 	}
 	elems, err := Parse(text)
 	if err != nil {
@@ -181,6 +182,11 @@ func Items(text string, types ...string) ([]Item, error) {
 // SetItem puts item in place of the first item whose type is one of same and whose Include matches; otherwise after the
 // last item after picks, or in a new ItemGroup.
 func SetItem(text string, item Item, same []string, after func(Item) bool) (string, error) {
+	for _, v := range append([]string{item.Include}, slices.Collect(maps.Values(item.Attrs))...) {
+		if err := CheckValue(v); err != nil {
+			return text, fmt.Errorf("the %s item %q: %w", item.Type, item.Include, err)
+		}
+	}
 	elems, err := Parse(text)
 	if err != nil {
 		return text, err
@@ -240,6 +246,9 @@ func Remove(text string, match func(e Elem, parent string) bool) (string, error)
 // SetAttr sets attr to value on every element match picks, in place: an existing value's bytes are replaced, a missing
 // attribute is added before the tag's end. It also serves .slnx solutions, which are XML.
 func SetAttr(text string, match func(e Elem, parent string) bool, attr, value string) (string, error) {
+	if err := CheckValue(value); err != nil {
+		return text, fmt.Errorf("the %s attribute: %w", attr, err)
+	}
 	elems, err := Parse(text)
 	if err != nil {
 		return text, err
@@ -353,6 +362,17 @@ var (
 	unescape      = strings.NewReplacer("%25", "%", "%24", "$", "%40", "@", "%3B", ";", "%27", "'", "%2A", "*", "%3F", "?")
 	escapeXML     = strings.NewReplacer("&", "&amp;", "<", "&lt;", ">", "&gt;")
 )
+
+// ErrBadChar is a value holding invalid UTF-8 or a character XML 1.0 cannot carry.
+var ErrBadChar = errors.New("holds a character XML cannot carry")
+
+// CheckValue refuses a value that would make the file one XML cannot parse.
+func CheckValue(v string) error {
+	if !utf8.ValidString(v) || strings.ContainsFunc(v, func(r rune) bool { return !xmlChar(r) }) {
+		return ErrBadChar
+	}
+	return nil
+}
 
 // xmlChar reports whether XML 1.0 allows r in text.
 func xmlChar(r rune) bool {
