@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -141,10 +142,10 @@ func TestFlatpakStore(t *testing.T) {
 			t.Fatalf("got %q, %v", v, err)
 		}
 		fi, err := os.Stat(filepath.Join(dir, "secrets.json"))
-		if err != nil || fi.Mode().Perm() != 0o600 {
+		if err != nil || (runtime.GOOS != "windows" && fi.Mode().Perm() != 0o600) {
 			t.Fatalf("plain file: %v %v", fi, err)
 		}
-		if di, _ := os.Stat(dir); di.Mode().Perm() != 0o700 {
+		if di, _ := os.Stat(dir); runtime.GOOS != "windows" && di.Mode().Perm() != 0o700 {
 			t.Fatalf("dir mode %v", di.Mode().Perm())
 		}
 		if _, err := os.Stat(filepath.Join(dir, "secrets")); err == nil {
@@ -255,6 +256,9 @@ func TestLivePortal(t *testing.T) {
 }
 
 func TestFlatpakStoreTightensAnExistingFolderAndRefusesALink(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("POSIX modes, and symlinks need a privilege on Windows")
+	}
 	dir := flatpakEnv(t, fixedPortal("master"))
 	if err := os.Mkdir(dir, 0o700); err != nil {
 		t.Fatal(err)
