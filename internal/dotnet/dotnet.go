@@ -189,6 +189,17 @@ func withModule[T any](path string, fn func(m *module) (T, error)) (out T, err e
 	return fn(m)
 }
 
+// maxAssembly caps the file read into memory: a mod's DLL is megabytes, and an unbounded read lets one file exhaust it.
+const maxAssembly = 256 << 20
+
+// readAssembly reads the assembly at path unless it is over maxAssembly.
+func readAssembly(path string) ([]byte, error) {
+	if fi, err := os.Stat(path); err == nil && fi.Size() > maxAssembly {
+		return nil, fmt.Errorf("%s: malformed assembly: %d bytes is over the %d-byte limit", path, fi.Size(), maxAssembly)
+	}
+	return fsx.ReadFile(path)
+}
+
 // malformed turns an index out of range, which the readers below hit on a truncated or crafted assembly instead of
 // checking every offset, into an error for path.
 func malformed[T any](path string, out *T, err *error) {

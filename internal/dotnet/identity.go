@@ -31,7 +31,7 @@ const (
 // symbols for ("<mvid>:IL_002E", Guid.ToString("N")), and which symbols it ships: SymbolsPortable, SymbolsWindows or "".
 // A file that is no assembly has neither.
 func Identity(path string) (mvid, symbols string) {
-	data, err := fsx.ReadFile(path)
+	data, err := readAssembly(path)
 	if err != nil {
 		return "", ""
 	}

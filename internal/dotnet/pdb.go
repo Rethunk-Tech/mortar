@@ -32,7 +32,7 @@ func SourceLine(path, method string, params, il int) string {
 }
 
 func sourceLine(path, method string, params, il int) (source string, err error) {
-	data, err := fsx.ReadFile(path)
+	data, err := readAssembly(path)
 	if err != nil {
 		return "", err
 	}
