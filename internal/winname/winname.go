@@ -2,7 +2,10 @@
 // fine on Linux cannot later fail or silently alias another file on Windows.
 package winname
 
-import "strings"
+import (
+	"slices"
+	"strings"
+)
 
 const invalid = `<>:"/\|?*`
 
@@ -31,7 +34,7 @@ func Clean(name string) string {
 }
 
 // device reports Windows device names, which Windows opens as devices even with an extension ("CON.txt") or
-// trailing spaces.
+// trailing spaces. COM0, LPT0 and the superscript ports (COM¹ to LPT³) are devices too.
 func device(seg string) bool {
 	base, _, _ := strings.Cut(seg, ".")
 	base = strings.ToUpper(strings.TrimRight(base, " "))
@@ -39,5 +42,9 @@ func device(seg string) bool {
 	case "CON", "PRN", "AUX", "NUL", "CONIN$", "CONOUT$":
 		return true
 	}
-	return len(base) == 4 && (strings.HasPrefix(base, "COM") || strings.HasPrefix(base, "LPT")) && base[3] >= '1' && base[3] <= '9'
+	port, ok := strings.CutPrefix(base, "COM")
+	if !ok {
+		port, ok = strings.CutPrefix(base, "LPT")
+	}
+	return ok && slices.Contains([]string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "¹", "²", "³"}, port)
 }
