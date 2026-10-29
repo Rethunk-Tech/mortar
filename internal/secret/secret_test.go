@@ -553,3 +553,44 @@ func TestSealedHostLookupOncePerRun(t *testing.T) {
 		}
 	})
 }
+
+// A sign-out while the host keyring is locked must not come back when the next run finds the host unlocked, whether or
+// not the item was looked up earlier in the run.
+func TestSealedDeleteStaysDeleted(t *testing.T) {
+	for _, getFirst := range []bool{true, false} {
+		flatpakEnv(t, fixedPortal("master"))
+		ring := map[string]string{"k": "old"}
+		setHostRing(ring)
+		locked := true
+		get, del := keyringGet, keyringDelete
+		lockErr := errors.New("failed to unlock correct collection '/x'")
+		keyringGet = func(svc, name string) (string, error) {
+			if name != hostProbeName && locked {
+				return "", lockErr
+			}
+			return get(svc, name)
+		}
+		keyringDelete = func(svc, name string) error {
+			if locked {
+				return lockErr
+			}
+			return del(svc, name)
+		}
+		if getFirst {
+			if _, err := Get("k"); !errors.Is(err, ErrNotFound) {
+				t.Fatalf("get: %v", err)
+			}
+		}
+		if err := Set("k", "new"); err != nil {
+			t.Fatal(err)
+		}
+		if err := Delete("k"); err != nil {
+			t.Fatal(err)
+		}
+		hostChecked = map[string]bool{}
+		locked = false
+		if v, err := Get("k"); err == nil {
+			t.Errorf("getFirst=%v: signed-out secret came back as %q", getFirst, v)
+		}
+	}
+}

@@ -322,7 +322,11 @@ func flatpakSet(svc, name, value string) error {
 		return err
 	}
 	if !host {
-		return update(func(m map[string]string) bool { m[flatpakName(svc, name)] = value; return true })
+		return update(func(m map[string]string) bool {
+			m[flatpakName(svc, name)] = value
+			delete(m, tombstone(svc, name))
+			return true
+		})
 	}
 	if err := keyringSet(svc, name, value); err != nil {
 		return explain(err)
@@ -338,9 +342,11 @@ func flatpakDelete(svc, name string) error {
 	if !host {
 		fn := flatpakName(svc, name)
 		if err := update(func(m map[string]string) bool {
-			_, ok := m[fn]
+			_, had := m[fn]
+			_, dead := m[tombstone(svc, name)]
 			delete(m, fn)
-			return ok
+			m[tombstone(svc, name)] = "1"
+			return had || !dead
 		}); err != nil {
 			return err
 		}
@@ -390,6 +396,9 @@ func flatpakGet(svc, name string) (string, error) {
 		var m map[string]string
 		if m, err = load(path, key); err == nil {
 			v, ok = m[flatpakName(svc, name)]
+			if _, dead := m[tombstone(svc, name)]; dead && !ok {
+				key = nil // signed out: never adopt a host copy back
+			}
 		}
 	}
 	storeMu.Unlock()
@@ -404,6 +413,10 @@ func flatpakGet(svc, name string) (string, error) {
 	}
 	return v, nil
 }
+
+// tombstone is the sealed-store key marking a signed-out secret, so a host-keyring copy that could not be purged
+// (locked host) is never adopted back. Set clears it; a store without any reads as an empty set.
+func tombstone(svc, name string) string { return "\x00deleted\x00" + flatpakName(svc, name) }
 
 // hostItems is the host-keyring namings of a secret: its own, then the one an earlier release wrote.
 func hostItems(svc, name string) [][2]string {
