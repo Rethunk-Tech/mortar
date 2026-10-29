@@ -185,3 +185,24 @@ func TestSetKeepsEachLinesOwnEnding(t *testing.T) {
 		t.Fatalf("%q %v", got, err)
 	}
 }
+
+func TestSetWritesDecimalsPlainAndAcceptsWhatDotNetReads(t *testing.T) {
+	d := parseCfg("[A]\n# Setting type: Decimal\nD = 1\n# Setting type: UInt64\nU = 1\n# Setting type: Int32\n# Acceptable values: Easy, Hard\nMode = Easy\n# Setting type: Mode\n# Acceptable values: Easy, Hard, Wild\n# Multiple values can be set at the same time by separating them with ,\nM = Easy\n")
+	for in, want := range map[string]string{"0.00001": "D = 0.00001\n", "1e-5": "D = 0.00001\n", "123456789012345678901234": "D = 123456789012345678901234\n"} {
+		if out, err := d.set("A", "D", in); err != nil || !strings.Contains(out, want) {
+			t.Errorf("%s: %q %v", in, out, err)
+		}
+	}
+	if out, err := d.set("A", "U", "18446744073709551615"); err != nil || !strings.Contains(out, "U = 18446744073709551615\n") {
+		t.Errorf("uint64: %q %v", out, err)
+	}
+	if _, err := d.set("A", "U", "-1"); err == nil {
+		t.Error("negative UInt64 accepted")
+	}
+	if out, err := d.set("A", "Mode", "hARD"); err != nil || !strings.Contains(out, "Mode = Hard\n") {
+		t.Errorf("enum case: %q %v", out, err)
+	}
+	if out, err := d.set("A", "M", "easy,WILD"); err != nil || !strings.Contains(out, "M = Easy,Wild\n") {
+		t.Errorf("flags case: %q %v", out, err)
+	}
+}

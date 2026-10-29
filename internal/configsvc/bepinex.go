@@ -76,6 +76,12 @@ var netLimits = map[string][2]float64{
 	"Single": {-math.MaxFloat32, math.MaxFloat32},
 }
 
+var (
+	unsignedTypes = []string{"Byte", "UInt16", "UInt32", "UInt64"}
+	// plainDecimal is what .NET's decimal.Parse reads: digits with an optional point, no exponent.
+	plainDecimal = regexp.MustCompile(`^[+-]?(\d+(\.\d*)?|\.\d+)$`)
+)
+
 func parseCfg(text string) cfgDoc {
 	text, bom := strings.CutPrefix(text, "\ufeff")
 	d := cfgDoc{bom: bom}
@@ -164,7 +170,7 @@ func finishEntry(e *Entry) {
 }
 
 // validate checks value against the entry's type, range and acceptable values and returns the text to write.
-func validate(e Entry, value string) (string, error) {
+func validate(e cfgEntry, value string) (string, error) {
 	if strings.ContainsAny(value, "\r\n") {
 		return "", fmt.Errorf("%s: a value is one line", e.Key)
 	}
@@ -177,27 +183,49 @@ func validate(e Entry, value string) (string, error) {
 		}
 		return "", fmt.Errorf("%s expects true or false", e.Key)
 	case TypeInt:
-		n, err := strconv.ParseInt(value, 10, 64)
-		if err != nil {
-			return "", fmt.Errorf("%s expects a whole number", e.Key)
+		var n float64
+		if slices.Contains(unsignedTypes, e.netType) {
+			u, err := strconv.ParseUint(value, 10, 64)
+			if err != nil {
+				return "", fmt.Errorf("%s expects a whole number", e.Key)
+			}
+			n = float64(u)
+		} else {
+			i, err := strconv.ParseInt(value, 10, 64)
+			if err != nil {
+				return "", fmt.Errorf("%s expects a whole number", e.Key)
+			}
+			n = float64(i)
 		}
-		return value, inRange(e, float64(n))
+		return value, inRange(e.Entry, n)
 	case TypeFloat:
 		n, text, err := finite(e.Key, value)
 		if err != nil {
 			return "", err
 		}
-		return text, inRange(e, n)
+		if e.netType == "Decimal" {
+			// decimal.Parse takes no exponent: keep plain digits as typed, else spell the number out.
+			text = strconv.FormatFloat(n, 'f', -1, 64)
+			if plainDecimal.MatchString(value) {
+				text = value
+			}
+		}
+		return text, inRange(e.Entry, n)
 	case TypeEnum:
 		parts := []string{value}
 		if e.Flags {
 			parts = strings.Split(value, ",")
 		}
-		for _, p := range parts {
-			if !slices.Contains(e.Values, strings.TrimSpace(p)) {
+		// Enum.Parse ignores case; the file gets the member's own spelling.
+		for i, p := range parts {
+			trimmed := strings.TrimSpace(p)
+			j := slices.IndexFunc(e.Values, func(v string) bool { return strings.EqualFold(v, trimmed) })
+			if j < 0 {
 				return "", fmt.Errorf("%s must be one of %s", e.Key, strings.Join(e.Values, ", "))
 			}
+			parts[i] = strings.Replace(p, trimmed, e.Values[j], 1)
 		}
+		value = strings.Join(parts, ",")
 	}
 	return value, nil
 }
@@ -241,7 +269,7 @@ func (d cfgDoc) set(section, key, value string) (string, error) {
 	if !ok {
 		return "", fmt.Errorf("no setting %s in [%s]", key, section)
 	}
-	val, err := validate(e.Entry, value)
+	val, err := validate(e, value)
 	if err != nil {
 		return "", err
 	}

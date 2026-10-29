@@ -32,7 +32,7 @@ func FuzzCfgSetKeepsOtherLines(f *testing.F) {
 				}
 			}
 			// Validation canonicalises a value ("truE" becomes "true"), which is a change; anything it keeps must not move.
-			if canon, _ := validate(e.Entry, e.Value); canon == e.Value && want[e.line] == e.Key+" = "+e.Value && out != norm {
+			if canon, _ := validate(e, e.Value); canon == e.Value && want[e.line] == e.Key+" = "+e.Value && out != norm {
 				t.Fatalf("an unchanged value rewrote the file:\n%q\n%q", norm, out)
 			}
 		}
