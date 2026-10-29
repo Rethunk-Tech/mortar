@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
 // PortableMarker is the file beside the executable that keeps the data folder in "data" next to it.
@@ -51,7 +52,7 @@ func portableDir(exe string) (string, error) {
 		exe = resolved
 	}
 	dir := filepath.Dir(exe)
-	if os.Getenv("FLATPAK_ID") != "" || dir == "/app" || strings.HasPrefix(dir, "/app/") {
+	if sandbox.InFlatpak() || dir == "/app" || strings.HasPrefix(dir, "/app/") {
 		return "", nil
 	}
 	if !hasMarker(dir) {

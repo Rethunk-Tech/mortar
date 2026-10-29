@@ -16,6 +16,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
@@ -36,14 +37,6 @@ const (
 var packaged string
 
 func skipUserDesktop() bool { return packaged != "" }
-
-func inFlatpak() bool {
-	if packaged == "flatpak" {
-		return true
-	}
-	_, err := os.Stat("/.flatpak-info")
-	return err == nil
-}
 
 // mimeDefaults runs xdg-mime. Inside a Flatpak the runtime has none, and the defaults that count are the host's.
 func (l *System) mimeDefaults(args ...string) (string, error) { return l.onHost(xdgMime, args...) }
@@ -411,7 +404,7 @@ func (l *System) handBack(schemes []string, previous map[string]string) error {
 
 // ForwardOther runs the previous handler's desktop entry on link.
 func (l *System) ForwardOther(link, previous string) error {
-	if inFlatpak() {
+	if sandbox.InFlatpak() {
 		if previous == "" {
 			return errors.New("no previous nxm handler")
 		}

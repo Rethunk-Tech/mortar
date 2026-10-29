@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -19,6 +20,7 @@ func flatpakLinux(t *testing.T, current string) (*System, string) {
 	t.Helper()
 	packaged = "flatpak"
 	t.Cleanup(func() { packaged = "" })
+	t.Setenv("FLATPAK_ID", appversion.AppID)
 	l, r := newLinux(t, current)
 	bin := t.TempDir()
 	launched := filepath.Join(bin, "launched")

@@ -176,7 +176,7 @@ func nativeTokens(inst Install) (map[string]string, error) {
 			sandbox := filepath.Join(home, ".var", "app", "com.valvesoftware.Steam")
 			tokens["xdgConfig"] = filepath.Join(sandbox, ".config")
 			tokens["xdgData"] = filepath.Join(sandbox, ".local", "share")
-		case os.Getenv("FLATPAK_ID") != "":
+		case sandbox.InFlatpak():
 			tokens["xdgConfig"] = sandbox.HostConfigHome(home)
 			tokens["xdgData"] = sandbox.HostDataHome(home)
 		default:
