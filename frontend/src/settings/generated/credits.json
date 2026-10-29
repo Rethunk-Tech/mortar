@@ -135,6 +135,11 @@
     "url": "https://github.com/pmndrs/zustand"
   },
   {
+    "name": "github.com/Rethunk-Tech/go-archive",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/go-archive"
+  },
+  {
     "name": "github.com/andybalholm/brotli",
     "licence": "MIT",
     "url": "https://github.com/andybalholm/brotli"
@@ -143,11 +148,6 @@
     "name": "github.com/andygrunwald/vdf",
     "licence": "MIT",
     "url": "https://github.com/andygrunwald/vdf"
-  },
-  {
-    "name": "github.com/bodgit/sevenzip",
-    "licence": "BSD-3-Clause",
-    "url": "https://github.com/bodgit/sevenzip"
   },
   {
     "name": "github.com/coder/websocket",
@@ -180,24 +180,9 @@
     "url": "https://github.com/hashicorp/mdns"
   },
   {
-    "name": "github.com/klauspost/compress",
-    "licence": "Apache-2.0",
-    "url": "https://github.com/klauspost/compress"
-  },
-  {
-    "name": "github.com/nwaples/rardecode/v2",
-    "licence": "BSD-2-Clause",
-    "url": "https://github.com/nwaples/rardecode"
-  },
-  {
     "name": "github.com/syndtr/goleveldb",
     "licence": "BSD-2-Clause",
     "url": "https://github.com/syndtr/goleveldb"
-  },
-  {
-    "name": "github.com/ulikunitz/xz",
-    "licence": "BSD-2-Clause",
-    "url": "https://github.com/ulikunitz/xz"
   },
   {
     "name": "github.com/wailsapp/wails/v3",
@@ -228,11 +213,6 @@
     "name": "golang.org/x/sys",
     "licence": "BSD-3-Clause",
     "url": "https://pkg.go.dev/golang.org/x/sys"
-  },
-  {
-    "name": "golang.org/x/text",
-    "licence": "BSD-3-Clause",
-    "url": "https://pkg.go.dev/golang.org/x/text"
   },
   {
     "name": "gopkg.in/yaml.v3",
