@@ -118,10 +118,13 @@ func TestSlowDirectWriterWaitsForStableSize(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer func() { _ = f.Close() }()
-	_, _ = f.WriteString("a")
-	time.Sleep(150 * time.Millisecond) // quiet period has passed; the first size check is under way
+	// Keep growing the file for twice the stable window, writing right before the check: a slow runner delays the
+	// sleeps, but a file that changed since the last look is never announced.
+	for range 30 {
+		_, _ = f.WriteString("a")
+		time.Sleep(20 * time.Millisecond)
+	}
 	_, _ = f.WriteString("b")
-	time.Sleep(100 * time.Millisecond)
 	g.mu.Lock()
 	early := len(g.evs)
 	g.mu.Unlock()
