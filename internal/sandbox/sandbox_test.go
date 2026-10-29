@@ -3,6 +3,7 @@ package sandbox
 import (
 	"context"
 	"errors"
+	"os/exec"
 	"path/filepath"
 	"reflect"
 	"testing"
@@ -97,5 +98,20 @@ func TestHostLookPathRejectsBuiltin(t *testing.T) {
 	Output = func(...string) ([]byte, error) { return []byte("/usr/bin/ls\n"), nil }
 	if p, err := HostLookPath("ls"); err != nil || p != "/usr/bin/ls" {
 		t.Fatalf("HostLookPath(ls) = %q, %v", p, err)
+	}
+}
+
+func TestHostHomesResolveEmptyHome(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	old := Getenv
+	t.Cleanup(func() { Getenv = old })
+	Getenv = func(string) string { return "" }
+	t.Chdir(t.TempDir())
+	if got, want := HostConfigHome(""), filepath.Join(home, ".config"); got != want {
+		t.Errorf("HostConfigHome(\"\") = %q, want %q", got, want)
+	}
+	if got, want := HostDataHome(""), filepath.Join(home, ".local", "share"); got != want {
+		t.Errorf("HostDataHome(\"\") = %q, want %q", got, want)
 	}
 }
