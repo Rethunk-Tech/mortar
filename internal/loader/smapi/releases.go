@@ -14,6 +14,7 @@ import (
 	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/github"
+	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
 const (
@@ -53,7 +54,8 @@ func (l Loader) installerAsset(version string) string {
 	return strings.ReplaceAll(pattern, "{version}", version)
 }
 
-func (l Loader) cache() *diskcache.Cache { return &diskcache.Cache{Dir: l.CacheDir} }
+// cache is CacheDir, else <datadir>/cache, as every meta lookup is: the registered Loader sets no folder.
+func (l Loader) cache() *diskcache.Cache { return (&meta.Client{CacheDir: l.CacheDir}).Cache() }
 
 // Latest returns the newest stable SMAPI version that ships an installer. A response younger than an hour
 // is reused, and a stale one stands in when the lookup fails.

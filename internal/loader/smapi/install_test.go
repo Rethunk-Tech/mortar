@@ -19,6 +19,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
@@ -55,6 +56,25 @@ func TestLatestFromRecordedResponseIsCached(t *testing.T) {
 	}
 	if hits.Load() != 1 {
 		t.Fatalf("api hit %d times, want 1", hits.Load())
+	}
+}
+
+func TestTheRegisteredLoaderCachesUnderTheDataFolder(t *testing.T) {
+	datadirtest.Use(t, t.TempDir())
+	var hits atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		hits.Add(1)
+		_, _ = w.Write(recorded(t))
+	}))
+	defer srv.Close()
+	g := Loader{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip"}
+	for range 2 {
+		if _, err := g.Latest(context.Background(), components.GameInfo{}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if hits.Load() != 1 {
+		t.Fatalf("api hit %d times with no CacheDir, want 1", hits.Load())
 	}
 }
 
