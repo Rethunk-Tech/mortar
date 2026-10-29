@@ -2,6 +2,7 @@ package iniedit
 
 import (
 	"errors"
+	"strings"
 	"testing"
 )
 
@@ -27,11 +28,18 @@ func TestSet(t *testing.T) {
 	}
 }
 
-func TestSetRefusesUTF16Untouched(t *testing.T) {
+func TestSetRefusesNonTextUntouched(t *testing.T) {
 	for _, in := range []string{"\xff\xfem\x00o\x00", "\xfe\xff\x00m\x00o", "a\x00b\x00"} {
 		got, err := Set(in, "", "k", "v")
-		if !errors.Is(err, ErrUTF16) || got != in {
+		if !errors.Is(err, ErrNotText) || got != in {
 			t.Errorf("%q: got %q, %v", in, got, err)
 		}
+	}
+}
+
+func TestRefusalDoesNotCallANULInUTF8TextUTF16(t *testing.T) {
+	err := Check("[o]\nk = a\x00b\n")
+	if !errors.Is(err, ErrNotText) || !strings.Contains(err.Error(), "NUL") {
+		t.Fatalf("got %v", err)
 	}
 }

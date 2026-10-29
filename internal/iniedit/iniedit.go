@@ -8,13 +8,14 @@ import (
 
 const utf8BOM = "\xef\xbb\xbf"
 
-// ErrUTF16 refuses a UTF-16 file: its bytes are not lines of text, and an edit would mangle it.
-var ErrUTF16 = errors.New("the file is UTF-16, which Mortar does not edit")
+// ErrNotText refuses a UTF-16 file or any file holding a NUL byte (UTF-16 without a byte order mark looks the same):
+// its bytes are not lines of text, and an edit would mangle it.
+var ErrNotText = errors.New("the file is UTF-16 or holds a NUL byte, which Mortar does not edit")
 
-// Check reports why content cannot be edited: ErrUTF16 for a UTF-16 file, nil otherwise.
+// Check reports why content cannot be edited: ErrNotText for such a file, nil otherwise.
 func Check(content string) error {
 	if strings.HasPrefix(content, "\xff\xfe") || strings.HasPrefix(content, "\xfe\xff") || strings.ContainsRune(content, 0) {
-		return ErrUTF16
+		return ErrNotText
 	}
 	return nil
 }
