@@ -42,21 +42,6 @@ func TestProcesses(t *testing.T) {
 	if err != nil || len(procs) != 4 {
 		t.Fatalf("procs = %+v, %v", procs, err)
 	}
-	want := map[string]int{"/p/a/mods": 101, "/p/b/mods": 102, "/p/c/mods": 104}
-	for dir, pid := range want {
-		var found []int
-		for _, p := range procs {
-			if p.UsesModsPath(dir) {
-				found = append(found, p.PID)
-			}
-		}
-		if !slices.Equal(found, []int{pid}) {
-			t.Fatalf("%s matched %v, want [%d]", dir, found, pid)
-		}
-	}
-	if procs[0].UsesModsPath("/p/other/mods") {
-		t.Fatal("matched an unrelated mods path")
-	}
 	add("107", "/bin/sh\x00-c\x00steam-runtime-launch\x00")
 	add("108", `Z:\\g\\SH.EXE`+"\x00")
 	if sh, err := Processes(proc, "SH"); err != nil || len(sh) != 1 || sh[0].PID != 108 {

@@ -139,3 +139,21 @@ func TestLoadReadsEachModSMAPILoads(t *testing.T) {
 		}
 	}
 }
+
+func TestUsesModsPath(t *testing.T) {
+	for _, tc := range []struct {
+		args []string
+		dir  string
+		want bool
+	}{
+		{[]string{"/g/StardewModdingAPI", "--mods-path=/p/a/mods"}, "/p/a/mods", true},
+		{[]string{"dotnet", "/g/StardewModdingAPI.dll", "--mods-path", "/p/c/mods"}, "/p/c/mods", true},
+		{[]string{"--mods-path", "/p/c/mods"}, "/p/other/mods", false},
+		{[]string{"--mods-path"}, "/p/c/mods", false},
+		{nil, "/p/c/mods", false},
+	} {
+		if got := usesModsPath(tc.args, tc.dir); got != tc.want {
+			t.Errorf("usesModsPath(%q, %q) = %v, want %v", tc.args, tc.dir, got, tc.want)
+		}
+	}
+}

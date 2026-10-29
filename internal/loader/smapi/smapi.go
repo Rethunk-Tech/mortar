@@ -14,7 +14,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
@@ -140,7 +139,22 @@ func vanilla(goos string, plan *launchplan.Plan, dir string) error {
 
 // Owns is true for a process started with this profile's mods folder.
 func (Loader) Owns(p loader.Process, prof loader.ProfileView) bool {
-	return launch.Process{PID: p.PID, Args: p.Args}.UsesModsPath(modsDir(prof))
+	return usesModsPath(p.Args, modsDir(prof))
+}
+
+// usesModsPath reports whether args carry --mods-path pointing at modsDir. It is false when the platform gave
+// no command line: see launch.Process.Args.
+func usesModsPath(args []string, modsDir string) bool {
+	want := filepath.Clean(modsDir)
+	for i, a := range args {
+		if v, ok := strings.CutPrefix(a, "--mods-path="); ok && fsx.SamePath(v, want) {
+			return true
+		}
+		if a == "--mods-path" && i+1 < len(args) && fsx.SamePath(args[i+1], want) {
+			return true
+		}
+	}
+	return false
 }
 
 // Path is SMAPI-latest.txt, which SMAPI rewrites on each start and which outlives the game.

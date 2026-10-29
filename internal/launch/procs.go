@@ -85,21 +85,6 @@ func within(path, dir string) bool {
 	return datadir.UnderRoot(dir, path)
 }
 
-// UsesModsPath reports whether p was started with --mods-path pointing at modsDir. It is false when the
-// platform gave no command line: see Process.Args.
-func (p Process) UsesModsPath(modsDir string) bool {
-	want := filepath.Clean(modsDir)
-	for i, a := range p.Args {
-		if v, ok := strings.CutPrefix(a, "--mods-path="); ok && fsx.SamePath(v, want) {
-			return true
-		}
-		if a == "--mods-path" && i+1 < len(p.Args) && fsx.SamePath(p.Args[i+1], want) {
-			return true
-		}
-	}
-	return false
-}
-
 // exitedWithin reports whether gone turns true within grace.
 func exitedWithin(gone func() bool, grace time.Duration) bool {
 	deadline := time.Now().Add(grace)
