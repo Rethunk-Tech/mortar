@@ -16,6 +16,7 @@ const DRIVER = `http://127.0.0.1:${PORT}`
 const SETTLE_MS = 3000
 const VIEW = { width: 1400, height: 840 }
 const DRIVER_BIN = '/usr/bin/WebKitWebDriver'
+const MINI_BROWSER = '/usr/libexec/webkit2gtk-4.1/MiniBrowser'
 
 export interface Walk {
   sandbox: string
@@ -217,7 +218,7 @@ async function visit(id: string, screen: Screen, w: Walk): Promise<string[]> {
 // Walks every screen and returns its layout breaks, or null when WebKitGTK's driver or the sandbox's display is missing.
 export async function webkitWalk(w: Walk): Promise<string[] | null> {
   const env = sandboxEnv(w.sandbox)
-  if (!(env && existsSync(DRIVER_BIN))) {
+  if (!(env && existsSync(DRIVER_BIN) && existsSync(MINI_BROWSER))) {
     return null
   }
   if (w.shots) {
@@ -235,7 +236,7 @@ export async function webkitWalk(w: Walk): Promise<string[] | null> {
       capabilities: {
         alwaysMatch: {
           'webkitgtk:browserOptions': {
-            binary: '/usr/libexec/webkit2gtk-4.1/MiniBrowser',
+            binary: MINI_BROWSER,
             args: ['--automation'],
           },
         },
