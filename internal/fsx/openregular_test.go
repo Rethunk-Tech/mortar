@@ -35,3 +35,16 @@ func TestIsDirFollowsASymlinkOutOfItsFolder(t *testing.T) {
 		t.Fatal("symlinked folder not seen as a directory")
 	}
 }
+
+// A path with a trailing separator names the same file as without one, as it does for os.
+func TestRootedCallsAcceptATrailingSeparator(t *testing.T) {
+	t.Parallel()
+	dir := filepath.Join(t.TempDir(), "a")
+	if err := os.Mkdir(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	info, err := Stat(dir + string(filepath.Separator))
+	if err != nil || !info.IsDir() {
+		t.Fatalf("Stat(dir+sep) = %v, %v", info, err)
+	}
+}

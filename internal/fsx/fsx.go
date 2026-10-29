@@ -14,8 +14,10 @@ import (
 	"path/filepath"
 )
 
-// in runs fn with a root on path's parent directory and path's final element.
+// in runs fn with a root on path's parent directory and path's final element. A trailing separator is dropped
+// first: Dir keeps it as the last element while Base strips it, which would name that element twice.
 func in[T any](path string, fn func(root *os.Root, name string) (T, error)) (T, error) {
+	path = filepath.Clean(path)
 	root, err := os.OpenRoot(filepath.Dir(path))
 	if err != nil {
 		var zero T
