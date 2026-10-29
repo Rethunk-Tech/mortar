@@ -30,46 +30,25 @@ const CONTENT_MAX = 880
 const NAV_WIDTH = 224
 const NAV_WIDTH_NARROW = 196
 const NARROW_WINDOW = 999
-// At most this many matching rows also offers the search on the other settings screen.
-const FEW_HITS = 3
 
 type Elsewhere = { label: string; search: (query: string) => void } | undefined
 type Related = { match: (query: string) => string[]; row: (label: string) => ReactNode } | undefined
 
-// What a search offers beside its own matches: the settings that live in another place, and the same search there.
-function SearchLeads({
-  query,
-  hits,
-  relatedLabels,
-  related,
-  elsewhere,
-}: {
-  query: string
-  hits: number
-  relatedLabels: string[]
-  related: Related
-  elsewhere: Elsewhere
-}) {
+// Beside the search results heading: the same search in the other settings place.
+function ElsewhereButton({ elsewhere }: { elsewhere: Elsewhere }) {
+  const query = useSettingsSearch()
+  if (!(query && elsewhere)) {
+    return null
+  }
   return (
-    <>
-      {relatedLabels.map((label) => (
-        <Box key={label}>{related?.row(label)}</Box>
-      ))}
-      {query && elsewhere && hits <= FEW_HITS ? (
-        <Button
-          startIcon={<Search size={16} />}
-          onClick={() => elsewhere.search(query)}
-          sx={{ alignSelf: 'flex-start' }}
-        >
-          {elsewhere.label}
-        </Button>
-      ) : null}
-    </>
+    <Button startIcon={<Search size={16} />} onClick={() => elsewhere.search(query)}>
+      {elsewhere.label}
+    </Button>
   )
 }
 
 // Follows the search text: counts the matching rows after they render, and says when none match or what else does.
-function SearchStatus({ related, elsewhere }: { related: Related; elsewhere: Elsewhere }) {
+function SearchStatus({ related }: { related: Related }) {
   const { t } = useLingui()
   const query = useSettingsSearch()
   const [hits, setHits] = useState(0)
@@ -77,10 +56,10 @@ function SearchStatus({ related, elsewhere }: { related: Related; elsewhere: Els
   // state, which would draw every page twice on opening.
   const marker = useRef<HTMLSpanElement>(null)
   useLayoutEffect(() => {
-    // Only whether there are none and whether there are few matters, so a larger count stays one value.
+    // Only whether there are none matters, so any count above zero stays one value.
     const results = marker.current?.parentElement
     const count = () =>
-      setHits(query ? Math.min(results?.querySelectorAll(SEARCH_HIT).length ?? 0, FEW_HITS + 1) : 0)
+      setHits(query ? Math.min(results?.querySelectorAll(SEARCH_HIT).length ?? 0, 1) : 0)
     count()
     // Rows that render after an async read arrive later than the query.
     if (!(query && results)) {
@@ -99,13 +78,9 @@ function SearchStatus({ related, elsewhere }: { related: Related; elsewhere: Els
           {t`Try another word, or clear the search.`}
         </EmptyState>
       ) : null}
-      <SearchLeads
-        query={query}
-        hits={hits}
-        relatedLabels={relatedLabels}
-        related={related}
-        elsewhere={elsewhere}
-      />
+      {relatedLabels.map((label) => (
+        <Box key={label}>{related?.row(label)}</Box>
+      ))}
     </>
   )
 }
@@ -242,7 +217,7 @@ export function SettingsShell<Id extends string>({
           >
             {searching ? t`Search results` : pages.find((p) => p.id === current)?.label}
           </Typography>
-          {searching ? null : actions[current]}
+          {searching ? <ElsewhereButton elsewhere={elsewhere} /> : actions[current]}
         </Box>
         <Box
           sx={{
@@ -256,7 +231,7 @@ export function SettingsShell<Id extends string>({
             gap: space.pad,
           }}
         >
-          <SearchStatus related={related} elsewhere={elsewhere} />
+          <SearchStatus related={related} />
           {searching
             ? pages.map((p) => (
                 <Box
