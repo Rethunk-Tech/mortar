@@ -2,6 +2,7 @@ package contentpatcher
 
 import (
 	"bytes"
+	"compress/gzip"
 	"image"
 	"image/color"
 	"os"
@@ -632,5 +633,45 @@ func TestOverlayAlphaMaskWithBadChecksumIsNotServed(t *testing.T) {
 	pngAlphaCache = sync.Map{}
 	if _, ok := loadPNGAlpha(im.Folder, "patch.png", key); ok {
 		t.Fatal("a mask whose checksum fails was served")
+	}
+}
+
+// A cache header could claim any size; it is held to the pixel bound the mask was decoded under, so a crafted one
+// is refused before its claim is allocated.
+func TestAlphaDiskRefusesAnOversizedHeaderBeforeAllocating(t *testing.T) {
+	t.Parallel()
+	var buf bytes.Buffer
+	zw := gzip.NewWriter(&buf)
+	if _, err := zw.Write([]byte("65536 65536\n")); err != nil {
+		t.Fatal(err)
+	}
+	if err := zw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(t.TempDir(), "mask.gz")
+	if err := os.WriteFile(path, buf.Bytes(), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	var before, after runtime.MemStats
+	runtime.ReadMemStats(&before)
+	if _, ok := readAlphaDisk(path); ok {
+		t.Fatal("a 65536x65536 header read as a mask")
+	}
+	runtime.ReadMemStats(&after)
+	if grew := after.TotalAlloc - before.TotalAlloc; grew > 64<<20 {
+		t.Fatalf("refusing the header allocated %d MiB", grew>>20)
+	}
+}
+
+// A mask wider than 65536 px is within the pixel bound, so the cache that wrote it reads it back.
+func TestAlphaDiskReadsBackAWideMask(t *testing.T) {
+	t.Parallel()
+	pix := pngAlpha{w: 70000, h: 2, a: make([]byte, (70000*2+7)/8)}
+	pix.a[0], pix.a[len(pix.a)-1] = 0b1010_0101, 0b1100_0011
+	path := filepath.Join(t.TempDir(), "wide.gz")
+	writeAlphaDisk(path, pix)
+	got, ok := readAlphaDisk(path)
+	if !ok || got.w != pix.w || got.h != pix.h || !bytes.Equal(got.a, pix.a) {
+		t.Fatalf("read back ok=%v %dx%d", ok, got.w, got.h)
 	}
 }

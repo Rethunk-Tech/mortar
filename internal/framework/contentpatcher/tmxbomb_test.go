@@ -33,3 +33,21 @@ func TestDecodeTMXValuesBoundsInflation(t *testing.T) {
 		t.Fatalf("honest layer refused: %v %v", v, ok)
 	}
 }
+
+// An infinite map may hold any number of chunks, each within the per-chunk bound, so the bound covers the whole map
+// before any chunk inflates.
+func TestTMXTileCapCoversTheWholeMap(t *testing.T) {
+	t.Parallel()
+	chunk := tmxChunk{Width: 1000, Height: 1000}
+	within := []tmxLayer{{Data: tmxData{Chunks: []tmxChunk{chunk, chunk, chunk, chunk}}}}
+	if !tmxWithinTileCap(within) {
+		t.Fatal("four 1000x1000 chunks refused")
+	}
+	over := []tmxLayer{within[0], {Data: tmxData{Chunks: []tmxChunk{chunk}}}}
+	if tmxWithinTileCap(over) {
+		t.Fatal("five 1000x1000 chunks across two layers accepted")
+	}
+	if tmxWithinTileCap([]tmxLayer{{Width: -1, Height: 10}}) {
+		t.Fatal("a negative width accepted")
+	}
+}

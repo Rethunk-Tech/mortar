@@ -1224,6 +1224,10 @@ func decodeMap(root, rel string) (decodedMap, bool) {
 		mapCache.Store(key, decodedMapResult{ok: false})
 		return decodedMap{}, false
 	}
+	if !tmxWithinTileCap(doc.Layers) {
+		mapCache.Store(key, decodedMapResult{ok: false})
+		return decodedMap{}, false
+	}
 	out := decodedMap{width: doc.Width, height: doc.Height}
 	for _, layer := range doc.Layers {
 		decoded, ok := decodeTMXLayer(layer)
@@ -1273,8 +1277,36 @@ func decodeTMXLayer(layer tmxLayer) (decodedMapLayer, bool) {
 	return out, true
 }
 
-// maxTMXTiles bounds one layer or chunk's declared tile count, which also bounds what its compressed data may inflate to.
+// maxTMXTiles bounds the tiles a map declares, per layer or chunk and across the whole map, which also bounds what
+// its compressed data may inflate to. An infinite map can hold any number of chunks, each within the per-chunk bound.
 const maxTMXTiles = 4_000_000
+
+// tmxWithinTileCap reports whether every layer and chunk together declare no more than maxTMXTiles, checked before
+// any of them inflates.
+func tmxWithinTileCap(layers []tmxLayer) bool {
+	var total int64
+	add := func(width, height int) bool {
+		if width < 0 || height < 0 {
+			return false
+		}
+		total += int64(width) * int64(height)
+		return total <= maxTMXTiles
+	}
+	for _, layer := range layers {
+		if len(layer.Data.Chunks) == 0 {
+			if !add(layer.Width, layer.Height) {
+				return false
+			}
+			continue
+		}
+		for _, chunk := range layer.Data.Chunks {
+			if !add(chunk.Width, chunk.Height) {
+				return false
+			}
+		}
+	}
+	return true
+}
 
 func decodeTMXValues(text, encoding, compression string, width, height int) ([]int, bool) {
 	text = strings.TrimSpace(text)

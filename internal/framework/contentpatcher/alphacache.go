@@ -71,7 +71,9 @@ func readAlphaDisk(path string) (pngAlpha, bool) {
 	if _, err := fmt.Fscanf(br, "%d %d\n", &w, &h); err != nil {
 		return pngAlpha{}, false
 	}
-	if w <= 0 || h <= 0 || w > 1<<16 || h > 1<<16 {
+	// The header is read from disk and could claim any size; the bound is the one the mask was decoded under, so
+	// every mask that was written reads back.
+	if w <= 0 || h <= 0 || !pngPixelsWithinCap(w, h) {
 		return pngAlpha{}, false
 	}
 	mask := acquireAlpha((w*h + 7) / 8)
