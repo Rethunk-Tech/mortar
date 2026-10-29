@@ -15,6 +15,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
 	"github.com/Rethunk-Tech/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func zipFile(t *testing.T, dir, name string, files map[string]string) string {
@@ -37,7 +38,7 @@ func zipFile(t *testing.T, dir, name string, files map[string]string) string {
 
 func newService(t *testing.T) (*Service, string, *[]queue.Request) {
 	t.Helper()
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	testfs.DataHome(t)
 	items, err := store.Open()
 	if err != nil {
 		t.Fatal(err)
