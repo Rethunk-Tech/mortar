@@ -7,6 +7,7 @@ import (
 	"math"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -104,7 +105,7 @@ func TestRequiredPluginIsResolvedWithoutChoice(t *testing.T) {
 
 func TestUnchosenPluginsInstallTheirAlwaysAndUsableFiles(t *testing.T) {
 	cfg, err := Parse([]byte(`<config><installSteps><installStep name="S"><optionalFileGroups>
-		<group name="G" type="SelectAny"><plugins>
+		<group name="G" type="SelectAny"><plugins order="Explicit">
 			<plugin name="Usable"><files><file source="always.txt" alwaysInstall="true"/><file source="usable.txt" installIfUsable="1"/>
 				<file source="chosen.txt"/></files><typeDescriptor><type name="Optional"/></typeDescriptor></plugin>
 			<plugin name="Unusable"><files><file source="always2.txt" alwaysInstall="true"/><file source="usable2.txt" installIfUsable="true"/></files>
@@ -327,5 +328,118 @@ func TestLoadRefusesOversizedConfig(t *testing.T) {
 	}
 	if _, err := Load(path); !errors.Is(err, fsx.ErrTooLarge) {
 		t.Fatalf("err = %v", err)
+	}
+}
+
+func orderConfig(t *testing.T, steps, groups, plugins string) Config {
+	t.Helper()
+	attr := func(o string) string {
+		if o == "" {
+			return ""
+		}
+		return ` order="` + o + `"`
+	}
+	plug := func(n string) string {
+		return `<plugin name="` + n + `"><files><file source="` + n + `" priority="1"/></files>` +
+			`<typeDescriptor><type name="Optional"/></typeDescriptor></plugin>`
+	}
+	grp := func(n string) string {
+		return `<group name="` + n + `" type="SelectAny"><plugins` + attr(plugins) + `>` + plug("b") + plug("C") + plug("a") + `</plugins></group>`
+	}
+	step := func(n string) string {
+		return `<installStep name="` + n + `"><optionalFileGroups` + attr(groups) + `>` + grp("y") + grp("z") + grp("x") +
+			`</optionalFileGroups></installStep>`
+	}
+	cfg, err := Parse([]byte(`<config><installSteps` + attr(steps) + `>` + step("2") + step("3") + step("1") + `</installSteps></config>`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	return cfg
+}
+
+func TestOrderAttribute(t *testing.T) {
+	for _, c := range []struct {
+		order, wantOrder string
+	}{
+		{"", OrderAscending},
+		{"Ascending", OrderAscending},
+		{"Descending", OrderDescending},
+		{"Explicit", OrderExplicit},
+	} {
+		// Capitals sort before lowercase, as in MO2.
+		want := map[string]string{"": "Cab", "Ascending": "Cab", "Descending": "baC", "Explicit": "bCa"}[c.order]
+		t.Run(c.order, func(t *testing.T) {
+			steps := orderConfig(t, c.order, "", "")
+			if got := stepNames(steps); got != orderOf(c.order, "231", "123") {
+				t.Fatalf("steps = %s", got)
+			}
+			if steps.StepOrder != c.wantOrder {
+				t.Fatalf("StepOrder = %s", steps.StepOrder)
+			}
+			groups := orderConfig(t, "Explicit", c.order, "")
+			if got := groupNames(groups.Steps[0]); got != orderOf(c.order, "yzx", "xyz") {
+				t.Fatalf("groups = %s", got)
+			}
+			if groups.Steps[0].GroupOrder != c.wantOrder {
+				t.Fatalf("GroupOrder = %s", groups.Steps[0].GroupOrder)
+			}
+			plugins := orderConfig(t, "Explicit", "Explicit", c.order)
+			g := plugins.Steps[0].Groups[0]
+			var got string
+			for _, p := range g.Plugins {
+				got += p.Name
+			}
+			if got != want {
+				t.Fatalf("plugins = %s, want %s", got, want)
+			}
+			if g.PluginOrder != c.wantOrder {
+				t.Fatalf("PluginOrder = %s", g.PluginOrder)
+			}
+		})
+	}
+}
+
+// orderOf is the document-order result for Explicit, the ascending one for Ascending or unset, else descending.
+func orderOf(order, doc, asc string) string {
+	switch order {
+	case "Explicit":
+		return doc
+	case "Descending":
+		b := []byte(asc)
+		slices.Reverse(b)
+		return string(b)
+	default:
+		return asc
+	}
+}
+
+func stepNames(c Config) string {
+	var s string
+	for _, st := range c.Steps {
+		s += st.Name
+	}
+	return s
+}
+
+func groupNames(st Step) string {
+	var s string
+	for _, g := range st.Groups {
+		s += g.Name
+	}
+	return s
+}
+
+func TestOrderDecidesResolveTie(t *testing.T) {
+	cfg, err := Parse([]byte(`<config><installSteps><installStep name="S"><optionalFileGroups>` +
+		`<group name="G" type="SelectAll"><plugins>` +
+		`<plugin name="b"><files><file source="b" destination="x" priority="1"/></files></plugin>` +
+		`<plugin name="a"><files><file source="a" destination="x" priority="1"/></files></plugin>` +
+		`</plugins></group></optionalFileGroups></installStep></installSteps></config>`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	ops := Resolve(cfg, Choices{}, EvalContext{})
+	if len(ops) != 2 || ops[0].Source != "a" || ops[1].Source != "b" {
+		t.Fatalf("ops = %+v", ops)
 	}
 }

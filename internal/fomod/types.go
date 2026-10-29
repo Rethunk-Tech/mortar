@@ -23,6 +23,14 @@ const (
 	FileMissing  = "Missing"
 )
 
+// Order values of the installSteps, optionalFileGroups and plugins order attribute. Parse has already applied it to
+// the lists it returns: Explicit keeps document order, the others sort by name.
+const (
+	OrderAscending  = "Ascending"
+	OrderDescending = "Descending"
+	OrderExplicit   = "Explicit"
+)
+
 // Choices is install step name → group name → selected plugin names.
 type Choices map[string]map[string][]string
 
@@ -53,6 +61,7 @@ type Config struct {
 	ModuleName   string
 	Required     []Op
 	Steps        []Step
+	StepOrder    string
 	Conditionals []Conditional
 }
 
@@ -60,12 +69,16 @@ type Step struct {
 	Name    string
 	Visible Composite
 	Groups  []Group
+	// GroupOrder is the order attribute of this step's optionalFileGroups.
+	GroupOrder string
 }
 
 type Group struct {
 	Name    string
 	Type    string
 	Plugins []Plugin
+	// PluginOrder is the order attribute of this group's plugins.
+	PluginOrder string
 }
 
 type Plugin struct {

@@ -5,8 +5,10 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
+	"slices"
 	"strconv"
 	"strings"
+	"unicode/utf16"
 	"unicode/utf8"
 
 	"golang.org/x/text/encoding/charmap"
@@ -25,13 +27,13 @@ func Parse(data []byte) (Config, error) {
 	if err := dec.Decode(&raw); err != nil {
 		return Config{}, fmt.Errorf("fomod: %w", err)
 	}
-	cfg := Config{ModuleName: strings.TrimSpace(raw.ModuleName)}
+	cfg := Config{ModuleName: strings.TrimSpace(raw.ModuleName), StepOrder: normOrder(raw.Steps.Order)}
 	cfg.Required = appendOps(nil, raw.Required.Files, false)
 	cfg.Required = appendOps(cfg.Required, raw.Required.Folders, true)
 	for _, s := range raw.Steps.Steps {
-		st := Step{Name: s.Name, Visible: s.Visible.Composite}
+		st := Step{Name: s.Name, Visible: s.Visible.Composite, GroupOrder: normOrder(s.Groups.Order)}
 		for _, g := range s.Groups.Groups {
-			gr := Group{Name: g.Name, Type: g.Type}
+			gr := Group{Name: g.Name, Type: g.Type, PluginOrder: normOrder(g.Plugins.Order)}
 			for _, p := range g.Plugins.Plugins {
 				pl := Plugin{
 					Name:        p.Name,
@@ -48,10 +50,13 @@ func Parse(data []byte) (Config, error) {
 				}
 				gr.Plugins = append(gr.Plugins, pl)
 			}
+			sortByOrder(gr.Plugins, gr.PluginOrder, func(p Plugin) string { return p.Name })
 			st.Groups = append(st.Groups, gr)
 		}
+		sortByOrder(st.Groups, st.GroupOrder, func(g Group) string { return g.Name })
 		cfg.Steps = append(cfg.Steps, st)
 	}
+	sortByOrder(cfg.Steps, cfg.StepOrder, func(s Step) string { return s.Name })
 	for _, p := range raw.Conditionals.Patterns.Patterns {
 		c := Conditional{When: p.Dependencies.Composite}
 		c.Files = appendOps(c.Files, p.Files.Files, false)
@@ -59,6 +64,34 @@ func Parse(data []byte) (Config, error) {
 		cfg.Conditionals = append(cfg.Conditionals, c)
 	}
 	return cfg, nil
+}
+
+// normOrder maps an order attribute to its constant; an absent or unknown value is the schema default, Ascending.
+func normOrder(s string) string {
+	switch {
+	case strings.EqualFold(s, OrderDescending):
+		return OrderDescending
+	case strings.EqualFold(s, OrderExplicit):
+		return OrderExplicit
+	default:
+		return OrderAscending
+	}
+}
+
+// sortByOrder sorts by name unless the order is Explicit. Names compare by UTF-16 code unit, case-sensitively, as
+// Qt's QString operator< does in MO2's installer_fomod (fomodinstallerdialog.cpp ControlsAscending, PagesAscending).
+func sortByOrder[T any](items []T, order string, name func(T) string) {
+	if order == OrderExplicit {
+		return
+	}
+	key := func(t T) []uint16 { return utf16.Encode([]rune(name(t))) }
+	slices.SortStableFunc(items, func(a, b T) int {
+		c := slices.Compare(key(a), key(b))
+		if order == OrderDescending {
+			return -c
+		}
+		return c
+	})
 }
 
 // charsetReader accepts any declared label: Parse has already made the bytes UTF-8 (decodeXML, then the
@@ -107,6 +140,7 @@ type xmlConfig struct {
 }
 
 type xmlSteps struct {
+	Order string    `xml:"order,attr"`
 	Steps []xmlStep `xml:"installStep"`
 }
 
@@ -121,6 +155,7 @@ type xmlVisible struct {
 }
 
 type xmlGroups struct {
+	Order  string     `xml:"order,attr"`
 	Groups []xmlGroup `xml:"group"`
 }
 
@@ -131,6 +166,7 @@ type xmlGroup struct {
 }
 
 type xmlPlugins struct {
+	Order   string      `xml:"order,attr"`
 	Plugins []xmlPlugin `xml:"plugin"`
 }
 
