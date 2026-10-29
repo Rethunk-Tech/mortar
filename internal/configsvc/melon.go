@@ -37,9 +37,10 @@ type melonEntry struct {
 }
 
 type melonDoc struct {
-	lines     []string
-	bom, crlf bool
-	entries   []melonEntry
+	lines   []string
+	eols    []string
+	bom     bool
+	entries []melonEntry
 }
 
 var (
@@ -49,8 +50,8 @@ var (
 
 func parseMelon(text string) melonDoc {
 	text, bom := strings.CutPrefix(text, "\ufeff")
-	d := melonDoc{bom: bom, crlf: strings.Contains(text, "\r\n")}
-	d.lines = strings.Split(strings.ReplaceAll(text, "\r\n", "\n"), "\n")
+	d := melonDoc{bom: bom}
+	d.lines, d.eols = splitLines(text)
 	var section string
 	var desc []string
 	for i := 0; i < len(d.lines); i++ {
@@ -264,15 +265,10 @@ func (d melonDoc) set(section, key, value string) (string, error) {
 		}
 		lines := slices.Delete(append([]string(nil), d.lines...), e.line+1, e.end+1)
 		lines[e.line] = e.prefix + lit + e.suffix
-		eol := "\n"
-		if d.crlf {
-			eol = "\r\n"
-		}
-		out := strings.Join(lines, eol)
-		if d.bom {
-			out = "\ufeff" + out
-		}
-		return out, nil
+		// The value now ends where its last line did.
+		eols := slices.Delete(append([]string(nil), d.eols...), e.line+1, e.end+1)
+		eols[e.line] = d.eols[e.end]
+		return joinLines(lines, eols, d.bom), nil
 	}
 	return "", fmt.Errorf("no setting %s in [%s]", key, section)
 }

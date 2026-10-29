@@ -109,3 +109,14 @@ func TestMelonMultiLineValuesAreEditedWhole(t *testing.T) {
 		t.Fatalf("set array: %q %v", out, err)
 	}
 }
+
+func TestMelonSetKeepsEachLinesOwnEnding(t *testing.T) {
+	const text = "[M]\r\nA = 1\nB = [\r\n 1,\r\n]\nC = 3"
+	d := parseMelon(text)
+	if out, err := d.set("M", "A", "2"); err != nil || out != "[M]\r\nA = 2\nB = [\r\n 1,\r\n]\nC = 3" {
+		t.Fatalf("%q %v", out, err)
+	}
+	if out, err := d.set("M", "B", "[]"); err != nil || out != "[M]\r\nA = 1\nB = []\nC = 3" {
+		t.Fatalf("%q %v", out, err)
+	}
+}

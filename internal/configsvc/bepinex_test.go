@@ -177,3 +177,11 @@ func TestHostValuesKeepOnlyTheFilesPlugin(t *testing.T) {
 		t.Fatalf("hostValuesOf = %+v, %v", got, err)
 	}
 }
+
+func TestSetKeepsEachLinesOwnEnding(t *testing.T) {
+	const text = "[A]\r\n# Setting type: Int32\nK = 1\nL = 2\r\n# Setting type: Int32\nM = 3"
+	got, err := parseCfg(text).set("A", "L", "5")
+	if want := strings.Replace(text, "L = 2", "L = 5", 1); err != nil || got != want {
+		t.Fatalf("%q %v", got, err)
+	}
+}

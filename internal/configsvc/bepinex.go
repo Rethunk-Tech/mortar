@@ -51,8 +51,9 @@ var (
 // cfgDoc is a parsed .cfg: the original lines, so a write changes only the edited line.
 type cfgDoc struct {
 	lines []string
-	// bom and crlf are the file's own encoding, which a write keeps.
-	bom, crlf bool
+	// eols is each line's own ending, which a write keeps; bom likewise.
+	eols []string
+	bom  bool
 	// plugin and guid come from the header.
 	plugin, guid string
 	entries      []cfgEntry
@@ -77,8 +78,8 @@ var netLimits = map[string][2]float64{
 
 func parseCfg(text string) cfgDoc {
 	text, bom := strings.CutPrefix(text, "\ufeff")
-	d := cfgDoc{bom: bom, crlf: strings.Contains(text, "\r\n")}
-	d.lines = strings.Split(strings.ReplaceAll(text, "\r\n", "\n"), "\n")
+	d := cfgDoc{bom: bom}
+	d.lines, d.eols = splitLines(text)
 	var section string
 	var pending Entry
 	var desc []string
@@ -253,15 +254,7 @@ func (d cfgDoc) set(section, key, value string) (string, error) {
 	old := lines[e.line]
 	eq := strings.Index(old, "=")
 	lines[e.line] = strings.TrimRight(old[:eq+1], " ") + " " + val
-	eol := "\n"
-	if d.crlf {
-		eol = "\r\n"
-	}
-	out := strings.Join(lines, eol)
-	if d.bom {
-		out = "\ufeff" + out
-	}
-	return out, nil
+	return joinLines(lines, d.eols, d.bom), nil
 }
 
 func (d cfgDoc) schema(file ConfigFile) Schema {
