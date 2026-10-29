@@ -3,6 +3,7 @@ package share
 import (
 	"errors"
 	"io/fs"
+	"log/slog"
 	"path"
 	"path/filepath"
 	"slices"
@@ -75,6 +76,8 @@ func CompanionState(gameID, loaderID string) string {
 // size cap, not UTF-8, or with unusual names are skipped and returned as paths.
 func readLoaderConfigs(profileDir, gameID, loaderID string) (found []LoaderConfig, skipped []string, err error) {
 	state := CompanionState(gameID, loaderID)
+	// Read refuses two entries differing only by case, so a case variant of an earlier name is left out.
+	folded := map[string]bool{}
 	for _, root := range LoaderConfigRoots(gameID, loaderID) {
 		err := filepath.WalkDir(filepath.Join(profileDir, filepath.FromSlash(root)), func(p string, d fs.DirEntry, walkErr error) error {
 			if walkErr != nil {
@@ -102,6 +105,12 @@ func readLoaderConfigs(profileDir, gameID, loaderID string) (found []LoaderConfi
 			if err != nil {
 				return err
 			}
+			if folded[strings.ToLower(rel)] {
+				slog.Warn("share: skipped a loader config whose name differs from an earlier one only by case", "path", rel)
+				skipped = append(skipped, rel)
+				return nil
+			}
+			folded[strings.ToLower(rel)] = true
 			found = append(found, LoaderConfig{Path: rel, Data: data})
 			return nil
 		})
