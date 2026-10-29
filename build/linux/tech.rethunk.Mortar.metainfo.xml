@@ -52,6 +52,38 @@
     <content_attribute id="social-info">mild</content_attribute>
   </content_rating>
   <releases>
+    <release version="0.3.16" date="2026-10-29">
+      <description>
+        <p>New</p>
+        <ul>
+          <li>Import from Mod Organizer 2 can use a folder you choose, like Vortex's, and reads the base, mod and profile folders MO2 is set to</li>
+          <li>Mortar unpacks lz4 archives, and an archive packed with a compression dictionary too large to unpack safely says so</li>
+        </ul>
+        <p>Changed</p>
+        <ul>
+          <li>The config editor says why it refused a value (out of range, not a number, a colour BepInEx cannot read) and when a setting is missing from the file</li>
+          <li>FOMOD installers list steps, groups and options in the order the mod author set</li>
+          <li>Versions are ordered as SMAPI and BepInEx order them, so update checks agree with the game's loader</li>
+          <li>A time more than a minute ahead shows as a date</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>BepInEx configs (Lethal Company, Risk of Rain 2) keep each line's own ending and write decimals, large numbers and enum values the plugin can read back</li>
+          <li>MelonLoader configs are never left in a state MelonPreferences.cfg cannot parse</li>
+          <li>Content Patcher packs for Stardew Valley are read as the game reads them: leading or trailing decimal points, empty values and UTF-32 files load, and an unclosed comment or a stray control character is reported as an error on the right line</li>
+          <li>The Proton version shows for a game in a second Steam library</li>
+          <li>In-game performance measurement picks up loader events reliably</li>
+          <li>GitHub and Nexus rate limits wait only as long as the site asks, the GitHub rate in Settings stays current, and a Nexus collection that stops answering fails instead of hanging</li>
+          <li>A denied Nexus sign-in no longer tells the browser tab it succeeded</li>
+          <li>GitHub downloads accept more archive types, a queued .tar.gz keeps its full name, and a resumed download that restarts from the beginning is saved whole</li>
+          <li>Shared profiles and backups skip file names Windows cannot use, and keep only one of two files whose names differ only by case</li>
+          <li>Desktop shortcuts, the nxm handler and autostart work from a folder whose path has spaces, quotes or a backslash</li>
+          <li>In the Flatpak, saves, other managers' profiles and GOG, Lutris and Bottles games are found under a custom XDG home, and a locked keyring is asked again instead of falling back to plain text</li>
+          <li>A Thunderstore listing, or a GitHub or SMAPI answer, refreshes after the computer's clock was set back</li>
+          <li>Keyboard shortcuts can use the plus key, and work while a checkbox, switch or button has focus</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.3.15" date="2026-10-28">
       <description>
         <p>New</p>
