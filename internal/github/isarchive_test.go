@@ -13,6 +13,7 @@ func TestIsArchive(t *testing.T) {
 		{"m.lz4", "application/x-lz4", true},
 		{"m.tar.xz", "application/x-xz-compressed-tar", true},
 		{"m.tar.zst", "application/x-zstd-compressed-tar", true},
+		{"m.tar.gz", "application/x-gtar; charset=binary", true},
 		{"m.zip", "", true},
 		{"m.zip", "text/html", false},
 		{"m.txt", "application/zip", false},

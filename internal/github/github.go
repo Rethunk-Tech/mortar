@@ -13,6 +13,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"mime"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -636,7 +637,11 @@ func IsArchive(a Asset) bool {
 	if !archive.HasExtension(a.Name) {
 		return false
 	}
-	return a.ContentType == "" || archiveTypes[strings.ToLower(a.ContentType)]
+	if a.ContentType == "" {
+		return true
+	}
+	mt, _, err := mime.ParseMediaType(a.ContentType)
+	return err == nil && archiveTypes[mt]
 }
 
 // Select picks the newest non-draft release whose tag is version (any when version is empty) and returns it with its
