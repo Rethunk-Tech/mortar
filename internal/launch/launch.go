@@ -15,8 +15,8 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
+	"github.com/Rethunk-Tech/go-gamelocator/steam"
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/steam"
 )
 
 // Hint names why a launch failed, for the frontend to explain in the user's language.

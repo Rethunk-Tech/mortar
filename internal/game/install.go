@@ -11,11 +11,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-gamelocator/bottles"
+	"github.com/Rethunk-Tech/go-gamelocator/steam"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/runtime"
-	"github.com/Rethunk-Tech/mortar/internal/steam"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 
 	"github.com/Rethunk-Tech/mortar/internal/gamestore"
@@ -293,7 +294,7 @@ func ResolveInstall(home string, s settings.Settings, id, pin string) (Install, 
 		return in, nil
 	}
 	// A folder the user chose inside a bottle still runs in it.
-	prefix := gamestore.BottleOf(dir)
+	prefix := bottles.Of(dir)
 	if prefix != "" {
 		store = StoreBottles
 	}
@@ -315,7 +316,7 @@ func (in Install) RunError(name string, steamRoots ...string) error {
 	}
 	switch in.Runtime {
 	case runtime.MortarProton:
-		if _, ok := runtime.FindProton("", "", steamRoots...); !ok {
+		if _, ok := steam.FindProton("", "", steamRoots...); !ok {
 			return usererr.Wrap(usererr.Invalid, fmt.Errorf("%s in %s is the Windows build, and Mortar runs it through Proton: install any Proton version in Steam (Library, Tools), then press Play again", name, in.Dir))
 		}
 		return nil

@@ -6,10 +6,10 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-gamelocator/steam"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/runtime"
-	"github.com/Rethunk-Tech/mortar/internal/steam"
 )
 
 // OverrideLoader is implemented by a loader that injects through a proxy library next to the game (winhttp for BepInEx,

@@ -16,9 +16,9 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 
 	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
+	"github.com/Rethunk-Tech/go-gamelocator/steam"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/selfexe"
-	"github.com/Rethunk-Tech/mortar/internal/steam"
 )
 
 const playFlag = "--play="
@@ -208,5 +208,5 @@ func (s *Service) AddToSteam(game, gameName, profile, profileName string) (steam
 		LaunchOptions: SteamArgs(game, profile),
 		Key:           Arg(game, profile),
 		Cover:         cover,
-	})
+	}, steam.EditOptions{BackupSuffix: appversion.SteamBackupSuffix})
 }

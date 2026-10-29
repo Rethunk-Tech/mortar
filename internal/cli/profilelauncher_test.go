@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-gamelocator/steam"
 	"github.com/Rethunk-Tech/mortar/internal/control"
-	"github.com/Rethunk-Tech/mortar/internal/steam"
 )
 
 func TestProfileShortcutAndSteam(t *testing.T) {

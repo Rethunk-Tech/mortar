@@ -40,3 +40,10 @@ func TestABuildPastItsReleaseReadsTheNextPatch(t *testing.T) {
 		}
 	}
 }
+
+// 0.3.8 wrote backups under this name; a different one would copy a second backup over the first edit's original.
+func TestSteamBackupSuffixIsWhatEarlierReleasesWrote(t *testing.T) {
+	if SteamBackupSuffix != ".mortar.bak" {
+		t.Fatalf("SteamBackupSuffix = %q", SteamBackupSuffix)
+	}
+}

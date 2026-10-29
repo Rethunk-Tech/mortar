@@ -5,9 +5,10 @@ import (
 	"path/filepath"
 	"runtime"
 	"slices"
+	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/appversion"
+	"github.com/Rethunk-Tech/go-gamelocator/gog"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 )
 
@@ -84,41 +85,47 @@ func TestBottlesFindsGamesInEveryBottleLocation(t *testing.T) {
 	}
 }
 
-func TestBottleOfWalksUpToBottleYml(t *testing.T) {
-	bottle := filepath.Join(t.TempDir(), "Games")
-	game := filepath.Join(bottle, "drive_c", "Stardew Valley")
-	if err := os.MkdirAll(game, 0o750); err != nil {
-		t.Fatal(err)
+func TestSteamFindsAGameInALibraryUnderAnAddedRoot(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home) // the default Steam folders are searched under the process's home
+	root := filepath.Join(t.TempDir(), "Steam")
+	game := filepath.Join(root, "steamapps", "common", "Stardew Valley")
+	for p, body := range map[string]string{
+		filepath.Join(game, "Stardew Valley.dll"):                  "",
+		filepath.Join(root, "steamapps", "libraryfolders.vdf"):     "\"libraryfolders\"\n{\n\"0\"\n{\n\"path\" \"" + strings.ReplaceAll(root, `\`, `\\`) + "\"\n}\n}\n",
+		filepath.Join(root, "steamapps", "appmanifest_413150.acf"): "\"AppState\"\n{\n\"installdir\" \"Stardew Valley\"\n}\n",
+	} {
+		if err := os.MkdirAll(filepath.Dir(p), 0o750); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(body), 0o600); err != nil {
+			t.Fatal(err)
+		}
 	}
-	if BottleOf(game) != "" {
-		t.Fatal("no bottle.yml yet")
+	g := components.GameInfo{ID: "x", Name: "X", Marker: "Stardew Valley.dll", Stores: components.GameStores{Steam: &components.SteamStore{AppID: "413150"}}}
+	if got := Discover(home, nil, g); len(got) != 0 {
+		t.Fatalf("found %+v without the added root", got)
 	}
-	if err := os.WriteFile(filepath.Join(bottle, "bottle.yml"), nil, 0o600); err != nil {
-		t.Fatal(err)
+	got := Discover(home, map[string][]string{LauncherSteam: {root}}, g)
+	if want := []Install{{Store: StoreSteam, Dir: game}}; !slices.Equal(got, want) {
+		t.Fatalf("got %+v, want %+v", got, want)
 	}
-	if got := BottleOf(game); got != bottle {
-		t.Fatalf("BottleOf = %q, want %q", got, bottle)
+	if looked := (steamStore{}).Launchers("linux")[0].Looked(home, map[string][]string{LauncherSteam: {root}}); looked[0] != root {
+		t.Fatalf("the added root is searched first: %v", looked)
 	}
 }
 
-func TestBottlesDirsFollowCustomXDGData(t *testing.T) {
-	home := t.TempDir()
-	t.Setenv("HOME", home)
-	t.Setenv("USERPROFILE", home) // userdirs honours XDG and APPDATA only for os.UserHomeDir, which reads USERPROFILE on Windows
-	data := filepath.Join(t.TempDir(), "data")
-	want := filepath.Join(data, "bottles", "bottles")
-	t.Run("native", func(t *testing.T) {
-		t.Setenv("XDG_DATA_HOME", data)
-		if got := bottlesDirs(home); !slices.Contains(got, want) {
-			t.Fatalf("%q missing from %v", want, got)
+// The ids are saved in settings, so they never change with the module that finds the games.
+func TestStoreIDsAreTheSavedSettingValues(t *testing.T) {
+	got := []string{StoreSteam, StoreFlatpakSteam, StoreGOG, StoreGOGHeroic, StoreMinigalaxy, StoreLutris, StoreBottles, StoreEA, StoreEpic, StoreEpicHeroic, StoreXbox, StoreStandalone, StoreFlatpak}
+	want := []string{"steam", "flatpak-steam", "gog", "gog-heroic", "gog-minigalaxy", "lutris", "bottles", "ea", "epic", "epic-heroic", "xbox", "standalone", "flatpak"}
+	if !slices.Equal(got, want) {
+		t.Fatalf("store ids = %v, want %v", got, want)
+	}
+	for src, id := range map[gog.Source]string{gog.SourceGOG: StoreGOG, gog.SourceHeroic: StoreGOGHeroic, gog.SourceMinigalaxy: StoreMinigalaxy} {
+		if gogStoreID(src) != id {
+			t.Errorf("source %d maps to %q, want %q", src, gogStoreID(src), id)
 		}
-	})
-	t.Run("flatpak", func(t *testing.T) {
-		t.Setenv("FLATPAK_ID", appversion.AppID)
-		t.Setenv("XDG_DATA_HOME", filepath.Join(home, "own", "data"))
-		t.Setenv("HOST_XDG_DATA_HOME", data)
-		if got := bottlesDirs(home); !slices.Contains(got, want) {
-			t.Fatalf("%q missing from %v", want, got)
-		}
-	})
+	}
 }

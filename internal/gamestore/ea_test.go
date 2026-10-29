@@ -8,6 +8,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
+	"github.com/Rethunk-Tech/go-gamelocator/ea"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 )
 
@@ -23,21 +24,7 @@ func touchFile(t *testing.T, p string) {
 	testfs.WriteAt(t, p, nil)
 }
 
-func TestEADirsAreWindowsOnlyAndUserFoldersComeFirst(t *testing.T) {
-	env := map[string]string{"ProgramFiles": `C:\PF`, "ProgramFiles(x86)": `C:\PF86`}
-	get := func(k string) string { return env[k] }
-	got := eaDirs("windows", get, "D:/mine")
-	want := []string{
-		"D:/mine",
-		filepath.Join(`C:\PF`, "EA Games"), filepath.Join(`C:\PF`, "Electronic Arts"),
-		filepath.Join(`C:\PF86`, "EA Games"), filepath.Join(`C:\PF86`, "Electronic Arts"),
-	}
-	if !slices.Equal(got, want) {
-		t.Fatalf("windows dirs = %v, want %v", got, want)
-	}
-	if got := eaDirs("linux", get, "/mine"); !slices.Equal(got, []string{"/mine"}) {
-		t.Fatalf("linux has no EA App folders of its own: %v", got)
-	}
+func TestTheEAAndEpicLaunchersAreListedOnWindowsOnly(t *testing.T) {
 	if (eaStore{}).Launchers("linux") != nil || len((eaStore{}).Launchers("windows")) != 1 {
 		t.Fatal("the EA App launcher is listed on Windows only")
 	}
@@ -112,7 +99,7 @@ func TestEAFindsAnInstallOnAnotherDriveByItsRegistryEntry(t *testing.T) {
 	touchFile(t, filepath.Join(away, "X.exe"))
 	var asked string
 	lookupEARegistry = func(key string) string { asked = key; return away }
-	t.Cleanup(func() { lookupEARegistry = eaRegistryDir })
+	t.Cleanup(func() { lookupEARegistry = ea.RegistryDir })
 	g := eaGame()
 	g.Stores.EA.Registry = `SOFTWARE\X`
 	got := Discover(t.TempDir(), nil, g)

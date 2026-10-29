@@ -6,15 +6,13 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
-	"regexp"
 	goruntime "runtime"
 	"slices"
 	"strings"
 
 	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
-	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/go-gamelocator/steam"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/steam"
 )
 
 // Runtime ids.
@@ -190,25 +188,12 @@ func (proton) Detect(inst Install) bool {
 		(inst.Store == storeSteam || inst.Store == storeFlatpakSteam)
 }
 
-// steamappsOf is the steamapps folder holding the install at dir.
-func steamappsOf(dir string) (string, bool) {
-	steamapps := dir
-	for filepath.Base(steamapps) != "steamapps" {
-		parent := filepath.Dir(steamapps)
-		if parent == steamapps {
-			return "", false
-		}
-		steamapps = parent
-	}
-	return steamapps, true
-}
-
 // CompatDataDir is the Steam compatdata folder (the Proton prefix's parent) of a Proton install.
 func CompatDataDir(inst Install) (string, bool) {
 	if !(proton{}).Detect(inst) {
 		return "", false
 	}
-	steamapps, ok := steamappsOf(inst.Dir)
+	steamapps, ok := steam.LibraryOf(inst.Dir)
 	if !ok {
 		return "", false
 	}
@@ -222,48 +207,24 @@ func Version(inst Install) string {
 	if !(proton{}).Detect(inst) {
 		return ""
 	}
-	steamapps, ok := steamappsOf(inst.Dir)
+	steamapps, ok := steam.LibraryOf(inst.Dir)
 	if !ok {
 		return ""
 	}
-	if b, err := safefs.ReadFile(filepath.Join(steamapps, "compatdata", inst.AppID, "config_info")); err == nil {
-		if line, _, _ := strings.Cut(string(b), "\n"); strings.TrimSpace(line) != "" {
-			return strings.TrimSpace(line)
-		}
+	if v := steam.PrefixVersion(filepath.Join(steamapps, "compatdata", inst.AppID)); v != "" {
+		return v
 	}
 	// Steam keeps config/ only in its own root, so a game in a second library finds it there.
-	dirs := []string{filepath.Dir(steamapps)}
-	for _, s := range steam.LocateAll(inst.Home, inst.SteamRoots...) {
-		dirs = append(dirs, s.Root)
-	}
-	var configs []string
-	for _, dir := range dirs {
-		if b, err := safefs.ReadFile(filepath.Join(dir, "config", "config.vdf")); err == nil {
-			configs = append(configs, string(b))
-		}
-	}
+	roots := []steam.Steam{{Root: filepath.Dir(steamapps)}}
+	roots = append(roots, steam.LocateAll(inst.Home, inst.SteamRoots...)...)
 	for _, id := range []string{inst.AppID, "0"} {
-		for _, c := range configs {
-			if name := compatToolName(c, id); name != "" {
+		for _, st := range roots {
+			if name := st.CompatTool(id); name != "" {
 				return name
 			}
 		}
 	}
 	return ""
-}
-
-// compatToolName is the "name" of appID's entry in config.vdf's CompatToolMapping, which is the section's flat
-// list of {name, config, priority} blocks.
-func compatToolName(vdf, appID string) string {
-	_, rest, ok := strings.Cut(vdf, `"CompatToolMapping"`)
-	if !ok {
-		return ""
-	}
-	m := regexp.MustCompile(`(?s)"` + regexp.QuoteMeta(appID) + `"\s*\{[^}]*?"name"\s*"([^"]*)"`).FindStringSubmatch(rest)
-	if m == nil {
-		return ""
-	}
-	return m[1]
 }
 
 // ponytail: the Steam library is found by walking up to its steamapps folder; a Proton prefix that Steam keeps elsewhere needs a setting.
@@ -275,7 +236,7 @@ func (p proton) Resolve(inst Install, t components.PathTemplate) (string, error)
 	if tmpl == "" {
 		return "", errors.New("no path for a windows build")
 	}
-	steamapps, ok := steamappsOf(inst.Dir)
+	steamapps, ok := steam.LibraryOf(inst.Dir)
 	if !ok {
 		return "", fmt.Errorf("%q is not inside a Steam library", inst.Dir)
 	}

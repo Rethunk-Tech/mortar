@@ -4,9 +4,10 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 
-	"github.com/Rethunk-Tech/mortar/internal/steam"
+	"github.com/Rethunk-Tech/go-gamelocator/steam"
 )
 
 // LaunchOptions returns the launch options Steam holds for the game, or "" when none are set or Steam is missing.
@@ -44,7 +45,7 @@ func (s *Service) SetLaunchOption(id string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return st.SetLaunchOptions(g.SteamAppID(), func(current string) string { return launchWith(exe, current) })
+	return setLaunchOptions(st, g.SteamAppID(), func(current string) string { return launchWith(exe, current) })
 }
 
 // ClearLaunchOption removes the game's loader command from Steam's launch options.
@@ -61,7 +62,16 @@ func (s *Service) ClearLaunchOption(id string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return st.SetLaunchOptions(g.SteamAppID(), func(current string) string { return launchWithout(exe, current) })
+	return setLaunchOptions(st, g.SteamAppID(), func(current string) string { return launchWithout(exe, current) })
+}
+
+// setLaunchOptions edits st's launch options for appID, telling the player what to do when Steam has none to edit yet.
+func setLaunchOptions(st steam.Steam, appID string, merge func(string) string) (string, error) {
+	out, err := st.SetLaunchOptions(appID, merge, steam.EditOptions{BackupSuffix: appversion.SteamBackupSuffix})
+	if errors.Is(err, steam.ErrNoAppsSection) {
+		err = fmt.Errorf("%w; launch the game from Steam once first", err)
+	}
+	return out, err
 }
 
 // closedSteam is the Steam whose config holds launch options, refused while it runs: Steam rewrites its config when it

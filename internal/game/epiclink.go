@@ -3,8 +3,8 @@ package game
 import (
 	"fmt"
 
+	"github.com/Rethunk-Tech/go-gamelocator/epic"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/gamestore"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 )
 
@@ -17,7 +17,7 @@ func epicCommand(inst Install) (launch.Command, error) {
 	if info.Stores.Epic == nil {
 		return launch.Command{}, fmt.Errorf("%s is not sold on Epic Games", inst.Game)
 	}
-	app := gamestore.EpicAppName(inst.Dir, info.Stores.Epic.AppNames)
+	app := epic.AppNameAt(inst.Dir, info.Stores.Epic.AppNames)
 	if !components.PlainAppName(app) {
 		return launch.Command{}, fmt.Errorf("the Epic AppName %q is not a plain name", app)
 	}

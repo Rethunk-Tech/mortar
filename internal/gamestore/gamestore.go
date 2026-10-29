@@ -5,18 +5,16 @@ import (
 	"slices"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/gog"
-	"github.com/Rethunk-Tech/mortar/internal/lutris"
 )
 
 // Install store ids, as saved in settings and shown to the frontend.
 const (
 	StoreSteam        = "steam"
 	StoreFlatpakSteam = "flatpak-steam"
-	StoreGOG          = gog.StoreGOG
-	StoreGOGHeroic    = gog.StoreHeroic
-	StoreMinigalaxy   = gog.StoreMinigalaxy
-	StoreLutris       = lutris.StoreLutris
+	StoreGOG          = "gog"
+	StoreGOGHeroic    = "gog-heroic"
+	StoreMinigalaxy   = "gog-minigalaxy"
+	StoreLutris       = "lutris"
 	StoreBottles      = "bottles"
 	StoreEA           = "ea"
 	StoreEpic         = "epic"

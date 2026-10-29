@@ -3,7 +3,7 @@ package control
 import (
 	"fmt"
 
-	"github.com/Rethunk-Tech/mortar/internal/steam"
+	"github.com/Rethunk-Tech/go-gamelocator/steam"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 

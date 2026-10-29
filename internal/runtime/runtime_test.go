@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
@@ -126,6 +127,18 @@ func TestNativeRefusesForeignBuildAndMissingPath(t *testing.T) {
 	}
 }
 
+// compatToolConfig is a config.vdf as Steam writes it: the mapping sits under InstallConfigStore/Software/Valve/Steam,
+// and Steam writes both "Software" and "software". idName pairs are an app id and its tool.
+func compatToolConfig(software string, idName ...string) string {
+	var b strings.Builder
+	b.WriteString("\"InstallConfigStore\"\n{\n\t\"" + software + "\"\n\t{\n\t\t\"Valve\"\n\t\t{\n\t\t\t\"Steam\"\n\t\t\t{\n\t\t\t\t\"CompatToolMapping\"\n\t\t\t\t{\n")
+	for i := 0; i+1 < len(idName); i += 2 {
+		b.WriteString("\t\t\t\t\t\"" + idName[i] + "\"\n\t\t\t\t\t{\n\t\t\t\t\t\t\"name\"\t\t\"" + idName[i+1] + "\"\n\t\t\t\t\t}\n")
+	}
+	b.WriteString("\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n}\n")
+	return b.String()
+}
+
 func TestVersionReadsConfigInfoThenCompatToolMapping(t *testing.T) {
 	root := t.TempDir()
 	dir := filepath.Join(root, "steamapps", "common", "Lethal Company")
@@ -137,7 +150,7 @@ func TestVersionReadsConfigInfoThenCompatToolMapping(t *testing.T) {
 	if got := Version(inst); got != "" {
 		t.Fatalf("no Steam data: %q", got)
 	}
-	write("config/config.vdf", "\"Software\"\n{\n\t\"CompatToolMapping\"\n\t{\n\t\t\"0\"\n\t\t{\n\t\t\t\"name\"\t\t\"proton_9\"\n\t\t}\n\t\t\"1966720\"\n\t\t{\n\t\t\t\"name\"\t\t\"GE-Proton9-5\"\n\t\t}\n\t}\n}\n")
+	write("config/config.vdf", compatToolConfig("Software", "0", "proton_9", "1966720", "GE-Proton9-5"))
 	if got := Version(inst); got != "GE-Proton9-5" {
 		t.Fatalf("mapping: %q", got)
 	}
@@ -200,7 +213,7 @@ func TestWinePrefixBottle(t *testing.T) {
 func TestVersionReadsTheSteamRootConfigForAGameInASecondLibrary(t *testing.T) {
 	root, lib := t.TempDir(), t.TempDir()
 	testfs.WriteAt(t, filepath.Join(root, "steamapps", "libraryfolders.vdf"), []byte("\"libraryfolders\"\n{\n}\n"))
-	testfs.WriteAt(t, filepath.Join(root, "config", "config.vdf"), []byte("\"CompatToolMapping\"\n{\n\t\"1966720\"\n\t{\n\t\t\"name\"\t\t\"GE-Proton9-5\"\n\t}\n}\n"))
+	testfs.WriteAt(t, filepath.Join(root, "config", "config.vdf"), []byte(compatToolConfig("software", "1966720", "GE-Proton9-5")))
 	inst := Install{
 		Store: "steam", Dir: filepath.Join(lib, "steamapps", "common", "Lethal Company"), AppID: "1966720",
 		Platform: "windows", GOOS: "linux", Home: t.TempDir(), SteamRoots: []string{root},

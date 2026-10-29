@@ -1,38 +1,15 @@
 package gamestore
 
 import (
-	"os"
-	"path/filepath"
 	"runtime"
 
-	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
+	gamelocator "github.com/Rethunk-Tech/go-gamelocator"
+	"github.com/Rethunk-Tech/go-gamelocator/bottles"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/gog"
 )
 
 const bottlesKey = "bottles"
-
-// bottlesDirs are the folders Bottles keeps its bottles in, the user's own first: native, then Flatpak.
-func bottlesDirs(home string, extra ...string) []string {
-	return append(append([]string(nil), extra...),
-		filepath.Join(userdirs.HostDataHome(home), "bottles", "bottles"),
-		filepath.Join(userdirs.FlatpakApp(home, "com.usebottles.bottles"), "data", "bottles", "bottles"),
-	)
-}
-
-// bottleGameDirs are where a Steam or GOG install of folder sits inside a bottle's C: drive.
-func bottleGameDirs(bottle, folder string) []string {
-	c := filepath.Join(bottle, "drive_c")
-	return []string{
-		filepath.Join(c, "Program Files (x86)", "Steam", "steamapps", "common", folder),
-		filepath.Join(c, "Program Files", "Steam", "steamapps", "common", folder),
-		filepath.Join(c, "Program Files", "EA Games", folder),
-		filepath.Join(c, "Program Files (x86)", "EA Games", folder),
-		filepath.Join(c, "GOG Games", folder),
-		filepath.Join(c, "Program Files (x86)", "GOG Galaxy", "Games", folder),
-	}
-}
 
 type bottlesStore struct{}
 
@@ -45,7 +22,7 @@ func (bottlesStore) Launchers(goos string) []LauncherSpec {
 	return []LauncherSpec{{
 		ID: LauncherBottles, Name: "Bottles", Usable: safefs.IsDir,
 		Looked: func(home string, added map[string][]string) []string {
-			return bottlesDirs(home, added[LauncherBottles]...)
+			return bottles.Dirs(home, added[LauncherBottles]...)
 		},
 	}}
 }
@@ -56,18 +33,10 @@ func (bottlesStore) Discover(home string, roots map[string][]string, g component
 		return nil
 	}
 	var out []Install
-	for _, dir := range bottlesDirs(home, roots[LauncherBottles]...) {
-		entries, err := os.ReadDir(dir)
-		if err != nil {
-			continue
-		}
-		for _, ent := range entries {
-			bottle := filepath.Join(dir, ent.Name())
-			if !safefs.IsDir(bottle) || !safefs.IsFile(filepath.Join(bottle, "bottle.yml")) {
-				continue
-			}
-			for _, cand := range bottleGameDirs(bottle, g.Stores.Bottles.Folder) {
-				if found := gog.GameDir(cand, g.MarkerPath()); found != "" {
+	for _, dir := range bottles.Dirs(home, roots[LauncherBottles]...) {
+		for _, bottle := range bottles.List(dir) {
+			for _, cand := range bottles.GameDirs(bottle, g.Stores.Bottles.Folder) {
+				if found := gamelocator.GameDir(cand, g.MarkerPath()); found != "" {
 					out = append(out, Install{Store: StoreBottles, Dir: found, Prefix: bottle})
 					break
 				}
@@ -75,16 +44,4 @@ func (bottlesStore) Discover(home string, roots map[string][]string, g component
 		}
 	}
 	return out
-}
-
-// BottleOf is the bottle that holds dir, found by walking up to a folder with bottle.yml; "" when dir is in none.
-func BottleOf(dir string) string {
-	for d := filepath.Clean(dir); ; d = filepath.Dir(d) {
-		if safefs.IsFile(filepath.Join(d, "bottle.yml")) {
-			return d
-		}
-		if filepath.Dir(d) == d {
-			return ""
-		}
-	}
 }

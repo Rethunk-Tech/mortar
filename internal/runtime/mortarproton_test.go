@@ -72,24 +72,3 @@ func TestMortarProtonRunsAFolderCopyThroughSteamsBestProtonInMortarsPrefix(t *te
 		t.Fatalf("path = %q %v, want %q", got, err, want)
 	}
 }
-
-// Builds outside Valve's numbered releases rank by the numbers in their names, so GE-Proton10 is newer than GE-Proton9.
-func TestProtonRankOrdersOtherBuildsByTheirNumbers(t *testing.T) {
-	got := []string{"GE-Proton9-27", "GE-Proton10-9", "GE-Proton10-10"}
-	slices.SortFunc(got, protonRank)
-	if want := []string{"GE-Proton10-10", "GE-Proton10-9", "GE-Proton9-27"}; !slices.Equal(got, want) {
-		t.Fatalf("order = %v, want %v", got, want)
-	}
-}
-
-func TestPickProtonMatchesSteamsToolBeforeTheBest(t *testing.T) {
-	found := []ProtonBuild{{Dir: "/c/GE-Proton10-34"}, {Dir: "/c/Proton 9.0 (Beta)"}, {Dir: "/c/Proton - Experimental"}}
-	for tool, want := range map[string]string{"proton_9": "Proton 9.0 (Beta)", "proton_experimental": "Proton - Experimental", "GE-Proton10-34": "GE-Proton10-34", "": "GE-Proton10-34", "proton_8": "GE-Proton10-34"} {
-		if b, ok := pickProton(found, "", tool); !ok || filepath.Base(b.Dir) != want {
-			t.Errorf("tool %q picked %v, want %s", tool, b.Dir, want)
-		}
-	}
-	if b, _ := pickProton(found, "Proton - Experimental", "proton_9"); filepath.Base(b.Dir) != "Proton - Experimental" {
-		t.Errorf("a named build lost to the tool: %v", b.Dir)
-	}
-}

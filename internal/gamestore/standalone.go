@@ -5,8 +5,8 @@ import (
 	goruntime "runtime"
 
 	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
+	gamelocator "github.com/Rethunk-Tech/go-gamelocator"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/gog"
 	"github.com/Rethunk-Tech/mortar/internal/runtime"
 )
 
@@ -17,11 +17,11 @@ const (
 
 // gameDir is dir (or its "game" folder) when it holds the game's marker or its native Linux build's executable.
 func gameDir(dir string, g components.GameInfo) string {
-	if found := gog.GameDir(dir, g.MarkerPath()); found != "" {
+	if found := gamelocator.GameDir(dir, g.MarkerPath()); found != "" {
 		return found
 	}
 	if g.LinuxMarker != "" && goruntime.GOOS == "linux" {
-		return gog.GameDir(dir, g.LinuxMarker)
+		return gamelocator.GameDir(dir, g.LinuxMarker)
 	}
 	return ""
 }

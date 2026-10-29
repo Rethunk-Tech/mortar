@@ -155,6 +155,16 @@
     "url": "https://github.com/Rethunk-Tech/go-dotnet"
   },
   {
+    "name": "github.com/Rethunk-Tech/go-gamelocator",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/go-gamelocator"
+  },
+  {
+    "name": "github.com/Rethunk-Tech/go-github",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/go-github"
+  },
+  {
     "name": "github.com/Rethunk-Tech/go-httpkit",
     "licence": "MIT",
     "url": "https://github.com/Rethunk-Tech/go-httpkit"
@@ -180,14 +190,14 @@
     "url": "https://github.com/Rethunk-Tech/go-semverish"
   },
   {
+    "name": "github.com/Rethunk-Tech/go-smapiweb",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/go-smapiweb"
+  },
+  {
     "name": "github.com/andybalholm/brotli",
     "licence": "MIT",
     "url": "https://github.com/andybalholm/brotli"
-  },
-  {
-    "name": "github.com/andygrunwald/vdf",
-    "licence": "MIT",
-    "url": "https://github.com/andygrunwald/vdf"
   },
   {
     "name": "github.com/coder/websocket",

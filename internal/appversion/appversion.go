@@ -19,6 +19,10 @@ var infoVersion = regexp.MustCompile(`(?m)^info:\n(?:[ \t]+.*\n)*?[ \t]+version:
 // AppID is Mortar's application id: the Flatpak id, the desktop-entry basename and the single-instance id.
 const AppID = "tech.rethunk.Mortar"
 
+// SteamBackupSuffix is the suffix of the one-time copy Mortar takes of a Steam file before its first edit; it stays
+// what 0.3.8 wrote so an existing backup is found and never copied over.
+const SteamBackupSuffix = ".mortar.bak"
+
 // UserAgent names Mortar to a site.
 func UserAgent(version string) string {
 	if version == "" {

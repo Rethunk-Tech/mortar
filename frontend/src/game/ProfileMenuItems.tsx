@@ -15,6 +15,7 @@ import {
   Trash2,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { AddResult } from '../../bindings/github.com/Rethunk-Tech/go-gamelocator/steam/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { SetFavourite } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import {
@@ -23,7 +24,6 @@ import {
   Remove as RemoveShortcut,
   Capabilities as ShortcutCapabilities,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/shortcut/service.ts'
-import { AddResult } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/steam/models.ts'
 import { STEAM } from '../brand/productNames.ts'
 import { setFrozen } from '../mods/freeze.ts'
 import { isFrozen } from '../mods/frozen.ts'

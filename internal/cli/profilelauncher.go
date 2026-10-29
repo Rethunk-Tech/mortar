@@ -3,8 +3,8 @@ package cli
 import (
 	"fmt"
 
+	"github.com/Rethunk-Tech/go-gamelocator/steam"
 	"github.com/Rethunk-Tech/mortar/internal/control"
-	"github.com/Rethunk-Tech/mortar/internal/steam"
 )
 
 func (c *cmd) profileShortcut() error {

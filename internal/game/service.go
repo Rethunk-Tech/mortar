@@ -7,6 +7,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-gamelocator/steam"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/customgame"
@@ -16,7 +17,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/runtime"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/shots"
-	"github.com/Rethunk-Tech/mortar/internal/steam"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -372,7 +372,7 @@ func (s *Service) ProtonBuilds(gameID string) []string {
 		return []string{}
 	}
 	out := []string{}
-	for _, b := range runtime.ProtonBuilds(s.home, steamRoots(s.store.Get())...) {
+	for _, b := range steam.ProtonBuilds(s.home, steamRoots(s.store.Get())...) {
 		out = append(out, filepath.Base(b.Dir))
 	}
 	return out

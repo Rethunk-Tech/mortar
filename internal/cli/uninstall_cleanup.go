@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/Rethunk-Tech/go-gamelocator/steam"
+	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
-	"github.com/Rethunk-Tech/mortar/internal/steam"
 )
 
 // uninstallCleanup undoes what Mortar wrote outside its install folder: the start-at-sign-in entry, the profile
@@ -34,7 +35,7 @@ func (c *cmd) removeSteamShortcuts(home, exe string, steamRoots []string) error 
 	var errs []error
 	removed := 0
 	for _, st := range steam.LocateAll(home, steamRoots...) {
-		n, err := st.RemoveShortcuts(exe, "--play=")
+		n, err := st.RemoveShortcuts(exe, "--play=", steam.EditOptions{BackupSuffix: appversion.SteamBackupSuffix})
 		removed += n
 		errs = append(errs, err)
 	}
