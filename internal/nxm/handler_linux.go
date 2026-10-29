@@ -148,6 +148,9 @@ func desktopName(path string) string {
 	return ""
 }
 
+// desktopString undoes a key file's string escapes, which wrap the Exec quoting.
+var desktopString = strings.NewReplacer(`\\`, `\`, `\s`, " ", `\n`, "\n", `\t`, "\t", `\r`, "\r")
+
 func desktopExec(path string) string {
 	b, err := fsx.ReadFile(path)
 	if err != nil {
@@ -155,7 +158,7 @@ func desktopExec(path string) string {
 	}
 	for line := range strings.SplitSeq(string(b), "\n") {
 		if exec, ok := strings.CutPrefix(line, "Exec="); ok {
-			return exec
+			return desktopString.Replace(exec)
 		}
 	}
 	return ""
@@ -222,7 +225,7 @@ func (l *System) integrator() string {
 				argv = argv[1:]
 			}
 		}
-		if len(argv) < 2 || argv[0] != l.exe || !slices.ContainsFunc(argv[1:], func(a string) bool { return a == "%u" || a == "%U" }) {
+		if len(argv) < 2 || strings.ReplaceAll(argv[0], "%%", "%") != l.exe || !slices.ContainsFunc(argv[1:], func(a string) bool { return a == "%u" || a == "%U" }) {
 			continue
 		}
 		if marked {

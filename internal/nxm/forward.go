@@ -71,7 +71,7 @@ func programAndArgs(argv []string, winField, link string) (string, []string, err
 			placed = true
 		case "%f", "%F", "%i", "%c", "%k":
 		default:
-			out = append(out, a)
+			out = append(out, strings.ReplaceAll(a, "%%", "%"))
 		}
 	}
 	if !placed {

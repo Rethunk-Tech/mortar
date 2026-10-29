@@ -555,6 +555,18 @@ func TestReleaseHandsBackOnlyTheGivenScheme(t *testing.T) {
 	}
 }
 
+func TestDesktopExecReadsBackAnEscapedPath(t *testing.T) {
+	exe := "/opt/50%off/$x `b` \\q \"z\" d"
+	path := filepath.Join(t.TempDir(), "a.desktop")
+	if err := os.WriteFile(path, []byte("[Desktop Entry]\nExec=\""+quoteExec(exe)+"\" --nxm %u\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	name, args, err := programAndArgs(splitDesktopExec(desktopExec(path)), "", "nxm://x")
+	if err != nil || name != exe || !slices.Equal(args, []string{"--nxm", "nxm://x"}) {
+		t.Fatalf("read back %q %q, %v", name, args, err)
+	}
+}
+
 func TestQuoteExecEscapesForTheExecValue(t *testing.T) {
 	got := quoteExec("/opt/50%off/$x `b` \\q \"z\" d")
 	want := "/opt/50%%off/\\\\$x \\\\`b\\\\` \\\\\\\\q \\\\\"z\\\\\" d"
