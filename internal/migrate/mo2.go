@@ -264,11 +264,23 @@ func mo2Dirs(root string) (mods, profiles string) {
 	if data, err := fsx.ReadFile(filepath.Join(root, "ModOrganizer.ini")); err == nil {
 		settings = iniSection(data, "settings")
 	}
-	base := cmp.Or(mo2INIPath(settings["base_directory"]), root)
+	// MO2 leaves a relative path relative to its own working directory, which is
+	// the instance folder for the portable instances Mortar reads.
+	abs := func(p string) string {
+		p = filepath.FromSlash(strings.ReplaceAll(p, `\`, "/"))
+		if !filepath.IsAbs(p) {
+			p = filepath.Join(root, p)
+		}
+		return filepath.Clean(p)
+	}
+	base := root
+	if b := mo2INIPath(settings["base_directory"]); b != "" {
+		base = abs(b)
+	}
 	resolve := func(key, def string) string {
 		path := cmp.Or(mo2INIPath(settings[key]), "%BASE_DIR%/"+def)
 		path = strings.ReplaceAll(path, "%BASE_DIR%", filepath.ToSlash(base))
-		return filepath.Clean(filepath.FromSlash(strings.ReplaceAll(path, `\`, "/")))
+		return abs(path)
 	}
 	return resolve("mod_directory", "mods"), resolve("profiles_directory", "profiles")
 }
