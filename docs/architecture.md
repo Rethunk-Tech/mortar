@@ -261,7 +261,7 @@ An import or a profile's missing files run one queue (`internal/queue`), persist
 
 ## GitHub releases
 
-`internal/github` reads `/repos/<owner>/<repo>/releases` without sign-in. Answers are cached on disk and served stale when GitHub is unreachable; the unauthenticated limit is per IP.
+`internal/github` reads `/repos/<owner>/<repo>/releases`, with the gh token when gh is signed in. Answers are cached on disk and served stale when GitHub is unreachable; the unauthenticated limit is per IP.
 
 - **Trust** (`internal/github/verify.go`): a GitHub-sourced install counts as verified only when SMAPI's update API maps the manifest's `UniqueID` to the same repo. A known mismatch parks the item in `needs-confirm`; an unknown answer installs and marks it "could not verify"; nothing here blocks.
 - **Asset picker** (`internal/github/pick.go`): the first rule that leaves one archive wins; several left park the item in `needs-choice` (last choice kept in `github-choices.json`).

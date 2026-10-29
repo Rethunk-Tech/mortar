@@ -1,5 +1,6 @@
-// Package github reads a repository's public releases without sign-in (60 calls an hour per IP), so lookups are
-// cached on disk and a stale answer stands in when GitHub cannot be reached or the limit is reached.
+// Package github reads a repository's public releases (60 calls an hour per IP without sign-in, more with the gh token
+// when gh is signed in), so lookups are cached on disk and a stale answer stands in when GitHub cannot be reached or
+// the limit is reached.
 package github
 
 import (
