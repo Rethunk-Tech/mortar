@@ -16,6 +16,7 @@
       "!**/design/doc-page.js",
       "!**/design/support.js",
       "!**/generated",
+      "!internal/secret/testdata",
       "!**/locales/*/messages.ts",
       "!**/vendor",
       "!.claude"

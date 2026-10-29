@@ -38,7 +38,7 @@ func TestAMSIFlagsTheMicrosoftTestSample(t *testing.T) {
 	if errors.Is(err, os.ErrNotExist) {
 		t.Skip("the antivirus removed the test file before AMSI saw it")
 	}
-	if err == nil && !found && defenderRealtimeOff() {
+	if err == nil && !found && defenderRealtimeOff(t) {
 		t.Skip("Defender real-time protection is off, so no provider flags the sample")
 	}
 	if err != nil || !found || hit.File != "sample.txt" || hit.Scanner != "AMSI" {
@@ -48,8 +48,8 @@ func TestAMSIFlagsTheMicrosoftTestSample(t *testing.T) {
 
 // defenderRealtimeOff reports that Defender answered and says real-time protection is off, as on a hosted CI runner; a
 // failed query counts as on, so the test still fails where a provider should flag the sample.
-func defenderRealtimeOff() bool {
-	out, err := exec.Command("powershell", "-NoProfile", "-NonInteractive", "-Command",
+func defenderRealtimeOff(t *testing.T) bool {
+	out, err := exec.CommandContext(t.Context(), "powershell", "-NoProfile", "-NonInteractive", "-Command",
 		"(Get-MpComputerStatus).RealTimeProtectionEnabled").Output()
 	return err == nil && strings.EqualFold(strings.TrimSpace(string(out)), "false")
 }
