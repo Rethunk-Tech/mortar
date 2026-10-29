@@ -13,7 +13,7 @@ func TestValidAndClean(t *testing.T) {
 			t.Errorf("Valid(%q) = false", ok)
 		}
 	}
-	for in, want := range map[string]string{"A:B": "A-B", "Main?. ": "Main-", "NUL": "NUL_", "": "", " . ": ""} {
+	for in, want := range map[string]string{"A:B": "A-B", "Main?. ": "Main-", "NUL": "NUL_", "nul.txt": "nul_.txt", "com1.tar.gz": "com1_.tar.gz", "": "", " . ": ""} {
 		if got := Clean(in); got != want || (got != "" && !Valid(got)) {
 			t.Errorf("Clean(%q) = %q, want %q", in, got, want)
 		}

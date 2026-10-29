@@ -19,7 +19,7 @@ func Valid(seg string) bool {
 }
 
 // Clean turns name into one valid segment: reserved characters become '-', edge dots and spaces go, and a device
-// name gets a trailing underscore. An empty result is returned as "".
+// name gets an underscore after its stem ("nul.txt" becomes "nul_.txt"). An empty result is returned as "".
 func Clean(name string) string {
 	name = strings.Trim(strings.Map(func(r rune) rune {
 		if r < ' ' || strings.ContainsRune(invalid, r) {
@@ -28,7 +28,11 @@ func Clean(name string) string {
 		return r
 	}, name), " .")
 	if device(name) {
-		name += "_"
+		stem, ext, dot := strings.Cut(name, ".")
+		name = strings.TrimRight(stem, " ") + "_"
+		if dot {
+			name += "." + ext
+		}
 	}
 	return name
 }
