@@ -14,6 +14,8 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/Rethunk-Tech/go-httpkit"
+
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
@@ -74,7 +76,7 @@ func newService(base, version string, env func(string) problems.Environment) *Se
 		Timeout: timeout,
 		// smapi.io answers success with a redirect to the log's page and failure with a 200 page, so the redirect
 		// itself is the answer.
-		CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse },
+		CheckRedirect: httpkit.NoFollow,
 	}}
 }
 

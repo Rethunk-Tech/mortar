@@ -11,9 +11,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-httpkit"
+
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/source"
-	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // GaleBaseURL is the server behind Gale's profile sync, which hands out the short codes.
@@ -77,23 +78,12 @@ func (g GaleCode) Parse(ctx context.Context, in Input) (Draft, error) {
 		return Draft{}, err
 	}
 	req.Header.Set("User-Agent", source.UserAgentWithSite(""))
-	resp, err := cmp.Or(g.HTTP, http.DefaultClient).Do(req)
-	if err != nil {
-		return Draft{}, err
-	}
-	defer func() { _ = resp.Body.Close() }()
-	if resp.StatusCode == http.StatusNotFound {
-		return Draft{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("gale has no profile code %s", id))
-	}
-	if resp.StatusCode != http.StatusOK {
-		return Draft{}, usererr.Wrap(usererr.Network, fmt.Errorf("gale answered %s for profile code %s", resp.Status, id))
-	}
-	b, err := safefs.ReadCapped(resp.Body, maxInput)
+	b, err := httpkit.DoCapped(g.HTTP, req, maxInput, nil)
 	if errors.Is(err, safefs.ErrTooLarge) {
 		return Draft{}, errors.New("profile code is too large")
 	}
 	if err != nil {
-		return Draft{}, err
+		return Draft{}, fmt.Errorf("gale profile code %s: %w", id, err)
 	}
 	return parseR2Zip(b)
 }

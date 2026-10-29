@@ -115,17 +115,6 @@ func New(version string) *Client {
 	return &Client{version: version, lim: &limiter{}, track: &trackedCache{}, scanMu: &sync.Mutex{}, scans: map[scanKey]map[int]string{}}
 }
 
-// sameOriginRedirect refuses a redirect to another host or scheme, so the API key stays with the Nexus API.
-func sameOriginRedirect(req *http.Request, via []*http.Request) error {
-	if len(via) >= 10 {
-		return errors.New("stopped after 10 redirects")
-	}
-	if first := via[0].URL; req.URL.Host != first.Host || req.URL.Scheme != first.Scheme {
-		return fmt.Errorf("refusing a redirect to %s://%s", req.URL.Scheme, req.URL.Host)
-	}
-	return nil
-}
-
 // with returns a client that authenticates with key or bearer and shares c's rate-limit and tracked-list state.
 func (c *Client) with(key string, bearer TokenSource) *Client {
 	return &Client{HTTP: c.HTTP, BaseURL: c.BaseURL, CacheDir: c.CacheDir, Now: c.Now, key: key, bearer: bearer, version: c.version, lim: c.lim, track: c.track, scanMu: c.scanMu, scans: c.scans, onLimits: c.onLimits, Servers: c.Servers}
@@ -240,13 +229,8 @@ func (c *Client) roundTrip(ctx context.Context, method, path string, body any) (
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
-	hc := cmp.Or(c.HTTP, http.DefaultClient)
-	if hc.CheckRedirect == nil {
-		// Go forwards a custom header such as Apikey to wherever a redirect points.
-		secured := *hc
-		secured.CheckRedirect = sameOriginRedirect
-		hc = &secured
-	}
+	// Go forwards a custom header such as Apikey to wherever a redirect points.
+	hc := httpkit.WithRedirect(cmp.Or(c.HTTP, http.DefaultClient), httpkit.SameOrigin)
 	resp, err := hc.Do(req)
 	if ue, ok := errors.AsType[*url.Error](err); ok {
 		// A link request carries the nxm key and expiry in its query; the error quotes the URL into logs.

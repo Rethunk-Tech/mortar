@@ -9,6 +9,8 @@ import (
 	"net/url"
 	"strings"
 	"testing"
+
+	"github.com/Rethunk-Tech/go-httpkit"
 )
 
 func TestUploadPostsFormAndReturnsLocation(t *testing.T) {
@@ -28,7 +30,7 @@ func TestUploadPostsFormAndReturnsLocation(t *testing.T) {
 	t.Cleanup(srv.Close)
 
 	c := &Client{BaseURL: srv.URL, HTTP: srv.Client()}
-	c.HTTP.CheckRedirect = noFollow
+	c.HTTP.CheckRedirect = httpkit.NoFollow
 	link, err := c.Upload(context.Background(), "SMAPI 4.0 for Stardew Valley")
 	if err != nil {
 		t.Fatal(err)
@@ -63,7 +65,7 @@ func TestUploadNeedsLogPageRedirect(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 	c := &Client{BaseURL: srv.URL, HTTP: srv.Client()}
-	c.HTTP.CheckRedirect = noFollow
+	c.HTTP.CheckRedirect = httpkit.NoFollow
 	if _, err := c.Upload(context.Background(), "not empty"); err == nil {
 		t.Fatal("expected error")
 	}

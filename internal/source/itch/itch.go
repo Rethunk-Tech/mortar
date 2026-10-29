@@ -16,6 +16,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-httpkit"
+
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/secret"
@@ -123,7 +125,7 @@ func (d Driver) call(ctx context.Context, key, path string, params url.Values, o
 // JSON, so the redirect is read, not followed.
 func (d Driver) downloadURL(ctx context.Context, key, uploadID string) (string, error) {
 	client := *cmp.Or(d.HTTP, http.DefaultClient)
-	client.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+	client.CheckRedirect = httpkit.NoFollow
 	ctx, cancel := context.WithTimeout(ctx, source.RequestTimeout)
 	defer cancel()
 	u := strings.TrimRight(cmp.Or(d.URL, BaseURL), "/") + "/uploads/" + url.PathEscape(uploadID) + "/download"

@@ -13,24 +13,13 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/Rethunk-Tech/go-httpkit"
+
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/winname"
 )
-
-// httpsOnly refuses a redirect off https, so a server cannot steer a download to a plain-HTTP or local address.
-func httpsOnly(req *http.Request, via []*http.Request) error {
-	if len(via) >= maxRedirects {
-		return fmt.Errorf("stopped after %d redirects", maxRedirects)
-	}
-	if req.URL.Scheme != "https" {
-		return fmt.Errorf("refusing a redirect to %s://", req.URL.Scheme)
-	}
-	return nil
-}
-
-const maxRedirects = 10
 
 func fileName(u *url.URL) string {
 	n := path.Base(u.Path)
@@ -70,11 +59,7 @@ func (d *Direct) Fetch(ctx context.Context, rawURL, dstDir string) (string, erro
 	if hc == nil {
 		hc = &http.Client{Timeout: 30 * time.Minute}
 	}
-	if hc.CheckRedirect == nil {
-		secured := *hc
-		secured.CheckRedirect = httpsOnly
-		hc = &secured
-	}
+	hc = httpkit.WithRedirect(hc, httpkit.NoDowngrade)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, rawURL, nil)
 	if err != nil {
 		return "", err

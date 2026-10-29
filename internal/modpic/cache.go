@@ -19,6 +19,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-httpkit"
+
 	"github.com/Rethunk-Tech/go-safefs"
 )
 
@@ -102,18 +104,14 @@ func New(dataDir string, client *http.Client) *Cache {
 	if client == nil {
 		client = http.DefaultClient
 	}
-	if client.CheckRedirect == nil {
-		// A redirect must land on an allowed https host as well, or the allowlist covers only the first hop.
-		secured := *client
-		secured.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-			if len(via) >= 5 {
-				return errors.New("too many redirects")
-			}
-			_, err := parsePicture(req.URL.String())
-			return err
+	// A redirect must land on an allowed https host as well, or the allowlist covers only the first hop.
+	client = httpkit.WithRedirect(client, func(req *http.Request, via []*http.Request) error {
+		if len(via) >= 5 {
+			return errors.New("too many redirects")
 		}
-		client = &secured
-	}
+		_, err := parsePicture(req.URL.String())
+		return err
+	})
 	c := &Cache{
 		dir:   filepath.Join(dataDir, "cache", "modpic"),
 		http:  client,

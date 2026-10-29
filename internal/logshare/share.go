@@ -12,6 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-httpkit"
+
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 )
 
@@ -35,12 +37,8 @@ type Client struct {
 func New() *Client {
 	return &Client{
 		BaseURL: DefaultURL,
-		HTTP:    &http.Client{Timeout: Timeout, CheckRedirect: noFollow},
+		HTTP:    &http.Client{Timeout: Timeout, CheckRedirect: httpkit.NoFollow},
 	}
-}
-
-func noFollow(*http.Request, []*http.Request) error {
-	return http.ErrUseLastResponse
 }
 
 // Upload posts the raw SMAPI log as application/x-www-form-urlencoded input=… and
@@ -56,7 +54,7 @@ func (c *Client) Upload(ctx context.Context, logText string) (string, error) {
 	base := cmp.Or(c.BaseURL, DefaultURL)
 	httpClient := c.HTTP
 	if httpClient == nil {
-		httpClient = &http.Client{Timeout: Timeout, CheckRedirect: noFollow}
+		httpClient = &http.Client{Timeout: Timeout, CheckRedirect: httpkit.NoFollow}
 	}
 	form := url.Values{"input": {logText}}.Encode()
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, base, strings.NewReader(form))

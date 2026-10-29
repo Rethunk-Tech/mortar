@@ -16,12 +16,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-httpkit"
+
 	"go.yaml.in/yaml/v3"
 
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/source"
-	"github.com/Rethunk-Tech/mortar/internal/usererr"
 
 	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
 )
@@ -151,20 +152,11 @@ func (c Code) fetch(ctx context.Context, key string) (string, error) {
 		return "", err
 	}
 	req.Header.Set("User-Agent", source.UserAgentWithSite(""))
-	client := cmp.Or(c.HTTP, http.DefaultClient)
-	resp, err := client.Do(req)
+	b, err := httpkit.DoCapped(c.HTTP, req, 64<<20, nil)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("thunderstore profile code %s: %w", key, err)
 	}
-	defer func() { _ = resp.Body.Close() }()
-	if resp.StatusCode == http.StatusNotFound {
-		return "", usererr.Wrap(usererr.NotFound, fmt.Errorf("thunderstore has no profile code %s", key))
-	}
-	if resp.StatusCode != http.StatusOK {
-		return "", usererr.Wrap(usererr.Network, fmt.Errorf("thunderstore answered %s for profile code %s", resp.Status, key))
-	}
-	b, err := safefs.ReadCapped(resp.Body, 64<<20)
-	return string(b), err
+	return string(b), nil
 }
 
 func parseR2Zip(data []byte) (Draft, error) {

@@ -25,6 +25,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-httpkit"
+
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
@@ -126,21 +128,7 @@ var (
 	listingIdle = 10 * time.Minute
 )
 
-// noDowngrade refuses a redirect from https to another scheme.
-func noDowngrade(req *http.Request, via []*http.Request) error {
-	if len(via) >= maxRedirects {
-		return errors.New("too many redirects")
-	}
-	if via[0].URL.Scheme == "https" && req.URL.Scheme != "https" {
-		return fmt.Errorf("refusing a redirect to %s://", req.URL.Scheme)
-	}
-	return nil
-}
-
-const (
-	maxRedirects = 10
-	maxChunks    = 500
-)
+const maxChunks = 500
 
 var communityKey = regexp.MustCompile(`^[a-z0-9][a-z0-9-]*$`)
 
@@ -186,12 +174,7 @@ func (d Driver) open(ctx context.Context, url, ua string) (body io.Reader, done 
 		return nil, nil, err
 	}
 	req.Header.Set("User-Agent", ua)
-	client := cmp.Or(d.HTTP, http.DefaultClient)
-	if client.CheckRedirect == nil {
-		secured := *client
-		secured.CheckRedirect = noDowngrade
-		client = &secured
-	}
+	client := httpkit.WithRedirect(cmp.Or(d.HTTP, http.DefaultClient), httpkit.NoDowngrade)
 	resp, err := client.Do(req)
 	if err != nil {
 		cancel()

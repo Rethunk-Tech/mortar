@@ -80,36 +80,16 @@ func TestFileNameStaysOneSegment(t *testing.T) {
 	}
 }
 
-func TestHTTPSOnlyRedirects(t *testing.T) {
+func TestFetchRefusesARedirectToPlainHTTP(t *testing.T) {
 	t.Parallel()
-	req := func(raw string) *http.Request {
-		u, err := url.Parse(raw)
-		if err != nil {
-			t.Fatal(err)
-		}
-		return &http.Request{URL: u}
-	}
-	via := func(n int) []*http.Request {
-		out := make([]*http.Request, n)
-		for i := range out {
-			out[i] = req("https://example.com/")
-		}
-		return out
-	}
-	for _, tc := range []struct {
-		name    string
-		to      string
-		via     []*http.Request
-		refused bool
-	}{
-		{"https to http", "http://example.com/x", via(1), true},
-		{"https to https", "https://cdn.example.com/x", via(1), false},
-		{"https to file", "file:///etc/passwd", via(1), true},
-		{"nine hops", "https://example.com/x", via(maxRedirects - 1), false},
-		{"ten hops", "https://example.com/x", via(maxRedirects), true},
-	} {
-		if err := httpsOnly(req(tc.to), tc.via); (err != nil) != tc.refused {
-			t.Errorf("%s: err = %v, refused want %v", tc.name, err, tc.refused)
-		}
+	plain := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write([]byte("x")) }))
+	t.Cleanup(plain.Close)
+	secure := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, plain.URL, http.StatusFound)
+	}))
+	t.Cleanup(secure.Close)
+	_, err := (&Direct{HTTP: secure.Client()}).Fetch(t.Context(), secure.URL+"/m.zip", t.TempDir())
+	if err == nil || !strings.Contains(err.Error(), "refusing a redirect") {
+		t.Fatalf("err = %v", err)
 	}
 }

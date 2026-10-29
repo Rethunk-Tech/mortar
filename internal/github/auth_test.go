@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 )
@@ -81,13 +82,18 @@ type roundTripFunc func(*http.Request) (*http.Response, error)
 
 func (f roundTripFunc) RoundTrip(r *http.Request) (*http.Response, error) { return f(r) }
 
-func TestNoDowngradeRefusesAPlainHTTPRedirect(t *testing.T) {
-	first := req(t, "https://api.github.com/x")
-	next := req(t, "http://api.github.com/y")
-	if err := noDowngrade(&http.Client{}).CheckRedirect(next, []*http.Request{first}); err == nil {
-		t.Fatal("redirect to http allowed")
+func TestReleaseCallsRefuseARedirectToPlainHTTP(t *testing.T) {
+	plain := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write([]byte("[]")) }))
+	t.Cleanup(plain.Close)
+	secure := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, plain.URL, http.StatusFound)
+	}))
+	t.Cleanup(secure.Close)
+	if _, err := FetchReleases(context.Background(), secure.Client(), secure.URL); err == nil || !strings.Contains(err.Error(), "refusing a redirect") {
+		t.Fatalf("FetchReleases followed it: %v", err)
 	}
-	if err := noDowngrade(&http.Client{}).CheckRedirect(req(t, "https://objects.githubusercontent.com/z"), []*http.Request{first}); err != nil {
-		t.Fatal(err)
+	c := &Client{HTTP: secure.Client(), APIBase: secure.URL, CacheDir: t.TempDir()}
+	if _, err := c.ReleaseNotes(context.Background(), "o", "r", "v1"); err == nil || !strings.Contains(err.Error(), "refusing a redirect") {
+		t.Fatalf("ReleaseNotes followed it: %v", err)
 	}
 }

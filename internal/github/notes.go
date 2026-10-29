@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-httpkit"
+
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/go-safefs/diskcache"
 )
@@ -31,7 +33,7 @@ func (c *Client) ReleaseNotes(ctx context.Context, owner, repo, tag string) (str
 	}
 	req.Header.Set("Accept", "application/vnd.github+json")
 	DefaultAuth.Apply(req)
-	hc := noDowngrade(cmp.Or(c.HTTP, http.DefaultClient))
+	hc := httpkit.WithRedirect(cmp.Or(c.HTTP, http.DefaultClient), httpkit.NoDowngrade)
 	resp, err := hc.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("could not reach GitHub: %w", err)

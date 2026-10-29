@@ -134,7 +134,7 @@ func FetchReleases(ctx context.Context, hc *http.Client, url string) ([]Release,
 	if hc == nil {
 		hc = http.DefaultClient
 	}
-	resp, err := noDowngrade(hc).Do(req)
+	resp, err := httpkit.WithRedirect(hc, httpkit.NoDowngrade).Do(req)
 	netstate.Record("github", err)
 	if err != nil {
 		return nil, fmt.Errorf("could not reach GitHub: %w", err)
