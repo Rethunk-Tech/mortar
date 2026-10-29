@@ -1,45 +1,47 @@
 import { useLingui } from '@lingui/react/macro'
-import { Alert, Chip } from '@mui/material'
+import { Alert } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { KeysUnencrypted } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
+import { refresh } from '../../shell/offline.ts'
 import { githubLoggedIn } from '../../shell/sharedReads.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
-import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
+import { SettingsSection } from '../SettingsSection.tsx'
 import { useSettingsRelevant } from '../useSettingsSearch.ts'
+import { AccountRow, ServiceBlock } from './AccountRow.tsx'
 import { ItchAccount } from './ItchAccount.tsx'
 import { NexusMods } from './NexusMods.tsx'
+import { Connection, ConnectionAccountRow, Quota } from './SourceConnection.tsx'
 
-// The login answer lands on the row alone, not the section around it.
-function GitHubLogin() {
+const NO_ACCOUNT = ['thunderstore', 'modrinth', 'curseforge', 'vsmoddb', 'paradox']
+
+// The login answer lands on the block alone, not the page around it.
+function GitHubAccount() {
   const { t } = useLingui()
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null)
-  const label = t`${{ source: sourceLabel('github') }} CLI login`
-  const using = t`Mortar uses your gh login for ${{ source: sourceLabel('github') }} requests, which raises the rate limit.`
-  const without = t`Mortar sends ${{ source: sourceLabel('github') }} requests without a login. Run gh auth login to raise the rate limit.`
-  const relevant = useSettingsRelevant(label, using, without)
+  const relevant = useSettingsRelevant(
+    sourceLabel('github'),
+    t`Your gh login · higher rate limit`,
+    t`Requests`,
+  )
   useEffect(() => {
     if (relevant) {
       githubLoggedIn().then(setLoggedIn).catch(reportUnexpected)
     }
   }, [relevant])
+  let status = ''
+  if (loggedIn) {
+    status = t`Your gh login · higher rate limit`
+  } else if (loggedIn === false) {
+    status = t`No login, so the lower rate limit applies. Run gh auth login to raise it.`
+  }
   return (
-    <SettingRow label={label} description={loggedIn ? using : without}>
-      {loggedIn === null ? null : (
-        <Chip
-          size="small"
-          color={loggedIn ? 'primary' : 'default'}
-          label={loggedIn ? t`In use` : t`Not signed in`}
-        />
-      )}
-    </SettingRow>
-  )
-}
-
-function GitHubAccount() {
-  return (
-    <SettingsSection title={sourceLabel('github')}>
-      <GitHubLogin />
+    <SettingsSection>
+      <ServiceBlock>
+        <AccountRow source="github" tone={loggedIn ? 'ok' : 'none'} status={status} />
+        <Connection source="github" />
+        <Quota source="github" />
+      </ServiceBlock>
     </SettingsSection>
   )
 }
@@ -61,12 +63,26 @@ function UnencryptedKeys() {
 }
 
 export function Accounts() {
+  const { t } = useLingui()
+  const relevant = useSettingsRelevant(t`Connection`)
+  useEffect(() => {
+    if (relevant) {
+      refresh().catch(reportUnexpected)
+    }
+  }, [relevant])
   return (
     <>
       <UnencryptedKeys />
       <NexusMods />
       <GitHubAccount />
       <ItchAccount />
+      {NO_ACCOUNT.map((id) => (
+        <SettingsSection key={id}>
+          <ServiceBlock>
+            <ConnectionAccountRow source={id} />
+          </ServiceBlock>
+        </SettingsSection>
+      ))}
     </>
   )
 }

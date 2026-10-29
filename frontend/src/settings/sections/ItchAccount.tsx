@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Alert, Box, Button, Chip, TextField } from '@mui/material'
+import { Alert, Box, Button, TextField } from '@mui/material'
 import { type SubmitEvent, useEffect, useId, useState } from 'react'
 import {
   SignIn,
@@ -12,9 +12,10 @@ import { errorKind } from '../../toasts/errorKind.ts'
 import { type InlineError, inlineError, reportUnexpected } from '../../toasts/report.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettingsRelevant } from '../useSettingsSearch.ts'
+import { AccountRow, ServiceBlock } from './AccountRow.tsx'
+import { Connection } from './SourceConnection.tsx'
 
-// The account answer lands on the row alone, not the section around it.
-function ItchRow() {
+export function ItchAccount() {
   const { t } = useLingui()
   const keyId = useId()
   const [name, setName] = useState<string | null>(null)
@@ -22,8 +23,8 @@ function ItchRow() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<InlineError | null>(null)
   const relevant = useSettingsRelevant(
-    t`Account`,
-    t`Your API key is kept in your system keyring.`,
+    sourceLabel('itch'),
+    t`Remove key`,
     t`API key`,
     t`Kept in your system keyring. Create one on ${{ source: sourceLabel('itch') }} under Settings, API keys.`,
   )
@@ -57,57 +58,67 @@ function ItchRow() {
       .then(() => setName(''))
       .catch(reportUnexpected)
   }
-  return name ? (
-    <SettingRow label={t`Account`} description={t`Your API key is kept in your system keyring.`}>
-      <Chip size="small" color="primary" label={name} />
-      <Button size="small" onClick={signOut}>
-        {t`Remove key`}
-      </Button>
-    </SettingRow>
-  ) : (
-    <SettingRow
-      label={t`API key`}
-      description={t`Kept in your system keyring. Create one on ${{ source: sourceLabel('itch') }} under Settings, API keys.`}
-    >
-      <Box
-        component="form"
-        onSubmit={test}
-        sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-          <TextField
-            id={keyId}
-            slotProps={{ htmlInput: { 'aria-label': t`API key` } }}
-            type="password"
-            size="small"
-            autoComplete="off"
-            value={key}
-            onChange={(e) => setKey(e.target.value)}
-            sx={{ width: 260, maxWidth: '100%' }}
-          />
-          <Button
-            type="submit"
-            variant="outlined"
-            disabled={busy || key.trim() === ''}
-            sx={{ flexShrink: 0 }}
-          >
-            {t`Test`}
-          </Button>
-        </Box>
-        {error ? (
-          <Alert variant="compact" severity="error" title={error.details}>
-            {error.message}
-          </Alert>
-        ) : null}
-      </Box>
-    </SettingRow>
-  )
-}
-
-export function ItchAccount() {
+  let itchStatus = ''
+  if (name) {
+    itchStatus = t`${name} · API key in your system keyring`
+  } else if (name !== null) {
+    itchStatus = t`Not signed in`
+  }
   return (
-    <SettingsSection title={sourceLabel('itch')}>
-      <ItchRow />
+    <SettingsSection>
+      <ServiceBlock>
+        <AccountRow
+          source="itch"
+          tone={name ? 'ok' : 'none'}
+          status={itchStatus}
+          action={
+            name ? (
+              <Button size="small" onClick={signOut}>
+                {t`Remove key`}
+              </Button>
+            ) : null
+          }
+        />
+        {name ? null : (
+          <SettingRow
+            label={t`API key`}
+            description={t`Kept in your system keyring. Create one on ${{ source: sourceLabel('itch') }} under Settings, API keys.`}
+          >
+            <Box
+              component="form"
+              onSubmit={test}
+              sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
+                <TextField
+                  id={keyId}
+                  slotProps={{ htmlInput: { 'aria-label': t`API key` } }}
+                  type="password"
+                  size="small"
+                  autoComplete="off"
+                  value={key}
+                  onChange={(e) => setKey(e.target.value)}
+                  sx={{ width: 260, maxWidth: '100%' }}
+                />
+                <Button
+                  type="submit"
+                  variant="outlined"
+                  disabled={busy || key.trim() === ''}
+                  sx={{ flexShrink: 0 }}
+                >
+                  {t`Test`}
+                </Button>
+              </Box>
+              {error ? (
+                <Alert variant="compact" severity="error" title={error.details}>
+                  {error.message}
+                </Alert>
+              ) : null}
+            </Box>
+          </SettingRow>
+        )}
+        <Connection source="itch" />
+      </ServiceBlock>
     </SettingsSection>
   )
 }

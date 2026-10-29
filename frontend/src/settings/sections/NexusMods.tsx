@@ -1,8 +1,8 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Alert, Box, Button, Chip, TextField } from '@mui/material'
+import { Alert, Box, Button, TextField } from '@mui/material'
 import { Events } from '@wailsio/runtime'
-import { Check, LogIn, LogOut } from 'lucide-react'
+import { LogIn, LogOut } from 'lucide-react'
 import { type SubmitEvent, useEffect, useId, useState } from 'react'
 import {
   APIKeyAvailable,
@@ -27,8 +27,10 @@ import { PrefByKey } from '../PrefRow.tsx'
 import { Searchable, SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import { useSettingsRelevant } from '../useSettingsSearch.ts'
+import { AccountRow, ServiceBlock } from './AccountRow.tsx'
 import { NexusSSO } from './NexusSSO.tsx'
 import { useNxmHandler } from './nxmHandler.tsx'
+import { Connection, Quota } from './SourceConnection.tsx'
 
 function UntrackConfirmDialog({
   unused,
@@ -97,13 +99,9 @@ function UntrackConfirmDialog({
 }
 
 function NexusModsSignedIn({
-  name,
-  premium,
   askEndorse,
   onAskEndorse,
 }: {
-  name: string
-  premium: boolean
   askEndorse: boolean
   onAskEndorse: (on: boolean) => void
 }) {
@@ -139,73 +137,32 @@ function NexusModsSignedIn({
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
-      <Searchable
-        terms={`${t`${{ source: sourceLabel('nexus') }} account`} ${t`Sign out`} ${name}`}
+    <>
+      <PrefByKey prefKey="autoTrackNexus" />
+      <SettingRow
+        label={t`Untrack on ${{ source: sourceLabel('nexus') }}`}
+        description={trackedText}
       >
-        <Alert
-          variant="compact"
-          severity="success"
-          icon={<Check size={16} aria-hidden={true} />}
-          action={
-            <Button
-              color="inherit"
-              size="small"
-              startIcon={<LogOut size={16} />}
-              onClick={() => {
-                SignOut()
-                  .then(() =>
-                    useToasts.getState().push({
-                      kind: 'success',
-                      title: t`Signed out of ${{ source: sourceLabel('nexus') }}`,
-                    }),
-                  )
-                  .catch(reportUnexpected)
-              }}
-            >
-              {t`Sign out`}
-            </Button>
-          }
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span>{t`Signed in as ${name}`}</span>
-            <Chip
-              size="small"
-              color={premium ? 'primary' : 'default'}
-              label={premium ? t`Premium` : t`Free`}
-            />
-          </Box>
-        </Alert>
-      </Searchable>
-      <SettingsSection title={t`Tracking`}>
-        <PrefByKey prefKey="autoTrackNexus" />
-        <SettingRow
-          label={t`Untrack on ${{ source: sourceLabel('nexus') }}`}
-          description={trackedText}
-        >
-          <Box sx={{ display: 'flex', gap: space.gap }}>
-            <Button
-              variant="outlined"
-              disabled={untrackOff}
-              onClick={() => setConfirming(true)}
-            >{t`Untrack unused…`}</Button>
-            <Button
-              variant="outlined"
-              disabled={untrackOff}
-              onClick={() => setConfirming(false)}
-            >{t`Untrack all…`}</Button>
-          </Box>
-        </SettingRow>
-      </SettingsSection>
-      <SettingsSection title={t`Endorsements`}>
-        <SettingRow label={t`Ask me to endorse mods I keep using`}>
-          <PrefSwitch
-            checked={askEndorse}
-            onChange={onAskEndorse}
-            label={t`Ask me to endorse mods I keep using`}
-          />
-        </SettingRow>
-      </SettingsSection>
+        <Box sx={{ display: 'flex', gap: space.gap }}>
+          <Button
+            variant="outlined"
+            disabled={untrackOff}
+            onClick={() => setConfirming(true)}
+          >{t`Untrack unused…`}</Button>
+          <Button
+            variant="outlined"
+            disabled={untrackOff}
+            onClick={() => setConfirming(false)}
+          >{t`Untrack all…`}</Button>
+        </Box>
+      </SettingRow>
+      <SettingRow label={t`Ask me to endorse mods I keep using`}>
+        <PrefSwitch
+          checked={askEndorse}
+          onChange={onAskEndorse}
+          label={t`Ask me to endorse mods I keep using`}
+        />
+      </SettingRow>
       <UntrackConfirmDialog
         unused={confirming}
         busy={busy}
@@ -216,7 +173,7 @@ function NexusModsSignedIn({
         setTrackedCount={setTrackedCount}
         onCancel={() => setConfirming(null)}
       />
-    </Box>
+    </>
   )
 }
 
@@ -325,17 +282,47 @@ export function NexusMods() {
   const onAskEndorse = (on: boolean) => {
     SetAskEndorseMods(on).catch(reportUnexpected)
   }
+  const signOut = () => {
+    SignOut()
+      .then(() =>
+        useToasts.getState().push({
+          kind: 'success',
+          title: t`Signed out of ${{ source: sourceLabel('nexus') }}`,
+        }),
+      )
+      .catch(reportUnexpected)
+  }
   return (
-    <SettingsSection title={t`${{ source: sourceLabel('nexus') }}`} tiles={false}>
-      <NexusSignIn />
-      {signedIn ? (
-        <NexusModsSignedIn
-          name={name}
-          premium={premium}
-          askEndorse={askEndorse}
-          onAskEndorse={onAskEndorse}
+    <SettingsSection>
+      <ServiceBlock>
+        <AccountRow
+          source="nexus"
+          tone={signedIn ? 'ok' : 'none'}
+          status={
+            signedIn
+              ? `${name} · ${premium ? t`Premium account` : t`Free account`}`
+              : t`Not signed in`
+          }
+          action={
+            signedIn ? (
+              <Button
+                color="inherit"
+                size="small"
+                startIcon={<LogOut size={16} />}
+                onClick={signOut}
+              >
+                {t`Sign out`}
+              </Button>
+            ) : null
+          }
         />
-      ) : null}
+        <NexusSignIn />
+        {signedIn ? (
+          <NexusModsSignedIn askEndorse={askEndorse} onAskEndorse={onAskEndorse} />
+        ) : null}
+        <Connection source="nexus" />
+        <Quota source="nexus" />
+      </ServiceBlock>
     </SettingsSection>
   )
 }

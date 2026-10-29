@@ -13,6 +13,8 @@ const SYNONYMS: Record<string, string[]> = {
   apikey: ['account', 'api key'],
   token: ['account', 'api key'],
   login: ['account', 'sign in'],
+  health: ['connection', 'requests'],
+  'rate limit': ['connection', 'requests'],
   password: ['account', 'sign in'],
   trash: ['recently deleted', 'storage'],
   recycle: ['recently deleted', 'storage'],

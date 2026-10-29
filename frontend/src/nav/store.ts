@@ -13,7 +13,6 @@ type SettingsSection =
   | 'mods'
   | 'downloads'
   | 'accounts'
-  | 'sources'
   | 'updates'
   | 'notifications'
   | 'storage'

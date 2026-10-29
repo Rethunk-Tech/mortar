@@ -12,7 +12,6 @@ const SETTINGS_SECTIONS = [
   'Mods and profiles',
   'Downloads',
   'Accounts',
-  'Source health',
   'Updates',
   'Notifications',
   'Storage',

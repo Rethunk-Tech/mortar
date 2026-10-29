@@ -36,5 +36,7 @@ test('a query matches a label, a description or a synonym, and an empty one matc
   expect(prefMatches('api key', 'Account', '')).toBe(true)
   expect(prefMatches('trash', 'Recently deleted retention', '')).toBe(true)
   expect(prefMatches('cleanup', 'Clean up…', '')).toBe(true)
+  expect(prefMatches('health', 'Connection', '')).toBe(true)
+  expect(prefMatches('rate limit', 'Requests', '')).toBe(true)
   expect(prefMatches('dark', 'Language', '')).toBe(false)
 })

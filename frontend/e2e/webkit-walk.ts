@@ -50,7 +50,6 @@ const SECTIONS = [
   'Mods and profiles',
   'Downloads',
   'Accounts',
-  'Source health',
   'Updates',
   'Notifications',
   'Storage',

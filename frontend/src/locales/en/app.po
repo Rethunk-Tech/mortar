@@ -4420,10 +4420,6 @@ msgstr "The rest of Mortar still works. Try again, or copy the details for a bug
 msgid "Title"
 msgstr "Title"
 
-#: src/commandPalette/CommandPalette.tsx
-msgid "Source health"
-msgstr "Source health"
-
 #: src/game/Home.tsx
 msgid "All saves"
 msgstr "All saves"

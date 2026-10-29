@@ -4420,10 +4420,6 @@ msgstr ""
 msgid "Title"
 msgstr ""
 
-#: src/commandPalette/CommandPalette.tsx
-msgid "Source health"
-msgstr ""
-
 #: src/game/Home.tsx
 msgid "All saves"
 msgstr ""

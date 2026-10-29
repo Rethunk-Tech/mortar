@@ -35,10 +35,6 @@ msgstr "Start muted"
 msgid "Interface tour"
 msgstr "Interface tour"
 
-#: src/settings/sections/Accounts.tsx
-msgid "{source} CLI login"
-msgstr "{source} CLI login"
-
 #: src/settings/sections/DataUsage.tsx
 msgid "Other"
 msgstr "Other"
@@ -234,10 +230,6 @@ msgstr "List"
 msgid "Installed: Mortar {version}"
 msgstr "Installed: Mortar {version}"
 
-#: src/settings/sections/ItchAccount.tsx
-msgid "Your API key is kept in your system keyring."
-msgstr "Your API key is kept in your system keyring."
-
 #: src/settings/sections/Updates.tsx
 msgid "Mod loader updates"
 msgstr "Mod loader updates"
@@ -266,11 +258,7 @@ msgstr "and open it in {app}. If that release has none, unzip the download, open
 msgid "Start the game without a backup."
 msgstr "Start the game without a backup."
 
-#: src/settings/sections/NexusMods.tsx
-msgid "Free"
-msgstr "Free"
-
-#: src/settings/sections/Sources.tsx
+#: src/settings/sections/Accounts.tsx
 msgid "No login, so the lower rate limit applies. Run gh auth login to raise it."
 msgstr "No login, so the lower rate limit applies. Run gh auth login to raise it."
 
@@ -334,7 +322,7 @@ msgstr "Used with Custom command. {path} stands for the folder to scan; exit cod
 msgid "Follows your desktop"
 msgstr "Follows your desktop"
 
-#: src/settings/sections/Sources.tsx
+#: src/settings/sections/SourceConnection.tsx
 msgid "Recheck"
 msgstr "Recheck"
 
@@ -370,10 +358,6 @@ msgstr "{count, plural, one {# mod checked} other {# mods checked}}"
 #: src/settings/sections/NxmReclaim.tsx
 msgid "Take them back for Mortar?"
 msgstr "Take them back for Mortar?"
-
-#: src/settings/sections/Accounts.tsx
-msgid "In use"
-msgstr "In use"
 
 #: src/settings/sections/DataMove.tsx
 msgid "Move the data folder?"
@@ -423,7 +407,7 @@ msgstr "No scanning. The mod sites' own scans still apply."
 msgid "Off, a share names only the mods you chose, and the receiver gets what they need. Default for Share and Export."
 msgstr "Off, a share names only the mods you chose, and the receiver gets what they need. Default for Share and Export."
 
-#: src/settings/sections/Sources.tsx
+#: src/settings/sections/SourceConnection.tsx
 msgid "the connection failed"
 msgstr "the connection failed"
 
@@ -543,7 +527,7 @@ msgstr "Name"
 msgid "Dependency versions"
 msgstr "Dependency versions"
 
-#: src/settings/sections/Sources.tsx
+#: src/settings/sections/SourceConnection.tsx
 msgid "Could not recheck {source}"
 msgstr "Could not recheck {source}"
 
@@ -632,7 +616,8 @@ msgstr "Leave the caches alone."
 msgid "Scales text, controls and spacing together"
 msgstr "Scales text, controls and spacing together"
 
-#: src/settings/sections/Accounts.tsx
+#: src/settings/sections/ItchAccount.tsx
+#: src/settings/sections/NexusMods.tsx
 msgid "Not signed in"
 msgstr "Not signed in"
 
@@ -709,10 +694,6 @@ msgstr "Check Mortar"
 msgid "{count} settings temporary or copy file is present"
 msgstr "{count} settings temporary or copy file is present"
 
-#: src/settings/sections/NexusMods.tsx
-msgid "{source}"
-msgstr "{source}"
-
 #: src/settings/sections/DataImport.tsx
 #: src/settings/SettingsPage.tsx
 msgid "Appearance"
@@ -734,11 +715,6 @@ msgstr "Mods and profiles"
 #: src/settings/sections/Updates.tsx
 msgid "Mortar {version} is available."
 msgstr "Mortar {version} is available."
-
-#: src/settings/sections/ItchAccount.tsx
-#: src/settings/sections/Sources.tsx
-msgid "Account"
-msgstr "Account"
 
 #: src/settings/prefCopy.ts
 msgid "Offer to add new mod archives that land in your Downloads folder or Mortar's download folder"
@@ -787,10 +763,6 @@ msgstr "Load a save to see values"
 #: src/settings/sections/General.tsx
 msgid "Nearby computers cannot reach Mortar. Set the network to Private in {os} network settings."
 msgstr "Nearby computers cannot reach Mortar. Set the network to Private in {os} network settings."
-
-#: src/settings/sections/Sources.tsx
-msgid "Not signed in. Add your API key in Accounts."
-msgstr "Not signed in. Add your API key in Accounts."
 
 #: src/settings/sections/checkDetail.ts
 msgid "{game} with {loader} {version} in {path} ({where})"
@@ -904,7 +876,7 @@ msgstr "Storage"
 msgid "Licence"
 msgstr "Licence"
 
-#: src/settings/sections/Sources.tsx
+#: src/settings/sections/SourceConnection.tsx
 msgid "Unreachable"
 msgstr "Unreachable"
 
@@ -1323,8 +1295,9 @@ msgstr "Save these settings to a file, or load them on another computer."
 msgid "Include beta releases"
 msgstr "Include beta releases"
 
+#: src/settings/sections/Accounts.tsx
 #: src/settings/sections/Downloads.tsx
-#: src/settings/sections/Sources.tsx
+#: src/settings/sections/SourceConnection.tsx
 msgid "Connection"
 msgstr "Connection"
 
@@ -1344,10 +1317,6 @@ msgstr "Per profile"
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "All checks passed"
 msgstr "All checks passed"
-
-#: src/settings/sections/Sources.tsx
-msgid "API key not set. Itch.io search is off until you add one."
-msgstr "API key not set. Itch.io search is off until you add one."
 
 #: src/settings/sections/General.tsx
 msgid "Export…"
@@ -1393,10 +1362,6 @@ msgstr "Settings backups"
 #: src/settings/sections/NexusMods.tsx
 msgid "Untrack all…"
 msgstr "Untrack all…"
-
-#: src/settings/sections/Sources.tsx
-msgid "No account needed"
-msgstr "No account needed"
 
 #: src/settings/prefCopy.ts
 msgid "Pause downloads while the game runs"
@@ -1624,7 +1589,7 @@ msgid "Background"
 msgstr "Background"
 
 #: src/settings/NexusMeter.tsx
-#: src/settings/sections/Sources.tsx
+#: src/settings/sections/SourceConnection.tsx
 msgid "Request counts appear after Mortar talks to {source}."
 msgstr "Request counts appear after Mortar talks to {source}."
 
@@ -1641,7 +1606,7 @@ msgstr "{source} download host"
 msgid "Download folder"
 msgstr "Download folder"
 
-#: src/settings/sections/Sources.tsx
+#: src/settings/sections/SourceConnection.tsx
 msgid "{remaining} of {limit} requests left"
 msgstr "{remaining} of {limit} requests left"
 
@@ -1755,10 +1720,6 @@ msgstr "Absolute"
 msgid "Enter 1 or more"
 msgstr "Enter 1 or more"
 
-#: src/settings/sections/NexusMods.tsx
-msgid "Endorsements"
-msgstr "Endorsements"
-
 #: src/settings/sections/FolderListRow.tsx
 msgid "Remove {name}"
 msgstr "Remove {name}"
@@ -1868,6 +1829,10 @@ msgstr "Nothing would change."
 msgid "Applies after Mortar restarts."
 msgstr "Applies after Mortar restarts."
 
+#: src/settings/sections/NexusMods.tsx
+msgid "Premium account"
+msgstr "Premium account"
+
 #: src/settings/sections/DataMove.tsx
 msgid "Move…"
 msgstr "Move…"
@@ -1892,6 +1857,10 @@ msgstr "API key"
 msgid "Share FOMOD choices"
 msgstr "Share FOMOD choices"
 
+#: src/settings/sections/Accounts.tsx
+msgid "Your gh login · higher rate limit"
+msgstr "Your gh login · higher rate limit"
+
 #: src/settings/prefCopyGame.ts
 msgid "Delete the caches once after the mod set changes; the game rebuilds them."
 msgstr "Delete the caches once after the mod set changes; the game rebuilds them."
@@ -1911,10 +1880,6 @@ msgstr "Days left"
 #: src/settings/sections/Downloads.tsx
 msgid "{name} ({game})"
 msgstr "{name} ({game})"
-
-#: src/settings/sections/Accounts.tsx
-msgid "Mortar sends {source} requests without a login. Run gh auth login to raise the rate limit."
-msgstr "Mortar sends {source} requests without a login. Run gh auth login to raise the rate limit."
 
 #: src/settings/sections/NexusMods.tsx
 msgid "Kept in your system keyring. Find it on {source} under Settings, API Keys."
@@ -1952,6 +1917,10 @@ msgstr "Clicking these links on {source} starts the download in Mortar."
 #: src/settings/sections/Updates.tsx
 msgid "Mods"
 msgstr "Mods"
+
+#: src/settings/sections/NexusMods.tsx
+msgid "Free account"
+msgstr "Free account"
 
 #: src/settings/prefCopy.ts
 msgid "Auto-retry failed downloads"
@@ -2085,7 +2054,7 @@ msgstr "Update ready: applies when you close Mortar."
 msgid "Default mods view"
 msgstr "Default mods view"
 
-#: src/settings/sections/Sources.tsx
+#: src/settings/sections/SourceConnection.tsx
 msgid "Reachable"
 msgstr "Reachable"
 
@@ -2104,10 +2073,6 @@ msgstr "Enable Share profiles on the local network first."
 #: src/settings/sections/SyncFolder.tsx
 msgid "Sync folder"
 msgstr "Sync folder"
-
-#: src/settings/sections/Sources.tsx
-msgid "No account"
-msgstr "No account"
 
 #: src/settings/sections/GameSettings.tsx
 msgid "Not found"
@@ -2154,7 +2119,7 @@ msgstr "Run again"
 msgid "Remove {loader} from {launcher}'s launch options"
 msgstr "Remove {loader} from {launcher}'s launch options"
 
-#: src/settings/sections/Sources.tsx
+#: src/settings/sections/SourceConnection.tsx
 msgid "resets {when}"
 msgstr "resets {when}"
 
@@ -2266,10 +2231,6 @@ msgstr "Spacing of buttons and lists"
 msgid "Every profile of this game shares these. Switch to all profiles to change them."
 msgstr "Every profile of this game shares these. Switch to all profiles to change them."
 
-#: src/settings/SettingsPage.tsx
-msgid "Source health"
-msgstr "Source health"
-
 #: src/settings/updates.ts
 msgid "Check your connection and try again."
 msgstr "Check your connection and try again."
@@ -2309,10 +2270,6 @@ msgstr "Data to copy: {size}"
 #: src/settings/sections/HiddenMods.tsx
 msgid "Everything by {a}"
 msgstr "Everything by {a}"
-
-#: src/settings/sections/Sources.tsx
-msgid "API key set for {key}"
-msgstr "API key set for {key}"
 
 #: src/settings/sections/LoaderRow.tsx
 msgid "{name} is not installed"
@@ -2516,7 +2473,7 @@ msgstr "Reset"
 msgid "No settings temporary or copy files"
 msgstr "No settings temporary or copy files"
 
-#: src/settings/sections/Sources.tsx
+#: src/settings/sections/SourceConnection.tsx
 msgid "its address could not be looked up"
 msgstr "its address could not be looked up"
 
@@ -2593,7 +2550,7 @@ msgstr "Data folder has no free space"
 msgid "Freed {size}"
 msgstr "Freed {size}"
 
-#: src/settings/sections/Sources.tsx
+#: src/settings/sections/SourceConnection.tsx
 msgid "Free accounts click Download on {source} for each file; Mortar opens each page in turn."
 msgstr "Free accounts click Download on {source} for each file; Mortar opens each page in turn."
 
@@ -2637,7 +2594,7 @@ msgstr "Where this game's profiles are shared between your computers"
 msgid "The port Mortar uses for local sharing"
 msgstr "The port Mortar uses for local sharing"
 
-#: src/settings/sections/Sources.tsx
+#: src/settings/sections/SourceConnection.tsx
 msgid "No answer {when}: {reason}"
 msgstr "No answer {when}: {reason}"
 
@@ -2689,7 +2646,8 @@ msgstr "Open folder"
 msgid "Profile settings, mod lists and configs sync through this folder (with {app}, {otherApp} or a NAS); each computer downloads the mod files itself. Each game has its own subfolder, or its own folder or no sync, set in the game's settings."
 msgstr "Profile settings, mod lists and configs sync through this folder (with {app}, {otherApp} or a NAS); each computer downloads the mod files itself. Each game has its own subfolder, or its own folder or no sync, set in the game's settings."
 
-#: src/settings/sections/Sources.tsx
+#: src/settings/sections/Accounts.tsx
+#: src/settings/sections/SourceConnection.tsx
 msgid "Requests"
 msgstr "Requests"
 
@@ -2721,10 +2679,6 @@ msgstr "Keep"
 #: src/settings/sections/General.tsx
 msgid "Settings file"
 msgstr "Settings file"
-
-#: src/settings/sections/Sources.tsx
-msgid "Signed in"
-msgstr "Signed in"
 
 #: src/settings/sections/checkDetail.ts
 msgid "Store index.json is unreadable or corrupt"
@@ -2858,10 +2812,6 @@ msgstr "Hide to tray"
 msgid "Use the sync folder set under Mods and profiles, if any."
 msgstr "Use the sync folder set under Mods and profiles, if any."
 
-#: src/settings/PrefRow.tsx
-msgid "Same as the game"
-msgstr "Same as the game"
-
 #: src/settings/sections/SourceOrder.tsx
 msgid "Move up"
 msgstr "Move up"
@@ -2882,6 +2832,10 @@ msgstr "A download finishes"
 msgid "Download failed"
 msgstr "Download failed"
 
+#: src/settings/PrefRow.tsx
+msgid "This profile's own value"
+msgstr "This profile's own value"
+
 #: src/settings/prefCopyGame.ts
 msgid "Auto"
 msgstr "Auto"
@@ -2893,10 +2847,6 @@ msgstr "Follow live log"
 #: src/settings/sections/checkDetail.ts
 msgid "nxm:// links: Mortar"
 msgstr "nxm:// links: Mortar"
-
-#: src/settings/sections/Sources.tsx
-msgid "Not set up"
-msgstr "Not set up"
 
 #: src/settings/prefCopy.ts
 msgid "Save backups kept"
@@ -2938,7 +2888,7 @@ msgstr "Install {version}…"
 msgid "Mortar bridge"
 msgstr "Mortar bridge"
 
-#: src/settings/sections/Sources.tsx
+#: src/settings/sections/SourceConnection.tsx
 msgid "Mortar has not asked {source} this session."
 msgstr "Mortar has not asked {source} this session."
 
@@ -2947,10 +2897,6 @@ msgstr "Mortar has not asked {source} this session."
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Enter a number from {min} to {max}"
 msgstr "Enter a number from {min} to {max}"
-
-#: src/settings/PrefRow.tsx
-msgid "Game: {value}"
-msgstr "Game: {value}"
 
 #: src/settings/shortcutLabels.ts
 msgid "Open focused mod details"
@@ -2967,10 +2913,6 @@ msgstr "Latest (recommended)"
 #: src/settings/prefCopyRequirements.ts
 msgid "Auto-enable requirements"
 msgstr "Auto-enable requirements"
-
-#: src/settings/sections/NexusMods.tsx
-msgid "Premium"
-msgstr "Premium"
 
 #: src/settings/sections/checkDetail.ts
 msgid "{game}: the {app} prefix does not load {name} natively, so its loader will not start"
@@ -3019,10 +2961,6 @@ msgstr "Files"
 #: src/settings/sections/DataStoreCheck.tsx
 msgid "{count, plural, one {# has damaged files} other {# have damaged files}}"
 msgstr "{count, plural, one {# has damaged files} other {# have damaged files}}"
-
-#: src/settings/sections/Accounts.tsx
-msgid "Mortar uses your gh login for {source} requests, which raises the rate limit."
-msgstr "Mortar uses your gh login for {source} requests, which raises the rate limit."
 
 #: src/settings/GraphicsApiRow.tsx
 msgid "{name} (recommended)"
@@ -3144,7 +3082,7 @@ msgstr "Play"
 msgid "Luck skill"
 msgstr "Luck skill"
 
-#: src/settings/sections/Sources.tsx
+#: src/settings/sections/SourceConnection.tsx
 msgid "the connection was refused"
 msgstr "the connection was refused"
 
@@ -3185,7 +3123,7 @@ msgstr "Mining skill"
 msgid "Import settings?"
 msgstr "Import settings?"
 
-#: src/settings/sections/Sources.tsx
+#: src/settings/sections/SourceConnection.tsx
 msgid "Not contacted yet"
 msgstr "Not contacted yet"
 
@@ -3216,10 +3154,6 @@ msgstr "View licences…"
 #: src/settings/ScopeSwitch.tsx
 msgid "Settings for"
 msgstr "Settings for"
-
-#: src/settings/sections/NexusMods.tsx
-msgid "Tracking"
-msgstr "Tracking"
 
 #: src/settings/sections/SourceOrder.tsx
 msgid "Preferred source"
@@ -3309,7 +3243,7 @@ msgstr "Only lines about {object}"
 msgid "About"
 msgstr "About"
 
-#: src/settings/sections/Sources.tsx
+#: src/settings/sections/SourceConnection.tsx
 msgid "it took too long to answer"
 msgstr "it took too long to answer"
 
@@ -3387,6 +3321,10 @@ msgstr "Player"
 #: src/settings/sections/Shortcuts.tsx
 msgid "Profiles"
 msgstr "Profiles"
+
+#: src/settings/PrefRow.tsx
+msgid "Reset to the game's: {value}"
+msgstr "Reset to the game's: {value}"
 
 #: src/settings/prefCopy.ts
 msgid "Update digest notification"
@@ -3468,11 +3406,6 @@ msgstr "Game install"
 msgid "This deletes the game folder at {path}, with every file in it, including {loader} and mods placed there. Your saves and your profiles' mods are stored elsewhere and are kept."
 msgstr "This deletes the game folder at {path}, with every file in it, including {loader} and mods placed there. Your saves and your profiles' mods are stored elsewhere and are kept."
 
-#: src/settings/sections/NexusMods.tsx
-#: src/settings/sections/Sources.tsx
-msgid "Signed in as {name}"
-msgstr "Signed in as {name}"
-
 #: src/settings/sections/General.tsx
 msgid "System default"
 msgstr "System default"
@@ -3520,6 +3453,10 @@ msgstr "Leave them"
 #: src/settings/sections/Updates.tsx
 msgid "Check only enabled mods"
 msgstr "Check only enabled mods"
+
+#: src/settings/sections/ItchAccount.tsx
+msgid "{name} · API key in your system keyring"
+msgstr "{name} · API key in your system keyring"
 
 #: src/settings/shortcutLabels.ts
 msgid "Close dialog or clear selection"
@@ -3757,10 +3694,6 @@ msgstr "Ignored fields Mortar does not import: {names}"
 msgid "{loader} unofficial builds"
 msgstr "{loader} unofficial builds"
 
-#: src/settings/PrefRow.tsx
-msgid "Use the game's"
-msgstr "Use the game's"
-
 #: src/settings/prefCopy.ts
 msgid "Profile hero"
 msgstr "Profile hero"
@@ -3801,17 +3734,13 @@ msgstr "Confirm removals"
 msgid "Recently deleted retention"
 msgstr "Recently deleted retention"
 
-#: src/settings/sections/Sources.tsx
+#: src/settings/sections/SourceConnection.tsx
 msgid "Could not be reached: {reason}"
 msgstr "Could not be reached: {reason}"
 
 #: src/settings/updates.ts
 msgid "Could not update: {error}"
 msgstr "Could not update: {error}"
-
-#: src/settings/sections/Sources.tsx
-msgid "Using your gh login"
-msgstr "Using your gh login"
 
 #: src/settings/sections/General.tsx
 msgid "Share profiles on the local network"
@@ -3863,7 +3792,7 @@ msgstr "Untrack mods?"
 msgid "Sidebar profile order"
 msgstr "Sidebar profile order"
 
-#: src/settings/sections/Sources.tsx
+#: src/settings/sections/SourceConnection.tsx
 msgid "Last answered {when}"
 msgstr "Last answered {when}"
 
