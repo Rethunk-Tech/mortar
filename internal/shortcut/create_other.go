@@ -144,9 +144,9 @@ func exists(game, profile string) (bool, error) {
 	return err == nil && info.Mode().IsRegular(), err
 }
 
-// desktopValue keeps a name on one line, as the desktop entry format requires.
+// desktopValue is s as a one-line Desktop Entry string value: a backslash starts an escape there, so it is doubled.
 func desktopValue(s string) string {
-	return strings.NewReplacer("\n", " ", "\r", " ").Replace(s)
+	return strings.NewReplacer(`\`, `\\`, "\n", " ", "\r", " ").Replace(s)
 }
 
 func dataHome() (string, error) {
