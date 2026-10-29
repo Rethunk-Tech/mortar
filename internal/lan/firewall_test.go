@@ -58,6 +58,7 @@ func TestApplyDoesNotListenAtLaunchWithoutRules(t *testing.T) {
 			}
 			svc := NewService(Deps{Settings: store})
 			svc.checkFirewall = func(context.Context, bool) (bool, error) { return tc.blocked, nil }
+			svc.networkPublic = func() bool { return false }
 			t.Cleanup(svc.Shutdown)
 			if err := svc.Apply(); err != nil {
 				if tc.wantListen && strings.Contains(err.Error(), "no multicast listeners") {

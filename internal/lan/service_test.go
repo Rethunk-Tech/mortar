@@ -14,6 +14,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
 	"sync"
@@ -165,7 +166,8 @@ func TestPairing(t *testing.T) {
 		t.Fatal("a code paired twice")
 	}
 	info, err := os.Stat(filepath.Join(joiner.book.dir, "peers.json"))
-	if err != nil || info.Mode().Perm() != 0o600 {
+	// Windows reports every file as 0666; only POSIX modes can show the file is private.
+	if err != nil || runtime.GOOS != "windows" && info.Mode().Perm() != 0o600 {
 		t.Fatalf("peers.json = %v, %v", info, err)
 	}
 	if err := joiner.Unpair(hostID); err != nil || joiner.book.key(hostID) != nil {
