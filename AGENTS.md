@@ -39,6 +39,7 @@ Mortar is a desktop mod manager for several games (`mortar games` lists the cata
 - Mortar never re-hosts mod files; downloads come from each mod's own source. Exception: a profile sent between the user's own computers over the LAN, paired with a code, carries its mod files from every source.
 - Nexus downloads start only from Nexus's own Mod Manager Download button (or a Premium API download the user asked for in Mortar). The browser extension reads and marks Nexus pages and relays those clicks; it never starts downloads or opens Nexus pages itself.
 - The browser extension lives in Rethunk-Tech/mortar-browser-extension with its own version.
+- Code leaves Mortar as a library (`go-<name>`, or a framework prefix such as `react-`, `mui-` or `dom-` for frontend packages) only when it is usage-agnostic and could serve consumers other than Mortar: a format parser, a protocol client, a platform binding. Product decisions (findings, blame, wording, settings) stay in Mortar; a split that only Mortar could use is named `mortar-<name>`. [go-archive](https://github.com/Rethunk-Tech/go-archive) is the first.
 
 ## Verify
 
