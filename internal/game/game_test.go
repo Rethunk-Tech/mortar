@@ -63,7 +63,8 @@ func home(t *testing.T) string {
 
 func TestListAndArt(t *testing.T) {
 	h0 := home(t)
-	svc := NewService(h0, steamStore(t, h0))
+	store := steamStore(t, h0)
+	svc := NewService(h0, store)
 	list, err := svc.List()
 	if err != nil || len(list) != len(Catalog()) {
 		t.Fatalf("list = %v, %v", list, err)
@@ -91,7 +92,7 @@ func TestListAndArt(t *testing.T) {
 	heroCDN, storeBrowse, storeAssets = cdn.URL+"/%s", cdn.URL+"/store", cdn.URL+"/assets/"
 	defer func() { heroCDN, storeBrowse, storeAssets = was, wasStore, wasAssets }()
 
-	h := ArtMiddleware(h0)(http.NotFoundHandler())
+	h := ArtMiddleware(h0, store.Get)(http.NotFoundHandler())
 	for path, want := range map[string]int{
 		"/steam-art/413150":  http.StatusOK,
 		"/steam-art/1966720": http.StatusOK,
@@ -336,5 +337,29 @@ func TestPickCleansTheOverride(t *testing.T) {
 	dir, store := pick([]Install{{Dir: filepath.Join("g", "Stardew Valley"), Store: "steam"}}, filepath.Join("g", "Stardew Valley")+string(filepath.Separator), "", anyFolder{})
 	if dir != filepath.Join("g", "Stardew Valley") || store != "steam" {
 		t.Fatalf("pick = %q, %q", dir, store)
+	}
+}
+
+func TestArtComesFromAPlayerAddedSteam(t *testing.T) {
+	root := filepath.Join(t.TempDir(), "elsewhere", "Steam")
+	if err := os.MkdirAll(filepath.Join(root, "steamapps"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Join(root, "appcache", "librarycache", "413150"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, "appcache", "librarycache", "413150", "library_hero.jpg"), testJPEG(t, 64, 20), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	was := heroCDN
+	heroCDN = "http://127.0.0.1:9/%s"
+	defer func() { heroCDN = was }()
+	s := settings.Defaults()
+	s.LauncherRoots = map[string][]string{LauncherSteam: {root}}
+	h := ArtMiddleware(t.TempDir(), func() settings.Settings { return s })(http.NotFoundHandler())
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/steam-art/413150", nil))
+	if rec.Code != http.StatusOK || rec.Header().Get("Content-Type") != "image/jpeg" {
+		t.Fatalf("art from the added Steam = %d %q", rec.Code, rec.Header().Get("Content-Type"))
 	}
 }

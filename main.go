@@ -334,6 +334,12 @@ func run() error {
 		slog.Info("shutdown", "clean", true)
 		_ = updates.ApplyOnQuit(context.Background())
 	})
+	currentSettings := func() settings.Settings {
+		if store == nil {
+			return settings.Defaults()
+		}
+		return store.Get()
+	}
 	app := application.New(application.Options{
 		Name:         "Mortar",
 		Icon:         appIcon,
@@ -355,27 +361,12 @@ func run() error {
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
 			Middleware: application.ChainMiddleware(
-				game.ArtMiddleware(home),
-				game.InstallArtMiddleware(home, func() settings.Settings {
-					if store == nil {
-						return settings.Defaults()
-					}
-					return store.Get()
-				}),
-				game.ScreenshotMiddleware(home, func() settings.Settings {
-					if store == nil {
-						return settings.Defaults()
-					}
-					return store.Get()
-				}),
+				game.ArtMiddleware(home, currentSettings),
+				game.InstallArtMiddleware(home, currentSettings),
+				game.ScreenshotMiddleware(home, currentSettings),
 				profile.CoverMiddleware(func() *profile.Store { return profiles }),
 				modpic.Middleware(func() *modpic.Cache { return pictures }),
-				backdrop.Middleware(func() settings.Settings {
-					if store == nil {
-						return settings.Defaults()
-					}
-					return store.Get()
-				}, backdrop.SystemDefault, backdrop.DesktopWallpaper, filepath.Join(dataDir, "cache", "backdrop")),
+				backdrop.Middleware(currentSettings, backdrop.SystemDefault, backdrop.DesktopWallpaper, filepath.Join(dataDir, "cache", "backdrop")),
 			),
 		},
 		OnShutdown: shutdown,

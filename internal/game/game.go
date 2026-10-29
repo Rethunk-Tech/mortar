@@ -330,12 +330,13 @@ func writeArt(w http.ResponseWriter, r *http.Request, b []byte, modTime time.Tim
 
 // ArtMiddleware serves GET /steam-art/<appid> for listed games only, from Steam's cached hero image, else from
 // Steam's public copy fetched here: the webview does not follow a redirect from the app's own scheme to https. It
-// also serves GET /steam-icon/<appid>, the game's square icon from Steam's own files, which has no public copy.
-func ArtMiddleware(home string) func(http.Handler) http.Handler {
+// also serves GET /steam-icon/<appid>, the game's square icon from Steam's own files, which has no public copy. Steam
+// folders the player added come first, as in discovery.
+func ArtMiddleware(home string, current func() settings.Settings) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if id, ok := strings.CutPrefix(r.URL.Path, iconPrefix); ok {
-				serveIcon(w, r, home, id)
+				serveIcon(w, r, home, id, steamRoots(current()))
 				return
 			}
 			id, ok := strings.CutPrefix(r.URL.Path, artPrefix)
@@ -349,7 +350,7 @@ func ArtMiddleware(home string) func(http.Handler) http.Handler {
 				return
 			}
 			path := ""
-			for _, one := range steam.LocateAll(home) {
+			for _, one := range steam.LocateAll(home, steamRoots(current())...) {
 				path = one.HeroArt(id)
 				if path != "" {
 					break
@@ -379,12 +380,12 @@ func ArtMiddleware(home string) func(http.Handler) http.Handler {
 }
 
 // serveIcon writes the square icon of the listed app id from the first Steam that keeps one.
-func serveIcon(w http.ResponseWriter, r *http.Request, home, id string) {
+func serveIcon(w http.ResponseWriter, r *http.Request, home, id string, steamRoots []string) {
 	if _, listed := listedApp(id); r.Method != http.MethodGet || !listed {
 		http.NotFound(w, r)
 		return
 	}
-	for _, one := range steam.LocateAll(home) {
+	for _, one := range steam.LocateAll(home, steamRoots...) {
 		if b := one.ClientIcon(id); b != nil {
 			writeArt(w, r, b, time.Time{})
 			return

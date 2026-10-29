@@ -372,7 +372,7 @@ func (s *Service) ProtonBuilds(gameID string) []string {
 		return []string{}
 	}
 	out := []string{}
-	for _, b := range runtime.ProtonBuilds(s.home, roots(s.store.Get(), LauncherSteam)...) {
+	for _, b := range runtime.ProtonBuilds(s.home, steamRoots(s.store.Get())...) {
 		out = append(out, filepath.Base(b.Dir))
 	}
 	return out
