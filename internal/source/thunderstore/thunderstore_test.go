@@ -188,14 +188,11 @@ func TestChangedIndexRebuilds(t *testing.T) {
 	}
 	f.third.Store(true)
 	now = now.Add(2 * time.Hour)
-	// The stale listing answers at once and a rebuild starts behind it.
-	if p, err := d.Search(t.Context(), q); err != nil || p.Total != 0 {
-		t.Fatalf("stale answer: %v %v", err, p.Total)
+	// A search past the refresh window answers from the rebuilt listing, not the stale one.
+	if p, err := d.Search(t.Context(), q); err != nil || p.Total != 1 {
+		t.Fatalf("answer after refresh: %v %v", err, p.Total)
 	}
-	waitFor(t, func() bool {
-		p, err := d.Search(t.Context(), q)
-		return err == nil && p.Total == 1
-	})
+	refreshes.Wait()
 }
 
 func TestIndexCannotSendMortarElsewhere(t *testing.T) {

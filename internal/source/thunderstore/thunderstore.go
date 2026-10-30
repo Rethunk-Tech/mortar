@@ -99,7 +99,14 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 	if q.Key == "" {
 		return source.Page{}, fmt.Errorf("game %q has no Thunderstore community", q.Game)
 	}
-	pk, err := d.packages(ctx, q.Key, source.UserAgentWithSite(q.Version))
+	ua := source.UserAgentWithSite(q.Version)
+	// A stale listing starts its refresh here; a search waits for it, since the cached pages of an answer built on a
+	// stale listing outlive the refresh and hide packages published since.
+	if _, err := d.listingFile(ctx, q.Key, ua); err != nil {
+		return source.Page{}, err
+	}
+	d.awaitRefresh(ctx, q.Key)
+	pk, err := d.packages(ctx, q.Key, ua)
 	if err != nil {
 		return source.Page{}, err
 	}

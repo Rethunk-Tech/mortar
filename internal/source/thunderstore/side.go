@@ -74,6 +74,8 @@ func (d Driver) sideVersions(ctx context.Context, key, namespace, name, mortarVe
 var (
 	refreshMu    sync.Mutex
 	refreshTried = map[string]time.Time{}
+	// refreshDone closes when the community's latest background refresh ends.
+	refreshDone = map[string]chan struct{}{}
 	// refreshes lets a test wait for a refresh to finish writing before its cache folder is removed.
 	refreshes sync.WaitGroup
 )
@@ -88,12 +90,34 @@ func (d Driver) refreshInBackground(ctx context.Context, key, ua string) {
 		return
 	}
 	refreshTried[tried] = d.now()
+	done := make(chan struct{})
+	refreshDone[tried] = done
 	bg, cancel := context.WithTimeout(context.WithoutCancel(ctx), refreshTimeout)
 	refreshes.Go(func() {
+		defer close(done)
 		defer cancel()
 		_, _ = d.buildListing(bg, key, ua)
 	})
 }
+
+// awaitRefresh gives a refresh of the community's index that is still running up to searchWait to land, so a search
+// reads the new listing instead of the stale one it started the refresh for.
+func (d Driver) awaitRefresh(ctx context.Context, key string) {
+	refreshMu.Lock()
+	done := refreshDone[d.cacheRoot()+"|"+key]
+	refreshMu.Unlock()
+	if done == nil {
+		return
+	}
+	select {
+	case <-done:
+	case <-time.After(searchWait):
+	case <-ctx.Done():
+	}
+}
+
+// searchWait is the longest a search waits for a refresh before answering from the stale listing.
+const searchWait = 20 * time.Second
 
 // refreshTimeout bounds a background index refresh, which downloads every chunk of a large community.
 const refreshTimeout = 5 * time.Minute
