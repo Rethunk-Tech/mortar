@@ -31,7 +31,7 @@ export function AdoptHost() {
 
 /** The folder a player brought in that is not a Mortar project yet: what Mortar found, for them to confirm or change.
  * Nothing is written into the folder until Add. */
-export function AdoptDialog({
+function AdoptDialog({
   game,
   dir,
   found,
