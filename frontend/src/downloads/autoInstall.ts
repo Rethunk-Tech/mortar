@@ -66,14 +66,25 @@ export const inFolder = (folder: string, dir: string) =>
   folder === dir || folder.startsWith(`${dir}/`) || folder.startsWith(`${dir}\\`)
 
 async function installFolder(game: string, dir: string) {
-  const profileId = targetOf(game, dir)
-  if (!profileId) {
-    return
-  }
   const listed = (await ExtraFolderMods(game)).mods ?? []
   const folders = listed
     .filter((m) => willImport(m.status) && m.folder && inFolder(m.folder, dir))
     .map((m) => m.folder ?? '')
+  if (folders.length === 0) {
+    return
+  }
+  const profileId = targetOf(game, dir)
+  if (!profileId) {
+    // Without a picked profile the folder installs into the open one, so a folder watched while none is open waits.
+    useToasts.getState().push({
+      kind: 'warning',
+      title: i18n._(
+        msg`Open a profile of this game, or pick one beside the folder in Settings, to add its mods`,
+      ),
+      body: dir,
+    })
+    return
+  }
   const added: string[] = []
   let profileName = ''
   for (const folder of folders) {

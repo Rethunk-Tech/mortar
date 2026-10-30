@@ -1,8 +1,11 @@
 package profile
 
 import (
+	"bytes"
+	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -181,5 +184,26 @@ func TestInstallExtraFolderLeavesAnAssetRepositoryOut(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(stored, "Sounds", "a.wav")); err != nil {
 		t.Error(err)
+	}
+}
+
+// An item mod that is only an asset bundle lists nothing; the log says so and why, under a non-ASCII path.
+func TestExtraFolderLogsWhatItFindsAndSkips(t *testing.T) {
+	e := newEnv(t)
+	svc, st := e.withSettings(t)
+	root := filepath.Join(t.TempDir(), "Jogos²", "LocalModsToMortar")
+	writeFile(t, root, "Items/itemsbundle", "UnityFS")
+	setPrefOf(t, st, "lethal-company", "extraModsFolder", root)
+	var buf bytes.Buffer
+	log.SetOutput(&buf)
+	t.Cleanup(func() { log.SetOutput(os.Stderr) })
+	got, err := svc.ExtraFolderMods(t.Context(), "lethal-company")
+	if err != nil || len(got.Mods) != 0 {
+		t.Fatalf("listed = %+v, %v", got, err)
+	}
+	for _, want := range []string{"found 0 mods in " + root, "skipped " + filepath.Join(root, "Items") + ": it holds no manifest.json"} {
+		if !strings.Contains(buf.String(), want) {
+			t.Errorf("log lacks %q:\n%s", want, buf.String())
+		}
 	}
 }

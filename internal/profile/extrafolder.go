@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"io/fs"
+	"log"
 	"os"
 	"path/filepath"
 	"slices"
@@ -33,6 +34,12 @@ func (s *Service) extraFolderMods(game string) (GameModsPreview, error) {
 		if err != nil {
 			return GameModsPreview{}, err
 		}
+		log.Printf("extra folder %s: found %d mods in %s", game, len(got.Mods), dir)
+		for _, m := range got.Mods {
+			if m.Status != outcomeImported {
+				log.Printf("extra folder %s: %s not offered (%s): %s", game, m.Folder, m.Status, m.Reason)
+			}
+		}
 		out.Mods = append(out.Mods, got.Mods...)
 		out.CanMove = out.CanMove || got.CanMove
 	}
@@ -44,6 +51,7 @@ func (s *Service) extraFolderMods(game string) (GameModsPreview, error) {
 func (s *Service) InstallExtraFolderMod(ctx context.Context, game, id, folder string) (InstallResult, error) {
 	roots := s.extraModsFolders(game)
 	if len(roots) == 0 {
+		log.Printf("extra folder %s: install %s: no extra mods folder is set", game, folder)
 		return InstallResult{}, errors.New("no extra mods folder is set")
 	}
 	for _, root := range roots {
@@ -61,11 +69,14 @@ func (s *Service) InstallExtraFolderMod(ctx context.Context, game, id, folder st
 		}
 		res, err := s.store.InstallExtraFolder(ctx, game, id, folder)
 		if _, same := errors.AsType[*DuplicateError](err); same {
+			log.Printf("extra folder %s: %s is already in profile %s unchanged", game, folder, id)
 			p, err := s.store.Get(game, id)
 			return InstallResult{Profile: p}, err
 		}
+		log.Printf("extra folder %s: installed %s into profile %s: added %d, error %v", game, folder, id, len(res.Added), err)
 		return res, err
 	}
+	log.Printf("extra folder %s: %s is not in any extra mods folder %v", game, folder, roots)
 	return InstallResult{}, errors.New("that folder is not in an extra mods folder")
 }
 
@@ -95,6 +106,7 @@ func (s *Store) previewExtraFolder(game, dir string) (GameModsPreview, error) {
 	}
 	entries, err := os.ReadDir(dir)
 	if errors.Is(err, fs.ErrNotExist) {
+		log.Printf("extra folder %s: %s does not exist", game, dir)
 		return out, nil
 	}
 	if err != nil {
@@ -106,6 +118,8 @@ func (s *Store) previewExtraFolder(game, dir string) (GameModsPreview, error) {
 		}
 		if p, ok := packagePreview(filepath.Join(dir, e.Name()), g, false); ok {
 			out.Mods = append(out.Mods, p)
+		} else {
+			log.Printf("extra folder %s: skipped %s: it holds no manifest.json with a name and version_number, no plugin DLL and no BepInEx folder", game, filepath.Join(dir, e.Name()))
 		}
 	}
 	return out, nil
