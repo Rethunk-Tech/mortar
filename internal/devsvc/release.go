@@ -67,6 +67,16 @@ func (s *Service) Pack(ctx context.Context, gameID, dir string) (PackResult, err
 		}
 	}
 	if r.Zip == "" {
+		if csproj, adopted := recordedCsproj(p.Dir); adopted {
+			zipPath, files, err := s.packBuilt(ctx, gameID, p, csproj)
+			if err != nil {
+				return r, err
+			}
+			r.Zip = zipPath
+			r.Log += fmt.Sprintf("\nPacked %d files into %s:\n%s", len(files), filepath.Base(zipPath), strings.Join(files, "\n"))
+		}
+	}
+	if r.Zip == "" {
 		r.Issues = append(r.Issues, "the build wrote no package")
 		return r, nil
 	}

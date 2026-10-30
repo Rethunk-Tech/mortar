@@ -131,11 +131,11 @@ func buildArgs(p settings.DevProject, config string) []string {
 	if !adopted {
 		return []string{"build", "-c", config, "-nologo"}
 	}
-	args := []string{"build", csproj, "-c", config, "-nologo"}
-	if config == "Debug" {
-		args = append(args, "-o", p.Output)
+	out := p.Output
+	if config != "Debug" {
+		out = releaseOutput(p)
 	}
-	return args
+	return []string{"build", csproj, "-c", config, "-nologo", "-o", out}
 }
 
 // lockedBuild takes the project's build lock and declares the dependencies installed since they were added on the

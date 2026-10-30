@@ -304,25 +304,8 @@ func packAsset(p settings.DevProject, team, version string) (string, error) {
 	if !packageVersion.MatchString(version) {
 		return "", usererr.Wrap(usererr.Invalid, fmt.Errorf("%q is not a version like 1.2.3; fix manifest.json", version))
 	}
-	manifest, err := safefs.ReadFile(filepath.Join(p.Dir, "manifest.json"))
-	raw := map[string]any{}
-	switch {
-	case errors.Is(err, os.ErrNotExist):
-	case err != nil:
-		return "", err
-	default:
-		if err := json.Unmarshal(bytes.TrimPrefix(manifest, []byte("\xef\xbb\xbf")), &raw); err != nil {
-			return "", usererr.Wrap(usererr.Damaged, fmt.Errorf("manifest.json: %w", err))
-		}
-	}
-	// A folder adopted with no manifest, or a partial one, gets only the fields Thunderstore insists on.
-	for field, def := range map[string]any{"name": p.Name, "description": "", "website_url": "", "dependencies": []string{}} {
-		if _, ok := raw[field]; !ok {
-			raw[field] = def
-		}
-	}
-	raw["version_number"] = version
-	if manifest, err = json.MarshalIndent(raw, "", "  "); err != nil {
+	manifest, err := completeManifest(p.Dir, p.Name, version)
+	if err != nil {
 		return "", err
 	}
 	out := filepath.Join(p.Dir, "artifacts", "thunderstore", "release")
@@ -337,6 +320,30 @@ func packAsset(p settings.DevProject, team, version string) (string, error) {
 	zw := zip.NewWriter(f)
 	err = errors.Join(addZipFile(zw, "manifest.json", bytes.NewReader(manifest)), addTree(zw, p.Dir))
 	return zipPath, errors.Join(err, zw.Close(), f.Close())
+}
+
+// completeManifest is dir's manifest.json at version, with the fields Thunderstore insists on filled in when a folder
+// adopted with no manifest, or a partial one, lacks them.
+func completeManifest(dir, name, version string) ([]byte, error) {
+	manifest, err := safefs.ReadFile(filepath.Join(dir, "manifest.json"))
+	raw := map[string]any{}
+	switch {
+	case errors.Is(err, os.ErrNotExist):
+	case err != nil:
+		return nil, err
+	default:
+		if err := json.Unmarshal(bytes.TrimPrefix(manifest, []byte("\xef\xbb\xbf")), &raw); err != nil {
+			return nil, usererr.Wrap(usererr.Damaged, fmt.Errorf("manifest.json: %w", err))
+		}
+	}
+	// A folder adopted with no manifest, or a partial one, gets only the fields Thunderstore insists on.
+	for field, def := range map[string]any{"name": name, "description": "", "website_url": "", "dependencies": []string{}} {
+		if _, ok := raw[field]; !ok {
+			raw[field] = def
+		}
+	}
+	raw["version_number"] = version
+	return json.MarshalIndent(raw, "", "  ")
 }
 
 func addZipFile(zw *zip.Writer, name string, r io.Reader) error {

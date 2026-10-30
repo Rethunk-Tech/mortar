@@ -2,6 +2,8 @@ package devsvc
 
 import (
 	"archive/zip"
+	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"slices"
@@ -157,5 +159,58 @@ func TestRecordsRoundTripAndOldOnesStillRead(t *testing.T) {
 	}
 	if _, ok := readRecord(bad); ok {
 		t.Error("a record escaped the project folder")
+	}
+}
+
+func TestAdoptedCodeProjectReleasePacksItsBuiltDLL(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	dir := adoptFolder(t, "Wallet", map[string]string{
+		"Wallet/Wallet.csproj": "<Project><PropertyGroup><Version>1.2.3.0</Version></PropertyGroup></Project>",
+		"README.md":            "# Wallet",
+	})
+	a, err := svc.Detect(adoptGame, dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := svc.Adopt(t.Context(), adoptGame, dir, "", a); err != nil {
+		t.Fatal(err)
+	}
+	if err := svc.Trust(adoptGame, dir); err != nil {
+		t.Fatal(err)
+	}
+	svc.Run = func(_ context.Context, _, name string, args ...string) ([]byte, error) {
+		if name != "dotnet" {
+			return nil, errors.New("no tag")
+		}
+		out := args[slices.Index(args, "-o")+1]
+		for _, f := range []string{"Wallet.dll", "Wallet.pdb", "UnityEngine.CoreModule.dll", "System.Memory.dll", "Helper.dll"} {
+			if err := writeAll(filepath.Join(out, f), []byte(f), 0o644); err != nil {
+				return nil, err
+			}
+		}
+		return nil, nil
+	}
+	r, err := svc.Pack(t.Context(), adoptGame, dir)
+	if err != nil || !r.OK || r.Zip == "" {
+		t.Fatalf("pack = %+v, %v", r, err)
+	}
+	zr, err := zip.OpenReader(r.Zip)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = zr.Close() }()
+	var names []string
+	for _, f := range zr.File {
+		names = append(names, f.Name)
+	}
+	slices.Sort(names)
+	if !slices.Equal(names, []string{"Helper.dll", "README.md", "Wallet.dll", "manifest.json"}) {
+		t.Errorf("zip holds %v", names)
+	}
+	if m := zipText(t, zr, "manifest.json"); !strings.Contains(m, `"name": "Wallet"`) || !strings.Contains(m, `"version_number": "1.2.3"`) || !strings.Contains(m, `"dependencies"`) {
+		t.Errorf("manifest %s", m)
+	}
+	if !strings.Contains(r.Log, "Packed 4 files") {
+		t.Errorf("log %q", r.Log)
 	}
 }
