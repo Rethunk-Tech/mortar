@@ -41,6 +41,7 @@ require (
 	github.com/Rethunk-Tech/go-avscan v0.1.0 // indirect
 	github.com/Rethunk-Tech/go-cfgedit v0.1.0 // indirect
 	github.com/Rethunk-Tech/go-gameproc v0.1.0 // indirect
+	github.com/Rethunk-Tech/go-tilemask v0.1.0 // indirect
 	github.com/Rethunk-Tech/go-winsym v0.1.0 // indirect
 	github.com/adrg/xdg v0.5.3 // indirect
 	github.com/andygrunwald/vdf v1.1.0 // indirect

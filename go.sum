@@ -38,6 +38,8 @@ github.com/Rethunk-Tech/go-semverish v0.1.0 h1:FmDBEHtobafSLwzov50P2tvUMYSdoqqOT
 github.com/Rethunk-Tech/go-semverish v0.1.0/go.mod h1:eWQ8e6P6yvghMZ+Sd/J4UBAKvoFcwr3fA/wGBRmGk0s=
 github.com/Rethunk-Tech/go-smapiweb v0.1.0 h1:D5iR7Ft8kDIpP0TBvUqnkiSx6TWDt6uM82g6Y+aWa8k=
 github.com/Rethunk-Tech/go-smapiweb v0.1.0/go.mod h1:SmIu/GJLKTJh6peUgY1SgHzaqMiSpD5Ff74GRL0YIlw=
+github.com/Rethunk-Tech/go-tilemask v0.1.0 h1:wJGhH0MlvLpallezQQH3s1bWmZVTddcqY3aIwtUHZgg=
+github.com/Rethunk-Tech/go-tilemask v0.1.0/go.mod h1:gyHCBVGruiMrf9SBfiM2qp+bl1ReN3qjZWpbAFg3yO4=
 github.com/Rethunk-Tech/go-winsym v0.1.0 h1:24C0LUbWV1mXNDTbmANdNZoy5QXc3jxSPoDACQNhnu8=
 github.com/Rethunk-Tech/go-winsym v0.1.0/go.mod h1:G2HkTaF219rTvk/U+qgVy27TirsALIzNok0T8P4wJus=
 github.com/adrg/xdg v0.5.3 h1:xRnxJXne7+oWDatRhR1JLnvuccuIeCoBu2rtuLqQB78=
