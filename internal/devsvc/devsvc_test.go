@@ -172,7 +172,7 @@ func TestCreateRunsDotnetNewAndWiresTheProfile(t *testing.T) {
 		}
 	}
 	body, err := safefs.ReadFile(filepath.Join(dir, ".mortar", "template.json"))
-	if err != nil || !strings.Contains(string(body), `"team": "Ab"`) || !strings.Contains(string(body), `"ref": "v0.1.0"`) {
+	if err != nil || !strings.Contains(string(body), `"team": "Ab"`) || !strings.Contains(string(body), `"ref": "v0.1.1"`) {
 		t.Errorf("record = %s (%v)", body, err)
 	}
 	gp := svc.Settings.Get().GamePrefs("lethal-company")
