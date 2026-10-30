@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-gameproc"
 	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
@@ -190,7 +191,7 @@ func TestStopEndsTestJoinersBeforeTheHost(t *testing.T) {
 	svc, g := steamRun(t, false, false)
 	fakeProc(t, svc, "4243", "/proton/files/bin/wine64-preloader", protonGame, "--lan", "--join", "127.0.0.1")
 	var order []int
-	if err := svc.endSlot(svc.slots(g)[0], func(p launch.Process) error {
+	if err := svc.endSlot(svc.slots(g)[0], func(p gameproc.Process) error {
 		order = append(order, p.PID)
 		return nil
 	}); err != nil {

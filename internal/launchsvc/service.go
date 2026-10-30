@@ -23,6 +23,7 @@ import (
 	"github.com/Rethunk-Tech/go-smapiweb"
 
 	"github.com/Rethunk-Tech/go-gamelocator/steam"
+	"github.com/Rethunk-Tech/go-gameproc"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/go-winsym"
 	"github.com/Rethunk-Tech/mortar/internal/backup"
@@ -47,7 +48,7 @@ var pollEvery = 2 * time.Second
 
 // procVisible, when set, limits which of the live processes count as a game; tests use it so a game running outside the test, such
 // as another test binary's stand-in, is never mistaken for their own.
-var procVisible func(launch.Process) bool
+var procVisible func(gameproc.Process) bool
 
 const (
 	// StateEvent is emitted with a Status whenever a game's launch state changes.
@@ -336,14 +337,14 @@ func (s *Service) current(g game.Game) Status {
 }
 
 // procsFor returns the loader processes of g's install that run modsDir.
-func (s *Service) procsFor(g game.Game, modsDir, profileID string) ([]launch.Process, error) {
+func (s *Service) procsFor(g game.Game, modsDir, profileID string) ([]gameproc.Process, error) {
 	l, _ := s.loaderOf(g.ID(), profileID)
 	// A loader without executables of its own runs inside the game's process.
 	names := g.GameProcesses()
 	if own, ok := l.(loader.ProcessNames); ok {
 		names = own.ProcessNames()
 	}
-	procs, err := launch.Processes(s.procDir, names...)
+	procs, err := gameproc.Processes(s.procDir, names...)
 	if err != nil {
 		return nil, err
 	}
@@ -359,7 +360,7 @@ func (s *Service) procsFor(g game.Game, modsDir, profileID string) ([]launch.Pro
 		launched = sess.profile
 		vanilla = sess.vanilla
 	}
-	var out []launch.Process
+	var out []gameproc.Process
 	for _, p := range procs {
 		if credited(owner, p, modsDir, profileID, launched, vanilla) {
 			out = append(out, p)
@@ -371,7 +372,7 @@ func (s *Service) procsFor(g game.Game, modsDir, profileID string) ([]launch.Pro
 // credited reports whether the loader process p runs profileID, whose mods folder is modsDir. launched is the
 // profile of the launch Mortar made and has not seen end, if any. Where the platform gives no command line (Windows),
 // the process is credited to that profile, or to every profile when Mortar did not start it: it may run any of them.
-func credited(owner loader.Owner, p launch.Process, modsDir, profileID, launched string, vanilla bool) bool {
+func credited(owner loader.Owner, p gameproc.Process, modsDir, profileID, launched string, vanilla bool) bool {
 	if vanilla {
 		return false
 	}
@@ -434,12 +435,12 @@ func sinceOr(t time.Time) int64 {
 }
 
 // gameProcs are the running processes of g's install.
-func (s *Service) gameProcs(g game.Game) ([]launch.Process, error) {
-	ps, err := launch.Processes(s.procDir, game.ProcessNames(g)...)
+func (s *Service) gameProcs(g game.Game) ([]gameproc.Process, error) {
+	ps, err := gameproc.Processes(s.procDir, game.ProcessNames(g)...)
 	if err != nil {
 		return nil, err
 	}
-	var out []launch.Process
+	var out []gameproc.Process
 	for _, p := range ps {
 		if procVisible == nil || s.procDir != procDirRun || procVisible(p) {
 			out = append(out, p)
@@ -499,7 +500,7 @@ func (s *Service) poll(g game.Game) bool {
 // why a run was closed: on Windows the command line is unreadable, so the install is the only thing tying a process
 // to the run.
 func (s *Service) describeProcs(g game.Game) string {
-	ps, err := launch.Processes(s.procDir, game.ProcessNames(g)...)
+	ps, err := gameproc.Processes(s.procDir, game.ProcessNames(g)...)
 	if err != nil {
 		return "listing processes: " + err.Error()
 	}
@@ -580,10 +581,10 @@ func (s *Service) BusyAmong(ids []string) []string {
 			names = append(names, game.ProcessNames(g)...)
 		}
 	}
-	procs, err := launch.Processes(s.procDir, names...)
+	procs, err := gameproc.Processes(s.procDir, names...)
 	alive := func(id string) bool {
 		g := game.Find(id)
-		return err != nil || g != nil && slices.ContainsFunc(procs, func(p launch.Process) bool { return p.Named(game.ProcessNames(g)...) })
+		return err != nil || g != nil && slices.ContainsFunc(procs, func(p gameproc.Process) bool { return p.Named(game.ProcessNames(g)...) })
 	}
 	var out []string
 	for _, id := range ids {
@@ -1537,19 +1538,19 @@ func (s *Service) stoppable(sl slot) bool {
 // closes every copy at once, and a joiner that sees its host leave writes the save files the host is writing as it
 // quits, which copies share.
 func (s *Service) stopSlot(ctx context.Context, g slot) error {
-	return s.endSlot(g, func(p launch.Process) error {
+	return s.endSlot(g, func(p gameproc.Process) error {
 		if game.TestJoiner(p.Args) {
 			return terminate(p)
 		}
-		return launch.Stop(ctx, p, stopGrace)
+		return gameproc.Stop(ctx, p, stopGrace)
 	})
 }
 
 // terminate ends a process outright, without first asking it to close.
-func terminate(p launch.Process) error { return launch.Terminate(p.PID, stopGrace) }
+func terminate(p gameproc.Process) error { return gameproc.Terminate(p.PID, stopGrace) }
 
 // endSlot ends the game's processes with end and records the run as stopped from Mortar.
-func (s *Service) endSlot(g slot, end func(launch.Process) error) error {
+func (s *Service) endSlot(g slot, end func(gameproc.Process) error) error {
 	cur := s.current(g)
 	// One game runs per install, so its processes are the run's; a profile search misses a loader inside the game.
 	procs, err := s.gameProcs(g)
@@ -1564,7 +1565,7 @@ func (s *Service) endSlot(g slot, end func(launch.Process) error) error {
 	}
 	s.mu.Unlock()
 	// Joiners first, so a host's stop finds them gone.
-	slices.SortStableFunc(procs, func(a, b launch.Process) int {
+	slices.SortStableFunc(procs, func(a, b gameproc.Process) int {
 		switch ja, jb := game.TestJoiner(a.Args), game.TestJoiner(b.Args); {
 		case ja && !jb:
 			return -1

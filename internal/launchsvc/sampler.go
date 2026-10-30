@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-gameproc"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/game"
-	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/sampler"
@@ -93,7 +93,7 @@ func startSampler(ctx context.Context, pid int) (*sampler.Session, error) {
 	}
 }
 
-func (s *Service) waitForSampleProcess(ctx context.Context, g game.Game, profileID, modsDir string) (launch.Process, error) {
+func (s *Service) waitForSampleProcess(ctx context.Context, g game.Game, profileID, modsDir string) (gameproc.Process, error) {
 	ticker := time.NewTicker(100 * time.Millisecond)
 	defer ticker.Stop()
 	for {
@@ -103,7 +103,7 @@ func (s *Service) waitForSampleProcess(ctx context.Context, g game.Game, profile
 		}
 		select {
 		case <-ctx.Done():
-			return launch.Process{}, ctx.Err()
+			return gameproc.Process{}, ctx.Err()
 		case <-ticker.C:
 		}
 	}

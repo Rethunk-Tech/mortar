@@ -3,9 +3,9 @@ package launchsvc
 import (
 	"slices"
 
+	"github.com/Rethunk-Tech/go-gameproc"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/game"
-	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
@@ -89,7 +89,7 @@ func (s *Service) activeSlot(g game.Game) (slot, bool) {
 // install's when its executable cannot tell (unreadable, or a Wine, Proton or dotnet host), so the running lock holds;
 // one whose executable is the game itself in a folder outside every install is a copy Mortar does not manage, and
 // ok is false.
-func (s *Service) owner(g game.Game, p launch.Process) (id string, ok bool) {
+func (s *Service) owner(g game.Game, p gameproc.Process) (id string, ok bool) {
 	all, selected := s.installs(g)
 	for _, in := range all {
 		if p.RunsFrom(in.Dir) || p.LinkedFrom(in.Dir) {
@@ -113,7 +113,7 @@ func (s *Service) owner(g game.Game, p launch.Process) (id string, ok bool) {
 }
 
 // runsFromClient reports whether p runs from a folder of an install of the client game.
-func (s *Service) runsFromClient(client string, p launch.Process) bool {
+func (s *Service) runsFromClient(client string, p gameproc.Process) bool {
 	c := game.Find(client)
 	if c == nil {
 		return false
@@ -125,8 +125,8 @@ func (s *Service) runsFromClient(client string, p launch.Process) bool {
 }
 
 // ownedBy keeps the processes that belong to g's install.
-func (s *Service) ownedBy(g game.Game, procs []launch.Process) []launch.Process {
-	var out []launch.Process
+func (s *Service) ownedBy(g game.Game, procs []gameproc.Process) []gameproc.Process {
+	var out []gameproc.Process
 	for _, p := range procs {
 		if id, ok := s.owner(g, p); ok && id == installOf(g) {
 			out = append(out, p)

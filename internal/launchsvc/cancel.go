@@ -74,7 +74,7 @@ func (s *Service) cancelledRun(g game.Game, buf *launch.Buffer) bool {
 const lateStartWindow = 30 * time.Second
 
 // endLateStart ends the game if its launcher starts it after the launch was cancelled. Only the game's own processes
-// are ended (launch.Processes matches a process's program), never the launcher.
+// are ended (gameproc.Processes matches a process's program), never the launcher.
 func (s *Service) endLateStart(ctx context.Context, sl slot) {
 	ctx, cancel := context.WithTimeout(ctx, lateStartWindow)
 	defer cancel()

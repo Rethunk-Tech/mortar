@@ -16,6 +16,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-gameproc"
 	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
@@ -384,14 +385,14 @@ func TestAProfileReadiedForLaunchIsRunning(t *testing.T) {
 }
 
 func TestAProcessWithoutACommandLineLocksEveryProfileUnlessMortarLaunchedIt(t *testing.T) {
-	bare := launch.Process{PID: 1}
+	bare := gameproc.Process{PID: 1}
 	if !credited(smapi.Loader{}, bare, "/a/mods", "a", "", false) || !credited(smapi.Loader{}, bare, "/b/mods", "b", "", false) {
 		t.Fatal("a game Mortar did not start may run any profile")
 	}
 	if !credited(smapi.Loader{}, bare, "/a/mods", "a", "a", false) || credited(smapi.Loader{}, bare, "/b/mods", "b", "a", false) {
 		t.Fatal("a game Mortar launched runs its launched profile only")
 	}
-	withArgs := launch.Process{PID: 2, Args: []string{"StardewModdingAPI", "--mods-path", "/a/mods"}}
+	withArgs := gameproc.Process{PID: 2, Args: []string{"StardewModdingAPI", "--mods-path", "/a/mods"}}
 	if !credited(smapi.Loader{}, withArgs, "/a/mods", "a", "", false) || credited(smapi.Loader{}, withArgs, "/b/mods", "b", "", false) {
 		t.Fatal("a command line names its profile")
 	}
@@ -469,7 +470,7 @@ func TestMain(m *testing.M) {
 	if err := os.Setenv("TMPDIR", root); err != nil {
 		panic(err)
 	}
-	procVisible = func(p launch.Process) bool { return p.RunsFrom(root) }
+	procVisible = func(p gameproc.Process) bool { return p.RunsFrom(root) }
 	// A parallel test cannot t.Setenv, so the game config folder falls back to each test's own home instead of the
 	// user's.
 	if err := os.Unsetenv("XDG_CONFIG_HOME"); err != nil {
