@@ -16,6 +16,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-nexusmods"
 
+	tstore "github.com/Rethunk-Tech/go-thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/nxm"
@@ -23,7 +24,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/source"
 	_ "github.com/Rethunk-Tech/mortar/internal/source/all"
 	"github.com/Rethunk-Tech/mortar/internal/source/curseforge"
-	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/source/vsmoddb"
 	"github.com/Rethunk-Tech/mortar/internal/winhost"
 )
@@ -156,7 +156,7 @@ func (s *Service) Receive(args []string) bool {
 			}
 			continue
 		}
-		if ref, err := thunderstore.ParseLink(arg); err == nil {
+		if ref, err := tstore.ParseLink(arg); err == nil {
 			s.mu.Lock()
 			s.nextID++
 			a := Arrival{ID: s.nextID, Package: ref.Namespace + "-" + ref.Name, Version: ref.Version, Games: gamesWith("thunderstore"), raw: arg}

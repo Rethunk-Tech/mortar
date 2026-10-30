@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	tstore "github.com/Rethunk-Tech/go-thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
@@ -19,26 +20,26 @@ func (d Driver) Standings(ctx context.Context, version string, ids []string) (ma
 			byKey[key] = append(byKey[key], name)
 		}
 	}
+	c, err := d.client(version)
+	if err != nil {
+		return nil, err
+	}
 	out := map[string]source.Standing{}
 	for key, names := range byKey {
-		path, err := d.listingFile(ctx, key, source.UserAgentWithSite(version))
-		if err != nil {
-			return nil, err
-		}
 		want := make(map[string]bool, len(names))
 		for _, name := range names {
 			want[strings.ToLower(name)] = true
 		}
 		// The problems check asks at every start, so unless Browse already holds the listing it is read a package at a
-		// time rather than loaded and kept for listingIdle.
+		// time rather than loaded and kept in memory.
 		listed, seen := map[string]bool{}, false
-		note := func(p *pkg) {
+		note := func(p *tstore.Package) {
 			seen = true
-			if id := packageID(p.Owner, p.Name); want[id] {
+			if id := p.ID(); want[id] {
 				listed[id] = true
 			}
 		}
-		if err := eachPackage(key, path, note); err != nil {
+		if err := c.Each(ctx, key, note); err != nil {
 			return nil, err
 		}
 		if !seen {

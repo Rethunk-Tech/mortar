@@ -36,6 +36,7 @@ import (
 
 	gh "github.com/Rethunk-Tech/go-github"
 	"github.com/Rethunk-Tech/go-safefs"
+	tstore "github.com/Rethunk-Tech/go-thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/desktopnotify"
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
@@ -370,11 +371,11 @@ type Deps struct {
 	InstallExtra func(ctx context.Context, game, profileID, entryKey, path string, source profile.Source) (profile.InstallResult, error)
 	Verify       func(ctx context.Context, id mod.ID, owner, repo string) (bool, error)
 	// Closure resolves Thunderstore packages and their dependencies for a game, dependencies first; nil refuses packages.
-	Closure func(ctx context.Context, gameID string, roots []thunderstore.Ref, deps thunderstore.Deps) ([]thunderstore.Resolved, error)
+	Closure func(ctx context.Context, gameID string, roots []tstore.Ref, deps thunderstore.Deps) ([]thunderstore.Resolved, error)
 	// ExactDependencies reports whether the profile installs a package's dependencies at the versions it pins; nil
 	// means the newest.
 	ExactDependencies func(gameID, profileID string) bool
-	// CDNs are Thunderstore's download hosts as base addresses, tried in order; nil means thunderstore.CDNs.
+	// CDNs are Thunderstore's download hosts as base addresses, tried in order; nil means tstore.CDNs.
 	CDNs []string
 	// ThunderstoreHost is the base address of the one CDN the player pinned, or empty for automatic; nil means automatic.
 	ThunderstoreHost func() string

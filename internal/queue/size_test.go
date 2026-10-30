@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	tstore "github.com/Rethunk-Tech/go-thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 )
 
@@ -13,7 +14,7 @@ func bigPackage(t *testing.T, size, free int64) *fixture {
 	t.Helper()
 	f := newFixture(t)
 	c, _ := f.s.d.Client()
-	f.s.d.Closure = func(_ context.Context, _ string, _ []thunderstore.Ref, _ thunderstore.Deps) ([]thunderstore.Resolved, error) {
+	f.s.d.Closure = func(_ context.Context, _ string, _ []tstore.Ref, _ thunderstore.Deps) ([]thunderstore.Resolved, error) {
 		return []thunderstore.Resolved{{Namespace: "Me", Name: "Big", Version: "1.0.0", URL: c.BaseURL + "/cdn/file.zip", Size: size}}, nil
 	}
 	f.s.d.InstallPackage = f.s.d.Install

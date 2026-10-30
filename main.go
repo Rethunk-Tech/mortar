@@ -32,6 +32,7 @@ import (
 
 	goavscan "github.com/Rethunk-Tech/go-avscan"
 	"github.com/Rethunk-Tech/go-safefs"
+	tstore "github.com/Rethunk-Tech/go-thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/archivesvc"
 	"github.com/Rethunk-Tech/mortar/internal/avscan"
@@ -468,6 +469,10 @@ func run() error {
 		log.Printf("profiles: remove leftover crash-check copies: %v", err)
 	}
 	profiles.Tidied = func(code, what, profileName, folder string) { tidied.Add(code, what, "", profileName, 1, folder) }
+	// Every Thunderstore Driver on this cache folder shares the one client made here, under Mortar's own user agent.
+	if _, err := (thunderstore.Driver{CacheDir: filepath.Join(dataDir, "cache")}).Open(version); err != nil {
+		return err
+	}
 	profiles.Publisher = func(gameID, name, ver string) (string, bool) {
 		key := share.SourceKeys(gameID)["thunderstore"]
 		if key == "" {
@@ -663,7 +668,7 @@ func run() error {
 		Verify: func(ctx context.Context, id mod.ID, owner, repo string) (bool, error) {
 			return github.Verify(ctx, modMeta, id.Local(), owner, repo)
 		},
-		Closure: func(ctx context.Context, gameID string, roots []thunderstore.Ref, deps thunderstore.Deps) ([]thunderstore.Resolved, error) {
+		Closure: func(ctx context.Context, gameID string, roots []tstore.Ref, deps thunderstore.Deps) ([]thunderstore.Resolved, error) {
 			key := share.SourceKeys(gameID)["thunderstore"]
 			if key == "" {
 				return nil, fmt.Errorf("%s has no Thunderstore community", gameID)

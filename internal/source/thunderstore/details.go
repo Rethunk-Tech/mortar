@@ -5,11 +5,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"net/url"
 	"strings"
 	"sync"
 
 	"github.com/Rethunk-Tech/go-httpkit"
+	tstore "github.com/Rethunk-Tech/go-thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
@@ -17,7 +19,7 @@ import (
 // README and CHANGELOG from the site.
 func (d Driver) Details(ctx context.Context, key, id, mortarVersion string) (source.Details, error) {
 	ua := source.UserAgentWithSite(mortarVersion)
-	p, err := d.find(ctx, key, id, ua)
+	p, err := d.find(ctx, key, id, mortarVersion)
 	if err != nil {
 		return source.Details{}, err
 	}
@@ -26,7 +28,7 @@ func (d Driver) Details(ctx context.Context, key, id, mortarVersion string) (sou
 		out.Versions = append(out.Versions, v.Number)
 		out.Released = append(out.Released, v.Created)
 	}
-	out.Dependencies = append(out.Dependencies, p.depsOf(p.Versions[0])...)
+	out.Dependencies = append(out.Dependencies, p.Dependencies(p.Versions[0])...)
 	latest := p.Versions[0].Number
 	// The site answers each document from its origin the first time, so the two are asked together.
 	var readmeErr, changelogErr error
@@ -46,10 +48,10 @@ func (d Driver) Details(ctx context.Context, key, id, mortarVersion string) (sou
 }
 
 // find is the package id ("Owner-Name") in the community index key, which lists at least one version of it.
-func (d Driver) find(ctx context.Context, key, id, ua string) (pkg, error) {
-	pk, err := d.packages(ctx, key, ua)
+func (d Driver) find(ctx context.Context, key, id, mortarVersion string) (tstore.Package, error) {
+	pk, err := d.packages(ctx, key, mortarVersion)
 	if err != nil {
-		return pkg{}, err
+		return tstore.Package{}, err
 	}
 	owner, name, _ := strings.Cut(id, "-")
 	for _, p := range pk {
@@ -57,18 +59,22 @@ func (d Driver) find(ctx context.Context, key, id, ua string) (pkg, error) {
 			return p, nil
 		}
 	}
-	return pkg{}, fmt.Errorf("%s is not in the %s index", id, key)
+	return tstore.Package{}, fmt.Errorf("%s is not in the %s index", id, key)
 }
 
 // doc is one version's README or CHANGELOG as Markdown; a 404 (httpkit.ErrNotFound) when the version has none.
-func (d Driver) doc(ctx context.Context, p pkg, ver, kind, ua string) (string, error) {
-	base := cmp.Or(d.URL, BaseURL)
+func (d Driver) doc(ctx context.Context, p tstore.Package, ver, kind, ua string) (string, error) {
+	base := cmp.Or(d.URL, tstore.BaseURL)
 	u := base + "/api/experimental/package/" + url.PathEscape(p.Owner) + "/" + url.PathEscape(p.Name) + "/" +
 		url.PathEscape(ver) + "/" + kind + "/"
 	var body struct {
 		Markdown string `json:"markdown"`
 	}
-	if _, err := d.getJSON(ctx, u, ua, &body); err != nil {
+	r := source.Request{
+		Service: "Thunderstore", URL: u, UserAgent: ua,
+		Client: httpkit.WithRedirect(cmp.Or(d.HTTP, http.DefaultClient), httpkit.NoDowngrade),
+	}
+	if err := source.DoJSON(ctx, r, &body); err != nil {
 		return "", err
 	}
 	return body.Markdown, nil
@@ -78,7 +84,7 @@ func (d Driver) doc(ctx context.Context, p pkg, ver, kind, ua string) (string, e
 // the versions in between add nothing. A version without a CHANGELOG answers no notes.
 func (d Driver) Changelog(ctx context.Context, key, id, _, latest, mortarVersion string) ([]source.Note, error) {
 	ua := source.UserAgentWithSite(mortarVersion)
-	p, err := d.find(ctx, key, id, ua)
+	p, err := d.find(ctx, key, id, mortarVersion)
 	if err != nil {
 		return nil, err
 	}

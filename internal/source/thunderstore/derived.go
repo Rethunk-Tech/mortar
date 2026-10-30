@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/Rethunk-Tech/go-safefs"
+	tstore "github.com/Rethunk-Tech/go-thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
@@ -59,17 +60,17 @@ func refreshDerived(dir, key, path string) {
 	}
 }
 
-// deriveFrom reads the listing a package at a time, holding the one winning listing per id (as dedupeIDs does) with
+// deriveFrom reads the listing a package at a time, holding the one winning listing per id (Package.Outranks) with
 // only the fields the answers use.
 func deriveFrom(path string) (derivedFile, error) {
-	winners := map[string]pkg{}
-	err := eachListed(path, func(p *pkg) {
-		id := packageID(p.Owner, p.Name)
-		if o, seen := winners[id]; seen && keepsOver(o, *p) {
+	winners := map[string]tstore.Package{}
+	err := tstore.EachStored(path, func(p *tstore.Package) {
+		id := p.ID()
+		if o, seen := winners[id]; seen && o.Outranks(*p) {
 			return
 		}
-		w := pkg{Owner: p.Owner, Name: p.Name, Hidden: p.Hidden, Updated: p.Updated, Categories: p.Categories}
-		if p.Hidden {
+		w := tstore.Package{Owner: p.Owner, Name: p.Name, Deprecated: p.Deprecated, Updated: p.Updated, Categories: p.Categories}
+		if p.Deprecated {
 			w.Summary = p.Summary
 		}
 		winners[id] = w
@@ -81,13 +82,13 @@ func deriveFrom(path string) (derivedFile, error) {
 	live := map[string]string{}
 	for _, p := range winners {
 		cats = append(cats, p.Categories...)
-		if !p.Hidden {
+		if !p.Deprecated {
 			live[strings.ToLower(p.Owner+"-"+p.Name)] = p.Owner + "-" + p.Name
 		}
 	}
 	out := map[string]Deprecation{}
 	for _, p := range winners {
-		if p.Hidden {
+		if p.Deprecated {
 			self := strings.ToLower(p.Owner + "-" + p.Name)
 			out[self] = Deprecation{Replacement: replacementFor(p, self, live)}
 		}

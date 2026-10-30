@@ -13,13 +13,12 @@ import (
 	"strings"
 	"time"
 
+	tstore "github.com/Rethunk-Tech/go-thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
-// BaseURL is the real site.
-const BaseURL = "https://thunderstore.io"
-
 // Driver searches Thunderstore. The zero value talks to the real site and caches under the user cache directory.
+// HTTP, URL and Now are read once per cache folder, by the first Driver there to need the shared client (Open).
 type Driver struct {
 	HTTP *http.Client
 	URL  string
@@ -59,12 +58,12 @@ func (d Driver) ModPageURL(gameKey, id string) string {
 	if !ok {
 		return ""
 	}
-	base := cmp.Or(d.URL, BaseURL)
+	base := cmp.Or(d.URL, tstore.BaseURL)
 	return base + "/c/" + gameKey + "/p/" + owner + "/" + name + "/"
 }
 
 // score ranks a package against the query tokens: name over owner over summary; zero when a token matches nowhere.
-func score(p pkg, tokens []string) int {
+func score(p tstore.Package, tokens []string) int {
 	name, owner, summary := strings.ToLower(p.Name), strings.ToLower(p.Owner), strings.ToLower(p.Summary)
 	total := 0
 	for _, t := range tokens {
@@ -99,13 +98,13 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 	if q.Key == "" {
 		return source.Page{}, fmt.Errorf("game %q has no Thunderstore community", q.Game)
 	}
-	pk, err := d.packages(ctx, q.Key, source.UserAgentWithSite(q.Version))
+	pk, err := d.packages(ctx, q.Key, q.Version)
 	if err != nil {
 		return source.Page{}, err
 	}
 	tokens := strings.Fields(strings.ToLower(q.Text))
 	type hit struct {
-		p     pkg
+		p     tstore.Package
 		score int
 	}
 	var hits []hit
@@ -144,19 +143,19 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 	return source.Page{Total: len(hits), Items: items}, nil
 }
 
-func (d Driver) item(p pkg) source.Item {
+func (d Driver) item(p tstore.Package) source.Item {
 	return source.Item{
 		Source: d.ID(), ID: p.Owner + "-" + p.Name, Name: p.Name, Summary: p.Summary, Author: p.Owner,
 		Version: p.Versions[0].Number, Size: p.Versions[0].Size, Picture: p.Icon, Endorsements: p.Rating, Downloads: p.Downloads,
-		Updated: p.Updated, URL: p.URL, Adult: p.Adult, Repo: p.Repo, Obsolete: p.Hidden,
+		Updated: p.Updated, URL: p.URL, Adult: p.Adult, Repo: p.Repo, Obsolete: p.Deprecated,
 	}
 }
 
 // Items returns the community's packages named by ids ("Namespace-Name", in any case) from the cached listing. The
 // update check asks at every start, so unless Browse already holds the listing it is read a package at a time rather
-// than loaded and kept for listingIdle.
+// than loaded and kept in memory.
 func (d Driver) Items(ctx context.Context, key, mortarVersion string, ids []string) (map[string]source.Item, error) {
-	path, err := d.listingFile(ctx, key, source.UserAgentWithSite(mortarVersion))
+	c, err := d.client(mortarVersion)
 	if err != nil {
 		return nil, err
 	}
@@ -164,14 +163,14 @@ func (d Driver) Items(ctx context.Context, key, mortarVersion string, ids []stri
 	for _, id := range ids {
 		want[strings.ToLower(id)] = true
 	}
-	found := make(map[string]pkg, len(ids))
-	keep := func(p *pkg) {
-		id := packageID(p.Owner, p.Name)
-		if o, seen := found[id]; want[id] && (!seen || !keepsOver(o, *p)) {
+	found := make(map[string]tstore.Package, len(ids))
+	keep := func(p *tstore.Package) {
+		id := p.ID()
+		if o, seen := found[id]; want[id] && (!seen || !o.Outranks(*p)) {
 			found[id] = *p
 		}
 	}
-	if err := eachPackage(key, path, keep); err != nil {
+	if err := c.Each(ctx, key, keep); err != nil {
 		return nil, err
 	}
 	out := make(map[string]source.Item, len(found))
@@ -183,7 +182,7 @@ func (d Driver) Items(ctx context.Context, key, mortarVersion string, ids []stri
 
 // Categories lists the community's package categories, sorted.
 func (d Driver) Categories(ctx context.Context, key string) ([]string, error) {
-	s, err := d.derived(ctx, key, source.UserAgentWithSite(""))
+	s, err := d.derived(ctx, key, "")
 	return s.Categories, err
 }
 
@@ -202,12 +201,12 @@ var (
 
 // Deprecated lists the community's deprecated packages by lower-cased "Namespace-Name", from the cached index.
 func (d Driver) Deprecated(ctx context.Context, key, version string) (map[string]Deprecation, error) {
-	s, err := d.derived(ctx, key, source.UserAgentWithSite(version))
+	s, err := d.derived(ctx, key, version)
 	return s.Deprecation, err
 }
 
 // replacementFor is the live package p's summary points to, or empty.
-func replacementFor(p pkg, self string, live map[string]string) string {
+func replacementFor(p tstore.Package, self string, live map[string]string) string {
 	if !replaceHint.MatchString(p.Summary) {
 		return ""
 	}
@@ -225,10 +224,14 @@ func replacementFor(p pkg, self string, live map[string]string) string {
 	return ""
 }
 
-func (d Driver) derived(ctx context.Context, key, ua string) (derivedFile, error) {
-	path, err := d.listingFile(ctx, key, ua)
+func (d Driver) derived(ctx context.Context, key, version string) (derivedFile, error) {
+	c, err := d.client(version)
 	if err != nil {
 		return derivedFile{}, err
 	}
-	return derivedFor(filepath.Join(d.cacheRoot(), "thunderstore"), key, path)
+	path, err := c.ListingFile(ctx, key)
+	if err != nil {
+		return derivedFile{}, err
+	}
+	return derivedFor(filepath.Dir(path), key, path)
 }

@@ -4,14 +4,14 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
-	"errors"
+	"maps"
 	"net/http"
 	"net/http/httptest"
+	"slices"
 	"sync/atomic"
 	"testing"
 	"time"
 
-	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
@@ -141,33 +141,6 @@ func TestSearchRanksAndExcludes(t *testing.T) {
 	}
 }
 
-func TestCacheHitThenRefresh(t *testing.T) {
-	f := newFake(t)
-	now := time.Now()
-	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir(), Now: func() time.Time { return now }}
-	q := source.Query{Key: "lethal-company", Text: "library", Page: 1, Version: "1.2.3"}
-	if _, err := d.Search(t.Context(), q); err != nil {
-		t.Fatal(err)
-	}
-	now = now.Add(30 * time.Minute)
-	if _, err := d.Search(t.Context(), q); err != nil || f.indexHits.Load() != 1 || f.chunkHit.Load() != 2 {
-		t.Fatalf("hit: err %v index %d chunks %d", err, f.indexHits.Load(), f.chunkHit.Load())
-	}
-	now = now.Add(time.Hour)
-	if _, err := d.Search(t.Context(), q); err != nil {
-		t.Fatal(err)
-	}
-	waitFor(t, func() bool { return f.indexHits.Load() == 2 })
-	if f.chunkHit.Load() != 2 {
-		t.Fatalf("unchanged index must not refetch chunks: chunks %d", f.chunkHit.Load())
-	}
-	now = now.Add(-24 * time.Hour)
-	if _, err := d.Search(t.Context(), q); err != nil {
-		t.Fatal(err)
-	}
-	waitFor(t, func() bool { return f.indexHits.Load() == 3 })
-}
-
 func waitFor(t *testing.T, ok func() bool) {
 	t.Helper()
 	for deadline := time.Now().Add(5 * time.Second); !ok(); time.Sleep(5 * time.Millisecond) {
@@ -175,7 +148,7 @@ func waitFor(t *testing.T, ok func() bool) {
 			t.Fatal("timed out waiting for the background refresh")
 		}
 	}
-	refreshes.Wait()
+	waitRefreshes()
 }
 
 func TestChangedIndexRebuilds(t *testing.T) {
@@ -206,21 +179,7 @@ func TestChangedIndexRebuilds(t *testing.T) {
 	if p, err := d.Search(t.Context(), q); err != nil || p.Total != 1 {
 		t.Fatalf("answer after refresh: %v %v", err, p.Total)
 	}
-	refreshes.Wait()
-}
-
-func TestIndexCannotSendMortarElsewhere(t *testing.T) {
-	f := newFake(t)
-	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
-	f.evil.Store(true)
-	q := source.Query{Key: "lethal-company", Page: 1, Version: "1.2.3"}
-	if _, err := d.Search(t.Context(), q); err == nil {
-		t.Fatal("followed a chunk URL on another host")
-	}
-	q.Key = "../../etc"
-	if _, err := d.Search(t.Context(), q); err == nil {
-		t.Fatal("accepted a community key that is a path")
-	}
+	waitRefreshes()
 }
 
 func TestCategoryFilterSortAndList(t *testing.T) {
@@ -252,7 +211,6 @@ func TestDeprecatedListsPackagesAndTheirNamedReplacement(t *testing.T) {
 		listing("Gus", "Horn", "Airhorn is replaced with MoreCompany", 5, true, false),
 		listing("Hal", "Warn", "[DEPRECATED] Please use https://thunderstore.io/c/lethal-company/p/Alice/MoreCompany/ instead!", 5, true, false),
 		listing("Alice", "MoreCompanyFix", "[V69]Replace with MoreCompany -> (see its page)", 5, true, false))
-	clearMemo()
 	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
 	got, err := d.Deprecated(t.Context(), "lethal-company", "1.2.3")
 	if err != nil {
@@ -273,7 +231,7 @@ func TestDeprecatedListsPackagesAndTheirNamedReplacement(t *testing.T) {
 	if got["fay-legacy"].Replacement != "Alice-MoreCompany" || len(got) != 6 {
 		t.Fatalf("got %+v", got)
 	}
-	if listingHeld() {
+	if held(t, d) {
 		t.Fatal("the deprecation check kept the whole listing in memory")
 	}
 }
@@ -281,37 +239,13 @@ func TestDeprecatedListsPackagesAndTheirNamedReplacement(t *testing.T) {
 func TestStandingsFlagOnlyPackagesTheIndexNoLongerLists(t *testing.T) {
 	f := newFake(t)
 	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
-	memoMu.Lock()
-	clear(memo)
-	memoMu.Unlock()
 	ids := []string{"lethal-company/Alice-MoreCompany", "lethal-company/dave-library", "lethal-company/Eve-OldMod", "lethal-company/Gone-Mod", "no-slash"}
 	got, err := d.Standings(t.Context(), "1.2.3", ids)
 	if err != nil || len(got) != 1 || got["lethal-company/Gone-Mod"].State != "removed" {
 		t.Fatalf("a listed or deprecated package is not removed, only a missing one: %+v %v", got, err)
 	}
-	memoMu.Lock()
-	defer memoMu.Unlock()
-	if _, held := memo["lethal-company"]; held {
+	if held(t, d) {
 		t.Fatal("a standing check kept the whole listing in memory")
-	}
-}
-
-// A chunk that unpacks past the cap is refused as too large, not read as a list cut short.
-func TestAChunkOverTheCapIsRefusedAsTooLarge(t *testing.T) {
-	prev := maxUnpacked
-	maxUnpacked = 16
-	t.Cleanup(func() { maxUnpacked = prev })
-	var packed bytes.Buffer
-	zw, _ := gzip.NewWriterLevel(&packed, gzip.BestSpeed)
-	_, _ = zw.Write([]byte("["))
-	_, _ = zw.Write(bytes.Repeat([]byte(" "), 16))
-	_, _ = zw.Write([]byte("]"))
-	_ = zw.Close()
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write(packed.Bytes()) }))
-	defer srv.Close()
-	err := Driver{HTTP: srv.Client()}.streamPackages(t.Context(), srv.URL, "ua", func(*wirePackage) error { return nil })
-	if !errors.Is(err, safefs.ErrTooLarge) {
-		t.Fatalf("err = %v, want ErrTooLarge", err)
 	}
 }
 
@@ -324,4 +258,36 @@ func TestRefreshRebuildsAFreshListingNow(t *testing.T) {
 	}
 	d.Refresh("lethal-company", "1.2.3")
 	waitFor(t, func() bool { return f.indexHits.Load() == 2 })
+}
+
+// waitRefreshes waits for every background refresh, so a test's cache folder can be removed.
+func waitRefreshes() {
+	clientsMu.Lock()
+	cs := slices.Collect(maps.Values(clients))
+	clientsMu.Unlock()
+	for _, c := range cs {
+		c.Wait()
+	}
+}
+
+// held reports whether d's client holds the lethal-company listing in memory.
+func held(t *testing.T, d Driver) bool {
+	t.Helper()
+	c, err := d.client("")
+	if err != nil {
+		t.Fatal(err)
+	}
+	return c.Held("lethal-company")
+}
+
+// restart drops d's client, as a new run of Mortar starts with none.
+func restart(d Driver) {
+	root := d.cacheRoot()
+	clientsMu.Lock()
+	c := clients[root]
+	delete(clients, root)
+	clientsMu.Unlock()
+	if c != nil {
+		c.Wait()
+	}
 }

@@ -13,6 +13,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-httpkit/download"
 
+	tstore "github.com/Rethunk-Tech/go-thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
@@ -50,7 +51,7 @@ func (s *Service) expandPackages(ctx context.Context, reqs []Request) ([]Request
 		if s.d.Closure == nil {
 			return nil, errors.New("cannot install Thunderstore packages here")
 		}
-		var roots []thunderstore.Ref
+		var roots []tstore.Ref
 		byID := map[string]Request{}
 		for j := i; j < len(reqs); j++ {
 			q := reqs[j]
@@ -59,7 +60,7 @@ func (s *Service) expandPackages(ctx context.Context, reqs []Request) ([]Request
 			}
 			done[j] = true
 			ns, name, _ := strings.Cut(q.Package, "-")
-			roots = append(roots, thunderstore.Ref{Namespace: ns, Name: name, Version: q.Version})
+			roots = append(roots, tstore.Ref{Namespace: ns, Name: name, Version: q.Version})
 			byID[strings.ToLower(q.Package)] = q
 		}
 		cctx, cancel := context.WithTimeout(ctx, closureTimeout)
@@ -112,7 +113,7 @@ func (s *Service) Unresolvable(ctx context.Context, gameID, profileID string, re
 		}
 		ns, name, _ := strings.Cut(q.Package, "-")
 		cctx, cancel := context.WithTimeout(ctx, closureTimeout)
-		list, err := s.d.Closure(cctx, gameID, []thunderstore.Ref{{Namespace: ns, Name: name, Version: q.Version}}, s.depsFor(gameID, profileID, q.AsIs))
+		list, err := s.d.Closure(cctx, gameID, []tstore.Ref{{Namespace: ns, Name: name, Version: q.Version}}, s.depsFor(gameID, profileID, q.AsIs))
 		cancel()
 		if err != nil {
 			unavailable[q.Package] = err.Error()
@@ -234,7 +235,7 @@ func cdnFailure(ctx context.Context, err error) bool {
 func (s *Service) fetchPackage(ctx context.Context, it Item, path string) error {
 	hosts := s.d.CDNs
 	if hosts == nil {
-		hosts = thunderstore.CDNs
+		hosts = tstore.CDNs
 	}
 	pinned := ""
 	if s.d.ThunderstoreHost != nil {
@@ -243,13 +244,13 @@ func (s *Service) fetchPackage(ctx context.Context, it Item, path string) error 
 	s.mu.Lock()
 	good := s.cdnGood
 	s.mu.Unlock()
-	order := thunderstore.CDNOrder(it.URL, hosts, pinned, good)
+	order := tstore.CDNOrder(it.URL, hosts, pinned, good)
 	if len(order) == 0 {
 		return s.fetch(ctx, it, it.URL, path)
 	}
 	var err error
 	for _, host := range order {
-		u, _ := thunderstore.OnHost(it.URL, host)
+		u, _ := tstore.OnHost(it.URL, host)
 		if err = s.fetchStalling(ctx, it, u, path); err == nil {
 			s.mu.Lock()
 			s.cdnGood = host

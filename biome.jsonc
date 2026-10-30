@@ -17,6 +17,7 @@
       "!**/design/support.js",
       "!**/generated",
       "!internal/secret/testdata",
+      "!internal/source/thunderstore/testdata",
       "!**/locales/*/messages.ts",
       "!**/vendor",
       "!.claude"

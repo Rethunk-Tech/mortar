@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	tstore "github.com/Rethunk-Tech/go-thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 )
@@ -20,7 +21,7 @@ func TestPackageInstallsWithItsDependencies(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
 	c, _ := f.s.d.Client()
-	f.s.d.Closure = func(_ context.Context, game string, roots []thunderstore.Ref, _ thunderstore.Deps) ([]thunderstore.Resolved, error) {
+	f.s.d.Closure = func(_ context.Context, game string, roots []tstore.Ref, _ thunderstore.Deps) ([]thunderstore.Resolved, error) {
 		if game != "riskofrain2" || len(roots) != 2 || roots[0].Name != "Mod" || roots[1].Name != "Other" {
 			t.Errorf("closure asked %q %+v", game, roots)
 		}
@@ -83,7 +84,7 @@ func TestPackageUpdateInstallsANewDependency(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
 	c, _ := f.s.d.Client()
-	f.s.d.Closure = func(_ context.Context, _ string, roots []thunderstore.Ref, _ thunderstore.Deps) ([]thunderstore.Resolved, error) {
+	f.s.d.Closure = func(_ context.Context, _ string, roots []tstore.Ref, _ thunderstore.Deps) ([]thunderstore.Resolved, error) {
 		if len(roots) != 1 || roots[0].Version != "2.0.0" {
 			t.Errorf("closure asked %+v", roots)
 		}
@@ -152,7 +153,7 @@ func TestPackageDownloadFallsBackAcrossCDNs(t *testing.T) {
 	f := newFixture(t)
 	f.s.d.CDNs = []string{deadURL, stalled.URL, good.URL}
 	fire := manualStall(f.s, 2)
-	f.s.d.Closure = func(_ context.Context, _ string, _ []thunderstore.Ref, _ thunderstore.Deps) ([]thunderstore.Resolved, error) {
+	f.s.d.Closure = func(_ context.Context, _ string, _ []tstore.Ref, _ thunderstore.Deps) ([]thunderstore.Resolved, error) {
 		return []thunderstore.Resolved{{Namespace: "Me", Name: "Mod", Version: "1.0.0", URL: deadURL + "/p/Me-Mod.zip"}}, nil
 	}
 	f.s.d.InstallPackage = f.s.d.Install
@@ -184,7 +185,7 @@ func TestPinnedCDNIsTheOnlyOneTried(t *testing.T) {
 	f := newFixture(t)
 	f.s.d.CDNs = []string{a.URL, b.URL}
 	f.s.d.ThunderstoreHost = func() string { return b.URL }
-	f.s.d.Closure = func(_ context.Context, _ string, _ []thunderstore.Ref, _ thunderstore.Deps) ([]thunderstore.Resolved, error) {
+	f.s.d.Closure = func(_ context.Context, _ string, _ []tstore.Ref, _ thunderstore.Deps) ([]thunderstore.Resolved, error) {
 		return []thunderstore.Resolved{{Namespace: "Me", Name: "Mod", Version: "1.0.0", URL: a.URL + "/p/Me-Mod.zip"}}, nil
 	}
 	f.s.d.InstallPackage = f.s.d.Install
@@ -220,7 +221,7 @@ func TestPackageStalledCDNHandsItsPartialToTheNext(t *testing.T) {
 	f := newFixture(t)
 	f.s.d.CDNs = []string{stalled.URL, good.URL}
 	fire := manualStall(f.s, 1)
-	f.s.d.Closure = func(_ context.Context, _ string, _ []thunderstore.Ref, _ thunderstore.Deps) ([]thunderstore.Resolved, error) {
+	f.s.d.Closure = func(_ context.Context, _ string, _ []tstore.Ref, _ thunderstore.Deps) ([]thunderstore.Resolved, error) {
 		return []thunderstore.Resolved{{Namespace: "Me", Name: "Mod", Version: "1.0.0", URL: stalled.URL + "/p/Me-Mod.zip"}}, nil
 	}
 	f.s.d.InstallPackage = f.s.d.Install
@@ -239,7 +240,7 @@ func TestPackageStalledCDNHandsItsPartialToTheNext(t *testing.T) {
 func TestUnresolvableNamesOnlyThePackagesWhoseClosureFails(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
-	f.s.d.Closure = func(_ context.Context, _ string, roots []thunderstore.Ref, _ thunderstore.Deps) ([]thunderstore.Resolved, error) {
+	f.s.d.Closure = func(_ context.Context, _ string, roots []tstore.Ref, _ thunderstore.Deps) ([]thunderstore.Resolved, error) {
 		if roots[0].Name == "Gone" {
 			return nil, errors.New("me-gone 1.0.0 is not in the index")
 		}
@@ -254,7 +255,7 @@ func TestUnresolvableNamesOnlyThePackagesWhoseClosureFails(t *testing.T) {
 func TestUnresolvableReportsADependencyTheIndexLost(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
-	f.s.d.Closure = func(context.Context, string, []thunderstore.Ref, thunderstore.Deps) ([]thunderstore.Resolved, error) {
+	f.s.d.Closure = func(context.Context, string, []tstore.Ref, thunderstore.Deps) ([]thunderstore.Resolved, error) {
 		return []thunderstore.Resolved{{Namespace: "Me", Name: "Driver", Missing: []string{"rob_gaming-driver"}}}, nil
 	}
 	gone, missing := f.s.Unresolvable(t.Context(), "riskofrain2", "p1", []Request{{Package: "Me-Driver"}})
@@ -274,7 +275,7 @@ func TestAnAsIsRequestResolvesWithoutDependencies(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
 	var asked []thunderstore.Deps
-	f.s.d.Closure = func(_ context.Context, _ string, roots []thunderstore.Ref, deps thunderstore.Deps) ([]thunderstore.Resolved, error) {
+	f.s.d.Closure = func(_ context.Context, _ string, roots []tstore.Ref, deps thunderstore.Deps) ([]thunderstore.Resolved, error) {
 		asked = append(asked, deps)
 		return []thunderstore.Resolved{{Namespace: roots[0].Namespace, Name: roots[0].Name, Version: "1.0.0"}}, nil
 	}

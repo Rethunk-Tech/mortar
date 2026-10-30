@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
+	tstore "github.com/Rethunk-Tech/go-thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
-	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 )
 
 func TestPrefDefaultsMatchToday(t *testing.T) {
@@ -552,7 +552,7 @@ func TestHidingAGameIsUndoable(t *testing.T) {
 
 func TestThunderstoreHostChoicesAreTheDownloadCDNs(t *testing.T) {
 	var want []string
-	for _, base := range thunderstore.CDNs {
+	for _, base := range tstore.CDNs {
 		want = append(want, strings.TrimPrefix(base, "https://"))
 	}
 	if got := thunderstoreHostValues[1:]; !slices.Equal(got, want) {

@@ -3,48 +3,20 @@ package thunderstore
 import (
 	"cmp"
 	"context"
-	"errors"
 	"fmt"
-	"net/url"
-	"regexp"
 	"slices"
 	"strings"
 
+	tstore "github.com/Rethunk-Tech/go-thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
-	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
 // Schemes is the one-click install link scheme.
-func (Driver) Schemes() []string { return []string{"ror2mm"} }
+func (Driver) Schemes() []string { return []string{tstore.Scheme} }
 
 // HandleLinksDefault is false: Mortar takes ror2mm links from the system only when the user opts in.
 func (Driver) HandleLinksDefault() bool { return false }
-
-// Ref names one package version in a ror2mm link.
-type Ref struct {
-	Namespace, Name, Version string
-}
-
-var (
-	part       = regexp.MustCompile(`^[A-Za-z0-9_]+$`)
-	versionRe  = regexp.MustCompile(`^\d+\.\d+\.\d+$`)
-	errBadLink = errors.New("not a ror2mm install link")
-)
-
-// ParseLink reads ror2mm://v1/install/thunderstore.io/<namespace>/<name>/<version>/.
-func ParseLink(raw string) (Ref, error) {
-	u, err := url.Parse(raw)
-	if err != nil || u.Scheme != "ror2mm" || u.Host != "v1" || u.User != nil || u.RawQuery != "" || u.Fragment != "" {
-		return Ref{}, errBadLink
-	}
-	parts := strings.Split(strings.Trim(u.Path, "/"), "/")
-	if len(parts) != 5 || parts[0] != "install" || parts[1] != "thunderstore.io" ||
-		!part.MatchString(parts[2]) || !part.MatchString(parts[3]) || !versionRe.MatchString(parts[4]) {
-		return Ref{}, errBadLink
-	}
-	return Ref{Namespace: parts[2], Name: parts[3], Version: parts[4]}, nil
-}
 
 // Resolved is what an install needs of one package version.
 type Resolved struct {
@@ -62,7 +34,7 @@ type Resolved struct {
 
 // Resolve finds the package in the community's index; an empty version means the latest.
 func (d Driver) Resolve(ctx context.Context, key, namespace, name, ver, mortarVersion string) (Resolved, error) {
-	pk, err := d.packages(ctx, key, source.UserAgentWithSite(mortarVersion))
+	pk, err := d.packages(ctx, key, mortarVersion)
 	if err != nil {
 		return Resolved{}, err
 	}
@@ -82,12 +54,12 @@ func (d Driver) Resolve(ctx context.Context, key, namespace, name, ver, mortarVe
 // Publisher is the namespace of the one package in the community's index with this name and version; ok is false when
 // none or several match.
 func (d Driver) Publisher(ctx context.Context, key, name, ver, mortarVersion string) (namespace string, ok bool, err error) {
-	pk, err := d.packages(ctx, key, source.UserAgentWithSite(mortarVersion))
+	pk, err := d.packages(ctx, key, mortarVersion)
 	if err != nil {
 		return "", false, err
 	}
 	for _, p := range pk {
-		if !strings.EqualFold(p.Name, name) || !slices.ContainsFunc(p.Versions, func(v version) bool { return v.Number == ver }) {
+		if !strings.EqualFold(p.Name, name) || !slices.ContainsFunc(p.Versions, func(v tstore.Version) bool { return v.Number == ver }) {
 			continue
 		}
 		if namespace != "" {
@@ -100,49 +72,21 @@ func (d Driver) Publisher(ctx context.Context, key, name, ver, mortarVersion str
 
 // Versions lists the package's versions in the community's index, newest first.
 func (d Driver) Versions(ctx context.Context, key, namespace, name, mortarVersion string) ([]string, error) {
-	if out, ok := d.sideVersions(ctx, key, namespace, name, mortarVersion); ok {
-		return out, nil
-	}
-	// A miss (first start, or a refresh that changed the index) reads the stored listing a package at a time instead of
-	// loading it: the loader asks at every start, and a loaded listing stays in memory for listingIdle.
-	path, err := d.listingFile(ctx, key, source.UserAgentWithSite(mortarVersion))
+	c, err := d.client(mortarVersion)
 	if err != nil {
 		return nil, err
 	}
-	p, ok, err := findListed(path, namespace, name)
-	if err != nil {
-		return nil, err
-	}
-	if ok {
-		out := versionsOf(p)
-		d.rememberVersions(key, namespace, name, out)
-		return out, nil
-	}
-	return nil, fmt.Errorf("%s-%s is not in the %s index", namespace, name, key)
-}
-
-// versionsOf is the package's version numbers, newest first.
-func versionsOf(p pkg) []string {
-	out := make([]string, len(p.Versions))
-	for i, v := range p.Versions {
-		out[i] = v.Number
-	}
-	slices.SortStableFunc(out, func(a, b string) int {
-		switch {
-		case meta.Newer(a, b):
-			return -1
-		case meta.Newer(b, a):
-			return 1
-		}
-		return 0
-	})
-	return out
+	return c.Versions(ctx, key, namespace, name)
 }
 
 // Dependencies reads the dependencies of the listed package versions from the community's index, one package per
 // "Namespace-Name" id, with no request beyond the index's own refresh.
 func (d Driver) Dependencies(ctx context.Context, key, mortarVersion string, refs []source.VersionRef) (map[source.VersionRef][]string, error) {
-	pk, err := d.unkeptPackages(ctx, key, source.UserAgentWithSite(mortarVersion))
+	c, err := d.client(mortarVersion)
+	if err != nil {
+		return nil, err
+	}
+	x, err := c.Snapshot(ctx, key)
 	if err != nil {
 		return nil, err
 	}
@@ -151,14 +95,14 @@ func (d Driver) Dependencies(ctx context.Context, key, mortarVersion string, ref
 		want[strings.ToLower(r.ID)+"@"+r.Version] = r
 	}
 	out := map[source.VersionRef][]string{}
-	for _, p := range pk {
+	for _, p := range x.Packages() {
 		id := p.Owner + "-" + p.Name
 		for _, v := range p.Versions {
 			r, ok := want[strings.ToLower(id)+"@"+v.Number]
 			if !ok {
 				continue
 			}
-			needs := p.depsOf(v)
+			needs := p.Dependencies(v)
 			names := make([]string, 0, len(needs))
 			for _, dep := range needs {
 				if pkg, _, ok := deps.ThunderstoreRef(dep); ok {
@@ -172,10 +116,10 @@ func (d Driver) Dependencies(ctx context.Context, key, mortarVersion string, ref
 	return out, nil
 }
 
-func (d Driver) resolved(p pkg, v version) Resolved {
-	base := cmp.Or(d.URL, BaseURL)
+func (d Driver) resolved(p tstore.Package, v tstore.Version) Resolved {
+	base := cmp.Or(d.URL, tstore.BaseURL)
 	return Resolved{
-		Namespace: p.Owner, Name: p.Name, Version: v.Number, Size: v.Size, Dependencies: p.depsOf(v),
+		Namespace: p.Owner, Name: p.Name, Version: v.Number, Size: v.Size, Dependencies: p.Dependencies(v),
 		URL:  base + "/package/download/" + p.Owner + "/" + p.Name + "/" + v.Number + "/",
 		Icon: p.Icon, Category: Category(p.Categories),
 	}

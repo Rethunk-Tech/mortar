@@ -4,6 +4,8 @@ import (
 	"strings"
 	"testing"
 
+	tstore "github.com/Rethunk-Tech/go-thunderstore"
+
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
@@ -40,28 +42,28 @@ func TestClosure(t *testing.T) {
 	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
 	cases := []struct {
 		name    string
-		roots   []Ref
+		roots   []tstore.Ref
 		want    string // "Name Version" in install order
 		wantErr string
 	}{
 		{
 			"highest version wins and brings its own dependencies",
-			[]Ref{{"Ns", "A", "1.0.0"}, {"Ns", "C", ""}},
+			[]tstore.Ref{{Namespace: "Ns", Name: "A", Version: "1.0.0"}, {Namespace: "Ns", Name: "C", Version: ""}},
 			"D 1.0.0, B 2.0.0, BepInExPack 5.4.2305, A 1.0.0, C 1.0.0", "",
 		},
-		{"a root without a version takes the latest", []Ref{{"Ns", "B", ""}}, "D 1.0.0, B 2.0.0", ""},
-		{"a dependency's pin is a minimum, so the newest installs", []Ref{{"Ns", "A", "1.0.0"}}, "D 1.0.0, B 2.0.0, BepInExPack 5.4.2305, A 1.0.0", ""},
-		{"a root named at an exact version keeps it", []Ref{{"Ns", "A", "1.0.0"}, {"Ns", "B", "1.0.0"}}, "B 1.0.0, BepInExPack 5.4.2305, A 1.0.0", ""},
-		{"a pin newer than the index is an error", []Ref{{"Ns", "Ahead", ""}}, "", "ns-d 9.0.0 is not in the index"},
-		{"another loader major is refused", []Ref{{"Ns", "Old", ""}}, "", "ns-old 1.0.0 -> bepinex-bepinexpack"},
-		{"an IL2CPP pack's dependents take its newest BepInEx 6", []Ref{{"Ns", "Cat", ""}}, "BepInExPack_IL2CPP 6.0.788, Cat 1.0.0", ""},
-		{"another loader's pack is not held to BepInEx's series", []Ref{{"Ns", "Mel", ""}}, "MelonLoader 0.7.1, Mel 1.0.0", ""},
-		{"a missing dependency is left out", []Ref{{"Ns", "Lost", ""}}, "Lost 1.0.0", ""},
-		{"a missing root names the chain", []Ref{{"Ghost", "Pkg", ""}}, "", "ghost-pkg is not in the index (requested by ghost-pkg)"},
-		{"packages that list each other install together", []Ref{{"Ns", "X", ""}}, "Y 1.0.0, X 1.0.0", ""},
-		{"an older pack version of the same major is served by the newest", []Ref{{"Ns", "OldPin", ""}}, "BepInExPack 5.4.2305, OldPin 1.0.0", ""},
-		{"a mod manager listed as a dependency is left out", []Ref{{"Ns", "Managed", ""}}, "D 1.0.0, Managed 1.0.0", ""},
-		{"a mod manager asked for by name is refused", []Ref{{"ebkr", "r2modman", ""}}, "", "ebkr-r2modman is a mod manager, not a mod"},
+		{"a root without a version takes the latest", []tstore.Ref{{Namespace: "Ns", Name: "B", Version: ""}}, "D 1.0.0, B 2.0.0", ""},
+		{"a dependency's pin is a minimum, so the newest installs", []tstore.Ref{{Namespace: "Ns", Name: "A", Version: "1.0.0"}}, "D 1.0.0, B 2.0.0, BepInExPack 5.4.2305, A 1.0.0", ""},
+		{"a root named at an exact version keeps it", []tstore.Ref{{Namespace: "Ns", Name: "A", Version: "1.0.0"}, {Namespace: "Ns", Name: "B", Version: "1.0.0"}}, "B 1.0.0, BepInExPack 5.4.2305, A 1.0.0", ""},
+		{"a pin newer than the index is an error", []tstore.Ref{{Namespace: "Ns", Name: "Ahead", Version: ""}}, "", "ns-d 9.0.0 is not in the index"},
+		{"another loader major is refused", []tstore.Ref{{Namespace: "Ns", Name: "Old", Version: ""}}, "", "ns-old 1.0.0 -> bepinex-bepinexpack"},
+		{"an IL2CPP pack's dependents take its newest BepInEx 6", []tstore.Ref{{Namespace: "Ns", Name: "Cat", Version: ""}}, "BepInExPack_IL2CPP 6.0.788, Cat 1.0.0", ""},
+		{"another loader's pack is not held to BepInEx's series", []tstore.Ref{{Namespace: "Ns", Name: "Mel", Version: ""}}, "MelonLoader 0.7.1, Mel 1.0.0", ""},
+		{"a missing dependency is left out", []tstore.Ref{{Namespace: "Ns", Name: "Lost", Version: ""}}, "Lost 1.0.0", ""},
+		{"a missing root names the chain", []tstore.Ref{{Namespace: "Ghost", Name: "Pkg", Version: ""}}, "", "ghost-pkg is not in the index (requested by ghost-pkg)"},
+		{"packages that list each other install together", []tstore.Ref{{Namespace: "Ns", Name: "X", Version: ""}}, "Y 1.0.0, X 1.0.0", ""},
+		{"an older pack version of the same major is served by the newest", []tstore.Ref{{Namespace: "Ns", Name: "OldPin", Version: ""}}, "BepInExPack 5.4.2305, OldPin 1.0.0", ""},
+		{"a mod manager listed as a dependency is left out", []tstore.Ref{{Namespace: "Ns", Name: "Managed", Version: ""}}, "D 1.0.0, Managed 1.0.0", ""},
+		{"a mod manager asked for by name is refused", []tstore.Ref{{Namespace: "ebkr", Name: "r2modman", Version: ""}}, "", "ebkr-r2modman is a mod manager, not a mod"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -96,15 +98,15 @@ func TestClosureDependencyVersions(t *testing.T) {
 	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
 	for name, c := range map[string]struct {
 		deps  Deps
-		roots []Ref
+		roots []tstore.Ref
 		want  string
 	}{
-		"newest takes the latest":                     {DepsNewest, []Ref{{"Ns", "A", ""}}, "B 3.0.0, A 1.0.0"},
-		"exact takes the pin":                         {DepsPinned, []Ref{{"Ns", "A", ""}}, "B 1.0.0, A 1.0.0"},
-		"exact with two pins takes the higher":        {DepsPinned, []Ref{{"Ns", "A", ""}, {"Ns", "C", ""}}, "B 2.0.0, A 1.0.0, C 1.0.0"},
-		"exact keeps a root named at its own version": {DepsPinned, []Ref{{"Ns", "A", ""}, {"Ns", "B", "3.0.0"}}, "B 3.0.0, A 1.0.0"},
-		"as-is adds no dependency":                    {DepsNone, []Ref{{"Ns", "A", ""}}, "A 1.0.0"},
-		"as-is keeps a root another root needs newer": {DepsNone, []Ref{{"Ns", "C", ""}, {"Ns", "B", "1.0.0"}}, "C 1.0.0, B 1.0.0"},
+		"newest takes the latest":                     {DepsNewest, []tstore.Ref{{Namespace: "Ns", Name: "A", Version: ""}}, "B 3.0.0, A 1.0.0"},
+		"exact takes the pin":                         {DepsPinned, []tstore.Ref{{Namespace: "Ns", Name: "A", Version: ""}}, "B 1.0.0, A 1.0.0"},
+		"exact with two pins takes the higher":        {DepsPinned, []tstore.Ref{{Namespace: "Ns", Name: "A", Version: ""}, {Namespace: "Ns", Name: "C", Version: ""}}, "B 2.0.0, A 1.0.0, C 1.0.0"},
+		"exact keeps a root named at its own version": {DepsPinned, []tstore.Ref{{Namespace: "Ns", Name: "A", Version: ""}, {Namespace: "Ns", Name: "B", Version: "3.0.0"}}, "B 3.0.0, A 1.0.0"},
+		"as-is adds no dependency":                    {DepsNone, []tstore.Ref{{Namespace: "Ns", Name: "A", Version: ""}}, "A 1.0.0"},
+		"as-is keeps a root another root needs newer": {DepsNone, []tstore.Ref{{Namespace: "Ns", Name: "C", Version: ""}, {Namespace: "Ns", Name: "B", Version: "1.0.0"}}, "C 1.0.0, B 1.0.0"},
 	} {
 		got, err := d.Closure(t.Context(), "lethal-company", c.roots, "1.2.3", c.deps)
 		if err != nil {
@@ -163,7 +165,7 @@ func TestClosureCaseTwinKeepsTheLivePackage(t *testing.T) {
 			f.chunk0, f.chunk1 = append(f.chunk0, twin), append(f.chunk1, live)
 		}
 		d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
-		got, err := d.Closure(t.Context(), "lethal-company", []Ref{{"Mel", "Two_sToRy_Ship", "2.2.14"}}, "1.2.3", DepsNewest)
+		got, err := d.Closure(t.Context(), "lethal-company", []tstore.Ref{{Namespace: "Mel", Name: "Two_sToRy_Ship", Version: "2.2.14"}}, "1.2.3", DepsNewest)
 		if err != nil || len(got) != 1 || got[0].Version != "2.2.14" {
 			t.Fatalf("liveFirst=%v: %v %v", liveFirst, got, err)
 		}
@@ -178,11 +180,11 @@ func TestClosureSwapsADependencyForItsDropIn(t *testing.T) {
 		custom("Ns", "Pack", v("1.0.0", "Old-Loader-1.0.0")),
 	)
 	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir(), DropIns: map[string]string{"old-loader": "Mortar-Loader"}}
-	for roots, want := range map[Ref]string{
-		{"Ns", "Pack", ""}:    "Loader 0.1.0, Pack 1.0.0",
-		{"Old", "Loader", ""}: "Loader 1.0.0",
+	for roots, want := range map[tstore.Ref]string{
+		{Namespace: "Ns", Name: "Pack", Version: ""}:    "Loader 0.1.0, Pack 1.0.0",
+		{Namespace: "Old", Name: "Loader", Version: ""}: "Loader 1.0.0",
 	} {
-		got, err := d.Closure(t.Context(), "lethal-company", []Ref{roots}, "1.2.3", DepsNewest)
+		got, err := d.Closure(t.Context(), "lethal-company", []tstore.Ref{roots}, "1.2.3", DepsNewest)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -204,7 +206,7 @@ func TestClosureLoaderPackUnderAnotherNamespace(t *testing.T) {
 		custom("Ns", "Mod", v("1.0.0", "BepInEx-BepInExPack-5.4.2100")),
 	)
 	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
-	got, err := d.Closure(t.Context(), "lethal-company", []Ref{{"Ns", "Mod", ""}}, "1.2.3", DepsNewest)
+	got, err := d.Closure(t.Context(), "lethal-company", []tstore.Ref{{Namespace: "Ns", Name: "Mod", Version: ""}}, "1.2.3", DepsNewest)
 	if err != nil || len(got) != 1 || got[0].Name != "Mod" {
 		t.Fatalf("got %v, %v; want Mod alone: the pack is the loader's, not the mod's to install", got, err)
 	}
@@ -214,7 +216,7 @@ func TestClosureNamesTheMissingDependency(t *testing.T) {
 	f := newFake(t)
 	f.chunk0 = append(f.chunk0, custom("Ns", "Lost", v("1.0.0", "Ghost-Pkg-1.0.0")))
 	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
-	got, err := d.Closure(t.Context(), "lethal-company", []Ref{{"Ns", "Lost", ""}}, "1.2.3", DepsNewest)
+	got, err := d.Closure(t.Context(), "lethal-company", []tstore.Ref{{Namespace: "Ns", Name: "Lost", Version: ""}}, "1.2.3", DepsNewest)
 	if err != nil || len(got) != 1 || len(got[0].Missing) != 1 || got[0].Missing[0] != "Ghost-Pkg" {
 		t.Fatalf("got %+v, %v", got, err)
 	}

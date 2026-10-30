@@ -10,6 +10,9 @@ import (
 func TestFactsComeFromTheCachedIndexAlone(t *testing.T) {
 	f := newFake(t)
 	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
+	if _, err := d.Open("1.2.3"); err != nil {
+		t.Fatal(err)
+	}
 	if _, err := d.CachedFacts(t.Context(), "lethal-company", map[string]string{"alice-morecompany": "1.0.0"}); err == nil {
 		t.Fatal("a community with no cached listing answered")
 	}
