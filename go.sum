@@ -10,8 +10,8 @@ github.com/Rethunk-Tech/go-avscan v0.1.0 h1:ZwBuacWeI5Xnf601b+GFZLGR0QlQnINbIKem
 github.com/Rethunk-Tech/go-avscan v0.1.0/go.mod h1:Do3G/kVb9kYmOI5ZeEtygmoMnImmIliafwSxxZzqV3U=
 github.com/Rethunk-Tech/go-cfgedit v0.2.0 h1:AaoQuLBmiGvHd6irBqcDcChifMTai4idpTrWvST5bT8=
 github.com/Rethunk-Tech/go-cfgedit v0.2.0/go.mod h1:QufP3Eqz9dz83brRfZ7K4d6iN8T61IhCJee+5Wow/Ic=
-github.com/Rethunk-Tech/go-desktopenv v0.2.0 h1:xDFbwdiy0C0nOna3Pn8+3cIuQUoZxJYDNUonRgPeuLw=
-github.com/Rethunk-Tech/go-desktopenv v0.2.0/go.mod h1:4xFWLB3Q2VFr0fZeyRsGBdvSufYMggjqqlWAnYXUHxI=
+github.com/Rethunk-Tech/go-desktopenv v0.2.1 h1:1g5et7FtH1lkz8rOPdX+ZaS8RGqI2U0OlNOWnK2HSd0=
+github.com/Rethunk-Tech/go-desktopenv v0.2.1/go.mod h1:4xFWLB3Q2VFr0fZeyRsGBdvSufYMggjqqlWAnYXUHxI=
 github.com/Rethunk-Tech/go-dotnet v0.1.0 h1:r/WRllqyk2QELaqCHkxbW5urwXwihsYgn/0UgpKgelo=
 github.com/Rethunk-Tech/go-dotnet v0.1.0/go.mod h1:Wq94uiltkgNA/cbrytn4NwTAgKV6tZzv8Gi4ieTANL0=
 github.com/Rethunk-Tech/go-fomod v0.1.0 h1:NAmHf2WPHAsD+fcuc1UYWyjYpG56ioDwxjf/Qyq0ahA=

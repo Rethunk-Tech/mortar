@@ -7,11 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
-
-	"github.com/go-ole/go-ole"
-	"github.com/go-ole/go-ole/oleutil"
 
 	"github.com/Rethunk-Tech/go-desktopenv/lnk"
 	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
@@ -64,36 +60,6 @@ func startMenuDir() (string, error) {
 		return "", err
 	}
 	return filepath.Join(userdirs.AppData(home), "Microsoft", "Windows", "Start Menu", "Programs", "Mortar"), nil
-}
-
-func withLink(path string, fn func(*ole.IDispatch) error) error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
-	if err := ole.CoInitializeEx(0, ole.COINIT_APARTMENTTHREADED); err != nil {
-		var oleErr *ole.OleError
-		// S_FALSE means COM was already initialised on this thread, which is fine.
-		if !errors.As(err, &oleErr) || oleErr.Code() != 1 {
-			return err
-		}
-	}
-	defer ole.CoUninitialize()
-	unknown, err := oleutil.CreateObject("WScript.Shell")
-	if err != nil {
-		return err
-	}
-	defer unknown.Release()
-	shell, err := unknown.QueryInterface(ole.IID_IDispatch)
-	if err != nil {
-		return err
-	}
-	defer shell.Release()
-	linkVar, err := oleutil.CallMethod(shell, "CreateShortcut", path)
-	if err != nil {
-		return err
-	}
-	link := linkVar.ToIDispatch()
-	defer link.Release()
-	return fn(link)
 }
 
 func matchingLinks(dir, arg string) ([]string, error) {
@@ -191,18 +157,13 @@ func Repoint(exe string) error {
 	}
 	var errs []error
 	for _, path := range paths {
-		var target, arg string
-		if err := withLink(path, func(link *ole.IDispatch) error {
-			for prop, dst := range map[string]*string{"TargetPath": &target, "Arguments": &arg} {
-				value, err := oleutil.GetProperty(link, prop)
-				if err != nil {
-					return err
-				}
-				*dst = value.ToString()
-				_ = value.Clear()
-			}
-			return nil
-		}); err != nil {
+		arg, err := lnk.Arguments(path)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+		target, err := lnk.Target(path)
+		if err != nil {
 			errs = append(errs, err)
 			continue
 		}
