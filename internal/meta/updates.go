@@ -117,7 +117,7 @@ func (c *Client) CheckUpdates(ctx context.Context, req UpdateRequest) []smapiweb
 				delete(store, k)
 			}
 		}
-		diskcache.PutEntry(cache, updatesFile, diskcache.Entry[map[string]diskcache.Entry[smapiweb.UpdateResult]]{Fetched: now, Value: store, Stamp: build})
+		_ = diskcache.PutEntry(cache, updatesFile, diskcache.Entry[map[string]diskcache.Entry[smapiweb.UpdateResult]]{Fetched: now, Value: store, Stamp: build})
 	}
 	return out
 }

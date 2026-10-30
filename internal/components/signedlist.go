@@ -77,7 +77,7 @@ func (l signedList[T]) load(ctx context.Context, c *Client, cache *meta.Client, 
 			return cachedSignedList{}, fmt.Errorf("%w: %s serial %d is older than %d", ErrRollback, url, serial, oldSerial)
 		}
 		if serial > floor {
-			diskcache.Put(cache.Cache(), l.floorName(game), serial)
+			_ = diskcache.Put(cache.Cache(), l.floorName(game), serial)
 		}
 		return e, nil
 	})

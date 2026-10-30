@@ -61,14 +61,16 @@ func (c *Client) now() time.Time {
 	return time.Now().UTC()
 }
 
-// Cache is the client's cache: CacheDir, else <datadir>/cache. With no data folder it is disabled, and every
-// answer is fetched.
+// Cache is the client's cache: CacheDir, else <datadir>/cache. With no data folder it is nil (caching off), and
+// every answer is fetched.
 func (c *Client) Cache() *diskcache.Cache {
 	dir := c.CacheDir
 	if dir == "" {
-		if base, err := datadir.Dir(); err == nil {
-			dir = filepath.Join(base, "cache")
+		base, err := datadir.Dir()
+		if err != nil {
+			return nil
 		}
+		dir = filepath.Join(base, "cache")
 	}
 	return &diskcache.Cache{Dir: dir, Now: c.Now}
 }

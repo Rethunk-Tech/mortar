@@ -15,7 +15,7 @@ import (
 
 func TestCollectionDropsNonWebLinksFromAnOlderCache(t *testing.T) {
 	c := &Client{CacheDir: t.TempDir()}
-	diskcache.PutEntry(c.Cache(), "nexus-collection-stardewvalley-slug-0.json", diskcache.Entry[nexusmods.Collection]{Fetched: time.Now(), Value: nexusmods.Collection{External: []nexusmods.CollectionExternal{
+	_ = diskcache.PutEntry(c.Cache(), "nexus-collection-stardewvalley-slug-0.json", diskcache.Entry[nexusmods.Collection]{Fetched: time.Now(), Value: nexusmods.Collection{External: []nexusmods.CollectionExternal{
 		{Name: "app", URL: "steam://run/1"}, {Name: "page", URL: "https://example.com/mod"},
 	}}})
 

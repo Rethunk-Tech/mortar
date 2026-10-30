@@ -9,13 +9,13 @@ require (
 	github.com/Rethunk-Tech/go-dotnet v0.1.0
 	github.com/Rethunk-Tech/go-fomod v0.1.0
 	github.com/Rethunk-Tech/go-gamelocator v0.1.0
-	github.com/Rethunk-Tech/go-github v0.1.0
+	github.com/Rethunk-Tech/go-github v0.1.1
 	github.com/Rethunk-Tech/go-httpkit v0.1.0
 	github.com/Rethunk-Tech/go-keyring v0.1.0
 	github.com/Rethunk-Tech/go-lenientjson v0.1.0
 	github.com/Rethunk-Tech/go-modmanagers v0.1.0
 	github.com/Rethunk-Tech/go-nexusmods v0.1.0
-	github.com/Rethunk-Tech/go-safefs v0.1.0
+	github.com/Rethunk-Tech/go-safefs v0.2.0
 	github.com/Rethunk-Tech/go-semverish v0.1.0
 	github.com/Rethunk-Tech/go-smapiweb v0.1.0
 	github.com/andybalholm/brotli v1.2.7

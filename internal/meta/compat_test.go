@@ -22,7 +22,7 @@ func TestCompatListFetchesAgainACacheWrittenWithoutThisBuildsStamp(t *testing.T)
 	t.Cleanup(srv.Close)
 	c := &Client{HTTP: srv.Client(), CacheDir: t.TempDir(), CompatURL: srv.URL}
 	// An index cached before the unofficial version was kept: a day's TTL left, no build stamp, no version.
-	diskcache.PutEntry(c.Cache(), CompatCacheFile, diskcache.Entry[smapiweb.CompatIndex]{Fetched: time.Now(), Value: smapiweb.CompatIndex{
+	_ = diskcache.PutEntry(c.Cache(), CompatCacheFile, diskcache.Entry[smapiweb.CompatIndex]{Fetched: time.Now(), Value: smapiweb.CompatIndex{
 		ByID: map[string]smapiweb.CompatEntry{"hootless.buslocations": {Status: smapiweb.StatusUnofficial, UnofficialURL: "https://example.com/b"}},
 	}})
 

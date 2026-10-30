@@ -109,12 +109,12 @@ func (s *Service) fetchPages(ctx context.Context, domain string, ids []int) erro
 		log.Printf("nexus pages: %d of %d %s mods in %d requests", len(infos), len(ids), domain, nexusmods.Requests(len(ids)))
 	}
 	for id, info := range infos {
-		diskcache.Put(s.meta.Cache(), PageName(domain, id), Details{Page: info.Page(), Category: info.Category, Partial: true})
+		_ = diskcache.Put(s.meta.Cache(), PageName(domain, id), Details{Page: info.Page(), Category: info.Category, Partial: true})
 	}
 	if err == nil {
 		for _, id := range ids {
 			if _, ok := infos[id]; !ok {
-				diskcache.Put(s.meta.Cache(), absentName(domain, id), absent{})
+				_ = diskcache.Put(s.meta.Cache(), absentName(domain, id), absent{})
 			}
 		}
 	}

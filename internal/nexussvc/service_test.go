@@ -173,7 +173,7 @@ func TestDetailsCachedAndServedStaleWhenSignedOut(t *testing.T) {
 		hits.Load() != 5 {
 		t.Fatalf("cached details = %+v, hits %d", got, hits.Load())
 	}
-	diskcache.Put(s.meta.Cache(), PageName("stardewvalley", 777), Details{Page: nexusmods.Page{Version: "3.0"}, Partial: true})
+	_ = diskcache.Put(s.meta.Cache(), PageName("stardewvalley", 777), Details{Page: nexusmods.Page{Version: "3.0"}, Partial: true})
 	if got := s.CachedDetails("stardew", []int{777}); got[777].Page.Version != "3.0" || hits.Load() != 5 {
 		t.Fatalf("a mod known only from a batched page: %+v, hits %d", got, hits.Load())
 	}

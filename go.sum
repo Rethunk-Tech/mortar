@@ -14,8 +14,8 @@ github.com/Rethunk-Tech/go-fomod v0.1.0 h1:NAmHf2WPHAsD+fcuc1UYWyjYpG56ioDwxjf/Q
 github.com/Rethunk-Tech/go-fomod v0.1.0/go.mod h1:vNHiJeDb3TOL4FMGPqANWoM3kA16wKUDL/2kEEJ0BMo=
 github.com/Rethunk-Tech/go-gamelocator v0.1.0 h1:OS8Gp+ANUu4BHzCL0+YqclN4UVZE0qDZmuUXd0QH8Sg=
 github.com/Rethunk-Tech/go-gamelocator v0.1.0/go.mod h1:+QGK8M6vxBzKDmy70Gdj0pJMmCECbn8jCeZq7oa4/AY=
-github.com/Rethunk-Tech/go-github v0.1.0 h1:KKmnwjK3mQzAaj5Gbon647dQD+pI6ItEM6cJOOTRdtk=
-github.com/Rethunk-Tech/go-github v0.1.0/go.mod h1:sKfC9ejVj1doCXHrqPpFZzhMWT9C44sftUtM6+sfgZQ=
+github.com/Rethunk-Tech/go-github v0.1.1 h1:FwT2hDvsM92lVtoZ9kNInhBbMO31igrudzjiPflMge0=
+github.com/Rethunk-Tech/go-github v0.1.1/go.mod h1:/SY8QlMDDvAlSuN1uESIrEaTrUIzM85RrHjLnmgJxJk=
 github.com/Rethunk-Tech/go-httpkit v0.1.0 h1:SvoqwGRNV1p5C35bIyNmVdcjkyX+9uYq+kDbXhmPXB0=
 github.com/Rethunk-Tech/go-httpkit v0.1.0/go.mod h1:2UlPyOxq3gUFVrTKol+2lP9r0i7pC15pRPF3jtF8/dk=
 github.com/Rethunk-Tech/go-keyring v0.1.0 h1:ZmTkrs5bmamrqMcrH+q+X2GatWBLU5ArYp1kG+WjyQE=
@@ -26,8 +26,8 @@ github.com/Rethunk-Tech/go-modmanagers v0.1.0 h1:NWPG6HdhCR9CdIepjRrHIwKsvmnNoFE
 github.com/Rethunk-Tech/go-modmanagers v0.1.0/go.mod h1:9a6D5b2vTlHFDMuhbxKLCEukMmGuDvAIRj8SCTRuU0U=
 github.com/Rethunk-Tech/go-nexusmods v0.1.0 h1:bXmhgiGXEB6B0oUwjBJbBcryV/mp1oD7C2LFQKZIiis=
 github.com/Rethunk-Tech/go-nexusmods v0.1.0/go.mod h1:K+8EOUHMotbZkViPk7AGGdFgqS+57UUOMaZTEUOJ6X0=
-github.com/Rethunk-Tech/go-safefs v0.1.0 h1:M1HfJtdq1GzeY7xobb5z58UkMroUshNVY/qENuCptS4=
-github.com/Rethunk-Tech/go-safefs v0.1.0/go.mod h1:QCWJYkNlLkYuA2VKbJkz5x+8wJHnkfiBmzEH64qP7sk=
+github.com/Rethunk-Tech/go-safefs v0.2.0 h1:ZNsfZ+s62DFH0mj60qCkLV/sqhOMkyZ1S6vN7awJ8e4=
+github.com/Rethunk-Tech/go-safefs v0.2.0/go.mod h1:QCWJYkNlLkYuA2VKbJkz5x+8wJHnkfiBmzEH64qP7sk=
 github.com/Rethunk-Tech/go-semverish v0.1.0 h1:FmDBEHtobafSLwzov50P2tvUMYSdoqqOTbLu8hUR7V4=
 github.com/Rethunk-Tech/go-semverish v0.1.0/go.mod h1:eWQ8e6P6yvghMZ+Sd/J4UBAKvoFcwr3fA/wGBRmGk0s=
 github.com/Rethunk-Tech/go-smapiweb v0.1.0 h1:D5iR7Ft8kDIpP0TBvUqnkiSx6TWDt6uM82g6Y+aWa8k=

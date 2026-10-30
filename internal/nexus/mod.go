@@ -28,22 +28,18 @@ type Changelog struct {
 }
 
 // CachedMod returns a mod's page data. It is fetched once and kept in cache, since the picture and endorsement
-// count are only wanted at install time; a cache that cannot be read or written only costs a refetch. A nil or
-// disabled cache fetches every time.
+// count are only wanted at install time; a cache that cannot be read or written only costs a refetch. A nil
+// cache fetches every time.
 func CachedMod(ctx context.Context, c *nexusmods.Client, cache *diskcache.Cache, t nexusmods.Title, modID int) (Mod, error) {
 	name := fmt.Sprintf("%s%s-%d.json", meta.NexusModPrefix, t.Domain, modID)
-	if cache != nil {
-		if m, ok := diskcache.Peek[Mod](cache, name); ok {
-			return m.Value, nil
-		}
+	if m, ok := diskcache.Peek[Mod](cache, name); ok {
+		return m.Value, nil
 	}
 	p, err := c.Page(ctx, t, modID)
 	if err != nil {
 		return Mod{}, Worded(err)
 	}
 	m := Mod{Name: p.Name, Author: p.Author, PictureURL: p.PictureURL, EndorsementCount: p.Endorsements, Summary: p.Summary}
-	if cache != nil {
-		diskcache.Put(cache, name, m)
-	}
+	_ = diskcache.Put(cache, name, m)
 	return m, nil
 }

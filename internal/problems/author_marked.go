@@ -44,6 +44,9 @@ func authorMarkedMods(home, domain string, enabled []framework.Mod) []Broken {
 
 // readCachedNexusDetails reads the details Nexus pages left in the cache, never fetching.
 func readCachedNexusDetails(home, domain string, pageID int) (nexussvc.Details, bool) {
+	if home == "" {
+		return nexussvc.Details{}, false
+	}
 	e, ok := diskcache.Peek[nexussvc.Details](&diskcache.Cache{Dir: filepath.Join(home, "cache")}, nexussvc.DetailsName(domain, pageID))
 	return e.Value, ok
 }

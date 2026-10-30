@@ -37,7 +37,7 @@ func TestCheckUpdatesAsksAgainAfterAnotherBuildCached(t *testing.T) {
 		v.Stamp = ""
 		cached.Value[k] = v
 	}
-	diskcache.PutEntry(cache, updatesFile, cached)
+	_ = diskcache.PutEntry(cache, updatesFile, cached)
 	c.CheckUpdates(context.Background(), req)
 	if n := asked.Load(); n != 2 {
 		t.Fatalf("another build's cache is asked again: asked %d times", n)
@@ -50,7 +50,7 @@ func TestCheckUpdatesAsksAgainAfterAnotherBuildCached(t *testing.T) {
 	}
 	other := smapiweb.InstalledMod{ID: "B.Mod", Version: "2.0.0"}
 	cached.Value[req.key(other)] = diskcache.Entry[smapiweb.UpdateResult]{Fetched: time.Now(), Value: smapiweb.UpdateResult{ID: "B.Mod", Known: true}, Stamp: "another-build"}
-	diskcache.PutEntry(cache, updatesFile, cached)
+	_ = diskcache.PutEntry(cache, updatesFile, cached)
 	c.CheckUpdates(context.Background(), req)
 	cached, _ = diskcache.Peek[map[string]diskcache.Entry[smapiweb.UpdateResult]](cache, updatesFile)
 	if _, kept := cached.Value[req.key(other)]; !kept {
