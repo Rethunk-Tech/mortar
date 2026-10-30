@@ -2,22 +2,6 @@
 
 package nxm
 
-import (
-	"github.com/Rethunk-Tech/go-desktopenv/nativemessaging"
-	"github.com/Rethunk-Tech/go-desktopenv/schemehandler"
-)
-
-// System is the system's registration of the source link schemes and of the browser extension's native host.
-type System struct {
-	exe string
-	// dataHome is the user's XDG data folder, for the icons and the .mortar MIME definition (Linux only).
-	dataHome string
-	// run runs the desktop tools Mortar starts itself and is the scheme handler's and native host's runner (Linux only).
-	run Runner
-	h   *schemehandler.Handler
-	nh  nativemessaging.Host
-}
-
 func (s *System) Owner(scheme string) (Owner, error) {
 	o, err := s.h.Owner(scheme)
 	return Owner(o), err

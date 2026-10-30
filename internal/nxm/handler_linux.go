@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-desktopenv/hostenv"
+	"github.com/Rethunk-Tech/go-desktopenv/nativemessaging"
 	"github.com/Rethunk-Tech/go-desktopenv/schemehandler"
 	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
 	"github.com/Rethunk-Tech/go-safefs"
@@ -75,29 +76,29 @@ func execRun(name string, args ...string) (string, error) {
 	return string(out), err
 }
 
-func (l *System) desktopPath() string {
-	return filepath.Join(l.dataHome, "applications", desktopID)
+func (s *System) desktopPath() string {
+	return filepath.Join(s.dataHome, "applications", desktopID)
 }
 
-func (l *System) iconPNGPath() string {
-	return filepath.Join(l.dataHome, "icons", "hicolor", "256x256", "apps", "mortar.png")
+func (s *System) iconPNGPath() string {
+	return filepath.Join(s.dataHome, "icons", "hicolor", "256x256", "apps", "mortar.png")
 }
 
-func (l *System) iconSVGPath() string {
-	return filepath.Join(l.dataHome, "icons", "hicolor", "scalable", "apps", "mortar.svg")
+func (s *System) iconSVGPath() string {
+	return filepath.Join(s.dataHome, "icons", "hicolor", "scalable", "apps", "mortar.svg")
 }
 
 // NotificationIcon is the installed PNG, for notification attachments; empty until the desktop entry has been written.
-func (l *System) NotificationIcon() string {
-	path := l.iconPNGPath()
+func (s *System) NotificationIcon() string {
+	path := s.iconPNGPath()
 	if _, err := safefs.Stat(path); err != nil {
 		return ""
 	}
 	return path
 }
 
-func (l *System) installIcons() error {
-	png, svg := l.iconPNGPath(), l.iconSVGPath()
+func (s *System) installIcons() error {
+	png, svg := s.iconPNGPath(), s.iconSVGPath()
 	if same(png, iconPNG) && same(svg, iconSVG) {
 		return nil
 	}
@@ -115,61 +116,60 @@ func (l *System) installIcons() error {
 	}
 	// GTK trusts an icon-theme.cache that is newer than the theme folder, and writing into its subfolders does not
 	// touch the folder, so a cache another app left there would hide these icons.
-	theme := filepath.Join(l.dataHome, "icons", "hicolor")
+	theme := filepath.Join(s.dataHome, "icons", "hicolor")
 	now := time.Now()
 	if err := os.Chtimes(theme, now, now); err != nil {
 		return err
 	}
 	// A running shell may keep the cache it loaded; rebuilding it, when the tool exists, shows the icon at once.
 	if _, err := safefs.Stat(filepath.Join(theme, "icon-theme.cache")); err == nil {
-		_, _ = l.run(updateIcons, "-f", "-t", theme)
+		_, _ = s.run(updateIcons, "-f", "-t", theme)
 	}
 	return nil
 }
 
-
 // icons brings the icons up to date after a call that may have written the desktop entry, or yielded it to an
 // AppImage integrator's: notifications still attach the icon then.
-func (l *System) icons() error {
+func (s *System) icons() error {
 	if skipUserDesktop() {
 		return nil
 	}
-	return l.installIcons()
+	return s.installIcons()
 }
 
-func (l *System) Register() error {
-	if err := l.WriteNativeHosts(); err != nil {
+func (s *System) Register() error {
+	if err := s.WriteNativeHosts(); err != nil {
 		return err
 	}
-	if err := l.h.Register(source.Schemes()...); err != nil {
+	if err := s.h.Register(source.Schemes()...); err != nil {
 		return err
 	}
-	return l.icons()
+	return s.icons()
 }
 
-func (l *System) RegisterSchemes(schemes []string) error {
-	if err := l.h.Register(schemes...); err != nil {
+func (s *System) RegisterSchemes(schemes []string) error {
+	if err := s.h.Register(schemes...); err != nil {
 		return err
 	}
-	return l.icons()
+	return s.icons()
 }
 
-func (l *System) Restore(previous map[string]string) error {
-	if err := l.removeNativeHosts(); err != nil {
+func (s *System) Restore(previous map[string]string) error {
+	if err := s.removeNativeHosts(); err != nil {
 		return err
 	}
-	if err := l.h.Restore(previous); err != nil {
+	if err := s.h.Restore(previous); err != nil {
 		return err
 	}
-	return l.icons()
+	return s.icons()
 }
 
 // Release hands the given schemes back and leaves the rest claimed.
-func (l *System) Release(schemes []string, previous map[string]string) error {
-	if err := l.h.Release(schemes, previous); err != nil {
+func (s *System) Release(schemes []string, previous map[string]string) error {
+	if err := s.h.Release(schemes, previous); err != nil {
 		return err
 	}
-	return l.icons()
+	return s.icons()
 }
 
 const mimeXML = `<?xml version="1.0" encoding="UTF-8"?>
@@ -185,9 +185,9 @@ const mimeXML = `<?xml version="1.0" encoding="UTF-8"?>
 // RegisterLinks makes Mortar the app for mortar:// links and .mortar files: it writes the file type's MIME
 // definition and the desktop entry, and sets both defaults. Running it again changes nothing. The nxm scheme is
 // left as it is.
-func (l *System) RegisterLinks() error {
+func (s *System) RegisterLinks() error {
 	if !skipUserDesktop() {
-		xml := filepath.Join(l.dataHome, "mime", "packages", "mortar.xml")
+		xml := filepath.Join(s.dataHome, "mime", "packages", "mortar.xml")
 		if err := os.MkdirAll(filepath.Dir(xml), 0o750); err != nil {
 			return err
 		}
@@ -196,57 +196,57 @@ func (l *System) RegisterLinks() error {
 				return err
 			}
 			// A missing tool leaves the type unknown until the next database update; the desktop entry still works.
-			_, _ = l.run(updateMIME, filepath.Join(l.dataHome, "mime"))
+			_, _ = s.run(updateMIME, filepath.Join(s.dataHome, "mime"))
 		}
-		if err := l.h.WriteEntry(); err != nil {
+		if err := s.h.WriteEntry(); err != nil {
 			return err
 		}
-		if err := l.installIcons(); err != nil {
+		if err := s.installIcons(); err != nil {
 			return err
 		}
 	}
-	return l.h.SetDefault(mortarMime, fileMime)
+	return s.h.SetDefault(mortarMime, fileMime)
 }
 
 // Refresh rewrites the desktop entry when Mortar has moved since it was written, as an AppImage does when the user
 // moves the file. When no entry exists yet it registers mortar:// and .mortar so a skipped first run still gets
 // those. Only a production build takes the entry, so a dev build or go run does not take it from the installed Mortar;
 // the icons are any build's to bring up to date, since they name no program.
-func (l *System) Refresh() error {
+func (s *System) Refresh() error {
 	if skipUserDesktop() {
 		return nil
 	}
-	if _, err := safefs.Stat(l.desktopPath()); err == nil {
-		if err := l.installIcons(); err != nil {
+	if _, err := safefs.Stat(s.desktopPath()); err == nil {
+		if err := s.installIcons(); err != nil {
 			return err
 		}
 	}
 	if !production {
 		return nil
 	}
-	return l.refresh()
+	return s.refresh()
 }
 
 // refresh leaves an entry that runs another copy of Mortar to that copy: a second one running beside it, such as
 // another AppImage, is not a move. When no entry exists it registers mortar:// and .mortar.
-func (l *System) refresh() error {
-	other, err := l.anotherCopysEntry()
+func (s *System) refresh() error {
+	other, err := s.anotherCopysEntry()
 	if err != nil || other {
 		return err
 	}
-	return l.RegisterLinks()
+	return s.RegisterLinks()
 }
 
 // anotherCopysEntry is whether the desktop entry runs a program other than this one that still exists.
-func (l *System) anotherCopysEntry() (bool, error) {
-	target, err := l.h.EntryProgram()
+func (s *System) anotherCopysEntry() (bool, error) {
+	target, err := s.h.EntryProgram()
 	if errors.Is(err, fs.ErrNotExist) {
 		return false, nil
 	}
 	if err != nil {
 		return false, err
 	}
-	if target == "" || target == l.exe {
+	if target == "" || target == s.exe {
 		return false, nil
 	}
 	_, err = os.Stat(target)
@@ -256,4 +256,15 @@ func (l *System) anotherCopysEntry() (bool, error) {
 func same(path string, want []byte) bool {
 	b, err := safefs.ReadFile(path)
 	return err == nil && bytes.Equal(b, want)
+}
+
+// System is the system's registration of the source link schemes and of the browser extension's native host.
+type System struct {
+	exe string
+	// dataHome is the user's XDG data folder, for the icons and the .mortar MIME definition.
+	dataHome string
+	// run runs the desktop tools Mortar starts itself and is the scheme handler's and native host's runner.
+	run Runner
+	h   *schemehandler.Handler
+	nh  nativemessaging.Host
 }

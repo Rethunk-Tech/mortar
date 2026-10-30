@@ -19,7 +19,7 @@ const (
 	updateDB = "update-desktop-database"
 )
 
-func schemeMime(scheme string) string { return "x-scheme-handler/" + scheme }
+const nxmMime = "x-scheme-handler/nxm"
 
 type recorder struct {
 	calls   []string
@@ -47,7 +47,7 @@ func (r *recorder) run(name string, args ...string) (string, error) {
 			r.byMime = map[string]string{}
 		}
 		r.byMime[args[2]] = args[1]
-		if args[2] == schemeMime("nxm") {
+		if args[2] == nxmMime {
 			r.current = args[1]
 		}
 	}
@@ -62,7 +62,7 @@ func newLinux(t *testing.T, current string) (*System, *recorder) {
 	t.Setenv("XDG_DATA_HOME", filepath.Join(dir, "data"))
 	t.Setenv("XDG_CONFIG_HOME", filepath.Join(dir, "config"))
 	t.Setenv("XDG_DATA_DIRS", filepath.Join(dir, "system"))
-	r := &recorder{current: current, byMime: map[string]string{schemeMime("nxm"): current}}
+	r := &recorder{current: current, byMime: map[string]string{nxmMime: current}}
 	return withExe(t, r, "/opt/mortar/mortar"), r
 }
 
@@ -86,7 +86,7 @@ func TestRegisterLinksIsIdempotentAndKeepsNxm(t *testing.T) {
 		t.Fatalf("mime xml: %s, %v", xml, err)
 	}
 	desktop, _ := safefs.ReadFile(l.desktopPath())
-	if strings.Contains(string(desktop), schemeMime("nxm")) || !strings.Contains(string(desktop), "MimeType=x-scheme-handler/mortar;application/x-mortar;") {
+	if strings.Contains(string(desktop), nxmMime) || !strings.Contains(string(desktop), "MimeType=x-scheme-handler/mortar;application/x-mortar;") {
 		t.Fatalf("desktop file: %s", desktop)
 	}
 	if r.current != "vortex.desktop" {
@@ -114,7 +114,7 @@ func TestRegisterLinksIsIdempotentAndKeepsNxm(t *testing.T) {
 	if err := l.RegisterLinks(); err != nil {
 		t.Fatal(err)
 	}
-	if desktop, _ = safefs.ReadFile(l.desktopPath()); !strings.Contains(string(desktop), schemeMime("nxm")) {
+	if desktop, _ = safefs.ReadFile(l.desktopPath()); !strings.Contains(string(desktop), nxmMime) {
 		t.Errorf("RegisterLinks dropped nxm: %s", desktop)
 	}
 }
@@ -155,7 +155,7 @@ func TestAnAppImageRegistersItselfAndMovesItsEntry(t *testing.T) {
 	if err := l.refresh(); err != nil {
 		t.Fatal(err)
 	}
-	if desktop, err := safefs.ReadFile(l.desktopPath()); err != nil || strings.Contains(string(desktop), schemeMime("nxm")) {
+	if desktop, err := safefs.ReadFile(l.desktopPath()); err != nil || strings.Contains(string(desktop), nxmMime) {
 		t.Fatalf("links entry before Register: %s, %v", desktop, err)
 	}
 	if err := l.Register(); err != nil {
@@ -180,7 +180,7 @@ func TestAnAppImageRegistersItselfAndMovesItsEntry(t *testing.T) {
 		t.Fatal(err)
 	}
 	desktop, _ := safefs.ReadFile(l.desktopPath())
-	if !strings.Contains(string(desktop), `Exec="`+l.exe+`" %u`) || !strings.Contains(string(desktop), schemeMime("nxm")) {
+	if !strings.Contains(string(desktop), `Exec="`+l.exe+`" %u`) || !strings.Contains(string(desktop), nxmMime) {
 		t.Errorf("moved entry: %s", desktop)
 	}
 }
@@ -195,7 +195,7 @@ func TestRefreshRegistersLinksWhenMissing(t *testing.T) {
 		t.Fatalf("mime xml: %s, %v", xml, err)
 	}
 	desktop, err := safefs.ReadFile(l.desktopPath())
-	if err != nil || strings.Contains(string(desktop), schemeMime("nxm")) || !strings.Contains(string(desktop), "MimeType=x-scheme-handler/mortar;application/x-mortar;") {
+	if err != nil || strings.Contains(string(desktop), nxmMime) || !strings.Contains(string(desktop), "MimeType=x-scheme-handler/mortar;application/x-mortar;") {
 		t.Fatalf("desktop file: %s, %v", desktop, err)
 	}
 	if r.current != "vortex.desktop" {
@@ -211,12 +211,12 @@ func TestRefreshRegistersLinksWhenMissing(t *testing.T) {
 }
 
 func TestRefreshLeavesAnotherCopy(t *testing.T) {
-	l, r := newLinux(t, "")
+	_, r := newLinux(t, "")
 	other := filepath.Join(t.TempDir(), "other-mortar")
 	if err := safefs.WriteFile(other, nil, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	l = withExe(t, r, other)
+	l := withExe(t, r, other)
 	if err := l.Register(); err != nil {
 		t.Fatal(err)
 	}
@@ -308,12 +308,12 @@ func TestPackagedRefreshSkipsUserDesktop(t *testing.T) {
 }
 
 func TestRefreshUpdatesIconsWhenAnotherCopyOwnsTheEntry(t *testing.T) {
-	l, r := newLinux(t, "")
+	_, r := newLinux(t, "")
 	other := filepath.Join(t.TempDir(), "other-mortar")
 	if err := safefs.WriteFile(other, nil, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	l = withExe(t, r, other)
+	l := withExe(t, r, other)
 	if err := l.Register(); err != nil {
 		t.Fatal(err)
 	}
@@ -348,8 +348,8 @@ func gearLeverEntry(exe string) string {
 }
 
 func TestAnIntegratorsEntryIsTheHandler(t *testing.T) {
-	l, r := newLinux(t, "vortex.desktop")
-	l = withExe(t, r, "/home/u/Apps/mortar.appimage_0.appimage")
+	_, r := newLinux(t, "vortex.desktop")
+	l := withExe(t, r, "/home/u/Apps/mortar.appimage_0.appimage")
 	writeApp(t, l, "appimagekit_other.desktop", "[Desktop Entry]\nExec=\""+l.exe+"\" %U\n")
 	writeApp(t, l, gearLever, gearLeverEntry(l.exe))
 	for range 2 {
@@ -363,7 +363,7 @@ func TestAnIntegratorsEntryIsTheHandler(t *testing.T) {
 	if _, err := os.Stat(l.desktopPath()); !errors.Is(err, os.ErrNotExist) {
 		t.Fatalf("wrote its own entry beside the integrator's: %v", err)
 	}
-	for _, mime := range []string{schemeMime("nxm"), mortarMime, fileMime} {
+	for _, mime := range []string{nxmMime, mortarMime, fileMime} {
 		if r.byMime[mime] != gearLever {
 			t.Errorf("%s default %q", mime, r.byMime[mime])
 		}
@@ -375,7 +375,6 @@ func TestAnIntegratorsEntryIsTheHandler(t *testing.T) {
 		t.Error("no notification icon")
 	}
 }
-
 
 // The entry reads byte for byte as earlier releases wrote it, so an existing user entry is never rewritten.
 func TestDesktopEntryMatchesTheOneEarlierReleasesWrote(t *testing.T) {

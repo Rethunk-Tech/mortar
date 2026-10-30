@@ -16,7 +16,7 @@ func TestRemoveDesktopUndoesRegistration(t *testing.T) {
 	if err := l.RegisterLinks(); err != nil {
 		t.Fatal(err)
 	}
-	config := os.Getenv("XDG_CONFIG_HOME")
+	config := filepath.Join(filepath.Dir(l.dataHome), "config")
 	list := filepath.Join(config, "mimeapps.list")
 	if err := os.MkdirAll(config, 0o750); err != nil {
 		t.Fatal(err)
@@ -39,12 +39,12 @@ func TestRemoveDesktopUndoesRegistration(t *testing.T) {
 }
 
 func TestRemoveDesktopKeepsAnotherCopysEntry(t *testing.T) {
-	l, r := newLinux(t, "")
+	_, r := newLinux(t, "")
 	other := filepath.Join(t.TempDir(), "Mortar.AppImage")
 	if err := safefs.WriteFile(other, []byte("x"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	l = withExe(t, r, other)
+	l := withExe(t, r, other)
 	if err := l.Register(); err != nil {
 		t.Fatal(err)
 	}
