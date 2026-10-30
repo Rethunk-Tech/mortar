@@ -13,7 +13,7 @@ import {
   SearchX,
   Users,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Add,
   Detect,
@@ -152,7 +152,9 @@ function TestCopies({ game, profile, dirs }: { game: string; profile: string; di
   )
 }
 
-function ProjectGrid({
+const NO_PROJECTS: DevProject[] = []
+
+function ProjectGridView({
   game,
   projects,
   filtering,
@@ -186,6 +188,9 @@ function ProjectGrid({
   )
 }
 
+// Memoised: opening a dialog or the add menu changes the tab's state, which would otherwise redraw every card.
+const ProjectGrid = memo(ProjectGridView)
+
 // Picking is modal and the dialog that follows holds its own state, so the tab keeps none for the pick: one more
 // state here would redraw every project card twice per add.
 function useAddFolder(game: string, openId: string) {
@@ -212,7 +217,7 @@ function useAddFolder(game: string, openId: string) {
 /** The open profile's own mods in development: start one from the template, then build, test, pack and release it. */
 export function DevelopTab({ game }: { game: string }) {
   const { t } = useLingui()
-  const projects = useSettings((s) => s.games?.[game]?.devProjects) ?? []
+  const projects = useSettings((s) => s.games?.[game]?.devProjects) ?? NO_PROJECTS
   const openId = useProfiles((s) => s.openId)
   const [creating, setCreating] = useState(false)
   const [cloning, setCloning] = useState(false)
@@ -221,10 +226,14 @@ export function DevelopTab({ game }: { game: string }) {
   const addFolder = useAddFolder(game, openId)
   const [query, setQuery] = useState('')
   const [view, setView] = useStoredState<ViewMode>(`mortar.developView.${game}`, 'list', isViewMode)
-  const here = projects.filter((p) => p.profile === openId)
+  const here = useMemo(() => projects.filter((p) => p.profile === openId), [projects, openId])
   const codeHere = here.find((p) => !p.kind)
   const needle = query.trim().toLowerCase()
-  const shown = here.filter((p) => p.name.toLowerCase().includes(needle))
+  const shown = useMemo(
+    () => here.filter((p) => p.name.toLowerCase().includes(needle)),
+    [here, needle],
+  )
+  const clearQuery = useCallback(() => setQuery(''), [])
   const elsewhere = projects.filter((p) => p.profile !== openId)
   // Files can change in an editor while Mortar is in the background; coming back rereads them.
   const dirs = here.map((p) => p.dir).join('\n')
@@ -330,7 +339,7 @@ export function DevelopTab({ game }: { game: string }) {
         projects={shown}
         filtering={needle !== ''}
         list={view === 'list'}
-        onClear={() => setQuery('')}
+        onClear={clearQuery}
       />
       {elsewhere.length > 0 ? (
         <Box sx={{ px: space.gutter, pb: space.gutter }}>
