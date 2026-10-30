@@ -3,7 +3,7 @@ package launchsvc
 import (
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/crashdump"
+	"github.com/Rethunk-Tech/go-winsym/crashdump"
 	"github.com/Rethunk-Tech/mortar/internal/loader/dotnetstack"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )

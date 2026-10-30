@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/go-winsym"
-	"github.com/Rethunk-Tech/mortar/internal/crashdump"
+	"github.com/Rethunk-Tech/go-winsym/crashdump"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )

@@ -1,4 +1,4 @@
-package crashdump
+package launchsvc
 
 import (
 	"io"
@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/Rethunk-Tech/go-winsym/crashdump"
 )
 
 const maxReportBytes = 256 << 10
@@ -20,10 +22,17 @@ var (
 	catlibCaller = regexp.MustCompile(`(?m)^Called from: (\S+) \+ (0x[0-9a-fA-F]+)(?:\s+([^,\r\n]+))?`)
 )
 
-// CatLib reads the newest crash report CatLib (a BepInEx 6 library for Cat Mail Co.) kept since `since` in a
+// fault is a crash record with what only a CatLib report carries: the caller of a fault raised in Windows or the C
+// runtime, and the report's folder, which the window opens.
+type fault struct {
+	crashdump.Fault
+	CalledFrom, ReportDir string
+}
+
+// catLib reads the newest crash report CatLib (a BepInEx 6 library for Cat Mail Co.) kept since `since` in a
 // profile's BepInEx folder: BepInEx/CatLib/Crashes/<yyyy-MM-dd_HH-mm-ss>_<pid>/ holding report.txt and crash.dmp.
 // The minidump, when present, names the module; the report's own lines fill in what it cannot.
-func CatLib(profileDir string, since time.Time) (Fault, bool) {
+func catLib(profileDir string, since time.Time) (fault, bool) {
 	matches, _ := filepath.Glob(filepath.Join(profileDir, "BepInEx", "CatLib", "Crashes", "*_*"))
 	var newest string
 	var newestTime time.Time
@@ -33,22 +42,22 @@ func CatLib(profileDir string, since time.Time) (Fault, bool) {
 		}
 	}
 	if newest == "" {
-		return Fault{}, false
+		return fault{}, false
 	}
-	fault, _ := readDump(filepath.Join(newest, "crash.dmp"))
+	d, _ := crashdump.ReadDump(filepath.Join(newest, "crash.dmp"))
+	f := fault{Fault: d, ReportDir: newest}
 	if text, err := readHead(newest, "report.txt"); err == nil {
-		if r, ok := ParseCatLibReport(text); ok {
-			if fault.Module == "" || isSystemModule(fault.Module) {
-				fault.Module = r.Module
+		if r, ok := parseCatLibReport(text); ok {
+			if f.Module == "" || crashdump.IsSystemModule(f.Module) {
+				f.Module = r.Module
 			}
-			if fault.Detail == "" {
-				fault.Detail = r.Detail
+			if f.Detail == "" {
+				f.Detail = r.Detail
 			}
-			fault.CalledFrom = r.CalledFrom
+			f.CalledFrom = r.CalledFrom
 		}
 	}
-	fault.ReportDir = newest
-	return fault, true
+	return f, true
 }
 
 // readHead reads the first maxReportBytes of the file and drops the rest: a crash report is text, so the start of a
@@ -63,26 +72,27 @@ func readHead(dir, name string) (string, error) {
 	return strings.ToValidUTF8(string(b), ""), err
 }
 
-// ParseCatLibReport reads report.txt's Module, Method and Called from lines. The module is the one the crash was
+// parseCatLibReport reads report.txt's Module, Method and Called from lines. The module is the one the crash was
 // raised in, or, when that is Windows or the C runtime, the caller that asked for it.
-func ParseCatLibReport(text string) (Fault, bool) {
+func parseCatLibReport(text string) (fault, bool) {
 	m := catlibModule.FindStringSubmatch(text)
 	if m == nil {
-		return Fault{}, false
+		return fault{}, false
 	}
-	f := Fault{Module: baseName(m[1]), Detail: "exception " + strings.ToLower(m[3]) + " at " + m[2]}
+	f := fault{Module: baseName(m[1]), Detail: "exception " + strings.ToLower(m[3]) + " at " + m[2]}
 	if meth := catlibMethod.FindStringSubmatch(text); meth != nil {
 		f.Detail += ", " + strings.TrimSpace(meth[1])
 	}
 	if c := catlibCaller.FindStringSubmatch(text); c != nil {
 		f.CalledFrom = strings.TrimSpace(c[1] + " + " + c[2] + "  " + c[3])
-		if isSystemModule(f.Module) {
+		if crashdump.IsSystemModule(f.Module) {
 			f.Module = baseName(c[1])
 		}
 	}
 	return f, true
 }
 
-func isSystemModule(name string) bool {
-	return systemModules[strings.ToLower(strings.TrimSuffix(name, ".dll"))] || systemModules[name]
+// baseName is the file name of a Windows or Unix path, whichever separator it uses.
+func baseName(p string) string {
+	return p[strings.LastIndexAny(p, `\/`)+1:]
 }

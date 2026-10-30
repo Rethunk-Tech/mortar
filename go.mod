@@ -23,7 +23,7 @@ require (
 	github.com/Rethunk-Tech/go-smapiweb v0.1.0
 	github.com/Rethunk-Tech/go-thunderstore v0.1.2
 	github.com/Rethunk-Tech/go-tilemask v0.1.0
-	github.com/Rethunk-Tech/go-winsym v0.1.0
+	github.com/Rethunk-Tech/go-winsym v0.2.0
 	github.com/andybalholm/brotli v1.2.7
 	github.com/coder/websocket v1.8.15
 	github.com/fsnotify/fsnotify v1.10.1

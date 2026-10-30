@@ -44,8 +44,8 @@ github.com/Rethunk-Tech/go-thunderstore v0.1.2 h1:pl3FSM7IuKZrnBL1OwyxWKeEiDcf4d
 github.com/Rethunk-Tech/go-thunderstore v0.1.2/go.mod h1:Wq+yZkmsCMUftxxN+8BK+JbufcIe0T5EaDHofTBrScE=
 github.com/Rethunk-Tech/go-tilemask v0.1.0 h1:wJGhH0MlvLpallezQQH3s1bWmZVTddcqY3aIwtUHZgg=
 github.com/Rethunk-Tech/go-tilemask v0.1.0/go.mod h1:gyHCBVGruiMrf9SBfiM2qp+bl1ReN3qjZWpbAFg3yO4=
-github.com/Rethunk-Tech/go-winsym v0.1.0 h1:24C0LUbWV1mXNDTbmANdNZoy5QXc3jxSPoDACQNhnu8=
-github.com/Rethunk-Tech/go-winsym v0.1.0/go.mod h1:G2HkTaF219rTvk/U+qgVy27TirsALIzNok0T8P4wJus=
+github.com/Rethunk-Tech/go-winsym v0.2.0 h1:thWVURAmPekZDT9Qpl6Hv1bYtXtTQIRwthCjtSg9Yvc=
+github.com/Rethunk-Tech/go-winsym v0.2.0/go.mod h1:McSxcctOgYT7e+O7A0MF9g55EmMrD0ZC33hMuopk1ps=
 github.com/adrg/xdg v0.5.3 h1:xRnxJXne7+oWDatRhR1JLnvuccuIeCoBu2rtuLqQB78=
 github.com/adrg/xdg v0.5.3/go.mod h1:nlTsY+NNiCBGCK2tpm09vRqfVzrc2fLmXGpBLF0zlTQ=
 github.com/andybalholm/brotli v1.2.7 h1:UgafRPGMam5ySHfRkhthMqOFA6IFoeF3D7mWIDLjG5A=

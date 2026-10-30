@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-winsym"
+	"github.com/Rethunk-Tech/go-winsym/crashdump"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/crashdump"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader/dotnetstack"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -59,7 +59,7 @@ func (s *Service) dumpBlame(gameID, profileID string, run Run, mods []profile.In
 		case faultUnknown:
 			continue
 		case faultMod:
-			return mod, hintWhy{}, evidence, s.nativeFrame(fault), reportDir, true
+			return mod, hintWhy{}, evidence, s.nativeFrame(fault.Fault), reportDir, true
 		case faultGame:
 			why = hintWhy{fmt.Sprintf("The game itself crashed (%s), not a mod's code.", fault.Module), "gameCrash", map[string]string{"module": fault.Module}}
 		case faultUnity:
@@ -67,7 +67,7 @@ func (s *Service) dumpBlame(gameID, profileID string, run Run, mods []profile.In
 		case faultMono:
 			why = hintWhy{fmt.Sprintf("The Mono runtime crashed (%s), not a mod's code.", fault.Module), "monoCrash", map[string]string{"module": fault.Module}}
 		}
-		return profile.Installed{}, why, evidence, s.nativeFrame(fault), reportDir, true
+		return profile.Installed{}, why, evidence, s.nativeFrame(fault.Fault), reportDir, true
 	}
 	return profile.Installed{}, hintWhy{}, evidence, "", reportDir, reportDir != ""
 }
@@ -90,27 +90,29 @@ func (s *Service) nativeFrame(f crashdump.Fault) string {
 	return fmt.Sprintf("%s+0x%x", f.Module, f.Offset)
 }
 
-func (s *Service) faultsSince(gameID, profileID string, exes []string, since time.Time) []crashdump.Fault {
+func (s *Service) faultsSince(gameID, profileID string, exes []string, since time.Time) []fault {
 	if s.settings == nil {
 		return nil
 	}
 	set := s.settings.Get()
 	crashDumps, errA := game.PathIn(s.home, set, gameID, "", components.PathTemplate{Windows: `{localAppData}\CrashDumps`})
 	temp, errB := game.PathIn(s.home, set, gameID, "", components.PathTemplate{Windows: `{localAppData}\Temp`})
-	var out []crashdump.Fault
+	var out []fault
 	if dir, err := s.profiles.ProfileDir(gameID, profileID); err == nil {
-		if f, ok := crashdump.CatLib(dir, since); ok {
+		if f, ok := catLib(dir, since); ok {
 			out = append(out, f)
 		}
 	}
 	if errA == nil && errB == nil {
-		out = append(out, crashdump.Windows(crashDumps, temp, exes, since)...)
-		return append(out, crashdump.EventLog(context.Background(), exes, since)...)
+		for _, f := range append(crashdump.Windows(crashDumps, temp, exes, since), crashdump.EventLog(context.Background(), exes, since)...) {
+			out = append(out, fault{Fault: f})
+		}
+		return out
 	}
 	for _, exe := range exes {
 		comm := strings.TrimSuffix(exe, filepath.Ext(exe))
 		if f, ok := crashdump.Coredump(context.Background(), comm[:min(len(comm), 15)], since); ok {
-			out = append(out, f)
+			out = append(out, fault{Fault: f})
 		}
 	}
 	return out

@@ -1,4 +1,4 @@
-package crashdump
+package launchsvc
 
 import (
 	"os"
@@ -14,12 +14,12 @@ const catlibReport = "A cozy heading\r\n\r\nTime: 2026-10-21 10:30:43\r\nExit co
 	"Thread: 100, the game thread\r\nGame: 1.0, CatLib 0.9\r\n\r\nMods:\r\n  Better Repair 0.1.1\r\n"
 
 func TestParseCatLibReportNamesTheCallerOfASystemFault(t *testing.T) {
-	f, ok := ParseCatLibReport(catlibReport)
+	f, ok := parseCatLibReport(catlibReport)
 	if !ok || f.Module != "UnityPlayer.dll" || f.Detail != "exception 0xc0000005 at 0x1c408a, RaiseException + 0x8a" ||
 		f.CalledFrom != "UnityPlayer.dll + 0xdb437  Utils_CUSTOM_ForceCrash + 0x17" {
 		t.Errorf("fault = %+v ok=%v", f, ok)
 	}
-	if _, ok := ParseCatLibReport("no fault here"); ok {
+	if _, ok := parseCatLibReport("no fault here"); ok {
 		t.Error("a report without a Module line named a fault")
 	}
 }
@@ -40,11 +40,11 @@ func TestCatLibTakesTheNewestReportSinceTheRun(t *testing.T) {
 	if err := os.Chtimes(old, since.Add(-time.Hour), since.Add(-time.Hour)); err != nil {
 		t.Fatal(err)
 	}
-	f, ok := CatLib(profile, since)
+	f, ok := catLib(profile, since)
 	if !ok || f.ReportDir != fresh || f.Module != "UnityPlayer.dll" {
 		t.Errorf("fault = %+v ok=%v", f, ok)
 	}
-	if _, ok := CatLib(profile, time.Now().Add(time.Hour)); ok {
+	if _, ok := catLib(profile, time.Now().Add(time.Hour)); ok {
 		t.Error("a report older than the run was used")
 	}
 }
