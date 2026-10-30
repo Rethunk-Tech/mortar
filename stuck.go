@@ -28,6 +28,8 @@ func endStuckInstance(dataDir string) {
 		"End it and start Mortar again? Anything it was doing stops.", "count", strconv.Itoa(int(stuckWait/time.Second)))) {
 		return
 	}
+	// Not gameproc.Terminate: it sends SIGTERM first and goes through the Flatpak host, whose pid space is not the
+	// sandbox this sibling Mortar shares with us.
 	p, err := os.FindProcess(pid)
 	if err == nil {
 		err = p.Kill()
