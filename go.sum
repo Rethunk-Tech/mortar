@@ -30,6 +30,8 @@ github.com/Rethunk-Tech/go-lenientjson v0.1.0 h1:z9tWTZtE6x1FNsUuZEFgbCnaMkYk/0Q
 github.com/Rethunk-Tech/go-lenientjson v0.1.0/go.mod h1:wvcKB3J1GQTQpvVn/GHoGQ41yNMOu9rw6dw3+7k9WaQ=
 github.com/Rethunk-Tech/go-modmanagers v0.1.0 h1:NWPG6HdhCR9CdIepjRrHIwKsvmnNoFEmJVnqGc2jYVE=
 github.com/Rethunk-Tech/go-modmanagers v0.1.0/go.mod h1:9a6D5b2vTlHFDMuhbxKLCEukMmGuDvAIRj8SCTRuU0U=
+github.com/Rethunk-Tech/go-nettrace v0.1.0 h1:nwx2R/p7HGauax19KB1es9rSwr3ROubPEMhCLohnvsI=
+github.com/Rethunk-Tech/go-nettrace v0.1.0/go.mod h1:fy5SH8B/dIoykYgt2alKsyc745KnlMPnArGf+Egqm3s=
 github.com/Rethunk-Tech/go-nexusmods v0.1.0 h1:bXmhgiGXEB6B0oUwjBJbBcryV/mp1oD7C2LFQKZIiis=
 github.com/Rethunk-Tech/go-nexusmods v0.1.0/go.mod h1:K+8EOUHMotbZkViPk7AGGdFgqS+57UUOMaZTEUOJ6X0=
 github.com/Rethunk-Tech/go-safefs v0.2.0 h1:ZNsfZ+s62DFH0mj60qCkLV/sqhOMkyZ1S6vN7awJ8e4=
