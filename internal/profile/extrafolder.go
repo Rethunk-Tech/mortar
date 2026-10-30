@@ -1,7 +1,6 @@
 package profile
 
 import (
-	"bytes"
 	"cmp"
 	"context"
 	"encoding/json"
@@ -185,7 +184,7 @@ func manifestFor(game, folder string) ([]byte, bool) {
 	b, err := safefs.ReadFile(filepath.Join(arch.Dir, "manifest.json"))
 	exists := err == nil
 	if exists {
-		_ = json.Unmarshal(bytes.TrimPrefix(b, []byte("\xef\xbb\xbf")), &fields)
+		_ = mod.UnmarshalManifest(b, &fields)
 	}
 	name, _ := fields["name"].(string)
 	version, _ := fields["version_number"].(string)

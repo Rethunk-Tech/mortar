@@ -693,3 +693,21 @@ func TestAFailedEnrollLeavesNoDevelopmentProfile(t *testing.T) {
 		t.Errorf("profiles left behind: %v %v", all, err)
 	}
 }
+
+func TestValidateReadsAManifestWithABOM(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "p.zip")
+	f, err := safefs.Create(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	w := zip.NewWriter(f)
+	m, _ := w.Create("manifest.json")
+	_, _ = m.Write([]byte("\xef\xbb\xbf" + `{"name":"Shop_Drop","version_number":"1.0.0"}`))
+	if err := w.Close(); err != nil {
+		t.Fatal(err)
+	}
+	_ = f.Close()
+	if got := strings.Join(Validate(path), "\n"); strings.Contains(got, "does not parse") {
+		t.Errorf("a BOM manifest was refused:\n%s", got)
+	}
+}

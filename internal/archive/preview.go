@@ -1,8 +1,6 @@
 package archive
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"io"
 	"path"
@@ -109,7 +107,7 @@ func ManifestInfo(b []byte) (PreviewManifest, bool) {
 		Name    string `json:"name"`
 		Version string `json:"version_number"`
 	}
-	if err := json.Unmarshal(bytes.TrimPrefix(b, []byte("\xef\xbb\xbf")), &pkg); err != nil || pkg.Name == "" {
+	if err := mod.UnmarshalManifest(b, &pkg); err != nil || pkg.Name == "" {
 		return PreviewManifest{}, false
 	}
 	return PreviewManifest{Name: pkg.Name, Version: pkg.Version}, true

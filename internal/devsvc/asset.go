@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -332,7 +333,7 @@ func completeManifest(dir, name, version string) ([]byte, error) {
 	case err != nil:
 		return nil, err
 	default:
-		if err := json.Unmarshal(bytes.TrimPrefix(manifest, []byte("\xef\xbb\xbf")), &raw); err != nil {
+		if err := mod.UnmarshalManifest(manifest, &raw); err != nil {
 			return nil, usererr.Wrap(usererr.Damaged, fmt.Errorf("manifest.json: %w", err))
 		}
 	}

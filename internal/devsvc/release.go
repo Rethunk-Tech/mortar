@@ -4,7 +4,6 @@ import (
 	"archive/zip"
 	"context"
 	"crypto/sha256"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"image/png"
@@ -18,6 +17,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -136,7 +136,7 @@ func Validate(path string) []string {
 	body, err := safefs.ReadCapped(rc, maxManifest)
 	_ = rc.Close()
 	var m thunderstoreManifest
-	if err != nil || json.Unmarshal(body, &m) != nil {
+	if err != nil || mod.UnmarshalManifest(body, &m) != nil {
 		return append(issues, "manifest.json does not parse")
 	}
 	if !packageName.MatchString(m.Name) || len(m.Name) > 128 {

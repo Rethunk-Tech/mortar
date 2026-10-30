@@ -4,8 +4,6 @@
 package bepinex5
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"io/fs"
 	"os"
@@ -394,10 +392,9 @@ func (m Manifest) Needs() []mod.Dependency {
 	return out
 }
 
-// ParseManifest reads a Thunderstore manifest.json. Thunderstore accepts manifests saved with a UTF-8 BOM, and many
-// packages ship one, but encoding/json refuses it.
+// ParseManifest reads a Thunderstore manifest.json.
 func ParseManifest(b []byte) (Manifest, error) {
 	var m Manifest
-	err := json.Unmarshal(bytes.TrimPrefix(b, []byte("\xef\xbb\xbf")), &m)
+	err := mod.UnmarshalManifest(b, &m)
 	return m, err
 }
