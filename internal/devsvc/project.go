@@ -90,8 +90,22 @@ func setProp(body, name, value string) string {
 	return out
 }
 
-// csprojOf is the project's one project file under src/, which names it; false when the project is gone.
+// recordedCsproj is the project file an adopted code project's record names, absolute.
+func recordedCsproj(dir string) (string, bool) {
+	rec, ok := readRecord(dir)
+	if !ok || rec.Kind != kindCode {
+		return "", false
+	}
+	return filepath.Join(dir, filepath.FromSlash(rec.Csproj)), true
+}
+
+// csprojOf is the project's project file, which names it: the one its record names, else the one under src/. False
+// when the project is gone.
 func csprojOf(dir string) (string, bool) {
+	if csproj, recorded := recordedCsproj(dir); recorded {
+		_, err := os.Stat(csproj)
+		return csproj, err == nil
+	}
 	found, _ := filepath.Glob(filepath.Join(dir, "src", "*", "*.csproj"))
 	if len(found) == 0 {
 		return "", false
@@ -139,12 +153,22 @@ func (s *Service) Inspect(ctx context.Context, gameID, dir string) (ProjectInfo,
 		info.ClientOnly = json.Unmarshal(body, &rec) == nil && rec.Values["audience"] == "client"
 	}
 	base := strings.TrimSuffix(filepath.Base(csproj), ".csproj")
-	if base != p.Name && !p.Untrusted {
+	if _, adopted := recordedCsproj(p.Dir); base != p.Name && !p.Untrusted && !adopted {
 		if err := s.follow(gameID, p, base); err != nil {
 			return ProjectInfo{}, err
 		}
 	}
 	return info, nil
+}
+
+// sourceRoots are the folders whose files a build compiles or copies: src/ and assets/ for the template, the project
+// file's own folder for an adopted project.
+func sourceRoots(p settings.DevProject) []string {
+	roots := []string{filepath.Join(p.Dir, "src"), filepath.Join(p.Dir, "assets")}
+	if csproj, ok := recordedCsproj(p.Dir); ok {
+		roots = append(roots, filepath.Dir(csproj))
+	}
+	return roots
 }
 
 // buildState reads the last build from the files, so it survives a restart: the newest DLL in the output, and whether
@@ -161,7 +185,7 @@ func buildState(p settings.DevProject) (int64, bool) {
 		return 0, false
 	}
 	stale := false
-	for _, root := range []string{filepath.Join(p.Dir, "src"), filepath.Join(p.Dir, "assets")} {
+	for _, root := range sourceRoots(p) {
 		_ = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 			if err != nil || stale {
 				return filepath.SkipDir
@@ -318,6 +342,9 @@ func (s *Service) Edit(ctx context.Context, gameID, dir string, e ProjectEdit) (
 	old, err := readInfo(p.Dir, csproj)
 	if err != nil {
 		return ProjectInfo{}, err
+	}
+	if _, adopted := recordedCsproj(p.Dir); adopted && e.Name != old.Name {
+		return ProjectInfo{}, usererr.Wrap(usererr.Invalid, errors.New("an adopted project keeps its name; rename it in its project file"))
 	}
 	if e.Name != old.Name {
 		if csproj, err = s.rename(ctx, p, csproj, old.Name, e.Name); err != nil {

@@ -117,13 +117,14 @@ func (s *Service) Add(ctx context.Context, gameID, dir, profileID string) (setti
 		return bad("pick the project's folder")
 	}
 	dir = filepath.Clean(dir)
-	rec, asset := readAssetRecord(dir)
+	rec, recorded := readRecord(dir)
+	asset := recorded && rec.Kind != kindCode
 	name, ok := projectName(dir)
-	if asset {
+	if recorded {
 		name, ok = rec.Name, true
 	}
 	if !ok {
-		return bad("%s is not a mod project: it has no src/<Name>/<Name>.csproj from the template and no .mortar/project.json of an asset project", dir)
+		return bad("%s is not a Mortar project yet: adopt it to choose what it is", dir)
 	}
 	if slices.ContainsFunc(s.Projects(gameID), func(p settings.DevProject) bool { return filepath.Clean(p.Dir) == dir }) {
 		return bad("%s is already in the Develop tab", dir)
@@ -141,8 +142,10 @@ func (s *Service) Add(ctx context.Context, gameID, dir, profileID string) (setti
 		// A cloned folder can hold plugin DLLs that load on the next launch, so it installs only once trusted.
 		return s.enroll(gameID, dir, name, profileID, "", rec.Kind, true)
 	}
-	if err := pinGameRoot(dir, s.Tools(ctx, gameID).GameDir); err != nil {
-		return settings.DevProject{}, err
+	if !recorded {
+		if err := pinGameRoot(dir, s.Tools(ctx, gameID).GameDir); err != nil {
+			return settings.DevProject{}, err
+		}
 	}
 	// A foreign repository's build files run code, so nothing builds until the user agrees (see Trust).
 	return s.enroll(gameID, dir, name, profileID, "", "", true)

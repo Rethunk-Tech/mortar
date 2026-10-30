@@ -239,3 +239,25 @@ func TestExtraFolderInstallsAFolderWithoutADLL(t *testing.T) {
 		}
 	}
 }
+
+// An adopted folder of files is itself the extra mods folder, so its record is what makes it one mod.
+func TestExtraFolderInstallsAnAdoptedFolderOfFilesAsOneMod(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	svc, st := e.withSettings(t)
+	p, err := e.Create("lethal-company", "LC")
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir := filepath.Join(t.TempDir(), "Wallet")
+	writeFile(t, dir, "wallet.lethalbundle", "bundle")
+	setPrefOf(t, st, "lethal-company", "extraModsFolder", dir)
+	if got, err := svc.ExtraFolderMods(t.Context(), "lethal-company"); err != nil || len(got.Mods) != 0 {
+		t.Fatalf("an unrecorded folder of files listed %+v, %v", got, err)
+	}
+	writeFile(t, dir, ".mortar/project.json", `{"kind":"generic","name":"Wallet"}`)
+	res, err := svc.InstallExtraFolderMod(t.Context(), "lethal-company", p.ID, dir)
+	if err != nil || len(res.Added) != 1 || res.Added[0] != "Wallet" {
+		t.Fatalf("install = %+v, %v", res, err)
+	}
+}

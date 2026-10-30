@@ -35,16 +35,41 @@ type assetRecord struct {
 	Name   string `json:"name"`
 	Author string `json:"author"`
 	Team   string `json:"team"`
+	// Csproj is a code project's project file, a slash path from the project's folder; only kindCode records have one.
+	Csproj string `json:"csproj,omitempty"`
 }
 
-func readAssetRecord(dir string) (assetRecord, bool) {
+// A record's Kind is a catalog asset kind, or one of these two that every game has.
+const (
+	// kindCode is a C# project the player already had: built from the record's Csproj, not from the template's layout.
+	kindCode = "code"
+	// kindGeneric is a folder of files that installs as it is, with no catalog kind behind it.
+	kindGeneric = "generic"
+)
+
+// readRecord reads the project's .mortar/project.json of any kind; false when it is missing, damaged or names nothing
+// valid.
+func readRecord(dir string) (assetRecord, bool) {
 	body, err := safefs.ReadFile(filepath.Join(dir, ".mortar", assetRecordFile))
 	var rec assetRecord
-	if err != nil || json.Unmarshal(body, &rec) != nil || rec.Kind == "" || !modName.MatchString(rec.Name) ||
-		rec.Team != "" && !teamPattern.MatchString(rec.Team) {
+	if err != nil || json.Unmarshal(body, &rec) != nil || rec.Kind == "" || rec.Team != "" && !teamPattern.MatchString(rec.Team) {
 		return assetRecord{}, false
 	}
-	return rec, true
+	if rec.Kind == kindCode {
+		return rec, codeName.MatchString(rec.Name) && validCsproj(rec.Csproj)
+	}
+	return rec, modName.MatchString(rec.Name)
+}
+
+// readAssetRecord is readRecord for a project made only of files.
+func readAssetRecord(dir string) (assetRecord, bool) {
+	rec, ok := readRecord(dir)
+	return rec, ok && rec.Kind != kindCode
+}
+
+// validCsproj keeps a record from a cloned repository inside the project's folder.
+func validCsproj(p string) bool {
+	return fs.ValidPath(p) && !strings.Contains(p, "\\") && strings.HasSuffix(strings.ToLower(p), ".csproj")
 }
 
 // AssetKinds are the mods made only of files that the game's catalog entry offers beside code.
@@ -57,6 +82,9 @@ func (s *Service) AssetKinds(gameID string) []components.AssetKind {
 }
 
 func (s *Service) assetKind(gameID, id string) (components.AssetKind, error) {
+	if id == kindGeneric {
+		return components.AssetKind{ID: kindGeneric}, nil
+	}
 	i := slices.IndexFunc(s.AssetKinds(gameID), func(k components.AssetKind) bool { return k.ID == id })
 	if i < 0 {
 		return components.AssetKind{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("%s has no %q kind of mod", gameID, id))
@@ -196,6 +224,10 @@ func setManifestDependency(dir, pkg, version string) error {
 func editManifest(dir string, edit func(raw map[string]any)) error {
 	file := filepath.Join(dir, "manifest.json")
 	body, err := safefs.ReadFile(file)
+	if errors.Is(err, os.ErrNotExist) {
+		// An adopted folder has none until a change needs one.
+		body, err = []byte("{}"), nil
+	}
 	if err != nil {
 		return err
 	}
@@ -273,12 +305,21 @@ func packAsset(p settings.DevProject, team, version string) (string, error) {
 		return "", usererr.Wrap(usererr.Invalid, fmt.Errorf("%q is not a version like 1.2.3; fix manifest.json", version))
 	}
 	manifest, err := safefs.ReadFile(filepath.Join(p.Dir, "manifest.json"))
-	if err != nil {
+	raw := map[string]any{}
+	switch {
+	case errors.Is(err, os.ErrNotExist):
+	case err != nil:
 		return "", err
+	default:
+		if err := json.Unmarshal(bytes.TrimPrefix(manifest, []byte("\xef\xbb\xbf")), &raw); err != nil {
+			return "", usererr.Wrap(usererr.Damaged, fmt.Errorf("manifest.json: %w", err))
+		}
 	}
-	var raw map[string]any
-	if err := json.Unmarshal(manifest, &raw); err != nil {
-		return "", usererr.Wrap(usererr.Damaged, fmt.Errorf("manifest.json: %w", err))
+	// A folder adopted with no manifest, or a partial one, gets only the fields Thunderstore insists on.
+	for field, def := range map[string]any{"name": p.Name, "description": "", "website_url": "", "dependencies": []string{}} {
+		if _, ok := raw[field]; !ok {
+			raw[field] = def
+		}
 	}
 	raw["version_number"] = version
 	if manifest, err = json.MarshalIndent(raw, "", "  "); err != nil {
@@ -325,7 +366,7 @@ func addTree(zw *zip.Writer, dir string) error {
 			}
 			return nil
 		}
-		if !d.Type().IsRegular() {
+		if !d.Type().IsRegular() || isJunk(d.Name()) {
 			return nil
 		}
 		in, err := root.Open(rel)
@@ -337,10 +378,15 @@ func addTree(zw *zip.Writer, dir string) error {
 	})
 }
 
+// isJunk is a file a package never keeps.
+func isJunk(name string) bool {
+	return strings.EqualFold(name, "Thumbs.db") || name == ".DS_Store"
+}
+
 // packAssetProject packs an asset project at its next version (the latest tag, else the manifest's) and checks it.
 func (s *Service) packAssetProject(ctx context.Context, gameID string, p settings.DevProject) (PackResult, error) {
 	rec, _ := readAssetRecord(p.Dir)
-	version := assetInfo(p.Dir, rec).Version
+	version := cmp.Or(assetInfo(p.Dir, rec).Version, "0.1.0")
 	if v, err := s.NextVersions(ctx, gameID, p.Dir); err == nil && v.Current != "" {
 		version = v.Current
 	}
@@ -388,6 +434,9 @@ func (s *Service) OpenAssetFolder(gameID, dir string) error {
 	kind, err := s.assetKind(gameID, p.Kind)
 	if err != nil {
 		return err
+	}
+	if kind.ID == kindGeneric {
+		return datadir.Open(p.Dir)
 	}
 	folder := filepath.Join(p.Dir, filepath.FromSlash(kind.Folder))
 	if err := os.MkdirAll(folder, 0o750); err != nil {

@@ -18,6 +18,7 @@ import (
 	"github.com/Rethunk-Tech/go-desktopenv/nowindow"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/hostenv"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -113,7 +114,7 @@ func (s *Service) Build(ctx context.Context, gameID, dir string) (BuildResult, e
 		return BuildResult{OK: true}, nil
 	}
 	defer s.lockedBuild(ctx, gameID, p)()
-	out, err := s.run(ctx, p.Dir, "dotnet", "build", "-c", "Debug", "-nologo")
+	out, err := s.run(ctx, p.Dir, "dotnet", buildArgs(p, "Debug")...)
 	if _, missing := errors.AsType[*exec.Error](err); missing {
 		return BuildResult{}, usererr.Wrap(usererr.NotFound, errors.New("install the .NET SDK to build mods"))
 	}
@@ -121,6 +122,20 @@ func (s *Service) Build(ctx context.Context, gameID, dir string) (BuildResult, e
 		removeStaleBundles(p)
 	}
 	return BuildResult{OK: err == nil, Problems: ParseProblems(string(out)), Log: tail(string(out))}, nil
+}
+
+// buildArgs are dotnet's arguments for a build in config. An adopted project names its project file and builds into
+// the folder that installs; the template's own layout needs neither.
+func buildArgs(p settings.DevProject, config string) []string {
+	csproj, adopted := recordedCsproj(p.Dir)
+	if !adopted {
+		return []string{"build", "-c", config, "-nologo"}
+	}
+	args := []string{"build", csproj, "-c", config, "-nologo"}
+	if config == "Debug" {
+		args = append(args, "-o", p.Output)
+	}
+	return args
 }
 
 // lockedBuild takes the project's build lock and declares the dependencies installed since they were added on the
@@ -171,6 +186,9 @@ func WatchedSources(cur settings.Settings, games []string) map[string][]string {
 				continue
 			}
 			src := filepath.Join(p.Dir, "src", p.Name)
+			if csproj, ok := recordedCsproj(p.Dir); ok {
+				src = filepath.Dir(csproj)
+			}
 			assets := filepath.Join(p.Dir, "assets")
 			// Compat and assets are listed even before they exist, so a folder made later is watched from the next refresh.
 			out[g] = append(out[g], src, filepath.Join(src, "Compat"), assets)
@@ -246,6 +264,7 @@ func startEditor(commands [][]string) bool {
 			continue
 		}
 		cmd := exec.CommandContext(context.Background(), editor[0], editor[1:]...) // #nosec G204 -- fixed editors; paths are inside the project
+		cmd.Env = hostenv.Environ()
 		nowindow.Set(cmd)
 		if err := cmd.Start(); err == nil {
 			go func() { _ = cmd.Wait() }()

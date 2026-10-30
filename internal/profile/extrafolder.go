@@ -136,7 +136,9 @@ func packagePreview(folder string, g installer.Game, top bool) (GameModPreview, 
 	if !ok {
 		return GameModPreview{}, false
 	}
-	content := !top && inst.ID() == driverPlain && installer.HasFiles(arch)
+	// A folder Mortar adopted as a project of files is a package at the top too: its record says it is one mod.
+	_, adopted := os.Stat(filepath.Join(folder, ".mortar", "project.json"))
+	content := (!top || adopted == nil) && inst.ID() == driverPlain && installer.HasFiles(arch)
 	if inst.ID() != driverThunderstore && !content {
 		return GameModPreview{}, false
 	}
