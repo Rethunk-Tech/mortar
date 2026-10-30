@@ -1,13 +1,10 @@
 package dlwatch
 
 import (
-	"path/filepath"
-	"regexp"
-	"strconv"
 	"strings"
-)
 
-var nexusArchive = regexp.MustCompile(`(?i)^(.+?)-(\d+)-([0-9a-z]+(?:-[0-9a-z]+)*)-(\d{9,})\.(zip|7z|rar)$`)
+	"github.com/Rethunk-Tech/go-nexusmods"
+)
 
 // Info is what Mortar knows about a noticed archive before install.
 type Info struct {
@@ -16,17 +13,8 @@ type Info struct {
 }
 
 // ParseNexusFilename reads the Nexus Mod Manager archive pattern
-// "<name>-<modId>-<version>-<timestamp>.<ext>".
+// "<name>-<modId>-<version>-<timestamp>.<ext>", with the underscores Nexus puts in a name shown as spaces.
 func ParseNexusFilename(name string) (Info, bool) {
-	base := filepath.Base(name)
-	m := nexusArchive.FindStringSubmatch(base)
-	if m == nil {
-		return Info{}, false
-	}
-	id, err := strconv.Atoi(m[2])
-	if err != nil || id <= 0 {
-		return Info{}, false
-	}
-	label := strings.ReplaceAll(m[1], "_", " ")
-	return Info{Name: label, ModID: id}, true
+	a, ok := nexusmods.ParseArchiveName(name)
+	return Info{Name: strings.ReplaceAll(a.Name, "_", " "), ModID: a.ModID}, ok
 }
