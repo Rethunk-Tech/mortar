@@ -8,7 +8,8 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/mortar/internal/secret"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -32,7 +33,7 @@ func (s *Service) SignIn(ctx context.Context, key string) (Account, error) {
 		return Account{}, errors.New("paste your Nexus Mods personal API key")
 	}
 	user, err := s.client.WithKey(key).Validate(ctx)
-	if errors.Is(err, nexus.ErrUnauthorized) {
+	if errors.Is(err, nexusmods.ErrUnauthorized) {
 		return Account{}, usererr.Wrap(usererr.Invalid, err)
 	}
 	if err != nil {
@@ -47,7 +48,7 @@ func (s *Service) SignIn(ctx context.Context, key string) (Account, error) {
 func forgetKey() error { return secret.Delete(keyName) }
 
 // keyClient is c authenticated with the stored personal API key.
-func keyClient(c *nexus.Client) (*nexus.Client, error) {
+func keyClient(c *nexusmods.Client) (*nexusmods.Client, error) {
 	key, err := secret.Get(keyName)
 	if errors.Is(err, secret.ErrNotFound) {
 		// The account is remembered but its key is gone (a reset or new keyring): that is signed out, not a failure.
@@ -60,7 +61,7 @@ func keyClient(c *nexus.Client) (*nexus.Client, error) {
 }
 
 // signedIn records the account the player signed in as.
-func (s *Service) signedIn(user nexus.User) (Account, error) {
+func (s *Service) signedIn(user nexusmods.User) (Account, error) {
 	return s.update(func(v *settings.Settings) {
 		v.NexusUserID, v.NexusName, v.NexusPremium = user.ID, user.Name, user.IsPremium
 	})

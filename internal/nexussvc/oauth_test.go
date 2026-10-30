@@ -9,10 +9,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/mortar/internal/secret"
 
 	"github.com/Rethunk-Tech/go-nexusmods/sso"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/zalando/go-keyring"
 )
@@ -39,8 +40,8 @@ func TestOAuthBuildSendsBearerAndNeverTheKey(t *testing.T) {
 	if _, err := store.Update(func(v *settings.Settings) { v.NexusUserID = 1 }); err != nil {
 		t.Fatal(err)
 	}
-	base := nexus.New("1")
-	base.BaseURL, base.CacheDir = srv.URL, t.TempDir()
+	base := nexusmods.New("Mortar", "1")
+	base.BaseURL = srv.URL
 	c, err := Authed(store, base)
 	if err != nil {
 		t.Fatal(err)
@@ -136,7 +137,7 @@ func TestSignInWordingIsMortars(t *testing.T) {
 		t.Skipf("port is not free on this machine: %v", err)
 	}
 	defer func() { _ = ln.Close() }()
-	s := &Service{client: nexus.New("1")}
+	s := &Service{client: nexusmods.New("Mortar", "1")}
 	o.ClientID, o.OpenBrowser = "cid", func(string) error { return nil }
 	_, err = s.signInOAuth(t.Context(), o)
 	if err == nil || err.Error() != "Port 51762 is in use; close the app using it and try again" {

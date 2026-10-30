@@ -10,8 +10,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
@@ -43,7 +44,7 @@ func (Driver) ModPageURL(gameKey, id string) string {
 	if err != nil {
 		return ""
 	}
-	return nexus.ModURL(gameKey, modID)
+	return nexusmods.ModURL(gameKey, modID)
 }
 
 type searchBody struct {
@@ -82,7 +83,7 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 	if q.Key == "" {
 		return source.Page{}, fmt.Errorf("game %q has no Nexus domain", q.Game)
 	}
-	base := cmp.Or(d.URL, nexus.BaseURL)
+	base := cmp.Or(d.URL, nexusmods.BaseURL)
 	client := cmp.Or(d.HTTP, http.DefaultClient)
 	offset := (q.Page - source.FirstPage) * q.Len()
 	// A JSON string is a valid GraphQL string, so no input can end the literal or inject a field.
@@ -169,7 +170,7 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 			Updated:      n.UpdatedAt,
 			Adult:        n.AdultContent,
 			Category:     n.ModCategory.Name,
-			URL:          nexus.ModURL(q.Key, n.ModID),
+			URL:          nexusmods.ModURL(q.Key, n.ModID),
 		})
 	}
 	return source.Page{Total: parsed.Data.Mods.TotalCount, Items: items}, nil

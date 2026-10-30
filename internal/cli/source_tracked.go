@@ -3,8 +3,9 @@ package cli
 import (
 	"fmt"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/mortar/internal/control"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 )
 
 func (c *cmd) sourceTracked() error {
@@ -15,7 +16,7 @@ func (c *cmd) sourceTracked() error {
 	if err != nil {
 		return err
 	}
-	return show(c, "source.trackedMissing", control.Params{Game: a[0], Profile: a[1], Source: c.sourceFlag}, func(mods []nexus.TrackedMod) {
+	return show(c, "source.trackedMissing", control.Params{Game: a[0], Profile: a[1], Source: c.sourceFlag}, func(mods []nexusmods.TrackedMod) {
 		for _, im := range mods {
 			fmt.Fprintf(c.out, "%d\t%s\n", im.ModID, im.DomainName)
 		}

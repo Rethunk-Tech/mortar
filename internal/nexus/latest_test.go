@@ -2,10 +2,12 @@ package nexus
 
 import (
 	"testing"
+
+	"github.com/Rethunk-Tech/go-nexusmods"
 )
 
 func TestNewestUpdateFollowsTheChain(t *testing.T) {
-	files := []File{
+	files := []nexusmods.File{
 		{FileID: 1, Version: "1.0.0", ReplacedBy: 2},
 		{FileID: 2, Version: "1.1.0", ReplacedBy: 3},
 		{FileID: 3, Version: "1.2.0"},

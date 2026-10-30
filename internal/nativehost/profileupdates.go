@@ -6,9 +6,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
@@ -63,7 +64,7 @@ func updateRow(info components.GameInfo, u appUpdate) (modUpdate, bool) {
 	switch {
 	case u.NexusID > 0:
 		row.Source, row.ID, row.ModID = "nexus", strconv.Itoa(u.NexusID), u.NexusID
-		row.URL = nexus.ModURL(info.NexusDomain(), u.NexusID)
+		row.URL = nexusmods.ModURL(info.NexusDomain(), u.NexusID)
 	case u.Package != "":
 		row.Source = cmp.Or(u.PackageSource, "thunderstore")
 		row.ID = u.Package

@@ -7,12 +7,13 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/go-smapiweb"
 
 	"github.com/Rethunk-Tech/go-httpkit"
 
 	"github.com/Rethunk-Tech/mortar/internal/meta"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/share"
 )
@@ -21,7 +22,7 @@ type fakeMeta struct {
 	refs    map[string][]smapiweb.Ref
 	pages   map[int]smapiweb.Page
 	broken  map[string]string
-	coll    meta.Collection
+	coll    nexusmods.Collection
 	collErr error
 }
 
@@ -53,11 +54,11 @@ func page(id int, name string, files ...smapiweb.File) smapiweb.Page {
 	return smapiweb.Page{ID: id, Name: name, Author: "someone", Downloads: files}
 }
 
-func nf(id int, version, category string, primary bool) nexus.File {
-	return nexus.File{FileID: id, FileName: "f.zip", Version: version, Category: category, SizeKB: 10, IsPrimary: primary}
+func nf(id int, version, category string, primary bool) nexusmods.File {
+	return nexusmods.File{FileID: id, FileName: "f.zip", Version: version, Category: category, SizeKB: 10, IsPrimary: primary}
 }
 
-func testResolver(files map[int][]nexus.File, target []profile.Entry) *resolver {
+func testResolver(files map[int][]nexusmods.File, target []profile.Entry) *resolver {
 	dep := smapiweb.Mod{UniqueID: "B.Dep", Version: "1.2"}
 	fm := fakeMeta{
 		refs: map[string][]smapiweb.Ref{"b.dep": {{Site: "Nexus", ID: 900}}},
@@ -72,7 +73,7 @@ func testResolver(files map[int][]nexus.File, target []profile.Entry) *resolver 
 	}
 	return &resolver{
 		meta: fm, signedIn: true, premium: false, target: target, env: stardewEnv,
-		files: func(_ context.Context, _ nexus.Title, id int) ([]nexus.File, error) {
+		files: func(_ context.Context, _ nexusmods.Title, id int) ([]nexusmods.File, error) {
 			if f, ok := files[id]; ok {
 				return f, nil
 			}
@@ -91,7 +92,7 @@ func byKey(mods []Mod, want Mod) Mod {
 }
 
 func TestResolveGroupsAndSubstitutes(t *testing.T) {
-	files := map[int][]nexus.File{
+	files := map[int][]nexusmods.File{
 		100:  {nf(1, "1.0", "MAIN", true)},
 		200:  {nf(22, "2.0", "MAIN", false), nf(23, "3.0", "OPTIONAL", true)},
 		300:  {nf(3, "1.5", "ARCHIVED", false), nf(33, "1.5", "MAIN", false), nf(34, "2.5", "MAIN", true)},
@@ -186,7 +187,9 @@ func TestResolveSignedOutStaysWithTheLink(t *testing.T) {
 
 func TestResolveFilesFailureIsUnconfirmed(t *testing.T) {
 	r := testResolver(nil, nil)
-	r.files = func(context.Context, nexus.Title, int) ([]nexus.File, error) { return nil, errors.New("offline") }
+	r.files = func(context.Context, nexusmods.Title, int) ([]nexusmods.File, error) {
+		return nil, errors.New("offline")
+	}
 	mods, probs := r.resolve(t.Context(), []share.Ref{{ModID: 100, FileID: 1}})
 	if mods[0].State != StateDownload || mods[0].FileID != 1 {
 		t.Errorf("mods = %+v", mods)

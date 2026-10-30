@@ -7,10 +7,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/nxmsvc"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/store"
@@ -133,11 +134,11 @@ func TestStoredOptionalFileInstallsOverItsMainFile(t *testing.T) {
 		"Mod/manifest.json": `{"Name":"M","Author":"a","Version":"1.0.0","UniqueID":"a.m"}`, "Mod/a.png": "main",
 	})
 	add(optKey, map[string]string{"Mod/a.png": "opt"})
-	c := nexus.New("test")
-	c.BaseURL, c.CacheDir = "http://127.0.0.1:1", t.TempDir()
+	c := nexusmods.New("Mortar", "test")
+	c.BaseURL = "http://127.0.0.1:1"
 	client := c.WithKey("k")
 	s, err := New(Deps{
-		Client:  func() (*nexus.Client, error) { return client, nil },
+		Client:  func() (*nexusmods.Client, error) { return client, nil },
 		Premium: func() bool { return true },
 		Stored: func(game, key string) bool {
 			_, err := items.Path(game, key)

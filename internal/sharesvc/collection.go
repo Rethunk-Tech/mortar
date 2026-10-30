@@ -7,8 +7,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/share"
 )
@@ -78,7 +79,7 @@ func (s *Service) previewCollection(ctx context.Context, game, domain, slug stri
 	return pv, nil
 }
 
-func externalResources(in []meta.CollectionExternal) []ExternalResource {
+func externalResources(in []nexusmods.CollectionExternal) []ExternalResource {
 	out := make([]ExternalResource, 0, len(in))
 	for _, e := range in {
 		out = append(out, ExternalResource{Name: e.Name, Type: e.Type, URL: e.URL, Version: e.Version, Author: e.Author, Optional: e.Optional, InstallYourself: true})

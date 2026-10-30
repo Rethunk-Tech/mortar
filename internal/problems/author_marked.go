@@ -6,9 +6,10 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/nexussvc"
 )
 
@@ -22,7 +23,7 @@ func authorMarkedMods(home, domain string, enabled []framework.Mod) []Broken {
 			if !ok {
 				continue
 			}
-			var file *nexus.File
+			var file *nexusmods.File
 			for i := range details.Files {
 				if details.Files[i].FileID == fileID {
 					file = &details.Files[i]
@@ -57,7 +58,7 @@ func markedManifest(im framework.Mod, domain string) *Broken {
 	return nil
 }
 
-func markedBroken(im framework.Mod, domain, name, summary, description string, file *nexus.File) *Broken {
+func markedBroken(im framework.Mod, domain, name, summary, description string, file *nexusmods.File) *Broken {
 	if match := statusMatch(name, true); match != "" {
 		return authorBroken(im, domain, match, "nexusName")
 	}
@@ -136,7 +137,7 @@ func authorBroken(im framework.Mod, domain, quote, where string) *Broken {
 func authorBrokenText(im framework.Mod, domain, quote, where, text string) *Broken {
 	b := authorBrokenWithReplacement(im, domain, quote, where)
 	if ids := modPageIDs(text, domain); len(ids) > 0 {
-		b.Replacement = &Ref{Site: "Nexus", PageID: ids[0], URL: nexus.ModURL(domain, ids[0])}
+		b.Replacement = &Ref{Site: "Nexus", PageID: ids[0], URL: nexusmods.ModURL(domain, ids[0])}
 	}
 	return b
 }
@@ -155,7 +156,7 @@ func authorBrokenWithReplacement(im framework.Mod, domain, quote, where string) 
 		MarkedIn: where, Quote: quote,
 	}
 	if ids := modPageIDs(quote, domain); len(ids) > 0 {
-		b.Replacement = &Ref{Site: "Nexus", PageID: ids[0], URL: nexus.ModURL(domain, ids[0])}
+		b.Replacement = &Ref{Site: "Nexus", PageID: ids[0], URL: nexusmods.ModURL(domain, ids[0])}
 	}
 	return b
 }

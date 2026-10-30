@@ -10,13 +10,13 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/go-smapiweb"
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
-	"github.com/Rethunk-Tech/mortar/internal/meta"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
@@ -54,10 +54,10 @@ func TestPreviewLinkCollection(t *testing.T) {
 			200: page(200, "Two", dsFile(2, "1.0", smapiweb.Mod{UniqueID: "A.Two", Version: "1.0"})),
 			300: page(300, "Three", dsFile(3, "1.0", smapiweb.Mod{UniqueID: "A.Three", Version: "1.0"})),
 		},
-		coll: meta.Collection{
+		coll: nexusmods.Collection{
 			Name: "Cozy Farm",
 			Slug: "cozy-farm",
-			Files: []meta.CollectionFile{
+			Files: []nexusmods.CollectionFile{
 				{ModID: 100, FileID: 1},
 				{ModID: 200, FileID: 2, Optional: true},
 				{ModID: 300, FileID: 3},
@@ -94,9 +94,9 @@ func cozyCollectionService(t *testing.T, revision int) (*Service, *profile.Store
 		pages: map[int]smapiweb.Page{
 			100: page(100, "One", dsFile(1, "1.0", smapiweb.Mod{UniqueID: "A.One", Version: "1.0"})),
 		},
-		coll: meta.Collection{
+		coll: nexusmods.Collection{
 			Name: "Cozy Farm", Slug: "cozy-farm", Revision: revision,
-			Files: []meta.CollectionFile{{ModID: 100, FileID: 1}},
+			Files: []nexusmods.CollectionFile{{ModID: 100, FileID: 1}},
 		},
 	})
 }
@@ -109,8 +109,8 @@ func collectionService(t *testing.T, fm fakeMeta) (*Service, *profile.Store) {
 	_, profiles := testenv.Stores(t)
 	s := NewService(Deps{
 		Profiles: profiles, Meta: fm,
-		Files: func(_ context.Context, _ nexus.Title, id int) ([]nexus.File, error) {
-			return []nexus.File{nf(id%100, "1.0", "MAIN", true)}, nil
+		Files: func(_ context.Context, _ nexusmods.Title, id int) ([]nexusmods.File, error) {
+			return []nexusmods.File{nf(id%100, "1.0", "MAIN", true)}, nil
 		},
 		SignedIn: func() bool { return true }, Premium: func() bool { return true },
 		Env: func(string) problems.Environment { return stardewEnv }, Queue: &recorder{},
@@ -156,9 +156,9 @@ func TestImportCollectionRecordsRefOnExistingProfile(t *testing.T) {
 		pages: map[int]smapiweb.Page{
 			100: page(100, "One", dsFile(1, "1.0", smapiweb.Mod{UniqueID: "A.One", Version: "1.0"})),
 		},
-		coll: meta.Collection{
+		coll: nexusmods.Collection{
 			Name: "Cozy Farm", Slug: "cozy-farm", Revision: 4,
-			Files: []meta.CollectionFile{{ModID: 100, FileID: 1}},
+			Files: []nexusmods.CollectionFile{{ModID: 100, FileID: 1}},
 		},
 	}
 	pv, err = s.PreviewCollectionUpdate(context.Background(), "stardew", p.ID)
@@ -191,7 +191,7 @@ func TestCollectionStatusNewerSameAndError(t *testing.T) {
 		st.URL != "https://www.nexusmods.com/games/stardewvalley/collections/cozy-farm" {
 		t.Fatalf("newer: %+v, %v", st, err)
 	}
-	s.d.Meta = fakeMeta{coll: meta.Collection{Name: "Cozy Farm", Revision: 3}}
+	s.d.Meta = fakeMeta{coll: nexusmods.Collection{Name: "Cozy Farm", Revision: 3}}
 	st, err = s.CollectionStatus(context.Background(), "stardew", p.ID)
 	if err != nil || st.Latest != 3 || st.Revision != 3 {
 		t.Fatalf("same: %+v, %v", st, err)
@@ -262,15 +262,15 @@ func TestCollectionImportAppliesArchiveForPremiumOnly(t *testing.T) {
 			Profiles: profiles,
 			Meta: fakeMeta{
 				pages: map[int]smapiweb.Page{100: page(100, "One", dsFile(11, "1.0", smapiweb.Mod{UniqueID: "A.One", Version: "1.0"}))},
-				coll: meta.Collection{
+				coll: nexusmods.Collection{
 					Name: "Cozy Farm", Slug: "cozy-farm", Revision: 1, Instructions: "Start a new save.",
 					DownloadLink: "/v2/collections/1/revisions/2/download_link",
-					External:     []meta.CollectionExternal{{Name: "Hand Mod", Type: "browse", URL: "https://example.com/mod"}},
-					Files:        []meta.CollectionFile{{ModID: 100, FileID: 11}},
+					External:     []nexusmods.CollectionExternal{{Name: "Hand Mod", Type: "browse", URL: "https://example.com/mod"}},
+					Files:        []nexusmods.CollectionFile{{ModID: 100, FileID: 11}},
 				},
 			},
-			Files: func(context.Context, nexus.Title, int) ([]nexus.File, error) {
-				return []nexus.File{nf(11, "1.0", "MAIN", true)}, nil
+			Files: func(context.Context, nexusmods.Title, int) ([]nexusmods.File, error) {
+				return []nexusmods.File{nf(11, "1.0", "MAIN", true)}, nil
 			},
 			SignedIn: func() bool { return true }, Premium: func() bool { return premium },
 			CollectionArchive: func(_ context.Context, link string) ([]byte, error) {

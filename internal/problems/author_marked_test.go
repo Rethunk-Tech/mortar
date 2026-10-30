@@ -7,10 +7,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/nexussvc"
 )
 
@@ -23,15 +24,15 @@ func TestAuthorMarkedMods(t *testing.T) {
 		}
 	}
 	cache(10, nexussvc.Details{
-		Page: nexus.Page{
+		Page: nexusmods.Page{
 			Name:    "Foo",
 			Summary: "This mod is deprecated, use Bar (https://www.nexusmods.com/stardewvalley/mods/123)",
 		},
-		Files: []nexus.File{{FileID: 42, Name: "Foo 1.6", Description: "Deprecated - use the 1.6 version"}},
+		Files: []nexusmods.File{{FileID: 42, Name: "Foo 1.6", Description: "Deprecated - use the 1.6 version"}},
 	})
 	cache(11, nexussvc.Details{
-		Page:  nexus.Page{Name: "File Only"},
-		Files: []nexus.File{{FileID: 43, Name: "File Only 1.6", Description: "Deprecated - use the 1.6 version"}},
+		Page:  nexusmods.Page{Name: "File Only"},
+		Files: []nexusmods.File{{FileID: 43, Name: "File Only 1.6", Description: "Deprecated - use the 1.6 version"}},
 	})
 
 	mods := []framework.Mod{

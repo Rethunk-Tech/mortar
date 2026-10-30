@@ -7,13 +7,14 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 
@@ -353,16 +354,16 @@ func coveredBy(have []Update, key, version string) bool {
 }
 
 // NexusPagesOf looks up the page of many Nexus mods of the game in one batched call.
-type NexusPagesOf func(ctx context.Context, gameID string, modIDs []int) (map[int]nexus.Page, error)
+type NexusPagesOf func(ctx context.Context, gameID string, modIDs []int) (map[int]nexusmods.Page, error)
 
 // Requirements reads the requirements listed on the game's pages from the same batched page data; nil when p is.
 func (p NexusPagesOf) Requirements(gameID string) RequirementsOf {
 	if p == nil {
 		return nil
 	}
-	return func(ctx context.Context, modIDs []int) (map[int][]nexus.Requirement, error) {
+	return func(ctx context.Context, modIDs []int) (map[int][]nexusmods.Requirement, error) {
 		pages, err := p(ctx, gameID, modIDs)
-		out := make(map[int][]nexus.Requirement, len(pages))
+		out := make(map[int][]nexusmods.Requirement, len(pages))
 		for id, page := range pages {
 			out[id] = page.Requirements
 		}

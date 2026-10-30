@@ -6,6 +6,8 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -15,7 +17,7 @@ import (
 )
 
 // pageFiles lists the item's mod page files, nil when they cannot be fetched.
-func pageFiles(ctx context.Context, c *nexus.Client, it Item) []nexus.File {
+func pageFiles(ctx context.Context, c *nexusmods.Client, it Item) []nexusmods.File {
 	if it.FileID == 0 || c == nil {
 		return nil
 	}
@@ -30,7 +32,7 @@ func pageFiles(ctx context.Context, c *nexus.Client, it Item) []nexus.File {
 	return files
 }
 
-func fileCategoryOf(files []nexus.File, fileID int) string {
+func fileCategoryOf(files []nexusmods.File, fileID int) string {
 	for _, f := range files {
 		if f.FileID == fileID {
 			return f.Category
@@ -52,7 +54,7 @@ func archiveModIDs(path string) []mod.ID {
 	return ids
 }
 
-func (it Item) incoming(category string, files []nexus.File, ids []mod.ID) profile.IncomingFile {
+func (it Item) incoming(category string, files []nexusmods.File, ids []mod.ID) profile.IncomingFile {
 	return profile.IncomingFile{ModID: it.ModID, FileID: it.FileID, Category: category, Files: files, ModIDs: ids}
 }
 

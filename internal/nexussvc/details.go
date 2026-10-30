@@ -6,6 +6,8 @@ import (
 	"math"
 	"time"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
@@ -20,9 +22,9 @@ const (
 // Details is what the mod detail dialog shows from a Nexus page: the page, its category's name, every file and every
 // changelog version (one request however many there are).
 type Details struct {
-	Page       nexus.Page        `json:"page"`
+	Page       nexusmods.Page    `json:"page"`
 	Category   string            `json:"category"`
-	Files      []nexus.File      `json:"files"`
+	Files      []nexusmods.File  `json:"files"`
 	Changelogs []nexus.Changelog `json:"changelogs"`
 	// Partial marks details from the batched lookup: the page's headline data only, with no files or changelogs.
 	Partial bool `json:"partial,omitempty"`
@@ -43,7 +45,7 @@ func (s *Service) Details(ctx context.Context, gameID string, modID int) (Detail
 		}
 		page, err := c.Page(ctx, t, modID)
 		if err != nil {
-			return Details{}, err
+			return Details{}, nexus.Worded(err)
 		}
 		// Requirements are only in the GraphQL data; a failed lookup shows the page without them.
 		if infos, err := c.ModsByDomain(ctx, t.Domain, []int{modID}); err == nil {
@@ -51,17 +53,17 @@ func (s *Service) Details(ctx context.Context, gameID string, modID int) (Detail
 		}
 		files, err := c.Files(ctx, t, modID)
 		if err != nil {
-			return Details{}, err
+			return Details{}, nexus.Worded(err)
 		}
 		logs, err := c.Changelogs(ctx, t, modID, math.MaxInt)
 		if err != nil {
-			return Details{}, err
+			return Details{}, nexus.Worded(err)
 		}
 		// The category name is a label only: a failed lookup leaves it out rather than losing the rest.
 		cats, _ := diskcache.Cached(s.meta.Cache(), meta.NexusCategoriesPrefix+t.Domain+".json", categoriesTTL, func() (map[int]string, error) {
 			return c.Categories(ctx, t)
 		})
-		return Details{Page: page, Category: cats[page.CategoryID], Files: files, Changelogs: logs}, nil
+		return Details{Page: page, Category: cats[page.CategoryID], Files: files, Changelogs: nexusChangelogs(logs)}, nil
 	})
 }
 
@@ -73,16 +75,16 @@ func DetailsName(domain string, modID int) string {
 // CachedFiles returns the cached file list of each mod that has one, however old, without a network call.
 //
 //wails:ignore
-func (s *Service) CachedFiles(t nexus.Title, modIDs []int) map[int][]nexus.BatchFile {
-	out := make(map[int][]nexus.BatchFile, len(modIDs))
+func (s *Service) CachedFiles(t nexusmods.Title, modIDs []int) map[int][]nexusmods.BatchFile {
+	out := make(map[int][]nexusmods.BatchFile, len(modIDs))
 	for _, id := range modIDs {
 		d, ok := PeekDetails(s.meta, t.Domain, id)
 		if !ok || len(d.Files) == 0 {
 			continue
 		}
-		list := make([]nexus.BatchFile, len(d.Files))
+		list := make([]nexusmods.BatchFile, len(d.Files))
 		for i, f := range d.Files {
-			list[i] = nexus.BatchFile{FileID: f.FileID, Name: f.Name, Version: f.Version, Category: f.Category, ReplacedBy: f.ReplacedBy}
+			list[i] = nexusmods.BatchFile{FileID: f.FileID, Name: f.Name, Version: f.Version, Category: f.Category, ReplacedBy: f.ReplacedBy}
 		}
 		out[id] = list
 	}

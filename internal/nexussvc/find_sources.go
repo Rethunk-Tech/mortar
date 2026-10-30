@@ -9,13 +9,14 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/go-smapiweb"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/metadata"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 
@@ -131,7 +132,7 @@ func (s *Service) SetNexusPage(ctx context.Context, gameID, profileID, key, link
 	if s.Profiles == nil {
 		return profile.Profile{}, errors.New("profiles are unavailable")
 	}
-	domain, modID, ok := nexus.ParseModURL(link)
+	domain, modID, ok := nexusmods.ParseModURL(link)
 	if !ok {
 		return profile.Profile{}, usererr.Wrap(usererr.Invalid, errors.New("that is not the address of a Nexus mod page"))
 	}

@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
 // ExtraFileLabel matches the GUI menu labels in frontend/src/mods/menu.ts.
-func ExtraFileLabel(e Entry, extraKey string, files []nexus.File) string {
+func ExtraFileLabel(e Entry, extraKey string, files []nexusmods.File) string {
 	_, fileID, nexusKey := store.NexusFile(extraKey)
 	if nexusKey {
 		for _, f := range files {

@@ -22,6 +22,8 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/ids"
@@ -31,7 +33,6 @@ import (
 	"github.com/Rethunk-Tech/go-safefs"
 	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/migrate"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/pack"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -91,7 +92,7 @@ type Deps struct {
 	Profiles *profile.Store
 	Meta     problems.Meta
 	// Files lists a Nexus mod's files; it is only called while SignedIn.
-	Files    func(ctx context.Context, t nexus.Title, modID int) ([]nexus.File, error)
+	Files    func(ctx context.Context, t nexusmods.Title, modID int) ([]nexusmods.File, error)
 	SignedIn func() bool
 	Premium  func() bool
 	// CollectionArchive downloads a collection's curator archive by the API path Nexus reports; nil disables it.
@@ -434,7 +435,7 @@ func (s *Service) PreviewLink(ctx context.Context, game, text, profileID string)
 	if domain, slug, revision, ok := parseCollectionURL(text); ok {
 		return s.previewCollection(ctx, game, domain, slug, revision, profileID)
 	}
-	if domain, modID, ok := nexus.ParseModURL(text); ok {
+	if domain, modID, ok := nexusmods.ParseModURL(text); ok {
 		return s.previewModPage(ctx, game, domain, modID, profileID)
 	}
 	if in := (pack.Input{Text: text}); s.isPackCode(in) {

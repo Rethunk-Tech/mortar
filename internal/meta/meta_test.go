@@ -9,10 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-Tech/go-httpkit"
-
 	"github.com/Rethunk-Tech/go-smapiweb"
-	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // server replays the fixtures and counts requests; down makes every answer a 503.
@@ -163,37 +160,6 @@ func TestCheckUpdatesStaleThenUnknown(t *testing.T) {
 	}
 }
 
-func TestDoNamesMortarAndMapsTooManyRequestsToBusy(t *testing.T) {
-	var ua string
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ua = r.UserAgent()
-		w.WriteHeader(http.StatusTooManyRequests)
-	}))
-	defer srv.Close()
-	c := &Client{HTTP: &http.Client{Transport: &httpkit.Transport{Base: srv.Client().Transport, UserAgent: "Mortar/1.2.3"}}, Version: "1.2.3"}
-	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, srv.URL, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := c.do(req, 1<<10); usererr.KindOf(err) != usererr.RateLimited || ua != "Mortar/1.2.3" {
-		t.Fatalf("429: kind %v (%v), user agent %q", usererr.KindOf(err), err, ua)
-	}
-}
-
-// An untrusted certificate is a transport error, which classify reads as the network.
-func TestDoClassifiesATransportErrorAsNetwork(t *testing.T) {
-	srv := httptest.NewTLSServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
-	defer srv.Close()
-	c := &Client{HTTP: &http.Client{}}
-	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, srv.URL, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := c.do(req, 1<<10); usererr.KindOf(err) != usererr.Network {
-		t.Fatalf("kind %v (%v)", usererr.KindOf(err), err)
-	}
-}
-
 func TestCheckUpdatesSharesConcurrentAndPausesAfterFailure(t *testing.T) {
 	var down atomic.Bool
 	var hits atomic.Int32
@@ -259,15 +225,5 @@ func TestNewerOrdersPrereleasesAndPrefixes(t *testing.T) {
 		if got := Newer(tc.a, tc.b); got != tc.want {
 			t.Errorf("Newer(%q, %q) = %v, want %v", tc.a, tc.b, got, tc.want)
 		}
-	}
-}
-
-func TestDoRefusesABodyOverTheLimit(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write([]byte("0123456789")) }))
-	t.Cleanup(srv.Close)
-	c := &Client{HTTP: srv.Client(), CacheDir: t.TempDir()}
-	req, _ := http.NewRequestWithContext(t.Context(), http.MethodGet, srv.URL, nil)
-	if _, err := c.do(req, 9); err == nil {
-		t.Fatal("a body over the limit was returned")
 	}
 }

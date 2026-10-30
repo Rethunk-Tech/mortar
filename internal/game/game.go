@@ -17,6 +17,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/go-gamelocator/steam"
 	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/go-safefs"
@@ -27,7 +29,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	_ "github.com/Rethunk-Tech/mortar/internal/loader/all"
 	"github.com/Rethunk-Tech/mortar/internal/modpic"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/shots"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -217,12 +218,12 @@ func ByR2modmanFolder(name string) (string, bool) {
 }
 
 // NexusTitle is how Nexus knows the game with this id, from the catalog's nexus source.
-func NexusTitle(id string) (nexus.Title, error) {
+func NexusTitle(id string) (nexusmods.Title, error) {
 	g, ok := catalogGame(id)
 	if !ok || g.NexusDomain() == "" {
-		return nexus.Title{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("game %q has no Nexus domain", id))
+		return nexusmods.Title{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("game %q has no Nexus domain", id))
 	}
-	return nexus.Title{Domain: g.NexusDomain(), ID: g.NexusID()}, nil
+	return nexusmods.Title{Domain: g.NexusDomain(), ID: g.NexusID()}, nil
 }
 
 // Find returns the game with this id: its coded implementation, else the catalog's entry; nil when unlisted.

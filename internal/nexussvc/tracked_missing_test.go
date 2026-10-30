@@ -10,12 +10,13 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 
 	"github.com/Rethunk-Tech/mortar/internal/meta"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
@@ -37,7 +38,7 @@ func TestTrackedMissingFiltersDomainAndProfileMods(t *testing.T) {
 		}
 	}))
 	defer srv.Close()
-	c := nexus.New("1")
+	c := nexusmods.New("Mortar", "1")
 	c.BaseURL = srv.URL
 	_, profiles := testenv.Stores(t)
 	p := testenv.Profile(t, profiles, "stardew", "Farm")
@@ -86,8 +87,8 @@ func TestTrackedMissingIsEmptyWhenTheKeyIsGone(t *testing.T) {
 	if _, err := store.Update(func(s *settings.Settings) { s.NexusUserID = 7 }); err != nil {
 		t.Fatal(err)
 	}
-	s := NewService(store, nexus.New("1"), &meta.Client{})
-	if _, err := Authed(store, nexus.New("1")); !errors.Is(err, ErrSignedOut) {
+	s := NewService(store, nexusmods.New("Mortar", "1"), &meta.Client{})
+	if _, err := Authed(store, nexusmods.New("Mortar", "1")); !errors.Is(err, ErrSignedOut) {
 		t.Fatalf("a remembered account without a stored key is signed out: %v", err)
 	}
 	missing, err := s.TrackedMissing(context.Background(), "stardew", "any")

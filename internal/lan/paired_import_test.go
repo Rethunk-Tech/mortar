@@ -13,12 +13,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/go-smapiweb"
 
 	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
@@ -37,8 +38,8 @@ func (noMeta) Page(context.Context, int) (smapiweb.Page, error) {
 	return smapiweb.Page{}, errors.New("no page")
 }
 
-func (noMeta) Collection(context.Context, string, string, int) (meta.Collection, error) {
-	return meta.Collection{}, errors.New("no collection")
+func (noMeta) Collection(context.Context, string, string, int) (nexusmods.Collection, error) {
+	return nexusmods.Collection{}, errors.New("no collection")
 }
 
 func (noMeta) CheckUpdates(context.Context, meta.UpdateRequest) []smapiweb.UpdateResult { return nil }
@@ -86,12 +87,12 @@ func TestPairedSendPlacesEverySourceWithoutDownloading(t *testing.T) {
 	var nexusCalls atomic.Int64
 	shares := sharesvc.NewService(sharesvc.Deps{
 		Profiles: profiles, Meta: noMeta{}, Queue: spy, SignedIn: func() bool { return true }, Premium: func() bool { return false },
-		Files: func(context.Context, nexus.Title, int) ([]nexus.File, error) {
+		Files: func(context.Context, nexusmods.Title, int) ([]nexusmods.File, error) {
 			nexusCalls.Add(1)
-			return []nexus.File{{FileID: 2, FileName: "n.zip", Version: "1.0.0", Category: "MAIN", IsPrimary: true}}, nil
+			return []nexusmods.File{{FileID: 2, FileName: "n.zip", Version: "1.0.0", Category: "MAIN", IsPrimary: true}}, nil
 		},
 		Env: func(string) problems.Environment {
-			return problems.Environment{Nexus: nexus.Title{Domain: "stardewvalley", ID: 1303}, VersionScheme: deps.SemverSMAPI}
+			return problems.Environment{Nexus: nexusmods.Title{Domain: "stardewvalley", ID: 1303}, VersionScheme: deps.SemverSMAPI}
 		},
 		Stored: func(g, k string) bool { _, err := items.Path(g, k); return err == nil },
 	})

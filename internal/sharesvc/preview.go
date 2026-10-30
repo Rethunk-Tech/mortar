@@ -11,6 +11,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/go-smapiweb"
 
 	"github.com/Rethunk-Tech/go-httpkit"
@@ -21,7 +23,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
@@ -227,7 +228,7 @@ type resolver struct {
 	packageIcons func(names []string) map[string]string
 	icons        map[string]string
 	meta         problems.Meta
-	files        func(ctx context.Context, t nexus.Title, modID int) ([]nexus.File, error)
+	files        func(ctx context.Context, t nexusmods.Title, modID int) ([]nexusmods.File, error)
 	signedIn     bool
 	premium      bool
 	env          problems.Environment
@@ -255,7 +256,7 @@ type resolver struct {
 // means it could not be asked.
 type modInfo struct {
 	page    *smapiweb.Page
-	files   []nexus.File
+	files   []nexusmods.File
 	checked bool
 	gone    bool
 	failed  bool
@@ -329,20 +330,20 @@ func datasetFile(p *smapiweb.Page, fileID int) *smapiweb.File {
 
 // substitute picks the file that stands in for one Nexus no longer offers: the MAIN file of the same version,
 // else the mod's primary file.
-func substitute(files []nexus.File, version string) *nexus.File {
+func substitute(files []nexusmods.File, version string) *nexusmods.File {
 	if version != "" {
-		if i := slices.IndexFunc(files, func(f nexus.File) bool { return f.Category == categoryMain && f.Version == version }); i >= 0 {
+		if i := slices.IndexFunc(files, func(f nexusmods.File) bool { return f.Category == categoryMain && f.Version == version }); i >= 0 {
 			return &files[i]
 		}
 	}
-	if i := slices.IndexFunc(files, func(f nexus.File) bool { return f.IsPrimary }); i >= 0 {
+	if i := slices.IndexFunc(files, func(f nexusmods.File) bool { return f.IsPrimary }); i >= 0 {
 		return &files[i]
 	}
 	return nil
 }
 
 func nexusMod(domain string, modID, fileID int, state string) Mod {
-	return Mod{Key: store.NexusKey(modID, fileID), Site: SiteNexus, ModID: modID, FileID: fileID, PageURL: nexus.ModURL(domain, modID), State: state, IDs: []mod.ID{}}
+	return Mod{Key: store.NexusKey(modID, fileID), Site: SiteNexus, ModID: modID, FileID: fileID, PageURL: nexusmods.ModURL(domain, modID), State: state, IDs: []mod.ID{}}
 }
 
 // nexus resolves one Nexus file.
@@ -374,8 +375,8 @@ func (r *resolver) nexus(modID, fileID int, state string) Mod {
 	}
 	fileName := ""
 	if info.checked {
-		var listed *nexus.File
-		if i := slices.IndexFunc(info.files, func(f nexus.File) bool { return f.FileID == fileID }); i >= 0 {
+		var listed *nexusmods.File
+		if i := slices.IndexFunc(info.files, func(f nexusmods.File) bool { return f.FileID == fileID }); i >= 0 {
 			listed = &info.files[i]
 		}
 		chosen := listed

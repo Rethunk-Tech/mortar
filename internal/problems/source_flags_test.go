@@ -7,10 +7,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/nexussvc"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source"
@@ -37,7 +38,7 @@ func TestNexusFlaggedReadsTheCachedPageStatus(t *testing.T) {
 	t.Parallel()
 	_, cl := flagService(t)
 	for id, status := range map[int]string{1: "published", 2: "hidden", 3: "removed", 4: "under_moderation", 5: "not_published"} {
-		page := nexus.Page{ModID: id, Status: status, Available: status == "published"}
+		page := nexusmods.Page{ModID: id, Status: status, Available: status == "published"}
 		_, _ = diskcache.Cached(cl.Cache(), nexussvc.DetailsName("stardewvalley", id), time.Hour, func() (nexussvc.Details, error) {
 			return nexussvc.Details{Page: page}, nil
 		})

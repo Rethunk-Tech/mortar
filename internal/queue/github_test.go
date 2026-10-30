@@ -13,12 +13,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	_ "github.com/Rethunk-Tech/mortar/internal/loader/smapi"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/nxmsvc"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/store"
@@ -62,7 +63,7 @@ func newGitHubFixture(t *testing.T) *ghFixture {
 	srv = httptest.NewServer(mux)
 	t.Cleanup(srv.Close)
 
-	g.s.d.Client = func() (*nexus.Client, error) { return nil, fmt.Errorf("signed out") }
+	g.s.d.Client = func() (*nexusmods.Client, error) { return nil, fmt.Errorf("signed out") }
 	g.s.d.GitHub = &github.Client{HTTP: srv.Client(), CacheDir: t.TempDir(), APIBase: srv.URL, Now: g.now}
 	g.s.d.Stage = func(_ context.Context, _ string, src profile.Source, path string) (string, []mod.ID, error) {
 		if b, err := safefs.ReadFile(path); err != nil || string(b) != payload {

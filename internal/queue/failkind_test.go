@@ -8,6 +8,8 @@ import (
 	"net/url"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/go-httpkit"
 
 	"github.com/Rethunk-Tech/go-httpkit/download"
@@ -22,7 +24,7 @@ func TestFailureKind(t *testing.T) {
 		err  error
 		want string
 	}{
-		{fmt.Errorf("x: %w", nexus.ErrUnauthorized), FailAuth},
+		{fmt.Errorf("x: %w", nexusmods.ErrUnauthorized), FailAuth},
 		{nexus.ErrQuarantined, FailBlocked},
 		{&store.DiskFullError{NeedMB: 5}, FailDisk},
 		{usererr.Wrap(usererr.Malware, &store.DetectedError{Removed: true}), FailMalware},

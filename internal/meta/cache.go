@@ -3,21 +3,18 @@
 package meta
 
 import (
-	"context"
 	"net/http"
 	"path/filepath"
 	"sync"
 	"sync/atomic"
 	"time"
 
-	"github.com/Rethunk-Tech/go-httpkit"
+	"github.com/Rethunk-Tech/go-nexusmods"
 
 	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/go-smapiweb"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
-
-const requestTimeout = 20 * time.Second
 
 // Client fetches and caches mod metadata. The zero value uses the public endpoints and <datadir>/cache.
 type Client struct {
@@ -30,9 +27,13 @@ type Client struct {
 	PageBase   string
 	UpdatesURL string
 	CompatURL  string
-	Now        func() time.Time
-	index      indexMemo
-	compat     compatMemo
+	// NexusURL is the Nexus API origin; empty means the public one.
+	NexusURL  string
+	Now       func() time.Time
+	index     indexMemo
+	nexusOnce sync.Once
+	nexus     *nexusmods.Client
+	compat    compatMemo
 	// updatesMu serializes update checks so concurrent profiles share one fetch and one cache write.
 	updatesMu sync.Mutex
 	// updatesPause holds off smapi.io after a failed ask; until then stale cache or unknown is served.
@@ -70,13 +71,6 @@ func (c *Client) Cache() *diskcache.Cache {
 		}
 	}
 	return &diskcache.Cache{Dir: dir, Now: c.Now}
-}
-
-// do sends req and returns at most limit bytes of a 200 response body.
-func (c *Client) do(req *http.Request, limit int64) ([]byte, error) {
-	ctx, cancel := context.WithTimeout(req.Context(), requestTimeout)
-	defer cancel()
-	return httpkit.DoCapped(c.client(), req.WithContext(ctx), limit, nil)
 }
 
 // young reports whether an entry fetched at t is younger than ttl; one stamped in the future (a clock set back) is not.

@@ -5,6 +5,8 @@ import (
 	"io"
 	"runtime"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/store"
@@ -26,7 +28,7 @@ const (
 func failureKind(err error) string {
 	var full *store.DiskFullError
 	switch {
-	case errors.Is(err, nexus.ErrUnauthorized):
+	case errors.Is(err, nexusmods.ErrUnauthorized):
 		return FailAuth
 	case errors.Is(err, nexus.ErrQuarantined):
 		return FailBlocked

@@ -9,6 +9,8 @@ import (
 	"strings"
 	"sync/atomic"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/winhost"
@@ -26,10 +28,10 @@ const ChangedEvent = "nexus:changed"
 
 // Account is the signed-in Nexus account and the rate-limit budget last seen.
 type Account struct {
-	SignedIn bool         `json:"signedIn"`
-	Name     string       `json:"name"`
-	Premium  bool         `json:"premium"`
-	Limits   nexus.Limits `json:"limits"`
+	SignedIn bool             `json:"signedIn"`
+	Name     string           `json:"name"`
+	Premium  bool             `json:"premium"`
+	Limits   nexusmods.Limits `json:"limits"`
 }
 
 // UntrackAllResult reports the progress of a bulk untrack operation.
@@ -42,7 +44,7 @@ type UntrackAllResult struct {
 // Service signs in and out of Nexus Mods.
 type Service struct {
 	store   *settings.Store
-	client  *nexus.Client
+	client  *nexusmods.Client
 	meta    *meta.Client
 	seen    *nexus.SeenStore
 	prompts *promptStore
@@ -62,9 +64,9 @@ type Service struct {
 }
 
 // NewService keeps mod page details in m's cache.
-func NewService(store *settings.Store, client *nexus.Client, m *meta.Client) *Service {
+func NewService(store *settings.Store, client *nexusmods.Client, m *meta.Client) *Service {
 	s := &Service{store: store, client: client, meta: m, sso: sso.Legacy{Slug: Slug}, oauth: oauthConfig()}
-	client.SetLimitsHook(func(lim nexus.Limits) {
+	client.SetLimitsHook(func(lim nexusmods.Limits) {
 		if s.App != nil {
 			a := s.Account()
 			a.Limits = lim
@@ -75,7 +77,7 @@ func NewService(store *settings.Store, client *nexus.Client, m *meta.Client) *Se
 }
 
 // Limits is the budget from the last Nexus response; it does not call the API.
-func (s *Service) Limits() nexus.Limits {
+func (s *Service) Limits() nexusmods.Limits {
 	return s.client.Limits()
 }
 
@@ -128,19 +130,19 @@ func (s *Service) ModName(ctx context.Context, gameID string, modID int) (string
 	if err != nil {
 		return "", err
 	}
-	m, err := c.Mod(ctx, t, modID)
-	return m.Name, err
+	m, err := nexus.CachedMod(ctx, c, s.meta.Cache(), t, modID)
+	return m.Name, nexus.Worded(err)
 }
 
-func (s *Service) keyed() (*nexus.Client, error) {
+func (s *Service) keyed() (*nexusmods.Client, error) {
 	return Authed(s.store, s.client)
 }
 
 // titled resolves the game's Nexus title and the signed-in client together.
-func (s *Service) titled(gameID string) (nexus.Title, *nexus.Client, error) {
+func (s *Service) titled(gameID string) (nexusmods.Title, *nexusmods.Client, error) {
 	t, err := game.NexusTitle(gameID)
 	if err != nil {
-		return nexus.Title{}, nil, err
+		return nexusmods.Title{}, nil, err
 	}
 	c, err := s.keyed()
 	return t, c, err
@@ -153,7 +155,7 @@ func (s *Service) Endorse(ctx context.Context, gameID string, modID int, version
 		return "", err
 	}
 	status, err := c.Endorse(ctx, t, modID, version)
-	return string(status), err
+	return string(status), nexus.Worded(err)
 }
 
 // EndorsementOf is the signed-in user's current endorse_status for modID, read live because the mod page the window
@@ -164,7 +166,7 @@ func (s *Service) EndorsementOf(ctx context.Context, gameID string, modID int) (
 		return "", err
 	}
 	p, err := c.Page(ctx, t, modID)
-	return p.Endorsement, err
+	return p.Endorsement, nexus.Worded(err)
 }
 
 // Abstain withdraws the signed-in user's endorsement of modID at version.
@@ -174,16 +176,17 @@ func (s *Service) Abstain(ctx context.Context, gameID string, modID int, version
 		return "", err
 	}
 	status, err := c.Abstain(ctx, t, modID, version)
-	return string(status), err
+	return string(status), nexus.Worded(err)
 }
 
 // TrackedMods is the signed-in user's tracked list (briefly cached in the Nexus client).
-func (s *Service) TrackedMods(ctx context.Context) ([]nexus.TrackedMod, error) {
+func (s *Service) TrackedMods(ctx context.Context) ([]nexusmods.TrackedMod, error) {
 	c, err := s.keyed()
 	if err != nil {
 		return nil, err
 	}
-	return c.TrackedMods(ctx)
+	mods, err := c.TrackedMods(ctx)
+	return mods, nexus.Worded(err)
 }
 
 // trackedFor returns the signed-in user's tracked Nexus mod ids for a Mortar game.
@@ -236,7 +239,7 @@ func (s *Service) UntrackAll(ctx context.Context, gameID string, onlyNotInProfil
 	result := UntrackAllResult{Remaining: len(targets)}
 	for i, modID := range targets {
 		limits := s.client.Limits()
-		if limits.Known && (limits.Daily.Remaining <= nexus.LimitFloor || limits.Hourly.Remaining <= nexus.LimitFloor) {
+		if limits.Known && (limits.Daily.Remaining <= nexusmods.LimitFloor || limits.Hourly.Remaining <= nexusmods.LimitFloor) {
 			result.StoppedForLimit = true
 			break
 		}
@@ -283,7 +286,7 @@ func (s *Service) Track(ctx context.Context, gameID string, modID int) error {
 		return err
 	}
 	s.forgetTracked()
-	return c.Track(ctx, t, modID)
+	return nexus.Worded(c.Track(ctx, t, modID))
 }
 
 // Untrack stops tracking modID for the signed-in user.
@@ -293,5 +296,5 @@ func (s *Service) Untrack(ctx context.Context, gameID string, modID int) error {
 		return err
 	}
 	s.forgetTracked()
-	return c.Untrack(ctx, t, modID)
+	return nexus.Worded(c.Untrack(ctx, t, modID))
 }

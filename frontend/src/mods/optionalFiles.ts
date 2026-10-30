@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { File } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexus/models.ts'
+import type { File } from '../../bindings/github.com/Rethunk-Tech/go-nexusmods/models.ts'
 import type { Update } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import type {
   OverlayFileSet,

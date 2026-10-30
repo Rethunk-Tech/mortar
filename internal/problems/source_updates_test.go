@@ -8,10 +8,11 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/github"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 	"github.com/Rethunk-Tech/mortar/internal/source/modrinth"
@@ -86,12 +87,12 @@ func TestThunderstoreUpdatesOfferNewerVersionsAndMarkSourceSwitches(t *testing.T
 
 func TestNexusModsWithoutUpdateKeysAreAskedInOneBatch(t *testing.T) {
 	asks := 0
-	s := &Service{NexusPages: func(_ context.Context, game string, ids []int) (map[int]nexus.Page, error) {
+	s := &Service{NexusPages: func(_ context.Context, game string, ids []int) (map[int]nexusmods.Page, error) {
 		asks++
 		if game != "lethal-company" || len(ids) != 3 {
 			t.Errorf("asked %s %v", game, ids)
 		}
-		return map[int]nexus.Page{
+		return map[int]nexusmods.Page{
 			10: {Version: "1.2.0", Available: true},
 			11: {Version: "9.0.0", Available: false},
 			13: {Version: "2.0", Available: true},

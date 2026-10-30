@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
 import type { KeyboardEvent } from 'react'
-import type { File } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexus/models.ts'
+import type { File } from '../../bindings/github.com/Rethunk-Tech/go-nexusmods/models.ts'
 import type {
   Mod,
   OverlayFileSet,

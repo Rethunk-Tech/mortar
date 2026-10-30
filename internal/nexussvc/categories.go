@@ -5,9 +5,10 @@ import (
 	"maps"
 	"slices"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 )
 
 // CategoryNames lists a game's mod category names from the same cached lookup Details uses. It needs a signed-in
@@ -18,7 +19,7 @@ func (s *Service) CategoryNames(ctx context.Context, domain string) ([]string, e
 		if err != nil {
 			return nil, err
 		}
-		return c.Categories(ctx, nexus.Title{Domain: domain})
+		return c.Categories(ctx, nexusmods.Title{Domain: domain})
 	})
 	if err != nil {
 		return nil, err

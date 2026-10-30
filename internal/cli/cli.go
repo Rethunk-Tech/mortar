@@ -16,6 +16,8 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/avscan"
@@ -1389,7 +1391,7 @@ func nexusPage(game, source string) string {
 	if err != nil {
 		return ""
 	}
-	return nexus.ModURL(g.NexusDomain(), id)
+	return nexusmods.ModURL(g.NexusDomain(), id)
 }
 
 func (c *cmd) printEnabledMods(rows []control.ModRow, game string) {

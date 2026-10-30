@@ -4,7 +4,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
+	"github.com/Rethunk-Tech/go-nexusmods"
 )
 
 const maxGitHubBody = 6000
@@ -30,5 +30,5 @@ func NexusBugsURL(domain string, modID int) string {
 	if domain == "" || modID <= 0 {
 		return ""
 	}
-	return nexus.ModURL(domain, modID) + "?tab=bugs"
+	return nexusmods.ModURL(domain, modID) + "?tab=bugs"
 }

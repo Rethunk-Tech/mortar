@@ -3,8 +3,9 @@ package control
 import (
 	"fmt"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/mortar/internal/mod"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
@@ -19,7 +20,7 @@ func (s *Services) modExtraFiles(gameID string, prof profile.Profile, modID mod.
 	if !ok {
 		return nil, fmt.Errorf("profile %s has no mod %q", prof.Name, modID)
 	}
-	var files []nexus.File
+	var files []nexusmods.File
 	if e.Source.Kind == profile.KindNexus && e.Source.ModID > 0 && s.Nexus != nil {
 		if d, ok := s.Nexus.CachedDetails(gameID, []int{e.Source.ModID})[e.Source.ModID]; ok {
 			files = d.Files

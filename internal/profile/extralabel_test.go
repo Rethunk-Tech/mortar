@@ -3,7 +3,7 @@ package profile
 import (
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
+	"github.com/Rethunk-Tech/go-nexusmods"
 )
 
 func TestExtraFileLabelUsesNexusFileTitle(t *testing.T) {
@@ -11,7 +11,7 @@ func TestExtraFileLabelUsesNexusFileTitle(t *testing.T) {
 	e := Entry{
 		Mods: []Component{{Name: "Main", ID: "smapi:A.Main", Folder: "."}},
 	}
-	files := []nexus.File{{FileID: 2, FileName: "Optional pack", Version: "1.2"}}
+	files := []nexusmods.File{{FileID: 2, FileName: "Optional pack", Version: "1.2"}}
 	got := ExtraFileLabel(e, "nexus-7-2", files)
 	if got != "Optional pack (1.2)" {
 		t.Fatalf("got %q", got)

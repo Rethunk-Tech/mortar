@@ -11,6 +11,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/go-httpkit"
 
 	"github.com/Rethunk-Tech/go-httpkit/download"
@@ -155,7 +157,7 @@ func (s *Service) verifyMD5() bool { return s.d.VerifyNexusMD5 != nil && s.d.Ver
 
 // lookupMD5 reads the md5 of a file the queue did not choose itself (a link or a share named it, so its list was never
 // read). It is one quota-held request; a failure leaves the download unchecked rather than failing it.
-func lookupMD5(ctx context.Context, c *nexus.Client, t nexus.Title, it Item) string {
+func lookupMD5(ctx context.Context, c *nexusmods.Client, t nexusmods.Title, it Item) string {
 	files, err := c.Files(ctx, t, it.ModID)
 	if err != nil {
 		log.Printf("nexus md5: file list of mod %d: %v; installing file %d unchecked", it.ModID, err, it.FileID)
@@ -390,9 +392,9 @@ func (s *Service) settle(id string, err error) {
 		it.busy++
 		it.State, it.Progress, it.Speed = StateQueued, 0, 0
 		s.wait(sourceKey(it), time.Time{}, networkBackoff<<(it.busy-1))
-	case errors.Is(err, nexus.ErrPremiumRequired):
+	case errors.Is(err, nexusmods.ErrPremiumRequired):
 		it.State, it.Progress, it.Speed, it.key = StateWaitingClick, 0, 0, ""
-	case errors.Is(err, nexus.ErrUnauthorized):
+	case errors.Is(err, nexusmods.ErrUnauthorized):
 		it.State, it.Error = StateFailed, "Nexus rejected your API key: sign in again in Settings"
 	case errors.Is(err, nexus.ErrQuarantined):
 		it.State, it.Error = StateFailed, "Nexus has quarantined this file; Mortar will not download it"
@@ -447,7 +449,7 @@ func (s *Service) resolve(ctx context.Context, it Item) error {
 		return usererr.Wrap(usererr.Network, err)
 	}
 	statuses, _ := c.ScanStatuses(ctx, t, it.ModID)
-	var file nexus.File
+	var file nexusmods.File
 	if it.FileID != 0 && statuses[it.FileID] == "QUARANTINED" {
 		return nexus.ErrQuarantined
 	}
@@ -548,7 +550,7 @@ func (s *Service) download(ctx context.Context, it Item) error {
 	// usually fetched them while the item waited.
 	if it.Picture != "" {
 		im = nexus.Mod{Name: it.Name, PictureURL: it.Picture, EndorsementCount: it.endorsed}
-	} else if m, merr := c.Mod(ctx, t, it.ModID); merr == nil {
+	} else if m, merr := nexus.CachedMod(ctx, c, s.d.ModCache, t, it.ModID); merr == nil {
 		im = m
 		s.mu.Lock()
 		if cur := s.find(it.ID); cur != nil {
@@ -577,7 +579,7 @@ func (s *Service) download(ctx context.Context, it Item) error {
 	if parked, err := s.guardSize(it, it.SizeKB<<10); parked || err != nil {
 		return err
 	}
-	links, err := c.DownloadLinks(ctx, t, it.ModID, it.FileID, key, expires)
+	links, err := s.downloadLinks(ctx, c, t, it, key, expires)
 	if err != nil {
 		return usererr.Wrap(usererr.Network, err)
 	}
@@ -596,7 +598,7 @@ func (s *Service) download(ctx context.Context, it Item) error {
 			if ferr == nil || !errors.Is(ferr, download.ErrLinkExpired) || attempt == 1 {
 				break
 			}
-			next, lerr := c.DownloadLinks(ctx, t, it.ModID, it.FileID, key, expires)
+			next, lerr := s.downloadLinks(ctx, c, t, it, key, expires)
 			if lerr != nil {
 				return usererr.Wrap(usererr.Network, lerr)
 			}
@@ -647,7 +649,7 @@ func (s *Service) download(ctx context.Context, it Item) error {
 	if s.parkOverlay(it.ID, optional, true) {
 		return nil
 	}
-	var files []nexus.File
+	var files []nexusmods.File
 	category := it.Category
 	if category == "" {
 		files = pageFiles(ctx, c, it)
@@ -850,7 +852,7 @@ func (p *progress) set(n int64) {
 
 // installStored adds a Nexus file the store already holds to the item's profile. It reports false, so the file is
 // downloaded as usual, when the profile has an entry from the same mod page: that choice installs from the archive.
-func (s *Service) installStored(ctx context.Context, c *nexus.Client, it Item, im nexus.Mod) (bool, error) {
+func (s *Service) installStored(ctx context.Context, c *nexusmods.Client, it Item, im nexus.Mod) (bool, error) {
 	if it.Kind != KindUpdate && !it.overlay && s.d.SamePage != nil {
 		_, updates, ok := s.d.SamePage(it.Game, it.Profile, it.incoming(it.Category, nil, nil))
 		if ok {
@@ -893,4 +895,20 @@ func detectedText(d *store.DetectedError) string {
 		return d.Error()
 	}
 	return "The antivirus flagged this download, so it was not installed: " + d.Error()
+}
+
+// downloadLinks asks for the file's mirrors with the nxm link's key when one is held, else as a premium account; the
+// caller has already checked that one of the two applies. The player's preferred mirror comes first.
+func (s *Service) downloadLinks(ctx context.Context, c *nexusmods.Client, t nexusmods.Title, it Item, key string, expires int64) ([]nexusmods.Link, error) {
+	var links []nexusmods.Link
+	var err error
+	if key != "" {
+		links, err = c.DownloadLinks(ctx, t, nexusmods.NXMLink{ModID: it.ModID, FileID: it.FileID, Key: key, Expires: expires})
+	} else {
+		links, err = c.PremiumDownloadLinks(ctx, t, it.ModID, it.FileID)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return s.d.NexusServers.Order(links), nil
 }

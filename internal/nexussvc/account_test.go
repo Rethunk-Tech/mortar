@@ -3,13 +3,19 @@ package nexussvc
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
+	"sync/atomic"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
+
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/mortar/internal/meta"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 )
 
 func TestEndorseAndTrackActOnSignedInAccount(t *testing.T) {
@@ -43,7 +49,7 @@ func TestEndorseAndTrackActOnSignedInAccount(t *testing.T) {
 		}
 	}))
 	defer srv.Close()
-	c := nexus.New("1")
+	c := nexusmods.New("Mortar", "1")
 	c.BaseURL = srv.URL
 	s := NewService(store, c, &meta.Client{})
 	ctx := context.Background()
@@ -85,5 +91,47 @@ func TestEndorseAndTrackActOnSignedInAccount(t *testing.T) {
 	}
 	if _, err := s.TrackedUnusedCount(ctx, "stardew"); err == nil {
 		t.Fatal("counting unused tracked mods without the profile store must refuse, not count them all")
+	}
+}
+
+// The sentences a player reads for Nexus's refusals are Mortar's: a rejected key, and a rate limit that also stops
+// UntrackAll.
+func TestRefusalsKeepTheirWording(t *testing.T) {
+	store := testStore(t)
+	var status atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if s := status.Load(); s != 0 {
+			if s == http.StatusTooManyRequests {
+				w.Header().Set("Retry-After", "120")
+			}
+			w.WriteHeader(int(s))
+			return
+		}
+		if r.URL.Path == "/v1/users/validate.json" {
+			_, _ = w.Write([]byte(`{"user_id":7,"name":"Ada","is_premium":true}`))
+			return
+		}
+		_, _ = w.Write([]byte(`{"message":"ok"}`))
+	}))
+	defer srv.Close()
+	c := nexusmods.New("Mortar", "1")
+	c.BaseURL = srv.URL
+	s := NewService(store, c, &meta.Client{})
+	ctx := context.Background()
+
+	status.Store(http.StatusUnauthorized)
+	_, err := s.SignIn(ctx, "bad")
+	if err == nil || err.Error() != "[invalid] nexus rejected the API key" {
+		t.Fatalf("401 = %v", err)
+	}
+
+	status.Store(0)
+	if _, err := s.SignIn(ctx, "key"); err != nil {
+		t.Fatal(err)
+	}
+	status.Store(http.StatusTooManyRequests)
+	err = s.Track(ctx, "stardew", 541)
+	if !strings.HasPrefix(fmt.Sprint(err), "nexus rate limit reached until ") || usererr.KindOf(err) != usererr.RateLimited {
+		t.Fatalf("429 = %v (%s)", err, usererr.KindOf(err))
 	}
 }

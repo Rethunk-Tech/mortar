@@ -5,10 +5,11 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/nexussvc"
 )
 
@@ -44,7 +45,7 @@ func nexusPageRequirements(domain string, modID int) []requirementItem {
 	return markRequirementPresence(items, activeProfileNexusIDs(dataDir, info))
 }
 
-func requirementItems(reqs []nexus.Requirement) []requirementItem {
+func requirementItems(reqs []nexusmods.Requirement) []requirementItem {
 	items := make([]requirementItem, 0, len(reqs))
 	for _, req := range reqs {
 		name := strings.TrimSpace(req.Name)

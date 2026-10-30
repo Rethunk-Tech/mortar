@@ -5,15 +5,16 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/mortar/internal/game"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 // TrackedMissing lists tracked mods for the game's Nexus domain that no Nexus entry in the profile uses.
-func (s *Service) TrackedMissing(ctx context.Context, gameID, profileID string) ([]nexus.TrackedMod, error) {
+func (s *Service) TrackedMissing(ctx context.Context, gameID, profileID string) ([]nexusmods.TrackedMod, error) {
 	if _, err := s.keyed(); errors.Is(err, ErrSignedOut) {
-		return []nexus.TrackedMod{}, nil
+		return []nexusmods.TrackedMod{}, nil
 	} else if err != nil {
 		return nil, err
 	}
@@ -33,7 +34,7 @@ func (s *Service) TrackedMissing(ctx context.Context, gameID, profileID string) 
 	if err != nil {
 		return nil, err
 	}
-	var out []nexus.TrackedMod
+	var out []nexusmods.TrackedMod
 	for _, mod := range mods {
 		if !strings.EqualFold(mod.DomainName, t.Domain) {
 			continue

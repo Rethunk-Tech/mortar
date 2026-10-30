@@ -5,10 +5,11 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/go-smapiweb"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 )
 
 func TestCheckUpdatesUsesTheNewestFileInTheInstalledGroup(t *testing.T) {
@@ -110,7 +111,7 @@ func TestCheckUpdatesTrustsSMAPIOverAStaleDatasetPage(t *testing.T) {
 }
 
 func TestLiveFileIsCurrentSeesANewerFileInTheGroup(t *testing.T) {
-	files := []nexus.BatchFile{
+	files := []nexusmods.BatchFile{
 		{FileID: 179112, Name: "Machine Control Panel", Version: "2.4.1", Category: "OLD_VERSION"},
 		{FileID: 185367, Name: "Machine Control Panel", Version: "2.5.0", Category: "MAIN"},
 	}
@@ -121,7 +122,7 @@ func TestLiveFileIsCurrentSeesANewerFileInTheGroup(t *testing.T) {
 }
 
 func TestLiveFileIsCurrentAcceptsAnUnbumpedManifest(t *testing.T) {
-	files := []nexus.BatchFile{{FileID: 82663, Name: "Aspen", Version: "0.0.53", Category: "MAIN"}}
+	files := []nexusmods.BatchFile{{FileID: 82663, Name: "Aspen", Version: "0.0.53", Category: "MAIN"}}
 	installed := inst("nexus-6754-82663", "invatorzen.AspenCP", "0.0.52", true)
 	if cur, known := liveFileIsCurrent(files, installed, "0.0.53"); !cur || !known {
 		t.Fatalf("current %v known %v, want current", cur, known)
@@ -138,9 +139,9 @@ func TestCheckUpdatesUsesOneLiveCallWhenAvailable(t *testing.T) {
 	installed := inst("nexus-28261-179112", id, "2.4.1", true)
 	installed.UpdateKeys = []string{"Nexus:28261"}
 	calls := 0
-	filesOf := func(_ context.Context, _ nexus.Title, ids []int) (map[int][]nexus.BatchFile, error) {
+	filesOf := func(_ context.Context, _ nexusmods.Title, ids []int) (map[int][]nexusmods.BatchFile, error) {
 		calls++
-		return map[int][]nexus.BatchFile{28261: {
+		return map[int][]nexusmods.BatchFile{28261: {
 			{FileID: 179112, Name: "Machine Control Panel", Version: "2.4.1", Category: "OLD_VERSION"},
 			{FileID: 185367, Name: "Machine Control Panel", Version: "2.5.0", Category: "MAIN"},
 		}}, nil
@@ -173,19 +174,19 @@ func TestCheckUpdatesPicksTheBundlePacksOwnFile(t *testing.T) {
 	}}
 	installed := inst("nexus-22743-178711", id, "2.0.1", true)
 	installed.UpdateKeys = []string{"Nexus:22743"}
-	page := []nexus.BatchFile{
+	page := []nexusmods.BatchFile{
 		{FileID: 175151, Name: "Alchemistry", Version: "2.0.1", Category: "OLD_VERSION"},
 		{FileID: 175656, Name: "Alchemistry", Version: "2.0.2", Category: "MAIN"},
 		{FileID: 175660, Name: "Alchemistry CC Bundles", Version: "2.0.0", Category: "OLD_VERSION"},
 		{FileID: 178711, Name: "Alchemistry CC Bundles", Version: "2.0.1", Category: "OPTIONAL"},
 	}
-	updates := func(files []nexus.BatchFile) []Update {
-		filesOf := func(context.Context, nexus.Title, []int) (map[int][]nexus.BatchFile, error) {
-			return map[int][]nexus.BatchFile{22743: files}, nil
+	updates := func(files []nexusmods.BatchFile) []Update {
+		filesOf := func(context.Context, nexusmods.Title, []int) (map[int][]nexusmods.BatchFile, error) {
+			return map[int][]nexusmods.BatchFile{22743: files}, nil
 		}
 		return checkUpdates(context.Background(), rm, testEnv, []framework.Mod{installed}, false, false, filesOf).Updates
 	}
-	check := func(files []nexus.BatchFile) Update {
+	check := func(files []nexusmods.BatchFile) Update {
 		t.Helper()
 		got := updates(files)
 		if len(got) != 1 {
@@ -196,18 +197,18 @@ func TestCheckUpdatesPicksTheBundlePacksOwnFile(t *testing.T) {
 	if got := updates(page); len(got) != 0 {
 		t.Errorf("the installed bundle file is its download's newest, so the page's 2.0.2 is not its update: %+v", got)
 	}
-	archived := slices.Concat(page[:3], []nexus.BatchFile{{FileID: 178711, Name: "Alchemistry CC Bundles", Version: "2.0.1", Category: "ARCHIVED"}})
+	archived := slices.Concat(page[:3], []nexusmods.BatchFile{{FileID: 178711, Name: "Alchemistry CC Bundles", Version: "2.0.1", Category: "ARCHIVED"}})
 	if u := check(archived); u.FileID != 0 || !u.PickFile {
 		t.Errorf("an archived bundle file with no successor: got file %d pick %v, want a pick on Nexus", u.FileID, u.PickFile)
 	}
-	newer := slices.Concat(page[:3], []nexus.BatchFile{
+	newer := slices.Concat(page[:3], []nexusmods.BatchFile{
 		{FileID: 178711, Name: "Alchemistry CC Bundles", Version: "2.0.1", Category: "OLD_VERSION"},
 		{FileID: 181000, Name: "Alchemistry CC Bundles", Version: "2.0.2", Category: "OPTIONAL"},
 	})
 	if u := check(newer); u.FileID != 181000 || u.PickFile || u.Version != "2.0.2" {
 		t.Errorf("newer bundle file: got file %d pick %v version %s, want 181000 at 2.0.2", u.FileID, u.PickFile, u.Version)
 	}
-	older := slices.Concat(page[:3], []nexus.BatchFile{
+	older := slices.Concat(page[:3], []nexusmods.BatchFile{
 		{FileID: 178711, Name: "Alchemistry CC Bundles", Version: "2.0.1", Category: "OLD_VERSION"},
 		{FileID: 179000, Name: "Alchemistry CC Bundles", Version: "2.0.1.1", Category: "OPTIONAL"},
 	})
@@ -224,8 +225,8 @@ func TestCheckUpdatesIgnoresAPageVersionWithoutANewFile(t *testing.T) {
 	}}
 	installed := inst("nexus-33076-129465", id, "1.0.0", true)
 	installed.UpdateKeys = []string{"Nexus:33076"}
-	filesOf := func(context.Context, nexus.Title, []int) (map[int][]nexus.BatchFile, error) {
-		return map[int][]nexus.BatchFile{33076: {{FileID: 129465, Name: "Earthy Cursor", Version: "1.0.0", Category: "MAIN"}}}, nil
+	filesOf := func(context.Context, nexusmods.Title, []int) (map[int][]nexusmods.BatchFile, error) {
+		return map[int][]nexusmods.BatchFile{33076: {{FileID: 129465, Name: "Earthy Cursor", Version: "1.0.0", Category: "MAIN"}}}, nil
 	}
 	if got := checkUpdates(context.Background(), rm, testEnv, []framework.Mod{installed}, false, false, filesOf).Updates; len(got) != 0 {
 		t.Fatalf("updates = %+v, want none", got)
@@ -240,8 +241,8 @@ func TestCheckUpdatesFollowsTheReplacedByChain(t *testing.T) {
 	}}
 	installed := inst("nexus-5-10", id, "1.0", true)
 	installed.UpdateKeys = []string{"Nexus:5"}
-	filesOf := func(context.Context, nexus.Title, []int) (map[int][]nexus.BatchFile, error) {
-		return map[int][]nexus.BatchFile{5: {
+	filesOf := func(context.Context, nexusmods.Title, []int) (map[int][]nexusmods.BatchFile, error) {
+		return map[int][]nexusmods.BatchFile{5: {
 			{FileID: 10, Name: "Chain", Version: "1.0", Category: "OLD_VERSION", ReplacedBy: 20},
 			{FileID: 20, Name: "Chain", Version: "2.0", Category: "OLD_VERSION", ReplacedBy: 30},
 			{FileID: 30, Name: "Chain", Version: "3.0", Category: "MAIN"},

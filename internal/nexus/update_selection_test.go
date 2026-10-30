@@ -2,10 +2,12 @@ package nexus
 
 import (
 	"testing"
+
+	"github.com/Rethunk-Tech/go-nexusmods"
 )
 
 func TestChooseFileUpdateStaysInTheInstalledFileGroup(t *testing.T) {
-	files := []File{
+	files := []nexusmods.File{
 		{FileID: 9545, FileName: "EvenMoreSecretWoods - Content Patcher Version-2364-1-2.zip", Version: "1.2", Category: "MAIN"},
 		{FileID: 9546, FileName: "EvenMoreSecretWoods - raw woods.xnb file-2364-1-2.zip", Version: "1.2", Category: "MAIN"},
 	}
@@ -17,7 +19,7 @@ func TestChooseFileUpdateStaysInTheInstalledFileGroup(t *testing.T) {
 }
 
 func TestNewestUpdateChoosesTheNewestSameStemFile(t *testing.T) {
-	files := []File{
+	files := []nexusmods.File{
 		{FileID: 9544, FileName: "Example.Mod-2364-1-1.zip", Version: "1.1", Category: "OLD_VERSION", ReplacedBy: 9545},
 		{FileID: 9545, FileName: "Example.Mod-2364-1-2.zip", Version: "1.2", Category: "MAIN"},
 		{FileID: 9546, FileName: "Example.Mod raw woods-2364-1-2.zip", Version: "1.2", Category: "MAIN"},
@@ -31,7 +33,7 @@ func TestNewestUpdateChoosesTheNewestSameStemFile(t *testing.T) {
 
 // Nexus now names archives "<name> <mod id> <version> <upload time> <token>.zip", so stems differ across versions.
 func TestChooseFileFollowsTheChainForTimestampedArchiveNames(t *testing.T) {
-	files := []File{
+	files := []nexusmods.File{
 		{FileID: 171060, Name: "Quest Helper", FileName: "Quest Helper 41150 0.3.3 2026-06-13T09-35Z OtbsrfvQn.zip", Version: "0.3.3", Category: "OLD_VERSION", ReplacedBy: 185334},
 		{FileID: 185334, Name: "Quest Helper", FileName: "Quest Helper 41150 0.3.4 2026-10-03T06-09Z Pct02696C.zip", Version: "0.3.4", Category: "MAIN", IsPrimary: true},
 	}
@@ -42,12 +44,12 @@ func TestChooseFileFollowsTheChainForTimestampedArchiveNames(t *testing.T) {
 }
 
 func TestSameFileGroupUsesDisplayNameAndChain(t *testing.T) {
-	a := File{FileID: 1, Name: "Machine Control Panel", FileName: "Machine Control Panel 28261 2.4.1 2026-08-17T21-05Z cYC7hVFrv.zip"}
-	b := File{FileID: 2, Name: "Machine Control Panel", FileName: "Machine Control Panel 28261 2.5.0 2026-10-03T12-28Z KAEi8abtd.zip"}
+	a := nexusmods.File{FileID: 1, Name: "Machine Control Panel", FileName: "Machine Control Panel 28261 2.4.1 2026-08-17T21-05Z cYC7hVFrv.zip"}
+	b := nexusmods.File{FileID: 2, Name: "Machine Control Panel", FileName: "Machine Control Panel 28261 2.5.0 2026-10-03T12-28Z KAEi8abtd.zip"}
 	if !sameFileGroup(a, b) {
 		t.Fatal("same display name should be one group")
 	}
-	c := File{FileID: 3, Name: "Optional textures", FileName: "x.zip"}
+	c := nexusmods.File{FileID: 3, Name: "Optional textures", FileName: "x.zip"}
 	if sameFileGroup(a, c) {
 		t.Fatal("different display names should be different groups")
 	}
@@ -58,7 +60,7 @@ func TestSameFileGroupUsesDisplayNameAndChain(t *testing.T) {
 }
 
 func TestChooseFileForAFreshInstall(t *testing.T) {
-	files := []File{
+	files := []nexusmods.File{
 		{FileID: 1, Name: "Example", Version: "1.0", Category: "MAIN", IsPrimary: true},
 		{FileID: 2, Name: "Example extras", Version: "2.0", Category: "OPTIONAL"},
 		{FileID: 3, Name: "Example", Version: "2.0.0", Category: "MAIN"},
@@ -68,7 +70,7 @@ func TestChooseFileForAFreshInstall(t *testing.T) {
 			t.Errorf("version %q: got %d, %v, want %d", version, got.FileID, ok, want)
 		}
 	}
-	if _, ok := ChooseFile([]File{{FileID: 9, Category: "OPTIONAL"}}, "1.0", 0); ok {
+	if _, ok := ChooseFile([]nexusmods.File{{FileID: 9, Category: "OPTIONAL"}}, "1.0", 0); ok {
 		t.Error("an optional file was chosen for a profile that has none")
 	}
 }
@@ -76,8 +78,8 @@ func TestChooseFileForAFreshInstall(t *testing.T) {
 // alchemistry is shaped like Nexus mod 22743: a main file and an optional bundle pack on one page, each with its
 // own file_updates chain, and archived legacy packs. The mod page's version (2.0.2) is the main file's; the
 // bundle pack's newest file is 2.0.1.
-func alchemistry() []File {
-	return []File{
+func alchemistry() []nexusmods.File {
+	return []nexusmods.File{
 		{FileID: 172590, Name: "(LEGACY) Alchemistry - CC Bundles (Easy)", Version: "2.0.0", Category: "ARCHIVED"},
 		{FileID: 175151, Name: "Alchemistry", Version: "2.0.1", Category: "OLD_VERSION", ReplacedBy: 175656},
 		{FileID: 175656, Name: "Alchemistry", Version: "2.0.2", Category: "MAIN", IsPrimary: true},
@@ -97,8 +99,8 @@ func TestChooseFileNeverUpdatesABundlePackToTheMainFile(t *testing.T) {
 
 func TestSupersedesFindsTheBundlePacksOwnNewerFile(t *testing.T) {
 	files := append(alchemistry(),
-		File{FileID: 181000, Name: "Alchemistry CC Bundles", Version: "2.0.2", Category: "OPTIONAL"},
-		File{FileID: 181001, Name: "Alchemistry", Version: "2.0.3", Category: "MAIN"},
+		nexusmods.File{FileID: 181000, Name: "Alchemistry CC Bundles", Version: "2.0.2", Category: "OPTIONAL"},
+		nexusmods.File{FileID: 181001, Name: "Alchemistry", Version: "2.0.3", Category: "MAIN"},
 	)
 	files[2].Category = "OLD_VERSION"
 	// The GraphQL listing carries no file_updates chain, so the name has to find it.
@@ -112,7 +114,7 @@ func TestSupersedesFindsTheBundlePacksOwnNewerFile(t *testing.T) {
 }
 
 func TestSupersedesFallsBackToCategoryThenTheOneMainFile(t *testing.T) {
-	files := []File{
+	files := []nexusmods.File{
 		{FileID: 10, Name: "Old Pack Name", Version: "1.0", Category: "OLD_VERSION"},
 		{FileID: 11, Name: "Old Main Name", Version: "1.0", Category: "OLD_VERSION"},
 		{FileID: 20, Name: "New Pack Name", Version: "1.1", Category: "OPTIONAL"},
@@ -127,7 +129,7 @@ func TestSupersedesFallsBackToCategoryThenTheOneMainFile(t *testing.T) {
 	if got, ok := Supersedes(files, files[0], "1.2", "OPTIONAL"); ok {
 		t.Errorf("an optional entry got file %d; want none", got.FileID)
 	}
-	files = append(files, File{FileID: 22, Name: "Other Main", Version: "1.2", Category: "MAIN"})
+	files = append(files, nexusmods.File{FileID: 22, Name: "Other Main", Version: "1.2", Category: "MAIN"})
 	if got, ok := Supersedes(files, files[1], "1.3", "MAIN"); ok {
 		t.Errorf("two main files: got %d; want none", got.FileID)
 	}
@@ -135,7 +137,7 @@ func TestSupersedesFallsBackToCategoryThenTheOneMainFile(t *testing.T) {
 
 // An author who re-uploads a fix under the same version leaves a later file of the same download.
 func TestSupersedesTakesAReuploadUnderTheSameVersion(t *testing.T) {
-	files := []File{
+	files := []nexusmods.File{
 		{FileID: 10, Name: "Mod", Version: "1.0", Category: "MAIN"},
 		{FileID: 11, Name: "Mod", Version: "1.0", Category: "MAIN"},
 	}

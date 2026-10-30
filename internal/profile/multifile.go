@@ -9,12 +9,13 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
@@ -40,7 +41,7 @@ type IncomingFile struct {
 	ModID, FileID int
 	Category      string
 	// Files is the mod page's file list, nil when it could not be fetched.
-	Files []nexus.File
+	Files []nexusmods.File
 	// ModIDs are the mods the file's archive holds, nil when it could not be read.
 	ModIDs []mod.ID
 }

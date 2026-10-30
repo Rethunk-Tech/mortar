@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 )
 
 // PageName is the cache file under cache/ for a Nexus mod's page data from the batched lookup.
@@ -103,7 +104,7 @@ func (s *Service) fetchPages(ctx context.Context, domain string, ids []int) erro
 	if err != nil {
 		log.Printf("nexus pages: %d of %d %s mods, then %v", len(infos), len(ids), domain, err)
 	} else {
-		log.Printf("nexus pages: %d of %d %s mods in %d requests", len(infos), len(ids), domain, nexus.Requests(len(ids)))
+		log.Printf("nexus pages: %d of %d %s mods in %d requests", len(infos), len(ids), domain, nexusmods.Requests(len(ids)))
 	}
 	for id, info := range infos {
 		diskcache.Put(s.meta.Cache(), PageName(domain, id), Details{Page: info.Page(), Category: info.Category, Partial: true})

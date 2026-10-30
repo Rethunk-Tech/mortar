@@ -3,12 +3,12 @@ package profile
 import (
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
+	"github.com/Rethunk-Tech/go-nexusmods"
 )
 
 func TestNewestChannelFile(t *testing.T) {
 	t.Parallel()
-	files := []nexus.File{
+	files := []nexusmods.File{
 		{FileID: 1, Category: "MAIN", Version: "1.0.0", Name: "Mod"},
 		{FileID: 2, Category: "MAIN", Version: "1.1.0", Name: "Mod"},
 		{FileID: 3, Category: "OPTIONAL", Version: "1.2.0", Name: "Mod extra"},

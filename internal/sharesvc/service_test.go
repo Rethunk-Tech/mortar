@@ -12,12 +12,13 @@ import (
 	"sync/atomic"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
@@ -39,7 +40,7 @@ func newService(t *testing.T, signedIn bool) (*Service, *recorder) {
 	t.Helper()
 	testfs.DataHome(t)
 	_, profiles := testenv.Stores(t)
-	r := testResolver(map[int][]nexus.File{
+	r := testResolver(map[int][]nexusmods.File{
 		100: {nf(1, "1.0", "MAIN", true)},
 		600: {nf(6, "1.0", "MAIN", true)},
 		900: {nf(9, "1.2", "MAIN", true)},
@@ -386,7 +387,7 @@ func slowFirst(s *Service) (entered, release chan struct{}) {
 	entered, release = make(chan struct{}), make(chan struct{})
 	files := s.d.Files
 	var first atomic.Bool
-	s.d.Files = func(ctx context.Context, t nexus.Title, modID int) ([]nexus.File, error) {
+	s.d.Files = func(ctx context.Context, t nexusmods.Title, modID int) ([]nexusmods.File, error) {
 		if first.CompareAndSwap(false, true) {
 			close(entered)
 			<-release

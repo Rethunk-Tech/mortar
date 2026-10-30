@@ -1,9 +1,13 @@
 package nexus
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/Rethunk-Tech/go-nexusmods"
+)
 
 func TestPickDownloadLink(t *testing.T) {
-	links := []Link{
+	links := []nexusmods.Link{
 		{Name: "Nexus CDN", ShortName: "nexus_cdn", URI: "https://a.example/1"},
 		{Name: "Amsterdam", ShortName: "amsterdam", URI: "https://b.example/2"},
 	}

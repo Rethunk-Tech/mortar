@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
@@ -83,6 +85,17 @@ func (s *Service) changelogs(ctx context.Context, gameID string, modID int) ([]n
 		if err != nil {
 			return nil, err
 		}
-		return c.Changelogs(ctx, t, modID, math.MaxInt)
+		logs, err := c.Changelogs(ctx, t, modID, math.MaxInt)
+		return nexusChangelogs(logs), nexus.Worded(err)
 	})
+}
+
+// nexusChangelogs maps the module's entries onto the changelog rows the window and the cache hold, whose Notes are
+// never null.
+func nexusChangelogs(in []nexusmods.Changelog) []nexus.Changelog {
+	out := make([]nexus.Changelog, len(in))
+	for i, e := range in {
+		out[i] = nexus.Changelog{Version: e.Version, Notes: append([]string{}, e.Notes...)}
+	}
+	return out
 }

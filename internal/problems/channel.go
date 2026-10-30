@@ -3,10 +3,11 @@ package problems
 import (
 	"context"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/go-smapiweb"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 
 	"github.com/Rethunk-Tech/go-semverish"
@@ -31,9 +32,9 @@ func applyChannelFileOffers(ctx context.Context, m Meta, domain string, asked []
 		if err != nil {
 			continue
 		}
-		files := make([]nexus.File, 0, len(page.Downloads))
+		files := make([]nexusmods.File, 0, len(page.Downloads))
 		for _, d := range page.Downloads {
-			files = append(files, nexus.File{
+			files = append(files, nexusmods.File{
 				FileID: int(d.ID), FileName: d.FileName, Name: d.FileName, Version: d.Version, Category: d.Type,
 			})
 		}

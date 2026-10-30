@@ -10,8 +10,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/mortar/internal/meta"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/winhost"
 )
 
@@ -45,7 +46,7 @@ func TestTrackedForCardAnswersFromDiskAndRefreshesInBackground(t *testing.T) {
 	// Runs before srv.Close, which waits for the held request.
 	release := sync.OnceFunc(func() { close(held) })
 	defer release()
-	c := nexus.New("1")
+	c := nexusmods.New("Mortar", "1")
 	c.BaseURL = srv.URL
 	s := NewService(store, c, &meta.Client{})
 	events := make(chan string, 4)
@@ -64,10 +65,10 @@ func TestTrackedForCardAnswersFromDiskAndRefreshesInBackground(t *testing.T) {
 
 	hold.Store(true)
 	body.Store(`[{"mod_id":100,"domain_name":"stardewvalley"},{"mod_id":200,"domain_name":"stardewvalley"}]`)
-	c2 := nexus.New("1") // no in-memory copy: only the disk can answer quickly
+	c2 := nexusmods.New("Mortar", "1") // no in-memory copy: only the disk can answer quickly
 	c2.BaseURL = srv.URL
 	s.client = c2
-	read := make(chan []nexus.TrackedMod, 1)
+	read := make(chan []nexusmods.TrackedMod, 1)
 	go func() {
 		mods, _ := s.trackedForCard(ctx)
 		read <- mods

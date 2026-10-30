@@ -6,15 +6,11 @@ import (
 )
 
 func TestChangelogBetweenFromCannedBody(t *testing.T) {
-	raw := []byte(`{
-		"1.0.0": ["first release"],
-		"1.5.0": ["mid"],
-		"2.0.0": ["breaking save format", "new crops"],
-		"2.1.0": ["not in this update"]
-	}`)
-	all, err := parseChangelogs(raw, 100)
-	if err != nil {
-		t.Fatal(err)
+	all := []Changelog{
+		{Version: "2.1.0", Notes: []string{"not in this update"}},
+		{Version: "2.0.0", Notes: []string{"breaking save format", "new crops"}},
+		{Version: "1.5.0", Notes: []string{"mid"}},
+		{Version: "1.0.0", Notes: []string{"first release"}},
 	}
 	got := ChangelogBetween(all, "1.0.0", "2.0.0")
 	var versions []string
@@ -29,9 +25,8 @@ func TestChangelogBetweenFromCannedBody(t *testing.T) {
 	}
 }
 
-func TestChangelogBetweenEmptyBody(t *testing.T) {
-	all, err := parseChangelogs([]byte("[]"), 10)
-	if err != nil || len(ChangelogBetween(all, "1.0.0", "2.0.0")) != 0 {
-		t.Fatalf("empty = %+v, %v", all, err)
+func TestChangelogBetweenEmpty(t *testing.T) {
+	if got := ChangelogBetween(nil, "1.0.0", "2.0.0"); len(got) != 0 {
+		t.Fatalf("empty = %+v", got)
 	}
 }

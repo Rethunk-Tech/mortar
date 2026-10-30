@@ -8,10 +8,11 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/go-smapiweb"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 
 	"github.com/Rethunk-Tech/go-semverish"
 )
@@ -97,7 +98,7 @@ func replacementFromSummary(ctx context.Context, m Meta, domain string, dependen
 func refForNexusPage(ctx context.Context, m Meta, domain string, pageID int) *Ref {
 	page, err := m.Page(ctx, pageID)
 	if err != nil {
-		return &Ref{Site: "Nexus", PageID: pageID, URL: nexus.ModURL(domain, pageID)}
+		return &Ref{Site: "Nexus", PageID: pageID, URL: nexusmods.ModURL(domain, pageID)}
 	}
 	r := smapiweb.Ref{Site: "Nexus", ID: pageID}
 	var best *Ref

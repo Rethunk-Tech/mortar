@@ -10,12 +10,13 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/pack"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/share"
@@ -84,7 +85,7 @@ type choicePlugin struct {
 
 // fileFacts looks up what the store records lack: Nexus's md5, size and category of a file. ok is false when
 // unknown (signed out, offline, file gone).
-type fileFacts func(modID, fileID int) (nexus.File, bool)
+type fileFacts func(modID, fileID int) (nexusmods.File, bool)
 
 func choicesOf(fomod map[string]map[string][]string) *collectionChoices {
 	if len(fomod) == 0 {
@@ -233,7 +234,7 @@ func (s *Service) ExportCollection(ctx context.Context, game, profileID string) 
 	if !ok || info.NexusDomain() == "" {
 		return ExportedCollection{}, fmt.Errorf("%s has no Nexus page to make a collection for", game)
 	}
-	t := nexus.Title{Domain: info.NexusDomain(), ID: info.NexusID()}
+	t := nexusmods.Title{Domain: info.NexusDomain(), ID: info.NexusID()}
 	dest, err := s.App.SaveFile(winhost.Dialog{Filename: "collection.zip", Filters: []winhost.Filter{{Name: i18n.T("{source} collection draft (zip)", "source", "Nexus"), Pattern: "*.zip"}}})
 	if err != nil || dest == "" {
 		return ExportedCollection{Skipped: []string{}}, err
@@ -241,15 +242,15 @@ func (s *Service) ExportCollection(ctx context.Context, game, profileID string) 
 	return s.writeCollection(ctx, p, t, modsDir, dest)
 }
 
-func (s *Service) writeCollection(ctx context.Context, p profile.Profile, t nexus.Title, modsDir, dest string) (ExportedCollection, error) {
-	cache := map[int]map[int]nexus.File{}
-	facts := func(modID, fileID int) (nexus.File, bool) {
+func (s *Service) writeCollection(ctx context.Context, p profile.Profile, t nexusmods.Title, modsDir, dest string) (ExportedCollection, error) {
+	cache := map[int]map[int]nexusmods.File{}
+	facts := func(modID, fileID int) (nexusmods.File, bool) {
 		if s.d.Files == nil || !s.d.SignedIn() {
-			return nexus.File{}, false
+			return nexusmods.File{}, false
 		}
 		byID, ok := cache[modID]
 		if !ok {
-			byID = map[int]nexus.File{}
+			byID = map[int]nexusmods.File{}
 			if files, err := s.d.Files(ctx, t, modID); err == nil {
 				for _, f := range files {
 					byID[f.FileID] = f

@@ -14,6 +14,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/go-smapiweb"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -23,7 +25,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	_ "github.com/Rethunk-Tech/mortar/internal/source/all"
 
@@ -34,14 +35,14 @@ import (
 type Meta interface {
 	Lookup(ctx context.Context, uniqueID string) ([]smapiweb.Ref, error)
 	Page(ctx context.Context, id int) (smapiweb.Page, error)
-	Collection(ctx context.Context, domain, slug string, revision int) (meta.Collection, error)
+	Collection(ctx context.Context, domain, slug string, revision int) (nexusmods.Collection, error)
 	CheckUpdates(ctx context.Context, req meta.UpdateRequest) []smapiweb.UpdateResult
 }
 
 // Environment says what the profile runs on, for the broken-mod check.
 type Environment struct {
 	// Nexus is how Nexus names the game the check runs for.
-	Nexus nexus.Title
+	Nexus nexusmods.Title
 	// SkipImageOverlap turns off the pixel-overlap scan of image edits, trading accuracy for speed.
 	SkipImageOverlap bool
 	GameVersion      string
@@ -262,7 +263,7 @@ func meets(version, minimum string) bool {
 }
 
 // RequirementsOf gives the requirements listed on many Nexus pages of the checked game, in a few batched requests.
-type RequirementsOf func(ctx context.Context, modIDs []int) (map[int][]nexus.Requirement, error)
+type RequirementsOf func(ctx context.Context, modIDs []int) (map[int][]nexusmods.Requirement, error)
 
 // Check computes the problems of mods. Lookups that fail leave Unknown set and never return an error. reqs reads the
 // requirements Nexus pages list; nil skips that check.
@@ -407,7 +408,7 @@ func duplicatesWithNexus(ctx context.Context, m Meta, scheme string, enabled []f
 func newerNexusFile(a, b NexusFile) bool {
 	_, aID, _ := nexusFile(a.Key)
 	_, bID, _ := nexusFile(b.Key)
-	return meta.NewerFile(a.Version, int64(aID), b.Version, int64(bID))
+	return nexusmods.NewerFile(a.Version, int64(aID), b.Version, int64(bID))
 }
 
 // indexByID groups mods by folded ID, keeping list order within a group.
@@ -487,7 +488,7 @@ func listedRequirements(ctx context.Context, m Meta, reqs RequirementsOf, domain
 	unknown := err != nil
 	info, _ := components.GameByNexusDomain(domain)
 	for page, list := range requirementsByPage {
-		requirementsByPage[page] = slices.DeleteFunc(slices.Clone(list), func(r nexus.Requirement) bool { return isLoader(info.Loaders, r) })
+		requirementsByPage[page] = slices.DeleteFunc(slices.Clone(list), func(r nexusmods.Requirement) bool { return isLoader(info.Loaders, r) })
 	}
 	var reqIDs []int
 	for _, list := range requirementsByPage {
@@ -578,7 +579,7 @@ func listedRequirements(ctx context.Context, m Meta, reqs RequirementsOf, domain
 				Site:     "Nexus",
 				PageID:   req.ModID,
 				PageName: pageName,
-				URL:      nexus.ModURL(domain, req.ModID),
+				URL:      nexusmods.ModURL(domain, req.ModID),
 			}
 			if uniqueID == mod.NewID("nexus", strconv.Itoa(req.ModID)) {
 				miss.Where = pageRef
@@ -618,7 +619,7 @@ const minNamePrefix = 6
 
 // isLoader reports a requirement that is the game's loader, which Mortar installs itself and never as a profile entry:
 // its Nexus page, or an outside link (its own site, its releases) named as the loader, "SMAPI 4.1.6" included.
-func isLoader(loaders []components.GameLoader, r nexus.Requirement) bool {
+func isLoader(loaders []components.GameLoader, r nexusmods.Requirement) bool {
 	name := strings.ToLower(strings.TrimSpace(r.Name))
 	return slices.ContainsFunc(loaders, func(l components.GameLoader) bool {
 		if l.NexusModID != 0 && r.ModID == l.NexusModID {
@@ -906,7 +907,7 @@ func thunderstoreRef(community string, id mod.ID) *Ref {
 func siteURL(domain string, r smapiweb.Ref) string {
 	switch strings.ToLower(r.Site) {
 	case "nexus":
-		return nexus.ModURL(domain, r.ID)
+		return nexusmods.ModURL(domain, r.ID)
 	case "curseforge":
 		return "https://www.curseforge.com/projects/" + strconv.Itoa(r.ID)
 	}
@@ -1016,7 +1017,7 @@ func fileIn(page smapiweb.Page, domain string, r smapiweb.Ref, uniqueID mod.ID, 
 }
 
 func newer(a, b Ref) bool {
-	return meta.NewerFile(a.Version, a.FileID, b.Version, b.FileID)
+	return nexusmods.NewerFile(a.Version, a.FileID, b.Version, b.FileID)
 }
 
 // ConflictRows counts non-cosmetic conflicts as the Problems tab shows them: conflicts between the same mods with the

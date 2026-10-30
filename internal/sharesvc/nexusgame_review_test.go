@@ -3,7 +3,8 @@ package sharesvc
 import (
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/mortar/internal/share"
 )
 
@@ -11,7 +12,7 @@ import (
 // sourceKeys claim; the same file for a game that lists Nexus resolves as usual.
 func TestANexusFileForAGameWithNoNexusSourceIsUnavailable(t *testing.T) {
 	t.Parallel()
-	files := map[int][]nexus.File{100: {nf(1, "1.0", "MAIN", true)}}
+	files := map[int][]nexusmods.File{100: {nf(1, "1.0", "MAIN", true)}}
 	ref := []share.Ref{{ModID: 100, FileID: 1}}
 
 	none := testResolver(files, nil)

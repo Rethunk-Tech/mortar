@@ -5,9 +5,10 @@ import (
 	"slices"
 	"time"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 )
 
 const (
@@ -18,11 +19,11 @@ const (
 
 // trackedDisk is the tracked list as last fetched; User ties it to the account that fetched it.
 type trackedDisk struct {
-	User int                `json:"user"`
-	Mods []nexus.TrackedMod `json:"mods"`
+	User int                    `json:"user"`
+	Mods []nexusmods.TrackedMod `json:"mods"`
 }
 
-func (s *Service) readTracked() ([]nexus.TrackedMod, bool) {
+func (s *Service) readTracked() ([]nexusmods.TrackedMod, bool) {
 	var d trackedDisk
 	found, err := datadir.ReadJSON(s.trackedPath, &d)
 	if s.trackedPath == "" || err != nil || !found || d.User == 0 || d.User != s.store.Get().NexusUserID {
@@ -39,7 +40,7 @@ func (s *Service) forgetTracked() {
 }
 
 // fetchTracked reads the list from Nexus and keeps it, unless the account changed meanwhile.
-func (s *Service) fetchTracked(ctx context.Context) ([]nexus.TrackedMod, error) {
+func (s *Service) fetchTracked(ctx context.Context) ([]nexusmods.TrackedMod, error) {
 	user := s.store.Get().NexusUserID
 	mods, err := s.TrackedMods(ctx)
 	if err != nil {
@@ -53,7 +54,7 @@ func (s *Service) fetchTracked(ctx context.Context) ([]nexus.TrackedMod, error) 
 
 // trackedForCard answers from the kept list at once and refreshes it in the background; with no kept list it waits
 // for Nexus.
-func (s *Service) trackedForCard(ctx context.Context) ([]nexus.TrackedMod, error) {
+func (s *Service) trackedForCard(ctx context.Context) ([]nexusmods.TrackedMod, error) {
 	kept, ok := s.readTracked()
 	if !ok {
 		return s.fetchTracked(ctx)

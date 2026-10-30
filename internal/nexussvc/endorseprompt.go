@@ -7,8 +7,9 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 )
 
 const (
@@ -67,7 +68,7 @@ func (p *promptStore) writeLocked() error {
 
 func endorsementUndecided(status string) bool {
 	status = strings.TrimSpace(status)
-	return !strings.EqualFold(status, string(nexus.EndorseEndorsed)) && !strings.EqualFold(status, string(nexus.EndorseAbstained))
+	return !strings.EqualFold(status, string(nexusmods.EndorseEndorsed)) && !strings.EqualFold(status, string(nexusmods.EndorseAbstained))
 }
 
 func (p *promptStore) record(runID string, mods []CleanMod, ask bool) ([]EndorsePrompt, error) {

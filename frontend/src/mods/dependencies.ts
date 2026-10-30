@@ -1,4 +1,4 @@
-import type { Requirement } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexus/models.ts'
+import type { Requirement } from '../../bindings/github.com/Rethunk-Tech/go-nexusmods/models.ts'
 
 /** One thing a mod needs: a page to open when it is a mod on the same site, otherwise just its name. */
 interface Dependency {

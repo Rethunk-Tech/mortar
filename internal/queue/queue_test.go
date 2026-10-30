@@ -112,11 +112,11 @@ func newFixture(t *testing.T) *fixture {
 	}))
 	t.Cleanup(srv.Close)
 
-	c := nexus.New("test")
-	c.BaseURL, c.CacheDir, c.HTTP, c.Now = srv.URL, t.TempDir(), srv.Client(), f.now
+	c := nexusmods.New("Mortar", "test")
+	c.BaseURL, c.HTTP, c.Now = srv.URL, srv.Client(), f.now
 	client := c.WithKey("secret")
 	s, err := New(Deps{
-		Client:  func() (*nexus.Client, error) { return client, nil },
+		Client:  func() (*nexusmods.Client, error) { return client, nil },
 		Premium: f.premium.Load,
 		Install: func(_ context.Context, _, _, path string, src profile.Source) (profile.InstallResult, error) {
 			if f.installErr != nil {
@@ -649,7 +649,7 @@ func TestRestartPausesAQueueHoldingNexusFiles(t *testing.T) {
 func TestSignedOutRefusesToQueue(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
-	f.s.d.Client = func() (*nexus.Client, error) { return nil, fmt.Errorf("sign in") }
+	f.s.d.Client = func() (*nexusmods.Client, error) { return nil, fmt.Errorf("sign in") }
 	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err == nil {
 		t.Fatal("queued while signed out")
 	}
@@ -692,7 +692,7 @@ func TestARejectedLinkCanBeRetried(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
 	client := f.s.d.Client
-	f.s.d.Client = func() (*nexus.Client, error) { return nil, fmt.Errorf("sign in") }
+	f.s.d.Client = func() (*nexusmods.Client, error) { return nil, fmt.Errorf("sign in") }
 	ctx, cancel := context.WithCancel(context.Background())
 	assigned := make(chan nxmsvc.Assignment)
 	wait := Run(ctx, f.s, assigned)

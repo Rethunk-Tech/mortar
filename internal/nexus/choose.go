@@ -4,8 +4,9 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/mortar/internal/archive"
-	"github.com/Rethunk-Tech/mortar/internal/meta"
 
 	"github.com/Rethunk-Tech/go-semverish"
 )
@@ -34,7 +35,7 @@ func FileStem(name string) string {
 // sameFileGroup reports whether two files are versions of the same download: the author's file_updates chain links
 // them, they share Nexus's display name, or their archive names match once versions are stripped. Archive names
 // alone are not enough: Nexus now appends an upload time and a random token to them.
-func sameFileGroup(a, b File) bool {
+func sameFileGroup(a, b nexusmods.File) bool {
 	if a.ReplacedBy == b.FileID || b.ReplacedBy == a.FileID {
 		return true
 	}
@@ -45,17 +46,17 @@ func sameFileGroup(a, b File) bool {
 	return aStem == "" || bStem == "" || aStem == bStem
 }
 
-func betterFile(candidate, current File) bool {
+func betterFile(candidate, current nexusmods.File) bool {
 	candidateOld := strings.EqualFold(candidate.Category, "OLD_VERSION")
 	currentOld := strings.EqualFold(current.Category, "OLD_VERSION")
 	if candidateOld != currentOld {
 		return currentOld
 	}
-	return meta.NewerFile(candidate.Version, int64(candidate.FileID), current.Version, int64(current.FileID))
+	return nexusmods.NewerFile(candidate.Version, int64(candidate.FileID), current.Version, int64(current.FileID))
 }
 
 // Stale reports a file Nexus keeps listed only as history.
-func Stale(f File) bool {
+func Stale(f nexusmods.File) bool {
 	switch strings.ToUpper(f.Category) {
 	case "OLD_VERSION", "ARCHIVED", "DELETED", "REMOVED":
 		return true
@@ -63,7 +64,7 @@ func Stale(f File) bool {
 	return false
 }
 
-func sameVersion(f File, want string) bool {
+func sameVersion(f nexusmods.File, want string) bool {
 	for _, v := range []string{f.Version, f.ModVersion} {
 		if v == want {
 			return true
@@ -75,13 +76,13 @@ func sameVersion(f File, want string) bool {
 	return false
 }
 
-func newer(f, than File) bool {
-	return meta.NewerFile(f.Version, int64(f.FileID), than.Version, int64(than.FileID))
+func newer(f, than nexusmods.File) bool {
+	return nexusmods.NewerFile(f.Version, int64(f.FileID), than.Version, int64(than.FileID))
 }
 
 // only is the one file match accepts, if exactly one does.
-func only(files []File, match func(File) bool) (File, bool) {
-	var hit File
+func only(files []nexusmods.File, match func(nexusmods.File) bool) (nexusmods.File, bool) {
+	var hit nexusmods.File
 	n := 0
 	for _, f := range files {
 		if match(f) {
@@ -97,14 +98,14 @@ func only(files []File, match func(File) bool) (File, bool) {
 // single current file of installed's kind at version; and, only for a MAIN entry on a page with exactly one current
 // MAIN file, that file. kind is the category the entry was installed as, empty to use installed's own: an archived
 // file no longer says what it was. ok is false when nothing supersedes installed.
-func Supersedes(files []File, installed File, version, kind string) (File, bool) {
+func Supersedes(files []nexusmods.File, installed nexusmods.File, version, kind string) (nexusmods.File, bool) {
 	if kind == "" {
 		kind = installed.Category
 	}
 	if next := NewestUpdate(files, installed); next.FileID != installed.FileID {
 		return next, true
 	}
-	var group File
+	var group nexusmods.File
 	for _, f := range files {
 		// A MAIN entry never becomes an optional pack, whatever the names say.
 		if f.FileID == installed.FileID || Stale(f) || !newer(f, installed) || !sameFileGroup(f, installed) ||
@@ -120,26 +121,26 @@ func Supersedes(files []File, installed File, version, kind string) (File, bool)
 		return group, true
 	}
 	if version != "" {
-		if f, ok := only(files, func(f File) bool {
+		if f, ok := only(files, func(f nexusmods.File) bool {
 			return !Stale(f) && strings.EqualFold(f.Category, kind) && sameVersion(f, version)
 		}); ok && f.FileID != installed.FileID {
 			return f, true
 		}
 	}
 	if strings.EqualFold(kind, categoryMain) {
-		if f, ok := only(files, func(f File) bool { return strings.EqualFold(f.Category, categoryMain) }); ok &&
+		if f, ok := only(files, func(f nexusmods.File) bool { return strings.EqualFold(f.Category, categoryMain) }); ok &&
 			f.FileID != installed.FileID && newer(f, installed) {
 			return f, true
 		}
 	}
-	return File{}, false
+	return nexusmods.File{}, false
 }
 
 // ChooseFile picks the file of a mod to download. With current, the file the profile has now, listed, it is the file
 // that supersedes current (Supersedes), or current itself when it is at version. Otherwise it is the MAIN file at version, else the primary file; an
 // OPTIONAL file is never chosen for a profile that has none. version may be empty, which leaves only the primary
 // file.
-func ChooseFile(files []File, version string, current int) (File, bool) {
+func ChooseFile(files []nexusmods.File, version string, current int) (nexusmods.File, bool) {
 	if installed := FileByID(files, current); installed.FileID != 0 {
 		if f, ok := Supersedes(files, installed, version, ""); ok {
 			return f, true
@@ -148,7 +149,7 @@ func ChooseFile(files []File, version string, current int) (File, bool) {
 		return installed, version != "" && sameVersion(installed, version)
 	}
 	if version != "" {
-		var best File
+		var best nexusmods.File
 		for _, f := range files {
 			if strings.EqualFold(f.Category, categoryMain) && sameVersion(f, version) && f.FileID > best.FileID {
 				best = f
@@ -163,21 +164,21 @@ func ChooseFile(files []File, version string, current int) (File, bool) {
 			return f, true
 		}
 	}
-	return File{}, false
+	return nexusmods.File{}, false
 }
 
 // FileByID is the listed file with id, or the zero File.
-func FileByID(files []File, id int) File {
+func FileByID(files []nexusmods.File, id int) nexusmods.File {
 	for _, f := range files {
 		if f.FileID == id {
 			return f
 		}
 	}
-	return File{}
+	return nexusmods.File{}
 }
 
 // NewestUpdate follows the author's file_updates chain from file to the newest file still listed.
-func NewestUpdate(files []File, file File) File {
+func NewestUpdate(files []nexusmods.File, file nexusmods.File) nexusmods.File {
 	seen := map[int]bool{}
 	for file.ReplacedBy != 0 && !seen[file.FileID] {
 		seen[file.FileID] = true

@@ -12,13 +12,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/go-httpkit/download"
 
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/ids"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/nxmsvc"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
@@ -114,12 +115,12 @@ func TestExpiredNexusLinkRefetchesThenRanges(t *testing.T) {
 	if err := os.MkdirAll(filepath.Join(dir, downloadsDir), 0o700); err != nil {
 		t.Fatal(err)
 	}
-	c := nexus.New("test")
-	c.BaseURL, c.CacheDir, c.HTTP, c.Now = srv.URL, t.TempDir(), srv.Client(), func() time.Time { return time.Unix(1_000_000, 0).UTC() }
+	c := nexusmods.New("Mortar", "test")
+	c.BaseURL, c.HTTP, c.Now = srv.URL, srv.Client(), func() time.Time { return time.Unix(1_000_000, 0).UTC() }
 	client := c.WithKey("secret")
 	var installs int
 	s, err := New(Deps{
-		Client:  func() (*nexus.Client, error) { return client, nil },
+		Client:  func() (*nexusmods.Client, error) { return client, nil },
 		Premium: func() bool { return true },
 		Install: func(_ context.Context, _, _, path string, _ profile.Source) (profile.InstallResult, error) {
 			b, err := safefs.ReadFile(path)

@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/mortar/internal/meta"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 
 	"github.com/Rethunk-Tech/go-semverish"
 )
@@ -44,8 +45,8 @@ func (s *Store) SetUpdateChannel(game, id, key, channel string) (Profile, error)
 }
 
 // NewestChannelFile is the newest file this channel will take that is newer than installed.
-func NewestChannelFile(channel, installed string, files []nexus.File) (nexus.File, bool) {
-	var best nexus.File
+func NewestChannelFile(channel, installed string, files []nexusmods.File) (nexusmods.File, bool) {
+	var best nexusmods.File
 	found := false
 	for _, f := range files {
 		if !FileOnChannel(channel, f) {
@@ -62,7 +63,7 @@ func NewestChannelFile(channel, installed string, files []nexus.File) (nexus.Fil
 }
 
 // FileOnChannel is whether this Nexus file is an update this channel will show.
-func FileOnChannel(channel string, f nexus.File) bool {
+func FileOnChannel(channel string, f nexusmods.File) bool {
 	cat := strings.ToUpper(strings.TrimSpace(f.Category))
 	if cat == "OLD_VERSION" {
 		return false
@@ -97,7 +98,7 @@ func parseUpdateChannel(channel string) (string, error) {
 	}
 }
 
-func prereleaseFile(f nexus.File) bool {
+func prereleaseFile(f nexusmods.File) bool {
 	return prereleaseText(f.Version) || prereleaseText(f.Name) || prereleaseText(f.FileName)
 }
 

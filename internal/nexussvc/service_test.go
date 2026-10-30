@@ -15,6 +15,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
@@ -96,7 +98,7 @@ func TestSignInOutKeepsKeyOutOfSettings(t *testing.T) {
 		_, _ = w.Write([]byte(`{"user_id":7,"name":"Ada","is_premium":true}`))
 	}))
 	defer srv.Close()
-	c := nexus.New("1")
+	c := nexusmods.New("Mortar", "1")
 	c.BaseURL = srv.URL
 	s := NewService(store, c, &meta.Client{})
 	ctx := context.Background()
@@ -125,7 +127,7 @@ func TestSignInOutKeepsKeyOutOfSettings(t *testing.T) {
 
 func TestModNameNeedsASignedInAccount(t *testing.T) {
 	store := testStore(t)
-	s := NewService(store, nexus.New("1"), &meta.Client{})
+	s := NewService(store, nexusmods.New("Mortar", "1"), &meta.Client{})
 	if _, err := s.ModName(context.Background(), "stardew", 1); !errors.Is(err, ErrSignedOut) {
 		t.Fatalf("got %v", err)
 	}
@@ -134,7 +136,7 @@ func TestModNameNeedsASignedInAccount(t *testing.T) {
 func TestDetailsCachedAndServedStaleWhenSignedOut(t *testing.T) {
 	srv, hits := serveFixtures(t)
 	store := testStore(t)
-	c := nexus.New("1")
+	c := nexusmods.New("Mortar", "1")
 	c.BaseURL = srv.URL
 	now := time.Date(2026, 9, 30, 12, 0, 0, 0, time.UTC)
 	m := &meta.Client{CacheDir: t.TempDir(), Now: func() time.Time { return now }}
@@ -153,7 +155,7 @@ func TestDetailsCachedAndServedStaleWhenSignedOut(t *testing.T) {
 		len(d.Changelogs) != 4 || d.Changelogs[0].Version != "1.8.2" {
 		t.Fatalf("details = %+v, %v", d, err)
 	}
-	if r := d.Page.Requirements; len(r) != 1 || r[0].ModID != 2400 || r[0].URL != nexus.ModURL("stardewvalley", 2400) {
+	if r := d.Page.Requirements; len(r) != 1 || r[0].ModID != 2400 || r[0].URL != nexusmods.ModURL("stardewvalley", 2400) {
 		t.Fatalf("requirements = %+v", r)
 	}
 	if hits.Load() != 5 {
@@ -171,7 +173,7 @@ func TestDetailsCachedAndServedStaleWhenSignedOut(t *testing.T) {
 		hits.Load() != 5 {
 		t.Fatalf("cached details = %+v, hits %d", got, hits.Load())
 	}
-	diskcache.Put(s.meta.Cache(), PageName("stardewvalley", 777), Details{Page: nexus.Page{Version: "3.0"}, Partial: true})
+	diskcache.Put(s.meta.Cache(), PageName("stardewvalley", 777), Details{Page: nexusmods.Page{Version: "3.0"}, Partial: true})
 	if got := s.CachedDetails("stardew", []int{777}); got[777].Page.Version != "3.0" || hits.Load() != 5 {
 		t.Fatalf("a mod known only from a batched page: %+v, hits %d", got, hits.Load())
 	}
@@ -183,7 +185,7 @@ func TestDetailsCachedAndServedStaleWhenSignedOut(t *testing.T) {
 func TestDetailsRefetchesUnversionedCache(t *testing.T) {
 	srv, hits := serveFixtures(t)
 	store := testStore(t)
-	c := nexus.New("1")
+	c := nexusmods.New("Mortar", "1")
 	c.BaseURL = srv.URL
 	now := time.Date(2026, 9, 30, 12, 0, 0, 0, time.UTC)
 	m := &meta.Client{CacheDir: t.TempDir(), Now: func() time.Time { return now }}
@@ -229,7 +231,7 @@ func TestStartSSOStoresKeyLikePasted(t *testing.T) {
 		_ = c.Close(websocket.StatusNormalClosure, "")
 	}))
 	defer ws.Close()
-	client := nexus.New("test")
+	client := nexusmods.New("Mortar", "test")
 	client.BaseURL = api.URL
 	s := NewService(store, client, &meta.Client{})
 	if s.SSOAvailable() {
@@ -255,7 +257,7 @@ func TestStartSSOPrefersOAuthWhenClientIDSet(t *testing.T) {
 		_, _ = w.Write([]byte(`{"access_token":"A1","refresh_token":"R1","expires_in":3600}`))
 	}))
 	defer idp.Close()
-	client := nexus.New("test")
+	client := nexusmods.New("Mortar", "test")
 	client.BaseURL = api.URL
 	s := NewService(store, client, &meta.Client{})
 	s.sso = sso.Legacy{Slug: "mortar"}
@@ -321,7 +323,7 @@ func TestPrimeDetailsAsksOncePerBatch(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 	store := testStore(t)
-	c := nexus.New("1")
+	c := nexusmods.New("Mortar", "1")
 	c.BaseURL = srv.URL
 	s := NewService(store, c, &meta.Client{CacheDir: t.TempDir()})
 	ctx := context.Background()
@@ -336,7 +338,7 @@ func TestPrimeDetailsAsksOncePerBatch(t *testing.T) {
 	if err != nil || len(got) != 800 || !got[5].Partial || got[5].Page.Version != "2.0" || got[5].Category != "Misc" {
 		t.Fatalf("got %d, %v, %+v", len(got), err, got[5])
 	}
-	if int(requests.Load()) != nexus.Requests(800) {
+	if int(requests.Load()) != nexusmods.Requests(800) {
 		t.Fatalf("800 mods cost %d requests", requests.Load())
 	}
 	before := requests.Load()
@@ -367,7 +369,7 @@ func TestPrimeDetailsDoesNotAskAgainForAModNexusDoesNotReturn(t *testing.T) {
 		_, _ = w.Write([]byte(`{"data":{"legacyModsByDomain":{"nodes":[]}}}`))
 	}))
 	t.Cleanup(srv.Close)
-	c := nexus.New("1")
+	c := nexusmods.New("Mortar", "1")
 	c.BaseURL = srv.URL
 	s := NewService(testStore(t), c, &meta.Client{CacheDir: t.TempDir()})
 	ctx := context.Background()

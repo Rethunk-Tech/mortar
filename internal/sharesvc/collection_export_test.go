@@ -13,7 +13,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/mortar/internal/pack"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
@@ -43,11 +44,11 @@ func TestCollectionExportRoundTrip(t *testing.T) {
 		{Key: "k3", Source: profile.Source{Kind: profile.KindLocal, Name: "mine.zip"}},
 		{Key: "k4", Source: profile.Source{Kind: profile.KindGitHub, Repo: "o/r", Tag: "v1", Asset: "a.zip"}},
 	}}
-	facts := func(modID, fileID int) (nexus.File, bool) {
+	facts := func(modID, fileID int) (nexusmods.File, bool) {
 		if modID == 100 {
-			return nexus.File{FileID: fileID, MD5: "abc", SizeKB: 2, Category: "MAIN"}, true
+			return nexusmods.File{FileID: fileID, MD5: "abc", SizeKB: 2, Category: "MAIN"}, true
 		}
-		return nexus.File{FileID: fileID, Category: "OPTIONAL"}, true
+		return nexusmods.File{FileID: fileID, Category: "OPTIONAL"}, true
 	}
 	doc, files, skipped, err := buildCollection(p, "stardewvalley", modsDir, facts)
 	if err != nil || len(skipped) != 0 {

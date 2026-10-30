@@ -20,6 +20,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/go-smapiweb"
 
 	"github.com/Rethunk-Tech/go-httpkit"
@@ -561,8 +563,9 @@ func run() error {
 	savesSvc.Launches = launches
 	launches.OnSavePlayed = savesSvc.NotePlayed
 
-	nexusClient := nexus.New(version)
-	nexusClient.Servers = nexus.DownloadServers{
+	nexusClient := nexusmods.New("Mortar", version)
+	nexusClient.HTTP = nexus.ObservedHTTP(http.DefaultTransport)
+	nexusServers := nexus.DownloadServers{
 		Remember: func(shortNames []string) {
 			if err := svc.RememberNexusDownloadServers(shortNames); err != nil {
 				slog.Warn("could not record Nexus download servers", "err", err)
@@ -618,8 +621,10 @@ func run() error {
 		}
 	}
 	queueSvc, err := queue.New(queue.Deps{
-		Client:  func() (*nexus.Client, error) { return nexussvc.Authed(store, nexusClient) },
-		Premium: func() bool { return store.Get().NexusPremium },
+		Client:       func() (*nexusmods.Client, error) { return nexussvc.Authed(store, nexusClient) },
+		ModCache:     modMeta.Cache(),
+		NexusServers: nexusServers,
+		Premium:      func() bool { return store.Get().NexusPremium },
 		Install: func(ctx context.Context, game, profileID, path string, src profile.Source) (profile.InstallResult, error) {
 			res, err := profiles.InstallSource(ctx, game, profileID, path, src)
 			warmDetails(ctx, game, src, err)
@@ -766,23 +771,23 @@ func run() error {
 	problemsSvc.GitHub = &github.Client{}
 	problemsSvc.DevPackages = devSvc.Packages
 	problemsSvc.Emit = emit
-	nexusPages := func(ctx context.Context, gameID string, ids []int) (map[int]nexus.Page, error) {
+	nexusPages := func(ctx context.Context, gameID string, ids []int) (map[int]nexusmods.Page, error) {
 		details, err := nexusSvc.Prime(ctx, gameID, ids)
-		pages := make(map[int]nexus.Page, len(details))
+		pages := make(map[int]nexusmods.Page, len(details))
 		for id, d := range details {
 			pages[id] = d.Page
 		}
 		return pages, err
 	}
 	problemsSvc.NexusPages = nexusPages
-	problemsSvc.NexusFiles = func(ctx context.Context, t nexus.Title, ids []int) (map[int][]nexus.BatchFile, error) {
-		var out map[int][]nexus.BatchFile
+	problemsSvc.NexusFiles = func(ctx context.Context, t nexusmods.Title, ids []int) (map[int][]nexusmods.BatchFile, error) {
+		var out map[int][]nexusmods.BatchFile
 		var err error
 		if c, authErr := nexussvc.Authed(store, nexusClient); authErr == nil {
 			out, err = c.FilesOf(ctx, t, ids)
 		}
 		if out == nil {
-			out = map[int][]nexus.BatchFile{}
+			out = map[int][]nexusmods.BatchFile{}
 		}
 		var missing []int
 		for _, id := range ids {
@@ -828,7 +833,7 @@ func run() error {
 	shareSvc = sharesvc.NewService(sharesvc.Deps{
 		Profiles: profiles,
 		Meta:     modMeta,
-		Files: func(ctx context.Context, t nexus.Title, modID int) ([]nexus.File, error) {
+		Files: func(ctx context.Context, t nexusmods.Title, modID int) ([]nexusmods.File, error) {
 			c, err := nexussvc.Authed(store, nexusClient)
 			if err != nil {
 				return nil, err
@@ -843,7 +848,8 @@ func run() error {
 			if err != nil {
 				return nil, err
 			}
-			return c.CollectionArchive(ctx, link)
+			archive, err := c.PremiumCollectionArchive(ctx, link)
+			return archive, nexus.Worded(err)
 		},
 		Env:          problemsSvc.Environment,
 		Queue:        queueSvc,

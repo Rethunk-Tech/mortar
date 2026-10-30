@@ -7,8 +7,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/mortar/internal/mod"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/store"
@@ -69,10 +70,10 @@ func TestSamePageAskTakesANewerFileAsAnUpdate(t *testing.T) {
 	}{
 		{"same mods inside", IncomingFile{ModID: 49397, FileID: 185494, Category: "MAIN", ModIDs: []mod.ID{"smapi:phuicmt.SDVRadiance"}}, 185426},
 		{"same mods, other case", IncomingFile{ModID: 25328, FileID: 185524, Category: "MAIN", ModIDs: []mod.ID{"smapi:selph.extraanimalconfig"}}, 177076},
-		{"file_updates chain", IncomingFile{ModID: 25328, FileID: 185524, Category: "MAIN", Files: []nexus.File{
+		{"file_updates chain", IncomingFile{ModID: 25328, FileID: 185524, Category: "MAIN", Files: []nexusmods.File{
 			{FileID: 177076, Category: "OLD_VERSION", ReplacedBy: 180001}, {FileID: 180001, Category: "OLD_VERSION", ReplacedBy: 185524}, {FileID: 185524, Category: "MAIN"},
 		}}, 177076},
-		{"retired main file", IncomingFile{ModID: 49397, FileID: 185494, Category: "MAIN", Files: []nexus.File{
+		{"retired main file", IncomingFile{ModID: 49397, FileID: 185494, Category: "MAIN", Files: []nexusmods.File{
 			{FileID: 185426, Category: "ARCHIVED"}, {FileID: 185494, Category: "MAIN"},
 		}}, 185426},
 	} {
@@ -81,7 +82,7 @@ func TestSamePageAskTakesANewerFileAsAnUpdate(t *testing.T) {
 			t.Errorf("%s: ask %+v %v, updates %d, want %d", tc.name, ask, ok, up, tc.want)
 		}
 	}
-	if _, up, ok := SamePageAsk(p, IncomingFile{ModID: 49397, FileID: 185494, Category: "OPTIONAL", Files: []nexus.File{{FileID: 185426, Category: "MAIN"}}}); !ok || up != 0 {
+	if _, up, ok := SamePageAsk(p, IncomingFile{ModID: 49397, FileID: 185494, Category: "OPTIONAL", Files: []nexusmods.File{{FileID: 185426, Category: "MAIN"}}}); !ok || up != 0 {
 		t.Error("an optional file beside a current main file is another file")
 	}
 }
@@ -91,7 +92,7 @@ func TestSamePageAskNeverTakesAnotherModForAnUpdate(t *testing.T) {
 	t.Parallel()
 	addon := Entry{Key: "nexus-7-11", Source: Source{Kind: KindNexus, ModID: 7, FileID: 11, Category: "MAIN"}, Mods: []Component{{Name: "Addon", ID: "smapi:Addon"}}}
 	core := Entry{Key: "nexus-7-10", Source: Source{Kind: KindNexus, ModID: 7, FileID: 10, Category: "MAIN"}, Mods: []Component{{Name: "Core", ID: "smapi:Core"}}}
-	files := []nexus.File{
+	files := []nexusmods.File{
 		{FileID: 10, Category: "OLD_VERSION"},
 		{FileID: 11, Category: "OLD_VERSION", ReplacedBy: 20},
 		{FileID: 20, Category: "MAIN"},
@@ -106,7 +107,7 @@ func TestSamePageAskNeverTakesAnotherModForAnUpdate(t *testing.T) {
 	}
 	unknown := coreV2
 	unknown.ModIDs, unknown.Files = nil, files[:1:1]
-	unknown.Files = append(unknown.Files, nexus.File{FileID: 11, Category: "OLD_VERSION"})
+	unknown.Files = append(unknown.Files, nexusmods.File{FileID: 11, Category: "OLD_VERSION"})
 	if _, up, ok := SamePageAsk(Profile{Entries: []Entry{addon, core}}, unknown); up != 0 || !ok {
 		t.Errorf("with two retired main files and unknown mods, ask: %d %v", up, ok)
 	}
@@ -333,7 +334,7 @@ func hasMod(e Entry, id mod.ID) bool {
 func TestRenamedModOnFileUpdatesChainIsAnUpdate(t *testing.T) {
 	t.Parallel()
 	e := Entry{Key: "nexus-7-1", Source: Source{Kind: KindNexus, ModID: 7, FileID: 1, Category: "MAIN"}, Mods: []Component{{Name: "A", ID: "smapi:X.A"}}}
-	in := IncomingFile{ModID: 7, FileID: 2, Category: "MAIN", ModIDs: []mod.ID{"smapi:X.B"}, Files: []nexus.File{
+	in := IncomingFile{ModID: 7, FileID: 2, Category: "MAIN", ModIDs: []mod.ID{"smapi:X.B"}, Files: []nexusmods.File{
 		{FileID: 1, Category: "OLD_VERSION", ReplacedBy: 2}, {FileID: 2, Category: "MAIN"},
 	}}
 	if ask, up, ok := SamePageAsk(Profile{Entries: []Entry{e}}, in); up != 1 {

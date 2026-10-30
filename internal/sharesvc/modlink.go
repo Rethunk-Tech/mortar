@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/mortar/internal/game"
 
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/share"
 )
@@ -39,11 +40,11 @@ func (s *Service) previewModPage(ctx context.Context, gameID, domain string, mod
 	return s.preview(ctx, gameID, share.Shared{Name: f.Name, Entries: []share.Ref{ref}}, "", nil, profileID, profile.OriginLink)
 }
 
-func pickModPageFile(files []nexus.File) *nexus.File {
+func pickModPageFile(files []nexusmods.File) *nexusmods.File {
 	if f := substitute(files, ""); f != nil {
 		return f
 	}
-	var best *nexus.File
+	var best *nexusmods.File
 	for i := range files {
 		if files[i].Category == categoryMain && (best == nil || files[i].Uploaded.After(best.Uploaded)) {
 			best = &files[i]

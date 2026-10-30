@@ -1,7 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Chip, Radio, Typography } from '@mui/material'
-import type { File } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexus/models.ts'
+import type { File } from '../../bindings/github.com/Rethunk-Tech/go-nexusmods/models.ts'
 import type { OverlayFileSet } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { formatKb } from '../i18n/bytes.ts'
 import { download } from '../queue/actions.ts'

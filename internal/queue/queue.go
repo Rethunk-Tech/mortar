@@ -19,6 +19,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs/diskcache"
+
 	"github.com/Rethunk-Tech/go-nexusmods"
 
 	"github.com/Rethunk-Tech/go-httpkit"
@@ -28,6 +30,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/nexus"
 
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 
@@ -36,7 +39,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/desktopnotify"
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/nxmsvc"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
@@ -337,9 +339,13 @@ type OverlayPlace struct {
 // Deps is what the queue needs from the rest of the app.
 type Deps struct {
 	// Client returns a client that carries the signed-in account's key, or an error when signed out.
-	Client  func() (*nexus.Client, error)
-	Premium func() bool
-	Install func(ctx context.Context, game, profileID, path string, source profile.Source) (profile.InstallResult, error)
+	Client func() (*nexusmods.Client, error)
+	// ModCache keeps mod page data; nil fetches every time.
+	ModCache *diskcache.Cache
+	// NexusServers orders the mirrors a download link offers by the player's choice.
+	NexusServers nexus.DownloadServers
+	Premium      func() bool
+	Install      func(ctx context.Context, game, profileID, path string, source profile.Source) (profile.InstallResult, error)
 	// Stored reports whether the game's store already holds key, as a Nexus file installed into another profile
 	// does. Such a file installs from the store without downloading or a click.
 	Stored func(game, key string) bool
@@ -592,7 +598,7 @@ func (s *Service) describe(ctx context.Context, id, gameID string, modID int) {
 	}
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
-	m, err := c.Mod(ctx, t, modID)
+	m, err := nexus.CachedMod(ctx, c, s.d.ModCache, t, modID)
 	if err != nil {
 		return
 	}
@@ -1168,7 +1174,7 @@ func (s *Service) OpenPage(id string) error {
 	var url string
 	if it != nil && it.FileID != 0 {
 		if t, err := game.NexusTitle(it.Game); err == nil {
-			url = nexus.ModURL(t.Domain, it.ModID) + fmt.Sprintf("?tab=files&file_id=%d&nmm=1", it.FileID)
+			url = nexusmods.ModURL(t.Domain, it.ModID) + fmt.Sprintf("?tab=files&file_id=%d&nmm=1", it.FileID)
 		}
 	}
 	s.mu.Unlock()

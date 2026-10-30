@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-nexusmods"
+
 	"github.com/Rethunk-Tech/go-smapiweb"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
@@ -133,8 +135,8 @@ type Held struct {
 	Reason  string `json:"reason"`
 }
 
-// NexusFilesOf lists many Nexus mods' current files in one call (nexus.Client.FilesOf); nil when signed out.
-type NexusFilesOf func(ctx context.Context, t nexus.Title, modIDs []int) (map[int][]nexus.BatchFile, error)
+// NexusFilesOf lists many Nexus mods' current files in one call (nexusmods.Client.FilesOf); nil when signed out.
+type NexusFilesOf func(ctx context.Context, t nexusmods.Title, modIDs []int) (map[int][]nexusmods.BatchFile, error)
 
 // checkUpdates asks SMAPI's API about every user mod (the bundled ones update with SMAPI). It never returns an
 // error: a failed lookup leaves Unknown set.
@@ -199,7 +201,7 @@ func checkUpdates(ctx context.Context, m Meta, env Environment, mods []framework
 			}
 			lineDone := false
 			if files, ok := live[u.NexusID]; ok && u.GitHubRepo == "" {
-				var f nexus.File
+				var f nexusmods.File
 				f, u.PickFile, lineDone = supersedingFile(files, x, u.NexusID, u.Version)
 				u.FileID = f.FileID
 				if f.Version != "" {
@@ -422,7 +424,7 @@ func modPage(gameID string, m framework.Mod) string {
 	}
 	switch {
 	case m.SourceKind == profile.KindNexus && m.SourceModID > 0:
-		return nexus.ModURL(nexusDomain(gameID), m.SourceModID)
+		return nexusmods.ModURL(nexusDomain(gameID), m.SourceModID)
 	case m.SourceKind == profile.KindGitHub && m.SourceRepo != "":
 		return "https://github.com/" + m.SourceRepo
 	}
@@ -543,7 +545,7 @@ func newerPreviewFile(candidate, current smapiweb.File) bool {
 	if candidateOld != currentOld {
 		return currentOld
 	}
-	return meta.NewerFile(candidate.Version, candidate.ID, current.Version, current.ID)
+	return nexusmods.NewerFile(candidate.Version, candidate.ID, current.Version, current.ID)
 }
 
 func containsPreviewMod(file smapiweb.File, uniqueID mod.ID) bool {
@@ -594,7 +596,7 @@ func nexusFileIsCurrent(ctx context.Context, m Meta, x framework.Mod, url, sugge
 
 // liveNexusFiles asks Nexus once for the current files of every flagged Nexus mod, so a stale dataset page cannot
 // hide a new file or invent one. It returns nothing when signed out or when the call fails.
-func liveNexusFiles(ctx context.Context, filesOf NexusFilesOf, t nexus.Title, asked []framework.Mod, results []smapiweb.UpdateResult) map[int][]nexus.BatchFile {
+func liveNexusFiles(ctx context.Context, filesOf NexusFilesOf, t nexusmods.Title, asked []framework.Mod, results []smapiweb.UpdateResult) map[int][]nexusmods.BatchFile {
 	if filesOf == nil {
 		return nil
 	}
@@ -620,33 +622,33 @@ func liveNexusFiles(ctx context.Context, filesOf NexusFilesOf, t nexus.Title, as
 // then offers. When nothing supersedes the installed file, newest is set if it is still a current file, the newest of
 // its own download, so the page's newer version belongs to another download; pick is set if it is history only. All
 // are zero when the installed file is not listed, which leaves the choice to the queue.
-func supersedingFile(files []nexus.BatchFile, x framework.Mod, modID int, version string) (file nexus.File, pick, newest bool) {
+func supersedingFile(files []nexusmods.BatchFile, x framework.Mod, modID int, version string) (file nexusmods.File, pick, newest bool) {
 	keyModID, have, ok := nexusFile(x.Key)
 	if !ok || keyModID != modID {
-		return nexus.File{}, false, false
+		return nexusmods.File{}, false, false
 	}
-	list := make([]nexus.File, len(files))
+	list := make([]nexusmods.File, len(files))
 	for i, f := range files {
-		list[i] = nexus.File{FileID: f.FileID, Name: f.Name, Version: f.Version, Category: f.Category, ReplacedBy: f.ReplacedBy}
+		list[i] = nexusmods.File{FileID: f.FileID, Name: f.Name, Version: f.Version, Category: f.Category, ReplacedBy: f.ReplacedBy}
 	}
 	installed := nexus.FileByID(list, have)
 	if installed.FileID == 0 {
-		return nexus.File{}, false, false
+		return nexusmods.File{}, false, false
 	}
 	if f, ok := nexus.Supersedes(list, installed, version, x.SourceCategory); ok {
 		return f, false, false
 	}
-	return nexus.File{}, nexus.Stale(installed), !nexus.Stale(installed)
+	return nexusmods.File{}, nexus.Stale(installed), !nexus.Stale(installed)
 }
 
 // liveFileIsCurrent says whether the installed Nexus file is still the newest in its group (same display name) and
 // already at the suggested version. known is false when the installed file is not in the list.
-func liveFileIsCurrent(files []nexus.BatchFile, x framework.Mod, suggested string) (current, known bool) {
+func liveFileIsCurrent(files []nexusmods.BatchFile, x framework.Mod, suggested string) (current, known bool) {
 	_, fileID, ok := nexusFile(x.Key)
 	if !ok {
 		return false, false
 	}
-	var installed nexus.BatchFile
+	var installed nexusmods.BatchFile
 	for _, f := range files {
 		if f.FileID == fileID {
 			installed = f
