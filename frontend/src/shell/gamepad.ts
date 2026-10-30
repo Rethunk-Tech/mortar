@@ -1,14 +1,14 @@
-import { runShortcut } from '../settings/useShortcuts.ts'
-import { useRoomy } from '../theme/roomy.ts'
-import { FOCUSABLE } from './arrowFocus.ts'
 import {
   type Direction,
+  FOCUSABLE,
   firedActions,
   heldActions,
   heldElsewhere,
   type PadAction,
   spatialNext,
-} from './gamepadInput.ts'
+} from '@rethunk/dom-input-nav'
+import { runShortcut } from '../settings/useShortcuts.ts'
+import { useRoomy } from '../theme/roomy.ts'
 
 const ARROWS: Record<Direction, string> = {
   up: 'ArrowUp',
@@ -105,7 +105,7 @@ function act(action: PadAction) {
     case 'back':
       key(focused() ?? document.body, 'Escape')
       return
-    case 'play':
+    case 'start':
       if (!modal) {
         runShortcut('play')
       }

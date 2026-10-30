@@ -1,6 +1,6 @@
+import { isTypingTarget, type TypingTarget } from '@rethunk/dom-input-nav'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { type RefObject, useEffect, useLayoutEffect, useRef } from 'react'
-import { isTypingTarget, type TypingTarget } from '../settings/shortcuts.ts'
 import { TYPE_RESET_MS, typedKey, typedMatch } from '../shell/typeahead.ts'
 import { useDetail } from './detail.ts'
 import { hiddenByAncestor, toggleCollapsed } from './group.ts'

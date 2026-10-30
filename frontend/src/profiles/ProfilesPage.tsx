@@ -16,6 +16,7 @@ import {
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ButtonBase, Typography } from '@mui/material'
+import { isTypingTarget } from '@rethunk/dom-input-nav'
 import {
   ArrowLeft,
   Download,
@@ -39,7 +40,7 @@ import { localId } from '../mods/dependents.ts'
 import { modId } from '../mods/lookup.ts'
 import { useCurrentGame } from '../nav/currentGame.ts'
 import { useNav } from '../nav/store.ts'
-import { dialogOpen, isTypingTarget } from '../settings/shortcuts.ts'
+import { dialogOpen } from '../settings/shortcuts.ts'
 import { shouldLeavePageOnEscape } from '../settings/shouldLeavePageOnEscape.ts'
 import { openImport } from '../share/store.ts'
 import { baseName } from '../shell/baseName.ts'

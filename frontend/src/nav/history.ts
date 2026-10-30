@@ -1,6 +1,7 @@
+import { isTypingTarget } from '@rethunk/dom-input-nav'
 import { create } from 'zustand'
 import { type TabId, useTab } from '../game/tab.ts'
-import { dialogOpen, isTypingTarget } from '../settings/shortcuts.ts'
+import { dialogOpen } from '../settings/shortcuts.ts'
 import { sameValue } from '../shell/sameValue.ts'
 import { type Route, useNav } from './store.ts'
 

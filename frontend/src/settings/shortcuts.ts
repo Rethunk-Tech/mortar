@@ -1,51 +1,6 @@
-const toEventKey: Record<string, string> = {
-  Esc: 'Escape',
-  Escape: 'Escape',
-  '↑': 'ArrowUp',
-  ArrowUp: 'ArrowUp',
-  '↓': 'ArrowDown',
-  ArrowDown: 'ArrowDown',
-  Left: 'ArrowLeft',
-  ArrowLeft: 'ArrowLeft',
-  Right: 'ArrowRight',
-  ArrowRight: 'ArrowRight',
-  Space: ' ',
-  ' ': ' ',
-}
+import { type Chord, isTypingTarget, matchChord, type TypingTarget } from '@rethunk/dom-input-nav'
 
-const fromEventKey: Record<string, string> = {
-  Escape: 'Esc',
-  ArrowUp: '↑',
-  ArrowDown: '↓',
-  ArrowLeft: 'Left',
-  ArrowRight: 'Right',
-  ' ': 'Space',
-}
-
-const modifiers = new Set(['Control', 'Shift', 'Alt', 'Meta', 'OS', 'Hyper', 'Super'])
 let capturing = false
-
-function eventKey(key: string): string {
-  const mapped = toEventKey[key]
-  if (mapped) {
-    return mapped
-  }
-  if (key.length === 1) {
-    return key.toLowerCase()
-  }
-  return key
-}
-
-function chordKey(c: {
-  key: string
-  ctrlKey?: boolean
-  metaKey?: boolean
-  shiftKey?: boolean
-  altKey?: boolean
-}): string {
-  const ctrl = Boolean(c.ctrlKey || c.metaKey)
-  return `${ctrl ? 1 : 0}${c.shiftKey ? 1 : 0}${c.altKey ? 1 : 0}${eventKey(c.key)}`
-}
 
 export type ShortcutId =
   | 'command-palette'
@@ -90,33 +45,6 @@ export interface Shortcut {
   group: 'General' | 'Navigation' | 'Profiles' | 'Mods list' | 'Tabs'
 }
 
-export interface Chord {
-  key: string
-  ctrlKey?: boolean
-  metaKey?: boolean
-  shiftKey?: boolean
-  altKey?: boolean
-}
-
-export interface TypingTarget {
-  tagName?: string
-  isContentEditable?: boolean
-  type?: string
-}
-
-// Input types that take no typed text, so a shortcut or arrow key may pass through them.
-const nonTextInputs = new Set([
-  'checkbox',
-  'radio',
-  'range',
-  'button',
-  'submit',
-  'reset',
-  'image',
-  'color',
-  'file',
-])
-
 export type ShortcutBindings = Partial<Record<ShortcutId, string>>
 
 /** Single table for key handling and Settings › Shortcuts. */
@@ -160,53 +88,6 @@ export const SHORTCUTS: readonly Shortcut[] = [
   { id: 'help', keys: 'F1', always: false, group: 'General' },
   { id: 'vanilla-play', keys: 'Ctrl+Shift+P', always: false, group: 'General' },
 ]
-
-export function parseKeys(keys: string): Chord | null {
-  // A trailing "+" is the plus key itself ("Ctrl++"), not a separator.
-  const plus = keys === '+' || keys.endsWith('++')
-  const parts = (plus ? keys.slice(0, -1) : keys).split('+').filter(Boolean)
-  if (parts.length === 0 && !plus) {
-    return null
-  }
-  let ctrlKey = false
-  let shiftKey = false
-  let altKey = false
-  let key = plus ? '+' : ''
-  for (const part of parts) {
-    if (part === 'Ctrl' || part === 'Cmd' || part === 'Meta') {
-      ctrlKey = true
-    } else if (part === 'Shift') {
-      shiftKey = true
-    } else if (part === 'Alt') {
-      altKey = true
-    } else {
-      key = eventKey(part)
-    }
-  }
-  if (!key) {
-    return null
-  }
-  return { key, ctrlKey, shiftKey, altKey }
-}
-
-export function formatChord(e: Chord): string | null {
-  if (modifiers.has(e.key) || e.key === '') {
-    return null
-  }
-  const parts: string[] = []
-  if (e.ctrlKey || e.metaKey) {
-    parts.push('Ctrl')
-  }
-  if (e.shiftKey) {
-    parts.push('Shift')
-  }
-  if (e.altKey) {
-    parts.push('Alt')
-  }
-  const display = fromEventKey[e.key] ?? (e.key.length === 1 ? e.key.toUpperCase() : e.key)
-  parts.push(display)
-  return parts.join('+')
-}
 
 export function defaultBindings(): Record<ShortcutId, string> {
   return Object.fromEntries(SHORTCUTS.map((row) => [row.id, row.keys])) as Record<
@@ -254,20 +135,6 @@ export function takeableFrom(
   return other && bindings[other] === defaultBindings()[other] ? other : null
 }
 
-export function isTypingTarget(el: TypingTarget | null): boolean {
-  if (!el) {
-    return false
-  }
-  const tag = el.tagName
-  if (tag === 'INPUT') {
-    return !nonTextInputs.has((el.type ?? '').toLowerCase())
-  }
-  if (tag === 'TEXTAREA' || tag === 'SELECT') {
-    return true
-  }
-  return Boolean(el.isContentEditable)
-}
-
 export function dialogOpen(): boolean {
   return document.querySelector('[role="dialog"]') !== null
 }
@@ -303,14 +170,13 @@ export function matchShortcut(
   e: Chord,
   bindings: ShortcutBindings = defaultBindings(),
 ): ShortcutId | null {
-  const want = chordKey(e)
-  for (const row of SHORTCUTS) {
-    const parsed = parseKeys(bindings[row.id] ?? row.keys)
-    if (parsed && chordKey(parsed) === want) {
-      return row.id
-    }
-  }
-  return null
+  return matchChord<ShortcutId>(
+    e,
+    Object.fromEntries(SHORTCUTS.map((row) => [row.id, bindings[row.id] ?? row.keys])) as Record<
+      ShortcutId,
+      string
+    >,
+  )
 }
 
 /** The shortcut a key event triggers under the user's current bindings. */

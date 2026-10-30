@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ButtonBase } from '@mui/material'
+import { formatChord } from '@rethunk/dom-input-nav'
 import { RotateCcw } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { SetShortcuts } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
@@ -12,7 +13,6 @@ import { shortcutLabels } from '../shortcutLabels.ts'
 import {
   conflictFor,
   defaultBindings,
-  formatChord,
   mergeBindings,
   SHORTCUTS,
   type Shortcut,

@@ -1,14 +1,12 @@
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
+import { formatChord, parseKeys } from '@rethunk/dom-input-nav'
 import {
   boundShortcut,
   conflictFor,
   defaultBindings,
-  formatChord,
-  isTypingTarget,
   matchShortcut,
   mergeBindings,
-  parseKeys,
   SHORTCUTS,
   shortcutAllowed,
   takeableFrom,
@@ -57,23 +55,6 @@ describe('combo parse and match', () => {
     expect(conflictFor('downloads', 'Ctrl+J', bindings)).toBeNull()
     expect(conflictFor('command-palette', 'Ctrl+K', bindings)).toBeNull()
   })
-
-  test('the plus key round-trips and fires', () => {
-    for (const chord of [
-      { key: '+', ctrlKey: true },
-      { key: '+' },
-      { key: '+', ctrlKey: true, shiftKey: true },
-    ]) {
-      const keys = formatChord(chord) as string
-      expect(parseKeys(keys)).toMatchObject({ key: '+', ctrlKey: Boolean(chord.ctrlKey) })
-      expect(matchShortcut(chord, { play: keys })).toBe('play')
-    }
-  })
-
-  test('formatChord ignores modifier-only presses', () => {
-    expect(formatChord({ key: 'Control', ctrlKey: true })).toBeNull()
-    expect(formatChord({ key: 'Shift', shiftKey: true })).toBeNull()
-  })
 })
 
 describe('shortcutAllowed', () => {
@@ -86,6 +67,10 @@ describe('shortcutAllowed', () => {
   test('blocks non-Esc when a dialog is open', () => {
     expect(shortcutAllowed('play', { tagName: 'DIV' }, true)).toBe(false)
     expect(shortcutAllowed('dismiss', { tagName: 'DIV' }, true)).toBe(true)
+  })
+
+  test('lets chords through a checkbox', () => {
+    expect(shortcutAllowed('filter-mods', { tagName: 'INPUT', type: 'checkbox' })).toBe(true)
   })
 
   test('allows chords on the page body', () => {
@@ -123,14 +108,4 @@ test("a default's chord can be taken from it, a chord the user chose cannot", ()
   const chosen = mergeBindings({ 'command-palette': 'Ctrl+J' })
   expect(takeableFrom('play', 'Ctrl+J', chosen)).toBeNull()
   expect(takeableFrom('play', 'Ctrl+Alt+F12', defaultBindings())).toBeNull()
-})
-
-describe('isTypingTarget', () => {
-  test('text inputs type, checkboxes and switches do not', () => {
-    expect(isTypingTarget({ tagName: 'INPUT', type: 'text' })).toBe(true)
-    expect(isTypingTarget({ tagName: 'INPUT', type: '' })).toBe(true)
-    expect(isTypingTarget({ tagName: 'INPUT', type: 'checkbox' })).toBe(false)
-    expect(isTypingTarget({ tagName: 'INPUT', type: 'range' })).toBe(false)
-    expect(shortcutAllowed('filter-mods', { tagName: 'INPUT', type: 'checkbox' })).toBe(true)
-  })
 })

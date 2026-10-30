@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Divider } from '@mui/material'
+import { arrowFocus } from '@rethunk/dom-input-nav'
 import {
   Gauge,
   Hammer,
@@ -24,7 +25,6 @@ import { problemCount } from '../mods/lookup.ts'
 import { useMods } from '../mods/store.ts'
 import { useLoadProblemsOnFocus } from '../mods/useLoadProblemsOnFocus.ts'
 import { openProfileOf, useProfileLoader, useProfiles } from '../profiles/store.ts'
-import { arrowFocus } from '../shell/arrowFocus.ts'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { space } from '../theme/density.ts'
 import { useRail, useSidebarCollapsed } from './sidebarCollapsed.ts'
