@@ -187,7 +187,7 @@ func (s *Service) Adopt(ctx context.Context, gameID, dir, profileID string, choi
 	if err != nil {
 		// A refused adoption leaves the folder as it was found.
 		_ = safefs.Remove(file)
-		_ = os.Remove(filepath.Dir(file))
+		_ = safefs.Remove(filepath.Dir(file))
 	}
 	return p, err
 }
