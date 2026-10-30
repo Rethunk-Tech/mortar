@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.12.0.schema.json
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.28.0.schema.json
 
 PackageIdentifier: RethunkTech.Mortar
 PackageVersion: 0.2.2
@@ -26,4 +26,4 @@ Tags:
   - valheim
 ReleaseNotesUrl: https://github.com/Rethunk-Tech/mortar/releases/tag/v0.2.2
 ManifestType: defaultLocale
-ManifestVersion: 1.12.0
+ManifestVersion: 1.28.0
