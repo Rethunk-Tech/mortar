@@ -50,7 +50,7 @@ func (s *Service) cfgGUID(game, profileID, file string) string {
 		return ""
 	}
 	if i := slices.IndexFunc(docs, func(d cfgOnDisk) bool { return d.name == file }); i >= 0 {
-		return docs[i].doc.guid
+		return docs[i].doc.GUID()
 	}
 	return ""
 }

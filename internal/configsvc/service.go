@@ -16,6 +16,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-cfgedit"
 	"github.com/Rethunk-Tech/go-lenientjson"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
@@ -81,11 +82,11 @@ type hostKey struct{ game, profile, mod, file string }
 type parsedCfg struct {
 	size int64
 	at   time.Time
-	doc  cfgDoc
+	doc  *cfgedit.BepInEx
 }
 
 // parseCached is the parse of the .cfg file at path, read again only when it changed since the last.
-func (s *Service) parseCached(path string, info fs.FileInfo) (cfgDoc, error) {
+func (s *Service) parseCached(path string, info fs.FileInfo) (*cfgedit.BepInEx, error) {
 	s.parsedMu.Lock()
 	hit, ok := s.parsed[path]
 	s.parsedMu.Unlock()
@@ -94,9 +95,9 @@ func (s *Service) parseCached(path string, info fs.FileInfo) (cfgDoc, error) {
 	}
 	raw, err := safefs.ReadFile(path)
 	if err != nil {
-		return cfgDoc{}, err
+		return nil, err
 	}
-	doc := parseCfg(string(raw))
+	doc := cfgedit.ParseBepInEx(string(raw))
 	s.parsedMu.Lock()
 	if s.parsed == nil {
 		s.parsed = map[string]parsedCfg{}
@@ -210,7 +211,7 @@ func (s *Service) Files(game, profileID, modID string) ([]ConfigFile, error) {
 type cfgOnDisk struct {
 	name string
 	stem string
-	doc  cfgDoc
+	doc  *cfgedit.BepInEx
 	json bool
 	text bool
 	// folder is the subfolder a text file sits in, "" at the top: mods put their files in one named for the package.
@@ -255,13 +256,13 @@ func (d cfgOnDisk) ownedBy(names []string) bool {
 		})
 	}
 	return slices.ContainsFunc(names, func(n string) bool {
-		if strings.EqualFold(d.stem, n) || strings.EqualFold(d.doc.guid, n) {
+		if strings.EqualFold(d.stem, n) || strings.EqualFold(d.doc.GUID(), n) {
 			return true
 		}
 		// A ConfigFile a plugin builds itself has no GUID header and is often named after the package
 		// (LethalLevelLoader.cfg for thunderstore:IAmBatby-LethalLevelLoader).
 		_, name := packageNames(n)
-		return d.doc.guid == "" && name != "" && strings.EqualFold(d.stem, name)
+		return d.doc.GUID() == "" && name != "" && strings.EqualFold(d.stem, name)
 	})
 }
 
@@ -272,14 +273,14 @@ func (d cfgOnDisk) file() ConfigFile {
 	if d.json {
 		return ConfigFile{Name: d.name, Format: FormatJSON, Label: d.name}
 	}
-	label := d.doc.plugin
+	label := d.doc.Plugin()
 	label = cmp.Or(label, d.name)
 	return ConfigFile{Name: d.name, Format: FormatBepInEx, Label: label}
 }
 
 // changed reports whether a .cfg differs from its defaults; a mod's JSON file names none.
 func (d cfgOnDisk) changed() bool {
-	return !d.json && !d.text && schemaChanged(d.doc.schema(d.file()))
+	return !d.json && !d.text && schemaChanged(cfgSchema(d.doc, d.file()))
 }
 
 // allDocs is the profile's .cfg files and the JSON files of its mod config folder.
@@ -549,7 +550,7 @@ func (s *Service) schemaOf(game, profileID, modID string, f ConfigFile) (Schema,
 		if err != nil {
 			return Schema{}, err
 		}
-		return withSync(doc.schema(f), path), nil
+		return withSync(cfgSchema(doc, f), path), nil
 	}
 	cur, err := s.Profiles.ReadConfig(game, profileID, "", mod.ID(modID))
 	if err != nil {
@@ -666,8 +667,8 @@ func (s *Service) write(game, profileID, modID string, f ConfigFile, edits []edi
 	}
 	text := string(raw)
 	for _, e := range edits {
-		if text, err = parseCfg(text).set(e.section, e.key, e.value); err != nil {
-			return err
+		if text, err = cfgedit.ParseBepInEx(text).Set(e.section, e.key, e.value); err != nil {
+			return valueErr(err)
 		}
 	}
 	return safefs.WriteFileAtomic(p, []byte(text), 0o600)

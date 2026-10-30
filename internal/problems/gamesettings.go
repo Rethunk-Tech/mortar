@@ -4,10 +4,11 @@ import (
 	"bufio"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-cfgedit/ini"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/game"
-	"github.com/Rethunk-Tech/mortar/internal/iniedit"
+	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
@@ -69,10 +70,10 @@ func (s *Service) gameSettingFailures(gameID, profileID string) []LoadFailure {
 		if err != nil {
 			continue
 		}
-		if refused := iniedit.Check(string(b)); refused != nil {
+		if ini.Check(string(b)) != nil {
 			// Mortar leaves a file it cannot edit alone at launch, so the settings are the player's to switch on.
 			for _, r := range rs {
-				out = append(out, LoadFailure{Plugin: r.Key, Kind: KindGameSetting, Message: r.Message + " Mortar cannot edit this file: " + refused.Error() + "."})
+				out = append(out, LoadFailure{Plugin: r.Key, Kind: KindGameSetting, Message: r.Message + " " + i18n.T("Mortar cannot edit this file: it is UTF-16 or holds a NUL byte.")})
 			}
 			continue
 		}

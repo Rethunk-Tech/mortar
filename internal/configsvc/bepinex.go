@@ -4,260 +4,18 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
-	"math"
-	"math/big"
 	"path/filepath"
-	"regexp"
 	"slices"
-	"strconv"
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-cfgedit"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
-
-// The layout parsed here is what BepInEx's ConfigFile.Save and ConfigEntryBase.WriteDescription write
-// (BepInEx.Core/Configuration/ConfigFile.cs and ConfigEntryBase.cs, BepInEx 5.4.x/6):
-//
-//	## Settings file was created by plugin <Name> v<Version>
-//	## Plugin GUID: <GUID>
-//
-//	[Section]
-//
-//	## <description, one "## " line per line of text>
-//	# Setting type: <.NET type name>
-//	# Default value: <value>
-//	# Acceptable values: a, b, c               (AcceptableValueList, or the names of an enum)
-//	# Acceptable value range: From x to y      (AcceptableValueRange)
-//	# Multiple values can be set at the same time by separating them with , (e.g. Debug, Warning)   (a [Flags] enum)
-//	Key = value
-//
-// The reader skips lines that start with '#', and splits "Key = value" at the first '='.
-
-var (
-	settingType = regexp.MustCompile(`^# Setting type: (.+)$`)
-	defaultVal  = regexp.MustCompile(`^# Default value: ?(.*)$`)
-	acceptList  = regexp.MustCompile(`^# Acceptable values: (.*)$`)
-	acceptRange = regexp.MustCompile(`^# Acceptable value range: From (.+) to (.+)$`)
-	flagsLine   = "# Multiple values can be set at the same time by separating them with ,"
-	sectionLine = regexp.MustCompile(`^\[(.+)\]$`)
-	pluginName  = regexp.MustCompile(`^## Settings file was created by plugin (.+) v\S+$`)
-	pluginGUID  = regexp.MustCompile(`^## Plugin GUID: (.+)$`)
-)
-
-// cfgDoc is a parsed .cfg: the original lines, so a write changes only the edited line.
-type cfgDoc struct {
-	lines []string
-	// eols is each line's own ending, which a write keeps; bom likewise.
-	eols []string
-	bom  bool
-	// plugin and guid come from the header.
-	plugin, guid string
-	entries      []cfgEntry
-}
-
-type cfgEntry struct {
-	section string
-	line    int
-	// netType is the .NET type BepInEx parses the value into.
-	netType string
-	Entry
-}
-
-// netLimits bound the .NET number types narrower than what validate parses; BepInEx replaces a value that overflows
-// its type with the default when the game starts.
-var netLimits = map[string][2]float64{
-	"Byte": {0, math.MaxUint8}, "SByte": {math.MinInt8, math.MaxInt8},
-	"Int16": {math.MinInt16, math.MaxInt16}, "UInt16": {0, math.MaxUint16},
-	"Int32": {math.MinInt32, math.MaxInt32}, "UInt32": {0, math.MaxUint32}, "UInt64": {0, math.MaxUint64},
-	"Single": {-math.MaxFloat32, math.MaxFloat32},
-}
-
-// decimalMax is .NET's decimal.MaxValue, which a float64 cannot hold exactly; decimalBound is it for the refusal's detail.
-var (
-	decimalMax, _ = new(big.Rat).SetString("79228162514264337593543950335")
-	decimalBound  = [2]float64{-79228162514264337593543950335, 79228162514264337593543950335}
-)
-
-// hexColor is what Unity's ColorUtility.TryParseHtmlString reads after BepInEx adds the "#": RGB, RGBA, RRGGBB or RRGGBBAA.
-var hexColor = regexp.MustCompile(`^#?([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$`)
-
-var (
-	unsignedTypes = []string{"Byte", "UInt16", "UInt32", "UInt64"}
-	// plainDecimal is what .NET's decimal.Parse reads: digits with an optional point, no exponent.
-	plainDecimal = regexp.MustCompile(`^[+-]?(\d+(\.\d*)?|\.\d+)$`)
-)
-
-func parseCfg(text string) cfgDoc {
-	text, bom := strings.CutPrefix(text, "\ufeff")
-	d := cfgDoc{bom: bom}
-	d.lines, d.eols = splitLines(text)
-	var section string
-	var pending Entry
-	var desc []string
-	reset := func() { pending, desc = Entry{}, nil }
-	for i, raw := range d.lines {
-		line := strings.TrimSpace(raw)
-		switch {
-		case line == "":
-			reset()
-		case pluginName.MatchString(line):
-			d.plugin = pluginName.FindStringSubmatch(line)[1]
-		case pluginGUID.MatchString(line):
-			d.guid = pluginGUID.FindStringSubmatch(line)[1]
-		case strings.HasPrefix(line, "## "):
-			desc = append(desc, strings.TrimPrefix(line, "## "))
-		case strings.HasPrefix(line, "##"):
-			desc = append(desc, strings.TrimPrefix(line, "##"))
-		case strings.HasPrefix(line, "#"):
-			readMeta(&pending, line)
-		case sectionLine.MatchString(line):
-			section = sectionLine.FindStringSubmatch(line)[1]
-			reset()
-		default:
-			key, val, ok := strings.Cut(line, "=")
-			if !ok {
-				reset()
-				continue
-			}
-			e := pending
-			e.Key, e.Value = strings.TrimSpace(key), strings.TrimSpace(val)
-			e.Description = strings.Join(desc, "\n")
-			netType := e.Type
-			finishEntry(&e)
-			d.entries = append(d.entries, cfgEntry{section: section, line: i, netType: netType, Entry: e})
-			reset()
-		}
-	}
-	return d
-}
-
-func readMeta(e *Entry, line string) {
-	switch {
-	case settingType.MatchString(line):
-		e.Type = settingType.FindStringSubmatch(line)[1]
-	case defaultVal.MatchString(line):
-		e.Default, e.HasDefault = defaultVal.FindStringSubmatch(line)[1], true
-	case acceptList.MatchString(line):
-		for v := range strings.SplitSeq(acceptList.FindStringSubmatch(line)[1], ", ") {
-			e.Values = append(e.Values, strings.TrimSpace(v))
-		}
-	case acceptRange.MatchString(line):
-		m := acceptRange.FindStringSubmatch(line)
-		if lo, err := strconv.ParseFloat(strings.TrimSpace(m[1]), 64); err == nil {
-			e.Min = &lo
-		}
-		if hi, err := strconv.ParseFloat(strings.TrimSpace(m[2]), 64); err == nil {
-			e.Max = &hi
-		}
-	case strings.HasPrefix(line, flagsLine):
-		e.Flags = true
-	}
-}
-
-// finishEntry turns the .NET type name into one of the schema types.
-func finishEntry(e *Entry) {
-	switch name := e.Type; {
-	case len(e.Values) > 0:
-		e.Type = TypeEnum
-	case name == "Boolean":
-		e.Type = TypeBool
-	case slices.Contains([]string{"Int32", "Int64", "Int16", "UInt32", "UInt64", "UInt16", "Byte", "SByte"}, name):
-		e.Type = TypeInt
-	case slices.Contains([]string{"Single", "Double", "Decimal"}, name):
-		e.Type = TypeFloat
-	case name == "Color":
-		e.Type = TypeColor
-	case strings.HasSuffix(name, "[]"):
-		e.Type = TypeList
-	default:
-		e.Type = TypeString
-	}
-}
-
-// validate checks value against the entry's type, range and acceptable values and returns the text to write.
-func validate(e cfgEntry, value string) (string, error) {
-	if strings.ContainsAny(value, "\r\n") {
-		return "", refuse("line", "%s: a value is one line", e.Key)
-	}
-	value = strings.TrimSpace(value)
-	switch e.Type {
-	case TypeBool:
-		switch strings.ToLower(value) {
-		case "true", "false":
-			return strings.ToLower(value), nil
-		}
-		return "", refuse("bool", "%s expects true or false", e.Key)
-	case TypeInt:
-		var n float64
-		if slices.Contains(unsignedTypes, e.netType) {
-			u, err := strconv.ParseUint(value, 10, 64)
-			if err != nil {
-				return "", refuse("whole_number", "%s expects a whole number", e.Key)
-			}
-			n = float64(u)
-		} else {
-			i, err := strconv.ParseInt(value, 10, 64)
-			if err != nil {
-				return "", refuse("whole_number", "%s expects a whole number", e.Key)
-			}
-			n = float64(i)
-		}
-		return value, inRange(e.Entry, n)
-	case TypeFloat:
-		n, text, err := finite(e.Key, value)
-		if err != nil {
-			return "", err
-		}
-		if e.netType == "Decimal" {
-			// decimal.Parse takes no exponent: keep plain digits as typed, else spell the number out.
-			text = strconv.FormatFloat(n, 'f', -1, 64)
-			if plainDecimal.MatchString(value) {
-				text = value
-			}
-		}
-		return text, inRange(e.Entry, n)
-	case TypeColor:
-		if !hexColor.MatchString(value) {
-			return "", refuse("color", "%s expects a hex color such as FF8800 or FF8800CC", e.Key)
-		}
-	case TypeEnum:
-		parts := []string{value}
-		if e.Flags {
-			parts = strings.Split(value, ",")
-		}
-		// Enum.Parse ignores case; the file gets the member's own spelling.
-		for i, p := range parts {
-			trimmed := strings.TrimSpace(p)
-			j := slices.IndexFunc(e.Values, func(v string) bool { return strings.EqualFold(v, trimmed) })
-			if j < 0 {
-				return "", refuseEnum(e)
-			}
-			parts[i] = strings.Replace(p, trimmed, e.Values[j], 1)
-		}
-		value = strings.Join(parts, ",")
-	}
-	return value, nil
-}
-
-// finite parses a number and writes it the way both .NET and TOML read it: Go also takes "1_000", hex and "Inf", which
-// neither does.
-func finite(key, value string) (float64, string, error) {
-	n, err := strconv.ParseFloat(value, 64)
-	if err != nil || math.IsInf(n, 0) || math.IsNaN(n) {
-		return 0, "", refuse("number", "%s expects a number", key)
-	}
-	return n, strconv.FormatFloat(n, 'g', -1, 64), nil
-}
-
-func refuseEnum(e cfgEntry) error {
-	return usererr.Wrap(usererr.Invalid, &valueError{Problem: "enum", Values: e.Values, msg: fmt.Sprintf("%s must be one of %s", e.Key, strings.Join(e.Values, ", "))})
-}
 
 // valueError is a value the editor will not write. Its English sentence is the error text; Detail is what the GUI words
 // its own sentence from (usererr.Detailer).
@@ -274,73 +32,41 @@ func (e *valueError) Error() string { return e.msg }
 
 func (e *valueError) Detail() any { return e }
 
-func refuse(problem, format string, args ...any) error {
-	return usererr.Wrap(usererr.Invalid, &valueError{Problem: problem, msg: fmt.Sprintf(format, args...)})
-}
-
-func refuseRange(key string, lo, hi *float64) error {
-	f := func(p *float64) string { return strconv.FormatFloat(*p, 'f', -1, 64) }
-	var msg string
+// valueErr is err as the service reports it: a refused value is Invalid with its problem as detail, a missing setting
+// NotFound.
+func valueErr(err error) error {
+	var ve *cfgedit.ValueError
 	switch {
-	case lo == nil:
-		msg = fmt.Sprintf("%s must be at most %s", key, f(hi))
-	case hi == nil:
-		msg = fmt.Sprintf("%s must be at least %s", key, f(lo))
-	default:
-		msg = fmt.Sprintf("%s must be between %s and %s", key, f(lo), f(hi))
+	case err == nil:
+		return nil
+	case errors.As(err, &ve):
+		return usererr.Wrap(usererr.Invalid, &valueError{Problem: string(ve.Problem), Min: ve.Min, Max: ve.Max, Values: ve.Values, msg: ve.Error()})
+	case errors.Is(err, cfgedit.ErrNoSetting):
+		return usererr.Wrap(usererr.NotFound, err)
 	}
-	return usererr.Wrap(usererr.Invalid, &valueError{Problem: "range", Min: lo, Max: hi, msg: msg})
+	return err
 }
 
-func inRange(e Entry, n float64) error {
-	if (e.Min != nil && n < *e.Min) || (e.Max != nil && n > *e.Max) {
-		return refuseRange(e.Key, e.Min, e.Max)
-	}
-	return nil
-}
-
-func (d cfgDoc) find(section, key string) (cfgEntry, bool) {
-	for _, e := range d.entries {
-		if e.section == section && e.Key == key {
-			return e, true
+// schemaOf groups entries read in file order by the section run they sit in, keeping those keep accepts.
+func schemaOf(file ConfigFile, entries []cfgedit.Entry, keep func(section string) bool) Schema {
+	s := Schema{File: file, Sections: []Section{}}
+	for _, e := range entries {
+		if keep(e.Section) {
+			s.Sections = addToSection(s.Sections, e.Section, entryOf(e))
 		}
-	}
-	return cfgEntry{}, false
-}
-
-// set returns the file text with one value replaced, every other byte as it was.
-func (d cfgDoc) set(section, key, value string) (string, error) {
-	e, ok := d.find(section, key)
-	if !ok {
-		return "", usererr.Wrap(usererr.NotFound, fmt.Errorf("no setting %s in [%s]", key, section))
-	}
-	val, err := validate(e, value)
-	if err != nil {
-		return "", err
-	}
-	if e.netType == "Decimal" {
-		if r, ok := new(big.Rat).SetString(val); ok && r.Abs(r).Cmp(decimalMax) > 0 {
-			return "", refuseRange(key, &decimalBound[0], &decimalBound[1])
-		}
-	}
-	if lim, ok := netLimits[e.netType]; ok {
-		if n, _ := strconv.ParseFloat(val, 64); n < lim[0] || n > lim[1] {
-			return "", refuseRange(key, &lim[0], &lim[1])
-		}
-	}
-	lines := append([]string(nil), d.lines...)
-	old := lines[e.line]
-	eq := strings.Index(old, "=")
-	lines[e.line] = strings.TrimRight(old[:eq+1], " ") + " " + val
-	return joinLines(lines, d.eols, d.bom), nil
-}
-
-func (d cfgDoc) schema(file ConfigFile) Schema {
-	s := Schema{File: file}
-	for _, e := range d.entries {
-		s.Sections = addToSection(s.Sections, e.section, e.Entry)
 	}
 	return s
+}
+
+func entryOf(e cfgedit.Entry) Entry {
+	return Entry{
+		Key: e.Key, Type: string(e.Type), Value: e.Value, Default: e.Default, HasDefault: e.HasDefault,
+		Description: e.Description, Min: e.Min, Max: e.Max, Values: e.Values, Flags: e.Flags,
+	}
+}
+
+func cfgSchema(d *cfgedit.BepInEx, file ConfigFile) Schema {
+	return schemaOf(file, d.Entries(), func(string) bool { return true })
 }
 
 // addToSection appends e to the last section when it is named section, else to a new one: entries read in file order
