@@ -8,54 +8,31 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/Rethunk-Tech/go-modmanagers/r2modman"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/source"
-	"go.yaml.in/yaml/v3"
 )
-
-type exportMod struct {
-	Name    string           `yaml:"name"`
-	Version r2modman.Version `yaml:"version"`
-	Enabled bool             `yaml:"enabled"`
-}
-
-type exportDoc struct {
-	Name string      `yaml:"profileName"`
-	Mods []exportMod `yaml:"mods"`
-}
 
 // ExportZip is the .r2z body: export.r2x plus the draft's config files.
 func ExportZip(d Draft) ([]byte, error) {
-	doc := exportDoc{Name: d.Name, Mods: make([]exportMod, 0, len(d.Packages))}
+	e := r2modman.Export{ProfileName: d.Name, Mods: make([]r2modman.Mod, 0, len(d.Packages)), Files: make(map[string][]byte, len(d.Configs))}
 	for _, p := range d.Packages {
 		if p.Source != thunderstore {
 			return nil, fmt.Errorf("%s package %s cannot go in an r2modman code", p.Source, p.Native)
 		}
-		m := exportMod{Name: p.Native, Enabled: !p.Disabled}
-		parts := strings.Split(p.Version, ".")
-		nums := []*int{&m.Version.Major, &m.Version.Minor, &m.Version.Patch}
-		if len(parts) != len(nums) {
+		ver, err := r2modman.ParseVersion(p.Version)
+		if err != nil {
 			return nil, fmt.Errorf("%s has version %q, not major.minor.patch", p.Native, p.Version)
 		}
-		for i, part := range parts {
-			n, err := strconv.Atoi(part)
-			if err != nil || n < 0 {
-				return nil, fmt.Errorf("%s has version %q, not major.minor.patch", p.Native, p.Version)
-			}
-			*nums[i] = n
-		}
-		doc.Mods = append(doc.Mods, m)
+		e.Mods = append(e.Mods, r2modman.Mod{Name: p.Native, Version: ver, Enabled: !p.Disabled})
 	}
-	raw, err := yaml.Marshal(doc)
-	if err != nil {
-		return nil, err
+	for _, f := range d.Configs {
+		e.Files[f.Path] = f.Data
 	}
-	return Zip(append([]File{{Path: exportFile, Data: raw}}, d.Configs...))
+	return r2modman.WriteExport(e)
 }
 
 // ExportCode stores d on Thunderstore as an r2modman profile code and returns its key. It publishes the profile's
