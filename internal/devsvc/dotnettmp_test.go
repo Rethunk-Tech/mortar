@@ -3,6 +3,7 @@ package devsvc
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -57,6 +58,9 @@ func TestDotnetRunsWithItsTempFolderInTheCache(t *testing.T) {
 }
 
 func TestDotnetEnvDropsAppImageLibraries(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		t.Skip("AppImages exist only on Linux")
+	}
 	t.Setenv("APPIMAGE", "/home/u/Mortar.AppImage")
 	t.Setenv("APPDIR", "/tmp/.mount_mortarX")
 	t.Setenv("LD_LIBRARY_PATH", "/tmp/.mount_mortarX/usr/lib")
