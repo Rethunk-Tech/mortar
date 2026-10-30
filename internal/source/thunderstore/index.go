@@ -193,8 +193,7 @@ func (d Driver) open(ctx context.Context, url, ua string) (body io.Reader, done 
 		done()
 		return nil, nil, &httpkit.StatusError{Code: resp.StatusCode, Status: resp.Status}
 	}
-	// One byte past the cap lets get tell an oversize body from one that fits exactly.
-	return io.LimitReader(resp.Body, source.MaxBody+1), done, nil
+	return safefs.CapReader(resp.Body, source.MaxBody), done, nil
 }
 
 func (d Driver) get(ctx context.Context, url, ua string) ([]byte, error) {
