@@ -1,6 +1,10 @@
 package launchsvc
 
 import (
+	"errors"
+	"io/fs"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/Rethunk-Tech/go-nettrace"
@@ -35,9 +39,17 @@ func TestModOfReadsPathsAndFullAssemblyNames(t *testing.T) {
 	}
 }
 
-func TestEmptyTraceHasNoMainThread(t *testing.T) {
-	var trace nettrace.Trace
-	if _, ok := mainSampleThread(trace.Samples, map[string]string{"Spin": "FixtureMod"}); ok {
-		t.Fatal("a trace with no samples has a main thread")
+func TestATraceWithNoEventsWritesNoSamples(t *testing.T) {
+	file, err := os.Open(filepath.Join("testdata", "no-events.nettrace"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer file.Close()
+	dir := t.TempDir()
+	if _, err := writeStartupSamples(file, dir, "run", t.TempDir()); !errors.Is(err, nettrace.ErrNoEvents) {
+		t.Fatalf("err = %v, want ErrNoEvents", err)
+	}
+	if _, err := os.Stat(filepath.Join(dir, "run.samples.json")); !errors.Is(err, fs.ErrNotExist) {
+		t.Fatalf("a samples file was written: %v", err)
 	}
 }
