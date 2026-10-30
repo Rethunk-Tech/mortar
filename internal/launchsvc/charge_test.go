@@ -44,7 +44,11 @@ func TestATraceWithNoEventsWritesNoSamples(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer file.Close()
+	t.Cleanup(func() {
+		if err := file.Close(); err != nil {
+			t.Error(err)
+		}
+	})
 	dir := t.TempDir()
 	if _, err := writeStartupSamples(file, dir, "run", t.TempDir()); !errors.Is(err, nettrace.ErrNoEvents) {
 		t.Fatalf("err = %v, want ErrNoEvents", err)
