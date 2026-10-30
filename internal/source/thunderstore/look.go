@@ -68,9 +68,14 @@ func (d Driver) CachedIcons(key string, names []string) (map[string]string, erro
 }
 
 // lookedUp is the names CachedLooks already looked up in the stored listing. A new listing removes the file (Built).
+// Format is lookedFormat: a record without it was stamped with an index hash this code cannot check against the
+// stored listing, so it is read as absent.
 type lookedUp struct {
-	Names []string `json:"names"`
+	Format int      `json:"format"`
+	Names  []string `json:"names"`
 }
+
+const lookedFormat = 2
 
 func lookedPath(dir, key string) string { return filepath.Join(dir, key+".looked.json") }
 
@@ -88,9 +93,10 @@ func (d Driver) CachedLooks(key string, names []string) (map[string]Look, error)
 	}
 	markPath := lookedPath(filepath.Join(d.cacheRoot(), "thunderstore"), key)
 	var mark lookedUp
-	if b, err := safefs.ReadFile(markPath); err == nil {
-		_ = json.Unmarshal(b, &mark)
+	if b, err := safefs.ReadFile(markPath); err == nil && (json.Unmarshal(b, &mark) != nil || mark.Format != lookedFormat) {
+		mark = lookedUp{}
 	}
+	mark.Format = lookedFormat
 	want := map[string]bool{}
 	for _, n := range names {
 		if id := strings.ToLower(n); !slices.Contains(mark.Names, id) {

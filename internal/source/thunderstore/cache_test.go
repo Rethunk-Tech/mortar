@@ -5,11 +5,13 @@ import (
 	"errors"
 	"net/http"
 	"os"
+	"path/filepath"
 	"slices"
 	"sync/atomic"
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
@@ -61,5 +63,41 @@ func TestTheC4CacheAnEarlierReleaseWroteIsReadWithoutTheNetwork(t *testing.T) {
 	}
 	if n := asked.Load(); n != 0 {
 		t.Fatalf("reading the stored cache sent %d requests", n)
+	}
+}
+
+// testdata/looked-hashed is the looked-up record an earlier release wrote, stamped with an index hash. Nothing can
+// check that hash against the stored listing without the network, so the record is read as absent: the names it claims
+// are looked up again, from disk alone, and the record is rewritten in the current format.
+func TestALookedRecordStampedWithAHashIsRebuilt(t *testing.T) {
+	cache := t.TempDir()
+	if err := os.CopyFS(cache, os.DirFS("testdata/listing-c4")); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.CopyFS(filepath.Join(cache, "thunderstore"), os.DirFS("testdata/looked-hashed")); err != nil {
+		t.Fatal(err)
+	}
+	var asked atomic.Int32
+	offline := &http.Client{Transport: roundTrip(func(*http.Request) (*http.Response, error) {
+		asked.Add(1)
+		return nil, errors.New("offline")
+	})}
+	d := Driver{HTTP: offline, CacheDir: cache}
+	t.Cleanup(func() { restart(d) })
+
+	looks, err := d.CachedLooks("lethal-company", []string{"Alice-MoreCompany"})
+	if err != nil || looks["alice-morecompany"] != (Look{Category: "Items"}) {
+		t.Fatalf("looks = %+v, %v", looks, err)
+	}
+	b, err := safefs.ReadFile(filepath.Join(cache, "thunderstore", "lethal-company.looked.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var got lookedUp
+	if err := json.Unmarshal(b, &got); err != nil || got.Format != lookedFormat || !slices.Equal(got.Names, []string{"alice-morecompany"}) {
+		t.Fatalf("record = %s, %v", b, err)
+	}
+	if n := asked.Load(); n != 0 {
+		t.Fatalf("rebuilding the record sent %d requests", n)
 	}
 }
