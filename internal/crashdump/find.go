@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/Rethunk-Tech/go-winsym"
 )
 
 // maxDumpBytes bounds the dumps read: a full-memory dump is gigabytes, and only its header streams are needed, so one
@@ -78,8 +80,11 @@ func readDump(path string) (Fault, bool) {
 	if err != nil || info.Size() > maxDumpBytes {
 		return Fault{}, false
 	}
-	fault, err := ParseMinidump(f, info.Size())
-	return fault, err == nil
+	m, err := winsym.ParseMinidump(f, info.Size())
+	if err != nil {
+		return Fault{}, false
+	}
+	return fromMinidump(m), true
 }
 
 func stem(module string) string { return strings.TrimSuffix(module, filepath.Ext(module)) }

@@ -9,13 +9,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-winsym"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/crashdump"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader/dotnetstack"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
-	"github.com/Rethunk-Tech/mortar/internal/symsrv"
 )
 
 // hintWhy is a crash hint's reason: the English line, and the code and values the window words it from.
@@ -80,7 +80,7 @@ func (s *Service) nativeFrame(f crashdump.Fault) string {
 	}
 	cv := f.CodeView
 	if cv.PDB == "" && f.ModulePath != "" {
-		cv, _ = symsrv.PECodeView(f.ModulePath)
+		cv, _ = winsym.PECodeView(f.ModulePath)
 	}
 	if s.Symbols != nil {
 		if name, off, ok := s.Symbols.Name(context.Background(), cv, f.Offset); ok {

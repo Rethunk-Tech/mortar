@@ -9,6 +9,15 @@ import (
 	"testing"
 	"time"
 	"unicode/utf16"
+
+	"github.com/Rethunk-Tech/go-winsym"
+)
+
+const (
+	minidumpMagic    = 0x504d444d // "MDMP"
+	moduleListStream = 4
+	exceptionStream  = 6
+	moduleEntrySize  = 108
 )
 
 type testModule struct {
@@ -72,9 +81,13 @@ func TestMinidumpNamesTheModuleHoldingTheFaultAddress(t *testing.T) {
 		testModule{`C:\Game\Mods\Cool\Cool.dll`, 0x7ff800000000, 0x10000, []byte("RSDS0123456789abcdef\x02\x00\x00\x00C:\\build\\Cool.pdb\x00")},
 		testModule{`C:\Windows\System32\ntdll.dll`, 0x7ff900000000, 0x200000, nil},
 	)
-	got, err := ParseMinidump(bytes.NewReader(dump), int64(len(dump)))
-	if err != nil || got.Module != "Cool.dll" || got.Offset != 0x1234 || got.CodeView.PDB != "Cool.pdb" || got.CodeView.Age != 2 {
-		t.Fatalf("fault = %+v, %v", got, err)
+	m, err := winsym.ParseMinidump(bytes.NewReader(dump), int64(len(dump)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := fromMinidump(m)
+	if got.Module != "Cool.dll" || !got.HasOffset || got.Offset != 0x1234 || got.CodeView.PDB != "Cool.pdb" || got.CodeView.Age != 2 {
+		t.Fatalf("fault = %+v", got)
 	}
 	if got.Detail != "exception 0xc0000005 at 0x7ff800001234" {
 		t.Fatalf("detail = %q", got.Detail)
@@ -84,22 +97,9 @@ func TestMinidumpNamesTheModuleHoldingTheFaultAddress(t *testing.T) {
 func TestMinidumpWithAnAddressInNoModuleNamesNone(t *testing.T) {
 	t.Parallel()
 	dump := minidump(0x1, testModule{`C:\Game\Game.exe`, 0x140000000, 0x2000000, nil})
-	got, err := ParseMinidump(bytes.NewReader(dump), int64(len(dump)))
-	if err != nil || got.Module != "" {
+	m, err := winsym.ParseMinidump(bytes.NewReader(dump), int64(len(dump)))
+	if got := fromMinidump(m); err != nil || got.Module != "" || got.HasOffset {
 		t.Fatalf("fault = %+v, %v", got, err)
-	}
-}
-
-func TestMinidumpRejectsGarbageAndTruncation(t *testing.T) {
-	t.Parallel()
-	for name, data := range map[string][]byte{
-		"empty":     nil,
-		"not a dmp": bytes.Repeat([]byte("x"), 200),
-		"truncated": minidump(0x1, testModule{"a.dll", 0, 10, nil})[:60],
-	} {
-		if _, err := ParseMinidump(bytes.NewReader(data), int64(len(data))); err == nil {
-			t.Errorf("%s: parsed", name)
-		}
 	}
 }
 
