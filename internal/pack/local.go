@@ -1,6 +1,7 @@
 package pack
 
 import (
+	"encoding/json"
 	"io/fs"
 	"os"
 	"path"
@@ -46,8 +47,31 @@ func (m LocalMod) Size() int64 {
 }
 
 // Stage writes the mod's files below dir as BepInEx/plugins/..., the layout the BepInEx installer places as one
-// plugin folder, under their switched-on names. Links in Dir are not followed.
+// plugin folder, under their switched-on names, with a manifest.json at dir naming the version and author the
+// other manager recorded: the folder carries none, so without it the mod would install unversioned. Links in Dir are
+// not followed.
 func (m LocalMod) Stage(dir string) error {
+	if err := m.stageFiles(dir); err != nil {
+		return err
+	}
+	if m.Name == "" || (m.Version == "" && m.Author == "") {
+		return nil
+	}
+	fields := map[string]string{"name": m.Name}
+	if m.Version != "" {
+		fields["version_number"] = m.Version
+	}
+	if m.Author != "" {
+		fields["author"] = m.Author
+	}
+	b, err := json.Marshal(fields)
+	if err != nil {
+		return err
+	}
+	return safefs.WriteFile(filepath.Join(dir, "manifest.json"), b, 0o600)
+}
+
+func (m LocalMod) stageFiles(dir string) error {
 	root := filepath.Join(dir, "BepInEx", "plugins")
 	dest := func(rel string) (string, error) {
 		p := filepath.Join(root, filepath.FromSlash(path.Join(path.Dir(rel), switchedOn(path.Base(rel)))))
