@@ -135,14 +135,19 @@
     "url": "https://github.com/pmndrs/zustand"
   },
   {
-    "name": "github.com/BurntSushi/toml",
-    "licence": "MIT",
-    "url": "https://github.com/BurntSushi/toml"
-  },
-  {
     "name": "github.com/Rethunk-Tech/go-archive",
     "licence": "MIT",
     "url": "https://github.com/Rethunk-Tech/go-archive"
+  },
+  {
+    "name": "github.com/Rethunk-Tech/go-avscan",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/go-avscan"
+  },
+  {
+    "name": "github.com/Rethunk-Tech/go-cfgedit",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/go-cfgedit"
   },
   {
     "name": "github.com/Rethunk-Tech/go-desktopenv",
@@ -163,6 +168,11 @@
     "name": "github.com/Rethunk-Tech/go-gamelocator",
     "licence": "MIT",
     "url": "https://github.com/Rethunk-Tech/go-gamelocator"
+  },
+  {
+    "name": "github.com/Rethunk-Tech/go-gameproc",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/go-gameproc"
   },
   {
     "name": "github.com/Rethunk-Tech/go-github",
@@ -208,6 +218,16 @@
     "name": "github.com/Rethunk-Tech/go-smapiweb",
     "licence": "MIT",
     "url": "https://github.com/Rethunk-Tech/go-smapiweb"
+  },
+  {
+    "name": "github.com/Rethunk-Tech/go-tilemask",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/go-tilemask"
+  },
+  {
+    "name": "github.com/Rethunk-Tech/go-winsym",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/go-winsym"
   },
   {
     "name": "github.com/andybalholm/brotli",
