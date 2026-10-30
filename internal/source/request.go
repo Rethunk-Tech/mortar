@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/go-safefs"
 )
 
@@ -23,6 +24,9 @@ type StatusError struct {
 }
 
 func (e *StatusError) Error() string { return e.Service + " answered " + e.Status }
+
+// Unwrap lets usererr and errors.Is(err, httpkit.ErrNotFound) classify the answer like any other HTTP status.
+func (e *StatusError) Unwrap() error { return &httpkit.StatusError{Code: e.Code, Status: e.Status} }
 
 func (e *StatusError) Auth() bool {
 	return e.Code == http.StatusUnauthorized || e.Code == http.StatusForbidden

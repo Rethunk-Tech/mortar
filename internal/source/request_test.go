@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 func TestDoJSON(t *testing.T) {
@@ -54,6 +55,12 @@ func TestDoJSON(t *testing.T) {
 	err := call("/html", &out)
 	if se, ok := errors.AsType[*StatusError](err); !ok || se.Auth() || se.Error() != "Site answered 502 Bad Gateway" {
 		t.Fatalf("other status: %v", err)
+	}
+	if usererr.KindOf(err) != usererr.Network {
+		t.Fatalf("502 should classify as Network: %v", usererr.KindOf(err))
+	}
+	if k := usererr.KindOf(&StatusError{Service: "Site", Code: 404, Status: "404 Not Found"}); k != usererr.NotFound {
+		t.Fatalf("404 should classify as NotFound: %v", k)
 	}
 	if err := call("/bad", &out); err == nil {
 		t.Fatal("a 200 with a body that is not JSON should fail")
