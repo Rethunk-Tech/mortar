@@ -1035,6 +1035,7 @@ msgstr "Running for {time}"
 msgid "Your build changed; it is added when the game stops"
 msgstr "Your build changed; it is added when the game stops"
 
+#: src/develop/AdoptDialog.tsx
 #: src/firstrun/ProfileStep.tsx
 #: src/games/AddGameDialog.tsx
 #: src/groups/dialogs.tsx
@@ -1781,6 +1782,10 @@ msgstr "Could not start pairing"
 #: src/develop/Outcome.tsx
 msgid "The build failed."
 msgstr "The build failed."
+
+#: src/develop/AdoptDialog.tsx
+msgid "Add this folder as a project"
+msgstr "Add this folder as a project"
 
 #: src/saves/SaveDetails.tsx
 msgid "Saved on version {gameVersion}"
@@ -3299,6 +3304,10 @@ msgstr "Edit profile…"
 msgid "{name} settings"
 msgstr "{name} settings"
 
+#: src/develop/AdoptDialog.tsx
+msgid "Files, installed as they are"
+msgstr "Files, installed as they are"
+
 #: src/firstrun/FirstRun.tsx
 msgid "{found} of {count, plural, one {# launcher} other {# launchers}} found."
 msgstr "{found} of {count, plural, one {# launcher} other {# launchers}} found."
@@ -3551,6 +3560,10 @@ msgstr "New"
 #: src/share/Included.tsx
 msgid "pins"
 msgstr "pins"
+
+#: src/develop/AdoptDialog.tsx
+msgid "The name holds letters, digits, dots, dashes and underscores."
+msgstr "The name holds letters, digits, dots, dashes and underscores."
 
 #: src/game/NewProfileDialog.tsx
 msgid "{count, plural, one {Created {name}; downloading # mod} other {Created {name}; downloading # mods}}"
@@ -3831,6 +3844,7 @@ msgstr "Every archive in the downloads folder is already in a profile or Mortar'
 msgid "Clear download history?"
 msgstr "Clear download history?"
 
+#: src/develop/AdoptDialog.tsx
 #: src/develop/DevelopTab.tsx
 msgid "Could not add the project"
 msgstr "Could not add the project"
@@ -3990,6 +4004,10 @@ msgstr "Sign in to import"
 msgid "Team"
 msgstr "Team"
 
+#: src/develop/AdoptDialog.tsx
+msgid "Folder"
+msgstr "Folder"
+
 #: src/develop/ProjectCard.tsx
 msgid "Last run: {frame} ms a frame"
 msgstr "Last run: {frame} ms a frame"
@@ -3999,6 +4017,7 @@ msgstr "Last run: {frame} ms a frame"
 msgid "Not found"
 msgstr "Not found"
 
+#: src/develop/AdoptDialog.tsx
 #: src/develop/NewModDialog.tsx
 msgid "Kind"
 msgstr "Kind"
@@ -4232,6 +4251,7 @@ msgstr "This pack has files that always install."
 msgid "Mod list"
 msgstr "Mod list"
 
+#: src/develop/AdoptDialog.tsx
 #: src/develop/CloneDialog.tsx
 #: src/develop/DevelopTab.tsx
 #: src/groups/applied.ts
@@ -4344,6 +4364,7 @@ msgstr "Saved .r2z"
 
 #: src/browse/BrowseMenu.tsx
 #: src/browse/CardAction.tsx
+#: src/develop/AdoptDialog.tsx
 #: src/develop/DependenciesStep.tsx
 #: src/downloads/newDownloads.ts
 #: src/game/FarmMenuItem.tsx
@@ -4754,6 +4775,10 @@ msgstr "Something went wrong"
 #: src/launch/store.ts
 msgid "New errors after updating {profile}"
 msgstr "New errors after updating {profile}"
+
+#: src/develop/AdoptDialog.tsx
+msgid "Mortar writes only a small record into it, in .mortar/project.json."
+msgstr "Mortar writes only a small record into it, in .mortar/project.json."
 
 #: src/i18n/reasonText.ts
 msgid "missing dependencies: {list}"
@@ -5256,6 +5281,10 @@ msgstr "Files that {name} loads. No SDK needed."
 msgid "Could not check the graphics setting"
 msgstr "Could not check the graphics setting"
 
+#: src/develop/AdoptDialog.tsx
+msgid "Project file"
+msgstr "Project file"
+
 #: src/saves/lackChips.tsx
 msgid "{name} (disabled)"
 msgstr "{name} (disabled)"
@@ -5593,6 +5622,10 @@ msgstr "{names} cannot be reached; nothing saved to show yet"
 #: src/launch/autoUpdate.ts
 msgid "the mod"
 msgstr "the mod"
+
+#: src/develop/AdoptDialog.tsx
+msgid "The name starts with a capital letter and holds only letters and digits."
+msgstr "The name starts with a capital letter and holds only letters and digits."
 
 #: src/browse/BrowseBody.tsx
 msgid "Searching…"
@@ -6354,6 +6387,10 @@ msgstr "a patch for {name} matched nothing in the game's code"
 #: src/install/HandoffDialog.tsx
 msgid "Install {file} as from {page}?"
 msgstr "Install {file} as from {page}?"
+
+#: src/develop/AdoptDialog.tsx
+msgid "Code (C# project)"
+msgstr "Code (C# project)"
 
 #: src/game/NewProfileDialog.tsx
 #: src/game/TemplateMenuItems.tsx

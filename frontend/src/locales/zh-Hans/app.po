@@ -1035,6 +1035,7 @@ msgstr ""
 msgid "Your build changed; it is added when the game stops"
 msgstr ""
 
+#: src/develop/AdoptDialog.tsx
 #: src/firstrun/ProfileStep.tsx
 #: src/games/AddGameDialog.tsx
 #: src/groups/dialogs.tsx
@@ -1780,6 +1781,10 @@ msgstr ""
 
 #: src/develop/Outcome.tsx
 msgid "The build failed."
+msgstr ""
+
+#: src/develop/AdoptDialog.tsx
+msgid "Add this folder as a project"
 msgstr ""
 
 #: src/saves/SaveDetails.tsx
@@ -3299,6 +3304,10 @@ msgstr ""
 msgid "{name} settings"
 msgstr ""
 
+#: src/develop/AdoptDialog.tsx
+msgid "Files, installed as they are"
+msgstr ""
+
 #: src/firstrun/FirstRun.tsx
 msgid "{found} of {count, plural, one {# launcher} other {# launchers}} found."
 msgstr ""
@@ -3550,6 +3559,10 @@ msgstr ""
 
 #: src/share/Included.tsx
 msgid "pins"
+msgstr ""
+
+#: src/develop/AdoptDialog.tsx
+msgid "The name holds letters, digits, dots, dashes and underscores."
 msgstr ""
 
 #: src/game/NewProfileDialog.tsx
@@ -3831,6 +3844,7 @@ msgstr ""
 msgid "Clear download history?"
 msgstr ""
 
+#: src/develop/AdoptDialog.tsx
 #: src/develop/DevelopTab.tsx
 msgid "Could not add the project"
 msgstr ""
@@ -3990,6 +4004,10 @@ msgstr ""
 msgid "Team"
 msgstr ""
 
+#: src/develop/AdoptDialog.tsx
+msgid "Folder"
+msgstr ""
+
 #: src/develop/ProjectCard.tsx
 msgid "Last run: {frame} ms a frame"
 msgstr ""
@@ -3999,6 +4017,7 @@ msgstr ""
 msgid "Not found"
 msgstr ""
 
+#: src/develop/AdoptDialog.tsx
 #: src/develop/NewModDialog.tsx
 msgid "Kind"
 msgstr ""
@@ -4232,6 +4251,7 @@ msgstr ""
 msgid "Mod list"
 msgstr ""
 
+#: src/develop/AdoptDialog.tsx
 #: src/develop/CloneDialog.tsx
 #: src/develop/DevelopTab.tsx
 #: src/groups/applied.ts
@@ -4344,6 +4364,7 @@ msgstr ""
 
 #: src/browse/BrowseMenu.tsx
 #: src/browse/CardAction.tsx
+#: src/develop/AdoptDialog.tsx
 #: src/develop/DependenciesStep.tsx
 #: src/downloads/newDownloads.ts
 #: src/game/FarmMenuItem.tsx
@@ -4753,6 +4774,10 @@ msgstr ""
 
 #: src/launch/store.ts
 msgid "New errors after updating {profile}"
+msgstr ""
+
+#: src/develop/AdoptDialog.tsx
+msgid "Mortar writes only a small record into it, in .mortar/project.json."
 msgstr ""
 
 #: src/i18n/reasonText.ts
@@ -5256,6 +5281,10 @@ msgstr ""
 msgid "Could not check the graphics setting"
 msgstr ""
 
+#: src/develop/AdoptDialog.tsx
+msgid "Project file"
+msgstr ""
+
 #: src/saves/lackChips.tsx
 msgid "{name} (disabled)"
 msgstr ""
@@ -5592,6 +5621,10 @@ msgstr ""
 
 #: src/launch/autoUpdate.ts
 msgid "the mod"
+msgstr ""
+
+#: src/develop/AdoptDialog.tsx
+msgid "The name starts with a capital letter and holds only letters and digits."
 msgstr ""
 
 #: src/browse/BrowseBody.tsx
@@ -6353,6 +6386,10 @@ msgstr ""
 
 #: src/install/HandoffDialog.tsx
 msgid "Install {file} as from {page}?"
+msgstr ""
+
+#: src/develop/AdoptDialog.tsx
+msgid "Code (C# project)"
 msgstr ""
 
 #: src/game/NewProfileDialog.tsx
