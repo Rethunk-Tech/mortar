@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/Rethunk-Tech/mortar/internal/hostenv"
 )
 
 // checkOpenable refuses a path the system handler should not be given: one that is not absolute (a leading dash would
@@ -42,6 +44,7 @@ func Open(dir string) error {
 		name = "explorer"
 	}
 	cmd := exec.CommandContext(context.Background(), name, dir) //nolint:gosec // G204: name is the OS file manager; dir is a validated data path
+	cmd.Env = hostenv.Environ()
 	setArgs(cmd, dir)
 	if err := cmd.Start(); err != nil {
 		return err

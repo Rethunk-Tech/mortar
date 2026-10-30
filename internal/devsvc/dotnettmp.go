@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-safefs"
+
+	"github.com/Rethunk-Tech/mortar/internal/hostenv"
 )
 
 // The .NET CLI leaves two empty folders from Directory.CreateTempSubdirectory in the temp folder on every command, and
@@ -26,7 +28,7 @@ const (
 )
 
 func (s *Service) dotnetEnv() []string {
-	env := os.Environ()
+	env := hostenv.Environ()
 	if s.CacheDir == "" {
 		return env
 	}

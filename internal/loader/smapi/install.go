@@ -20,6 +20,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/hostenv"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	gamert "github.com/Rethunk-Tech/mortar/internal/runtime"
 
@@ -299,6 +300,7 @@ func (Loader) Install(ctx context.Context, t loader.Target, pkg loader.Package, 
 	} else {
 		cmd := exec.CommandContext(ctx, filepath.Join(folder, exe), args...) //nolint:gosec // G204: exe is the SMAPI installer name inside the unpacked folder
 		cmd.Dir = folder
+		cmd.Env = hostenv.Environ()
 		if out, err := runInstaller(ctx, cmd); err != nil {
 			return "", installerError(err, out)
 		}

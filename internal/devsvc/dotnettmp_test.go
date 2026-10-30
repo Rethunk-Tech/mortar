@@ -3,6 +3,7 @@ package devsvc
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
@@ -52,5 +53,16 @@ func TestDotnetRunsWithItsTempFolderInTheCache(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(s.CacheDir, "dotnet-tmp")); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestDotnetEnvDropsAppImageLibraries(t *testing.T) {
+	t.Setenv("APPIMAGE", "/home/u/Mortar.AppImage")
+	t.Setenv("APPDIR", "/tmp/.mount_mortarX")
+	t.Setenv("LD_LIBRARY_PATH", "/tmp/.mount_mortarX/usr/lib")
+	for _, kv := range (&Service{}).dotnetEnv() {
+		if strings.Contains(kv, "/tmp/.mount_mortarX") {
+			t.Errorf("build environment keeps %s", kv)
+		}
 	}
 }

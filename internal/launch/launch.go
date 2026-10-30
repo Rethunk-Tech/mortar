@@ -17,6 +17,8 @@ import (
 	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 	"github.com/Rethunk-Tech/go-gamelocator/steam"
 	"github.com/Rethunk-Tech/go-safefs"
+
+	"github.com/Rethunk-Tech/mortar/internal/hostenv"
 )
 
 // Hint names why a launch failed, for the frontend to explain in the user's language.
@@ -124,9 +126,7 @@ func StartHidden(ctx context.Context, env []string, dir, name string, args ...st
 func startCmd(ctx context.Context, env []string, dir, name string, args []string, hide bool) (<-chan error, error) {
 	cmd := flatpak.CommandContext(ctx, name, args...)
 	cmd.Dir = dir
-	if len(env) > 0 {
-		cmd.Env = append(os.Environ(), env...)
-	}
+	cmd.Env = append(hostenv.Environ(), env...)
 	if ownsConsole(hide) {
 		return startOwnConsole(env, dir, name, args)
 	}
