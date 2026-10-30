@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"slices"
 
+	"github.com/Rethunk-Tech/go-modmanagers/r2modman"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
@@ -118,7 +119,7 @@ func (s *Service) LocalProfiles(gameID string) ([]LocalProfile, error) {
 		}
 	}
 	for _, data := range pack.DataDirs(s.folder()) {
-		scan(data, info.R2modmanFolder, pack.IsProfileFolder)
+		scan(data, info.R2modmanFolder, r2modman.IsProfileFolder)
 	}
 	if src, ok := info.Source("thunderstore"); ok && src.Key != "" {
 		if db := pack.GaleDB(s.folder()); db != "" {

@@ -132,10 +132,7 @@ type Profile struct {
 func (Profile) ID() string { return "r2modman-profile" }
 
 // Detect accepts a folder holding mods.yml.
-func (Profile) Detect(in Input) bool { return in.Path != "" && IsProfileFolder(in.Path) }
-
-// IsProfileFolder reports whether dir is an r2modman profile folder: it holds a mods.yml.
-func IsProfileFolder(dir string) bool { return r2modman.IsProfileFolder(dir) }
+func (Profile) Detect(in Input) bool { return in.Path != "" && r2modman.IsProfileFolder(in.Path) }
 
 // Parse reads mods.yml and the profile's BepInEx/config files. Game is the catalog id when GameByFolder knows
 // r2modman's folder name for the game (for example "LethalCompany"), else that folder name.
