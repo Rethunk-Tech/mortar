@@ -204,7 +204,7 @@ type Service struct {
 	SweepHasUpdate   func(uniqueID mod.ID, nexusID int) bool
 	SweepMissingDeps func(gameID, profileID string) int
 	// Symbols names native crash frames from symbol servers; nil names none.
-	Symbols *symsrv.Resolver
+	Symbols *winsym.Resolver
 }
 
 func NewService(home string, s *settings.Store, profiles *profile.Store) *Service {
@@ -223,12 +223,12 @@ func NewService(home string, s *settings.Store, profiles *profile.Store) *Servic
 // symbolWait is how long explaining a crash waits for a PDB download before showing the module and offset instead.
 const symbolWait = 5 * time.Second
 
-func symbolResolver() *symsrv.Resolver {
+func symbolResolver() *winsym.Resolver {
 	dir, err := datadir.Dir()
 	if err != nil {
 		return nil
 	}
-	return &symsrv.Resolver{
+	return &winsym.Resolver{
 		HTTP: &http.Client{Timeout: 10 * time.Minute}, Dir: filepath.Join(dir, "cache", "symbols"),
 		Online: func() bool { return !netstate.Offline() }, Wait: symbolWait,
 	}
