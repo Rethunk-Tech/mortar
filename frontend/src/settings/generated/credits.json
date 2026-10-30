@@ -155,6 +155,11 @@
     "url": "https://github.com/Rethunk-Tech/go-dotnet"
   },
   {
+    "name": "github.com/Rethunk-Tech/go-fomod",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/go-fomod"
+  },
+  {
     "name": "github.com/Rethunk-Tech/go-gamelocator",
     "licence": "MIT",
     "url": "https://github.com/Rethunk-Tech/go-gamelocator"
@@ -178,6 +183,16 @@
     "name": "github.com/Rethunk-Tech/go-lenientjson",
     "licence": "MIT",
     "url": "https://github.com/Rethunk-Tech/go-lenientjson"
+  },
+  {
+    "name": "github.com/Rethunk-Tech/go-modmanagers",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/go-modmanagers"
+  },
+  {
+    "name": "github.com/Rethunk-Tech/go-nexusmods",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/go-nexusmods"
   },
   {
     "name": "github.com/Rethunk-Tech/go-safefs",
@@ -268,11 +283,6 @@
     "name": "golang.org/x/sys",
     "licence": "BSD-3-Clause",
     "url": "https://pkg.go.dev/golang.org/x/sys"
-  },
-  {
-    "name": "golang.org/x/text",
-    "licence": "BSD-3-Clause",
-    "url": "https://pkg.go.dev/golang.org/x/text"
   },
   {
     "name": "modernc.org/sqlite",

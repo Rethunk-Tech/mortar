@@ -4296,6 +4296,10 @@ msgstr "Recently played"
 msgid "Created {name}"
 msgstr "Created {name}"
 
+#: src/downloads/autoInstall.ts
+msgid "Open a profile of this game, or pick one beside the folder in Settings, to add its mods"
+msgstr "Open a profile of this game, or pick one beside the folder in Settings, to add its mods"
+
 #: src/i18n/counts.ts
 #: src/share/ListFormat.tsx
 msgid "{count, plural, one {# mod} other {# mods}}"
