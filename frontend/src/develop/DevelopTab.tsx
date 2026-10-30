@@ -39,7 +39,6 @@ import { isViewMode, type ViewMode } from '../shell/viewMode.ts'
 import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
-import { usePending } from '../toasts/usePending.ts'
 import { AdoptHost } from './AdoptDialog.tsx'
 import { useAdopting } from './adopting.ts'
 import { refreshInfo, useProjectInfo } from './builds.ts'
@@ -187,29 +186,27 @@ function ProjectGrid({
   )
 }
 
+// Picking is modal and the dialog that follows holds its own state, so the tab keeps none for the pick: one more
+// state here would redraw every project card twice per add.
 function useAddFolder(game: string, openId: string) {
   const { t } = useLingui()
-  const [adding, run] = usePending()
-  const addFolder = () =>
-    run(
-      async () => {
-        const dir = await PickFolder(t`Choose the mod project's folder`)
-        if (!dir) {
-          return
-        }
-        const found = await Detect(game, dir)
-        if (!found.known) {
-          useAdopting.getState().ask({ game, dir, found })
-          return
-        }
-        const project = await Add(game, dir, openId)
-        useToasts
-          .getState()
-          .push({ kind: 'success', title: t`Added ${{ name: project.name }}`, body: project.dir })
-      },
-      { errorTitle: t`Could not add the project` },
-    )
-  return [adding, addFolder] as const
+  return () => {
+    ;(async () => {
+      const dir = await PickFolder(t`Choose the mod project's folder`)
+      if (!dir) {
+        return
+      }
+      const found = await Detect(game, dir)
+      if (!found.known) {
+        useAdopting.getState().ask({ game, dir, found })
+        return
+      }
+      const project = await Add(game, dir, openId)
+      useToasts
+        .getState()
+        .push({ kind: 'success', title: t`Added ${{ name: project.name }}`, body: project.dir })
+    })().catch(reportError(t`Could not add the project`))
+  }
 }
 
 /** The open profile's own mods in development: start one from the template, then build, test, pack and release it. */
@@ -221,7 +218,7 @@ export function DevelopTab({ game }: { game: string }) {
   const [cloning, setCloning] = useState(false)
   const [reading, setReading] = useState(false)
   const [addMenu, setAddMenu] = useState<HTMLElement | null>(null)
-  const [adding, addFolder] = useAddFolder(game, openId)
+  const addFolder = useAddFolder(game, openId)
   const [query, setQuery] = useState('')
   const [view, setView] = useStoredState<ViewMode>(`mortar.developView.${game}`, 'list', isViewMode)
   const here = projects.filter((p) => p.profile === openId)
@@ -281,7 +278,6 @@ export function DevelopTab({ game }: { game: string }) {
           <MenuAction
             icon={<FolderPlus size={16} aria-hidden={true} />}
             label={t`Add a project folder…`}
-            disabled={adding}
             onClick={() => {
               setAddMenu(null)
               addFolder()
