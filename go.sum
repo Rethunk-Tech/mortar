@@ -18,6 +18,8 @@ github.com/Rethunk-Tech/go-fomod v0.1.0 h1:NAmHf2WPHAsD+fcuc1UYWyjYpG56ioDwxjf/Q
 github.com/Rethunk-Tech/go-fomod v0.1.0/go.mod h1:vNHiJeDb3TOL4FMGPqANWoM3kA16wKUDL/2kEEJ0BMo=
 github.com/Rethunk-Tech/go-gamelocator v0.1.0 h1:OS8Gp+ANUu4BHzCL0+YqclN4UVZE0qDZmuUXd0QH8Sg=
 github.com/Rethunk-Tech/go-gamelocator v0.1.0/go.mod h1:+QGK8M6vxBzKDmy70Gdj0pJMmCECbn8jCeZq7oa4/AY=
+github.com/Rethunk-Tech/go-gameproc v0.1.0 h1:ZbuqIW6Dqqt9n7m0mTq+M12PmkYPlHtGt/DNgdJgqr4=
+github.com/Rethunk-Tech/go-gameproc v0.1.0/go.mod h1:QxA0/v7sAD+a2yOkIO/Zkznp4H197STWms/Y9vYUvnA=
 github.com/Rethunk-Tech/go-github v0.1.1 h1:FwT2hDvsM92lVtoZ9kNInhBbMO31igrudzjiPflMge0=
 github.com/Rethunk-Tech/go-github v0.1.1/go.mod h1:/SY8QlMDDvAlSuN1uESIrEaTrUIzM85RrHjLnmgJxJk=
 github.com/Rethunk-Tech/go-httpkit v0.1.0 h1:SvoqwGRNV1p5C35bIyNmVdcjkyX+9uYq+kDbXhmPXB0=
