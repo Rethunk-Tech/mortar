@@ -3358,6 +3358,10 @@ msgstr ""
 msgid "Logs"
 msgstr ""
 
+#: src/settings/shortcutLabels.ts
+msgid "Go forward"
+msgstr ""
+
 #: src/settings/prefCopy.ts
 msgid "How profiles are ordered in the sidebar"
 msgstr ""

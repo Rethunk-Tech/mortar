@@ -100,6 +100,8 @@ export function runShortcut(id: ShortcutId) {
       return openShare(profiles.openId)
     case 'back':
       return go(-1)
+    case 'forward':
+      return go(1)
     case 'help':
       return useConsole.getState().setHelping(true)
     case 'downloads': {

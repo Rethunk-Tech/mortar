@@ -3358,6 +3358,10 @@ msgstr "Set Update digest notification to something other than Off first."
 msgid "Logs"
 msgstr "Logs"
 
+#: src/settings/shortcutLabels.ts
+msgid "Go forward"
+msgstr "Go forward"
+
 #: src/settings/prefCopy.ts
 msgid "How profiles are ordered in the sidebar"
 msgstr "How profiles are ordered in the sidebar"

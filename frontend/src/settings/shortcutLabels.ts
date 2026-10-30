@@ -37,6 +37,7 @@ export function shortcutLabels(i18n: I18n): Record<ShortcutId, string> {
     'next-profile': i18n._(msg`Open the next profile`),
     'collapse-sidebar': i18n._(msg`Collapse or expand the sidebar`),
     back: i18n._(msg`Go back`),
+    forward: i18n._(msg`Go forward`),
     help: i18n._(msg`Get help`),
     'vanilla-play': i18n._(msg`Play the game without mods`),
   }

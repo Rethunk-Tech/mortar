@@ -45,6 +45,7 @@ var defaultShortcuts = map[string]string{
 	"next-profile":      "Ctrl+PageDown",
 	"collapse-sidebar":  "Ctrl+B",
 	"back":              "Alt+Left",
+	"forward":           "Alt+Right",
 	"help":              "F1",
 	"vanilla-play":      "Ctrl+Shift+P",
 }

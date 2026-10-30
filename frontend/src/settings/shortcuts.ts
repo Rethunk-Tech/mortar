@@ -35,6 +35,7 @@ export type ShortcutId =
   | 'next-profile'
   | 'collapse-sidebar'
   | 'back'
+  | 'forward'
   | 'help'
   | 'vanilla-play'
 
@@ -85,6 +86,7 @@ export const SHORTCUTS: readonly Shortcut[] = [
   { id: 'next-profile', keys: 'Ctrl+PageDown', always: false, group: 'Navigation' },
   { id: 'collapse-sidebar', keys: 'Ctrl+B', always: false, group: 'Navigation' },
   { id: 'back', keys: 'Alt+Left', always: false, group: 'Navigation' },
+  { id: 'forward', keys: 'Alt+Right', always: false, group: 'Navigation' },
   { id: 'help', keys: 'F1', always: false, group: 'General' },
   { id: 'vanilla-play', keys: 'Ctrl+Shift+P', always: false, group: 'General' },
 ]
