@@ -8,6 +8,7 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material'
+import { useLoaded } from '@rethunk/react-load-hooks'
 import { Events } from '@wailsio/runtime'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type {
@@ -34,7 +35,13 @@ import { useToasts } from '../toasts/store.ts'
 function EnterCodeDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useLingui()
   // null until the first scan answers, so the dialog never flashes "none found" before it has looked.
-  const [peers, setPeers] = useState<Peer[] | null>(null)
+  const { data: found, error: scanError } = useLoaded<Peer[] | null>(
+    open ? async () => (await Peers()) ?? [] : null,
+    [open],
+    null,
+    (error) => toastError(t`Could not find Mortar users`, error),
+  )
+  const peers = scanError === null ? found : []
   const [target, setTarget] = useState('')
   const [manual, setManual] = useState('')
   const [code, setCode] = useState('')
@@ -44,22 +51,8 @@ function EnterCodeDialog({ open, onClose }: { open: boolean; onClose: () => void
       setTarget('')
       setManual('')
       setCode('')
-      setPeers(null)
-      return
     }
-    let live = true
-    Peers()
-      .then((next) => live && setPeers(next ?? []))
-      .catch((error: unknown) => {
-        if (live) {
-          setPeers([])
-          toastError(t`Could not find Mortar users`, error)
-        }
-      })
-    return () => {
-      live = false
-    }
-  }, [open, t])
+  }, [open])
   const address = manual.trim() === '' ? target : manual.trim()
   let issue = ''
   if (address === '') {
