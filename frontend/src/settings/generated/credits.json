@@ -235,6 +235,11 @@
     "url": "https://github.com/Rethunk-Tech/go-smapiweb"
   },
   {
+    "name": "github.com/Rethunk-Tech/go-thunderstore",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/go-thunderstore"
+  },
+  {
     "name": "github.com/Rethunk-Tech/go-tilemask",
     "licence": "MIT",
     "url": "https://github.com/Rethunk-Tech/go-tilemask"
