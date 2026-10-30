@@ -681,12 +681,12 @@ func refusesAlphaHeader(t *testing.T, header string) {
 // A mask written by an earlier release still reads, and is written back the same.
 func TestAlphaDiskReadsAnEarlierReleasesFile(t *testing.T) {
 	t.Parallel()
-	old, err := os.ReadFile("testdata/mask-gzip-19x5.gz")
+	old, err := safefs.ReadFile("testdata/mask-gzip-19x5.gz")
 	if err != nil {
 		t.Fatal(err)
 	}
 	path := filepath.Join(t.TempDir(), "old.gz")
-	if err := os.WriteFile(path, old, 0o600); err != nil {
+	if err := safefs.WriteFile(path, old, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	got := readAlphaDisk(path)
