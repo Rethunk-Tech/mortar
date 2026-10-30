@@ -18,6 +18,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-cfgedit/msbuild"
 	"github.com/Rethunk-Tech/go-desktopenv/nowindow"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
@@ -28,7 +29,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/hostenv"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
-	"github.com/Rethunk-Tech/mortar/internal/msbuild"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"

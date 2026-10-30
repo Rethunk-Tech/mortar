@@ -14,9 +14,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-cfgedit/msbuild"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/modpic"
-	"github.com/Rethunk-Tech/mortar/internal/msbuild"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )

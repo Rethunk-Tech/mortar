@@ -12,9 +12,9 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-cfgedit/msbuild"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/msbuild"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
