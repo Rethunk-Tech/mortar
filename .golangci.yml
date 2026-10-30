@@ -62,7 +62,7 @@ linters:
     rules:
       # safefs wraps these calls; tests, build tools, /proc reads, a file the user names on the CLI and a game's own
       # options file are not Mortar's own data, so they keep the plain calls.
-      - path: (_test\.go$|^cmd/|^graphics_linux\.go$|^internal/launch/term_unix\.go$|^internal/sampler/ipc\.go$|^internal/cli/farm\.go$|^internal/gamesettings/types\.go$)
+      - path: (_test\.go$|^cmd/|^graphics_linux\.go$|^internal/sampler/ipc\.go$|^internal/cli/farm\.go$|^internal/gamesettings/types\.go$)
         linters:
           - forbidigo
   settings:

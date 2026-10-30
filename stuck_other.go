@@ -4,16 +4,11 @@ package main
 
 import (
 	"os"
-	"strconv"
 	"syscall"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
 )
-
-func processExe(pid int) (string, error) {
-	return os.Readlink("/proc/" + strconv.Itoa(pid) + "/exe")
-}
 
 // waitGone waits up to 5 seconds for an ended process to be gone; it is not this process's child, so Wait cannot.
 func waitGone(p *os.Process) {

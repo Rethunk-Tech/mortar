@@ -9,6 +9,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/Rethunk-Tech/go-gameproc"
 	"github.com/Rethunk-Tech/go-safefs"
 )
 
@@ -87,7 +88,7 @@ func (c *capture) release() {
 // stop ends the launched process and everything it started.
 func (c *capture) stop() {
 	if c != nil && c.cmd.Process != nil {
-		killTree(c.cmd.Process.Pid)
+		gameproc.KillTree(c.cmd.Process.Pid)
 	}
 }
 

@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/Rethunk-Tech/go-gameproc"
+
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
 )
@@ -45,6 +47,6 @@ func runsMortar(pid int) bool {
 	if err != nil {
 		return false
 	}
-	exe, err := processExe(pid)
+	exe, err := gameproc.ImagePath(pid)
 	return err == nil && filepath.Base(exe) == filepath.Base(self)
 }

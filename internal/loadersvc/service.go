@@ -14,10 +14,10 @@ import (
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/winhost"
 
+	"github.com/Rethunk-Tech/go-gameproc"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/game"
-	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
@@ -385,7 +385,7 @@ func (s *Service) install(ctx context.Context, id, loaderID string, fromStart bo
 
 // gameRunning reports whether any process of the game runs, with or without its loader and however it was started.
 func (s *Service) gameRunning(g game.Game) (bool, error) {
-	procs, err := launch.Processes(s.procDir, game.ProcessNames(g)...)
+	procs, err := gameproc.Processes(s.procDir, game.ProcessNames(g)...)
 	if err != nil {
 		return false, fmt.Errorf("check for a running %s: %w", g.Name(), err)
 	}

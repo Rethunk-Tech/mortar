@@ -17,6 +17,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 	"github.com/Rethunk-Tech/go-gamelocator/steam"
+	"github.com/Rethunk-Tech/go-gameproc"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
@@ -443,7 +444,7 @@ func (st Starter) startVR(ctx context.Context, env StartEnv) error {
 		if env.ALVRProgram == "" {
 			return usererr.Wrap(usererr.Invalid, errors.New("ALVR is set to start first, but its program is not chosen: choose it in the game's Play settings"))
 		}
-		if running, err := launch.Processes("/proc", filepath.Base(env.ALVRProgram)); err == nil && len(running) > 0 {
+		if running, err := gameproc.Processes("/proc", filepath.Base(env.ALVRProgram)); err == nil && len(running) > 0 {
 			return nil
 		}
 		cmd = launch.Command{Dir: filepath.Dir(env.ALVRProgram), Name: env.ALVRProgram}

@@ -17,7 +17,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 	"github.com/Rethunk-Tech/go-gamelocator/steam"
-	"github.com/Rethunk-Tech/mortar/internal/launch"
+	"github.com/Rethunk-Tech/go-gameproc"
 	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 )
 
@@ -187,7 +187,7 @@ func (s *Service) AddToSteam(game, gameName, profile, profileName string) (steam
 	if status != steam.Found || st.Kind != steam.KindNative {
 		return "", errors.New("no Steam was found that can start Mortar: Steam (Flatpak) cannot run programs outside its sandbox")
 	}
-	if running, err := launch.Processes("/proc", "steam"); err == nil && len(running) > 0 {
+	if running, err := gameproc.Processes("/proc", "steam"); err == nil && len(running) > 0 {
 		return "", ErrSteamRunning
 	}
 	exe, err := os.Executable()

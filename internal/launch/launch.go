@@ -11,11 +11,13 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
 	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 	"github.com/Rethunk-Tech/go-gamelocator/steam"
+	"github.com/Rethunk-Tech/go-gameproc"
 	"github.com/Rethunk-Tech/go-safefs"
 
 	"github.com/Rethunk-Tech/mortar/internal/hostenv"
@@ -127,10 +129,10 @@ func startCmd(ctx context.Context, env []string, dir, name string, args []string
 	cmd := flatpak.CommandContext(ctx, name, args...)
 	cmd.Dir = dir
 	cmd.Env = append(hostenv.Environ(), env...)
-	if ownsConsole(hide) {
-		return startOwnConsole(env, dir, name, args)
+	if runtime.GOOS == "windows" && !hide {
+		return gameproc.StartOwnConsole(cmd.Env, dir, name, args)
 	}
-	hideWindow(cmd, hide)
+	gameproc.PrepareTree(cmd, hide)
 	// Stdin is a pipe held open until the process exits: SMAPI reads console commands in a loop that spins a whole
 	// core on an input already at end of file (/dev/null, NUL), and blocks quietly on an open one.
 	stdin, hold, err := os.Pipe()
@@ -139,7 +141,6 @@ func startCmd(ctx context.Context, env []string, dir, name string, args []string
 	}
 	cmd.Stdin = stdin
 	out := newCapture(cmd)
-	holdStart(cmd)
 	err = cmd.Start()
 	_ = stdin.Close()
 	if err != nil {
@@ -148,11 +149,10 @@ func startCmd(ctx context.Context, env []string, dir, name string, args []string
 		return nil, err
 	}
 	pid := cmd.Process.Pid
-	trackTree(pid)
-	if err := releaseStart(pid); err != nil {
-		killTree(pid)
+	if err := gameproc.TrackTree(pid); err != nil && !errors.Is(err, gameproc.ErrNotTracked) {
+		gameproc.KillTree(pid)
 		_ = cmd.Wait()
-		untrackTree(pid)
+		gameproc.UntrackTree(pid)
 		_ = hold.Close()
 		out.release()
 		return nil, err
@@ -160,7 +160,7 @@ func startCmd(ctx context.Context, env []string, dir, name string, args []string
 	done := make(chan error, 1)
 	go func() {
 		err := cmd.Wait()
-		untrackTree(pid)
+		gameproc.UntrackTree(pid)
 		_ = hold.Close()
 		out.removeIfReleased()
 		done <- err

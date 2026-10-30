@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/Rethunk-Tech/go-gameproc"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
-	"github.com/Rethunk-Tech/mortar/internal/launch"
 
 	"github.com/Rethunk-Tech/go-gamelocator/steam"
 )
@@ -81,7 +81,7 @@ func (s *Service) closedSteam() (steam.Steam, error) {
 	if status != steam.Found {
 		return steam.Steam{}, errors.New("steam was not found")
 	}
-	if running, err := launch.Processes("/proc", "steam"); err == nil && len(running) > 0 {
+	if running, err := gameproc.Processes("/proc", "steam"); err == nil && len(running) > 0 {
 		return steam.Steam{}, errors.New("close Steam first: it rewrites its settings when it exits")
 	}
 	return st, nil

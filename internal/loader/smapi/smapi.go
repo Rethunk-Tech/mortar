@@ -143,7 +143,7 @@ func (Loader) Owns(p loader.Process, prof loader.ProfileView) bool {
 }
 
 // usesModsPath reports whether args carry --mods-path pointing at modsDir. It is false when the platform gave
-// no command line: see launch.Process.Args.
+// no command line: see gameproc.Process.Args.
 func usesModsPath(args []string, modsDir string) bool {
 	want := filepath.Clean(modsDir)
 	for i, a := range args {
