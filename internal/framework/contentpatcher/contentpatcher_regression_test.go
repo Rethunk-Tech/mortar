@@ -2,6 +2,9 @@ package contentpatcher
 
 import (
 	"bytes"
+	"compress/zlib"
+	"encoding/base64"
+	"encoding/binary"
 	"image"
 	"image/color"
 	"image/png"
@@ -79,6 +82,19 @@ func TestEditMapPatchModesUseSourceLayers(t *testing.T) {
 		}
 	})
 
+	t.Run("overlay reads base64 layer data", func(t *testing.T) {
+		for _, compression := range []string{"", "zlib"} {
+			back, front := tmjLayerData(t, compression, 1, 0, 0, 0, 2, 0), tmjLayerData(t, compression, 0, 0, 3, 0, 0, 0)
+			encoded := `{"width":3,"height":2,"layers":[
+				{"type":"tilelayer","name":"Back","width":3,"height":2,"encoding":"base64","compression":"` + compression + `","data":"` + back + `"},
+				{"type":"tilelayer","name":"Front","width":3,"height":2,"encoding":"base64","compression":"` + compression + `","data":"` + front + `"}
+			]}`
+			if got, want := syntheticMapShapes(t, encoded, "Overlay"), syntheticMapShapes(t, mapJSON, "Overlay"); !slices.Equal(got, want) {
+				t.Errorf("compression %q: got %#v, want %#v", compression, got, want)
+			}
+		}
+	})
+
 	t.Run("replace by layer writes each source layer", func(t *testing.T) {
 		shapes := syntheticMapShapes(t, mapJSON, "ReplaceByLayer")
 		if len(shapes) != 2 || shapes[0].layer == "" || shapes[1].layer == "" {
@@ -108,6 +124,26 @@ func TestEditMapPatchModesUseSourceLayers(t *testing.T) {
 			t.Fatal("two overlay image patches should not clash")
 		}
 	})
+}
+
+func tmjLayerData(t *testing.T, compression string, gids ...uint32) string {
+	t.Helper()
+	var raw bytes.Buffer
+	for _, gid := range gids {
+		raw.Write(binary.LittleEndian.AppendUint32(nil, gid))
+	}
+	if compression == "zlib" {
+		var z bytes.Buffer
+		w := zlib.NewWriter(&z)
+		if _, err := w.Write(raw.Bytes()); err != nil {
+			t.Fatal(err)
+		}
+		if err := w.Close(); err != nil {
+			t.Fatal(err)
+		}
+		raw = z
+	}
+	return base64.StdEncoding.EncodeToString(raw.Bytes())
 }
 
 func syntheticMapShapes(t *testing.T, mapJSON, patchMode string) []cpShape {
