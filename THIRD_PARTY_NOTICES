@@ -3067,7 +3067,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-github@v0.1.0
+github.com/Rethunk-Tech/go-github@v0.1.1
 licence: MIT
 https://github.com/Rethunk-Tech/go-github
 
@@ -3235,7 +3235,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-safefs@v0.1.0
+github.com/Rethunk-Tech/go-safefs@v0.2.0
 licence: MIT
 https://github.com/Rethunk-Tech/go-safefs
 
