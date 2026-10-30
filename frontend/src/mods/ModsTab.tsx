@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Skeleton, Typography } from '@mui/material'
+import { isTypingTarget } from '@rethunk/dom-input-nav'
 import { useDebouncedValue } from '@rethunk/react-load-hooks'
 import { SearchX } from 'lucide-react'
 import { memo, useCallback, useEffect, useMemo, useRef } from 'react'
@@ -66,7 +67,7 @@ function SelectionKeys({ shown }: { shown: Mod[] }) {
         return
       }
       const el = e.target
-      if (el instanceof HTMLElement && el.closest('input, textarea, [contenteditable="true"]')) {
+      if (isTypingTarget(el instanceof HTMLElement ? el : null)) {
         return
       }
       if (dialogOpen()) {
@@ -156,7 +157,8 @@ const ModsBody = memo(function ModsBodyView({
       onKeyDown={(e) => {
         // Escape belongs to a field or dialog first; otherwise it closes the details panel.
         const typing =
-          e.target instanceof Element && e.target.closest('input, textarea, [role="dialog"]')
+          isTypingTarget(e.target instanceof HTMLElement ? e.target : null) ||
+          (e.target instanceof Element && e.target.closest('[role="dialog"]'))
         if (e.key === 'Escape' && !typing && useDetail.getState().detailId !== '') {
           useDetail.getState().show(null)
         }

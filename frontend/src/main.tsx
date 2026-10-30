@@ -1,6 +1,7 @@
 import '@wailsio/runtime'
 import { I18nProvider } from '@lingui/react'
 import { CssBaseline } from '@mui/material'
+import { isTypingTarget } from '@rethunk/dom-input-nav'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { Get } from '../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
@@ -42,9 +43,7 @@ import './theme/fonts.ts'
 
 document.addEventListener('contextmenu', (event) => {
   const { target } = event
-  const editable =
-    target instanceof Element &&
-    target.closest('input, textarea, [contenteditable="true"]') !== null
+  const editable = isTypingTarget(target instanceof HTMLElement ? target : null)
   const selection = globalThis.getSelection()?.toString()
   if (!(editable || selection)) {
     event.preventDefault()
