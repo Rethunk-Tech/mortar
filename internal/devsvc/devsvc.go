@@ -25,6 +25,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
+	"github.com/Rethunk-Tech/mortar/internal/hostenv"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/msbuild"
@@ -42,10 +43,8 @@ const (
 
 var (
 	modName = regexp.MustCompile(`^[A-Z][A-Za-z0-9]{1,63}$`)
-
 	// codeName is an adopted C# project's name: its project file's, which need not follow the template's naming.
 	codeName  = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$`)
-
 	repoName  = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$`)
 	ownerName = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9-]{0,38}$`)
 	refPath   = regexp.MustCompile(`[^A-Za-z0-9._-]+`)
