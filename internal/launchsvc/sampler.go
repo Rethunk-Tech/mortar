@@ -3,6 +3,7 @@ package launchsvc
 import (
 	"context"
 	"errors"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -10,12 +11,12 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-gameproc"
+	"github.com/Rethunk-Tech/go-nettrace"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
-	"github.com/Rethunk-Tech/mortar/internal/sampler"
 )
 
 const (
@@ -47,7 +48,7 @@ func (s *Service) sampleStartup(parent context.Context, g game.Game, profileID, 
 		log.Printf("startup sampler: %s: %v", g.ID(), err)
 		return
 	}
-	session, err := startSampler(ctx, process.PID)
+	session, file, err := startSampler(ctx, process.PID)
 	if err != nil {
 		log.Printf("startup sampler: %s: %v", g.ID(), err)
 		return
@@ -55,19 +56,21 @@ func (s *Service) sampleStartup(parent context.Context, g game.Game, profileID, 
 	detached := context.WithoutCancel(ctx)
 	reportID, reportFound := s.waitForSampleReport(ctx, g, profileID, modsDir, filepath.Join(profileDir, startupDir), before)
 	stopCtx, stopCancel := context.WithTimeout(detached, 30*time.Second)
-	tracePath, stopErr := session.Stop(stopCtx)
+	stopErr := session.Stop(stopCtx)
 	stopCancel()
 	stopped()
+	defer func() {
+		_ = file.Close()
+		_ = safefs.Remove(file.Name())
+	}()
 	if stopErr != nil {
-		_ = safefs.Remove(tracePath)
 		log.Printf("startup sampler: %s: %v", g.ID(), stopErr)
 		return
 	}
-	defer func() { _ = safefs.Remove(tracePath) }()
 	if !reportFound {
 		return
 	}
-	samples, err := writeStartupSamples(tracePath, filepath.Join(profileDir, startupDir), reportID, modsDir)
+	samples, err := writeStartupSamples(file, filepath.Join(profileDir, startupDir), reportID, modsDir)
 	if err != nil {
 		log.Printf("startup sampler: %s: %v", g.ID(), err)
 		return
@@ -75,21 +78,30 @@ func (s *Service) sampleStartup(parent context.Context, g game.Game, profileID, 
 	log.Printf("startup sampler: %s: %d main-thread samples, %d mods charged, %d ms other", g.ID(), samples.ThreadSamples, len(samples.Mods), samples.OtherMs)
 }
 
-func startSampler(ctx context.Context, pid int) (*sampler.Session, error) {
-	var last error
+// startSampler traces the game's startup into a temp file the caller closes and removes once the session has stopped.
+func startSampler(ctx context.Context, pid int) (*nettrace.Session, *os.File, error) {
+	file, err := os.CreateTemp("", "mortar-startup-*.nettrace")
+	if err != nil {
+		return nil, nil, err
+	}
 	for {
-		session, err := sampler.Start(ctx, pid)
+		session, err := nettrace.StartTracing(ctx, pid, nettrace.Config{}, file)
 		if err == nil {
-			return session, nil
+			return session, file, nil
 		}
-		last = err
 		timer := time.NewTimer(100 * time.Millisecond)
 		select {
 		case <-ctx.Done():
 			timer.Stop()
-			return nil, last
+			err = ctx.Err()
 		case <-timer.C:
+			if errors.Is(err, nettrace.ErrNoEndpoint) {
+				continue
+			}
 		}
+		_ = file.Close()
+		_ = safefs.Remove(file.Name())
+		return nil, nil, err
 	}
 }
 
@@ -165,8 +177,11 @@ func newStartupReport(path string, before map[string]bool) string {
 	return ""
 }
 
-func writeStartupSamples(tracePath, startupPath, reportID, modsDir string) (startupSamples, error) {
-	trace, err := sampler.ParseFile(tracePath)
+func writeStartupSamples(file *os.File, startupPath, reportID, modsDir string) (startupSamples, error) {
+	if _, err := file.Seek(0, io.SeekStart); err != nil {
+		return startupSamples{}, err
+	}
+	trace, err := nettrace.Parse(file)
 	if err != nil {
 		return startupSamples{}, err
 	}
@@ -178,13 +193,7 @@ func writeStartupSamples(tracePath, startupPath, reportID, modsDir string) (star
 	if !ok {
 		return startupSamples{}, errors.New("no mod frames were sampled")
 	}
-	charged := sampler.Charge(trace.Samples, threadID, assemblyToMod)
-	samples := startupSamples{
-		Schema:        1,
-		Mods:          charged.Mods,
-		OtherMs:       charged.OtherMs,
-		ThreadSamples: charged.ThreadSamples,
-	}
+	samples := charge(trace.Samples, threadID, assemblyToMod)
 	return samples, datadir.WriteJSON(filepath.Join(startupPath, reportID+".samples.json"), samples)
 }
 
@@ -224,17 +233,17 @@ func mapModAssemblies(assemblyToMod map[string]string, dir string, uniqueID mod.
 	return nil
 }
 
-func mainSampleThread(samples []sampler.Sample, assemblyToMod map[string]string) (uint32, bool) {
-	counts := make(map[uint32]int)
+func mainSampleThread(samples []nettrace.Sample, assemblyToMod map[string]string) (uint64, bool) {
+	counts := make(map[uint64]int)
 	for _, sample := range samples {
 		for _, frame := range sample.Frames {
-			if mappedAssembly(frame.Assembly, assemblyToMod) {
+			if modOf(frame.Assembly, assemblyToMod) != "" {
 				counts[sample.ThreadID]++
 				break
 			}
 		}
 	}
-	var threadID uint32
+	var threadID uint64
 	count := 0
 	for candidate, value := range counts {
 		if value > count {
@@ -242,11 +251,4 @@ func mainSampleThread(samples []sampler.Sample, assemblyToMod map[string]string)
 		}
 	}
 	return threadID, count != 0
-}
-
-func mappedAssembly(assembly string, assemblyToMod map[string]string) bool {
-	assembly = strings.TrimSpace(strings.SplitN(assembly, ",", 2)[0])
-	assembly = strings.TrimSuffix(filepath.Base(strings.ReplaceAll(assembly, `\`, `/`)), ".dll")
-	_, ok := assemblyToMod[assembly]
-	return ok
 }

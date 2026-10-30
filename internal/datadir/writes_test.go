@@ -15,7 +15,7 @@ import (
 var writersOutsideDatadir = map[string]string{
 	"components/components.go": "temp file beside the catalog cache, renamed over it",
 	"launch/output.go":         "a throwaway game log in the OS temp folder",
-	"sampler/ipc.go":           "a throwaway trace in the OS temp folder",
+	"launchsvc/sampler.go":     "a throwaway trace in the OS temp folder",
 	"cli/console_windows.go":   "opens the console device, creates nothing",
 }
 
