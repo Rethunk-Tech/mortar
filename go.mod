@@ -3,12 +3,14 @@ module github.com/Rethunk-Tech/mortar
 go 1.27.3
 
 require (
-	github.com/BurntSushi/toml v1.6.0
 	github.com/Rethunk-Tech/go-archive v0.2.0
+	github.com/Rethunk-Tech/go-avscan v0.1.0
+	github.com/Rethunk-Tech/go-cfgedit v0.1.0
 	github.com/Rethunk-Tech/go-desktopenv v0.1.0
 	github.com/Rethunk-Tech/go-dotnet v0.1.0
 	github.com/Rethunk-Tech/go-fomod v0.1.0
 	github.com/Rethunk-Tech/go-gamelocator v0.1.0
+	github.com/Rethunk-Tech/go-gameproc v0.1.0
 	github.com/Rethunk-Tech/go-github v0.1.1
 	github.com/Rethunk-Tech/go-httpkit v0.1.0
 	github.com/Rethunk-Tech/go-keyring v0.1.0
@@ -18,6 +20,8 @@ require (
 	github.com/Rethunk-Tech/go-safefs v0.2.0
 	github.com/Rethunk-Tech/go-semverish v0.1.0
 	github.com/Rethunk-Tech/go-smapiweb v0.1.0
+	github.com/Rethunk-Tech/go-tilemask v0.1.0
+	github.com/Rethunk-Tech/go-winsym v0.1.0
 	github.com/andybalholm/brotli v1.2.7
 	github.com/coder/websocket v1.8.15
 	github.com/fsnotify/fsnotify v1.10.1
@@ -38,11 +42,7 @@ require (
 
 require (
 	git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3 // indirect
-	github.com/Rethunk-Tech/go-avscan v0.1.0 // indirect
-	github.com/Rethunk-Tech/go-cfgedit v0.1.0 // indirect
-	github.com/Rethunk-Tech/go-gameproc v0.1.0 // indirect
-	github.com/Rethunk-Tech/go-tilemask v0.1.0 // indirect
-	github.com/Rethunk-Tech/go-winsym v0.1.0 // indirect
+	github.com/BurntSushi/toml v1.6.0 // indirect
 	github.com/adrg/xdg v0.5.3 // indirect
 	github.com/andygrunwald/vdf v1.1.0 // indirect
 	github.com/bodgit/plumbing v1.3.0 // indirect
