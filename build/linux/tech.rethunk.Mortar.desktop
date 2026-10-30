@@ -3,6 +3,7 @@ Type=Application
 Name=Mortar
 Exec=mortar %u
 Icon=tech.rethunk.Mortar
+# Both main categories on purpose: Mortar belongs under Games and under Utilities.
 Categories=Game;Utility;
 Comment=Desktop mod manager for PC games
 Terminal=false
