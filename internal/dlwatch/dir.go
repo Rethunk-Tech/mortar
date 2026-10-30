@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/hostenv"
+	"github.com/Rethunk-Tech/go-desktopenv/hostenv"
 )
 
 // UserDir is the platform Downloads folder: xdg-user-dir DOWNLOAD or ~/Downloads

@@ -6,7 +6,7 @@ import (
 	"context"
 	"os/exec"
 
-	"github.com/Rethunk-Tech/mortar/internal/hostenv"
+	"github.com/Rethunk-Tech/go-desktopenv/hostenv"
 )
 
 func start(exe, link string) error {

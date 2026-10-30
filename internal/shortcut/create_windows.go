@@ -13,6 +13,7 @@ import (
 	"github.com/go-ole/go-ole"
 	"github.com/go-ole/go-ole/oleutil"
 
+	"github.com/Rethunk-Tech/go-desktopenv/lnk"
 	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/winname"
@@ -31,7 +32,7 @@ func create(exe, arg, name string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if err := writeLink(path, exe, arg); err != nil {
+	if err := lnk.Write(path, lnk.Shortcut{Target: exe, Arguments: arg, Icon: exe + ",0"}); err != nil {
 		return "", err
 	}
 	return path, nil
@@ -51,7 +52,7 @@ func freeLinkPath(dir, base, arg string) (string, error) {
 		} else if err != nil {
 			return "", err
 		}
-		if got, err := linkArguments(path); err == nil && got == arg {
+		if got, err := lnk.Arguments(path); err == nil && got == arg {
 			return path, nil
 		}
 	}
@@ -95,56 +96,14 @@ func withLink(path string, fn func(*ole.IDispatch) error) error {
 	return fn(link)
 }
 
-// writeLink drives WScript.Shell's CreateShortcut, which COM needs on one OS thread for the whole call.
-func writeLink(path, exe, arg string) error {
-	return withLink(path, func(link *ole.IDispatch) error {
-		for prop, value := range map[string]string{"TargetPath": exe, "Arguments": arg, "IconLocation": exe + ",0"} {
-			if _, err := oleutil.PutProperty(link, prop, value); err != nil {
-				return err
-			}
-		}
-		_, err := oleutil.CallMethod(link, "Save")
-		return err
-	})
-}
-
-func linkArguments(path string) (string, error) {
-	var arguments string
-	err := withLink(path, func(link *ole.IDispatch) error {
-		value, err := oleutil.GetProperty(link, "Arguments")
-		if err != nil {
-			return err
-		}
-		defer func() { _ = value.Clear() }()
-		arguments = value.ToString()
-		return nil
-	})
-	return arguments, err
-}
-
-// lnkFiles lists the shortcut files in dir; a missing dir holds none.
-func lnkFiles(dir string) ([]string, error) {
-	entries, err := os.ReadDir(dir)
-	if errors.Is(err, os.ErrNotExist) {
-		return nil, nil
-	}
-	var paths []string
-	for _, entry := range entries {
-		if !entry.IsDir() && strings.EqualFold(filepath.Ext(entry.Name()), ".lnk") {
-			paths = append(paths, filepath.Join(dir, entry.Name()))
-		}
-	}
-	return paths, err
-}
-
 func matchingLinks(dir, arg string) ([]string, error) {
-	paths, err := lnkFiles(dir)
+	paths, err := lnk.Files(dir)
 	if err != nil {
 		return nil, err
 	}
 	var matches []string
 	for _, path := range paths {
-		got, err := linkArguments(path)
+		got, err := lnk.Arguments(path)
 		if errors.Is(err, os.ErrNotExist) {
 			continue
 		}
@@ -226,7 +185,7 @@ func Repoint(exe string) error {
 	if err != nil {
 		return err
 	}
-	paths, err := lnkFiles(dir)
+	paths, err := lnk.Files(dir)
 	if err != nil {
 		return err
 	}
@@ -253,7 +212,7 @@ func Repoint(exe string) error {
 		if _, err := os.Stat(target); err == nil {
 			continue
 		}
-		errs = append(errs, writeLink(path, exe, arg))
+		errs = append(errs, lnk.Write(path, lnk.Shortcut{Target: exe, Arguments: arg, Icon: exe + ",0"}))
 	}
 	return errors.Join(errs...)
 }

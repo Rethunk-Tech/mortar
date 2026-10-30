@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-cfgedit/msbuild"
+	"github.com/Rethunk-Tech/go-desktopenv/hostenv"
 	"github.com/Rethunk-Tech/go-desktopenv/nowindow"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
@@ -26,7 +27,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
-	"github.com/Rethunk-Tech/mortar/internal/hostenv"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"

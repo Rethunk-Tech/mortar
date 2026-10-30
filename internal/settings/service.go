@@ -9,13 +9,13 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-desktopenv/fonts"
+	"github.com/Rethunk-Tech/go-desktopenv/sysaccent"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/avscan"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fonts"
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/picker"
-	"github.com/Rethunk-Tech/mortar/internal/sysaccent"
 	"github.com/Rethunk-Tech/mortar/internal/winhost"
 )
 

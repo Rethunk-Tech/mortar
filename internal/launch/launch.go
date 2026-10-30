@@ -20,7 +20,7 @@ import (
 	"github.com/Rethunk-Tech/go-gameproc"
 	"github.com/Rethunk-Tech/go-safefs"
 
-	"github.com/Rethunk-Tech/mortar/internal/hostenv"
+	"github.com/Rethunk-Tech/go-desktopenv/hostenv"
 )
 
 // Hint names why a launch failed, for the frontend to explain in the user's language.

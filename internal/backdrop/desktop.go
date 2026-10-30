@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/hostenv"
+	"github.com/Rethunk-Tech/go-desktopenv/hostenv"
 )
 
 // Runner runs gsettings with args and returns its standard output.

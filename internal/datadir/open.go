@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/hostenv"
+	"github.com/Rethunk-Tech/go-desktopenv/hostenv"
 )
 
 // checkOpenable refuses a path the system handler should not be given: one that is not absolute (a leading dash would

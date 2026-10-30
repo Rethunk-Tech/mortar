@@ -3,7 +3,7 @@ package settings
 import (
 	"slices"
 
-	"github.com/Rethunk-Tech/mortar/internal/sysaccent"
+	"github.com/Rethunk-Tech/go-desktopenv/sysaccent"
 )
 
 // AccentSystem follows the desktop's accent colour.

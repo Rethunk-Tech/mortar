@@ -8,7 +8,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-safefs"
 
-	"github.com/Rethunk-Tech/mortar/internal/hostenv"
+	"github.com/Rethunk-Tech/go-desktopenv/hostenv"
 )
 
 // The .NET CLI leaves two empty folders from Directory.CreateTempSubdirectory in the temp folder on every command, and
