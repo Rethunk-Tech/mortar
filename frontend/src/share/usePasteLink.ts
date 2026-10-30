@@ -1,9 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
+import { isTypingTarget } from '@rethunk/dom-input-nav'
 import { useEffect } from 'react'
 import { useLocked } from '../mods/useLocked.ts'
 import { dialogOpen } from '../settings/shortcuts.ts'
 import { useToasts } from '../toasts/store.ts'
-import { classifyPastedLink, pasteTargetIsEditable } from './pasteLink.ts'
+import { classifyPastedLink } from './pasteLink.ts'
 import { openImport } from './store.ts'
 
 export function usePasteLink(profileId: string) {
@@ -12,7 +13,10 @@ export function usePasteLink(profileId: string) {
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
       const target = e.target instanceof Element ? e.target : null
-      if (pasteTargetIsEditable(target) || pasteTargetIsEditable(document.activeElement)) {
+      if (
+        isTypingTarget(target, { ancestors: true }) ||
+        isTypingTarget(document.activeElement, { ancestors: true })
+      ) {
         return
       }
       if (dialogOpen()) {

@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { classifyPastedLink, pasteTargetIsEditable } from './pasteLink.ts'
+import { classifyPastedLink } from './pasteLink.ts'
 
 test('classifyPastedLink recognises share, collection and mod links', () => {
   expect(classifyPastedLink('https://mortar.rethunk.tech/stardew/p#abc')).toBe('share')
@@ -37,23 +37,4 @@ test('classifyPastedLink does not confuse collection, mod and share shapes', () 
   expect(classifyPastedLink('https://www.nexusmods.com/games/stardewvalley/mods/1915')).not.toBe(
     'share',
   )
-})
-
-test('pasteTargetIsEditable is true for fields and their descendants', () => {
-  expect(pasteTargetIsEditable({ tagName: 'INPUT' })).toBe(true)
-  expect(pasteTargetIsEditable({ tagName: 'TEXTAREA' })).toBe(true)
-  expect(pasteTargetIsEditable({ tagName: 'SELECT' })).toBe(true)
-  expect(pasteTargetIsEditable({ tagName: 'DIV', isContentEditable: true })).toBe(true)
-  expect(
-    pasteTargetIsEditable({
-      tagName: 'SPAN',
-      closest: () => ({}),
-    }),
-  ).toBe(true)
-})
-
-test('pasteTargetIsEditable is false for the page body and a plain div', () => {
-  expect(pasteTargetIsEditable({ tagName: 'BODY' })).toBe(false)
-  expect(pasteTargetIsEditable({ tagName: 'DIV' })).toBe(false)
-  expect(pasteTargetIsEditable(null)).toBe(false)
 })

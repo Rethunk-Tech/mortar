@@ -13,28 +13,6 @@ const COLLECTION = /^\/games\/[^/]+\/collections\/[^/]+(?:\/revisions\/\d+)?$/
 const MOD_ON_GAME = /^\/games\/[^/]+\/mods\/\d+$/
 const MOD_ON_DOMAIN = /^\/[^/]+\/mods\/\d+$/
 
-function pasteTargetIsEditable(
-  el: {
-    tagName?: string
-    isContentEditable?: boolean
-    closest?: (selector: string) => unknown
-  } | null,
-): boolean {
-  if (!el) {
-    return false
-  }
-  const tag = el.tagName?.toLowerCase()
-  if (tag === 'input' || tag === 'textarea' || tag === 'select') {
-    return true
-  }
-  if (el.isContentEditable) {
-    return true
-  }
-  return Boolean(
-    el.closest?.('input, textarea, select, [contenteditable=""], [contenteditable="true"]'),
-  )
-}
-
 function classifyPastedLink(text: string): PastedLinkKind | null {
   const value = text.trim()
   if (!value) {
@@ -71,4 +49,4 @@ function classifyPastedLink(text: string): PastedLinkKind | null {
   return null
 }
 
-export { classifyPastedLink, pasteTargetIsEditable }
+export { classifyPastedLink }
