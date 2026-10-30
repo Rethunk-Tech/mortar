@@ -167,27 +167,6 @@ func TestMO2DirsFollowSettings(t *testing.T) {
 			t.Fatalf("mods=%q want %q err=%v", got, mods, err)
 		}
 	})
-
-	t.Run("BASE_DIR expands", func(t *testing.T) {
-		t.Parallel()
-		root := t.TempDir()
-		write(root, "[Settings]\nprofiles_directory=%BASE_DIR%/prof\n")
-		if _, profiles := mo2Dirs(root); profiles != filepath.Join(root, "prof") {
-			t.Fatalf("profiles = %q", profiles)
-		}
-	})
-}
-
-func TestMO2DirsRelative(t *testing.T) {
-	t.Parallel()
-	root := t.TempDir()
-	if err := os.WriteFile(filepath.Join(root, "ModOrganizer.ini"), []byte("[Settings]\nbase_directory=data\nmod_directory=staged\n"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	mods, profiles := mo2Dirs(root)
-	if mods != filepath.Join(root, "staged") || profiles != filepath.Join(root, "data", "profiles") {
-		t.Fatalf("mods=%q profiles=%q", mods, profiles)
-	}
 }
 
 func TestMO2DetectUsesChosenFolder(t *testing.T) {

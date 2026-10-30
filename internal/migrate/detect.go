@@ -10,6 +10,9 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
+	"github.com/Rethunk-Tech/go-modmanagers/mo2"
+	"github.com/Rethunk-Tech/go-modmanagers/stardrop"
+	"github.com/Rethunk-Tech/go-modmanagers/vortex"
 	"github.com/Rethunk-Tech/mortar/internal/installer"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi"
 
@@ -79,16 +82,16 @@ func detect(home, modsPath, gameID, vortexFolder, mo2Folder string) ([]installat
 	var out []installation
 
 	if gameID == "stardew" {
-		stardropRoot := filepath.Join(config, "Stardrop", "Data", "Profiles")
-		profiles, err := stardropProfiles(stardropRoot, modsPath)
+		stardropData := stardrop.DataDir(config)
+		profiles, err := stardropProfiles(stardropData, modsPath)
 		if err != nil {
 			return nil, err
 		}
 		if len(profiles) > 0 {
 			out = append(out, installation{
 				info:     SourceInfo{Kind: KindStardrop, Name: "Stardrop", Profiles: profileInfos(profiles)},
-				root:     stardropRoot,
-				modsPath: stardropModsPath(filepath.Dir(stardropRoot), modsPath),
+				root:     stardropData,
+				modsPath: stardrop.ModsFolder(stardropData, modsPath),
 			})
 		}
 	}
@@ -123,7 +126,11 @@ func previewInstallation(install installation, id string) (ProfilePreview, error
 	case KindVortex:
 		return vortexPreview(install.root, install.vortexID, install.gameID, id)
 	case KindMO2:
-		return mo2Preview(install.root, install.modsPath, install.gameID, id)
+		inst, err := mo2.Open(install.root)
+		if err != nil {
+			return ProfilePreview{}, err
+		}
+		return mo2Preview(inst, install.modsPath, install.gameID, id)
 	default:
 		return ProfilePreview{}, fmt.Errorf("unsupported import source %q", install.info.Kind)
 	}
@@ -156,34 +163,35 @@ func importIDs(gameID string) components.ImportIDs {
 	return info.ImportIDs
 }
 
-// vortexRoots lists where Vortex may keep its state.v2, most specific first: the folder the user chose, the
-// per-user folder, then (Windows only) the shared folder multi-user mode moves it to. Vortex derives the shared
-// path from %ProgramData%\vortex and the per-user one from <appData>\vortex (src/main/src/Application.ts
-// multiUserPath and onReady). In multi-user mode the per-user database only holds the flag and stale data, so
-// it is skipped.
-func vortexRoots(config, chosen, programData string, windows, multiUser bool) []string {
-	var roots []string
-	if chosen != "" {
-		roots = append(roots, filepath.Clean(chosen))
-	}
-	if !multiUser {
-		roots = append(roots, filepath.Join(config, "Vortex"))
-	}
+// vortexSearch lists where Vortex may keep its state.v2 and, on Windows, the per-user database it had to read for
+// the multi-user flag, so the caller does not copy that database a second time.
+func vortexSearch(config, chosen, programData string, windows bool) (roots []string, perUser string, state *vortex.State) {
+	perUser = filepath.Join(config, "Vortex")
+	multiUser := false
 	if windows {
-		roots = append(roots, filepath.Join(programData, "vortex"))
+		if st, err := readVortexState(perUser); err == nil {
+			state, multiUser = st, st.MultiUser()
+		}
 	}
-	return roots
+	return vortex.Roots(config, programData, chosen, windows, multiUser), perUser, state
 }
 
 // detectVortex returns the first Vortex data folder that has profiles for the game.
 func detectVortex(config, chosen, programData, vortexID, gameID string, windows bool) (installation, bool, error) {
-	multiUser := windows && vortexMultiUser(filepath.Join(config, "Vortex"))
-	for _, root := range vortexRoots(config, chosen, programData, windows, multiUser) {
+	roots, perUser, userState := vortexSearch(config, chosen, programData, windows)
+	for _, root := range roots {
 		// Only a missing state.v2 means no Vortex data here; a path missing inside the staging folder is an error to show.
 		if _, err := os.Stat(filepath.Join(root, "state.v2")); errors.Is(err, os.ErrNotExist) {
 			continue
 		}
-		profiles, modsPath, err := vortexProfiles(root, vortexID, gameID)
+		state := userState
+		if root != perUser || state == nil {
+			var err error
+			if state, err = readVortexState(root); err != nil {
+				return installation{}, false, err
+			}
+		}
+		profiles, modsPath, err := vortexProfiles(state, vortexID, gameID)
 		if err != nil {
 			return installation{}, false, err
 		}
@@ -229,18 +237,21 @@ func VortexContents(home, chosen string) (VortexInventory, error) {
 		return VortexInventory{}, err
 	}
 	config := configDir(base)
-	windows := runtime.GOOS == "windows"
-	multiUser := windows && vortexMultiUser(filepath.Join(config, "Vortex"))
-	for _, root := range vortexRoots(config, chosen, programData(), windows, multiUser) {
-		state, err := readVortexState(root)
-		if errors.Is(err, os.ErrNotExist) {
-			continue
-		}
-		if err != nil {
-			return VortexInventory{}, err
+	roots, perUser, state := vortexSearch(config, chosen, programData(), runtime.GOOS == "windows")
+	for _, root := range roots {
+		state := state
+		if root != perUser || state == nil {
+			var err error
+			state, err = readVortexState(root)
+			if errors.Is(err, os.ErrNotExist) {
+				continue
+			}
+			if err != nil {
+				return VortexInventory{}, err
+			}
 		}
 		counts := map[string]int{}
-		for _, p := range vortexProfileList(state, "") {
+		for _, p := range state.Profiles("") {
 			counts[p.GameID]++
 		}
 		games := make([]VortexGame, 0, len(counts))

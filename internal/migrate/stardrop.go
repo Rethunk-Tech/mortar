@@ -5,104 +5,45 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/url"
 	"os"
 	"path/filepath"
-	"strconv"
-	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/modname"
 
-	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/go-modmanagers/stardrop"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 )
 
-type stardropProfile struct {
-	Name          string            `json:"Name"`
-	EnabledModIDs []stardropModRef  `json:"EnabledModIds"`
-	ModData       []stardropModData `json:"ModData"`
-	// PreservedModConfigs holds each mod's config.json for this profile, keyed by lower-case mod id, when
-	// Stardrop keeps configs per profile. The copy in the mod folder is whichever profile ran last.
-	PreservedModConfigs map[string]json.RawMessage `json:"PreservedModConfigs"`
-}
-
-// stardropModRef is an EnabledModIds item: a bare mod id, or an object that also names the collection that
-// installed the mod.
-type stardropModRef string
-
-func (r *stardropModRef) UnmarshalJSON(b []byte) error {
-	var id string
-	if json.Unmarshal(b, &id) == nil {
-		*r = stardropModRef(id)
-		return nil
-	}
-	var ref struct {
-		ID string `json:"UniqueId"`
-	}
-	if err := json.Unmarshal(b, &ref); err != nil {
-		return err
-	}
-	*r = stardropModRef(ref.ID)
-	return nil
-}
-
-type stardropModData struct {
-	ID         string `json:"UniqueId"`
-	Version    string `json:"Version"`
-	Name       string `json:"Name"`
-	ModPageURI string `json:"ModPageUri"`
-}
-
-func stardropProfiles(profilesDir, fallbackModsPath string) ([]ProfilePreview, error) {
-	entries, err := os.ReadDir(profilesDir)
-	if errors.Is(err, os.ErrNotExist) {
-		return nil, nil
-	}
+func stardropProfiles(dataDir, fallbackModsPath string) ([]ProfilePreview, error) {
+	ids, err := stardrop.ProfileIDs(dataDir)
 	if err != nil {
 		return nil, err
 	}
-	modsPath := stardropModsPath(filepath.Dir(profilesDir), fallbackModsPath)
+	modsPath := stardrop.ModsFolder(dataDir, fallbackModsPath)
 	var out []ProfilePreview
-	for _, entry := range entries {
-		if entry.IsDir() || !strings.EqualFold(filepath.Ext(entry.Name()), ".json") {
-			continue
-		}
-		id := strings.TrimSuffix(entry.Name(), filepath.Ext(entry.Name()))
-		preview, err := stardropPreviewFile(filepath.Join(profilesDir, entry.Name()), id, modsPath)
+	for _, id := range ids {
+		preview, err := stardropPreview(dataDir, modsPath, id)
 		if err != nil {
-			return nil, fmt.Errorf("read Stardrop profile %s: %w", entry.Name(), err)
+			return nil, fmt.Errorf("read Stardrop profile %s: %w", id, err)
 		}
 		out = append(out, preview)
 	}
 	return out, nil
 }
 
-func stardropPreview(profilesDir, modsPath, id string) (ProfilePreview, error) {
-	path := filepath.Join(profilesDir, id)
-	if filepath.Ext(path) == "" {
-		path += ".json"
-	}
-	return stardropPreviewFile(path, strings.TrimSuffix(filepath.Base(path), filepath.Ext(path)), modsPath)
-}
-
-func stardropPreviewFile(path, id, modsPath string) (ProfilePreview, error) {
-	data, err := safefs.ReadFile(path)
+// stardropPreview reads the profile file <id>.json; the extension is added here so an id with a dot still names its file.
+func stardropPreview(dataDir, modsPath, id string) (ProfilePreview, error) {
+	source, err := stardrop.ReadProfile(dataDir, id+".json")
 	if err != nil {
 		return ProfilePreview{}, err
 	}
-	var source stardropProfile
-	if err := json.Unmarshal(data, &source); err != nil {
-		return ProfilePreview{}, err
-	}
-	name := strings.TrimSpace(source.Name)
-	name = cmp.Or(name, id)
 	enabled := make(map[string]bool, len(source.EnabledModIDs))
 	enabledIDs := make([]mod.ID, 0, len(source.EnabledModIDs))
 	for _, ref := range source.EnabledModIDs {
-		id := mod.SMAPI(strings.TrimSpace(string(ref)))
-		enabled[id.Fold()] = true
-		enabledIDs = append(enabledIDs, id)
+		sid := mod.SMAPI(ref)
+		enabled[sid.Fold()] = true
+		enabledIDs = append(enabledIDs, sid)
 	}
 	mods, missing, err := stardropMods(modsPath, enabled, enabledIDs, source.ModData)
 	if err != nil {
@@ -118,34 +59,15 @@ func stardropPreviewFile(path, id, modsPath string) (ProfilePreview, error) {
 		}
 	}
 	return ProfilePreview{
-		ID: id, Name: name, Source: KindStardrop, ModsPath: modsPath, Mods: mods, Missing: missing,
+		ID: id, Name: source.Name, Source: KindStardrop, ModsPath: modsPath, Mods: mods, Missing: missing,
 	}, nil
-}
-
-func stardropModsPath(dataDir, fallback string) string {
-	path := fallback
-	data, err := safefs.ReadFile(filepath.Join(dataDir, "Settings.json"))
-	if err == nil {
-		var settings struct {
-			ModFolderPath   string `json:"ModFolderPath"`
-			SMAPIFolderPath string `json:"SMAPIFolderPath"`
-		}
-		if json.Unmarshal(data, &settings) == nil {
-			if settings.ModFolderPath != "" {
-				path = settings.ModFolderPath
-			} else if settings.SMAPIFolderPath != "" {
-				path = filepath.Join(settings.SMAPIFolderPath, "Mods")
-			}
-		}
-	}
-	return filepath.Clean(path)
 }
 
 func stardropMods(
 	modsPath string,
 	enabled map[string]bool,
 	enabledIDs []mod.ID,
-	portable []stardropModData,
+	portable []stardrop.ModData,
 ) ([]ModPreview, []string, error) {
 	found, err := folderMods(modsPath)
 	if err != nil {
@@ -162,8 +84,8 @@ func stardropMods(
 		})
 	}
 	for _, item := range portable {
-		key := mod.SMAPI(item.ID).Fold()
-		if item.ID == "" || seen[key] {
+		key := mod.SMAPI(item.UniqueID).Fold()
+		if item.UniqueID == "" || seen[key] {
 			continue
 		}
 		isEnabled := enabled[key]
@@ -174,8 +96,8 @@ func stardropMods(
 			isEnabled = true
 		}
 		out = append(out, ModPreview{
-			ID: mod.SMAPI(item.ID), Name: item.Name, Version: item.Version,
-			Enabled: isEnabled, NexusModID: nexusIDFromURL(item.ModPageURI),
+			ID: mod.SMAPI(item.UniqueID), Name: item.Name, Version: item.Version,
+			Enabled: isEnabled, NexusModID: item.NexusID(),
 		})
 	}
 	return out, missingEnabledIDs(enabledIDs, found), nil
@@ -269,24 +191,6 @@ func modDirs(modsPath string) ([]string, error) {
 func nexusID(updateKeys []string) int {
 	for _, key := range updateKeys {
 		if id, ok := smapimanifest.NexusUpdateKey(key); ok && id > 0 {
-			return id
-		}
-	}
-	return 0
-}
-
-func nexusIDFromURL(raw string) int {
-	parsed, err := url.Parse(raw)
-	if err != nil {
-		return 0
-	}
-	parts := strings.Split(strings.Trim(parsed.Path, "/"), "/")
-	for i := 0; i+1 < len(parts); i++ {
-		if !strings.EqualFold(parts[i], "mods") {
-			continue
-		}
-		id, err := strconv.Atoi(parts[i+1])
-		if err == nil && id > 0 {
 			return id
 		}
 	}

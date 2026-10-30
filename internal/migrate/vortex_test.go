@@ -2,7 +2,6 @@ package migrate
 
 import (
 	"crypto/sha256"
-	"encoding/json"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -153,21 +152,6 @@ func TestVortexStagingFolderDefaultsAndPlaceholders(t *testing.T) {
 	}
 }
 
-func TestVortexRootsOrder(t *testing.T) {
-	got := vortexRoots("cfg", "chosen", "pd", true, false)
-	want := []string{"chosen", filepath.Join("cfg", "Vortex"), filepath.Join("pd", "vortex")}
-	if !slices.Equal(got, want) {
-		t.Fatalf("windows roots = %v, want %v", got, want)
-	}
-	if got = vortexRoots("cfg", "chosen", "pd", true, true); !slices.Equal(got, []string{"chosen", filepath.Join("pd", "vortex")}) {
-		t.Fatalf("multi-user roots = %v", got)
-	}
-	got = vortexRoots("cfg", "", "pd", false, false)
-	if want = []string{filepath.Join("cfg", "Vortex")}; !slices.Equal(got, want) {
-		t.Fatalf("linux roots = %v, want %v", got, want)
-	}
-}
-
 func TestDetectUsesChosenVortexFolder(t *testing.T) {
 	home, state, _ := newVortexHome(t, "custom")
 	moved := filepath.Join(t.TempDir(), "elsewhere")
@@ -274,22 +258,5 @@ func TestVortexContentsListsGamesMortarDoesNotKnow(t *testing.T) {
 	empty, err := VortexContents(t.TempDir(), "")
 	if err != nil || empty.Folder != "" || len(empty.Games) != 0 {
 		t.Fatalf("no vortex = %#v, %v", empty, err)
-	}
-}
-
-func TestVortexNestedProfilesDecodeIndependently(t *testing.T) {
-	state := map[string]json.RawMessage{
-		"persistent": json.RawMessage(`{"profiles":{"stardewvalley":{
-			"a":{"gameId":"stardewvalley","name":"A","modState":{"m1":{"enabled":true},"m2":{"enabled":true}}},
-			"b":{"gameId":"stardewvalley","modState":{"m3":{"enabled":true}}},
-			"c":{"name":"no game"}}}}`),
-	}
-	got := map[string]vortexProfile{}
-	for _, p := range vortexProfileList(state, "") {
-		got[p.ID] = p
-	}
-	if len(got) != 2 || got["a"].Name != "A" || len(got["a"].ModState) != 2 ||
-		got["b"].Name != "b" || len(got["b"].ModState) != 1 {
-		t.Fatalf("profiles = %#v", got)
 	}
 }
