@@ -19,6 +19,7 @@ import (
 	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
+	"github.com/Rethunk-Tech/mortar/internal/hostenv"
 	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
@@ -105,7 +106,9 @@ func baseDir(env, fallback string) string {
 }
 
 func execRun(name string, args ...string) (string, error) {
-	out, err := exec.CommandContext(context.Background(), name, args...).Output() //nolint:gosec // G204: name is xdg-mime or Mortar's own handler path
+	cmd := exec.CommandContext(context.Background(), name, args...) //nolint:gosec // G204: name is xdg-mime or Mortar's own handler path
+	cmd.Env = hostenv.Environ()
+	out, err := cmd.Output()
 	return string(out), err
 }
 

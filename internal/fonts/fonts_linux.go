@@ -4,6 +4,8 @@ import (
 	"context"
 	"os/exec"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/hostenv"
 )
 
 const listTimeout = 10 * time.Second
@@ -12,7 +14,9 @@ const listTimeout = 10 * time.Second
 func List() ([]string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), listTimeout)
 	defer cancel()
-	out, err := exec.CommandContext(ctx, "fc-list", ":", "family").Output()
+	cmd := exec.CommandContext(ctx, "fc-list", ":", "family")
+	cmd.Env = hostenv.Environ()
+	out, err := cmd.Output()
 	if err != nil {
 		return nil, err
 	}

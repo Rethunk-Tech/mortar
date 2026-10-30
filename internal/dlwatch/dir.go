@@ -8,6 +8,8 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/hostenv"
 )
 
 // UserDir is the platform Downloads folder: xdg-user-dir DOWNLOAD or ~/Downloads
@@ -22,7 +24,9 @@ func UserDir() string {
 func unixDownloads() string {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	out, err := exec.CommandContext(ctx, "xdg-user-dir", "DOWNLOAD").Output()
+	cmd := exec.CommandContext(ctx, "xdg-user-dir", "DOWNLOAD")
+	cmd.Env = hostenv.Environ()
+	out, err := cmd.Output()
 	if err == nil {
 		p := strings.TrimSpace(string(out))
 		if p != "" {

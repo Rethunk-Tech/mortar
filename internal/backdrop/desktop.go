@@ -8,13 +8,17 @@ import (
 	"os/exec"
 	"strings"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/hostenv"
 )
 
 // Runner runs gsettings with args and returns its standard output.
 type Runner func(ctx context.Context, args ...string) (string, error)
 
 func execRunner(ctx context.Context, args ...string) (string, error) {
-	out, err := exec.CommandContext(ctx, "/usr/bin/gsettings", args...).Output() //nolint:gosec // G204: binary is /usr/bin/gsettings; args are schema keys Mortar writes
+	cmd := exec.CommandContext(ctx, "/usr/bin/gsettings", args...) //nolint:gosec // G204: binary is /usr/bin/gsettings; args are schema keys Mortar writes
+	cmd.Env = hostenv.Environ()
+	out, err := cmd.Output()
 	return string(out), err
 }
 
