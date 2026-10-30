@@ -187,8 +187,22 @@ func TestChangedIndexRebuilds(t *testing.T) {
 		t.Fatal("unexpected hit")
 	}
 	f.third.Store(true)
+	told := make(chan string, 1)
+	OnRefreshed(func(key string) { told <- key })
+	t.Cleanup(func() { OnRefreshed(nil) })
 	now = now.Add(2 * time.Hour)
-	// A search past the refresh window answers from the rebuilt listing, not the stale one.
+	// The stale listing answers at once and a rebuild starts behind it.
+	if p, err := d.Search(t.Context(), q); err != nil || p.Total != 0 {
+		t.Fatalf("stale answer: %v %v", err, p.Total)
+	}
+	select {
+	case key := <-told:
+		if key != "lethal-company" {
+			t.Fatalf("told about %q", key)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("the refresh that changed the listing was not announced")
+	}
 	if p, err := d.Search(t.Context(), q); err != nil || p.Total != 1 {
 		t.Fatalf("answer after refresh: %v %v", err, p.Total)
 	}

@@ -236,6 +236,22 @@ var (
 	topCache = map[string]topEntry{}
 )
 
+// RefreshedEvent tells the window that a source's data changed under the answers it shows; the payload is the game's
+// community key.
+const RefreshedEvent = "browse:refreshed"
+
+// Forget drops what is remembered of the source's answers (pages and where each visible page ended), for when the
+// source's own data changed under them: a search then reads it again.
+func Forget(id string) {
+	prefix := id + "|"
+	topMu.Lock()
+	maps.DeleteFunc(topCache, func(k string, _ topEntry) bool { return strings.HasPrefix(k, prefix) })
+	topMu.Unlock()
+	cursorMu.Lock()
+	maps.DeleteFunc(cursors, func(k string, _ cursorEntry) bool { return strings.HasPrefix(k, prefix) })
+	cursorMu.Unlock()
+}
+
 // searchCached runs the source's search, reusing its answer for topTTL. It returns a copy callers may edit.
 func searchCached(ctx context.Context, id string, s source.Searcher, q source.Query) (Page, error) {
 	key := fmt.Sprintf("%s|%d", queryKey(id, q), q.Page)

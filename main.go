@@ -987,6 +987,11 @@ func run() error {
 	problemsSvc.Damage = items.Damaged
 
 	browseSvc := browse.NewService(version, profileSvc)
+	// A Thunderstore listing that was stale when searched is replaced in the background; open Browse windows search again.
+	thunderstore.OnRefreshed(func(key string) {
+		browse.Forget("thunderstore")
+		emit(browse.RefreshedEvent, key)
+	})
 	packs := &packsvc.Service{Profiles: profiles, Queue: queueSvc, Folder: func() string { return store.Get().PackFolder }}
 	browseSvc.ShowAdult = func() bool { return store.Get().ShowAdultContent }
 	browseSvc.Installed = profiles.Installed

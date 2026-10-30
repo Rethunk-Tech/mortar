@@ -561,3 +561,17 @@ func TestSourcesOffNeverTurnsEveryAvailableSourceOff(t *testing.T) {
 		t.Fatalf("all off must turn none off: %v", got)
 	}
 }
+
+func TestForgetMakesTheNextSearchReadTheSourceAgain(t *testing.T) {
+	c := &Client{}
+	for range 2 {
+		if _, err := c.search(context.Background(), catalog, "fake", "again", 1, Filter{}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	before := fake.calls
+	Forget("fake")
+	if _, err := c.search(context.Background(), catalog, "fake", "again", 1, Filter{}); err != nil || fake.calls != before+1 {
+		t.Fatalf("calls %d after forgetting, want %d: %v", fake.calls, before+1, err)
+	}
+}

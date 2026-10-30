@@ -1,3 +1,4 @@
+import { Events } from '@wailsio/runtime'
 import { type Dispatch, type SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
 import { useSettings } from '../settings/store.ts'
 import { useLoaded } from '../shell/useLoaded.ts'
@@ -201,6 +202,8 @@ function useBrowseQuery({
   const [page, setPage] = useState(FIRST_PAGE)
   const [retry, setRetry] = useState(0)
   const hides = useBrowseView((s) => s.hides)
+  // A source's data refreshed behind the answers on screen: search again for the current query.
+  useEffect(() => Events.On('browse:refreshed', () => setRetry((n) => n + 1)), [])
   const [result, setResult] = useState<BrowseResult>(EMPTY_RESULT)
   const [status, setStatus] = useState<Status>('idle')
   const [error, setError] = useState<InlineError | null>(null)
