@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Typography } from '@mui/material'
-import type { KeyboardEvent, ReactNode } from 'react'
+import { arrowFocus } from '@rethunk/dom-input-nav'
+import type { ReactNode } from 'react'
 import { space } from '../theme/density.ts'
 import { gridColumns } from './methods.ts'
 
@@ -13,29 +14,6 @@ export interface Tile<Id extends string> {
   hint: string
   // Why the tile cannot be used; it stays in place so the grid does not shift.
   disabled?: string
-}
-
-// Arrow keys move between the enabled tiles; the grid's own column count decides what up and down mean.
-function moveFocus(event: KeyboardEvent<HTMLElement>) {
-  const grid = event.currentTarget
-  const tiles = [...grid.querySelectorAll<HTMLElement>('button:not(:disabled)')]
-  const at = tiles.indexOf(document.activeElement as HTMLElement)
-  const columns = getComputedStyle(grid).gridTemplateColumns.split(' ').length
-  const step: Record<string, number> = {
-    ArrowRight: 1,
-    ArrowLeft: -1,
-    ArrowDown: columns,
-    ArrowUp: -columns,
-  }
-  const delta = step[event.key]
-  if (delta === undefined || at < 0) {
-    return
-  }
-  const next = tiles[at + delta]
-  if (next) {
-    event.preventDefault()
-    next.focus()
-  }
 }
 
 // The first step of the Share and Import dialogs: one tile per way to send or bring in a profile.
@@ -61,7 +39,7 @@ export function TileGrid<Id extends string>({
     <Box
       role="group"
       aria-label={label}
-      onKeyDown={moveFocus}
+      onKeyDown={(event) => arrowFocus(event, 'button:not(:disabled)')}
       sx={{
         display: 'grid',
         gridTemplateColumns: `repeat(${gridColumns(tiles.length)}, minmax(0, 1fr))`,
