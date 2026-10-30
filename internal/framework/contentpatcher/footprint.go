@@ -3,17 +3,11 @@ package contentpatcher
 import (
 	"bytes"
 	"cmp"
-	"compress/gzip"
-	"compress/zlib"
 	"crypto/sha256"
-	"encoding/base64"
-	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
-	"encoding/xml"
 	"image"
 	"image/png"
-	"io"
 	"maps"
 	"os"
 	"path/filepath"
@@ -26,6 +20,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-lenientjson"
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/go-tilemask"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
@@ -442,11 +437,6 @@ var (
 	cellSetCache  sync.Map
 )
 
-type pngAlpha struct {
-	w, h int
-	a    []byte
-}
-
 func imagePatchShapes(root string, ch cpChange, x, y int, skip bool) []cpShape {
 	files := sourceFiles(root, ch.FromFile)
 	if len(files) == 0 {
@@ -506,41 +496,16 @@ func opaqueImageShape(root, rel string, fromRaw json.RawMessage, x, y int) (cpSh
 	if !ok {
 		return cpShape{}, false
 	}
+	src := image.Rectangle{Min: image.Pt(from.x, from.y), Max: image.Pt(from.x+from.w, from.y+from.h)}
 	if fromKey == "full" {
-		from = cpShape{w: decoded.w, h: decoded.h}
-	}
-	minX, maxX := max(from.x, 0), min(from.x+from.w, decoded.w)
-	minY, maxY := max(from.y, 0), min(from.y+from.h, decoded.h)
-	if minX >= maxX || minY >= maxY {
-		return cpShape{kind: 'r'}, true
-	}
-	firstCellX := (x + minX - from.x) / 16
-	lastCellX := (x + maxX - 1 - from.x) / 16
-	firstCellY := (y + minY - from.y) / 16
-	lastCellY := (y + maxY - 1 - from.y) / 16
-	width := lastCellX - firstCellX + 1
-	bitmap := make([]bool, width*(lastCellY-firstCellY+1))
-	for py := minY; py < maxY; py++ {
-		row := py * decoded.w
-		for px := minX; px < maxX; px++ {
-			if !maskSet(decoded.a, row+px) {
-				continue
-			}
-			cellX := (x + px - from.x) / 16
-			cellY := (y + py - from.y) / 16
-			bitmap[(cellY-firstCellY)*width+cellX-firstCellX] = true
-		}
+		src = image.Rect(0, 0, decoded.Width, decoded.Height)
 	}
 	var cells strings.Builder
-	for cellY := firstCellY; cellY <= lastCellY; cellY++ {
-		for cellX := firstCellX; cellX <= lastCellX; cellX++ {
-			if bitmap[(cellY-firstCellY)*width+cellX-firstCellX] {
-				cells.WriteByte(';')
-				cells.WriteString(strconv.Itoa(cellX))
-				cells.WriteByte(',')
-				cells.WriteString(strconv.Itoa(cellY))
-			}
-		}
+	for c := range decoded.Cells(src, image.Pt(x, y), 16) {
+		cells.WriteByte(';')
+		cells.WriteString(strconv.Itoa(c.X))
+		cells.WriteByte(',')
+		cells.WriteString(strconv.Itoa(c.Y))
 	}
 	pngShapeCache.Store(key, cells.String())
 	return cpShape{kind: 'r', cells: cells.String()}, true
@@ -589,60 +554,43 @@ func warmOverlayImages(root, rel string, changes []json.RawMessage, skip bool) {
 	wg.Wait()
 }
 
-func loadPNGAlpha(root, rel, fileKey string) (pngAlpha, bool) {
+// loadPNGAlpha returns the image's alpha mask, or false when it cannot be decoded; a nil entry in pngAlphaCache
+// memoises a failure.
+func loadPNGAlpha(root, rel, fileKey string) (*tilemask.Mask, bool) {
 	if cached, ok := pngAlphaCache.Load(fileKey); ok {
-		if pix, ok := cached.(pngAlpha); ok {
-			return pix, pix.a != nil
+		if pix, ok := cached.(*tilemask.Mask); ok {
+			return pix, pix != nil
 		}
 	}
 	diskPath := alphaDiskPath(fileKey)
-	pix, ok := pngAlpha{}, false
+	var pix *tilemask.Mask
 	if diskPath != "" {
-		pix, ok = readAlphaDisk(diskPath)
+		pix = readAlphaDisk(diskPath)
 	}
-	if !ok {
+	if pix == nil {
 		file, err := os.OpenInRoot(root, filepath.FromSlash(rel))
 		if err != nil {
-			pngAlphaCache.Store(fileKey, pngAlpha{})
-			return pngAlpha{}, false
+			pngAlphaCache.Store(fileKey, (*tilemask.Mask)(nil))
+			return nil, false
 		}
-		pix, ok = decodePNGAlpha(file)
+		pix, err = tilemask.DecodePNG(safefs.CapReader(file, footprintReadCap), tilemask.Options{})
 		_ = file.Close()
-		if !ok {
-			pngAlphaCache.Store(fileKey, pngAlpha{})
-			return pngAlpha{}, false
+		if err != nil {
+			pngAlphaCache.Store(fileKey, (*tilemask.Mask)(nil))
+			return nil, false
 		}
-		pix.a = packNonzeroMask(pix.a)
 		if diskPath != "" {
 			writeAlphaDisk(diskPath, pix)
 		}
 	}
 	actual, loaded := pngAlphaCache.LoadOrStore(fileKey, pix)
 	if loaded {
-		if kept, ok := actual.(pngAlpha); ok {
-			return kept, kept.a != nil
+		if kept, ok := actual.(*tilemask.Mask); ok {
+			return kept, kept != nil
 		}
-		return pngAlpha{}, false
+		return nil, false
 	}
 	return pix, true
-}
-
-func packNonzeroMask(a []byte) []byte {
-	n := (len(a) + 7) / 8
-	mask := make([]byte, n)
-	for i, v := range a {
-		if v != 0 {
-			mask[i>>3] |= 1 << (i & 7)
-		}
-	}
-	return mask
-}
-
-func maskSet(mask []byte, i int) bool {
-	if i < 0 || i>>3 >= len(mask) {
-		return false
-	}
-	return mask[i>>3]&(1<<(uint(i)&7)) != 0
 }
 
 // footprintReadCap bounds each map or overlay file read, matching the pack file cap.
@@ -657,269 +605,10 @@ func readCappedFile(path string) ([]byte, error) {
 	return safefs.ReadCapped(file, footprintReadCap)
 }
 
-func decodePNGAlpha(r io.Reader) (pngAlpha, bool) {
-	raw, err := safefs.ReadCapped(r, footprintReadCap)
-	if err != nil || len(raw) < 8 || string(raw[:8]) != "\x89PNG\r\n\x1a\n" {
-		return pngAlpha{}, false
-	}
-	var (
-		w, h, bitDepth, colorType, interlace int
-		trns, idat                           []byte
-		gotIHDR                              bool
-	)
-	for i := 8; i+12 <= len(raw); {
-		n := int(binary.BigEndian.Uint32(raw[i:]))
-		i += 4
-		if i+4+n+4 > len(raw) {
-			return pngAlpha{}, false
-		}
-		kind := string(raw[i : i+4])
-		data := raw[i+4 : i+4+n]
-		i += 4 + n + 4
-		switch kind {
-		case "IHDR":
-			if n < 13 {
-				return pngAlpha{}, false
-			}
-			w = int(binary.BigEndian.Uint32(data[0:4]))
-			h = int(binary.BigEndian.Uint32(data[4:8]))
-			bitDepth = int(data[8])
-			colorType = int(data[9])
-			interlace = int(data[12])
-			gotIHDR = true
-		case "tRNS":
-			trns = data
-		case "IDAT":
-			idat = append(idat, data...)
-		case "IEND":
-			i = len(raw)
-		}
-	}
-	if gotIHDR && !pngPixelsWithinCap(w, h) {
-		return pngAlpha{}, false
-	}
-	if !gotIHDR || w <= 0 || h <= 0 || interlace != 0 || bitDepth != 8 {
-		return decodePNGAlphaStd(bytes.NewReader(raw))
-	}
-	n := w * h
-	alpha := make([]byte, n)
-	opaque := colorType == 0 || colorType == 2
-	if opaque && len(trns) == 0 {
-		for i := range alpha {
-			alpha[i] = 255
-		}
-		return pngAlpha{w: w, h: h, a: alpha}, true
-	}
-	if !inflatePNGAlpha(idat, alpha, w, h, colorType, trns) {
-		return decodePNGAlphaStd(bytes.NewReader(raw))
-	}
-	return pngAlpha{w: w, h: h, a: alpha}, true
-}
-
-func inflatePNGAlpha(idat, alpha []byte, w, h, colorType int, trns []byte) bool {
-	cpp := pngChannels(colorType)
-	if cpp == 0 {
-		return false
-	}
-	zr, err := zlib.NewReader(bytes.NewReader(idat))
-	if err != nil {
-		return false
-	}
-	defer func() { _ = zr.Close() }()
-	stride := w*cpp + 1
-	row := make([]byte, stride)
-	prev := make([]byte, stride)
-	i := 0
-	for range h {
-		if _, err := io.ReadFull(zr, row); err != nil {
-			return false
-		}
-		if !pngUnfilter(row, prev, cpp) {
-			return false
-		}
-		pix := row[1:]
-		switch colorType {
-		case 0:
-			for x := range w {
-				a := byte(255)
-				if len(trns) >= 2 && pix[x] == trns[1] {
-					a = 0
-				}
-				alpha[i] = a
-				i++
-			}
-		case 2:
-			for x := range w {
-				off := x * 3
-				a := byte(255)
-				if len(trns) >= 6 && pix[off] == trns[1] && pix[off+1] == trns[3] && pix[off+2] == trns[5] {
-					a = 0
-				}
-				alpha[i] = a
-				i++
-			}
-		case 3:
-			for x := range w {
-				idx := int(pix[x])
-				a := byte(255)
-				if idx < len(trns) {
-					a = trns[idx]
-				}
-				alpha[i] = a
-				i++
-			}
-		case 4:
-			for x := range w {
-				alpha[i] = pix[x*2+1]
-				i++
-			}
-		case 6:
-			for x := range w {
-				alpha[i] = pix[x*4+3]
-				i++
-			}
-		default:
-			return false
-		}
-		copy(prev, row)
-	}
-	return i == len(alpha)
-}
-
-func pngChannels(colorType int) int {
-	switch colorType {
-	case 0, 3:
-		return 1
-	case 2:
-		return 3
-	case 4:
-		return 2
-	case 6:
-		return 4
-	default:
-		return 0
-	}
-}
-
-func pngUnfilter(row, prev []byte, cpp int) bool {
-	filter := row[0]
-	cur := row[1:]
-	prior := prev[1:]
-	switch filter {
-	case 0:
-		return true
-	case 1:
-		for i := cpp; i < len(cur); i++ {
-			cur[i] += cur[i-cpp]
-		}
-		return true
-	case 2:
-		for i := range cur {
-			cur[i] += prior[i]
-		}
-		return true
-	case 3:
-		for i := range cur {
-			var a byte
-			if i >= cpp {
-				a = cur[i-cpp]
-			}
-			cur[i] += a>>1 + prior[i]>>1 + a&prior[i]&1
-		}
-		return true
-	case 4:
-		for i := range cur {
-			var a, c byte
-			if i >= cpp {
-				a = cur[i-cpp]
-				c = prior[i-cpp]
-			}
-			cur[i] += paeth(a, prior[i], c)
-		}
-		return true
-	default:
-		return false
-	}
-}
-
-func paeth(a, b, c byte) byte {
-	ia, ib, ic := int(a), int(b), int(c)
-	p := ia + ib - ic
-	pa, pb, pc := absInt(p-ia), absInt(p-ib), absInt(p-ic)
-	if pa <= pb && pa <= pc {
-		return a
-	}
-	if pb <= pc {
-		return b
-	}
-	return c
-}
-
-func absInt(n int) int {
-	if n < 0 {
-		return -n
-	}
-	return n
-}
-
-// maxOverlayPixels bounds an overlay or crop source before its pixels are allocated: a few-byte IHDR
-// can claim any size, and the decode would otherwise allocate it (or panic on makeslice).
-const maxOverlayPixels = 100_000_000
-
-func pngPixelsWithinCap(w, h int) bool {
-	return areaWithin(w, h, maxOverlayPixels)
-}
-
-// areaWithin reports whether a w by h area is at most limit. It divides rather than multiplies, since dimensions a
-// file declares can be large enough that the product wraps negative and passes.
-func areaWithin(w, h int, limit int64) bool {
-	if w < 0 || h < 0 || limit < 0 {
-		return false
-	}
-	return h == 0 || int64(w) <= limit/int64(h)
-}
-
-// pngDecodable reports whether raw's declared size is within the cap, reading only the header.
+// pngDecodable reports whether raw's declared size is within the pixel cap, reading only the header.
 func pngDecodable(raw []byte) bool {
 	cfg, err := png.DecodeConfig(bytes.NewReader(raw))
-	return err == nil && pngPixelsWithinCap(cfg.Width, cfg.Height)
-}
-
-func decodePNGAlphaStd(r io.Reader) (pngAlpha, bool) {
-	raw, err := safefs.ReadCapped(r, footprintReadCap)
-	if err != nil || !pngDecodable(raw) {
-		return pngAlpha{}, false
-	}
-	decoded, err := png.Decode(bytes.NewReader(raw))
-	if err != nil {
-		return pngAlpha{}, false
-	}
-	b := decoded.Bounds()
-	n := b.Dx() * b.Dy()
-	alpha := make([]byte, n)
-	i := 0
-	for y := b.Min.Y; y < b.Max.Y; y++ {
-		for x := b.Min.X; x < b.Max.X; x++ {
-			alpha[i] = imageAlpha(decoded, x, y)
-			i++
-		}
-	}
-	return pngAlpha{w: b.Dx(), h: b.Dy(), a: alpha}, true
-}
-
-func imageAlpha(img image.Image, x, y int) uint8 {
-	switch img := img.(type) {
-	case *image.NRGBA:
-		return img.Pix[img.PixOffset(x, y)+3]
-	case *image.RGBA:
-		return img.Pix[img.PixOffset(x, y)+3]
-	default:
-		_, _, _, a := img.At(x, y).RGBA()
-		if a > 0 {
-			return 1
-		}
-		return 0
-	}
+	return err == nil && int64(cfg.Width) <= tilemask.DefaultMaxPixels/max(int64(cfg.Height), 1)
 }
 
 func sourceFiles(root, rel string) []string {
@@ -1068,92 +757,34 @@ func pngSize(root, rel string) (w, h int, ok bool) {
 	return cfg.Width, cfg.Height, true
 }
 
-type decodedMap struct {
-	width, height int
-	layers        []decodedMapLayer
-}
-
 type decodedMapResult struct {
-	value decodedMap
+	value tilemask.Map
 	ok    bool
 }
 
 var mapCache sync.Map
 
-type decodedMapLayer struct {
-	name  string
-	tiles []mapTile
+// mapFormat is the tilemask format of a .tmx or .tmj path.
+func mapFormat(rel string) (tilemask.Format, bool) {
+	switch strings.ToLower(filepath.Ext(rel)) {
+	case ".tmx":
+		return tilemask.TMX, true
+	case ".tmj":
+		return tilemask.TMJ, true
+	}
+	return 0, false
 }
 
-type mapTile struct {
-	x, y int
-}
-
-type tmxMapDocument struct {
-	Width  int        `xml:"width,attr"`
-	Height int        `xml:"height,attr"`
-	Layers []tmxLayer `xml:"layer"`
-}
-
-type tmxLayer struct {
-	Name   string  `xml:"name,attr"`
-	Width  int     `xml:"width,attr"`
-	Height int     `xml:"height,attr"`
-	Data   tmxData `xml:"data"`
-}
-
-type tmxData struct {
-	Encoding    string     `xml:"encoding,attr"`
-	Compression string     `xml:"compression,attr"`
-	Text        string     `xml:",chardata"`
-	Tiles       []tmxTile  `xml:"tile"`
-	Chunks      []tmxChunk `xml:"chunk"`
-}
-
-type tmxTile struct {
-	GID uint32 `xml:"gid,attr"`
-}
-
-type tmxChunk struct {
-	X      int       `xml:"x,attr"`
-	Y      int       `xml:"y,attr"`
-	Width  int       `xml:"width,attr"`
-	Height int       `xml:"height,attr"`
-	Text   string    `xml:",chardata"`
-	Tiles  []tmxTile `xml:"tile"`
-}
-
-type tmjMapDocument struct {
-	Width  int        `json:"width"`
-	Height int        `json:"height"`
-	Layers []tmjLayer `json:"layers"`
-}
-
-type tmjLayer struct {
-	Type   string     `json:"type"`
-	Name   string     `json:"name"`
-	Width  int        `json:"width"`
-	Height int        `json:"height"`
-	Data   []int      `json:"data"`
-	Chunks []tmjChunk `json:"chunks"`
-}
-
-type tmjChunk struct {
-	X      int   `json:"x"`
-	Y      int   `json:"y"`
-	Width  int   `json:"width"`
-	Height int   `json:"height"`
-	Data   []int `json:"data"`
-}
-
-func decodeMap(root, rel string) (decodedMap, bool) {
+// decodeMap reads a map's occupied tiles; layer names come back lower-cased and trimmed.
+func decodeMap(root, rel string) (tilemask.Map, bool) {
 	abs, ok := inside(root, rel)
-	if !ok {
-		return decodedMap{}, false
+	format, known := mapFormat(rel)
+	if !ok || !known {
+		return tilemask.Map{}, false
 	}
 	info, err := os.Stat(abs)
 	if err != nil {
-		return decodedMap{}, false
+		return tilemask.Map{}, false
 	}
 	key := abs + "\x00" + strconv.FormatInt(info.Size(), 10) + "\x00" +
 		strconv.FormatInt(info.ModTime().UnixNano(), 10)
@@ -1165,241 +796,22 @@ func decodeMap(root, rel string) (decodedMap, bool) {
 	}
 	raw, err := readCappedFile(abs)
 	if err != nil {
-		return decodedMap{}, false
+		return tilemask.Map{}, false
 	}
-	if strings.EqualFold(filepath.Ext(rel), ".tmj") {
-		var doc tmjMapDocument
-		if json.Unmarshal(raw, &doc) != nil {
-			mapCache.Store(key, decodedMapResult{ok: false})
-			return decodedMap{}, false
-		}
-		out := decodedMap{width: doc.Width, height: doc.Height}
-		for _, layer := range doc.Layers {
-			if layer.Type != "" && !strings.EqualFold(layer.Type, "tilelayer") {
-				continue
-			}
-			decoded := decodedMapLayer{name: strings.ToLower(strings.TrimSpace(layer.Name))}
-			if len(layer.Chunks) > 0 {
-				for _, chunk := range layer.Chunks {
-					appendMapTiles(&decoded.tiles, chunk.X, chunk.Y, chunk.Width, chunk.Height, chunk.Data)
-				}
-			} else {
-				width := layer.Width
-				if width <= 0 {
-					width = doc.Width
-				}
-				appendMapTiles(&decoded.tiles, 0, 0, width, layer.Height, layer.Data)
-			}
-			out.layers = append(out.layers, decoded)
-		}
-		mapBounds(&out)
-		mapCache.Store(key, decodedMapResult{value: out, ok: true})
-		return out, true
-	}
-
-	var doc tmxMapDocument
-	if xml.Unmarshal(raw, &doc) != nil {
-		mapCache.Store(key, decodedMapResult{ok: false})
-		return decodedMap{}, false
-	}
-	if !tmxWithinTileCap(doc.Layers) {
-		mapCache.Store(key, decodedMapResult{ok: false})
-		return decodedMap{}, false
-	}
-	out := decodedMap{width: doc.Width, height: doc.Height}
-	for _, layer := range doc.Layers {
-		decoded, ok := decodeTMXLayer(layer)
-		if !ok {
-			mapCache.Store(key, decodedMapResult{ok: false})
-			return decodedMap{}, false
-		}
-		decoded.name = strings.ToLower(strings.TrimSpace(layer.Name))
-		out.layers = append(out.layers, decoded)
-	}
-	mapBounds(&out)
-	mapCache.Store(key, decodedMapResult{value: out, ok: true})
-	return out, true
-}
-
-func decodeTMXLayer(layer tmxLayer) (decodedMapLayer, bool) {
-	out := decodedMapLayer{}
-	if len(layer.Data.Chunks) > 0 {
-		for _, chunk := range layer.Data.Chunks {
-			values, ok := decodeTMXValues(chunk.Text, layer.Data.Encoding, layer.Data.Compression, chunk.Width, chunk.Height)
-			if len(chunk.Tiles) > 0 {
-				values = make([]int, len(chunk.Tiles))
-				for i, tile := range chunk.Tiles {
-					values[i] = int(tile.GID)
-				}
-				ok = true
-			}
-			if !ok {
-				return decodedMapLayer{}, false
-			}
-			appendMapTiles(&out.tiles, chunk.X, chunk.Y, chunk.Width, chunk.Height, values)
-		}
-		return out, true
-	}
-	values, ok := decodeTMXValues(layer.Data.Text, layer.Data.Encoding, layer.Data.Compression, layer.Width, layer.Height)
-	if len(layer.Data.Tiles) > 0 {
-		values = make([]int, len(layer.Data.Tiles))
-		for i, tile := range layer.Data.Tiles {
-			values[i] = int(tile.GID)
-		}
-		ok = true
-	}
-	if !ok {
-		return decodedMapLayer{}, false
-	}
-	appendMapTiles(&out.tiles, 0, 0, layer.Width, layer.Height, values)
-	return out, true
-}
-
-// maxTMXTiles bounds the tiles a map declares, per layer or chunk and across the whole map, which also bounds what
-// its compressed data may inflate to. An infinite map can hold any number of chunks, each within the per-chunk bound.
-const maxTMXTiles = 4_000_000
-
-// tmxWithinTileCap reports whether every layer and chunk together declare no more than maxTMXTiles, checked before
-// any of them inflates.
-func tmxWithinTileCap(layers []tmxLayer) bool {
-	var total int64
-	add := func(width, height int) bool {
-		if !areaWithin(width, height, maxTMXTiles-total) {
-			return false
-		}
-		total += int64(width) * int64(height)
-		return true
-	}
-	for _, layer := range layers {
-		if len(layer.Data.Chunks) == 0 {
-			if !add(layer.Width, layer.Height) {
-				return false
-			}
-			continue
-		}
-		for _, chunk := range layer.Data.Chunks {
-			if !add(chunk.Width, chunk.Height) {
-				return false
-			}
-		}
-	}
-	return true
-}
-
-func decodeTMXValues(text, encoding, compression string, width, height int) ([]int, bool) {
-	text = strings.TrimSpace(text)
-	if strings.EqualFold(encoding, "csv") {
-		if text == "" {
-			return nil, true
-		}
-		var out []int
-		for value := range strings.SplitSeq(text, ",") {
-			value = strings.TrimSpace(value)
-			if value == "" {
-				continue
-			}
-			n, err := strconv.Atoi(value)
-			if err != nil {
-				return nil, false
-			}
-			out = append(out, n)
-		}
-		return out, true
-	}
-	if !strings.EqualFold(encoding, "base64") {
-		return nil, text == ""
-	}
-	encoded, err := base64.StdEncoding.DecodeString(strings.Join(strings.Fields(text), ""))
+	decoded, err := tilemask.DecodeMap(bytes.NewReader(raw), format, tilemask.Options{})
 	if err != nil {
-		return nil, false
+		mapCache.Store(key, decodedMapResult{})
+		return tilemask.Map{}, false
 	}
-	if !areaWithin(width, height, maxTMXTiles) {
-		return nil, false
+	for i := range decoded.Layers {
+		decoded.Layers[i].Name = strings.ToLower(strings.TrimSpace(decoded.Layers[i].Name))
 	}
-	limit := int64(width) * int64(height) * 4
-	var data []byte
-	switch strings.ToLower(strings.TrimSpace(compression)) {
-	case "":
-		data = encoded
-	case "zlib":
-		reader, err := zlib.NewReader(bytesReader(encoded))
-		if err != nil {
-			return nil, false
-		}
-		data, err = safefs.ReadCapped(reader, limit)
-		_ = reader.Close()
-		if err != nil {
-			return nil, false
-		}
-	case "gzip":
-		reader, err := gzip.NewReader(bytesReader(encoded))
-		if err != nil {
-			return nil, false
-		}
-		data, err = safefs.ReadCapped(reader, limit)
-		_ = reader.Close()
-		if err != nil {
-			return nil, false
-		}
-	default:
-		return nil, false
-	}
-	if len(data)%4 != 0 {
-		return nil, false
-	}
-	out := make([]int, len(data)/4)
-	for i := range out {
-		out[i] = int(binary.LittleEndian.Uint32(data[i*4:]))
-	}
-	return out, true
+	mapCache.Store(key, decodedMapResult{value: decoded, ok: true})
+	return decoded, true
 }
 
-func bytesReader(data []byte) io.Reader {
-	return &sliceReader{data: data}
-}
-
-type sliceReader struct {
-	data []byte
-	pos  int
-}
-
-func (r *sliceReader) Read(p []byte) (int, error) {
-	if r.pos >= len(r.data) {
-		return 0, io.EOF
-	}
-	n := copy(p, r.data[r.pos:])
-	r.pos += n
-	return n, nil
-}
-
-func appendMapTiles(out *[]mapTile, x, y, width, height int, values []int) {
-	if width <= 0 {
-		return
-	}
-	for i, value := range values {
-		if value == 0 {
-			continue
-		}
-		tx := x + i%width
-		ty := y + i/width
-		if height > 0 && i/width >= height {
-			break
-		}
-		*out = append(*out, mapTile{x: tx, y: ty})
-	}
-}
-
-func mapBounds(m *decodedMap) {
-	for _, layer := range m.layers {
-		for _, tile := range layer.tiles {
-			m.width = max(m.width, tile.x+1)
-			m.height = max(m.height, tile.y+1)
-		}
-	}
-}
-
-func mapFileShapes(m decodedMap, ch cpChange) []cpShape {
-	fallback := cpShape{kind: 'r', w: m.width, h: m.height}
+func mapFileShapes(m tilemask.Map, ch cpChange) []cpShape {
+	fallback := cpShape{kind: 'r', w: m.Width, h: m.Height}
 	if fallback.w <= 0 || fallback.h <= 0 {
 		return nil
 	}
@@ -1413,7 +825,7 @@ func mapFileShapes(m decodedMap, ch cpChange) []cpShape {
 	if !ok {
 		return unplaced(ch.ToArea)
 	}
-	if len(m.layers) == 0 {
+	if len(m.Layers) == 0 {
 		to.layer = ""
 		return []cpShape{to}
 	}
@@ -1422,14 +834,14 @@ func mapFileShapes(m decodedMap, ch cpChange) []cpShape {
 	switch mode {
 	case "overlay":
 		var out []cpShape
-		for _, layer := range m.layers {
-			for _, tile := range layer.tiles {
-				if tile.x < from.x || tile.x >= from.x+from.w || tile.y < from.y || tile.y >= from.y+from.h {
+		for _, layer := range m.Layers {
+			for _, tile := range layer.Tiles {
+				if tile.X < from.x || tile.X >= from.x+from.w || tile.Y < from.y || tile.Y >= from.y+from.h {
 					continue
 				}
 				out = append(out, cpShape{
-					kind: 't', x: to.x + tile.x - from.x, y: to.y + tile.y - from.y,
-					layer: layer.name,
+					kind: 't', x: to.x + tile.X - from.x, y: to.y + tile.Y - from.y,
+					layer: layer.Name,
 				})
 			}
 		}
@@ -1439,17 +851,17 @@ func mapFileShapes(m decodedMap, ch cpChange) []cpShape {
 		return []cpShape{to}
 	case "replacebylayer":
 		var out []cpShape
-		for _, layer := range m.layers {
+		for _, layer := range m.Layers {
 			area := to
-			area.layer = layer.name
+			area.layer = layer.Name
 			out = append(out, area)
 		}
 		return out
 	default:
 		var out []cpShape
-		for _, layer := range m.layers {
+		for _, layer := range m.Layers {
 			area := to
-			area.layer = layer.name
+			area.layer = layer.Name
 			out = append(out, area)
 		}
 		return out
@@ -1492,13 +904,11 @@ func hasAreaField(fields map[string]json.RawMessage, want string) bool {
 	return false
 }
 
-var tmxSize = regexp.MustCompile(`<map\b[^>]*?\bwidth="(\d+)"[^>]*?\bheight="(\d+)"`)
-
 // mapSize reads a .tmx or .tmj map's size in tiles; .tbin and tokenized paths are unknown.
 func mapSize(root, rel string) (w, h int, ok bool) {
 	rel = strings.TrimSpace(rel)
-	ext := strings.ToLower(filepath.Ext(rel))
-	if rel == "" || hasToken(rel) || (ext != ".tmx" && ext != ".tmj") {
+	format, known := mapFormat(rel)
+	if rel == "" || hasToken(rel) || !known {
 		return 0, 0, false
 	}
 	abs, inRoot := inside(root, rel)
@@ -1509,24 +919,8 @@ func mapSize(root, rel string) (w, h int, ok bool) {
 	if err != nil {
 		return 0, 0, false
 	}
-	if ext == ".tmj" {
-		var m struct {
-			Width  int `json:"width"`
-			Height int `json:"height"`
-		}
-		if json.Unmarshal(raw, &m) != nil || m.Width <= 0 || m.Height <= 0 {
-			return 0, 0, false
-		}
-		return m.Width, m.Height, true
-	}
-	head := raw[:min(len(raw), 4096)]
-	m := tmxSize.FindSubmatch(head)
-	if m == nil {
-		return 0, 0, false
-	}
-	w, _ = strconv.Atoi(string(m[1]))
-	h, _ = strconv.Atoi(string(m[2]))
-	return w, h, w > 0 && h > 0
+	w, h, err = tilemask.MapSize(bytes.NewReader(raw), format)
+	return w, h, err == nil
 }
 
 // placeTokens are conditions that hold one value at a time for the player: two edits that need disjoint

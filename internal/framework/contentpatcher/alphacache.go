@@ -1,11 +1,8 @@
 package contentpatcher
 
 import (
-	"bufio"
-	"compress/gzip"
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -14,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/go-tilemask"
 )
 
 // The alpha mask of an overlay image is the slow part of a cold check (a recolour pack overlays hundreds of large
@@ -55,56 +53,29 @@ func pruneAlphaDir(dir string) {
 	}
 }
 
-func readAlphaDisk(path string) (pngAlpha, bool) {
+func readAlphaDisk(path string) *tilemask.Mask {
 	f, err := safefs.Open(path)
 	if err != nil {
-		return pngAlpha{}, false
+		return nil
 	}
 	defer func() { _ = f.Close() }()
-	zr, err := gzip.NewReader(f)
+	mask, err := tilemask.ReadMask(f, tilemask.Options{})
 	if err != nil {
-		return pngAlpha{}, false
-	}
-	br := bufio.NewReader(zr)
-	var w, h int
-	if _, err := fmt.Fscanf(br, "%d %d\n", &w, &h); err != nil {
-		return pngAlpha{}, false
-	}
-	// The header is read from disk and could claim any size; the bound is the one the mask was decoded under, so
-	// every mask that was written reads back.
-	if w <= 0 || h <= 0 || !pngPixelsWithinCap(w, h) {
-		return pngAlpha{}, false
-	}
-	mask := make([]byte, (w*h+7)/8)
-	if _, err := io.ReadFull(br, mask); err != nil {
-		return pngAlpha{}, false
-	}
-	// The gzip trailer's checksum is read only at the end of the stream, and a write that never synced can be torn.
-	if _, err := io.Copy(io.Discard, br); err != nil {
-		return pngAlpha{}, false
+		return nil
 	}
 	if info, err := os.Stat(path); err == nil && time.Since(info.ModTime()) > alphaTouchAge {
 		now := time.Now()
 		_ = os.Chtimes(path, now, now)
 	}
-	return pngAlpha{w: w, h: h, a: mask}, true
+	return mask
 }
 
-func writeAlphaDisk(path string, pix pngAlpha) {
+func writeAlphaDisk(path string, mask *tilemask.Mask) {
 	if os.MkdirAll(filepath.Dir(path), 0o700) != nil {
 		return
 	}
 	_ = safefs.WriteStreamNoSync(path, 0o600, func(w io.Writer) error {
-		zw, err := gzip.NewWriterLevel(w, gzip.BestSpeed)
-		if err != nil {
-			return err
-		}
-		if _, err := fmt.Fprintf(zw, "%d %d\n", pix.w, pix.h); err != nil {
-			return err
-		}
-		if _, err := zw.Write(pix.a); err != nil {
-			return err
-		}
-		return zw.Close()
+		_, err := mask.WriteTo(w)
+		return err
 	})
 }

@@ -146,13 +146,6 @@ func TestOpaqueImageShapeMatchesBruteForceCells(t *testing.T) {
 	}
 }
 
-func TestImageAlphaFallbackKeepsLowOpacity(t *testing.T) {
-	img := lowOpacityImage{}
-	if imageAlpha(img, 0, 0) == 0 {
-		t.Fatal("low nonzero alpha was treated as transparent")
-	}
-}
-
 func TestSkipImageOverlapUsesRectangles(t *testing.T) {
 	dir := t.TempDir()
 	img := image.NewNRGBA(image.Rect(0, 0, 32, 16))
@@ -203,12 +196,6 @@ func TestOpaqueImageShapeConcurrent(t *testing.T) {
 	}
 }
 
-type lowOpacityImage struct{}
-
-func (lowOpacityImage) ColorModel() color.Model { return color.RGBA64Model }
-func (lowOpacityImage) Bounds() image.Rectangle { return image.Rect(0, 0, 1, 1) }
-func (lowOpacityImage) At(int, int) color.Color { return color.RGBA64{A: 1} }
-
 func TestPlacesMakeEditsExclusive(t *testing.T) {
 	a := edit(t, `{"ToArea":{"X":0,"Y":0,"Width":16,"Height":16},"When":{"LocationName":"EastScarp_Village"}}`, true)
 	b := edit(t, `{"ToArea":{"X":0,"Y":0,"Width":16,"Height":16},"When":{"LocationName |contains=Custom_Umuwi":true}}`, true)
@@ -249,7 +236,7 @@ func TestDecodeMapCacheUsesFileStamp(t *testing.T) {
 	write(1)
 	mapCache = sync.Map{}
 	first, ok := decodeMap(dir, "map.tmj")
-	if !ok || first.width != 1 {
+	if !ok || first.Width != 1 {
 		t.Fatalf("first decode = %#v, %v", first, ok)
 	}
 	if _, ok := decodeMap(dir, "map.tmj"); !ok {
@@ -261,7 +248,7 @@ func TestDecodeMapCacheUsesFileStamp(t *testing.T) {
 		t.Fatal(err)
 	}
 	second, ok := decodeMap(dir, "map.tmj")
-	if !ok || second.width != 2 {
+	if !ok || second.Width != 2 {
 		t.Fatalf("changed decode = %#v, %v", second, ok)
 	}
 	entries := 0
@@ -330,9 +317,6 @@ func TestHugeIHDRPNGIsRefusedBeforeAllocation(t *testing.T) {
 		raw.WriteString("IHDR")
 		raw.Write(ihdr)
 		raw.Write([]byte{0, 0, 0, 0})
-		if _, ok := decodePNGAlpha(bytes.NewReader(raw.Bytes())); ok {
-			t.Errorf("%d x %d header decoded", dim, dim)
-		}
 		if _, err := cropImageDataURL(raw.Bytes(), 0, 0, 1, 1); err == nil {
 			t.Errorf("%d x %d header cropped", dim, dim)
 		}
@@ -355,11 +339,11 @@ func TestFootprintReadsAreCapped(t *testing.T) {
 	if err := png.Encode(&buf, image.NewNRGBA(image.Rect(0, 0, 32, 32))); err != nil || buf.Len() <= 64 {
 		t.Fatalf("fixture: %v, %d bytes", err, buf.Len())
 	}
-	if _, ok := decodePNGAlpha(bytes.NewReader(buf.Bytes())); ok {
-		t.Fatal("oversized PNG decoded")
+	if err := os.WriteFile(filepath.Join(dir, "big.png"), buf.Bytes(), 0o600); err != nil {
+		t.Fatal(err)
 	}
-	if _, ok := decodePNGAlphaStd(bytes.NewReader(buf.Bytes())); ok {
-		t.Fatal("oversized PNG decoded by std path")
+	if _, ok := loadPNGAlpha(dir, "big.png", "capped-big"); ok {
+		t.Fatal("oversized PNG decoded")
 	}
 }
 
@@ -384,12 +368,12 @@ func TestDroppedMemoLeavesHeldMaskIntact(t *testing.T) {
 	if !ok {
 		t.Fatal("decode a")
 	}
-	before := bytes.Clone(held.a)
+	before := maskBytes(t, held)
 	dropPNGAlphaMemo()
 	if _, ok := loadPNGAlpha(dir, "b.png", "held-b"); !ok {
 		t.Fatal("decode b")
 	}
-	if !bytes.Equal(before, held.a) {
-		t.Fatalf("held mask changed under its reader: %v -> %v", before, held.a)
+	if after := maskBytes(t, held); !bytes.Equal(before, after) {
+		t.Fatalf("held mask changed under its reader: %v -> %v", before, after)
 	}
 }

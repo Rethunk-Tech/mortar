@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"reflect"
 	"runtime"
-	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -24,6 +23,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/go-tilemask"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 )
 
@@ -248,9 +248,8 @@ func TestPNGAlphaMemoIsBitMaskAndDroppedAfterPack(t *testing.T) {
 	if !ok {
 		t.Fatal("loadPNGAlpha")
 	}
-	want := (32*16 + 7) / 8
-	if len(pix.a) != want {
-		t.Fatalf("mask bytes = %d, want %d (byte-per-pixel would be %d)", len(pix.a), want, 32*16)
+	if pix.Width != 32 || pix.Height != 16 {
+		t.Fatalf("mask = %d x %d, want 32 x 16", pix.Width, pix.Height)
 	}
 
 	readContentPack(im, false)
@@ -585,7 +584,7 @@ func TestOverlayAlphaMaskIsKeptOnDisk(t *testing.T) {
 	if !ok {
 		t.Fatal("loadPNGAlpha")
 	}
-	want := slices.Clone(first.a)
+	want := maskBytes(t, first)
 
 	// The same size and mtime with bytes no PNG decoder accepts: only the disk cache can still answer.
 	info, err := os.Stat(pngPath)
@@ -600,8 +599,8 @@ func TestOverlayAlphaMaskIsKeptOnDisk(t *testing.T) {
 	}
 	pngAlphaCache = sync.Map{}
 	got, ok := loadPNGAlpha(im.Folder, "patch.png", key)
-	if !ok || got.w != first.w || got.h != first.h || !bytes.Equal(got.a, want) {
-		t.Fatalf("mask after a restart = %v %dx%d, want the decoded one", ok, got.w, got.h)
+	if !ok || got.Width != first.Width || got.Height != first.Height || !bytes.Equal(maskBytes(t, got), want) {
+		t.Fatalf("mask after a restart differs from the decoded one (ok=%v)", ok)
 	}
 }
 
@@ -670,7 +669,7 @@ func refusesAlphaHeader(t *testing.T, header string) {
 	}
 	var before, after runtime.MemStats
 	runtime.ReadMemStats(&before)
-	if _, ok := readAlphaDisk(path); ok {
+	if readAlphaDisk(path) != nil {
 		t.Fatalf("header %q read as a mask", header)
 	}
 	runtime.ReadMemStats(&after)
@@ -679,15 +678,31 @@ func refusesAlphaHeader(t *testing.T, header string) {
 	}
 }
 
-// A mask wider than 65536 px is within the pixel bound, so the cache that wrote it reads it back.
-func TestAlphaDiskReadsBackAWideMask(t *testing.T) {
+// A mask written by an earlier release still reads, and is written back the same.
+func TestAlphaDiskReadsAnEarlierReleasesFile(t *testing.T) {
 	t.Parallel()
-	pix := pngAlpha{w: 70000, h: 2, a: make([]byte, (70000*2+7)/8)}
-	pix.a[0], pix.a[len(pix.a)-1] = 0b1010_0101, 0b1100_0011
-	path := filepath.Join(t.TempDir(), "wide.gz")
-	writeAlphaDisk(path, pix)
-	got, ok := readAlphaDisk(path)
-	if !ok || got.w != pix.w || got.h != pix.h || !bytes.Equal(got.a, pix.a) {
-		t.Fatalf("read back ok=%v %dx%d", ok, got.w, got.h)
+	old, err := os.ReadFile("testdata/mask-gzip-19x5.gz")
+	if err != nil {
+		t.Fatal(err)
 	}
+	path := filepath.Join(t.TempDir(), "old.gz")
+	if err := os.WriteFile(path, old, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	got := readAlphaDisk(path)
+	if got == nil || got.Width != 19 || got.Height != 5 {
+		t.Fatalf("earlier release's mask = %v", got)
+	}
+	if !bytes.Equal(maskBytes(t, got), old) {
+		t.Fatal("mask no longer writes the bytes it was read from")
+	}
+}
+
+func maskBytes(t *testing.T, m *tilemask.Mask) []byte {
+	t.Helper()
+	var buf bytes.Buffer
+	if _, err := m.WriteTo(&buf); err != nil {
+		t.Fatal(err)
+	}
+	return buf.Bytes()
 }
