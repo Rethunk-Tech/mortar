@@ -6,7 +6,7 @@ require (
 	github.com/Rethunk-Tech/go-archive v0.2.0
 	github.com/Rethunk-Tech/go-avscan v0.1.0
 	github.com/Rethunk-Tech/go-cfgedit v0.2.0
-	github.com/Rethunk-Tech/go-desktopenv v0.1.0
+	github.com/Rethunk-Tech/go-desktopenv v0.2.0
 	github.com/Rethunk-Tech/go-dotnet v0.1.0
 	github.com/Rethunk-Tech/go-fomod v0.1.0
 	github.com/Rethunk-Tech/go-gamelocator v0.1.0
@@ -15,11 +15,11 @@ require (
 	github.com/Rethunk-Tech/go-httpkit v0.1.0
 	github.com/Rethunk-Tech/go-keyring v0.1.0
 	github.com/Rethunk-Tech/go-lenientjson v0.1.0
-	github.com/Rethunk-Tech/go-modmanagers v0.1.0
+	github.com/Rethunk-Tech/go-modmanagers v0.2.0
 	github.com/Rethunk-Tech/go-nettrace v0.1.0
-	github.com/Rethunk-Tech/go-nexusmods v0.1.0
+	github.com/Rethunk-Tech/go-nexusmods v0.2.0
 	github.com/Rethunk-Tech/go-safefs v0.2.0
-	github.com/Rethunk-Tech/go-semverish v0.1.0
+	github.com/Rethunk-Tech/go-semverish v0.2.0
 	github.com/Rethunk-Tech/go-smapiweb v0.1.0
 	github.com/Rethunk-Tech/go-tilemask v0.1.0
 	github.com/Rethunk-Tech/go-winsym v0.1.0

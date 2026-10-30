@@ -176,7 +176,7 @@ func installedFile(mods []profile.Component, p smapiweb.Page) int {
 			if i < 0 {
 				continue
 			}
-			if !sameVersion(mods[i].Version, published.Version) {
+			if !semverish.Equal(mods[i].Version, published.Version) {
 				differs = true
 				break
 			}
@@ -197,15 +197,6 @@ func installedFile(mods []profile.Component, p smapiweb.Page) int {
 		return 0
 	}
 	return best
-}
-
-// sameVersion treats a manifest's "1.2" and the dataset's "1.2.0" as one version.
-func sameVersion(a, b string) bool {
-	if a == b {
-		return true
-	}
-	c, ok := semverish.Compare(a, b)
-	return ok && c == 0
 }
 
 // datasetPages reads the dataset's record of each page; one that cannot be read is left out.
@@ -290,7 +281,7 @@ func publishesInstalled(p smapiweb.Page, mods []profile.Component) bool {
 	for _, f := range p.Downloads {
 		for _, published := range f.Mods {
 			if slices.ContainsFunc(mods, func(m profile.Component) bool {
-				return mod.Equal(m.ID, mod.SMAPI(published.UniqueID)) && sameVersion(m.Version, published.Version)
+				return mod.Equal(m.ID, mod.SMAPI(published.UniqueID)) && semverish.Equal(m.Version, published.Version)
 			}) {
 				return true
 			}

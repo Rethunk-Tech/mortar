@@ -271,7 +271,7 @@ func farmRows(l FarmList, p profile.Profile) []FarmRow {
 		switch {
 		case !ok:
 			row.State = FarmMissing
-		case !sameVersion(c.Version, m.Version):
+		case !semverish.Equal(c.Version, m.Version):
 			row.State, row.Mine = FarmDifferent, c.Version
 		case !e.Enabled(c.ID):
 			row.State, row.Mine, row.Fixable = FarmOff, c.Version, false
@@ -294,7 +294,7 @@ func findComponent(p profile.Profile, m FarmMod) (profile.Entry, profile.Compone
 		)
 		for _, e := range p.Entries {
 			for _, c := range e.Mods {
-				if strings.EqualFold(strings.TrimSpace(c.Name), m.Name) && (!found || sameVersion(c.Version, m.Version)) {
+				if strings.EqualFold(strings.TrimSpace(c.Name), m.Name) && (!found || semverish.Equal(c.Version, m.Version)) {
 					entry, named, found = e, c, true
 				}
 			}
@@ -307,13 +307,6 @@ func findComponent(p profile.Profile, m FarmMod) (profile.Entry, profile.Compone
 		}
 	}
 	return profile.Entry{}, profile.Component{}, false
-}
-
-func sameVersion(a, b string) bool {
-	if c, ok := semverish.Compare(a, b); ok {
-		return c == 0
-	}
-	return a == b
 }
 
 func installable(s profile.Source) bool {

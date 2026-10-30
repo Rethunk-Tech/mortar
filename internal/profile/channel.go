@@ -55,7 +55,7 @@ func NewestChannelFile(channel, installed string, files []nexusmods.File) (nexus
 		if !meta.Newer(f.Version, installed) {
 			continue
 		}
-		if !found || meta.Newer(f.Version, best.Version) || (sameVersion(f.Version, best.Version) && f.FileID > best.FileID) {
+		if !found || meta.Newer(f.Version, best.Version) || (semverish.Equal(f.Version, best.Version) && f.FileID > best.FileID) {
 			best, found = f, true
 		}
 	}
@@ -122,9 +122,4 @@ func prereleaseText(s string) bool {
 	}
 	_, ok := semverish.Parse(v[:i])
 	return ok
-}
-
-func sameVersion(a, b string) bool {
-	c, ok := semverish.Compare(a, b)
-	return ok && c == 0
 }
