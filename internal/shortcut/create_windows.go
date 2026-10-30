@@ -13,6 +13,7 @@ import (
 	"github.com/go-ole/go-ole"
 	"github.com/go-ole/go-ole/oleutil"
 
+	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/winname"
 )
@@ -57,11 +58,11 @@ func freeLinkPath(dir, base, arg string) (string, error) {
 }
 
 func startMenuDir() (string, error) {
-	appData, err := os.UserConfigDir()
+	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(appData, "Microsoft", "Windows", "Start Menu", "Programs", "Mortar"), nil
+	return filepath.Join(userdirs.AppData(home), "Microsoft", "Windows", "Start Menu", "Programs", "Mortar"), nil
 }
 
 func withLink(path string, fn func(*ole.IDispatch) error) error {

@@ -39,7 +39,6 @@ func flatpakLinux(t *testing.T, current string) (*System, string) {
 		return execRun("sh", args[2:]...)
 	}
 	t.Setenv("HOME", l.home)
-	t.Setenv("XDG_CONFIG_HOME", hostConfig(l))
 	t.Setenv("XDG_DATA_HOME", l.dataHome)
 	t.Setenv("XDG_DATA_DIRS", t.TempDir())
 	t.Setenv("PATH", bin+":"+os.Getenv("PATH"))
@@ -47,7 +46,7 @@ func flatpakLinux(t *testing.T, current string) (*System, string) {
 }
 
 // hostConfig is the host's config folder in flatpakLinux, apart from the sandbox's own l.configHome.
-func hostConfig(l *System) string { return filepath.Join(l.home, "host-config") }
+func hostConfig(l *System) string { return filepath.Join(l.home, ".config") }
 
 func TestFlatpakRestoreDropsOurDefaultFromTheHostsMimeapps(t *testing.T) {
 	l, _ := flatpakLinux(t, "")

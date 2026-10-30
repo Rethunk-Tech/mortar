@@ -417,11 +417,7 @@ func (l *System) ForwardOther(link, previous string) error {
 
 // dropDefault removes Mortar's lines for mimes from the user's mimeapps.list: xdg-mime cannot unset a default.
 func (l *System) dropDefault(mimes ...string) error {
-	config, err := l.hostConfigHome()
-	if err != nil {
-		return err
-	}
-	path := l.hostResolve(filepath.Join(config, "mimeapps.list"))
+	path := l.hostResolve(filepath.Join(l.hostConfigHome(), "mimeapps.list"))
 	b, err := l.hostRead(path)
 	if errors.Is(err, fs.ErrNotExist) {
 		return nil

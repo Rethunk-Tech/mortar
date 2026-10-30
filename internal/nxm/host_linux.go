@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
+	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
 	"github.com/Rethunk-Tech/go-safefs"
 )
 
@@ -39,11 +40,11 @@ exit 1`
 const errHostMissing = 3
 
 // hostConfigHome is the host's XDG config folder; a Flatpak's own XDG_CONFIG_HOME points into its sandbox.
-func (l *System) hostConfigHome() (string, error) {
+func (l *System) hostConfigHome() string {
 	if !flatpak.Inside() {
-		return l.configHome, nil
+		return l.configHome
 	}
-	return l.onHost("sh", "-c", `printf %s "${XDG_CONFIG_HOME:-$HOME/.config}"`)
+	return userdirs.HostConfigHome(l.home)
 }
 
 // hostResolve follows a symlink (a dotfile manager's), so a rewrite lands in its target and the link stays.

@@ -28,10 +28,7 @@ var nativeHostBrowsers = []browserEntry{
 // nativeHostEntries lists the installed browsers, each with where it looks for Mortar's host manifest. Chromium
 // browsers look under the host's config folder, which inside a Flatpak is not the sandbox's own.
 func (l *System) nativeHostEntries() []hostEntry {
-	config, err := l.hostConfigHome()
-	if err != nil {
-		return nil
-	}
+	config := l.hostConfigHome()
 	var out []hostEntry
 	for _, b := range nativeHostBrowsers {
 		dir := filepath.Join(config, b.dir)
