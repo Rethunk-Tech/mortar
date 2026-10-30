@@ -34,7 +34,7 @@ Each release attaches the Flathub files with a `flathub-` prefix and `flathub-SU
 
 ## winget
 
-After a release publishes, `build/windows/winget/bump.sh 1.2.3 <winget-pkgs checkout>` writes `manifests/r/RethunkTech/Mortar/1.2.3/`. Run `winget validate`, send the update to [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs) as a PR, and copy the new manifests back over `build/windows/winget/` once it merges. Scoop and the Homebrew tap update themselves from the release.
+After a release publishes, `build/windows/winget/bump.sh 1.2.3 <winget-pkgs checkout>` writes `manifests/r/RethunkTech/Mortar/1.2.3/` and rewrites the templates in `build/windows/winget/` to match. Run `winget validate`, send the update to [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs) as a PR, and commit the templates. Scoop and the Homebrew tap update themselves from the release.
 
 ## AUR mortar-bin
 

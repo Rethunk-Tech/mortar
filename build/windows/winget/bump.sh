@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Usage: bump.sh VERSION [OUT] — writes the winget-pkgs manifests for VERSION into OUT/manifests/r/RethunkTech/Mortar/VERSION
 # (OUT defaults to a temp dir; point it at a winget-pkgs checkout), hashes taken from the release's signed SHA256SUMS.
+# The templates here are rewritten to match, so they always hold the last version submitted.
 set -euo pipefail
 here=$(cd "$(dirname "$0")" && pwd); repo=$(cd "$here/../../.." && pwd)
 v=$1; out=${2:-$(mktemp -d)}; dst=$out/manifests/r/RethunkTech/Mortar/$v
@@ -22,4 +23,5 @@ p,amd,arm=sys.argv[1:]; s=open(p).read()
 hs=iter([amd,arm]); s=re.sub(r'InstallerSha256: [0-9A-F]+', lambda m: 'InstallerSha256: '+next(hs), s)
 open(p,'w').write(s)
 PY
+cp "$dst"/*.yaml "$here/"
 echo "$dst"; grep -E "InstallerUrl|InstallerSha256|PackageVersion" "$dst"/*.installer.yaml
