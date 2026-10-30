@@ -8,7 +8,8 @@ import {
   RadioGroup,
   TextField,
 } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useDebouncedLoad } from '@rethunk/react-load-hooks'
+import { useEffect } from 'react'
 import type { GitHubOwner } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import { CheckRepo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
@@ -30,41 +31,27 @@ const Avatar = ({ owner }: { owner: GitHubOwner }) => (
 // Asks GitHub, once typing pauses, whether owner exists and already has repo; the answer lands in the draft's ownerIssue.
 function useRepoCheck(draft: Draft, set: (next: Partial<Draft>) => void) {
   const { t } = useLingui()
-  // Null while the check runs; owner null when GitHub has no such account.
-  const [checked, setChecked] = useState<{ owner: GitHubOwner | null } | null>(null)
   const owner = draft.owner
   const repo = draft.repo || draft.name
   const on = draft.github && OWNER.test(owner)
+  const { data, loading, error } = useDebouncedLoad(
+    on ? () => CheckRepo(owner, repo) : null,
+    [on, owner, repo],
+    { initial: null, delayMs: CHECK_DELAY_MS },
+  )
+  // Null while the check runs or failed; owner null when GitHub has no such account.
+  const checked = on && !loading && error === null && data ? { owner: data.owner } : null
+  let issue = ''
+  if (on && loading) {
+    issue = t`Checking ${{ owner }} on ${{ source: sourceLabel('github') }}`
+  } else if (checked && !checked.owner) {
+    issue = t`${{ source: sourceLabel('github') }} has no account named ${{ owner }}.`
+  } else if (checked && data?.taken) {
+    issue = t`${{ owner }}/${{ repo }} already exists.`
+  }
   useEffect(() => {
-    setChecked(null)
-    if (!on) {
-      set({ ownerIssue: '' })
-      return
-    }
-    set({ ownerIssue: t`Checking ${{ owner }} on ${{ source: sourceLabel('github') }}` })
-    let stale = false
-    const timer = setTimeout(() => {
-      CheckRepo(owner, repo)
-        .then((check) => {
-          if (stale) {
-            return
-          }
-          setChecked({ owner: check.owner })
-          let issue = ''
-          if (!check.owner) {
-            issue = t`${{ source: sourceLabel('github') }} has no account named ${{ owner }}.`
-          } else if (check.taken) {
-            issue = t`${{ owner }}/${{ repo }} already exists.`
-          }
-          set({ ownerIssue: issue })
-        })
-        .catch(() => stale || set({ ownerIssue: '' }))
-    }, CHECK_DELAY_MS)
-    return () => {
-      stale = true
-      clearTimeout(timer)
-    }
-  }, [on, owner, repo, set, t])
+    set({ ownerIssue: issue })
+  }, [issue, set])
   return checked
 }
 
