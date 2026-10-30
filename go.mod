@@ -16,6 +16,7 @@ require (
 	github.com/Rethunk-Tech/go-keyring v0.1.0
 	github.com/Rethunk-Tech/go-lenientjson v0.1.0
 	github.com/Rethunk-Tech/go-modmanagers v0.1.0
+	github.com/Rethunk-Tech/go-nettrace v0.1.0
 	github.com/Rethunk-Tech/go-nexusmods v0.1.0
 	github.com/Rethunk-Tech/go-safefs v0.2.0
 	github.com/Rethunk-Tech/go-semverish v0.1.0
@@ -43,7 +44,6 @@ require (
 require (
 	git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3 // indirect
 	github.com/BurntSushi/toml v1.6.0 // indirect
-	github.com/Rethunk-Tech/go-nettrace v0.1.0 // indirect
 	github.com/adrg/xdg v0.5.3 // indirect
 	github.com/andygrunwald/vdf v1.1.0 // indirect
 	github.com/bodgit/plumbing v1.3.0 // indirect
