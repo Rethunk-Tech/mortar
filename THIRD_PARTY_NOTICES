@@ -888,7 +888,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-@rethunk/dom-input-nav@0.1.0
+@rethunk/dom-input-nav@0.1.1
 licence: MIT
 https://github.com/Rethunk-Tech/dom-input-nav
 
@@ -916,7 +916,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-@rethunk/react-load-hooks@0.1.0
+@rethunk/react-load-hooks@0.1.1
 licence: MIT
 https://github.com/Rethunk-Tech/react-load-hooks
 
@@ -3067,7 +3067,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-desktopenv@v0.1.0
+github.com/Rethunk-Tech/go-desktopenv@v0.2.0
 licence: MIT
 https://github.com/Rethunk-Tech/go-desktopenv
 
@@ -3319,7 +3319,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-modmanagers@v0.1.0
+github.com/Rethunk-Tech/go-modmanagers@v0.2.0
 licence: MIT
 https://github.com/Rethunk-Tech/go-modmanagers
 
@@ -3375,7 +3375,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-nexusmods@v0.1.0
+github.com/Rethunk-Tech/go-nexusmods@v0.2.0
 licence: MIT
 https://github.com/Rethunk-Tech/go-nexusmods
 
@@ -3431,7 +3431,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-semverish@v0.1.0
+github.com/Rethunk-Tech/go-semverish@v0.2.0
 licence: MIT
 https://github.com/Rethunk-Tech/go-semverish
 
