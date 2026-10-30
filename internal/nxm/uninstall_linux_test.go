@@ -16,8 +16,9 @@ func TestRemoveDesktopUndoesRegistration(t *testing.T) {
 	if err := l.RegisterLinks(); err != nil {
 		t.Fatal(err)
 	}
-	list := filepath.Join(l.configHome, "mimeapps.list")
-	if err := os.MkdirAll(l.configHome, 0o750); err != nil {
+	config := os.Getenv("XDG_CONFIG_HOME")
+	list := filepath.Join(config, "mimeapps.list")
+	if err := os.MkdirAll(config, 0o750); err != nil {
 		t.Fatal(err)
 	}
 	body := "[Default Applications]\n" + mortarMime + "=" + desktopID + "\n" + fileMime + "=" + desktopID + ";\ntext/html=a.desktop\n"
@@ -38,16 +39,16 @@ func TestRemoveDesktopUndoesRegistration(t *testing.T) {
 }
 
 func TestRemoveDesktopKeepsAnotherCopysEntry(t *testing.T) {
-	l, _ := newLinux(t, "")
+	l, r := newLinux(t, "")
 	other := filepath.Join(t.TempDir(), "Mortar.AppImage")
 	if err := safefs.WriteFile(other, []byte("x"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	l.exe = other
+	l = withExe(t, r, other)
 	if err := l.Register(); err != nil {
 		t.Fatal(err)
 	}
-	l.exe = "/usr/bin/mortar"
+	l = withExe(t, r, "/usr/bin/mortar")
 	if err := l.RemoveDesktop(); err != nil {
 		t.Fatal(err)
 	}

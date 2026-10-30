@@ -5,12 +5,10 @@ package nativehost
 import (
 	"cmp"
 	"context"
-	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
-	"math"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -19,6 +17,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-desktopenv/nativemessaging"
 	"github.com/Rethunk-Tech/go-smapiweb"
 
 	"github.com/Rethunk-Tech/go-safefs/diskcache"
@@ -451,18 +450,11 @@ func (h handlers) answer(req request) reply {
 
 func serveHandlers(r io.Reader, w io.Writer, h handlers) error {
 	for {
-		var n uint32
-		if err := binary.Read(r, binary.NativeEndian, &n); err != nil {
+		var req request
+		if err := nativemessaging.Read(r, maxMessage, &req); err != nil {
 			if errors.Is(err, io.EOF) {
 				return nil
 			}
-			return err
-		}
-		if n > maxMessage {
-			return fmt.Errorf("message of %d bytes is too large", n)
-		}
-		var req request
-		if err := json.NewDecoder(safefs.CapReader(r, int64(n))).Decode(&req); err != nil {
 			return err
 		}
 		mismatch := protocolMismatch(req.Protocol)
@@ -483,18 +475,7 @@ func serveHandlers(r io.Reader, w io.Writer, h handlers) error {
 		}
 		rep.Protocol = req.version()
 		rep.Accent = accentColor()
-		out, err := json.Marshal(rep)
-		if err != nil {
-			return err
-		}
-		n32, err := frameLen(len(out))
-		if err != nil {
-			return err
-		}
-		if err := binary.Write(w, binary.NativeEndian, n32); err != nil {
-			return err
-		}
-		if _, err := w.Write(out); err != nil {
+		if err := nativemessaging.Write(w, rep); err != nil {
 			return err
 		}
 	}
@@ -837,28 +818,20 @@ func nexusUpdateAvailable(version *string, fileID int, pageVer string, files []c
 	}
 }
 
-// frameLen is a message's length as the uint32 prefix native messaging uses.
-func frameLen(n int) (uint32, error) {
-	if n < 0 || uint64(n) > math.MaxUint32 {
-		return 0, fmt.Errorf("message of %d bytes cannot be framed", n)
+// Host is the native-messaging host that lets the Mortar extension start exe. Windows keeps its manifests in the
+// default data folder, which stays local when the data folder moves.
+func Host(exe string) nativemessaging.Host {
+	h := nativemessaging.Host{
+		Name:              Name,
+		Description:       "Mortar mod manager",
+		Path:              exe,
+		AllowedOrigins:    ChromeOrigins(),
+		AllowedExtensions: []string{FirefoxID},
 	}
-	return uint32(n), nil
-}
-
-// Manifest is the host manifest a browser reads to find Mortar; firefox picks that browser's allow-list field.
-func Manifest(exe string, firefox bool) ([]byte, error) {
-	m := map[string]any{
-		"name":        Name,
-		"description": "Mortar mod manager",
-		"path":        exe,
-		"type":        "stdio",
+	if dir, err := datadir.DefaultDir(); err == nil {
+		h.ManifestDir = filepath.Join(dir, "nativehost")
 	}
-	if firefox {
-		m["allowed_extensions"] = []string{FirefoxID}
-	} else {
-		m["allowed_origins"] = ChromeOrigins()
-	}
-	return json.MarshalIndent(m, "", "  ")
+	return h
 }
 
 // accentColor reads only the accent from Mortar's settings file; the native host never writes Mortar's data, so it

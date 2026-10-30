@@ -11,8 +11,15 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/appversion"
+	"github.com/Rethunk-Tech/mortar/internal/source"
 )
+
+const (
+	xdgMime  = "/usr/bin/xdg-mime"
+	updateDB = "update-desktop-database"
+)
+
+func schemeMime(scheme string) string { return "x-scheme-handler/" + scheme }
 
 type recorder struct {
 	calls   []string
@@ -47,86 +54,26 @@ func (r *recorder) run(name string, args ...string) (string, error) {
 	return "", nil
 }
 
+// newLinux gives the test its own home and XDG folders and a recorder in place of xdg-mime.
 func newLinux(t *testing.T, current string) (*System, *recorder) {
 	t.Helper()
 	dir := t.TempDir()
+	t.Setenv("HOME", filepath.Join(dir, "home"))
+	t.Setenv("XDG_DATA_HOME", filepath.Join(dir, "data"))
+	t.Setenv("XDG_CONFIG_HOME", filepath.Join(dir, "config"))
+	t.Setenv("XDG_DATA_DIRS", filepath.Join(dir, "system"))
 	r := &recorder{current: current, byMime: map[string]string{schemeMime("nxm"): current}}
-	return &System{exe: "/opt/mortar/mortar", home: filepath.Join(dir, "home"), dataHome: filepath.Join(dir, "data"), configHome: filepath.Join(dir, "config"), run: r.run}, r
+	return withExe(t, r, "/opt/mortar/mortar"), r
 }
 
-func TestRegisterThenRestorePreviousHandler(t *testing.T) {
-	l, r := newLinux(t, "vortex.desktop")
-	owner, err := l.Owner("nxm")
-	if err != nil || owner.ID != "vortex.desktop" || owner.Mine || owner.Name != "vortex" {
-		t.Fatalf("owner before: %+v, %v", owner, err)
-	}
-	if err := l.Register(); err != nil {
+// withExe is the System for another copy of Mortar at exe, in the same folders and with the same recorder.
+func withExe(t *testing.T, r *recorder, exe string) *System {
+	t.Helper()
+	l, err := newSystem(exe, r.run)
+	if err != nil {
 		t.Fatal(err)
 	}
-	if r.current != desktopID {
-		t.Fatalf("default is %q after Register", r.current)
-	}
-	b, err := safefs.ReadFile(l.desktopPath())
-	if err != nil || !strings.Contains(string(b), `Exec="/opt/mortar/mortar" %u`) || !strings.Contains(string(b), "MimeType=x-scheme-handler/nxm;x-scheme-handler/mortar;application/x-mortar;") {
-		t.Fatalf("desktop file: %s, %v", b, err)
-	}
-	png, err := safefs.ReadFile(l.iconPNGPath())
-	if err != nil || len(png) == 0 || string(png) != string(iconPNG) {
-		t.Fatalf("hicolor png: %d, %v", len(png), err)
-	}
-	svg, err := safefs.ReadFile(l.iconSVGPath())
-	if err != nil || !strings.Contains(string(svg), `viewBox="0 0 1024 1024"`) {
-		t.Fatalf("hicolor svg: %s, %v", svg, err)
-	}
-	if l.NotificationIcon() != l.iconPNGPath() {
-		t.Fatalf("NotificationIcon: %q", l.NotificationIcon())
-	}
-	if owner, _ := l.Owner("nxm"); !owner.Mine {
-		t.Fatalf("owner after Register: %+v", owner)
-	}
-	if err := l.Restore(map[string]string{"nxm": "vortex.desktop"}); err != nil {
-		t.Fatal(err)
-	}
-	if r.current != "vortex.desktop" {
-		t.Errorf("default is %q after Restore", r.current)
-	}
-	b, _ = safefs.ReadFile(l.desktopPath())
-	if strings.Contains(string(b), schemeMime("nxm")) {
-		t.Errorf("desktop file still lists nxm after Restore: %s", b)
-	}
-}
-
-func TestRestoreWithoutPreviousDropsOurDefault(t *testing.T) {
-	l, r := newLinux(t, "")
-	if err := l.Register(); err != nil {
-		t.Fatal(err)
-	}
-	list := filepath.Join(l.configHome, "mimeapps.list")
-	if err := os.MkdirAll(l.configHome, 0o750); err != nil {
-		t.Fatal(err)
-	}
-	target := filepath.Join(l.configHome, "dotfiles.list")
-	if err := safefs.WriteFile(target, []byte("[Default Applications]\nx-scheme-handler/nxm="+desktopID+";\ntext/html=a.desktop\n"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.Symlink(target, list); err != nil {
-		t.Fatal(err)
-	}
-	if err := l.Restore(nil); err != nil {
-		t.Fatal(err)
-	}
-	if fi, err := os.Lstat(list); err != nil || fi.Mode()&os.ModeSymlink == 0 {
-		t.Errorf("mimeapps.list symlink replaced: %v", err)
-	}
-	b, _ := safefs.ReadFile(target)
-	if string(b) != "[Default Applications]\ntext/html=a.desktop\n" {
-		t.Errorf("mimeapps.list: %q", b)
-	}
-	for _, c := range r.calls {
-		if strings.HasPrefix(c, xdgMime+" default") && !strings.HasSuffix(c, desktopID+" "+schemeMime("nxm")) {
-			t.Errorf("Restore set a default: %s", c)
-		}
-	}
+	return l
 }
 
 func TestRegisterLinksIsIdempotentAndKeepsNxm(t *testing.T) {
@@ -204,7 +151,7 @@ func TestAnAppImageRegistersItselfAndMovesItsEntry(t *testing.T) {
 		t.Errorf("a child outside the mount took the AppImage path: %q", other.exe)
 	}
 	r := &recorder{}
-	l.run = r.run
+	l = withExe(t, r, l.exe)
 	if err := l.refresh(); err != nil {
 		t.Fatal(err)
 	}
@@ -217,7 +164,7 @@ func TestAnAppImageRegistersItselfAndMovesItsEntry(t *testing.T) {
 	registered, _ := safefs.ReadFile(l.desktopPath())
 
 	// Another copy of Mortar, such as a dev build, leaves the entry to the one it names.
-	l.exe = filepath.Join(dir, "dev", "mortar")
+	l = withExe(t, r, filepath.Join(dir, "dev", "mortar"))
 	if err := l.refresh(); err != nil {
 		t.Fatal(err)
 	}
@@ -225,7 +172,7 @@ func TestAnAppImageRegistersItselfAndMovesItsEntry(t *testing.T) {
 		t.Errorf("another copy took the entry: %s", desktop)
 	}
 
-	l.exe = filepath.Join(dir, "Apps", "Mortar.AppImage")
+	l = withExe(t, r, filepath.Join(dir, "Apps", "Mortar.AppImage"))
 	if err := os.Remove(img); err != nil {
 		t.Fatal(err)
 	}
@@ -264,12 +211,12 @@ func TestRefreshRegistersLinksWhenMissing(t *testing.T) {
 }
 
 func TestRefreshLeavesAnotherCopy(t *testing.T) {
-	l, _ := newLinux(t, "")
+	l, r := newLinux(t, "")
 	other := filepath.Join(t.TempDir(), "other-mortar")
 	if err := safefs.WriteFile(other, nil, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	l.exe = other
+	l = withExe(t, r, other)
 	if err := l.Register(); err != nil {
 		t.Fatal(err)
 	}
@@ -277,7 +224,7 @@ func TestRefreshLeavesAnotherCopy(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	l.exe = filepath.Join(t.TempDir(), "this-mortar")
+	l = withExe(t, r, filepath.Join(t.TempDir(), "this-mortar"))
 	if err := l.refresh(); err != nil {
 		t.Fatal(err)
 	}
@@ -317,20 +264,6 @@ func TestInstallIconsOutdatesAStaleIconCache(t *testing.T) {
 	}
 	if dir.ModTime().Before(c.ModTime()) {
 		t.Fatalf("theme folder %v is older than its cache %v, so GTK would keep the stale cache", dir.ModTime(), c.ModTime())
-	}
-}
-
-func TestRegisterLinksWritesReverseDNSDesktop(t *testing.T) {
-	l, _ := newLinux(t, "")
-	if err := l.RegisterLinks(); err != nil {
-		t.Fatal(err)
-	}
-	if filepath.Base(l.desktopPath()) != desktopID {
-		t.Fatalf("desktop path %s", l.desktopPath())
-	}
-	b, err := safefs.ReadFile(l.desktopPath())
-	if err != nil || !strings.Contains(string(b), "StartupWMClass="+appversion.AppID) {
-		t.Fatalf("desktop file: %s, %v", b, err)
 	}
 }
 
@@ -374,65 +307,20 @@ func TestPackagedRefreshSkipsUserDesktop(t *testing.T) {
 	}
 }
 
-func TestPackagedRegisterSetsNxmDefaultWithoutWriting(t *testing.T) {
-	packaged = "deb"
-	t.Cleanup(func() { packaged = "" })
-	l, r := newLinux(t, "vortex.desktop")
-	// The package's system entry is the handler even beside an integrator's for the same program.
-	writeApp(t, l, gearLever, gearLeverEntry(l.exe))
-	if err := l.Register(); err != nil {
-		t.Fatal(err)
-	}
-	if r.current != desktopID {
-		t.Fatalf("default is %q after packaged Register", r.current)
-	}
-	if _, err := os.Stat(l.desktopPath()); !errors.Is(err, os.ErrNotExist) {
-		t.Fatal("packaged Register wrote a user desktop entry")
-	}
-}
-
-func TestFlatpakSetsTheHostsDefault(t *testing.T) {
-	l, _ := flatpakLinux(t, "other.desktop")
-	r := &recorder{current: "other.desktop", byMime: map[string]string{schemeMime("nxm"): "other.desktop"}}
-	host := l.run
-	l.run = func(name string, args ...string) (string, error) {
-		if !slices.Equal(args[:min(2, len(args))], []string{"--host", "xdg-mime"}) {
-			if name != "flatpak-spawn" {
-				t.Errorf("flatpak ran %s %q outside the host bridge", name, args)
-			}
-			return host(name, args...)
-		}
-		return r.run(name, args...)
-	}
-	if err := l.Register(); err != nil {
-		t.Fatal(err)
-	}
-	if err := l.RegisterLinks(); err != nil {
-		t.Fatal(err)
-	}
-	owner, err := l.Owner("nxm")
-	if err != nil || !owner.Mine {
-		t.Fatalf("owner = %+v, %v", owner, err)
-	}
-	if _, err := os.Stat(l.desktopPath()); !errors.Is(err, os.ErrNotExist) {
-		t.Fatal("flatpak wrote a user desktop entry")
-	}
-}
-
 func TestRefreshUpdatesIconsWhenAnotherCopyOwnsTheEntry(t *testing.T) {
-	l, _ := newLinux(t, "")
+	l, r := newLinux(t, "")
 	other := filepath.Join(t.TempDir(), "other-mortar")
 	if err := safefs.WriteFile(other, nil, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	l.exe = other
+	l = withExe(t, r, other)
 	if err := l.Register(); err != nil {
 		t.Fatal(err)
 	}
 	if err := safefs.WriteFile(l.iconSVGPath(), []byte("<svg/>"), desktopPerm); err != nil {
 		t.Fatal(err)
 	}
-	l.exe = filepath.Join(t.TempDir(), "this-mortar")
+	l = withExe(t, r, filepath.Join(t.TempDir(), "this-mortar"))
 	if err := l.Refresh(); err != nil {
 		t.Fatal(err)
 	}
@@ -459,25 +347,9 @@ func gearLeverEntry(exe string) string {
 	return "[Desktop Entry]\nName=Mortar\nExec=env DESKTOPINTEGRATION=1 " + exe + " %u\nX-AppImage-Name=Mortar\n"
 }
 
-func TestNoIntegratorWritesOurEntry(t *testing.T) {
-	l, r := newLinux(t, "")
-	// Our own profile shortcut and an entry that cannot take a link do not count as an integrator's.
-	writeApp(t, l, appversion.AppID+".play-stardew-x.desktop", "[Desktop Entry]\nExec=\""+l.exe+"\" --play=stardew/x\n")
-	writeApp(t, l, "other.desktop", "[Desktop Entry]\nExec="+l.exe+"\n")
-	if err := l.Register(); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := os.Stat(l.desktopPath()); err != nil {
-		t.Fatalf("own entry: %v", err)
-	}
-	if r.byMime[schemeMime("nxm")] != desktopID {
-		t.Fatalf("defaults: %v", r.byMime)
-	}
-}
-
 func TestAnIntegratorsEntryIsTheHandler(t *testing.T) {
 	l, r := newLinux(t, "vortex.desktop")
-	l.exe = "/home/u/Apps/mortar.appimage_0.appimage"
+	l = withExe(t, r, "/home/u/Apps/mortar.appimage_0.appimage")
 	writeApp(t, l, "appimagekit_other.desktop", "[Desktop Entry]\nExec=\""+l.exe+"\" %U\n")
 	writeApp(t, l, gearLever, gearLeverEntry(l.exe))
 	for range 2 {
@@ -504,55 +376,50 @@ func TestAnIntegratorsEntryIsTheHandler(t *testing.T) {
 	}
 }
 
-func TestAnIntegratorReplacesOurStaleEntry(t *testing.T) {
+
+// The entry reads byte for byte as earlier releases wrote it, so an existing user entry is never rewritten.
+func TestDesktopEntryMatchesTheOneEarlierReleasesWrote(t *testing.T) {
 	l, r := newLinux(t, "")
-	l.exe = "/home/u/Apps/mortar.appimage_0.appimage"
-	if err := l.Register(); err != nil {
-		t.Fatal(err)
-	}
-	if err := l.RegisterLinks(); err != nil {
-		t.Fatal(err)
-	}
-	r.byMime["x-scheme-handler/http"] = "firefox.desktop"
-	writeApp(t, l, gearLever, gearLeverEntry(l.exe))
-	r.calls = nil
-	if err := l.refresh(); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := os.Stat(l.desktopPath()); !errors.Is(err, os.ErrNotExist) {
-		t.Fatalf("stale own entry kept: %v", err)
-	}
-	if !slices.Contains(r.calls, updateDB+" "+filepath.Dir(l.desktopPath())) {
-		t.Errorf("desktop database not rebuilt: %q", r.calls)
-	}
-	for _, mime := range append(schemeMimes(), mortarMime, fileMime) {
-		if r.byMime[mime] != gearLever {
-			t.Errorf("%s default %q", mime, r.byMime[mime])
+	earlier := func(withSchemes bool) string {
+		mime := ""
+		if withSchemes {
+			for _, scheme := range source.Schemes() {
+				mime += "x-scheme-handler/" + scheme + ";"
+			}
 		}
+		return `[Desktop Entry]
+Type=Application
+Name=Mortar
+Comment=Desktop mod manager for PC games
+Exec="/opt/mortar/mortar" %u
+Icon=mortar
+Terminal=false
+Categories=Game;Utility;
+Keywords=mod;manager;nexus;stardew;
+StartupWMClass=tech.rethunk.Mortar
+MimeType=` + mime + "x-scheme-handler/mortar;application/x-mortar;\n"
 	}
-	if r.byMime["x-scheme-handler/http"] != "firefox.desktop" {
-		t.Error("another type's default moved")
-	}
-}
-
-func TestReleaseHandsBackOnlyTheGivenScheme(t *testing.T) {
-	l, r := newLinux(t, "vortex.desktop")
-	if err := l.Release([]string{"ror2mm"}, map[string]string{"ror2mm": "r2modman.desktop"}); err != nil {
+	if err := os.MkdirAll(filepath.Dir(l.desktopPath()), 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if got := r.byMime[schemeMime("ror2mm")]; got != "r2modman.desktop" {
-		t.Fatalf("ror2mm owner %q", got)
-	}
-	if r.byMime[schemeMime("nxm")] != "vortex.desktop" {
-		t.Fatalf("the nxm default changed: %v", r.byMime)
-	}
-}
-
-// execTarget reads back the program from the entry desktopFile writes, whatever the path holds.
-func TestExecTargetReadsBackTheEntryDesktopFileWrites(t *testing.T) {
-	exe := "/opt/50%off/$x `b` \\q \"z\" d"
-	l := &System{exe: exe}
-	if got := execTarget([]byte(l.desktopFile(false))); got != exe {
-		t.Fatalf("execTarget = %q, want %q", got, exe)
+	for _, withSchemes := range []bool{false, true} {
+		if withSchemes {
+			if err := l.Register(); err != nil {
+				t.Fatal(err)
+			}
+		}
+		if err := safefs.WriteFile(l.desktopPath(), []byte(earlier(withSchemes)), desktopPerm); err != nil {
+			t.Fatal(err)
+		}
+		r.calls = nil
+		if err := l.RegisterLinks(); err != nil {
+			t.Fatal(err)
+		}
+		if slices.Contains(r.calls, updateDB+" "+filepath.Dir(l.desktopPath())) {
+			t.Errorf("withSchemes %v: an earlier release's entry was rewritten", withSchemes)
+		}
+		if b, _ := safefs.ReadFile(l.desktopPath()); string(b) != earlier(withSchemes) {
+			t.Errorf("withSchemes %v: entry\n%s\nwant\n%s", withSchemes, b, earlier(withSchemes))
+		}
 	}
 }

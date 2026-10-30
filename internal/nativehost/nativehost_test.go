@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"context"
-	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"io"
@@ -16,6 +15,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-desktopenv/nativemessaging"
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
@@ -29,29 +29,18 @@ func frame(t *testing.T, v any) []byte {
 		r.Protocol = new(Protocol)
 		v = r
 	}
-	b, err := json.Marshal(v)
-	if err != nil {
-		t.Fatal(err)
-	}
 	var buf bytes.Buffer
-	n, err := frameLen(len(b))
-	if err != nil {
+	if err := nativemessaging.Write(&buf, v); err != nil {
 		t.Fatal(err)
 	}
-	_ = binary.Write(&buf, binary.NativeEndian, n)
-	buf.Write(b)
 	return buf.Bytes()
 }
 
 // readReply reads one framed reply off out.
 func readReply(t *testing.T, out *bytes.Buffer) reply {
 	t.Helper()
-	var n uint32
-	if err := binary.Read(out, binary.NativeEndian, &n); err != nil {
-		t.Fatal(err)
-	}
 	var r reply
-	if err := json.Unmarshal(out.Next(int(n)), &r); err != nil {
+	if err := nativemessaging.Read(out, maxMessage, &r); err != nil {
 		t.Fatal(err)
 	}
 	return r
@@ -610,19 +599,10 @@ func TestManifestAllowsStoreOrigins(t *testing.T) {
 	old := storeChromeIDs
 	storeChromeIDs = []string{"abcdefghijklmnopabcdefghijklmnop"}
 	t.Cleanup(func() { storeChromeIDs = old })
-	b, err := Manifest("/usr/bin/mortar", false)
-	if err != nil {
-		t.Fatal(err)
-	}
-	var m struct {
-		AllowedOrigins []string `json:"allowed_origins"`
-	}
-	if err := json.Unmarshal(b, &m); err != nil {
-		t.Fatal(err)
-	}
+	got := Host("/usr/bin/mortar").AllowedOrigins
 	want := []string{ChromeOrigin, "chrome-extension://abcdefghijklmnopabcdefghijklmnop/"}
-	if !slices.Equal(m.AllowedOrigins, want) {
-		t.Fatalf("allowed_origins = %q, want %q", m.AllowedOrigins, want)
+	if !slices.Equal(got, want) {
+		t.Fatalf("allowed origins = %q, want %q", got, want)
 	}
 	if !Invoked([]string{want[1]}) {
 		t.Fatal("store origin must start the host")

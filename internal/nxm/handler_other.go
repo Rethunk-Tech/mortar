@@ -20,3 +20,9 @@ func (System) Release([]string, map[string]string) error { return errUnsupported
 func (System) ForwardOther(string, string) error         { return errUnsupported }
 func (System) RegisterLinks() error                      { return nil }
 func (System) Refresh() error                            { return nil }
+
+// WriteNativeHosts does nothing where browsers do not use these host manifests.
+func (System) WriteNativeHosts() error { return nil }
+
+// NativeHostStatus is empty where browsers do not use these host manifests.
+func (System) NativeHostStatus() []HostStatus { return nil }

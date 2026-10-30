@@ -1,9 +1,6 @@
 package nxm
 
 import (
-	"errors"
-	"io/fs"
-	"os"
 	"path/filepath"
 
 	"github.com/Rethunk-Tech/go-safefs"
@@ -13,21 +10,11 @@ import (
 // .mortar MIME definition, then the mortar:// and .mortar defaults. An entry that runs another Mortar copy which
 // still exists (a second AppImage) is left with everything it uses. Run Restore first for the nxm default.
 func (l *System) RemoveDesktop() error {
-	current, err := safefs.ReadFile(l.desktopPath())
-	switch {
-	case errors.Is(err, fs.ErrNotExist):
-	case err != nil:
+	if other, err := l.anotherCopysEntry(); err != nil || other {
 		return err
-	default:
-		if target := execTarget(current); target != "" && target != l.exe {
-			if _, err := os.Stat(target); err == nil {
-				return nil
-			}
-		}
-		if err := safefs.RemoveAll(l.desktopPath()); err != nil {
-			return err
-		}
-		_, _ = l.run(updateDB, filepath.Dir(l.desktopPath()))
+	}
+	if err := l.h.RemoveEntry(); err != nil {
+		return err
 	}
 	for _, path := range []string{l.iconPNGPath(), l.iconSVGPath()} {
 		if err := safefs.RemoveAll(path); err != nil {
@@ -41,5 +28,5 @@ func (l *System) RemoveDesktop() error {
 		}
 		_, _ = l.run(updateMIME, filepath.Join(l.dataHome, "mime"))
 	}
-	return l.dropDefault(mortarMime, fileMime)
+	return l.h.DropDefault(mortarMime, fileMime)
 }

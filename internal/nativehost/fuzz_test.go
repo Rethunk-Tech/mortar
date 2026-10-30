@@ -2,10 +2,11 @@ package nativehost
 
 import (
 	"bytes"
-	"encoding/binary"
+	"encoding/json"
 	"io"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-desktopenv/nativemessaging"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
@@ -13,13 +14,10 @@ import (
 func FuzzServe(f *testing.F) {
 	testfs.DataHome(f)
 	frame := func(body string) []byte {
-		n, err := frameLen(len(body))
-		if err != nil {
+		var b bytes.Buffer
+		if err := nativemessaging.Write(&b, json.RawMessage(body)); err != nil {
 			f.Fatal(err)
 		}
-		var b bytes.Buffer
-		_ = binary.Write(&b, binary.NativeEndian, n)
-		b.WriteString(body)
 		return b.Bytes()
 	}
 	f.Add(frame(`{"link":"nxm://stardewvalley/mods/1/files/2"}`))
