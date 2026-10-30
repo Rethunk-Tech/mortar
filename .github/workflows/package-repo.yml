@@ -95,7 +95,7 @@ jobs:
       - name: Build the site from its ref
         if: inputs.site != ''
         working-directory: site-src
-        run: bun install --frozen-lockfile && bun run bindings && bun run site
+        run: bun install --frozen-lockfile && bun run bindings && bun run --cwd frontend i18n:compile && bun run site
 
       # The site's download links follow the latest release, so a renamed asset breaks them the moment it publishes.
       - name: Site download links
