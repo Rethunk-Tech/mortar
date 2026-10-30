@@ -1,0 +1,46 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+Architectures: amd64 arm64
+Codename: stable
+Components: main
+Date: Fri, 30 Oct 2026 20:32:12 +0000
+Label: Mortar
+Origin: Mortar
+Suite: stable
+MD5Sum:
+ 69ae0ff897aeb291a955a245803a60c5              662 main/binary-amd64/Packages
+ 87914aacf96c766e0b89b04ea227b9c9              476 main/binary-amd64/Packages.gz
+ 3214b6b9b8297a8076bf1f2a3a830b79              662 main/binary-arm64/Packages
+ bea4449279eb06259c74641ffe617bd2              474 main/binary-arm64/Packages.gz
+SHA1:
+ d7826f63c19ecfb24f0c07a1a9debbba81ed3f12              662 main/binary-amd64/Packages
+ 648c864eda109426a6f1bb9bd6372a3e01a1a8ee              476 main/binary-amd64/Packages.gz
+ e2526ac6662bc9bb7f4c287ea908b46521fb24fc              662 main/binary-arm64/Packages
+ bba9b23330381327027240fb16a1886ece85ac84              474 main/binary-arm64/Packages.gz
+SHA256:
+ d2a8f5d9ae7080a9262f2dbf8082064f9b81aaa232d13d13ff9a98582370b46d              662 main/binary-amd64/Packages
+ 8f43fd063e0f504971af8fc39b52ba143c99ec28856819d0e885f1a048b36e19              476 main/binary-amd64/Packages.gz
+ 5343392c831755a25ea1307b163ee95bbba8d8b73871c0eaba492d351ba98b76              662 main/binary-arm64/Packages
+ d9f308f8756af7779e40aa3e998ce52aba784ca8dcb7ad1126a2328296788d83              474 main/binary-arm64/Packages.gz
+SHA512:
+ 86cc20ee7335b51f7d208ab9edd14181e7a58c9a310c903e1b9a1baef64ff49aba28b5fb74c401b08d74af727d0a86b227c134ec83e0eb005331f1841195377f              662 main/binary-amd64/Packages
+ 0bdc9155b6026cbf9535673a98d0f419b04acfa8cddcda1ad97a7c14cdc6069758a769f7ae8a85ccf2362de6f49932320b0462607ae8a57db405d11c10dbb8a6              476 main/binary-amd64/Packages.gz
+ 206a213b038868c8e5823f1add2805610cec5495fe0e9eb359fedc0dbd451e074a83dde56a91995da3d40de0b5f1a0c0de9cfd4545a1e5c8f8f88b6268203e95              662 main/binary-arm64/Packages
+ e19e1487a772c5ad8da1f89f059fa5fa4049494491460703fbada1b85e944f6ee9b7e494742d892408a7925c8b3fa497468c4177161e49ade14ea8f62a99bf57              474 main/binary-arm64/Packages.gz
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE2LHEwgXF+zYzy4uZALdZWbY33LUFAmrk/swACgkQALdZWbY3
+3LUZTw/9FIOfH7znHg9Xv5gTvi08LaC2kKnupK7dggHff216pSwUkkj63ZOKuf1j
+4DqrU7iCVjIRLBZHUtdEnrEfhqQBuENAhRlvBWZZmu5nwdoqrCANZPmJz0MC3xMk
+kWOfFhihblkGyj77KFRzo5m6QOSjYfunCp8CbvCFtPkPMbDFyhS1UKI+87ZxOhJw
++2z7XVO8SbHkEXBkyIgT8MG6Ixd0cGflc0FXCjUpx+t754qTdrgDr4vvciLYPgu6
+bb557kHoufXNJ6AuRL2zTQPorNC10vDv400cNf0wwf2ni11ejN32AlBwRVafZl/O
+DidUS7UyqdLKUI049vK1rIVijcnK3yqTixOxcngBBJLluXUiS6dnx0faZN3Kus9r
+Vp8vX2Zgmylhq9wDkd+cfrp7HWIA67jXyF0D7Onuu/l+J56LY4dZrdvypNBEfSrE
+VuIrzCe+TZ8oAc583bZF4XIrAISKyD/5gY0OREMfFiRjeAAmotC1lZfflk4bynPi
+3z1LNpIobPHJzSRYhifYJC2qBjFPh4EuMWm1uYwE0yPE539nwOTnn4WNu+XGO9N0
+TKmqP18B7yaoroyd/xFXKM9oCkdvMyaupsg8EwEezS21qMyOqASCaK+J0GX5n6MZ
+awK+fpt/gsiqHK5QULzHzQUegzigTUsDzwf+4UOYnakujumUP34=
+=aw0N
+-----END PGP SIGNATURE-----

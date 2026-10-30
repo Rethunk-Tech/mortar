@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="darkreader-lock">
+    <meta name="referrer" content="no-referrer">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#111114">
+    
+    <title>Mortar browser extension</title>
+    <meta name="description" content="The Mortar browser extension marks Nexus Mods, Thunderstore, CurseForge, Vintage Story Mod DB, Paradox Mods and Modrinth pages with what your Mortar profile already has and hands their install buttons to Mortar. For Firefox, Chrome and Edge.">
+    <link rel="canonical" href="https://mortar.rethunk.tech/extension/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Mortar">
+    <meta property="og:url" content="https://mortar.rethunk.tech/extension/">
+    <meta property="og:title" content="Mortar browser extension">
+    <meta property="og:description" content="The Mortar browser extension marks Nexus Mods, Thunderstore, CurseForge, Vintage Story Mod DB, Paradox Mods and Modrinth pages with what your Mortar profile already has and hands their install buttons to Mortar. For Firefox, Chrome and Edge.">
+    <meta property="og:image" content="https://mortar.rethunk.tech/og/extension.png?v=0.3.16">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="alternate" type="application/rss+xml" title="Mortar news" href="https://mortar.rethunk.tech/news/rss.xml">
+    <link rel="alternate" type="application/atom+xml" title="Mortar releases" href="https://mortar.rethunk.tech/changelog/feed.xml">
+    <!-- Body and heading text arrive before first paint, so the page does not shift when they swap in. -->
+    <link rel="preload" href="/_astro/atkinson-hyperlegible-next-latin-400-normal.FfmJh7DR.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/_astro/atkinson-hyperlegible-next-latin-800-normal.D32lleIF.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="icon" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/img/icon-192.png">
+    <link rel="sitemap" href="/sitemap-index.xml">
+    <script async src="https://plausible.io/js/pa-Q6uQ-Ve40xbXZhAAHIlnr.js"></script>
+    <!-- Plausible's queue: calls made before its script loads wait in plausible.q, and init's options in plausible.o. -->
+    <script>
+      {
+        const p =
+          globalThis.plausible ||
+          ((...args) => {
+            p.q = p.q || []
+            p.q.push(args)
+          })
+        p.init =
+          p.init ||
+          ((options) => {
+            p.o = options || {}
+          })
+        globalThis.plausible = p
+        // A share link carries the whole profile after the #, and its Open in Mortar link carries it in a mortar://
+        // address that Plausible would report as an outbound click; that click has its own event instead.
+        p.init({
+          transformRequest: (request) =>
+            String(request.p?.url ?? '').startsWith('mortar:') ? null : { ...request, u: request.u.split('#')[0] },
+        })
+      }
+    </script>
+    <script>document.documentElement.classList.remove('no-js')</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Mortar","applicationCategory":"GameApplication","operatingSystem":"Windows, Linux","softwareVersion":"0.3.16","url":"https://mortar.rethunk.tech/","downloadUrl":"https://mortar.rethunk.tech/download/","license":"https://www.gnu.org/licenses/agpl-3.0.html","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Mortar","item":"https://mortar.rethunk.tech/"},{"@type":"ListItem","position":2,"name":"Browser extension","item":"https://mortar.rethunk.tech/extension/"}]}</script>
+    
+  <link rel="stylesheet" href="/_astro/Base.H6Wqy4FH.css">
+<link rel="stylesheet" href="/_astro/page-lists.DcgSTmT0.css">
+<link rel="stylesheet" href="/_astro/landing-compare.BqZ8PYVX.css">
+<style>.store-badge[data-astro-cid-dxzik6al] img[data-astro-cid-dxzik6al]{width:auto;height:50px}.ext-shot[data-astro-cid-dxzik6al]{justify-self:center}.ext-shot[data-astro-cid-dxzik6al] img[data-astro-cid-dxzik6al]{max-width:420px}
+</style></head>
+  <body id="top">
+    <a class="skip" href="#main">Skip to content</a>
+    <nav class="nav" aria-label="Main">
+  <div class="progress" id="progress"></div>
+  <div class="wrap">
+    <a class="brand" href="/"><img src="/img/icon-192.png" width="30" height="30" alt="">Mortar</a>
+    <div class="links">
+      <a href="/games/" data-sec="games">
+            Games
+          </a><a href="/#features" data-sec="features">
+            Features
+          </a><a href="/news/" data-sec="news">
+            News
+          </a><a href="/why/" data-sec="compare">
+            Compare
+          </a><a href="/guide/">
+            Guide
+          </a><a href="/faq/">
+            FAQ
+          </a>
+    </div>
+    <span class="tools">
+      <button type="button" class="nav-search" aria-label="Search" aria-keyshortcuts="Control+K Meta+K">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+      </button>
+      <a class="optional" href="https://github.com/Rethunk-Tech/mortar" title="GitHub">
+            <svg aria-hidden="true"><use href="/img/brands.svg#github"></use></svg>
+            <span class="visually-hidden">GitHub</span>
+          </a><a class="optional" href="https://discord.gg/TfecaTm8J2" title="Discord">
+            <svg aria-hidden="true"><use href="/img/brands.svg#discord"></use></svg>
+            <span class="visually-hidden">Discord</span>
+          </a>
+      <button type="button" class="nav-menu" aria-label="Menu" aria-expanded="false" aria-controls="nav-drawer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+      </button>
+    </span>
+    <a class="btn primary" href="/download/">Download</a>
+  </div>
+  <div class="nav-drawer" id="nav-drawer" hidden>
+    <a href="/games/">Games</a><a href="/#features">Features</a><a href="/news/">News</a><a href="/why/">Compare</a><a href="/guide/">Guide</a><a href="/faq/">FAQ</a>
+    <a href="https://github.com/Rethunk-Tech/mortar">GitHub</a><a href="https://discord.gg/TfecaTm8J2">Discord</a>
+    <a href="/download/">Download</a>
+  </div>
+</nav>
+    
+    <main id="main" data-pagefind-body>
+      
+  <div class="wrap pagehead" data-astro-cid-dxzik6al>
+    <div class="wide spot" data-astro-cid-dxzik6al>
+      <div data-astro-cid-dxzik6al>
+        <p class="kicker" data-astro-cid-dxzik6al>Browser extension</p>
+        <h1 data-astro-cid-dxzik6al>Mod sites, aware of <em data-astro-cid-dxzik6al>your profile.</em></h1>
+        <p class="lede" data-astro-cid-dxzik6al>See what your profile already has while you browse Nexus Mods, Thunderstore, CurseForge, the Vintage Story Mod DB, Paradox Mods or Modrinth, and send their install buttons to Mortar. Firefox, Chrome, Edge and other Chromium browsers.</p>
+        <div class="cta" data-astro-cid-dxzik6al>
+          <a class="btn primary" href="https://github.com/Rethunk-Tech/mortar-browser-extension/releases/latest/download/mortar-browser-extension.xpi" data-astro-cid-dxzik6al>Get it for Firefox</a>
+          <a class="store-badge" href="https://chromewebstore.google.com/detail/hboeppdoecbglcmfojappgehkbecdfbi" data-astro-cid-dxzik6al><img src="/img/chrome-web-store.png" alt="Available in the Chrome Web Store" width="165" height="50" data-astro-cid-dxzik6al></a>
+        </div>
+        <p class="cta-sub" data-astro-cid-dxzik6al>Free and open source. Needs Mortar on the same computer.</p>
+      </div>
+      <div class="ext-shot" data-astro-cid-dxzik6al><img class="shot zoom" src="/img/extension.webp" width="368" height="232" alt="The extension popup connected to Mortar with the Main profile open, listing updates from Thunderstore and Nexus Mods" data-astro-cid-dxzik6al></div>
+    </div>
+  </div>
+
+  <div class="wrap sec" data-astro-cid-dxzik6al>
+    <div class="head" data-astro-cid-dxzik6al><p class="kicker" data-astro-cid-dxzik6al>What it does</p><h2 data-astro-cid-dxzik6al>Three jobs, on the pages you already use.</h2></div>
+    <div class="f1" data-astro-cid-dxzik6al>
+      <div class="card" data-astro-cid-dxzik6al>
+            <div class="body" data-astro-cid-dxzik6al>
+              <div class="ico" data-astro-cid-dxzik6al><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-astro-cid-dxzik6al><path d="M12 3v12m0 0-4-4m4 4 4-4M5 21h14" data-astro-cid-dxzik6al></path></svg></div>
+              <h3 data-astro-cid-dxzik6al>Mod Manager Download, into Mortar</h3>
+              <p data-astro-cid-dxzik6al>Click Nexus&#39;s own Mod Manager Download button and the file goes to the right Mortar profile. The extension never starts a download by itself.</p>
+            </div>
+          </div><div class="card" data-astro-cid-dxzik6al>
+            <div class="body" data-astro-cid-dxzik6al>
+              <div class="ico" data-astro-cid-dxzik6al><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-astro-cid-dxzik6al><path d="M20 6 9 17l-5-5" data-astro-cid-dxzik6al></path></svg></div>
+              <h3 data-astro-cid-dxzik6al>Marks what you have</h3>
+              <p data-astro-cid-dxzik6al>Mod pages, file lists and search results show which mods and files the open profile already has, so you don&#39;t download twice.</p>
+            </div>
+          </div><div class="card" data-astro-cid-dxzik6al>
+            <div class="body" data-astro-cid-dxzik6al>
+              <div class="ico" data-astro-cid-dxzik6al><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-astro-cid-dxzik6al><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" data-astro-cid-dxzik6al></path></svg></div>
+              <h3 data-astro-cid-dxzik6al>Updates and warnings</h3>
+              <p data-astro-cid-dxzik6al>The toolbar popup lists updates for the mods in your profile and flags broken or obsolete mods on their pages.</p>
+            </div>
+          </div>
+    </div>
+  </div>
+
+  <div class="wrap sec prose" id="install" data-astro-cid-dxzik6al>
+    <h2 data-astro-cid-dxzik6al>Install</h2>
+    <ol class="steps-list" data-astro-cid-dxzik6al>
+      <li data-astro-cid-dxzik6al><strong data-astro-cid-dxzik6al>Firefox:</strong> open the downloaded <code data-astro-cid-dxzik6al>.xpi</code> in Firefox, or drop it on <code data-astro-cid-dxzik6al>about:addons</code>, and confirm.</li>
+      <li data-astro-cid-dxzik6al><strong data-astro-cid-dxzik6al>Chrome and Edge:</strong> choose <strong data-astro-cid-dxzik6al>Add to Chrome</strong> on the <a href="https://chromewebstore.google.com/detail/hboeppdoecbglcmfojappgehkbecdfbi" data-astro-cid-dxzik6al>Chrome Web Store page</a>. Edge installs it from the same page.</li>
+      <li data-astro-cid-dxzik6al>In Mortar, open Settings › Downloads. It shows the extension as connected once you visit Nexus Mods.</li>
+    </ol>
+  </div>
+
+  <div class="wrap sec" id="privacy" data-astro-cid-dxzik6al>
+    <div class="faqgrid" data-astro-cid-dxzik6al>
+      <div data-astro-cid-dxzik6al>
+        <p class="kicker" data-astro-cid-dxzik6al>Privacy</p>
+        <h2 data-astro-cid-dxzik6al>It talks only to Mortar.</h2>
+        <p class="dim" data-astro-cid-dxzik6al>That means the Mortar app on your own computer, reached through the browser's native messaging. The extension has no server, no analytics and no telemetry.</p>
+      </div>
+      <div class="faq" data-astro-cid-dxzik6al>
+        <details open data-astro-cid-dxzik6al>
+          <summary data-astro-cid-dxzik6al>Privacy policy</summary>
+          <div class="a" data-astro-cid-dxzik6al><p data-astro-cid-dxzik6al>Mortar's browser extension reads Nexus Mods, Thunderstore, CurseForge, Vintage Story Mod DB, Paradox Mods and Modrinth pages in your browser to mark mods and to pass their install links to the Mortar desktop app installed on your own computer, using the browser's native messaging. The only data exchanged is Nexus mod ids, file ids and nxm:// links, Thunderstore package names, CurseForge project ids, mod names and curseforge:// links, Mod DB mod ids and install links, and Paradox Mods and Modrinth project ids, going to Mortar, and installed-mod and update information coming back. It runs only on https://www.nexusmods.com, Thunderstore community and package pages (https://thunderstore.io/c/*), https://www.curseforge.com, https://mods.vintagestory.at, https://mods.paradoxplaza.com and https://modrinth.com. The extension makes no network requests of its own, has no server, analytics or telemetry, and sends nothing to the developers or any third party. Your display choice and filter settings are stored in your browser's extension storage and never leave it. Uninstalling the extension removes them.</p></div>
+        </details>
+        <details data-astro-cid-dxzik6al>
+          <summary data-astro-cid-dxzik6al>Permissions it asks for</summary>
+          <div class="a" data-astro-cid-dxzik6al><p data-astro-cid-dxzik6al><code data-astro-cid-dxzik6al>nativeMessaging</code> to reach Mortar on your computer; access to <code data-astro-cid-dxzik6al>www.nexusmods.com</code>, to read and mark its pages, to Thunderstore pages, to mark a package and add its Install in Mortar button, to <code data-astro-cid-dxzik6al>www.curseforge.com</code> and <code data-astro-cid-dxzik6al>mods.vintagestory.at</code>, to mark mods and hand their Install buttons to Mortar, and to <code data-astro-cid-dxzik6al>mods.paradoxplaza.com</code> and <code data-astro-cid-dxzik6al>modrinth.com</code>, to mark mods and add Install in Mortar; <code data-astro-cid-dxzik6al>scripting</code> to add its marks to tabs of those sites that were already open when it was installed; <code data-astro-cid-dxzik6al>storage</code> for your display settings; <code data-astro-cid-dxzik6al>alarms</code> to refresh the update check.</p></div>
+        </details>
+        <details data-astro-cid-dxzik6al>
+          <summary data-astro-cid-dxzik6al>Source code</summary>
+          <div class="a" data-astro-cid-dxzik6al><p data-astro-cid-dxzik6al>Every line is public at <a href="https://github.com/Rethunk-Tech/mortar-browser-extension" data-astro-cid-dxzik6al>github.com/Rethunk-Tech/mortar-browser-extension</a>, with no build step: the files in the release are the files in the repository.</p></div>
+        </details>
+      </div>
+    </div>
+  </div>
+
+    </main>
+    <footer class="foot">
+<a class="totop" href="#top"><span class="visually-hidden">Back to top</span><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"></path></svg></a>
+  <div class="wrap">
+    <div class="fcta reveal">
+          <div>
+            <h2>Ready to mod?</h2>
+            <p class="dim">Free and open source. Setup takes a minute.</p>
+          </div>
+          <a class="btn primary big" href="/download/">
+            Download Mortar
+          </a>
+        </div>
+    <div class="cols">
+      <div>
+        <b class="fbrand"><img src="/img/icon-192.png" width="34" height="34" alt="">Mortar</b>
+        <p class="dim">Free, open source mod manager for Windows, Linux and SteamOS.</p>
+        <div class="social">
+          <a href="https://github.com/Rethunk-Tech/mortar"><span class="visually-hidden">GitHub</span><svg aria-hidden="true"><use href="/img/brands.svg#github"></use></svg></a>
+          <a href="https://discord.gg/TfecaTm8J2"><span class="visually-hidden">Discord</span><svg style="color:rgb(88, 101, 242)" aria-hidden="true"><use href="/img/brands.svg#discord"></use></svg></a>
+          <a href="/news/rss.xml"><span class="visually-hidden">News feed</span><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="#F99830" stroke-width="2.4" stroke-linecap="round"><path d="M5 11a8 8 0 0 1 8 8M5 5a14 14 0 0 1 14 14"></path><circle cx="5.5" cy="18.5" r="1.2" fill="#F99830"></circle></g></svg></a>
+        </div>
+      </div>
+      <div>
+            <b>Product</b>
+            <a href="/download/">Download</a><a href="/games/">Games</a><a href="/sources/">Mod sites</a><a href="/news/">News</a><a href="/why/">Compare</a><a href="/changelog/">Changelog</a>
+          </div><div>
+            <b>Help</b>
+            <a href="/guide/">Guide</a><a href="/faq/">FAQ</a><a href="https://discord.gg/TfecaTm8J2">Discord</a><a href="/go/bug-reports/">Report a bug</a>
+          </div><div>
+            <b>Project</b>
+            <a href="/mission/">Mission</a><a href="https://github.com/Rethunk-Tech/mortar">Source code</a><a href="https://hosted.weblate.org/projects/mortar/">Help translate</a><a href="/extension/">Browser extension</a><a href="/code-signing/">Code signing</a><a href="/privacy/">Privacy</a>
+          </div>
+    </div>
+    <div class="fbar">
+      <span><a href="https://www.gnu.org/licenses/agpl-3.0.html">AGPL-3.0</a> · Version 0.3.16</span>
+      <span>Mortar by <a href="https://we.rethunk.tech/">Rethunk.Tech</a>. Not affiliated with any game developer or mod site.</span>
+    </div>
+  </div>
+</footer>
+    <div class="lightbox" id="lightbox" aria-hidden="true"><img alt=""></div>
+    <script type="module">var e=.5,t=matchMedia(`(prefers-reduced-motion: reduce)`).matches,n=document.querySelector(`.nav`),r=document.getElementById(`progress`),i=[...document.querySelectorAll(`.nav .links a[data-sec]`)],a=i.flatMap(e=>document.getElementById(e.dataset.sec??``)??[]);function o(){n?.classList.toggle(`scrolled`,scrollY>10);let e=document.documentElement.scrollHeight-innerHeight;r&&(r.style.width=`${e>0?scrollY/e*100:0}%`);let t=``;for(let e of a)e.getBoundingClientRect().top<innerHeight/3&&(t=e.id);for(let e of i)e.classList.toggle(`on`,e.dataset.sec===t)}addEventListener(`scroll`,o,{passive:!0}),o();var s=document.querySelector(`.nav-menu`),c=document.getElementById(`nav-drawer`);function l(e){c&&s&&(c.hidden=!e,s.setAttribute(`aria-expanded`,String(e)))}s?.addEventListener(`click`,()=>l(c?.hidden===!0)),document.addEventListener(`click`,e=>{let t=e.target;c&&!c.hidden&&t instanceof Node&&!c.contains(t)&&!s?.contains(t)&&l(!1)});var u=new IntersectionObserver(e=>{for(let t of e)t.isIntersecting&&(t.target.classList.add(`in`),u.unobserve(t.target))},{threshold:.1});for(let e of document.querySelectorAll(`.reveal`))u.observe(e);var d=5;for(let n of document.querySelectorAll(`.card.tilt`))n.addEventListener(`pointermove`,r=>{if(t)return;let i=n.getBoundingClientRect(),a=(r.clientX-i.left)/i.width-e,o=(r.clientY-i.top)/i.height-e;n.style.transform=`perspective(1000px) rotateY(${a*d}deg) rotateX(${-o*d}deg) translateZ(0)`}),n.addEventListener(`pointerleave`,()=>{n.style.transform=``});for(let e of document.querySelectorAll(`pre`))e.tabIndex=0;var f=document.getElementById(`lightbox`),p=f?.querySelector(`img`);function m(){f?.classList.remove(`open`),f?.setAttribute(`aria-hidden`,`true`)}document.addEventListener(`click`,e=>{let t=e.target instanceof Element?e.target:null,n=t?.closest(`img.zoom`);n&&f&&p?(e.preventDefault(),p.src=n.currentSrc||n.src,p.alt=n.alt,f.classList.add(`open`),f.setAttribute(`aria-hidden`,`false`)):t?.closest(`#lightbox`)&&m()}),globalThis.addEventListener(`keydown`,e=>{e.key===`Escape`&&(m(),l(!1))});</script>
+    <script src="/search.js" defer></script>
+  </body>
+</html>

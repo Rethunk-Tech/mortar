@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="darkreader-lock">
+    <meta name="referrer" content="no-referrer">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#111114">
+    
+    <title>Download Mortar</title>
+    <meta name="description" content="Download Mortar for Windows, Linux or the Steam Deck: installer, AppImage, Flatpak, and signed apt, dnf and pacman repositories that keep it up to date.">
+    <link rel="canonical" href="https://mortar.rethunk.tech/download/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Mortar">
+    <meta property="og:url" content="https://mortar.rethunk.tech/download/">
+    <meta property="og:title" content="Download Mortar">
+    <meta property="og:description" content="Download Mortar for Windows, Linux or the Steam Deck: installer, AppImage, Flatpak, and signed apt, dnf and pacman repositories that keep it up to date.">
+    <meta property="og:image" content="https://mortar.rethunk.tech/og/download.png?v=0.3.16">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="alternate" type="application/rss+xml" title="Mortar news" href="https://mortar.rethunk.tech/news/rss.xml">
+    <link rel="alternate" type="application/atom+xml" title="Mortar releases" href="https://mortar.rethunk.tech/changelog/feed.xml">
+    <!-- Body and heading text arrive before first paint, so the page does not shift when they swap in. -->
+    <link rel="preload" href="/_astro/atkinson-hyperlegible-next-latin-400-normal.FfmJh7DR.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/_astro/atkinson-hyperlegible-next-latin-800-normal.D32lleIF.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="icon" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/img/icon-192.png">
+    <link rel="sitemap" href="/sitemap-index.xml">
+    <script async src="https://plausible.io/js/pa-Q6uQ-Ve40xbXZhAAHIlnr.js"></script>
+    <!-- Plausible's queue: calls made before its script loads wait in plausible.q, and init's options in plausible.o. -->
+    <script>
+      {
+        const p =
+          globalThis.plausible ||
+          ((...args) => {
+            p.q = p.q || []
+            p.q.push(args)
+          })
+        p.init =
+          p.init ||
+          ((options) => {
+            p.o = options || {}
+          })
+        globalThis.plausible = p
+        // A share link carries the whole profile after the #, and its Open in Mortar link carries it in a mortar://
+        // address that Plausible would report as an outbound click; that click has its own event instead.
+        p.init({
+          transformRequest: (request) =>
+            String(request.p?.url ?? '').startsWith('mortar:') ? null : { ...request, u: request.u.split('#')[0] },
+        })
+      }
+    </script>
+    <script>document.documentElement.classList.remove('no-js')</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Mortar","applicationCategory":"GameApplication","operatingSystem":"Windows, Linux","softwareVersion":"0.3.16","url":"https://mortar.rethunk.tech/","downloadUrl":"https://mortar.rethunk.tech/download/","license":"https://www.gnu.org/licenses/agpl-3.0.html","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Mortar","item":"https://mortar.rethunk.tech/"},{"@type":"ListItem","position":2,"name":"Download","item":"https://mortar.rethunk.tech/download/"}]}</script>
+    
+  <link rel="stylesheet" href="/_astro/Base.H6Wqy4FH.css">
+<link rel="stylesheet" href="/_astro/download.BThtHnu6.css">
+<link rel="stylesheet" href="/_astro/page-lists.DcgSTmT0.css"></head>
+  <body id="top">
+    <a class="skip" href="#main">Skip to content</a>
+    <nav class="nav" aria-label="Main">
+  <div class="progress" id="progress"></div>
+  <div class="wrap">
+    <a class="brand" href="/"><img src="/img/icon-192.png" width="30" height="30" alt="">Mortar</a>
+    <div class="links">
+      <a href="/games/" data-sec="games">
+            Games
+          </a><a href="/#features" data-sec="features">
+            Features
+          </a><a href="/news/" data-sec="news">
+            News
+          </a><a href="/why/" data-sec="compare">
+            Compare
+          </a><a href="/guide/">
+            Guide
+          </a><a href="/faq/">
+            FAQ
+          </a>
+    </div>
+    <span class="tools">
+      <button type="button" class="nav-search" aria-label="Search" aria-keyshortcuts="Control+K Meta+K">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+      </button>
+      <a class="optional" href="https://github.com/Rethunk-Tech/mortar" title="GitHub">
+            <svg aria-hidden="true"><use href="/img/brands.svg#github"></use></svg>
+            <span class="visually-hidden">GitHub</span>
+          </a><a class="optional" href="https://discord.gg/TfecaTm8J2" title="Discord">
+            <svg aria-hidden="true"><use href="/img/brands.svg#discord"></use></svg>
+            <span class="visually-hidden">Discord</span>
+          </a>
+      <button type="button" class="nav-menu" aria-label="Menu" aria-expanded="false" aria-controls="nav-drawer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+      </button>
+    </span>
+    <a class="btn primary" href="/download/" aria-current="page">Download</a>
+  </div>
+  <div class="nav-drawer" id="nav-drawer" hidden>
+    <a href="/games/">Games</a><a href="/#features">Features</a><a href="/news/">News</a><a href="/why/">Compare</a><a href="/guide/">Guide</a><a href="/faq/">FAQ</a>
+    <a href="https://github.com/Rethunk-Tech/mortar">GitHub</a><a href="https://discord.gg/TfecaTm8J2">Discord</a>
+    <a href="/download/">Download</a>
+  </div>
+</nav>
+    
+    <main id="main" data-pagefind-body>
+      
+  <header class="wrap pagehead">
+    <p class="kicker">Download</p>
+    <h1>Get Mortar. <em>It's free.</em></h1>
+    <p class="lede">It's open source too. Mortar runs on Windows and Linux, x64 and ARM64, and on the Steam Deck.</p>
+  </header>
+  <div class="wrap sec dl" data-version="0.3.16">
+<p class="forsys jsonly">For <b id="sysname">your system</b>. <button type="button" class="linkish" id="other" aria-expanded="false" aria-controls="systems">Not your system?</button></p>
+<div class="tabs" id="systems" role="tablist" aria-label="Platform">
+  <button type="button" role="tab" id="tab-windows" aria-controls="windows"><svg class="mk mk-windows" aria-hidden="true"><use href="/img/brands.svg#windows"></use></svg>Windows</button>
+  <button type="button" role="tab" id="tab-linux" aria-controls="linux"><svg class="mk mk-linux" aria-hidden="true"><use href="/img/brands.svg#linux"></use></svg>Linux</button>
+  <button type="button" role="tab" id="tab-deck" aria-controls="deck"><svg class="mk mk-steamdeck" aria-hidden="true"><use href="/img/brands.svg#steamdeck"></use></svg>Steam Deck</button>
+  <button type="button" role="tab" id="tab-extension" aria-controls="extension"><svg class="mk mk-extension" aria-hidden="true"><use href="/img/brands.svg#extension"></use></svg>Browser extension</button>
+</div>
+
+<section class="panel" id="windows" role="tabpanel" aria-labelledby="tab-windows">
+  <p class="muted">
+    Windows 10 and 11. Mortar installs for your user, so it needs no
+    administrator rights. It needs Microsoft's WebView2 Runtime, which the installer adds when missing.
+  </p>
+  <div class="files">
+    <a class="file primary" data-asset="mortar-amd64-installer.exe" href="https://github.com/Rethunk-Tech/mortar/releases/download/v0.3.16/mortar-amd64-installer.exe">
+        <svg class="fileicon" aria-hidden="true" style="color:rgb(76, 194, 255)">
+      <use href="/img/brands.svg#windows"></use>
+    </svg>
+
+
+
+      <strong>Installer, x64</strong><span>Most PCs</span>
+    </a>
+    <a class="file" data-asset="mortar-arm64-installer.exe" href="https://github.com/Rethunk-Tech/mortar/releases/download/v0.3.16/mortar-arm64-installer.exe">
+        <svg class="fileicon" aria-hidden="true" style="color:rgb(76, 194, 255)">
+      <use href="/img/brands.svg#windows"></use>
+    </svg>
+
+
+
+      <strong>Installer, ARM64</strong><span>Snapdragon and other ARM PCs</span>
+    </a>
+    <a class="file" data-asset="mortar-windows-amd64.exe" href="https://github.com/Rethunk-Tech/mortar/releases/download/v0.3.16/mortar-windows-amd64.exe">
+        <svg class="fileicon" aria-hidden="true" style="color:rgb(76, 194, 255)">
+      <use href="/img/brands.svg#windows"></use>
+    </svg>
+
+
+
+      <strong>Portable, x64</strong><span>Runs from any folder</span>
+    </a>
+    <a class="file" data-asset="mortar-windows-arm64.exe" href="https://github.com/Rethunk-Tech/mortar/releases/download/v0.3.16/mortar-windows-arm64.exe">
+        <svg class="fileicon" aria-hidden="true" style="color:rgb(76, 194, 255)">
+      <use href="/img/brands.svg#windows"></use>
+    </svg>
+
+
+
+      <strong>Portable, ARM64</strong><span>Runs from any folder</span>
+    </a>
+  </div>
+  <ol class="steps-list">
+    <li>
+      Run the installer. It puts Mortar in
+      <code>%LOCALAPPDATA%\Programs\Mortar</code> and adds Start Menu and
+      Desktop shortcuts.
+    </li>
+    <li>
+      The builds are not code-signed, so SmartScreen says “Windows
+      protected your PC” the first time. Choose
+      <strong>More info</strong>, then <strong>Run anyway</strong>.
+    </li>
+    <li>Mortar updates itself from then on.</li>
+  </ol>
+  <h3>Scoop</h3>
+  <p class="muted">
+    From Mortar's own bucket, with every download pinned by its SHA-256. Scoop then handles updates.
+  </p>
+  <pre><code>scoop bucket add mortar https://github.com/Rethunk-Tech/scoop-bucket
+scoop install mortar/mortar</code></pre>
+</section>
+
+<section class="panel" id="linux" role="tabpanel" aria-labelledby="tab-linux">
+  <div class="tabs modes" role="tablist" aria-label="How to install">
+    <button type="button" role="tab" id="tab-linux-files" aria-controls="linux-files">Download a file</button>
+    <button type="button" role="tab" id="tab-linux-store" aria-controls="linux-store">Software center</button>
+    <button type="button" role="tab" id="tab-linux-cli" aria-controls="linux-cli">Command line</button>
+  </div>
+
+  <div class="panel sub" id="linux-store" role="tabpanel" aria-labelledby="tab-linux-store">
+    <p class="muted">
+      Any distribution with Flatpak, x86_64 or aarch64. The link adds Mortar's signed repository to GNOME Software,
+      KDE Discover or your app store, which then keeps Mortar up to date.
+    </p>
+    <div class="files">
+      <a class="file" href="https://mortar.rethunk.tech/packages/flatpak/tech.rethunk.Mortar.flatpakref">
+        <svg class="fileicon" aria-hidden="true" style="color:rgb(74, 144, 217)">
+      <use href="/img/brands.svg#flatpak"></use>
+    </svg>
+
+
+
+        <strong>Install with Flatpak</strong><span>Opens in your software center</span>
+      </a>
+    </div>
+    <p class="muted">
+      The sandbox only sees the usual game folders. For a game installed elsewhere, run
+      <code>flatpak override --user --filesystem=&lt;folder&gt; tech.rethunk.Mortar</code>.
+    </p>
+  </div>
+
+  <div class="panel sub" id="linux-files" role="tabpanel" aria-labelledby="tab-linux-files">
+    <p class="muted">
+      The AppImage and the portable program run on Ubuntu 24.04, Debian 13, Fedora 39 or a newer Linux (glibc 2.38)
+      and update themselves in place. A single package installs without updates.
+    </p>
+    <div class="files">
+      <a class="file primary" data-asset="mortar-linux-x86_64.AppImage" href="https://github.com/Rethunk-Tech/mortar/releases/download/v0.3.16/mortar-linux-x86_64.AppImage">
+        <svg class="fileicon" aria-hidden="true" style="color:rgb(115, 159, 185)">
+      <use href="/img/brands.svg#appimage"></use>
+    </svg>
+
+
+
+        <strong>AppImage, x86_64</strong><span>Nothing else to install</span>
+      </a>
+      <a class="file" data-asset="mortar-linux-aarch64.AppImage" href="https://github.com/Rethunk-Tech/mortar/releases/download/v0.3.16/mortar-linux-aarch64.AppImage">
+        <svg class="fileicon" aria-hidden="true" style="color:rgb(115, 159, 185)">
+      <use href="/img/brands.svg#appimage"></use>
+    </svg>
+
+
+
+        <strong>AppImage, ARM64</strong><span>Nothing else to install</span>
+      </a>
+      <a class="file" data-asset="mortar-linux-amd64" href="https://github.com/Rethunk-Tech/mortar/releases/download/v0.3.16/mortar-linux-amd64">
+        <svg class="fileicon" aria-hidden="true" style="color:rgb(252, 198, 36)">
+      <use href="/img/brands.svg#linux"></use>
+    </svg>
+
+
+
+        <strong>Portable, x86_64</strong><span>Uses the system's GTK 4 and WebKitGTK 6</span>
+      </a>
+      <a class="file" data-asset="mortar-linux-arm64" href="https://github.com/Rethunk-Tech/mortar/releases/download/v0.3.16/mortar-linux-arm64">
+        <svg class="fileicon" aria-hidden="true" style="color:rgb(252, 198, 36)">
+      <use href="/img/brands.svg#linux"></use>
+    </svg>
+
+
+
+        <strong>Portable, ARM64</strong><span>Uses the system's GTK 4 and WebKitGTK 6</span>
+      </a>
+      <a class="file" data-asset="mortar_VERSION_amd64.deb" href="https://github.com/Rethunk-Tech/mortar/releases/download/v0.3.16/mortar_0.3.16_amd64.deb">
+        <svg class="fileicon" aria-hidden="true" style="color:rgb(168, 29, 51)">
+      <use href="/img/brands.svg#debian"></use>
+    </svg>
+
+
+
+            <strong>.deb, amd64</strong>
+            <span>Ubuntu and Debian, no updates</span>
+          </a><a class="file" data-asset="mortar_VERSION_arm64.deb" href="https://github.com/Rethunk-Tech/mortar/releases/download/v0.3.16/mortar_0.3.16_arm64.deb">
+        <svg class="fileicon" aria-hidden="true" style="color:rgb(168, 29, 51)">
+      <use href="/img/brands.svg#debian"></use>
+    </svg>
+
+
+
+            <strong>.deb, arm64</strong>
+            <span>Ubuntu and Debian, no updates</span>
+          </a><a class="file" data-asset="mortar-VERSION-1.x86_64.rpm" href="https://github.com/Rethunk-Tech/mortar/releases/download/v0.3.16/mortar-0.3.16-1.x86_64.rpm">
+        <svg class="fileicon" aria-hidden="true" style="color:rgb(81, 162, 218)">
+      <use href="/img/brands.svg#fedora"></use>
+    </svg>
+
+
+
+            <strong>.rpm, x86_64</strong>
+            <span>Fedora, no updates</span>
+          </a><a class="file" data-asset="mortar-VERSION-1.aarch64.rpm" href="https://github.com/Rethunk-Tech/mortar/releases/download/v0.3.16/mortar-0.3.16-1.aarch64.rpm">
+        <svg class="fileicon" aria-hidden="true" style="color:rgb(81, 162, 218)">
+      <use href="/img/brands.svg#fedora"></use>
+    </svg>
+
+
+
+            <strong>.rpm, aarch64</strong>
+            <span>Fedora, no updates</span>
+          </a><a class="file" data-asset="mortar-VERSION-1-x86_64.pkg.tar.zst" href="https://github.com/Rethunk-Tech/mortar/releases/download/v0.3.16/mortar-0.3.16-1-x86_64.pkg.tar.zst">
+        <svg class="fileicon" aria-hidden="true" style="color:rgb(23, 147, 209)">
+      <use href="/img/brands.svg#archlinux"></use>
+    </svg>
+
+
+
+            <strong>Arch package, x86_64</strong>
+            <span>pacman -U, no updates</span>
+          </a><a class="file" data-asset="mortar-VERSION-1-aarch64.pkg.tar.zst" href="https://github.com/Rethunk-Tech/mortar/releases/download/v0.3.16/mortar-0.3.16-1-aarch64.pkg.tar.zst">
+        <svg class="fileicon" aria-hidden="true" style="color:rgb(23, 147, 209)">
+      <use href="/img/brands.svg#archlinux"></use>
+    </svg>
+
+
+
+            <strong>Arch package, aarch64</strong>
+            <span>pacman -U, no updates</span>
+          </a><a class="file" data-asset="mortar-linux-x86_64.flatpak" href="https://github.com/Rethunk-Tech/mortar/releases/download/v0.3.16/mortar-linux-x86_64.flatpak">
+        <svg class="fileicon" aria-hidden="true" style="color:rgb(74, 144, 217)">
+      <use href="/img/brands.svg#flatpak"></use>
+    </svg>
+
+
+
+            <strong>Flatpak bundle, x86_64</strong>
+            <span>flatpak install, no updates</span>
+          </a><a class="file" data-asset="mortar-linux-aarch64.flatpak" href="https://github.com/Rethunk-Tech/mortar/releases/download/v0.3.16/mortar-linux-aarch64.flatpak">
+        <svg class="fileicon" aria-hidden="true" style="color:rgb(74, 144, 217)">
+      <use href="/img/brands.svg#flatpak"></use>
+    </svg>
+
+
+
+            <strong>Flatpak bundle, aarch64</strong>
+            <span>flatpak install, no updates</span>
+          </a>
+    </div>
+    <p class="muted">To run the x86_64 AppImage:</p>
+    <pre><code>chmod +x mortar-linux-x86_64.AppImage
+./mortar-linux-x86_64.AppImage</code></pre>
+    <p class="muted">
+      The first run adds Mortar to your applications menu and takes
+      <code>nxm://</code> links and <code>.mortar</code> files.
+    </p>
+  </div>
+
+  <div class="panel sub" id="linux-cli" role="tabpanel" aria-labelledby="tab-linux-cli">
+  <div class="tabs sub" role="tablist" aria-label="Distribution">
+    <button type="button" role="tab" id="tab-deb" aria-controls="deb"><svg class="mk mk-debian" aria-hidden="true"><use href="/img/brands.svg#debian"></use></svg>Ubuntu and Debian</button>
+    <button type="button" role="tab" id="tab-fedora" aria-controls="fedora"><svg class="mk mk-fedora" aria-hidden="true"><use href="/img/brands.svg#fedora"></use></svg>Fedora</button>
+    <button type="button" role="tab" id="tab-arch" aria-controls="arch"><svg class="mk mk-archlinux" aria-hidden="true"><use href="/img/brands.svg#archlinux"></use></svg>Arch</button>
+    <button type="button" role="tab" id="tab-flatpak" aria-controls="flatpak"><svg class="mk mk-flatpak" aria-hidden="true"><use href="/img/brands.svg#flatpak"></use></svg>Flatpak</button>
+    <button type="button" role="tab" id="tab-brew" aria-controls="brew"><svg class="mk mk-homebrew" aria-hidden="true"><use href="/img/brands.svg#homebrew"></use></svg>Homebrew</button>
+  </div>
+
+  <div class="panel sub" id="deb" role="tabpanel" aria-labelledby="tab-deb">
+    <p class="muted">
+      Ubuntu 24.04, Debian 13 or newer, on amd64 and arm64. Mortar then updates with the rest of your system.
+    </p>
+    <pre><code>sudo apt update &amp;&amp; sudo apt install curl
+sudo curl -fsSLo /usr/share/keyrings/mortar-archive-keyring.gpg https://mortar.rethunk.tech/packages/mortar-archive-keyring.gpg
+sudo curl -fsSLo /etc/apt/sources.list.d/mortar.list https://mortar.rethunk.tech/packages/mortar.list
+sudo apt update &amp;&amp; sudo apt install mortar</code></pre>
+  </div>
+
+  <div class="panel sub" id="fedora" role="tabpanel" aria-labelledby="tab-fedora">
+    <p class="muted">
+      Fedora 39 or newer, on x86_64 and aarch64. dnf asks once to import
+      the key; check its fingerprint against the one under <a href="#verify">Verify your download</a>.
+    </p>
+    <pre><code>sudo curl -fsSLo /etc/yum.repos.d/mortar.repo https://mortar.rethunk.tech/packages/mortar.repo
+sudo dnf install mortar</code></pre>
+  </div>
+
+  <div class="panel sub" id="arch" role="tabpanel" aria-labelledby="tab-arch">
+    <p class="muted">
+      x86_64 and aarch64. These commands trust the Mortar key, add the
+      repository to <code>/etc/pacman.conf</code> and install.
+    </p>
+    <pre><code>curl -fsSL https://mortar.rethunk.tech/packages/mortar-archive-keyring.asc | sudo pacman-key --add -
+sudo pacman-key --lsign-key D8B1C4C205C5FB3633CB8B9900B75959B637DCB5
+curl -fsSL https://mortar.rethunk.tech/packages/pacman.conf | sudo tee -a /etc/pacman.conf
+sudo pacman -Syu mortar</code></pre>
+  </div>
+
+  <div class="panel sub" id="flatpak" role="tabpanel" aria-labelledby="tab-flatpak">
+    <p class="muted">
+      Any distribution with Flatpak, x86_64 or aarch64. This adds Mortar's signed Flatpak repository, so
+      <code>flatpak update</code> keeps it current.
+    </p>
+    <pre><code>flatpak install --user https://mortar.rethunk.tech/packages/flatpak/tech.rethunk.Mortar.flatpakref</code></pre>
+  </div>
+
+  <div class="panel sub" id="brew" role="tabpanel" aria-labelledby="tab-brew">
+    <p class="muted">
+      From Mortar's own tap, pinned by SHA-256. It installs the AppImage, which needs FUSE 2
+      (<code>libfuse2</code>). Homebrew then handles updates.
+    </p>
+    <pre><code>brew install rethunk-tech/tap/mortar</code></pre>
+  </div>
+  </div>
+</section>
+
+<section class="panel" id="deck" role="tabpanel" aria-labelledby="tab-deck">
+  <p class="muted">
+    The Steam Deck runs the x86_64 AppImage. Mortar sets up in Desktop Mode, then each profile can be played from
+    Game Mode.
+  </p>
+  <div class="files">
+    <a class="file primary" data-asset="mortar-linux-x86_64.AppImage" href="https://github.com/Rethunk-Tech/mortar/releases/download/v0.3.16/mortar-linux-x86_64.AppImage">
+        <svg class="fileicon" aria-hidden="true" style="color:rgb(26, 159, 255)">
+      <use href="/img/brands.svg#steamdeck"></use>
+    </svg>
+
+
+
+      <strong>AppImage, x86_64</strong><span>For the Steam Deck</span>
+    </a>
+  </div>
+  <ol class="steps-list">
+    <li>Switch to Desktop Mode and download the AppImage.</li>
+    <li>
+      Mark it executable: right-click it, <strong>Properties</strong>, <strong>Permissions</strong>, then
+      <strong>Is executable</strong>. Run it.
+    </li>
+    <li>
+      Set up your game, close Steam, then open a profile's menu and choose <strong>Add this profile to Steam</strong>. The profile appears
+      in Game Mode, and playing it there starts the game with that profile's mods.
+    </li>
+  </ol>
+  <p class="muted">
+    The Flatpak cannot add itself to Steam, so use the AppImage on the Deck. Mortar updates itself in place.
+  </p>
+</section>
+
+<section class="panel" id="extension" role="tabpanel" aria-labelledby="tab-extension">
+  <p class="muted">
+    Optional. It marks Nexus Mods, Thunderstore, CurseForge, Vintage Story Mod DB, Paradox Mods and Modrinth pages
+    with what your profile already has, and sends their install buttons to Mortar. <a href="/extension/">What it does, and privacy</a>.
+  </p>
+  <div class="files">
+    <a class="file primary" href="https://github.com/Rethunk-Tech/mortar-browser-extension/releases/latest/download/mortar-browser-extension.xpi">
+        <svg class="fileicon" aria-hidden="true" style="color:currentColor">
+      <use href="/img/brands.svg#extension"></use>
+    </svg>
+
+
+
+      <strong>Firefox</strong><span>Signed by Mozilla; open the file in Firefox</span>
+    </a>
+    <a class="file" href="https://chromewebstore.google.com/detail/hboeppdoecbglcmfojappgehkbecdfbi">
+        <svg class="fileicon" aria-hidden="true" style="color:currentColor">
+      <use href="/img/brands.svg#extension"></use>
+    </svg>
+
+
+
+      <strong>Chrome, Edge and other Chromium browsers</strong><span>Chrome Web Store; updates itself</span>
+    </a>
+  </div>
+  <ol class="steps-list">
+    <li>
+      Chromium browsers: choose <strong>Add to Chrome</strong> on the
+      Chrome Web Store page.
+    </li>
+    <li>
+      Firefox: open the <code>.xpi</code> in Firefox, or drop it on
+      <code>about:addons</code>.
+    </li>
+  </ol>
+</section>
+<section class="panel" id="verify">
+  <h2>Verify your download</h2>
+  <p class="muted">
+    Every release carries <code>SHA256SUMS</code>, signed with the Mortar packages key, and a GitHub build
+    provenance attestation for each file. With the downloaded file in the current folder:
+  </p>
+  <div data-for="windows">
+    <p class="muted">In PowerShell. <code>gpg</code> comes with <a href="https://gpg4win.org/">Gpg4win</a>, <code>gh</code> is the <a href="https://cli.github.com/">GitHub CLI</a>.</p>
+    <pre><code>$f = '<span class="vfile">mortar-amd64-installer.exe</span>'
+$base = 'https://github.com/Rethunk-Tech/mortar/releases/download/v0.3.16'
+Invoke-WebRequest "$base/SHA256SUMS" -OutFile SHA256SUMS
+Invoke-WebRequest "$base/SHA256SUMS.asc" -OutFile SHA256SUMS.asc
+Invoke-WebRequest https://mortar.rethunk.tech/packages/mortar-archive-keyring.asc -OutFile mortar.asc
+gpg --import mortar.asc
+gpg --verify SHA256SUMS.asc SHA256SUMS
+$want = (Select-String -Path SHA256SUMS -Pattern "  $([regex]::Escape($f))$").Line.Split(' ')[0]
+if ((Get-FileHash $f).Hash -eq $want) OK else MISMATCH
+gh attestation verify $f --repo Rethunk-Tech/mortar</code></pre>
+  </div>
+  <div data-for="linux">
+    <p class="muted">In a terminal.</p>
+    <pre><code>f=<span class="vfile">mortar-linux-x86_64.AppImage</span>
+curl -fsSLO https://github.com/Rethunk-Tech/mortar/releases/download/v0.3.16/SHA256SUMS
+curl -fsSLO https://github.com/Rethunk-Tech/mortar/releases/download/v0.3.16/SHA256SUMS.asc
+curl -fsSL https://mortar.rethunk.tech/packages/mortar-archive-keyring.asc | gpg --import
+gpg --verify SHA256SUMS.asc SHA256SUMS
+grep "  $f\$" SHA256SUMS | sha256sum --check
+gh attestation verify "$f" --repo Rethunk-Tech/mortar</code></pre>
+  </div>
+  <p class="fingerprint">
+    One key, “Mortar packages &lt;opensource@rethunk.tech&gt;”, signs every release's <code>SHA256SUMS</code> and
+    the apt, dnf, pacman and Flatpak repositories, so every download checks against the same fingerprint:
+    <code>D8B1 C4C2 05C5 FB36 33CB 8B99 00B7 5959 B637 DCB5</code>.
+    <a href="/code-signing/">Code signing policy</a>
+  </p>
+</section>
+
+
+<p class="muted">
+  Checksums, release notes and every build:
+  <a href="https://github.com/Rethunk-Tech/mortar/releases/tag/v0.3.16">latest release on GitHub</a>.
+</p>
+  </div>
+
+    </main>
+    <footer class="foot">
+<a class="totop" href="#top"><span class="visually-hidden">Back to top</span><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"></path></svg></a>
+  <div class="wrap">
+    
+    <div class="cols">
+      <div>
+        <b class="fbrand"><img src="/img/icon-192.png" width="34" height="34" alt="">Mortar</b>
+        <p class="dim">Free, open source mod manager for Windows, Linux and SteamOS.</p>
+        <div class="social">
+          <a href="https://github.com/Rethunk-Tech/mortar"><span class="visually-hidden">GitHub</span><svg aria-hidden="true"><use href="/img/brands.svg#github"></use></svg></a>
+          <a href="https://discord.gg/TfecaTm8J2"><span class="visually-hidden">Discord</span><svg style="color:rgb(88, 101, 242)" aria-hidden="true"><use href="/img/brands.svg#discord"></use></svg></a>
+          <a href="/news/rss.xml"><span class="visually-hidden">News feed</span><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="#F99830" stroke-width="2.4" stroke-linecap="round"><path d="M5 11a8 8 0 0 1 8 8M5 5a14 14 0 0 1 14 14"></path><circle cx="5.5" cy="18.5" r="1.2" fill="#F99830"></circle></g></svg></a>
+        </div>
+      </div>
+      <div>
+            <b>Product</b>
+            <a href="/download/">Download</a><a href="/games/">Games</a><a href="/sources/">Mod sites</a><a href="/news/">News</a><a href="/why/">Compare</a><a href="/changelog/">Changelog</a>
+          </div><div>
+            <b>Help</b>
+            <a href="/guide/">Guide</a><a href="/faq/">FAQ</a><a href="https://discord.gg/TfecaTm8J2">Discord</a><a href="/go/bug-reports/">Report a bug</a>
+          </div><div>
+            <b>Project</b>
+            <a href="/mission/">Mission</a><a href="https://github.com/Rethunk-Tech/mortar">Source code</a><a href="https://hosted.weblate.org/projects/mortar/">Help translate</a><a href="/extension/">Browser extension</a><a href="/code-signing/">Code signing</a><a href="/privacy/">Privacy</a>
+          </div>
+    </div>
+    <div class="fbar">
+      <span><a href="https://www.gnu.org/licenses/agpl-3.0.html">AGPL-3.0</a> · Version 0.3.16</span>
+      <span>Mortar by <a href="https://we.rethunk.tech/">Rethunk.Tech</a>. Not affiliated with any game developer or mod site.</span>
+    </div>
+  </div>
+</footer>
+    <div class="lightbox" id="lightbox" aria-hidden="true"><img alt=""></div>
+    <script type="module">var e=.5,t=matchMedia(`(prefers-reduced-motion: reduce)`).matches,n=document.querySelector(`.nav`),r=document.getElementById(`progress`),i=[...document.querySelectorAll(`.nav .links a[data-sec]`)],a=i.flatMap(e=>document.getElementById(e.dataset.sec??``)??[]);function o(){n?.classList.toggle(`scrolled`,scrollY>10);let e=document.documentElement.scrollHeight-innerHeight;r&&(r.style.width=`${e>0?scrollY/e*100:0}%`);let t=``;for(let e of a)e.getBoundingClientRect().top<innerHeight/3&&(t=e.id);for(let e of i)e.classList.toggle(`on`,e.dataset.sec===t)}addEventListener(`scroll`,o,{passive:!0}),o();var s=document.querySelector(`.nav-menu`),c=document.getElementById(`nav-drawer`);function l(e){c&&s&&(c.hidden=!e,s.setAttribute(`aria-expanded`,String(e)))}s?.addEventListener(`click`,()=>l(c?.hidden===!0)),document.addEventListener(`click`,e=>{let t=e.target;c&&!c.hidden&&t instanceof Node&&!c.contains(t)&&!s?.contains(t)&&l(!1)});var u=new IntersectionObserver(e=>{for(let t of e)t.isIntersecting&&(t.target.classList.add(`in`),u.unobserve(t.target))},{threshold:.1});for(let e of document.querySelectorAll(`.reveal`))u.observe(e);var d=5;for(let n of document.querySelectorAll(`.card.tilt`))n.addEventListener(`pointermove`,r=>{if(t)return;let i=n.getBoundingClientRect(),a=(r.clientX-i.left)/i.width-e,o=(r.clientY-i.top)/i.height-e;n.style.transform=`perspective(1000px) rotateY(${a*d}deg) rotateX(${-o*d}deg) translateZ(0)`}),n.addEventListener(`pointerleave`,()=>{n.style.transform=``});for(let e of document.querySelectorAll(`pre`))e.tabIndex=0;var f=document.getElementById(`lightbox`),p=f?.querySelector(`img`);function m(){f?.classList.remove(`open`),f?.setAttribute(`aria-hidden`,`true`)}document.addEventListener(`click`,e=>{let t=e.target instanceof Element?e.target:null,n=t?.closest(`img.zoom`);n&&f&&p?(e.preventDefault(),p.src=n.currentSrc||n.src,p.alt=n.alt,f.classList.add(`open`),f.setAttribute(`aria-hidden`,`false`)):t?.closest(`#lightbox`)&&m()}),globalThis.addEventListener(`keydown`,e=>{e.key===`Escape`&&(m(),l(!1))});</script>
+    <script src="/search.js" defer></script>
+  </body>
+</html>
+
+<script type="module" src="/_astro/index.astro_astro_type_script_index_0_lang.CwSLlbEe.js"></script>

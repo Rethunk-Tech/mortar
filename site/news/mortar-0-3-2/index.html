@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="darkreader-lock">
+    <meta name="referrer" content="no-referrer">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#111114">
+    
+    <title>Mortar 0.3.2: Animated backgrounds, Epic games</title>
+    <meta name="description" content="Backgrounds that move, the backups a game keeps itself, and Epic Games Launcher games on Windows.">
+    <link rel="canonical" href="https://mortar.rethunk.tech/news/mortar-0-3-2/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Mortar">
+    <meta property="og:url" content="https://mortar.rethunk.tech/news/mortar-0-3-2/">
+    <meta property="og:title" content="Mortar 0.3.2: Animated backgrounds, Epic games">
+    <meta property="og:description" content="Backgrounds that move, the backups a game keeps itself, and Epic Games Launcher games on Windows.">
+    <meta property="og:image" content="https://mortar.rethunk.tech/og/news/mortar-0-3-2.png?v=0.3.16">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="alternate" type="application/rss+xml" title="Mortar news" href="https://mortar.rethunk.tech/news/rss.xml">
+    <link rel="alternate" type="application/atom+xml" title="Mortar releases" href="https://mortar.rethunk.tech/changelog/feed.xml">
+    <!-- Body and heading text arrive before first paint, so the page does not shift when they swap in. -->
+    <link rel="preload" href="/_astro/atkinson-hyperlegible-next-latin-400-normal.FfmJh7DR.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/_astro/atkinson-hyperlegible-next-latin-800-normal.D32lleIF.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="icon" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/img/icon-192.png">
+    <link rel="sitemap" href="/sitemap-index.xml">
+    <script async src="https://plausible.io/js/pa-Q6uQ-Ve40xbXZhAAHIlnr.js"></script>
+    <!-- Plausible's queue: calls made before its script loads wait in plausible.q, and init's options in plausible.o. -->
+    <script>
+      {
+        const p =
+          globalThis.plausible ||
+          ((...args) => {
+            p.q = p.q || []
+            p.q.push(args)
+          })
+        p.init =
+          p.init ||
+          ((options) => {
+            p.o = options || {}
+          })
+        globalThis.plausible = p
+        // A share link carries the whole profile after the #, and its Open in Mortar link carries it in a mortar://
+        // address that Plausible would report as an outbound click; that click has its own event instead.
+        p.init({
+          transformRequest: (request) =>
+            String(request.p?.url ?? '').startsWith('mortar:') ? null : { ...request, u: request.u.split('#')[0] },
+        })
+      }
+    </script>
+    <script>document.documentElement.classList.remove('no-js')</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Mortar","applicationCategory":"GameApplication","operatingSystem":"Windows, Linux","softwareVersion":"0.3.16","url":"https://mortar.rethunk.tech/","downloadUrl":"https://mortar.rethunk.tech/download/","license":"https://www.gnu.org/licenses/agpl-3.0.html","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Mortar","item":"https://mortar.rethunk.tech/"},{"@type":"ListItem","position":2,"name":"News","item":"https://mortar.rethunk.tech/news/"},{"@type":"ListItem","position":3,"name":"Animated backgrounds, Epic games","item":"https://mortar.rethunk.tech/news/mortar-0-3-2/"}]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Animated backgrounds, Epic games","description":"Backgrounds that move, the backups a game keeps itself, and Epic Games Launcher games on Windows.","datePublished":"2026-10-16T00:00:00.000Z","url":"https://mortar.rethunk.tech/news/mortar-0-3-2/","author":{"@type":"Organization","name":"Rethunk.Tech","url":"https://we.rethunk.tech/"}}</script>
+    
+  <link rel="stylesheet" href="/_astro/page-lists.DcgSTmT0.css">
+<style>.highlights[data-astro-cid-hqq7p32a]{grid-template-columns:repeat(auto-fill,minmax(min(100%,24rem),24rem));gap:16px;width:max(100%,min(72rem + 32px,100vw - 64px));margin-bottom:24px;display:grid}figure[data-astro-cid-hqq7p32a]{background:var(--raised);border:1px solid var(--line);border-radius:14px;margin:0;overflow:hidden}figure[data-astro-cid-hqq7p32a] img[data-astro-cid-hqq7p32a]{aspect-ratio:16/10;object-fit:cover;object-position:top left;border:0;border-radius:0}figcaption[data-astro-cid-hqq7p32a]{color:var(--dim);gap:4px;padding:14px 16px;font-size:15px;display:grid}figcaption[data-astro-cid-hqq7p32a] b[data-astro-cid-hqq7p32a]{color:var(--ink)}.area[data-astro-cid-hqq7p32a]{letter-spacing:.08em;text-transform:uppercase;color:var(--sand);font-size:12px;font-weight:700}
+</style>
+<link rel="stylesheet" href="/_astro/Base.H6Wqy4FH.css"></head>
+  <body id="top">
+    <a class="skip" href="#main">Skip to content</a>
+    <nav class="nav" aria-label="Main">
+  <div class="progress" id="progress"></div>
+  <div class="wrap">
+    <a class="brand" href="/"><img src="/img/icon-192.png" width="30" height="30" alt="">Mortar</a>
+    <div class="links">
+      <a href="/games/" data-sec="games">
+            Games
+          </a><a href="/#features" data-sec="features">
+            Features
+          </a><a href="/news/" data-sec="news" aria-current="page">
+            News
+          </a><a href="/why/" data-sec="compare">
+            Compare
+          </a><a href="/guide/">
+            Guide
+          </a><a href="/faq/">
+            FAQ
+          </a>
+    </div>
+    <span class="tools">
+      <button type="button" class="nav-search" aria-label="Search" aria-keyshortcuts="Control+K Meta+K">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+      </button>
+      <a class="optional" href="https://github.com/Rethunk-Tech/mortar" title="GitHub">
+            <svg aria-hidden="true"><use href="/img/brands.svg#github"></use></svg>
+            <span class="visually-hidden">GitHub</span>
+          </a><a class="optional" href="https://discord.gg/TfecaTm8J2" title="Discord">
+            <svg aria-hidden="true"><use href="/img/brands.svg#discord"></use></svg>
+            <span class="visually-hidden">Discord</span>
+          </a>
+      <button type="button" class="nav-menu" aria-label="Menu" aria-expanded="false" aria-controls="nav-drawer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+      </button>
+    </span>
+    <a class="btn primary" href="/download/">Download</a>
+  </div>
+  <div class="nav-drawer" id="nav-drawer" hidden>
+    <a href="/games/">Games</a><a href="/#features">Features</a><a href="/news/">News</a><a href="/why/">Compare</a><a href="/guide/">Guide</a><a href="/faq/">FAQ</a>
+    <a href="https://github.com/Rethunk-Tech/mortar">GitHub</a><a href="https://discord.gg/TfecaTm8J2">Discord</a>
+    <a href="/download/">Download</a>
+  </div>
+</nav>
+    
+    <main id="main" data-pagefind-body>
+      
+  <header class="wrap pagehead">
+    <nav class="crumbs" aria-label="Breadcrumb" data-pagefind-ignore="true">
+          <a href="/">Mortar</a>
+          
+               › 
+              <a href="/news/">News</a>
+            
+        </nav>
+    <p class="kicker">Mortar 0.3.2 · October 16, 2026</p>
+    <h1>Animated backgrounds, Epic games</h1>
+    <p class="lede">Backgrounds that move, the backups a game keeps itself, and Epic Games Launcher games on Windows.</p>
+    
+  </header>
+  <div class="wrap pagebody">
+    <div class="prose">
+      <h2 data-astro-cid-hqq7p32a>What changed in 0.3.2</h2><div class="notes" data-astro-cid-hqq7p32a><h3>New</h3>
+<h4>Interface and settings</h4>
+<ul>
+<li>Animated backgrounds: an animated GIF, WebP or PNG plays behind Mortar, and holds still when Reduce motion is on or while a game is running</li>
+<li>Settings › Appearance says when a background image is large enough to cost memory and GPU, and suggests WebP</li>
+<li>What's new groups each release's changes by area, with a New or Fixed label on every line, and after an update that skipped versions it also shows each release you missed</li>
+<li>Bottles shows its own icon in Settings › Launchers</li>
+</ul>
+<h4>Saves</h4>
+<ul>
+<li>A save's backups also list the copies the game keeps itself, Valheim's automatic world backups and The Sims 4's rollback copies, and restore them like Mortar's own</li>
+</ul>
+<h4>Games</h4>
+<ul>
+<li>Games installed through the Epic Games Launcher on Windows are found, and Play starts them through the launcher: Risk of Rain 2, Enter the Gungeon, Outward and Totally Accurate Battle Simulator</li>
+<li>On Linux, Mortar also lists those games when Heroic installed them from Epic</li>
+<li>Games installed through the Xbox app on Windows are found: Valheim, Inscryption and Bomb Rush Cyberfunk</li>
+<li>Setting up a game that no launcher found offers any copy Mortar finds in your Desktop, Downloads or Games folders before you pick a folder yourself</li>
+</ul>
+<h4>Problems and diagnostics</h4>
+<ul>
+<li>A bug report names the build beside the version, and mortar.log starts with the version, build and platform</li>
+</ul>
+<h4>Mods and browsing</h4>
+<ul>
+<li>Browse cards can show downloads, endorsements, likes or stars, file size, version and last updated under the summary: tick the ones you want under Show › Card details</li>
+<li>Card details show file size for Nexus Mods and Modrinth mods too, as for Thunderstore and CurseForge</li>
+<li>The Mods tab's cards show the same Card details: endorsements, downloads, size on disk and last updated</li>
+</ul>
+
+<details><summary><h3>Fixed (18)</h3></summary>
+<h4>Games</h4>
+<ul>
+<li>Creating a Lethal Company or Valheim profile no longer fails with &quot;does not say who published it&quot;</li>
+<li>Newer Steam games, such as Super Battle Golf, show their art in Game select and the game menu</li>
+<li>The Sims 4 played in German, French, Spanish or Dutch finds its Mods, saves and Options.ini, which the game keeps in a folder named in that language</li>
+</ul>
+<h4>Launching and loaders</h4>
+<ul>
+<li>A catalog update holding a game this version cannot read no longer sends Mortar back to its built-in catalog; it leaves out only that game</li>
+<li>When Mortar cannot start, it says why in a message instead of closing without a word, with a button that opens the folder holding its log; on Linux without zenity or kdialog the message arrives as a desktop notification</li>
+<li>Starting Mortar while it is already open brings its window back even when the page inside had stopped responding</li>
+<li>A Mortar that has frozen no longer swallows the next start: that start offers to end it and open a fresh one</li>
+<li>Windows: the installer installs the WebView2 Runtime when it is missing or was removed, says so if that fails, and Mortar asks before starting without it</li>
+</ul>
+<h4>Downloads and updates</h4>
+<ul>
+<li>What's new no longer shows an error when GitHub cannot serve a release's notes; it waits for the next update instead</li>
+</ul>
+<h4>Mods and browsing</h4>
+<ul>
+<li>Browse and imports leave out Mortar's own bridges, which Mortar installs itself, so a profile can no longer load a second copy</li>
+</ul>
+<h4>Saves</h4>
+<ul>
+<li>Lethal Company's Saves lists each slot once: the backup and temporary files the game writes beside a slot belong to it, and each save says whether it is a save slot, an extra slot added by a mod, or the weekly challenge</li>
+<li>Saves leaves out the Season and Fits columns for games whose saves record neither, such as Lethal Company</li>
+</ul>
+<h4>Interface and settings</h4>
+<ul>
+<li>Menus are wide enough for their longest item, so Check mods and Mortar for updates is no longer cut off</li>
+<li>A menu item still cut off at the menu's widest, such as a long profile name, shows its full text on hover</li>
+<li>Game select's letter rail spreads down the whole window, with letters that grow with it</li>
+<li>Game select lists the games found on this computer right after the ones you played recently, ahead of the rest of the catalog, and the game menu in the title bar lists only those, with All games for the rest</li>
+<li>Saves no longer scrolls sideways in the list view</li>
+<li>An error message names what went wrong instead of &quot;Something went wrong&quot;</li>
+</ul>
+
+</details></div><p data-astro-cid-hqq7p32a>
+        <a href="https://github.com/Rethunk-Tech/mortar/releases/tag/v0.3.2" data-astro-cid-hqq7p32a>Downloads and checksums for 0.3.2</a> · <a href="/changelog/" data-astro-cid-hqq7p32a>Every release</a>
+      </p><div class="cta" style="margin-top:40px" data-astro-cid-hqq7p32a>
+    <a class="btn primary" href="/download/" data-astro-cid-hqq7p32a>Download Mortar</a>
+    <a class="btn ghost" href="/news/" data-astro-cid-hqq7p32a>All news</a>
+  </div>
+
+    </div>
+  </div>
+
+    </main>
+    <footer class="foot">
+<a class="totop" href="#top"><span class="visually-hidden">Back to top</span><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"></path></svg></a>
+  <div class="wrap">
+    <div class="fcta reveal">
+          <div>
+            <h2>Ready to mod?</h2>
+            <p class="dim">Free and open source. Setup takes a minute.</p>
+          </div>
+          <a class="btn primary big" href="/download/">
+            Download Mortar
+          </a>
+        </div>
+    <div class="cols">
+      <div>
+        <b class="fbrand"><img src="/img/icon-192.png" width="34" height="34" alt="">Mortar</b>
+        <p class="dim">Free, open source mod manager for Windows, Linux and SteamOS.</p>
+        <div class="social">
+          <a href="https://github.com/Rethunk-Tech/mortar"><span class="visually-hidden">GitHub</span><svg aria-hidden="true"><use href="/img/brands.svg#github"></use></svg></a>
+          <a href="https://discord.gg/TfecaTm8J2"><span class="visually-hidden">Discord</span><svg style="color:rgb(88, 101, 242)" aria-hidden="true"><use href="/img/brands.svg#discord"></use></svg></a>
+          <a href="/news/rss.xml"><span class="visually-hidden">News feed</span><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="#F99830" stroke-width="2.4" stroke-linecap="round"><path d="M5 11a8 8 0 0 1 8 8M5 5a14 14 0 0 1 14 14"></path><circle cx="5.5" cy="18.5" r="1.2" fill="#F99830"></circle></g></svg></a>
+        </div>
+      </div>
+      <div>
+            <b>Product</b>
+            <a href="/download/">Download</a><a href="/games/">Games</a><a href="/sources/">Mod sites</a><a href="/news/">News</a><a href="/why/">Compare</a><a href="/changelog/">Changelog</a>
+          </div><div>
+            <b>Help</b>
+            <a href="/guide/">Guide</a><a href="/faq/">FAQ</a><a href="https://discord.gg/TfecaTm8J2">Discord</a><a href="/go/bug-reports/">Report a bug</a>
+          </div><div>
+            <b>Project</b>
+            <a href="/mission/">Mission</a><a href="https://github.com/Rethunk-Tech/mortar">Source code</a><a href="https://hosted.weblate.org/projects/mortar/">Help translate</a><a href="/extension/">Browser extension</a><a href="/code-signing/">Code signing</a><a href="/privacy/">Privacy</a>
+          </div>
+    </div>
+    <div class="fbar">
+      <span><a href="https://www.gnu.org/licenses/agpl-3.0.html">AGPL-3.0</a> · Version 0.3.16</span>
+      <span>Mortar by <a href="https://we.rethunk.tech/">Rethunk.Tech</a>. Not affiliated with any game developer or mod site.</span>
+    </div>
+  </div>
+</footer>
+    <div class="lightbox" id="lightbox" aria-hidden="true"><img alt=""></div>
+    <script type="module">var e=.5,t=matchMedia(`(prefers-reduced-motion: reduce)`).matches,n=document.querySelector(`.nav`),r=document.getElementById(`progress`),i=[...document.querySelectorAll(`.nav .links a[data-sec]`)],a=i.flatMap(e=>document.getElementById(e.dataset.sec??``)??[]);function o(){n?.classList.toggle(`scrolled`,scrollY>10);let e=document.documentElement.scrollHeight-innerHeight;r&&(r.style.width=`${e>0?scrollY/e*100:0}%`);let t=``;for(let e of a)e.getBoundingClientRect().top<innerHeight/3&&(t=e.id);for(let e of i)e.classList.toggle(`on`,e.dataset.sec===t)}addEventListener(`scroll`,o,{passive:!0}),o();var s=document.querySelector(`.nav-menu`),c=document.getElementById(`nav-drawer`);function l(e){c&&s&&(c.hidden=!e,s.setAttribute(`aria-expanded`,String(e)))}s?.addEventListener(`click`,()=>l(c?.hidden===!0)),document.addEventListener(`click`,e=>{let t=e.target;c&&!c.hidden&&t instanceof Node&&!c.contains(t)&&!s?.contains(t)&&l(!1)});var u=new IntersectionObserver(e=>{for(let t of e)t.isIntersecting&&(t.target.classList.add(`in`),u.unobserve(t.target))},{threshold:.1});for(let e of document.querySelectorAll(`.reveal`))u.observe(e);var d=5;for(let n of document.querySelectorAll(`.card.tilt`))n.addEventListener(`pointermove`,r=>{if(t)return;let i=n.getBoundingClientRect(),a=(r.clientX-i.left)/i.width-e,o=(r.clientY-i.top)/i.height-e;n.style.transform=`perspective(1000px) rotateY(${a*d}deg) rotateX(${-o*d}deg) translateZ(0)`}),n.addEventListener(`pointerleave`,()=>{n.style.transform=``});for(let e of document.querySelectorAll(`pre`))e.tabIndex=0;var f=document.getElementById(`lightbox`),p=f?.querySelector(`img`);function m(){f?.classList.remove(`open`),f?.setAttribute(`aria-hidden`,`true`)}document.addEventListener(`click`,e=>{let t=e.target instanceof Element?e.target:null,n=t?.closest(`img.zoom`);n&&f&&p?(e.preventDefault(),p.src=n.currentSrc||n.src,p.alt=n.alt,f.classList.add(`open`),f.setAttribute(`aria-hidden`,`false`)):t?.closest(`#lightbox`)&&m()}),globalThis.addEventListener(`keydown`,e=>{e.key===`Escape`&&(m(),l(!1))});</script>
+    <script src="/search.js" defer></script>
+  </body>
+</html>

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="darkreader-lock">
+    <meta name="referrer" content="no-referrer">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#111114">
+    
+    <title>Mortar news</title>
+    <meta name="description" content="Mortar's release posts and how-tos: new games, features and fixes in each version.">
+    <link rel="canonical" href="https://mortar.rethunk.tech/news/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Mortar">
+    <meta property="og:url" content="https://mortar.rethunk.tech/news/">
+    <meta property="og:title" content="Mortar news">
+    <meta property="og:description" content="Mortar's release posts and how-tos: new games, features and fixes in each version.">
+    <meta property="og:image" content="https://mortar.rethunk.tech/og/news.png?v=0.3.16">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="alternate" type="application/rss+xml" title="Mortar news" href="https://mortar.rethunk.tech/news/rss.xml">
+    <link rel="alternate" type="application/atom+xml" title="Mortar releases" href="https://mortar.rethunk.tech/changelog/feed.xml">
+    <!-- Body and heading text arrive before first paint, so the page does not shift when they swap in. -->
+    <link rel="preload" href="/_astro/atkinson-hyperlegible-next-latin-400-normal.FfmJh7DR.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/_astro/atkinson-hyperlegible-next-latin-800-normal.D32lleIF.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="icon" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/img/icon-192.png">
+    <link rel="sitemap" href="/sitemap-index.xml">
+    <script async src="https://plausible.io/js/pa-Q6uQ-Ve40xbXZhAAHIlnr.js"></script>
+    <!-- Plausible's queue: calls made before its script loads wait in plausible.q, and init's options in plausible.o. -->
+    <script>
+      {
+        const p =
+          globalThis.plausible ||
+          ((...args) => {
+            p.q = p.q || []
+            p.q.push(args)
+          })
+        p.init =
+          p.init ||
+          ((options) => {
+            p.o = options || {}
+          })
+        globalThis.plausible = p
+        // A share link carries the whole profile after the #, and its Open in Mortar link carries it in a mortar://
+        // address that Plausible would report as an outbound click; that click has its own event instead.
+        p.init({
+          transformRequest: (request) =>
+            String(request.p?.url ?? '').startsWith('mortar:') ? null : { ...request, u: request.u.split('#')[0] },
+        })
+      }
+    </script>
+    <script>document.documentElement.classList.remove('no-js')</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Mortar","applicationCategory":"GameApplication","operatingSystem":"Windows, Linux","softwareVersion":"0.3.16","url":"https://mortar.rethunk.tech/","downloadUrl":"https://mortar.rethunk.tech/download/","license":"https://www.gnu.org/licenses/agpl-3.0.html","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Mortar","item":"https://mortar.rethunk.tech/"},{"@type":"ListItem","position":2,"name":"News","item":"https://mortar.rethunk.tech/news/"}]}</script>
+    
+  <link rel="stylesheet" href="/_astro/page-lists.DcgSTmT0.css">
+<style>.news-lead{border:1px solid var(--line);background:var(--raised);border-radius:16px;grid-template-columns:1.4fr 1fr;align-items:center;gap:28px;margin-bottom:28px;padding:18px;display:grid}.news-lead:hover,.news-grid a:hover{border-color:#d6b17a80}.news-lead img,.news-grid img{aspect-ratio:16/10;object-fit:cover;object-position:top left;border:1px solid var(--line);border-radius:10px;width:100%;height:auto}.news-lead h2{margin:10px 0;font-size:30px}.news-lead p,.news-grid p{color:var(--dim);margin:0}.news-lead .meta,.news-grid .meta{color:var(--faint);align-items:center;gap:10px;font-size:14px;display:flex}.news-chips{flex-wrap:wrap;gap:8px;margin:16px 0 0;padding:0;list-style:none;display:flex}.news-chips li{color:var(--sand);background:#d6b17a1f;border-radius:999px;padding:4px 10px;font-size:14px}.news-grid{grid-template-columns:repeat(3,1fr);gap:18px;margin:0;padding:0;list-style:none;display:grid}.news-grid a{border:1px solid var(--line);background:var(--raised);border-radius:14px;align-content:start;gap:10px;height:100%;padding:14px;display:grid}.news-grid h2{margin:0;font-size:19px}.news-blank{aspect-ratio:16/10;color:var(--sand);background:linear-gradient(135deg,#d6b17a29,#d6b17a08);border-radius:10px;place-items:center;font-size:34px;font-weight:800;display:grid}.news-more{margin-top:28px}.prose .news-lead,.prose .news-grid a{color:var(--ink);text-decoration:none}.prose .news-lead:hover h2,.prose .news-grid a:hover h2{color:var(--sand)}@media (width<=900px){.news-lead,.news-grid{grid-template-columns:1fr}}
+</style>
+<link rel="stylesheet" href="/_astro/Base.H6Wqy4FH.css"></head>
+  <body id="top">
+    <a class="skip" href="#main">Skip to content</a>
+    <nav class="nav" aria-label="Main">
+  <div class="progress" id="progress"></div>
+  <div class="wrap">
+    <a class="brand" href="/"><img src="/img/icon-192.png" width="30" height="30" alt="">Mortar</a>
+    <div class="links">
+      <a href="/games/" data-sec="games">
+            Games
+          </a><a href="/#features" data-sec="features">
+            Features
+          </a><a href="/news/" data-sec="news" aria-current="page">
+            News
+          </a><a href="/why/" data-sec="compare">
+            Compare
+          </a><a href="/guide/">
+            Guide
+          </a><a href="/faq/">
+            FAQ
+          </a>
+    </div>
+    <span class="tools">
+      <button type="button" class="nav-search" aria-label="Search" aria-keyshortcuts="Control+K Meta+K">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+      </button>
+      <a class="optional" href="https://github.com/Rethunk-Tech/mortar" title="GitHub">
+            <svg aria-hidden="true"><use href="/img/brands.svg#github"></use></svg>
+            <span class="visually-hidden">GitHub</span>
+          </a><a class="optional" href="https://discord.gg/TfecaTm8J2" title="Discord">
+            <svg aria-hidden="true"><use href="/img/brands.svg#discord"></use></svg>
+            <span class="visually-hidden">Discord</span>
+          </a>
+      <button type="button" class="nav-menu" aria-label="Menu" aria-expanded="false" aria-controls="nav-drawer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+      </button>
+    </span>
+    <a class="btn primary" href="/download/">Download</a>
+  </div>
+  <div class="nav-drawer" id="nav-drawer" hidden>
+    <a href="/games/">Games</a><a href="/#features">Features</a><a href="/news/">News</a><a href="/why/">Compare</a><a href="/guide/">Guide</a><a href="/faq/">FAQ</a>
+    <a href="https://github.com/Rethunk-Tech/mortar">GitHub</a><a href="https://discord.gg/TfecaTm8J2">Discord</a>
+    <a href="/download/">Download</a>
+  </div>
+</nav>
+    
+    <main id="main" data-pagefind-body>
+      
+  <header class="wrap pagehead">
+    
+    <p class="kicker">News</p>
+    <h1>News</h1>
+    <p class="lede">Release posts and how-tos. <a href="/news/rss.xml">RSS feed</a>.</p>
+    
+  </header>
+  <div class="wrap pagebody">
+    <div class="prose full">
+      <a class="news-lead" href="/news/mortar-0-3-16/">
+        <img src="/img/config.webp" alt="" width="1280" height="800">
+        <div class="news-lead-text">
+          <span class="meta">
+  <span class="vtag hot">0.3.16</span>
+  <time datetime="2026-10-29">October 29, 2026</time>
+</span>
+<h2>Configs that read back</h2>
+<p>BepInEx and MelonLoader configs write values their games read back, the config editor says why it refused one, Mod Organizer 2 imports from a folder you pick, and a list of fixes.</p>
+          <ul class="news-chips">
+              <li>Values the game reads back</li><li>Your Mod Organizer 2 folder</li><li>Content packs read like the game</li>
+            </ul>
+        </div>
+      </a><ul class="news-grid">
+    <li>
+          <a href="/news/mortar-0-3-15/">
+            <img src="/img/import.webp" alt="" width="1280" height="800" loading="lazy">
+            <span class="meta">
+  <span class="vtag hot">0.3.15</span>
+  <time datetime="2026-10-28">October 28, 2026</time>
+</span>
+<h2>Imports that bring every mod</h2>
+<p>Imports keep mods whose dependencies looked missing, downloads retry on their own, Risk of Rain 2 startup timing runs to the main menu, Simplified Chinese opens for translation, and a list of fixes.</p>
+          </a>
+        </li><li>
+          <a href="/news/mortar-0-3-14/">
+            <img src="/img/develop.webp" alt="" width="1280" height="800" loading="lazy">
+            <span class="meta">
+  <span class="vtag hot">0.3.14</span>
+  <time datetime="2026-10-28">October 28, 2026</time>
+</span>
+<h2>Make your own mods</h2>
+<p>A Develop tab that makes, builds, tests and publishes your own mods, sources you can switch off, a Play menu per game in the tray, and a long list of fixes.</p>
+          </a>
+        </li><li>
+          <a href="/news/mortar-0-3-13/">
+            <img src="/img/launch.webp" alt="" width="1280" height="800" loading="lazy">
+            <span class="meta">
+  <span class="vtag hot">0.3.13</span>
+  <time datetime="2026-10-24">October 24, 2026</time>
+</span>
+<h2>Live launches, dated versions</h2>
+<p>A launch screen you can follow and cancel, dated versions, add any game from its program, and split hosting and joining lists.</p>
+          </a>
+        </li><li>
+          <a href="/news/mortar-0-3-12/">
+            <img src="/img/problems.webp" alt="" width="1280" height="800" loading="lazy">
+            <span class="meta">
+  <span class="vtag hot">0.3.12</span>
+  <time datetime="2026-10-22">October 22, 2026</time>
+</span>
+<h2>Problems on one page, in your language</h2>
+<p>Every problem on one page with one fix button each, a Display language setting, a Graphics setting on Linux, and a faster start.</p>
+          </a>
+        </li><li>
+          <a href="/news/mortar-0-3-11/">
+            <img src="/img/performance.webp" alt="" width="1280" height="800" loading="lazy">
+            <span class="meta">
+  <span class="vtag hot">0.3.11</span>
+  <time datetime="2026-10-22">October 22, 2026</time>
+</span>
+<h2>Startups explained, errors traced</h2>
+<p>Each phase of a start and its slowest mods, errors traced to the Harmony patch that threw, and imported profiles keep their local mods.</p>
+          </a>
+        </li><li>
+          <a href="/news/mortar-0-3-10/">
+            <img src="/img/import.webp" alt="" width="1280" height="800" loading="lazy">
+            <span class="meta">
+  <span class="vtag hot">0.3.10</span>
+  <time datetime="2026-10-20">October 20, 2026</time>
+</span>
+<h2>Import anything, mod Cities: Skylines II</h2>
+<p>One Import for links, collections, r2modman and Gale codes; Paradox Mods for Cities: Skylines II; far less memory at idle.</p>
+          </a>
+        </li>
+  </ul>
+  <p class="news-more"><a class="allq" href="/news/archive/">All 20 posts →</a></p>
+    </div>
+  </div>
+
+    </main>
+    <footer class="foot">
+<a class="totop" href="#top"><span class="visually-hidden">Back to top</span><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"></path></svg></a>
+  <div class="wrap">
+    <div class="fcta reveal">
+          <div>
+            <h2>Ready to mod?</h2>
+            <p class="dim">Free and open source. Setup takes a minute.</p>
+          </div>
+          <a class="btn primary big" href="/download/">
+            Download Mortar
+          </a>
+        </div>
+    <div class="cols">
+      <div>
+        <b class="fbrand"><img src="/img/icon-192.png" width="34" height="34" alt="">Mortar</b>
+        <p class="dim">Free, open source mod manager for Windows, Linux and SteamOS.</p>
+        <div class="social">
+          <a href="https://github.com/Rethunk-Tech/mortar"><span class="visually-hidden">GitHub</span><svg aria-hidden="true"><use href="/img/brands.svg#github"></use></svg></a>
+          <a href="https://discord.gg/TfecaTm8J2"><span class="visually-hidden">Discord</span><svg style="color:rgb(88, 101, 242)" aria-hidden="true"><use href="/img/brands.svg#discord"></use></svg></a>
+          <a href="/news/rss.xml"><span class="visually-hidden">News feed</span><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="#F99830" stroke-width="2.4" stroke-linecap="round"><path d="M5 11a8 8 0 0 1 8 8M5 5a14 14 0 0 1 14 14"></path><circle cx="5.5" cy="18.5" r="1.2" fill="#F99830"></circle></g></svg></a>
+        </div>
+      </div>
+      <div>
+            <b>Product</b>
+            <a href="/download/">Download</a><a href="/games/">Games</a><a href="/sources/">Mod sites</a><a href="/news/">News</a><a href="/why/">Compare</a><a href="/changelog/">Changelog</a>
+          </div><div>
+            <b>Help</b>
+            <a href="/guide/">Guide</a><a href="/faq/">FAQ</a><a href="https://discord.gg/TfecaTm8J2">Discord</a><a href="/go/bug-reports/">Report a bug</a>
+          </div><div>
+            <b>Project</b>
+            <a href="/mission/">Mission</a><a href="https://github.com/Rethunk-Tech/mortar">Source code</a><a href="https://hosted.weblate.org/projects/mortar/">Help translate</a><a href="/extension/">Browser extension</a><a href="/code-signing/">Code signing</a><a href="/privacy/">Privacy</a>
+          </div>
+    </div>
+    <div class="fbar">
+      <span><a href="https://www.gnu.org/licenses/agpl-3.0.html">AGPL-3.0</a> · Version 0.3.16</span>
+      <span>Mortar by <a href="https://we.rethunk.tech/">Rethunk.Tech</a>. Not affiliated with any game developer or mod site.</span>
+    </div>
+  </div>
+</footer>
+    <div class="lightbox" id="lightbox" aria-hidden="true"><img alt=""></div>
+    <script type="module">var e=.5,t=matchMedia(`(prefers-reduced-motion: reduce)`).matches,n=document.querySelector(`.nav`),r=document.getElementById(`progress`),i=[...document.querySelectorAll(`.nav .links a[data-sec]`)],a=i.flatMap(e=>document.getElementById(e.dataset.sec??``)??[]);function o(){n?.classList.toggle(`scrolled`,scrollY>10);let e=document.documentElement.scrollHeight-innerHeight;r&&(r.style.width=`${e>0?scrollY/e*100:0}%`);let t=``;for(let e of a)e.getBoundingClientRect().top<innerHeight/3&&(t=e.id);for(let e of i)e.classList.toggle(`on`,e.dataset.sec===t)}addEventListener(`scroll`,o,{passive:!0}),o();var s=document.querySelector(`.nav-menu`),c=document.getElementById(`nav-drawer`);function l(e){c&&s&&(c.hidden=!e,s.setAttribute(`aria-expanded`,String(e)))}s?.addEventListener(`click`,()=>l(c?.hidden===!0)),document.addEventListener(`click`,e=>{let t=e.target;c&&!c.hidden&&t instanceof Node&&!c.contains(t)&&!s?.contains(t)&&l(!1)});var u=new IntersectionObserver(e=>{for(let t of e)t.isIntersecting&&(t.target.classList.add(`in`),u.unobserve(t.target))},{threshold:.1});for(let e of document.querySelectorAll(`.reveal`))u.observe(e);var d=5;for(let n of document.querySelectorAll(`.card.tilt`))n.addEventListener(`pointermove`,r=>{if(t)return;let i=n.getBoundingClientRect(),a=(r.clientX-i.left)/i.width-e,o=(r.clientY-i.top)/i.height-e;n.style.transform=`perspective(1000px) rotateY(${a*d}deg) rotateX(${-o*d}deg) translateZ(0)`}),n.addEventListener(`pointerleave`,()=>{n.style.transform=``});for(let e of document.querySelectorAll(`pre`))e.tabIndex=0;var f=document.getElementById(`lightbox`),p=f?.querySelector(`img`);function m(){f?.classList.remove(`open`),f?.setAttribute(`aria-hidden`,`true`)}document.addEventListener(`click`,e=>{let t=e.target instanceof Element?e.target:null,n=t?.closest(`img.zoom`);n&&f&&p?(e.preventDefault(),p.src=n.currentSrc||n.src,p.alt=n.alt,f.classList.add(`open`),f.setAttribute(`aria-hidden`,`false`)):t?.closest(`#lightbox`)&&m()}),globalThis.addEventListener(`keydown`,e=>{e.key===`Escape`&&(m(),l(!1))});</script>
+    <script src="/search.js" defer></script>
+  </body>
+</html>

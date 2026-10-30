@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="darkreader-lock">
+    <meta name="referrer" content="no-referrer">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#111114">
+    
+    <title>Mortar 0.3.3: Vintage Story</title>
+    <meta name="description" content="Mods from the Vintage Story Mod DB, mod settings per profile, and Windows games outside Steam through Proton.">
+    <link rel="canonical" href="https://mortar.rethunk.tech/news/mortar-0-3-3/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Mortar">
+    <meta property="og:url" content="https://mortar.rethunk.tech/news/mortar-0-3-3/">
+    <meta property="og:title" content="Mortar 0.3.3: Vintage Story">
+    <meta property="og:description" content="Mods from the Vintage Story Mod DB, mod settings per profile, and Windows games outside Steam through Proton.">
+    <meta property="og:image" content="https://mortar.rethunk.tech/og/news/mortar-0-3-3.png?v=0.3.16">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="alternate" type="application/rss+xml" title="Mortar news" href="https://mortar.rethunk.tech/news/rss.xml">
+    <link rel="alternate" type="application/atom+xml" title="Mortar releases" href="https://mortar.rethunk.tech/changelog/feed.xml">
+    <!-- Body and heading text arrive before first paint, so the page does not shift when they swap in. -->
+    <link rel="preload" href="/_astro/atkinson-hyperlegible-next-latin-400-normal.FfmJh7DR.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/_astro/atkinson-hyperlegible-next-latin-800-normal.D32lleIF.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="icon" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/img/icon-192.png">
+    <link rel="sitemap" href="/sitemap-index.xml">
+    <script async src="https://plausible.io/js/pa-Q6uQ-Ve40xbXZhAAHIlnr.js"></script>
+    <!-- Plausible's queue: calls made before its script loads wait in plausible.q, and init's options in plausible.o. -->
+    <script>
+      {
+        const p =
+          globalThis.plausible ||
+          ((...args) => {
+            p.q = p.q || []
+            p.q.push(args)
+          })
+        p.init =
+          p.init ||
+          ((options) => {
+            p.o = options || {}
+          })
+        globalThis.plausible = p
+        // A share link carries the whole profile after the #, and its Open in Mortar link carries it in a mortar://
+        // address that Plausible would report as an outbound click; that click has its own event instead.
+        p.init({
+          transformRequest: (request) =>
+            String(request.p?.url ?? '').startsWith('mortar:') ? null : { ...request, u: request.u.split('#')[0] },
+        })
+      }
+    </script>
+    <script>document.documentElement.classList.remove('no-js')</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Mortar","applicationCategory":"GameApplication","operatingSystem":"Windows, Linux","softwareVersion":"0.3.16","url":"https://mortar.rethunk.tech/","downloadUrl":"https://mortar.rethunk.tech/download/","license":"https://www.gnu.org/licenses/agpl-3.0.html","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Mortar","item":"https://mortar.rethunk.tech/"},{"@type":"ListItem","position":2,"name":"News","item":"https://mortar.rethunk.tech/news/"},{"@type":"ListItem","position":3,"name":"Vintage Story","item":"https://mortar.rethunk.tech/news/mortar-0-3-3/"}]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Vintage Story","description":"Mods from the Vintage Story Mod DB, mod settings per profile, and Windows games outside Steam through Proton.","datePublished":"2026-10-16T00:00:00.000Z","url":"https://mortar.rethunk.tech/news/mortar-0-3-3/","author":{"@type":"Organization","name":"Rethunk.Tech","url":"https://we.rethunk.tech/"}}</script>
+    
+  <link rel="stylesheet" href="/_astro/page-lists.DcgSTmT0.css">
+<style>.highlights[data-astro-cid-hqq7p32a]{grid-template-columns:repeat(auto-fill,minmax(min(100%,24rem),24rem));gap:16px;width:max(100%,min(72rem + 32px,100vw - 64px));margin-bottom:24px;display:grid}figure[data-astro-cid-hqq7p32a]{background:var(--raised);border:1px solid var(--line);border-radius:14px;margin:0;overflow:hidden}figure[data-astro-cid-hqq7p32a] img[data-astro-cid-hqq7p32a]{aspect-ratio:16/10;object-fit:cover;object-position:top left;border:0;border-radius:0}figcaption[data-astro-cid-hqq7p32a]{color:var(--dim);gap:4px;padding:14px 16px;font-size:15px;display:grid}figcaption[data-astro-cid-hqq7p32a] b[data-astro-cid-hqq7p32a]{color:var(--ink)}.area[data-astro-cid-hqq7p32a]{letter-spacing:.08em;text-transform:uppercase;color:var(--sand);font-size:12px;font-weight:700}
+</style>
+<link rel="stylesheet" href="/_astro/Base.H6Wqy4FH.css"></head>
+  <body id="top">
+    <a class="skip" href="#main">Skip to content</a>
+    <nav class="nav" aria-label="Main">
+  <div class="progress" id="progress"></div>
+  <div class="wrap">
+    <a class="brand" href="/"><img src="/img/icon-192.png" width="30" height="30" alt="">Mortar</a>
+    <div class="links">
+      <a href="/games/" data-sec="games">
+            Games
+          </a><a href="/#features" data-sec="features">
+            Features
+          </a><a href="/news/" data-sec="news" aria-current="page">
+            News
+          </a><a href="/why/" data-sec="compare">
+            Compare
+          </a><a href="/guide/">
+            Guide
+          </a><a href="/faq/">
+            FAQ
+          </a>
+    </div>
+    <span class="tools">
+      <button type="button" class="nav-search" aria-label="Search" aria-keyshortcuts="Control+K Meta+K">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+      </button>
+      <a class="optional" href="https://github.com/Rethunk-Tech/mortar" title="GitHub">
+            <svg aria-hidden="true"><use href="/img/brands.svg#github"></use></svg>
+            <span class="visually-hidden">GitHub</span>
+          </a><a class="optional" href="https://discord.gg/TfecaTm8J2" title="Discord">
+            <svg aria-hidden="true"><use href="/img/brands.svg#discord"></use></svg>
+            <span class="visually-hidden">Discord</span>
+          </a>
+      <button type="button" class="nav-menu" aria-label="Menu" aria-expanded="false" aria-controls="nav-drawer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+      </button>
+    </span>
+    <a class="btn primary" href="/download/">Download</a>
+  </div>
+  <div class="nav-drawer" id="nav-drawer" hidden>
+    <a href="/games/">Games</a><a href="/#features">Features</a><a href="/news/">News</a><a href="/why/">Compare</a><a href="/guide/">Guide</a><a href="/faq/">FAQ</a>
+    <a href="https://github.com/Rethunk-Tech/mortar">GitHub</a><a href="https://discord.gg/TfecaTm8J2">Discord</a>
+    <a href="/download/">Download</a>
+  </div>
+</nav>
+    
+    <main id="main" data-pagefind-body>
+      
+  <header class="wrap pagehead">
+    <nav class="crumbs" aria-label="Breadcrumb" data-pagefind-ignore="true">
+          <a href="/">Mortar</a>
+          
+               › 
+              <a href="/news/">News</a>
+            
+        </nav>
+    <p class="kicker">Mortar 0.3.3 · October 16, 2026</p>
+    <h1>Vintage Story</h1>
+    <p class="lede">Mods from the Vintage Story Mod DB, mod settings per profile, and Windows games outside Steam through Proton.</p>
+    
+  </header>
+  <div class="wrap pagebody">
+    <div class="prose">
+      <h2 data-astro-cid-hqq7p32a>What changed in 0.3.3</h2><div class="notes" data-astro-cid-hqq7p32a><h3>New</h3>
+<h4>Games</h4>
+<ul>
+<li>Vintage Story: Mortar finds the copy its installer or Flatpak put in place, browses and installs mods from the Vintage Story Mod DB (and Nexus and GitHub), names each mod from its modinfo.json, fetches the mods each one requires, and turns them on for the length of each launch</li>
+<li>The Mod DB's 1-click install button can open in Mortar: turn on Handle Vintage Story Mod DB links in Settings › Downloads</li>
+<li>Each Vintage Story profile keeps its own mod settings (ModConfig), and the Config page edits them</li>
+<li>A game no store has art for shows art from its own install</li>
+<li>On Linux, a Windows game outside Steam, such as a copy in a folder you chose or one Heroic or Lutris installed, runs through a Proton version your Steam already has, in a prefix Mortar keeps for it</li>
+<li>Settings › Launchers lists launchers that only run on Windows, and a row for games found where their own installer or Flatpak put them</li>
+</ul>
+<h4>Saves</h4>
+<ul>
+<li>Vintage Story worlds show their name, play style, play time and the game version that last saved them</li>
+<li>A Vintage Story world lists the mods it was played with that the profile lacks, and installs each from the Mod DB</li>
+<li>The world backups Vintage Story makes itself (Modify World and /genbackup) are listed under each world and restore like Mortar's own</li>
+<li>A Vintage Story world's minimap is backed up and restored with it</li>
+</ul>
+<h4>Interface and settings</h4>
+<ul>
+<li>A Screenshots tab shows the game's own screenshots and, for a Steam game, the ones Steam takes, newest first, full size on a click</li>
+<li>Browse cards put Add under the mod's picture, so the name, author, summary and stats get the card's width and read apart</li>
+</ul>
+<h4>Profiles and sharing</h4>
+<ul>
+<li>Vintage Story Mod DB mods travel in share links, sends to your other computers and the share page</li>
+</ul>
+<h4>Launching and loaders</h4>
+<ul>
+<li>The Console shows Vintage Story's own log while it runs, and a run that crashes keeps the game's crash report</li>
+</ul>
+
+<details><summary><h3>Fixed (9)</h3></summary>
+<h4>Saves</h4>
+<ul>
+<li>Restoring a save no longer leaves the current save's leftover files beside it, which could undo a Vintage Story restore</li>
+<li>Saves lists every game's saves without the internet; only Stardew Valley's mod matching needs it</li>
+</ul>
+<h4>Launching and loaders</h4>
+<ul>
+<li>Mortar finds your Steam account on current Steam clients, so Steam launch options, shortcuts and screenshots work again</li>
+<li>mortar.log keeps the startup lines that are the only trace of a WebView2 failure</li>
+</ul>
+<h4>Interface and settings</h4>
+<ul>
+<li>On Linux laptops with an NVIDIA graphics card beside an AMD or Intel one, Mortar no longer renders at a crawl: it keeps WebKit's fast renderer unless it is running on the NVIDIA card</li>
+<li>Menu items no longer say &quot;Stop the game to change mods.&quot; when no game is running</li>
+<li>Performance's Where the time goes is one stacked bar again, with each phase's time beside its colour</li>
+<li>Buttons beside a text field are as tall as the field</li>
+<li>The Nexus key and the browser extension steps sit in their setting rows</li>
+</ul>
+
+</details></div><p data-astro-cid-hqq7p32a>
+        <a href="https://github.com/Rethunk-Tech/mortar/releases/tag/v0.3.3" data-astro-cid-hqq7p32a>Downloads and checksums for 0.3.3</a> · <a href="/changelog/" data-astro-cid-hqq7p32a>Every release</a>
+      </p><div class="cta" style="margin-top:40px" data-astro-cid-hqq7p32a>
+    <a class="btn primary" href="/download/" data-astro-cid-hqq7p32a>Download Mortar</a>
+    <a class="btn ghost" href="/news/" data-astro-cid-hqq7p32a>All news</a>
+  </div>
+
+    </div>
+  </div>
+
+    </main>
+    <footer class="foot">
+<a class="totop" href="#top"><span class="visually-hidden">Back to top</span><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"></path></svg></a>
+  <div class="wrap">
+    <div class="fcta reveal">
+          <div>
+            <h2>Ready to mod?</h2>
+            <p class="dim">Free and open source. Setup takes a minute.</p>
+          </div>
+          <a class="btn primary big" href="/download/">
+            Download Mortar
+          </a>
+        </div>
+    <div class="cols">
+      <div>
+        <b class="fbrand"><img src="/img/icon-192.png" width="34" height="34" alt="">Mortar</b>
+        <p class="dim">Free, open source mod manager for Windows, Linux and SteamOS.</p>
+        <div class="social">
+          <a href="https://github.com/Rethunk-Tech/mortar"><span class="visually-hidden">GitHub</span><svg aria-hidden="true"><use href="/img/brands.svg#github"></use></svg></a>
+          <a href="https://discord.gg/TfecaTm8J2"><span class="visually-hidden">Discord</span><svg style="color:rgb(88, 101, 242)" aria-hidden="true"><use href="/img/brands.svg#discord"></use></svg></a>
+          <a href="/news/rss.xml"><span class="visually-hidden">News feed</span><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="#F99830" stroke-width="2.4" stroke-linecap="round"><path d="M5 11a8 8 0 0 1 8 8M5 5a14 14 0 0 1 14 14"></path><circle cx="5.5" cy="18.5" r="1.2" fill="#F99830"></circle></g></svg></a>
+        </div>
+      </div>
+      <div>
+            <b>Product</b>
+            <a href="/download/">Download</a><a href="/games/">Games</a><a href="/sources/">Mod sites</a><a href="/news/">News</a><a href="/why/">Compare</a><a href="/changelog/">Changelog</a>
+          </div><div>
+            <b>Help</b>
+            <a href="/guide/">Guide</a><a href="/faq/">FAQ</a><a href="https://discord.gg/TfecaTm8J2">Discord</a><a href="/go/bug-reports/">Report a bug</a>
+          </div><div>
+            <b>Project</b>
+            <a href="/mission/">Mission</a><a href="https://github.com/Rethunk-Tech/mortar">Source code</a><a href="https://hosted.weblate.org/projects/mortar/">Help translate</a><a href="/extension/">Browser extension</a><a href="/code-signing/">Code signing</a><a href="/privacy/">Privacy</a>
+          </div>
+    </div>
+    <div class="fbar">
+      <span><a href="https://www.gnu.org/licenses/agpl-3.0.html">AGPL-3.0</a> · Version 0.3.16</span>
+      <span>Mortar by <a href="https://we.rethunk.tech/">Rethunk.Tech</a>. Not affiliated with any game developer or mod site.</span>
+    </div>
+  </div>
+</footer>
+    <div class="lightbox" id="lightbox" aria-hidden="true"><img alt=""></div>
+    <script type="module">var e=.5,t=matchMedia(`(prefers-reduced-motion: reduce)`).matches,n=document.querySelector(`.nav`),r=document.getElementById(`progress`),i=[...document.querySelectorAll(`.nav .links a[data-sec]`)],a=i.flatMap(e=>document.getElementById(e.dataset.sec??``)??[]);function o(){n?.classList.toggle(`scrolled`,scrollY>10);let e=document.documentElement.scrollHeight-innerHeight;r&&(r.style.width=`${e>0?scrollY/e*100:0}%`);let t=``;for(let e of a)e.getBoundingClientRect().top<innerHeight/3&&(t=e.id);for(let e of i)e.classList.toggle(`on`,e.dataset.sec===t)}addEventListener(`scroll`,o,{passive:!0}),o();var s=document.querySelector(`.nav-menu`),c=document.getElementById(`nav-drawer`);function l(e){c&&s&&(c.hidden=!e,s.setAttribute(`aria-expanded`,String(e)))}s?.addEventListener(`click`,()=>l(c?.hidden===!0)),document.addEventListener(`click`,e=>{let t=e.target;c&&!c.hidden&&t instanceof Node&&!c.contains(t)&&!s?.contains(t)&&l(!1)});var u=new IntersectionObserver(e=>{for(let t of e)t.isIntersecting&&(t.target.classList.add(`in`),u.unobserve(t.target))},{threshold:.1});for(let e of document.querySelectorAll(`.reveal`))u.observe(e);var d=5;for(let n of document.querySelectorAll(`.card.tilt`))n.addEventListener(`pointermove`,r=>{if(t)return;let i=n.getBoundingClientRect(),a=(r.clientX-i.left)/i.width-e,o=(r.clientY-i.top)/i.height-e;n.style.transform=`perspective(1000px) rotateY(${a*d}deg) rotateX(${-o*d}deg) translateZ(0)`}),n.addEventListener(`pointerleave`,()=>{n.style.transform=``});for(let e of document.querySelectorAll(`pre`))e.tabIndex=0;var f=document.getElementById(`lightbox`),p=f?.querySelector(`img`);function m(){f?.classList.remove(`open`),f?.setAttribute(`aria-hidden`,`true`)}document.addEventListener(`click`,e=>{let t=e.target instanceof Element?e.target:null,n=t?.closest(`img.zoom`);n&&f&&p?(e.preventDefault(),p.src=n.currentSrc||n.src,p.alt=n.alt,f.classList.add(`open`),f.setAttribute(`aria-hidden`,`false`)):t?.closest(`#lightbox`)&&m()}),globalThis.addEventListener(`keydown`,e=>{e.key===`Escape`&&(m(),l(!1))});</script>
+    <script src="/search.js" defer></script>
+  </body>
+</html>

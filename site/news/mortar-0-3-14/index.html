@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="darkreader-lock">
+    <meta name="referrer" content="no-referrer">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#111114">
+    
+    <title>Mortar 0.3.14: Make your own mods</title>
+    <meta name="description" content="A Develop tab that makes, builds, tests and publishes your own mods, sources you can switch off, a Play menu per game in the tray, and a long list of fixes.">
+    <link rel="canonical" href="https://mortar.rethunk.tech/news/mortar-0-3-14/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Mortar">
+    <meta property="og:url" content="https://mortar.rethunk.tech/news/mortar-0-3-14/">
+    <meta property="og:title" content="Mortar 0.3.14: Make your own mods">
+    <meta property="og:description" content="A Develop tab that makes, builds, tests and publishes your own mods, sources you can switch off, a Play menu per game in the tray, and a long list of fixes.">
+    <meta property="og:image" content="https://mortar.rethunk.tech/og/news/mortar-0-3-14.png?v=0.3.16">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="alternate" type="application/rss+xml" title="Mortar news" href="https://mortar.rethunk.tech/news/rss.xml">
+    <link rel="alternate" type="application/atom+xml" title="Mortar releases" href="https://mortar.rethunk.tech/changelog/feed.xml">
+    <!-- Body and heading text arrive before first paint, so the page does not shift when they swap in. -->
+    <link rel="preload" href="/_astro/atkinson-hyperlegible-next-latin-400-normal.FfmJh7DR.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/_astro/atkinson-hyperlegible-next-latin-800-normal.D32lleIF.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="icon" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/img/icon-192.png">
+    <link rel="sitemap" href="/sitemap-index.xml">
+    <script async src="https://plausible.io/js/pa-Q6uQ-Ve40xbXZhAAHIlnr.js"></script>
+    <!-- Plausible's queue: calls made before its script loads wait in plausible.q, and init's options in plausible.o. -->
+    <script>
+      {
+        const p =
+          globalThis.plausible ||
+          ((...args) => {
+            p.q = p.q || []
+            p.q.push(args)
+          })
+        p.init =
+          p.init ||
+          ((options) => {
+            p.o = options || {}
+          })
+        globalThis.plausible = p
+        // A share link carries the whole profile after the #, and its Open in Mortar link carries it in a mortar://
+        // address that Plausible would report as an outbound click; that click has its own event instead.
+        p.init({
+          transformRequest: (request) =>
+            String(request.p?.url ?? '').startsWith('mortar:') ? null : { ...request, u: request.u.split('#')[0] },
+        })
+      }
+    </script>
+    <script>document.documentElement.classList.remove('no-js')</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Mortar","applicationCategory":"GameApplication","operatingSystem":"Windows, Linux","softwareVersion":"0.3.16","url":"https://mortar.rethunk.tech/","downloadUrl":"https://mortar.rethunk.tech/download/","license":"https://www.gnu.org/licenses/agpl-3.0.html","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Mortar","item":"https://mortar.rethunk.tech/"},{"@type":"ListItem","position":2,"name":"News","item":"https://mortar.rethunk.tech/news/"},{"@type":"ListItem","position":3,"name":"Make your own mods","item":"https://mortar.rethunk.tech/news/mortar-0-3-14/"}]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Make your own mods","description":"A Develop tab that makes, builds, tests and publishes your own mods, sources you can switch off, a Play menu per game in the tray, and a long list of fixes.","datePublished":"2026-10-28T00:00:00.000Z","url":"https://mortar.rethunk.tech/news/mortar-0-3-14/","author":{"@type":"Organization","name":"Rethunk.Tech","url":"https://we.rethunk.tech/"}}</script>
+    
+  <link rel="stylesheet" href="/_astro/page-lists.DcgSTmT0.css">
+<style>.highlights[data-astro-cid-hqq7p32a]{grid-template-columns:repeat(auto-fill,minmax(min(100%,24rem),24rem));gap:16px;width:max(100%,min(72rem + 32px,100vw - 64px));margin-bottom:24px;display:grid}figure[data-astro-cid-hqq7p32a]{background:var(--raised);border:1px solid var(--line);border-radius:14px;margin:0;overflow:hidden}figure[data-astro-cid-hqq7p32a] img[data-astro-cid-hqq7p32a]{aspect-ratio:16/10;object-fit:cover;object-position:top left;border:0;border-radius:0}figcaption[data-astro-cid-hqq7p32a]{color:var(--dim);gap:4px;padding:14px 16px;font-size:15px;display:grid}figcaption[data-astro-cid-hqq7p32a] b[data-astro-cid-hqq7p32a]{color:var(--ink)}.area[data-astro-cid-hqq7p32a]{letter-spacing:.08em;text-transform:uppercase;color:var(--sand);font-size:12px;font-weight:700}
+</style>
+<link rel="stylesheet" href="/_astro/Base.H6Wqy4FH.css"></head>
+  <body id="top">
+    <a class="skip" href="#main">Skip to content</a>
+    <nav class="nav" aria-label="Main">
+  <div class="progress" id="progress"></div>
+  <div class="wrap">
+    <a class="brand" href="/"><img src="/img/icon-192.png" width="30" height="30" alt="">Mortar</a>
+    <div class="links">
+      <a href="/games/" data-sec="games">
+            Games
+          </a><a href="/#features" data-sec="features">
+            Features
+          </a><a href="/news/" data-sec="news" aria-current="page">
+            News
+          </a><a href="/why/" data-sec="compare">
+            Compare
+          </a><a href="/guide/">
+            Guide
+          </a><a href="/faq/">
+            FAQ
+          </a>
+    </div>
+    <span class="tools">
+      <button type="button" class="nav-search" aria-label="Search" aria-keyshortcuts="Control+K Meta+K">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+      </button>
+      <a class="optional" href="https://github.com/Rethunk-Tech/mortar" title="GitHub">
+            <svg aria-hidden="true"><use href="/img/brands.svg#github"></use></svg>
+            <span class="visually-hidden">GitHub</span>
+          </a><a class="optional" href="https://discord.gg/TfecaTm8J2" title="Discord">
+            <svg aria-hidden="true"><use href="/img/brands.svg#discord"></use></svg>
+            <span class="visually-hidden">Discord</span>
+          </a>
+      <button type="button" class="nav-menu" aria-label="Menu" aria-expanded="false" aria-controls="nav-drawer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+      </button>
+    </span>
+    <a class="btn primary" href="/download/">Download</a>
+  </div>
+  <div class="nav-drawer" id="nav-drawer" hidden>
+    <a href="/games/">Games</a><a href="/#features">Features</a><a href="/news/">News</a><a href="/why/">Compare</a><a href="/guide/">Guide</a><a href="/faq/">FAQ</a>
+    <a href="https://github.com/Rethunk-Tech/mortar">GitHub</a><a href="https://discord.gg/TfecaTm8J2">Discord</a>
+    <a href="/download/">Download</a>
+  </div>
+</nav>
+    
+    <main id="main" data-pagefind-body>
+      
+  <header class="wrap pagehead">
+    <nav class="crumbs" aria-label="Breadcrumb" data-pagefind-ignore="true">
+          <a href="/">Mortar</a>
+          
+               › 
+              <a href="/news/">News</a>
+            
+        </nav>
+    <p class="kicker">Mortar 0.3.14 · October 28, 2026</p>
+    <h1>Make your own mods</h1>
+    <p class="lede">A Develop tab that makes, builds, tests and publishes your own mods, sources you can switch off, a Play menu per game in the tray, and a long list of fixes.</p>
+    
+  </header>
+  <div class="wrap pagebody">
+    <div class="prose">
+      <div class="highlights" data-astro-cid-hqq7p32a>
+        <figure data-astro-cid-hqq7p32a>
+            <img class="zoom" src="/img/develop.webp" alt="Make your own mods" width="1280" height="800" loading="lazy" data-astro-cid-hqq7p32a>
+            <figcaption data-astro-cid-hqq7p32a>
+              <span class="area" data-astro-cid-hqq7p32a>Develop</span>
+              <b data-astro-cid-hqq7p32a>Make your own mods</b>
+              Start a mod from the game&#39;s template, build as you edit, test it in several copies of the game and publish it to Thunderstore.
+            </figcaption>
+          </figure><figure data-astro-cid-hqq7p32a>
+            <img class="zoom" src="/img/source-order.webp" alt="Pick your sources" width="1280" height="800" loading="lazy" data-astro-cid-hqq7p32a>
+            <figcaption data-astro-cid-hqq7p32a>
+              <span class="area" data-astro-cid-hqq7p32a>Browse</span>
+              <b data-astro-cid-hqq7p32a>Pick your sources</b>
+              Turn a site off for a game and Browse leaves it out; known-broken mods are marked, with a mod to use instead.
+            </figcaption>
+          </figure><figure data-astro-cid-hqq7p32a>
+            <img class="zoom" src="/img/tray-menu.webp" alt="Play from the tray" width="1280" height="800" loading="lazy" data-astro-cid-hqq7p32a>
+            <figcaption data-astro-cid-hqq7p32a>
+              <span class="area" data-astro-cid-hqq7p32a>Tray</span>
+              <b data-astro-cid-hqq7p32a>Play from the tray</b>
+              Recent profiles sit under a Play menu for each game.
+            </figcaption>
+          </figure>
+      </div><h2 data-astro-cid-hqq7p32a>What changed in 0.3.14</h2><div class="notes" data-astro-cid-hqq7p32a><h3>New</h3>
+<h4>Develop</h4>
+<ul>
+<li>A new Develop tab for making your own mods, with grid and list views and a filter</li>
+<li>New mod is a step by step wizard: pick the kind of mod, name it, say what it does, choose a license and its dependencies, and Mortar makes the project from the game's template and its own development profile</li>
+<li>New mod picks your GitHub account from the ones you are signed in to, checks the name is free, and warns when no installed .NET SDK fits the template</li>
+<li>Suit and sound mods need no SDK: their project adds your files instead of building</li>
+<li>New mod can start the development profile with the open profile's mods</li>
+<li>Add an existing project folder or clone one from GitHub; a project you did not make runs nothing until you trust it</li>
+<li>Each project card shows the mod's icon, version, build state, when it was last built, whether its files changed since, and its git branch and unpushed work</li>
+<li>Build, or Build on save to rebuild as you edit; build errors read plainly</li>
+<li>Test starts the game with your mod, one copy for client-only mods and two or more for multiplayer, laid out in a grid on screen, with the copies meeting in one game for Lethal Company</li>
+<li>Test copies keep their own saves, so a test never writes your real game's saves</li>
+<li>Start for debugging opens the game with its debugger listening</li>
+<li>Release drafts what changed since the last version, then tags and publishes it, through GitHub when the project has one</li>
+<li>Upload to Thunderstore packs and publishes a mod with your team's token, kept in the system keyring, and can upload the latest release again after an interrupted upload</li>
+<li>Pack warns while a mod still carries the template's icon</li>
+<li>Dependencies are required or optional, added from Browse or the wizard, and changed later in Edit details</li>
+<li>Game code searches the game's code, shows any type as C# or IL side by side, finds where a method is used, and copies a hook for it</li>
+<li>Open in editor opens a project in VS Code, VSCodium or Rider, whichever is installed</li>
+<li>A card shows your mod's start-up time and frame cost from its last measured run, and Show log opens its own log in the Console</li>
+<li>Remove from list can also move the project's folder to the trash, warning first about unpushed or uncommitted work</li>
+<li>Mods you develop group under In development in Mods, and updates are not offered for them</li>
+<li>The Updated column shows when a mod in development was last built</li>
+</ul>
+<h4>Mods</h4>
+<ul>
+<li>Disable asks about the mods that need the one you switch off and the libraries only it needed; Undo switches them all back</li>
+<li>A switched off mod's config is set aside and comes back when you switch it on again; removing a mod sets its config aside too, so Undo or adding it again brings it back</li>
+<li>A mod's update badge opens Update review on that mod</li>
+<li>A mod's menu groups its version actions and its organising actions, with Update in all profiles beside Skip</li>
+<li>Update review and the patch-day sweep warn about mods on the game's known-broken list</li>
+<li>Extra mods folders install their mods into a profile you pick per folder, and again whenever the folder changes</li>
+</ul>
+<h4>Browse</h4>
+<ul>
+<li>Mods known to be broken are marked in Browse and import previews, with the reason and a mod to use instead, and adding one asks first</li>
+<li>A known-broken mod's working replacement installs in its place and counts for mods that need the original</li>
+<li>Preferred source can turn a source off for a game, so Browse leaves it out</li>
+<li>Card stats are small icons, and a possible re-upload is a warning mark with its note in the tooltip</li>
+</ul>
+<h4>Play</h4>
+<ul>
+<li>Play can start SteamVR or the ALVR dashboard before the game, per game or per profile</li>
+<li>The Sims 4's DirectX 9 build counts as the game running</li>
+</ul>
+<h4>Config</h4>
+<ul>
+<li>The config editor marks settings the host enforces or recommends through ConfigSync, and shows the host's value while you are in a game</li>
+<li>Save host's values keeps the host's ConfigSync values as your own once the game closes</li>
+</ul>
+<h4>Console</h4>
+<ul>
+<li>Right-click a line to copy it or hide messages like it, from one object or from every object</li>
+<li>Each game's known noisy messages are hidden by default, and you can show any of them again</li>
+<li>The levels a game's Console opens with are ticked one by one</li>
+<li>Copy takes the whole line with its method and object, and right-clicking a selection copies every selected message</li>
+<li>Hidden messages are listed by where they come from, in a section of their own</li>
+</ul>
+<h4>Settings</h4>
+<ul>
+<li>A game's settings page switches between every profile's values and the open profile's own, showing each override beside the game's value</li>
+<li>A setting another one makes moot is disabled and says what to change first</li>
+</ul>
+<h4>Saves</h4>
+<ul>
+<li>A save's missing mods line can be dismissed until the mods it wants change</li>
+<li>A backup's Keep forever is its own pin button</li>
+</ul>
+<h4>Tray</h4>
+<ul>
+<li>Recent profiles sit under a Play submenu per game</li>
+</ul>
+
+<details><summary><h3>Changed (12)</h3></summary>
+<ul>
+<li>Built on Wails 3.0</li>
+<li>Edit profile has tabs; a profile's overrides, loader options and startup options are edited on the game's settings page instead</li>
+<li>Dialogs, menus and the sidebar are regrouped and tidied, and the sidebar fits a short window without scrolling</li>
+<li>The Play menu's copies section is gone: Develop's Test starts linked copies, and Instances in a game's Play settings still starts several</li>
+<li>Touch ripples are off unless you turn them on</li>
+<li>Removing or switching off a mod takes its files out of the game at once instead of at the next launch</li>
+<li>Many screens, menus and dialogs redraw far less, and History and notifications load older entries as you ask for them</li>
+<li>What is new for a Mortar update shows formatted text</li>
+<li>In-game performance measuring shows one clear state and live results</li>
+<li>Notifications show the latest changes with All changes for the rest, and History draws the newest entries first</li>
+<li>Config sits above Mods in the sidebar, every badge on the rail wears the accent colour, and a profile's notes render as Markdown</li>
+<li>Load order items read Load earlier and Load later</li>
+</ul>
+
+</details>
+<details><summary><h3>Fixed (36)</h3></summary>
+<ul>
+<li>A catalog fetched after Mortar starts reaches saves, Problems, the tray and the game list</li>
+<li>Every Browse page shows each mod once and fills the screen</li>
+<li>A custom download folder is safe: Mortar clears only its own finished downloads there, never your other files</li>
+<li>Switching games or profiles quickly no longer shows the previous one's runs, reports, versions or profiles</li>
+<li>Moving a folder to the trash works across drives</li>
+<li>A failed catalog check never falls back to a cached catalog older than the one Mortar ships with</li>
+<li>Nested mods sit beneath the mod that needs them even when it is in another group</li>
+<li>Several copies of a game each keep their own log, so their errors count</li>
+<li>On Linux a Steam game started directly, for several copies or a debug start, runs through Proton in Steam's prefix</li>
+<li>Merging profiles carries Thunderstore packages, and a merge that fails takes back what it added</li>
+<li>Cleanup never offers to remove a mod you develop, built or published, and no longer counts toward the Problems badge</li>
+<li>Profiles added, renamed or deleted from the command line, a share or sync show in the window and the tray at once</li>
+<li>A missing Thunderstore requirement links to its page and can be added in one click</li>
+<li>Duplicates found after a run open the same chooser as Problems, and each copy names where it came from</li>
+<li>Moving the data folder keeps profiles you moved to another folder</li>
+<li>The backup before Play or an update holds the profile's own saves, never another profile's</li>
+<li>Removing a mod keeps its settings for Undo, and a mod named BepInEx never takes the loader's own settings with it</li>
+<li>A damaged Nexus cache file no longer stops Mortar from starting</li>
+<li>FOMOD installers packed in a subfolder or naming files in another letter case install</li>
+<li>Heroic's GOG games are found, and so are games and Steam libraries behind a symlink</li>
+<li>Find the cause no longer blames a framework when one of its content packs crashes the game</li>
+<li>All sources sorted by downloads or by updated no longer skips mods or shows empty pages</li>
+<li>Play from a Steam shortcut no longer waits forever when the graphics question is due</li>
+<li>Bug reports and diagnostics files write your home folder as ~</li>
+<li>Command palette actions work from Settings and the other full pages</li>
+<li>The Flatpak finds r2modman and Gale profiles in their usual folders</li>
+<li>Find the cause asks before it starts relaunching a crashed game</li>
+<li>Removing a custom game, unpairing a computer and restoring over saves ask first</li>
+<li>A retried LAN transfer updates the profile you chose, and a sender that goes silent is retried</li>
+<li>Edit profile keeps what you typed when a save is refused</li>
+<li>Config cleanup spares a config an enabled mod still uses</li>
+<li>Backups reuse the newest one while your saves have not changed</li>
+<li>A SMAPI installer runs only when it matches the hash GitHub publishes</li>
+<li>Imported settings, packs and shared profiles can no longer set programs, folders, launch prefixes or turn protection off, and shared changes carry text and data files only</li>
+<li>Signed catalogs and lists cannot be rolled back to older ones, even after clearing the cache</li>
+<li>Nearby sharing checks and limits what other computers send, and your Nexus key stays out of logs</li>
+</ul>
+
+</details></div><p data-astro-cid-hqq7p32a>
+        <a href="https://github.com/Rethunk-Tech/mortar/releases/tag/v0.3.14" data-astro-cid-hqq7p32a>Downloads and checksums for 0.3.14</a> · <a href="/changelog/" data-astro-cid-hqq7p32a>Every release</a>
+      </p><div class="cta" style="margin-top:40px" data-astro-cid-hqq7p32a>
+    <a class="btn primary" href="/download/" data-astro-cid-hqq7p32a>Download Mortar</a>
+    <a class="btn ghost" href="/news/" data-astro-cid-hqq7p32a>All news</a>
+  </div>
+
+    </div>
+  </div>
+
+    </main>
+    <footer class="foot">
+<a class="totop" href="#top"><span class="visually-hidden">Back to top</span><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"></path></svg></a>
+  <div class="wrap">
+    <div class="fcta reveal">
+          <div>
+            <h2>Ready to mod?</h2>
+            <p class="dim">Free and open source. Setup takes a minute.</p>
+          </div>
+          <a class="btn primary big" href="/download/">
+            Download Mortar
+          </a>
+        </div>
+    <div class="cols">
+      <div>
+        <b class="fbrand"><img src="/img/icon-192.png" width="34" height="34" alt="">Mortar</b>
+        <p class="dim">Free, open source mod manager for Windows, Linux and SteamOS.</p>
+        <div class="social">
+          <a href="https://github.com/Rethunk-Tech/mortar"><span class="visually-hidden">GitHub</span><svg aria-hidden="true"><use href="/img/brands.svg#github"></use></svg></a>
+          <a href="https://discord.gg/TfecaTm8J2"><span class="visually-hidden">Discord</span><svg style="color:rgb(88, 101, 242)" aria-hidden="true"><use href="/img/brands.svg#discord"></use></svg></a>
+          <a href="/news/rss.xml"><span class="visually-hidden">News feed</span><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="#F99830" stroke-width="2.4" stroke-linecap="round"><path d="M5 11a8 8 0 0 1 8 8M5 5a14 14 0 0 1 14 14"></path><circle cx="5.5" cy="18.5" r="1.2" fill="#F99830"></circle></g></svg></a>
+        </div>
+      </div>
+      <div>
+            <b>Product</b>
+            <a href="/download/">Download</a><a href="/games/">Games</a><a href="/sources/">Mod sites</a><a href="/news/">News</a><a href="/why/">Compare</a><a href="/changelog/">Changelog</a>
+          </div><div>
+            <b>Help</b>
+            <a href="/guide/">Guide</a><a href="/faq/">FAQ</a><a href="https://discord.gg/TfecaTm8J2">Discord</a><a href="/go/bug-reports/">Report a bug</a>
+          </div><div>
+            <b>Project</b>
+            <a href="/mission/">Mission</a><a href="https://github.com/Rethunk-Tech/mortar">Source code</a><a href="https://hosted.weblate.org/projects/mortar/">Help translate</a><a href="/extension/">Browser extension</a><a href="/code-signing/">Code signing</a><a href="/privacy/">Privacy</a>
+          </div>
+    </div>
+    <div class="fbar">
+      <span><a href="https://www.gnu.org/licenses/agpl-3.0.html">AGPL-3.0</a> · Version 0.3.16</span>
+      <span>Mortar by <a href="https://we.rethunk.tech/">Rethunk.Tech</a>. Not affiliated with any game developer or mod site.</span>
+    </div>
+  </div>
+</footer>
+    <div class="lightbox" id="lightbox" aria-hidden="true"><img alt=""></div>
+    <script type="module">var e=.5,t=matchMedia(`(prefers-reduced-motion: reduce)`).matches,n=document.querySelector(`.nav`),r=document.getElementById(`progress`),i=[...document.querySelectorAll(`.nav .links a[data-sec]`)],a=i.flatMap(e=>document.getElementById(e.dataset.sec??``)??[]);function o(){n?.classList.toggle(`scrolled`,scrollY>10);let e=document.documentElement.scrollHeight-innerHeight;r&&(r.style.width=`${e>0?scrollY/e*100:0}%`);let t=``;for(let e of a)e.getBoundingClientRect().top<innerHeight/3&&(t=e.id);for(let e of i)e.classList.toggle(`on`,e.dataset.sec===t)}addEventListener(`scroll`,o,{passive:!0}),o();var s=document.querySelector(`.nav-menu`),c=document.getElementById(`nav-drawer`);function l(e){c&&s&&(c.hidden=!e,s.setAttribute(`aria-expanded`,String(e)))}s?.addEventListener(`click`,()=>l(c?.hidden===!0)),document.addEventListener(`click`,e=>{let t=e.target;c&&!c.hidden&&t instanceof Node&&!c.contains(t)&&!s?.contains(t)&&l(!1)});var u=new IntersectionObserver(e=>{for(let t of e)t.isIntersecting&&(t.target.classList.add(`in`),u.unobserve(t.target))},{threshold:.1});for(let e of document.querySelectorAll(`.reveal`))u.observe(e);var d=5;for(let n of document.querySelectorAll(`.card.tilt`))n.addEventListener(`pointermove`,r=>{if(t)return;let i=n.getBoundingClientRect(),a=(r.clientX-i.left)/i.width-e,o=(r.clientY-i.top)/i.height-e;n.style.transform=`perspective(1000px) rotateY(${a*d}deg) rotateX(${-o*d}deg) translateZ(0)`}),n.addEventListener(`pointerleave`,()=>{n.style.transform=``});for(let e of document.querySelectorAll(`pre`))e.tabIndex=0;var f=document.getElementById(`lightbox`),p=f?.querySelector(`img`);function m(){f?.classList.remove(`open`),f?.setAttribute(`aria-hidden`,`true`)}document.addEventListener(`click`,e=>{let t=e.target instanceof Element?e.target:null,n=t?.closest(`img.zoom`);n&&f&&p?(e.preventDefault(),p.src=n.currentSrc||n.src,p.alt=n.alt,f.classList.add(`open`),f.setAttribute(`aria-hidden`,`false`)):t?.closest(`#lightbox`)&&m()}),globalThis.addEventListener(`keydown`,e=>{e.key===`Escape`&&(m(),l(!1))});</script>
+    <script src="/search.js" defer></script>
+  </body>
+</html>

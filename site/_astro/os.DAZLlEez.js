@@ -1,0 +1,1 @@
+function e(){let e=navigator.userAgent;return/Android|iPhone|iPad/i.test(e)?null:/Windows/i.test(e)?`windows`:/Linux|X11/i.test(e)?`linux`:null}export{e as t};

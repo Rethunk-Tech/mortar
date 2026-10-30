@@ -1,0 +1,7 @@
+[mortar]
+name=Mortar
+baseurl=https://mortar.rethunk.tech/packages/rpm/$basearch
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://mortar.rethunk.tech/packages/mortar-archive-keyring.asc
