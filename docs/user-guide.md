@@ -220,6 +220,8 @@ Each project has **Build** (compiler errors open in VS Code, VSCodium or Rider a
 
 A mod of files only (suits, sounds, posters, paintings, TV videos, boombox songs) needs no compiler. **New mod…** first asks which kind to make, and offers a kind only once the loader that reads it is on Thunderstore or among your projects. The project is a folder of files with a manifest. It installs into the development profile as it is, and **Edit details…** changes its description, author, team and dependencies. A folder of this kind that you add or clone installs once you agree to **Install**, because a plugin among its files runs when the game starts. **Release…** tags the version (and pushes it when the folder has a GitHub remote), then **Upload** sends it to Thunderstore; such a project has no CI of its own.
 
+**Add a project folder…** (in the menu beside **New mod…**) takes any folder you already have. A folder that already is a Mortar project is added as it is. Any other folder gets a confirm step with the name, the kind Mortar detected and the project file it found; you can change the kind. A `.csproj` anywhere in the folder makes it a code project built from that file; a folder with an asset kind's files makes that kind; anything else is **Files, installed as they are**. Mortar writes only `.mortar/project.json` into the folder, and only after you press **Add**. A project of files has no build: its folder installs once trusted, and **Release…** packs its files with a `manifest.json` in which Mortar fills only the missing fields.
+
 ## Problems
 
 The **Problems** tab checks the open profile for missing requirements, conflicts, broken or outdated mods, damaged files, duplicates and more. It warns and never blocks Play.

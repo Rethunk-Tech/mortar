@@ -1,3 +1,4 @@
+import { mkdirSync, writeFileSync } from 'node:fs'
 import type { Page } from '@playwright/test'
 import { openGameSelect, openSettings } from './app.ts'
 import type { Case } from './render-budget.ts'
@@ -5,6 +6,7 @@ import type { Helpers } from './renderCases.ts'
 
 const CLOSE_TRIES = 4
 const CLOSE_WAIT_MS = 1000
+const ADOPT_PARENT = '/var/tmp/render-adopt'
 const WIZARD_BUDGET = { updates: 3000 }
 const TYPING_BUDGET = { updates: 2000 }
 
@@ -112,6 +114,7 @@ function dialogKit(h: Helpers) {
   }
   return {
     dialog,
+    shown,
     shareNearby,
     profileMenu,
     switcher,
@@ -164,7 +167,7 @@ function shareCases(kit: ReturnType<typeof dialogKit>): Case[] {
 
 // Home's Tools menu and the Develop tab's New mod wizard, each step measured on its own.
 function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
-  const { dialog, button, pick, inDialog, newModTo, atHome, tab } = kit
+  const { dialog, button, pick, inDialog, newModTo, atHome, tab, shown } = kit
   return [
     dialog(
       'manage-tools',
@@ -215,6 +218,27 @@ function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
         await p.getByRole('button', { name: 'More ways to add a mod project' }).click()
       },
       run: (p) => p.getByRole('menuitem', { name: 'Clone from GitHub…' }).click(),
+    },
+    {
+      name: 'develop-adopt',
+      // The folder picker is native, so its call is answered with a folder of only an asset bundle; Mortar reads that
+      // folder for real and asks what it is.
+      setup: async (p) => {
+        const folder = `${ADOPT_PARENT}/Wallet-OuterWildsItems`
+        mkdirSync(folder, { recursive: true })
+        writeFileSync(`${folder}/wallet.bundle`, 'UnityFS')
+        await p.route('**/wails/runtime', (route) =>
+          route.request().postData()?.includes("Choose the mod project's folder")
+            ? route.fulfill({ contentType: 'application/json', body: JSON.stringify(folder) })
+            : route.fallback(),
+        )
+        await tab(p, 'Develop')
+        await p.getByRole('button', { name: 'More ways to add a mod project' }).click()
+      },
+      run: async (p) => {
+        await p.getByRole('menuitem', { name: 'Add a project folder…' }).click()
+        await shown(p)
+      },
     },
     {
       ...dialog(

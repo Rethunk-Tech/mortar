@@ -15,6 +15,7 @@ import {
 import { useEffect, useState } from 'react'
 import {
   Add,
+  Detect,
   Forget,
   Move,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
@@ -39,6 +40,8 @@ import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
+import { AdoptHost } from './AdoptDialog.tsx'
+import { useAdopting } from './adopting.ts'
 import { refreshInfo, useProjectInfo } from './builds.ts'
 import { CloneDialog } from './CloneDialog.tsx'
 import { GameCodeDialog } from './GameCodeDialog.tsx'
@@ -194,6 +197,11 @@ function useAddFolder(game: string, openId: string) {
         if (!dir) {
           return
         }
+        const found = await Detect(game, dir)
+        if (!found.known) {
+          useAdopting.getState().ask({ game, dir, found })
+          return
+        }
         const project = await Add(game, dir, openId)
         useToasts
           .getState()
@@ -339,6 +347,7 @@ export function DevelopTab({ game }: { game: string }) {
       <CloneDialog open={cloning} game={game} onClose={() => setCloning(false)} />
       <NewModDialog open={creating} game={game} onClose={() => setCreating(false)} />
       <TrustDialog />
+      <AdoptHost />
       {reading && codeHere ? (
         <GameCodeDialog game={game} dir={codeHere.dir} onClose={() => setReading(false)} />
       ) : null}
