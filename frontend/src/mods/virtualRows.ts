@@ -1,7 +1,12 @@
-import { isTypingTarget, type TypingTarget } from '@rethunk/dom-input-nav'
+import {
+  isTypingTarget,
+  TYPE_RESET_MS,
+  type TypingTarget,
+  typeaheadChar,
+  typedMatch,
+} from '@rethunk/dom-input-nav'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { type RefObject, useEffect, useLayoutEffect, useRef } from 'react'
-import { TYPE_RESET_MS, typedKey, typedMatch } from '../shell/typeahead.ts'
 import { useDetail } from './detail.ts'
 import { hiddenByAncestor, toggleCollapsed } from './group.ts'
 import type { ListRow } from './listColumns.ts'
@@ -207,25 +212,6 @@ export function useModVirtual<T>(items: readonly VirtualRow<T>[], lanePx: number
     getItemKey: (index) => items[index]?.key ?? index,
   })
   return { parentRef, virtualizer }
-}
-
-export function typeaheadChar(e: {
-  key: string
-  ctrlKey: boolean
-  altKey: boolean
-  metaKey: boolean
-  target: EventTarget | null
-}): string | undefined {
-  if (e.ctrlKey || e.altKey || e.metaKey || e.key.length !== 1) {
-    return undefined
-  }
-  if (!typedKey(e.key)) {
-    return undefined
-  }
-  if (isTypingTarget(e.target as TypingTarget | null)) {
-    return undefined
-  }
-  return e.key
 }
 
 export function typeaheadQuery(prev: string, at: number, key: string, now: number): string {

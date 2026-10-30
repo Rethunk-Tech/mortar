@@ -1,4 +1,4 @@
-import { typedKey } from '../shell/typeahead.ts'
+import { typedKey } from '@rethunk/dom-input-nav'
 
 interface Listed {
   id: string

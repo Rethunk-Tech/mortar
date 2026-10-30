@@ -1,10 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
-import { isTypingTarget } from '@rethunk/dom-input-nav'
+import { isTypingTarget, TYPE_RESET_MS, typeaheadChar, typedMatch } from '@rethunk/dom-input-nav'
 import { readStored, writeStored } from '@rethunk/react-load-hooks'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import { useSettings } from '../settings/store.ts'
-import { TYPE_RESET_MS, typedKey, typedMatch } from '../shell/typeahead.ts'
 import { listedGames } from './hidden.ts'
 import { gameOrder } from './order.ts'
 
@@ -111,26 +110,25 @@ export function useTypeToScroll(games: Game[], reveal: (id: string) => void) {
     let typed = ''
     let at = 0
     const onKey = (e: KeyboardEvent) => {
-      const { target } = e
-      if (
-        e.ctrlKey ||
-        e.metaKey ||
-        e.altKey ||
-        e.key.length !== 1 ||
-        isTypingTarget(target instanceof HTMLElement ? target : null) ||
-        document.querySelector('[role="dialog"], [role="menu"]')
-      ) {
+      if (document.querySelector('[role="dialog"], [role="menu"]')) {
         return
       }
       const fresh = e.timeStamp - at > TYPE_RESET_MS
-      if (!typedKey(e.key)) {
+      const ch = typeaheadChar(e)
+      if (ch === undefined) {
         // A space inside a name being typed would otherwise press the row that typing just focused.
-        if (e.key === ' ' && !fresh) {
+        const { target } = e
+        if (
+          e.key === ' ' &&
+          !fresh &&
+          !(e.ctrlKey || e.metaKey || e.altKey) &&
+          !isTypingTarget(target instanceof HTMLElement ? target : null)
+        ) {
           e.preventDefault()
         }
         return
       }
-      typed = fresh ? e.key : typed + e.key
+      typed = fresh ? ch : typed + ch
       at = e.timeStamp
       const hit = typedMatch(list.current.games, typed, (g) => g.name)
       if (hit) {

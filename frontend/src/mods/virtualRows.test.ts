@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { TYPE_RESET_MS } from '../shell/typeahead.ts'
+import { TYPE_RESET_MS } from '@rethunk/dom-input-nav'
 import {
   flattenModGroups,
   gridColumnCount,
@@ -8,7 +8,6 @@ import {
   revealMod,
   stepId,
   stuckHeader,
-  typeaheadChar,
   typeaheadQuery,
   virtualIndexOf,
 } from './virtualRows.ts'
@@ -54,34 +53,6 @@ test('flattens grouped list rows, skips collapsed items, lanes for the grid', ()
 test('typed letters and digits add to the search until a pause, and typing in a field is left alone', () => {
   expect(typeaheadQuery('A', 0, 'u', TYPE_RESET_MS + 1)).toBe('u')
   expect(typeaheadQuery('A', 0, 'u', TYPE_RESET_MS - 1)).toBe('Au')
-  const key = (k: string) => ({
-    key: k,
-    ctrlKey: false,
-    altKey: false,
-    metaKey: false,
-    target: null,
-  })
-  expect(typeaheadChar(key('4'))).toBe('4')
-  expect(typeaheadChar(key('.'))).toBeUndefined()
-  expect(typeaheadChar(key(' '))).toBeUndefined()
-  expect(
-    typeaheadChar({
-      key: 'a',
-      ctrlKey: false,
-      altKey: false,
-      metaKey: false,
-      target: { tagName: 'INPUT', isContentEditable: false } as HTMLElement,
-    }),
-  ).toBeUndefined()
-  expect(
-    typeaheadChar({
-      key: 'a',
-      ctrlKey: false,
-      altKey: false,
-      metaKey: false,
-      target: { tagName: 'DIV', isContentEditable: false } as HTMLElement,
-    }),
-  ).toBe('a')
 })
 
 test('stepId clamps at both ends instead of wrapping', () => {
