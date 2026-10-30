@@ -575,3 +575,35 @@ func TestForgetMakesTheNextSearchReadTheSourceAgain(t *testing.T) {
 		t.Fatalf("calls %d after forgetting, want %d: %v", fake.calls, before+1, err)
 	}
 }
+
+type refreshable struct {
+	fakeSource
+	keys []string
+}
+
+func (*refreshable) ID() string { return "refreshable" }
+func (r *refreshable) Refresh(key, _ string) {
+	r.keys = append(r.keys, key)
+}
+
+func TestRefreshDropsTheGamesPagesAndRebuildsStoredListings(t *testing.T) {
+	r := &refreshable{}
+	source.Register(r)
+	g := components.GameInfo{ID: "g", Sources: []components.GameSource{{ID: "fake", Key: "gkey"}, {ID: "refreshable", Key: "rkey"}}}
+	c := &Client{}
+	if _, err := c.search(context.Background(), g, "fake", "refresh", 1, Filter{}); err != nil {
+		t.Fatal(err)
+	}
+	before := fake.calls
+	forgetGame("other")
+	if _, err := c.search(context.Background(), g, "fake", "refresh", 1, Filter{}); err != nil || fake.calls != before {
+		t.Fatalf("another game's refresh dropped this game's page: %d calls, want %d", fake.calls, before)
+	}
+	refreshGame(g, "v")
+	if _, err := c.search(context.Background(), g, "fake", "refresh", 1, Filter{}); err != nil || fake.calls != before+1 {
+		t.Fatalf("calls %d after the game's refresh, want %d: %v", fake.calls, before+1, err)
+	}
+	if fmt.Sprint(r.keys) != "[rkey]" {
+		t.Fatalf("stored listings rebuilt for %v, want [rkey]", r.keys)
+	}
+}

@@ -9,6 +9,7 @@ import { parsePicks } from './browsePicks.ts'
 import { effectiveSort, sortsFor } from './browseSort.ts'
 import { clampPage, PAGE_SIZE, pageKeeping, screenSpan } from './browseState.ts'
 import type { BrowseFilter, BrowseItem, BrowsePageProps } from './browseTypes.ts'
+import { onBrowseRefresh } from './refresh.ts'
 import { hitKey, useBrowseSelection } from './selection.ts'
 import { useBrowseView } from './view.ts'
 
@@ -154,6 +155,20 @@ function useKeepScreen(
   }, [size, setPage])
 }
 
+// A source's data refreshed behind the answers on screen, or the player asked for a refresh: search again for the
+// current query.
+function useSearchAgainOnRefresh(setRetry: Dispatch<SetStateAction<number>>) {
+  useEffect(() => {
+    const again = () => setRetry((n) => n + 1)
+    const off = [Events.On('browse:refreshed', again), onBrowseRefresh(again)]
+    return () => {
+      for (const stop of off) {
+        stop()
+      }
+    }
+  }, [setRetry])
+}
+
 function useBrowseQuery({
   game,
   profileID,
@@ -202,8 +217,7 @@ function useBrowseQuery({
   const [page, setPage] = useState(FIRST_PAGE)
   const [retry, setRetry] = useState(0)
   const hides = useBrowseView((s) => s.hides)
-  // A source's data refreshed behind the answers on screen: search again for the current query.
-  useEffect(() => Events.On('browse:refreshed', () => setRetry((n) => n + 1)), [])
+  useSearchAgainOnRefresh(setRetry)
   const [result, setResult] = useState<BrowseResult>(EMPTY_RESULT)
   const [status, setStatus] = useState<Status>('idle')
   const [error, setError] = useState<InlineError | null>(null)

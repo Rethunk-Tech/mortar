@@ -112,6 +112,26 @@ func OnRefreshed(f func(key string)) {
 	onRefreshed = f
 }
 
+// Refresh rebuilds the community's stored listing now, without waiting for the refresh window; searches keep answering
+// from the stored one until the rebuild lands.
+func (d Driver) Refresh(key, version string) {
+	if !communityKey.MatchString(key) {
+		return
+	}
+	dir := filepath.Join(d.cacheRoot(), "thunderstore")
+	var meta cacheMeta
+	if b, err := safefs.ReadFile(filepath.Join(dir, key+".meta.json")); err == nil && json.Unmarshal(b, &meta) == nil && meta.Hash != "" {
+		meta.Fetched = time.Time{}
+		if nm, err := json.Marshal(meta); err == nil {
+			_ = safefs.WriteFileAtomic(filepath.Join(dir, key+".meta.json"), nm, 0o644)
+		}
+	}
+	refreshMu.Lock()
+	delete(refreshTried, d.cacheRoot()+"|"+key)
+	refreshMu.Unlock()
+	d.refreshInBackground(context.Background(), key, source.UserAgentWithSite(version))
+}
+
 func (d Driver) storedHash(key string) string {
 	var meta cacheMeta
 	if b, err := safefs.ReadFile(filepath.Join(d.cacheRoot(), "thunderstore", key+".meta.json")); err == nil {

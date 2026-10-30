@@ -314,3 +314,14 @@ func TestAChunkOverTheCapIsRefusedAsTooLarge(t *testing.T) {
 		t.Fatalf("err = %v, want ErrTooLarge", err)
 	}
 }
+
+func TestRefreshRebuildsAFreshListingNow(t *testing.T) {
+	f := newFake(t)
+	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
+	q := source.Query{Key: "lethal-company", Text: "library", Page: 1, Version: "1.2.3"}
+	if _, err := d.Search(t.Context(), q); err != nil {
+		t.Fatal(err)
+	}
+	d.Refresh("lethal-company", "1.2.3")
+	waitFor(t, func() bool { return f.indexHits.Load() == 2 })
+}

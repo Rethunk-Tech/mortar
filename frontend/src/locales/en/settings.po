@@ -242,10 +242,6 @@ msgstr "Use the system title bar"
 msgid "A ripple spreads from where you press a button. Off, the button only changes shade."
 msgstr "A ripple spreads from where you press a button. Off, the button only changes shade."
 
-#: src/settings/shortcutLabels.ts
-msgid "Check mods and Mortar for updates"
-msgstr "Check mods and Mortar for updates"
-
 #: src/settings/sections/Downloads.tsx
 msgid "Opening a {scheme}:// link, such as Install with Mod Manager, installs the mod in Mortar."
 msgstr "Opening a {scheme}:// link, such as Install with Mod Manager, installs the mod in Mortar."
@@ -861,6 +857,10 @@ msgstr "Shared by every game"
 #: src/settings/nexus.ts
 msgid "{source} API requests are running low"
 msgstr "{source} API requests are running low"
+
+#: src/settings/shortcutLabels.ts
+msgid "Check mods and Mortar for updates, or refresh Browse"
+msgstr "Check mods and Mortar for updates, or refresh Browse"
 
 #: src/settings/SettingsPage.tsx
 msgid "Accounts"

@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { refreshBrowse } from '../browse/refresh.ts'
 import { useCommandPalette } from '../commandPalette/store.ts'
 import { useConsole } from '../console/store.ts'
 import { useRenameRequest } from '../game/renameRequest.ts'
@@ -60,8 +61,15 @@ export function runShortcut(id: ShortcutId) {
       return requestFilterFocus()
     case 'play':
       return playOpenProfile()
-    case 'check-updates':
+    case 'check-updates': {
+      // On the Browse tab the same key refreshes what Browse shows.
+      const { route } = useNav.getState()
+      const game = routeGame(route)
+      if (game && useTab.getState().tab === 'browse') {
+        return refreshBrowse(game).catch(reportUnexpected)
+      }
       return checkForUpdates()
+    }
     case 'open-settings':
       return useNav.getState().openSettings()
     case 'tab-browse':

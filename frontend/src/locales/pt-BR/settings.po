@@ -242,10 +242,6 @@ msgstr ""
 msgid "A ripple spreads from where you press a button. Off, the button only changes shade."
 msgstr ""
 
-#: src/settings/shortcutLabels.ts
-msgid "Check mods and Mortar for updates"
-msgstr ""
-
 #: src/settings/sections/Downloads.tsx
 msgid "Opening a {scheme}:// link, such as Install with Mod Manager, installs the mod in Mortar."
 msgstr ""
@@ -860,6 +856,10 @@ msgstr ""
 
 #: src/settings/nexus.ts
 msgid "{source} API requests are running low"
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Check mods and Mortar for updates, or refresh Browse"
 msgstr ""
 
 #: src/settings/SettingsPage.tsx

@@ -2,6 +2,7 @@ package browse
 
 import (
 	"context"
+	"fmt"
 	"slices"
 	"strings"
 
@@ -58,6 +59,31 @@ func (s *Service) Search(ctx context.Context, game, sourceID, text string, page 
 		c.Installed, c.Bundled, c.Identity = h.Has, h.Bundled, h.Identity
 	}
 	return c.Search(ctx, game, sourceID, text, page, filter)
+}
+
+// refresher is a source that keeps a stored copy of its listing and can rebuild it on demand.
+type refresher interface{ Refresh(key, version string) }
+
+// Refresh makes the next search of game read every source again: its remembered pages are dropped and each source that
+// stores a listing rebuilds it now. A rebuilt listing announces itself with RefreshedEvent.
+func (s *Service) Refresh(game string) error {
+	info, ok := catalogGame(game)
+	if !ok {
+		return fmt.Errorf("%w: game %q", ErrUnknownSource, game)
+	}
+	refreshGame(info, s.Version)
+	return nil
+}
+
+func refreshGame(info components.GameInfo, version string) {
+	forgetGame(info.ID)
+	for _, gs := range info.Sources {
+		if e, ok := source.Get(gs.ID); ok {
+			if r, ok := e.Source.(refresher); ok {
+				r.Refresh(gs.Key, version)
+			}
+		}
+	}
 }
 
 // Categories lists the category names of sourceID (or of every source) for the filter pickers.

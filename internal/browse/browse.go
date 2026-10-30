@@ -242,13 +242,19 @@ const RefreshedEvent = "browse:refreshed"
 
 // Forget drops what is remembered of the source's answers (pages and where each visible page ended), for when the
 // source's own data changed under them: a search then reads it again.
-func Forget(id string) {
-	prefix := id + "|"
+func Forget(id string) { forgetWhere(func(parts []string) bool { return parts[0] == id }) }
+
+// forgetGame drops what is remembered of every source's answers for the game.
+func forgetGame(game string) { forgetWhere(func(parts []string) bool { return parts[1] == game }) }
+
+// forgetWhere drops the remembered answers whose key (source id, game, ...) the match accepts.
+func forgetWhere(match func(parts []string) bool) {
+	drop := func(k string) bool { return match(strings.SplitN(k, "|", 3)) }
 	topMu.Lock()
-	maps.DeleteFunc(topCache, func(k string, _ topEntry) bool { return strings.HasPrefix(k, prefix) })
+	maps.DeleteFunc(topCache, func(k string, _ topEntry) bool { return drop(k) })
 	topMu.Unlock()
 	cursorMu.Lock()
-	maps.DeleteFunc(cursors, func(k string, _ cursorEntry) bool { return strings.HasPrefix(k, prefix) })
+	maps.DeleteFunc(cursors, func(k string, _ cursorEntry) bool { return drop(k) })
 	cursorMu.Unlock()
 }
 
