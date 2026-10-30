@@ -75,6 +75,9 @@ msgstr ""
 msgid "Mods with errors: {count}"
 msgstr ""
 
+msgid "Mortar cannot edit this file: it is UTF-16 or holds a NUL byte."
+msgstr ""
+
 msgid "Mortar could not start:\n\n{error}\n\nThe details are in mortar.log in Mortar's data folder."
 msgstr ""
 
