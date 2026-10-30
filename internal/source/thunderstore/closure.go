@@ -7,31 +7,20 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-semverish"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
+	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
 func packageID(namespace, name string) string { return strings.ToLower(namespace + "-" + name) }
 
-// versionParts reads "1.2.3" as numbers; a part that is not a number counts as 0.
-func versionParts(v string) [3]int {
-	var out [3]int
-	for i, s := range strings.SplitN(v, ".", 3) {
-		out[i], _ = strconv.Atoi(s)
-	}
-	return out
-}
-
-func newer(a, b string) bool {
-	pa, pb := versionParts(a), versionParts(b)
-	for i := range pa {
-		if pa[i] != pb[i] {
-			return pa[i] > pb[i]
-		}
-	}
-	return false
+// parseVersion reads a version; one that does not parse counts as 0.0.
+func parseVersion(v string) semverish.Version {
+	pv, _ := semverish.Parse(v)
+	return pv
 }
 
 // pick is the version of p that ref asks for: the newest when it names none or, unless exactDeps, when it is a
@@ -42,16 +31,16 @@ func pick(p pkg, ref Ref, minimum bool) (string, error) {
 	id := packageID(p.Owner, p.Name)
 	if components.IsBepInExPackage(p.Owner + "-" + p.Name) {
 		major := components.LoaderPackageMajor(p.Owner + "-" + p.Name)
-		series, inSeries := "5.4.x", func(v [3]int) bool { return v[0] == 5 && v[1] == 4 }
+		series, inSeries := "5.4.x", func(v semverish.Version) bool { return v.Major == 5 && v.Minor == 4 }
 		if major != 5 {
-			series, inSeries = strconv.Itoa(major)+".x", func(v [3]int) bool { return v[0] == major }
+			series, inSeries = strconv.Itoa(major)+".x", func(v semverish.Version) bool { return v.Major == major }
 		}
-		if ref.Version != "" && versionParts(ref.Version)[0] != major {
+		if ref.Version != "" && parseVersion(ref.Version).Major != major {
 			return "", fmt.Errorf("%s asks for %s %s, but Mortar runs BepInEx %s", id, p.Name, ref.Version, series)
 		}
 		best := ""
 		for _, v := range p.Versions {
-			if inSeries(versionParts(v.Number)) && (best == "" || newer(v.Number, best)) {
+			if inSeries(parseVersion(v.Number)) && (best == "" || meta.Newer(v.Number, best)) {
 				best = v.Number
 			}
 		}
@@ -65,11 +54,11 @@ func pick(p pkg, ref Ref, minimum bool) (string, error) {
 		if v.Number == ref.Version && !minimum {
 			return v.Number, nil
 		}
-		if best == "" || newer(v.Number, best) {
+		if best == "" || meta.Newer(v.Number, best) {
 			best = v.Number
 		}
 	}
-	if best == "" || (ref.Version != "" && (!minimum || newer(ref.Version, best))) {
+	if best == "" || (ref.Version != "" && (!minimum || meta.Newer(ref.Version, best))) {
 		return "", fmt.Errorf("%s %s is not in the index", id, ref.Version)
 	}
 	return best, nil
@@ -188,7 +177,7 @@ func (w *walk) visit(ref Ref, chain []string) error {
 	if err != nil {
 		return fmt.Errorf("%w (requested by %s)", err, via)
 	}
-	if cur := w.chosen[id]; cur == "" || newer(v, cur) {
+	if cur := w.chosen[id]; cur == "" || meta.Newer(v, cur) {
 		w.chosen[id] = v
 		w.raised = w.raised || cur != ""
 	}

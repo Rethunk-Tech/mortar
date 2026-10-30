@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/deps"
+	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
@@ -128,9 +129,9 @@ func versionsOf(p pkg) []string {
 	}
 	slices.SortStableFunc(out, func(a, b string) int {
 		switch {
-		case newer(a, b):
+		case meta.Newer(a, b):
 			return -1
-		case newer(b, a):
+		case meta.Newer(b, a):
 			return 1
 		}
 		return 0

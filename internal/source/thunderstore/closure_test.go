@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
@@ -216,5 +217,11 @@ func TestClosureNamesTheMissingDependency(t *testing.T) {
 	got, err := d.Closure(t.Context(), "lethal-company", []Ref{{"Ns", "Lost", ""}}, "1.2.3", DepsNewest)
 	if err != nil || len(got) != 1 || len(got[0].Missing) != 1 || got[0].Missing[0] != "Ghost-Pkg" {
 		t.Fatalf("got %+v, %v", got, err)
+	}
+}
+
+func TestParseVersionPrereleaseIsOlder(t *testing.T) {
+	if meta.Newer("1.0.0-beta", "1.0.0") || !meta.Newer("1.0.0", "1.0.0-beta") {
+		t.Fatal("a prerelease should rank below its release")
 	}
 }
