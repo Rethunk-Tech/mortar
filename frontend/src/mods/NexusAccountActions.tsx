@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
+import { useLoaded } from '@rethunk/react-load-hooks'
 import { Bell, BellOff, ThumbsDown, ThumbsUp } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import {
@@ -13,7 +14,6 @@ import {
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { currentGame } from '../nav/currentGame.ts'
 import { useNexus } from '../settings/nexus.ts'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { errorDetails, errorKind } from '../toasts/errorKind.ts'
 import { errorMessage, toastError } from '../toasts/report.ts'

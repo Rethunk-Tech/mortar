@@ -1,5 +1,5 @@
+import { useDebouncedLoad } from '@rethunk/react-load-hooks'
 import type { RunSearch } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
-import { useDebouncedLoad } from '../shell/useDebouncedLoad.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 
 const SEARCH_DEBOUNCE_MS = 250

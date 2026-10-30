@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
+import { useLoaded } from '@rethunk/react-load-hooks'
 import type { KeyboardEvent } from 'react'
 import type { File } from '../../bindings/github.com/Rethunk-Tech/go-nexusmods/models.ts'
 import type {
@@ -9,7 +10,6 @@ import type {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { OverlayFiles } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { entryOf } from './lookup.ts'

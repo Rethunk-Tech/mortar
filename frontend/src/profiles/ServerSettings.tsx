@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, MenuItem, TextField, Typography } from '@mui/material'
+import { useLoaded } from '@rethunk/react-load-hooks'
 import { useId, useState } from 'react'
 import type { ServerSetting } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/packsvc/models.ts'
 import {
@@ -8,7 +9,6 @@ import {
   SetServerSetting,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/packsvc/service.ts'
 import { Field, FormSection, SelectField } from '../shell/dialog/FormDialog.tsx'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { listProfiles } from './listProfiles.ts'

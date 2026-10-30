@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box } from '@mui/material'
+import { useLoaded } from '@rethunk/react-load-hooks'
 import {
   ChevronDown,
   ChevronUp,
@@ -19,7 +20,6 @@ import { PageActions } from '../game/PageActions.tsx'
 import { useProfileLoader, useProfiles } from '../profiles/store.ts'
 import { copyText } from '../share/copyText.ts'
 import { IconAction } from '../shell/IconAction.tsx'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { firstError, formatAll } from './filter.ts'
 import { useLineText } from './lineText.ts'

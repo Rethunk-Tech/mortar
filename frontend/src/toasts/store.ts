@@ -1,5 +1,5 @@
+import { readStored, writeStored } from '@rethunk/react-load-hooks'
 import { create } from 'zustand'
-import { readStored, writeStored } from '../shell/useStoredState.ts'
 import { HISTORY_CAP, type HistoryActionState, prependHistory } from './history.ts'
 
 const QUICK_MS = 5000

@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box } from '@mui/material'
+import { useStoredState } from '@rethunk/react-load-hooks'
 import { type ReactNode, useState } from 'react'
 import type {
   FrameSummary,
@@ -7,7 +8,6 @@ import type {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { BEPINEX, HARMONY } from '../brand/productNames.ts'
 import { useProfileLoader, useProfiles } from '../profiles/store.ts'
-import { useStoredState } from '../shell/useStoredState.ts'
 import { space } from '../theme/density.ts'
 import { formatTiming } from './formatTiming.ts'
 import { MeasuredPanel, PerformanceEmpty } from './PerformancePanelParts.tsx'

@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Alert, Box, Button, Typography } from '@mui/material'
+import { useLoaded } from '@rethunk/react-load-hooks'
 import { PickFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
@@ -8,7 +9,6 @@ import {
   MoveToFolder,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'

@@ -1,7 +1,7 @@
+import { useLoaded } from '@rethunk/react-load-hooks'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import type { CollectionStatus } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/models.ts'
 import { CollectionStatus as loadCollectionStatus } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/service.ts'
-import { useLoaded } from '../shell/useLoaded.ts'
 import type { CollectionLink } from './collectionHeader.ts'
 
 function fallbackStatus(profile: Profile): CollectionLink | null {

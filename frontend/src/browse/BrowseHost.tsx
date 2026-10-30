@@ -1,3 +1,4 @@
+import { useLoaded } from '@rethunk/react-load-hooks'
 import {
   Categories,
   DefaultExcludes,
@@ -8,7 +9,6 @@ import {
 import { openPage } from '../mods/menu.ts'
 import { download } from '../queue/actions.ts'
 import { useNexus } from '../settings/nexus.ts'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { BrowsePage } from './BrowsePage.tsx'
 import type { BrowseSearch, BrowseSource } from './browseTypes.ts'

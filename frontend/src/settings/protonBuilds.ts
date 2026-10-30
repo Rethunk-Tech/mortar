@@ -1,5 +1,5 @@
+import { useLoaded } from '@rethunk/react-load-hooks'
 import { ProtonBuilds } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 
 // The Proton builds Steam has that the game's copy could run through; none unless it is a Windows copy outside Steam

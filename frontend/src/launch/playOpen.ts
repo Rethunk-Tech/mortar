@@ -1,3 +1,4 @@
+import { readStored, writeStored } from '@rethunk/react-load-hooks'
 import { System } from '@wailsio/runtime'
 import { create } from 'zustand'
 import { State } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
@@ -5,7 +6,6 @@ import { ForcesLoader } from '../../bindings/github.com/Rethunk-Tech/mortar/inte
 import { useLoader } from '../loader/store.ts'
 import { routeGame, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { readStored, writeStored } from '../shell/useStoredState.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { playDirect } from './directPref.ts'
 import { useLaunch } from './store.ts'

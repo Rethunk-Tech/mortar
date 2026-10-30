@@ -1,6 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Chip, Link, Typography } from '@mui/material'
+import { useLoaded } from '@rethunk/react-load-hooks'
 import {
   Download,
   Gamepad2,
@@ -26,7 +27,6 @@ import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { openPage } from '../mods/menu.ts'
 import { PageLink } from '../share/CollectionNotes.tsx'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { groupNotes, type NoteArea, type NoteKind, type NoteLine } from './releaseNotes.ts'

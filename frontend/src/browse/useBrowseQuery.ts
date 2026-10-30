@@ -1,7 +1,7 @@
+import { useLoaded } from '@rethunk/react-load-hooks'
 import { Events } from '@wailsio/runtime'
 import { type Dispatch, type SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
 import { useSettings } from '../settings/store.ts'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { type InlineError, inlineError } from '../toasts/report.ts'
 import { ALL, FIRST_PAGE } from './browseConstants.ts'
 import { parseModes } from './browseModes.ts'

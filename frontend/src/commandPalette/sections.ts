@@ -1,4 +1,4 @@
-import { readStored, writeStored } from '../shell/useStoredState.ts'
+import { readStored, writeStored } from '@rethunk/react-load-hooks'
 import { matchPaletteItems, type PaletteItem } from './match.ts'
 
 // The order the sections appear in; the last is the one a long result list cuts.

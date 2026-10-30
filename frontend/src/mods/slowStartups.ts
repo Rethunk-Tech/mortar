@@ -1,7 +1,7 @@
+import { useLoaded } from '@rethunk/react-load-hooks'
 import { StartupReports } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { type SlowStartup, slowStartups } from '../console/startupView.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useMods } from './store.ts'
 

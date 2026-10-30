@@ -2,6 +2,7 @@ import type { MessageDescriptor } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box } from '@mui/material'
+import { useLoaded } from '@rethunk/react-load-hooks'
 import { useEffect, useRef, useState } from 'react'
 import {
   GameSettings as GetGameSettings,
@@ -15,7 +16,6 @@ import {
 import { useGameInfo } from '../../games/info.ts'
 import { formSettingsFromBackend } from '../../profiles/formSettingsFromBackend.ts'
 import { GameSettings, type GameSettingsValues } from '../../profiles/GameSettings.tsx'
-import { useLoaded } from '../../shell/useLoaded.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { PrefSelect, PrefSwitch } from '../PrefControls.tsx'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'

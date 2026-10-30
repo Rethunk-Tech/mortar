@@ -8,6 +8,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
+import { useWidth } from '@rethunk/react-load-hooks'
 import { ChevronDown, CircleCheck, CircleX, Folder, FolderPlus, RefreshCw, X } from 'lucide-react'
 import { useState } from 'react'
 import type { StoreApp } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
@@ -20,7 +21,6 @@ import { LauncherLogo } from '../brand/launchers/LauncherLogo.tsx'
 import { BOTTLES, HEROIC, LUTRIS, WINDOWS } from '../brand/productNames.ts'
 import { listNames } from '../i18n/list.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
-import { useWidth } from '../shell/useWidth.ts'
 import { space } from '../theme/density.ts'
 import { type InlineError, inlineError } from '../toasts/report.ts'
 

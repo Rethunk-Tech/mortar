@@ -1,4 +1,4 @@
-import { readStored, writeStored } from './useStoredState.ts'
+import { readStored, writeStored } from '@rethunk/react-load-hooks'
 
 // Redirects on Mortar's site to Discord's permanent invites, so a moved channel needs only a site change.
 export const GO = 'https://mortar.rethunk.tech/go/'

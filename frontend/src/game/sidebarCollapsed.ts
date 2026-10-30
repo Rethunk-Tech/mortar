@@ -1,6 +1,6 @@
 import { useMediaQuery } from '@mui/material'
+import { readStored, writeStored } from '@rethunk/react-load-hooks'
 import { create } from 'zustand'
-import { readStored, writeStored } from '../shell/useStoredState.ts'
 import { compactQuery } from './compact.ts'
 
 const KEY = 'mortar.sidebarCollapsed'

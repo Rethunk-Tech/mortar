@@ -1,4 +1,4 @@
-import { useLoaded } from '../shell/useLoaded.ts'
+import { useLoaded } from '@rethunk/react-load-hooks'
 import { errorMessage } from '../toasts/report.ts'
 
 // The source's category names, empty while loading, when the source has none, or when the lookup fails; `why` is the

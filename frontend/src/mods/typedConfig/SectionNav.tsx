@@ -1,9 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, IconButton, Typography } from '@mui/material'
+import { readStored, writeStored } from '@rethunk/react-load-hooks'
 import { PanelRightClose, PanelRightOpen } from 'lucide-react'
 import { type RefObject, useEffect, useState } from 'react'
 import { Tooltip } from '../../shell/Tooltip.tsx'
-import { readStored, writeStored } from '../../shell/useStoredState.ts'
 import { space } from '../../theme/density.ts'
 
 const OPEN_KEY = 'mortar.configSectionNav'

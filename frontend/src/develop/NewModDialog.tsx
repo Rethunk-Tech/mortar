@@ -10,6 +10,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from '@mui/material'
+import { readStored, writeStored } from '@rethunk/react-load-hooks'
 import { Hammer } from 'lucide-react'
 import { memo, useCallback, useEffect, useId, useState } from 'react'
 import type {
@@ -28,7 +29,6 @@ import { useGameInfo } from '../games/info.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { Field, FieldRow, FormDialog, SelectField, TextInput } from '../shell/dialog/FormDialog.tsx'
-import { readStored, writeStored } from '../shell/useStoredState.ts'
 import { space } from '../theme/density.ts'
 import { reportError, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'

@@ -1,4 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
+import { useLoaded } from '@rethunk/react-load-hooks'
 import { type ReactNode, useState } from 'react'
 import {
   DeclineOffer,
@@ -8,7 +9,6 @@ import {
 import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
 import { nxmOwner } from '../../shell/sharedReads.ts'
-import { useLoaded } from '../../shell/useLoaded.ts'
 import { toastError } from '../../toasts/report.ts'
 import { useSettings } from '../store.ts'
 

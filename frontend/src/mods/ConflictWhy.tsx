@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
+import { useLoaded } from '@rethunk/react-load-hooks'
 import { type ReactNode, useEffect, useState } from 'react'
 import type {
   AssetConflict,
@@ -11,7 +12,6 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import { listNames } from '../i18n/list.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 

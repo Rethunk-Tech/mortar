@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Button, IconButton, Menu } from '@mui/material'
+import { useLoaded } from '@rethunk/react-load-hooks'
 import {
   BellOff,
   ExternalLink,
@@ -25,7 +26,6 @@ import { MenuAction } from '../../shell/MenuAction.tsx'
 import { OfflineGate } from '../../shell/OfflineGate.tsx'
 import { updateSources, useOfflineReason } from '../../shell/offlineText.ts'
 import { StableLabel } from '../../shell/StableLabel.tsx'
-import { useLoaded } from '../../shell/useLoaded.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { installableUpdate } from '../lookup.ts'
 import { ICON_SIZE, openPage } from '../menu.ts'

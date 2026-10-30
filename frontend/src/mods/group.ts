@@ -1,8 +1,8 @@
+import { readStored, writeStored } from '@rethunk/react-load-hooks'
 import type {
   CustomCategory,
   Entry,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { readStored, writeStored } from '../shell/useStoredState.ts'
 import { cmpText } from './cmpText.ts'
 import { idKey } from './dependents.ts'
 

@@ -1,6 +1,6 @@
+import { useDebouncedValue } from '@rethunk/react-load-hooks'
 import { memo, useEffect, useState } from 'react'
 import { SearchField } from '../../shell/SearchField.tsx'
-import { useDebouncedValue } from '../../shell/useDebouncedValue.ts'
 
 // How long typing pauses before the mods and settings re-filter, so a word typed at speed filters them once.
 const SEARCH_SETTLE_MS = 150

@@ -1,7 +1,7 @@
 import { i18n } from '@lingui/core'
+import { useNowValue } from '@rethunk/react-load-hooks'
 import type { ReactNode } from 'react'
 import { formatWhen } from './formatWhen.ts'
-import { useNowValue } from './useNow.ts'
 import { absoluteWhen } from './when.ts'
 
 interface WhenProps {

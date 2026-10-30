@@ -11,6 +11,7 @@ import {
   ToggleButtonGroup,
   Typography,
 } from '@mui/material'
+import { useDebouncedLoad, useLoaded } from '@rethunk/react-load-hooks'
 import { CircleAlert, Code, Copy, FileSearch, Search } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type {
@@ -34,8 +35,6 @@ import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { labelledInput } from '../shell/labelledInput.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
-import { useDebouncedLoad } from '../shell/useDebouncedLoad.ts'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
 import {

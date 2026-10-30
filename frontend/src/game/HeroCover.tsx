@@ -1,8 +1,8 @@
 import { Box } from '@mui/material'
+import { useLoaded } from '@rethunk/react-load-hooks'
 import { useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { Covers } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { firstCoverSrc } from './cover.ts'
 

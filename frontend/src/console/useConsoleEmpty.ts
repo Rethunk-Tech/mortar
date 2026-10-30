@@ -1,6 +1,6 @@
+import { useLoaded } from '@rethunk/react-load-hooks'
 import { useLaunch } from '../launch/store.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { listRuns } from './listRuns.ts'
 import { useShownEntries } from './logHooks.ts'
 import { canSendTo, useConsole } from './store.ts'

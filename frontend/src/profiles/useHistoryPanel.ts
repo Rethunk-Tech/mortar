@@ -1,3 +1,4 @@
+import { useLoaded } from '@rethunk/react-load-hooks'
 import { type Dispatch, type SetStateAction, useEffect, useState } from 'react'
 import type {
   HistoryDiff,
@@ -11,7 +12,6 @@ import {
   RestoreKnownGood,
   RevertHistoryItem,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { selectedPair } from './historyDiff.ts'
 import { pushMissingToast, revertHistoryEvent } from './historyRevert.ts'

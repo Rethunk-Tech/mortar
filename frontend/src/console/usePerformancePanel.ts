@@ -1,3 +1,4 @@
+import { useLoaded } from '@rethunk/react-load-hooks'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type {
   PerformanceRow,
@@ -11,7 +12,6 @@ import {
 import { useLaunch } from '../launch/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { copyText } from '../share/copyText.ts'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { canSendTo, useConsole } from './store.ts'
 

@@ -8,6 +8,7 @@ import {
   Button,
   Typography,
 } from '@mui/material'
+import { useLoaded } from '@rethunk/react-load-hooks'
 import { Events } from '@wailsio/runtime'
 import { ChevronDown, ExternalLink, Plus } from 'lucide-react'
 import { memo, useEffect } from 'react'
@@ -20,7 +21,6 @@ import { currentGame } from '../nav/currentGame.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { openImport } from '../share/store.ts'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { LockedReason } from './LockedReason.tsx'

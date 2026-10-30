@@ -1,8 +1,8 @@
+import { useLoaded } from '@rethunk/react-load-hooks'
 import { Events } from '@wailsio/runtime'
 import { useEffect, useRef } from 'react'
 import type { Backup } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/backup/models.ts'
 import { ListBackups } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 
 // Every backup of the game's saves, read once for the whole page so each save's button can count its own; null until

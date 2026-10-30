@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
+import { useLoaded } from '@rethunk/react-load-hooks'
 import { type ReactNode, useCallback, useMemo } from 'react'
 import type { Entry } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import {
@@ -9,7 +10,6 @@ import {
 import { openMod } from '../mods/openMod.ts'
 import { useUpdates } from '../mods/updates.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'

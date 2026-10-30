@@ -1,4 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
+import { readStored } from '@rethunk/react-load-hooks'
 import { useEffect, useState } from 'react'
 import type { AssetKind } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/components/models.ts'
 import type { Form } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
@@ -6,7 +7,6 @@ import {
   AssetForm,
   AssetKinds,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
-import { readStored } from '../shell/useStoredState.ts'
 import { reportError } from '../toasts/report.ts'
 import { useProjectInfo } from './builds.ts'
 import { findPackage } from './dependencies.ts'

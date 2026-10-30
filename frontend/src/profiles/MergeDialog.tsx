@@ -10,6 +10,7 @@ import {
   RadioGroup,
   Typography,
 } from '@mui/material'
+import { useLoaded } from '@rethunk/react-load-hooks'
 import { useId, useState } from 'react'
 import type {
   MergePreview as Merged,
@@ -23,7 +24,6 @@ import { useOrderedProfiles } from '../game/useSidebarProfiles.ts'
 import { applyWithUndo } from '../mods/menu.ts'
 import { lockedIn, useLaunchLocks } from '../mods/useLocked.ts'
 import { FormDialog, SelectField } from '../shell/dialog/FormDialog.tsx'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'

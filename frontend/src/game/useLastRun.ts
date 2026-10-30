@@ -1,7 +1,7 @@
+import { useLoaded } from '@rethunk/react-load-hooks'
 import { LastRunStarted } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { profileCardLastPlayedIso } from '../games/profileCardLastPlayed.ts'
 import { useSettings } from '../settings/store.ts'
-import { useLoaded } from '../shell/useLoaded.ts'
 
 const inFlight = new Map<string, { updated: string; started: Promise<string> }>()
 

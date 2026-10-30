@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, List, ListItem, ListItemText, Typography } from '@mui/material'
+import { useLoaded } from '@rethunk/react-load-hooks'
 import { useState } from 'react'
 import type {
   HiddenMod,
@@ -15,7 +16,6 @@ import { SMAPI } from '../brand/productNames.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { LockedReason } from './LockedReason.tsx'

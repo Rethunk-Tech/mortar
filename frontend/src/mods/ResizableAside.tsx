@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box } from '@mui/material'
+import { useStoredState } from '@rethunk/react-load-hooks'
 import { type PointerEvent, type ReactNode, useRef, useState } from 'react'
-import { useStoredState } from '../shell/useStoredState.ts'
 import {
   clampPanelWidth,
   isWidth,

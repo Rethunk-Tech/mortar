@@ -13,6 +13,7 @@ import {
   TableRow,
   TableSortLabel,
 } from '@mui/material'
+import { useStoredState } from '@rethunk/react-load-hooks'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { useState } from 'react'
 import type {
@@ -23,7 +24,6 @@ import { BEPINEX, SMAPI } from '../brand/productNames.ts'
 import { cmpText } from '../mods/cmpText.ts'
 import { openModHandlers } from '../mods/openMod.ts'
 import { Tooltip } from '../shell/Tooltip.tsx'
-import { useStoredState } from '../shell/useStoredState.ts'
 import { space } from '../theme/density.ts'
 import { useDuration, useSmapiStartup, useWhy } from './startupHooks.ts'
 import { foldMods, modsMs, modTotal, rowAnchor, slowestEvent, whyOf } from './startupView.ts'

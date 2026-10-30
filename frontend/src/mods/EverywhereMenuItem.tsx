@@ -1,9 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
+import { useLoaded } from '@rethunk/react-load-hooks'
 import { RefreshCcw } from 'lucide-react'
 import type { EverywherePreview } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { PreviewEverywhere } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { ICON_SIZE } from './menu.ts'
 
 export function EverywhereMenuItem({

@@ -1,6 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Alert, Box, Button, Chip, InputBase, Menu } from '@mui/material'
+import { useLoaded } from '@rethunk/react-load-hooks'
 import {
   ArrowDownToLine,
   ChevronDown,
@@ -25,7 +26,6 @@ import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { MenuCheck, MenuNote } from '../shell/MenuAction.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { MONO, PAD_FOCUS } from '../theme/theme.ts'
 import { TipBanner } from '../tips/TipBanner.tsx'

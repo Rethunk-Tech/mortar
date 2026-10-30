@@ -1,10 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
+import { readStored, writeStored } from '@rethunk/react-load-hooks'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import { isTypingTarget } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
 import { TYPE_RESET_MS, typedKey, typedMatch } from '../shell/typeahead.ts'
-import { readStored, writeStored } from '../shell/useStoredState.ts'
 import { listedGames } from './hidden.ts'
 import { gameOrder } from './order.ts'
 

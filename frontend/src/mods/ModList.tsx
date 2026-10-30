@@ -1,6 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { alpha, Box, TableRow, useMediaQuery } from '@mui/material'
+import { useWidth } from '@rethunk/react-load-hooks'
 import { CornerDownRight, Pin } from 'lucide-react'
 import {
   type ComponentProps,
@@ -23,7 +24,6 @@ import { When } from '../i18n/When.tsx'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { boundShortcut, type ShortcutId } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
-import { useWidth } from '../shell/useWidth.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { actingMods, toggleActing } from './actingMods.ts'

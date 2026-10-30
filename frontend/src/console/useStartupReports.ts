@@ -1,4 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
+import { useLoaded } from '@rethunk/react-load-hooks'
 import { useCallback, useEffect } from 'react'
 import type { StartupReport } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import {
@@ -8,7 +9,6 @@ import {
   StartupReports,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { useLaunch } from '../launch/store.ts'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 
 /** The profile's startup reports, reloaded whenever a launch ends (the bridge writes one at the title screen). */

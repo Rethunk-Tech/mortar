@@ -1,6 +1,6 @@
+import { useLoaded } from '@rethunk/react-load-hooks'
 import type { ProfileBudget } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/datasvc/models.ts'
 import { ProfileBudgets } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/datasvc/service.ts'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 
 // Disk use per profile of the open game. The backend caches the measure, so reading again after the profiles change

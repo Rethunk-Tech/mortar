@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Checkbox, FormControlLabel, Menu, Typography } from '@mui/material'
+import { useLoaded } from '@rethunk/react-load-hooks'
 import { Download, UserRound } from 'lucide-react'
 import { useState } from 'react'
 import type { Arrival } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nxmsvc/models.ts'
@@ -15,7 +16,6 @@ import { AppDialog, DialogFooter, ToneIcon } from '../shell/dialog/AppDialog.tsx
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { type InlineError, inlineError, reportUnexpected } from '../toasts/report.ts'
 import {

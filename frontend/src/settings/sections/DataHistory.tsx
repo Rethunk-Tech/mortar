@@ -1,6 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Button } from '@mui/material'
+import { useLoaded } from '@rethunk/react-load-hooks'
 import { useState } from 'react'
 import type { HistoryUsage } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
@@ -10,7 +11,6 @@ import {
 import { formatBytes } from '../../i18n/bytes.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { DisabledReason } from '../../shell/DisabledReason.tsx'
-import { useLoaded } from '../../shell/useLoaded.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { usePending } from '../../toasts/usePending.ts'

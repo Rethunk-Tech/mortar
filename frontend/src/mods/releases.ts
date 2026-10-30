@@ -1,6 +1,6 @@
+import { useLoaded } from '@rethunk/react-load-hooks'
 import type { Changelog } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexus/models.ts'
 import { ReleaseChangelog } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { inlineError } from '../toasts/report.ts'
 
 type Loaded = { logs: Changelog[] } | { error: ReturnType<typeof inlineError> } | null

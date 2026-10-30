@@ -1,10 +1,10 @@
+import { useDebouncedLoad } from '@rethunk/react-load-hooks'
 import type {
   AssetMapPage,
   AssetTarget,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher/models.ts'
 import { AssetMap } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { useDebouncedLoad } from '../shell/useDebouncedLoad.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 
 const filterDelayMs = 200

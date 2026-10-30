@@ -1,8 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
+import { useLoaded } from '@rethunk/react-load-hooks'
 import type { SavedGroup } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savedgroups/models.ts'
 import { List } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savedgroups/service.ts'
 import { useRefreshOnFocus } from '../firstrun/useRefreshOnFocus.ts'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { reportError } from '../toasts/report.ts'
 
 const NONE: SavedGroup[] = []

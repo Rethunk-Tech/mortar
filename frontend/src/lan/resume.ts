@@ -1,4 +1,4 @@
-import { readStored, writeStored } from '../shell/useStoredState.ts'
+import { readStored, writeStored } from '@rethunk/react-load-hooks'
 
 const KEY = 'mortar.lanResume'
 

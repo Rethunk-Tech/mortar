@@ -1,7 +1,7 @@
+import { useLoaded } from '@rethunk/react-load-hooks'
 import { useEffect } from 'react'
 import { Details as ReadDetails } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/browse/service.ts'
 import { ReleaseChangelog } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { type InlineError, inlineError } from '../toasts/report.ts'
 import { loadDetails, useNexusEntry } from './nexusDetails.ts'
 import type { ListedVersion } from './versionChoices.ts'

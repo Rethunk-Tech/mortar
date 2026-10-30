@@ -10,6 +10,7 @@ import {
   Menu,
   Typography,
 } from '@mui/material'
+import { useNowValue } from '@rethunk/react-load-hooks'
 import {
   Bug,
   EllipsisVertical,
@@ -37,7 +38,6 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import { StartDebugging } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import type { DevProject } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
-import { useNowValue } from '../i18n/useNow.ts'
 import { relativeWhen } from '../i18n/when.ts'
 import { LetterTile } from '../mods/LetterTile.tsx'
 import { persist, saveSetting } from '../settings/persist.ts'

@@ -1,8 +1,8 @@
+import { useLoaded } from '@rethunk/react-load-hooks'
 import { useEffect, useRef } from 'react'
 import type { FileConflict } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { FileConflicts } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
-import { useLoaded } from '../shell/useLoaded.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 
 /** The files one winner takes from the same set of mods, so a hundred shared files read as one row. */
