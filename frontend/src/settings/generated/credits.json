@@ -200,6 +200,11 @@
     "url": "https://github.com/Rethunk-Tech/go-modmanagers"
   },
   {
+    "name": "github.com/Rethunk-Tech/go-nettrace",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/go-nettrace"
+  },
+  {
     "name": "github.com/Rethunk-Tech/go-nexusmods",
     "licence": "MIT",
     "url": "https://github.com/Rethunk-Tech/go-nexusmods"
