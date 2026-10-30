@@ -81,10 +81,13 @@ func (s *Store) InstallLocalFolder(ctx context.Context, game, id, path string, e
 // InstallExtraFolder is InstallFolder for a mod in an extra mods folder, whose entry remembers the folder.
 func (s *Store) InstallExtraFolder(ctx context.Context, game, id, path string) (InstallResult, error) {
 	src := Source{Kind: KindLocal, Name: filepath.Base(path), Folder: path}
-	if _, err := os.Stat(filepath.Join(path, ".mortar", "project.json")); err != nil {
+	_, noProject := os.Stat(filepath.Join(path, ".mortar", "project.json"))
+	manifest, needsManifest := manifestFor(game, path)
+	if noProject != nil && !needsManifest {
 		return s.installDir(ctx, game, id, path, src, true)
 	}
-	// An asset project's folder is its repository: the package is what is left without the repository's own files.
+	// An asset project's folder is its repository: the package is what is left without the repository's own files. A
+	// folder with no complete manifest.json is staged with one written, so the original stays as the player made it.
 	scratch, err := os.MkdirTemp(filepath.Dir(s.root), "mortar-asset-*")
 	if err != nil {
 		return InstallResult{}, installError(err)
@@ -93,6 +96,11 @@ func (s *Store) InstallExtraFolder(ctx context.Context, game, id, path string) (
 	staged := filepath.Join(scratch, filepath.Base(path))
 	if err := copyWithout(path, staged, ".git", ".mortar", "artifacts"); err != nil {
 		return InstallResult{}, installError(err)
+	}
+	if needsManifest {
+		if err := safefs.WriteFile(filepath.Join(staged, "manifest.json"), manifest, 0o600); err != nil {
+			return InstallResult{}, installError(err)
+		}
 	}
 	return s.installDir(ctx, game, id, staged, src, true)
 }

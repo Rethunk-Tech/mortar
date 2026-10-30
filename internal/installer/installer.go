@@ -224,3 +224,9 @@ func files(a Archive, dir string) ([]string, error) {
 	})
 	return out, err
 }
+
+// HasFiles reports an archive that holds at least one file besides the junk a store item never keeps.
+func HasFiles(a Archive) bool {
+	all, err := files(a, ".")
+	return err == nil && slices.ContainsFunc(all, func(f string) bool { return !skip(f) })
+}

@@ -187,12 +187,12 @@ func TestInstallExtraFolderLeavesAnAssetRepositoryOut(t *testing.T) {
 	}
 }
 
-// An item mod that is only an asset bundle lists nothing; the log says so and why, under a non-ASCII path.
+// A folder of only junk lists nothing; the log says so and why, under a non-ASCII path.
 func TestExtraFolderLogsWhatItFindsAndSkips(t *testing.T) {
 	e := newEnv(t)
 	svc, st := e.withSettings(t)
 	root := filepath.Join(t.TempDir(), "Jogos²", "LocalModsToMortar")
-	writeFile(t, root, "Items/itemsbundle", "UnityFS")
+	writeFile(t, root, "Items/Thumbs.db", "x")
 	setPrefOf(t, st, "lethal-company", "extraModsFolder", root)
 	var buf bytes.Buffer
 	log.SetOutput(&buf)
@@ -201,9 +201,41 @@ func TestExtraFolderLogsWhatItFindsAndSkips(t *testing.T) {
 	if err != nil || len(got.Mods) != 0 {
 		t.Fatalf("listed = %+v, %v", got, err)
 	}
-	for _, want := range []string{"found 0 mods in " + root, "skipped " + filepath.Join(root, "Items") + ": it holds no manifest.json"} {
+	for _, want := range []string{"found 0 mods in " + root, "skipped " + filepath.Join(root, "Items") + ": it holds no files besides junk"} {
 		if !strings.Contains(buf.String(), want) {
 			t.Errorf("log lacks %q:\n%s", want, buf.String())
+		}
+	}
+}
+
+func TestExtraFolderInstallsAFolderWithoutADLL(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	svc, st := e.withSettings(t)
+	p, err := e.Create("lethal-company", "LC")
+	if err != nil {
+		t.Fatal(err)
+	}
+	mods := t.TempDir()
+	writeFile(t, mods, "ItemMod/ItemMod.lethalbundle", "bundle")
+	writeFile(t, mods, "NoVersion/NoVersion.lethalbundle", "bundle")
+	writeFile(t, mods, "NoVersion/manifest.json", `{"name":"NoVersion","description":"d"}`)
+	writeFile(t, mods, "Junk/Thumbs.db", "x")
+	if err := os.MkdirAll(filepath.Join(mods, "Empty"), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	setPrefOf(t, st, "lethal-company", "extraModsFolder", mods)
+	got, err := svc.ExtraFolderMods(t.Context(), "lethal-company")
+	if err != nil || len(got.Mods) != 2 {
+		t.Fatalf("listed = %+v, %v", got, err)
+	}
+	for _, name := range []string{"ItemMod", "NoVersion"} {
+		res, err := svc.InstallExtraFolderMod(t.Context(), "lethal-company", p.ID, filepath.Join(mods, name))
+		if err != nil || len(res.Added) != 1 || res.Added[0] != name {
+			t.Fatalf("install %s = %+v, %v", name, res, err)
+		}
+		if _, err := os.Stat(filepath.Join(mods, "ItemMod", "manifest.json")); err == nil {
+			t.Error("wrote a manifest into the player's folder")
 		}
 	}
 }

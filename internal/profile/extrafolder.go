@@ -1,8 +1,10 @@
 package profile
 
 import (
+	"bytes"
 	"cmp"
 	"context"
+	"encoding/json"
 	"errors"
 	"io/fs"
 	"log"
@@ -119,30 +121,82 @@ func (s *Store) previewExtraFolder(game, dir string) (GameModsPreview, error) {
 		if p, ok := packagePreview(filepath.Join(dir, e.Name()), g, false); ok {
 			out.Mods = append(out.Mods, p)
 		} else {
-			log.Printf("extra folder %s: skipped %s: it holds no manifest.json with a name and version_number, no plugin DLL and no BepInEx folder", game, filepath.Join(dir, e.Name()))
+			log.Printf("extra folder %s: skipped %s: it holds no files besides junk, no plugin DLL and no BepInEx folder", game, filepath.Join(dir, e.Name()))
 		}
 	}
 	return out, nil
 }
 
 // packagePreview is folder as one mod when the game's installer takes it as a package. top asks for the manifest or a
-// DLL directly in folder, which tells a build output folder from a folder holding several mods.
+// DLL directly in folder, which tells a build output folder from a folder holding several mods. A folder inside the
+// extra folder with files but no DLL (asset bundles, config or content files) is a package too.
 func packagePreview(folder string, g installer.Game, top bool) (GameModPreview, bool) {
 	arch := installer.Open(folder, "").PackageRoot()
-	if inst, ok := installer.Pick(arch, g); !ok || inst.ID() != driverThunderstore {
+	inst, ok := installer.Pick(arch, g)
+	if !ok {
+		return GameModPreview{}, false
+	}
+	content := !top && inst.ID() == driverPlain && installer.HasFiles(arch)
+	if inst.ID() != driverThunderstore && !content {
 		return GameModPreview{}, false
 	}
 	if b, err := safefs.ReadFile(filepath.Join(arch.Dir, "manifest.json")); err == nil {
 		if m, err := bepinex5.ParseManifest(b); err == nil && m.Name != "" {
+			log.Printf("extra folder: %s is a package by its manifest.json (%s)", folder, m.Name)
 			id := mod.NewID(mod.FormatThunderstore, cmp.Or(m.Namespace, m.Author, unknownPublisher)+"-"+m.Name)
-			return GameModPreview{ID: id, Name: m.Name, Version: m.Version, Status: outcomeImported, Folder: folder}, true
+			return GameModPreview{ID: id, Name: m.Name, Version: cmp.Or(m.Version, fallbackVersion), Status: outcomeImported, Folder: folder}, true
 		}
+	}
+	if content {
+		name := filepath.Base(folder)
+		log.Printf("extra folder: %s is a package of content files, named for the folder", folder)
+		id := mod.NewID(mod.FormatThunderstore, unknownPublisher+"-"+name)
+		return GameModPreview{ID: id, Name: name, Version: fallbackVersion, Status: outcomeImported, Folder: folder}, true
 	}
 	if top && !topDLL(folder) {
 		return GameModPreview{}, false
 	}
+	log.Printf("extra folder: %s is a plugin by its DLL or BepInEx folder", folder)
 	c := pluginComponent(filepath.Base(folder), folder)
 	return GameModPreview{ID: c.ID, Name: c.Name, Status: outcomeImported, Folder: folder}, true
+}
+
+// fallbackVersion is the version of a local package whose folder names none.
+const fallbackVersion = "0.0.0"
+
+const driverPlain = "plain"
+
+// manifestFor is the manifest.json a package-game folder in an extra folder needs written into its staged copy to
+// install as a package: its own with a name and version_number filled in, or one named for the folder. It reports
+// false for a folder the installer takes as it is.
+func manifestFor(game, folder string) ([]byte, bool) {
+	g := installerGame(game)
+	if !installer.TakesPackages(g) {
+		return nil, false
+	}
+	arch := installer.Open(folder, "").PackageRoot()
+	inst, ok := installer.Pick(arch, g)
+	if !ok || (inst.ID() != driverThunderstore && inst.ID() != driverPlain) {
+		return nil, false
+	}
+	fields := map[string]any{}
+	b, err := safefs.ReadFile(filepath.Join(arch.Dir, "manifest.json"))
+	exists := err == nil
+	if exists {
+		_ = json.Unmarshal(bytes.TrimPrefix(b, []byte("\xef\xbb\xbf")), &fields)
+	}
+	name, _ := fields["name"].(string)
+	version, _ := fields["version_number"].(string)
+	switch {
+	case name != "" && version != "":
+		return nil, false
+	case !exists && (inst.ID() != driverPlain || !installer.HasFiles(arch)):
+		return nil, false
+	}
+	fields["name"] = cmp.Or(name, filepath.Base(folder))
+	fields["version_number"] = cmp.Or(version, fallbackVersion)
+	out, err := json.Marshal(fields)
+	return out, err == nil
 }
 
 // buildOutput reports dir as one mod's files, as previewExtraFolder lists it.
