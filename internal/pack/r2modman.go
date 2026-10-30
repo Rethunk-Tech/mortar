@@ -3,78 +3,46 @@ package pack
 import (
 	"cmp"
 	"context"
-	"encoding/base64"
 	"errors"
 	"fmt"
-	"io/fs"
 	"net/http"
-	"os"
 	"path/filepath"
-	"regexp"
-	"runtime"
 	"slices"
 	"strings"
 	"time"
 
 	"github.com/Rethunk-Tech/go-httpkit"
 
-	"go.yaml.in/yaml/v3"
-
+	"github.com/Rethunk-Tech/go-modmanagers/r2modman"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
-
-	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
 )
 
 const (
 	thunderstore = "thunderstore"
-	codePrefix   = "#r2modman"
+	codePrefix   = r2modman.CodePrefix
 	exportFile   = "export.r2x"
 	// BaseURL is Thunderstore's site, where profile codes are stored.
 	BaseURL = "https://thunderstore.io"
 )
 
-var codeKey = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
-
-// r2Mod is one mod in export.r2x (name, version {major,minor,patch}, enabled) and in an r2modman mods.yml, which
-// spells the version versionNumber.
-type r2Version struct {
-	Major int `yaml:"major"`
-	Minor int `yaml:"minor"`
-	Patch int `yaml:"patch"`
-}
-
-type r2Mod struct {
-	Name          string    `yaml:"name"`
-	Version       r2Version `yaml:"version"`
-	VersionNumber r2Version `yaml:"versionNumber"`
-	Enabled       *bool     `yaml:"enabled"`
-}
-
-func (m r2Mod) ref() (Ref, error) {
+func ref(m r2modman.Mod) (Ref, error) {
 	if !nativeID.MatchString(m.Name) {
 		return Ref{}, fmt.Errorf("%q is not a Namespace-Name package", m.Name)
 	}
-	v := m.Version
-	if v == (r2Version{}) {
-		v = m.VersionNumber
-	}
-	return Ref{
-		Source: thunderstore, Native: m.Name, Version: fmt.Sprintf("%d.%d.%d", v.Major, v.Minor, v.Patch),
-		Disabled: m.Enabled != nil && !*m.Enabled,
-	}, nil
+	return Ref{Source: thunderstore, Native: m.Name, Version: m.Version.String(), Disabled: !m.Enabled}, nil
 }
 
-func refs(mods []r2Mod) ([]Ref, error) {
+func refs(mods []r2modman.Mod) ([]Ref, error) {
 	out := make([]Ref, 0, len(mods))
 	for _, m := range mods {
-		ref, err := m.ref()
+		r, err := ref(m)
 		if err != nil {
 			return nil, err
 		}
-		out = append(out, ref)
+		out = append(out, r)
 	}
 	return out, nil
 }
@@ -91,105 +59,65 @@ type Code struct {
 // ID names the format.
 func (Code) ID() string { return "r2modman-code" }
 
-// galeImportLink is the deep link Gale's exported code arrives in; the key after it is Thunderstore's.
-const galeImportLink = "gale://profile/import/"
-
-// codeText is the pasted text with Gale's import link taken off a bare key.
-func codeText(text string) string {
-	text = strings.TrimSpace(text)
-	if key, ok := strings.CutPrefix(text, galeImportLink); ok {
-		return strings.TrimSuffix(key, "/")
-	}
-	return text
-}
-
 // Detect accepts a code, a bare key (also inside Gale's import link), or a .r2z path.
 func (Code) Detect(in Input) bool {
-	text := codeText(in.Text)
-	return strings.HasPrefix(text, codePrefix) || codeKey.MatchString(text) || strings.EqualFold(filepath.Ext(in.Path), ".r2z")
+	return r2modman.IsCode(in.Text) || r2modman.IsCodeKey(in.Text) || strings.EqualFold(filepath.Ext(in.Path), ".r2z")
 }
 
 // Parse reads the code, fetching it first when the input is a key.
 func (c Code) Parse(ctx context.Context, in Input) (Draft, error) {
-	var zipBytes []byte
-	text := codeText(in.Text)
-	switch {
-	case in.Path != "" && text == "":
+	text := in.Text
+	if key, ok := r2modman.CodeKey(text); ok {
+		fetched, err := c.fetch(ctx, key)
+		if err != nil {
+			return Draft{}, err
+		}
+		text = fetched
+	} else if in.Path != "" && strings.TrimSpace(text) == "" {
 		b, err := readCapped(in.Path, maxInput)
 		if err != nil {
 			return Draft{}, err
 		}
-		zipBytes = b
-	default:
-		if codeKey.MatchString(text) {
-			fetched, err := c.fetch(ctx, text)
-			if err != nil {
-				return Draft{}, err
-			}
-			text = fetched
-		}
-		if int64(len(text)) > maxInput {
-			return Draft{}, errors.New("profile code is too large")
-		}
-		body, ok := strings.CutPrefix(text, codePrefix)
-		if !ok {
-			return Draft{}, errors.New("not an r2modman profile code")
-		}
-		b, err := base64.StdEncoding.DecodeString(strings.Join(strings.Fields(body), ""))
-		if err != nil {
-			return Draft{}, fmt.Errorf("profile code is not base64: %w", err)
-		}
-		zipBytes = b
+		return parseR2Zip(b)
 	}
-	return parseR2Zip(zipBytes)
+	if int64(len(text)) > maxInput {
+		return Draft{}, errors.New("profile code is too large")
+	}
+	b, err := r2modman.DecodeCode(text)
+	if err != nil {
+		return Draft{}, err
+	}
+	return parseR2Zip(b)
 }
 
 func (c Code) fetch(ctx context.Context, key string) (string, error) {
-	base := cmp.Or(c.URL, BaseURL)
 	ctx, cancel := context.WithTimeout(ctx, 20*time.Second)
 	defer cancel()
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, base+"/api/experimental/legacyprofile/get/"+key+"/", nil)
-	if err != nil {
-		return "", err
-	}
-	req.Header.Set("User-Agent", source.UserAgentWithSite(""))
-	b, err := httpkit.DoCapped(c.HTTP, req, 64<<20, nil)
+	client := r2modman.Client{HTTP: c.HTTP, BaseURL: cmp.Or(c.URL, BaseURL), UserAgent: source.UserAgentWithSite("")}
+	text, err := client.FetchCode(ctx, key)
 	if errors.Is(err, httpkit.ErrNotFound) {
 		return "", usererr.Wrap(usererr.NotFound, fmt.Errorf("thunderstore has no profile code %s", key))
 	}
 	if err != nil {
 		return "", fmt.Errorf("thunderstore profile code %s: %w", key, err)
 	}
-	return string(b), nil
+	return text, nil
 }
 
 func parseR2Zip(data []byte) (Draft, error) {
-	files, err := readZip(data)
+	exp, err := r2modman.ReadExport(data)
 	if err != nil {
 		return Draft{}, err
 	}
-	raw, ok := files[exportFile]
-	if !ok {
-		return Draft{}, errors.New("profile has no " + exportFile)
-	}
-	var doc struct {
-		Name      string  `yaml:"profileName"`
-		Community string  `yaml:"community"`
-		Mods      []r2Mod `yaml:"mods"`
-	}
-	if err := yaml.Unmarshal(raw, &doc); err != nil {
-		return Draft{}, fmt.Errorf("reading %s: %w", exportFile, err)
-	}
-	packages, err := refs(doc.Mods)
+	packages, err := refs(exp.Mods)
 	if err != nil {
 		return Draft{}, err
 	}
-	d := Draft{Name: doc.Name, Game: doc.Community, Packages: packages, Configs: filesUnder(files, "config/")}
-	delete(files, exportFile)
+	d := Draft{Name: exp.ProfileName, Game: exp.Community, Packages: packages, Configs: filesUnder(exp.Files, "config/")}
 	for _, f := range d.Configs {
-		delete(files, f.Path)
+		delete(exp.Files, f.Path)
 	}
-	d.Local, d.Loose = carriedPlugins(filesUnder(files, ""), d.Packages)
+	d.Local, d.Loose = carriedPlugins(filesUnder(exp.Files, ""), d.Packages)
 	return d, nil
 }
 
@@ -207,77 +135,52 @@ func (Profile) ID() string { return "r2modman-profile" }
 func (Profile) Detect(in Input) bool { return in.Path != "" && IsProfileFolder(in.Path) }
 
 // IsProfileFolder reports whether dir is an r2modman profile folder: it holds a mods.yml.
-func IsProfileFolder(dir string) bool {
-	st, err := os.Stat(filepath.Join(dir, "mods.yml"))
-	return err == nil && !st.IsDir()
-}
+func IsProfileFolder(dir string) bool { return r2modman.IsProfileFolder(dir) }
 
 // Parse reads mods.yml and the profile's BepInEx/config files. Game is the catalog id when GameByFolder knows
 // r2modman's folder name for the game (for example "LethalCompany"), else that folder name.
 func (p Profile) Parse(_ context.Context, in Input) (Draft, error) {
-	raw, err := readCapped(filepath.Join(in.Path, "mods.yml"), maxFile)
+	prof, err := r2modman.ReadProfile(in.Path)
 	if err != nil {
 		return Draft{}, err
 	}
-	var mods []r2Mod
-	if err := yaml.Unmarshal(raw, &mods); err != nil {
-		return Draft{}, fmt.Errorf("reading mods.yml: %w", err)
-	}
-	packages, err := refs(mods)
+	packages, err := refs(prof.Mods)
 	if err != nil {
 		return Draft{}, err
 	}
-	d := Draft{Name: filepath.Base(in.Path), Game: filepath.Base(filepath.Dir(filepath.Dir(in.Path))), Packages: packages}
+	d := Draft{Name: prof.Name, Game: prof.GameFolder, Packages: packages}
 	if id, ok := p.lookup(d.Game); ok {
 		d.Game = id
 	}
-	if d.Configs, err = bepinexConfigs(in.Path); err != nil {
+	if d.Configs, err = configFiles(in.Path); err != nil {
 		return Draft{}, err
 	}
 	return d, nil
 }
 
-// bepinexConfigs reads the files below a profile folder's BepInEx/config, subfolders included.
-func bepinexConfigs(profileDir string) ([]File, error) {
-	cfg := filepath.Join(profileDir, "BepInEx", "config")
-	var out []File
-	err := filepath.WalkDir(cfg, func(p string, e fs.DirEntry, err error) error {
-		if err != nil {
-			if p == cfg && errors.Is(err, fs.ErrNotExist) {
-				return nil
-			}
-			return err
-		}
-		if !e.Type().IsRegular() {
-			return nil
-		}
-		b, err := readCapped(p, maxFile)
-		if err != nil {
-			return err
-		}
-		rel, _ := filepath.Rel(cfg, p)
-		out = append(out, File{Path: "config/" + filepath.ToSlash(rel), Data: b})
-		return nil
-	})
-	return out, err
+// configFiles reads the files below a profile folder's BepInEx/config, subfolders included.
+func configFiles(profileDir string) ([]File, error) {
+	found, err := r2modman.Configs(profileDir)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]File, len(found))
+	for i, f := range found {
+		out[i] = File{Path: f.Path, Data: f.Data}
+	}
+	return out, nil
 }
 
 // DataDirs lists the r2modman data folders that exist on this machine: extra (the player's own choice, empty for none),
-// r2modmanPlus-local, and the Thunderstore Mod Manager's DataFolder. The last two live under the user config directory
-// (~/.config on Linux, %AppData% on Windows).
+// then r2modmanPlus-local and the Thunderstore Mod Manager's DataFolder under the user config directory.
 func DataDirs(extra string) []string {
 	var out []string
 	if extra != "" && safefs.IsDir(extra) {
 		out = append(out, extra)
 	}
-	for _, base := range managerBases(userdirs.HostConfigHome) {
-		for _, p := range []string{
-			filepath.Join(base, "r2modmanPlus-local"),
-			filepath.Join(base, "Thunderstore Mod Manager", "DataFolder"),
-		} {
-			if safefs.IsDir(p) && !slices.Contains(out, p) {
-				out = append(out, p)
-			}
+	for _, d := range r2modman.DataDirs(r2modman.Bases()...) {
+		if !slices.Contains(out, d) {
+			out = append(out, d)
 		}
 	}
 	return out
@@ -300,24 +203,4 @@ func readCapped(file string, limit int64) ([]byte, error) {
 		return nil, fmt.Errorf("%s is larger than %s", filepath.Base(file), bytefmt.Format(limit))
 	}
 	return safefs.ReadFile(file)
-}
-
-// managerBases is the folder another mod manager keeps its data under: on Linux the host's XDG home (linuxHome, which
-// inside the Flatpak is the host's, since no other manager installs into Mortar's sandbox), on Windows %AppData%, and
-// on macOS the user config dir.
-func managerBases(linuxHome func(home string) string) []string {
-	home, _ := os.UserHomeDir()
-	var base string
-	switch runtime.GOOS {
-	case "linux":
-		base = linuxHome(home)
-	case "windows":
-		base = userdirs.AppData(home)
-	default:
-		base, _ = os.UserConfigDir()
-	}
-	if base == "" {
-		return nil
-	}
-	return []string{base}
 }

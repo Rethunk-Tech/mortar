@@ -12,15 +12,16 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-modmanagers/r2modman"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 	"go.yaml.in/yaml/v3"
 )
 
 type exportMod struct {
-	Name    string    `yaml:"name"`
-	Version r2Version `yaml:"version"`
-	Enabled bool      `yaml:"enabled"`
+	Name    string           `yaml:"name"`
+	Version r2modman.Version `yaml:"version"`
+	Enabled bool             `yaml:"enabled"`
 }
 
 type exportDoc struct {

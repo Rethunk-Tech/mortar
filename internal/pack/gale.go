@@ -2,42 +2,21 @@ package pack
 
 import (
 	"context"
-	"database/sql"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-modmanagers/gale"
+	"github.com/Rethunk-Tech/go-modmanagers/r2modman"
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/winname"
 	_ "modernc.org/sqlite"
-
-	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
 )
 
-// galeAppID is the folder Gale keeps its data in below the user's data directory
-// (Kesomannen/gale src-tauri/src/util/path.rs, APP_GUID and default_app_data_dir).
-const galeAppID = "com.kesomannen.gale"
-
-// galeDB is Gale's database file (src-tauri/src/db/mod.rs:24).
-const galeDB = "data.sqlite3"
-
-// galeMod is one entry of a profile's mods JSON (src-tauri/src/profile/mod.rs:86 ProfileMod, :106 ThunderstoreMod,
-// :400 LocalMod): a Thunderstore mod names its package as fullName, "Namespace-Name-Version"; a mod added from disk has
-// no fullName, and its dependencies are packages named the same way.
-type galeMod struct {
-	FullName     string   `json:"fullName"`
-	Enabled      *bool    `json:"enabled"`
-	Name         string   `json:"name"`
-	Author       string   `json:"author"`
-	Version      string   `json:"version"`
-	Dependencies []string `json:"dependencies"`
-}
+const galeAppID = gale.AppID
 
 // galeRef is the package a "Namespace-Name-Version" names.
 func galeRef(full string) (Ref, bool) {
@@ -61,10 +40,7 @@ type Gale struct {
 }
 
 // GaleProfile is one profile row of Gale's database.
-type GaleProfile struct {
-	Name, Path, Slug string
-	mods             string
-}
+type GaleProfile = gale.Profile
 
 func (g Gale) dbFile() string {
 	if g.DB != "" {
@@ -77,7 +53,7 @@ func (g Gale) dbFile() string {
 // before the default place, or "" when there is none.
 func GaleDB(extra string) string {
 	if dirs := GaleDataDirs(extra); len(dirs) > 0 {
-		return filepath.Join(dirs[0], galeDB)
+		return gale.Database(dirs[0])
 	}
 	return ""
 }
@@ -88,48 +64,7 @@ func GaleProfiles(ctx context.Context, db string) ([]GaleProfile, error) {
 	if db == "" {
 		return nil, nil
 	}
-	if _, err := safefs.Stat(db); err != nil {
-		return nil, nil
-	}
-	conn, err := sql.Open("sqlite", datadir.ReadOnlySQLiteURI(db))
-	if err != nil {
-		return nil, err
-	}
-	defer func() { _ = conn.Close() }()
-	rows, err := conn.QueryContext(ctx, "SELECT name, path, game_slug, mods FROM profiles ORDER BY id")
-	if err != nil {
-		return nil, fmt.Errorf("reading Gale's database: %w", err)
-	}
-	defer func() { _ = rows.Close() }()
-	var out []GaleProfile
-	for rows.Next() {
-		var p GaleProfile
-		if err := rows.Scan(&p.Name, &p.Path, &p.Slug, &p.mods); err != nil {
-			return nil, err
-		}
-		p.Path = reachablePath(p.Path, p.Slug, filepath.Dir(db))
-		out = append(out, p)
-	}
-	return out, rows.Err()
-}
-
-// reachablePath is a profile's folder as this process can reach it. Gale records the absolute path it used, below
-// <data dir>/<game slug>; when that path is not here (a Flatpak reaching the data folder through the document portal,
-// or a data folder since moved) the same folder below the database's own folder is used.
-func reachablePath(path, slug, dataDir string) string {
-	if safefs.IsDir(path) {
-		return path
-	}
-	parts := strings.FieldsFunc(path, func(r rune) bool { return r == '/' || r == '\\' })
-	at := slices.Index(parts, slug)
-	if at < 0 {
-		return path
-	}
-	moved := filepath.Join(append([]string{dataDir}, parts[at:]...)...)
-	if safefs.IsDir(moved) {
-		return moved
-	}
-	return path
+	return gale.Profiles(ctx, db)
 }
 
 func (g Gale) find(ctx context.Context, path string) (GaleProfile, bool) {
@@ -162,8 +97,8 @@ func (g Gale) Parse(ctx context.Context, in Input) (Draft, error) {
 	if !ok {
 		return Draft{}, errors.New("not a profile in Gale's database")
 	}
-	var mods []galeMod
-	if err := json.Unmarshal([]byte(p.mods), &mods); err != nil {
+	mods, err := p.Mods()
+	if err != nil {
 		return Draft{}, fmt.Errorf("reading the mods of Gale profile %s: %w", p.Name, err)
 	}
 	d := Draft{Name: p.Name, Game: p.Slug}
@@ -174,7 +109,7 @@ func (g Gale) Parse(ctx context.Context, in Input) (Draft, error) {
 	}
 	var deps []string
 	for _, m := range mods {
-		off := m.Enabled != nil && !*m.Enabled
+		off := !m.Enabled
 		if m.FullName == "" {
 			dir := filepath.Join(p.Path, "BepInEx", "plugins", m.Name)
 			if winname.Valid(m.Name) && safefs.IsDir(dir) {
@@ -193,25 +128,22 @@ func (g Gale) Parse(ctx context.Context, in Input) (Draft, error) {
 			d.Packages = append(d.Packages, ref)
 		}
 	}
-	var err error
-	if d.Configs, err = bepinexConfigs(p.Path); err != nil {
+	if d.Configs, err = configFiles(p.Path); err != nil {
 		return Draft{}, err
 	}
 	return d, nil
 }
 
 // GaleDataDirs lists Gale's data folders that exist on this machine: extra when it holds Gale's database (the player's
-// own choice, empty for none), then <user data dir>/com.kesomannen.gale, with the user data dir as the dirs crate
-// resolves it (XDG data home on Linux, %AppData% on Windows, Application Support on macOS).
+// own choice, empty for none), then <user data dir>/com.kesomannen.gale.
 func GaleDataDirs(extra string) []string {
 	var out []string
-	if extra != "" && safefs.IsFile(filepath.Join(extra, galeDB)) {
+	if extra != "" && gale.HasDatabase(extra) {
 		out = append(out, extra)
 	}
-	for _, base := range managerBases(userdirs.HostDataHome) {
-		p := filepath.Join(base, galeAppID)
-		if st, err := safefs.Stat(p); err == nil && st.IsDir() && !slices.Contains(out, p) {
-			out = append(out, p)
+	for _, d := range gale.DataDirs(gale.Bases()...) {
+		if !slices.Contains(out, d) {
+			out = append(out, d)
 		}
 	}
 	return out
@@ -220,12 +152,5 @@ func GaleDataDirs(extra string) []string {
 // IsManagerFolder reports a folder r2modman or Gale could keep its data in: Gale's database, or r2modman's per-game
 // folders each holding profiles.
 func IsManagerFolder(dir string) bool {
-	if safefs.IsFile(filepath.Join(dir, galeDB)) {
-		return true
-	}
-	entries, err := os.ReadDir(dir)
-	if err != nil {
-		return false
-	}
-	return slices.ContainsFunc(entries, func(e os.DirEntry) bool { return safefs.IsDir(filepath.Join(dir, e.Name(), "profiles")) })
+	return gale.HasDatabase(dir) || r2modman.IsDataFolder(dir)
 }

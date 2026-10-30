@@ -13,6 +13,7 @@ require (
 	github.com/Rethunk-Tech/go-httpkit v0.1.0
 	github.com/Rethunk-Tech/go-keyring v0.1.0
 	github.com/Rethunk-Tech/go-lenientjson v0.1.0
+	github.com/Rethunk-Tech/go-modmanagers v0.1.0
 	github.com/Rethunk-Tech/go-nexusmods v0.1.0
 	github.com/Rethunk-Tech/go-safefs v0.1.0
 	github.com/Rethunk-Tech/go-semverish v0.1.0
@@ -24,7 +25,7 @@ require (
 	github.com/godbus/dbus/v5 v5.2.4
 	github.com/google/pprof v0.0.0-20261026192309-dbd0ed30aa88
 	github.com/hashicorp/mdns v1.0.7
-	github.com/syndtr/goleveldb v1.0.0
+	github.com/syndtr/goleveldb v1.0.1-0.20220721030215-126854af5e6d
 	github.com/wailsapp/wails/v3 v3.0.0
 	github.com/zalando/go-keyring v0.2.8
 	go.yaml.in/yaml/v3 v3.0.5

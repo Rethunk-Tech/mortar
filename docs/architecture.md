@@ -6,7 +6,7 @@ How Mortar works: storage, profile semantics, the game catalog and its registrie
 
 Mortar finds a game, installs its mod loader, keeps each set of mods in its own profile, and launches the game with the chosen profile. Windows and Linux only (fleet CI has no macOS runners, and Wails does not cross-compile to it). Licence: AGPL-3.0-only. The signed catalog lists every game ([Games and the catalog](#games-and-the-catalog)); a game's `enabled` flag makes it selectable.
 
-**External profile import** (Profiles › Import…) reads r2modman, Gale, Stardrop (Stardew Valley only), Vortex and Mod Organizer 2 from their default data (`packsvc.LocalProfiles`, `migrate.Detect`). Vortex and MO2 take the game's names from its catalog `importIds`. Present folders are copied into the store; missing Nexus mods go through the share-import resolver and download queue.
+**External profile import** (Profiles › Import…) reads r2modman, Gale, Stardrop (Stardew Valley only), Vortex and Mod Organizer 2 from their default data (`packsvc.LocalProfiles`, `migrate.Detect`). The readers for r2modman, Gale, Stardrop, Vortex and MO2 are the [go-modmanagers](https://github.com/Rethunk-Tech/go-modmanagers) module's; `pack` and `migrate` keep the mapping into Mortar's model. Vortex and MO2 take the game's names from its catalog `importIds`. Present folders are copied into the store; missing Nexus mods go through the share-import resolver and download queue.
 
 ## Stack
 
