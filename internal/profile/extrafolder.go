@@ -12,9 +12,10 @@ import (
 	"slices"
 	"strings"
 
+	tstore "github.com/Rethunk-Tech/go-thunderstore"
+
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/installer"
-	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -142,7 +143,7 @@ func packagePreview(folder string, g installer.Game, top bool) (GameModPreview, 
 		return GameModPreview{}, false
 	}
 	if b, err := safefs.ReadFile(filepath.Join(arch.Dir, "manifest.json")); err == nil {
-		if m, err := bepinex5.ParseManifest(b); err == nil && m.Name != "" {
+		if m, err := tstore.ParseManifest(b); err == nil && m.Name != "" {
 			log.Printf("extra folder: %s is a package by its manifest.json (%s)", folder, m.Name)
 			id := mod.NewID(mod.FormatThunderstore, cmp.Or(m.Namespace, m.Author, unknownPublisher)+"-"+m.Name)
 			return GameModPreview{ID: id, Name: m.Name, Version: cmp.Or(m.Version, fallbackVersion), Status: outcomeImported, Folder: folder}, true

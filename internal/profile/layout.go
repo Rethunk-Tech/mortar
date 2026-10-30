@@ -10,6 +10,8 @@ import (
 	"slices"
 	"strings"
 
+	tstore "github.com/Rethunk-Tech/go-thunderstore"
+
 	"github.com/Rethunk-Tech/go-fomod"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
@@ -129,7 +131,7 @@ func (s *Store) namePackage(game, key, fileName, fallback string) error {
 	if err != nil {
 		return err
 	}
-	m, err := bepinex5.ParseManifest(b)
+	m, err := tstore.ParseManifest(b)
 	if err != nil {
 		return err
 	}
@@ -186,7 +188,7 @@ func (s *Store) packageMods(game, key, title string) (mods []Component, ok bool,
 	if err != nil {
 		return nil, false, err
 	}
-	m, err := bepinex5.ParseManifest(b)
+	m, err := tstore.ParseManifest(b)
 	if err != nil {
 		return nil, false, err
 	}
@@ -200,7 +202,7 @@ func (s *Store) packageMods(game, key, title string) (mods []Component, ok bool,
 		id = author + "-" + m.Name
 	}
 	var needs []mod.ID
-	for _, d := range m.Needs() {
+	for _, d := range bepinex5.Needs(m) {
 		needs = append(needs, d.ModID())
 	}
 	return []Component{{ID: mod.NewID(mod.FormatThunderstore, id), Version: m.Version, Name: m.Name, Author: author, Folder: ".", Needs: needs}}, true, nil

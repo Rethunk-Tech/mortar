@@ -8,6 +8,8 @@ import (
 	"slices"
 	"strings"
 
+	tstore "github.com/Rethunk-Tech/go-thunderstore"
+
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/loader/melonloader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/thunderpack"
@@ -26,7 +28,7 @@ func manifestOf(a Archive) (name string, ok bool) {
 	if err != nil {
 		return "", false
 	}
-	m, err := bepinex5.ParseManifest(b)
+	m, err := tstore.ParseManifest(b)
 	if err != nil || m.Name == "" || m.Version == "" {
 		return "", false
 	}

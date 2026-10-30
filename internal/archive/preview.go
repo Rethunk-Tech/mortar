@@ -6,6 +6,8 @@ import (
 	"path"
 	"strings"
 
+	tstore "github.com/Rethunk-Tech/go-thunderstore"
+
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/go-safefs"
@@ -103,11 +105,8 @@ func ManifestInfo(b []byte) (PreviewManifest, bool) {
 	if m, err := smapimanifest.Parse(b); err == nil {
 		return PreviewManifest{ID: m.ModID(), Name: m.Name, Version: m.Version}, true
 	}
-	var pkg struct {
-		Name    string `json:"name"`
-		Version string `json:"version_number"`
-	}
-	if err := mod.UnmarshalManifest(b, &pkg); err != nil || pkg.Name == "" {
+	pkg, err := tstore.ParseManifest(b)
+	if err != nil || pkg.Name == "" {
 		return PreviewManifest{}, false
 	}
 	return PreviewManifest{Name: pkg.Name, Version: pkg.Version}, true

@@ -9,9 +9,10 @@ import (
 	"slices"
 	"strings"
 
+	tstore "github.com/Rethunk-Tech/go-thunderstore"
+
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/installer"
-	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -47,7 +48,7 @@ func Of(gameID, dir string) Info {
 func packageInfo(dir string) Info {
 	root := installer.Open(dir, "").PackageRoot()
 	if b, err := safefs.ReadFile(filepath.Join(root.Dir, "manifest.json")); err == nil {
-		if m, err := bepinex5.ParseManifest(b); err == nil && m.Name != "" {
+		if m, err := tstore.ParseManifest(b); err == nil && m.Name != "" {
 			publisher := cmp.Or(m.Namespace, m.Author, unknownPublisher)
 			return Info{ID: mod.NewID(mod.FormatThunderstore, publisher+"-"+m.Name), Name: m.Name, Version: m.Version}
 		}

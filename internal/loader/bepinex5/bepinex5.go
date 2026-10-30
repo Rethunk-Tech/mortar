@@ -13,6 +13,8 @@ import (
 	"strconv"
 	"strings"
 
+	tstore "github.com/Rethunk-Tech/go-thunderstore"
+
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -92,9 +94,9 @@ func InstallPack(zipPath, profileRoot string) (Installed, error) {
 	if err != nil {
 		return Installed{}, err
 	}
-	var manifest Manifest
+	var manifest tstore.Manifest
 	if b, err := safefs.ReadFile(filepath.Join(tmp, "manifest.json")); err == nil {
-		manifest, _ = ParseManifest(b)
+		manifest, _ = tstore.ParseManifest(b)
 	}
 	if err := clearPack(profileRoot); err != nil {
 		return Installed{}, err
@@ -369,18 +371,9 @@ func Route(relPath, pkg string, routes []components.LoaderRoute) string {
 	return path.Join("BepInEx", "plugins", pkg, name)
 }
 
-// Manifest is the part of a Thunderstore package's manifest.json that Mortar reads.
-type Manifest struct {
-	Name         string   `json:"name"`
-	Version      string   `json:"version_number"`
-	Namespace    string   `json:"namespace"`
-	Author       string   `json:"author"`
-	Dependencies []string `json:"dependencies"`
-}
-
 // Needs is the packages the manifest depends on, each at least the version it names. The BepInEx pack is left out:
 // the loader install supplies it, so no profile entry ever stands for it.
-func (m Manifest) Needs() []mod.Dependency {
+func Needs(m tstore.Manifest) []mod.Dependency {
 	var out []mod.Dependency
 	for _, s := range m.Dependencies {
 		d, err := deps.Thunderstore(s)
@@ -390,11 +383,4 @@ func (m Manifest) Needs() []mod.Dependency {
 		out = append(out, mod.NewDependency(mod.ID(d.Target.Package), d.Constraint, true))
 	}
 	return out
-}
-
-// ParseManifest reads a Thunderstore manifest.json.
-func ParseManifest(b []byte) (Manifest, error) {
-	var m Manifest
-	err := mod.UnmarshalManifest(b, &m)
-	return m, err
 }

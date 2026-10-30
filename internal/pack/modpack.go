@@ -7,8 +7,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	tstore "github.com/Rethunk-Tech/go-thunderstore"
+
 	"github.com/Rethunk-Tech/mortar/internal/deps"
-	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 )
 
 // Modpack reads a Thunderstore modpack package: a package zip whose manifest dependencies are the mod list and
@@ -18,22 +19,22 @@ type Modpack struct{}
 // ID names the format.
 func (Modpack) ID() string { return "thunderstore-modpack" }
 
-func readModpack(path string) (bepinex5.Manifest, map[string][]byte, bool) {
+func readModpack(path string) (tstore.Manifest, map[string][]byte, bool) {
 	data, err := readCapped(path, maxInput)
 	if err != nil {
-		return bepinex5.Manifest{}, nil, false
+		return tstore.Manifest{}, nil, false
 	}
 	files, err := readZip(data)
 	if err != nil {
-		return bepinex5.Manifest{}, nil, false
+		return tstore.Manifest{}, nil, false
 	}
-	m, err := bepinex5.ParseManifest(files["manifest.json"])
+	m, err := tstore.ParseManifest(files["manifest.json"])
 	if err != nil || len(m.Dependencies) == 0 {
-		return bepinex5.Manifest{}, nil, false
+		return tstore.Manifest{}, nil, false
 	}
 	for name := range files {
 		if strings.EqualFold(filepath.Ext(name), ".dll") {
-			return bepinex5.Manifest{}, nil, false
+			return tstore.Manifest{}, nil, false
 		}
 	}
 	return m, files, true

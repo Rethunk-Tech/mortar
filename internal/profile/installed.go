@@ -3,6 +3,8 @@ package profile
 import (
 	"path/filepath"
 
+	tstore "github.com/Rethunk-Tech/go-thunderstore"
+
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
@@ -103,8 +105,8 @@ func (s *Store) packageInstalled(game string, e Entry) []Installed {
 	var needs []mod.Dependency
 	if dir != "" {
 		if b, err := safefs.ReadFile(filepath.Join(dir, "manifest.json")); err == nil {
-			if m, err := bepinex5.ParseManifest(b); err == nil {
-				needs = m.Needs()
+			if m, err := tstore.ParseManifest(b); err == nil {
+				needs = bepinex5.Needs(m)
 			}
 		}
 	}

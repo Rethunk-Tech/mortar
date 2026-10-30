@@ -4,11 +4,12 @@ import (
 	"path"
 	"strings"
 	"testing"
+
+	tstore "github.com/Rethunk-Tech/go-thunderstore"
 )
 
-// FuzzParseManifest feeds a Thunderstore package's manifest.json, which every BepInEx install reads for its
-// dependencies.
-func FuzzParseManifest(f *testing.F) {
+// FuzzNeeds feeds a Thunderstore package's manifest.json, which every BepInEx install reads for its dependencies.
+func FuzzNeeds(f *testing.F) {
 	for _, s := range []string{
 		"\xef\xbb\xbf" + `{"name":"Mod","version_number":"1.2.3","namespace":"Ns","author":"Ns","dependencies":["BepInEx-BepInExPack-5.4.2100","Ns-Lib-1.0.0"]}`,
 		`{"dependencies":["a-b","-x-1","a--1","Ns-Lib-1.0.0-extra"]}`,
@@ -17,11 +18,11 @@ func FuzzParseManifest(f *testing.F) {
 		f.Add([]byte(s))
 	}
 	f.Fuzz(func(t *testing.T, b []byte) {
-		m, err := ParseManifest(b)
+		m, err := tstore.ParseManifest(b)
 		if err != nil {
 			return
 		}
-		for _, d := range m.Needs() {
+		for _, d := range Needs(m) {
 			if pkg, ok := strings.CutPrefix(string(d.ModID()), "thunderstore:"); !ok || strings.Count(pkg, "-") != 1 {
 				t.Fatalf("dependency %q from %q", d.ModID(), m.Dependencies)
 			}
