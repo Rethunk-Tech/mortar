@@ -3,11 +3,11 @@ package nativehost
 import (
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-gameproc"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
@@ -36,7 +36,7 @@ func browserName(args []string) string {
 	if len(args) > 1 && args[1] == FirefoxID {
 		return "Firefox"
 	}
-	if exe, err := os.Readlink(filepath.Join("/proc", strconv.Itoa(os.Getppid()), "exe")); err == nil {
+	if exe, err := gameproc.ImagePath(os.Getppid()); err == nil {
 		if name := strings.TrimSuffix(filepath.Base(exe), ".exe"); name != "" {
 			return name
 		}
