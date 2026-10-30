@@ -10,6 +10,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-nexusmods"
 
+	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/secret"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -37,7 +38,7 @@ func (s *Service) SignIn(ctx context.Context, key string) (Account, error) {
 		return Account{}, usererr.Wrap(usererr.Invalid, err)
 	}
 	if err != nil {
-		return Account{}, err
+		return Account{}, nexus.Worded(err)
 	}
 	if err := secret.Set(keyName, key); err != nil {
 		return Account{}, err

@@ -446,7 +446,7 @@ func (s *Service) resolve(ctx context.Context, it Item) error {
 	}
 	files, err := c.Files(ctx, t, it.ModID)
 	if err != nil {
-		return usererr.Wrap(usererr.Network, err)
+		return usererr.Wrap(usererr.Network, nexus.Worded(err))
 	}
 	statuses, _ := c.ScanStatuses(ctx, t, it.ModID)
 	var file nexusmods.File
@@ -908,7 +908,7 @@ func (s *Service) downloadLinks(ctx context.Context, c *nexusmods.Client, t nexu
 		links, err = c.PremiumDownloadLinks(ctx, t, it.ModID, it.FileID)
 	}
 	if err != nil {
-		return nil, err
+		return nil, nexus.Worded(err)
 	}
 	return s.d.NexusServers.Order(links), nil
 }

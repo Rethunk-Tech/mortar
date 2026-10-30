@@ -3,8 +3,13 @@ package queue
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-Tech/go-nexusmods"
 
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/source"
@@ -129,5 +134,20 @@ func TestARateLimitHoldsTheItemsOwnSource(t *testing.T) {
 	s.settle("a", &github.RateLimitError{Reset: reset})
 	if got := s.until["nexus"]; !got.Equal(reset) || !s.until["github"].IsZero() {
 		t.Fatalf("until %v", s.until)
+	}
+}
+
+func TestNexusRateLimitKeepsItsWordingInTheQueue(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Retry-After", "120")
+		w.WriteHeader(http.StatusTooManyRequests)
+	}))
+	defer srv.Close()
+	c := nexusmods.New("Mortar", "1")
+	c.BaseURL = srv.URL
+	s := &Service{}
+	_, err := s.downloadLinks(t.Context(), c.WithKey("k"), nexusmods.Title{Domain: "stardewvalley"}, Item{ModID: 1, FileID: 2}, "", 0)
+	if err == nil || !strings.HasPrefix(err.Error(), "nexus rate limit reached until ") {
+		t.Fatalf("429 = %v", err)
 	}
 }

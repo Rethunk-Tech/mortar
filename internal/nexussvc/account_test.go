@@ -135,3 +135,31 @@ func TestRefusalsKeepTheirWording(t *testing.T) {
 		t.Fatalf("429 = %v (%s)", err, usererr.KindOf(err))
 	}
 }
+
+// Every read through the client words a 429 the same way, whichever call hit it.
+func TestRateLimitWordingHoldsOnReads(t *testing.T) {
+	store := testStore(t)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/v1/users/validate.json" {
+			_, _ = w.Write([]byte(`{"user_id":7,"name":"Ada","is_premium":true}`))
+			return
+		}
+		w.Header().Set("Retry-After", "120")
+		w.WriteHeader(http.StatusTooManyRequests)
+	}))
+	defer srv.Close()
+	c := nexusmods.New("Mortar", "1")
+	c.BaseURL = srv.URL
+	s := NewService(store, c, &meta.Client{CacheDir: t.TempDir()})
+	ctx := context.Background()
+	if _, err := s.SignIn(ctx, "key"); err != nil {
+		t.Fatal(err)
+	}
+	_, nameErr := s.ModName(ctx, "stardew", 541)
+	_, detailsErr := s.Details(ctx, "stardew", 541)
+	for name, err := range map[string]error{"ModName": nameErr, "Details": detailsErr} {
+		if !strings.Contains(fmt.Sprint(err), "nexus rate limit reached until ") {
+			t.Errorf("%s: %v", name, err)
+		}
+	}
+}

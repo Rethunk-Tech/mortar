@@ -61,7 +61,8 @@ func (s *Service) Details(ctx context.Context, gameID string, modID int) (Detail
 		}
 		// The category name is a label only: a failed lookup leaves it out rather than losing the rest.
 		cats, _ := diskcache.Cached(s.meta.Cache(), meta.NexusCategoriesPrefix+t.Domain+".json", categoriesTTL, func() (map[int]string, error) {
-			return c.Categories(ctx, t)
+			cats, err := c.Categories(ctx, t)
+			return cats, nexus.Worded(err)
 		})
 		return Details{Page: page, Category: cats[page.CategoryID], Files: files, Changelogs: nexusChangelogs(logs)}, nil
 	})

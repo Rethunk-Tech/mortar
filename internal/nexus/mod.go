@@ -39,7 +39,7 @@ func CachedMod(ctx context.Context, c *nexusmods.Client, cache *diskcache.Cache,
 	}
 	p, err := c.Page(ctx, t, modID)
 	if err != nil {
-		return Mod{}, err
+		return Mod{}, Worded(err)
 	}
 	m := Mod{Name: p.Name, Author: p.Author, PictureURL: p.PictureURL, EndorsementCount: p.Endorsements, Summary: p.Summary}
 	if cache != nil {

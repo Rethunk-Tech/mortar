@@ -785,6 +785,7 @@ func run() error {
 		var err error
 		if c, authErr := nexussvc.Authed(store, nexusClient); authErr == nil {
 			out, err = c.FilesOf(ctx, t, ids)
+			err = nexus.Worded(err)
 		}
 		if out == nil {
 			out = map[int][]nexusmods.BatchFile{}
@@ -838,7 +839,8 @@ func run() error {
 			if err != nil {
 				return nil, err
 			}
-			return c.Files(ctx, t, modID)
+			files, err := c.Files(ctx, t, modID)
+			return files, nexus.Worded(err)
 		},
 		SignedIn:   func() bool { return store.Get().NexusUserID != 0 },
 		Premium:    func() bool { return store.Get().NexusPremium },
@@ -970,6 +972,7 @@ func run() error {
 				return "", err
 			}
 			files, err := c.Files(ctx, t, modID)
+			err = nexus.Worded(err)
 			for _, f := range files {
 				if f.FileID == fileID {
 					return f.MD5, err

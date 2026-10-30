@@ -5,6 +5,7 @@ import (
 	"errors"
 	"sync"
 
+	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/opener"
 
 	"github.com/Rethunk-Tech/go-nexusmods/sso"
@@ -133,7 +134,7 @@ func (s *Service) signInOAuth(ctx context.Context, o sso.OAuth) (Account, error)
 	}
 	user, err := s.client.WithBearer(func(context.Context) (string, error) { return t.Access, nil }).Validate(ctx)
 	if err != nil {
-		return Account{}, err
+		return Account{}, nexus.Worded(err)
 	}
 	if err := tokenStore.Save(t); err != nil {
 		return Account{}, err
