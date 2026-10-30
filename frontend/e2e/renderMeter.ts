@@ -1,16 +1,17 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { basename, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import type { CDPSession, Page, Request } from '@playwright/test'
-import { dwell } from './app.ts'
+import type { CDPSession, Page } from '@playwright/test'
+import {
+  hookScript,
+  Meter,
+  muiPreset,
+  nestedBoxes,
+  unevenSpacing,
+} from '@rethunk/react-render-audit'
 
-const QUIET_POLL_MS = 100
 const TOP = Number(process.env.MORTAR_RENDER_TOP ?? '8')
-// Library building blocks every MUI component renders through; the report names the app's own components instead.
 const ALL_NAMES = process.env.MORTAR_RENDER_ALL_NAMES === '1'
-const LIBRARY =
-  /^(Insertion|Styled\(|Mui|Box$|Typography$|ButtonBase$|anonymous$|TouchRipple|Ripple$|Popper|Portal$|Grow$|Fade$|Collapse$|Transition|SvgIcon$|Tooltip$|Modal$|Dialog$|Paper$|Button$|IconButton$|InputBase$|FormControl$|Chip$|Menu$|List|TableCell$|TableRow$)/
-const MIB = 1024 * 1024
 const BINDINGS = fileURLToPath(new URL('../bindings', import.meta.url))
 const BINDING_CALL = /export function (\w+)\(.*\{\n\s*return \$Call\.ByID\((\d+)/g
 
@@ -40,201 +41,29 @@ export function methodOf(body: string): string {
   }
 }
 
-export interface Sample {
-  commits: number
-  mounts: number
-  updates: number
-  top: [string, number][]
-  /** The components cascades of re-renders started at, with how many re-renders each started, most first. */
-  startedBy: [string, number][]
-  /** What changed at each root (changed props, or the position and a preview of each changed state hook), by the re-renders it caused. */
-  why: [string, number][]
-  mutations: number
-  longTasks: number
-  longMs: number
-  calls: number
-  callsBy: [string, number][]
-  /** The slowest backend calls by method, each method's worst wait in ms, slowest first. */
-  slowest: [string, number][]
-  layouts: number
-  styles: number
-  scriptMs: number
-  heapMiB: number
-  nodes: number
-  listeners: number
-  // Wall time from the action's start to its last React commit.
-  settledMs: number
-  /** What started the cascades of that last commit. */
-  lastWhy: string[]
+export const HOOK = hookScript({ ignoreCommitsOf: muiPreset.ignoreCommitsOf })
+export const mortarBoxes = (page: Page) => nestedBoxes(page, muiPreset)
+export const mortarGaps = (page: Page) => unevenSpacing(page, muiPreset)
+
+export function mortarMeter(page: Page, cdp: CDPSession): Meter {
+  return new Meter(page, cdp, {
+    backendCall: (r) =>
+      new URL(r.url()).pathname.startsWith('/wails/') ? methodOf(r.postData() ?? '') : null,
+    top: TOP,
+    libraryNames: ALL_NAMES ? null : muiPreset.libraryNames,
+    log: console.log,
+  })
 }
 
-interface PageCounts {
-  commits: number
-  mounts: number
-  updates: number
-  names: Record<string, number>
-  roots: Record<string, number>
-  why: Record<string, number>
-  mutations: number
-  longTasks: number
-  longMs: number
-  settledMs: number
-  lastWhy: string[]
-}
-
-type Metrics = Partial<Record<string, number>>
-
-export class Meter {
-  calls = 0
-  private lastCallAt = 0
-  private readonly named = new Map<string, number>()
-  private readonly started = new Map<Request, number>()
-  private readonly worst = new Map<string, number>()
-  private before: Metrics = {}
-  private readonly page: Page
-  private readonly cdp: CDPSession
-
-  constructor(page: Page, cdp: CDPSession) {
-    this.page = page
-    this.cdp = cdp
-    const settled = (r: Request) => {
-      if (new URL(r.url()).pathname.startsWith('/wails/')) {
-        this.lastCallAt = Date.now()
-        const what = methodOf(r.postData() ?? '')
-        const ms = this.lastCallAt - (this.started.get(r) ?? this.lastCallAt)
-        this.started.delete(r)
-        this.worst.set(what, Math.max(ms, this.worst.get(what) ?? 0))
-      }
-    }
-    // A reload cancels the old document's calls, sometimes with no requestfailed, so they are not left in flight.
-    page.on('framenavigated', (frame) => {
-      if (frame === page.mainFrame()) {
-        this.started.clear()
-      }
-    })
-    page.on('requestfinished', settled)
-    page.on('requestfailed', settled)
-    page.on('request', (r) => {
-      if (new URL(r.url()).pathname.startsWith('/wails/')) {
-        this.calls += 1
-        this.started.set(r, Date.now())
-        const what = methodOf(r.postData() ?? '')
-        this.named.set(what, (this.named.get(what) ?? 0) + 1)
-      }
-    })
+/** Dismisses the toasts on screen, whose timers would otherwise commit during the case, and logs what they said. */
+export async function quietToasts(page: Page, name: string) {
+  const region = page.getByRole('region', { name: 'Notifications' })
+  const dismiss = region.getByRole('button', { name: 'Dismiss' })
+  if ((await dismiss.count()) === 0) {
+    return
   }
-
-  /** Waits until React has not committed, no backend call is in flight and none finished for quietMs (counted from the
-   * call at the earliest), or maxMs passes. */
-  async untilStill(quietMs: number, maxMs: number) {
-    const start = Date.now()
-    while (Date.now() - start < maxMs) {
-      const sinceCommit = await this.page.evaluate(() =>
-        (globalThis as unknown as RenderWindow).mortarRenders.stillMs(),
-      )
-      const now = Date.now()
-      if (
-        this.started.size === 0 &&
-        Math.min(sinceCommit, now - this.lastCallAt, now - start) >= quietMs
-      ) {
-        return
-      }
-      await dwell(this.page, QUIET_POLL_MS)
-    }
-    const open = [...this.started].map(
-      ([r, at]) => `${methodOf(r.postData() ?? '')} (${Date.now() - at} ms)`,
-    )
-    console.log(`  not still after ${maxMs} ms; calls in flight: ${open.join(', ') || 'none'}`)
-  }
-
-  private async metrics(): Promise<Metrics> {
-    const { metrics } = await this.cdp.send('Performance.getMetrics')
-    return Object.fromEntries(metrics.map((m) => [m.name, m.value]))
-  }
-
-  /** Dismisses the toasts on screen, whose timers would otherwise commit during the case, and logs what they said. */
-  async quietToasts(name: string) {
-    const region = this.page.getByRole('region', { name: 'Notifications' })
-    const dismiss = region.getByRole('button', { name: 'Dismiss' })
-    if ((await dismiss.count()) === 0) {
-      return
-    }
-    console.log(
-      `${name}: cleared toasts: ${(await region.innerText()).replace(/\s+/g, ' ').trim()}`,
-    )
-    for (let left = await dismiss.count(); left > 0; left--) {
-      await dismiss.first().click()
-    }
-  }
-
-  async reset() {
-    await this.page.evaluate(() => (globalThis as unknown as RenderWindow).mortarRenders.reset())
-    this.calls = 0
-    this.named.clear()
-    this.worst.clear()
-    this.before = await this.metrics()
-  }
-
-  async read(): Promise<Sample> {
-    const c = await this.page.evaluate(() =>
-      (globalThis as unknown as RenderWindow).mortarRenders.read(),
-    )
-    const m = await this.metrics()
-    const delta = (k: string) => (m[k] ?? 0) - (this.before[k] ?? 0)
-    return {
-      commits: c.commits,
-      mounts: c.mounts,
-      updates: c.updates,
-      top: Object.entries(c.names)
-        .filter(([n]) => ALL_NAMES || !LIBRARY.test(n))
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, TOP),
-      startedBy: Object.entries(c.roots)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, TOP),
-      why: Object.entries(c.why)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, TOP),
-      mutations: c.mutations,
-      longTasks: c.longTasks,
-      longMs: Math.round(c.longMs),
-      settledMs: Math.round(c.settledMs),
-      lastWhy: c.lastWhy,
-      calls: this.calls,
-      callsBy: [...this.named].sort((a, b) => b[1] - a[1]).slice(0, TOP),
-      slowest: [...this.worst].sort((a, b) => b[1] - a[1]).slice(0, TOP),
-      layouts: delta('LayoutCount'),
-      styles: delta('RecalcStyleCount'),
-      scriptMs: Math.round(delta('ScriptDuration') * 1000),
-      heapMiB: Math.round(((m.JSHeapUsedSize ?? 0) / MIB) * 10) / 10,
-      nodes: m.Nodes ?? 0,
-      listeners: m.JSEventListeners ?? 0,
-    }
-  }
-}
-
-interface RenderWindow {
-  mortarRenders: { reset: () => void; read: () => PageCounts; stillMs: () => number }
-}
-
-const TEN_S_MS = 10_000
-
-/** Idle figures per 10 s, whatever the watch length. */
-export function perTen(s: Sample, watchedMs: number): Sample {
-  const k = TEN_S_MS / watchedMs
-  const scale = (n: number) => Math.round(n * k)
-  return {
-    ...s,
-    commits: scale(s.commits),
-    mounts: scale(s.mounts),
-    updates: scale(s.updates),
-    mutations: scale(s.mutations),
-    calls: scale(s.calls),
-    layouts: scale(s.layouts),
-    styles: scale(s.styles),
-    scriptMs: scale(s.scriptMs),
-    top: s.top.map(([n, v]) => [n, scale(v)]),
-    startedBy: s.startedBy.map(([n, v]) => [n, scale(v)]),
-    why: s.why.map(([n, v]) => [n, scale(v)]),
+  console.log(`${name}: cleared toasts: ${(await region.innerText()).replace(/\s+/g, ' ').trim()}`)
+  for (let left = await dismiss.count(); left > 0; left--) {
+    await dismiss.first().click()
   }
 }

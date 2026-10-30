@@ -6,17 +6,10 @@
 //   MORTAR_SELFTEST_DIR=/var/tmp/mortar-selftest MORTAR_RENDER_SHOTS=/var/tmp/shots bun run renders:webkit
 // MORTAR_RENDER_URL names the server and MORTAR_RENDER_ONLY=a,b the screens whose names start with these. Exits 1 on a
 // layout break. React render counts need Chromium's DevTools protocol, so this pass only checks and pictures.
-import { existsSync, mkdirSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
-import { collapsed, covered, overflow } from './renderLayout.ts'
-
-const PORT = 4471
-const DRIVER = `http://127.0.0.1:${PORT}`
-const SETTLE_MS = 3000
-const VIEW = { width: 1400, height: 840 }
-const DRIVER_BIN = '/usr/bin/WebKitWebDriver'
-const MINI_BROWSER = '/usr/libexec/webkit2gtk-4.1/MiniBrowser'
+import { type Screen, type Step, webkitWalk as walk } from '@rethunk/react-render-audit'
 
 export interface Walk {
   sandbox: string
@@ -25,20 +18,6 @@ export interface Walk {
   only: string[]
 }
 
-// A step clicks the element of that role whose accessible name matches, in the page.
-interface Step {
-  role: 'tab' | 'button' | 'menuitem'
-  name: string
-  // Searches only inside this container, for a name another control shares (the bell is also "Notifications").
-  within?: string
-}
-// The screens in an order where each is reached from the one before by clicking, so the app loads once. from is what
-// leads back to a screen's starting point after a reload, when a step finds nothing to click.
-interface Screen {
-  name: string
-  steps: Step[]
-  from?: Step[]
-}
 const tab = (name: string): Step[] => [{ role: 'tab', name: `^${name}` }]
 const OPEN_SETTINGS: Step[] = [
   { role: 'button', name: '^Mortar menu$' },
@@ -87,50 +66,6 @@ const SCREENS: Screen[] = [
   },
 ]
 
-type Json = Record<string, unknown>
-const isJson = (v: unknown): v is Json => typeof v === 'object' && v !== null
-
-async function call(method: string, path: string, body?: Json): Promise<unknown> {
-  const res = await fetch(DRIVER + path, {
-    method,
-    headers: { 'content-type': 'application/json' },
-    ...(body ? { body: JSON.stringify(body) } : {}),
-  })
-  const json: unknown = await res.json()
-  if (!(res.ok && isJson(json))) {
-    throw new Error(`${method} ${path}: ${JSON.stringify(json).slice(0, 300)}`)
-  }
-  return json.value
-}
-
-// The page-side click: the first element of the role whose aria-label or text matches, waiting up to a few seconds.
-const CLICK = `
-  const [role, pattern, within, done] = arguments
-  const re = new RegExp(pattern)
-  const sel = { tab: '[role=tab]', button: 'button,[role=button]', menuitem: '[role=menuitem]' }[role]
-  const start = Date.now()
-  const tryClick = () => {
-    const el = [...(within ? document.querySelector(within) ?? document : document).querySelectorAll(sel)].find((e) => re.test((e.getAttribute('aria-label') ?? e.textContent ?? '').trim()))
-    if (el) { el.click(); done(true) } else if (Date.now() - start > 8000) { done(false) } else { setTimeout(tryClick, 200) }
-  }
-  tryClick()
-`
-// The page-side wait: done once the DOM has not changed for quiet ms, or max ms have passed.
-const STILL = `
-  const [quiet, max, done] = arguments
-  const start = Date.now()
-  let last = start
-  const watch = new MutationObserver(() => { last = Date.now() })
-  watch.observe(document, { subtree: true, childList: true, attributes: true, characterData: true })
-  const tick = () => {
-    const now = Date.now()
-    if (now - last >= quiet || now - start >= max) { watch.disconnect(); done(true) } else { setTimeout(tick, 50) }
-  }
-  tick()
-`
-const QUIET_MS = 300
-const check = (fn: () => unknown) => `return (${fn.toString()})()`
-
 // MiniBrowser's environment: the sandbox's hidden X display only (its Xwayland), with Wayland and every other display
 // removed, so a missing sandbox fails instead of opening on the user's screen.
 function sandboxEnv(sandbox: string): Record<string, string> | null {
@@ -153,108 +88,20 @@ function sandboxEnv(sandbox: string): Record<string, string> | null {
   return { ...env, GDK_BACKEND: 'x11' }
 }
 
-const click = async (id: string, s: Step) =>
-  Boolean(
-    await call('POST', `/session/${id}/execute/async`, {
-      script: CLICK,
-      args: [s.role, s.name, s.within ?? ''],
-    }),
-  )
-
-const still = (id: string, maxMs: number) =>
-  call('POST', `/session/${id}/execute/async`, { script: STILL, args: [QUIET_MS, maxMs] })
-
-async function load(id: string, url: string) {
-  await call('POST', `/session/${id}/url`, { url })
-  await still(id, SETTLE_MS)
-}
-
-async function shoot(id: string, file: string) {
-  const png = await call('GET', `/session/${id}/screenshot`)
-  await Bun.write(file, Buffer.from(String(png), 'base64'))
-}
-
-// Reaches one screen from the one before, reloading only when a step finds nothing, and returns its layout breaks. The
-// loading picture is taken as the last step lands, the settled one after the wait.
-async function visit(id: string, screen: Screen, w: Walk): Promise<string[]> {
-  const breaks: string[] = []
-  let reached = true
-  for (const s of screen.steps) {
-    reached = reached && (await click(id, s))
-    if (w.shots && s === screen.steps.at(-1)) {
-      await shoot(id, join(w.shots, 'loading', `${screen.name}.png`))
-    }
-    await still(id, SETTLE_MS / 2)
-  }
-  if (!reached) {
-    await load(id, w.url)
-    for (const s of [
-      ...(screen.from ?? []),
-      ...screen.steps.filter((x) => !(screen.from ?? []).includes(x)),
-    ]) {
-      if (!(await click(id, s))) {
-        breaks.push(`LAYOUT ${screen.name} | missing | ${s.role} ${s.name} not found`)
-      }
-      if (w.shots && s === screen.steps.at(-1)) {
-        await shoot(id, join(w.shots, 'loading', `${screen.name}.png`))
-      }
-      await still(id, SETTLE_MS / 2)
-    }
-  }
-  await still(id, SETTLE_MS)
-  for (const fn of [collapsed, covered, overflow]) {
-    const found = await call('POST', `/session/${id}/execute/sync`, { script: check(fn), args: [] })
-    for (const b of Array.isArray(found) ? found.filter(isJson) : []) {
-      breaks.push(`LAYOUT ${screen.name} | ${b.kind} | ${b.where} | ${b.text}`)
-    }
-  }
-  if (w.shots) {
-    await shoot(id, join(w.shots, `${screen.name}.png`))
-  }
-  return breaks
-}
-
 // Walks every screen and returns its layout breaks, or null when WebKitGTK's driver or the sandbox's display is missing.
 export async function webkitWalk(w: Walk): Promise<string[] | null> {
   const env = sandboxEnv(w.sandbox)
-  if (!(env && existsSync(DRIVER_BIN) && existsSync(MINI_BROWSER))) {
+  if (!env) {
     return null
   }
-  if (w.shots) {
-    mkdirSync(join(w.shots, 'loading'), { recursive: true })
-  }
-  const driver = Bun.spawn([DRIVER_BIN, `--port=${PORT}`], {
+  const breaks = await walk({
+    url: w.url,
+    screens: SCREENS.filter((s) => w.only.length === 0 || w.only.some((o) => s.name.startsWith(o))),
     env,
-    stdout: 'ignore',
-    stderr: 'ignore',
+    ...(w.shots ? { shots: w.shots } : {}),
+    log: console.log,
   })
-  const breaks: string[] = []
-  try {
-    await Bun.sleep(800)
-    const session = await call('POST', '/session', {
-      capabilities: {
-        alwaysMatch: {
-          'webkitgtk:browserOptions': {
-            binary: MINI_BROWSER,
-            args: ['--automation'],
-          },
-        },
-      },
-    })
-    const id = isJson(session) ? String(session.sessionId) : ''
-    await call('POST', `/session/${id}/window/rect`, VIEW).catch(() => undefined)
-    await load(id, w.url)
-    for (const screen of SCREENS.filter(
-      (s) => w.only.length === 0 || w.only.some((o) => s.name.startsWith(o)),
-    )) {
-      breaks.push(...(await visit(id, screen, w)))
-      console.log(`${screen.name} checked (WebKitGTK)`)
-    }
-    await call('DELETE', `/session/${id}`)
-  } finally {
-    driver.kill()
-  }
-  return breaks
+  return breaks?.map((b) => `LAYOUT ${b.screen} | ${b.kind} | ${b.where} | ${b.text}`) ?? null
 }
 
 if (import.meta.main) {

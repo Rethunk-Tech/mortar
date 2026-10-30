@@ -1,6 +1,7 @@
 import type { Page } from '@playwright/test'
+import type { Sample } from '@rethunk/react-render-audit'
 import type { Result } from './render-budget.ts'
-import { methodOf, type Sample } from './renderMeter.ts'
+import { methodOf } from './renderMeter.ts'
 
 // A backend call this slow is felt as a stalled screen.
 const SLOW_CALL_MS = 300

@@ -1,6 +1,7 @@
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
 import { chromium, type Page } from '@playwright/test'
+import { layoutBreaks, type Meter, perTen, type Sample } from '@rethunk/react-render-audit'
 import {
   dwell,
   openGameSelect,
@@ -10,15 +11,11 @@ import {
   waitForQuietNotices,
 } from './app.ts'
 import { serveModTemplate } from './modTemplate.ts'
-import { nestedBoxes } from './renderBoxes.ts'
 import { clickIfPresent, gameSettingsCases, newCases } from './renderCases.ts'
 import { dialogCases } from './renderDialogs.ts'
 import { writeGallery } from './renderGallery.ts'
-import { unevenSpacing } from './renderGaps.ts'
-import { HOOK } from './renderHook.ts'
-import { type LayoutBreak, layoutBreaks } from './renderLayout.ts'
 import { printExtras, report, startupLine, watchLog } from './renderLog.ts'
-import { Meter, perTen, type Sample } from './renderMeter.ts'
+import { HOOK, mortarBoxes, mortarGaps, mortarMeter, quietToasts } from './renderMeter.ts'
 import { screenCases } from './renderScreens.ts'
 import { PAGE } from './renderViewport.ts'
 import { keepServerLogs, sandboxPort, selftest } from './sandbox.ts'
@@ -30,7 +27,7 @@ import { webkitWalk } from './webkit-walk.ts'
 // listeners) and how many backend calls it made: once over the action itself, and once while the screen sits idle.
 // The build measured is the production bundle the sandbox serves (it keeps component names), not the dev server,
 // whose StrictMode doubles effects.
-// Periodic timers of 5 s or more never fire (renderHook.ts), so a poll landing in a case's window cannot skew it.
+// Periodic timers of 5 s or more never fire (renderMeter.ts), so a poll landing in a case's window cannot skew it.
 //
 //   MORTAR_RENDER_DATA=<data folder>   measure a copy of that data (default: the maintainer's own, selftest --copy-data)
 //   MORTAR_RENDER_SEEDED=1             the small seeded sandbox instead (a smoke run)
@@ -39,11 +36,11 @@ import { webkitWalk } from './webkit-walk.ts'
 //   MORTAR_RENDER_ONLY=mods,config     run only the cases whose names start with these
 //   MORTAR_RENDER_SETTLE_MS / _IDLE_MS how long a case's own steps wait (3000) and how long idle is watched (3000); setup
 //                                      and action end once nothing has committed or called the backend for 1.5 s
-//   MORTAR_RENDER_GAPS=1              print each screen's unevenly spaced stacks and cards (renderGaps.ts)
+//   MORTAR_RENDER_GAPS=1              print each screen's unevenly spaced stacks and cards (unevenSpacing)
 //   MORTAR_RENDER_SHOTS=<dir>          where each screen's pictures go (default <out>/shots): settled in <dir>/chromium
 //                                      and <dir>/webkit, loading (just after the action) in their loading/ folders;
 //                                      `bun run renders:diff OLD/chromium NEW/chromium` compares two runs' settled ones
-// Every screen is checked for layout breaks (renderLayout.ts) in Chromium, and with MORTAR_RENDER_WEBKIT=1 (renders:release)
+// Every screen is checked for layout breaks (layoutBreaks) in Chromium, and with MORTAR_RENDER_WEBKIT=1 (renders:release)
 // in WebKitGTK too (webkit-walk.ts) on the same sandbox; a break fails the run like a budget.
 //   MORTAR_RENDER_MOTION=1             measure with motion (by default reduced, so no ripple or animation is counted)
 //   MORTAR_RENDER_TOP=<n>              how many components, roots and causes each case lists (8)
@@ -329,7 +326,7 @@ async function measure(
     const t0 = Date.now()
     await c.setup?.(page)
     await meter.untilStill(QUIET_MS, QUIET_MAX_MS)
-    await meter.quietToasts(c.name)
+    await quietToasts(page, c.name)
     await meter.reset()
     const t1 = Date.now()
     await c.run(page)
@@ -375,7 +372,7 @@ async function run(
     await page.addInitScript(HOOK)
     const cdp = await page.context().newCDPSession(page)
     await cdp.send('Performance.enable')
-    const meter = new Meter(page, cdp)
+    const meter = mortarMeter(page, cdp)
     const shownMs = await land(page)
     if (shownMs !== null) {
       await meter.untilStill(QUIET_MS, QUIET_MAX_MS)
@@ -397,7 +394,7 @@ async function run(
       try {
         breaks.push(
           ...(await layoutBreaks(page)).map(
-            (b: LayoutBreak) => `LAYOUT ${c.name} | ${b.kind} | ${b.where} | ${b.text}`,
+            (b) => `LAYOUT ${c.name} | ${b.kind} | ${b.where} | ${b.text}`,
           ),
         )
         await page.screenshot({ path: `${shots}/${c.name}.png` })
@@ -415,12 +412,12 @@ async function run(
         errors: [...logged],
       })
       if (process.env.MORTAR_RENDER_BOXES) {
-        for (const b of await nestedBoxes(page)) {
+        for (const b of await mortarBoxes(page)) {
           console.log(`BOX ${c.name} | ${b.inner} in ${b.outer} | ${b.text}`)
         }
       }
       if (process.env.MORTAR_RENDER_GAPS) {
-        for (const g of await unevenSpacing(page)) {
+        for (const g of await mortarGaps(page)) {
           console.log(`GAP ${c.name} | ${g.kind} ${g.sizes.join('/')} | ${g.where} | ${g.text}`)
         }
       }

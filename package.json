@@ -19,7 +19,7 @@
     "perf": "MORTAR_PERF=1 go test -count=1 -run '^TestPerfBudgets$' ./internal/problems && MORTAR_PERF=1 bun test frontend/src/mods/useModGroups.test.ts",
     "mem": "scripts/mem-budget.sh",
     "renders": "scripts/render-budget.sh",
-    "renders:diff": "bun frontend/e2e/render-diff.ts",
+    "renders:diff": "bun frontend/node_modules/.bin/render-diff",
     "renders:release": "MORTAR_RENDER_WEBKIT=1 scripts/render-budget.sh",
     "renders:webkit": "bun frontend/e2e/webkit-walk.ts",
     "vuln": "govulncheck ./...",
