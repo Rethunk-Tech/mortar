@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/avscan"
+	goavscan "github.com/Rethunk-Tech/go-avscan"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -20,7 +20,7 @@ type DetectedError struct {
 	Key  string `json:"key"`
 	// Removed is set when the antivirus deleted the file itself: there is nothing left to install anyway.
 	Removed bool `json:"removed"`
-	avscan.Detection
+	goavscan.Detection
 }
 
 // Detail is what the GUI reads off the error (usererr.Detailer): which store item, and what was flagged in it.
@@ -40,7 +40,7 @@ func (e *DetectedError) Error() string {
 // reported, and the items the player chose to install despite a detection.
 type scanning struct {
 	mu      sync.Mutex
-	scanner func() avscan.Scanner
+	scanner func() goavscan.Scanner
 	failed  func(game, key string, err error)
 	allowed map[string]Override
 	// applied holds the overrides whose scan was skipped, until the install that used them succeeds or fails.
@@ -55,7 +55,7 @@ type Override struct {
 
 // SetScanner makes every item that enters the store pass through the scanner pick returns, which is asked each time so
 // a changed setting applies at once. failed hears about a scan that could not finish; the item installs anyway.
-func (s *Store) SetScanner(pick func() avscan.Scanner, failed func(game, key string, err error)) {
+func (s *Store) SetScanner(pick func() goavscan.Scanner, failed func(game, key string, err error)) {
 	s.scan.mu.Lock()
 	defer s.scan.mu.Unlock()
 	s.scan.scanner, s.scan.failed = pick, failed
@@ -124,4 +124,4 @@ func (s *Store) checkExtracted(ctx context.Context, game, key, dir string) error
 	return usererr.Wrap(usererr.Malware, &DetectedError{Game: game, Key: key, Detection: hit})
 }
 
-func isNoScanner(err error) bool { return errors.Is(err, avscan.ErrNoScanner) }
+func isNoScanner(err error) bool { return errors.Is(err, goavscan.ErrNoScanner) }

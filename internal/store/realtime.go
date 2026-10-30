@@ -6,8 +6,8 @@ import (
 	"runtime"
 	"syscall"
 
+	goavscan "github.com/Rethunk-Tech/go-avscan"
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/avscan"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -37,7 +37,7 @@ func RealTimeBlock(game, key string, err error, staging ...string) error {
 	if (runtime.GOOS != "windows" || !isVirusErrno(err)) && !vanishedFrom(err, staging) {
 		return err
 	}
-	hit := avscan.Detection{Scanner: RealTimeScanner}
+	hit := goavscan.Detection{Scanner: RealTimeScanner}
 	return usererr.Wrap(usererr.Malware, &DetectedError{Game: game, Key: key, Removed: true, Detection: hit})
 }
 

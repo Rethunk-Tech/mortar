@@ -4,13 +4,11 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"os/exec"
-	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
 
-	"github.com/Rethunk-Tech/go-desktopenv/nowindow"
+	goavscan "github.com/Rethunk-Tech/go-avscan"
 	"github.com/Rethunk-Tech/go-safefs"
 )
 
@@ -36,20 +34,20 @@ func ProductOf(ctx context.Context, c Config) ProductLine {
 	case ModeOff:
 		return ProductLine{Text: "Antivirus scanning is off", Code: "off"}
 	case ModeCommand:
-		if parts := splitCommand(c.Command); len(parts) > 0 {
-			return ProductLine{Text: filepath.Base(parts[0])}
+		if prog := (goavscan.Command{Line: c.Command}).Program(); prog != "" {
+			return ProductLine{Text: prog}
 		}
 		return ProductLine{Text: "No command set", Code: "noCommand"}
 	case ModeClamd:
-		return clamdProduct(ctx, clamd{socket: c.Socket})
+		return clamdProduct(ctx, goavscan.Clamd{Socket: c.Socket})
 	}
 	if runtime.GOOS == "windows" {
 		return windowsProduct(ctx)
 	}
-	return clamdProduct(ctx, clamd{socket: c.Socket})
+	return clamdProduct(ctx, goavscan.Clamd{Socket: c.Socket})
 }
 
-func clamdProduct(ctx context.Context, c clamd) ProductLine {
+func clamdProduct(ctx context.Context, c goavscan.Clamd) ProductLine {
 	line, err := c.Version(ctx)
 	if err != nil || line == "" {
 		return ProductLine{Text: "No antivirus found", Code: "none"}
@@ -62,14 +60,11 @@ func clamdProduct(ctx context.Context, c clamd) ProductLine {
 // antivirus is registered, so that is what it says.
 func windowsProduct(ctx context.Context) ProductLine {
 	fallback := ProductLine{Text: "Windows antivirus (AMSI)", Code: "windowsAmsi"}
-	cmd := exec.CommandContext(ctx, "powershell.exe", "-NoProfile", "-NonInteractive", "-Command",
-		"(Get-CimInstance -Namespace root/SecurityCenter2 -ClassName AntiVirusProduct).displayName -join ', '")
-	nowindow.Set(cmd)
-	out, err := cmd.Output()
+	names, err := goavscan.SecurityCenterProducts(ctx)
 	if err != nil {
 		return fallback
 	}
-	if name := strings.TrimSpace(string(out)); name != "" {
+	if name := strings.Join(names, ", "); name != "" {
 		return ProductLine{Text: fmt.Sprintf("%s (AMSI)", name), Code: "namedAmsi", Params: map[string]string{"names": name}}
 	}
 	return fallback
@@ -103,7 +98,7 @@ func StatusOf(ctx context.Context, c Config) Status {
 	_, _, err = New(c).Scan(ctx, dir)
 	if err == nil && st.Scanner == "clamd" {
 		// An empty folder never reaches the daemon, so ask it directly.
-		_, err = clamd{socket: c.Socket}.Version(ctx)
+		_, err = goavscan.Clamd{Socket: c.Socket}.Version(ctx)
 	}
 	if err != nil {
 		st.Problem = err.Error()

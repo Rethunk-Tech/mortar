@@ -10,34 +10,34 @@ import (
 	"syscall"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/avscan"
+	goavscan "github.com/Rethunk-Tech/go-avscan"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 type fakeScanner struct {
-	hit   *avscan.Detection
+	hit   *goavscan.Detection
 	err   error
 	calls int
 }
 
-func (f *fakeScanner) Scan(context.Context, string) (avscan.Detection, bool, error) {
+func (f *fakeScanner) Scan(context.Context, string) (goavscan.Detection, bool, error) {
 	f.calls++
 	if f.hit != nil {
 		return *f.hit, true, f.err
 	}
-	return avscan.Detection{}, false, f.err
+	return goavscan.Detection{}, false, f.err
 }
 
 func scanned(t *testing.T, f *fakeScanner) (*Store, *[]error) {
 	t.Helper()
 	s := newStore(t)
 	var failures []error
-	s.SetScanner(func() avscan.Scanner { return f }, func(_, _ string, err error) { failures = append(failures, err) })
+	s.SetScanner(func() goavscan.Scanner { return f }, func(_, _ string, err error) { failures = append(failures, err) })
 	return s, &failures
 }
 
 func TestADetectionRefusesTheItemAndLeavesNothingInTheStore(t *testing.T) {
-	f := &fakeScanner{hit: &avscan.Detection{Name: "Test.Threat", File: "Mod/a.dll", Scanner: "fake"}}
+	f := &fakeScanner{hit: &goavscan.Detection{Name: "Test.Threat", File: "Mod/a.dll", Scanner: "fake"}}
 	s, _ := scanned(t, f)
 	p := buildZip(t, map[string]string{"Mod/a.dll": "x"})
 	_, err := s.AddArchive(t.Context(), "stardew", p)
@@ -54,7 +54,7 @@ func TestADetectionRefusesTheItemAndLeavesNothingInTheStore(t *testing.T) {
 }
 
 func TestInstallAnywayLetsTheItemInOnce(t *testing.T) {
-	f := &fakeScanner{hit: &avscan.Detection{Name: "Test.Threat"}}
+	f := &fakeScanner{hit: &goavscan.Detection{Name: "Test.Threat"}}
 	s, _ := scanned(t, f)
 	p := buildZip(t, map[string]string{"Mod/a.dll": "x"})
 	key, err := hashKey(p)
@@ -85,7 +85,7 @@ func TestAScannerErrorInstallsAndIsReported(t *testing.T) {
 }
 
 func TestNoScannerInstallsSilently(t *testing.T) {
-	f := &fakeScanner{err: avscan.ErrNoScanner}
+	f := &fakeScanner{err: goavscan.ErrNoScanner}
 	s, failures := scanned(t, f)
 	if _, err := s.AddArchive(t.Context(), "stardew", buildZip(t, map[string]string{"a": "x"})); err != nil || len(*failures) != 0 {
 		t.Fatalf("err = %v, failures = %v", err, *failures)
@@ -93,7 +93,7 @@ func TestNoScannerInstallsSilently(t *testing.T) {
 }
 
 func TestLoaderBundlesAreNotScanned(t *testing.T) {
-	f := &fakeScanner{hit: &avscan.Detection{Name: "Heuristic"}}
+	f := &fakeScanner{hit: &goavscan.Detection{Name: "Heuristic"}}
 	s, _ := scanned(t, f)
 	dir := t.TempDir()
 	if err := s.AddLoaderDir(t.Context(), "lethal-company", LoaderKey("bepinex5", "5.4.2"), dir); err != nil {
@@ -106,14 +106,14 @@ func TestLoaderBundlesAreNotScanned(t *testing.T) {
 
 type ctxScanner struct{}
 
-func (ctxScanner) Scan(ctx context.Context, _ string) (avscan.Detection, bool, error) {
+func (ctxScanner) Scan(ctx context.Context, _ string) (goavscan.Detection, bool, error) {
 	<-ctx.Done()
-	return avscan.Detection{}, false, ctx.Err()
+	return goavscan.Detection{}, false, ctx.Err()
 }
 
 func TestCancellingTheInstallStopsTheScanAndAddsNothing(t *testing.T) {
 	s := newStore(t)
-	s.SetScanner(func() avscan.Scanner { return ctxScanner{} }, nil)
+	s.SetScanner(func() goavscan.Scanner { return ctxScanner{} }, nil)
 	ctx, cancel := context.WithCancel(t.Context())
 	cancel()
 	p := buildZip(t, map[string]string{"a": "x"})
@@ -160,7 +160,7 @@ func TestRealTimeBlockReportsAVirusErrnoAndAVanishedStagingFileAsMalware(t *test
 }
 
 func TestAnOverrideIsHandedOverOnlyWhenItsInstallSucceeds(t *testing.T) {
-	f := &fakeScanner{hit: &avscan.Detection{Name: "Test.Threat", Scanner: "fake"}}
+	f := &fakeScanner{hit: &goavscan.Detection{Name: "Test.Threat", Scanner: "fake"}}
 	s, _ := scanned(t, f)
 	ov := Override{Profile: "p1", Name: "mod.zip", Detection: "Test.Threat"}
 	fill := func(tmp string) error { return os.WriteFile(filepath.Join(tmp, "a"), []byte("x"), 0o600) }

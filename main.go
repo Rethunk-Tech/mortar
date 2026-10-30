@@ -30,6 +30,7 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/services/notifications"
 
+	goavscan "github.com/Rethunk-Tech/go-avscan"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/archivesvc"
@@ -447,7 +448,7 @@ func run() error {
 	}
 
 	items.SetScanner(
-		func() avscan.Scanner {
+		func() goavscan.Scanner {
 			v := store.Get()
 			return avscan.New(avscan.Config{Mode: v.Antivirus, Socket: v.AntivirusSocket, Command: v.AntivirusCommand})
 		},

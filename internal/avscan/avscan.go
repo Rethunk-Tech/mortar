@@ -4,10 +4,9 @@ package avscan
 
 import (
 	"context"
-	"errors"
-	"io/fs"
-	"path/filepath"
 	"runtime"
+
+	goavscan "github.com/Rethunk-Tech/go-avscan"
 )
 
 // Modes of Config, as the antivirus setting names them.
@@ -18,24 +17,6 @@ const (
 	ModeOff       = "off"
 )
 
-// ErrNoScanner is a scanner that is not there: no AMSI provider, no reachable clamd. It is not a failure to report,
-// since most Linux players run no daemon.
-var ErrNoScanner = errors.New("no antivirus scanner available")
-
-// Detection is what a scanner flagged: its name for the threat and the file, relative to the scanned folder, when the
-// scanner says which.
-type Detection struct {
-	Name    string `json:"name"`
-	File    string `json:"file"`
-	Scanner string `json:"scanner"`
-}
-
-// Scanner scans a folder of extracted files. The bool says whether anything was detected; an error is a scan that did
-// not finish and says nothing about the files.
-type Scanner interface {
-	Scan(ctx context.Context, dir string) (Detection, bool, error)
-}
-
 // Config is the antivirus settings: which scanner, clamd's socket and the custom command.
 type Config struct {
 	Mode    string
@@ -44,7 +25,7 @@ type Config struct {
 }
 
 // Chosen is the scanner the settings name: Windows' AMSI, a clamd daemon, the custom command, or none.
-type Chosen struct{ inner Scanner }
+type Chosen struct{ inner goavscan.Scanner }
 
 // New is the scanner the settings name; the empty mode is Automatic.
 func New(c Config) Chosen {
@@ -52,43 +33,34 @@ func New(c Config) Chosen {
 	case ModeOff:
 		return Chosen{off{}}
 	case ModeClamd:
-		return Chosen{clamd{socket: c.Socket}}
+		return Chosen{goavscan.Clamd{Socket: c.Socket}}
 	case ModeCommand:
-		return Chosen{command{line: c.Command}}
+		return Chosen{goavscan.Command{Line: c.Command}}
 	default:
 		if runtime.GOOS == "windows" {
-			return Chosen{amsi{}}
+			return Chosen{goavscan.AMSI{AppName: "Mortar"}}
 		}
-		return Chosen{clamd{socket: c.Socket}}
+		return Chosen{goavscan.Clamd{Socket: c.Socket}}
 	}
 }
 
-// Scan runs the chosen scanner.
-func (c Chosen) Scan(ctx context.Context, dir string) (Detection, bool, error) {
-	return c.inner.Scan(ctx, dir)
+// Scan runs the chosen scanner. AMSI and a command that prints nothing flag a file without naming the threat, so the
+// name is worded here.
+func (c Chosen) Scan(ctx context.Context, dir string) (goavscan.Detection, bool, error) {
+	d, found, err := c.inner.Scan(ctx, dir)
+	if found && d.Name == "" {
+		switch c.inner.(type) {
+		case goavscan.AMSI:
+			d.Name = "malware reported by the Windows antivirus"
+		case goavscan.Command:
+			d.Name = "detected by " + d.Scanner
+		}
+	}
+	return d, found, err
 }
 
 type off struct{}
 
-func (off) Scan(context.Context, string) (Detection, bool, error) { return Detection{}, false, nil }
-
-// files calls visit for each regular file under dir with its path relative to dir, stopping at the first error or
-// when the context ends.
-func files(ctx context.Context, dir string, visit func(abs, rel string) error) error {
-	return filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if cerr := ctx.Err(); cerr != nil {
-			return cerr
-		}
-		if !d.Type().IsRegular() {
-			return nil
-		}
-		rel, relErr := filepath.Rel(dir, path)
-		if relErr != nil {
-			return relErr
-		}
-		return visit(path, filepath.ToSlash(rel))
-	})
+func (off) Scan(context.Context, string) (goavscan.Detection, bool, error) {
+	return goavscan.Detection{}, false, nil
 }

@@ -15,8 +15,8 @@ import (
 	"testing"
 	"time"
 
+	goavscan "github.com/Rethunk-Tech/go-avscan"
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/avscan"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
@@ -87,7 +87,7 @@ func TestServeAnswersOnlyTokenHoldersAndCleansUp(t *testing.T) {
 				return nil, errors.New("boom")
 			}
 			if method == "flagged" {
-				hit := avscan.Detection{Scanner: "AMSI"}
+				hit := goavscan.Detection{Scanner: "AMSI"}
 				return nil, usererr.Wrap(usererr.Malware, &store.DetectedError{Game: "stardew", Key: "k", Detection: hit})
 			}
 			return map[string]string{"method": method, "game": p.Game}, nil
@@ -215,13 +215,13 @@ func servicesWithItems(t *testing.T) (*Services, *store.Store) {
 
 type flaggingScanner struct{}
 
-func (flaggingScanner) Scan(context.Context, string) (avscan.Detection, bool, error) {
-	return avscan.Detection{Name: "Test.Threat", File: "Mod/a.dll", Scanner: "fake"}, true, nil
+func (flaggingScanner) Scan(context.Context, string) (goavscan.Detection, bool, error) {
+	return goavscan.Detection{Name: "Test.Threat", File: "Mod/a.dll", Scanner: "fake"}, true, nil
 }
 
 func TestInstallAnywayInstallsAFlaggedArchiveOnlyWhenAsked(t *testing.T) {
 	s, items := servicesWithItems(t)
-	items.SetScanner(func() avscan.Scanner { return flaggingScanner{} }, nil)
+	items.SetScanner(func() goavscan.Scanner { return flaggingScanner{} }, nil)
 	prof, err := s.Profiles.Create("stardew", "Farm")
 	if err != nil {
 		t.Fatal(err)
