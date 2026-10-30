@@ -85,6 +85,16 @@
     "url": "https://mui.com/material-ui/"
   },
   {
+    "name": "@rethunk/dom-input-nav",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/dom-input-nav"
+  },
+  {
+    "name": "@rethunk/react-load-hooks",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/react-load-hooks"
+  },
+  {
     "name": "@tanstack/react-virtual",
     "licence": "MIT",
     "url": "https://tanstack.com/virtual"
