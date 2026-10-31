@@ -171,8 +171,9 @@ func TestCreateRunsDotnetNewAndWiresTheProfile(t *testing.T) {
 			t.Errorf("dotnet new %v lacks %v", made, want)
 		}
 	}
+	tpl, _ := Template("lethal-company")
 	body, err := safefs.ReadFile(filepath.Join(dir, ".mortar", "template.json"))
-	if err != nil || !strings.Contains(string(body), `"team": "Ab"`) || !strings.Contains(string(body), `"ref": "v0.1.1"`) || !strings.Contains(string(body), `"game": "lethal-company"`) {
+	if err != nil || !strings.Contains(string(body), `"team": "Ab"`) || !strings.Contains(string(body), `"ref": "`+tpl.Ref+`"`) || !strings.Contains(string(body), `"game": "lethal-company"`) {
 		t.Errorf("record = %s (%v)", body, err)
 	}
 	gp := svc.Settings.Get().GamePrefs("lethal-company")
