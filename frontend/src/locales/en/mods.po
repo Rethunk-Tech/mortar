@@ -888,6 +888,10 @@ msgstr "{unique} unique"
 msgid "In development"
 msgstr "In development"
 
+#: src/mods/ProblemsTab.tsx
+msgid "Some checks got no answer from their sites, which may be offline or busy, so more problems may show up later."
+msgstr "Some checks got no answer from their sites, which may be offline or busy, so more problems may show up later."
+
 #: src/mods/LoadOrderTab.tsx
 msgid "No enabled mods"
 msgstr "No enabled mods"
@@ -2649,10 +2653,6 @@ msgstr "This change can be undone from History."
 #: src/mods/NexusDetails.tsx
 msgid "Description"
 msgstr "Description"
-
-#: src/mods/ProblemsTab.tsx
-msgid "Some checks could not run without a connection, so more problems may show up later."
-msgstr "Some checks could not run without a connection, so more problems may show up later."
 
 #: src/mods/describeLoadFailure.ts
 msgid "{plugin} declares itself incompatible with {dependency}, which is also enabled."
