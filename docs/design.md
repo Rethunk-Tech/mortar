@@ -47,11 +47,11 @@ Decided work, short enough to build cold. Delete an item in the change that land
 
 Mortar's side is built (`internal/devsvc/content.go`, the catalog's `devTemplate.content`). Left:
 
-- The BepInEx 5 template (`Rethunk-Tech/mortar-bepinex5-template`, `Directory.Build.targets` `ContentFile`/`CopyContent`) gets a minor tag and the catalog pins it; until then a code project's ticked `content/mortar/<kind>/` folders exist but its build does not ship them.
+- The BepInEx 5 template (`Rethunk-Tech/mortar-bepinex5-template`, `Directory.Build.targets` `ContentFile`/`CopyContent`) gets a minor tag and the catalog pins it; until then a code project's ticked `content/` folders exist but its build does not ship them.
 - The three mods (Mortar-Posters, Mortar-Boombox, Mortar-Television, #5) scan every package folder under `plugins/` for `mortar/<kind>/` and keep reading the old layouts (`*/LethalPosters/posters`, `*/LethalPosters/tips`, `*/LethalPaintings/paintings`, `*/Custom Songs`, `BepInEx/Custom Songs`, `*/Television Videos`), loading a file present in both once; the known-broken redirects (#10) follow. New mod offers the content pack only once one of them is on Thunderstore.
-- The per-kind `assetKinds` entries for posters, paintings, television and boombox leave the catalog once no supported build predates the `content` entry's `minVersion`.
+- The per-kind `assetKinds` entries for posters, paintings, television, boombox, suits and sounds leave the catalog once no supported build predates the `content` entry's `minVersion`.
 
-Done when: a pack with posters + boombox + tv in `plugins/mortar/` loads all three in game; a legacy-layout pack still loads; a code project's ticked content ships in its package.
+Done when: a pack with posters + boombox + tv in `plugins/mortar/`, suits in `plugins/moresuits/` and a sound pack loads all three in game; a legacy-layout pack still loads; a code project's ticked content ships in its package.
 
 ### Lethal Company facts to verify
 
