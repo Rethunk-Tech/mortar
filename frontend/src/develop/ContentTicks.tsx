@@ -44,7 +44,15 @@ function Tile({
       value={label}
       selected={on}
       onChange={toggle}
-      sx={{ justifyContent: 'flex-start', gap: space.gap, textTransform: 'none' }}
+      sx={{
+        justifyContent: 'flex-start',
+        gap: space.gap,
+        textTransform: 'none',
+        textAlign: 'left',
+        // A long label wraps inside its tile instead of running past the edge.
+        whiteSpace: 'normal',
+        overflowWrap: 'anywhere',
+      }}
     >
       <Icon size={18} aria-hidden={true} style={{ flexShrink: 0 }} />
       {label}

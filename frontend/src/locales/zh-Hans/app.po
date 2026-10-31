@@ -3815,6 +3815,7 @@ msgid "Send"
 msgstr ""
 
 #: src/commandPalette/CommandPalette.tsx
+#: src/develop/EditProjectDialog.tsx
 #: src/firstrunTour/TourPopover.tsx
 #: src/game/Sidebar.tsx
 msgid "Mods"
@@ -5364,6 +5365,10 @@ msgstr ""
 msgid "Wait for the running build to finish"
 msgstr ""
 
+#: src/develop/EditProjectDialog.tsx
+msgid "Sites"
+msgstr ""
+
 #: src/develop/LicenseChart.tsx
 msgid "Anything at all"
 msgstr ""
@@ -6269,6 +6274,7 @@ msgstr ""
 msgid "{name} was blocked by your antivirus"
 msgstr ""
 
+#: src/develop/EditProjectDialog.tsx
 #: src/toasts/ToastHost.tsx
 msgid "Details"
 msgstr ""
@@ -6373,6 +6379,7 @@ msgstr ""
 msgid "Rename saved group"
 msgstr ""
 
+#: src/develop/EditProjectDialog.tsx
 #: src/firstrunTour/TourPopover.tsx
 msgid "Mod details"
 msgstr ""

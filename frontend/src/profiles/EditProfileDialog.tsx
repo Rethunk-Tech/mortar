@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Tab, Tabs, TextField, Typography } from '@mui/material'
+import { Box, Button, TextField, Typography } from '@mui/material'
 import { type ReactNode, useEffect, useId, useRef, useState } from 'react'
 import { PickImage } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
@@ -7,6 +7,7 @@ import { hasPickedCover, type StagedCover } from '../game/cover.ts'
 import { HeroCover } from '../game/HeroCover.tsx'
 import { baseName } from '../shell/baseName.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { DialogPanel, DialogTabs } from '../shell/dialog/DialogTabs.tsx'
 import { Field, FormDialog, FormSection } from '../shell/dialog/FormDialog.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -83,34 +84,17 @@ function FieldsTabs({
   onTab: (tab: FieldsTab) => void
 }) {
   const { t } = useLingui()
-  const tabProps = (id: FieldsTab) => ({
-    value: id,
-    id: `${ids}-tab-${id}`,
-    'aria-controls': `${ids}-panel-${id}`,
-  })
   return (
-    <Tabs
-      value={tab}
-      onChange={(_, next: FieldsTab) => onTab(next)}
-      aria-label={t`Profile settings`}
-      sx={{
-        minHeight: 44,
-        mx: -1.75,
-        '& .MuiTabs-indicator': { height: 2 },
-        '& .MuiTab-root': {
-          minHeight: 44,
-          minWidth: 0,
-          px: '14px',
-          fontSize: 'medium.fontSize',
-          fontWeight: 400,
-          color: 'text.secondary',
-          '&.Mui-selected': { color: 'var(--mortar-ink)', fontWeight: 600 },
-        },
-      }}
-    >
-      <Tab {...tabProps('appearance')} label={t`Appearance`} />
-      <Tab {...tabProps('launch')} label={t`Launch`} />
-    </Tabs>
+    <DialogTabs
+      ids={ids}
+      tab={tab}
+      onTab={onTab}
+      label={t`Profile settings`}
+      tabs={[
+        { id: 'appearance', label: t`Appearance` },
+        { id: 'launch', label: t`Launch` },
+      ]}
+    />
   )
 }
 
@@ -139,14 +123,6 @@ interface ProfileFieldsProps {
   tab: FieldsTab
 }
 
-// Only the open panel is drawn; what a field holds lives in the dialog, so switching tabs loses nothing typed.
-const panelSx = {
-  // Room inside the scroll box for a slider's thumb at its far end.
-  overflowX: 'hidden',
-  px: 1,
-  mx: -1,
-} as const
-
 function ProfileFields({
   profile,
   gameId,
@@ -173,17 +149,11 @@ function ProfileFields({
 }: ProfileFieldsProps) {
   const { t } = useLingui()
   const nameId = useId()
-  const panel = (id: FieldsTab, children: ReactNode) =>
-    tab === id ? (
-      <Box
-        role="tabpanel"
-        id={`${ids}-panel-${id}`}
-        aria-labelledby={`${ids}-tab-${id}`}
-        sx={{ ...panelSx, display: 'flex', flexDirection: 'column', gap: 3 }}
-      >
-        {children}
-      </Box>
-    ) : null
+  const panel = (id: FieldsTab, children: ReactNode) => (
+    <DialogPanel ids={ids} panel={id} open={tab === id}>
+      {children}
+    </DialogPanel>
+  )
   return (
     <Box>
       {panel(

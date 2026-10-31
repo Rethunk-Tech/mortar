@@ -160,7 +160,7 @@ function shareCases(kit: ReturnType<typeof dialogKit>): Case[] {
 
 // Home's Tools menu and the Develop tab's New mod wizard, each step measured on its own.
 function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
-  const { dialog, button, pick, inDialog, newModTo, atHome, tab, shown } = kit
+  const { dialog, button, pick, inDialog, tabIn, newModTo, atHome, tab, shown } = kit
   return [
     dialog(
       'manage-tools',
@@ -243,6 +243,32 @@ function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
         (p) => newModTo(p, 0),
       ),
       name: 'develop-new-mod-content',
+    },
+    // A project's Edit dialog, on its Details tab, then its Mods tab.
+    {
+      ...dialog(
+        '',
+        (p) => pick(p, /^Edit details…/),
+        undefined,
+        async (p) => {
+          await tab(p, 'Develop')
+          await p.getByRole('main').getByRole('button', { name: 'More actions' }).first().click()
+        },
+      ),
+      name: 'develop-edit-project',
+    },
+    {
+      ...dialog(
+        '',
+        (p) => tabIn(p, 'Mods'),
+        undefined,
+        async (p) => {
+          await tab(p, 'Develop')
+          await p.getByRole('main').getByRole('button', { name: 'More actions' }).first().click()
+          await pick(p, /^Edit details…/)
+        },
+      ),
+      name: 'develop-edit-project-mods',
     },
     ...[
       ['author', 0],
