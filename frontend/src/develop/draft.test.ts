@@ -9,6 +9,7 @@ import {
   requirementIssue,
   stepIssue,
   stepParams,
+  swapCategories,
 } from './draft.ts'
 
 const param = {
@@ -133,4 +134,13 @@ test('a switch that needs another answer says so until that answer is given', ()
   // The template's default answers for an audience never asked.
   expect(requirementIssue(netcode, {}, all)).toBe('')
   expect(requirementIssue(netcode, { audience: 'host' }, all)).toContain('Everyone')
+})
+
+test('swapCategories drops only what the old ticks implied and adds the new, keeping hand picks', () => {
+  const swap = (c: string, before: string[], after: string[]) =>
+    swapCategories({ categories: c, x: 'y' }, before, after)
+  expect(swap('mods|items', ['mods', 'bepinex'], [])).toEqual({ categories: 'items', x: 'y' })
+  expect(swap('items', [], ['poster']).categories).toBe('items|poster')
+  expect(swap('poster', [], ['poster']).categories).toBe('poster')
+  expect(swap('poster|audio', ['poster', 'audio'], ['poster']).categories).toBe('poster')
 })

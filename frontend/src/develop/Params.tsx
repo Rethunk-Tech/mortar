@@ -12,7 +12,7 @@ import { space } from '../theme/density.ts'
 import { CONTENT_PARAM } from './assetKinds.ts'
 import { ChoicePicker } from './ChoicePicker.tsx'
 import { ContentTicks } from './ContentTicks.tsx'
-import { type Draft, requirementIssue } from './draft.ts'
+import { CATEGORIES_PARAM, type Draft, requirementIssue, swapCategories } from './draft.ts'
 import { localizedParam } from './ownParams.ts'
 
 // A single choice with this many options or fewer is a row of toggle buttons rather than a menu.
@@ -143,6 +143,12 @@ export function Params({
   set: SetDraft
   code?: CodeTile | undefined
 }) {
+  // The categories the ticked content folders stand for.
+  const implied = (content: string) =>
+    (params.find((p) => p.id === CONTENT_PARAM)?.choices ?? []).flatMap((c) =>
+      c.category && content.split('|').includes(c.value) ? [c.category] : [],
+    )
+  const hasCategories = all.some((p) => p.id === CATEGORIES_PARAM)
   return params.map((p) => (
     <ParamField
       key={p.id}
@@ -151,7 +157,14 @@ export function Params({
       // A tick changes the recommended mods, so the picks start again from them.
       set={(v) =>
         set({
-          values: { ...draft.values, [p.id]: v },
+          values:
+            p.id === CONTENT_PARAM && hasCategories
+              ? swapCategories(
+                  { ...draft.values, [p.id]: v },
+                  implied(draft.values[p.id] ?? ''),
+                  implied(v),
+                )
+              : { ...draft.values, [p.id]: v },
           ...(p.id === CONTENT_PARAM ? { dependencies: null } : {}),
         })
       }

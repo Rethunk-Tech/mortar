@@ -27,6 +27,8 @@ import { buildProject } from './builds.ts'
 import { DependenciesStep } from './DependenciesStep.tsx'
 import { startDependencies, useKnownPackages } from './dependencies.ts'
 import {
+  CATEGORIES_PARAM,
+  CODE_CATEGORIES,
   chosenDependencies,
   type Draft,
   draftIssue,
@@ -38,6 +40,7 @@ import {
   stepIndex,
   stepIssue,
   stepParams,
+  swapCategories,
   validModName,
   wizardSteps,
 } from './draft.ts'
@@ -143,7 +146,18 @@ const ModStep = memo(
             noCodeOffered
               ? {
                   on: draft.kind === '',
-                  set: (on) => set({ kind: on ? '' : CONTENT_KIND, dependencies: null }),
+                  set: (on) =>
+                    set({
+                      kind: on ? '' : CONTENT_KIND,
+                      dependencies: null,
+                      values: form?.parameters?.some((p) => p.id === CATEGORIES_PARAM)
+                        ? swapCategories(
+                            draft.values,
+                            on ? [] : CODE_CATEGORIES,
+                            on ? CODE_CATEGORIES : [],
+                          )
+                        : draft.values,
+                    }),
                 }
               : undefined
           }

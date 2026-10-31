@@ -81,6 +81,24 @@ export function rememberedOf(d: Draft, form: Form): Remembered {
   return out
 }
 
+export const CATEGORIES_PARAM: string = 'categories'
+
+// What the Code tile stands for in the categories.
+export const CODE_CATEGORIES = ['mods', 'bepinex']
+
+/** The values with their categories changed for what implies them going from `before` to `after`: a slug only
+ * `before` implies goes, one `after` implies is added when absent, and every other pick stays. */
+export function swapCategories(
+  values: Record<string, string>,
+  before: string[],
+  after: string[],
+): Record<string, string> {
+  const gone = before.filter((c) => !after.includes(c))
+  const picked = (values[CATEGORIES_PARAM] ?? '').split('|').filter((c) => c && !gone.includes(c))
+  const next = [...picked, ...after.filter((c) => !picked.includes(c))].join('|')
+  return { ...values, [CATEGORIES_PARAM]: next }
+}
+
 function paramIssue(p: Param, raw: string): string {
   const v = raw.trim()
   const name = p.label

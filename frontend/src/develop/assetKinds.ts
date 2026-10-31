@@ -6,7 +6,7 @@ import { AssetForm } from '../../bindings/github.com/Rethunk-Tech/mortar/interna
 import { reportError } from '../toasts/report.ts'
 import { useProjectInfo } from './builds.ts'
 import { findPackage } from './dependencies.ts'
-import { type Draft, firstDraft, isRemembered, REMEMBERED } from './draft.ts'
+import { CATEGORIES_PARAM, type Draft, firstDraft, isRemembered, REMEMBERED } from './draft.ts'
 
 export const CONTENT_KIND = 'content'
 export const CONTENT_PARAM = 'mortarContent'
@@ -47,6 +47,20 @@ function withOfferedContent(form: Form | null, missing: ReadonlySet<string>): Fo
     return choices.length > 0 ? [{ ...p, choices }] : []
   })
   return { ...form, parameters }
+}
+
+/** The no-code form with the template's categories before its content question, for the pack to be listed under. */
+function withCategories(form: Form | null, templateForm: Form | null): Form | null {
+  const categories = templateForm?.parameters?.find((p) => p.id === CATEGORIES_PARAM)
+  if (!(form && categories)) {
+    return form
+  }
+  const parameters = form.parameters ?? []
+  const at = parameters.findIndex((p) => p.id === CONTENT_PARAM)
+  return {
+    ...form,
+    parameters: parameters.toSpliced(at < 0 ? parameters.length : at, 0, categories),
+  }
 }
 
 const NONE_MISSING: ReadonlySet<string> = new Set()
@@ -101,7 +115,7 @@ export function useWizardForm(
     }
   }, [game, kind, setDraft, t])
   const shown = useMemo(
-    () => withOfferedContent(kind ? form : templateForm, missing),
+    () => withOfferedContent(kind ? withCategories(form, templateForm) : templateForm, missing),
     [kind, form, templateForm, missing],
   )
   const offered = useMemo(
