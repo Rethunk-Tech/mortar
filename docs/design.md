@@ -43,6 +43,22 @@ Decided work, short enough to build cold. Delete an item in the change that land
 
 - **Decide** how Windows placement copes with large profiles: every Play places every file again (`internal/deploy/place.go`), several times slower on Windows than on Linux (`MORTAR_SCALE=1 go test ./internal/loader/folder -run TestPlaceAndPurgeAThreeThousandFileProfile -v`). Options: show progress; leave files unchanged since the last Play in place; link files where the volume allows, which needs an answer for a mod that rewrites its own file.
 
+### Lethal Company content packs under `mortar/<kind>/`
+
+A content pack is a package like any other, installed in its own folder (`BepInEx/plugins/<Author-Package>/`, as r2modman, Gale and Mortar's Thunderstore install lay it out). Its content sits in a `mortar/` folder inside that package folder, one subfolder per kind, and one pack may carry any number of kinds:
+
+- `mortar/posters/`, `mortar/tips/`, `mortar/paintings/`: `*.png`, `*.jpg`, `*.jpeg`, read by Mortar-Posters (one mod for every picture on the ship).
+- `mortar/boombox/`: `*.mp3`, `*.ogg`, `*.wav`, read by Mortar-Boombox.
+- `mortar/tv/`: `*.mp4`, `*.webm`, read by Mortar-Television.
+
+The mods scan every package folder under `plugins/` for these subfolders. The old layouts stay readable and are never written or recommended: `*/LethalPosters/posters`, `*/LethalPosters/tips`, `*/LethalPaintings/paintings` (`mortar-mods/bepinex5/lethal-company/mortar-lc-posters/src/Posters/Plugin.cs:63-65, 91-93`), `*/Custom Songs` and `BepInEx/Custom Songs` (`mortar-lc-boombox/src/Boombox/Plugin.cs:74-79`), `*/Television Videos` (`mortar-lc-television/src/Television/Plugin.cs:97`). A file present in both layouts loads once.
+
+Develop: New mod offers one kind, **Content pack**, where the author ticks any of posters, tips, paintings, boombox songs and TV videos (at least one). The project gets those `mortar/<kind>/` folders and depends on the mods its ticked kinds need. Adopting a folder detects kinds from the `mortar/<kind>/` folders it already has, and also from the legacy folders, which it reports as old layout with an offer to move the files. The catalog's per-kind `assetKinds` entries (`components.source.json` ~306-340: `folder` `plugins/LethalPosters/posters`, `plugins/LethalPaintings/paintings`, `plugins/Television Videos`, `plugins/Custom Songs`) become one `content` kind carrying the list of subfolders, patterns and dependency per subfolder; `frontend/src/develop/assetKinds.ts` and `internal/devsvc` (asset.go, adopt.go) follow. Release validates that each ticked kind's folder holds at least one matching file.
+
+Traps: Mortar 0.3.8+ projects adopted with an old per-kind entry in `.mortar/project.json` must still open (migrate on read to `content` with that one subfolder); the signed catalog must keep old builds working (an old build reads the per-kind entries it knows, so publish the new `content` kind with `minVersion` and keep the per-kind entries until no supported build needs them). The three mods are unreleased (#5), so their new layout ships in their first release; the known-broken redirects (#10) follow that.
+
+Done when: a pack with posters + boombox + tv in `mortar/` loads all three in game; a legacy-layout pack still loads; New mod creates a multi-kind pack and Release builds it; an adopted legacy pack is recognised and offered the move.
+
 ### Lethal Company facts to verify
 
 Record each in [games.md](games.md#lethal-company) once seen.
