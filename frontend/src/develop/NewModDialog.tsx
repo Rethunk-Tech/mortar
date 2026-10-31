@@ -134,30 +134,19 @@ const ModStep = memo(
             onChange={(repo) => set({ repo })}
           />
         </FieldRow>
-        {noCodeOffered ? (
-          <FormControlLabel
-            sx={{ m: 0, alignItems: 'flex-start', gap: space.gap }}
-            control={
-              <Switch
-                checked={draft.kind === ''}
-                onChange={(_, code) => set({ kind: code ? '' : CONTENT_KIND, dependencies: null })}
-              />
-            }
-            label={
-              <Box sx={{ pt: 0.75 }}>
-                <Box sx={{ fontSize: 'medium.fontSize', fontWeight: 500 }}>{t`Has code`}</Box>
-                <Box sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
-                  {t`A C# plugin built with the .NET SDK. Without it the mod is only the content below, and no SDK is needed.`}
-                </Box>
-              </Box>
-            }
-          />
-        ) : null}
         <Params
           params={stepParams(form, 'mod')}
           all={form?.parameters ?? []}
           draft={draft}
           set={set}
+          code={
+            noCodeOffered
+              ? {
+                  on: draft.kind === '',
+                  set: (on) => set({ kind: on ? '' : CONTENT_KIND, dependencies: null }),
+                }
+              : undefined
+          }
         />
       </>
     )

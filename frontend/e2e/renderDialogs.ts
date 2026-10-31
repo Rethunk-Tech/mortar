@@ -233,16 +233,12 @@ function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
         await shown(p)
       },
     },
-    // The mod step without code: its switch off, the content folders ticked.
+    // The mod step without code: the Code tile off, so only content folders are carried.
     {
       ...dialog(
         '',
         (p) =>
-          p
-            .getByRole('dialog')
-            .last()
-            .getByRole('switch', { name: /^Has code/ })
-            .click(),
+          p.getByRole('dialog').last().getByRole('button', { name: 'Code', exact: true }).click(),
         WIZARD_BUDGET,
         (p) => newModTo(p, 0),
       ),

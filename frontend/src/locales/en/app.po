@@ -2638,6 +2638,7 @@ msgid "The link was made for another {source} account than the one signed in."
 msgstr "The link was made for another {source} account than the one signed in."
 
 #: src/develop/CodeView.tsx
+#: src/develop/ContentTicks.tsx
 #: src/lan/PairedComputers.tsx
 msgid "Code"
 msgstr "Code"
@@ -3012,10 +3013,6 @@ msgstr "The files will download from each mod's source."
 #: src/groups/SavedGroupRow.tsx
 msgid "Profiles: {holderNames}"
 msgstr "Profiles: {holderNames}"
-
-#: src/develop/NewModDialog.tsx
-msgid "A C# plugin built with the .NET SDK. Without it the mod is only the content below, and no SDK is needed."
-msgstr "A C# plugin built with the .NET SDK. Without it the mod is only the content below, and no SDK is needed."
 
 #: src/i18n/reasonText.ts
 msgid "{os} antivirus (AMSI)"
@@ -5295,10 +5292,6 @@ msgstr "Report copied"
 #: src/queue/UnmoderatedDialog.tsx
 msgid "Anyone can publish files on {sites}, and nobody reviews or scans them for malware. Download only from authors you trust. Mortar asks once per site."
 msgstr "Anyone can publish files on {sites}, and nobody reviews or scans them for malware. Download only from authors you trust. Mortar asks once per site."
-
-#: src/develop/NewModDialog.tsx
-msgid "Has code"
-msgstr "Has code"
 
 #: src/nxm/ArrivalDialog.tsx
 msgid "You started this download on {source}, but you have no {game} profile yet."

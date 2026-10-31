@@ -20,6 +20,12 @@ const TOGGLE_CHOICES = 3
 
 export type SetDraft = (next: Partial<Draft>) => void
 
+/** Whether the mod has code, shown as the first content tile when it may go without. */
+export interface CodeTile {
+  on: boolean
+  set: (on: boolean) => void
+}
+
 function ChoiceField({
   param,
   value,
@@ -76,15 +82,17 @@ function ParamField({
   value,
   set,
   blocked,
+  code,
 }: {
   param: Param
   value: string
   set: (v: string) => void
   // Why the switch cannot be turned on with the other answers as they are.
   blocked: string
+  code?: CodeTile | undefined
 }) {
   if (param.id === CONTENT_PARAM) {
-    return <ContentTicks param={param} value={value} set={set} />
+    return <ContentTicks param={param} value={value} set={set} code={code} />
   }
   if (param.kind === 'choice') {
     return <ChoiceField param={param} value={value} set={set} />
@@ -127,11 +135,13 @@ export function Params({
   all,
   draft,
   set,
+  code,
 }: {
   params: Param[]
   all: Param[]
   draft: Draft
   set: SetDraft
+  code?: CodeTile | undefined
 }) {
   return params.map((p) => (
     <ParamField
@@ -146,6 +156,7 @@ export function Params({
         })
       }
       blocked={p.kind === 'bool' ? requirementIssue(p, draft.values, all) : ''}
+      code={code}
     />
   ))
 }
