@@ -412,7 +412,8 @@
         {
           "id": "curseforge",
           "key": "7275",
-          "gameId": 86318
+          "gameId": 86318,
+          "uploadSubdomain": "lethal-company"
         },
         {
           "id": "github",

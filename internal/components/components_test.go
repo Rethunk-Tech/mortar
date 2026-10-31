@@ -682,6 +682,29 @@ func TestSourceClassesValidation(t *testing.T) {
 	}
 }
 
+func TestSourceUploadSubdomainValidation(t *testing.T) {
+	g := func(sub string) GameInfo {
+		return GameInfo{
+			ID: "x", Name: "x", Marker: "x", Loaders: []GameLoader{{ID: "l"}}, Deploy: DeployProfile,
+			Sources: []GameSource{{ID: "curseforge", Key: "1", GameID: 2, UploadSubdomain: sub}},
+		}
+	}
+	for _, ok := range []string{"", "lethal-company"} {
+		if err := g(ok).Validate(); err != nil {
+			t.Errorf("%q rejected: %v", ok, err)
+		}
+	}
+	for _, bad := range []string{"evil.example/", "a.b", "-a", "A", "a@b"} {
+		if g(bad).Validate() == nil {
+			t.Errorf("%q validated", bad)
+		}
+	}
+	lc, _ := Game("lethal-company")
+	if src, _ := lc.Source("curseforge"); src.UploadSubdomain != "lethal-company" {
+		t.Errorf("bundled lethal-company upload subdomain = %q", src.UploadSubdomain)
+	}
+}
+
 func TestValidateChecksCachePaths(t *testing.T) {
 	m, err := BundledManifest()
 	if err != nil {

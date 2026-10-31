@@ -591,6 +591,9 @@ type AssetKind struct {
 	Files      map[string]string `json:"files,omitempty"`
 }
 
+// uploadSubdomain keeps a catalog value from steering an upload token to another host.
+var uploadSubdomain = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
+
 var assetKindID = regexp.MustCompile(`^[a-z][a-z0-9-]*$`)
 
 // validate refuses a kind whose paths could leave the project folder or whose packages are not Thunderstore names.
@@ -895,6 +898,9 @@ type GameSource struct {
 	ID     string `json:"id"`
 	Key    string `json:"key,omitempty"`
 	GameID int    `json:"gameId,omitempty"`
+	// UploadSubdomain is the {game} in https://{game}.curseforge.com, the host CurseForge's upload API answers on; Develop's
+	// Release uploads to CurseForge only for a game that names it.
+	UploadSubdomain string `json:"uploadSubdomain,omitempty"`
 	// Classes are the numeric class ids a search covers, for a game whose mods sit in several (CurseForge's Create a
 	// Sim and Build / Buy beside Mods); it lists Key, the class the source is addressed by.
 	Classes []string `json:"classes,omitempty"`
@@ -1166,6 +1172,9 @@ func (g GameInfo) Validate() error {
 		sources[s.ID] = struct{}{}
 		if len(s.Classes) > 0 && !slices.Contains(s.Classes, s.Key) {
 			return fmt.Errorf("game %q source %q lists classes without its key %q", g.ID, s.ID, s.Key)
+		}
+		if s.UploadSubdomain != "" && !uploadSubdomain.MatchString(s.UploadSubdomain) {
+			return fmt.Errorf("game %q source %q has an upload subdomain %q that is not a host label", g.ID, s.ID, s.UploadSubdomain)
 		}
 		for _, c := range s.Classes {
 			if _, err := strconv.ParseUint(c, 10, 31); err != nil {
