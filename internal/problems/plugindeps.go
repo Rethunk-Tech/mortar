@@ -6,6 +6,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-bepinex/plugins"
 
+	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
@@ -100,10 +101,20 @@ func enabledProvider(providers []installedPlugin, self string) (installedPlugin,
 // unmetDependency is the row for a dependency the profile does not meet. A dependency with no plugin of that GUID but an
 // enabled mod of that name (the same mod shipped under another GUID) is met, as an outside requirement is.
 func unmetDependency(r dotnet.Relation, providers []installedPlugin, mods []framework.Mod, p profile.PackageRef, name string) (Missing, bool) {
-	meets := func(x installedPlugin) bool {
+	check := func(x installedPlugin) deps.Status {
 		c, ok := semverish.CompareDotNet(x.version, r.MinVersion)
-		return r.MinVersion == "" || !ok || c >= 0
+		switch {
+		case r.MinVersion == "":
+			return deps.Met
+		case !ok:
+			return deps.Unknown
+		case c < 0:
+			return deps.Unmet
+		}
+		return deps.Met
 	}
+	meets := func(x installedPlugin) bool { return check(x) == deps.Met }
+	unordered := func(x installedPlugin) bool { return check(x) == deps.Unknown }
 	if len(providers) == 0 {
 		others := slices.DeleteFunc(slices.Clone(mods), func(x framework.Mod) bool { return x.Key == p.Key })
 		if installedByName(others, r.GUID[strings.LastIndex(r.GUID, ".")+1:]) {
@@ -115,10 +126,13 @@ func unmetDependency(r dotnet.Relation, providers []installedPlugin, mods []fram
 	switch {
 	case slices.ContainsFunc(enabled, meets):
 		return Missing{}, false
+	case slices.ContainsFunc(enabled, unordered):
+		i := slices.IndexFunc(enabled, unordered)
+		row.Reason, row.ID, row.InstalledVersion = "unknown", enabled[i].pkg.ID, enabled[i].version
 	case len(enabled) > 0:
 		row.Reason, row.ID, row.InstalledVersion = "outdated", enabled[0].pkg.ID, highestPlugin(enabled)
 	case len(providers) > 0:
-		i := slices.IndexFunc(providers, meets)
+		i := slices.IndexFunc(providers, func(x installedPlugin) bool { return check(x) != deps.Unmet })
 		if i < 0 {
 			row.Reason, row.ID, row.InstalledVersion = "outdated", providers[0].pkg.ID, highestPlugin(providers)
 		} else {

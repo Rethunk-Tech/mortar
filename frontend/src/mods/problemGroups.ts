@@ -17,7 +17,7 @@ export const isInfoRow = (p: Row): boolean =>
   (p.kind === 'duplicate' && p.duplicate.nexusOptional === true) ||
   (p.kind === 'broken' &&
     (p.broken.status === 'abandoned' || p.broken.status === 'notRecommended')) ||
-  (p.kind === 'missing' && p.missing.listed) ||
+  (p.kind === 'missing' && (p.missing.listed || p.missing.reason === 'unknown')) ||
   p.kind === 'setting' ||
   p.kind === 'deprecated' ||
   p.kind === 'fileConflict' ||

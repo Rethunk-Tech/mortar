@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"reflect"
+	"slices"
 	"testing"
 
 	"github.com/Rethunk-Tech/go-smapiweb"
@@ -71,7 +72,8 @@ func TestMissingKinds(t *testing.T) {
 		{"prerelease below release", []framework.Mod{inst("a", "A", "1.0", true, req("B", "1.2")), inst("b", "B", "1.2-beta.1", true)}, []string{"outdated"}},
 		{"release meets prerelease minimum", []framework.Mod{inst("a", "A", "1.0", true, req("B", "1.2-beta.1")), inst("b", "B", "1.2", true)}, nil},
 		{"prerelease meets lower prerelease", []framework.Mod{inst("a", "A", "1.0", true, req("B", "1.2-alpha")), inst("b", "B", "1.2-beta", true)}, nil},
-		{"unparseable version is not flagged", []framework.Mod{inst("a", "A", "1.0", true, req("B", "1.2")), inst("b", "B", "weird", true)}, nil},
+		{"unparseable version is unknown", []framework.Mod{inst("a", "A", "1.0", true, req("B", "1.2")), inst("b", "B", "weird", true)}, []string{"unknown"}},
+		{"unparseable minimum is unknown", []framework.Mod{inst("a", "A", "1.0", true, req("B", "soon")), inst("b", "B", "1.0", true)}, []string{"unknown"}},
 		{"optional ignored", []framework.Mod{inst("a", "A", "1.0", true, mod.Dependency{UniqueID: "B", Required: false})}, nil},
 		{"disabled dependent ignored", []framework.Mod{inst("a", "A", "1.0", false, req("B", ""))}, nil},
 		{"one of two copies satisfies", []framework.Mod{
@@ -93,6 +95,9 @@ func TestMissingKinds(t *testing.T) {
 		}
 		if !reflect.DeepEqual(reasons, want) {
 			t.Errorf("%s: reasons = %v, want %v", c.name, reasons, want)
+		}
+		if slices.Equal(want, []string{"unknown"}) && (got.Count() != 0 || got.Missing[0].InstalledVersion != c.mods[1].Version) {
+			t.Errorf("%s: an unknown requirement counted %d, installed %q", c.name, got.Count(), got.Missing[0].InstalledVersion)
 		}
 	}
 }

@@ -253,6 +253,11 @@ function describeMissing(
   if (reason === 'disabled') {
     return i18n._(msg`${{ name: dependentName }} needs ${dep}, which is disabled.`)
   }
+  if (reason === 'unknown') {
+    return i18n._(
+      msg`${{ name: dependentName }} needs ${dep} ${{ version: minimumVersion }} or newer, and Mortar cannot tell whether this profile's ${{ installed: installedVersion }} is.`,
+    )
+  }
   if (reason === 'outdated') {
     return i18n._(
       msg`${{ name: dependentName }} needs ${dep} ${{ version: minimumVersion }} or newer, and this profile has ${{ installed: installedVersion }}.`,

@@ -57,6 +57,17 @@ func TestPluginDepsHardDependencyIsMetAbsentOrTooOld(t *testing.T) {
 	}
 }
 
+func TestPluginDepsMinimumThatCannotBeOrderedIsUnknown(t *testing.T) {
+	lib := pkgWith(t, "lib", "com.x.Lib", "2.0.0", true)
+	user := pkgWith(t, "user", "com.x.User", "1.0.0", true, hard("com.x.lib", "soon"))
+
+	got, _ := pluginDeps([]profile.PackageRef{lib, user}, nil)
+
+	if len(got) != 1 || got[0].Reason != "unknown" || got[0].InstalledVersion != "2.0.0" || got[0].Counted() {
+		t.Fatalf("missing = %+v, want one uncounted unknown row", got)
+	}
+}
+
 func TestPluginDepsNamesALibraryThatIsDisabled(t *testing.T) {
 	lib := pkgWith(t, "lib", "com.x.Lib", "2.0.0", false)
 	user := pkgWith(t, "user", "com.x.User", "1.0.0", true, hard("com.x.lib", "1.0.0"))

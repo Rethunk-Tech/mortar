@@ -66,7 +66,10 @@ test('playIssueSummary is empty when nothing is wrong', () => {
   expect(playIssueSummary({})).toEqual([])
   expect(
     playIssueSummary({
-      missing: [missing({ optional: true })],
+      missing: [
+        missing({ optional: true }),
+        missing({ reason: 'unknown', minimumVersion: '1.2', installedVersion: 'beta' }),
+      ],
       assetConflicts: [conflict({ cosmetic: true })],
       broken: [broken({ status: 'abandoned' })],
       updates: [],

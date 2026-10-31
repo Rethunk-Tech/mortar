@@ -340,7 +340,7 @@ func updateSource(u smapiweb.Update, nexusID int, githubRepo string) string {
 	return ""
 }
 
-// Need is one dependency of a mod and whether the profile meets it. State is "ok", "absent", "disabled" or
+// Need is one dependency of a mod and whether the profile meets it. State is "ok", "absent", "disabled", "unknown" or
 // "outdated"; Name is the installed mod's name, or the mod id when there is none.
 type Need struct {
 	ID               mod.ID `json:"id"`

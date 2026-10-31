@@ -2175,6 +2175,10 @@ msgstr ""
 msgid "Error in {name}"
 msgstr ""
 
+#: src/mods/describe.ts
+msgid "{name} needs {dep} {version} or newer, and Mortar cannot tell whether this profile's {installed} is."
+msgstr ""
+
 #: src/mods/NexusDetails.tsx
 #: src/mods/parts.tsx
 #: src/mods/Sidebar.tsx

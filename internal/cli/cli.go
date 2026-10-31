@@ -834,11 +834,11 @@ func modNamesForIDs(ids []string, mods []control.ModRow) []string {
 	return out
 }
 
-// countedMissing is the missing requirements Count includes; optional and outside ones are harmless.
+// countedMissing is the missing requirements Count includes; the informational ones are harmless.
 func countedMissing(r problems.Result) int {
 	n := 0
 	for _, x := range r.Missing {
-		if !x.Optional && !x.External {
+		if x.Counted() {
 			n++
 		}
 	}

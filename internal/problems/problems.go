@@ -80,7 +80,8 @@ type Ref struct {
 	Version  string `json:"version"`
 }
 
-// Missing is a required dependency the profile does not satisfy. Reason is "absent", "disabled" or "outdated".
+// Missing is a required dependency the profile does not satisfy. Reason is "absent", "disabled" or "outdated", or
+// "unknown" when the installed version (InstalledVersion) or the minimum cannot be ordered: shown, never counted.
 // Where is nil when the dataset does not know the mod or could not be reached.
 type Missing struct {
 	DependentID      mod.ID `json:"dependentId"`
@@ -97,6 +98,9 @@ type Missing struct {
 	External bool `json:"external,omitempty"`
 	Where    *Ref `json:"where"`
 }
+
+// Counted is false for the informational rows: optional and outside requirements, and versions that cannot be ordered.
+func (m Missing) Counted() bool { return !m.External && !m.Optional && m.Reason != "unknown" }
 
 // OutsideFormat is the id format of an External requirement, whose local part is the name the page gives it.
 const OutsideFormat = "outside"
@@ -221,7 +225,7 @@ type CheckTiming struct {
 func (r Result) Count() int {
 	missing := 0
 	for _, m := range r.Missing {
-		if !m.External && !m.Optional {
+		if m.Counted() {
 			missing++
 		}
 	}
@@ -254,8 +258,8 @@ func (r Result) WarningCount() int {
 }
 
 // satisfied reports whether version meets dep's constraint under scheme.
-func satisfied(scheme string, dep mod.Dependency, version string) bool {
-	return deps.Check(scheme, version, dep.MinimumVersion) != deps.Unmet
+func satisfied(scheme string, dep mod.Dependency, version string) deps.Status {
+	return deps.Check(scheme, version, dep.MinimumVersion)
 }
 
 // meets is satisfied for a bare minimum in SMAPI's scheme, which is what the dataset's Nexus files are versioned in.
@@ -744,17 +748,26 @@ func replacedBy(dropIns map[string]string, byID map[string][]framework.Mod, id m
 }
 
 // depState says why the mods in all do not satisfy dep: "absent", "disabled" or "outdated", with the highest
-// installed version for the last. An empty reason means the dependency is met.
+// installed version for the last, or "unknown" with the enabled version that cannot be ordered against the minimum.
+// An empty reason means the dependency is met.
 func depState(scheme string, byID map[string][]framework.Mod, dep mod.Dependency) (reason, installedVersion string) {
 	installed := byID[dep.ModID().Fold()]
+	enabledIs := func(s deps.Status) func(framework.Mod) bool {
+		return func(x framework.Mod) bool { return x.Enabled && satisfied(scheme, dep, x.Version) == s }
+	}
 	switch {
 	case len(installed) == 0:
 		return "absent", ""
-	case slices.ContainsFunc(installed, func(x framework.Mod) bool { return x.Enabled && satisfied(scheme, dep, x.Version) }):
+	case slices.ContainsFunc(installed, enabledIs(deps.Met)):
 		return "", ""
+	}
+	if i := slices.IndexFunc(installed, enabledIs(deps.Unknown)); i >= 0 {
+		return "unknown", installed[i].Version
+	}
+	switch {
 	case slices.ContainsFunc(installed, func(x framework.Mod) bool { return x.Enabled }):
 		return "outdated", highest(installed)
-	case slices.ContainsFunc(installed, func(x framework.Mod) bool { return satisfied(scheme, dep, x.Version) }):
+	case slices.ContainsFunc(installed, func(x framework.Mod) bool { return satisfied(scheme, dep, x.Version) != deps.Unmet }):
 		return "disabled", ""
 	}
 	return "outdated", highest(installed)
@@ -801,7 +814,7 @@ func copies(scheme string, group, enabled []framework.Mod) []Copy {
 				if !dep.Required || !mod.Equal(dep.ModID(), g.ModID()) {
 					continue
 				}
-				if satisfied(scheme, dep, g.Version) {
+				if satisfied(scheme, dep, g.Version) != deps.Unmet {
 					c.Needed = append(c.Needed, d.Name)
 				} else {
 					c.TooOld = append(c.TooOld, d.Name)
@@ -863,7 +876,7 @@ func fillWhere(ctx context.Context, m Meta, env Environment, enabled []framework
 	cache := map[string]found{}
 	for i := range missing {
 		x := &missing[i]
-		if x.Reason == "disabled" {
+		if x.Reason == "disabled" || x.Reason == "unknown" {
 			continue
 		}
 		if x.Where != nil || x.External {

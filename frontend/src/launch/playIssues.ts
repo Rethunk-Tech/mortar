@@ -18,7 +18,7 @@ import { LastSaveGap } from '../../bindings/github.com/Rethunk-Tech/mortar/inter
 import { listNames } from '../i18n/list.ts'
 import { localId } from '../mods/dependents.ts'
 import { missingDepName } from '../mods/describe.ts'
-import { sameId, visibleUpdates } from '../mods/lookup.ts'
+import { countsAsMissing, sameId, visibleUpdates } from '../mods/lookup.ts'
 import { useMods } from '../mods/store.ts'
 import { changesSinceCache } from '../profiles/changesSinceCache.ts'
 import { diffLines } from '../profiles/historyDiff.ts'
@@ -98,7 +98,7 @@ function playIssueSummary(input: {
   const missing = groupOf(
     'missing',
     (input.missing ?? [])
-      .filter((m) => !(m.optional || m.external))
+      .filter(countsAsMissing)
       .map((m) => missingName(m, input.nameOf ?? localId)),
   )
   const conflicts = groupOf(
