@@ -1,11 +1,5 @@
 msgid ""
-msgstr ""
-"POT-Creation-Date: 2026-10-28 14:49-0700\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"X-Generator: @lingui/cli\n"
-"Language: zh-Hans\n"
+msgstr "POT-Creation-Date: 2026-10-28 14:49-0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nX-Generator: Weblate 2026.11.dev0\nLanguage: zh-Hans\nPO-Revision-Date: 2026-10-31 13:53+0000\nLast-Translator: MOXIAOLEQWQ <moxiaole@users.noreply.hosted.weblate.org>\nLanguage-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/projects/mortar/mods/zh_Hans/>\nPlural-Forms: nplurals=1; plural=0;\n"
 
 #: src/mods/describe.ts
 msgid "Its {source} page summary"
@@ -42,7 +36,7 @@ msgstr ""
 #: src/mods/HiddenInside.tsx
 #: src/mods/storeEntries.ts
 msgid "Could not open the folder"
-msgstr ""
+msgstr "无法打开文件夹"
 
 #: src/mods/typedConfig/valueError.ts
 msgid "This needs to be a hex color like FF8800 or FF8800CC."
@@ -83,13 +77,13 @@ msgstr ""
 
 #: src/mods/problemFix/LongPathFix.tsx
 msgid "Open storage settings"
-msgstr ""
+msgstr "打开存储设置"
 
 #: src/mods/columnLabel.ts
 #: src/mods/NexusDetails.tsx
 #: src/mods/Sidebar.tsx
 msgid "Updated"
-msgstr ""
+msgstr "已更新"
 
 #: src/mods/describe.ts
 msgid "{name} needs {loader} {needs} or newer, and Mortar cannot tell whether the installed {installed} is."
@@ -113,7 +107,7 @@ msgstr ""
 #: src/mods/Toolbar.tsx
 #: src/mods/typedConfig/ConfigPane.tsx
 msgid "Stop the game to change mods."
-msgstr ""
+msgstr "停止游戏以更改模组。"
 
 #: src/mods/typedConfig/ConfigPane.tsx
 msgid "Every entry in {current} goes back to its default."
@@ -125,7 +119,7 @@ msgstr ""
 
 #: src/mods/storeEntries.ts
 msgid "That profile is gone."
-msgstr ""
+msgstr "该配置已不存在。"
 
 #: src/mods/OldFilesCallouts.tsx
 msgid "Keep all"
