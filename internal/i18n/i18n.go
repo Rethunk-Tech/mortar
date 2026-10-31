@@ -13,6 +13,8 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+
+	"github.com/Rethunk-Tech/go-desktopenv/locale"
 )
 
 //go:embed locales/*/native.po
@@ -77,7 +79,7 @@ func Current() string {
 	if f := languageSource.Load(); f != nil {
 		setting = (*f)()
 	}
-	return resolve(catalogs(), setting, systemLanguage())
+	return resolve(catalogs(), setting, locale.Language())
 }
 
 // T returns msgid in the current locale, with each {key} replaced by the value after it in kv. The msgid must be a
@@ -163,15 +165,4 @@ func format(translated, msgid string, kv []string) string {
 		pairs = append(pairs, "{"+kv[i]+"}", kv[i+1])
 	}
 	return strings.NewReplacer(pairs...).Replace(msg)
-}
-
-// posixTag turns a POSIX locale such as "de_DE.UTF-8@euro" into the tag "de-DE"; "C" and "POSIX" name no language.
-func posixTag(v string) string {
-	if i := strings.IndexAny(v, ".@"); i >= 0 {
-		v = v[:i]
-	}
-	if v == "C" || v == "POSIX" {
-		return ""
-	}
-	return strings.ReplaceAll(v, "_", "-")
 }

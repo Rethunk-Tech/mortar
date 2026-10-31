@@ -148,19 +148,6 @@ func TestLocaleAndFormat(t *testing.T) {
 			t.Errorf("resolve(%q, %q) = %q, want %q", c.setting, c.system, got, c.want)
 		}
 	}
-	for in, want := range map[string]string{
-		"de_DE.UTF-8":    "de-DE",
-		"pt_BR@euro":     "pt-BR",
-		"en_US.UTF-8@x":  "en-US",
-		"fr":             "fr",
-		"C":              "",
-		"POSIX":          "",
-		"zh_Hant_TW.utf": "zh-Hant-TW",
-	} {
-		if got := posixTag(in); got != want {
-			t.Errorf("posixTag(%q) = %q, want %q", in, got, want)
-		}
-	}
 	if got := format("", "Stop {game}", []string{"game", "Stardew"}); got != "Stop Stardew" {
 		t.Errorf("fallback = %q", got)
 	}
