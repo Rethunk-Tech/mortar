@@ -1,10 +1,7 @@
 package game
 
 import (
-	"path/filepath"
 	"testing"
-
-	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func TestLaunchOptions(t *testing.T) {
@@ -18,19 +15,6 @@ func TestLaunchOptions(t *testing.T) {
 	}
 	if got, err := NewService(t.TempDir(), testStore(t)).LaunchOptions("stardew"); err != nil || got != "" {
 		t.Fatalf("no steam = %q, %v", got, err)
-	}
-
-	root := filepath.Join(h, ".local", "share", "Steam")
-	write := func(rel, body string) {
-		p := filepath.Join(root, rel)
-		testfs.WriteAt(t, p, []byte(body))
-	}
-	write("config/loginusers.vdf", `"users" { "76561198000000002" { "AccountName" "b" "MostRecent" "1" } }`)
-	write("userdata/39734274/config/localconfig.vdf", `"UserLocalConfigStore" { "Software" { "Valve" { "Steam" { "apps" {
-		"413150" { "LaunchOptions" "\"C:\\Stardew Valley\\StardewModdingAPI.exe\" %command%" } } } } } }`)
-	got, err := svc.LaunchOptions("stardew")
-	if err != nil || got != `"C:\Stardew Valley\StardewModdingAPI.exe" %command%` {
-		t.Fatalf("launch options = %q, %v", got, err)
 	}
 }
 

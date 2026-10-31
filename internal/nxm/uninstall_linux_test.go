@@ -37,25 +37,3 @@ func TestRemoveDesktopUndoesRegistration(t *testing.T) {
 		t.Errorf("mimeapps.list: %q", b)
 	}
 }
-
-func TestRemoveDesktopKeepsAnotherCopysEntry(t *testing.T) {
-	_, r := newLinux(t, "")
-	other := filepath.Join(t.TempDir(), "Mortar.AppImage")
-	if err := safefs.WriteFile(other, []byte("x"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	l := withExe(t, r, other)
-	if err := l.Register(); err != nil {
-		t.Fatal(err)
-	}
-	l = withExe(t, r, "/usr/bin/mortar")
-	if err := l.RemoveDesktop(); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := os.Stat(l.desktopPath()); err != nil {
-		t.Errorf("another copy's entry was removed: %v", err)
-	}
-	if _, err := os.Stat(l.iconPNGPath()); err != nil {
-		t.Errorf("another copy's icon was removed: %v", err)
-	}
-}

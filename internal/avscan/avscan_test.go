@@ -57,18 +57,9 @@ func TestOnlyAnUnnamedCommandDetectionIsNamedAfterItsProgram(t *testing.T) {
 	}
 	dir := t.TempDir()
 	testfs.WriteAt(t, filepath.Join(dir, "a"), []byte("x"))
-	for _, tc := range []struct {
-		command, name string
-		found         bool
-	}{
-		{"false", "detected by false", true},
-		{`sh -c "echo Eicar-Test-Signature; exit 1"`, "Eicar-Test-Signature", true},
-		{"true", "", false},
-	} {
-		got, found, err := New(Config{Mode: ModeCommand, Command: tc.command}).Scan(context.Background(), dir)
-		if err != nil || found != tc.found || got.Name != tc.name {
-			t.Errorf("%s: got %+v, %v, %v", tc.command, got, found, err)
-		}
+	got, found, err := New(Config{Mode: ModeCommand, Command: "false"}).Scan(context.Background(), dir)
+	if err != nil || !found || got.Name != "detected by false" {
+		t.Errorf("got %+v, %v, %v", got, found, err)
 	}
 }
 

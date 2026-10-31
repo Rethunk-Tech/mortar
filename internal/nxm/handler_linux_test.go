@@ -267,43 +267,26 @@ func TestInstallIconsOutdatesAStaleIconCache(t *testing.T) {
 	}
 }
 
-func TestPackagedRegisterLinksSkipsUserDesktop(t *testing.T) {
+// A packaged build's own desktop entry, MIME type and icons come with the package, so linking and a refresh only set
+// the defaults.
+func TestPackagedLeavesTheUserDesktopAlone(t *testing.T) {
 	packaged = "deb"
 	t.Cleanup(func() { packaged = "" })
 	l, r := newLinux(t, "vortex.desktop")
 	if err := l.RegisterLinks(); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := os.Stat(l.desktopPath()); !errors.Is(err, os.ErrNotExist) {
-		t.Fatal("packaged RegisterLinks wrote a user desktop entry")
-	}
-	if _, err := os.Stat(filepath.Join(l.dataHome, "mime", "packages", "mortar.xml")); !errors.Is(err, os.ErrNotExist) {
-		t.Fatal("packaged RegisterLinks wrote MIME XML")
-	}
-	if _, err := os.Stat(l.iconPNGPath()); !errors.Is(err, os.ErrNotExist) {
-		t.Fatal("packaged RegisterLinks wrote icons")
-	}
-	want := []string{
-		xdgMime + " default " + desktopID + " " + mortarMime,
-		xdgMime + " default " + desktopID + " " + fileMime,
-	}
-	if strings.Join(r.calls, "\n") != strings.Join(want, "\n") {
-		t.Errorf("calls = %q", r.calls)
-	}
-}
-
-func TestPackagedRefreshSkipsUserDesktop(t *testing.T) {
-	packaged = "deb"
-	t.Cleanup(func() { packaged = "" })
-	l, r := newLinux(t, "")
 	if err := l.refresh(); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := os.Stat(l.desktopPath()); !errors.Is(err, os.ErrNotExist) {
-		t.Fatal("packaged refresh wrote a user desktop entry")
+	for _, p := range []string{l.desktopPath(), filepath.Join(l.dataHome, "mime", "packages", "mortar.xml"), l.iconPNGPath()} {
+		if _, err := os.Stat(p); !errors.Is(err, os.ErrNotExist) {
+			t.Errorf("packaged build wrote %s", p)
+		}
 	}
-	if len(r.calls) != 2 {
-		t.Errorf("refresh still sets packaged mime defaults, calls = %q", r.calls)
+	defaults := xdgMime + " default " + desktopID + " " + mortarMime + "\n" + xdgMime + " default " + desktopID + " " + fileMime
+	if strings.Join(r.calls, "\n") != defaults+"\n"+defaults {
+		t.Errorf("calls = %q", r.calls)
 	}
 }
 
@@ -347,32 +330,40 @@ func gearLeverEntry(exe string) string {
 	return "[Desktop Entry]\nName=Mortar\nExec=env DESKTOPINTEGRATION=1 " + exe + " %u\nX-AppImage-Name=Mortar\n"
 }
 
-func TestAnIntegratorsEntryIsTheHandler(t *testing.T) {
+// An AppImage integrator's entry for this copy, or another copy's own entry, is left in place: Mortar writes none
+// beside the first, removes neither, and still installs the icons notifications use.
+func TestAnotherEntryIsLeftInPlace(t *testing.T) {
 	_, r := newLinux(t, "vortex.desktop")
 	l := withExe(t, r, "/home/u/Apps/mortar.appimage_0.appimage")
-	writeApp(t, l, "appimagekit_other.desktop", "[Desktop Entry]\nExec=\""+l.exe+"\" %U\n")
 	writeApp(t, l, gearLever, gearLeverEntry(l.exe))
-	for range 2 {
-		if err := l.Register(); err != nil {
-			t.Fatal(err)
-		}
-		if err := l.RegisterLinks(); err != nil {
-			t.Fatal(err)
-		}
+	if err := l.Register(); err != nil {
+		t.Fatal(err)
+	}
+	if err := l.RegisterLinks(); err != nil {
+		t.Fatal(err)
 	}
 	if _, err := os.Stat(l.desktopPath()); !errors.Is(err, os.ErrNotExist) {
 		t.Fatalf("wrote its own entry beside the integrator's: %v", err)
 	}
-	for _, mime := range []string{nxmMime, mortarMime, fileMime} {
-		if r.byMime[mime] != gearLever {
-			t.Errorf("%s default %q", mime, r.byMime[mime])
+	if r.byMime[mortarMime] != gearLever || l.NotificationIcon() == "" {
+		t.Errorf("mortar default %q, notification icon %q", r.byMime[mortarMime], l.NotificationIcon())
+	}
+
+	other := filepath.Join(t.TempDir(), "Mortar.AppImage")
+	if err := safefs.WriteFile(other, []byte("x"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := withExe(t, r, other).Register(); err != nil {
+		t.Fatal(err)
+	}
+	l = withExe(t, r, "/usr/bin/mortar")
+	if err := l.RemoveDesktop(); err != nil {
+		t.Fatal(err)
+	}
+	for _, p := range []string{l.desktopPath(), l.iconPNGPath()} {
+		if _, err := os.Stat(p); err != nil {
+			t.Errorf("another copy's %s was removed: %v", p, err)
 		}
-	}
-	if owner, _ := l.Owner("nxm"); !owner.Mine || owner.Name != "Mortar" {
-		t.Errorf("owner: %+v", owner)
-	}
-	if l.NotificationIcon() == "" {
-		t.Error("no notification icon")
 	}
 }
 

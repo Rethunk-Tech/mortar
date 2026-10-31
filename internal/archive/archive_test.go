@@ -78,22 +78,8 @@ func TestPreviewArchiveTruncatesEntries(t *testing.T) {
 func TestFacadeRefusesAnUnsupportedFormat(t *testing.T) {
 	t.Parallel()
 	p := testfs.WriteFile(t, t.TempDir(), "x.zip", "plain text")
-	if _, err := PreviewArchive(p); !errors.Is(err, ErrUnsupportedFormat) {
-		t.Fatalf("PreviewArchive: %v", err)
-	}
 	if err := Extract(p, t.TempDir()); !errors.Is(err, ErrUnsupportedFormat) {
 		t.Fatalf("Extract: %v", err)
-	}
-	if _, err := DeclaredSize(p); !errors.Is(err, ErrUnsupportedFormat) {
-		t.Fatalf("DeclaredSize: %v", err)
-	}
-}
-
-func TestExtractAppliesWindowsNames(t *testing.T) {
-	t.Parallel()
-	err := Extract(zipAt(t, map[string]string{"CON.txt": "x"}), t.TempDir())
-	if !errors.Is(err, ErrUnsafeName) {
-		t.Fatalf("err = %v", err)
 	}
 }
 

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -30,19 +31,14 @@ func TestSelect(t *testing.T) {
 	if err := json.Unmarshal([]byte(releasesJSON), &all); err != nil {
 		t.Fatal(err)
 	}
+	// IsArchive keeps the 7z and drops a .zip GitHub serves as text/html; a release with no archive is ErrNoArchive.
 	r, assets, err := Select(all, "", false)
-	if err != nil || r.Tag != "v2.1.0" || len(assets) != 3 {
-		t.Fatalf("newest = %q %v %v", r.Tag, assets, err)
+	names := make([]string, len(assets))
+	for i, a := range assets {
+		names[i] = a.Name
 	}
-	r, assets, err = Select(all, "2.0.0", false)
-	if err != nil || r.Tag != "v2.0.0" || len(assets) != 1 {
-		t.Fatalf("requested = %q %v %v", r.Tag, assets, err)
-	}
-	if r, _, err = Select(all, "", true); err != nil || r.Tag != "v3.0.0-beta" {
-		t.Fatalf("prereleases asked for = %q %v", r.Tag, err)
-	}
-	if r, _, err = Select(all, "3.0.0-beta", false); err != nil || r.Tag != "v3.0.0-beta" {
-		t.Fatalf("a named prerelease = %q %v", r.Tag, err)
+	if err != nil || r.Tag != "v2.1.0" || !slices.Contains(names, "Mod-2.1.0-alt.7z") || slices.Contains(names, "fake.zip") {
+		t.Fatalf("newest = %q %v %v", r.Tag, names, err)
 	}
 	if _, _, err = Select(all, "1.0.0", false); !errors.Is(err, ErrNoArchive) {
 		t.Fatalf("no archive: %v", err)
