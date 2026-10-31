@@ -5,7 +5,7 @@ Where the tests are, what each opt-in run proves and how to start it. The gate t
 ## Budget
 
 - The default suite (Go with `-race` plus `bun test`) runs in under 10 s warm. Only the `main` package links the Wails `application` package (GTK and WebKit through cgo; `TestOnlyPackageMainImportsWails`): services take a `winhost.Host` and `desktopnotify` a `Notifier`, both implemented in `wailshost.go`, so no other test binary pays that link.
-- A slow path sits behind a flag below, not in the default run.
+- A slow path sits behind a flag below.
 - Every `dotnet` invocation leaves an empty six-character dir in `TMPDIR`: a script that runs it gives it a per-run `TMPDIR`.
 - Browser e2e stays under its 2-minute budget: `frontend/e2e/run-shards.ts` splits it across sandboxes, because the specs mutate one seeded server. Each shard costs a sandbox's memory and a headless display, so use the fewest that fit.
 
@@ -66,7 +66,7 @@ Every game a self-test sandbox starts, from its browser view or `regress`, goes 
 - **Hidden display.** Headless mutter with a virtual monitor, its own Xwayland, D-Bus session and a private runtime dir (`<sandbox>/run`, exported as `MORTAR_HIDDEN_RUNTIME`), so no desktop Wayland socket, bus, PipeWire or Pulse socket is in reach. The guard refuses a launch whose environment names anything else.
 - **No network.** Each launch runs under `bwrap --unshare-net`, so it cannot reach a Steam client on loopback (`127.0.0.1:57343`).
 - **Cap.** A session gets at most 3 launches across all its sandboxes; the fourth exits 3 (`scripts/launch-guard.sh` names the session key and counter). `regress` refuses up front a run needing more launches than are left. The e2e sandbox has a session per run (`play.pw.ts` starts a stand-in, never a game).
-- **Recorded pids.** Each game's pid and start time go to `<sandbox>/launches.pids`. `stop`, `destroy` and the end of `regress` stop exactly those, each found again by start time (the pid is the one inside the server's pid namespace), never by name.
+- **Recorded pids.** Each game's pid and start time go to `<sandbox>/launches.pids`. `stop`, `destroy` and the end of `regress` stop exactly those, each found again by start time (the pid is the one inside the server's pid namespace).
 - **Intro skip.** Guarded launches carry `MORTAR_SKIP_INTRO=1`, which the Mortar bridge reads to skip Lethal Company's intro; only the guard sets it.
 
 The Lethal Company regress installs the bridge the catalog publishes, so a broken release asset fails it. Sandbox, environment variables (a local bridge build included) and failure artefacts: [HUMANS.md](../HUMANS.md#stardew-regression-run-opt-in-not-in-the-gate).
