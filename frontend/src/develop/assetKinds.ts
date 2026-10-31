@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { readStored } from '@rethunk/react-load-hooks'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { AssetKind } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/components/models.ts'
 import type { Form } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import {
@@ -12,39 +12,77 @@ import { useProjectInfo } from './builds.ts'
 import { findPackage } from './dependencies.ts'
 import { type Draft, firstDraft, isRemembered, REMEMBERED } from './draft.ts'
 
-// A lookup that fails (offline) leaves the kind offered; only a loader the source does not list hides it.
-// A kind whose loader is neither on Thunderstore nor one of the player's projects makes a pack nothing loads.
-async function offered(game: string, kinds: AssetKind[]): Promise<AssetKind[]> {
+export const CONTENT_KIND = 'content'
+export const CONTENT_PARAM = 'mortarContent'
+
+// What a pack of the kind needs to load anything: its loader, or for the content pack any one folder's mod.
+const needs = (k: AssetKind) => (k.id === CONTENT_KIND ? (k.recommends ?? []) : [k.dependency])
+
+// A lookup that fails (offline) counts the package as there; only one the source does not list is missing. A package
+// that is neither on Thunderstore nor one of the player's projects makes a pack nothing loads.
+async function missingPackages(game: string, packages: string[]): Promise<Set<string>> {
   const own = new Set(Object.values(useProjectInfo.getState().byDir).map((info) => info.package))
+  const unique = [...new Set(packages)]
   const found = await Promise.all(
-    kinds.map((k) =>
-      own.has(k.dependency)
+    unique.map((pkg) =>
+      own.has(pkg)
         ? true
-        : findPackage(game, '', k.dependency).then(
+        : findPackage(game, '', pkg).then(
             (item) => item !== undefined,
             () => true,
           ),
     ),
   )
-  return kinds.filter((_, i) => found[i])
+  return new Set(unique.filter((_, i) => !found[i]))
 }
 
-/** The game's asset kinds, and the form for the one the draft picked (null for a code mod or while it loads). Picking a
- * kind fills its questions as the template's are filled: remembered answers first, what was typed kept. */
+/** The form less the content folders whose mod is missing, and less the content question when none is left. */
+export function withOfferedContent(form: Form | null, missing: ReadonlySet<string>): Form | null {
+  const gone = new Set(
+    (form?.recommends ?? [])
+      .filter((r) => r.param === CONTENT_PARAM && missing.has(r.package))
+      .flatMap((r) => r.values ?? []),
+  )
+  if (!form || gone.size === 0) {
+    return form
+  }
+  const parameters = (form.parameters ?? []).flatMap((p) => {
+    if (p.id !== CONTENT_PARAM) {
+      return [p]
+    }
+    const choices = (p.choices ?? []).filter((c) => !gone.has(c.value))
+    return choices.length > 0 ? [{ ...p, choices }] : []
+  })
+  return { ...form, parameters }
+}
+
+const NONE_MISSING: ReadonlySet<string> = new Set()
+
+/** The game's asset kinds, and the form for the kind the draft picked (the template's for a code mod; null while it
+ * loads), less the content folders whose mod is missing. Picking a kind fills its questions as the template's are
+ * filled: remembered answers first, what was typed kept. */
 export function useAssetKinds(
-  open: boolean,
-  game: string,
-  kind: string,
+  {
+    open,
+    game,
+    kind,
+    templateForm,
+  }: { open: boolean; game: string; kind: string; templateForm: Form | null },
   setDraft: (fn: (d: Draft) => Draft) => void,
 ) {
   const { t } = useLingui()
   const [kinds, setKinds] = useState<AssetKind[]>([])
+  const [missing, setMissing] = useState<ReadonlySet<string>>(NONE_MISSING)
   const [form, setForm] = useState<Form | null>(null)
   useEffect(() => {
     if (open) {
       AssetKinds(game)
-        .then((found) => offered(game, found ?? []))
-        .then(setKinds)
+        .then(async (found) => {
+          const all = found ?? []
+          const gone = await missingPackages(game, all.flatMap(needs))
+          setMissing(gone)
+          setKinds(all.filter((k) => needs(k).some((pkg) => !gone.has(pkg))))
+        })
         .catch(() => setKinds([]))
     }
   }, [open, game])
@@ -71,5 +109,9 @@ export function useAssetKinds(
       stale = true
     }
   }, [game, kind, setDraft, t])
-  return { kinds, form }
+  const shown = useMemo(
+    () => withOfferedContent(kind ? form : templateForm, missing),
+    [kind, form, templateForm, missing],
+  )
+  return { kinds, form: shown }
 }

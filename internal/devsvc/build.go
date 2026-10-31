@@ -277,6 +277,7 @@ func startEditor(commands [][]string) bool {
 func (s *Service) project(gameID, dir string) (settings.DevProject, error) {
 	for _, p := range s.Settings.Get().GamePrefs(gameID).DevProjects {
 		if p.Dir == dir {
+			p.Kind = migrateKind(gameID, p.Kind)
 			return p, nil
 		}
 	}

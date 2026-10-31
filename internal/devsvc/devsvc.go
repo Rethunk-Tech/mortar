@@ -339,6 +339,10 @@ func (s *Service) TemplateForm(ctx context.Context, gameID string) (Form, error)
 	}
 	form, err := ReadForm(dir)
 	form.Recommends = append([]components.DevRecommend{}, tpl.Recommends...)
+	if folders := contentFolders(gameID); len(folders) > 0 {
+		form.Recommends = append(form.Recommends, contentRecommends(folders)...)
+		form.Parameters = append(form.Parameters, contentQuestion(folders, false))
+	}
 	return form, err
 }
 
@@ -364,6 +368,10 @@ func (s *Service) Create(ctx context.Context, m NewMod) (_ settings.DevProject, 
 	if err != nil {
 		return settings.DevProject{}, err
 	}
+	ticked, err := tickedContent(m.Game, m.Values, false)
+	if err != nil {
+		return settings.DevProject{}, err
+	}
 	dest, url, err := m.destination()
 	if err != nil {
 		return settings.DevProject{}, err
@@ -377,6 +385,9 @@ func (s *Service) Create(ctx context.Context, m NewMod) (_ settings.DevProject, 
 		return settings.DevProject{}, err
 	}
 	if err := record(dest, tpl, m.Name, used); err != nil {
+		return settings.DevProject{}, err
+	}
+	if err := writeFiles(dest, contentStarters(codeContentRoot, ticked)); err != nil {
 		return settings.DevProject{}, err
 	}
 	if err := writeUserProps(dest, s.Tools(ctx, m.Game).GameDir); err != nil {

@@ -131,6 +131,7 @@ func (s *Service) Inspect(ctx context.Context, gameID, dir string) (ProjectInfo,
 		return ProjectInfo{}, err
 	}
 	if rec, ok := readAssetRecord(p.Dir); ok && p.Kind != "" {
+		rec.Kind = p.Kind
 		info := assetInfo(p.Dir, rec)
 		info.Icon = iconData(p.Dir)
 		s.readGit(ctx, p, &info)

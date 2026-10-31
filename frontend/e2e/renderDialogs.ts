@@ -254,6 +254,21 @@ function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
       ),
       name: 'develop-new-mod-asset',
     },
+    // The content pack's mod step, where its content folders are ticked.
+    {
+      ...dialog(
+        '',
+        (p) =>
+          p
+            .getByRole('dialog')
+            .last()
+            .getByRole('button', { name: /^Content pack/ })
+            .click(),
+        WIZARD_BUDGET,
+        (p) => newModTo(p, 0),
+      ),
+      name: 'develop-new-mod-content',
+    },
     ...[
       ['mod', 0],
       ['author', 1],

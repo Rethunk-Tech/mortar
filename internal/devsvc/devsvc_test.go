@@ -122,7 +122,7 @@ func TestTemplateFormAsksForTheTemplatesParametersInOrder(t *testing.T) {
 	for _, p := range form.Parameters {
 		ids = append(ids, p.ID)
 	}
-	if !slices.Equal(ids, []string{"description", "team", "categories", "netcode"}) || form.Parameters[3].Kind != "bool" || form.shortName != "test-mod" {
+	if !slices.Equal(ids, []string{"description", "team", "categories", "netcode", "mortarContent"}) || form.Parameters[3].Kind != "bool" || form.shortName != "test-mod" {
 		t.Fatalf("form = %+v", form)
 	}
 	team, categories := form.Parameters[1], form.Parameters[2]

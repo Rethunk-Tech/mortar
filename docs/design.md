@@ -45,21 +45,13 @@ Decided work, short enough to build cold. Delete an item in the change that land
 
 ### Lethal Company content packs under `mortar/<kind>/`
 
-A content pack is a package like any other, installed in its own folder (`BepInEx/plugins/<Author-Package>/`, as r2modman, Gale and Mortar's Thunderstore install lay it out). Its content sits in a `mortar/` folder inside that package folder, one subfolder per kind, and one pack may carry any number of kinds:
+Mortar's side is built (`internal/devsvc/content.go`, the catalog's `devTemplate.content`). Left:
 
-- `mortar/posters/`, `mortar/tips/`, `mortar/paintings/`: `*.png`, `*.jpg`, `*.jpeg`, read by Mortar-Posters (one mod for every picture on the ship).
-- `mortar/boombox/`: `*.mp3`, `*.ogg`, `*.wav`, read by Mortar-Boombox.
-- `mortar/tv/`: `*.mp4`, `*.webm`, read by Mortar-Television.
+- The BepInEx 5 template (`Rethunk-Tech/mortar-bepinex5-template`, `Directory.Build.targets` `ContentFile`/`CopyContent`) gets a minor tag and the catalog pins it; until then a code project's ticked `content/mortar/<kind>/` folders exist but its build does not ship them.
+- The three mods (Mortar-Posters, Mortar-Boombox, Mortar-Television, #5) scan every package folder under `plugins/` for `mortar/<kind>/` and keep reading the old layouts (`*/LethalPosters/posters`, `*/LethalPosters/tips`, `*/LethalPaintings/paintings`, `*/Custom Songs`, `BepInEx/Custom Songs`, `*/Television Videos`), loading a file present in both once; the known-broken redirects (#10) follow. New mod offers the content pack only once one of them is on Thunderstore.
+- The per-kind `assetKinds` entries for posters, paintings, television and boombox leave the catalog once no supported build predates the `content` entry's `minVersion`.
 
-The mods scan every package folder under `plugins/` for these subfolders. The old layouts stay readable and are never written or recommended: `*/LethalPosters/posters`, `*/LethalPosters/tips`, `*/LethalPaintings/paintings` (`mortar-mods/bepinex5/lethal-company/mortar-lc-posters/src/Posters/Plugin.cs:63-65, 91-93`), `*/Custom Songs` and `BepInEx/Custom Songs` (`mortar-lc-boombox/src/Boombox/Plugin.cs:74-79`), `*/Television Videos` (`mortar-lc-television/src/Television/Plugin.cs:97`). A file present in both layouts loads once.
-
-Develop: New mod offers one kind, **Content pack**, where the author ticks any of posters, tips, paintings, boombox songs and TV videos (at least one). The project gets those `mortar/<kind>/` folders and depends on the mods its ticked kinds need. Adopting a folder detects kinds from the `mortar/<kind>/` folders it already has, and also from the legacy folders, which it reports as old layout with an offer to move the files. The catalog's per-kind `assetKinds` entries (`components.source.json` ~306-340: `folder` `plugins/LethalPosters/posters`, `plugins/LethalPaintings/paintings`, `plugins/Television Videos`, `plugins/Custom Songs`) become one `content` kind carrying the list of subfolders, patterns and dependency per subfolder; `frontend/src/develop/assetKinds.ts` and `internal/devsvc` (asset.go, adopt.go) follow. Release validates that each ticked kind's folder holds at least one matching file.
-
-Any package can carry content, a code mod included, so content kinds are a project option rather than a project type. The BepInEx 5 template (`Rethunk-Tech/mortar-bepinex5-template`) gets a `content/` folder copied as-is into the package root: `content/mortar/tv/clip.mp4` ships as `plugins/<Author-Mod>/mortar/tv/clip.mp4`. It follows the template's asset-bundle pattern (`Directory.Build.targets` ~117-125 copies `assets/*.bundle` into `$(OutDir)` after Build and maps them as `ModFile` for ThunderPipe): a `ContentFile` item over `content/**/*`, copied into `$(OutDir)` keeping `%(RecursiveDir)` after every Build (the extra-folder dev loop reads the build output, so content shows in game without a release) and mapped as `ModFile` with `Destination="plugins/%(RecursiveDir)"`. A template without `content/` builds as before. Develop's New mod offers the content kinds as ticks on every project, code included, creating `content/mortar/<kind>/` in a code project and `mortar/<kind>/` at the root of a content-only one; the template release gets a minor tag and the catalog pins it.
-
-Traps: Mortar 0.3.8+ projects adopted with an old per-kind entry in `.mortar/project.json` must still open (migrate on read to `content` with that one subfolder); the signed catalog must keep old builds working (an old build reads the per-kind entries it knows, so publish the new `content` kind with `minVersion` and keep the per-kind entries until no supported build needs them). The three mods are unreleased (#5), so their new layout ships in their first release; the known-broken redirects (#10) follow that.
-
-Done when: a pack with posters + boombox + tv in `mortar/` loads all three in game; a legacy-layout pack still loads; New mod creates a multi-kind pack and Release builds it; an adopted legacy pack is recognised and offered the move.
+Done when: a pack with posters + boombox + tv in `plugins/mortar/` loads all three in game; a legacy-layout pack still loads; a code project's ticked content ships in its package.
 
 ### Lethal Company facts to verify
 

@@ -3,6 +3,7 @@ import { Code, Frame, Image, Package, Radio, Shirt, Tv, Volume2 } from 'lucide-r
 import type { ReactNode } from 'react'
 import type { AssetKind } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/components/models.ts'
 import { type Tile, TileGrid } from '../share/TileGrid.tsx'
+import { CONTENT_KIND } from './assetKinds.ts'
 
 const ICON_PX = 32
 
@@ -37,12 +38,21 @@ export function KindStep({
       name: t`Code`,
       hint: t`A plugin in C#, built with the .NET SDK from the game's template.`,
     },
-    ...kinds.map((k) => ({
-      id: k.id,
-      icon: KIND_ICONS[k.id] ?? <Package size={ICON_PX} />,
-      name: k.label,
-      hint: t`Files that ${{ name: packageTitle(k.dependency) }} loads. No SDK needed.`,
-    })),
+    ...kinds.map((k) =>
+      k.id === CONTENT_KIND
+        ? {
+            id: k.id,
+            icon: <Package size={ICON_PX} />,
+            name: t`Content pack`,
+            hint: t`Pictures, songs or videos, each loaded by its own mod. No SDK needed.`,
+          }
+        : {
+            id: k.id,
+            icon: KIND_ICONS[k.id] ?? <Package size={ICON_PX} />,
+            name: k.label,
+            hint: t`Files that ${{ name: packageTitle(k.dependency) }} loads. No SDK needed.`,
+          },
+    ),
   ]
   return (
     <TileGrid

@@ -8,6 +8,10 @@ const OWN_PARAMS: Record<string, { label: MessageDescriptor; hint: MessageDescri
   description: { label: msg`Description`, hint: msg`What the mod does, in one line.` },
   modAuthor: { label: msg`Author`, hint: msg`Who holds the copyright.` },
   team: { label: msg`Team`, hint: msg`The team the mod is published under.` },
+  mortarContent: {
+    label: msg`Content`,
+    hint: msg`Folders of files the package carries; each adds the mod that loads it.`,
+  },
 }
 
 export function localizedParam(p: Param): Param {

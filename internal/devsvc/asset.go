@@ -13,6 +13,7 @@ import (
 	"image/png"
 	"io"
 	"io/fs"
+	"maps"
 	"os"
 	"path"
 	"path/filepath"
@@ -73,30 +74,48 @@ func validCsproj(p string) bool {
 	return fs.ValidPath(p) && !strings.Contains(p, "\\") && strings.HasSuffix(strings.ToLower(p), ".csproj")
 }
 
-// AssetKinds are the mods made only of files that the game's catalog entry offers beside code.
+// AssetKinds are the mods made only of files that the game's catalog entry offers beside code: its asset kinds less
+// those the content pack supersedes, then the content pack (whose Recommends are its folders' mods).
 func (s *Service) AssetKinds(gameID string) []components.AssetKind {
-	tpl, ok := Template(gameID)
-	if !ok || tpl.AssetKinds == nil {
-		return []components.AssetKind{}
+	tpl, _ := Template(gameID)
+	folders := contentFolders(gameID)
+	out := []components.AssetKind{}
+	for _, k := range tpl.AssetKinds {
+		if !superseded(folders, k) {
+			out = append(out, k)
+		}
 	}
-	return tpl.AssetKinds
+	if len(folders) > 0 {
+		out = append(out, contentAssetKind(folders))
+	}
+	return out
 }
 
+// assetKind is any kind a project may be recorded as, a superseded one included.
 func (s *Service) assetKind(gameID, id string) (components.AssetKind, error) {
 	if id == kindGeneric {
 		return components.AssetKind{ID: kindGeneric}, nil
 	}
-	i := slices.IndexFunc(s.AssetKinds(gameID), func(k components.AssetKind) bool { return k.ID == id })
+	tpl, _ := Template(gameID)
+	all := tpl.AssetKinds
+	if folders := contentFolders(gameID); len(folders) > 0 {
+		all = append(slices.Clone(all), contentAssetKind(folders))
+	}
+	i := slices.IndexFunc(all, func(k components.AssetKind) bool { return k.ID == id })
 	if i < 0 {
 		return components.AssetKind{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("%s has no %q kind of mod", gameID, id))
 	}
-	return s.AssetKinds(gameID)[i], nil
+	return all[i], nil
 }
 
 // createAsset starts a project of the kind m.Kind: a package folder Mortar packs itself, so no SDK is needed. Its
 // dependency joins later through AddDependency, as the wizard's choices do for code.
 func (s *Service) createAsset(ctx context.Context, m NewMod) (_ settings.DevProject, err error) {
 	kind, err := s.assetKind(m.Game, m.Kind)
+	if err != nil {
+		return settings.DevProject{}, err
+	}
+	ticked, err := tickedContent(m.Game, m.Values, kind.ID == kindContent)
 	if err != nil {
 		return settings.DevProject{}, err
 	}
@@ -127,8 +146,11 @@ func (s *Service) createAsset(ctx context.Context, m NewMod) (_ settings.DevProj
 		".gitignore":                 []byte("artifacts/\n"),
 		"LICENSE":                    []byte(mitLicense(author)),
 		".mortar/" + assetRecordFile: append(record, '\n'),
-		kind.Folder + "/README.txt":  []byte(kind.Label + ": put " + strings.Join(kind.Patterns, ", ") + " files in this folder.\n"),
 	}
+	if kind.ID != kindContent {
+		files[kind.Folder+"/README.txt"] = []byte(kind.Label + ": put " + strings.Join(kind.Patterns, ", ") + " files in this folder.\n")
+	}
+	maps.Copy(files, contentStarters(packContentRoot, ticked))
 	for name, body := range kind.Files {
 		files[name] = []byte(strings.ReplaceAll(body, "{name}", m.Name))
 	}
@@ -405,6 +427,7 @@ func (s *Service) packAssetProject(ctx context.Context, gameID string, p setting
 	}
 	r.Zip = zipPath
 	r.Issues = Validate(zipPath)
+	r.Issues = append(r.Issues, contentIssues(p.Dir, packContentRoot, contentFolders(gameID), p.Kind == kindContent)...)
 	if p.TemplateIcon != "" && zipFileHash(zipPath, "icon.png") == p.TemplateIcon {
 		r.Issues = append(r.Issues, "icon.png is still the placeholder; draw the mod its own")
 	}
@@ -418,11 +441,20 @@ func (s *Service) AssetForm(gameID, id string) (Form, error) {
 	if err != nil {
 		return Form{}, err
 	}
+	params := assetParams()
+	if kind.ID == kindContent {
+		folders := contentFolders(gameID)
+		return Form{Name: kind.Label, Recommends: contentRecommends(folders), Parameters: append(params, contentQuestion(folders, true))}, nil
+	}
 	recommends := []components.DevRecommend{{Package: kind.Dependency}}
 	for _, r := range kind.Recommends {
 		recommends = append(recommends, components.DevRecommend{Package: r})
 	}
-	return Form{Name: kind.Label, Recommends: recommends, Parameters: assetParams()}, nil
+	if folders := contentFolders(gameID); len(folders) > 0 {
+		recommends = append(recommends, contentRecommends(folders)...)
+		params = append(params, contentQuestion(folders, false))
+	}
+	return Form{Name: kind.Label, Recommends: recommends, Parameters: params}, nil
 }
 
 func assetParams() []Param {
@@ -444,6 +476,12 @@ func (s *Service) OpenAssetFolder(gameID, dir string) error {
 		return err
 	}
 	if kind.ID == kindGeneric {
+		return datadir.Open(p.Dir)
+	}
+	if kind.ID == kindContent {
+		if folder := filepath.Join(p.Dir, filepath.FromSlash(packContentRoot)); isDir(folder) {
+			return datadir.Open(folder)
+		}
 		return datadir.Open(p.Dir)
 	}
 	folder := filepath.Join(p.Dir, filepath.FromSlash(kind.Folder))

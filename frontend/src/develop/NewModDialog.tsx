@@ -33,9 +33,10 @@ import { space } from '../theme/density.ts'
 import { reportError, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
-import { useAssetKinds } from './assetKinds.ts'
+import { CONTENT_PARAM, useAssetKinds } from './assetKinds.ts'
 import { buildProject } from './builds.ts'
 import { ChoicePicker } from './ChoicePicker.tsx'
+import { ContentTicks } from './ContentTicks.tsx'
 import { DependenciesStep } from './DependenciesStep.tsx'
 import { startDependencies, useKnownPackages } from './dependencies.ts'
 import {
@@ -179,6 +180,9 @@ function ParamField({
   // Why the switch cannot be turned on with the other answers as they are.
   blocked: string
 }) {
+  if (param.id === CONTENT_PARAM) {
+    return <ContentTicks param={param} value={value} set={set} />
+  }
   if (param.kind === 'choice') {
     return <ChoiceField param={param} value={value} set={set} />
   }
@@ -231,7 +235,13 @@ function Params({
       key={p.id}
       param={localizedParam(p)}
       value={draft.values[p.id] ?? ''}
-      set={(v) => set({ values: { ...draft.values, [p.id]: v } })}
+      // A tick changes the recommended mods, so the picks start again from them.
+      set={(v) =>
+        set({
+          values: { ...draft.values, [p.id]: v },
+          ...(p.id === CONTENT_PARAM ? { dependencies: null } : {}),
+        })
+      }
       blocked={p.kind === 'bool' ? requirementIssue(p, draft.values, all) : ''}
     />
   ))
@@ -428,8 +438,7 @@ export function NewModDialog({
   const labels = useStepLabels()
   const [draft, setDraft] = useState<Draft>(() => firstDraft(null, {}))
   const { tools, form: templateForm, failed } = useWizardData(open, game, setDraft)
-  const { kinds, form: assetForm } = useAssetKinds(open, game, draft.kind, setDraft)
-  const form = draft.kind ? assetForm : templateForm
+  const { kinds, form } = useAssetKinds({ open, game, kind: draft.kind, templateForm }, setDraft)
   const steps = wizardSteps(kinds.length > 0, form)
   // Kept by name: the kind and the template's form arrive late and change which steps exist.
   const [stepName, setStepName] = useState<Step | null>(null)

@@ -690,6 +690,10 @@ msgstr "Loading saved groups…"
 msgid "How to install"
 msgstr "How to install"
 
+#: src/develop/ownParams.ts
+msgid "Content"
+msgstr "Content"
+
 #: src/saves/backups.ts
 msgid "Scheduled"
 msgstr "Scheduled"
@@ -1332,6 +1336,11 @@ msgstr "No projects match"
 #: src/tools/ToolEditorDialog.tsx
 msgid "Choose executable"
 msgstr "Choose executable"
+
+#: src/develop/AdoptDialog.tsx
+#: src/develop/KindStep.tsx
+msgid "Content pack"
+msgstr "Content pack"
 
 #: src/browse/CardProgress.tsx
 msgid "Paused {percent}%"
@@ -2598,6 +2607,10 @@ msgstr "The link was made for another {source} account than the one signed in."
 #: src/lan/PairedComputers.tsx
 msgid "Code"
 msgstr "Code"
+
+#: src/develop/AdoptDialog.tsx
+msgid "Could not move the files"
+msgstr "Could not move the files"
 
 #: src/saves/SaveRow.tsx
 msgid "Meadowlands farm"
@@ -4982,6 +4995,10 @@ msgstr "{count} left out"
 msgid "No mods in development"
 msgstr "No mods in development"
 
+#: src/develop/ownParams.ts
+msgid "Folders of files the package carries; each adds the mod that loads it."
+msgstr "Folders of files the package carries; each adds the mod that loads it."
+
 #: src/firstrunTour/TourPopover.tsx
 #: src/game/Sidebar.tsx
 msgid "Problems"
@@ -6025,6 +6042,10 @@ msgstr "In progress ({count})"
 msgid "Changes from your other machines"
 msgstr "Changes from your other machines"
 
+#: src/develop/AdoptDialog.tsx
+msgid "Move files"
+msgstr "Move files"
+
 #: src/launch/UpdateWarnDialog.tsx
 msgid "Broke in {brokeIn}"
 msgstr "Broke in {brokeIn}"
@@ -6789,6 +6810,10 @@ msgstr "Suggested for {answer}"
 msgid "Dependencies"
 msgstr "Dependencies"
 
+#: src/develop/KindStep.tsx
+msgid "Pictures, songs or videos, each loaded by its own mod. No SDK needed."
+msgstr "Pictures, songs or videos, each loaded by its own mod. No SDK needed."
+
 #: src/games/GameSelect.tsx
 #: src/games/ProfileCards.tsx
 #: src/games/useOpenGame.ts
@@ -7250,6 +7275,10 @@ msgstr "{name} is not on {source}"
 #: src/develop/DevelopTab.tsx
 msgid "Show all projects"
 msgstr "Show all projects"
+
+#: src/develop/AdoptDialog.tsx
+msgid "Some content is in an old layout ({name}). Move it into plugins/mortar/, where each kind gets its own folder."
+msgstr "Some content is in an old layout ({name}). Move it into plugins/mortar/, where each kind gets its own folder."
 
 #: src/saves/BackupsDialog.tsx
 #: src/saves/SaveBackupsButton.tsx

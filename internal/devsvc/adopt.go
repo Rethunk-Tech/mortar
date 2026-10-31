@@ -29,6 +29,10 @@ type Adoption struct {
 	Csproj string `json:"csproj"`
 	// Kinds are the kinds the folder can be adopted as.
 	Kinds []string `json:"kinds"`
+	// Content are the content folders it carries in the mortar/ layout; Legacy those it carries only in an old one,
+	// which MoveLegacyContent moves when the player agrees.
+	Content []string `json:"content"`
+	Legacy  []string `json:"legacy"`
 }
 
 // junkDirs are folders a search for the project file does not enter.
@@ -77,22 +81,7 @@ func findCsproj(dir string) string {
 // findAssetKind is the game's asset kind whose folder in dir holds a file its patterns take.
 func (s *Service) findAssetKind(gameID, dir string) string {
 	for _, k := range s.AssetKinds(gameID) {
-		folder := filepath.Join(dir, filepath.FromSlash(k.Folder))
-		hit := false
-		_ = filepath.WalkDir(folder, func(_ string, d fs.DirEntry, err error) error {
-			if err != nil || hit {
-				return fs.SkipDir
-			}
-			if !d.IsDir() && slices.ContainsFunc(k.Patterns, func(pat string) bool {
-				ok, _ := path.Match(strings.ToLower(pat), strings.ToLower(d.Name()))
-				return ok
-			}) {
-				hit = true
-				return fs.SkipAll
-			}
-			return nil
-		})
-		if hit {
+		if k.ID != kindContent && holdsMatch(filepath.Join(dir, filepath.FromSlash(k.Folder)), k.Patterns) {
 			return k.ID
 		}
 	}
@@ -122,21 +111,29 @@ func (s *Service) Detect(gameID, dir string) (Adoption, error) {
 		return Adoption{}, usererr.Wrap(usererr.Invalid, errors.New("pick the project's folder"))
 	}
 	dir = filepath.Clean(dir)
+	folders := contentFolders(gameID)
+	content, legacy := detectContent(dir, folders)
 	if rec, ok := readRecord(dir); ok {
-		return Adoption{Known: true, Name: rec.Name, Kind: rec.Kind, Csproj: rec.Csproj, Kinds: []string{rec.Kind}}, nil
+		kind := migrateKind(gameID, rec.Kind)
+		return Adoption{Known: true, Name: rec.Name, Kind: kind, Csproj: rec.Csproj, Kinds: []string{kind}, Content: content, Legacy: legacy}, nil
 	}
 	if name, ok := projectName(dir); ok {
-		return Adoption{Known: true, Name: name, Kind: kindCode, Kinds: []string{kindCode}}, nil
+		return Adoption{Known: true, Name: name, Kind: kindCode, Kinds: []string{kindCode}, Content: content, Legacy: legacy}, nil
 	}
 	if !installer.HasFiles(installer.Open(dir, "")) {
 		return Adoption{}, usererr.Wrap(usererr.Invalid, fmt.Errorf("%s holds no files, so there is nothing to develop", dir))
 	}
-	a := Adoption{Name: folderName(dir), Kind: kindGeneric, Kinds: []string{}}
-	if a.Csproj = findCsproj(dir); a.Csproj != "" {
+	a := Adoption{Name: folderName(dir), Kind: kindGeneric, Kinds: []string{}, Content: content, Legacy: legacy}
+	switch a.Csproj = findCsproj(dir); {
+	case a.Csproj != "":
 		a.Kind, a.Name = kindCode, strings.TrimSuffix(path.Base(a.Csproj), path.Ext(a.Csproj))
 		a.Kinds = append(a.Kinds, kindCode)
-	} else if id := s.findAssetKind(gameID, dir); id != "" {
-		a.Kind = id
+	case len(content)+len(legacy) > 0:
+		a.Kind = kindContent
+	default:
+		if id := s.findAssetKind(gameID, dir); id != "" {
+			a.Kind = id
+		}
 	}
 	for _, k := range s.AssetKinds(gameID) {
 		a.Kinds = append(a.Kinds, k.ID)

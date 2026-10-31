@@ -80,7 +80,7 @@ func (s *Service) Pack(ctx context.Context, gameID, dir string) (PackResult, err
 		r.Issues = append(r.Issues, "the build wrote no package")
 		return r, nil
 	}
-	r.Issues = Validate(r.Zip)
+	r.Issues = append(Validate(r.Zip), contentIssues(p.Dir, codeContentRoot, contentFolders(gameID), false)...)
 	if p.TemplateIcon != "" && zipFileHash(r.Zip, "icon.png") == p.TemplateIcon {
 		r.Issues = append(r.Issues, "icon.png is still the template's; draw the mod its own")
 	}

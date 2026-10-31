@@ -690,6 +690,10 @@ msgstr ""
 msgid "How to install"
 msgstr ""
 
+#: src/develop/ownParams.ts
+msgid "Content"
+msgstr ""
+
 #: src/saves/backups.ts
 msgid "Scheduled"
 msgstr ""
@@ -1331,6 +1335,11 @@ msgstr ""
 
 #: src/tools/ToolEditorDialog.tsx
 msgid "Choose executable"
+msgstr ""
+
+#: src/develop/AdoptDialog.tsx
+#: src/develop/KindStep.tsx
+msgid "Content pack"
 msgstr ""
 
 #: src/browse/CardProgress.tsx
@@ -2597,6 +2606,10 @@ msgstr ""
 #: src/develop/KindStep.tsx
 #: src/lan/PairedComputers.tsx
 msgid "Code"
+msgstr ""
+
+#: src/develop/AdoptDialog.tsx
+msgid "Could not move the files"
 msgstr ""
 
 #: src/saves/SaveRow.tsx
@@ -4982,6 +4995,10 @@ msgstr ""
 msgid "No mods in development"
 msgstr ""
 
+#: src/develop/ownParams.ts
+msgid "Folders of files the package carries; each adds the mod that loads it."
+msgstr ""
+
 #: src/firstrunTour/TourPopover.tsx
 #: src/game/Sidebar.tsx
 msgid "Problems"
@@ -6025,6 +6042,10 @@ msgstr ""
 msgid "Changes from your other machines"
 msgstr ""
 
+#: src/develop/AdoptDialog.tsx
+msgid "Move files"
+msgstr ""
+
 #: src/launch/UpdateWarnDialog.tsx
 msgid "Broke in {brokeIn}"
 msgstr ""
@@ -6789,6 +6810,10 @@ msgstr ""
 msgid "Dependencies"
 msgstr ""
 
+#: src/develop/KindStep.tsx
+msgid "Pictures, songs or videos, each loaded by its own mod. No SDK needed."
+msgstr ""
+
 #: src/games/GameSelect.tsx
 #: src/games/ProfileCards.tsx
 #: src/games/useOpenGame.ts
@@ -7249,6 +7274,10 @@ msgstr ""
 
 #: src/develop/DevelopTab.tsx
 msgid "Show all projects"
+msgstr ""
+
+#: src/develop/AdoptDialog.tsx
+msgid "Some content is in an old layout ({name}). Move it into plugins/mortar/, where each kind gets its own folder."
 msgstr ""
 
 #: src/saves/BackupsDialog.tsx

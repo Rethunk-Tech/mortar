@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { MenuItem } from '@mui/material'
+import { Alert, Button, MenuItem } from '@mui/material'
 import { FolderPlus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { AssetKind } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/components/models.ts'
@@ -7,17 +7,23 @@ import type { Adoption } from '../../bindings/github.com/Rethunk-Tech/mortar/int
 import {
   Adopt,
   AssetKinds,
+  Detect,
+  MoveLegacyContent,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
+import { listNames } from '../i18n/list.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { DerivedValue, FormDialog, SelectField, TextInput } from '../shell/dialog/FormDialog.tsx'
-import { reportUnexpected } from '../toasts/report.ts'
+import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { useAdopting } from './adopting.ts'
+import { CONTENT_KIND } from './assetKinds.ts'
 
 const CODE = 'code'
 const GENERIC = 'generic'
+// Every content kind fits in the old-layout note.
+const LEGACY_SHOWN = 6
 const CODE_NAME = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/
 const MOD_NAME = /^[A-Z][A-Za-z0-9]{1,63}$/
 
@@ -34,7 +40,7 @@ export function AdoptHost() {
 function AdoptDialog({
   game,
   dir,
-  found,
+  found: detected,
   onClose,
 }: {
   game: string
@@ -43,6 +49,8 @@ function AdoptDialog({
   onClose: () => void
 }) {
   const { t } = useLingui()
+  // Read again after the old-layout files move.
+  const [found, setFound] = useState(detected)
   const openId = useProfiles((s) => s.openId)
   const [name, setName] = useState(found.name)
   const [kind, setKind] = useState(found.kind)
@@ -59,6 +67,9 @@ function AdoptDialog({
     }
     if (id === GENERIC) {
       return t`Files, installed as they are`
+    }
+    if (id === CONTENT_KIND) {
+      return t`Content pack`
     }
     return assetKinds.find((k) => k.id === id)?.label ?? id
   }
@@ -80,6 +91,11 @@ function AdoptDialog({
       },
       { errorTitle: t`Could not add the project` },
     )
+  const moveLegacy = () =>
+    MoveLegacyContent(game, dir)
+      .then(() => Detect(game, dir))
+      .then(setFound)
+      .catch(reportError(t`Could not move the files`))
   const nameRule = kind === CODE ? CODE_NAME : MOD_NAME
   let issue = ''
   if (!nameRule.test(name.trim())) {
@@ -115,6 +131,19 @@ function AdoptDialog({
           </MenuItem>
         ))}
       </SelectField>
+      {(found.legacy ?? []).length > 0 ? (
+        <Alert
+          variant="compact"
+          severity="info"
+          action={
+            <Button size="small" onClick={moveLegacy}>
+              {t`Move files`}
+            </Button>
+          }
+        >
+          {t`Some content is in an old layout (${{ name: listNames(found.legacy ?? [], LEGACY_SHOWN) }}). Move it into plugins/mortar/, where each kind gets its own folder.`}
+        </Alert>
+      ) : null}
       {kind === CODE && found.csproj ? (
         <DerivedValue label={t`Project file`} value={found.csproj} />
       ) : null}

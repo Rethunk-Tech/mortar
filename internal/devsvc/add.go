@@ -118,6 +118,7 @@ func (s *Service) Add(ctx context.Context, gameID, dir, profileID string) (setti
 	}
 	dir = filepath.Clean(dir)
 	rec, recorded := readRecord(dir)
+	rec.Kind = migrateKind(gameID, rec.Kind)
 	asset := recorded && rec.Kind != kindCode
 	name, ok := projectName(dir)
 	if recorded {

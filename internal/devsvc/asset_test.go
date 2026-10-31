@@ -297,7 +297,7 @@ func TestAssetParamsHaveGUIText(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, p := range assetParams() {
+	for _, p := range append(assetParams(), contentQuestion(nil, false)) {
 		if !p.Own || !strings.Contains(string(src), "\n  "+p.ID+": {") {
 			t.Errorf("param %q is not marked own or has no entry in ownParams.ts", p.ID)
 		}
