@@ -241,7 +241,7 @@ function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
           p
             .getByRole('dialog')
             .last()
-            .getByRole('checkbox', { name: /^Has code/ })
+            .getByRole('switch', { name: /^Has code/ })
             .click(),
         WIZARD_BUDGET,
         (p) => newModTo(p, 0),
