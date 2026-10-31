@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-semverish"
+
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
@@ -120,9 +122,13 @@ func (l BrokenList) Find(m BrokenMod, gameVersion string) (BrokenEntry, bool) {
 
 var digits = regexp.MustCompile(`[0-9]+`)
 
-// compareLoose orders two versions by their runs of digits in turn ("49" < "50", "v72" > "v50", "1.2" = "1.2.0"); a
-// version with no digits cannot be ordered. Games and mod sites write versions too loosely for semver.
+// compareLoose orders two versions as semver when both parse, so a prerelease sorts below its release and build
+// metadata is ignored; otherwise by their runs of digits in turn ("49" < "50", "v72" > "v50"), since games and mod
+// sites write versions too loosely for semver. A version with no digits cannot be ordered.
 func compareLoose(a, b string) (int, bool) {
+	if c, ok := semverish.Compare(a, b); ok {
+		return c, true
+	}
 	x, y := digits.FindAllString(a, -1), digits.FindAllString(b, -1)
 	if len(x) == 0 || len(y) == 0 {
 		return 0, false
