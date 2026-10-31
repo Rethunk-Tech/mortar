@@ -38,7 +38,7 @@ func (d Driver) Standings(ctx context.Context, _ string, ids []string) (map[stri
 				out[id] = source.Standing{State: "abandoned"}
 			case m.Status == cf.StatusInactive:
 				out[id] = source.Standing{State: "inactive"}
-			case !m.IsAvailable:
+			case !m.Available():
 				out[id] = source.Standing{State: "unavailable"}
 			}
 		}
