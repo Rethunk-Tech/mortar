@@ -3151,7 +3151,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-dotnet@v0.1.0
+github.com/Rethunk-Tech/go-dotnet@v0.1.1
 licence: MIT
 https://github.com/Rethunk-Tech/go-dotnet
 
@@ -5951,7 +5951,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 
-modernc.org/sqlite@v1.61.0
+modernc.org/sqlite@v1.61.1
 licence: BSD-3-Clause
 https://pkg.go.dev/modernc.org/sqlite
 
