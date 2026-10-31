@@ -228,7 +228,8 @@ For a game whose loader has a mod template (Lethal Company), **Develop** in the 
 Each project has:
 
 - **Build** (compiler errors open in VS Code, VSCodium or Rider at the line) and **Build on save**.
-- **Release…**: the next version, a changelog entry and a git tag. With a GitHub remote both are pushed and the project's CI publishes to Thunderstore; otherwise the release stays local and Mortar offers to pack and upload it.
+- **Release…**: the next version, a changelog entry and a git tag. With a GitHub remote both are pushed and the project's CI publishes to Thunderstore; otherwise the release stays local and Mortar offers to pack and upload it. **Upload v…** in the project's menu does the same for the latest release at any time.
+- **Upload**: lists the sites the project is set up for, each with a tick: Thunderstore, and **Nexus Mods** and **CurseForge** once the project's ids for them are filled in under **Edit details…** (**Other sites**). A site that lacks its credentials shows **Add token** (CurseForge: create an upload token under your author settings, one token for all your projects) or, for Nexus Mods, **Add your API key in Settings** (**Settings › Accounts**). Mortar packs the mod once and uploads it only after you click **Upload**; each site then reports a link to the page or what went wrong. Nexus Mods replaces the file whose id you gave (the old one is archived) and adds the version's changelog when the mod id is set; CurseForge adds a release with the changelog. A site that refuses your token asks for it again next time.
 - **Game code…** in the page header.
 - **Test**: copies of the development profile on one computer, one hosting and the rest joining (one copy when every mod here is client-only, otherwise two, or the number last picked from its menu). It first installs any mod the project lists under **Test with** that the profile lacks.
 
@@ -237,9 +238,9 @@ A project you clone or add from a folder is not built when it joins; its first b
 A mod of files only needs no compiler: on New mod's **Mod** step, turn **Has code** off. Any project can tick content: posters, tips, paintings, boombox songs, TV videos, suits and sounds. Each is a folder that adds the mod loading it as a dependency (`mortar/<kind>/` for posters and the like, `moresuits/` for suits, `sound_pack.json` with `sounds/` and `replacers/` for sounds; under `plugins/` without code, `content/` with it). A project without code ticks at least one, and only folders whose mod is on Thunderstore or among your projects are offered. Sounds do nothing until a file in `replacers/` maps a game sound to them.
 
 - **Release…** refuses a ticked folder that holds nothing its mod loads, whose mod is not among the manifest's dependencies, or a sound pack missing `sound_pack.json` or a `replacers/*.json`, and warns of files its mod does not read. A content pack's package holds only `plugins/`, the icon, README, CHANGELOG and LICENSE.
-- **Edit details…** changes the description, categories, team, dependencies and the mods **Test** installs beside it (never part of the package).
+- **Edit details…** changes the description, categories, team, dependencies, the Nexus Mods mod and file ids and the CurseForge project id (shown for games on those sites; Nexus Mods lists the file id under **Advanced** on the mod's Files tab, CurseForge shows the project id on its overview page), and the mods **Test** installs beside it (never part of the package).
 - A folder you add or clone installs once you agree to **Install**, because a plugin among its files runs when the game starts.
-- Without code there is no CI: **Release…** tags the version (and pushes it with a GitHub remote), then **Upload** sends it to Thunderstore.
+- Without code there is no CI: **Release…** tags the version (and pushes it with a GitHub remote), then **Upload** sends it to Thunderstore and to the other sites you set up.
 
 **Add a project folder…** (menu beside **New mod…**) takes any folder. A Mortar project is added as it is; any other folder gets a confirm step with the name, the detected kind and the project file found, and you can change the kind:
 
