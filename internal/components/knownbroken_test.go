@@ -29,7 +29,9 @@ func TestAKnownBrokenEntryFlagsThroughItsVersion(t *testing.T) {
 			t.Errorf("LethalThings %s: broken %v, want %v", v, got, want)
 		}
 	}
-	byNexus := func(v string) BrokenMod { return BrokenMod{ID: mod.NewID(mod.FormatSMAPI, "Some.Mod"), NexusID: 42, Version: v} }
+	byNexus := func(v string) BrokenMod {
+		return BrokenMod{ID: mod.NewID(mod.FormatSMAPI, "Some.Mod"), NexusID: 42, Version: v}
+	}
 	for v, want := range map[string]bool{"2.0.0-beta.3": true, "2.0.0+20240101": true, "v2.0.0": true, "2.0.1-beta": false} {
 		if _, got := l.Find(byNexus(v), "50"); got != want {
 			t.Errorf("Nexus 42 at %s: broken %v, want %v", v, got, want)
