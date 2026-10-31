@@ -416,7 +416,7 @@
                 },
                 {
                   "id": "sounds",
-                  "label": "Sounds (each needs a line in replacers/)",
+                  "label": "Sounds",
                   "folder": "sounds",
                   "patterns": ["*.ogg", "*.wav", "*.mp3"],
                   "dependency": "loaforc-loaforcsSoundAPI",
