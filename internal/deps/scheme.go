@@ -1,9 +1,8 @@
 package deps
 
 import (
-	"regexp"
-
 	"github.com/Rethunk-Tech/go-semverish"
+	"github.com/Rethunk-Tech/go-smapi"
 )
 
 // Version scheme names a loader reports as its capability.
@@ -13,45 +12,34 @@ const (
 	Opaque       = "opaque"
 )
 
-// compare orders two versions: -1, 0 or 1. ok is false when the scheme cannot order them.
-type compare func(a, b string) (cmp int, ok bool)
+// Status is whether a version meets a constraint: Met, Unmet, or Unknown when the two cannot be ordered.
+type Status = smapi.Status
 
-var schemes = map[string]compare{
-	// SMAPI's lenient semver: two to four numbers, prerelease and build.
-	SemverSMAPI: semverish.Compare,
-	// Thunderstore's d.d.d.
-	SemverStrict: compareStrict,
-}
+const (
+	Unknown = smapi.Unknown
+	Met     = smapi.Met
+	Unmet   = smapi.Unmet
+)
 
-var strictPattern = regexp.MustCompile(`^\d+\.\d+\.\d+$`)
-
-func compareStrict(a, b string) (int, bool) {
-	if !strictPattern.MatchString(a) || !strictPattern.MatchString(b) {
+// Compare orders two versions under the named scheme: -1, 0 or 1. ok is false when the scheme (opaque, or unknown) or
+// the versions cannot be ordered. Both semver schemes order leniently (a leading v, two to four numbers), since a
+// version mods declare in a strict scheme is still often written loosely.
+func Compare(scheme, a, b string) (cmp int, ok bool) {
+	if scheme != SemverSMAPI && scheme != SemverStrict {
 		return 0, false
 	}
 	return semverish.Compare(a, b)
 }
 
-// Compare orders two versions under the named scheme: -1, 0 or 1. ok is false when the scheme (opaque, or unknown) or
-// the versions cannot be ordered.
-func Compare(scheme, a, b string) (cmp int, ok bool) {
-	order, known := schemes[scheme]
-	if !known {
-		return 0, false
-	}
-	return order(a, b)
-}
-
-// Satisfies reports whether version meets constraint under the named scheme; an unknown scheme is opaque. An empty
-// constraint is met, and so is a pair a semver scheme cannot order, since only orderable versions are worth
-// complaining about. Opaque is exact: any other version fails.
-func Satisfies(scheme, version, constraint string) bool {
-	if constraint == "" {
-		return true
-	}
+// Check says whether version meets the minimum constraint under the named scheme; an unknown scheme is opaque. An
+// empty constraint is Met. A pair a semver scheme cannot order is Unknown, as is any opaque version other than the
+// constraint itself, since an opaque scheme cannot tell newer from older.
+func Check(scheme, version, constraint string) Status {
 	if scheme == SemverSMAPI || scheme == SemverStrict {
-		c, ok := schemes[scheme](version, constraint)
-		return !ok || c >= 0
+		return smapi.Dependency{MinimumVersion: constraint}.Check(version)
 	}
-	return version == constraint
+	if constraint == "" || version == constraint {
+		return Met
+	}
+	return Unknown
 }

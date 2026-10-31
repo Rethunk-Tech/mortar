@@ -95,7 +95,7 @@ func TestNexusModsWithoutUpdateKeysAreAskedInOneBatch(t *testing.T) {
 		return map[int]nexusmods.Page{
 			10: {Version: "1.2.0", Available: true},
 			11: {Version: "9.0.0", Available: false},
-			13: {Version: "2.0", Available: true},
+			13: {Version: "soon", Available: true},
 		}, nil
 	}}
 	mk := func(key string, id int, version string) framework.Mod {

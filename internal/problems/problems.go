@@ -255,12 +255,12 @@ func (r Result) WarningCount() int {
 
 // satisfied reports whether version meets dep's constraint under scheme.
 func satisfied(scheme string, dep mod.Dependency, version string) bool {
-	return deps.Satisfies(scheme, version, dep.MinimumVersion)
+	return deps.Check(scheme, version, dep.MinimumVersion) != deps.Unmet
 }
 
 // meets is satisfied for a bare minimum in SMAPI's scheme, which is what the dataset's Nexus files are versioned in.
 func meets(version, minimum string) bool {
-	return deps.Satisfies(deps.SemverSMAPI, version, minimum)
+	return deps.Check(deps.SemverSMAPI, version, minimum) != deps.Unmet
 }
 
 // RequirementsOf gives the requirements listed on many Nexus pages of the checked game, in a few batched requests.

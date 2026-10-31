@@ -233,7 +233,7 @@ func attribute(found []loader.Finding, owners func() map[string]framework.Mod, e
 func gameVersionFailure(gameID string, l loader.Loader, env Environment) (LoadFailure, bool) {
 	accepted := components.BundledAccepted(gameID, l.ID())
 	minimum, ok := strings.CutPrefix(accepted, ">=")
-	if !ok || env.GameVersion == "" || deps.Satisfies(env.VersionScheme, env.GameVersion, minimum) {
+	if !ok || env.GameVersion == "" || deps.Check(env.VersionScheme, env.GameVersion, minimum) != deps.Unmet {
 		return LoadFailure{}, false
 	}
 	return LoadFailure{

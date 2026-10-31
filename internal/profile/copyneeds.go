@@ -43,7 +43,7 @@ func (s *Store) NeedsToCopy(game, fromID, toID string, ids []mod.ID) ([]DiffSide
 				}
 				seen[d.ModID().Fold()] = true
 				if slices.ContainsFunc(target, func(x Installed) bool {
-					return mod.Equal(x.ModID(), d.ModID()) && deps.Satisfies(scheme, x.Version, d.MinimumVersion)
+					return mod.Equal(x.ModID(), d.ModID()) && deps.Check(scheme, x.Version, d.MinimumVersion) != deps.Unmet
 				}) {
 					continue
 				}

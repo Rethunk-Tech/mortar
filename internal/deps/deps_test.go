@@ -2,23 +2,26 @@ package deps
 
 import "testing"
 
-func TestSatisfies(t *testing.T) {
+func TestCheck(t *testing.T) {
 	for _, c := range []struct {
 		scheme, version, constraint string
-		want                        bool
+		want                        Status
 	}{
-		{SemverSMAPI, "1.2.0", "1.10", false},
-		{SemverSMAPI, "2.0-beta", "2.0", false},
-		{SemverSMAPI, "garbage", "1.0", true},
-		{SemverSMAPI, "1.0", "", true},
-		{SemverStrict, "1.10.0", "1.9.9", true},
-		{SemverStrict, "1.0.0", "1.0.1", false},
-		{SemverStrict, "1.0", "1.0.1", true},
-		{Opaque, "r12", "r12", true},
-		{Opaque, "r13", "r12", false},
+		{SemverSMAPI, "1.2.0", "1.10", Unmet},
+		{SemverSMAPI, "2.0-beta", "2.0", Unmet},
+		{SemverSMAPI, "garbage", "1.0", Unknown},
+		{SemverSMAPI, "1.0", "garbage", Unknown},
+		{SemverSMAPI, "1.0", "", Met},
+		{SemverStrict, "1.10.0", "1.9.9", Met},
+		{SemverStrict, "1.0.0", "1.0.1", Unmet},
+		{SemverStrict, "1.0", "1.0.1", Unmet},
+		{SemverStrict, "v0.15.1", "0.16.0", Unmet},
+		{SemverStrict, "1.2.3.4", "1.2.3", Met},
+		{Opaque, "r12", "r12", Met},
+		{Opaque, "r13", "r12", Unknown},
 	} {
-		if got := Satisfies(c.scheme, c.version, c.constraint); got != c.want {
-			t.Errorf("Satisfies(%s, %q, %q) = %v", c.scheme, c.version, c.constraint, got)
+		if got := Check(c.scheme, c.version, c.constraint); got != c.want {
+			t.Errorf("Check(%s, %q, %q) = %v, want %v", c.scheme, c.version, c.constraint, got, c.want)
 		}
 	}
 }

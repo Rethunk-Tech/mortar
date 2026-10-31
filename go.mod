@@ -22,7 +22,7 @@ require (
 	github.com/Rethunk-Tech/go-nexusmods v0.2.0
 	github.com/Rethunk-Tech/go-safefs v0.2.0
 	github.com/Rethunk-Tech/go-semverish v0.2.0
-	github.com/Rethunk-Tech/go-smapi v0.1.0
+	github.com/Rethunk-Tech/go-smapi v0.2.0
 	github.com/Rethunk-Tech/go-smapiweb v0.1.0
 	github.com/Rethunk-Tech/go-thunderstore v0.1.2
 	github.com/Rethunk-Tech/go-tilemask v0.1.0
