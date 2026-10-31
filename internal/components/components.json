@@ -367,7 +367,47 @@
                 "patterns": ["*.mp3", "*.ogg", "*.wav"],
                 "dependency": "Mortar-Boombox"
               }
-            ]
+            ],
+            "content": {
+              "minVersion": "0.4.0",
+              "folders": [
+                {
+                  "id": "posters",
+                  "label": "Posters",
+                  "patterns": ["*.png", "*.jpg", "*.jpeg"],
+                  "dependency": "Mortar-Posters",
+                  "legacy": ["plugins/LethalPosters/posters"]
+                },
+                {
+                  "id": "tips",
+                  "label": "Tips",
+                  "patterns": ["*.png", "*.jpg", "*.jpeg"],
+                  "dependency": "Mortar-Posters",
+                  "legacy": ["plugins/LethalPosters/tips"]
+                },
+                {
+                  "id": "paintings",
+                  "label": "Paintings",
+                  "patterns": ["*.png", "*.jpg", "*.jpeg"],
+                  "dependency": "Mortar-Posters",
+                  "legacy": ["plugins/LethalPaintings/paintings"]
+                },
+                {
+                  "id": "boombox",
+                  "label": "Boombox songs",
+                  "patterns": ["*.mp3", "*.ogg", "*.wav"],
+                  "dependency": "Mortar-Boombox",
+                  "legacy": ["plugins/Custom Songs"]
+                },
+                {
+                  "id": "tv",
+                  "label": "TV videos",
+                  "patterns": ["*.mp4", "*.webm"],
+                  "dependency": "Mortar-Television",
+                  "legacy": ["plugins/Television Videos"]
+                }
+              ]
+            }
           }
         }
       ],

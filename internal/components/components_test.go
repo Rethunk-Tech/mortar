@@ -834,6 +834,27 @@ func TestMinVersionIsCheckedAgainstTheRunningCatalogVersion(t *testing.T) {
 	}
 }
 
+// The content pack is left out of a build older than its minVersion, which keeps offering the asset kinds it supersedes.
+func TestTheContentPackNeedsItsMinVersion(t *testing.T) {
+	t.Cleanup(func() { SetRunning("") })
+	content := func(running string) bool {
+		SetRunning(running)
+		g, ok := bundledGame("lethal-company")
+		if !ok {
+			t.Fatal("no bundled lethal-company")
+		}
+		m, _ := withoutUnreadable(Manifest{Games: []GameInfo{g}})
+		t := m.Games[0].Loaders[0].DevTemplate
+		return t != nil && t.Content != nil && len(t.AssetKinds) == 6
+	}
+	if content("0.3.16") {
+		t.Error("0.3.16 offered the content pack")
+	}
+	if !content("0.4.0") {
+		t.Error("0.4.0 left out the content pack")
+	}
+}
+
 // A minVersion is ordered as a Mortar version is, so a four-part one is a version, met by a newer build.
 func TestAFourPartMinVersionIsAVersion(t *testing.T) {
 	t.Cleanup(func() { SetRunning("") })

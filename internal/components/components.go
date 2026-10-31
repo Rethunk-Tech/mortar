@@ -519,6 +519,48 @@ type DevTemplate struct {
 	DevHelper *DevRecommend `json:"devHelper,omitempty"`
 	// AssetKinds are the mods made only of files a loader mod reads, which the New mod wizard offers beside code.
 	AssetKinds []AssetKind `json:"assetKinds,omitempty"`
+	// Content is the content pack: one package carrying any of its folders under mortar/, each read by its own mod.
+	// Builds before it ignore the field and keep offering the AssetKinds it supersedes.
+	Content *ContentKind `json:"content,omitempty"`
+}
+
+// ContentKind is the content pack a template offers, and the content folders any project of it may tick.
+type ContentKind struct {
+	// MinVersion is the oldest Mortar that offers it; an older build that reads the field leaves it out.
+	MinVersion string          `json:"minVersion,omitempty"`
+	Folders    []ContentFolder `json:"folders"`
+}
+
+// ContentFolder is mortar/<ID>/ in a package: files matching Patterns, read by Dependency. Legacy are the folders, as
+// slash paths in the package, that older packs used for the same files; its mod still reads them, and an AssetKind
+// whose Folder is one of them is superseded by the content pack.
+type ContentFolder struct {
+	ID         string   `json:"id"`
+	Label      string   `json:"label"`
+	Patterns   []string `json:"patterns"`
+	Dependency string   `json:"dependency"`
+	Legacy     []string `json:"legacy,omitempty"`
+}
+
+func (c ContentKind) validate() error {
+	if _, ok := semverish.Parse(c.MinVersion); c.MinVersion != "" && !ok {
+		return fmt.Errorf("content has minVersion %q, not a version", c.MinVersion)
+	}
+	if len(c.Folders) == 0 {
+		return errors.New("content lists no folder")
+	}
+	for _, f := range c.Folders {
+		k := AssetKind{ID: f.ID, Label: f.Label, Folder: "mortar/" + f.ID, Patterns: f.Patterns, Dependency: f.Dependency}
+		if err := k.validate(); err != nil {
+			return fmt.Errorf("content folder: %w", err)
+		}
+		for _, l := range f.Legacy {
+			if l == "." || strings.Contains(l, "\\") || !fs.ValidPath(l) {
+				return fmt.Errorf("content folder %q has an unsafe legacy folder %q", f.ID, l)
+			}
+		}
+	}
+	return nil
 }
 
 // AssetKind is a mod of files a loader mod reads (suits, sounds), made without code: Folder below the package holds
@@ -970,6 +1012,11 @@ func (g GameInfo) Validate() error {
 					return fmt.Errorf("game %q: %w", g.ID, err)
 				}
 			}
+			if t.Content != nil {
+				if err := t.Content.validate(); err != nil {
+					return fmt.Errorf("game %q: %w", g.ID, err)
+				}
+			}
 		}
 		if l.PlaceDir != "" && (strings.Contains(l.PlaceDir, "\\") || !fs.ValidPath(l.PlaceDir) || l.PlaceDir == ".") {
 			return fmt.Errorf("game %q has an unsafe loader folder %q", g.ID, l.PlaceDir)
@@ -1305,6 +1352,19 @@ func withoutUnreadable(m Manifest) (Manifest, int) {
 		}
 		return err != nil
 	})
+	for i, g := range m.Games {
+		for j, l := range g.Loaders {
+			if t := l.DevTemplate; t != nil && t.Content != nil {
+				if c, ok := semverish.Compare(running, t.Content.MinVersion); t.Content.MinVersion != "" && ok && c < 0 {
+					// A copy, so a manifest the caller still holds keeps its content pack.
+					without := *t
+					without.Content = nil
+					m.Games[i].Loaders = slices.Clone(m.Games[i].Loaders)
+					m.Games[i].Loaders[j].DevTemplate = &without
+				}
+			}
+		}
+	}
 	return m, listed - len(m.Games)
 }
 
