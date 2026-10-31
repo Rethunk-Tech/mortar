@@ -12,7 +12,7 @@
 #   scripts/selftest.sh destroy               stop the server and everything running from the sandbox, then delete it
 #   scripts/selftest.sh reap [--hours N] [--yes]  list (and with --yes delete) idle sandboxes under the base dir
 #   scripts/selftest.sh seed                  fill the running sandbox with fixture data (once; skipped when present)
-#   scripts/selftest.sh secrets               copy the maintainer's Nexus and itch.io keys into the running sandbox's keyring (screenshots)
+#   scripts/selftest.sh prep-shots            ready the running sandbox for product screenshots: the maintainer's Nexus and itch.io keys, no update notices
 #   scripts/selftest.sh sims4-install         add only the stand-in The Sims 4 (see sims4_install) to the sandbox (before start)
 #   scripts/selftest.sh ea-fixture FOLDER MARKER  add a fake Bottles bottle holding an EA App install of FOLDER (discovery only)
 #   scripts/selftest.sh regress --fake GAME_ID  launch regress for a game not installed here: a fake install and a dummy window (see regress_fake)
@@ -311,9 +311,10 @@ copy_data() {
   done
 }
 
-# The maintainer's own Nexus and itch.io keys, piped from the real keyring into the sandbox's (never printed), so
-# screenshots show what a signed-in Mortar does. Thunderstore upload tokens stay out: no screen needs them.
-copy_secrets() {
+# Readies a running sandbox for product screenshots: the maintainer's own Nexus and itch.io keys, piped from the real
+# keyring into the sandbox's (never printed), so signed-in checks run; Thunderstore upload tokens stay out, since no
+# screen needs them. Mod-update notices are turned off too, or one lands on the bell mid-shot.
+prep_shots() {
   [ -s "$ROOT/run/display.env" ] || {
     echo "start the sandbox first: its keyring lives on its own session bus" >&2
     exit 1
@@ -330,6 +331,7 @@ copy_secrets() {
     copied=$((copied + 1))
   done
   echo "copied $copied keyring item(s) into the sandbox"
+  cli settings set notifyModUpdates false >/dev/null
 }
 
 # The server re-executes itself, so the process to stop is the one holding the port, checked against our binary.
@@ -1914,7 +1916,7 @@ sims4-install)
   ;;
 ea-fixture) ea_fixture "${2:-}" "${3:-}" ;;
 seed) seed ;;
-secrets) copy_secrets ;;
+prep-shots) prep_shots ;;
 stop) stop ;;
 destroy) destroy ;;
 reap)
