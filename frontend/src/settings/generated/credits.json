@@ -155,6 +155,11 @@
     "url": "https://github.com/Rethunk-Tech/go-avscan"
   },
   {
+    "name": "github.com/Rethunk-Tech/go-bepinex",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/go-bepinex"
+  },
+  {
     "name": "github.com/Rethunk-Tech/go-cfgedit",
     "licence": "MIT",
     "url": "https://github.com/Rethunk-Tech/go-cfgedit"
