@@ -7,13 +7,13 @@ highlights:
   - area: Config
     title: Values the game reads back
     text: BepInEx and MelonLoader configs keep their line endings and write decimals, large numbers and enum values the plugin reads, and the editor says why it refused a value.
-    image: /img/config.webp
+    image: /img/config-0-3-16.webp
   - area: Import
     title: Your Mod Organizer 2 folder
     text: Point Mortar at a Mod Organizer 2 folder, as you can for Vortex, and it reads the base, mod and profile folders MO2 is set to.
-    image: /img/import.webp
+    image: /img/import-0-3-16.webp
   - area: Stardew Valley
     title: Content packs read like the game
     text: Content Patcher packs load the JSON the game accepts, and a broken file reports its error on the right line.
-    image: /img/patch-errors.webp
+    image: /img/patch-errors-0-3-16.webp
 ---

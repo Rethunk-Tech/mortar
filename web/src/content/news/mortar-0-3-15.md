@@ -7,13 +7,13 @@ highlights:
   - area: Import
     title: Every mod comes along
     text: Gale and r2modman imports keep mods that ask for an old BepInExPack or depend on each other, and a mod whose dependency is gone imports with a note.
-    image: /img/import.webp
+    image: /img/import-0-3-16.webp
   - area: Performance
     title: Startup to the main menu
     text: Risk of Rain 2's startup timing runs until the main menu is ready, with the loading after the title screen shown in the bar.
-    image: /img/performance.webp
+    image: /img/performance-0-3-16.webp
   - area: Language
     title: Simplified Chinese
     text: Simplified Chinese is open for translation on Weblate and joins the language picker as it fills in.
-    image: /img/language.webp
+    image: /img/language-0-3-16.webp
 ---

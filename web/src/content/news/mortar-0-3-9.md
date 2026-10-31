@@ -11,9 +11,9 @@ highlights:
   - area: Downloads
     title: Auto-install folders
     text: Each build of your mod lands in the open profile.
-    image: /img/watch-folders.webp
+    image: /img/watch-folders-0-3-16.webp
   - area: Interface
     title: A lighter interface
     text: Mods and Config do far less work as you switch.
-    image: /img/config.webp
+    image: /img/config-0-3-16.webp
 ---

@@ -7,9 +7,9 @@ highlights:
   - area: Performance
     title: Startup and in game
     text: Each phase of a start, beside the six slowest mods.
-    image: /img/performance.webp
+    image: /img/performance-0-3-16.webp
   - area: Problems
     title: Errors traced to their patch
     text: An error names the Harmony patch, the method it patched and the source line.
-    image: /img/patch-errors.webp
+    image: /img/patch-errors-0-3-16.webp
 ---

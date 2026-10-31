@@ -7,9 +7,9 @@ highlights:
   - area: Import
     title: One Import for every source
     text: A link, a code, a file or another manager's profile, previewed before anything downloads.
-    image: /img/import.webp
+    image: /img/import-0-3-16.webp
   - area: Browse
     title: "Paradox Mods for Cities: Skylines II"
     text: Search, install and update them beside every other source.
-    image: /img/paradox.webp
+    image: /img/paradox-0-3-16.webp
 ---
