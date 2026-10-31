@@ -34,7 +34,7 @@ import { webkitWalk } from './webkit-walk.ts'
 //   MORTAR_RENDER_URL=http://…         drive an already running server (selftest.sh start) instead of a new sandbox
 //   MORTAR_RENDER_PROFILE=<name>       open this profile (default: whichever profile Mortar reopens; seeded: Seed Farm)
 //   MORTAR_RENDER_ONLY=mods,config     run only the cases whose names start with these
-//   MORTAR_RENDER_SETTLE_MS / _IDLE_MS how long a case's own steps wait (3000) and how long idle is watched (3000); setup
+//   MORTAR_RENDER_SETTLE_MS / _IDLE_MS how long a case's own steps wait (3000) and how long idle is watched (1000); setup
 //                                      and action end once nothing has committed or called the backend for 1.5 s
 //   MORTAR_RENDER_GAPS=1              print each screen's unevenly spaced stacks and cards (unevenSpacing)
 //   MORTAR_RENDER_SHOTS=<dir>          where each screen's pictures go (default <out>/shots): settled in <dir>/chromium
@@ -52,7 +52,7 @@ const BASE = '/var/tmp'
 
 const SETTLE_MS = Number(process.env.MORTAR_RENDER_SETTLE_MS ?? '3000')
 // Most cases show nothing idle; a short watch still sees churn, and the walk spends most of its time here.
-const IDLE_MS = Number(process.env.MORTAR_RENDER_IDLE_MS ?? '3000')
+const IDLE_MS = Number(process.env.MORTAR_RENDER_IDLE_MS ?? '1000')
 const IDLE_SCALE_MS = 10_000
 const QUIET_MS = 1500
 const QUIET_MAX_MS = 60_000
