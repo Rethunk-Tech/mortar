@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"slices"
 
+	"github.com/Rethunk-Tech/go-smapi"
+
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -100,7 +102,7 @@ func rewriteLoadAfter(root string, e Entry, m Component, dropped []mod.ID) error
 	if err != nil {
 		return err
 	}
-	rewritten, err := smapimanifest.RewriteDependencies(raw, safeLoadAfter(e, m), dropped)
+	rewritten, err := smapi.RewriteDependencies(raw, mod.Locals(safeLoadAfter(e, m)), mod.Locals(dropped))
 	if err != nil {
 		return err
 	}

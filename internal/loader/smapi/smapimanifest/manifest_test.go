@@ -11,58 +11,37 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
-func TestParseLenient(t *testing.T) {
-	cases := map[string]struct {
-		in   string
-		want Manifest
-	}{
-		"bom comments trailing commas": {
-			"\xef\xbb\xbf{\n  // the mod\n  \"Name\": \"Content Patcher\", /* inline */\n  \"Author\": \"Pathoschild\",\n  \"Version\": \"2.0.0\",\n  \"Description\": \"http://x // not a comment\",\n  \"UniqueID\": \"Pathoschild.ContentPatcher\",\n  \"Dependencies\": [ { \"UniqueID\": \"a\", }, ],\n}\n",
-			Manifest{Name: "Content Patcher", Author: "Pathoschild", Version: "2.0.0", UniqueID: "Pathoschild.ContentPatcher", Description: "http://x // not a comment", Dependencies: []mod.Dependency{{UniqueID: "a", Required: true}}},
-		},
-		"lowercase keys": {
-			`{"name":"N","author":"A","version":"1.2","uniqueid":"A.N","description":"d"}`,
-			Manifest{Name: "N", Author: "A", Version: "1.2", UniqueID: "A.N", Description: "d"},
-		},
-		"dependencies and content pack": {
-			`{"UniqueID":"A.P","UpdateKeys":["Nexus:1"," ",7],"Dependencies":[{"UniqueID":"B.Req","MinimumVersion":"1.2-beta"},{"uniqueid":"B.Opt","isrequired":false},{"MinimumVersion":"1"},"junk"],"ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher","MinimumVersion":"2.0"}}`,
-			Manifest{
-				UniqueID: "A.P", UpdateKeys: []string{"Nexus:1"}, ContentPackFor: "Pathoschild.ContentPatcher",
-				Dependencies: []mod.Dependency{
-					{UniqueID: "B.Req", MinimumVersion: "1.2-beta", Required: true}, {UniqueID: "B.Opt"}, {UniqueID: "Pathoschild.ContentPatcher", MinimumVersion: "2.0", Required: true},
-				},
-			},
-		},
-		"framework listed twice": {
-			`{"UniqueID":"A.P","Dependencies":[{"UniqueID":"pathoschild.contentpatcher","IsRequired":false}],"ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher","MinimumVersion":"2.0"}}`,
-			Manifest{
-				UniqueID: "A.P", ContentPackFor: "Pathoschild.ContentPatcher",
-				Dependencies: []mod.Dependency{{UniqueID: "pathoschild.contentpatcher", MinimumVersion: "2.0", Required: true}},
-			},
-		},
-		"legacy version object": {
-			`{"Name":"Old","Author":"A","UniqueID":"A.Old","Version":{"MajorVersion":1,"MinorVersion":2,"PatchVersion":3,"Build":"beta"}}`,
-			Manifest{Name: "Old", Author: "A", Version: "1.2.3-beta", UniqueID: "A.Old"},
-		},
-		"update hints case insensitive": {
-			`{"UniqueID":"A.B","UpdateCautionMessage":"Read the release notes","DELETEOLDVERSION":true}`,
-			Manifest{UniqueID: "A.B", UpdateCautionMessage: "Read the release notes", DeleteOldVersion: true},
-		},
-		"escaped quote in string": {
-			`{"Name":"Say \"hi\" // ok","UniqueID":"A.B","Version":"1.0"}`,
-			Manifest{Name: `Say "hi" // ok`, Version: "1.0", UniqueID: "A.B"},
+// Parse carries every field smapi.Parse reads into Mortar's Manifest, IsRequired becoming Required.
+func TestParseMapsEveryField(t *testing.T) {
+	got, err := Parse([]byte(`{"Name":"N","Author":"A","Version":"1.2","UniqueID":"A.P","Description":"d","EntryDll":"P.dll",
+		"UpdateKeys":["Nexus:1"],"UpdateCautionMessage":"careful","MinimumGameVersion":"1.6","DeleteOldVersion":true,
+		"Dependencies":[{"UniqueID":"B.Req","MinimumVersion":"1.2-beta"},{"UniqueID":"B.Opt","IsRequired":false}],
+		"ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`))
+	want := Manifest{
+		Name: "N", Author: "A", Version: "1.2", UniqueID: "A.P", Description: "d", EntryDll: "P.dll", UpdateKeys: []string{"Nexus:1"},
+		UpdateCautionMessage: "careful", MinimumGameVersion: "1.6", DeleteOldVersion: true, ContentPackFor: "Pathoschild.ContentPatcher",
+		Dependencies: []mod.Dependency{
+			{UniqueID: "B.Req", MinimumVersion: "1.2-beta", Required: true}, {UniqueID: "B.Opt"}, {UniqueID: "Pathoschild.ContentPatcher", Required: true},
 		},
 	}
-	for name, c := range cases {
-		got, err := Parse([]byte(c.in))
-		if err != nil || !reflect.DeepEqual(got, c.want) {
-			t.Errorf("%s: got %+v, %v; want %+v", name, got, err, c.want)
-		}
+	if err != nil || !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %+v, %v", got, err)
 	}
-	for _, bad := range []string{`{"Name":"x"}`, `not json`, `{"UniqueID":"a"`} {
-		if _, err := Parse([]byte(bad)); err == nil {
-			t.Errorf("Parse(%q) accepted", bad)
-		}
+}
+
+// Order hands SMAPI's resolver each mod's dependencies and maps its rows back to SMAPI mod ids.
+func TestOrderMapsRowsBack(t *testing.T) {
+	rows := Order([]Mod{
+		{UniqueID: "Me.Pack", Name: "Pack", ContentPackFor: "Me.Frame", Dependencies: []mod.Dependency{{UniqueID: "Me.Opt"}, {UniqueID: "Me.Gone", Required: true}}, Folder: "a"},
+		{UniqueID: "Me.Frame", Name: "Frame", Folder: "b"},
+		{UniqueID: "Me.Opt", Name: "Opt", Folder: "c"},
+	})
+	if len(rows) != 3 || rows[1].ID != "smapi:Me.Frame" || rows[1].Position != 2 || !reflect.DeepEqual(rows[1].Dependents, []mod.ID{"smapi:Me.Pack"}) {
+		t.Fatalf("rows = %+v", rows)
+	}
+	if pack := rows[0]; pack.ID != "smapi:Me.Pack" || !reflect.DeepEqual(pack.Optional, []mod.ID{"smapi:Me.Opt"}) ||
+		!reflect.DeepEqual(pack.MissingRequired, []mod.ID{"smapi:Me.Gone"}) {
+		t.Fatalf("pack = %+v", pack)
 	}
 }
 
@@ -117,23 +96,6 @@ func TestScanSkipsASymlinkDirectory(t *testing.T) {
 	}
 }
 
-func TestParseReadsStringIsRequired(t *testing.T) {
-	m, err := Parse([]byte(`{"UniqueID": "A", "Dependencies": [
-		{"UniqueID": "Opt", "IsRequired": "false"},
-		{"UniqueID": "Req", "IsRequired": "True"},
-		{"UniqueID": "Plain"}
-	]}`))
-	if err != nil {
-		t.Fatal(err)
-	}
-	want := map[string]bool{"Opt": false, "Req": true, "Plain": true}
-	for _, d := range m.Dependencies {
-		if w, ok := want[d.UniqueID]; ok && d.Required != w {
-			t.Errorf("%s Required = %v, want %v", d.UniqueID, d.Required, w)
-		}
-	}
-}
-
 func TestModIDIsSMAPIScoped(t *testing.T) {
 	m := Manifest{UniqueID: "Au.One", ContentPackFor: "Au.Two"}
 	if m.ModID() != "smapi:Au.One" || m.ContentPackForID() != "smapi:Au.Two" || (Manifest{}).ContentPackForID() != "" {
@@ -161,14 +123,6 @@ func TestParseAgainReturnsAnUnsharedCopy(t *testing.T) {
 	}
 	if _, err := Parse([]byte(`{"Name":"no id"}`)); err == nil {
 		t.Fatal("a manifest without a UniqueID parsed")
-	}
-}
-
-func TestGitHubUpdateKeyRefusesWhatMovesTheURL(t *testing.T) {
-	for _, repo := range []string{"me/..", "./mod", "../..", "me/.", "o/r?x", "o/r#x", "o/r/s", "o /r"} {
-		if _, ok := GitHubUpdateKey("GitHub:" + repo); ok {
-			t.Errorf("GitHubUpdateKey accepted %q", repo)
-		}
 	}
 }
 
@@ -208,41 +162,6 @@ func TestScanFollowsDeployedManifestLinks(t *testing.T) {
 	want := map[string]string{"Top": "A.Top", "Pack/Nested": "A.Nested"}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("Scan = %v, want %v", got, want)
-	}
-}
-
-func TestParseNewtonsoftForms(t *testing.T) {
-	utf16le := []byte{0xff, 0xfe}
-	for _, c := range []byte(`{'UniqueID': 'A.U16'}`) {
-		utf16le = append(utf16le, c, 0)
-	}
-	for name, tc := range map[string]struct {
-		in   []byte
-		want string
-	}{
-		"single quotes":         {[]byte(`{'Name':'N','UniqueID':'A.Single'}`), "A.Single"},
-		"unquoted names":        {[]byte(`{Name:"N", UniqueID: "A.Bare",}`), "A.Bare"},
-		"utf16":                 {utf16le, "A.U16"},
-		"raw newline in string": {[]byte("{\"Description\":\"two\nlines\",\"UniqueID\":\"A.NL\"}"), "A.NL"},
-		"curly quotes":          {[]byte("{“UniqueID”: “A.Curly”}"), "A.Curly"},
-	} {
-		m, err := Parse(tc.in)
-		if err != nil || m.UniqueID != tc.want {
-			t.Errorf("%s: %+v, %v", name, m, err)
-		}
-	}
-}
-
-func TestParseErrorsSayWhy(t *testing.T) {
-	for in, want := range map[string]string{
-		"{\n\"UniqueID\": \"A\",\n\"Name\" \"x\"\n}": "invalid JSON at line 3",
-		`{"Name":"x"}`: "manifest has no UniqueID",
-		`[1]`:          "not a JSON object",
-		`null`:         "not a JSON object",
-	} {
-		if _, err := Parse([]byte(in)); err == nil || !strings.Contains(err.Error(), want) {
-			t.Errorf("%q: %v, want %q", in, err, want)
-		}
 	}
 }
 

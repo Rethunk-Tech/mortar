@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-smapi"
+
 	"github.com/Rethunk-Tech/go-nexusmods"
 
 	"github.com/Rethunk-Tech/go-smapiweb"
@@ -17,7 +19,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
-	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -455,10 +456,10 @@ func sourcePage(gameID string, m framework.Mod) string {
 // pageURL is the page of the first update key that names one: a Nexus mod or a GitHub repository.
 func pageURL(domain string, keys []string) string {
 	for _, k := range keys {
-		if n, ok := smapimanifest.NexusUpdateKey(k); ok {
+		if n, ok := smapi.NexusUpdateKey(k); ok {
 			return siteURL(domain, smapiweb.Ref{Site: "Nexus", ID: n})
 		}
-		if repo, ok := smapimanifest.GitHubUpdateKey(k); ok {
+		if repo, ok := smapi.GitHubUpdateKey(k); ok {
 			return "https://github.com/" + repo
 		}
 	}
@@ -468,7 +469,7 @@ func pageURL(domain string, keys []string) string {
 // nexusID is the Nexus mod of the first update key that names one, or 0.
 func nexusID(keys []string) int {
 	for _, k := range keys {
-		if n, ok := smapimanifest.NexusUpdateKey(k); ok {
+		if n, ok := smapi.NexusUpdateKey(k); ok {
 			return n
 		}
 	}
@@ -490,7 +491,7 @@ func githubUpdate(keys []string, url string) string {
 		return ""
 	}
 	for _, k := range keys {
-		if repo, ok := smapimanifest.GitHubUpdateKey(k); ok {
+		if repo, ok := smapi.GitHubUpdateKey(k); ok {
 			return repo
 		}
 	}
@@ -512,7 +513,7 @@ func githubFallback(keys []string, url string) string {
 		return ""
 	}
 	for _, k := range keys {
-		if repo, ok := smapimanifest.GitHubUpdateKey(k); ok {
+		if repo, ok := smapi.GitHubUpdateKey(k); ok {
 			return repo
 		}
 	}

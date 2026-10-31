@@ -10,6 +10,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-smapi"
+
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
@@ -123,7 +125,7 @@ func assertOptionalDep(t *testing.T, raw, uniqueID string, want bool) {
 func TestRewriteManifestDepsJSONC(t *testing.T) {
 	t.Parallel()
 	raw := []byte("\xef\xbb\xbf{\n  // comment\n  \"Name\": \"Win\",\n  \"UniqueID\": \"Me.Win\",\n}\n")
-	out, err := smapimanifest.RewriteDependencies(raw, []mod.ID{"smapi:Me.Lose"}, nil)
+	out, err := smapi.RewriteDependencies(raw, []string{"Me.Lose"}, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

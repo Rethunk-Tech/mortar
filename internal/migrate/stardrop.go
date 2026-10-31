@@ -8,6 +8,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/Rethunk-Tech/go-smapi"
+
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/modname"
 
@@ -190,7 +192,7 @@ func modDirs(modsPath string) ([]string, error) {
 
 func nexusID(updateKeys []string) int {
 	for _, key := range updateKeys {
-		if id, ok := smapimanifest.NexusUpdateKey(key); ok && id > 0 {
+		if id, ok := smapi.NexusUpdateKey(key); ok && id > 0 {
 			return id
 		}
 	}

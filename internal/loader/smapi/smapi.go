@@ -220,7 +220,7 @@ func (Loader) SharesLog() {}
 
 // Order is SMAPI's load order of the enabled mods, each folder in p.Enabled keeping its manifest at its root.
 func (Loader) Order(p loader.ProfileView) ([]loadorder.Row, error) {
-	var mods []loadorder.Mod
+	var mods []smapimanifest.Mod
 	for _, dir := range p.Enabled {
 		b, err := safefs.ReadFile(filepath.Join(dir, smapimanifest.FileName))
 		if err != nil {
@@ -230,13 +230,9 @@ func (Loader) Order(p loader.ProfileView) ([]loadorder.Row, error) {
 		if err != nil {
 			continue
 		}
-		m := loadorder.Mod{ID: mf.ModID(), Name: mf.Name, Folder: dir, ContentPackFor: mf.ContentPackForID()}
-		for _, d := range mf.Dependencies {
-			m.Deps = append(m.Deps, loadorder.Dep{ID: d.ModID(), Required: d.Required})
-		}
-		mods = append(mods, m)
+		mods = append(mods, smapimanifest.Mod{Manifest: mf, Folder: dir})
 	}
-	return loadorder.Resolve(mods), nil
+	return smapimanifest.Order(mods), nil
 }
 
 // Companion is the Mortar SMAPI Bridge.

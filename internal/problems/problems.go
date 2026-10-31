@@ -14,6 +14,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-smapi"
+
 	"github.com/Rethunk-Tech/go-nexusmods"
 
 	"github.com/Rethunk-Tech/go-smapiweb"
@@ -23,7 +25,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	_ "github.com/Rethunk-Tech/mortar/internal/source/all"
@@ -939,7 +940,7 @@ func Locate(ctx context.Context, m Meta, domain string, uniqueID mod.ID, minimum
 		return &Ref{Site: other[0].Site, PageID: other[0].ID, URL: siteURL(domain, other[0])}, true
 	}
 	for _, k := range dependentKeys {
-		if n, ok := smapimanifest.NexusUpdateKey(k); ok {
+		if n, ok := smapi.NexusUpdateKey(k); ok {
 			if i := slices.IndexFunc(nexus, func(r smapiweb.Ref) bool { return r.ID == n }); i >= 0 {
 				nexus = []smapiweb.Ref{nexus[i]}
 				break
@@ -975,7 +976,7 @@ func githubRepo(ctx context.Context, m Meta, uniqueID mod.ID) string {
 	if len(got) != 1 || !got[0].Known {
 		return ""
 	}
-	if repo, ok := smapimanifest.GitHubUpdateKey("github:" + got[0].GitHubRepo); ok {
+	if repo, ok := smapi.GitHubUpdateKey("github:" + got[0].GitHubRepo); ok {
 		return repo
 	}
 	return ""

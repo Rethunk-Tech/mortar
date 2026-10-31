@@ -5,8 +5,9 @@ import (
 	"errors"
 	"regexp"
 
+	"github.com/Rethunk-Tech/go-smapi"
+
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 	"github.com/Rethunk-Tech/mortar/internal/source/curseforge"
@@ -25,7 +26,7 @@ var versionToken = regexp.MustCompile(`\d+(?:\.\d+)+`)
 // cfProject is the CurseForge project of the update keys, "" when none names one.
 func cfProject(keys []string) string {
 	for _, k := range keys {
-		if id, ok := smapimanifest.CurseForgeUpdateKey(k); ok {
+		if id, ok := smapi.CurseForgeUpdateKey(k); ok {
 			return id
 		}
 	}

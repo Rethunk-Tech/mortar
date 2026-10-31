@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/loadorder"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -137,25 +137,23 @@ func sharedTarget(target AssetTarget) bool {
 
 // smapiOrder is each enabled mod's position in SMAPI's load order and the folded mod ids it loads after.
 func smapiOrder(mods []framework.Mod) (order map[string]int, after map[string][]string) {
-	in := make([]loadorder.Mod, 0, len(mods))
+	in := make([]smapimanifest.Mod, 0, len(mods))
 	after = map[string][]string{}
 	for _, im := range mods {
 		if !im.Enabled {
 			continue
 		}
-		m := loadorder.Mod{ID: im.ModID(), Name: im.Name, Folder: im.Folder, ContentPackFor: im.ContentPackForID()}
 		id := im.ModID().Fold()
 		for _, d := range im.Dependencies {
-			m.Deps = append(m.Deps, loadorder.Dep{ID: d.ModID(), Required: d.Required})
 			after[id] = append(after[id], d.ModID().Fold())
 		}
 		if im.ContentPackFor != "" {
 			after[id] = append(after[id], im.ContentPackForID().Fold())
 		}
-		in = append(in, m)
+		in = append(in, smapimanifest.Mod{Manifest: im.Manifest, Folder: im.Folder})
 	}
 	order = map[string]int{}
-	for _, row := range loadorder.Resolve(in) {
+	for _, row := range smapimanifest.Order(in) {
 		order[row.ID.Fold()] = row.Position
 	}
 	return order, after
