@@ -28,6 +28,6 @@ test('extract keeps the header Weblate wrote', async () => {
   const ctx = { locale: 'es', sourceLocale: 'en', filename: 'es.po' }
   const existing = `msgid ""\nmsgstr "Language: es\\nLast-Translator: someone\\n"\n\nmsgid "Close"\nmsgstr "Cerrar"\n`
   const out = await format.serialize(await format.parse(existing, ctx), { ...ctx, existing })
-  expect(out.startsWith('msgid ""\nmsgstr "Language: es\\nLast-Translator: someone\\n"\n')).toBe(true)
+  expect(out).toStartWith('msgid ""\nmsgstr "Language: es\\nLast-Translator: someone\\n"\n')
   expect(out).toContain('msgstr "Cerrar"')
 })
