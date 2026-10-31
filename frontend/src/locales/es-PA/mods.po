@@ -91,6 +91,10 @@ msgstr ""
 msgid "Updated"
 msgstr ""
 
+#: src/mods/describe.ts
+msgid "{name} needs {loader} {needs} or newer, and Mortar cannot tell whether the installed {installed} is."
+msgstr ""
+
 #: src/mods/problemFix/FileConflictFix.tsx
 #: src/mods/problemFix/WinFix.tsx
 msgid "Make {name} win"
@@ -817,6 +821,10 @@ msgstr ""
 msgid "Keep {name}'s old files"
 msgstr ""
 
+#: src/mods/describe.ts
+msgid "{name} is known to break on some versions of {game}, and Mortar cannot tell which version is installed."
+msgstr ""
+
 #: src/mods/CompatChip.tsx
 #: src/mods/CompatSection.tsx
 msgid "Unofficial update"
@@ -1530,6 +1538,10 @@ msgid "{failed} failed"
 msgstr ""
 
 #: src/mods/describe.ts
+msgid "{name} needs {loader} {needs} or newer, and {loader} {installed} is installed."
+msgstr ""
+
+#: src/mods/describe.ts
 msgid "{name} lists itself as a dependency, so {loader} skips it."
 msgstr ""
 
@@ -2171,10 +2183,6 @@ msgstr ""
 msgid "Include prereleases"
 msgstr ""
 
-#: src/mods/describe.ts
-msgid "{name} needs SMAPI {needs} or newer, and Mortar cannot tell whether the installed {installed} is."
-msgstr ""
-
 #: src/mods/ReportToAuthorButton.tsx
 msgid "Error in {name}"
 msgstr ""
@@ -2676,10 +2684,6 @@ msgstr ""
 
 #: src/mods/typedConfig/SaveHostValues.tsx
 msgid "Saved the host's values"
-msgstr ""
-
-#: src/mods/describe.ts
-msgid "{name} needs SMAPI {needs} or newer, and SMAPI {installed} is installed."
 msgstr ""
 
 #: src/mods/ChangeVersionDialog.tsx

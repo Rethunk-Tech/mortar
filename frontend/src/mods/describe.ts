@@ -3,6 +3,7 @@ import { useLingui } from '@lingui/react/macro'
 import type { Drift } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { BEPINEX, CONTENT_PATCHER, SMAPI, WINDOWS } from '../brand/productNames.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
+import { gameName } from '../games/info.ts'
 import { i18n } from '../i18n/index.ts'
 import { listNames } from '../i18n/list.ts'
 import { lowerFirst } from '../i18n/lowerFirst.ts'
@@ -121,18 +122,23 @@ function describeBroken(p: Extract<Problem, { kind: 'broken' }>): string {
       ? describeLoaderCycle(p.broken.cycle ?? [])
       : describeCycle(p.broken.cycle ?? [], p.broken.cycleBlocksAll === true)
   }
+  if (status === 'game-unknown') {
+    return i18n._(
+      msg`${name} is known to break on some versions of ${{ game: gameName() }}, and Mortar cannot tell which version is installed.`,
+    )
+  }
   // A site's own flag: Go words the sentence and names the site.
   if (p.broken.source && summary) {
     return i18n._(msg`${name}: ${summary}`)
   }
   if (status === 'needs-smapi') {
     return i18n._(
-      msg`${name} needs SMAPI ${{ needs: p.broken.needsSmapi ?? '' }} or newer, and SMAPI ${{ installed: p.broken.smapi ?? '' }} is installed.`,
+      msg`${name} needs ${{ loader: SMAPI }} ${{ needs: p.broken.needsSmapi ?? '' }} or newer, and ${{ loader: SMAPI }} ${{ installed: p.broken.smapi ?? '' }} is installed.`,
     )
   }
   if (status === 'smapi-unknown') {
     return i18n._(
-      msg`${name} needs SMAPI ${{ needs: p.broken.needsSmapi ?? '' }} or newer, and Mortar cannot tell whether the installed ${{ installed: p.broken.smapi ?? '' }} is.`,
+      msg`${name} needs ${{ loader: SMAPI }} ${{ needs: p.broken.needsSmapi ?? '' }} or newer, and Mortar cannot tell whether the installed ${{ installed: p.broken.smapi ?? '' }} is.`,
     )
   }
   if (status === 'needs-game') {

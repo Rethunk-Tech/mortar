@@ -67,7 +67,8 @@ export const countsAsMissing = (m: Missing): boolean =>
 // A plugin that loaded and then threw still ran, and so did a run that did not crash: shown, not counted.
 const counts = (p: Problem): boolean =>
   (p.kind !== 'missing' || countsAsMissing(p.missing)) &&
-  (p.kind !== 'broken' || p.broken.status !== 'smapi-unknown') &&
+  (p.kind !== 'broken' ||
+    (p.broken.status !== 'smapi-unknown' && p.broken.status !== 'game-unknown')) &&
   (p.kind !== 'loadFailure' || !p.loadFailure.ran) &&
   (p.kind !== 'runError' || p.runError.severe)
 const mustFix = (p: Problem): boolean =>

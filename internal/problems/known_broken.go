@@ -10,6 +10,10 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
+// StatusGameUnknown is the Broken status of a known-broken entry for some game versions when the install's version is
+// unknown: shown, not counted.
+const StatusGameUnknown = "game-unknown"
+
 // mortarSiteName is the Source of a row from Mortar's own known-broken list.
 const mortarSiteName = "Mortar"
 
@@ -32,6 +36,10 @@ func curatedBroken(list components.BrokenList, gameVersion, tsKey string, pkgs [
 			return
 		}
 		seen[key] = true
+		if gameVersion == "" && k.GameScoped() {
+			out = append(out, Broken{Key: key, ID: m.ID, Name: name, Status: StatusGameUnknown, Source: mortarSiteName, Summary: k.Reason})
+			return
+		}
 		out = append(out, Broken{
 			Key: key, ID: m.ID, Name: name, Status: k.Status(), Source: mortarSiteName,
 			Summary: k.Reason, Replacement: curatedReplacement(k.Replacement, tsKey),

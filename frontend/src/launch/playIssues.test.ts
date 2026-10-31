@@ -71,7 +71,7 @@ test('playIssueSummary is empty when nothing is wrong', () => {
         missing({ reason: 'unknown', minimumVersion: '1.2', installedVersion: 'beta' }),
       ],
       assetConflicts: [conflict({ cosmetic: true })],
-      broken: [broken({ status: 'abandoned' })],
+      broken: [broken({ status: 'abandoned' }), broken({ status: 'game-unknown' })],
       updates: [],
       currentProfileId: 'p1',
       lastPlayed: { folder: 'Farm_1', farm: 'Sunny', profileId: 'p1', profileName: 'Main' },

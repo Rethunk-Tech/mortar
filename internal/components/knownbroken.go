@@ -90,7 +90,9 @@ func (e BrokenEntry) Names(m BrokenMod) bool {
 }
 
 // Breaks reports whether the entry flags version on gameVersion: the version is Through or older (a version that
-// cannot be compared is not flagged), and the game version meets GameVersions (an unknown game version does).
+// cannot be compared is not flagged), and the game version meets GameVersions. An empty gameVersion means any game
+// version, for lists shown outside an install; a check against an install whose version is unknown asks
+// GameScoped first.
 func (e BrokenEntry) Breaks(version, gameVersion string) bool {
 	c, ok := compareLoose(version, e.Through)
 	if !ok || c > 0 {
@@ -98,6 +100,10 @@ func (e BrokenEntry) Breaks(version, gameVersion string) bool {
 	}
 	return e.GameVersions == "" || gameVersion == "" || inConstraints(gameVersion, e.GameVersions)
 }
+
+// GameScoped reports whether the entry holds only on some game versions, so it cannot flag an install of unknown
+// version.
+func (e BrokenEntry) GameScoped() bool { return e.GameVersions != "" }
 
 // DropIns maps each Thunderstore package a drop-in entry names, lowercased "Namespace-Name", to its replacement.
 func (l BrokenList) DropIns() map[string]string {

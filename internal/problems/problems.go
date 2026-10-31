@@ -247,7 +247,7 @@ func (r Result) Count() int {
 	}
 	broken := 0
 	for _, b := range r.Broken {
-		if b.Status != "smapi-unknown" {
+		if b.Status != "smapi-unknown" && b.Status != StatusGameUnknown {
 			broken++
 		}
 	}

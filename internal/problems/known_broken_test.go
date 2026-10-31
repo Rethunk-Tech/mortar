@@ -59,3 +59,27 @@ func TestWithKnownBrokenMarksStillListedAndFixingUpdates(t *testing.T) {
 		t.Errorf("unlisted = %+v", other)
 	}
 }
+
+// With no known game version, an entry scoped to some game versions is an uncounted unknown row rather than a flag;
+// an entry for every game version still flags.
+func TestCuratedBrokenOnAnUnknownGameVersion(t *testing.T) {
+	t.Parallel()
+	list := components.BrokenList{Entries: []components.BrokenEntry{
+		{IDs: components.BrokenIDs{SMAPI: "Me.Scoped"}, Through: "1.0.0", GameVersions: ">=1.6", Reason: "Breaks on 1.6."},
+		{IDs: components.BrokenIDs{SMAPI: "Me.Always"}, Through: "1.0.0", Reason: "Always breaks."},
+	}}
+	mods := []framework.Mod{
+		{Key: "s", Name: "Scoped", UniqueID: "Me.Scoped", Version: "1.0.0"},
+		{Key: "a", Name: "Always", UniqueID: "Me.Always", Version: "1.0.0"},
+	}
+	got := curatedBroken(list, "", "", nil, mods)
+	if len(got) != 2 || got[0].Key != "s" || got[0].Status != "game-unknown" || got[1].Key != "a" || got[1].Status != "broken" {
+		t.Fatalf("rows = %+v", got)
+	}
+	if n := (Result{Broken: got}).Count(); n != 1 {
+		t.Errorf("Count = %d, want the unknown row left out", n)
+	}
+	if got := curatedBroken(list, "1.6.15", "", nil, mods); len(got) != 2 || got[0].Status != "broken" {
+		t.Errorf("a known game version: rows = %+v", got)
+	}
+}

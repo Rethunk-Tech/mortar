@@ -91,6 +91,10 @@ msgstr "Open storage settings"
 msgid "Updated"
 msgstr "Updated"
 
+#: src/mods/describe.ts
+msgid "{name} needs {loader} {needs} or newer, and Mortar cannot tell whether the installed {installed} is."
+msgstr "{name} needs {loader} {needs} or newer, and Mortar cannot tell whether the installed {installed} is."
+
 #: src/mods/problemFix/FileConflictFix.tsx
 #: src/mods/problemFix/WinFix.tsx
 msgid "Make {name} win"
@@ -817,6 +821,10 @@ msgstr "The file changed outside Mortar. Save again to replace it, or Revert to 
 msgid "Keep {name}'s old files"
 msgstr "Keep {name}'s old files"
 
+#: src/mods/describe.ts
+msgid "{name} is known to break on some versions of {game}, and Mortar cannot tell which version is installed."
+msgstr "{name} is known to break on some versions of {game}, and Mortar cannot tell which version is installed."
+
 #: src/mods/CompatChip.tsx
 #: src/mods/CompatSection.tsx
 msgid "Unofficial update"
@@ -1530,6 +1538,10 @@ msgid "{failed} failed"
 msgstr "{failed} failed"
 
 #: src/mods/describe.ts
+msgid "{name} needs {loader} {needs} or newer, and {loader} {installed} is installed."
+msgstr "{name} needs {loader} {needs} or newer, and {loader} {installed} is installed."
+
+#: src/mods/describe.ts
 msgid "{name} lists itself as a dependency, so {loader} skips it."
 msgstr "{name} lists itself as a dependency, so {loader} skips it."
 
@@ -2171,10 +2183,6 @@ msgstr "Category"
 msgid "Include prereleases"
 msgstr "Include prereleases"
 
-#: src/mods/describe.ts
-msgid "{name} needs SMAPI {needs} or newer, and Mortar cannot tell whether the installed {installed} is."
-msgstr "{name} needs SMAPI {needs} or newer, and Mortar cannot tell whether the installed {installed} is."
-
 #: src/mods/ReportToAuthorButton.tsx
 msgid "Error in {name}"
 msgstr "Error in {name}"
@@ -2677,10 +2685,6 @@ msgstr "Added this week"
 #: src/mods/typedConfig/SaveHostValues.tsx
 msgid "Saved the host's values"
 msgstr "Saved the host's values"
-
-#: src/mods/describe.ts
-msgid "{name} needs SMAPI {needs} or newer, and SMAPI {installed} is installed."
-msgstr "{name} needs SMAPI {needs} or newer, and SMAPI {installed} is installed."
 
 #: src/mods/ChangeVersionDialog.tsx
 msgid "{name} is pinned at {installed}. Install {version} anyway? The pin stays on the new version."
