@@ -124,6 +124,7 @@ pids[racechain]=$!
 step golangci-windows env GOGC=400 GOOS=windows golangci-lint run --allow-parallel-runners
 step version go run ./cmd/version -check
 step i18n-dupes bun scripts/i18n-dupes.ts
+step credits bun scripts/gen-credits.ts --check
 step metainfo appstreamcli validate --strict --no-net build/linux/tech.rethunk.Mortar.metainfo.xml
 
 wait "$bindings_pid" || {

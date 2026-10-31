@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { dirname, join, resolve } from 'node:path'
+import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { bundledArtwork } from './bundled-artwork.ts'
 import { type CreditEntry, isCreditList } from './creditList.ts'
@@ -453,9 +453,27 @@ async function main(): Promise<void> {
   }
   const notices = collectNotices(await gatherSources())
   const outDir = join(frontendRoot, 'src', 'settings', 'generated')
+  const files: [string, string][] = [
+    [join(outDir, 'credits.json'), `${JSON.stringify(entries, null, 2)}\n`],
+    [join(repoRoot, 'THIRD_PARTY_NOTICES'), formatNotices(notices)],
+  ]
+  // --check compares without writing: the gate runs it beside steps that read these files.
+  if (process.argv.includes('--check')) {
+    const stale = files.filter(
+      ([file, body]) => !existsSync(file) || readFileSync(file, 'utf8') !== body,
+    )
+    for (const [file] of stale) {
+      console.error(
+        `${relative(repoRoot, file)} is out of date: run bun scripts/gen-credits.ts and commit it`,
+      )
+    }
+    process.exitCode = stale.length > 0 ? 1 : 0
+    return
+  }
   mkdirSync(outDir, { recursive: true })
-  writeFileSync(join(outDir, 'credits.json'), `${JSON.stringify(entries, null, 2)}\n`)
-  writeFileSync(join(repoRoot, 'THIRD_PARTY_NOTICES'), formatNotices(notices))
+  for (const [file, body] of files) {
+    writeFileSync(file, body)
+  }
 }
 
 if (import.meta.main) {

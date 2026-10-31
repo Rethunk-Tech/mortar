@@ -27,7 +27,7 @@ bun run --cwd frontend e2e                    # UI smoke in its own sandbox
 
 - `selftest` (`scripts/selftest.sh`; its header lists every subcommand and variable) runs a `server`-tagged binary with its own HOME, copied game folders (no links) and a minimal Steam library, so real data, game and Steam config stay untouched. `--copy-data` copies live profiles and settings in once. `stop` leaves the folder; `destroy` deletes it.
 - `e2e` (Playwright, Chromium only; [docs/testing.md](docs/testing.md)) starts its own sandbox, opens every profile tab and Settings page and fails on a console error, a failed request or a main-thread task over 200 ms. Not in the gate or CI; run it after each wave of UI changes.
-- The frontend build first runs `scripts/gen-credits.ts` (rewrites `frontend/src/settings/generated/credits.json` from `frontend/package.json` and `go.mod`), then extracts and compiles the Lingui catalogs in `frontend/src/locales/`. Commit those files when they change.
+- The frontend build first runs `scripts/gen-credits.ts` (rewrites `frontend/src/settings/generated/credits.json` from `frontend/package.json` and `go.mod`), then extracts and compiles the Lingui catalogs in `frontend/src/locales/`. Commit those files when they change; the gate's `credits` step fails while they are stale.
 
 ## Command line
 
