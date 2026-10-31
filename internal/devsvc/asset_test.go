@@ -63,7 +63,7 @@ func TestAnAssetProjectIsItsOwnPackage(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(dir, "plugins", "sounds", "quack.ogg"), []byte("ogg"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if r, err := svc.Pack(t.Context(), "lethal-company", dir); err != nil || !slices.Contains(r.Issues, "plugins holds no replacers/*.json, which Sounds (each needs a line in replacers/) needs") {
+	if r, err := svc.Pack(t.Context(), "lethal-company", dir); err != nil || !slices.Contains(r.Issues, "plugins holds no replacers/*.json, which Sounds needs") {
 		t.Fatalf("a sounds pack with no replacer packed clean: %+v, %v", r, err)
 	}
 	if err := os.WriteFile(filepath.Join(dir, "plugins", "replacers", "quack.json"), []byte("{}"), 0o600); err != nil {

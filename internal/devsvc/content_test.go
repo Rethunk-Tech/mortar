@@ -109,7 +109,7 @@ func TestReleaseRefusesAnEmptyContentFolder(t *testing.T) {
 		{"empty kind", map[string]string{"plugins/mortar/tv/README.txt": "r", "plugins/mortar/posters/a.png": "p"}, packContentRoot, true, []string{"plugins/mortar/tv/ holds no *.mp4, *.webm file"}},
 		{"package top", map[string]string{"mortar/tv/a.mp4": "v", "plugins/mortar/tv/a.mp4": "v"}, packContentRoot, true, []string{"mortar/tv/ installs flattened from the package's top; move it under plugins/"}},
 		{"no kind", map[string]string{"README.md": "r"}, packContentRoot, true, []string{"the content pack has no content folder; add one under plugins/"}},
-		{"sounds without a replacer", map[string]string{"plugins/sounds/a.ogg": "o", "plugins/sound_pack.json": "{}"}, packContentRoot, true, []string{"plugins holds no replacers/*.json, which Sounds (each needs a line in replacers/) needs"}},
+		{"sounds without a replacer", map[string]string{"plugins/sounds/a.ogg": "o", "plugins/sound_pack.json": "{}"}, packContentRoot, true, []string{"plugins holds no replacers/*.json, which Sounds needs"}},
 		{"sounds filled", map[string]string{"plugins/sounds/a.ogg": "o", "plugins/sound_pack.json": "{}", "plugins/replacers/a.json": "{}"}, packContentRoot, true, []string{}},
 		{"old layout counts", map[string]string{"plugins/Custom Songs/a.ogg": "s"}, packContentRoot, true, []string{}},
 		{"code without content", map[string]string{"Pack.csproj": "<Project/>"}, codeContentRoot, false, []string{}},
