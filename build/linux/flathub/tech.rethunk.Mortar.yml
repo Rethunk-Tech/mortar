@@ -21,12 +21,16 @@ modules:
       # The Wails CLI comes from the fork go.mod pins; it generates the frontend's TypeScript bindings.
       - go mod download github.com/wailsapp/wails/v3
       - go build -C "$(go list -m -f '{{.Dir}}' github.com/wailsapp/wails/v3)" -o /run/build/mortar/tools/wails3 ./cmd/wails3
+      - /run/build/mortar/tools/wails3 generate bindings -clean=true -ts -i
+      # package.json's `bindings` script runs this rewrite with bun, which the SDK does not ship.
+      - node scripts/erasable-bindings.ts
+      # The same trim render.sh made before writing yarn.lock: the app's packages only.
+      - node build/linux/flathub/app-packages.ts
       # The build's HOME is not writable, so `yarn config set` would not persist; a project .yarnrc does.
       - echo 'yarn-offline-mirror "/run/build/mortar/flatpak-node/yarn-mirror"' >.yarnrc
       - yarn install --offline --frozen-lockfile --ignore-scripts
-      - PATH="/run/build/mortar/tools:$PATH" yarn run bindings
-      # The catalogs, credits and notices the frontend's full build script regenerates are committed.
-      - cd frontend && ../node_modules/.bin/vite build --mode production
+      # Credits and notices are committed; the Lingui catalogs are compiled from the .po files.
+      - cd frontend && ../node_modules/.bin/lingui compile --typescript && ../node_modules/.bin/vite build --mode production
       - >-
         go build -buildmode=pie -tags production -trimpath -buildvcs=false -o /app/bin/mortar
         -ldflags="-w -s -X main.packaged=flatpak -X github.com/Rethunk-Tech/mortar/internal/nxm.packaged=flatpak -extldflags '-Wl,-z,relro,-z,now'"

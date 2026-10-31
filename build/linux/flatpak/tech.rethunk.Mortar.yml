@@ -4,37 +4,50 @@ runtime-version: "51"
 sdk: org.gnome.Sdk
 command: mortar
 finish-args:
-  - --share=network
+  # The WebKitGTK window, and controllers for gamepad navigation: the input device type needs Flatpak 1.16, older than
+  # what Ubuntu 24.04 and Debian 12 ship, so every device is granted (which includes the GPU).
   - --socket=wayland
   - --socket=fallback-x11
   - --share=ipc
-  - --device=dri
-  - --device=input
-  - --filesystem=xdg-config/StardewValley
+  - --device=all
+  # Mod downloads and catalog updates.
+  - --share=network
+  # Steam: native, Debian and Ubuntu's (~/.steam/debian-installation), the Snap's and the Flatpak's libraries.
   - --filesystem=xdg-data/Steam
+  - --filesystem=~/.steam
+  - --filesystem=~/snap/steam
   - --filesystem=~/.var/app/com.valvesoftware.Steam
-  - --filesystem=~/.var/app/com.valvesoftware.Steam/.config/StardewValley
+  # Heroic: its configs, read to find what it installed, and the Flatpak's own folder.
   - --filesystem=xdg-config/heroic:ro
-  - --filesystem=xdg-data/lutris:ro
-  - --filesystem=~/.var/app/net.lutris.Lutris
+  - --filesystem=~/snap/heroic:ro
   - --filesystem=~/.var/app/com.heroicgameslauncher.hgl
+  # Lutris: its game configs (older releases keep them under xdg-config), and the Flatpak's own folder.
+  - --filesystem=xdg-data/lutris:ro
+  - --filesystem=xdg-config/lutris:ro
+  - --filesystem=~/.var/app/net.lutris.Lutris
+  # Bottles: native and Flatpak bottles.
   - --filesystem=xdg-data/bottles
   - --filesystem=~/.var/app/com.usebottles.bottles/data/bottles
+  # Default install folders: GOG's, and Heroic's and Lutris's under ~/Games.
   - --filesystem=~/GOG Games
-  - --filesystem=~/Games/Heroic
-  - --filesystem=xdg-download
+  - --filesystem=~/Games
+  # Game libraries on other drives: removable drives mount under /run/media (Fedora, Arch) or /media (Debian, Ubuntu).
   - --filesystem=/run/media
+  - --filesystem=/media
   - --filesystem=/mnt
+  # Stardew Valley's saves, for save backups and the per-save mod list.
+  - --filesystem=xdg-config/StardewValley
+  # Mod archives the user downloads by hand.
+  - --filesystem=xdg-download
   # r2modman's and Gale's own data folders, read by Import for their profiles.
   - --filesystem=xdg-config/r2modmanPlus-local:ro
   - --filesystem=xdg-data/com.kesomannen.gale:ro
   # Desktop notifications and the tray icon talk to these names directly, not through a portal.
   - --talk-name=org.freedesktop.Notifications
   - --talk-name=org.kde.StatusNotifierWatcher
-  # The host's Secret Service keeps account keys when the Secret portal is missing.
-  - --talk-name=org.freedesktop.secrets
   # The tray item's name carries the process id, which is 2 inside the sandbox.
   - --own-name=org.kde.StatusNotifierItem-2-1
+  # flatpak-spawn --host: games start through the host's Steam or launcher.
   - --talk-name=org.freedesktop.Flatpak
 modules:
   - name: mortar

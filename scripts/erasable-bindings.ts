@@ -3,7 +3,7 @@
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-const ROOT = join(import.meta.dir, '../frontend/bindings')
+const ROOT = join(import.meta.dirname, '../frontend/bindings')
 
 export function rewriteEnums(src: string): string {
   return src.replace(/export enum (\w+) \{([\s\S]*?)\n\};?/g, (_, name: string, body: string) => {

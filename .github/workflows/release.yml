@@ -409,7 +409,7 @@ jobs:
           build/linux/flathub/render.sh bin/flathub
           cp bin/aur/PKGBUILD bin/PKGBUILD
           cp bin/aur/.SRCINFO bin/SRCINFO
-          for f in tech.rethunk.Mortar.yml go-sources.json node-sources.json yarn.lock SUBMISSION.md; do
+          for f in tech.rethunk.Mortar.yml go-sources.json node-sources.json yarn.lock; do
             cp "bin/flathub/$f" "bin/flathub-$f"
           done
           rm -r bin/aur bin/flathub
