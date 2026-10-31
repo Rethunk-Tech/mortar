@@ -4,13 +4,15 @@ import (
 	"context"
 	"errors"
 	"io/fs"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/Rethunk-Tech/go-bepinex"
+	tstore "github.com/Rethunk-Tech/go-thunderstore"
 
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -70,7 +72,7 @@ func (Loader) VersionScheme() string { return deps.SemverStrict }
 func (Loader) Formats() []string { return []string{"bepinplugin"} }
 
 func (Loader) Status(t loader.Target) (loader.Status, error) {
-	if _, err := os.Stat(filepath.Join(t.ProfileDir, entry(t.ProfileDir))); errors.Is(err, fs.ErrNotExist) {
+	if _, err := os.Stat(filepath.Join(t.ProfileDir, bepinex.Entry(t.ProfileDir))); errors.Is(err, fs.ErrNotExist) {
 		return loader.Status{}, nil
 	} else if err != nil {
 		return loader.Status{}, err
@@ -81,24 +83,23 @@ func (Loader) Status(t loader.Target) (loader.Status, error) {
 
 // Install lays the BepInExPack archive out in the profile and records its version and Doorstop major.
 func (Loader) Install(ctx context.Context, t loader.Target, pkg loader.Package, progress func(loader.Step)) (string, error) {
-	got, err := InstallPack(pkg.Archive, t.ProfileDir)
+	got, err := bepinex.InstallPack(pkg.Archive, t.ProfileDir)
 	if err != nil {
 		return "", err
 	}
-	if hasCLR(t.ProfileDir) {
-		if err := placeUnityLibs(ctx, t.InstallDir, t.ProfileDir); err != nil {
-			log.Printf("bepinex: the Unity base libraries are left for BepInEx to fetch at first start: %v", err)
-		}
+	manifest, _ := tstore.ParseManifest(got.Manifest)
+	if bepinex.HasCLR(t.ProfileDir) {
+		placeUnityLibs(ctx, t.InstallDir, t.ProfileDir)
 	}
 	if progress != nil {
 		progress(loader.StepFiles)
 	}
 	m := readMarker(t.ProfileDir)
-	m.Version, m.Doorstop = got.Version, got.Doorstop
+	m.Version, m.Doorstop = manifest.Version, got.Doorstop
 	if err := writeMarker(t.ProfileDir, m); err != nil {
 		return "", err
 	}
-	return got.Version, nil
+	return manifest.Version, nil
 }
 
 // Contribute points Doorstop at the profile's entry assembly, declares the proxy files for the game folder and, under
@@ -110,7 +111,7 @@ func (Loader) Contribute(ctx context.Context, plan *launchplan.Plan, p loader.Pr
 	m := readMarker(p.Dir)
 	debug := loader.Debugger(ctx)
 	// Doorstop 4 opens Mono's debugger; Doorstop 3 and an IL2CPP pack's .NET runtime have no such switch.
-	if debug && (m.Doorstop < 4 || hasCLR(p.Dir)) {
+	if debug && (m.Doorstop < 4 || bepinex.HasCLR(p.Dir)) {
 		return usererr.Wrap(usererr.Invalid, errors.New("starting for debugging needs a Mono game and BepInEx with Doorstop 4"))
 	}
 	if p.Platform == "linux" {
@@ -122,22 +123,25 @@ func (Loader) Contribute(ctx context.Context, plan *launchplan.Plan, p loader.Pr
 	}
 	proton := p.Runtime == "proton" || p.Runtime == "mortar-proton"
 	plan.ForCopy = forCopy(p, proton)
-	plan.AddArgs(LaunchArgs(p.Dir, m.Doorstop, proton)...)
+	plan.AddArgs(bepinex.LaunchArgs(p.Dir, m.Doorstop, proton)...)
 	if debug {
 		plan.AddArgs("--doorstop-mono-debug-enabled", "true", "--doorstop-mono-debug-address", loader.DebugAddress)
 	}
-	for _, f := range DoorstopFiles(p.Dir) {
+	for _, f := range bepinex.DoorstopFiles(p.Dir, bepinex.Proxies()[0]) {
 		src := filepath.Join(p.Dir, filepath.FromSlash(f))
-		if f == doorstopConfig {
-			var err error
-			if src, err = absoluteDoorstopConfig(p.Dir, m.Doorstop, proton); err != nil {
+		if f == "doorstop_config.ini" {
+			// The game folder's copy names the profile's files by absolute path, as Doorstop reads relative ones from
+			// the game folder.
+			src = filepath.Join(p.Dir, ".mortar-doorstop_config.ini")
+			if err := bepinex.WriteAbsoluteConfig(p.Dir, src, m.Doorstop, proton); err != nil {
 				return err
 			}
 		}
 		plan.AddFile(launchplan.PlanFile{Src: src, Dst: filepath.FromSlash(f)})
 	}
 	if proton {
-		plan.RequireRuntime(launchplan.RuntimeReq{Kind: "dll-override", Key: strings.TrimSuffix(proxyDLL(p.Dir, p.Game), ".dll"), Value: "native,builtin"})
+		g, _ := components.Game(p.Game)
+		plan.RequireRuntime(launchplan.RuntimeReq{Kind: "dll-override", Key: strings.TrimSuffix(bepinex.Proxy(p.Dir, g.DoorstopProxy()), ".dll"), Value: "native,builtin"})
 	}
 	return nil
 }
@@ -159,7 +163,7 @@ func contributeLinux(plan *launchplan.Plan, p loader.ProfileView, m marker) erro
 		return err
 	}
 	plan.ForCopy = forCopy(p, false)
-	plan.AddArgs(LaunchArgs(p.Dir, m.Doorstop, false)...)
+	plan.AddArgs(bepinex.LaunchArgs(p.Dir, m.Doorstop, false)...)
 	target := targetPath(p.Dir, false)
 	if m.Doorstop >= 4 {
 		plan.SetEnv("DOORSTOP_ENABLED", "1")
@@ -203,7 +207,7 @@ func (Loader) Owns(p loader.Process, prof loader.ProfileView) bool {
 
 // Vanilla switches Doorstop off, so the game starts unmodded even while the proxy files sit in its folder.
 func (Loader) Vanilla(_ context.Context, plan *launchplan.Plan, _ loader.Target) error {
-	plan.AddArgs(VanillaArgs()...)
+	plan.AddArgs(bepinex.VanillaArgs()...)
 	return nil
 }
 

@@ -4,15 +4,17 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-bepinex/plugins"
+
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 func TestLastRunOrderHoldsForThePluginsItLoaded(t *testing.T) {
-	plugin := func(guid, version string, deps ...dotnet.Relation) dotnet.Loaded {
-		return dotnet.Loaded{GUID: guid, Name: guid + " Name", Version: version, Deps: deps}
+	plugin := func(guid, version string, deps ...dotnet.Relation) plugins.Loaded {
+		return plugins.Loaded{GUID: guid, Name: guid + " Name", Version: version, Deps: deps}
 	}
-	order := []dotnet.Loaded{
+	order := []plugins.Loaded{
 		plugin("a", "1.0.0"),
 		plugin("b", "1.1.0", dotnet.Relation{GUID: "BepInEx", Kind: dotnet.HardDependency},
 			dotnet.Relation{GUID: "gone", Kind: dotnet.HardDependency}, dotnet.Relation{GUID: "elsewhere", Kind: dotnet.SoftDependency},

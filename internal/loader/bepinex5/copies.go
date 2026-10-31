@@ -8,11 +8,13 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-bepinex"
+
+	"github.com/Rethunk-Tech/go-bepinex/wineoverride"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
-	"github.com/Rethunk-Tech/mortar/internal/wineoverride"
 )
 
 // A test run's later copies each get a BepInEx root of their own beside Mortar's data, outside the profile (whose
@@ -87,7 +89,7 @@ func forCopy(p loader.ProfileView, proton bool) func(int, *launchplan.Plan) erro
 		if err := BuildCopyRoot(p.Dir, root); err != nil {
 			return err
 		}
-		target := hostPath(root, entry(p.Dir), proton)
+		target := bepinex.HostPath(root, bepinex.Entry(p.Dir), proton)
 		for i, a := range c.Args[:max(len(c.Args)-1, 0)] {
 			if a == "--doorstop-target" || a == "--doorstop-target-assembly" {
 				c.Args[i+1] = target

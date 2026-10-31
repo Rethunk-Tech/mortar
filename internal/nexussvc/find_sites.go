@@ -5,6 +5,8 @@ import (
 	"maps"
 	"slices"
 
+	"github.com/Rethunk-Tech/go-bepinex/plugins"
+
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source/vsmoddb"
@@ -20,7 +22,7 @@ type modDBResolver interface {
 func (s *Service) findOnSites(ctx context.Context, gameID, profileID string, p profile.Profile, sites []string) (FoundSources, error) {
 	found := map[string]profile.Source{}
 	if slices.Contains(sites, "thunderstore") {
-		maps.Copy(found, thunderstoreSources(p.Entries, s.Profiles.PluginTwins(gameID, func(dir string) []dotnet.Plugin { return dotnet.ScanDir(dir).Plugins })))
+		maps.Copy(found, thunderstoreSources(p.Entries, s.Profiles.PluginTwins(gameID, func(dir string) []dotnet.Plugin { return plugins.ScanDir(dir).Plugins })))
 	}
 	if slices.Contains(sites, "vsmoddb") {
 		maps.Copy(found, modDBSources(ctx, p.Entries, vsmoddb.Driver{}))

@@ -5,6 +5,7 @@ go 1.27.3
 require (
 	github.com/Rethunk-Tech/go-archive v0.2.0
 	github.com/Rethunk-Tech/go-avscan v0.1.0
+	github.com/Rethunk-Tech/go-bepinex v0.1.0
 	github.com/Rethunk-Tech/go-cfgedit v0.2.0
 	github.com/Rethunk-Tech/go-curseforge v0.1.0
 	github.com/Rethunk-Tech/go-desktopenv v0.3.1

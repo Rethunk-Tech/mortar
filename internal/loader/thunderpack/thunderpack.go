@@ -16,6 +16,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-bepinex/wineoverride"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -24,7 +25,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
-	"github.com/Rethunk-Tech/mortar/internal/wineoverride"
 )
 
 // Spec is what differs between the loaders. All paths are slash paths.

@@ -5,7 +5,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/launch"
+	"github.com/Rethunk-Tech/go-bepinex/logline"
+
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 )
 
@@ -72,7 +73,7 @@ func RanAfterLoad(kind string) bool {
 // HarmonyPatchMethod is the patch method, "Namespace.Type::Method", a LogOutput.log line says HarmonyX could not run.
 // The stack below such a line holds only the Harmony wrapper of the method it patches.
 func HarmonyPatchMethod(line string) (string, bool) {
-	_, line = launch.SplitBepInExStamp(strings.TrimRight(line, "\r"))
+	_, line = logline.SplitStamp(strings.TrimRight(line, "\r"))
 	m := logLine.FindStringSubmatch(line)
 	if m == nil {
 		return "", false
@@ -148,7 +149,7 @@ func Analyze(logOutput, playerLog string) []Finding {
 // classify reads one LogOutput.log line. ok is false for a warning or error no rule recognises; a recognised line
 // that needs nothing from the player has an empty Kind.
 func classify(line string) (f Finding, ok bool) {
-	_, line = launch.SplitBepInExStamp(line)
+	_, line = logline.SplitStamp(line)
 	m := logLine.FindStringSubmatch(line)
 	if m == nil {
 		return Finding{}, true
@@ -219,7 +220,7 @@ func Unclassified(logOutput string) int {
 // unityLogException reads an exception Unity caught (one thrown in a plugin's Awake or Update) as BepInEx's Unity log
 // listener writes it: the exception line, "Stack trace:", then Unity's frames, which blame the first mod namespace.
 func unityLogException(line string, before, rest []string) (Finding, bool) {
-	_, line = launch.SplitBepInExStamp(strings.TrimRight(line, "\r"))
+	_, line = logline.SplitStamp(strings.TrimRight(line, "\r"))
 	m := logLine.FindStringSubmatch(line)
 	if m == nil || m[1] != "Error" || strings.TrimSpace(m[2]) != "Unity Log" || len(rest) == 0 ||
 		strings.TrimSpace(rest[0]) != "Stack trace:" {
@@ -257,7 +258,7 @@ func loadingPlugin(before, stack []string) string {
 		return ""
 	}
 	for _, l := range slices.Backward(before) {
-		_, l = launch.SplitBepInExStamp(strings.TrimRight(l, "\r"))
+		_, l = logline.SplitStamp(strings.TrimRight(l, "\r"))
 		if m := loading.FindStringSubmatch(l); m != nil {
 			return m[1]
 		}

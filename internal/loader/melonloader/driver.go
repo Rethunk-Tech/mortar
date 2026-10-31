@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-bepinex/wineoverride"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -15,7 +16,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/dotnetstack"
-	"github.com/Rethunk-Tech/mortar/internal/wineoverride"
 )
 
 var _ = loader.Register(Loader{})

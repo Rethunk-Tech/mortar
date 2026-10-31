@@ -35,15 +35,15 @@ Rows are item -> test or step id (`launch (a)` and so on name the launch; `offli
 
 | Item | Covered by |
 | --- | --- |
-| Fresh install | offline `loader.fresh`; `TestInstallPackAndDoorstopFiles`, `TestLoaderContract` |
-| Pin an older pack over a newer one | offline `loader.pin`; `TestAnOlderPackOverANewerOneKeepsNoneOfItsFiles` |
+| Fresh install | offline `loader.fresh`; the install-pack test in [go-bepinex `bepinex_test.go`](https://github.com/Rethunk-Tech/go-bepinex/blob/v0.1.0/bepinex_test.go), `TestLoaderContract` |
+| Pin an older pack over a newer one | offline `loader.pin`; the older-pack-over-newer test in [go-bepinex `bepinex_test.go`](https://github.com/Rethunk-Tech/go-bepinex/blob/v0.1.0/bepinex_test.go) |
 | Pinned pack starts | launch (b) `loader.pin-run` |
 | Unpin and install the latest | offline `loader.unpin` |
 | Reinstall a version over itself | offline `loader.reinstall` |
 | Reinstalled latest pack starts | launch (a) `loader.reinstall-run` |
-| Per-Doorstop files and flag spelling | `loader.pin`, `loader.unpin`, `loader.reinstall`, `loader.reinstall-run`, `loader.pin-run`; `TestLaunchArgs` |
-| Uninstall leaves the game folder as before | `stop.a`, `launch.exit`, `loader.pin-exit`; `TestLoaderContract`, `TestLaunchArgs` |
-| Wine `winhttp` override in `user.reg` | `TestEnsure` (`internal/wineoverride`); launches (a), (c) and (b) |
+| Per-Doorstop files and flag spelling | `loader.pin`, `loader.unpin`, `loader.reinstall`, `loader.reinstall-run`, `loader.pin-run`; the launch-args test in [go-bepinex `bepinex_test.go`](https://github.com/Rethunk-Tech/go-bepinex/blob/v0.1.0/bepinex_test.go) |
+| Uninstall leaves the game folder as before | `stop.a`, `launch.exit`, `loader.pin-exit`; `TestLoaderContract`, the launch-args test in [go-bepinex `bepinex_test.go`](https://github.com/Rethunk-Tech/go-bepinex/blob/v0.1.0/bepinex_test.go) |
+| Wine `winhttp` override in `user.reg` | the `user.reg` tests in [go-bepinex `wineoverride`](https://github.com/Rethunk-Tech/go-bepinex/tree/v0.1.0/wineoverride); launches (a), (c) and (b) |
 
 ## Mods
 

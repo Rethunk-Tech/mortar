@@ -7,6 +7,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-bepinex/plugins"
+
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
@@ -126,7 +128,7 @@ func loaderFailures(l loader.Loader, p loader.ProfileView, player string, owners
 		if f.Kind != bepinex5.KindDuplicateGUID || f.Key != "" {
 			continue
 		}
-		if abs := dotnet.PluginFile(filepath.Join(p.Dir, filepath.FromSlash(pluginsDir)), f.Plugin); abs != "" {
+		if abs := plugins.PluginFile(filepath.Join(p.Dir, filepath.FromSlash(pluginsDir)), f.Plugin); abs != "" {
 			rel, _ := filepath.Rel(p.Dir, abs)
 			out[i].Path = filepath.ToSlash(rel)
 		}
@@ -153,7 +155,7 @@ func dropFixed(found []LoadFailure, pluginsPath string, owners func() map[string
 	gone := func(plugin string) bool {
 		if declared == nil {
 			declared = map[string]bool{}
-			for _, pl := range dotnet.PluginsIn(pluginsPath) {
+			for _, pl := range plugins.PluginsIn(pluginsPath) {
 				for _, n := range []string{pl.GUID, pl.Name, pl.Name + " " + pl.Version} {
 					declared[strings.ToLower(n)] = true
 				}
@@ -256,7 +258,7 @@ func startFailure(runID string, summary launch.Summary) []LoadFailure {
 	return []LoadFailure{{Plugin: runID, Kind: KindRunFailed, Message: summary.StartFailure}}
 }
 
-// pluginOwners maps every way a log names a plugin (see dotnet.Owners) to the enabled package whose plugin DLLs
+// pluginOwners maps every way a log names a plugin (see plugins.Owners) to the enabled package whose plugin DLLs
 // declare it. A package is the identity; the GUIDs are read from its files, since a package may hold several plugins or
 // none and can change a GUID between versions.
 func pluginOwners(mods []framework.Mod) map[string]framework.Mod {
@@ -268,7 +270,7 @@ func pluginOwners(mods []framework.Mod) map[string]framework.Mod {
 		}
 	}
 	owners := map[string]framework.Mod{}
-	for name, i := range dotnet.Owners(dirs) {
+	for name, i := range plugins.Owners(dirs) {
 		owners[name] = with[i]
 	}
 	return owners

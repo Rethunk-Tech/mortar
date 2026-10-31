@@ -4,9 +4,12 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-bepinex/logline"
+
+	"github.com/Rethunk-Tech/go-bepinex/plugins"
+
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
-	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loadorder"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -19,9 +22,9 @@ import (
 func (l Loader) Order(p loader.ProfileView) ([]loadorder.Row, error) {
 	var asms []dotnet.Declared
 	for _, dir := range p.Enabled {
-		asms = append(asms, dotnet.ScanEach(dir)...)
+		asms = append(asms, plugins.ScanEach(dir)...)
 	}
-	order := dotnet.LoadOrder(asms)
+	order := plugins.LoadOrder(asms)
 	path, _ := l.Path(p)
 	raw, _ := safefs.ReadFile(path)
 	moved := asLastRun(order, string(raw))
@@ -30,16 +33,16 @@ func (l Loader) Order(p loader.ProfileView) ([]loadorder.Row, error) {
 
 // asLastRun reorders, in place, the plugins the log loaded into the order it loaded them, keeping every other plugin
 // at its predicted place, and reports the GUIDs that moved.
-func asLastRun(order []dotnet.Loaded, log string) map[string]bool {
+func asLastRun(order []plugins.Loaded, log string) map[string]bool {
 	at := map[string]int{}
 	n := 0
 	for line := range strings.Lines(log) {
-		_, line = launch.SplitBepInExStamp(strings.TrimRight(line, "\r\n"))
+		_, line = logline.SplitStamp(strings.TrimRight(line, "\r\n"))
 		m := loading.FindStringSubmatch(line)
 		if m == nil {
 			continue
 		}
-		i := slices.IndexFunc(order, func(l dotnet.Loaded) bool { return names(l.Plugin, m[1]) })
+		i := slices.IndexFunc(order, func(l plugins.Loaded) bool { return names(l.Plugin, m[1]) })
 		if i >= 0 {
 			if _, seen := at[order[i].GUID]; !seen {
 				at[order[i].GUID] = n
@@ -48,14 +51,14 @@ func asLastRun(order []dotnet.Loaded, log string) map[string]bool {
 		}
 	}
 	var slots []int
-	var logged []dotnet.Loaded
+	var logged []plugins.Loaded
 	for i, l := range order {
 		if _, ok := at[l.GUID]; ok {
 			slots = append(slots, i)
 			logged = append(logged, l)
 		}
 	}
-	slices.SortStableFunc(logged, func(a, b dotnet.Loaded) int { return at[a.GUID] - at[b.GUID] })
+	slices.SortStableFunc(logged, func(a, b plugins.Loaded) int { return at[a.GUID] - at[b.GUID] })
 	moved := map[string]bool{}
 	for k, i := range slots {
 		if order[i].GUID != logged[k].GUID {
@@ -76,7 +79,7 @@ func names(p dotnet.Plugin, nameVersion string) bool {
 	return ok && c == 0 || nameVersion[i+1:] == p.Version
 }
 
-func rows(order []dotnet.Loaded, moved map[string]bool) []loadorder.Row {
+func rows(order []plugins.Loaded, moved map[string]bool) []loadorder.Row {
 	id := func(guid string) mod.ID { return mod.NewID(mod.FormatBepInEx, guid) }
 	present := map[string]bool{}
 	for _, l := range order {

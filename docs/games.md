@@ -130,7 +130,7 @@ Each decision names its community source, because EA documents little. The catal
 
 Sources: r2modman's ecosystem schema, MO2's `games/game_valheim.py`, Vortex's `Nexus-Mods/game-valheim`, the `denikson-BepInExPack_Valheim` zip.
 - **Native Linux launch** is always direct, because Steam's own start cannot carry the environment: Mortar does what the pack's Linux start script does (`LD_PRELOAD` the profile's `doorstop_libs/libdoorstop_x64.so`, `DOORSTOP_ENABLED=1`, `DOORSTOP_TARGET_ASSEMBLY`) plus `SteamAppId` so Steamworks does not restart the game through Steam. The shared `BepInEx-BepInExPack` ships no Linux library, so this works only with a community pack that has one.
-- **Loader pack:** the community's own `denikson-BepInExPack_Valheim`; the generic pack is not listed in the community. Its files sit under `BepInExPack_Valheim/` in the zip, which `InstallPack` finds by the folder holding the preloader.
+- **Loader pack:** the community's own `denikson-BepInExPack_Valheim`; the generic pack is not listed in the community. Its files sit under `BepInExPack_Valheim/` in the zip, which go-bepinex `InstallPack` finds by the folder holding the preloader.
 - Mods name the pack as a dependency, which Mortar skips because the loader install provides it.
 - **Steam Cloud saves** live in `userdata/<id>/892970/remote/`, outside the `saves` path.
 - **Logs:** the pack's `Chainloader startup complete` line ends with counts, which `Ready` still matches. Duplicate-GUID skips add the GUID and both paths, and an identical second copy reads `because a duplicate of it was already loaded from <path>` (`AzumattDev/BepInEx` `Chainloader.cs`); the analyzer reads both wordings.

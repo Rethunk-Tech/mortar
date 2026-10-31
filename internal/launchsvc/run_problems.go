@@ -8,8 +8,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-bepinex/plugins"
+
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
@@ -141,7 +142,7 @@ func (s *Service) modIDOwners(gameID, profileID string) map[string]profile.Insta
 	return owners
 }
 
-// pluginOwners maps every name a loader log gives a plugin (see dotnet.Owners) to the profile mod whose DLLs declare it.
+// pluginOwners maps every name a loader log gives a plugin (see plugins.Owners) to the profile mod whose DLLs declare it.
 func (s *Service) pluginOwners(gameID, profileID string) map[string]profile.Installed {
 	if s.profiles == nil || profileID == "" {
 		return nil
@@ -164,7 +165,7 @@ func (s *Service) pluginOwners(gameID, profileID string) map[string]profile.Inst
 		}
 	}
 	owners := map[string]profile.Installed{}
-	for name, i := range dotnet.Owners(dirs) {
+	for name, i := range plugins.Owners(dirs) {
 		owners[name] = with[i]
 	}
 	return owners

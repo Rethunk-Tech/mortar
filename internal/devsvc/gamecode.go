@@ -14,6 +14,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-bepinex/plugins"
+
 	"github.com/Rethunk-Tech/go-cfgedit/msbuild"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
@@ -73,7 +75,7 @@ func (s *Service) Assemblies(gameID, dir string) ([]Assembly, error) {
 			if im.Source.Kind != profile.KindThunderstore || im.Folder == "" {
 				continue
 			}
-			for _, path := range dotnet.DLLs(im.Folder) {
+			for _, path := range plugins.DLLs(im.Folder) {
 				out = append(out, Assembly{Label: im.Source.Name + "/" + filepath.Base(path), Path: path, Group: "dependency"})
 			}
 		}

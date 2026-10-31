@@ -7,7 +7,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/dotnet"
+	"github.com/Rethunk-Tech/go-bepinex/plugins"
+
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -131,7 +132,7 @@ func (s *Service) livePackages(gameID, profileID string) func() livePackages {
 			if !im.Enabled || im.Folder == "" {
 				continue
 			}
-			for _, pl := range dotnet.PluginsIn(im.Folder) {
+			for _, pl := range plugins.PluginsIn(im.Folder) {
 				out.plugins = append(out.plugins, declaredPlugin{ID: im.ModID(), Key: im.Key, GUID: pl.GUID, Version: pl.Version})
 			}
 		}

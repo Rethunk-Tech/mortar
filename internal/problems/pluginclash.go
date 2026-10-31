@@ -10,6 +10,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/go-bepinex/plugins"
+
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -56,7 +58,7 @@ func declaredIn(dir string) dotnet.Declared {
 	if ok {
 		return cached
 	}
-	out := dotnet.ScanDir(dir)
+	out := plugins.ScanDir(dir)
 	pluginMu.Lock()
 	maps.DeleteFunc(pluginCache, func(k pluginKey, _ dotnet.Declared) bool {
 		_, err := os.Stat(k.dir)
@@ -80,7 +82,7 @@ func pluginClashes(pkgs []profile.PackageRef, deprecated, developed map[string]b
 		seen := map[string]bool{}
 		for _, pl := range pluginsIn(p.Dir) {
 			g := strings.ToLower(pl.GUID)
-			if g == "" || seen[g] || !dotnet.Loadable(pl) {
+			if g == "" || seen[g] || !plugins.Loadable(pl) {
 				continue
 			}
 			seen[g] = true

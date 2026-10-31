@@ -29,6 +29,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-bepinex"
+
 	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/go-httpkit/download"
 	"github.com/Rethunk-Tech/go-safefs"
@@ -497,7 +499,7 @@ type GameLoader struct {
 	// Routes are folders beyond BepInEx's own that the game's mods install into, from r2modman's install rules.
 	Routes []LoaderRoute `json:"routes,omitempty"`
 	// Proxy is the Doorstop proxy library the game's BepInEx pack ships when it is not winhttp.dll (In Silence's pack
-	// renames it to version.dll); one of DoorstopProxies. Checks that run before a profile holds the pack read it here.
+	// renames it to version.dll); one of bepinex.Proxies. Checks that run before a profile holds the pack read it here.
 	Proxy string `json:"proxy,omitempty"`
 	// PlaceDir is the slash path below the install of the folder a profile-held loader's executable-side files are
 	// placed in for a launch, when that is not MarkerDir (an Unreal game's Binaries/Win64, beside its shipping build).
@@ -593,9 +595,6 @@ func (g GameInfo) LoaderPlaceDir(id string) string {
 	return g.MarkerDir
 }
 
-// DoorstopProxies are the names a BepInEx pack gives its Doorstop proxy, the usual one first.
-var DoorstopProxies = []string{"winhttp.dll", "version.dll", "winmm.dll"}
-
 // DoorstopProxy is the Doorstop proxy the game's BepInEx pack ships: the loader entry's Proxy, else winhttp.dll.
 func (g GameInfo) DoorstopProxy() string {
 	for _, l := range g.Loaders {
@@ -603,7 +602,7 @@ func (g GameInfo) DoorstopProxy() string {
 			return l.Proxy
 		}
 	}
-	return DoorstopProxies[0]
+	return bepinex.Proxies()[0]
 }
 
 // A LoaderRoute's Track says where a package's files go below its folder.
@@ -952,7 +951,7 @@ func (g GameInfo) Validate() error {
 		}
 	}
 	for _, l := range g.Loaders {
-		if l.Proxy != "" && !slices.Contains(DoorstopProxies, l.Proxy) {
+		if l.Proxy != "" && !slices.Contains(bepinex.Proxies(), l.Proxy) {
 			return fmt.Errorf("game %q names an unknown Doorstop proxy %q", g.ID, l.Proxy)
 		}
 		if t := l.DevTemplate; t != nil && (!devTemplateRepo.MatchString(t.Repo) || !devTemplateRef.MatchString(t.Ref) || strings.Contains(t.Ref, "..")) {

@@ -4,6 +4,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-bepinex/plugins"
+
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
@@ -31,7 +33,7 @@ func pluginDeps(pkgs []profile.PackageRef, mods []framework.Mod) ([]Missing, []L
 		d := declaredIn(p.Dir)
 		declared[p.Key] = d
 		for _, pl := range d.Plugins {
-			if !dotnet.Loadable(pl) {
+			if !plugins.Loadable(pl) {
 				continue
 			}
 			g := strings.ToLower(pl.GUID)

@@ -11,6 +11,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/go-bepinex/wineoverride"
 	"github.com/Rethunk-Tech/go-cfgedit/ini"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -24,7 +25,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/savesiso"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
-	"github.com/Rethunk-Tech/mortar/internal/wineoverride"
 )
 
 // loaderID is the id of the game's first loader, "" when it has none.
@@ -599,7 +599,7 @@ func (s *Service) ensureRuntime(inst game.Install, reqs []launchplan.RuntimeReq,
 			}
 			return errNoPrefix
 		}
-		if err := wineoverride.Ensure(reg, r.Key); err != nil {
+		if err := wineoverride.Ensure(reg, r.Key, reg+".mortar-backup"); err != nil {
 			return fmt.Errorf("make the Proton prefix load %s: %w", r.Key, err)
 		}
 	}

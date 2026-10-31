@@ -8,6 +8,8 @@ github.com/Rethunk-Tech/go-archive v0.2.0 h1:a97WkTSQijRD3D7/5Cu10iz0JqGHr75V8gO
 github.com/Rethunk-Tech/go-archive v0.2.0/go.mod h1:CvcGZQvQOVK8RCKV+60Yijah6Y5P2/l6U0eKJGtvhjk=
 github.com/Rethunk-Tech/go-avscan v0.1.0 h1:ZwBuacWeI5Xnf601b+GFZLGR0QlQnINbIKemTwrIQWc=
 github.com/Rethunk-Tech/go-avscan v0.1.0/go.mod h1:Do3G/kVb9kYmOI5ZeEtygmoMnImmIliafwSxxZzqV3U=
+github.com/Rethunk-Tech/go-bepinex v0.1.0 h1:OQCmnPluf78etWtKvkebwIyGasUEm0yap1D41/qWDFU=
+github.com/Rethunk-Tech/go-bepinex v0.1.0/go.mod h1:27zVIQsm8SU5yncUpKGddbYGmp8kYRujWaBZhHeug5E=
 github.com/Rethunk-Tech/go-cfgedit v0.2.0 h1:AaoQuLBmiGvHd6irBqcDcChifMTai4idpTrWvST5bT8=
 github.com/Rethunk-Tech/go-cfgedit v0.2.0/go.mod h1:QufP3Eqz9dz83brRfZ7K4d6iN8T61IhCJee+5Wow/Ic=
 github.com/Rethunk-Tech/go-curseforge v0.1.0 h1:VImHkP4TA2tVzixbt8nq3GQZJkTX0kSd82JkNqOwTDQ=

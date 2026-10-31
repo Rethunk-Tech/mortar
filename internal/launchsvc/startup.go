@@ -10,10 +10,11 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/go-bepinex/plugins"
+
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi"
@@ -200,7 +201,7 @@ func (s *Service) pluginPackages(gameID, profileID string) func() map[string]sta
 			if !im.Enabled || im.Folder == "" {
 				continue
 			}
-			for _, pl := range dotnet.PluginsIn(im.Folder) {
+			for _, pl := range plugins.PluginsIn(im.Folder) {
 				owners[strings.ToLower(pl.GUID)] = startupOwner{ID: im.ModID(), Name: im.Name, Version: im.Version}
 			}
 		}

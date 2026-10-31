@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-bepinex/plugins"
+
 	"github.com/Rethunk-Tech/go-safefs"
 
 	"github.com/Rethunk-Tech/go-semverish"
@@ -79,7 +81,7 @@ func TestRealBepInExRun(t *testing.T) {
 	if count != len(loaded)+len(skipped) {
 		t.Errorf("BepInEx counted %d plugins to load, then logged %d Loading and %d skipped lines", count, len(loaded), len(skipped))
 	}
-	found := PluginsIn(filepath.Join(dir, "BepInEx", "plugins"))
+	found := plugins.PluginsIn(filepath.Join(dir, "BepInEx", "plugins"))
 	in := func(list []runPlugin, p Plugin) bool {
 		for _, l := range list {
 			if l.name == p.Name && sameVersion(l.version, p.Version) {
@@ -98,7 +100,7 @@ func TestRealBepInExRun(t *testing.T) {
 			t.Errorf("Mortar found %s (%s %s), which BepInEx neither loaded nor skipped", p.GUID, p.Name, p.Version)
 		}
 	}
-	order := LoadOrder(ScanEach(filepath.Join(dir, "BepInEx", "plugins")))
+	order := plugins.LoadOrder(plugins.ScanEach(filepath.Join(dir, "BepInEx", "plugins")))
 	var predicted []runPlugin
 	for _, p := range order {
 		if in(loaded, p.Plugin) {

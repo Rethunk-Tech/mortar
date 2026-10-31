@@ -5,6 +5,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/go-bepinex/plugins"
+
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -52,13 +54,13 @@ func packageFootprints(pkgs []profile.PackageRef, mods []framework.Mod) (map[str
 		if _, ok := byKey[p.Key]; !ok {
 			continue
 		}
-		d := dotnet.ScanDir(p.Dir)
+		d := plugins.ScanDir(p.Dir)
 		declared[p.Key] = d
 		for _, pl := range d.Plugins {
 			g := strings.ToLower(pl.GUID)
 			owners[g] = append(owners[g], p.Key)
 		}
-		for _, dll := range dotnet.DLLs(p.Dir) {
+		for _, dll := range plugins.DLLs(p.Dir) {
 			dlls, keys = append(dlls, dll), append(keys, p.Key)
 		}
 	}
@@ -130,7 +132,7 @@ func packagePatchers(pkgs []profile.PackageRef, mods []framework.Mod) *patchInde
 			if !ok {
 				continue
 			}
-			for _, dll := range dotnet.DLLs(p.Dir) {
+			for _, dll := range plugins.DLLs(p.Dir) {
 				patches, _ := dotnet.Patches(dll)
 				for _, patch := range patches {
 					out.targets[patch.Target] = append(out.targets[patch.Target], name)

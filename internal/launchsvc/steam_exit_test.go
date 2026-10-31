@@ -10,11 +10,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-bepinex"
+
 	"github.com/Rethunk-Tech/go-gameproc"
 	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
-	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 )
 
@@ -161,10 +162,10 @@ func TestABepInExGameIsTheProfileItsDoorstopTargetNames(t *testing.T) {
 		args    []string
 		profile string
 	}{
-		{"Proton Z: target", bepinex5.LaunchArgs(dirB, 3, true), b.ID},
-		{"native target", bepinex5.LaunchArgs(dirB, 4, false), b.ID},
+		{"Proton Z: target", bepinex.LaunchArgs(dirB, 3, true), b.ID},
+		{"native target", bepinex.LaunchArgs(dirB, 4, false), b.ID},
 		{"started from Steam without Mortar", nil, ""},
-		{"vanilla", bepinex5.VanillaArgs(), ""},
+		{"vanilla", bepinex.VanillaArgs(), ""},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			svc.procDir = t.TempDir()

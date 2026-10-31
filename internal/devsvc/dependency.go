@@ -11,9 +11,10 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-bepinex/plugins"
+
 	"github.com/Rethunk-Tech/go-cfgedit/msbuild"
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -285,7 +286,7 @@ func (s *Service) syncDependencies(gameID string, p settings.DevProject) error {
 		if err := setUserDependency(p.Dir, pkg, folder+string(filepath.Separator)); err != nil {
 			return err
 		}
-		for _, pl := range dotnet.PluginsIn(folder) {
+		for _, pl := range plugins.PluginsIn(folder) {
 			if err := declareDependency(src, pl.GUID, soft); err != nil {
 				return err
 			}

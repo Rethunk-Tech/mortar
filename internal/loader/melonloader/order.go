@@ -5,6 +5,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-bepinex/plugins"
+
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loadorder"
@@ -16,22 +18,22 @@ import (
 // another's references, [MelonAdditionalDependencies] or [MelonOptionalDependencies] is that melon's dependency; one
 // that is absent and not optional shows as missing.
 func (Loader) Order(p loader.ProfileView) ([]loadorder.Row, error) {
-	var plugins, mods []dotnet.Melon
+	var plugs, mods []dotnet.Melon
 	for _, dir := range p.Enabled {
-		for _, path := range dotnet.DLLs(dir) {
+		for _, path := range plugins.DLLs(dir) {
 			m, err := dotnet.ScanMelon(path)
 			if err != nil || !m.HasInfo {
 				continue
 			}
 			rel, _ := filepath.Rel(dir, path)
 			if slices.ContainsFunc(strings.FieldsFunc(rel, func(r rune) bool { return r == '/' || r == '\\' }), func(s string) bool { return strings.EqualFold(s, "Plugins") }) {
-				plugins = append(plugins, m)
+				plugs = append(plugs, m)
 			} else {
 				mods = append(mods, m)
 			}
 		}
 	}
-	return melonRows(dotnet.MelonOrder(plugins), dotnet.MelonOrder(mods)), nil
+	return melonRows(dotnet.MelonOrder(plugs), dotnet.MelonOrder(mods)), nil
 }
 
 func melonRows(groups ...[]dotnet.Melon) []loadorder.Row {

@@ -9,6 +9,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-bepinex/plugins"
+
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -107,7 +109,7 @@ func (s *Store) scanPackage(game string, e Entry) (packageScan, bool) {
 	pkg := cmp.Or(e.Source.Name, e.Key)
 	var sc packageScan
 	var patcher, plugin, dll bool
-	for _, path := range dotnet.DLLs(dir) {
+	for _, path := range plugins.DLLs(dir) {
 		dll = true
 		d, _ := dotnet.Scan(path)
 		isPatcher := false

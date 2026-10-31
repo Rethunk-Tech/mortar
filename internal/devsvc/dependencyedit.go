@@ -10,9 +10,10 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-bepinex/plugins"
+
 	"github.com/Rethunk-Tech/go-cfgedit/msbuild"
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -85,7 +86,7 @@ func (s *Service) RemoveDependency(gameID, dir, pkg string) error {
 		}
 		src := filepath.Dir(csproj)
 		if folder != "" {
-			for _, pl := range dotnet.PluginsIn(folder) {
+			for _, pl := range plugins.PluginsIn(folder) {
 				if err := undeclareDependency(src, pl.GUID); err != nil {
 					return err
 				}

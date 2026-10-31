@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-bepinex"
+
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/loader/thunderpack"
 )
@@ -13,7 +15,10 @@ import (
 // ProfileFiles are what InstallPack lays out in each profile's folder (BepInEx's files sit there, not in the game's
 // install), with the marker that records the installed version.
 func (Loader) ProfileFiles() []string {
-	return append(append([]string{"BepInEx", "doorstop_config.ini", "doorstop_libs", doorstopFile, markerFile}, components.DoorstopProxies...), packRuntimeDirs...)
+	// .doorstop_version and the runtime folders (dotnet, mono, unstripped_corlib) are the pack's, as bepinex.InstallPack
+	// lays them out.
+	return append(append([]string{"BepInEx", "doorstop_config.ini", "doorstop_libs", ".doorstop_version", markerFile}, bepinex.Proxies()...),
+		"dotnet", "mono", "unstripped_corlib")
 }
 
 // releases offers only the BepInEx major the catalog names for the game (5 unless it says otherwise): plugins do not

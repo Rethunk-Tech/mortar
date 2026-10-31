@@ -4,8 +4,9 @@ import (
 	"path/filepath"
 	"slices"
 
+	"github.com/Rethunk-Tech/go-bepinex/plugins"
+
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -74,7 +75,7 @@ func (s *Store) InstalledPluginGUIDs(game, id string) []string {
 	}
 	var out []string
 	add := func(root string) {
-		for _, pl := range dotnet.PluginsIn(root) {
+		for _, pl := range plugins.PluginsIn(root) {
 			out = append(out, pl.GUID)
 		}
 	}
