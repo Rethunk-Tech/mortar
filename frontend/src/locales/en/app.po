@@ -6167,6 +6167,10 @@ msgstr "Mortar backs up your saves before playing and before updates. Use Back u
 msgid "Stop the game to restore saves."
 msgstr "Stop the game to restore saves."
 
+#: src/develop/AdoptDialog.tsx
+msgid "Some content is in an old layout ({name}). Move it into plugins/, where each kind gets its own folder."
+msgstr "Some content is in an old layout ({name}). Move it into plugins/, where each kind gets its own folder."
+
 #: src/commandPalette/paletteLabels.ts
 msgid "Diagnostics"
 msgstr "Diagnostics"
@@ -7264,10 +7268,6 @@ msgstr "{name} is not on {source}"
 #: src/develop/DevelopTab.tsx
 msgid "Show all projects"
 msgstr "Show all projects"
-
-#: src/develop/AdoptDialog.tsx
-msgid "Some content is in an old layout ({name}). Move it into plugins/mortar/, where each kind gets its own folder."
-msgstr "Some content is in an old layout ({name}). Move it into plugins/mortar/, where each kind gets its own folder."
 
 #: src/saves/BackupsDialog.tsx
 #: src/saves/SaveBackupsButton.tsx

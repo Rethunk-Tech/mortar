@@ -6167,6 +6167,10 @@ msgstr ""
 msgid "Stop the game to restore saves."
 msgstr ""
 
+#: src/develop/AdoptDialog.tsx
+msgid "Some content is in an old layout ({name}). Move it into plugins/, where each kind gets its own folder."
+msgstr ""
+
 #: src/commandPalette/paletteLabels.ts
 msgid "Diagnostics"
 msgstr ""
@@ -7263,10 +7267,6 @@ msgstr ""
 
 #: src/develop/DevelopTab.tsx
 msgid "Show all projects"
-msgstr ""
-
-#: src/develop/AdoptDialog.tsx
-msgid "Some content is in an old layout ({name}). Move it into plugins/mortar/, where each kind gets its own folder."
 msgstr ""
 
 #: src/saves/BackupsDialog.tsx

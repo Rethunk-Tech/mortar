@@ -141,7 +141,7 @@ function AdoptDialog({
             </Button>
           }
         >
-          {t`Some content is in an old layout (${{ name: listNames(found.legacy ?? [], LEGACY_SHOWN) }}). Move it into plugins/mortar/, where each kind gets its own folder.`}
+          {t`Some content is in an old layout (${{ name: listNames(found.legacy ?? [], LEGACY_SHOWN) }}). Move it into plugins/, where each kind gets its own folder.`}
         </Alert>
       ) : null}
       {kind === CODE && found.csproj ? (
