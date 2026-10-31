@@ -47,7 +47,7 @@ tasks:
       # -buildvcs=false leaves the binary without its commit, so the build stamps it in for mortar version and About.
       COMMIT:
         sh: git rev-parse --short=8 HEAD 2>/dev/null || true
-      # Commits since the tag of build/config.yml's version, so a build past its release reads the next patch's catalog entries.
+      # Commits since the tag of build/config.yml's version, so a build past its release reads the next release's catalog entries.
       SINCE_RELEASE:
         sh: |-
           git rev-list --count "v$(sed -n 's/^  version: "\([^"]*\)".*/\1/p' build/config.yml)..HEAD" 2>/dev/null || true

@@ -101,26 +101,30 @@ func PastRelease() bool {
 	return err == nil && n > 0
 }
 
-// NextPatch is version with its patch number raised by one; a version that is not x.y.z comes back as it was.
-func NextPatch(version string) string {
+// NextMinor is version with its minor number raised by one and its patch zeroed; a version that is not x.y.z comes
+// back as it was.
+func NextMinor(version string) string {
 	parts := strings.Split(version, ".")
 	if len(parts) != 3 {
 		return version
 	}
-	patch, err := strconv.Atoi(parts[2])
+	minor, err := strconv.Atoi(parts[1])
 	if err != nil {
 		return version
 	}
-	parts[2] = strconv.Itoa(patch + 1)
+	if _, err := strconv.Atoi(parts[2]); err != nil {
+		return version
+	}
+	parts[1], parts[2] = strconv.Itoa(minor+1), "0"
 	return strings.Join(parts, ".")
 }
 
 // ForCatalog is the version the catalog's minVersion entries are compared with: a build past its release reads
-// entries for the next patch, since the code they need is in it. The version shown and compared for updates is
+// entries for the next release, a patch or a minor, since the code they need is in it. The version shown and compared for updates is
 // untouched.
 func ForCatalog(version string) string {
 	if PastRelease() {
-		return NextPatch(version)
+		return NextMinor(version)
 	}
 	return version
 }

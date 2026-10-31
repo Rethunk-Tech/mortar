@@ -95,7 +95,7 @@ build() {
     # changes; bindings-fresh regenerates them whenever a Go source or the generator changed.
     (cd "$REPO" && scripts/bindings-fresh.sh >"$ROOT/bindings.log" 2>&1)
     (cd "$REPO" && bun run --cwd frontend build >"$ROOT/frontend-build.log" 2>&1)
-    # Stamped past the release like build/linux/Taskfile.yml, so entries for the next patch (minVersion) are read.
+    # Stamped past the release like build/linux/Taskfile.yml, so entries for the next release (minVersion) are read.
     since=$(cd "$REPO" && git rev-list --count "v$(sed -n 's/^  version: "\([^"]*\)".*/\1/p' build/config.yml)..HEAD" 2>/dev/null || true)
     (cd "$REPO" && go build -tags server ${since:+-ldflags "-X github.com/Rethunk-Tech/mortar/internal/appversion.pastRelease=$since"} -o "$ROOT/mortar-server.new" .)
     # Filed under the key taken before the build: the tree can change while it runs (another worker's edit), and a

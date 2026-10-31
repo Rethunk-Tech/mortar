@@ -813,7 +813,7 @@ func TestServerSpecsAreChecked(t *testing.T) {
 	}
 }
 
-// A build past its release reads entries for the next patch (appversion.ForCatalog); a released one reads its own.
+// A build past its release reads entries for the next release (appversion.ForCatalog); a released one reads its own.
 func TestMinVersionIsCheckedAgainstTheRunningCatalogVersion(t *testing.T) {
 	t.Cleanup(func() { SetRunning("") })
 	games := func(running string) int {
@@ -830,7 +830,7 @@ func TestMinVersionIsCheckedAgainstTheRunningCatalogVersion(t *testing.T) {
 	if got := games("0.3.7"); got != 10 {
 		t.Errorf("a released 0.3.7 kept an entry that needs 0.3.8 (%d)", got)
 	}
-	if got := games("0.3.8"); got != 1 {
+	if got := games("0.4.0"); got != 1 {
 		t.Errorf("a 0.3.7 build past its release dropped an entry that needs 0.3.8 (%d)", got)
 	}
 }
