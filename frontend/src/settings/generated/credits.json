@@ -235,6 +235,11 @@
     "url": "https://github.com/Rethunk-Tech/go-semverish"
   },
   {
+    "name": "github.com/Rethunk-Tech/go-smapi",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/go-smapi"
+  },
+  {
     "name": "github.com/Rethunk-Tech/go-smapiweb",
     "licence": "MIT",
     "url": "https://github.com/Rethunk-Tech/go-smapiweb"
