@@ -283,7 +283,7 @@
           "companion": "bridge",
           "devTemplate": {
             "repo": "Rethunk-Tech/mortar-bepinex5-template",
-            "ref": "v0.1.1",
+            "ref": "v0.2.0",
             "recommends": [
               {
                 "package": "Evaisa-LethalLib",
