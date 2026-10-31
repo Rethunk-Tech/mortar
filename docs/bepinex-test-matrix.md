@@ -14,7 +14,7 @@ No vanilla launch runs: it takes no launch prefix, so the regress cannot isolate
 
 `bridge.survived.*` are INFO rows: with the default `HideManagerGameObject = false`, Lethal Company's first scene load destroys the loader's manager object and its plugin components, so False is expected and only an unreachable bridge fails.
 
-Rows are item -> test or step id (`launch (a)` etc. name the launch; `offline` needs none).
+`launch (a)` and the like name the launch; `offline` needs none.
 
 ## Measured launch and live state
 
