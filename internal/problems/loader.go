@@ -245,7 +245,7 @@ func gameVersionFailure(gameID string, l loader.Loader, env Environment) (LoadFa
 // belowAccepted reports whether version is older than the ">=" bound of accepted, a space-separated range such as
 // ">=1.6.14 <1.7"; a range without one, or a version that cannot be ordered, is not.
 func belowAccepted(scheme, version, accepted string) bool {
-	for _, term := range strings.Fields(accepted) {
+	for term := range strings.FieldsSeq(accepted) {
 		if minimum, ok := strings.CutPrefix(term, ">="); ok && deps.Check(scheme, version, minimum) == deps.Unmet {
 			return true
 		}

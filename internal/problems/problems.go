@@ -885,13 +885,13 @@ func needsNewerSMAPI(have string, enabled []framework.Mod) []Broken {
 		return out
 	}
 	for _, x := range enabled {
-		status := ""
+		var status string
 		switch (smapi.Manifest{MinimumAPIVersion: x.MinimumAPIVersion}).CheckSMAPI(have) {
 		case smapi.Unmet:
 			status = "needs-smapi"
 		case smapi.Unknown:
 			status = "smapi-unknown"
-		default:
+		case smapi.Met:
 			continue
 		}
 		out = append(out, Broken{Key: x.Key, ID: x.ModID(), Name: x.Name, Status: status, NeedsSMAPI: x.MinimumAPIVersion, SMAPI: have})
