@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -186,7 +187,7 @@ func (n nexusUploader) store(ctx context.Context, path string) (string, error) {
 func (n nexusUploader) wait(ctx context.Context, id string) error {
 	for attempt := 1; attempt <= nexusPolls; attempt++ {
 		var up nexusUpload
-		if err := n.call(ctx, http.MethodGet, "/uploads/"+id, nil, &up); err != nil {
+		if err := n.call(ctx, http.MethodGet, "/uploads/"+url.PathEscape(id), nil, &up); err != nil {
 			return err
 		}
 		if up.Data.State == "available" {
@@ -210,19 +211,19 @@ func (n nexusUploader) upload(ctx context.Context, path, name string, ids NexusI
 	if err != nil {
 		return err
 	}
-	if err := n.call(ctx, http.MethodPost, "/uploads/"+id+"/finalise", nil, nil); err != nil {
+	if err := n.call(ctx, http.MethodPost, "/uploads/"+url.PathEscape(id)+"/finalise", nil, nil); err != nil {
 		return err
 	}
 	if err := n.wait(ctx, id); err != nil {
 		return err
 	}
-	err = n.call(ctx, http.MethodPost, "/mod-files/"+strconv.Itoa(ids.FileID)+"/versions", map[string]any{
+	err = n.call(ctx, http.MethodPost, "/mod-files/"+url.PathEscape(ids.FileID)+"/versions", map[string]any{
 		"upload_id": id, "name": name, "version": version, "file_category": "main", "archive_existing_file": true,
 	}, nil)
-	if err != nil || changelog == "" || ids.ModID == 0 {
+	if err != nil || changelog == "" || ids.ModID == "" {
 		return err
 	}
-	if err := n.call(ctx, http.MethodPost, "/mods/"+strconv.Itoa(ids.ModID)+"/changelogs", map[string]any{"version": version, "changelog": changelog}, nil); err != nil {
+	if err := n.call(ctx, http.MethodPost, "/mods/"+url.PathEscape(ids.ModID)+"/changelogs", map[string]any{"version": version, "changelog": changelog}, nil); err != nil {
 		return fmt.Errorf("the file is up, but its changelog was not added: %w", err)
 	}
 	return nil
@@ -234,8 +235,9 @@ func nexusDomain(gameID string) string {
 }
 
 func nexusPage(gameID string, ids NexusIDs) string {
-	if ids.ModID == 0 {
+	modID, err := strconv.Atoi(ids.ModID)
+	if err != nil {
 		return ""
 	}
-	return nexusmods.ModURL(nexusDomain(gameID), ids.ModID) + "?tab=files"
+	return nexusmods.ModURL(nexusDomain(gameID), modID) + "?tab=files"
 }

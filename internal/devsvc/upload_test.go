@@ -163,7 +163,7 @@ func (f *fakeNexus) uploader(singleMax int64) nexusUploader {
 func TestNexusUploadSinglePutThenVersionAndChangelog(t *testing.T) {
 	f := newFakeNexus(t, 0, 0)
 	pkg := writePackage(t, "0123456789")
-	err := f.uploader(0).upload(t.Context(), pkg, "ShopDrop", NexusIDs{ModID: 55, FileID: 77}, "1.2.0", "- fixed it")
+	err := f.uploader(0).upload(t.Context(), pkg, "ShopDrop", NexusIDs{ModID: "55", FileID: "77"}, "1.2.0", "- fixed it")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -192,7 +192,7 @@ func TestNexusUploadMultipartCompletesWithEachETag(t *testing.T) {
 	f := newFakeNexus(t, 3, 4)
 	pkg := writePackage(t, "0123456789")
 	// No mod id: no changelog request.
-	if err := f.uploader(5).upload(t.Context(), pkg, "ShopDrop", NexusIDs{FileID: 77}, "1.2.0", "- fixed it"); err != nil {
+	if err := f.uploader(5).upload(t.Context(), pkg, "ShopDrop", NexusIDs{FileID: "77"}, "1.2.0", "- fixed it"); err != nil {
 		t.Fatal(err)
 	}
 	for part, want := range map[string]string{"part1": "0123", "part2": "4567", "part3": "89"} {
@@ -214,7 +214,7 @@ func TestNexusUploadMultipartCompletesWithEachETag(t *testing.T) {
 
 func TestNexusUploadRefusesPartsThatMissTheFile(t *testing.T) {
 	f := newFakeNexus(t, 2, 4)
-	err := f.uploader(5).upload(t.Context(), writePackage(t, "0123456789"), "ShopDrop", NexusIDs{FileID: 77}, "1.2.0", "")
+	err := f.uploader(5).upload(t.Context(), writePackage(t, "0123456789"), "ShopDrop", NexusIDs{FileID: "77"}, "1.2.0", "")
 	if err == nil || slices.Contains(f.log, "PUT /s3/part1") {
 		t.Errorf("err = %v, requests = %q", err, f.log)
 	}
@@ -227,13 +227,13 @@ func TestSiteErrorsAndStorageAddresses(t *testing.T) {
 		busy   bool
 	}{
 		{http.StatusUnauthorized, usererr.Permission, false},
-		{http.StatusForbidden, usererr.RateLimited, true},
+		{http.StatusForbidden, usererr.Permission, false},
 		{http.StatusTooManyRequests, usererr.RateLimited, true},
 	} {
 		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(c.status) }))
 		pkg := writePackage(t, "x")
 		errs := map[string]error{
-			"nexus": nexusUploader{client: srv.Client(), base: srv.URL, key: "k"}.upload(t.Context(), pkg, "n", NexusIDs{FileID: 1}, "1.0.0", ""),
+			"nexus": nexusUploader{client: srv.Client(), base: srv.URL, key: "k"}.upload(t.Context(), pkg, "n", NexusIDs{FileID: "1"}, "1.0.0", ""),
 			"curseforge": func() error {
 				_, err := curseForgeUploader{client: srv.Client(), base: srv.URL, token: "t"}.upload(t.Context(), pkg, 1, "n", "")
 				return err
@@ -312,8 +312,16 @@ func TestSiteIDsAreKeptInTheProjectsRecordAndOffered(t *testing.T) {
 	keyring.MockInit()
 	svc, _ := testService(t, testTemplate)
 	dir := fixtureProject(t, svc)
-	if sites, _ := svc.UploadSites("lethal-company", dir); len(sites) != 1 || sites[0].ID != "thunderstore" {
-		t.Fatalf("sites before ids = %v", sites)
+	configured := func() []string {
+		sites, _ := svc.UploadSites("lethal-company", dir)
+		ids := []string{}
+		for _, s := range sites {
+			ids = append(ids, s.ID+fmt.Sprint(s.Configured))
+		}
+		return ids
+	}
+	if got := configured(); !slices.Equal(got, []string{"thunderstoretrue", "nexusfalse", "curseforgefalse"}) {
+		t.Fatalf("sites before ids = %v", got)
 	}
 	info, err := svc.Inspect(t.Context(), "lethal-company", dir)
 	if err != nil {
@@ -322,7 +330,7 @@ func TestSiteIDsAreKeptInTheProjectsRecordAndOffered(t *testing.T) {
 	edit := ProjectEdit{
 		Name: info.Name, Description: info.Description, Author: info.Author, Team: info.Team, IDPrefix: info.IDPrefix,
 		Categories: info.Categories, TestWith: info.TestWith,
-		Nexus: NexusIDs{ModID: 55, FileID: 77}, CurseForge: CurseForgeIDs{ProjectID: 31},
+		Nexus: NexusIDs{ModID: "55", FileID: "77"}, CurseForge: CurseForgeIDs{ProjectID: 31},
 	}
 	got, err := svc.Edit(t.Context(), "lethal-company", dir, edit)
 	if err != nil || got.Nexus != edit.Nexus || got.CurseForge != edit.CurseForge {
@@ -334,13 +342,8 @@ func TestSiteIDsAreKeptInTheProjectsRecordAndOffered(t *testing.T) {
 	if fmt.Sprint(rec["nexus"], rec["curseforge"]) != "map[fileId:77 modId:55] map[projectId:31]" {
 		t.Errorf("record = %s", body)
 	}
-	ids := []string{}
-	sites, _ := svc.UploadSites("lethal-company", dir)
-	for _, s := range sites {
-		ids = append(ids, s.ID)
-	}
-	if !slices.Equal(ids, []string{"thunderstore", "nexus", "curseforge"}) {
-		t.Errorf("sites = %v", ids)
+	if got := configured(); !slices.Equal(got, []string{"thunderstoretrue", "nexustrue", "curseforgetrue"}) {
+		t.Errorf("sites = %v", got)
 	}
 	edit.Nexus = NexusIDs{}
 	edit.CurseForge = CurseForgeIDs{}
@@ -351,15 +354,15 @@ func TestSiteIDsAreKeptInTheProjectsRecordAndOffered(t *testing.T) {
 	if strings.Contains(string(body), "nexus") || strings.Contains(string(body), "curseforge") {
 		t.Errorf("cleared ids stay in %s", body)
 	}
-	edit.Nexus.FileID = -1
+	edit.Nexus.FileID = "../x"
 	if _, err := svc.Edit(t.Context(), "lethal-company", dir, edit); usererr.KindOf(err) != usererr.Invalid {
-		t.Errorf("negative id: %v", err)
+		t.Errorf("unsafe id: %v", err)
 	}
 }
 
 func TestSiteIDsSurviveTheStartUpMigrationOfAProjectOfFiles(t *testing.T) {
 	dir := t.TempDir()
-	rec := `{"kind":"generic","name":"Pack","team":"Ab","nexus":{"modId":5,"fileId":6},"curseforge":{"projectId":7}}`
+	rec := `{"kind":"generic","name":"Pack","team":"Ab","nexus":{"modId":"5","fileId":"6"},"curseforge":{"projectId":7}}`
 	if err := writeTracked(dir, assetRecordFile, []byte(rec)); err != nil {
 		t.Fatal(err)
 	}
@@ -370,7 +373,7 @@ func TestSiteIDsSurviveTheStartUpMigrationOfAProjectOfFiles(t *testing.T) {
 	if err := writeTracked(dir, assetRecordFile, body); err != nil {
 		t.Fatal(err)
 	}
-	if got := readSites(dir); got.Nexus != (NexusIDs{ModID: 5, FileID: 6}) || got.CurseForge.ProjectID != 7 {
+	if got := readSites(dir); got.Nexus != (NexusIDs{ModID: "5", FileID: "6"}) || got.CurseForge.ProjectID != 7 {
 		t.Errorf("ids after migration = %+v (%s)", got, body)
 	}
 }

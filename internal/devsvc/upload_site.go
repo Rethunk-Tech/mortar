@@ -13,15 +13,17 @@ import (
 // maxSiteReply is the most of a site's answer Mortar reads: every answer it parses is a short JSON object.
 const maxSiteReply = 1 << 20
 
-// siteError is the error for a site's refusal, nil under 400. A refused credential asks for a new one, and a busy site
-// (403 or 429) is retried later.
+// siteError is the error for a site's refusal, nil under 400. A refused credential (401, or 403 when the account lacks
+// rights to the target) asks for a new one, and a busy site (429) is retried later.
 func siteError(site, what string, res *http.Response, reply []byte) error {
 	switch {
 	case res.StatusCode < http.StatusBadRequest:
 		return nil
 	case res.StatusCode == http.StatusUnauthorized:
 		return usererr.Wrap(usererr.Permission, fmt.Errorf("%s refused the credentials: enter them again", site))
-	case res.StatusCode == http.StatusForbidden, res.StatusCode == http.StatusTooManyRequests:
+	case res.StatusCode == http.StatusForbidden:
+		return usererr.Wrap(usererr.Permission, fmt.Errorf("%s refused the credentials, or the account has no rights to that mod or project: enter them again or check the id", site))
+	case res.StatusCode == http.StatusTooManyRequests:
 		return source.Busy(site, res)
 	}
 	text := strings.TrimSpace(string(reply))

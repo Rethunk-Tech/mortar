@@ -140,15 +140,17 @@ func (s *Service) UploadThunderstore(ctx context.Context, gameID, dir string) (s
 	return ts.submit(ctx, uuid, info.Team, community, info.Categories)
 }
 
-// UploadSite is a site Release can upload the project to: its id is thunderstore, nexus or curseforge, and Ready is
-// set when the credentials it needs are kept.
+// UploadSite is a site the game can be uploaded to: its id is thunderstore, nexus or curseforge. Configured is set when
+// the project's ids for it are filled in (Thunderstore needs none), and Ready when the credentials it needs are kept.
 type UploadSite struct {
-	ID    string `json:"id"`
-	Ready bool   `json:"ready"`
+	ID         string `json:"id"`
+	Configured bool   `json:"configured"`
+	Ready      bool   `json:"ready"`
 }
 
-// UploadSites lists the sites the project can be uploaded to: Thunderstore when the game has a community, and Nexus
-// Mods or CurseForge when the project's ids for it are set and the game is on that site.
+// UploadSites lists the sites the game can be uploaded to: Thunderstore when it has a community, Nexus Mods when it
+// has a Nexus domain and CurseForge when its source names an upload subdomain. Edit shows the id fields of those; Upload
+// offers the Configured ones.
 func (s *Service) UploadSites(gameID, dir string) ([]UploadSite, error) {
 	p, err := s.project(gameID, dir)
 	if err != nil {
@@ -156,15 +158,15 @@ func (s *Service) UploadSites(gameID, dir string) ([]UploadSite, error) {
 	}
 	sites := []UploadSite{}
 	if thunderstoreCommunity(gameID) != "" {
-		sites = append(sites, UploadSite{ID: "thunderstore", Ready: s.HasThunderstoreToken(gameID, dir)})
+		sites = append(sites, UploadSite{ID: "thunderstore", Configured: true, Ready: s.HasThunderstoreToken(gameID, dir)})
 	}
 	ids := readSites(p.Dir)
-	if ids.Nexus.FileID > 0 && nexusDomain(gameID) != "" {
-		key, err := nexusAPIKey()
-		sites = append(sites, UploadSite{ID: "nexus", Ready: err == nil && key != ""})
+	if nexusDomain(gameID) != "" {
+		_, err := nexusAPIKey()
+		sites = append(sites, UploadSite{ID: "nexus", Configured: ids.Nexus.FileID != "", Ready: err == nil})
 	}
-	if ids.CurseForge.ProjectID > 0 && curseForgeBase(gameID) != "" {
-		sites = append(sites, UploadSite{ID: "curseforge", Ready: s.HasCurseForgeToken()})
+	if curseForgeBase(gameID) != "" {
+		sites = append(sites, UploadSite{ID: "curseforge", Configured: ids.CurseForge.ProjectID > 0, Ready: s.HasCurseForgeToken()})
 	}
 	return sites, nil
 }
@@ -189,7 +191,7 @@ func (s *Service) UploadNexus(ctx context.Context, gameID, dir, version string) 
 		return "", err
 	}
 	ids := readSites(p.Dir).Nexus
-	if ids.FileID <= 0 || nexusDomain(gameID) == "" {
+	if ids.FileID == "" || nexusDomain(gameID) == "" {
 		return "", usererr.Wrap(usererr.Invalid, errors.New("set the project's Nexus Mods file id first"))
 	}
 	notes, err := releaseNotes(p.Dir, version)
