@@ -2,9 +2,9 @@ package curseforge
 
 import (
 	"context"
-	"errors"
-	"net/url"
 	"strconv"
+
+	cf "github.com/Rethunk-Tech/go-curseforge"
 )
 
 // Schemes is the scheme of the site's Install button.
@@ -15,30 +15,10 @@ func (Driver) Schemes() []string { return []string{"curseforge"} }
 func (Driver) HandleLinksDefault() bool { return false }
 
 // Ref names one file of a project in an install link.
-type Ref struct {
-	Project, File int
-}
-
-var errBadLink = errors.New("not a curseforge install link")
+type Ref = cf.Ref
 
 // ParseLink reads curseforge://install?addonId=<project>&fileId=<file>.
-func ParseLink(raw string) (Ref, error) {
-	u, err := url.Parse(raw)
-	if err != nil || u.Scheme != "curseforge" || u.Host != "install" || u.User != nil || u.Fragment != "" ||
-		(u.Path != "" && u.Path != "/") {
-		return Ref{}, errBadLink
-	}
-	q, err := url.ParseQuery(u.RawQuery)
-	if err != nil {
-		return Ref{}, errBadLink
-	}
-	project, perr := strconv.Atoi(q.Get("addonId"))
-	file, ferr := strconv.Atoi(q.Get("fileId"))
-	if perr != nil || ferr != nil || project <= 0 || file <= 0 {
-		return Ref{}, errBadLink
-	}
-	return Ref{Project: project, File: file}, nil
-}
+func ParseLink(raw string) (Ref, error) { return cf.ParseLink(raw) }
 
 // Project is what a link's project is: its name, the site's id of its game, and whether its author forbids
 // downloads outside CurseForge's own page.
@@ -52,7 +32,7 @@ type Project struct {
 func (d Driver) Project(ctx context.Context, id int) (Project, error) {
 	m, err := d.mod(ctx, strconv.Itoa(id))
 	return Project{
-		Name: m.Name, GameID: m.GameID, Restricted: m.AllowModDistribution != nil && !*m.AllowModDistribution,
+		Name: m.Name, GameID: m.GameID, Restricted: m.Restricted(),
 	}, err
 }
 

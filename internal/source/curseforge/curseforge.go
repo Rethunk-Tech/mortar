@@ -8,7 +8,6 @@ package curseforge
 import (
 	"cmp"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -21,13 +20,12 @@ import (
 	"sync"
 	"time"
 
+	cf "github.com/Rethunk-Tech/go-curseforge"
+	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
-
-// BaseURL is the real API.
-const BaseURL = "https://api.curseforge.com/v1"
 
 const siteURL = "https://www.curseforge.com"
 
@@ -113,32 +111,32 @@ func (d Driver) gameSource(game string) (components.GameSource, bool) {
 	return g.Source("curseforge")
 }
 
-// do calls the API. The key rides in a header only, so an error that quotes the address cannot leak it.
-func (d Driver) do(ctx context.Context, method, path string, params url.Values, body, out any) error {
+// call runs one request through a client built for this call, so a key set while Mortar runs is used at once. The
+// library's rate-limit and status errors become source's, which usererr and the queue classify.
+func call[T any](d Driver, f func(*cf.Client) (T, error)) (T, error) {
 	key := d.key()
 	if key == "" {
-		return ErrNoKey
+		var zero T
+		return zero, ErrNoKey
 	}
-	u := strings.TrimRight(cmp.Or(d.URL, BaseURL), "/") + path
-	return source.DoJSON(ctx, source.Request{
-		Service: "CurseForge", Client: d.HTTP, Method: method, URL: u, Params: params, Body: body,
-		Header: func(h http.Header) { h.Set("X-Api-Key", key) },
-	}, out)
+	v, err := f(cf.New(cf.Config{APIKey: key, HTTP: d.HTTP, BaseURL: d.URL, UserAgent: source.UserAgentWithSite("")}))
+	if rl, ok := errors.AsType[*httpkit.RateLimitError](err); ok {
+		return v, &source.BusyError{Source: "CurseForge", Reset: rl.Reset}
+	}
+	if se, ok := errors.AsType[*httpkit.StatusError](err); ok {
+		return v, &source.StatusError{Service: "CurseForge", Code: se.Code, Status: se.Status}
+	}
+	return v, err
 }
 
-func (d Driver) get(ctx context.Context, path string, params url.Values, out any) error {
-	return d.do(ctx, http.MethodGet, path, params, nil, out)
+// projectID is a project id as the API takes it.
+func projectID(id string) (int, error) {
+	n, err := strconv.Atoi(id)
+	if err != nil || n <= 0 {
+		return 0, fmt.Errorf("%q is not a CurseForge project id", id)
+	}
+	return n, nil
 }
-
-// CurseForge's sortField values (https://docs.curseforge.com/rest-api/#tocS_ModsSearchSortField).
-const (
-	sortFeatured  = 1
-	sortPopular   = 2
-	sortUpdated   = 3
-	sortName      = 4
-	sortDownloads = 6
-	sortReleased  = 11
-)
 
 // Sorts are the ModsSearchSortField values the driver offers besides Featured, its best match.
 func (Driver) Sorts() []string {
@@ -148,136 +146,31 @@ func (Driver) Sorts() []string {
 func sortField(sort string) int {
 	switch sort {
 	case source.SortDownloads:
-		return sortDownloads
+		return cf.SortTotalDownloads
 	case source.SortUpdated:
-		return sortUpdated
+		return cf.SortLastUpdated
 	case source.SortEndorsements:
-		return sortPopular
+		return cf.SortPopularity
 	case source.SortNewest:
-		return sortReleased
+		return cf.SortReleasedDate
 	case source.SortName:
-		return sortName
+		return cf.SortName
 	}
-	return sortFeatured
+	return cf.SortFeatured
 }
 
-// maxWindow is how deep the API pages: index + pageSize may not pass it.
-const maxWindow = 10000
-
-type modResp struct {
-	ID                   int    `json:"id"`
-	Name                 string `json:"name"`
-	GameID               int    `json:"gameId"`
-	Summary              string `json:"summary"`
-	DownloadCount        int    `json:"downloadCount"`
-	ThumbsUpCount        int    `json:"thumbsUpCount"`
-	DateModified         string `json:"dateModified"`
-	DateReleased         string `json:"dateReleased"`
-	ClassID              int    `json:"classId"`
-	MainFileID           int    `json:"mainFileId"`
-	AllowModDistribution *bool  `json:"allowModDistribution"`
-	IsAvailable          bool   `json:"isAvailable"`
-	Links                struct {
-		WebsiteURL string `json:"websiteUrl"`
-		SourceURL  string `json:"sourceUrl"`
-		IssuesURL  string `json:"issuesUrl"`
-	} `json:"links"`
-	Authors []struct {
-		Name string `json:"name"`
-	} `json:"authors"`
-	Logo struct {
-		ThumbnailURL string `json:"thumbnailUrl"`
-	} `json:"logo"`
-	Categories []struct {
-		Name string `json:"name"`
-	} `json:"categories"`
-	LatestFiles []fileResp `json:"latestFiles"`
+// fileVersion is the name a file goes by in Mortar: its display name without the archive extension.
+func fileVersion(f cf.File) string {
+	return archive.StripExtension(cmp.Or(f.DisplayName, f.FileName, strconv.Itoa(f.ID)))
 }
 
-type fileResp struct {
-	ID          int    `json:"id"`
-	ModID       int    `json:"modId"`
-	IsAvailable bool   `json:"isAvailable"`
-	DisplayName string `json:"displayName"`
-	FileName    string `json:"fileName"`
-	// ReleaseType is 1 release, 2 beta, 3 alpha.
-	ReleaseType int `json:"releaseType"`
-	Hashes      []struct {
-		Value string `json:"value"`
-		// Algo is 1 for SHA-1 and 2 for MD5.
-		Algo int `json:"algo"`
-	} `json:"hashes"`
-	FileDate     string   `json:"fileDate"`
-	FileLength   int64    `json:"fileLength"`
-	DownloadURL  string   `json:"downloadUrl"`
-	GameVersions []string `json:"gameVersions"`
-	Dependencies []struct {
-		ModID int `json:"modId"`
-		// RelationType 3 is a required dependency.
-		RelationType int `json:"relationType"`
-	} `json:"dependencies"`
-}
-
-const (
-	relationRequired = 3
-	releaseStable    = 1
-	hashSHA1         = 1
-)
-
-func (f fileResp) sha1() string {
-	for _, h := range f.Hashes {
-		if h.Algo == hashSHA1 && h.Value != "" {
-			return strings.ToLower(h.Value)
-		}
-	}
-	return ""
-}
-
-// version is the name a file goes by in Mortar: its display name without the archive extension.
-func (f fileResp) version() string {
-	name := cmp.Or(f.DisplayName, f.FileName, strconv.Itoa(f.ID))
-	return archive.StripExtension(name)
-}
-
-func (f fileResp) required() []string {
+func required(f cf.File) []string {
 	var ids []string
-	for _, dep := range f.Dependencies {
-		if dep.RelationType == relationRequired && dep.ModID > 0 {
-			ids = append(ids, strconv.Itoa(dep.ModID))
-		}
+	for _, id := range f.Required() {
+		ids = append(ids, strconv.Itoa(id))
 	}
 	return ids
 }
-
-// newest picks the newest published file, keeping to files for one of gameVersions when it names any. On the release
-// channel (stability source.StabilityRelease) a stable release wins over a newer beta; a channel that accepts betas or
-// alphas takes the newest file of any release type up to its stability.
-func newest(files []fileResp, gameVersions []string, stability int) (fileResp, bool) {
-	var best fileResp
-	found := false
-	for _, f := range files {
-		if !f.IsAvailable || f.ID == 0 {
-			continue
-		}
-		if len(gameVersions) > 0 && !slices.ContainsFunc(f.GameVersions, func(v string) bool { return slices.Contains(gameVersions, v) }) {
-			continue
-		}
-		if stability > source.StabilityRelease {
-			if f.ReleaseType <= stability && (!found || f.FileDate > best.FileDate) {
-				best, found = f, true
-			}
-			continue
-		}
-		stable, bestStable := f.ReleaseType == releaseStable, best.ReleaseType == releaseStable
-		if !found || (stable && !bestStable) || (stable == bestStable && f.FileDate > best.FileDate) {
-			best, found = f, true
-		}
-	}
-	return best, found
-}
-
-// apiPageSize is the most mods one /mods/search request returns.
-const apiPageSize = 50
 
 // Search lists mods in the game's Mods class, or in every class the catalog lists for it, merged by the query's sort.
 // Included categories go to the API as ids; it has no exclude parameter and ANDs several ids, so excluded ones are
@@ -288,14 +181,14 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 		return source.Page{}, fmt.Errorf("game %q has no CurseForge game and class id", q.Game)
 	}
 	index := max(q.Page-source.FirstPage, 0) * source.PageSize
-	if index+source.PageSize > maxWindow {
-		return source.Page{Total: maxWindow}, nil
+	if index+source.PageSize > cf.MaxWindow {
+		return source.Page{Total: cf.MaxWindow}, nil
 	}
 	classes := gs.Classes
 	if len(classes) == 0 {
 		classes = []string{q.Key}
 	}
-	var mods []modResp
+	var mods []cf.Mod
 	var failed []string
 	var total int
 	if len(classes) > 1 && index+source.PageSize > mergedCap {
@@ -315,7 +208,7 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 	items := make([]source.Item, 0, len(mods))
 	hidden := 0
 	for _, m := range mods {
-		if !source.CategoryMatch(categoryNames(m), nil, q.ExcludeCategories) {
+		if !source.CategoryMatch(m.CategoryNames(), nil, q.ExcludeCategories) {
 			hidden++
 			continue
 		}
@@ -323,21 +216,21 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 			Source: d.ID(), ID: strconv.Itoa(m.ID), Name: m.Name, Summary: m.Summary, Picture: m.Logo.ThumbnailURL,
 			Endorsements: m.ThumbsUpCount, Downloads: m.DownloadCount, Updated: m.DateModified,
 			URL: cmp.Or(m.Links.WebsiteURL, d.ModPageURL(strconv.Itoa(m.ClassID), strconv.Itoa(m.ID))), Repo: source.GitHubRepo(m.Links.SourceURL),
-			External: m.AllowModDistribution != nil && !*m.AllowModDistribution,
+			External: m.Restricted(),
 		}
 		if len(m.Authors) > 0 {
 			it.Author = m.Authors[0].Name
 		}
 		for _, f := range m.LatestFiles {
 			if f.ID == m.MainFileID {
-				it.Version = f.version()
+				it.Version = fileVersion(f)
 				it.Size = f.FileLength
 			}
 		}
 		items = append(items, it)
 	}
 	failed = d.classLabels(ctx, gs.GameID, failed)
-	limit := maxWindow
+	limit := cf.MaxWindow
 	if len(classes) > 1 {
 		limit = mergedCap
 	}
@@ -353,17 +246,15 @@ func (d Driver) classLabels(ctx context.Context, gameID int, classes []string) [
 	if len(classes) == 0 {
 		return nil
 	}
-	key := cmp.Or(d.URL, BaseURL) + "|" + strconv.Itoa(gameID)
+	key := cmp.Or(d.URL, cf.BaseURL) + "|" + strconv.Itoa(gameID)
 	var names map[string]string
 	if v, ok := classNames.Load(key); ok {
 		names, _ = v.(map[string]string)
 	} else {
-		var out struct {
-			Data []category `json:"data"`
-		}
-		if err := d.get(ctx, "/categories", url.Values{"gameId": {strconv.Itoa(gameID)}, "classesOnly": {"true"}}, &out); err == nil {
+		classes, err := call(d, func(c *cf.Client) ([]cf.Category, error) { return c.Classes(ctx, gameID) })
+		if err == nil {
 			names = map[string]string{}
-			for _, c := range out.Data {
+			for _, c := range classes {
 				names[strconv.Itoa(c.ID)] = c.Name
 			}
 			classNames.Store(key, names)
@@ -383,54 +274,39 @@ func (d Driver) classLabels(ctx context.Context, gameID int, classes []string) [
 }
 
 // searchClass asks one class for size mods from index, and returns them with the class's total.
-func (d Driver) searchClass(ctx context.Context, gameID int, class string, q source.Query, index, size int) ([]modResp, int, error) {
-	order := "desc"
-	if q.Sort == source.SortName {
-		order = "asc"
+func (d Driver) searchClass(ctx context.Context, gameID int, class string, q source.Query, index, size int) ([]cf.Mod, int, error) {
+	classID, err := strconv.Atoi(class)
+	if err != nil {
+		return nil, 0, fmt.Errorf("CurseForge class %q is not a number", class)
 	}
-	params := url.Values{}
-	params.Set("gameId", strconv.Itoa(gameID))
-	params.Set("classId", class)
-	params.Set("searchFilter", q.Text)
-	params.Set("sortField", strconv.Itoa(sortField(q.Sort)))
-	params.Set("sortOrder", order)
-	params.Set("index", strconv.Itoa(index))
-	params.Set("pageSize", strconv.Itoa(size))
+	sq := cf.SearchQuery{
+		GameID: gameID, ClassID: classID, Text: q.Text, SortField: sortField(q.Sort), Ascending: q.Sort == source.SortName,
+		Index: index, PageSize: size,
+	}
 	if len(q.Categories) > 0 {
 		cats, err := d.classCategories(ctx, gameID, class)
 		if err != nil {
 			return nil, 0, err
 		}
-		var ids []int
 		for _, c := range cats {
 			if slices.ContainsFunc(q.Categories, func(n string) bool { return strings.EqualFold(n, c.Name) }) {
-				ids = append(ids, c.ID)
+				sq.CategoryIDs = append(sq.CategoryIDs, c.ID)
 			}
 		}
-		if len(ids) == 0 {
+		if len(sq.CategoryIDs) == 0 {
 			return nil, 0, nil
 		}
-		raw, err := json.Marshal(ids)
-		if err != nil {
-			return nil, 0, err
-		}
-		params.Set("categoryIds", string(raw))
 	}
-	var parsed struct {
-		Data       []modResp `json:"data"`
-		Pagination struct {
-			TotalCount int `json:"totalCount"`
-		} `json:"pagination"`
-	}
-	if err := d.get(ctx, "/mods/search", params, &parsed); err != nil {
+	res, err := call(d, func(c *cf.Client) (cf.SearchResult, error) { return c.Search(ctx, sq) })
+	if err != nil {
 		return nil, 0, err
 	}
-	for i := range parsed.Data {
-		if parsed.Data[i].ClassID == 0 {
-			parsed.Data[i].ClassID, _ = strconv.Atoi(class)
+	for i := range res.Mods {
+		if res.Mods[i].ClassID == 0 {
+			res.Mods[i].ClassID = classID
 		}
 	}
-	return parsed.Data, parsed.Pagination.TotalCount, nil
+	return res.Mods, res.Pagination.TotalCount, nil
 }
 
 // mergedCap is how deep a merged multi-class search goes: past it a page is empty and the total stops here. A merged
@@ -443,7 +319,7 @@ const rowsTTL = 10 * time.Minute
 // classRows are the leading rows of one class's search. at is when the first of them was fetched, which is their age
 // however often they are read; last is when rows were last added, which orders eviction.
 type classRows struct {
-	mods  []modResp
+	mods  []cf.Mod
 	total int
 	at    time.Time
 	last  time.Time
@@ -483,8 +359,8 @@ func storeRows(key string, held classRows) {
 // classRowsTo returns the first `end` rows of one class for the query, reading from the API only the rows the cache
 // does not hold yet, in API-sized requests. Rows past their age are read again from the start of the class. The total
 // is the class's own.
-func (d Driver) classRowsTo(ctx context.Context, gameID int, class string, q source.Query, end int) ([]modResp, int, error) {
-	key := strings.Join([]string{cmp.Or(d.URL, BaseURL), strconv.Itoa(gameID), class, q.Text, q.Sort, strings.Join(q.Categories, ",")}, "|")
+func (d Driver) classRowsTo(ctx context.Context, gameID int, class string, q source.Query, end int) ([]cf.Mod, int, error) {
+	key := strings.Join([]string{cmp.Or(d.URL, cf.BaseURL), strconv.Itoa(gameID), class, q.Text, q.Sort, strings.Join(q.Categories, ",")}, "|")
 	rowsMu.Lock()
 	held, ok := rowsCache[key]
 	if ok && time.Since(held.at) > rowsTTL {
@@ -494,7 +370,7 @@ func (d Driver) classRowsTo(ctx context.Context, gameID int, class string, q sou
 	rowsMu.Unlock()
 	fetched := false
 	for len(held.mods) < end && (len(held.mods) == 0 || len(held.mods) < held.total) {
-		rows, n, err := d.searchClass(ctx, gameID, class, q, len(held.mods), min(apiPageSize, end-len(held.mods)))
+		rows, n, err := d.searchClass(ctx, gameID, class, q, len(held.mods), min(cf.MaxPageSize, end-len(held.mods)))
 		if err != nil {
 			return nil, 0, err
 		}
@@ -518,9 +394,9 @@ func (d Driver) classRowsTo(ctx context.Context, gameID int, class string, q sou
 // page needs every class's leading rows. The merge takes the best of the classes' next rows and keeps each class's own
 // order, which the API's sort need not match exactly (Popularity is not the thumbs-up count), so the merged order of
 // the first rows never changes as later pages read deeper; ties go by rank, then class.
-func (d Driver) searchClasses(ctx context.Context, gameID int, classes []string, q source.Query, index int) (mods []modResp, total int, failed []string, err error) {
+func (d Driver) searchClasses(ctx context.Context, gameID int, classes []string, q source.Query, index int) (mods []cf.Mod, total int, failed []string, err error) {
 	end := index + source.PageSize
-	var lanes [][]modResp
+	var lanes [][]cf.Mod
 	var errs []error
 	for _, class := range classes {
 		got, n, err := d.classRowsTo(ctx, gameID, class, q, end)
@@ -536,7 +412,7 @@ func (d Driver) searchClasses(ctx context.Context, gameID int, classes []string,
 		return nil, 0, nil, errors.Join(errs...)
 	}
 	next := make([]int, len(lanes))
-	var all []modResp
+	var all []cf.Mod
 	for len(all) < end {
 		best := -1
 		for c, lane := range lanes {
@@ -568,7 +444,7 @@ func (d Driver) searchClasses(ctx context.Context, gameID int, classes []string,
 }
 
 // compareBySort orders two mods as the API's sortField does: negative when a comes first.
-func compareBySort(sort string, a, b modResp) int {
+func compareBySort(sort string, a, b cf.Mod) int {
 	switch sort {
 	case source.SortDownloads:
 		return cmp.Compare(b.DownloadCount, a.DownloadCount)
@@ -584,38 +460,26 @@ func compareBySort(sort string, a, b modResp) int {
 	return 0
 }
 
-func categoryNames(m modResp) []string {
-	names := make([]string, len(m.Categories))
-	for i, c := range m.Categories {
-		names[i] = c.Name
-	}
-	return names
-}
-
-type category struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
-}
-
 // categoryLists caches each class's categories for the process, keyed by API address, game and class.
 var categoryLists sync.Map
 
-func (d Driver) classCategories(ctx context.Context, gameID int, classID string) ([]category, error) {
-	key := cmp.Or(d.URL, BaseURL) + "|" + strconv.Itoa(gameID) + "|" + classID
+func (d Driver) classCategories(ctx context.Context, gameID int, classID string) ([]cf.Category, error) {
+	key := cmp.Or(d.URL, cf.BaseURL) + "|" + strconv.Itoa(gameID) + "|" + classID
 	if v, ok := categoryLists.Load(key); ok {
-		if cats, ok := v.([]category); ok {
+		if cats, ok := v.([]cf.Category); ok {
 			return cats, nil
 		}
 	}
-	var out struct {
-		Data []category `json:"data"`
+	class, err := strconv.Atoi(classID)
+	if err != nil {
+		return nil, fmt.Errorf("CurseForge class %q is not a number", classID)
 	}
-	params := url.Values{"gameId": {strconv.Itoa(gameID)}, "classId": {classID}}
-	if err := d.get(ctx, "/categories", params, &out); err != nil {
+	cats, err := call(d, func(c *cf.Client) ([]cf.Category, error) { return c.Categories(ctx, gameID, class) })
+	if err != nil {
 		return nil, err
 	}
-	categoryLists.Store(key, out.Data)
-	return out.Data, nil
+	categoryLists.Store(key, cats)
+	return cats, nil
 }
 
 // Categories lists the category names of the Mods class key, sorted. The catalog's game for a class is found by
@@ -655,21 +519,22 @@ func (d Driver) Categories(ctx context.Context, key string) ([]string, error) {
 	return source.UniqueNames(names), nil
 }
 
-func (d Driver) mod(ctx context.Context, id string) (modResp, error) {
-	var out struct {
-		Data modResp `json:"data"`
+func (d Driver) mod(ctx context.Context, id string) (cf.Mod, error) {
+	n, err := projectID(id)
+	if err != nil {
+		return cf.Mod{}, err
 	}
-	err := d.get(ctx, "/mods/"+url.PathEscape(id), nil, &out)
-	return out.Data, err
+	return call(d, func(c *cf.Client) (cf.Mod, error) { return c.Mod(ctx, n) })
 }
 
 // files lists the mod's newest published files, at most one API page.
-func (d Driver) files(ctx context.Context, id string) ([]fileResp, error) {
-	var out struct {
-		Data []fileResp `json:"data"`
+func (d Driver) files(ctx context.Context, id string) ([]cf.File, error) {
+	n, err := projectID(id)
+	if err != nil {
+		return nil, err
 	}
-	err := d.get(ctx, "/mods/"+url.PathEscape(id)+"/files", url.Values{"pageSize": {"50"}}, &out)
-	return out.Data, err
+	res, err := call(d, func(c *cf.Client) (cf.FilesResult, error) { return c.Files(ctx, n, cf.FilesQuery{}) })
+	return res.Files, err
 }
 
 type projectName struct {
@@ -684,7 +549,7 @@ var (
 
 // ProjectName is the name of project id, kept for ten minutes so a preview of many shared files asks once per project.
 func (d Driver) ProjectName(ctx context.Context, id string) (string, error) {
-	key := cmp.Or(d.URL, BaseURL) + "|" + id
+	key := cmp.Or(d.URL, cf.BaseURL) + "|" + id
 	namesMu.Lock()
 	held, ok := names[key]
 	namesMu.Unlock()
@@ -712,22 +577,21 @@ func (d Driver) Details(ctx context.Context, _, id, _ string) (source.Details, e
 	if err != nil {
 		return source.Details{}, err
 	}
-	var long struct {
-		Data string `json:"data"`
-	}
-	if err := d.get(ctx, "/mods/"+url.PathEscape(id)+"/description", nil, &long); err != nil {
+	n, _ := strconv.Atoi(id)
+	long, err := call(d, func(c *cf.Client) (string, error) { return c.Description(ctx, n) })
+	if err != nil {
 		return source.Details{}, err
 	}
-	slices.SortStableFunc(files, func(a, b fileResp) int { return strings.Compare(b.FileDate, a.FileDate) })
-	out := source.Details{Description: cmp.Or(source.HTMLMarkdown(long.Data), m.Summary), Versions: []string{}, Dependencies: []string{}, Categories: []string{}}
+	slices.SortStableFunc(files, func(a, b cf.File) int { return strings.Compare(b.FileDate, a.FileDate) })
+	out := source.Details{Description: cmp.Or(source.HTMLMarkdown(long), m.Summary), Versions: []string{}, Dependencies: []string{}, Categories: []string{}}
 	for _, f := range files {
 		if f.IsAvailable {
-			out.Versions = append(out.Versions, f.version())
+			out.Versions = append(out.Versions, fileVersion(f))
 			out.Released = append(out.Released, source.Released(f.FileDate))
 		}
 	}
-	if f, ok := newest(files, nil, source.StabilityRelease); ok {
-		out.Dependencies = append(out.Dependencies, f.required()...)
+	if f, ok := cf.Newest(files, nil, source.StabilityRelease); ok {
+		out.Dependencies = append(out.Dependencies, required(f)...)
 	}
 	for _, c := range m.Categories {
 		out.Categories = append(out.Categories, c.Name)
@@ -760,21 +624,23 @@ func (d Driver) Resolve(ctx context.Context, id, version string) (Resolved, erro
 	if err != nil {
 		return Resolved{}, err
 	}
-	f, err := d.pick(ctx, id, version)
+	// mod accepted id, so it is a positive number.
+	n, _ := strconv.Atoi(id)
+	f, err := d.pick(ctx, n, version)
 	if err != nil {
 		return Resolved{}, err
 	}
 	page := cmp.Or(m.Links.WebsiteURL, d.ModPageURL("", id))
-	if m.AllowModDistribution != nil && !*m.AllowModDistribution {
+	if m.Restricted() {
 		return Resolved{}, &NotDistributableError{Mod: m.Name, PageURL: page}
 	}
 	link := f.DownloadURL
 	if link == "" {
-		link, err = d.downloadURL(ctx, id, f.ID)
+		link, err = call(d, func(c *cf.Client) (string, error) { return c.DownloadURL(ctx, n, f.ID) })
+		if cf.Denied(err) || errors.Is(err, cf.ErrNoDownload) {
+			return Resolved{}, &NotDistributableError{Mod: m.Name, PageURL: page}
+		}
 		if err != nil {
-			if se, ok := errors.AsType[*source.StatusError](err); ok && se.Auth() {
-				return Resolved{}, &NotDistributableError{Mod: m.Name, PageURL: page}
-			}
 			return Resolved{}, err
 		}
 	}
@@ -782,53 +648,38 @@ func (d Driver) Resolve(ctx context.Context, id, version string) (Resolved, erro
 		return Resolved{}, &NotDistributableError{Mod: m.Name, PageURL: page}
 	}
 	res := Resolved{
-		ModID: id, Name: m.Name, Version: f.version(), VersionID: strconv.Itoa(f.ID), FileName: f.FileName,
-		URL: link, Size: f.FileLength, Dependencies: f.required(),
+		ModID: id, Name: m.Name, Version: fileVersion(f), VersionID: strconv.Itoa(f.ID), FileName: f.FileName,
+		URL: link, Size: f.FileLength, Dependencies: required(f),
 	}
-	if h := f.sha1(); h != "" {
+	if h := f.SHA1(); h != "" {
 		res.Digest = "sha1:" + h
 	}
 	return res, nil
 }
 
-func (d Driver) pick(ctx context.Context, id, version string) (fileResp, error) {
+func (d Driver) pick(ctx context.Context, id int, version string) (cf.File, error) {
 	if n, err := strconv.Atoi(version); err == nil && n > 0 {
-		var out struct {
-			Data fileResp `json:"data"`
-		}
-		if err := d.get(ctx, "/mods/"+url.PathEscape(id)+"/files/"+strconv.Itoa(n), nil, &out); err != nil {
-			return fileResp{}, err
-		}
-		return out.Data, nil
+		return call(d, func(c *cf.Client) (cf.File, error) { return c.File(ctx, id, n) })
 	}
-	files, err := d.files(ctx, id)
+	files, err := d.files(ctx, strconv.Itoa(id))
 	if err != nil {
-		return fileResp{}, err
+		return cf.File{}, err
 	}
 	if version != "" {
-		files = slices.DeleteFunc(files, func(f fileResp) bool { return f.version() != version && f.DisplayName != version })
+		files = slices.DeleteFunc(files, func(f cf.File) bool { return fileVersion(f) != version && f.DisplayName != version })
 	}
-	if f, ok := newest(files, nil, source.StabilityRelease); ok {
+	if f, ok := cf.Newest(files, nil, source.StabilityRelease); ok {
 		return f, nil
 	}
-	return fileResp{}, fmt.Errorf("%s %s is not on CurseForge", id, version)
-}
-
-// downloadURL asks the API for the file's address; a refusal means the author forbids third-party downloads.
-func (d Driver) downloadURL(ctx context.Context, id string, file int) (string, error) {
-	var out struct {
-		Data string `json:"data"`
-	}
-	err := d.get(ctx, "/mods/"+url.PathEscape(id)+"/files/"+strconv.Itoa(file)+"/download-url", nil, &out)
-	return out.Data, err
+	return cf.File{}, fmt.Errorf("%d %s is not on CurseForge", id, version)
 }
 
 // listed holds the required dependencies of files an update check read, keyed by mod id and version, so
 // Dependencies answers without another request. Oldest keys drop once the cap is hit.
 var listed source.ListedStore
 
-func remember(f fileResp) {
-	listed.Put(source.VersionRef{ID: strconv.Itoa(f.ModID), Version: f.version()}, f.required())
+func remember(f cf.File) {
+	listed.Put(source.VersionRef{ID: strconv.Itoa(f.ModID), Version: fileVersion(f)}, required(f))
 }
 
 // Latest reads each installed mod's newest file through POST /mods, which carries the latest files and their
@@ -851,26 +702,22 @@ func (d Driver) Latest(ctx context.Context, src components.GameSource, _ string,
 	slices.Sort(ids)
 	const batch = 100
 	for chunk := range slices.Chunk(ids, batch) {
-		var resp struct {
-			Data []modResp `json:"data"`
-		}
-		if err := d.do(ctx, http.MethodPost, "/mods", nil, struct {
-			ModIDs []int `json:"modIds"`
-		}{chunk}, &resp); err != nil {
+		mods, err := call(d, func(c *cf.Client) ([]cf.Mod, error) { return c.Mods(ctx, chunk) })
+		if err != nil {
 			return nil, err
 		}
-		for _, m := range resp.Data {
+		for _, m := range mods {
 			for _, have := range byMod[m.ID] {
-				f, ok := newest(m.LatestFiles, src.GameVersions, source.Stability(have.Channel))
+				f, ok := cf.Newest(m.LatestFiles, src.GameVersions, source.Stability(have.Channel))
 				if !ok {
 					continue
 				}
 				remember(f)
-				if have.Digest == "sha1:"+f.sha1() || have.Version == f.version() {
+				if have.Digest == "sha1:"+f.SHA1() || have.Version == fileVersion(f) {
 					continue
 				}
 				out[have.Digest] = source.Latest{
-					ProjectID: strconv.Itoa(m.ID), Version: f.version(), VersionID: strconv.Itoa(f.ID),
+					ProjectID: strconv.Itoa(m.ID), Version: fileVersion(f), VersionID: strconv.Itoa(f.ID),
 					URL: cmp.Or(m.Links.WebsiteURL, Driver{}.ModPageURL("", strconv.Itoa(m.ID))),
 				}
 			}
@@ -892,14 +739,14 @@ func (d Driver) Changelog(ctx context.Context, _, id, installed, latest, _ strin
 	if err != nil {
 		return nil, err
 	}
-	files = slices.DeleteFunc(files, func(f fileResp) bool { return !f.IsAvailable })
-	slices.SortStableFunc(files, func(a, b fileResp) int { return strings.Compare(b.FileDate, a.FileDate) })
+	files = slices.DeleteFunc(files, func(f cf.File) bool { return !f.IsAvailable })
+	slices.SortStableFunc(files, func(a, b cf.File) int { return strings.Compare(b.FileDate, a.FileDate) })
 	since, until := "", "\xff"
 	for _, f := range files {
 		switch {
-		case f.version() == installed:
+		case fileVersion(f) == installed:
 			since = f.FileDate
-		case f.version() == latest || strconv.Itoa(f.ID) == latest:
+		case fileVersion(f) == latest || strconv.Itoa(f.ID) == latest:
 			until = f.FileDate
 		}
 	}
@@ -911,14 +758,12 @@ func (d Driver) Changelog(ctx context.Context, _, id, installed, latest, _ strin
 		if len(out) == source.MaxNotes {
 			break
 		}
-		var body struct {
-			Data string `json:"data"`
-		}
-		if err := d.get(ctx, "/mods/"+url.PathEscape(id)+"/files/"+strconv.Itoa(f.ID)+"/changelog", nil, &body); err != nil {
+		body, err := call(d, func(c *cf.Client) (string, error) { return c.Changelog(ctx, f.ModID, f.ID) })
+		if err != nil {
 			return nil, err
 		}
 		date, _, _ := strings.Cut(f.FileDate, "T")
-		out = append(out, source.Note{Version: f.version(), Date: date, Body: source.HTMLText(body.Data)})
+		out = append(out, source.Note{Version: fileVersion(f), Date: date, Body: source.HTMLText(body)})
 	}
 	return out, nil
 }

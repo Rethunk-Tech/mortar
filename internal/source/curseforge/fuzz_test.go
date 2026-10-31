@@ -33,18 +33,3 @@ func FuzzDecoders(f *testing.F) {
 		_, _ = d.Latest(t.Context(), components.GameSource{}, "", []source.InstalledFile{{ID: "1", Digest: "sha1:ab"}})
 	})
 }
-
-// FuzzParseLink holds that an accepted install link names a positive project and file, and nothing else is accepted.
-func FuzzParseLink(f *testing.F) {
-	f.Add("curseforge://install?addonId=309243&fileId=555")
-	f.Add("curseforge://install?addonId=-1&fileId=555")
-	f.Add("curseforge://install/../x?addonId=1&fileId=2")
-	f.Add("curseforge://user@install?addonId=1&fileId=2")
-	f.Add("")
-	f.Fuzz(func(t *testing.T, raw string) {
-		ref, err := ParseLink(raw)
-		if err == nil && (ref.Project <= 0 || ref.File <= 0) {
-			t.Fatalf("bad ref %+v from %q", ref, raw)
-		}
-	})
-}

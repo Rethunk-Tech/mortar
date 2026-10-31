@@ -2,21 +2,14 @@ package curseforge
 
 import (
 	"context"
-	"net/http"
 	"strconv"
 
+	cf "github.com/Rethunk-Tech/go-curseforge"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
 // standingBatch is how many mods one request names.
 const standingBatch = 500
-
-// CurseForge's ModStatus values that mean the mod is no longer maintained or gone.
-const (
-	statusInactive  = 7
-	statusAbandoned = 8
-	statusDeleted   = 9
-)
 
 // Standings flags the mods CurseForge marks Inactive, Abandoned or Deleted, or no longer available, one request per
 // five hundred mods. The answer is keyed by the id as given.
@@ -32,26 +25,20 @@ func (d Driver) Standings(ctx context.Context, _ string, ids []string) (map[stri
 		if len(asked) == 0 {
 			continue
 		}
-		var resp struct {
-			Data []struct {
-				ID          int   `json:"id"`
-				Status      int   `json:"status"`
-				IsAvailable *bool `json:"isAvailable"`
-			} `json:"data"`
-		}
-		if err := d.do(ctx, http.MethodPost, "/mods", nil, map[string]any{"modIds": asked}, &resp); err != nil {
+		mods, err := call(d, func(c *cf.Client) ([]cf.Mod, error) { return c.Mods(ctx, asked) })
+		if err != nil {
 			return nil, err
 		}
-		for _, m := range resp.Data {
+		for _, m := range mods {
 			id := strconv.Itoa(m.ID)
 			switch {
-			case m.Status == statusDeleted:
+			case m.Status == cf.StatusDeleted:
 				out[id] = source.Standing{State: "removed"}
-			case m.Status == statusAbandoned:
+			case m.Status == cf.StatusAbandoned:
 				out[id] = source.Standing{State: "abandoned"}
-			case m.Status == statusInactive:
+			case m.Status == cf.StatusInactive:
 				out[id] = source.Standing{State: "inactive"}
-			case m.IsAvailable != nil && !*m.IsAvailable:
+			case !m.IsAvailable:
 				out[id] = source.Standing{State: "unavailable"}
 			}
 		}
