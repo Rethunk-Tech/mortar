@@ -282,7 +282,7 @@ A mod wrote errors to the game's log last time you played; it may be broken, out
 
 Right-click a Console line to **Copy this message**, or **Hide this message**: every line from the same place in the game's code (or, for an engine warning, the same warning about the same object) leaves the Console, and in a BepInEx game the bridge stops the game writing it. The game's settings › **Console** › **Hidden messages** shows them again, along with the common noise Mortar hides by default.
 
-The Console's **Problems in this run** strip reads SMAPI's log and offers one fix per mod: **Add** a missing requirement, **Update** the mod, **Update SMAPI**, **Disable** a mod that crashed or is obsolete, and **Remove duplicate** or **Remove** (a mod installed twice, or one SMAPI flags as malicious).
+The Console's **Problems in this run** strip reads SMAPI's log and offers one fix per mod: **Add** a missing requirement, **Update** the mod, **Update SMAPI**, **Disable** a mod that crashed or is obsolete, **Resolve** a mod installed twice (the same picker as the Problems tab), and **Remove** a mod SMAPI flags as malicious.
 
 #### Errors while running
 
