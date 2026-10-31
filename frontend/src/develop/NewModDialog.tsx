@@ -1,22 +1,11 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Alert,
-  Box,
-  Button,
-  FormControlLabel,
-  MenuItem,
-  Switch,
-  TextField,
-  ToggleButton,
-  ToggleButtonGroup,
-} from '@mui/material'
+import { Alert, Box, Button, FormControlLabel, MenuItem, Switch, TextField } from '@mui/material'
 import { readStored, writeStored } from '@rethunk/react-load-hooks'
 import { Hammer } from 'lucide-react'
 import { memo, useCallback, useEffect, useId, useState } from 'react'
 import type {
   Form,
   GitHubOwner,
-  Param,
   Tools,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import {
@@ -33,10 +22,8 @@ import { space } from '../theme/density.ts'
 import { reportError, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
-import { CONTENT_PARAM, useAssetKinds } from './assetKinds.ts'
+import { CONTENT_KIND, useWizardForm } from './assetKinds.ts'
 import { buildProject } from './builds.ts'
-import { ChoicePicker } from './ChoicePicker.tsx'
-import { ContentTicks } from './ContentTicks.tsx'
 import { DependenciesStep } from './DependenciesStep.tsx'
 import { startDependencies, useKnownPackages } from './dependencies.ts'
 import {
@@ -47,7 +34,6 @@ import {
   isRemembered,
   REMEMBERED,
   rememberedOf,
-  requirementIssue,
   type Step,
   stepIndex,
   stepIssue,
@@ -55,9 +41,8 @@ import {
   validModName,
   wizardSteps,
 } from './draft.ts'
-import { KindStep } from './KindStep.tsx'
 import { LicenseChart } from './LicenseChart.tsx'
-import { localizedParam } from './ownParams.ts'
+import { Params, type SetDraft } from './Params.tsx'
 import { RepositoryChoice } from './RepositoryChoice.tsx'
 import { sdkSatisfies } from './sdk.ts'
 
@@ -69,10 +54,6 @@ const LICENCES = [
   ['mpl-2.0', 'Mozilla Public License 2.0'],
   ['unlicense', 'The Unlicense'],
 ] as const
-// A single choice with this many options or fewer is a row of toggle buttons rather than a menu.
-const TOGGLE_CHOICES = 3
-
-type Set = (next: Partial<Draft>) => void
 
 const NO_OWNERS: GitHubOwner[] = []
 
@@ -117,139 +98,19 @@ const Prerequisites = memo(function PrerequisitesView({
   )
 })
 
-function ChoiceField({
-  param,
-  value,
-  set,
-}: {
-  param: Param
-  value: string
-  set: (v: string) => void
-}) {
-  const choices = param.choices ?? []
-  if (param.multiple) {
-    return (
-      <ChoicePicker
-        label={param.label}
-        helperText={param.description}
-        choices={choices}
-        value={value.split('|').filter(Boolean)}
-        onChange={(next) => set(next.join('|'))}
-      />
-    )
-  }
-  if (choices.length <= TOGGLE_CHOICES) {
-    return (
-      <Field label={param.label} hint={param.description}>
-        <ToggleButtonGroup
-          exclusive={true}
-          size="small"
-          value={value}
-          aria-label={param.label}
-          onChange={(_, next: string | null) => next && set(next)}
-        >
-          {choices.map((c) => (
-            <ToggleButton key={c.value} value={c.value}>
-              {c.label}
-            </ToggleButton>
-          ))}
-        </ToggleButtonGroup>
-      </Field>
-    )
-  }
-  return (
-    <SelectField label={param.label} value={value} onChange={set} hint={param.description}>
-      {choices.map((c) => (
-        <MenuItem key={c.value} value={c.value}>
-          {c.label}
-        </MenuItem>
-      ))}
-    </SelectField>
-  )
-}
-
-function ParamField({
-  param,
-  value,
-  set,
-  blocked,
-}: {
-  param: Param
-  value: string
-  set: (v: string) => void
-  // Why the switch cannot be turned on with the other answers as they are.
-  blocked: string
-}) {
-  if (param.id === CONTENT_PARAM) {
-    return <ContentTicks param={param} value={value} set={set} />
-  }
-  if (param.kind === 'choice') {
-    return <ChoiceField param={param} value={value} set={set} />
-  }
-  if (param.kind === 'bool') {
-    return (
-      <FormControlLabel
-        sx={{ m: 0, alignItems: 'flex-start', gap: space.gap }}
-        control={
-          <Switch
-            checked={value === 'true'}
-            disabled={blocked !== '' && value !== 'true'}
-            onChange={(_, on) => set(String(on))}
-          />
-        }
-        label={
-          <Box sx={{ pt: 0.75 }}>
-            <Box sx={{ fontSize: 'medium.fontSize', fontWeight: 500 }}>{param.label}</Box>
-            <Box sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
-              {blocked || param.description}
-            </Box>
-          </Box>
-        }
-      />
-    )
-  }
-  return (
-    <TextInput
-      label={param.label}
-      hint={param.description}
-      value={value}
-      onChange={set}
-      {...(param.maxLength > 0 ? { maxLength: param.maxLength } : {})}
-    />
-  )
-}
-
-function Params({
-  params,
-  all,
-  draft,
-  set,
-}: {
-  params: Param[]
-  all: Param[]
-  draft: Draft
-  set: Set
-}) {
-  return params.map((p) => (
-    <ParamField
-      key={p.id}
-      param={localizedParam(p)}
-      value={draft.values[p.id] ?? ''}
-      // A tick changes the recommended mods, so the picks start again from them.
-      set={(v) =>
-        set({
-          values: { ...draft.values, [p.id]: v },
-          ...(p.id === CONTENT_PARAM ? { dependencies: null } : {}),
-        })
-      }
-      blocked={p.kind === 'bool' ? requirementIssue(p, draft.values, all) : ''}
-    />
-  ))
-}
-
 // Memoised on what it shows, so the GitHub owner filled in as the tools arrive leaves the fields alone.
 const ModStep = memo(
-  function ModStepView({ draft, form, set }: { draft: Draft; form: Form | null; set: Set }) {
+  function ModStepView({
+    draft,
+    form,
+    noCodeOffered,
+    set,
+  }: {
+    draft: Draft
+    form: Form | null
+    noCodeOffered: boolean
+    set: SetDraft
+  }) {
     const { t } = useLingui()
     return (
       <>
@@ -273,6 +134,25 @@ const ModStep = memo(
             onChange={(repo) => set({ repo })}
           />
         </FieldRow>
+        {noCodeOffered ? (
+          <FormControlLabel
+            sx={{ m: 0, alignItems: 'flex-start', gap: space.gap }}
+            control={
+              <Switch
+                checked={draft.kind === ''}
+                onChange={(_, code) => set({ kind: code ? '' : CONTENT_KIND, dependencies: null })}
+              />
+            }
+            label={
+              <Box sx={{ pt: 0.75 }}>
+                <Box sx={{ fontSize: 'medium.fontSize', fontWeight: 500 }}>{t`Has code`}</Box>
+                <Box sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
+                  {t`A C# plugin built with the .NET SDK. Without it the mod is only the content below, and no SDK is needed.`}
+                </Box>
+              </Box>
+            }
+          />
+        ) : null}
         <Params
           params={stepParams(form, 'mod')}
           all={form?.parameters ?? []}
@@ -284,13 +164,23 @@ const ModStep = memo(
   },
   (a, b) =>
     a.form === b.form &&
+    a.noCodeOffered === b.noCodeOffered &&
     a.set === b.set &&
+    a.draft.kind === b.draft.kind &&
     a.draft.name === b.draft.name &&
     a.draft.repo === b.draft.repo &&
     a.draft.values === b.draft.values,
 )
 
-function ProjectStep({ draft, owners, set }: { draft: Draft; owners: GitHubOwner[]; set: Set }) {
+function ProjectStep({
+  draft,
+  owners,
+  set,
+}: {
+  draft: Draft
+  owners: GitHubOwner[]
+  set: SetDraft
+}) {
   const { t } = useLingui()
   const profiles = useProfiles((s) => s.profiles)
   const openName = useProfiles((s) => openProfileOf(s)?.name ?? '')
@@ -364,7 +254,6 @@ function ProjectStep({ draft, owners, set }: { draft: Draft; owners: GitHubOwner
 function useStepLabels() {
   const { t } = useLingui()
   return {
-    kind: t`Kind`,
     mod: t`Mod`,
     author: t`Author`,
     features: t`Features`,
@@ -438,8 +327,8 @@ export function NewModDialog({
   const labels = useStepLabels()
   const [draft, setDraft] = useState<Draft>(() => firstDraft(null, {}))
   const { tools, form: templateForm, failed } = useWizardData(open, game, setDraft)
-  const { kinds, form } = useAssetKinds({ open, game, kind: draft.kind, templateForm }, setDraft)
-  const steps = wizardSteps(kinds.length > 0, form)
+  const { form, noCodeOffered } = useWizardForm({ game, kind: draft.kind, templateForm }, setDraft)
+  const steps = wizardSteps(form)
   // Kept by name: the kind and the template's form arrive late and change which steps exist.
   const [stepName, setStepName] = useState<Step | null>(null)
   const at = stepIndex(steps, stepName)
@@ -451,7 +340,7 @@ export function NewModDialog({
       setStepName(null)
     }
   }, [open])
-  const set: Set = useCallback((next) => setDraft((d) => ({ ...d, ...next })), [])
+  const set: SetDraft = useCallback((next) => setDraft((d) => ({ ...d, ...next })), [])
   const step = steps[at] ?? 'project'
   const last = at === steps.length - 1
   let issue = last ? draftIssue(draft, form) : stepIssue(draft, form, step)
@@ -521,19 +410,9 @@ export function NewModDialog({
       closeButton={true}
     >
       {draft.kind ? null : <Prerequisites tools={tools} form={templateForm} />}
-      {step === 'kind' ? (
-        <KindStep
-          kinds={kinds}
-          kind={draft.kind}
-          choose={(kind) => {
-            if (kind !== draft.kind) {
-              set({ kind, dependencies: null })
-            }
-            setAt(at + 1)
-          }}
-        />
+      {step === 'mod' ? (
+        <ModStep draft={draft} form={form} noCodeOffered={noCodeOffered} set={set} />
       ) : null}
-      {step === 'mod' ? <ModStep draft={draft} form={form} set={set} /> : null}
       {step === 'author' || step === 'features' ? (
         <Params
           params={stepParams(form, step)}

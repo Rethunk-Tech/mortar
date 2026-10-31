@@ -1338,7 +1338,6 @@ msgid "Choose executable"
 msgstr ""
 
 #: src/develop/AdoptDialog.tsx
-#: src/develop/KindStep.tsx
 msgid "Content pack"
 msgstr ""
 
@@ -2603,7 +2602,6 @@ msgid "The link was made for another {source} account than the one signed in."
 msgstr ""
 
 #: src/develop/CodeView.tsx
-#: src/develop/KindStep.tsx
 #: src/lan/PairedComputers.tsx
 msgid "Code"
 msgstr ""
@@ -2858,10 +2856,6 @@ msgstr ""
 msgid "Report a bug…"
 msgstr ""
 
-#: src/develop/KindStep.tsx
-msgid "Kind of mod"
-msgstr ""
-
 #: src/game/ProfileMenu.tsx
 #: src/game/ProfileMenuItems.tsx
 msgid "Delete profile…"
@@ -2981,6 +2975,10 @@ msgstr ""
 
 #: src/groups/SavedGroupRow.tsx
 msgid "Profiles: {holderNames}"
+msgstr ""
+
+#: src/develop/NewModDialog.tsx
+msgid "A C# plugin built with the .NET SDK. Without it the mod is only the content below, and no SDK is needed."
 msgstr ""
 
 #: src/develop/UploadDialog.tsx
@@ -4031,7 +4029,6 @@ msgid "Not found"
 msgstr ""
 
 #: src/develop/AdoptDialog.tsx
-#: src/develop/NewModDialog.tsx
 msgid "Kind"
 msgstr ""
 
@@ -5233,6 +5230,10 @@ msgstr ""
 msgid "Anyone can publish files on {sites}, and nobody reviews or scans them for malware. Download only from authors you trust. Mortar asks once per site."
 msgstr ""
 
+#: src/develop/NewModDialog.tsx
+msgid "Has code"
+msgstr ""
+
 #: src/nxm/ArrivalDialog.tsx
 msgid "You started this download on {source}, but you have no {game} profile yet."
 msgstr ""
@@ -5292,10 +5293,6 @@ msgstr ""
 
 #: src/share/ManagerPane.tsx
 msgid "{count, plural, one {Import # profile} other {Import # profiles}}"
-msgstr ""
-
-#: src/develop/KindStep.tsx
-msgid "Files that {name} loads. No SDK needed."
 msgstr ""
 
 #: src/launch/playStart.ts
@@ -6178,10 +6175,6 @@ msgstr ""
 msgid "Name the account or organisation on {source}."
 msgstr ""
 
-#: src/develop/KindStep.tsx
-msgid "A plugin in C#, built with the .NET SDK from the game's template."
-msgstr ""
-
 #: src/game/Hero.tsx
 msgid "From the {source} collection \"{name}\""
 msgstr ""
@@ -6808,10 +6801,6 @@ msgstr ""
 #: src/develop/NewModDialog.tsx
 #: src/develop/ProjectDependencies.tsx
 msgid "Dependencies"
-msgstr ""
-
-#: src/develop/KindStep.tsx
-msgid "Pictures, songs or videos, each loaded by its own mod. No SDK needed."
 msgstr ""
 
 #: src/games/GameSelect.tsx

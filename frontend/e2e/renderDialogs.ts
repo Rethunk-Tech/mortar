@@ -82,29 +82,22 @@ function dialogKit(h: Helpers) {
     await inDialog(page, step)
   }
 
-  // New mod's steps after the kind (a code mod): a valid name and description open the author's fields, those the
-  // features, and each Next from there the next step.
-  // Everything before the Next that opens step `steps` (0: the mod step, from the kind): the case measures only
-  // stepping into it.
+  // Everything before the `steps`th Next past New mod's mod step (a code mod): a valid name and description fill it,
+  // and the author's fields are filled on the way, so the case measures only stepping into the step it names.
   const newModTo = async (p: Page, steps: number) => {
     await tab(p, 'Develop')
     await button(p, /^New mod…/)
-    if (steps === 0) {
-      return
-    }
-    await inDialog(p, /^Next$/)
     const box = (name: string) =>
       p.getByRole('dialog').last().getByRole('textbox', { name }).first()
     await box('Mod name').fill('RenderCheck')
     await box('Description').fill('Checks how the wizard looks.')
-    if (steps > 1) {
+    for (let at = 0; at < steps; at++) {
       await inDialog(p, /^Next$/)
-      await box('Author').fill('Render Check')
-      await box('Thunderstore team').fill('RenderCheck')
-      await box('Id prefix').fill('com.rendercheck')
-    }
-    for (let at = 2; at < steps; at++) {
-      await inDialog(p, /^Next$/)
+      if (at === 0) {
+        await box('Author').fill('Render Check')
+        await box('Thunderstore team').fill('RenderCheck')
+        await box('Id prefix').fill('com.rendercheck')
+      }
     }
   }
   // The first look for computers takes about 2 s; the action ends when it does, so the idle watch is idle.
@@ -240,6 +233,7 @@ function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
         await shown(p)
       },
     },
+    // The mod step without code: its switch off, the content folders ticked.
     {
       ...dialog(
         '',
@@ -247,22 +241,7 @@ function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
           p
             .getByRole('dialog')
             .last()
-            .getByRole('button', { name: /^Suits/ })
-            .click(),
-        WIZARD_BUDGET,
-        (p) => newModTo(p, 0),
-      ),
-      name: 'develop-new-mod-asset',
-    },
-    // The content pack's mod step, where its content folders are ticked.
-    {
-      ...dialog(
-        '',
-        (p) =>
-          p
-            .getByRole('dialog')
-            .last()
-            .getByRole('button', { name: /^Content pack/ })
+            .getByRole('checkbox', { name: /^Has code/ })
             .click(),
         WIZARD_BUDGET,
         (p) => newModTo(p, 0),
@@ -270,11 +249,10 @@ function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
       name: 'develop-new-mod-content',
     },
     ...[
-      ['mod', 0],
-      ['author', 1],
-      ['features', 2],
-      ['dependencies', 3],
-      ['project', 4],
+      ['author', 0],
+      ['features', 1],
+      ['dependencies', 2],
+      ['project', 3],
     ].map(([step, n]) => ({
       ...dialog(
         '',

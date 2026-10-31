@@ -1338,7 +1338,6 @@ msgid "Choose executable"
 msgstr "Choose executable"
 
 #: src/develop/AdoptDialog.tsx
-#: src/develop/KindStep.tsx
 msgid "Content pack"
 msgstr "Content pack"
 
@@ -2603,7 +2602,6 @@ msgid "The link was made for another {source} account than the one signed in."
 msgstr "The link was made for another {source} account than the one signed in."
 
 #: src/develop/CodeView.tsx
-#: src/develop/KindStep.tsx
 #: src/lan/PairedComputers.tsx
 msgid "Code"
 msgstr "Code"
@@ -2858,10 +2856,6 @@ msgstr "{name}: not in the form the template needs."
 msgid "Report a bug…"
 msgstr "Report a bug…"
 
-#: src/develop/KindStep.tsx
-msgid "Kind of mod"
-msgstr "Kind of mod"
-
 #: src/game/ProfileMenu.tsx
 #: src/game/ProfileMenuItems.tsx
 msgid "Delete profile…"
@@ -2982,6 +2976,10 @@ msgstr "The files will download from each mod's source."
 #: src/groups/SavedGroupRow.tsx
 msgid "Profiles: {holderNames}"
 msgstr "Profiles: {holderNames}"
+
+#: src/develop/NewModDialog.tsx
+msgid "A C# plugin built with the .NET SDK. Without it the mod is only the content below, and no SDK is needed."
+msgstr "A C# plugin built with the .NET SDK. Without it the mod is only the content below, and no SDK is needed."
 
 #: src/develop/UploadDialog.tsx
 msgid "Upload {name} {version} to {source}?"
@@ -4031,7 +4029,6 @@ msgid "Not found"
 msgstr "Not found"
 
 #: src/develop/AdoptDialog.tsx
-#: src/develop/NewModDialog.tsx
 msgid "Kind"
 msgstr "Kind"
 
@@ -5233,6 +5230,10 @@ msgstr "Report copied"
 msgid "Anyone can publish files on {sites}, and nobody reviews or scans them for malware. Download only from authors you trust. Mortar asks once per site."
 msgstr "Anyone can publish files on {sites}, and nobody reviews or scans them for malware. Download only from authors you trust. Mortar asks once per site."
 
+#: src/develop/NewModDialog.tsx
+msgid "Has code"
+msgstr "Has code"
+
 #: src/nxm/ArrivalDialog.tsx
 msgid "You started this download on {source}, but you have no {game} profile yet."
 msgstr "You started this download on {source}, but you have no {game} profile yet."
@@ -5293,10 +5294,6 @@ msgstr "Drag {path} into the {source} issue to attach it."
 #: src/share/ManagerPane.tsx
 msgid "{count, plural, one {Import # profile} other {Import # profiles}}"
 msgstr "{count, plural, one {Import # profile} other {Import # profiles}}"
-
-#: src/develop/KindStep.tsx
-msgid "Files that {name} loads. No SDK needed."
-msgstr "Files that {name} loads. No SDK needed."
 
 #: src/launch/playStart.ts
 msgid "Could not check the graphics setting"
@@ -6178,10 +6175,6 @@ msgstr "Diagnostics"
 msgid "Name the account or organisation on {source}."
 msgstr "Name the account or organisation on {source}."
 
-#: src/develop/KindStep.tsx
-msgid "A plugin in C#, built with the .NET SDK from the game's template."
-msgstr "A plugin in C#, built with the .NET SDK from the game's template."
-
 #: src/game/Hero.tsx
 msgid "From the {source} collection \"{name}\""
 msgstr "From the {source} collection \"{name}\""
@@ -6809,10 +6802,6 @@ msgstr "Suggested for {answer}"
 #: src/develop/ProjectDependencies.tsx
 msgid "Dependencies"
 msgstr "Dependencies"
-
-#: src/develop/KindStep.tsx
-msgid "Pictures, songs or videos, each loaded by its own mod. No SDK needed."
-msgstr "Pictures, songs or videos, each loaded by its own mod. No SDK needed."
 
 #: src/games/GameSelect.tsx
 #: src/games/ProfileCards.tsx
