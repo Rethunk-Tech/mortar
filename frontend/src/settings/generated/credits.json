@@ -160,6 +160,11 @@
     "url": "https://github.com/Rethunk-Tech/go-cfgedit"
   },
   {
+    "name": "github.com/Rethunk-Tech/go-curseforge",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/go-curseforge"
+  },
+  {
     "name": "github.com/Rethunk-Tech/go-desktopenv",
     "licence": "MIT",
     "url": "https://github.com/Rethunk-Tech/go-desktopenv"
