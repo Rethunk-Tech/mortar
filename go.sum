@@ -18,6 +18,8 @@ github.com/Rethunk-Tech/go-desktopenv v0.4.0 h1:XPYnAKxjOml0Z4Nv4l4A/NxFDqFMv4DB
 github.com/Rethunk-Tech/go-desktopenv v0.4.0/go.mod h1:r/4DNFhqgHjn3T7bOitXEkqQEvbZw0RaEfyAI/0BHoM=
 github.com/Rethunk-Tech/go-dotnet v0.1.0 h1:r/WRllqyk2QELaqCHkxbW5urwXwihsYgn/0UgpKgelo=
 github.com/Rethunk-Tech/go-dotnet v0.1.0/go.mod h1:Wq94uiltkgNA/cbrytn4NwTAgKV6tZzv8Gi4ieTANL0=
+github.com/Rethunk-Tech/go-dotnet v0.1.1 h1:uy+n0k8FF+bh50Kt4y5fjH7F3b3UtE3N2S4+4oOA7ro=
+github.com/Rethunk-Tech/go-dotnet v0.1.1/go.mod h1:Nd59gwMl484+cwGQy+vVIOWPduhkj2PRg/UWzfJy/fY=
 github.com/Rethunk-Tech/go-fomod v0.1.0 h1:NAmHf2WPHAsD+fcuc1UYWyjYpG56ioDwxjf/Qyq0ahA=
 github.com/Rethunk-Tech/go-fomod v0.1.0/go.mod h1:vNHiJeDb3TOL4FMGPqANWoM3kA16wKUDL/2kEEJ0BMo=
 github.com/Rethunk-Tech/go-gamelocator v0.1.0 h1:OS8Gp+ANUu4BHzCL0+YqclN4UVZE0qDZmuUXd0QH8Sg=

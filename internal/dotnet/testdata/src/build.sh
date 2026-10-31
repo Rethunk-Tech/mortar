@@ -15,7 +15,7 @@ cp -r "$module/testdata/src/Game" "$module/testdata/src/Mod" "$out/"
 chmod -R u+w "$out/Game" "$out/Mod"
 dotnet build "$out/Mod/Mod.csproj" -c Release -o "$out/mod" -p:Deterministic=true -p:DebugType=none -nologo -v quiet
 cp "$out/mod/Mod.dll" ../mod.dll
-dotnet build "$out/Mod/Mod.csproj" -c Release -o "$out/embedded" -p:Deterministic=true -p:DebugType=embedded -nologo -v quiet
+dotnet build "$out/Mod/Mod.csproj" -c Release -o "$out/embedded" -p:Deterministic=true -p:DebugType=embedded -p:PathMap="$out=/fixture" -nologo -v quiet
 cp "$out/embedded/Mod.dll" ../embedded.dll
 mkdir -p ../e2e
 for name in Small Large Filler Alpha Beta; do

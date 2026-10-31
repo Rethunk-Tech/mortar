@@ -70,10 +70,10 @@ func TestRanErrorNamesWhereItWasThrownAndWhoPatchesIt(t *testing.T) {
 		"  at (wrapper dynamic-method) StardewValley.Farmer.DMD<StardewValley.Farmer::Update>(StardewValley.Farmer)\n\n" +
 		"NullReferenceException: beta broke\n" +
 		"  at SoundManager.PlayAmbientSound () [0x00010] in <0123456789abcdef0123456789abcdef>:IL_0010 \n" +
-		"  at Beta.SaveManager.Prefix () [0x00001] in <5fbed16890e94601b0c1d6bd5787551f>:IL_0001 \n" +
+		"  at Beta.SaveManager.Prefix () [0x00001] in <1397cc1a9cf6456c98f37d5e73a651e0>:IL_0001 \n" +
 		"  at (wrapper dynamic-method) GameNetworkManager.DMD<GameNetworkManager::SaveLocalPlayerValues>(GameNetworkManager)\n\n" +
 		"NullReferenceException: fixture broke\n" +
-		"  at Fixture.Patches.FarmerPatches.SkipUpdate () [0x00000] in <bae0cdbd54c4427189879800db2c4c0e>:IL_0000 \n" +
+		"  at Fixture.Patches.FarmerPatches.SkipUpdate () [0x00000] in <c298fd269b0a4179b076a6a3f8dd1b09>:IL_0000 \n" +
 		"  at (wrapper dynamic-method) StardewValley.Farmer.DMD<StardewValley.Farmer::Update>(StardewValley.Farmer)\n"
 	var pkgs []profile.PackageRef
 	var mods []framework.Mod
