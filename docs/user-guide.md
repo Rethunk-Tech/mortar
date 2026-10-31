@@ -1,6 +1,6 @@
 # Mortar user guide
 
-Mortar manages mods for the PC games its catalog enables. It finds the game, installs its mod loader (SMAPI for Stardew Valley), keeps each set of mods in its own profile and starts the game with the profile you pick. Internals: [architecture.md](architecture.md).
+Mortar finds your game, installs its mod loader (SMAPI for Stardew Valley), keeps each set of mods in its own profile and starts the game with the profile you pick. Internals: [architecture.md](architecture.md).
 
 ## Install
 
@@ -8,22 +8,22 @@ Download from [mortar.rethunk.tech/download](https://mortar.rethunk.tech/downloa
 
 ### Windows
 
-- **Installer:** `mortar-amd64-installer.exe` (`mortar-arm64-installer.exe` on an ARM PC). It installs for your account only, into `%LOCALAPPDATA%\Programs\Mortar`, with Start Menu and Desktop shortcuts and no administrator prompt.
+- **Installer:** `mortar-amd64-installer.exe` (`mortar-arm64-installer.exe` on ARM). It installs for your account into `%LOCALAPPDATA%\Programs\Mortar`, with Start Menu and Desktop shortcuts and no administrator prompt.
 - **Bare program:** `mortar-windows-amd64.exe` or `mortar-windows-arm64.exe`, run from any folder.
 - **Scoop:** `scoop bucket add mortar https://github.com/Rethunk-Tech/scoop-bucket`, then `scoop install mortar/mortar`. Scoop handles updates; Mortar's own updater stays off.
 
-The window needs Microsoft's WebView2 Runtime; the installer adds it when missing and the bare program asks first. The builds are not code-signed, so SmartScreen warns the first time: choose **More info**, then **Run anyway**.
+The window needs Microsoft's WebView2 Runtime (the installer adds it when missing; the bare program asks first). The builds are not code-signed, so SmartScreen warns once: choose **More info**, then **Run anyway**.
 
 ### Linux
 
 - **AppImage** (`mortar-linux-x86_64.AppImage`, `mortar-linux-aarch64.AppImage`): `chmod +x` and run it. It needs glibc 2.35 or newer (Ubuntu 22.04, Linux Mint 21, Debian 12, Fedora 36); on an older system use the Flatpak.
-- **Portable program** (`mortar-linux-amd64`, `mortar-linux-arm64`): the same requirements plus GTK 3 and WebKitGTK 4.1 (`libwebkit2gtk-4.1-0` on Debian and Ubuntu, `webkit2gtk4.1` on Fedora, `webkit2gtk-4.1` on Arch). It updates itself and on first run adds a menu entry and takes nxm:// links.
+- **Portable program** (`mortar-linux-amd64`, `mortar-linux-arm64`): the same glibc requirement plus GTK 3 and WebKitGTK 4.1 (`libwebkit2gtk-4.1-0` on Debian and Ubuntu, `webkit2gtk4.1` on Fedora, `webkit2gtk-4.1` on Arch). It updates itself and on first run adds a menu entry and takes nxm:// links.
 - **Flatpak:** `flatpak install --user https://mortar.rethunk.tech/packages/flatpak/tech.rethunk.Mortar.flatpakref` adds Mortar's signed repository, so `flatpak update` keeps it current. Each release also has `mortar-linux-x86_64.flatpak` and `mortar-linux-aarch64.flatpak` for a one-time install without updates. Sandbox limits:
   - Folders outside the Flatpak's allowed set (Steam, Heroic, Lutris and the usual game folders) are invisible. Grant one with `flatpak override --user --filesystem=<folder> tech.rethunk.Mortar`.
-  - **Add this profile to Steam** is refused; the error shows the `flatpak run tech.rethunk.Mortar --play=<game>/<profile> --steam-session` command to use instead.
+  - **Add this profile to Steam** is refused; the error shows the `flatpak run tech.rethunk.Mortar --play=<game>/<profile> --steam-session` command to use.
   - Flatpak Steam cannot read profiles until you choose **Grant access** in the game's settings.
 - **Homebrew:** `brew install rethunk-tech/tap/mortar` installs the AppImage; `brew upgrade` updates it.
-- **`.deb`, `.rpm`, Arch package:** `sudo apt install ./mortar_*_amd64.deb`, `sudo dnf install ./mortar-*.rpm` or `sudo pacman -U mortar-*.pkg.tar.zst`. These do not update themselves; add the repository below.
+- **`.deb`, `.rpm`, Arch package:** `sudo apt install ./mortar_*_amd64.deb`, `sudo dnf install ./mortar-*.rpm` or `sudo pacman -U mortar-*.pkg.tar.zst`. They do not update themselves; add the repository below.
 
 ### Linux package repository
 
@@ -56,9 +56,10 @@ sudo pacman -Syu mortar
 
 ## First run
 
-Continue past the welcome screen (it lists the launchers found: Steam, GOG, Heroic, Lutris, Bottles) and open Stardew Valley. Setup has three steps.
-1. **Game folder.** Mortar shows where it found the game. A copy in Desktop, Downloads or Games (on Windows also a drive's root) is offered under **Found a copy outside your launchers**; otherwise use **Choose folder…**. **Change folder…** and **Rescan** fix a wrong pick. On Linux, a Windows build outside Steam runs through a Proton version your Steam already has.
-2. **Install SMAPI.** Mortar installs it by itself; if that fails, choose **Retry** or **Skip for now**. On Windows with Steam, the game starts without SMAPI unless SMAPI is in its Launch Options (right-click the game in Steam, **Properties**). Mortar shows the line to paste, or choose **Set it in Steam for me** with Steam closed.
+Continue past the welcome screen (it lists the launchers found: Steam, GOG, Heroic, Lutris, Bottles) and open Stardew Valley.
+
+1. **Game folder.** A copy in Desktop, Downloads or Games (on Windows also a drive's root) is offered under **Found a copy outside your launchers**; otherwise use **Choose folder…**. **Change folder…** and **Rescan** fix a wrong pick. On Linux, a Windows build outside Steam runs through a Proton version your Steam already has.
+2. **Install SMAPI.** Mortar does it; if that fails, choose **Retry** or **Skip for now**. On Windows with Steam, the game starts without SMAPI unless SMAPI is in its Launch Options (right-click the game in Steam, **Properties**). Mortar shows the line to paste, or choose **Set it in Steam for me** with Steam closed.
 3. **First profile.** **Start empty** (only SMAPI), **Import from the game's Mods folder** (copies your mods, changes nothing in the game folder), **From another mod manager** or **From a shared link**.
 
 ## Sign in to Nexus Mods
@@ -71,7 +72,7 @@ Premium accounts download inside Mortar. Free accounts click **Mod Manager Downl
 
 The downloads panel opens with Ctrl+J.
 
-- A download over 2 GB waits for **Continue anyway**. Before any download starts, Mortar checks that the file, its unpacked copy and a little spare room fit on the drive; if not, it fails at once and says how much is needed and free. Free some space, then **Retry**.
+- A download over 2 GB waits for **Continue anyway**. Before a download starts, Mortar checks that the file, its unpacked copy and some spare room fit on the drive; if not, it fails at once and says how much is needed and free. Free some space, then **Retry**.
 - **Pause** keeps what was fetched; **Resume** continues from there, also after a restart, and replaces Retry after a network error unless the file changed on the server.
 - **Download now** moves a download to the front; if every slot is busy, the last running one steps aside and restarts when a slot frees. The arrows reorder waiting downloads.
 - **Settings › Downloads › Download speed limit** caps all downloads together in MB/s (0 is no limit).
@@ -79,53 +80,52 @@ The downloads panel opens with Ctrl+J.
 
 ## Browser extension
 
-The extension is optional. It marks Nexus pages with what your profile already has and sends Mod Manager Download clicks to Mortar. **Settings › Downloads** has a **Download the extension** button for `mortar-browser-extension.zip` from its [releases](https://github.com/Rethunk-Tech/mortar-browser-extension/releases/latest), and says **The browser extension is too old for this Mortar** (or too new) when versions drift.
+Optional. It marks Nexus pages with what your profile already has and sends Mod Manager Download clicks to Mortar. **Settings › Downloads** has a **Download the extension** button (`mortar-browser-extension.zip` from its [releases](https://github.com/Rethunk-Tech/mortar-browser-extension/releases/latest)) and says **The browser extension is too old for this Mortar** (or too new) when versions drift.
 
-- **Chrome, Edge, other Chromium:** install it from the [Chrome Web Store](https://chromewebstore.google.com/detail/hboeppdoecbglcmfojappgehkbecdfbi), which keeps it updated. To try the zip instead: unzip, open `chrome://extensions`, turn on Developer mode, choose **Load unpacked** and pick the folder.
+- **Chrome, Edge, other Chromium:** install it from the [Chrome Web Store](https://chromewebstore.google.com/detail/hboeppdoecbglcmfojappgehkbecdfbi), which keeps it updated. To use the zip: unzip, open `chrome://extensions`, turn on Developer mode, choose **Load unpacked** and pick the folder.
 - **Firefox:** open `mortar-browser-extension.xpi` from the latest release in Firefox, or drop it on `about:addons`; Mozilla signs it, so it stays. Without an `.xpi`, use the zip: `about:debugging`, **This Firefox**, **Load Temporary Add-on**, pick `manifest.json` (removed when Firefox restarts).
 
 ## Find and add mods
 
-**Browse** searches every site the game's mods come from at once (for Stardew Valley, Nexus Mods, CurseForge and GitHub). A mod several sites list is one card; its badge picks the site to install from, and **Preferred source** (the game's settings, **Mods** page) sets the default. The chips beside **All sources** narrow to one site, and switching a site off in the game's settings (**Mods** page) leaves it out of Browse. A mod on the known-broken list is marked on its card, with the mod to use instead.
+**Browse** searches every site the game's mods come from at once (for Stardew Valley, Nexus Mods, CurseForge and GitHub). A mod several sites list is one card; its badge picks the site to install from, and **Preferred source** (the game's settings, **Mods** page) sets the default. The chips beside **All sources** narrow to one site; switching a site off on the same page leaves it out. A known-broken mod is marked on its card, with the mod to use instead.
 
 1. Open **Browse**. With nothing typed, each site lists its top mods.
 2. Type a name; results update as you type.
 3. Choose **Add** (**Download** on Nexus with Premium) on a card. It shows progress, then **Added**. On Nexus with a free account the button is **Get**, which opens the mod's files page.
 
-- **GitHub:** **Add** installs the latest release; `gh auth login`, when present, raises GitHub's rate limits. Nobody reviews or scans what is published on GitHub or itch.io, and the first download from either says so once.
-- **Card details:** **Show › Card details** picks what cards list; the Mods tab uses the same choice.
+- **GitHub:** **Add** installs the latest release; `gh auth login` raises GitHub's rate limits. Nobody reviews what is published on GitHub or itch.io, and the first download from either says so once.
 - **Downloads folder:** an archive saved to Downloads, Mortar's download folder or a folder under **Settings › Downloads › Also watch these folders** is offered for install.
-- **Extra mods folders** (the game's settings): unpacked mods, or the output folder of a mod you are building. Each folder names the profile its mods install into (or the open one); they install when you add the folder and again whenever its files change, so the game loads your latest build. A change while the game runs waits for it to stop.
+- **Extra mods folders** (the game's settings): unpacked mods, or the output folder of a mod you are building. Each folder names the profile its mods install into (or the open one). They install when you add the folder and whenever its files change, waiting for the game to stop if it is running.
 - **Hide from Browse:** a card's menu has **Hide from Browse** and **Hide everything by \<author\>**; the game's settings list **Hidden mods** with **Unhide**. Links and imports still install a hidden mod.
 - **Modpacks, translations and cheats:** the **Exclude categories** picker starts with them; remove a chip to see them.
 - **Open a mod's page:** Ctrl+click a card in Browse, or middle-click a mod in the Mods tab.
-- **Versions:** **Choose a version…** on a card's details page installs a version other than the latest; an installed mod offers **Change version…**. A **Support the author** link shows when the mod's page gives a donation address.
+- **Versions:** **Choose a version…** on a card's details page installs an older one; an installed mod offers **Change version…**. **Support the author** shows when the mod's page gives a donation address.
 
 ### Narrow and sort the results
 
 - **Include categories** and **Exclude categories** filter by category; sites without categories (GitHub, or Nexus while signed out) turn them off.
-- **Sort** orders the results. Under **All sources**, most downloaded and recently updated rank every site as one list, leaving out (and naming) a site that cannot sort that way, such as GitHub for downloads. Best match takes turns between sites.
-- **Show** has rows for **Mods in this profile**, **Obsolete** and **Broken**, each **Off**, **Gray out** or **Hide** (counted as "N hidden"); **Obsolete** and **Broken** can also **Flag** a mod with a warning mark. **Broken** needs a compatibility list, which Stardew Valley has.
+- **Sort** orders the results. Under **All sources**, most downloaded and recently updated rank every site as one list and name any site that cannot sort that way (GitHub for downloads). Best match takes turns between sites.
+- **Show** has a **Card details** choice for what cards list (the Mods tab shares it) and rows for **Mods in this profile**, **Obsolete** and **Broken**, each **Off**, **Gray out** or **Hide** (counted as "N hidden"); **Obsolete** and **Broken** can also **Flag** a mod with a warning mark. **Broken** needs a compatibility list, which Stardew Valley has.
 
 Mods already in the profile show **Added**, whichever site they came from. A helper Mortar installs for a loader shows **Built in**.
 
 ## Modrinth and itch.io
 
-A game whose catalog entry lists Modrinth or itch.io gets a chip for it beside **All sources**, and its results join the merged search. Stardew Valley lists neither.
+A game whose catalog entry lists Modrinth or itch.io gets a chip for it beside **All sources**, and its results join the merged search.
 
 - **Modrinth** needs no account. **Add** installs the newest version with its required projects.
 - **itch.io** needs your own API key: create one in your itch.io account (**Settings › API keys**), paste it into **API key** in **Settings › Accounts** and choose **Test**. The key is kept in your system keyring; **Remove key** forgets it. Until then the chip is greyed out. itch.io has no sort order or categories, and **Add** takes the game's first upload that is not a demo or soundtrack.
 
 ## Edit a mod's settings
 
-Mortar edits a mod's config as a form, and other files a BepInEx mod keeps (YAML, TOML, XML, INI, JSON, text) as text. A mod that has not run yet has no config.
+Mortar edits a mod's config as a form, and the other files a BepInEx mod keeps (YAML, TOML, XML, INI, JSON, text) as text. A mod that has not run yet has no config.
 
-1. In the **Mods** tab, select a mod, then choose **Edit config** under **Config** (or right-click it, or use its **⋯** menu).
-2. Pick one of its config files (`config.json` for a SMAPI mod, each BepInEx `.cfg` for a Lethal Company plugin).
-3. Change a value. Each change saves as you make it, but not while the game runs the profile. A setting that differs from the mod's default shows **Reset to default**; **Reset all** restores the file. An info button shows the mod's own description, and **Search entries** filters long files.
+1. In the **Mods** tab, select a mod and choose **Edit config** under **Config** (or right-click it, or use its **⋯** menu).
+2. Pick a config file (`config.json` for a SMAPI mod, each BepInEx `.cfg` for a Lethal Company plugin).
+3. Change a value. Each change saves as you make it, except while the game runs the profile. A value that differs from the mod's default shows **Reset to default**; **Reset all** restores the file. **Search entries** filters long files.
 4. **Presets** saves the file's values under a name and applies them to any profile's copy.
 
-The **Config** tab (Ctrl+6) lists every mod with settings and searches every config file in the profile. A change under **In-game menu** (Generic Mod Config Menu) says **Applied when the game next starts**. **Delete file** removes a config file no mod owns. **Centre config controls** (**Settings › Appearance**) sets each control nearer its name on a wide window.
+The **Config** tab (Ctrl+6) lists every mod with settings and searches every config file in the profile. A change under **In-game menu** (Generic Mod Config Menu) says **Applied when the game next starts**. **Delete file** removes a config file no mod owns. **Centre config controls** (**Settings › Appearance**) puts each control nearer its name on a wide window.
 
 ## Your mod list
 
@@ -142,7 +142,7 @@ Lethal Company's mods are Thunderstore packages on BepInEx. Mortar installs BepI
 - **Thunderstore links:** `ror2mm://` links (**Install with Mod Manager**) stay with your other manager until you turn on **Handle Thunderstore links** in Settings › Downloads (turn it off to hand them back). A link names no game, so it installs into the open game when that game has a Thunderstore community.
 - **CurseForge links:** turn on **Handle CurseForge links** in Settings › Downloads, or tick **Open CurseForge Install links with Mortar** on the Windows installer's last page. A mod for a managed game asks which profile it goes into; other games' links go back to the CurseForge app.
 - **Vintage Story Mod DB links:** turn on **Handle Vintage Story Mod DB links** in Settings › Downloads.
-- **Play:** BepInEx reads only the game's folder, so on each launch Mortar places the profile's BepInEx files beside the game (`winhttp.dll`, `doorstop_config.ini`) and removes them when the game exits (a crash is cleaned up at the next start). Plugins and settings stay in the profile; the log is `BepInEx/LogOutput.log`, also shown in the **Console** tab.
+- **Play:** BepInEx reads only the game's folder, so each launch places the profile's BepInEx files beside the game (`winhttp.dll`, `doorstop_config.ini`) and removes them when the game exits (after a crash, at the next start). Plugins and settings stay in the profile; the log is `BepInEx/LogOutput.log`, also in the **Console** tab.
 - **Launch options:** profile menu › **Edit profile**, **BepInEx** group: **Show the console window** and **Log level**, applied at the next start.
 
 ## Pair your computers
@@ -160,7 +160,7 @@ On Windows, sharing is off while every connected network is **Public**; set it t
 
 ## Switch games
 
-Click the game's name in the title bar; it opens on the profile you used last. **All games…** opens Game select, where right-clicking a game offers **Hide this game** (and **Unhide**) and clicking a section's heading folds it away. The mouse's back and forward buttons, and Alt with the left and right arrows, move through the pages you opened.
+Click the game's name in the title bar; it opens on the profile you used last. **All games…** opens Game select, where right-clicking a game offers **Hide this game** (and **Unhide**) and clicking a section's heading folds it. The mouse's back and forward buttons, and Alt with the left and right arrows, move through the pages you opened.
 
 ## Game installs
 
@@ -168,40 +168,49 @@ A game installed more than once (Steam and GOG, a beta branch, another folder) h
 
 ### Bottles
 
-On Linux, Mortar finds a Windows build inside a [Bottles](https://usebottles.com) bottle (native or Flatpak Bottles) when the game sits in the bottle's Steam or GOG folders; the store reads **Bottles**. Open the game from **Game select** (use **Choose folder…** if it sits somewhere unusual in the bottle). Mortar installs the Windows SMAPI inside the bottle and **Play** starts the game through it.
+On Linux, Mortar finds a Windows build in a [Bottles](https://usebottles.com) bottle (native or Flatpak) when the game sits in the bottle's Steam or GOG folders; the store reads **Bottles**. Open it from **Game select** (**Choose folder…** if it sits elsewhere in the bottle). Mortar installs the Windows SMAPI inside the bottle and **Play** starts the game through it.
 
 ## Profiles
 
 A profile is one set of mods. Switching profiles never touches the game folder's own `Mods` folder.
 
 - **Create:** **New profile…** (Profiles page or title-bar switcher), then **Start from**: **Empty profile**, **Copy of \<the open profile\>** (mods, their settings and what they wrote) or a template from **Save as template…** (**Manage templates…** renames or deletes them).
-- **Nested groups:** name a group with a slash, such as **Looks/Hats**, to put it inside **Looks**. With the list grouped by **Group**, each level has a header that collapses its contents, and the switch on a header enables or disables everything inside. Renaming or deleting a group does the same to the groups inside it.
-- **Why each mod is there:** a mod you add is **Explicit**; one added because another needs it is **Implicit**. Group the Mods list by **Install reason**, and right-click a mod to mark it either way.
+- **Nested groups:** name a group with a slash, such as **Looks/Hats**, to put it inside **Looks**. With the list grouped by **Group**, each level has a collapsible header whose switch enables or disables everything inside. Renaming or deleting a group applies to the groups inside it too.
+- **Install reason:** a mod you add is **Explicit**; one added because another needs it is **Implicit**. Group the Mods list by **Install reason**, or right-click a mod to mark it either way.
 - **Delete:** a deleted profile waits in **Recently deleted** (**Restore**, **Delete permanently**). Play always starts the open profile.
 - **Freeze:** **Freeze this profile** holds its mods on their versions and offers no updates until **Unfreeze**.
 - **A game that is not listed:** the game list's **Add a game…** takes a name, the game's program and how it is modded (BepInEx 5, BepInEx 6, MelonLoader, Shimloader or a Mods folder). It stays on this computer and has no mod site, so add its mods from archives. A Shimloader game (an Unreal Engine game such as Voices of the Void, whose program is the one in `Binaries/Win64`) also names its Thunderstore community, where its mods come from. **Remove** in the same dialog forgets the game and leaves its folder and profiles on disk.
-- **Profile folder:** **Open profile folder** opens it in your file manager; **Move profile folder…** moves a profile to a folder of your choice, such as one on another drive, and back. On another drive its mods are copies instead of links into the shared store.
-- **Share:** **Share profile**, then **Copy link** (names the mods and their Nexus or GitHub files, with pins, groups and install reasons) or save a `.mortar` file (also carries settings and notes; suits large profiles). **Share › Mod list** can also write a Thunderstore dependency string list. For a Thunderstore game, **Save .r2z…** writes an r2modman or Gale profile file without posting a public code, and **Export as Thunderstore modpack…** opens a form for the pack's details; the next export suggests the next patch version and writes a changelog of what changed since the last. Mods from other sources are named in the README.
-- **Separate saves:** **Edit profile**, enable **Keep this profile's saves separate** and confirm. Leave **Start with a copy of my current saves** ticked to start from your saves, or untick it to start empty. On each Play Mortar swaps in the profile's own `saves` folder and restores the shared one when the game closes (or at the next start). Nothing is deleted. Only games with a save folder have it. In Cities: Skylines II only cities saved to **Local** are kept per profile; Steam Cloud and Xbox cloud cities are shared by every profile.
+- **Profile folder:** **Open profile folder** opens it in your file manager; **Move profile folder…** moves a profile to a folder of your choice (another drive, say) and back. On another drive its mods are copies instead of links into the shared store.
+- **Share:** **Share profile**, then **Copy link** (names the mods and their Nexus or GitHub files, with pins, groups and install reasons) or save a `.mortar` file (also carries settings and notes; suits large profiles). **Share › Mod list** can also write a Thunderstore dependency string list. For a Thunderstore game, **Save .r2z…** writes an r2modman or Gale profile file with no public code, and **Export as Thunderstore modpack…** opens a form for the pack's details; the next export suggests the next patch version and writes a changelog since the last. Mods from other sources are named in the README.
+- **Separate saves:** **Edit profile**, enable **Keep this profile's saves separate** and confirm. Leave **Start with a copy of my current saves** ticked to start from your saves, or untick it to start empty. On each Play Mortar swaps in the profile's own `saves` folder and restores the shared one when the game closes (or at the next start). Nothing is deleted. Only games with a save folder have this option. In Cities: Skylines II only cities saved to **Local** are kept per profile; Steam Cloud and Xbox cloud cities are shared by every profile.
 
 ### Import
 
 **Import…** (Profiles page, a profile's menu and the first-run steps) opens one dialog with four sources. Each ends in a preview of what the profile holds; Mortar then installs or queues what is missing. The preview offers a new profile, or adds to or replaces the open one. **Restore from a file…** reads a **Back up to a file…** backup.
 
-- **A link or code:** a Mortar link, a Nexus collection, an r2modman code, a Gale sync code (the short form such as `E5RG8F` and the older 22-character form), or a Patreon or itch.io post (Mortar opens the page and offers the file you save from it).
+- **A link or code:** a Mortar link, a Nexus collection, an r2modman code, a Gale sync code (short form such as `E5RG8F`, or the older 22-character form), or a Patreon or itch.io post (Mortar opens the page and offers the file you save from it).
 - **A file:** a `.mortar` file, an r2modman or Gale `.r2z`, a Thunderstore modpack zip or a local profile folder.
-- **Local mods:** mods the other manager added from disk (from a Gale profile on this computer, or a code or `.r2z` that carries their files) come along as Local mods, disabled if they were. The preview marks them before anything installs, because a code's files come from whoever made it.
 - **The game's Mods folder:** copies the mods the game reads into a new profile and leaves the folder as is. Tick **Move them out of the game's Mods folder** to take the originals out; left there, the game keeps loading them even when a profile disables them, and Mortar refills that folder on each Play. For The Sims 4 it is `Mods` in the Documents folder.
-- **Another mod manager:** lists profiles found for the game from r2modman, Gale, Vortex, Mod Organizer 2 and Stardrop, and can read every r2modman or Gale profile in a data folder you choose. Copied mods may have no page to update from: group the Mods list by **Source** and choose **Find sources**, or right-click a mod › **Set Nexus Mods page…**. Mods with an unknown file still update, but a share leaves them out.
+- **Another mod manager:** lists profiles found for the game from r2modman, Gale, Vortex, Mod Organizer 2 and Stardrop, and can read every r2modman or Gale profile in a data folder you choose.
+
+Mods the other manager added from disk (from a Gale profile on this computer, or a code or `.r2z` that carries their files) come along as Local mods, disabled if they were. The preview marks them before anything installs, because a code's files come from whoever made it. Copied mods may have no page to update from: group the Mods list by **Source** and choose **Find sources**, or right-click a mod › **Set Nexus Mods page…**. Mods with an unknown file still update, but a share leaves them out.
 
 ### Multiplayer
 
-- **Multiplayer mod list (Stardew Valley, Thunderstore games such as Lethal Company, REPO, PEAK, Content Warning and Valheim, and Vintage Story):** profile menu › **Multiplayer mod list…** copies the host's enabled mods with versions and sources. A friend pastes it under **The host's list** and chooses **Check**: missing mods show **Install**, other versions **Update** (to the host's version, even when yours is newer), and **Fix all** queues every one; a mod with no download source is named to install by hand. On Stardew, **Check** also reads **Share › Mod list** text and **Load the host's list from a file…**; those carry no ids, so mods match by name and may come out newer than the host's. Many mods refuse a player on another version, so match before joining.
-- **Dedicated servers (Valheim and Risk of Rain 2):** each server is its own game in Game select, with profiles of its own. **Edit profile › Server** sets its name, port and password, and **Use mods from…** queues a client profile's mods for install, so the server and the clients share one list. Valheim refuses to start without a password of five or more characters.
+- **Multiplayer mod list** (Stardew Valley, Thunderstore games such as Lethal Company, REPO, PEAK, Content Warning and Valheim, and Vintage Story): profile menu › **Multiplayer mod list…** copies the host's enabled mods with versions and sources. A friend pastes it under **The host's list** and chooses **Check**. Missing mods show **Install**, other versions **Update** (to the host's version, even when yours is newer), and **Fix all** queues every one; a mod with no download source is named to install by hand. Many mods refuse a player on another version, so match before joining.
+  - On Stardew, **Check** also reads **Share › Mod list** text and **Load the host's list from a file…**. Those carry no ids, so mods match by name and may come out newer than the host's.
+- **Dedicated servers (Valheim and Risk of Rain 2):** each server is its own game in Game select, with profiles of its own. **Edit profile › Server** sets its name, port and password, and **Use mods from…** queues a client profile's mods for install, so server and clients share one list. Valheim refuses to start without a password of five or more characters.
 
 ## Play
 
-**Play** applies the profile's mod list and starts the game through its loader. Direct Play (not a Steam or store URL launch) can start more than one instance, spaced by a delay, for local multiplayer: set both in the game's settings under **Play** (**Instances** and **Delay seconds**). Develop's **Test** starts copies on its own. A Heroic or Lutris copy starts through its own launcher, so the game runs in the prefix and runner the launcher keeps for it. In a BepInEx game whose bridge has a console, the **Console** tab takes commands. **Skip the intro** in Stardew Valley's settings skips the title intro. **Start first** in the game's Play settings starts SteamVR, or the ALVR dashboard (choose its program there; it opens SteamVR itself), before the game; a profile can turn it off to play a flat-screen mod. **Launch options…** in the menu beside **Play** opens the profile's own launch options: extra arguments for the game, a command prefix (for example `gamemoderun mangohud`) and environment variables; the prefix and the environment apply to direct launches only. Launch presets keep several sets, each a **Play with** choice in that menu.
+**Play** applies the profile's mod list and starts the game through its loader. Options, in the game's settings under **Play** unless noted:
+
+- **Instances** and **Delay seconds:** direct Play (not a Steam or store URL launch) can start several instances, spaced by the delay, for local multiplayer. Develop's **Test** starts copies on its own.
+- **Start first:** starts SteamVR, or the ALVR dashboard (choose its program there; it opens SteamVR itself), before the game. A profile can turn it off to play a flat-screen mod.
+- **Launch options…** (menu beside **Play**): the profile's extra game arguments, a command prefix (such as `gamemoderun mangohud`) and environment variables; the prefix and environment apply to direct launches only. Launch presets keep several sets, each a **Play with** choice in that menu.
+- **Skip the intro** (Stardew Valley's settings) skips the title intro.
+- A Heroic or Lutris copy starts through its own launcher, so the game runs in the prefix and runner that launcher keeps.
+- In a BepInEx game whose bridge has a console, the **Console** tab takes commands.
 
 On Windows, Steam's own **Play** starts SMAPI with the game's own `Mods` folder, not a profile. Press Play in Mortar, or use the profile menu's **Add a desktop shortcut** (Start Menu on Windows, launcher entry on Linux) or **Add this profile to Steam** (a non-Steam game; close Steam first).
 
@@ -214,31 +223,50 @@ A card on the profile's Home names the likely cause, read from the loader's log 
 
 ## Make your own mods
 
-For a game whose loader has a mod template (Lethal Company), **Develop** in the sidebar starts a mod: **New mod…** asks for its name, a one-line description, the author, Thunderstore team and id prefix, and where the project goes. Signed in to the `gh` tool, Mortar can create a GitHub repository for it; otherwise it copies the template into the folder. The project builds against your copy of the game, and every build installs into a development profile (one Mortar creates, or one you pick).
+For a game whose loader has a mod template (Lethal Company), **Develop** in the sidebar starts a mod. **New mod…** asks for its name, a one-line description, the author, Thunderstore team and id prefix, and where the project goes. With `gh` signed in, Mortar can create a GitHub repository for it; otherwise it copies the template into the folder. The project builds against your copy of the game and installs every build into a development profile (one Mortar creates, or one you pick). Building needs the .NET SDK and git; the dialog says what is missing.
 
-Each project has **Build** (compiler errors open in VS Code, VSCodium or Rider at the line), **Build on save**, **Release…** (the next version, a changelog entry and a git tag; with a GitHub remote both are pushed and the project's CI publishes to Thunderstore, otherwise the release stays local and Mortar offers to pack and upload it), **Game code…** in the page header, and the page's **Test** (copies of the development profile on one computer, one hosting and the rest joining: one copy when every mod here is client-only, otherwise two, or the number last picked from its menu); it first installs any mod a project lists under **Test with** that the profile lacks. A project you clone from GitHub or add from a folder is not built when it joins; its first build asks once, because building runs that repository's code on your computer. Mortar needs the .NET SDK to build and git to keep the history; the dialog says what is missing.
+Each project has:
 
-A mod of files only needs no compiler: on New mod's **Mod** step, turn **Has code** off. Every project, code included, can tick content: posters, tips, paintings, boombox songs, TV videos, suits and sounds, each a folder that adds the mod loading it as a dependency (posters and the like in `mortar/<kind>/`, suits in `moresuits/`, sounds as `sound_pack.json` with `sounds/` and `replacers/`; under `plugins/` without code, `content/` with it); a project without code ticks at least one, and only folders whose mod is on Thunderstore or among your projects are offered. Sounds do nothing until a file in `replacers/` maps a game sound to them. **Release…** refuses a ticked folder that holds no file its mod loads, whose mod is not among the manifest's dependencies, and a sound pack without `sound_pack.json` or a `replacers/*.json`; it warns of a file in a content folder that its mod does not read. A content pack's package holds only `plugins/`, the icon, README, CHANGELOG and LICENSE. The project is a folder of files with a manifest. It installs into the development profile as it is, and **Edit details…** changes its description, categories, team, dependencies and the mods **Test** installs beside it (never part of the package). A folder of this kind that you add or clone installs once you agree to **Install**, because a plugin among its files runs when the game starts. **Release…** tags the version (and pushes it when the folder has a GitHub remote), then **Upload** sends it to Thunderstore; such a project has no CI of its own.
+- **Build** (compiler errors open in VS Code, VSCodium or Rider at the line) and **Build on save**.
+- **Release…**: the next version, a changelog entry and a git tag. With a GitHub remote both are pushed and the project's CI publishes to Thunderstore; otherwise the release stays local and Mortar offers to pack and upload it.
+- **Game code…** in the page header.
+- **Test**: copies of the development profile on one computer, one hosting and the rest joining (one copy when every mod here is client-only, otherwise two, or the number last picked from its menu). It first installs any mod the project lists under **Test with** that the profile lacks.
 
-**Add a project folder…** (in the menu beside **New mod…**) takes any folder you already have. A folder that already is a Mortar project is added as it is. Any other folder gets a confirm step with the name, the kind Mortar detected and the project file it found; you can change the kind. A `.csproj` anywhere in the folder makes it a code project built from that file; a folder with content folders (such as `plugins/mortar/<kind>/` or `plugins/moresuits/`, or an older layout) makes a content pack, and the confirm step offers to move older-layout files into place; a folder with an asset kind's files makes that kind; anything else is **Files, installed as they are**. Mortar writes only `.mortar/project.json` into the folder, and only after you press **Add**. A folder whose record names another game offers to be added under that game instead. A project of files has no build: its folder installs once trusted, and **Release…** packs its files with a `manifest.json` in which Mortar fills only the missing fields.
+A project you clone or add from a folder is not built when it joins; its first build asks once, because building runs that repository's code on your computer.
+
+A mod of files only needs no compiler: on New mod's **Mod** step, turn **Has code** off. Any project can tick content: posters, tips, paintings, boombox songs, TV videos, suits and sounds. Each is a folder that adds the mod loading it as a dependency (`mortar/<kind>/` for posters and the like, `moresuits/` for suits, `sound_pack.json` with `sounds/` and `replacers/` for sounds; under `plugins/` without code, `content/` with it). A project without code ticks at least one, and only folders whose mod is on Thunderstore or among your projects are offered. Sounds do nothing until a file in `replacers/` maps a game sound to them.
+
+- **Release…** refuses a ticked folder that holds nothing its mod loads, whose mod is not among the manifest's dependencies, or a sound pack missing `sound_pack.json` or a `replacers/*.json`, and warns of files its mod does not read. A content pack's package holds only `plugins/`, the icon, README, CHANGELOG and LICENSE.
+- **Edit details…** changes the description, categories, team, dependencies and the mods **Test** installs beside it (never part of the package).
+- A folder you add or clone installs once you agree to **Install**, because a plugin among its files runs when the game starts.
+- Without code there is no CI: **Release…** tags the version (and pushes it with a GitHub remote), then **Upload** sends it to Thunderstore.
+
+**Add a project folder…** (menu beside **New mod…**) takes any folder. A Mortar project is added as it is; any other folder gets a confirm step with the name, the detected kind and the project file found, and you can change the kind:
+
+- a `.csproj` anywhere in it: a code project built from that file;
+- content folders (`plugins/mortar/<kind>/`, `plugins/moresuits/` or an older layout): a content pack, and the confirm step offers to move older-layout files into place;
+- an asset kind's files: that kind;
+- anything else: **Files, installed as they are**. It has no build; its folder installs once trusted, and **Release…** packs its files with a `manifest.json` in which Mortar fills only the missing fields.
+
+Mortar writes only `.mortar/project.json` into the folder, and only after you press **Add**. A folder whose record names another game offers to be added under that game instead.
 
 ## Problems
 
 The **Problems** tab checks the open profile for missing requirements, conflicts, broken or outdated mods, damaged files, duplicates and more. It warns and never blocks Play.
 
-- Each kind of problem is a section with a count (red when it holds something broken); an empty section is not shown. **Add all** in the missing-requirements section installs every requirement Mortar can find.
-- Advice and history (Slow startup, Redundant, Cleanup, Replaced, Dismissed) are links under the list; choose one to open it below, and again to close it.
-- A mod's name in a row filters the **Mods** tab to it. **Why?** on a row explains it and links to its section below. A row's fix is a button; its arrow opens the alternatives and **Dismiss**.
+- Each kind of problem is a section with a count (red when it holds something broken); an empty section is hidden. **Add all** in the missing-requirements section installs every requirement Mortar can find.
+- Advice and history (Slow startup, Redundant, Cleanup, Replaced, Dismissed) are links under the list; choose one to open it, and again to close it.
+- A mod's name in a row filters the **Mods** tab to it. **Why?** explains the row and links to its section below. A row's fix is a button; its arrow opens the alternatives and **Dismiss**.
 
 ### What each problem means
 
 #### Missing requirement
 
-A mod you enabled needs another mod that is not in the profile or is disabled, so it may fail to load or lose features. **Add** installs the missing one when Mortar can find it.
+A mod you enabled needs another that is not in the profile or is disabled, so it may fail to load or lose features. **Add** installs the missing one when Mortar can find it.
 
 #### Broken mod
 
-SMAPI's list for your game version, Mortar's list of known-broken mods or the mod's own site marks it broken, obsolete, abandoned or gone (a hidden, removed or moderated Nexus page; an archived, inactive, abandoned or deleted Modrinth, CurseForge or GitHub project; a Thunderstore package taken off the site). The row names who said so. The mod may crash, do nothing, or break at the next game update. Update it, or replace it with the mod the row names.
+SMAPI's list for your game version, Mortar's known-broken list or the mod's own site marks it broken, obsolete, abandoned or gone (a hidden, removed or moderated Nexus page; an archived, abandoned or deleted Modrinth, CurseForge or GitHub project; a Thunderstore package taken off the site). The row names who said so. The mod may crash, do nothing or break at the next game update. Update it, or replace it with the mod the row names.
 
 #### Duplicate mod
 
@@ -246,27 +274,27 @@ Two enabled copies of one mod are in the profile. The game loads only one, and y
 
 #### Conflicting files
 
-Two mods change the same file or asset and only one change wins, so the other may look or behave wrongly. The row says which wins; disable the one you prefer to lose, or dismiss the row if the overlap is harmless. **Why?** then **Show conflicts** lists every mod touching the asset in load order, with each change's kind and the winner.
+Two mods change the same file or asset and only one change wins. The row says which; disable the one you prefer to lose, or dismiss the row if the overlap is harmless. **Why?** then **Show conflicts** lists every mod touching the asset in load order, with each change's kind and the winner.
 
 #### Errors in the last run
 
 A mod wrote errors to the game's log last time you played; it may be broken, out of date or missing something. Open the log to read them.
 
-Right-click a Console line to **Copy this message**, or to **Hide this message**: every line from the same place in the game's code (or, for an engine warning, the same warning about the same object) leaves the Console, and in a BepInEx game the bridge stops the game writing it. The game's settings › **Console** › **Hidden messages** shows them again, along with the common noise Mortar hides for the game by default.
+Right-click a Console line to **Copy this message**, or **Hide this message**: every line from the same place in the game's code (or, for an engine warning, the same warning about the same object) leaves the Console, and in a BepInEx game the bridge stops the game writing it. The game's settings › **Console** › **Hidden messages** shows them again, along with the common noise Mortar hides by default.
 
 The Console's **Problems in this run** strip reads SMAPI's log and offers one fix per mod: **Add** a missing requirement, **Update** the mod, **Update SMAPI**, **Disable** a mod that crashed or is obsolete, and **Remove duplicate** or **Remove** (a mod installed twice, or one SMAPI flags as malicious).
 
 #### Errors while running
 
-A plugin that loaded and then logged errors or threw an exception is listed once, with its error count. The row names the method that threw and the other enabled mods that patch code on that path, since one of them may be the cause. The plugin ran, so these rows do not count as problems. **Disable** or **Update** it if the game misbehaves, or **Dismiss** the row for that run.
+A plugin that loaded and then logged errors or threw an exception is listed once, with its error count. The row names the method that threw and the other enabled mods that patch code on that path, since one of them may be the cause. These rows do not count as problems because the plugin ran. **Disable** or **Update** it if the game misbehaves, or **Dismiss** the row for that run.
 
 #### Failed to load
 
-The loader's log shows a plugin did not start, so its features are missing. The row quotes the log line; usual causes are a wrong game version or a missing requirement. The button follows the cause: **Find** a plugin that is not installed, **Update** one built for other versions, **Reinstall loader** when a plugin needs a newer BepInEx or the loader failed to start, or **Disable** a plugin that is incompatible, skipped for a newer copy, or keeps reporting errors.
+The loader's log shows a plugin did not start, so its features are missing. The row quotes the log line; usual causes are a wrong game version or a missing requirement. The button follows the cause: **Find** a plugin that is not installed, **Update** one built for other versions, **Reinstall loader** when a plugin needs a newer BepInEx or the loader failed to start, or **Disable** a plugin that is incompatible, skipped for a newer copy or keeps reporting errors.
 
 #### Setting suggestion
 
-A mod works better, or only works, with a setting changed. Nothing is wrong yet. The row names the setting and the button changes it.
+A mod works better, or only works, with a setting changed. The row names it and the button changes it.
 
 #### Damaged files
 
@@ -274,7 +302,7 @@ Files of a stored mod went missing, changed or appeared since Mortar stored it (
 
 #### Paths too long
 
-On Windows, a mod file's full path, where the game reads it, is 260 characters or more. Most games cannot open such a file, and turning on long paths in Windows does not change that. The row names the longest path. For a file the game reads from the profile, move Mortar's data folder somewhere shorter (**Open storage settings**, then **Move…**); a file placed in the game's own mods folder needs the game in a shorter folder. Linux, including games under Proton, is not affected.
+On Windows, a mod file's full path, where the game reads it, is 260 characters or more. Most games cannot open such a file, and Windows' long-path setting does not change that. The row names the longest path. For a file the game reads from the profile, move Mortar's data folder somewhere shorter (**Open storage settings**, then **Move…**); a file in the game's own mods folder needs the game in a shorter folder. Linux, including games under Proton, is not affected.
 
 #### Files two packages ship
 
@@ -320,11 +348,11 @@ A sync folder shares each profile's mod list, sources, settings and mod config f
 
 ## Language
 
-Mortar follows your system language once a translation of it is mostly done, and English otherwise. **Settings › General › Language** picks one yourself; a language still being translated shows how much is done, and the rest stays in English. Volunteers translate Mortar on [Hosted Weblate](https://hosted.weblate.org/projects/mortar/), and **Help translate Mortar** beside the picker opens it.
+Mortar follows your system language once its translation is mostly done, and English otherwise. **Settings › General › Language** picks one yourself; an unfinished language shows how much is done, and the rest stays in English. Volunteers translate Mortar on [Hosted Weblate](https://hosted.weblate.org/projects/mortar/); **Help translate Mortar** beside the picker opens it.
 
 ## Save backups and restore
 
-Mortar zips your saves before it changes them: before a profile update, on every game start with **Back up saves before Play**, and on a timer with **Scheduled save backups** (both under the game's **Save backups** in Settings). A game whose catalog entry has no save folder shows no Saves tab, no Saves card on Home and no **Save backups** page.
+Mortar zips your saves before it changes them: before a profile update, on every game start with **Back up saves before Play**, and on a timer with **Scheduled save backups** (both under the game's **Save backups** in Settings). A game whose catalog entry has no save folder has no Saves tab, Saves card or **Save backups** page.
 
 To restore, stop the game, open the **Saves** tab, choose **Save backups…**, pick a backup and choose **Restore**. Mortar backs up the current Saves folder first. **Open backups folder** shows the zips; **Backup location** in the game's settings moves new ones. For Valheim, The Sims 4 and Vintage Story the list also shows the game's own copies, marked **Kept by the game**.
 
@@ -347,8 +375,8 @@ To move the data, stop the game, open **Settings › Storage** and choose **Move
 
 Close Steam first so the Steam cleanup sticks: Steam rewrites its shortcut list on exit.
 
-- **Windows:** Settings › Apps, or the uninstaller in the install folder. It removes the program, shortcuts, the start-at-login entry and the profiles you added to Steam, and leaves your data folder, SMAPI and the game folder; delete `%LOCALAPPDATA%\Mortar` to remove profiles, mods and settings.
-- **Linux:** first run `mortar --release-links && mortar uninstall-cleanup` (AppImage: `./mortar-linux-x86_64.AppImage --release-links && ./mortar-linux-x86_64.AppImage uninstall-cleanup`, or the `aarch64` file; Flatpak: `flatpak run tech.rethunk.Mortar --release-links && flatpak run tech.rethunk.Mortar uninstall-cleanup`). It gives nxm:// links back and removes the extension's connection, the start-at-login entry, profile shortcuts, Steam profiles, and what an AppImage or portable binary added to the menu. Then remove the package, AppImage or Flatpak. Removing a `.deb`, `.rpm` or Arch package with `sudo` runs those steps for your own account only. Delete the data folder to remove profiles and mods.
+- **Windows:** Settings › Apps, or the uninstaller in the install folder. It removes the program, shortcuts, the start-at-login entry and the profiles you added to Steam, and leaves your data folder, SMAPI and the game folder; delete `%LOCALAPPDATA%\Mortar` for profiles, mods and settings.
+- **Linux:** first run `mortar --release-links && mortar uninstall-cleanup` (AppImage: the same two commands through the AppImage file; Flatpak: `flatpak run tech.rethunk.Mortar` in place of `mortar`). It gives nxm:// links back and removes the extension's connection, the start-at-login entry, profile shortcuts, Steam profiles, and what an AppImage or portable binary added to the menu. Then remove the package, AppImage or Flatpak. Removing a `.deb`, `.rpm` or Arch package with `sudo` runs those steps for your own account only. Delete the data folder to remove profiles and mods.
 
 ## Stream overlay
 
@@ -365,7 +393,7 @@ Before a mod enters Mortar's store, Mortar scans it with Windows Security or, on
 - **Mortar does not start:** it shows why, with a button that opens the folder holding `mortar.log`. Starting Mortar again while a copy is stuck offers to end it.
 - **Run checks:** **Settings › About › Diagnostics › Run checks…**; **Repair** fixes what it can.
 - **Logs:** `mortar.log` in the data folder, plus `crash.log` after a crash. Each profile's SMAPI log is on its log view; **Share log…** there uploads it to smapi.io/log and gives you a link.
-- **Slow start:** `mortar.log` times each step of the start (lines beginning `startup:`). For more, the Mortar menu's **Restart and record startup profile** records Mortar's first 30 seconds into the data folder's `startup-profile` folder, and the next diagnostics zip includes it.
-- **Slow scrolling or loud fans (Linux):** **Settings › Appearance › Display › Graphics** set to **Smoother scrolling** keeps the graphics card drawing the window, which some NVIDIA setups otherwise hand to the processor; **Compatible** is for a window that stays blank or white. Either applies after a restart, and `mortar.log` names the one in use (its `msg=graphics` line). A window too blank to reach Settings: start Mortar once with `WEBKIT_DISABLE_DMABUF_RENDERER=1` in its environment, which overrides the setting, and pick **Compatible**.
-- **Report a bug:** the Mortar menu's **Report a bug** opens a prefilled GitHub issue. Leave **Attach diagnostics** ticked to save a zip (checks, logs, settings and recent runs, with secrets and your home folder removed) and drag it into the issue. **Save diagnostics…** (Mortar menu, Settings › About › Diagnostics) writes the same zip. **Report a bug** can also copy the report for a new post in the bug-reports forum on Mortar's Discord.
+- **Slow start:** `mortar.log` times each step (lines beginning `startup:`). The Mortar menu's **Restart and record startup profile** records the first 30 seconds into the data folder's `startup-profile` folder, and the next diagnostics zip includes it.
+- **Slow scrolling or loud fans (Linux):** **Settings › Appearance › Display › Graphics**: **Smoother scrolling** keeps the graphics card drawing the window (some NVIDIA setups otherwise hand it to the processor); **Compatible** is for a window that stays blank or white. Either applies after a restart; `mortar.log` names the one in use (`msg=graphics`). If the window is too blank to reach Settings, start Mortar once with `WEBKIT_DISABLE_DMABUF_RENDERER=1`, which overrides the setting, and pick **Compatible**.
+- **Report a bug:** the Mortar menu's **Report a bug** opens a prefilled GitHub issue (or copies the report for the bug-reports forum on Mortar's Discord). Leave **Attach diagnostics** ticked to save a zip (checks, logs, settings and recent runs, with secrets and your home folder removed) and drag it into the issue. **Save diagnostics…** (Mortar menu, Settings › About › Diagnostics) writes the same zip.
 - **Ask for help or an idea:** the Mortar menu has **Ask on Discord** and **Suggest a feature…**.
