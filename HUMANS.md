@@ -25,7 +25,7 @@ wails3 task selftest ARGS=stop
 bun run --cwd frontend e2e                    # UI smoke in its own sandbox
 ```
 
-- `selftest` (`scripts/selftest.sh`; its header lists every subcommand and variable) runs a `server`-tagged binary with its own HOME, copied (never linked) game folders and a minimal Steam library, so real data, game and Steam config stay untouched. `--copy-data` copies live profiles and settings in once. `stop` leaves the folder; `destroy` deletes it.
+- `selftest` (`scripts/selftest.sh`; its header lists every subcommand and variable) runs a `server`-tagged binary with its own HOME, copied game folders (no links) and a minimal Steam library, so real data, game and Steam config stay untouched. `--copy-data` copies live profiles and settings in once. `stop` leaves the folder; `destroy` deletes it.
 - `e2e` (Playwright, Chromium only; [docs/testing.md](docs/testing.md)) starts its own sandbox, opens every profile tab and Settings page and fails on a console error, a failed request or a main-thread task over 200 ms. Not in the gate or CI; run it after each wave of UI changes.
 - The frontend build first runs `scripts/gen-credits.ts` (rewrites `frontend/src/settings/generated/credits.json` from `frontend/package.json` and `go.mod`), then extracts and compiles the Lingui catalogs in `frontend/src/locales/`. Commit those files when they change.
 
@@ -121,12 +121,12 @@ A game is catalog data, with code only where its behaviour differs. `TestEveryCa
 Add the game to `games` in `components.source.json`, then publish as under [Publishing components](#publishing-components). `GameInfo` (`internal/components/components.go`) documents every field, and `GameInfo.Validate` rejects an incomplete entry. Traps that are not one field's:
 
 - A key `GameInfo` does not know is dropped at publish, and an older Mortar ignores a field it lacks, so set `minVersion` when the entry needs driver code or fields an older build lacks.
-- Known-broken lists are not part of the entry: they are published from Rethunk-Tech/mortar-known-broken (`internal/components/knownbroken.go`).
+- Known-broken lists live outside the entry, published from Rethunk-Tech/mortar-known-broken (`internal/components/knownbroken.go`).
 - The Sims 4 (`sims4`) is the worked `folder` game: loader `folder`, `deploy` `profile`, a `mods` target with `keepWhole` `["ts4script"]` and a `tray` target with `role` `tray`.
 
 ### A catalog-only game, end to end
 
-A game on a loader, store and sources Mortar already has needs no Go: `game.Find` answers for every catalog entry, and only a game the entry cannot describe is a type in `internal/game` listed in `coded`. `TestACatalogOnlyGameNeedsNoCode` (`internal/game`) and `TestACatalogOnlyGameBrowsesAndAdds` (`internal/browse`) are the pattern: the entry goes in a test manifest selected with `components.Use`, never the shipped catalog. Lethal Company is the worked catalog entry.
+A game on a loader, store and sources Mortar already has needs no Go: `game.Find` answers for every catalog entry, and only a game the entry cannot describe is a type in `internal/game` listed in `coded`. `TestACatalogOnlyGameNeedsNoCode` (`internal/game`) and `TestACatalogOnlyGameBrowsesAndAdds` (`internal/browse`) are the pattern: the entry goes in a test manifest selected with `components.Use`, and the shipped catalog stays untouched. Lethal Company is the worked catalog entry.
 
 1. **Entry.** Add it to `games` with `enabled: false` while checking.
 2. **Components.** A loader whose release Mortar installs (SMAPI) or a companion (the bridge) is a `components` entry with a GitHub source, an asset pattern and a version policy. BepInEx ships as a Thunderstore package and needs none.
