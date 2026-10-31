@@ -72,7 +72,7 @@ func (s *Service) packBuilt(ctx context.Context, gameID string, p settings.DevPr
 		return "", nil, usererr.Wrap(usererr.NotFound, fmt.Errorf("the build wrote no %s.dll", assembly))
 	}
 	name := notNameChar.ReplaceAllString(p.Name, "_")
-	manifest, err := completeManifest(p.Dir, name, version)
+	manifest, err := completeManifest(p.Dir, name, version, s.githubURL(ctx, p.Dir))
 	if err != nil {
 		return "", nil, err
 	}

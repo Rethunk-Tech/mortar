@@ -2,17 +2,16 @@ import { useLingui } from '@lingui/react/macro'
 import { Trust } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import { installExtraFolder } from '../downloads/autoInstall.ts'
 import { persist } from '../settings/persist.ts'
-import { useSettings } from '../settings/store.ts'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { buildProject, packProject, useTrustAsk } from './builds.ts'
+import { useDevKinds } from './kinds.ts'
 
 /** Asks once, before a project from outside the New mod wizard first builds, because a build runs its code. */
 export function TrustDialog() {
   const { t } = useLingui()
   const ask = useTrustAsk((s) => s.ask)
   const close = () => useTrustAsk.setState({ ask: null })
-  const projects = useSettings((s) => (ask ? s.games?.[ask.game]?.devProjects : undefined))
-  const isAsset = (projects ?? []).some((p) => p.dir === ask?.dir && p.kind)
+  const isAsset = useDevKinds((s) => Boolean(ask && s.byDir[ask.dir]))
   return (
     <ConfirmationDialog
       open={ask !== null}

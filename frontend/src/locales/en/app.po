@@ -185,6 +185,10 @@ msgstr "That profile is gone."
 msgid "Up next: {names}"
 msgstr "Up next: {names}"
 
+#: src/develop/TestWith.tsx
+msgid "Test with"
+msgstr "Test with"
+
 #: src/develop/draft.ts
 msgid "{name}: cannot start with a dash."
 msgstr "{name}: cannot start with a dash."
@@ -698,6 +702,10 @@ msgstr "Content"
 msgid "Scheduled"
 msgstr "Scheduled"
 
+#: src/develop/TestWith.tsx
+msgid "Mods that Test installs into the profile beside this one. They are never part of the package."
+msgstr "Mods that Test installs into the profile beside this one. They are never part of the package."
+
 #: src/i18n/reasonText.ts
 msgid "No antivirus found"
 msgstr "No antivirus found"
@@ -1104,6 +1112,10 @@ msgstr "Saved group name"
 #: src/saves/SaveListRow.tsx
 msgid "Actions"
 msgstr "Actions"
+
+#: src/develop/ElsewhereDialog.tsx
+msgid "{dir} belongs to {game}, not {here}. Add it under {game} instead?"
+msgstr "{dir} belongs to {game}, not {here}. Add it under {game} instead?"
 
 #: src/queue/LargeDownloadDialog.tsx
 #: src/queue/QueueBody.tsx
@@ -3006,6 +3018,10 @@ msgstr "has {name}"
 msgid "Open mod"
 msgstr "Open mod"
 
+#: src/develop/ElsewhereDialog.tsx
+msgid "Add under {game}"
+msgstr "Add under {game}"
+
 #: src/groups/SavedGroupRow.tsx
 msgid "Hide mods of {name}"
 msgstr "Hide mods of {name}"
@@ -3857,6 +3873,7 @@ msgstr "Clear download history?"
 
 #: src/develop/AdoptDialog.tsx
 #: src/develop/DevelopTab.tsx
+#: src/develop/ElsewhereDialog.tsx
 msgid "Could not add the project"
 msgstr "Could not add the project"
 
@@ -4264,6 +4281,7 @@ msgstr "Mod list"
 #: src/develop/AdoptDialog.tsx
 #: src/develop/CloneDialog.tsx
 #: src/develop/DevelopTab.tsx
+#: src/develop/ElsewhereDialog.tsx
 #: src/groups/applied.ts
 msgid "Added {name}"
 msgstr "Added {name}"
@@ -4462,6 +4480,10 @@ msgstr "All saves"
 #: src/launch/LaunchScreen.tsx
 msgid "Still loading {mod}"
 msgstr "Still loading {mod}"
+
+#: src/develop/TestWith.tsx
+msgid "Test installs nothing else."
+msgstr "Test installs nothing else."
 
 #: src/game/Sidebar.tsx
 msgid "Collapse sidebar"
@@ -4898,6 +4920,10 @@ msgstr "Add as local file"
 #: src/i18n/reasonText.ts
 msgid "Tilesheets not used by any installed mod"
 msgstr "Tilesheets not used by any installed mod"
+
+#: src/develop/ElsewhereDialog.tsx
+msgid "This is a {game} project"
+msgstr "This is a {game} project"
 
 #: src/i18n/reasonText.ts
 msgid "already in this profile as {name}"

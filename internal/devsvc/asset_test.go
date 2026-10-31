@@ -2,6 +2,8 @@ package devsvc
 
 import (
 	"archive/zip"
+	"context"
+	"errors"
 	"io"
 	"maps"
 	"os"
@@ -30,8 +32,11 @@ func TestAnAssetProjectIsItsOwnPackage(t *testing.T) {
 	if slices.ContainsFunc(d.calls, func(c []string) bool { return c[0] == "dotnet" }) {
 		t.Errorf("an asset project ran dotnet: %v", d.calls)
 	}
-	if p.Kind != kindContent || p.Output != dir || p.Untrusted || p.TemplateIcon == "" {
+	if assetKindOf("lethal-company", dir) != kindContent || p.Output != dir || p.Untrusted {
 		t.Fatalf("project %+v", p)
+	}
+	if rec, _ := safefs.ReadFile(filepath.Join(dir, ".mortar", "project.json")); string(rec) != "{\n  \"team\": \"Ab\",\n  \"game\": \"lethal-company\"\n}\n" {
+		t.Errorf("record %s", rec)
 	}
 	if body, err := safefs.ReadFile(filepath.Join(dir, "plugins", "sound_pack.json")); err != nil || !strings.Contains(string(body), `"name": "Quacks"`) {
 		t.Errorf("starter file = %s (%v)", body, err)
@@ -64,8 +69,14 @@ func TestAnAssetProjectIsItsOwnPackage(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(dir, "plugins", "replacers", "quack.json"), []byte("{}"), 0o600); err != nil {
 		t.Fatal(err)
 	}
+	// The author's own tooling stays out of the package, and a file no loader reads ships with a warning.
+	for _, f := range []string{".github/workflows/ci.yml", ".editorconfig", "lefthook.yml", "art/quack.psd", "plugins/sounds/notes.txt"} {
+		if err := writeAll(filepath.Join(dir, filepath.FromSlash(f)), []byte("x"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
 	r, err := svc.Pack(t.Context(), "lethal-company", dir)
-	if err != nil || !r.OK || !slices.Equal(r.Issues, []string{"icon.png is still the placeholder; draw the mod its own"}) {
+	if err != nil || !r.OK || !slices.Equal(r.Issues, []string{"icon.png is still the placeholder; draw the mod its own"}) || len(r.Warnings) != 1 || !strings.HasPrefix(r.Warnings[0], "plugins/sounds/notes.txt ships") {
 		t.Fatalf("pack = %+v, %v", r, err)
 	}
 	zr, err := zip.OpenReader(r.Zip)
@@ -78,7 +89,7 @@ func TestAnAssetProjectIsItsOwnPackage(t *testing.T) {
 		names = append(names, f.Name)
 	}
 	slices.Sort(names)
-	want := []string{"CHANGELOG.md", "LICENSE", "README.md", "icon.png", "manifest.json", "plugins/replacers/README.txt", "plugins/replacers/quack.json", "plugins/sound_pack.json", "plugins/sounds/README.txt", "plugins/sounds/quack.ogg"}
+	want := []string{"CHANGELOG.md", "LICENSE", "README.md", "icon.png", "manifest.json", "plugins/replacers/README.txt", "plugins/replacers/quack.json", "plugins/sound_pack.json", "plugins/sounds/README.txt", "plugins/sounds/notes.txt", "plugins/sounds/quack.ogg"}
 	if !slices.Equal(names, want) || filepath.Base(r.Zip) != "Ab-Quacks-0.1.0.zip" {
 		t.Errorf("zip %s holds %v", r.Zip, names)
 	}
@@ -247,11 +258,14 @@ func TestAnAssetProjectReleasesHereAndEditsItsDetails(t *testing.T) {
 	if deps, _ := svc.Dependencies(game, dir); len(deps) != 0 {
 		t.Errorf("dependencies = %+v", deps)
 	}
-	info, err := svc.Edit(t.Context(), game, dir, ProjectEdit{Name: "Quacks", Description: "Loud.", Author: "B", Team: "Bc"})
-	if err != nil || info.Description != "Loud." || info.Author != "B" || info.Team != "Bc" {
+	info, err := svc.Edit(t.Context(), game, dir, ProjectEdit{Name: "Quacks", Description: "Loud.", Team: "Bc", Categories: []string{"audio"}, TestWith: []string{"Ab-Other"}})
+	if err != nil || info.Description != "Loud." || info.Team != "Bc" || !slices.Equal(info.Categories, []string{"audio"}) || !slices.Equal(info.TestWith, []string{"Ab-Other"}) {
 		t.Fatalf("edited = %+v, %v", info, err)
 	}
-	if _, err := svc.Edit(t.Context(), game, dir, ProjectEdit{Name: "Other", Description: "d", Author: "B", Team: "Bc"}); err == nil {
+	if rec, _ := safefs.ReadFile(filepath.Join(dir, ".mortar", "project.json")); strings.Contains(string(rec), `"author"`) || !strings.Contains(string(rec), `"testWith"`) {
+		t.Errorf("an edit rewrote the record as %s", rec)
+	}
+	if _, err := svc.Edit(t.Context(), game, dir, ProjectEdit{Name: "Other", Description: "d", Team: "Bc"}); err == nil {
 		t.Error("a rename of a project of files was accepted")
 	}
 	if pkgs := svc.Packages(game); !slices.Equal(pkgs, []string{"Bc-Quacks"}) {
@@ -299,7 +313,7 @@ func TestCreateAssetRefusesATeamTheRecordWouldRejectBeforeWritingAnything(t *tes
 }
 
 func TestAssetParamsHaveGUIText(t *testing.T) {
-	src, err := os.ReadFile("../../frontend/src/develop/ownParams.ts")
+	src, err := safefs.ReadFile("../../frontend/src/develop/ownParams.ts")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -307,5 +321,51 @@ func TestAssetParamsHaveGUIText(t *testing.T) {
 		if !p.Own || !strings.Contains(string(src), "\n  "+p.ID+": {") {
 			t.Errorf("param %q is not marked own or has no entry in ownParams.ts", p.ID)
 		}
+	}
+}
+
+func TestAGitHubRemoteFillsAnEmptyWebsiteAndTheOtherGameIsRefused(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	const game = "lethal-company"
+	run := svc.Run
+	svc.Run = func(ctx context.Context, dir, name string, args ...string) ([]byte, error) {
+		switch {
+		case name == "git" && slices.Contains(args, "get-url"):
+			return []byte("git@github.com:Ab/quacks.git\n"), nil
+		case name == "git" && slices.Contains(args, "@{u}"):
+			return nil, errors.New("no upstream")
+		}
+		return run(ctx, dir, name, args...)
+	}
+	dir := assetDir(t, `{"team":"Ab","game":"lethal-company","testWith":["Ab-Other"]}`)
+	if err := writeAll(filepath.Join(dir, "manifest.json"), []byte(`{"name":"Quacks","version_number":"0.1.0","description":"d","website_url":"","dependencies":[]}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := writeAll(filepath.Join(dir, "plugins", "sounds", "a.ogg"), []byte("o"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := svc.Add(t.Context(), "stardew", dir, ""); usererr.KindOf(err) != usererr.OtherGame {
+		t.Fatalf("added under another game: %v", err)
+	}
+	if _, err := svc.Add(t.Context(), game, dir, ""); err != nil {
+		t.Fatal(err)
+	}
+	if err := svc.Trust(game, dir); err != nil {
+		t.Fatal(err)
+	}
+	if missing, err := svc.TestMods(game, svc.Projects(game)[0].Profile); err != nil || !slices.Equal(missing, []string{"Ab-Other"}) {
+		t.Errorf("test mods = %v, %v", missing, err)
+	}
+	if _, err := svc.Inspect(t.Context(), game, dir); err != nil {
+		t.Fatal(err)
+	}
+	if body, _ := safefs.ReadFile(filepath.Join(dir, "manifest.json")); !strings.Contains(string(body), `"website_url": "https://github.com/Ab/quacks"`) {
+		t.Errorf("manifest = %s", body)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "manifest.json"), []byte(`{"name":"Quacks","version_number":"0.1.0"}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if manifest, err := completeManifest(dir, "Quacks", "0.1.0", "https://github.com/Ab/quacks"); err != nil || !strings.Contains(string(manifest), `"website_url": "https://github.com/Ab/quacks"`) {
+		t.Errorf("packed manifest = %s, %v", manifest, err)
 	}
 }

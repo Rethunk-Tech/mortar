@@ -3,18 +3,23 @@ import { Box, Button, TextField } from '@mui/material'
 import { readStored, writeStored } from '@rethunk/react-load-hooks'
 import { GitBranch } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Clone } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
+import {
+  Clone,
+  Detect,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import { PickFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { Field, FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { space } from '../theme/density.ts'
+import { errorKind } from '../toasts/errorKind.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { isRemembered, REMEMBERED } from './draft.ts'
-import { isRepoAddress } from './repo.ts'
+import { useElsewhere } from './elsewhere.ts'
+import { cloneFolder, isRepoAddress } from './repo.ts'
 
 /** Clones a GitHub mod project into the projects folder the New mod wizard remembers and adds it. */
 export function CloneDialog({
@@ -49,7 +54,19 @@ export function CloneDialog({
   const clone = () =>
     run(
       async () => {
-        const project = await Clone(game, repo.trim(), parent, openId)
+        const project = await Clone(game, repo.trim(), parent, openId).catch(async (e: unknown) => {
+          if (errorKind(e) !== 'other_game') {
+            throw e
+          }
+          // The clone stays, for the player to add under the game it names.
+          const dir = cloneFolder(parent, repo)
+          useElsewhere.getState().ask({ game, dir, found: await Detect(game, dir) })
+          return null
+        })
+        if (!project) {
+          onClose()
+          return
+        }
         writeStored(REMEMBERED, { ...readStored(REMEMBERED, {}, isRemembered), parent })
         useToasts
           .getState()

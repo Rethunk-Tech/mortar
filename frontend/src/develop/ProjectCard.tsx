@@ -56,6 +56,7 @@ import {
   useTrustAsk,
 } from './builds.ts'
 import { EditProjectDialog } from './EditProjectDialog.tsx'
+import { useIsAsset } from './kinds.ts'
 import { showModLog, useModCosts } from './modCosts.ts'
 import { Outcome } from './Outcome.tsx'
 import { ReleaseDialog } from './ReleaseDialog.tsx'
@@ -64,6 +65,7 @@ import { UploadDialog } from './UploadDialog.tsx'
 
 function Status({ project }: { project: DevProject }) {
   const dir = project.dir
+  const asset = useIsAsset(dir)
   const { t, i18n } = useLingui()
   const run = useDevRuns((s) => runOf(s.byDir, dir))
   // The files remember a build from before Mortar started; this session's result adds its errors.
@@ -91,7 +93,7 @@ function Status({ project }: { project: DevProject }) {
       />
     )
   }
-  if (project.kind) {
+  if (asset) {
     // Nothing compiles: once trusted, the project's folder is what installs.
     return project.untrusted ? (
       <Chip size="small" sx={statusSx} variant="outlined" label={t`Not installed`} />
@@ -222,7 +224,7 @@ function MoreMenu({
   const [trashFolder, setTrashFolder] = useState(false)
   const info = useProjectInfo((s) => s.byDir[project.dir])
   // A project made only of files has no build, plugin or log.
-  const code = !project.kind
+  const code = !useIsAsset(project.dir)
   // One start with the game's Mono debugger open; the toast says where to attach.
   const debug = () =>
     StartDebugging(game, project.profile)
@@ -357,7 +359,8 @@ function BuildButton({
   const { t } = useLingui()
   const running = useDevRuns((s) => runOf(s.byDir, project.dir).running)
   const build = () => buildProject(game, project.dir).catch(() => undefined)
-  if (project.kind && project.untrusted) {
+  const asset = useIsAsset(project.dir)
+  if (asset && project.untrusted) {
     // Added from a folder: its files install only once trusted, which the build's refusal asks for.
     return compact ? (
       <TipIconButton label={t`Install`} onClick={build}>
@@ -369,7 +372,7 @@ function BuildButton({
       </Button>
     )
   }
-  if (project.kind) {
+  if (asset) {
     // A project made only of files installs as it is; its button opens the folder the loader reads.
     const open = () =>
       OpenAssetFolder(game, project.dir).catch(reportError(t`Could not open the folder`))

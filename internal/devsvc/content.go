@@ -184,10 +184,14 @@ func holdsMatch(folder string, patterns []string) bool {
 
 // contentIssues are what a release would ship empty: each content folder below root (and, for a pack, each old-layout
 // one) that holds no file its mod loads or lacks a file its mod needs beside it, or a pack with no content folder at
-// all.
+// all. A pack's folder also needs its mod among manifest.json's dependencies, or nothing loads it.
 func contentIssues(dir, root string, folders []components.ContentFolder, pack bool) []string {
 	issues := []string{}
 	present := false
+	var deps []Dependency
+	if pack {
+		deps, _ = manifestDependencies(dir)
+	}
 	for _, f := range folders {
 		dirs := []string{root + "/" + f.Path()}
 		if pack {
@@ -196,12 +200,17 @@ func contentIssues(dir, root string, folders []components.ContentFolder, pack bo
 				issues = append(issues, top+"/ installs flattened from the package's top; move it under "+root+"/")
 			}
 		}
+		unloaded := pack
 		for _, d := range dirs {
 			full := filepath.Join(dir, filepath.FromSlash(d))
 			if !isDir(full) {
 				continue
 			}
 			present = true
+			if unloaded && !slices.ContainsFunc(deps, func(dep Dependency) bool { return dep.Package == f.Dependency }) {
+				issues = append(issues, fmt.Sprintf("%s/ is loaded by %s, which manifest.json does not depend on", d, f.Dependency))
+			}
+			unloaded = false
 			if !holdsMatch(full, f.Patterns) {
 				issues = append(issues, fmt.Sprintf("%s/ holds no %s file", d, strings.Join(f.Patterns, ", ")))
 			}
@@ -263,4 +272,51 @@ func (s *Service) MoveLegacyContent(gameID, dir string) (int, error) {
 		}
 	}
 	return moved, nil
+}
+
+// contentExtras are the files beside a folder's own patterns that its mod reads too. A pattern with a folder matches
+// below it at any depth.
+var contentExtras = map[string][]string{
+	"suits":  {"advanced/*.json", "*.matbundle", "*.suitbundle"},
+	"sounds": {"sound_pack.json", "replacers/*.json"},
+}
+
+// seededNote is the README Mortar puts in a content folder to say what goes there; no loader reads it, and it is no
+// mistake.
+const seededNote = "README.txt"
+
+// readByLoader is whether the file at rel, a slash path below f's folder, is one f's mod reads.
+func readByLoader(f components.ContentFolder, rel string) bool {
+	name := strings.ToLower(path.Base(rel))
+	if name == strings.ToLower(seededNote) {
+		return true
+	}
+	matches := func(pat string) bool {
+		dir, base := path.Split(strings.ToLower(pat))
+		ok, _ := path.Match(base, name)
+		return ok && strings.HasPrefix(strings.ToLower(rel), dir)
+	}
+	return slices.ContainsFunc(f.Patterns, matches) || slices.ContainsFunc(contentExtras[f.ID], matches)
+}
+
+// unreadContent warns of each file in a content folder below root that its mod does not read: it ships, and does
+// nothing.
+func unreadContent(dir, root string, folders []components.ContentFolder) []string {
+	warnings := []string{}
+	for _, f := range folders {
+		base := root + "/" + f.Path()
+		folder := filepath.Join(dir, filepath.FromSlash(base))
+		_ = filepath.WalkDir(folder, func(p string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return fs.SkipDir
+			}
+			rel, _ := filepath.Rel(folder, p)
+			rel = filepath.ToSlash(rel)
+			if d.Type().IsRegular() && !isJunk(d.Name()) && !readByLoader(f, rel) {
+				warnings = append(warnings, fmt.Sprintf("%s/%s ships, but %s reads only %s files here", base, rel, f.Dependency, strings.Join(f.Patterns, ", ")))
+			}
+			return nil
+		})
+	}
+	return warnings
 }

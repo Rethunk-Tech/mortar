@@ -2,11 +2,9 @@ package devsvc
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
-	"os"
 	"path"
 	"path/filepath"
 	"slices"
@@ -25,6 +23,8 @@ type Adoption struct {
 	Known bool   `json:"known"`
 	Name  string `json:"name"`
 	Kind  string `json:"kind"`
+	// Game is the game a known project says it is for, empty when it names none.
+	Game string `json:"game"`
 	// Csproj is the project file a code project builds, a slash path from the folder.
 	Csproj string `json:"csproj"`
 	// Kinds are the kinds the folder can be adopted as.
@@ -43,6 +43,14 @@ const maxCsprojDepth = 4
 // findCsproj picks the project file of a folder of code: the one named for the folder, else the shallowest, else the
 // first by name. The path is a slash path from dir.
 func findCsproj(dir string) string {
+	if found := listCsproj(dir); len(found) > 0 {
+		return found[0]
+	}
+	return ""
+}
+
+// listCsproj lists the project files of a folder of code, the one findCsproj picks first; slash paths from dir.
+func listCsproj(dir string) []string {
 	var found []string
 	_ = filepath.WalkDir(dir, func(p string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -72,10 +80,7 @@ func findCsproj(dir string) string {
 		}
 		return strings.Compare(a, b)
 	})
-	if len(found) == 0 {
-		return ""
-	}
-	return found[0]
+	return found
 }
 
 // findAssetKind is the game's asset kind whose folder in dir holds a file its patterns take.
@@ -115,10 +120,10 @@ func (s *Service) Detect(gameID, dir string) (Adoption, error) {
 	content, legacy := detectContent(dir, folders)
 	if rec, ok := readRecord(dir); ok {
 		kind := migrateKind(gameID, rec.Kind)
-		return Adoption{Known: true, Name: rec.Name, Kind: kind, Csproj: rec.Csproj, Kinds: []string{kind}, Content: content, Legacy: legacy}, nil
+		return Adoption{Known: true, Name: rec.Name, Kind: kind, Game: recordedGame(dir), Csproj: rec.Csproj, Kinds: []string{kind}, Content: content, Legacy: legacy}, nil
 	}
 	if name, ok := projectName(dir); ok {
-		return Adoption{Known: true, Name: name, Kind: kindCode, Kinds: []string{kindCode}, Content: content, Legacy: legacy}, nil
+		return Adoption{Known: true, Name: name, Kind: kindCode, Game: recordedGame(dir), Kinds: []string{kindCode}, Content: content, Legacy: legacy}, nil
 	}
 	if !installer.HasFiles(installer.Open(dir, "")) {
 		return Adoption{}, usererr.Wrap(usererr.Invalid, fmt.Errorf("%s holds no files, so there is nothing to develop", dir))
@@ -159,25 +164,26 @@ func (s *Service) Adopt(ctx context.Context, gameID, dir, profileID string, choi
 	if !slices.Contains(found.Kinds, choice.Kind) {
 		return bad("%s cannot be adopted as %q", dir, choice.Kind)
 	}
-	rec := assetRecord{Kind: choice.Kind, Name: choice.Name}
 	switch {
-	case rec.Kind == kindCode && !codeName.MatchString(rec.Name):
+	case choice.Kind == kindCode && !codeName.MatchString(choice.Name):
 		return bad("the name holds letters, digits, dots, dashes and underscores")
-	case rec.Kind != kindCode && !modName.MatchString(rec.Name):
+	case choice.Kind != kindCode && !modName.MatchString(choice.Name):
 		return bad("the mod name must start with a capital letter and hold only letters and digits")
 	}
-	if rec.Kind == kindCode {
+	// The record says only what the files do not: the kind and name they give are left out, and so is the project file
+	// unless the tree holds several.
+	rec := assetRecord{Game: gameID}
+	if got, _ := rec.resolve(dir); got.Kind != choice.Kind {
+		rec.Kind = choice.Kind
+	}
+	if got, _ := rec.resolve(dir); got.Name != choice.Name {
+		rec.Name = choice.Name
+	}
+	if choice.Kind == kindCode && len(listCsproj(dir)) > 1 {
 		rec.Csproj = found.Csproj
 	}
-	body, err := json.MarshalIndent(rec, "", "  ")
-	if err != nil {
-		return settings.DevProject{}, err
-	}
 	file := filepath.Join(dir, ".mortar", assetRecordFile)
-	if err := os.MkdirAll(filepath.Dir(file), 0o750); err != nil {
-		return settings.DevProject{}, err
-	}
-	if err := safefs.WriteFile(file, append(body, '\n'), 0o644); err != nil { // #nosec G306 -- a tracked project file
+	if err := writeRecord(dir, rec); err != nil {
 		return settings.DevProject{}, err
 	}
 	p, err := s.Add(ctx, gameID, dir, profileID)

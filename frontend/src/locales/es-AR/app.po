@@ -185,6 +185,10 @@ msgstr ""
 msgid "Up next: {names}"
 msgstr ""
 
+#: src/develop/TestWith.tsx
+msgid "Test with"
+msgstr ""
+
 #: src/develop/draft.ts
 msgid "{name}: cannot start with a dash."
 msgstr ""
@@ -698,6 +702,10 @@ msgstr ""
 msgid "Scheduled"
 msgstr ""
 
+#: src/develop/TestWith.tsx
+msgid "Mods that Test installs into the profile beside this one. They are never part of the package."
+msgstr ""
+
 #: src/i18n/reasonText.ts
 msgid "No antivirus found"
 msgstr ""
@@ -1103,6 +1111,10 @@ msgstr ""
 #: src/commandPalette/CommandPalette.tsx
 #: src/saves/SaveListRow.tsx
 msgid "Actions"
+msgstr ""
+
+#: src/develop/ElsewhereDialog.tsx
+msgid "{dir} belongs to {game}, not {here}. Add it under {game} instead?"
 msgstr ""
 
 #: src/queue/LargeDownloadDialog.tsx
@@ -3006,6 +3018,10 @@ msgstr ""
 msgid "Open mod"
 msgstr ""
 
+#: src/develop/ElsewhereDialog.tsx
+msgid "Add under {game}"
+msgstr ""
+
 #: src/groups/SavedGroupRow.tsx
 msgid "Hide mods of {name}"
 msgstr ""
@@ -3857,6 +3873,7 @@ msgstr ""
 
 #: src/develop/AdoptDialog.tsx
 #: src/develop/DevelopTab.tsx
+#: src/develop/ElsewhereDialog.tsx
 msgid "Could not add the project"
 msgstr ""
 
@@ -4264,6 +4281,7 @@ msgstr ""
 #: src/develop/AdoptDialog.tsx
 #: src/develop/CloneDialog.tsx
 #: src/develop/DevelopTab.tsx
+#: src/develop/ElsewhereDialog.tsx
 #: src/groups/applied.ts
 msgid "Added {name}"
 msgstr ""
@@ -4461,6 +4479,10 @@ msgstr ""
 
 #: src/launch/LaunchScreen.tsx
 msgid "Still loading {mod}"
+msgstr ""
+
+#: src/develop/TestWith.tsx
+msgid "Test installs nothing else."
 msgstr ""
 
 #: src/game/Sidebar.tsx
@@ -4897,6 +4919,10 @@ msgstr ""
 
 #: src/i18n/reasonText.ts
 msgid "Tilesheets not used by any installed mod"
+msgstr ""
+
+#: src/develop/ElsewhereDialog.tsx
+msgid "This is a {game} project"
 msgstr ""
 
 #: src/i18n/reasonText.ts

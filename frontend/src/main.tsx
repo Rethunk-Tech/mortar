@@ -7,6 +7,7 @@ import ReactDOM from 'react-dom/client'
 import { Get } from '../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { App } from './App.tsx'
 import { initDevWatch } from './develop/builds.ts'
+import { initDevKinds } from './develop/kinds.ts'
 import { logRenderError } from './diag/renderErrors.ts'
 import { initAutoInstall } from './downloads/autoInstall.ts'
 import { initNewDownloads } from './downloads/newDownloads.ts'
@@ -59,6 +60,7 @@ initUpdateDigestToast()
 initNewDownloads()
 initAutoInstall()
 initDevWatch()
+initDevKinds()
 initGameList()
 initNexus().catch(reportUnexpected)
 initNexusSeen().catch(reportUnexpected)

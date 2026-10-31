@@ -43,7 +43,7 @@ func (s *Service) AddDependency(gameID, dir, pkg, version string, soft bool) err
 	if !thunderstorePackage.MatchString(pkg) || !packageVersion.MatchString(version) {
 		return usererr.Wrap(usererr.Invalid, fmt.Errorf("%s %s is not a Thunderstore package and version", pkg, version))
 	}
-	if p.Kind != "" {
+	if assetKindOf(gameID, p.Dir) != "" {
 		// A soft dependency means nothing to a package of files; the loader it needs is required.
 		return s.wire(context.Background(), p, func() error { return setManifestDependency(p.Dir, pkg, version) })
 	}

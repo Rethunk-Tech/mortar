@@ -74,11 +74,7 @@ func (s *Service) projectTeam(gameID, dir string) (string, error) {
 
 // projectInfo reads the team and categories an upload needs: from the record of an asset project, else the project file.
 func projectInfo(p settings.DevProject) (ProjectInfo, error) {
-	if p.Kind != "" {
-		rec, ok := readAssetRecord(p.Dir)
-		if !ok {
-			return ProjectInfo{}, usererr.Wrap(usererr.NotFound, errors.New("the project's record is missing"))
-		}
+	if rec, ok := readAssetRecord(p.Dir); ok {
 		return assetInfo(p.Dir, rec), nil
 	}
 	csproj, ok := csprojOf(p.Dir)

@@ -209,10 +209,8 @@ type DevProject struct {
 	// Untrusted is a project added from a folder or a clone: its first build waits for the user's yes, because a build
 	// runs the repository's own code. A record without it, as every earlier release wrote, is trusted.
 	Untrusted bool `json:"untrusted,omitempty"`
-	// TemplateIcon is the SHA-256 of the template's icon.png, so Pack can say the mod still wears it.
+	// TemplateIcon is read for a project whose .mortar/template.json predates it; new projects keep it there.
 	TemplateIcon string `json:"templateIcon,omitempty"`
-	// Kind is the catalog asset kind of a project made only of files (suits, sounds); empty is a code project.
-	Kind string `json:"kind,omitempty"`
 }
 
 // AddDevProject records p for the game and makes its build output an extra mods folder that installs into its profile.

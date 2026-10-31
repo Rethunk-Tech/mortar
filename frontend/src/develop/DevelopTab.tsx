@@ -43,10 +43,14 @@ import { AdoptHost } from './AdoptDialog.tsx'
 import { useAdopting } from './adopting.ts'
 import { refreshInfo, useProjectInfo } from './builds.ts'
 import { CloneDialog } from './CloneDialog.tsx'
+import { ElsewhereHost } from './ElsewhereDialog.tsx'
+import { useElsewhere } from './elsewhere.ts'
 import { GameCodeDialog } from './GameCodeDialog.tsx'
+import { useDevKinds } from './kinds.ts'
 import { NewModDialog } from './NewModDialog.tsx'
 import { ProjectCard } from './ProjectCard.tsx'
 import { TrustDialog } from './TrustDialog.tsx'
+import { installTestMods } from './testMods.ts'
 
 const profileNameOf = (list: { id: string; name: string }[], id: string) =>
   list.find((p) => p.id === id)?.name ?? ''
@@ -104,7 +108,9 @@ function TestCopies({ game, profile, dirs }: { game: string; profile: string; di
   const clientOnly = useProjectInfo((s) => dirs.every((d) => s.byDir[d]?.clientOnly === true))
   const count = saved || (clientOnly ? 1 : 2)
   const start = (n: number) =>
-    StartInstances(game, profile, n).catch(reportError(t`Could not start the game`))
+    installTestMods(game, profile)
+      .then(() => StartInstances(game, profile, n))
+      .catch(reportError(t`Could not start the game`))
   return (
     <>
       <ButtonGroup variant="outlined">
@@ -206,6 +212,10 @@ function useAddFolder(game: string, openId: string) {
         useAdopting.getState().ask({ game, dir, found })
         return
       }
+      if (found.game && found.game !== game) {
+        useElsewhere.getState().ask({ game, dir, found })
+        return
+      }
       const project = await Add(game, dir, openId)
       useToasts
         .getState()
@@ -227,7 +237,8 @@ export function DevelopTab({ game }: { game: string }) {
   const [query, setQuery] = useState('')
   const [view, setView] = useStoredState<ViewMode>(`mortar.developView.${game}`, 'list', isViewMode)
   const here = useMemo(() => projects.filter((p) => p.profile === openId), [projects, openId])
-  const codeHere = here.find((p) => !p.kind)
+  const kinds = useDevKinds((s) => s.byDir)
+  const codeHere = here.find((p) => !kinds[p.dir])
   const needle = query.trim().toLowerCase()
   const shown = useMemo(
     () => here.filter((p) => p.name.toLowerCase().includes(needle)),
@@ -353,6 +364,7 @@ export function DevelopTab({ game }: { game: string }) {
       <NewModDialog open={creating} game={game} onClose={() => setCreating(false)} />
       <TrustDialog />
       <AdoptHost />
+      <ElsewhereHost />
       {reading && codeHere ? (
         <GameCodeDialog game={game} dir={codeHere.dir} onClose={() => setReading(false)} />
       ) : null}

@@ -26,6 +26,7 @@ import { buildProject, useProjectInfo } from './builds.ts'
 import { ChoicePicker } from './ChoicePicker.tsx'
 import { ProjectDependencies } from './ProjectDependencies.tsx'
 import { saveDependencies, useDependencyRows } from './projectDependencies.ts'
+import { TestWith } from './TestWith.tsx'
 
 const MAX_DESCRIPTION = 250
 
@@ -50,6 +51,7 @@ const editOf = (info: ProjectInfo): ProjectEdit => ({
   team: info.team,
   idPrefix: info.idPrefix,
   categories: info.categories ?? [],
+  testWith: info.testWith ?? [],
 })
 
 /** Edits the details the project's files hold; a new name renames the project's folder, files and namespace. */
@@ -147,14 +149,12 @@ export function EditProjectDialog({
           maxLength={MAX_DESCRIPTION}
           multiline={true}
         />
-        {files ? null : (
-          <ChoicePicker
-            label={t`Categories`}
-            choices={categories}
-            value={edit.categories ?? []}
-            onChange={(next) => set({ categories: next })}
-          />
-        )}
+        <ChoicePicker
+          label={t`Categories`}
+          choices={categories}
+          value={edit.categories ?? []}
+          onChange={(next) => set({ categories: next })}
+        />
       </FormSection>
       <ProjectDependencies
         game={game}
@@ -165,9 +165,16 @@ export function EditProjectDialog({
         error={deps.error}
         onRetry={deps.retry}
       />
+      <TestWith game={game} ids={edit.testWith ?? []} onChange={(testWith) => set({ testWith })} />
       <FormSection title={t`Credits`}>
         <FieldRow>
-          <TextInput label={t`Author`} value={edit.author} onChange={(author) => set({ author })} />
+          {files ? null : (
+            <TextInput
+              label={t`Author`}
+              value={edit.author}
+              onChange={(author) => set({ author })}
+            />
+          )}
           <TextInput
             label={t`Team on ${{ source: thunderstore }}`}
             value={edit.team}

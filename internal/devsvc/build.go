@@ -83,7 +83,7 @@ func (s *Service) Trust(gameID, dir string) error {
 	if err != nil {
 		return err
 	}
-	if p.Kind != "" && p.Untrusted {
+	if assetKindOf(gameID, p.Dir) != "" && p.Untrusted {
 		next := p
 		next.Untrusted, next.Output = false, p.Dir
 		return s.Settings.ReplaceDevProject(gameID, p, next)
@@ -109,7 +109,7 @@ func (s *Service) Build(ctx context.Context, gameID, dir string) (BuildResult, e
 	if err := requireTrust(p); err != nil {
 		return BuildResult{}, err
 	}
-	if p.Kind != "" {
+	if assetKindOf(gameID, p.Dir) != "" {
 		// An asset project's folder is what installs; there is nothing to compile.
 		return BuildResult{OK: true}, nil
 	}
@@ -182,7 +182,7 @@ func WatchedSources(cur settings.Settings, games []string) map[string][]string {
 	out := map[string][]string{}
 	for _, g := range games {
 		for _, p := range cur.GamePrefs(g).DevProjects {
-			if p.Kind != "" {
+			if assetKindOf(g, p.Dir) != "" {
 				continue
 			}
 			src := filepath.Join(p.Dir, "src", p.Name)
@@ -277,7 +277,6 @@ func startEditor(commands [][]string) bool {
 func (s *Service) project(gameID, dir string) (settings.DevProject, error) {
 	for _, p := range s.Settings.Get().GamePrefs(gameID).DevProjects {
 		if p.Dir == dir {
-			p.Kind = migrateKind(gameID, p.Kind)
 			return p, nil
 		}
 	}

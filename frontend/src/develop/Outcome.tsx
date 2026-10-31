@@ -88,6 +88,13 @@ export function Outcome({ game, project }: { game: string; project: DevProject }
           {(pack.issues ?? []).join(' ')}
         </Alert>
       ) : null}
+      {pack && (pack.warnings ?? []).length > 0 ? (
+        <Alert variant="compact" severity="info">
+          {(pack.warnings ?? []).map((w) => (
+            <Box key={w}>{w}</Box>
+          ))}
+        </Alert>
+      ) : null}
     </>
   )
 }

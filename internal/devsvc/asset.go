@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"cmp"
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -21,6 +22,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-cfgedit/msbuild"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -32,13 +34,20 @@ import (
 // assetRecordFile marks a project made only of files: .mortar/project.json, with what manifest.json has no field for.
 const assetRecordFile = "project.json"
 
+// assetRecord is .mortar/project.json. Kind, Name and Csproj are written only when the files do not say them: a project
+// with a project file is code, one without is a content pack, and the name is the manifest's or the project file's.
 type assetRecord struct {
-	Kind   string `json:"kind"`
-	Name   string `json:"name"`
-	Author string `json:"author"`
-	Team   string `json:"team"`
-	// Csproj is a code project's project file, a slash path from the project's folder; only kindCode records have one.
+	Kind string `json:"kind,omitempty"`
+	Name string `json:"name,omitempty"`
+	Team string `json:"team,omitempty"`
+	// Csproj is a code project's project file, a slash path from the project's folder; written only when the tree holds
+	// more than one.
 	Csproj string `json:"csproj,omitempty"`
+	// Game is the catalog id of the game the project is for.
+	Game       string   `json:"game,omitempty"`
+	Categories []string `json:"categories,omitempty"`
+	// TestWith are packages (Team-Name) that Test installs into the project's profile beside it.
+	TestWith []string `json:"testWith,omitempty"`
 }
 
 // A record's Kind is a catalog asset kind, or one of these two that every game has.
@@ -49,18 +58,93 @@ const (
 	kindGeneric = "generic"
 )
 
-// readRecord reads the project's .mortar/project.json of any kind; false when it is missing, damaged or names nothing
-// valid.
-func readRecord(dir string) (assetRecord, bool) {
+// readRawRecord reads the project's .mortar/project.json as written, checking what it holds; false when it is missing,
+// damaged or holds something invalid.
+func readRawRecord(dir string) (assetRecord, bool) {
 	body, err := safefs.ReadFile(filepath.Join(dir, ".mortar", assetRecordFile))
 	var rec assetRecord
-	if err != nil || json.Unmarshal(body, &rec) != nil || rec.Kind == "" || rec.Team != "" && !teamPattern.MatchString(rec.Team) {
+	if err != nil || json.Unmarshal(body, &rec) != nil || rec.Team != "" && !teamPattern.MatchString(rec.Team) {
 		return assetRecord{}, false
 	}
-	if rec.Kind == kindCode {
-		return rec, codeName.MatchString(rec.Name) && validCsproj(rec.Csproj)
+	return rec, rec.Csproj == "" || validCsproj(rec.Csproj)
+}
+
+// readRecord reads the project's .mortar/project.json of any kind, with the kind, name and project file the files give
+// where it names none; false when it is missing, damaged or resolves to nothing valid.
+func readRecord(dir string) (assetRecord, bool) {
+	rec, ok := readRawRecord(dir)
+	if !ok {
+		return assetRecord{}, false
 	}
-	return rec, modName.MatchString(rec.Name)
+	return rec.resolve(dir)
+}
+
+func (r assetRecord) resolve(dir string) (assetRecord, bool) {
+	if r.Kind == "" {
+		r.Kind = kindContent
+		if findCsproj(dir) != "" {
+			r.Kind = kindCode
+		}
+	}
+	if r.Kind == kindCode {
+		r.Csproj = cmp.Or(r.Csproj, findCsproj(dir))
+		if !validCsproj(r.Csproj) {
+			return r, false
+		}
+		r.Name = cmp.Or(r.Name, csprojName(dir, r.Csproj))
+		return r, codeName.MatchString(r.Name)
+	}
+	if r.Name == "" {
+		if r.Name = manifestName(dir); !modName.MatchString(r.Name) {
+			r.Name = folderName(dir)
+		}
+	}
+	return r, modName.MatchString(r.Name)
+}
+
+// csprojName is the name a project file gives the mod: its AssemblyTitle, else the file's own name.
+func csprojName(dir, csproj string) string {
+	base := strings.TrimSuffix(path.Base(csproj), path.Ext(csproj))
+	body, err := safefs.ReadFile(filepath.Join(dir, filepath.FromSlash(csproj)))
+	if err != nil {
+		return base
+	}
+	if title := msbuild.Property(string(body), "AssemblyTitle"); codeName.MatchString(title) {
+		return title
+	}
+	return base
+}
+
+// manifestName is the name in the project's manifest.json, empty when it has none.
+func manifestName(dir string) string {
+	body, err := safefs.ReadFile(filepath.Join(dir, "manifest.json"))
+	var m thunderstoreManifest
+	if err != nil || mod.UnmarshalManifest(body, &m) != nil {
+		return ""
+	}
+	return m.Name
+}
+
+// writeRecord writes the project's .mortar/project.json.
+func writeRecord(dir string, rec assetRecord) error {
+	body, err := json.MarshalIndent(rec, "", "  ")
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Join(dir, ".mortar"), 0o750); err != nil {
+		return err
+	}
+	return safefs.WriteFile(filepath.Join(dir, ".mortar", assetRecordFile), append(body, '\n'), 0o644) // #nosec G306 -- a tracked project file
+}
+
+// assetKindOf is the catalog asset kind of the project in dir; empty for a code project, built from the template or
+// adopted.
+func assetKindOf(gameID, dir string) string {
+	rec, ok := readRecord(dir)
+	if !ok || rec.Kind == kindCode {
+		return ""
+	}
+	return migrateKind(gameID, rec.Kind)
 }
 
 // readAssetRecord is readRecord for a project made only of files.
@@ -119,7 +203,11 @@ func (s *Service) createAsset(ctx context.Context, m NewMod) (_ settings.DevProj
 		return settings.DevProject{}, err
 	}
 	author := cmp.Or(m.Values["modAuthor"], m.Owner)
-	if err := (ProjectEdit{Name: m.Name, Description: m.Values["description"], Author: author, Team: m.Values["team"]}).checkDetails(); err != nil {
+	details := ProjectEdit{Name: m.Name, Description: m.Values["description"], Author: author, Team: m.Values["team"]}
+	if err := details.checkDetails(); err != nil {
+		return settings.DevProject{}, err
+	}
+	if err := details.checkAuthor(); err != nil {
 		return settings.DevProject{}, err
 	}
 	dest, url, err := m.destination()
@@ -133,7 +221,7 @@ func (s *Service) createAsset(ctx context.Context, m NewMod) (_ settings.DevProj
 	if err != nil {
 		return settings.DevProject{}, err
 	}
-	record, err := json.MarshalIndent(assetRecord{Kind: kindContent, Name: m.Name, Author: author, Team: m.Values["team"]}, "", "  ")
+	record, err := json.MarshalIndent(assetRecord{Team: m.Values["team"], Game: m.Game}, "", "  ")
 	if err != nil {
 		return settings.DevProject{}, err
 	}
@@ -163,7 +251,7 @@ func (s *Service) createAsset(ctx context.Context, m NewMod) (_ settings.DevProj
 			return settings.DevProject{}, err
 		}
 	}
-	return s.enroll(m.Game, dest, m.Name, m.Profile, m.CopyFrom, kindContent, false)
+	return s.enroll(m.Game, dest, m.Name, m.Profile, m.CopyFrom, true, false)
 }
 
 func writeFiles(dir string, files map[string][]byte) error {
@@ -178,6 +266,9 @@ func writeFiles(dir string, files map[string][]byte) error {
 	}
 	return nil
 }
+
+// placeholderHash is the SHA-256 of placeholderIcon, to tell a package still carrying it.
+func placeholderHash() string { return fmt.Sprintf("%x", sha256.Sum256(placeholderIcon())) }
 
 // placeholderIcon is a plain 256×256 PNG for a new asset project; Pack says while it is still this one.
 func placeholderIcon() []byte {
@@ -278,8 +369,8 @@ func manifestDependencies(dir string) ([]Dependency, error) {
 	return out, nil
 }
 
-// editAsset writes an asset project's description into manifest.json and its author and team into its record; the
-// name stays, since the folder, the record and the package are named by it.
+// editAsset writes an asset project's description into manifest.json and its team, categories and test packages into
+// its record; the name stays, since the folder, the manifest and the package are named by it.
 func editAsset(p settings.DevProject, e ProjectEdit) error {
 	rec, ok := readAssetRecord(p.Dir)
 	if !ok {
@@ -288,12 +379,10 @@ func editAsset(p settings.DevProject, e ProjectEdit) error {
 	if e.Name != rec.Name {
 		return usererr.Wrap(usererr.Invalid, errors.New("a project of files keeps its name"))
 	}
-	rec.Author, rec.Team = e.Author, e.Team
-	body, err := json.MarshalIndent(rec, "", "  ")
-	if err != nil {
-		return err
-	}
-	if err := safefs.WriteFile(filepath.Join(p.Dir, ".mortar", assetRecordFile), append(body, '\n'), 0o644); err != nil { // #nosec G306 -- a tracked project file
+	// The record as written, so a name or kind the files give stays out of it.
+	raw, _ := readRawRecord(p.Dir)
+	raw.Team, raw.Categories, raw.TestWith = e.Team, e.Categories, e.TestWith
+	if err := writeRecord(p.Dir, raw); err != nil {
 		return err
 	}
 	return editManifest(p.Dir, func(raw map[string]any) { raw["description"] = e.Description })
@@ -301,7 +390,7 @@ func editAsset(p settings.DevProject, e ProjectEdit) error {
 
 // assetInfo reads an asset project's details from manifest.json and its record.
 func assetInfo(dir string, rec assetRecord) ProjectInfo {
-	info := ProjectInfo{Name: rec.Name, Author: rec.Author, Team: rec.Team, Kind: rec.Kind, Categories: []string{}}
+	info := ProjectInfo{Name: rec.Name, Team: rec.Team, Kind: rec.Kind, Categories: nonNil(rec.Categories), TestWith: nonNil(rec.TestWith)}
 	if body, err := safefs.ReadFile(filepath.Join(dir, "manifest.json")); err == nil {
 		var m thunderstoreManifest
 		if json.Unmarshal(body, &m) == nil {
@@ -314,13 +403,20 @@ func assetInfo(dir string, rec assetRecord) ProjectInfo {
 	return info
 }
 
-// packAsset zips an asset project the way Thunderstore takes it: manifest.json (at the version given), icon, README,
-// CHANGELOG, LICENSE and every folder but Mortar's and git's own, into artifacts/thunderstore/release.
-func packAsset(p settings.DevProject, team, version string) (string, error) {
+func nonNil(list []string) []string {
+	if list == nil {
+		return []string{}
+	}
+	return list
+}
+
+// packAsset zips an asset project the way Thunderstore takes it, into artifacts/thunderstore/release: manifest.json at
+// the version given and, filled in from website when it names none, the entries shipsAtTop keeps.
+func packAsset(p settings.DevProject, content bool, team, version, website string) (string, error) {
 	if !packageVersion.MatchString(version) {
 		return "", usererr.Wrap(usererr.Invalid, fmt.Errorf("%q is not a version like 1.2.3; fix manifest.json", version))
 	}
-	manifest, err := completeManifest(p.Dir, p.Name, version)
+	manifest, err := completeManifest(p.Dir, p.Name, version, website)
 	if err != nil {
 		return "", err
 	}
@@ -334,13 +430,13 @@ func packAsset(p settings.DevProject, team, version string) (string, error) {
 		return "", err
 	}
 	zw := zip.NewWriter(f)
-	err = errors.Join(addZipFile(zw, "manifest.json", bytes.NewReader(manifest)), addTree(zw, p.Dir))
+	err = errors.Join(addZipFile(zw, "manifest.json", bytes.NewReader(manifest)), addTree(zw, p.Dir, content))
 	return zipPath, errors.Join(err, zw.Close(), f.Close())
 }
 
 // completeManifest is dir's manifest.json at version, with the fields Thunderstore insists on filled in when a folder
 // adopted with no manifest, or a partial one, lacks them.
-func completeManifest(dir, name, version string) ([]byte, error) {
+func completeManifest(dir, name, version, website string) ([]byte, error) {
 	manifest, err := safefs.ReadFile(filepath.Join(dir, "manifest.json"))
 	raw := map[string]any{}
 	switch {
@@ -358,6 +454,9 @@ func completeManifest(dir, name, version string) ([]byte, error) {
 			raw[field] = def
 		}
 	}
+	if url, _ := raw["website_url"].(string); url == "" && website != "" {
+		raw["website_url"] = website
+	}
 	raw["version_number"] = version
 	return json.MarshalIndent(raw, "", "  ")
 }
@@ -371,19 +470,30 @@ func addZipFile(zw *zip.Writer, name string, r io.Reader) error {
 	return err
 }
 
-// addTree adds the project's files to the package; manifest.json is written apart, at the release's version.
-func addTree(zw *zip.Writer, dir string) error {
+// contentTop are the top-level entries a content pack ships; everything else in it is the author's own tooling.
+var contentTop = []string{packContentRoot, "icon.png", "README.md", "CHANGELOG.md", "LICENSE"}
+
+// shipsAtTop is whether the package keeps the project's top-level entry name. A content pack keeps only contentTop;
+// any other kind keeps all but dot-entries, Mortar's artifacts and manifest.json, which is written apart.
+func shipsAtTop(content bool, name string) bool {
+	if content {
+		return slices.Contains(contentTop, name)
+	}
+	return !strings.HasPrefix(name, ".") && name != "artifacts" && name != "manifest.json"
+}
+
+// addTree adds the project's files to the package.
+func addTree(zw *zip.Writer, dir string, content bool) error {
 	root, err := os.OpenRoot(dir)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = root.Close() }()
-	skip := []string{".git", ".mortar", "artifacts", ".gitignore", "manifest.json"}
 	return fs.WalkDir(root.FS(), ".", func(rel string, d fs.DirEntry, err error) error {
 		if err != nil || rel == "." {
 			return err
 		}
-		if slices.Contains(skip, strings.Split(rel, "/")[0]) {
+		if !shipsAtTop(content, strings.Split(rel, "/")[0]) {
 			if d.IsDir() {
 				return fs.SkipDir
 			}
@@ -409,19 +519,23 @@ func isJunk(name string) bool {
 // packAssetProject packs an asset project at its next version (the latest tag, else the manifest's) and checks it.
 func (s *Service) packAssetProject(ctx context.Context, gameID string, p settings.DevProject) (PackResult, error) {
 	rec, _ := readAssetRecord(p.Dir)
+	kind := migrateKind(gameID, rec.Kind)
 	version := cmp.Or(assetInfo(p.Dir, rec).Version, "0.1.0")
 	if v, err := s.NextVersions(ctx, gameID, p.Dir); err == nil && v.Current != "" {
 		version = v.Current
 	}
-	r := PackResult{OK: true, Issues: []string{}}
-	zipPath, err := packAsset(p, rec.Team, version)
+	r := PackResult{OK: true, Issues: []string{}, Warnings: []string{}}
+	zipPath, err := packAsset(p, kind == kindContent, rec.Team, version, s.githubURL(ctx, p.Dir))
 	if err != nil {
 		return PackResult{}, err
 	}
 	r.Zip = zipPath
 	r.Issues = Validate(zipPath)
-	r.Issues = append(r.Issues, contentIssues(p.Dir, packContentRoot, contentFolders(gameID), p.Kind == kindContent)...)
-	if p.TemplateIcon != "" && zipFileHash(zipPath, "icon.png") == p.TemplateIcon {
+	r.Issues = append(r.Issues, contentIssues(p.Dir, packContentRoot, contentFolders(gameID), kind == kindContent)...)
+	if kind == kindContent {
+		r.Warnings = unreadContent(p.Dir, packContentRoot, contentFolders(gameID))
+	}
+	if zipFileHash(zipPath, "icon.png") == placeholderHash() {
 		r.Issues = append(r.Issues, "icon.png is still the placeholder; draw the mod its own")
 	}
 	return r, nil
@@ -455,7 +569,7 @@ func (s *Service) OpenAssetFolder(gameID, dir string) error {
 	if err != nil {
 		return err
 	}
-	kind, err := s.assetKind(gameID, p.Kind)
+	kind, err := s.assetKind(gameID, assetKindOf(gameID, p.Dir))
 	if err != nil {
 		return err
 	}
@@ -484,7 +598,7 @@ func AssetSubfolders(cur settings.Settings, games []string) []AssetFolder {
 	var out []AssetFolder
 	for _, g := range games {
 		for _, p := range cur.GamePrefs(g).DevProjects {
-			if p.Kind == "" {
+			if assetKindOf(g, p.Dir) == "" {
 				continue
 			}
 			_ = filepath.WalkDir(p.Dir, func(dir string, d fs.DirEntry, err error) error {

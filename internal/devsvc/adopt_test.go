@@ -9,6 +9,8 @@ import (
 	"slices"
 	"strings"
 	"testing"
+
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 const adoptGame = "lethal-company"
@@ -54,14 +56,17 @@ func TestDetectPicksTheKindFromWhatTheFolderHolds(t *testing.T) {
 
 func TestAdoptingABundleOnlyFolderWritesOnlyItsRecordAndInstallsAsGeneric(t *testing.T) {
 	svc, d := testService(t, testTemplate)
-	dir := adoptFolder(t, "Wallet-OuterWildsItems", map[string]string{"wallet.bundle": "b", "Thumbs.db": "junk"})
+	dir := adoptFolder(t, "Wallet-OuterWildsItems", map[string]string{"wallet.bundle": "b", "Thumbs.db": "junk", ".github/ci.yml": "x", "docs/a.md": "x"})
 	a, err := svc.Detect(adoptGame, dir)
 	if err != nil {
 		t.Fatal(err)
 	}
 	p, err := svc.Adopt(t.Context(), adoptGame, dir, "", a)
-	if err != nil || p.Kind != "generic" || p.Name != "WalletOuterWildsItems" || !p.Untrusted {
+	if err != nil || assetKindOf(adoptGame, dir) != "generic" || p.Name != "WalletOuterWildsItems" || !p.Untrusted {
 		t.Fatalf("adopt = %+v, %v", p, err)
+	}
+	if rec, _ := safefs.ReadFile(filepath.Join(dir, ".mortar", "project.json")); string(rec) != "{\n  \"kind\": \"generic\",\n  \"game\": \"lethal-company\"\n}\n" {
+		t.Errorf("record %s", rec)
 	}
 	var written []string
 	_ = filepath.WalkDir(dir, func(path string, e os.DirEntry, _ error) error {
@@ -71,7 +76,7 @@ func TestAdoptingABundleOnlyFolderWritesOnlyItsRecordAndInstallsAsGeneric(t *tes
 		return nil
 	})
 	slices.Sort(written)
-	if !slices.Equal(written, []string{".mortar/project.json", "Thumbs.db", "wallet.bundle"}) {
+	if !slices.Equal(written, []string{".github/ci.yml", ".mortar/project.json", "Thumbs.db", "docs/a.md", "wallet.bundle"}) {
 		t.Errorf("folder holds %v", written)
 	}
 	if err := svc.Trust(adoptGame, dir); err != nil {
@@ -101,7 +106,7 @@ func TestAdoptingABundleOnlyFolderWritesOnlyItsRecordAndInstallsAsGeneric(t *tes
 		names = append(names, f.Name)
 	}
 	slices.Sort(names)
-	if !slices.Equal(names, []string{"manifest.json", "wallet.bundle"}) {
+	if !slices.Equal(names, []string{"docs/a.md", "manifest.json", "wallet.bundle"}) {
 		t.Errorf("zip holds %v", names)
 	}
 	if m := zipText(t, zr, "manifest.json"); !strings.Contains(m, `"name": "WalletOuterWildsItems"`) || !strings.Contains(m, `"version_number": "0.1.0"`) {
@@ -117,8 +122,11 @@ func TestAdoptedCodeProjectBuildsItsRecordedProjectFile(t *testing.T) {
 		t.Fatalf("detect = %+v, %v", a, err)
 	}
 	p, err := svc.Adopt(t.Context(), adoptGame, dir, "", a)
-	if err != nil || p.Kind != "" || p.Name != "Wallet" {
+	if err != nil || assetKindOf(adoptGame, dir) != "" || p.Name != "Wallet" {
 		t.Fatalf("adopt = %+v, %v", p, err)
+	}
+	if rec, _ := safefs.ReadFile(filepath.Join(dir, ".mortar", "project.json")); string(rec) != "{\n  \"game\": \"lethal-company\"\n}\n" {
+		t.Errorf("record %s", rec)
 	}
 	if _, err := os.Stat(filepath.Join(dir, "Config.Build.user.props")); err == nil {
 		t.Error("adopting wrote a props file into the folder")
@@ -138,27 +146,34 @@ func TestAdoptedCodeProjectBuildsItsRecordedProjectFile(t *testing.T) {
 	}
 }
 
-func TestRecordsRoundTripAndOldOnesStillRead(t *testing.T) {
-	dir := assetDir(t, `{"kind":"sounds","name":"Quacks","author":"Me","team":"Ab"}`)
-	if rec, ok := readRecord(dir); !ok || rec.Kind != "sounds" || rec.Csproj != "" {
-		t.Fatalf("old record = %+v, %v", rec, ok)
+func TestRecordsReadWhatTheyHoldAndDetectTheRest(t *testing.T) {
+	cases := []struct {
+		name, record string
+		files        map[string]string
+		kind, rname  string
+		csproj       string
+		ok           bool
+	}{
+		{"0.3.8 record", `{"kind":"sounds","name":"Quacks","author":"Me","team":"Ab"}`, nil, "sounds", "Quacks", "", true},
+		{"recorded generic", `{"kind":"generic","name":"Bundle"}`, nil, "generic", "Bundle", "", true},
+		{"recorded code", `{"kind":"code","name":"My.Mod","csproj":"a/My.Mod.csproj"}`, nil, "code", "My.Mod", "a/My.Mod.csproj", true},
+		{"content from its manifest", `{"team":"Ab"}`, map[string]string{"manifest.json": `{"name":"Quacks"}`, "plugins/sounds/a.ogg": "x"}, "content", "Quacks", "", true},
+		{"content named for its folder", `{}`, map[string]string{"plugins/sounds/a.ogg": "x"}, "content", "Quacks", "", true},
+		{"code from its project file", `{}`, map[string]string{"Wallet/Wallet.csproj": "<Project><PropertyGroup><AssemblyTitle>Pay</AssemblyTitle></PropertyGroup></Project>"}, "code", "Pay", "Wallet/Wallet.csproj", true},
+		{"escaping project file", `{"kind":"code","name":"X1","csproj":"../out/X.csproj"}`, nil, "", "", "", false},
+		{"bad team", `{"team":"a b"}`, nil, "", "", "", false},
 	}
-	for _, rec := range []assetRecord{{Kind: "generic", Name: "Bundle"}, {Kind: "code", Name: "My.Mod", Csproj: "a/My.Mod.csproj"}} {
-		dir := t.TempDir()
-		body := `{"kind":"` + rec.Kind + `","name":"` + rec.Name + `","csproj":"` + rec.Csproj + `"}`
-		if err := writeAll(filepath.Join(dir, ".mortar", assetRecordFile), []byte(body), 0o644); err != nil {
-			t.Fatal(err)
-		}
-		if got, ok := readRecord(dir); !ok || got != rec {
-			t.Errorf("record %+v read as %+v, %v", rec, got, ok)
-		}
-	}
-	bad := t.TempDir()
-	if err := writeAll(filepath.Join(bad, ".mortar", assetRecordFile), []byte(`{"kind":"code","name":"X1","csproj":"../out/X.csproj"}`), 0o644); err != nil {
-		t.Fatal(err)
-	}
-	if _, ok := readRecord(bad); ok {
-		t.Error("a record escaped the project folder")
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			dir := adoptFolder(t, "Quacks", c.files)
+			if err := writeAll(filepath.Join(dir, ".mortar", assetRecordFile), []byte(c.record), 0o644); err != nil {
+				t.Fatal(err)
+			}
+			got, ok := readRecord(dir)
+			if ok != c.ok || ok && (got.Kind != c.kind || got.Name != c.rname || got.Csproj != c.csproj) {
+				t.Errorf("read %+v, %v", got, ok)
+			}
+		})
 	}
 }
 

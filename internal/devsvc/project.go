@@ -3,7 +3,6 @@ package devsvc
 import (
 	"context"
 	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -45,6 +44,8 @@ type ProjectInfo struct {
 	Version     string   `json:"version"`
 	Description string   `json:"description"`
 	Categories  []string `json:"categories"`
+	// TestWith are the packages (Team-Name) Test installs into the project's profile beside it.
+	TestWith []string `json:"testWith"`
 	// Released is the latest vX.Y.Z tag's version, empty before the first release.
 	Released string `json:"released"`
 	// Icon is the project's icon.png as a small data URL, empty when the project has none.
@@ -79,6 +80,7 @@ type ProjectEdit struct {
 	Team        string   `json:"team"`
 	IDPrefix    string   `json:"idPrefix"`
 	Categories  []string `json:"categories"`
+	TestWith    []string `json:"testWith"`
 }
 
 // setProp sets a property of an MSBuild file's text, adding it when missing; a file that does not parse stays as it is.
@@ -130,11 +132,16 @@ func (s *Service) Inspect(ctx context.Context, gameID, dir string) (ProjectInfo,
 	if err != nil {
 		return ProjectInfo{}, err
 	}
-	if rec, ok := readAssetRecord(p.Dir); ok && p.Kind != "" {
-		rec.Kind = p.Kind
+	if rec, ok := readAssetRecord(p.Dir); ok {
+		rec.Kind = migrateKind(gameID, rec.Kind)
 		info := assetInfo(p.Dir, rec)
 		info.Icon = iconData(p.Dir)
 		s.readGit(ctx, p, &info)
+		if !p.Untrusted {
+			if err := s.fillWebsite(ctx, p.Dir); err != nil {
+				return ProjectInfo{}, err
+			}
+		}
 		return info, nil
 	}
 	csproj, ok := csprojOf(p.Dir)
@@ -149,9 +156,8 @@ func (s *Service) Inspect(ctx context.Context, gameID, dir string) (ProjectInfo,
 	info.Icon = iconData(p.Dir)
 	s.readGit(ctx, p, &info)
 	info.BuiltAt, info.Stale = buildState(p)
-	if body, err := safefs.ReadFile(filepath.Join(p.Dir, ".mortar", "template.json")); err == nil {
-		var rec projectRecord
-		info.ClientOnly = json.Unmarshal(body, &rec) == nil && rec.Values["audience"] == "client"
+	if rec, ok := readTemplateRecord(p.Dir); ok {
+		info.ClientOnly = rec.Values["audience"] == "client"
 	}
 	base := strings.TrimSuffix(filepath.Base(csproj), ".csproj")
 	if _, adopted := recordedCsproj(p.Dir); base != p.Name && !p.Untrusted && !adopted {
@@ -237,6 +243,7 @@ func readInfo(dir, csproj string) (ProjectInfo, error) {
 		Team:        msbuild.Property(string(props), "ThunderstoreTeam"),
 		Description: msbuild.Property(string(project), "ThunderstoreDescription"),
 		Categories:  []string{},
+		TestWith:    nonNil(readTestWith(dir)),
 	}
 	info.IDPrefix = strings.TrimSuffix(info.GUID, "."+info.Name)
 	info.Package = packageOf(dir)
@@ -287,7 +294,8 @@ func (s *Service) dropBuild(gameID string, p settings.DevProject) error {
 	return err
 }
 
-// checkDetails checks what every project has: its name, description, author and team.
+// checkDetails checks what every project has: its name, description and team, and the categories and test packages
+// it lists.
 func (e ProjectEdit) checkDetails() error {
 	bad := func(what string) error { return usererr.Wrap(usererr.Invalid, errors.New(what)) }
 	oneLine := func(v string) bool { return strings.TrimSpace(v) != "" && !strings.ContainsAny(v, "\r\n") }
@@ -296,10 +304,19 @@ func (e ProjectEdit) checkDetails() error {
 		return bad("the mod name must start with a capital letter and hold only letters and digits")
 	case !oneLine(e.Description) || len([]rune(e.Description)) > maxDescription:
 		return bad(fmt.Sprintf("describe the mod in one line of at most %d characters", maxDescription))
-	case !oneLine(e.Author):
-		return bad("name the author")
 	case !teamPattern.MatchString(e.Team):
 		return bad("the team holds only letters, digits and underscores")
+	case slices.ContainsFunc(e.Categories, func(c string) bool { return !categorySlug.MatchString(c) }):
+		return bad("categories are Thunderstore category slugs")
+	case slices.ContainsFunc(e.TestWith, func(p string) bool { return !thunderstorePackage.MatchString(p) }):
+		return bad("test packages are Thunderstore packages, such as Team-Name")
+	}
+	return nil
+}
+
+func (e ProjectEdit) checkAuthor() error {
+	if a := e.Author; strings.TrimSpace(a) == "" || strings.ContainsAny(a, "\r\n") {
+		return usererr.Wrap(usererr.Invalid, errors.New("name the author"))
 	}
 	return nil
 }
@@ -308,12 +325,11 @@ func (e ProjectEdit) check() error {
 	if err := e.checkDetails(); err != nil {
 		return err
 	}
-	bad := func(what string) error { return usererr.Wrap(usererr.Invalid, errors.New(what)) }
-	switch {
-	case !guidPattern.MatchString(e.IDPrefix):
-		return bad("the id prefix holds lower-case letters and digits between dots, such as com.yourname")
-	case slices.ContainsFunc(e.Categories, func(c string) bool { return !categorySlug.MatchString(c) }):
-		return bad("categories are Thunderstore category slugs")
+	if err := e.checkAuthor(); err != nil {
+		return err
+	}
+	if !guidPattern.MatchString(e.IDPrefix) {
+		return usererr.Wrap(usererr.Invalid, errors.New("the id prefix holds lower-case letters and digits between dots, such as com.yourname"))
 	}
 	return nil
 }
@@ -324,7 +340,7 @@ func (s *Service) Edit(ctx context.Context, gameID, dir string, e ProjectEdit) (
 	if err != nil {
 		return ProjectInfo{}, err
 	}
-	if p.Kind != "" {
+	if assetKindOf(gameID, p.Dir) != "" {
 		if err := e.checkDetails(); err != nil {
 			return ProjectInfo{}, err
 		}
@@ -383,6 +399,11 @@ func (s *Service) Edit(ctx context.Context, gameID, dir string, e ProjectEdit) (
 		return body
 	}); err != nil {
 		return ProjectInfo{}, err
+	}
+	if !slices.Equal(old.TestWith, e.TestWith) {
+		if err := writeTestWith(p.Dir, e.TestWith); err != nil {
+			return ProjectInfo{}, err
+		}
 	}
 	if old.Team != e.Team {
 		_ = editFile(filepath.Join(p.Dir, "DEVELOPING.md"), func(body string) string {

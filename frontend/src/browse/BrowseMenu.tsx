@@ -8,6 +8,7 @@ import {
   HideBrowseMod,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { addDependency, type DependencyAsk, useDependencyAsk } from '../develop/dependencyAsk.ts'
+import { useDevKinds } from '../develop/kinds.ts'
 import { useCurrentGame } from '../nav/currentGame.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useNexus } from '../settings/nexus.ts'
@@ -38,7 +39,7 @@ function askDependency(
     version: item.version,
     install,
   }
-  if (p.kind) {
+  if (useDevKinds.getState().byDir[p.dir]) {
     addDependency(ask, false)
   } else {
     useDependencyAsk.setState({ ask })

@@ -4,6 +4,7 @@ package devsvc
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -266,6 +267,51 @@ func (s *Service) Projects(gameID string) []settings.DevProject {
 	return slices.Clone(s.Settings.Get().GamePrefs(gameID).DevProjects)
 }
 
+// Kinds are the asset kind of each of the game's projects by folder; a code project has none and is left out.
+func (s *Service) Kinds(gameID string) map[string]string {
+	out := map[string]string{}
+	for _, p := range s.Projects(gameID) {
+		if kind := assetKindOf(gameID, p.Dir); kind != "" {
+			out[p.Dir] = kind
+		}
+	}
+	return out
+}
+
+// TestMods lists the packages the profile's projects name to test with that the profile does not hold yet. A package
+// one of the game's projects publishes is built from that project, so it is never missing.
+func (s *Service) TestMods(gameID, profileID string) ([]string, error) {
+	installed, err := s.Profiles.Installed(gameID, profileID)
+	if err != nil {
+		return nil, err
+	}
+	have := map[string]bool{}
+	for _, im := range installed {
+		if im.Source.Kind == profile.KindThunderstore {
+			have[im.Source.Name] = true
+		}
+	}
+	projects := s.Projects(gameID)
+	for _, p := range projects {
+		if info, err := projectInfo(p); err == nil && info.Package != "" {
+			have[info.Package] = true
+		}
+	}
+	missing := []string{}
+	for _, p := range projects {
+		if p.Profile != profileID {
+			continue
+		}
+		for _, pkg := range readTestWith(p.Dir) {
+			if !have[pkg] {
+				missing = append(missing, pkg)
+				have[pkg] = true
+			}
+		}
+	}
+	return missing, nil
+}
+
 // Packages lists the Thunderstore packages (Team-Name) the game's projects publish, so updates to them are not offered.
 func (s *Service) Packages(gameID string) []string {
 	var out []string
@@ -384,7 +430,7 @@ func (s *Service) Create(ctx context.Context, m NewMod) (_ settings.DevProject, 
 	if err := s.instantiate(ctx, tpl, raw, form, m, dest, args); err != nil {
 		return settings.DevProject{}, err
 	}
-	if err := record(dest, tpl, m.Name, used); err != nil {
+	if err := record(dest, m.Game, tpl, m.Name, used); err != nil {
 		return settings.DevProject{}, err
 	}
 	if err := writeFiles(dest, contentStarters(codeContentRoot, m.Name, ticked)); err != nil {
@@ -397,7 +443,7 @@ func (s *Service) Create(ctx context.Context, m NewMod) (_ settings.DevProject, 
 		return settings.DevProject{}, err
 	}
 	s.commit(ctx, dest, m.GitHub, m.Name)
-	return s.enroll(m.Game, dest, m.Name, m.Profile, m.CopyFrom, "", false)
+	return s.enroll(m.Game, dest, m.Name, m.Profile, m.CopyFrom, false, false)
 }
 
 // instantiate runs `dotnet new` on the template in raw, in Mortar's own template hive so nothing is installed for
@@ -469,17 +515,81 @@ type projectRecord struct {
 	Ref      string            `json:"ref"`
 	Name     string            `json:"name"`
 	Values   map[string]string `json:"values"`
+	// Game is the catalog id of the game the project is for.
+	Game string `json:"game,omitempty"`
+	// TemplateIcon is the SHA-256 of the template's icon.png, so Pack can say the mod still wears it.
+	TemplateIcon string `json:"templateIcon,omitempty"`
+	// TestWith are packages (Team-Name) that Test installs into the project's profile beside it.
+	TestWith []string `json:"testWith,omitempty"`
 }
 
-func record(dir string, tpl components.DevTemplate, name string, values map[string]string) error {
-	body, err := json.MarshalIndent(projectRecord{Template: tpl.Repo, Ref: tpl.Ref, Name: name, Values: values}, "", "  ")
+const templateRecordFile = "template.json"
+
+// readTemplateRecord reads the project's .mortar/template.json; false when it is missing or damaged.
+func readTemplateRecord(dir string) (projectRecord, bool) {
+	body, err := safefs.ReadFile(filepath.Join(dir, ".mortar", templateRecordFile))
+	var rec projectRecord
+	return rec, err == nil && json.Unmarshal(body, &rec) == nil
+}
+
+func writeTemplateRecord(dir string, rec projectRecord) error {
+	body, err := json.MarshalIndent(rec, "", "  ")
 	if err != nil {
 		return err
 	}
 	if err := os.MkdirAll(filepath.Join(dir, ".mortar"), 0o750); err != nil {
 		return err
 	}
-	return safefs.WriteFile(filepath.Join(dir, ".mortar", "template.json"), append(body, '\n'), 0o644) // #nosec G306 -- a tracked project file
+	return safefs.WriteFile(filepath.Join(dir, ".mortar", templateRecordFile), append(body, '\n'), 0o644) // #nosec G306 -- a tracked project file
+}
+
+func record(dir, gameID string, tpl components.DevTemplate, name string, values map[string]string) error {
+	rec := projectRecord{Template: tpl.Repo, Ref: tpl.Ref, Name: name, Values: values, Game: gameID}
+	if icon, err := safefs.ReadFile(filepath.Join(dir, "icon.png")); err == nil {
+		rec.TemplateIcon = fmt.Sprintf("%x", sha256.Sum256(icon))
+	}
+	return writeTemplateRecord(dir, rec)
+}
+
+// templateIcon is the hash of the icon the template gave the project: recorded with it, else (for a project made
+// before that) in Mortar's settings.
+func templateIcon(p settings.DevProject) string {
+	if rec, ok := readTemplateRecord(p.Dir); ok && rec.TemplateIcon != "" {
+		return rec.TemplateIcon
+	}
+	return p.TemplateIcon
+}
+
+// recordedGame is the game the project says it is for, empty when it names none.
+func recordedGame(dir string) string {
+	if rec, ok := readRawRecord(dir); ok && rec.Game != "" {
+		return rec.Game
+	}
+	rec, _ := readTemplateRecord(dir)
+	return rec.Game
+}
+
+// readTestWith is the packages Test installs beside the project in dir.
+func readTestWith(dir string) []string {
+	if rec, ok := readRawRecord(dir); ok {
+		return rec.TestWith
+	}
+	rec, _ := readTemplateRecord(dir)
+	return rec.TestWith
+}
+
+// writeTestWith records the packages Test installs beside the project in dir, in the record the project keeps.
+func writeTestWith(dir string, ids []string) error {
+	if rec, ok := readRawRecord(dir); ok {
+		rec.TestWith = ids
+		return writeRecord(dir, rec)
+	}
+	rec, ok := readTemplateRecord(dir)
+	if !ok && len(ids) == 0 {
+		return nil
+	}
+	rec.TestWith = ids
+	return writeTemplateRecord(dir, rec)
 }
 
 // loaderPackVersion is the newest release of the game's loader, empty when it cannot be looked up (the template's

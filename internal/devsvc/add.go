@@ -3,7 +3,6 @@ package devsvc
 import (
 	"context"
 	"crypto/sha256"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -22,15 +21,11 @@ import (
 var githubRepo = regexp.MustCompile(`^(?:https://github\.com/|git@github\.com:)?([A-Za-z0-9][A-Za-z0-9-]{0,38})/([A-Za-z0-9][A-Za-z0-9._-]{0,99}?)(?:\.git)?/?$`)
 
 // enroll makes dir's build output an extra mods folder of the project's profile (created as "<game> Development"
-// when profileID is empty, filled from copyFrom) and records the project. An asset project (kind set) has no build:
-// its folder itself is what installs.
-func (s *Service) enroll(gameID, dir, name, profileID, copyFrom, kind string, untrusted bool) (_ settings.DevProject, err error) {
+// when profileID is empty, filled from copyFrom) and records the project. An asset project has no build: its folder
+// itself is what installs.
+func (s *Service) enroll(gameID, dir, name, profileID, copyFrom string, asset, untrusted bool) (_ settings.DevProject, err error) {
 	if profileID == "" {
-		gameName := gameID
-		if info, ok := components.Game(gameID); ok {
-			gameName = info.Name
-		}
-		p, createErr := s.Profiles.Create(gameID, gameName+" Development")
+		p, createErr := s.Profiles.Create(gameID, gameName(gameID)+" Development")
 		if createErr != nil {
 			return settings.DevProject{}, createErr
 		}
@@ -60,18 +55,23 @@ func (s *Service) enroll(gameID, dir, name, profileID, copyFrom, kind string, un
 		if err := os.MkdirAll(output, 0o750); err != nil {
 			return settings.DevProject{}, err
 		}
-	} else if kind == "" {
+	} else if !asset {
 		// The template builds an unpacked package here; it exists before the first build so the folder watch can start.
 		output = filepath.Join(dir, "artifacts", "bin", name, "debug")
 		if err := os.MkdirAll(output, 0o750); err != nil {
 			return settings.DevProject{}, err
 		}
 	}
-	p := settings.DevProject{Dir: dir, Name: name, Profile: profileID, Output: output, Untrusted: untrusted, Kind: kind}
-	if icon, err := safefs.ReadFile(filepath.Join(dir, "icon.png")); err == nil {
-		p.TemplateIcon = fmt.Sprintf("%x", sha256.Sum256(icon))
-	}
+	p := settings.DevProject{Dir: dir, Name: name, Profile: profileID, Output: output, Untrusted: untrusted}
 	return p, s.Settings.AddDevProject(gameID, p)
+}
+
+// gameName is the catalog's name for the game, else its id.
+func gameName(gameID string) string {
+	if info, ok := components.Game(gameID); ok {
+		return info.Name
+	}
+	return gameID
 }
 
 // projectName is the mod's name in a project made from the template: the one its record names, else the only folder
@@ -84,11 +84,8 @@ func projectName(dir string) (string, bool) {
 		_, err := os.Stat(filepath.Join(dir, "src", name, name+".csproj"))
 		return err == nil
 	}
-	if body, err := safefs.ReadFile(filepath.Join(dir, ".mortar", "template.json")); err == nil {
-		var rec projectRecord
-		if json.Unmarshal(body, &rec) == nil && has(rec.Name) {
-			return rec.Name, true
-		}
+	if rec, ok := readTemplateRecord(dir); ok && has(rec.Name) {
+		return rec.Name, true
 	}
 	entries, _ := os.ReadDir(filepath.Join(dir, "src"))
 	var found []string
@@ -110,13 +107,16 @@ func (s *Service) Add(ctx context.Context, gameID, dir, profileID string) (setti
 	bad := func(what string, args ...any) (settings.DevProject, error) {
 		return settings.DevProject{}, usererr.Wrap(usererr.Invalid, fmt.Errorf(what, args...))
 	}
-	if _, ok := Template(gameID); !ok {
-		return settings.DevProject{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("%s has no mod template", gameID))
-	}
 	if !filepath.IsAbs(dir) {
 		return bad("pick the project's folder")
 	}
 	dir = filepath.Clean(dir)
+	if other := recordedGame(dir); other != "" && other != gameID {
+		return settings.DevProject{}, usererr.Wrap(usererr.OtherGame, fmt.Errorf("%s is a %s project, not a %s one", dir, gameName(other), gameName(gameID)))
+	}
+	if _, ok := Template(gameID); !ok {
+		return settings.DevProject{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("%s has no mod template", gameID))
+	}
 	rec, recorded := readRecord(dir)
 	rec.Kind = migrateKind(gameID, rec.Kind)
 	asset := recorded && rec.Kind != kindCode
@@ -141,7 +141,7 @@ func (s *Service) Add(ctx context.Context, gameID, dir, profileID string) (setti
 			return settings.DevProject{}, err
 		}
 		// A cloned folder can hold plugin DLLs that load on the next launch, so it installs only once trusted.
-		return s.enroll(gameID, dir, name, profileID, "", rec.Kind, true)
+		return s.enroll(gameID, dir, name, profileID, "", true, true)
 	}
 	if !recorded {
 		if err := pinGameRoot(dir, s.Tools(ctx, gameID).GameDir); err != nil {
@@ -149,7 +149,7 @@ func (s *Service) Add(ctx context.Context, gameID, dir, profileID string) (setti
 		}
 	}
 	// A foreign repository's build files run code, so nothing builds until the user agrees (see Trust).
-	return s.enroll(gameID, dir, name, profileID, "", "", true)
+	return s.enroll(gameID, dir, name, profileID, "", false, true)
 }
 
 // pinGameRoot points the project's GameRootDir at this computer's game folder, so a committed Config.Build.user.props
@@ -207,7 +207,8 @@ func (s *Service) Clone(ctx context.Context, gameID, repo, parentDir, profileID 
 		return settings.DevProject{}, err
 	}
 	p, err := s.Add(ctx, gameID, dest, profileID)
-	if err != nil {
+	// A project of another game stays where it was cloned, for the player to add under that game.
+	if err != nil && usererr.KindOf(err) != usererr.OtherGame {
 		_ = safefs.RemoveAll(dest)
 	}
 	return p, err

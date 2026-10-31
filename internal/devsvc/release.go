@@ -37,8 +37,10 @@ var (
 // PackResult is a release build's package and what Thunderstore would refuse in it.
 type PackResult struct {
 	BuildResult
-	Zip    string   `json:"zip"`
-	Issues []string `json:"issues"`
+	Zip string `json:"zip"`
+	// Issues are what Thunderstore would refuse or the package would ship broken; Warnings are worth a look and refuse nothing.
+	Issues   []string `json:"issues"`
+	Warnings []string `json:"warnings"`
 }
 
 // Pack builds the project in Release, which packs it for Thunderstore, and checks the newest package it wrote.
@@ -50,13 +52,13 @@ func (s *Service) Pack(ctx context.Context, gameID, dir string) (PackResult, err
 	if err := requireTrust(p); err != nil {
 		return PackResult{}, err
 	}
-	if p.Kind != "" {
+	if assetKindOf(gameID, p.Dir) != "" {
 		return s.packAssetProject(ctx, gameID, p)
 	}
 	defer s.lockedBuild(ctx, gameID, p)()
 	started := time.Now()
 	out, err := s.run(ctx, p.Dir, "dotnet", buildArgs(p, "Release")...)
-	r := PackResult{OK: err == nil, Problems: ParseProblems(string(out)), Log: tail(string(out)), Issues: []string{}}
+	r := PackResult{OK: err == nil, Problems: ParseProblems(string(out)), Log: tail(string(out)), Issues: []string{}, Warnings: []string{}}
 	if !r.OK {
 		return r, nil
 	}
@@ -81,7 +83,7 @@ func (s *Service) Pack(ctx context.Context, gameID, dir string) (PackResult, err
 		return r, nil
 	}
 	r.Issues = append(Validate(r.Zip), contentIssues(p.Dir, codeContentRoot, contentFolders(gameID), false)...)
-	if p.TemplateIcon != "" && zipFileHash(r.Zip, "icon.png") == p.TemplateIcon {
+	if icon := templateIcon(p); icon != "" && zipFileHash(r.Zip, "icon.png") == icon {
 		r.Issues = append(r.Issues, "icon.png is still the template's; draw the mod its own")
 	}
 	return r, nil
@@ -204,7 +206,7 @@ func (s *Service) NextVersions(ctx context.Context, gameID, dir string) (Version
 	}
 	latest := s.latestRelease(ctx, p.Dir)
 	v := nextVersions(latest)
-	if p.Kind == "" {
+	if assetKindOf(gameID, p.Dir) == "" {
 		// An asset project has no CI workflow; its release is uploaded from here.
 		v.GitHub = s.githubRemote(ctx, p.Dir)
 	}
@@ -277,6 +279,43 @@ func (s *Service) githubRemote(ctx context.Context, dir string) string {
 	return remote
 }
 
+// githubURL is the https address of the GitHub repository the project pushes to; empty without one.
+func (s *Service) githubURL(ctx context.Context, dir string) string {
+	remote := s.githubRemote(ctx, dir)
+	if remote == "" {
+		return ""
+	}
+	out, err := s.run(ctx, dir, "git", "remote", "get-url", remote)
+	if err != nil {
+		return ""
+	}
+	owner, name, err := ParseRepo(strings.TrimSpace(string(out)))
+	if err != nil {
+		return ""
+	}
+	return "https://github.com/" + owner + "/" + name
+}
+
+// emptyWebsite is whether the project has a manifest.json that names no website.
+func emptyWebsite(dir string) bool {
+	body, err := safefs.ReadFile(filepath.Join(dir, "manifest.json"))
+	var m thunderstoreManifest
+	return err == nil && mod.UnmarshalManifest(body, &m) == nil && (m.WebsiteURL == nil || *m.WebsiteURL == "")
+}
+
+// fillWebsite puts the project's GitHub address into manifest.json when the manifest names no website, so the listing
+// links to the source.
+func (s *Service) fillWebsite(ctx context.Context, dir string) error {
+	if !emptyWebsite(dir) {
+		return nil
+	}
+	url := s.githubURL(ctx, dir)
+	if url == "" {
+		return nil
+	}
+	return editManifest(dir, func(raw map[string]any) { raw["website_url"] = url })
+}
+
 // Release adds version and its notes to CHANGELOG.md, commits that, and tags it vX.Y.Z, which the template takes as
 // the version. The tree must be otherwise committed, so the tag holds what was tested. With a GitHub remote the
 // commit and tag are pushed there, and the template's CI publishes the package; it returns that remote, or "" when
@@ -299,7 +338,7 @@ func (s *Service) Release(ctx context.Context, gameID, dir, version string, note
 	if _, err := s.run(ctx, p.Dir, "git", "push", remote, "HEAD", "refs/tags/v"+version); err != nil {
 		return "", fmt.Errorf("v%s is tagged here, but pushing it to %s failed: %w", version, remote, err)
 	}
-	if p.Kind != "" {
+	if assetKindOf(gameID, p.Dir) != "" {
 		return "", nil
 	}
 	return remote, nil

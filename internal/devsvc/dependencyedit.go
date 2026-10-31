@@ -33,7 +33,7 @@ func (s *Service) Dependencies(gameID, dir string) ([]Dependency, error) {
 	if err != nil {
 		return nil, err
 	}
-	if p.Kind != "" {
+	if assetKindOf(gameID, p.Dir) != "" {
 		return manifestDependencies(p.Dir)
 	}
 	_, raw, err := readCsproj(p.Dir)
@@ -65,7 +65,7 @@ func (s *Service) RemoveDependency(gameID, dir, pkg string) error {
 	if !thunderstorePackage.MatchString(pkg) || pkg == loaderPackage {
 		return usererr.Wrap(usererr.Invalid, fmt.Errorf("%s is not a dependency the project can drop", pkg))
 	}
-	if p.Kind != "" {
+	if assetKindOf(gameID, p.Dir) != "" {
 		return s.wire(context.Background(), p, func() error { return setManifestDependency(p.Dir, pkg, "") })
 	}
 	csproj, raw, err := readCsproj(p.Dir)

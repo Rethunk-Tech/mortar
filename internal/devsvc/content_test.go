@@ -1,8 +1,10 @@
 package devsvc
 
 import (
+	"maps"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/go-safefs"
@@ -79,7 +81,7 @@ func TestA038RecordOfASupersededKindOpensAsTheContentPack(t *testing.T) {
 		t.Run(old, func(t *testing.T) {
 			dir := assetDir(t, `{"kind":"`+old+`","name":"Pack","team":"Ab"}`)
 			p, err := svc.Add(t.Context(), contentGame, dir, "")
-			if err != nil || p.Kind != kindContent {
+			if err != nil || assetKindOf(contentGame, p.Dir) != kindContent {
 				t.Fatalf("added %+v, %v", p, err)
 			}
 			if a, err := svc.Detect(contentGame, dir); err != nil || !a.Known || a.Kind != kindContent {
@@ -88,7 +90,7 @@ func TestA038RecordOfASupersededKindOpensAsTheContentPack(t *testing.T) {
 		})
 	}
 	dir := assetDir(t, `{"kind":"sounds","name":"Quacks","team":"Ab"}`)
-	if p, err := svc.Add(t.Context(), contentGame, dir, ""); err != nil || p.Kind != kindContent {
+	if p, err := svc.Add(t.Context(), contentGame, dir, ""); err != nil || assetKindOf(contentGame, p.Dir) != kindContent {
 		t.Errorf("sounds added as %+v, %v", p, err)
 	}
 }
@@ -102,6 +104,7 @@ func TestReleaseRefusesAnEmptyContentFolder(t *testing.T) {
 		pack  bool
 		want  []string
 	}{
+		{"loader not depended on", map[string]string{"plugins/mortar/tv/a.mp4": "v", "manifest.json": `{"dependencies":[]}`}, packContentRoot, true, []string{"plugins/mortar/tv/ is loaded by Mortar-Television, which manifest.json does not depend on"}},
 		{"filled", map[string]string{"plugins/mortar/tv/a.mp4": "v"}, packContentRoot, true, []string{}},
 		{"empty kind", map[string]string{"plugins/mortar/tv/README.txt": "r", "plugins/mortar/posters/a.png": "p"}, packContentRoot, true, []string{"plugins/mortar/tv/ holds no *.mp4, *.webm file"}},
 		{"package top", map[string]string{"mortar/tv/a.mp4": "v", "plugins/mortar/tv/a.mp4": "v"}, packContentRoot, true, []string{"mortar/tv/ installs flattened from the package's top; move it under plugins/"}},
@@ -114,7 +117,13 @@ func TestReleaseRefusesAnEmptyContentFolder(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			if got := contentIssues(adoptFolder(t, "Pack", c.files), c.root, folders, c.pack); !slices.Equal(got, c.want) {
+			var deps []string
+			for _, f := range folders {
+				deps = append(deps, `"`+f.Dependency+`-1.0.0"`)
+			}
+			files := map[string]string{"manifest.json": `{"dependencies":[` + strings.Join(deps, ",") + `]}`}
+			maps.Copy(files, c.files)
+			if got := contentIssues(adoptFolder(t, "Pack", files), c.root, folders, c.pack); !slices.Equal(got, c.want) {
 				t.Errorf("issues = %q, want %q", got, c.want)
 			}
 		})
@@ -130,7 +139,7 @@ func TestANewContentPackGetsATickedFolderEach(t *testing.T) {
 	}
 	values[contentParam] = "posters|tv|suits"
 	p, err := svc.Create(t.Context(), NewMod{Game: contentGame, Kind: kindContent, Name: "Art", Parent: parent, Repo: "art", Values: values})
-	if err != nil || p.Kind != kindContent {
+	if err != nil || assetKindOf(contentGame, p.Dir) != kindContent {
 		t.Fatalf("created %+v, %v", p, err)
 	}
 	found, _ := detectContent(p.Dir, contentFolders(contentGame))
