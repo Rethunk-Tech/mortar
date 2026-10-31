@@ -26,16 +26,16 @@ func TestRepoConfigHasAVersion(t *testing.T) {
 }
 
 func TestABuildPastItsReleaseReadsTheNextRelease(t *testing.T) {
-	if got := NextMinor("0.3.7"); got != "0.4.0" {
+	if got := NextMinor("1.4.2"); got != "1.5.0" {
 		t.Errorf("NextMinor = %q", got)
 	}
 	if got := NextMinor("dev"); got != "dev" {
 		t.Errorf("a version that is not x.y.z changed to %q", got)
 	}
 	t.Cleanup(func() { pastRelease = "" })
-	for stamp, want := range map[string]string{"": "0.3.7", "0": "0.3.7", "4": "0.4.0"} {
+	for stamp, want := range map[string]string{"": "1.4.2", "0": "1.4.2", "4": "1.5.0"} {
 		pastRelease = stamp
-		if got := ForCatalog("0.3.7"); got != want {
+		if got := ForCatalog("1.4.2"); got != want {
 			t.Errorf("past %q: ForCatalog = %q, want %q", stamp, got, want)
 		}
 	}

@@ -822,15 +822,15 @@ func TestMinVersionIsCheckedAgainstTheRunningCatalogVersion(t *testing.T) {
 			t.Fatal(err)
 		}
 		g := bundled.Games[0]
-		g.MinVersion = "0.3.8"
+		g.MinVersion = "1.4.3"
 		m, left := withoutUnreadable(Manifest{Games: []GameInfo{g}})
 		return len(m.Games) + 10*left
 	}
-	if got := games("0.3.7"); got != 10 {
-		t.Errorf("a released 0.3.7 kept an entry that needs 0.3.8 (%d)", got)
+	if got := games("1.4.2"); got != 10 {
+		t.Errorf("a released 1.4.2 kept an entry that needs 1.4.3 (%d)", got)
 	}
-	if got := games("0.4.0"); got != 1 {
-		t.Errorf("a 0.3.7 build past its release dropped an entry that needs 0.3.8 (%d)", got)
+	if got := games("1.5.0"); got != 1 {
+		t.Errorf("a 1.4.2 build past its release dropped an entry that needs 1.4.3 (%d)", got)
 	}
 }
 
