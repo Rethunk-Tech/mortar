@@ -61,6 +61,8 @@ type Service struct {
 	CacheDir string
 	// Run runs a tool (dotnet, git, gh) in dir and returns its output; nil runs it.
 	Run func(ctx context.Context, dir, name string, args ...string) ([]byte, error)
+	// Version is Mortar's version, which Nexus Mods and CurseForge are told in uploads.
+	Version string
 	// ThunderstoreURL, when set, replaces https://thunderstore.io/ for uploads (tests).
 	ThunderstoreURL string
 	// LicensesURL, when set, replaces GitHub's licenses API (tests).
@@ -521,6 +523,7 @@ type projectRecord struct {
 	TemplateIcon string `json:"templateIcon,omitempty"`
 	// TestWith are packages (Team-Name) that Test installs into the project's profile beside it.
 	TestWith []string `json:"testWith,omitempty"`
+	siteIDs
 }
 
 const templateRecordFile = "template.json"

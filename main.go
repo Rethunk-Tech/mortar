@@ -768,7 +768,7 @@ func run() error {
 	savesSvc.Enqueue = queueSvc.Add
 	profileSvc.Version = version
 	savedGroupsSvc := savedgroups.NewService(profiles, dataDir)
-	devSvc := &devsvc.Service{Home: home, Settings: svc, Profiles: profileSvc, CacheDir: filepath.Join(dataDir, "cache")}
+	devSvc := &devsvc.Service{Version: version, Home: home, Settings: svc, Profiles: profileSvc, CacheDir: filepath.Join(dataDir, "cache")}
 	devSvc.MigrateRecords()
 	problemsSvc := problems.NewService(home, store, profiles, modMeta)
 	problemsSvc.Runs = launches

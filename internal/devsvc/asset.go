@@ -48,6 +48,7 @@ type assetRecord struct {
 	Categories []string `json:"categories,omitempty"`
 	// TestWith are packages (Team-Name) that Test installs into the project's profile beside it.
 	TestWith []string `json:"testWith,omitempty"`
+	siteIDs
 }
 
 // A record's Kind is a catalog asset kind, or one of these two that every game has.
@@ -393,6 +394,7 @@ func editAsset(p settings.DevProject, e ProjectEdit) error {
 	// The record as written, so a name or kind the files give stays out of it.
 	raw, _ := readRawRecord(p.Dir)
 	raw.Team, raw.Categories, raw.TestWith = e.Team, e.Categories, e.TestWith
+	raw.Nexus, raw.CurseForge = e.Nexus, e.CurseForge
 	if err := writeRecord(p.Dir, raw); err != nil {
 		return err
 	}
@@ -401,7 +403,7 @@ func editAsset(p settings.DevProject, e ProjectEdit) error {
 
 // assetInfo reads an asset project's details from manifest.json and its record.
 func assetInfo(dir string, rec assetRecord) ProjectInfo {
-	info := ProjectInfo{Name: rec.Name, Team: rec.Team, Kind: rec.Kind, Categories: nonNil(rec.Categories), TestWith: nonNil(rec.TestWith)}
+	info := ProjectInfo{Name: rec.Name, Team: rec.Team, Kind: rec.Kind, Categories: nonNil(rec.Categories), TestWith: nonNil(rec.TestWith), Nexus: rec.Nexus, CurseForge: rec.CurseForge}
 	if body, err := safefs.ReadFile(filepath.Join(dir, "manifest.json")); err == nil {
 		var m thunderstoreManifest
 		if json.Unmarshal(body, &m) == nil {

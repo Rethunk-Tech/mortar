@@ -48,13 +48,19 @@ func (s *Service) SignIn(ctx context.Context, key string) (Account, error) {
 
 func forgetKey() error { return secret.Delete(keyName) }
 
-// keyClient is c authenticated with the stored personal API key.
-func keyClient(c *nexusmods.Client) (*nexusmods.Client, error) {
+// StoredAPIKey is the kept personal API key. The account is remembered but its key may be gone (a reset or new
+// keyring): that is ErrSignedOut, not a failure.
+func StoredAPIKey() (string, error) {
 	key, err := secret.Get(keyName)
 	if errors.Is(err, secret.ErrNotFound) {
-		// The account is remembered but its key is gone (a reset or new keyring): that is signed out, not a failure.
-		return nil, ErrSignedOut
+		return "", ErrSignedOut
 	}
+	return key, err
+}
+
+// keyClient is c authenticated with the stored personal API key.
+func keyClient(c *nexusmods.Client) (*nexusmods.Client, error) {
+	key, err := StoredAPIKey()
 	if err != nil {
 		return nil, err
 	}

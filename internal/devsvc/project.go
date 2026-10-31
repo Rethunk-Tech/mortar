@@ -46,6 +46,9 @@ type ProjectInfo struct {
 	Categories  []string `json:"categories"`
 	// TestWith are the packages (Team-Name) Test installs into the project's profile beside it.
 	TestWith []string `json:"testWith"`
+	// Nexus and CurseForge are the ids Release uploads with; a site whose ids are unset is not offered.
+	Nexus      NexusIDs      `json:"nexus"`
+	CurseForge CurseForgeIDs `json:"curseforge"`
 	// Released is the latest vX.Y.Z tag's version, empty before the first release.
 	Released string `json:"released"`
 	// Icon is the project's icon.png as a small data URL, empty when the project has none.
@@ -74,13 +77,15 @@ type GitState struct {
 
 // ProjectEdit is a change to a project's details; a new Name renames the project.
 type ProjectEdit struct {
-	Name        string   `json:"name"`
-	Description string   `json:"description"`
-	Author      string   `json:"author"`
-	Team        string   `json:"team"`
-	IDPrefix    string   `json:"idPrefix"`
-	Categories  []string `json:"categories"`
-	TestWith    []string `json:"testWith"`
+	Name        string        `json:"name"`
+	Description string        `json:"description"`
+	Author      string        `json:"author"`
+	Team        string        `json:"team"`
+	IDPrefix    string        `json:"idPrefix"`
+	Categories  []string      `json:"categories"`
+	TestWith    []string      `json:"testWith"`
+	Nexus       NexusIDs      `json:"nexus"`
+	CurseForge  CurseForgeIDs `json:"curseforge"`
 }
 
 // setProp sets a property of an MSBuild file's text, adding it when missing; a file that does not parse stays as it is.
@@ -245,6 +250,8 @@ func readInfo(dir, csproj string) (ProjectInfo, error) {
 		Categories:  []string{},
 		TestWith:    nonNil(readTestWith(dir)),
 	}
+	sites := readSites(dir)
+	info.Nexus, info.CurseForge = sites.Nexus, sites.CurseForge
 	info.IDPrefix = strings.TrimSuffix(info.GUID, "."+info.Name)
 	info.Package = packageOf(dir)
 	info.Version = msbuild.Property(string(props), "Version")
@@ -311,7 +318,7 @@ func (e ProjectEdit) checkDetails() error {
 	case slices.ContainsFunc(e.TestWith, func(p string) bool { return !thunderstorePackage.MatchString(p) }):
 		return bad("test packages are Thunderstore packages, such as Team-Name")
 	}
-	return nil
+	return e.checkSites()
 }
 
 func (e ProjectEdit) checkAuthor() error {
@@ -402,6 +409,11 @@ func (s *Service) Edit(ctx context.Context, gameID, dir string, e ProjectEdit) (
 	}
 	if !slices.Equal(old.TestWith, e.TestWith) {
 		if err := writeTestWith(p.Dir, e.TestWith); err != nil {
+			return ProjectInfo{}, err
+		}
+	}
+	if sites := (siteIDs{Nexus: e.Nexus, CurseForge: e.CurseForge}); sites != readSites(p.Dir) {
+		if err := writeSites(p.Dir, sites); err != nil {
 			return ProjectInfo{}, err
 		}
 	}

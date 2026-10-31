@@ -18,6 +18,12 @@ import (
 
 const graphQL = "/v2/graphql"
 
+// SetAppHeaders names Mortar to Nexus Mods, which asks every client for its application name and version.
+func SetAppHeaders(h http.Header, version string) {
+	h.Set("Application-Name", "Mortar")
+	h.Set("Application-Version", version)
+}
+
 // Driver searches Nexus Mods. The zero value talks to the real site.
 type Driver struct {
 	HTTP *http.Client
@@ -145,10 +151,7 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 	err = source.DoJSON(ctx, source.Request{
 		Service: d.Name(), Client: client, Method: http.MethodPost, URL: strings.TrimRight(base, "/") + graphQL,
 		Body: searchBody{Query: query}, UserAgent: appversion.UserAgent(q.Version),
-		Header: func(h http.Header) {
-			h.Set("Application-Name", "Mortar")
-			h.Set("Application-Version", q.Version)
-		},
+		Header: func(h http.Header) { SetAppHeaders(h, q.Version) },
 	}, &parsed)
 	if err != nil {
 		return source.Page{}, err

@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -96,23 +97,32 @@ type finishedPart struct {
 	PartNumber int    `json:"PartNumber"`
 }
 
+// uploadPackage is the trusted project in dir and the newest package Pack wrote for it.
+func (s *Service) uploadPackage(gameID, dir string) (settings.DevProject, string, error) {
+	p, err := s.project(gameID, dir)
+	if err != nil {
+		return p, "", err
+	}
+	if err := requireTrust(p); err != nil {
+		return p, "", err
+	}
+	zipPath := newestPackage(p.Dir)
+	if zipPath == "" {
+		return p, "", usererr.Wrap(usererr.NotFound, errors.New("pack the mod first"))
+	}
+	return p, zipPath, nil
+}
+
 // UploadThunderstore uploads the project's newest package to the game's Thunderstore community under the project's
 // team and categories, as Thunderstore's own CLI does, and returns the package's page.
 func (s *Service) UploadThunderstore(ctx context.Context, gameID, dir string) (string, error) {
-	p, err := s.project(gameID, dir)
+	p, zipPath, err := s.uploadPackage(gameID, dir)
 	if err != nil {
-		return "", err
-	}
-	if err := requireTrust(p); err != nil {
 		return "", err
 	}
 	community := thunderstoreCommunity(gameID)
 	if community == "" {
 		return "", usererr.Wrap(usererr.Invalid, errors.New("this game has no Thunderstore community"))
-	}
-	zipPath := newestPackage(p.Dir)
-	if zipPath == "" {
-		return "", usererr.Wrap(usererr.NotFound, errors.New("pack the mod first"))
 	}
 	info, err := projectInfo(p)
 	if err != nil {
@@ -128,6 +138,108 @@ func (s *Service) UploadThunderstore(ctx context.Context, gameID, dir string) (s
 		return "", err
 	}
 	return ts.submit(ctx, uuid, info.Team, community, info.Categories)
+}
+
+// UploadSite is a site Release can upload the project to: its id is thunderstore, nexus or curseforge, and Ready is
+// set when the credentials it needs are kept.
+type UploadSite struct {
+	ID    string `json:"id"`
+	Ready bool   `json:"ready"`
+}
+
+// UploadSites lists the sites the project can be uploaded to: Thunderstore when the game has a community, and Nexus
+// Mods or CurseForge when the project's ids for it are set and the game is on that site.
+func (s *Service) UploadSites(gameID, dir string) ([]UploadSite, error) {
+	p, err := s.project(gameID, dir)
+	if err != nil {
+		return nil, err
+	}
+	sites := []UploadSite{}
+	if thunderstoreCommunity(gameID) != "" {
+		sites = append(sites, UploadSite{ID: "thunderstore", Ready: s.HasThunderstoreToken(gameID, dir)})
+	}
+	ids := readSites(p.Dir)
+	if ids.Nexus.FileID > 0 && nexusDomain(gameID) != "" {
+		key, err := nexusAPIKey()
+		sites = append(sites, UploadSite{ID: "nexus", Ready: err == nil && key != ""})
+	}
+	if ids.CurseForge.ProjectID > 0 && curseForgeBase(gameID) != "" {
+		sites = append(sites, UploadSite{ID: "curseforge", Ready: s.HasCurseForgeToken()})
+	}
+	return sites, nil
+}
+
+// releaseNotes is the project's CHANGELOG.md notes for version, empty when it has none.
+func releaseNotes(dir, version string) (string, error) {
+	if !packageVersion.MatchString(version) {
+		return "", usererr.Wrap(usererr.Invalid, errors.New("the version must be three numbers, such as 1.0.0"))
+	}
+	body, err := safefs.ReadFile(filepath.Join(dir, "CHANGELOG.md"))
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return "", err
+	}
+	return changelogOf(string(body), version), nil
+}
+
+// UploadNexus uploads the project's newest package as the next version of its Nexus Mods file, archiving the one it
+// replaces, and returns the mod's files page (empty without a mod id).
+func (s *Service) UploadNexus(ctx context.Context, gameID, dir, version string) (string, error) {
+	p, zipPath, err := s.uploadPackage(gameID, dir)
+	if err != nil {
+		return "", err
+	}
+	ids := readSites(p.Dir).Nexus
+	if ids.FileID <= 0 || nexusDomain(gameID) == "" {
+		return "", usererr.Wrap(usererr.Invalid, errors.New("set the project's Nexus Mods file id first"))
+	}
+	notes, err := releaseNotes(p.Dir, version)
+	if err != nil {
+		return "", err
+	}
+	key, err := nexusAPIKey()
+	if err != nil {
+		return "", err
+	}
+	info, err := projectInfo(p)
+	if err != nil {
+		return "", err
+	}
+	up := nexusUploader{client: s.httpClient(), base: nexusAPI, key: key, version: s.Version, poll: 2 * time.Second}
+	if err := up.upload(ctx, zipPath, info.Name, ids, version, notes); err != nil {
+		return "", err
+	}
+	return nexusPage(gameID, ids), nil
+}
+
+// UploadCurseForge uploads the project's newest package as a release of its CurseForge project and returns the
+// project's files page on the authors site.
+func (s *Service) UploadCurseForge(ctx context.Context, gameID, dir, version string) (string, error) {
+	p, zipPath, err := s.uploadPackage(gameID, dir)
+	if err != nil {
+		return "", err
+	}
+	id := readSites(p.Dir).CurseForge.ProjectID
+	base := curseForgeBase(gameID)
+	if id <= 0 || base == "" {
+		return "", usererr.Wrap(usererr.Invalid, errors.New("set the project's CurseForge project id first"))
+	}
+	notes, err := releaseNotes(p.Dir, version)
+	if err != nil {
+		return "", err
+	}
+	token, err := secret.Get(curseForgeKeyring)
+	if err != nil || token == "" {
+		return "", usererr.Wrap(usererr.Permission, errors.New("add a CurseForge upload token first"))
+	}
+	info, err := projectInfo(p)
+	if err != nil {
+		return "", err
+	}
+	up := curseForgeUploader{client: s.httpClient(), base: base, token: token, version: s.Version}
+	if _, err := up.upload(ctx, zipPath, id, info.Name+" "+version, notes); err != nil {
+		return "", err
+	}
+	return curseForgePage(id), nil
 }
 
 func thunderstoreCommunity(gameID string) string {
