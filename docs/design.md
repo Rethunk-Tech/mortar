@@ -48,7 +48,7 @@ Stage 2: unique content per game page (`web/src/pages/[game]/index.astro`), besi
 Mortar's side is built (`internal/devsvc/content.go`, the catalog's `devTemplate.content`). Left:
 
 - The BepInEx 5 template (`Rethunk-Tech/mortar-bepinex5-template`, `Directory.Build.targets` `ContentFile`/`CopyContent`) gets a minor tag and the catalog pins it; until then a code project's ticked `content/` folders are not shipped by its build.
-- The three mods (Mortar-Posters, Mortar-Boombox, Mortar-Television) scan every package folder under `plugins/` for `mortar/<kind>/` and keep reading the old layouts (`*/LethalPosters/posters`, `*/LethalPosters/tips`, `*/LethalPaintings/paintings`, `*/Custom Songs`, `BepInEx/Custom Songs`, `*/Television Videos`), loading a file present in both once; the known-broken redirects follow. New mod offers the content pack only once one of them is on Thunderstore.
+- Mortar-Posters, Mortar-Boombox and Mortar-Television are published to Thunderstore, and the known-broken redirects from LethalPosters, LethalPaintings, Custom Boombox Music and TVLoader to them follow. New mod offers a content tick only once its loader is there.
 - The per-kind `assetKinds` entries for posters, paintings, television, boombox, suits and sounds leave the catalog once no supported build predates the `content` entry's `minVersion`.
 
 Done when: a pack with posters + boombox + tv in `plugins/mortar/`, suits in `plugins/moresuits/` and a sound pack loads all three in game; a legacy-layout pack still loads; a code project's ticked content ships in its package.
