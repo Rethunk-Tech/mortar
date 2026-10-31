@@ -3095,7 +3095,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-curseforge@v0.1.0
+github.com/Rethunk-Tech/go-curseforge@v0.2.0
 licence: MIT
 https://github.com/Rethunk-Tech/go-curseforge
 
@@ -3515,7 +3515,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-smapi@v0.1.0
+github.com/Rethunk-Tech/go-smapi@v0.2.0
 licence: MIT
 https://github.com/Rethunk-Tech/go-smapi
 
