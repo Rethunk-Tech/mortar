@@ -22,12 +22,14 @@ func TestMigrateRecordsWritesTheStandardShapeOnce(t *testing.T) {
 			"{\n  \"game\": \"lethal-company\",\n  \"keep\": {\n    \"x\": 1\n  },\n  \"name\": \"Mod\",\n  \"ref\": \"main\",\n  \"template\": \"T/t\",\n  \"templateIcon\": \"abc\",\n  \"values\": {\n    \"a\": \"b\"\n  }\n}\n",
 		},
 		{
-			"0.3.8 pack record", "project.json", `{"kind":"posters","name":"Mod","author":"me","team":"Mortar"}`, "",
+			"0.3.8 pack record", "project.json", `{"kind":"posters","name":"Mod","author":"me","team":"Mortar"}`, "abc",
 			"{\n  \"team\": \"Mortar\",\n  \"game\": \"lethal-company\"\n}\n",
 		},
 		{"new template untouched", "template.json", newTemplate, "", newTemplate},
 		{"new record untouched", "project.json", "{\n  \"team\": \"Mortar\",\n  \"game\": \"lethal-company\"\n}\n", "", "{\n  \"team\": \"Mortar\",\n  \"game\": \"lethal-company\"\n}\n"},
 		{"damaged file left", "project.json", `{"team":`, "", `{"team":`},
+		// Last: the one project that keeps its icon in settings, since its template.json cannot be read.
+		{"damaged template keeps the kept icon", "template.json", `{"template":`, "abc", `{"template":`},
 	}
 	var dirs []string
 	for _, c := range cases {

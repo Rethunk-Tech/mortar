@@ -7,6 +7,7 @@ import (
 	"errors"
 	"io/fs"
 	"log"
+	"os"
 	"path/filepath"
 
 	"github.com/Rethunk-Tech/go-safefs"
@@ -40,7 +41,10 @@ func (s *Service) MigrateRecords() {
 					wrote++
 				}
 			}
-			if rec, ok := readTemplateRecord(dir); ok && rec.TemplateIcon != "" && p.TemplateIcon != "" {
+			// Only a template project's Release reads the kept icon (templateIcon); a project with no template.json
+			// never does, so its copy goes too.
+			rec, ok := readTemplateRecord(dir)
+			if p.TemplateIcon != "" && (ok && rec.TemplateIcon != "" || !ok && hasNoTemplateRecord(dir)) {
 				if err := s.Settings.ClearDevProjectTemplateIcon(gameID, p.Dir); err != nil {
 					log.Printf("devsvc: clearing the icon kept for %s: %v", dir, err)
 				}
@@ -119,4 +123,14 @@ func standardRecord(dir, gameID string) ([]byte, error) {
 		rec.Csproj = ""
 	}
 	return recordFile(rec)
+}
+
+// hasNoTemplateRecord is true only for a project folder that is there and holds no template.json, so a damaged record
+// or a moved folder keeps the icon it may still need.
+func hasNoTemplateRecord(dir string) bool {
+	if _, err := os.Stat(dir); err != nil {
+		return false
+	}
+	_, err := os.Stat(filepath.Join(dir, ".mortar", templateRecordFile))
+	return errors.Is(err, fs.ErrNotExist)
 }
