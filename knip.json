@@ -15,7 +15,6 @@
         "vite.config.ts",
         "e2e/mem-budget.ts",
         "e2e/render-budget.ts",
-        "e2e/render-diff.ts",
         "e2e/webkit-walk.ts",
         "e2e/screens.ts",
         "e2e/record-demo.ts",

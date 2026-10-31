@@ -37,7 +37,7 @@ async function missingPackages(game: string, packages: string[]): Promise<Set<st
 }
 
 /** The form less the content folders whose mod is missing, and less the content question when none is left. */
-export function withOfferedContent(form: Form | null, missing: ReadonlySet<string>): Form | null {
+function withOfferedContent(form: Form | null, missing: ReadonlySet<string>): Form | null {
   const gone = new Set(
     (form?.recommends ?? [])
       .filter((r) => r.param === CONTENT_PARAM && missing.has(r.package))
