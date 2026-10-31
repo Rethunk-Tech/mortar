@@ -26,6 +26,8 @@ func fakeClamd(t *testing.T) goavscan.Clamd {
 			if err != nil {
 				return
 			}
+			// Reading the command first keeps the close from resetting the connection before the client has read.
+			_, _ = conn.Read(make([]byte, 64))
 			_, _ = conn.Write([]byte("ClamAV 1.0.1/27000/Mon\x00"))
 			_ = conn.Close()
 		}
