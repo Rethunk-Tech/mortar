@@ -14,7 +14,7 @@ Mortar runs on the Steam Deck as the x86_64 AppImage. You set it up once in Desk
 2. Mark it executable: right-click it, **Properties**, **Permissions**, then **Is executable**. Run it.
 3. Pick your game. Mortar installs its mod loader and makes your first profile. Add your mods.
 
-Use the AppImage rather than the Flatpak on the Deck: the Flatpak cannot add itself to Steam. The AppImage updates itself in place.
+On the Deck, use the AppImage: the Flatpak cannot add itself to Steam. The AppImage updates itself in place.
 
 ## Add a profile to Steam
 

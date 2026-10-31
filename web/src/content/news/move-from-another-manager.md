@@ -6,7 +6,7 @@ date: 2026-10-20
 image: /img/profile.webp
 ---
 
-You don't have to start over to try Mortar. It reads the profiles your current manager already has.
+Mortar reads the profiles your current manager already has, so you don't have to start over.
 
 ## Import a profile
 
@@ -24,7 +24,7 @@ For a Thunderstore game, **Use a code or file…** reads an r2modman or Gale pro
 
 ## Vortex
 
-Mods Vortex linked into the game folder are copied, not moved, so Vortex keeps working. A Nexus Collection link opens in Mortar like a shared profile.
+Mods Vortex linked into the game folder are copied and the originals stay, so Vortex keeps working. A Nexus Collection link opens in Mortar like a shared profile.
 
 ## Mods with no page
 
