@@ -161,7 +161,7 @@ export function UploadDialog({
   const [uploading, upload] = usePending()
   const load = useCallback(() => {
     UploadSites(game, dir)
-      .then((list) => setSites(list ?? []))
+      .then((list) => setSites((list ?? []).filter((s) => s.configured)))
       .catch((e: unknown) => {
         setSites([])
         reportError(t`Could not read the sites to upload to`)(e)

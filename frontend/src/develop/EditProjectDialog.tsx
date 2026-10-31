@@ -13,7 +13,6 @@ import {
   TemplateForm,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
-import { useProfiles } from '../profiles/store.ts'
 import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import {
   DerivedValue,
@@ -29,6 +28,7 @@ import { ProjectDependencies } from './ProjectDependencies.tsx'
 import { saveDependencies, useDependencyRows } from './projectDependencies.ts'
 import { SiteIds } from './SiteIds.tsx'
 import { TestWith } from './TestWith.tsx'
+import { useUploadSites } from './uploadSites.ts'
 
 const MAX_DESCRIPTION = 250
 
@@ -73,7 +73,7 @@ export function EditProjectDialog({
   const { t } = useLingui()
   const [edit, setEdit] = useState<ProjectEdit>(() => editOf(info))
   const [saving, run] = usePending()
-  const sources = useProfiles((s) => s.game?.sources) ?? []
+  const sites = useUploadSites(game, dir)
   const categories = useCategoryChoices(game, edit.categories ?? [])
   const details = !sameValue(edit, editOf(info))
   const deps = useDependencyRows(game, dir)
@@ -172,7 +172,7 @@ export function EditProjectDialog({
       />
       <TestWith game={game} ids={edit.testWith ?? []} onChange={(testWith) => set({ testWith })} />
       <SiteIds
-        sources={sources}
+        sites={sites}
         nexus={edit.nexus}
         curseforge={edit.curseforge}
         onNexus={(nexus) => set({ nexus })}

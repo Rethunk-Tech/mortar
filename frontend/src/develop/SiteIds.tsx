@@ -6,29 +6,32 @@ import type {
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { FieldRow, FormSection, TextInput } from '../shell/dialog/FormDialog.tsx'
 
-// Nine digits is past every id the sites hand out and well inside what the Go side accepts.
+// Nine digits is past every CurseForge project id and well inside what the Go side accepts.
 const MAX_DIGITS = 9
 
-const idText = (id: number | undefined) => (id ? String(id) : '')
-const idOf = (text: string) => Number(text.replace(/\D/g, '').slice(0, MAX_DIGITS)) || 0
+const MAX_NEXUS_ID = 64
+const nexusId = (text: string) => text.replace(/[^A-Za-z0-9_-]/g, '').slice(0, MAX_NEXUS_ID)
+const projectText = (id: number | undefined) => (id ? String(id) : '')
+const projectId = (text: string) => Number(text.replace(/\D/g, '').slice(0, MAX_DIGITS)) || 0
 
 /** The Edit dialog's ids for the sites Release uploads to besides Thunderstore; a site with no ids is not offered. */
 export function SiteIds({
-  sources,
+  sites,
   nexus,
   curseforge,
   onNexus,
   onCurseForge,
 }: {
-  sources: string[]
+  // The ids of the sites the game can be uploaded to.
+  sites: string[]
   nexus: NexusIDs
   curseforge: CurseForgeIDs
   onNexus: (ids: NexusIDs) => void
   onCurseForge: (ids: CurseForgeIDs) => void
 }) {
   const { t } = useLingui()
-  const hasNexus = sources.includes('nexus')
-  const hasCurseForge = sources.includes('curseforge')
+  const hasNexus = sites.includes('nexus')
+  const hasCurseForge = sites.includes('curseforge')
   if (!(hasNexus || hasCurseForge)) {
     return null
   }
@@ -41,24 +44,24 @@ export function SiteIds({
         <FieldRow>
           <TextInput
             label={t`${{ source: sourceLabel('nexus') }} mod id`}
-            value={idText(nexus.modId)}
+            value={nexus.modId ?? ''}
             hint={t`Adds the changelog and links the page.`}
-            onChange={(v) => onNexus({ ...nexus, modId: idOf(v) })}
+            onChange={(v) => onNexus({ ...nexus, modId: nexusId(v) })}
           />
           <TextInput
             label={t`${{ source: sourceLabel('nexus') }} file id`}
-            value={idText(nexus.fileId)}
+            value={nexus.fileId ?? ''}
             hint={t`Shown under Advanced on the mod's Files tab.`}
-            onChange={(v) => onNexus({ ...nexus, fileId: idOf(v) })}
+            onChange={(v) => onNexus({ ...nexus, fileId: nexusId(v) })}
           />
         </FieldRow>
       ) : null}
       {hasCurseForge ? (
         <TextInput
           label={t`${{ source: sourceLabel('curseforge') }} project id`}
-          value={idText(curseforge.projectId)}
+          value={projectText(curseforge.projectId)}
           hint={t`Shown on the project's overview page.`}
-          onChange={(v) => onCurseForge({ projectId: idOf(v) })}
+          onChange={(v) => onCurseForge({ projectId: projectId(v) })}
         />
       ) : null}
     </FormSection>
