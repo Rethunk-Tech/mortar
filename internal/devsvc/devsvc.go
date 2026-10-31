@@ -533,14 +533,11 @@ func readTemplateRecord(dir string) (projectRecord, bool) {
 }
 
 func writeTemplateRecord(dir string, rec projectRecord) error {
-	body, err := json.MarshalIndent(rec, "", "  ")
+	body, err := recordFile(rec)
 	if err != nil {
 		return err
 	}
-	if err := os.MkdirAll(filepath.Join(dir, ".mortar"), 0o750); err != nil {
-		return err
-	}
-	return safefs.WriteFile(filepath.Join(dir, ".mortar", templateRecordFile), append(body, '\n'), 0o644) // #nosec G306 -- a tracked project file
+	return writeTracked(dir, templateRecordFile, body)
 }
 
 func record(dir, gameID string, tpl components.DevTemplate, name string, values map[string]string) error {

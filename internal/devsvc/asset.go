@@ -127,14 +127,25 @@ func manifestName(dir string) string {
 
 // writeRecord writes the project's .mortar/project.json.
 func writeRecord(dir string, rec assetRecord) error {
-	body, err := json.MarshalIndent(rec, "", "  ")
+	body, err := recordFile(rec)
 	if err != nil {
 		return err
 	}
+	return writeTracked(dir, assetRecordFile, body)
+}
+
+// recordFile is a .mortar record as Mortar writes it: indented, with a closing newline.
+func recordFile(rec any) ([]byte, error) {
+	body, err := json.MarshalIndent(rec, "", "  ")
+	return append(body, '\n'), err
+}
+
+// writeTracked writes name in the project's .mortar folder.
+func writeTracked(dir, name string, body []byte) error {
 	if err := os.MkdirAll(filepath.Join(dir, ".mortar"), 0o750); err != nil {
 		return err
 	}
-	return safefs.WriteFile(filepath.Join(dir, ".mortar", assetRecordFile), append(body, '\n'), 0o644) // #nosec G306 -- a tracked project file
+	return safefs.WriteFile(filepath.Join(dir, ".mortar", name), body, 0o644) // #nosec G306 -- a tracked project file
 }
 
 // assetKindOf is the catalog asset kind of the project in dir; empty for a code project, built from the template or

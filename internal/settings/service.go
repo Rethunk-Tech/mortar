@@ -240,6 +240,11 @@ func (s *Service) TrustDevProject(game, dir string) error {
 	return s.editDevProject(game, dir, func(p *DevProject) { p.Untrusted = false })
 }
 
+// ClearDevProjectTemplateIcon drops the icon hash kept here for the project in dir, once its template.json holds it.
+func (s *Service) ClearDevProjectTemplateIcon(game, dir string) error {
+	return s.editDevProject(game, dir, func(p *DevProject) { p.TemplateIcon = "" })
+}
+
 // editDevProject applies edit to the record of the project in dir.
 func (s *Service) editDevProject(game, dir string, edit func(p *DevProject)) error {
 	return s.set(func(v *Settings) {
