@@ -1,13 +1,13 @@
 # GUI design
 
-The design system lives in code: `frontend/src/theme/` (palette, density, the MUI theme), `frontend/src/shell/` (dialogs in `shell/dialog/`, menu rows in `shell/MenuAction.tsx`, `TitleMenu.tsx`'s headings and rules, `Tooltip.tsx`, `EmptyState.tsx`) and `frontend/src/brand/`. `frontend/src/lint/patterns.test.ts` and `bun run --cwd frontend i18n:dupes` fail a change that builds around them; `frontend/e2e/deck.pw.ts` checks the Steam Deck size, controller reach and 44px targets. Read those before any UI change. This page holds only what code cannot enforce: conventions, then per screen the rules no test pins.
+The design system lives in code: `frontend/src/theme/` (palette, density, the MUI theme), `frontend/src/shell/` (dialogs in `shell/dialog/`, menu rows in `shell/MenuAction.tsx`, `TitleMenu.tsx`'s headings and rules, `Tooltip.tsx`, `EmptyState.tsx`) and `frontend/src/brand/`. `frontend/src/lint/patterns.test.ts` and `bun run --cwd frontend i18n:dupes` fail a change that builds around them; `frontend/e2e/deck.pw.ts` checks the Steam Deck size, controller reach and 44px targets. Read those before any UI change. This page holds only the rules code cannot enforce.
 
 ## Conventions
 
 - Dark is the lead theme: screenshots, the README and store listings show it.
 - Dialog footers: Cancel or Close is a text button, leftmost; at most one contained primary, rightmost; a destructive primary is contained `color="error"`.
-- Layout reads spacing roles from `space` (`theme/density.ts`) rather than hand-set pixels, so a Density change moves every page together.
-- A trailing "…" only on a control that opens further input (a dialog, a picker, a confirmation); clicking it never starts the work, and the dialog's own title has none.
+- Spacing comes from the `space` roles (`theme/density.ts`), never hand-set pixels, so a Density change moves every page.
+- A trailing "…" only on a control that opens further input (a dialog, a picker, a confirmation); clicking it never starts the work, and the dialog's title has none.
 - **Remove** takes something out of a profile, group or list; **Delete** destroys it on disk. The button, its confirmation and its toast use the same verb.
 - Sentence case everywhere; labels, buttons, headings and toast titles take no full stop, body text does. No article where the meaning holds without it. A label reused mid-sentence is lowercased in code (`i18n/lowerFirst.ts`).
 - One placeholder name per concept (`{name}`, `{count}`, `{profile}`, `{game}`, `{version}`, `{path}`, `{when}`, `{source}`, `{manager}`, `{loader}`, `{launcher}`, `{os}`, `{app}`); a plural holds only the counted clause.
@@ -16,14 +16,14 @@ The design system lives in code: `frontend/src/theme/` (palette, density, the MU
 ## Game Select
 
 Choose or set up a game; shown at start and from the title bar. Code: `frontend/src/games/GameSelect.tsx`.
-- Art is Steam's `library_hero.jpg` read at runtime, never bundled, under a light solid dim layer with a text shadow and no panel; a row never changes height or moves its art on hover or focus, no tile carries an edge stripe, and a tile that cannot open is desaturated under a darker dim.
+- Art is Steam's `library_hero.jpg` read at runtime, never bundled, under a light solid dim layer with a text shadow and no panel. A row never changes height or moves its art on hover or focus, no tile has an edge stripe, and a tile that cannot open is desaturated under a darker dim.
 
 ## Main screen
 
 A left sidebar and a detail pane. Code: `frontend/src/game/MainScreen.tsx`; Play is `frontend/src/launch/PlayControl.tsx`, Home `frontend/src/game/Home.tsx`.
 - Below 960px the sidebar is always the icon rail, the hero a one-line header, the mods search folds into a filter icon, other actions into icon buttons, and the mod grid drops to two columns.
 - The hero bleeds to the pane's edges, carries no actions beside the name, and its cover sits under a light solid dim layer that fades to transparent over the bottom 20% by an alpha mask.
-- The launch screen (`frontend/src/launch/LaunchScreen.tsx`) covers the game page from Play until the loader says the mods have loaded, opaque, the game's hero art under the art-dim set. The slow notice and a failure cover the log box instead of adding height, each with one contained action (**Keep waiting**, **Retry**). **Cancel** ends only the game's own processes, never the launcher.
+- The launch screen (`frontend/src/launch/LaunchScreen.tsx`) covers the game page, opaque, from Play until the loader says the mods have loaded, with the game's hero art under the art-dim set. The slow notice and a failure cover the log box instead of adding height, each with one contained action (**Keep waiting**, **Retry**). **Cancel** ends only the game's own processes, never the launcher.
 
 ## Mods tab
 
@@ -63,15 +63,18 @@ Dropping an archive, Nexus links, two copies of one mod and loading. Code: `fron
 ## Performance tab
 
 Two summary cards head the page and switch it: **Startup** and **In game**. Code: `frontend/src/console/PerformanceTab.tsx`, thresholds in `startupView.ts`.
-- The in-game source depends on the loader's `perf` capability: the console fallback uses SMAPI's `performance` commands; SMAPI with its bridge times each mod's per-frame event handlers, and **Baseline** is the frame less the mods' timed code (Harmony patches and work outside events stay in it); BepInEx measures only on a launch measured from Startup, counting Harmony prefixes, postfixes and finalizers and the plugin's Update, LateUpdate and FixedUpdate, exclusive of nested timed calls, not transpiled code or other threads.
+- The in-game source follows the loader's `perf` capability:
+  - Console fallback: SMAPI's `performance` commands.
+  - SMAPI with its bridge: times each mod's per-frame event handlers; **Baseline** is the frame less the mods' timed code (Harmony patches and work outside events stay in it).
+  - BepInEx: measures only on a launch measured from Startup, counting Harmony prefixes, postfixes and finalizers and the plugin's Update, LateUpdate and FixedUpdate, exclusive of nested timed calls, not transpiled code or other threads.
 
 ## Profile management
 
 Every profile as a sortable row with colour and icon mark, summary, **Share** and a ⋯ menu of the shared profile items, with asides for saved groups and recently deleted profiles. Code: `frontend/src/profiles/ProfilesPage.tsx` (History, Edit profile, Compare and Merge dialogs beside it), `frontend/src/share/`.
-- The switcher's context menu and the row ⋯ menu share the profile items; Send, Compare and Delete dialogs stay mounted so they survive the menu closing.
+- The switcher's context menu and the row ⋯ menu share the profile items; Send, Compare and Delete dialogs stay mounted so they outlive the menu.
 - Applying a template previews, merges, queues missing downloads and toasts Undo; its history event follows a baseline event when the newest is not the current mods, and Undo reverts to the baseline, restoring the game settings and launch options it replaced.
 - History keeps `historyEventsKept` events; snapshot file bytes are not capped.
-- Launch prefix and environment apply to direct launches only (no prefix on Windows); Steam launches receive neither.
+- Launch prefix and environment apply to direct launches only (no prefix on Windows).
 - Compare's buttons are disabled with a tooltip while the game runs the target.
 
 ## Import
@@ -88,14 +91,14 @@ A side sheet (Ctrl+J, the title bar pill or the palette). Code: `frontend/src/qu
 
 ## First run
 
-Mortar's own setup finds launchers, not games, and opens until finished once (`launchersConfirmed`); each game runs its own setup when first opened while not set up. Code: `frontend/src/firstrun/`, `frontend/src/firstrunTour/`.
+Mortar's own setup finds launchers, not games, and runs until finished once (`launchersConfirmed`); each game runs its own setup when first opened while not set up. Code: `frontend/src/firstrun/`, `frontend/src/firstrunTour/`.
 - The loader step starts by itself, unattended; a failure shows its error with **Retry** and **Skip for now**. On Windows with Steam, **Set it in Steam for me** fails with a toast while Steam is running.
 
 ## Settings
 
 Only what is Mortar-wide, never one game's (the exception: Downloads' default profile for Nexus links, labelled with its game). Code: `frontend/src/settings/SettingsPage.tsx` and `sections/`; the registry is `internal/settings/registry.go`. Per-game settings are their own page (`GameSettingsPage.tsx`), opened by the **<game> settings** button on Home (`frontend/src/game/Home.tsx`) or the command palette.
-- A flagged download is refused with **Install anyway**, which asks in an error-coloured confirm, records the override in the profile's History and installs unscanned; a scan that could not finish installs the mod and warns it was unscanned. **Settings file** import lists changes by section and applies only the ticked ones.
-- GitHub uses the `gh` login when present; the itch.io API key is kept in the system keyring and **Test** stores nothing on rejection.
+- **Install anyway** on a flagged download asks in an error-coloured confirm. **Settings file** import lists changes by section and applies only the ticked ones.
+- The itch.io API key is kept in the system keyring; **Test** stores nothing on rejection.
 - In a game's profile scope, a row a profile may override looks like the game's until the profile changes it, then shows an accent dot after its label and a reset button naming the game's value; other rows show the game's value, held. Values only ever per profile (the loader's options in the profile's files, the game's startup options) show only in that scope.
 - **Reset game install** deletes the folder, SMAPI and the mods placed there, keeping Saves and Mortar profiles.
 - **Preferred source** is an ordered list; a mod on several sites installs from the first.
@@ -103,7 +106,7 @@ Only what is Mortar-wide, never one game's (the exception: Downloads' default pr
 
 ## Browser extension
 
-The MV3 extension ([Rethunk-Tech/mortar-browser-extension](https://github.com/Rethunk-Tech/mortar-browser-extension), own repo and version) on `www.nexusmods.com`; its UI rules (popup modes, badges, filters, mod page panel) live in that repo. When the two sides share no native-messaging protocol (`internal/nativehost` `Protocol`, `MinProtocol`, `MaxProtocol`), it says which side to update. Native-host requests: [architecture.md](architecture.md#nexus-mods).
+The MV3 extension ([Rethunk-Tech/mortar-browser-extension](https://github.com/Rethunk-Tech/mortar-browser-extension), own repo and version) runs on `www.nexusmods.com`; its UI rules live in that repo. When the two sides share no native-messaging protocol (`internal/nativehost` `Protocol`, `MinProtocol`, `MaxProtocol`), it says which side to update. Native-host requests: [architecture.md](architecture.md#nexus-mods).
 
 ## Where other screens live
 
