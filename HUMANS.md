@@ -1,11 +1,11 @@
 # Mortar runbook
 
-How to run, build and gate Mortar. Rules and what it is: [AGENTS.md](AGENTS.md); how it works: [docs/architecture.md](docs/architecture.md); decided work not yet built: [docs/design.md](docs/design.md).
+How to run, build and gate Mortar. Rules: [AGENTS.md](AGENTS.md); how it works: [docs/architecture.md](docs/architecture.md); unbuilt work: [docs/design.md](docs/design.md).
 
 ## Prerequisites
 
 - Go (the version in `go.mod`) and [bun](https://bun.sh).
-- `wails3`, built inside the `Rethunk-AI/wails` fork's module at the version `go.mod` pins (`go install` ignores `replace`): `go mod download github.com/wailsapp/wails/v3`, then `(v=$(go env GOVERSION); cd "$(go list -m -f '{{.Replace.Dir}}' github.com/wailsapp/wails/v3)" && GOTOOLCHAIN=$v go build -o "$(go env GOPATH)/bin/wails3" ./cmd/wails3)`. Mortar's Go version builds it because the fork's own `go.mod` asks for an older one.
+- `wails3`, built inside the `Rethunk-AI/wails` fork's module at the version `go.mod` pins (`go install` ignores `replace`): `go mod download github.com/wailsapp/wails/v3`, then `(v=$(go env GOVERSION); cd "$(go list -m -f '{{.Replace.Dir}}' github.com/wailsapp/wails/v3)" && GOTOOLCHAIN=$v go build -o "$(go env GOPATH)/bin/wails3" ./cmd/wails3)`. Mortar's Go version builds it (the fork's own `go.mod` asks for an older one).
 - GTK4 and WebKitGTK 6.0 development packages: `sudo dnf install gtk4-devel webkitgtk6.0-devel gcc-c++ pkgconf-pkg-config`.
 - On PATH: `golangci-lint` and `govulncheck` (gate steps), `lefthook` and `gitleaks` (git hooks; pre-commit runs gitleaks on staged changes).
 
@@ -25,13 +25,13 @@ wails3 task selftest ARGS=stop
 bun run --cwd frontend e2e                    # UI smoke in its own sandbox
 ```
 
-- `selftest` (`scripts/selftest.sh`; its header lists every subcommand and variable) runs a `server`-tagged binary with its own HOME, copied (never linked) game folders and a minimal Steam library, so real data, game and Steam config are never touched. `--copy-data` copies live profiles and settings in once. `stop` leaves the folder; `destroy` deletes it.
-- `e2e` (Playwright, Chromium only; [docs/testing.md](docs/testing.md)) starts its own sandbox, opens every profile tab and Settings page and fails on a console error, a failed request or a main-thread task over 200 ms. It is in neither the gate nor CI; run it after each wave of UI changes.
+- `selftest` (`scripts/selftest.sh`; its header lists every subcommand and variable) runs a `server`-tagged binary with its own HOME, copied (never linked) game folders and a minimal Steam library, so real data, game and Steam config stay untouched. `--copy-data` copies live profiles and settings in once. `stop` leaves the folder; `destroy` deletes it.
+- `e2e` (Playwright, Chromium only; [docs/testing.md](docs/testing.md)) starts its own sandbox, opens every profile tab and Settings page and fails on a console error, a failed request or a main-thread task over 200 ms. Not in the gate or CI; run it after each wave of UI changes.
 - The frontend build first runs `scripts/gen-credits.ts` (rewrites `frontend/src/settings/generated/credits.json` from `frontend/package.json` and `go.mod`), then extracts and compiles the Lingui catalogs in `frontend/src/locales/`. Commit those files when they change.
 
 ## Command line
 
-With Mortar running, `mortar <command>` asks the open app and prints a table, or JSON with `--json`. `mortar help` lists every command; exit codes, the `--json` error shape and the window-launch arguments are in `internal/cli/cli.go`. `<profile>` is a profile id or name; a mod id is `<format>:<local id>` (a bare id uses the game's own format, SMAPI's UniqueID for Stardew). A destructive verb is refused until you pass `--yes`.
+With Mortar running, `mortar <command>` asks the open app and prints a table, or JSON with `--json`. `mortar help` lists every command; exit codes, the `--json` error shape and window-launch arguments are in `internal/cli/cli.go`. `<profile>` is a profile id or name; a mod id is `<format>:<local id>` (a bare id uses the game's own format, SMAPI's UniqueID for Stardew). A destructive verb is refused until you pass `--yes`.
 
 ```sh
 mortar conflicts stardew "Profile 2"
@@ -64,7 +64,7 @@ It runs in a throwaway sandbox, launches the first profile, and requires an empt
 scripts/selftest.sh regress --game lethal-company     # needs Lethal Company and Proton - Experimental in the real Steam library
 ```
 
-Same shape. The steps and every `MORTAR_REGRESS_*` variable are in `scripts/selftest.sh` (`regress_lc`); the multi-launch matrix is in `scripts/regress-bepinex.sh` ([docs/bepinex-test-matrix.md](docs/bepinex-test-matrix.md)). Traps:
+Same shape. Steps and `MORTAR_REGRESS_*` variables: `scripts/selftest.sh` (`regress_lc`); the multi-launch matrix: `scripts/regress-bepinex.sh` ([docs/bepinex-test-matrix.md](docs/bepinex-test-matrix.md)). Traps:
 
 - Steam is never started. Every Proton process runs under `bwrap --unshare-net`: a copy registered under its Wine pid in a running Steam's loopback IPC leaves Steam on "Waiting for Lethal Company to shut down" for good.
 - Launches run on the sandbox's hidden display under the session's launch cap ([docs/testing.md](docs/testing.md#sandbox-game-launches)).
@@ -112,7 +112,7 @@ Starting a language: add its code to `availableLocales` in `frontend/src/i18n/lo
 
 ## Adding a game
 
-A game is catalog data first and code only where its behaviour differs. `TestEveryCatalogReferenceResolves` (`internal/source/all/catalog_test.go`) fails when an entry names a source, loader, metadata id, store field, path role or path token nothing answers to.
+A game is catalog data, with code only where its behaviour differs. `TestEveryCatalogReferenceResolves` (`internal/source/all/catalog_test.go`) fails when an entry names a source, loader, metadata id, store field, path role or path token nothing answers to.
 
 `wails3 task components:audit` lists Thunderstore communities with 20 or more packages that the catalog lacks, and catalog games Nexus hosts for their loader (or CurseForge hosts, with `MORTAR_CURSEFORGE_KEY` set) that have no source there, and fails when a catalog game's community or loader pack has gone from Thunderstore; run it before a release.
 
@@ -137,7 +137,7 @@ A game on a loader, store and sources Mortar already has needs no Go: `game.Find
 
 ### Drivers
 
-A new store, site, runtime, provider, host, installer, deployer, framework or loader is one Go package or file plus its registration. A game that uses only existing ones needs none of this. Each driver implements the interface named here, which documents its optional capabilities (type assertions):
+A new store, site, runtime, provider, host, installer, deployer, framework or loader is one Go package or file plus its registration; a game using only existing ones needs none. Each driver implements the interface named here, which documents its optional capabilities (type assertions):
 
 - Store: where its files live and how to read them go in a go-gamelocator package (one per store); `Store` in `internal/gamestore/gamestore.go` gets a driver over it, added to `All()`, and `components.GameStores` the matching field.
 - Source: `Source` in `internal/source/<id>/`; `source.Register`; import in `internal/source/all/all.go`. A searcher sets `Item.Adult` from the site's flag, since browse hides adult hits unless opted in. Tests serve the site from a fake HTTP server.
