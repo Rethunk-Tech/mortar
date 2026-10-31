@@ -232,8 +232,7 @@ func attribute(found []loader.Finding, owners func() map[string]framework.Mod, e
 // A loader that declares no minimum, or a game whose version is unknown, has none.
 func gameVersionFailure(gameID string, l loader.Loader, env Environment) (LoadFailure, bool) {
 	accepted := components.BundledAccepted(gameID, l.ID())
-	minimum, ok := strings.CutPrefix(accepted, ">=")
-	if !ok || env.GameVersion == "" || deps.Check(env.VersionScheme, env.GameVersion, minimum) != deps.Unmet {
+	if env.GameVersion == "" || !belowAccepted(env.VersionScheme, env.GameVersion, accepted) {
 		return LoadFailure{}, false
 	}
 	return LoadFailure{
@@ -241,6 +240,17 @@ func gameVersionFailure(gameID string, l loader.Loader, env Environment) (LoadFa
 		Message: "game version " + env.GameVersion + " is older than the loader accepts (" + accepted + ")",
 		Code:    "gameVersionOlder", Params: map[string]string{"version": env.GameVersion, "accepted": accepted},
 	}, true
+}
+
+// belowAccepted reports whether version is older than the ">=" bound of accepted, a space-separated range such as
+// ">=1.6.14 <1.7"; a range without one, or a version that cannot be ordered, is not.
+func belowAccepted(scheme, version, accepted string) bool {
+	for _, term := range strings.Fields(accepted) {
+		if minimum, ok := strings.CutPrefix(term, ">="); ok && deps.Check(scheme, version, minimum) == deps.Unmet {
+			return true
+		}
+	}
+	return false
 }
 
 // KindGameVersion is the LoadFailure kind of a game version the loader does not accept.

@@ -124,6 +124,17 @@ func TestGameVersionFailureNeedsAnOlderGameThanTheLoaderAccepts(t *testing.T) {
 	}
 }
 
+func TestBelowAcceptedReadsTheLowerBoundOfARange(t *testing.T) {
+	for _, c := range []struct {
+		version, accepted string
+		below             bool
+	}{{"1.6.10", ">=1.6.14 <1.7", true}, {"1.6.15", ">=1.6.14 <1.7", false}, {"1.5", ">=1.6.14", true}, {"1.5", "<1.7", false}, {"beta", ">=1.6.14", false}} {
+		if got := belowAccepted(deps.SemverSMAPI, c.version, c.accepted); got != c.below {
+			t.Errorf("%s against %q: below %v", c.version, c.accepted, got)
+		}
+	}
+}
+
 func TestPluginOwnersNameAPackageByItsPluginsNamespace(t *testing.T) {
 	dll, err := safefs.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
 	if err != nil {
