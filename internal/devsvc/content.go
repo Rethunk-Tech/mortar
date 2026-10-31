@@ -73,7 +73,7 @@ func contentQuestion(folders []components.ContentFolder, required bool) Param {
 		Kind: "choice", Multiple: true, Required: required, Own: true, Choices: []Choice{},
 	}
 	for _, f := range folders {
-		p.Choices = append(p.Choices, Choice{Value: f.ID, Label: f.Label})
+		p.Choices = append(p.Choices, Choice{Value: f.ID, Label: f.Label, Category: f.Category})
 	}
 	return p
 }

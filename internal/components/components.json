@@ -376,6 +376,7 @@
                   "label": "Posters",
                   "patterns": ["*.png", "*.jpg", "*.jpeg"],
                   "dependency": "Mortar-Posters",
+                  "category": "poster",
                   "legacy": ["plugins/LethalPosters/posters"]
                 },
                 {
@@ -383,6 +384,7 @@
                   "label": "Tips",
                   "patterns": ["*.png", "*.jpg", "*.jpeg"],
                   "dependency": "Mortar-Posters",
+                  "category": "poster",
                   "legacy": ["plugins/LethalPosters/tips"]
                 },
                 {
@@ -390,6 +392,7 @@
                   "label": "Paintings",
                   "patterns": ["*.png", "*.jpg", "*.jpeg"],
                   "dependency": "Mortar-Posters",
+                  "category": "poster",
                   "legacy": ["plugins/LethalPaintings/paintings"]
                 },
                 {
@@ -397,6 +400,7 @@
                   "label": "Boombox songs",
                   "patterns": ["*.mp3", "*.ogg", "*.wav"],
                   "dependency": "Mortar-Boombox",
+                  "category": "boombox",
                   "legacy": ["plugins/Custom Songs"]
                 },
                 {
@@ -404,6 +408,7 @@
                   "label": "TV videos",
                   "patterns": ["*.mp4", "*.webm"],
                   "dependency": "Mortar-Television",
+                  "category": "video",
                   "legacy": ["plugins/Television Videos"]
                 },
                 {
@@ -412,6 +417,7 @@
                   "folder": "moresuits",
                   "patterns": ["*.png"],
                   "dependency": "x753-More_Suits",
+                  "category": "suits",
                   "recommends": ["Verity-TooManySuits"]
                 },
                 {
@@ -420,10 +426,11 @@
                   "folder": "sounds",
                   "patterns": ["*.ogg", "*.wav", "*.mp3"],
                   "dependency": "loaforc-loaforcsSoundAPI",
+                  "category": "audio",
                   "recommends": ["loaforc-loaforcsSoundAPI_LethalCompany"],
                   "files": {
-                    "sound_pack.json": "{\n  \"name\": \"{name}\"\n}\n",
-                    "replacers/README.txt": "Each .json file here maps game sounds to files in sounds/. See https://soundapi.loaforc.me/soundpack-tutorials/guide/getting-started.html\n"
+                    "replacers/README.txt": "Each .json file here maps game sounds to files in sounds/. See https://soundapi.loaforc.me/soundpack-tutorials/guide/getting-started.html\n",
+                    "sound_pack.json": "{\n  \"name\": \"{name}\"\n}\n"
                   },
                   "needs": ["sound_pack.json", "replacers/*.json"]
                 }

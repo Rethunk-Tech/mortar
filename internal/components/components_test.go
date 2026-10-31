@@ -945,3 +945,12 @@ func TestAGameThatNeedsANewerMortarKeepsItsBundledEntry(t *testing.T) {
 		t.Errorf("NeedsNewerMortar flags %s %v, %s %v", id, NeedsNewerMortar(id), m.Games[1].ID, NeedsNewerMortar(m.Games[1].ID))
 	}
 }
+
+func TestAContentFolderCategoryIsASlug(t *testing.T) {
+	for cat, ok := range map[string]bool{"": true, "poster": true, "audio-2": true, "Poster": false, "a b": false, "../x": false} {
+		c := ContentKind{Folders: []ContentFolder{{ID: "posters", Label: "Posters", Patterns: []string{"*.png"}, Dependency: "Mortar-Posters", Category: cat}}}
+		if err := c.validate(); (err == nil) != ok {
+			t.Errorf("category %q: %v", cat, err)
+		}
+	}
+}

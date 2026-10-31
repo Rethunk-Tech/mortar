@@ -542,6 +542,8 @@ type ContentFolder struct {
 	Folder     string   `json:"folder,omitempty"`
 	Patterns   []string `json:"patterns"`
 	Dependency string   `json:"dependency"`
+	// Category is the Thunderstore category slug a pack with this folder is listed under; empty adds none.
+	Category string `json:"category,omitempty"`
 	// Recommends are packages that go well with Dependency, offered with it when the folder is ticked.
 	Recommends []string          `json:"recommends,omitempty"`
 	Legacy     []string          `json:"legacy,omitempty"`
@@ -569,6 +571,9 @@ func (c ContentKind) validate() error {
 		if err := k.validate(); err != nil {
 			return fmt.Errorf("content folder: %w", err)
 		}
+		if f.Category != "" && !categorySlug.MatchString(f.Category) {
+			return fmt.Errorf("content folder %q has category %q, not a category slug", f.ID, f.Category)
+		}
 		for _, l := range append(slices.Clone(f.Legacy), f.Needs...) {
 			if l == "." || strings.Contains(l, "\\") || !fs.ValidPath(l) {
 				return fmt.Errorf("content folder %q has an unsafe path %q", f.ID, l)
@@ -593,6 +598,8 @@ type AssetKind struct {
 
 // uploadSubdomain keeps a catalog value from steering an upload token to another host.
 var uploadSubdomain = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
+
+var categorySlug = regexp.MustCompile(`^[a-z0-9-]+$`)
 
 var assetKindID = regexp.MustCompile(`^[a-z][a-z0-9-]*$`)
 

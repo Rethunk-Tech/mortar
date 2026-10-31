@@ -215,7 +215,10 @@ func (s *Service) createAsset(ctx context.Context, m NewMod) (_ settings.DevProj
 		return settings.DevProject{}, err
 	}
 	author := cmp.Or(m.Values["modAuthor"], m.Owner)
-	details := ProjectEdit{Name: m.Name, Description: m.Values["description"], Author: author, Team: m.Values["team"]}
+	details := ProjectEdit{
+		Name: m.Name, Description: m.Values["description"], Author: author, Team: m.Values["team"],
+		Categories: slices.DeleteFunc(strings.Split(m.Values["categories"], "|"), func(c string) bool { return c == "" }),
+	}
 	if err := details.checkDetails(); err != nil {
 		return settings.DevProject{}, err
 	}
@@ -233,7 +236,7 @@ func (s *Service) createAsset(ctx context.Context, m NewMod) (_ settings.DevProj
 	if err != nil {
 		return settings.DevProject{}, err
 	}
-	record, err := json.MarshalIndent(assetRecord{Team: m.Values["team"], Game: m.Game}, "", "  ")
+	record, err := json.MarshalIndent(assetRecord{Team: m.Values["team"], Game: m.Game, Categories: details.Categories}, "", "  ")
 	if err != nil {
 		return settings.DevProject{}, err
 	}

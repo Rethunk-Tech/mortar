@@ -39,6 +39,8 @@ var (
 type Choice struct {
 	Value string `json:"value"`
 	Label string `json:"label"`
+	// Category is the Thunderstore category a content folder's tile adds; empty for any other choice.
+	Category string `json:"category,omitempty"`
 }
 
 // Param is one value the wizard asks for, in the template's words.

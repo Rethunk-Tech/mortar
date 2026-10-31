@@ -23,7 +23,7 @@ func TestAnAssetProjectIsItsOwnPackage(t *testing.T) {
 	parent := t.TempDir()
 	p, err := svc.Create(t.Context(), NewMod{
 		Game: "lethal-company", Kind: kindContent, Name: "Quacks", Parent: parent, Repo: "quacks",
-		Values: map[string]string{"description": "Ducks.", "modAuthor": "Me", "team": "Ab", contentParam: "sounds"},
+		Values: map[string]string{"description": "Ducks.", "modAuthor": "Me", "team": "Ab", contentParam: "sounds", "categories": "audio|mods"},
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -35,7 +35,7 @@ func TestAnAssetProjectIsItsOwnPackage(t *testing.T) {
 	if assetKindOf("lethal-company", dir) != kindContent || p.Output != dir || p.Untrusted {
 		t.Fatalf("project %+v", p)
 	}
-	if rec, _ := safefs.ReadFile(filepath.Join(dir, ".mortar", "project.json")); string(rec) != "{\n  \"team\": \"Ab\",\n  \"game\": \"lethal-company\"\n}\n" {
+	if rec, _ := safefs.ReadFile(filepath.Join(dir, ".mortar", "project.json")); string(rec) != "{\n  \"team\": \"Ab\",\n  \"game\": \"lethal-company\",\n  \"categories\": [\n    \"audio\",\n    \"mods\"\n  ]\n}\n" {
 		t.Errorf("record %s", rec)
 	}
 	if body, err := safefs.ReadFile(filepath.Join(dir, "plugins", "sound_pack.json")); err != nil || !strings.Contains(string(body), `"name": "Quacks"`) {
