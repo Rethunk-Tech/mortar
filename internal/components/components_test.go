@@ -17,9 +17,8 @@ import (
 	"testing"
 	"time"
 
-	"golang.org/x/mod/semver"
-
 	"github.com/Rethunk-Tech/go-safefs/diskcache"
+	"github.com/Rethunk-Tech/go-semverish"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -719,7 +718,7 @@ func TestDecodeSkipsAGameThisBuildCannotRead(t *testing.T) {
 	t.Cleanup(func() { SetRunning("") })
 	want := len(m.Games) - 3
 	for _, g := range m.Games[4:] {
-		if g.MinVersion != "" && semver.Compare("v0.3.5", "v"+g.MinVersion) < 0 {
+		if c, ok := semverish.Compare("0.3.5", g.MinVersion); g.MinVersion != "" && ok && c < 0 {
 			want--
 		}
 	}
@@ -832,6 +831,20 @@ func TestMinVersionIsCheckedAgainstTheRunningCatalogVersion(t *testing.T) {
 	}
 	if got := games("0.4.0"); got != 1 {
 		t.Errorf("a 0.3.7 build past its release dropped an entry that needs 0.3.8 (%d)", got)
+	}
+}
+
+// A minVersion is ordered as a Mortar version is, so a four-part one is a version, met by a newer build.
+func TestAFourPartMinVersionIsAVersion(t *testing.T) {
+	t.Cleanup(func() { SetRunning("") })
+	SetRunning("1.5.0")
+	g, ok := bundledGame("stardew")
+	if !ok {
+		t.Fatal("no bundled stardew")
+	}
+	g.MinVersion = "1.4.2.1"
+	if m, left := withoutUnreadable(Manifest{Games: []GameInfo{g}}); len(m.Games) != 1 || left != 0 {
+		t.Fatalf("a 1.5.0 build left out a game that needs 1.4.2.1 (kept %d)", len(m.Games))
 	}
 }
 

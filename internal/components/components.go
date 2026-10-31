@@ -35,11 +35,10 @@ import (
 	"github.com/Rethunk-Tech/go-httpkit/download"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/go-safefs/diskcache"
+	"github.com/Rethunk-Tech/go-semverish"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
-
-	"golang.org/x/mod/semver"
 )
 
 const (
@@ -894,7 +893,7 @@ func (g GameInfo) Validate() error {
 	if g.ID == "" || g.Name == "" || g.Marker == "" {
 		return errors.New("a game needs an id, a name and a marker file")
 	}
-	if g.MinVersion != "" && !semver.IsValid("v"+g.MinVersion) {
+	if _, ok := semverish.Parse(g.MinVersion); g.MinVersion != "" && !ok {
 		return fmt.Errorf("game %q has minVersion %q, not a version", g.ID, g.MinVersion)
 	}
 	if len(g.Loaders) == 0 {
@@ -1293,7 +1292,7 @@ func withoutUnreadable(m Manifest) (Manifest, int) {
 	})
 	listed := len(m.Games)
 	m.Games = slices.DeleteFunc(m.Games, func(g GameInfo) bool {
-		if g.MinVersion != "" && running != "" && semver.Compare("v"+running, "v"+g.MinVersion) < 0 {
+		if c, ok := semverish.Compare(running, g.MinVersion); g.MinVersion != "" && ok && c < 0 {
 			slog.Info("component manifest: leaving out a game that needs a newer Mortar", "game", g.ID, "needs", g.MinVersion)
 			return true
 		}

@@ -42,8 +42,6 @@ github.com/Rethunk-Tech/go-safefs v0.2.0 h1:ZNsfZ+s62DFH0mj60qCkLV/sqhOMkyZ1S6vN
 github.com/Rethunk-Tech/go-safefs v0.2.0/go.mod h1:QCWJYkNlLkYuA2VKbJkz5x+8wJHnkfiBmzEH64qP7sk=
 github.com/Rethunk-Tech/go-semverish v0.2.0 h1:UrJw6+D1uOclXnkLmpSQAIvzoCqF9XPmXBqRRdA+1lw=
 github.com/Rethunk-Tech/go-semverish v0.2.0/go.mod h1:aCtsBrSen/cxziPkxMmXxk/C3xsFVcH5+GjqPKtr6iM=
-github.com/Rethunk-Tech/go-smapi v0.1.0 h1:XQx1bF/XYTj5J7cmO5jNn1xt49TTDmRDxo3b3HUxT8I=
-github.com/Rethunk-Tech/go-smapi v0.1.0/go.mod h1:LG5HI6qH15aIOTotKmPPnlAdYa8zNbFswdqWBjdvZ2w=
 github.com/Rethunk-Tech/go-smapi v0.2.0 h1:nH+UsxO7kpJp1QKvLDfHKF/qiUDJ2JXtIw93qBmXcqI=
 github.com/Rethunk-Tech/go-smapi v0.2.0/go.mod h1:LG5HI6qH15aIOTotKmPPnlAdYa8zNbFswdqWBjdvZ2w=
 github.com/Rethunk-Tech/go-smapiweb v0.1.0 h1:D5iR7Ft8kDIpP0TBvUqnkiSx6TWDt6uM82g6Y+aWa8k=
