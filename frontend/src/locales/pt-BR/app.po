@@ -665,6 +665,10 @@ msgstr ""
 msgid "Undo this and {count, plural, one {# later change} other {# later changes}}?"
 msgstr ""
 
+#: src/develop/SiteIds.tsx
+msgid "Shown on the project's overview page."
+msgstr ""
+
 #: src/launch/LaunchButtons.tsx
 msgid "Cancelling…"
 msgstr ""
@@ -740,6 +744,10 @@ msgstr ""
 msgid "{count, plural, one {# mod installed} other {# mods installed}}"
 msgstr ""
 
+#: src/develop/SiteIds.tsx
+msgid "Shown under Advanced on the mod's Files tab."
+msgstr ""
+
 #: src/tidy/report.ts
 msgid "Mortar tidied up {count, plural, one {# thing} other {# things}}"
 msgstr ""
@@ -790,6 +798,10 @@ msgstr ""
 
 #: src/firstrun/LoaderStep.tsx
 msgid "{loader} is the loader every {game} mod needs. Mortar puts it in each profile; the game folder stays as it is."
+msgstr ""
+
+#: src/develop/UploadDialog.tsx
+msgid "Add your API key in Settings"
 msgstr ""
 
 #: src/launch/PrePlayDialog.tsx
@@ -984,6 +996,10 @@ msgstr ""
 
 #: src/launch/playStart.ts
 msgid "Could not update mods before Play"
+msgstr ""
+
+#: src/develop/SiteIds.tsx
+msgid "Release uploads to a site once its ids are set. Leave them empty to skip it."
 msgstr ""
 
 #: src/toasts/report.ts
@@ -1803,6 +1819,10 @@ msgstr ""
 msgid "The build failed."
 msgstr ""
 
+#: src/develop/UploadDialog.tsx
+msgid "Upload {name} {version}"
+msgstr ""
+
 #: src/develop/AdoptDialog.tsx
 msgid "Add this folder as a project"
 msgstr ""
@@ -2417,6 +2437,10 @@ msgstr ""
 msgid "That folder has no {manager} or {otherManager} data. Choose {otherManager}'s data folder, the one holding data.sqlite3, or {manager}'s."
 msgstr ""
 
+#: src/develop/UploadDialog.tsx
+msgid "Create one in your author settings"
+msgstr ""
+
 #: src/toasts/report.ts
 msgid "Open log"
 msgstr ""
@@ -2993,10 +3017,6 @@ msgstr ""
 msgid "A C# plugin built with the .NET SDK. Without it the mod is only the content below, and no SDK is needed."
 msgstr ""
 
-#: src/develop/UploadDialog.tsx
-msgid "Upload {name} {version} to {source}?"
-msgstr ""
-
 #: src/i18n/reasonText.ts
 msgid "{os} antivirus (AMSI)"
 msgstr ""
@@ -3082,6 +3102,10 @@ msgstr ""
 
 #: src/develop/ProjectCard.tsx
 msgid "{count, plural, one {# to push} other {# to push}}"
+msgstr ""
+
+#: src/develop/SiteIds.tsx
+msgid "{source} file id"
 msgstr ""
 
 #: src/nxm/store.ts
@@ -3415,7 +3439,7 @@ msgstr ""
 
 #: src/browse/BrowseMenu.tsx
 #: src/browse/CardAction.tsx
-#: src/develop/UploadDialog.tsx
+#: src/develop/uploadSites.ts
 #: src/share/ImportPreview.tsx
 msgid "Open page"
 msgstr ""
@@ -3435,6 +3459,10 @@ msgstr ""
 
 #: src/queue/actions.ts
 msgid "{count, plural, one {# download added} other {# downloads added}}"
+msgstr ""
+
+#: src/develop/SiteIds.tsx
+msgid "{source} mod id"
 msgstr ""
 
 #: src/browse/stats.ts
@@ -3767,6 +3795,10 @@ msgstr ""
 msgid "Multiplayer mod list…"
 msgstr ""
 
+#: src/develop/uploadSites.ts
+msgid "Uploaded {name} to {site}"
+msgstr ""
+
 #: src/share/ModpackDialog.tsx
 msgid "Could not write the changelog"
 msgstr ""
@@ -4055,6 +4087,10 @@ msgstr ""
 
 #: src/share/ModpackDialog.tsx
 msgid "Use the plain icon"
+msgstr ""
+
+#: src/develop/SiteIds.tsx
+msgid "Adds the changelog and links the page."
 msgstr ""
 
 #: src/share/useImportFlow.ts
@@ -4577,6 +4613,10 @@ msgstr ""
 msgid "Show archive contents"
 msgstr ""
 
+#: src/develop/SiteIds.tsx
+msgid "Other sites"
+msgstr ""
+
 #: src/install/batchSummary.ts
 msgid "Undo all"
 msgstr ""
@@ -4754,6 +4794,10 @@ msgstr ""
 
 #: src/browse/stats.ts
 msgid "{count, plural, one {# star} other {# stars}}"
+msgstr ""
+
+#: src/develop/UploadDialog.tsx
+msgid "Could not read the sites to upload to"
 msgstr ""
 
 #: src/saves/SaveBackupsButton.tsx
@@ -5121,10 +5165,6 @@ msgstr ""
 msgid "{count, plural, one {Update # mod} other {Update # mods}}"
 msgstr ""
 
-#: src/develop/UploadDialog.tsx
-msgid "Uploaded {name}"
-msgstr ""
-
 #: src/share/ImportProblems.tsx
 msgid "Some files could not be checked against {source}, so a few may differ from what was shared."
 msgstr ""
@@ -5366,6 +5406,10 @@ msgstr ""
 msgid "Restore from a file…"
 msgstr ""
 
+#: src/develop/UploadDialog.tsx
+msgid "One upload token covers every project of yours."
+msgstr ""
+
 #: src/lan/IncomingPrompt.tsx
 msgid "{sender} sent you {profile} ({game})"
 msgstr ""
@@ -5394,6 +5438,10 @@ msgstr ""
 msgid "Start it with the mods of {profile}"
 msgstr ""
 
+#: src/develop/UploadDialog.tsx
+msgid "Upload token"
+msgstr ""
+
 #: src/launch/VanillaPlay.tsx
 msgid "Mortar starts the unmodded game directly, outside {launcher}. The {launcher} overlay and playtime tracking do not work; {launcher} still supplies its API if running."
 msgstr ""
@@ -5412,6 +5460,10 @@ msgstr ""
 
 #: src/toasts/report.ts
 msgid "The system would not let Mortar end the game. Close it from its own window or end it in your task manager."
+msgstr ""
+
+#: src/develop/uploadSites.ts
+msgid "Could not upload to {site}"
 msgstr ""
 
 #: src/develop/ProjectCard.tsx
@@ -5632,6 +5684,10 @@ msgstr ""
 
 #: src/browse/browseConstants.ts
 msgid "Search every site this game's mods come from at once. Each result installs into this profile from wherever its author published it."
+msgstr ""
+
+#: src/develop/UploadDialog.tsx
+msgid "Mortar builds the package once and uploads it to each site ticked. A published version cannot be replaced."
 msgstr ""
 
 #: src/develop/DevelopTab.tsx
@@ -6099,10 +6155,6 @@ msgstr ""
 msgid "Could not enable sharing nearby"
 msgstr ""
 
-#: src/develop/UploadDialog.tsx
-msgid "Mortar builds the package and publishes it for everyone under your team. A published version cannot be replaced."
-msgstr ""
-
 #: src/game/ProfileMenuItems.tsx
 msgid "Already in {launcher}"
 msgstr ""
@@ -6166,6 +6218,10 @@ msgstr ""
 
 #: src/share/Included.tsx
 msgid "{shared} of {total} mods"
+msgstr ""
+
+#: src/develop/SiteIds.tsx
+msgid "{source} project id"
 msgstr ""
 
 #: src/updates/WhatsNewDialog.tsx
@@ -6975,6 +7031,10 @@ msgstr ""
 msgid "Sort: most popular"
 msgstr ""
 
+#: src/develop/UploadDialog.tsx
+msgid "Tick a site that has its credentials."
+msgstr ""
+
 #: src/i18n/formatWhen.ts
 msgid "a few seconds ago"
 msgstr ""
@@ -7363,6 +7423,7 @@ msgid "Command palette"
 msgstr ""
 
 #: src/develop/UploadDialog.tsx
+#: src/develop/uploadSites.ts
 msgid "Could not open the page"
 msgstr ""
 
@@ -7458,6 +7519,10 @@ msgstr ""
 
 #: src/develop/UploadDialog.tsx
 msgid "Service account token"
+msgstr ""
+
+#: src/develop/UploadDialog.tsx
+msgid "Add token"
 msgstr ""
 
 #: src/firstrun/LoaderStep.tsx

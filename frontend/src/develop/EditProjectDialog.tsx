@@ -13,6 +13,7 @@ import {
   TemplateForm,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
+import { useProfiles } from '../profiles/store.ts'
 import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import {
   DerivedValue,
@@ -26,6 +27,7 @@ import { buildProject, useProjectInfo } from './builds.ts'
 import { ChoicePicker } from './ChoicePicker.tsx'
 import { ProjectDependencies } from './ProjectDependencies.tsx'
 import { saveDependencies, useDependencyRows } from './projectDependencies.ts'
+import { SiteIds } from './SiteIds.tsx'
 import { TestWith } from './TestWith.tsx'
 
 const MAX_DESCRIPTION = 250
@@ -52,6 +54,8 @@ const editOf = (info: ProjectInfo): ProjectEdit => ({
   idPrefix: info.idPrefix,
   categories: info.categories ?? [],
   testWith: info.testWith ?? [],
+  nexus: info.nexus,
+  curseforge: info.curseforge,
 })
 
 /** Edits the details the project's files hold; a new name renames the project's folder, files and namespace. */
@@ -69,6 +73,7 @@ export function EditProjectDialog({
   const { t } = useLingui()
   const [edit, setEdit] = useState<ProjectEdit>(() => editOf(info))
   const [saving, run] = usePending()
+  const sources = useProfiles((s) => s.game?.sources) ?? []
   const categories = useCategoryChoices(game, edit.categories ?? [])
   const details = !sameValue(edit, editOf(info))
   const deps = useDependencyRows(game, dir)
@@ -166,6 +171,13 @@ export function EditProjectDialog({
         onRetry={deps.retry}
       />
       <TestWith game={game} ids={edit.testWith ?? []} onChange={(testWith) => set({ testWith })} />
+      <SiteIds
+        sources={sources}
+        nexus={edit.nexus}
+        curseforge={edit.curseforge}
+        onNexus={(nexus) => set({ nexus })}
+        onCurseForge={(curseforge) => set({ curseforge })}
+      />
       <FormSection title={t`Credits`}>
         <FieldRow>
           {files ? null : (
