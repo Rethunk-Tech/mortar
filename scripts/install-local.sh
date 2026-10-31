@@ -1,21 +1,37 @@
 #!/usr/bin/env bash
 # Builds the committed HEAD and installs it over the maintainer's Mortar (GearLever AppImage), after snapshotting the data folder.
 #
-#   scripts/install-local.sh [--windows]   --windows also builds the Windows installer and zips it into ~/Downloads
+#   scripts/install-local.sh [--windows] [--allow-dirty]
+#     --windows      also builds the Windows installer and zips it into ~/Downloads
+#     --allow-dirty  builds anyway when the tree has uncommitted changes (another session's work in progress); the
+#                    build still reports HEAD, so it holds those changes under HEAD's stamp
 #
-# Refuses a dirty tree, since the build stamps HEAD. Needs the CurseForge key in the keyring (secret-tool, service curseforge).
+# Refuses a dirty tree otherwise, since the build stamps HEAD. Needs the CurseForge key in the keyring (secret-tool, service curseforge).
 # Once the installed build reports HEAD, superseded /var/tmp/mortar-pre-* snapshots are deleted; older installer zips are listed.
 set -euo pipefail
 
 REPO=$(cd "$(dirname "$0")/.." && pwd)
 cd "$REPO"
-windows=0
-[ "${1:-}" = "--windows" ] && windows=1
+windows=0 dirty=0
+for arg in "$@"; do
+  case "$arg" in
+    --windows) windows=1 ;;
+    --allow-dirty) dirty=1 ;;
+    *)
+      echo "unknown option: $arg" >&2
+      exit 2
+      ;;
+  esac
+done
 
 if [ -n "$(git status --porcelain)" ]; then
-  echo "the tree is dirty; commit first so the build matches HEAD" >&2
+  if [ "$dirty" = 0 ]; then
+    echo "the tree is dirty; commit first so the build matches HEAD, or pass --allow-dirty" >&2
+    git status --short >&2
+    exit 1
+  fi
+  echo "building a dirty tree; these changes ride under HEAD's stamp:" >&2
   git status --short >&2
-  exit 1
 fi
 sha=$(git rev-parse --short=8 HEAD)
 log=${TMPDIR:-/var/tmp}/mortar-install-$sha.log
