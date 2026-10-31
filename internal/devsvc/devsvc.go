@@ -387,7 +387,7 @@ func (s *Service) Create(ctx context.Context, m NewMod) (_ settings.DevProject, 
 	if err := record(dest, tpl, m.Name, used); err != nil {
 		return settings.DevProject{}, err
 	}
-	if err := writeFiles(dest, contentStarters(codeContentRoot, ticked)); err != nil {
+	if err := writeFiles(dest, contentStarters(codeContentRoot, m.Name, ticked)); err != nil {
 		return settings.DevProject{}, err
 	}
 	if err := writeUserProps(dest, s.Tools(ctx, m.Game).GameDir); err != nil {

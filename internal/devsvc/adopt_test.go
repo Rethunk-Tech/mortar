@@ -36,7 +36,7 @@ func TestDetectPicksTheKindFromWhatTheFolderHolds(t *testing.T) {
 	}{
 		{"csproj outside src", "Wallet", map[string]string{"lib/Other.csproj": "<Project/>", "Wallet/Wallet.csproj": "<Project/>", "a.txt": "x"}, "code", "Wallet/Wallet.csproj"},
 		{"shallowest csproj", "Folder", map[string]string{"a/b/Deep.csproj": "<Project/>", "a/Top.csproj": "<Project/>"}, "code", "a/Top.csproj"},
-		{"asset project", "Quacks", map[string]string{"plugins/sounds/quack.ogg": "ogg"}, "sounds", ""},
+		{"asset project", "Quacks", map[string]string{"plugins/sounds/quack.ogg": "ogg"}, "content", ""},
 		{"bundle only", "Wallet-OuterWildsItems", map[string]string{"wallet.bundle": "b", "README.md": "r"}, "generic", ""},
 	}
 	for _, c := range cases {

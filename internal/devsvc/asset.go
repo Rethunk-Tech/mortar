@@ -108,14 +108,13 @@ func (s *Service) assetKind(gameID, id string) (components.AssetKind, error) {
 	return all[i], nil
 }
 
-// createAsset starts a project of the kind m.Kind: a package folder Mortar packs itself, so no SDK is needed. Its
-// dependency joins later through AddDependency, as the wizard's choices do for code.
+// createAsset starts a content pack: a package folder Mortar packs itself, so no SDK is needed. The ticked folders'
+// mods join later through AddDependency, as the wizard's choices do for code.
 func (s *Service) createAsset(ctx context.Context, m NewMod) (_ settings.DevProject, err error) {
-	kind, err := s.assetKind(m.Game, m.Kind)
-	if err != nil {
-		return settings.DevProject{}, err
+	if m.Kind != kindContent || len(contentFolders(m.Game)) == 0 {
+		return settings.DevProject{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("%s has no %q kind of mod", m.Game, m.Kind))
 	}
-	ticked, err := tickedContent(m.Game, m.Values, kind.ID == kindContent)
+	ticked, err := tickedContent(m.Game, m.Values, true)
 	if err != nil {
 		return settings.DevProject{}, err
 	}
@@ -134,7 +133,7 @@ func (s *Service) createAsset(ctx context.Context, m NewMod) (_ settings.DevProj
 	if err != nil {
 		return settings.DevProject{}, err
 	}
-	record, err := json.MarshalIndent(assetRecord{Kind: kind.ID, Name: m.Name, Author: author, Team: m.Values["team"]}, "", "  ")
+	record, err := json.MarshalIndent(assetRecord{Kind: kindContent, Name: m.Name, Author: author, Team: m.Values["team"]}, "", "  ")
 	if err != nil {
 		return settings.DevProject{}, err
 	}
@@ -147,13 +146,7 @@ func (s *Service) createAsset(ctx context.Context, m NewMod) (_ settings.DevProj
 		"LICENSE":                    []byte(mitLicense(author)),
 		".mortar/" + assetRecordFile: append(record, '\n'),
 	}
-	if kind.ID != kindContent {
-		files[kind.Folder+"/README.txt"] = []byte(kind.Label + ": put " + strings.Join(kind.Patterns, ", ") + " files in this folder.\n")
-	}
-	maps.Copy(files, contentStarters(packContentRoot, ticked))
-	for name, body := range kind.Files {
-		files[name] = []byte(strings.ReplaceAll(body, "{name}", m.Name))
-	}
+	maps.Copy(files, contentStarters(packContentRoot, m.Name, ticked))
 	if err := writeFiles(dest, files); err != nil {
 		return settings.DevProject{}, err
 	}
@@ -170,7 +163,7 @@ func (s *Service) createAsset(ctx context.Context, m NewMod) (_ settings.DevProj
 			return settings.DevProject{}, err
 		}
 	}
-	return s.enroll(m.Game, dest, m.Name, m.Profile, m.CopyFrom, kind.ID, false)
+	return s.enroll(m.Game, dest, m.Name, m.Profile, m.CopyFrom, kindContent, false)
 }
 
 func writeFiles(dir string, files map[string][]byte) error {
@@ -435,26 +428,17 @@ func (s *Service) packAssetProject(ctx context.Context, gameID string, p setting
 }
 
 // AssetForm is what the wizard asks for a mod of the asset kind id: the template's questions for its description,
-// author and team under the same ids (so remembered answers carry over), and the kind's packages to start with.
+// author and team under the same ids (so remembered answers carry over), and the content folders to tick.
 func (s *Service) AssetForm(gameID, id string) (Form, error) {
 	kind, err := s.assetKind(gameID, id)
 	if err != nil {
 		return Form{}, err
 	}
-	params := assetParams()
-	if kind.ID == kindContent {
-		folders := contentFolders(gameID)
-		return Form{Name: kind.Label, Recommends: contentRecommends(folders), Parameters: append(params, contentQuestion(folders, true))}, nil
+	folders := contentFolders(gameID)
+	if kind.ID != kindContent {
+		return Form{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("%s has no %q kind of mod", gameID, id))
 	}
-	recommends := []components.DevRecommend{{Package: kind.Dependency}}
-	for _, r := range kind.Recommends {
-		recommends = append(recommends, components.DevRecommend{Package: r})
-	}
-	if folders := contentFolders(gameID); len(folders) > 0 {
-		recommends = append(recommends, contentRecommends(folders)...)
-		params = append(params, contentQuestion(folders, false))
-	}
-	return Form{Name: kind.Label, Recommends: recommends, Parameters: params}, nil
+	return Form{Name: kind.Label, Recommends: contentRecommends(folders), Parameters: append(assetParams(), contentQuestion(folders, true))}, nil
 }
 
 func assetParams() []Param {

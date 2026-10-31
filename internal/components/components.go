@@ -531,15 +531,30 @@ type ContentKind struct {
 	Folders    []ContentFolder `json:"folders"`
 }
 
-// ContentFolder is mortar/<ID>/ in a package: files matching Patterns, read by Dependency. Legacy are the folders, as
-// slash paths in the package, that older packs used for the same files; its mod still reads them, and an AssetKind
-// whose Folder is one of them is superseded by the content pack.
+// ContentFolder is a folder of a package, Folder below the content root (mortar/<ID> when empty): files matching
+// Patterns, read by Dependency. Files are starter files below the root, each body's {name} replaced by the package
+// name, and Needs are patterns below the root that must match a file for the folder to do anything. Legacy are the
+// folders, as slash paths in the package, that older packs used for the same files; its mod still reads them, and an
+// AssetKind whose Folder is one of them, or is the folder itself, is superseded by the content pack.
 type ContentFolder struct {
 	ID         string   `json:"id"`
 	Label      string   `json:"label"`
+	Folder     string   `json:"folder,omitempty"`
 	Patterns   []string `json:"patterns"`
 	Dependency string   `json:"dependency"`
-	Legacy     []string `json:"legacy,omitempty"`
+	// Recommends are packages that go well with Dependency, offered with it when the folder is ticked.
+	Recommends []string          `json:"recommends,omitempty"`
+	Legacy     []string          `json:"legacy,omitempty"`
+	Files      map[string]string `json:"files,omitempty"`
+	Needs      []string          `json:"needs,omitempty"`
+}
+
+// Path is the folder below the content root.
+func (f ContentFolder) Path() string {
+	if f.Folder == "" {
+		return "mortar/" + f.ID
+	}
+	return f.Folder
 }
 
 func (c ContentKind) validate() error {
@@ -550,13 +565,13 @@ func (c ContentKind) validate() error {
 		return errors.New("content lists no folder")
 	}
 	for _, f := range c.Folders {
-		k := AssetKind{ID: f.ID, Label: f.Label, Folder: "mortar/" + f.ID, Patterns: f.Patterns, Dependency: f.Dependency}
+		k := AssetKind{ID: f.ID, Label: f.Label, Folder: f.Path(), Patterns: f.Patterns, Dependency: f.Dependency, Recommends: f.Recommends, Files: f.Files}
 		if err := k.validate(); err != nil {
 			return fmt.Errorf("content folder: %w", err)
 		}
-		for _, l := range f.Legacy {
+		for _, l := range append(slices.Clone(f.Legacy), f.Needs...) {
 			if l == "." || strings.Contains(l, "\\") || !fs.ValidPath(l) {
-				return fmt.Errorf("content folder %q has an unsafe legacy folder %q", f.ID, l)
+				return fmt.Errorf("content folder %q has an unsafe path %q", f.ID, l)
 			}
 		}
 	}

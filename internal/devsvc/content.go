@@ -20,10 +20,10 @@ const (
 	// contentParam is the wizard's question for the content folders a new project ticks, joined with "|".
 	contentParam = "mortarContent"
 	// packContentRoot holds a content pack's folders: below plugins/, since BepInEx and other managers flatten any
-	// other folder at a package's top, so it installs as BepInEx/plugins/<package>/mortar/. A code project keeps them
-	// in codeContentRoot, which its build ships under plugins/.
-	packContentRoot = "plugins/mortar"
-	codeContentRoot = "content/mortar"
+	// other folder at a package's top, so it installs as BepInEx/plugins/<package>/. A code project keeps them in
+	// codeContentRoot, which its build ships under plugins/.
+	packContentRoot = "plugins"
+	codeContentRoot = "content"
 )
 
 // contentFolders are the content folders the game's template offers; nil when it has no content pack.
@@ -35,9 +35,12 @@ func contentFolders(gameID string) []components.ContentFolder {
 	return tpl.Content.Folders
 }
 
-// superseded is an asset kind whose folder is a content folder's old layout: the content pack replaces it.
+// superseded is an asset kind whose folder is a content folder's old layout, or the folder itself in a pack: the
+// content pack replaces it.
 func superseded(folders []components.ContentFolder, k components.AssetKind) bool {
-	return slices.ContainsFunc(folders, func(f components.ContentFolder) bool { return slices.Contains(f.Legacy, k.Folder) })
+	return slices.ContainsFunc(folders, func(f components.ContentFolder) bool {
+		return slices.Contains(f.Legacy, k.Folder) || k.Folder == packContentRoot+"/"+f.Path()
+	})
 }
 
 // migrateKind is the kind a project recorded as kind reads as now: a superseded asset kind is the content pack.
@@ -79,12 +82,15 @@ func contentQuestion(folders []components.ContentFolder, required bool) Param {
 func contentRecommends(folders []components.ContentFolder) []components.DevRecommend {
 	var out []components.DevRecommend
 	for _, f := range folders {
-		i := slices.IndexFunc(out, func(r components.DevRecommend) bool { return r.Package == f.Dependency })
-		if i < 0 {
-			out = append(out, components.DevRecommend{Package: f.Dependency, Param: contentParam})
-			i = len(out) - 1
+		// A folder's extra packages are soft: they never decide whether its mod is on offer.
+		for n, pkg := range append([]string{f.Dependency}, f.Recommends...) {
+			i := slices.IndexFunc(out, func(r components.DevRecommend) bool { return r.Package == pkg })
+			if i < 0 {
+				out = append(out, components.DevRecommend{Package: pkg, Param: contentParam, Optional: n > 0})
+				i = len(out) - 1
+			}
+			out[i].Values = append(out[i].Values, f.ID)
 		}
-		out[i].Values = append(out[i].Values, f.ID)
 	}
 	return out
 }
@@ -109,19 +115,23 @@ func tickedContent(gameID string, values map[string]string, required bool) ([]co
 	return out, nil
 }
 
-// contentStarters are a README in each ticked folder below root, saying what goes there.
-func contentStarters(root string, ticked []components.ContentFolder) map[string][]byte {
+// contentStarters are a README in each ticked folder below root, saying what goes there, and the folder's own starter
+// files.
+func contentStarters(root, name string, ticked []components.ContentFolder) map[string][]byte {
 	out := map[string][]byte{}
 	for _, f := range ticked {
-		out[root+"/"+f.ID+"/README.txt"] = []byte(f.Label + ": put " + strings.Join(f.Patterns, ", ") + " files in this folder.\n")
+		out[root+"/"+f.Path()+"/README.txt"] = []byte(f.Label + ": put " + strings.Join(f.Patterns, ", ") + " files in this folder.\n")
+		for file, body := range f.Files {
+			out[root+"/"+file] = []byte(strings.ReplaceAll(body, "{name}", name))
+		}
 	}
 	return out
 }
 
-// oldFolders are where a pack may hold f's files outside plugins/mortar/: its mod's old layouts, and mortar/ at the
+// oldFolders are where a pack may hold f's files outside plugins/: its mod's old layouts, and f's folder at the
 // package's top, which installs flattened.
 func oldFolders(f components.ContentFolder) []string {
-	return append(slices.Clone(f.Legacy), "mortar/"+f.ID)
+	return append(slices.Clone(f.Legacy), f.Path())
 }
 
 func isDir(p string) bool {
@@ -129,12 +139,12 @@ func isDir(p string) bool {
 	return err == nil && info.IsDir()
 }
 
-// detectContent lists the content folders dir carries in the mortar/ layout (a pack's plugins/mortar/, or a code
-// project's content/mortar/), and those it carries only in an old or misplaced one.
+// detectContent lists the content folders dir carries in their own folder (below a pack's plugins/, or a code
+// project's content/), and those it carries only in an old or misplaced one.
 func detectContent(dir string, folders []components.ContentFolder) (found, legacy []string) {
 	found, legacy = []string{}, []string{}
 	for _, f := range folders {
-		if isDir(filepath.Join(dir, filepath.FromSlash(packContentRoot), f.ID)) || isDir(filepath.Join(dir, filepath.FromSlash(codeContentRoot), f.ID)) {
+		if isDir(filepath.Join(dir, filepath.FromSlash(packContentRoot), filepath.FromSlash(f.Path()))) || isDir(filepath.Join(dir, filepath.FromSlash(codeContentRoot), filepath.FromSlash(f.Path()))) {
 			found = append(found, f.ID)
 		}
 		if slices.ContainsFunc(oldFolders(f), func(l string) bool { return isDir(filepath.Join(dir, filepath.FromSlash(l))) }) {
@@ -142,6 +152,15 @@ func detectContent(dir string, folders []components.ContentFolder) (found, legac
 		}
 	}
 	return found, legacy
+}
+
+// hasFile is whether a file in base matches need, a slash path whose last element may be a pattern.
+func hasFile(base, need string) bool {
+	entries, err := os.ReadDir(filepath.Join(base, filepath.FromSlash(path.Dir(need))))
+	return err == nil && slices.ContainsFunc(entries, func(e fs.DirEntry) bool {
+		ok, _ := path.Match(path.Base(need), e.Name())
+		return ok && !e.IsDir()
+	})
 }
 
 // holdsMatch is whether folder, or a folder below it, holds a file one of patterns takes.
@@ -164,15 +183,16 @@ func holdsMatch(folder string, patterns []string) bool {
 }
 
 // contentIssues are what a release would ship empty: each content folder below root (and, for a pack, each old-layout
-// one) that holds no file its mod loads, or a pack with no content folder at all.
+// one) that holds no file its mod loads or lacks a file its mod needs beside it, or a pack with no content folder at
+// all.
 func contentIssues(dir, root string, folders []components.ContentFolder, pack bool) []string {
 	issues := []string{}
 	present := false
 	for _, f := range folders {
-		dirs := []string{root + "/" + f.ID}
+		dirs := []string{root + "/" + f.Path()}
 		if pack {
 			dirs = append(dirs, f.Legacy...)
-			if top := "mortar/" + f.ID; isDir(filepath.Join(dir, filepath.FromSlash(top))) {
+			if top := f.Path(); isDir(filepath.Join(dir, filepath.FromSlash(top))) {
 				issues = append(issues, top+"/ installs flattened from the package's top; move it under "+root+"/")
 			}
 		}
@@ -186,6 +206,13 @@ func contentIssues(dir, root string, folders []components.ContentFolder, pack bo
 				issues = append(issues, fmt.Sprintf("%s/ holds no %s file", d, strings.Join(f.Patterns, ", ")))
 			}
 		}
+		if isDir(filepath.Join(dir, filepath.FromSlash(root+"/"+f.Path()))) {
+			for _, need := range f.Needs {
+				if !hasFile(filepath.Join(dir, filepath.FromSlash(root)), need) {
+					issues = append(issues, fmt.Sprintf("%s holds no %s, which %s needs", root, need, f.Label))
+				}
+			}
+		}
 	}
 	if pack && !present {
 		issues = append(issues, "the content pack has no content folder; add one under "+root+"/")
@@ -193,7 +220,7 @@ func contentIssues(dir, root string, folders []components.ContentFolder, pack bo
 	return issues
 }
 
-// MoveLegacyContent moves the files of dir's old-layout content folders into plugins/mortar/<kind>/, which the player confirms
+// MoveLegacyContent moves the files of dir's old-layout content folders into each folder of the pack, which the player confirms
 // when adopting; a file already in the new folder stays where it is. It returns how many files moved.
 func (s *Service) MoveLegacyContent(gameID, dir string) (int, error) {
 	if !filepath.IsAbs(dir) {
@@ -206,7 +233,7 @@ func (s *Service) MoveLegacyContent(gameID, dir string) (int, error) {
 	defer func() { _ = root.Close() }()
 	moved := 0
 	for _, f := range contentFolders(gameID) {
-		dest := packContentRoot + "/" + f.ID
+		dest := packContentRoot + "/" + f.Path()
 		for _, l := range oldFolders(f) {
 			entries, err := fs.ReadDir(root.FS(), l)
 			if err != nil {

@@ -24,7 +24,8 @@ func TestDetectFindsContentInTheNewAndOldLayouts(t *testing.T) {
 		{"package top", map[string]string{"mortar/tv/a.mp4": "v"}, kindContent, []string{}, []string{"tv"}},
 		{"both", map[string]string{"plugins/mortar/paintings/a.png": "p", "plugins/Television Videos/a.webm": "v"}, kindContent, []string{"paintings"}, []string{"tv"}},
 		{"code project", map[string]string{"Pack.csproj": "<Project/>", "content/mortar/boombox/a.ogg": "s"}, kindCode, []string{"boombox"}, []string{}},
-		{"neither", map[string]string{"plugins/sounds/quack.ogg": "o"}, "sounds", []string{}, []string{}},
+		{"suits and sounds", map[string]string{"plugins/moresuits/a.png": "p", "plugins/sound_pack.json": "{}", "plugins/sounds/a.ogg": "o"}, kindContent, []string{"suits", "sounds"}, []string{}},
+		{"unrelated", map[string]string{"README.md": "r"}, kindGeneric, []string{}, []string{}},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -87,7 +88,7 @@ func TestA038RecordOfASupersededKindOpensAsTheContentPack(t *testing.T) {
 		})
 	}
 	dir := assetDir(t, `{"kind":"sounds","name":"Quacks","team":"Ab"}`)
-	if p, err := svc.Add(t.Context(), contentGame, dir, ""); err != nil || p.Kind != "sounds" {
+	if p, err := svc.Add(t.Context(), contentGame, dir, ""); err != nil || p.Kind != kindContent {
 		t.Errorf("sounds added as %+v, %v", p, err)
 	}
 }
@@ -103,8 +104,10 @@ func TestReleaseRefusesAnEmptyContentFolder(t *testing.T) {
 	}{
 		{"filled", map[string]string{"plugins/mortar/tv/a.mp4": "v"}, packContentRoot, true, []string{}},
 		{"empty kind", map[string]string{"plugins/mortar/tv/README.txt": "r", "plugins/mortar/posters/a.png": "p"}, packContentRoot, true, []string{"plugins/mortar/tv/ holds no *.mp4, *.webm file"}},
-		{"package top", map[string]string{"mortar/tv/a.mp4": "v", "plugins/mortar/tv/a.mp4": "v"}, packContentRoot, true, []string{"mortar/tv/ installs flattened from the package's top; move it under plugins/mortar/"}},
-		{"no kind", map[string]string{"README.md": "r"}, packContentRoot, true, []string{"the content pack has no content folder; add one under plugins/mortar/"}},
+		{"package top", map[string]string{"mortar/tv/a.mp4": "v", "plugins/mortar/tv/a.mp4": "v"}, packContentRoot, true, []string{"mortar/tv/ installs flattened from the package's top; move it under plugins/"}},
+		{"no kind", map[string]string{"README.md": "r"}, packContentRoot, true, []string{"the content pack has no content folder; add one under plugins/"}},
+		{"sounds without a replacer", map[string]string{"plugins/sounds/a.ogg": "o", "plugins/sound_pack.json": "{}"}, packContentRoot, true, []string{"plugins holds no replacers/*.json, which Sounds (each needs a line in replacers/) needs"}},
+		{"sounds filled", map[string]string{"plugins/sounds/a.ogg": "o", "plugins/sound_pack.json": "{}", "plugins/replacers/a.json": "{}"}, packContentRoot, true, []string{}},
 		{"old layout counts", map[string]string{"plugins/Custom Songs/a.ogg": "s"}, packContentRoot, true, []string{}},
 		{"code without content", map[string]string{"Pack.csproj": "<Project/>"}, codeContentRoot, false, []string{}},
 		{"code with an empty kind", map[string]string{"content/mortar/boombox/README.txt": "r"}, codeContentRoot, false, []string{"content/mortar/boombox/ holds no *.mp3, *.ogg, *.wav file"}},
@@ -125,13 +128,13 @@ func TestANewContentPackGetsATickedFolderEach(t *testing.T) {
 	if _, err := svc.Create(t.Context(), NewMod{Game: contentGame, Kind: kindContent, Name: "Art", Parent: parent, Repo: "none", Values: values}); err == nil {
 		t.Error("a content pack with nothing ticked was made")
 	}
-	values[contentParam] = "posters|tv"
+	values[contentParam] = "posters|tv|suits"
 	p, err := svc.Create(t.Context(), NewMod{Game: contentGame, Kind: kindContent, Name: "Art", Parent: parent, Repo: "art", Values: values})
 	if err != nil || p.Kind != kindContent {
 		t.Fatalf("created %+v, %v", p, err)
 	}
 	found, _ := detectContent(p.Dir, contentFolders(contentGame))
-	if !slices.Equal(found, []string{"posters", "tv"}) {
+	if !slices.Equal(found, []string{"posters", "tv", "suits"}) {
 		t.Errorf("folders %v", found)
 	}
 	form, err := svc.AssetForm(contentGame, kindContent)

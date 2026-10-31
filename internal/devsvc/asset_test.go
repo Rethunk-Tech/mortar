@@ -20,8 +20,8 @@ func TestAnAssetProjectIsItsOwnPackage(t *testing.T) {
 	svc, d := testService(t, testTemplate)
 	parent := t.TempDir()
 	p, err := svc.Create(t.Context(), NewMod{
-		Game: "lethal-company", Kind: "sounds", Name: "Quacks", Parent: parent, Repo: "quacks",
-		Values: map[string]string{"description": "Ducks.", "modAuthor": "Me", "team": "Ab"},
+		Game: "lethal-company", Kind: kindContent, Name: "Quacks", Parent: parent, Repo: "quacks",
+		Values: map[string]string{"description": "Ducks.", "modAuthor": "Me", "team": "Ab", contentParam: "sounds"},
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -30,7 +30,7 @@ func TestAnAssetProjectIsItsOwnPackage(t *testing.T) {
 	if slices.ContainsFunc(d.calls, func(c []string) bool { return c[0] == "dotnet" }) {
 		t.Errorf("an asset project ran dotnet: %v", d.calls)
 	}
-	if p.Kind != "sounds" || p.Output != dir || p.Untrusted || p.TemplateIcon == "" {
+	if p.Kind != kindContent || p.Output != dir || p.Untrusted || p.TemplateIcon == "" {
 		t.Fatalf("project %+v", p)
 	}
 	if body, err := safefs.ReadFile(filepath.Join(dir, "plugins", "sound_pack.json")); err != nil || !strings.Contains(string(body), `"name": "Quacks"`) {
@@ -52,10 +52,16 @@ func TestAnAssetProjectIsItsOwnPackage(t *testing.T) {
 		t.Errorf("build = %+v, %v", res, err)
 	}
 	info, err := svc.Inspect(t.Context(), "lethal-company", dir)
-	if err != nil || info.Kind != "sounds" || info.Package != "Ab-Quacks" || info.Missing {
+	if err != nil || info.Kind != kindContent || info.Package != "Ab-Quacks" || info.Missing {
 		t.Errorf("info = %+v, %v", info, err)
 	}
 	if err := os.WriteFile(filepath.Join(dir, "plugins", "sounds", "quack.ogg"), []byte("ogg"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if r, err := svc.Pack(t.Context(), "lethal-company", dir); err != nil || !slices.Contains(r.Issues, "plugins holds no replacers/*.json, which Sounds (each needs a line in replacers/) needs") {
+		t.Fatalf("a sounds pack with no replacer packed clean: %+v, %v", r, err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "plugins", "replacers", "quack.json"), []byte("{}"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	r, err := svc.Pack(t.Context(), "lethal-company", dir)
@@ -72,7 +78,7 @@ func TestAnAssetProjectIsItsOwnPackage(t *testing.T) {
 		names = append(names, f.Name)
 	}
 	slices.Sort(names)
-	want := []string{"CHANGELOG.md", "LICENSE", "README.md", "icon.png", "manifest.json", "plugins/replacers/README.txt", "plugins/sound_pack.json", "plugins/sounds/README.txt", "plugins/sounds/quack.ogg"}
+	want := []string{"CHANGELOG.md", "LICENSE", "README.md", "icon.png", "manifest.json", "plugins/replacers/README.txt", "plugins/replacers/quack.json", "plugins/sound_pack.json", "plugins/sounds/README.txt", "plugins/sounds/quack.ogg"}
 	if !slices.Equal(names, want) || filepath.Base(r.Zip) != "Ab-Quacks-0.1.0.zip" {
 		t.Errorf("zip %s holds %v", r.Zip, names)
 	}
@@ -281,8 +287,8 @@ func TestCreateAssetRefusesATeamTheRecordWouldRejectBeforeWritingAnything(t *tes
 	svc, _ := testService(t, testTemplate)
 	parent := t.TempDir()
 	_, err := svc.Create(t.Context(), NewMod{
-		Game: "lethal-company", Kind: "sounds", Name: "Quacks", Parent: parent, Repo: "quacks",
-		Values: map[string]string{"description": "Ducks.", "modAuthor": "Me", "team": "_Ab"},
+		Game: "lethal-company", Kind: kindContent, Name: "Quacks", Parent: parent, Repo: "quacks",
+		Values: map[string]string{"description": "Ducks.", "modAuthor": "Me", "team": "_Ab", contentParam: "sounds"},
 	})
 	if usererr.KindOf(err) != usererr.Invalid {
 		t.Fatalf("err = %v", err)
