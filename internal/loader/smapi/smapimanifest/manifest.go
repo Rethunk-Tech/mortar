@@ -36,6 +36,8 @@ type Manifest struct {
 	UpdateCautionMessage string
 	// MinimumGameVersion is the oldest game version the mod runs on, when it declares one.
 	MinimumGameVersion string
+	// MinimumAPIVersion is the oldest SMAPI the mod runs on, as written; empty when it declares none.
+	MinimumAPIVersion string
 	// DeleteOldVersion tells Mortar to carry over only user-written config (such as config.json), not other edited files.
 	DeleteOldVersion bool
 	// Format is the mod.ID format UniqueID belongs to; empty is SMAPI, the only format a manifest.json is read in.
@@ -68,7 +70,7 @@ func Parse(b []byte) (Manifest, error) {
 		Name: sm.Name, Author: sm.Author, Version: sm.Version, UniqueID: sm.UniqueID, Description: sm.Description,
 		UpdateKeys: sm.UpdateKeys, EntryDll: sm.EntryDll, ContentPackFor: sm.ContentPackFor,
 		UpdateCautionMessage: sm.UpdateCautionMessage, MinimumGameVersion: sm.MinimumGameVersion,
-		DeleteOldVersion: sm.DeleteOldVersion,
+		MinimumAPIVersion: sm.MinimumAPIVersion, DeleteOldVersion: sm.DeleteOldVersion,
 	}
 	for _, d := range sm.Dependencies {
 		m.Dependencies = append(m.Dependencies, mod.Dependency{UniqueID: d.UniqueID, MinimumVersion: d.MinimumVersion, Required: d.IsRequired})

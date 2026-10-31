@@ -14,12 +14,12 @@ import (
 // Parse carries every field smapi.Parse reads into Mortar's Manifest, IsRequired becoming Required.
 func TestParseMapsEveryField(t *testing.T) {
 	got, err := Parse([]byte(`{"Name":"N","Author":"A","Version":"1.2","UniqueID":"A.P","Description":"d","EntryDll":"P.dll",
-		"UpdateKeys":["Nexus:1"],"UpdateCautionMessage":"careful","MinimumGameVersion":"1.6","DeleteOldVersion":true,
+		"UpdateKeys":["Nexus:1"],"UpdateCautionMessage":"careful","MinimumGameVersion":"1.6","MinimumApiVersion":"4.1","DeleteOldVersion":true,
 		"Dependencies":[{"UniqueID":"B.Req","MinimumVersion":"1.2-beta"},{"UniqueID":"B.Opt","IsRequired":false}],
 		"ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`))
 	want := Manifest{
 		Name: "N", Author: "A", Version: "1.2", UniqueID: "A.P", Description: "d", EntryDll: "P.dll", UpdateKeys: []string{"Nexus:1"},
-		UpdateCautionMessage: "careful", MinimumGameVersion: "1.6", DeleteOldVersion: true, ContentPackFor: "Pathoschild.ContentPatcher",
+		UpdateCautionMessage: "careful", MinimumGameVersion: "1.6", MinimumAPIVersion: "4.1", DeleteOldVersion: true, ContentPackFor: "Pathoschild.ContentPatcher",
 		Dependencies: []mod.Dependency{
 			{UniqueID: "B.Req", MinimumVersion: "1.2-beta", Required: true}, {UniqueID: "B.Opt"}, {UniqueID: "Pathoschild.ContentPatcher", Required: true},
 		},

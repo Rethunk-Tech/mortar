@@ -125,6 +125,16 @@ function describeBroken(p: Extract<Problem, { kind: 'broken' }>): string {
   if (p.broken.source && summary) {
     return i18n._(msg`${name}: ${summary}`)
   }
+  if (status === 'needs-smapi') {
+    return i18n._(
+      msg`${name} needs SMAPI ${{ needs: p.broken.needsSmapi ?? '' }} or newer, and SMAPI ${{ installed: p.broken.smapi ?? '' }} is installed.`,
+    )
+  }
+  if (status === 'smapi-unknown') {
+    return i18n._(
+      msg`${name} needs SMAPI ${{ needs: p.broken.needsSmapi ?? '' }} or newer, and Mortar cannot tell whether the installed ${{ installed: p.broken.smapi ?? '' }} is.`,
+    )
+  }
   if (status === 'needs-game') {
     const needs = p.broken.needsGame ?? ''
     return i18n._(msg`${name} needs game version ${needs} or newer.`)

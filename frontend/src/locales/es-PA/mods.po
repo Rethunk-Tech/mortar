@@ -2171,6 +2171,10 @@ msgstr ""
 msgid "Include prereleases"
 msgstr ""
 
+#: src/mods/describe.ts
+msgid "{name} needs SMAPI {needs} or newer, and Mortar cannot tell whether the installed {installed} is."
+msgstr ""
+
 #: src/mods/ReportToAuthorButton.tsx
 msgid "Error in {name}"
 msgstr ""
@@ -2672,6 +2676,10 @@ msgstr ""
 
 #: src/mods/typedConfig/SaveHostValues.tsx
 msgid "Saved the host's values"
+msgstr ""
+
+#: src/mods/describe.ts
+msgid "{name} needs SMAPI {needs} or newer, and SMAPI {installed} is installed."
 msgstr ""
 
 #: src/mods/ChangeVersionDialog.tsx

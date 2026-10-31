@@ -117,6 +117,28 @@ func TestNeedsNewerGame(t *testing.T) {
 	}
 }
 
+// A mod whose MinimumApiVersion the installed SMAPI does not meet is a row; one whose minimum cannot be ordered is an
+// uncounted unknown row.
+func TestNeedsNewerSMAPI(t *testing.T) {
+	mod := func(id, needs string) framework.Mod {
+		m := framework.Mod{Key: id, Enabled: true}
+		m.Name, m.UniqueID, m.MinimumAPIVersion = id, id, needs
+		return m
+	}
+	mods := []framework.Mod{mod("too.new", "4.3.0"), mod("fine", "4.0"), mod("none", ""), mod("odd", "soon")}
+	got := needsNewerSMAPI("4.2.1", mods)
+	if len(got) != 2 || got[0].Key != "too.new" || got[0].Status != "needs-smapi" || got[0].NeedsSMAPI != "4.3.0" || got[0].SMAPI != "4.2.1" ||
+		got[1].Key != "odd" || got[1].Status != "smapi-unknown" {
+		t.Fatalf("rows = %+v", got)
+	}
+	if n := (Result{Broken: got}).Count(); n != 1 {
+		t.Errorf("Count = %d, want the unknown row left out", n)
+	}
+	if got := needsNewerSMAPI("", mods); len(got) != 0 {
+		t.Fatalf("no installed SMAPI made rows: %+v", got)
+	}
+}
+
 func TestADropInReplacementMeetsTheDependency(t *testing.T) {
 	ts := func(id string, enabled bool, needs ...string) framework.Mod {
 		m := framework.Mod{Enabled: enabled}

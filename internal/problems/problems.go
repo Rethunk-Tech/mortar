@@ -154,6 +154,10 @@ type Broken struct {
 	Source string `json:"source,omitempty"`
 	// NeedsGame is the game version a "needs-game" row's mod requires; the install is older.
 	NeedsGame string `json:"needsGame,omitempty"`
+	// NeedsSMAPI is the SMAPI version a "needs-smapi" row's mod requires and SMAPI the installed one, which is older;
+	// a "smapi-unknown" row has the two that cannot be ordered and is shown, not counted.
+	NeedsSMAPI string `json:"needsSmapi,omitempty"`
+	SMAPI      string `json:"smapi,omitempty"`
 	// Cycle is the loop's mods in dependency order; the last waits for the first.
 	Cycle []Dependent `json:"cycle,omitempty"`
 	// CycleBlocksAll is set when every link of the loop is required, so SMAPI loads none of its mods.
@@ -241,7 +245,13 @@ func (r Result) Count() int {
 			crashed++
 		}
 	}
-	return missing + len(r.Duplicates) + len(r.Broken) + ConflictRows(r.AssetConflicts) + len(r.Settings) +
+	broken := 0
+	for _, b := range r.Broken {
+		if b.Status != "smapi-unknown" {
+			broken++
+		}
+	}
+	return missing + len(r.Duplicates) + broken + ConflictRows(r.AssetConflicts) + len(r.Settings) +
 		crashed + failed + len(r.PluginClashes) + len(r.Drift) + len(r.Damaged) +
 		len(r.LongPaths) + len(r.Deprecated) + len(r.Cleanup) + len(r.Compat) + redundantCount(r.Redundant)
 }
@@ -319,6 +329,7 @@ func Check(ctx context.Context, m Meta, env Environment, mods []framework.Mod, r
 	broken, unknown := brokenMods(ctx, m, env, enabled)
 	broken = append(broken, dependencyCycles(enabled)...)
 	broken = append(broken, needsNewerGame(env.GameVersion, enabled)...)
+	broken = append(broken, needsNewerSMAPI(env.APIVersion, enabled)...)
 	r.Broken = broken
 	r.Unknown = r.Unknown || unknown
 	r.Timings = append(r.Timings, CheckTiming{Name: "others", Ms: time.Since(otherStart).Milliseconds(), Count: len(r.Duplicates) + len(r.Broken) + len(r.Cleanup)})
@@ -862,6 +873,28 @@ func needsNewerGame(have string, enabled []framework.Mod) []Broken {
 		if c, ok := semverish.Compare(x.MinimumGameVersion, have); ok && c > 0 {
 			out = append(out, Broken{Key: x.Key, ID: x.ModID(), Name: x.Name, Status: "needs-game", NeedsGame: x.MinimumGameVersion})
 		}
+	}
+	return out
+}
+
+// needsNewerSMAPI is a row for each switched-on mod whose MinimumApiVersion the installed SMAPI (have) does not meet,
+// and an uncounted "smapi-unknown" row for one where the two cannot be ordered.
+func needsNewerSMAPI(have string, enabled []framework.Mod) []Broken {
+	var out []Broken
+	if have == "" {
+		return out
+	}
+	for _, x := range enabled {
+		status := ""
+		switch (smapi.Manifest{MinimumAPIVersion: x.MinimumAPIVersion}).CheckSMAPI(have) {
+		case smapi.Unmet:
+			status = "needs-smapi"
+		case smapi.Unknown:
+			status = "smapi-unknown"
+		default:
+			continue
+		}
+		out = append(out, Broken{Key: x.Key, ID: x.ModID(), Name: x.Name, Status: status, NeedsSMAPI: x.MinimumAPIVersion, SMAPI: have})
 	}
 	return out
 }
