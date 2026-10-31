@@ -1,4 +1,5 @@
 import { msg } from '@lingui/core/macro'
+import { sameValue } from '@rethunk/react-load-hooks'
 import { create } from 'zustand'
 import type { CustomCategory } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
@@ -8,7 +9,6 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { sameValue } from '../shell/sameValue.ts'
 import { reportError } from '../toasts/report.ts'
 
 export function categoriesDiffer(a: CustomCategory[], b: CustomCategory[]) {

@@ -1,9 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
+import { sameValue } from '@rethunk/react-load-hooks'
 import { useCallback, useEffect } from 'react'
 import { create } from 'zustand'
 import type { Template } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/templates/models.ts'
 import { Templates } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/templates/service.ts'
-import { sameValue } from '../shell/sameValue.ts'
 import { reportError } from '../toasts/report.ts'
 
 const NONE: Template[] = []

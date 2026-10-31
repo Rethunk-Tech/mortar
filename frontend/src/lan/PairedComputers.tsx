@@ -8,7 +8,7 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material'
-import { useLoaded } from '@rethunk/react-load-hooks'
+import { sameValue, useLoaded } from '@rethunk/react-load-hooks'
 import { Events } from '@wailsio/runtime'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type {
@@ -26,7 +26,6 @@ import { SettingRow } from '../settings/SettingsSection.tsx'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
-import { sameValue } from '../shell/sameValue.ts'
 import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'

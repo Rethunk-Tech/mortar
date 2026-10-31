@@ -1,3 +1,4 @@
+import { sameValue } from '@rethunk/react-load-hooks'
 import { create } from 'zustand'
 import {
   type LiveRun,
@@ -5,7 +6,6 @@ import {
   type Status,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { idKey } from '../mods/dependents.ts'
-import { sameValue } from '../shell/sameValue.ts'
 
 interface Live {
   game: string

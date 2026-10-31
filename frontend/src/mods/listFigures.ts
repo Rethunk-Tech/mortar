@@ -1,3 +1,4 @@
+import { sameValue } from '@rethunk/react-load-hooks'
 import { useEffect } from 'react'
 import { create } from 'zustand'
 import type { Details } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/models.ts'
@@ -7,7 +8,6 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { ModFacts } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
-import { sameValue } from '../shell/sameValue.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import type { ListRow } from './listColumns.ts'
 import { useUpdates } from './updates.ts'

@@ -1,3 +1,4 @@
+import { clockWhen, sameValue } from '@rethunk/react-load-hooks'
 import { create } from 'zustand'
 import type { State } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/netstate/models.ts'
 import {
@@ -5,9 +6,7 @@ import {
   Retry,
   States,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/netstate/service.ts'
-import { clockWhen } from '../i18n/when.ts'
 import { shareInFlight } from '../profiles/listProfiles.ts'
-import { sameValue } from './sameValue.ts'
 
 // Local, in-process reads of what the last real requests showed; the only network cost is the Recheck below.
 const STATE_POLL_MS = 15_000

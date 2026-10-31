@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Alert } from '@mui/material'
+import { sameValue } from '@rethunk/react-load-hooks'
 import { Hammer } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type {
@@ -20,7 +21,6 @@ import {
   FormSection,
   TextInput,
 } from '../shell/dialog/FormDialog.tsx'
-import { sameValue } from '../shell/sameValue.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { buildProject, useProjectInfo } from './builds.ts'
 import { ChoicePicker } from './ChoicePicker.tsx'

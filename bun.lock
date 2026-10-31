@@ -24,7 +24,7 @@
         "@lingui/react": "6.10.1",
         "@mui/material": "9.5.0",
         "@rethunk/dom-input-nav": "^0.1.1",
-        "@rethunk/react-load-hooks": "^0.1.1",
+        "@rethunk/react-load-hooks": "^0.2.0",
         "@tanstack/react-virtual": "3.14.23",
         "@wailsio/runtime": "3.0.0",
         "lucide-react": "1.63.0",
@@ -520,7 +520,7 @@
 
     "@rethunk/dom-input-nav": ["@rethunk/dom-input-nav@0.1.1", "", {}, "sha512-nnb3VUsFxF+3LL/+saEYrGxMPP35RaP/bvlmqSIvvPIhwUxckrUblf+GE/8WliZ/pzSK+9VD0yfhzyLAk5Sbxw=="],
 
-    "@rethunk/react-load-hooks": ["@rethunk/react-load-hooks@0.1.1", "", { "peerDependencies": { "react": "^19.0.0", "react-dom": "^19.0.0" } }, "sha512-R1VlIi6MDhx6liJDZ37hsQOG+LMJleg4833yU4+vlVztj5eyGb4B/yIge+H3EfXrnj90UcOqkFQLNF7B3k4eFw=="],
+    "@rethunk/react-load-hooks": ["@rethunk/react-load-hooks@0.2.0", "", { "peerDependencies": { "react": "^19.0.0", "react-dom": "^19.0.0" } }, "sha512-swWtnR7wGLRy+Z850Ref5zzfntAcRSi0u5+hj60qkrZb2ueaqcYD+LU7h/YB1olYu+l0ezBBSM/14EWz2cjB5w=="],
 
     "@rethunk/react-render-audit": ["@rethunk/react-render-audit@0.1.1", "", { "peerDependencies": { "@playwright/test": "^1.64.0", "react": "^19.0.0", "react-dom": "^19.0.0" }, "bin": { "render-diff": "dist/cli.js" } }, "sha512-HXnkm5k4Ypu83SpYGeHSO1lCOM+VAH+sDjRE1ZybS7JmyorWKwygBfr5O273LLR6SBPfGEn75MnQOUGcfih24w=="],
 

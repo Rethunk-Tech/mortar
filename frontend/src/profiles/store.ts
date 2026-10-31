@@ -1,4 +1,5 @@
 import { msg } from '@lingui/core/macro'
+import { keepFields, sameValue } from '@rethunk/react-load-hooks'
 import { Events } from '@wailsio/runtime'
 import { create } from 'zustand'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
@@ -26,7 +27,6 @@ import { SetLastProfile } from '../../bindings/github.com/Rethunk-Tech/mortar/in
 import { loadGameStatus } from '../games/status.ts'
 import { i18n } from '../i18n/index.ts'
 import { useSettings } from '../settings/store.ts'
-import { keepFields, sameValue } from '../shell/sameValue.ts'
 import { reportError } from '../toasts/report.ts'
 import { setLatestChange, useToasts } from '../toasts/store.ts'
 import { settledLastProfile } from './lastProfile.ts'

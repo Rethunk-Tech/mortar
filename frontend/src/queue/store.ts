@@ -1,4 +1,5 @@
 import { msg, plural } from '@lingui/core/macro'
+import { sameValue } from '@rethunk/react-load-hooks'
 import { Events } from '@wailsio/runtime'
 import { create } from 'zustand'
 import type {
@@ -33,7 +34,6 @@ import { getProfile, useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { isSummarizedBatch, observeImportState } from '../share/importCompletion.ts'
 import { follow } from '../shell/follow.ts'
-import { sameValue } from '../shell/sameValue.ts'
 import { errorDetails, errorKind } from '../toasts/errorKind.ts'
 import { changeStillLatest, type HistoryActionState } from '../toasts/history.ts'
 import { type ToastInput, useToasts } from '../toasts/store.ts'

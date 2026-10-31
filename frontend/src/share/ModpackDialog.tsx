@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Checkbox, FormControlLabel, TextField, Typography } from '@mui/material'
-import { useLoaded } from '@rethunk/react-load-hooks'
+import { sameValue, useLoaded } from '@rethunk/react-load-hooks'
 import { useId, useState } from 'react'
 import type {
   ModpackForm,
@@ -19,7 +19,6 @@ import { Field, FieldRow, FormDialog, FormSection, TextInput } from '../shell/di
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { Fold } from '../shell/Fold.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
-import { sameValue } from '../shell/sameValue.ts'
 import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
 import { inlineError, reportError } from '../toasts/report.ts'

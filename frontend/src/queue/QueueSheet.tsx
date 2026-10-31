@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Drawer, Typography } from '@mui/material'
+import { clockWhen } from '@rethunk/react-load-hooks'
 import {
   History as HistoryIcon,
   List,
@@ -17,7 +18,6 @@ import {
 import { useTab } from '../game/tab.ts'
 import { formatKb } from '../i18n/bytes.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
-import { clockWhen } from '../i18n/when.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'

@@ -1,4 +1,5 @@
 import { msg, plural } from '@lingui/core/macro'
+import { sameValue } from '@rethunk/react-load-hooks'
 import { create } from 'zustand'
 import type { UpdatesResult } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import {
@@ -11,7 +12,6 @@ import { formatWhen } from '../i18n/formatWhen.ts'
 import { i18n } from '../i18n/index.ts'
 import { getProfile, openProfileOf, useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
-import { sameValue } from '../shell/sameValue.ts'
 import { toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useBadges } from './badges.ts'

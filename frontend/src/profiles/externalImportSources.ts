@@ -1,7 +1,7 @@
+import { sameValue } from '@rethunk/react-load-hooks'
 import { useCallback, useEffect, useState } from 'react'
 import type { SourceInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/migrate/models.ts'
 import { ExternalSources } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
-import { sameValue } from '../shell/sameValue.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 
 // Detection runs each time `active` turns true (a dialog opening), so changes made since the last look show up.

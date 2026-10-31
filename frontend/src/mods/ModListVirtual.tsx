@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Table, TableBody, TableHead, TableRow } from '@mui/material'
+import { sameValue } from '@rethunk/react-load-hooks'
 import { type MouseEvent, memo, type ReactNode, type Ref, useCallback, useRef } from 'react'
-import { sameValue } from '../shell/sameValue.ts'
 import { space } from '../theme/density.ts'
 import { showModId } from './detail.ts'
 import type { sanitizeListGroupBy } from './group.ts'

@@ -1,4 +1,4 @@
-import { readStored, writeStored } from '@rethunk/react-load-hooks'
+import { readStored, sameValue, writeStored } from '@rethunk/react-load-hooks'
 import { useEffect } from 'react'
 import { create } from 'zustand'
 import type {
@@ -9,7 +9,6 @@ import { Mods } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/
 import type { Profile } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useTab } from '../../game/tab.ts'
 import { useProfiles } from '../../profiles/store.ts'
-import { sameValue } from '../../shell/sameValue.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 
 type ConfigShow = 'all' | 'changed' | 'menu' | 'waiting'

@@ -1,6 +1,6 @@
+import { sameValue } from '@rethunk/react-load-hooks'
 import { create } from 'zustand'
 import { type TabId, useTab } from '../game/tab.ts'
-import { sameValue } from '../shell/sameValue.ts'
 import { type Route, useNav } from './store.ts'
 
 interface Visit {

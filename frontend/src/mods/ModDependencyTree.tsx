@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Link, Typography } from '@mui/material'
+import { sameValue } from '@rethunk/react-load-hooks'
 import {
   Asterisk,
   CircleAlert,
@@ -18,7 +19,6 @@ import { refWant } from '../queue/refWant.ts'
 import { useQueue } from '../queue/store.ts'
 import { pendingFor } from '../queue/totals.ts'
 import { StableLabel } from '../shell/StableLabel.tsx'
-import { sameValue } from '../shell/sameValue.ts'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import {

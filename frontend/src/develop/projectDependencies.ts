@@ -1,3 +1,4 @@
+import { sameValue } from '@rethunk/react-load-hooks'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Dependency } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import {
@@ -5,7 +6,6 @@ import {
   Dependencies,
   RemoveDependency,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
-import { sameValue } from '../shell/sameValue.ts'
 import { type InlineError, inlineError } from '../toasts/report.ts'
 import { startDependencies, useKnownPackages } from './dependencies.ts'
 

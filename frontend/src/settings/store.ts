@@ -1,4 +1,5 @@
 import { msg } from '@lingui/core/macro'
+import { keepFields } from '@rethunk/react-load-hooks'
 import { create } from 'zustand'
 import type { Settings } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import {
@@ -8,7 +9,6 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { follow } from '../shell/follow.ts'
-import { keepFields } from '../shell/sameValue.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { loadPrefSpecs } from './prefSpecs.ts'

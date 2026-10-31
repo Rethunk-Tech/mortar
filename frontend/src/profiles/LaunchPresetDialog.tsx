@@ -1,11 +1,11 @@
 import { useLingui } from '@lingui/react/macro'
 import { MenuItem } from '@mui/material'
+import { sameValue } from '@rethunk/react-load-hooks'
 import { useEffect, useState } from 'react'
 import type { LaunchPreset } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { SMAPI } from '../brand/productNames.ts'
 import { useGameInfo } from '../games/info.ts'
 import { FormDialog, SelectField, TextInput } from '../shell/dialog/FormDialog.tsx'
-import { sameValue } from '../shell/sameValue.ts'
 import { presetNameError } from './profilePresets.ts'
 
 const FOLLOW = 'follow'

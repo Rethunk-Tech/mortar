@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { readStored, writeStored } from '@rethunk/react-load-hooks'
+import { readStored, sameValue, writeStored } from '@rethunk/react-load-hooks'
 import { useEffect, useRef, useState } from 'react'
 import type { Saved } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/models.ts'
 import {
@@ -9,7 +9,6 @@ import {
 import { useCurrentGame } from '../nav/currentGame.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
-import { sameValue } from '../shell/sameValue.ts'
 import { toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'

@@ -1,3 +1,4 @@
+import { sameValue } from '@rethunk/react-load-hooks'
 import { create } from 'zustand'
 import {
   Problems,
@@ -5,7 +6,6 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useSettings } from '../settings/store.ts'
-import { sameValue } from '../shell/sameValue.ts'
 import { runBackgroundBadgeChecks } from './badgeDisplay.ts'
 import { missingCount, problemCount, updateCount } from './lookup.ts'
 import { detailsFor, useNexusDetails } from './nexusDetails.ts'

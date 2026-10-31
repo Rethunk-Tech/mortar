@@ -1,5 +1,5 @@
 import { msg } from '@lingui/core/macro'
-import { coalescer } from '@rethunk/react-load-hooks'
+import { coalescer, keepUnchanged, sameValue } from '@rethunk/react-load-hooks'
 import type { Result } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import {
   Pages,
@@ -11,7 +11,6 @@ import { SetListGroupBy } from '../../bindings/github.com/Rethunk-Tech/mortar/in
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
-import { keepUnchanged, sameValue } from '../shell/sameValue.ts'
 import { errorMessage, reportError, reportUnexpected } from '../toasts/report.ts'
 import { useBadges } from './badges.ts'
 import { loadCollapsed, persistCollapsed } from './group.ts'
