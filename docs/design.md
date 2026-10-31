@@ -27,7 +27,7 @@ Stage 2: unique content per game page (`web/src/pages/[game]/index.astro`), besi
 - Sign-in per user, like itch.io (`internal/source/itch/service.go`): the player pastes a read-only OAuth token from mod.io/me/access, Mortar tests it and keeps it in the keyring (`internal/secret`), and Settings › Accounts shows the account. A key shipped in the binary fails: a key is capped at 60 requests per minute across every install sharing it, a user's own token at 120. Tokens have no refresh, so an expired one asks the player to sign in again.
 - Downloads: fetch the modfile again right before each download (`binary_url` can expire), check its MD5 (the only hash mod.io gives), send `X-Modio-Platform: windows` for Proton games and `linux` for native ones, and honour `retry-after` on a 429.
 - Dependencies come from `?recursive=true`; some creators list soft "credit" links, so a dependency is offered, never installed unasked.
-- Placement: the game's manual mod path, never the mod.io SDK's cache, which the game's own client syncs and may overwrite.
+- Placement: the game's manual mod path. The mod.io SDK's cache is synced by the game's own client, which may overwrite it.
 - Branding: mod.io's mark and name wherever its mods appear (terms 3.3).
 - Catalog: add `modio` to the five games above and Gladio Mori. Baldur's Gate 3, Deep Rock Galactic and Core Keeper are separate entries with their own install layouts.
 
