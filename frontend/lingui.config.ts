@@ -34,11 +34,27 @@ export function withoutFuzzy(base: Formatter): Formatter {
   }
 }
 
+// The header entry at the top of a PO file (msgid "" with its msgstr lines).
+const HEADER = /^msgid ""\nmsgstr "[^\n]*"(?:\n"[^\n]*")*/
+
+// Weblate writes a header (revision date, translator, plural forms) that extract would blank, rewriting every file a
+// Weblate merge touched; the file's own header is kept instead.
+export function keepHeader(base: Formatter): Formatter {
+  return {
+    ...base,
+    serialize: async (catalog, ctx) => {
+      const out = await base.serialize(catalog, ctx)
+      const header = ctx.existing?.match(HEADER)?.[0]
+      return header === undefined ? out : out.replace(HEADER, header)
+    },
+  }
+}
+
 // Compile parses in worker threads, whose command line no longer names it, so the main thread passes the mode on.
 if (/lingui-compile/.test(process.argv[1] ?? '')) {
   process.env.MORTAR_LINGUI_COMPILE = '1'
 }
-const po = formatter({ lineNumbers: false })
+const po = keepHeader(formatter({ lineNumbers: false }))
 const format = process.env.MORTAR_LINGUI_COMPILE === '1' ? withoutFuzzy(po) : po
 
 export default defineConfig({
