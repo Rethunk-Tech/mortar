@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Autocomplete, Box, Chip, TextField } from '@mui/material'
 import { memo, useLayoutEffect, useRef, useState } from 'react'
 import { PrefSelect } from '../settings/PrefControls.tsx'
+import { useSelectedFirst } from '../shell/selectedFirst.ts'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { space } from '../theme/density.ts'
 import { BrowseShow } from './BrowseShow.tsx'
@@ -122,12 +123,14 @@ function CategoryPicker({
   disabled: boolean
   title: string
 }) {
+  const listed = useSelectedFirst(options, (o) => value.includes(o))
   return (
     <Autocomplete
       multiple={true}
       autoHighlight={true}
       size="small"
-      options={options}
+      options={listed.options}
+      onOpen={listed.onOpen}
       value={value}
       disabled={disabled}
       onChange={(_, next) => onChange(next)}

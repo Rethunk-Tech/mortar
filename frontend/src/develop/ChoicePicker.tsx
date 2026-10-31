@@ -2,6 +2,7 @@ import { Autocomplete, TextField } from '@mui/material'
 import { useId } from 'react'
 import type { Choice } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import { Field } from '../shell/dialog/FormDialog.tsx'
+import { useSelectedFirst } from '../shell/selectedFirst.ts'
 import { space } from '../theme/density.ts'
 
 const CHIP_PX = 24
@@ -21,6 +22,7 @@ export function ChoicePicker({
   onChange: (next: string[]) => void
 }) {
   const id = useId()
+  const listed = useSelectedFirst(choices, (c) => value.includes(c.value))
   return (
     <Field label={label} hint={helperText} htmlFor={id}>
       <Autocomplete
@@ -45,7 +47,8 @@ export function ChoicePicker({
           },
           '& .MuiAutocomplete-tag': { my: 0 },
         }}
-        options={choices}
+        options={listed.options}
+        onOpen={listed.onOpen}
         value={choices.filter((c) => value.includes(c.value))}
         getOptionLabel={(c) => c.label}
         isOptionEqualToValue={(a, b) => a.value === b.value}
