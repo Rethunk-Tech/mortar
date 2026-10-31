@@ -1,11 +1,5 @@
 msgid ""
-msgstr ""
-"POT-Creation-Date: 2026-10-28 14:49-0700\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"X-Generator: @lingui/cli\n"
-"Language: zh-Hans\n"
+msgstr "POT-Creation-Date: 2026-10-28 14:49-0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nX-Generator: Weblate 2026.11.dev0\nLanguage: zh-Hans\nPO-Revision-Date: 2026-10-31 13:53+0000\nLast-Translator: MOXIAOLEQWQ <moxiaole@users.noreply.hosted.weblate.org>\nLanguage-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/projects/mortar/console/zh_Hans/>\nPlural-Forms: nplurals=1; plural=0;\n"
 
 #: src/console/StartupSections.tsx
 msgid "What to do"
@@ -17,7 +11,7 @@ msgstr ""
 
 #: src/console/PerformancePanelParts.tsx
 msgid "Performance"
-msgstr ""
+msgstr "性能"
 
 #: src/console/PerformanceCards.tsx
 msgid "Play this profile, then time each mod per frame"
@@ -29,7 +23,7 @@ msgstr ""
 
 #: src/console/LinkedLog.tsx
 msgid "Could not open the folder"
-msgstr ""
+msgstr "无法打开文件夹"
 
 #: src/console/PerformancePanel.tsx
 msgid "Each mod's time in its per-frame event handlers (update, render and one-second ticks), summed per frame, averaged over every frame. The 95th percentile and peak are per frame. {app} patches and work outside events are in the baseline, not in a mod's row."
@@ -41,7 +35,7 @@ msgstr ""
 
 #: src/console/BisectDialog.tsx
 msgid "Open profile"
-msgstr ""
+msgstr "打开配置"
 
 #: src/console/UpdateNoteTag.tsx
 msgid "Unofficial build"
@@ -49,7 +43,7 @@ msgstr ""
 
 #: src/console/RunProblems.tsx
 msgid "Stop the game to change mods."
-msgstr ""
+msgstr "停止游戏以更改模组。"
 
 #: src/console/useStartupReports.ts
 msgid "Could not ask for a measured launch"
