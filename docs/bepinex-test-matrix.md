@@ -1,20 +1,20 @@
 # BepInEx test matrix
 
-What proves Mortar's BepInEx 5 support, with Lethal Company as the real game: each row names the automated test or regress step that covers it. Run it with `MORTAR_REGRESS_MATRIX=1 scripts/selftest.sh regress --game lethal-company` (code: `scripts/regress-bepinex.sh`, whose header explains the stages). Each step writes one PASS or FAIL row with its evidence to `matrix.tsv` in the sandbox; any FAIL fails the regress. It needs the copied game, Proton, the network (Thunderstore) and the .NET SDK, whose Roslyn builds the probe plugins in `scripts/bepinex-probe/` against the copied game's assemblies. Suite map: [testing.md](testing.md).
+What proves Mortar's BepInEx 5 support, with Lethal Company as the real game: each row names the test or regress step that covers it. Run it with `MORTAR_REGRESS_MATRIX=1 scripts/selftest.sh regress --game lethal-company` (code: `scripts/regress-bepinex.sh`, whose header explains the stages). Each step writes a PASS or FAIL row with its evidence to `matrix.tsv` in the sandbox; any FAIL fails the regress. Needs the copied game, Proton, the network (Thunderstore) and the .NET SDK, whose Roslyn builds the probe plugins in `scripts/bepinex-probe/` against the copied game's assemblies. Suite map: [testing.md](testing.md).
 
 ## Launches
 
-A session may start the game 3 times ([testing.md](testing.md#sandbox-game-launches)), so everything that needs no game process runs offline and the rest runs in three launches, using the whole cap (`MORTAR_REGRESS_R2_CODE` is refused with the matrix). (c) and (b) each differ from (a) in one variable, so the `bridge.reachable` rows say which, if either, costs Mortar its bridge:
+A session may start the game 3 times ([testing.md](testing.md#sandbox-game-launches)), so everything without a game process runs offline and the rest runs in three launches (`MORTAR_REGRESS_R2_CODE` is refused with the matrix). (c) and (b) each differ from (a) in one variable, so the `bridge.reachable` rows say which, if either, costs Mortar its bridge:
 
 - **(a)** the base run on the reinstalled latest pack (Doorstop 4), a measured launch of a profile filled with the modpack, the probe packages and two config edits.
 - **(c)** the Throw and Quit probes on the latest pack, run first while that pack is pinned: crash analysis, a natural exit, an unmeasured launch, and whether a plugin throwing in `Awake` alone takes the bridge down.
 - **(b)** the Save and Quit probes on the older pack pinned (5.4.2100, Doorstop 3), no throwing plugin.
 
-No vanilla launch is run: it takes no launch prefix, so the regress cannot isolate it from Steam.
+No vanilla launch runs: it takes no launch prefix, so the regress cannot isolate it from Steam.
 
 `bridge.survived.*` are INFO rows: with the default `HideManagerGameObject = false`, Lethal Company's first scene load destroys the loader's manager object and its plugin components, so False is expected and only an unreachable bridge fails.
 
-Rows are item -> test or step id (`launch (a)` and so on name the launch; `offline` needs none).
+Rows are item -> test or step id (`launch (a)` etc. name the launch; `offline` needs none).
 
 ## Measured launch and live state
 
