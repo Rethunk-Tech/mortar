@@ -225,6 +225,9 @@ func (s *Service) fetchEntry(
 	var n int64
 	var err error
 	for attempt := 1; attempt <= fetchAttempts; attempt++ {
+		if s.fetchTried != nil {
+			s.fetchTried()
+		}
 		n, err = s.fetchOnce(ctx, incoming, item, id, current, total, bytes, started)
 		if err == nil || !retryable(err) || attempt == fetchAttempts {
 			return n, err

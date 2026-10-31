@@ -153,6 +153,9 @@ type Service struct {
 	sharesInFlight int
 	// receiveIdle overrides storeIdle for a receiving copy; tests shorten it.
 	receiveIdle time.Duration
+	// fetchTried, when set, is called as fetchEntry starts each try; tests count tries with it, since a try can idle
+	// out before its request reaches the sender.
+	fetchTried func()
 }
 
 type peerRecord struct {
