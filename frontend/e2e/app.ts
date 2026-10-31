@@ -162,3 +162,16 @@ export async function showProblemSection(page: Page, id: string) {
   }
   await expect(page.locator(`section[data-section="${id}"]`)).toBeVisible()
 }
+
+// A notification in the copied data puts a badge on the bell that no product picture should carry; clearing it touches
+// only the sandbox.
+export async function clearBell(page: Page, stepMs: number) {
+  const bell = page.getByRole('button', { name: /^Notifications, \d+ unread/ })
+  if (!(await bell.isVisible({ timeout: 1500 }).catch(() => false))) {
+    return
+  }
+  await bell.click()
+  await page.getByRole('dialog').getByRole('button', { name: 'Clear' }).click({ timeout: stepMs })
+  await page.keyboard.press('Escape')
+  await bell.waitFor({ state: 'detached', timeout: stepMs })
+}

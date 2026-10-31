@@ -4,7 +4,7 @@ import { basename, join } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { chromium, type Page } from '@playwright/test'
-import { dwell } from './app.ts'
+import { clearBell, dwell } from './app.ts'
 import { releaseScenes } from './screenScenes.ts'
 
 // Headless screenshots of the main screens, for a person whose own browser cannot capture the sandbox. Not a spec:
@@ -140,7 +140,7 @@ async function settings(page: Page, section: string) {
 }
 
 const STARDEW = { game: 'Stardew Valley', name: 'Main' }
-const LETHAL = { game: 'Lethal Company', name: 'Main' }
+const LETHAL = { game: 'Lethal Company', name: 'Lethal Company Development' }
 // The maintainer's measured profile, whose runs logged patch errors.
 const LETHAL_MEASURED = { game: 'Lethal Company', name: 'Guided Test' }
 
@@ -346,7 +346,7 @@ const SITE: Scene[] = [
     desk: DESK,
     wide: WIDE,
     profile: LETHAL_MEASURED,
-    developing: { game: 'Lethal Company', name: 'ConfigSync Test' },
+    developing: LETHAL,
     stepMs: STEP_MS,
   }),
 ]
@@ -383,6 +383,7 @@ async function siteShots() {
         if (scene.profile) {
           await openNamedProfile(page, scene.profile.game, scene.profile.name)
         }
+        await clearBell(page, STEP_MS)
         await scene.steps(page)
         await page.mouse.move(scene.width / 2, 8)
       },

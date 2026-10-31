@@ -12,6 +12,7 @@
 #   scripts/selftest.sh destroy               stop the server and everything running from the sandbox, then delete it
 #   scripts/selftest.sh reap [--hours N] [--yes]  list (and with --yes delete) idle sandboxes under the base dir
 #   scripts/selftest.sh seed                  fill the running sandbox with fixture data (once; skipped when present)
+#   scripts/selftest.sh secrets               copy the maintainer's Nexus and itch.io keys into the running sandbox's keyring (screenshots)
 #   scripts/selftest.sh sims4-install         add only the stand-in The Sims 4 (see sims4_install) to the sandbox (before start)
 #   scripts/selftest.sh ea-fixture FOLDER MARKER  add a fake Bottles bottle holding an EA App install of FOLDER (discovery only)
 #   scripts/selftest.sh regress --fake GAME_ID  launch regress for a game not installed here: a fake install and a dummy window (see regress_fake)
@@ -308,6 +309,27 @@ copy_data() {
       cp -a "$real/$item" "$dest/"
     fi
   done
+}
+
+# The maintainer's own Nexus and itch.io keys, piped from the real keyring into the sandbox's (never printed), so
+# screenshots show what a signed-in Mortar does. Thunderstore upload tokens stay out: no screen needs them.
+copy_secrets() {
+  [ -s "$ROOT/run/display.env" ] || {
+    echo "start the sandbox first: its keyring lives on its own session bus" >&2
+    exit 1
+  }
+  local name copied=0
+  for name in nexus nexus-oauth itch; do
+    /usr/bin/secret-tool lookup service mortar username "$name" >/dev/null 2>&1 || continue
+    /usr/bin/secret-tool lookup service mortar username "$name" |
+      hidden secret-tool store --label="Password for '$name' on 'mortar'" service mortar username "$name"
+    if [ "$(/usr/bin/secret-tool lookup service mortar username "$name" | sha256sum)" != "$(hidden secret-tool lookup service mortar username "$name" | sha256sum)" ]; then
+      echo "$name did not reach the sandbox keyring intact" >&2
+      exit 1
+    fi
+    copied=$((copied + 1))
+  done
+  echo "copied $copied keyring item(s) into the sandbox"
 }
 
 # The server re-executes itself, so the process to stop is the one holding the port, checked against our binary.
@@ -780,22 +802,22 @@ regress_lc() {
   # game (the same executable on the same IL2CPP BepInEx pack) and runs without a bridge, since none is built for it.
   local rg_id=$1 rg_app rg_src_app rg_folder rg_bepinex rg_bridge=expected rg_plugins rg_packages rg_unity_data="" rg_timeout=240
   case $rg_id in
-    lethal-company)
-      rg_app=$LC_APP_ID rg_src_app=$LC_APP_ID rg_folder=$LC_FOLDER rg_bepinex=5.4.2305
-      rg_plugins=(LethalConfig ShipLoot MoreCompany)
-      rg_packages=(AinaVT/LethalConfig/1.4.6 tinyhoot/ShipLoot/1.1.0 notnotnotswipez/MoreCompany/1.14.0)
-      ;;
-    cat-mail-co)
-      rg_app=4380490 rg_src_app=4622530 rg_folder=CatMailCoDemo rg_bepinex=6.0.788 rg_bridge=skipped
-      # The first start generates the interop assemblies before any plugin loads.
-      rg_unity_data=CatMailCo_Data rg_timeout=900
-      rg_plugins=(CatLib)
-      rg_packages=(CatLib/CrashWatcher/1.1.0 CatLib/CatLib/0.7.3)
-      if [ -n "${MORTAR_REGRESS_MATRIX:-}${MORTAR_REGRESS_R2_CODE:-}${MORTAR_REGRESS_MORTAR_PROTON:-}" ]; then
-        echo "the matrix, r2 codes and Mortar's own Proton run only with --game lethal-company" >&2
-        exit 2
-      fi
-      ;;
+  lethal-company)
+    rg_app=$LC_APP_ID rg_src_app=$LC_APP_ID rg_folder=$LC_FOLDER rg_bepinex=5.4.2305
+    rg_plugins=(LethalConfig ShipLoot MoreCompany)
+    rg_packages=(AinaVT/LethalConfig/1.4.6 tinyhoot/ShipLoot/1.1.0 notnotnotswipez/MoreCompany/1.14.0)
+    ;;
+  cat-mail-co)
+    rg_app=4380490 rg_src_app=4622530 rg_folder=CatMailCoDemo rg_bepinex=6.0.788 rg_bridge=skipped
+    # The first start generates the interop assemblies before any plugin loads.
+    rg_unity_data=CatMailCo_Data rg_timeout=900
+    rg_plugins=(CatLib)
+    rg_packages=(CatLib/CrashWatcher/1.1.0 CatLib/CatLib/0.7.3)
+    if [ -n "${MORTAR_REGRESS_MATRIX:-}${MORTAR_REGRESS_R2_CODE:-}${MORTAR_REGRESS_MORTAR_PROTON:-}" ]; then
+      echo "the matrix, r2 codes and Mortar's own Proton run only with --game lethal-company" >&2
+      exit 2
+    fi
+    ;;
   esac
   if [ -n "${MORTAR_REGRESS_R2_CODE:-}" ] && [ "$(regress_launches)" -gt "$LAUNCH_CAP" ]; then
     echo "refused: MORTAR_REGRESS_R2_CODE needs launch $(regress_launches), but a session allows $LAUNCH_CAP and the base run and the matrix use $(($(regress_launches) - 1)) of them; unset MORTAR_REGRESS_R2_CODE or MORTAR_REGRESS_MATRIX" >&2
@@ -1159,11 +1181,11 @@ PYEOF
 # regress can run against a stand-in folder (see regress_fake).
 fake_game() {
   case "$1" in
-    repo) echo "3241660|REPO|REPO.exe|5.4.2305" ;;
-    peak) echo "3527290|PEAK|PEAK.exe|5.4.75301" ;;
-    riskofrain2) echo "632360|Risk of Rain 2|Risk of Rain 2.exe|5.4.2122" ;;
-    cities-skylines-ii) echo "949230|Cities Skylines II|Cities2.exe|5.4.2305" ;;
-    *) return 1 ;;
+  repo) echo "3241660|REPO|REPO.exe|5.4.2305" ;;
+  peak) echo "3527290|PEAK|PEAK.exe|5.4.75301" ;;
+  riskofrain2) echo "632360|Risk of Rain 2|Risk of Rain 2.exe|5.4.2122" ;;
+  cities-skylines-ii) echo "949230|Cities Skylines II|Cities2.exe|5.4.2305" ;;
+  *) return 1 ;;
   esac
 }
 
@@ -1272,7 +1294,8 @@ sys.exit(0 if g and g.get("installed") else 1)
 PY
   # A game whose catalog offers graphics APIs gets its recommended one chosen, so the launch must carry its arguments.
   local graphics_args choice=""
-  graphics_args=$(python3 - "$REPO/internal/components/components.json" "$id" <<'PY'
+  graphics_args=$(
+    python3 - "$REPO/internal/components/components.json" "$id" <<'PY'
 import json, sys
 g = next(g for g in json.load(open(sys.argv[1]))["games"] if g["id"] == sys.argv[2])
 gr = g.get("graphics")
@@ -1646,7 +1669,8 @@ curseforge_scenario() {
     cli mods stardew "$profile" --json >"$ROOT/cf-mods.json"
     mods=$(python3 -c 'import json,sys; print(sum(1 for m in json.load(open(sys.argv[1])) if m["source"]=="curseforge" and m["version"]))' "$ROOT/cf-mods.json")
     [ "$mods" -ge 1 ] || failures+=("no mod with source curseforge and a version landed in the profile")
-    fileid=$(python3 - "$data/profiles/stardew" "$profile" <<'PY'
+    fileid=$(
+      python3 - "$data/profiles/stardew" "$profile" <<'PY'
 import json, os, sys
 root = os.path.join(sys.argv[1], sys.argv[2])
 for d, _, files in os.walk(root):
@@ -1663,7 +1687,7 @@ for d, _, files in os.walk(root):
                 print(src["fileId"])
                 sys.exit()
 PY
-)
+    )
     [ -n "$fileid" ] || failures+=("the profile records no CurseForge file id")
     [ "$fileid" = "$older" ] || failures+=("the profile records file $fileid, not the requested $older")
     cli updates stardew "$profile" --json >"$ROOT/cf-updates.json" 2>&1 ||
@@ -1678,14 +1702,15 @@ PY
     curl -fsS --config <(printf 'header = "x-api-key: %s"\n' "$MORTAR_CURSEFORGE_KEY") \
       "https://api.curseforge.com/v1/mods/search?gameId=669&sortField=2&sortOrder=desc&pageSize=50&index=$page" \
       >"$ROOT/cf-search.json" 2>/dev/null || break
-    blocked=$(python3 - "$ROOT/cf-search.json" <<'PY'
+    blocked=$(
+      python3 - "$ROOT/cf-search.json" <<'PY'
 import json, sys
 for m in json.load(open(sys.argv[1]))["data"]:
     if m.get("allowModDistribution") is False:
         print(f'{m["id"]}\t{m["name"]}')
         break
 PY
-)
+    )
     [ -n "$blocked" ] && break
   done
   if [ -z "$blocked" ]; then
@@ -1734,14 +1759,15 @@ cf_wait_queue() {
   local deadline=$((SECONDS + 180)) out=""
   while [ "$SECONDS" -lt "$deadline" ]; do
     cli queue --json >"$ROOT/cf-queue.json"
-    out=$(python3 - "$ROOT/cf-queue.json" "$1" <<'PY'
+    out=$(
+      python3 - "$ROOT/cf-queue.json" "$1" <<'PY'
 import json, sys
 items = [i for i in json.load(open(sys.argv[1]))["items"] if i["profileId"] == sys.argv[2]]
 for i in items:
     if i["state"] != "done":
         print(f'{i["name"]}: {i["state"]} {i["error"]}')
 PY
-)
+    )
     [ -z "$out" ] && return 0
     case "$out" in *failed* | *skipped* | *cancelled*) break ;; esac
     sleep 2
@@ -1775,18 +1801,18 @@ reap() {
   local hours=6 yes="" dir
   while [ $# -gt 0 ]; do
     case "$1" in
-      --hours)
-        hours=${2:?--hours takes a number}
-        shift 2
-        ;;
-      --yes)
-        yes=1
-        shift
-        ;;
-      *)
-        echo "reap takes --hours N and --yes" >&2
-        exit 2
-        ;;
+    --hours)
+      hours=${2:?--hours takes a number}
+      shift 2
+      ;;
+    --yes)
+      yes=1
+      shift
+      ;;
+    *)
+      echo "reap takes --hours N and --yes" >&2
+      exit 2
+      ;;
     esac
   done
   [[ $hours =~ ^[0-9]+$ ]] || {
@@ -1842,62 +1868,63 @@ if [ "${1:-}" = start ] && [ "${2:-}" = --fake ]; then
 fi
 
 case "${1:-}" in
-  destroy | reap | harness-check) ;;
-  regress)
-    case "${2:-}${3:-}" in
-      "") regress ;;
-      --gamelethal-company) regress_lc lethal-company ;;
-      --gamecat-mail-co) regress_lc cat-mail-co ;;
-      --gamestardew) regress ;;
-      --gamesims4) regress_sims4 ;;
-      --fake*) regress_fake "${3:-}" ;;
-      *)
-        echo "regress takes --game stardew, --game lethal-company, --game cat-mail-co, --game sims4 or --fake GAME_ID" >&2
-        exit 2
-        ;;
-    esac
-    ;;
-  curseforge) curseforge_scenario ;;
-  *) mkdir -p "$ROOT" ;;
-esac
-case "${1:-}" in
-  start)
-    if [ "${2:-}" = --fake ]; then
-      start_fake "$3"
-      exit 0
-    fi
-    setup
-    if [ "${2:-}" = "--copy-data" ]; then copy_data; fi
-    build
-    stop
-    start
-    ;;
-  restart)
-    build
-    stop
-    start
-    ;;
-  setup) setup ;;
-  fake-install)
-    mark
-    fake_install "${2:?usage: selftest.sh fake-install GAME_ID}"
-    ;;
-  sims4-install)
-    mark
-    sims4_install
-    ;;
-  ea-fixture) ea_fixture "${2:-}" "${3:-}" ;;
-  seed) seed ;;
-  stop) stop ;;
-  destroy) destroy ;;
-  reap)
-    shift
-    reap "$@"
-    ;;
-  regress | curseforge) ;;
-  harness-check) harness_check ;;
+destroy | reap | harness-check) ;;
+regress)
+  case "${2:-}${3:-}" in
+  "") regress ;;
+  --gamelethal-company) regress_lc lethal-company ;;
+  --gamecat-mail-co) regress_lc cat-mail-co ;;
+  --gamestardew) regress ;;
+  --gamesims4) regress_sims4 ;;
+  --fake*) regress_fake "${3:-}" ;;
   *)
-    sed -n '2,24p' "$0"
+    echo "regress takes --game stardew, --game lethal-company, --game cat-mail-co, --game sims4 or --fake GAME_ID" >&2
     exit 2
     ;;
+  esac
+  ;;
+curseforge) curseforge_scenario ;;
+*) mkdir -p "$ROOT" ;;
+esac
+case "${1:-}" in
+start)
+  if [ "${2:-}" = --fake ]; then
+    start_fake "$3"
+    exit 0
+  fi
+  setup
+  if [ "${2:-}" = "--copy-data" ]; then copy_data; fi
+  build
+  stop
+  start
+  ;;
+restart)
+  build
+  stop
+  start
+  ;;
+setup) setup ;;
+fake-install)
+  mark
+  fake_install "${2:?usage: selftest.sh fake-install GAME_ID}"
+  ;;
+sims4-install)
+  mark
+  sims4_install
+  ;;
+ea-fixture) ea_fixture "${2:-}" "${3:-}" ;;
+seed) seed ;;
+secrets) copy_secrets ;;
+stop) stop ;;
+destroy) destroy ;;
+reap)
+  shift
+  reap "$@"
+  ;;
+regress | curseforge) ;;
+harness-check) harness_check ;;
+*)
+  sed -n '2,24p' "$0"
+  exit 2
+  ;;
 esac
