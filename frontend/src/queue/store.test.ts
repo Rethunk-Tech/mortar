@@ -112,6 +112,7 @@ beforeEach(() => {
         store: 'steam',
         installs: [],
         directInstall: false,
+        newerMortar: false,
       },
       openId: 'p1',
       profiles: [baseProfile()],

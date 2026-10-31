@@ -1171,6 +1171,8 @@ type Manifest struct {
 	Games      []GameInfo  `json:"games"`
 	// Authors are people known by different names on different mod sites.
 	Authors []AuthorAliases `json:"authors,omitempty"`
+	// NeedsNewer lists the games Decode left out because their minVersion is newer than this Mortar.
+	NeedsNewer []string `json:"-"`
 }
 
 // AuthorAliases is one person's names on the mod sites (a Thunderstore team and a GitHub account, say), which Browse
@@ -1294,6 +1296,7 @@ func withoutUnreadable(m Manifest) (Manifest, int) {
 	m.Games = slices.DeleteFunc(m.Games, func(g GameInfo) bool {
 		if c, ok := semverish.Compare(running, g.MinVersion); g.MinVersion != "" && ok && c < 0 {
 			slog.Info("component manifest: leaving out a game that needs a newer Mortar", "game", g.ID, "needs", g.MinVersion)
+			m.NeedsNewer = append(m.NeedsNewer, g.ID)
 			return true
 		}
 		err := g.Validate()

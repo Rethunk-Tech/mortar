@@ -59,6 +59,9 @@ type GameInfo struct {
 	// DirectInstall is true when an install's store cannot start it, so Mortar starts it directly whatever the launch
 	// method, and the direct launch settings (instances, delay) apply.
 	DirectInstall bool `json:"directInstall"`
+	// NewerMortar is true when the live catalog has an entry for the game that only a newer Mortar can read, so this
+	// build's own entry is shown instead.
+	NewerMortar bool `json:"newerMortar"`
 }
 
 // LoaderRef names one of a game's loaders.
@@ -267,6 +270,7 @@ func List(home string, cur settings.Settings) ([]GameInfo, error) {
 				}
 			}
 		}
+		info.NewerMortar = components.NeedsNewerMortar(c.ID)
 		info.ArtURL = artFor(info.AppID)
 		if info.AppID != "" {
 			info.IconURL = IconURL(info.AppID)

@@ -872,3 +872,32 @@ func TestGetKindsAStatusAnswer(t *testing.T) {
 		}
 	}
 }
+
+// A game the live catalog says needs a newer Mortar keeps this build's bundled entry, flagged for the notice.
+func TestAGameThatNeedsANewerMortarKeepsItsBundledEntry(t *testing.T) {
+	var m Manifest
+	if err := json.Unmarshal(bundledJSON, &m); err != nil {
+		t.Fatal(err)
+	}
+	SetRunning("1.4.2")
+	t.Cleanup(func() { SetRunning(""); Use(nil) })
+	id := m.Games[0].ID
+	m.Games[0].MinVersion = "1.4.3"
+	b, err := json.Marshal(m)
+	if err != nil {
+		t.Fatal(err)
+	}
+	live, err := Decode(b)
+	if err != nil {
+		t.Fatal(err)
+	}
+	c := NewClient(nil)
+	c.SetManifest(live)
+	Use(c)
+	if !slices.ContainsFunc(Games(), func(g GameInfo) bool { return g.ID == id }) {
+		t.Fatalf("%s vanished from the game list", id)
+	}
+	if !NeedsNewerMortar(id) || NeedsNewerMortar(m.Games[1].ID) {
+		t.Errorf("NeedsNewerMortar flags %s %v, %s %v", id, NeedsNewerMortar(id), m.Games[1].ID, NeedsNewerMortar(m.Games[1].ID))
+	}
+}

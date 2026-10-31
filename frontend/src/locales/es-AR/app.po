@@ -5097,6 +5097,10 @@ msgstr ""
 msgid "{app} {launcher} cannot read your mods"
 msgstr ""
 
+#: src/game/MainScreen.tsx
+msgid "A newer Mortar has updates for {name}. Update Mortar to get them."
+msgstr ""
+
 #: src/groups/SavedGroupRow.tsx
 msgid "A saved group keeps at least one mod; delete the saved group instead"
 msgstr ""
