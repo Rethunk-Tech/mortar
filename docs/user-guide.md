@@ -252,7 +252,7 @@ Mortar writes only `.mortar/project.json` into the folder, and only after you pr
 
 ## Problems
 
-The **Problems** tab checks the open profile for missing requirements, conflicts, broken or outdated mods, damaged files, duplicates and more. It warns and never blocks Play.
+The **Problems** tab checks the open profile for missing requirements, conflicts, broken or outdated mods, damaged files, duplicates and more. It warns and does not block Play.
 
 - Each kind of problem is a section with a count (red when it holds something broken); an empty section is hidden. **Add all** in the missing-requirements section installs every requirement Mortar can find.
 - Advice and history (Slow startup, Redundant, Cleanup, Replaced, Dismissed) are links under the list; choose one to open it, and again to close it.
