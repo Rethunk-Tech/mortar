@@ -15,8 +15,12 @@ async function rowLabels(page: Page): Promise<string[]> {
     ).toBeVisible()
     // Storage names its per-game rows once it has measured them.
     await expect(page.getByText(/^Measuring…/)).toHaveCount(0, { timeout: 15_000 })
-    for (const text of await page.locator('[data-setting-label]').allInnerTexts()) {
-      labels.add(text.trim())
+    // A hidden title (an account row) carries a live status, which changes under the search.
+    for (const label of await page.locator('[data-setting-label]').all()) {
+      // Visually hidden still counts as visible to Playwright: its box is one pixel.
+      if (((await label.boundingBox())?.width ?? 0) > 1) {
+        labels.add((await label.innerText()).trim())
+      }
     }
   }
   return [...labels]
@@ -84,16 +88,16 @@ test('a Mortar settings search that finds little offers the same search in the g
   ).toBeVisible()
 })
 
-test('a search for a per-profile setting such as zoom points at Edit profile', async ({ page }) => {
+test('a search for a per-profile setting such as zoom shows it for the open profile', async ({
+  page,
+}) => {
   await openSeedFarm(page)
   await openSettings(page)
   await page.getByRole('textbox', { name: 'Search settings' }).fill('zoom')
   await page.getByRole('button', { name: 'Search Stardew Valley settings' }).click()
   await expect(page.getByText('Zoom is set per profile')).toBeVisible()
   await expect(page.getByText('No settings match')).toHaveCount(0)
-  await page.getByRole('button', { name: /^Edit / }).click()
-  await expect(page.getByRole('tab', { name: 'Game settings' })).toHaveAttribute(
-    'aria-selected',
-    'true',
-  )
+  await page.getByRole('button', { name: /^Show for / }).click()
+  await expect(page.getByRole('heading', { level: 3, name: 'Game settings' })).toBeVisible()
+  await expect(page.getByRole('slider', { name: /^Zoom/ })).toBeVisible()
 })
