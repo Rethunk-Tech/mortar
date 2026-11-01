@@ -332,18 +332,13 @@ html.js .dl .panel[hidden] {
 }
 
 .file.primary {
-  background: var(--sand);
   border-color: var(--sand);
-  color: var(--sand-ink);
+  box-shadow: 0 0 0 1px var(--sand) inset;
 }
 
 .file span {
   color: var(--dim);
   font-size: 14px;
-}
-
-.file.primary span {
-  color: rgba(25, 25, 30, 0.75);
 }
 
 .file .size {
@@ -429,9 +424,7 @@ html:not(.js) .jsonly,
 }
 
 .dl .tabs.modes button[aria-selected="true"] {
-  color: var(--sand-ink);
-  background: var(--sand);
-  box-shadow: none;
+  border-radius: 11px;
 }
 
 .dl .tabs.modes button + button {
