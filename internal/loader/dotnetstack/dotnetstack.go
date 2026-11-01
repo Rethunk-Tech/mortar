@@ -20,8 +20,10 @@ var (
 	frameLine = regexp.MustCompile(`^\s+at (?:\(wrapper [^)]*\) )?([\w.<>` + "`" + `$+@\[\]-]+?)\.([^.\s(]+)(?:\[[^\]]*\])? ?\(`)
 	// unityFrame is a frame Unity's log prints after "Stack trace:", with no "at": "Namespace.Type.Method (args) (at <module>:0)".
 	unityFrame = regexp.MustCompile(`^([\w.<>` + "`" + `$+@\[\]-]+?)\.([^.\s(:]+)(?:\[[^\]]*\])? ?\(.*\(at .*\)\s*$`)
-	// patchFrame is a Harmony-generated method: DMD<...> wrapper frames, or a patched method renamed "..._Patch1".
-	patchFrame = regexp.MustCompile(`^\s+at (?:\(wrapper [^)]*\) )?(?:DMD<|[\w.<>+]*_Patch\d*\()`)
+	// patchFrame is a Harmony-generated method: a DMD<...> wrapper frame, which MonoMod prints after the patched type
+	// ("GameNetworkManager.DMD<GameNetworkManager::Start>"), or a patched method renamed "..._Patch1". Unity's format
+	// prints it with no "at".
+	patchFrame = regexp.MustCompile(`^\s*(?:at )?(?:\(wrapper [^)]*\) )?(?:(?:[\w.+]+\.)?DMD<|[\w.<>+]*_Patch\d*\()`)
 	// dmdTarget is the method a Harmony wrapper stands in for: "DMD<Namespace.Type::Method>".
 	dmdTarget = regexp.MustCompile(`DMD<([^>]+::[^>]+)>`)
 	harmonyID = regexp.MustCompile(`(?i)(?:harmony ?id|patch ?owner|patched by)\W+([A-Za-z0-9_][\w.\-]*)`)

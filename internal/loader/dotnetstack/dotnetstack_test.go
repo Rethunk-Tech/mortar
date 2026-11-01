@@ -1,6 +1,7 @@
 package dotnetstack
 
 import (
+	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"os"
 	"path/filepath"
 	"strings"
@@ -97,5 +98,20 @@ func TestFramesReadsRealStacks(t *testing.T) {
 	blames := Blames(string(data), Unity)
 	if len(blames) < 3 || blames[2].Frame != "at TooManyEmotes.SaveManager.SaveLocalPlayerValues ()" {
 		t.Errorf("a frame's symbol-less location is cut from its blame: %+v", blames)
+	}
+}
+
+func TestBlamesAStackOfOnlyHarmonyWrappersOnTheHarmonyIDTheLogShows(t *testing.T) {
+	log := "[Error  : HarmonyX] Patched by: com.example.mod\n" +
+		"NullReferenceException: boom\n" +
+		"  at (wrapper dynamic-method) GameNetworkManager.DMD<GameNetworkManager::Start>(GameNetworkManager) [0x00000] in <0123456789abcdef0123456789abcdef>:0 \n"
+	got := Blames(log, Unity)
+	want := loader.Blame{
+		Exception:  "NullReferenceException: boom",
+		Frame:      "at (wrapper dynamic-method) GameNetworkManager.DMD<GameNetworkManager::Start>(GameNetworkManager)",
+		PatchOwner: "com.example.mod",
+	}
+	if len(got) != 1 || got[0] != want {
+		t.Fatalf("got %+v, want %+v", got, want)
 	}
 }
