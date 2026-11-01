@@ -1884,10 +1884,6 @@ func typedIDs(ids []string) []mod.ID {
 	return out
 }
 
-// updateRequest is the queue request that installs an update, from the source the update names.
-// queueableUpdate reports whether updates.queue may queue u. An unofficial update or one that needs a file picked is left
-// to the review, and so is one whose project forbids outside downloads (the review links its page). A switch to another
-// site is offered, never applied on its own: only a mod the caller named is switched.
 // queueUpdates queues the profile's updates: the named ones, or every one that needs no choice. beforePlay is the
 // unattended update before a launch, which leaves out an update whose author asks the player to read a caution
 // first and is content with nothing to do.
