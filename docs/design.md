@@ -83,7 +83,7 @@ Parked; take up when asked.
 - **Add to Mortar** button on Nexus listing tiles, which needs Nexus's approval first ([nexus-application.md](nexus-application.md)).
 - **Settings:** an offline mode that never contacts the network.
 - **Windows code signing** with Azure Trusted Signing.
-- **GitHub topic-search fallback** (`source/github/fallback.go`) into go-github, once a second consumer needs it.
+- **GitHub topic-search fallback** (`internal/source/github/fallback.go`) into go-github, once a second consumer needs it.
 - **Registering Mortar with Nexus** ([nexus-application.md](nexus-application.md)): once approved, release builds pass `nexussvc.Slug` and `ClientID` as ldflags and the same change removes the API-key sign-in (go-nexusmods' `WithKey`, `internal/nexussvc/apikey.go`), the only sign-in while neither is set.
 - **macOS support** (darwin/arm64 and amd64), parked until the maintainer owns or borrows a Mac.
   - **Scope:** the catalog's `darwin` path templates and the macOS asset picker exist. Profile copies need a darwin `Clone` using `clonefile` in go-safefs (`clone_stub.go` there). Lethal Company and most BepInEx games ship no macOS build, so the first targets are native-macOS games (check each game's macOS depot before enabling) and, for Windows-only games, a CrossOver or Whisky prefix.

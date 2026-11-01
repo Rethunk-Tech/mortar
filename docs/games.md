@@ -102,7 +102,7 @@ Rules: `internal/framework/contentpatcher`. Invariants the code does not say:
 - **Make win** records the loser's UniqueID in the winner entry's `loadAfter` and adds it to the winner's installed `manifest.json` as an optional dependency, so SMAPI loads the winner later. The profile's manifest is its own copy, so the store is untouched, and the dependency is rewritten after an update.
 - **Asset map:** mods are ranked in SMAPI load order ([go-smapi](https://github.com/Rethunk-Tech/go-smapi) `Resolve`, through `smapimanifest.Order`), not profile order. Trap: for Loads the last loaded wins on a tie although the Content Patcher docs say "first" (`PatchManager.ApplyPatchesToAsset` replaces its pick with every later candidate not strictly lower); two Exclusive loads apply neither.
 - **Same job** (`internal/problems/samejob.go`, constants `sameJob*`): a C# mod's footprint is the `StardewValley` members its `EntryDll` assigns, read from the IL, plus its Harmony-replaced methods from the startup report. Members are weighted ln(N/df), so a rarely written member counts more.
-- **Config suggestions** (`contentpatcher/settings.go`): an on/off `ConfigSchema` field whose value runs none of the pack's `HasMod` compatibility patches is suggested with the values that would; fields that list NPCs never are.
+- **Config suggestions** (`internal/framework/contentpatcher/settings.go`): an on/off `ConfigSchema` field whose value runs none of the pack's `HasMod` compatibility patches is suggested with the values that would; fields that list NPCs never are.
 
 ### Generic Mod Config Menu
 

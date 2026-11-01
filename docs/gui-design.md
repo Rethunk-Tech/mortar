@@ -1,15 +1,15 @@
 # GUI design
 
-The design system lives in code: `frontend/src/theme/` (palette, density, the MUI theme), `frontend/src/shell/` (dialogs in `shell/dialog/`, menu rows in `shell/MenuAction.tsx`, `TitleMenu.tsx`'s headings and rules, `Tooltip.tsx`, `EmptyState.tsx`) and `frontend/src/brand/`. `frontend/src/lint/patterns.test.ts` and `bun run --cwd frontend i18n:dupes` fail a change that builds around them; `frontend/e2e/deck.pw.ts` checks the Steam Deck size, controller reach and 44px targets. Read those before any UI change. This page holds only the rules code cannot enforce.
+The design system lives in code: `frontend/src/theme/` (palette, density, the MUI theme), `frontend/src/shell/` (dialogs in `shell/dialog/`, menu rows in `frontend/src/shell/MenuAction.tsx`, `TitleMenu.tsx`'s headings and rules, `Tooltip.tsx`, `EmptyState.tsx`) and `frontend/src/brand/`. `frontend/src/lint/patterns.test.ts` and `bun run --cwd frontend i18n:dupes` fail a change that builds around them; `frontend/e2e/deck.pw.ts` checks the Steam Deck size, controller reach and 44px targets. Read those before any UI change. This page holds only the rules code cannot enforce.
 
 ## Conventions
 
 - Dark is the lead theme: screenshots, the README and store listings show it.
 - Dialog footers: Cancel or Close is a text button, leftmost; at most one contained primary, rightmost; a destructive primary is contained `color="error"`.
-- Spacing uses the `space` roles (`theme/density.ts`) and no hand-set pixels, so a Density change moves every page.
+- Spacing uses the `space` roles (`frontend/src/theme/density.ts`) and no hand-set pixels, so a Density change moves every page.
 - A trailing "…" only on a control that opens further input (a dialog, a picker, a confirmation); clicking it never starts the work, and the dialog's title has none.
 - **Remove** takes something out of a profile, group or list; **Delete** destroys it on disk. The button, its confirmation and its toast use the same verb.
-- Sentence case everywhere; labels, buttons, headings and toast titles take no full stop, body text does. No article where the meaning holds without it. A label reused mid-sentence is lowercased in code (`i18n/lowerFirst.ts`).
+- Sentence case everywhere; labels, buttons, headings and toast titles take no full stop, body text does. No article where the meaning holds without it. A label reused mid-sentence is lowercased in code (`frontend/src/i18n/lowerFirst.ts`).
 - One placeholder name per concept (`{name}`, `{count}`, `{profile}`, `{game}`, `{version}`, `{path}`, `{when}`, `{source}`, `{manager}`, `{loader}`, `{launcher}`, `{os}`, `{app}`); a plural holds only the counted clause.
 - **Command palette** (Ctrl+K): a shortcut that does what an action does shows its keys on that action and gets no second row; an action needing an open profile is greyed with a reason.
 
