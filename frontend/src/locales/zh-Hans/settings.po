@@ -79,6 +79,10 @@ msgstr ""
 msgid "Allow shows {source} pages what Mortar has. Off hides that; download links still arrive"
 msgstr ""
 
+#: src/settings/sections/About.tsx
+msgid "Startup profile"
+msgstr ""
+
 #: src/settings/sections/Downloads.tsx
 msgid "Connected from {browser}, last seen "
 msgstr ""
@@ -459,6 +463,10 @@ msgstr ""
 
 #: src/settings/sections/DataStoreCheck.tsx
 msgid "{checked}. All files are intact."
+msgstr ""
+
+#: src/settings/sections/About.tsx
+msgid "Could not restart Mortar"
 msgstr ""
 
 #: src/settings/prefCopy.ts
@@ -1928,6 +1936,10 @@ msgstr ""
 msgid "Stopped at the API limit; {remaining} left"
 msgstr ""
 
+#: src/settings/sections/About.tsx
+msgid "Source code"
+msgstr ""
+
 #: src/settings/sections/Appearance.tsx
 msgid "color"
 msgstr ""
@@ -2095,6 +2107,10 @@ msgstr ""
 
 #: src/settings/prefCopy.ts
 msgid "Check for mod updates when Mortar starts"
+msgstr ""
+
+#: src/settings/sections/About.tsx
+msgid "Restart and record"
 msgstr ""
 
 #: src/settings/sections/Appearance.tsx
@@ -3619,6 +3635,10 @@ msgstr ""
 
 #: src/settings/prefCopy.ts
 msgid "Stay open"
+msgstr ""
+
+#: src/settings/sections/About.tsx
+msgid "Restarts Mortar and records its first 30 seconds, for a slow start."
 msgstr ""
 
 #: src/settings/shortcutLabels.ts

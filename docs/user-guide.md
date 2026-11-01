@@ -370,7 +370,7 @@ The **Screenshots** tab shows the game's own screenshots and, for a Steam game, 
 | Mortar's data (profiles, mods, downloads, backups, settings, logs) | `%LOCALAPPDATA%\Mortar` | `$XDG_DATA_HOME/mortar`, usually `~/.local/share/mortar` |
 | Your saves | `%APPDATA%\StardewValley\Saves` | `~/.config/StardewValley/Saves` |
 
-The Mortar menu's **Open data folder** opens the first row.
+**Settings › Data usage › Open folder** opens the first row.
 
 To move the data, stop the game, open **Settings › Storage** and choose **Move…**. Mortar copies everything to an empty folder you pick, checks it, removes the old one and restarts. A file named `portable` beside the program keeps all data in a `data` folder next to it (not in a Flatpak or a read-only folder).
 
@@ -396,7 +396,7 @@ Before a mod enters Mortar's store, Mortar scans it with Windows Security or, on
 - **Mortar does not start:** it shows why, with a button that opens the folder holding `mortar.log`. Starting Mortar again while a copy is stuck offers to end it.
 - **Run checks:** **Settings › About › Diagnostics › Run checks…**; **Repair** fixes what it can.
 - **Logs:** `mortar.log` in the data folder, plus `crash.log` after a crash. Each profile's SMAPI log is on its log view; **Share log…** there uploads it to smapi.io/log and gives you a link.
-- **Slow start:** `mortar.log` times each step (lines beginning `startup:`). The Mortar menu's **Restart and record startup profile** records the first 30 seconds into the data folder's `startup-profile` folder, and the next diagnostics zip includes it.
+- **Slow start:** `mortar.log` times each step (lines beginning `startup:`). **Settings › About › Startup profile** records Mortar's first 30 seconds; the next diagnostics zip includes it.
 - **Slow scrolling or loud fans (Linux):** **Settings › Appearance › Display › Graphics**: **Smoother scrolling** keeps the graphics card drawing the window (some NVIDIA setups otherwise hand it to the processor); **Compatible** is for a window that stays blank or white. Either applies after a restart; `mortar.log` names the one in use (`msg=graphics`). If the window is too blank to reach Settings, start Mortar once with `WEBKIT_DISABLE_DMABUF_RENDERER=1`, which overrides the setting, and pick **Compatible**.
 - **Report a bug:** the Mortar menu's **Report a bug** opens a prefilled GitHub issue (or copies the report for the bug-reports forum on Mortar's Discord). Leave **Attach diagnostics** ticked to save a zip (checks, logs, settings and recent runs, with secrets and your home folder removed) and drag it into the issue. **Save diagnostics…** (Mortar menu, Settings › About › Diagnostics) writes the same zip.
 - **Ask for help or an idea:** the Mortar menu has **Ask on Discord** and **Suggest a feature…**.

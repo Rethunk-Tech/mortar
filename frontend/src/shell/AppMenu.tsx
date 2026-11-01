@@ -1,26 +1,19 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase } from '@mui/material'
+import { ButtonBase } from '@mui/material'
 import { Application } from '@wailsio/runtime'
 import {
   Bug,
   ChevronDown,
-  Code2,
   Download,
-  FolderOpen,
   Info,
   LifeBuoy,
   Lightbulb,
-  LogIn,
   LogOut,
   RefreshCw,
   Settings,
   Sparkles,
-  Timer,
 } from 'lucide-react'
 import { memo, type ReactNode, useEffect } from 'react'
-import { SignOut } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
-import { OpenDataFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
-import { RestartProfilingStartup } from '../../bindings/github.com/Rethunk-Tech/mortar/quitservice.ts'
 import { DiscordLogo } from '../brand/Discord.tsx'
 import { Logo } from '../brand/Logo.tsx'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
@@ -30,7 +23,6 @@ import { useTab } from '../game/tab.ts'
 import { openPage } from '../mods/menu.ts'
 import { openSettings, routeGame, useNav } from '../nav/store.ts'
 import { useQueue } from '../queue/store.ts'
-import { useNexus } from '../settings/nexus.ts'
 import { useMortarUpdate } from '../settings/updates.ts'
 import { useShortcutHint } from '../settings/useShortcutHint.ts'
 import { space } from '../theme/density.ts'
@@ -46,7 +38,6 @@ import { Tooltip } from './Tooltip.tsx'
 import { closeTitleMenu, useTitleMenu } from './titleMenus.ts'
 
 const ICON_PX = 16
-const SOURCE = 'https://github.com/Rethunk-Tech/mortar'
 
 // A disabled row cannot take hover, so its reason rides on a wrapper.
 function Reason({ reason, children }: { reason: string; children: ReactNode }) {
@@ -59,50 +50,6 @@ function Reason({ reason, children }: { reason: string; children: ReactNode }) {
   )
 }
 
-function NexusLines({ close }: { close: () => void }) {
-  const { t } = useLingui()
-  const signedIn = useNexus((s) => s.signedIn)
-  const name = useNexus((s) => s.name)
-  const premium = useNexus((s) => s.premium)
-  return (
-    <>
-      <Box sx={{ px: '14px', py: '6px', fontSize: 'base.fontSize' }}>
-        {[sourceLabel('nexus'), signedIn ? t`Signed in as ${name}` : t`Not signed in`].join(' · ')}
-        {signedIn && premium ? (
-          <Box
-            component="span"
-            sx={{ color: 'var(--mortar-accent-ink)', '&::before': { content: '" · "' } }}
-          >
-            {t`Premium`}
-          </Box>
-        ) : null}
-      </Box>
-      {signedIn ? (
-        <TitleMenuItem
-          dim={true}
-          icon={<LogOut size={ICON_PX} />}
-          label={t`Sign out of ${{ source: sourceLabel('nexus') }}`}
-          onClick={() => {
-            close()
-            SignOut().catch(reportUnexpected)
-          }}
-        />
-      ) : (
-        <TitleMenuItem
-          icon={<LogIn size={ICON_PX} />}
-          label={t`Sign in to ${{ source: sourceLabel('nexus') }}…`}
-          onClick={() => {
-            close()
-            openSettings('accounts')
-          }}
-        />
-      )}
-    </>
-  )
-}
-
-// Ways to reach the project (its Discord, bug reports and suggestions, about, its source), then the startup-profile
-// restart, which is troubleshooting.
 function ProjectLinks({ close }: { close: () => void }) {
   const { t } = useLingui()
   const open = (url: string) => () => {
@@ -138,19 +85,6 @@ function ProjectLinks({ close }: { close: () => void }) {
         onClick={() => {
           close()
           openSettings('about')
-        }}
-      />
-      <TitleMenuItem
-        icon={<Code2 size={ICON_PX} />}
-        label={t`Source code`}
-        onClick={open(SOURCE)}
-      />
-      <TitleMenuItem
-        icon={<Timer size={ICON_PX} />}
-        label={t`Restart and record startup profile`}
-        onClick={() => {
-          close()
-          RestartProfilingStartup().catch(reportError(t`Could not restart Mortar`))
         }}
       />
     </>
@@ -201,14 +135,6 @@ const AppMenuItems = memo(function AppMenuItemsView() {
         }}
       />
       <TitleMenuItem
-        icon={<FolderOpen size={ICON_PX} />}
-        label={t`Open data folder`}
-        onClick={() => {
-          close()
-          OpenDataFolder().catch(reportUnexpected)
-        }}
-      />
-      <TitleMenuItem
         icon={<Settings size={ICON_PX} />}
         label={t`Mortar settings`}
         hint={settingsKeys}
@@ -244,8 +170,6 @@ const AppMenuItems = memo(function AppMenuItemsView() {
       <MenuHeading>{t`Help`}</MenuHeading>
       <GetHelp />
       <ProjectLinks close={close} />
-      <MenuRule />
-      <NexusLines close={close} />
       <MenuRule />
       <TitleMenuItem icon={<LogOut size={ICON_PX} />} label={t`Quit Mortar`} onClick={quit} />
     </>

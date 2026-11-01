@@ -2,17 +2,19 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Link } from '@mui/material'
 import { useState } from 'react'
 import { OpenDataFolder } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { RestartProfilingStartup } from '../../../bindings/github.com/Rethunk-Tech/mortar/quitservice.ts'
 import { Logo } from '../../brand/Logo.tsx'
 import { openPage } from '../../mods/menu.ts'
 import { AppDialog, DialogFooter } from '../../shell/dialog/AppDialog.tsx'
 import { space } from '../../theme/density.ts'
-import { reportUnexpected } from '../../toasts/report.ts'
+import { reportError, reportUnexpected } from '../../toasts/report.ts'
 import credits from '../generated/credits.json' with { type: 'json' }
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useMortarUpdate } from '../updates.ts'
 import { Diagnostics } from './AboutDiagnostics.tsx'
 
-const LICENCE = 'https://github.com/Rethunk-Tech/mortar/blob/main/LICENSE'
+const SOURCE = 'https://github.com/Rethunk-Tech/mortar'
+const LICENCE = `${SOURCE}/blob/main/LICENSE`
 // The licence and repository are names, the same in every language.
 const LICENSE_LINE = 'AGPL-3.0 · Rethunk-Tech/mortar'
 
@@ -134,9 +136,14 @@ export function About() {
               </Box>
             ) : null}
           </Box>
-          <Button variant="outlined" onClick={() => openPage(LICENCE)}>
-            {t`Licence`}
-          </Button>
+          <Box sx={{ display: 'flex', gap: space.gap }}>
+            <Button variant="outlined" onClick={() => openPage(SOURCE)}>
+              {t`Source code`}
+            </Button>
+            <Button variant="outlined" onClick={() => openPage(LICENCE)}>
+              {t`Licence`}
+            </Button>
+          </Box>
         </Box>
         <LicencesRow />
         <SettingRow
@@ -145,6 +152,19 @@ export function About() {
         >
           <Button variant="outlined" onClick={() => OpenDataFolder().catch(reportUnexpected)}>
             {t`Open log folder`}
+          </Button>
+        </SettingRow>
+        <SettingRow
+          label={t`Startup profile`}
+          description={t`Restarts Mortar and records its first 30 seconds, for a slow start.`}
+        >
+          <Button
+            variant="outlined"
+            onClick={() =>
+              RestartProfilingStartup().catch(reportError(t`Could not restart Mortar`))
+            }
+          >
+            {t`Restart and record`}
           </Button>
         </SettingRow>
       </SettingsSection>

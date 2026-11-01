@@ -85,6 +85,10 @@ msgstr "Move data folder…"
 msgid "Allow shows {source} pages what Mortar has. Off hides that; download links still arrive"
 msgstr "Allow shows {source} pages what Mortar has. Off hides that; download links still arrive"
 
+#: src/settings/sections/About.tsx
+msgid "Startup profile"
+msgstr "Startup profile"
+
 #: src/settings/sections/Downloads.tsx
 msgid "Connected from {browser}, last seen "
 msgstr "Connected from {browser}, last seen "
@@ -466,6 +470,10 @@ msgstr "Search results"
 #: src/settings/sections/DataStoreCheck.tsx
 msgid "{checked}. All files are intact."
 msgstr "{checked}. All files are intact."
+
+#: src/settings/sections/About.tsx
+msgid "Could not restart Mortar"
+msgstr "Could not restart Mortar"
 
 #: src/settings/prefCopy.ts
 #: src/settings/sections/Appearance.tsx
@@ -1934,6 +1942,10 @@ msgstr "Auto-retry failed downloads"
 msgid "Stopped at the API limit; {remaining} left"
 msgstr "Stopped at the API limit; {remaining} left"
 
+#: src/settings/sections/About.tsx
+msgid "Source code"
+msgstr "Source code"
+
 #: src/settings/sections/Appearance.tsx
 msgid "color"
 msgstr "color"
@@ -2102,6 +2114,10 @@ msgstr "Handle {name} links"
 #: src/settings/prefCopy.ts
 msgid "Check for mod updates when Mortar starts"
 msgstr "Check for mod updates when Mortar starts"
+
+#: src/settings/sections/About.tsx
+msgid "Restart and record"
+msgstr "Restart and record"
 
 #: src/settings/sections/Appearance.tsx
 msgid "{name}, ascending"
@@ -3626,6 +3642,10 @@ msgstr "Leftover files"
 #: src/settings/prefCopy.ts
 msgid "Stay open"
 msgstr "Stay open"
+
+#: src/settings/sections/About.tsx
+msgid "Restarts Mortar and records its first 30 seconds, for a slow start."
+msgstr "Restarts Mortar and records its first 30 seconds, for a slow start."
 
 #: src/settings/shortcutLabels.ts
 msgid "Open settings"

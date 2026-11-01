@@ -768,10 +768,6 @@ msgstr "+{more} more"
 msgid "Save diagnostics…"
 msgstr "Save diagnostics…"
 
-#: src/shell/AppMenu.tsx
-msgid "Restart and record startup profile"
-msgstr "Restart and record startup profile"
-
 #: src/firstrun/ProfileStep.tsx
 msgid "From a shared link"
 msgstr "From a shared link"
@@ -901,10 +897,6 @@ msgstr "Matching C# to IL"
 #: src/queue/LargeDownloadDialog.tsx
 msgid "{more, plural, one {# more large download is waiting after this one.} other {# more large downloads are waiting after this one.}}"
 msgstr "{more, plural, one {# more large download is waiting after this one.} other {# more large downloads are waiting after this one.}}"
-
-#: src/shell/AppMenu.tsx
-msgid "Could not restart Mortar"
-msgstr "Could not restart Mortar"
 
 #: src/sync/pins.tsx
 msgid "Enable or disable on this computer only"
@@ -1331,10 +1323,6 @@ msgstr "Open profile first."
 #: src/saves/SavesTab.tsx
 msgid "Try a different search."
 msgstr "Try a different search."
-
-#: src/shell/AppMenu.tsx
-msgid "Not signed in"
-msgstr "Not signed in"
 
 #: src/tools/ToolsManageDialog.tsx
 msgid "The program itself is not touched."
@@ -3657,10 +3645,6 @@ msgstr "Create a profile first."
 msgid "Which?"
 msgstr "Which?"
 
-#: src/shell/AppMenu.tsx
-msgid "Open data folder"
-msgstr "Open data folder"
-
 #: src/share/ImportInput.tsx
 msgid "Opened the {source} page. Save the file from it; Mortar offers it from your Downloads folder."
 msgstr "Opened the {source} page. Save the file from it; Mortar offers it from your Downloads folder."
@@ -3760,10 +3744,6 @@ msgstr "Edit {name}"
 msgid "Could not update {mod} in the other profiles"
 msgstr "Could not update {mod} in the other profiles"
 
-#: src/shell/AppMenu.tsx
-msgid "Sign out of {source}"
-msgstr "Sign out of {source}"
-
 #: src/lan/IncomingPrompt.tsx
 msgid "Decline"
 msgstr "Decline"
@@ -3862,10 +3842,6 @@ msgstr "Games starting with {letter}"
 #: src/saves/SaveRow.tsx
 msgid "Has used {count, plural, one {# mod it lacks} other {# mods it lacks}}"
 msgstr "Has used {count, plural, one {# mod it lacks} other {# mods it lacks}}"
-
-#: src/shell/AppMenu.tsx
-msgid "Source code"
-msgstr "Source code"
 
 #: src/shell/checkForUpdates.ts
 #: src/shell/ViewToggle.tsx
@@ -4906,10 +4882,6 @@ msgstr "missing dependencies: {list}"
 msgid "Hide which files they changed"
 msgstr "Hide which files they changed"
 
-#: src/shell/AppMenu.tsx
-msgid "Sign in to {source}…"
-msgstr "Sign in to {source}…"
-
 #: src/games/GameRowMenu.tsx
 msgid "Hide this game"
 msgstr "Hide this game"
@@ -5711,10 +5683,6 @@ msgstr "Without mods"
 #: src/share/ListFormat.tsx
 msgid "Enabled"
 msgstr "Enabled"
-
-#: src/shell/AppMenu.tsx
-msgid "Premium"
-msgstr "Premium"
 
 #: src/develop/ProjectCard.tsx
 msgid "Remove and move to trash"
@@ -6739,7 +6707,6 @@ msgid "{name} here is another mod manager's copy. Removing that manager removes 
 msgstr "{name} here is another mod manager's copy. Removing that manager removes {name}."
 
 #: src/firstrun/NexusStep.tsx
-#: src/shell/AppMenu.tsx
 msgid "Signed in as {name}"
 msgstr "Signed in as {name}"
 
