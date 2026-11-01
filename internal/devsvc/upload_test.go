@@ -377,3 +377,23 @@ func TestSiteIDsSurviveTheStartUpMigrationOfAProjectOfFiles(t *testing.T) {
 		t.Errorf("ids after migration = %+v (%s)", got, body)
 	}
 }
+
+func TestUploadClientRefusesARedirectToAnotherHost(t *testing.T) {
+	var leaked string
+	other := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, r *http.Request) { leaked = r.Header.Get("Apikey") }))
+	defer other.Close()
+	first := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, other.URL, http.StatusTemporaryRedirect)
+	}))
+	defer first.Close()
+	req, _ := http.NewRequestWithContext(t.Context(), http.MethodPost, first.URL, strings.NewReader("x"))
+	req.Header.Set("Apikey", "secret")
+	res, err := (&Service{}).httpClient().Do(req)
+	if err == nil {
+		_ = res.Body.Close()
+		t.Fatal("followed a redirect to another host")
+	}
+	if leaked != "" {
+		t.Errorf("the second host saw Apikey %q", leaked)
+	}
+}
