@@ -21,6 +21,9 @@ export interface PickedMember {
   name: string
 }
 
+// A stable empty list, so a view without links keeps the same array between renders.
+const NO_LINKS: number[] = []
+
 /**
  * C# and IL side by side: clicking a line on one side tints it and its counterpart on the other. A declaration's
  * counterpart is the member's declaration on the other side; a statement's is the IL compiled from it.
@@ -34,14 +37,19 @@ export function MappedView({
   member: PickedMember
   onSymbol?: ((at: SymbolClick) => void) | undefined
 }) {
-  const links = mapped.links ?? []
+  const links = mapped.links ?? NO_LINKS
   const csLines = useMemo(() => mapped.csharp.split('\n'), [mapped.csharp])
   const ilLines = useMemo(() => mapped.il.split('\n'), [mapped.il])
   const ilOf = useMemo(() => {
     const byCs = new Map<number, number[]>()
     links.forEach((from, il) => {
       if (from >= 0) {
-        byCs.set(from, [...(byCs.get(from) ?? []), il])
+        const ils = byCs.get(from)
+        if (ils) {
+          ils.push(il)
+        } else {
+          byCs.set(from, [il])
+        }
       }
     })
     return byCs
