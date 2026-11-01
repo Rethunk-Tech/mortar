@@ -78,6 +78,8 @@ export function thunderstoreVisit(
     to: async (p: Page) => {
       await page.home(p)
       await page.share(p)
+      // The menu mounts after the click, and a close that looks too early finds nothing to close.
+      await p.getByRole('dialog').last().waitFor()
       const offered = await p
         .getByRole('button', { name: /^Thunderstore/ })
         .isVisible({ timeout: 1500 })
@@ -86,6 +88,8 @@ export function thunderstoreVisit(
       if (!offered) {
         left = await currentGame(p)
         await openGame(p, workspaceTabs(p), 'Lethal Company')
+        // Opening a game can raise a dialog of its own over the workspace.
+        await page.close(p)
         await page.home(p)
       }
     },
