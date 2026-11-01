@@ -19,22 +19,33 @@ interface Costs {
 const NO_COSTS: Costs = {}
 
 /** The mod's start-up time and average cost a frame in the development profile's latest measured run. */
-export function useModCosts(game: string, profile: string, info: ProjectInfo | undefined): Costs {
+/** The project's costs from the last run, when that run came after builtAt (Unix ms), the project's last build. */
+export function useModCosts(
+  game: string,
+  profile: string,
+  info: ProjectInfo | undefined,
+  builtAt: number,
+): Costs {
   const latest = useRef(info)
   latest.current = info
   const known = info !== undefined && !info.missing
   // A reread that changes nothing here (a window focus) must not repeat the reports' reads.
-  const key = info ? `${info.guid}|${info.name}|${info.builtAt}` : ''
+  const key = info ? `${info.guid}|${info.name}|${builtAt}` : ''
   const current = latest.current
   const { data } = useLoaded<Costs>(
-    known && current && key !== '' ? () => readCosts(game, profile, current) : null,
+    known && current && key !== '' ? () => readCosts(game, profile, current, builtAt) : null,
     [game, profile, known, key],
     NO_COSTS,
   )
   return data
 }
 
-async function readCosts(game: string, profile: string, current: ProjectInfo): Promise<Costs> {
+async function readCosts(
+  game: string,
+  profile: string,
+  current: ProjectInfo,
+  builtAt: number,
+): Promise<Costs> {
   const [startups, perfs] = await Promise.all([
     StartupReports(game, profile),
     PerformanceReports(game, profile),
@@ -42,14 +53,14 @@ async function readCosts(game: string, profile: string, current: ProjectInfo): P
   const next: Costs = {}
   // A run before the last build measured the previous build, so its figures say nothing about this one.
   const startup = startups?.[0]
-  const mod = measured(startup?.processStart, current.builtAt)
+  const mod = measured(startup?.processStart, builtAt)
     ? startup?.mods?.find((m) => isProjectRow(current, m.name, String(m.id)))
     : undefined
   if (mod) {
     next.startupMs = modTotal(mod)
   }
   const perf = perfs?.[0]
-  const row = measured(perf?.at, current.builtAt)
+  const row = measured(perf?.at, builtAt)
     ? perf?.rows?.find((r) => isProjectRow(current, r.name))
     : undefined
   if (row) {

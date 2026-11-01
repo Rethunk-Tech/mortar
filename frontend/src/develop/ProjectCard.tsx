@@ -160,14 +160,19 @@ function useInfo(game: string, dir: string) {
 function Costs({
   game,
   profile,
+  dir,
   info,
 }: {
   game: string
   profile: string
+  dir: string
   info: ProjectInfo | undefined
 }) {
   const { t, i18n } = useLingui()
-  const { startupMs, frameMs } = useModCosts(game, profile, info)
+  const run = useDevRuns((s) => runOf(s.byDir, dir))
+  // As the card's Built label counts it: a build that changed nothing still leaves the output's time as it was.
+  const builtAt = Math.max(run.builtAt, info?.builtAt ?? 0)
+  const { startupMs, frameMs } = useModCosts(game, profile, info, builtAt)
   const start = startupMs === undefined ? '' : Math.round(startupMs).toLocaleString(i18n.locale)
   const frame =
     frameMs === undefined ? '' : frameMs.toLocaleString(i18n.locale, { maximumFractionDigits: 2 })
@@ -471,7 +476,7 @@ export function ProjectCard({
           onEdit={() => setEditing(true)}
         />
       </Box>
-      <Costs game={game} profile={project.profile} info={info} />
+      <Costs game={game} profile={project.profile} dir={project.dir} info={info} />
       <Outcome game={game} project={project} />
       {editing && info ? (
         <EditProjectDialog
