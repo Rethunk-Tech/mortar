@@ -24,6 +24,13 @@ import { openProfileOf, profileById, useProfiles } from './store.ts'
 
 const ICON_PX = 16
 
+// What the switcher's button shows of the open profile.
+interface ButtonProfile extends Pick<Profile, 'color' | 'icon'> {
+  id: string
+  name: string
+  count: number
+}
+
 interface Position {
   top: number
   left: number
@@ -35,7 +42,7 @@ function ProfileButton({
   trigger,
   onContext,
 }: {
-  current: Profile | undefined
+  current: ButtonProfile | undefined
   expanded: boolean
   trigger: ReturnType<typeof useTitleMenu>['trigger']
   onContext: (id: string, position: Position) => void
@@ -100,9 +107,7 @@ function ProfileButton({
       {/* Named by its content, so the visible text is inside the accessible name. */}
       {current ? <span className="profile-button-hidden">{`${t`Switch profile`}:`}</span> : null}
       <span className="profile-button-name">{current?.name ?? t`No profile`}</span>
-      {current ? (
-        <span className="profile-button-mods">{modsLabel(userModCount(current))}</span>
-      ) : null}
+      {current ? <span className="profile-button-mods">{modsLabel(current.count)}</span> : null}
       <ChevronDown size={14} aria-hidden={true} style={{ flexShrink: 0 }} />
     </ButtonBase>
   )
@@ -111,7 +116,6 @@ function ProfileButton({
 interface MenuListProps {
   game: string
   gameName: string
-  profiles: Profile[]
   openId: string
   hasTemplates: boolean
   onCreate: () => void
@@ -122,7 +126,6 @@ interface MenuListProps {
 function ProfileMenuListView({
   game,
   gameName,
-  profiles,
   openId,
   hasTemplates,
   onCreate,
@@ -130,6 +133,8 @@ function ProfileMenuListView({
   onContext,
 }: MenuListProps) {
   const { t } = useLingui()
+  // Read here, where it shows: the menu's items mount only while it is open, so a profile save leaves a closed menu be.
+  const { profiles } = useOrderedProfiles(game)
   const profileRowLabel = (p: Profile) => {
     const { name } = p
     const mods = modsLabel(userModCount(p))
@@ -205,7 +210,6 @@ const ProfileMenuList = memo(
   (a, b) =>
     a.game === b.game &&
     a.gameName === b.gameName &&
-    a.profiles === b.profiles &&
     a.openId === b.openId &&
     a.hasTemplates === b.hasTemplates &&
     a.onCreate === b.onCreate &&
@@ -238,9 +242,22 @@ const ContextHost = memo(function ContextHostView({ game }: { game: string }) {
 export const ProfileMenu = memo(function ProfileMenuView({ game }: { game: string }) {
   const { t } = useLingui()
   const gameName = useGameName(game)
-  const { profiles } = useOrderedProfiles(game)
   const openId = useProfiles((s) => s.openId)
-  const current = useProfiles(openProfileOf)
+  // The button's few fields, each its own value, so a save that changes none of them redraws nothing here.
+  const name = useProfiles((s) => openProfileOf(s)?.name)
+  const color = useProfiles((s) => openProfileOf(s)?.color)
+  const icon = useProfiles((s) => openProfileOf(s)?.icon)
+  const count = useProfiles((s) => {
+    const p = openProfileOf(s)
+    return p ? userModCount(p) : 0
+  })
+  const current = useMemo(
+    () =>
+      name === undefined
+        ? undefined
+        : { id: openId, name, count, ...(color ? { color } : {}), ...(icon ? { icon } : {}) },
+    [openId, name, color, icon, count],
+  )
   const { anchor, close, trigger } = useTitleMenu('profile')
   const [creating, setCreating] = useState(false)
   const [managing, setManaging] = useState(false)
@@ -276,7 +293,6 @@ export const ProfileMenu = memo(function ProfileMenuView({ game }: { game: strin
         <ProfileMenuList
           game={game}
           gameName={gameName}
-          profiles={profiles}
           openId={openId}
           hasTemplates={templates.length > 0}
           onCreate={onCreate}

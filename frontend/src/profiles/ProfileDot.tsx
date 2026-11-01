@@ -7,7 +7,7 @@ export function ProfileDot({
   profile,
   size = 16,
 }: {
-  profile: Profile | undefined
+  profile: Pick<Profile, 'color' | 'icon'> | undefined
   size?: number
 }) {
   if (profile && (profile.color || profile.icon)) {

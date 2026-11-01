@@ -34,7 +34,13 @@ const ICONS: Record<ProfileIcon, LucideIcon> = {
 
 const ICON_SIZE = 0.55
 
-export function ProfileMark({ profile, size = 28 }: { profile: Profile; size?: number }) {
+export function ProfileMark({
+  profile,
+  size = 28,
+}: {
+  profile: Pick<Profile, 'color' | 'icon'>
+  size?: number
+}) {
   const hex = colorHex(profile.color)
   const Icon = isProfileIcon(profile.icon) ? ICONS[profile.icon] : undefined
   if (!(hex || Icon)) {
