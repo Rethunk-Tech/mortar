@@ -13,7 +13,7 @@ import {
 } from '@mui/material'
 import { useDebouncedLoad, useLoaded } from '@rethunk/react-load-hooks'
 import { CircleAlert, Code, FileSearch } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type {
   Assembly,
   Mapped,
@@ -201,10 +201,37 @@ function Source({
     )
   }
   return (
-    <CodeView
+    <SingleView
+      key={`${type}\n${kind}\n${method}\n${source.length}`}
       source={source}
       il={il}
       line={declarationLine(source, type, kind, method)}
+      onSymbol={onSymbol}
+    />
+  )
+}
+
+// One side alone tints the opened member's declaration, then whichever line is clicked, as Side by side does.
+function SingleView({
+  source,
+  il,
+  line,
+  onSymbol,
+}: {
+  source: string
+  il: boolean
+  line: number
+  onSymbol: (at: SymbolClick) => void
+}) {
+  const [picked, setPicked] = useState(line)
+  const marked = useMemo(() => new Set(picked >= 0 ? [picked] : []), [picked])
+  return (
+    <CodeView
+      source={source}
+      il={il}
+      line={line}
+      marked={marked}
+      onPick={setPicked}
       onSymbol={onSymbol}
     />
   )
