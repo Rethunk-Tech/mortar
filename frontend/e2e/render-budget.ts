@@ -16,8 +16,9 @@ import { dialogCases } from './renderDialogs.ts'
 import { writeGallery } from './renderGallery.ts'
 import { printExtras, report, startupLine, watchLog } from './renderLog.ts'
 import { HOOK, mortarBoxes, mortarGaps, mortarMeter, quietToasts } from './renderMeter.ts'
-import { openBiggestProfile } from './renderProfile.ts'
+import { openBiggestProfile, rememberMainGame } from './renderProfile.ts'
 import { screenCases } from './renderScreens.ts'
+import { modsView } from './renderView.ts'
 import { PAGE } from './renderViewport.ts'
 import { keepServerLogs, sandboxPort, selftest } from './sandbox.ts'
 import { webkitWalk } from './webkit-walk.ts'
@@ -103,24 +104,8 @@ async function tab(page: Page, name: string) {
     .click()
 }
 
-async function view(page: Page, which: 'List view' | 'Grid view') {
-  await tab(page, 'Mods')
-  // A filter typed by an earlier case persists per profile and would leave a grid with fewer cards than a case clicks.
-  const filter = page.getByRole('textbox', { name: /^Filter/ }).first()
-  if ((await filter.isVisible()) && (await filter.inputValue()) !== '') {
-    await filter.fill('')
-  }
-  const button = page.getByRole('button', { name: which })
-  if ((await button.getAttribute('aria-pressed')) !== 'true') {
-    await button.click()
-  }
-  // Closes the details panel, so a case that opens it starts from the same place every time.
-  if (await page.getByRole('complementary', { name: 'Selected mod' }).isVisible()) {
-    await page.keyboard.press('Escape')
-  }
-}
-
 const row = (page: Page, n: number) => page.locator('[data-mod-id]').nth(n)
+const view = modsView(tab, tabs, row)
 
 async function typeInto(page: Page, label: RegExp | string, text: string) {
   const field = page.getByRole('textbox', { name: label }).first()
@@ -260,10 +245,12 @@ async function land(page: Page): Promise<number | null> {
   const named = process.env.MORTAR_RENDER_PROFILE
   if (named) {
     await openProfile(page, named)
+    await rememberMainGame(page)
     return null
   }
   if (process.env.MORTAR_RENDER_SEEDED) {
     await openSeedFarm(page)
+    await rememberMainGame(page)
     return null
   }
   const start = Date.now()
@@ -280,6 +267,7 @@ async function land(page: Page): Promise<number | null> {
     await skip.click()
   }
   await openBiggestProfile(page, tabs(page))
+  await rememberMainGame(page)
   await waitForQuietNotices(page)
   return shownMs
 }

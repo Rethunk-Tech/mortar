@@ -3,6 +3,7 @@ import type { Page } from '@playwright/test'
 import { openGameSelect, openSettings } from './app.ts'
 import type { Case } from './render-budget.ts'
 import type { Helpers } from './renderCases.ts'
+import { thunderstoreVisit } from './renderProfile.ts'
 
 const CLOSE_TRIES = 4
 const CLOSE_WAIT_MS = 1000
@@ -76,6 +77,10 @@ function dialogKit(h: Helpers) {
       await inDialog(page, destination)
     }
   }
+  const { to: toThunderstore, from: fromThunderstore } = thunderstoreVisit(
+    { share: (p) => button(p, /^Share…/), close: closeAll, home: atHome },
+    h.tabs,
+  )
   const editProfile = (page: Page) => profileMenu(page, /^Edit profile…/)
   const importStep = async (page: Page, step: RegExp) => {
     await switcher(page, /^Import…/)
@@ -113,6 +118,9 @@ function dialogKit(h: Helpers) {
     switcher,
     share,
     editProfile,
+    toThunderstore,
+    fromThunderstore,
+    ready,
     importStep,
     pick,
     button,
@@ -126,7 +134,7 @@ function dialogKit(h: Helpers) {
 
 // Share's destinations, each opened from Home.
 function shareCases(kit: ReturnType<typeof dialogKit>): Case[] {
-  const { dialog, share, shareNearby, inDialog, atHome } = kit
+  const { dialog, share, shareNearby, inDialog, atHome, toThunderstore, fromThunderstore } = kit
   return [
     dialog('share', (p) => share(p), undefined, atHome),
     dialog('share-mortar-link', (p) => share(p, /^Mortar/), undefined, atHome),
@@ -140,27 +148,34 @@ function shareCases(kit: ReturnType<typeof dialogKit>): Case[] {
       atHome,
     ),
     dialog('share-nexus', (p) => share(p, /^Nexus/), undefined, atHome),
-    dialog('share-thunderstore', (p) => share(p, /^Thunderstore/), undefined, atHome),
+    {
+      ...dialog('share-thunderstore', (p) => share(p, /^Thunderstore/), undefined, toThunderstore),
+      teardown: fromThunderstore,
+    },
     // It looks again every 5 s, so one look can land in the watch, and it may find a computer the first did not.
     dialog('share-nearby', shareNearby, { idleCalls: 4, idleUpdates: 100, idleCommits: 3 }, atHome),
     dialog('share-mod-list', (p) => share(p, /^Mod list/), undefined, atHome),
-    ...['Plain text', 'Discord', 'Thunderstore'].map((format) =>
-      dialog(
-        `share-mod-list-${format.toLowerCase().replace(' ', '-')}`,
-        async (p) => {
-          await share(p, /^Mod list/)
-          await inDialog(p, new RegExp(`^${format}`))
-        },
-        undefined,
-        atHome,
-      ),
-    ),
+    ...['Plain text', 'Discord', 'Thunderstore'].map((format) => {
+      const thunderstore = format === 'Thunderstore'
+      return {
+        ...dialog(
+          `share-mod-list-${format.toLowerCase().replace(' ', '-')}`,
+          async (p) => {
+            await share(p, /^Mod list/)
+            await inDialog(p, new RegExp(`^${format}`))
+          },
+          undefined,
+          thunderstore ? toThunderstore : atHome,
+        ),
+        ...(thunderstore ? { teardown: fromThunderstore } : {}),
+      }
+    }),
   ]
 }
 
 // Home's Tools menu and the Develop tab's New mod wizard, each step measured on its own.
 function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
-  const { dialog, button, pick, inDialog, tabIn, newModTo, atHome, tab, shown } = kit
+  const { dialog, button, pick, inDialog, tabIn, newModTo, atHome, tab, shown, ready } = kit
   return [
     dialog(
       'manage-tools',
@@ -185,7 +200,11 @@ function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
     // Filling the fields and stepping through is one action, so it re-renders the wizard several times over.
     {
       name: 'develop-new-mod',
-      setup: (p) => tab(p, 'Develop'),
+      // An earlier case's dialog can still cover the header.
+      setup: async (p) => {
+        await ready(p)
+        await tab(p, 'Develop')
+      },
       // The header's button; an empty Develop page offers a second one.
       run: (p) => p.getByRole('button', { name: 'New mod…' }).first().click(),
     },
