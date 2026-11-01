@@ -187,7 +187,7 @@ const cases: Case[] = [
     setup: (p) => view(p, 'List view'),
     run: (p) => typeInto(p, /^Filter/, 'farm'),
     // The search is kept; later cases expect every mod listed.
-    teardown: (p) => p.getByRole('button', { name: 'Show all mods' }).click(),
+    teardown: (p) => p.getByRole('textbox', { name: /^Filter/ }).first().fill(''),
   },
   {
     name: 'mods-view-switch',
