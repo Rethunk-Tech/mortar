@@ -49,6 +49,27 @@ function useCategoryChoices(game: string, current: string[]): Choice[] {
   return [...choices, ...current.filter((c) => !known.has(c)).map((c) => ({ value: c, label: c }))]
 }
 
+// Its own component, so the choices arriving redraw this field and not the whole dialog.
+function CategoryField({
+  game,
+  value,
+  onChange,
+}: {
+  game: string
+  value: string[]
+  onChange: (next: string[]) => void
+}) {
+  const { t } = useLingui()
+  return (
+    <ChoicePicker
+      label={t`Categories`}
+      choices={useCategoryChoices(game, value)}
+      value={value}
+      onChange={onChange}
+    />
+  )
+}
+
 // Thunderstore needs no ids, so Sites shows only when another site takes uploads.
 function useEditTabs(sites: string[]): { id: EditTab; label: string }[] {
   const { t } = useLingui()
@@ -87,7 +108,6 @@ export function EditProjectDialog({
   const [edit, setEdit] = useState<ProjectEdit>(() => editOf(info))
   const [saving, run] = usePending()
   const sites = useUploadSites(game, dir)
-  const categories = useCategoryChoices(game, edit.categories ?? [])
   const details = !sameValue(edit, editOf(info))
   const deps = useDependencyRows(game, dir)
   const dirty = details || deps.dirty
@@ -172,9 +192,8 @@ export function EditProjectDialog({
             maxLength={MAX_DESCRIPTION}
             multiline={true}
           />
-          <ChoicePicker
-            label={t`Categories`}
-            choices={categories}
+          <CategoryField
+            game={game}
             value={edit.categories ?? []}
             onChange={(next) => set({ categories: next })}
           />
