@@ -283,19 +283,13 @@ func (d cfgOnDisk) file() ConfigFile {
 	return ConfigFile{Name: d.name, Format: FormatBepInEx, Label: label}
 }
 
-// docChanged reports whether a .cfg differs from its defaults, as its plugin's DLL now binds them when that is newer;
+// docChanged reports whether a .cfg differs from its defaults, as its plugin's DLL binds them;
 // a mod's JSON file names none.
 func (s *Service) docChanged(game, profileID string, d cfgOnDisk) bool {
 	if d.json || d.text {
 		return false
 	}
-	sc := cfgSchema(d.doc, d.file())
-	if path, err := s.cfgPath(game, profileID, d.name); err == nil {
-		if info, err := os.Stat(path); err == nil {
-			sc = s.withBound(game, profileID, sc, guidOf(d.doc, d.name), path, info.ModTime())
-		}
-	}
-	return schemaChanged(sc)
+	return schemaChanged(s.withBound(game, profileID, cfgSchema(d.doc, d.file()), guidOf(d.doc, d.name)))
 }
 
 // allDocs is the profile's .cfg files and the JSON files of its mod config folder.
@@ -571,7 +565,7 @@ func (s *Service) schemaOf(game, profileID, modID string, f ConfigFile) (Schema,
 		if err != nil {
 			return Schema{}, err
 		}
-		return s.withBound(game, profileID, withSync(cfgSchema(doc, f), path), guidOf(doc, f.Name), path, info.ModTime()), nil
+		return s.withBound(game, profileID, withSync(cfgSchema(doc, f), path), guidOf(doc, f.Name)), nil
 	}
 	cur, err := s.Profiles.ReadConfig(game, profileID, "", mod.ID(modID))
 	if err != nil {

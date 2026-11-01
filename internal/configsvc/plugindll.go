@@ -15,9 +15,10 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
-// BepInEx writes a plugin's .cfg the first time the game runs it, and rewrites its defaults only then. A plugin's DLL
-// says what it binds before that, so a rebuilt or updated mod shows its new defaults and settings, and a mod the game
-// has not run yet can be set up, without a launch.
+// BepInEx writes a plugin's .cfg the first time the game runs it, and rewrites its defaults only then. The DLL is what
+// the game will run, so what it binds wins: a rebuilt or updated mod shows its new defaults and settings, and a mod the
+// game has not run yet can be set up, without a launch. File times cannot tell which is newer: a build installed after
+// the game last ran can still be older than the .cfg that run wrote.
 
 // bound is a plugin's settings as its DLL binds them.
 type bound struct {
@@ -180,8 +181,8 @@ func (b bound) setting(section, key string) (dotnet.Setting, bool) {
 	return b.settings[i], true
 }
 
-// overlay gives the entries of a .cfg older than its plugin's DLL what the DLL now binds: defaults, descriptions,
-// ranges and values, and the settings the file does not have yet, each at its default.
+// overlay gives the entries of a .cfg what its plugin's DLL binds: defaults, descriptions, ranges and values, and the
+// settings the file does not have yet, each at its default.
 func overlay(sc Schema, b bound) Schema {
 	fresh := cfgSchema(cfgedit.ParseBepInEx(b.render()), sc.File)
 	for _, fs := range fresh.Sections {
@@ -214,7 +215,7 @@ func overlay(sc Schema, b bound) Schema {
 // syncLevels names the DLL reader's sync levels as ConfigSync's sidecar does.
 var syncLevels = map[string]string{"host-enforced": "hostEnforced", "host-recommended": "hostRecommended"}
 
-// boundSync marks the entries b shares with the lobby, for when ConfigSync has not written its sidecar for this build.
+// boundSync marks the entries b shares with the lobby, over what ConfigSync's sidecar from an earlier run says.
 func boundSync(sc Schema, b bound) Schema {
 	for i := range sc.Sections {
 		for j := range sc.Sections[i].Entries {
@@ -232,19 +233,11 @@ func guidOf(doc *cfgedit.BepInEx, name string) string {
 	return cmp.Or(doc.GUID(), strings.TrimSuffix(name, filepath.Ext(name)))
 }
 
-// withBound applies what the plugin's DLL binds to the schema of its .cfg at path (modified at cfgAt): defaults and
-// new settings when the DLL is newer than the file, and sync levels when ConfigSync's sidecar is missing or older.
-func (s *Service) withBound(game, profileID string, sc Schema, guid, path string, cfgAt time.Time) Schema {
+// withBound applies what the plugin's DLL binds to the schema of its .cfg.
+func (s *Service) withBound(game, profileID string, sc Schema, guid string) Schema {
 	b, ok := s.boundFor(game, profileID, guid)
 	if !ok {
 		return sc
 	}
-	if b.at.After(cfgAt) {
-		sc = overlay(sc, b)
-	}
-	side, err := os.Stat(strings.TrimSuffix(path, filepath.Ext(path)) + syncSidecar)
-	if err != nil || b.at.After(side.ModTime()) {
-		sc = boundSync(sc, b)
-	}
-	return sc
+	return boundSync(overlay(sc, b), b)
 }

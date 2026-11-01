@@ -79,18 +79,16 @@ func TestAPluginTheGameHasNotRunShowsItsSettingsAndTheFirstEditWritesItsFile(t *
 	}
 }
 
-func TestADLLNewerThanItsCfgGivesTheNewDefaultsAndSettings(t *testing.T) {
+// The .cfg is the newer file here: a game run with the old build wrote it, then the new build was installed with its
+// build time. The DLL still wins.
+func TestTheDLLGivesTheDefaultsAndSettingsOverAnOlderBuildsCfg(t *testing.T) {
 	s, path, dll := boundService(t)
 	old := "## Plugin GUID: com.fixture.plugin\n\n[Numbers]\n\n# Setting type: Int32\n# Default value: 5\nCount = 5\n"
 	if err := os.WriteFile(path, []byte(old), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	past := time.Now().Add(-time.Hour)
-	if err := os.Chtimes(path, past, past); err != nil {
-		t.Fatal(err)
-	}
-	now := time.Now()
-	if err := os.Chtimes(dll, now, now); err != nil {
+	if err := os.Chtimes(dll, past, past); err != nil {
 		t.Fatal(err)
 	}
 	sc, err := s.Schema("lc", "p", "thunderstore:Ex-Fixture", boundGUID+".cfg")
