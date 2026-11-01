@@ -178,3 +178,32 @@ func TestWriteUserPropsRefusesAGamePathXMLCannotCarry(t *testing.T) {
 		t.Errorf("props written: %v", err)
 	}
 }
+
+func TestAssembliesListTheGamesMainAssemblyFirst(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	dir := fixtureProject(t, svc)
+	game := t.TempDir()
+	managed := filepath.Join(game, "Game_Data", "Managed")
+	if err := os.MkdirAll(managed, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"Another.dll", "Assembly-CSharp.dll", "Zed.dll", "System.Core.dll"} {
+		if err := safefs.WriteFile(filepath.Join(managed, name), nil, 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := writeUserProps(dir, game); err != nil {
+		t.Fatal(err)
+	}
+	all, err := svc.Assemblies("lethal-company", dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var labels []string
+	for _, a := range all {
+		labels = append(labels, a.Label)
+	}
+	if !slices.Equal(labels, []string{"Assembly-CSharp.dll", "Another.dll", "Zed.dll"}) {
+		t.Errorf("assemblies = %v", labels)
+	}
+}

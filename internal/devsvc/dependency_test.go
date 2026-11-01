@@ -281,3 +281,25 @@ func TestWithoutDependencyMatchesWithoutCase(t *testing.T) {
 		t.Errorf("entry kept: %q, %v", out, err)
 	}
 }
+
+func TestUndeclareDependencyDropsOnlyThatGUIDsLine(t *testing.T) {
+	const src = "[BepInPlugin(\"a.b\", \"B\", \"1.0.0\")]\n[BepInDependency(\"x.hard\", BepInDependency.DependencyFlags.HardDependency)]\n[BepInDependency(\"x.soft\", BepInDependency.DependencyFlags.SoftDependency)]\nclass P {}\n"
+	for _, c := range []struct{ guid, want string }{
+		{"x.hard", "[BepInPlugin(\"a.b\", \"B\", \"1.0.0\")]\n[BepInDependency(\"x.soft\", BepInDependency.DependencyFlags.SoftDependency)]\nclass P {}\n"},
+		{"x.soft", "[BepInPlugin(\"a.b\", \"B\", \"1.0.0\")]\n[BepInDependency(\"x.hard\", BepInDependency.DependencyFlags.HardDependency)]\nclass P {}\n"},
+		{"absent", src},
+		{"bad\"guid", src},
+	} {
+		dir := t.TempDir()
+		path := filepath.Join(dir, "Plugin.cs")
+		if err := os.WriteFile(path, []byte(src), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		if err := undeclareDependency(dir, c.guid); err != nil {
+			t.Fatal(err)
+		}
+		if got, _ := safefs.ReadFile(path); string(got) != c.want {
+			t.Errorf("%s: %q", c.guid, got)
+		}
+	}
+}

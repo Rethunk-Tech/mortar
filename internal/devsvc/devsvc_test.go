@@ -712,3 +712,14 @@ func TestValidateReadsAManifestWithABOM(t *testing.T) {
 		t.Errorf("a BOM manifest was refused:\n%s", got)
 	}
 }
+
+func TestLoaderPackVersionIsEmptyWithoutALookup(t *testing.T) {
+	svc := &Service{}
+	if got := svc.loaderPackVersion(t.Context(), "no-such-game"); got != "" {
+		t.Errorf("unknown game = %q", got)
+	}
+	svc.LatestLoader = func(context.Context, string) string { return "" }
+	if got := svc.loaderPackVersion(t.Context(), "lethal-company"); got != "" {
+		t.Errorf("no release = %q", got)
+	}
+}

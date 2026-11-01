@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -395,5 +396,82 @@ func TestUploadClientRefusesARedirectToAnotherHost(t *testing.T) {
 	}
 	if leaked != "" {
 		t.Errorf("the second host saw Apikey %q", leaked)
+	}
+}
+
+func writePackedZip(t *testing.T, dir string) {
+	t.Helper()
+	release := filepath.Join(dir, "artifacts", "thunderstore", "release")
+	if err := os.MkdirAll(release, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := safefs.WriteFile(filepath.Join(release, "Ab-ShopDrop-1.0.0.zip"), []byte("zip"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestReleaseNotesReadsTheVersionsSectionOfTheChangelog(t *testing.T) {
+	withLog := t.TempDir()
+	if err := safefs.WriteFile(filepath.Join(withLog, "CHANGELOG.md"), []byte("## 1.2.3\n\n- fix\n\n## 1.0.0\n\n- first\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	for _, c := range []struct {
+		dir, version, want string
+		invalid            bool
+	}{
+		{withLog, "1.0", "", true},
+		{t.TempDir(), "1.2.3", "", false},
+		{withLog, "1.2.3", "- fix", false},
+	} {
+		got, err := releaseNotes(c.dir, c.version)
+		if got != c.want || (err != nil) != c.invalid || c.invalid && usererr.KindOf(err) != usererr.Invalid {
+			t.Errorf("releaseNotes(%q) = %q, %v", c.version, got, err)
+		}
+	}
+}
+
+func TestUploadsNeedTheSitesIdsAndCredentials(t *testing.T) {
+	keyring.MockInit()
+	svc, _ := testService(t, testTemplate)
+	dir := fixtureProject(t, svc)
+	ctx := t.Context()
+	if _, err := svc.UploadThunderstore(ctx, "lethal-company", dir); usererr.KindOf(err) != usererr.NotFound || !strings.Contains(err.Error(), "pack") {
+		t.Errorf("thunderstore without a package: %v", err)
+	}
+	writePackedZip(t, dir)
+	if _, err := svc.UploadNexus(ctx, "lethal-company", dir, "1.0.0"); usererr.KindOf(err) != usererr.Invalid {
+		t.Errorf("nexus without ids: %v", err)
+	}
+	if _, err := svc.UploadCurseForge(ctx, "lethal-company", dir, "1.0.0"); usererr.KindOf(err) != usererr.Invalid {
+		t.Errorf("curseforge without ids: %v", err)
+	}
+	if err := writeSites(dir, siteIDs{CurseForge: CurseForgeIDs{ProjectID: 31}}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := svc.UploadCurseForge(ctx, "lethal-company", dir, "1.0.0"); usererr.KindOf(err) != usererr.Permission {
+		t.Errorf("curseforge without a token: %v", err)
+	}
+}
+
+func TestNewestPackagePicksTheLatestZip(t *testing.T) {
+	dir := t.TempDir()
+	if got := newestPackage(dir); got != "" {
+		t.Fatalf("no packages = %q", got)
+	}
+	release := filepath.Join(dir, "artifacts", "thunderstore", "release")
+	if err := os.MkdirAll(release, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	for name, at := range map[string]int64{"old.zip": 1_000_000, "new.zip": 2_000_000} {
+		path := filepath.Join(release, name)
+		if err := safefs.WriteFile(path, []byte("zip"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Chtimes(path, time.Unix(at, 0), time.Unix(at, 0)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if got := newestPackage(dir); filepath.Base(got) != "new.zip" {
+		t.Errorf("newest = %q", got)
 	}
 }
