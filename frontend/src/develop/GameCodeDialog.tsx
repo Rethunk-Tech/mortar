@@ -185,13 +185,7 @@ function Source({
     )
   }
   if (mode === 'both' && mapped) {
-    return (
-      <MappedView
-        mapped={mapped}
-        line={declarationLine(mapped.csharp, type, kind, method)}
-        onSymbol={onSymbol}
-      />
-    )
+    return <MappedView mapped={mapped} member={{ type, kind, name: method }} onSymbol={onSymbol} />
   }
   if (mode === 'both' || source === '') {
     return (
@@ -442,7 +436,16 @@ export function GameCodeDialog({
         onOpen={(u) => {
           const [type = '', method = ''] = u.caller.split('::')
           setAssembly(u.assembly === assemblies[0]?.path ? '' : u.assembly)
-          setPicked({ type, kind: 'method', method, static: false, void: true, params: [] })
+          setPicked({
+            type,
+            kind: 'method',
+            method,
+            static: false,
+            void: true,
+            params: [],
+            types: [],
+            returns: '',
+          })
           setUsagesOf('')
         }}
       />

@@ -2490,6 +2490,10 @@ msgstr "{hidden} hidden"
 msgid "Unknown"
 msgstr "Unknown"
 
+#: src/develop/SymbolMenu.tsx
+msgid "Copy a {library} Hook for {signature}"
+msgstr "Copy a {library} Hook for {signature}"
+
 #: src/game/ProfileMenu.tsx
 #: src/game/ProfileMenuItems.tsx
 msgid "History…"
@@ -5440,6 +5444,10 @@ msgstr "Preview link…"
 msgid "Could not set the cover"
 msgstr "Could not set the cover"
 
+#: src/develop/SymbolMenu.tsx
+msgid "Copy a {library} patch for {signature}"
+msgstr "Copy a {library} patch for {signature}"
+
 #: src/commandPalette/paletteLabels.ts
 msgid "Review collection update"
 msgstr "Review collection update"
@@ -6961,6 +6969,10 @@ msgstr "Save…"
 msgid "Fall"
 msgstr "Fall"
 
+#: src/develop/SymbolMenu.tsx
+msgid "Copy a {library} On. hook for {signature}"
+msgstr "Copy a {library} On. hook for {signature}"
+
 #: src/browse/BrowseBody.tsx
 msgid "Try fewer words, or the mod's exact name."
 msgstr "Try fewer words, or the mod's exact name."
@@ -7354,10 +7366,6 @@ msgstr "Caused by {name}"
 #: src/share/ImportProblems.tsx
 msgid "{name} is not on {source}"
 msgstr "{name} is not on {source}"
-
-#: src/develop/SymbolMenu.tsx
-msgid "Copy a {library} hook for {signature}"
-msgstr "Copy a {library} hook for {signature}"
 
 #: src/develop/DevelopTab.tsx
 msgid "Show all projects"

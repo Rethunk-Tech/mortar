@@ -2484,6 +2484,10 @@ msgstr ""
 msgid "Unknown"
 msgstr ""
 
+#: src/develop/SymbolMenu.tsx
+msgid "Copy a {library} Hook for {signature}"
+msgstr ""
+
 #: src/game/ProfileMenu.tsx
 #: src/game/ProfileMenuItems.tsx
 msgid "History…"
@@ -5434,6 +5438,10 @@ msgstr ""
 msgid "Could not set the cover"
 msgstr ""
 
+#: src/develop/SymbolMenu.tsx
+msgid "Copy a {library} patch for {signature}"
+msgstr ""
+
 #: src/commandPalette/paletteLabels.ts
 msgid "Review collection update"
 msgstr ""
@@ -6955,6 +6963,10 @@ msgstr ""
 msgid "Fall"
 msgstr ""
 
+#: src/develop/SymbolMenu.tsx
+msgid "Copy a {library} On. hook for {signature}"
+msgstr ""
+
 #: src/browse/BrowseBody.tsx
 msgid "Try fewer words, or the mod's exact name."
 msgstr ""
@@ -7347,10 +7359,6 @@ msgstr ""
 
 #: src/share/ImportProblems.tsx
 msgid "{name} is not on {source}"
-msgstr ""
-
-#: src/develop/SymbolMenu.tsx
-msgid "Copy a {library} hook for {signature}"
 msgstr ""
 
 #: src/develop/DevelopTab.tsx

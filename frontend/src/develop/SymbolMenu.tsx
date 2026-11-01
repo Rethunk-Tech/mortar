@@ -7,16 +7,26 @@ import {
   GameCode,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import type { Member } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/dotnet/models.ts'
-import { MONOMOD } from '../brand/productNames.ts'
+import { HARMONY, HOOKGEN, MONOMOD } from '../brand/productNames.ts'
 import { copyText } from '../share/copyText.ts'
 import { MenuAction, MenuNote } from '../shell/MenuAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { declares } from './declaration.ts'
-import { hookSnippet, memberKey } from './hook.ts'
+import { harmonyPatchSnippet, hookSnippet, memberKey, monoModHookSnippet } from './hook.ts'
 import { ilOwner, type SymbolClick } from './symbolAt.ts'
 
 // Members a right-click menu lists, at most.
 const MENU_MEMBERS = 6
+
+interface Found {
+  owner: string
+  members: Member[]
+}
+
+// What each right-click resolved to, so the same name on the same line opens its menu at once the next time. The game's
+// code does not change while Mortar runs.
+const lookups = new Map<string, Found>()
+const LOOKUPS_MAX = 500
 
 // Where a right-click landed: the assembly and the type open in the view.
 interface Scope {
@@ -52,9 +62,9 @@ async function ownerOf(scope: Scope, at: SymbolClick): Promise<string> {
 }
 
 /**
- * What a right-clicked name can do: go to its definition from a use of it, find who uses the member it names, and
- * copy a hook for a method, whose signature the search gives. Only when its owner cannot be told are all the
- * assembly's members by that name offered.
+ * What a right-clicked name can do: go to its definition from a use of it, find who uses the member it names, and on a
+ * method's own declaration copy a HookGen hook, a MonoMod Hook or a Harmony patch for it, built from the signature the
+ * search gives. Only when its owner cannot be told are all the assembly's members by that name offered.
  */
 export function SymbolMenu({
   scope,
@@ -72,22 +82,30 @@ export function SymbolMenu({
   const { t } = useLingui()
   const name = at?.name ?? ''
   const { game, dir, assembly, type } = scope
-  const { data: found } = useLoaded<{ owner: string; members: Member[] } | null>(
-    at === null
+  const key = at ? [game, dir, assembly, type, at.il, at.line, at.name].join('\n') : ''
+  const cached = lookups.get(key)
+  const { data: loaded } = useLoaded<Found | null>(
+    at === null || cached
       ? null
       : async () => {
           const owner = await ownerOf({ game, dir, assembly, type }, at)
           const hits =
             (await GameCode(game, dir, assembly, owner ? `${owner}::${at.name}` : at.name)) ?? []
-          return {
+          const resolved = {
             owner,
             members: hits.filter((m) => m.method === at.name && (owner === '' || m.type === owner)),
           }
+          if (lookups.size >= LOOKUPS_MAX) {
+            lookups.clear()
+          }
+          lookups.set(key, resolved)
+          return resolved
         },
-    [game, dir, assembly, type, at],
+    [key],
     null,
     reportUnexpected,
   )
+  const found = cached ?? loaded
   const members = found?.members.slice(0, MENU_MEMBERS) ?? []
   const onItsDefinition = at !== null && declares(at.text, at.name)
   // A member of another assembly (Unity's, say) is not in this one's search, but its usages can still be found.
@@ -116,7 +134,7 @@ export function SymbolMenu({
       {members.flatMap((m) => {
         const label = `${m.type.split('.').at(-1) ?? m.type}::${m.method}`
         // A code signature, not words, so it stays out of the translated message whole.
-        const signature = `${label}(${(m.params ?? []).join(', ')})`
+        const signature = `${label}(${(m.types ?? m.params ?? []).join(', ')})`
         return [
           onItsDefinition ? null : (
             <MenuAction
@@ -132,17 +150,35 @@ export function SymbolMenu({
             label={t`Find usages of ${{ label }}`}
             onClick={() => onUsages(`${m.type}::${m.method}`)}
           />,
-          m.kind === 'field' ? null : (
-            <MenuAction
-              key={`h${memberKey(m)}`}
-              icon={<Copy size={14} />}
-              label={t`Copy a ${{ library: MONOMOD }} hook for ${{ signature }}`}
-              onClick={() => {
-                copyText(hookSnippet(m), t`Hook copied`)
-                onClose()
-              }}
-            />
-          ),
+          ...(onItsDefinition && m.kind !== 'field'
+            ? [
+                {
+                  id: 'on',
+                  text: t`Copy a ${{ library: HOOKGEN }} On. hook for ${{ signature }}`,
+                  make: hookSnippet,
+                },
+                {
+                  id: 'mm',
+                  text: t`Copy a ${{ library: MONOMOD }} Hook for ${{ signature }}`,
+                  make: monoModHookSnippet,
+                },
+                {
+                  id: 'hp',
+                  text: t`Copy a ${{ library: HARMONY }} patch for ${{ signature }}`,
+                  make: harmonyPatchSnippet,
+                },
+              ].map((h) => (
+                <MenuAction
+                  key={`${h.id}${memberKey(m)}`}
+                  icon={<Copy size={14} />}
+                  label={h.text}
+                  onClick={() => {
+                    copyText(h.make(m), t`Hook copied`)
+                    onClose()
+                  }}
+                />
+              ))
+            : []),
         ]
       })}
     </Menu>
