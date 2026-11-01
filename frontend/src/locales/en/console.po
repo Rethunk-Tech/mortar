@@ -799,6 +799,10 @@ msgstr "Mortar offers this update in the profile's update list."
 msgid "applying its patches {ms}"
 msgstr "applying its patches {ms}"
 
+#: src/console/StartupSections.tsx
+msgid "The title screen is up while the game still loads its own content, including content packs from mods. The menu is unusable until this ends"
+msgstr "The title screen is up while the game still loads its own content, including content packs from mods. The menu is unusable until this ends"
+
 #: src/console/StartupTable.tsx
 msgid "Click a mod to show it in Mods"
 msgstr "Click a mod to show it in Mods"
@@ -847,10 +851,6 @@ msgstr "Debug"
 #: src/console/UpdateNoteTag.tsx
 msgid "Source skipped"
 msgstr "Source skipped"
-
-#: src/console/StartupSections.tsx
-msgid "The title screen is up but the game is still loading its own content, including content packs from mods; the menu is not usable until this ends"
-msgstr "The title screen is up but the game is still loading its own content, including content packs from mods; the menu is not usable until this ends"
 
 #: src/console/UpdateNoteTag.tsx
 msgid "Mortar offers prereleases only when Settings allows them."

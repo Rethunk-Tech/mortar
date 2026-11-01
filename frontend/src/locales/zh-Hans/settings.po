@@ -220,6 +220,10 @@ msgstr ""
 msgid "How timestamps are shown"
 msgstr ""
 
+#: src/settings/prefCopyGraphics.ts
+msgid "Try this if scrolling is slow or the fans spin up."
+msgstr ""
+
 #: src/settings/prefCopyModsView.ts
 msgid "List"
 msgstr ""
@@ -545,10 +549,6 @@ msgstr ""
 msgid "{game}: not installed"
 msgstr ""
 
-#: src/settings/prefCopyAntivirus.ts
-msgid "Scan every mod after it is extracted and before it enters Mortar's store. This applies to every game."
-msgstr ""
-
 #: src/settings/prefCopy.ts
 msgid "Launch Mortar at login"
 msgstr ""
@@ -563,10 +563,6 @@ msgstr ""
 
 #: src/settings/prefCopy.ts
 msgid "Remember window size and position"
-msgstr ""
-
-#: src/settings/prefCopyGraphics.ts
-msgid "Try this if scrolling is slow or the fans spin up, as on some graphics cards."
 msgstr ""
 
 #: src/settings/prefCopy.ts
@@ -862,6 +858,10 @@ msgstr ""
 
 #: src/settings/shortcutLabels.ts
 msgid "Check mods and Mortar for updates, or refresh Browse"
+msgstr ""
+
+#: src/settings/sections/About.tsx
+msgid "mortar.log, the previous run's mortar.prev.log and crash.log, in Mortar's data folder. Save diagnostics below zips them with personal paths removed, for a bug report."
 msgstr ""
 
 #: src/settings/SettingsPage.tsx
@@ -1262,6 +1262,10 @@ msgstr ""
 
 #: src/settings/sections/checkDetail.ts
 msgid "{game} in {path} ({where})"
+msgstr ""
+
+#: src/settings/prefCopyAntivirus.ts
+msgid "Scan every mod after extraction and before it enters Mortar's store. Applies to every game."
 msgstr ""
 
 #: src/settings/prefCopyGame.ts
@@ -2579,10 +2583,6 @@ msgstr ""
 msgid "Graphics API"
 msgstr ""
 
-#: src/settings/prefCopyGame.ts
-msgid "Whether Mortar deletes the game's rebuildable cache files on the first launch after this profile's mods change"
-msgstr ""
-
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Skills"
 msgstr ""
@@ -2881,6 +2881,10 @@ msgstr ""
 msgid "{count, plural, one {# change} other {# changes}}"
 msgstr ""
 
+#: src/settings/prefCopyGame.ts
+msgid "Delete the game's rebuildable cache files on the first launch after this profile's mods change"
+msgstr ""
+
 #: src/settings/startupChecks.ts
 msgid "Report it so it can be fixed."
 msgstr ""
@@ -2933,10 +2937,6 @@ msgstr ""
 
 #: src/settings/sections/HiddenLogSources.tsx
 msgid "Hidden messages"
-msgstr ""
-
-#: src/settings/sections/About.tsx
-msgid "mortar.log, the previous run's mortar.prev.log and crash.log, in Mortar's data folder. For a bug report, Save diagnostics below puts them in one zip with personal paths removed."
 msgstr ""
 
 #: src/settings/sections/HiddenLogSources.tsx
@@ -3352,6 +3352,10 @@ msgstr ""
 msgid "Language"
 msgstr ""
 
+#: src/settings/sections/HiddenLogSources.tsx
+msgid "Right-click a Console line to hide everything from its source, in every profile of this game. The game stops writing them where its bridge can. Messages Mortar hides by default for this game are listed too."
+msgstr ""
+
 #: src/settings/ProtonRow.tsx
 msgid "The {app} build from {launcher} that runs this copy, which {launcher} does not start"
 msgstr ""
@@ -3457,10 +3461,6 @@ msgstr ""
 
 #: src/settings/prefCopy.ts
 msgid "Run crashed"
-msgstr ""
-
-#: src/settings/sections/HiddenLogSources.tsx
-msgid "Right-click a line in the Console to hide every line from where it came from, in every profile of this game. The game stops writing them where its bridge can. Messages Mortar hides by default for this game are listed too."
 msgstr ""
 
 #: src/settings/sections/NxmReclaim.tsx

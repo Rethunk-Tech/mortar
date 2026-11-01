@@ -675,6 +675,10 @@ msgstr ""
 msgid "Changed profile settings"
 msgstr ""
 
+#: src/profiles/GameModsDialog.tsx
+msgid "If they stay, the game keeps loading them even when a profile disables them."
+msgstr ""
+
 #: src/profiles/ProfileMenu.tsx
 #: src/profiles/ProfilesPage.tsx
 msgid "New profile…"
@@ -743,10 +747,6 @@ msgstr ""
 
 #: src/profiles/store.ts
 msgid "Deleted {name}"
-msgstr ""
-
-#: src/profiles/GameModsDialog.tsx
-msgid "If they stay there, the game goes on loading them even when a profile disables them."
 msgstr ""
 
 #: src/profiles/GameModsDialog.tsx

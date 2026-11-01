@@ -799,6 +799,10 @@ msgstr ""
 msgid "applying its patches {ms}"
 msgstr ""
 
+#: src/console/StartupSections.tsx
+msgid "The title screen is up while the game still loads its own content, including content packs from mods. The menu is unusable until this ends"
+msgstr ""
+
 #: src/console/StartupTable.tsx
 msgid "Click a mod to show it in Mods"
 msgstr ""
@@ -846,10 +850,6 @@ msgstr ""
 
 #: src/console/UpdateNoteTag.tsx
 msgid "Source skipped"
-msgstr ""
-
-#: src/console/StartupSections.tsx
-msgid "The title screen is up but the game is still loading its own content, including content packs from mods; the menu is not usable until this ends"
 msgstr ""
 
 #: src/console/UpdateNoteTag.tsx

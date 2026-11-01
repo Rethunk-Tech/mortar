@@ -675,6 +675,10 @@ msgstr "Tagged {name} with {detail}"
 msgid "Changed profile settings"
 msgstr "Changed profile settings"
 
+#: src/profiles/GameModsDialog.tsx
+msgid "If they stay, the game keeps loading them even when a profile disables them."
+msgstr "If they stay, the game keeps loading them even when a profile disables them."
+
 #: src/profiles/ProfileMenu.tsx
 #: src/profiles/ProfilesPage.tsx
 msgid "New profile…"
@@ -744,10 +748,6 @@ msgstr "Could not unlink the collection"
 #: src/profiles/store.ts
 msgid "Deleted {name}"
 msgstr "Deleted {name}"
-
-#: src/profiles/GameModsDialog.tsx
-msgid "If they stay there, the game goes on loading them even when a profile disables them."
-msgstr "If they stay there, the game goes on loading them even when a profile disables them."
 
 #: src/profiles/GameModsDialog.tsx
 msgid "{count, plural, one {# failed} other {# failed}}"

@@ -371,10 +371,6 @@ msgstr ""
 msgid "Dismiss {name}"
 msgstr ""
 
-#: src/mods/problemWhy.ts
-msgid "Something changed this profile's mods folder without Mortar, by adding, removing or editing a file. Mortar flags it so the profile matches what you expect."
-msgstr ""
-
 #: src/mods/problemFix/fixActions.tsx
 msgid "Other fixes"
 msgstr ""
@@ -490,10 +486,6 @@ msgstr ""
 #: src/mods/updateDigestToast.ts
 #: src/mods/updates.ts
 msgid "Review"
-msgstr ""
-
-#: src/mods/SetNexusPageDialog.tsx
-msgid "Paste the address of the mod's page on {source}. To name the exact file, open that file's Manual Download on the page's Files tab and paste that address instead."
 msgstr ""
 
 #: src/mods/updateReview/Changes.tsx
@@ -616,10 +608,6 @@ msgstr ""
 
 #: src/mods/typedConfig/TextFile.tsx
 msgid "{name} has edits that are not saved."
-msgstr ""
-
-#: src/mods/problemWhy.ts
-msgid "Files of this stored mod went missing, changed or appeared after Mortar stored it. An antivirus, a disk fault or a manual edit can cause that, and the mod may misbehave."
 msgstr ""
 
 #: src/mods/HiddenInside.tsx
@@ -799,10 +787,6 @@ msgstr ""
 msgid "Ignore update source"
 msgstr ""
 
-#: src/mods/problemWhy.ts
-msgid "A mod you enabled needs another mod that is not in this profile, or is disabled. The first mod may fail to load or leave out features until the other one is added."
-msgstr ""
-
 #: src/mods/NewFoldersCallout.tsx
 #: src/mods/OldFilesCallouts.tsx
 #: src/mods/overlayActions.ts
@@ -888,8 +872,8 @@ msgstr ""
 msgid "In development"
 msgstr ""
 
-#: src/mods/ProblemsTab.tsx
-msgid "Some checks got no answer from their sites, which may be offline or busy, so more problems may show up later."
+#: src/mods/SetNexusPageDialog.tsx
+msgid "Paste the mod's page address on {source}. For an exact file, paste the address of its Manual Download on the page's Files tab instead."
 msgstr ""
 
 #: src/mods/LoadOrderTab.tsx
@@ -967,6 +951,10 @@ msgstr ""
 
 #: src/mods/DisableDialog.tsx
 msgid "{count, plural, one {Also disable # library nothing else needs} other {Also disable # libraries nothing else needs}}: {names}"
+msgstr ""
+
+#: src/mods/ProblemsTab.tsx
+msgid "Some sites did not answer, so more problems may show up later."
 msgstr ""
 
 #: src/mods/describeLoadFailure.ts
@@ -1555,6 +1543,10 @@ msgstr ""
 
 #: src/mods/updateReview/UpdateActions.tsx
 msgid "Tick \"Update despite this\" first."
+msgstr ""
+
+#: src/mods/problemWhy.ts
+msgid "Files of this stored mod went missing, changed or appeared after Mortar stored it. Antivirus, a disk fault or a manual edit can cause that, and the mod may misbehave."
 msgstr ""
 
 #: src/mods/SelectionBarActions.tsx
@@ -2851,6 +2843,10 @@ msgstr ""
 msgid "You endorsed this mod."
 msgstr ""
 
+#: src/mods/problemWhy.ts
+msgid "Something changed this profile's mods folder without Mortar, by adding, removing or editing a file."
+msgstr ""
+
 #: src/mods/parts.tsx
 msgid "{count, plural, one {Also removes # optional file that goes on top of it.} other {Also removes # optional files that go on top of it.}}"
 msgstr ""
@@ -3232,6 +3228,10 @@ msgstr ""
 
 #: src/mods/describeLoadFailure.ts
 msgid "transpiler"
+msgstr ""
+
+#: src/mods/problemWhy.ts
+msgid "Two enabled copies of the same mod are in this profile. The game loads only one, and you cannot choose which."
 msgstr ""
 
 #: src/mods/detail.ts
@@ -3690,10 +3690,6 @@ msgstr ""
 msgid "{count, plural, one {# mod matches.} other {# mods match.}}"
 msgstr ""
 
-#: src/mods/problemWhy.ts
-msgid "Two enabled copies of the same mod are in this profile. The game loads only one of them, and you do not choose which."
-msgstr ""
-
 #: src/mods/overlayActions.ts
 #: src/mods/storeEntries.ts
 msgid "This is no longer the latest change."
@@ -3850,6 +3846,10 @@ msgstr ""
 
 #: src/mods/ConfigPresets.tsx
 msgid "Save current as…"
+msgstr ""
+
+#: src/mods/problemWhy.ts
+msgid "A mod you enabled needs another mod that is not in this profile, or is disabled. It may fail to load or lack features until the other is added."
 msgstr ""
 
 #: src/mods/AssetMapDialog.tsx

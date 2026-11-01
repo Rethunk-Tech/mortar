@@ -5,10 +5,6 @@ msgstr "POT-Creation-Date: 2026-10-28 14:49-0700\nMIME-Version: 1.0\nContent-Typ
 msgid "No saves match"
 msgstr "没有匹配的存档"
 
-#: src/launch/SmapiWarnDialog.tsx
-msgid "{game}'s {launcher} launch options run {loader} in place of the game. {launcher} will still start {loader} unless that launch option is removed. Mortar will not change it."
-msgstr "{game} 的 {launcher} 启动选项会代替游戏运行 {loader}。除非移除该启动选项，否则 {launcher} 仍会启动 {loader}。Mortar 不会更改它。"
-
 #: src/launch/SaveWarnDialog.tsx
 msgid "{name} ({path}) was last played with mods this profile lacks or has disabled. Playing without them can lose their items or break the save."
 msgstr "{name}（{path}）上次游玩时使用了此配置缺少或已禁用的模组。没有这些模组继续游玩可能会丢失物品或损坏存档。"
@@ -68,6 +64,10 @@ msgstr "{name} 已在 {machine} 上更改"
 #: src/queue/QueueBody.tsx
 msgid "Press Mod Manager Download on {source}. Mortar picks it up and opens the next page."
 msgstr "在 {source} 上按下 Mod Manager Download。Mortar 会将其接管并打开下一页。"
+
+#: src/queue/LargeDownloadDialog.tsx
+msgid "This download is {size}, far larger than a mod normally is. It will take a long time and fill a lot of your drive."
+msgstr ""
 
 #: src/share/importCompletion.ts
 msgid "Show failed"
@@ -329,10 +329,6 @@ msgstr ""
 msgid "{name} {latest} is available"
 msgstr ""
 
-#: src/install/DropOverlay.tsx
-msgid "Zip, RAR, 7z, tar, gzip, xz, lzma, zstd and bzip2. Mortar reads the mods inside and shows you what was added."
-msgstr ""
-
 #: src/install/store.ts
 msgid "Could not add the chosen folder"
 msgstr ""
@@ -351,6 +347,10 @@ msgstr ""
 
 #: src/share/MethodPanes.tsx
 msgid "Enable and continue"
+msgstr ""
+
+#: src/firstrunTour/TourPopover.tsx
+msgid "Search every mod site at once or pick one; with nothing typed you see the top mods. Add installs into this profile. Or drop a downloaded archive anywhere on this window."
 msgstr ""
 
 #: src/groups/SavedGroupRow.tsx
@@ -556,6 +556,10 @@ msgstr ""
 #: src/groups/dialogs.tsx
 #: src/groups/SavedGroupsSection.tsx
 msgid "No saved groups yet"
+msgstr ""
+
+#: src/install/DropOverlay.tsx
+msgid "Zip, RAR, 7z, tar, gzip, xz, lzma, zstd and bzip2. Mortar reads the mods inside and shows what was added."
 msgstr ""
 
 #: src/browse/BrowseShow.tsx
@@ -2665,6 +2669,10 @@ msgstr ""
 msgid "{name} (optional file)"
 msgstr ""
 
+#: src/launch/GraphicsDialog.tsx
+msgid "Change this later in {name}'s settings, under Play."
+msgstr ""
+
 #: src/develop/UploadDialog.tsx
 msgid "Could not upload the mod"
 msgstr ""
@@ -3248,10 +3256,6 @@ msgstr ""
 msgid "Listing"
 msgstr ""
 
-#: src/share/MethodPanes.tsx
-msgid "Other Mortar users on your local network will be able to find this computer and send you profiles. You can disable it again in Settings › General."
-msgstr ""
-
 #: src/game/FarmMenuItem.tsx
 msgid "Host {host}, yours {mine}"
 msgstr ""
@@ -3675,10 +3679,6 @@ msgstr ""
 msgid "Versions"
 msgstr ""
 
-#: src/firstrunTour/TourPopover.tsx
-msgid "Click the game's name in the title bar to open the game menu and jump to another game."
-msgstr ""
-
 #: src/share/ListFormat.tsx
 msgid "Mod list format"
 msgstr ""
@@ -3784,6 +3784,10 @@ msgstr ""
 
 #: src/share/TileGrid.tsx
 msgid "Last used"
+msgstr ""
+
+#: src/launch/SmapiWarnDialog.tsx
+msgid "{game}'s {launcher} launch options run {loader} in place of the game. Remove that launch option to stop it. Mortar will not change it."
 msgstr ""
 
 #: src/lan/PairedComputers.tsx
@@ -4436,6 +4440,10 @@ msgstr ""
 msgid "Add"
 msgstr ""
 
+#: src/firstrunTour/TourPopover.tsx
+msgid "Click the game's name in the title bar to switch games."
+msgstr ""
+
 #: src/browse/BrowseMenu.tsx
 msgid "Could not hide that author"
 msgstr ""
@@ -4462,10 +4470,6 @@ msgstr ""
 
 #: src/toasts/HistoryButton.tsx
 msgid "Results of installs, updates and launches appear here."
-msgstr ""
-
-#: src/launch/GraphicsDialog.tsx
-msgid "You can change this later in {name}'s settings, under Play."
 msgstr ""
 
 #: src/develop/TraceSteps.tsx
@@ -4535,6 +4539,10 @@ msgstr ""
 
 #: src/develop/LicenseChart.tsx
 msgid "Use your patents in it"
+msgstr ""
+
+#: src/game/HomeNotes.tsx
+msgid "Notes for this profile, for example: Friday co-op profile. Keep everyone on the same version of the big mods. Notes travel in a shared .mortar file, not in a share link."
 msgstr ""
 
 #: src/loader/Banner.tsx
@@ -5422,6 +5430,10 @@ msgstr ""
 msgid "{sender} sent you {profile} ({game})"
 msgstr ""
 
+#: src/lan/PairedComputers.tsx
+msgid "Profiles sent between you will no longer carry mod files directly. Pairing again needs a new code."
+msgstr ""
+
 #: src/share/MethodPanes.tsx
 msgid "Saved to {path}"
 msgstr ""
@@ -5880,10 +5892,6 @@ msgstr ""
 
 #: src/queue/UnmoderatedDialog.tsx
 msgid "{count, plural, one {{sites} is not moderated} other {{sites} are not moderated}}"
-msgstr ""
-
-#: src/firstrunTour/TourPopover.tsx
-msgid "Search every mod site at once or pick one; with nothing typed you see the top mods. Add installs into this profile. You can also drop a downloaded archive anywhere on this window."
 msgstr ""
 
 #: src/launch/PrePlayDialog.tsx
@@ -6405,10 +6413,6 @@ msgstr ""
 msgid "No command set"
 msgstr ""
 
-#: src/launch/playStart.ts
-msgid "You can roll back the completed updates from the profile history."
-msgstr ""
-
 #: src/share/Included.tsx
 msgid "Its source is not known."
 msgstr ""
@@ -6535,6 +6539,10 @@ msgstr ""
 
 #: src/toasts/HistoryButton.tsx
 msgid "Nothing new"
+msgstr ""
+
+#: src/launch/playStart.ts
+msgid "Roll back the completed updates from the profile history."
 msgstr ""
 
 #: src/install/OverlayPlaceDialog.tsx
@@ -6756,10 +6764,6 @@ msgstr ""
 
 #: src/groups/ApplySavedGroupToProfile.tsx
 msgid "Pick a profile."
-msgstr ""
-
-#: src/queue/LargeDownloadDialog.tsx
-msgid "This download is {size}, far larger than a mod normally is. It will take a long time and fill a lot of your drive. Make sure you meant to get it."
 msgstr ""
 
 #: src/develop/draft.ts
@@ -7061,10 +7065,6 @@ msgstr ""
 msgid "Launch options…"
 msgstr ""
 
-#: src/game/HomeNotes.tsx
-msgid "Your notes for this profile, for example: Friday co-op profile. Keep everyone on the same version of the big mods before playing together. Notes travel in a shared .mortar file, not in a share link."
-msgstr ""
-
 #: src/saves/SavesTab.tsx
 msgid "Play this profile and save a game. Each save shows here with how well it fits {name}, so you know which mods it needs."
 msgstr ""
@@ -7179,10 +7179,6 @@ msgstr ""
 
 #: src/game/ProfileMenuItems.tsx
 msgid "Could not add the shortcut"
-msgstr ""
-
-#: src/lan/PairedComputers.tsx
-msgid "Profiles sent between you will no longer carry their mod files directly, and you will need a new code to pair again."
 msgstr ""
 
 #: src/share/ModpackDialog.tsx
@@ -7346,6 +7342,10 @@ msgstr ""
 
 #: src/launch/LaunchLayer.tsx
 msgid "Caused by {name}"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "Other Mortar users on your network can find this computer and send you profiles. Turn it off again in Settings › General."
 msgstr ""
 
 #: src/share/ImportProblems.tsx
