@@ -475,3 +475,12 @@ func TestNewestPackagePicksTheLatestZip(t *testing.T) {
 		t.Errorf("newest = %q", got)
 	}
 }
+
+func TestThunderstorePartURLMustBeHTTPS(t *testing.T) {
+	t.Parallel()
+	ts := thunderstoreAPI{client: http.DefaultClient, site: "https://thunderstore.io/"}
+	_, err := ts.putPart(t.Context(), []byte("abc"), uploadPart{PartNumber: 1, Offset: 0, Length: 3, URL: "http://evil.example/part"})
+	if err == nil || !strings.Contains(err.Error(), "not https") {
+		t.Fatalf("err = %v, want the http part URL refused", err)
+	}
+}

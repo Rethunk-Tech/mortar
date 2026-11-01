@@ -361,7 +361,11 @@ func (t thunderstoreAPI) putPart(ctx context.Context, data []byte, part uploadPa
 	}
 	chunk := data[part.Offset : part.Offset+part.Length]
 	sum := md5.Sum(chunk) // #nosec G401 -- S3's Content-MD5 integrity header
-	req, err := http.NewRequestWithContext(ctx, http.MethodPut, part.URL, bytes.NewReader(chunk))
+	target, err := storageURL(part.URL, t.site)
+	if err != nil {
+		return "", err
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, target, bytes.NewReader(chunk))
 	if err != nil {
 		return "", err
 	}
