@@ -180,8 +180,12 @@ function SyncIcon({ level }: { level: 'hostEnforced' | 'hostRecommended' }) {
         role="img"
         aria-label={label}
         tabIndex={0}
+        // The padding a small IconButton has, so the gap to the name matches the name's gap to its ? button; the
+        // negative margin keeps the icon's edge where the row starts.
         sx={{
           display: 'inline-flex',
+          p: '5px',
+          ml: '-5px',
           color: enforced ? 'warning.main' : 'text.secondary',
           '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main' },
         }}
