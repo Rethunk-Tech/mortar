@@ -23,12 +23,16 @@ func fakeBridge(t *testing.T, dir, reply string) {
 	}
 	port := 1
 	if !strings.HasPrefix(reply, "gone") {
-		ln, err := net.Listen("tcp", "127.0.0.1:0")
+		ln, err := (&net.ListenConfig{}).Listen(t.Context(), "tcp", "127.0.0.1:0")
 		if err != nil {
 			t.Fatal(err)
 		}
 		t.Cleanup(func() { _ = ln.Close() })
-		port = ln.Addr().(*net.TCPAddr).Port
+		addr, ok := ln.Addr().(*net.TCPAddr)
+		if !ok {
+			t.Fatalf("listener address %v is not TCP", ln.Addr())
+		}
+		port = addr.Port
 		go func() {
 			for {
 				c, err := ln.Accept()

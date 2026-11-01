@@ -6,6 +6,8 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-safefs"
+
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -48,7 +50,7 @@ func TestHoldDroppedMovesFilesUnderChangedAndMarksThemHeld(t *testing.T) {
 	if err := holdDropped(dir, "k"); err != nil {
 		t.Fatal(err)
 	}
-	if b, err := os.ReadFile(filepath.Join(dir, changedDir, "a", "b.txt")); err != nil || string(b) != "x" {
+	if b, err := safefs.ReadFile(filepath.Join(dir, changedDir, "a", "b.txt")); err != nil || string(b) != "x" {
 		t.Fatalf("changed copy %q, %v", b, err)
 	}
 	if _, ok := readHeld(dir)["a/b.txt"]; !ok {
