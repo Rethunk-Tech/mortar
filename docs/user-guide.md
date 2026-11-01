@@ -23,7 +23,7 @@ The window needs Microsoft's WebView2 Runtime (the installer adds it when missin
   - **Add this profile to Steam** is refused; the error shows the `flatpak run tech.rethunk.Mortar --play=<game>/<profile> --steam-session` command to use.
   - Flatpak Steam cannot read profiles until you choose **Grant access** in the game's settings.
 - **Homebrew:** `brew install rethunk-tech/tap/mortar` installs the AppImage; `brew upgrade` updates it.
-- **`.deb`, `.rpm`, Arch package:** `sudo apt install ./mortar_*_amd64.deb`, `sudo dnf install ./mortar-*.rpm` or `sudo pacman -U mortar-*.pkg.tar.zst`. They do not update themselves; add the repository below.
+- **`.deb`, `.rpm`, Arch package:** `sudo apt install ./mortar_*_amd64.deb`, `sudo dnf install ./mortar-*.rpm` or `sudo pacman -U mortar-*.pkg.tar.zst`. They do not update themselves; add the repository below for that.
 
 ### Linux package repository
 
@@ -80,7 +80,7 @@ The downloads panel opens with Ctrl+J.
 
 ## Browser extension
 
-Optional. It marks Nexus pages with what your profile already has and sends Mod Manager Download clicks to Mortar. **Settings › Downloads** has a **Download the extension** button (`mortar-browser-extension.zip` from its [releases](https://github.com/Rethunk-Tech/mortar-browser-extension/releases/latest)) and says **The browser extension is too old for this Mortar** (or too new) when versions drift.
+The extension is optional. It marks Nexus pages with what your profile already has and sends Mod Manager Download clicks to Mortar. **Settings › Downloads** has a **Download the extension** button (`mortar-browser-extension.zip` from its [releases](https://github.com/Rethunk-Tech/mortar-browser-extension/releases/latest)) and says **The browser extension is too old for this Mortar** (or too new) when versions drift.
 
 - **Chrome, Edge, other Chromium:** install it from the [Chrome Web Store](https://chromewebstore.google.com/detail/hboeppdoecbglcmfojappgehkbecdfbi), which keeps it updated. To use the zip: unzip, open `chrome://extensions`, turn on Developer mode, choose **Load unpacked** and pick the folder.
 - **Firefox:** open `mortar-browser-extension.xpi` from the latest release in Firefox, or drop it on `about:addons`; Mozilla signs it, so it stays. Without an `.xpi`, use the zip: `about:debugging`, **This Firefox**, **Load Temporary Add-on**, pick `manifest.json` (removed when Firefox restarts).
@@ -114,7 +114,7 @@ Mods already in the profile show **Added**, whichever site they came from. A hel
 A game whose catalog entry lists Modrinth or itch.io gets a chip for it beside **All sources**, and its results join the merged search.
 
 - **Modrinth** needs no account. **Add** installs the newest version with its required projects.
-- **itch.io** needs your own API key: create one in your itch.io account (**Settings › API keys**), paste it into **API key** in **Settings › Accounts** and choose **Test**. The key is kept in your system keyring; **Remove key** forgets it. Until then the chip is greyed out. itch.io has no sort order or categories, and **Add** takes the game's first upload that is not a demo or soundtrack.
+- **itch.io** needs your own API key: create one in your itch.io account (**Settings › API keys**), paste it into **API key** in **Settings › Accounts** and choose **Test**. The key is kept in your system keyring; **Remove key** forgets it. Until you add one, the chip is greyed out. itch.io has no sort order or categories, and **Add** takes the game's first upload that is not a demo or soundtrack.
 
 ## Edit a mod's settings
 
@@ -147,7 +147,7 @@ Lethal Company's mods are Thunderstore packages on BepInEx. Mortar installs BepI
 
 ## Pair your computers
 
-Pairing lets a profile sent between two of your computers carry its mod files. An unpaired computer still receives the profile and downloads each mod from its source.
+A profile sent between two paired computers carries its mod files. An unpaired computer still receives the profile and downloads each mod from its source.
 
 1. On both, enable **Share profiles on the local network** in **Settings › General › Sharing**.
 2. On the first choose **Pair a computer**; it shows a code like `ABCD-EFGH`, valid once for five minutes.
@@ -253,7 +253,7 @@ Mortar writes only `.mortar/project.json` into the folder, and only after you pr
 
 ## Problems
 
-The **Problems** tab checks the open profile for missing requirements, conflicts, broken or outdated mods, damaged files, duplicates and more. It warns and does not block Play.
+The **Problems** tab checks the open profile for missing requirements, conflicts, broken or outdated mods, damaged files, duplicates and more. It warns; it never blocks Play.
 
 - Each kind of problem is a section with a count (red when it holds something broken); an empty section is hidden. **Add all** in the missing-requirements section installs every requirement Mortar can find.
 - Advice and history (Slow startup, Redundant, Cleanup, Replaced, Dismissed) are links under the list; choose one to open it, and again to close it.
@@ -271,7 +271,7 @@ SMAPI's list for your game version, Mortar's known-broken list or the mod's own 
 
 #### Duplicate mod
 
-Two enabled copies of one mod are in the profile. The game loads only one, and you do not control which. Remove the one you do not want.
+Two enabled copies of one mod are in the profile. The game loads only one, and you cannot choose which. Remove the one you do not want.
 
 #### Conflicting files
 
@@ -289,7 +289,7 @@ The Console's **Problems in this run** strip reads SMAPI's log and offers one fi
 
 #### Errors while running
 
-A plugin that loaded and then logged errors or threw an exception is listed once, with its error count. The row names the method that threw and the other enabled mods that patch code on that path, since one of them may be the cause. These rows do not count as problems because the plugin ran. **Disable** or **Update** it if the game misbehaves, or **Dismiss** the row for that run.
+A plugin that loaded and then logged errors or threw an exception is listed once, with its error count. The row names the method that threw and the other enabled mods that patch code on that path, since one of them may be the cause. These rows do not count as problems, since the plugin ran. **Disable** or **Update** it if the game misbehaves, or **Dismiss** the row for that run.
 
 #### Failed to load
 
