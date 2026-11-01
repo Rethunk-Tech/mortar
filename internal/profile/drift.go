@@ -971,7 +971,7 @@ func (s *Store) restoreSource(game, id, token, trash string) (dir, src, name str
 	if _, perr := strconv.ParseInt(stamp, 10, 64); !ok || perr != nil {
 		return "", "", "", errors.New("invalid restore token")
 	}
-	if name, perr := safeFolder(name); perr != nil || name != strings.TrimSpace(name) {
+	if safe, perr := safeFolder(name); perr != nil || safe != name {
 		return "", "", "", errors.New("invalid restore token")
 	}
 	if err := s.unlocked(game, id); err != nil {
