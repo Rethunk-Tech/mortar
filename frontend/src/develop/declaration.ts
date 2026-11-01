@@ -52,17 +52,29 @@ const STATEMENTS = new Set([
   'this',
 ])
 
-/** The member a line of decompiled C# or IL declares, or null when it declares none. */
+// ILSpy writes every member with its modifiers, which a local variable never has. In IL a field is a .field line and a
+// method's name sits on the line its parameter list ends (cil managed) or opens on.
+const MEMBER =
+  /^\s*(?:public|private|protected|internal|static|extern|override|virtual|abstract|sealed|unsafe|readonly|const|event)\b/
+const IL_FIELD = /^\s*\.field\b/
+const IL_METHOD = /\(\s*$|\)\s*(?:cil|runtime)\s+managed\b/
+
+/** The member a line of decompiled C# or IL declares, or null when it declares none (a local variable, a statement). */
 export function declaredIn(line: string): { kind: 'method' | 'field'; name: string } | null {
+  const member = MEMBER.test(line)
   for (const m of line.matchAll(CALLED)) {
     const name = m[1] ?? ''
-    if (!STATEMENTS.has(name) && declarationLine(line, '', 'method', name) === 0) {
+    if (
+      (member || IL_METHOD.test(line)) &&
+      !STATEMENTS.has(name) &&
+      declarationLine(line, '', 'method', name) === 0
+    ) {
       return { kind: 'method', name }
     }
   }
   for (const m of line.trimEnd().matchAll(NAMED)) {
     const name = m[1] ?? ''
-    if (declarationLine(line, '', 'field', name) === 0) {
+    if ((member || IL_FIELD.test(line)) && declarationLine(line, '', 'field', name) === 0) {
       return { kind: 'field', name }
     }
   }

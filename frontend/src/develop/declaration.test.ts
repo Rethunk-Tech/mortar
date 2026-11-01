@@ -60,4 +60,8 @@ test('declaredIn names what a C# or IL line declares, and nothing for a statemen
   })
   expect(declaredIn('\t\tif (dirty)')).toBeNull()
   expect(declaredIn('\t\tRefreshVisibility();')).toBeNull()
+  // A local variable is no member, though it is written like a field.
+  expect(declaredIn('\t\tint particleCount = _particleSystem.particleCount;')).toBeNull()
+  expect(declaredIn('\t\t\t[0] int32 particleCount')).toBeNull()
+  expect(declaredIn('\t\tinstance void Invoke (')).toEqual({ kind: 'method', name: 'Invoke' })
 })

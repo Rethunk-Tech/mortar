@@ -65,7 +65,7 @@ const NO_MARKS: ReadonlySet<number> = new Set()
 const MARK_BG = 'color-mix(in srgb, var(--mortar-accent-ink) 18%, transparent)'
 
 // Rows are measured as they draw, and long ones wrap, so a jump far down lands short of an estimate: it repeats each
-// frame until the row is on screen. The returned function cancels it.
+// frame until the row is on screen, and does nothing when it already is. The returned function cancels it.
 function useJump(
   virtualizer: { scrollToIndex: (index: number, options: { align: 'start' | 'center' }) => void },
   scroller: RefObject<HTMLDivElement | null>,
@@ -74,15 +74,23 @@ function useJump(
     (index: number, align: 'start' | 'center') => {
       let tries = 0
       let frame = 0
-      const step = () => {
-        virtualizer.scrollToIndex(index, { align })
+      const shown = () => {
         const box = scroller.current?.getBoundingClientRect()
         const row = scroller.current
           ?.querySelector(`[data-index="${index}"]`)
           ?.getBoundingClientRect()
-        const shown = box && row && row.top >= box.top && row.bottom <= box.bottom
+        return (
+          box !== undefined && row !== undefined && row.top >= box.top && row.bottom <= box.bottom
+        )
+      }
+      // A row already on screen stays where it is, so the side being read does not move under the reader.
+      const step = () => {
+        if (shown()) {
+          return
+        }
+        virtualizer.scrollToIndex(index, { align })
         tries += 1
-        if (!shown && tries < JUMP_TRIES) {
+        if (tries < JUMP_TRIES) {
           frame = requestAnimationFrame(step)
         }
       }
