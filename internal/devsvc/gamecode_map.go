@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -90,6 +91,7 @@ func (s *Service) withPDB(ctx context.Context, tool, path string) (string, error
 			_ = safefs.RemoveAll(o)
 		}
 	}
+	removeFlatPDBCopies(filepath.Dir(source))
 	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return "", err
 	}
@@ -100,6 +102,24 @@ func (s *Service) withPDB(ctx context.Context, tool, path string) (string, error
 		return "", err
 	}
 	return dll, nil
+}
+
+// removeFlatPDBCopies deletes the folders of the earlier cache layout, which held an assembly and its PDB directly;
+// the current layout nests them one level deeper, so a folder with a file of its own is an old one.
+func removeFlatPDBCopies(root string) {
+	entries, err := os.ReadDir(root)
+	if err != nil {
+		return
+	}
+	for _, e := range entries {
+		if !e.IsDir() {
+			continue
+		}
+		inner, err := os.ReadDir(filepath.Join(root, e.Name()))
+		if err == nil && slices.ContainsFunc(inner, func(i os.DirEntry) bool { return !i.IsDir() }) {
+			_ = safefs.RemoveAll(filepath.Join(root, e.Name()))
+		}
+	}
 }
 
 // linkLines reads the IL's sequence points: each applies to the instructions after it, a blank line or another

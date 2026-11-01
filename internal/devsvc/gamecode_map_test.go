@@ -7,6 +7,8 @@ import (
 	"slices"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // ILSpy's PDB numbers lines one below the single type's C#; each point covers the instructions after it.
@@ -46,5 +48,30 @@ func TestWithPDBKeepsOnlyTheAssembliesNewestVersion(t *testing.T) {
 	versions, _ := filepath.Glob(filepath.Join(svc.CacheDir, "game-code-pdb", "*", "*"))
 	if len(versions) != 1 {
 		t.Fatalf("versions = %v", versions)
+	}
+}
+
+func TestWithPDBRemovesFoldersOfTheFlatLayout(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	svc.Run = func(_ context.Context, _, _ string, a ...string) ([]byte, error) {
+		dll := a[len(a)-1]
+		return nil, safefs.WriteFile(dll[:len(dll)-len(".dll")]+".pdb", []byte("pdb"), 0o600)
+	}
+	flat := filepath.Join(svc.CacheDir, "game-code-pdb", "0123456789abcdef")
+	if err := os.MkdirAll(flat, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := safefs.WriteFile(filepath.Join(flat, "A.dll"), []byte("old"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	dll := filepath.Join(t.TempDir(), "A.dll")
+	if err := safefs.WriteFile(dll, []byte("dll"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := svc.withPDB(t.Context(), "ilspycmd", dll); err != nil {
+		t.Fatal(err)
+	}
+	if safefs.IsDir(flat) {
+		t.Fatal("the flat-layout folder is still there")
 	}
 }
