@@ -1,11 +1,12 @@
 package dotnetstack
 
 import (
-	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/loader"
 )
 
 func TestBlamesReadsEachRuntimesFrameFormat(t *testing.T) {
