@@ -16,11 +16,15 @@ const dotted = (type: string) => type.replaceAll('+', '.')
 const SEPARATOR = /[\\/]/u
 const fileName = (path: string) => path.split(SEPARATOR).at(-1) ?? ''
 
-// Where a frame's method can be: the assembly its module id names; without one (Unity's own traces print none), the
+// Where a frame's method can be: the assembly its module id names; without a known one (Unity's own traces print none), the
 // game's own and then those named after the type's root namespace, as UnityEngine.CoreModule.dll is.
 async function placesOf(game: string, dir: string, f: StackFrame, assemblies: string[]) {
   if (f.mvid) {
-    return [await FrameAssembly(game, dir, f.mvid)]
+    // '' means no listed assembly has this module id; searching '' would open a same-named method of the main assembly.
+    const named = await FrameAssembly(game, dir, f.mvid)
+    if (named !== '') {
+      return [named]
+    }
   }
   const root = f.type.split('.')[0] ?? ''
   return ['', ...assemblies.filter((a) => root !== '' && fileName(a).startsWith(`${root}.`))]
