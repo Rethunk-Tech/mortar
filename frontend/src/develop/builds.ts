@@ -12,6 +12,7 @@ import {
   Inspect,
   Pack,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
+import { installExtraFolder } from '../downloads/autoInstall.ts'
 import { i18n } from '../i18n/index.ts'
 import { useSettings } from '../settings/store.ts'
 import { errorKind } from '../toasts/errorKind.ts'
@@ -53,8 +54,17 @@ export async function buildProject(game: string, dir: string, quiet = false) {
   }
   patch(dir, { running: 'build' })
   try {
-    patch(dir, { build: await Build(game, dir), builtAt: Date.now() })
+    const build = await Build(game, dir)
+    patch(dir, { build, builtAt: Date.now() })
     await refreshInfo(game, dir, quiet)
+    // A build that changed nothing writes no file for the folder watch to see, so a mod removed from the profile comes
+    // back only when asked here. A source-watch build's own writes already reach the watch.
+    const output = useSettings
+      .getState()
+      .games?.[game]?.devProjects?.find((p) => p.dir === dir)?.output
+    if (build.ok && !quiet && output) {
+      installExtraFolder(game, output)
+    }
   } catch (e) {
     if (errorKind(e) === 'unconfirmed') {
       if (quiet) {
