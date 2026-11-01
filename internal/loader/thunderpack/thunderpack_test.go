@@ -278,3 +278,14 @@ func TestAMappedDestinationOutsideTheProfileIsRefused(t *testing.T) {
 		t.Fatal("the file escaped the profile")
 	}
 }
+
+func TestAMarkerPathLeavingTheProfileIsIgnored(t *testing.T) {
+	root := t.TempDir()
+	dir := filepath.Join(root, "profile")
+	testfs.WriteFile(t, root, "x", "outside")
+	l := Loader{LoaderID: "lovely"}
+	testfs.WriteFile(t, dir, l.markerFile(), `{"version":"1.0.0","placed":["../x","winmm.dll","/abs"]}`)
+	if got := l.readMarker(dir).Placed; !slices.Equal(got, []string{"winmm.dll"}) {
+		t.Fatalf("placed = %v, want only winmm.dll", got)
+	}
+}

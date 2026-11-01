@@ -89,6 +89,8 @@ func (l Loader) readMarker(dir string) marker {
 	if b, err := safefs.ReadFile(filepath.Join(dir, l.markerFile())); err == nil {
 		_ = json.Unmarshal(b, &m)
 	}
+	// The marker sits in a folder mods can write to: a path leaving the profile must never be removed or placed.
+	m.Placed = slices.DeleteFunc(m.Placed, func(f string) bool { return !filepath.IsLocal(filepath.FromSlash(f)) })
 	return m
 }
 
