@@ -8,6 +8,7 @@ import type {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import {
   Build,
+  BuildOrder,
   Inspect,
   Pack,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
@@ -69,10 +70,13 @@ export async function buildProject(game: string, dir: string, quiet = false) {
   }
 }
 
-/** Builds each project in turn, one dotnet build at a time; a failed build reports itself and the next one starts. */
+/**
+ * Builds every project at once, except that one waits for the projects it depends on: a wave builds together, each
+ * project compiling against what the waves before it wrote. A failed build reports itself; the next wave still starts.
+ */
 export async function buildAll(game: string, dirs: string[]) {
-  for (const dir of dirs) {
-    await buildProject(game, dir)
+  for (const wave of (await BuildOrder(dirs)) ?? []) {
+    await Promise.all((wave ?? []).map((dir) => buildProject(game, dir)))
   }
 }
 

@@ -55,8 +55,9 @@ import { installTestMods } from './testMods.ts'
 const profileNameOf = (list: { id: string; name: string }[], id: string) =>
   list.find((p) => p.id === id)?.name ?? ''
 
-// Builds the profile's code projects that are trusted, one at a time: a content pack has nothing to compile and an
-// untrusted project asks first, from its own card. Shown only when there is more than one to build.
+// Builds the profile's code projects that are trusted, all at once save for waiting on their dependencies: a content
+// pack has nothing to compile and an untrusted project asks first, from its own card. Shown only when there is more
+// than one to build.
 function BuildAll({ game, projects }: { game: string; projects: DevProject[] }) {
   const { t } = useLingui()
   const kinds = useDevKinds((s) => s.byDir)
