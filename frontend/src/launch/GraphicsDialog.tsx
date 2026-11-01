@@ -61,7 +61,7 @@ export function GraphicsDialog() {
           </Link>
         ) : null}
         <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
-          {t`You can change this later in ${name}'s settings, under Play.`}
+          {t`Change this later in ${name}'s settings, under Play.`}
         </Typography>
       </Box>
     </AppDialog>

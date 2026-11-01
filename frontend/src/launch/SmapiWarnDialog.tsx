@@ -19,7 +19,7 @@ export function SmapiWarnDialog({
     <ConfirmationDialog
       open={open}
       title={t`${{ launcher: STEAM }} will still start ${loader}`}
-      body={t`${{ game: gameName }}'s ${{ launcher: STEAM }} launch options run ${loader} in place of the game. ${{ launcher: STEAM }} will still start ${loader} unless that launch option is removed. Mortar will not change it.`}
+      body={t`${{ game: gameName }}'s ${{ launcher: STEAM }} launch options run ${loader} in place of the game. Remove that launch option to stop it. Mortar will not change it.`}
       confirmLabel={t`Play without mods`}
       onCancel={onClose}
       onConfirm={onPlay}

@@ -101,7 +101,7 @@ function updateFailure(error: unknown, resume: () => Promise<void>) {
   const point = isAutoUpdateError(error) ? error.restorePoint : undefined
   toastError(i18n._(msg`Could not update mods before Play`), error, {
     ...(point && point.updates.length > 0
-      ? { detail: i18n._(msg`You can roll back the completed updates from the profile history.`) }
+      ? { detail: i18n._(msg`Roll back the completed updates from the profile history.`) }
       : {}),
     action: { label: i18n._(msg`Play anyway`), run: resume },
   })

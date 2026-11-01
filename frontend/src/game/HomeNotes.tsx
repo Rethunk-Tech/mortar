@@ -89,7 +89,7 @@ function NotesEditor({ profile, onDone }: { profile: Profile; onDone: () => void
           globalThis.clearTimeout(timer.current)
           timer.current = globalThis.setTimeout(save, DEBOUNCE_MS)
         }}
-        placeholder={t`Your notes for this profile, for example: Friday co-op profile. Keep everyone on the same version of the big mods before playing together. Notes travel in a shared .mortar file, not in a share link.`}
+        placeholder={t`Notes for this profile, for example: Friday co-op profile. Keep everyone on the same version of the big mods. Notes travel in a shared .mortar file, not in a share link.`}
         slotProps={{
           htmlInput: { 'aria-label': t`Notes for ${{ name: profile.name }}`, maxLength: MAX_NOTES },
         }}

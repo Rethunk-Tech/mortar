@@ -59,7 +59,7 @@ function Plan({
             label={t`Move them out of the game's Mods folder`}
           />
           <Typography sx={{ mb: 1.5, fontSize: 'base.fontSize', color: 'text.secondary' }}>
-            {t`If they stay there, the game goes on loading them even when a profile disables them.`}
+            {t`If they stay, the game keeps loading them even when a profile disables them.`}
           </Typography>
         </>
       ) : null}
