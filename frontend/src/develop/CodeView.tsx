@@ -8,6 +8,7 @@ import { copyText } from '../share/copyText.ts'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { MONO } from '../theme/theme.ts'
 import { type TokenKind, tokenize } from './codeTokens.ts'
+import { symbolAt } from './symbolAt.ts'
 
 const LINE_PX = 20
 const OVERSCAN = 30
@@ -54,7 +55,8 @@ const NO_MARKS: ReadonlySet<number> = new Set()
 const MARK_BG = 'color-mix(in srgb, var(--mortar-accent-ink) 18%, transparent)'
 
 /** Decompiled code with line numbers and highlighting, drawn a screenful at a time; Copy takes all of it. `line` is
- * scrolled to the top when it changes, `follow` into view each time a new one is passed; `marked` lines are tinted and `onPick` hears a line clicked. */
+ * scrolled to the top when it changes, `follow` into view each time a new one is passed; `marked` lines are tinted, `onPick`
+ * hears a line clicked and `onSymbol` a name right-clicked, with where. */
 export function CodeView({
   source,
   il,
@@ -62,6 +64,7 @@ export function CodeView({
   follow = null,
   marked = NO_MARKS,
   onPick,
+  onSymbol,
 }: {
   source: string
   il: boolean
@@ -69,6 +72,7 @@ export function CodeView({
   follow?: { line: number } | null
   marked?: ReadonlySet<number>
   onPick?: (line: number) => void
+  onSymbol?: ((name: string, x: number, y: number) => void) | undefined
 }) {
   const { t } = useLingui()
   const scroller = useRef<HTMLDivElement | null>(null)
@@ -134,6 +138,17 @@ export function CodeView({
               ref={virtualizer.measureElement}
               data-index={v.index}
               onClick={onPick ? () => onPick(v.index) : undefined}
+              onContextMenu={(e) => {
+                // With text selected, the right-click keeps the menu that copies it.
+                const name =
+                  onSymbol && !globalThis.getSelection()?.toString()
+                    ? symbolAt(e.clientX, e.clientY)
+                    : ''
+                if (name !== '') {
+                  e.preventDefault()
+                  onSymbol?.(name, e.clientX, e.clientY)
+                }
+              }}
               {...(onPick
                 ? {
                     role: 'button',

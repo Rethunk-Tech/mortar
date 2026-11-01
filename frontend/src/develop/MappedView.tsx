@@ -15,7 +15,15 @@ interface Pick {
 }
 
 /** C# and IL side by side: clicking a line on one side tints it and its counterpart lines on the other. */
-export function MappedView({ mapped, line }: { mapped: Mapped; line: number }) {
+export function MappedView({
+  mapped,
+  line,
+  onSymbol,
+}: {
+  mapped: Mapped
+  line: number
+  onSymbol?: ((name: string, x: number, y: number) => void) | undefined
+}) {
   const links = mapped.links ?? []
   const [pick, setPick] = useState<Pick | null>(null)
   const ilOf = useMemo(() => {
@@ -60,6 +68,7 @@ export function MappedView({ mapped, line }: { mapped: Mapped; line: number }) {
           follow={csFollow}
           marked={csMarked}
           onPick={pickCs}
+          onSymbol={onSymbol}
         />
       </Box>
       <Box sx={{ display: 'flex', minWidth: 0 }}>
@@ -70,6 +79,7 @@ export function MappedView({ mapped, line }: { mapped: Mapped; line: number }) {
           follow={ilFollow}
           marked={ilMarked}
           onPick={pickIl}
+          onSymbol={onSymbol}
         />
       </Box>
     </Box>

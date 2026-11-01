@@ -1092,10 +1092,6 @@ msgstr "The program to start {name} was not found. Check that the game is still 
 msgid "Do not check before Play"
 msgstr "Do not check before Play"
 
-#: src/develop/GameCodeDialog.tsx
-msgid "Pick the member in the search to copy its hook."
-msgstr "Pick the member in the search to copy its hook."
-
 #: src/lan/PairedComputers.tsx
 msgid "Paired computers"
 msgstr "Paired computers"
@@ -1257,6 +1253,10 @@ msgstr "{name} as of {when}"
 #: src/share/ImportSources.tsx
 msgid "A .mortar file, an .r2z or a {source} modpack"
 msgstr "A .mortar file, an .r2z or a {source} modpack"
+
+#: src/develop/GameCodeDialog.tsx
+msgid "Looking up {name}…"
+msgstr "Looking up {name}…"
 
 #: src/launch/LaunchScreen.tsx
 msgid "Mods loaded"
@@ -4765,6 +4765,10 @@ msgstr "{length} of {limit} characters"
 msgid "Copy code"
 msgstr "Copy code"
 
+#: src/develop/GameCodeDialog.tsx
+msgid "Find usages of {label}"
+msgstr "Find usages of {label}"
+
 #: src/develop/DevelopTab.tsx
 msgid "Test"
 msgstr "Test"
@@ -4805,6 +4809,10 @@ msgstr "No backups yet"
 #: src/queue/QueueRows.tsx
 msgid "Resume {name}"
 msgstr "Resume {name}"
+
+#: src/develop/GameCodeDialog.tsx
+msgid "No member named {name} in this assembly"
+msgstr "No member named {name} in this assembly"
 
 #: src/toasts/report.ts
 msgid "That request was not valid."
@@ -6313,10 +6321,6 @@ msgstr "Pair the two computers to send whole files instead. Pairing takes a one-
 msgid "needs install choices"
 msgstr "needs install choices"
 
-#: src/develop/GameCodeDialog.tsx
-msgid "Copy a {library} hook"
-msgstr "Copy a {library} hook"
-
 #: src/game/ProfileMenuItems.tsx
 msgid "Added to {launcher}"
 msgstr "Added to {launcher}"
@@ -6989,10 +6993,6 @@ msgstr "{count, plural, one {# settings file was left out (too large):} other {#
 msgid "This mod's installer has options to pick before it installs."
 msgstr "This mod's installer has options to pick before it installs."
 
-#: src/develop/GameCodeDialog.tsx
-msgid "Find usages"
-msgstr "Find usages"
-
 #: src/tools/ToolEditorDialog.tsx
 msgid "Choose program…"
 msgstr "Choose program…"
@@ -7350,6 +7350,10 @@ msgstr "Caused by {name}"
 #: src/share/ImportProblems.tsx
 msgid "{name} is not on {source}"
 msgstr "{name} is not on {source}"
+
+#: src/develop/GameCodeDialog.tsx
+msgid "Copy a {library} hook for {signature}"
+msgstr "Copy a {library} hook for {signature}"
 
 #: src/develop/DevelopTab.tsx
 msgid "Show all projects"

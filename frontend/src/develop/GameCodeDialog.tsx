@@ -5,6 +5,7 @@ import {
   Button,
   CircularProgress,
   Drawer,
+  Menu,
   MenuItem,
   TextField,
   ToggleButton,
@@ -34,7 +35,7 @@ import { AppDialog, ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { labelledInput } from '../shell/labelledInput.tsx'
-import { TipIconButton } from '../shell/TipIconButton.tsx'
+import { MenuAction, MenuNote } from '../shell/MenuAction.tsx'
 import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
 import {
@@ -56,6 +57,8 @@ import { MappedView } from './MappedView.tsx'
 const SEARCH_DELAY_MS = 200
 const SEARCH_PX = 420
 const ASSEMBLY_PX = 240
+// The narrowest the assembly and member pickers get before the header has no room left.
+const PICKER_MIN_PX = 140
 const USAGES_PX = 420
 const CSHARP = 'C#'
 const IL_LABEL = 'IL'
@@ -80,6 +83,7 @@ function Source({
   kind,
   method,
   mode,
+  onSymbol,
 }: {
   game: string
   dir: string
@@ -88,6 +92,7 @@ function Source({
   kind: string
   method: string
   mode: CodeMode
+  onSymbol: (name: string, x: number, y: number) => void
 }) {
   const { t } = useLingui()
   const [has, setHas] = useState<boolean | null>(null)
@@ -181,7 +186,13 @@ function Source({
     )
   }
   if (mode === 'both' && mapped) {
-    return <MappedView mapped={mapped} line={declarationLine(mapped.csharp, type, kind, method)} />
+    return (
+      <MappedView
+        mapped={mapped}
+        line={declarationLine(mapped.csharp, type, kind, method)}
+        onSymbol={onSymbol}
+      />
+    )
   }
   if (mode === 'both' || source === '') {
     return (
@@ -193,7 +204,14 @@ function Source({
       </EmptyState>
     )
   }
-  return <CodeView source={source} il={il} line={declarationLine(source, type, kind, method)} />
+  return (
+    <CodeView
+      source={source}
+      il={il}
+      line={declarationLine(source, type, kind, method)}
+      onSymbol={onSymbol}
+    />
+  )
 }
 
 // The methods, in every assembly the view lists, that use the picked member; picking one opens it.
@@ -278,6 +296,83 @@ function UsagesDrawer({
   )
 }
 
+// A name right-clicked in the code, and where, for the menu that opens there.
+interface SymbolAt {
+  name: string
+  x: number
+  y: number
+}
+
+// Members a right-click menu lists, at most.
+const MENU_MEMBERS = 6
+
+// What a right-clicked name can do: find who uses each member by that name in the assembly, and copy a hook for a
+// method, whose signature the search gives.
+function SymbolMenu({
+  game,
+  dir,
+  assembly,
+  at,
+  onClose,
+  onUsages,
+}: {
+  game: string
+  dir: string
+  assembly: string
+  at: SymbolAt | null
+  onClose: () => void
+  onUsages: (target: string) => void
+}) {
+  const { t } = useLingui()
+  const name = at?.name ?? ''
+  const { data: found } = useLoaded<Member[] | null>(
+    name === '' ? null : () => GameCode(game, dir, assembly, name).then((all) => all ?? []),
+    [game, dir, assembly, name],
+    null,
+    reportUnexpected,
+  )
+  const members = (found ?? []).filter((m) => m.method === name).slice(0, MENU_MEMBERS)
+  return (
+    <Menu
+      open={at !== null}
+      onClose={onClose}
+      anchorReference="anchorPosition"
+      anchorPosition={at ? { top: at.y, left: at.x } : undefined}
+      // Above the full-window dialog it opens from.
+      sx={{ zIndex: (theme) => theme.zIndex.modal + 1 }}
+    >
+      {found === null ? <MenuNote>{t`Looking up ${{ name }}…`}</MenuNote> : null}
+      {found !== null && members.length === 0 ? (
+        <MenuNote>{t`No member named ${{ name }} in this assembly`}</MenuNote>
+      ) : null}
+      {members.flatMap((m) => {
+        const label = `${m.type.split('.').at(-1) ?? m.type}::${m.method}`
+        // A code signature, not words, so it stays out of the translated message whole.
+        const signature = `${label}(${(m.params ?? []).join(', ')})`
+        return [
+          <MenuAction
+            key={`u${memberKey(m)}`}
+            icon={<Search size={14} />}
+            label={t`Find usages of ${{ label }}`}
+            onClick={() => onUsages(`${m.type}::${m.method}`)}
+          />,
+          m.kind === 'field' ? null : (
+            <MenuAction
+              key={`h${memberKey(m)}`}
+              icon={<Copy size={14} />}
+              label={t`Copy a ${{ library: MONOMOD }} hook for ${{ signature }}`}
+              onClick={() => {
+                copyText(hookSnippet(m), t`Hook copied`)
+                onClose()
+              }}
+            />
+          ),
+        ]
+      })}
+    </Menu>
+  )
+}
+
 const memberKey = (m: Member) => `${m.type}::${m.method}(${(m.params ?? []).join(',')})`
 
 // The search: hits drop down under it, a type or method on each; picking one opens it.
@@ -300,7 +395,7 @@ function MemberSearch({
   return (
     <Autocomplete
       size="small"
-      sx={{ width: SEARCH_PX }}
+      sx={{ flex: `0 1 ${SEARCH_PX}px`, minWidth: PICKER_MIN_PX }}
       options={hits}
       value={picked}
       inputValue={query}
@@ -343,14 +438,23 @@ export function GameCodeDialog({
   const [picked, setPicked] = useState<Member | null>(null)
   const [assembly, setAssembly] = useState('')
   const [mode, setMode] = useState<CodeMode>('cs')
-  const [usages, setUsages] = useState(false)
-  // A member opened from Usages has only a name, so a hook for it would carry a made-up signature.
-  const [exact, setExact] = useState(true)
+  // The member whose usages the drawer lists, as "Type::Member"; '' while it is closed.
+  const [usagesOf, setUsagesOf] = useState('')
+  const [symbol, setSymbol] = useState<SymbolAt | null>(null)
   const assemblies =
     useLoaded(() => Assemblies(game, dir), [game, dir], null, reportUnexpected).data ?? []
-  const target = picked ? `${picked.type}::${picked.method}` : ''
+  // The pickers shrink before the title wraps; the view buttons keep their width.
   const actions = (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, flexWrap: 'wrap' }}>
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: space.gap,
+        flex: '1 1 auto',
+        minWidth: 0,
+        justifyContent: 'flex-end',
+      }}
+    >
       <TextField
         select={true}
         size="small"
@@ -360,7 +464,7 @@ export function GameCodeDialog({
           setPicked(null)
         }}
         slotProps={{ select: { displayEmpty: true }, htmlInput: { 'aria-label': t`Assembly` } }}
-        sx={{ width: ASSEMBLY_PX }}
+        sx={{ flex: `0 1 ${ASSEMBLY_PX}px`, minWidth: PICKER_MIN_PX }}
       >
         {assemblies.map((a, i) => (
           <MenuItem key={a.path} value={i === 0 && a.group === 'game' ? '' : a.path}>
@@ -368,44 +472,19 @@ export function GameCodeDialog({
           </MenuItem>
         ))}
       </TextField>
-      <MemberSearch
-        game={game}
-        dir={dir}
-        assembly={assembly}
-        picked={picked}
-        onPick={(m) => {
-          setExact(true)
-          setPicked(m)
-        }}
-      />
+      <MemberSearch game={game} dir={dir} assembly={assembly} picked={picked} onPick={setPicked} />
       <ToggleButtonGroup
         exclusive={true}
         size="small"
         value={mode}
         onChange={(_, next: CodeMode | null) => next && setMode(next)}
         aria-label={t`Code view`}
+        sx={{ flexShrink: 0 }}
       >
         <ToggleButton value="cs">{CSHARP}</ToggleButton>
         <ToggleButton value="il">{IL_LABEL}</ToggleButton>
         <ToggleButton value="both">{t`Side by side`}</ToggleButton>
       </ToggleButtonGroup>
-      <Button
-        variant="outlined"
-        startIcon={<Search size={14} />}
-        disabled={target === ''}
-        onClick={() => setUsages(true)}
-      >
-        {t`Find usages`}
-      </Button>
-      <TipIconButton
-        label={t`Copy a ${{ library: MONOMOD }} hook`}
-        tip={exact ? undefined : t`Pick the member in the search to copy its hook.`}
-        size="medium"
-        disabled={!picked || picked.kind === 'field' || !exact}
-        onClick={() => picked && copyText(hookSnippet(picked), t`Hook copied`)}
-      >
-        <Copy size={16} />
-      </TipIconButton>
     </Box>
   )
   return (
@@ -431,20 +510,31 @@ export function GameCodeDialog({
           kind={picked?.kind ?? 'method'}
           method={picked?.method ?? ''}
           mode={mode}
+          onSymbol={(name, x, y) => setSymbol({ name, x, y })}
         />
       </Box>
       <UsagesDrawer
         game={game}
         dir={dir}
-        target={target}
-        open={usages}
-        onClose={() => setUsages(false)}
+        target={usagesOf}
+        open={usagesOf !== ''}
+        onClose={() => setUsagesOf('')}
         onOpen={(u) => {
           const [type = '', method = ''] = u.caller.split('::')
           setAssembly(u.assembly === assemblies[0]?.path ? '' : u.assembly)
-          setExact(false)
           setPicked({ type, kind: 'method', method, static: false, void: true, params: [] })
-          setUsages(false)
+          setUsagesOf('')
+        }}
+      />
+      <SymbolMenu
+        game={game}
+        dir={dir}
+        assembly={assembly}
+        at={symbol}
+        onClose={() => setSymbol(null)}
+        onUsages={(target) => {
+          setSymbol(null)
+          setUsagesOf(target)
         }}
       />
     </AppDialog>

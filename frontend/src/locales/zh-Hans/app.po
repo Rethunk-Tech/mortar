@@ -1086,10 +1086,6 @@ msgstr ""
 msgid "Do not check before Play"
 msgstr ""
 
-#: src/develop/GameCodeDialog.tsx
-msgid "Pick the member in the search to copy its hook."
-msgstr ""
-
 #: src/lan/PairedComputers.tsx
 msgid "Paired computers"
 msgstr ""
@@ -1250,6 +1246,10 @@ msgstr ""
 
 #: src/share/ImportSources.tsx
 msgid "A .mortar file, an .r2z or a {source} modpack"
+msgstr ""
+
+#: src/develop/GameCodeDialog.tsx
+msgid "Looking up {name}…"
 msgstr ""
 
 #: src/launch/LaunchScreen.tsx
@@ -4759,6 +4759,10 @@ msgstr ""
 msgid "Copy code"
 msgstr ""
 
+#: src/develop/GameCodeDialog.tsx
+msgid "Find usages of {label}"
+msgstr ""
+
 #: src/develop/DevelopTab.tsx
 msgid "Test"
 msgstr ""
@@ -4798,6 +4802,10 @@ msgstr ""
 
 #: src/queue/QueueRows.tsx
 msgid "Resume {name}"
+msgstr ""
+
+#: src/develop/GameCodeDialog.tsx
+msgid "No member named {name} in this assembly"
 msgstr ""
 
 #: src/toasts/report.ts
@@ -6307,10 +6315,6 @@ msgstr ""
 msgid "needs install choices"
 msgstr ""
 
-#: src/develop/GameCodeDialog.tsx
-msgid "Copy a {library} hook"
-msgstr ""
-
 #: src/game/ProfileMenuItems.tsx
 msgid "Added to {launcher}"
 msgstr ""
@@ -6983,10 +6987,6 @@ msgstr ""
 msgid "This mod's installer has options to pick before it installs."
 msgstr ""
 
-#: src/develop/GameCodeDialog.tsx
-msgid "Find usages"
-msgstr ""
-
 #: src/tools/ToolEditorDialog.tsx
 msgid "Choose program…"
 msgstr ""
@@ -7343,6 +7343,10 @@ msgstr ""
 
 #: src/share/ImportProblems.tsx
 msgid "{name} is not on {source}"
+msgstr ""
+
+#: src/develop/GameCodeDialog.tsx
+msgid "Copy a {library} hook for {signature}"
 msgstr ""
 
 #: src/develop/DevelopTab.tsx
