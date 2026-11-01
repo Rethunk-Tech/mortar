@@ -964,25 +964,35 @@ func (s *Store) trashModsFolder(game, id, folder string) (string, error) {
 	return token, s.RecordModsSnapshot(game, id)
 }
 
-// RestoreModsFolder moves a folder trashModsFolder set aside back into mods/.
-func (s *Store) RestoreModsFolder(game, id, token string) error {
-	stamp, folder, ok := strings.Cut(token, "/")
-	if _, err := strconv.ParseInt(stamp, 10, 64); !ok || err != nil {
-		return errors.New("invalid restore token")
+// restoreSource parses a restore token (a stamp, then the folder or key set aside under it) and returns the profile's
+// directory and the set-aside path under trash.
+func (s *Store) restoreSource(game, id, token, trash string) (dir, src, name string, err error) {
+	stamp, name, ok := strings.Cut(token, "/")
+	if _, perr := strconv.ParseInt(stamp, 10, 64); !ok || perr != nil {
+		return "", "", "", errors.New("invalid restore token")
 	}
-	if folder, err := safeFolder(folder); err != nil || folder != strings.TrimSpace(folder) {
-		return errors.New("invalid restore token")
+	if name, perr := safeFolder(name); perr != nil || name != strings.TrimSpace(name) {
+		return "", "", "", errors.New("invalid restore token")
 	}
 	if err := s.unlocked(game, id); err != nil {
-		return err
+		return "", "", "", err
 	}
-	dir, err := s.profileDir(game, id)
+	dir, err = s.profileDir(game, id)
+	if err != nil {
+		return "", "", "", err
+	}
+	src = filepath.Join(trash, stamp, name)
+	if !exists(src) {
+		return "", "", "", os.ErrNotExist
+	}
+	return dir, src, name, nil
+}
+
+// RestoreModsFolder moves a folder trashModsFolder set aside back into mods/.
+func (s *Store) RestoreModsFolder(game, id, token string) error {
+	dir, src, folder, err := s.restoreSource(game, id, token, s.removedModsDir(game, id))
 	if err != nil {
 		return err
-	}
-	src := filepath.Join(s.removedModsDir(game, id), stamp, folder)
-	if !exists(src) {
-		return os.ErrNotExist
 	}
 	dst := filepath.Join(dir, "mods", folder)
 	if exists(dst) {

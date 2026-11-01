@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"slices"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -217,23 +216,9 @@ func (s *Store) TrashOldFiles(game, id, key string) (string, error) {
 func (s *Store) RestoreOldFiles(game, id, token string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	stamp, key, ok := strings.Cut(token, "/")
-	if _, err := strconv.ParseInt(stamp, 10, 64); !ok || err != nil {
-		return errors.New("invalid restore token")
-	}
-	if _, err := safeFolder(key); err != nil {
-		return errors.New("invalid restore token")
-	}
-	if err := s.unlocked(game, id); err != nil {
-		return err
-	}
-	dir, err := s.profileDir(game, id)
+	dir, src, key, err := s.restoreSource(game, id, token, s.removedOldFilesDir(game, id))
 	if err != nil {
 		return err
-	}
-	src := filepath.Join(s.removedOldFilesDir(game, id), stamp, key)
-	if !exists(src) {
-		return os.ErrNotExist
 	}
 	dst := filepath.Join(dir, oldFilesDir, key)
 	if exists(dst) {
