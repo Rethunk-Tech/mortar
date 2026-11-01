@@ -6,7 +6,7 @@ import (
 	"unicode"
 )
 
-// Mod formats. SMAPI is the only one with a reader today.
+// Mod formats.
 const (
 	FormatSMAPI        = "smapi"
 	FormatBepInEx      = "bepinex"

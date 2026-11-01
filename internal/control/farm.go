@@ -21,6 +21,6 @@ func (s *Services) farmCall(ctx context.Context, method string, p Params) (any, 
 	case "pack.farmCheck":
 		return s.Packs.CheckFarm(p.Game, prof.ID, p.Value)
 	default:
-		return s.Packs.FixFarm(ctx, p.Game, prof.ID, p.Value, typedIDs(p.IDs))
+		return s.Packs.FixFarm(ctx, p.Game, prof.ID, p.Value, typedIDs(modIDs(prof), p.IDs))
 	}
 }

@@ -10,6 +10,7 @@ import (
 	"strconv"
 
 	"github.com/Rethunk-Tech/mortar/internal/lan"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/share"
 	"github.com/Rethunk-Tech/mortar/internal/sharesvc"
 	"github.com/Rethunk-Tech/mortar/internal/templates"
@@ -74,9 +75,11 @@ func (s *Services) savedGroupsWrite(method string, p Params) (any, error) {
 		return nil, errors.New("saved groups are unavailable")
 	}
 	if method == "groups.create" {
-		return s.profileCall(p, func(id string) (any, error) {
-			return s.SavedGroups.Create(p.Game, p.Name, id, typedIDs(p.IDs))
-		})
+		prof, err := s.resolve(p.Game, p.Profile)
+		if err != nil {
+			return nil, err
+		}
+		return s.SavedGroups.Create(p.Game, p.Name, prof.ID, typedIDs(modIDs(prof), p.IDs))
 	}
 	list, err := s.SavedGroups.List(p.Game)
 	if err != nil {
@@ -92,9 +95,17 @@ func (s *Services) savedGroupsWrite(method string, p Params) (any, error) {
 	case "groups.rename":
 		return s.SavedGroups.Rename(p.Game, g.ID, p.Value)
 	case "groups.add":
-		return s.profileCall(p, func(id string) (any, error) { return s.SavedGroups.AddMods(p.Game, g.ID, id, typedIDs(p.IDs)) })
+		prof, err := s.resolve(p.Game, p.Profile)
+		if err != nil {
+			return nil, err
+		}
+		return s.SavedGroups.AddMods(p.Game, g.ID, prof.ID, typedIDs(modIDs(prof), p.IDs))
 	default:
-		return s.SavedGroups.RemoveMods(p.Game, g.ID, typedIDs(p.IDs))
+		members := make([]mod.ID, len(g.Mods))
+		for i, m := range g.Mods {
+			members[i] = m.ID
+		}
+		return s.SavedGroups.RemoveMods(p.Game, g.ID, typedIDs(members, p.IDs))
 	}
 }
 

@@ -842,7 +842,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		if len(p.IDs) == 0 {
 			return nil, fmt.Errorf("mods files needs a mod")
 		}
-		return s.modExtraFiles(p.Game, prof, typedID(p.IDs[0]))
+		return s.modExtraFiles(p.Game, prof, typedID(modIDs(prof), p.IDs[0]))
 	case "mods.preset":
 		return s.modsPreset(p, id, prof)
 	case "mods.config":
@@ -1267,7 +1267,7 @@ func extraKeyOf(e profile.Entry, id string) (string, error) {
 			if folder != extra && !strings.HasPrefix(folder, prefix) {
 				continue
 			}
-			if mod.Equal(m.ID, typedID(id)) || strings.EqualFold(m.Name, id) {
+			if idMatches(id, m.ID) || strings.EqualFold(m.Name, id) {
 				return extra, nil
 			}
 		}
@@ -1282,9 +1282,11 @@ func refsFor(p profile.Profile, ids []string) ([]profile.EnableRef, error) {
 		return nil, errors.New("name at least one mod by id")
 	}
 	refs := make([]profile.EnableRef, 0, len(ids))
+	known := modIDs(p)
 	for _, id := range ids {
-		if e, _, ok := p.FindMod("", typedID(id)); ok {
-			refs = append(refs, profile.EnableRef{Key: e.Key, ID: typedID(id)})
+		uid := typedID(known, id)
+		if e, _, ok := p.FindMod("", uid); ok {
+			refs = append(refs, profile.EnableRef{Key: e.Key, ID: uid})
 			continue
 		}
 		before := len(refs)
@@ -1452,7 +1454,7 @@ func (s *Services) modInfo(ctx context.Context, gameID string, p profile.Profile
 	if len(ids) != 1 {
 		return ModInfo{}, errors.New("name one mod by id")
 	}
-	uid := typedID(ids[0])
+	uid := typedID(modIDs(p), ids[0])
 	e, _, ok := p.FindMod("", uid)
 	if !ok {
 		return ModInfo{}, fmt.Errorf("profile %s has no mod %q", p.Name, uid)
@@ -1873,17 +1875,6 @@ func (s *Services) doctor() (Doctor, error) {
 	return Doctor{Version: s.Version, DataDir: dir, Games: gs, Environment: env, NxmHandled: st.NxmHandled, NxmPrevious: st.NxmPreviousName, SteamRoots: st.LauncherRoots[game.LauncherSteam]}, nil
 }
 
-// typedID reads an id a user typed: bare ids are SMAPI's for now, since Stardew is the only game with mods.
-func typedID(s string) mod.ID { return mod.Parse(s, mod.FormatSMAPI) }
-
-func typedIDs(ids []string) []mod.ID {
-	out := make([]mod.ID, len(ids))
-	for i, id := range ids {
-		out[i] = typedID(id)
-	}
-	return out
-}
-
 // queueUpdates queues the profile's updates: the named ones, or every one that needs no choice. beforePlay is the
 // unattended update before a launch, which leaves out an update whose author asks the player to read a caution
 // first and is content with nothing to do.
@@ -1894,7 +1885,7 @@ func (s *Services) queueUpdates(ctx context.Context, gameID, id string, ids []st
 	}
 	var reqs []queue.Request
 	for _, u := range r.Updates {
-		named := len(ids) > 0 && slices.ContainsFunc(typedIDs(ids), func(want mod.ID) bool { return mod.Equal(want, u.ID) })
+		named := slices.ContainsFunc(ids, func(typed string) bool { return idMatches(typed, u.ID) })
 		if !queueableUpdate(u, named) || (!all && len(ids) > 0 && !named) || (beforePlay && strings.TrimSpace(u.CautionMessage) != "") {
 			continue
 		}
