@@ -13,8 +13,9 @@ type Related = NonNullable<Parameters<typeof SettingsShell>[0]['related']>
 export function usePerProfileRelated(game: string, show: () => void): Related | undefined {
   const { t } = useLingui()
   const startup = useGameInfo(game)?.startupSettings === true
-  const profile = useProfiles(openProfileOf)
-  if (!(startup && profile)) {
+  // The name alone: a whole-profile selector would redraw every page of game settings on each profile save.
+  const profileName = useProfiles((s) => openProfileOf(s)?.name ?? '')
+  if (!(startup && profileName)) {
     return undefined
   }
   const labels = [
@@ -33,7 +34,7 @@ export function usePerProfileRelated(game: string, show: () => void): Related | 
         <Typography
           sx={{ flex: 1, fontSize: 'medium.fontSize' }}
         >{t`${{ name: label }} is set per profile`}</Typography>
-        <Button onClick={show}>{t`Show for ${{ name: profile.name }}`}</Button>
+        <Button onClick={show}>{t`Show for ${{ name: profileName }}`}</Button>
       </Box>
     ),
   }
