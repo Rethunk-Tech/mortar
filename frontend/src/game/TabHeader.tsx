@@ -53,12 +53,12 @@ function Chip({
   )
 }
 
-// The strip every tab but Home opens with: the profile's name and status, and a slot for the tab's own buttons.
+// The strip every tab but Home opens with: the profile's status, and a slot for the tab's own buttons. The title bar
+// already names the profile.
 // It reads the open profile's few fields itself, so a change elsewhere in the profile (a mod switched) leaves it alone.
 export const TabHeader = memo(function TabHeaderView() {
   const { t } = useLingui()
   const id = useProfiles((s) => s.openId)
-  const name = useProfiles((s) => openProfileOf(s)?.name ?? '')
   const color = useProfiles((s) => openProfileOf(s)?.color)
   const notes = useProfiles((s) => notesFirstLine(openProfileOf(s)?.notes ?? ''))
   const modCount = useProfiles((s) => {
@@ -95,9 +95,6 @@ export const TabHeader = memo(function TabHeaderView() {
         borderBottom: '1px solid var(--mortar-hairline)',
       }}
     >
-      <Typography noWrap={true} component="h1" sx={{ fontSize: 18, fontWeight: 700, minWidth: 0 }}>
-        {name}
-      </Typography>
       <Box sx={{ display: 'flex', gap: space.gap, flexShrink: 0 }}>
         <Chip label={modsLabel(modCount)} onClick={go('mods')} />
         {updates > 0 ? (
