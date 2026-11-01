@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, IconButton, Typography } from '@mui/material'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import type { Assembly } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import {
   FrameAssembly,
   GameCode,
@@ -12,29 +13,47 @@ import { reportUnexpected } from '../toasts/report.ts'
 
 const dotted = (type: string) => type.replaceAll('+', '.')
 
-// The member a frame ran: in the assembly its module id names, else the game's own; the overload taking as many
-// arguments as the frame lists when there are several.
+const fileName = (path: string) => path.split(/[\\/]/u).at(-1) ?? ''
+
+// Where a frame's method can be: the assembly its module id names; without one (Unity's own traces print none), the
+// game's own and then those named after the type's root namespace, as UnityEngine.CoreModule.dll is.
+async function placesOf(game: string, dir: string, f: StackFrame, assemblies: string[]) {
+  if (f.mvid) {
+    return [await FrameAssembly(game, dir, f.mvid)]
+  }
+  const root = f.type.split('.')[0] ?? ''
+  return ['', ...assemblies.filter((a) => root !== '' && fileName(a).startsWith(`${root}.`))]
+}
+
+// The member a frame ran, the overload taking as many arguments as the frame lists when there are several.
 async function memberOf(
   game: string,
   dir: string,
   f: StackFrame,
+  assemblies: string[],
 ): Promise<{ assembly: string; member: Member } | null> {
-  const assembly = f.mvid ? await FrameAssembly(game, dir, f.mvid) : ''
-  const hits = (await GameCode(game, dir, assembly, `${f.type}::${f.method}`)) ?? []
-  const named = hits.filter((m) => m.method === f.method && dotted(m.type) === dotted(f.type))
-  const member = named.find((m) => (m.params ?? []).length === f.params) ?? named[0]
-  return member ? { assembly, member } : null
+  for (const assembly of await placesOf(game, dir, f, assemblies)) {
+    const hits = (await GameCode(game, dir, assembly, `${f.type}::${f.method}`)) ?? []
+    const named = hits.filter((m) => m.method === f.method && dotted(m.type) === dotted(f.type))
+    const member = named.find((m) => (m.params ?? []).length === f.params) ?? named[0]
+    if (member) {
+      return { assembly, member }
+    }
+  }
+  return null
 }
 
 /** Steps through a Console stack trace in Game code: each frame opens the method it ran. */
 export function TraceSteps({
   game,
   dir,
+  assemblies,
   trace,
   onOpen,
 }: {
   game: string
   dir: string
+  assemblies: Assembly[]
   trace: { frames: StackFrame[]; at: number }
   onOpen: (assembly: string, member: Member) => void
 }) {
@@ -47,7 +66,12 @@ export function TraceSteps({
       return
     }
     let live = true
-    memberOf(game, dir, frame)
+    memberOf(
+      game,
+      dir,
+      frame,
+      assemblies.map((a) => a.path),
+    )
       .then((found) => {
         if (!live) {
           return
@@ -61,7 +85,7 @@ export function TraceSteps({
     return () => {
       live = false
     }
-  }, [game, dir, frame, onOpen])
+  }, [game, dir, frame, assemblies, onOpen])
   if (!frame) {
     return null
   }

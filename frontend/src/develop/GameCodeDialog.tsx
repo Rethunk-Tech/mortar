@@ -15,6 +15,7 @@ import { useDebouncedLoad, useLoaded } from '@rethunk/react-load-hooks'
 import { CircleAlert, Code, FileSearch } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type {
+  Assembly,
   Mapped,
   Usage,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
@@ -307,6 +308,8 @@ function MemberSearch({
 }) {
   const { t } = useLingui()
   const [query, setQuery] = useState('')
+  // A pick from the list keeps what was typed; one made elsewhere (a trace, Usages) shows its name instead.
+  const ownPick = useRef(false)
   const { hits, error } = useHits(game, dir, assembly, query)
   return (
     <Autocomplete
@@ -320,8 +323,18 @@ function MemberSearch({
       getOptionLabel={(m) => `${m.type}::${m.method}`}
       getOptionKey={memberKey}
       noOptionsText={error || t`Type two letters or more`}
-      onInputChange={(_, next, reason) => reason === 'input' && setQuery(next)}
-      onChange={(_, m) => m && onPick(m)}
+      onInputChange={(_, next, reason) => {
+        if (reason === 'input' || (reason === 'reset' && !ownPick.current && next !== '')) {
+          setQuery(next)
+        }
+        ownPick.current = false
+      }}
+      onChange={(_, m) => {
+        ownPick.current = true
+        if (m) {
+          onPick(m)
+        }
+      }}
       renderOption={({ key, ...props }, m) => (
         <Box component="li" key={key} {...props} sx={{ display: 'block !important' }}>
           <Typography noWrap={true} sx={{ fontFamily: MONO, fontSize: 'small.fontSize' }}>
@@ -339,6 +352,9 @@ function MemberSearch({
     />
   )
 }
+
+// The same empty list each render while the list loads, so what depends on it stays put.
+const NO_ASSEMBLIES: Assembly[] = []
 
 /** Search the game's code, read a type decompiled as C#, IL or both side by side, and copy a hook for a method. Opened
  * from a Console stack trace, it steps through the trace's frames. */
@@ -361,7 +377,8 @@ export function GameCodeDialog({
   const [usagesOf, setUsagesOf] = useState('')
   const [symbol, setSymbol] = useState<SymbolClick | null>(null)
   const assemblies =
-    useLoaded(() => Assemblies(game, dir), [game, dir], null, reportUnexpected).data ?? []
+    useLoaded(() => Assemblies(game, dir), [game, dir], null, reportUnexpected).data ??
+    NO_ASSEMBLIES
   const main = assemblies[0]?.path
   const openFrame = useCallback(
     (from: string, m: Member) => {
@@ -382,7 +399,7 @@ export function GameCodeDialog({
         justifyContent: 'flex-end',
       }}
     >
-      {trace ? <TraceSteps game={game} dir={dir} trace={trace} onOpen={openFrame} /> : null}
+      {trace ? <TraceSteps {...{ game, dir, assemblies, trace }} onOpen={openFrame} /> : null}
       <TextField
         select={true}
         size="small"
