@@ -82,7 +82,19 @@ func (s *Service) boundFor(game, profileID, guid string) (bound, bool) {
 			return bound{}, false
 		}
 		settings := s.settingsOf(dll.Path, info)
-		settings = slices.DeleteFunc(slices.Clone(settings), func(st dotnet.Setting) bool { return st.Default == "" && st.Type != "string" })
+		settings = slices.DeleteFunc(slices.Clone(settings), func(st dotnet.Setting) bool {
+			return (st.Default == "" && st.Type != "string") || !renderable(st)
+		})
+		if strings.ContainsAny(g, "\r\n") {
+			return bound{}, false
+		}
+		// A name or version with a line break would write lines of the DLL's own into the header.
+		if strings.ContainsAny(dll.Name, "\r\n") {
+			dll.Name = ""
+		}
+		if strings.ContainsAny(dll.Version, "\r\n") {
+			dll.Version = ""
+		}
 		return bound{guid: g, dll: dll, at: info.ModTime(), settings: settings}, len(settings) > 0
 	}
 	return bound{}, false
@@ -135,10 +147,7 @@ var netTypes = map[string]string{
 func (b bound) render() string {
 	var out strings.Builder
 	fmt.Fprintf(&out, "## Settings file was created by plugin %s v%s\n## Plugin GUID: %s\n", cmp.Or(b.dll.Name, b.guid), cmp.Or(b.dll.Version, "0.0.0"), b.guid)
-	// A newline or a ']' would end the line or the section header early and let a DLL write lines of its own.
-	settings := slices.DeleteFunc(slices.Clone(b.settings), func(st dotnet.Setting) bool {
-		return strings.ContainsAny(st.Section+st.Key+st.Default, "\r\n") || strings.Contains(st.Section, "]")
-	})
+	settings := b.settings
 	var sections []string
 	for _, st := range settings {
 		if !slices.Contains(sections, st.Section) {
@@ -154,6 +163,20 @@ func (b bound) render() string {
 		}
 	}
 	return out.String()
+}
+
+// renderable reports whether st can be written into a .cfg without ending a line or a section header early, which
+// would let a DLL write lines of its own. Description alone may hold "\n": entryText comments each line.
+func renderable(st dotnet.Setting) bool {
+	if strings.Contains(st.Section, "]") || strings.Contains(st.Description, "\r") {
+		return false
+	}
+	for _, f := range append([]string{st.Section, st.Key, st.Default, st.Min, st.Max}, st.Values...) {
+		if strings.ContainsAny(f, "\r\n") {
+			return false
+		}
+	}
+	return true
 }
 
 // entryText is one setting as BepInEx writes it, after the blank line before it.

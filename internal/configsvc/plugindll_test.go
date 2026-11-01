@@ -111,19 +111,25 @@ func TestTheDLLGivesTheDefaultsAndSettingsOverAnOlderBuildsCfg(t *testing.T) {
 	}
 }
 
-// A bound setting whose section, key or default would break the .cfg's lines is left out of the rendered file.
-func TestRenderSkipsSettingsThatWouldBreakTheFile(t *testing.T) {
+// A bound setting with any field that would break the .cfg's lines is not renderable.
+func TestRenderableRejectsSettingsThatWouldBreakTheFile(t *testing.T) {
 	t.Parallel()
-	good := dotnet.Setting{Section: "S", Key: "ok", Type: "int", Default: "1"}
-	b := bound{guid: "g", settings: []dotnet.Setting{
-		good,
-		{Section: "S", Key: "a\nb", Type: "int", Default: "1"},
-		{Section: "S", Key: "k", Type: "string", Default: "x\ny = z"},
-		{Section: "S]\n[Evil", Key: "k", Type: "int", Default: "1"},
-		{Section: "T]", Key: "k", Type: "int", Default: "1"},
-	}}
-	got := b.render()
-	if want := "\n[S]\n" + entryText(good); !strings.HasSuffix(got, want) || strings.Count(got, "[") != 1 {
-		t.Fatalf("rendered %q", got)
+	good := dotnet.Setting{Section: "S", Key: "ok", Type: "int", Default: "1", Description: "a\nb", Values: []string{"x"}}
+	if !renderable(good) {
+		t.Fatal("good setting rejected")
+	}
+	for name, bad := range map[string]dotnet.Setting{
+		"key":     {Section: "S", Key: "a\nb", Default: "1"},
+		"default": {Section: "S", Key: "k", Default: "x\ny = z"},
+		"section": {Section: "S]\n[Evil", Key: "k", Default: "1"},
+		"bracket": {Section: "T]", Key: "k", Default: "1"},
+		"descCR":  {Section: "S", Key: "k", Default: "1", Description: "a\rb"},
+		"value":   {Section: "S", Key: "k", Default: "1", Values: []string{"a\nb"}},
+		"min":     {Section: "S", Key: "k", Default: "1", Min: "0\r"},
+		"max":     {Section: "S", Key: "k", Default: "1", Max: "9\n"},
+	} {
+		if renderable(bad) {
+			t.Errorf("%s: accepted", name)
+		}
 	}
 }
