@@ -1,4 +1,5 @@
 import { localId } from '../mods/dependents.ts'
+import { parseFrame } from './stackFrame.ts'
 
 const WORD_CHAR = /[A-Za-z0-9_]/
 const TRAILING_PUNCT = /[.,;:)\]]$/
@@ -7,6 +8,7 @@ const ROOT_TRAILING_SEP = /[/\\]+$/
 type ConsoleLink =
   | { kind: 'mod'; start: number; end: number; id: string }
   | { kind: 'path'; start: number; end: number; path: string }
+  | { kind: 'frame'; start: number; end: number }
 
 function overlap(aStart: number, aEnd: number, bStart: number, bEnd: number): boolean {
   return aStart < bEnd && bStart < aEnd
@@ -89,6 +91,14 @@ interface InstalledMod {
 interface ConsoleLinkRoots {
   modsDir: string
   gameDir: string
+  // A stack frame links to Game code, which reads a code project's assemblies.
+  code: boolean
+}
+
+// A stack frame's "Type.Method", which opens Game code when there is a code project to read it from.
+function frameLinks(text: string, roots: ConsoleLinkRoots): ConsoleLink[] {
+  const frame = roots.code ? parseFrame(text) : null
+  return frame ? [{ kind: 'frame', start: frame.start, end: frame.end }] : []
 }
 
 function linksInText(
@@ -96,7 +106,7 @@ function linksInText(
   mods: readonly InstalledMod[],
   roots: ConsoleLinkRoots,
 ): ConsoleLink[] {
-  const found: ConsoleLink[] = []
+  const found: ConsoleLink[] = frameLinks(text, roots)
   const names = mods
     .flatMap((m) => [
       { key: localId(m.id), id: m.id },

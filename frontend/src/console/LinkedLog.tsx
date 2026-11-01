@@ -1,12 +1,14 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
 import { useLoaded } from '@rethunk/react-load-hooks'
-import { type ReactNode, useCallback, useMemo } from 'react'
+import { type ReactNode, useCallback, useMemo, useState } from 'react'
 import type { Entry } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import {
   ModsDir,
   OpenConsolePath,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { GameCodeDialog } from '../develop/GameCodeDialog.tsx'
+import { useCodeProject } from '../develop/kinds.ts'
 import { openMod } from '../mods/openMod.ts'
 import { useUpdates } from '../mods/updates.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
@@ -15,6 +17,7 @@ import { MONO } from '../theme/theme.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import type { InstalledMod } from './consoleLinks.ts'
 import { smapiUpdateNotes } from './smapiUpdateNotes.ts'
+import type { StackFrame } from './stackFrame.ts'
 import { VirtualLog } from './VirtualLog.tsx'
 
 function installedOf(
@@ -57,7 +60,13 @@ export function LinkedLog({
     '',
   )
   // Kept between renders, so the memoised rows in view skip a render when lines arrive.
-  const roots = useMemo(() => ({ modsDir, gameDir }), [modsDir, gameDir])
+  const codeDir = useCodeProject(game)
+  const [trace, setTrace] = useState<{ frames: StackFrame[]; at: number } | null>(null)
+  const onTrace = useCallback((frames: StackFrame[], at: number) => setTrace({ frames, at }), [])
+  const roots = useMemo(
+    () => ({ modsDir, gameDir, code: codeDir !== '' }),
+    [modsDir, gameDir, codeDir],
+  )
   const onMod = useCallback((id: string) => {
     openMod({ id }).catch(reportUnexpected)
   }, [])
@@ -101,8 +110,12 @@ export function LinkedLog({
           roots={roots}
           onMod={onMod}
           onPath={onPath}
+          onTrace={onTrace}
         />
       )}
+      {trace && codeDir ? (
+        <GameCodeDialog game={game} dir={codeDir} trace={trace} onClose={() => setTrace(null)} />
+      ) : null}
     </Box>
   )
 }

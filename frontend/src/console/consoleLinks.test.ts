@@ -9,7 +9,17 @@ const mods: InstalledMod[] = [
 const roots = {
   modsDir: '/home/user/.local/share/mortar/profiles/p1/mods',
   gameDir: '/home/user/Games/Stardew Valley',
+  code: true,
 }
+
+test('a stack frame links as one span, over a mod name inside it, and only with a code project', () => {
+  const text = '  at Farm.Patches.Hoe.Prefix () [0x00019] in <9c56>:0 '
+  const links = linksInText(text, mods, roots)
+  expect(links.map((l) => [l.kind, text.slice(l.start, l.end)])).toEqual([
+    ['frame', 'Farm.Patches.Hoe.Prefix'],
+  ])
+  expect(linksInText(text, mods, { ...roots, code: false }).map((l) => l.kind)).toEqual(['mod'])
+})
 
 test('message links prefer the longest exact mod name and skip substrings', () => {
   const text = 'SMAPI loaded Farm Type Manager after Farm; skip Farming and Farmland'

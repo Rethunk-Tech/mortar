@@ -98,6 +98,21 @@ func cmpBool(a, b bool) int {
 	}
 }
 
+// FrameAssembly is the listed assembly whose module version id is mvid, as a stack frame without symbols prints it
+// ("<mvid>:IL_002E"); "" when none is.
+func (s *Service) FrameAssembly(gameID, dir, mvid string) (string, error) {
+	all, err := s.Assemblies(gameID, dir)
+	if err != nil || mvid == "" {
+		return "", err
+	}
+	for _, a := range all {
+		if id, _ := dotnet.Identity(a.Path); id == mvid {
+			return a.Path, nil
+		}
+	}
+	return "", nil
+}
+
 // assembly is path when Assemblies lists it, else the game's main assembly when path is empty; anything else is
 // refused, so the view never reads a file the player did not pick from the list.
 func (s *Service) assembly(gameID, dir, path string) (string, error) {

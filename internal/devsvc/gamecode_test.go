@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 )
 
 func TestGameCodeSearchesAndDecompilesTheGamesAssembly(t *testing.T) {
@@ -34,6 +35,13 @@ func TestGameCodeSearchesAndDecompilesTheGamesAssembly(t *testing.T) {
 	}
 	if err := writeUserProps(dir, game); err != nil {
 		t.Fatal(err)
+	}
+	mvid, _ := dotnet.Identity(filepath.Join(managed, "Assembly-CSharp.dll"))
+	if got, err := svc.FrameAssembly("lethal-company", dir, mvid); err != nil || got != filepath.Join(managed, "Assembly-CSharp.dll") {
+		t.Fatalf("FrameAssembly(%s) = %q, %v", mvid, got, err)
+	}
+	if got, err := svc.FrameAssembly("lethal-company", dir, "00000000000000000000000000000000"); err != nil || got != "" {
+		t.Fatalf("FrameAssembly(unknown) = %q, %v", got, err)
 	}
 	hits, err := svc.GameCode("lethal-company", dir, "", "MOD switch")
 	if err != nil || len(hits) != 1 || hits[0].Type != "Fixture.Mod" || hits[0].Method != "SwitchTool" {

@@ -1,11 +1,22 @@
 import { create } from 'zustand'
 import { Kinds } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import type { Settings } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
+import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 
 /** The asset kind of each project made only of files, by folder; a code project has no entry. The files decide it, not the settings. */
 export const useDevKinds = create<{ byDir: Record<string, string> }>(() => ({ byDir: {} }))
+
+/** The folder of the open profile's first code project, '' when it has none: Game code reads its assemblies. */
+export function useCodeProject(game: string): string {
+  const openId = useProfiles((s) => s.openId)
+  const kinds = useDevKinds((s) => s.byDir)
+  return useSettings(
+    (s) =>
+      s.games?.[game]?.devProjects?.find((p) => p.profile === openId && !kinds[p.dir])?.dir ?? '',
+  )
+}
 
 /** Whether the project in dir is made only of files. */
 export const useIsAsset = (dir: string) => useDevKinds((s) => Boolean(s.byDir[dir]))

@@ -29,6 +29,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import type { Member } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/dotnet/models.ts'
 import { ILSPY } from '../brand/productNames.ts'
+import type { StackFrame } from '../console/stackFrame.ts'
 import { AppDialog, ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
@@ -49,6 +50,7 @@ import { memberKey } from './hook.ts'
 import { MappedView } from './MappedView.tsx'
 import { SymbolMenu } from './SymbolMenu.tsx'
 import type { SymbolClick } from './symbolAt.ts'
+import { TraceSteps } from './TraceSteps.tsx'
 
 // A constructor's decompiled declaration is named after its type, which a search for ".ctor" cannot find.
 
@@ -338,14 +340,17 @@ function MemberSearch({
   )
 }
 
-/** Search the game's code, read a type decompiled as C#, IL or both side by side, and copy a hook for a method. */
+/** Search the game's code, read a type decompiled as C#, IL or both side by side, and copy a hook for a method. Opened
+ * from a Console stack trace, it steps through the trace's frames. */
 export function GameCodeDialog({
   game,
   dir,
+  trace,
   onClose,
 }: {
   game: string
   dir: string
+  trace?: { frames: StackFrame[]; at: number }
   onClose: () => void
 }) {
   const { t } = useLingui()
@@ -357,6 +362,14 @@ export function GameCodeDialog({
   const [symbol, setSymbol] = useState<SymbolClick | null>(null)
   const assemblies =
     useLoaded(() => Assemblies(game, dir), [game, dir], null, reportUnexpected).data ?? []
+  const main = assemblies[0]?.path
+  const openFrame = useCallback(
+    (from: string, m: Member) => {
+      setAssembly(from === main ? '' : from)
+      setPicked(m)
+    },
+    [main],
+  )
   // The pickers shrink before the title wraps; the view buttons keep their width.
   const actions = (
     <Box
@@ -369,6 +382,7 @@ export function GameCodeDialog({
         justifyContent: 'flex-end',
       }}
     >
+      {trace ? <TraceSteps game={game} dir={dir} trace={trace} onOpen={openFrame} /> : null}
       <TextField
         select={true}
         size="small"

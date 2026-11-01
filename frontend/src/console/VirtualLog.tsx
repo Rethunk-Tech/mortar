@@ -25,6 +25,7 @@ import { LineMenu } from './LineMenu.tsx'
 import { levelChrome } from './levelPalette.ts'
 import { useLineText } from './lineText.ts'
 import type { UpdateNote } from './smapiUpdateNotes.ts'
+import { parseFrame, type StackFrame } from './stackFrame.ts'
 import { UpdateNoteTag } from './UpdateNoteTag.tsx'
 
 // 13px monospace at line-height 1.75.
@@ -42,11 +43,13 @@ function Linked({
   links,
   onMod,
   onPath,
+  onFrame,
 }: {
   text: string
   links: ConsoleLink[]
   onMod: (id: string) => void
   onPath: (path: string) => void
+  onFrame: () => void
 }) {
   if (links.length === 0) {
     return text
@@ -68,8 +71,10 @@ function Linked({
         onClick={() => {
           if (link.kind === 'mod') {
             onMod(link.id)
-          } else {
+          } else if (link.kind === 'path') {
             onPath(link.path)
+          } else {
+            onFrame()
           }
         }}
         sx={linkSx}
@@ -93,6 +98,7 @@ const Row = memo(function RowView({
   roots,
   onMod,
   onPath,
+  onFrame,
   onMenu,
   selected,
   note,
@@ -110,9 +116,11 @@ const Row = memo(function RowView({
   roots: ConsoleLinkRoots
   onMod: (id: string) => void
   onPath: (path: string) => void
+  onFrame: (seq: number) => void
 }) {
   const { t } = useLingui()
   const theme = useTheme()
+  const frame = () => onFrame(entry.seq)
   const text = useLineText()(entry)
   const look = levelChrome(theme, entry.level)
   const modLinks = useMemo(
@@ -152,7 +160,7 @@ const Row = memo(function RowView({
         {entry.cont ? (
           ''
         ) : (
-          <Linked text={entry.mod} links={modLinks} onMod={onMod} onPath={onPath} />
+          <Linked text={entry.mod} links={modLinks} onMod={onMod} onPath={onPath} onFrame={frame} />
         )}
       </Box>
       <Box
@@ -160,7 +168,7 @@ const Row = memo(function RowView({
         title={text}
       >
         <Box sx={cell}>
-          <Linked text={text} links={messageLinks} onMod={onMod} onPath={onPath} />
+          <Linked text={text} links={messageLinks} onMod={onMod} onPath={onPath} onFrame={frame} />
         </Box>
         {repeat > 1 ? (
           <Box
@@ -220,6 +228,30 @@ function groupAt(rows: Entry[], index: number): Entry[] {
   return rows.slice(start, end)
 }
 
+// A clicked frame's seq to the frames of its message and which one it is.
+function useTraceClick(rows: Entry[], onTrace: (frames: StackFrame[], at: number) => void) {
+  const lineText = useLineText()
+  return useCallback(
+    (seq: number) => {
+      const group = groupAt(
+        rows,
+        rows.findIndex((r) => r.seq === seq),
+      )
+      const frames: StackFrame[] = []
+      let at = 0
+      for (const e of group) {
+        const f = parseFrame(lineText(e))
+        if (f) {
+          at = e.seq === seq ? frames.length : at
+          frames.push(f)
+        }
+      }
+      onTrace(frames, at)
+    },
+    [rows, lineText, onTrace],
+  )
+}
+
 export function VirtualLog({
   game,
   rows,
@@ -230,6 +262,7 @@ export function VirtualLog({
   roots,
   onMod,
   onPath,
+  onTrace,
   notes,
 }: {
   game: string
@@ -244,6 +277,8 @@ export function VirtualLog({
   roots: ConsoleLinkRoots
   onMod: (id: string) => void
   onPath: (path: string) => void
+  // A clicked frame, with every frame of its message so the reader can step through them.
+  onTrace: (frames: StackFrame[], at: number) => void
 }) {
   const { t } = useLingui()
   const ref = useRef<HTMLDivElement>(null)
@@ -276,6 +311,7 @@ export function VirtualLog({
       setMenu({ seq, top: y, left: x, ends: selectedEnds(ref.current) ?? selectedRange.current }),
     [],
   )
+  const onFrame = useTraceClick(rows, onTrace)
   const menuIndex = menu ? rows.findIndex((r) => r.seq === menu.seq) : -1
   const menuGroup = menuIndex >= 0 ? groupAt(rows, menuIndex) : []
   // Opening the menu moves focus and can drop the selection, so the selected lines stay marked while it is open;
@@ -363,6 +399,7 @@ export function VirtualLog({
               roots={roots}
               onMod={onMod}
               onPath={onPath}
+              onFrame={onFrame}
               onMenu={onMenu}
               selected={marked.includes(entry)}
             />

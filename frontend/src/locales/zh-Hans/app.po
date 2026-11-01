@@ -1136,6 +1136,10 @@ msgstr ""
 msgid "Kept"
 msgstr ""
 
+#: src/develop/TraceSteps.tsx
+msgid "Frame {n} of {total}: {name} is not in the listed assemblies"
+msgstr ""
+
 #: src/shell/AppMenu.tsx
 msgid "Could not quit Mortar"
 msgstr ""
@@ -2793,6 +2797,10 @@ msgstr ""
 msgid "Joining"
 msgstr ""
 
+#: src/develop/TraceSteps.tsx
+msgid "Previous frame"
+msgstr ""
+
 #: src/launch/LaunchScreen.tsx
 msgid "{plugin} failed to load."
 msgstr ""
@@ -3234,6 +3242,10 @@ msgstr ""
 #: src/saves/lackChipActions.tsx
 #: src/shell/FlatpakGrant.tsx
 msgid "Copy"
+msgstr ""
+
+#: src/develop/TraceSteps.tsx
+msgid "Next frame"
 msgstr ""
 
 #: src/share/Included.tsx
@@ -4478,6 +4490,10 @@ msgstr ""
 
 #: src/launch/GraphicsDialog.tsx
 msgid "You can change this later in {name}'s settings, under Play."
+msgstr ""
+
+#: src/develop/TraceSteps.tsx
+msgid "Frame {n} of {total}"
 msgstr ""
 
 #: src/develop/ReleaseItems.tsx

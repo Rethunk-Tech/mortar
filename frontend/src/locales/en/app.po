@@ -1142,6 +1142,10 @@ msgstr "Continue anyway"
 msgid "Kept"
 msgstr "Kept"
 
+#: src/develop/TraceSteps.tsx
+msgid "Frame {n} of {total}: {name} is not in the listed assemblies"
+msgstr "Frame {n} of {total}: {name} is not in the listed assemblies"
+
 #: src/shell/AppMenu.tsx
 msgid "Could not quit Mortar"
 msgstr "Could not quit Mortar"
@@ -2799,6 +2803,10 @@ msgstr "Hosting"
 msgid "Joining"
 msgstr "Joining"
 
+#: src/develop/TraceSteps.tsx
+msgid "Previous frame"
+msgstr "Previous frame"
+
 #: src/launch/LaunchScreen.tsx
 msgid "{plugin} failed to load."
 msgstr "{plugin} failed to load."
@@ -3241,6 +3249,10 @@ msgstr "{paused} paused"
 #: src/shell/FlatpakGrant.tsx
 msgid "Copy"
 msgstr "Copy"
+
+#: src/develop/TraceSteps.tsx
+msgid "Next frame"
+msgstr "Next frame"
 
 #: src/share/Included.tsx
 msgid "{count, plural, one {# more mod is left out} other {# more mods are left out}}"
@@ -4485,6 +4497,10 @@ msgstr "Results of installs, updates and launches appear here."
 #: src/launch/GraphicsDialog.tsx
 msgid "You can change this later in {name}'s settings, under Play."
 msgstr "You can change this later in {name}'s settings, under Play."
+
+#: src/develop/TraceSteps.tsx
+msgid "Frame {n} of {total}"
+msgstr "Frame {n} of {total}"
 
 #: src/develop/ReleaseItems.tsx
 msgid "Upload v{version}…"
