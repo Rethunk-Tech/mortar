@@ -107,8 +107,9 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font: 600 15px inherit;
-  font-family: inherit;
+  font: inherit;
+  font-weight: 600;
+  font-size: 15px;
   color: var(--dim);
   background: var(--raised);
   border: 1px solid var(--line);
@@ -156,8 +157,9 @@
 }
 
 .cmdbox button {
-  font: 700 14px inherit;
-  font-family: inherit;
+  font: inherit;
+  font-weight: 700;
+  font-size: 14px;
   background: var(--raised2);
   color: var(--sand);
   border: 1px solid var(--line);
@@ -201,8 +203,9 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  font: 700 16px inherit;
-  font-family: inherit;
+  font: inherit;
+  font-weight: 700;
+  font-size: 16px;
   color: var(--dim);
   background: var(--raised);
   border: 1px solid var(--line);
@@ -367,8 +370,9 @@ html.js .dl .panel[hidden] {
   position: absolute;
   top: 10px;
   right: 10px;
-  font: 700 14px inherit;
-  font-family: inherit;
+  font: inherit;
+  font-weight: 700;
+  font-size: 14px;
   background: var(--raised2);
   color: var(--sand);
   border: 1px solid var(--line);
@@ -422,6 +426,12 @@ html:not(.js) .jsonly,
   border-radius: 0;
   font-size: 15px;
   padding: 9px 16px;
+}
+
+.dl .tabs.modes button[aria-selected="true"] {
+  color: var(--sand-ink);
+  background: var(--sand);
+  box-shadow: none;
 }
 
 .dl .tabs.modes button + button {
