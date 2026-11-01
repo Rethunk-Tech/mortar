@@ -103,13 +103,10 @@ func (s *Service) SavePerformanceReport(gameID, profileID string, rows []Perform
 }
 
 func (s *Service) savePerformanceReport(gameID, profileID string, rows []PerformanceRow, frame *FrameSummary) (SavedReport, error) {
-	if _, err := game.Require(gameID); err != nil {
-		return SavedReport{}, err
-	}
 	if len(rows) == 0 {
 		return SavedReport{}, errors.New("cannot save an empty performance report")
 	}
-	modsDir, err := s.profiles.ModsDir(gameID, profileID)
+	dir, err := s.runsDirFor(gameID, profileID)
 	if err != nil {
 		return SavedReport{}, err
 	}
@@ -121,7 +118,6 @@ func (s *Service) savePerformanceReport(gameID, profileID string, rows []Perform
 		Rows:  append([]PerformanceRow(nil), rows...),
 		Frame: frame,
 	}
-	dir := runsDir(modsDir)
 	index, err := readPerformanceReports(dir)
 	if err != nil {
 		return SavedReport{}, err
@@ -145,14 +141,11 @@ func (s *Service) savePerformanceReport(gameID, profileID string, rows []Perform
 }
 
 func (s *Service) PerformanceReports(gameID, profileID string) ([]SavedReport, error) {
-	if _, err := game.Require(gameID); err != nil {
-		return nil, err
-	}
-	modsDir, err := s.profiles.ModsDir(gameID, profileID)
+	dir, err := s.runsDirFor(gameID, profileID)
 	if err != nil {
 		return nil, err
 	}
-	index, err := readPerformanceReports(runsDir(modsDir))
+	index, err := readPerformanceReports(dir)
 	if err != nil {
 		return nil, err
 	}

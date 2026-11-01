@@ -109,6 +109,18 @@ func runsDir(modsDir string) string {
 	return filepath.Join(filepath.Dir(modsDir), "runs")
 }
 
+// runsDirFor is the folder a profile keeps its run records in; the game must exist.
+func (s *Service) runsDirFor(gameID, profileID string) (string, error) {
+	if _, err := game.Require(gameID); err != nil {
+		return "", err
+	}
+	modsDir, err := s.profiles.ModsDir(gameID, profileID)
+	if err != nil {
+		return "", err
+	}
+	return runsDir(modsDir), nil
+}
+
 func runLogPath(dir, id string) string {
 	return filepath.Join(dir, id+".txt")
 }
@@ -121,14 +133,11 @@ func runPlayerLogPath(dir, id string) string {
 
 // Runs lists the newest recorded launches of the profile, at most the last 20.
 func (s *Service) Runs(gameID, profileID string) ([]Run, error) {
-	if _, err := game.Require(gameID); err != nil {
-		return nil, err
-	}
-	modsDir, err := s.profiles.ModsDir(gameID, profileID)
+	dir, err := s.runsDirFor(gameID, profileID)
 	if err != nil {
 		return nil, err
 	}
-	idx, err := readIndex(runsDir(modsDir))
+	idx, err := readIndex(dir)
 	if err != nil {
 		return nil, err
 	}
@@ -240,14 +249,11 @@ type RunIssues struct {
 //
 //wails:ignore
 func (s *Service) LastRunID(gameID, profileID string) (string, error) {
-	if _, err := game.Require(gameID); err != nil {
-		return "", err
-	}
-	modsDir, err := s.profiles.ModsDir(gameID, profileID)
+	dir, err := s.runsDirFor(gameID, profileID)
 	if err != nil {
 		return "", err
 	}
-	path := filepath.Join(runsDir(modsDir), "index.json")
+	path := filepath.Join(dir, "index.json")
 	var stamp lastRunStamp
 	fi, statErr := os.Stat(path)
 	if statErr == nil {
@@ -259,7 +265,7 @@ func (s *Service) LastRunID(gameID, profileID string) (string, error) {
 			return hit.id, nil
 		}
 	}
-	idx, err := readIndex(runsDir(modsDir))
+	idx, err := readIndex(dir)
 	if err != nil {
 		return "", err
 	}
@@ -361,11 +367,11 @@ func (s *Service) runFile(gameID, profileID, runID string) (string, error) {
 	if !runIDPattern.MatchString(runID) {
 		return "", fmt.Errorf("unknown run %q", runID)
 	}
-	modsDir, err := s.profiles.ModsDir(gameID, profileID)
+	dir, err := s.runsDirFor(gameID, profileID)
 	if err != nil {
 		return "", err
 	}
-	return runLogPath(runsDir(modsDir), runID), nil
+	return runLogPath(dir, runID), nil
 }
 
 func readIndex(dir string) (runIndex, error) {
