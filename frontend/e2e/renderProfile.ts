@@ -24,7 +24,7 @@ export async function openBiggestProfile(page: Page, workspaceTabs: Locator) {
 }
 
 /** The open game's name, read from the title bar's game switcher. */
-export async function currentGame(page: Page): Promise<string> {
+async function currentGame(page: Page): Promise<string> {
   const label = await page
     .getByRole('button', { name: /^Switch game: / })
     .getAttribute('aria-label')
@@ -32,7 +32,7 @@ export async function currentGame(page: Page): Promise<string> {
 }
 
 /** Opens a game from the title bar's game menu, which reopens that game's last profile. */
-export async function openGame(page: Page, workspaceTabs: Locator, name: string) {
+async function openGame(page: Page, workspaceTabs: Locator, name: string) {
   if ((await currentGame(page)) === name) {
     return
   }
