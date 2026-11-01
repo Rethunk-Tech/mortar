@@ -35,7 +35,14 @@ func TestAnalyze(t *testing.T) {
 		"[Error  : Unity Log] NullReferenceException: Object reference not set to an instance of an object\n" +
 		"Stack trace:\n" +
 		"GameNetcodeStuff.PlayerControllerB.Update () (at <af9b1eec498a45aebd42601d6ab85015>:IL_0B14)\n" +
-		"[Info   :   BepInEx] Chainloader startup complete\n"
+		"[Info   :   BepInEx] Chainloader startup complete\n" +
+		// The game threw; Mortar's bridge only relays the log, so its frame blames nothing.
+		"[Error  : Unity Log] NullReferenceException: Object reference not set to an instance of an object\n" +
+		"Stack trace:\n" +
+		"CentipedeAI.OnDestroy () (at <aca1e98d6f844d3f85cd22b6f7be2f9b>:0)\n" +
+		"UnityEngine.DebugLogHandler:LogException(Exception, Object)\n" +
+		"MortarBepInExBridge.LogSources:LogException(Exception, Object)\n" +
+		"UnityEngine.Debug:CallOverridenDebugHandler(Exception, Object)\n"
 	cases := []struct {
 		name, log, player string
 		want              []Finding

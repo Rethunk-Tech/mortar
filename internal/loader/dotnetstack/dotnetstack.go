@@ -41,14 +41,16 @@ var (
 	mvid     = regexp.MustCompile(`^<([0-9a-f]{32})>$`)
 )
 
-// SMAPI is the root namespaces of code that is not a SMAPI mod's: SMAPI, its libraries, the game and the runtime.
+// SMAPI is the root namespaces of code that is not a SMAPI mod's: SMAPI, its libraries, the game, the runtime and
+// Mortar's bridge, which relays every log line and so sits in the logging chain of each stack.
 var SMAPI = Set("stardewmoddingapi", "harmonylib", "monomod", "stardewvalley", "xtile", "system", "microsoft", "mono",
-	"netcode", "newtonsoft", "monogame", "steamworks", "dmd", "lidgren", "sdl2", "mscorlib")
+	"netcode", "newtonsoft", "monogame", "steamworks", "dmd", "lidgren", "sdl2", "mscorlib", "mortarsmapibridge")
 
-// Unity is the root namespaces of a Unity game's loaders, engine and runtime, for BepInEx and MelonLoader logs.
+// Unity is the root namespaces of a Unity game's loaders, engine and runtime, and Mortar's bridge, which relays the
+// game's log and so sits in the logging chain of each stack, for BepInEx and MelonLoader logs.
 var Unity = Set("system", "microsoft", "mono", "unityengine", "unity", "unityeditor", "tmpro", "harmonylib", "harmonyx",
 	"monomod", "dmd", "bepinex", "melonloader", "il2cppinterop", "il2cppsystem", "il2cpp", "steamworks", "netcode",
-	"newtonsoft", "mscorlib", "dissonance", "gamenetcodestuff", "cecil")
+	"newtonsoft", "mscorlib", "dissonance", "gamenetcodestuff", "cecil", "mortarbepinexbridge")
 
 // VintageStory is the root namespaces of the game's own code and the runtime, so a frame in one is not a mod's.
 var VintageStory = Set("system", "microsoft", "mono", "vintagestory", "vintagestoryapi", "vsurvival", "vsessentials",

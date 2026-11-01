@@ -8,6 +8,7 @@ import (
 	"github.com/Rethunk-Tech/go-bepinex/logline"
 
 	"github.com/Rethunk-Tech/mortar/internal/loader"
+	"github.com/Rethunk-Tech/mortar/internal/loader/dotnetstack"
 )
 
 // Kinds of Finding.
@@ -91,9 +92,6 @@ var loaderSources = []string{"BepInEx", "Preloader", "HarmonyX", "Unity Log"}
 // notices are loader warnings that need nothing from the player: a plugin limited to another game's process, a type
 // a plugin DLL holds that is not a plugin, and Harmony's lookup miss that precedes the patch failure it causes.
 var notices = regexp.MustCompile(`^Skipping \[[^\]]+\] because of process filters|^Skipping (?:over )?type \[|^AccessTools\.\w+: Could not find`)
-
-// frameworkNamespaces are code that is not a mod, so a stack naming only them blames no plugin.
-var frameworkNamespaces = []string{"System", "UnityEngine", "Unity", "GameNetcodeStuff", "Dissonance", "HarmonyLib", "MonoMod", "BepInEx", "Mono", "TMPro", "UnityEditor", "DMD", "Steamworks", "Netcode"}
 
 // Analyze reads the load failures out of BepInEx's LogOutput.log and the Unity Player.log. Either may be empty. A
 // failure repeated in a log is reported once, at its first line.
@@ -266,7 +264,8 @@ func loadingPlugin(before, stack []string) string {
 	return ""
 }
 
-// blamedPlugin is the root namespace of the first stack frame, read with frame, that is not game, Unity or loader code.
+// blamedPlugin is the root namespace of the first stack frame, read with frame, that is not game, Unity, loader or
+// Mortar bridge code.
 func blamedPlugin(stack []string, frame *regexp.Regexp) string {
 	for _, l := range stack {
 		m := frame.FindStringSubmatch(strings.TrimRight(l, "\r"))
@@ -277,7 +276,7 @@ func blamedPlugin(stack []string, frame *regexp.Regexp) string {
 			return ""
 		}
 		// The game's own code has no namespace, so a frame with none is not blamed.
-		if ns := rootNamespace(m[1]); strings.Contains(m[1], ".") && !isFramework(ns) {
+		if ns := rootNamespace(m[1]); strings.Contains(m[1], ".") && !dotnetstack.Unity[strings.ToLower(ns)] {
 			return ns
 		}
 	}
@@ -287,13 +286,4 @@ func blamedPlugin(stack []string, frame *regexp.Regexp) string {
 func rootNamespace(typeName string) string {
 	root, _, _ := strings.Cut(typeName, ".")
 	return root
-}
-
-func isFramework(ns string) bool {
-	for _, f := range frameworkNamespaces {
-		if strings.EqualFold(ns, f) {
-			return true
-		}
-	}
-	return false
 }
