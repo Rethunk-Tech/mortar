@@ -9,6 +9,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
@@ -21,7 +22,7 @@ const KindGameSetting = "game-setting"
 func settingFailures(content string, required []components.RequiredSetting) []LoadFailure {
 	have := map[string]string{}
 	section := ""
-	sc := bufio.NewScanner(strings.NewReader(strings.TrimPrefix(content, "\ufeff")))
+	sc := bufio.NewScanner(strings.NewReader(strings.TrimPrefix(content, mod.BOM)))
 	for sc.Scan() {
 		line := strings.TrimSpace(sc.Text())
 		if line == "" || line[0] == ';' || line[0] == '#' {

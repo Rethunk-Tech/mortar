@@ -2,7 +2,6 @@ package backup
 
 import (
 	"archive/zip"
-	"bytes"
 	"encoding/xml"
 	"errors"
 	"io"
@@ -14,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/saves"
 )
 
@@ -125,7 +125,7 @@ func farmName(f *zip.File) string {
 		return ""
 	}
 	var info farmerInfo
-	if xml.Unmarshal(bytes.TrimPrefix(b, []byte{0xEF, 0xBB, 0xBF}), &info) != nil {
+	if xml.Unmarshal(mod.StripBOM(b), &info) != nil {
 		return ""
 	}
 	return strings.TrimSpace(info.FarmName)

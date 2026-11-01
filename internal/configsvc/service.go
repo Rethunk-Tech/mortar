@@ -393,12 +393,8 @@ func (s *Service) Text(game, profileID, modID, file string) (string, error) {
 		return "", fmt.Errorf("%s is %s, too big to edit here; open its folder instead", file, bytefmt.Format(st.Size()))
 	}
 	raw, err := safefs.ReadFile(p)
-	return string(bytes.TrimPrefix(raw, utf8BOM)), err
+	return string(mod.StripBOM(raw)), err
 }
-
-// utf8BOM starts many mods' XML and JSON files; Text leaves it out, so an edit at the top cannot push it inside the
-// text, and SetText puts it back.
-var utf8BOM = []byte("\xef\xbb\xbf")
 
 // SetText replaces one of a mod's text config files, atomically.
 func (s *Service) SetText(game, profileID, modID, file, text string) error {
@@ -413,8 +409,8 @@ func (s *Service) SetText(game, profileID, modID, file, text string) error {
 		return usererr.Wrap(usererr.Invalid, err)
 	}
 	out := []byte(text)
-	if old, err := safefs.ReadFile(p); err == nil && bytes.HasPrefix(old, utf8BOM) {
-		out = append(slices.Clone(utf8BOM), out...)
+	if old, err := safefs.ReadFile(p); err == nil && bytes.HasPrefix(old, []byte(mod.BOM)) {
+		out = append([]byte(mod.BOM), out...)
 	}
 	return safefs.WriteFileAtomic(p, out, 0o600)
 }

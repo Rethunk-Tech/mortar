@@ -505,7 +505,7 @@ func (s *Scanner) read(ctx context.Context, folder string, index map[string][]sm
 // readInfo fills farmer, farm, date, money and playtime from SaveGameInfo (root <Farmer> direct children).
 // It stops once those tags have been seen so a large inventory is not fully walked.
 func readInfo(b []byte, info *Info) {
-	d := xml.NewDecoder(bytes.NewReader(bytes.TrimPrefix(b, []byte{0xEF, 0xBB, 0xBF})))
+	d := xml.NewDecoder(bytes.NewReader(mod.StripBOM(b)))
 	depth := 0
 	var field string
 	var got uint8
