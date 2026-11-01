@@ -87,7 +87,7 @@ func (s *Service) withPDB(ctx context.Context, tool, path string) (string, error
 	old, _ := filepath.Glob(filepath.Join(source, "*"))
 	for _, o := range old {
 		if o != dir {
-			_ = os.RemoveAll(o)
+			_ = safefs.RemoveAll(o)
 		}
 	}
 	if err := os.MkdirAll(dir, 0o750); err != nil {
