@@ -86,9 +86,24 @@ export function MappedView({
     [pick],
   )
   return (
-    <Box sx={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
+    // The row is capped at the view's height, so each side scrolls on its own; an auto row grew to the code's length and
+    // left the dialog scrolling both together.
+    <Box
+      sx={{
+        flex: 1,
+        minHeight: 0,
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gridTemplateRows: 'minmax(0, 1fr)',
+      }}
+    >
       <Box
-        sx={{ display: 'flex', minWidth: 0, borderRight: '1px solid var(--mortar-hairline-muted)' }}
+        sx={{
+          display: 'flex',
+          minWidth: 0,
+          minHeight: 0,
+          borderRight: '1px solid var(--mortar-hairline-muted)',
+        }}
       >
         <CodeView
           source={mapped.csharp}
@@ -100,7 +115,7 @@ export function MappedView({
           onSymbol={onSymbol}
         />
       </Box>
-      <Box sx={{ display: 'flex', minWidth: 0 }}>
+      <Box sx={{ display: 'flex', minWidth: 0, minHeight: 0 }}>
         <CodeView
           source={mapped.il}
           il={true}
