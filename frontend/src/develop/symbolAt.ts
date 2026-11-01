@@ -21,7 +21,7 @@ export function symbolAt(x: number, y: number): string {
   return identifierAt(node.textContent ?? '', range.startOffset)
 }
 
-const ESCAPE = /[.*+?^${}()|[\]\\]/g
+export const ESCAPE = /[.*+?^${}()|[\]\\]/g
 
 // The type an IL line names as the owner of name ("Namespace.Outer+Inner", as the member search names types), or ''.
 // A call, field load or store writes its target as [Assembly]Namespace.Type::Member, a nested type with '/' and a

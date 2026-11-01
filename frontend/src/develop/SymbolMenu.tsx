@@ -14,7 +14,7 @@ import { MenuAction, MenuNote } from '../shell/MenuAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { declares } from './declaration.ts'
 import { harmonyPatchSnippet, hookSnippet, memberKey, monoModHookSnippet } from './hook.ts'
-import { csArity, ilArity, ilOwner, type SymbolClick } from './symbolAt.ts'
+import { csArity, ESCAPE, ilArity, ilOwner, type SymbolClick } from './symbolAt.ts'
 
 // Members a right-click menu lists, at most.
 const MENU_MEMBERS = 6
@@ -60,7 +60,9 @@ async function ownerOf(scope: Scope, at: SymbolClick): Promise<{ owner: string; 
       return { owner, arity: ilArity(line, at.name) }
     }
   }
-  const before = at.text.slice(0, at.text.search(new RegExp(`\\b${at.name}\\b`))).trimEnd()
+  const before = at.text
+    .slice(0, at.text.search(new RegExp(`\\b${at.name.replace(ESCAPE, '\\$&')}\\b`)))
+    .trimEnd()
   return { owner: before.endsWith('.') ? '' : scope.type, arity: -1 }
 }
 
