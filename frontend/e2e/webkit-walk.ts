@@ -7,7 +7,6 @@
 // MORTAR_RENDER_URL names the server and MORTAR_RENDER_ONLY=a,b the screens whose names start with these. Exits 1 on a
 // layout break. React render counts need Chromium's DevTools protocol, so this pass only checks and pictures.
 import { existsSync, readFileSync } from 'node:fs'
-import { createServer } from 'node:net'
 import { join } from 'node:path'
 import process from 'node:process'
 import { type Screen, type Step, webkitWalk as walk } from '@rethunk/react-render-audit'
@@ -90,19 +89,6 @@ function sandboxEnv(sandbox: string): Record<string, string> | null {
 }
 
 // Walks every screen and returns its layout breaks, or null when WebKitGTK's driver or the sandbox's display is missing.
-// A port the system has free, so a driver an interrupted run left behind never takes this walk's sessions.
-function freePort(): Promise<number> {
-  return new Promise((resolve, reject) => {
-    const server = createServer()
-    server.once('error', reject)
-    server.listen(0, '127.0.0.1', () => {
-      const address = server.address()
-      const port = typeof address === 'object' && address ? address.port : 0
-      server.close(() => resolve(port))
-    })
-  })
-}
-
 export async function webkitWalk(w: Walk): Promise<string[] | null> {
   const env = sandboxEnv(w.sandbox)
   if (!env) {
@@ -112,7 +98,6 @@ export async function webkitWalk(w: Walk): Promise<string[] | null> {
     url: w.url,
     screens: SCREENS.filter((s) => w.only.length === 0 || w.only.some((o) => s.name.startsWith(o))),
     env,
-    port: await freePort(),
     ...(w.shots ? { shots: w.shots } : {}),
     log: console.log,
   })

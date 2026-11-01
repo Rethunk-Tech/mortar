@@ -47,7 +47,7 @@
         "@lingui/native-tools": "^0.2.0",
         "@lingui/vite-plugin": "6.11.0",
         "@playwright/test": "1.64.1",
-        "@rethunk/react-render-audit": "^0.1.1",
+        "@rethunk/react-render-audit": "^0.1.2",
         "@testing-library/dom": "^10.4.2",
         "@testing-library/react": "^16.3.3",
         "@types/babel__core": "^7.20.5",
@@ -524,7 +524,7 @@
 
     "@rethunk/react-load-hooks": ["@rethunk/react-load-hooks@0.2.0", "", { "peerDependencies": { "react": "^19.0.0", "react-dom": "^19.0.0" } }, "sha512-swWtnR7wGLRy+Z850Ref5zzfntAcRSi0u5+hj60qkrZb2ueaqcYD+LU7h/YB1olYu+l0ezBBSM/14EWz2cjB5w=="],
 
-    "@rethunk/react-render-audit": ["@rethunk/react-render-audit@0.1.1", "", { "peerDependencies": { "@playwright/test": "^1.64.0", "react": "^19.0.0", "react-dom": "^19.0.0" }, "bin": { "render-diff": "dist/cli.js" } }, "sha512-HXnkm5k4Ypu83SpYGeHSO1lCOM+VAH+sDjRE1ZybS7JmyorWKwygBfr5O273LLR6SBPfGEn75MnQOUGcfih24w=="],
+    "@rethunk/react-render-audit": ["@rethunk/react-render-audit@0.1.2", "", { "peerDependencies": { "@playwright/test": "^1.64.0", "react": "^19.0.0", "react-dom": "^19.0.0" }, "bin": { "render-diff": "dist/cli.js" } }, "sha512-+1Xd/BPaVG8vlps2KG0CQ9BZ2H1X4k0qR1Wfqo0533TrzLWa4VsEYpQ/YxPeXdpGafVTM0SSSvaZmpNp9D0gtg=="],
 
     "@rolldown/binding-android-arm-eabi": ["@rolldown/binding-android-arm-eabi@1.2.16", "", { "os": "android", "cpu": "arm" }, "sha512-ia3DwAs0OsMGS7+IConptSiyk9pEXkOx/AbJ2n/lAGxH3QkWQus1t8d7gnAT38FCU2sQu8lUbeR6AiZFv4JxaA=="],
 
