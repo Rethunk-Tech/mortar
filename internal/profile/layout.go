@@ -276,30 +276,47 @@ func (s *Store) swapPackage(game, id string, e Entry, newKey string, mods []Comp
 // WriteFiles writes files into the profile, by slash path relative to its folder. A path that leaves the folder is
 // refused before anything is written.
 func (s *Store) WriteFiles(game, id string, files map[string][]byte) error {
-	if err := s.unlocked(game, id); err != nil {
-		return err
-	}
-	_, dir, err := s.readDir(game, id)
-	if err != nil {
-		return err
-	}
-	for rel := range files {
+	_, _, err := s.writeProfileFiles(game, id, files, true, func(dir, rel string) error {
 		if !filepath.IsLocal(filepath.FromSlash(rel)) {
 			return fmt.Errorf("pack file %q leaves the profile", rel)
 		}
 		if linkOnPath(dir, rel) {
 			return fmt.Errorf("pack file %q reaches a link", rel)
 		}
+		return nil
+	})
+	return err
+}
+
+// writeProfileFiles checks every path with check before writing any, then writes each file into the profile folder.
+// Unless overwrite, a file already there stays. It returns the folder and the paths it wrote.
+func (s *Store) writeProfileFiles(game, id string, files map[string][]byte, overwrite bool, check func(dir, rel string) error) (string, []string, error) {
+	if err := s.unlocked(game, id); err != nil {
+		return "", nil, err
 	}
+	_, dir, err := s.readDir(game, id)
+	if err != nil {
+		return "", nil, err
+	}
+	for rel := range files {
+		if err := check(dir, rel); err != nil {
+			return "", nil, err
+		}
+	}
+	var written []string
 	for rel, data := range files {
 		to := filepath.Join(dir, filepath.FromSlash(rel))
-		if err := os.MkdirAll(filepath.Dir(to), 0o700); err != nil {
-			return err
+		if _, err := os.Lstat(to); err == nil && !overwrite {
+			continue
+		}
+		if err := os.MkdirAll(filepath.Dir(to), 0o750); err != nil {
+			return "", nil, err
 		}
 		// Replaced, never written in place: the file there may be a hardlink to the store's copy.
 		if err := safefs.WriteFileAtomic(to, data, 0o600); err != nil {
-			return err
+			return "", nil, err
 		}
+		written = append(written, rel)
 	}
-	return nil
+	return dir, written, nil
 }

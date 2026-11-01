@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
@@ -61,35 +60,17 @@ func ValidChangedLocation(game, rel string) bool {
 // folder, where SyncPackages keeps them as it keeps any copy it did not lay out. Unless overwrite, a file the profile
 // already has stays. A path outside the content folder and changed/, or one that reaches a link, is refused.
 func (s *Store) WriteChangedFiles(game, id string, files map[string][]byte, overwrite bool) error {
-	if err := s.unlocked(game, id); err != nil {
-		return err
-	}
-	_, dir, err := s.readDir(game, id)
-	if err != nil {
-		return err
-	}
-	for rel := range files {
+	dir, written, err := s.writeProfileFiles(game, id, files, overwrite, func(dir, rel string) error {
 		if !ValidChangedPath(game, rel) {
 			return fmt.Errorf("changed file %q is not a place the profile keeps one", rel)
 		}
 		if linkOnPath(dir, rel) {
 			return fmt.Errorf("changed file %q reaches a link", rel)
 		}
-	}
-	var written []string
-	for rel, data := range files {
-		to := filepath.Join(dir, filepath.FromSlash(rel))
-		if _, err := os.Lstat(to); err == nil && !overwrite {
-			continue
-		}
-		if err := os.MkdirAll(filepath.Dir(to), 0o750); err != nil {
-			return err
-		}
-		// Replaced, never written in place: the file there may be a hardlink to the store's copy.
-		if err := safefs.WriteFileAtomic(to, data, 0o600); err != nil {
-			return err
-		}
-		written = append(written, rel)
+		return nil
+	})
+	if err != nil {
+		return err
 	}
 	return s.markCopiesChanged(game, id, dir, written)
 }
