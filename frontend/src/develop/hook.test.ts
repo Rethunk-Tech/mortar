@@ -75,3 +75,20 @@ test('a Harmony patch targets the overload and takes the instance and arguments 
     ].join('\n'),
   )
 })
+
+const cctor = {
+  ...damage,
+  method: '.cctor',
+  static: true,
+  params: [],
+  types: [],
+  returns: 'void',
+} as Member
+const ctor = { ...cctor, method: '.ctor', static: false } as Member
+
+test('a static constructor is told apart from an instance one in both snippets', () => {
+  expect(harmonyPatchSnippet(cctor)).toContain('MethodType.StaticConstructor, Type.EmptyTypes')
+  expect(harmonyPatchSnippet(ctor)).toContain('MethodType.Constructor, Type.EmptyTypes')
+  expect(monoModHookSnippet(cctor)).toContain('private static Hook? cctorHook;')
+  expect(monoModHookSnippet(ctor)).toContain('private static Hook? ctorHook;')
+})

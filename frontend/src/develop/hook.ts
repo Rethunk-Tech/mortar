@@ -6,8 +6,13 @@ const REF = 'ref '
 
 const ownerName = (m: Member) => m.type.replaceAll('+', '.')
 const isConstructor = (m: Member) => CONSTRUCTOR.test(m.method)
-// A name a handler or patch class can carry: a constructor's is Ctor.
-const handlerName = (m: Member) => (isConstructor(m) ? 'Ctor' : m.method)
+// A name a handler or patch class can carry: a constructor's is Ctor, a static constructor's Cctor.
+const handlerName = (m: Member) => {
+  if (!isConstructor(m)) {
+    return m.method
+  }
+  return m.method === '.cctor' ? 'Cctor' : 'Ctor'
+}
 const typesOf = (m: Member) => m.types ?? []
 const paramsOf = (m: Member) => m.params ?? []
 
@@ -81,7 +86,7 @@ export function monoModHookSnippet(m: Member): string {
 export function harmonyPatchSnippet(m: Member): string {
   const owner = ownerName(m)
   const target = isConstructor(m)
-    ? `typeof(${owner}), MethodType.Constructor, ${typeArray(m)}`
+    ? `typeof(${owner}), MethodType.${m.method === '.cctor' ? 'StaticConstructor' : 'Constructor'}, ${typeArray(m)}`
     : `typeof(${owner}), "${m.method}", ${typeArray(m)}`
   const instance = m.static ? [] : [`${owner} __instance`]
   const args = paramsOf(m).map((p, i) => {
