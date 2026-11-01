@@ -423,16 +423,13 @@ html:not(.js) .jsonly,
   padding: 9px 16px;
 }
 
-.dl .tabs.modes button[aria-selected="true"] {
-  border-radius: 11px;
-}
-
 .dl .tabs.modes button + button {
   border-left: 1px solid var(--line);
 }
 
 .dl .tabs.modes button[aria-selected="true"] {
   background: var(--raised2);
+  border-radius: 11px;
 }
 
 .sec.dl {
