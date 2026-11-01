@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Alert, Box, Button, IconButton, MenuItem, TextField, Typography } from '@mui/material'
-import { CircleHelp, Lock, LockOpen, RotateCcw } from 'lucide-react'
+import { CircleHelp, Crown, RotateCcw, ThumbsUp } from 'lucide-react'
 import {
   type RefObject,
   useCallback,
@@ -78,6 +78,7 @@ function EntryRow({
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}>
+        {entry.sync ? <SyncIcon level={entry.sync} /> : null}
         <Typography title={entry.key} sx={{ overflowWrap: 'normal', wordBreak: 'normal' }}>
           {entry.label || humanizeKey(entry.key)}
         </Typography>
@@ -92,7 +93,6 @@ function EntryRow({
             </IconButton>
           </Tooltip>
         ) : null}
-        {entry.sync ? <SyncIcon level={entry.sync} /> : null}
       </Box>
       {entry.readOnly ? (
         <Typography
@@ -160,13 +160,13 @@ function EntryRow({
   )
 }
 
-// A shared setting's level as a small lock beside its name: closed when the host's value always wins, open when a
-// player may keep their own. The tooltip names it and says what it means.
+// A shared setting's level as a small icon before its name: a crown when the host's value always wins, a thumbs-up when
+// the host only recommends it. The tooltip names it and says what it means.
 function SyncIcon({ level }: { level: 'hostEnforced' | 'hostRecommended' }) {
   const { t } = useLingui()
   const enforced = level === 'hostEnforced'
   const label = enforced ? t`Host enforced` : t`Host recommended`
-  const Icon = enforced ? Lock : LockOpen
+  const Icon = enforced ? Crown : ThumbsUp
   return (
     <Tooltip
       title={
