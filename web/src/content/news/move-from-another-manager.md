@@ -6,7 +6,7 @@ date: 2026-10-20
 image: /img/profile.webp
 ---
 
-Mortar reads the profiles your current manager already has, so you don't have to start over.
+Mortar reads the profiles your current manager already has.
 
 ## Import a profile
 

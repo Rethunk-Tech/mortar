@@ -6,7 +6,7 @@ date: 2026-10-20
 image: /img/deck.webp
 ---
 
-Mortar runs on the Steam Deck as the x86_64 AppImage. You set it up once in Desktop Mode. After that, each profile you add to Steam plays from Game Mode with its own mods.
+Mortar runs on the Steam Deck as the x86_64 AppImage. Set it up once in Desktop Mode, then each profile you add to Steam plays from Game Mode with its own mods.
 
 ## Set it up in Desktop Mode
 
