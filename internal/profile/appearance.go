@@ -64,8 +64,8 @@ func sanitizeAppearance(p *Profile) {
 	}
 }
 
-// foldDescription moves a "description" key, which Mortar no longer writes, into the notes so nothing a player
-// wrote is lost; the next write of the profile drops the key.
+// foldDescription moves a profile's older "description" key into the notes so nothing a player wrote is lost;
+// the next write of the profile drops the key.
 func foldDescription(raw []byte, p *Profile) {
 	var old struct {
 		Description string `json:"description"`

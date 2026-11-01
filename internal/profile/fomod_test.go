@@ -143,8 +143,8 @@ func TestFomodUpdateReplaysOnlyUnchangedOptions(t *testing.T) {
 	}
 }
 
-// legacyFomod is a FOMOD archive whose folder has an empty destination, which the spec installs in the mod's folder and
-// Mortar used to install under its own name.
+// legacyFomod is a FOMOD archive whose folder has an empty destination, which the spec installs in the mod's folder, not
+// under a folder of the archive's own name.
 func legacyFomod(id, dll string) map[string]string {
 	return map[string]string{
 		"fomod/ModuleConfig.xml": `<config><moduleName>M</moduleName><requiredInstallFiles><folder source="Main" destination=""/></requiredInstallFiles></config>`,
