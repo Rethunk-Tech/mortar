@@ -32,7 +32,7 @@ export function LargeDownloadDialog() {
       open={ask !== null}
       tone="danger"
       title={t`${name} is a very large download`}
-      body={t`This download is ${size}, far larger than a mod normally is. It will take a long time and fill a lot of your drive. Make sure you meant to get it.`}
+      body={t`This download is ${size}, far larger than a mod normally is. It will take a long time and fill a lot of your drive.`}
       confirmLabel={t`Continue anyway`}
       onCancel={cancel}
       onConfirm={() => {

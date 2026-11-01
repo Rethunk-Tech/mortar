@@ -32,11 +32,11 @@ function useTourCopy(step: number, paletteKeys: string) {
   switch (TOUR_STEPS[step]) {
     case 'browse':
       title = t`Browse`
-      body = t`Search every mod site at once or pick one; with nothing typed you see the top mods. Add installs into this profile. You can also drop a downloaded archive anywhere on this window.`
+      body = t`Search every mod site at once or pick one; with nothing typed you see the top mods. Add installs into this profile. Or drop a downloaded archive anywhere on this window.`
       break
     case 'game':
       title = t`Switch game`
-      body = t`Click the game's name in the title bar to open the game menu and jump to another game.`
+      body = t`Click the game's name in the title bar to switch games.`
       break
     case 'play':
       title = t`Play`
