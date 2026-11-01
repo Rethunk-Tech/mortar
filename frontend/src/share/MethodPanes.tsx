@@ -181,7 +181,7 @@ export function NexusPane({ game, profileId }: { game: string; profileId: string
       return
     }
     const skipped = r.skipped ?? []
-    const next = t`${{ source: sourceLabel('nexus') }} expects a 7z. Repack collection.zip with 7-Zip before uploading.`
+    const next = t`${{ source: sourceLabel('nexus') }} expects a 7z. Repack collection.zip as a 7z with 7-Zip before uploading.`
     useToasts.getState().push({
       kind: skipped.length > 0 ? 'warning' : 'success',
       title: t`Collection draft saved`,
