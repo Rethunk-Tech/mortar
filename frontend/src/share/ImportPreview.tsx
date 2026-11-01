@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Alert, Box, Button, Checkbox, Link, Typography } from '@mui/material'
 import { alpha, type Theme, useTheme } from '@mui/material/styles'
+import { useRef } from 'react'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/models.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { listNames } from '../i18n/list.ts'
@@ -103,6 +104,9 @@ function TileName({ mod }: { mod: Mod }) {
   )
 }
 
+// How far a press may move and still be a click, not a drag selecting the tile's text.
+const DRAG_PX = 4
+
 function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle: () => void }) {
   const { t } = useLingui()
   const theme = useTheme()
@@ -126,14 +130,20 @@ function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle
   ].filter(Boolean)
   const byline = [formatAuthors(mod.author), ...notes].filter(Boolean).join(' · ')
   const tint = tileTint(theme, state, checked && !fixed)
+  const pressedAt = useRef<{ x: number; y: number } | null>(null)
   return (
     <Box
+      onMouseDown={(e) => {
+        pressedAt.current = { x: e.clientX, y: e.clientY }
+      }}
       onClick={
         fixed
           ? undefined
-          : () => {
-              // A click that ends a text selection (a name being copied) is not a toggle.
-              if (!globalThis.getSelection()?.toString()) {
+          : (e) => {
+              // A press dragged across text selects it (a name being copied) and is no toggle; a plain click is one
+              // even while text selected earlier is still highlighted.
+              const from = pressedAt.current
+              if (!from || Math.hypot(e.clientX - from.x, e.clientY - from.y) <= DRAG_PX) {
                 onToggle()
               }
             }
