@@ -126,8 +126,14 @@ func (s *Store) parkModConfigs(game string, p Profile, dir string) error {
 			}
 			for _, f := range files {
 				dst := filepath.Join(to, f)
-				// A file already where it would go is newer than the copy set aside: the mod wrote it since.
+				// Back to live, a file already there is newer than the copy set aside (the mod wrote it since);
+				// going aside, the file already there is the older copy and is replaced.
 				if _, err := safefs.Stat(dst); err == nil {
+					if to == aside {
+						if err := safefs.Rename(filepath.Join(from, f), dst); err != nil {
+							return err
+						}
+					}
 					continue
 				} else if !errors.Is(err, fs.ErrNotExist) {
 					return err

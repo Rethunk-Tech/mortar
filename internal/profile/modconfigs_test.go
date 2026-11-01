@@ -153,3 +153,42 @@ func TestSeedConfigsSkipsAConfigSetAside(t *testing.T) {
 		t.Fatal("seeded over a config set aside")
 	}
 }
+
+// Switching a mod off replaces an older copy already set aside with the live one, and switching it on brings that back.
+func TestModConfigAsideCopyIsReplacedByTheLiveOne(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, err := e.Create("lethal-company", "LC")
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, err := e.InstallSource(t.Context(), "lethal-company", p.ID, tsZip(t, "1.0.0"), Source{Kind: KindThunderstore, Name: "Ns-Mod", Version: "1.0.0"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	en := res.Profile.Entries[0]
+	dir, _ := e.ProfileDir("lethal-company", p.ID)
+	writeFile(t, dir, "BepInEx/config/Mod.cfg", "new")
+	writeFile(t, dir, ConfigAsideDir+"/Mod.cfg", "old")
+	toggle := func(on bool) {
+		t.Helper()
+		if _, _, err := e.enableMod("lethal-company", p.ID, en.Key, en.Mods[0].ID, on); err != nil {
+			t.Fatal(err)
+		}
+		if err := e.SyncPackages("lethal-company", p.ID); err != nil {
+			t.Fatal(err)
+		}
+	}
+	read := func(rel string) string {
+		b, _ := safefs.ReadFile(filepath.Join(dir, rel))
+		return string(b)
+	}
+	toggle(false)
+	if got := read(ConfigAsideDir + "/Mod.cfg"); got != "new" {
+		t.Fatalf("aside holds %q", got)
+	}
+	toggle(true)
+	if got := read("BepInEx/config/Mod.cfg"); got != "new" {
+		t.Fatalf("live holds %q", got)
+	}
+}
