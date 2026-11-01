@@ -847,10 +847,6 @@ msgstr "{source}"
 msgid "Could not restore the warning"
 msgstr "Could not restore the warning"
 
-#: src/mods/typedConfig/ConfigPane.tsx
-msgid "While you are in a game, you use the host's value unless you disable Follow host recommendations in ConfigSync."
-msgstr "While you are in a game, you use the host's value unless you disable Follow host recommendations in ConfigSync."
-
 #: src/mods/describeLoadFailure.ts
 msgid "The last launch failed: {message}."
 msgstr "The last launch failed: {message}."
@@ -862,6 +858,10 @@ msgstr "Try another spelling, or install a mod by {author} in any profile."
 #: src/mods/updateReview/WithheldGroup.tsx
 msgid "Not offered ({count})"
 msgstr "Not offered ({count})"
+
+#: src/mods/typedConfig/ConfigPane.tsx
+msgid "Host recommended: while you are in a game, you use the host's value unless you disable Follow host recommendations in ConfigSync."
+msgstr "Host recommended: while you are in a game, you use the host's value unless you disable Follow host recommendations in ConfigSync."
 
 #: src/mods/describe.ts
 msgid "{path} wait for each other in a loop, so {loader} loads none of them."
@@ -1823,6 +1823,10 @@ msgstr "{count, plural, one {# failed} other {# failed}}"
 msgid "Problem: {text}"
 msgstr "Problem: {text}"
 
+#: src/mods/typedConfig/ConfigPane.tsx
+msgid "Host enforced: while you are in a game, the host's value replaces yours."
+msgstr "Host enforced: while you are in a game, the host's value replaces yours."
+
 #: src/mods/NexusDetails.tsx
 #: src/mods/Sidebar.tsx
 msgid "Endorsements"
@@ -2283,10 +2287,6 @@ msgstr "This profile is frozen, so {name} is held at {installed}. Install {versi
 #: src/mods/columnLabel.ts
 msgid "Kind"
 msgstr "Kind"
-
-#: src/mods/typedConfig/ConfigPane.tsx
-msgid "While you are in a game, the host's value replaces yours."
-msgstr "While you are in a game, the host's value replaces yours."
 
 #: src/mods/updateReview/undoAll.ts
 msgid "Restored the profile from before Update all"

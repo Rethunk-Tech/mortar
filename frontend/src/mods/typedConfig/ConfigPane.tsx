@@ -1,15 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Alert,
-  Box,
-  Button,
-  Chip,
-  IconButton,
-  MenuItem,
-  TextField,
-  Typography,
-} from '@mui/material'
-import { CircleHelp, RotateCcw } from 'lucide-react'
+import { Alert, Box, Button, IconButton, MenuItem, TextField, Typography } from '@mui/material'
+import { CircleHelp, Lock, LockOpen, RotateCcw } from 'lucide-react'
 import {
   type RefObject,
   useCallback,
@@ -101,7 +92,7 @@ function EntryRow({
             </IconButton>
           </Tooltip>
         ) : null}
-        {entry.sync ? <SyncChip level={entry.sync} /> : null}
+        {entry.sync ? <SyncIcon level={entry.sync} /> : null}
       </Box>
       {entry.readOnly ? (
         <Typography
@@ -169,24 +160,34 @@ function EntryRow({
   )
 }
 
-function SyncChip({ level }: { level: 'hostEnforced' | 'hostRecommended' }) {
+// A shared setting's level as a small lock beside its name: closed when the host's value always wins, open when a
+// player may keep their own. The tooltip names it and says what it means.
+function SyncIcon({ level }: { level: 'hostEnforced' | 'hostRecommended' }) {
   const { t } = useLingui()
   const enforced = level === 'hostEnforced'
+  const label = enforced ? t`Host enforced` : t`Host recommended`
+  const Icon = enforced ? Lock : LockOpen
   return (
     <Tooltip
       title={
         enforced
-          ? t`While you are in a game, the host's value replaces yours.`
-          : t`While you are in a game, you use the host's value unless you disable Follow host recommendations in ConfigSync.`
+          ? t`Host enforced: while you are in a game, the host's value replaces yours.`
+          : t`Host recommended: while you are in a game, you use the host's value unless you disable Follow host recommendations in ConfigSync.`
       }
     >
-      <Chip
-        size="small"
-        variant="outlined"
-        color={enforced ? 'warning' : 'default'}
-        sx={{ height: 20, fontSize: 'tiny.fontSize', '& .MuiChip-label': { px: 0.75 } }}
-        label={enforced ? t`Host enforced` : t`Host recommended`}
-      />
+      <Box
+        component="span"
+        role="img"
+        aria-label={label}
+        tabIndex={0}
+        sx={{
+          display: 'inline-flex',
+          color: enforced ? 'warning.main' : 'text.secondary',
+          '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main' },
+        }}
+      >
+        <Icon size={14} aria-hidden={true} />
+      </Box>
     </Tooltip>
   )
 }
