@@ -25,7 +25,7 @@ func TestModConfigFollowsTheMod(t *testing.T) {
 	en := res.Profile.Entries[0]
 	dir, _ := e.ProfileDir("lethal-company", p.ID)
 	live := filepath.Join(dir, "BepInEx", "config", "Mod.cfg")
-	aside := filepath.Join(dir, configAsideDir, "Mod.cfg")
+	aside := filepath.Join(dir, ConfigAsideDir, "Mod.cfg")
 	writeFile(t, dir, "BepInEx/config/Mod.cfg", "[General]\nA = 1\n")
 	exists := func(path string) bool {
 		_, err := safefs.Stat(path)
@@ -145,7 +145,7 @@ func TestSeedConfigsSkipsAConfigSetAside(t *testing.T) {
 	if err := os.WriteFile(src, []byte("default"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	writeFile(t, dir, configAsideDir+"/Mod.cfg", "mine")
+	writeFile(t, dir, ConfigAsideDir+"/Mod.cfg", "mine")
 	if err := seedConfigs(dir, map[string]packageFile{"BepInEx/config/Mod.cfg": {src: src}}); err != nil {
 		t.Fatal(err)
 	}

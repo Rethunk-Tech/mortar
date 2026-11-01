@@ -12,9 +12,9 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
-// configAsideDir holds, by file name, the BepInEx config files of mods switched off in the profile; switching the mod
+// ConfigAsideDir holds, by file name, the BepInEx config files of mods switched off in the profile; switching the mod
 // back on puts them back, so its settings survive the round trip.
-const configAsideDir = "config-aside"
+const ConfigAsideDir = "config-aside"
 
 // modConfigNames is what a mod's BepInEx config files are named after: its plugins' GUIDs and its package's name
 // (LethalLevelLoader.cfg for thunderstore:IAmBatby-LethalLevelLoader).
@@ -93,7 +93,7 @@ func (s *Store) modConfigPaths(game string, p Profile, dir string, e Entry) []st
 // Undo, or adding the mod again, brings its settings back through parkModConfigs.
 func setConfigsAside(paths []string) {
 	for _, f := range paths {
-		aside := filepath.Join(filepath.Dir(f), "..", "..", configAsideDir)
+		aside := filepath.Join(filepath.Dir(f), "..", "..", ConfigAsideDir)
 		if err := os.MkdirAll(aside, 0o750); err != nil {
 			continue
 		}
@@ -104,7 +104,7 @@ func setConfigsAside(paths []string) {
 // parkModConfigs moves the config files of switched-off package mods aside and brings back those of mods switched on.
 func (s *Store) parkModConfigs(game string, p Profile, dir string) error {
 	live := filepath.Join(dir, "BepInEx", "config")
-	aside := filepath.Join(dir, configAsideDir)
+	aside := filepath.Join(dir, ConfigAsideDir)
 	for _, e := range p.Entries {
 		if !e.Package {
 			continue

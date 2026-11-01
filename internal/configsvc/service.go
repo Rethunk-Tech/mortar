@@ -166,7 +166,8 @@ func (s *Service) jsonPath(game, id, name string) (string, error) {
 	return filepath.Join(dir, name), nil
 }
 
-// cfgPath is a .cfg inside the profile's BepInEx config folder; name must be a bare file name.
+// cfgPath is a .cfg inside the profile's BepInEx config folder, or the copy set aside while its mod is switched off;
+// name must be a bare file name.
 func (s *Service) cfgPath(game, id, name string) (string, error) {
 	if name != filepath.Base(name) || !strings.EqualFold(filepath.Ext(name), cfgExt) {
 		return "", fmt.Errorf("%q is not a config file name", name)
@@ -175,7 +176,14 @@ func (s *Service) cfgPath(game, id, name string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(dir, name), nil
+	live := filepath.Join(dir, name)
+	if _, err := os.Stat(live); err != nil {
+		aside := filepath.Join(dir, "..", "..", profile.ConfigAsideDir, name)
+		if _, err := os.Stat(aside); err == nil {
+			return aside, nil
+		}
+	}
+	return live, nil
 }
 
 // Files lists the mod's config files in the profile.
@@ -477,16 +485,24 @@ func (s *Service) cfgDocs(game, profileID string) ([]cfgOnDisk, error) {
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return nil, err
 	}
+	// A switched-off mod's settings wait in config-aside, so they stay editable.
+	aside, _ := os.ReadDir(filepath.Join(dir, "..", "..", profile.ConfigAsideDir))
 	var out []cfgOnDisk
-	for _, e := range ents {
-		if e.IsDir() || !strings.EqualFold(filepath.Ext(e.Name()), cfgExt) {
+	seen := map[string]bool{}
+	for _, e := range append(ents, aside...) {
+		if e.IsDir() || !strings.EqualFold(filepath.Ext(e.Name()), cfgExt) || seen[e.Name()] {
 			continue
 		}
+		seen[e.Name()] = true
 		info, err := e.Info()
 		if err != nil {
 			continue
 		}
-		doc, err := s.parseCached(filepath.Join(dir, e.Name()), info)
+		path, err := s.cfgPath(game, profileID, e.Name())
+		if err != nil {
+			continue
+		}
+		doc, err := s.parseCached(path, info)
 		if err != nil {
 			continue
 		}
