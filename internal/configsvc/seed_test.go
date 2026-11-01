@@ -55,8 +55,8 @@ func TestASwitchedOffModsConfigStaysListedAndEditable(t *testing.T) {
 		t.Fatal(err)
 	}
 	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "a.zip"), map[string]string{
-		"manifest.json":          `{"name":"A","version_number":"1.0.0"}`,
-		"config/A.cfg":          "[General]\nValue = shipped\n",
+		"manifest.json": `{"name":"A","version_number":"1.0.0"}`,
+		"config/A.cfg":  "[General]\nValue = shipped\n",
 	})
 	res, err := ps.InstallSource(t.Context(), lc, p.ID, zip, profile.Source{Kind: profile.KindThunderstore, Name: "Ns-A", Version: "1.0.0"})
 	if err != nil {
