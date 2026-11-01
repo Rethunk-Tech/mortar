@@ -94,7 +94,8 @@ function LazyTooltip({
   const titleIsString = typeof title === 'string'
   const named = describeChild
     ? {
-        title: !open && titleIsString && !disableHoverListener ? title : undefined,
+        // Not title: the browser's own tooltip would show beside this one.
+        'aria-description': !open && titleIsString ? title : undefined,
         'aria-describedby': open ? tipId : undefined,
       }
     : {
