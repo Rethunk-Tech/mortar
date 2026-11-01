@@ -88,6 +88,8 @@
           <li>Switching a mod off and on again keeps its newest settings</li>
           <li>Mod uploads from Develop never send a site's API key on to another host</li>
           <li>New profile's "Start from" field and the launch preview are named for screen readers</li>
+          <li>Restoring a removed mods folder or old files only ever restores from Mortar's own trash</li>
+          <li>Combining a mod's files into another entry keeps its settings</li>
         </ul>
       </description>
     </release>
