@@ -67,8 +67,13 @@ func (s *Service) withPDB(ctx context.Context, tool, path string) (string, error
 	if err != nil {
 		return "", err
 	}
-	sum := sha256.Sum256([]byte(fmt.Sprintf("%s|%d|%d|refs", path, st.Size(), st.ModTime().UnixNano())))
-	dir := filepath.Join(s.CacheDir, "game-code-pdb", hex.EncodeToString(sum[:8]))
+	key := func(v string) string {
+		sum := sha256.Sum256([]byte(v))
+		return hex.EncodeToString(sum[:8])
+	}
+	source := filepath.Join(s.CacheDir, "game-code-pdb", key(path))
+	version := key(fmt.Sprintf("%d|%d|refs", st.Size(), st.ModTime().UnixNano()))
+	dir := filepath.Join(source, version)
 	dll := filepath.Join(dir, filepath.Base(path))
 	pdb := strings.TrimSuffix(dll, filepath.Ext(dll)) + ".pdb"
 	if safefs.IsFile(dll) && safefs.IsFile(pdb) {
@@ -77,6 +82,13 @@ func (s *Service) withPDB(ctx context.Context, tool, path string) (string, error
 	body, err := safefs.ReadFile(path)
 	if err != nil {
 		return "", err
+	}
+	// Older versions of the same assembly are never read again.
+	old, _ := filepath.Glob(filepath.Join(source, "*"))
+	for _, o := range old {
+		if o != dir {
+			_ = os.RemoveAll(o)
+		}
 	}
 	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return "", err
