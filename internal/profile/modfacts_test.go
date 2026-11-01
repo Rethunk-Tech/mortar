@@ -174,3 +174,30 @@ func TestPackageScansAreCachedAndBounded(t *testing.T) {
 		t.Fatalf("cache holds %d scans, bound %d", n, scanCacheMax)
 	}
 }
+
+// The plugins folder holds what the last launch deployed; a rebuilt package's store copy is what the next launch runs.
+func TestPluginDLLsPreferAPackagesStoreCopyOverTheDeployedOne(t *testing.T) {
+	dll, err := os.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	e := newEnv(t)
+	p, err := e.Create("lethal-company", "Lobby")
+	if err != nil {
+		t.Fatal(err)
+	}
+	addPackage(t, e, p, "Ns-Plug", map[string]string{"mod.dll": string(dll)})
+	dir, err := e.ProfileDir("lethal-company", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	writeFile(t, dir, "BepInEx/plugins/Ns-Plug/mod.dll", string(dll))
+	store, err := e.items.Path("lethal-company", "ns-plug")
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := e.PluginDLLs("lethal-company", p.ID)["com.fixture.plugin"]
+	if !strings.HasPrefix(got.Path, store) || got.Name != "Fixture Plugin" {
+		t.Fatalf("plugin = %+v, want the store copy under %s", got, store)
+	}
+}

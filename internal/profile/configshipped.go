@@ -88,6 +88,9 @@ func (s *Store) PluginDLLs(game, id string) map[string]PluginDLL {
 			}
 		}
 	}
+	// The plugins folder holds what the last launch deployed; a package's store copy is what the next launch runs (a
+	// rebuild lands there first), so it is read last and wins.
+	add(filepath.Join(dir, "BepInEx", "plugins"))
 	if s.items != nil {
 		for _, e := range p.Entries {
 			if !e.Package {
@@ -98,6 +101,5 @@ func (s *Store) PluginDLLs(game, id string) map[string]PluginDLL {
 			}
 		}
 	}
-	add(filepath.Join(dir, "BepInEx", "plugins"))
 	return out
 }
