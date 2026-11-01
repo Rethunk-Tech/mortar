@@ -1086,6 +1086,10 @@ msgstr ""
 msgid "Do not check before Play"
 msgstr ""
 
+#: src/develop/DevelopTab.tsx
+msgid "Build all"
+msgstr ""
+
 #: src/lan/PairedComputers.tsx
 msgid "Paired computers"
 msgstr ""

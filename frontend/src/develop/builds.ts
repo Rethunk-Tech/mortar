@@ -69,6 +69,13 @@ export async function buildProject(game: string, dir: string, quiet = false) {
   }
 }
 
+/** Builds each project in turn, one dotnet build at a time; a failed build reports itself and the next one starts. */
+export async function buildAll(game: string, dirs: string[]) {
+  for (const dir of dirs) {
+    await buildProject(game, dir)
+  }
+}
+
 /** Builds the project in Release and checks the package against Thunderstore's rules; null when it could not. */
 export async function packProject(game: string, dir: string): Promise<PackResult | null> {
   if (runOf(useDevRuns.getState().byDir, dir).running) {

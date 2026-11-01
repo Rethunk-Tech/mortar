@@ -41,7 +41,7 @@ import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { AdoptHost } from './AdoptDialog.tsx'
 import { useAdopting } from './adopting.ts'
-import { refreshInfo, useProjectInfo } from './builds.ts'
+import { buildAll, refreshInfo, runOf, useDevRuns, useProjectInfo } from './builds.ts'
 import { CloneDialog } from './CloneDialog.tsx'
 import { ElsewhereHost } from './ElsewhereDialog.tsx'
 import { useElsewhere } from './elsewhere.ts'
@@ -54,6 +54,25 @@ import { installTestMods } from './testMods.ts'
 
 const profileNameOf = (list: { id: string; name: string }[], id: string) =>
   list.find((p) => p.id === id)?.name ?? ''
+
+// Builds the profile's code projects that are trusted, one at a time: a content pack has nothing to compile and an
+// untrusted project asks first, from its own card. Shown only when there is more than one to build.
+function BuildAll({ game, projects }: { game: string; projects: DevProject[] }) {
+  const { t } = useLingui()
+  const kinds = useDevKinds((s) => s.byDir)
+  const buildable = projects.filter((p) => !(p.untrusted || kinds[p.dir])).map((p) => p.dir)
+  const building = useDevRuns((s) => projects.some((p) => runOf(s.byDir, p.dir).running !== null))
+  return buildable.length > 1 ? (
+    <Button
+      variant="outlined"
+      startIcon={<Hammer size={14} />}
+      disabled={building}
+      onClick={() => buildAll(game, buildable)}
+    >
+      {t`Build all`}
+    </Button>
+  ) : null
+}
 
 // A project in another profile: its builds install there, so it is worked on from that profile. One whose profile
 // was deleted can be moved into the open profile or dropped from the list.
@@ -277,6 +296,7 @@ export function DevelopTab({ game }: { game: string }) {
             {t`Game code…`}
           </Button>
         ) : null}
+        <BuildAll game={game} projects={here} />
         {here.length > 0 ? (
           <TestCopies game={game} profile={openId} dirs={here.map((p) => p.dir)} />
         ) : null}

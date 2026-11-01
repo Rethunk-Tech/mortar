@@ -1092,6 +1092,10 @@ msgstr "The program to start {name} was not found. Check that the game is still 
 msgid "Do not check before Play"
 msgstr "Do not check before Play"
 
+#: src/develop/DevelopTab.tsx
+msgid "Build all"
+msgstr "Build all"
+
 #: src/lan/PairedComputers.tsx
 msgid "Paired computers"
 msgstr "Paired computers"
