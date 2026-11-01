@@ -145,7 +145,7 @@ function Phases({ report }: { report: StartupReport }) {
         entry: t`${{ loader: BEPINEX }}'s preloader patches the game, then ${{ app: UNITY }} starts it`,
         content: t`Each plugin's constructor and Awake, run one after another`,
         firstTicks: t`Until the game's first scene has loaded`,
-        afterTitle: t`The title screen is up but the game is still loading its own content, including content packs from mods; the menu is not usable until this ends`,
+        afterTitle: t`The title screen is up while the game still loads its own content, including content packs from mods. The menu is unusable until this ends`,
         intro: t`From the first scene to the main menu. Plugins' work in Start, coroutines and scene hooks lands here, not on the plugin, and so does any wait for a click, such as Lethal Company's Online or LAN choice.`,
       }
   const segments = phaseSegments(report.phases)

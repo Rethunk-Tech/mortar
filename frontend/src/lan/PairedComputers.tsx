@@ -200,7 +200,7 @@ export function PairedComputers() {
         open={unpairing !== null}
         tone="danger"
         title={t`Unpair ${{ name: unpairing?.name ?? '' }}?`}
-        body={t`Profiles sent between you will no longer carry their mod files directly, and you will need a new code to pair again.`}
+        body={t`Profiles sent between you will no longer carry mod files directly. Pairing again needs a new code.`}
         confirmLabel={t`Unpair`}
         onCancel={() => setUnpairing(null)}
         onConfirm={() => {

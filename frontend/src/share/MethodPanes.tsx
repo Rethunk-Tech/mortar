@@ -181,7 +181,7 @@ export function NexusPane({ game, profileId }: { game: string; profileId: string
       return
     }
     const skipped = r.skipped ?? []
-    const next = t`${{ source: sourceLabel('nexus') }} expects a 7z. Repack collection.zip as a 7z with 7-Zip before uploading.`
+    const next = t`${{ source: sourceLabel('nexus') }} expects a 7z. Repack collection.zip with 7-Zip before uploading.`
     useToasts.getState().push({
       kind: skipped.length > 0 ? 'warning' : 'success',
       title: t`Collection draft saved`,
@@ -344,7 +344,7 @@ export function NearbyPane({
         sx={{ fontSize: 'lead.fontSize', fontWeight: 600 }}
       >{t`Enable sharing nearby?`}</Typography>
       <Typography sx={note}>
-        {t`Other Mortar users on your local network will be able to find this computer and send you profiles. You can disable it again in Settings › General.`}
+        {t`Other Mortar users on your network can find this computer and send you profiles. Turn it off again in Settings › General.`}
       </Typography>
       <Box>
         <Button
