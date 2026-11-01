@@ -1,6 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Checkbox, FormControlLabel, MenuItem, MenuList } from '@mui/material'
+import { Box, Button, Checkbox, FormControlLabel, MenuList } from '@mui/material'
 import { FolderPlus } from 'lucide-react'
 import { useState } from 'react'
 import type {
@@ -98,15 +98,15 @@ function AddToGroupDialog({
         ) : (
           <MenuList dense={true}>
             {groups.map((g) => (
-              <MenuItem
+              <MenuAction
                 key={g.name}
+                icon={null}
+                label={g.name}
                 disabled={locked}
                 onClick={() => {
                   add(g.name ?? '').catch(reportUnexpected)
                 }}
-              >
-                {g.name}
-              </MenuItem>
+              />
             ))}
           </MenuList>
         )}
