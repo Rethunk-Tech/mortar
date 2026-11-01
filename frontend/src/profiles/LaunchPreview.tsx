@@ -82,8 +82,9 @@ export function LaunchPreview({
       ) : (
         <Box
           component="pre"
-          // A scroll region needs its own keyboard stop.
+          // A scroll region needs its own keyboard stop, and a region role for its name.
           tabIndex={0}
+          role="region"
           aria-label={t`Direct launch preview`}
           sx={{
             m: 0,
