@@ -29,3 +29,42 @@ export function declares(line: string, name: string): boolean {
     declarationLine(line, '', 'field', name) === 0
   )
 }
+
+const CALLED = /([A-Za-z_]\w*)\s*(?:<[^>()]*>)?\s*\(/g
+const NAMED = /([A-Za-z_]\w*)\s*(?:;|=(?!=)|$)/g
+// Words a statement opens with before a parenthesis, which no member is named.
+const STATEMENTS = new Set([
+  'if',
+  'for',
+  'foreach',
+  'while',
+  'switch',
+  'catch',
+  'using',
+  'lock',
+  'return',
+  'fixed',
+  'nameof',
+  'typeof',
+  'sizeof',
+  'new',
+  'base',
+  'this',
+])
+
+/** The member a line of decompiled C# or IL declares, or null when it declares none. */
+export function declaredIn(line: string): { kind: 'method' | 'field'; name: string } | null {
+  for (const m of line.matchAll(CALLED)) {
+    const name = m[1] ?? ''
+    if (!STATEMENTS.has(name) && declarationLine(line, '', 'method', name) === 0) {
+      return { kind: 'method', name }
+    }
+  }
+  for (const m of line.trimEnd().matchAll(NAMED)) {
+    const name = m[1] ?? ''
+    if (declarationLine(line, '', 'field', name) === 0) {
+      return { kind: 'field', name }
+    }
+  }
+  return null
+}

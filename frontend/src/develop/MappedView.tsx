@@ -1,32 +1,42 @@
 import { Box } from '@mui/material'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { Mapped } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import { CodeView } from './CodeView.tsx'
+import { declarationLine, declaredIn } from './declaration.ts'
 import { nearestLine } from './nearestLine.ts'
 import type { SymbolClick } from './symbolAt.ts'
 
-const NONE: number[] = []
-
-// The C# line clicked and the nearest one with IL, from either side; the other side scrolls to it. Each click is a
-// new Pick, so clicking the same line again scrolls back to it.
+// The lines tinted on each side, and which side the pick came from: the other side scrolls to its first line (both
+// for a member picked in the search). Each pick is a new object, so picking the same line again scrolls back to it.
 interface Pick {
-  clicked: number
-  cs: number
-  from: 'cs' | 'il'
+  cs: number[]
+  il: number[]
+  from: 'cs' | 'il' | 'search'
 }
 
-/** C# and IL side by side: clicking a line on one side tints it and its counterpart lines on the other. */
+// The member the search picked: its declaration opens on both sides.
+export interface PickedMember {
+  type: string
+  kind: string
+  name: string
+}
+
+/**
+ * C# and IL side by side: clicking a line on one side tints it and its counterpart on the other. A declaration's
+ * counterpart is the member's declaration on the other side; a statement's is the IL compiled from it.
+ */
 export function MappedView({
   mapped,
-  line,
+  member,
   onSymbol,
 }: {
   mapped: Mapped
-  line: number
+  member: PickedMember
   onSymbol?: ((at: SymbolClick) => void) | undefined
 }) {
   const links = mapped.links ?? []
-  const [pick, setPick] = useState<Pick | null>(null)
+  const csLines = useMemo(() => mapped.csharp.split('\n'), [mapped.csharp])
+  const ilLines = useMemo(() => mapped.il.split('\n'), [mapped.il])
   const ilOf = useMemo(() => {
     const byCs = new Map<number, number[]>()
     links.forEach((from, il) => {
@@ -36,26 +46,44 @@ export function MappedView({
     })
     return byCs
   }, [links])
-  const cs = pick?.cs ?? -1
-  const ilLines = ilOf.get(cs) ?? NONE
-  // A C# click tints the line clicked as well as the one it resolved to.
-  const csMarked = useMemo(() => {
-    const lines = pick?.from === 'cs' ? [pick.clicked, cs] : [cs]
-    return new Set(lines.filter((n) => n >= 0))
-  }, [pick, cs])
-  const ilMarked = useMemo(() => new Set(ilLines), [ilLines])
-  const csCount = useMemo(() => mapped.csharp.split('\n').length, [mapped.csharp])
-  const pickCs = (n: number) =>
-    setPick({ clicked: n, cs: nearestLine(n, csCount, (c) => ilOf.has(c)), from: 'cs' })
-  // An IL line with no C# of its own (a label, the locals) takes the C# of the nearest one that has.
-  const pickIl = (n: number) => {
-    const linked = nearestLine(n, links.length, (i) => (links[i] ?? -1) >= 0)
-    setPick({ clicked: n, cs: linked >= 0 ? (links[linked] ?? -1) : -1, from: 'il' })
+  const [pick, setPick] = useState<Pick | null>(null)
+  useEffect(() => {
+    const cs = declarationLine(mapped.csharp, member.type, member.kind, member.name)
+    const il = declarationLine(mapped.il, member.type, member.kind, member.name)
+    setPick({ cs: cs >= 0 ? [cs] : [], il: il >= 0 ? [il] : [], from: 'search' })
+  }, [mapped, member.type, member.kind, member.name])
+  const pickCs = (n: number) => {
+    const decl = declaredIn(csLines[n] ?? '')
+    const il = decl ? declarationLine(mapped.il, member.type, decl.kind, decl.name) : -1
+    if (il >= 0) {
+      setPick({ cs: [n], il: [il], from: 'cs' })
+      return
+    }
+    // A line without IL of its own (a brace, a comment) takes the nearest one that has, tinted beside it.
+    const cs = nearestLine(n, csLines.length, (c) => ilOf.has(c))
+    setPick({ cs: cs >= 0 && cs !== n ? [n, cs] : [n], il: ilOf.get(cs) ?? [], from: 'cs' })
   }
-  const csFollow = useMemo(() => (pick?.from === 'il' && cs >= 0 ? { line: cs } : null), [pick, cs])
+  const pickIl = (n: number) => {
+    const decl = declaredIn(ilLines[n] ?? '')
+    const cs = decl ? declarationLine(mapped.csharp, member.type, decl.kind, decl.name) : -1
+    if (cs >= 0) {
+      setPick({ cs: [cs], il: [n], from: 'il' })
+      return
+    }
+    // An IL line with no C# of its own (a label, the locals) takes the C# of the nearest one that has.
+    const linked = nearestLine(n, links.length, (i) => (links[i] ?? -1) >= 0)
+    const to = linked >= 0 ? (links[linked] ?? -1) : -1
+    setPick({ cs: to >= 0 ? [to] : [], il: [n], from: 'il' })
+  }
+  const csMarked = useMemo(() => new Set(pick?.cs ?? []), [pick])
+  const ilMarked = useMemo(() => new Set(pick?.il ?? []), [pick])
+  const csFollow = useMemo(
+    () => (pick && pick.from !== 'cs' && pick.cs[0] !== undefined ? { line: pick.cs[0] } : null),
+    [pick],
+  )
   const ilFollow = useMemo(
-    () => (pick?.from === 'cs' && ilLines[0] !== undefined ? { line: ilLines[0] } : null),
-    [pick, ilLines],
+    () => (pick && pick.from !== 'il' && pick.il[0] !== undefined ? { line: pick.il[0] } : null),
+    [pick],
   )
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
@@ -65,7 +93,7 @@ export function MappedView({
         <CodeView
           source={mapped.csharp}
           il={false}
-          line={line}
+          line={-1}
           follow={csFollow}
           marked={csMarked}
           onPick={pickCs}

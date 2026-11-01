@@ -3,7 +3,15 @@ import { Box, IconButton } from '@mui/material'
 import type { Theme } from '@mui/material/styles'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Copy } from 'lucide-react'
-import { type KeyboardEvent, memo, useEffect, useMemo, useRef } from 'react'
+import {
+  type KeyboardEvent,
+  memo,
+  type RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+} from 'react'
 import { copyText } from '../share/copyText.ts'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { MONO } from '../theme/theme.ts'
@@ -12,6 +20,8 @@ import { type SymbolClick, symbolAt } from './symbolAt.ts'
 
 const LINE_PX = 20
 const OVERSCAN = 30
+// Frames a jump keeps correcting itself while the rows it passes are measured.
+const JUMP_TRIES = 8
 
 // Palette colours per run: the light shade on a dark theme, the dark shade on a light one.
 const PALETTE: Partial<
@@ -54,6 +64,35 @@ const Line = memo(function LineView({ text, il }: { text: string; il: boolean })
 const NO_MARKS: ReadonlySet<number> = new Set()
 const MARK_BG = 'color-mix(in srgb, var(--mortar-accent-ink) 18%, transparent)'
 
+// Rows are measured as they draw, and long ones wrap, so a jump far down lands short of an estimate: it repeats each
+// frame until the row is on screen. The returned function cancels it.
+function useJump(
+  virtualizer: { scrollToIndex: (index: number, options: { align: 'start' | 'center' }) => void },
+  scroller: RefObject<HTMLDivElement | null>,
+) {
+  return useCallback(
+    (index: number, align: 'start' | 'center') => {
+      let tries = 0
+      let frame = 0
+      const step = () => {
+        virtualizer.scrollToIndex(index, { align })
+        const box = scroller.current?.getBoundingClientRect()
+        const row = scroller.current
+          ?.querySelector(`[data-index="${index}"]`)
+          ?.getBoundingClientRect()
+        const shown = box && row && row.top >= box.top && row.bottom <= box.bottom
+        tries += 1
+        if (!shown && tries < JUMP_TRIES) {
+          frame = requestAnimationFrame(step)
+        }
+      }
+      step()
+      return () => cancelAnimationFrame(frame)
+    },
+    [virtualizer, scroller],
+  )
+}
+
 /** Decompiled code with line numbers and highlighting, drawn a screenful at a time; Copy takes all of it. `line` is
  * scrolled to the top when it changes, `follow` into view each time a new one is passed; `marked` lines are tinted, `onPick`
  * hears a line clicked and `onSymbol` a name right-clicked, with where. */
@@ -84,16 +123,9 @@ export function CodeView({
     estimateSize: () => LINE_PX,
     overscan: OVERSCAN,
   })
-  useEffect(() => {
-    if (line >= 0) {
-      virtualizer.scrollToIndex(line, { align: 'start' })
-    }
-  }, [line, virtualizer])
-  useEffect(() => {
-    if (follow) {
-      virtualizer.scrollToIndex(follow.line, { align: 'center' })
-    }
-  }, [follow, virtualizer])
+  const jump = useJump(virtualizer, scroller)
+  useEffect(() => (line >= 0 ? jump(line, 'start') : undefined), [line, jump])
+  useEffect(() => (follow ? jump(follow.line, 'center') : undefined), [follow, jump])
   return (
     <Box sx={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex' }}>
       <Tooltip title={t`Copy code`}>

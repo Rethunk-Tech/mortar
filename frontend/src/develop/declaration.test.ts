@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { declarationLine, declares } from './declaration.ts'
+import { declarationLine, declaredIn, declares } from './declaration.ts'
 
 const csharp = [
   'public class PlayerControllerB : NetworkBehaviour',
@@ -39,4 +39,25 @@ test('declares tells a declaration from a use', () => {
   expect(declares('\tpublic Camera gameplayCamera;', 'gameplayCamera')).toBe(true)
   expect(declares('\t\tRefreshVisibility();', 'RefreshVisibility')).toBe(false)
   expect(declares('\t\tgameplayCamera.fieldOfView = 60f;', 'gameplayCamera')).toBe(false)
+})
+
+test('declaredIn names what a C# or IL line declares, and nothing for a statement', () => {
+  expect(declaredIn('\tprotected virtual void OnEnable()')).toEqual({
+    kind: 'method',
+    name: 'OnEnable',
+  })
+  expect(declaredIn('\t\tinstance void OnEnable () cil managed')).toEqual({
+    kind: 'method',
+    name: 'OnEnable',
+  })
+  expect(declaredIn('\tpublic int AdjacentTileDepth = 1;')).toEqual({
+    kind: 'field',
+    name: 'AdjacentTileDepth',
+  })
+  expect(declaredIn('\t.field public int32 AdjacentTileDepth')).toEqual({
+    kind: 'field',
+    name: 'AdjacentTileDepth',
+  })
+  expect(declaredIn('\t\tif (dirty)')).toBeNull()
+  expect(declaredIn('\t\tRefreshVisibility();')).toBeNull()
 })
