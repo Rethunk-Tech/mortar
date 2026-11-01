@@ -35,6 +35,10 @@ test.beforeAll(() => {
   writeFileSync(`${root}/winhttp.dll`, 'stub')
   writeFileSync(`${root}/doorstop_config.ini`, 'stub')
   writeFileSync(`${root}/.mortar-bepinex.json`, '{"version":"5.4.75301","doorstop":4}')
+  // A direct launch of a Windows game needs a Proton build in Steam; the launch prefix wraps it, so a stub will do.
+  const proton = `${env.HOME}/.local/share/Steam/compatibilitytools.d/Stand-In`
+  mkdirSync(proton, { recursive: true })
+  writeFileSync(`${proton}/proton`, '#!/bin/sh\n', { mode: 0o755 })
   const fake = `${dir}/peak-fake-game.sh`
   writeFileSync(fake, FAKE_GAME)
   chmodSync(fake, 0o755)

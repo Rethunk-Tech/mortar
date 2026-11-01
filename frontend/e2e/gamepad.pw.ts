@@ -27,15 +27,20 @@ test('a gamepad walks the tabs, Mods, Browse and a dialog with focus always show
   const mods = page.getByRole('tab', { name: 'Mods' })
   await expect(mods).toHaveAttribute('aria-selected', 'true')
 
+  // RB walks the sidebar in its own order, which differs by game (a load order tab or none).
+  const order = await page
+    .getByRole('tablist', { name: 'Profile sections' })
+    .getByRole('tab')
+    .allInnerTexts()
+  const names = order.map((n) => n.trim().split('\n')[0] ?? '')
+  const next = page.getByRole('tab', { name: names[names.indexOf('Mods') + 1], exact: true })
   await press(page, RB)
-  // The sidebar's order is Home, Mods, Saves, Config, Screenshots, Browse, Problems, so RB from Mods lands on Saves.
-  const saves = page.getByRole('tab', { name: 'Saves' })
-  await expect(saves).toHaveAttribute('aria-selected', 'true')
-  await expect(saves).toBeFocused()
+  await expect(next).toHaveAttribute('aria-selected', 'true')
+  await expect(next).toBeFocused()
   await expectRing(page)
-  await press(page, RB)
-  await press(page, RB)
-  await press(page, RB)
+  for (let i = names.indexOf('Mods') + 1; i < names.indexOf('Browse'); i += 1) {
+    await press(page, RB)
+  }
   const browse = page.getByRole('tab', { name: 'Browse' })
   await expect(browse).toHaveAttribute('aria-selected', 'true')
 
@@ -47,10 +52,9 @@ test('a gamepad walks the tabs, Mods, Browse and a dialog with focus always show
   ).toBe(true)
   await expectRing(page)
 
-  await press(page, LB)
-  await press(page, LB)
-  await press(page, LB)
-  await press(page, LB)
+  for (let i = names.indexOf('Browse'); i > names.indexOf('Mods'); i -= 1) {
+    await press(page, LB)
+  }
   await expect(mods).toHaveAttribute('aria-selected', 'true')
   await press(page, DOWN)
   const walked = new Set<string>()
@@ -79,7 +83,7 @@ test('a gamepad walks the tabs, Mods, Browse and a dialog with focus always show
   const menuButton = page.getByRole('button', { name: 'Mortar menu' })
   await menuButton.focus()
   await press(page, A)
-  const drawer = page.locator('.MuiModal-root').last()
+  const drawer = page.locator('.MuiModal-root:not(.MuiModal-hidden)').last()
   await expect(drawer).toBeVisible()
   for (let i = 0; i < 3; i++) {
     await press(page, DOWN)
