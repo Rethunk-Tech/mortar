@@ -1,26 +1,40 @@
+import { readdirSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import type { Locator, Page } from '@playwright/test'
 
-// "Name · 12 mods": the label of each profile in the switcher.
-const MOD_COUNT = /·\s*(\d+) mods?/u
-
-/** Opens the open game's profile with the most mods, so the Mods cases have rows however the copied data reopens. */
-export async function openBiggestProfile(page: Page, workspaceTabs: Locator) {
-  await page.getByRole('button', { name: /^Switch profile/ }).click()
-  const items = page.getByRole('menuitemradio')
-  await items.first().waitFor()
-  let best = { index: -1, mods: -1, checked: false }
-  for (const [index, item] of (await items.all()).entries()) {
-    const mods = Number(MOD_COUNT.exec(await item.innerText())?.[1] ?? '-1')
-    if (mods > best.mods) {
-      best = { index, mods, checked: (await item.getAttribute('aria-checked')) === 'true' }
+/**
+ * The name of the profile with the most mods in the copied data, across every game, so the Mods cases have rows
+ * whichever game the data reopens. '' when the data holds no profile.
+ */
+export function biggestProfile(dataDir: string): string {
+  let best = { name: '', mods: -1 }
+  for (const game of readDirSafe(join(dataDir, 'profiles'))) {
+    for (const id of readDirSafe(join(dataDir, 'profiles', game))) {
+      try {
+        const p = JSON.parse(
+          readFileSync(join(dataDir, 'profiles', game, id, 'profile.json'), 'utf8'),
+        ) as {
+          name?: string
+          entries?: { mods?: unknown[] }[]
+        }
+        const mods = (p.entries ?? []).reduce((n, e) => n + (e.mods?.length ?? 0), 0)
+        if (p.name && mods > best.mods) {
+          best = { name: p.name, mods }
+        }
+      } catch {
+        // A folder without a readable profile.json is no profile.
+      }
     }
   }
-  if (best.index < 0 || best.checked) {
-    await page.keyboard.press('Escape')
-    return
+  return best.name
+}
+
+function readDirSafe(dir: string): string[] {
+  try {
+    return readdirSync(dir)
+  } catch {
+    return []
   }
-  await items.nth(best.index).click()
-  await workspaceTabs.waitFor({ timeout: 30_000 })
 }
 
 /** The open game's name, read from the title bar's game switcher. */

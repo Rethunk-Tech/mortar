@@ -1,4 +1,5 @@
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 import process from 'node:process'
 import { chromium, type Page } from '@playwright/test'
 import { layoutBreaks, type Meter, perTen, type Sample } from '@rethunk/react-render-audit'
@@ -16,7 +17,7 @@ import { dialogCases } from './renderDialogs.ts'
 import { writeGallery } from './renderGallery.ts'
 import { printExtras, report, startupLine, watchLog } from './renderLog.ts'
 import { HOOK, mortarBoxes, mortarGaps, mortarMeter, quietToasts } from './renderMeter.ts'
-import { openBiggestProfile, rememberMainGame } from './renderProfile.ts'
+import { biggestProfile, rememberMainGame } from './renderProfile.ts'
 import { screenCases } from './renderScreens.ts'
 import { modsView } from './renderView.ts'
 import { PAGE } from './renderViewport.ts'
@@ -34,7 +35,7 @@ import { webkitWalk } from './webkit-walk.ts'
 //   MORTAR_RENDER_DATA=<data folder>   measure a copy of that data (default: the maintainer's own, selftest --copy-data)
 //   MORTAR_RENDER_SEEDED=1             the small seeded sandbox instead (a smoke run)
 //   MORTAR_RENDER_URL=http://…         drive an already running server (selftest.sh start) instead of a new sandbox
-//   MORTAR_RENDER_PROFILE=<name>       open this profile (default: the open game's profile with the most mods; seeded: Seed Farm)
+//   MORTAR_RENDER_PROFILE=<name>       open this profile (default: the copied data's profile with the most mods; seeded: Seed Farm)
 //   MORTAR_RENDER_ONLY=mods,config     run only the cases whose names start with these
 //   MORTAR_RENDER_SETTLE_MS / _IDLE_MS how long a case's own steps wait (3000) and how long idle is watched (1000); setup
 //                                      and action end once nothing has committed or called the backend for 1.5 s
@@ -266,7 +267,12 @@ async function land(page: Page): Promise<number | null> {
   if (await skip.isVisible({ timeout: 1500 }).catch(() => false)) {
     await skip.click()
   }
-  await openBiggestProfile(page, tabs(page))
+  const biggest = biggestProfile(
+    process.env.MORTAR_RENDER_DATA ?? join(process.env.HOME ?? '', '.local', 'share', 'mortar'),
+  )
+  if (biggest) {
+    await openProfile(page, biggest)
+  }
   await rememberMainGame(page)
   await waitForQuietNotices(page)
   return shownMs
