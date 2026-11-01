@@ -46,12 +46,19 @@ async function currentGame(page: Page): Promise<string> {
 }
 
 /** Opens a game from the title bar's game menu, which reopens that game's last profile. */
-async function openGame(page: Page, workspaceTabs: Locator, name: string) {
+export async function openGame(page: Page, workspaceTabs: Locator, name: string) {
   if ((await currentGame(page)) === name) {
     return
   }
   await page.getByRole('button', { name: /^Switch game: / }).click()
-  await page.getByRole('menuitem', { name: new RegExp(`^${name}`) }).click()
+  // The menu's games are radio rows, its other entries plain items.
+  await page
+    .getByRole('menuitemradio', { name: new RegExp(`^${name}`) })
+    .or(page.getByRole('menuitem', { name: new RegExp(`^${name}`) }))
+    .first()
+    .click()
+  // The old game's tabs are still up while the switch lands, so wait for the title bar to name the new one.
+  await page.getByRole('button', { name: `Switch game: ${name}` }).waitFor({ timeout: 30_000 })
   await workspaceTabs.waitFor({ timeout: 30_000 })
 }
 

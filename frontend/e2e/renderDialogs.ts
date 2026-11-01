@@ -3,7 +3,7 @@ import type { Page } from '@playwright/test'
 import { openGameSelect, openSettings } from './app.ts'
 import type { Case } from './render-budget.ts'
 import type { Helpers } from './renderCases.ts'
-import { thunderstoreVisit } from './renderProfile.ts'
+import { openGame, thunderstoreVisit } from './renderProfile.ts'
 
 const CLOSE_TRIES = 4
 const CLOSE_WAIT_MS = 1000
@@ -87,10 +87,20 @@ function dialogKit(h: Helpers) {
     await inDialog(page, step)
   }
 
+  // Develop is measured in Lethal Company, the copied data's game with projects; the run's main game may have no Develop
+  // tab, and one the last game switch is still tearing down would mislead a tab check. An open dialog hides the page
+  // from role queries, so any an earlier case or the switch left goes first.
+  const developTab = async (p: Page) => {
+    await closeAll(p)
+    await openGame(p, h.tabs(p), 'Lethal Company')
+    await closeAll(p)
+    await tab(p, 'Develop')
+  }
+
   // Everything before the `steps`th Next past New mod's mod step (a code mod): a valid name and description fill it,
   // and the author's fields are filled on the way, so the case measures only stepping into the step it names.
   const newModTo = async (p: Page, steps: number) => {
-    await tab(p, 'Develop')
+    await developTab(p)
     await button(p, /^New mod…/)
     const box = (name: string) =>
       p.getByRole('dialog').last().getByRole('textbox', { name }).first()
@@ -129,6 +139,7 @@ function dialogKit(h: Helpers) {
     newModTo,
     atHome,
     tab,
+    developTab,
   }
 }
 
@@ -175,7 +186,8 @@ function shareCases(kit: ReturnType<typeof dialogKit>): Case[] {
 
 // Home's Tools menu and the Develop tab's New mod wizard, each step measured on its own.
 function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
-  const { dialog, button, pick, inDialog, tabIn, newModTo, atHome, tab, shown, ready } = kit
+  const { dialog, button, pick, inDialog, tabIn, newModTo, atHome, tab, shown, ready, developTab } =
+    kit
   return [
     dialog(
       'manage-tools',
@@ -203,7 +215,7 @@ function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
       // An earlier case's dialog can still cover the header.
       setup: async (p) => {
         await ready(p)
-        await tab(p, 'Develop')
+        await developTab(p)
       },
       // The header's button; an empty Develop page offers a second one.
       run: (p) => p.getByRole('button', { name: 'New mod…' }).first().click(),
@@ -213,11 +225,11 @@ function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
       // Game code… is in the header only while the open profile has a project; an earlier case may have opened one
       // without, so this opens the first profile the Develop tab lists a project in.
       setup: async (p) => {
-        await tab(p, 'Develop')
+        await developTab(p)
         const game = p.getByRole('button', { name: 'Game code…' })
         if (!(await game.isVisible())) {
           await p.getByRole('button', { name: 'Open profile' }).first().click()
-          await tab(p, 'Develop')
+          await developTab(p)
         }
       },
       run: (p) => p.getByRole('button', { name: 'Game code…' }).click(),
@@ -226,7 +238,7 @@ function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
       name: 'develop-clone',
       // The add menu opens in setup, so the action is the dialog alone.
       setup: async (p) => {
-        await tab(p, 'Develop')
+        await developTab(p)
         await p.getByRole('button', { name: 'More ways to add a mod project' }).click()
       },
       run: (p) => p.getByRole('menuitem', { name: 'Clone from GitHub…' }).click(),
@@ -244,7 +256,7 @@ function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
             ? route.fulfill({ contentType: 'application/json', body: JSON.stringify(folder) })
             : route.fallback(),
         )
-        await tab(p, 'Develop')
+        await developTab(p)
         await p.getByRole('button', { name: 'More ways to add a mod project' }).click()
       },
       run: async (p) => {
@@ -270,7 +282,7 @@ function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
         (p) => pick(p, /^Edit details…/),
         undefined,
         async (p) => {
-          await tab(p, 'Develop')
+          await developTab(p)
           await p.getByRole('main').getByRole('button', { name: 'More actions' }).first().click()
         },
       ),
@@ -282,7 +294,7 @@ function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
         (p) => tabIn(p, 'Mods'),
         undefined,
         async (p) => {
-          await tab(p, 'Develop')
+          await developTab(p)
           await p.getByRole('main').getByRole('button', { name: 'More actions' }).first().click()
           await pick(p, /^Edit details…/)
         },
