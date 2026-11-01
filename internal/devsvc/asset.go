@@ -271,6 +271,9 @@ func (s *Service) createAsset(ctx context.Context, m NewMod) (_ settings.DevProj
 
 func writeFiles(dir string, files map[string][]byte) error {
 	for name, body := range files {
+		if !filepath.IsLocal(filepath.FromSlash(name)) {
+			return fmt.Errorf("project file %q is outside the project folder", name)
+		}
 		p := filepath.Join(dir, filepath.FromSlash(name))
 		if err := os.MkdirAll(filepath.Dir(p), 0o750); err != nil {
 			return err

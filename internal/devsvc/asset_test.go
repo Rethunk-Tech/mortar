@@ -369,3 +369,17 @@ func TestAGitHubRemoteFillsAnEmptyWebsiteAndTheOtherGameIsRefused(t *testing.T) 
 		t.Errorf("packed manifest = %s, %v", manifest, err)
 	}
 }
+
+func TestWriteFilesRefusesANameOutsideTheFolder(t *testing.T) {
+	t.Parallel()
+	dir := filepath.Join(t.TempDir(), "proj")
+	if err := writeFiles(dir, map[string][]byte{"../escaped.txt": []byte("x")}); err == nil {
+		t.Fatal("a name leaving the folder was written")
+	}
+	if safefs.IsFile(filepath.Join(filepath.Dir(dir), "escaped.txt")) {
+		t.Fatal("file escaped")
+	}
+	if err := writeFiles(dir, map[string][]byte{"a/b.txt": []byte("x")}); err != nil {
+		t.Fatal(err)
+	}
+}
