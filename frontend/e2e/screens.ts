@@ -329,14 +329,13 @@ const SITE: Scene[] = [
   {
     name: 'config',
     ...DESK,
-    profile: STARDEW,
+    profile: LETHAL,
     steps: async (page) => {
       await click(page, 'tab', 'Config')
-      // The first button is the group's header, which would fold the list away.
+      // Its settings are shared by the host, so the picture shows the crowns.
       await page
         .getByRole('group', { name: 'Mods with settings' })
-        .getByRole('button')
-        .nth(1)
+        .getByRole('button', { name: /^Dropzone/u })
         .click({ timeout: STEP_MS })
     },
   },
