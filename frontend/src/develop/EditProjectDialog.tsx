@@ -23,6 +23,7 @@ import {
   FormSection,
   TextInput,
 } from '../shell/dialog/FormDialog.tsx'
+import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { buildProject, useProjectInfo } from './builds.ts'
 import { ChoicePicker } from './ChoicePicker.tsx'
@@ -50,7 +51,9 @@ function useEditChoices(game: string, dir: string, current: string[]) {
       TemplateForm(game)
         .then((f) => (f.parameters ?? []).find((p) => p.id === 'categories')?.choices ?? [])
         .catch(() => []),
-    ]).then(([sites, choices]) => setRead({ sites, choices }))
+    ])
+      .then(([sites, choices]) => setRead({ sites, choices }))
+      .catch(reportUnexpected)
   }, [game, dir])
   const known = new Set(read.choices.map((c) => c.value))
   return {
