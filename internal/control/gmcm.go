@@ -15,7 +15,10 @@ func (s *Services) modsMenu(p Params) (any, error) {
 	if len(p.IDs) == 0 {
 		return nil, fmt.Errorf("mods menu needs a mod")
 	}
-	uid := typedID(modIDs(prof), p.IDs[0])
+	uid, err := typedID(modIDs(prof), p.IDs[0])
+	if err != nil {
+		return nil, err
+	}
 	if p.Value != "" {
 		return s.setGmcm(p.Game, prof.ID, uid, p.Value)
 	}

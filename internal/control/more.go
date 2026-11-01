@@ -79,7 +79,11 @@ func (s *Services) savedGroupsWrite(method string, p Params) (any, error) {
 		if err != nil {
 			return nil, err
 		}
-		return s.SavedGroups.Create(p.Game, p.Name, prof.ID, typedIDs(modIDs(prof), p.IDs))
+		ids, err := typedIDs(modIDs(prof), p.IDs)
+		if err != nil {
+			return nil, err
+		}
+		return s.SavedGroups.Create(p.Game, p.Name, prof.ID, ids)
 	}
 	list, err := s.SavedGroups.List(p.Game)
 	if err != nil {
@@ -99,13 +103,21 @@ func (s *Services) savedGroupsWrite(method string, p Params) (any, error) {
 		if err != nil {
 			return nil, err
 		}
-		return s.SavedGroups.AddMods(p.Game, g.ID, prof.ID, typedIDs(modIDs(prof), p.IDs))
+		ids, err := typedIDs(modIDs(prof), p.IDs)
+		if err != nil {
+			return nil, err
+		}
+		return s.SavedGroups.AddMods(p.Game, g.ID, prof.ID, ids)
 	default:
 		members := make([]mod.ID, len(g.Mods))
 		for i, m := range g.Mods {
 			members[i] = m.ID
 		}
-		return s.SavedGroups.RemoveMods(p.Game, g.ID, typedIDs(members, p.IDs))
+		ids, err := typedIDs(members, p.IDs)
+		if err != nil {
+			return nil, err
+		}
+		return s.SavedGroups.RemoveMods(p.Game, g.ID, ids)
 	}
 }
 

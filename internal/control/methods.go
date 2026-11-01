@@ -842,7 +842,11 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		if len(p.IDs) == 0 {
 			return nil, fmt.Errorf("mods files needs a mod")
 		}
-		return s.modExtraFiles(p.Game, prof, typedID(modIDs(prof), p.IDs[0]))
+		uid, err := typedID(modIDs(prof), p.IDs[0])
+		if err != nil {
+			return nil, err
+		}
+		return s.modExtraFiles(p.Game, prof, uid)
 	case "mods.preset":
 		return s.modsPreset(p, id, prof)
 	case "mods.config":
@@ -1284,7 +1288,10 @@ func refsFor(p profile.Profile, ids []string) ([]profile.EnableRef, error) {
 	refs := make([]profile.EnableRef, 0, len(ids))
 	known := modIDs(p)
 	for _, id := range ids {
-		uid := typedID(known, id)
+		uid, err := typedID(known, id)
+		if err != nil {
+			return nil, err
+		}
 		if e, _, ok := p.FindMod("", uid); ok {
 			refs = append(refs, profile.EnableRef{Key: e.Key, ID: uid})
 			continue
@@ -1454,7 +1461,10 @@ func (s *Services) modInfo(ctx context.Context, gameID string, p profile.Profile
 	if len(ids) != 1 {
 		return ModInfo{}, errors.New("name one mod by id")
 	}
-	uid := typedID(modIDs(p), ids[0])
+	uid, err := typedID(modIDs(p), ids[0])
+	if err != nil {
+		return ModInfo{}, err
+	}
 	e, _, ok := p.FindMod("", uid)
 	if !ok {
 		return ModInfo{}, fmt.Errorf("profile %s has no mod %q", p.Name, uid)

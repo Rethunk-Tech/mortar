@@ -54,7 +54,10 @@ func TestSavedGroupsWriteNeedsTheService(t *testing.T) {
 func TestTypedIDsKeepsOrderAndMixesKnownAndNew(t *testing.T) {
 	t.Parallel()
 	known := []mod.ID{"thunderstore:Ns-A", "thunderstore:Ns-B"}
-	got := typedIDs(known, []string{"Ns-B", "Ns-C", "smapi:X.Y"})
+	got, err := typedIDs(known, []string{"Ns-B", "Ns-C", "smapi:X.Y"})
+	if err != nil {
+		t.Fatal(err)
+	}
 	want := []mod.ID{"thunderstore:Ns-B", "thunderstore:Ns-C", "smapi:X.Y"}
 	if len(got) != len(want) {
 		t.Fatalf("got %v", got)

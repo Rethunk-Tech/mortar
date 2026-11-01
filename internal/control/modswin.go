@@ -14,7 +14,15 @@ func (s *Services) modsWin(p Params, prof profile.Profile, id string) (any, erro
 	if err != nil {
 		return nil, err
 	}
+	winner, err := typedID(modIDs(prof), p.IDs[0])
+	if err != nil {
+		return nil, err
+	}
+	loser, err := typedID(modIDs(prof), p.IDs[1])
+	if err != nil {
+		return nil, err
+	}
 	return s.changed(p.Game, func() (any, error) {
-		return s.Profiles.SetWinner(p.Game, id, keys[0], typedID(modIDs(prof), p.IDs[0]), typedID(modIDs(prof), p.IDs[1]), !p.Remove)
+		return s.Profiles.SetWinner(p.Game, id, keys[0], winner, loser, !p.Remove)
 	})
 }

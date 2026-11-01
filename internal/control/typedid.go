@@ -1,6 +1,7 @@
 package control
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -18,27 +19,41 @@ func idMatches(typed string, id mod.ID) bool {
 }
 
 // typedID reads an id a user typed against the mods it may name: the one it matches, else the bare id in the format
-// most of them use (SMAPI's when there are none).
-func typedID(known []mod.ID, typed string) mod.ID {
+// most of them use (SMAPI's when there are none). A bare id that two mods of different formats match is an error,
+// since picking one would act on a mod the user may not have meant.
+func typedID(known []mod.ID, typed string) (mod.ID, error) {
 	counts := map[string]int{}
 	common := mod.FormatSMAPI
+	var found mod.ID
 	for _, id := range known {
 		if idMatches(typed, id) {
-			return id
+			if found != "" && !mod.Equal(found, id) {
+				return "", fmt.Errorf("ambiguous id %s: give format:id (%s or %s)", strings.TrimSpace(typed), found, id)
+			}
+			if found == "" {
+				found = id
+			}
 		}
 		if counts[id.Format()]++; counts[id.Format()] > counts[common] {
 			common = id.Format()
 		}
 	}
-	return mod.Parse(typed, common)
+	if found != "" {
+		return found, nil
+	}
+	return mod.Parse(typed, common), nil
 }
 
-func typedIDs(known []mod.ID, typed []string) []mod.ID {
+func typedIDs(known []mod.ID, typed []string) ([]mod.ID, error) {
 	out := make([]mod.ID, len(typed))
 	for i, t := range typed {
-		out[i] = typedID(known, t)
+		id, err := typedID(known, t)
+		if err != nil {
+			return nil, err
+		}
+		out[i] = id
 	}
-	return out
+	return out, nil
 }
 
 // modIDs is every mod id a profile holds, for typedID.
