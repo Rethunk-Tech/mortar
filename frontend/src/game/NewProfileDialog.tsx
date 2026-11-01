@@ -24,6 +24,7 @@ import { listNames } from '../i18n/list.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
 import { Field, FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
+import { labelIdOf } from '../shell/dialog/fieldLabel.ts'
 import { starterWants } from '../templates/starterWants.ts'
 import { ManageTemplatesDialog } from '../templates/TemplateDialogs.tsx'
 import { useTemplates } from '../templates/useTemplates.ts'
@@ -82,7 +83,7 @@ function StartFromSelect({
             value={value}
             disabled={disabled}
             onChange={(e) => onChange(e.target.value)}
-            slotProps={{ select: { displayEmpty: true } }}
+            slotProps={{ select: { displayEmpty: true, labelId: labelIdOf(selectId) } }}
           >
             <MenuItem value={EMPTY}>{t`Empty profile`}</MenuItem>
             {copyOf === '' ? null : (

@@ -5,6 +5,7 @@ import { type ReactNode, useId } from 'react'
 import { space } from '../../theme/density.ts'
 import { useDiscardGuard } from '../useDiscardGuard.tsx'
 import { AppDialog, DialogFooter, type DialogSize } from './AppDialog.tsx'
+import { labelIdOf } from './fieldLabel.ts'
 
 const MULTILINE_ROWS = 3
 
@@ -188,7 +189,11 @@ export function Field({
 }) {
   return (
     <FieldRoot sx={fieldSx}>
-      <label className="field-label" htmlFor={htmlFor}>
+      <label
+        className="field-label"
+        htmlFor={htmlFor}
+        id={htmlFor ? labelIdOf(htmlFor) : undefined}
+      >
         <span>{label}</span>
         {counter ? <span className="field-counter">{counter}</span> : null}
       </label>
@@ -286,7 +291,7 @@ export function SelectField({
         error={Boolean(error)}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        slotProps={{ select: { displayEmpty } }}
+        slotProps={{ select: { displayEmpty, labelId: labelIdOf(id) } }}
       >
         {children}
       </TextField>
