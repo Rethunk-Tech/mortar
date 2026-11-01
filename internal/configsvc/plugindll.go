@@ -135,15 +135,19 @@ var netTypes = map[string]string{
 func (b bound) render() string {
 	var out strings.Builder
 	fmt.Fprintf(&out, "## Settings file was created by plugin %s v%s\n## Plugin GUID: %s\n", cmp.Or(b.dll.Name, b.guid), cmp.Or(b.dll.Version, "0.0.0"), b.guid)
+	// A newline or a ']' would end the line or the section header early and let a DLL write lines of its own.
+	settings := slices.DeleteFunc(slices.Clone(b.settings), func(st dotnet.Setting) bool {
+		return strings.ContainsAny(st.Section+st.Key+st.Default, "\r\n") || strings.Contains(st.Section, "]")
+	})
 	var sections []string
-	for _, st := range b.settings {
+	for _, st := range settings {
 		if !slices.Contains(sections, st.Section) {
 			sections = append(sections, st.Section)
 		}
 	}
 	for _, sec := range sections {
 		fmt.Fprintf(&out, "\n[%s]\n", sec)
-		for _, st := range b.settings {
+		for _, st := range settings {
 			if st.Section == sec {
 				out.WriteString(entryText(st))
 			}

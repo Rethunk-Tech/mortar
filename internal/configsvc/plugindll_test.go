@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-dotnet"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
@@ -107,5 +108,22 @@ func TestTheDLLGivesTheDefaultsAndSettingsOverAnOlderBuildsCfg(t *testing.T) {
 	raw, _ := safefs.ReadFile(path)
 	if !strings.Contains(string(raw), "Speed = 2") || !strings.Contains(string(raw), "Count = 5") {
 		t.Fatalf("written file:\n%s", raw)
+	}
+}
+
+// A bound setting whose section, key or default would break the .cfg's lines is left out of the rendered file.
+func TestRenderSkipsSettingsThatWouldBreakTheFile(t *testing.T) {
+	t.Parallel()
+	good := dotnet.Setting{Section: "S", Key: "ok", Type: "int", Default: "1"}
+	b := bound{guid: "g", settings: []dotnet.Setting{
+		good,
+		{Section: "S", Key: "a\nb", Type: "int", Default: "1"},
+		{Section: "S", Key: "k", Type: "string", Default: "x\ny = z"},
+		{Section: "S]\n[Evil", Key: "k", Type: "int", Default: "1"},
+		{Section: "T]", Key: "k", Type: "int", Default: "1"},
+	}}
+	got := b.render()
+	if want := "\n[S]\n" + entryText(good); !strings.HasSuffix(got, want) || strings.Count(got, "[") != 1 {
+		t.Fatalf("rendered %q", got)
 	}
 }
