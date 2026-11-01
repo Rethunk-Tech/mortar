@@ -74,6 +74,20 @@ func TestGameCodeSearchesAndDecompilesTheGamesAssembly(t *testing.T) {
 	if _, err := svc.Decompile(t.Context(), "lethal-company", dir, filepath.Join(managed, "Assembly-CSharp.dll"), "Fixture.Mod", true); err != nil || args[0] != "-il" {
 		t.Fatalf("IL view %v %v", args, err)
 	}
+	// Side by side reads a copy in the cache, so each run must name the game's folder for its references.
+	var runs [][]string
+	svc.Run = func(_ context.Context, _, _ string, a ...string) ([]byte, error) {
+		runs = append(runs, a)
+		return []byte("class Mod {}"), nil
+	}
+	if _, err := svc.DecompileMapped(t.Context(), "lethal-company", dir, "", "Fixture.Mod"); err != nil || len(runs) != 3 {
+		t.Fatalf("mapped: %d runs, %v", len(runs), err)
+	}
+	for _, r := range runs {
+		if i := slices.Index(r, "-r"); i < 0 || r[i+1] != managed {
+			t.Fatalf("ILSpy ran without the game's folder as its reference path: %v", r)
+		}
+	}
 	if _, err := svc.GameCode("lethal-company", dir, "/etc/passwd", "x"); err == nil {
 		t.Fatal("read an assembly Game code does not list")
 	}

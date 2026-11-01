@@ -47,11 +47,13 @@ func (s *Service) DecompileMapped(ctx context.Context, gameID, dir, assembly, ty
 	if err != nil {
 		return Mapped{}, err
 	}
-	cs, err := s.run(ctx, filepath.Dir(dll), tool, "-usepdb", "-t", typ, dll)
+	// The copy sits apart from the assemblies it references, so ILSpy is pointed back at them.
+	refs := filepath.Dir(path)
+	cs, err := s.run(ctx, filepath.Dir(dll), tool, "-r", refs, "-usepdb", "-t", typ, dll)
 	if err != nil {
 		return Mapped{}, err
 	}
-	out, err := s.run(ctx, filepath.Dir(dll), tool, "--il-sequence-points", "-usepdb", "-t", typ, dll)
+	out, err := s.run(ctx, filepath.Dir(dll), tool, "-r", refs, "--il-sequence-points", "-usepdb", "-t", typ, dll)
 	if err != nil {
 		return Mapped{}, err
 	}
@@ -65,7 +67,7 @@ func (s *Service) withPDB(ctx context.Context, tool, path string) (string, error
 	if err != nil {
 		return "", err
 	}
-	sum := sha256.Sum256([]byte(fmt.Sprintf("%s|%d|%d", path, st.Size(), st.ModTime().UnixNano())))
+	sum := sha256.Sum256([]byte(fmt.Sprintf("%s|%d|%d|refs", path, st.Size(), st.ModTime().UnixNano())))
 	dir := filepath.Join(s.CacheDir, "game-code-pdb", hex.EncodeToString(sum[:8]))
 	dll := filepath.Join(dir, filepath.Base(path))
 	pdb := strings.TrimSuffix(dll, filepath.Ext(dll)) + ".pdb"
@@ -82,7 +84,7 @@ func (s *Service) withPDB(ctx context.Context, tool, path string) (string, error
 	if err := safefs.WriteFile(dll, body, 0o600); err != nil {
 		return "", err
 	}
-	if _, err := s.run(ctx, dir, tool, "-genpdb", "-o", dir, dll); err != nil {
+	if _, err := s.run(ctx, dir, tool, "-r", filepath.Dir(path), "-genpdb", "-o", dir, dll); err != nil {
 		return "", err
 	}
 	return dll, nil
