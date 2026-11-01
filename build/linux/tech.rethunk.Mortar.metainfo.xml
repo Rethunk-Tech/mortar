@@ -84,6 +84,10 @@
           <li>Programs started from the AppImage (git, dotnet, the browser) get your system's libraries, not the AppImage's</li>
           <li>A Gale or r2modman local mod keeps the version and author its manager recorded</li>
           <li>A folder of content files with no DLL in an extra mods folder installs as a local package</li>
+          <li>An error that runs only through Harmony patches is blamed on the mod whose patch threw</li>
+          <li>Switching a mod off and on again keeps its newest settings</li>
+          <li>Mod uploads from Develop never send a site's API key on to another host</li>
+          <li>New profile's "Start from" field and the launch preview are named for screen readers</li>
         </ul>
       </description>
     </release>
