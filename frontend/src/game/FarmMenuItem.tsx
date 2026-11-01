@@ -1,6 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
-import { Clipboard } from '@wailsio/runtime'
 import { CircleAlert, Users } from 'lucide-react'
 import { useState } from 'react'
 import type { FarmRow } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/packsvc/models.ts'
@@ -13,6 +12,7 @@ import { ReadTextFile } from '../../bindings/github.com/Rethunk-Tech/mortar/inte
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { listNames } from '../i18n/list.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { copyText } from '../share/copyText.ts'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { FormSection, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
@@ -41,14 +41,7 @@ export function FarmDialog({
   const { push } = useToasts.getState()
   const copyList = () =>
     ExportFarm(game, profile.id)
-      .then(async (list) => {
-        await Clipboard.SetText(JSON.stringify(list))
-        push({
-          kind: 'success',
-          title: t`List copied`,
-          body: t`Send it to the people joining you.`,
-        })
-      })
+      .then((list) => copyText(JSON.stringify(list), t`List copied`))
       .catch((error: unknown) => toastError(t`Could not make the list`, error))
   const loadList = () =>
     ReadTextFile(t`Open the host's list`)
