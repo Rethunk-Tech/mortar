@@ -221,7 +221,6 @@ func (s *Store) SplitExtra(game, id, entryKey, extraKey string) (Profile, error)
 
 // CombineEntries attaches otherKey as an extra file of targetKey when both are from the same Nexus page.
 func (s *Store) CombineEntries(game, id, targetKey, otherKey string) (Profile, error) {
-	var dropped []string
 	p, err := s.updateModsRecorded(game, id, func(p *Profile, dir string) error {
 		if targetKey == "" || otherKey == "" || targetKey == otherKey {
 			return fmt.Errorf("cannot combine %q with %q", targetKey, otherKey)
@@ -247,7 +246,8 @@ func (s *Store) CombineEntries(game, id, targetKey, otherKey string) (Profile, e
 		if target.Source.Kind != KindNexus || other.Source.Kind != KindNexus || target.Source.ModID != other.Source.ModID || target.Source.ModID <= 0 {
 			return fmt.Errorf("those mods are not from the same Nexus page")
 		}
-		if dropped, err = s.removeFrom(game, p, dir, otherKey); err != nil {
+		// The other entry's mods stay installed in the target, so their live configs stay where they are.
+		if _, err = s.removeFrom(game, p, dir, otherKey); err != nil {
 			return err
 		}
 		return s.addExtraLocked(game, p, dir, targetKey, otherKey, other.Source.WithFomod(other.Fomod).WithDisabled(other.Disabled))
@@ -255,7 +255,6 @@ func (s *Store) CombineEntries(game, id, targetKey, otherKey string) (Profile, e
 	if err != nil {
 		return Profile{}, err
 	}
-	setConfigsAside(dropped)
 	return p, s.items.Touch(game, otherKey)
 }
 
