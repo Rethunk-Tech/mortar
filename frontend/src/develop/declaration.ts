@@ -21,3 +21,11 @@ export function declarationLine(source: string, type: string, kind: string, name
       !line.trimEnd().endsWith(';'),
   )
 }
+
+// Whether a line of decompiled C# or IL declares a member called name, by the same rules declarationLine uses.
+export function declares(line: string, name: string): boolean {
+  return (
+    declarationLine(line, '', 'method', name) === 0 ||
+    declarationLine(line, '', 'field', name) === 0
+  )
+}

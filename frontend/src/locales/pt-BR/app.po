@@ -1254,7 +1254,7 @@ msgstr ""
 msgid "A .mortar file, an .r2z or a {source} modpack"
 msgstr ""
 
-#: src/develop/GameCodeDialog.tsx
+#: src/develop/SymbolMenu.tsx
 msgid "Looking up {name}…"
 msgstr ""
 
@@ -1539,6 +1539,10 @@ msgstr ""
 
 #: src/launch/SweepDialog.tsx
 msgid "No fix yet"
+msgstr ""
+
+#: src/develop/SymbolMenu.tsx
+msgid "Go to the definition of {label}"
 msgstr ""
 
 #: src/groups/SaveGroupToLibrary.tsx
@@ -2473,7 +2477,7 @@ msgstr ""
 msgid "This download is {size}, which is unusually large for a mod."
 msgstr ""
 
-#: src/develop/GameCodeDialog.tsx
+#: src/develop/SymbolMenu.tsx
 msgid "Hook copied"
 msgstr ""
 
@@ -4765,7 +4769,7 @@ msgstr ""
 msgid "Copy code"
 msgstr ""
 
-#: src/develop/GameCodeDialog.tsx
+#: src/develop/SymbolMenu.tsx
 msgid "Find usages of {label}"
 msgstr ""
 
@@ -4810,7 +4814,7 @@ msgstr ""
 msgid "Resume {name}"
 msgstr ""
 
-#: src/develop/GameCodeDialog.tsx
+#: src/develop/SymbolMenu.tsx
 msgid "No member named {name} in this assembly"
 msgstr ""
 
@@ -7351,7 +7355,7 @@ msgstr ""
 msgid "{name} is not on {source}"
 msgstr ""
 
-#: src/develop/GameCodeDialog.tsx
+#: src/develop/SymbolMenu.tsx
 msgid "Copy a {library} hook for {signature}"
 msgstr ""
 

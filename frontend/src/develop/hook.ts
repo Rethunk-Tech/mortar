@@ -16,3 +16,6 @@ export function hookSnippet(m: Member): string {
     '',
   ].join('\n')
 }
+
+// A member's identity among overloads: its type, name and parameter names.
+export const memberKey = (m: Member) => `${m.type}::${m.method}(${(m.params ?? []).join(',')})`

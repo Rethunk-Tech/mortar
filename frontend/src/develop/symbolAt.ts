@@ -20,3 +20,25 @@ export function symbolAt(x: number, y: number): string {
   }
   return identifierAt(node.textContent ?? '', range.startOffset)
 }
+
+const ESCAPE = /[.*+?^${}()|[\]\\]/g
+
+// The type an IL line names as the owner of name ("Namespace.Outer+Inner", as the member search names types), or ''.
+// A call, field load or store writes its target as [Assembly]Namespace.Type::Member, a nested type with '/' and a
+// generic one with its arguments in angle brackets.
+export function ilOwner(line: string, name: string): string {
+  const m = line.match(
+    new RegExp(`([A-Za-z_][\\w.\`/]*)(?:<[^\\s]*>)?::${name.replace(ESCAPE, '\\$&')}\\b`),
+  )
+  return m?.[1]?.replaceAll('/', '+') ?? ''
+}
+
+// A name right-clicked in a code view: where, on which line (from 0) and that line's text, in C# or IL.
+export interface SymbolClick {
+  name: string
+  x: number
+  y: number
+  line: number
+  text: string
+  il: boolean
+}

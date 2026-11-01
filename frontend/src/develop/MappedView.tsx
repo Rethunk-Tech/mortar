@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import type { Mapped } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import { CodeView } from './CodeView.tsx'
 import { nearestLine } from './nearestLine.ts'
+import type { SymbolClick } from './symbolAt.ts'
 
 const NONE: number[] = []
 
@@ -22,7 +23,7 @@ export function MappedView({
 }: {
   mapped: Mapped
   line: number
-  onSymbol?: ((name: string, x: number, y: number) => void) | undefined
+  onSymbol?: ((at: SymbolClick) => void) | undefined
 }) {
   const links = mapped.links ?? []
   const [pick, setPick] = useState<Pick | null>(null)

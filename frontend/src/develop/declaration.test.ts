@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { declarationLine } from './declaration.ts'
+import { declarationLine, declares } from './declaration.ts'
 
 const csharp = [
   'public class PlayerControllerB : NetworkBehaviour',
@@ -32,4 +32,11 @@ describe('declarationLine', () => {
     expect(declarationLine(il, 'PlayerControllerB', 'method', 'Update')).toBe(2)
     expect(declarationLine(csharp, 'GameNetcodeStuff.PlayerControllerB', 'method', '.ctor')).toBe(9)
   })
+})
+
+test('declares tells a declaration from a use', () => {
+  expect(declares('\tprotected virtual void LateUpdate()', 'LateUpdate')).toBe(true)
+  expect(declares('\tpublic Camera gameplayCamera;', 'gameplayCamera')).toBe(true)
+  expect(declares('\t\tRefreshVisibility();', 'RefreshVisibility')).toBe(false)
+  expect(declares('\t\tgameplayCamera.fieldOfView = 60f;', 'gameplayCamera')).toBe(false)
 })

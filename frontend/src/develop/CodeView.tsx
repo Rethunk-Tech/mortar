@@ -8,7 +8,7 @@ import { copyText } from '../share/copyText.ts'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { MONO } from '../theme/theme.ts'
 import { type TokenKind, tokenize } from './codeTokens.ts'
-import { symbolAt } from './symbolAt.ts'
+import { type SymbolClick, symbolAt } from './symbolAt.ts'
 
 const LINE_PX = 20
 const OVERSCAN = 30
@@ -72,7 +72,7 @@ export function CodeView({
   follow?: { line: number } | null
   marked?: ReadonlySet<number>
   onPick?: (line: number) => void
-  onSymbol?: ((name: string, x: number, y: number) => void) | undefined
+  onSymbol?: ((at: SymbolClick) => void) | undefined
 }) {
   const { t } = useLingui()
   const scroller = useRef<HTMLDivElement | null>(null)
@@ -146,7 +146,14 @@ export function CodeView({
                     : ''
                 if (name !== '') {
                   e.preventDefault()
-                  onSymbol?.(name, e.clientX, e.clientY)
+                  onSymbol?.({
+                    name,
+                    x: e.clientX,
+                    y: e.clientY,
+                    line: v.index,
+                    text: lines[v.index] ?? '',
+                    il,
+                  })
                 }
               }}
               {...(onPick

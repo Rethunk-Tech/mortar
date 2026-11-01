@@ -5,7 +5,6 @@ import {
   Button,
   CircularProgress,
   Drawer,
-  Menu,
   MenuItem,
   TextField,
   ToggleButton,
@@ -13,7 +12,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useDebouncedLoad, useLoaded } from '@rethunk/react-load-hooks'
-import { CircleAlert, Code, Copy, FileSearch, Search } from 'lucide-react'
+import { CircleAlert, Code, FileSearch } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type {
   Mapped,
@@ -29,13 +28,11 @@ import {
   Usages,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import type { Member } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/dotnet/models.ts'
-import { ILSPY, MONOMOD } from '../brand/productNames.ts'
-import { copyText } from '../share/copyText.ts'
+import { ILSPY } from '../brand/productNames.ts'
 import { AppDialog, ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { labelledInput } from '../shell/labelledInput.tsx'
-import { MenuAction, MenuNote } from '../shell/MenuAction.tsx'
 import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
 import {
@@ -48,8 +45,10 @@ import {
 import { usePending } from '../toasts/usePending.ts'
 import { CodeView } from './CodeView.tsx'
 import { declarationLine } from './declaration.ts'
-import { hookSnippet } from './hook.ts'
+import { memberKey } from './hook.ts'
 import { MappedView } from './MappedView.tsx'
+import { SymbolMenu } from './SymbolMenu.tsx'
+import type { SymbolClick } from './symbolAt.ts'
 
 // A constructor's decompiled declaration is named after its type, which a search for ".ctor" cannot find.
 
@@ -92,7 +91,7 @@ function Source({
   kind: string
   method: string
   mode: CodeMode
-  onSymbol: (name: string, x: number, y: number) => void
+  onSymbol: (at: SymbolClick) => void
 }) {
   const { t } = useLingui()
   const [has, setHas] = useState<boolean | null>(null)
@@ -296,85 +295,6 @@ function UsagesDrawer({
   )
 }
 
-// A name right-clicked in the code, and where, for the menu that opens there.
-interface SymbolAt {
-  name: string
-  x: number
-  y: number
-}
-
-// Members a right-click menu lists, at most.
-const MENU_MEMBERS = 6
-
-// What a right-clicked name can do: find who uses each member by that name in the assembly, and copy a hook for a
-// method, whose signature the search gives.
-function SymbolMenu({
-  game,
-  dir,
-  assembly,
-  at,
-  onClose,
-  onUsages,
-}: {
-  game: string
-  dir: string
-  assembly: string
-  at: SymbolAt | null
-  onClose: () => void
-  onUsages: (target: string) => void
-}) {
-  const { t } = useLingui()
-  const name = at?.name ?? ''
-  const { data: found } = useLoaded<Member[] | null>(
-    name === '' ? null : () => GameCode(game, dir, assembly, name).then((all) => all ?? []),
-    [game, dir, assembly, name],
-    null,
-    reportUnexpected,
-  )
-  const members = (found ?? []).filter((m) => m.method === name).slice(0, MENU_MEMBERS)
-  return (
-    <Menu
-      open={at !== null}
-      onClose={onClose}
-      anchorReference="anchorPosition"
-      anchorPosition={at ? { top: at.y, left: at.x } : undefined}
-      // Above the full-window dialog it opens from.
-      sx={{ zIndex: (theme) => theme.zIndex.modal + 1 }}
-    >
-      {found === null ? <MenuNote>{t`Looking up ${{ name }}…`}</MenuNote> : null}
-      {found !== null && members.length === 0 ? (
-        <MenuNote>{t`No member named ${{ name }} in this assembly`}</MenuNote>
-      ) : null}
-      {members.flatMap((m) => {
-        const label = `${m.type.split('.').at(-1) ?? m.type}::${m.method}`
-        // A code signature, not words, so it stays out of the translated message whole.
-        const signature = `${label}(${(m.params ?? []).join(', ')})`
-        return [
-          <MenuAction
-            key={`u${memberKey(m)}`}
-            icon={<Search size={14} />}
-            label={t`Find usages of ${{ label }}`}
-            onClick={() => onUsages(`${m.type}::${m.method}`)}
-          />,
-          m.kind === 'field' ? null : (
-            <MenuAction
-              key={`h${memberKey(m)}`}
-              icon={<Copy size={14} />}
-              label={t`Copy a ${{ library: MONOMOD }} hook for ${{ signature }}`}
-              onClick={() => {
-                copyText(hookSnippet(m), t`Hook copied`)
-                onClose()
-              }}
-            />
-          ),
-        ]
-      })}
-    </Menu>
-  )
-}
-
-const memberKey = (m: Member) => `${m.type}::${m.method}(${(m.params ?? []).join(',')})`
-
 // The search: hits drop down under it, a type or method on each; picking one opens it.
 function MemberSearch({
   game,
@@ -440,7 +360,7 @@ export function GameCodeDialog({
   const [mode, setMode] = useState<CodeMode>('cs')
   // The member whose usages the drawer lists, as "Type::Member"; '' while it is closed.
   const [usagesOf, setUsagesOf] = useState('')
-  const [symbol, setSymbol] = useState<SymbolAt | null>(null)
+  const [symbol, setSymbol] = useState<SymbolClick | null>(null)
   const assemblies =
     useLoaded(() => Assemblies(game, dir), [game, dir], null, reportUnexpected).data ?? []
   // The pickers shrink before the title wraps; the view buttons keep their width.
@@ -510,7 +430,7 @@ export function GameCodeDialog({
           kind={picked?.kind ?? 'method'}
           method={picked?.method ?? ''}
           mode={mode}
-          onSymbol={(name, x, y) => setSymbol({ name, x, y })}
+          onSymbol={setSymbol}
         />
       </Box>
       <UsagesDrawer
@@ -527,14 +447,16 @@ export function GameCodeDialog({
         }}
       />
       <SymbolMenu
-        game={game}
-        dir={dir}
-        assembly={assembly}
+        scope={{ game, dir, assembly, type: picked?.type ?? '' }}
         at={symbol}
         onClose={() => setSymbol(null)}
         onUsages={(target) => {
           setSymbol(null)
           setUsagesOf(target)
+        }}
+        onDefinition={(m) => {
+          setSymbol(null)
+          setPicked(m)
         }}
       />
     </AppDialog>
