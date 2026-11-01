@@ -52,6 +52,41 @@
     <content_attribute id="social-info">mild</content_attribute>
   </content_rating>
   <releases>
+    <release version="0.4.0" date="2026-11-01">
+      <description>
+        <p>New</p>
+        <ul>
+          <li>Develop's Release uploads to Nexus Mods and CurseForge as well as Thunderstore</li>
+          <li>Develop can adopt any folder as a project, and a project's content is a grid of tiles (suits, sounds, posters and more) that also picks its Thunderstore categories</li>
+          <li>Build all builds every code project in the profile at once, each after the projects it depends on</li>
+          <li>Game code: right-click a name for Go to definition, Find usages, or a HookGen, MonoMod or Harmony hook to copy for a method; Side by side links each C# line to its IL</li>
+          <li>In the Console, the methods in an error's stack trace open Game code, with arrows to step through the trace (needs a code project in Develop)</li>
+          <li>Config reads a plugin's settings from its DLL: defaults and new settings show right after a rebuild, and a mod that has never run has settings to edit</li>
+          <li>A setting the host shares shows a crown when the host enforces it and a thumbs-up when the host only recommends it</li>
+          <li>Config has the Mods page's Group by</li>
+          <li>F5 on Browse refreshes its listings</li>
+          <li>Alt+Right goes forward, beside Alt+Left back</li>
+          <li>Gale sync links open in Mortar</li>
+        </ul>
+        <p>Changed</p>
+        <ul>
+          <li>Settings merges Source health into Accounts, one block per service, and a setting a profile changed shows a dot and a reset button</li>
+          <li>The tab header no longer repeats the profile name the title bar shows</li>
+          <li>A mod that needs a newer SMAPI is listed as a problem, and a requirement whose version can't be compared shows as unknown instead of blocking Play</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>A switched-off mod's settings stay listed and editable in Config, and edits made while it is off are there when it comes back on</li>
+          <li>Problems no longer blames Mortar's bridge for an error the game threw</li>
+          <li>Game code's Side by side shows real C# instead of "Unknown result type" on every line</li>
+          <li>Clicking a mod in an imported profile toggles it even while text is selected</li>
+          <li>A Thunderstore search past its refresh waits for the new listing, and a prerelease ranks below its release</li>
+          <li>Programs started from the AppImage (git, dotnet, the browser) get your system's libraries, not the AppImage's</li>
+          <li>A Gale or r2modman local mod keeps the version and author its manager recorded</li>
+          <li>A folder of content files with no DLL in an extra mods folder installs as a local package</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.3.16" date="2026-10-29">
       <description>
         <p>New</p>

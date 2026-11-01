@@ -1,11 +1,11 @@
 {
   "fixed": {
-    "file_version": "0.3.16"
+    "file_version": "0.4.0"
   },
   "info": {
     "0000": {
-      "ProductVersion": "0.3.16",
-      "FileVersion": "0.3.16",
+      "ProductVersion": "0.4.0",
+      "FileVersion": "0.4.0",
       "CompanyName": "Rethunk.Tech",
       "FileDescription": "Mortar",
       "LegalCopyright": "(c) 2026, Rethunk.Tech",
