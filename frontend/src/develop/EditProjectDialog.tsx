@@ -11,6 +11,7 @@ import type {
 import {
   Edit,
   TemplateForm,
+  UploadSites,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
@@ -29,24 +30,36 @@ import { ProjectDependencies } from './ProjectDependencies.tsx'
 import { saveDependencies, useDependencyRows } from './projectDependencies.ts'
 import { SiteIds } from './SiteIds.tsx'
 import { TestWith } from './TestWith.tsx'
-import { useUploadSites } from './uploadSites.ts'
 
 const MAX_DESCRIPTION = 250
 
 type EditTab = 'details' | 'mods' | 'sites'
 
-// The template's category choices; a project's own categories stay pickable even when the template lacks them.
-function useCategoryChoices(game: string, current: string[]): Choice[] {
-  const [choices, setChoices] = useState<Choice[]>([])
+// The upload sites and the template's category choices, read together: each arrival redraws the whole dialog. A
+// project's own categories stay pickable even when the template lacks them.
+function useEditChoices(game: string, dir: string, current: string[]) {
+  const [read, setRead] = useState<{ sites: string[]; choices: Choice[] }>({
+    sites: [],
+    choices: [],
+  })
   useEffect(() => {
-    TemplateForm(game)
-      .then((f) =>
-        setChoices((f.parameters ?? []).find((p) => p.id === 'categories')?.choices ?? []),
-      )
-      .catch(() => setChoices([]))
-  }, [game])
-  const known = new Set(choices.map((c) => c.value))
-  return [...choices, ...current.filter((c) => !known.has(c)).map((c) => ({ value: c, label: c }))]
+    Promise.all([
+      UploadSites(game, dir)
+        .then((list) => (list ?? []).map((s) => s.id))
+        .catch(() => []),
+      TemplateForm(game)
+        .then((f) => (f.parameters ?? []).find((p) => p.id === 'categories')?.choices ?? [])
+        .catch(() => []),
+    ]).then(([sites, choices]) => setRead({ sites, choices }))
+  }, [game, dir])
+  const known = new Set(read.choices.map((c) => c.value))
+  return {
+    sites: read.sites,
+    categories: [
+      ...read.choices,
+      ...current.filter((c) => !known.has(c)).map((c) => ({ value: c, label: c })),
+    ],
+  }
 }
 
 // Thunderstore needs no ids, so Sites shows only when another site takes uploads.
@@ -86,8 +99,7 @@ export function EditProjectDialog({
   const { t } = useLingui()
   const [edit, setEdit] = useState<ProjectEdit>(() => editOf(info))
   const [saving, run] = usePending()
-  const sites = useUploadSites(game, dir)
-  const categories = useCategoryChoices(game, edit.categories ?? [])
+  const { sites, categories } = useEditChoices(game, dir, edit.categories ?? [])
   const details = !sameValue(edit, editOf(info))
   const deps = useDependencyRows(game, dir)
   const dirty = details || deps.dirty

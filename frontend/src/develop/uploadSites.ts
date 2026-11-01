@@ -1,11 +1,9 @@
 import { msg } from '@lingui/core/macro'
-import { useEffect, useState } from 'react'
 import {
   ForgetCurseForgeToken,
   ForgetThunderstoreToken,
   UploadCurseForge,
   UploadNexus,
-  UploadSites,
   UploadThunderstore,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
@@ -62,15 +60,4 @@ export async function uploadTo(
       await forgetRefused(id, game, dir)
     }
   }
-}
-
-/** The ids of the sites the game can be uploaded to, empty until they are read. */
-export function useUploadSites(game: string, dir: string): string[] {
-  const [ids, setIds] = useState<string[]>([])
-  useEffect(() => {
-    UploadSites(game, dir)
-      .then((list) => setIds((list ?? []).map((s) => s.id)))
-      .catch(() => setIds([]))
-  }, [game, dir])
-  return ids
 }
