@@ -24,7 +24,7 @@ export function useModCosts(game: string, profile: string, info: ProjectInfo | u
   latest.current = info
   const known = info !== undefined && !info.missing
   // A reread that changes nothing here (a window focus) must not repeat the reports' reads.
-  const key = info ? `${info.guid}|${info.name}` : ''
+  const key = info ? `${info.guid}|${info.name}|${info.builtAt}` : ''
   const current = latest.current
   const { data } = useLoaded<Costs>(
     known && current && key !== '' ? () => readCosts(game, profile, current) : null,
@@ -40,15 +40,27 @@ async function readCosts(game: string, profile: string, current: ProjectInfo): P
     PerformanceReports(game, profile),
   ])
   const next: Costs = {}
-  const mod = startups?.[0]?.mods?.find((m) => isProjectRow(current, m.name, String(m.id)))
+  // A run before the last build measured the previous build, so its figures say nothing about this one.
+  const startup = startups?.[0]
+  const mod = measured(startup?.processStart, current.builtAt)
+    ? startup?.mods?.find((m) => isProjectRow(current, m.name, String(m.id)))
+    : undefined
   if (mod) {
     next.startupMs = modTotal(mod)
   }
-  const row = perfs?.[0]?.rows?.find((r) => isProjectRow(current, r.name))
+  const perf = perfs?.[0]
+  const row = measured(perf?.at, current.builtAt)
+    ? perf?.rows?.find((r) => isProjectRow(current, r.name))
+    : undefined
   if (row) {
     next.frameMs = row.averageMs
   }
   return next
+}
+
+/** Whether a run at the time `at` (an ISO date) ran the build written at `builtAt` (Unix ms, 0 before any build). */
+export function measured(at: string | undefined, builtAt: number): boolean {
+  return at !== undefined && Date.parse(at) >= builtAt
 }
 
 /** The live Console, showing only the mod's own log source. */
