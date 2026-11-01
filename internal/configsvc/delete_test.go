@@ -51,7 +51,7 @@ func TestDeleteUnownedRefusesAFileNamedForAnInstalledPlugin(t *testing.T) {
 	if err := os.WriteFile(file, []byte(body), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	f.installed = []string{"com.author.mod"}
+	f.dlls = map[string]profile.PluginDLL{"com.author.mod": {}}
 	s.Profiles = f
 	if err := s.DeleteUnowned("g", "p", "Author.ModName.cfg"); err == nil {
 		t.Fatal("a live plugin's config was deleted")
@@ -59,7 +59,7 @@ func TestDeleteUnownedRefusesAFileNamedForAnInstalledPlugin(t *testing.T) {
 	if _, err := os.Stat(file); err != nil {
 		t.Fatalf("the file went: %v", err)
 	}
-	f.installed = nil
+	f.dlls = nil
 	s.Profiles = f
 	if err := s.DeleteUnowned("g", "p", "Author.ModName.cfg"); err != nil {
 		t.Fatal(err)

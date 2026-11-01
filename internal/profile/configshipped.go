@@ -5,6 +5,7 @@ import (
 	"slices"
 
 	"github.com/Rethunk-Tech/go-bepinex/plugins"
+	"github.com/Rethunk-Tech/go-dotnet"
 
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -63,20 +64,28 @@ func (s *Store) pluginGUIDsOf(game string, p Profile, uniqueID mod.ID) []string 
 	return slices.Clone(sc.ids)
 }
 
-// InstalledPluginGUIDs is the [BepInPlugin] GUID of every plugin the profile holds: each package's, bundled ones
-// included, and any DLL placed loose in its plugins folder. A config file named for one of them belongs to a live mod
-// whether or not the game has run.
-func (s *Store) InstalledPluginGUIDs(game, id string) []string {
+// PluginDLL is a plugin the profile holds: the DLL that declares it and what its [BepInPlugin] names it.
+type PluginDLL struct {
+	Path, Name, Version string
+}
+
+// PluginDLLs is every plugin the profile holds by its [BepInPlugin] GUID: each package's, bundled ones included, and
+// any DLL placed loose in its plugins folder. A config file named for one of them belongs to a live mod whether or not
+// the game has run, and the DLL says which settings the plugin binds.
+func (s *Store) PluginDLLs(game, id string) map[string]PluginDLL {
 	s.mu.Lock()
 	p, dir, err := s.readDir(game, id)
 	s.mu.Unlock()
+	out := map[string]PluginDLL{}
 	if err != nil {
-		return nil
+		return out
 	}
-	var out []string
 	add := func(root string) {
-		for _, pl := range plugins.PluginsIn(root) {
-			out = append(out, pl.GUID)
+		for _, path := range plugins.DLLs(root) {
+			d, _ := dotnet.Scan(path)
+			for _, pl := range d.Plugins {
+				out[pl.GUID] = PluginDLL{Path: path, Name: pl.Name, Version: pl.Version}
+			}
 		}
 	}
 	if s.items != nil {

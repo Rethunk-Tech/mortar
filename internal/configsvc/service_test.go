@@ -19,7 +19,7 @@ import (
 type fakeProfiles struct {
 	dir, folder, config, shipped string
 	mods                         []profile.Mod
-	installed                    []string
+	dlls                         map[string]profile.PluginDLL
 }
 
 func (f fakeProfiles) ProfileDir(string, string) (string, error) { return f.dir, nil }
@@ -55,7 +55,7 @@ func (f fakeProfiles) ConfigView(string, string) (profile.ConfigView, error) {
 
 func (fakeProfiles) SeedConfigs(string, string) error { return nil }
 
-func (f fakeProfiles) InstalledPluginGUIDs(string, string) []string { return f.installed }
+func (f fakeProfiles) PluginDLLs(string, string) map[string]profile.PluginDLL { return f.dlls }
 
 func (fakeProfiles) PluginGUIDs(_, _ string, id mod.ID) []string {
 	switch id {
@@ -63,6 +63,8 @@ func (fakeProfiles) PluginGUIDs(_, _ string, id mod.ID) []string {
 		return []string{"com.example.BetterStuff"}
 	case "folder:carryon":
 		return []string{"carryon"}
+	case "thunderstore:Ex-Fixture":
+		return []string{"com.fixture.plugin"}
 	}
 	return nil
 }

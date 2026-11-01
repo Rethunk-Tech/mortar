@@ -74,12 +74,16 @@ func (s *Service) Mods(game, profileID string) (ModList, error) {
 				row.Files = append(row.Files, ModFile{Name: gmcmFileName, Format: FormatGMCM})
 			}
 		}
-		names := append([]string{id}, view.PluginGUIDs(m.ID)...)
+		guids := view.PluginGUIDs(m.ID)
+		names := append([]string{id}, guids...)
 		for _, d := range docs {
 			if d.ownedBy(names) {
 				owned[d.name] = true
-				row.Files = append(row.Files, ModFile{Name: d.name, Format: d.file().Format, Changed: d.changed()})
+				row.Files = append(row.Files, ModFile{Name: d.name, Format: d.file().Format, Changed: s.docChanged(game, profileID, d)})
 			}
+		}
+		for _, f := range s.unwritten(game, profileID, guids, docs) {
+			row.Files = append(row.Files, ModFile{Name: f.Name, Format: f.Format})
 		}
 		if len(row.Files) == 0 {
 			out.Without++
@@ -89,7 +93,7 @@ func (s *Service) Mods(game, profileID string) (ModList, error) {
 	}
 	for _, d := range docs {
 		if !owned[d.name] {
-			out.Other = append(out.Other, ModFile{Name: d.name, Format: d.file().Format, Changed: d.changed()})
+			out.Other = append(out.Other, ModFile{Name: d.name, Format: d.file().Format, Changed: s.docChanged(game, profileID, d)})
 		}
 	}
 	return out, nil

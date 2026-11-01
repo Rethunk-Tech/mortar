@@ -57,7 +57,10 @@ func (s *Service) cfgGUID(game, profileID, file string) string {
 
 // installedPlugin reports whether the file's name or header GUID is the GUID of a plugin the profile holds.
 func (s *Service) installedPlugin(game, profileID string, names ...string) bool {
-	return slices.ContainsFunc(s.Profiles.InstalledPluginGUIDs(game, profileID), func(g string) bool {
-		return slices.ContainsFunc(names, func(n string) bool { return n != "" && strings.EqualFold(n, g) })
-	})
+	for g := range s.Profiles.PluginDLLs(game, profileID) {
+		if slices.ContainsFunc(names, func(n string) bool { return n != "" && strings.EqualFold(n, g) }) {
+			return true
+		}
+	}
+	return false
 }

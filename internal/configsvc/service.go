@@ -45,7 +45,7 @@ type Profiles interface {
 	ShippedConfig(game, id, key string, uniqueID mod.ID) (string, bool)
 	ContentSchema(game, id, key string, uniqueID mod.ID) (modconfig.Schema, error)
 	PluginGUIDs(game, id string, uniqueID mod.ID) []string
-	InstalledPluginGUIDs(game, id string) []string
+	PluginDLLs(game, id string) map[string]profile.PluginDLL
 	ConfigView(game, id string) (profile.ConfigView, error)
 	SeedConfigs(game, id string) error
 	UserMods(game, id string) ([]profile.Mod, error)
@@ -75,6 +75,8 @@ type Service struct {
 	// hostKept is the host's values a player chose to keep, written into the .cfg once the game is closed.
 	hostMu   sync.Mutex
 	hostKept map[hostKey][]edit
+
+	dlls dllCache
 }
 
 type hostKey struct{ game, profile, mod, file string }
@@ -203,6 +205,9 @@ func (s *Service) Files(game, profileID, modID string) ([]ConfigFile, error) {
 		}
 		out = append(out, d.file())
 	}
+	if modID != "" {
+		out = append(out, s.unwritten(game, profileID, names[1:], docs)...)
+	}
 	return append(out, s.melonFile(game, profileID, modID, names)...), nil
 }
 
@@ -278,9 +283,19 @@ func (d cfgOnDisk) file() ConfigFile {
 	return ConfigFile{Name: d.name, Format: FormatBepInEx, Label: label}
 }
 
-// changed reports whether a .cfg differs from its defaults; a mod's JSON file names none.
-func (d cfgOnDisk) changed() bool {
-	return !d.json && !d.text && schemaChanged(cfgSchema(d.doc, d.file()))
+// docChanged reports whether a .cfg differs from its defaults, as its plugin's DLL now binds them when that is newer;
+// a mod's JSON file names none.
+func (s *Service) docChanged(game, profileID string, d cfgOnDisk) bool {
+	if d.json || d.text {
+		return false
+	}
+	sc := cfgSchema(d.doc, d.file())
+	if path, err := s.cfgPath(game, profileID, d.name); err == nil {
+		if info, err := os.Stat(path); err == nil {
+			sc = s.withBound(game, profileID, sc, guidOf(d.doc, d.name), path, info.ModTime())
+		}
+	}
+	return schemaChanged(sc)
 }
 
 // allDocs is the profile's .cfg files and the JSON files of its mod config folder.
@@ -536,6 +551,12 @@ func (s *Service) schemaOf(game, profileID, modID string, f ConfigFile) (Schema,
 			return Schema{}, err
 		}
 		info, err := os.Stat(path)
+		if errors.Is(err, fs.ErrNotExist) {
+			// A plugin the game has not run yet: its settings as its DLL binds them, at their defaults.
+			if b, ok := s.boundFor(game, profileID, strings.TrimSuffix(f.Name, filepath.Ext(f.Name))); ok {
+				return boundSync(cfgSchema(cfgedit.ParseBepInEx(b.render()), f), b), nil
+			}
+		}
 		if err != nil {
 			return Schema{}, err
 		}
@@ -550,7 +571,7 @@ func (s *Service) schemaOf(game, profileID, modID string, f ConfigFile) (Schema,
 		if err != nil {
 			return Schema{}, err
 		}
-		return withSync(cfgSchema(doc, f), path), nil
+		return s.withBound(game, profileID, withSync(cfgSchema(doc, f), path), guidOf(doc, f.Name), path, info.ModTime()), nil
 	}
 	cur, err := s.Profiles.ReadConfig(game, profileID, "", mod.ID(modID))
 	if err != nil {
@@ -661,15 +682,27 @@ func (s *Service) write(game, profileID, modID string, f ConfigFile, edits []edi
 	if err != nil {
 		return err
 	}
+	b, hasBound := s.boundFor(game, profileID, strings.TrimSuffix(f.Name, filepath.Ext(f.Name)))
 	raw, err := safefs.ReadFile(p)
+	if errors.Is(err, fs.ErrNotExist) && hasBound {
+		// The first edit of a plugin the game has not run yet writes the file BepInEx would, which it then keeps.
+		raw, err = []byte(b.render()), nil
+	}
 	if err != nil {
 		return err
 	}
 	text := string(raw)
 	for _, e := range edits {
-		if text, err = cfgedit.ParseBepInEx(text).Set(e.section, e.key, e.value); err != nil {
+		next, err := cfgedit.ParseBepInEx(text).Set(e.section, e.key, e.value)
+		if st, ok := b.setting(e.section, e.key); errors.Is(err, cfgedit.ErrNoSetting) && hasBound && ok {
+			// A setting the plugin added since the game last wrote its file.
+			text += fmt.Sprintf("\n[%s]\n", e.section) + entryText(st)
+			next, err = cfgedit.ParseBepInEx(text).Set(e.section, e.key, e.value)
+		}
+		if err != nil {
 			return valueErr(err)
 		}
+		text = next
 	}
 	return safefs.WriteFileAtomic(p, []byte(text), 0o600)
 }
