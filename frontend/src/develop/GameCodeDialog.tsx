@@ -46,12 +46,11 @@ import {
 } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { CodeView } from './CodeView.tsx'
+import { declarationLine } from './declaration.ts'
 import { hookSnippet } from './hook.ts'
 import { MappedView } from './MappedView.tsx'
 
 // A constructor's decompiled declaration is named after its type, which a search for ".ctor" cannot find.
-const CONSTRUCTOR_NAME = /^\.c?ctor$/
-const TYPE_PARTS = /[.+]/
 
 // Typing settles for this long before the game's members are searched.
 const SEARCH_DELAY_MS = 200
@@ -73,26 +72,12 @@ function useHits(game: string, dir: string, assembly: string, query: string) {
   return { hits: data, error: error === null ? '' : errorMessage(error) }
 }
 
-// The line declaring method in decompiled source: its name before a parameter list, on a line that is not a call.
-function declarationLine(source: string, type: string, method: string): number {
-  const name = CONSTRUCTOR_NAME.test(method) ? (type.split(TYPE_PARTS).at(-1) ?? '') : method
-  return (
-    source
-      .split('\n')
-      // IL writes a space before the parameter list.
-      .findIndex(
-        (line) =>
-          (line.includes(` ${name}(`) || line.includes(` ${name} (`)) &&
-          !line.trimEnd().endsWith(';'),
-      )
-  )
-}
-
 function Source({
   game,
   dir,
   assembly,
   type,
+  kind,
   method,
   mode,
 }: {
@@ -100,6 +85,7 @@ function Source({
   dir: string
   assembly: string
   type: string
+  kind: string
   method: string
   mode: CodeMode
 }) {
@@ -195,7 +181,7 @@ function Source({
     )
   }
   if (mode === 'both' && mapped) {
-    return <MappedView mapped={mapped} line={declarationLine(mapped.csharp, type, method)} />
+    return <MappedView mapped={mapped} line={declarationLine(mapped.csharp, type, kind, method)} />
   }
   if (mode === 'both' || source === '') {
     return (
@@ -207,7 +193,7 @@ function Source({
       </EmptyState>
     )
   }
-  return <CodeView source={source} il={il} line={declarationLine(source, type, method)} />
+  return <CodeView source={source} il={il} line={declarationLine(source, type, kind, method)} />
 }
 
 // The methods, in every assembly the view lists, that use the picked member; picking one opens it.
@@ -442,6 +428,7 @@ export function GameCodeDialog({
           dir={dir}
           assembly={assembly}
           type={picked?.type ?? ''}
+          kind={picked?.kind ?? 'method'}
           method={picked?.method ?? ''}
           mode={mode}
         />
