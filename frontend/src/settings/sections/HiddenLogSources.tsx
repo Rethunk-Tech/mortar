@@ -50,7 +50,7 @@ export function HiddenLogSources() {
     <Searchable terms={t`Hidden messages`}>
       <SettingsSection
         title={t`Hidden messages`}
-        description={t`Right-click a line in the Console to hide every line from where it came from, in every profile of this game. The game stops writing them where its bridge can. Messages Mortar hides by default for this game are listed too.`}
+        description={t`Right-click a Console line to hide everything from its source, in every profile of this game. The game stops writing them where its bridge can. Messages Mortar hides by default for this game are listed too.`}
       >
         {hidden.length === 0 ? (
           <Typography sx={{ p: space.pad, color: 'text.secondary' }}>{t`None`}</Typography>

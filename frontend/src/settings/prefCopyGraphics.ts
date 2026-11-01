@@ -12,9 +12,7 @@ export function graphicsPrefs(i18n: I18n): Record<string, PrefCopy> {
         {
           value: 'smooth',
           label: i18n._(msg`Smoother scrolling`),
-          hint: i18n._(
-            msg`Try this if scrolling is slow or the fans spin up, as on some graphics cards.`,
-          ),
+          hint: i18n._(msg`Try this if scrolling is slow or the fans spin up.`),
         },
         {
           value: 'compatible',

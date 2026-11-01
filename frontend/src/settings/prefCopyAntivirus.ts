@@ -14,7 +14,7 @@ export function antivirusPrefs(i18n: I18n): Record<string, PrefCopy> {
     antivirus: {
       label: i18n._(msg`Antivirus`),
       description: i18n._(
-        msg`Scan every mod after it is extracted and before it enters Mortar's store. This applies to every game.`,
+        msg`Scan every mod after extraction and before it enters Mortar's store. Applies to every game.`,
       ),
       options: [
         {

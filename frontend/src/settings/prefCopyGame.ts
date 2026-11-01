@@ -29,7 +29,7 @@ export function gamePrefs(i18n: I18n): Record<string, PrefCopy> {
     cacheClearing: {
       label: i18n._(msg`Clear game caches`),
       description: i18n._(
-        msg`Whether Mortar deletes the game's rebuildable cache files on the first launch after this profile's mods change`,
+        msg`Delete the game's rebuildable cache files on the first launch after this profile's mods change`,
       ),
       options: [
         {

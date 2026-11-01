@@ -148,7 +148,7 @@ export function About() {
         <LicencesRow />
         <SettingRow
           label={t`Logs`}
-          description={t`mortar.log, the previous run's mortar.prev.log and crash.log, in Mortar's data folder. For a bug report, Save diagnostics below puts them in one zip with personal paths removed.`}
+          description={t`mortar.log, the previous run's mortar.prev.log and crash.log, in Mortar's data folder. Save diagnostics below zips them with personal paths removed, for a bug report.`}
         >
           <Button variant="outlined" onClick={() => OpenDataFolder().catch(reportUnexpected)}>
             {t`Open log folder`}
