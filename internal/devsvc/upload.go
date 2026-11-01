@@ -273,10 +273,9 @@ func (s *Service) httpClient() *http.Client {
 	return uploadClient
 }
 
-// uploadClient has no overall timeout because uploads stream large bodies. It refuses a redirect to another host or
-// scheme, which would carry the site's API key header along.
+// uploadClient refuses a redirect to another host or scheme, which would carry the site's API key header along. Its
+// nil Transport is http.DefaultTransport at request time, the one that names Mortar to every site.
 var uploadClient = &http.Client{
-	Transport: &http.Transport{Proxy: http.ProxyFromEnvironment, ResponseHeaderTimeout: time.Minute, TLSHandshakeTimeout: 30 * time.Second},
 	CheckRedirect: func(req *http.Request, via []*http.Request) error {
 		if req.URL.Scheme != via[0].URL.Scheme || req.URL.Host != via[0].URL.Host {
 			return errors.New("refusing a redirect to another host")
