@@ -101,12 +101,23 @@ function frameLinks(text: string, roots: ConsoleLinkRoots): ConsoleLink[] {
   return frame ? [{ kind: 'frame', start: frame.start, end: frame.end }] : []
 }
 
-function linksInText(
-  text: string,
-  mods: readonly InstalledMod[],
-  roots: ConsoleLinkRoots,
-): ConsoleLink[] {
-  const found: ConsoleLink[] = frameLinks(text, roots)
+interface ModIndex {
+  // Longest first, so a longer name wins an overlap; one entry per distinct (id, key).
+  names: { key: string; id: string }[]
+  // First mod per name or local id, as a linear find would pick.
+  byKey: Map<string, string>
+}
+
+// Rows call per render with the same mods array; the index is built once per array.
+const indexes = new WeakMap<readonly InstalledMod[], ModIndex>()
+
+function indexOf(mods: readonly InstalledMod[]): ModIndex {
+  const cached = indexes.get(mods)
+  if (cached !== undefined) {
+    return cached
+  }
+  const seen = new Set<string>()
+  const byKey = new Map<string, string>()
   const names = mods
     .flatMap((m) => [
       { key: localId(m.id), id: m.id },
@@ -114,29 +125,49 @@ function linksInText(
     ])
     .filter((m) => m.key.length > 0)
     .sort((a, b) => b.key.length - a.key.length)
-
-  const seen = new Set<string>()
-  for (const n of names) {
-    const id = `${n.id}\0${n.key}`
-    if (!seen.has(id)) {
-      seen.add(id)
-      let from = 0
-      for (;;) {
-        const i = text.indexOf(n.key, from)
-        if (i < 0) {
-          break
-        }
-        const end = i + n.key.length
-        if (isTokenBoundary(text, i, end)) {
-          insertNonOverlapping(found, {
-            kind: 'mod',
-            start: i,
-            end,
-            id: n.id,
-          })
-        }
-        from = i + 1
+    .filter((n) => {
+      const id = `${n.id}\0${n.key}`
+      if (seen.has(id)) {
+        return false
       }
+      seen.add(id)
+      return true
+    })
+  for (const m of mods) {
+    for (const key of [m.name, localId(m.id)]) {
+      if (!byKey.has(key)) {
+        byKey.set(key, m.id)
+      }
+    }
+  }
+  const index = { names, byKey }
+  indexes.set(mods, index)
+  return index
+}
+
+function linksInText(
+  text: string,
+  mods: readonly InstalledMod[],
+  roots: ConsoleLinkRoots,
+): ConsoleLink[] {
+  const found: ConsoleLink[] = frameLinks(text, roots)
+  for (const n of indexOf(mods).names) {
+    let from = 0
+    for (;;) {
+      const i = text.indexOf(n.key, from)
+      if (i < 0) {
+        break
+      }
+      const end = i + n.key.length
+      if (isTokenBoundary(text, i, end)) {
+        insertNonOverlapping(found, {
+          kind: 'mod',
+          start: i,
+          end,
+          id: n.id,
+        })
+      }
+      from = i + 1
     }
   }
 
@@ -169,12 +200,12 @@ function linksForModColumn(modColumn: string, mods: readonly InstalledMod[]): Co
   if (key.length === 0) {
     return []
   }
-  const match = mods.find((m) => m.name === key || localId(m.id) === key)
+  const match = indexOf(mods).byKey.get(key)
   if (match === undefined) {
     return []
   }
   const start = modColumn.indexOf(key)
-  return [{ kind: 'mod', start, end: start + key.length, id: match.id }]
+  return [{ kind: 'mod', start, end: start + key.length, id: match }]
 }
 
 export type { ConsoleLink, ConsoleLinkRoots, InstalledMod }
