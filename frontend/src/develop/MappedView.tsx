@@ -2,11 +2,14 @@ import { Box } from '@mui/material'
 import { useMemo, useState } from 'react'
 import type { Mapped } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import { CodeView } from './CodeView.tsx'
+import { nearestLine } from './nearestLine.ts'
 
 const NONE: number[] = []
 
-// The C# line picked, from either side; the other side scrolls to it.
+// The C# line clicked and the nearest one with IL, from either side; the other side scrolls to it. Each click is a
+// new Pick, so clicking the same line again scrolls back to it.
 interface Pick {
+  clicked: number
   cs: number
   from: 'cs' | 'il'
 }
@@ -26,8 +29,25 @@ export function MappedView({ mapped, line }: { mapped: Mapped; line: number }) {
   }, [links])
   const cs = pick?.cs ?? -1
   const ilLines = ilOf.get(cs) ?? NONE
-  const csMarked = useMemo(() => new Set(cs >= 0 ? [cs] : []), [cs])
+  // A C# click tints the line clicked as well as the one it resolved to.
+  const csMarked = useMemo(() => {
+    const lines = pick?.from === 'cs' ? [pick.clicked, cs] : [cs]
+    return new Set(lines.filter((n) => n >= 0))
+  }, [pick, cs])
   const ilMarked = useMemo(() => new Set(ilLines), [ilLines])
+  const csCount = useMemo(() => mapped.csharp.split('\n').length, [mapped.csharp])
+  const pickCs = (n: number) =>
+    setPick({ clicked: n, cs: nearestLine(n, csCount, (c) => ilOf.has(c)), from: 'cs' })
+  // An IL line with no C# of its own (a label, the locals) takes the C# of the nearest one that has.
+  const pickIl = (n: number) => {
+    const linked = nearestLine(n, links.length, (i) => (links[i] ?? -1) >= 0)
+    setPick({ clicked: n, cs: linked >= 0 ? (links[linked] ?? -1) : -1, from: 'il' })
+  }
+  const csFollow = useMemo(() => (pick?.from === 'il' && cs >= 0 ? { line: cs } : null), [pick, cs])
+  const ilFollow = useMemo(
+    () => (pick?.from === 'cs' && ilLines[0] !== undefined ? { line: ilLines[0] } : null),
+    [pick, ilLines],
+  )
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
       <Box
@@ -37,9 +57,9 @@ export function MappedView({ mapped, line }: { mapped: Mapped; line: number }) {
           source={mapped.csharp}
           il={false}
           line={line}
-          follow={pick?.from === 'il' ? cs : -1}
+          follow={csFollow}
           marked={csMarked}
-          onPick={(n) => setPick({ cs: n, from: 'cs' })}
+          onPick={pickCs}
         />
       </Box>
       <Box sx={{ display: 'flex', minWidth: 0 }}>
@@ -47,9 +67,9 @@ export function MappedView({ mapped, line }: { mapped: Mapped; line: number }) {
           source={mapped.il}
           il={true}
           line={-1}
-          follow={pick?.from === 'cs' ? (ilLines[0] ?? -1) : -1}
+          follow={ilFollow}
           marked={ilMarked}
-          onPick={(n) => setPick({ cs: links[n] ?? -1, from: 'il' })}
+          onPick={pickIl}
         />
       </Box>
     </Box>
