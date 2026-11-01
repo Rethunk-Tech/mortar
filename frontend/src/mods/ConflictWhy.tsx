@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
 import { useLoaded } from '@rethunk/react-load-hooks'
-import { type ReactNode, useEffect, useState } from 'react'
+import type { ReactNode } from 'react'
 import type {
   AssetConflict,
   ConflictEvidence,
@@ -24,6 +24,7 @@ function evidenceKey(e: ConflictEvidence) {
 }
 
 const KEYS_SHOWN = 8
+const NO_PREVIEWS: Record<string, string> = {}
 
 function EvidenceLine({ children }: { children: ReactNode }) {
   return (
@@ -37,7 +38,6 @@ export function ConflictWhy({ asset }: { asset: AssetConflict }) {
   const { t } = useLingui()
   const gameId = useProfiles((s) => s.game?.id) ?? ''
   const openId = useProfiles((s) => s.openId)
-  const [previews, setPreviews] = useState<Record<string, string>>({})
   const { data: evidence } = useLoaded<ConflictEvidence[]>(
     gameId !== '' && openId !== ''
       ? () =>
@@ -47,49 +47,33 @@ export function ConflictWhy({ asset }: { asset: AssetConflict }) {
     [],
     reportUnexpected,
   )
-  useEffect(() => {
-    let cancelled = false
-    const crops = evidence.filter(
-      (e) => e.cropW > 0 && (e.fromFile ?? '') !== '' && e.packId !== '',
-    )
-    if (crops.length === 0 || gameId === '' || openId === '') {
-      return () => {
-        cancelled = true
-      }
-    }
-    Promise.all(
-      crops.map((e) =>
-        ConflictImageCrop(
-          gameId,
-          openId,
-          e.packId,
-          e.fromFile ?? '',
-          e.cropX,
-          e.cropY,
-          e.cropW,
-          e.cropH,
-        )
-          .then((url) => ({ key: previewKey(e), url }))
-          .catch(() => ({ key: previewKey(e), url: '' })),
-      ),
-    )
-      .then((rows) => {
-        if (cancelled) {
-          return
-        }
-        const next: Record<string, string> = {}
-        for (const row of rows) {
-          if (row.url !== '') {
-            next[row.key] = row.url
-          }
-        }
-        setPreviews(next)
-      })
-      .catch(reportUnexpected)
-    return () => {
-      cancelled = true
-    }
-  }, [evidence, gameId, openId])
+  const crops = evidence.filter((e) => e.cropW > 0 && (e.fromFile ?? '') !== '' && e.packId !== '')
+  const { data: previews } = useLoaded<Record<string, string>>(
+    crops.length > 0 && gameId !== '' && openId !== ''
+      ? () =>
+          Promise.all(
+            crops.map((e) =>
+              ConflictImageCrop(
+                gameId,
+                openId,
+                e.packId,
+                e.fromFile ?? '',
+                e.cropX,
+                e.cropY,
+                e.cropW,
+                e.cropH,
+              )
+                .then((url) => ({ key: previewKey(e), url }))
+                .catch(() => ({ key: previewKey(e), url: '' })),
+            ),
+          ).then((rows) =>
+            Object.fromEntries(rows.filter((r) => r.url !== '').map((r) => [r.key, r.url])),
+          )
+      : null,
+    [evidence, gameId, openId],
+    NO_PREVIEWS,
+    reportUnexpected,
+  )
   const images = evidence.filter((e) => previews[previewKey(e)])
   return (
     <Box sx={{ mt: 0.75, display: 'flex', flexDirection: 'column', gap: space.gap }}>
