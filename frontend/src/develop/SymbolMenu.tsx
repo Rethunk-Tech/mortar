@@ -1,7 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
 import { Menu } from '@mui/material'
 import { useLoaded } from '@rethunk/react-load-hooks'
-import { Copy, CornerDownRight, Search } from 'lucide-react'
+import { ChevronRight, Copy, CornerDownRight, Search } from 'lucide-react'
+import { useState } from 'react'
 import {
   DecompileMapped,
   GameCode,
@@ -80,10 +81,16 @@ export function SymbolMenu({
   onDefinition: (m: Member) => void
 }) {
   const { t } = useLingui()
+  // The Copy hook row whose submenu is open, and its member.
+  const [hooks, setHooks] = useState<{ row: HTMLElement; member: Member } | null>(null)
+  const close = () => {
+    setHooks(null)
+    onClose()
+  }
   const name = at?.name ?? ''
   const { game, dir, assembly, type } = scope
-  const key = at ? [game, dir, assembly, type, at.il, at.line, at.name].join('\n') : ''
-  const cached = lookups.get(key)
+  const lookupKey = at ? [game, dir, assembly, type, at.il, at.line, at.name].join('\n') : ''
+  const cached = lookups.get(lookupKey)
   const { data: loaded } = useLoaded<Found | null>(
     at === null || cached
       ? null
@@ -98,10 +105,10 @@ export function SymbolMenu({
           if (lookups.size >= LOOKUPS_MAX) {
             lookups.clear()
           }
-          lookups.set(key, resolved)
+          lookups.set(lookupKey, resolved)
           return resolved
         },
-    [key],
+    [lookupKey],
     null,
     reportUnexpected,
   )
@@ -114,7 +121,7 @@ export function SymbolMenu({
   return (
     <Menu
       open={at !== null}
-      onClose={onClose}
+      onClose={close}
       anchorReference="anchorPosition"
       anchorPosition={at ? { top: at.y, left: at.x } : undefined}
       // Above the full-window dialog it opens from.
@@ -132,55 +139,66 @@ export function SymbolMenu({
         />
       )}
       {members.flatMap((m) => {
-        const label = `${m.type.split('.').at(-1) ?? m.type}::${m.method}`
-        // A code signature, not words, so it stays out of the translated message whole.
-        const signature = `${label}(${(m.types ?? m.params ?? []).join(', ')})`
+        const key = memberKey(m)
         return [
+          // Only when the name could be more than one member does each group say whose it is.
+          members.length > 1 ? (
+            <MenuNote
+              key={`n${key}`}
+            >{`${m.type.split('.').at(-1) ?? m.type}::${m.method}`}</MenuNote>
+          ) : null,
           onItsDefinition ? null : (
             <MenuAction
-              key={`d${memberKey(m)}`}
+              key={`d${key}`}
               icon={<CornerDownRight size={14} />}
-              label={t`Go to the definition of ${{ label }}`}
+              label={t`Go to definition`}
               onClick={() => onDefinition(m)}
             />
           ),
           <MenuAction
-            key={`u${memberKey(m)}`}
+            key={`u${key}`}
             icon={<Search size={14} />}
-            label={t`Find usages of ${{ label }}`}
+            label={t`Find usages…`}
             onClick={() => onUsages(`${m.type}::${m.method}`)}
           />,
-          ...(onItsDefinition && m.kind !== 'field'
-            ? [
-                {
-                  id: 'on',
-                  text: t`Copy a ${{ library: HOOKGEN }} On. hook for ${{ signature }}`,
-                  make: hookSnippet,
-                },
-                {
-                  id: 'mm',
-                  text: t`Copy a ${{ library: MONOMOD }} Hook for ${{ signature }}`,
-                  make: monoModHookSnippet,
-                },
-                {
-                  id: 'hp',
-                  text: t`Copy a ${{ library: HARMONY }} patch for ${{ signature }}`,
-                  make: harmonyPatchSnippet,
-                },
-              ].map((h) => (
-                <MenuAction
-                  key={`${h.id}${memberKey(m)}`}
-                  icon={<Copy size={14} />}
-                  label={h.text}
-                  onClick={() => {
-                    copyText(h.make(m), t`Hook copied`)
-                    onClose()
-                  }}
-                />
-              ))
-            : []),
+          onItsDefinition && m.kind !== 'field' ? (
+            <MenuAction
+              key={`h${key}`}
+              icon={<Copy size={14} />}
+              label={t`Copy hook`}
+              expanded={hooks?.member === m}
+              end={<ChevronRight size={14} />}
+              onClick={(e) => setHooks({ row: e.currentTarget, member: m })}
+            />
+          ) : null,
         ]
       })}
+      <Menu
+        open={hooks !== null}
+        anchorEl={hooks?.row}
+        onClose={() => setHooks(null)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        sx={{ zIndex: (theme) => theme.zIndex.modal + 2 }}
+      >
+        {hooks
+          ? [
+              { id: 'on', text: t`${{ app: HOOKGEN }} On. hook`, make: hookSnippet },
+              { id: 'mm', text: t`${{ app: MONOMOD }} Hook`, make: monoModHookSnippet },
+              { id: 'hp', text: t`${{ app: HARMONY }} patch`, make: harmonyPatchSnippet },
+            ].map((h) => (
+              <MenuAction
+                key={h.id}
+                icon={<Copy size={14} />}
+                label={h.text}
+                onClick={() => {
+                  copyText(h.make(hooks.member), t`Hook copied`)
+                  close()
+                }}
+              />
+            ))
+          : null}
+      </Menu>
     </Menu>
   )
 }

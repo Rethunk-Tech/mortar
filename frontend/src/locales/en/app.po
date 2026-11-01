@@ -1541,10 +1541,6 @@ msgstr "Not downloaded yet: {names}"
 msgid "No fix yet"
 msgstr "No fix yet"
 
-#: src/develop/SymbolMenu.tsx
-msgid "Go to the definition of {label}"
-msgstr "Go to the definition of {label}"
-
 #: src/groups/SaveGroupToLibrary.tsx
 msgid "A saved group with this name already exists."
 msgstr "A saved group with this name already exists."
@@ -2000,6 +1996,10 @@ msgstr "Copy message {count}"
 msgid "On this computer"
 msgstr "On this computer"
 
+#: src/develop/SymbolMenu.tsx
+msgid "{app} Hook"
+msgstr "{app} Hook"
+
 #: src/share/ModpackDialog.tsx
 msgid "The name may hold only letters, digits and underscores."
 msgstr "The name may hold only letters, digits and underscores."
@@ -2278,6 +2278,10 @@ msgstr "Done"
 msgid "{name} is no longer in the saves folder"
 msgstr "{name} is no longer in the saves folder"
 
+#: src/develop/SymbolMenu.tsx
+msgid "{app} patch"
+msgstr "{app} patch"
+
 #: src/lan/SendPanel.tsx
 msgid "No Mortar users found nearby"
 msgstr "No Mortar users found nearby"
@@ -2489,10 +2493,6 @@ msgstr "{hidden} hidden"
 #: src/saves/SaveListRow.tsx
 msgid "Unknown"
 msgstr "Unknown"
-
-#: src/develop/SymbolMenu.tsx
-msgid "Copy a {library} Hook for {signature}"
-msgstr "Copy a {library} Hook for {signature}"
 
 #: src/game/ProfileMenu.tsx
 #: src/game/ProfileMenuItems.tsx
@@ -3258,6 +3258,10 @@ msgstr "Other Mortar users on your local network will be able to find this compu
 msgid "Host {host}, yours {mine}"
 msgstr "Host {host}, yours {mine}"
 
+#: src/develop/SymbolMenu.tsx
+msgid "Copy hook"
+msgstr "Copy hook"
+
 #: src/install/NeedsRootCallout.tsx
 msgid "Choose variant…"
 msgstr "Choose variant…"
@@ -3976,6 +3980,10 @@ msgstr "A file to send, with your config files"
 #: src/game/ProfileMenuItems.tsx
 msgid "Shortcut added"
 msgstr "Shortcut added"
+
+#: src/develop/SymbolMenu.tsx
+msgid "Go to definition"
+msgstr "Go to definition"
 
 #: src/tools/ToolsManageDialog.tsx
 msgid "Could not remove {name}"
@@ -5443,10 +5451,6 @@ msgstr "Preview link…"
 #: src/screenshots/ScreenshotsTab.tsx
 msgid "Could not set the cover"
 msgstr "Could not set the cover"
-
-#: src/develop/SymbolMenu.tsx
-msgid "Copy a {library} patch for {signature}"
-msgstr "Copy a {library} patch for {signature}"
 
 #: src/commandPalette/paletteLabels.ts
 msgid "Review collection update"
@@ -6969,10 +6973,6 @@ msgstr "Save…"
 msgid "Fall"
 msgstr "Fall"
 
-#: src/develop/SymbolMenu.tsx
-msgid "Copy a {library} On. hook for {signature}"
-msgstr "Copy a {library} On. hook for {signature}"
-
 #: src/browse/BrowseBody.tsx
 msgid "Try fewer words, or the mod's exact name."
 msgstr "Try fewer words, or the mod's exact name."
@@ -7186,6 +7186,10 @@ msgstr "Open settings"
 #: src/share/ImportFooter.tsx
 msgid "Sign in to {source} to download these mods."
 msgstr "Sign in to {source} to download these mods."
+
+#: src/develop/SymbolMenu.tsx
+msgid "Find usages…"
+msgstr "Find usages…"
 
 #: src/queue/QueueBody.tsx
 #: src/queue/store.ts
@@ -7462,6 +7466,10 @@ msgstr "Forest farm"
 #: src/game/TabHeader.tsx
 msgid "{count, plural, one {# save} other {# saves}}"
 msgstr "{count, plural, one {# save} other {# saves}}"
+
+#: src/develop/SymbolMenu.tsx
+msgid "{app} On. hook"
+msgstr "{app} On. hook"
 
 #: src/develop/ProjectCard.tsx
 msgid "Last run: {start} ms to start, {frame} ms a frame"

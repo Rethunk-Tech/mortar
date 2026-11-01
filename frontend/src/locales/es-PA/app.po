@@ -1541,10 +1541,6 @@ msgstr ""
 msgid "No fix yet"
 msgstr ""
 
-#: src/develop/SymbolMenu.tsx
-msgid "Go to the definition of {label}"
-msgstr ""
-
 #: src/groups/SaveGroupToLibrary.tsx
 msgid "A saved group with this name already exists."
 msgstr ""
@@ -2000,6 +1996,10 @@ msgstr ""
 msgid "On this computer"
 msgstr ""
 
+#: src/develop/SymbolMenu.tsx
+msgid "{app} Hook"
+msgstr ""
+
 #: src/share/ModpackDialog.tsx
 msgid "The name may hold only letters, digits and underscores."
 msgstr ""
@@ -2278,6 +2278,10 @@ msgstr ""
 msgid "{name} is no longer in the saves folder"
 msgstr ""
 
+#: src/develop/SymbolMenu.tsx
+msgid "{app} patch"
+msgstr ""
+
 #: src/lan/SendPanel.tsx
 msgid "No Mortar users found nearby"
 msgstr ""
@@ -2488,10 +2492,6 @@ msgstr ""
 #: src/saves/backups.ts
 #: src/saves/SaveListRow.tsx
 msgid "Unknown"
-msgstr ""
-
-#: src/develop/SymbolMenu.tsx
-msgid "Copy a {library} Hook for {signature}"
 msgstr ""
 
 #: src/game/ProfileMenu.tsx
@@ -3258,6 +3258,10 @@ msgstr ""
 msgid "Host {host}, yours {mine}"
 msgstr ""
 
+#: src/develop/SymbolMenu.tsx
+msgid "Copy hook"
+msgstr ""
+
 #: src/install/NeedsRootCallout.tsx
 msgid "Choose variant…"
 msgstr ""
@@ -3975,6 +3979,10 @@ msgstr ""
 
 #: src/game/ProfileMenuItems.tsx
 msgid "Shortcut added"
+msgstr ""
+
+#: src/develop/SymbolMenu.tsx
+msgid "Go to definition"
 msgstr ""
 
 #: src/tools/ToolsManageDialog.tsx
@@ -5442,10 +5450,6 @@ msgstr ""
 
 #: src/screenshots/ScreenshotsTab.tsx
 msgid "Could not set the cover"
-msgstr ""
-
-#: src/develop/SymbolMenu.tsx
-msgid "Copy a {library} patch for {signature}"
 msgstr ""
 
 #: src/commandPalette/paletteLabels.ts
@@ -6969,10 +6973,6 @@ msgstr ""
 msgid "Fall"
 msgstr ""
 
-#: src/develop/SymbolMenu.tsx
-msgid "Copy a {library} On. hook for {signature}"
-msgstr ""
-
 #: src/browse/BrowseBody.tsx
 msgid "Try fewer words, or the mod's exact name."
 msgstr ""
@@ -7185,6 +7185,10 @@ msgstr ""
 
 #: src/share/ImportFooter.tsx
 msgid "Sign in to {source} to download these mods."
+msgstr ""
+
+#: src/develop/SymbolMenu.tsx
+msgid "Find usages…"
 msgstr ""
 
 #: src/queue/QueueBody.tsx
@@ -7461,6 +7465,10 @@ msgstr ""
 
 #: src/game/TabHeader.tsx
 msgid "{count, plural, one {# save} other {# saves}}"
+msgstr ""
+
+#: src/develop/SymbolMenu.tsx
+msgid "{app} On. hook"
 msgstr ""
 
 #: src/develop/ProjectCard.tsx

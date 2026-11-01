@@ -1,6 +1,6 @@
 import MenuItem from '@mui/material/MenuItem'
 import { Check } from 'lucide-react'
-import type { ReactNode } from 'react'
+import type { MouseEvent, ReactNode } from 'react'
 import { destructiveSx } from './destructive.ts'
 import { pickWithoutFocus } from './pickWithoutFocus.ts'
 import { Tooltip } from './Tooltip.tsx'
@@ -47,7 +47,8 @@ export function MenuAction({
   // Why the item is disabled, shown under its label; a disabled item cannot be hovered reliably for a tooltip.
   reason?: string | undefined
   tone?: 'error' | undefined
-  onClick: () => void
+  // Given the row, for a submenu to open beside it.
+  onClick: (e: MouseEvent<HTMLElement>) => void
 }) {
   return (
     <MenuItem
