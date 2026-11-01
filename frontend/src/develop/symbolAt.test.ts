@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { identifierAt, ilOwner } from './symbolAt.ts'
+import { csArity, identifierAt, ilArity, ilOwner } from './symbolAt.ts'
 
 test('identifierAt finds the name a click lands in, and nothing on punctuation', () => {
   const line = 'public Camera gameplayCamera;'
@@ -31,4 +31,33 @@ test('ilOwner reads the type a call or field access names', () => {
     ),
   ).toBe('System.Collections.Generic.List`1')
   expect(ilOwner('call instance void Thing::Updated()', 'Update')).toBe('')
+})
+
+test("ilArity counts a call's arguments, not those of its generic types", () => {
+  expect(
+    ilArity(
+      'call instance void AdjacentRoomCullingModified::UpdateRendererLists()',
+      'UpdateRendererLists',
+    ),
+  ).toBe(0)
+  expect(
+    ilArity(
+      'call instance void AdjacentRoomCullingModified::UpdateRendererLists(class [mscorlib]System.Collections.Generic.List`1<class [DunGen]DunGen.Tile>, class [mscorlib]System.Collections.Generic.List`1<class [DunGen]DunGen.Door>)',
+      'UpdateRendererLists',
+    ),
+  ).toBe(2)
+  expect(ilArity('ldfld class Tile AdjacentRoomCullingModified::currentTile', 'currentTile')).toBe(
+    -1,
+  )
+})
+
+test("csArity counts a declaration's parameters", () => {
+  expect(
+    csArity(
+      '\tpublic void UpdateRendererLists(List<Tile> tiles, List<Door> doors)',
+      'UpdateRendererLists',
+    ),
+  ).toBe(2)
+  expect(csArity('\tpublic void UpdateRendererLists()', 'UpdateRendererLists')).toBe(0)
+  expect(csArity('\tpublic int count;', 'count')).toBe(-1)
 })

@@ -14,7 +14,7 @@ import { MenuAction, MenuNote } from '../shell/MenuAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { declares } from './declaration.ts'
 import { harmonyPatchSnippet, hookSnippet, memberKey, monoModHookSnippet } from './hook.ts'
-import { ilOwner, type SymbolClick } from './symbolAt.ts'
+import { csArity, ilArity, ilOwner, type SymbolClick } from './symbolAt.ts'
 
 // Members a right-click menu lists, at most.
 const MENU_MEMBERS = 6
@@ -37,29 +37,69 @@ interface Scope {
   type: string
 }
 
-// The type that owns a right-clicked name: the open type for its own declaration, else the target IL names on that
-// line (read from the IL view, or through the line map from C#), else the open type for a name not after a dot.
-// '' when none of those settles it.
-async function ownerOf(scope: Scope, at: SymbolClick): Promise<string> {
+// Who a right-clicked name is: the type that owns it and, for a method, how many arguments the call passes or the
+// declaration lists (-1 when unknown), which tells overloads apart. The owner is the open type for its own declaration,
+// else the target IL names on that line (read from the IL view, or through the line map from C#), else the open type
+// for a name not after a dot; '' when none of those settles it.
+async function ownerOf(scope: Scope, at: SymbolClick): Promise<{ owner: string; arity: number }> {
   if (scope.type !== '' && declares(at.text, at.name)) {
-    return scope.type
+    return { owner: scope.type, arity: at.il ? -1 : csArity(at.text, at.name) }
   }
   if (at.il) {
-    return ilOwner(at.text, at.name)
+    return { owner: ilOwner(at.text, at.name), arity: ilArity(at.text, at.name) }
   }
   if (scope.type === '') {
-    return ''
+    return { owner: '', arity: -1 }
   }
   const mapped = await DecompileMapped(scope.game, scope.dir, scope.assembly, scope.type)
   const il = mapped.il.split('\n')
   for (const [i, cs] of (mapped.links ?? []).entries()) {
-    const owner = cs === at.line ? ilOwner(il[i] ?? '', at.name) : ''
+    const line = cs === at.line ? (il[i] ?? '') : ''
+    const owner = line === '' ? '' : ilOwner(line, at.name)
     if (owner !== '') {
-      return owner
+      return { owner, arity: ilArity(line, at.name) }
     }
   }
   const before = at.text.slice(0, at.text.search(new RegExp(`\\b${at.name}\\b`))).trimEnd()
-  return before.endsWith('.') ? '' : scope.type
+  return { owner: before.endsWith('.') ? '' : scope.type, arity: -1 }
+}
+
+// What a right-click resolves to: a name already looked up on that line comes from the cache at once.
+function useLookup(scope: Scope, at: SymbolClick | null): Found | null {
+  const { game, dir, assembly, type } = scope
+  const lookupKey = at ? [game, dir, assembly, type, at.il, at.line, at.name].join('\n') : ''
+  const cached = lookups.get(lookupKey)
+  const { data: loaded } = useLoaded<Found | null>(
+    at === null || cached
+      ? null
+      : async () => {
+          const { owner, arity } = await ownerOf({ game, dir, assembly, type }, at)
+          const hits =
+            (await GameCode(game, dir, assembly, owner ? `${owner}::${at.name}` : at.name)) ?? []
+          const resolved = {
+            owner,
+            members: overload(
+              hits.filter((m) => m.method === at.name && (owner === '' || m.type === owner)),
+              arity,
+            ),
+          }
+          if (lookups.size >= LOOKUPS_MAX) {
+            lookups.clear()
+          }
+          lookups.set(lookupKey, resolved)
+          return resolved
+        },
+    [lookupKey],
+    null,
+    reportUnexpected,
+  )
+  return cached ?? loaded
+}
+
+// The overloads that take arity arguments, when that leaves any; all of them when the count is unknown.
+function overload(members: Member[], arity: number): Member[] {
+  const taking = members.filter((m) => m.kind === 'method' && (m.params ?? []).length === arity)
+  return arity < 0 || taking.length === 0 ? members : taking
 }
 
 /**
@@ -88,31 +128,7 @@ export function SymbolMenu({
     onClose()
   }
   const name = at?.name ?? ''
-  const { game, dir, assembly, type } = scope
-  const lookupKey = at ? [game, dir, assembly, type, at.il, at.line, at.name].join('\n') : ''
-  const cached = lookups.get(lookupKey)
-  const { data: loaded } = useLoaded<Found | null>(
-    at === null || cached
-      ? null
-      : async () => {
-          const owner = await ownerOf({ game, dir, assembly, type }, at)
-          const hits =
-            (await GameCode(game, dir, assembly, owner ? `${owner}::${at.name}` : at.name)) ?? []
-          const resolved = {
-            owner,
-            members: hits.filter((m) => m.method === at.name && (owner === '' || m.type === owner)),
-          }
-          if (lookups.size >= LOOKUPS_MAX) {
-            lookups.clear()
-          }
-          lookups.set(lookupKey, resolved)
-          return resolved
-        },
-    [lookupKey],
-    null,
-    reportUnexpected,
-  )
-  const found = cached ?? loaded
+  const found = useLookup(scope, at)
   const members = found?.members.slice(0, MENU_MEMBERS) ?? []
   const onItsDefinition = at !== null && declares(at.text, at.name)
   // A member of another assembly (Unity's, say) is not in this one's search, but its usages can still be found.
@@ -143,9 +159,9 @@ export function SymbolMenu({
         return [
           // Only when the name could be more than one member does each group say whose it is.
           members.length > 1 ? (
-            <MenuNote
-              key={`n${key}`}
-            >{`${m.type.split('.').at(-1) ?? m.type}::${m.method}`}</MenuNote>
+            <MenuNote key={`n${key}`}>
+              {`${m.type.split('.').at(-1) ?? m.type}::${m.method}${m.kind === 'field' ? '' : `(${(m.types ?? []).join(', ')})`}`}
+            </MenuNote>
           ) : null,
           onItsDefinition ? null : (
             <MenuAction

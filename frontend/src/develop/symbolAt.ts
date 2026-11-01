@@ -42,3 +42,43 @@ export interface SymbolClick {
   text: string
   il: boolean
 }
+
+// How many arguments an IL call to name passes, read from its parameter list (commas outside generic arguments), or -1
+// when the line is no call to it (a field access, say).
+export function ilArity(line: string, name: string): number {
+  return arityAt(line, line.search(new RegExp(`::${name.replace(ESCAPE, '\\$&')}\\b`)))
+}
+
+// How many parameters a C# declaration of name lists, or -1 when the line declares no method called name.
+export function csArity(line: string, name: string): number {
+  return arityAt(
+    line,
+    line.search(new RegExp(`\\b${name.replace(ESCAPE, '\\$&')}\\s*(?:<[^>()]*>)?\\s*\\(`)),
+  )
+}
+
+// The number of entries in the first parameter list after position at, counting commas outside nested <> and ().
+function arityAt(line: string, at: number): number {
+  const open = at < 0 ? -1 : line.indexOf('(', at)
+  if (open < 0) {
+    return -1
+  }
+  const list = line.slice(open + 1)
+  if (list.trimStart().startsWith(')')) {
+    return 0
+  }
+  let depth = 0
+  let commas = 0
+  for (const c of list) {
+    if (c === '<' || c === '(') {
+      depth += 1
+    } else if (c === '>' || (c === ')' && depth > 0)) {
+      depth -= 1
+    } else if (c === ')') {
+      break
+    } else if (c === ',' && depth === 0) {
+      commas += 1
+    }
+  }
+  return commas + 1
+}
