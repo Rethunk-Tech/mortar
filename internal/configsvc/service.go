@@ -249,11 +249,12 @@ func packageNames(n string) (pkg, name string) {
 
 func (d cfgOnDisk) ownedBy(names []string) bool {
 	if d.text {
+		folder, stem := mod.LooseName(d.folder), mod.LooseName(d.stem)
 		return slices.ContainsFunc(names, func(n string) bool {
 			// A Thunderstore id is source:Namespace-Name; the package's folder is Namespace-Name, its file the Name.
 			pkg, name := packageNames(n)
 			for _, k := range []string{mod.LooseName(n), mod.LooseName(pkg), mod.LooseName(name)} {
-				if len(k) >= minConfigName && (mod.LooseName(d.folder) == k || strings.Contains(mod.LooseName(d.stem), k)) {
+				if len(k) >= minConfigName && (folder == k || strings.Contains(stem, k)) {
 					return true
 				}
 			}
@@ -671,6 +672,7 @@ func (s *Service) write(game, profileID, modID string, f ConfigFile, edits []edi
 		if s.SetJSON == nil {
 			return errors.New("config.json edits are not wired")
 		}
+		// ponytail: one SetJSON read/write per edit (k writes per save); upgrade is a batch setter on the profile's writer.
 		for _, e := range edits {
 			if err := s.SetJSON(game, profileID, mod.ID(modID), path(e.section, e.key), e.value); err != nil {
 				return err
@@ -698,6 +700,7 @@ func (s *Service) write(game, profileID, modID string, f ConfigFile, edits []edi
 		return err
 	}
 	text := string(raw)
+	// ponytail: re-parses the whole file per edit; upgrade is one parse applying all edits.
 	for _, e := range edits {
 		next, err := cfgedit.ParseBepInEx(text).Set(e.section, e.key, e.value)
 		if st, ok := b.setting(e.section, e.key); errors.Is(err, cfgedit.ErrNoSetting) && hasBound && ok {
