@@ -3788,7 +3788,7 @@ msgstr ""
 
 #: src/launch/SmapiWarnDialog.tsx
 msgid "{game}'s {launcher} launch options run {loader} in place of the game. Remove that launch option to stop it. Mortar will not change it."
-msgstr ""
+msgstr "{game} 的 {launcher} 启动选项会代替游戏运行 {loader}。移除该启动选项即可停止。Mortar 不会更改它。"
 
 #: src/lan/PairedComputers.tsx
 msgid "Pair a computer"
