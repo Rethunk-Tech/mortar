@@ -186,8 +186,7 @@ function shareCases(kit: ReturnType<typeof dialogKit>): Case[] {
 
 // Home's Tools menu and the Develop tab's New mod wizard, each step measured on its own.
 function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
-  const { dialog, button, pick, inDialog, tabIn, newModTo, atHome, tab, shown, ready, developTab } =
-    kit
+  const { dialog, button, pick, inDialog, tabIn, newModTo, atHome, shown, ready, developTab } = kit
   return [
     dialog(
       'manage-tools',
