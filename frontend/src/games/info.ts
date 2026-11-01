@@ -15,7 +15,13 @@ function ensureLoaded() {
   }
   requested = true
   List()
-    .then((games) => useGameList.setState({ games: games ?? [] }))
+    .then((games) => {
+      const next = games ?? []
+      // A reread that changed nothing keeps the old list, so every menu and page that reads it skips a redraw.
+      if (JSON.stringify(next) !== JSON.stringify(useGameList.getState().games)) {
+        useGameList.setState({ games: next })
+      }
+    })
     .catch(() => {
       requested = false
     })
