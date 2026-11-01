@@ -13,7 +13,8 @@ import { reportUnexpected } from '../toasts/report.ts'
 
 const dotted = (type: string) => type.replaceAll('+', '.')
 
-const fileName = (path: string) => path.split(/[\\/]/u).at(-1) ?? ''
+const SEPARATOR = /[\\/]/u
+const fileName = (path: string) => path.split(SEPARATOR).at(-1) ?? ''
 
 // Where a frame's method can be: the assembly its module id names; without one (Unity's own traces print none), the
 // game's own and then those named after the type's root namespace, as UnityEngine.CoreModule.dll is.
