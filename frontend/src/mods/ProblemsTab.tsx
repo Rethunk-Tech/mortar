@@ -55,7 +55,7 @@ function OfflineChecksNote() {
   const { t } = useLingui()
   return (
     <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>
-      {t`Some checks got no answer from their sites, which may be offline or busy, so more problems may show up later.`}
+      {t`Some sites did not answer, so more problems may show up later.`}
     </Typography>
   )
 }

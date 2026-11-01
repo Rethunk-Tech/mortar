@@ -17,7 +17,7 @@ const problemWhy: Record<Row['kind'], Why> = {
     anchor: 'missing-requirement',
     text: () =>
       i18n._(
-        msg`A mod you enabled needs another mod that is not in this profile, or is disabled. The first mod may fail to load or leave out features until the other one is added.`,
+        msg`A mod you enabled needs another mod that is not in this profile, or is disabled. It may fail to load or lack features until the other is added.`,
       ),
   },
   broken: {
@@ -43,7 +43,7 @@ const problemWhy: Record<Row['kind'], Why> = {
     anchor: 'duplicate-mod',
     text: () =>
       i18n._(
-        msg`Two enabled copies of the same mod are in this profile. The game loads only one of them, and you do not choose which.`,
+        msg`Two enabled copies of the same mod are in this profile. The game loads only one, and you cannot choose which.`,
       ),
   },
   asset: {
@@ -76,7 +76,7 @@ const problemWhy: Record<Row['kind'], Why> = {
     anchor: 'damaged-files',
     text: () =>
       i18n._(
-        msg`Files of this stored mod went missing, changed or appeared after Mortar stored it. An antivirus, a disk fault or a manual edit can cause that, and the mod may misbehave.`,
+        msg`Files of this stored mod went missing, changed or appeared after Mortar stored it. Antivirus, a disk fault or a manual edit can cause that, and the mod may misbehave.`,
       ),
   },
   longPath: {
@@ -111,7 +111,7 @@ const problemWhy: Record<Row['kind'], Why> = {
     anchor: 'changed-outside-mortar',
     text: () =>
       i18n._(
-        msg`Something changed this profile's mods folder without Mortar, by adding, removing or editing a file. Mortar flags it so the profile matches what you expect.`,
+        msg`Something changed this profile's mods folder without Mortar, by adding, removing or editing a file.`,
       ),
   },
 }
