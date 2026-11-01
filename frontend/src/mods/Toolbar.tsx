@@ -193,7 +193,7 @@ const ShowFilterControl = memo(function ShowFilterMenu({
   )
 })
 
-const GroupByControl = memo(function GroupByMenu() {
+export const GroupByControl = memo(function GroupByMenu() {
   const { t } = useLingui()
   const by = useListGroupBy()
   const loader = useProfileLoader()

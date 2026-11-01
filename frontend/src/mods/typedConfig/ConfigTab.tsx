@@ -22,6 +22,7 @@ import { LetterTile } from '../LetterTile.tsx'
 import { modId } from '../lookup.ts'
 import { GroupHeaderRow } from '../ModsGroupHeader.tsx'
 import { useMods } from '../store.ts'
+import { GroupByControl } from '../Toolbar.tsx'
 import { useListHeading } from '../useListHeading.ts'
 import { useModGroups } from '../useModGroups.ts'
 import { flattenModGroups, useModVirtual, type VirtualRow } from '../virtualRows.ts'
@@ -490,6 +491,7 @@ export function ConfigTab({ profile, game }: { profile: Profile; game: string })
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
       <ControlsRow>
+        <GroupByControl />
         <ConfigSearch
           label={t`Filter mods`}
           placeholder={plural({ count: total }, { one: 'Filter # mod', other: 'Filter # mods' })}
