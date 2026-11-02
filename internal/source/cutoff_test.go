@@ -63,3 +63,11 @@ func TestReleasesWithin(t *testing.T) {
 		t.Fatalf("got %v", got)
 	}
 }
+
+func TestValidCutoff(t *testing.T) {
+	for in, want := range map[string]bool{"2024-02-10": true, "2024-13-40": false, "yesterday": false, "": false} {
+		if got := ValidCutoff(in); got != want {
+			t.Errorf("ValidCutoff(%q) = %v, want %v", in, got, want)
+		}
+	}
+}

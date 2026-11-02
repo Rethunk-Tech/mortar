@@ -157,10 +157,8 @@ func (s *Service) SetGameFolder(gameID, id, dir string) (Profile, error) {
 // SetModsUpTo makes the profile install and update mods at the newest version released on or before date
 // (YYYY-MM-DD); "" lifts the limit.
 func (s *Service) SetModsUpTo(gameID, id, date string) (Profile, error) {
-	if date != "" {
-		if _, err := time.Parse(source.CutoffLayout, date); err != nil {
-			return Profile{}, usererr.Wrap(usererr.Invalid, fmt.Errorf("%q is not a date (YYYY-MM-DD)", date))
-		}
+	if date != "" && !source.ValidCutoff(date) {
+		return Profile{}, usererr.Wrap(usererr.Invalid, fmt.Errorf("%q is not a date (YYYY-MM-DD)", date))
 	}
 	return s.store.update(gameID, id, func(p *Profile, _ string) error {
 		p.ModsUpTo = date

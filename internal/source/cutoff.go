@@ -12,6 +12,12 @@ type cutoffKey struct{}
 // CutoffLayout is how a profile's "mod versions up to" date is written.
 const CutoffLayout = "2006-01-02"
 
+// ValidCutoff reports whether s is a date in CutoffLayout.
+func ValidCutoff(s string) bool {
+	_, err := time.Parse(CutoffLayout, s)
+	return err == nil
+}
+
 // ParseCutoff reads a YYYY-MM-DD date as the end of that day in UTC, so a version released on the date still counts.
 // An empty or unreadable value is no cutoff.
 func ParseCutoff(s string) time.Time {

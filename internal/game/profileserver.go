@@ -11,12 +11,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
-// HasProfileServer reports whether a profile of game id can run the game's dedicated server.
-func HasProfileServer(id string) bool {
-	info, ok := catalogGame(id)
-	return ok && info.ProfileServer != nil
-}
-
 // ProfileServerStart is the program and arguments that start the dedicated server of the install in installDir with
 // dataDir as its data folder: the server's own executable on a Windows build, the assembly under dotnet elsewhere.
 func ProfileServerStart(spec components.ProfileServerSpec, platform, installDir, dataDir string) (exe string, args []string, err error) {
