@@ -8,6 +8,7 @@ import { AppDialog, DialogFooter, type DialogSize } from './AppDialog.tsx'
 import { labelIdOf } from './fieldLabel.ts'
 
 const MULTILINE_ROWS = 3
+const TABBED_HEIGHT = 'min(600px, calc(100% - 64px))'
 
 /**
  * A dialog that edits something: Enter submits, Esc or Cancel with unsaved changes asks first, and while the form
@@ -62,6 +63,8 @@ export function FormDialog({
       icon={icon}
       size={size}
       tabs={tabs}
+      // Tabs differ in length: a steady height keeps the tab bar still while the body scrolls.
+      height={tabs ? TABBED_HEIGHT : undefined}
       closeButton={closeButton}
       footer={
         <DialogFooter
