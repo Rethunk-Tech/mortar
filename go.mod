@@ -19,7 +19,7 @@ require (
 	github.com/Rethunk-Tech/go-keyring v0.1.0
 	github.com/Rethunk-Tech/go-larian v0.1.1
 	github.com/Rethunk-Tech/go-lenientjson v0.1.0
-	github.com/Rethunk-Tech/go-modio v0.0.0
+	github.com/Rethunk-Tech/go-modio v0.1.0
 	github.com/Rethunk-Tech/go-modmanagers v0.2.0
 	github.com/Rethunk-Tech/go-nettrace v0.1.0
 	github.com/Rethunk-Tech/go-nexusmods v0.3.0
@@ -80,4 +80,6 @@ require (
 
 replace github.com/wailsapp/wails/v3 => github.com/Rethunk-AI/wails/v3 v3.0.0-mortar.1
 
-replace github.com/Rethunk-Tech/go-modio => ../go-modio
+replace github.com/Rethunk-Tech/go-safefs => ../go-safefs
+
+replace github.com/Rethunk-Tech/go-nexusmods => ../go-nexusmods

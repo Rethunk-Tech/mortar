@@ -36,14 +36,12 @@ github.com/Rethunk-Tech/go-larian v0.1.1 h1:0h9gzh2X4oXOP6jxn3B/lfgdsTlO1lPoMyyo
 github.com/Rethunk-Tech/go-larian v0.1.1/go.mod h1:oZ8kRTS3AJw6fkyfP66mXP7DJ6l7eJPExmr8+b6tV1M=
 github.com/Rethunk-Tech/go-lenientjson v0.1.0 h1:z9tWTZtE6x1FNsUuZEFgbCnaMkYk/0QzPcbLiWrldcg=
 github.com/Rethunk-Tech/go-lenientjson v0.1.0/go.mod h1:wvcKB3J1GQTQpvVn/GHoGQ41yNMOu9rw6dw3+7k9WaQ=
+github.com/Rethunk-Tech/go-modio v0.1.0 h1:Io87+1yXEBx9b6E0x8O3jT/TJfJfAOMVczCB2RvdpNs=
+github.com/Rethunk-Tech/go-modio v0.1.0/go.mod h1:qtOl9kRCC8VIqhKO6SrE/o8HX2pgoYss23ct6r00ilM=
 github.com/Rethunk-Tech/go-modmanagers v0.2.0 h1:cJc5uHwJF2U3O/X/eEilRWxo27pLh6nDy2uY788weCY=
 github.com/Rethunk-Tech/go-modmanagers v0.2.0/go.mod h1:AqikiyPOMrgYO7aI2DiO4d5GL3rywr4xxmkB8grsly0=
 github.com/Rethunk-Tech/go-nettrace v0.1.0 h1:nwx2R/p7HGauax19KB1es9rSwr3ROubPEMhCLohnvsI=
 github.com/Rethunk-Tech/go-nettrace v0.1.0/go.mod h1:fy5SH8B/dIoykYgt2alKsyc745KnlMPnArGf+Egqm3s=
-github.com/Rethunk-Tech/go-nexusmods v0.3.0 h1:Gp0x2DfRK4RbqjS7C3u0D295FQIrhYehzNaNOj0CN9o=
-github.com/Rethunk-Tech/go-nexusmods v0.3.0/go.mod h1:SveCytdv94AzTS8R47bPHKkSIeXogEhZAopBsS/4rv8=
-github.com/Rethunk-Tech/go-safefs v0.4.0 h1:3xzfhEAgKuLw+29eum7njGc73yNlD9Ih/BfnnEoQ3Jc=
-github.com/Rethunk-Tech/go-safefs v0.4.0/go.mod h1:OlJOS+MRiL1we4bZjwI59SfZ1P2w7htlhxdP0ZuVBgU=
 github.com/Rethunk-Tech/go-semverish v0.2.0 h1:UrJw6+D1uOclXnkLmpSQAIvzoCqF9XPmXBqRRdA+1lw=
 github.com/Rethunk-Tech/go-semverish v0.2.0/go.mod h1:aCtsBrSen/cxziPkxMmXxk/C3xsFVcH5+GjqPKtr6iM=
 github.com/Rethunk-Tech/go-smapi v0.2.0 h1:nH+UsxO7kpJp1QKvLDfHKF/qiUDJ2JXtIw93qBmXcqI=
