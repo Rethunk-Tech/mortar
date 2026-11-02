@@ -142,4 +142,4 @@ runs:
     - name: Install dependencies and build the frontend
       if: inputs.frontend == 'true'
       shell: bash
-      run: bun install --frozen-lockfile && bun run bindings && bun run --cwd frontend build
+      run: bun install --frozen-lockfile && scripts/bindings-fresh.sh && bun run --cwd frontend build
