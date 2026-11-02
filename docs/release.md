@@ -19,7 +19,7 @@ The recipes are the `wails3 task` targets in `Taskfile.yml` (`linux:create:appim
 
 ## Each release
 
-1. **Check it.** Gate-green is not QA: walk every screen on a `--copy-data` sandbox at the commit to tag ([AGENTS.md](../AGENTS.md) § Testing), and run `bun run renders:release`.
+1. **Check it.** Gate-green is not QA: run `bun run renders:release` at the commit to tag and look at the pictures it saves under `shots` ([AGENTS.md](../AGENTS.md) § Testing).
 2. **Player notes** go in `build/release/notes/v1.2.3.md` ("## New", "## Changed" and "## Fixed" lists, written for players); `build/release/notes.sh` prefers them to the commit list, for the GitHub release, the metainfo and the Discord post.
 3. **Version.** Set `info.version` in `build/config.yml` (the only place), then `go run ./cmd/version`. Run `build/release/notes.sh --metainfo build/linux/tech.rethunk.Mortar.metainfo.xml v1.2.3 HEAD` to write the notes into that version's `<release><description>`. Gate, commit and push `main`.
 4. **News post and pictures,** in the same commit: `web/src/content/news/mortar-1-2-3.md` with two or three highlights, each with a picture from `bun frontend/e2e/screens.ts --set site --only <scenes>` against a `--copy-data` sandbox, after `scripts/selftest.sh prep-shots` (the maintainer's Nexus and itch.io keys, so signed-in checks run, and no update notices). The site check refuses a version with no post. An earlier post keeps the picture it shipped with: before retaking a picture an older post shows, copy it to a versioned name and point that post at it.
