@@ -153,7 +153,7 @@ export function ReleaseEverywhere({
               ) : null}
               {st.kind === 'skipped' ? (
                 <Typography variant="caption" color="text.secondary">
-                  {t`Skipped: ${st.reason}`}
+                  {t`Skipped: ${{ reason: st.reason }}`}
                 </Typography>
               ) : null}
               {st.kind === 'done' ? <DoneCell url={st.url} /> : null}

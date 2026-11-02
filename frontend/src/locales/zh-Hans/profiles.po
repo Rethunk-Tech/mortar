@@ -142,6 +142,10 @@ msgstr ""
 msgid "Choose the game folder"
 msgstr ""
 
+#: src/profiles/OlderVersionDialog.tsx
+msgid "build {commit}"
+msgstr ""
+
 #: src/profiles/ProfilesPage.tsx
 msgid "Find a mod in all profiles"
 msgstr ""
@@ -168,11 +172,6 @@ msgstr ""
 
 #: src/profiles/CrashHintCard.tsx
 msgid "Stack frame: {evidence}"
-msgstr ""
-
-#. placeholder {0}: b.buildId
-#: src/profiles/OlderVersionDialog.tsx
-msgid "build {0}"
 msgstr ""
 
 #: src/profiles/useColorName.ts

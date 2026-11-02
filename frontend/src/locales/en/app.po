@@ -5010,11 +5010,6 @@ msgstr "missing dependencies: {list}"
 msgid "Hide which files they changed"
 msgstr "Hide which files they changed"
 
-#. placeholder {0}: st.reason
-#: src/develop/ReleaseEverywhere.tsx
-msgid "Skipped: {0}"
-msgstr "Skipped: {0}"
-
 #: src/games/GameRowMenu.tsx
 msgid "Hide this game"
 msgstr "Hide this game"
@@ -5032,6 +5027,10 @@ msgstr "Manage tools"
 #: src/share/Included.tsx
 msgid "Change"
 msgstr "Change"
+
+#: src/browse/stats.ts
+msgid "{endorsements, plural, one {# positive rating} other {# positive ratings}}"
+msgstr "{endorsements, plural, one {# positive rating} other {# positive ratings}}"
 
 #: src/firstrunTour/TourPopover.tsx
 #: src/game/Sidebar.tsx
@@ -5978,6 +5977,10 @@ msgstr "Creative Building"
 msgid "Quit"
 msgstr "Quit"
 
+#: src/share/ImportPreview.tsx
+msgid "Needs your {source} access token in Settings, Accounts"
+msgstr "Needs your {source} access token in Settings, Accounts"
+
 #: src/lan/IncomingPrompt.tsx
 msgid "Update an existing profile"
 msgstr "Update an existing profile"
@@ -6149,6 +6152,10 @@ msgstr "Save"
 #: src/launch/LaunchScreen.tsx
 msgid "Keep waiting"
 msgstr "Keep waiting"
+
+#: src/develop/ReleaseEverywhere.tsx
+msgid "Skipped: {reason}"
+msgstr "Skipped: {reason}"
 
 #: src/install/NeedsRootCallout.tsx
 msgid "Choose folder"

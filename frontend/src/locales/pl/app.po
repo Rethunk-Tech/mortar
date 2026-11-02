@@ -5010,11 +5010,6 @@ msgstr ""
 msgid "Hide which files they changed"
 msgstr ""
 
-#. placeholder {0}: st.reason
-#: src/develop/ReleaseEverywhere.tsx
-msgid "Skipped: {0}"
-msgstr ""
-
 #: src/games/GameRowMenu.tsx
 msgid "Hide this game"
 msgstr ""
@@ -5031,6 +5026,10 @@ msgstr ""
 
 #: src/share/Included.tsx
 msgid "Change"
+msgstr ""
+
+#: src/browse/stats.ts
+msgid "{endorsements, plural, one {# positive rating} other {# positive ratings}}"
 msgstr ""
 
 #: src/firstrunTour/TourPopover.tsx
@@ -5978,6 +5977,10 @@ msgstr ""
 msgid "Quit"
 msgstr ""
 
+#: src/share/ImportPreview.tsx
+msgid "Needs your {source} access token in Settings, Accounts"
+msgstr ""
+
 #: src/lan/IncomingPrompt.tsx
 msgid "Update an existing profile"
 msgstr ""
@@ -6148,6 +6151,10 @@ msgstr ""
 
 #: src/launch/LaunchScreen.tsx
 msgid "Keep waiting"
+msgstr ""
+
+#: src/develop/ReleaseEverywhere.tsx
+msgid "Skipped: {reason}"
 msgstr ""
 
 #: src/install/NeedsRootCallout.tsx

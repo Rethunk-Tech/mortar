@@ -142,7 +142,12 @@ export function OlderVersionDialog({
             >
               {builds.map((b) => (
                 <MenuItem key={`${b.depotId}:${b.manifest}`} value={`${b.depotId}:${b.manifest}`}>
-                  {[b.seen, b.buildId && t`build ${b.buildId}`, b.manifest, b.current && t`current`]
+                  {[
+                    b.seen,
+                    b.buildId && t`build ${{ commit: b.buildId }}`,
+                    b.manifest,
+                    b.current && t`current`,
+                  ]
                     .filter(Boolean)
                     .join(' · ')}
                 </MenuItem>

@@ -148,6 +148,10 @@ msgstr "Rename"
 msgid "Choose the game folder"
 msgstr "Choose the game folder"
 
+#: src/profiles/OlderVersionDialog.tsx
+msgid "build {commit}"
+msgstr "build {commit}"
+
 #: src/profiles/ProfilesPage.tsx
 msgid "Find a mod in all profiles"
 msgstr "Find a mod in all profiles"
@@ -175,11 +179,6 @@ msgstr "Revert this mod"
 #: src/profiles/CrashHintCard.tsx
 msgid "Stack frame: {evidence}"
 msgstr "Stack frame: {evidence}"
-
-#. placeholder {0}: b.buildId
-#: src/profiles/OlderVersionDialog.tsx
-msgid "build {0}"
-msgstr "build {0}"
 
 #: src/profiles/useColorName.ts
 msgid "Orange"
