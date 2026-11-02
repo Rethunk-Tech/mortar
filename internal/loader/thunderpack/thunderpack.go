@@ -316,7 +316,21 @@ func (l Loader) Vanilla(_ context.Context, plan *launchplan.Plan, _ loader.Targe
 // Owns is true for a game process started on this profile's folder, in either the host or the Wine form.
 func (Loader) Owns(p loader.Process, prof loader.ProfileView) bool {
 	host, wine := hostPath(prof.Dir, false), hostPath(prof.Dir, true)
-	return slices.ContainsFunc(p.Args, func(a string) bool { return strings.Contains(a, host) || strings.Contains(a, wine) })
+	return slices.ContainsFunc(p.Args, func(a string) bool { return namesFolder(a, host) || namesFolder(a, wine) })
+}
+
+// namesFolder reports whether arg holds dir as a whole path, so profile "default" does not claim "default-2".
+func namesFolder(arg, dir string) bool {
+	for rest := arg; ; {
+		_, after, found := strings.Cut(rest, dir)
+		if !found {
+			return false
+		}
+		if after == "" || strings.ContainsRune(`/\"'`, rune(after[0])) {
+			return true
+		}
+		rest = after
+	}
 }
 
 // ModArchive reports a Thunderstore-shaped archive: manifest.json and icon.png at its root.

@@ -294,3 +294,23 @@ func TestAMarkerPathLeavingTheProfileIsIgnored(t *testing.T) {
 		t.Fatalf("placed = %v, want only winmm.dll", got)
 	}
 }
+
+func TestOwnsMatchesTheWholeProfileFolder(t *testing.T) {
+	dir := filepath.Join(t.TempDir(), "default")
+	prof := loader.ProfileView{Dir: dir}
+	for _, c := range []struct {
+		arg  string
+		want bool
+	}{
+		{dir, true},
+		{"--profile=" + filepath.Join(dir, "BepInEx"), true},
+		{`--target="` + dir + `"`, true},
+		{dir + "-2", false},
+		{"--profile=" + filepath.Join(dir+"-2", "BepInEx"), false},
+		{dir + "-2 " + dir, true},
+	} {
+		if got := (Loader{}).Owns(loader.Process{Args: []string{c.arg}}, prof); got != c.want {
+			t.Errorf("Owns(%q) = %v, want %v", c.arg, got, c.want)
+		}
+	}
+}
