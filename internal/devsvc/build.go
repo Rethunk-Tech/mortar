@@ -263,7 +263,10 @@ func startEditor(commands [][]string) bool {
 		if _, err := exec.LookPath(editor[0]); err != nil {
 			continue
 		}
-		cmd := exec.CommandContext(context.Background(), editor[0], editor[1:]...) // #nosec G204 -- fixed editors; paths are inside the project
+		cmd, err := toolCommand(context.Background(), editor[0], editor[1:]...)
+		if err != nil {
+			continue
+		}
 		cmd.Env = hostenv.Environ()
 		nowindow.Set(cmd)
 		if err := cmd.Start(); err == nil {

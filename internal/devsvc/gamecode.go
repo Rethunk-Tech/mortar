@@ -280,13 +280,15 @@ func (s *Service) ilspy() (string, bool) {
 	if p, err := exec.LookPath("ilspycmd"); err == nil {
 		return p, true
 	}
-	name := "ilspycmd"
+	names := []string{"ilspycmd"}
 	if runtime.GOOS == "windows" {
-		name += ".exe"
+		names = []string{"ilspycmd.exe", "ilspycmd.cmd"}
 	}
-	p := filepath.Join(s.Home, ".dotnet", "tools", name)
-	if st, err := os.Stat(p); err == nil && st.Mode().IsRegular() {
-		return p, true
+	for _, name := range names {
+		p := filepath.Join(s.Home, ".dotnet", "tools", name)
+		if st, err := os.Stat(p); err == nil && st.Mode().IsRegular() {
+			return p, true
+		}
 	}
 	return "", false
 }

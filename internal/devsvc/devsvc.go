@@ -150,7 +150,10 @@ func (s *Service) run(ctx context.Context, dir, name string, args ...string) ([]
 		return s.Run(ctx, dir, name, args...)
 	}
 	args = guardGit(name, args)
-	cmd := exec.CommandContext(ctx, name, args...) // #nosec G204 -- fixed tools; arguments validated by the caller
+	cmd, err := toolCommand(ctx, name, args...)
+	if err != nil {
+		return nil, err
+	}
 	cmd.Dir = dir
 	cmd.Env = hostenv.Environ()
 	if name == "dotnet" {
