@@ -86,25 +86,32 @@ function invert(edges: Map<string, Edge[]>): Map<string, Edge[]> {
   return back
 }
 
-function walk(from: string, adj: Map<string, Edge[]>, stack: Set<string>): TreeNode[] {
-  const children: TreeNode[] = []
-  for (const e of adj.get(from) ?? []) {
-    const key = idKey(e.to)
-    const cycle = stack.has(key)
-    if (cycle) {
-      children.push({ id: e.to, required: e.required, cycle: true, children: [] })
-    } else {
-      stack.add(key)
-      children.push({
-        id: e.to,
-        required: e.required,
-        cycle: false,
-        children: walk(e.to, adj, stack),
-      })
-      stack.delete(key)
-    }
+type Side = 'needs' | 'neededBy'
+
+function graphOf(manifests: readonly ProfileManifest[]) {
+  let graph = graphs.get(manifests)
+  if (!graph) {
+    const { edges, spellings } = outgoing(manifests)
+    graph = { edges, back: invert(edges), spellings }
+    graphs.set(manifests, graph)
   }
-  return children
+  return graph
+}
+
+// One level only: a node's own children are built when it is expanded, since the full expansion of a framework's
+// dependents repeats each dependent once per path through the graph.
+function level(parent: string, path: readonly string[], adj: Map<string, Edge[]>): TreeNode[] {
+  return (adj.get(parent) ?? []).map((e) => {
+    const key = idKey(e.to)
+    const cycle = path.includes(key)
+    return {
+      id: e.to,
+      required: e.required,
+      cycle,
+      count: cycle ? 0 : (adj.get(e.to)?.length ?? 0),
+      path: [...path, key],
+    }
+  })
 }
 
 function nodeState(id: string, byID: Map<string, InstalledModState>): DepNodeState {
@@ -130,8 +137,9 @@ function annotate(nodes: readonly TreeNode[], byID: Map<string, InstalledModStat
     id: n.id,
     required: n.required,
     cycle: n.cycle,
+    count: n.count,
+    path: n.path,
     state: nodeState(n.id, byID),
-    children: annotate(n.children, byID),
   }))
 }
 
@@ -145,7 +153,10 @@ export interface TreeNode {
   id: string
   required: boolean
   cycle: boolean
-  children: TreeNode[]
+  /** Edges out of this node on its side of the graph: what expanding it lists. Zero for a cycle. */
+  count: number
+  /** Id keys from the root down to this node, which is what marks a child as a cycle. */
+  path: readonly string[]
 }
 
 export interface DependencyTrees {
@@ -163,26 +174,34 @@ export interface DepViewNode {
   id: string
   required: boolean
   cycle: boolean
+  count: number
+  path: readonly string[]
   state: DepNodeState
-  children: DepViewNode[]
 }
 
 export function buildDependencyTrees(
   manifests: readonly ProfileManifest[],
   rootID: string,
 ): DependencyTrees {
-  let graph = graphs.get(manifests)
-  if (!graph) {
-    const { edges, spellings } = outgoing(manifests)
-    graph = { edges, back: invert(edges), spellings }
-    graphs.set(manifests, graph)
-  }
+  const graph = graphOf(manifests)
   const root = canonical(graph.spellings, rootID)
-  const stack = new Set<string>([idKey(root)])
+  const path = [idKey(root)]
   return {
-    needs: walk(root, graph.edges, stack),
-    neededBy: walk(root, graph.back, stack),
+    needs: level(root, path, graph.edges),
+    neededBy: level(root, path, graph.back),
   }
+}
+
+export function childrenOf(
+  manifests: readonly ProfileManifest[],
+  side: Side,
+  node: TreeNode,
+): TreeNode[] {
+  if (node.cycle) {
+    return []
+  }
+  const graph = graphOf(manifests)
+  return level(node.id, node.path, side === 'needs' ? graph.edges : graph.back)
 }
 
 export function manifestsFromMods(

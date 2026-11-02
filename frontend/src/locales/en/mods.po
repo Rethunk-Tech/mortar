@@ -228,6 +228,10 @@ msgstr "Could not show the skipped update for {name}"
 msgid "{source} hides or has removed these pages, so there is no download to offer."
 msgstr "{source} hides or has removed these pages, so there is no download to offer."
 
+#: src/mods/ModDependencyTree.tsx
+msgid "Expand"
+msgstr "Expand"
+
 #: src/mods/typedConfig/valueError.ts
 msgid "This setting is no longer in the file."
 msgstr "This setting is no longer in the file."
@@ -448,6 +452,10 @@ msgstr "{name} is marked obsolete and may not work with this game version."
 #: src/mods/updateDigestToast.ts
 msgid "{count, plural, one {# update for {profiles, plural, one {# profile} other {# profiles}}} other {# updates for {profiles, plural, one {# profile} other {# profiles}}}}"
 msgstr "{count, plural, one {# update for {profiles, plural, one {# profile} other {# profiles}}} other {# updates for {profiles, plural, one {# profile} other {# profiles}}}}"
+
+#: src/mods/ModDependencyTree.tsx
+msgid "Show all {total}"
+msgstr "Show all {total}"
 
 #: src/mods/ModUpdateControls.tsx
 msgid "Update channel"
@@ -1785,6 +1793,10 @@ msgstr "These mods may add the same item: {info}."
 #: src/mods/OldFilesCallouts.tsx
 msgid "{mods} no longer include {oldFiles} from their old versions. Keep them or delete them?"
 msgstr "{mods} no longer include {oldFiles} from their old versions. Keep them or delete them?"
+
+#: src/mods/ModDependencyTree.tsx
+msgid "Collapse"
+msgstr "Collapse"
 
 #: src/mods/HiddenInside.tsx
 msgid "Unhide {name}?"

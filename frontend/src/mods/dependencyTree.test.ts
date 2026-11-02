@@ -2,8 +2,10 @@ import { describe, expect, test } from 'bun:test'
 import {
   annotateTree,
   buildDependencyTrees,
+  childrenOf,
   manifestsFromMods,
   type ProfileManifest,
+  type TreeNode,
 } from './dependencyTree.ts'
 
 const pack: ProfileManifest = {
@@ -11,37 +13,23 @@ const pack: ProfileManifest = {
   dependencies: [{ id: 'SMAPI', isRequired: true }],
 }
 
+const shape = (
+  nodes: readonly { id: string; required: boolean; cycle: boolean; count: number }[],
+) => nodes.map((n) => [n.id, n.required, n.cycle, n.count])
+
 describe('buildDependencyTrees', () => {
-  test('ContentPackFor is a required edge onto the framework', () => {
-    const trees = buildDependencyTrees(
-      [
-        pack,
-        {
-          id: 'Example.Pack',
-          contentPackFor: 'Pathoschild.ContentPatcher',
-        },
-      ],
-      'Example.Pack',
-    )
-    expect(trees.needs).toEqual([
-      {
-        id: 'Pathoschild.ContentPatcher',
-        required: true,
-        cycle: false,
-        children: [
-          {
-            id: 'SMAPI',
-            required: true,
-            cycle: false,
-            children: [],
-          },
-        ],
-      },
-    ])
+  test('ContentPackFor is a required edge onto the framework, expanded lazily', () => {
+    const manifests = [pack, { id: 'Example.Pack', contentPackFor: 'Pathoschild.ContentPatcher' }]
+    const trees = buildDependencyTrees(manifests, 'Example.Pack')
+    expect(shape(trees.needs)).toEqual([['Pathoschild.ContentPatcher', true, false, 1]])
     expect(trees.neededBy).toEqual([])
+    const [cp] = trees.needs
+    expect(shape(childrenOf(manifests, 'needs', cp as TreeNode))).toEqual([
+      ['SMAPI', true, false, 0],
+    ])
   })
 
-  test('optional vs required edges stay marked; missing nodes appear with no children', () => {
+  test('optional vs required edges stay marked; missing nodes have no children', () => {
     const trees = buildDependencyTrees(
       [
         {
@@ -51,65 +39,46 @@ describe('buildDependencyTrees', () => {
       ],
       'A.Mod',
     )
-    expect(trees.needs).toEqual([
-      {
-        id: 'B.Required',
-        required: true,
-        cycle: false,
-        children: [],
-      },
-      {
-        id: 'C.Optional',
-        required: false,
-        cycle: false,
-        children: [],
-      },
+    expect(shape(trees.needs)).toEqual([
+      ['B.Required', true, false, 0],
+      ['C.Optional', false, false, 0],
     ])
   })
 
-  test('cycles are cut and the looping id is shown once', () => {
-    const trees = buildDependencyTrees(
-      [
-        {
-          id: 'A.Mod',
-          dependencies: [{ id: 'B.Mod' }],
-        },
-        {
-          id: 'B.Mod',
-          dependencies: [{ id: 'A.Mod' }],
-        },
-      ],
-      'A.Mod',
-    )
-    expect(trees.needs).toEqual([
-      {
-        id: 'B.Mod',
-        required: true,
-        cycle: false,
-        children: [
-          {
-            id: 'A.Mod',
-            required: true,
-            cycle: true,
-            children: [],
-          },
-        ],
-      },
+  test('a cycle is flagged on the node that loops back and has no children', () => {
+    const manifests = [
+      { id: 'A.Mod', dependencies: [{ id: 'B.Mod' }] },
+      { id: 'B.Mod', dependencies: [{ id: 'A.Mod' }] },
+    ]
+    const trees = buildDependencyTrees(manifests, 'A.Mod')
+    expect(shape(trees.needs)).toEqual([['B.Mod', true, false, 1]])
+    const below = childrenOf(manifests, 'needs', trees.needs[0] as TreeNode)
+    expect(shape(below)).toEqual([['A.Mod', true, true, 0]])
+    expect(childrenOf(manifests, 'needs', below[0] as TreeNode)).toEqual([])
+    const up = buildDependencyTrees(manifests, 'A.Mod').neededBy
+    expect(shape(childrenOf(manifests, 'neededBy', up[0] as TreeNode))).toEqual([
+      ['A.Mod', true, true, 0],
     ])
-    expect(trees.neededBy).toEqual([
-      {
-        id: 'B.Mod',
-        required: true,
-        cycle: false,
-        children: [
-          {
-            id: 'A.Mod',
-            required: true,
-            cycle: true,
-            children: [],
-          },
-        ],
-      },
+  })
+
+  test('each dependent is listed once per level however many paths reach it', () => {
+    const manifests = [
+      { id: 'Core' },
+      { id: 'Mid.One', dependencies: [{ id: 'Core' }] },
+      { id: 'Mid.Two', dependencies: [{ id: 'Core' }, { id: 'Mid.One' }] },
+      { id: 'Leaf', dependencies: [{ id: 'Mid.One' }, { id: 'Mid.Two' }, { id: 'mid.one' }] },
+    ]
+    const { neededBy } = buildDependencyTrees(manifests, 'Core')
+    expect(shape(neededBy)).toEqual([
+      ['Mid.One', true, false, 2],
+      ['Mid.Two', true, false, 1],
+    ])
+    const two = neededBy[1] as TreeNode
+    expect(shape(childrenOf(manifests, 'neededBy', two))).toEqual([['Leaf', true, false, 0]])
+    const leaf = buildDependencyTrees(manifests, 'Leaf').needs
+    expect(shape(leaf)).toEqual([
+      ['Mid.One', true, false, 1],
+      ['Mid.Two', true, false, 2],
     ])
   })
 
@@ -117,10 +86,7 @@ describe('buildDependencyTrees', () => {
     const trees = buildDependencyTrees(
       [
         pack,
-        {
-          id: 'Farm.Pack',
-          contentPackFor: 'Pathoschild.ContentPatcher',
-        },
+        { id: 'Farm.Pack', contentPackFor: 'Pathoschild.ContentPatcher' },
         {
           id: 'Town.Pack',
           contentPackFor: 'Pathoschild.ContentPatcher',
@@ -133,12 +99,6 @@ describe('buildDependencyTrees', () => {
       'Farm.Pack',
       'Town.Pack',
     ])
-    expect(trees.neededBy.find((n) => n.id === 'Town.Pack')).toEqual({
-      id: 'Town.Pack',
-      required: true,
-      cycle: false,
-      children: [],
-    })
   })
 
   test('UniqueIDs match case-insensitively and keep the first spelling', () => {

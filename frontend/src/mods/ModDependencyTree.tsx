@@ -1,8 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Link, Typography } from '@mui/material'
-import { sameValue } from '@rethunk/react-load-hooks'
 import {
   Asterisk,
+  ChevronDown,
+  ChevronRight,
   CircleAlert,
   CircleCheck,
   CircleDashed,
@@ -10,7 +11,7 @@ import {
   type LucideIcon,
   TriangleAlert,
 } from 'lucide-react'
-import { memo, useDeferredValue, useMemo, useRef } from 'react'
+import { memo, useCallback, useDeferredValue, useMemo, useState } from 'react'
 import type { Broken } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -24,6 +25,7 @@ import { reportUnexpected } from '../toasts/report.ts'
 import {
   annotateTree,
   buildDependencyTrees,
+  childrenOf,
   type DepViewNode,
   manifestsFromMods,
 } from './dependencyTree.ts'
@@ -42,6 +44,10 @@ const rowGap = 0.75
 const nameSize = 13
 const headingGap = 0.5
 const iconSize = 13
+// Rows rendered before Show all: a framework's direct dependents run to hundreds.
+const firstRows = 50
+
+type Expand = (node: DepViewNode) => DepViewNode[]
 
 function MissingAdd({ id }: { id: string }) {
   const { t } = useLingui()
@@ -121,11 +127,52 @@ function Mark({ icon: Icon, label, color }: { icon: LucideIcon; label: string; c
   )
 }
 
-// Memoised, with Branch: a framework's Used by list runs to hundreds of rows, and the trees' nodes are kept until the
-// mods or problems change, so a re-render of the panel around them skips every row.
+function NodeList({
+  nodes,
+  depth,
+  expand,
+}: {
+  nodes: DepViewNode[]
+  depth: number
+  expand: Expand
+}) {
+  const { t } = useLingui()
+  const [all, setAll] = useState(false)
+  const total = nodes.length
+  const shown = all ? nodes : nodes.slice(0, firstRows)
+  return (
+    <>
+      {shown.map((n) => (
+        <NodeRow key={`${n.id}:${n.required}`} node={n} depth={depth} expand={expand} />
+      ))}
+      {shown.length < nodes.length ? (
+        <Button
+          size="small"
+          onClick={() => setAll(true)}
+          sx={{ ml: depth * indentStep, ...noWrap }}
+        >
+          {t`Show all ${total}`}
+        </Button>
+      ) : null}
+    </>
+  )
+}
+
+// Memoised: a node's children are built only when it is opened, and the memo keeps an unrelated re-render of the panel
+// from touching rows.
 const NodeRow = memo(
-  function NodeRowView({ node, depth }: { node: DepViewNode; depth: number }) {
+  function NodeRowView({
+    node,
+    depth,
+    expand,
+  }: {
+    node: DepViewNode
+    depth: number
+    expand: Expand
+  }) {
     const { t } = useLingui()
+    const [open, setOpen] = useState(false)
+    const children = useMemo(() => (open ? expand(node) : []), [open, expand, node])
     const show = useDetail((s) => s.show)
     // Whether it is listed, not the mod itself: the store rebuilds every mod on each switch, and a node shows none of it.
     const listed = useMods((s) => modById(s.mods, node.id) !== undefined)
@@ -153,6 +200,23 @@ const NodeRow = memo(
             columnGap: rowGap,
           }}
         >
+          {node.count > 0 ? (
+            <Link
+              component="button"
+              aria-expanded={open}
+              aria-label={open ? t`Collapse` : t`Expand`}
+              onClick={() => setOpen((v) => !v)}
+              sx={{ display: 'inline-flex', mt: '3px', color: 'text.secondary' }}
+            >
+              {open ? (
+                <ChevronDown size={iconSize} aria-hidden={true} />
+              ) : (
+                <ChevronRight size={iconSize} aria-hidden={true} />
+              )}
+            </Link>
+          ) : (
+            <Box sx={{ width: iconSize, flexShrink: 0 }} />
+          )}
           <Mark
             icon={node.required ? Asterisk : CircleDashed}
             label={edgeNote}
@@ -195,43 +259,43 @@ const NodeRow = memo(
                 {label}
               </Typography>
             )}
+            {node.count > 0 ? (
+              <Typography sx={{ fontSize: nameSize, color: 'text.secondary' }}>
+                {node.count}
+              </Typography>
+            ) : null}
             {node.state === 'missing' ? <MissingAdd id={node.id} /> : null}
           </Box>
         </Box>
-        {node.children.map((c) => (
-          <NodeRow key={`${c.id}:${c.required}:${c.cycle}`} node={c} depth={depth + 1} />
-        ))}
+        {open ? <NodeList nodes={children} depth={depth + 1} expand={expand} /> : null}
       </Box>
     )
   },
-  (a, b) => a.depth === b.depth && sameNode(a.node, b.node),
+  (a, b) =>
+    a.depth === b.depth &&
+    a.expand === b.expand &&
+    a.node.id === b.node.id &&
+    a.node.required === b.node.required &&
+    a.node.cycle === b.node.cycle &&
+    a.node.count === b.node.count &&
+    a.node.state === b.node.state,
 )
 
-// A switch rebuilds the trees, so a node is compared by what it shows rather than by identity.
-function sameNode(a: DepViewNode, b: DepViewNode): boolean {
-  return (
-    a === b ||
-    (a.id === b.id &&
-      a.required === b.required &&
-      a.cycle === b.cycle &&
-      a.state === b.state &&
-      a.children.length === b.children.length &&
-      a.children.every((c, i) => {
-        const d = b.children[i]
-        return d !== undefined && sameNode(c, d)
-      }))
-  )
-}
-
-const Branch = memo(function BranchView({ title, nodes }: { title: string; nodes: DepViewNode[] }) {
+const Branch = memo(function BranchView({
+  title,
+  nodes,
+  expand,
+}: {
+  title: string
+  nodes: DepViewNode[]
+  expand: Expand
+}) {
   return (
     <Box>
       <Typography sx={{ fontSize: nameSize, color: 'text.secondary', mt: headingGap }}>
         {title}
       </Typography>
-      {nodes.map((n) => (
-        <NodeRow key={`${n.id}:${n.required}:${n.cycle}`} node={n} depth={0} />
-      ))}
+      <NodeList nodes={nodes} depth={0} expand={expand} />
     </Box>
   )
 })
@@ -248,31 +312,40 @@ function TreesView({
   const { t } = useLingui()
   // The trees walk every mod in the profile, so they are rebuilt only when the mods or the problems change.
   const manifests = useMemo(() => manifestsFromMods(mods), [mods])
-  const lastTrees = useRef<{ needs: DepViewNode[]; neededBy: DepViewNode[] } | null>(null)
-  const built = useMemo(() => {
+  const installed = useMemo(
+    () =>
+      mods.map((m) => ({
+        id: m.id,
+        enabled: m.enabled,
+        broken: (broken ?? []).some((b) => sameId(b.id, m.id)),
+      })),
+    [mods, broken],
+  )
+  const { needs, neededBy } = useMemo(() => {
     const trees = buildDependencyTrees(manifests, mod.id)
-    const installed = mods.map((m) => ({
-      id: m.id,
-      enabled: m.enabled,
-      broken: (broken ?? []).some((b) => sameId(b.id, m.id)),
-    }))
     return {
       needs: annotateTree(trees.needs, installed),
       neededBy: annotateTree(trees.neededBy, installed),
     }
-  }, [manifests, mods, mod.id, broken])
-  // A rebuild that changes nothing keeps the previous nodes, so the memoised rows skip it.
-  const trees = lastTrees.current && sameValue(lastTrees.current, built) ? lastTrees.current : built
-  lastTrees.current = trees
-  const { needs, neededBy } = trees
+  }, [manifests, installed, mod.id])
+  const expandNeeds = useCallback<Expand>(
+    (n) => annotateTree(childrenOf(manifests, 'needs', n), installed),
+    [manifests, installed],
+  )
+  const expandUsedBy = useCallback<Expand>(
+    (n) => annotateTree(childrenOf(manifests, 'neededBy', n), installed),
+    [manifests, installed],
+  )
   return (
     <Box>
       <Typography sx={heading}>{t`Dependencies`}</Typography>
       {needs.length === 0 && neededBy.length === 0 ? (
         <Typography sx={{ fontSize: nameSize, color: 'text.secondary' }}>{t`None`}</Typography>
       ) : null}
-      {needs.length > 0 ? <Branch title={t`Needs`} nodes={needs} /> : null}
-      {neededBy.length > 0 ? <Branch title={t`Used by`} nodes={neededBy} /> : null}
+      {needs.length > 0 ? <Branch title={t`Needs`} nodes={needs} expand={expandNeeds} /> : null}
+      {neededBy.length > 0 ? (
+        <Branch title={t`Used by`} nodes={neededBy} expand={expandUsedBy} />
+      ) : null}
     </Box>
   )
 }
