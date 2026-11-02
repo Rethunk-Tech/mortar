@@ -12,6 +12,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { readStates } from '../shell/offline.ts'
+import { errorKind } from '../toasts/errorKind.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { currentFiles, isNewer } from './nexusFormat.ts'
 import { offersNexusDownload } from './nexusMark.ts'
@@ -19,6 +20,7 @@ import { offersNexusDownload } from './nexusMark.ts'
 interface Entry {
   details?: Details
   error?: string
+  signedOut?: true
 }
 
 // A Nexus mod id names a page only within its game's domain, so everything here is kept per game and id.
@@ -125,7 +127,11 @@ const loadDetails = (game: string, id: number) => {
       (details) => put(key, { details }),
       (e: unknown) => {
         reads.delete(key)
-        put(key, { ...useNexusDetails.getState().byKey[key], error: errorMessage(e) })
+        put(key, {
+          ...useNexusDetails.getState().byKey[key],
+          error: errorMessage(e),
+          ...(errorKind(e) === 'signed_out' ? { signedOut: true } : {}),
+        })
       },
     )
     reads.set(key, read)

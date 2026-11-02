@@ -129,7 +129,11 @@ function NexusPage({ game, modId }: { game: string; modId: number }) {
   if (!details && entry?.error) {
     return (
       <ErrorRetry
-        error={{ message: entry.error, details: entry.error }}
+        error={{
+          message: entry.error,
+          details: entry.error,
+          ...(entry.signedOut ? { signedOut: true } : {}),
+        }}
         onRetry={() => setAttempt((n) => n + 1)}
       />
     )

@@ -104,6 +104,8 @@ export function logAction(): ToastAction {
 export interface InlineError {
   message: string
   details: string
+  /** The failure was a missing sign-in, which Retry cannot fix. */
+  signedOut?: true
 }
 
 /** Plain sentence for a kind. Untagged errors use the generic sentence; raw Go text stays in errorDetails. */
@@ -112,7 +114,11 @@ export function errorMessage(e: unknown): string {
 }
 
 export function inlineError(e: unknown, message = errorMessage(e)): InlineError {
-  return { message, details: errorDetails(e) }
+  return {
+    message,
+    details: errorDetails(e),
+    ...(kindOf(e) === 'signed_out' ? { signedOut: true } : {}),
+  }
 }
 
 /** `detail` is a line appended after the error's own text; `action` replaces the default next step; `retry` repeats the failed action. */

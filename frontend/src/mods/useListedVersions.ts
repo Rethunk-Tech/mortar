@@ -42,7 +42,11 @@ function useNexusVersions(game: string, modId: number): Listed {
     }
   }
   if (entry?.error) {
-    const error = { message: entry.error, details: entry.error }
+    const error = {
+      message: entry.error,
+      details: entry.error,
+      ...(entry.signedOut ? { signedOut: true as const } : {}),
+    }
     return { state: 'error', error, retry: () => loadDetails(game, modId).then(() => undefined) }
   }
   return { state: 'loading' }
