@@ -24,8 +24,8 @@ github.com/Rethunk-Tech/go-fomod v0.1.0 h1:NAmHf2WPHAsD+fcuc1UYWyjYpG56ioDwxjf/Q
 github.com/Rethunk-Tech/go-fomod v0.1.0/go.mod h1:vNHiJeDb3TOL4FMGPqANWoM3kA16wKUDL/2kEEJ0BMo=
 github.com/Rethunk-Tech/go-gamelocator v0.3.0 h1:JXcxXsx73Vn2U5IZvhhHrMNWyeU9cRWv+zLlgk8cTE0=
 github.com/Rethunk-Tech/go-gamelocator v0.3.0/go.mod h1:88Arq6X9tKS5j1NqTfeCDQeRoZaSsuH9ssniWQHZMJk=
-github.com/Rethunk-Tech/go-gameproc v0.1.0 h1:ZbuqIW6Dqqt9n7m0mTq+M12PmkYPlHtGt/DNgdJgqr4=
-github.com/Rethunk-Tech/go-gameproc v0.1.0/go.mod h1:QxA0/v7sAD+a2yOkIO/Zkznp4H197STWms/Y9vYUvnA=
+github.com/Rethunk-Tech/go-gameproc v0.1.1 h1:1Unpk7iHBdoRfo+nFEs4mfiAzfBb4M0kljYMe8mOBTY=
+github.com/Rethunk-Tech/go-gameproc v0.1.1/go.mod h1:0Ft5ovr6EdcyAooKufV3j69YJC2KMZQGB+Yh0FgVNnY=
 github.com/Rethunk-Tech/go-github v0.2.0 h1:sHjszKXkl3QtFT38Xi9RvhvP9OioCsHczla5pMBDL8E=
 github.com/Rethunk-Tech/go-github v0.2.0/go.mod h1:mNSH9/TiPkrZjyXAuwlk3qTuoFiF0dM6kIY3Uxxkl6M=
 github.com/Rethunk-Tech/go-httpkit v0.1.0 h1:SvoqwGRNV1p5C35bIyNmVdcjkyX+9uYq+kDbXhmPXB0=
@@ -52,8 +52,8 @@ github.com/Rethunk-Tech/go-smapi v0.2.0 h1:nH+UsxO7kpJp1QKvLDfHKF/qiUDJ2JXtIw93q
 github.com/Rethunk-Tech/go-smapi v0.2.0/go.mod h1:LG5HI6qH15aIOTotKmPPnlAdYa8zNbFswdqWBjdvZ2w=
 github.com/Rethunk-Tech/go-smapiweb v0.1.0 h1:D5iR7Ft8kDIpP0TBvUqnkiSx6TWDt6uM82g6Y+aWa8k=
 github.com/Rethunk-Tech/go-smapiweb v0.1.0/go.mod h1:SmIu/GJLKTJh6peUgY1SgHzaqMiSpD5Ff74GRL0YIlw=
-github.com/Rethunk-Tech/go-thunderstore v0.3.1 h1:jaBS3gQ//YNp+KMzcfTAgqc9w+mC69YUFI0SyK0KLdI=
-github.com/Rethunk-Tech/go-thunderstore v0.3.1/go.mod h1:CTSOFX38BNT0LxzvzSc930jzaZ6GPOjDYnRz3vuyv6M=
+github.com/Rethunk-Tech/go-thunderstore v0.3.2 h1:SwxKZTwE9f2/h0U2qLSYUeUtrPe1NCSj1ugZbio1TI0=
+github.com/Rethunk-Tech/go-thunderstore v0.3.2/go.mod h1:CTSOFX38BNT0LxzvzSc930jzaZ6GPOjDYnRz3vuyv6M=
 github.com/Rethunk-Tech/go-tilemask v0.1.0 h1:wJGhH0MlvLpallezQQH3s1bWmZVTddcqY3aIwtUHZgg=
 github.com/Rethunk-Tech/go-tilemask v0.1.0/go.mod h1:gyHCBVGruiMrf9SBfiM2qp+bl1ReN3qjZWpbAFg3yO4=
 github.com/Rethunk-Tech/go-winsym v0.2.0 h1:thWVURAmPekZDT9Qpl6Hv1bYtXtTQIRwthCjtSg9Yvc=

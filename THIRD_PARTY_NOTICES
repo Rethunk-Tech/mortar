@@ -3263,7 +3263,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-gameproc@v0.1.0
+github.com/Rethunk-Tech/go-gameproc@v0.1.1
 licence: MIT
 https://github.com/Rethunk-Tech/go-gameproc
 
@@ -3655,7 +3655,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-thunderstore@v0.3.1
+github.com/Rethunk-Tech/go-thunderstore@v0.3.2
 licence: MIT
 https://github.com/Rethunk-Tech/go-thunderstore
 
