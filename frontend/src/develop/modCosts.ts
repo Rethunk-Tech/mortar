@@ -13,13 +13,16 @@ import { isProjectRow } from './projectRow.ts'
 
 interface Costs {
   startupMs?: number
+  startupAt?: string
   frameMs?: number
+  frameAt?: string
 }
 
 const NO_COSTS: Costs = {}
 
-/** The mod's start-up time and average cost a frame in the development profile's latest measured run. */
-/** The project's costs from the last run, when that run came after builtAt (Unix ms), the project's last build. */
+/** The project's start-up time and average cost a frame from the latest measured launch, each with when it was
+ * measured, when that came after builtAt (Unix ms), the project's last build. Only a launch asked to be measured reports
+ * them, so they can be much older than the last run. */
 export function useModCosts(
   game: string,
   profile: string,
@@ -58,6 +61,7 @@ async function readCosts(
     : undefined
   if (mod) {
     next.startupMs = modTotal(mod)
+    next.startupAt = startup?.processStart ?? ''
   }
   const perf = perfs?.[0]
   const row = measured(perf?.at, builtAt)
@@ -65,6 +69,7 @@ async function readCosts(
     : undefined
   if (row) {
     next.frameMs = row.averageMs
+    next.frameAt = perf?.at ?? ''
   }
   return next
 }

@@ -38,6 +38,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import { StartDebugging } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import type { DevProject } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
+import { formatWhen } from '../i18n/formatWhen.ts'
 import { formatNumber } from '../i18n/numberFormat.ts'
 import { LetterTile } from '../mods/LetterTile.tsx'
 import { useProfiles } from '../profiles/store.ts'
@@ -205,18 +206,16 @@ function Costs({
   const run = useDevRuns((s) => runOf(s.byDir, dir))
   // As the card's Built label counts it: a build that changed nothing still leaves the output's time as it was.
   const builtAt = Math.max(run.builtAt, info?.builtAt ?? 0)
-  const { startupMs, frameMs } = useModCosts(game, profile, info, builtAt)
+  const { startupMs, startupAt, frameMs, frameAt } = useModCosts(game, profile, info, builtAt)
   const start = startupMs === undefined ? '' : formatNumber(Math.round(startupMs))
   const frame =
     frameMs === undefined ? '' : formatNumber(frameMs, i18n.locale, { maximumFractionDigits: 2 })
-  let line = ''
-  if (start && frame) {
-    line = t`Last run: ${{ start }} ms to start, ${{ frame }} ms a frame`
-  } else if (start) {
-    line = t`Last run: ${{ start }} ms to start`
-  } else if (frame) {
-    line = t`Last run: ${{ frame }} ms a frame`
-  }
+  const line = [
+    start ? t`Measured ${{ when: formatWhen(startupAt ?? '') }}: ${{ start }} ms to start` : '',
+    frame ? t`Measured ${{ when: formatWhen(frameAt ?? '') }}: ${{ frame }} ms a frame` : '',
+  ]
+    .filter(Boolean)
+    .join(' · ')
   return line ? (
     <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>{line}</Typography>
   ) : null

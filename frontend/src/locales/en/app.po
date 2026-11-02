@@ -4158,10 +4158,6 @@ msgstr "Folder"
 msgid "Separated by commas."
 msgstr "Separated by commas."
 
-#: src/develop/ProjectCard.tsx
-msgid "Last run: {frame} ms a frame"
-msgstr "Last run: {frame} ms a frame"
-
 #: src/firstrun/FindStep.tsx
 #: src/launchers/LauncherList.tsx
 msgid "Not found"
@@ -5838,6 +5834,10 @@ msgstr "Enabled"
 msgid "Remove and move to trash"
 msgstr "Remove and move to trash"
 
+#: src/develop/ProjectCard.tsx
+msgid "Measured {when}: {start} ms to start"
+msgstr "Measured {when}: {start} ms to start"
+
 #: src/games/AddGameDialog.tsx
 msgid "Any game whose mods are files in a Mods folder"
 msgstr "Any game whose mods are files in a Mods folder"
@@ -6999,6 +6999,10 @@ msgstr "Write the changelog against the last export"
 msgid "Start mod"
 msgstr "Start mod"
 
+#: src/develop/ProjectCard.tsx
+msgid "Measured {when}: {frame} ms a frame"
+msgstr "Measured {when}: {frame} ms a frame"
+
 #: src/browse/CardProgress.tsx
 msgid "Failed, retry"
 msgstr "Failed, retry"
@@ -7110,10 +7114,6 @@ msgstr "Name the tool."
 #: src/develop/dependencyAsk.ts
 msgid "{mod} is a dependency of {name}"
 msgstr "{mod} is a dependency of {name}"
-
-#: src/develop/ProjectCard.tsx
-msgid "Last run: {start} ms to start"
-msgstr "Last run: {start} ms to start"
 
 #: src/queue/QueueBody.tsx
 msgid "Check this download"
@@ -7639,10 +7639,6 @@ msgstr "{count, plural, one {# save} other {# saves}}"
 #: src/develop/SymbolMenu.tsx
 msgid "{app} On. hook"
 msgstr "{app} On. hook"
-
-#: src/develop/ProjectCard.tsx
-msgid "Last run: {start} ms to start, {frame} ms a frame"
-msgstr "Last run: {start} ms to start, {frame} ms a frame"
 
 #: src/develop/DependencySync.tsx
 msgid "Could not dismiss it"

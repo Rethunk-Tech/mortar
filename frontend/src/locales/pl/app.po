@@ -4158,10 +4158,6 @@ msgstr ""
 msgid "Separated by commas."
 msgstr ""
 
-#: src/develop/ProjectCard.tsx
-msgid "Last run: {frame} ms a frame"
-msgstr ""
-
 #: src/firstrun/FindStep.tsx
 #: src/launchers/LauncherList.tsx
 msgid "Not found"
@@ -5838,6 +5834,10 @@ msgstr ""
 msgid "Remove and move to trash"
 msgstr ""
 
+#: src/develop/ProjectCard.tsx
+msgid "Measured {when}: {start} ms to start"
+msgstr ""
+
 #: src/games/AddGameDialog.tsx
 msgid "Any game whose mods are files in a Mods folder"
 msgstr ""
@@ -6999,6 +6999,10 @@ msgstr ""
 msgid "Start mod"
 msgstr ""
 
+#: src/develop/ProjectCard.tsx
+msgid "Measured {when}: {frame} ms a frame"
+msgstr ""
+
 #: src/browse/CardProgress.tsx
 msgid "Failed, retry"
 msgstr ""
@@ -7109,10 +7113,6 @@ msgstr ""
 
 #: src/develop/dependencyAsk.ts
 msgid "{mod} is a dependency of {name}"
-msgstr ""
-
-#: src/develop/ProjectCard.tsx
-msgid "Last run: {start} ms to start"
 msgstr ""
 
 #: src/queue/QueueBody.tsx
@@ -7638,10 +7638,6 @@ msgstr ""
 
 #: src/develop/SymbolMenu.tsx
 msgid "{app} On. hook"
-msgstr ""
-
-#: src/develop/ProjectCard.tsx
-msgid "Last run: {start} ms to start, {frame} ms a frame"
 msgstr ""
 
 #: src/develop/DependencySync.tsx
