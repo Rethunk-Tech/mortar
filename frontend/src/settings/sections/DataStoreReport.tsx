@@ -364,7 +364,12 @@ function CleanupDialog({
     const files = chosenLeftovers.flatMap((g) => g.items)
     runCleanup(() =>
       Promise.all([
-        ...[...byGame.entries()].map(([game, chosen]) => RemoveItems(game, chosen.map((s) => s.item.key))),
+        ...[...byGame.entries()].map(([game, chosen]) =>
+          RemoveItems(
+            game,
+            chosen.map((s) => s.item.key),
+          ),
+        ),
         ...(preview && files.length > 0
           ? [Cleanup({ ...preview, items: files, total: files.reduce((n, f) => n + f.size, 0) })]
           : []),

@@ -7,12 +7,10 @@ afterEach(() => {
 })
 
 test('a mod opened while another still loads keeps the pane when the first answer arrives late', async () => {
-  let releaseFirst: () => void = () => undefined
+  const { promise: firstGate, resolve: releaseFirst } = Promise.withResolvers<void>()
   spyOn(configApi, 'files').mockImplementation(async (t: Target) => {
     if (t.key === 'slow') {
-      await new Promise<void>((resolve) => {
-        releaseFirst = resolve
-      })
+      await firstGate
       return [{ name: 'Slow.cfg', label: '', format: 'cfg', sections: [] }]
     }
     return [{ name: 'BepInEx.cfg', label: '', format: 'cfg', sections: [] }]

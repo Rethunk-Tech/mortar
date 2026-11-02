@@ -53,10 +53,10 @@ function settleDisable(mods: Mod[]) {
 
 function askToDisable(set: (patch: { disabling: Mod[] }) => void, mods: Mod[]): Promise<Mod[]> {
   settleDisable([])
-  return new Promise((resolve) => {
-    pendingDisable = resolve
-    set({ disabling: mods })
-  })
+  const { promise, resolve } = Promise.withResolvers<Mod[]>()
+  pendingDisable = resolve
+  set({ disabling: mods })
+  return promise
 }
 
 export const useMods = create<{

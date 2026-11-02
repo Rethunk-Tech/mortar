@@ -5,7 +5,7 @@ test('unmount stops UsageProgress ticks and ignores a late Usage result', async 
   const bytes: number[] = []
   const usages: string[] = []
   let tick: (() => void) | undefined
-  let release: (u: {
+  const { promise: usage, resolve: release } = Promise.withResolvers<{
     path: string
     profiles: null
     games: null
@@ -16,10 +16,7 @@ test('unmount stops UsageProgress ticks and ignores a late Usage result', async 
     total: number
     sharedSaved: number
     sharedSavedKnown: boolean
-  }) => void = () => undefined
-  const usage = new Promise<Parameters<typeof release>[0]>((resolve) => {
-    release = resolve
-  })
+  }>()
   const stop = beginUsageLoad({
     usage: () => usage,
     progress: async () => ({ measuring: true, bytes: 9 }),

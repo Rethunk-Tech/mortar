@@ -11,7 +11,9 @@ interface QuitState {
 const useQuitPrompt = create<QuitState>(() => ({ message: '', resolve: null }))
 
 function askQuit(message: string): Promise<boolean> {
-  return new Promise((resolve) => useQuitPrompt.setState({ message, resolve }))
+  const { promise, resolve } = Promise.withResolvers<boolean>()
+  useQuitPrompt.setState({ message, resolve })
+  return promise
 }
 
 async function handleQuit(event: { data: unknown }) {

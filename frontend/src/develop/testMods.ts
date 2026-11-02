@@ -23,12 +23,12 @@ export async function installTestMods(game: string, profile: string) {
   if (finished()) {
     return
   }
-  await new Promise<void>((resolve) => {
-    const stop = useQueue.subscribe(() => {
-      if (finished()) {
-        stop()
-        resolve()
-      }
-    })
+  const { promise, resolve } = Promise.withResolvers<void>()
+  const stop = useQueue.subscribe(() => {
+    if (finished()) {
+      stop()
+      resolve()
+    }
   })
+  await promise
 }

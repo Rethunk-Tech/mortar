@@ -20,7 +20,8 @@ export const useHandoffAsk = create<{
 }))
 
 /** Whether to record the saved file against the page it was saved from; false installs it as a plain local file. */
-export const askHandoff = (file: string, page: string) =>
-  new Promise<boolean>((resolve) =>
-    useHandoffAsk.getState().push({ file: baseName(file), page, answer: resolve }),
-  )
+export function askHandoff(file: string, page: string) {
+  const { promise, resolve } = Promise.withResolvers<boolean>()
+  useHandoffAsk.getState().push({ file: baseName(file), page, answer: resolve })
+  return promise
+}

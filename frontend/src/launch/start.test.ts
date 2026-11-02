@@ -19,9 +19,9 @@ beforeEach(() => {
   askGraphics = false
   graphicsAfterCrash = false
   finishWarn = undefined
-  warnWait = new Promise<void>((resolve) => {
-    finishWarn = resolve
-  })
+  const warn = Promise.withResolvers<void>()
+  warnWait = warn.promise
+  finishWarn = warn.resolve
   useLaunch.setState(useLaunch.getInitialState(), true)
   spyOn(problems, 'Problems').mockImplementation(() =>
     CancellablePromise.resolve({

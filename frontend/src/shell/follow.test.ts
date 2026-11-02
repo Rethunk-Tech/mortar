@@ -6,10 +6,7 @@ test('a fetch that finishes after an event is dropped', async () => {
   let emit:
     | ((ev: { data: { items: never[]; paused: boolean; limitedUntil: number } }) => void)
     | undefined
-  let release: () => void = () => undefined
-  const gate = new Promise<void>((resolve) => {
-    release = resolve
-  })
+  const { promise: gate, resolve: release } = Promise.withResolvers<void>()
   const done = follow(
     'queue:changed',
     async () => {

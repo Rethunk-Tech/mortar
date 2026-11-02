@@ -22,9 +22,9 @@ async function warnNow(sources: readonly string[]): Promise<boolean> {
   if (fresh.length === 0) {
     return true
   }
-  const go = await new Promise<boolean>((answer) =>
-    useUnmoderatedAsk.setState({ ask: { sources: fresh, answer } }),
-  )
+  const { promise, resolve: answer } = Promise.withResolvers<boolean>()
+  useUnmoderatedAsk.setState({ ask: { sources: fresh, answer } })
+  const go = await promise
   useUnmoderatedAsk.setState({ ask: null })
   if (go) {
     await SetTipsSeen([...(useSettings.getState().tipsSeen ?? []), ...fresh.map(seenKey)])

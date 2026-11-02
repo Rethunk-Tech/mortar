@@ -66,10 +66,7 @@ test('restore asks for the chosen zip and folders then reloads', async () => {
 
 test('a slower first list does not overwrite a later load', async () => {
   let n = 0
-  let release: () => void = () => undefined
-  const gate = new Promise<void>((resolve) => {
-    release = resolve
-  })
+  const { promise: gate, resolve: release } = Promise.withResolvers<void>()
   listImpl = async () => {
     n += 1
     if (n === 1) {
@@ -93,11 +90,9 @@ test('formatBytes uses KB past a kibibyte', () => {
 })
 
 test('opening for another game never shows the rows read before', async () => {
-  let release: () => void = () => undefined
-  listImpl = () =>
-    new Promise((resolve) => {
-      release = () => resolve([])
-    })
+  const rows = Promise.withResolvers<typeof listed>()
+  const release = () => rows.resolve([])
+  listImpl = () => rows.promise
   useSaveBackups.setState(
     {
       ...useSaveBackups.getInitialState(),
