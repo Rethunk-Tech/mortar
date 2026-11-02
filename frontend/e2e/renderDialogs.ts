@@ -4,6 +4,7 @@ import { openGameSelect, openSettings } from './app.ts'
 import type { Case } from './render-budget.ts'
 import type { Helpers } from './renderCases.ts'
 import { openGame, thunderstoreVisit } from './renderProfile.ts'
+import { stubbedCases } from './renderStubbed.ts'
 
 const CLOSE_TRIES = 4
 const CLOSE_WAIT_MS = 1000
@@ -15,7 +16,7 @@ const TYPING_BUDGET = { updates: 2000 }
  * Every dialog a profile can reach, and every tab, step and view inside one, so the report pictures each for review.
  * Each case is named dialog-…, so MORTAR_RENDER_ONLY=dialog runs only these.
  */
-function dialogKit(h: Helpers) {
+export function dialogKit(h: Helpers) {
   const { toWorkspace, tab } = h
 
   async function closeAll(page: Page) {
@@ -354,6 +355,7 @@ export function dialogCases(h: Helpers): Case[] {
     dialog('import-manager', (p) => importStep(p, /^Another mod manager/)),
     ...shareCases(kit),
     ...toolAndWizardCases(kit),
+    ...stubbedCases(kit),
     // Showing the list and picking a mod is setup: only opening the dialog is measured.
     dialog(
       'mod-also-add',
