@@ -64,8 +64,8 @@ func packageInfo(dir string) Info {
 // mod without a Thunderstore manifest is named for it, since it is the plugin's assembly in nearly every archive.
 func FirstDLL(dir string) string {
 	var dlls []string
-	_ = filepath.WalkDir(dir, func(p string, d fs.DirEntry, err error) error {
-		if err == nil && !d.IsDir() && strings.EqualFold(filepath.Ext(p), ".dll") {
+	_ = safefs.WalkRegular(dir, func(p string, _ fs.DirEntry) error {
+		if strings.EqualFold(filepath.Ext(p), ".dll") {
 			dlls = append(dlls, p)
 		}
 		return nil

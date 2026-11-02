@@ -2,10 +2,8 @@ package lan
 
 import (
 	"encoding/json"
-	"io/fs"
 	"log"
 	"net/http"
-	"path/filepath"
 	"slices"
 	"strings"
 	"time"
@@ -212,16 +210,8 @@ func (s *Service) entrySize(game, key string) int64 {
 		return 0
 	}
 	var total int64
-	_ = filepath.WalkDir(root, func(_ string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if d.IsDir() {
-			return nil
-		}
-		if info, err := d.Info(); err == nil {
-			total += info.Size()
-		}
+	_ = safefs.WalkFiles(root, func(_, _ string, size int64) error {
+		total += size
 		return nil
 	})
 	return total
