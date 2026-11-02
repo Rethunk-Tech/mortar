@@ -543,12 +543,12 @@ func (s *Store) List(game string) ([]Profile, error) {
 	if err != nil {
 		return nil, err
 	}
-	dirs, err := os.ReadDir(dir)
-	if errors.Is(err, os.ErrNotExist) {
-		return []Profile{}, nil
-	}
+	dirs, found, err := safefs.ReadDirIfExists(dir)
 	if err != nil {
 		return nil, err
+	}
+	if !found {
+		return []Profile{}, nil
 	}
 	out := []Profile{}
 	for _, d := range dirs {
@@ -578,12 +578,12 @@ func (s *Store) List(game string) ([]Profile, error) {
 // ProfileCounts is how many profiles each game has, from the folders alone: no profile.json is read, and a damaged
 // profile counts as the one it is.
 func (s *Store) ProfileCounts() (map[string]int, error) {
-	games, err := os.ReadDir(s.root)
-	if errors.Is(err, os.ErrNotExist) {
-		return map[string]int{}, nil
-	}
+	games, found, err := safefs.ReadDirIfExists(s.root)
 	if err != nil {
 		return nil, err
+	}
+	if !found {
+		return map[string]int{}, nil
 	}
 	out := map[string]int{}
 	for _, g := range games {

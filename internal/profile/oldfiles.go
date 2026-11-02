@@ -2,9 +2,7 @@ package profile
 
 import (
 	"cmp"
-	"errors"
 	"fmt"
-	"io/fs"
 	"os"
 	"path/filepath"
 	"slices"
@@ -60,12 +58,12 @@ func (s *Store) PendingOldFiles(game, id string) ([]OldFiles, error) {
 		return nil, err
 	}
 	root := filepath.Join(dir, oldFilesDir)
-	keys, err := os.ReadDir(root)
-	if errors.Is(err, fs.ErrNotExist) {
-		return []OldFiles{}, nil
-	}
+	keys, found, err := safefs.ReadDirIfExists(root)
 	if err != nil {
 		return nil, err
+	}
+	if !found {
+		return []OldFiles{}, nil
 	}
 	out := []OldFiles{}
 	for _, k := range keys {
@@ -126,8 +124,8 @@ func (s *Store) ResolveOldFiles(game, id, key string, keep bool) error {
 	}
 	set := filepath.Join(dir, oldFilesDir, key)
 	if keep {
-		mods, err := os.ReadDir(set)
-		if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		mods, _, err := safefs.ReadDirIfExists(set)
+		if err != nil {
 			return err
 		}
 		for _, m := range mods {

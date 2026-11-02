@@ -1,10 +1,11 @@
 package datadir
 
 import (
-	"errors"
 	"io/fs"
 	"os"
 	"path/filepath"
+
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // ProfileDir is one <profiles>/<game>/<id> folder.
@@ -15,8 +16,8 @@ type ProfileDir struct {
 // ProfileDirs lists the profile folders under profilesRoot, skipping files and symlinks at both levels. A missing
 // root is an empty list.
 func ProfileDirs(profilesRoot string) ([]ProfileDir, error) {
-	games, err := os.ReadDir(filepath.Clean(profilesRoot))
-	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+	games, _, err := safefs.ReadDirIfExists(filepath.Clean(profilesRoot))
+	if err != nil {
 		return nil, err
 	}
 	var out []ProfileDir

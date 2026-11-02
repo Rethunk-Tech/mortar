@@ -5,7 +5,6 @@ import (
 	"cmp"
 	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 	"regexp"
 	"slices"
@@ -13,6 +12,7 @@ import (
 	"sync"
 	"unicode/utf8"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -270,12 +270,12 @@ func (s *Service) ReferencedStoreKeys() (map[string][]string, error) {
 // mods reads one game's mods.
 func StoreKeysIn(dir string, mods func(gameID string) ([]Mod, error)) (map[string][]string, error) {
 	out := map[string][]string{}
-	files, err := os.ReadDir(dir)
-	if errors.Is(err, os.ErrNotExist) {
-		return out, nil
-	}
+	files, found, err := safefs.ReadDirIfExists(dir)
 	if err != nil {
 		return nil, err
+	}
+	if !found {
+		return out, nil
 	}
 	for _, file := range files {
 		gameID, ok := strings.CutSuffix(file.Name(), ".json")

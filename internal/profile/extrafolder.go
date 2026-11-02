@@ -106,13 +106,13 @@ func (s *Store) previewExtraFolder(game, dir string) (GameModsPreview, error) {
 		out.Mods = append(out.Mods, p)
 		return out, nil
 	}
-	entries, err := os.ReadDir(dir)
-	if errors.Is(err, fs.ErrNotExist) {
-		log.Printf("extra folder %s: %s does not exist", game, dir)
-		return out, nil
-	}
+	entries, found, err := safefs.ReadDirIfExists(dir)
 	if err != nil {
 		return GameModsPreview{}, err
+	}
+	if !found {
+		log.Printf("extra folder %s: %s does not exist", game, dir)
+		return out, nil
 	}
 	for _, e := range entries {
 		if !e.IsDir() || strings.HasPrefix(e.Name(), ".") {

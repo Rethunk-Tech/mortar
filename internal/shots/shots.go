@@ -5,13 +5,12 @@ package shots
 import (
 	"cmp"
 	"errors"
-	"io/fs"
 	"maps"
-	"os"
 	"path/filepath"
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/winname"
 )
 
@@ -48,12 +47,12 @@ func List(dirs map[string]string) (Gallery, error) {
 	out := Gallery{Shots: []Shot{}, Sources: []string{}}
 	var errs []error
 	for _, source := range slices.Sorted(maps.Keys(dirs)) {
-		ents, err := os.ReadDir(dirs[source])
-		if errors.Is(err, fs.ErrNotExist) {
-			continue
-		}
+		ents, found, err := safefs.ReadDirIfExists(dirs[source])
 		if err != nil {
 			errs = append(errs, err)
+			continue
+		}
+		if !found {
 			continue
 		}
 		out.Sources = append(out.Sources, source)

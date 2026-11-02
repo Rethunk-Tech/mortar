@@ -4,12 +4,9 @@
 package bannerlord
 
 import (
-	"errors"
 	"fmt"
-	"io/fs"
 	"log"
 	"maps"
-	"os"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -94,12 +91,12 @@ func load(p loader.ProfileView) (modules, error) {
 // readModules parses the SubModule.xml of each folder directly below root, in name order. A folder whose file does not
 // parse is not a module the game could load.
 func readModules(root string) ([]bl.Module, error) {
-	entries, err := os.ReadDir(root)
-	if errors.Is(err, fs.ErrNotExist) {
-		return nil, nil
-	}
+	entries, found, err := safefs.ReadDirIfExists(root)
 	if err != nil {
 		return nil, err
+	}
+	if !found {
+		return nil, nil
 	}
 	var out []bl.Module
 	for _, e := range entries {

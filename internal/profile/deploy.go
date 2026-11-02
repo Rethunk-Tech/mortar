@@ -507,12 +507,12 @@ func setAsideDropped(dir, key, rel string) error {
 // restoreDropped puts back a file an update set aside for the Keep or Delete question, when a roll back lays its
 // path out again before the question was answered.
 func restoreDropped(dir, rel string) (bool, error) {
-	sets, err := os.ReadDir(filepath.Join(dir, oldFilesDir))
+	sets, found, err := safefs.ReadDirIfExists(filepath.Join(dir, oldFilesDir))
 	if err != nil {
-		if errors.Is(err, fs.ErrNotExist) {
-			return false, nil
-		}
 		return false, err
+	}
+	if !found {
+		return false, nil
 	}
 	for _, set := range sets {
 		root := filepath.Join(dir, oldFilesDir, set.Name(), droppedFilesDir)

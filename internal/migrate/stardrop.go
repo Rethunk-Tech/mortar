@@ -3,11 +3,10 @@ package migrate
 import (
 	"cmp"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/go-smapi"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -177,10 +176,7 @@ func stagedMods(gameID, modsPath string) ([]folderMod, error) {
 
 // modDirs names the folders directly under modsPath; a missing modsPath has none.
 func modDirs(modsPath string) ([]string, error) {
-	entries, err := os.ReadDir(modsPath)
-	if errors.Is(err, os.ErrNotExist) {
-		return nil, nil
-	}
+	entries, _, err := safefs.ReadDirIfExists(modsPath)
 	var names []string
 	for _, entry := range entries {
 		if entry.IsDir() {

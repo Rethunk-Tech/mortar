@@ -967,12 +967,12 @@ func writeSnapshotFile(dir, id string, entries []Entry) error {
 }
 
 func pruneSnapshotFiles(dir string, referenced map[string]struct{}) error {
-	entries, err := os.ReadDir(filepath.Join(dir, snapshotsDir))
+	entries, found, err := safefs.ReadDirIfExists(filepath.Join(dir, snapshotsDir))
 	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return nil
-		}
 		return err
+	}
+	if !found {
+		return nil
 	}
 	for _, ent := range entries {
 		if ent.IsDir() {

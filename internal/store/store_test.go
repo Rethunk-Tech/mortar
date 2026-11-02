@@ -2,7 +2,6 @@ package store
 
 import (
 	"errors"
-	"io/fs"
 	"maps"
 	"os"
 	"path/filepath"
@@ -34,12 +33,12 @@ func buildZip(t *testing.T, files map[string]string) string {
 
 func names(t *testing.T, dir string) []string {
 	t.Helper()
-	es, err := os.ReadDir(dir)
-	if errors.Is(err, fs.ErrNotExist) {
-		return nil
-	}
+	es, found, err := safefs.ReadDirIfExists(dir)
 	if err != nil {
 		t.Fatal(err)
+	}
+	if !found {
+		return nil
 	}
 	var out []string
 	for _, e := range es {

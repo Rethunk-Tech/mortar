@@ -978,12 +978,12 @@ func (s *Store) collectBlobs(idx index, dropped map[string]bool, now time.Time) 
 			named[r.Blob] = true
 		}
 	}
-	ents, err := os.ReadDir(filepath.Join(s.root, blobsDir))
-	if errors.Is(err, fs.ErrNotExist) {
-		return nil
-	}
+	ents, found, err := safefs.ReadDirIfExists(filepath.Join(s.root, blobsDir))
 	if err != nil {
 		return err
+	}
+	if !found {
+		return nil
 	}
 	var errs []error
 	for _, e := range ents {
@@ -1130,12 +1130,12 @@ func (s *Store) Cleanup() ([]string, error) {
 	var removed []string
 	var errs []error
 	for _, parent := range parents {
-		items, err := os.ReadDir(parent)
-		if errors.Is(err, fs.ErrNotExist) {
-			continue
-		}
+		items, found, err := safefs.ReadDirIfExists(parent)
 		if err != nil {
 			errs = append(errs, err)
+			continue
+		}
+		if !found {
 			continue
 		}
 		for _, it := range items {

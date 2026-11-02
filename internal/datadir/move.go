@@ -274,12 +274,12 @@ func clampProgress(report func(CopyProgress)) func(CopyProgress) {
 }
 
 func emptyDir(path string) error {
-	ents, err := os.ReadDir(path)
+	ents, found, err := safefs.ReadDirIfExists(path)
 	if err != nil {
-		if os.IsNotExist(err) {
-			return os.MkdirAll(path, 0o700)
-		}
 		return err
+	}
+	if !found {
+		return os.MkdirAll(path, 0o700)
 	}
 	if len(ents) > 0 {
 		return ErrNotEmpty

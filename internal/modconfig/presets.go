@@ -25,12 +25,12 @@ func ListPresets(dataDir, game string, id mod.ID) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	ents, err := os.ReadDir(dir)
+	ents, found, err := safefs.ReadDirIfExists(dir)
 	if err != nil {
-		if os.IsNotExist(err) {
-			return []string{}, nil
-		}
 		return nil, err
+	}
+	if !found {
+		return []string{}, nil
 	}
 	names := make([]string, 0, len(ents))
 	for _, ent := range ents {

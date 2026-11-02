@@ -324,11 +324,8 @@ func scanGameMods(modsDir string) ([]gameModSlot, error) {
 // readModsDir lists a game's mods folder with its real path, so a child can be checked to sit inside it; a missing
 // folder lists nothing.
 func readModsDir(modsDir string) (entries []os.DirEntry, root string, err error) {
-	entries, err = os.ReadDir(modsDir)
-	if errors.Is(err, fs.ErrNotExist) {
-		return nil, "", nil
-	}
-	if err != nil {
+	entries, found, err := safefs.ReadDirIfExists(modsDir)
+	if err != nil || !found {
 		return nil, "", err
 	}
 	root, err = safefs.EvalSymlinks(modsDir)

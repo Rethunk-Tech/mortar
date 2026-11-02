@@ -528,12 +528,12 @@ func readProfileEntries(path string) profileEntries {
 }
 
 func clearCache(dir string) error {
-	ents, err := os.ReadDir(filepath.Clean(dir))
-	if errors.Is(err, fs.ErrNotExist) {
-		return os.MkdirAll(filepath.Clean(dir), 0o700)
-	}
+	ents, found, err := safefs.ReadDirIfExists(filepath.Clean(dir))
 	if err != nil {
 		return err
+	}
+	if !found {
+		return os.MkdirAll(filepath.Clean(dir), 0o700)
 	}
 	var errs []error
 	for _, e := range ents {

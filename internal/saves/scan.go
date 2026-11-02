@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"errors"
-	"io/fs"
 	"os"
 	"path"
 	"path/filepath"
@@ -363,12 +362,12 @@ func (l Layout) Names() ([]string, error) {
 	}
 	var out []string
 	for _, d := range dirs {
-		ents, err := os.ReadDir(filepath.Join(l.Dir, filepath.FromSlash(d)))
-		if errors.Is(err, fs.ErrNotExist) {
-			continue
-		}
+		ents, found, err := safefs.ReadDirIfExists(filepath.Join(l.Dir, filepath.FromSlash(d)))
 		if err != nil {
 			return nil, err
+		}
+		if !found {
+			continue
 		}
 		for _, e := range ents {
 			if name := path.Join(d, e.Name()); l.IsSave(name) {
@@ -381,12 +380,12 @@ func (l Layout) Names() ([]string, error) {
 
 // userFolders are the folders directly in Dir, each one platform user's saves.
 func (l Layout) userFolders() ([]string, error) {
-	ents, err := os.ReadDir(l.Dir)
-	if errors.Is(err, fs.ErrNotExist) {
-		return nil, nil
-	}
+	ents, found, err := safefs.ReadDirIfExists(l.Dir)
 	if err != nil {
 		return nil, err
+	}
+	if !found {
+		return nil, nil
 	}
 	var out []string
 	for _, e := range ents {

@@ -137,8 +137,8 @@ func (s *Service) jsonDocs(game, profileID string) ([]cfgOnDisk, error) {
 	if err != nil || dir == "" {
 		return nil, err
 	}
-	ents, err := os.ReadDir(dir)
-	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+	ents, _, err := safefs.ReadDirIfExists(dir)
+	if err != nil {
 		return nil, err
 	}
 	var out []cfgOnDisk
@@ -332,11 +332,12 @@ func (s *Service) textDocs(game, profileID string) ([]cfgOnDisk, error) {
 	}
 	var out []cfgOnDisk
 	add := func(folder string) error {
-		ents, err := os.ReadDir(filepath.Join(dir, folder))
-		if errors.Is(err, fs.ErrNotExist) {
-			return nil
-		} else if err != nil {
+		ents, found, err := safefs.ReadDirIfExists(filepath.Join(dir, folder))
+		if err != nil {
 			return err
+		}
+		if !found {
+			return nil
 		}
 		for _, e := range ents {
 			ext := strings.ToLower(filepath.Ext(e.Name()))
@@ -354,8 +355,8 @@ func (s *Service) textDocs(game, profileID string) ([]cfgOnDisk, error) {
 	if err := add(""); err != nil {
 		return nil, err
 	}
-	ents, err := os.ReadDir(dir)
-	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+	ents, _, err := safefs.ReadDirIfExists(dir)
+	if err != nil {
 		return nil, err
 	}
 	for _, e := range ents {
@@ -477,8 +478,8 @@ func (s *Service) cfgDocs(game, profileID string) ([]cfgOnDisk, error) {
 	if err := s.Profiles.SeedConfigs(game, profileID); err != nil {
 		return nil, err
 	}
-	ents, err := os.ReadDir(dir)
-	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+	ents, _, err := safefs.ReadDirIfExists(dir)
+	if err != nil {
 		return nil, err
 	}
 	// A switched-off mod's settings wait in config-aside, so they stay editable.

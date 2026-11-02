@@ -468,12 +468,12 @@ func relFiles(root string) (map[string]struct{}, error) {
 func liveFolders(modsDir, heldDir string) (map[string]string, error) {
 	names := map[string]string{}
 	for _, root := range []string{modsDir, heldDir} {
-		ents, err := os.ReadDir(root)
+		ents, found, err := safefs.ReadDirIfExists(root)
 		if err != nil {
-			if errors.Is(err, os.ErrNotExist) {
-				continue
-			}
 			return nil, err
+		}
+		if !found {
+			continue
 		}
 		for _, e := range ents {
 			if !e.IsDir() {
@@ -592,12 +592,12 @@ func (s *Store) parkUnknownModsLocked(dir string, p Profile) error {
 		known[key] = struct{}{}
 	}
 	modsDir := datadir.ModsDirOf(dir)
-	ents, err := os.ReadDir(modsDir)
+	ents, found, err := safefs.ReadDirIfExists(modsDir)
 	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return nil
-		}
 		return err
+	}
+	if !found {
+		return nil
 	}
 	hold := holdDir(dir)
 	for _, e := range ents {

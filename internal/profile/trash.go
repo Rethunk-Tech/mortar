@@ -98,12 +98,12 @@ func (s *Store) Delete(gameID, id string) error {
 
 func (s *Store) trashed(gameID string) ([]TrashItem, error) {
 	dir := filepath.Join(s.trash, gameID)
-	dirs, err := os.ReadDir(dir)
-	if errors.Is(err, fs.ErrNotExist) {
-		return []TrashItem{}, nil
-	}
+	dirs, found, err := safefs.ReadDirIfExists(dir)
 	if err != nil {
 		return nil, err
+	}
+	if !found {
+		return []TrashItem{}, nil
 	}
 	out := []TrashItem{}
 	for _, d := range dirs {
@@ -194,12 +194,12 @@ func (s *Store) purgeTrash(gameID string) error {
 		return usererr.Wrap(usererr.NotFound, fmt.Errorf("unknown game %q", gameID))
 	}
 	dir := filepath.Join(s.trash, gameID)
-	items, err := os.ReadDir(dir)
-	if errors.Is(err, fs.ErrNotExist) {
-		return nil
-	}
+	items, found, err := safefs.ReadDirIfExists(dir)
 	if err != nil {
 		return err
+	}
+	if !found {
+		return nil
 	}
 	var errs []error
 	for _, item := range items {
@@ -234,12 +234,12 @@ func (s *Store) PurgeTrash(target any) error {
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	games, err := os.ReadDir(s.trash)
-	if errors.Is(err, fs.ErrNotExist) {
-		return nil
-	}
+	games, found, err := safefs.ReadDirIfExists(s.trash)
 	if err != nil {
 		return err
+	}
+	if !found {
+		return nil
 	}
 	var errs []error
 	for _, g := range games {
@@ -266,8 +266,8 @@ func (s *Store) StoreKeys(history bool) (map[string][]string, error) {
 	out := map[string][]string{}
 	games := map[string]bool{}
 	for _, root := range []string{s.root, s.trash} {
-		dirs, err := os.ReadDir(root)
-		if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		dirs, _, err := safefs.ReadDirIfExists(root)
+		if err != nil {
 			return nil, err
 		}
 		for _, d := range dirs {
@@ -285,8 +285,8 @@ func (s *Store) StoreKeys(history bool) (map[string][]string, error) {
 		if bad := len(profiles) - len(skipDamaged(profiles)); bad > 0 {
 			return nil, fmt.Errorf("%d %s profile(s) are damaged: repair or delete them before collecting the store", bad, g)
 		}
-		dirs, err := os.ReadDir(filepath.Join(s.trash, g))
-		if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		dirs, _, err := safefs.ReadDirIfExists(filepath.Join(s.trash, g))
+		if err != nil {
 			return nil, err
 		}
 		for _, d := range dirs {

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/go-nexusmods"
@@ -52,7 +51,7 @@ func siteError(site string, err error) error {
 	if err == nil {
 		return nil
 	}
-	if strings.Contains(err.Error(), "the file is up, but its changelog") {
+	if _, ok := errors.AsType[*nexusmods.ChangelogError](err); ok {
 		return errors.New(site + ": the file is up, but its changelog was not added; do not upload again, add the changelog on the mod page")
 	}
 	if rl, ok := errors.AsType[*httpkit.RateLimitError](err); ok {

@@ -6,7 +6,6 @@ import (
 	"context"
 	"crypto/sha256"
 	"errors"
-	"io/fs"
 	"os"
 	"path/filepath"
 	"slices"
@@ -82,12 +81,12 @@ func (s *Service) DownloadsArchives(game string) ([]DownloadArchive, error) {
 		nexus = s.d.NexusMods()
 	}
 	for _, dir := range s.dirs() {
-		ents, err := os.ReadDir(dir)
-		if errors.Is(err, fs.ErrNotExist) {
-			continue
-		}
+		ents, found, err := safefs.ReadDirIfExists(dir)
 		if err != nil {
 			return nil, err
+		}
+		if !found {
+			continue
 		}
 		for _, e := range ents {
 			path := filepath.Join(dir, e.Name())

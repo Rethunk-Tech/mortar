@@ -308,7 +308,7 @@ func TestSiteErrorMapsEachFailureToItsKind(t *testing.T) {
 		{name: "plain", err: errors.New("boom"), contain: "boom"},
 		{
 			name:    "changelog failed after the file went up",
-			err:     fmt.Errorf("the file is up, but its changelog was not added: %w", &httpkit.StatusError{Code: http.StatusUnauthorized}),
+			err:     &nexusmods.ChangelogError{Err: &httpkit.StatusError{Code: http.StatusUnauthorized}},
 			contain: "the file is up",
 		},
 	} {
