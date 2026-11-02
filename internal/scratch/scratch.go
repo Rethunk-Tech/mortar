@@ -4,7 +4,9 @@ package scratch
 import (
 	"os"
 	"path/filepath"
+	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
@@ -20,4 +22,29 @@ func Dir(pattern string) (string, error) {
 		return "", err
 	}
 	return os.MkdirTemp(cache, pattern)
+}
+
+// Sweep removes the scratch folders under cache that nothing has touched for maxAge, the leftovers of a run that died
+// mid-unpack. It reports how many it removed.
+func Sweep(maxAge time.Duration) (int, error) {
+	base, err := datadir.Dir()
+	if err != nil {
+		return 0, err
+	}
+	dirs, err := filepath.Glob(filepath.Join(base, "cache", "mortar-*"))
+	if err != nil {
+		return 0, err
+	}
+	removed := 0
+	for _, d := range dirs {
+		info, err := os.Lstat(d)
+		if err != nil || !info.IsDir() || time.Since(info.ModTime()) < maxAge {
+			continue
+		}
+		if err := safefs.RemoveAll(d); err != nil {
+			return removed, err
+		}
+		removed++
+	}
+	return removed, nil
 }

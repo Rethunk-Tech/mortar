@@ -70,6 +70,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/picker"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/scratch"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
 	"github.com/Rethunk-Tech/mortar/internal/savedgroups"
 	"github.com/Rethunk-Tech/mortar/internal/savessvc"
@@ -469,6 +470,11 @@ func run() error {
 	startupStep("settings, mod store and profiles open")
 	if err := profiles.PurgeScratch(); err != nil {
 		log.Printf("profiles: remove leftover crash-check copies: %v", err)
+	}
+	if n, err := scratch.Sweep(24 * time.Hour); err != nil {
+		log.Printf("scratch: remove old unpack folders: %v", err)
+	} else {
+		log.Printf("scratch: removed %d old unpack folders", n)
 	}
 	profiles.Tidied = func(code, what, profileName, folder string) { tidied.Add(code, what, "", profileName, 1, folder) }
 	// Every Thunderstore Driver on this cache folder shares the one client made here, under Mortar's own user agent.
