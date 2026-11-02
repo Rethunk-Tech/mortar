@@ -125,10 +125,20 @@ func StartHidden(ctx context.Context, env []string, dir, name string, args ...st
 	return startCmd(ctx, env, dir, name, args, true)
 }
 
+// commandEnv is the host's environment plus env for a child starting in dir. exec only fills in PWD when no environment
+// is given, and an AppImage's own PWD is scrubbed as a path inside its mount; GE-Proton's protonfixes reads PWD unguarded.
+func commandEnv(dir string, env []string) []string {
+	out := append(hostenv.Environ(), env...)
+	if dir != "" {
+		out = append(out, "PWD="+dir)
+	}
+	return out
+}
+
 func startCmd(ctx context.Context, env []string, dir, name string, args []string, hide bool) (<-chan error, error) {
 	cmd := flatpak.CommandContext(ctx, name, args...)
 	cmd.Dir = dir
-	cmd.Env = append(hostenv.Environ(), env...)
+	cmd.Env = commandEnv(dir, env)
 	if runtime.GOOS == "windows" && !hide {
 		return gameproc.StartOwnConsole(cmd.Env, dir, name, args)
 	}
