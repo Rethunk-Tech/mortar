@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"maps"
-	"os"
 	"path/filepath"
 	"slices"
 	"time"
@@ -14,6 +13,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/scratch"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -138,7 +138,7 @@ func (s *Service) installVersion(ctx context.Context, g game.Game, dir, id, load
 		}
 		return s.applyBundled(id, l, key, fromStart)
 	}
-	work, err := os.MkdirTemp("", "mortar-loader-")
+	work, err := scratch.Dir("mortar-loader-")
 	if err != nil {
 		return loader.Status{}, err
 	}
@@ -354,7 +354,7 @@ func (s *Service) fetchIntoStore(ctx context.Context, id, loaderID string, rel l
 	if err := s.ensureKnown(ctx, id, loaderID, version); err != nil {
 		return "", err
 	}
-	work, err := os.MkdirTemp("", "mortar-loader-")
+	work, err := scratch.Dir("mortar-loader-")
 	if err != nil {
 		return "", err
 	}

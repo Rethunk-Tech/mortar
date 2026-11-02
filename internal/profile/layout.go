@@ -22,6 +22,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/modname"
+	"github.com/Rethunk-Tech/mortar/internal/scratch"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
@@ -111,7 +112,7 @@ func (s *Store) layoutItem(game, id, key string, choices map[string]map[string][
 	if err != nil || driver == "plain" {
 		return arch.Dir, "", err
 	}
-	tmp, err = os.MkdirTemp("", "mortar-fomod-")
+	tmp, err = scratch.Dir("mortar-fomod-")
 	if err != nil {
 		return "", "", err
 	}

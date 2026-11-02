@@ -23,6 +23,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	gamert "github.com/Rethunk-Tech/mortar/internal/runtime"
+	"github.com/Rethunk-Tech/mortar/internal/scratch"
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
@@ -281,7 +282,7 @@ func (Loader) Install(ctx context.Context, t loader.Target, pkg loader.Package, 
 	if err != nil {
 		return "", err
 	}
-	work, err := os.MkdirTemp("", "mortar-smapi-")
+	work, err := scratch.Dir("mortar-smapi-")
 	if err != nil {
 		return "", err
 	}

@@ -12,6 +12,7 @@ import (
 	"sync"
 
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/mortar/internal/scratch"
 	"github.com/Rethunk-Tech/mortar/internal/winhost"
 
 	"github.com/Rethunk-Tech/go-gameproc"
@@ -161,7 +162,7 @@ func (s *Service) ensureBridge(ctx context.Context, id string) (profile.Bundle, 
 	} else if !errors.Is(err, store.ErrNotFound) {
 		return profile.Bundle{}, err
 	}
-	tmp, err := os.MkdirTemp("", "mortar-bridge-")
+	tmp, err := scratch.Dir("mortar-bridge-")
 	if err != nil {
 		return profile.Bundle{}, err
 	}
@@ -216,7 +217,7 @@ func (s *Service) ensureBundled(ctx context.Context, id string) (string, error) 
 	if err != nil {
 		return "", err
 	}
-	tmp, err := os.MkdirTemp("", "mortar-bundled-")
+	tmp, err := scratch.Dir("mortar-bundled-")
 	if err != nil {
 		return "", err
 	}
