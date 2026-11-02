@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
@@ -133,8 +134,8 @@ func TestGameSettingsRestoreReportsReadError(t *testing.T) {
 		path:       filepath.Join(t.TempDir(), "missing"),
 		recordPath: filepath.Join(t.TempDir(), "record"),
 	})
-	if !errors.Is(err, os.ErrNotExist) {
-		t.Fatalf("restore error = %v, want missing startup preferences", err)
+	if !errors.Is(err, os.ErrNotExist) || !strings.Contains(err.Error(), "missing") {
+		t.Fatalf("restore error = %v, want missing startup preferences naming the path", err)
 	}
 }
 

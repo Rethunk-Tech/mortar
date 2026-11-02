@@ -156,7 +156,7 @@ func (s *Service) restoreGameSettings(restore *settingsRestore) error {
 			return
 		}
 		if !found {
-			restoreErr = os.ErrNotExist
+			restoreErr = fmt.Errorf("%s: %w", restore.path, os.ErrNotExist)
 			return
 		}
 		current, err := readStartupSettings(data, restore.written)

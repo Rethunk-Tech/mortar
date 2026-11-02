@@ -81,7 +81,7 @@ func modules(p loader.ProfileView) ([]listed, error) {
 	for _, path := range paks {
 		mod, err := moduleOf(path)
 		if err != nil {
-			log.Printf("larian: %s is not listed in modsettings.lsx: %v", filepath.Base(path), err)
+			log.Printf("larian: %s could not read module info: %v", filepath.Base(path), err)
 			continue
 		}
 		if seen[strings.ToLower(mod.UUID)] {
