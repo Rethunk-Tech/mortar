@@ -3,7 +3,6 @@ package sharesvc
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"strconv"
 	"strings"
 
@@ -14,11 +13,12 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/share"
+	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
 func parseCollectionURL(text string) (domain, slug string, revision int, ok bool) {
-	u, err := url.Parse(strings.TrimSpace(text))
-	if err != nil || u.Scheme != "https" {
+	u, httpsOK := source.ParseHTTPSURL(text)
+	if !httpsOK {
 		return "", "", 0, false
 	}
 	host := strings.TrimPrefix(strings.ToLower(u.Host), "www.")

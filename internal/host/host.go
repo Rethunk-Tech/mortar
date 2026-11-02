@@ -18,6 +18,7 @@ import (
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
+	"github.com/Rethunk-Tech/mortar/internal/source"
 	"github.com/Rethunk-Tech/mortar/internal/winname"
 )
 
@@ -32,11 +33,6 @@ func fileName(u *url.URL) string {
 	return "download"
 }
 
-func parseHTTPS(raw string) (*url.URL, bool) {
-	u, err := url.Parse(raw)
-	return u, err == nil && u.Scheme == "https" && u.Host != ""
-}
-
 // Direct is a plain HTTPS GET.
 type Direct struct {
 	HTTP *http.Client
@@ -47,7 +43,7 @@ type Direct struct {
 // Fetch writes to a temp file beside the target and renames it into place, so a failed or oversize download leaves
 // nothing behind.
 func (d *Direct) Fetch(ctx context.Context, rawURL, dstDir string) (string, error) {
-	u, ok := parseHTTPS(rawURL)
+	u, ok := source.ParseHTTPSURL(rawURL)
 	if !ok {
 		return "", fmt.Errorf("not an https address")
 	}
