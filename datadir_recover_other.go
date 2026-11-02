@@ -26,6 +26,10 @@ func labelOpenLog() string { return i18n.T("Open the log folder") }
 var dialogTools = []string{"zenity", "kdialog"}
 
 func findDialogTool() string {
+	// A server build's window is a browser tab, so a dialog would land on whatever desktop happens to run it.
+	if serverBuild {
+		return ""
+	}
 	for _, tool := range dialogTools {
 		if _, err := exec.LookPath(tool); err == nil {
 			return tool
@@ -85,6 +89,10 @@ func askMissingLocation(path string) locationChoice {
 // showStartupError shows msg with a button that opens folder, the one holding the log ("" for none). Without a dialog
 // tool it becomes a desktop notification, which every desktop with a notification daemon shows.
 func showStartupError(msg, folder string) {
+	if serverBuild {
+		log.Print(msg)
+		return
+	}
 	tool := findDialogTool()
 	if tool == "" {
 		notifyStartupError(msg)
