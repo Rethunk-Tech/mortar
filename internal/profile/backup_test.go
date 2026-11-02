@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"slices"
+	"strings"
 	"testing"
 )
 
@@ -85,5 +86,25 @@ func TestBackupRestoresAnEqualProfileWithoutTheStore(t *testing.T) {
 	}
 	if _, _, err := e.RestoreBackup(t.Context(), "stardew", src, map[string][]byte{"../escape.json": nil}, nil); err == nil {
 		t.Fatal("a path outside the profile must be refused")
+	}
+}
+
+func TestBackupLeavesTheServerDataFolderOut(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p := mustCreate(t, e, "Farm")
+	dir, err := e.ProfileDir("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	writeFile(t, dir, ServerDataFolder+"/serverconfig.json", `{"Password":"hunter2"}`)
+	_, files, err := e.Backup("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for rel := range files {
+		if strings.HasPrefix(rel, ServerDataFolder) {
+			t.Errorf("backup carries %s", rel)
+		}
 	}
 }
