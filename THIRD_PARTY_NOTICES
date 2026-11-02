@@ -3207,7 +3207,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-gamelocator@v0.1.0
+github.com/Rethunk-Tech/go-gamelocator@v0.2.0
 licence: MIT
 https://github.com/Rethunk-Tech/go-gamelocator
 
@@ -3571,7 +3571,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-thunderstore@v0.2.0
+github.com/Rethunk-Tech/go-thunderstore@v0.3.0
 licence: MIT
 https://github.com/Rethunk-Tech/go-thunderstore
 
