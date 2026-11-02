@@ -2,6 +2,8 @@ package launchsvc
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -325,7 +327,17 @@ func journalDir(installID string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(base, "journal", installID), nil
+	return filepath.Join(base, "journal", journalSegment(installID)), nil
+}
+
+// journalSegment is installID as one folder name. A folder pin ("dir:<path>") holds separators and a colon, which
+// NTFS refuses, so it is hashed.
+func journalSegment(installID string) string {
+	if !strings.ContainsAny(installID, `/\:`) {
+		return installID
+	}
+	sum := sha256.Sum256([]byte(installID))
+	return "dir-" + hex.EncodeToString(sum[:6])
 }
 
 // deployProfile is startDeploy for a launch of profileID: it runs the loader's prelaunch step, then places the plan's
