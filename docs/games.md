@@ -23,6 +23,7 @@ Nobody on the team owns the game. Sources: PCGamingWiki, a decompiled 1.x Steam 
 Sources: Vortex's `game-baldursgate3` extension (`Nexus-Mods/vortex-games`, `game-baldursgate3/index.tsx`: Steam `1086940`, GOG `1456460669`, executables `bin/bg3.exe` and `bin/bg3_dx11.exe`, mods in `%LOCALAPPDATA%/Larian Studios/Baldur's Gate 3/Mods`, load order in `PlayerProfiles/Public/modsettings.lsx`) and Nexus's `baldursgate3`.
 
 - The folder loader places the profile's `.pak` files in the game's `Mods` folder for the run. Its Larian extension (`internal/loader/larian`, on the `modSettings` path role) writes a `modsettings.lsx` from each pak's `meta.lsx` (go-larian), GustavX (the main campaign) first, in the profile's mod order. The deployer sets the player's own `modsettings.lsx` aside and puts it back after the run.
+- **Sources:** Nexus and mod.io (game 6715, BG3's official mod channel; [mod.io](#modio)).
 - A pak with no `meta.lsx` (an override) is placed and not listed.
 - Only the Windows build is started, under Proton. `bg3.exe` is the marker; `bg3_dx11.exe` is the other build.
 - Unverified until someone runs the game: the GOG install folder name (`Baldurs Gate 3`), and that the game accepts a `modsettings.lsx` whose GustavX entry carries Mortar's fixed version.
@@ -180,8 +181,13 @@ Sources: r2modman's ecosystem schema, MO2's `games/game_valheim.py`, Vortex's `N
 
 ## Core Keeper
 
-Sources: r2modmanPlus and Gale through the Thunderstore ecosystem schema (`thunderstore.io/api/experimental/schema/dev/latest/`, `core-keeper`: folder `CoreKeeper`, executable `CoreKeeper.exe`, Steam app 1621690), the `BepInEx-BepInExPack_Core_Keeper` package.
-- **Loader:** BepInEx 6 on IL2CPP, through the `bepinex5` driver. The pack is a community build numbered 2.x, so the catalog's `major` is 2. It runs on Doorstop 3 and ships no .NET runtime; Mortar tells the build from the profile's entry assembly (`BepInEx.Unity.IL2CPP.dll`), not from the runtime folder.
-- **Source:** Thunderstore (`core-keeper`) only. Nexus and mod.io are not wired for it.
-- **Bridge:** the catalog's `bridge` component is `MortarBepInExBridge_IL2CPP` (mortar-bepinex-bridge), whose `plugins/*.dll` the thunderstore-rules installer places under `BepInEx/plugins/Rethunk-MortarBepInExBridge`, as for the Mono bridge. It answers the plugin query only, so Mortar offers no startup timing, performance, overlay or intro skip for it.
+Sources: the official mod SDK's mods on mod.io (game 5289; Pugstorm's channel), which its Thunderstore page also sends modders to (the Thunderstore packages there are BepInEx 6 plugins, last updated in January 2025).
+- **Loader:** the folder loader. A mod is a folder holding `ModManifest.json`, placed in `CoreKeeper_Data/StreamingAssets/Mods`. Not checked against a real mod.io download: no token was available when the entry was written.
+- **Source:** mod.io only, signed in with the player's token ([mod.io](#modio)).
 - **Not yet:** the saves folder is not in the catalog.
+
+## mod.io
+
+mod.io is a source for Blade & Sorcery (3852), S.T.A.L.K.E.R. 2 (5761), Baldur's Gate 3 (6715, beside Nexus), Deep Rock Galactic (2475), Core Keeper (5289), Timberborn (3659), BONELAB (3809) and Gladio Mori (11453). The player pastes a read-only token from mod.io/me/access in Settings > Accounts; requests go to the account's own host (`u-{user-id}.modapi.io`) through [go-modio](https://github.com/Rethunk-Tech/go-modio), and each download is checked against the MD5 mod.io publishes. Dependencies are listed, never installed unasked.
+- **Placement:** games whose loader is `folder` take the archive in their mods target as for Nexus. Timberborn, BONELAB and Gladio Mori run BepInEx or MelonLoader, so their `modio` target (path role `modioMods`, the game's own Mods folder) takes the archive whole below `modio-<mod id>`, as Paradox Mods does; it is shared by every profile. Whether each game reads a mod one folder deeper than its own is unverified.
+- **Baldur's Gate 3:** mod.io files go through the same go-larian paks and `modsettings.lsx` handling as Nexus ones.
