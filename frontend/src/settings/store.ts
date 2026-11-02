@@ -35,6 +35,7 @@ const defaults: Settings = {
   nexusUserId: 0,
   nexusName: '',
   itchName: '',
+  modioName: '',
   nexusPremium: false,
   nxmHandled: false,
   nxmPreviousHandlers: {},

@@ -22,7 +22,8 @@ const ICONS: Record<string, { path: string; fill: string }> = {
 
 // Nexus's and the Vintage Story Mod DB's logos are artwork rather than vector marks, so SourceLogo draws them apart
 // from ICONS.
-const hasSourceLogo = (id: string) => id === 'nexus' || id === 'vsmoddb' || id in ICONS
+const hasSourceLogo = (id: string) =>
+  id === 'nexus' || id === 'vsmoddb' || id === 'modio' || id in ICONS
 
 // A mark laid over a corner of a mod's picture (its source, the favourite star) on a solid chip, readable on any art.
 // Plain CSS names, so it serves as an inline style as well as sx.

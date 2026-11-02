@@ -463,6 +463,10 @@ msgstr "{name} now opens {source} \"Install with Mod Manager\" links."
 msgid "Looking for launchers…"
 msgstr "Looking for launchers…"
 
+#: src/settings/sections/ModioAccount.tsx
+msgid "Your access token is kept in your system keyring."
+msgstr "Your access token is kept in your system keyring."
+
 #: src/settings/sections/DataHistory.tsx
 msgid "Trimmed {profile}'s history, freed {size}"
 msgstr "Trimmed {profile}'s history, freed {size}"
@@ -716,6 +720,10 @@ msgstr "Mods and profiles"
 msgid "Mortar {version} is available."
 msgstr "Mortar {version} is available."
 
+#: src/settings/sections/ModioAccount.tsx
+msgid "Account"
+msgstr "Account"
+
 #: src/settings/prefCopy.ts
 msgid "Offer to add new mod archives that land in your Downloads folder or Mortar's download folder"
 msgstr "Offer to add new mod archives that land in your Downloads folder or Mortar's download folder"
@@ -799,6 +807,10 @@ msgstr "Sound volume"
 #: src/settings/vrPrefCopy.ts
 msgid "Off"
 msgstr "Off"
+
+#: src/settings/sections/ModioAccount.tsx
+msgid "Kept in your system keyring. Create a read-only OAuth token at mod.io/me/access."
+msgstr "Kept in your system keyring. Create a read-only OAuth token at mod.io/me/access."
 
 #: src/settings/prefCopyModsView.ts
 msgid "Default grouping"
@@ -1253,6 +1265,10 @@ msgstr "Browser extension"
 #: src/settings/sections/LoaderRow.tsx
 msgid "Update"
 msgstr "Update"
+
+#: src/settings/sections/ModioAccount.tsx
+msgid "Remove token"
+msgstr "Remove token"
 
 #: src/settings/sections/Downloads.tsx
 msgid "Send other games' links to {name}"
@@ -2421,6 +2437,7 @@ msgid "Show the author line on grid cards"
 msgstr "Show the author line on grid cards"
 
 #: src/settings/sections/ItchAccount.tsx
+#: src/settings/sections/ModioAccount.tsx
 msgid "Test"
 msgstr "Test"
 
@@ -2451,6 +2468,10 @@ msgstr "Regenerate token?"
 #: src/settings/sections/NexusMods.tsx
 msgid "Could not untrack mods"
 msgstr "Could not untrack mods"
+
+#: src/settings/sections/ModioAccount.tsx
+msgid "mod.io"
+msgstr "mod.io"
 
 #: src/settings/sections/ScheduledStatus.tsx
 msgid "Last scheduled backup {when}"
@@ -3002,6 +3023,10 @@ msgstr "How Play starts the game. Direct skips {launcher}'s overlay and playtime
 msgid "Import…"
 msgstr "Import…"
 
+#: src/settings/sections/ModioAccount.tsx
+msgid "Access token"
+msgstr "Access token"
+
 #: src/settings/sections/checkDetail.ts
 msgid "{game}: {app} has not created its prefix yet, so a {launcher} launch cannot load the loader"
 msgstr "{game}: {app} has not created its prefix yet, so a {launcher} launch cannot load the loader"
@@ -3508,6 +3533,10 @@ msgstr "Data folder: {path}"
 #: src/settings/sections/nxmHandler.tsx
 msgid "Handle links"
 msgstr "Handle links"
+
+#: src/settings/sections/ModioAccount.tsx
+msgid "mod.io rejected your access token"
+msgstr "mod.io rejected your access token"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Season"

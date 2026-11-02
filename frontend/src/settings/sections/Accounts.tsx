@@ -11,6 +11,7 @@ import { SettingsSection } from '../SettingsSection.tsx'
 import { useSettingsRelevant } from '../useSettingsSearch.ts'
 import { AccountRow, ServiceBlock } from './AccountRow.tsx'
 import { ItchAccount } from './ItchAccount.tsx'
+import { ModioAccount } from './ModioAccount.tsx'
 import { NexusMods } from './NexusMods.tsx'
 import { Connection, ConnectionAccountRow, Quota } from './SourceConnection.tsx'
 
@@ -79,6 +80,7 @@ export function Accounts() {
       <NexusMods />
       <GitHubAccount />
       <ItchAccount />
+      <ModioAccount />
       <SettingsSection>
         {NO_ACCOUNT.map((id) => (
           <ConnectionAccountRow key={id} source={id} />

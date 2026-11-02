@@ -51,6 +51,13 @@ export const bundledArtwork = [
       'Bundled loader icon (frontend/src/brand/vendor/smapi.png) from SMAPI (src/SMAPI.ModBuildConfig/assets/nuget-icon.png), licensed under the GNU Lesser General Public License v3.0: https://www.gnu.org/licenses/lgpl-3.0.html',
   },
   {
+    name: 'mod.io mark (from the mod.io SDK)',
+    licence: 'Trademark',
+    url: 'https://github.com/modio/modio-sdk',
+    notice:
+      'Bundled source icon (frontend/src/brand/vendor/modio.svg) from the mod.io SDK, shown wherever mod.io mods appear as the mod.io API Access Terms (3.3) ask. mod.io and its logo are trademarks of mod.io Pty Ltd.',
+  },
+  {
     name: 'Nexus Mods logo (from Vortex)',
     licence: 'GPL-3.0',
     url: 'https://github.com/Nexus-Mods/Vortex',

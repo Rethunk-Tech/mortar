@@ -35,6 +35,11 @@
     "url": "https://github.com/Pathoschild/SMAPI"
   },
   {
+    "name": "mod.io mark (from the mod.io SDK)",
+    "licence": "Trademark",
+    "url": "https://github.com/modio/modio-sdk"
+  },
+  {
     "name": "Nexus Mods logo (from Vortex)",
     "licence": "GPL-3.0",
     "url": "https://github.com/Nexus-Mods/Vortex"
@@ -223,6 +228,11 @@
     "name": "github.com/Rethunk-Tech/go-lenientjson",
     "licence": "MIT",
     "url": "https://github.com/Rethunk-Tech/go-lenientjson"
+  },
+  {
+    "name": "github.com/Rethunk-Tech/go-modio",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/go-modio"
   },
   {
     "name": "github.com/Rethunk-Tech/go-modmanagers",

@@ -457,6 +457,10 @@ msgstr ""
 msgid "Looking for launchers…"
 msgstr ""
 
+#: src/settings/sections/ModioAccount.tsx
+msgid "Your access token is kept in your system keyring."
+msgstr ""
+
 #: src/settings/sections/DataHistory.tsx
 msgid "Trimmed {profile}'s history, freed {size}"
 msgstr ""
@@ -710,6 +714,10 @@ msgstr ""
 msgid "Mortar {version} is available."
 msgstr ""
 
+#: src/settings/sections/ModioAccount.tsx
+msgid "Account"
+msgstr ""
+
 #: src/settings/prefCopy.ts
 msgid "Offer to add new mod archives that land in your Downloads folder or Mortar's download folder"
 msgstr ""
@@ -792,6 +800,10 @@ msgstr ""
 #: src/settings/sections/SyncFolder.tsx
 #: src/settings/vrPrefCopy.ts
 msgid "Off"
+msgstr ""
+
+#: src/settings/sections/ModioAccount.tsx
+msgid "Kept in your system keyring. Create a read-only OAuth token at mod.io/me/access."
 msgstr ""
 
 #: src/settings/prefCopyModsView.ts
@@ -1246,6 +1258,10 @@ msgstr ""
 #: src/settings/loaderToast.ts
 #: src/settings/sections/LoaderRow.tsx
 msgid "Update"
+msgstr ""
+
+#: src/settings/sections/ModioAccount.tsx
+msgid "Remove token"
 msgstr ""
 
 #: src/settings/sections/Downloads.tsx
@@ -2415,6 +2431,7 @@ msgid "Show the author line on grid cards"
 msgstr ""
 
 #: src/settings/sections/ItchAccount.tsx
+#: src/settings/sections/ModioAccount.tsx
 msgid "Test"
 msgstr ""
 
@@ -2444,6 +2461,10 @@ msgstr ""
 
 #: src/settings/sections/NexusMods.tsx
 msgid "Could not untrack mods"
+msgstr ""
+
+#: src/settings/sections/ModioAccount.tsx
+msgid "mod.io"
 msgstr ""
 
 #: src/settings/sections/ScheduledStatus.tsx
@@ -2996,6 +3017,10 @@ msgstr ""
 msgid "Import…"
 msgstr ""
 
+#: src/settings/sections/ModioAccount.tsx
+msgid "Access token"
+msgstr ""
+
 #: src/settings/sections/checkDetail.ts
 msgid "{game}: {app} has not created its prefix yet, so a {launcher} launch cannot load the loader"
 msgstr ""
@@ -3501,6 +3526,10 @@ msgstr ""
 
 #: src/settings/sections/nxmHandler.tsx
 msgid "Handle links"
+msgstr ""
+
+#: src/settings/sections/ModioAccount.tsx
+msgid "mod.io rejected your access token"
 msgstr ""
 
 #: src/settings/sections/StreamOverlay.tsx

@@ -12,6 +12,7 @@ export type PageHost =
   | 'patreon'
   | 'vsmoddb'
   | 'paradox'
+  | 'modio'
   | 'web'
   | ''
 export type ModAction =
@@ -67,6 +68,9 @@ export const hostOf = (url: string | undefined): PageHost => {
   }
   if (on('mods.paradoxplaza.com')) {
     return 'paradox'
+  }
+  if (on('mod.io')) {
+    return 'modio'
   }
   return on('itch.io') ? 'itch' : 'web'
 }
