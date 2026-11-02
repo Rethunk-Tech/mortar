@@ -226,8 +226,9 @@ function budgetFor(tab: string): Pick<Case, 'budget'> {
     // more than a setup screen.
     return { budget: { updates: 2000 } }
   }
-  // A grid mounts more cards than a list rows, and the view the cases before left is remembered.
-  return tab === 'Mods' ? { budget: { updates: 1600 } } : {}
+  // A grid mounts more cards than a list rows, the view the cases before left is remembered, and the copied data decides
+  // how many mods there are.
+  return tab === 'Mods' ? { budget: { updates: 2000 } } : {}
 }
 
 /**
