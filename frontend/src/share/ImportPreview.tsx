@@ -16,6 +16,7 @@ import {
   type ModState,
   needsCurseForgeKey,
   needsItchFile,
+  needsModioToken,
   needsPatreonFile,
 } from './logic.ts'
 
@@ -124,6 +125,9 @@ function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle
     needsItchFile(mod) ? t`Needs a file from its ${{ source: sourceLabel('itch') }} page` : '',
     needsCurseForgeKey(mod)
       ? t`Needs a ${{ source: sourceLabel('curseforge') }} key, or the file from its page`
+      : '',
+    needsModioToken(mod)
+      ? t`Needs your ${{ source: sourceLabel('modio') }} access token in Settings, Accounts`
       : '',
     mod.filesFrom === 'code' ? t`program files from this code` : '',
     mod.filesFrom === 'computer' ? t`copied from this computer` : '',

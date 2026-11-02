@@ -122,3 +122,15 @@ func TestReplaceKeepsTheSharedOrderAsModsArrive(t *testing.T) {
 		t.Fatalf("after the download: %v, want [200 900 100]", got)
 	}
 }
+
+func TestPlanReplaceKeepsTheSharedModioFileAndDropsAnother(t *testing.T) {
+	t.Parallel()
+	p := profile.Profile{Entries: []profile.Entry{
+		{Key: "m-9", Source: profile.Source{Kind: profile.KindModio, Name: "42", FileID: 9}, Mods: []profile.Component{{Name: "Shared", ID: "folder:m-9"}}},
+		{Key: "m-8", Source: profile.Source{Kind: profile.KindModio, Name: "42", FileID: 8}, Mods: []profile.Component{{Name: "Old file", ID: "folder:m-8"}}},
+	}}
+	got := PlanReplace(p, []Mod{{Key: "modio:42:9", Site: SiteModio, Package: "42", FileID: 9}})
+	if !slices.Equal(got.Remove, []string{"Old file"}) {
+		t.Fatalf("remove = %+v", got)
+	}
+}

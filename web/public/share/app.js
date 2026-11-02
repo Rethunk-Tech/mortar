@@ -40,6 +40,11 @@ const SOURCES = {
       text: `CurseForge project ${e.project}`,
     }),
   },
+  // mod.io names a mod's page by slugs a link does not carry, so the row is the mod's id alone.
+  modio: {
+    label: 'mod.io',
+    link: (e) => ({ text: `mod.io mod ${e.mod}` }),
+  },
   vsmoddb: {
     label: 'Vintage Story Mod DB',
     link: (e) => ({
@@ -134,7 +139,7 @@ function row(e, sourceKeys, marks) {
   framed.append(pic, badge(e.kind, source.label, marks))
   li.append(
     framed,
-    el('a', { href, rel: 'noopener noreferrer' }, text),
+    href ? el('a', { href, rel: 'noopener noreferrer' }, text) : el('span', {}, text),
     el('span', { className: 'meta' }, meta),
     needs,
   )

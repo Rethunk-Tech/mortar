@@ -17,6 +17,15 @@ func curseforgeUnavailable() string {
 	return source.Unavailable(e.Source)
 }
 
+// modioUnavailable is why mod.io cannot be used now, or "" when the receiver is signed in.
+func modioUnavailable() string {
+	e, ok := source.Get(profile.KindModio)
+	if !ok {
+		return "mod.io is not available"
+	}
+	return source.Unavailable(e.Source)
+}
+
 // curseforgeProjectName is a project's name through the registered driver, or "" when it has no key or the call fails.
 func curseforgeProjectName(ctx context.Context, project string) string {
 	e, ok := source.Get(profile.KindCurseForge)

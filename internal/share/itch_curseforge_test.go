@@ -71,3 +71,29 @@ func TestSplitCurseForgeArchiveIsOneRef(t *testing.T) {
 		t.Fatalf("%+v", s.Entries)
 	}
 }
+
+func TestAModioEntryTravelsAsModAndFile(t *testing.T) {
+	t.Parallel()
+	p := profile.Profile{Name: "Colony", Entries: []profile.Entry{
+		{Key: "pkg-1", Source: profile.Source{Kind: profile.KindModio, Name: "2463537", Version: "0.8", FileID: 7590646}},
+	}}
+	res, err := Encode("timberborn", p, profile.ShareFacts{})
+	if err != nil || len(res.LeftOut) != 0 || len(res.Shared.Entries) != 1 {
+		t.Fatalf("result = %+v, %v", res, err)
+	}
+	got, err := Parse(res.Payload)
+	if err != nil || len(got.Entries) != 1 || got.Entries[0].Modio != 2463537 || got.Entries[0].FileID != 7590646 {
+		t.Fatalf("parsed = %+v, %v", got.Entries, err)
+	}
+	if !got.Entries[0].MatchesEntry(p.Entries[0]) || got.Entries[0].Identity() != "m:2463537:7590646" {
+		t.Fatal("the ref names its entry")
+	}
+	for _, bad := range []Ref{{Modio: 1}, {Modio: 1, FileID: 1, CurseForge: 2}, {Modio: 1, FileID: 1, Version: "1"}, {Modio: -1, FileID: 1}} {
+		if bad.valid() {
+			t.Fatalf("%+v passed", bad)
+		}
+	}
+	if _, err := Encode("stardew", p, profile.ShareFacts{}); err == nil {
+		t.Fatal("a mod.io ref for a game with no mod.io source was accepted")
+	}
+}
