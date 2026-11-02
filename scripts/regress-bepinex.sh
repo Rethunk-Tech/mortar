@@ -991,15 +991,21 @@ PY
   echo "---- BepInEx matrix: $(grep -c "$(printf '\tPASS\t')" "$ROOT/matrix.tsv") PASS, $(grep -c "$(printf '\tFAIL\t')" "$ROOT/matrix.tsv") FAIL ($ROOT/matrix.tsv)"
 }
 
+# share_import PreviewLink|PreviewFile INPUT: previews INPUT into a session and imports it, printing the result.
+share_import() {
+  local session
+  session=$(mx_wails "sharesvc.Service.$1" '"lethal-company"' "$(mx_q "$2")" '""' | python3 -c 'import json,sys; print(json.load(sys.stdin)["session"])')
+  mx_wails sharesvc.Service.Import '"lethal-company"' "$(mx_q "$session")" '""' null
+}
+
 # regress_bepinex_sharing PROFILE NAME shares the base profile: a link and a .mortar file carry its Thunderstore
 # packages, a LAN send its local probe packages and edited config too.
 regress_bepinex_sharing() {
   local pack=$1 name=$2 out
   # A share link carries the Thunderstore packages and imports into a new profile through the window's own calls.
-  local link session res
+  local link res
   link=$(cli share lethal-company "$pack")
-  session=$(mx_wails sharesvc.Service.PreviewLink '"lethal-company"' "$(mx_q "$link")" '""' | python3 -c 'import json,sys; print(json.load(sys.stdin)["session"])')
-  res=$(mx_wails sharesvc.Service.Import '"lethal-company"' "$(mx_q "$session")" '""' null)
+  res=$(share_import PreviewLink "$link")
   out=$(
     python3 - "$res" "$ROOT/pack-mods.json" <<'PY'
 import json, sys
@@ -1013,8 +1019,7 @@ PY
 
   # A .mortar file of the same profile.
   cli export lethal-company "$pack" "$ROOT/pack.mortar" >/dev/null
-  session=$(mx_wails sharesvc.Service.PreviewFile '"lethal-company"' "$(mx_q "$ROOT/pack.mortar")" '""' | python3 -c 'import json,sys; print(json.load(sys.stdin)["session"])')
-  res=$(mx_wails sharesvc.Service.Import '"lethal-company"' "$(mx_q "$session")" '""' null)
+  res=$(share_import PreviewFile "$ROOT/pack.mortar")
   out=$(
     python3 - "$res" "$ROOT/pack-mods.json" <<'PY'
 import json, sys
