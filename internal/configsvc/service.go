@@ -20,8 +20,8 @@ import (
 	"github.com/Rethunk-Tech/go-lenientjson"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
-	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/gmcm"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/modconfig"
@@ -121,8 +121,7 @@ func (s *Service) cfgDir(game, id string) (string, error) {
 // modConfigDir is the profile's own copy of the game's mod config folder (the catalog's modConfig path), "" for a game
 // whose mods keep their settings elsewhere.
 func (s *Service) modConfigDir(game, id string) (string, error) {
-	info, ok := components.Game(game)
-	if _, has := info.Paths[profile.ModConfigRole]; !ok || !has {
+	if !gamepkg.HasPath(game, profile.ModConfigRole) {
 		return "", nil
 	}
 	dir, err := s.Profiles.ProfileDir(game, id)
