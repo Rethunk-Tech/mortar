@@ -60,10 +60,7 @@ func expireHeld(dir string, keep time.Duration, now time.Time) (int, error) {
 	onDisk := map[string]heldCopy{}
 	for _, root := range []string{changedDir, replacedDir} {
 		base := filepath.Join(dir, root)
-		err := filepath.WalkDir(base, func(path string, d fs.DirEntry, err error) error {
-			if err != nil || !d.Type().IsRegular() {
-				return err
-			}
+		err := safefs.WalkRegular(base, func(path string, _ fs.DirEntry) error {
 			rel, err := filepath.Rel(base, path)
 			key := filepath.ToSlash(rel)
 			if root == replacedDir {
@@ -72,7 +69,7 @@ func expireHeld(dir string, keep time.Duration, now time.Time) (int, error) {
 			onDisk[key] = heldCopy{base, path}
 			return err
 		})
-		if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		if err != nil {
 			return 0, err
 		}
 	}

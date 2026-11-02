@@ -427,15 +427,12 @@ func holdAdopted(dir string, gone []string, files map[string]packageFile) error 
 		done[folder] = true
 		root := filepath.Join(dir, filepath.FromSlash(folder))
 		var held []string
-		err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
-			if err != nil || !d.Type().IsRegular() {
-				return err
-			}
+		err := safefs.WalkRegular(root, func(path string, _ fs.DirEntry) error {
 			r, err := filepath.Rel(dir, path)
 			held = append(held, filepath.ToSlash(r))
 			return err
 		})
-		if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		if err != nil {
 			return err
 		}
 		for _, r := range held {

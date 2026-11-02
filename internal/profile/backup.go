@@ -384,10 +384,7 @@ func applyRestored(dir, modsDir, key string) error {
 	if !exists(dst) {
 		dst = filepath.Join(modsDir, "."+key)
 	}
-	err := filepath.WalkDir(src, func(path string, d fs.DirEntry, err error) error {
-		if err != nil || !d.Type().IsRegular() {
-			return err
-		}
+	err := safefs.WalkRegular(src, func(path string, _ fs.DirEntry) error {
 		rel, err := filepath.Rel(src, path)
 		if err != nil {
 			return err

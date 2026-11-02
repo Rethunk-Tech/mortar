@@ -28,10 +28,7 @@ func (s *Store) ReplacedFiles(game, id string) ([]ReplacedFile, error) {
 	}
 	root := filepath.Join(dir, replacedDir)
 	var out []ReplacedFile
-	err = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
-		if err != nil || !d.Type().IsRegular() {
-			return err
-		}
+	err = safefs.WalkRegular(root, func(path string, d fs.DirEntry) error {
 		info, err := d.Info()
 		if err != nil {
 			return err
@@ -40,7 +37,7 @@ func (s *Store) ReplacedFiles(game, id string) ([]ReplacedFile, error) {
 		out = append(out, ReplacedFile{Path: filepath.ToSlash(rel), Size: info.Size()})
 		return err
 	})
-	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+	if err != nil {
 		return nil, err
 	}
 	slices.SortFunc(out, func(a, b ReplacedFile) int { return strings.Compare(a.Path, b.Path) })
