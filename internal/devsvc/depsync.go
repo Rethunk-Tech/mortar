@@ -48,8 +48,8 @@ func diffDependencies(declared []Dependency, installed []profile.Installed, igno
 		switch {
 		case im.Source.Kind == profile.KindThunderstore:
 			held[strings.ToLower(im.Source.Name)] = im
-		case mod.ID(im.UniqueID).Format() == mod.FormatThunderstore:
-			local[strings.ToLower(mod.ID(im.UniqueID).Local())] = true
+		case im.ModID().Format() == mod.FormatThunderstore:
+			local[strings.ToLower(im.ModID().Local())] = true
 		}
 	}
 	isDeclared := map[string]bool{}

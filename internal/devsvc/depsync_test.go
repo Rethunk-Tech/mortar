@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -75,8 +76,7 @@ func TestDiffDependenciesCountsAProjectBuiltFromItsOwnFolder(t *testing.T) {
 	dev := profile.Installed{
 		Source:   profile.Source{Kind: profile.KindLocal, Name: "debug"},
 		Enabled:  true,
-		UniqueID: string(mod.NewID(mod.FormatThunderstore, "Mortar-ConfigSync")),
-		Version:  "0.1.1",
+		Manifest: smapimanifest.Manifest{Version: "0.1.1"}.WithModID(mod.NewID(mod.FormatThunderstore, "Mortar-ConfigSync")),
 	}
 	got := diffDependencies(declared, []profile.Installed{dev}, nil, []string{"Mortar-ConfigSync"}, false)
 	if len(got.Missing) != 0 || len(got.Differs) != 0 || len(got.Undeclared) != 0 {
