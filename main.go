@@ -83,6 +83,7 @@ import (
 	_ "github.com/Rethunk-Tech/mortar/internal/source/all"
 	githubsrc "github.com/Rethunk-Tech/mortar/internal/source/github"
 	itchsource "github.com/Rethunk-Tech/mortar/internal/source/itch"
+	modiosource "github.com/Rethunk-Tech/mortar/internal/source/modio"
 	nexussource "github.com/Rethunk-Tech/mortar/internal/source/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 	modstore "github.com/Rethunk-Tech/mortar/internal/store"
@@ -1059,6 +1060,7 @@ func run() error {
 		application.NewService(plays),
 		application.NewService(nexusSvc),
 		application.NewService(&itchsource.Service{Store: store}),
+		application.NewService(&modiosource.Service{Store: store}),
 		application.NewService(nxmSvc),
 		application.NewService(notifier),
 		application.NewService(problemsSvc),

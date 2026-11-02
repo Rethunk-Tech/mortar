@@ -28,6 +28,7 @@ var sourceFields = map[string][]string{
 	"curseforge":   {"curseforgeHandleLinks=handleLinks"},
 	"vsmoddb":      {"vsmoddbHandleLinks=handleLinks"},
 	"itch":         {"itchName=name"},
+	"modio":        {"modioName=name"},
 	"nexus": {
 		"nexusUserId=userId", "nexusName=name", "nexusPremium=premium",
 		"nexusPreferredDownloadServer=preferredDownloadServer", "nexusSeenDownloadServers=seenDownloadServers",

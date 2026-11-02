@@ -13,7 +13,7 @@ import (
 )
 
 // cfDirect is queue.ResolveDirect's CurseForge branch against a fake API whose files are served from cdn.
-func cfDirect(t *testing.T, cdn string) func(context.Context, string, string, string, []string) (DirectFile, error) {
+func cfDirect(t *testing.T, cdn string) func(context.Context, string, string, string, components.GameSource) (DirectFile, error) {
 	t.Helper()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
@@ -36,7 +36,7 @@ func cfDirect(t *testing.T, cdn string) func(context.Context, string, string, st
 			return components.GameSource{ID: "curseforge", Key: "4643", GameID: 669}, true
 		},
 	}
-	return func(ctx context.Context, _, id, version string, _ []string) (DirectFile, error) {
+	return func(ctx context.Context, _, id, version string, _ components.GameSource) (DirectFile, error) {
 		r, err := driver.Resolve(ctx, id, version)
 		if err != nil {
 			return DirectFile{}, err

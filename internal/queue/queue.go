@@ -26,6 +26,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-httpkit/download"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -112,7 +113,7 @@ const AlreadyNewest = "Already the newest file"
 // packagePattern is a Thunderstore "Namespace-Name"; neither part holds a dash.
 var packagePattern = regexp.MustCompile(`^[A-Za-z0-9_]+-[A-Za-z0-9_]+$`)
 
-// directIDPattern is a Modrinth project id, a CurseForge mod id or an itch.io game id.
+// directIDPattern is a Modrinth project id, a CurseForge or mod.io mod id or an itch.io game id.
 var directIDPattern = regexp.MustCompile(`^[A-Za-z0-9_.-]+$`)
 
 func (r Request) valid() bool {
@@ -388,7 +389,7 @@ type Deps struct {
 	// history says so) and lets the next install of it skip the scan; nil means the choice is not offered.
 	AllowUnscanned func(game, profileID, key, name, detection string) error
 	// Direct resolves a Modrinth project or itch.io game to its file and required dependencies; nil refuses them.
-	Direct  func(ctx context.Context, source, id, version string, loaders []string) (DirectFile, error)
+	Direct  func(ctx context.Context, source, id, version string, gs components.GameSource) (DirectFile, error)
 	GitHub  *github.Client
 	OpenURL func(url string) error
 	// Running reports whether the game runs the profile; its items wait until it stops. Nil means never.

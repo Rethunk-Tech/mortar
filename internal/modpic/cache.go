@@ -38,7 +38,7 @@ const workers = 4
 // cache instead of being fetched from the CDN again each time Browse is opened.
 var allowedHosts = []string{
 	"staticdelivery.nexusmods.com", "images.nexusmods.com", "ccdn.thunderstore.io", "gcdn.thunderstore.io",
-	"cdn.modrinth.com", "media.forgecdn.net", "avatars.githubusercontent.com", "img.itch.zone",
+	"cdn.modrinth.com", "media.forgecdn.net", "avatars.githubusercontent.com", "img.itch.zone", "thumb.modcdn.io",
 	"moddbcdn.vintagestory.at", "modscontent.paradox-interactive.com",
 }
 
