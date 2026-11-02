@@ -37,13 +37,18 @@ jobs:
           apt-packages: appstream
           lint-tools: "true"
 
-      - name: Setup Go
+      # The vulnerability database moves without a code change, so every push still checks; loading the Wails cgo
+      # packages needs the GTK4 and WebKitGTK headers.
+      - name: Set up Go and GTK for the vulnerability check
         if: ${{ !cancelled() && steps.changes.outputs.code != 'true' }}
-        uses: Rethunk-Tech/gh-actions/setup-go@67ec8bd68343d915462729ad119c355740cf6205 # v1.22
+        uses: ./.github/actions/setup-mortar
         with:
-          run-govulncheck: "true"
-          go-version-file: go.mod
-          cache-build: "false"
+          lint-tools: "true"
+          frontend: "false"
+
+      - name: Vulnerability check
+        if: ${{ !cancelled() && steps.changes.outputs.code != 'true' }}
+        run: scripts/vulncheck.sh
 
       - name: Offline gate
         if: ${{ !cancelled() && steps.changes.outputs.code == 'true' }}
