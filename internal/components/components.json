@@ -1,5 +1,5 @@
 {
-  "serial": 1793634642,
+  "serial": 1793635355,
   "components": [
     {
       "game": "melonloader",
@@ -15087,6 +15087,41 @@
         {
           "id": "nexus",
           "key": "mountandblade2bannerlord"
+        }
+      ]
+    },
+    {
+      "id": "ancient-dungeon-vr",
+      "name": "Ancient Dungeon VR",
+      "enabled": true,
+      "minVersion": "0.5.0",
+      "marker": "Ancient_Dungeon.exe",
+      "r2modmanFolder": "AncientDungeonVR",
+      "metadata": [],
+      "modsArg": "--mods-path",
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "mods",
+          "root": "{profileMods}",
+          "modRoot": "mod.modinfo"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "1125240"
+        }
+      },
+      "loaders": [
+        {
+          "id": "folder",
+          "name": ""
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "ancient-dungeon-vr"
         }
       ]
     }

@@ -182,6 +182,11 @@ type GameInfo struct {
 	// Graphics offers the player a choice of graphics API for the game, each passed as launch arguments; an older
 	// Mortar ignores the field.
 	Graphics *Graphics `json:"graphics,omitempty"`
+	// ModsArg is the launch argument the folder loader passes the profile's mods folder under (r2modman's Ancient
+	// Dungeon VR reads "--mods-path <folder>"), for a game that takes its mods from a folder named on the command
+	// line: nothing is placed, so the game needs no mods path role. An older Mortar ignores the field, so an entry
+	// using it sets MinVersion.
+	ModsArg string `json:"modsArg,omitempty"`
 	// Deploy is how the profile reaches the game: redirect (the loader points the game at the profile's mods folder,
 	// nothing is placed) or profile (the profile holds the loader and its mods, and the loader's install-side files are
 	// placed into the install for the launch and taken back after).

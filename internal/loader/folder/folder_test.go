@@ -269,3 +269,71 @@ func TestProfileModsDirErrors(t *testing.T) {
 	}
 	t.Skip("every catalog game has a mods target")
 }
+
+func TestAGameWithAModsArgGetsTheProfileModsFolderOnItsCommandLine(t *testing.T) {
+	m, err := components.BundledManifest()
+	if err != nil {
+		t.Fatal(err)
+	}
+	m.Games = append(slices.Clone(m.Games), components.GameInfo{
+		ID: "arg-game", Name: "Arg Game", Enabled: true, Marker: "G.exe", Deploy: "profile", ModsArg: "--mods-path",
+		Targets: []components.TargetDef{{ID: "mods", Root: "{profileMods}", ModRoot: "mod.modinfo"}},
+		Stores:  components.GameStores{Steam: &components.SteamStore{AppID: "1"}},
+		Loaders: []components.GameLoader{{ID: "folder", Name: "Mod folder"}},
+	})
+	if err := m.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	c := components.NewClient(nil)
+	c.SetManifest(m)
+	components.Use(c)
+	t.Cleanup(func() { components.Use(nil) })
+
+	_, ps := testenv.StoresIn(t, t.TempDir())
+	prof, err := ps.Create("arg-game", "A")
+	if err != nil {
+		t.Fatal(err)
+	}
+	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "pkg.zip"), map[string]string{
+		"manifest.json":     "{}",
+		"Cool/mod.modinfo":  "{}",
+		"Cool/Lua/main.lua": "x",
+	})
+	if _, err := ps.InstallArchive(t.Context(), "arg-game", prof.ID, zip); err != nil {
+		t.Fatal(err)
+	}
+	if err := ps.SyncPackages("arg-game", prof.ID); err != nil {
+		t.Fatal(err)
+	}
+	l, _ := loader.Get("folder")
+	dir, err := ps.ProfileDir("arg-game", prof.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, _ := filepath.Glob(filepath.Join(dir, "mods", "*", "Lua", "main.lua")); len(got) != 1 {
+		t.Fatalf("the mod folder is laid out whole in its own folder under the profile's mods folder: %v", tree(t, dir))
+	}
+	plan := launchplan.New(launchplan.ModeProfile)
+	if err := l.Contribute(t.Context(), plan, loader.ProfileView{Game: "arg-game", Dir: dir}); err != nil {
+		t.Fatal(err)
+	}
+	want := filepath.Join(dir, "mods")
+	if len(plan.Args) != 2 || plan.Args[0] != "--mods-path" || plan.Args[1] != want || len(plan.Files) != 0 {
+		t.Fatalf("args %v files %v, want --mods-path %s and no placed file", plan.Args, plan.Files, want)
+	}
+	places, ok := l.(loader.PlacesFolder)
+	if !ok {
+		t.Fatal("the folder loader must say which folder it places")
+	}
+	if _, _, ok := places.PlacedFolder("arg-game"); ok {
+		t.Fatal("a game with no mods path role places nothing")
+	}
+
+	proton := launchplan.New(launchplan.ModeProfile)
+	if err := l.Contribute(t.Context(), proton, loader.ProfileView{Game: "arg-game", Dir: dir, Runtime: "proton"}); err != nil {
+		t.Fatal(err)
+	}
+	if got := proton.Args[1]; !strings.HasPrefix(got, "Z:") && goruntime.GOOS != "windows" {
+		t.Fatalf("under Proton the folder is a Z: path, got %q", got)
+	}
+}

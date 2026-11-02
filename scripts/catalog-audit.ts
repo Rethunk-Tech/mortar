@@ -63,20 +63,17 @@ const LEFT_OUT = new Set([
   'wrestling-empire',
   // Its Thunderstore page says mods moved to the Steam Workshop and those left there are out of date.
   'stacklands',
-  // Thunderstore's ecosystem schema names no mod loader for these, so no driver can place their mods.
+  // Neither r2modman nor Gale offers these: the schema gives them no r2modman section, so there is no loader or install
+  // rule to follow.
   'reskate',
   'zelda-64-recompiled',
   'banjo-recompiled',
   '2-ship-2-harkinian',
   'r5flowstate',
-  // On BepisLoader, which has no driver; docs/design.md keeps it under Later.
+  // r2modman and Gale both offer it, on BepisLoader, which Mortar has no driver for; docs/design.md keeps it under Later.
   'resonite',
-  // Sold on no store Mortar reads, and the schema has no entry naming its executable.
+  // Neither r2modman nor Gale lists it, and no store Mortar reads sells it.
   '3dash',
-  // The schema's install rules for it are empty, unlike the other Godot Mod Loader games, so what the driver places is unproven.
-  'pair-a-dice',
-  // The schema names only the launcher EscapeFromPlaytime.exe, not the Unreal project folder Shimloader's files go beside.
-  'escape-from-playtime',
 ])
 
 const missing = results

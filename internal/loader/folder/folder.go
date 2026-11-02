@@ -11,6 +11,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-bepinex/wineoverride"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
@@ -166,12 +167,15 @@ func (Loader) Contribute(_ context.Context, plan *launchplan.Plan, p loader.Prof
 	if !ok {
 		return errors.New("unknown game " + p.Game)
 	}
-	if _, has := info.Paths[ModsRole]; !has {
-		return errors.New(info.Name + " names no " + ModsRole + " folder")
-	}
 	t, ok := info.Target(TargetID)
 	if !ok {
 		return errors.New(info.Name + " has no " + TargetID + " target")
+	}
+	if info.ModsArg != "" {
+		return passModsFolder(plan, info, t, p)
+	}
+	if _, has := info.Paths[ModsRole]; !has {
+		return errors.New(info.Name + " names no " + ModsRole + " folder")
 	}
 	root := filepath.Join(p.Dir, filepath.FromSlash(t.ProfileFolder()))
 	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
@@ -197,6 +201,23 @@ func (Loader) Contribute(_ context.Context, plan *launchplan.Plan, p loader.Prof
 	for _, e := range extensionsOf(p.Game) {
 		e.Contribute(plan, p)
 	}
+	return nil
+}
+
+// passModsFolder points a game that reads its mods from a command-line folder at the profile's mods target. Under Proton
+// the game is a Windows process and needs the folder in the Wine Z: form.
+func passModsFolder(plan *launchplan.Plan, info components.GameInfo, t components.TargetDef, p loader.ProfileView) error {
+	dir, err := filepath.Abs(filepath.Join(p.Dir, filepath.FromSlash(t.ProfileFolder())))
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		return err
+	}
+	if p.Runtime == "proton" || p.Runtime == "mortar-proton" {
+		dir = wineoverride.ZPath(dir)
+	}
+	plan.AddArgs(info.ModsArg, dir)
 	return nil
 }
 
