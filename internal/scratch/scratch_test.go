@@ -4,10 +4,12 @@ import (
 	"os"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func TestSweepRemovesOnlyOldScratchFolders(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	testfs.DataHome(t)
 	old, err := Dir("mortar-old-")
 	if err != nil {
 		t.Fatal(err)
