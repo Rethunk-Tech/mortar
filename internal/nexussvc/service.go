@@ -11,6 +11,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-nexusmods"
 
+	gh "github.com/Rethunk-Tech/go-github"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/winhost"
@@ -100,7 +101,7 @@ func (s *Service) KeysUnencrypted() bool {
 
 // GitHubRate is the quota GitHub last reported; Known is false until a request has been made.
 func (s *Service) GitHubRate() github.Rate {
-	return github.CurrentRate()
+	return gh.CurrentRate()
 }
 
 // SignOut deletes the key and forgets the account.

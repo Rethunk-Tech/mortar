@@ -12,8 +12,8 @@ import (
 
 	"github.com/Rethunk-Tech/go-safefs"
 
+	gh "github.com/Rethunk-Tech/go-github"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
-	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/modpic"
 )
@@ -158,7 +158,7 @@ func TestStageThenInstallGitHubKeepsTheTypedSource(t *testing.T) {
 	zip := buildZip(t, "mod.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})
 	src := Source{Kind: KindGitHub, Name: "mod.zip", Version: "1.0", Repo: "Me/Mod", Tag: "v1.0", Asset: "mod.zip"}
 	key, ids, err := e.StageGitHub(t.Context(), "stardew", src, zip)
-	if err != nil || key != github.Key("Me", "Mod", "v1.0", "mod.zip") || len(ids) != 1 || ids[0] != "smapi:X.A" {
+	if err != nil || key != gh.Key("Me", "Mod", "v1.0", "mod.zip") || len(ids) != 1 || ids[0] != "smapi:X.A" {
 		t.Fatalf("stage = %q, %v, %v", key, ids, err)
 	}
 	if got, _ := e.List("stardew"); len(got[0].Entries) != 0 {

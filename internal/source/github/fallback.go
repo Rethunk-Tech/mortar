@@ -15,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	gh "github.com/Rethunk-Tech/go-github"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	ghauth "github.com/Rethunk-Tech/mortar/internal/github"
@@ -87,7 +88,7 @@ func (d *Driver) loggedIn(ctx context.Context) bool {
 		return d.LoggedIn(ctx)
 	}
 	u, err := url.Parse(cmp.Or(d.URL, apiURL))
-	return err == nil && ghauth.IsGitHubHost(u.Hostname()) && ghauth.DefaultAuth.LoggedIn(ctx)
+	return err == nil && gh.IsGitHubHost(u.Hostname()) && ghauth.DefaultAuth.LoggedIn(ctx)
 }
 
 func pageKey(terms string, q source.Query, page int) string {

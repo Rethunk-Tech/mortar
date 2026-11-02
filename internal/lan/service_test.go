@@ -22,6 +22,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
+	gh "github.com/Rethunk-Tech/go-github"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -252,7 +253,7 @@ func TestLoopbackTransfer(t *testing.T) {
 	}
 
 	// Files from a source other than Nexus travel too.
-	ghKey := github.Key("o", "r", "v1", "m.zip")
+	ghKey := gh.Key("o", "r", "v1", "m.zip")
 	if err := senderStore.AddDir(t.Context(), "stardew", ghKey, source); err != nil {
 		t.Fatal(err)
 	}

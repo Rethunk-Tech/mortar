@@ -17,6 +17,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-smapiweb"
 
+	gh "github.com/Rethunk-Tech/go-github"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
@@ -66,7 +67,7 @@ func smapiFolder(t *testing.T, id string) string {
 func TestPairedSendPlacesEverySourceWithoutDownloading(t *testing.T) {
 	const game = "stardew"
 	senderStore := store.OpenAt(t.TempDir())
-	nexusKey, ghKey, localKey := store.NexusKey(7, 2), github.Key("o", "r", "v1", "m.zip"), store.LocalKey(strings.Repeat("cd", 32))
+	nexusKey, ghKey, localKey := store.NexusKey(7, 2), gh.Key("o", "r", "v1", "m.zip"), store.LocalKey(strings.Repeat("cd", 32))
 	for key, id := range map[string]string{nexusKey: "Me.Nexus", ghKey: "Me.GitHub", localKey: "Me.Local"} {
 		if err := senderStore.AddDir(t.Context(), game, key, smapiFolder(t, id)); err != nil {
 			t.Fatal(err)

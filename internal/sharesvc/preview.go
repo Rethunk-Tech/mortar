@@ -17,9 +17,9 @@ import (
 
 	"github.com/Rethunk-Tech/go-httpkit"
 
+	gh "github.com/Rethunk-Tech/go-github"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
@@ -434,7 +434,7 @@ func (r *resolver) github(ref share.Ref) Mod {
 	}
 	if r.hasGitHub(repo, tag, asset) {
 		m.State = StateInstalled
-	} else if r.storedKey(github.Key(owner, name, tag, asset)) {
+	} else if r.storedKey(gh.Key(owner, name, tag, asset)) {
 		m.State, r.storedKeys[m.Key] = StateInstalled, true
 	}
 	return m

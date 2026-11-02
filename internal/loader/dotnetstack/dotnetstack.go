@@ -235,14 +235,3 @@ func params(s string) int {
 	}
 	return n
 }
-
-// Methods names the methods the stack below an exception line runs through, innermost first, as Harmony targets name
-// them ("Namespace.Type::Method"): each frame's method, and for a Harmony wrapper the method it stands in for.
-func Methods(lines []string) []string {
-	frames := Frames(lines)
-	out := make([]string, len(frames))
-	for i, f := range frames {
-		out[i] = f.Method
-	}
-	return out
-}

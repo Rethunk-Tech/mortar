@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/github"
+	gh "github.com/Rethunk-Tech/go-github"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/share"
 	"github.com/Rethunk-Tech/mortar/internal/store"
@@ -128,7 +128,7 @@ func transferItems(shared share.Shared) []transferItem {
 		case ref.GitHub != "":
 			repo, tag, asset := ref.GitHubParts()
 			owner, name, _ := strings.Cut(repo, "/")
-			item = transferItem{Key: github.Key(owner, name, tag, asset), Source: profile.KindGitHub, Package: repo, Version: tag, Asset: asset}
+			item = transferItem{Key: gh.Key(owner, name, tag, asset), Source: profile.KindGitHub, Package: repo, Version: tag, Asset: asset}
 		case ref.Package != "":
 			if ref.Version == "" {
 				continue

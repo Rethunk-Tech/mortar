@@ -11,11 +11,11 @@ import (
 	"strings"
 	"time"
 
+	gh "github.com/Rethunk-Tech/go-github"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/backup"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
-	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -581,7 +581,7 @@ func (s *Store) followKey(game string, src Source, key string) Source {
 		}
 	case KindGitHub:
 		owner, repo, _ := strings.Cut(src.Repo, "/")
-		if github.Key(owner, repo, src.Tag, src.Asset) == key {
+		if gh.Key(owner, repo, src.Tag, src.Asset) == key {
 			return src
 		}
 		kind, _, tag, ok := s.items.Meta(game, key)
@@ -590,7 +590,7 @@ func (s *Store) followKey(game string, src Source, key string) Source {
 		}
 		// Items stored before the asset was recorded: the asset keeps its name across a release when the key matches.
 		for _, asset := range []string{s.items.Asset(game, key), src.Asset} {
-			if asset != "" && github.Key(owner, repo, tag, asset) == key {
+			if asset != "" && gh.Key(owner, repo, tag, asset) == key {
 				src.Tag, src.Asset, src.Digest = tag, asset, ""
 				break
 			}

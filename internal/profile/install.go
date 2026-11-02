@@ -11,10 +11,10 @@ import (
 	"strconv"
 	"strings"
 
+	gh "github.com/Rethunk-Tech/go-github"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
-	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/store"
@@ -167,7 +167,7 @@ func (s *Store) InstallSource(ctx context.Context, game, id, path string, source
 // the mod ids of the mods it holds, so the source can be checked before anything lands in a profile.
 func (s *Store) StageGitHub(ctx context.Context, game string, source Source, path string) (key string, uniqueIDs []mod.ID, err error) {
 	owner, repo, _ := strings.Cut(source.Repo, "/")
-	key = github.Key(owner, repo, source.Tag, source.Asset)
+	key = gh.Key(owner, repo, source.Tag, source.Asset)
 	if err := s.items.AddArchiveKey(ctx, game, key, path); err != nil {
 		return "", nil, installError(err)
 	}

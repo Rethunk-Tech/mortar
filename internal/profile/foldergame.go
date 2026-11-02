@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/github"
+	gh "github.com/Rethunk-Tech/go-github"
 	"github.com/Rethunk-Tech/mortar/internal/installer"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
@@ -26,7 +26,7 @@ func supersedes(next, old Source) bool {
 	switch next.Kind {
 	case KindGitHub:
 		return next.Repo != "" && strings.EqualFold(next.Repo, old.Repo) && next.Tag != old.Tag &&
-			github.Shape(next.Asset) == github.Shape(old.Asset)
+			gh.Shape(next.Asset) == gh.Shape(old.Asset)
 	case KindLocal:
 		return false
 	case KindParadox:

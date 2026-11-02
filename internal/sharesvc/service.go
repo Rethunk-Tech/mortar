@@ -24,7 +24,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-nexusmods"
 
-	"github.com/Rethunk-Tech/mortar/internal/github"
+	gh "github.com/Rethunk-Tech/go-github"
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -783,7 +783,7 @@ func (m Mod) storedEntry() (storedEntry, bool) {
 		return storedEntry{key: store.PackageKey(profile.KindParadox+":"+m.Package, m.Version), source: src}, true
 	case SiteGitHub:
 		src := profile.Source{Kind: profile.KindGitHub, Name: m.Asset, Version: m.Tag, Repo: m.Repo, Tag: m.Tag, Asset: m.Asset}
-		return storedEntry{key: github.Key(m.Author, m.Name, m.Tag, m.Asset), source: withChoices(src, m)}, true
+		return storedEntry{key: gh.Key(m.Author, m.Name, m.Tag, m.Asset), source: withChoices(src, m)}, true
 	case SiteNexus:
 		if m.Different {
 			return storedEntry{}, false

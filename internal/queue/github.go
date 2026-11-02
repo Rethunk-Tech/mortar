@@ -14,6 +14,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-httpkit/download"
 
+	gh "github.com/Rethunk-Tech/go-github"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
@@ -58,7 +59,7 @@ func (s *Service) remember(repo, asset string) {
 	s.choiceMu.Lock()
 	defer s.choiceMu.Unlock()
 	m := s.choices()
-	m[strings.ToLower(repo)] = github.Shape(asset)
+	m[strings.ToLower(repo)] = gh.Shape(asset)
 	if err := datadir.WriteJSON(filepath.Join(s.d.Dir, choicesFile), m); err != nil {
 		log.Printf("queue: remember the %s asset choice: %v", repo, err)
 	}
@@ -75,11 +76,11 @@ func (s *Service) pick(ctx context.Context, gameID, repo string, assets []github
 	shape := s.choices()[strings.ToLower(repo)]
 	s.choiceMu.Unlock()
 	if shape != "" {
-		if i := slices.IndexFunc(assets, func(a github.Asset) bool { return github.Shape(a.Name) == shape }); i >= 0 {
+		if i := slices.IndexFunc(assets, func(a github.Asset) bool { return gh.Shape(a.Name) == shape }); i >= 0 {
 			return assets[i : i+1]
 		}
 	}
-	assets = github.Installable(assets, runtime.GOOS)
+	assets = gh.Installable(assets, runtime.GOOS)
 	if len(assets) < 2 {
 		return assets
 	}
@@ -95,7 +96,7 @@ func (s *Service) pick(ctx context.Context, gameID, repo string, assets []github
 		return assets
 	}
 	fit := slices.DeleteFunc(slices.Clone(assets), func(a github.Asset) bool {
-		names, err := github.ZipNames(ctx, s.d.HTTP, a)
+		names, err := gh.ZipNames(ctx, s.d.HTTP, a)
 		return err != nil || !slices.ContainsFunc(shapes, func(m loader.ModArchive) bool { return m.ModArchive(names) })
 	})
 	if len(fit) == 0 {

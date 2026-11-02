@@ -38,16 +38,6 @@ var DefaultAuth = func() *Auth {
 // MaxChangelog bounds how many releases ReleasesBetween returns.
 const MaxChangelog = gh.MaxChangelog
 
-func Key(owner, repo, tag, asset string) string       { return gh.Key(owner, repo, tag, asset) }
-func Shape(name string) string                        { return gh.Shape(name) }
-func Installable(assets []Asset, goos string) []Asset { return gh.Installable(assets, goos) }
-func CurrentRate() Rate                               { return gh.CurrentRate() }
-func Observe(resp *http.Response) error               { return gh.Observe(resp) }
-func IsGitHubHost(host string) bool                   { return gh.IsGitHubHost(host) }
-func ZipNames(ctx context.Context, hc *http.Client, a Asset) ([]string, error) {
-	return gh.ZipNames(ctx, hc, a)
-}
-
 // RateLimitError is GitHub's unauthenticated limit; Reset is when calls work again (zero when GitHub did not say).
 type RateLimitError struct{ Reset time.Time }
 
