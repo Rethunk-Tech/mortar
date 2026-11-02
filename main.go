@@ -471,7 +471,8 @@ func run() error {
 	}
 	profiles.Tidied = func(code, what, profileName, folder string) { tidied.Add(code, what, "", profileName, 1, folder) }
 	// Every Thunderstore Driver on this cache folder shares the one client made here, under Mortar's own user agent.
-	if _, err := (thunderstore.Driver{CacheDir: filepath.Join(dataDir, "cache")}).Open(version); err != nil {
+	tsClient, err := (thunderstore.Driver{CacheDir: filepath.Join(dataDir, "cache")}).Open(version)
+	if err != nil {
 		return err
 	}
 	profiles.Publisher = func(gameID, name, ver string) (string, bool) {
@@ -1000,7 +1001,7 @@ func run() error {
 		browse.Forget("thunderstore")
 		emit(browse.RefreshedEvent, key)
 	})
-	packs := &packsvc.Service{Profiles: profiles, Queue: queueSvc, Folder: func() string { return store.Get().PackFolder }}
+	packs := &packsvc.Service{Profiles: profiles, Queue: queueSvc, Folder: func() string { return store.Get().PackFolder }, Categories: tsClient.Categories}
 	browseSvc.ShowAdult = func() bool { return store.Get().ShowAdultContent }
 	browseSvc.Installed = profiles.Installed
 	browseSvc.Compat = func(game string) func(ctx context.Context) (smapiweb.CompatIndex, error) {

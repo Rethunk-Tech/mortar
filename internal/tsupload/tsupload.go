@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 
+	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/go-thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/secret"
@@ -79,7 +79,8 @@ func Upload(ctx context.Context, client *http.Client, site, zipPath, team, commu
 }
 
 func refusedToken(err error) error {
-	if err != nil && (strings.Contains(err.Error(), ": 401 ") || strings.Contains(err.Error(), ": 403 ")) {
+	var status *httpkit.StatusError
+	if errors.As(err, &status) && (status.Code == http.StatusUnauthorized || status.Code == http.StatusForbidden) {
 		return usererr.Wrap(usererr.Permission, fmt.Errorf("thunderstore refused the token: %w", err))
 	}
 	return err

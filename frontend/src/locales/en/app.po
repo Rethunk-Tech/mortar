@@ -4038,6 +4038,10 @@ msgstr "Only settings and options differ."
 msgid "{count, plural, one {# backup} other {# backups}}"
 msgstr "{count, plural, one {# backup} other {# backups}}"
 
+#: src/share/UploadModpackDialog.tsx
+msgid "Could not load the category list. {failure}"
+msgstr "Could not load the category list. {failure}"
+
 #: src/firstrun/ProfileStep.tsx
 msgid "From another mod manager"
 msgstr "From another mod manager"

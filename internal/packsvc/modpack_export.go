@@ -413,6 +413,8 @@ func (s *Service) UploadModpack(ctx context.Context, gameID, profileID string, o
 	case !tsupload.HasToken(team):
 		return "", usererr.New(usererr.Permission, "add a Thunderstore service account token first")
 	}
+	// The export remembers the form, and the team is what the next upload starts from.
+	o.Author = team
 	dir, err := os.MkdirTemp("", "mortar-modpack-")
 	if err != nil {
 		return "", err
@@ -430,6 +432,39 @@ func (s *Service) UploadModpack(ctx context.Context, gameID, profileID string, o
 		site = tsupload.Site
 	}
 	return tsupload.Upload(ctx, client, site, zipPath, team, community, categories)
+}
+
+// Category is one of a Thunderstore community's package categories; Slug is what an upload files a package under.
+type Category struct {
+	Slug string `json:"slug"`
+	Name string `json:"name"`
+}
+
+// ThunderstoreCategories lists the game's Thunderstore community's package categories, asked once per community for
+// the session.
+func (s *Service) ThunderstoreCategories(ctx context.Context, gameID string) ([]Category, error) {
+	community := tsupload.Community(gameID)
+	if community == "" || s.Categories == nil {
+		return nil, usererr.New(usererr.Invalid, "this game has no Thunderstore community")
+	}
+	s.catMu.Lock()
+	defer s.catMu.Unlock()
+	if list, ok := s.catList[community]; ok {
+		return list, nil
+	}
+	got, err := s.Categories(ctx, community)
+	if err != nil {
+		return nil, err
+	}
+	list := make([]Category, len(got))
+	for i, c := range got {
+		list[i] = Category{Slug: c.Slug, Name: c.Name}
+	}
+	if s.catList == nil {
+		s.catList = map[string][]Category{}
+	}
+	s.catList[community] = list
+	return list, nil
 }
 
 // SetThunderstoreToken keeps team's service account token in the keyring for uploads.

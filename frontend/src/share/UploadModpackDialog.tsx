@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button, TextField } from '@mui/material'
+import { Button, TextField, Typography } from '@mui/material'
 import { useLoaded } from '@rethunk/react-load-hooks'
 import { Upload } from 'lucide-react'
 import { useId, useState } from 'react'
@@ -8,14 +8,16 @@ import {
   ForgetThunderstoreToken,
   HasThunderstoreToken,
   SetThunderstoreToken,
+  ThunderstoreCategories,
   UploadModpack,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/packsvc/service.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
+import { ChoicePicker } from '../develop/ChoicePicker.tsx'
 import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { Field, FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { openWeb } from '../shell/openWeb.ts'
 import { errorKind } from '../toasts/errorKind.ts'
-import { reportError } from '../toasts/report.ts'
+import { errorMessage, reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 
@@ -35,7 +37,7 @@ export function UploadModpackDialog({
 }) {
   const { t } = useLingui()
   const [team, setTeam] = useState(options.author)
-  const [categories, setCategories] = useState('modpacks')
+  const [categories, setCategories] = useState<string[]>(['modpacks'])
   const [token, setToken] = useState('')
   const [busy, run] = usePending()
   const id = useId()
@@ -59,12 +61,8 @@ export function UploadModpackDialog({
         if (token.trim() !== '') {
           await SetThunderstoreToken(name, token.trim())
         }
-        const list = categories
-          .split(',')
-          .map((c) => c.trim())
-          .filter(Boolean)
         try {
-          const url = await UploadModpack(game, profileId, options, name, list)
+          const url = await UploadModpack(game, profileId, options, name, categories)
           useToasts.getState().push({
             kind: 'success',
             title: t`Uploaded ${{ name: options.name }} to ${{ site }}`,
@@ -108,12 +106,7 @@ export function UploadModpackDialog({
       onSubmit={submit}
     >
       <TextInput label={t`Team`} value={team} onChange={setTeam} autoFocus={true} />
-      <TextInput
-        label={t`Categories`}
-        value={categories}
-        onChange={setCategories}
-        hint={t`Separated by commas.`}
-      />
+      <CategoryField game={game} value={categories} onChange={setCategories} />
       <Field
         label={t`Service account token`}
         htmlFor={id}
@@ -152,5 +145,66 @@ export function UploadModpackDialog({
         />
       </Field>
     </FormDialog>
+  )
+}
+
+/** The community's categories as a multi-select, or a comma separated field with the failure shown when the list cannot be loaded. */
+function CategoryField({
+  game,
+  value,
+  onChange,
+}: {
+  game: string
+  value: string[]
+  onChange: (next: string[]) => void
+}) {
+  const { t } = useLingui()
+  const listed = useLoaded<{ value: string; label: string }[]>(
+    () =>
+      ThunderstoreCategories(game).then((l) =>
+        (l ?? []).map((c) => ({ value: c.slug, label: c.name })),
+      ),
+    [game],
+    [],
+  )
+  if (!listed.error) {
+    return (
+      <ChoicePicker label={t`Categories`} choices={listed.data} value={value} onChange={onChange} />
+    )
+  }
+  return <TypedCategories value={value} onChange={onChange} failure={errorMessage(listed.error)} />
+}
+
+function TypedCategories({
+  value,
+  onChange,
+  failure,
+}: {
+  value: string[]
+  onChange: (next: string[]) => void
+  failure: string
+}) {
+  const { t } = useLingui()
+  const [text, setText] = useState(value.join(', '))
+  return (
+    <>
+      <TextInput
+        label={t`Categories`}
+        value={text}
+        onChange={(next) => {
+          setText(next)
+          onChange(
+            next
+              .split(',')
+              .map((c) => c.trim())
+              .filter(Boolean),
+          )
+        }}
+        hint={t`Separated by commas.`}
+      />
+      <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
+        {t`Could not load the category list. ${failure}`}
+      </Typography>
+    </>
   )
 }

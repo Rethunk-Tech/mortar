@@ -9,8 +9,10 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"sync"
 
 	"github.com/Rethunk-Tech/go-modmanagers/r2modman"
+	tstore "github.com/Rethunk-Tech/go-thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
@@ -52,6 +54,11 @@ type Service struct {
 	// Thunderstore.
 	HTTP            *http.Client
 	ThunderstoreURL string
+	// Categories lists a Thunderstore community's package categories; nil means the list is unavailable.
+	Categories func(ctx context.Context, community string) ([]tstore.Category, error)
+
+	catMu   sync.Mutex
+	catList map[string][]Category
 }
 
 func (s *Service) folder() string {

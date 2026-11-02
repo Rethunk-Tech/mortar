@@ -4032,6 +4032,10 @@ msgstr ""
 msgid "{count, plural, one {# backup} other {# backups}}"
 msgstr ""
 
+#: src/share/UploadModpackDialog.tsx
+msgid "Could not load the category list. {failure}"
+msgstr ""
+
 #: src/firstrun/ProfileStep.tsx
 msgid "From another mod manager"
 msgstr ""
