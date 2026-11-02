@@ -39,6 +39,7 @@ const shares: Record<string, number> = {
   es: 0.85,
   'es-AR': 0.9,
   'es-PA': 0.1,
+  pl: 0,
   'pt-BR': 0,
   'zh-Hans': 0,
 }
