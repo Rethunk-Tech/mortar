@@ -70,13 +70,9 @@ func (s *Store) MakeServer(gameID, id string) (Profile, error) {
 	if err != nil {
 		return Profile{}, err
 	}
-	taken := make([]string, 0, len(all))
-	for _, p := range all {
-		taken = append(taken, p.Name)
-	}
 	const suffix = " server"
 	base := []rune(dup.CopyOf)
-	name := UniqueName(taken, string(base[:min(len(base), maxName-len(suffix))])+suffix)
+	name := UniqueName(Names(all), string(base[:min(len(base), maxName-len(suffix))])+suffix)
 	out, err := s.update(gameID, dup.ID, func(p *Profile, _ string) error {
 		p.Server, p.Name = true, name
 		return nil

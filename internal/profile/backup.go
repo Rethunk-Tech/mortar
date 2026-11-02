@@ -281,11 +281,7 @@ func (s *Store) RestoreBackup(ctx context.Context, game string, p Profile, files
 	if err != nil {
 		return Profile{}, nil, err
 	}
-	taken := make([]string, 0, len(all))
-	for _, q := range all {
-		taken = append(taken, q.Name)
-	}
-	created, err := s.Create(game, UniqueName(taken, p.Name))
+	created, err := s.Create(game, UniqueName(Names(all), p.Name))
 	if err != nil {
 		return Profile{}, nil, err
 	}

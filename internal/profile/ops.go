@@ -796,16 +796,12 @@ func (s *Store) Duplicate(game, id string) (Profile, error) {
 	if err != nil {
 		return Profile{}, err
 	}
-	taken := make([]string, 0, len(all))
-	for _, p := range all {
-		taken = append(taken, p.Name)
-	}
 	newID := ids.New()
 	dstDir, _ := s.profileDir(game, newID)
 
 	const suffix = " copy"
 	runes := []rune(src.Name)
-	name := UniqueName(taken, string(runes[:min(len(runes), maxName-len(suffix))])+suffix)
+	name := UniqueName(Names(all), string(runes[:min(len(runes), maxName-len(suffix))])+suffix)
 	now := time.Now().UTC().Truncate(time.Second)
 	dup := src
 	dup.ID, dup.Name, dup.Created, dup.Updated = newID, name, now, now

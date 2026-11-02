@@ -40,14 +40,6 @@ func queueReq(game, profileID string, m PlayedMod) (queue.Request, bool) {
 	}
 }
 
-func takenNames(all []profile.Profile) []string {
-	out := make([]string, 0, len(all))
-	for _, p := range all {
-		out = append(out, p.Name)
-	}
-	return out
-}
-
 func (s *Service) enqueue(ctx context.Context, reqs []queue.Request) error {
 	if len(reqs) == 0 {
 		return nil
@@ -105,7 +97,7 @@ func (s *Service) FromSave(ctx context.Context, game, saveFolder string) (FromSa
 	if err != nil {
 		return FromSaveResult{}, err
 	}
-	created, err := s.profiles.Create(game, profile.UniqueName(takenNames(all), s.farmOf(ctx, game, saveFolder)))
+	created, err := s.profiles.Create(game, profile.UniqueName(profile.Names(all), s.farmOf(ctx, game, saveFolder)))
 	if err != nil {
 		return FromSaveResult{}, err
 	}

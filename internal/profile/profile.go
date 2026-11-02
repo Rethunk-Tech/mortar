@@ -488,6 +488,15 @@ func CleanName(what, name string) (string, error) {
 	return name, nil
 }
 
+// Names lists the profiles' names, for UniqueName.
+func Names(all []Profile) []string {
+	out := make([]string, 0, len(all))
+	for _, p := range all {
+		out = append(out, p.Name)
+	}
+	return out
+}
+
 // UniqueName returns name when no taken name equals it (ignoring case), else "name (2)", "name (3)" and so on with the
 // first number that is free. A long name is cut so the result still fits maxName.
 func UniqueName(taken []string, name string) string {

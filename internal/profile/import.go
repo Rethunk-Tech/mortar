@@ -476,11 +476,7 @@ func (s *Store) ImportGameMods(ctx context.Context, game, modsDir string, move b
 	if err != nil {
 		return GameModsResult{}, err
 	}
-	taken := make([]string, len(existing))
-	for i, p := range existing {
-		taken[i] = p.Name
-	}
-	created, err := s.Create(game, UniqueName(taken, importedProfileName))
+	created, err := s.Create(game, UniqueName(Names(existing), importedProfileName))
 	if err != nil {
 		return GameModsResult{}, err
 	}
