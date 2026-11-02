@@ -271,6 +271,10 @@ msgstr ""
 msgid "History"
 msgstr ""
 
+#: src/share/ListFormat.tsx
+msgid "({off} disabled)"
+msgstr ""
+
 #: src/develop/EditProjectDialog.tsx
 #: src/develop/ProjectDependencies.tsx
 msgid "Reading the dependencies…"
@@ -947,6 +951,10 @@ msgstr ""
 msgid "Download again"
 msgstr ""
 
+#: src/develop/ProjectDependencies.tsx
+msgid "New ones install into the mod's profile."
+msgstr ""
+
 #: src/develop/NewModDialog.tsx
 #: src/firstrunTour/TourPopover.tsx
 msgid "Step {step} of {count}"
@@ -1084,6 +1092,10 @@ msgstr ""
 
 #: src/queue/QueueNeedsFomod.tsx
 msgid "Choose options…"
+msgstr ""
+
+#: src/share/ManagerPane.tsx
+msgid "Use {manager} or {otherManager} from another folder?"
 msgstr ""
 
 #: src/launch/store.ts
@@ -2431,10 +2443,6 @@ msgstr ""
 msgid "Mortar installs this itself."
 msgstr ""
 
-#: src/share/ManagerPane.tsx
-msgid "{manager} or {otherManager} in another folder?"
-msgstr ""
-
 #: src/queue/QueueBody.tsx
 msgid "Skip every waiting download"
 msgstr ""
@@ -2730,6 +2738,10 @@ msgstr ""
 
 #: src/develop/DevelopTab.tsx
 msgid "Filter projects"
+msgstr ""
+
+#: src/shell/ErrorRetry.tsx
+msgid "Open Settings"
 msgstr ""
 
 #: src/game/NewProfileDialog.tsx
@@ -5936,10 +5948,6 @@ msgstr ""
 msgid "Ask another Mortar user to open sharing nearby."
 msgstr ""
 
-#: src/share/ListFormat.tsx
-msgid "{count, plural, one {# mod disabled} other {# mods disabled}}"
-msgstr ""
-
 #: src/toasts/EarlierChanges.tsx
 msgid "No changes yet"
 msgstr ""
@@ -6583,6 +6591,10 @@ msgstr ""
 msgid "Clear search"
 msgstr ""
 
+#: src/browse/stats.ts
+msgid "{count} downloads"
+msgstr ""
+
 #: src/develop/EditProjectDialog.tsx
 #: src/develop/NewModDialog.tsx
 #: src/develop/ownParams.ts
@@ -6731,6 +6743,10 @@ msgstr ""
 
 #: src/launch/SaveWarnDialog.tsx
 msgid "Your last save needs other mods"
+msgstr ""
+
+#: src/browse/stats.ts
+msgid "{count} endorsements"
 msgstr ""
 
 #: src/develop/ReleaseDialog.tsx
@@ -7056,10 +7072,6 @@ msgstr ""
 #: src/firstrun/LoaderStep.tsx
 #: src/firstrun/NexusStep.tsx
 msgid "Continue"
-msgstr ""
-
-#: src/develop/DependenciesStep.tsx
-msgid "Suggested for {answer}"
 msgstr ""
 
 #: src/browse/BrowseDetails.tsx
@@ -7505,6 +7517,10 @@ msgstr ""
 
 #: src/loader/store.ts
 msgid "{name} {version} is installed"
+msgstr ""
+
+#: src/develop/DependenciesStep.tsx
+msgid "Suggested by your answer: {answer}"
 msgstr ""
 
 #: src/saves/backups.ts

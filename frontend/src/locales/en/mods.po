@@ -526,6 +526,10 @@ msgstr "Could not dismiss the warning"
 msgid "Some mods could not be checked, so more updates may show up later."
 msgstr "Some mods could not be checked, so more updates may show up later."
 
+#: src/mods/ModsTab.tsx
+msgid "Click the star on a mod to add it here."
+msgstr "Click the star on a mod to add it here."
+
 #: src/mods/LoadOrderTab.tsx
 #: src/mods/ModsTab.tsx
 #: src/mods/typedConfig/ConfigPane.tsx
@@ -587,6 +591,10 @@ msgstr "Name"
 #: src/mods/typedConfig/OtherFiles.tsx
 msgid "Loader and other"
 msgstr "Loader and other"
+
+#: src/mods/ModsTab.tsx
+msgid "No favourites yet"
+msgstr "No favourites yet"
 
 #: src/mods/problemFix/SettingFix.tsx
 msgid "Set to automatic"
@@ -1202,10 +1210,6 @@ msgstr "Supplies tilesheets for other mods"
 #: src/mods/updateReview/Row.tsx
 msgid "Changelog"
 msgstr "Changelog"
-
-#: src/mods/LoadOrderTab.tsx
-msgid "{count, plural, one {Used by # mod} other {Used by # mods}}"
-msgstr "{count, plural, one {Used by # mod} other {Used by # mods}}"
 
 #: src/mods/NexusDetails.tsx
 #: src/mods/Sidebar.tsx
@@ -2801,6 +2805,10 @@ msgstr "Could not keep the old files"
 #: src/mods/ModUpdateControls.tsx
 msgid "Releases, betas and alphas"
 msgstr "Releases, betas and alphas"
+
+#: src/mods/LoadOrderTab.tsx
+msgid "{count, plural, one {Used by: # mod} other {Used by: # mods}}"
+msgstr "{count, plural, one {Used by: # mod} other {Used by: # mods}}"
 
 #: src/mods/storeEntries.ts
 msgid "Skipped updates for selected mods"

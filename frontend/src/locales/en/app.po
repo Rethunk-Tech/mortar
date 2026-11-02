@@ -271,6 +271,10 @@ msgstr "Could not hide that mod"
 msgid "History"
 msgstr "History"
 
+#: src/share/ListFormat.tsx
+msgid "({off} disabled)"
+msgstr "({off} disabled)"
+
 #: src/develop/EditProjectDialog.tsx
 #: src/develop/ProjectDependencies.tsx
 msgid "Reading the dependencies…"
@@ -947,6 +951,10 @@ msgstr "It could not load an asset."
 msgid "Download again"
 msgstr "Download again"
 
+#: src/develop/ProjectDependencies.tsx
+msgid "New ones install into the mod's profile."
+msgstr "New ones install into the mod's profile."
+
 #: src/develop/NewModDialog.tsx
 #: src/firstrunTour/TourPopover.tsx
 msgid "Step {step} of {count}"
@@ -1085,6 +1093,10 @@ msgstr "Reading the archive…"
 #: src/queue/QueueNeedsFomod.tsx
 msgid "Choose options…"
 msgstr "Choose options…"
+
+#: src/share/ManagerPane.tsx
+msgid "Use {manager} or {otherManager} from another folder?"
+msgstr "Use {manager} or {otherManager} from another folder?"
 
 #: src/launch/store.ts
 msgid "The program to start {name} was not found. Check that the game is still installed and the launch prefix names a real command. {error}"
@@ -2431,10 +2443,6 @@ msgstr "Project"
 msgid "Mortar installs this itself."
 msgstr "Mortar installs this itself."
 
-#: src/share/ManagerPane.tsx
-msgid "{manager} or {otherManager} in another folder?"
-msgstr "{manager} or {otherManager} in another folder?"
-
 #: src/queue/QueueBody.tsx
 msgid "Skip every waiting download"
 msgstr "Skip every waiting download"
@@ -2731,6 +2739,10 @@ msgstr "One argument per line. Placeholders: {placeholders}."
 #: src/develop/DevelopTab.tsx
 msgid "Filter projects"
 msgstr "Filter projects"
+
+#: src/shell/ErrorRetry.tsx
+msgid "Open Settings"
+msgstr "Open Settings"
 
 #: src/game/NewProfileDialog.tsx
 msgid "Copy of {name}"
@@ -5936,10 +5948,6 @@ msgstr "Paths too long for {os} ({count})"
 msgid "Ask another Mortar user to open sharing nearby."
 msgstr "Ask another Mortar user to open sharing nearby."
 
-#: src/share/ListFormat.tsx
-msgid "{count, plural, one {# mod disabled} other {# mods disabled}}"
-msgstr "{count, plural, one {# mod disabled} other {# mods disabled}}"
-
 #: src/toasts/EarlierChanges.tsx
 msgid "No changes yet"
 msgstr "No changes yet"
@@ -6583,6 +6591,10 @@ msgstr "{name} needs {names}"
 msgid "Clear search"
 msgstr "Clear search"
 
+#: src/browse/stats.ts
+msgid "{count} downloads"
+msgstr "{count} downloads"
+
 #: src/develop/EditProjectDialog.tsx
 #: src/develop/NewModDialog.tsx
 #: src/develop/ownParams.ts
@@ -6732,6 +6744,10 @@ msgstr "Profiles"
 #: src/launch/SaveWarnDialog.tsx
 msgid "Your last save needs other mods"
 msgstr "Your last save needs other mods"
+
+#: src/browse/stats.ts
+msgid "{count} endorsements"
+msgstr "{count} endorsements"
 
 #: src/develop/ReleaseDialog.tsx
 msgid "What changed, one line each"
@@ -7057,10 +7073,6 @@ msgstr "{app} stopped on an error before {name} started: {error}"
 #: src/firstrun/NexusStep.tsx
 msgid "Continue"
 msgstr "Continue"
-
-#: src/develop/DependenciesStep.tsx
-msgid "Suggested for {answer}"
-msgstr "Suggested for {answer}"
 
 #: src/browse/BrowseDetails.tsx
 #: src/develop/NewModDialog.tsx
@@ -7506,6 +7518,10 @@ msgstr "Copy as a message"
 #: src/loader/store.ts
 msgid "{name} {version} is installed"
 msgstr "{name} {version} is installed"
+
+#: src/develop/DependenciesStep.tsx
+msgid "Suggested by your answer: {answer}"
+msgstr "Suggested by your answer: {answer}"
 
 #: src/saves/backups.ts
 msgid "Before a restore"

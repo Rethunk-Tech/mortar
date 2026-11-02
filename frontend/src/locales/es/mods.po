@@ -526,6 +526,10 @@ msgstr ""
 msgid "Some mods could not be checked, so more updates may show up later."
 msgstr ""
 
+#: src/mods/ModsTab.tsx
+msgid "Click the star on a mod to add it here."
+msgstr ""
+
 #: src/mods/LoadOrderTab.tsx
 #: src/mods/ModsTab.tsx
 #: src/mods/typedConfig/ConfigPane.tsx
@@ -586,6 +590,10 @@ msgstr ""
 
 #: src/mods/typedConfig/OtherFiles.tsx
 msgid "Loader and other"
+msgstr ""
+
+#: src/mods/ModsTab.tsx
+msgid "No favourites yet"
 msgstr ""
 
 #: src/mods/problemFix/SettingFix.tsx
@@ -1201,10 +1209,6 @@ msgstr ""
 #: src/mods/Sidebar.tsx
 #: src/mods/updateReview/Row.tsx
 msgid "Changelog"
-msgstr ""
-
-#: src/mods/LoadOrderTab.tsx
-msgid "{count, plural, one {Used by # mod} other {Used by # mods}}"
 msgstr ""
 
 #: src/mods/NexusDetails.tsx
@@ -2800,6 +2804,10 @@ msgstr ""
 
 #: src/mods/ModUpdateControls.tsx
 msgid "Releases, betas and alphas"
+msgstr ""
+
+#: src/mods/LoadOrderTab.tsx
+msgid "{count, plural, one {Used by: # mod} other {Used by: # mods}}"
 msgstr ""
 
 #: src/mods/storeEntries.ts

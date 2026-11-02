@@ -1310,10 +1310,6 @@ msgstr ""
 msgid "Not used by any profile"
 msgstr ""
 
-#: src/profiles/ProfileMenu.tsx
-msgid "Manage profiles…"
-msgstr ""
-
 #: src/profiles/CompareTable.tsx
 #: src/profiles/ProfilesPage.tsx
 msgid "Enabled"
@@ -1379,6 +1375,10 @@ msgstr ""
 
 #: src/profiles/historyLabel.ts
 msgid "Set {detail} of {name} for the next start"
+msgstr ""
+
+#: src/profiles/ProfileMenu.tsx
+msgid "Manage profiles"
 msgstr ""
 
 #: src/profiles/LaunchOptionsBlock.tsx
