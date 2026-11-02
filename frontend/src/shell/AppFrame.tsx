@@ -6,6 +6,7 @@ import { SweepDialog } from '../launch/SweepDialog.tsx'
 import { QueueSheet } from '../queue/QueueSheet.tsx'
 import { NxmReclaim } from '../settings/sections/NxmReclaim.tsx'
 import { useSettings } from '../settings/store.ts'
+import { UpdateReadyBanner } from '../updates/UpdateReadyBanner.tsx'
 import { BackdropImage } from './BackdropImage.tsx'
 import { OfflineBanner } from './OfflineBanner.tsx'
 import { TitleBar } from './TitleBar.tsx'
@@ -82,6 +83,7 @@ export function AppFrame({ children }: { children: ReactNode }) {
       ) : null}
       <TitleBar maximised={maximised} />
       <OfflineBanner />
+      <UpdateReadyBanner />
       <Box component="main" sx={{ flexGrow: 1, minHeight: 0 }}>
         {children}
       </Box>

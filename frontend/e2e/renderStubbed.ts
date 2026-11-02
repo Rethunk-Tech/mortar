@@ -10,6 +10,8 @@ const UPLOAD_SITES = 858_225_634
 const LOAD_ORDER = 3_963_816_757
 const PACK = 1_330_956_574
 const UPLOAD_GITHUB = 3_405_360_245
+const UPDATE_CHECK = 3_749_236_397
+const UPDATE_INFO = 3_769_649_439
 
 type Stub = (route: Route) => Promise<void>
 /** Answers the named binding calls with the given results; every other call goes on to the server. */
@@ -149,6 +151,37 @@ function olderVersionBuildsCase({
   }
 }
 
+// A staged update: its banner takes room from the page, so the page's foot (the Play button) stays inside the window.
+function updateReadyCase(): Case {
+  const stub = stubCalls({
+    [UPDATE_INFO]: { version: '0.4.0', commit: 'render', off: '' },
+    [UPDATE_CHECK]: { version: '9.9.9', staged: true },
+  })
+  return {
+    name: 'update-ready-banner',
+    setup: async (p) => {
+      await p.route('**/wails/runtime', stub)
+      await p.reload()
+    },
+    run: async (p) => {
+      await p.getByRole('button', { name: 'Mortar menu' }).click()
+      await p.getByRole('menuitem', { name: /^Check mods and Mortar for updates/ }).click()
+      await p.getByRole('button', { name: 'Restart now' }).first().waitFor()
+      const overflow = await p.evaluate(() => {
+        const page = document.querySelector('main')?.lastElementChild
+        return page ? page.getBoundingClientRect().bottom - window.innerHeight : 0
+      })
+      if (overflow > 1) {
+        throw new Error(`the page runs ${overflow}px past the window under the update banner`)
+      }
+    },
+    teardown: async (p) => {
+      await p.unroute('**/wails/runtime', stub)
+      await p.reload()
+    },
+  }
+}
+
 /** Screens the render data may not reach on its own, each with the backend answer that opens it stubbed. */
 export function stubbedCases(kit: ReturnType<typeof dialogKit>): Case[] {
   const {
@@ -164,6 +197,7 @@ export function stubbedCases(kit: ReturnType<typeof dialogKit>): Case[] {
     tab,
   } = kit
   return [
+    updateReadyCase(),
     // The Mods tab with the project and its development profile disagreeing in all three ways.
     (() => {
       const stub = stubCalls({

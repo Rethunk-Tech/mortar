@@ -37,7 +37,6 @@ import { SuggestDialog } from './shell/SuggestDialog.tsx'
 import { AvOverrideDialog } from './toasts/AvOverrideDialog.tsx'
 import { reportError } from './toasts/report.ts'
 import { ToastHost } from './toasts/ToastHost.tsx'
-import { UpdateReadyBanner } from './updates/UpdateReadyBanner.tsx'
 import { WhatsNewDialog } from './updates/WhatsNewDialog.tsx'
 
 // The launch overlay follows the route and the running game; its own component, so neither re-renders the app.
@@ -108,7 +107,6 @@ export function App() {
   return (
     <>
       <AppFrame>
-        <UpdateReadyBanner />
         <Routes />
       </AppFrame>
       <Overlay />
