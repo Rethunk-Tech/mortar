@@ -1,5 +1,5 @@
 msgid ""
-msgstr "POT-Creation-Date: 2026-10-28 14:49-0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nX-Generator: Weblate 2026.11.dev0\nLanguage: zh-Hans\nPO-Revision-Date: 2026-10-31 13:53+0000\nLast-Translator: MOXIAOLEQWQ <moxiaole@users.noreply.hosted.weblate.org>\nLanguage-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/projects/mortar/settings/zh_Hans/>\nPlural-Forms: nplurals=1; plural=0;\n"
+msgstr "POT-Creation-Date: 2026-10-28 14:49-0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nX-Generator: Weblate 2026.11.dev0\nLanguage: zh-Hans\nPO-Revision-Date: 2026-11-02 17:19+0000\nLast-Translator: MOXIAOLEQWQ <moxiaole@users.noreply.hosted.weblate.org>\nLanguage-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/projects/mortar/settings/zh_Hans/>\nPlural-Forms: nplurals=1; plural=0;\n"
 
 #: src/settings/sections/Notifications.tsx
 msgid "{name}: desktop notification"
@@ -118,7 +118,7 @@ msgstr ""
 
 #: src/settings/shortcutLabels.ts
 msgid "Switch to Console"
-msgstr ""
+msgstr "切换至控制台"
 
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "Run checks…"
@@ -130,7 +130,7 @@ msgstr ""
 
 #: src/settings/sections/ExtraModsFolders.tsx
 msgid "Deleted profile"
-msgstr ""
+msgstr "已删除配置文件"
 
 #: src/settings/sections/NexusMods.tsx
 msgid "Untrack mods"

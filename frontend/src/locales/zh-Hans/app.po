@@ -1,5 +1,5 @@
 msgid ""
-msgstr "POT-Creation-Date: 2026-10-28 14:49-0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nX-Generator: Weblate 2026.11.dev0\nLanguage: zh-Hans\nPO-Revision-Date: 2026-10-31 13:53+0000\nLast-Translator: MOXIAOLEQWQ <moxiaole@users.noreply.hosted.weblate.org>\nLanguage-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/projects/mortar/app/zh_Hans/>\nPlural-Forms: nplurals=1; plural=0;\n"
+msgstr "POT-Creation-Date: 2026-10-28 14:49-0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nX-Generator: Weblate 2026.11.dev0\nLanguage: zh-Hans\nPO-Revision-Date: 2026-11-02 17:19+0000\nLast-Translator: MOXIAOLEQWQ <moxiaole@users.noreply.hosted.weblate.org>\nLanguage-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/projects/mortar/app/zh_Hans/>\nPlural-Forms: nplurals=1; plural=0;\n"
 
 #: src/saves/SavesTab.tsx
 msgid "No saves match"
@@ -67,7 +67,7 @@ msgstr "在 {source} 上按下 Mod Manager Download。Mortar 会将其接管并�
 
 #: src/queue/LargeDownloadDialog.tsx
 msgid "This download is {size}, far larger than a mod normally is. It will take a long time and fill a lot of your drive."
-msgstr ""
+msgstr "此次下载大小为 {size}，远超过普通模组的大小。下载将花费很长时间，并占用大量磁盘空间。"
 
 #: src/share/importCompletion.ts
 msgid "Show failed"
@@ -173,93 +173,93 @@ msgstr "接下来：{names}"
 
 #: src/develop/TestWith.tsx
 msgid "Test with"
-msgstr ""
+msgstr "使用以下进行测试"
 
 #: src/develop/draft.ts
 msgid "{name}: cannot start with a dash."
-msgstr ""
+msgstr "{name}：不能以短横线开头。"
 
 #: src/share/CollectionNotes.tsx
 msgid "These come from outside {source}, so Mortar does not download them."
-msgstr ""
+msgstr "这些内容来自 {source} 之外，因此 Mortar 不会下载它们。"
 
 #: src/game/HomeNotes.tsx
 msgid "Edit notes"
-msgstr ""
+msgstr "编辑备注"
 
 #: src/updates/WhatsNewDialog.tsx
 msgid "No notes for this release."
-msgstr ""
+msgstr "此版本暂无备注。"
 
 #: src/share/ListFormat.tsx
 #: src/share/MethodPanes.tsx
 #: src/share/useShareBuild.ts
 msgid "Could not save the file"
-msgstr ""
+msgstr "无法保存该文件"
 
 #: src/saves/lackChipActions.tsx
 msgid "Enable {name} in this profile"
-msgstr ""
+msgstr "在此配置文件中启用 {name}"
 
 #: src/games/AddGameDialog.tsx
 msgid "Choose the game's program first."
-msgstr ""
+msgstr "请先选择游戏的可执行程序。"
 
 #: src/templates/TemplateDialogs.tsx
 msgid "A template with this name already exists."
-msgstr ""
+msgstr "已存在同名模板。"
 
 #: src/launchers/LauncherList.tsx
 msgid "Found, with no supported games yet"
-msgstr ""
+msgstr "已找到，但尚无受支持的游戏"
 
 #: src/lan/IncomingPrompt.tsx
 msgid "Copying mod files"
-msgstr ""
+msgstr "正在复制模组文件"
 
 #: src/games/ProfileCards.tsx
 msgid "Open {game} ({count, plural, one {# more profile} other {# more profiles}})"
-msgstr ""
+msgstr "打开 {game}（另有 {count, plural, one {# 个配置文件} other {# 个配置文件}}）"
 
 #: src/share/ImportProblems.tsx
 msgid "{name} is broken for {detail}"
-msgstr ""
+msgstr "{name} 因 {detail} 而损坏"
 
 #: src/saves/SaveBackupsButton.tsx
 msgid "Kept by the game"
-msgstr ""
+msgstr "由游戏保留"
 
 #: src/firstrunTour/TourPopover.tsx
 msgid "Switch game"
-msgstr ""
+msgstr "切换游戏"
 
 #: src/queue/store.ts
 msgid "{name} needs its main file first"
-msgstr ""
+msgstr "{name} 需要先有其主文件"
 
 #: src/share/ImportProblems.tsx
 msgid "{name} needs {detail}, which Mortar cannot install"
-msgstr ""
+msgstr "{name} 需要 {detail}，而 Mortar 无法安装它"
 
 #: src/tidy/report.ts
 msgid "Removed a leftover mod folder"
-msgstr ""
+msgstr "已移除残留的模组文件夹"
 
 #: src/toasts/AvOverrideDialog.tsx
 msgid "Your antivirus ({scanner}) reports {name}{where}. Mod loaders and their DLLs often trip heuristics, but a real detection can harm your computer. Install only a file you trust. Mortar records this choice in the profile's history."
-msgstr ""
+msgstr "你的杀毒软件（{scanner}）在 {where} 报告 {name} 存在问题。模组加载器及其 DLL 文件经常会触发启发式检测误报，但真实的病毒检测会危害你的电脑。只安装你信任的文件。Mortar 会将此选择记录到配置文件的历史记录中。"
 
 #: src/groups/applied.ts
 msgid "{count, plural, one {# mod added} other {# mods added}}"
-msgstr ""
+msgstr "{count, plural, one {已添加 # 个模组} other {已添加 # 个模组}}"
 
 #: src/queue/store.ts
 msgid "The download could not finish. Retry or skip it from the queue."
-msgstr ""
+msgstr "下载未能完成。请重试，或将其从队列中跳过。"
 
 #: src/browse/BrowseMenu.tsx
 msgid "Could not hide that mod"
-msgstr ""
+msgstr "无法隐藏该模组"
 
 #: src/queue/QueueSheet.tsx
 msgid "History"
@@ -268,50 +268,50 @@ msgstr ""
 #: src/develop/EditProjectDialog.tsx
 #: src/develop/ProjectDependencies.tsx
 msgid "Reading the dependencies…"
-msgstr ""
+msgstr "正在读依赖项…"
 
 #: src/shell/useDiscardGuard.tsx
 msgid "Discard changes?"
-msgstr ""
+msgstr "放弃更改？"
 
 #: src/tidy/report.ts
 msgid "Rebuilt a mod folder from the store"
-msgstr ""
+msgstr "已从商店重建一个模组文件夹"
 
 #: src/share/ImportDialog.tsx
 #: src/share/ImportSources.tsx
 msgid "Another mod manager"
-msgstr ""
+msgstr "另一个模组管理器"
 
 #: src/share/DestinationGrid.tsx
 #: src/share/ShareDialog.tsx
 msgid "Nearby computer"
-msgstr ""
+msgstr "附近的电脑"
 
 #: src/templates/ApplyTemplateDialog.tsx
 msgid "{left, plural, one {downloading # mod} other {downloading # mods}}"
-msgstr ""
+msgstr "{left, plural, one {正在下载 # 个模组} other {正在下载 # 个模组}}"
 
 #: src/share/MethodPanes.tsx
 msgid "Use a file"
-msgstr ""
+msgstr "使用文件"
 
 #: src/commandPalette/paletteLabels.ts
 msgid "Switch to Console"
-msgstr ""
+msgstr "切换至控制台"
 
 #: src/lan/PairedComputers.tsx
 msgid "Unpair {name}?"
-msgstr ""
+msgstr "取消配对 {name}？"
 
 #: src/queue/QueueHistory.tsx
 #: src/saves/SaveRow.tsx
 msgid "Deleted profile"
-msgstr ""
+msgstr "已删除配置文件"
 
 #: src/templates/ApplyTemplateDialog.tsx
 msgid "{count, plural, one {Added # mod from {name}} other {Added # mods from {name}}}"
-msgstr ""
+msgstr "{count, plural, one {已从 {name} 添加 # 个模组} other {已从 {name} 添加 # 个模组}}"
 
 #: src/tidy/report.ts
 msgid "Mod store"
