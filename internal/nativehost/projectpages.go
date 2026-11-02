@@ -31,9 +31,7 @@ var (
 
 func readPages(dir string) map[string]string {
 	pages := map[string]string{}
-	if b, err := safefs.ReadFile(filepath.Join(dir, pagesCacheRel)); err == nil {
-		_ = json.Unmarshal(b, &pages)
-	}
+	_, _ = datadir.ReadJSON(filepath.Join(dir, pagesCacheRel), &pages)
 	return pages
 }
 

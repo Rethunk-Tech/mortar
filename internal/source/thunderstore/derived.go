@@ -1,12 +1,10 @@
 package thunderstore
 
 import (
-	"encoding/json"
 	"path/filepath"
 	"strings"
 	"sync"
 
-	"github.com/Rethunk-Tech/go-safefs"
 	tstore "github.com/Rethunk-Tech/go-thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/source"
@@ -29,9 +27,7 @@ func derivedPath(dir, key string) string { return filepath.Join(dir, key+".deriv
 
 func readDerived(dir, key string) derivedFile {
 	var s derivedFile
-	if b, err := safefs.ReadFile(derivedPath(dir, key)); err == nil {
-		_ = json.Unmarshal(b, &s)
-	}
+	_, _ = datadir.ReadJSON(derivedPath(dir, key), &s)
 	return s
 }
 

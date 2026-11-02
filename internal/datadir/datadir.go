@@ -62,11 +62,8 @@ func resolve() (string, error) {
 	if testing.Testing() && !underTemp(def) {
 		return "", errRealDataInTest
 	}
-	b, err := safefs.ReadFile(filepath.Join(def, PointerName))
+	b, _, err := safefs.ReadFileIfExists(filepath.Join(def, PointerName))
 	if err != nil {
-		if os.IsNotExist(err) {
-			return def, nil
-		}
 		return "", err
 	}
 	p := strings.TrimSpace(string(b))

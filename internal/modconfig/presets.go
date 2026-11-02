@@ -73,12 +73,12 @@ func LoadPreset(dataDir, game string, id mod.ID, name string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	b, err := safefs.ReadFile(path)
+	b, found, err := safefs.ReadFileIfExists(path)
 	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, fmt.Errorf("preset %q is not saved", name)
-		}
 		return nil, err
+	}
+	if !found {
+		return nil, fmt.Errorf("preset %q is not saved", name)
 	}
 	return b, nil
 }

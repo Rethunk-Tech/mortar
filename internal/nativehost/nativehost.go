@@ -23,7 +23,6 @@ import (
 	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
-	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -838,9 +837,7 @@ func accentColor() string {
 		} `json:"global"`
 	}
 	if dir, err := datadir.Dir(); err == nil {
-		if b, err := safefs.ReadFile(filepath.Join(dir, settings.FileName)); err == nil {
-			_ = json.Unmarshal(b, &s)
-		}
+		_, _ = datadir.ReadJSON(filepath.Join(dir, settings.FileName), &s)
 	}
 	return settings.AccentColor(s.Global.Accent)
 }

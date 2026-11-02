@@ -3,14 +3,12 @@
 package serverargs
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"path/filepath"
 	"regexp"
 	"strings"
 
-	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
@@ -24,9 +22,7 @@ const ConfigName = "server.cfg"
 // Load reads the profile's server settings; none are set when the file is missing or unreadable.
 func Load(profileDir string) map[string]string {
 	values := map[string]string{}
-	if b, err := safefs.ReadFile(filepath.Join(profileDir, File)); err == nil {
-		_ = json.Unmarshal(b, &values)
-	}
+	_, _ = datadir.ReadJSON(filepath.Join(profileDir, File), &values)
 	return values
 }
 

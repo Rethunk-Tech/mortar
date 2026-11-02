@@ -1,7 +1,6 @@
 package updatesvc
 
 import (
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -16,11 +15,8 @@ func lastRunPath(dir string) string {
 }
 
 func readLastRun(dir string) (string, error) {
-	b, err := safefs.ReadFile(lastRunPath(dir))
+	b, _, err := safefs.ReadFileIfExists(lastRunPath(dir))
 	if err != nil {
-		if os.IsNotExist(err) {
-			return "", nil
-		}
 		return "", err
 	}
 	return strings.TrimSpace(string(b)), nil
