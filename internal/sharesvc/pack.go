@@ -3,7 +3,6 @@ package sharesvc
 import (
 	"context"
 	"errors"
-	"os"
 	"path/filepath"
 	"slices"
 	"strconv"
@@ -16,6 +15,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/pack"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/scratch"
 	"github.com/Rethunk-Tech/mortar/internal/share"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"github.com/Rethunk-Tech/mortar/internal/winname"
@@ -167,13 +167,12 @@ func carriedRows(local []pack.LocalMod) []Mod {
 // installCarried adds a pack's local mod to the profile as a local entry, switched off when it was; one the profile
 // already holds is left as it is.
 func (s *Service) installCarried(ctx context.Context, game, profileID string, m pack.LocalMod) (string, error) {
-	// The data folder rather than the system temp folder, which may be in memory and too small for a large mod.
-	scratch, err := os.MkdirTemp(s.d.Dir, "mortar-carried-*")
+	tmp, err := scratch.Dir("mortar-carried-*")
 	if err != nil {
 		return "", err
 	}
-	defer func() { _ = safefs.RemoveAll(scratch) }()
-	dir := filepath.Join(scratch, m.Name)
+	defer func() { _ = safefs.RemoveAll(tmp) }()
+	dir := filepath.Join(tmp, m.Name)
 	if err := m.Stage(dir); err != nil {
 		return "", err
 	}

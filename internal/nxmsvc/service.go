@@ -311,7 +311,7 @@ func (s *Service) receiveVSModDB(raw string, ref vsmoddb.Ref) {
 func gamesWith(sourceID string) []string {
 	var out []string
 	for _, g := range game.Catalog() {
-		if slices.ContainsFunc(g.Sources, func(src components.GameSource) bool { return src.ID == sourceID }) {
+		if _, ok := g.Source(sourceID); ok {
 			out = append(out, g.ID)
 		}
 	}

@@ -64,9 +64,7 @@ func curatedReplacement(pkg, tsKey string) *Ref {
 		ref.PageName = strings.ReplaceAll(name, "_", " ")
 	}
 	if e, ok := source.Get("thunderstore"); ok && tsKey != "" {
-		if d, ok := e.Source.(interface {
-			ModPageURL(gameKey, id string) string
-		}); ok {
+		if d, ok := e.Source.(source.PageLinker); ok {
 			ref.URL = d.ModPageURL(tsKey, pkg)
 		}
 	}

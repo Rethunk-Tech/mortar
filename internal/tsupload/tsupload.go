@@ -28,12 +28,8 @@ var Client = httpkit.WithRedirect(nil, httpkit.SameOrigin)
 // Community is the game's Thunderstore community key, empty when it has none.
 func Community(gameID string) string {
 	g, _ := components.Game(gameID)
-	for _, src := range g.Sources {
-		if src.ID == "thunderstore" {
-			return src.Key
-		}
-	}
-	return ""
+	src, _ := g.Source("thunderstore")
+	return src.Key
 }
 
 // SetToken keeps team's service account token.

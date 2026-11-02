@@ -644,12 +644,7 @@ func activeNexusUpdates(domain string) (string, []modUpdate) {
 func hostGames() []hostGame {
 	var games []hostGame
 	for _, g := range components.Games() {
-		keys := map[string]string{}
-		for _, src := range g.Sources {
-			if src.Key != "" {
-				keys[src.ID] = src.Key
-			}
-		}
+		keys := g.SourceKeys()
 		if len(keys) > 0 {
 			games = append(games, hostGame{ID: g.ID, Name: g.Name, Sources: keys})
 		}

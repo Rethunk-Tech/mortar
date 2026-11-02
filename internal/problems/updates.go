@@ -441,12 +441,11 @@ func sourcePage(gameID string, m framework.Mod) string {
 		return ""
 	}
 	g, _ := components.Game(gameID)
-	for _, src := range g.Sources {
-		if src.ID == m.SourceKind && (src.Key != "" || m.SourceKind == profile.KindPatreon || m.SourceKind == profile.KindItch) {
-			return linker.ModPageURL(src.Key, m.SourceName)
-		}
+	src, ok := g.Source(m.SourceKind)
+	if !ok || (src.Key == "" && m.SourceKind != profile.KindPatreon && m.SourceKind != profile.KindItch) {
+		return ""
 	}
-	return ""
+	return linker.ModPageURL(src.Key, m.SourceName)
 }
 
 // pageURL is the page of the first update key that names one: a Nexus mod or a GitHub repository.
