@@ -212,7 +212,7 @@ function MultiWidget({ entry, label, onChange }: WidgetProps) {
           (typeof e.target.value === 'string' ? [e.target.value] : e.target.value).join(', '),
         )
       }
-      inputProps={{ 'aria-label': label }}
+      slotProps={{ input: { 'aria-label': label } }}
       sx={{ minWidth: TEXT_WIDTH_PX }}
     >
       {(entry.options ?? []).map((o) => (
@@ -289,7 +289,7 @@ function EntryWidget(props: WidgetProps) {
           size="small"
           value={String(entry.value)}
           onChange={(e) => onChange(e.target.value)}
-          inputProps={{ 'aria-label': label }}
+          slotProps={{ input: { 'aria-label': label } }}
           sx={{ minWidth: NUMBER_WIDTH_PX }}
         >
           {(entry.options ?? []).map((o, i) => (

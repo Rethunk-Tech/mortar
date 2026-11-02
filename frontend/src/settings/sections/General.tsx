@@ -115,7 +115,7 @@ function Language() {
           size="small"
           value={language}
           displayEmpty={true}
-          inputProps={{ 'aria-label': t`Language` }}
+          slotProps={{ input: { 'aria-label': t`Language` } }}
           onChange={(event) => {
             SetLanguage(event.target.value).catch(reportFailure)
           }}

@@ -171,10 +171,12 @@ const CommandLine = memo(function CommandLineView({ game }: { game: string }) {
           {'>'}
         </Box>
       }
-      inputProps={{
-        'aria-label': t`Console command`,
-        spellCheck: false,
-        autoComplete: 'off',
+      slotProps={{
+        input: {
+          'aria-label': t`Console command`,
+          spellCheck: false,
+          autoComplete: 'off',
+        },
       }}
       placeholder={t`Type a command, for example help`}
       value={text}

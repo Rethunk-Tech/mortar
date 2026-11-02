@@ -285,7 +285,7 @@ export function TextInput({
         autoFocus={autoFocus}
         disabled={disabled}
         error={Boolean(error)}
-        inputProps={maxLength === undefined ? undefined : { maxLength }}
+        slotProps={maxLength === undefined ? undefined : { input: { maxLength } }}
       />
     </Field>
   )

@@ -36,7 +36,7 @@ export function PrefSelect({
       disabled={disabled}
       displayEmpty={true}
       value={value}
-      inputProps={{ 'aria-label': label }}
+      slotProps={{ input: { 'aria-label': label } }}
       onChange={(e) => onChange(String(e.target.value))}
       sx={{ minWidth: 180 }}
     >

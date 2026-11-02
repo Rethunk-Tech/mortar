@@ -30,7 +30,7 @@ function ReportPicker({
       size="small"
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      inputProps={{ 'aria-label': t`Launch` }}
+      slotProps={{ input: { 'aria-label': t`Launch` } }}
     >
       {reports.map((r) => (
         <MenuItem key={r.id} value={r.id}>

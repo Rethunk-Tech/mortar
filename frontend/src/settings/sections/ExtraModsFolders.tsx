@@ -40,7 +40,7 @@ function ExtraModsFolders() {
           size="small"
           sx={{ minWidth: 240, maxWidth: 360, flexShrink: 0 }}
           value={targets?.[dir] || OPEN}
-          inputProps={{ 'aria-label': t`Profile ${{ path: dir }} installs into` }}
+          slotProps={{ input: { 'aria-label': t`Profile ${{ path: dir }} installs into` } }}
           onChange={(e) => target(dir, e.target.value)}
         >
           <MenuItem value={OPEN}>{t`Open profile`}</MenuItem>

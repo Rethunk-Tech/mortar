@@ -158,7 +158,7 @@ export function HistoryList({
             displayEmpty={true}
             value={filters.outcome}
             onChange={(e) => onFilters({ ...filters, outcome: e.target.value })}
-            inputProps={{ 'aria-label': t`Filter by outcome` }}
+            slotProps={{ input: { 'aria-label': t`Filter by outcome` } }}
           >
             <MenuItem value="" sx={{ display: 'flex', gap: space.gap }}>
               <Filter size={14} />
@@ -177,7 +177,7 @@ export function HistoryList({
             displayEmpty={true}
             value={filters.profileId}
             onChange={(e) => onFilters({ ...filters, profileId: e.target.value })}
-            inputProps={{ 'aria-label': t`Filter by profile` }}
+            slotProps={{ input: { 'aria-label': t`Filter by profile` } }}
           >
             <MenuItem value="" sx={{ display: 'flex', gap: space.gap }}>
               <User size={14} />
