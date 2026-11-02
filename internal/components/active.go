@@ -71,12 +71,16 @@ func GameBySource(source, key string) (GameInfo, bool) {
 	return GameInfo{}, false
 }
 
-// Game is the catalog entry with id, from the selected manifest when it lists the game, else the bundled one.
+// Game is the catalog entry with id, from the selected manifest when it lists the game, else the bundled one for a
+// game the manifest left out for a newer Mortar. A game the selected manifest dropped is not found.
 func Game(id string) (GameInfo, bool) {
 	var g GameInfo
 	var ok bool
-	if c := active.Load(); c != nil {
-		g, ok = c.Game(id)
+	if c := active.Load(); c != nil && len(c.Manifest().Games) > 0 {
+		m := c.Manifest()
+		if g, ok = findGame(m.Games, id); !ok && slices.Contains(m.NeedsNewer, id) {
+			g, ok = bundledGame(id)
+		}
 	} else {
 		g, ok = bundledGame(id)
 	}

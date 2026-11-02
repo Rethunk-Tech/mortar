@@ -971,6 +971,57 @@ func TestAGameThatNeedsANewerMortarKeepsItsBundledEntry(t *testing.T) {
 	}
 }
 
+// A game the signed catalog dropped is not a catalog game, though this build's bundled manifest still lists it.
+func TestAGameTheCatalogDroppedIsNotFound(t *testing.T) {
+	var m Manifest
+	if err := json.Unmarshal(bundledJSON, &m); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { Use(nil) })
+	id := m.Games[0].ID
+	m.Games = m.Games[1:]
+	b, err := json.Marshal(m)
+	if err != nil {
+		t.Fatal(err)
+	}
+	live, err := Decode(b)
+	if err != nil {
+		t.Fatal(err)
+	}
+	c := NewClient(nil)
+	c.SetManifest(live)
+	Use(c)
+	if _, ok := Game(id); ok {
+		t.Fatalf("%s found though the catalog dropped it", id)
+	}
+	if _, ok := Game(m.Games[0].ID); !ok {
+		t.Fatal("a listed game was not found")
+	}
+}
+
+func TestGameBySourceIgnoresAnEmptyKeyAndAWrongSource(t *testing.T) {
+	var s GameSource
+	for _, x := range Games() {
+		for _, src := range x.Sources {
+			if src.Key != "" {
+				s = src
+			}
+		}
+	}
+	if s.ID == "" {
+		t.Skip("no keyed source")
+	}
+	if g, ok := GameBySource(s.ID, s.Key); !ok || g.ID == "" {
+		t.Fatal("a keyed source was not found")
+	}
+	if _, ok := GameBySource(s.ID, ""); ok {
+		t.Error("empty key matched")
+	}
+	if _, ok := GameBySource("no-such-source", s.Key); ok {
+		t.Error("wrong source matched")
+	}
+}
+
 func TestAContentFolderCategoryIsASlug(t *testing.T) {
 	for cat, ok := range map[string]bool{"": true, "poster": true, "audio-2": true, "Poster": false, "a b": false, "../x": false} {
 		c := ContentKind{Folders: []ContentFolder{{ID: "posters", Label: "Posters", Patterns: []string{"*.png"}, Dependency: "Mortar-Posters", Category: cat}}}
