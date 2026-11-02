@@ -8,6 +8,7 @@ const API = 'https://thunderstore.io/api'
 // A community smaller than this is not worth a catalog entry yet.
 const MIN_PACKAGES = 20
 const PAGE_SIZE = 1000
+const NOT_FOUND = 404
 
 interface Game {
   id: string
@@ -51,9 +52,9 @@ const live = new Set(results.map((c) => c.identifier))
 
 // The list leaves out unlisted communities, which still serve their packages, so only the community's own page can say
 // it is gone.
-async function communityExists(key: string): Promise<boolean> {
-  const res = await fetch(`https://thunderstore.io/c/${key}/`, { method: 'HEAD' })
-  return res.status !== 404
+async function communityExists(community: string): Promise<boolean> {
+  const res = await fetch(`https://thunderstore.io/c/${community}/`, { method: 'HEAD' })
+  return res.status !== NOT_FOUND
 }
 
 // Communities that stay out of the catalog, each for the reason beside it.
@@ -72,6 +73,10 @@ const LEFT_OUT = new Set([
   'resonite',
   // Sold on no store Mortar reads, and the schema has no entry naming its executable.
   '3dash',
+  // The schema's install rules for it are empty, unlike the other Godot Mod Loader games, so what the driver places is unproven.
+  'pair-a-dice',
+  // The schema names only the launcher EscapeFromPlaytime.exe, not the Unreal project folder Shimloader's files go beside.
+  'escape-from-playtime',
 ])
 
 const missing = results
