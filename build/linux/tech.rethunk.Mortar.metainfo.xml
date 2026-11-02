@@ -52,6 +52,44 @@
     <content_attribute id="social-info">mild</content_attribute>
   </content_rating>
   <releases>
+    <release version="0.5.0" date="2026-11-02">
+      <description>
+        <p>New</p>
+        <ul>
+          <li>mod.io is a source: sign in with a read-only token in Settings › Accounts to browse and install from it. Blade &amp; Sorcery, S.T.A.L.K.E.R. 2, Baldur's Gate 3, Timberborn, BONELAB, Gladio Mori, Deep Rock Galactic and Core Keeper use it, and share links carry mod.io files</li>
+          <li>32 more games, among them Baldur's Gate 3, Mount &amp; Blade II: Bannerlord, Core Keeper, Dome Keeper, Resonite, Brotato, Papers, Please, Disco Elysium and Ancient Dungeon VR</li>
+          <li>A Load order tab for Baldur's Gate 3 and Mount &amp; Blade II: Bannerlord shows the order the game will use and the issues in it; Baldur's Gate 3's can be reordered</li>
+          <li>Release everywhere in Develop packs the project once and uploads to every site that is ready, with progress per site and a retry</li>
+          <li>Develop's Release creates the project's GitHub release from its tag and attaches the package</li>
+          <li>Develop keeps a project's Thunderstore dependencies and its development profile's mods in step, and Edit project picks categories from Thunderstore's list</li>
+          <li>Send the development profile to a paired computer for a co-op test</li>
+          <li>Upload a modpack to Thunderstore from its export dialog, with its categories picked from the community's list</li>
+          <li>A profile can run its own game version, and Get an older version lists the past Steam builds Mortar has seen</li>
+          <li>Core Keeper and other BepInEx 6 IL2CPP games install and launch their packs</li>
+          <li>Vintage Story profiles can run the dedicated server with the same mods</li>
+          <li>A mod that is one zip file installs as it is</li>
+          <li>Polish is open for translation on Weblate</li>
+        </ul>
+        <p>Changed</p>
+        <ul>
+          <li>The Mortar menu is shorter: Source code and the startup profile moved to Settings › About</li>
+          <li>Used by lists each dependent once and opens a row's own dependents on click</li>
+          <li>Settings, Develop, Console, profile, game and download text is tighter</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>The update banner takes room from the page, so Play no longer slides under the task bar (#15)</li>
+          <li>Decompiling and previewing the game's code works when the tool is a command file in a folder with a space on Windows (#16)</li>
+          <li>A game started from a profile's own game folder is found as running</li>
+          <li>Install missing in Develop installs into the project's development profile</li>
+          <li>A profile named default no longer claims the files of default-2</li>
+          <li>A modpack upload remembers its team without changing the modpack's author</li>
+          <li>Baldur's Gate 3's main campaign is listed first, as BG3 Mod Manager does</li>
+          <li>A game the signed catalog dropped is no longer found through the bundled one</li>
+          <li>Mod versions up to and other profile fields are named for screen readers</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.4.0" date="2026-11-01">
       <description>
         <p>New</p>
