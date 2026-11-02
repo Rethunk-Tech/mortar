@@ -144,7 +144,7 @@ function DepChips({
   const long = required.length > INLINE_REQUIRED || users.length > INLINE_USERS
   const collapsedLabel = [
     users.length > INLINE_USERS
-      ? plural({ count: users.length }, { one: 'Used by # mod', other: 'Used by # mods' })
+      ? plural({ count: users.length }, { one: 'Used by: # mod', other: 'Used by: # mods' })
       : '',
     required.length > INLINE_REQUIRED
       ? t`${{ count: required.length - INLINE_REQUIRED }} more required`
