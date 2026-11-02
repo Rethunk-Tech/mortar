@@ -746,7 +746,7 @@ func (s *Service) addDevHelper(ctx context.Context, gameID, profileID string) er
 			return "", err
 		}
 		for _, e := range p.Entries {
-			if e.Package && e.Source.Kind == profile.KindThunderstore && strings.EqualFold(e.Source.Name, pkg) {
+			if holdsPackage(e, pkg) {
 				return e.Key, nil
 			}
 		}
@@ -765,6 +765,17 @@ func (s *Service) addDevHelper(ctx context.Context, gameID, profileID string) er
 	}
 	_, err = s.profiles.SetDevOnly(gameID, profileID, key, true)
 	return err
+}
+
+// holdsPackage reports whether e is pkg: the package itself, or a build of it from its own project, which installing
+// the package would replace.
+func holdsPackage(e profile.Entry, pkg string) bool {
+	if e.Package && e.Source.Kind == profile.KindThunderstore && strings.EqualFold(e.Source.Name, pkg) {
+		return true
+	}
+	return slices.ContainsFunc(e.Mods, func(c profile.Component) bool {
+		return c.ID.Format() == mod.FormatThunderstore && strings.EqualFold(c.ID.Local(), pkg)
+	})
 }
 
 // StartDebugging starts the profile directly with its loader opening the game's Mono debugger for this launch only,

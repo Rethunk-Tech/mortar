@@ -123,3 +123,20 @@ func TestStartInstancesTouchesNothingWhileTheInstallIsBusy(t *testing.T) {
 		t.Fatalf("a refused start changed the profile (helper %v, separate saves %v -> %v)", helped, before, ps.SeparateSaves(lc, p.ID))
 	}
 }
+
+func TestAProjectBuildOfTheDevHelperCountsAsTheHelper(t *testing.T) {
+	const pkg = "Mortar-DevLaunch"
+	for _, tc := range []struct {
+		name string
+		e    profile.Entry
+		want bool
+	}{
+		{"the package", profile.Entry{Package: true, Source: profile.Source{Kind: profile.KindThunderstore, Name: pkg}}, true},
+		{"a project's build", profile.Entry{Package: true, Source: profile.Source{Kind: profile.KindLocal, Name: "debug"}, Mods: []profile.Component{{ID: "thunderstore:Mortar-DevLaunch"}}}, true},
+		{"another mod", profile.Entry{Package: true, Source: profile.Source{Kind: profile.KindLocal, Name: "debug"}, Mods: []profile.Component{{ID: "thunderstore:Mortar-Posters"}}}, false},
+	} {
+		if got := holdsPackage(tc.e, pkg); got != tc.want {
+			t.Errorf("%s: holdsPackage = %v", tc.name, got)
+		}
+	}
+}
