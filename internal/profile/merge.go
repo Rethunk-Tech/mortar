@@ -136,7 +136,7 @@ func (s *Store) mergeAdds(game, fromID, toID string, pv MergePreview, from Profi
 		}
 		done = append(done, side.Key)
 		src := side.Source
-		if i := entryIndex(from.Entries, side.Key); i >= 0 {
+		if i := EntryIndex(from.Entries, side.Key); i >= 0 {
 			src = src.WithImplicit(from.Entries[i].Implicit)
 		}
 		if _, err := s.AddEntry(game, toID, side.Key, src); err != nil {

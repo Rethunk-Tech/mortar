@@ -61,7 +61,7 @@ func (s *Store) PlaceArrivals(game, id string, rank func(Entry) (int, bool), pla
 		slices.SortStableFunc(arrivals, func(a, b arrival) int { return a.rank - b.rank })
 		was := slices.Clone(p.Entries)
 		for _, a := range arrivals {
-			at := slices.IndexFunc(p.Entries, func(e Entry) bool { return e.Key == a.key })
+			at := EntryIndex(p.Entries, a.key)
 			moving := p.Entries[at]
 			p.Entries = slices.Delete(p.Entries, at, at+1)
 			to, after, before := at, -1, -1

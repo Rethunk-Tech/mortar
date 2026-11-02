@@ -6,6 +6,7 @@ import (
 	tstore "github.com/Rethunk-Tech/go-thunderstore"
 
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -64,7 +65,7 @@ func (s *Store) installed(game, id string) ([]Installed, []UnreadableManifest, e
 			continue
 		}
 		for _, m := range e.Mods {
-			plain, dotted, err := ModPaths(filepath.Join(dir, "mods"), e.Key, m.Folder)
+			plain, dotted, err := ModPaths(datadir.ModsDirOf(dir), e.Key, m.Folder)
 			if err != nil {
 				return nil, nil, err
 			}

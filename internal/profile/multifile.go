@@ -200,7 +200,7 @@ func (s *Store) SplitExtra(game, id, entryKey, extraKey string) (Profile, error)
 		if xi < len(e.PreviousExtraStoreKeys) {
 			e.PreviousExtraStoreKeys = slices.Delete(e.PreviousExtraStoreKeys, xi, xi+1)
 		}
-		entryDir := liveEntryDir(filepath.Join(dir, "mods"), e.Key)
+		entryDir := liveEntryDir(datadir.ModsDirOf(dir), e.Key)
 		if err := safefs.RemoveAll(filepath.Join(entryDir, extraKey)); err != nil {
 			return err
 		}
@@ -294,7 +294,7 @@ func (s *Store) addExtraLocked(game string, p *Profile, dir, entryKey, extraKey 
 	if extraKey == "" || extraKey == e.Key || slices.Contains(e.ExtraStoreKeys, extraKey) {
 		return &DuplicateError{Key: extraKey, Label: entryLabel(*e)}
 	}
-	entryDir := liveEntryDir(filepath.Join(dir, "mods"), e.Key)
+	entryDir := liveEntryDir(datadir.ModsDirOf(dir), e.Key)
 	if err := s.copyExtraInto(game, p.ID, entryDir, extraKey, source.fomodMap()); err != nil {
 		return err
 	}

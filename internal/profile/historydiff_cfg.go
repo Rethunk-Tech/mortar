@@ -26,7 +26,7 @@ const (
 func historyConfigIndex(dir string, entries []Entry) (map[string]map[string]string, map[string][]byte) {
 	idx := map[string]map[string]string{}
 	bodies := map[string][]byte{}
-	mods := filepath.Join(dir, "mods")
+	mods := datadir.ModsDirOf(dir)
 	for _, e := range entries {
 		files := configFilesIn(liveEntryDir(mods, e.Key))
 		if len(files) == 0 {
@@ -204,7 +204,7 @@ func restoreHistoryConfig(dir, snapshotID, key, file string) error {
 	if err != nil {
 		return err
 	}
-	dst := filepath.Join(liveEntryDir(filepath.Join(dir, "mods"), key), filepath.FromSlash(file))
+	dst := filepath.Join(liveEntryDir(datadir.ModsDirOf(dir), key), filepath.FromSlash(file))
 	if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
 		return err
 	}

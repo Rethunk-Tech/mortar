@@ -31,7 +31,7 @@ func (s *Store) FixStaleManifest(game, id, key string, uniqueID mod.ID, version 
 	// profile that installs it starts right.
 	storeRoot, storeErr := s.items.Path(game, key)
 	_, err = s.update(game, id, func(p *Profile, _ string) error {
-		ei := entryIndex(p.Entries, key)
+		ei := EntryIndex(p.Entries, key)
 		if ei < 0 {
 			return fmt.Errorf("no entry %s", key)
 		}

@@ -257,7 +257,7 @@ func TestDeletingACustomCategoryRecordsAnEventInEachProfileItChanged(t *testing.
 	if err != nil {
 		t.Fatal(err)
 	}
-	if i := entryIndex(prev.Entries, "local-a"); i < 0 || prev.Entries[i].CategoryOverride != saved[0].ID {
+	if i := EntryIndex(prev.Entries, "local-a"); i < 0 || prev.Entries[i].CategoryOverride != saved[0].ID {
 		t.Fatalf("undo left %+v", prev.Entries)
 	}
 }

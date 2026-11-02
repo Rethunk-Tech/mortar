@@ -13,6 +13,7 @@ import (
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
@@ -80,7 +81,7 @@ func (Loader) SteamExe(installDir string) string {
 	return filepath.Join(installDir, smapiMarker+".exe")
 }
 
-func modsDir(p loader.ProfileView) string { return filepath.Join(p.Dir, "mods") }
+func modsDir(p loader.ProfileView) string { return datadir.ModsDirOf(p.Dir) }
 
 // Contribute points SMAPI at the profile's mods folder.
 func (Loader) Contribute(_ context.Context, plan *launchplan.Plan, p loader.ProfileView) error {

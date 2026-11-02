@@ -17,7 +17,7 @@ type FileGroup struct {
 func withRefGroups(p profile.Profile, refs []Ref) {
 	for _, g := range p.Groups {
 		for _, key := range g.Keys {
-			i := slices.IndexFunc(p.Entries, func(e profile.Entry) bool { return e.Key == key })
+			i := profile.EntryIndex(p.Entries, key)
 			if i < 0 {
 				continue
 			}
@@ -50,7 +50,7 @@ func collectFileGroups(p profile.Profile) []FileGroup {
 	for _, g := range p.Groups {
 		fg := FileGroup{Name: g.Name}
 		for _, key := range g.Keys {
-			i := slices.IndexFunc(p.Entries, func(e profile.Entry) bool { return e.Key == key })
+			i := profile.EntryIndex(p.Entries, key)
 			if i < 0 {
 				continue
 			}

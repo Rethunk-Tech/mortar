@@ -2,9 +2,9 @@ package profile
 
 import (
 	"errors"
-	"path/filepath"
 	"slices"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	gamereg "github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loadorder"
@@ -68,7 +68,7 @@ func (s *Store) entryFolders(game, dir string, p Profile) ([]entryFolder, error)
 	has := func(folder string) bool {
 		return slices.ContainsFunc(out, func(e entryFolder) bool { return e.folder == folder })
 	}
-	modsDir := filepath.Join(dir, "mods")
+	modsDir := datadir.ModsDirOf(dir)
 	for _, e := range p.Entries {
 		if e.Source.Bundled() {
 			continue

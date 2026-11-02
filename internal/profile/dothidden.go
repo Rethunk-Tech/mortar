@@ -39,7 +39,7 @@ func (s *Store) DotHiddenMods(game, id, key string) ([]HiddenMod, error) {
 	if err != nil {
 		return nil, err
 	}
-	modsDir := filepath.Join(dir, "mods")
+	modsDir := datadir.ModsDirOf(dir)
 	out := []HiddenMod{}
 	for _, e := range p.Entries {
 		if e.Source.Bundled() || (key != "" && e.Key != key) {
@@ -108,11 +108,11 @@ func (s *Store) hiddenModPath(game, id, key, folder string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	ei := entryIndex(p.Entries, key)
+	ei := EntryIndex(p.Entries, key)
 	if ei < 0 {
 		return "", usererr.Wrap(usererr.NotFound, fmt.Errorf("no entry %s", key))
 	}
-	root := entryRoot(filepath.Join(dir, "mods"), key)
+	root := entryRoot(datadir.ModsDirOf(dir), key)
 	if _, err := findHidden(root, p.Entries[ei], folder); err != nil {
 		return "", err
 	}
@@ -135,12 +135,12 @@ func findHidden(root string, e Entry, folder string) (HiddenMod, error) {
 // mod id is already loaded elsewhere in the profile or a folder with the undotted name exists.
 func (s *Store) UnhideMod(game, id, key, folder string) (Profile, error) {
 	return s.updateMods(game, id, func(p *Profile, dir string) error {
-		ei := entryIndex(p.Entries, key)
+		ei := EntryIndex(p.Entries, key)
 		if ei < 0 {
 			return usererr.Wrap(usererr.NotFound, fmt.Errorf("no entry %s", key))
 		}
 		e := &p.Entries[ei]
-		root := entryRoot(filepath.Join(dir, "mods"), key)
+		root := entryRoot(datadir.ModsDirOf(dir), key)
 		h, err := findHidden(root, *e, folder)
 		if err != nil {
 			return err

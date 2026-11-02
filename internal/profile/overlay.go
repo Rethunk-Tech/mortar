@@ -385,7 +385,7 @@ func (s *Store) relayBase(game string, p *Profile, dir, baseKey string, was []En
 		return nil
 	}
 	base := p.Entries[bi]
-	return s.layOverlays(game, p.ID, base, liveEntryDir(filepath.Join(dir, "mods"), base.Key), was, overlaysOn(p.Entries, base.Key))
+	return s.layOverlays(game, p.ID, base, liveEntryDir(datadir.ModsDirOf(dir), base.Key), was, overlaysOn(p.Entries, base.Key))
 }
 
 func overlayAsk(key string, source Source, base Entry, itemDir, baseSrc string) (RemapAsk, error) {
@@ -598,7 +598,7 @@ func basesFirst(entries []Entry) []Entry {
 func (s *Store) swapOverlaid(game string, p *Profile, dir string, ei int, newKey string, source *Source) (Entry, swapped, error) {
 	e := p.Entries[ei]
 	overs := overlaysOf(p.Entries, e.Key)
-	modsDir := filepath.Join(dir, "mods")
+	modsDir := datadir.ModsDirOf(dir)
 	if len(overs) > 0 {
 		if err := s.layOverlays(game, p.ID, e, liveEntryDir(modsDir, e.Key), overs, nil); err != nil {
 			return Entry{}, swapped{}, err

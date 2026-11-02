@@ -306,7 +306,7 @@ func (s *Store) addToStaged(game string, p *Profile, dir, key string, source Sou
 			e.Disabled = append(e.Disabled, m.ID)
 		}
 	}
-	modsDir := filepath.Join(dir, "mods")
+	modsDir := datadir.ModsDirOf(dir)
 	if err := os.MkdirAll(modsDir, 0o700); err != nil {
 		return "", "", err
 	}
@@ -480,7 +480,7 @@ func (s *Store) removeFrom(game string, p *Profile, dir, key string) (configs []
 		dropKeyFromGroups(p, key)
 		return nil, s.relayBase(game, p, dir, base, was)
 	}
-	modsDir := filepath.Join(dir, "mods")
+	modsDir := datadir.ModsDirOf(dir)
 	configs = s.modConfigPaths(game, *p, dir, p.Entries[i])
 	if err := removeEntryFolders(modsDir, key); err != nil {
 		return nil, err
@@ -651,7 +651,7 @@ func applyEnabled(p *Profile, dir, key string, uniqueID mod.ID, enabled bool) er
 			continue
 		}
 		if e.hasFolder() {
-			plain, dotted, err := ModPaths(filepath.Join(dir, "mods"), e.Key, e.Mods[mi].Folder)
+			plain, dotted, err := ModPaths(datadir.ModsDirOf(dir), e.Key, e.Mods[mi].Folder)
 			if err != nil {
 				return err
 			}
@@ -910,7 +910,7 @@ func (s *Store) mods(game, id string, bundled bool) ([]Mod, error) {
 // rebuild recopies mods/ and any entry folder that is gone, puts back an entry folder an interrupted update left
 // aside, and clears temp folders and folders of entries profile.json does not record.
 func (s *Store) rebuild(game, dir string, p Profile) error {
-	modsDir := filepath.Join(dir, "mods")
+	modsDir := datadir.ModsDirOf(dir)
 	if err := os.MkdirAll(modsDir, 0o700); err != nil {
 		return err
 	}
@@ -981,7 +981,7 @@ func (s *Store) finishInterrupted(modsDir, profileName, key string) error {
 // placeEntry copies the entry's folder from the store into the profile at dir, with its overlays and any config files
 // a restore kept for it.
 func (s *Store) placeEntry(game, dir string, p Profile, e Entry) error {
-	modsDir := filepath.Join(dir, "mods")
+	modsDir := datadir.ModsDirOf(dir)
 	if err := s.place(game, modsDir, e); err != nil {
 		return err
 	}
@@ -1043,7 +1043,7 @@ func modFolderIn(p Profile, dir, key string, uniqueID mod.ID) (string, error) {
 			if !e.hasFolder() {
 				return "", ErrNoModFolder
 			}
-			plain, dotted, err := ModPaths(filepath.Join(dir, "mods"), e.Key, m.Folder)
+			plain, dotted, err := ModPaths(datadir.ModsDirOf(dir), e.Key, m.Folder)
 			if err != nil {
 				return "", err
 			}

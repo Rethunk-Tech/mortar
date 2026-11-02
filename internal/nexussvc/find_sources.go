@@ -152,7 +152,7 @@ func (s *Service) SetNexusPage(ctx context.Context, gameID, profileID, key, link
 		if err != nil {
 			return profile.Profile{}, err
 		}
-		if i := slices.IndexFunc(p.Entries, func(e profile.Entry) bool { return e.Key == key }); i >= 0 {
+		if i := profile.EntryIndex(p.Entries, key); i >= 0 {
 			// A page the dataset does not list leaves the file unknown.
 			if page, err := s.meta.Page(ctx, modID); err == nil {
 				fileID = installedFile(p.Entries[i].Mods, page)

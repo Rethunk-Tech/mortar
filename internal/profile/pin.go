@@ -19,7 +19,7 @@ func (e Entry) SkipsSource(source string) bool {
 
 func (s *Store) patchEntry(game, id, key string, fn func(*Entry) error) (Profile, error) {
 	return s.update(game, id, func(p *Profile, _ string) error {
-		i := entryIndex(p.Entries, key)
+		i := EntryIndex(p.Entries, key)
 		if i < 0 {
 			return errors.New("no such mod in this profile")
 		}

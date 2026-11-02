@@ -183,7 +183,7 @@ func (s *Store) rollBackFolderLocked(game, id, key string) (p Profile, ok bool, 
 	var restored, group []Entry
 	placement := noTray()
 	p, err = s.updateLocked(game, id, func(p *Profile, _ string) error {
-		i := entryIndex(p.Entries, key)
+		i := EntryIndex(p.Entries, key)
 		if i < 0 {
 			return nil
 		}

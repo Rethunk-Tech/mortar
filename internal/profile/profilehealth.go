@@ -223,7 +223,7 @@ func driftFindings(p Profile, drift []Drift) []HealthFinding {
 		if d.Key == "" || d.Kind == DriftUnknown {
 			continue
 		}
-		i := entryIndex(p.Entries, d.Key)
+		i := EntryIndex(p.Entries, d.Key)
 		if i < 0 {
 			continue
 		}

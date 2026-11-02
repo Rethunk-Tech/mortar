@@ -9,6 +9,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-fomod"
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -371,7 +372,7 @@ func (s *Store) applyFomod(game, id, key string, choices map[string]map[string][
 				e.Disabled = append(e.Disabled, m.ID)
 			}
 		}
-		modsDir := filepath.Join(dir, "mods")
+		modsDir := datadir.ModsDirOf(dir)
 		if err := removeEntryFolders(modsDir, key); err != nil {
 			return err
 		}

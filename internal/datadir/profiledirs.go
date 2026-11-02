@@ -38,3 +38,7 @@ func ProfileDirs(profilesRoot string) ([]ProfileDir, error) {
 }
 
 func plainDir(e fs.DirEntry) bool { return e.IsDir() && e.Type()&fs.ModeSymlink == 0 }
+
+// ModsDirOf is the folder in the profile folder dir where each entry's files are stored. A package game's files are
+// laid out from there into its mods target's folder, which is a different one.
+func ModsDirOf(dir string) string { return filepath.Join(dir, "mods") }

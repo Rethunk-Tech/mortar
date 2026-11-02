@@ -21,7 +21,7 @@ func (s *Store) SetWinner(game, profileID, winnerKey string, winner, loser mod.I
 		return Profile{}, fmt.Errorf("loser unique ID is empty")
 	}
 	p, err := s.updateMods(game, profileID, func(p *Profile, dir string) error {
-		i := entryIndex(p.Entries, winnerKey)
+		i := EntryIndex(p.Entries, winnerKey)
 		if i < 0 {
 			return fmt.Errorf("mod %q is not in this profile", winnerKey)
 		}
@@ -55,12 +55,13 @@ func (s *Service) SetWinner(game, profileID, winnerKey string, winner, loser mod
 	return s.store.SetWinner(game, profileID, winnerKey, winner, loser, on)
 }
 
-func entryIndex(entries []Entry, key string) int {
+// EntryIndex is the position of the entry with key, or -1.
+func EntryIndex(entries []Entry, key string) int {
 	return slices.IndexFunc(entries, func(e Entry) bool { return e.Key == key })
 }
 
 func requireEntry(entries []Entry, key string) (int, error) {
-	i := entryIndex(entries, key)
+	i := EntryIndex(entries, key)
 	if i < 0 {
 		return 0, fmt.Errorf("%q is not in this profile", key)
 	}

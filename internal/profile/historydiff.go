@@ -2,10 +2,10 @@ package profile
 
 import (
 	"fmt"
-	"path/filepath"
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -297,7 +297,7 @@ func latestSnapshotOf(data historyFileData) ([]Entry, bool) {
 }
 
 func overlayLiveConfigs(dir string, entries []Entry, cfg map[string]map[string][]byte) {
-	live := readLiveConfigs(filepath.Join(dir, "mods"), entries)
+	live := readLiveConfigs(datadir.ModsDirOf(dir), entries)
 	for id, files := range live {
 		if len(cfg[id]) == 0 {
 			cfg[id] = files

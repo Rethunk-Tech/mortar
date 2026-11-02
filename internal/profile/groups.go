@@ -61,6 +61,16 @@ func dropKeyFromGroups(p *Profile, key string) {
 	p.Groups = out
 }
 
+// requireGroupInside is the indexes of the group name and the groups nested in it, or a not-found error when there are
+// none.
+func (p Profile) requireGroupInside(name string) ([]int, error) {
+	inside := p.groupsInside(name)
+	if len(inside) == 0 {
+		return nil, usererr.Wrap(usererr.NotFound, fmt.Errorf("group %q not found", name))
+	}
+	return inside, nil
+}
+
 func (s *Store) mutateGroup(game, id, name string, fn func(p *Profile, idx int) error) (Profile, error) {
 	name, err := CleanGroupName(name)
 	if err != nil {
@@ -120,7 +130,7 @@ func (s *Store) AddGroup(game, id, name string, keys []string) (Profile, string,
 		used = p.freeGroupName(name)
 		held := make([]string, 0, len(keys))
 		for _, key := range keys {
-			if entryIndex(p.Entries, key) >= 0 && !slices.Contains(held, key) {
+			if EntryIndex(p.Entries, key) >= 0 && !slices.Contains(held, key) {
 				held = append(held, key)
 			}
 		}
@@ -152,9 +162,9 @@ func (s *Store) RenameGroup(game, id, name, next string) (Profile, error) {
 		return Profile{}, err
 	}
 	return s.updateMods(game, id, func(p *Profile, _ string) error {
-		inside := p.groupsInside(name)
-		if len(inside) == 0 {
-			return usererr.Wrap(usererr.NotFound, fmt.Errorf("group %q not found", name))
+		inside, err := p.requireGroupInside(name)
+		if err != nil {
+			return err
 		}
 		if InGroup(next, name) && !strings.EqualFold(next, name) {
 			return usererr.Wrap(usererr.Invalid, fmt.Errorf("group %q cannot move inside itself", name))
@@ -184,9 +194,9 @@ func (s *Store) DeleteGroup(game, id, name string) (Profile, error) {
 		return Profile{}, err
 	}
 	return s.updateMods(game, id, func(p *Profile, _ string) error {
-		inside := p.groupsInside(name)
-		if len(inside) == 0 {
-			return usererr.Wrap(usererr.NotFound, fmt.Errorf("group %q not found", name))
+		_, err := p.requireGroupInside(name)
+		if err != nil {
+			return err
 		}
 		p.Groups = slices.DeleteFunc(p.Groups, func(g Group) bool { return InGroup(g.Name, name) })
 		return nil
@@ -204,7 +214,7 @@ func (s *Store) AddToGroup(game, id, name, key string) (Profile, error) {
 		return Profile{}, usererr.Wrap(usererr.Invalid, fmt.Errorf("entry key is empty"))
 	}
 	return s.updateMods(game, id, func(p *Profile, _ string) error {
-		if entryIndex(p.Entries, key) < 0 {
+		if EntryIndex(p.Entries, key) < 0 {
 			return usererr.Wrap(usererr.NotFound, fmt.Errorf("entry %q not found", key))
 		}
 		idx := p.groupIndex(name)
@@ -244,13 +254,13 @@ func (s *Store) SetGroupEnabled(game, id, name string, on bool) (Profile, error)
 	}
 	defer s.mu.Unlock()
 	return s.updateLockedAs(game, id, kind, HistoryEvent{Change: change, Name: name}, func(p *Profile, dir string) error {
-		inside := p.groupsInside(name)
-		if len(inside) == 0 {
-			return usererr.Wrap(usererr.NotFound, fmt.Errorf("group %q not found", name))
+		inside, err := p.requireGroupInside(name)
+		if err != nil {
+			return err
 		}
 		for _, gi := range inside {
 			for _, key := range p.Groups[gi].Keys {
-				ei := entryIndex(p.Entries, key)
+				ei := EntryIndex(p.Entries, key)
 				if ei < 0 {
 					continue
 				}

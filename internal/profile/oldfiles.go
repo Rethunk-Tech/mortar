@@ -69,7 +69,7 @@ func (s *Store) PendingOldFiles(game, id string) ([]OldFiles, error) {
 	}
 	out := []OldFiles{}
 	for _, k := range keys {
-		i := slices.IndexFunc(p.Entries, func(e Entry) bool { return e.Key == k.Name() })
+		i := EntryIndex(p.Entries, k.Name())
 		if i < 0 {
 			if err := holdDropped(dir, k.Name()); err != nil {
 				return nil, err

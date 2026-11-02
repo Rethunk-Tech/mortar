@@ -575,7 +575,7 @@ func (s *Store) missingEntryFolders(game, id string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	modsDir := filepath.Join(dir, "mods")
+	modsDir := datadir.ModsDirOf(dir)
 	var missing []string
 	for _, key := range entryKeys(p) {
 		if exists(filepath.Join(modsDir, key)) || exists(filepath.Join(modsDir, "."+key)) {
@@ -591,7 +591,7 @@ func (s *Store) parkUnknownModsLocked(dir string, p Profile) error {
 	for _, key := range entryKeys(p) {
 		known[key] = struct{}{}
 	}
-	modsDir := filepath.Join(dir, "mods")
+	modsDir := datadir.ModsDirOf(dir)
 	ents, err := os.ReadDir(modsDir)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
@@ -639,7 +639,7 @@ func (s *Store) unplaceKeys(game, id string, keys []string) error {
 	if err != nil {
 		return err
 	}
-	modsDir := filepath.Join(dir, "mods")
+	modsDir := datadir.ModsDirOf(dir)
 	for _, key := range keys {
 		if err := removeEntryFolders(modsDir, key); err != nil {
 			return err
@@ -655,7 +655,7 @@ func (s *Store) liveDriftState(game, id string) (Profile, string, map[string]str
 	if err != nil {
 		return Profile{}, "", nil, nil, err
 	}
-	modsDir := filepath.Join(dir, "mods")
+	modsDir := datadir.ModsDirOf(dir)
 	held := holdDir(dir)
 	names, err := liveFolders(modsDir, held)
 	if err != nil {
@@ -710,7 +710,7 @@ func (s *Store) repairSnapshot(game, dir string, p Profile) error {
 	if len(missing) == 0 {
 		return nil
 	}
-	modsDir, held := filepath.Join(dir, "mods"), holdDir(dir)
+	modsDir, held := datadir.ModsDirOf(dir), holdDir(dir)
 	names, err := liveFolders(modsDir, held)
 	if err != nil {
 		return err
@@ -835,7 +835,7 @@ func (s *Store) restoreDriftEntry(game, id, key string) (Profile, error) {
 		if err != nil {
 			return err
 		}
-		modsDir := filepath.Join(dir, "mods")
+		modsDir := datadir.ModsDirOf(dir)
 		if err := removeEntryFolders(modsDir, key); err != nil {
 			return err
 		}
@@ -860,7 +860,7 @@ func (s *Store) revertDriftEntry(game, id, key string) (Profile, error) {
 		if err != nil {
 			return err
 		}
-		modsDir := filepath.Join(dir, "mods")
+		modsDir := datadir.ModsDirOf(dir)
 		scratch, err := os.MkdirTemp(modsDir, tempPrefix)
 		if err != nil {
 			return err

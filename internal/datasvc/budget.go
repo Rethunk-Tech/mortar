@@ -51,7 +51,7 @@ func MeasureBudgets(root string, itemSizes map[string]int64, savesOf func(game, 
 	}
 	out := make([]ProfileBudget, 0, len(dirs))
 	for i, d := range dirs {
-		b := ProfileBudget{Game: d.Game, ID: d.ID, Deployed: dirSize(filepath.Join(d.Dir, "mods"))}
+		b := ProfileBudget{Game: d.Game, ID: d.ID, Deployed: dirSize(datadir.ModsDirOf(d.Dir))}
 		if loaderFiles != nil {
 			for _, rel := range loaderFiles(d.Game, d.ID) {
 				b.Deployed += dirSize(filepath.Join(d.Dir, filepath.FromSlash(rel)))

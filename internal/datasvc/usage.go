@@ -486,7 +486,7 @@ func profileUse(root string) (names map[string]string, uses map[string]int, copi
 	dirs, _ := datadir.ProfileDirs(filepath.Join(root, "profiles"))
 	for _, d := range dirs {
 		p := readProfileEntries(filepath.Join(d.Dir, "profile.json"))
-		mods := filepath.Join(d.Dir, "mods")
+		mods := datadir.ModsDirOf(d.Dir)
 		seen := map[string]bool{}
 		for _, e := range p.Entries {
 			keys := append([]string{cmp.Or(e.Item, e.Key)}, e.ExtraStoreKeys...)

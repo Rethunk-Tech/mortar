@@ -249,7 +249,7 @@ func (s *Store) placePackageLocked(game, id, key string, source Source, mods []C
 	var updated, changed bool
 	mods[0].Version = cmp.Or(mods[0].Version, source.Version)
 	p, err := s.updateLocked(game, id, func(p *Profile, dir string) error {
-		if i := slices.IndexFunc(p.Entries, func(e Entry) bool { return e.Key == key }); i >= 0 {
+		if i := EntryIndex(p.Entries, key); i >= 0 {
 			return &DuplicateError{Key: key, Label: entryLabel(p.Entries[i])}
 		}
 		i := slices.IndexFunc(p.Entries, func(e Entry) bool {

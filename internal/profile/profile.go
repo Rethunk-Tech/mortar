@@ -442,7 +442,7 @@ func (s *Store) ModsDir(game, id string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return filepath.Abs(filepath.Join(dir, "mods"))
+	return filepath.Abs(datadir.ModsDirOf(dir))
 }
 
 // InMods runs fn on the profile and its absolute mods/ folder under the store's lock, so files fn writes there cannot
@@ -697,7 +697,7 @@ func readAt(dir, id string) (Profile, error) {
 	}
 	sanitizeAppearance(&p)
 	foldDescription(b, &p)
-	adoptProfileLoadAfter(b, &p, filepath.Join(dir, "mods"))
+	adoptProfileLoadAfter(b, &p, datadir.ModsDirOf(dir))
 	if statErr == nil {
 		rememberProfile(path, fi, p)
 	}
@@ -759,7 +759,7 @@ func (s *Store) create(game, name string) (Profile, error) {
 	if err != nil {
 		return Profile{}, err
 	}
-	if err := os.MkdirAll(filepath.Join(dir, "mods"), 0o700); err != nil {
+	if err := os.MkdirAll(datadir.ModsDirOf(dir), 0o700); err != nil {
 		return Profile{}, err
 	}
 	now := time.Now().UTC().Truncate(time.Second)
@@ -858,7 +858,7 @@ func (s *Store) updateLockedCommit(game, id string, fn func(p *Profile, dir stri
 	if commit != nil {
 		commit()
 	}
-	_ = safefs.RemoveAll(filepath.Join(dir, "mods") + ".old")
+	_ = safefs.RemoveAll(datadir.ModsDirOf(dir) + ".old")
 	kind, note, configs := s.historyKind, s.historyNote, s.historyConfigs
 	s.historyKind, s.historyNote, s.historyConfigs = "", HistoryEvent{}, nil
 	if s.historyQuietIDs[id] == 0 {

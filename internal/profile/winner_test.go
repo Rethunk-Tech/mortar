@@ -224,7 +224,7 @@ func TestSetWinnerOrdersOnlyTheWinningPack(t *testing.T) {
 	}
 	assertOptionalDep(t, winnerManifest(t, e, p.ID, "pack/Cape"), "Me.Lose", true)
 	assertOptionalDep(t, winnerManifest(t, e, p.ID, "pack/Annetta"), "Me.Lose", false)
-	for _, c := range got.Entries[entryIndex(got.Entries, "pack")].Mods {
+	for _, c := range got.Entries[EntryIndex(got.Entries, "pack")].Mods {
 		if want := mod.Equal(c.ID, "smapi:Me.Cape"); slices.Contains(c.LoadAfter, "smapi:Me.Lose") != want {
 			t.Fatalf("%s LoadAfter = %v", c.ID, c.LoadAfter)
 		}
@@ -261,7 +261,7 @@ func legacyEntries(t *testing.T, entries []Entry) []byte {
 
 func assertCapeWins(t *testing.T, entries []Entry) {
 	t.Helper()
-	for _, c := range entries[entryIndex(entries, "pack")].Mods {
+	for _, c := range entries[EntryIndex(entries, "pack")].Mods {
 		want := []mod.ID(nil)
 		if mod.Equal(c.ID, "smapi:Me.Cape") {
 			want = []mod.ID{"smapi:Me.Lose"}

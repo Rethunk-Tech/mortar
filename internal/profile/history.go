@@ -339,7 +339,7 @@ func (s *Store) Revert(game, id, eventID string) (Profile, error) {
 }
 
 func (s *Store) applyEntrySnapshot(game string, p *Profile, dir string, entries []Entry) error {
-	modsDir := filepath.Join(dir, "mods")
+	modsDir := datadir.ModsDirOf(dir)
 	staging := modsDir + ".new"
 	_ = safefs.RemoveAll(staging)
 	if err := os.MkdirAll(staging, 0o700); err != nil {
@@ -417,7 +417,7 @@ func (s *Store) applyEntrySnapshot(game string, p *Profile, dir string, entries 
 }
 
 func restoreModsOld(dir string) {
-	modsDir := filepath.Join(dir, "mods")
+	modsDir := datadir.ModsDirOf(dir)
 	old := modsDir + ".old"
 	if _, err := os.Stat(old); err != nil {
 		return
@@ -925,7 +925,7 @@ func decodeSnapshot(dir string, raw []byte) ([]Entry, bool) {
 	if err := json.Unmarshal(raw, &entries); err != nil {
 		return nil, false
 	}
-	adoptEntryLoadAfter(raw, entries, filepath.Join(dir, "mods"))
+	adoptEntryLoadAfter(raw, entries, datadir.ModsDirOf(dir))
 	return entries, true
 }
 

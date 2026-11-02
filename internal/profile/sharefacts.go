@@ -5,6 +5,7 @@ import (
 	"regexp"
 
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 
 	"github.com/Rethunk-Tech/go-semverish"
@@ -39,7 +40,7 @@ func (s *Store) ShareFacts(game string, p Profile) ShareFacts {
 	if err != nil {
 		return out
 	}
-	modsDir := filepath.Join(dir, "mods")
+	modsDir := datadir.ModsDirOf(dir)
 	for _, e := range p.Entries {
 		for _, m := range e.Mods {
 			plain, dotted, err := ModPaths(modsDir, e.Key, m.Folder)

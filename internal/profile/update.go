@@ -279,7 +279,7 @@ func (s *Store) swapEntry(game, id, dir string, e Entry, newKey string, source *
 	if err := s.saveBackup(game, id); err != nil {
 		return Entry{}, swapped{}, fmt.Errorf("back up saves: %w", err)
 	}
-	modsDir := filepath.Join(dir, "mods")
+	modsDir := datadir.ModsDirOf(dir)
 	if err := os.MkdirAll(modsDir, 0o700); err != nil {
 		return Entry{}, swapped{}, err
 	}

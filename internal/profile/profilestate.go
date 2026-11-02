@@ -10,6 +10,7 @@ import (
 	"slices"
 
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
 const historySettings = "settings"
@@ -104,7 +105,7 @@ func capturedConfig(dir, snapshotID, key string) string {
 }
 
 func liveConfigHash(dir, key string) string {
-	body, err := safefs.ReadFile(filepath.Join(liveEntryDir(filepath.Join(dir, "mods"), key), configFile))
+	body, err := safefs.ReadFile(filepath.Join(liveEntryDir(datadir.ModsDirOf(dir), key), configFile))
 	return configHash(body, err == nil)
 }
 
@@ -123,7 +124,7 @@ func restoreConfigsTo(dir string, entries []Entry, targetID, headID string) []st
 			continue
 		}
 		if want == "" {
-			if safefs.Remove(filepath.Join(liveEntryDir(filepath.Join(dir, "mods"), e.Key), configFile)) == nil {
+			if safefs.Remove(filepath.Join(liveEntryDir(datadir.ModsDirOf(dir), e.Key), configFile)) == nil {
 				changed = append(changed, e.Key)
 			}
 			continue

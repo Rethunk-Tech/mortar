@@ -76,7 +76,7 @@ func (s *Store) Backup(game, id string) (Profile, map[string][]byte, error) {
 			return Profile{}, nil, err
 		}
 	}
-	modsDir := filepath.Join(dir, "mods")
+	modsDir := datadir.ModsDirOf(dir)
 	for _, e := range p.Entries {
 		if e.Source.Bundled() || e.IsOverlay() || !e.hasFolder() {
 			continue

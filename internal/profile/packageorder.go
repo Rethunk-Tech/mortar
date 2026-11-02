@@ -12,7 +12,7 @@ func (s *Store) MovePackage(game, id, key string, delta int) (Profile, error) {
 		return Profile{}, errors.New("a package moves one place at a time")
 	}
 	return s.update(game, id, func(p *Profile, _ string) error {
-		i := entryIndex(p.Entries, key)
+		i := EntryIndex(p.Entries, key)
 		if i < 0 {
 			return errors.New("no such mod in this profile")
 		}
@@ -29,7 +29,7 @@ func (s *Store) MovePackage(game, id, key string, delta int) (Profile, error) {
 // MakePackageWin moves a mod to just after over in the package order, so it wins every file both provide.
 func (s *Store) MakePackageWin(game, id, key, over string) (Profile, error) {
 	return s.update(game, id, func(p *Profile, _ string) error {
-		i, j := entryIndex(p.Entries, key), entryIndex(p.Entries, over)
+		i, j := EntryIndex(p.Entries, key), EntryIndex(p.Entries, over)
 		if i < 0 || j < 0 {
 			return errors.New("no such mod in this profile")
 		}
