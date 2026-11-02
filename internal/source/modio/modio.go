@@ -33,6 +33,12 @@ const (
 // ErrNeedsToken means no mod.io access token is stored.
 var ErrNeedsToken = errors.New("needs a mod.io access token")
 
+// ErrAPIKey means the player pasted the API key mod.io also shows on the access page, which cannot sign in.
+var ErrAPIKey = errors.New("that is a mod.io API key; create a read-only OAuth access token on the same page and paste that")
+
+// apiKeyShape is an API key's form; an OAuth access token is far longer.
+var apiKeyShape = regexp.MustCompile(`^[0-9a-fA-F]{32}$`)
+
 // ErrBadToken means mod.io rejected the token: it was revoked, expired or mistyped, and tokens do not refresh.
 var ErrBadToken = errors.New("mod.io rejected the access token, sign in again")
 
@@ -340,6 +346,9 @@ func (d Driver) Latest(ctx context.Context, src components.GameSource, _ string,
 
 // Validate checks token against the API and returns the account's username.
 func (d Driver) Validate(ctx context.Context, token string) (string, error) {
+	if apiKeyShape.MatchString(strings.TrimSpace(token)) {
+		return "", ErrAPIKey
+	}
 	me, err := wrap(gomodio.New(d.config(strings.TrimSpace(token))).Me(ctx))
 	if err != nil {
 		return "", err

@@ -9,11 +9,25 @@ import (
 	"strings"
 	"testing"
 
+	gomodio "github.com/Rethunk-Tech/go-modio"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
-// TestLive runs the driver against the real API. MORTAR_MODIO_LIVE=1 turns it on; the token comes from
-// MORTAR_MODIO_TOKEN, else the keyring.
+// apiKeyAuth signs each API call with an API key, which mod.io takes as a query parameter on the public host.
+type apiKeyAuth struct{ key string }
+
+func (a apiKeyAuth) RoundTrip(r *http.Request) (*http.Response, error) {
+	r = r.Clone(r.Context())
+	r.Header.Del("Authorization")
+	q := r.URL.Query()
+	q.Set("api_key", a.key)
+	r.URL.RawQuery = q.Encode()
+	return http.DefaultTransport.RoundTrip(r)
+}
+
+// TestLive runs the driver against the real API. MORTAR_MODIO_LIVE=1 turns it on. MORTAR_MODIO_APIKEY reads through an
+// API key on the public host, which leaves out the account lookup and the per-user host; otherwise the OAuth token comes
+// from MORTAR_MODIO_TOKEN, else the keyring.
 func TestLive(t *testing.T) {
 	if os.Getenv("MORTAR_MODIO_LIVE") == "" {
 		t.Skip("MORTAR_MODIO_LIVE is not set")
@@ -22,6 +36,9 @@ func TestLive(t *testing.T) {
 	d := Driver{}
 	if token := os.Getenv("MORTAR_MODIO_TOKEN"); token != "" {
 		d.Token = func() (string, error) { return token, nil }
+	}
+	if key := os.Getenv("MORTAR_MODIO_APIKEY"); key != "" {
+		d = Driver{HTTP: &http.Client{Transport: apiKeyAuth{key}}, URL: gomodio.BaseURL, Token: func() (string, error) { return "api-key", nil }}
 	}
 	if why := d.Unavailable(); why != "" {
 		t.Fatalf("unavailable: %s", why)
@@ -42,9 +59,11 @@ func TestLive(t *testing.T) {
 	t.Logf("categories: %d", len(cats))
 	for _, item := range page.Items {
 		id := item.ID
-		if _, err := d.Details(ctx, timberborn, id, ""); err != nil {
+		details, err := d.Details(ctx, timberborn, id, "")
+		if err != nil {
 			t.Fatal(err)
 		}
+		t.Logf("details %q: %d dependencies", item.Name, len(details.Dependencies))
 		f, err := d.Resolve(ctx, timberborn, id, "")
 		if err != nil {
 			t.Fatal(err)

@@ -124,3 +124,9 @@ func TestTokenAndGameKey(t *testing.T) {
 		t.Fatal("a non-numeric game key reached the address")
 	}
 }
+
+func TestValidateNamesAnAPIKey(t *testing.T) {
+	if _, err := (Driver{}).Validate(t.Context(), " 0123456789abcdef0123456789abcdef\n"); !errors.Is(err, ErrAPIKey) {
+		t.Fatalf("err = %v", err)
+	}
+}
