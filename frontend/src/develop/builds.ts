@@ -17,6 +17,7 @@ import { i18n } from '../i18n/index.ts'
 import { useSettings } from '../settings/store.ts'
 import { errorKind } from '../toasts/errorKind.ts'
 import { toastError } from '../toasts/report.ts'
+import { useDevKinds } from './kinds.ts'
 
 interface ProjectRun {
   // What runs now, if anything.
@@ -170,4 +171,15 @@ export async function buildChanged(game: string, dirs: string[]): Promise<string
   return (
     useSettings.getState().games?.[game]?.devProjects?.find((p) => p.dir === failed)?.name ?? failed
   )
+}
+
+/** Builds what changed among the code projects developed in this profile, so a send carries them current. Returns the
+ * name of the first that failed, or null. */
+export function buildProfileProjects(game: string, profile: string): Promise<string | null> {
+  const kinds = useDevKinds.getState().byDir
+  const projects = useSettings.getState().games?.[game]?.devProjects ?? []
+  const dirs = projects
+    .filter((p) => p.profile === profile && !p.untrusted && !kinds[p.dir])
+    .map((p) => p.dir)
+  return buildChanged(game, dirs)
 }

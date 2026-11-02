@@ -476,10 +476,6 @@ msgstr ""
 msgid "Remove the shortcut"
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
-msgid "Send to a paired computer…"
-msgstr ""
-
 #: src/queue/QueueBody.tsx
 msgid "{repo} {tag} has several archives. Which one should Mortar install?"
 msgstr ""
@@ -2575,10 +2571,6 @@ msgstr ""
 msgid "Back up to a file…"
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
-msgid "No computer is paired. Pair one first."
-msgstr ""
-
 #: src/develop/DependenciesStep.tsx
 msgid "Add another mod"
 msgstr ""
@@ -3859,7 +3851,6 @@ msgstr ""
 msgid "{game}'s {launcher} launch options run {loader} in place of the game. Remove that launch option to stop it. Mortar will not change it."
 msgstr "{game} 的 {launcher} 启动选项会代替游戏运行 {loader}。移除该启动选项即可停止。Mortar 不会更改它。"
 
-#: src/develop/DevelopTab.tsx
 #: src/lan/PairedComputers.tsx
 msgid "Pair a computer"
 msgstr ""
@@ -4471,7 +4462,7 @@ msgstr ""
 msgid "Could not import"
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
+#: src/lan/SendPanel.tsx
 msgid "{name} did not build"
 msgstr ""
 
@@ -6613,7 +6604,7 @@ msgstr ""
 msgid "Mortar forgets this game. Its files stay where they are."
 msgstr ""
 
-#: src/develop/DevelopTab.tsx
+#: src/lan/SendPanel.tsx
 msgid "Nothing was sent. Fix the errors on its card and try again."
 msgstr ""
 

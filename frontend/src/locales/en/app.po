@@ -482,10 +482,6 @@ msgstr "Removed leftover temporary folders"
 msgid "Remove the shortcut"
 msgstr "Remove the shortcut"
 
-#: src/develop/DevelopTab.tsx
-msgid "Send to a paired computer…"
-msgstr "Send to a paired computer…"
-
 #: src/queue/QueueBody.tsx
 msgid "{repo} {tag} has several archives. Which one should Mortar install?"
 msgstr "{repo} {tag} has several archives. Which one should Mortar install?"
@@ -2581,10 +2577,6 @@ msgstr "Access granted"
 msgid "Back up to a file…"
 msgstr "Back up to a file…"
 
-#: src/develop/DevelopTab.tsx
-msgid "No computer is paired. Pair one first."
-msgstr "No computer is paired. Pair one first."
-
 #: src/develop/DependenciesStep.tsx
 msgid "Add another mod"
 msgstr "Add another mod"
@@ -3865,7 +3857,6 @@ msgstr "Last used"
 msgid "{game}'s {launcher} launch options run {loader} in place of the game. Remove that launch option to stop it. Mortar will not change it."
 msgstr "{game}'s {launcher} launch options run {loader} in place of the game. Remove that launch option to stop it. Mortar will not change it."
 
-#: src/develop/DevelopTab.tsx
 #: src/lan/PairedComputers.tsx
 msgid "Pair a computer"
 msgstr "Pair a computer"
@@ -4477,7 +4468,7 @@ msgstr "Something went wrong in this view"
 msgid "Could not import"
 msgstr "Could not import"
 
-#: src/develop/DevelopTab.tsx
+#: src/lan/SendPanel.tsx
 msgid "{name} did not build"
 msgstr "{name} did not build"
 
@@ -6619,7 +6610,7 @@ msgstr "{count, plural, one {# download needs your decision} other {# downloads 
 msgid "Mortar forgets this game. Its files stay where they are."
 msgstr "Mortar forgets this game. Its files stay where they are."
 
-#: src/develop/DevelopTab.tsx
+#: src/lan/SendPanel.tsx
 msgid "Nothing was sent. Fix the errors on its card and try again."
 msgstr "Nothing was sent. Fix the errors on its card and try again."
 

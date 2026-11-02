@@ -18,6 +18,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Peer } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/models.ts'
 import { Peers, Send } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/service.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
+import { buildProfileProjects } from '../develop/builds.ts'
 import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { getProfile } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
@@ -185,8 +186,19 @@ function useSend(game: string, profileId: string, include: ShareInclude, onSent:
   const send = (target: SendTarget) => {
     const profileName = getProfile(profileId)?.name ?? ''
     setSending(target.id)
-    Send(target.id, game, profileId, toShareInclude(include))
-      .then(() => {
+    // A paired computer gets the development mods' files, so they go out built.
+    const built = target.paired ? buildProfileProjects(game, profileId) : Promise.resolve(null)
+    built
+      .then(async (failed) => {
+        if (failed !== null) {
+          useToasts.getState().push({
+            kind: 'error',
+            title: t`${{ name: failed }} did not build`,
+            body: t`Nothing was sent. Fix the errors on its card and try again.`,
+          })
+          return
+        }
+        await Send(target.id, game, profileId, toShareInclude(include))
         useToasts.getState().push({
           kind: 'success',
           title: target.paired
