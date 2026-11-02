@@ -2,6 +2,7 @@ import type { Page } from '@playwright/test'
 import { openSettings } from './app.ts'
 import type { Case } from './render-budget.ts'
 import type { Helpers } from './renderCases.ts'
+import { coverageCases } from './renderCoverage.ts'
 import { openGame, returnToMainGame } from './renderProfile.ts'
 import { VIEWPORT } from './renderViewport.ts'
 
@@ -125,5 +126,6 @@ export function screenCases(h: Helpers): Case[] {
     },
     ...GAME_PAGES.map(gamePage),
     ...SETTINGS_SECTIONS.map(section),
+    ...coverageCases(h),
   ]
 }
