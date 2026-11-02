@@ -1,5 +1,5 @@
 {
-  "serial": 1793580758,
+  "serial": 1793582490,
   "components": [
     {
       "game": "melonloader",
@@ -53,10 +53,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-bepinex-bridge"
       },
-      "tag": "v0.3.6",
-      "asset": "MortarBepInExBridge_LethalCompany-0.3.6.zip",
-      "version": "0.3.6",
-      "sha256": "075b58006ed78ece908931dbc1c0b8511009f215507b107f4bd6a20162a894b6"
+      "tag": "v0.4.0",
+      "asset": "MortarBepInExBridge_LethalCompany-0.4.0.zip",
+      "version": "0.4.0",
+      "sha256": "0fe8ab9ffd8324df46aac14ed6e61a85000b4fd9b126b2c68bf3be6e97bbe653"
     },
     {
       "game": "valheim",
@@ -67,10 +67,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-bepinex-bridge"
       },
-      "tag": "v0.3.6",
-      "asset": "MortarBepInExBridge_Valheim-0.3.6.zip",
-      "version": "0.3.6",
-      "sha256": "5cdd880704d95faf578b058e2ac3d699e408c977bf7cef8f10958ebd25c96922"
+      "tag": "v0.4.0",
+      "asset": "MortarBepInExBridge_Valheim-0.4.0.zip",
+      "version": "0.4.0",
+      "sha256": "3d4af4be79bd321fea9d07e02ef9df4dc396ddc0123be3b333da8f618abd27f8"
     },
     {
       "game": "repo",
@@ -81,10 +81,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-bepinex-bridge"
       },
-      "tag": "v0.3.6",
-      "asset": "MortarBepInExBridge-0.3.6.zip",
-      "version": "0.3.6",
-      "sha256": "6ff02ff0c88f1cbc6c70a83fec0414cc33c943bc13970c38c6bb07764266a7a9"
+      "tag": "v0.4.0",
+      "asset": "MortarBepInExBridge-0.4.0.zip",
+      "version": "0.4.0",
+      "sha256": "16499e7f50df7e88ac372071abdcf474a39ce25174bff92eccacc1d5c8c645d4"
     },
     {
       "game": "peak",
@@ -95,10 +95,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-bepinex-bridge"
       },
-      "tag": "v0.3.6",
-      "asset": "MortarBepInExBridge-0.3.6.zip",
-      "version": "0.3.6",
-      "sha256": "6ff02ff0c88f1cbc6c70a83fec0414cc33c943bc13970c38c6bb07764266a7a9"
+      "tag": "v0.4.0",
+      "asset": "MortarBepInExBridge-0.4.0.zip",
+      "version": "0.4.0",
+      "sha256": "16499e7f50df7e88ac372071abdcf474a39ce25174bff92eccacc1d5c8c645d4"
     },
     {
       "game": "riskofrain2",
@@ -109,10 +109,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-bepinex-bridge"
       },
-      "tag": "v0.3.6",
-      "asset": "MortarBepInExBridge-0.3.6.zip",
-      "version": "0.3.6",
-      "sha256": "6ff02ff0c88f1cbc6c70a83fec0414cc33c943bc13970c38c6bb07764266a7a9"
+      "tag": "v0.4.0",
+      "asset": "MortarBepInExBridge-0.4.0.zip",
+      "version": "0.4.0",
+      "sha256": "16499e7f50df7e88ac372071abdcf474a39ce25174bff92eccacc1d5c8c645d4"
     },
     {
       "game": "content-warning",
@@ -123,10 +123,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-bepinex-bridge"
       },
-      "tag": "v0.3.6",
-      "asset": "MortarBepInExBridge-0.3.6.zip",
-      "version": "0.3.6",
-      "sha256": "6ff02ff0c88f1cbc6c70a83fec0414cc33c943bc13970c38c6bb07764266a7a9"
+      "tag": "v0.4.0",
+      "asset": "MortarBepInExBridge-0.4.0.zip",
+      "version": "0.4.0",
+      "sha256": "16499e7f50df7e88ac372071abdcf474a39ce25174bff92eccacc1d5c8c645d4"
     }
   ],
   "games": [
@@ -14003,6 +14003,53 @@
         {
           "id": "nexus",
           "key": "domekeeper"
+        }
+      ]
+    },
+    {
+      "id": "baldurs-gate-3",
+      "name": "Baldur's Gate 3",
+      "enabled": true,
+      "minVersion": "0.5.0",
+      "marker": "bg3.exe",
+      "markerDir": "bin",
+      "processes": ["bg3_dx11.exe"],
+      "metadata": [],
+      "paths": {
+        "modSettings": {
+          "windows": "{localAppData}/Larian Studios/Baldur's Gate 3/PlayerProfiles/Public"
+        },
+        "mods": {
+          "windows": "{localAppData}/Larian Studios/Baldur's Gate 3/Mods"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "mods",
+          "root": "{profile}/Mods",
+          "keepWhole": ["pak"]
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "1086940"
+        },
+        "gog": {
+          "productId": "1456460669",
+          "folder": "Baldurs Gate 3"
+        }
+      },
+      "loaders": [
+        {
+          "id": "folder",
+          "name": ""
+        }
+      ],
+      "sources": [
+        {
+          "id": "nexus",
+          "key": "baldursgate3"
         }
       ]
     }

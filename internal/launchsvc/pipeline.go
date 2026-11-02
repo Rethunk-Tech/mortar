@@ -20,6 +20,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
+	"github.com/Rethunk-Tech/mortar/internal/loader/folder"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	gameruntime "github.com/Rethunk-Tech/mortar/internal/runtime"
 	"github.com/Rethunk-Tech/mortar/internal/savesiso"
@@ -361,7 +362,13 @@ func (s *Service) prelaunch(gameID, profileID, installDir string) error {
 	if err != nil {
 		return err
 	}
-	return pre.Prelaunch(loader.ProfileView{Game: gameID, Dir: dir, InstallDir: installDir})
+	view := loader.ProfileView{Game: gameID, Dir: dir, InstallDir: installDir}
+	if folder.WantsOrder(gameID) {
+		if view.Enabled, err = s.profiles.EnabledFolders(gameID, profileID); err != nil {
+			return err
+		}
+	}
+	return pre.Prelaunch(view)
 }
 
 // startDeploy places plan's install-side files into inst, journaled before the first file moves. A launch with none

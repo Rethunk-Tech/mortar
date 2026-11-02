@@ -13130,6 +13130,30 @@
         { "id": "thunderstore", "key": "dome-keeper" },
         { "id": "nexus", "key": "domekeeper" }
       ]
+    },
+    {
+      "id": "baldurs-gate-3",
+      "name": "Baldur's Gate 3",
+      "enabled": true,
+      "minVersion": "0.5.0",
+      "marker": "bg3.exe",
+      "markerDir": "bin",
+      "processes": ["bg3_dx11.exe"],
+      "metadata": [],
+      "paths": {
+        "mods": { "windows": "{localAppData}/Larian Studios/Baldur's Gate 3/Mods" },
+        "modSettings": {
+          "windows": "{localAppData}/Larian Studios/Baldur's Gate 3/PlayerProfiles/Public"
+        }
+      },
+      "deploy": "profile",
+      "targets": [{ "id": "mods", "root": "{profile}/Mods", "keepWhole": ["pak"] }],
+      "stores": {
+        "steam": { "appId": "1086940" },
+        "gog": { "productId": "1456460669", "folder": "Baldurs Gate 3" }
+      },
+      "loaders": [{ "id": "folder" }],
+      "sources": [{ "id": "nexus", "key": "baldursgate3" }]
     }
   ],
   "authors": [{ "names": ["Evaisa", "EvaisaDev"] }]

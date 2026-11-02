@@ -18,6 +18,16 @@ Nobody on the team owns the game. Sources: PCGamingWiki, a decompiled 1.x Steam 
 - No `newProfileSeparateSaves`: a new profile would open on an empty city list, and cities run to hundreds of MB.
 - **Paradox Mods:** the `pdx` target (path role `pdxMods`) names the `paradox` source, so the `source-target` installer runs before every other driver and lays the archive out whole below `paradox-<mod id>`, whatever the BepInEx rules would make of its DLLs. Placed files are recorded per entry with their hashes, removed with it, and never replace a file nobody placed (as Tray files).
 
+## Baldur's Gate 3
+
+Sources: Vortex's `game-baldursgate3` extension (`Nexus-Mods/vortex-games`, `game-baldursgate3/index.tsx`: Steam `1086940`, GOG `1456460669`, executables `bin/bg3.exe` and `bin/bg3_dx11.exe`, mods in `%LOCALAPPDATA%/Larian Studios/Baldur's Gate 3/Mods`, load order in `PlayerProfiles/Public/modsettings.lsx`) and Nexus's `baldursgate3`.
+
+- The folder loader places the profile's `.pak` files in the game's `Mods` folder for the run. Its Larian extension (`internal/loader/larian`, on the `modSettings` path role) writes a `modsettings.lsx` from each pak's `meta.lsx` (go-larian), GustavDev first, in the profile's mod order. The deployer sets the player's own `modsettings.lsx` aside and puts it back after the run.
+- A pak with no `meta.lsx` (an override) is placed and not listed.
+- Only the Windows build is started, under Proton. `bg3.exe` is the marker; `bg3_dx11.exe` is the other build.
+- Unverified until someone runs the game: the GOG install folder name (`Baldurs Gate 3`), and that the game accepts a `modsettings.lsx` whose GustavDev entry carries Mortar's fixed version.
+- Planet Zoo and Graveyard Keeper are not in the catalog: no r2modman, Gale or Vortex source names a mods folder or a marker for either.
+
 ## Dome Keeper
 
 Sources: r2modman's ecosystem schema (`dome-keeper`: Steam `1637320`, `exeNames` `domekeeper.exe`, `packageLoader` `godotml`, one install rule, `package-zip` into `mods`), Thunderstore's `dome-keeper` community and Nexus's `domekeeper`.

@@ -26,6 +26,53 @@ const TargetID = "mods"
 
 var _ = loader.Register(Loader{})
 
+// Extension is per-launch work a game's catalog asks of the folder loader by naming a path role: the game's files
+// outside its mods folder that the loader also fills or writes.
+type Extension interface {
+	// Role is the catalog path role that switches the extension on for a game.
+	Role() string
+	// Contribute adds the extension's files to plan; it has no side effects.
+	Contribute(plan *launchplan.Plan, p loader.ProfileView)
+	// Prelaunch writes what Contribute placed, for a launch actually starting. p.Enabled is the profile's enabled
+	// package folders in mod order.
+	Prelaunch(p loader.ProfileView) error
+}
+
+var extensions []Extension
+
+// Extend adds an extension and reports true, for a driver package's blank variable like loader.Register.
+func Extend(e Extension) bool {
+	extensions = append(extensions, e)
+	return true
+}
+
+func extensionsOf(gameID string) []Extension {
+	info, ok := components.Game(gameID)
+	if !ok {
+		return nil
+	}
+	var out []Extension
+	for _, e := range extensions {
+		if _, has := info.Paths[e.Role()]; has {
+			out = append(out, e)
+		}
+	}
+	return out
+}
+
+// WantsOrder reports whether the game has an extension that needs ProfileView.Enabled.
+func WantsOrder(gameID string) bool { return len(extensionsOf(gameID)) > 0 }
+
+// Prelaunch runs the game's extensions.
+func (Loader) Prelaunch(p loader.ProfileView) error {
+	for _, e := range extensionsOf(p.Game) {
+		if err := e.Prelaunch(p); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // Loader has nothing to install: the folder exists for as long as the game does.
 type Loader struct{}
 
@@ -107,6 +154,9 @@ func (Loader) Contribute(_ context.Context, plan *launchplan.Plan, p loader.Prof
 	})
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return err
+	}
+	for _, e := range extensionsOf(p.Game) {
+		e.Contribute(plan, p)
 	}
 	return nil
 }

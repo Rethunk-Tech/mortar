@@ -60,3 +60,12 @@ func (s *Store) enabledFolders(game, dir string, p Profile) ([]string, error) {
 	}
 	return out, nil
 }
+
+// EnabledFolders are the folders of the profile's enabled mods in the profile's order.
+func (s *Store) EnabledFolders(game, id string) ([]string, error) {
+	p, dir, err := s.readDir(game, id)
+	if err != nil {
+		return nil, err
+	}
+	return s.enabledFolders(game, dir, p)
+}
