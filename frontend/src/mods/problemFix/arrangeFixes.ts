@@ -8,7 +8,7 @@ const RANK: Record<FixWeight, number> = { main: 0, other: 1, quiet: 2 }
 export function arrangeFixes<T extends { weight: FixWeight }>(
   fixes: readonly T[],
 ): { main: T | undefined; menu: T[]; quiet: T[] } {
-  const sorted = [...fixes].sort((a, b) => RANK[a.weight] - RANK[b.weight])
+  const sorted = fixes.toSorted((a, b) => RANK[a.weight] - RANK[b.weight])
   const loud = sorted.filter((fix) => fix.weight !== 'quiet')
   return {
     main: loud[0],

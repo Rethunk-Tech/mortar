@@ -106,7 +106,7 @@ function ReportTable({
   ]
   const orderedRows = useMemo(
     () =>
-      [...rows].sort((a, b) => {
+      rows.toSorted((a, b) => {
         if (sort.column === 'name') {
           const result = cmpText(a.name, b.name)
           return sort.direction === 'asc' ? result : -result

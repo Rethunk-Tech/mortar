@@ -245,7 +245,7 @@ function fitListColumns(cols: readonly ListColumnId[], width: number): ListColum
   if (width <= 0) {
     return out
   }
-  for (const id of [...NARROW_HIDE_LIST_COLUMNS].reverse()) {
+  for (const id of NARROW_HIDE_LIST_COLUMNS.toReversed()) {
     if (fixedListWidth(out) + NAME_MIN_PX <= width) {
       break
     }

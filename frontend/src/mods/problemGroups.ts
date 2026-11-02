@@ -55,7 +55,7 @@ export function assetRows(conflicts: AssetConflict[]): Row[] {
   const groups = Map.groupBy(conflicts, (asset) =>
     JSON.stringify([
       asset.kind,
-      [...(asset.packIds ?? [])].sort((a, b) => Number(a > b) - Number(a < b)),
+      (asset.packIds ?? []).toSorted((a, b) => Number(a > b) - Number(a < b)),
       asset.winnerKind,
       asset.winnerName,
       asset.fixes ?? [],

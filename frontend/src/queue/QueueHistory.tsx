@@ -88,7 +88,7 @@ function HistoryRows({
   renderRow: (e: HistoryEntry) => ReactNode
 }) {
   const scrollRef = useRef<HTMLDivElement>(null)
-  const newest = useMemo(() => rows.slice().reverse(), [rows])
+  const newest = useMemo(() => rows.toReversed(), [rows])
   const virtualizer = useVirtualizer({
     count: newest.length,
     getScrollElement: () => scrollRef.current,

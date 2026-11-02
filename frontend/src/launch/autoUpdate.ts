@@ -261,7 +261,7 @@ async function rollbackAutoUpdate(point: AutoUpdateRestorePoint): Promise<void> 
     useProfiles.getState().replace(next)
   } else {
     const keys = await currentUpdateKeys(point)
-    for (const key of keys.reverse()) {
+    for (const key of keys.toReversed()) {
       const next = await RollBack(point.game, point.profileId, key)
       useProfiles.getState().replace(next)
     }

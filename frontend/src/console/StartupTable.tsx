@@ -95,7 +95,7 @@ function sortMods(
         return changeOf(mod, previous)
     }
   }
-  return [...mods].sort((a, b) =>
+  return mods.toSorted((a, b) =>
     column === 'name' ? sign * cmpText(a.name, b.name) : sign * (value(a) - value(b)),
   )
 }
