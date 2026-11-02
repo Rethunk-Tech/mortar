@@ -485,6 +485,7 @@ export function ProjectCard({
           >
             {info ? details.join(' · ') : project.dir}
           </Typography>
+          <Costs game={game} profile={project.profile} dir={project.dir} info={info} />
         </Box>
         <BuildButton game={game} project={project} compact={!list} />
         <MoreMenu
@@ -499,7 +500,6 @@ export function ProjectCard({
           onEdit={() => setEditing(true)}
         />
       </Box>
-      <Costs game={game} profile={project.profile} dir={project.dir} info={info} />
       <Outcome game={game} project={project} />
       {editing && info ? (
         <EditProjectDialog
