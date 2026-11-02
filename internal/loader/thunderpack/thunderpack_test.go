@@ -99,6 +99,8 @@ func packOf(id string) (zip map[string]string, version string) {
 		return map[string]string{"manifest.json": "{}", "RivetPack/version.dll": "v", "RivetPack/Rivet.ini": "ini", "RivetPack/Rivet/Loader.dll": "loader"}, "0.1.17"
 	case "shimloader":
 		return map[string]string{"manifest.json": "{}", "dwmapi.dll": "proxy", "UE4SS/dwmapi.dll": "unused", "UE4SS/LICENSE": "l", "UE4SS/UE4SS.dll": "ue4ss", "UE4SS/UE4SS-settings.ini": "ini", "UE4SS/Mods/shared/UEHelpers/UEHelpers.lua": "lua"}, "1.1.7"
+	case "godotml":
+		return map[string]string{"manifest.json": "{}", "icon.png": "i", "addons/mod_loader/mod_loader_setup.gd": "setup", "addons/mod_loader/api/mod.gd": "api", "addons/JSON_Schema_Validator/json_schema_validator.gd": "v"}, "7.0.1"
 	case "umm":
 		return map[string]string{"manifest.json": "{}", "winhttp.dll": "w", "doorstop_config.ini": "c", ".doorstop_version": "4.4.0", "doorstop_libs/libdoorstop_x64.so": "so", "run_umm.sh": "sh", "UMM/Core/UnityModManager.dll": "umm"}, "1.1.0"
 	}
@@ -124,6 +126,9 @@ func TestInstallAndLaunch(t *testing.T) {
 		{"rivet", "scrap-mechanic", "proton", func(p string) []string {
 			return []string{"-rivetEnable", "true", "-rivetTarget", "Z:" + backslash(filepath.Join(p, "Rivet", "Loader.dll")), "-rivetDirectory", "Z:" + backslash(filepath.Join(p, "Rivet", "Mods"))}
 		}, []string{"Release/version.dll"}, []string{"version"}},
+		{"godotml", "dome-keeper", "proton", func(p string) []string {
+			return []string{"--script", "res://addons/mod_loader/mod_loader_setup.gd", "--enable-mods", "--mods-path", "Z:" + backslash(filepath.Join(p, "mods"))}
+		}, []string{"addons/JSON_Schema_Validator/json_schema_validator.gd", "addons/mod_loader/api/mod.gd", "addons/mod_loader/mod_loader_setup.gd"}, nil},
 		{"umm", "broforce", "", func(p string) []string {
 			target := filepath.Join(p, "UMM", "Core", "UnityModManager.dll")
 			return []string{"--doorstop-enabled", "true", "--doorstop-target-assembly", target, "--doorstop-enable", "true", "--doorstop-target", target}

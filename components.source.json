@@ -13111,6 +13111,25 @@
           "key": "voices-of-the-void"
         }
       ]
+    },
+    {
+      "id": "dome-keeper",
+      "name": "Dome Keeper",
+      "enabled": true,
+      "minVersion": "0.5.0",
+      "marker": "domekeeper.exe",
+      "r2modmanFolder": "DomeKeeper",
+      "metadata": [],
+      "deploy": "profile",
+      "targets": [{ "id": "mods", "root": "{profileMods}" }],
+      "stores": { "steam": { "appId": "1637320" } },
+      "loaders": [
+        { "id": "godotml", "name": "GodotModLoader", "package": "GodotModding-GodotModLoader" }
+      ],
+      "sources": [
+        { "id": "thunderstore", "key": "dome-keeper" },
+        { "id": "nexus", "key": "domekeeper" }
+      ]
     }
   ],
   "authors": [{ "names": ["Evaisa", "EvaisaDev"] }]

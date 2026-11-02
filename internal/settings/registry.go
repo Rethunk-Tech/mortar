@@ -247,6 +247,7 @@ var registry = withDefaults([]pref{
 	loaderPref("gdweave", pinPref("gdweavePin", "gdweave")),
 	loaderPref("lovely", pinPref("lovelyPin", "lovely")),
 	loaderPref("northstar", pinPref("northstarPin", "northstar")),
+	loaderPref("godotml", pinPref("godotmlPin", "godotml")),
 	loaderPref("rivet", pinPref("rivetPin", "rivet")),
 	loaderPref("umm", pinPref("ummPin", "umm")),
 	loaderPref("shimloader", pinPref("shimloaderPin", "shimloader")),

@@ -18,6 +18,15 @@ Nobody on the team owns the game. Sources: PCGamingWiki, a decompiled 1.x Steam 
 - No `newProfileSeparateSaves`: a new profile would open on an empty city list, and cities run to hundreds of MB.
 - **Paradox Mods:** the `pdx` target (path role `pdxMods`) names the `paradox` source, so the `source-target` installer runs before every other driver and lays the archive out whole below `paradox-<mod id>`, whatever the BepInEx rules would make of its DLLs. Placed files are recorded per entry with their hashes, removed with it, and never replace a file nobody placed (as Tray files).
 
+## Dome Keeper
+
+Sources: r2modman's ecosystem schema (`dome-keeper`: Steam `1637320`, `exeNames` `domekeeper.exe`, `packageLoader` `godotml`, one install rule, `package-zip` into `mods`), Thunderstore's `dome-keeper` community and Nexus's `domekeeper`.
+
+- The loader is GodotModLoader. Its pack, `GodotModding-GodotModLoader`, comes from Thunderstore; most mods are on Nexus.
+- Mods load only as `.zip` files from the profile's `mods` folder, so every archive is placed as one zip (see [architecture](architecture.md#loader-notes)).
+- Only the Windows build is started, under Proton. The marker is the Windows executable.
+- Unverified until someone runs the game: the loader's first run may write an `override.cfg` beside the executable, which Mortar does not remove with the loader files it takes back after a launch.
+
 ## Lethal Company
 
 Sources: Gale (`Kesomannen/gale`), r2modmanPlus (`ebkr/r2modmanPlus`), the Thunderstore server source (`thunderstore-io/Thunderstore`), BepInEx 5.4.23.5.

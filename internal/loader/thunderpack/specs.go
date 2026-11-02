@@ -120,6 +120,17 @@ var specs = []Spec{
 		ConfigFolders: []string{"shimloader/cfg"},
 	},
 	{
+		// GodotModLoader's addons/mod_loader (and the JSON schema validator it needs) must sit beside the executable, where
+		// mod_loader_setup.gd finds them; mods are zips in the profile's mods folder, named on the command line.
+		LoaderID: "godotml", Name: "GodotModLoader", ZippedMods: true,
+		Placed: func(rel string) bool { return strings.HasPrefix(rel, "addons/") },
+		Files:  []string{"addons"},
+		Dirs:   []string{"mods"},
+		Args: func(dir string, proton bool) []string {
+			return []string{"--script", "res://addons/mod_loader/mod_loader_setup.gd", "--enable-mods", "--mods-path", hostPath(filepath.Join(dir, "mods"), proton)}
+		},
+	},
+	{
 		// Northstar's whole release is laid out in the profile, which it is told is its R2Northstar folder; the launcher
 		// and the libraries around it are placed beside the game's executable.
 		LoaderID: "northstar", Name: "Northstar", Root: "Northstar",
