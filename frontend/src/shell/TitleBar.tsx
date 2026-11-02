@@ -44,16 +44,6 @@ function WindowButton({
 
 const rule = { width: '1px', height: 22, flexShrink: 0, bgcolor: 'var(--mortar-hairline-14)' }
 
-const Slash = memo(function SlashView() {
-  return (
-    <Box
-      component="span"
-      aria-hidden={true}
-      sx={{ color: 'var(--mortar-ink-dim-60)', '&::before': { content: '"/"' } }}
-    />
-  )
-})
-
 // Memoised apart from the bar, which repaints on every route change while the buttons stay as they were.
 const WindowControls = memo(function WindowControlsView({ maximised }: { maximised: boolean }) {
   const { t } = useLingui()
@@ -110,19 +100,11 @@ export function TitleBar({ maximised }: { maximised: boolean }) {
       ) : (
         <GameMenu />
       )}
-      {game ? (
-        <>
-          <Slash />
-          <ProfileMenu game={game} />
-        </>
-      ) : null}
+      {game ? <ProfileMenu game={game} /> : null}
       {routeName === 'settings' ? (
-        <>
-          <Slash />
-          <Box component="span" sx={{ fontSize: 'medium.fontSize', fontWeight: 600 }}>
-            {t`Settings`}
-          </Box>
-        </>
+        <Box component="span" sx={{ fontSize: 'medium.fontSize', fontWeight: 600 }}>
+          {t`Settings`}
+        </Box>
       ) : null}
       <Box sx={{ flexGrow: 1 }} />
       <DownloadsPill />
