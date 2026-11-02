@@ -17,6 +17,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/scratch"
@@ -24,6 +25,9 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
+
+// peerClient talks to a paired peer, whose protocol has no redirects: one would carry the bearer token elsewhere.
+var peerClient = httpkit.WithRedirect(nil, httpkit.NoFollow)
 
 const (
 	// TransferProgressEvent carries file-transfer progress to the window.
@@ -160,7 +164,7 @@ func (s *Service) reportOutgoing(ctx context.Context, incoming incomingTransfer,
 	}
 	request.Header.Set("Authorization", "Bearer "+incoming.Token)
 	request.Header.Set("Content-Type", "application/json")
-	if response, err := (&http.Client{}).Do(request); err == nil {
+	if response, err := peerClient.Do(request); err == nil {
 		_ = response.Body.Close()
 	}
 }
@@ -278,7 +282,7 @@ func (s *Service) fetchOnce(
 		return 0, err
 	}
 	request.Header.Set("Authorization", "Bearer "+incoming.Token)
-	response, err := (&http.Client{}).Do(request)
+	response, err := peerClient.Do(request)
 	if err != nil {
 		if idle.stalled.Load() {
 			return 0, idle.err(incoming.Sender)

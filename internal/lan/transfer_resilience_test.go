@@ -257,3 +257,27 @@ func TestASilentSenderIsGivenUpOnAndRetried(t *testing.T) {
 		t.Fatalf("err = %v, tries = %d, want a network error after %d tries", err, tries.Load(), fetchAttempts)
 	}
 }
+
+func TestPeerClientDoesNotFollowRedirects(t *testing.T) {
+	elsewhere := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		t.Errorf("redirect followed with Authorization %q", r.Header.Get("Authorization"))
+	}))
+	defer elsewhere.Close()
+	peer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, elsewhere.URL, http.StatusFound)
+	}))
+	defer peer.Close()
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, peer.URL, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Authorization", "Bearer x")
+	resp, err := peerClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = resp.Body.Close()
+	if resp.StatusCode != http.StatusFound {
+		t.Fatalf("status = %d", resp.StatusCode)
+	}
+}

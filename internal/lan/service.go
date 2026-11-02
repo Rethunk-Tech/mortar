@@ -597,7 +597,7 @@ func (s *Service) sendPayload(ctx context.Context, peerID, game, profileID strin
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set(senderHeader, selfID)
-	resp, err := (&http.Client{}).Do(req)
+	resp, err := peerClient.Do(req)
 	if err != nil {
 		return usererr.Wrap(usererr.Network, fmt.Errorf("%s could not be reached: %w", name, err))
 	}
@@ -682,7 +682,7 @@ func (s *Service) hello(ctx context.Context, peerID string) (helloResponse, erro
 	if err != nil {
 		return helloResponse{}, fmt.Errorf("prepare LAN handshake: %w", err)
 	}
-	resp, err := (&http.Client{}).Do(req)
+	resp, err := peerClient.Do(req)
 	if err != nil {
 		return helloResponse{}, usererr.Wrap(usererr.Network, fmt.Errorf("contact LAN peer: %w", err))
 	}
@@ -1339,7 +1339,7 @@ func postRaw(ctx context.Context, endpoint string, body []byte) (*http.Response,
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	resp, err := (&http.Client{}).Do(req)
+	resp, err := peerClient.Do(req)
 	if err != nil {
 		cancel()
 		return nil, err
