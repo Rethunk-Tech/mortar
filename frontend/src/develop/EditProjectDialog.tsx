@@ -13,6 +13,7 @@ import {
   TemplateForm,
   UploadSites,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
+import { ThunderstoreCategories } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/packsvc/service.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { DialogPanel, DialogTabs } from '../shell/dialog/DialogTabs.tsx'
@@ -37,8 +38,21 @@ const MAX_DESCRIPTION = 250
 
 type EditTab = 'details' | 'mods' | 'sites'
 
-// The upload sites and the template's category choices, read together: each arrival redraws the whole dialog. A
-// project's own categories stay pickable even when the template lacks them.
+async function categoryChoices(game: string): Promise<Choice[]> {
+  const listed = await ThunderstoreCategories(game)
+    .then((l) => (l ?? []).map((c) => ({ value: c.slug, label: c.name })))
+    .catch(() => [])
+  if (listed.length > 0) {
+    return listed
+  }
+  return TemplateForm(game)
+    .then((f) => (f.parameters ?? []).find((p) => p.id === 'categories')?.choices ?? [])
+    .catch(() => [])
+}
+
+// The upload sites and the community's Thunderstore categories, read together: each arrival redraws the whole
+// dialog. The template's choices stand in when Thunderstore's list is unavailable, and a project's own categories
+// stay pickable even when neither lists them.
 function useEditChoices(game: string, dir: string, current: string[]) {
   const [read, setRead] = useState<{ sites: string[]; choices: Choice[] }>({
     sites: [],
@@ -49,9 +63,7 @@ function useEditChoices(game: string, dir: string, current: string[]) {
       UploadSites(game, dir)
         .then((list) => (list ?? []).map((s) => s.id))
         .catch(() => []),
-      TemplateForm(game)
-        .then((f) => (f.parameters ?? []).find((p) => p.id === 'categories')?.choices ?? [])
-        .catch(() => []),
+      categoryChoices(game),
     ])
       .then(([sites, choices]) => setRead({ sites, choices }))
       .catch(reportUnexpected)

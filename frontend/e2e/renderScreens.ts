@@ -2,6 +2,7 @@ import type { Page } from '@playwright/test'
 import { openSettings } from './app.ts'
 import type { Case } from './render-budget.ts'
 import type { Helpers } from './renderCases.ts'
+import { openGame, returnToMainGame } from './renderProfile.ts'
 import { VIEWPORT } from './renderViewport.ts'
 
 const SHORT_WINDOW = { width: 1280, height: 600 }
@@ -20,9 +21,33 @@ const SETTINGS_SECTIONS = [
   'About',
 ]
 
+const GAME_PAGES = ['Core Keeper', 'Dome Keeper', "Baldur's Gate 3", 'Mount & Blade II: Bannerlord']
+export const STAND_IN_GAMES = [
+  'core-keeper',
+  'dome-keeper',
+  'baldurs-gate-3',
+  'mount-and-blade-2-bannerlord',
+]
+
 /** Screens no interaction case reaches, so every one is measured, checked for layout breaks and pictured. */
 export function screenCases(h: Helpers): Case[] {
-  const { toWorkspace, tab } = h
+  const { toWorkspace, tab, tabs } = h
+  // A game with no profile yet, as the stand-in installs are, opens its setup; the run's own game comes back after,
+  // for the cases that follow.
+  const gamePage = (name: string): Case => ({
+    name: `game-page-${name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')}`,
+    // The switch redraws the old game's Home and mounts the new game's setup, which a three-step game draws most of.
+    budget: { updates: 1300 },
+    // From Home, so the open game's mod cards are not on screen to redraw for the switch.
+    setup: (p: Page) => tab(p, 'Home'),
+    run: (p: Page) => openGame(p, tabs(p).or(p.getByRole('heading', { name: /^Set up / })), name),
+    teardown: async (p: Page) => {
+      await returnToMainGame(p, tabs(p), async () => 0)
+    },
+  })
   // Browse has its own view buttons; the shared view() helper switches the Mods tab.
   const browseView = (p: Page, which: 'List view' | 'Grid view') =>
     p.getByRole('button', { name: which }).first().click()
@@ -98,6 +123,7 @@ export function screenCases(h: Helpers): Case[] {
       },
       teardown: (p) => p.setViewportSize(VIEWPORT),
     },
+    ...GAME_PAGES.map(gamePage),
     ...SETTINGS_SECTIONS.map(section),
   ]
 }

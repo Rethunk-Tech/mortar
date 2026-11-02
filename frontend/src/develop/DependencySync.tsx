@@ -23,7 +23,8 @@ export function DependencySync({
 }) {
   const { t } = useLingui()
   const { sync, reload } = useDependencySync(game, dir)
-  if (!sync || outOfStep(sync) === 0) {
+  const count = outOfStep(sync)
+  if (!sync || count === 0) {
     return null
   }
   const done = () => {
@@ -36,6 +37,7 @@ export function DependencySync({
   return (
     <FormSection
       title={t`Out of step`}
+      count={count}
       description={t`The project and its development profile disagree. Nothing changes until you click.`}
     >
       {missing.length > 0 ? (

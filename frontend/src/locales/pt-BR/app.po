@@ -7607,7 +7607,6 @@ msgstr ""
 msgid "Command palette"
 msgstr ""
 
-#: src/develop/uploadSites.ts
 #: src/shell/openPageReported.ts
 msgid "Could not open the page"
 msgstr ""

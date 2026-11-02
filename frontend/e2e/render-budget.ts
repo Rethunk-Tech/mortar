@@ -18,7 +18,7 @@ import { writeGallery } from './renderGallery.ts'
 import { printExtras, report, startupLine, watchLog } from './renderLog.ts'
 import { HOOK, mortarBoxes, mortarGaps, mortarMeter, quietToasts } from './renderMeter.ts'
 import { biggestProfile, rememberMainGame } from './renderProfile.ts'
-import { screenCases } from './renderScreens.ts'
+import { STAND_IN_GAMES, screenCases } from './renderScreens.ts'
 import { modsView } from './renderView.ts'
 import { PAGE } from './renderViewport.ts'
 import { keepServerLogs, sandboxPort, selftest } from './sandbox.ts'
@@ -461,6 +461,10 @@ async function main(): Promise<number> {
       const seeded = Boolean(process.env.MORTAR_RENDER_SEEDED)
       if (process.env.MORTAR_RENDER_DATA) {
         process.env.MORTAR_SELFTEST_DATA = process.env.MORTAR_RENDER_DATA
+      }
+      // The game pages of games the maintainer's machine lacks open from stand-in installs (renderScreens.ts).
+      for (const id of STAND_IN_GAMES) {
+        selftest(dir, 'fake-install', id)
       }
       selftest(dir, 'start', ...(seeded ? [] : ['--copy-data']))
       if (seeded) {

@@ -7607,7 +7607,6 @@ msgstr "Fix the mod name."
 msgid "Command palette"
 msgstr "Command palette"
 
-#: src/develop/uploadSites.ts
 #: src/shell/openPageReported.ts
 msgid "Could not open the page"
 msgstr "Could not open the page"

@@ -1187,6 +1187,10 @@ fake_game() {
   peak) echo "3527290|PEAK|PEAK.exe|5.4.75301" ;;
   riskofrain2) echo "632360|Risk of Rain 2|Risk of Rain 2.exe|5.4.2122" ;;
   cities-skylines-ii) echo "949230|Cities Skylines II|Cities2.exe|5.4.2305" ;;
+  core-keeper) echo "1621690|Core Keeper|CoreKeeper.exe|6" ;;
+  dome-keeper) echo "1637320|Dome Keeper|domekeeper.exe|" ;;
+  baldurs-gate-3) echo "1086940|Baldurs Gate 3|bg3.exe|" ;;
+  mount-and-blade-2-bannerlord) echo "261550|Mount & Blade II Bannerlord|Bannerlord.exe|" ;;
   *) return 1 ;;
   esac
 }

@@ -120,6 +120,12 @@ const sectionSx = {
   gap: 2,
   '& + &': { borderTop: '1px solid var(--mortar-hairline-muted)', pt: 3 },
   '& > header > h3': { m: 0, fontSize: 'lead.fontSize', fontWeight: 600 },
+  '& > header > h3 > .count': {
+    ml: 1,
+    fontSize: 'base.fontSize',
+    fontWeight: 400,
+    color: 'text.secondary',
+  },
   '& > header > p': { m: 0, mt: 0.25, fontSize: 'medium.fontSize', color: 'text.secondary' },
 } as const
 const SectionRoot = styled('section')({})
@@ -128,16 +134,22 @@ const SectionRoot = styled('section')({})
 export function FormSection({
   title,
   description,
+  count,
   children,
 }: {
   title: string
   description?: string
+  /** How many items the section holds, shown beside the title as Problems does. */
+  count?: number
   children: ReactNode
 }) {
   return (
     <SectionRoot sx={sectionSx}>
       <header>
-        <h3>{title}</h3>
+        <h3>
+          {title}
+          {count === undefined ? null : <span className="count">{count}</span>}
+        </h3>
         {description ? <p>{description}</p> : null}
       </header>
       {children}

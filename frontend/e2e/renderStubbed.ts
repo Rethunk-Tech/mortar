@@ -126,7 +126,7 @@ export function stubbedCases(kit: ReturnType<typeof dialogKit>): Case[] {
           '',
           async (p) => {
             await tabIn(p, 'Mods')
-            await p.getByText('Out of step', { exact: true }).waitFor()
+            await p.getByRole('heading', { name: /^Out of step/ }).waitFor()
           },
           undefined,
           async (p) => {
