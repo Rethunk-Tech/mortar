@@ -417,9 +417,11 @@ func (s *Service) settle(id string, err error) {
 		rec = &snap
 	}
 	s.mu.Unlock()
-	s.publish(true)
 	if rec != nil {
 		s.recordHistory(rec, StateFailed)
+	}
+	s.publish(true)
+	if rec != nil {
 		notifyDesktopDownload(rec.Name, rec.Game, rec.Profile, false)
 	}
 	if reopen {
@@ -765,13 +767,14 @@ func (s *Service) finish(id string, err error, unverified bool, change string) e
 			log.Printf("queue: remove %s replaced by %s: %v", rec.Replaces, rec.Name, rmErr)
 		}
 	}
+	// Before the state changes, so whoever sees Done finds the download in the history.
+	s.recordHistory(rec, StateDone)
 	s.mu.Lock()
 	if cur := s.find(id); cur != nil {
 		cur.State, cur.Progress, cur.key, cur.staged, cur.Unverified, cur.Change = StateDone, 100, "", "", unverified, change
 	}
 	s.mu.Unlock()
 	s.publish(true)
-	s.recordHistory(rec, StateDone)
 	notifyDesktopDownload(rec.Name, rec.Game, rec.Profile, true)
 	if rec.Everywhere != "" && s.d.Everywhere != nil {
 		if failed := s.d.Everywhere(rec.Game, rec.Everywhere); len(failed) > 0 {
