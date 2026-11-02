@@ -16,6 +16,7 @@ import { AppDialog, DialogFooter, ToneIcon } from '../shell/dialog/AppDialog.tsx
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
+import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
 import { space } from '../theme/density.ts'
 import { type InlineError, inlineError, reportUnexpected } from '../toasts/report.ts'
 import {
@@ -59,7 +60,7 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
   // New profile creates in the game the profiles store has open, so it is offered only when that is this game.
   const canCreate = useProfiles((s) => s.game?.id === game)
   const gameName = useProfiles((s) => (s.game?.id === game ? s.game.name : game))
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const { anchor, show, hide } = usePopoverAnchor()
   const [creating, setCreating] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<InlineError | null>(null)
@@ -121,7 +122,7 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
                 disabled={busy}
                 aria-haspopup="menu"
                 aria-expanded={anchor !== null}
-                onClick={(e) => setAnchor(e.currentTarget)}
+                onClick={show}
               >
                 {t`Other profile…`}
               </Button>
@@ -161,14 +162,14 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
           ) : null}
         </Box>
       </AppDialog>
-      <Menu anchorEl={anchor} open={anchor !== null} onClose={() => setAnchor(null)}>
+      <Menu anchorEl={anchor} open={anchor !== null} onClose={() => hide()}>
         {others.map((p) => (
           <MenuAction
             key={p.id}
             icon={<UserRound size={16} aria-hidden={true} />}
             label={p.name}
             onClick={() => {
-              setAnchor(null)
+              hide()
               pick(p.id)
             }}
           />

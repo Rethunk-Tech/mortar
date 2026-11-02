@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Link, Menu, Typography } from '@mui/material'
-import { ChevronDown, ExternalLink, LifeBuoy, Search, Terminal } from 'lucide-react'
+import { Box, Button, Link, Typography } from '@mui/material'
+import { ExternalLink, LifeBuoy, Search, Terminal } from 'lucide-react'
 import { useState } from 'react'
 import { Start as StartBisect } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/bisect/service.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
@@ -22,6 +22,8 @@ import { profileById, useProfileLoader, useProfiles } from '../profiles/store.ts
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
+import { MenuButton } from '../shell/MenuButton.tsx'
+import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
 import { space } from '../theme/density.ts'
 import { errorDetails } from '../toasts/errorKind.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
@@ -97,21 +99,13 @@ function MoreActions({
   onDone: () => void
 }) {
   const { t } = useLingui()
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const menu = usePopoverAnchor()
   const profileLoader = useProfileLoader(crash.profile)
   const shares = profileLoader?.share === true || Boolean(profileLoader?.paste)
-  const close = () => setAnchor(null)
+  const close = menu.hide
   return (
     <>
-      <Button
-        endIcon={<ChevronDown size={16} />}
-        aria-haspopup="menu"
-        aria-expanded={anchor !== null}
-        onClick={(e) => setAnchor(e.currentTarget)}
-      >
-        {t`More`}
-      </Button>
-      <Menu anchorEl={anchor} open={anchor !== null} onClose={close}>
+      <MenuButton menu={menu} label={t`More`} variant="text">
         {nexusID > 0 ? (
           <MenuAction
             icon={<ExternalLink size={16} />}
@@ -145,7 +139,7 @@ function MoreActions({
             }}
           />
         ) : null}
-      </Menu>
+      </MenuButton>
     </>
   )
 }

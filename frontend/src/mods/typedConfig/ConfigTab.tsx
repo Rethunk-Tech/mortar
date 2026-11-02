@@ -16,6 +16,7 @@ import { EmptyState } from '../../shell/EmptyState.tsx'
 import { LoadErrorRow, LoadingRow } from '../../shell/LoadingRow.tsx'
 import { MenuCheck } from '../../shell/MenuAction.tsx'
 import { MenuButton } from '../../shell/MenuButton.tsx'
+import { usePopoverAnchor } from '../../shell/usePopoverAnchor.ts'
 import { space } from '../../theme/density.ts'
 import { type InlineError, inlineError } from '../../toasts/report.ts'
 import { LetterTile } from '../LetterTile.tsx'
@@ -103,7 +104,7 @@ const ShowMenu = memo(function ShowMenuView({
   onChange: (show: ConfigShow) => void
 }) {
   const { t } = useLingui()
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const menu = usePopoverAnchor()
   const labels: Record<ConfigShow, string> = {
     all: t`All`,
     changed: t`Changed`,
@@ -112,8 +113,7 @@ const ShowMenu = memo(function ShowMenuView({
   }
   return (
     <MenuButton
-      anchor={anchor}
-      setAnchor={setAnchor}
+      menu={menu}
       icon={<Filter size={14} />}
       label={show === 'all' ? t`Show` : labels[show]}
       color={show === 'all' ? 'inherit' : 'primary'}
@@ -126,7 +126,7 @@ const ShowMenu = memo(function ShowMenuView({
           label={labels[item]}
           onClick={() => {
             onChange(item)
-            setAnchor(null)
+            menu.hide()
           }}
         />
       ))}

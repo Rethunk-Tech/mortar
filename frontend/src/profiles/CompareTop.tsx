@@ -1,12 +1,13 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, IconButton, Menu, Typography } from '@mui/material'
-import { ChevronDown, Search, Users } from 'lucide-react'
-import { useState } from 'react'
+import { Box, IconButton, Typography } from '@mui/material'
+import { Search, Users } from 'lucide-react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { hasModList } from '../game/modList.ts'
 import { modsLabel } from '../i18n/counts.ts'
 import { MenuAction, MenuCheck } from '../shell/MenuAction.tsx'
+import { MenuButton } from '../shell/MenuButton.tsx'
 import { MenuHeading } from '../shell/TitleMenu.tsx'
+import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
 import { space } from '../theme/density.ts'
 import { userModCount } from './count.ts'
 import { ProfileDot } from './ProfileDot.tsx'
@@ -31,26 +32,21 @@ function OtherPicker({
 }) {
   const { t } = useLingui()
   const listed = useProfiles((s) => s.profiles)
-  const [menu, setMenu] = useState<HTMLElement | null>(null)
+  const menu = usePopoverAnchor()
   const others = listed.filter((p) => p.id !== profileA.id)
   const choose = (action: () => void) => () => {
-    setMenu(null)
+    menu.hide()
     action()
   }
   return (
     <>
-      <Button
+      <MenuButton
+        menu={menu}
+        label={profileB?.name ?? t`Choose…`}
         color="inherit"
-        variant="outlined"
         disabled={disabled}
-        aria-haspopup="menu"
-        onClick={(e) => setMenu(e.currentTarget)}
-        endIcon={<ChevronDown size={14} />}
         sx={{ height: space.control, whiteSpace: 'nowrap' }}
       >
-        {profileB?.name ?? t`Choose…`}
-      </Button>
-      <Menu anchorEl={menu} open={menu !== null} onClose={() => setMenu(null)}>
         {others.length > 0 ? <MenuHeading>{t`Your profiles`}</MenuHeading> : null}
         {others.map((p) => (
           <MenuCheck
@@ -75,7 +71,7 @@ function OtherPicker({
             onClick={choose(onHost)}
           />
         ) : null}
-      </Menu>
+      </MenuButton>
     </>
   )
 }

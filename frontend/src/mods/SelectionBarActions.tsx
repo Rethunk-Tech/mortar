@@ -18,11 +18,12 @@ import {
   Workflow,
   X,
 } from 'lucide-react'
-import { type ReactNode, useMemo, useState } from 'react'
+import { type ReactNode, useMemo } from 'react'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { IconAction } from '../shell/IconAction.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
+import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { partKey, supportParts } from './installReason.ts'
@@ -94,13 +95,13 @@ export function SelectionBarActions({
   clear: () => void
 }) {
   const { t } = useLingui()
-  const [menu, setMenu] = useState<HTMLElement | null>(null)
+  const { anchor: menu, show: showMenu, hide: hideMenu } = usePopoverAnchor()
   const pinned = selected.every(
     (mod) => profile?.entries?.find((entry) => entry.key === mod.key)?.pinned,
   )
   const { markable, implicit } = useMarkable(selected)
   const pick = (run: () => void) => () => {
-    setMenu(null)
+    hideMenu()
     run()
   }
   const more: { label: string; icon: ReactNode; run: () => void; edits: boolean }[] = [
@@ -209,10 +210,10 @@ export function SelectionBarActions({
         menu={true}
         aria-haspopup="menu"
         aria-expanded={menu !== null}
-        onClick={(e) => setMenu(e.currentTarget)}
+        onClick={showMenu}
       />
       <IconAction label={t`Clear selection`} icon={<X size={18} />} onClick={clear} />
-      <Menu anchorEl={menu} open={menu !== null} onClose={() => setMenu(null)}>
+      <Menu anchorEl={menu} open={menu !== null} onClose={() => hideMenu()}>
         {more.map((m) => (
           <MenuAction
             key={m.label}

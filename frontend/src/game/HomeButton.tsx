@@ -1,7 +1,8 @@
 import { Button, type ButtonProps, Menu } from '@mui/material'
 import { ChevronDown } from 'lucide-react'
-import { type ReactNode, useState } from 'react'
+import { type ReactNode } from 'react'
 import { Tooltip } from '../shell/Tooltip.tsx'
+import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
 import { space } from '../theme/density.ts'
 import { iconWhenCompact } from './compact.ts'
 
@@ -47,8 +48,8 @@ export function HomeMenuButton({
   menu: (close: () => void) => ReactNode
   onOpen?: () => void
 }) {
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
-  const close = () => setAnchor(null)
+  const { anchor, show, hide } = usePopoverAnchor()
+  const close = () => hide()
   return (
     <>
       <HomeButton
@@ -57,7 +58,7 @@ export function HomeMenuButton({
         aria-haspopup="menu"
         aria-expanded={anchor !== null}
         onClick={(e) => {
-          setAnchor(e.currentTarget)
+          show(e)
           onOpen?.()
         }}
       >

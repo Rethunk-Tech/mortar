@@ -44,6 +44,7 @@ import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { MenuAction, MenuCheck } from '../shell/MenuAction.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { MenuRule } from '../shell/TitleMenu.tsx'
+import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
 import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -244,7 +245,7 @@ function MoreMenu({
   onEdit: () => void
 }) {
   const { t } = useLingui()
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const { anchor, show, hide } = usePopoverAnchor()
   const [forgetting, setForgetting] = useState(false)
   const [trashFolder, setTrashFolder] = useState(false)
   const info = useProjectInfo((s) => s.byDir[project.dir])
@@ -262,15 +263,15 @@ function MoreMenu({
       )
       .catch(reportError(t`Could not start the game`))
   const act = (fn: () => unknown) => () => {
-    setAnchor(null)
+    hide()
     fn()
   }
   return (
     <>
-      <IconButton aria-label={t`More actions`} onClick={(e) => setAnchor(e.currentTarget)}>
+      <IconButton aria-label={t`More actions`} onClick={show}>
         <EllipsisVertical size={18} />
       </IconButton>
-      <Menu anchorEl={anchor} open={anchor !== null} onClose={() => setAnchor(null)}>
+      <Menu anchorEl={anchor} open={anchor !== null} onClose={() => hide()}>
         {code ? (
           <MenuCheck
             checked={Boolean(project.watch)}

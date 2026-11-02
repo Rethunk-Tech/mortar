@@ -1,41 +1,50 @@
-import { Button, type ButtonProps, Menu } from '@mui/material'
+import { Button, type ButtonProps, Menu, type SxProps, type Theme } from '@mui/material'
 import { ChevronDown } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Tooltip } from './Tooltip.tsx'
+import type { usePopoverAnchor } from './usePopoverAnchor.ts'
 
 /** An outlined button that drops a menu down from itself. The caller holds the anchor so its items can close it. */
 export function MenuButton({
-  anchor,
-  setAnchor,
+  menu: { anchor, show, hide },
   icon,
   label,
   ariaLabel,
   tooltip,
   color,
+  variant = 'outlined',
+  size,
+  disabled,
+  paperSx,
   sx,
   children,
 }: {
-  anchor: HTMLElement | null
-  setAnchor: (anchor: HTMLElement | null) => void
-  icon: ReactNode
+  menu: ReturnType<typeof usePopoverAnchor>
+  icon?: ReactNode
   label: ReactNode
   ariaLabel?: string
   tooltip?: string
   color?: ButtonProps['color']
+  variant?: ButtonProps['variant']
+  size?: ButtonProps['size']
+  disabled?: boolean
+  paperSx?: SxProps<Theme>
   sx?: ButtonProps['sx']
   children: ReactNode
 }) {
   const button = (
     <Button
-      variant="outlined"
+      variant={variant}
+      {...(size === undefined ? {} : { size })}
+      {...(disabled === undefined ? {} : { disabled })}
       {...(color === undefined ? {} : { color })}
       {...(ariaLabel === undefined ? {} : { 'aria-label': ariaLabel })}
       {...(sx === undefined ? {} : { sx })}
-      startIcon={icon}
+      {...(icon === undefined ? {} : { startIcon: icon })}
       endIcon={<ChevronDown size={14} aria-hidden={true} />}
       aria-haspopup="menu"
       aria-expanded={anchor !== null}
-      onClick={(e) => setAnchor(e.currentTarget)}
+      onClick={show}
     >
       {label}
     </Button>
@@ -43,7 +52,12 @@ export function MenuButton({
   return (
     <>
       {tooltip === undefined ? button : <Tooltip title={tooltip}>{button}</Tooltip>}
-      <Menu open={anchor !== null} anchorEl={anchor} onClose={() => setAnchor(null)}>
+      <Menu
+        open={anchor !== null}
+        anchorEl={anchor}
+        onClose={hide}
+        {...(paperSx === undefined ? {} : { slotProps: { paper: { sx: paperSx } } })}
+      >
         {children}
       </Menu>
     </>

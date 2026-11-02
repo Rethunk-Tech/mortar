@@ -37,6 +37,7 @@ import { MenuAction, MenuCheck } from '../shell/MenuAction.tsx'
 import { MenuButton } from '../shell/MenuButton.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { MenuHeading, MenuRule } from '../shell/TitleMenu.tsx'
+import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
 import { ViewToggle } from '../shell/ViewToggle.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -148,15 +149,15 @@ const ShowFilterControl = memo(function ShowFilterMenu({
   onTags: (tags: string[]) => void
 }) {
   const { t, i18n } = useLingui()
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const menu = usePopoverAnchor()
   const active = FILTERS.find((item) => item.id === filter)
   const tagged = selectedTags.length > 0
   const showLabel = active ? t`Show: ${{ filter: active.label(i18n) }}` : t`Show`
   const choose = (next: ModFilter) => {
     onFilter(next)
-    setAnchor(null)
+    menu.hide()
   }
-  const items = useKeptWhileClosed(anchor !== null, [
+  const items = useKeptWhileClosed(menu.anchor !== null, [
     ...[
       { id: 'all' as const, label: t`All mods` },
       ...FILTERS.map((item) => ({ id: item.id, label: item.label(i18n) })),
@@ -180,8 +181,7 @@ const ShowFilterControl = memo(function ShowFilterMenu({
   ])
   return (
     <MenuButton
-      anchor={anchor}
-      setAnchor={setAnchor}
+      menu={menu}
       icon={<Filter size={14} />}
       label={<span className="label">{active ? active.label(i18n) : t`Show`}</span>}
       ariaLabel={showLabel}
@@ -200,14 +200,13 @@ export const GroupByControl = memo(function GroupByMenu() {
   const loader = useProfileLoader()
   const frameworks = loader?.frameworks ?? false
   const downloads = loader?.id === FOLDER_LOADER
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const menu = usePopoverAnchor()
   const [editorOpen, setEditorOpen] = useState(false)
   const tagHint = t`A mod with several tags appears under its first tag.`
   return (
     <>
       <MenuButton
-        anchor={anchor}
-        setAnchor={setAnchor}
+        menu={menu}
         icon={<FolderTree size={14} />}
         label={<span className="label">{t`Group by`}</span>}
         ariaLabel={t`Group by`}
@@ -238,7 +237,7 @@ export const GroupByControl = memo(function GroupByMenu() {
             hint={item.hint}
             onClick={() => {
               persistGroupBy(item.id)
-              setAnchor(null)
+              menu.hide()
             }}
           />
         ))}
@@ -247,7 +246,7 @@ export const GroupByControl = memo(function GroupByMenu() {
           icon={<Settings2 size={16} aria-hidden={true} />}
           label={t`Edit categories…`}
           onClick={() => {
-            setAnchor(null)
+            menu.hide()
             setEditorOpen(true)
           }}
         />

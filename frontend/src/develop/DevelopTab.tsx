@@ -39,6 +39,7 @@ import { ControlsRow } from '../shell/ControlsRow.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
+import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
 import { ViewToggle } from '../shell/ViewToggle.tsx'
 import { isViewMode, type ViewMode } from '../shell/viewMode.ts'
 import { space } from '../theme/density.ts'
@@ -128,7 +129,7 @@ const MAX_TEST_COPIES = 4
 // remembered for the profile.
 function TestCopies({ game, profile, dirs }: { game: string; profile: string; dirs: string[] }) {
   const { t } = useLingui()
-  const [menu, setMenu] = useState<HTMLElement | null>(null)
+  const { anchor: menu, show: showMenu, hide: hideMenu } = usePopoverAnchor()
   const saved = useProfiles((s) => s.profiles.find((p) => p.id === profile)?.testCopies ?? 0)
   const clientOnly = useProjectInfo((s) => dirs.every((d) => s.byDir[d]?.clientOnly === true))
   const count = saved || (clientOnly ? 1 : 2)
@@ -150,13 +151,13 @@ function TestCopies({ game, profile, dirs }: { game: string; profile: string; di
           aria-label={t`How many copies to test with`}
           aria-haspopup="menu"
           aria-expanded={menu !== null}
-          onClick={(e) => setMenu(e.currentTarget)}
+          onClick={showMenu}
           sx={{ minWidth: 30, px: 0.5 }}
         >
           <ChevronDown size={14} aria-hidden={true} />
         </Button>
       </ButtonGroup>
-      <Menu open={menu !== null} anchorEl={menu} onClose={() => setMenu(null)}>
+      <Menu open={menu !== null} anchorEl={menu} onClose={() => hideMenu()}>
         {Array.from({ length: MAX_TEST_COPIES }, (_, i) => i + 1).map((n) => (
           <MenuAction
             key={n}
@@ -169,7 +170,7 @@ function TestCopies({ game, profile, dirs }: { game: string; profile: string; di
             }
             label={plural(n, { one: 'Test with # copy', other: 'Test with # copies' })}
             onClick={() => {
-              setMenu(null)
+              hideMenu()
               useProfiles
                 .getState()
                 .setTestCopies(profile, n)
@@ -317,7 +318,7 @@ export function DevelopTab({ game }: { game: string }) {
   const [creating, setCreating] = useState(false)
   const [cloning, setCloning] = useState(false)
   const [reading, setReading] = useState(false)
-  const [addMenu, setAddMenu] = useState<HTMLElement | null>(null)
+  const { anchor: addMenu, show: showAddMenu, hide: hideAddMenu } = usePopoverAnchor()
   const addFolder = useAddFolder(game, openId)
   const [query, setQuery] = useState('')
   const [view, setView] = useStoredState<ViewMode>(`mortar.developView.${game}`, 'list', isViewMode)
@@ -374,18 +375,18 @@ export function DevelopTab({ game }: { game: string }) {
             aria-label={t`More ways to add a mod project`}
             aria-haspopup="menu"
             aria-expanded={addMenu !== null}
-            onClick={(e) => setAddMenu(e.currentTarget)}
+            onClick={showAddMenu}
             sx={{ minWidth: 30, px: 0.5 }}
           >
             <ChevronDown size={14} aria-hidden={true} />
           </Button>
         </ButtonGroup>
-        <Menu open={addMenu !== null} anchorEl={addMenu} onClose={() => setAddMenu(null)}>
+        <Menu open={addMenu !== null} anchorEl={addMenu} onClose={() => hideAddMenu()}>
           <MenuAction
             icon={<FolderPlus size={16} aria-hidden={true} />}
             label={t`Add a project folder…`}
             onClick={() => {
-              setAddMenu(null)
+              hideAddMenu()
               addFolder()
             }}
           />
@@ -393,7 +394,7 @@ export function DevelopTab({ game }: { game: string }) {
             icon={<GitBranch size={16} aria-hidden={true} />}
             label={t`Clone from ${{ source: sourceLabel('github') }}…`}
             onClick={() => {
-              setAddMenu(null)
+              hideAddMenu()
               setCloning(true)
             }}
           />

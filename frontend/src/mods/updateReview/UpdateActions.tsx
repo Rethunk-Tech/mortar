@@ -26,6 +26,7 @@ import { MenuAction } from '../../shell/MenuAction.tsx'
 import { OfflineGate } from '../../shell/OfflineGate.tsx'
 import { updateSources, useOfflineReason } from '../../shell/offlineText.ts'
 import { StableLabel } from '../../shell/StableLabel.tsx'
+import { usePopoverAnchor } from '../../shell/usePopoverAnchor.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { installableUpdate } from '../lookup.ts'
 import { ICON_SIZE, openPage } from '../menu.ts'
@@ -55,7 +56,7 @@ export function UpdateActions({
   const setPinned = useMods((s) => s.setPinned)
   const setSkipVersion = useMods((s) => s.setSkipVersion)
   const setSkipSource = useMods((s) => s.setSkipSource)
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const { anchor, show, hide } = usePopoverAnchor()
   const [everywhere, setEverywhere] = useState(false)
   const [confirmSwitch, setConfirmSwitch] = useState(false)
   // A preview that cannot be read leaves the action without its count.
@@ -81,7 +82,7 @@ export function UpdateActions({
   }
   const missingWhy = t`This mod is not in the profile.`
   const act = (fn: () => Promise<unknown>) => () => {
-    setAnchor(null)
+    hide()
     fn().catch(reportUnexpected)
   }
   const install = () => {
@@ -109,18 +110,18 @@ export function UpdateActions({
         aria-label={t`More actions for ${{ name: update.name }}`}
         aria-haspopup="menu"
         aria-expanded={anchor !== null}
-        onClick={(e) => setAnchor(e.currentTarget)}
+        onClick={show}
         sx={{ borderRadius: '6px', bgcolor: anchor ? 'var(--mortar-hairline)' : 'transparent' }}
       >
         <MoreHorizontal size={18} />
       </IconButton>
-      <Menu open={anchor !== null} anchorEl={anchor} onClose={() => setAnchor(null)}>
+      <Menu open={anchor !== null} anchorEl={anchor} onClose={() => hide()}>
         {update.url ? (
           <MenuAction
             icon={<ExternalLink size={ICON_SIZE} />}
             label={t`Open page`}
             onClick={() => {
-              setAnchor(null)
+              hide()
               openPage(update.url)
             }}
           />
@@ -132,7 +133,7 @@ export function UpdateActions({
               label={t`Update in all profiles (${{ count: n }})`}
               disabled={everywhereBlocked || blocked}
               onClick={() => {
-                setAnchor(null)
+                hide()
                 setEverywhere(true)
               }}
             />

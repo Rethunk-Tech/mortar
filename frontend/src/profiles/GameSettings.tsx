@@ -17,6 +17,7 @@ import { type MouseEvent, type ReactNode, useCallback, useId, useState } from 'r
 import { GameSettings as FetchGameSettings } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { cmpText } from '../mods/cmpText.ts'
 import { MenuAction, MenuNote } from '../shell/MenuAction.tsx'
+import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { formSettingsFromBackend } from './formSettingsFromBackend.ts'
 import { ProfileDot } from './ProfileDot.tsx'
@@ -46,7 +47,7 @@ interface CopyFromProfileProps {
 function CopyFromProfileMenu({ gameId, profileId, onCopy }: CopyFromProfileProps) {
   const { t } = useLingui()
   const profiles = useProfiles((s) => s.profiles)
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const { anchor, show, hide } = usePopoverAnchor()
   const [sources, setSources] = useState<CopySource[]>([])
   const [loading, setLoading] = useState(false)
 
@@ -76,12 +77,12 @@ function CopyFromProfileMenu({ gameId, profileId, onCopy }: CopyFromProfileProps
   }, [gameId, profileId, profiles])
 
   const openMenu = (event: MouseEvent<HTMLButtonElement>) => {
-    setAnchor(event.currentTarget)
+    show(event)
     loadSources().catch(reportUnexpected)
   }
 
   const closeMenu = () => {
-    setAnchor(null)
+    hide()
   }
 
   const pickSource = (sourceId: string) => {

@@ -8,6 +8,7 @@ import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { PromptDialog } from '../shell/PromptDialog.tsx'
+import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { AddToGroupMenuItem } from './AddToGroupDialog.tsx'
 import { LockedReason } from './LockedReason.tsx'
@@ -22,11 +23,11 @@ const MAX_NAME = 60
 export function GroupMenu({ name }: { name: string }) {
   const { t } = useLingui()
   const locked = useLocked()
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const { anchor, show, hide } = usePopoverAnchor()
   const [renaming, setRenaming] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [saving, setSaving] = useState(false)
-  const close = () => setAnchor(null)
+  const close = () => hide()
   const item = (label: string, icon: ReactNode, run: () => void, tone?: 'error') => (
     <MenuAction
       disabled={locked}
@@ -45,7 +46,7 @@ export function GroupMenu({ name }: { name: string }) {
         label={t`Group actions`}
         icon={<MoreHorizontal size={ICON_SIZE} />}
         menu={true}
-        onClick={(e) => setAnchor(e.currentTarget)}
+        onClick={show}
       />
       <Menu open={anchor !== null} anchorEl={anchor} onClose={close}>
         <LockedReason locked={locked}>

@@ -22,6 +22,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
+import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -132,7 +133,7 @@ export function SaveBackupsButton({
   onChanged: () => Promise<void>
 }) {
   const { t, i18n } = useLingui()
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const { anchor, show, hide } = usePopoverAnchor()
   const [ask, setAsk] = useState<Ask | null>(null)
   const [pending, run] = usePending()
   const busyGame = useGameBusy()
@@ -169,14 +170,14 @@ export function SaveBackupsButton({
         label={tip}
         aria-haspopup="dialog"
         aria-expanded={anchor !== null}
-        onClick={(e) => setAnchor(e.currentTarget)}
+        onClick={show}
       >
         <History size={16} />
       </TipIconButton>
       <Popover
         open={anchor !== null}
         anchorEl={anchor}
-        onClose={() => setAnchor(null)}
+        onClose={() => hide()}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
         slotProps={{ paper: { role: 'dialog', 'aria-label': t`Backups of ${{ name: label }}` } }}

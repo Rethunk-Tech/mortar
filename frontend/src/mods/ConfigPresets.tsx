@@ -14,6 +14,7 @@ import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { PromptDialog } from '../shell/PromptDialog.tsx'
 import { MenuRule } from '../shell/TitleMenu.tsx'
+import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { LockedReason } from './LockedReason.tsx'
 import { ICON_SIZE } from './menu.ts'
@@ -62,7 +63,7 @@ function PresetItems({
 function PresetsButton({ mod }: { mod: Mod }) {
   const { t } = useLingui()
   const locked = useLocked()
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const { anchor, show, hide } = usePopoverAnchor()
   const [names, setNames] = useState<string[]>([])
   const [saveOpen, setSaveOpen] = useState(false)
   const [pendingDelete, setPendingDelete] = useState<string | null>(null)
@@ -83,7 +84,7 @@ function PresetsButton({ mod }: { mod: Mod }) {
         setSaveOpen(false)
         setPendingDelete(null)
         setReplacing(null)
-        setAnchor(null)
+        hide()
       })
       .catch(reportUnexpected)
   }
@@ -106,19 +107,19 @@ function PresetsButton({ mod }: { mod: Mod }) {
         aria-haspopup="menu"
         aria-expanded={anchor !== null}
         onClick={(e) => {
-          setAnchor(e.currentTarget)
+          show(e)
           load()
         }}
       >
         {t`Presets`}
       </Button>
-      <Menu anchorEl={anchor} open={anchor !== null} onClose={() => setAnchor(null)}>
+      <Menu anchorEl={anchor} open={anchor !== null} onClose={() => hide()}>
         <MenuAction
           icon={<Save size={ICON_SIZE} />}
           label={t`Save current as…`}
           onClick={() => {
             setSaveOpen(true)
-            setAnchor(null)
+            hide()
           }}
         />
         {names.length > 0 ? <MenuRule /> : null}
@@ -132,7 +133,7 @@ function PresetsButton({ mod }: { mod: Mod }) {
             }
           }}
           onAskDelete={(name) => {
-            setAnchor(null)
+            hide()
             setPendingDelete(name)
           }}
         />

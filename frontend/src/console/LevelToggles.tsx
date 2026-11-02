@@ -3,11 +3,12 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Menu, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { ChevronDown } from 'lucide-react'
-import { memo, useMemo, useState } from 'react'
+import { memo, useMemo } from 'react'
 import { Level } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import { formatCount } from '../mods/nexusFormat.ts'
 import { MenuCheck } from '../shell/MenuAction.tsx'
 import { pillButtonSx, pillGroupSx } from '../shell/pillToggle.ts'
+import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
 import { space } from '../theme/density.ts'
 import { countByLevel, LEVELS } from './filter.ts'
 import { levelSwatch } from './levelPalette.ts'
@@ -33,7 +34,7 @@ const Pills = memo(function PillsView({ counts: joined }: { counts: string }) {
     const n = joined.split(',').map(Number)
     return new Map<Level, number>(LEVELS.map((level, i) => [level, n[i] ?? 0]))
   }, [joined])
-  const [more, setMore] = useState<HTMLElement | null>(null)
+  const { anchor: more, show: showMore, hide: hideMore } = usePopoverAnchor()
   const names = useLevelNames()
   const everyday = LEVELS.filter((level) => !QUIET_LEVELS.includes(level))
   return (
@@ -85,7 +86,7 @@ const Pills = memo(function PillsView({ counts: joined }: { counts: string }) {
         aria-label={t`More levels`}
         aria-haspopup="menu"
         aria-expanded={more !== null}
-        onClick={(e) => setMore(e.currentTarget)}
+        onClick={showMore}
         sx={{
           height: 28,
           px: 0.75,
@@ -98,7 +99,7 @@ const Pills = memo(function PillsView({ counts: joined }: { counts: string }) {
       >
         <ChevronDown size={14} />
       </ButtonBase>
-      <Menu anchorEl={more} open={more !== null} onClose={() => setMore(null)}>
+      <Menu anchorEl={more} open={more !== null} onClose={() => hideMore()}>
         {QUIET_LEVELS.map((level) => (
           <MenuCheck
             key={level}

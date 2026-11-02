@@ -1,14 +1,15 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Menu } from '@mui/material'
+import { Box } from '@mui/material'
 import { useLoaded } from '@rethunk/react-load-hooks'
-import { ChevronDown, History } from 'lucide-react'
-import { useState } from 'react'
+import { History } from 'lucide-react'
 import type { Run } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { MenuCheck, MenuNote } from '../shell/MenuAction.tsx'
+import { MenuButton } from '../shell/MenuButton.tsx'
+import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
 import { space } from '../theme/density.ts'
 import { listRuns } from './listRuns.ts'
 import { useOutcomeLabel } from './outcome.ts'
@@ -21,7 +22,7 @@ export function RunsPicker({ game }: { game: string }) {
   const viewingRun = useConsole((s) => s.viewingRun)
   const viewRun = useConsole((s) => s.viewRun)
   const crashId = useLaunch((s) => s.crash?.runId ?? '')
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const menu = usePopoverAnchor()
   const { data: runs } = useLoaded<Run[]>(
     profile ? () => listRuns(game, profile) : null,
     [game, profile, crashId],
@@ -40,28 +41,18 @@ export function RunsPicker({ game }: { game: string }) {
   }
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-      <Button
-        variant="outlined"
+      <MenuButton
+        menu={menu}
+        icon={<History size={14} />}
+        label={button}
+        ariaLabel={t`Runs: ${button}`}
         color="inherit"
-        startIcon={<History size={14} />}
-        endIcon={<ChevronDown size={12} />}
-        aria-label={t`Runs: ${button}`}
-        aria-haspopup="menu"
-        aria-expanded={anchor !== null}
-        onClick={(e) => setAnchor(e.currentTarget)}
+        paperSx={{ maxHeight: 360, minWidth: 280 }}
         sx={{
           height: space.control,
           borderColor: 'var(--mortar-hairline-20)',
           color: 'var(--mortar-ink)',
         }}
-      >
-        {button}
-      </Button>
-      <Menu
-        open={anchor !== null}
-        anchorEl={anchor}
-        onClose={() => setAnchor(null)}
-        slotProps={{ paper: { sx: { maxHeight: 360, minWidth: 280 } } }}
       >
         <MenuCheck
           radio={true}
@@ -69,7 +60,7 @@ export function RunsPicker({ game }: { game: string }) {
           label={t`This session`}
           onClick={() => {
             viewRun(game, profile, '')
-            setAnchor(null)
+            menu.hide()
           }}
         />
         {runs.length === 0 ? <MenuNote>{t`No recorded runs yet`}</MenuNote> : null}
@@ -94,11 +85,11 @@ export function RunsPicker({ game }: { game: string }) {
             }
             onClick={() => {
               viewRun(game, profile, r.id)
-              setAnchor(null)
+              menu.hide()
             }}
           />
         ))}
-      </Menu>
+      </MenuButton>
     </Box>
   )
 }

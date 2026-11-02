@@ -10,6 +10,7 @@ import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { MenuHeading, MenuRule } from '../shell/TitleMenu.tsx'
+import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
 
 // The chevron of the Add split button: archives from the downloads folder, and whole sets of mods (a template, a saved
 // group). The archive pick is the button beside it, so the menu does not repeat it.
@@ -25,12 +26,12 @@ export function AddMenu({
 } & Pick<ButtonGroupProps, 'variant' | 'size'>) {
   const { t } = useLingui()
   const game = useProfiles((s) => s.game?.id ?? '')
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const { anchor, show, hide } = usePopoverAnchor()
   // The id and name, not the profile, so a save of the open profile does not re-render the Add button.
   const profileId = useProfiles((s) => openProfileOf(s)?.id ?? '')
   const profileName = useProfiles((s) => openProfileOf(s)?.name ?? '')
   const [savedGroupOpen, setSavedGroupOpen] = useState(false)
-  const close = () => setAnchor(null)
+  const close = () => hide()
   return (
     <>
       <ButtonGroup {...group}>
@@ -41,7 +42,7 @@ export function AddMenu({
             aria-label={t`More ways to add mods`}
             aria-haspopup="menu"
             aria-expanded={anchor !== null}
-            onClick={(e) => setAnchor(e.currentTarget)}
+            onClick={show}
             sx={{ minWidth: 30, px: 0.5 }}
           >
             <ChevronDown size={14} aria-hidden={true} />
@@ -54,7 +55,7 @@ export function AddMenu({
           icon={<Download size={16} aria-hidden={true} />}
           label={t`The downloads folder…`}
           onClick={() => {
-            setAnchor(null)
+            hide()
             openDownloadsDialog()
           }}
         />

@@ -1,12 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Checkbox, FormControlLabel, Popover, Typography } from '@mui/material'
 import { Filter } from 'lucide-react'
-import { useState } from 'react'
 import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { PrefSegmented } from '../settings/PrefControls.tsx'
 import { saveSetting } from '../settings/persist.ts'
 import { useSettings } from '../settings/store.ts'
 import { Tooltip } from '../shell/Tooltip.tsx'
+import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
 import { space } from '../theme/density.ts'
 import { type BrowseModes, DEFAULT_MODES, type Mode, ROWS } from './browseModes.ts'
 import { CARD_STATS, type CardStat, formatCardStats, parseCardStats } from './stats.ts'
@@ -23,7 +23,7 @@ function BrowseShow({
   hasCompat: boolean
 }) {
   const { t } = useLingui()
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const { anchor, show, hide } = usePopoverAnchor()
   const active = ROWS.some((r) => modes[r] !== DEFAULT_MODES[r])
   const labels = {
     installed: t`Mods in this profile`,
@@ -59,13 +59,13 @@ function BrowseShow({
           startIcon={<Filter size={14} />}
           aria-haspopup="menu"
           aria-expanded={anchor !== null}
-          onClick={(e) => setAnchor(e.currentTarget)}
+          onClick={show}
         >
           {t`Show`}
         </Button>
       </Tooltip>
       {/* A panel of settings, not a list of actions, so a popover rather than a menu. */}
-      <Popover open={anchor !== null} anchorEl={anchor} onClose={() => setAnchor(null)}>
+      <Popover open={anchor !== null} anchorEl={anchor} onClose={() => hide()}>
         <Box
           sx={{
             display: 'flex',

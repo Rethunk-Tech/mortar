@@ -17,6 +17,7 @@ import { useBadges } from '../mods/badges.ts'
 import { openShare } from '../share/store.ts'
 import { MenuHeading } from '../shell/TitleMenu.tsx'
 import { Tooltip } from '../shell/Tooltip.tsx'
+import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
 import { space } from '../theme/density.ts'
 import { chosenModCount, userModCount } from './count.ts'
 import { HealthCheckBadge } from './HealthCheckBadge.tsx'
@@ -142,7 +143,7 @@ export const ProfileRow = memo(function ProfileRowView({
   const game = useProfiles((s) => s.game?.id ?? '')
   const rename = useProfiles((s) => s.rename)
   const [renaming, setRenaming] = useState(false)
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const { anchor, show, hide } = usePopoverAnchor()
   const more = useRef<HTMLButtonElement>(null)
   useRestoreFocus(renaming, more)
   const {
@@ -244,7 +245,7 @@ export const ProfileRow = memo(function ProfileRowView({
           aria-label={t`Actions for ${{ name: profile.name }}`}
           aria-haspopup="menu"
           aria-expanded={anchor !== null}
-          onClick={(e) => setAnchor(e.currentTarget)}
+          onClick={show}
           sx={{
             width: 40,
             height: 40,
@@ -258,7 +259,7 @@ export const ProfileRow = memo(function ProfileRowView({
       <RowMenu
         profile={profile}
         anchor={anchor}
-        onClose={() => setAnchor(null)}
+        onClose={() => hide()}
         onRename={() => setRenaming(true)}
         returnFocus={() => more.current?.focus()}
       />

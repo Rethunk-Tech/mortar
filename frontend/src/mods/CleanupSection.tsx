@@ -7,6 +7,7 @@ import { useReasonText } from '../i18n/reasonText.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
+import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { LockedReason } from './LockedReason.tsx'
@@ -35,7 +36,7 @@ function RemoveOne({ choices }: { choices: { key: string; name: string }[] }) {
   const remove = useMods((s) => s.remove)
   const mods = useMods((s) => s.mods)
   const locked = useLocked()
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const { anchor, show, hide } = usePopoverAnchor()
   return (
     <>
       <LockedReason locked={locked}>
@@ -45,12 +46,12 @@ function RemoveOne({ choices }: { choices: { key: string; name: string }[] }) {
           endIcon={<ChevronDown size={14} />}
           aria-haspopup="menu"
           aria-expanded={anchor !== null}
-          onClick={(e) => setAnchor(e.currentTarget)}
+          onClick={show}
         >
           {t`Remove one…`}
         </Button>
       </LockedReason>
-      <Menu anchorEl={anchor} open={anchor !== null} onClose={() => setAnchor(null)}>
+      <Menu anchorEl={anchor} open={anchor !== null} onClose={() => hide()}>
         {choices.map((choice) => {
           const mod = mods.find((m) => m.key === choice.key)
           return (
@@ -61,7 +62,7 @@ function RemoveOne({ choices }: { choices: { key: string; name: string }[] }) {
               icon={<Trash2 size={16} />}
               label={t`Remove ${{ name: choice.name }}`}
               onClick={() => {
-                setAnchor(null)
+                hide()
                 if (mod !== undefined) {
                   remove(mod).catch(reportUnexpected)
                 }

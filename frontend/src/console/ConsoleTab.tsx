@@ -1,16 +1,8 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Alert, Box, Button, Chip, InputBase, Menu } from '@mui/material'
+import { Alert, Box, Button, Chip, InputBase } from '@mui/material'
 import { useLoaded } from '@rethunk/react-load-hooks'
-import {
-  ArrowDownToLine,
-  ChevronDown,
-  Clock,
-  Download,
-  FilterX,
-  SquareTerminal,
-  X,
-} from 'lucide-react'
+import { ArrowDownToLine, Clock, Download, FilterX, SquareTerminal, X } from 'lucide-react'
 import { memo, type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { State } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { RunCause } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
@@ -25,7 +17,9 @@ import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { MenuCheck, MenuNote } from '../shell/MenuAction.tsx'
+import { MenuButton } from '../shell/MenuButton.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
+import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
 import { space } from '../theme/density.ts'
 import { MONO, PAD_FOCUS } from '../theme/theme.ts'
 import { TipBanner } from '../tips/TipBanner.tsx'
@@ -47,30 +41,20 @@ function ModPicker() {
   const entries = useShownEntries()
   const picked = useConsole((s) => s.filters.mods)
   const setMods = useConsole((s) => s.setMods)
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const menu = usePopoverAnchor()
   const mods = useMemo(() => modsOf(entries), [entries])
   return (
     <>
-      <Button
-        variant="outlined"
+      <MenuButton
+        menu={menu}
+        label={t`Mods`}
         color="inherit"
-        endIcon={<ChevronDown size={12} />}
-        aria-haspopup="menu"
-        aria-expanded={anchor !== null}
-        onClick={(e) => setAnchor(e.currentTarget)}
+        paperSx={{ maxHeight: 360, minWidth: 220 }}
         sx={{
           height: space.control,
           borderColor: 'var(--mortar-hairline-20)',
           color: 'var(--mortar-ink)',
         }}
-      >
-        {t`Mods`}
-      </Button>
-      <Menu
-        open={anchor !== null}
-        anchorEl={anchor}
-        onClose={() => setAnchor(null)}
-        slotProps={{ paper: { sx: { maxHeight: 360, minWidth: 220 } } }}
       >
         {mods.length === 0 ? <MenuNote>{t`No mods have logged yet`}</MenuNote> : null}
         {mods.map((mod) => {
@@ -84,7 +68,7 @@ function ModPicker() {
             />
           )
         })}
-      </Menu>
+      </MenuButton>
     </>
   )
 }
