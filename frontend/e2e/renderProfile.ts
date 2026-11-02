@@ -2,12 +2,15 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { Locator, Page } from '@playwright/test'
 
-/**
- * The name of the profile with the most mods in the copied data, across every game, so the Mods cases have rows
- * whichever game the data reopens. '' when the data holds no profile.
- */
-export function biggestProfile(dataDir: string): string {
-  let best = { name: '', mods: -1 }
+interface ProfileFacts {
+  game: string
+  name: string
+  mods: number
+}
+
+/** Every readable profile in the copied data, with its game's id and how many mods it holds. */
+function dataProfiles(dataDir: string): ProfileFacts[] {
+  const found: ProfileFacts[] = []
   for (const game of readDirSafe(join(dataDir, 'profiles'))) {
     for (const id of readDirSafe(join(dataDir, 'profiles', game))) {
       try {
@@ -18,15 +21,38 @@ export function biggestProfile(dataDir: string): string {
           entries?: { mods?: unknown[] }[]
         }
         const mods = (p.entries ?? []).reduce((n, e) => n + (e.mods?.length ?? 0), 0)
-        if (p.name && mods > best.mods) {
-          best = { name: p.name, mods }
+        if (p.name) {
+          found.push({ game, name: p.name, mods })
         }
       } catch {
         // A folder without a readable profile.json is no profile.
       }
     }
   }
-  return best.name
+  return found
+}
+
+const mostMods = (all: ProfileFacts[]) =>
+  all.reduce<ProfileFacts | undefined>(
+    (best, p) => (!best || p.mods > best.mods ? p : best),
+    undefined,
+  )
+
+/**
+ * The name of the profile with the most mods in the copied data, across every game, so the Mods cases have rows
+ * whichever game the data reopens. '' when the data holds no profile.
+ */
+export function biggestProfile(dataDir: string): string {
+  return mostMods(dataProfiles(dataDir))?.name ?? ''
+}
+
+/** The ids of the games with a profile in the copied data other than the one the run measures, in id order. */
+export function otherGameIds(dataDir: string): string[] {
+  const all = dataProfiles(dataDir)
+  const main = mostMods(all)?.game
+  return [...new Set(all.map((p) => p.game))]
+    .filter((g) => g !== main)
+    .sort((a, b) => a.localeCompare(b))
 }
 
 function readDirSafe(dir: string): string[] {
@@ -101,10 +127,7 @@ export function thunderstoreVisit(
       await page.share(p)
       // The menu mounts after the click, and a close that looks too early finds nothing to close.
       await p.getByRole('dialog').last().waitFor()
-      const offered = await p
-        .getByRole('button', { name: /^Thunderstore/ })
-        .isVisible({ timeout: 1500 })
-        .catch(() => false)
+      const offered = await p.getByRole('button', { name: /^Thunderstore/ }).isVisible()
       await page.close(p)
       if (!offered) {
         left = await currentGame(p)

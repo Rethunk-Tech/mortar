@@ -1,6 +1,14 @@
-import { expect, type Page } from '@playwright/test'
+import { expect, type Locator, type Page } from '@playwright/test'
 
 /** Opens the seeded Stardew Valley on the Seed Farm profile with the first-run tour dismissed. */
+
+// isVisible answers at once and ignores a timeout; this one waits for the element to turn up.
+const appears = (target: Locator, timeout: number) =>
+  target.waitFor({ timeout }).then(
+    () => true,
+    () => false,
+  )
+
 export async function openSeedFarm(page: Page) {
   await page.goto('/')
   const welcome = page.getByRole('button', { name: 'Continue' })
@@ -17,7 +25,7 @@ export async function openSeedFarm(page: Page) {
   const mods = page.getByRole('tab', { name: 'Mods' })
   // A click can land while the list is still settling; clicking again opens it, as openProfile does.
   for (let attempt = 0; attempt < 3 && !(await mods.isVisible()); attempt++) {
-    if (await farm.isVisible({ timeout: 5000 }).catch(() => false)) {
+    if (await appears(farm, 5000)) {
       await farm.click()
     }
     await mods.waitFor({ timeout: 8000 }).catch(() => undefined)
@@ -25,7 +33,7 @@ export async function openSeedFarm(page: Page) {
   await expect(mods).toBeVisible()
   // The tour shows once per sandbox, so only the first spec sees it.
   const skip = page.getByRole('button', { name: 'Skip tour' })
-  if (await skip.isVisible({ timeout: 1500 }).catch(() => false)) {
+  if (await skip.isVisible()) {
     await skip.click()
   }
 }
@@ -51,14 +59,14 @@ export async function openProfile(page: Page, name: string) {
   const mods = page.getByRole('tab', { name: 'Mods' })
   // The tiles animate under the pointer, so a click can land between them; clicking again settles it.
   for (let attempt = 0; attempt < 3 && !(await mods.isVisible()); attempt++) {
-    if (await profile.isVisible({ timeout: 5000 }).catch(() => false)) {
+    if (await appears(profile, 5000)) {
       await profile.click()
     }
     await mods.waitFor({ timeout: 8000 }).catch(() => undefined)
   }
   await mods.waitFor({ timeout: 1000 })
   const skip = page.getByRole('button', { name: 'Skip tour' })
-  if (await skip.isVisible({ timeout: 1500 }).catch(() => false)) {
+  if (await skip.isVisible()) {
     await skip.click()
   }
 }
@@ -73,7 +81,7 @@ export async function switchProfile(page: Page, name: string) {
 export async function switchToOtherProfile(page: Page): Promise<boolean> {
   await page.getByRole('button', { name: /^Switch profile/ }).click()
   const other = page.getByRole('menuitemradio', { checked: false }).first()
-  if (!(await other.isVisible({ timeout: 1500 }).catch(() => false))) {
+  if (!(await other.isVisible())) {
     await page.keyboard.press('Escape')
     return false
   }
@@ -168,7 +176,7 @@ export async function showProblemSection(page: Page, id: string) {
 export async function clearBell(page: Page, stepMs: number) {
   await waitForQuietNotices(page)
   const bell = page.getByRole('button', { name: /^Notifications, \d+ unread/ })
-  if (!(await bell.isVisible({ timeout: 1500 }).catch(() => false))) {
+  if (!(await bell.isVisible())) {
     return
   }
   await bell.click()

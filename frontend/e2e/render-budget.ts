@@ -38,7 +38,7 @@ import { webkitWalk } from './webkit-walk.ts'
 //   MORTAR_RENDER_PROFILE=<name>       open this profile (default: the copied data's profile with the most mods; seeded: Seed Farm)
 //   MORTAR_RENDER_ONLY=mods,config     run only the cases whose names start with these
 //   MORTAR_RENDER_SETTLE_MS / _IDLE_MS how long a case's own steps wait (3000) and how long idle is watched (1000); setup
-//                                      and action end once nothing has committed or called the backend for 1.5 s
+//                                      and action end once nothing has committed or called the backend for 0.3 s and 0.75 s
 //   MORTAR_RENDER_GAPS=1              print each screen's unevenly spaced stacks and cards (unevenSpacing)
 //   MORTAR_RENDER_SHOTS=<dir>          where each screen's pictures go (default <out>/shots): settled in <dir>/chromium
 //                                      and <dir>/webkit, loading (just after the action) in their loading/ folders;
@@ -54,10 +54,10 @@ import { webkitWalk } from './webkit-walk.ts'
 const BASE = '/var/tmp'
 
 const SETTLE_MS = Number(process.env.MORTAR_RENDER_SETTLE_MS ?? '3000')
-// Most cases show nothing idle; a short watch still sees churn, and the walk spends most of its time here.
-const IDLE_MS = Number(process.env.MORTAR_RENDER_IDLE_MS ?? '1000')
+const IDLE_MS = Number(process.env.MORTAR_RENDER_IDLE_MS ?? '500')
 const IDLE_SCALE_MS = 10_000
-const QUIET_MS = 1500
+const SETUP_QUIET_MS = 300
+const ACTION_QUIET_MS = 750
 const QUIET_MAX_MS = 60_000
 const TYPE_DELAY_MS = 120
 const STEP_TIMEOUT_MS = 15_000
@@ -268,7 +268,7 @@ async function land(page: Page): Promise<number | null> {
   await tabs(page).waitFor({ timeout: 30_000 })
   const shownMs = Date.now() - start
   const skip = page.getByRole('button', { name: 'Skip tour' })
-  if (await skip.isVisible({ timeout: 1500 }).catch(() => false)) {
+  if (await skip.isVisible()) {
     await skip.click()
   }
   const biggest = biggestProfile(
@@ -325,14 +325,14 @@ async function measure(
   try {
     const t0 = Date.now()
     await c.setup?.(page)
-    await meter.untilStill(QUIET_MS, QUIET_MAX_MS)
+    await meter.untilStill(SETUP_QUIET_MS, QUIET_MAX_MS)
     await quietToasts(page, c.name)
     await meter.reset()
     const t1 = Date.now()
     await c.run(page)
     await loading()
     // Background checks (a profile's badges) finish after the action; what they cause belongs to it, not to idle.
-    await meter.untilStill(QUIET_MS, QUIET_MAX_MS)
+    await meter.untilStill(ACTION_QUIET_MS, QUIET_MAX_MS)
     const action = await meter.read()
     await meter.reset()
     const t2 = Date.now()
@@ -375,7 +375,7 @@ async function run(
     const meter = mortarMeter(page, cdp)
     const shownMs = await land(page)
     if (shownMs !== null) {
-      await meter.untilStill(QUIET_MS, QUIET_MAX_MS)
+      await meter.untilStill(SETUP_QUIET_MS, QUIET_MAX_MS)
       console.log(startupLine(shownMs, await meter.read()))
     }
     const results: Result[] = []

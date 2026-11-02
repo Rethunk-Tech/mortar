@@ -73,7 +73,7 @@ async function openPeak(page: Page) {
     await welcome.click()
   }
   const skip = page.getByRole('button', { name: 'Skip tour' })
-  if (await skip.isVisible({ timeout: 1500 }).catch(() => false)) {
+  if (await skip.isVisible()) {
     await skip.click()
   }
   // Mortar reopens the last game, which an earlier spec may have left on another one.
