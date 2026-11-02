@@ -213,7 +213,8 @@ function hiddenModsCase({ tab, typeInto, settleMs }: Helpers): Case {
   }
 }
 
-// The first mod that offers other versions: a mod built in Develop or added from an archive has none.
+// The first mod that offers other versions and that nothing depends on: a mod built in Develop or added from an
+// archive has none, and a framework's Used by tree runs to ~190k nodes, so the page cannot answer a click for seconds.
 async function selectVersioned(
   p: Page,
   { view, row }: Pick<Helpers, 'view' | 'row'>,
@@ -223,10 +224,11 @@ async function selectVersioned(
   for (let n = 0; n < rows; n++) {
     await row(p, n).click()
     if (
-      await p
+      (await p
         .getByRole('button', { name: /^Change version…/ })
         .first()
-        .isVisible()
+        .isVisible()) &&
+      !(await p.getByText('Used by', { exact: true }).first().isVisible())
     ) {
       return true
     }
