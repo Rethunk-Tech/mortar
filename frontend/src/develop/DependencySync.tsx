@@ -52,6 +52,8 @@ export function DependencySync({
                       package: d.package,
                       version: d.version,
                     })),
+                    false,
+                    sync.profile,
                   ),
                 t`Could not install the dependencies`,
               )}

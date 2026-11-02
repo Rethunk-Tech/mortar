@@ -1,10 +1,13 @@
 package devsvc
 
 import (
+	"os"
+	"path/filepath"
 	"reflect"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 func installedTS(name, version string, enabled, implicit bool) profile.Installed {
@@ -40,5 +43,28 @@ func TestDiffDependencies(t *testing.T) {
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("got %+v\nwant %+v", got, want)
+	}
+}
+
+func TestDependencySyncNamesTheDevelopmentProfile(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	prof, err := svc.Profiles.Create("lethal-company", "Dev")
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir := t.TempDir()
+	csproj := filepath.Join(dir, "src", "Mod", "Mod.csproj")
+	if err := os.MkdirAll(filepath.Dir(csproj), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(csproj, []byte("<Project/>"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := svc.Settings.AddDevProject("lethal-company", settings.DevProject{Dir: dir, Name: "Mod", Profile: prof.ID}); err != nil {
+		t.Fatal(err)
+	}
+	got, err := svc.DependencySync("lethal-company", dir)
+	if err != nil || got.Profile != prof.ID {
+		t.Fatalf("profile = %q, %v", got.Profile, err)
 	}
 }

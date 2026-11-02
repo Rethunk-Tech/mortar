@@ -51,15 +51,23 @@ function wantSource(r: Want): string {
   return r.package ? 'thunderstore' : 'nexus'
 }
 
-// Queues files for the open profile. Nexus files cannot download while signed out: say so and point at the
+// Queues files for the open profile, or for profileId when given. Nexus files cannot download while signed out: say so and point at the
 // sign-in instead. GitHub needs no account.
-export async function download(reqs: Want[], showQueue = false): Promise<boolean> {
-  return (await queueWants(reqs, showQueue)) !== undefined
+export async function download(
+  reqs: Want[],
+  showQueue = false,
+  profileId?: string,
+): Promise<boolean> {
+  return (await queueWants(reqs, showQueue, profileId)) !== undefined
 }
 
 // download, returning the queue items the wants became (a want for a file already waiting joins its item), or
 // undefined when nothing was queued.
-export async function queueWants(reqs: Want[], showQueue = false): Promise<Item[] | undefined> {
+export async function queueWants(
+  reqs: Want[],
+  showQueue = false,
+  profileId?: string,
+): Promise<Item[] | undefined> {
   const toasts = useToasts.getState()
   if (!useNexus.getState().signedIn && reqs.some((r) => !(r.repo || r.package))) {
     toasts.push({
@@ -76,7 +84,8 @@ export async function queueWants(reqs: Want[], showQueue = false): Promise<Item[
   if (!(await warnUnmoderated(reqs.filter((r) => !r.currentKey).map(wantSource)))) {
     return
   }
-  const at = openTarget()
+  const open = openTarget()
+  const at = open && profileId ? { game: open.game, id: profileId } : open
   if (!at) {
     return
   }

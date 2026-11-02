@@ -25,6 +25,8 @@ type DepVersion struct {
 
 // DepSync is how a project's declared Thunderstore dependencies and its development profile's mods differ.
 type DepSync struct {
+	// Profile is the project's development profile, where missing dependencies install whether or not it is open.
+	Profile string `json:"profile"`
 	// Missing are required dependencies the profile does not hold.
 	Missing []Dependency `json:"missing"`
 	// Undeclared are enabled mods the player added that the project does not declare.
@@ -102,7 +104,9 @@ func (s *Service) DependencySync(gameID, dir string) (DepSync, error) {
 			own = append(own, pkg)
 		}
 	}
-	return diffDependencies(declared, installed, p.IgnoredDeps, own), nil
+	out := diffDependencies(declared, installed, p.IgnoredDeps, own)
+	out.Profile = p.Profile
+	return out, nil
 }
 
 // IgnoreDependency stops offering pkg as a dependency of the project in dir.
