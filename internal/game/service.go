@@ -7,6 +7,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-bepinex"
 	"github.com/Rethunk-Tech/go-gamelocator/steam"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -98,7 +99,7 @@ type LoaderRef struct {
 	DevTemplate *components.DevTemplate `json:"devTemplate,omitempty"`
 }
 
-func loaderRef(gameID string, l components.GameLoader) LoaderRef {
+func loaderRef(gameID, installDir string, l components.GameLoader) LoaderRef {
 	ref := LoaderRef{ID: l.ID, Name: l.Name, DevTemplate: l.DevTemplate}
 	if d, ok := LoaderOf(gameID, l.ID); ok {
 		_, ref.Order = d.(loader.WithOrder)
@@ -107,11 +108,10 @@ func loaderRef(gameID string, l components.GameLoader) LoaderRef {
 		// Commands, startup timing, in-game performance, the overlay and intro skipping all run in the bridge, which
 		// Mortar installs only from the game's own bridge component, so a game without one (Cat Mail Co.'s IL2CPP
 		// BepInEx, or a BepInEx 5 game whose bridge is not built) offers none of them.
-		companion, bridge := components.LookupComponent(gameID, l.Companion)
-		bridge = bridge && l.Companion != ""
+		bridge := l.Companion != "" && components.HasComponent(gameID, l.Companion)
 		// The IL2CPP build has no engine types to read the scene, perf, overlay or intro from, and no patcher to time
-		// startup: it answers the plugin query only.
-		mono := bridge && !strings.Contains(companion.Asset, "IL2CPP")
+		// startup: it answers the plugin query only. An uninstalled game is taken as Mono.
+		mono := bridge && !bepinex.IsIL2CPPGame(installDir)
 		_, hasConsole := d.(loader.Console)
 		_, hasCompanion := d.(loader.WithCompanion)
 		// A BepInEx game takes commands only where the bridge knows the game's console; SMAPI always has one.
@@ -247,9 +247,6 @@ func List(home string, cur settings.Settings) ([]GameInfo, error) {
 	for _, c := range catalog {
 		info := GameInfo{ID: c.ID, Name: c.Name, Deploy: c.Deploy, AppID: c.SteamAppID(), HasSaves: HasSaves(c.ID), StartupSettings: HasStartupSettings(c.ID), HasOptions: HasPath(c.ID, "options"), HasCaches: len(c.Caches) > 0, HasScreenshots: HasScreenshots(c.ID), Installs: []Install{}, Sources: make([]string, len(c.Sources)), SourceKeys: map[string]string{}, FindSources: FindSourceSites(c), Graphics: c.Graphics}
 		info.Loader, info.LoaderID = c.Loaders[0].Name, c.Loaders[0].ID
-		for _, l := range c.Loaders {
-			info.Loaders = append(info.Loaders, loaderRef(c.ID, l))
-		}
 		for i, src := range c.Sources {
 			info.Sources[i] = src.ID
 			if src.Key != "" {
@@ -273,6 +270,9 @@ func List(home string, cur settings.Settings) ([]GameInfo, error) {
 					info.Installs[i].Version = info.Installs[i].readVersion(c)
 				}
 			}
+		}
+		for _, l := range c.Loaders {
+			info.Loaders = append(info.Loaders, loaderRef(c.ID, info.InstallDir, l))
 		}
 		info.NewerMortar = components.NeedsNewerMortar(c.ID)
 		info.ArtURL = artFor(info.AppID)
