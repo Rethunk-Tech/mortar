@@ -89,6 +89,7 @@ const POPULARITY_ICON: Record<string, StatIcon> = {
   [VSMODDB]: 'follower',
 }
 
+const COMPACT_FROM = 1000
 const compact = (n: number) => formatCount(n, i18n.locale || 'en')
 
 /** A card's chosen stats, leaving out what the hit's site does not say. */
@@ -131,27 +132,50 @@ function useCardStats(item: BrowseItem, stats: readonly CardStat[]): CardStatPar
 }
 
 /** An installed mod's card line for the same chosen stats: its Nexus page's figures and its size on disk. The card
- * already shows the installed version. */
+ * already shows the installed version. `short` counts compactly to fit the card; `full` is exact, for the tooltip. */
 function useModCardStats(
   { mod, size, details }: Pick<ListRow, 'mod' | 'size' | 'details'>,
   stats: readonly CardStat[],
-): string[] {
+): { short: string[]; full: string[] } {
   const { t } = useLingui()
   const page = details?.page
   const endorsements = page?.endorsements ?? mod.endorsements
-  const parts: Record<CardStat, string> = {
-    popularity:
-      endorsements > 0
-        ? plural({ count: endorsements }, { one: '# endorsement', other: '# endorsements' })
-        : '',
-    downloads: page
-      ? plural({ count: page.downloads }, { one: '# download', other: '# downloads' })
-      : '',
-    size: size !== undefined && size > 0 ? formatBytes(size) : '',
-    version: '',
-    updated: page?.updated ? t`Updated ${{ when: formatWhen(page.updated) }}` : '',
+  const updated = page?.updated ? t`Updated ${{ when: formatWhen(page.updated) }}` : ''
+  const sized = size !== undefined && size > 0 ? formatBytes(size) : ''
+  const endorsementsFull =
+    endorsements > 0
+      ? plural({ count: endorsements }, { one: '# endorsement', other: '# endorsements' })
+      : ''
+  const downloadsFull = page
+    ? plural({ count: page.downloads }, { one: '# download', other: '# downloads' })
+    : ''
+  // Below 1,000 the compact figure is the exact one, so the plural form serves.
+  const endorsementsShort =
+    endorsements >= COMPACT_FROM
+      ? t`${{ count: compact(endorsements) }} endorsements`
+      : endorsementsFull
+  const downloadsShort =
+    page && page.downloads >= COMPACT_FROM
+      ? t`${{ count: compact(page.downloads) }} downloads`
+      : downloadsFull
+  const pick = (parts: Record<CardStat, string>) =>
+    stats.map((s) => parts[s]).filter((p) => p !== '')
+  return {
+    short: pick({
+      popularity: endorsementsShort,
+      downloads: downloadsShort,
+      size: sized,
+      version: '',
+      updated,
+    }),
+    full: pick({
+      popularity: endorsementsFull,
+      downloads: downloadsFull,
+      size: sized,
+      version: '',
+      updated,
+    }),
   }
-  return stats.map((s) => parts[s]).filter((p) => p !== '')
 }
 
 export type { CardStat, CardStatPart, StatIcon }

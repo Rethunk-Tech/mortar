@@ -31,10 +31,11 @@ export function CardMeta({
   const details = useNexusDetails(
     (s) => nexusEntryOf(s.byKey, game, nexusIdOf(profile, m))?.details,
   )
-  const stats = useModCardStats(
+  const cardStats = useModCardStats(
     { mod: m, ...(size === undefined ? {} : { size }), ...(details ? { details } : {}) },
     parseCardStats(useSettings((s) => s.browseCardStats)),
-  ).join(' · ')
+  )
+  const stats = cardStats.short.join(' · ')
   const byline = [formatAuthors(m.author), m.version].filter(Boolean).join(' · ')
   return (
     <>
@@ -58,7 +59,7 @@ export function CardMeta({
         <Typography
           className="card-stats"
           noWrap={true}
-          title={stats}
+          title={cardStats.full.join(' · ')}
           sx={{ fontSize: META_FONT_PX, color: 'text.secondary' }}
         >
           {stats || '\u00a0'}
