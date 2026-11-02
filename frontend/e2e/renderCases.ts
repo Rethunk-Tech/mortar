@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test'
-import { openGameSelect, openSettings, switchToOtherProfile } from './app.ts'
+import { openGameSelect, openSettings } from './app.ts'
 import { largeDownloadCases } from './largeDownloadCase.ts'
 import { pausedDownloadCases } from './pausedDownloadCase.ts'
 import type { Case } from './render-budget.ts'
@@ -27,27 +27,7 @@ export function newCases(h: Helpers): Case[] {
   }
   const pick = (page: Page, item: RegExp) => page.getByRole('menuitem', { name: item }).click()
 
-  // The case measures a second profile, so it skips itself when the game has only one.
-  let inOther = false
-  let shared = false
   let versioned = false
-  async function inGame(page: Page) {
-    await toWorkspace(page)
-    inOther = await switchToOtherProfile(page)
-  }
-
-  /** Select the mod at row n and open its details panel. */
-  const shareThunderstore = async (page: Page) => {
-    await tab(page, 'Home')
-    await page.getByRole('button', { name: /^Share…/ }).click()
-    const target = page.getByRole('button', { name: /^Thunderstore/ })
-    if (await target.isVisible()) {
-      await target.click()
-      return true
-    }
-    await page.keyboard.press('Escape')
-    return false
-  }
 
   return [
     ...largeDownloadCases(),
@@ -143,32 +123,13 @@ export function newCases(h: Helpers): Case[] {
     },
     {
       name: 'coop-list',
-      setup: async (p) => {
-        await inGame(p)
-        if (inOther) {
-          await openProfileMenu(p)
-        }
-      },
+      setup: openProfileMenu,
+      // Only a game with a mod list offers it; a Thunderstore game's picture is then the menu.
       run: async (p) => {
         const item = p.getByRole('menuitem', { name: /^Multiplayer mod list…/ })
-        if (inOther && (await item.count()) > 0) {
+        if ((await item.count()) > 0) {
           await item.click()
         }
-      },
-    },
-    {
-      name: 'modpack-form',
-      // Home and the share dialog open in setup, so the action is the form alone.
-      setup: async (p) => {
-        await inGame(p)
-        shared = inOther && (await shareThunderstore(p))
-      },
-      run: async (p) => {
-        if (!shared) {
-          return
-        }
-        await p.getByRole('button', { name: /^Modpack/ }).click()
-        await p.getByRole('textbox', { name: 'Name' }).waitFor()
       },
     },
   ]
@@ -208,7 +169,7 @@ function hiddenModsCase({ tab, typeInto, settleMs }: Helpers): Case {
       }
       await p.getByRole('button', { name: /settings$/ }).click()
       await p.getByText('Mods', { exact: true }).last().click()
-      await p.getByText('Hidden mods', { exact: true }).waitFor()
+      await p.getByText('Hidden mods', { exact: true }).scrollIntoViewIfNeeded()
     },
   }
 }

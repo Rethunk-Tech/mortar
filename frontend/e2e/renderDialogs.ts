@@ -164,6 +164,18 @@ function shareCases(kit: ReturnType<typeof dialogKit>): Case[] {
       ...dialog('share-thunderstore', (p) => share(p, /^Thunderstore/), undefined, toThunderstore),
       teardown: fromThunderstore,
     },
+    {
+      ...dialog(
+        'share-modpack',
+        async (p) => {
+          await share(p, /^Thunderstore/)
+          await inDialog(p, /^Modpack/)
+        },
+        undefined,
+        toThunderstore,
+      ),
+      teardown: fromThunderstore,
+    },
     // It looks again every 5 s, so one look can land in the watch, and it may find a computer the first did not.
     dialog('share-nearby', shareNearby, { idleCalls: 4, idleUpdates: 100, idleCommits: 3 }, atHome),
     dialog('share-mod-list', (p) => share(p, /^Mod list/), undefined, atHome),
