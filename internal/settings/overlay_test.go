@@ -38,14 +38,7 @@ func TestOverlayDefaultsAndPortRange(t *testing.T) {
 }
 
 func TestNewOverlayTokenIs32BytesHex(t *testing.T) {
-	a, err := NewOverlayToken()
-	if err != nil {
-		t.Fatal(err)
-	}
-	b, err := NewOverlayToken()
-	if err != nil {
-		t.Fatal(err)
-	}
+	a, b := NewOverlayToken(), NewOverlayToken()
 	if len(a) != 64 || len(b) != 64 {
 		t.Fatalf("len %d %d", len(a), len(b))
 	}

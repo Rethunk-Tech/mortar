@@ -194,9 +194,7 @@ func New(d Deps) (*Service, error) {
 	}
 	if s.st.Machine == "" {
 		id := make([]byte, 6)
-		if _, err := rand.Read(id); err != nil {
-			return nil, err
-		}
+		_, _ = rand.Read(id) // never fails since Go 1.24
 		s.st.Machine = hex.EncodeToString(id)
 	}
 	if s.st.Profiles == nil {

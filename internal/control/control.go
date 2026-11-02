@@ -143,10 +143,7 @@ func Serve(ctx context.Context, dir, version string, h Handler) error {
 		return err
 	}
 	tok := make([]byte, 32)
-	if _, err := rand.Read(tok); err != nil {
-		_ = ln.Close()
-		return err
-	}
+	_, _ = rand.Read(tok) // never fails since Go 1.24
 	token := hex.EncodeToString(tok)
 	tcp, ok := ln.Addr().(*net.TCPAddr)
 	if !ok {

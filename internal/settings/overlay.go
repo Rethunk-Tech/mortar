@@ -17,12 +17,10 @@ const (
 )
 
 // NewOverlayToken returns 32 random bytes as hex. Never log the result.
-func NewOverlayToken() (string, error) {
+func NewOverlayToken() string {
 	var b [overlayTokenBytes]byte
-	if _, err := rand.Read(b[:]); err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(b[:]), nil
+	_, _ = rand.Read(b[:]) // never fails since Go 1.24
+	return hex.EncodeToString(b[:])
 }
 
 func normalizeOverlay(s *Settings) {
@@ -57,11 +55,7 @@ func overlayFileURL(s Settings) (string, error) {
 func (s *Service) SetOverlayEnabled(on bool) error {
 	token := s.store.Get().OverlayToken
 	if on && token == "" {
-		next, err := NewOverlayToken()
-		if err != nil {
-			return err
-		}
-		token = next
+		token = NewOverlayToken()
 	}
 	if err := s.set(func(v *Settings) {
 		v.OverlayEnabled = on
@@ -82,10 +76,7 @@ func (s *Service) SetOverlayPort(n int) error {
 }
 
 func (s *Service) RegenerateOverlayToken() error {
-	token, err := NewOverlayToken()
-	if err != nil {
-		return err
-	}
+	token := NewOverlayToken()
 	if err := s.set(func(v *Settings) { v.OverlayToken = token }); err != nil {
 		return err
 	}

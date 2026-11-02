@@ -180,10 +180,7 @@ type shareRequest struct {
 
 // NewService returns a LAN sharing service that is disabled until SetEnabled is called.
 func NewService(deps Deps) *Service {
-	instanceID, err := randomToken()
-	if err != nil {
-		instanceID = fmt.Sprintf("%d", time.Now().UnixNano())
-	}
+	instanceID := randomToken()
 	service := &Service{
 		deps:          deps,
 		checkFirewall: firewallBlocked,
@@ -667,10 +664,7 @@ func (s *Service) hello(ctx context.Context, peerID string) (helloResponse, erro
 	if err != nil {
 		return helloResponse{}, err
 	}
-	challenge, err := randomToken()
-	if err != nil {
-		return helloResponse{}, err
-	}
+	challenge := randomToken()
 	selfID, err := s.book.self()
 	if err != nil {
 		return helloResponse{}, err
@@ -809,11 +803,7 @@ func (s *Service) handleHello(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	nonce, err := randomToken()
-	if err != nil {
-		http.Error(w, "could not create handshake", http.StatusInternalServerError)
-		return
-	}
+	nonce := randomToken()
 	now := time.Now()
 	peer := remotePeer(r)
 	s.mu.Lock()
@@ -906,11 +896,7 @@ func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
 	response := shareResponse{Paired: paired}
 	var arrivalTransfer incomingTransfer
 	if paired {
-		token, tokenErr := randomToken()
-		if tokenErr != nil {
-			http.Error(w, "could not create transfer token", http.StatusInternalServerError)
-			return
-		}
+		token := randomToken()
 		keys := make([]string, len(items))
 		for i, item := range items {
 			keys[i] = item.Key

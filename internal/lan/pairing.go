@@ -92,11 +92,7 @@ func (b *peerBook) loadLocked() error {
 		}
 	}
 	if b.file.Self == "" {
-		id, err := randomToken()
-		if err != nil {
-			return err
-		}
-		b.file.Self = id
+		b.file.Self = randomToken()
 		if err := b.saveLocked(); err != nil {
 			return err
 		}
@@ -323,11 +319,7 @@ func (s *Service) handlePairBegin(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "could not start pairing", http.StatusInternalServerError)
 		return
 	}
-	session, err := randomToken()
-	if err != nil {
-		http.Error(w, "could not start pairing", http.StatusInternalServerError)
-		return
-	}
+	session := randomToken()
 	now, remote := time.Now(), remotePeer(r)
 	h := &s.pairing
 	h.mu.Lock()

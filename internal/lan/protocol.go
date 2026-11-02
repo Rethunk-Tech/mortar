@@ -82,12 +82,10 @@ func entryMAC(key []byte, game, entry, hash string) string {
 	return hmacProof(key, "store|"+game+"|"+entry, hash)
 }
 
-func randomToken() (string, error) {
+func randomToken() string {
 	raw := make([]byte, 32)
-	if _, err := rand.Read(raw); err != nil {
-		return "", err
-	}
-	return base64.RawURLEncoding.EncodeToString(raw), nil
+	_, _ = rand.Read(raw) // never fails since Go 1.24
+	return base64.RawURLEncoding.EncodeToString(raw)
 }
 
 // transferItem is one store entry a paired receiver copies from the sender, with what the store records about
