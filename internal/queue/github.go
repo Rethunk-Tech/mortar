@@ -15,6 +15,7 @@ import (
 	"github.com/Rethunk-Tech/go-httpkit/download"
 
 	gh "github.com/Rethunk-Tech/go-github"
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
@@ -85,7 +86,7 @@ func (s *Service) pick(ctx context.Context, gameID, repo string, assets []github
 		return assets
 	}
 	var shapes []loader.ModArchive
-	if g, ok := gameInfo(gameID); ok {
+	if g, ok := components.Game(gameID); ok {
 		for _, l := range loader.For(g) {
 			if m, ok := l.(loader.ModArchive); ok {
 				shapes = append(shapes, m)

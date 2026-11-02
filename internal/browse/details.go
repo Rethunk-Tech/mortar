@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
@@ -32,7 +33,7 @@ func (s *Service) Details(ctx context.Context, game, sourceID, id string) (sourc
 	if ok && time.Now().Before(hit.until) {
 		return hit.details, nil
 	}
-	info, ok := catalogGame(game)
+	info, ok := components.Game(game)
 	if !ok {
 		return source.Details{}, fmt.Errorf("unknown game %q", game)
 	}

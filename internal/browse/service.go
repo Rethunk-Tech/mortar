@@ -67,7 +67,7 @@ type refresher interface{ Refresh(key, version string) }
 // Refresh makes the next search of game read every source again: its remembered pages are dropped and each source that
 // stores a listing rebuilds it now. A rebuilt listing announces itself with RefreshedEvent.
 func (s *Service) Refresh(game string) error {
-	info, ok := catalogGame(game)
+	info, ok := components.Game(game)
 	if !ok {
 		return fmt.Errorf("%w: game %q", ErrUnknownSource, game)
 	}
@@ -108,7 +108,7 @@ func (s *Service) off(game string) []string {
 // SourcesOff is the game's sources the player turned off, or none when that would leave Browse no available source
 // to search (a settings edit outside the window can turn every one off).
 func SourcesOff(game string, off []string) []string {
-	info, ok := catalogGame(game)
+	info, ok := components.Game(game)
 	if !ok || len(off) == 0 {
 		return off
 	}
@@ -136,7 +136,7 @@ type SourceInfo struct {
 func (s *Service) SearchableSources(game string) []SourceInfo {
 	out := []SourceInfo{}
 	off := s.off(game)
-	if info, ok := catalogGame(game); ok {
+	if info, ok := components.Game(game); ok {
 		for _, src := range source.Searchable(info) {
 			out = append(out, SourceInfo{ID: src.ID(), Name: src.Name(), Unavailable: source.Unavailable(src), Sorts: source.SortsOf(src), Off: slices.Contains(off, src.ID())})
 		}
@@ -152,7 +152,7 @@ func (s *Service) holdings(game, profileID string) *Holdings {
 	if err != nil {
 		return nil
 	}
-	info, _ := catalogGame(game)
+	info, _ := components.Game(game)
 	for _, prof := range list {
 		if prof.ID == profileID || strings.EqualFold(prof.Name, profileID) {
 			var installed []profile.Installed

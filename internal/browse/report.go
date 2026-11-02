@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
 // ReportTarget says where to report a problem with the mod id on sourceID: its GitHub repository when the site links
 // one, else a page. A source that cannot say answers an empty target.
 func (s *Service) ReportTarget(ctx context.Context, game, sourceID, id string) (source.ReportTarget, error) {
-	info, ok := catalogGame(game)
+	info, ok := components.Game(game)
 	if !ok {
 		return source.ReportTarget{}, fmt.Errorf("unknown game %q", game)
 	}

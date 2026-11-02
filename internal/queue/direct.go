@@ -111,16 +111,12 @@ func (s *Service) handOff(e *curseforge.NotDistributableError) error {
 // gameSource is the game's catalog entry for the source: its key at the site, and the loaders that narrow the versions
 // a dependency may take.
 func gameSource(gameID, sourceID string) components.GameSource {
-	if g, ok := gameInfo(gameID); ok {
+	if g, ok := components.Game(gameID); ok {
 		if src, ok := g.Source(sourceID); ok {
 			return src
 		}
 	}
 	return components.GameSource{ID: sourceID}
-}
-
-func gameInfo(gameID string) (components.GameInfo, bool) {
-	return components.Game(gameID)
 }
 
 // ResolveDirect is Deps.Direct for the real sites.

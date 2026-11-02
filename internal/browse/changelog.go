@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
@@ -11,7 +12,7 @@ import (
 // Changelog reads the notes of the versions an update of project id on sourceID crosses, newest first. A source that
 // keeps no changelog answers none.
 func Changelog(ctx context.Context, game, sourceID, id, installed, latest, mortarVersion string) ([]nexus.Changelog, error) {
-	info, ok := catalogGame(game)
+	info, ok := components.Game(game)
 	if !ok {
 		return nil, fmt.Errorf("unknown game %q", game)
 	}

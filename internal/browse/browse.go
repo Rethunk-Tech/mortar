@@ -108,7 +108,7 @@ func (c *Client) identity(ctx context.Context) identityOf {
 
 // Search returns one page of mods for game from the source matching text.
 func (c *Client) Search(ctx context.Context, game, sourceID, text string, page int, f Filter) (Page, error) {
-	info, ok := catalogGame(game)
+	info, ok := components.Game(game)
 	if !ok {
 		return Page{}, fmt.Errorf("%w: game %q", ErrUnknownSource, game)
 	}
@@ -208,8 +208,6 @@ func interleave(pages []Page) []Item {
 		}
 	}
 }
-
-func catalogGame(id string) (components.GameInfo, bool) { return components.Game(id) }
 
 // topTTL is how long a source's answer is reused, so opening Browse costs each source one request and page N of a
 // search rereads its earlier pages from here.
@@ -509,7 +507,7 @@ var (
 // AllSources. Answers are cached for a day; a source that fails is skipped, and the error comes back only when no
 // source gave any, so the pickers can say why they are empty.
 func (c *Client) Categories(ctx context.Context, game, sourceID string) ([]string, error) {
-	info, ok := catalogGame(game)
+	info, ok := components.Game(game)
 	if !ok {
 		return nil, fmt.Errorf("%w: game %q", ErrUnknownSource, game)
 	}
