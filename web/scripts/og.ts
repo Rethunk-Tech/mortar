@@ -110,6 +110,25 @@ function card(title: string, description: string, icon: string): Node {
   )
 }
 
+/** A heading's text: everything from a `<` to its `>` goes, so no tag or tag's start is left. */
+function textOf(html: string | undefined): string | undefined {
+  if (html === undefined) {
+    return undefined
+  }
+  let text = ''
+  let inTag = false
+  for (const c of html) {
+    if (c === '<') {
+      inTag = true
+    } else if (c === '>' && inTag) {
+      inTag = false
+    } else if (!inTag) {
+      text += c
+    }
+  }
+  return text
+}
+
 /** The page's own words for the picture: its title without the site name, and a description cut to fit. */
 function words(html: string): { title: string; description: string } | undefined {
   const title = meta(html, 'og:title')
@@ -119,13 +138,8 @@ function words(html: string): { title: string; description: string } | undefined
   }
   const description = decodeEntities(meta(html, 'og:description') ?? '')
   // "Mortar: <what it is>" titles read badly cut; their page heading says it better.
-  const h1 = /<h1[^>]*>(.*?)<\/h1>/s
-    .exec(html)?.[1]
-    ?.replace(/<br\s*\/?>/g, ' ')
-    .replace(/<[^>]+>/g, '')
-    // One pass can leave a tag's start behind (`<scr<x>ipt`); a heading's text has no `<` of its own.
-    .replace(/</g, '')
-    .replace(/\s+/g, ' ')
+  const h1 = textOf(/<h1[^>]*>(.*?)<\/h1>/s.exec(html)?.[1]?.replace(/<br\s*\/?>/g, ' '))
+    ?.replace(/\s+/g, ' ')
     .trim()
   const own = decodeEntities(title)
   return {
