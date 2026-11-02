@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"os"
 	"slices"
 	"strings"
 	"time"
@@ -294,10 +293,10 @@ func (s *Service) downloadPackage(ctx context.Context, it Item) error {
 	if parked, err := s.guardSize(it, it.SizeKB<<10); parked || err != nil {
 		return err
 	}
-	if err := os.MkdirAll(s.downloadRoot(), 0o700); err != nil {
+	path, err := s.prepareDownload(it.ID, it.FileName)
+	if err != nil {
 		return err
 	}
-	path := s.dest(it.ID, it.FileName)
 	if err := s.fetchPackage(ctx, it, path); err != nil {
 		if ctx.Err() != nil {
 			return ctx.Err()

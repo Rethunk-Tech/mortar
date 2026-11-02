@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"os"
 	"strings"
 	"sync"
 	"time"
@@ -586,10 +585,10 @@ func (s *Service) download(ctx context.Context, it Item) error {
 	if len(links) == 0 {
 		return usererr.New(usererr.Network, "the download has no link")
 	}
-	if err := os.MkdirAll(s.downloadRoot(), 0o700); err != nil {
+	path, err := s.prepareDownload(it.ID, it.FileName)
+	if err != nil {
 		return err
 	}
-	path := s.dest(it.ID, it.FileName)
 	fetchOnce := func() error {
 		uri := links[0].URI
 		var ferr error

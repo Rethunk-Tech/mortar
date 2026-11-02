@@ -3,7 +3,6 @@ package cli
 import (
 	"fmt"
 
-	"github.com/Rethunk-Tech/mortar/internal/control"
 	"github.com/Rethunk-Tech/mortar/internal/gmcm"
 )
 
@@ -12,7 +11,7 @@ func (c *cmd) modsMenu() error {
 	if err != nil {
 		return err
 	}
-	p := control.Params{Game: a[0], Profile: a[1], IDs: a[2:3]}
+	p := modTarget(a)
 	if c.setFlag {
 		spec := c.setSpec
 		if !c.setEquals {

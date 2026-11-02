@@ -31,6 +31,14 @@ func (s *Service) dest(id, fileName string) string {
 	return filepath.Join(s.downloadRoot(), archive.SavedName(id, fileName))
 }
 
+// prepareDownload makes the download folder and returns where the item's file is saved in it.
+func (s *Service) prepareDownload(id, fileName string) (string, error) {
+	if err := os.MkdirAll(s.downloadRoot(), 0o700); err != nil {
+		return "", err
+	}
+	return s.dest(id, fileName), nil
+}
+
 func (s *Service) dropDownloadUnlessKept(path string) {
 	if s.d.KeepArchives != nil && s.d.KeepArchives() {
 		return

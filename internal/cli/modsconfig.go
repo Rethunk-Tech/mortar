@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/control"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
@@ -13,7 +12,7 @@ func (c *cmd) modsConfig() error {
 	if err != nil {
 		return err
 	}
-	p := control.Params{Game: a[0], Profile: a[1], IDs: a[2:3]}
+	p := modTarget(a)
 	switch {
 	case len(a) >= 5:
 		p.Key, p.Value = a[3], a[4]

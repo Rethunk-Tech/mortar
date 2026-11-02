@@ -11,6 +11,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/lan"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/share"
 	"github.com/Rethunk-Tech/mortar/internal/sharesvc"
 	"github.com/Rethunk-Tech/mortar/internal/templates"
@@ -70,16 +71,22 @@ func (s *Services) handleMore(ctx context.Context, method string, p Params) (res
 	return res, true, err
 }
 
+// resolveIDs is the profile p names and the mods p.IDs pick from it.
+func (s *Services) resolveIDs(p Params) (profile.Profile, []mod.ID, error) {
+	prof, err := s.resolve(p.Game, p.Profile)
+	if err != nil {
+		return profile.Profile{}, nil, err
+	}
+	ids, err := typedIDs(modIDs(prof), p.IDs)
+	return prof, ids, err
+}
+
 func (s *Services) savedGroupsWrite(method string, p Params) (any, error) {
 	if s.SavedGroups == nil {
 		return nil, errors.New("saved groups are unavailable")
 	}
 	if method == "groups.create" {
-		prof, err := s.resolve(p.Game, p.Profile)
-		if err != nil {
-			return nil, err
-		}
-		ids, err := typedIDs(modIDs(prof), p.IDs)
+		prof, ids, err := s.resolveIDs(p)
 		if err != nil {
 			return nil, err
 		}
@@ -99,11 +106,7 @@ func (s *Services) savedGroupsWrite(method string, p Params) (any, error) {
 	case "groups.rename":
 		return s.SavedGroups.Rename(p.Game, g.ID, p.Value)
 	case "groups.add":
-		prof, err := s.resolve(p.Game, p.Profile)
-		if err != nil {
-			return nil, err
-		}
-		ids, err := typedIDs(modIDs(prof), p.IDs)
+		prof, ids, err := s.resolveIDs(p)
 		if err != nil {
 			return nil, err
 		}

@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"os"
 	"path/filepath"
 	"runtime"
 	"slices"
@@ -220,10 +219,10 @@ func (s *Service) downloadGitHub(ctx context.Context, it Item) error {
 	if parked, err := s.guardSize(it, assets[i].Size); parked || err != nil {
 		return err
 	}
-	if err := os.MkdirAll(s.downloadRoot(), 0o700); err != nil {
+	path, err := s.prepareDownload(it.ID, it.Asset)
+	if err != nil {
 		return err
 	}
-	path := s.dest(it.ID, it.Asset)
 	if err := s.fetch(ctx, it, assets[i].URL, path); err != nil {
 		if ctx.Err() != nil {
 			return ctx.Err()
