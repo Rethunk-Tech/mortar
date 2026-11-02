@@ -17,6 +17,7 @@ import type {
   PerformanceRow,
   SavedReport,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
+import { formatNumber } from '../i18n/numberFormat.ts'
 import { cmpText } from '../mods/cmpText.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
@@ -30,14 +31,14 @@ function callsLabel(value: number, locale: string) {
   if (value === 0) {
     return '—'
   }
-  return Number.isInteger(value) ? value.toLocaleString(locale) : formatTiming(value, locale)
+  return Number.isInteger(value) ? formatNumber(value, locale) : formatTiming(value, locale)
 }
 
 const PERCENT = 100
 const SEPARATOR = ' · '
 
 function percentLabel(share: number, locale: string) {
-  return `${(share * PERCENT).toLocaleString(locale, { maximumFractionDigits: 1 })}%`
+  return `${formatNumber(share * PERCENT, locale, { maximumFractionDigits: 1 })}%`
 }
 
 interface HeaderProps {

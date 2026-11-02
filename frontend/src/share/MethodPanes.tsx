@@ -16,6 +16,7 @@ import {
 import { R2MODMAN } from '../brand/productNames.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { listNames } from '../i18n/list.ts'
+import { formatNumber } from '../i18n/numberFormat.ts'
 import { SendPanel } from '../lan/SendPanel.tsx'
 import { useSettings } from '../settings/store.ts'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
@@ -47,10 +48,10 @@ const LEVEL_COLOUR: Record<MeterLevel, string> = {
 }
 
 function Meter({ info }: { info: ShownInfo }) {
-  const { t, i18n } = useLingui()
+  const { t } = useLingui()
   const { ratio, level } = meter(info.length, info.limit)
-  const length = info.length.toLocaleString(i18n.locale)
-  const limit = info.limit.toLocaleString(i18n.locale)
+  const length = formatNumber(info.length)
+  const limit = formatNumber(info.limit)
   const app = sourceLabel('discord')
   const verdict = `${t`${length} of ${limit} characters`} · ${
     {

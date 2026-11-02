@@ -1,5 +1,6 @@
 import { msg } from '@lingui/core/macro'
 import { i18n } from '../../i18n/index.ts'
+import { numberFormat } from '../../i18n/numberFormat.ts'
 import { errorKind } from '../../toasts/errorKind.ts'
 import { errorMessage } from '../../toasts/report.ts'
 
@@ -53,7 +54,7 @@ export function configValueMessage(e: unknown): string {
     case 'toml':
       return i18n._(msg`This would leave the file unreadable to the game.`)
     case 'range': {
-      const n = new Intl.NumberFormat(i18n.locale)
+      const n = numberFormat()
       const min = d.min === undefined ? undefined : n.format(d.min)
       const max = d.max === undefined ? undefined : n.format(d.max)
       if (min !== undefined && max !== undefined) {

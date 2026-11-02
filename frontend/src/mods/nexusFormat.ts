@@ -1,4 +1,5 @@
 import type { File } from '../../bindings/github.com/Rethunk-Tech/go-nexusmods/models.ts'
+import { formatNumber } from '../i18n/numberFormat.ts'
 
 // Go's zero time, sent for a date Nexus left out.
 // Nexus leaves the category out on many old files, so only these count as current.
@@ -116,7 +117,7 @@ const compareVersions = (a: string, b: string) => {
 }
 
 export const formatCount = (n: number, locale: string) =>
-  new Intl.NumberFormat(locale, { notation: 'compact', maximumFractionDigits: 1 }).format(n)
+  formatNumber(n, locale, { notation: 'compact', maximumFractionDigits: 1 })
 
 // The installed file first, then the page's current files, newest first; old and archived files are left out.
 export const currentFiles = (files: File[], installedId: number) => {

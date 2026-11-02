@@ -1,3 +1,5 @@
+import { formatNumber } from '../i18n/numberFormat.ts'
+
 const MINUTE = 60_000
 const HOUR = 60 * MINUTE
 const WHOLE_HOURS = 10
@@ -8,12 +10,12 @@ export function formatPlaytime(ms: number, locale = 'en'): string {
     return ''
   }
   const fmt = (unit: 'minute' | 'hour', digits: number, n: number) =>
-    new Intl.NumberFormat(locale, {
+    formatNumber(n, locale, {
       style: 'unit',
       unit,
       unitDisplay: 'short',
       maximumFractionDigits: digits,
-    }).format(n)
+    })
   if (ms < HOUR) {
     return fmt('minute', 0, Math.floor(ms / MINUTE))
   }

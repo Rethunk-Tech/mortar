@@ -21,6 +21,7 @@ import type {
   StartupReport,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { BEPINEX, SMAPI } from '../brand/productNames.ts'
+import { formatNumber } from '../i18n/numberFormat.ts'
 import { cmpText } from '../mods/cmpText.ts'
 import { openModHandlers } from '../mods/openMod.ts'
 import { Tooltip } from '../shell/Tooltip.tsx'
@@ -51,7 +52,7 @@ function Share({ part, largest }: { part: number; largest: number }) {
         }}
       />
       <Box component="span" sx={{ color: 'text.secondary', fontSize: 'small.fontSize' }}>
-        {part.toLocaleString(i18n.locale, { style: 'percent', maximumFractionDigits: 1 })}
+        {formatNumber(part, i18n.locale, { style: 'percent', maximumFractionDigits: 1 })}
       </Box>
     </Box>
   )

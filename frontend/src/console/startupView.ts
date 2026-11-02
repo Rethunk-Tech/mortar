@@ -3,6 +3,7 @@ import type {
   StartupPhases,
   StartupReport,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
+import { formatNumber } from '../i18n/numberFormat.ts'
 
 type PhaseId = 'smapi' | 'entry' | 'content' | 'firstTicks' | 'intro' | 'afterTitle'
 
@@ -59,8 +60,8 @@ interface StartupRegression {
 
 function formatDuration(ms: number, locale: string): string {
   return ms >= MS_PER_SECOND
-    ? `${(ms / MS_PER_SECOND).toLocaleString(locale, { maximumFractionDigits: 1 })} s`
-    : `${ms.toLocaleString(locale)} ms`
+    ? `${formatNumber(ms / MS_PER_SECOND, locale, { maximumFractionDigits: 1 })} s`
+    : `${formatNumber(ms, locale)} ms`
 }
 
 /** Mods that were updated or added since the previous launch and made startup slower by a noticeable amount. */

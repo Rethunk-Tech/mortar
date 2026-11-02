@@ -14,6 +14,7 @@ import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { isDevelopEntry } from '../develop/devEntry.ts'
 import { useTab } from '../game/tab.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
+import { formatNumber } from '../i18n/numberFormat.ts'
 import { openModInProfile } from '../profiles/findMod.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { Fold } from '../shell/Fold.tsx'
@@ -316,11 +317,11 @@ function ActionRows({
         </Link>
       ) : null}
       <DependentRows
-        label={t`Required by (${{ count: neededBy.length.toLocaleString(i18n.locale) }})`}
+        label={t`Required by (${{ count: formatNumber(neededBy.length) }})`}
         dependents={neededBy}
       />
       <DependentRows
-        label={t`Optional for (${{ count: optionalFor.length.toLocaleString(i18n.locale) }})`}
+        label={t`Optional for (${{ count: formatNumber(optionalFor.length) }})`}
         dependents={optionalFor}
       />
     </>
@@ -368,7 +369,7 @@ function DependentRows({ label, dependents }: { label: string; dependents: reado
 // Opening or switching paints the panel's header and actions at once; the sections between follow in a render that
 // never blocks input, and a toggle or profile save re-renders them there too.
 function LowerSectionsView({ mod, profile }: { mod: Mod; profile: Profile }) {
-  const { t, i18n } = useLingui()
+  const { t } = useLingui()
   const setSkipVersion = useMods((s) => s.setSkipVersion)
   const setSkipSource = useMods((s) => s.setSkipSource)
   const nexusId = nexusIdOf(profile, mod)
@@ -414,7 +415,7 @@ function LowerSectionsView({ mod, profile }: { mod: Mod; profile: Profile }) {
       >
         {idName !== '' && ownIds !== '' ? <Field label={idName} value={ownIds} /> : null}
         {mod.endorsements > 0 ? (
-          <Field label={t`Endorsements`} value={mod.endorsements.toLocaleString(i18n.locale)} />
+          <Field label={t`Endorsements`} value={formatNumber(mod.endorsements)} />
         ) : null}
       </Box>
       {nexusId ? (

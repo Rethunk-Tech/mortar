@@ -7,6 +7,7 @@ import { SaveFile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { safeFileName } from '../console/save.ts'
 import { listNames } from '../i18n/list.ts'
+import { formatNumber } from '../i18n/numberFormat.ts'
 import { profileById, useProfiles } from '../profiles/store.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { space } from '../theme/density.ts'
@@ -94,7 +95,7 @@ function ListHint({ skipped, total }: { skipped: string[]; total: number }) {
 // The mod list as text: the format, the text itself as it will be pasted, and Copy and Save. Discord's list is
 // shown as the messages it is split into, copied one after another.
 export function ListFormat() {
-  const { t, i18n } = useLingui()
+  const { t } = useLingui()
   const profileId = useShareDialog((s) => s.profileId)
   const keys = useShareDialog((s) => s.keys)
   const thunderstore = useProfiles((s) => s.game?.sources?.includes('thunderstore') === true)
@@ -174,7 +175,7 @@ export function ListFormat() {
                 <p className="list-message-title">
                   {t`Message ${{ count: part.n }} of ${total}`}
                   <span className="list-message-size">
-                    {t`${{ count: part.text.length.toLocaleString(i18n.locale) }} characters`}
+                    {t`${{ count: formatNumber(part.text.length) }} characters`}
                   </span>
                 </p>
                 <TipIconButton

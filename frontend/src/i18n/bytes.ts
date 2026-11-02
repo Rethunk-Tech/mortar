@@ -1,4 +1,5 @@
 import { i18n } from '@lingui/core'
+import { formatNumber } from './numberFormat.ts'
 
 const UNITS = ['byte', 'kilobyte', 'megabyte', 'gigabyte'] as const
 const KIB = 1024
@@ -11,13 +12,13 @@ export function formatBytes(bytes: number): string {
     value /= KIB
     unitIndex += 1
   }
-  return new Intl.NumberFormat(i18n.locale || 'en', {
+  return formatNumber(value, i18n.locale || 'en', {
     style: 'unit',
     unit: UNITS[unitIndex],
     // 'long' for bytes so the count agrees ("1 byte", "0 bytes"); the short form reads "0 byte".
     unitDisplay: unitIndex === 0 ? 'long' : 'short',
     maximumFractionDigits: unitIndex === 0 ? 0 : 1,
-  }).format(value)
+  })
 }
 
 export function formatKb(kb: number): string {

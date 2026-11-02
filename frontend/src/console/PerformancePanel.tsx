@@ -7,6 +7,7 @@ import type {
   PerformanceRow,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { BEPINEX, HARMONY } from '../brand/productNames.ts'
+import { formatNumber } from '../i18n/numberFormat.ts'
 import { useProfileLoader, useProfiles } from '../profiles/store.ts'
 import { space } from '../theme/density.ts'
 import { formatTiming } from './formatTiming.ts'
@@ -197,7 +198,7 @@ function PanelView({
 function FrameLine({ frame, smapi }: { frame: FrameSummary | null; smapi: boolean }) {
   const { t, i18n } = useLingui()
   const ms = (v: number) => formatTiming(v, i18n.locale)
-  const mib = (bytes: number) => Math.round(bytes / MIB).toLocaleString(i18n.locale)
+  const mib = (bytes: number) => formatNumber(Math.round(bytes / MIB))
   return (
     <Box
       sx={{
