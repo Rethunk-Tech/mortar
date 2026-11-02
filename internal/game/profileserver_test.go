@@ -2,6 +2,7 @@ package game
 
 import (
 	"path/filepath"
+	"runtime"
 	"slices"
 	"testing"
 
@@ -15,6 +16,9 @@ func TestProfileServerStart(t *testing.T) {
 	exe, args, err := ProfileServerStart(spec, "windows", "/g", "/d")
 	if err != nil || exe != filepath.Join("/g", "S.exe") || !slices.Equal(args, []string{"--dataPath", "/d"}) {
 		t.Fatalf("windows: %q %v %v", exe, args, err)
+	}
+	if runtime.GOOS == "windows" {
+		return // the linux path finds an extensionless dotnet on PATH, which a Windows host never resolves
 	}
 	bin := t.TempDir()
 	testfs.WriteAt(t, filepath.Join(bin, "dotnet"), []byte("#!/bin/sh\n"))
