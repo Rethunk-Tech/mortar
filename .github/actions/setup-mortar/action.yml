@@ -57,16 +57,24 @@ runs:
         apt=(-o "Dir::Cache::archives=$HOME/apt-archives" -o APT::Keep-Downloaded-Packages=true -o Acquire::Retries=3 -o Acquire::http::Timeout=30)
         sudo apt-get "${apt[@]}" update && sudo apt-get "${apt[@]}" install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev "${pkgs[@]}"
 
+    # A key with no date hits forever and never saves, which leaves the build cache at its first compile; once a day on
+    # main keeps it near the code.
+    - name: Cache day
+      id: day
+      shell: bash
+      run: echo "date=$(date -u +%F)" >>"$GITHUB_OUTPUT"
+
     - name: Setup Go
       if: inputs.native == 'true'
-      uses: Rethunk-Tech/gh-actions/setup-go@67ec8bd68343d915462729ad119c355740cf6205 # v1.22
+      uses: Rethunk-Tech/gh-actions/setup-go@0fd53b2e66ac157aab89e4dc0ebbf4627969acef # v1.23
       with:
         go-version-file: go.mod
+        cache-key-suffix: ${{ github.ref == 'refs/heads/main' && steps.day.outputs.date || '' }}
 
     # Without the app's compile there is no build cache worth restoring (1.4 GB), so only the module cache is kept.
     - name: Setup Go (no build cache)
       if: inputs.native != 'true'
-      uses: Rethunk-Tech/gh-actions/setup-go@67ec8bd68343d915462729ad119c355740cf6205 # v1.22
+      uses: Rethunk-Tech/gh-actions/setup-go@0fd53b2e66ac157aab89e4dc0ebbf4627969acef # v1.23
       with:
         go-version-file: go.mod
         cache-build: "false"
@@ -129,7 +137,7 @@ runs:
 
     - name: Setup Bun
       if: inputs.frontend == 'true'
-      uses: Rethunk-Tech/gh-actions/setup-bun@67ec8bd68343d915462729ad119c355740cf6205 # v1.22
+      uses: Rethunk-Tech/gh-actions/setup-bun@0fd53b2e66ac157aab89e4dc0ebbf4627969acef # v1.23
 
     # Astro runs under Node, and the runner image's Node can trail the version it requires.
     - name: Setup Node

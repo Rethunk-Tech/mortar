@@ -78,10 +78,17 @@ jobs:
         id: changes
         uses: ./.github/actions/code-changed
 
+      - name: Cache day
+        id: day
+        if: steps.changes.outputs.code == 'true'
+        shell: bash
+        run: echo "date=$(date -u +%F)" >>"$GITHUB_OUTPUT"
+
       - name: Setup Go
         if: steps.changes.outputs.code == 'true'
-        uses: Rethunk-Tech/gh-actions/setup-go@67ec8bd68343d915462729ad119c355740cf6205 # v1.22
+        uses: Rethunk-Tech/gh-actions/setup-go@0fd53b2e66ac157aab89e4dc0ebbf4627969acef # v1.23
         with:
+          cache-key-suffix: ${{ github.ref == 'refs/heads/main' && steps.day.outputs.date || '' }}
           go-version-file: go.mod
 
       # -race needs cgo and gcc; the runner image ships mingw, and the step fails loudly if it does not.
