@@ -67,16 +67,16 @@ scripts:
 overrides:
   deb:
     depends:
-      - libwebkitgtk-6.0-4
+      - libwebkitgtk-6.0-4 (>= 2.44)
       - xdg-utils
   rpm:
     depends:
-      - webkitgtk6.0
+      - webkitgtk6.0 >= 2.44
       - xdg-utils
   archlinux:
     depends:
-      - webkitgtk-6.0
+      - webkitgtk-6.0>=2.44
       - xdg-utils
 depends:
-  - webkitgtk-6.0
+  - webkitgtk-6.0>=2.44
   - xdg-utils
