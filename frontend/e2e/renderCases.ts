@@ -41,7 +41,7 @@ export function newCases(h: Helpers): Case[] {
     await tab(page, 'Home')
     await page.getByRole('button', { name: /^Share…/ }).click()
     const target = page.getByRole('button', { name: /^Thunderstore/ })
-    if (await target.isVisible({ timeout: 1500 }).catch(() => false)) {
+    if (await target.isVisible()) {
       await target.click()
       return true
     }
