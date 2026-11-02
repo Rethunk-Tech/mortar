@@ -7,6 +7,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/opener"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 
 	"github.com/Rethunk-Tech/go-nexusmods/sso"
 )
@@ -49,7 +50,7 @@ func (s *Service) StartSSO(ctx context.Context) (Account, error) {
 	s.run.mu.Lock()
 	if s.run.cancel != nil {
 		s.run.mu.Unlock()
-		return Account{}, errors.New("a Nexus sign-in is already in progress")
+		return Account{}, usererr.New(usererr.Busy, "a Nexus sign-in is already in progress")
 	}
 	s.run.cancel = cancel
 	s.run.mu.Unlock()

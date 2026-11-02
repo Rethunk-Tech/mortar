@@ -24,7 +24,7 @@ var errUnknownVersion = errors.New("unknown loader version")
 // InstallVersion installs the given SMAPI version. A copy already in the store is applied without downloading.
 func (s *Service) InstallVersion(ctx context.Context, id, loaderID, version string) (loader.Status, error) {
 	if !s.busy.TryLock() {
-		return loader.Status{}, errors.New("a loader install is already running")
+		return loader.Status{}, usererr.New(usererr.Busy, "a loader install is already running")
 	}
 	defer s.busy.Unlock()
 	g, dir, err := s.target(id)

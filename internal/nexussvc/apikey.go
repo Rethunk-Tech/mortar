@@ -31,7 +31,7 @@ func (s *Service) SignIn(ctx context.Context, key string) (Account, error) {
 	}
 	key = strings.TrimSpace(key)
 	if key == "" {
-		return Account{}, errors.New("paste your Nexus Mods personal API key")
+		return Account{}, usererr.New(usererr.Invalid, "paste your Nexus Mods personal API key")
 	}
 	user, err := s.client.WithKey(key).Validate(ctx)
 	if errors.Is(err, nexusmods.ErrUnauthorized) {

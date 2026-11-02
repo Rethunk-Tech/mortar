@@ -339,7 +339,7 @@ func (s *Service) Status(ctx context.Context, id, loaderID string) (loader.Statu
 // Install installs the loader or, when it is already there, updates it, then puts its bundled mods in every profile.
 func (s *Service) Install(ctx context.Context, id, loaderID string) (loader.Status, error) {
 	if !s.busy.TryLock() {
-		return loader.Status{}, errors.New("a loader install is already running")
+		return loader.Status{}, usererr.New(usererr.Busy, "a loader install is already running")
 	}
 	defer s.busy.Unlock()
 	return s.run(ctx, id, loaderID, false)

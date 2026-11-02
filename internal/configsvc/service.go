@@ -153,7 +153,7 @@ func (s *Service) jsonDocs(game, profileID string) ([]cfgOnDisk, error) {
 // jsonPath is a file of the profile's mod config folder; name must be a bare .json file name.
 func (s *Service) jsonPath(game, id, name string) (string, error) {
 	if name != filepath.Base(name) || !strings.EqualFold(filepath.Ext(name), jsonExt) {
-		return "", fmt.Errorf("%q is not a config file name", name)
+		return "", usererr.Wrap(usererr.Invalid, fmt.Errorf("%q is not a config file name", name))
 	}
 	dir, err := s.modConfigDir(game, id)
 	if err != nil {
@@ -169,7 +169,7 @@ func (s *Service) jsonPath(game, id, name string) (string, error) {
 // name must be a bare file name.
 func (s *Service) cfgPath(game, id, name string) (string, error) {
 	if name != filepath.Base(name) || !strings.EqualFold(filepath.Ext(name), cfgExt) {
-		return "", fmt.Errorf("%q is not a config file name", name)
+		return "", usererr.Wrap(usererr.Invalid, fmt.Errorf("%q is not a config file name", name))
 	}
 	dir, err := s.cfgDir(game, id)
 	if err != nil {
@@ -372,7 +372,7 @@ func (s *Service) textDocs(game, profileID string) ([]cfgOnDisk, error) {
 func (s *Service) textPath(game, id, name string) (string, error) {
 	rel := filepath.FromSlash(name)
 	if !filepath.IsLocal(rel) || strings.Count(name, "/") > 1 || !slices.Contains(textExts, strings.ToLower(filepath.Ext(name))) {
-		return "", fmt.Errorf("%q is not a config file name", name)
+		return "", usererr.Wrap(usererr.Invalid, fmt.Errorf("%q is not a config file name", name))
 	}
 	dir, err := s.cfgDir(game, id)
 	if err != nil {
@@ -390,7 +390,7 @@ func (s *Service) Text(game, profileID, modID, file string) (string, error) {
 	if st, err := os.Stat(p); err != nil {
 		return "", err
 	} else if st.Size() > maxTextFile {
-		return "", fmt.Errorf("%s is %s, too big to edit here; open its folder instead", file, bytefmt.Format(st.Size()))
+		return "", usererr.Wrap(usererr.Invalid, fmt.Errorf("%s is %s, too big to edit here; open its folder instead", file, bytefmt.Format(st.Size())))
 	}
 	raw, err := safefs.ReadFile(p)
 	return string(mod.StripBOM(raw)), err
@@ -433,14 +433,14 @@ func checkSyntax(file, text string) error {
 		var v any
 		if err := json.Unmarshal(clean, &v); err != nil {
 			if se, ok := errors.AsType[*json.SyntaxError](err); ok {
-				return fmt.Errorf("%s is not valid JSON at line %d: %w", file, 1+bytes.Count(clean[:se.Offset], []byte("\n")), err)
+				return usererr.Wrap(usererr.Invalid, fmt.Errorf("%s is not valid JSON at line %d: %w", file, 1+bytes.Count(clean[:se.Offset], []byte("\n")), err))
 			}
-			return fmt.Errorf("%s is not valid JSON: %w", file, err)
+			return usererr.Wrap(usererr.Invalid, fmt.Errorf("%s is not valid JSON: %w", file, err))
 		}
 	case ".yaml", ".yml":
 		var v any
 		if err := yaml.Unmarshal([]byte(text), &v); err != nil {
-			return fmt.Errorf("%s is not valid YAML: %w", file, err)
+			return usererr.Wrap(usererr.Invalid, fmt.Errorf("%s is not valid YAML: %w", file, err))
 		}
 	case ".xml":
 		d := xml.NewDecoder(strings.NewReader(text))
@@ -450,7 +450,7 @@ func checkSyntax(file, text string) error {
 				break
 			}
 			if err != nil {
-				return fmt.Errorf("%s is not valid XML: %w", file, err)
+				return usererr.Wrap(usererr.Invalid, fmt.Errorf("%s is not valid XML: %w", file, err))
 			}
 		}
 	}
@@ -463,7 +463,7 @@ func (s *Service) textFile(game, profileID, modID, file string) (string, error) 
 		return "", err
 	}
 	if f.Format != FormatText {
-		return "", fmt.Errorf("%s is not edited as text", file)
+		return "", usererr.Wrap(usererr.Invalid, fmt.Errorf("%s is not edited as text", file))
 	}
 	return s.textPath(game, profileID, f.Name)
 }
@@ -517,7 +517,7 @@ func (s *Service) fileOf(game, profileID, modID, name string) (ConfigFile, error
 			return f, nil
 		}
 	}
-	return ConfigFile{}, fmt.Errorf("%s has no config file %q in this profile", modID, name)
+	return ConfigFile{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("%s has no config file %q in this profile", modID, name))
 }
 
 // Schema reads one file as typed sections and entries.

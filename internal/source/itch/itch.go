@@ -122,8 +122,7 @@ func (d Driver) call(ctx context.Context, key, path string, params url.Values, o
 // downloadURL asks for an upload's file. The API answers with a redirect to a short-lived signed address rather than
 // JSON, so the redirect is read, not followed.
 func (d Driver) downloadURL(ctx context.Context, key, uploadID string) (string, error) {
-	client := *cmp.Or(d.HTTP, http.DefaultClient)
-	client.CheckRedirect = httpkit.NoFollow
+	client := httpkit.WithRedirect(d.HTTP, httpkit.NoFollow)
 	ctx, cancel := context.WithTimeout(ctx, source.RequestTimeout)
 	defer cancel()
 	u := strings.TrimRight(cmp.Or(d.URL, BaseURL), "/") + "/uploads/" + url.PathEscape(uploadID) + "/download"

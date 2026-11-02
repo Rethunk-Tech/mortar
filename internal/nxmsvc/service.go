@@ -25,6 +25,7 @@ import (
 	_ "github.com/Rethunk-Tech/mortar/internal/source/all"
 	"github.com/Rethunk-Tech/mortar/internal/source/curseforge"
 	"github.com/Rethunk-Tech/mortar/internal/source/vsmoddb"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"github.com/Rethunk-Tech/mortar/internal/winhost"
 )
 
@@ -367,14 +368,14 @@ func (s *Service) Inbox() Inbox {
 // Assign hands the arrival to the download queue for the profile.
 func (s *Service) Assign(id int, game, profile string) error {
 	if game == "" || profile == "" {
-		return errors.New("choose a profile for the download")
+		return usererr.New(usererr.Invalid, "choose a profile for the download")
 	}
 	// The arrival leaves the inbox only once the queue took it, so a full queue leaves it there to assign again.
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	i := slices.IndexFunc(s.arrivals, func(a Arrival) bool { return a.ID == id })
 	if i < 0 {
-		return fmt.Errorf("link %d is no longer waiting", id)
+		return usererr.Wrap(usererr.NotFound, fmt.Errorf("link %d is no longer waiting", id))
 	}
 	select {
 	case s.Assigned <- Assignment{
@@ -386,7 +387,7 @@ func (s *Service) Assign(id int, game, profile string) error {
 		return nil
 	default:
 		log.Printf("nxm: link %d not assigned: download queue full", id)
-		return errors.New("too many downloads are waiting")
+		return usererr.New(usererr.Busy, "too many downloads are waiting")
 	}
 }
 

@@ -880,7 +880,7 @@ func unzipPackCache(raw []byte) ([]byte, bool) {
 		if err != nil {
 			return nil, false
 		}
-		payload, err := io.ReadAll(reader)
+		payload, err := safefs.ReadCapped(reader, maxPackFileBytes)
 		_ = reader.Close()
 		return payload, err == nil
 	}
