@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, ToggleButton } from '@mui/material'
+import { alpha, Box, ToggleButton } from '@mui/material'
 import {
   Code,
   Folder,
@@ -28,6 +28,9 @@ const ICONS: Record<string, LucideIcon> = {
   sounds: Volume2,
 }
 
+const SELECTED_ALPHA = 0.16
+const SELECTED_HOVER_ALPHA = 0.24
+
 function Tile({
   icon: Icon,
   label,
@@ -52,6 +55,13 @@ function Tile({
         // A long label wraps inside its tile instead of running past the edge.
         whiteSpace: 'normal',
         overflowWrap: 'anywhere',
+        // MUI's selected tile is only slightly lighter than an unselected one on a dark window.
+        '&.Mui-selected': {
+          color: 'primary.main',
+          borderColor: 'primary.main',
+          bgcolor: (th) => alpha(th.palette.primary.main, SELECTED_ALPHA),
+          '&:hover': { bgcolor: (th) => alpha(th.palette.primary.main, SELECTED_HOVER_ALPHA) },
+        },
       }}
     >
       <Icon size={18} aria-hidden={true} style={{ flexShrink: 0 }} />
