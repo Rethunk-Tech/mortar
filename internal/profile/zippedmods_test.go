@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/Rethunk-Tech/go-safefs"
 )
@@ -140,5 +141,27 @@ func TestReadOnlyQueriesLeaveTheZipCacheToTheSync(t *testing.T) {
 	}
 	if left, _ := filepath.Glob(filepath.Join(dir, zipsDir, "*.tmp")); len(left) != 0 {
 		t.Fatalf("temp files left: %v", left)
+	}
+}
+
+func TestPruneZipsRemovesOnlyStaleTemps(t *testing.T) {
+	dir := t.TempDir()
+	zips := filepath.Join(dir, zipsDir)
+	if err := os.MkdirAll(zips, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	old, fresh := filepath.Join(zips, "old.1-1.tmp"), filepath.Join(zips, "fresh.1-2.tmp")
+	for _, p := range []string{old, fresh} {
+		if err := safefs.WriteFile(p, []byte("x"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	past := time.Now().Add(-2 * staleTmpAge)
+	if err := os.Chtimes(old, past, past); err != nil {
+		t.Fatal(err)
+	}
+	pruneZips(dir, nil)
+	if safefs.IsFile(old) || !safefs.IsFile(fresh) {
+		t.Fatalf("old temp present %v, fresh temp present %v", safefs.IsFile(old), safefs.IsFile(fresh))
 	}
 }

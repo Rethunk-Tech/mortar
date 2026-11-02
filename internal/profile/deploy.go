@@ -105,8 +105,12 @@ func zipCached(dir, key, src string) (string, error) {
 	return zp, safefs.Rename(tmp, zp)
 }
 
+// staleTmpAge is how old a zip build's temp file must be before pruneZips treats it as a crash leftover.
+const staleTmpAge = time.Hour
+
 // pruneZips removes the cached zips none of files lays out any more. It runs under the profile's layout lock, which
-// the read-only queries that also build zips do not hold, so an in-flight build's temp file is left alone.
+// the read-only queries that also build zips do not hold, so a temp file is removed only once it is too old to be an
+// in-flight build's.
 func pruneZips(dir string, files map[string]packageFile) {
 	keep := map[string]bool{}
 	for _, f := range files {
@@ -119,9 +123,15 @@ func pruneZips(dir string, files map[string]packageFile) {
 		return
 	}
 	for _, e := range entries {
-		if !keep[e.Name()] && !strings.HasSuffix(e.Name(), ".tmp") {
-			_ = safefs.Remove(filepath.Join(dir, zipsDir, e.Name()))
+		if keep[e.Name()] {
+			continue
 		}
+		if strings.HasSuffix(e.Name(), ".tmp") {
+			if info, err := e.Info(); err != nil || time.Since(info.ModTime()) < staleTmpAge {
+				continue
+			}
+		}
+		_ = safefs.Remove(filepath.Join(dir, zipsDir, e.Name()))
 	}
 }
 
