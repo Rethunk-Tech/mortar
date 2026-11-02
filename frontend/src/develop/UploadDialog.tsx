@@ -18,6 +18,7 @@ import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { packProject, runOf, useDevRuns } from './builds.ts'
+import { ReleaseEverywhere } from './ReleaseEverywhere.tsx'
 import { siteLabel, TEAMS_PAGE, uploadTo } from './uploadSites.ts'
 
 const CURSEFORGE_TOKENS_PAGE = 'https://authors.curseforge.com/#/settings/api-tokens'
@@ -91,6 +92,49 @@ function TokenDialog({
   )
 }
 
+/** The token dialog for the site that lacks one. */
+function AskToken({
+  site,
+  game,
+  dir,
+  onSaved,
+  onClose,
+}: {
+  site: string
+  game: string
+  dir: string
+  onSaved: () => void
+  onClose: () => void
+}) {
+  const { t } = useLingui()
+  if (site === 'thunderstore') {
+    return (
+      <TokenDialog
+        site={sourceLabel('thunderstore')}
+        subtitle={t`Uploads go through a service account of your team.`}
+        fieldLabel={t`Service account token`}
+        pageLabel={t`Create one in your team's settings`}
+        page={TEAMS_PAGE}
+        save={(token) => SetThunderstoreToken(game, dir, token)}
+        onSaved={onSaved}
+        onClose={onClose}
+      />
+    )
+  }
+  return (
+    <TokenDialog
+      site={sourceLabel('curseforge')}
+      subtitle={t`One upload token covers every project of yours.`}
+      fieldLabel={t`Upload token`}
+      pageLabel={t`Create one in your author settings`}
+      page={CURSEFORGE_TOKENS_PAGE}
+      save={SetCurseForgeToken}
+      onSaved={onSaved}
+      onClose={onClose}
+    />
+  )
+}
+
 function SiteRow({
   site,
   on,
@@ -158,10 +202,11 @@ export function UploadDialog({
   const [sites, setSites] = useState<UploadSite[] | null>(null)
   const [skipped, setSkipped] = useState<string[]>([])
   const [asking, setAsking] = useState('')
+  const [releasing, setReleasing] = useState(false)
   const [uploading, upload] = usePending()
   const load = useCallback(() => {
     UploadSites(game, dir)
-      .then((list) => setSites((list ?? []).filter((s) => s.configured)))
+      .then((list) => setSites(list ?? []))
       .catch((e: unknown) => {
         setSites([])
         reportError(t`Could not read the sites to upload to`)(e)
@@ -175,35 +220,25 @@ export function UploadDialog({
     setAsking('')
     load()
   }
-  if (asking === 'thunderstore') {
+  if (asking !== '') {
     return (
-      <TokenDialog
-        site={sourceLabel('thunderstore')}
-        subtitle={t`Uploads go through a service account of your team.`}
-        fieldLabel={t`Service account token`}
-        pageLabel={t`Create one in your team's settings`}
-        page={TEAMS_PAGE}
-        save={(token) => SetThunderstoreToken(game, dir, token)}
-        onSaved={saved}
-        onClose={() => setAsking('')}
+      <AskToken site={asking} game={game} dir={dir} onSaved={saved} onClose={() => setAsking('')} />
+    )
+  }
+  if (releasing) {
+    return (
+      <ReleaseEverywhere
+        game={game}
+        dir={dir}
+        name={name}
+        version={version}
+        sites={sites}
+        onClose={onClose}
       />
     )
   }
-  if (asking === 'curseforge') {
-    return (
-      <TokenDialog
-        site={sourceLabel('curseforge')}
-        subtitle={t`One upload token covers every project of yours.`}
-        fieldLabel={t`Upload token`}
-        pageLabel={t`Create one in your author settings`}
-        page={CURSEFORGE_TOKENS_PAGE}
-        save={SetCurseForgeToken}
-        onSaved={saved}
-        onClose={() => setAsking('')}
-      />
-    )
-  }
-  const chosen = sites.filter((s) => s.ready && !skipped.includes(s.id))
+  const offered = sites.filter((s) => s.configured)
+  const chosen = offered.filter((s) => s.ready && !skipped.includes(s.id))
   return (
     <FormDialog
       open={true}
@@ -245,7 +280,7 @@ export function UploadDialog({
       }
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
-        {sites.map((s) => (
+        {offered.map((s) => (
           <SiteRow
             key={s.id}
             site={s}
@@ -260,6 +295,15 @@ export function UploadDialog({
             }}
           />
         ))}
+        <Box>
+          <Button
+            size="small"
+            disabled={uploading || !offered.some((s) => s.ready)}
+            onClick={() => setReleasing(true)}
+          >
+            {t`Release everywhere`}
+          </Button>
+        </Box>
       </Box>
     </FormDialog>
   )

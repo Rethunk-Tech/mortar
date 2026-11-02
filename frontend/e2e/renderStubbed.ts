@@ -6,6 +6,9 @@ import type { dialogKit } from './renderDialogs.ts'
 const CAN_GET_OLDER_VERSION = 3_208_769_223
 const DEPENDENCY_SYNC = 458_110_213
 const UPLOAD_SITES = 858_225_634
+const LOAD_ORDER = 3_963_816_757
+const PACK = 1_330_956_574
+const UPLOAD_GITHUB = 3_405_360_245
 
 type Stub = (route: Route) => Promise<void>
 /** Answers the named binding calls with the given results; every other call goes on to the server. */
@@ -22,6 +25,75 @@ function stubCalls(answers: Record<number, unknown>): Stub {
   }
 }
 
+// Release everywhere: the package is stubbed as built, GitHub uploads, Thunderstore is refused and Nexus is not ready.
+function releaseEverywhereCase({ developTab, pick }: ReturnType<typeof dialogKit>): Case {
+  const stub = stubCalls({
+    [UPLOAD_SITES]: [
+      { id: 'thunderstore', configured: true, ready: true },
+      { id: 'nexus', configured: true, ready: false },
+      { id: 'github', configured: true, ready: true },
+    ],
+    [PACK]: { zip: '/tmp/render.zip', issues: [] },
+    [UPLOAD_GITHUB]: 'https://github.com/example/mod/releases/tag/v1.0.0',
+  })
+  return {
+    name: 'develop-release-everywhere',
+    setup: async (p: Page) => {
+      await p.route('**/wails/runtime', stub)
+      await developTab(p)
+      await p.getByRole('main').getByRole('button', { name: 'More actions' }).first().click()
+      if ((await p.getByRole('menuitem', { name: /^Upload v/ }).count()) === 0) {
+        throw new Error(
+          'the first Develop project offers no Upload; the render data needs a released project',
+        )
+      }
+    },
+    run: async (p: Page) => {
+      await pick(p, /^Upload v/)
+      const d = p.getByRole('dialog').last()
+      await d.getByRole('button', { name: 'Release everywhere' }).click()
+      await d.getByText('Skipped: No credentials yet').waitFor()
+      await d.getByRole('button', { name: 'Open page' }).waitFor()
+    },
+    teardown: (p: Page) => p.unroute('**/wails/runtime', stub),
+  }
+}
+
+/** The Load order tab as Baldur's Gate 3 shows it: GustavX, then paks in the profile's order, one with an issue. */
+function loadOrderCase(tab: (page: Page, name: string) => Promise<void>): Case {
+  const row = (position: number, name: string, over: Record<string, unknown> = {}) => ({
+    position,
+    id: `folder:uuid-${position}`,
+    name,
+    version: '1.0.0.0',
+    detail: `${name}.pak`,
+    ...over,
+  })
+  const stub = stubCalls({
+    [LOAD_ORDER]: [
+      row(1, 'GustavX', { official: true, detail: undefined }),
+      row(2, 'Improved UI', { entry: 'improved-ui' }),
+      row(3, 'Party Limit Begone', {
+        entry: 'party-limit',
+        issues: [{ code: 'moduleMissing', message: 'requires Gone', params: { other: 'Gone' } }],
+      }),
+      row(4, 'Hand-added override'),
+    ],
+  })
+  return {
+    name: 'load-order-bg3',
+    setup: async (p: Page) => {
+      await p.route('**/wails/runtime', stub)
+      await tab(p, 'Home')
+    },
+    run: async (p: Page) => {
+      await tab(p, 'Load order')
+      await p.getByText('Party Limit Begone', { exact: true }).waitFor()
+    },
+    teardown: (p: Page) => p.unroute('**/wails/runtime', stub),
+  }
+}
+
 /** Screens the render data may not reach on its own, each with the backend answer that opens it stubbed. */
 export function stubbedCases(kit: ReturnType<typeof dialogKit>): Case[] {
   const {
@@ -34,6 +106,7 @@ export function stubbedCases(kit: ReturnType<typeof dialogKit>): Case[] {
     share,
     toThunderstore,
     fromThunderstore,
+    tab,
   } = kit
   return [
     // The Mods tab with the project and its development profile disagreeing in all three ways.
@@ -97,6 +170,7 @@ export function stubbedCases(kit: ReturnType<typeof dialogKit>): Case[] {
         teardown: (p: Page) => p.unroute('**/wails/runtime', stub),
       }
     })(),
+    releaseEverywhereCase(kit),
     // The Launch tab offers the older version only for a Steam install, so the render sandbox's answer is stubbed.
     (() => {
       const stub = stubCalls({ [CAN_GET_OLDER_VERSION]: true })
@@ -130,5 +204,6 @@ export function stubbedCases(kit: ReturnType<typeof dialogKit>): Case[] {
       ),
       teardown: fromThunderstore,
     },
+    loadOrderCase(tab),
   ]
 }

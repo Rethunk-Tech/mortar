@@ -38,6 +38,22 @@ async function forgetRefused(id: string, game: string, dir: string) {
   }
 }
 
+/** Uploads the newest package to one site and returns the page's link (empty when the site has none). A refused token
+ * is forgotten, so the next upload asks for it again. */
+export async function uploadResult(
+  id: string,
+  { game, dir, version }: { game: string; dir: string; version: string },
+): Promise<string> {
+  try {
+    return await uploadCall(id, game, dir, version)
+  } catch (e) {
+    if (errorKind(e) === 'permission') {
+      await forgetRefused(id, game, dir)
+    }
+    throw e
+  }
+}
+
 /** Uploads the newest package to one site and reports the outcome in a toast: the page's link, or the failure. */
 export async function uploadTo(
   id: string,
@@ -45,7 +61,7 @@ export async function uploadTo(
 ) {
   const site = siteLabel(id)
   try {
-    const url = await uploadCall(id, game, dir, version)
+    const url = await uploadResult(id, { game, dir, version })
     useToasts.getState().push({
       kind: 'success',
       title: i18n._(msg`Uploaded ${name} to ${site}`),
@@ -60,9 +76,6 @@ export async function uploadTo(
     })
   } catch (e) {
     reportError(i18n._(msg`Could not upload to ${site}`))(e)
-    if (errorKind(e) === 'permission') {
-      await forgetRefused(id, game, dir)
-    }
   }
 }
 

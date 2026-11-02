@@ -951,6 +951,7 @@ msgid "Step {step} of {count}"
 msgstr ""
 
 #: src/browse/BrowseBody.tsx
+#: src/develop/ReleaseEverywhere.tsx
 #: src/firstrun/LoaderStep.tsx
 #: src/game/detailStates.tsx
 #: src/lan/SendPanel.tsx
@@ -1440,6 +1441,10 @@ msgstr ""
 
 #: src/saves/SaveGapLine.tsx
 msgid "Needs {count, plural, one {# mod this profile lacks} other {# mods this profile lacks}}"
+msgstr ""
+
+#: src/develop/ReleaseEverywhere.tsx
+msgid "Not set up for this project"
 msgstr ""
 
 #: src/launch/events.ts
@@ -2288,6 +2293,7 @@ msgstr ""
 msgid "Could not preview the template"
 msgstr ""
 
+#: src/develop/ReleaseEverywhere.tsx
 #: src/firstrunTour/TourPopover.tsx
 #: src/game/HomeNotes.tsx
 #: src/queue/QueueHistory.tsx
@@ -3019,6 +3025,10 @@ msgstr ""
 msgid "For a game that is not in Mortar's list. It stays on this computer, and its mods come from archives you add, since Mortar knows no site for it."
 msgstr ""
 
+#: src/develop/ReleaseEverywhere.tsx
+msgid "Could not upload"
+msgstr ""
+
 #: src/share/Included.tsx
 msgid "{count, plural, one {# mod you added from an archive} other {# mods you added from archives}} cannot be linked"
 msgstr ""
@@ -3035,6 +3045,7 @@ msgstr ""
 msgid "Template saved"
 msgstr ""
 
+#: src/develop/ReleaseEverywhere.tsx
 #: src/develop/UploadDialog.tsx
 msgid "Uploading…"
 msgstr ""
@@ -3131,6 +3142,7 @@ msgid "Could not read the mod project"
 msgstr ""
 
 #: src/develop/ReleaseDialog.tsx
+#: src/develop/ReleaseEverywhere.tsx
 msgid "Could not release the mod"
 msgstr ""
 
@@ -3497,6 +3509,7 @@ msgstr ""
 
 #: src/browse/BrowseMenu.tsx
 #: src/browse/CardAction.tsx
+#: src/develop/ReleaseEverywhere.tsx
 #: src/develop/uploadSites.ts
 #: src/share/ImportPreview.tsx
 #: src/share/UploadModpackDialog.tsx
@@ -3889,6 +3902,10 @@ msgstr ""
 #: src/firstrunTour/TourPopover.tsx
 #: src/game/Sidebar.tsx
 msgid "Mods"
+msgstr ""
+
+#: src/develop/ReleaseEverywhere.tsx
+msgid "Not signed in with the gh CLI"
 msgstr ""
 
 #: src/games/LetterRail.tsx
@@ -4987,6 +5004,11 @@ msgstr ""
 msgid "Hide which files they changed"
 msgstr ""
 
+#. placeholder {0}: st.reason
+#: src/develop/ReleaseEverywhere.tsx
+msgid "Skipped: {0}"
+msgstr ""
+
 #: src/games/GameRowMenu.tsx
 msgid "Hide this game"
 msgstr ""
@@ -5520,6 +5542,10 @@ msgstr ""
 
 #: src/templates/ApplyTemplateDialog.tsx
 msgid "{left, plural, one {# mod still to download} other {# mods still to download}}"
+msgstr ""
+
+#: src/develop/ReleaseEverywhere.tsx
+msgid "Building the package…"
 msgstr ""
 
 #: src/develop/ProjectCard.tsx
@@ -6286,6 +6312,10 @@ msgstr ""
 msgid "Already in {launcher}"
 msgstr ""
 
+#: src/develop/ReleaseEverywhere.tsx
+msgid "The package was refused. The project card says why."
+msgstr ""
+
 #: src/launch/VanillaPlay.tsx
 msgid "Play without {launcher} overlay"
 msgstr ""
@@ -6422,6 +6452,7 @@ msgstr ""
 msgid "Minimise"
 msgstr ""
 
+#: src/develop/ReleaseEverywhere.tsx
 #: src/launch/LaunchScreen.tsx
 msgid "Waiting"
 msgstr ""
@@ -6806,6 +6837,10 @@ msgstr ""
 msgid "Open downloads"
 msgstr ""
 
+#: src/develop/ReleaseEverywhere.tsx
+msgid "No credentials yet"
+msgstr ""
+
 #: src/game/Home.tsx
 msgid "All saves ({total})"
 msgstr ""
@@ -6974,6 +7009,10 @@ msgstr ""
 
 #: src/toasts/report.ts
 msgid "That was made by a newer Mortar. Update Mortar to open it."
+msgstr ""
+
+#: src/develop/ReleaseEverywhere.tsx
+msgid "Release {name} {version}"
 msgstr ""
 
 #: src/saves/SaveDetails.tsx
@@ -7192,6 +7231,10 @@ msgstr ""
 msgid "Launch options…"
 msgstr ""
 
+#: src/develop/UploadDialog.tsx
+msgid "Release everywhere"
+msgstr ""
+
 #: src/saves/SavesTab.tsx
 msgid "Play this profile and save a game. Each save shows here with how well it fits {name}, so you know which mods it needs."
 msgstr ""
@@ -7356,6 +7399,7 @@ msgstr ""
 msgid "{count, plural, one {# update} other {# updates}}"
 msgstr ""
 
+#: src/develop/ReleaseEverywhere.tsx
 #: src/game/FarmMenuItem.tsx
 #: src/groups/dialogs.tsx
 #: src/launch/LaunchButtons.tsx
@@ -7550,6 +7594,7 @@ msgstr ""
 msgid "Command palette"
 msgstr ""
 
+#: src/develop/ReleaseEverywhere.tsx
 #: src/develop/UploadDialog.tsx
 #: src/develop/uploadSites.ts
 #: src/share/UploadModpackDialog.tsx
