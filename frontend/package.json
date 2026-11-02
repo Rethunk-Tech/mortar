@@ -26,7 +26,7 @@
     "@lingui/react": "6.11.0",
     "@mui/material": "9.5.0",
     "@rethunk/dom-input-nav": "^0.1.1",
-    "@rethunk/react-load-hooks": "^0.2.0",
+    "@rethunk/react-load-hooks": "^0.3.0",
     "@tanstack/react-virtual": "3.14.25",
     "@wailsio/runtime": "3.1.0",
     "lucide-react": "1.66.0",
