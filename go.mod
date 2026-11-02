@@ -12,12 +12,12 @@ require (
 	github.com/Rethunk-Tech/go-desktopenv v0.4.0
 	github.com/Rethunk-Tech/go-dotnet v0.2.0
 	github.com/Rethunk-Tech/go-fomod v0.1.0
-	github.com/Rethunk-Tech/go-gamelocator v0.2.0
+	github.com/Rethunk-Tech/go-gamelocator v0.3.0
 	github.com/Rethunk-Tech/go-gameproc v0.1.0
 	github.com/Rethunk-Tech/go-github v0.2.0
 	github.com/Rethunk-Tech/go-httpkit v0.1.0
 	github.com/Rethunk-Tech/go-keyring v0.1.0
-	github.com/Rethunk-Tech/go-larian v0.1.0
+	github.com/Rethunk-Tech/go-larian v0.1.1
 	github.com/Rethunk-Tech/go-lenientjson v0.1.0
 	github.com/Rethunk-Tech/go-modmanagers v0.2.0
 	github.com/Rethunk-Tech/go-nettrace v0.1.0
@@ -26,7 +26,7 @@ require (
 	github.com/Rethunk-Tech/go-semverish v0.2.0
 	github.com/Rethunk-Tech/go-smapi v0.2.0
 	github.com/Rethunk-Tech/go-smapiweb v0.1.0
-	github.com/Rethunk-Tech/go-thunderstore v0.3.0
+	github.com/Rethunk-Tech/go-thunderstore v0.3.1
 	github.com/Rethunk-Tech/go-tilemask v0.1.0
 	github.com/Rethunk-Tech/go-winsym v0.2.0
 	github.com/andybalholm/brotli v1.2.7
@@ -78,11 +78,3 @@ require (
 )
 
 replace github.com/wailsapp/wails/v3 => github.com/Rethunk-AI/wails/v3 v3.0.0-mortar.1
-
-replace github.com/Rethunk-Tech/go-thunderstore => ../go-thunderstore
-
-replace github.com/Rethunk-Tech/go-larian => ../go-larian
-
-replace github.com/Rethunk-Tech/go-bannerlord => ../go-bannerlord
-
-replace github.com/Rethunk-Tech/go-gamelocator => ../go-gamelocator
