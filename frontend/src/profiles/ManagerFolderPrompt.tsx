@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button, Typography } from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import { type ReactNode, useState } from 'react'
 import { PickFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
@@ -41,24 +41,21 @@ export function ManagerFolderPrompt({
       .catch(() => setTyping(true))
   }
   return (
-    <Typography variant="body2" color="text.secondary">
-      {note}{' '}
-      <Button size="small" onClick={choose}>
-        {t`Choose folder…`}
-      </Button>
+    <Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Typography variant="body2" color="text.secondary">
+          {note}
+        </Typography>
+        <Button size="small" onClick={choose} sx={{ flexShrink: 0 }}>
+          {t`Choose folder…`}
+        </Button>
+      </Box>
       {typing ? <TypedFolder label={label} onUse={apply} /> : null}
       {error ? (
-        <Typography
-          component="span"
-          variant="body2"
-          color="error"
-          role="alert"
-          title={error.details}
-          sx={{ ml: 1 }}
-        >
+        <Typography variant="body2" color="error" role="alert" title={error.details}>
           {error.message}
         </Typography>
       ) : null}
-    </Typography>
+    </Box>
   )
 }
