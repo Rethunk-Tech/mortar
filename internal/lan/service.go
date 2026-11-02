@@ -760,24 +760,22 @@ func newHTTPServer(handler http.Handler) *http.Server {
 
 func (s *Service) handler() http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/hello", withDeadline(s.handleHello))
-	mux.HandleFunc("/share", jsonOnly(withDeadline(s.handleShare)))
-	mux.HandleFunc("/store/", s.handleStore)
-	mux.HandleFunc("/outgoing", jsonOnly(withDeadline(s.handleOutgoing)))
-	mux.HandleFunc("/pair/begin", jsonOnly(withDeadline(s.handlePairBegin)))
-	mux.HandleFunc("/pair/finish", jsonOnly(withDeadline(s.handlePairFinish)))
+	mux.HandleFunc("GET /hello", withDeadline(s.handleHello))
+	mux.HandleFunc("POST /share", jsonOnly(withDeadline(s.handleShare)))
+	mux.HandleFunc("GET /store/", s.handleStore)
+	mux.HandleFunc("POST /outgoing", jsonOnly(withDeadline(s.handleOutgoing)))
+	mux.HandleFunc("POST /pair/begin", jsonOnly(withDeadline(s.handlePairBegin)))
+	mux.HandleFunc("POST /pair/finish", jsonOnly(withDeadline(s.handlePairFinish)))
 	return mux
 }
 
-// jsonOnly refuses a POST that is not declared JSON. A web page can send text/plain across origins without a preflight,
+// jsonOnly refuses a request that is not declared JSON. A web page can send text/plain across origins without a preflight,
 // so the declaration is what keeps a visited page from posting to the listener.
 func jsonOnly(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			if mt, _, err := mime.ParseMediaType(r.Header.Get("Content-Type")); err != nil || mt != "application/json" {
-				http.Error(w, "content type must be application/json", http.StatusUnsupportedMediaType)
-				return
-			}
+		if mt, _, err := mime.ParseMediaType(r.Header.Get("Content-Type")); err != nil || mt != "application/json" {
+			http.Error(w, "content type must be application/json", http.StatusUnsupportedMediaType)
+			return
 		}
 		next(w, r)
 	}
@@ -799,10 +797,6 @@ func withDeadline(next http.HandlerFunc) http.HandlerFunc {
 }
 
 func (s *Service) handleHello(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
 	nonce := randomToken()
 	now := time.Now()
 	peer := remotePeer(r)
@@ -836,10 +830,6 @@ func (s *Service) handleHello(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
 	if r.ContentLength > maxRequestBytes {
 		http.Error(w, "request is too large", http.StatusRequestEntityTooLarge)
 		return

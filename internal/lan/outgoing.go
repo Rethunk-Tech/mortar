@@ -147,10 +147,6 @@ func (s *Service) emitOutgoing(o OutgoingTransfer) {
 
 // handleOutgoing takes the pulling computer's plan and ending; the transfer token is the credential.
 func (s *Service) handleOutgoing(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
 	token, _ := strings.CutPrefix(r.Header.Get("Authorization"), "Bearer ")
 	s.outMu.Lock()
 	o, known := s.outgoing[token]

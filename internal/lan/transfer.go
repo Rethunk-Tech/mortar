@@ -389,10 +389,6 @@ func receiveError(sender string, err error) error {
 }
 
 func (s *Service) handleStore(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
 	parts := strings.Split(strings.TrimPrefix(r.URL.Path, "/store/"), "/")
 	if len(parts) != 2 || parts[0] == "" || parts[1] == "" || strings.Contains(parts[1], `\`) {
 		http.Error(w, "invalid store path", http.StatusBadRequest)
