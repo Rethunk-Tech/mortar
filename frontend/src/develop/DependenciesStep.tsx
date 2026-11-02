@@ -209,7 +209,11 @@ export function DependenciesStep({
             key={id}
             id={id}
             item={known[id] ?? ownProject(projects, id)}
-            why={rec ? t`Suggested by your answer: ${{ answer: lowerFirst(answerLabel(form, rec)) }}` : ''}
+            why={
+              rec
+                ? t`Suggested by your answer: ${{ answer: lowerFirst(answerLabel(form, rec)) }}`
+                : ''
+            }
             checked={chosen.includes(id)}
             onToggle={toggle}
             optional={draft.optional.includes(id)}
