@@ -107,7 +107,11 @@ func loaderRef(gameID string, l components.GameLoader) LoaderRef {
 		// Commands, startup timing, in-game performance, the overlay and intro skipping all run in the bridge, which
 		// Mortar installs only from the game's own bridge component, so a game without one (Cat Mail Co.'s IL2CPP
 		// BepInEx, or a BepInEx 5 game whose bridge is not built) offers none of them.
-		bridge := l.Companion != "" && components.HasComponent(gameID, l.Companion)
+		companion, bridge := components.LookupComponent(gameID, l.Companion)
+		bridge = bridge && l.Companion != ""
+		// The IL2CPP build has no engine types to read the scene, perf, overlay or intro from, and no patcher to time
+		// startup: it answers the plugin query only.
+		mono := bridge && !strings.Contains(companion.Asset, "IL2CPP")
 		_, hasConsole := d.(loader.Console)
 		_, hasCompanion := d.(loader.WithCompanion)
 		// A BepInEx game takes commands only where the bridge knows the game's console; SMAPI always has one.
@@ -116,7 +120,7 @@ func loaderRef(gameID string, l components.GameLoader) LoaderRef {
 		_, ref.Perf = d.(loader.InGamePerf)
 		_, ref.Overlay = d.(loader.StreamOverlay)
 		_, ref.IntroSkip = d.(loader.IntroSkipper)
-		ref.Startup, ref.Perf, ref.Overlay, ref.IntroSkip = bridge && ref.Startup, bridge && ref.Perf, bridge && ref.Overlay, bridge && ref.IntroSkip
+		ref.Startup, ref.Perf, ref.Overlay, ref.IntroSkip = mono && ref.Startup, mono && ref.Perf, mono && ref.Overlay, mono && ref.IntroSkip
 		_, ref.Builtin = d.(loader.Builtin)
 		ref.Share = loader.SharesLog(d)
 		if n, ok := d.(loader.ModIDNamer); ok {

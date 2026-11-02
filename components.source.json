@@ -58,6 +58,18 @@
       "version": "latest"
     },
     {
+      "game": "core-keeper",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "asset": "MortarBepInExBridge_IL2CPP-{version}.zip",
+      "version": "latest"
+    },
+    {
       "game": "repo",
       "name": "bridge",
       "kind": "bridge",
@@ -2677,7 +2689,8 @@
           "id": "bepinex5",
           "name": "BepInEx 6 (IL2CPP)",
           "package": "BepInEx-BepInExPack_Core_Keeper",
-          "major": 2
+          "major": 2,
+          "companion": "bridge"
         }
       ],
       "sources": [

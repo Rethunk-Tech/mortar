@@ -1,5 +1,5 @@
 {
-  "serial": 1793582833,
+  "serial": 1793583076,
   "components": [
     {
       "game": "melonloader",
@@ -71,6 +71,20 @@
       "asset": "MortarBepInExBridge_Valheim-0.4.0.zip",
       "version": "0.4.0",
       "sha256": "3d4af4be79bd321fea9d07e02ef9df4dc396ddc0123be3b333da8f618abd27f8"
+    },
+    {
+      "game": "core-keeper",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.4.0",
+      "asset": "MortarBepInExBridge_IL2CPP-0.4.0.zip",
+      "version": "0.4.0",
+      "sha256": "9860cf523d158c7e6ea11b9e7576a75a2cc1cb379ac6a6cb5f0a2538a64bda74"
     },
     {
       "game": "repo",
@@ -2712,6 +2726,7 @@
         {
           "id": "bepinex5",
           "name": "BepInEx 6 (IL2CPP)",
+          "companion": "bridge",
           "package": "BepInEx-BepInExPack_Core_Keeper",
           "major": 2
         }

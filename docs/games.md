@@ -182,4 +182,5 @@ Sources: r2modman's ecosystem schema, MO2's `games/game_valheim.py`, Vortex's `N
 Sources: r2modmanPlus and Gale through the Thunderstore ecosystem schema (`thunderstore.io/api/experimental/schema/dev/latest/`, `core-keeper`: folder `CoreKeeper`, executable `CoreKeeper.exe`, Steam app 1621690), the `BepInEx-BepInExPack_Core_Keeper` package.
 - **Loader:** BepInEx 6 on IL2CPP, through the `bepinex5` driver. The pack is a community build numbered 2.x, so the catalog's `major` is 2. It runs on Doorstop 3 and ships no .NET runtime; Mortar tells the build from the profile's entry assembly (`BepInEx.Unity.IL2CPP.dll`), not from the runtime folder.
 - **Source:** Thunderstore (`core-keeper`) only. Nexus and mod.io are not wired for it.
-- **Not yet:** the Mortar bridge has no IL2CPP build, so Console and Problems show nothing from the game's side, and the intro skip is unavailable. The saves folder is not in the catalog.
+- **Bridge:** the catalog's `bridge` component is `MortarBepInExBridge_IL2CPP` (mortar-bepinex-bridge), whose `plugins/*.dll` the thunderstore-rules installer places under `BepInEx/plugins/Rethunk-MortarBepInExBridge`, as for the Mono bridge. It answers the plugin query only, so Mortar offers no startup timing, performance, overlay or intro skip for it.
+- **Not yet:** the saves folder is not in the catalog.
