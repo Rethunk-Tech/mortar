@@ -26,6 +26,7 @@ import { GroupHeaderRow, StickyGroupSlot } from './ModsGroupHeader.tsx'
 import { useMarked, useRowFocus, useTabStop } from './marked.ts'
 import { contextMenuProps } from './menu.ts'
 import { useModFresh } from './modFresh.ts'
+import { OFF_OPACITY } from './modListCells.ts'
 import { cardSlice } from './overlayRows.ts'
 import { ProfileModTile } from './parts.tsx'
 import { rowPointerHandlers } from './rowPointer.ts'
@@ -48,7 +49,6 @@ import {
   type VirtualRow,
 } from './virtualRows.ts'
 
-const OFF_OPACITY = 0.6
 const CARD_HEIGHT_SMALL = 50
 const CARD_HEIGHT_MEDIUM = 64
 const CARD_HEIGHT_LARGE = 80

@@ -1,3 +1,6 @@
+/** How faint a disabled mod's name and details are, in the grid and the list alike. */
+export const OFF_OPACITY = 0.6
+
 const ellipsis = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } as const
 
 // A row's cells are plain elements styled from the row: a list redraws many rows at once (a freeze, a reload), and a

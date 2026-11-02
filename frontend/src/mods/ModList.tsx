@@ -51,7 +51,7 @@ import { ModListTable } from './ModListVirtual.tsx'
 import { useMarked, useRowFocus, useTabStop } from './marked.ts'
 import { contextMenuProps } from './menu.ts'
 import { useModFresh } from './modFresh.ts'
-import { cellsSx } from './modListCells.ts'
+import { cellsSx, OFF_OPACITY } from './modListCells.ts'
 import { formatCount, isNewer } from './nexusFormat.ts'
 import { OverlayCountChip } from './OverlayRow.tsx'
 import { cardSlice, nestOverlays, overlaysByBase } from './overlayRows.ts'
@@ -383,6 +383,7 @@ function ModRowView({ row, cols, locale, first, orderedRef, profile, onArrow }: 
           cursor: 'pointer',
           bgcolor: (th) =>
             marked ? alpha(th.palette.primary.main, SELECTED_ALPHA) : 'transparent',
+          ...(m.enabled ? {} : { '& > td:not(.cell-status)': { opacity: OFF_OPACITY } }),
           ...(marked ? {} : { '[data-striped] > &': { bgcolor: 'var(--mortar-hairline-ghost)' } }),
           ...(local ? { boxShadow: (th) => `inset 3px 0 0 ${th.palette.info.main}` } : {}),
         },
