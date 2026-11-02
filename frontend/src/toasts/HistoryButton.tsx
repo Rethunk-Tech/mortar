@@ -87,7 +87,8 @@ function HistoryRow({ item }: { item: ToastHistoryItem }) {
             <Button
               size="small"
               onClick={() => copyText(item.detail ?? '', t`Details copied`)}
-              sx={{ alignSelf: 'flex-start' }}
+              // The small button's own 10px side padding would indent its label past the text above.
+              sx={{ alignSelf: 'flex-start', ml: '-10px' }}
             >
               {t`Copy details`}
             </Button>
