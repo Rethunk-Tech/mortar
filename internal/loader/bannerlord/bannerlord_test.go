@@ -66,16 +66,7 @@ func TestPrelaunchSelectsSortedModulesAndTheDeployerRestoresTheOwn(t *testing.T)
 	if err := (extension{}).Prelaunch(view); err != nil {
 		t.Fatal(err)
 	}
-	l, err := bl.ParseLauncher(bytes.NewReader(mustRead(t, generatedPath(view.Dir))))
-	if err != nil {
-		t.Fatal(err)
-	}
-	var got []string
-	for _, m := range l.Mods(bl.Singleplayer) {
-		if m.Selected {
-			got = append(got, m.ID)
-		}
-	}
+	got := selectedModules(t, view)
 	// The multiplayer module is official but neither a default nor needed; StoryMode is needed by Alpha.
 	want := []string{"Native", "SandBoxCore", "StoryMode", "Alpha", "Zeta"}
 	if !slices.Equal(got, want) {
@@ -162,6 +153,14 @@ func TestPrelaunchSelectsTheOfficialModulesADependencyNeedsTransitively(t *testi
 	if err := (extension{}).Prelaunch(view); err != nil {
 		t.Fatal(err)
 	}
+	got := selectedModules(t, view)
+	if !slices.Contains(got, "DlcA") || !slices.Contains(got, "DlcB") || slices.Contains(got, "MultiplayerModule") {
+		t.Fatalf("selected %v", got)
+	}
+}
+
+func selectedModules(t *testing.T, view loader.ProfileView) []string {
+	t.Helper()
 	l, err := bl.ParseLauncher(bytes.NewReader(mustRead(t, generatedPath(view.Dir))))
 	if err != nil {
 		t.Fatal(err)
@@ -172,7 +171,5 @@ func TestPrelaunchSelectsTheOfficialModulesADependencyNeedsTransitively(t *testi
 			got = append(got, m.ID)
 		}
 	}
-	if !slices.Contains(got, "DlcA") || !slices.Contains(got, "DlcB") || slices.Contains(got, "MultiplayerModule") {
-		t.Fatalf("selected %v", got)
-	}
+	return got
 }

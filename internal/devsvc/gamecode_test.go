@@ -21,21 +21,7 @@ func TestGameCodeSearchesAndDecompilesTheGamesAssembly(t *testing.T) {
 	if _, err := svc.GameCode("lethal-company", dir, "", "x"); err == nil {
 		t.Fatal("searched without a game folder")
 	}
-	game := t.TempDir()
-	dll, err := safefs.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	managed := filepath.Join(game, "Game_Data", "Managed")
-	if err := os.MkdirAll(managed, 0o750); err != nil {
-		t.Fatal(err)
-	}
-	if err := safefs.WriteFile(filepath.Join(managed, "Assembly-CSharp.dll"), dll, 0o600); err != nil {
-		t.Fatal(err)
-	}
-	if err := writeUserProps(dir, game); err != nil {
-		t.Fatal(err)
-	}
+	managed := gameWithModDLL(t, dir)
 	mvid, _ := dotnet.Identity(filepath.Join(managed, "Assembly-CSharp.dll"))
 	if got, err := svc.FrameAssembly("lethal-company", dir, mvid); err != nil || got != filepath.Join(managed, "Assembly-CSharp.dll") {
 		t.Fatalf("FrameAssembly(%s) = %q, %v", mvid, got, err)
@@ -138,21 +124,7 @@ func TestILBlock(t *testing.T) {
 func TestUsagesSearchesTheListedAssemblies(t *testing.T) {
 	svc, _ := testService(t, testTemplate)
 	dir := fixtureProject(t, svc)
-	game := t.TempDir()
-	dll, err := safefs.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	managed := filepath.Join(game, "Game_Data", "Managed")
-	if err := os.MkdirAll(managed, 0o750); err != nil {
-		t.Fatal(err)
-	}
-	if err := safefs.WriteFile(filepath.Join(managed, "Assembly-CSharp.dll"), dll, 0o600); err != nil {
-		t.Fatal(err)
-	}
-	if err := writeUserProps(dir, game); err != nil {
-		t.Fatal(err)
-	}
+	gameWithModDLL(t, dir)
 	got, err := svc.Usages("lethal-company", dir, "Fixture.Mod::set_Own")
 	if err != nil || len(got) != 1 || got[0].Caller != "Fixture.Mod::SwitchTool" || got[0].Label != "Assembly-CSharp.dll" {
 		t.Fatalf("usages = %+v, %v", got, err)
@@ -206,4 +178,25 @@ func TestAssembliesListTheGamesMainAssemblyFirst(t *testing.T) {
 	if !slices.Equal(labels, []string{"Assembly-CSharp.dll", "Another.dll", "Zed.dll"}) {
 		t.Errorf("assemblies = %v", labels)
 	}
+}
+
+// gameWithModDLL gives the project a game folder whose Assembly-CSharp.dll is the test mod, and returns its Managed folder.
+func gameWithModDLL(t *testing.T, dir string) string {
+	t.Helper()
+	game := t.TempDir()
+	dll, err := safefs.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	managed := filepath.Join(game, "Game_Data", "Managed")
+	if err := os.MkdirAll(managed, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := safefs.WriteFile(filepath.Join(managed, "Assembly-CSharp.dll"), dll, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := writeUserProps(dir, game); err != nil {
+		t.Fatal(err)
+	}
+	return managed
 }

@@ -96,16 +96,8 @@ func TestAdoptingABundleOnlyFolderWritesOnlyItsRecordAndInstallsAsGeneric(t *tes
 	if err != nil || !r.OK {
 		t.Fatalf("pack = %+v, %v", r, err)
 	}
-	zr, err := zip.OpenReader(r.Zip)
-	if err != nil {
-		t.Fatal(err)
-	}
+	zr, names := openPacked(t, r.Zip)
 	defer func() { _ = zr.Close() }()
-	var names []string
-	for _, f := range zr.File {
-		names = append(names, f.Name)
-	}
-	slices.Sort(names)
 	if !slices.Equal(names, []string{"docs/a.md", "manifest.json", "wallet.bundle"}) {
 		t.Errorf("zip holds %v", names)
 	}
@@ -209,16 +201,8 @@ func TestAdoptedCodeProjectReleasePacksItsBuiltDLL(t *testing.T) {
 	if err != nil || !r.OK || r.Zip == "" {
 		t.Fatalf("pack = %+v, %v", r, err)
 	}
-	zr, err := zip.OpenReader(r.Zip)
-	if err != nil {
-		t.Fatal(err)
-	}
+	zr, names := openPacked(t, r.Zip)
 	defer func() { _ = zr.Close() }()
-	var names []string
-	for _, f := range zr.File {
-		names = append(names, f.Name)
-	}
-	slices.Sort(names)
 	if !slices.Equal(names, []string{"Helper.dll", "README.md", "Wallet.dll", "manifest.json"}) {
 		t.Errorf("zip holds %v", names)
 	}
@@ -228,4 +212,18 @@ func TestAdoptedCodeProjectReleasePacksItsBuiltDLL(t *testing.T) {
 	if !strings.Contains(r.Log, "Packed 4 files") {
 		t.Errorf("log %q", r.Log)
 	}
+}
+
+func openPacked(t *testing.T, path string) (*zip.ReadCloser, []string) {
+	t.Helper()
+	zr, err := zip.OpenReader(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var names []string
+	for _, f := range zr.File {
+		names = append(names, f.Name)
+	}
+	slices.Sort(names)
+	return zr, names
 }
