@@ -236,6 +236,10 @@ msgstr ""
 msgid "Mod loader updates"
 msgstr ""
 
+#: src/settings/sections/ModioAccount.tsx
+msgid "Kept in your system keyring. Create a read-only personal access token at mod.io/me/access."
+msgstr ""
+
 #: src/settings/prefCopy.ts
 msgid "Use the system title bar"
 msgstr ""
@@ -800,10 +804,6 @@ msgstr ""
 #: src/settings/sections/SyncFolder.tsx
 #: src/settings/vrPrefCopy.ts
 msgid "Off"
-msgstr ""
-
-#: src/settings/sections/ModioAccount.tsx
-msgid "Kept in your system keyring. Create a read-only OAuth token at mod.io/me/access."
 msgstr ""
 
 #: src/settings/prefCopyModsView.ts

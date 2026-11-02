@@ -26,7 +26,7 @@ func (a apiKeyAuth) RoundTrip(r *http.Request) (*http.Response, error) {
 }
 
 // TestLive runs the driver against the real API. MORTAR_MODIO_LIVE=1 turns it on. MORTAR_MODIO_APIKEY reads through an
-// API key on the public host, which leaves out the account lookup and the per-user host; otherwise the OAuth token comes
+// API key on the public host, which leaves out the account lookup and the per-user host; otherwise the access token comes
 // from MORTAR_MODIO_TOKEN, else the keyring.
 func TestLive(t *testing.T) {
 	if os.Getenv("MORTAR_MODIO_LIVE") == "" {
@@ -36,6 +36,11 @@ func TestLive(t *testing.T) {
 	d := Driver{}
 	if token := os.Getenv("MORTAR_MODIO_TOKEN"); token != "" {
 		d.Token = func() (string, error) { return token, nil }
+		name, err := d.Validate(t.Context(), token)
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Logf("signed in as %s", name)
 	}
 	if key := os.Getenv("MORTAR_MODIO_APIKEY"); key != "" {
 		d = Driver{HTTP: &http.Client{Transport: apiKeyAuth{key}}, URL: gomodio.BaseURL, Token: func() (string, error) { return "api-key", nil }}

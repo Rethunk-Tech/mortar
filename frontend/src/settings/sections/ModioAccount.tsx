@@ -60,7 +60,7 @@ function ModioRow() {
   ) : (
     <SettingRow
       label={t`Access token`}
-      description={t`Kept in your system keyring. Create a read-only OAuth token at mod.io/me/access.`}
+      description={t`Kept in your system keyring. Create a read-only personal access token at mod.io/me/access.`}
     >
       <Box
         component="form"

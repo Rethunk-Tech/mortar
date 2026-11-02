@@ -242,6 +242,10 @@ msgstr "Installed: Mortar {version}"
 msgid "Mod loader updates"
 msgstr "Mod loader updates"
 
+#: src/settings/sections/ModioAccount.tsx
+msgid "Kept in your system keyring. Create a read-only personal access token at mod.io/me/access."
+msgstr "Kept in your system keyring. Create a read-only personal access token at mod.io/me/access."
+
 #: src/settings/prefCopy.ts
 msgid "Use the system title bar"
 msgstr "Use the system title bar"
@@ -807,10 +811,6 @@ msgstr "Sound volume"
 #: src/settings/vrPrefCopy.ts
 msgid "Off"
 msgstr "Off"
-
-#: src/settings/sections/ModioAccount.tsx
-msgid "Kept in your system keyring. Create a read-only OAuth token at mod.io/me/access."
-msgstr "Kept in your system keyring. Create a read-only OAuth token at mod.io/me/access."
 
 #: src/settings/prefCopyModsView.ts
 msgid "Default grouping"

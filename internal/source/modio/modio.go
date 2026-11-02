@@ -1,4 +1,4 @@
-// Package modio is the mod.io source driver over go-modio, signed in with the player's own read-only OAuth access
+// Package modio is the mod.io source driver over go-modio, signed in with the player's own read-only personal access
 // token (mod.io/me/access), kept in the OS keyring under "modio"; without one the driver reports ErrNeedsToken and
 // browse disables it. A game's source key is its numeric mod.io game id.
 package modio
@@ -34,9 +34,9 @@ const (
 var ErrNeedsToken = errors.New("needs a mod.io access token")
 
 // ErrAPIKey means the player pasted the API key mod.io also shows on the access page, which cannot sign in.
-var ErrAPIKey = errors.New("that is a mod.io API key; create a read-only OAuth access token on the same page and paste that")
+var ErrAPIKey = errors.New("that is a mod.io API key; create a read-only personal access token on the same page and paste that")
 
-// apiKeyShape is an API key's form; an OAuth access token is far longer.
+// apiKeyShape is an API key's form; an access token is far longer.
 var apiKeyShape = regexp.MustCompile(`^[0-9a-fA-F]{32}$`)
 
 // ErrBadToken means mod.io rejected the token: it was revoked, expired or mistyped, and tokens do not refresh.
