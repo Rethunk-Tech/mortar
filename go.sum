@@ -48,6 +48,8 @@ github.com/Rethunk-Tech/go-smapiweb v0.1.0 h1:D5iR7Ft8kDIpP0TBvUqnkiSx6TWDt6uM82
 github.com/Rethunk-Tech/go-smapiweb v0.1.0/go.mod h1:SmIu/GJLKTJh6peUgY1SgHzaqMiSpD5Ff74GRL0YIlw=
 github.com/Rethunk-Tech/go-thunderstore v0.1.2 h1:pl3FSM7IuKZrnBL1OwyxWKeEiDcf4d2pflKzv2dGNXg=
 github.com/Rethunk-Tech/go-thunderstore v0.1.2/go.mod h1:Wq+yZkmsCMUftxxN+8BK+JbufcIe0T5EaDHofTBrScE=
+github.com/Rethunk-Tech/go-thunderstore v0.2.0 h1:c86+2xfG5a4Irmnq/7YiLZrgdyg7MXYxGMf3iGllFsQ=
+github.com/Rethunk-Tech/go-thunderstore v0.2.0/go.mod h1:CTSOFX38BNT0LxzvzSc930jzaZ6GPOjDYnRz3vuyv6M=
 github.com/Rethunk-Tech/go-tilemask v0.1.0 h1:wJGhH0MlvLpallezQQH3s1bWmZVTddcqY3aIwtUHZgg=
 github.com/Rethunk-Tech/go-tilemask v0.1.0/go.mod h1:gyHCBVGruiMrf9SBfiM2qp+bl1ReN3qjZWpbAFg3yO4=
 github.com/Rethunk-Tech/go-winsym v0.2.0 h1:thWVURAmPekZDT9Qpl6Hv1bYtXtTQIRwthCjtSg9Yvc=
