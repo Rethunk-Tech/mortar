@@ -34,15 +34,6 @@ func TestUploadRefusesAnUntrustedProject(t *testing.T) {
 	}
 }
 
-func writePackage(t *testing.T, body string) string {
-	t.Helper()
-	pkg := filepath.Join(t.TempDir(), "Ab-ShopDrop-1.2.0.zip")
-	if err := safefs.WriteFile(pkg, []byte(body), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	return pkg
-}
-
 func TestUploadMapsASitesRefusalToAUserError(t *testing.T) {
 	keyring.MockInit()
 	if err := secret.Set("nexus", "k"); err != nil {

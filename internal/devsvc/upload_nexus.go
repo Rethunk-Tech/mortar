@@ -53,7 +53,7 @@ func (s *Service) uploadNexus(ctx context.Context, key, path, name string, ids N
 // retried later, and a failing site is a network error.
 func siteError(site string, err error) error {
 	if err == nil {
-		return err
+		return nil
 	}
 	if rl, ok := errors.AsType[*httpkit.RateLimitError](err); ok {
 		return &source.BusyError{Source: site, Reset: rl.Reset}
