@@ -781,12 +781,12 @@ func (s *Store) loadHistory(game, id string) (historyFileData, error) {
 
 func readHistory(dir string) (historyFileData, error) {
 	path := filepath.Join(dir, historyFile)
-	b, err := safefs.ReadFile(path)
+	b, found, err := safefs.ReadFileIfExists(path)
 	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return emptyHistoryAt(dir), nil
-		}
 		return historyFileData{}, err
+	}
+	if !found {
+		return emptyHistoryAt(dir), nil
 	}
 	data, err := historyFromBytes(b)
 	if err != nil {

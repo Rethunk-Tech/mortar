@@ -1,9 +1,7 @@
 package launchsvc
 
 import (
-	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -70,8 +68,8 @@ func (s *Service) storedRunLogs(gameID, profileID, runID string) (string, string
 	if err != nil {
 		return "", "", err
 	}
-	b, err := safefs.ReadFile(runPlayerLogPath(filepath.Dir(path), runID))
-	if err != nil && !errors.Is(err, os.ErrNotExist) {
+	b, _, err := safefs.ReadFileIfExists(runPlayerLogPath(filepath.Dir(path), runID))
+	if err != nil {
 		return "", "", err
 	}
 	return text, strings.ToValidUTF8(string(b), ""), nil

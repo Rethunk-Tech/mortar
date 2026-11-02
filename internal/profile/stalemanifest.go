@@ -3,7 +3,6 @@ package profile
 import (
 	"errors"
 	"fmt"
-	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -79,12 +78,12 @@ var errNotFixable = errors.New("manifest not in the entry's own download")
 // setManifestVersion rewrites the file only when it is uniqueID's manifest; a missing file means the folder came
 // from another file of the entry.
 func setManifestVersion(path string, uniqueID mod.ID, version string) error {
-	b, err := safefs.ReadFile(path)
-	if errors.Is(err, fs.ErrNotExist) {
-		return errNotFixable
-	}
+	b, found, err := safefs.ReadFileIfExists(path)
 	if err != nil {
 		return err
+	}
+	if !found {
+		return errNotFixable
 	}
 	m, err := smapimanifest.Parse(b)
 	if err != nil || !mod.Equal(m.ModID(), uniqueID) {

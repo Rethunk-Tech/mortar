@@ -1,7 +1,6 @@
 package bepinex5
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -107,10 +106,7 @@ func writeConfig(profileDir, text string) error {
 }
 
 func readConfig(profileDir string) (string, error) {
-	b, err := safefs.ReadFile(configFile(profileDir))
-	if errors.Is(err, os.ErrNotExist) {
-		return "", nil
-	}
+	b, _, err := safefs.ReadFileIfExists(configFile(profileDir))
 	return string(b), err
 }
 

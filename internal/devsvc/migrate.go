@@ -56,12 +56,12 @@ func (s *Service) MigrateRecords() {
 
 // migrateFile replaces .mortar/name with what update gives when the bytes differ; a missing file is not an error.
 func migrateFile(dir, name string, update func() ([]byte, error)) (bool, error) {
-	body, err := safefs.ReadFile(filepath.Join(dir, ".mortar", name))
-	if errors.Is(err, fs.ErrNotExist) {
-		return false, nil
-	}
+	body, found, err := safefs.ReadFileIfExists(filepath.Join(dir, ".mortar", name))
 	if err != nil {
 		return false, err
+	}
+	if !found {
+		return false, nil
 	}
 	next, err := update()
 	if err != nil || bytes.Equal(next, body) {

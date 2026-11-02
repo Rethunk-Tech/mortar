@@ -179,8 +179,8 @@ func releaseNotes(dir, version string) (string, error) {
 	if !packageVersion.MatchString(version) {
 		return "", usererr.Wrap(usererr.Invalid, errors.New("the version must be three numbers, such as 1.0.0"))
 	}
-	body, err := safefs.ReadFile(filepath.Join(dir, "CHANGELOG.md"))
-	if err != nil && !errors.Is(err, os.ErrNotExist) {
+	body, _, err := safefs.ReadFileIfExists(filepath.Join(dir, "CHANGELOG.md"))
+	if err != nil {
 		return "", err
 	}
 	return changelogOf(string(body), version), nil

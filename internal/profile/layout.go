@@ -2,9 +2,7 @@ package profile
 
 import (
 	"cmp"
-	"errors"
 	"fmt"
-	"io/fs"
 	"os"
 	"path/filepath"
 	"slices"
@@ -193,12 +191,12 @@ func (s *Store) packageMods(game, key, title string) (mods []Component, ok bool,
 	if err != nil || inst.ID() != driverThunderstore {
 		return nil, false, err
 	}
-	b, err := safefs.ReadFile(filepath.Join(arch.Dir, "manifest.json"))
-	if errors.Is(err, fs.ErrNotExist) {
-		return []Component{pluginComponent(key, arch.Dir)}, true, nil
-	}
+	b, found, err := safefs.ReadFileIfExists(filepath.Join(arch.Dir, "manifest.json"))
 	if err != nil {
 		return nil, false, err
+	}
+	if !found {
+		return []Component{pluginComponent(key, arch.Dir)}, true, nil
 	}
 	m, err := tstore.ParseManifest(b)
 	if err != nil {

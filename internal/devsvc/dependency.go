@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"os"
 	"path/filepath"
 	"regexp"
 	"slices"
@@ -176,8 +175,8 @@ func depProp(pkg string) string { return depPropPrefix + strings.ReplaceAll(pkg,
 // editUserProps changes the player's own Config.Build.user.props, kept out of the repository, starting one when there is none.
 func editUserProps(dir string, fn func(string) (string, error)) error {
 	path := filepath.Join(dir, "Config.Build.user.props")
-	raw, err := safefs.ReadFile(path)
-	if err != nil && !errors.Is(err, os.ErrNotExist) {
+	raw, _, err := safefs.ReadFileIfExists(path)
+	if err != nil {
 		return err
 	}
 	body := string(raw)

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/fs"
 	"maps"
 	"path/filepath"
 	"regexp"
@@ -186,13 +185,13 @@ func cmpOr(a, b string) string {
 
 // applyHost sets what Mortar's host file says about each parameter in all.
 func applyHost(dir string, all []Param) error {
-	body, err := safefs.ReadFile(filepath.Join(dir, filepath.FromSlash(hostFile)))
-	if errors.Is(err, fs.ErrNotExist) {
-		// A template without Mortar's host file asks for every parameter.
-		return nil
-	}
+	body, found, err := safefs.ReadFileIfExists(filepath.Join(dir, filepath.FromSlash(hostFile)))
 	if err != nil {
 		return err
+	}
+	if !found {
+		// A template without Mortar's host file asks for every parameter.
+		return nil
 	}
 	var h hostJSON
 	if err := json.Unmarshal(body, &h); err != nil {

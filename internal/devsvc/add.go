@@ -156,12 +156,12 @@ func (s *Service) Add(ctx context.Context, gameID, dir, profileID string) (setti
 // cannot choose which DLLs Game code reads. The file's other settings stay.
 func pinGameRoot(dir, gameDir string) error {
 	props := filepath.Join(dir, "Config.Build.user.props")
-	body, err := safefs.ReadFile(props)
-	if errors.Is(err, os.ErrNotExist) {
-		return writeUserProps(dir, gameDir)
-	}
+	body, found, err := safefs.ReadFileIfExists(props)
 	if err != nil {
 		return err
+	}
+	if !found {
+		return writeUserProps(dir, gameDir)
 	}
 	root := ""
 	if gameDir != "" {

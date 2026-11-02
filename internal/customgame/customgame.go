@@ -110,12 +110,12 @@ func List() ([]Entry, error) {
 	if err != nil {
 		return nil, err
 	}
-	b, err := safefs.ReadFile(p)
-	if errors.Is(err, os.ErrNotExist) {
-		return []Entry{}, nil
-	}
+	b, found, err := safefs.ReadFileIfExists(p)
 	if err != nil {
 		return nil, err
+	}
+	if !found {
+		return []Entry{}, nil
 	}
 	var f file
 	if err := json.Unmarshal(b, &f); err != nil {

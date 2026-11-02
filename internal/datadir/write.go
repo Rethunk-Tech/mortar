@@ -15,12 +15,12 @@ import (
 
 // ReadJSON reads path into v. Missing files yield found=false and leave v unchanged.
 func ReadJSON(path string, v any) (found bool, err error) {
-	b, err := safefs.ReadFile(path)
-	if errors.Is(err, os.ErrNotExist) {
-		return false, nil
-	}
+	b, found, err := safefs.ReadFileIfExists(path)
 	if err != nil {
 		return false, err
+	}
+	if !found {
+		return false, nil
 	}
 	if err := json.Unmarshal(b, v); err != nil {
 		return true, err
@@ -88,12 +88,12 @@ func WriteOrRemove(path string, data []byte) error {
 // ReadJournal reads the JSON journal at path into v unless the file is missing or busy reports that it must be left
 // alone for now; found says whether v was read.
 func ReadJournal(path string, busy func() bool, v any) (found bool, err error) {
-	b, err := safefs.ReadFile(path)
-	if errors.Is(err, os.ErrNotExist) {
-		return false, nil
-	}
+	b, found, err := safefs.ReadFileIfExists(path)
 	if err != nil {
 		return false, err
+	}
+	if !found {
+		return false, nil
 	}
 	if busy != nil && busy() {
 		return false, nil

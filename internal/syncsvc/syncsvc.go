@@ -183,8 +183,8 @@ func New(d Deps) (*Service, error) {
 	if d.Machine == "" {
 		s.d.Machine, _ = os.Hostname()
 	}
-	b, err := safefs.ReadFile(s.statePath())
-	if err != nil && !errors.Is(err, os.ErrNotExist) {
+	b, _, err := safefs.ReadFileIfExists(s.statePath())
+	if err != nil {
 		return nil, err
 	}
 	if err == nil {

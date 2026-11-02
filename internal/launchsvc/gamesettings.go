@@ -80,12 +80,12 @@ func (s *Service) prepareGameSettings(gameID, id, installID string) (*settingsRe
 	if err != nil {
 		return nil, false, err
 	}
-	data, err := safefs.ReadFile(path)
-	if errors.Is(err, os.ErrNotExist) {
-		return nil, true, nil
-	}
+	data, found, err := safefs.ReadFileIfExists(path)
 	if err != nil {
 		return nil, false, err
+	}
+	if !found {
+		return nil, true, nil
 	}
 	original, err := readStartupSettings(data, value)
 	if err != nil {
@@ -150,13 +150,13 @@ func (s *Service) restoreGameSettings(restore *settingsRestore) error {
 	}
 	var restoreErr error
 	restore.once.Do(func() {
-		data, err := safefs.ReadFile(restore.path)
-		if errors.Is(err, os.ErrNotExist) {
+		data, found, err := safefs.ReadFileIfExists(restore.path)
+		if err != nil {
 			restoreErr = err
 			return
 		}
-		if err != nil {
-			restoreErr = err
+		if !found {
+			restoreErr = os.ErrNotExist
 			return
 		}
 		current, err := readStartupSettings(data, restore.written)

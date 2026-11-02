@@ -398,12 +398,12 @@ func carryConfig(srcRoot, destDir, folder string) error {
 		rel = ""
 	}
 	from := filepath.Join(srcRoot, filepath.FromSlash(rel), configFileName)
-	b, err := safefs.ReadFile(from)
-	if errors.Is(err, fs.ErrNotExist) {
-		return nil
-	}
+	b, found, err := safefs.ReadFileIfExists(from)
 	if err != nil {
 		return err
+	}
+	if !found {
+		return nil
 	}
 	return safefs.WriteFile(filepath.Join(destDir, configFileName), b, 0o600)
 }

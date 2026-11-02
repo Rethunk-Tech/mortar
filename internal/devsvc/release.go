@@ -365,8 +365,8 @@ func (s *Service) tagRelease(ctx context.Context, dir, version string, notes []s
 		return usererr.Wrap(usererr.Invalid, fmt.Errorf("v%s is already released", version))
 	}
 	log := filepath.Join(dir, "CHANGELOG.md")
-	body, err := safefs.ReadFile(log)
-	if err != nil && !errors.Is(err, os.ErrNotExist) {
+	body, _, err := safefs.ReadFileIfExists(log)
+	if err != nil {
 		return err
 	}
 	next := AddChangelogEntry(string(body), version, notes)

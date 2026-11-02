@@ -4,10 +4,8 @@ package support
 import (
 	"cmp"
 	"context"
-	"errors"
 	"fmt"
 	"net/url"
-	"os"
 	"runtime"
 	"strings"
 	"unicode/utf8"
@@ -80,12 +78,12 @@ func (s *Service) Log(gameID, profileID string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	data, err := safefs.ReadFile(path)
-	if errors.Is(err, os.ErrNotExist) {
-		return "", nil
-	}
+	data, found, err := safefs.ReadFileIfExists(path)
 	if err != nil {
 		return "", err
+	}
+	if !found {
+		return "", nil
 	}
 	if len(data) > MaxLog {
 		return "", fmt.Errorf("the log is %s, too large to upload", bytefmt.Format(int64(len(data))))

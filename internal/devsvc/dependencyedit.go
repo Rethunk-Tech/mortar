@@ -2,9 +2,7 @@ package devsvc
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 	"regexp"
 	"slices"
@@ -111,11 +109,8 @@ func dropUntouchedCompat(src, pkg string) error {
 	if class == "" {
 		return nil
 	}
-	raw, err := safefs.ReadFile(path)
-	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return nil
-		}
+	raw, found, err := safefs.ReadFileIfExists(path)
+	if err != nil || !found {
 		return err
 	}
 	guid := regexp.MustCompile(`ContainsKey\("([^"]*)"\)`).FindStringSubmatch(string(raw))

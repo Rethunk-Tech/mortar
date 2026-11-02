@@ -42,11 +42,10 @@ func (s *Store) Backup(game, id string) (Profile, map[string][]byte, error) {
 	}
 	files := map[string][]byte{}
 	read := func(rel string) error {
-		b, err := safefs.ReadFile(filepath.Join(dir, filepath.FromSlash(rel)))
-		if errors.Is(err, fs.ErrNotExist) {
-			return nil
+		b, found, err := safefs.ReadFileIfExists(filepath.Join(dir, filepath.FromSlash(rel)))
+		if found {
+			files[rel] = b
 		}
-		files[rel] = b
 		return err
 	}
 	names := slices.Clone(backupFiles)

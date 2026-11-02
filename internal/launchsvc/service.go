@@ -1410,12 +1410,12 @@ func (s *Service) Lines(gameID, profileID string) ([]launch.Entry, error) {
 	if err != nil {
 		return nil, err
 	}
-	data, err := safefs.ReadFile(path)
-	if errors.Is(err, os.ErrNotExist) {
-		return []launch.Entry{}, nil
-	}
+	data, found, err := safefs.ReadFileIfExists(path)
 	if err != nil {
 		return nil, err
+	}
+	if !found {
+		return []launch.Entry{}, nil
 	}
 	modsDir, err := s.profiles.ModsDir(gameID, profileID)
 	if err != nil {

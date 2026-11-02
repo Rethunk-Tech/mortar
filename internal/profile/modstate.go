@@ -94,12 +94,12 @@ func (s *Store) ModState(game, id, key string, uniqueID mod.ID) (ModState, error
 	if err != nil {
 		return ModState{}, err
 	}
-	mine, err := safefs.ReadFile(filepath.Join(folder, configFile))
-	if errors.Is(err, fs.ErrNotExist) {
-		return st, nil
-	}
+	mine, found, err := safefs.ReadFileIfExists(filepath.Join(folder, configFile))
 	if err != nil {
 		return ModState{}, err
+	}
+	if !found {
+		return st, nil
 	}
 	src, err := s.items.Path(game, e.StoreKey())
 	if errors.Is(err, store.ErrNotFound) {
@@ -109,12 +109,12 @@ func (s *Store) ModState(game, id, key string, uniqueID mod.ID) (ModState, error
 	if err != nil {
 		return ModState{}, err
 	}
-	shipped, err := safefs.ReadFile(filepath.Join(src, filepath.FromSlash(m.Folder), configFile))
+	shipped, found, err := safefs.ReadFileIfExists(filepath.Join(src, filepath.FromSlash(m.Folder), configFile))
 	switch {
-	case errors.Is(err, fs.ErrNotExist):
-		st.Config = ConfigGenerated
 	case err != nil:
 		return ModState{}, err
+	case !found:
+		st.Config = ConfigGenerated
 	case bytes.Equal(mine, shipped):
 		st.Config = ConfigDefault
 	default:

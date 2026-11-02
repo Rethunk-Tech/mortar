@@ -348,13 +348,13 @@ func setManifestDependency(dir, pkg, version string) error {
 // editManifest rewrites manifest.json with edit applied, keeping the fields Mortar does not know.
 func editManifest(dir string, edit func(raw map[string]any)) error {
 	file := filepath.Join(dir, "manifest.json")
-	body, err := safefs.ReadFile(file)
-	if errors.Is(err, os.ErrNotExist) {
-		// An adopted folder has none until a change needs one.
-		body, err = []byte("{}"), nil
-	}
+	body, found, err := safefs.ReadFileIfExists(file)
 	if err != nil {
 		return err
+	}
+	if !found {
+		// An adopted folder has none until a change needs one.
+		body = []byte("{}")
 	}
 	var raw map[string]any
 	if err := json.Unmarshal(body, &raw); err != nil {
@@ -456,13 +456,12 @@ func packAsset(p settings.DevProject, content bool, team, version, website strin
 // completeManifest is dir's manifest.json at version, with the fields Thunderstore insists on filled in when a folder
 // adopted with no manifest, or a partial one, lacks them.
 func completeManifest(dir, name, version, website string) ([]byte, error) {
-	manifest, err := safefs.ReadFile(filepath.Join(dir, "manifest.json"))
+	manifest, found, err := safefs.ReadFileIfExists(filepath.Join(dir, "manifest.json"))
 	raw := map[string]any{}
 	switch {
-	case errors.Is(err, os.ErrNotExist):
 	case err != nil:
 		return nil, err
-	default:
+	case found:
 		if err := mod.UnmarshalManifest(manifest, &raw); err != nil {
 			return nil, usererr.Wrap(usererr.Damaged, fmt.Errorf("manifest.json: %w", err))
 		}

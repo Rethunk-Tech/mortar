@@ -2,7 +2,6 @@ package launchsvc
 
 import (
 	"cmp"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -160,12 +159,12 @@ func (s *Service) RunLog(gameID, profileID, runID string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	data, err := safefs.ReadFile(path)
-	if errors.Is(err, os.ErrNotExist) {
-		return "", nil
-	}
+	data, found, err := safefs.ReadFileIfExists(path)
 	if err != nil {
 		return "", err
+	}
+	if !found {
+		return "", nil
 	}
 	return strings.ToValidUTF8(string(data), ""), nil
 }

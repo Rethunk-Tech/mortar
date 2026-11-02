@@ -80,11 +80,12 @@ func (s *Service) SetConfigValue(game, id, key string, uniqueID mod.ID, field, v
 		return err
 	}
 	path := filepath.Join(folder, configFile)
-	raw, err := safefs.ReadFile(path)
-	if errors.Is(err, fs.ErrNotExist) {
-		raw = []byte("{}")
-	} else if err != nil {
+	raw, found, err := safefs.ReadFileIfExists(path)
+	if err != nil {
 		return err
+	}
+	if !found {
+		raw = []byte("{}")
 	}
 	schema, err := s.contentSchema(game, id, key, uniqueID)
 	if err != nil {
@@ -112,12 +113,12 @@ func (s *Store) ContentSchema(game, id, key string, uniqueID mod.ID) (modconfig.
 	if err != nil {
 		return nil, err
 	}
-	man, err := safefs.ReadFile(filepath.Join(folder, smapimanifest.FileName))
+	man, found, err := safefs.ReadFileIfExists(filepath.Join(folder, smapimanifest.FileName))
 	if err != nil {
-		if errors.Is(err, fs.ErrNotExist) {
-			return modconfig.Schema{}, nil
-		}
 		return nil, err
+	}
+	if !found {
+		return modconfig.Schema{}, nil
 	}
 	if !modconfig.IsContentPack(man) {
 		return modconfig.Schema{}, nil

@@ -122,12 +122,12 @@ func Renamed(game, profile, profileName, gameName string) error {
 	if err != nil {
 		return err
 	}
-	b, err := safefs.ReadFile(path)
-	if errors.Is(err, os.ErrNotExist) {
-		return nil
-	}
+	b, found, err := safefs.ReadFileIfExists(path)
 	if err != nil {
 		return err
+	}
+	if !found {
+		return nil
 	}
 	lines := strings.SplitAfter(string(b), "\n")
 	replaced := false

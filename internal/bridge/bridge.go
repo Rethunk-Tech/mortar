@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -73,12 +72,12 @@ type State struct {
 // ReadState reads the companion's state file. A missing or unreadable file is ErrNotReady. Whether the game behind it
 // still runs only a connection can tell: the pid a companion records is the game's own, a Wine PID under Proton.
 func ReadState(stateFile string) (State, error) {
-	b, err := safefs.ReadFile(stateFile)
-	if errors.Is(err, os.ErrNotExist) {
-		return State{}, ErrNotReady
-	}
+	b, found, err := safefs.ReadFileIfExists(stateFile)
 	if err != nil {
 		return State{}, err
+	}
+	if !found {
+		return State{}, ErrNotReady
 	}
 	var st State
 	if json.Unmarshal(b, &st) != nil || st.Port <= 0 || st.Port > 65535 || !validToken(st.Token) {

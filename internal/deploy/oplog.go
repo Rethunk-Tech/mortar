@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"io/fs"
 	"os"
 	"path/filepath"
 	"slices"
@@ -86,12 +85,12 @@ func replay(m *Manifest) error {
 	if m.View.JournalDir == "" {
 		return nil
 	}
-	b, err := safefs.ReadFile(logPath(m.View.JournalDir))
-	if errors.Is(err, fs.ErrNotExist) {
-		return nil
-	}
+	b, found, err := safefs.ReadFileIfExists(logPath(m.View.JournalDir))
 	if err != nil {
 		return err
+	}
+	if !found {
+		return nil
 	}
 	sc := bufio.NewScanner(bytes.NewReader(b))
 	sc.Buffer(nil, 1<<20)

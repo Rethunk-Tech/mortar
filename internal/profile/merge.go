@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"os"
 	"path/filepath"
 	"slices"
 
@@ -201,12 +200,12 @@ func (s *Store) carryConfig(game, fromID, toID string, side DiffSide) error {
 	if err != nil {
 		return err
 	}
-	b, err := safefs.ReadFile(filepath.Join(srcDir, configFile))
-	if errors.Is(err, os.ErrNotExist) {
-		return nil
-	}
+	b, found, err := safefs.ReadFileIfExists(filepath.Join(srcDir, configFile))
 	if err != nil {
 		return err
+	}
+	if !found {
+		return nil
 	}
 	dstDir, err := s.ModFolder(game, toID, side.Key, side.ID)
 	if err != nil {

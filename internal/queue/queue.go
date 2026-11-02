@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/fs"
 	"log"
 	"net/http"
 	"path/filepath"
@@ -497,12 +496,12 @@ func New(d Deps) (*Service, error) {
 		d: d, kick: make(chan struct{}, 1), cancels: map[string]context.CancelFunc{},
 		premiumFetch: make(chan struct{}, 3), freeFetch: make(chan struct{}, 1),
 	}
-	b, err := safefs.ReadFile(filepath.Join(d.Dir, fileName))
-	if errors.Is(err, fs.ErrNotExist) {
-		return s, nil
-	}
+	b, found, err := safefs.ReadFileIfExists(filepath.Join(d.Dir, fileName))
 	if err != nil {
 		return nil, err
+	}
+	if !found {
+		return s, nil
 	}
 	var file saved
 	if err := json.Unmarshal(b, &file); err != nil {

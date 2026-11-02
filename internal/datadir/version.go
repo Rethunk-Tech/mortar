@@ -26,8 +26,8 @@ func CheckVersion(v int) error {
 // WriteVersioned writes v like WriteJSON, unless the file on disk was written by a newer Mortar. Then it copies
 // that file to path+".newer" once and leaves it untouched. Callers set the struct's FormatVersion to FormatVersion.
 func WriteVersioned(path string, v any) error {
-	b, err := safefs.ReadFile(path)
-	if err != nil && !errors.Is(err, os.ErrNotExist) {
+	b, _, err := safefs.ReadFileIfExists(path)
+	if err != nil {
 		return err
 	}
 	var head struct {
