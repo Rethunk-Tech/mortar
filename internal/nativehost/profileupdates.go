@@ -32,7 +32,7 @@ type appUpdate struct {
 
 // activeProfileUpdates is the app's own update list for the open profile of the source's game, every source included.
 func activeProfileUpdates(src, key string) (state, profile string, rows []modUpdate) {
-	info, found := gameBySourceKey(src, key)
+	info, found := components.GameBySource(src, key)
 	if !found {
 		info, found = components.GameByNexusDomain(key)
 	}

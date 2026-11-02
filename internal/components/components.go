@@ -948,6 +948,17 @@ func (g GameInfo) Source(id string) (GameSource, bool) {
 	return GameSource{}, false
 }
 
+// SourceKeys is each of the game's sources that names the game, keyed by source id.
+func (g GameInfo) SourceKeys() map[string]string {
+	out := map[string]string{}
+	for _, src := range g.Sources {
+		if src.Key != "" {
+			out[src.ID] = src.Key
+		}
+	}
+	return out
+}
+
 // NexusDomain is the game's Nexus v1 URL segment, empty when Nexus does not host it.
 func (g GameInfo) NexusDomain() string {
 	s, _ := g.Source("nexus")

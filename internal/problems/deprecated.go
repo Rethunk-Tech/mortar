@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
@@ -48,11 +48,7 @@ func deprecatedPackages(ctx context.Context, src deprecationSource, key, version
 
 // thunderstoreKey is the game's Thunderstore community, empty when the catalog lists none.
 func thunderstoreKey(gameID string) string {
-	for _, g := range game.Catalog() {
-		if g.ID == gameID {
-			gs, _ := g.Source("thunderstore")
-			return gs.Key
-		}
-	}
-	return ""
+	g, _ := components.Game(gameID)
+	gs, _ := g.Source("thunderstore")
+	return gs.Key
 }

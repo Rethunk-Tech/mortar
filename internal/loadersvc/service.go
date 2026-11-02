@@ -245,12 +245,8 @@ func (s *Service) ensureBundled(ctx context.Context, id string) (string, error) 
 
 // catalogGame is the game's catalog entry; the zero value when the catalog lacks it.
 func catalogGame(id string) components.GameInfo {
-	for _, g := range game.Catalog() {
-		if g.ID == id {
-			return g
-		}
-	}
-	return components.GameInfo{}
+	g, _ := components.Game(id)
+	return g
 }
 
 func (s *Service) target(id string) (game.Game, string, error) {

@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
@@ -82,11 +81,10 @@ func farmSupported(gameID string) bool {
 	if gameID == farmGame {
 		return true
 	}
-	i := slices.IndexFunc(game.Catalog(), func(g components.GameInfo) bool { return g.ID == gameID })
-	if i < 0 {
+	g, ok := components.Game(gameID)
+	if !ok {
 		return false
 	}
-	g := game.Catalog()[i]
 	_, thunderstore := g.Source(profile.KindThunderstore)
 	_, vintage := g.Source(profile.KindVSModDB)
 	return thunderstore || vintage
@@ -239,9 +237,9 @@ func parseFarmFor(gameID, text string) (FarmList, error) {
 	}
 	// A list names its own download sources; one the game's catalog does not offer is dropped, leaving the mod to
 	// install by hand.
-	if i := slices.IndexFunc(game.Catalog(), func(g components.GameInfo) bool { return g.ID == gameID }); i >= 0 {
+	if g, ok := components.Game(gameID); ok {
 		for j := range l.Mods {
-			if _, ok := game.Catalog()[i].Source(l.Mods[j].Source.Kind); !ok {
+			if _, ok := g.Source(l.Mods[j].Source.Kind); !ok {
 				l.Mods[j].Source = profile.Source{}
 			}
 		}

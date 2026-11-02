@@ -16,7 +16,6 @@ import (
 	"github.com/Rethunk-Tech/go-smapiweb"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/netstate"
 	"github.com/Rethunk-Tech/mortar/internal/source"
@@ -210,14 +209,7 @@ func interleave(pages []Page) []Item {
 	}
 }
 
-func catalogGame(id string) (components.GameInfo, bool) {
-	catalog := gamepkg.Catalog()
-	i := slices.IndexFunc(catalog, func(g components.GameInfo) bool { return g.ID == id })
-	if i < 0 {
-		return components.GameInfo{}, false
-	}
-	return catalog[i], true
-}
+func catalogGame(id string) (components.GameInfo, bool) { return components.Game(id) }
 
 // topTTL is how long a source's answer is reused, so opening Browse costs each source one request and page N of a
 // search rereads its earlier pages from here.

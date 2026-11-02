@@ -15,8 +15,8 @@ import (
 
 	"github.com/Rethunk-Tech/go-smapiweb"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/meta"
@@ -440,14 +440,10 @@ func sourcePage(gameID string, m framework.Mod) string {
 	if !ok || !canLink || m.SourceName == "" || m.SourceKind == profile.KindNexus || m.SourceKind == profile.KindGitHub {
 		return ""
 	}
-	for _, g := range game.Catalog() {
-		if g.ID != gameID {
-			continue
-		}
-		for _, src := range g.Sources {
-			if src.ID == m.SourceKind && (src.Key != "" || m.SourceKind == profile.KindPatreon || m.SourceKind == profile.KindItch) {
-				return linker.ModPageURL(src.Key, m.SourceName)
-			}
+	g, _ := components.Game(gameID)
+	for _, src := range g.Sources {
+		if src.ID == m.SourceKind && (src.Key != "" || m.SourceKind == profile.KindPatreon || m.SourceKind == profile.KindItch) {
+			return linker.ModPageURL(src.Key, m.SourceName)
 		}
 	}
 	return ""

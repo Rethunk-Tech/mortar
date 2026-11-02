@@ -85,12 +85,8 @@ func (s *Service) read(ctx context.Context, path string) (pack.Draft, error) {
 
 // gameByThunderstoreKey is the catalog game whose Thunderstore community key is slug, which is what Gale names a game.
 func gameByThunderstoreKey(slug string) (string, bool) {
-	for _, g := range game.Catalog() {
-		if src, ok := g.Source("thunderstore"); ok && src.Key == slug {
-			return g.ID, true
-		}
-	}
-	return "", false
+	g, ok := components.GameBySource("thunderstore", slug)
+	return g.ID, ok
 }
 
 // LocalProfile is a profile folder of r2modman, the Thunderstore Mod Manager or Gale on this computer.

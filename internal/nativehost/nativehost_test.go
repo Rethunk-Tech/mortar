@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-desktopenv/nativemessaging"
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
@@ -764,7 +765,7 @@ func TestRepliesEchoTheRequestsProtocolAndHoldProtocol4Back(t *testing.T) {
 }
 
 func TestUpdateRowsNameTheModAtItsSource(t *testing.T) {
-	info, ok := gameBySourceKey("paradox", "cities_skylines_2")
+	info, ok := components.GameBySource("paradox", "cities_skylines_2")
 	if !ok {
 		t.Fatal("Cities: Skylines II lists no Paradox key")
 	}

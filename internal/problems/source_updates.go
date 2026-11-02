@@ -31,16 +31,12 @@ func (s *Service) sourceUpdates(ctx context.Context, gameID string, mods []frame
 	out := s.nexusPageUpdates(ctx, gameID, mods, have)
 	out = append(out, s.githubUpdates(ctx, mods, append(slices.Clone(have), out...))...)
 	twins := s.thunderstoreTwins(gameID)
-	for _, g := range game.Catalog() {
-		if g.ID != gameID {
-			continue
-		}
-		for _, src := range g.Sources {
-			found, err := s.searchUpdates(ctx, gameID, src, mods, append(slices.Clone(have), out...), twins)
-			out = append(out, found...)
-			if err != nil {
-				return out
-			}
+	g, _ := components.Game(gameID)
+	for _, src := range g.Sources {
+		found, err := s.searchUpdates(ctx, gameID, src, mods, append(slices.Clone(have), out...), twins)
+		out = append(out, found...)
+		if err != nil {
+			return out
 		}
 	}
 	return out

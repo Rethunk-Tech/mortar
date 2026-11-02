@@ -20,7 +20,7 @@ import (
 
 	"github.com/andybalholm/brotli"
 
-	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source/itch"
@@ -840,18 +840,8 @@ func Collect(p profile.Profile, include ...Include) (s Shared, left []LeftOut, o
 
 // SourceKeys is each of the game's catalog sources that names the game, keyed by source id.
 func SourceKeys(gameID string) map[string]string {
-	out := map[string]string{}
-	for _, g := range game.Catalog() {
-		if g.ID != gameID {
-			continue
-		}
-		for _, src := range g.Sources {
-			if src.Key != "" {
-				out[src.ID] = src.Key
-			}
-		}
-	}
-	return out
+	g, _ := components.Game(gameID)
+	return g.SourceKeys()
 }
 
 // linkPrefix matches a web or app link up to its payload; the game id is group 1 or 2.

@@ -58,6 +58,19 @@ func Authors() []AuthorAliases {
 	return m.Authors
 }
 
+// GameBySource is the catalog game whose source has the given id and key.
+func GameBySource(source, key string) (GameInfo, bool) {
+	if key == "" {
+		return GameInfo{}, false
+	}
+	for _, g := range Games() {
+		if s, ok := g.Source(source); ok && s.Key == key {
+			return g, true
+		}
+	}
+	return GameInfo{}, false
+}
+
 // Game is the catalog entry with id, from the selected manifest when it lists the game, else the bundled one.
 func Game(id string) (GameInfo, bool) {
 	var g GameInfo

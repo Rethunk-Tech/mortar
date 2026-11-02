@@ -8,8 +8,8 @@ import (
 
 	"github.com/Rethunk-Tech/go-smapiweb"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/metadata"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -124,12 +124,11 @@ func (s *Service) providers(gameID string) metadata.Providers {
 	if !ok {
 		return metadata.Providers{}
 	}
-	for _, g := range game.Catalog() {
-		if g.ID == gameID {
-			return metadata.For(c, g.Metadata)
-		}
+	g, ok := components.Game(gameID)
+	if !ok {
+		return metadata.Providers{}
 	}
-	return metadata.Providers{}
+	return metadata.For(c, g.Metadata)
 }
 
 // metaFor is the lookup surface for a game's checks: updates and the dataset answer from the game's providers,

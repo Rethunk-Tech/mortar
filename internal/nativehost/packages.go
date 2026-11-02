@@ -101,17 +101,6 @@ func (h handlers) answerInstallProject(req request) reply {
 	return rep
 }
 
-func gameBySourceKey(source, key string) (components.GameInfo, bool) {
-	for _, g := range components.Games() {
-		for _, src := range g.Sources {
-			if src.ID == source && src.Key == key && key != "" {
-				return g, true
-			}
-		}
-	}
-	return components.GameInfo{}, false
-}
-
 // openProfile is the game's last open profile id, or "" when there is none.
 func openProfile(info components.GameInfo) string {
 	id := settings.Peek().LastProfile[info.ID]
@@ -123,7 +112,7 @@ func openProfile(info components.GameInfo) string {
 
 // activePackages lists the Thunderstore packages the community's game holds in its open profile.
 func activePackages(key string) (state, profile string, packages []string) {
-	info, found := gameBySourceKey("thunderstore", key)
+	info, found := components.GameBySource("thunderstore", key)
 	state, profile, dataDir, ok := readyProfile(info, found)
 	if !ok {
 		return state, profile, nil
@@ -160,7 +149,7 @@ func queueProject(src, key, project string) error {
 
 // installVia asks the running app to install args' package into the open profile of the source's game.
 func installVia(src, key string, args map[string]any) error {
-	info, ok := gameBySourceKey(src, key)
+	info, ok := components.GameBySource(src, key)
 	if !ok {
 		return os.ErrNotExist
 	}
@@ -190,7 +179,7 @@ func readyProfile(info components.GameInfo, found bool) (state, profile, dataDir
 // profile. A CurseForge entry's Name is the project id; a Mod DB entry's is "<modid>-<assetid>", which pages are
 // addressed by; a Paradox entry's is the mod id and a Modrinth entry's the project id.
 func activeProjects(src, key string) (state, profile string, projects []hostProject) {
-	info, found := gameBySourceKey(src, key)
+	info, found := components.GameBySource(src, key)
 	state, profile, dataDir, ok := readyProfile(info, found)
 	if !ok {
 		return state, profile, nil

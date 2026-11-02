@@ -261,7 +261,8 @@ func Require(id string) (Game, error) {
 
 // Valid reports whether id names a listed game.
 func Valid(id string) bool {
-	return slices.ContainsFunc(Catalog(), func(g components.GameInfo) bool { return g.ID == id })
+	_, ok := components.Game(id)
+	return ok
 }
 
 // File is the path of a game's JSON file below root, for stores that keep one file per game.

@@ -11,6 +11,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/pack"
@@ -44,12 +45,8 @@ func (s *Service) readPack(ctx context.Context, in pack.Input) (pack.Draft, erro
 
 // gameByThunderstoreKey is the catalog game whose Thunderstore community key is slug, which is what Gale names a game.
 func gameByThunderstoreKey(slug string) (string, bool) {
-	for _, g := range gamepkg.Catalog() {
-		if src, ok := g.Source("thunderstore"); ok && src.Key == slug {
-			return g.ID, true
-		}
-	}
-	return "", false
+	g, ok := components.GameBySource("thunderstore", slug)
+	return g.ID, ok
 }
 
 // PreviewLocalProfile reads a profile folder of r2modman or Gale on this computer (a LocalProfile's Path) and
