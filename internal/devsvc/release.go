@@ -316,7 +316,7 @@ func (s *Service) fillWebsite(ctx context.Context, dir string) error {
 	return editManifest(dir, func(raw map[string]any) { raw["website_url"] = url })
 }
 
-// Release adds version and its notes to CHANGELOG.md, commits that, and tags it vX.Y.Z, which the template takes as
+// Release adds version and its notes to the changelog, commits that, and tags it vX.Y.Z, which the template takes as
 // the version. The tree must be otherwise committed, so the tag holds what was tested. With a GitHub remote the
 // commit and tag are pushed there, and the template's CI publishes the package; it returns that remote, or "" when
 // the release stayed local.

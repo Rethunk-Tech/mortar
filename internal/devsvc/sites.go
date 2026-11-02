@@ -68,7 +68,7 @@ func writeSites(dir string, ids siteIDs) error {
 	return writeTemplateRecord(dir, rec)
 }
 
-// changelogOf is the notes under "## version" in a CHANGELOG.md, without the heading.
+// changelogOf is the notes under "## version" in a changelog, without the heading.
 func changelogOf(changelog, version string) string {
 	var out []string
 	in := false

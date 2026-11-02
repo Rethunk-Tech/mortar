@@ -174,7 +174,7 @@ func (s *Service) prepareUpload(gameID, dir, version string, notes bool, check f
 	return
 }
 
-// releaseNotes is the project's CHANGELOG.md notes for version, empty when it has none.
+// releaseNotes is the project's changelog notes for version, empty when it has none.
 func releaseNotes(dir, version string) (string, error) {
 	if !packageVersion.MatchString(version) {
 		return "", usererr.Wrap(usererr.Invalid, errors.New("the version must be three numbers, such as 1.0.0"))
