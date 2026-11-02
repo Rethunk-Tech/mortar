@@ -1,9 +1,10 @@
 package itch
 
 import (
-	"net/url"
 	"regexp"
 	"strings"
+
+	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
 // A page is named by the account and game slug of its address, "<user>.itch.io/<game>", written "user/game". A game
@@ -32,8 +33,8 @@ func PageURL(id string) string {
 // of the one game slug. It returns "user/game"; the address that opens is always rebuilt from it, so a query,
 // fragment or look-alike host never reaches the browser.
 func ParsePageURL(text string) (string, bool) {
-	u, err := url.Parse(strings.TrimSpace(text))
-	if err != nil || u.Scheme != "https" || u.User != nil || u.Port() != "" {
+	u, ok := source.ParseHTTPSURL(text)
+	if !ok || u.Port() != "" {
 		return "", false
 	}
 	user, found := strings.CutSuffix(strings.ToLower(u.Hostname()), ".itch.io")
@@ -41,7 +42,7 @@ func ParsePageURL(text string) (string, bool) {
 		return "", false
 	}
 	game := strings.TrimSuffix(u.EscapedPath(), "/")
-	game, ok := strings.CutPrefix(game, "/")
+	game, ok = strings.CutPrefix(game, "/")
 	if !ok || !slugPattern.MatchString(game) {
 		return "", false
 	}

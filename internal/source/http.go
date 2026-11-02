@@ -42,3 +42,12 @@ func GitHubRepo(raw string) string {
 	}
 	return repo
 }
+
+// ParseHTTPSURL parses text as an https address without credentials.
+func ParseHTTPSURL(text string) (*url.URL, bool) {
+	u, err := url.Parse(strings.TrimSpace(text))
+	if err != nil || u.Scheme != "https" || u.User != nil {
+		return nil, false
+	}
+	return u, true
+}

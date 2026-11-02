@@ -784,8 +784,7 @@ func (d Driver) ReportTarget(ctx context.Context, _, id, _ string) (source.Repor
 // secureLink is raw when it is an https address without credentials, else empty: the site supplies it and the
 // window opens it.
 func secureLink(raw string) string {
-	u, err := url.Parse(source.WebLink(raw))
-	if err != nil || u.Scheme != "https" || u.User != nil {
+	if _, ok := source.ParseHTTPSURL(source.WebLink(raw)); !ok {
 		return ""
 	}
 	return raw

@@ -5,7 +5,6 @@
 package patreon
 
 import (
-	"net/url"
 	"regexp"
 	"strings"
 
@@ -55,8 +54,8 @@ func PostURL(id string) string {
 // ParsePostURL reads a pasted post address: https only, host patreon.com or www.patreon.com, no user name or port, and
 // a path of /posts/<id> or /posts/<slug>-<id>. It returns the id; the address that opens is always rebuilt from it.
 func ParsePostURL(text string) (string, bool) {
-	u, err := url.Parse(strings.TrimSpace(text))
-	if err != nil || u.Scheme != "https" || u.User != nil || u.Port() != "" {
+	u, ok := source.ParseHTTPSURL(text)
+	if !ok || u.Port() != "" {
 		return "", false
 	}
 	if host := strings.ToLower(u.Hostname()); host != "patreon.com" && host != "www.patreon.com" {
