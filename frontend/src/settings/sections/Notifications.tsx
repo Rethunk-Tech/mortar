@@ -53,6 +53,9 @@ function ChannelHeader() {
   const { t } = useLingui()
   const cell = {
     width: CHANNEL_WIDTH,
+    // SettingRow pulls each switch 12px out on the right (mr: -1.5), which moves its centre 6px right of the column's.
+    pl: 1.5,
+    boxSizing: 'border-box',
     textAlign: 'center',
     fontSize: 'small.fontSize',
     fontWeight: 700,
