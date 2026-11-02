@@ -173,3 +173,34 @@ func selectedModules(t *testing.T, view loader.ProfileView) []string {
 	}
 	return got
 }
+
+func TestOrderListsTheSelectedModulesWithTheirIssues(t *testing.T) {
+	t.Parallel()
+	_, view := fixture(t)
+	put(t, filepath.Join(view.Dir, "Modules"), "Lonely", subModule("Lonely", false, false, "Nowhere"))
+	rows, err := (extension{}).Order(view)
+	if err != nil {
+		t.Fatal(err)
+	}
+	byName := map[string]int{}
+	for i, r := range rows {
+		byName[r.Name] = i
+		if r.Position != i+1 || r.Folder != "" || r.Entry != "" {
+			t.Fatalf("row %+v", r)
+		}
+	}
+	if byName["Native"] > byName["SandBoxCore"] || byName["SandBoxCore"] > byName["StoryMode"] || byName["StoryMode"] > byName["Alpha"] {
+		t.Fatalf("order %v", byName)
+	}
+	if _, ok := byName["MultiplayerModule"]; ok {
+		t.Fatal("an official module the game does not start with is listed")
+	}
+	if r := rows[byName["Native"]]; !r.Official || !r.Default || len(r.Issues) != 0 {
+		t.Fatalf("Native %+v", r)
+	}
+	lonely := rows[byName["Lonely"]]
+	if len(lonely.Issues) != 1 || lonely.Issues[0].Code != CodeMissing || lonely.Issues[0].Params["other"] != "Nowhere" ||
+		len(lonely.MissingRequired) != 1 {
+		t.Fatalf("Lonely %+v", lonely)
+	}
+}

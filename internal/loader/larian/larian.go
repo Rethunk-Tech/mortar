@@ -16,6 +16,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/folder"
+	"github.com/Rethunk-Tech/mortar/internal/loadorder"
+	modpkg "github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 // Role is the catalog path role of the folder holding modsettings.lsx.
@@ -47,16 +49,24 @@ var gustavX = larianpak.ModuleInfo{
 	UUID: larianpak.GustavXUUID, Name: "GustavX", Folder: "GustavX", Version64: larianpak.NewVersion64(1, 0, 0, 0),
 }
 
-// Prelaunch lists, after GustavX, the module of each pak in the profile's mods folder in the profile's mod order.
+// listed is a module modsettings.lsx lists, with the pak it came from.
+type listed struct {
+	info larianpak.ModuleInfo
+	pak  string
+	// folder is the enabled mod folder that holds the pak; empty for a pak the profile does not hold.
+	folder string
+}
+
+// modules are GustavX and then the module of each pak in the profile's mods folder, in the profile's mod order.
 // A pak with no meta.lsx is an override the game reads without a list entry.
-func (extension) Prelaunch(p loader.ProfileView) error {
+func modules(p loader.ProfileView) ([]listed, error) {
 	root, err := folder.ProfileModsDir(p.Game, p.Dir)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	paks, err := pakPaths(root, false)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	rank := orderRanks(p.Enabled)
 	slices.SortStableFunc(paks, func(a, b string) int {
@@ -66,7 +76,7 @@ func (extension) Prelaunch(p loader.ProfileView) error {
 		}
 		return strings.Compare(a, b)
 	})
-	mods := []larianpak.ModuleInfo{gustavX}
+	mods := []listed{{info: gustavX}}
 	seen := map[string]bool{strings.ToLower(gustavX.UUID): true}
 	for _, path := range paks {
 		mod, err := moduleOf(path)
@@ -78,9 +88,42 @@ func (extension) Prelaunch(p loader.ProfileView) error {
 			continue
 		}
 		seen[strings.ToLower(mod.UUID)] = true
-		mods = append(mods, mod)
+		l := listed{info: mod, pak: filepath.Base(path)}
+		if r := rankOf(rank, path); r != unranked {
+			l.folder = p.Enabled[r]
+		}
+		mods = append(mods, l)
 	}
-	return folder.WriteGenerated(p.Dir, generatedDir, settingsFile, larianpak.FormatModSettings(mods))
+	return mods, nil
+}
+
+// Prelaunch writes the modules the load order lists.
+func (extension) Prelaunch(p loader.ProfileView) error {
+	mods, err := modules(p)
+	if err != nil {
+		return err
+	}
+	infos := make([]larianpak.ModuleInfo, len(mods))
+	for i, m := range mods {
+		infos[i] = m.info
+	}
+	return folder.WriteGenerated(p.Dir, generatedDir, settingsFile, larianpak.FormatModSettings(infos))
+}
+
+// Order is the list Prelaunch would write. Row.Folder names the profile's mod folder to move to change a row's place.
+func (extension) Order(p loader.ProfileView) ([]loadorder.Row, error) {
+	mods, err := modules(p)
+	if err != nil {
+		return nil, err
+	}
+	rows := make([]loadorder.Row, len(mods))
+	for i, m := range mods {
+		rows[i] = loadorder.Row{
+			Position: i + 1, ID: modpkg.NewID(modpkg.FormatFolder, m.info.UUID), Name: m.info.Name,
+			Version: m.info.Version64.String(), Detail: m.pak, Official: i == 0, Folder: m.folder,
+		}
+	}
+	return rows, nil
 }
 
 func moduleOf(path string) (info larianpak.ModuleInfo, err error) {

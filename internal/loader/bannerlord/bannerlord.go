@@ -19,6 +19,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/folder"
+	"github.com/Rethunk-Tech/mortar/internal/loadorder"
+	modpkg "github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 // Role is the catalog path role of the folder holding LauncherData.xml.
@@ -122,14 +124,9 @@ func readModules(root string) ([]bl.Module, error) {
 // emptyLauncher is the list the launcher keeps before the player has changed anything.
 const emptyLauncher = `<UserData><SingleplayerData><ModDatas/></SingleplayerData></UserData>`
 
-// Prelaunch writes a LauncherData.xml whose singleplayer list selects the profile's modules and the official modules
-// the game starts with (and those a profile module needs), in the order the dependency sort gives.
-func (extension) Prelaunch(p loader.ProfileView) error {
-	m, err := load(p)
-	if err != nil {
-		return err
-	}
-	order, _ := bl.Sort(m.all)
+// selection is the modules the launcher selects, in the dependency sort's order, with the sort's issues.
+func selection(m modules) (selected []bl.Module, issues []bl.Issue) {
+	order, issues := bl.Sort(m.all)
 	byID := map[string]bl.Module{}
 	for _, mod := range m.all {
 		if _, dup := byID[mod.ID]; !dup {
@@ -148,18 +145,32 @@ func (extension) Prelaunch(p loader.ProfileView) error {
 			}
 		}
 	}
-	selected := order[:0:0]
 	for _, id := range order {
 		mod := byID[id]
 		if m.profile[id] || mod.Official && (mod.Default || needed[id]) {
-			selected = append(selected, id)
+			selected = append(selected, mod)
 		}
+	}
+	return selected, issues
+}
+
+// Prelaunch writes a LauncherData.xml whose singleplayer list selects the profile's modules and the official modules
+// the game starts with (and those a profile module needs), in the order the dependency sort gives.
+func (extension) Prelaunch(p loader.ProfileView) error {
+	m, err := load(p)
+	if err != nil {
+		return err
+	}
+	selected, _ := selection(m)
+	ids := make([]string, len(selected))
+	for i, mod := range selected {
+		ids[i] = mod.ID
 	}
 	l, err := bl.ParseLauncher(strings.NewReader(emptyLauncher))
 	if err != nil {
 		return err
 	}
-	if err := l.SetMods(bl.Singleplayer, selected); err != nil {
+	if err := l.SetMods(bl.Singleplayer, ids); err != nil {
 		return err
 	}
 	b, err := l.Marshal()
@@ -167,6 +178,39 @@ func (extension) Prelaunch(p loader.ProfileView) error {
 		return err
 	}
 	return folder.WriteGenerated(p.Dir, generatedDir, launcherFile, b)
+}
+
+// Order is the list Prelaunch would write, each module with the sort issues that name it. The sort alone orders it, so
+// no row names a profile folder to move.
+func (extension) Order(p loader.ProfileView) ([]loadorder.Row, error) {
+	m, err := load(p)
+	if err != nil {
+		return nil, err
+	}
+	selected, issues := selection(m)
+	rows := make([]loadorder.Row, len(selected))
+	for i, mod := range selected {
+		row := loadorder.Row{
+			Position: i + 1, ID: modID(mod.ID), Name: mod.Name, Version: mod.Version.String(), Official: mod.Official, Default: mod.Default,
+		}
+		for _, d := range mod.Depends {
+			if !d.Optional {
+				row.Required = append(row.Required, modID(d.ID))
+			}
+		}
+		for _, is := range issues {
+			if is.Module == mod.ID || is.Kind == bl.CycleDetected && slices.Contains(is.Modules, mod.ID) {
+				f := finding(is)
+				row.Issues = append(row.Issues, loadorder.Issue{Code: f.Code, Message: f.Message, Params: f.Params})
+				if is.Kind == bl.MissingDependency {
+					row.MissingRequired = append(row.MissingRequired, modID(is.Other))
+				}
+				row.Cycle = row.Cycle || is.Kind == bl.CycleDetected
+			}
+		}
+		rows[i] = row
+	}
+	return rows, nil
 }
 
 // Findings are the problems the dependency sort finds among the profile's modules and the official ones. A problem
@@ -186,6 +230,8 @@ func (extension) Findings(p loader.ProfileView) []loader.Finding {
 	}
 	return out
 }
+
+func modID(id string) modpkg.ID { return modpkg.NewID(modpkg.FormatModInfo, id) }
 
 func finding(is bl.Issue) loader.Finding {
 	f := loader.Finding{Plugin: is.Module, Message: is.String(), Dependency: is.Other, Params: map[string]string{"other": is.Other, "detail": is.Detail}}

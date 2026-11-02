@@ -3,6 +3,7 @@ package larian
 import (
 	"bytes"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -111,5 +112,37 @@ func TestPrelaunchListsOnlyTheTopLevelPaksTheGameLoads(t *testing.T) {
 	out := string(mustRead(t, generatedPath(profile)))
 	if !strings.Contains(out, top) || strings.Contains(out, nested) {
 		t.Fatalf("modsettings.lsx = %s", out)
+	}
+}
+
+func TestOrderListsTheModulesPrelaunchWritesAndNamesTheFolderToMove(t *testing.T) {
+	t.Parallel()
+	root := t.TempDir()
+	profile := filepath.Join(root, "profile")
+	uuidA, uuidB := "aaaaaaaa-0000-0000-0000-000000000001", "bbbbbbbb-0000-0000-0000-000000000002"
+	folders := map[string]string{}
+	for _, p := range []struct{ file, uuid, name string }{{"A.pak", uuidA, "ModA"}, {"B.pak", uuidB, "ModB"}} {
+		pak := lariantest.BuildPak(t, 18, map[string][]byte{"Mods/" + p.name + "/meta.lsx": []byte(meta(p.uuid, p.name))}, larianpak.CompressionNone)
+		write(t, filepath.Join(profile, "Mods", p.file), pak)
+		folders[p.name] = filepath.Join(root, "store", p.name)
+		write(t, filepath.Join(folders[p.name], p.file), pak)
+	}
+	// A pak the profile does not hold has no folder to move.
+	hand := lariantest.BuildPak(t, 18, map[string][]byte{"Mods/Hand/meta.lsx": []byte(meta("cccccccc-0000-0000-0000-000000000003", "Hand"))}, larianpak.CompressionNone)
+	write(t, filepath.Join(profile, "Mods", "Hand.pak"), hand)
+	rows, err := (extension{}).Order(loader.ProfileView{Game: game, Dir: profile, Enabled: []string{folders["ModB"], folders["ModA"]}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var got []string
+	for _, r := range rows {
+		got = append(got, r.Name+"@"+r.Folder)
+	}
+	want := []string{"GustavX@", "ModB@" + folders["ModB"], "ModA@" + folders["ModA"], "Hand@"}
+	if !slices.Equal(got, want) {
+		t.Fatalf("rows %v, want %v", got, want)
+	}
+	if !rows[0].Official || rows[1].Detail != "B.pak" || rows[1].Position != 2 || rows[1].Version == "" {
+		t.Fatalf("rows %+v", rows)
 	}
 }

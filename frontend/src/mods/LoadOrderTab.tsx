@@ -1,9 +1,9 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Chip, Link, Skeleton, Typography, useTheme } from '@mui/material'
+import { Box, Button, Chip, IconButton, Link, Skeleton, Typography, useTheme } from '@mui/material'
 import { useLoaded } from '@rethunk/react-load-hooks'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { Copy, ListOrdered, TriangleAlert } from 'lucide-react'
+import { ChevronDown, ChevronUp, Copy, ListOrdered, TriangleAlert } from 'lucide-react'
 import {
   type CSSProperties,
   memo,
@@ -17,10 +17,15 @@ import {
 import type { Row } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/loadorder/models.ts'
 import { DependencyNames } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { LoadOrder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import {
+  LoadOrder,
+  MovePackage,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { PageActions } from '../game/PageActions.tsx'
 import { useTab } from '../game/tab.ts'
 import { useGameLoader } from '../games/info.ts'
+import { useReasonText } from '../i18n/reasonText.ts'
+import { useProfiles } from '../profiles/store.ts'
 import { copyText } from '../share/copyText.ts'
 import { AfterDelay } from '../shell/AfterDelay.tsx'
 import { ControlsRow } from '../shell/ControlsRow.tsx'
@@ -35,6 +40,7 @@ import { sameId } from './lookup.ts'
 import { focusMod } from './openMod.ts'
 import { requirementNameIn } from './requirementName.ts'
 import { useMods } from './store.ts'
+import { useLocked } from './useLocked.ts'
 
 const INLINE_REQUIRED = 4
 const ROW_ESTIMATE_PX = 44
@@ -166,24 +172,38 @@ function DepChips({
   )
 }
 
+type Move = (entry: string, delta: -1 | 1) => void
+
 interface RowBodyProps {
   row: Row
   names: Map<string, string>
   onScroll: (id: string) => boolean
+  // Null when the row cannot move that way: the order is not the profile's, or a neighbour shares its mod.
+  moveUp: (() => void) | null
+  moveDown: (() => void) | null
 }
 
 // The names map grows when the dependency names arrive; a row redraws only when one of its own dependencies changed.
 const sameRowBody = (a: RowBodyProps, b: RowBodyProps) =>
   a.row === b.row &&
   a.onScroll === b.onScroll &&
+  (a.moveUp === null) === (b.moveUp === null) &&
+  (a.moveDown === null) === (b.moveDown === null) &&
   (a.names === b.names ||
     [...(a.row.required ?? []), ...(a.row.optional ?? [])].every(
       (id) => a.names.get(idKey(id)) === b.names.get(idKey(id)),
     ))
 
 // A row's contents, apart from its position: the list re-renders whenever it measures a row, and this skips that.
-const OrderRowBody = memo(function OrderRowContent({ row, names, onScroll }: RowBodyProps) {
+const OrderRowBody = memo(function OrderRowContent({
+  row,
+  names,
+  onScroll,
+  moveUp,
+  moveDown,
+}: RowBodyProps) {
   const { t } = useLingui()
+  const reasonText = useReasonText()
   return (
     <>
       <Typography
@@ -234,9 +254,54 @@ const OrderRowBody = memo(function OrderRowContent({ row, names, onScroll }: Row
               />
             </Tooltip>
           ) : null}
+          {row.official ? (
+            <Chip size="small" variant="outlined" label={t`Official`} sx={{ height: 22 }} />
+          ) : null}
+          {(row.issues ?? []).map((issue) => (
+            <Tooltip
+              key={`${issue.code}-${issue.message}`}
+              title={reasonText(issue.code, issue.params, issue.message)}
+              describeChild={true}
+            >
+              <Chip
+                size="small"
+                tabIndex={0}
+                color="error"
+                variant="outlined"
+                icon={<TriangleAlert size={12} aria-hidden={true} />}
+                label={reasonText(issue.code, issue.params, issue.message)}
+                sx={{ height: 22, maxWidth: 360 }}
+              />
+            </Tooltip>
+          ))}
           <DepChips row={row} names={names} onScroll={onScroll} />
         </Box>
+        {row.version || row.detail ? (
+          <Typography noWrap={true} sx={{ fontSize: 'caption.fontSize', color: 'text.secondary' }}>
+            {[row.version, row.detail].filter((part) => part).join(' · ')}
+          </Typography>
+        ) : null}
       </Box>
+      {row.entry ? (
+        <Box sx={{ display: 'flex', flexShrink: 0 }}>
+          <IconButton
+            size="small"
+            aria-label={t`Load earlier`}
+            disabled={moveUp === null}
+            onClick={moveUp ?? undefined}
+          >
+            <ChevronUp size={16} />
+          </IconButton>
+          <IconButton
+            size="small"
+            aria-label={t`Load later`}
+            disabled={moveDown === null}
+            onClick={moveDown ?? undefined}
+          >
+            <ChevronDown size={16} />
+          </IconButton>
+        </Box>
+      ) : null}
     </>
   )
 }, sameRowBody)
@@ -253,14 +318,29 @@ const ROW_STYLE: CSSProperties = {
   borderBottom: '1px solid var(--mortar-hairline-faint)',
 }
 
+function useOrderNote() {
+  const { t } = useLingui()
+  return (rows: Row[]): string => {
+    if (rows.some((row) => row.entry)) {
+      return t`Mods load top to bottom. Move a mod to change when it loads.`
+    }
+    if (rows.some((row) => row.official)) {
+      return t`The order comes from the dependencies each module's SubModule.xml declares, so it cannot be moved here.`
+    }
+    return t`The game loader chooses this order. Mortar does not change it.`
+  }
+}
+
 function OrderList({
   rows,
   names,
   scrollRef,
+  move,
 }: {
   rows: Row[]
   names: Map<string, string>
   scrollRef: RefObject<(id: string) => boolean>
+  move: Move | null
 }) {
   const { t } = useLingui()
   const errorColor = useTheme().palette.error.main
@@ -291,6 +371,15 @@ function OrderList({
     return true
   }
   scrollRef.current = onScroll
+  const orderNote = useOrderNote()
+  const mover = (row: Row, delta: -1 | 1): (() => void) | null => {
+    const neighbour = rows[row.position - 1 + delta]
+    const entry = row.entry
+    if (move === null || !entry || !neighbour?.entry || neighbour.entry === entry) {
+      return null
+    }
+    return () => move(entry, delta)
+  }
   const scrollTo = useCallback((id: string) => scrollRef.current(id), [scrollRef])
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
@@ -314,7 +403,7 @@ function OrderList({
         sx={{ flex: 1, minHeight: 0, overflow: 'auto', px: space.gutter, pb: space.gutter }}
       >
         <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary', mb: 1.5 }}>
-          {t`The game loader chooses this order. Mortar does not change it.`}
+          {orderNote(rows)}
         </Typography>
         <Box sx={{ position: 'relative', height: virtualizer.getTotalSize() }}>
           {virtualizer.getVirtualItems().map((item) => {
@@ -332,7 +421,13 @@ function OrderList({
                   ...(row.cycle ? { outline: `1px solid ${errorColor}`, outlineOffset: -1 } : {}),
                 }}
               >
-                <OrderRowBody row={row} names={names} onScroll={scrollTo} />
+                <OrderRowBody
+                  row={row}
+                  names={names}
+                  onScroll={scrollTo}
+                  moveUp={mover(row, -1)}
+                  moveDown={mover(row, 1)}
+                />
               </div>
             ) : null
           })}
@@ -386,6 +481,7 @@ export function LoadOrderTab({ profile, game }: { profile: Profile; game: string
     .map((mod) => `${mod.id}:${mod.needs?.join(',')}:${mod.optional?.join(',')}`)
     .join('|')
   const scrollRef = useRef<(id: string) => boolean>(() => false)
+  const locked = useLocked()
 
   const {
     data: loadedRows,
@@ -397,6 +493,14 @@ export function LoadOrderTab({ profile, game }: { profile: Profile; game: string
     null,
     reportUnexpected,
   )
+  const move: Move = (entry, delta) => {
+    MovePackage(game, profile.id, entry, delta)
+      .then((next) => {
+        useProfiles.getState().replace(next)
+        reload()
+      })
+      .catch(reportUnexpected)
+  }
   const failed = error !== null
   const rows = failed ? [] : loadedRows
 
@@ -461,5 +565,5 @@ export function LoadOrderTab({ profile, game }: { profile: Profile; game: string
       </EmptyState>
     )
   }
-  return <OrderList rows={rows} names={names} scrollRef={scrollRef} />
+  return <OrderList rows={rows} names={names} scrollRef={scrollRef} move={locked ? null : move} />
 }

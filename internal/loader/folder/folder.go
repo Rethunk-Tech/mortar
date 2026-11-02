@@ -8,12 +8,14 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
+	"github.com/Rethunk-Tech/mortar/internal/loadorder"
 )
 
 // ID is the catalog's id for this loader.
@@ -42,6 +44,11 @@ type Extension interface {
 // Checker is an Extension that also finds problems in a profile's mods without a run.
 type Checker interface {
 	Findings(p loader.ProfileView) []loader.Finding
+}
+
+// Orderer is an Extension that also computes the load order it writes, for display.
+type Orderer interface {
+	Order(p loader.ProfileView) ([]loadorder.Row, error)
 }
 
 var extensions []Extension
@@ -78,6 +85,21 @@ func Findings(p loader.ProfileView) []loader.Finding {
 		}
 	}
 	return out
+}
+
+// HasOrder reports whether the game has an extension that computes a load order.
+func HasOrder(gameID string) bool {
+	return slices.ContainsFunc(extensionsOf(gameID), func(e Extension) bool { _, ok := e.(Orderer); return ok })
+}
+
+// Order is the load order the game's extension would write.
+func (Loader) Order(p loader.ProfileView) ([]loadorder.Row, error) {
+	for _, e := range extensionsOf(p.Game) {
+		if o, ok := e.(Orderer); ok {
+			return o.Order(p)
+		}
+	}
+	return nil, errors.New("this game has no load order")
 }
 
 // Prelaunch runs the game's extensions.
