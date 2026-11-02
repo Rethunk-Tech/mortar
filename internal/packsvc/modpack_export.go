@@ -457,8 +457,9 @@ func (s *Service) ThunderstoreCategories(ctx context.Context, gameID string) ([]
 		return nil, usererr.New(usererr.Invalid, "this game has no Thunderstore community")
 	}
 	s.catMu.Lock()
-	defer s.catMu.Unlock()
-	if e, ok := s.catList[community]; ok && time.Now().Before(e.until) {
+	e, ok := s.catList[community]
+	s.catMu.Unlock()
+	if ok && time.Now().Before(e.until) {
 		return e.list, nil
 	}
 	got, err := s.Categories(ctx, community)
@@ -469,6 +470,8 @@ func (s *Service) ThunderstoreCategories(ctx context.Context, gameID string) ([]
 	for i, c := range got {
 		list[i] = Category{Slug: c.Slug, Name: c.Name}
 	}
+	s.catMu.Lock()
+	defer s.catMu.Unlock()
 	if s.catList == nil {
 		s.catList = map[string]catEntry{}
 	}
