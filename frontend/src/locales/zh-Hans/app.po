@@ -388,6 +388,10 @@ msgstr ""
 msgid "Move {name} up"
 msgstr ""
 
+#: src/share/UploadModpackDialog.tsx
+msgid "Could not forget the token"
+msgstr ""
+
 #: src/develop/DevelopTab.tsx
 msgid "Clone from {source}…"
 msgstr ""
@@ -1273,6 +1277,10 @@ msgstr ""
 msgid "Reading {names}"
 msgstr ""
 
+#: src/share/UploadModpackDialog.tsx
+msgid "Kept in the system keyring"
+msgstr ""
+
 #: src/share/ModpackDialog.tsx
 msgid "A plain icon ({source} needs a 256x256 PNG)"
 msgstr ""
@@ -1430,6 +1438,7 @@ msgid "Could not restore profile game settings"
 msgstr ""
 
 #: src/develop/UploadDialog.tsx
+#: src/share/UploadModpackDialog.tsx
 msgid "Upload to {source}"
 msgstr ""
 
@@ -1884,6 +1893,10 @@ msgstr ""
 msgid "Try again in a few seconds."
 msgstr ""
 
+#: src/share/UploadModpackDialog.tsx
+msgid "Paste the team's service account token."
+msgstr ""
+
 #: src/lan/SendPanel.tsx
 msgid "Send to"
 msgstr ""
@@ -2325,6 +2338,7 @@ msgid "{source} expects a 7z. Repack collection.zip as a 7z with 7-Zip before up
 msgstr ""
 
 #: src/develop/UploadDialog.tsx
+#: src/share/UploadModpackDialog.tsx
 msgid "Create one in your team's settings"
 msgstr ""
 
@@ -2703,6 +2717,10 @@ msgstr ""
 
 #: src/queue/QueueBody.tsx
 msgid "Choose a file"
+msgstr ""
+
+#: src/share/ModpackDialog.tsx
+msgid "Upload to {source}…"
 msgstr ""
 
 #: src/game/NewProfileDialog.tsx
@@ -3452,6 +3470,7 @@ msgstr ""
 #: src/browse/CardAction.tsx
 #: src/develop/uploadSites.ts
 #: src/share/ImportPreview.tsx
+#: src/share/UploadModpackDialog.tsx
 msgid "Open page"
 msgstr ""
 
@@ -3799,6 +3818,7 @@ msgid "Multiplayer mod list…"
 msgstr ""
 
 #: src/develop/uploadSites.ts
+#: src/share/UploadModpackDialog.tsx
 msgid "Uploaded {name} to {site}"
 msgstr ""
 
@@ -4065,11 +4085,16 @@ msgid "Sign in to import"
 msgstr ""
 
 #: src/develop/ownParams.ts
+#: src/share/UploadModpackDialog.tsx
 msgid "Team"
 msgstr ""
 
 #: src/develop/AdoptDialog.tsx
 msgid "Folder"
+msgstr ""
+
+#: src/share/UploadModpackDialog.tsx
+msgid "Separated by commas."
 msgstr ""
 
 #: src/develop/ProjectCard.tsx
@@ -4667,6 +4692,10 @@ msgstr ""
 msgid "All"
 msgstr ""
 
+#: src/share/UploadModpackDialog.tsx
+msgid "A token is kept. Forget it"
+msgstr ""
+
 #: src/game/detailStates.tsx
 #: src/games/ProfileCards.tsx
 msgid "Could not read profiles"
@@ -4845,6 +4874,7 @@ msgstr ""
 
 #: src/browse/BrowseDetails.tsx
 #: src/develop/EditProjectDialog.tsx
+#: src/share/UploadModpackDialog.tsx
 msgid "Categories"
 msgstr ""
 
@@ -5011,6 +5041,7 @@ msgstr ""
 
 #: src/develop/UploadDialog.tsx
 #: src/share/MethodPanes.tsx
+#: src/share/UploadModpackDialog.tsx
 msgid "Upload"
 msgstr ""
 
@@ -5060,6 +5091,10 @@ msgstr ""
 
 #: src/browse/browseConstants.ts
 msgid "Search {source} for mods published as releases. Add puts the latest release in this profile."
+msgstr ""
+
+#: src/share/UploadModpackDialog.tsx
+msgid "Name the team to upload under."
 msgstr ""
 
 #: src/browse/stats.ts
@@ -5483,6 +5518,7 @@ msgid "The system would not let Mortar end the game. Close it from its own windo
 msgstr ""
 
 #: src/develop/uploadSites.ts
+#: src/share/UploadModpackDialog.tsx
 msgid "Could not upload to {site}"
 msgstr ""
 
@@ -5924,6 +5960,7 @@ msgid "It encountered an error."
 msgstr ""
 
 #: src/develop/UploadDialog.tsx
+#: src/share/UploadModpackDialog.tsx
 msgid "Uploads go through a service account of your team."
 msgstr ""
 
@@ -7425,6 +7462,7 @@ msgstr ""
 
 #: src/develop/UploadDialog.tsx
 #: src/develop/uploadSites.ts
+#: src/share/UploadModpackDialog.tsx
 msgid "Could not open the page"
 msgstr ""
 
@@ -7523,6 +7561,7 @@ msgid "Sort: most stars"
 msgstr ""
 
 #: src/develop/UploadDialog.tsx
+#: src/share/UploadModpackDialog.tsx
 msgid "Service account token"
 msgstr ""
 

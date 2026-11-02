@@ -24,6 +24,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/pack"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/tsupload"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"github.com/Rethunk-Tech/mortar/internal/winhost"
 )
@@ -399,3 +400,43 @@ func plainIcon() ([]byte, error) {
 	err := png.Encode(&buf, img)
 	return buf.Bytes(), err
 }
+
+// UploadModpack exports the profile as a modpack and publishes it to the game's Thunderstore community under team and
+// categories, with the team's kept token, and returns the package's page.
+func (s *Service) UploadModpack(ctx context.Context, gameID, profileID string, o ModpackOptions, team string, categories []string) (string, error) {
+	community := tsupload.Community(gameID)
+	switch {
+	case community == "":
+		return "", usererr.New(usererr.Invalid, "this game has no Thunderstore community")
+	case team == "":
+		return "", usererr.New(usererr.Invalid, "name the Thunderstore team to upload under")
+	case !tsupload.HasToken(team):
+		return "", usererr.New(usererr.Permission, "add a Thunderstore service account token first")
+	}
+	dir, err := os.MkdirTemp("", "mortar-modpack-")
+	if err != nil {
+		return "", err
+	}
+	defer func() { _ = safefs.RemoveAll(dir) }()
+	zipPath := filepath.Join(dir, o.Name+"-"+o.Version+".zip")
+	if _, err := s.ExportModpack(gameID, profileID, zipPath, o); err != nil {
+		return "", err
+	}
+	client, site := s.HTTP, s.ThunderstoreURL
+	if client == nil {
+		client = tsupload.Client
+	}
+	if site == "" {
+		site = tsupload.Site
+	}
+	return tsupload.Upload(ctx, client, site, zipPath, team, community, categories)
+}
+
+// SetThunderstoreToken keeps team's service account token in the keyring for uploads.
+func (*Service) SetThunderstoreToken(team, token string) error { return tsupload.SetToken(team, token) }
+
+// HasThunderstoreToken reports whether team has an upload token kept.
+func (*Service) HasThunderstoreToken(team string) bool { return tsupload.HasToken(team) }
+
+// ForgetThunderstoreToken removes team's kept upload token.
+func (*Service) ForgetThunderstoreToken(team string) error { return tsupload.ForgetToken(team) }

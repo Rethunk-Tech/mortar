@@ -5,6 +5,7 @@ package packsvc
 import (
 	"context"
 	"errors"
+	"net/http"
 	"os"
 	"path/filepath"
 	"slices"
@@ -47,6 +48,10 @@ type Service struct {
 	// Folder is the player's own r2modman or Gale data folder, for managers kept outside their default places; nil
 	// or empty means the defaults only.
 	Folder func() string
+	// HTTP and ThunderstoreURL are the client and site a modpack upload talks to; nil and empty mean the real
+	// Thunderstore.
+	HTTP            *http.Client
+	ThunderstoreURL string
 }
 
 func (s *Service) folder() string {

@@ -2,6 +2,11 @@ package packsvc
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"slices"
@@ -10,6 +15,8 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
+	"github.com/zalando/go-keyring"
 )
 
 func TestExportModpackReimportsAsTheSamePackages(t *testing.T) {
@@ -141,5 +148,57 @@ func TestModpackLeavesDevHelpersOut(t *testing.T) {
 	res := modpackPackages(profile.Profile{Entries: []profile.Entry{ts("A-Real", false), ts("A-Helper", true)}}, false)
 	if len(res.Dependencies) != 1 || res.Dependencies[0] != "A-Real-1.0.0" {
 		t.Fatalf("dependencies = %v", res.Dependencies)
+	}
+}
+
+func TestUploadModpackExportsThenSendsAndSubmits(t *testing.T) {
+	keyring.MockInit()
+	var calls []string
+	var zipped int
+	var submitted map[string]any
+	var srv *httptest.Server
+	srv = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, _ := io.ReadAll(r.Body)
+		calls = append(calls, r.URL.Path)
+		switch {
+		case strings.HasSuffix(r.URL.Path, "/initiate-upload/"):
+			var started struct {
+				Size int `json:"file_size_bytes"`
+			}
+			_ = json.Unmarshal(body, &started)
+			_, _ = fmt.Fprintf(w, `{"user_media":{"uuid":"u1"},"upload_urls":[{"part_number":1,"url":"%s/part/1","offset":0,"length":%d}]}`, srv.URL, started.Size)
+		case r.URL.Path == "/part/1":
+			zipped = len(body)
+			w.Header().Set("ETag", `"e1"`)
+		case strings.HasSuffix(r.URL.Path, "/submission/submit/"):
+			_ = json.Unmarshal(body, &submitted)
+			_, _ = w.Write([]byte(`{"available_communities":[{"url":"https://thunderstore.io/c/lethal-company/p/Ab/Friday_Night/"}]}`))
+		}
+	}))
+	defer srv.Close()
+	dir := t.TempDir()
+	ps := &fakeProfiles{dir: dir, list: []profile.Profile{{ID: "p1", Name: "Friday", Entries: []profile.Entry{{
+		Source: profile.Source{Kind: profile.KindThunderstore, Name: "AinaVT-LethalConfig", Version: "1.4.6"},
+		Mods:   []profile.Component{{ID: mod.NewID(mod.FormatThunderstore, "AinaVT-LethalConfig")}},
+	}}}}}
+	s := &Service{Profiles: ps, HTTP: srv.Client(), ThunderstoreURL: srv.URL + "/"}
+	o := ModpackOptions{Name: "Friday_Night", Version: "1.0.0"}
+
+	_, err := s.UploadModpack(t.Context(), "lethal-company", "p1", o, "Ab", []string{"modpacks"})
+	if usererr.KindOf(err) != usererr.Permission || len(calls) != 0 {
+		t.Fatalf("without a token: err = %v, calls = %v", err, calls)
+	}
+	if err := s.SetThunderstoreToken("Ab", "tok"); err != nil {
+		t.Fatal(err)
+	}
+	page, err := s.UploadModpack(t.Context(), "lethal-company", "p1", o, "Ab", []string{"modpacks"})
+	if err != nil || page != "https://thunderstore.io/c/lethal-company/p/Ab/Friday_Night/" {
+		t.Fatalf("page = %q, %v", page, err)
+	}
+	if zipped == 0 || len(ps.drafts) != 1 || submitted["author_name"] != "Ab" || fmt.Sprint(submitted["community_categories"]) != "map[lethal-company:[modpacks]]" {
+		t.Errorf("zipped %d, drafts %d, submitted %v", zipped, len(ps.drafts), submitted)
+	}
+	if want := []string{"/api/experimental/usermedia/initiate-upload/", "/part/1", "/api/experimental/usermedia/u1/finish-upload/", "/api/experimental/submission/submit/"}; !slices.Equal(calls, want) {
+		t.Errorf("calls = %v", calls)
 	}
 }

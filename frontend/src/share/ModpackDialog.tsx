@@ -24,6 +24,7 @@ import { MONO } from '../theme/theme.ts'
 import { inlineError, reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
+import { UploadModpackDialog } from './UploadModpackDialog.tsx'
 
 const DESCRIPTION_MAX = 250
 const SKELETON_FIELDS = 6
@@ -229,6 +230,7 @@ function Fields({
   const { t } = useLingui()
   const [o, setO] = useState<ModpackOptions>(form.options)
   const [busy, run] = usePending()
+  const [uploading, setUploading] = useState(false)
   const set: SetOption = (key, value) => setO((cur) => ({ ...cur, [key]: value }))
   let issue = ''
   if (!NAME_PATTERN.test(o.name)) {
@@ -294,6 +296,22 @@ function Fields({
             : t`Depends on ${{ dependencies: form.dependencies }} ${{ source: sourceLabel('thunderstore') }} packages.`}
         </Typography>
       </FormSection>
+      <Button
+        variant="outlined"
+        disabled={issue !== ''}
+        onClick={() => setUploading(true)}
+        sx={{ alignSelf: 'flex-start' }}
+      >
+        {t`Upload to ${{ source: sourceLabel('thunderstore') }}…`}
+      </Button>
+      {uploading ? (
+        <UploadModpackDialog
+          game={game}
+          profileId={profileId}
+          options={o}
+          onClose={() => setUploading(false)}
+        />
+      ) : null}
     </FormDialog>
   )
 }
