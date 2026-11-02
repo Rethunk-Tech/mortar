@@ -11,7 +11,7 @@ import { openGame, otherGameIds, returnToMainGame } from './renderProfile.ts'
 const SEARCHABLE_SOURCES = 2_448_717_962
 const PROBLEMS = 2_301_867_050
 const PROBLEMS_NO_WAIT = 1_691_579_924
-const TABS = ['Home', 'Mods', 'Config', 'Problems', 'Browse']
+const TABS = ['Home', 'Mods', 'Config', 'Problems', 'Browse', 'Develop']
 
 /** Cards and rows of the Mods tab and Browse open the same context menu by a right-click. */
 function menuCases({ tab, view, row }: Helpers): Case[] {
@@ -253,7 +253,18 @@ function otherGameCases({ tab, tabs }: Helpers): Case[] {
         name: `visit-${id}-${t.toLowerCase()}`,
         ...budgetFor(t),
         setup: i === 0 ? (p) => tab(p, 'Home') : here(name),
-        run: i === 0 ? here(name) : (p) => tab(p, t),
+        run:
+          i === 0
+            ? here(name)
+            : async (p) => {
+                // Only a loader with a devTemplate has the Develop tab.
+                const there = await tabs(p)
+                  .getByRole('tab', { name: new RegExp(`^${t}`) })
+                  .count()
+                if (t !== 'Develop' || there > 0) {
+                  await tab(p, t)
+                }
+              },
         // The cases after expect the run's own game.
         ...(last
           ? {
