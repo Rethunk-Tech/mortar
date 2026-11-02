@@ -551,6 +551,16 @@ func TestACommunityBepInExPackIsTheLoaderPackage(t *testing.T) {
 	}
 }
 
+func TestCoreKeeperIsABepInEx6IL2CPPGameOnItsOwnPack(t *testing.T) {
+	g, ok := Game("core-keeper")
+	if !ok || g.SteamAppID() != "1621690" || g.LoaderPackage() != "BepInEx-BepInExPack_Core_Keeper" || g.LoaderMajor("bepinex5") != 2 {
+		t.Fatalf("core-keeper = %+v", g)
+	}
+	if !IsLoaderPackage("BepInEx-BepInExPack_Core_Keeper") || g.MinVersion != "" {
+		t.Fatalf("pack or minVersion: %q", g.MinVersion)
+	}
+}
+
 // The catalog's serial is not bumped with every change to it, so a manifest cached by another build, or by one that did
 // not stamp its cache, is fetched again instead of shadowing what this build ships.
 func TestLoadFetchesAgainAManifestCachedWithoutThisBuildsStamp(t *testing.T) {

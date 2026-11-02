@@ -5,10 +5,12 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
+	"github.com/Rethunk-Tech/go-bepinex"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
@@ -56,6 +58,65 @@ func buildPackWithProxy(t *testing.T, root, doorstop, proxy string) string {
 		t.Fatal(err)
 	}
 	return p
+}
+
+// buildCoreKeeperPack builds the shape of BepInEx-BepInExPack_Core_Keeper: BepInEx 6 for IL2CPP on Doorstop 3, with no
+// bundled .NET runtime.
+func buildCoreKeeperPack(t *testing.T) string {
+	t.Helper()
+	p := filepath.Join(t.TempDir(), "pack.zip")
+	var buf bytes.Buffer
+	zw := zip.NewWriter(&buf)
+	const root = "BepInExPack_Core-Keeper/"
+	for name, body := range map[string]string{
+		"manifest.json":                                `{"name":"BepInExPack_Core_Keeper","version_number":"2.1.0"}`,
+		root + "winhttp.dll":                           "proxy",
+		root + "doorstop_config.ini":                   "[UnityDoorstop]",
+		root + ".doorstop_version":                     "3.4.0.0",
+		root + "BepInEx/core/BepInEx.Unity.IL2CPP.dll": "entry",
+		root + "BepInEx/config/BepInEx.cfg":            "cfg",
+	} {
+		w, _ := zw.Create(name)
+		_, _ = w.Write([]byte(body))
+	}
+	if err := zw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if err := safefs.WriteFile(p, buf.Bytes(), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	return p
+}
+
+func TestAnIL2CPPPackWithoutADotNetRuntimeInstallsAndLaunches(t *testing.T) {
+	ctx := t.Context()
+	var l Loader
+	tgt := loader.Target{ProfileDir: filepath.Join(t.TempDir(), "profile")}
+	ver, err := l.Install(ctx, tgt, loader.Package{Archive: buildCoreKeeperPack(t)}, nil)
+	if err != nil || ver != "2.1.0" {
+		t.Fatalf("install %q %v", ver, err)
+	}
+	if got := bepinex.Detect(tgt.ProfileDir); got != bepinex.FlavorBepInEx6IL2CPP {
+		t.Fatalf("flavor %v", got)
+	}
+	if st, _ := l.Status(tgt); !st.Installed || st.Version != "2.1.0" {
+		t.Fatalf("status %+v", st)
+	}
+	plan := launchplan.New(launchplan.ModeProfile)
+	view := loader.ProfileView{Dir: tgt.ProfileDir, Runtime: "proton"}
+	if err := l.Contribute(ctx, plan, view); err != nil {
+		t.Fatal(err)
+	}
+	args := strings.Join(plan.Args, " ")
+	if !strings.Contains(args, "--doorstop-enable true") || !strings.Contains(args, "BepInEx.Unity.IL2CPP.dll") {
+		t.Fatalf("args %q", args)
+	}
+	if len(plan.Files) != 2 || plan.Files[0].Dst != "doorstop_config.ini" || len(plan.RuntimeReqs) != 1 || plan.RuntimeReqs[0].Key != "winhttp" {
+		t.Fatalf("plan %+v", plan)
+	}
+	if err := l.Contribute(loader.WithDebugger(ctx), launchplan.New(launchplan.ModeProfile), view); err == nil {
+		t.Fatal("debugging an IL2CPP pack was allowed")
+	}
 }
 
 func TestRoute(t *testing.T) {

@@ -76,3 +76,5 @@ require (
 )
 
 replace github.com/wailsapp/wails/v3 => github.com/Rethunk-AI/wails/v3 v3.0.0-mortar.1
+
+replace github.com/Rethunk-Tech/go-bepinex => ../go-bepinex

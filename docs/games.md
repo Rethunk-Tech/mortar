@@ -149,3 +149,10 @@ Sources: r2modman's ecosystem schema, MO2's `games/game_valheim.py`, Vortex's `N
 - **Mod DB** (`internal/source/vsmoddb`): `/mods` takes a `limit` and no offset; a mod's page is `/show/mod/<assetid>` or `/<urlalias>` and the API does not answer to the assetid, so Mortar's id is `<modid>-<assetid>`. Releases carry no hash and no dependency list, so after an install Mortar reads each `modinfo.json` `dependencies` and queues the required mods missing from the profile.
 - **Install links:** the site's 1-click button opens `vintagestorymodinstall://<modid>@<version>`, which the game's installer registers for `Vintagestory -i`. Mortar claims the scheme only when the player turns it on.
 - **Settings:** the folder loader reads every per-game setting as for The Sims 4, except `skipIntro` and `graphicsApi` (no catalog entry), `gameSettingsMode` (no `requiredSettings`), `defaultLaunchMethod` (no store relay: every copy starts directly), and `enableRequirements` and `missingRequirements` (a Mod DB install queues the mods it requires).
+
+## Core Keeper
+
+Sources: r2modmanPlus and Gale through the Thunderstore ecosystem schema (`thunderstore.io/api/experimental/schema/dev/latest/`, `core-keeper`: folder `CoreKeeper`, executable `CoreKeeper.exe`, Steam app 1621690), the `BepInEx-BepInExPack_Core_Keeper` package.
+- **Loader:** BepInEx 6 on IL2CPP, through the `bepinex5` driver. The pack is a community build numbered 2.x, so the catalog's `major` is 2. It runs on Doorstop 3 and ships no .NET runtime; Mortar tells the build from the profile's entry assembly (`BepInEx.Unity.IL2CPP.dll`), not from the runtime folder.
+- **Source:** Thunderstore (`core-keeper`) only. Nexus and mod.io are not wired for it.
+- **Not yet:** the Mortar bridge has no IL2CPP build, so Console and Problems show nothing from the game's side, and the intro skip is unavailable. The saves folder is not in the catalog.

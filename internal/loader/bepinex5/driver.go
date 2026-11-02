@@ -88,7 +88,7 @@ func (Loader) Install(ctx context.Context, t loader.Target, pkg loader.Package, 
 		return "", err
 	}
 	manifest, _ := tstore.ParseManifest(got.Manifest)
-	if bepinex.HasCLR(t.ProfileDir) {
+	if bepinex.Detect(t.ProfileDir) == bepinex.FlavorBepInEx6IL2CPP {
 		placeUnityLibs(ctx, t.InstallDir, t.ProfileDir)
 	}
 	if progress != nil {
@@ -110,8 +110,8 @@ func (Loader) Contribute(ctx context.Context, plan *launchplan.Plan, p loader.Pr
 	}
 	m := readMarker(p.Dir)
 	debug := loader.Debugger(ctx)
-	// Doorstop 4 opens Mono's debugger; Doorstop 3 and an IL2CPP pack's .NET runtime have no such switch.
-	if debug && (m.Doorstop < 4 || bepinex.HasCLR(p.Dir)) {
+	// Doorstop 4 opens Mono's debugger; Doorstop 3 and an IL2CPP pack have no such switch.
+	if debug && (m.Doorstop < 4 || bepinex.Detect(p.Dir) == bepinex.FlavorBepInEx6IL2CPP) {
 		return usererr.Wrap(usererr.Invalid, errors.New("starting for debugging needs a Mono game and BepInEx with Doorstop 4"))
 	}
 	if p.Platform == "linux" {

@@ -21,8 +21,8 @@ func (Loader) ProfileFiles() []string {
 		"dotnet", "mono", "unstripped_corlib")
 }
 
-// releases offers only the BepInEx major the catalog names for the game (5 unless it says otherwise): plugins do not
-// load across majors, and Mortar starts only BepInEx 5 on Mono and BepInEx 6 on IL2CPP.
+// releases offers only the pack major the catalog names for the game (5 unless it says otherwise): plugins do not
+// load across BepInEx builds, and a community pack numbers its own releases (Core Keeper's 2.x is BepInEx 6).
 func (l Loader) releases(g components.GameInfo) thunderpack.Releases {
 	major := strconv.Itoa(cmp.Or(g.LoaderMajor(ID), 5)) + "."
 	return thunderpack.Releases{Name: "BepInEx", Index: l.Index, HTTP: l.HTTP, Keep: func(v string) bool { return strings.HasPrefix(v, major) }}

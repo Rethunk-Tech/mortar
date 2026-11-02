@@ -2649,6 +2649,45 @@
       ]
     },
     {
+      "id": "core-keeper",
+      "name": "Core Keeper",
+      "enabled": true,
+      "marker": "CoreKeeper.exe",
+      "r2modmanFolder": "CoreKeeper",
+      "metadata": [],
+      "paths": {
+        "unityLog": {
+          "windows": "{localLow}/Pugstorm/Core Keeper/Player.log"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "1621690"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 6 (IL2CPP)",
+          "package": "BepInEx-BepInExPack_Core_Keeper",
+          "major": 2
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "core-keeper"
+        }
+      ]
+    },
+    {
       "id": "9-kings",
       "name": "9 Kings",
       "enabled": true,
