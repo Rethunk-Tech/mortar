@@ -1,5 +1,5 @@
 {
-  "serial": 1793226891,
+  "serial": 1793580366,
   "components": [
     {
       "game": "melonloader",
@@ -10527,6 +10527,10 @@
         "steam": {
           "appId": "292030"
         },
+        "gog": {
+          "productId": "1207664663",
+          "folder": "The Witcher 3 Wild Hunt"
+        },
         "epic": {
           "appNames": ["725a22e15ed74735bb0d6a19f3cc82d0"]
         }
@@ -10710,6 +10714,10 @@
         "steam": {
           "appId": "1091500"
         },
+        "gog": {
+          "productId": "1423049311",
+          "folder": "Cyberpunk 2077"
+        },
         "epic": {
           "appNames": ["77f2b98e2cef40c8a7437518bf420e47"]
         }
@@ -10745,6 +10753,9 @@
       "stores": {
         "steam": {
           "appId": "1237970"
+        },
+        "ea": {
+          "folder": "Titanfall2"
         }
       },
       "loaders": [

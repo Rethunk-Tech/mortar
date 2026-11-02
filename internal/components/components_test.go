@@ -319,6 +319,19 @@ func TestLoadRefusesACachedManifestOlderThanBundledWhenTheFetchFails(t *testing.
 	}
 }
 
+func TestBundledGamesNameTheirExtraStores(t *testing.T) {
+	c := NewClient(nil)
+	c.SetManifest(Manifest{Serial: 1})
+	for id, want := range map[string]string{"witcher3": "1207664663", "cyberpunk-2077": "1423049311"} {
+		if g, ok := c.Game(id); !ok || g.Stores.GOG == nil || g.Stores.GOG.ProductID != want {
+			t.Errorf("%s GOG store = %+v, want product %s", id, g.Stores.GOG, want)
+		}
+	}
+	if g, ok := c.Game("titanfall-2"); !ok || g.Stores.EA == nil || g.Stores.EA.Folder != "Titanfall2" {
+		t.Errorf("titanfall-2 EA store = %+v", g.Stores.EA)
+	}
+}
+
 func TestGameFallsBackToBundledAndRejectsUnsafeNames(t *testing.T) {
 	c := NewClient(nil)
 	c.SetManifest(Manifest{Serial: 1})
