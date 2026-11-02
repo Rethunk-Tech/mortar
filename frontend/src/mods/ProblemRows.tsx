@@ -157,13 +157,16 @@ function ProblemRow({ row, dismissed }: { row: Row; dismissed?: DismissedRow }) 
           >
             {t`Why?`}
           </Button>
-          <SplitFix>
-            {row.kind === 'drift' ? (
-              <DriftButtons drift={row.drift} />
-            ) : (
-              <FixButton problem={row} dismissedToken={dismissed?.token} />
-            )}
-          </SplitFix>
+          {/* A shared minimum width lines Why? up across a section's rows; a longer label widens only its own row. */}
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', minWidth: 200 }}>
+            <SplitFix>
+              {row.kind === 'drift' ? (
+                <DriftButtons drift={row.drift} />
+              ) : (
+                <FixButton problem={row} dismissedToken={dismissed?.token} />
+              )}
+            </SplitFix>
+          </Box>
         </Box>
       </Box>
       {why ? (
