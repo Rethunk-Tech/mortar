@@ -56,9 +56,6 @@ func FileURL(pagePath string, port int, token string) string {
 
 // WriteBridgeConfig writes config.json in the bridge mod folder atomically at 0600.
 func WriteBridgeConfig(modDir string, cfg BridgeConfig) error {
-	if err := os.MkdirAll(modDir, 0o700); err != nil {
-		return err
-	}
 	return datadir.WriteJSON(filepath.Join(modDir, "config.json"), cfg)
 }
 

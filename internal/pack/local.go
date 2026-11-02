@@ -1,7 +1,6 @@
 package pack
 
 import (
-	"encoding/json"
 	"io/fs"
 	"os"
 	"path"
@@ -64,11 +63,7 @@ func (m LocalMod) Stage(dir string) error {
 	if m.Author != "" {
 		fields["author"] = m.Author
 	}
-	b, err := json.Marshal(fields)
-	if err != nil {
-		return err
-	}
-	return safefs.WriteFile(filepath.Join(dir, "manifest.json"), b, 0o600)
+	return datadir.WriteJSONCompact(filepath.Join(dir, "manifest.json"), fields)
 }
 
 func (m LocalMod) stageFiles(dir string) error {

@@ -120,9 +120,6 @@ func (s *Service) writeLocked(gameID string, groups []SavedGroup) error {
 	if err != nil {
 		return err
 	}
-	if err := os.MkdirAll(s.root, 0o700); err != nil {
-		return err
-	}
 	return datadir.WriteJSON(path, groups)
 }
 

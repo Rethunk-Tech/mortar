@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -52,9 +51,6 @@ func Set(profileDir string, spec components.ServerSpec, id, value string) error 
 		values[id] = value
 	}
 	// The file can hold a server password; WriteJSON creates it 0600.
-	if err := os.MkdirAll(profileDir, 0o700); err != nil {
-		return err
-	}
 	return datadir.WriteJSON(filepath.Join(profileDir, File), values)
 }
 

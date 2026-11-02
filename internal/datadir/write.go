@@ -45,10 +45,17 @@ func ReadJSONOrQuarantine(path string, v any) (found bool, err error) {
 	return false, nil
 }
 
-// WriteJSON marshals v and replaces path with it through a temp file and rename.
+// WriteJSON marshals v and replaces path with it through a temp file and rename, making path's folder first.
 func WriteJSON(path string, v any) error {
 	b, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
+		return err
+	}
+	return writeAtomic(path, b)
+}
+
+func writeAtomic(path string, b []byte) error {
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return err
 	}
 	return safefs.WriteFileAtomic(path, b, 0o600)
@@ -60,14 +67,11 @@ func WriteJSONCompact(path string, v any) error {
 	if err != nil {
 		return err
 	}
-	return safefs.WriteFileAtomic(path, b, 0o600)
+	return writeAtomic(path, b)
 }
 
-// WriteJSONIn is WriteJSON to name inside dir, making dir first.
+// WriteJSONIn is WriteJSON to name inside dir.
 func WriteJSONIn(dir, name string, v any) error {
-	if err := os.MkdirAll(dir, 0o700); err != nil {
-		return err
-	}
 	return WriteJSON(filepath.Join(dir, name), v)
 }
 
@@ -79,10 +83,7 @@ func WriteOrRemove(path string, data []byte) error {
 		}
 		return nil
 	}
-	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-		return err
-	}
-	return safefs.WriteFileAtomic(path, data, 0o600)
+	return writeAtomic(path, data)
 }
 
 // ReadJournal reads the JSON journal at path into v unless the file is missing or busy reports that it must be left

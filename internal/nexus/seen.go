@@ -4,7 +4,6 @@ import (
 	"cmp"
 	"errors"
 	"maps"
-	"os"
 	"path/filepath"
 	"slices"
 	"sync"
@@ -114,9 +113,6 @@ func (s *SeenStore) evictLocked() {
 }
 
 func (s *SeenStore) writeLocked() error {
-	if err := os.MkdirAll(filepath.Dir(s.path), 0o700); err != nil {
-		return err
-	}
 	return datadir.WriteJSON(s.path, s.data)
 }
 

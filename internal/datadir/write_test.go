@@ -43,3 +43,17 @@ func TestWriteOrRemoveWritesThenRemoves(t *testing.T) {
 		t.Fatalf("removing a missing file: %v", err)
 	}
 }
+
+func TestWriteJSONCompactMakesTheFolderAndWritesNoIndent(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "a", "b", "f.json")
+	if err := WriteJSONCompact(path, map[string]int{"n": 1}); err != nil {
+		t.Fatal(err)
+	}
+	if b, err := safefs.ReadFile(path); err != nil || string(b) != `{"n":1}` {
+		t.Fatalf("written = %q, %v", b, err)
+	}
+	var got map[string]int
+	if found, err := ReadJSON(path, &got); !found || err != nil || got["n"] != 1 {
+		t.Fatalf("read back: %v, %v, %v", found, err, got)
+	}
+}

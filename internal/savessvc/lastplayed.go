@@ -3,7 +3,6 @@ package savessvc
 import (
 	"errors"
 	"maps"
-	"os"
 	"path/filepath"
 	"slices"
 	"sync"
@@ -116,8 +115,5 @@ func (s *Store) loadUnlocked(gameID string) (lastPlayedFile, error) {
 }
 
 func (s *Store) writeUnlocked(gameID string, all lastPlayedFile) error {
-	if err := os.MkdirAll(filepath.Dir(s.path(gameID)), 0o700); err != nil {
-		return err
-	}
 	return datadir.WriteJSON(s.path(gameID), all)
 }
