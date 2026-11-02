@@ -44,32 +44,30 @@ function ModPicker() {
   const menu = usePopoverAnchor()
   const mods = useMemo(() => modsOf(entries), [entries])
   return (
-    <>
-      <MenuButton
-        menu={menu}
-        label={t`Mods`}
-        color="inherit"
-        paperSx={{ maxHeight: 360, minWidth: 220 }}
-        sx={{
-          height: space.control,
-          borderColor: 'var(--mortar-hairline-20)',
-          color: 'var(--mortar-ink)',
-        }}
-      >
-        {mods.length === 0 ? <MenuNote>{t`No mods have logged yet`}</MenuNote> : null}
-        {mods.map((mod) => {
-          const on = picked.includes(mod)
-          return (
-            <MenuCheck
-              key={mod}
-              checked={on}
-              label={mod}
-              onClick={() => setMods(on ? picked.filter((m) => m !== mod) : [...picked, mod])}
-            />
-          )
-        })}
-      </MenuButton>
-    </>
+    <MenuButton
+      menu={menu}
+      label={t`Mods`}
+      color="inherit"
+      paperSx={{ maxHeight: 360, minWidth: 220 }}
+      sx={{
+        height: space.control,
+        borderColor: 'var(--mortar-hairline-20)',
+        color: 'var(--mortar-ink)',
+      }}
+    >
+      {mods.length === 0 ? <MenuNote>{t`No mods have logged yet`}</MenuNote> : null}
+      {mods.map((mod) => {
+        const on = picked.includes(mod)
+        return (
+          <MenuCheck
+            key={mod}
+            checked={on}
+            label={mod}
+            onClick={() => setMods(on ? picked.filter((m) => m !== mod) : [...picked, mod])}
+          />
+        )
+      })}
+    </MenuButton>
   )
 }
 

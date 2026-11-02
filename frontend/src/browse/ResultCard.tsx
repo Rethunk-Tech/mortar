@@ -1,17 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Card } from '@mui/material'
-import {
-  Clock,
-  Download,
-  HardDrive,
-  Heart,
-  type LucideIcon,
-  Star,
-  Tag,
-  ThumbsUp,
-  TriangleAlert,
-  Users,
-} from 'lucide-react'
+import { TriangleAlert } from 'lucide-react'
 import { type MouseEvent, memo, useState } from 'react'
 import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
 import { hasSourceLogo, PICTURE_MARK_PX, pictureMarkSx } from '../brand/sources/sourceIcons.ts'
@@ -21,15 +10,15 @@ import { favouriteKey } from '../mods/favourites.ts'
 import { MIDDLE, opensPage } from '../mods/pageClick.ts'
 import { useSettings } from '../settings/store.ts'
 import { Tooltip } from '../shell/Tooltip.tsx'
-import { space } from '../theme/density.ts'
 import { BUTTON_RADIUS_PX, BUTTON_SMALL_HEIGHT } from '../theme/theme.ts'
 import { GRAY_OPACITY, PICTURE_PX, STALE_OPACITY } from './browseConstants.ts'
 import type { BrowseModes } from './browseModes.ts'
 import type { BrowseItem, ResultCardProps } from './browseTypes.ts'
 import { pictureSrc } from './pictureSrc.ts'
 import { SourceBadges } from './SourceBadges.tsx'
+import { StatParts } from './StatsLine.tsx'
 import { hitKey, useBrowseSelection } from './selection.ts'
-import { type CardStatPart, parseCardStats, type StatIcon, useCardStats } from './stats.ts'
+import { CARD_STAT_SX, type CardStatPart, parseCardStats, useCardStats } from './stats.ts'
 import { useCardAction } from './useCardAction.tsx'
 
 // The source mark in the picture's corner is about a third of the picture, within what stays legible.
@@ -233,17 +222,11 @@ const cardSx = {
     display: 'flex',
     flexWrap: 'wrap',
     justifyContent: 'flex-end',
-    columnGap: space.gap,
     fontSize: 'small.fontSize',
     color: 'var(--mortar-ink-dim-60)',
     fontVariantNumeric: 'tabular-nums',
   },
-  '& .card-stat': {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: 0.375,
-    whiteSpace: 'nowrap',
-  },
+  '& .card-stat': CARD_STAT_SX,
   '& .card-under': {
     width: PICTURE_PX,
     flexShrink: 0,
@@ -317,33 +300,14 @@ function ReuploadMark({ reuploadOf }: { reuploadOf: string }) {
   )
 }
 
-const STAT_ICONS: Record<StatIcon, LucideIcon> = {
-  like: Heart,
-  endorsement: ThumbsUp,
-  star: Star,
-  follower: Users,
-  download: Download,
-  size: HardDrive,
-  version: Tag,
-  updated: Clock,
-}
-
-// Icons and short figures, at the card's bottom right; each stat's tooltip and accessible name has its whole wording.
+// At the card's bottom right.
 function StatsLine({ stats }: { stats: CardStatPart[] }) {
   if (stats.length === 0) {
     return null
   }
   return (
     <div className="card-stats">
-      {stats.map(({ id, icon, short, full }) => {
-        const Icon = STAT_ICONS[icon]
-        return (
-          <span key={id} className="card-stat" role="img" aria-label={full} title={full}>
-            <Icon size={12} aria-hidden={true} />
-            {short}
-          </span>
-        )
-      })}
+      <StatParts stats={stats} />
     </div>
   )
 }

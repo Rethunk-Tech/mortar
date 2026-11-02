@@ -6587,10 +6587,6 @@ msgstr "{name} needs {names}"
 msgid "Clear search"
 msgstr "Clear search"
 
-#: src/browse/stats.ts
-msgid "{count} downloads"
-msgstr "{count} downloads"
-
 #: src/develop/EditProjectDialog.tsx
 #: src/develop/NewModDialog.tsx
 #: src/develop/ownParams.ts
@@ -6740,10 +6736,6 @@ msgstr "Profiles"
 #: src/launch/SaveWarnDialog.tsx
 msgid "Your last save needs other mods"
 msgstr "Your last save needs other mods"
-
-#: src/browse/stats.ts
-msgid "{count} endorsements"
-msgstr "{count} endorsements"
 
 #: src/develop/ReleaseDialog.tsx
 msgid "What changed, one line each"

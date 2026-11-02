@@ -3,7 +3,8 @@ import type {
   Mod,
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { parseCardStats, useModCardStats } from '../browse/stats.ts'
+import { StatParts } from '../browse/StatsLine.tsx'
+import { CARD_STAT_SX, parseCardStats, useModCardStats } from '../browse/stats.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { AuthorLink } from './AuthorLink.tsx'
@@ -35,7 +36,6 @@ export function CardMeta({
     { mod: m, ...(size === undefined ? {} : { size }), ...(details ? { details } : {}) },
     parseCardStats(useSettings((s) => s.browseCardStats)),
   )
-  const stats = cardStats.short.join(' · ')
   const byline = [formatAuthors(m.author), m.version].filter(Boolean).join(' · ')
   return (
     <>
@@ -59,10 +59,9 @@ export function CardMeta({
         <Typography
           className="card-stats"
           noWrap={true}
-          title={cardStats.full.join(' · ')}
-          sx={{ fontSize: META_FONT_PX, color: 'text.secondary' }}
+          sx={{ fontSize: META_FONT_PX, color: 'text.secondary', '& .card-stat': CARD_STAT_SX }}
         >
-          {stats || '\u00a0'}
+          {cardStats.length > 0 ? <StatParts stats={cardStats} /> : '\u00a0'}
         </Typography>
       ) : null}
     </>

@@ -5,6 +5,7 @@ import { formatBytes } from '../i18n/bytes.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import type { ListRow } from '../mods/listColumns.ts'
 import { formatCount } from '../mods/nexusFormat.ts'
+import { space } from '../theme/density.ts'
 import { GITHUB, NEXUS, THUNDERSTORE } from './browseConstants.ts'
 import type { BrowseItem } from './browseTypes.ts'
 
@@ -89,8 +90,16 @@ const POPULARITY_ICON: Record<string, StatIcon> = {
   [VSMODDB]: 'follower',
 }
 
-const COMPACT_FROM = 1000
 const compact = (n: number) => formatCount(n, i18n.locale || 'en')
+
+/** How one stat sits on a card; each card lays out the line that holds them. */
+const CARD_STAT_SX = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 0.375,
+  whiteSpace: 'nowrap',
+  '&:not(:last-child)': { mr: space.gap },
+}
 
 /** A card's chosen stats, leaving out what the hit's site does not say. */
 function useCardStats(item: BrowseItem, stats: readonly CardStat[]): CardStatPart[] {
@@ -132,51 +141,54 @@ function useCardStats(item: BrowseItem, stats: readonly CardStat[]): CardStatPar
 }
 
 /** An installed mod's card line for the same chosen stats: its Nexus page's figures and its size on disk. The card
- * already shows the installed version. `short` counts compactly to fit the card; `full` is exact, for the tooltip. */
+ * already shows the installed version. */
 function useModCardStats(
   { mod, size, details }: Pick<ListRow, 'mod' | 'size' | 'details'>,
   stats: readonly CardStat[],
-): { short: string[]; full: string[] } {
+): CardStatPart[] {
   const { t } = useLingui()
   const page = details?.page
   const endorsements = page?.endorsements ?? mod.endorsements
-  const updated = page?.updated ? t`Updated ${{ when: formatWhen(page.updated) }}` : ''
+  const updated = page?.updated ? formatWhen(page.updated) : ''
   const sized = size !== undefined && size > 0 ? formatBytes(size) : ''
-  const endorsementsFull =
-    endorsements > 0
-      ? plural({ count: endorsements }, { one: '# endorsement', other: '# endorsements' })
-      : ''
-  const downloadsFull = page
-    ? plural({ count: page.downloads }, { one: '# download', other: '# downloads' })
-    : ''
-  // Below 1,000 the compact figure is the exact one, so the plural form serves.
-  const endorsementsShort =
-    endorsements >= COMPACT_FROM
-      ? t`${{ count: compact(endorsements) }} endorsements`
-      : endorsementsFull
-  const downloadsShort =
-    page && page.downloads >= COMPACT_FROM
-      ? t`${{ count: compact(page.downloads) }} downloads`
-      : downloadsFull
-  const pick = (parts: Record<CardStat, string>) =>
-    stats.map((s) => parts[s]).filter((p) => p !== '')
-  return {
-    short: pick({
-      popularity: endorsementsShort,
-      downloads: downloadsShort,
-      size: sized,
-      version: '',
-      updated,
-    }),
-    full: pick({
-      popularity: endorsementsFull,
-      downloads: downloadsFull,
-      size: sized,
-      version: '',
-      updated,
-    }),
+  const parts: Record<CardStat, CardStatPart | null> = {
+    popularity:
+      endorsements > 0
+        ? {
+            id: 'popularity',
+            icon: 'endorsement',
+            short: compact(endorsements),
+            full: plural(
+              { count: endorsements },
+              { one: '# endorsement', other: '# endorsements' },
+            ),
+          }
+        : null,
+    downloads: page
+      ? {
+          id: 'downloads',
+          icon: 'download',
+          short: compact(page.downloads),
+          full: plural({ count: page.downloads }, { one: '# download', other: '# downloads' }),
+        }
+      : null,
+    size: sized === '' ? null : { id: 'size', icon: 'size', short: sized, full: sized },
+    version: null,
+    updated:
+      updated === ''
+        ? null
+        : { id: 'updated', icon: 'updated', short: updated, full: t`Updated ${{ when: updated }}` },
   }
+  return stats.flatMap((s) => parts[s] ?? [])
 }
 
 export type { CardStat, CardStatPart, StatIcon }
-export { CARD_STATS, formatCardStats, parseCardStats, useCardStats, useModCardStats, useStats }
+export {
+  CARD_STAT_SX,
+  CARD_STATS,
+  formatCardStats,
+  parseCardStats,
+  useCardStats,
+  useModCardStats,
+  useStats,
+}

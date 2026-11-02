@@ -6587,10 +6587,6 @@ msgstr ""
 msgid "Clear search"
 msgstr ""
 
-#: src/browse/stats.ts
-msgid "{count} downloads"
-msgstr ""
-
 #: src/develop/EditProjectDialog.tsx
 #: src/develop/NewModDialog.tsx
 #: src/develop/ownParams.ts
@@ -6739,10 +6735,6 @@ msgstr ""
 
 #: src/launch/SaveWarnDialog.tsx
 msgid "Your last save needs other mods"
-msgstr ""
-
-#: src/browse/stats.ts
-msgid "{count} endorsements"
 msgstr ""
 
 #: src/develop/ReleaseDialog.tsx
