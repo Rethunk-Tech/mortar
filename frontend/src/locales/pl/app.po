@@ -6382,6 +6382,10 @@ msgstr ""
 msgid "Include mod files (larger, works offline)"
 msgstr ""
 
+#: src/toasts/report.ts
+msgid "Sign in to this site in Settings, Accounts."
+msgstr ""
+
 #: src/firstrun/GameSetup.tsx
 msgid "First profile"
 msgstr ""

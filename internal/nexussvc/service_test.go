@@ -18,7 +18,9 @@ import (
 	"github.com/Rethunk-Tech/go-nexusmods"
 
 	"github.com/Rethunk-Tech/go-safefs/diskcache"
+	"github.com/Rethunk-Tech/mortar/internal/source"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 
 	"github.com/Rethunk-Tech/go-nexusmods/sso"
 	"github.com/Rethunk-Tech/go-safefs"
@@ -383,5 +385,14 @@ func TestPrimeDetailsDoesNotAskAgainForAModNexusDoesNotReturn(t *testing.T) {
 	}
 	if requests.Load() != 1 {
 		t.Fatalf("a mod Nexus does not return was asked for %d times", requests.Load())
+	}
+}
+
+func TestSignedOutCarriesItsKindAndStaysASourceSignedOut(t *testing.T) {
+	if usererr.KindOf(ErrSignedOut) != usererr.SignedOut {
+		t.Fatalf("kind %v", usererr.KindOf(ErrSignedOut))
+	}
+	if !errors.Is(ErrSignedOut, source.ErrSignedOut) {
+		t.Fatal("no longer a source.ErrSignedOut")
 	}
 }

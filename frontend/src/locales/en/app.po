@@ -6382,6 +6382,10 @@ msgstr "Install {loader}"
 msgid "Include mod files (larger, works offline)"
 msgstr "Include mod files (larger, works offline)"
 
+#: src/toasts/report.ts
+msgid "Sign in to this site in Settings, Accounts."
+msgstr "Sign in to this site in Settings, Accounts."
+
 #: src/firstrun/GameSetup.tsx
 msgid "First profile"
 msgstr "First profile"

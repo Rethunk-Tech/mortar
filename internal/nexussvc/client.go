@@ -9,10 +9,11 @@ import (
 	"github.com/Rethunk-Tech/go-nexusmods/sso"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/source"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // ErrSignedOut means a Nexus call was made without a signed-in account; it is a source.ErrSignedOut.
-var ErrSignedOut error = signedOut{}
+var ErrSignedOut = usererr.Wrap(usererr.SignedOut, signedOut{})
 
 type signedOut struct{}
 

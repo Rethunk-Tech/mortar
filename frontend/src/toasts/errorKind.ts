@@ -16,6 +16,7 @@ const knownKinds = [
   'malware',
   'process_denied',
   'rate_limited',
+  'signed_out',
 ] as const
 
 const kinds = new Set<string>(knownKinds)

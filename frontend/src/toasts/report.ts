@@ -46,6 +46,8 @@ function sentence(kind: ReturnType<typeof kindOf>): string {
       )
     case 'rate_limited':
       return i18n._(msg`The site is limiting how often Mortar may ask. Try again in a minute.`)
+    case 'signed_out':
+      return i18n._(msg`Sign in to this site in Settings, Accounts.`)
     default:
       return i18n._(msg`Something went wrong`)
   }
