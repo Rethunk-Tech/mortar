@@ -13,7 +13,7 @@ import (
 func entry(src profile.Source) profile.Entry { return profile.Entry{Source: src} }
 
 func TestHoldingsMatchEntrySourceUpdateKeyAndBundledCompanion(t *testing.T) {
-	info, ok := catalogGame("stardew")
+	info, ok := components.Game("stardew")
 	if !ok {
 		t.Fatal("no stardew in the catalog")
 	}

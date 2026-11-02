@@ -3,7 +3,6 @@ package launchsvc
 import (
 	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 	"slices"
 	"strconv"
@@ -130,9 +129,6 @@ func (s *Service) savePerformanceReport(gameID, profileID string, rows []Perform
 	index.Reports = append([]SavedReport{report}, index.Reports...)
 	if len(index.Reports) > maxPerformanceReports {
 		index.Reports = index.Reports[:maxPerformanceReports]
-	}
-	if err := os.MkdirAll(dir, 0o700); err != nil {
-		return SavedReport{}, err
 	}
 	if err := datadir.WriteJSON(filepath.Join(dir, "performance.json"), index); err != nil {
 		return SavedReport{}, err

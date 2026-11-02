@@ -87,9 +87,6 @@ func (s *Service) writeGraphicsMarker(gameID, profileID string, m graphicsMarker
 		}
 		return nil
 	}
-	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-		return err
-	}
 	return datadir.WriteJSON(path, m)
 }
 

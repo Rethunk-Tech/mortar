@@ -248,13 +248,10 @@ func List(home string, cur settings.Settings) ([]GameInfo, error) {
 	catalog := Catalog()
 	out := make([]GameInfo, 0, len(catalog))
 	for _, c := range catalog {
-		info := GameInfo{ID: c.ID, Name: c.Name, Deploy: c.Deploy, AppID: c.SteamAppID(), HasSaves: HasSaves(c.ID), StartupSettings: HasStartupSettings(c.ID), HasOptions: HasPath(c.ID, "options"), HasCaches: len(c.Caches) > 0, HasScreenshots: HasScreenshots(c.ID), Installs: []Install{}, Sources: make([]string, len(c.Sources)), SourceKeys: map[string]string{}, FindSources: FindSourceSites(c), Graphics: c.Graphics}
+		info := GameInfo{ID: c.ID, Name: c.Name, Deploy: c.Deploy, AppID: c.SteamAppID(), HasSaves: HasSaves(c.ID), StartupSettings: HasStartupSettings(c.ID), HasOptions: HasPath(c.ID, "options"), HasCaches: len(c.Caches) > 0, HasScreenshots: HasScreenshots(c.ID), Installs: []Install{}, Sources: make([]string, len(c.Sources)), SourceKeys: c.SourceKeys(), FindSources: FindSourceSites(c), Graphics: c.Graphics}
 		info.Loader, info.LoaderID = c.Loaders[0].Name, c.Loaders[0].ID
 		for i, src := range c.Sources {
 			info.Sources[i] = src.ID
-			if src.Key != "" {
-				info.SourceKeys[src.ID] = src.Key
-			}
 		}
 		if g := Find(c.ID); g != nil && c.Enabled {
 			info.Available = true
