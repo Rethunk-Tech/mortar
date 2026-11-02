@@ -100,12 +100,14 @@ const ModsBody = memo(function ModsBodyView({
   shown,
   view,
   filtering,
+  onlyFavourites,
   onClear,
 }: {
   profile: Profile
   shown: Mod[]
   view: View
   filtering: boolean
+  onlyFavourites: boolean
   onClear: () => void
 }) {
   const { t } = useLingui()
@@ -145,10 +147,12 @@ const ModsBody = memo(function ModsBodyView({
     return (
       <EmptyState
         icon={<SearchX />}
-        title={t`No mods match`}
+        title={onlyFavourites ? t`No favourites yet` : t`No mods match`}
         action={<Button onClick={onClear}>{t`Show all mods`}</Button>}
       >
-        {t`Try a different search or filter.`}
+        {onlyFavourites
+          ? t`Click the star on a mod to add it here.`
+          : t`Try a different search or filter.`}
       </EmptyState>
     )
   }
@@ -333,6 +337,7 @@ function FilteredMods({ profile }: { profile: Profile }) {
         shown={shown}
         view={view}
         filtering={q !== '' || filter !== 'all' || selectedTags.length > 0}
+        onlyFavourites={filter === 'favourite' && q === '' && selectedTags.length === 0}
         onClear={onClear}
       />
     </>
