@@ -3123,7 +3123,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-curseforge@v0.2.0
+github.com/Rethunk-Tech/go-curseforge@v0.3.0
 licence: MIT
 https://github.com/Rethunk-Tech/go-curseforge
 
@@ -3487,7 +3487,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-nexusmods@v0.2.0
+github.com/Rethunk-Tech/go-nexusmods@v0.3.0
 licence: MIT
 https://github.com/Rethunk-Tech/go-nexusmods
 
@@ -3515,7 +3515,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-safefs@v0.3.0
+github.com/Rethunk-Tech/go-safefs@v0.4.0
 licence: MIT
 https://github.com/Rethunk-Tech/go-safefs
 
