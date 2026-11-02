@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
-import { Alert, Box, Button, Chip, TextField } from '@mui/material'
+import { Alert, Box, Button, TextField } from '@mui/material'
+import { LogOut } from 'lucide-react'
 import { type SubmitEvent, useEffect, useId, useState } from 'react'
 import {
   Account,
@@ -10,6 +11,7 @@ import { space } from '../../theme/density.ts'
 import { errorKind } from '../../toasts/errorKind.ts'
 import { type InlineError, inlineError, reportUnexpected } from '../../toasts/report.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
+import { AccountRow, ServiceBlock } from './AccountRow.tsx'
 
 // The account answer lands on the row alone, not the section around it.
 function ModioRow() {
@@ -47,60 +49,76 @@ function ModioRow() {
       .then(() => setName(''))
       .catch(reportUnexpected)
   }
-  return name ? (
-    <SettingRow
-      label={t`Account`}
-      description={t`Your access token is kept in your system keyring.`}
-    >
-      <Chip size="small" color="primary" label={name} />
-      <Button size="small" onClick={signOut}>
-        {t`Remove token`}
-      </Button>
-    </SettingRow>
-  ) : (
-    <SettingRow
-      label={t`Access token`}
-      description={t`Kept in your system keyring. Create a read-only personal access token at mod.io/me/access.`}
-    >
-      <Box
-        component="form"
-        onSubmit={test}
-        sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-          <TextField
-            id={tokenId}
-            slotProps={{ htmlInput: { 'aria-label': t`Access token` } }}
-            type="password"
-            size="small"
-            autoComplete="off"
-            value={token}
-            onChange={(e) => setToken(e.target.value)}
-            sx={{ width: 260, maxWidth: '100%' }}
-          />
-          <Button
-            type="submit"
-            variant="outlined"
-            disabled={busy || token.trim() === ''}
-            sx={{ flexShrink: 0 }}
+  let status = ''
+  if (name) {
+    status = `${name} · ${t`Access token in your system keyring`}`
+  } else if (name !== null) {
+    status = t`Not signed in`
+  }
+  return (
+    <ServiceBlock>
+      <AccountRow
+        source="modio"
+        tone={name ? 'ok' : 'none'}
+        status={status}
+        action={
+          name ? (
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<LogOut size={16} />}
+              onClick={signOut}
+            >
+              {t`Remove token`}
+            </Button>
+          ) : null
+        }
+      />
+      {name ? null : (
+        <SettingRow
+          label={t`Access token`}
+          description={t`Kept in your system keyring. Create a read-only personal access token at mod.io/me/access.`}
+        >
+          <Box
+            component="form"
+            onSubmit={test}
+            sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}
           >
-            {t`Test`}
-          </Button>
-        </Box>
-        {error ? (
-          <Alert variant="compact" severity="error" title={error.details}>
-            {error.message}
-          </Alert>
-        ) : null}
-      </Box>
-    </SettingRow>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
+              <TextField
+                id={tokenId}
+                slotProps={{ htmlInput: { 'aria-label': t`Access token` } }}
+                type="password"
+                size="small"
+                autoComplete="off"
+                value={token}
+                onChange={(e) => setToken(e.target.value)}
+                sx={{ width: 260, maxWidth: '100%' }}
+              />
+              <Button
+                type="submit"
+                variant="outlined"
+                disabled={busy || token.trim() === ''}
+                sx={{ flexShrink: 0 }}
+              >
+                {t`Test`}
+              </Button>
+            </Box>
+            {error ? (
+              <Alert variant="compact" severity="error" title={error.details}>
+                {error.message}
+              </Alert>
+            ) : null}
+          </Box>
+        </SettingRow>
+      )}
+    </ServiceBlock>
   )
 }
 
 export function ModioAccount() {
-  const { t } = useLingui()
   return (
-    <SettingsSection title={t`mod.io`}>
+    <SettingsSection>
       <ModioRow />
     </SettingsSection>
   )

@@ -467,10 +467,6 @@ msgstr "{name} now opens {source} \"Install with Mod Manager\" links."
 msgid "Looking for launchers…"
 msgstr "Looking for launchers…"
 
-#: src/settings/sections/ModioAccount.tsx
-msgid "Your access token is kept in your system keyring."
-msgstr "Your access token is kept in your system keyring."
-
 #: src/settings/sections/DataHistory.tsx
 msgid "Trimmed {profile}'s history, freed {size}"
 msgstr "Trimmed {profile}'s history, freed {size}"
@@ -625,6 +621,7 @@ msgid "Scales text, controls and spacing together"
 msgstr "Scales text, controls and spacing together"
 
 #: src/settings/sections/ItchAccount.tsx
+#: src/settings/sections/ModioAccount.tsx
 #: src/settings/sections/NexusMods.tsx
 msgid "Not signed in"
 msgstr "Not signed in"
@@ -723,10 +720,6 @@ msgstr "Mods and profiles"
 #: src/settings/sections/Updates.tsx
 msgid "Mortar {version} is available."
 msgstr "Mortar {version} is available."
-
-#: src/settings/sections/ModioAccount.tsx
-msgid "Account"
-msgstr "Account"
 
 #: src/settings/prefCopy.ts
 msgid "Offer to add new mod archives that land in your Downloads folder or Mortar's download folder"
@@ -2469,10 +2462,6 @@ msgstr "Regenerate token?"
 msgid "Could not untrack mods"
 msgstr "Could not untrack mods"
 
-#: src/settings/sections/ModioAccount.tsx
-msgid "mod.io"
-msgstr "mod.io"
-
 #: src/settings/sections/ScheduledStatus.tsx
 msgid "Last scheduled backup {when}"
 msgstr "Last scheduled backup {when}"
@@ -3687,6 +3676,10 @@ msgstr "Take over"
 #: src/settings/updates.ts
 msgid "Could not reach {source}"
 msgstr "Could not reach {source}"
+
+#: src/settings/sections/ModioAccount.tsx
+msgid "Access token in your system keyring"
+msgstr "Access token in your system keyring"
 
 #: src/settings/sections/NexusMods.tsx
 msgid "Untrack unused…"

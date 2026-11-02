@@ -461,10 +461,6 @@ msgstr ""
 msgid "Looking for launchers…"
 msgstr ""
 
-#: src/settings/sections/ModioAccount.tsx
-msgid "Your access token is kept in your system keyring."
-msgstr ""
-
 #: src/settings/sections/DataHistory.tsx
 msgid "Trimmed {profile}'s history, freed {size}"
 msgstr ""
@@ -619,6 +615,7 @@ msgid "Scales text, controls and spacing together"
 msgstr ""
 
 #: src/settings/sections/ItchAccount.tsx
+#: src/settings/sections/ModioAccount.tsx
 #: src/settings/sections/NexusMods.tsx
 msgid "Not signed in"
 msgstr ""
@@ -716,10 +713,6 @@ msgstr ""
 
 #: src/settings/sections/Updates.tsx
 msgid "Mortar {version} is available."
-msgstr ""
-
-#: src/settings/sections/ModioAccount.tsx
-msgid "Account"
 msgstr ""
 
 #: src/settings/prefCopy.ts
@@ -2463,10 +2456,6 @@ msgstr ""
 msgid "Could not untrack mods"
 msgstr ""
 
-#: src/settings/sections/ModioAccount.tsx
-msgid "mod.io"
-msgstr ""
-
 #: src/settings/sections/ScheduledStatus.tsx
 msgid "Last scheduled backup {when}"
 msgstr ""
@@ -3680,6 +3669,10 @@ msgstr ""
 
 #: src/settings/updates.ts
 msgid "Could not reach {source}"
+msgstr ""
+
+#: src/settings/sections/ModioAccount.tsx
+msgid "Access token in your system keyring"
 msgstr ""
 
 #: src/settings/sections/NexusMods.tsx
