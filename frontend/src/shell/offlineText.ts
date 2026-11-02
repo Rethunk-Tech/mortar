@@ -3,14 +3,14 @@ import type { State } from '../../bindings/github.com/Rethunk-Tech/mortar/intern
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { i18n } from '../i18n/index.ts'
 import { listNames } from '../i18n/list.ts'
+import { cmpText } from '../mods/cmpText.ts'
 import { savedAt, unreachable, useOffline } from './offline.ts'
 
-const byLabel = (a: State, b: State) =>
-  sourceLabel(a.id).localeCompare(sourceLabel(b.id), i18n.locale)
+const byLabel = (a: State, b: State) => cmpText(sourceLabel(a.id), sourceLabel(b.id))
 
 // Source names in the same order in every sentence that lists them.
 function sourceNames(ids: readonly string[]): string {
-  return listNames(ids.map(sourceLabel).sort((a, b) => a.localeCompare(b, i18n.locale)))
+  return listNames(ids.map(sourceLabel).sort(cmpText))
 }
 
 // The note for sources that did not answer, by id.

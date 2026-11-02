@@ -11,6 +11,7 @@ import type {
   GapMod,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/models.ts'
 import { SaveGap } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts'
+import { cmpText } from '../mods/cmpText.ts'
 import { LockedReason } from '../mods/LockedReason.tsx'
 import { useLocked } from '../mods/useLocked.ts'
 import { space } from '../theme/density.ts'
@@ -47,7 +48,7 @@ export function SaveGapLine({ fit, profile, game }: { fit: Fit; profile: Profile
   // Dismissing remembers which mods were wanted, so the line comes back only when that set changes.
   const wanted = [...missing, ...disabled]
     .map((m) => m.id)
-    .sort((a, b) => a.localeCompare(b))
+    .sort(cmpText)
     .join('\n')
   const [dismissed, setDismissed] = useStoredState(
     `mortar.saveGapDismissed.${game}.${profile.id}.${fit.folder}`,

@@ -1,4 +1,5 @@
 import { typedKey } from '@rethunk/dom-input-nav'
+import { cmpText } from '../mods/cmpText.ts'
 
 interface Listed {
   id: string
@@ -24,7 +25,7 @@ function gameOrder<G extends Listed>(
     .slice(0, RECENT_GAMES)
   const rest = games
     .filter((g) => !recent.includes(g))
-    .sort((a, b) => typedKey(a.name).localeCompare(typedKey(b.name)))
+    .sort((a, b) => cmpText(typedKey(a.name), typedKey(b.name)))
   return { recent, rest }
 }
 

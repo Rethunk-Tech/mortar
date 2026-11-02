@@ -1,4 +1,5 @@
 import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
+import { cmpText } from '../cmpText.ts'
 
 const FIRST = ['nexus', 'github', 'thunderstore']
 
@@ -12,5 +13,5 @@ export function groupBySource(list: readonly Update[]): { name: string; list: Up
   const by = Map.groupBy(list, (u) => u.source)
   return [...by.entries()]
     .map(([name, rows]) => ({ name, list: rows }))
-    .sort((a, b) => rank(a.name) - rank(b.name) || a.name.localeCompare(b.name))
+    .sort((a, b) => rank(a.name) - rank(b.name) || cmpText(a.name, b.name))
 }

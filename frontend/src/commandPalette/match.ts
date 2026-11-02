@@ -1,3 +1,5 @@
+import { cmpText } from '../mods/cmpText.ts'
+
 function needle(s: string): string {
   return s.trim().toLowerCase()
 }
@@ -74,7 +76,7 @@ export function matchPaletteItems(items: readonly PaletteItem[], query: string):
     if (b.score !== a.score) {
       return b.score - a.score
     }
-    return a.item.label.localeCompare(b.item.label)
+    return cmpText(a.item.label, b.item.label)
   })
   return scored.map((row) => row.item)
 }

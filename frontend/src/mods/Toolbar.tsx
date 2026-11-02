@@ -43,6 +43,7 @@ import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { AddMenu } from './AddMenu.tsx'
 import { CategoryEditorDialog } from './CategoryEditor.tsx'
+import { cmpText } from './cmpText.ts'
 import { onFilterFocus } from './filterFocus.ts'
 import type { GroupBy } from './group.ts'
 import { lockedHint } from './lockedHint.ts'
@@ -226,7 +227,7 @@ export const GroupByControl = memo(function GroupByMenu() {
             { id: 'author' as const, label: t`Author`, Icon: User },
             { id: 'group' as const, label: t`Group`, Icon: FolderTree },
             { id: 'reason' as const, label: t`Install reason`, Icon: UserCheck },
-          ].sort((a, b) => a.label.localeCompare(b.label)),
+          ].sort((a, b) => cmpText(a.label, b.label)),
         ].map((item) => (
           <MenuCheck
             key={item.id}

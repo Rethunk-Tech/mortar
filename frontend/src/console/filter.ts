@@ -2,6 +2,7 @@ import {
   type Entry,
   Level,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
+import { cmpText } from '../mods/cmpText.ts'
 
 const LEVEL_WIDTH = 5
 const INCOMPATIBLE_GAME = 'this version of SMAPI is only compatible up to Stardew Valley'
@@ -65,9 +66,7 @@ export function countByLevel(entries: Entry[]): Map<Level, number> {
 }
 
 export function modsOf(entries: Entry[]): string[] {
-  return [...new Set(entries.map((e) => e.mod).filter((m) => m !== ''))].sort((a, b) =>
-    a.localeCompare(b),
-  )
+  return [...new Set(entries.map((e) => e.mod).filter((m) => m !== ''))].sort(cmpText)
 }
 
 // defaults are the levels the console starts with (levelsFromFloor of the open profile's floor).

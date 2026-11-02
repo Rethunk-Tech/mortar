@@ -3,6 +3,7 @@ import { Box, Button, Typography } from '@mui/material'
 import type { HiddenLogSource } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import { ShowLogSource } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { sameSource, useHiddenSources } from '../../console/hiddenSources.ts'
+import { cmpText } from '../../mods/cmpText.ts'
 import { useCurrentGame } from '../../nav/currentGame.ts'
 import { space } from '../../theme/density.ts'
 import { saveSetting } from '../persist.ts'
@@ -26,10 +27,10 @@ function grouped(hidden: readonly HiddenLogSource[], engine: string) {
   const groups = Map.groupBy(hidden, (h) => whereFrom(h.source, engine))
   const shown = (h: HiddenLogSource) => h.text || h.label || h.source
   return [...groups.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
+    .sort(([a], [b]) => cmpText(a, b))
     .map(([from, items]) => ({
       from,
-      items: items.sort((a, b) => shown(a).localeCompare(shown(b))),
+      items: items.sort((a, b) => cmpText(shown(a), shown(b))),
     }))
 }
 
