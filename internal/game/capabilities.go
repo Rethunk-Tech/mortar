@@ -10,6 +10,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-gamelocator/steam"
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/metadata"
 	"github.com/Rethunk-Tech/mortar/internal/runtime"
 	"github.com/Rethunk-Tech/mortar/internal/saves"
@@ -144,7 +145,7 @@ func FindSourceSites(g components.GameInfo) []string {
 	if g.HasMetadata(metadata.StardewDataset) {
 		out = append(out, "nexus")
 	}
-	if len(g.Loaders) > 0 && g.Loaders[0].ID == "bepinex5" && slices.ContainsFunc(g.Sources, func(s components.GameSource) bool { return s.ID == "thunderstore" }) {
+	if len(g.Loaders) > 0 && bepinex5.Family(g.Loaders[0].ID) && slices.ContainsFunc(g.Sources, func(s components.GameSource) bool { return s.ID == "thunderstore" }) {
 		out = append(out, "thunderstore")
 	}
 	if slices.ContainsFunc(g.Sources, func(s components.GameSource) bool { return s.ID == "vsmoddb" }) {

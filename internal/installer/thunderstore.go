@@ -81,7 +81,7 @@ const folderLoader = "folder"
 // TakesPackages reports a game whose mods this installer lays out: a BepInEx, MelonLoader or thunderpack game.
 func TakesPackages(g Game) bool {
 	_, pack := thunderpack.Of(g.Loaders)
-	return pack || slices.Contains(g.Loaders, bepinex5.ID) || slices.Contains(g.Loaders, melonloader.ID)
+	return pack || slices.ContainsFunc(g.Loaders, bepinex5.Family) || slices.Contains(g.Loaders, melonloader.ID)
 }
 
 // Detect takes a Thunderstore package, and for a BepInEx or MelonLoader game also an archive from another site that
@@ -94,7 +94,7 @@ func (thunderstoreRules) Detect(a Archive, g Game) bool {
 		return isPackage
 	}
 	switch {
-	case slices.Contains(g.Loaders, bepinex5.ID):
+	case slices.ContainsFunc(g.Loaders, bepinex5.Family):
 		loaderFolder = "BepInEx"
 	case slices.Contains(g.Loaders, melonloader.ID):
 		loaderFolder = "MelonLoader"

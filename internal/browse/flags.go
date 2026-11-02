@@ -10,6 +10,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -46,7 +47,7 @@ func (c *Client) mark(ctx context.Context, info components.GameInfo, items []Ite
 			it.Loader = slices.ContainsFunc(info.Loaders, func(l components.GameLoader) bool { return l.NexusModID == id })
 		case "thunderstore":
 			it.Loader = strings.EqualFold(it.ID, info.LoaderPackage()) &&
-				slices.ContainsFunc(info.Loaders, func(l components.GameLoader) bool { return strings.HasPrefix(l.ID, "bepinex") })
+				slices.ContainsFunc(info.Loaders, func(l components.GameLoader) bool { return bepinex5.Family(l.ID) })
 		}
 	}
 }
@@ -77,7 +78,7 @@ func (h Holdings) holdLoader(info components.GameInfo, loaderID string) {
 		if l.NexusModID != 0 {
 			h.nexus[l.NexusModID] = true
 		}
-		if strings.HasPrefix(l.ID, "bepinex") {
+		if bepinex5.Family(l.ID) {
 			h.hold(profile.KindThunderstore, info.LoaderPackage())
 		}
 	}

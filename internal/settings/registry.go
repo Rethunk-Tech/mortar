@@ -242,6 +242,7 @@ var registry = withDefaults([]pref{
 	loaderPref("smapi", enumPref("smapiBuilds", ScopeLoader, smapiBuildsValues, func(s Settings, _ string) string { return s.SmapiBuilds }, func(s *Settings, _, v string) { s.SmapiBuilds = v })),
 	loaderPref("smapi", pinPref("smapiPin", "smapi")),
 	loaderPref("bepinex5", pinPref("bepinex5Pin", "bepinex5")),
+	loaderPref("bepisloader", pinPref("bepisloaderPin", "bepisloader")),
 	loaderPref("melonloader", pinPref("melonloaderPin", "melonloader")),
 	loaderPref("returnofmodding", pinPref("returnofmoddingPin", "returnofmodding")),
 	loaderPref("gdweave", pinPref("gdweavePin", "gdweave")),

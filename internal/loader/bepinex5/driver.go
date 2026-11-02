@@ -29,6 +29,12 @@ import (
 // ID is the catalog's id for this loader.
 const ID = "bepinex5"
 
+// BepisLoaderID is the loader that starts BepInEx on a .NET host (internal/loader/bepisloader).
+const BepisLoaderID = "bepisloader"
+
+// Family reports a loader whose mods and log are BepInEx's.
+func Family(id string) bool { return id == ID || id == BepisLoaderID }
+
 var _ = loader.Register(Loader{})
 
 // markerFile records what Mortar installed, since BepInEx's own files do not say which pack they came from.

@@ -121,7 +121,7 @@ func loaderFailures(l loader.Loader, p loader.ProfileView, player string, owners
 		return frames
 	}
 	out := attribute(found, owners, func(lf *LoadFailure, f loader.Finding) { explain(lf, stackOf(f), owners, patches) })
-	if l.ID() == bepinex5.ID {
+	if bepinex5.Family(l.ID()) {
 		out = dropFixed(out, filepath.Join(p.Dir, filepath.FromSlash(pluginsDir)), owners)
 	}
 	for i, f := range out {

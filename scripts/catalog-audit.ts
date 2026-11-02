@@ -70,8 +70,6 @@ const LEFT_OUT = new Set([
   'banjo-recompiled',
   '2-ship-2-harkinian',
   'r5flowstate',
-  // r2modman and Gale both offer it, on BepisLoader, which Mortar has no driver for; docs/design.md keeps it under Later.
-  'resonite',
   // Neither r2modman nor Gale lists it, and no store Mortar reads sells it.
   '3dash',
 ])
@@ -156,6 +154,7 @@ const NEXUS_LEFT_OUT = new Set([
 ])
 const LOADER_WORDS: Record<string, string> = {
   bepinex5: 'BepInEx',
+  bepisloader: 'BepisLoader',
   melonloader: 'MelonLoader',
   lovely: 'Steamodded',
   returnofmodding: 'Hell2Modding',

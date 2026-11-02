@@ -47,6 +47,8 @@ func TestLayoutGoldens(t *testing.T) {
 	pack := func(id string) Game { return Game{Loaders: []string{id}, Targets: []Target{{ID: TargetProfile}}} }
 	northstar := pack("northstar")
 	northstar.Routes = []components.LoaderRoute{{Dir: "R2Northstar/mods"}}
+	resonite := pack("bepisloader")
+	resonite.Routes = []components.LoaderRoute{{Dir: "Renderer"}}
 	cases := []struct {
 		name    string
 		game    Game
@@ -160,6 +162,24 @@ func TestLayoutGoldens(t *testing.T) {
 			map[string]string{"manifest.json": `{"name":"Rom","version_number":"1.0.0"}`, "main.lua": "m", "config/a.cfg": "c"},
 			nil, "thunderstore-rules",
 			"profile:ReturnOfModding/config/Ns-Rom/a.cfg<-config/a.cfg profile:ReturnOfModding/plugins/Ns-Rom/main.lua<-main.lua",
+		},
+		{
+			"BepisLoader package with a renderer half", resonite, "nullobsi-FixHandPose",
+			map[string]string{"manifest.json": `{"name":"FixHandPose","version_number":"1.0.1"}`, "plugins/FixHandPose.FrooxEngine/a.dll": "d", "Renderer/BepInEx/plugins/FixHandPose.Unity/b.dll": "u"},
+			nil, "thunderstore-rules",
+			"profile:BepInEx/plugins/nullobsi-FixHandPose/FixHandPose.FrooxEngine/a.dll<-plugins/FixHandPose.FrooxEngine/a.dll profile:BepInEx/plugins/nullobsi-FixHandPose/manifest.json<-manifest.json profile:Renderer/BepInEx/plugins/FixHandPose.Unity/b.dll<-Renderer/BepInEx/plugins/FixHandPose.Unity/b.dll",
+		},
+		{
+			"BepInExRenderer's pack is a package, and its folder keeps the core", resonite, "ResoniteModding-BepInExRenderer",
+			map[string]string{"manifest.json": `{"name":"BepInExRenderer","version_number":"5.4.233001"}`, "BepInExPack/Renderer/BepInEx/core/BepInEx.Preloader.dll": "p"},
+			nil, "thunderstore-rules",
+			"profile:BepInEx/plugins/ResoniteModding-BepInExRenderer/manifest.json<-manifest.json profile:Renderer/BepInEx/core/BepInEx.Preloader.dll<-BepInExPack/Renderer/BepInEx/core/BepInEx.Preloader.dll",
+		},
+		{
+			"a mod's hostfxr.dll stays among its plugins, away from what goes beside the game", resonite, "Ns-Evil",
+			map[string]string{"manifest.json": `{"name":"Evil","version_number":"1.0.0"}`, "hostfxr.dll": "x", "Renderer/../BepInExPack/LinuxBootstrap.sh": "s"},
+			nil, "thunderstore-rules",
+			"profile:BepInEx/plugins/Ns-Evil/LinuxBootstrap.sh<-BepInExPack/LinuxBootstrap.sh profile:BepInEx/plugins/Ns-Evil/hostfxr.dll<-hostfxr.dll profile:BepInEx/plugins/Ns-Evil/manifest.json<-manifest.json",
 		},
 		{
 			"GDWeave package", pack("gdweave"), "Ns-Fish",

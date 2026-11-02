@@ -417,7 +417,7 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	stats := launch.Summarize(text)
 	ldr := cmp.Or(s.profileLoader(g.ID(), profileID), loaderID(g.ID()))
 	unclassified := launch.Unclassified(text)
-	if ldr == bepinex5.ID {
+	if bepinex5.Family(ldr) {
 		unclassified = bepinex5.Unclassified(text)
 	}
 	s.mu.Lock()

@@ -38,6 +38,9 @@ func TestClosure(t *testing.T) {
 		custom("ebkr", "r2modman", v("3.0.0")),
 		custom("Ns", "OldPin", v("1.0.0", "BepInEx-BepInExPack-5.3.1")),
 		custom("Ns", "Managed", v("1.0.0", "ebkr-r2modman-3.0.0", "Ns-D-1.0.0")),
+		custom("ResoniteModding", "BepInExResoniteShim", v("0.9.3")),
+		custom("ResoniteModding", "BepisLoader", v("1.7.0", "ResoniteModding-BepInExResoniteShim-0.9.3")),
+		custom("Ns", "Reso", v("1.0.0", "ResoniteModding-BepisLoader-1.5.0")),
 	)
 	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
 	cases := []struct {
@@ -57,6 +60,7 @@ func TestClosure(t *testing.T) {
 		{"a pin newer than the index is an error", []tstore.Ref{{Namespace: "Ns", Name: "Ahead", Version: ""}}, "", "ns-d 9.0.0 is not in the index"},
 		{"another loader major is refused", []tstore.Ref{{Namespace: "Ns", Name: "Old", Version: ""}}, "", "ns-old 1.0.0 -> bepinex-bepinexpack"},
 		{"an IL2CPP pack's dependents take its newest BepInEx 6", []tstore.Ref{{Namespace: "Ns", Name: "Cat", Version: ""}}, "BepInExPack_IL2CPP 6.0.788, Cat 1.0.0", ""},
+		{"a mod on BepisLoader brings the pack's shim", []tstore.Ref{{Namespace: "Ns", Name: "Reso", Version: ""}}, "BepInExResoniteShim 0.9.3, BepisLoader 1.7.0, Reso 1.0.0", ""},
 		{"another loader's pack is not held to BepInEx's series", []tstore.Ref{{Namespace: "Ns", Name: "Mel", Version: ""}}, "MelonLoader 0.7.1, Mel 1.0.0", ""},
 		{"a missing dependency is left out", []tstore.Ref{{Namespace: "Ns", Name: "Lost", Version: ""}}, "Lost 1.0.0", ""},
 		{"a missing root names the chain", []tstore.Ref{{Namespace: "Ghost", Name: "Pkg", Version: ""}}, "", "ghost-pkg is not in the index (requested by ghost-pkg)"},

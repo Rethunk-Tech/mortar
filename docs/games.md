@@ -70,6 +70,18 @@ Sources: Gale (`Kesomannen/gale`), r2modmanPlus (`ebkr/r2modmanPlus`), the Thund
 
 - Saves and `Player.log` follow PCGamingWiki's `AppData\LocalLow\semiwork\Repo\saves\`. With no `saveFiles` pattern a save is a folder holding a file of its own name.
 
+## Resonite
+
+Sources: r2modman's ecosystem schema (`resonite`: Steam `2519830`, `packageLoader` `bepisloader`, install rules) and [`BepisLoaderGameInstructions.ts`](https://github.com/ebkr/r2modmanPlus/blob/b09ec5a9/src/r2mm/launching/instructions/instructions/loader/BepisLoaderGameInstructions.ts); Gale's [`mod_loader.rs`](https://github.com/Kesomannen/gale/blob/173e59e7/src-tauri/src/profile/launch/mod_loader.rs) `add_bepisloader_args` and [issue 627](https://github.com/Kesomannen/gale/issues/627); the pack's own README and `LinuxBootstrap.sh`.
+
+- The loader is BepisLoader, which runs BepInEx on the game's .NET host, so the pack has no Doorstop and no `winhttp.dll` and needs no Wine override (Gale sets none). How it runs is in [architecture](architecture.md#loader-notes).
+- Where r2modman and Gale differ, Gale is followed: r2modman's Linux path looks for the renderer's preloader in the profile's `BepInEx/core`, which holds none of the names it wants, so from reading its renderer mods do not load there. Mortar reads `Renderer/BepInEx/core`, passes Doorstop only when that preloader exists, and gives it the Z: form under Proton.
+- r2modman's `--r2profile` is left out: nothing in the pack reads it.
+- `ResoniteModding-BepInExRenderer` stays an ordinary dependency, brought by the mods that name it (4 of 141 packages when read on 2026-11-02). Renderer plugins land flat in `Renderer/BepInEx/plugins`, where r2modman nests them by package; the folders they ship keep them apart.
+- Nexus has no Resonite game (its API answers `GAME_NOT_FOUND`, 2026-11-02), so Thunderstore is the one source.
+- The renderer's own log, `Renderer/BepInEx/LogOutput.log`, is not followed; the Console and Problems read the .NET side's.
+- Unverified until someone runs the game: nothing here has run against a real install. The log wording is read from the pack's `BepInEx.Core.dll`, the launch from the rivals' source and the pack's bootstrap. The engine namespaces that stack blame skips (`FrooxEngine`, `Elements`, `ProtoFlux`, `SkyFrost`, `Renderite`, `Awwdio`) are from memory of the game's assemblies, and that the game accepts `--bepinex-target` with hookfxr off, in a profile without mods, is inferred from it tolerating r2modman's `--r2profile`.
+
 ## Risk of Rain 2
 
 - **Dedicated server** writes `Risk of Rain 2_Data/Config/server.cfg` instead of passing flags. The file, folder and example lines are from the Steam dedicated server guide (`steamcommunity.com/sharedfiles/filedetails/?id=1938378081`, by `ghor`); the variable names are registered in the decompiled `RoR2.dll` (`WarmBuns/DecompiledPile`: `NetworkManagerSystem`, `SteamworksServerManager`), where `exec <name>` runs `Config/<name>.cfg`. The `avivace/ror2-server` image agrees.

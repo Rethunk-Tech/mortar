@@ -14066,6 +14066,27 @@
       "stores": { "steam": { "appId": "1125240" } },
       "loaders": [{ "id": "folder" }],
       "sources": [{ "id": "thunderstore", "key": "ancient-dungeon-vr" }]
+    },
+    {
+      "id": "resonite",
+      "name": "Resonite",
+      "enabled": true,
+      "minVersion": "0.5.0",
+      "marker": "Resonite.exe",
+      "r2modmanFolder": "Resonite",
+      "metadata": [],
+      "deploy": "profile",
+      "targets": [{ "id": "profile", "root": "{profile}" }],
+      "stores": { "steam": { "appId": "2519830" } },
+      "loaders": [
+        {
+          "id": "bepisloader",
+          "name": "BepisLoader",
+          "package": "ResoniteModding-BepisLoader",
+          "routes": [{ "dir": "Renderer" }]
+        }
+      ],
+      "sources": [{ "id": "thunderstore", "key": "resonite" }]
     }
   ],
   "authors": [{ "names": ["Evaisa", "EvaisaDev"] }]

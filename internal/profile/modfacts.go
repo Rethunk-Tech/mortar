@@ -105,7 +105,7 @@ func (s *Store) scanPackage(game string, e Entry) (packageScan, bool) {
 		return packageScan{}, false
 	}
 	g := installerGame(game)
-	bepin := slices.Contains(g.Loaders, bepinex5.ID)
+	bepin := slices.ContainsFunc(g.Loaders, bepinex5.Family)
 	pkg := cmp.Or(e.Source.Name, e.Key)
 	var sc packageScan
 	var patcher, plugin, dll bool

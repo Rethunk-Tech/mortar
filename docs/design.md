@@ -56,7 +56,7 @@ Parked; take up when asked.
 
 - **Translucent window** through the fork's GTK4 `setTransparent()` fix (upstream #6197). Traps: a fading or `backdrop-filter` full-window layer turns WebKitGTK's translucent window opaque, and stacked alphas compound toward opaque, so images and overlays each need their own alpha. Windows needs Acrylic with the frameless window. The AppImage is the GTK 3 build (RGBA visual) and needs the same check.
 - **Frosted glass on Linux** (needs GNOME 51): in the fork beside `setTransparent()`, bind Wayland `ext_background_effect_manager_v1` and set the toplevel surface's blur region to the whole window, updated on resize, only while the translucent window is on. The AppImage's GTK 3 build reaches the surface through `gdk_wayland_window_get_wl_surface`.
-- **Other loaders and game families:** Bethesda games (plugin load order, LOOT, script extenders, BSAs); Minecraft (Java instances, Fabric, Forge, NeoForge); Resonite on BepisLoader.
+- **Other loaders and game families:** Bethesda games (plugin load order, LOOT, script extenders, BSAs); Minecraft (Java instances, Fabric, Forge, NeoForge).
 - **Runs that need an outside tester:** a launch from a real GOG install and from Flatpak Steam; a Linux launch with Stardew's launch method set to Steam, confirming SMAPI loads the profile's mods; Import from Vortex against a long-lived Vortex folder; timings with the data folder under OneDrive.
 - **Translate a mod's description** into the player's language (as StarModsManager does for Stardew), optional and per description; revisit together with the app's own translations.
 - **Hosted share service** with short codes and share versioning.
