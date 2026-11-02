@@ -183,7 +183,7 @@ function ProfileMenuListView({
       <MenuRule />
       <TitleMenuItem
         icon={<ListOrdered size={ICON_PX} />}
-        label={t`Manage profiles…`}
+        label={t`Manage profiles`}
         onClick={() => {
           closeTitleMenu()
           useNav.getState().openProfiles()
