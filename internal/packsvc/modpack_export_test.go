@@ -170,7 +170,7 @@ func TestUploadModpackExportsThenSendsAndSubmits(t *testing.T) {
 				Size int `json:"file_size_bytes"`
 			}
 			_ = json.Unmarshal(body, &started)
-			_, _ = fmt.Fprintf(w, `{"user_media":{"uuid":"u1"},"upload_urls":[{"part_number":1,"url":"%s/part/1","offset":0,"length":%d}]}`, srv.URL, started.Size)
+			_, _ = fmt.Fprintf(w, `{"user_media":{"uuid":"0f8fad5b-d9cb-469f-a165-70867728950e"},"upload_urls":[{"part_number":1,"url":"%s/part/1","offset":0,"length":%d}]}`, srv.URL, started.Size)
 		case r.URL.Path == "/part/1":
 			zipped = len(body)
 			w.Header().Set("ETag", `"e1"`)
@@ -202,7 +202,7 @@ func TestUploadModpackExportsThenSendsAndSubmits(t *testing.T) {
 	if zipped == 0 || len(ps.drafts) != 1 || submitted["author_name"] != "Ab" || ps.drafts[0].Author != "Me" || ps.drafts[0].Team != "Ab" || fmt.Sprint(submitted["community_categories"]) != "map[lethal-company:[modpacks]]" {
 		t.Errorf("zipped %d, drafts %d, submitted %v", zipped, len(ps.drafts), submitted)
 	}
-	if want := []string{"/api/experimental/usermedia/initiate-upload/", "/part/1", "/api/experimental/usermedia/u1/finish-upload/", "/api/experimental/submission/submit/"}; !slices.Equal(calls, want) {
+	if want := []string{"/api/experimental/usermedia/initiate-upload/", "/part/1", "/api/experimental/usermedia/0f8fad5b-d9cb-469f-a165-70867728950e/finish-upload/", "/api/experimental/submission/submit/"}; !slices.Equal(calls, want) {
 		t.Errorf("calls = %v", calls)
 	}
 }

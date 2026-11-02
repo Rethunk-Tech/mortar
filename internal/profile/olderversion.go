@@ -20,7 +20,7 @@ var digits = regexp.MustCompile(`^[0-9]+$`)
 
 // OlderVersion is what the "Get an older version" dialog needs: the game's Steam app and the depots it has installed.
 type OlderVersion struct {
-	AppID  string  `json:"appId"`
+	AppID  string        `json:"appId"`
 	Depots []steam.Depot `json:"depots"`
 }
 
