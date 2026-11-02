@@ -170,3 +170,14 @@ describe('annotateTree', () => {
     ])
   })
 })
+
+test('a framework with thousands of dependents builds, listing each once', () => {
+  const n = 5000
+  const mods: ProfileManifest[] = [{ id: 'Framework' }]
+  for (let i = 0; i < n; i++) {
+    mods.push({ id: `Mod.${i}`, dependencies: [{ id: 'Framework' }, { id: 'framework' }] })
+  }
+  const trees = buildDependencyTrees(mods, 'Framework')
+  expect(trees.neededBy).toHaveLength(n)
+  expect(trees.needs).toHaveLength(0)
+})

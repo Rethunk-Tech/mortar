@@ -28,6 +28,8 @@ function outgoing(manifests: readonly ProfileManifest[]): {
 } {
   const spellings = new Map<string, string>()
   const edges = new Map<string, Edge[]>()
+  // Each node's edges by target key, so a framework with thousands of dependents is not scanned per edge.
+  const targets = new Map<string, Map<string, Edge>>()
 
   for (const man of manifests) {
     canonical(spellings, man.id)
@@ -48,13 +50,17 @@ function outgoing(manifests: readonly ProfileManifest[]): {
       return
     }
     const list = edges.get(from) ?? []
-    const dup = list.find((e) => idKey(e.to) === idKey(to))
+    const seen = targets.get(from) ?? new Map<string, Edge>()
+    const dup = seen.get(idKey(to))
     if (dup) {
       dup.required = dup.required || required
       return
     }
-    list.push({ to, required })
+    const edge = { to, required }
+    list.push(edge)
+    seen.set(idKey(to), edge)
     edges.set(from, list)
+    targets.set(from, seen)
   }
 
   for (const man of manifests) {
@@ -71,15 +77,20 @@ function outgoing(manifests: readonly ProfileManifest[]): {
 
 function invert(edges: Map<string, Edge[]>): Map<string, Edge[]> {
   const back = new Map<string, Edge[]>()
+  const seen = new Map<string, Map<string, Edge>>()
   for (const [from, list] of edges) {
     for (const e of list) {
       const incoming = back.get(e.to) ?? []
-      const dup = incoming.find((x) => idKey(x.to) === idKey(from))
+      const byKey = seen.get(e.to) ?? new Map<string, Edge>()
+      const dup = byKey.get(idKey(from))
       if (dup) {
         dup.required = dup.required || e.required
       } else {
-        incoming.push({ to: from, required: e.required })
+        const edge = { to: from, required: e.required }
+        incoming.push(edge)
+        byKey.set(idKey(from), edge)
         back.set(e.to, incoming)
+        seen.set(e.to, byKey)
       }
     }
   }
