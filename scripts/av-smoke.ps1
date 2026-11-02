@@ -11,13 +11,7 @@
 # not excluded, so the scan of the extracted files, or real-time protection on them, must still refuse the install.
 param([string]$Exe = "$env:LOCALAPPDATA\Programs\Mortar\mortar.exe", [string]$Out = "$env:LOCALAPPDATA\Temp\mortar-av-smoke.txt", [string]$ZipDir = 'C:\avsmoke', [string]$ZipPath = '')
 $ErrorActionPreference = 'Continue'
-$fails = 0
-Remove-Item $Out -ErrorAction SilentlyContinue
-function Check($name, [bool]$ok) {
-    $line = '{0,-5} {1}' -f $(if ($ok) { 'PASS' } else { 'FAIL' }), $name
-    if (-not $ok) { $script:fails++ }
-    $line | Tee-Object -FilePath $Out -Append
-}
+. "$PSScriptRoot\lib.ps1"
 function Finish { "failures: $fails" | Tee-Object -FilePath $Out -Append; exit $fails }
 
 $game = 'stardew'

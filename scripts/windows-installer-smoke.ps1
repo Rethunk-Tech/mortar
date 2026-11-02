@@ -3,13 +3,7 @@
 # Exits non-zero when any check fails; arm64 installers need an ARM machine.
 param([Parameter(Mandatory)][string]$Installer, [string]$Out = "$env:TEMP\mortar-smoke.txt")
 $ErrorActionPreference = 'Continue'
-$fails = 0
-Remove-Item $Out -ErrorAction SilentlyContinue
-function Check($name, [bool]$ok) {
-    $line = '{0,-5} {1}' -f $(if ($ok) { 'PASS' } else { 'FAIL' }), $name
-    if (-not $ok) { $script:fails++ }
-    $line | Tee-Object -FilePath $Out -Append
-}
+. "$PSScriptRoot\lib.ps1"
 function Uninstall-Entry { Get-ChildItem 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall', 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall' -ErrorAction SilentlyContinue |
     Where-Object { (Get-ItemProperty $_.PSPath).DisplayName -eq 'Mortar' } | Select-Object -First 1 }
 $runKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
