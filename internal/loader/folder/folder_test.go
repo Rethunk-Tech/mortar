@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	goruntime "runtime"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/go-safefs"
@@ -13,7 +14,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/deploy"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
-	_ "github.com/Rethunk-Tech/mortar/internal/loader/folder"
+	"github.com/Rethunk-Tech/mortar/internal/loader/folder"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/runtime"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
@@ -251,4 +252,20 @@ func TestAModsFolderInsideTheInstallIsFilledAndPurgedWithTheInstallUnchanged(t *
 			t.Fatalf("%s: %q, want %q", k, after[k], v)
 		}
 	}
+}
+
+func TestProfileModsDirErrors(t *testing.T) {
+	if _, err := folder.ProfileModsDir("no-such-game", t.TempDir()); err == nil || !strings.Contains(err.Error(), "unknown game") {
+		t.Errorf("unknown game: %v", err)
+	}
+	for _, g := range components.Games() {
+		if _, ok := g.Target(folder.TargetID); ok {
+			continue
+		}
+		if _, err := folder.ProfileModsDir(g.ID, t.TempDir()); err == nil || !strings.Contains(err.Error(), "no "+folder.TargetID+" target") {
+			t.Errorf("%s without a mods target: %v", g.ID, err)
+		}
+		return
+	}
+	t.Skip("every catalog game has a mods target")
 }
