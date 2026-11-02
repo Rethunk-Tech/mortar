@@ -24,19 +24,20 @@ export function overlaysByBase(
   if (cached) {
     return cached
   }
-  const out = new Map<string, OverlayRow[]>()
+  const rows = entries
+    .filter((x) => (x.overlayOf ?? '') !== '')
+    .map((e): OverlayRow => {
+      const baseKey = e.overlayOf ?? ''
+      return {
+        key: e.key,
+        baseKey,
+        label: overlayLabel(e),
+        enabled: !(e.overlayOff ?? false),
+        baseEnabled: anyModOn(entries.find((b) => b.key === baseKey)),
+      }
+    })
+  const out = Map.groupBy(rows, (row) => row.baseKey)
   byBaseCache.set(entries, out)
-  for (const e of entries.filter((x) => (x.overlayOf ?? '') !== '')) {
-    const baseKey = e.overlayOf ?? ''
-    const row: OverlayRow = {
-      key: e.key,
-      baseKey,
-      label: overlayLabel(e),
-      enabled: !(e.overlayOff ?? false),
-      baseEnabled: anyModOn(entries.find((b) => b.key === baseKey)),
-    }
-    out.set(baseKey, [...(out.get(baseKey) ?? []), row])
-  }
   return out
 }
 

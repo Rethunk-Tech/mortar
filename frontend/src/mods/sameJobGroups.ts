@@ -39,10 +39,6 @@ export function sameJobGroups(items: RedundantItem[]): { keys: string[]; detail:
       detail.set(root, item.detail)
     }
   }
-  const groups = new Map<string, string[]>()
-  for (const k of order) {
-    const root = find(k)
-    groups.set(root, [...(groups.get(root) ?? []), k])
-  }
+  const groups = Map.groupBy(order, find)
   return [...groups.entries()].map(([root, keys]) => ({ keys, detail: detail.get(root) ?? '' }))
 }

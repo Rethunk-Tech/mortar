@@ -43,10 +43,7 @@ export function supportParts(
   all: readonly PartMod[] = mods,
 ): Set<string> {
   const primary = primaryFramework(all)
-  const byKey = new Map<string, PartMod[]>()
-  for (const m of mods) {
-    byKey.set(m.key, [...(byKey.get(m.key) ?? []), m])
-  }
+  const byKey = Map.groupBy(mods, (m) => m.key)
   const needs = (a: PartMod, b: PartMod) => requiredIdsOf(a).some((id) => idKey(id) === idKey(b.id))
   const out = new Set<string>()
   for (const parts of byKey.values()) {

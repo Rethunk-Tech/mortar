@@ -52,17 +52,15 @@ export interface ProblemSection {
 // assetRows shows conflicts between the same mods, with the same outcome and fix, as one row: a pack that edits
 // four seasonal maps the same way would otherwise fill four rows with one story.
 export function assetRows(conflicts: AssetConflict[]): Row[] {
-  const groups = new Map<string, AssetConflict[]>()
-  for (const asset of conflicts) {
-    const key = JSON.stringify([
+  const groups = Map.groupBy(conflicts, (asset) =>
+    JSON.stringify([
       asset.kind,
       [...(asset.packIds ?? [])].sort((a, b) => Number(a > b) - Number(a < b)),
       asset.winnerKind,
       asset.winnerName,
       asset.fixes ?? [],
-    ])
-    groups.set(key, [...(groups.get(key) ?? []), asset])
-  }
+    ]),
+  )
   const rows: Row[] = []
   for (const [asset, ...siblings] of groups.values()) {
     if (asset !== undefined) {

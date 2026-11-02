@@ -360,14 +360,11 @@ function CleanupDialog({
     chosenItems.reduce((n, s) => n + s.item.size, 0) +
     chosenLeftovers.reduce((n, g) => n + g.size, 0)
   const run = () => {
-    const byGame = new Map<string, string[]>()
-    for (const s of chosenItems) {
-      byGame.set(s.game, [...(byGame.get(s.game) ?? []), s.item.key])
-    }
+    const byGame = Map.groupBy(chosenItems, (s) => s.game)
     const files = chosenLeftovers.flatMap((g) => g.items)
     runCleanup(() =>
       Promise.all([
-        ...[...byGame.entries()].map(([game, keys]) => RemoveItems(game, keys)),
+        ...[...byGame.entries()].map(([game, chosen]) => RemoveItems(game, chosen.map((s) => s.item.key))),
         ...(preview && files.length > 0
           ? [Cleanup({ ...preview, items: files, total: files.reduce((n, f) => n + f.size, 0) })]
           : []),

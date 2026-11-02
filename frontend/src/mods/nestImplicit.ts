@@ -17,7 +17,12 @@ export function nestImplicit<G extends { items: readonly ListRow[] }>(groups: re
       const child = byId.get(idKey(id))
       if (child && child !== parent && child.implicit && !claimed.has(child)) {
         claimed.add(child)
-        children.set(parent, [...(children.get(parent) ?? []), child])
+        const siblings = children.get(parent)
+        if (siblings) {
+          siblings.push(child)
+        } else {
+          children.set(parent, [child])
+        }
         claim(child)
       }
     }
@@ -62,7 +67,12 @@ export function foldLibraries<G extends { items: readonly ListRow[] }>(groups: r
     let owner: ListRow | undefined
     for (const r of group.items) {
       if (r.depth && owner) {
-        libraries.set(owner, [...(libraries.get(owner) ?? []), r])
+        const owned = libraries.get(owner)
+        if (owned) {
+          owned.push(r)
+        } else {
+          libraries.set(owner, [r])
+        }
       } else {
         owner = r
         items.push(r)

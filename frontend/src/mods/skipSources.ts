@@ -11,7 +11,12 @@ interface SkipEntry {
 }
 
 function push(groups: Map<string, Mod[]>, source: string, mod: Mod) {
-  groups.set(source, [...(groups.get(source) ?? []), mod])
+  const list = groups.get(source)
+  if (list) {
+    list.push(mod)
+  } else {
+    groups.set(source, [mod])
+  }
 }
 
 // Ignore: each selected mod's update source that is not ignored yet. Use: every source a selected mod ignores.

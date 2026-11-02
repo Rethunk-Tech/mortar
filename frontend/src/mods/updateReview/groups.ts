@@ -9,10 +9,7 @@ const rank = (name: string) => {
 
 /** Rows grouped by the source that reported the update: Nexus, GitHub, Thunderstore, then the rest alphabetically. */
 export function groupBySource(list: readonly Update[]): { name: string; list: Update[] }[] {
-  const by = new Map<string, Update[]>()
-  for (const u of list) {
-    by.set(u.source, [...(by.get(u.source) ?? []), u])
-  }
+  const by = Map.groupBy(list, (u) => u.source)
   return [...by.entries()]
     .map(([name, rows]) => ({ name, list: rows }))
     .sort((a, b) => rank(a.name) - rank(b.name) || a.name.localeCompare(b.name))

@@ -23,11 +23,7 @@ function whereFrom(source: string, engine: string): string {
 
 // Hidden sources grouped by where their lines come from (a method, a mod, or the engine), groups and lines in name order.
 function grouped(hidden: readonly HiddenLogSource[], engine: string) {
-  const groups = new Map<string, HiddenLogSource[]>()
-  for (const h of hidden) {
-    const from = whereFrom(h.source, engine)
-    groups.set(from, [...(groups.get(from) ?? []), h])
-  }
+  const groups = Map.groupBy(hidden, (h) => whereFrom(h.source, engine))
   const shown = (h: HiddenLogSource) => h.text || h.label || h.source
   return [...groups.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
