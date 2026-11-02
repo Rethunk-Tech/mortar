@@ -232,7 +232,15 @@ function Toolbar({
   // One file is named; several are picked from a dropdown in the same place, so the editor keeps the width.
   return (
     <Box
-      sx={{ display: 'flex', alignItems: 'center', gap: space.gap, px: space.pad, py: space.gap }}
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: space.gap,
+        px: space.pad,
+        py: space.gap,
+        // The buttons match the search field's height.
+        '& .MuiButton-root': { height: space.control },
+      }}
     >
       <Box sx={{ flex: 1, minWidth: 0 }}>
         {single ? (
