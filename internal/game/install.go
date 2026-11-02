@@ -221,6 +221,9 @@ func discover(g Game, home string, s settings.Settings) []Install {
 	for _, in := range gamestore.Discover(home, s.LauncherRoots, info) {
 		inst := newInstall(info, in.Store, in.Dir, in.Prefix, OriginDiscovered)
 		inst.Launcher = in.Launcher
+		if isSteamStore(in.Store) {
+			RecordBuilds(g.ID(), info.SteamAppID(), in.Dir)
+		}
 		all = append(all, inst)
 	}
 	return all

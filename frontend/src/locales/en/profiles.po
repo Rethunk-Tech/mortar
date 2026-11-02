@@ -176,6 +176,11 @@ msgstr "Revert this mod"
 msgid "Stack frame: {evidence}"
 msgstr "Stack frame: {evidence}"
 
+#. placeholder {0}: b.buildId
+#: src/profiles/OlderVersionDialog.tsx
+msgid "build {0}"
+msgstr "build {0}"
+
 #: src/profiles/useColorName.ts
 msgid "Orange"
 msgstr "Orange"
@@ -271,6 +276,10 @@ msgstr "{count, plural, one {# difference} other {# differences}}"
 #: src/profiles/VortexFolderPrompt.tsx
 msgid "This {manager} folder has no profiles for {game}: found {found}."
 msgstr "This {manager} folder has no profiles for {game}: found {found}."
+
+#: src/profiles/OlderVersionDialog.tsx
+msgid "current"
+msgstr "current"
 
 #: src/profiles/GameSettings.tsx
 msgid "Fullscreen resolution width"
@@ -911,6 +920,10 @@ msgstr "Revert"
 #: src/profiles/LaunchPreview.tsx
 msgid "Direct launch preview"
 msgstr "Direct launch preview"
+
+#: src/profiles/OlderVersionDialog.tsx
+msgid "Builds Mortar has seen"
+msgstr "Builds Mortar has seen"
 
 #: src/profiles/ProfileRow.tsx
 msgid "imported from the game's Mods folder"

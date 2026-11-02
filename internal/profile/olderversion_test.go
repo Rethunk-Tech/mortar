@@ -27,10 +27,10 @@ func TestDownloadDepotCommand(t *testing.T) {
 
 func TestDepotPaths(t *testing.T) {
 	lib := filepath.Join("home", "u", "SteamLibrary")
-	if got := libraryOf(filepath.Join(lib, "steamapps", "common", "Stardew Valley")); got != lib {
-		t.Fatalf("libraryOf = %q", got)
+	if got := game.LibraryOf(filepath.Join(lib, "steamapps", "common", "Stardew Valley")); got != lib {
+		t.Fatalf("LibraryOf = %q", got)
 	}
-	if got := libraryOf(filepath.Join("home", "u", "Games", "Stardew")); got != "" {
+	if got := game.LibraryOf(filepath.Join("home", "u", "Games", "Stardew")); got != "" {
 		t.Fatalf("a folder outside a library has library %q", got)
 	}
 	if got, want := steam.DepotDownloadDir(lib, "413150", "413151"), filepath.Join(lib, "steamapps", "content", "app_413150", "depot_413151"); got != want {

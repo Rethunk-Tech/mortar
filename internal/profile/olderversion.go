@@ -20,25 +20,15 @@ var digits = regexp.MustCompile(`^[0-9]+$`)
 
 // OlderVersion is what the "Get an older version" dialog needs: the game's Steam app and the depots it has installed.
 type OlderVersion struct {
-	AppID  string        `json:"appId"`
-	Depots []steam.Depot `json:"depots"`
+	AppID  string           `json:"appId"`
+	Depots []steam.Depot    `json:"depots"`
+	Builds []game.PastBuild `json:"builds"` // manifests Mortar saw installed, newest first
 }
 
 // OlderVersionState is whether Steam has finished writing a depot download.
 type OlderVersionState struct {
 	Dir   string `json:"dir"`
 	Ready bool   `json:"ready"`
-}
-
-// libraryOf is the Steam library folder that holds the install in dir (the parent of its steamapps folder), "" when dir
-// is not in one.
-func libraryOf(dir string) string {
-	for d := filepath.Clean(dir); d != filepath.Dir(d); d = filepath.Dir(d) {
-		if filepath.Base(d) == "steamapps" {
-			return filepath.Dir(d)
-		}
-	}
-	return ""
 }
 
 // downloadDepotCommand is what the player pastes into Steam's console.
@@ -57,31 +47,31 @@ func versionFolder(dataDir, gameID, manifest string) string {
 }
 
 // steamInstall finds the selected install's Steam app and library, the place Steam's console writes depots to.
-func (s *Service) steamInstall(gameID string) (appID, library string, err error) {
+func (s *Service) steamInstall(gameID string) (appID, library, dir string, err error) {
 	info, ok := components.Game(gameID)
 	if !ok || info.SteamAppID() == "" {
-		return "", "", usererr.Wrap(usererr.Invalid, fmt.Errorf("%s is not a Steam game", gameID))
+		return "", "", "", usererr.Wrap(usererr.Invalid, fmt.Errorf("%s is not a Steam game", gameID))
 	}
 	inst, err := game.ResolveInstall(s.home, s.settings.Get(), gameID, "")
 	if err != nil {
-		return "", "", err
+		return "", "", "", err
 	}
-	if library = libraryOf(inst.Dir); library == "" {
-		return "", "", usererr.Wrap(usererr.Invalid, fmt.Errorf("the selected install of %s is not in a Steam library", gameID))
+	if library = game.LibraryOf(inst.Dir); library == "" {
+		return "", "", "", usererr.Wrap(usererr.Invalid, fmt.Errorf("the selected install of %s is not in a Steam library", gameID))
 	}
-	return info.SteamAppID(), library, nil
+	return info.SteamAppID(), library, inst.Dir, nil
 }
 
 // CanGetOlderVersion reports whether the game's selected install is a Steam one, the only kind Steam's console can
 // download an older version of.
 func (s *Service) CanGetOlderVersion(gameID string) bool {
-	_, _, err := s.steamInstall(gameID)
+	_, _, _, err := s.steamInstall(gameID)
 	return err == nil
 }
 
 // OlderVersionDepots lists the depots of the game's Steam install.
 func (s *Service) OlderVersionDepots(gameID string) (OlderVersion, error) {
-	appID, library, err := s.steamInstall(gameID)
+	appID, library, dir, err := s.steamInstall(gameID)
 	if err != nil {
 		return OlderVersion{}, err
 	}
@@ -89,7 +79,8 @@ func (s *Service) OlderVersionDepots(gameID string) (OlderVersion, error) {
 	if err != nil {
 		return OlderVersion{}, err
 	}
-	return OlderVersion{AppID: appID, Depots: got}, nil
+	game.RecordBuildsIn(s.store.dataDir, gameID, appID, dir, time.Now())
+	return OlderVersion{AppID: appID, Depots: got, Builds: game.BuildHistory(s.store.dataDir, gameID, dir)}, nil
 }
 
 // DownloadDepotCommand is the Steam console line that downloads the manifest of a depot.
@@ -100,7 +91,7 @@ func (s *Service) DownloadDepotCommand(gameID, depotID, manifest string) (string
 
 // OlderVersionState reports whether Steam's console has finished the depot download, which is when the folder holds the game.
 func (s *Service) OlderVersionState(gameID, depotID string) (OlderVersionState, error) {
-	appID, library, err := s.steamInstall(gameID)
+	appID, library, _, err := s.steamInstall(gameID)
 	if err != nil {
 		return OlderVersionState{}, err
 	}

@@ -41,6 +41,14 @@ export function OlderVersionDialog({
   const [ready, setReady] = useState(false)
   const depotId = depot || data?.depots?.[0]?.id || ''
   const wanted = manifest.trim()
+  const builds = data?.builds ?? []
+  const pickBuild = (key: string) => {
+    const b = builds.find((x) => `${x.depotId}:${x.manifest}` === key)
+    if (b) {
+      setDepot(b.depotId)
+      setManifest(b.manifest)
+    }
+  }
 
   useEffect(() => {
     if (!(open && watching) || ready) {
@@ -122,6 +130,25 @@ export function OlderVersionDialog({
               </MenuItem>
             ))}
           </SelectField>
+          {builds.length > 0 && (
+            <SelectField
+              label={t`Builds Mortar has seen`}
+              value={
+                builds.some((b) => b.depotId === depotId && b.manifest === wanted)
+                  ? `${depotId}:${wanted}`
+                  : ''
+              }
+              onChange={pickBuild}
+            >
+              {builds.map((b) => (
+                <MenuItem key={`${b.depotId}:${b.manifest}`} value={`${b.depotId}:${b.manifest}`}>
+                  {[b.seen, b.buildId && t`build ${b.buildId}`, b.manifest, b.current && t`current`]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </MenuItem>
+              ))}
+            </SelectField>
+          )}
           <TextInput
             label={t`Manifest id of the version`}
             value={manifest}

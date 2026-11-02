@@ -170,6 +170,11 @@ msgstr ""
 msgid "Stack frame: {evidence}"
 msgstr ""
 
+#. placeholder {0}: b.buildId
+#: src/profiles/OlderVersionDialog.tsx
+msgid "build {0}"
+msgstr ""
+
 #: src/profiles/useColorName.ts
 msgid "Orange"
 msgstr ""
@@ -264,6 +269,10 @@ msgstr ""
 
 #: src/profiles/VortexFolderPrompt.tsx
 msgid "This {manager} folder has no profiles for {game}: found {found}."
+msgstr ""
+
+#: src/profiles/OlderVersionDialog.tsx
+msgid "current"
 msgstr ""
 
 #: src/profiles/GameSettings.tsx
@@ -904,6 +913,10 @@ msgstr ""
 
 #: src/profiles/LaunchPreview.tsx
 msgid "Direct launch preview"
+msgstr ""
+
+#: src/profiles/OlderVersionDialog.tsx
+msgid "Builds Mortar has seen"
 msgstr ""
 
 #: src/profiles/ProfileRow.tsx
