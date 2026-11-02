@@ -564,15 +564,25 @@ func TestACommunityBepInExPackIsTheLoaderPackage(t *testing.T) {
 	}
 }
 
-// Core Keeper is modded through mod.io's official SDK mods (a ModManifest.json folder each), not BepInEx plugins.
-func TestCoreKeeperTakesModioModsAsFolders(t *testing.T) {
+// Core Keeper takes Thunderstore's BepInEx 6 IL2CPP plugins through the loader and mod.io's SDK mods whole in the game's
+// own Mods folder, with the IL2CPP bridge as the loader's companion.
+func TestCoreKeeperTakesBothChannels(t *testing.T) {
 	g, ok := Game("core-keeper")
-	src, hasSrc := g.Source("modio")
-	if !ok || g.SteamAppID() != "1621690" || !hasSrc || src.Key != "5289" || len(g.Loaders) != 1 || g.Loaders[0].ID != "folder" {
+	modio, hasModio := g.Source("modio")
+	_, hasThunder := g.Source("thunderstore")
+	if !ok || g.SteamAppID() != "1621690" || !hasModio || modio.Key != "5289" || !hasThunder || g.MinVersion != "0.5.0" {
 		t.Fatalf("core-keeper = %+v", g)
 	}
-	if _, thunder := g.Source("thunderstore"); thunder || g.MinVersion != "0.5.0" {
-		t.Fatalf("thunderstore source or minVersion %q", g.MinVersion)
+	if len(g.Loaders) != 1 || g.Loaders[0].ID != "bepinex5" || g.Loaders[0].Major != 2 || g.LoaderPackage() != "BepInEx-BepInExPack_Core_Keeper" || g.Loaders[0].Companion != "bridge" {
+		t.Fatalf("loaders = %+v", g.Loaders)
+	}
+	m, err := BundledManifest()
+	if err != nil {
+		t.Fatal(err)
+	}
+	c, ok := findComponent(m.Components, "core-keeper", "bridge")
+	if !ok || c.Asset != "MortarBepInExBridge_IL2CPP-"+c.Version+".zip" {
+		t.Fatalf("bridge component = %+v", c)
 	}
 }
 

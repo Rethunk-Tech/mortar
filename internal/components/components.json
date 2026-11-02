@@ -1,5 +1,5 @@
 {
-  "serial": 1793589703,
+  "serial": 1793591312,
   "components": [
     {
       "game": "melonloader",
@@ -2711,9 +2711,10 @@
       "enabled": true,
       "minVersion": "0.5.0",
       "marker": "CoreKeeper.exe",
+      "r2modmanFolder": "CoreKeeper",
       "metadata": [],
       "paths": {
-        "mods": {
+        "modioMods": {
           "windows": "{install}/CoreKeeper_Data/StreamingAssets/Mods"
         },
         "unityLog": {
@@ -2723,9 +2724,14 @@
       "deploy": "profile",
       "targets": [
         {
-          "id": "mods",
-          "root": "{profile}/Mods",
-          "modRoot": "ModManifest.json"
+          "id": "profile",
+          "root": "{profile}"
+        },
+        {
+          "id": "modio",
+          "root": "",
+          "role": "modioMods",
+          "sources": ["modio"]
         }
       ],
       "stores": {
@@ -2735,11 +2741,18 @@
       },
       "loaders": [
         {
-          "id": "folder",
-          "name": ""
+          "id": "bepinex5",
+          "name": "BepInEx 6 (IL2CPP)",
+          "companion": "bridge",
+          "package": "BepInEx-BepInExPack_Core_Keeper",
+          "major": 2
         }
       ],
       "sources": [
+        {
+          "id": "thunderstore",
+          "key": "core-keeper"
+        },
         {
           "id": "modio",
           "key": "5289"

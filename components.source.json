@@ -2673,16 +2673,28 @@
       "enabled": true,
       "minVersion": "0.5.0",
       "marker": "CoreKeeper.exe",
+      "r2modmanFolder": "CoreKeeper",
       "metadata": [],
       "paths": {
-        "mods": { "windows": "{install}/CoreKeeper_Data/StreamingAssets/Mods" },
+        "modioMods": { "windows": "{install}/CoreKeeper_Data/StreamingAssets/Mods" },
         "unityLog": { "windows": "{localLow}/Pugstorm/Core Keeper/Player.log" }
       },
       "deploy": "profile",
-      "targets": [{ "id": "mods", "root": "{profile}/Mods", "modRoot": "ModManifest.json" }],
+      "targets": [
+        { "id": "profile", "root": "{profile}" },
+        { "id": "modio", "role": "modioMods", "sources": ["modio"] }
+      ],
       "stores": { "steam": { "appId": "1621690" } },
-      "loaders": [{ "id": "folder" }],
-      "sources": [{ "id": "modio", "key": "5289" }]
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 6 (IL2CPP)",
+          "package": "BepInEx-BepInExPack_Core_Keeper",
+          "major": 2,
+          "companion": "bridge"
+        }
+      ],
+      "sources": [{ "id": "thunderstore", "key": "core-keeper" }, { "id": "modio", "key": "5289" }]
     },
     {
       "id": "9-kings",

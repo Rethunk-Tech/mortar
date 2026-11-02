@@ -181,13 +181,14 @@ Sources: r2modman's ecosystem schema, MO2's `games/game_valheim.py`, Vortex's `N
 
 ## Core Keeper
 
-Sources: the official mod SDK's mods on mod.io (game 5289; Pugstorm's channel), which its Thunderstore page also sends modders to (the Thunderstore packages there are BepInEx 6 plugins, last updated in January 2025).
-- **Loader:** the folder loader. A mod is a folder holding `ModManifest.json`, placed in `CoreKeeper_Data/StreamingAssets/Mods`. Not checked against a real mod.io download: no token was available when the entry was written.
-- **Source:** mod.io only, signed in with the player's token ([mod.io](#modio)).
+Two channels, both in one profile: BepInEx 6 plugins from Thunderstore (`core-keeper`; r2modman's and Gale's ecosystem schema: folder `CoreKeeper`, `CoreKeeper.exe`, Steam app 1621690) and the official mod SDK's mods on mod.io (game 5289; Pugstorm's channel).
+- **Loader:** BepInEx 6 on IL2CPP, through the `bepinex5` driver, for the Thunderstore packages. The `BepInEx-BepInExPack_Core_Keeper` pack is a community build numbered 2.x, so the catalog's `major` is 2. It runs on Doorstop 3 and ships no .NET runtime; Mortar tells the build from the profile's entry assembly (`BepInEx.Unity.IL2CPP.dll`). The catalog cannot name two loaders active at once, so BepInEx is the loader and mod.io is a second target routed by source.
+- **mod.io mods:** a mod is a folder holding `ModManifest.json`. The `modio` target (path role `modioMods`, `CoreKeeper_Data/StreamingAssets/Mods`) takes the archive whole below `modio-<mod id>`, shared by every profile, as for Timberborn ([mod.io](#modio)). Not checked against a real mod.io download (no token was available), nor whether the game reads a mod one folder deeper than its own Mods folder.
+- **Bridge:** the `bridge` component is `MortarBepInExBridge_IL2CPP` (mortar-bepinex-bridge), whose `plugins/*.dll` the thunderstore-rules installer places under `BepInEx/plugins/Rethunk-MortarBepInExBridge`. It answers the plugin query only, so Mortar offers no startup timing, performance, overlay or intro skip for it.
 - **Not yet:** the saves folder is not in the catalog.
 
 ## mod.io
 
 mod.io is a source for Blade & Sorcery (3852), S.T.A.L.K.E.R. 2 (5761), Baldur's Gate 3 (6715, beside Nexus), Deep Rock Galactic (2475), Core Keeper (5289), Timberborn (3659), BONELAB (3809) and Gladio Mori (11453). The player pastes a read-only token from mod.io/me/access in Settings > Accounts; requests go to the account's own host (`u-{user-id}.modapi.io`) through [go-modio](https://github.com/Rethunk-Tech/go-modio), and each download is checked against the MD5 mod.io publishes. Dependencies are listed, never installed unasked.
-- **Placement:** games whose loader is `folder` take the archive in their mods target as for Nexus. Timberborn, BONELAB and Gladio Mori run BepInEx or MelonLoader, so their `modio` target (path role `modioMods`, the game's own Mods folder) takes the archive whole below `modio-<mod id>`, as Paradox Mods does; it is shared by every profile. Whether each game reads a mod one folder deeper than its own is unverified.
+- **Placement:** games whose loader is `folder` take the archive in their mods target as for Nexus. Timberborn, BONELAB, Gladio Mori and Core Keeper run BepInEx or MelonLoader, so their `modio` target (path role `modioMods`, the game's own Mods folder) takes the archive whole below `modio-<mod id>`, as Paradox Mods does; it is shared by every profile. Whether each game reads a mod one folder deeper than its own is unverified.
 - **Baldur's Gate 3:** mod.io files go through the same go-larian paks and `modsettings.lsx` handling as Nexus ones.
