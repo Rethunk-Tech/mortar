@@ -414,7 +414,7 @@ func (s *Service) nexusPageUpdates(ctx context.Context, gameID string, mods []fr
 			}
 			out = append(out, Update{
 				Key: x.Key, ID: x.ModID(), Name: x.Name, Installed: installed, Version: page.Version,
-				URL: "https://www.nexusmods.com/" + title.Domain + "/mods/" + strconv.Itoa(id), NexusID: id, Source: "Nexus",
+				URL: nexusmods.ModURL(title.Domain, id), NexusID: id, Source: "Nexus",
 			})
 		}
 	}

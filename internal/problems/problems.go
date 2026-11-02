@@ -28,6 +28,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	_ "github.com/Rethunk-Tech/mortar/internal/source/all"
+	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 
 	"github.com/Rethunk-Tech/go-semverish"
 )
@@ -947,7 +948,7 @@ func thunderstoreRef(community string, id mod.ID) *Ref {
 		Site:     "thunderstore",
 		Package:  pkg,
 		PageName: strings.ReplaceAll(name, "_", " "),
-		URL:      "https://thunderstore.io/c/" + community + "/p/" + namespace + "/" + name + "/",
+		URL:      thunderstore.Driver{}.ModPageURL(community, pkg),
 	}
 }
 
