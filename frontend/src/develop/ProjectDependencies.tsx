@@ -58,7 +58,11 @@ export function ProjectDependencies({
   return (
     <FormSection
       title={t`Dependencies`}
-      description={t`Untick one to drop it; new ones install into the mod's profile.`}
+      description={
+        rows.length > 0
+          ? t`Untick one to drop it; new ones install into the mod's profile.`
+          : t`New ones install into the mod's profile.`
+      }
     >
       {loading ? <LoadingRow>{t`Reading the dependencies…`}</LoadingRow> : null}
       {error ? <LoadErrorRow error={error} onRetry={onRetry} /> : null}
