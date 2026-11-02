@@ -36,7 +36,7 @@ export function UploadModpackDialog({
   onClose: () => void
 }) {
   const { t } = useLingui()
-  const [team, setTeam] = useState(options.author)
+  const [team, setTeam] = useState(options.team || options.author)
   const [categories, setCategories] = useState<string[]>(['modpacks'])
   const [token, setToken] = useState('')
   const [busy, run] = usePending()

@@ -3,8 +3,10 @@ package profile
 // ModpackDraft is what the modpack form remembers for a profile: its fields, and the packages and changelog of the
 // last export, which the next export's changelog is written against.
 type ModpackDraft struct {
-	Name            string `json:"name,omitempty"`
-	Author          string `json:"author,omitempty"`
+	Name   string `json:"name,omitempty"`
+	Author string `json:"author,omitempty"`
+	// Team is the Thunderstore team of the last upload, which the next upload starts from.
+	Team            string `json:"team,omitempty"`
 	Version         string `json:"version,omitempty"`
 	Description     string `json:"description,omitempty"`
 	Website         string `json:"website,omitempty"`

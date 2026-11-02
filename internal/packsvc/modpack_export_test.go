@@ -182,7 +182,7 @@ func TestUploadModpackExportsThenSendsAndSubmits(t *testing.T) {
 		Mods:   []profile.Component{{ID: mod.NewID(mod.FormatThunderstore, "AinaVT-LethalConfig")}},
 	}}}}}
 	s := &Service{Profiles: ps, HTTP: srv.Client(), ThunderstoreURL: srv.URL + "/"}
-	o := ModpackOptions{Name: "Friday_Night", Version: "1.0.0"}
+	o := ModpackOptions{Name: "Friday_Night", Author: "Me", Version: "1.0.0"}
 
 	_, err := s.UploadModpack(t.Context(), "lethal-company", "p1", o, "Ab", []string{"modpacks"})
 	if usererr.KindOf(err) != usererr.Permission || len(calls) != 0 {
@@ -195,7 +195,7 @@ func TestUploadModpackExportsThenSendsAndSubmits(t *testing.T) {
 	if err != nil || page != "https://thunderstore.io/c/lethal-company/p/Ab/Friday_Night/" {
 		t.Fatalf("page = %q, %v", page, err)
 	}
-	if zipped == 0 || len(ps.drafts) != 1 || submitted["author_name"] != "Ab" || fmt.Sprint(submitted["community_categories"]) != "map[lethal-company:[modpacks]]" {
+	if zipped == 0 || len(ps.drafts) != 1 || submitted["author_name"] != "Ab" || ps.drafts[0].Author != "Me" || ps.drafts[0].Team != "Ab" || fmt.Sprint(submitted["community_categories"]) != "map[lethal-company:[modpacks]]" {
 		t.Errorf("zipped %d, drafts %d, submitted %v", zipped, len(ps.drafts), submitted)
 	}
 	if want := []string{"/api/experimental/usermedia/initiate-upload/", "/part/1", "/api/experimental/usermedia/u1/finish-upload/", "/api/experimental/submission/submit/"}; !slices.Equal(calls, want) {

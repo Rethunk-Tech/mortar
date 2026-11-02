@@ -44,6 +44,7 @@ type ModpackResult struct {
 type ModpackOptions struct {
 	Name            string   `json:"name"`
 	Author          string   `json:"author"`
+	Team            string   `json:"team"`
 	Version         string   `json:"version"`
 	Description     string   `json:"description"`
 	Website         string   `json:"website"`
@@ -129,7 +130,7 @@ func (s *Service) ModpackForm(gameID, profileID string) (ModpackForm, error) {
 	}
 	slices.Sort(names)
 	o := ModpackOptions{
-		Name: cmp.Or(d.Name, packageName(p.Name)), Author: d.Author, Version: nextVersion(d.Version),
+		Name: cmp.Or(d.Name, packageName(p.Name)), Author: d.Author, Team: d.Team, Version: nextVersion(d.Version),
 		Description: cmp.Or(d.Description, truncate("Modpack exported from the Mortar profile "+p.Name, maxModpackDescription)),
 		Website:     d.Website, IconPath: d.Icon, Readme: d.Readme, IncludeDisabled: d.IncludeDisabled, Configs: names,
 	}
@@ -284,7 +285,7 @@ func (s *Service) ExportModpack(gameID, profileID, dest string, o ModpackOptions
 		return res, err
 	}
 	_, err = s.Profiles.SetModpackDraft(gameID, profileID, profile.ModpackDraft{
-		Name: o.Name, Author: o.Author, Version: o.Version, Description: o.Description, Website: o.Website, Icon: o.IconPath,
+		Name: o.Name, Author: o.Author, Team: o.Team, Version: o.Version, Description: o.Description, Website: o.Website, Icon: o.IconPath,
 		Readme: o.Readme, Changelog: o.Changelog, IncludeDisabled: o.IncludeDisabled, Exported: res.Dependencies,
 	})
 	return res, err
@@ -413,8 +414,7 @@ func (s *Service) UploadModpack(ctx context.Context, gameID, profileID string, o
 	case !tsupload.HasToken(team):
 		return "", usererr.New(usererr.Permission, "add a Thunderstore service account token first")
 	}
-	// The export remembers the form, and the team is what the next upload starts from.
-	o.Author = team
+	o.Team = team
 	dir, err := os.MkdirTemp("", "mortar-modpack-")
 	if err != nil {
 		return "", err
