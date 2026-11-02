@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, TextField, Typography } from '@mui/material'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useEffectEvent, useState } from 'react'
 import { useProfiles } from '../../profiles/store.ts'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
 import { space } from '../../theme/density.ts'
@@ -176,8 +176,17 @@ function useOutsideChange(
 ) {
   const [outside, setOutside] = useState<string | null>(null)
   const { game, profile, key, id } = target
-  const latest = useRef({ shown, adopt })
-  latest.current = { shown, adopt }
+  const settle = useEffectEvent((onDisk: string) => {
+    if (shown.saved === null || onDisk === shown.saved) {
+      return
+    }
+    if (shown.text === shown.saved) {
+      adopt(onDisk)
+      setOutside(null)
+    } else {
+      setOutside(onDisk)
+    }
+  })
   const updated = useProfiles((s) => s.profiles.find((p) => p.id === profile)?.updated)
   useEffect(() => {
     const at = { game, profile, key, id }
@@ -187,15 +196,8 @@ function useOutsideChange(
       configApi
         .text(at, name)
         .then((onDisk) => {
-          const { shown: now, adopt: take } = latest.current
-          if (!live || now.saved === null || onDisk === now.saved) {
-            return
-          }
-          if (now.text === now.saved) {
-            take(onDisk)
-            setOutside(null)
-          } else {
-            setOutside(onDisk)
+          if (live) {
+            settle(onDisk)
           }
         })
         .catch(() => undefined)

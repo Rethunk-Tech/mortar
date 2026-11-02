@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { isTypingTarget, TYPE_RESET_MS, typeaheadChar, typedMatch } from '@rethunk/dom-input-nav'
 import { readStored, writeStored } from '@rethunk/react-load-hooks'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useEffectEvent, useState } from 'react'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import { useSettings } from '../settings/store.ts'
 import { listedGames } from './hidden.ts'
@@ -79,12 +79,16 @@ export function useFindGame(args: {
   reveal: (id: string) => void
   unfold: () => boolean
 }) {
-  const latest = useRef(args)
-  latest.current = args
+  const settle = useEffectEvent((id: string) => {
+    if (args.listed(id)) {
+      args.reveal(id)
+      return true
+    }
+    return false
+  })
   const [want, setWant] = useState('')
   useEffect(() => {
-    if (want !== '' && latest.current.listed(want)) {
-      latest.current.reveal(want)
+    if (want !== '' && settle(want)) {
       setWant('')
     }
   }, [want])
@@ -104,8 +108,12 @@ export function useFindGame(args: {
 // Typing a game's name anywhere on the page jumps to it. The listener reads the list through a ref so the letters
 // typed so far survive the page's re-renders.
 export function useTypeToScroll(games: Game[], reveal: (id: string) => void) {
-  const list = useRef({ games, reveal })
-  list.current = { games, reveal }
+  const jumpTo = useEffectEvent((typed: string) => {
+    const hit = typedMatch(games, typed, (g) => g.name)
+    if (hit) {
+      reveal(hit.id)
+    }
+  })
   useEffect(() => {
     let typed = ''
     let at = 0
@@ -130,10 +138,7 @@ export function useTypeToScroll(games: Game[], reveal: (id: string) => void) {
       }
       typed = fresh ? ch : typed + ch
       at = e.timeStamp
-      const hit = typedMatch(list.current.games, typed, (g) => g.name)
-      if (hit) {
-        list.current.reveal(hit.id)
-      }
+      jumpTo(typed)
     }
     globalThis.addEventListener('keydown', onKey)
     return () => globalThis.removeEventListener('keydown', onKey)

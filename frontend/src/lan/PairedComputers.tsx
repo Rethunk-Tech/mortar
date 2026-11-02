@@ -10,7 +10,7 @@ import {
 } from '@mui/material'
 import { sameValue, useLoaded } from '@rethunk/react-load-hooks'
 import { Events } from '@wailsio/runtime'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useEffectEvent, useState } from 'react'
 import type {
   PairedPeer,
   Peer,
@@ -111,8 +111,7 @@ export function ShowCodeDialog({ open, onClose }: { open: boolean; onClose: () =
   const [code, setCode] = useState('')
   // Callers pass a fresh onClose on every render (the peer list re-renders every few seconds); keyed on it, each
   // render would request a new code and replace the one the user is typing.
-  const onCloseRef = useRef(onClose)
-  onCloseRef.current = onClose
+  const closeDialog = useEffectEvent(onClose)
   useEffect(() => {
     if (!open) {
       setCode('')
@@ -124,7 +123,7 @@ export function ShowCodeDialog({ open, onClose }: { open: boolean; onClose: () =
       .catch((error: unknown) => {
         if (live) {
           toastError(t`Could not start pairing`, error)
-          onCloseRef.current()
+          closeDialog()
         }
       })
     return () => {

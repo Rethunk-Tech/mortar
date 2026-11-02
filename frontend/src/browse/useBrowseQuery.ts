@@ -1,6 +1,14 @@
 import { useLoaded } from '@rethunk/react-load-hooks'
 import { Events } from '@wailsio/runtime'
-import { type Dispatch, type SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  type Dispatch,
+  type SetStateAction,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { useSettings } from '../settings/store.ts'
 import { type InlineError, inlineError } from '../toasts/report.ts'
 import { ALL, FIRST_PAGE } from './browseConstants.ts'
@@ -142,13 +150,14 @@ function useKeepScreen(
   setPage: Dispatch<SetStateAction<number>>,
 ) {
   const shown = useRef(size)
-  const onScreen = useRef(items)
-  onScreen.current = items
+  const anchorIndex = useEffectEvent((open: BrowseItem) =>
+    items.findIndex((i) => hitKey(i) === hitKey(open)),
+  )
   useEffect(() => {
     const from = shown.current
     if (from !== size) {
       const open = useBrowseSelection.getState().selected?.item
-      const anchor = open ? onScreen.current.findIndex((i) => hitKey(i) === hitKey(open)) : -1
+      const anchor = open ? anchorIndex(open) : -1
       setPage((current) => pageKeeping(current, from, size, Math.max(anchor, 0)))
       shown.current = size
     }

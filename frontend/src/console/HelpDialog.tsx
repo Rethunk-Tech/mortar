@@ -134,8 +134,6 @@ export function HelpDialog({ game }: { game: string }) {
   const paste = profileLoader?.paste ?? ''
   const pasteHost = paste ? new URL(paste).host : ''
   const viewingRun = useConsole((s) => s.viewingRun)
-  const openFor = useRef({ game, profile })
-  openFor.current = { game, profile }
   const uploadGen = useRef(0)
   const [uploading, setUploading] = useState(false)
   const [link, setLink] = useState('')
