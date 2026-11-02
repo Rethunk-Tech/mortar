@@ -766,14 +766,24 @@ func RouteByExtension(routes []LoaderRoute, name string) (best LoaderRoute, ok b
 // packMeta are the files Thunderstore requires at a package's top, which never reach a profile.
 var packMeta = map[string]bool{"manifest.json": true, "icon.png": true, "readme.md": true, "licence": true}
 
-// PackageFile cleans file relPath of Thunderstore package pkg (Namespace-Name) to a slash path below the package's top.
-// ok is false for a path that climbs out of it or names a drive, a package name with a separator, and package metadata.
-func PackageFile(relPath, pkg string) (clean string, ok bool) {
+// CleanPackagePath is the slash path of relPath below package pkg's top, ok false when it climbs out, names a drive or
+// pkg has a separator. It is slash-based on every OS, since catalog validation must not differ per platform.
+func CleanPackagePath(relPath, pkg string) (string, bool) {
 	if pkg == "" || strings.ContainsAny(pkg, `/\:`) || pkg == "." || pkg == ".." {
 		return "", false
 	}
 	p := path.Clean(strings.ReplaceAll(relPath, `\`, "/"))
 	if p == "." || strings.HasPrefix(p, "/") || p == ".." || strings.HasPrefix(p, "../") || strings.Contains(p, ":") {
+		return "", false
+	}
+	return p, true
+}
+
+// PackageFile cleans file relPath of Thunderstore package pkg (Namespace-Name) to a slash path below the package's top.
+// ok is false for a path that climbs out of it or names a drive, a package name with a separator, and package metadata.
+func PackageFile(relPath, pkg string) (clean string, ok bool) {
+	p, ok := CleanPackagePath(relPath, pkg)
+	if !ok {
 		return "", false
 	}
 	if !strings.Contains(p, "/") && packMeta[strings.ToLower(p)] {

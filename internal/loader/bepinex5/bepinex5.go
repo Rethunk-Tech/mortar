@@ -34,11 +34,8 @@ func targetPath(profileRoot string, proton bool) string {
 // and load it from beside their plugin. The game's routes (components.LoaderRoute) add folders of the same kind, each
 // matched by its last segment at any depth, and extensions that send a file there wherever it sits.
 func Route(relPath, pkg string, routes []components.LoaderRoute) string {
-	if pkg == "" || strings.ContainsAny(pkg, `/\:`) || pkg == "." || pkg == ".." {
-		return ""
-	}
-	p := path.Clean(strings.ReplaceAll(relPath, `\`, "/"))
-	if p == "." || strings.HasPrefix(p, "/") || p == ".." || strings.HasPrefix(p, "../") || strings.Contains(p, ":") {
+	p, ok := components.CleanPackagePath(relPath, pkg)
+	if !ok {
 		return ""
 	}
 	segs := strings.Split(p, "/")
