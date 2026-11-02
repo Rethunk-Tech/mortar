@@ -6,7 +6,12 @@ import { memo, type ReactElement, useEffect, useState } from 'react'
 import { SearchField } from '../shell/SearchField.tsx'
 import { space } from '../theme/density.ts'
 import type { ShellPage } from './SettingsShell.tsx'
-import { setSettingsQuery, settingsQuery, useSettingsSearch } from './useSettingsSearch.ts'
+import {
+  setSettingsQuery,
+  settingsQuery,
+  useSettingsSearch,
+  useSettingsSearching,
+} from './useSettingsSearch.ts'
 
 const ACTIVE_WEIGHT = 600
 const ICON_SIZE = 18
@@ -112,6 +117,8 @@ export function SettingsNav<Id extends string>({
   onPage: (id: Id) => void
 }) {
   const { t } = useLingui()
+  // The pane then shows results across every section, so none is the current one.
+  const searching = useSettingsSearching()
   return (
     <Box
       component="nav"
@@ -160,7 +167,7 @@ export function SettingsNav<Id extends string>({
           label={s.label}
           icon={s.icon}
           groupEnd={s.groupEnd === true}
-          active={current === s.id}
+          active={!searching && current === s.id}
           onPage={onPage}
         />
       ))}
