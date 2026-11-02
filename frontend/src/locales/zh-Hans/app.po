@@ -697,6 +697,7 @@ msgstr ""
 msgid "How to install"
 msgstr ""
 
+#: src/develop/NewModDialog.tsx
 #: src/develop/ownParams.ts
 msgid "Content"
 msgstr ""

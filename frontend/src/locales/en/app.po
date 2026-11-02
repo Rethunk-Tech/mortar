@@ -703,6 +703,7 @@ msgstr "Loading saved groups…"
 msgid "How to install"
 msgstr "How to install"
 
+#: src/develop/NewModDialog.tsx
 #: src/develop/ownParams.ts
 msgid "Content"
 msgstr "Content"
