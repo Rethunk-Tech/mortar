@@ -4,6 +4,7 @@ import type { dialogKit } from './renderDialogs.ts'
 
 // Backend answers the render data may not produce on its own (a Steam install, a project out of step, a GitHub origin).
 const CAN_GET_OLDER_VERSION = 3_208_769_223
+const OLDER_VERSION_DEPOTS = 1_490_403_490
 const DEPENDENCY_SYNC = 458_110_213
 const UPLOAD_SITES = 858_225_634
 const LOAD_ORDER = 3_963_816_757
@@ -89,6 +90,60 @@ function loadOrderCase(tab: (page: Page, name: string) => Promise<void>): Case {
     run: async (p: Page) => {
       await tab(p, 'Load order')
       await p.getByText('Party Limit Begone', { exact: true }).waitFor()
+    },
+    teardown: (p: Page) => p.unroute('**/wails/runtime', stub),
+  }
+}
+
+/** Get an older version with builds Mortar has seen, and the select that lists them open. */
+function olderVersionBuildsCase({
+  dialog,
+  inDialog,
+  tabIn,
+  editProfile,
+}: ReturnType<typeof dialogKit>): Case {
+  const stub = stubCalls({
+    [CAN_GET_OLDER_VERSION]: true,
+    [OLDER_VERSION_DEPOTS]: {
+      appId: '1966720',
+      depots: [{ id: '1966721', manifest: '7081337227611034738', size: 1 }],
+      builds: [
+        {
+          depotId: '1966721',
+          manifest: '7081337227611034738',
+          buildId: '15012345',
+          seen: '2026-10-28',
+          current: true,
+        },
+        {
+          depotId: '1966721',
+          manifest: '3322110099887766554',
+          buildId: '14998877',
+          seen: '2026-09-02',
+          current: false,
+        },
+        { depotId: '1966721', manifest: '1122334455667788990', seen: '2026-07-15', current: false },
+      ],
+    },
+  })
+  const base = dialog(
+    'older-version-builds',
+    (p) => inDialog(p, /^Get an older version…/),
+    undefined,
+    async (p) => {
+      await p.route('**/wails/runtime', stub)
+      await editProfile(p)
+      await tabIn(p, 'Launch')
+      await p.getByRole('button', { name: /^Get an older version…/ }).waitFor()
+    },
+  )
+  return {
+    ...base,
+    run: async (p: Page) => {
+      await base.run(p)
+      // An open menu hides the dialog from the accessibility tree, so the select opens last.
+      await p.getByLabel('Builds Mortar has seen').click()
+      await p.getByRole('option').first().waitFor()
     },
     teardown: (p: Page) => p.unroute('**/wails/runtime', stub),
   }
@@ -205,5 +260,6 @@ export function stubbedCases(kit: ReturnType<typeof dialogKit>): Case[] {
       teardown: fromThunderstore,
     },
     loadOrderCase(tab),
+    olderVersionBuildsCase(kit),
   ]
 }
