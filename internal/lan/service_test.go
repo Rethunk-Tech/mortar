@@ -24,7 +24,6 @@ import (
 
 	gh "github.com/Rethunk-Tech/go-github"
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/share"
 	"github.com/Rethunk-Tech/mortar/internal/store"

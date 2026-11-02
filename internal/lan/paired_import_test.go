@@ -19,7 +19,6 @@ import (
 
 	gh "github.com/Rethunk-Tech/go-github"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
-	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
