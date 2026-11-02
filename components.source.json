@@ -2671,41 +2671,18 @@
       "id": "core-keeper",
       "name": "Core Keeper",
       "enabled": true,
+      "minVersion": "0.5.0",
       "marker": "CoreKeeper.exe",
-      "r2modmanFolder": "CoreKeeper",
       "metadata": [],
       "paths": {
-        "unityLog": {
-          "windows": "{localLow}/Pugstorm/Core Keeper/Player.log"
-        }
+        "mods": { "windows": "{install}/CoreKeeper_Data/StreamingAssets/Mods" },
+        "unityLog": { "windows": "{localLow}/Pugstorm/Core Keeper/Player.log" }
       },
       "deploy": "profile",
-      "targets": [
-        {
-          "id": "profile",
-          "root": "{profile}"
-        }
-      ],
-      "stores": {
-        "steam": {
-          "appId": "1621690"
-        }
-      },
-      "loaders": [
-        {
-          "id": "bepinex5",
-          "name": "BepInEx 6 (IL2CPP)",
-          "package": "BepInEx-BepInExPack_Core_Keeper",
-          "major": 2,
-          "companion": "bridge"
-        }
-      ],
-      "sources": [
-        {
-          "id": "thunderstore",
-          "key": "core-keeper"
-        }
-      ]
+      "targets": [{ "id": "mods", "root": "{profile}/Mods", "modRoot": "ModManifest.json" }],
+      "stores": { "steam": { "appId": "1621690" } },
+      "loaders": [{ "id": "folder" }],
+      "sources": [{ "id": "modio", "key": "5289" }]
     },
     {
       "id": "9-kings",
@@ -5057,12 +5034,14 @@
       "marker": "Gladio Mori.exe",
       "r2modmanFolder": "GladioMori",
       "metadata": [],
+      "paths": { "modioMods": { "windows": "{install}/Mods" } },
       "deploy": "profile",
       "targets": [
         {
           "id": "profile",
           "root": "{profile}"
-        }
+        },
+        { "id": "modio", "role": "modioMods", "sources": ["modio"] }
       ],
       "stores": {
         "steam": {
@@ -5079,7 +5058,8 @@
         {
           "id": "thunderstore",
           "key": "gladio-mori"
-        }
+        },
+        { "id": "modio", "key": "11453" }
       ]
     },
     {
@@ -8396,12 +8376,14 @@
       "marker": "Timberborn.exe",
       "r2modmanFolder": "Timberborn",
       "metadata": [],
+      "paths": { "modioMods": { "windows": "{documents}/Timberborn/Mods" } },
       "deploy": "profile",
       "targets": [
         {
           "id": "profile",
           "root": "{profile}"
-        }
+        },
+        { "id": "modio", "role": "modioMods", "sources": ["modio"] }
       ],
       "stores": {
         "steam": {
@@ -8431,7 +8413,8 @@
           "id": "nexus",
           "key": "timberborn",
           "gameId": 4074
-        }
+        },
+        { "id": "modio", "key": "3659" }
       ]
     },
     {
@@ -8746,6 +8729,7 @@
       "r2modmanFolder": "BONELAB",
       "metadata": [],
       "paths": {
+        "modioMods": { "windows": "{localLow}/Stress Level Zero/BONELAB/Mods" },
         "saves": {
           "windows": "{localLow}/Stress Level Zero/BONELAB/Saves"
         },
@@ -8758,7 +8742,8 @@
         {
           "id": "profile",
           "root": "{profile}"
-        }
+        },
+        { "id": "modio", "role": "modioMods", "sources": ["modio"] }
       ],
       "stores": {
         "steam": {
@@ -8857,7 +8842,8 @@
           "id": "nexus",
           "key": "bonelab",
           "gameId": 4832
-        }
+        },
+        { "id": "modio", "key": "3809" }
       ]
     },
     {
@@ -10956,7 +10942,10 @@
       "targets": [{ "id": "mods", "root": "{profile}/Mods", "modRoot": "manifest.json" }],
       "stores": { "steam": { "appId": "629730" } },
       "loaders": [{ "id": "folder" }],
-      "sources": [{ "id": "nexus", "key": "bladeandsorcery", "gameId": 2673 }]
+      "sources": [
+        { "id": "nexus", "key": "bladeandsorcery", "gameId": 2673 },
+        { "id": "modio", "key": "3852" }
+      ]
     },
     {
       "id": "monster-hunter-world",
@@ -11227,7 +11216,10 @@
       "targets": [{ "id": "mods", "root": "{profile}/Mods", "keepWhole": ["utoc"] }],
       "stores": { "steam": { "appId": "1643320" } },
       "loaders": [{ "id": "folder" }],
-      "sources": [{ "id": "nexus", "key": "stalker2heartofchornobyl", "gameId": 6944 }]
+      "sources": [
+        { "id": "nexus", "key": "stalker2heartofchornobyl", "gameId": 6944 },
+        { "id": "modio", "key": "5761" }
+      ]
     },
     {
       "id": "broforce",
@@ -13173,7 +13165,22 @@
         "gog": { "productId": "1456460669", "folder": "Baldurs Gate 3" }
       },
       "loaders": [{ "id": "folder" }],
-      "sources": [{ "id": "nexus", "key": "baldursgate3" }]
+      "sources": [{ "id": "nexus", "key": "baldursgate3" }, { "id": "modio", "key": "6715" }]
+    },
+    {
+      "id": "deep-rock-galactic",
+      "name": "Deep Rock Galactic",
+      "enabled": true,
+      "minVersion": "0.5.0",
+      "marker": "FSD-Win64-Shipping.exe",
+      "markerDir": "FSD/Binaries/Win64",
+      "metadata": [],
+      "paths": { "mods": { "windows": "{install}/FSD/Mods" } },
+      "deploy": "profile",
+      "targets": [{ "id": "mods", "root": "{profile}/Mods" }],
+      "stores": { "steam": { "appId": "548430" } },
+      "loaders": [{ "id": "folder" }],
+      "sources": [{ "id": "modio", "key": "2475" }]
     },
     {
       "id": "mount-and-blade-2-bannerlord",

@@ -276,19 +276,9 @@ func TestByR2modmanFolderNamesTheCatalogGame(t *testing.T) {
 func TestLoaderRefsSayWhichTabsApply(t *testing.T) {
 	t.Parallel()
 	st := testStore(t)
-	// Core Keeper's folder is an IL2CPP build; Lethal Company's is Mono.
-	il2cpp, mono := t.TempDir(), t.TempDir()
-	for _, f := range []string{"CoreKeeper.exe", "GameAssembly.dll", "CoreKeeper_Data/il2cpp_data/x"} {
-		path := filepath.Join(il2cpp, f)
-		if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(path, []byte("x"), 0o600); err != nil {
-			t.Fatal(err)
-		}
-	}
+	mono := t.TempDir()
 	cur := st.Get()
-	cur.GameFolders = map[string]string{"core-keeper": il2cpp, "lethal-company": mono}
+	cur.GameFolders = map[string]string{"lethal-company": mono}
 	games, err := List(t.TempDir(), cur)
 	if err != nil {
 		t.Fatal(err)
@@ -306,10 +296,6 @@ func TestLoaderRefsSayWhichTabsApply(t *testing.T) {
 	// PEAK gets the core bridge build: everything the bridge offers, but no console commands, which need game hooks.
 	if p := caps["peak"]; !p.Console || !p.Startup || !p.Overlay || !p.IntroSkip || p.Commands {
 		t.Fatalf("BepInEx with the core bridge = %+v", p)
-	}
-	// Core Keeper installs the IL2CPP bridge, which only lists plugins: none of the tabs that need the Mono build.
-	if c := caps["core-keeper"]; !c.Console || c.Commands || c.Startup || c.Perf || c.Overlay || c.IntroSkip {
-		t.Fatalf("BepInEx with the IL2CPP bridge = %+v", c)
 	}
 	// Cat Mail Co.'s IL2CPP BepInEx runs without the bridge, so nothing that needs it is offered.
 	if c := caps["cat-mail-co"]; !c.Order || !c.Console || c.Commands || c.Startup || c.Perf || c.Overlay || c.IntroSkip {

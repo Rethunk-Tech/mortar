@@ -1,5 +1,5 @@
 {
-  "serial": 1793583585,
+  "serial": 1793589703,
   "components": [
     {
       "game": "melonloader",
@@ -153,7 +153,11 @@
         "mo2": "Stardew Valley"
       },
       "marker": "Stardew Valley.dll",
-      "metadata": ["smapi-updates", "smapi-compat", "stardew-dataset"],
+      "metadata": [
+        "smapi-updates",
+        "smapi-compat",
+        "stardew-dataset"
+      ],
       "paths": {
         "errorLogs": {
           "windows": "{appData}/StardewValley/ErrorLogs",
@@ -220,7 +224,10 @@
         {
           "id": "github",
           "key": "stardew-valley-mod",
-          "topics": ["stardew-valley-mods", "smapi-mod"]
+          "topics": [
+            "stardew-valley-mods",
+            "smapi-mod"
+          ]
         }
       ],
       "templates": [
@@ -274,8 +281,20 @@
           "linux": "{xdgConfig}/unity3d/ZeekerssRBLX/Lethal Company/Player.log"
         }
       },
-      "saveFiles": ["LCSaveFile*", "LCChallengeFile", "!*.bac", "!*.tmp", "!*.bak", "!*.moddata"],
-      "saveCompanions": [".bac", ".tmp", ".tmp.bak", ".moddata"],
+      "saveFiles": [
+        "LCSaveFile*",
+        "LCChallengeFile",
+        "!*.bac",
+        "!*.tmp",
+        "!*.bak",
+        "!*.moddata"
+      ],
+      "saveCompanions": [
+        ".bac",
+        ".tmp",
+        ".tmp.bak",
+        ".moddata"
+      ],
       "titleScene": "MainMenu",
       "deploy": "profile",
       "targets": [
@@ -302,28 +321,42 @@
               {
                 "package": "Evaisa-LethalLib",
                 "param": "categories",
-                "values": ["items", "equipment", "monsters", "hazards"]
+                "values": [
+                  "items",
+                  "equipment",
+                  "monsters",
+                  "hazards"
+                ]
               },
               {
                 "package": "IAmBatby-LethalLevelLoader",
                 "param": "categories",
-                "values": ["moons", "interiors"]
+                "values": [
+                  "moons",
+                  "interiors"
+                ]
               },
               {
                 "package": "x753-More_Suits",
                 "param": "categories",
-                "values": ["suits"]
+                "values": [
+                  "suits"
+                ]
               },
               {
                 "package": "AinaVT-LethalConfig",
                 "param": "config",
-                "values": ["true"],
+                "values": [
+                  "true"
+                ],
                 "optional": true
               },
               {
                 "package": "Mortar-ConfigSync",
                 "param": "configSync",
-                "values": ["true"]
+                "values": [
+                  "true"
+                ]
               }
             ],
             "devHelper": {
@@ -334,17 +367,27 @@
                 "id": "suits",
                 "label": "Suits",
                 "folder": "plugins/moresuits",
-                "patterns": ["*.png"],
+                "patterns": [
+                  "*.png"
+                ],
                 "dependency": "x753-More_Suits",
-                "recommends": ["Verity-TooManySuits"]
+                "recommends": [
+                  "Verity-TooManySuits"
+                ]
               },
               {
                 "id": "sounds",
                 "label": "Sounds",
                 "folder": "plugins/sounds",
-                "patterns": ["*.ogg", "*.wav", "*.mp3"],
+                "patterns": [
+                  "*.ogg",
+                  "*.wav",
+                  "*.mp3"
+                ],
                 "dependency": "loaforc-loaforcsSoundAPI",
-                "recommends": ["loaforc-loaforcsSoundAPI_LethalCompany"],
+                "recommends": [
+                  "loaforc-loaforcsSoundAPI_LethalCompany"
+                ],
                 "files": {
                   "plugins/replacers/README.txt": "Each .json file here maps game sounds to files in sounds/. See https://soundapi.loaforc.me/soundpack-tutorials/guide/getting-started.html\n",
                   "plugins/sound_pack.json": "{\n  \"name\": \"{name}\"\n}\n"
@@ -354,7 +397,11 @@
                 "id": "posters",
                 "label": "Posters",
                 "folder": "plugins/LethalPosters/posters",
-                "patterns": ["*.png", "*.jpg", "*.jpeg"],
+                "patterns": [
+                  "*.png",
+                  "*.jpg",
+                  "*.jpeg"
+                ],
                 "dependency": "Mortar-Posters",
                 "files": {
                   "plugins/LethalPosters/tips/README.txt": "A picture here goes on the ship's tips board, as posters/ does for its posters.\n"
@@ -364,21 +411,32 @@
                 "id": "paintings",
                 "label": "Paintings",
                 "folder": "plugins/LethalPaintings/paintings",
-                "patterns": ["*.png", "*.jpg", "*.jpeg"],
+                "patterns": [
+                  "*.png",
+                  "*.jpg",
+                  "*.jpeg"
+                ],
                 "dependency": "Mortar-Posters"
               },
               {
                 "id": "television",
                 "label": "TV videos",
                 "folder": "plugins/Television Videos",
-                "patterns": ["*.webm", "*.mp4"],
+                "patterns": [
+                  "*.webm",
+                  "*.mp4"
+                ],
                 "dependency": "Mortar-Television"
               },
               {
                 "id": "boombox",
                 "label": "Boombox songs",
                 "folder": "plugins/Custom Songs",
-                "patterns": ["*.mp3", "*.ogg", "*.wav"],
+                "patterns": [
+                  "*.mp3",
+                  "*.ogg",
+                  "*.wav"
+                ],
                 "dependency": "Mortar-Boombox"
               }
             ],
@@ -388,65 +446,107 @@
                 {
                   "id": "posters",
                   "label": "Posters",
-                  "patterns": ["*.png", "*.jpg", "*.jpeg"],
+                  "patterns": [
+                    "*.png",
+                    "*.jpg",
+                    "*.jpeg"
+                  ],
                   "dependency": "Mortar-Posters",
                   "category": "poster",
-                  "legacy": ["plugins/LethalPosters/posters"]
+                  "legacy": [
+                    "plugins/LethalPosters/posters"
+                  ]
                 },
                 {
                   "id": "tips",
                   "label": "Tips",
-                  "patterns": ["*.png", "*.jpg", "*.jpeg"],
+                  "patterns": [
+                    "*.png",
+                    "*.jpg",
+                    "*.jpeg"
+                  ],
                   "dependency": "Mortar-Posters",
                   "category": "poster",
-                  "legacy": ["plugins/LethalPosters/tips"]
+                  "legacy": [
+                    "plugins/LethalPosters/tips"
+                  ]
                 },
                 {
                   "id": "paintings",
                   "label": "Paintings",
-                  "patterns": ["*.png", "*.jpg", "*.jpeg"],
+                  "patterns": [
+                    "*.png",
+                    "*.jpg",
+                    "*.jpeg"
+                  ],
                   "dependency": "Mortar-Posters",
                   "category": "poster",
-                  "legacy": ["plugins/LethalPaintings/paintings"]
+                  "legacy": [
+                    "plugins/LethalPaintings/paintings"
+                  ]
                 },
                 {
                   "id": "boombox",
                   "label": "Boombox songs",
-                  "patterns": ["*.mp3", "*.ogg", "*.wav"],
+                  "patterns": [
+                    "*.mp3",
+                    "*.ogg",
+                    "*.wav"
+                  ],
                   "dependency": "Mortar-Boombox",
                   "category": "boombox",
-                  "legacy": ["plugins/Custom Songs"]
+                  "legacy": [
+                    "plugins/Custom Songs"
+                  ]
                 },
                 {
                   "id": "tv",
                   "label": "TV videos",
-                  "patterns": ["*.mp4", "*.webm"],
+                  "patterns": [
+                    "*.mp4",
+                    "*.webm"
+                  ],
                   "dependency": "Mortar-Television",
                   "category": "video",
-                  "legacy": ["plugins/Television Videos"]
+                  "legacy": [
+                    "plugins/Television Videos"
+                  ]
                 },
                 {
                   "id": "suits",
                   "label": "Suits",
                   "folder": "moresuits",
-                  "patterns": ["*.png"],
+                  "patterns": [
+                    "*.png"
+                  ],
                   "dependency": "x753-More_Suits",
                   "category": "suits",
-                  "recommends": ["Verity-TooManySuits"]
+                  "recommends": [
+                    "Verity-TooManySuits"
+                  ]
                 },
                 {
                   "id": "sounds",
                   "label": "Sounds",
                   "folder": "sounds",
-                  "patterns": ["*.ogg", "*.wav", "*.mp3"],
+                  "patterns": [
+                    "*.ogg",
+                    "*.wav",
+                    "*.mp3"
+                  ],
                   "dependency": "loaforc-loaforcsSoundAPI",
                   "category": "audio",
-                  "recommends": ["loaforc-loaforcsSoundAPI_LethalCompany"],
+                  "recommends": [
+                    "loaforc-loaforcsSoundAPI_LethalCompany"
+                  ],
                   "files": {
                     "replacers/README.txt": "Each .json file here maps game sounds to files in sounds/. See https://soundapi.loaforc.me/soundpack-tutorials/guide/getting-started.html\n",
                     "sound_pack.json": "{\n  \"name\": \"{name}\"\n}\n"
                   },
-                  "needs": ["sound_pack.json", "replacers/*.json"]
+                  "needs": [
+                    "sound_pack.json",
+                    "replacers/*.json"
+                  ]
                 }
               ]
             }
@@ -537,9 +637,17 @@
           "linux": "{xdgConfig}/unity3d/IronGate/Valheim/Player.log"
         }
       },
-      "saveFiles": ["characters_local/*.fch", "worlds_local/*.fwl", "!*_backup_*"],
-      "saveCompanions": [".db"],
-      "saveCopies": ["{stem}_backup_auto-*{ext}"],
+      "saveFiles": [
+        "characters_local/*.fch",
+        "worlds_local/*.fwl",
+        "!*_backup_*"
+      ],
+      "saveCompanions": [
+        ".db"
+      ],
+      "saveCopies": [
+        "{stem}_backup_auto-*{ext}"
+      ],
       "titleScene": "start",
       "deploy": "profile",
       "targets": [
@@ -688,7 +796,9 @@
           "appId": "632360"
         },
         "epic": {
-          "appNames": ["4b3dcc5723454a47a9112d8fe8fd5f5c"]
+          "appNames": [
+            "4b3dcc5723454a47a9112d8fe8fd5f5c"
+          ]
         }
       },
       "loaders": [
@@ -727,7 +837,9 @@
           {
             "id": "dx12",
             "label": "DirectX 12",
-            "args": ["-dx12"]
+            "args": [
+              "-dx12"
+            ]
           },
           {
             "id": "vulkan",
@@ -1359,7 +1471,9 @@
           "appId": "311690"
         },
         "epic": {
-          "appNames": ["Garlic"]
+          "appNames": [
+            "Garlic"
+          ]
         }
       },
       "loaders": [
@@ -1811,7 +1925,10 @@
           "appId": "794260"
         },
         "epic": {
-          "appNames": ["Viola", "f07a51af8ac845ea96f792fb485e04a3"]
+          "appNames": [
+            "Viola",
+            "f07a51af8ac845ea96f792fb485e04a3"
+          ]
         }
       },
       "loaders": [
@@ -2245,7 +2362,9 @@
           "appId": "508440"
         },
         "epic": {
-          "appNames": ["Driftfish"]
+          "appNames": [
+            "Driftfish"
+          ]
         }
       },
       "loaders": [
@@ -2405,7 +2524,9 @@
       "minVersion": "0.5.0",
       "marker": "Vintagestory.exe",
       "linuxMarker": "Vintagestory",
-      "processes": ["VintagestoryServer.exe"],
+      "processes": [
+        "VintagestoryServer.exe"
+      ],
       "linuxStart": "run.sh",
       "art": "assets/game/textures/gui/backgrounds/mainmenu1.png",
       "metadata": [],
@@ -2439,14 +2560,24 @@
           "linux": "{xdgConfig}/VintagestoryData"
         }
       },
-      "saveFiles": ["*.vcdbs"],
-      "saveCompanions": [".vcdbs-shm", ".vcdbs-wal"],
+      "saveFiles": [
+        "*.vcdbs"
+      ],
+      "saveCompanions": [
+        ".vcdbs-shm",
+        ".vcdbs-wal"
+      ],
       "saveCopies": [
         "{stem}-bkp-*{ext}",
         "{stem}-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]_*{ext}"
       ],
-      "saveCopyFolders": ["Backups", "BackupSaves"],
-      "saveLinked": ["Maps/{uuid}.db"],
+      "saveCopyFolders": [
+        "Backups",
+        "BackupSaves"
+      ],
+      "saveLinked": [
+        "Maps/{uuid}.db"
+      ],
       "caches": [
         {
           "role": "userData",
@@ -2501,7 +2632,10 @@
         {
           "id": "github",
           "key": "vintagestory-mod",
-          "topics": ["vintage-story-mod", "vintagestory"]
+          "topics": [
+            "vintage-story-mod",
+            "vintagestory"
+          ]
         }
       ],
       "templates": [
@@ -2671,8 +2805,12 @@
           "windows": "{localLow}/Maracas Studio/CatMailCo/Player.log"
         }
       },
-      "saveFiles": ["GameSaves/GameSave_*.bin"],
-      "saveCompanionPaths": ["CatLibSaves/{stem}"],
+      "saveFiles": [
+        "GameSaves/GameSave_*.bin"
+      ],
+      "saveCompanionPaths": [
+        "CatLibSaves/{stem}"
+      ],
       "deploy": "profile",
       "targets": [
         {
@@ -2709,10 +2847,13 @@
       "id": "core-keeper",
       "name": "Core Keeper",
       "enabled": true,
+      "minVersion": "0.5.0",
       "marker": "CoreKeeper.exe",
-      "r2modmanFolder": "CoreKeeper",
       "metadata": [],
       "paths": {
+        "mods": {
+          "windows": "{install}/CoreKeeper_Data/StreamingAssets/Mods"
+        },
         "unityLog": {
           "windows": "{localLow}/Pugstorm/Core Keeper/Player.log"
         }
@@ -2720,8 +2861,9 @@
       "deploy": "profile",
       "targets": [
         {
-          "id": "profile",
-          "root": "{profile}"
+          "id": "mods",
+          "root": "{profile}/Mods",
+          "modRoot": "ModManifest.json"
         }
       ],
       "stores": {
@@ -2731,17 +2873,14 @@
       },
       "loaders": [
         {
-          "id": "bepinex5",
-          "name": "BepInEx 6 (IL2CPP)",
-          "companion": "bridge",
-          "package": "BepInEx-BepInExPack_Core_Keeper",
-          "major": 2
+          "id": "folder",
+          "name": ""
         }
       ],
       "sources": [
         {
-          "id": "thunderstore",
-          "key": "core-keeper"
+          "id": "modio",
+          "key": "5289"
         }
       ]
     },
@@ -2840,7 +2979,9 @@
           "appId": "2407270"
         },
         "epic": {
-          "appNames": ["be55cbfd8bfb4605830e6a1308e03e73"]
+          "appNames": [
+            "be55cbfd8bfb4605830e6a1308e03e73"
+          ]
         }
       },
       "loaders": [
@@ -3846,7 +3987,9 @@
           "appId": "3265700"
         },
         "epic": {
-          "appNames": ["6d4f12300a0844369205eb8ae9619ca0"]
+          "appNames": [
+            "6d4f12300a0844369205eb8ae9619ca0"
+          ]
         },
         "xbox": {
           "package": "poncle.VampireCrawlers"
@@ -4253,7 +4396,9 @@
           "appId": "622650"
         },
         "epic": {
-          "appNames": ["39700e23ec114d7581aedea23779ce2d"]
+          "appNames": [
+            "39700e23ec114d7581aedea23779ce2d"
+          ]
         }
       },
       "loaders": [
@@ -4402,8 +4547,12 @@
           "windows": "{localLow}/Colossal Order/Cities Skylines II/Player.log"
         }
       },
-      "saveFiles": ["*.cok"],
-      "saveCompanions": [".cok.cid"],
+      "saveFiles": [
+        "*.cok"
+      ],
+      "saveCompanions": [
+        ".cok.cid"
+      ],
       "saveUserFolders": true,
       "deploy": "profile",
       "targets": [
@@ -4415,7 +4564,9 @@
           "id": "pdx",
           "root": "",
           "role": "pdxMods",
-          "sources": ["paradox"]
+          "sources": [
+            "paradox"
+          ]
         }
       ],
       "stores": {
@@ -4946,7 +5097,9 @@
           "appId": "2638370"
         },
         "epic": {
-          "appNames": ["a0fbc3eb950341e290ae20a7d02cc501"]
+          "appNames": [
+            "a0fbc3eb950341e290ae20a7d02cc501"
+          ]
         }
       },
       "loaders": [
@@ -4990,7 +5143,9 @@
           "appId": "527230"
         },
         "epic": {
-          "appNames": ["Discus"]
+          "appNames": [
+            "Discus"
+          ]
         }
       },
       "loaders": [
@@ -5096,11 +5251,24 @@
       "marker": "Gladio Mori.exe",
       "r2modmanFolder": "GladioMori",
       "metadata": [],
+      "paths": {
+        "modioMods": {
+          "windows": "{install}/Mods"
+        }
+      },
       "deploy": "profile",
       "targets": [
         {
           "id": "profile",
           "root": "{profile}"
+        },
+        {
+          "id": "modio",
+          "root": "",
+          "role": "modioMods",
+          "sources": [
+            "modio"
+          ]
         }
       ],
       "stores": {
@@ -5118,6 +5286,10 @@
         {
           "id": "thunderstore",
           "key": "gladio-mori"
+        },
+        {
+          "id": "modio",
+          "key": "11453"
         }
       ]
     },
@@ -6472,7 +6644,9 @@
           "appId": "572890"
         },
         "epic": {
-          "appNames": ["48619f5656da446abccb727b78cda644"]
+          "appNames": [
+            "48619f5656da446abccb727b78cda644"
+          ]
         }
       },
       "loaders": [
@@ -6925,7 +7099,9 @@
           "appId": "1380220"
         },
         "epic": {
-          "appNames": ["a774278c0813447c96a76b053cbf73ff"]
+          "appNames": [
+            "a774278c0813447c96a76b053cbf73ff"
+          ]
         }
       },
       "loaders": [
@@ -7788,7 +7964,9 @@
           "appId": "1966900"
         },
         "epic": {
-          "appNames": ["4656facc740742a39e265b026e13d075"]
+          "appNames": [
+            "4656facc740742a39e265b026e13d075"
+          ]
         }
       },
       "loaders": [
@@ -8144,7 +8322,10 @@
           "routes": [
             {
               "dir": "BepInEx/Sideloader",
-              "extensions": [".hotmod", ".h3mod"]
+              "extensions": [
+                ".hotmod",
+                ".h3mod"
+              ]
             }
           ]
         }
@@ -8298,12 +8479,16 @@
             },
             {
               "dir": "BepInEx/Voicepacks",
-              "extensions": [".voicepack"],
+              "extensions": [
+                ".voicepack"
+              ],
               "track": "subdir"
             },
             {
               "dir": "BepInEx/Skins",
-              "extensions": [".nasbskin"],
+              "extensions": [
+                ".nasbskin"
+              ],
               "track": "subdir"
             },
             {
@@ -8435,11 +8620,24 @@
       "marker": "Timberborn.exe",
       "r2modmanFolder": "Timberborn",
       "metadata": [],
+      "paths": {
+        "modioMods": {
+          "windows": "{documents}/Timberborn/Mods"
+        }
+      },
       "deploy": "profile",
       "targets": [
         {
           "id": "profile",
           "root": "{profile}"
+        },
+        {
+          "id": "modio",
+          "root": "",
+          "role": "modioMods",
+          "sources": [
+            "modio"
+          ]
         }
       ],
       "stores": {
@@ -8470,6 +8668,10 @@
           "id": "nexus",
           "key": "timberborn",
           "gameId": 4074
+        },
+        {
+          "id": "modio",
+          "key": "3659"
         }
       ]
     },
@@ -8746,7 +8948,9 @@
           "routes": [
             {
               "dir": "Mods",
-              "extensions": [".dll"]
+              "extensions": [
+                ".dll"
+              ]
             },
             {
               "dir": "UserData/ModManager",
@@ -8755,14 +8959,18 @@
             },
             {
               "dir": "UserLibs",
-              "extensions": [".lib.dll"]
+              "extensions": [
+                ".lib.dll"
+              ]
             },
             {
               "dir": "MelonLoader"
             },
             {
               "dir": "Managed",
-              "extensions": [".managed.dll"]
+              "extensions": [
+                ".managed.dll"
+              ]
             },
             {
               "dir": "Libs"
@@ -8785,6 +8993,9 @@
       "r2modmanFolder": "BONELAB",
       "metadata": [],
       "paths": {
+        "modioMods": {
+          "windows": "{localLow}/Stress Level Zero/BONELAB/Mods"
+        },
         "saves": {
           "windows": "{localLow}/Stress Level Zero/BONELAB/Saves"
         },
@@ -8797,6 +9008,14 @@
         {
           "id": "profile",
           "root": "{profile}"
+        },
+        {
+          "id": "modio",
+          "root": "",
+          "role": "modioMods",
+          "sources": [
+            "modio"
+          ]
         }
       ],
       "stores": {
@@ -8812,23 +9031,31 @@
           "routes": [
             {
               "dir": "Mods",
-              "extensions": [".dll"],
+              "extensions": [
+                ".dll"
+              ],
               "default": true
             },
             {
               "dir": "Plugins",
-              "extensions": [".plugin.dll"]
+              "extensions": [
+                ".plugin.dll"
+              ]
             },
             {
               "dir": "UserLibs",
-              "extensions": [".lib.dll"]
+              "extensions": [
+                ".lib.dll"
+              ]
             },
             {
               "dir": "MelonLoader"
             },
             {
               "dir": "Managed",
-              "extensions": [".managed.dll"]
+              "extensions": [
+                ".managed.dll"
+              ]
             },
             {
               "dir": "Libs"
@@ -8838,39 +9065,58 @@
             },
             {
               "dir": "CustomItems",
-              "extensions": [".melon"]
+              "extensions": [
+                ".melon"
+              ]
             },
             {
               "dir": "CustomMaps",
-              "extensions": [".bcm", ".cma"]
+              "extensions": [
+                ".bcm",
+                ".cma"
+              ]
             },
             {
               "dir": "PlayerModels",
-              "extensions": [".body"]
+              "extensions": [
+                ".body"
+              ]
             },
             {
               "dir": "CustomLoadScreens",
-              "extensions": [".load"]
+              "extensions": [
+                ".load"
+              ]
             },
             {
               "dir": "Music",
-              "extensions": [".wav"]
+              "extensions": [
+                ".wav"
+              ]
             },
             {
               "dir": "Food",
-              "extensions": [".food"]
+              "extensions": [
+                ".food"
+              ]
             },
             {
               "dir": "Scoreworks",
-              "extensions": [".sw"]
+              "extensions": [
+                ".sw"
+              ]
             },
             {
               "dir": "CustomSkins",
-              "extensions": [".png"]
+              "extensions": [
+                ".png"
+              ]
             },
             {
               "dir": "Grenades",
-              "extensions": [".grenade"]
+              "extensions": [
+                ".grenade"
+              ]
             },
             {
               "dir": "Not Enough Photons"
@@ -8896,6 +9142,10 @@
           "id": "nexus",
           "key": "bonelab",
           "gameId": 4832
+        },
+        {
+          "id": "modio",
+          "key": "3809"
         }
       ]
     },
@@ -8934,23 +9184,31 @@
           "routes": [
             {
               "dir": "Mods",
-              "extensions": [".dll"],
+              "extensions": [
+                ".dll"
+              ],
               "default": true
             },
             {
               "dir": "Plugins",
-              "extensions": [".plugin.dll"]
+              "extensions": [
+                ".plugin.dll"
+              ]
             },
             {
               "dir": "UserLibs",
-              "extensions": [".lib.dll"]
+              "extensions": [
+                ".lib.dll"
+              ]
             },
             {
               "dir": "MelonLoader"
             },
             {
               "dir": "Managed",
-              "extensions": [".managed.dll"]
+              "extensions": [
+                ".managed.dll"
+              ]
             },
             {
               "dir": "Libs"
@@ -8960,39 +9218,58 @@
             },
             {
               "dir": "CustomItems",
-              "extensions": [".melon"]
+              "extensions": [
+                ".melon"
+              ]
             },
             {
               "dir": "CustomMaps",
-              "extensions": [".bcm", ".cma"]
+              "extensions": [
+                ".bcm",
+                ".cma"
+              ]
             },
             {
               "dir": "PlayerModels",
-              "extensions": [".body"]
+              "extensions": [
+                ".body"
+              ]
             },
             {
               "dir": "CustomLoadScreens",
-              "extensions": [".load"]
+              "extensions": [
+                ".load"
+              ]
             },
             {
               "dir": "Music",
-              "extensions": [".wav"]
+              "extensions": [
+                ".wav"
+              ]
             },
             {
               "dir": "Food",
-              "extensions": [".food"]
+              "extensions": [
+                ".food"
+              ]
             },
             {
               "dir": "Scoreworks",
-              "extensions": [".sw"]
+              "extensions": [
+                ".sw"
+              ]
             },
             {
               "dir": "CustomSkins",
-              "extensions": [".png"]
+              "extensions": [
+                ".png"
+              ]
             },
             {
               "dir": "Grenades",
-              "extensions": [".grenade"]
+              "extensions": [
+                ".grenade"
+              ]
             }
           ]
         }
@@ -9107,7 +9384,9 @@
           "routes": [
             {
               "dir": "Mods",
-              "extensions": [".dll"]
+              "extensions": [
+                ".dll"
+              ]
             },
             {
               "dir": "UserData/ModManager",
@@ -9116,21 +9395,27 @@
             },
             {
               "dir": "UserLibs",
-              "extensions": [".lib.dll"]
+              "extensions": [
+                ".lib.dll"
+              ]
             },
             {
               "dir": "MelonLoader"
             },
             {
               "dir": "Managed",
-              "extensions": [".managed.dll"]
+              "extensions": [
+                ".managed.dll"
+              ]
             },
             {
               "dir": "Libs"
             },
             {
               "dir": "UserData/CustomNPCs",
-              "extensions": [".npc"]
+              "extensions": [
+                ".npc"
+              ]
             }
           ]
         }
@@ -9248,7 +9533,9 @@
           "routes": [
             {
               "dir": "Mods",
-              "extensions": [".dll"]
+              "extensions": [
+                ".dll"
+              ]
             },
             {
               "dir": "UserData/ModManager",
@@ -9257,14 +9544,18 @@
             },
             {
               "dir": "UserLibs",
-              "extensions": [".lib.dll"]
+              "extensions": [
+                ".lib.dll"
+              ]
             },
             {
               "dir": "MelonLoader"
             },
             {
               "dir": "Managed",
-              "extensions": [".managed.dll"]
+              "extensions": [
+                ".managed.dll"
+              ]
             },
             {
               "dir": "Libs"
@@ -9306,7 +9597,9 @@
           "routes": [
             {
               "dir": "Mods",
-              "extensions": [".dll"]
+              "extensions": [
+                ".dll"
+              ]
             },
             {
               "dir": "UserData/ModManager",
@@ -9315,14 +9608,18 @@
             },
             {
               "dir": "UserLibs",
-              "extensions": [".lib.dll"]
+              "extensions": [
+                ".lib.dll"
+              ]
             },
             {
               "dir": "MelonLoader"
             },
             {
               "dir": "Managed",
-              "extensions": [".managed.dll"]
+              "extensions": [
+                ".managed.dll"
+              ]
             },
             {
               "dir": "Libs"
@@ -10395,7 +10692,9 @@
       },
       "marker": "TS4_x64.exe",
       "markerDir": "Game/Bin",
-      "processes": ["TS4_DX9_x64.exe"],
+      "processes": [
+        "TS4_DX9_x64.exe"
+      ],
       "metadata": [],
       "newProfileSeparateSaves": true,
       "paths": {
@@ -10424,10 +10723,19 @@
           "linux": "{documents}/Electronic Arts/The Sims 4"
         }
       },
-      "saveFiles": ["Slot_*.save"],
-      "saveCopies": ["{name}.ver?"],
+      "saveFiles": [
+        "Slot_*.save"
+      ],
+      "saveCopies": [
+        "{name}.ver?"
+      ],
       "folderNames": {
-        "The Sims 4": ["Die Sims 4", "Les Sims 4", "Los Sims 4", "De Sims 4"]
+        "The Sims 4": [
+          "Die Sims 4",
+          "Les Sims 4",
+          "Los Sims 4",
+          "De Sims 4"
+        ]
       },
       "requiredSettings": [
         {
@@ -10462,7 +10770,9 @@
             "package": 5,
             "ts4script": 1
           },
-          "keepWhole": ["ts4script"]
+          "keepWhole": [
+            "ts4script"
+          ]
         },
         {
           "id": "tray",
@@ -10500,7 +10810,13 @@
           "id": "curseforge",
           "key": "5089",
           "gameId": 78062,
-          "classes": ["5089", "5339", "5437", "5344", "5681"]
+          "classes": [
+            "5089",
+            "5339",
+            "5437",
+            "5344",
+            "5681"
+          ]
         },
         {
           "id": "nexus",
@@ -10542,7 +10858,11 @@
         {
           "id": "mods",
           "root": "{profile}/Mods",
-          "keepWhole": ["bundle", "ws", "store"]
+          "keepWhole": [
+            "bundle",
+            "ws",
+            "store"
+          ]
         }
       ],
       "stores": {
@@ -10554,7 +10874,9 @@
           "folder": "The Witcher 3 Wild Hunt"
         },
         "epic": {
-          "appNames": ["725a22e15ed74735bb0d6a19f3cc82d0"]
+          "appNames": [
+            "725a22e15ed74735bb0d6a19f3cc82d0"
+          ]
         }
       },
       "loaders": [
@@ -10678,7 +11000,9 @@
         {
           "id": "mods",
           "root": "{profile}/Mods",
-          "keepWhole": ["utoc"]
+          "keepWhole": [
+            "utoc"
+          ]
         }
       ],
       "stores": {
@@ -10729,7 +11053,11 @@
         {
           "id": "mods",
           "root": "{profile}/Mods",
-          "keepWhole": ["archive", "xl", "reds"]
+          "keepWhole": [
+            "archive",
+            "xl",
+            "reds"
+          ]
         }
       ],
       "stores": {
@@ -10741,7 +11069,9 @@
           "folder": "Cyberpunk 2077"
         },
         "epic": {
-          "appNames": ["77f2b98e2cef40c8a7437518bf420e47"]
+          "appNames": [
+            "77f2b98e2cef40c8a7437518bf420e47"
+          ]
         }
       },
       "loaders": [
@@ -10829,7 +11159,9 @@
           "appId": "1145350"
         },
         "epic": {
-          "appNames": ["07c634c7291a49b5b2455e14b9a83950"]
+          "appNames": [
+            "07c634c7291a49b5b2455e14b9a83950"
+          ]
         }
       },
       "loaders": [
@@ -11049,6 +11381,10 @@
           "id": "nexus",
           "key": "bladeandsorcery",
           "gameId": 2673
+        },
+        {
+          "id": "modio",
+          "key": "3852"
         }
       ]
     },
@@ -11318,7 +11654,9 @@
         {
           "id": "mods",
           "root": "{profile}/Mods",
-          "keepWhole": ["utoc"]
+          "keepWhole": [
+            "utoc"
+          ]
         }
       ],
       "stores": {
@@ -11326,7 +11664,9 @@
           "appId": "3489700"
         },
         "epic": {
-          "appNames": ["4013d48a20c1403282fc9d1453ec8f5a"]
+          "appNames": [
+            "4013d48a20c1403282fc9d1453ec8f5a"
+          ]
         }
       },
       "loaders": [
@@ -11359,7 +11699,9 @@
         {
           "id": "mods",
           "root": "{profile}/Mods",
-          "keepWhole": ["utoc"]
+          "keepWhole": [
+            "utoc"
+          ]
         }
       ],
       "stores": {
@@ -11397,7 +11739,9 @@
         {
           "id": "mods",
           "root": "{profile}/Mods",
-          "keepWhole": ["sig"]
+          "keepWhole": [
+            "sig"
+          ]
         }
       ],
       "stores": {
@@ -11405,7 +11749,9 @@
           "appId": "2138710"
         },
         "epic": {
-          "appNames": ["d36336f190094951873ed6138ac208d8"]
+          "appNames": [
+            "d36336f190094951873ed6138ac208d8"
+          ]
         }
       },
       "loaders": [
@@ -11438,7 +11784,9 @@
         {
           "id": "mods",
           "root": "{profile}/Mods",
-          "keepWhole": ["utoc"]
+          "keepWhole": [
+            "utoc"
+          ]
         }
       ],
       "stores": {
@@ -11476,7 +11824,9 @@
         {
           "id": "mods",
           "root": "{profile}/Mods",
-          "keepWhole": ["utoc"]
+          "keepWhole": [
+            "utoc"
+          ]
         }
       ],
       "stores": {
@@ -11484,7 +11834,9 @@
           "appId": "3404260"
         },
         "epic": {
-          "appNames": ["1e51c1bc910d4881a950947e5590783b"]
+          "appNames": [
+            "1e51c1bc910d4881a950947e5590783b"
+          ]
         }
       },
       "loaders": [
@@ -11517,7 +11869,9 @@
         {
           "id": "mods",
           "root": "{profile}/Mods",
-          "keepWhole": ["utoc"]
+          "keepWhole": [
+            "utoc"
+          ]
         }
       ],
       "stores": {
@@ -11563,7 +11917,9 @@
         {
           "id": "mods",
           "root": "{profile}/Mods",
-          "keepWhole": ["utoc"]
+          "keepWhole": [
+            "utoc"
+          ]
         }
       ],
       "stores": {
@@ -11571,7 +11927,9 @@
           "appId": "2909400"
         },
         "epic": {
-          "appNames": ["33e6ac38b5a14098b079fd62d71aabc6"]
+          "appNames": [
+            "33e6ac38b5a14098b079fd62d71aabc6"
+          ]
         }
       },
       "loaders": [
@@ -11605,7 +11963,9 @@
         {
           "id": "mods",
           "root": "{profile}/Mods",
-          "keepWhole": ["utoc"]
+          "keepWhole": [
+            "utoc"
+          ]
         }
       ],
       "stores": {
@@ -11651,7 +12011,9 @@
           "appId": "495420"
         },
         "epic": {
-          "appNames": ["Snoek"]
+          "appNames": [
+            "Snoek"
+          ]
         }
       },
       "loaders": [
@@ -11684,7 +12046,9 @@
         {
           "id": "mods",
           "root": "{profile}/Mods",
-          "keepWhole": ["utoc"]
+          "keepWhole": [
+            "utoc"
+          ]
         }
       ],
       "stores": {
@@ -11692,7 +12056,9 @@
           "appId": "1374490"
         },
         "epic": {
-          "appNames": ["9d918774f1db4b26b23a93a78847f4eb"]
+          "appNames": [
+            "9d918774f1db4b26b23a93a78847f4eb"
+          ]
         }
       },
       "loaders": [
@@ -11725,7 +12091,9 @@
         {
           "id": "mods",
           "root": "{profile}/Mods",
-          "keepWhole": ["utoc"]
+          "keepWhole": [
+            "utoc"
+          ]
         }
       ],
       "stores": {
@@ -11744,6 +12112,10 @@
           "id": "nexus",
           "key": "stalker2heartofchornobyl",
           "gameId": 6944
+        },
+        {
+          "id": "modio",
+          "key": "5761"
         }
       ]
     },
@@ -11774,7 +12146,9 @@
           "routes": [
             {
               "dir": "UMM/Mods",
-              "extensions": [".dll"],
+              "extensions": [
+                ".dll"
+              ],
               "track": "subdir",
               "default": true
             },
@@ -11904,7 +12278,10 @@
       ],
       "server": {
         "clients": "valheim",
-        "fixed": ["-batchmode", "-nographics"],
+        "fixed": [
+          "-batchmode",
+          "-nographics"
+        ],
         "args": [
           {
             "id": "name",
@@ -12103,7 +12480,9 @@
             },
             {
               "dir": "shimloader/pak",
-              "extensions": [".pak"],
+              "extensions": [
+                ".pak"
+              ],
               "track": "subdir"
             },
             {
@@ -12462,7 +12841,9 @@
           "appId": "3041230"
         },
         "epic": {
-          "appNames": ["d08157fbe22d45fcba452680857ac58d"]
+          "appNames": [
+            "d08157fbe22d45fcba452680857ac58d"
+          ]
         }
       },
       "loaders": [
@@ -13056,7 +13437,9 @@
           "routes": [
             {
               "dir": "UMM/Mods",
-              "extensions": [".dll"],
+              "extensions": [
+                ".dll"
+              ],
               "track": "subdir",
               "default": true
             }
@@ -13357,7 +13740,9 @@
           "appId": "1123050"
         },
         "epic": {
-          "appNames": ["028263f54a874e35800d142275254d2c"]
+          "appNames": [
+            "028263f54a874e35800d142275254d2c"
+          ]
         }
       },
       "loaders": [
@@ -13791,7 +14176,9 @@
           "appId": "1967630"
         },
         "epic": {
-          "appNames": ["b628a8803ed34779aed1791026c08f36"]
+          "appNames": [
+            "b628a8803ed34779aed1791026c08f36"
+          ]
         }
       },
       "loaders": [
@@ -14035,7 +14422,9 @@
       "minVersion": "0.5.0",
       "marker": "bg3.exe",
       "markerDir": "bin",
-      "processes": ["bg3_dx11.exe"],
+      "processes": [
+        "bg3_dx11.exe"
+      ],
       "metadata": [],
       "paths": {
         "modSettings": {
@@ -14050,7 +14439,9 @@
         {
           "id": "mods",
           "root": "{profile}/Mods",
-          "keepWhole": ["pak"]
+          "keepWhole": [
+            "pak"
+          ]
         }
       ],
       "stores": {
@@ -14072,6 +14463,48 @@
         {
           "id": "nexus",
           "key": "baldursgate3"
+        },
+        {
+          "id": "modio",
+          "key": "6715"
+        }
+      ]
+    },
+    {
+      "id": "deep-rock-galactic",
+      "name": "Deep Rock Galactic",
+      "enabled": true,
+      "minVersion": "0.5.0",
+      "marker": "FSD-Win64-Shipping.exe",
+      "markerDir": "FSD/Binaries/Win64",
+      "metadata": [],
+      "paths": {
+        "mods": {
+          "windows": "{install}/FSD/Mods"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "mods",
+          "root": "{profile}/Mods"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "548430"
+        }
+      },
+      "loaders": [
+        {
+          "id": "folder",
+          "name": ""
+        }
+      ],
+      "sources": [
+        {
+          "id": "modio",
+          "key": "2475"
         }
       ]
     },
@@ -14124,7 +14557,10 @@
   ],
   "authors": [
     {
-      "names": ["Evaisa", "EvaisaDev"]
+      "names": [
+        "Evaisa",
+        "EvaisaDev"
+      ]
     }
   ]
 }

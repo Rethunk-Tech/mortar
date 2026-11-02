@@ -564,13 +564,15 @@ func TestACommunityBepInExPackIsTheLoaderPackage(t *testing.T) {
 	}
 }
 
-func TestCoreKeeperIsABepInEx6IL2CPPGameOnItsOwnPack(t *testing.T) {
+// Core Keeper is modded through mod.io's official SDK mods (a ModManifest.json folder each), not BepInEx plugins.
+func TestCoreKeeperTakesModioModsAsFolders(t *testing.T) {
 	g, ok := Game("core-keeper")
-	if !ok || g.SteamAppID() != "1621690" || g.LoaderPackage() != "BepInEx-BepInExPack_Core_Keeper" || g.LoaderMajor("bepinex5") != 2 {
+	src, hasSrc := g.Source("modio")
+	if !ok || g.SteamAppID() != "1621690" || !hasSrc || src.Key != "5289" || len(g.Loaders) != 1 || g.Loaders[0].ID != "folder" {
 		t.Fatalf("core-keeper = %+v", g)
 	}
-	if !IsLoaderPackage("BepInEx-BepInExPack_Core_Keeper") || g.MinVersion != "" {
-		t.Fatalf("pack or minVersion: %q", g.MinVersion)
+	if _, thunder := g.Source("thunderstore"); thunder || g.MinVersion != "0.5.0" {
+		t.Fatalf("thunderstore source or minVersion %q", g.MinVersion)
 	}
 }
 
