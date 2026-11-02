@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-gameproc"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
@@ -283,5 +284,19 @@ func TestInstalledServerDoesNotOwnItsClientsProcess(t *testing.T) {
 		if ps, err := svc.gameProcs(slot{g, sel.ID}); err != nil || len(ps) != want {
 			t.Fatalf("%s sees %d processes, want %d (%v)", id, len(ps), want, err)
 		}
+	}
+}
+
+func TestAGameRunFromAProfilesOwnFolderBelongsToThatSlot(t *testing.T) {
+	pair := twoInstalls(t)
+	g := game.Find("stardew")
+	old := t.TempDir()
+	pin := game.FolderPin(old)
+	proc := gameproc.Process{PID: 9, Exe: filepath.Join(old, "Stardew Valley")}
+	if id, ok := pair.svc.owner(slot{g, pin}, proc); !ok || id != pin {
+		t.Fatalf("owner = %q, %v; want %q", id, ok, pin)
+	}
+	if ps := pair.svc.ownedBy(slot{g, pair.folderID}, []gameproc.Process{proc}); len(ps) != 0 {
+		t.Errorf("the selected install claimed the old copy's process")
 	}
 }

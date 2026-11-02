@@ -90,6 +90,12 @@ func (s *Service) activeSlot(g game.Game) (slot, bool) {
 // one whose executable is the game itself in a folder outside every install is a copy Mortar does not manage, and
 // ok is false.
 func (s *Service) owner(g game.Game, p gameproc.Process) (id string, ok bool) {
+	// A profile that runs the game from its own folder is slotted by that folder, which no discovered install names.
+	if pin := installOf(g); pin != "" {
+		if dir, ok := game.FolderPinDir(pin); ok && (p.RunsFrom(dir) || p.LinkedFrom(dir)) {
+			return pin, true
+		}
+	}
 	all, selected := s.installs(g)
 	for _, in := range all {
 		if p.RunsFrom(in.Dir) || p.LinkedFrom(in.Dir) {
