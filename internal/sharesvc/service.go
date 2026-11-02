@@ -611,8 +611,7 @@ func externalLocalMods(mods []migrate.ModPreview) []Mod {
 	out := make([]Mod, 0, len(mods))
 	for i, im := range mods {
 		if im.SourcePath != "" {
-			name := im.Name
-			name = cmp.Or(name, im.ID.Local())
+			name := cmp.Or(im.Name, im.ID.Local())
 			out = append(out, Mod{
 				Key: externalKey(i), Site: SiteLocal, Name: name, Version: im.Version,
 				State: StateDownload, Enabled: im.Enabled, IDs: []mod.ID{im.ID},
@@ -620,8 +619,7 @@ func externalLocalMods(mods []migrate.ModPreview) []Mod {
 			continue
 		}
 		if im.NexusModID == 0 {
-			name := im.Name
-			name = cmp.Or(name, im.ID.Local())
+			name := cmp.Or(im.Name, im.ID.Local())
 			out = append(out, Mod{
 				Key: externalKey(i), Site: SiteLocal, Name: name, Version: im.Version,
 				State: StateUnavailable, Enabled: im.Enabled, Reason: ReasonNoFile, IDs: []mod.ID{im.ID},
@@ -1023,13 +1021,7 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 		if err != nil {
 			return Result{}, err
 		}
-		names := make([]string, 0, len(existing))
-		for _, e := range existing {
-			if e.Error == "" {
-				names = append(names, e.Name)
-			}
-		}
-		p, err := s.d.Profiles.Create(game, profile.UniqueName(names, cur.preview.Name))
+		p, err := s.d.Profiles.Create(game, profile.UniqueName(profile.Names(existing), cur.preview.Name))
 		if err != nil {
 			return Result{}, err
 		}
