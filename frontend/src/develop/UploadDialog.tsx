@@ -11,8 +11,8 @@ import {
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { openSettings } from '../nav/store.ts'
 import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
-import { FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
-import { openWeb } from '../shell/openWeb.ts'
+import { FormDialog } from '../shell/dialog/FormDialog.tsx'
+import { TokenInput } from '../shell/dialog/TokenInput.tsx'
 import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -72,21 +72,13 @@ function TokenDialog({
         )
       }
     >
-      <TextInput
+      <TokenInput
         label={fieldLabel}
-        type="password"
         value={token}
         onChange={setToken}
         autoFocus={true}
-        hint={
-          <Button
-            size="small"
-            sx={{ px: 0 }}
-            onClick={() => openWeb(page).catch(reportError(t`Could not open the page`))}
-          >
-            {pageLabel}
-          </Button>
-        }
+        page={page}
+        pageLabel={pageLabel}
       />
     </FormDialog>
   )

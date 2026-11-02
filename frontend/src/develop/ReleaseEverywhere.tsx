@@ -4,7 +4,7 @@ import { CircleAlert, CircleCheck, Clock, Rocket } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { UploadSite } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import { AppDialog, DialogFooter, ToneIcon } from '../shell/dialog/AppDialog.tsx'
-import { openWeb } from '../shell/openWeb.ts'
+import { PageLinkButton } from '../shell/PageLinkButton.tsx'
 import { space } from '../theme/density.ts'
 import { errorDetails } from '../toasts/errorKind.ts'
 import { reportError } from '../toasts/report.ts'
@@ -27,14 +27,7 @@ function DoneCell({ url }: { url: string }) {
       </Typography>
     )
   }
-  return (
-    <Button
-      size="small"
-      onClick={() => openWeb(url).catch(reportError(t`Could not open the page`))}
-    >
-      {t`Open page`}
-    </Button>
-  )
+  return <PageLinkButton url={url}>{t`Open page`}</PageLinkButton>
 }
 
 /** Packs the project once, then uploads to each ready site in turn and lists every site's state. The sites run one

@@ -1,6 +1,6 @@
 import { Button, type ButtonProps, Menu } from '@mui/material'
 import { ChevronDown } from 'lucide-react'
-import { type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
 import { space } from '../theme/density.ts'

@@ -7607,10 +7607,8 @@ msgstr "Fix the mod name."
 msgid "Command palette"
 msgstr "Command palette"
 
-#: src/develop/ReleaseEverywhere.tsx
-#: src/develop/UploadDialog.tsx
 #: src/develop/uploadSites.ts
-#: src/share/UploadModpackDialog.tsx
+#: src/shell/openPageReported.ts
 msgid "Could not open the page"
 msgstr "Could not open the page"
 

@@ -7601,10 +7601,8 @@ msgstr ""
 msgid "Command palette"
 msgstr ""
 
-#: src/develop/ReleaseEverywhere.tsx
-#: src/develop/UploadDialog.tsx
 #: src/develop/uploadSites.ts
-#: src/share/UploadModpackDialog.tsx
+#: src/shell/openPageReported.ts
 msgid "Could not open the page"
 msgstr ""
 

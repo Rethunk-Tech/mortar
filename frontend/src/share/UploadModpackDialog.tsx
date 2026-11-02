@@ -16,7 +16,9 @@ import { ChoicePicker } from '../develop/ChoicePicker.tsx'
 import { TEAMS_PAGE } from '../develop/uploadSites.ts'
 import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
-import { openWeb } from '../shell/openWeb.ts'
+import { TokenInput } from '../shell/dialog/TokenInput.tsx'
+import { openPageReported } from '../shell/openPageReported.ts'
+import { PageLinkButton } from '../shell/PageLinkButton.tsx'
 import { errorKind } from '../toasts/errorKind.ts'
 import { errorMessage, reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -68,7 +70,7 @@ export function UploadModpackDialog({
               ? {
                   action: {
                     label: t`Open page`,
-                    run: () => openWeb(url).catch(reportError(t`Could not open the page`)),
+                    run: () => openPageReported(url),
                   },
                 }
               : {}),
@@ -105,9 +107,8 @@ export function UploadModpackDialog({
     >
       <TextInput label={t`Team`} value={team} onChange={setTeam} autoFocus={true} />
       <CategoryField game={game} value={categories} onChange={setCategories} />
-      <TextInput
+      <TokenInput
         label={t`Service account token`}
-        type="password"
         value={token}
         onChange={setToken}
         placeholder={hasToken ? t`Kept in the system keyring` : ''}
@@ -125,13 +126,9 @@ export function UploadModpackDialog({
               {t`A token is kept. Forget it`}
             </Button>
           ) : (
-            <Button
-              size="small"
-              sx={{ px: 0 }}
-              onClick={() => openWeb(TEAMS_PAGE).catch(reportError(t`Could not open the page`))}
-            >
+            <PageLinkButton url={TEAMS_PAGE} sx={{ px: 0 }}>
               {t`Create one in your team's settings`}
-            </Button>
+            </PageLinkButton>
           )
         }
       />
