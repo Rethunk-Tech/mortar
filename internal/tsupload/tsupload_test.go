@@ -2,12 +2,12 @@ package tsupload
 
 import (
 	"context"
-	"net/http/httptest"
-
 	"fmt"
-	"github.com/zalando/go-keyring"
 	"net/http"
+	"net/http/httptest"
 	"testing"
+
+	"github.com/zalando/go-keyring"
 
 	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"

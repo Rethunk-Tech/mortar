@@ -11,8 +11,8 @@ import (
 
 const godotGame = "dome-keeper"
 
-func nexusSource(modID, fileID int) Source {
-	return Source{Kind: KindNexus, Name: "Mod", ModID: modID, FileID: fileID}
+func nexusSource(fileID int) Source {
+	return Source{Kind: KindNexus, Name: "Mod", ModID: 5, FileID: fileID}
 }
 
 func zipNames(t *testing.T, path string) []string {
@@ -37,7 +37,7 @@ func TestZippedModIsPlacedAsOneZipRecordedAndRemoved(t *testing.T) {
 		t.Fatal(err)
 	}
 	archive := zipOf(t, "m.zip", map[string]string{"mods-unpacked/Me-Mod/manifest.json": "{}", "mods-unpacked/Me-Mod/main.gd": "x"})
-	res, err := e.InstallSource(t.Context(), godotGame, p.ID, archive, nexusSource(5, 9))
+	res, err := e.InstallSource(t.Context(), godotGame, p.ID, archive, nexusSource(9))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -86,12 +86,12 @@ func TestZippedModUpdateReplacesTheOldZip(t *testing.T) {
 	e := newEnv(t)
 	p, _ := e.Create(godotGame, "G")
 	v1 := zipOf(t, "a.zip", map[string]string{"mods-unpacked/Me-Mod/main.gd": "1"})
-	first, err := e.InstallSource(t.Context(), godotGame, p.ID, v1, nexusSource(5, 9))
+	first, err := e.InstallSource(t.Context(), godotGame, p.ID, v1, nexusSource(9))
 	if err != nil {
 		t.Fatal(err)
 	}
 	v2 := zipOf(t, "b.zip", map[string]string{"mods-unpacked/Me-Mod/main.gd": "2"})
-	res, err := e.InstallSource(t.Context(), godotGame, p.ID, v2, nexusSource(5, 12).WithReplacing(9))
+	res, err := e.InstallSource(t.Context(), godotGame, p.ID, v2, nexusSource(12).WithReplacing(9))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -115,7 +115,7 @@ func TestReadOnlyQueriesLeaveTheZipCacheToTheSync(t *testing.T) {
 	e := newEnv(t)
 	p, _ := e.Create(godotGame, "G")
 	archive := zipOf(t, "m.zip", map[string]string{"mods-unpacked/Me-Mod/main.gd": "1"})
-	if _, err := e.InstallSource(t.Context(), godotGame, p.ID, archive, nexusSource(5, 9)); err != nil {
+	if _, err := e.InstallSource(t.Context(), godotGame, p.ID, archive, nexusSource(9)); err != nil {
 		t.Fatal(err)
 	}
 	dir, _ := e.ProfileDir(godotGame, p.ID)

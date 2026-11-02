@@ -3,6 +3,7 @@ package sharesvc
 import (
 	"context"
 	"errors"
+
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 
 	"github.com/Rethunk-Tech/go-nexusmods"

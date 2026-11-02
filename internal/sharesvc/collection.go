@@ -3,10 +3,11 @@ package sharesvc
 import (
 	"context"
 	"fmt"
-	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 
 	"github.com/Rethunk-Tech/go-nexusmods"
 

@@ -5,11 +5,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"maps"
 	"path/filepath"
 	"slices"
 	"strings"
+
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 
 	"github.com/Rethunk-Tech/go-nexusmods"
 

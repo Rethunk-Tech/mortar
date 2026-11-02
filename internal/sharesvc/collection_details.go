@@ -3,10 +3,11 @@ package sharesvc
 import (
 	"encoding/json"
 	"errors"
-	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"io"
 	"path"
 	"strings"
+
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"

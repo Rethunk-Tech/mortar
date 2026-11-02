@@ -14,6 +14,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/Rethunk-Tech/go-safefs"
@@ -87,21 +88,16 @@ func (s *Store) packageFilesWith(gameID, id string, withDev bool) (files map[str
 // are what the profile's mods folder is filled from.
 const zipsDir = ".mortar-zips"
 
+// zipSeq makes concurrent builds of one zip write to different temp files.
+var zipSeq atomic.Uint64
+
 // zipCached is the zip of the store item folder src, built once per store key because an item never changes.
 func zipCached(dir, key, src string) (string, error) {
 	zp := filepath.Join(dir, zipsDir, key+".zip")
 	if safefs.IsFile(zp) {
 		return zp, nil
 	}
-	if err := os.MkdirAll(filepath.Dir(zp), 0o750); err != nil {
-		return "", err
-	}
-	f, err := os.CreateTemp(filepath.Dir(zp), key+".*.tmp")
-	if err != nil {
-		return "", err
-	}
-	tmp := f.Name()
-	_ = f.Close()
+	tmp := fmt.Sprintf("%s.%d-%d.tmp", strings.TrimSuffix(zp, ".zip"), os.Getpid(), zipSeq.Add(1))
 	if err := installer.ZipDir(src, tmp); err != nil {
 		_ = safefs.Remove(tmp)
 		return "", err
