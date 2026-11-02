@@ -55,6 +55,7 @@ import {
   useProjectInfo,
   useTrustAsk,
 } from './builds.ts'
+import { outOfStep, useDependencySync } from './dependencySync.ts'
 import { EditProjectDialog } from './EditProjectDialog.tsx'
 import { useIsAsset } from './kinds.ts'
 import { showModLog, useModCosts } from './modCosts.ts'
@@ -124,6 +125,25 @@ function Status({ project }: { project: DevProject }) {
       label={t`Built ${{ when }}`}
     />
   )
+}
+
+// Counts where the project's dependencies and its profile's mods disagree; the Edit dialog's Dependencies tab lists them.
+function OutOfStep({ game, dir }: { game: string; dir: string }) {
+  const { t } = useLingui()
+  const count = outOfStep(useDependencySync(game, dir).sync)
+  return count > 0 ? (
+    <Chip
+      size="small"
+      sx={statusSx}
+      color="warning"
+      variant="outlined"
+      label={plural(count, {
+        one: '# dependency out of step',
+        other: '# dependencies out of step',
+      })}
+      title={t`Open Edit, Dependencies to review`}
+    />
+  ) : null
 }
 
 const statusSx = {
@@ -454,6 +474,7 @@ export function ProjectCard({
           <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, flexWrap: 'wrap' }}>
             <Typography sx={{ fontSize: 'large.fontSize', fontWeight: 600 }}>{name}</Typography>
             <Status project={project} />
+            <OutOfStep game={game} dir={project.dir} />
           </Box>
           <Typography
             noWrap={true}

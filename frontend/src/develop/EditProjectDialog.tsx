@@ -27,6 +27,7 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { buildProject, useProjectInfo } from './builds.ts'
 import { ChoicePicker } from './ChoicePicker.tsx'
+import { DependencySync } from './DependencySync.tsx'
 import { ProjectDependencies } from './ProjectDependencies.tsx'
 import { saveDependencies, useDependencyRows } from './projectDependencies.ts'
 import { SiteIds } from './SiteIds.tsx'
@@ -212,6 +213,7 @@ export function EditProjectDialog({
         </FormSection>
       </DialogPanel>
       <DialogPanel ids={ids} panel="mods" open={tab === 'mods'}>
+        <DependencySync game={game} dir={dir} onChanged={deps.retry} />
         <ProjectDependencies
           game={game}
           rows={deps.rows}

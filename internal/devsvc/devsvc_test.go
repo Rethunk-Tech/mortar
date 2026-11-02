@@ -177,7 +177,7 @@ func TestCreateRunsDotnetNewAndWiresTheProfile(t *testing.T) {
 		t.Errorf("record = %s (%v)", body, err)
 	}
 	gp := svc.Settings.Get().GamePrefs("lethal-company")
-	if len(gp.DevProjects) != 1 || gp.DevProjects[0] != p || p.Profile == "" || gp.ExtraModsProfile(p.Output) != p.Profile || p.Untrusted {
+	if len(gp.DevProjects) != 1 || !reflect.DeepEqual(gp.DevProjects[0], p) || p.Profile == "" || gp.ExtraModsProfile(p.Output) != p.Profile || p.Untrusted {
 		t.Fatalf("project %+v, settings %+v", p, gp.DevProjects)
 	}
 	if _, err := svc.Create(t.Context(), NewMod{Game: "lethal-company", Name: "ShopDrop", Parent: parent, Repo: "shop-drop", Values: map[string]string{"description": "d", "team": "Ab"}}); err == nil {

@@ -378,6 +378,10 @@ msgstr "Last played {when}"
 msgid "{name} has a new cover"
 msgstr "{name} has a new cover"
 
+#: src/develop/DependencySync.tsx
+msgid "Install missing"
+msgstr "Install missing"
+
 #: src/develop/GameCodeDialog.tsx
 msgid "Type or method, such as player update"
 msgstr "Type or method, such as player update"
@@ -435,6 +439,7 @@ msgstr "{skipped} skipped"
 msgid "The first type of an assembly takes a while."
 msgstr "The first type of an assembly takes a while."
 
+#: src/develop/DependencySync.tsx
 #: src/saves/SaveGapLine.tsx
 #: src/tips/TipBanner.tsx
 #: src/toasts/ToastHost.tsx
@@ -1381,6 +1386,10 @@ msgstr "No projects match"
 msgid "Choose executable"
 msgstr "Choose executable"
 
+#: src/develop/DependencySync.tsx
+msgid "{name}: the project declares {declared}, the profile has {version}"
+msgstr "{name}: the project declares {declared}, the profile has {version}"
+
 #: src/develop/AdoptDialog.tsx
 msgid "Content pack"
 msgstr "Content pack"
@@ -1923,6 +1932,10 @@ msgstr "Help"
 msgid "Last updated"
 msgstr "Last updated"
 
+#: src/develop/ProjectCard.tsx
+msgid "Open Edit, Dependencies to review"
+msgstr "Open Edit, Dependencies to review"
+
 #: src/share/Included.tsx
 msgid "Included"
 msgstr "Included"
@@ -2389,6 +2402,10 @@ msgstr "Very large download"
 #: src/share/MethodPanes.tsx
 msgid "Code copied"
 msgstr "Code copied"
+
+#: src/develop/ProjectCard.tsx
+msgid "{count, plural, one {# dependency out of step} other {# dependencies out of step}}"
+msgstr "{count, plural, one {# dependency out of step} other {# dependencies out of step}}"
 
 #: src/i18n/counts.ts
 msgid "{count, plural, one {# problem} other {# problems}}"
@@ -3004,6 +3021,10 @@ msgstr "Asking {launcher}"
 msgid "Screenshots you take while playing show here, newest first."
 msgstr "Screenshots you take while playing show here, newest first."
 
+#: src/develop/DependencySync.tsx
+msgid "Could not install the dependencies"
+msgstr "Could not install the dependencies"
+
 #: src/launch/LaunchScreen.tsx
 msgid "{launcher} has not started {name} yet"
 msgstr "{launcher} has not started {name} yet"
@@ -3307,6 +3328,10 @@ msgstr "Choose variant…"
 #: src/lan/SendPanel.tsx
 msgid "{name} is still taking your last share"
 msgstr "{name} is still taking your last share"
+
+#: src/develop/DependencySync.tsx
+msgid "The project and its development profile disagree. Nothing changes until you click."
+msgstr "The project and its development profile disagree. Nothing changes until you click."
 
 #: src/launchers/LauncherList.tsx
 #: src/tools/ToolsManageDialog.tsx
@@ -3753,6 +3778,10 @@ msgstr "Undo this change: {name}"
 #: src/queue/store.ts
 msgid "Retrying in {count} s."
 msgstr "Retrying in {count} s."
+
+#: src/develop/DependencySync.tsx
+msgid "Out of step"
+msgstr "Out of step"
 
 #: src/lan/IncomingPrompt.tsx
 msgid "{count, plural, one {{current} of # mod} other {{current} of # mods}}"
@@ -4319,6 +4348,10 @@ msgstr "Needs a file from its {source} page"
 msgid "Send it to the people joining you."
 msgstr "Send it to the people joining you."
 
+#: src/develop/DependencySync.tsx
+msgid "Add as dependency"
+msgstr "Add as dependency"
+
 #: src/launch/KnownGoodOffer.tsx
 msgid "Marked known good"
 msgstr "Marked known good"
@@ -4386,6 +4419,10 @@ msgstr "Optional"
 #: src/browse/BrowseBody.tsx
 msgid "{count, plural, one {# result} other {# results}}"
 msgstr "{count, plural, one {# result} other {# results}}"
+
+#: src/develop/DependencySync.tsx
+msgid "Could not update the dependency"
+msgstr "Could not update the dependency"
 
 #: src/commandPalette/CommandPalette.tsx
 msgid "Go to"
@@ -4912,6 +4949,10 @@ msgstr "Could not back up {name}"
 #: src/queue/RetryAllButton.tsx
 msgid "{count, plural, one {# incomplete entry} other {# incomplete entries}}"
 msgstr "{count, plural, one {# incomplete entry} other {# incomplete entries}}"
+
+#: src/develop/DependencySync.tsx
+msgid "{name} {version} is in the profile, not in the project"
+msgstr "{name} {version} is in the profile, not in the project"
 
 #: src/queue/actions.ts
 msgid "The download queue is empty."
@@ -5561,6 +5602,10 @@ msgstr "Import as new profile"
 msgid "Apply a template"
 msgstr "Apply a template"
 
+#: src/develop/DependencySync.tsx
+msgid "Not in the profile: {names}"
+msgstr "Not in the profile: {names}"
+
 #: src/fomod/Dialog.tsx
 msgid "This update changed its install options. Your earlier picks are kept where they still exist."
 msgstr "This update changed its install options. Your earlier picks are kept where they still exist."
@@ -6081,6 +6126,7 @@ msgid "Place here"
 msgstr "Place here"
 
 #: src/develop/dependencyAsk.ts
+#: src/develop/DependencySync.tsx
 msgid "Could not add the dependency"
 msgstr "Could not add the dependency"
 
@@ -6646,6 +6692,10 @@ msgstr "What changed, one line each"
 #: src/saves/SaveGapLine.tsx
 msgid "Missing"
 msgstr "Missing"
+
+#: src/develop/DependencySync.tsx
+msgid "Declare {version}"
+msgstr "Declare {version}"
 
 #: src/firstrun/LoaderStep.tsx
 #: src/loader/InstallSteps.tsx
@@ -7528,6 +7578,10 @@ msgstr "{app} On. hook"
 #: src/develop/ProjectCard.tsx
 msgid "Last run: {start} ms to start, {frame} ms a frame"
 msgstr "Last run: {start} ms to start, {frame} ms a frame"
+
+#: src/develop/DependencySync.tsx
+msgid "Could not dismiss it"
+msgstr "Could not dismiss it"
 
 #: src/install/DownloadsDialog.tsx
 msgid "Choose an archive first."

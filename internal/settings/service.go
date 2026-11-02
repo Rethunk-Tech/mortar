@@ -211,6 +211,9 @@ type DevProject struct {
 	Untrusted bool `json:"untrusted,omitempty"`
 	// TemplateIcon is read for a project whose .mortar/template.json predates it; new projects keep it there.
 	TemplateIcon string `json:"templateIcon,omitempty"`
+	// IgnoredDeps are Thunderstore packages (Team-Name) of the project's profile that the project is not offered to
+	// declare as dependencies: mods it merely tolerates.
+	IgnoredDeps []string `json:"ignoredDeps,omitempty"`
 }
 
 // AddDevProject records p for the game and makes its build output an extra mods folder that installs into its profile.
@@ -233,6 +236,15 @@ func (s *Service) AddDevProject(game string, p DevProject) error {
 // SetDevProjectWatch turns rebuilding on source changes on or off for the project in dir.
 func (s *Service) SetDevProjectWatch(game, dir string, on bool) error {
 	return s.editDevProject(game, dir, func(p *DevProject) { p.Watch = on })
+}
+
+// IgnoreDevProjectDependency stops offering pkg as a dependency of the project in dir.
+func (s *Service) IgnoreDevProjectDependency(game, dir, pkg string) error {
+	return s.editDevProject(game, dir, func(p *DevProject) {
+		if !slices.Contains(p.IgnoredDeps, pkg) {
+			p.IgnoredDeps = append(slices.Clone(p.IgnoredDeps), pkg)
+		}
+	})
 }
 
 // TrustDevProject records that the user agreed to build the project in dir.
