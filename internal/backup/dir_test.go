@@ -1,7 +1,10 @@
 package backup
 
 import (
+	"archive/zip"
+	"bytes"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/saves"
@@ -49,3 +52,18 @@ func layout(dir string) saves.Layout { return saves.Layout{Dir: dir} }
 
 // folderSaves lays saves out as Stardew Valley does, one folder per save; List needs only its shape.
 var folderSaves = saves.Layout{}
+
+func TestFarmNameCapsTheEntry(t *testing.T) {
+	var buf bytes.Buffer
+	zw := zip.NewWriter(&buf)
+	w, _ := zw.Create("Saves/Farm_1/Farm_1")
+	_, _ = w.Write([]byte("<SaveGame><farmName>Big</farmName>" + strings.Repeat(" ", 2<<20) + "</SaveGame>"))
+	_ = zw.Close()
+	zr, err := zip.NewReader(bytes.NewReader(buf.Bytes()), int64(buf.Len()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := farmName(zr.File[0]); got != "" {
+		t.Fatalf("read an oversized entry: %q", got)
+	}
+}

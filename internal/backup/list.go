@@ -4,7 +4,6 @@ import (
 	"archive/zip"
 	"encoding/xml"
 	"errors"
-	"io"
 	"io/fs"
 	"os"
 	"path"
@@ -13,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/saves"
 )
@@ -120,7 +120,7 @@ func farmName(f *zip.File) string {
 		return ""
 	}
 	defer func() { _ = rc.Close() }()
-	b, err := io.ReadAll(rc)
+	b, err := safefs.ReadCapped(rc, 1<<20)
 	if err != nil {
 		return ""
 	}
