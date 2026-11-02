@@ -1,9 +1,13 @@
 package devsvc
 
 import (
+	"archive/zip"
 	"cmp"
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -11,6 +15,8 @@ import (
 	"github.com/Rethunk-Tech/go-curseforge"
 	gh "github.com/Rethunk-Tech/go-github"
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/mortar/internal/appversion"
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/secret"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/tsupload"
@@ -129,7 +135,8 @@ var uploadSiteTable = []struct {
 	}},
 	{"nexus", func(_ context.Context, _ *Service, p settings.DevProject, gameID, _ string) (bool, bool, bool) {
 		_, err := nexusAPIKey()
-		return nexusDomain(gameID) != "", readSites(p.Dir).Nexus.FileID != "", err == nil
+		g, _ := components.Game(gameID)
+		return g.NexusDomain() != "", readSites(p.Dir).Nexus.FileID != "", err == nil
 	}},
 	{"curseforge", func(_ context.Context, s *Service, p settings.DevProject, gameID, _ string) (bool, bool, bool) {
 		return curseForgeBase(gameID) != "", readSites(p.Dir).CurseForge.ProjectID > 0, s.HasCurseForgeToken()
@@ -163,6 +170,11 @@ func (s *Service) prepareUpload(gameID, dir, version string, notes bool, check f
 	if p, zipPath, err = s.uploadPackage(gameID, dir); err != nil {
 		return
 	}
+	if version != "" {
+		if err = requirePackageVersion(zipPath, version); err != nil {
+			return
+		}
+	}
 	if check != nil {
 		if err = check(p); err != nil {
 			return
@@ -172,6 +184,36 @@ func (s *Service) prepareUpload(gameID, dir, version string, notes bool, check f
 		body, err = releaseNotes(p.Dir, version)
 	}
 	return
+}
+
+// requirePackageVersion refuses an upload whose package was packed at another version than the one given.
+func requirePackageVersion(zipPath, version string) error {
+	zr, err := zip.OpenReader(zipPath)
+	if err != nil {
+		return usererr.Wrap(usererr.Damaged, fmt.Errorf("the package cannot be read: %w", err))
+	}
+	defer func() { _ = zr.Close() }()
+	var m struct {
+		Version string `json:"version_number"`
+	}
+	for _, f := range zr.File {
+		if f.Name != "manifest.json" {
+			continue
+		}
+		rc, err := f.Open()
+		if err != nil {
+			return usererr.Wrap(usererr.Damaged, err)
+		}
+		err = json.NewDecoder(io.LimitReader(rc, 1<<20)).Decode(&m)
+		_ = rc.Close()
+		if err != nil {
+			return usererr.Wrap(usererr.Damaged, fmt.Errorf("the package's manifest.json: %w", err))
+		}
+	}
+	if m.Version != version {
+		return usererr.Wrap(usererr.Invalid, fmt.Errorf("the newest package is version %q, not %s: pack the mod at %s first", m.Version, version, version))
+	}
+	return nil
 }
 
 // releaseNotes is the project's changelog notes for version, empty when it has none.
@@ -191,7 +233,8 @@ func releaseNotes(dir, version string) (string, error) {
 func (s *Service) UploadNexus(ctx context.Context, gameID, dir, version string) (string, error) {
 	var ids NexusIDs
 	p, zipPath, notes, err := s.prepareUpload(gameID, dir, version, true, func(p settings.DevProject) error {
-		if ids = readSites(p.Dir).Nexus; ids.FileID == "" || nexusDomain(gameID) == "" {
+		g, _ := components.Game(gameID)
+		if ids = readSites(p.Dir).Nexus; ids.FileID == "" || g.NexusDomain() == "" {
 			return usererr.Wrap(usererr.Invalid, errors.New("set the project's Nexus Mods file id first"))
 		}
 		return nil
@@ -217,7 +260,7 @@ func (s *Service) UploadNexus(ctx context.Context, gameID, dir, version string) 
 // project's files page on the authors site.
 func (s *Service) UploadCurseForge(ctx context.Context, gameID, dir, version string) (string, error) {
 	var id int
-	base := cmp.Or(s.CurseForgeURL, curseForgeBase(gameID))
+	base := cmp.Or(s.curseForgeAPI, curseForgeBase(gameID))
 	p, zipPath, notes, err := s.prepareUpload(gameID, dir, version, true, func(p settings.DevProject) error {
 		if id = readSites(p.Dir).CurseForge.ProjectID; id <= 0 || base == "" {
 			return usererr.Wrap(usererr.Invalid, errors.New("set the project's CurseForge project id first"))
@@ -235,7 +278,10 @@ func (s *Service) UploadCurseForge(ctx context.Context, gameID, dir, version str
 	if err != nil {
 		return "", err
 	}
-	if _, err := s.uploadCurseForge(ctx, base, token, zipPath, id, info.Name+" "+version, notes); err != nil {
+	_, err = curseforge.NewUploader(curseforge.UploadConfig{
+		Token: token, BaseURL: base, HTTP: s.httpClient(), UserAgent: appversion.UserAgent(s.Version),
+	}).Upload(ctx, zipPath, id, info.Name+" "+version, notes)
+	if err = siteError(curseForgeName, err); err != nil {
 		return "", err
 	}
 	return curseforge.AuthorFilesURL(id), nil

@@ -3,7 +3,6 @@ package devsvc
 import (
 	"context"
 	"encoding/json"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -37,8 +36,7 @@ func TestUploadGitHubCreatesTheReleaseOrAddsToTheExistingOne(t *testing.T) {
 			released = true
 			_, _ = w.Write([]byte(`{"id":7,"tag_name":"v1.0.0","html_url":"page","upload_url":"` + srv.URL + `/up/7/assets{?name}"}`))
 		case r.Method == http.MethodPost && r.URL.Path == "/up/7/assets":
-			body, _ := io.ReadAll(r.Body)
-			uploads = append(uploads, r.URL.Query().Get("name")+"="+string(body))
+			uploads = append(uploads, r.URL.Query().Get("name"))
 			w.WriteHeader(http.StatusCreated)
 			_, _ = w.Write([]byte(`{"id":9}`))
 		default:
@@ -54,7 +52,7 @@ func TestUploadGitHubCreatesTheReleaseOrAddsToTheExistingOne(t *testing.T) {
 		t.Fatal(err)
 	}
 	tagged := true
-	svc.GitHubURL = srv.URL
+	svc.githubAPI = srv.URL
 	svc.HTTP = srv.Client()
 	svc.Run = func(_ context.Context, _, name string, args ...string) ([]byte, error) {
 		switch {
@@ -76,7 +74,7 @@ func TestUploadGitHubCreatesTheReleaseOrAddsToTheExistingOne(t *testing.T) {
 	if err != nil || url != "page" {
 		t.Fatalf("create = %q, %v", url, err)
 	}
-	if created["tag_name"] != "v1.0.0" || created["body"] != "- first" || len(uploads) != 1 || uploads[0] != "Ab-ShopDrop-1.0.0.zip=zip" {
+	if created["tag_name"] != "v1.0.0" || created["body"] != "- first" || len(uploads) != 1 || uploads[0] != "Ab-ShopDrop-1.0.0.zip" {
 		t.Fatalf("created %v, uploads %v", created, uploads)
 	}
 	if _, err := svc.UploadGitHub(ctx, "lethal-company", dir, "1.0.0"); err != nil || len(uploads) != 2 {

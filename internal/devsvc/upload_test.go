@@ -1,6 +1,9 @@
 package devsvc
 
 import (
+	"archive/zip"
+	"bytes"
+	"cmp"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,6 +16,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-httpkit"
+	"github.com/Rethunk-Tech/go-nexusmods"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/secret"
 	"github.com/Rethunk-Tech/mortar/internal/source"
@@ -52,7 +57,7 @@ func TestUploadMapsASitesRefusalToAUserError(t *testing.T) {
 	} {
 		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(c.status) }))
 		svc, _ := testService(t, testTemplate)
-		svc.HTTP, svc.NexusURL, svc.CurseForgeURL = srv.Client(), srv.URL, srv.URL
+		svc.HTTP, svc.nexusAPI, svc.curseForgeAPI = srv.Client(), srv.URL, srv.URL
 		dir := fixtureProject(t, svc)
 		writePackedZip(t, dir)
 		if err := writeSites(dir, siteIDs{Nexus: NexusIDs{FileID: "7"}, CurseForge: CurseForgeIDs{ProjectID: 3}}); err != nil {
@@ -177,8 +182,43 @@ func writePackedZip(t *testing.T, dir string) {
 	if err := os.MkdirAll(release, 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := safefs.WriteFile(filepath.Join(release, "Ab-ShopDrop-1.0.0.zip"), []byte("zip"), 0o600); err != nil {
+	writeZipAt(t, filepath.Join(release, "Ab-ShopDrop-1.0.0.zip"), "1.0.0")
+}
+
+// writeZipAt writes a package whose manifest.json is at version.
+func writeZipAt(t *testing.T, path, version string) {
+	t.Helper()
+	var buf bytes.Buffer
+	zw := zip.NewWriter(&buf)
+	w, err := zw.Create("manifest.json")
+	if err != nil {
 		t.Fatal(err)
+	}
+	fmt.Fprintf(w, `{"name":"ShopDrop","version_number":%q}`, version)
+	if err := zw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if err := safefs.WriteFile(path, buf.Bytes(), 0o600); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestUploadRefusesAPackageOfAnotherVersion(t *testing.T) {
+	keyring.MockInit()
+	svc, _ := testService(t, testTemplate)
+	dir := fixtureProject(t, svc)
+	writePackedZip(t, dir)
+	if err := writeSites(dir, siteIDs{Nexus: NexusIDs{ModID: "5", FileID: "7"}, CurseForge: CurseForgeIDs{ProjectID: 3}}); err != nil {
+		t.Fatal(err)
+	}
+	for site, up := range map[string]func() error{
+		"nexus":      func() error { _, err := svc.UploadNexus(t.Context(), "lethal-company", dir, "1.0.1"); return err },
+		"curseforge": func() error { _, err := svc.UploadCurseForge(t.Context(), "lethal-company", dir, "1.0.1"); return err },
+		"github":     func() error { _, err := svc.UploadGitHub(t.Context(), "lethal-company", dir, "1.0.1"); return err },
+	} {
+		if err := up(); usererr.KindOf(err) != usererr.Invalid || !strings.Contains(err.Error(), "pack the mod at 1.0.1") {
+			t.Errorf("%s: %v", site, err)
+		}
 	}
 }
 
@@ -245,5 +285,42 @@ func TestNewestPackagePicksTheLatestZip(t *testing.T) {
 	}
 	if got := newestPackage(dir); filepath.Base(got) != "new.zip" {
 		t.Errorf("newest = %q", got)
+	}
+}
+
+func TestSiteErrorMapsEachFailureToItsKind(t *testing.T) {
+	reset := time.Unix(100, 0)
+	for _, c := range []struct {
+		name    string
+		err     error
+		nilErr  bool
+		kind    usererr.Kind
+		busy    bool
+		contain string
+	}{
+		{name: "nil", nilErr: true},
+		{name: "rate limit", err: &httpkit.RateLimitError{Reset: reset}, kind: usererr.RateLimited, busy: true},
+		{name: "unauthorized", err: nexusmods.ErrUnauthorized, kind: usererr.Permission},
+		{name: "pending", err: nexusmods.ErrUploadPending, contain: "still processing"},
+		{name: "forbidden", err: &httpkit.StatusError{Code: http.StatusForbidden}, kind: usererr.Permission},
+		{name: "server", err: &httpkit.StatusError{Code: http.StatusBadGateway}, kind: usererr.Network},
+		{name: "conflict", err: &httpkit.StatusError{Code: http.StatusConflict}, kind: usererr.Invalid},
+		{name: "plain", err: errors.New("boom"), contain: "boom"},
+		{
+			name:    "changelog failed after the file went up",
+			err:     fmt.Errorf("the file is up, but its changelog was not added: %w", &httpkit.StatusError{Code: http.StatusUnauthorized}),
+			contain: "the file is up",
+		},
+	} {
+		got := siteError("Site", c.err)
+		if c.nilErr {
+			if got != nil {
+				t.Errorf("%s: %v", c.name, got)
+			}
+			continue
+		}
+		if usererr.KindOf(got) != cmp.Or(c.kind, usererr.KindOf(errors.New("plain"))) || errors.Is(got, source.ErrBusy) != c.busy || !strings.Contains(got.Error(), c.contain) {
+			t.Errorf("%s: kind %v, err %v", c.name, usererr.KindOf(got), got)
+		}
 	}
 }

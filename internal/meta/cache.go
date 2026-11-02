@@ -27,8 +27,8 @@ type Client struct {
 	PageBase   string
 	UpdatesURL string
 	CompatURL  string
-	// NexusURL is the Nexus API origin; empty means the public one.
-	NexusURL  string
+	// nexusURL is the Nexus API origin; empty means the public one.
+	nexusURL  string
 	Now       func() time.Time
 	index     indexMemo
 	nexusOnce sync.Once

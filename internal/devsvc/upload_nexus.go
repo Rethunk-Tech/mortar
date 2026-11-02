@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/go-nexusmods"
@@ -25,24 +26,20 @@ func nexusAPIKey() (string, error) {
 	return key, nil
 }
 
-func nexusDomain(gameID string) string {
-	g, _ := components.Game(gameID)
-	return g.NexusDomain()
-}
-
 func nexusPage(gameID string, ids NexusIDs) string {
 	modID, err := strconv.Atoi(ids.ModID)
 	if err != nil {
 		return ""
 	}
-	return nexusmods.ModURL(nexusDomain(gameID), modID) + "?tab=files"
+	g, _ := components.Game(gameID)
+	return nexusmods.ModURL(g.NexusDomain(), modID) + "?tab=files"
 }
 
 // uploadNexus sends the package as the next version of the mod file ids.FileID and adds changelog under the mod page.
 func (s *Service) uploadNexus(ctx context.Context, key, path, name string, ids NexusIDs, version, changelog string) error {
 	c := nexusmods.New("Mortar", s.Version).WithKey(key)
 	c.HTTP = s.httpClient()
-	c.BaseURL = s.NexusURL
+	c.BaseURL = s.nexusAPI
 	err := nexusmods.NewUploader(c).Upload(ctx, nexusmods.Release{
 		Path: path, ModFileID: ids.FileID, Name: name, Version: version, ModID: ids.ModID, Changelog: changelog,
 	})
@@ -54,6 +51,9 @@ func (s *Service) uploadNexus(ctx context.Context, key, path, name string, ids N
 func siteError(site string, err error) error {
 	if err == nil {
 		return nil
+	}
+	if strings.Contains(err.Error(), "the file is up, but its changelog") {
+		return errors.New(site + ": the file is up, but its changelog was not added; do not upload again, add the changelog on the mod page")
 	}
 	if rl, ok := errors.AsType[*httpkit.RateLimitError](err); ok {
 		return &source.BusyError{Source: site, Reset: rl.Reset}

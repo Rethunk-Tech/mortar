@@ -16,7 +16,7 @@ const collectionTTL = 15 * time.Minute
 func (c *Client) nexusClient() *nexusmods.Client {
 	c.nexusOnce.Do(func() {
 		c.nexus = nexusmods.New("Mortar", c.Version)
-		c.nexus.HTTP, c.nexus.BaseURL = c.client(), c.NexusURL
+		c.nexus.HTTP, c.nexus.BaseURL = c.client(), c.nexusURL
 	})
 	return c.nexus
 }

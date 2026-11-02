@@ -1,12 +1,9 @@
 package devsvc
 
 import (
-	"context"
 	"errors"
 	"strings"
 
-	"github.com/Rethunk-Tech/go-curseforge"
-	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/secret"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -25,14 +22,6 @@ func curseForgeBase(gameID string) string {
 		return "https://" + src.UploadSubdomain + ".curseforge.com"
 	}
 	return ""
-}
-
-// uploadCurseForge sends the package to the project as a release and returns the new file's id.
-func (s *Service) uploadCurseForge(ctx context.Context, base, token, path string, projectID int, name, changelog string) (int, error) {
-	id, err := curseforge.NewUploader(curseforge.UploadConfig{
-		Token: token, BaseURL: base, HTTP: s.httpClient(), UserAgent: appversion.UserAgent(s.Version),
-	}).Upload(ctx, path, projectID, name, changelog)
-	return id, siteError(curseForgeName, err)
 }
 
 // SetCurseForgeToken keeps the author's CurseForge upload token in the keyring.

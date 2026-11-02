@@ -29,11 +29,17 @@ function uploadCall(id: string, game: string, dir: string, version: string): Pro
   return UploadThunderstore(game, dir)
 }
 
+/** The site whose kept token a refusal invalidates; nexus and github keep none to forget. */
+export function tokenToForget(id: string): 'thunderstore' | 'curseforge' | undefined {
+  return id === 'thunderstore' || id === 'curseforge' ? id : undefined
+}
+
 // A refused token is forgotten, so the dialog asks for it again next time.
 async function forgetRefused(id: string, game: string, dir: string) {
-  if (id === 'thunderstore') {
+  const site = tokenToForget(id)
+  if (site === 'thunderstore') {
     await ForgetThunderstoreToken(game, dir).catch(() => undefined)
-  } else if (id === 'curseforge') {
+  } else if (site === 'curseforge') {
     await ForgetCurseForgeToken().catch(() => undefined)
   }
 }

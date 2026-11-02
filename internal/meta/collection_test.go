@@ -38,7 +38,7 @@ func TestCollectionReadsAnonymouslyAndCaches(t *testing.T) {
 		_, _ = w.Write([]byte(`{"data":{"collectionRevision":{"revisionNumber":4,"collection":{"name":"Cozy Farm","slug":"cozy-farm","user":{"name":"Pat"}},"modFiles":[{"fileId":11,"file":{"modId":100}}]}}}`))
 	}))
 	t.Cleanup(srv.Close)
-	c := &Client{CacheDir: t.TempDir(), NexusURL: srv.URL, Version: "9.9"}
+	c := &Client{CacheDir: t.TempDir(), nexusURL: srv.URL, Version: "9.9"}
 	for range 2 {
 		got, err := c.Collection(t.Context(), "stardewvalley", "cozy-farm", 0)
 		if err != nil || got.Name != "Cozy Farm" || len(got.Files) != 1 {
@@ -56,7 +56,7 @@ func TestCollectionNotFoundKeepsItsWording(t *testing.T) {
 		_, _ = w.Write([]byte(`{"data":{"collectionRevision":null}}`))
 	}))
 	t.Cleanup(srv.Close)
-	c := &Client{CacheDir: t.TempDir(), NexusURL: srv.URL}
+	c := &Client{CacheDir: t.TempDir(), nexusURL: srv.URL}
 	_, err := c.Collection(t.Context(), "stardewvalley", "missing", 0)
 	if usererr.KindOf(err) != usererr.NotFound || !strings.Contains(err.Error(), `nexus has no collection "missing"`) {
 		t.Fatalf("error = %v", err)

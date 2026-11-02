@@ -48,7 +48,7 @@ func (s *Service) UploadGitHub(ctx context.Context, gameID, dir, version string)
 	if strings.TrimSpace(string(out)) == "" {
 		return "", usererr.Wrap(usererr.Invalid, fmt.Errorf("push the tag %s to GitHub first", tag))
 	}
-	c := &gh.Client{HTTP: s.httpClient(), APIBase: s.GitHubURL}
+	c := &gh.Client{HTTP: s.httpClient(), APIBase: s.githubAPI}
 	rel, found, err := c.ReleaseByTag(ctx, owner, repo, tag)
 	if err == nil && !found {
 		rel, err = c.CreateRelease(ctx, owner, repo, gh.NewRelease{Tag: tag, Name: tag, Body: notes})
@@ -72,5 +72,5 @@ func githubError(err error) error {
 	if errors.Is(err, gh.ErrNoToken) {
 		return usererr.Wrap(usererr.Permission, errors.New("sign in to GitHub with the gh CLI: run gh auth login"))
 	}
-	return err
+	return siteError("GitHub", err)
 }
