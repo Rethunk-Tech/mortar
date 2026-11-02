@@ -76,7 +76,7 @@ func TestTagAndNoteEditsRecordWhatChanged(t *testing.T) {
 	t.Parallel()
 	s := newStore(t)
 	p := pinTestProfile(t, s)
-	name := entryName(p.Entries[0])
+	name := p.Entries[0].Label()
 	for _, c := range []struct {
 		tags   []string
 		change HistoryChange

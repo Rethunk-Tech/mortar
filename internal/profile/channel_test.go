@@ -55,8 +55,8 @@ func TestSetUpdateChannelOneHistoryEvent(t *testing.T) {
 	if len(after) != len(before)+1 {
 		t.Fatalf("history %d -> %d", len(before), len(after))
 	}
-	if after[0].Kind != historyChannel || after[0].Name != entryName(p.Entries[0]) || after[0].Detail != ChannelOptional {
-		t.Fatalf("event: %+v, want the mod %q switched to %q", after[0], entryName(p.Entries[0]), ChannelOptional)
+	if after[0].Kind != historyChannel || after[0].Name != p.Entries[0].Label() || after[0].Detail != ChannelOptional {
+		t.Fatalf("event: %+v, want the mod %q switched to %q", after[0], p.Entries[0].Label(), ChannelOptional)
 	}
 	p, err = s.SetUpdateChannel("stardew", p.ID, "nexus-1-1", "main")
 	if err != nil {

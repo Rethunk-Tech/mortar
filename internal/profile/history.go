@@ -1125,44 +1125,44 @@ func classifyHistory(before, after []Entry) HistoryEvent {
 	pinChange, tagChange := ChangePinned, ChangeTags
 	diffEntries(before, after, func(ae Entry) {
 		added++
-		name = entryName(ae)
+		name = ae.Label()
 	}, func(be Entry) {
 		removed++
-		name = entryName(be)
+		name = be.Label()
 	}, func(_ string, be, ae Entry) {
 		switch {
 		case be.Key != ae.Key || entryVersion(be) != entryVersion(ae):
 			updated++
 			from = entryVersion(be)
 			to = entryVersion(ae)
-			name = entryName(ae)
+			name = ae.Label()
 		case !slices.Equal(be.Disabled, ae.Disabled):
 			if len(ae.Disabled) > len(be.Disabled) {
 				disabled++
 			} else {
 				enabled++
 			}
-			name = entryName(ae)
+			name = ae.Label()
 		case be.OverlayOff != ae.OverlayOff:
 			if ae.OverlayOff {
 				disabled++
 			} else {
 				enabled++
 			}
-			name = entryName(ae)
+			name = ae.Label()
 		case be.Pinned != ae.Pinned:
 			pinned++
-			name = entryName(ae)
+			name = ae.Label()
 			if !ae.Pinned {
 				pinChange = ChangeUnpinned
 			}
 		case !slices.Equal(be.Tags, ae.Tags):
 			tagged++
-			name = entryName(ae)
+			name = ae.Label()
 			tagChange, tag = tagEdit(be.Tags, ae.Tags)
 		case be.Note != ae.Note:
 			noted++
-			name = entryName(ae)
+			name = ae.Label()
 		}
 	})
 	count := added + removed + updated + enabled + disabled + pinned + tagged + noted
@@ -1242,7 +1242,8 @@ func entryIdentity(e Entry) string {
 	return e.Mods[0].ID.Fold()
 }
 
-func entryName(e Entry) string {
+// Label is what the player calls the entry: its first mod, else its source, else its key.
+func (e Entry) Label() string {
 	if len(e.Mods) > 0 && e.Mods[0].Name != "" {
 		return e.Mods[0].Name
 	}

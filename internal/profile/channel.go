@@ -38,7 +38,7 @@ func (s *Store) SetUpdateChannel(game, id, key, channel string) (Profile, error)
 			return nil
 		}
 		s.historyKind = historyChannel
-		s.historyNote = HistoryEvent{Change: ChangeChannel, Name: entryName(*e), Detail: ch}
+		s.historyNote = HistoryEvent{Change: ChangeChannel, Name: e.Label(), Detail: ch}
 		e.UpdateChannel = stored
 		return nil
 	})

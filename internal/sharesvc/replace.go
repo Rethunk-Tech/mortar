@@ -67,16 +67,6 @@ func shareIndex(mods []Mod) (files, ids map[string]struct{}) {
 	return files, ids
 }
 
-func entryLabel(e profile.Entry) string {
-	if len(e.Mods) > 0 && e.Mods[0].Name != "" {
-		return e.Mods[0].Name
-	}
-	if len(e.Mods) > 0 {
-		return e.Mods[0].ID.Local()
-	}
-	return e.Key
-}
-
 func idsOf(e profile.Entry) []string {
 	out := make([]string, 0, len(e.Mods))
 	for _, m := range e.Mods {
@@ -105,12 +95,12 @@ func PlanReplace(p profile.Profile, mods []Mod) ReplacePlan {
 			}
 		}
 		if e.Source.Kind == profile.KindLocal && !inShare {
-			plan.KeepLocal = append(plan.KeepLocal, entryLabel(e))
+			plan.KeepLocal = append(plan.KeepLocal, e.Label())
 			continue
 		}
 		if inShare || tok != "" {
 			plan.RemoveKeys = append(plan.RemoveKeys, e.Key)
-			plan.Remove = append(plan.Remove, entryLabel(e))
+			plan.Remove = append(plan.Remove, e.Label())
 		}
 	}
 	return plan

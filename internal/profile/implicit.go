@@ -91,7 +91,7 @@ func (s *Store) SetImplicitMany(game, id string, keys []string, implicit bool) (
 			return usererr.Wrap(usererr.Invalid, errors.New("the loader and bridge entries Mortar adds are always implicit"))
 		}
 		if len(keys) == 1 {
-			s.historyNote.Name = entryName(*e)
+			s.historyNote.Name = e.Label()
 		}
 		e.Implicit = implicit
 		return nil

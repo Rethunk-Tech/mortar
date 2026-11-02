@@ -135,14 +135,14 @@ func DiffSnapshots(a, b string, before, after []Entry, cfgA, cfgB map[string]map
 func appendEntryPair(out *HistoryDiff, id mod.ID, be, ae Entry, oldCfg, newCfg map[string][]byte) {
 	if be.Key != ae.Key || entryVersion(be) != entryVersion(ae) {
 		out.Versions = append(out.Versions, DiffVersion{
-			ID: id, Name: entryName(ae), Old: entryVersion(be), New: entryVersion(ae),
+			ID: id, Name: ae.Label(), Old: entryVersion(be), New: entryVersion(ae),
 			OldKey: be.Key, NewKey: ae.Key,
 		})
 	}
 	out.Enabled = append(out.Enabled, enabledChanges(be, ae)...)
 	files := configFileDiff(oldCfg, newCfg)
 	if len(files) > 0 {
-		out.Configs = append(out.Configs, DiffConfig{ID: id, Name: entryName(ae), Key: ae.Key, Files: files})
+		out.Configs = append(out.Configs, DiffConfig{ID: id, Name: ae.Label(), Key: ae.Key, Files: files})
 	}
 }
 
@@ -154,7 +154,7 @@ func uniqueIDOf(e Entry, fallback string) mod.ID {
 }
 
 func diffMod(e Entry) DiffMod {
-	return DiffMod{ID: uniqueIDOf(e, entryIdentity(e)), Name: entryName(e), Version: entryVersion(e), Key: e.Key}
+	return DiffMod{ID: uniqueIDOf(e, entryIdentity(e)), Name: e.Label(), Version: entryVersion(e), Key: e.Key}
 }
 
 func enabledChanges(before, after Entry) []DiffEnabled {
@@ -162,7 +162,7 @@ func enabledChanges(before, after Entry) []DiffEnabled {
 		if before.OverlayOff == after.OverlayOff {
 			return nil
 		}
-		return []DiffEnabled{{ID: mod.ID(after.Key), Name: entryName(after), Key: after.Key, Old: !before.OverlayOff, New: !after.OverlayOff}}
+		return []DiffEnabled{{ID: mod.ID(after.Key), Name: after.Label(), Key: after.Key, Old: !before.OverlayOff, New: !after.OverlayOff}}
 	}
 	ids := uniqueIDs(before)
 	for _, id := range uniqueIDs(after) {
