@@ -13,8 +13,6 @@ import (
 	"strings"
 
 	larianpak "github.com/Rethunk-Tech/go-larian"
-	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/folder"
@@ -41,7 +39,7 @@ func (extension) Contribute(plan *launchplan.Plan, p loader.ProfileView) {
 }
 
 func generatedPath(profileDir string) string {
-	return filepath.Join(profileDir, generatedDir, settingsFile)
+	return folder.GeneratedPath(profileDir, generatedDir, settingsFile)
 }
 
 // gustavX is the main campaign's entry, listed first as BG3 Mod Manager writes it (MAIN_CAMPAIGN_UUID in DivinityApp.cs).
@@ -52,15 +50,11 @@ var gustavX = larianpak.ModuleInfo{
 // Prelaunch lists, after GustavX, the module of each pak in the profile's mods folder in the profile's mod order.
 // A pak with no meta.lsx is an override the game reads without a list entry.
 func (extension) Prelaunch(p loader.ProfileView) error {
-	info, ok := components.Game(p.Game)
-	if !ok {
-		return errors.New("unknown game " + p.Game)
+	root, err := folder.ProfileModsDir(p.Game, p.Dir)
+	if err != nil {
+		return err
 	}
-	target, ok := info.Target(folder.TargetID)
-	if !ok {
-		return errors.New(info.Name + " has no " + folder.TargetID + " target")
-	}
-	paks, err := pakPaths(filepath.Join(p.Dir, filepath.FromSlash(target.ProfileFolder())))
+	paks, err := pakPaths(root, false)
 	if err != nil {
 		return err
 	}
@@ -86,11 +80,7 @@ func (extension) Prelaunch(p loader.ProfileView) error {
 		seen[strings.ToLower(mod.UUID)] = true
 		mods = append(mods, mod)
 	}
-	out := generatedPath(p.Dir)
-	if err := os.MkdirAll(filepath.Dir(out), 0o700); err != nil {
-		return err
-	}
-	return safefs.WriteFileAtomic(out, larianpak.FormatModSettings(mods), 0o600)
+	return folder.WriteGenerated(p.Dir, generatedDir, settingsFile, larianpak.FormatModSettings(mods))
 }
 
 func moduleOf(path string) (info larianpak.ModuleInfo, err error) {
@@ -102,11 +92,16 @@ func moduleOf(path string) (info larianpak.ModuleInfo, err error) {
 	return pak.ReadModuleInfo()
 }
 
-func pakPaths(root string) ([]string, error) {
+// pakPaths lists the paks in root. BG3 loads only the top level of its Mods folder; the mod folders orderRanks reads
+// may nest theirs.
+func pakPaths(root string, deep bool) ([]string, error) {
 	var out []string
 	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
+		}
+		if d.IsDir() && !deep && path != root {
+			return fs.SkipDir
 		}
 		if d.Type().IsRegular() && strings.EqualFold(filepath.Ext(path), ".pak") {
 			out = append(out, path)
@@ -123,7 +118,7 @@ func pakPaths(root string) ([]string, error) {
 func orderRanks(enabled []string) map[string]int {
 	rank := map[string]int{}
 	for i, dir := range enabled {
-		paks, err := pakPaths(dir)
+		paks, err := pakPaths(dir, true)
 		if err != nil {
 			continue
 		}

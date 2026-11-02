@@ -94,3 +94,22 @@ func mustRead(t *testing.T, path string) []byte {
 	}
 	return b
 }
+
+func TestPrelaunchListsOnlyTheTopLevelPaksTheGameLoads(t *testing.T) {
+	t.Parallel()
+	profile := t.TempDir()
+	top, nested := "aaaaaaaa-0000-0000-0000-000000000001", "bbbbbbbb-0000-0000-0000-000000000002"
+	for path, p := range map[string]struct{ uuid, name string }{
+		filepath.Join(profile, "Mods", "Top.pak"):           {top, "Top"},
+		filepath.Join(profile, "Mods", "sub", "Nested.pak"): {nested, "Nested"},
+	} {
+		write(t, path, lariantest.BuildPak(t, 18, map[string][]byte{"Mods/" + p.name + "/meta.lsx": []byte(meta(p.uuid, p.name))}, larianpak.CompressionNone))
+	}
+	if err := (extension{}).Prelaunch(loader.ProfileView{Game: game, Dir: profile}); err != nil {
+		t.Fatal(err)
+	}
+	out := string(mustRead(t, generatedPath(profile)))
+	if !strings.Contains(out, top) || strings.Contains(out, nested) {
+		t.Fatalf("modsettings.lsx = %s", out)
+	}
+}

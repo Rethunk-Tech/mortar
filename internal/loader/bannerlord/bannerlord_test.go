@@ -151,3 +151,28 @@ func mustRead(t *testing.T, path string) []byte {
 	}
 	return b
 }
+
+func TestPrelaunchSelectsTheOfficialModulesADependencyNeedsTransitively(t *testing.T) {
+	t.Parallel()
+	_, view := fixture(t)
+	official := filepath.Join(view.InstallDir, "Modules")
+	put(t, official, "DlcA", subModule("DlcA", true, false, "Native", "DlcB"))
+	put(t, official, "DlcB", subModule("DlcB", true, false, "Native"))
+	put(t, filepath.Join(view.Dir, "Modules"), "NeedsDlc", subModule("NeedsDlc", false, false, "DlcA"))
+	if err := (extension{}).Prelaunch(view); err != nil {
+		t.Fatal(err)
+	}
+	l, err := bl.ParseLauncher(bytes.NewReader(mustRead(t, generatedPath(view.Dir))))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var got []string
+	for _, m := range l.Mods(bl.Singleplayer) {
+		if m.Selected {
+			got = append(got, m.ID)
+		}
+	}
+	if !slices.Contains(got, "DlcA") || !slices.Contains(got, "DlcB") || slices.Contains(got, "MultiplayerModule") {
+		t.Fatalf("selected %v", got)
+	}
+}

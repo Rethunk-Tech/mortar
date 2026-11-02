@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
@@ -175,4 +176,31 @@ func (Loader) Contribute(_ context.Context, plan *launchplan.Plan, p loader.Prof
 		e.Contribute(plan, p)
 	}
 	return nil
+}
+
+// ProfileModsDir is the folder of the profile in dir that holds the mods target's files for game.
+func ProfileModsDir(gameID, dir string) (string, error) {
+	info, ok := components.Game(gameID)
+	if !ok {
+		return "", errors.New("unknown game " + gameID)
+	}
+	t, ok := info.Target(TargetID)
+	if !ok {
+		return "", errors.New(info.Name + " has no " + TargetID + " target")
+	}
+	return filepath.Join(dir, filepath.FromSlash(t.ProfileFolder())), nil
+}
+
+// GeneratedPath is where an extension keeps the file it generates in the profile, which Contribute then places.
+func GeneratedPath(profileDir, genDir, file string) string {
+	return filepath.Join(profileDir, genDir, file)
+}
+
+// WriteGenerated writes an extension's generated file where GeneratedPath says, atomically.
+func WriteGenerated(profileDir, genDir, file string, data []byte) error {
+	out := GeneratedPath(profileDir, genDir, file)
+	if err := os.MkdirAll(filepath.Dir(out), 0o700); err != nil {
+		return err
+	}
+	return safefs.WriteFileAtomic(out, data, 0o600)
 }

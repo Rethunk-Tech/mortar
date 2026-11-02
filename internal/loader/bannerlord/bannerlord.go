@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/fs"
 	"log"
+	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -15,7 +16,6 @@ import (
 
 	bl "github.com/Rethunk-Tech/go-bannerlord"
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/folder"
@@ -52,7 +52,7 @@ func (extension) Contribute(plan *launchplan.Plan, p loader.ProfileView) {
 }
 
 func generatedPath(profileDir string) string {
-	return filepath.Join(profileDir, generatedDir, launcherFile)
+	return folder.GeneratedPath(profileDir, generatedDir, launcherFile)
 }
 
 // modules are the game's official modules and the profile's, in that order.
@@ -63,13 +63,9 @@ type modules struct {
 }
 
 func load(p loader.ProfileView) (modules, error) {
-	info, ok := components.Game(p.Game)
-	if !ok {
-		return modules{}, errors.New("unknown game " + p.Game)
-	}
-	target, ok := info.Target(folder.TargetID)
-	if !ok {
-		return modules{}, errors.New(info.Name + " has no " + folder.TargetID + " target")
+	root, err := folder.ProfileModsDir(p.Game, p.Dir)
+	if err != nil {
+		return modules{}, err
 	}
 	var m modules
 	official, err := readModules(filepath.Join(p.InstallDir, modulesDir))
@@ -81,7 +77,7 @@ func load(p loader.ProfileView) (modules, error) {
 			m.all = append(m.all, mod)
 		}
 	}
-	own, err := readModules(filepath.Join(p.Dir, filepath.FromSlash(target.ProfileFolder())))
+	own, err := readModules(root)
 	if err != nil {
 		return modules{}, err
 	}
@@ -136,12 +132,20 @@ func (extension) Prelaunch(p loader.ProfileView) error {
 	order, _ := bl.Sort(m.all)
 	byID := map[string]bl.Module{}
 	for _, mod := range m.all {
-		byID[mod.ID] = mod
+		if _, dup := byID[mod.ID]; !dup {
+			byID[mod.ID] = mod
+		}
 	}
 	needed := map[string]bool{}
-	for id := range m.profile {
+	queue := slices.Collect(maps.Keys(m.profile))
+	for len(queue) > 0 {
+		id := queue[len(queue)-1]
+		queue = queue[:len(queue)-1]
 		for _, d := range byID[id].Depends {
-			needed[d.ID] = true
+			if !needed[d.ID] {
+				needed[d.ID] = true
+				queue = append(queue, d.ID)
+			}
 		}
 	}
 	selected := order[:0:0]
@@ -162,11 +166,7 @@ func (extension) Prelaunch(p loader.ProfileView) error {
 	if err != nil {
 		return err
 	}
-	out := generatedPath(p.Dir)
-	if err := os.MkdirAll(filepath.Dir(out), 0o700); err != nil {
-		return err
-	}
-	return safefs.WriteFileAtomic(out, b, 0o600)
+	return folder.WriteGenerated(p.Dir, generatedDir, launcherFile, b)
 }
 
 // Findings are the problems the dependency sort finds among the profile's modules and the official ones. A problem
