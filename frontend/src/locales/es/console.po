@@ -47,10 +47,6 @@ msgstr ""
 msgid "Unofficial build"
 msgstr ""
 
-#: src/console/RunProblems.tsx
-msgid "Stop the game to change mods."
-msgstr ""
-
 #: src/console/useStartupReports.ts
 msgid "Could not ask for a measured launch"
 msgstr ""

@@ -2,10 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Alert, Button, Link, MenuItem, Typography } from '@mui/material'
 import { useLoaded } from '@rethunk/react-load-hooks'
 import { useEffect, useState } from 'react'
-import {
-  OpenSteamConsole,
-  OpenWeb,
-} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/opener/service.ts'
+import { OpenSteamConsole } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/opener/service.ts'
 import {
   AdoptOlderVersion,
   DownloadDepotCommand,
@@ -16,6 +13,7 @@ import { STEAM } from '../brand/productNames.ts'
 import { copyText } from '../share/copyText.ts'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { SelectField, TextInput } from '../shell/dialog/FormDialog.tsx'
+import { openWeb } from '../shell/openWeb.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { useProfiles } from './store.ts'
@@ -134,7 +132,7 @@ export function OlderVersionDialog({
                 component="button"
                 type="button"
                 onClick={() => {
-                  OpenWeb(`https://steamdb.info/depot/${depotId}/manifests/`).catch(
+                  openWeb(`https://steamdb.info/depot/${depotId}/manifests/`).catch(
                     reportError(t`Could not open the browser`),
                   )
                 }}

@@ -9,6 +9,7 @@ import type {
   Lack,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/models.ts'
 import { LockedReason } from '../mods/LockedReason.tsx'
+import { lockedHint } from '../mods/lockedHint.ts'
 import { useLocked } from '../mods/useLocked.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download, type Want } from '../queue/actions.ts'
@@ -58,7 +59,7 @@ function LackChip({
     plusTitle = t`Queued`
   }
   if (locked) {
-    plusTitle = t`Stop the game to change mods.`
+    plusTitle = t(lockedHint)
   }
   return (
     <Box

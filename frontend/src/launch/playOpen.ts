@@ -1,12 +1,12 @@
 import { readStored, writeStored } from '@rethunk/react-load-hooks'
 import { System } from '@wailsio/runtime'
 import { create } from 'zustand'
-import { State } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { ForcesLoader } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { useLoader } from '../loader/store.ts'
 import { routeGame, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { gameBusy } from './busy.ts'
 import { playDirect } from './directPref.ts'
 import { useLaunch } from './store.ts'
 
@@ -14,8 +14,7 @@ const linuxVanillaDirectKey = 'mortar.linuxVanillaDirect'
 
 function vanillaBusy(game: string): boolean {
   const { status, starting } = useLaunch.getState()
-  const launching = status?.game === game && status.state === State.Launching
-  return launching || starting || useLoader.getState().installing
+  return starting || gameBusy(status, game) || useLoader.getState().installing
 }
 
 const isBool = (v: unknown): v is boolean => typeof v === 'boolean'

@@ -10,6 +10,7 @@ import { MenuHeading } from '../shell/TitleMenu.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { pushUndoToast } from '../toasts/undo.ts'
+import { lockedHint } from './lockedHint.ts'
 import { applyWithUndo, entryFileLabel, ICON_SIZE } from './menu.ts'
 
 export function SplitCombineItems({
@@ -35,7 +36,7 @@ export function SplitCombineItems({
 }) {
   const { t } = useLingui()
   const push = useToasts((s) => s.push)
-  const lockedTip = t`Stop the game to change mods.`
+  const lockedTip = t(lockedHint)
   if (extras.length === 0 && siblings.length === 0) {
     return null
   }

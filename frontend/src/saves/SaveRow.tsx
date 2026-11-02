@@ -21,6 +21,7 @@ import {
   OpenSaveFolder,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts'
 import { lowerFirst } from '../i18n/lowerFirst.ts'
+import { lockedHint } from '../mods/lockedHint.ts'
 import { useLocked } from '../mods/useLocked.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
@@ -128,9 +129,7 @@ export function SaveButtons({
       {/* A save that never records its mods (Lethal Company's) can never seed a profile. */}
       {fit.unrecorded ? null : (
         <DisabledReason
-          title={
-            locked ? t`Stop the game to change mods.` : t`This save has no recorded mod list yet.`
-          }
+          title={locked ? t(lockedHint) : t`This save has no recorded mod list yet.`}
           disabled={!canFromSave || locked}
         >
           <TipIconButton

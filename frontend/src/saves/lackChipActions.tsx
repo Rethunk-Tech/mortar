@@ -9,6 +9,7 @@ import type {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/models.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { LockedReason } from '../mods/LockedReason.tsx'
+import { lockedHint } from '../mods/lockedHint.ts'
 import { openPage } from '../mods/menu.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
@@ -43,7 +44,7 @@ export function LackChipActions(p: {
     <>
       {lack.disabled ? (
         <TipIconButton
-          label={locked ? t`Stop the game to change mods.` : t`Enable ${name} in this profile`}
+          label={locked ? t(lockedHint) : t`Enable ${name} in this profile`}
           disabled={locked}
           onClick={() => {
             enable(game, profile, lack.id).catch(reportUnexpected)

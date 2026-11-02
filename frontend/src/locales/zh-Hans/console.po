@@ -41,10 +41,6 @@ msgstr "打开配置"
 msgid "Unofficial build"
 msgstr ""
 
-#: src/console/RunProblems.tsx
-msgid "Stop the game to change mods."
-msgstr "停止游戏以更改模组。"
-
 #: src/console/useStartupReports.ts
 msgid "Could not ask for a measured launch"
 msgstr ""

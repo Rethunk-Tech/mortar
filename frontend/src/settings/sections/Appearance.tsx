@@ -6,7 +6,6 @@ import {
   FormControlLabel,
   Radio,
   RadioGroup,
-  TextField,
   Typography,
 } from '@mui/material'
 import { System } from '@wailsio/runtime'
@@ -25,6 +24,7 @@ import { formatBytes } from '../../i18n/bytes.ts'
 import { columnLabel } from '../../mods/columnLabel.ts'
 import { LIST_COLUMN_IDS, sanitizeListSort } from '../../mods/listColumns.ts'
 import { BackdropImage } from '../../shell/BackdropImage.tsx'
+import { labelledInput } from '../../shell/labelledInput.tsx'
 import { visuallyHidden } from '../../shell/visuallyHidden.ts'
 import { space } from '../../theme/density.ts'
 import { useReducedMotion } from '../../theme/reducedMotion.ts'
@@ -149,7 +149,7 @@ function FontPicker() {
               sx: { '& li': { contentVisibility: 'auto', containIntrinsicSize: 'auto 36px' } },
             },
           }}
-          renderInput={(params) => <TextField {...params} placeholder={t`Bundled font`} />}
+          renderInput={labelledInput(t`App font`, t`Bundled font`)}
         />
       </SettingRow>
       <SettingRow label={t`Size`} description={t`Scales text, controls and spacing together`}>

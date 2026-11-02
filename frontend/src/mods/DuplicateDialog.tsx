@@ -11,11 +11,11 @@ import { SMAPI } from '../brand/productNames.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { useGameInfo } from '../games/info.ts'
 import { listNames } from '../i18n/list.ts'
-import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { AppDialog, DialogFooter, ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { LetterTile } from './LetterTile.tsx'
+import { LockedReason } from './LockedReason.tsx'
 import { nexusKeepKey, preselect } from './lookup.ts'
 import { useMods } from './store.ts'
 import { useLocked } from './useLocked.ts'
@@ -92,7 +92,6 @@ function Resolver({
   const loader = useGameInfo()?.loader ?? ''
   const keepCopy = useMods((s) => s.keepCopy)
   const locked = useLocked()
-  const lockedTitle = t`Stop the game to change mods.`
   const copies = dup.copies ?? []
   const [keep, setKeep] = useState(preselect(copies))
   const nexusKey = nexusKeepKey(copies)
@@ -116,7 +115,7 @@ function Resolver({
         <DialogFooter>
           <Button onClick={onClose}>{t`Decide later`}</Button>
           {nexusKey === null || keep !== nexusKey ? (
-            <DisabledReason title={lockedTitle} disabled={locked}>
+            <LockedReason locked={locked}>
               <Button
                 variant={nexusKey === null ? 'contained' : 'outlined'}
                 disabled={locked}
@@ -126,10 +125,10 @@ function Resolver({
               >
                 {t`Keep this one`}
               </Button>
-            </DisabledReason>
+            </LockedReason>
           ) : null}
           {nexusKey === null ? null : (
-            <DisabledReason title={lockedTitle} disabled={locked}>
+            <LockedReason locked={locked}>
               <Button
                 variant="contained"
                 disabled={locked}
@@ -139,7 +138,7 @@ function Resolver({
               >
                 {t`Keep the ${{ source: sourceLabel('nexus') }} copy`}
               </Button>
-            </DisabledReason>
+            </LockedReason>
           )}
         </DialogFooter>
       }

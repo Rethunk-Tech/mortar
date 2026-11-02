@@ -44,6 +44,7 @@ import { AddMenu } from './AddMenu.tsx'
 import { CategoryEditorDialog } from './CategoryEditor.tsx'
 import { onFilterFocus } from './filterFocus.ts'
 import type { GroupBy } from './group.ts'
+import { lockedHint } from './lockedHint.ts'
 import { useMods } from './store.ts'
 import { useLocked } from './useLocked.ts'
 import { FOLDER_LOADER, useListGroupBy } from './useModGroups.ts'
@@ -285,7 +286,7 @@ export function AddArchive({
   const pick = useInstall((s) => s.pick)
   const locked = useLocked()
   const blocked = installing || locked
-  const reason = locked ? t`Stop the game to change mods.` : t`Adding…`
+  const reason = locked ? t(lockedHint) : t`Adding…`
   const add = (
     <DisabledReason title={reason} disabled={blocked}>
       <Button

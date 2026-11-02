@@ -65,3 +65,5 @@ export async function uploadTo(
     }
   }
 }
+
+export const TEAMS_PAGE = 'https://thunderstore.io/settings/teams/'

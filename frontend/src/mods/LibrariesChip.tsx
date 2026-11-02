@@ -1,7 +1,7 @@
 import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Chip, Popover, Typography } from '@mui/material'
-import { useState } from 'react'
+import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
 import { space } from '../theme/density.ts'
 import { useDetail } from './detail.ts'
 import type { ListRow } from './listColumns.ts'
@@ -14,7 +14,7 @@ import { ModSwitch } from './parts.tsx'
 export function LibrariesChip({ libraries }: { libraries: readonly ListRow[] | undefined }) {
   const { i18n } = useLingui()
   const openDetail = useDetail((s) => s.show)
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const { anchor, show, hide } = usePopoverAnchor()
   if (!libraries || libraries.length === 0) {
     return null
   }
@@ -27,7 +27,7 @@ export function LibrariesChip({ libraries }: { libraries: readonly ListRow[] | u
         size="small"
         label={label}
         aria-haspopup="true"
-        onClick={(e) => setAnchor(e.currentTarget)}
+        onClick={show}
         sx={{
           height: 20,
           fontSize: 'tiny.fontSize',
@@ -39,7 +39,7 @@ export function LibrariesChip({ libraries }: { libraries: readonly ListRow[] | u
       <Popover
         open={anchor !== null}
         anchorEl={anchor}
-        onClose={() => setAnchor(null)}
+        onClose={hide}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
@@ -50,7 +50,7 @@ export function LibrariesChip({ libraries }: { libraries: readonly ListRow[] | u
                 data-mod-id={modId(r.mod)}
                 onClick={() => {
                   openDetail(r.mod)
-                  setAnchor(null)
+                  hide()
                 }}
                 sx={{
                   flex: 1,

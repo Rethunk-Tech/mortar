@@ -24,6 +24,7 @@ import { reportUnexpected } from '../../toasts/report.ts'
 import { PresetsButton } from '../ConfigPresets.tsx'
 import { localId } from '../dependents.ts'
 import { LockedReason } from '../LockedReason.tsx'
+import { lockedHint } from '../lockedHint.ts'
 import { useLocked } from '../useLocked.ts'
 import { configApi } from './api.ts'
 import { showsOneFile, useConfigList } from './configList.ts'
@@ -99,7 +100,7 @@ function EntryRow({
           sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}
         >{t`Change it in the game`}</Typography>
       ) : (
-        <OfflineGate reason={locked ? t`Stop the game to change mods.` : ''}>
+        <OfflineGate reason={locked ? t(lockedHint) : ''}>
           <EntryWidget
             entry={entry}
             label={entry.label || entry.key}

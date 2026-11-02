@@ -1,8 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button, TextField, Typography } from '@mui/material'
+import { Button, Typography } from '@mui/material'
 import { useLoaded } from '@rethunk/react-load-hooks'
 import { Upload } from 'lucide-react'
-import { useId, useState } from 'react'
+import { useState } from 'react'
 import type { ModpackOptions } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/packsvc/models.ts'
 import {
   ForgetThunderstoreToken,
@@ -13,15 +13,14 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/packsvc/service.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { ChoicePicker } from '../develop/ChoicePicker.tsx'
+import { TEAMS_PAGE } from '../develop/uploadSites.ts'
 import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
-import { Field, FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
+import { FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { openWeb } from '../shell/openWeb.ts'
 import { errorKind } from '../toasts/errorKind.ts'
 import { errorMessage, reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
-
-const TEAMS_PAGE = 'https://thunderstore.io/settings/teams/'
 
 /** Uploads the modpack to Thunderstore under a team, with that team's service account token kept in the keyring. */
 export function UploadModpackDialog({
@@ -40,7 +39,6 @@ export function UploadModpackDialog({
   const [categories, setCategories] = useState<string[]>(['modpacks'])
   const [token, setToken] = useState('')
   const [busy, run] = usePending()
-  const id = useId()
   const site = sourceLabel('thunderstore')
   const kept = useLoaded<boolean>(
     () => (team.trim() === '' ? Promise.resolve(false) : HasThunderstoreToken(team.trim())),
@@ -107,9 +105,12 @@ export function UploadModpackDialog({
     >
       <TextInput label={t`Team`} value={team} onChange={setTeam} autoFocus={true} />
       <CategoryField game={game} value={categories} onChange={setCategories} />
-      <Field
+      <TextInput
         label={t`Service account token`}
-        htmlFor={id}
+        type="password"
+        value={token}
+        onChange={setToken}
+        placeholder={hasToken ? t`Kept in the system keyring` : ''}
         hint={
           hasToken ? (
             <Button
@@ -133,17 +134,7 @@ export function UploadModpackDialog({
             </Button>
           )
         }
-      >
-        <TextField
-          id={id}
-          type="password"
-          size="small"
-          fullWidth={true}
-          value={token}
-          placeholder={hasToken ? t`Kept in the system keyring` : ''}
-          onChange={(e) => setToken(e.target.value)}
-        />
-      </Field>
+      />
     </FormDialog>
   )
 }

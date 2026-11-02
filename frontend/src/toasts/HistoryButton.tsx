@@ -4,6 +4,7 @@ import { Badge, Box, Button, IconButton, Popover, Typography } from '@mui/materi
 import { Bell } from 'lucide-react'
 import { memo, type ReactNode, useRef, useState } from 'react'
 import { When } from '../i18n/When.tsx'
+import { lockedHint } from '../mods/lockedHint.ts'
 import { useProfileLocked } from '../mods/useLocked.ts'
 import { HistoryDialog } from '../profiles/HistoryDialog.tsx'
 import { useProfiles } from '../profiles/store.ts'
@@ -34,7 +35,7 @@ function HistoryRow({ item }: { item: ToastHistoryItem }) {
   const { action } = item
   const profileHeld = useProfileLocked(action?.profileId ?? '')
   const locked = action?.profileId !== undefined && profileHeld
-  const lockHint = t`Stop the game to change mods.`
+  const lockHint = t(lockedHint)
   const state = historyActionState(action?.live, locked, lockHint)
   const run = () => {
     if (state.disabled || !action) {

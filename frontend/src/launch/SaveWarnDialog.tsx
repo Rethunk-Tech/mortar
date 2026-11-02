@@ -4,7 +4,7 @@ import { localId } from '../mods/dependents.ts'
 import { saveName } from '../saves/saveName.ts'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { space } from '../theme/density.ts'
-import { reportUnexpected } from '../toasts/report.ts'
+import { PlayAnywayButton } from './PlayAnywayButton.tsx'
 import { cancelling } from './playModeState.ts'
 import { useLaunch } from './store.ts'
 
@@ -13,7 +13,6 @@ export function SaveWarnDialog() {
   const warn = useLaunch((s) => s.saveWarn)
   const cancel = useLaunch((s) => s.dismissSaveWarn)
   const quit = cancelling(cancel)
-  const playAnyway = useLaunch((s) => s.playAnyway)
   const save = warn?.save
   const missing = save?.missing ?? []
   return (
@@ -26,9 +25,7 @@ export function SaveWarnDialog() {
         <DialogFooter>
           <Button onClick={quit}>{t`Cancel`}</Button>
           <Button onClick={useLaunch.getState().openSaves}>{t`Open saves`}</Button>
-          <Button variant="contained" onClick={() => playAnyway().catch(reportUnexpected)}>
-            {t`Play anyway`}
-          </Button>
+          <PlayAnywayButton />
         </DialogFooter>
       }
     >

@@ -13,9 +13,9 @@ import {
 } from 'lucide-react'
 import { type FocusEvent, type MouseEvent, memo, useState } from 'react'
 import { LetterTile } from '../mods/LetterTile.tsx'
+import { LockedReason } from '../mods/LockedReason.tsx'
 import { useProfileLocked } from '../mods/useLocked.ts'
 import { copyText } from '../share/copyText.ts'
-import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from './report.ts'
 import { type Toast, type ToastKind, useToasts } from './store.ts'
@@ -122,7 +122,6 @@ const ToastCard = memo(function ToastCardView({ toast }: { toast: Toast }) {
   const { action } = toast
   const profileHeld = useProfileLocked(action?.profileId ?? '')
   const locked = action?.profileId !== undefined && profileHeld
-  const lockHint = t`Stop the game to change mods.`
   const run = () => {
     if (locked || !action) {
       return
@@ -207,11 +206,11 @@ const ToastCard = memo(function ToastCardView({ toast }: { toast: Toast }) {
               <DetailsButton open={open} onToggle={() => setOpen((v) => !v)} />
             ) : null}
             {action ? (
-              <DisabledReason title={lockHint} disabled={locked}>
+              <LockedReason locked={locked}>
                 <Button size="small" disabled={locked} onClick={run} sx={toastButtonSx}>
                   {action.label}
                 </Button>
-              </DisabledReason>
+              </LockedReason>
             ) : null}
           </Box>
         ) : null}

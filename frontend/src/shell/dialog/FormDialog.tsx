@@ -217,6 +217,7 @@ export function TextInput({
   placeholder,
   autoFocus = false,
   disabled = false,
+  type,
 }: {
   label: string
   value: string
@@ -228,6 +229,7 @@ export function TextInput({
   placeholder?: string
   autoFocus?: boolean
   disabled?: boolean
+  type?: 'password'
 }) {
   const id = useId()
   return (
@@ -242,6 +244,7 @@ export function TextInput({
           every keystroke. */}
       <OutlinedInput
         id={id}
+        type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         fullWidth={true}

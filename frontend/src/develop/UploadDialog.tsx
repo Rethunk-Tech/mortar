@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Checkbox, FormControlLabel, TextField, Typography } from '@mui/material'
+import { Box, Button, Checkbox, FormControlLabel, Typography } from '@mui/material'
 import { Upload } from 'lucide-react'
-import { type ReactNode, useCallback, useEffect, useId, useState } from 'react'
+import { type ReactNode, useCallback, useEffect, useState } from 'react'
 import type { UploadSite } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import {
   SetCurseForgeToken,
@@ -11,16 +11,15 @@ import {
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { openSettings } from '../nav/store.ts'
 import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
-import { Field, FormDialog } from '../shell/dialog/FormDialog.tsx'
+import { FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { openWeb } from '../shell/openWeb.ts'
 import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { packProject, runOf, useDevRuns } from './builds.ts'
-import { siteLabel, uploadTo } from './uploadSites.ts'
+import { siteLabel, TEAMS_PAGE, uploadTo } from './uploadSites.ts'
 
-const TEAMS_PAGE = 'https://thunderstore.io/settings/teams/'
 const CURSEFORGE_TOKENS_PAGE = 'https://authors.curseforge.com/#/settings/api-tokens'
 
 // Asks once for a token, which Mortar keeps in the system keyring.
@@ -46,7 +45,6 @@ function TokenDialog({
   const { t } = useLingui()
   const [token, setToken] = useState('')
   const [saving, run] = usePending()
-  const id = useId()
   return (
     <FormDialog
       open={true}
@@ -73,9 +71,12 @@ function TokenDialog({
         )
       }
     >
-      <Field
+      <TextInput
         label={fieldLabel}
-        htmlFor={id}
+        type="password"
+        value={token}
+        onChange={setToken}
+        autoFocus={true}
         hint={
           <Button
             size="small"
@@ -85,17 +86,7 @@ function TokenDialog({
             {pageLabel}
           </Button>
         }
-      >
-        <TextField
-          id={id}
-          type="password"
-          size="small"
-          fullWidth={true}
-          autoFocus={true}
-          value={token}
-          onChange={(e) => setToken(e.target.value)}
-        />
-      </Field>
+      />
     </FormDialog>
   )
 }

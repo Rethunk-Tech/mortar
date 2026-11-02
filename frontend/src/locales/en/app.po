@@ -153,14 +153,6 @@ msgstr "Updated"
 msgid "{added}; {rest}"
 msgstr "{added}; {rest}"
 
-#: src/saves/lackChipActions.tsx
-#: src/saves/lackChips.tsx
-#: src/saves/SaveRow.tsx
-#: src/toasts/HistoryButton.tsx
-#: src/toasts/ToastHost.tsx
-msgid "Stop the game to change mods."
-msgstr "Stop the game to change mods."
-
 #: src/templates/TemplateDialogs.tsx
 msgid "Could not delete the template"
 msgstr "Could not delete the template"
@@ -4876,10 +4868,9 @@ msgstr "game version {version} is older than the loader accepts ({otherVersion})
 msgid "Executable"
 msgstr "Executable"
 
+#: src/launch/PlayAnywayButton.tsx
 #: src/launch/playStart.ts
 #: src/launch/PrePlayDialog.tsx
-#: src/launch/SaveWarnDialog.tsx
-#: src/launch/UpdateWarnDialog.tsx
 msgid "Play anyway"
 msgstr "Play anyway"
 

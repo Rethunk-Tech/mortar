@@ -37,10 +37,6 @@ msgstr ""
 msgid "Revert {name} to the installed copy?"
 msgstr ""
 
-#: src/profiles/MergeDialog.tsx
-msgid "Stop the game to change mods."
-msgstr "停止游戏以更改模组。"
-
 #: src/profiles/historyRevert.ts
 msgid "That profile is gone."
 msgstr "该配置已不存在。"

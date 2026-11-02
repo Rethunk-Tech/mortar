@@ -18,13 +18,13 @@ import { useGameLoader } from '../games/info.ts'
 import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { useLoader } from '../loader/store.ts'
 import { localId } from '../mods/dependents.ts'
+import { LockedReason } from '../mods/LockedReason.tsx'
 import { sameId } from '../mods/lookup.ts'
 import { useMods } from '../mods/store.ts'
 import { useUpdates } from '../mods/updates.ts'
 import { useLocked } from '../mods/useLocked.ts'
 import { download } from '../queue/actions.ts'
 import { refWant } from '../queue/refWant.ts'
-import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -127,7 +127,6 @@ function ProblemRow({
   const { t, i18n } = useLingui()
   const loaderName = useGameLoader(game) || lowerFirst(t`Mod loader`)
   const locked = useLocked()
-  const lockHint = t`Stop the game to change mods.`
   let label = ''
   if (problem.fix === 'installDependency') {
     label = t`Add`
@@ -159,7 +158,7 @@ function ProblemRow({
         <Box sx={{ color: 'text.secondary', mt: 0.25, whiteSpace: 'normal' }}>{problem.detail}</Box>
       </Box>
       {label ? (
-        <DisabledReason title={lockHint} disabled={locked}>
+        <LockedReason locked={locked}>
           <Button
             size="small"
             variant={contained ? 'contained' : 'outlined'}
@@ -170,7 +169,7 @@ function ProblemRow({
           >
             {label}
           </Button>
-        </DisabledReason>
+        </LockedReason>
       ) : null}
       <Button
         size="small"
@@ -285,7 +284,7 @@ export function RunProblemsStrip({
           sx={{ fontSize: 'base.fontSize', fontWeight: 700, flex: 1 }}
         >{t`Problems in this run`}</Typography>
         {bulk.length > 0 ? (
-          <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+          <LockedReason locked={locked}>
             <Button
               size="small"
               variant="contained"
@@ -299,7 +298,7 @@ export function RunProblemsStrip({
             >
               {t`Fix all`}
             </Button>
-          </DisabledReason>
+          </LockedReason>
         ) : null}
       </Box>
       {live.map((problem) => (

@@ -4,7 +4,7 @@ import { useGameName } from '../games/info.ts'
 import { modId } from '../mods/lookup.ts'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { space } from '../theme/density.ts'
-import { reportUnexpected } from '../toasts/report.ts'
+import { PlayAnywayButton } from './PlayAnywayButton.tsx'
 import { cancelling } from './playModeState.ts'
 import { useLaunch } from './store.ts'
 
@@ -13,7 +13,6 @@ export function UpdateWarnDialog() {
   const gameName = useGameName()
   const warn = useLaunch((s) => s.updateWarn)
   const cancel = cancelling(useLaunch((s) => s.dismissUpdateWarn))
-  const playAnyway = useLaunch((s) => s.playAnyway)
   const openProblems = useLaunch((s) => s.openProblems)
   return (
     <AppDialog
@@ -25,9 +24,7 @@ export function UpdateWarnDialog() {
         <DialogFooter>
           <Button onClick={cancel}>{t`Cancel`}</Button>
           <Button onClick={openProblems}>{t`Open problems`}</Button>
-          <Button variant="contained" onClick={() => playAnyway().catch(reportUnexpected)}>
-            {t`Play anyway`}
-          </Button>
+          <PlayAnywayButton />
         </DialogFooter>
       }
     >

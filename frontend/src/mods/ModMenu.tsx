@@ -35,6 +35,7 @@ import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
+import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
 import { OnlyHereMenuItem } from '../sync/pins.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -45,6 +46,7 @@ import { SetCategoryDialog } from './CategoryEditor.tsx'
 import { useDetail } from './detail.ts'
 import { EverywhereMenuItem } from './EverywhereMenuItem.tsx'
 import { ModGroupItems } from './GroupMenu.tsx'
+import { lockedHint } from './lockedHint.ts'
 import { modId, nexusIdOf, updateFor } from './lookup.ts'
 import { ModActionItems } from './ModActionItems.tsx'
 import { markImplicit } from './markImplicit.ts'
@@ -243,7 +245,7 @@ function PackageMoveItems({ mod, close }: { mod: Mod; close: () => void }) {
   }
   const upBlocked = locked || place <= 0
   const downBlocked = locked || place < 0 || place === packages.length - 1
-  const stopGame = t`Stop the game to change mods.`
+  const stopGame = t(lockedHint)
   const reasonUp = locked ? stopGame : t`Already loads first.`
   const reasonDown = locked ? stopGame : t`Already loads last.`
   return [
@@ -444,7 +446,7 @@ function ModActionMenu({
 // The ⋯ button of a card.
 export function ModMenu({ mod }: { mod: Mod }) {
   const { t } = useLingui()
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const { anchor, show, hide } = usePopoverAnchor()
   return (
     <>
       <IconAction
@@ -453,12 +455,10 @@ export function ModMenu({ mod }: { mod: Mod }) {
         menu={true}
         onClick={(e) => {
           e.stopPropagation()
-          setAnchor(e.currentTarget)
+          show(e)
         }}
       />
-      {anchor ? (
-        <ModActionMenu mod={mod} anchor={{ el: anchor }} onClose={() => setAnchor(null)} />
-      ) : null}
+      {anchor ? <ModActionMenu mod={mod} anchor={{ el: anchor }} onClose={hide} /> : null}
     </>
   )
 }

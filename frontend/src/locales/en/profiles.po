@@ -43,10 +43,6 @@ msgstr "Client"
 msgid "Revert {name} to the installed copy?"
 msgstr "Revert {name} to the installed copy?"
 
-#: src/profiles/MergeDialog.tsx
-msgid "Stop the game to change mods."
-msgstr "Stop the game to change mods."
-
 #: src/profiles/historyRevert.ts
 msgid "That profile is gone."
 msgstr "That profile is gone."

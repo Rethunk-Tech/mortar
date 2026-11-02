@@ -2,7 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, TextField } from '@mui/material'
 import { readStored, writeStored } from '@rethunk/react-load-hooks'
 import { GitBranch } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import {
   Clone,
   Detect,
@@ -32,6 +32,7 @@ export function CloneDialog({
   onClose: () => void
 }) {
   const { t } = useLingui()
+  const folderId = useId()
   const openId = useProfiles((s) => s.openId)
   const [repo, setRepo] = useState('')
   const [parent, setParent] = useState('')
@@ -105,9 +106,10 @@ export function CloneDialog({
         placeholder="owner/name"
         autoFocus={true}
       />
-      <Field label={t`Projects folder`}>
+      <Field label={t`Projects folder`} htmlFor={folderId}>
         <Box sx={{ display: 'flex', gap: space.gap }}>
           <TextField
+            id={folderId}
             size="small"
             fullWidth={true}
             value={parent}

@@ -21,6 +21,7 @@ import {
   MergePreview as PreviewMerge,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { useOrderedProfiles } from '../game/useSidebarProfiles.ts'
+import { lockedHint } from '../mods/lockedHint.ts'
 import { applyWithUndo } from '../mods/menu.ts'
 import { lockedIn, useLaunchLocks } from '../mods/useLocked.ts'
 import { FormDialog, SelectField } from '../shell/dialog/FormDialog.tsx'
@@ -158,7 +159,7 @@ function MergeBody({ source, onClose }: { source: Profile; onClose: () => void }
   const updates = preview ? preview.both.filter((b) => b.sourceNewer).length : 0
   const changes = preview ? preview.adds.length + (newerWins ? updates : 0) : 0
   const locked = lockedIn(launch, targetId)
-  const reason = locked ? t`Stop the game to change mods.` : ''
+  const reason = locked ? t(lockedHint) : ''
   const merge = () => {
     if (!target) {
       return

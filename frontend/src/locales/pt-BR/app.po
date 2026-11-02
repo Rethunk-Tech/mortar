@@ -153,14 +153,6 @@ msgstr ""
 msgid "{added}; {rest}"
 msgstr ""
 
-#: src/saves/lackChipActions.tsx
-#: src/saves/lackChips.tsx
-#: src/saves/SaveRow.tsx
-#: src/toasts/HistoryButton.tsx
-#: src/toasts/ToastHost.tsx
-msgid "Stop the game to change mods."
-msgstr ""
-
 #: src/templates/TemplateDialogs.tsx
 msgid "Could not delete the template"
 msgstr ""
@@ -4876,10 +4868,9 @@ msgstr ""
 msgid "Executable"
 msgstr ""
 
+#: src/launch/PlayAnywayButton.tsx
 #: src/launch/playStart.ts
 #: src/launch/PrePlayDialog.tsx
-#: src/launch/SaveWarnDialog.tsx
-#: src/launch/UpdateWarnDialog.tsx
 msgid "Play anyway"
 msgstr ""
 

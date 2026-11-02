@@ -1,8 +1,8 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, ListSubheader, MenuItem, TextField } from '@mui/material'
+import { Box, Button, ListSubheader, MenuItem } from '@mui/material'
 import { useLoaded } from '@rethunk/react-load-hooks'
-import { type RefObject, useEffect, useId, useRef, useState } from 'react'
+import { type RefObject, useEffect, useRef, useState } from 'react'
 import type { StarterTemplate } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/components/models.ts'
 import {
   Duplicate,
@@ -23,8 +23,7 @@ import { savedGroupWants } from '../groups/missingWants.ts'
 import { listNames } from '../i18n/list.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
-import { Field, FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
-import { labelIdOf } from '../shell/dialog/fieldLabel.ts'
+import { FormDialog, SelectField, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { starterWants } from '../templates/starterWants.ts'
 import { ManageTemplatesDialog } from '../templates/TemplateDialogs.tsx'
 import { useTemplates } from '../templates/useTemplates.ts'
@@ -62,52 +61,43 @@ function StartFromSelect({
 }) {
   const { t } = useLingui()
   const chosen = starters.find((starter) => STARTER + starter.id === value)
-  const selectId = useId()
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: 'flex-start' }}>
       <Box sx={{ width: '100%' }}>
-        <Field
+        <SelectField
           label={t`Start from`}
-          htmlFor={selectId}
+          value={value}
+          onChange={onChange}
+          disabled={disabled}
+          displayEmpty={true}
           hint={
             chosen
               ? t`${{ description: chosen.description }} Adds ${{ names: listNames((chosen.packages ?? []).map((p) => p.name)) }}.`
               : undefined
           }
         >
-          <TextField
-            id={selectId}
-            select={true}
-            fullWidth={true}
-            size="small"
-            value={value}
-            disabled={disabled}
-            onChange={(e) => onChange(e.target.value)}
-            slotProps={{ select: { displayEmpty: true, labelId: labelIdOf(selectId) } }}
-          >
-            <MenuItem value={EMPTY}>{t`Empty profile`}</MenuItem>
-            {copyOf === '' ? null : (
-              <MenuItem value={COPY}>{t`Copy of ${{ name: copyOf }}`}</MenuItem>
-            )}
-            {names.map((name) => (
-              <MenuItem key={name} value={name}>
-                {name}
-              </MenuItem>
-            ))}
-            {groups.length === 0 ? null : <ListSubheader>{t`Saved groups`}</ListSubheader>}
-            {groups.map((group) => (
-              <MenuItem key={group.id} value={groupStart(group.id)}>
-                {group.name}
-              </MenuItem>
-            ))}
-            {starters.length === 0 ? null : <ListSubheader>{t`Starter templates`}</ListSubheader>}
-            {starters.map((starter) => (
-              <MenuItem key={starter.id} value={STARTER + starter.id}>
-                {starter.name}
-              </MenuItem>
-            ))}
-          </TextField>
-        </Field>
+          <MenuItem value={EMPTY}>{t`Empty profile`}</MenuItem>
+          {copyOf === '' ? null : (
+            <MenuItem value={COPY}>{t`Copy of ${{ name: copyOf }}`}</MenuItem>
+          )}
+          {names.map((name) => (
+            <MenuItem key={name} value={name}>
+              {name}
+            </MenuItem>
+          ))}
+          {groups.length === 0 ? null : <ListSubheader>{t`Saved groups`}</ListSubheader>}
+          {groups.map((group) => (
+            <MenuItem key={group.id} value={groupStart(group.id)}>
+              {group.name}
+            </MenuItem>
+          ))}
+          {starters.length === 0 ? null : <ListSubheader>{t`Starter templates`}</ListSubheader>}
+          {starters.map((starter) => (
+            <MenuItem key={starter.id} value={STARTER + starter.id}>
+              {starter.name}
+            </MenuItem>
+          ))}
+        </SelectField>
       </Box>
       <Button size="small" onClick={onManage} disabled={disabled}>
         {t`Manage templates…`}

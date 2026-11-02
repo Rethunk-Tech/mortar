@@ -13,6 +13,7 @@ import { type ReactNode, useState } from 'react'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { MenuHeading, MenuRule } from '../shell/TitleMenu.tsx'
 import { space } from '../theme/density.ts'
+import { lockedHint } from './lockedHint.ts'
 import { ICON_SIZE } from './menu.ts'
 import type { ModAction } from './modActions.ts'
 
@@ -120,7 +121,7 @@ function ModActionItems({
   extra: { version: ReactNode[]; organise: ReactNode[] }
 }) {
   const { t } = useLingui()
-  const lockedTip = t`Stop the game to change mods.`
+  const lockedTip = t(lockedHint)
   const closeThen = (fn: () => void) => () => {
     close()
     fn()

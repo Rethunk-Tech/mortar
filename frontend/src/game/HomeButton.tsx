@@ -1,5 +1,6 @@
-import { Button, type ButtonProps } from '@mui/material'
-import type { ReactNode } from 'react'
+import { Button, type ButtonProps, Menu } from '@mui/material'
+import { ChevronDown } from 'lucide-react'
+import { type ReactNode, useState } from 'react'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { space } from '../theme/density.ts'
 import { iconWhenCompact } from './compact.ts'
@@ -31,5 +32,40 @@ export function HomeButton({
         <span className="label">{children}</span>
       </Button>
     </Tooltip>
+  )
+}
+
+/** A HomeButton that opens a menu; `menu` is built only while it is open and gets the function that closes it. */
+export function HomeMenuButton({
+  icon,
+  label,
+  menu,
+  onOpen,
+}: {
+  icon: ReactNode
+  label: string
+  menu: (close: () => void) => ReactNode
+  onOpen?: () => void
+}) {
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const close = () => setAnchor(null)
+  return (
+    <>
+      <HomeButton
+        icon={icon}
+        endIcon={<ChevronDown size={14} aria-hidden={true} />}
+        aria-haspopup="menu"
+        aria-expanded={anchor !== null}
+        onClick={(e) => {
+          setAnchor(e.currentTarget)
+          onOpen?.()
+        }}
+      >
+        {label}
+      </HomeButton>
+      <Menu open={anchor !== null} anchorEl={anchor} onClose={close}>
+        {anchor === null ? null : menu(close)}
+      </Menu>
+    </>
   )
 }

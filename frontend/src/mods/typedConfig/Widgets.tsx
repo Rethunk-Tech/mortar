@@ -16,6 +16,7 @@ import { Plus, X } from 'lucide-react'
 import { useState } from 'react'
 import { HexColorPicker } from 'react-colorful'
 import { labelledInput } from '../../shell/labelledInput.tsx'
+import { usePopoverAnchor } from '../../shell/usePopoverAnchor.ts'
 import { space } from '../../theme/density.ts'
 import {
   commaListKind,
@@ -94,13 +95,13 @@ function ColorWidget({ entry, label, onChange }: WidgetProps) {
   const value = String(entry.value)
   const hashed = value.startsWith('#') ? value : `#${value}`
   const normalized = isHexColor(value) ? hashed : FALLBACK_COLOR
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const { anchor, show, hide } = usePopoverAnchor()
   const rgb = normalized.slice(0, RGB_LENGTH)
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
       <ButtonBase
         aria-label={label}
-        onClick={(e) => setAnchor(e.currentTarget)}
+        onClick={show}
         sx={{
           width: SWATCH_PX,
           height: SWATCH_PX,
@@ -112,7 +113,7 @@ function ColorWidget({ entry, label, onChange }: WidgetProps) {
       <Popover
         open={anchor !== null}
         anchorEl={anchor}
-        onClose={() => setAnchor(null)}
+        onClose={hide}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         // The picker's round handles reach past its edges; padding keeps them inside rather than scrolling.

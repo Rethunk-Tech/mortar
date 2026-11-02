@@ -104,14 +104,7 @@ msgstr "Make {name} win"
 msgid "{list} do the same job: all {count} change {detail}"
 msgstr "{list} do the same job: all {count} change {detail}"
 
-#: src/mods/DuplicateDialog.tsx
-#: src/mods/LockedReason.tsx
-#: src/mods/ModActionItems.tsx
-#: src/mods/ModMenu.tsx
-#: src/mods/OtherProfilesDialog.tsx
-#: src/mods/SplitCombineItems.tsx
-#: src/mods/Toolbar.tsx
-#: src/mods/typedConfig/ConfigPane.tsx
+#: src/mods/lockedHint.ts
 msgid "Stop the game to change mods."
 msgstr "Stop the game to change mods."
 
