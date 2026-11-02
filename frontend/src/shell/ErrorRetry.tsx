@@ -14,7 +14,7 @@ export function ErrorRetry({ error, onRetry }: { error: InlineError; onRetry: ()
       action={
         error.signedOut ? (
           <Button color="inherit" size="small" onClick={() => openSettings('accounts')}>
-            {t`Open Settings`}
+            {t`Open settings`}
           </Button>
         ) : (
           <Button color="inherit" size="small" onClick={onRetry}>

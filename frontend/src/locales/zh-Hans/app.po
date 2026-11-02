@@ -265,10 +265,6 @@ msgstr "无法隐藏该模组"
 msgid "History"
 msgstr ""
 
-#: src/share/ListFormat.tsx
-msgid "({off} disabled)"
-msgstr ""
-
 #: src/develop/EditProjectDialog.tsx
 #: src/develop/ProjectDependencies.tsx
 msgid "Reading the dependencies…"
@@ -2732,10 +2728,6 @@ msgstr ""
 
 #: src/develop/DevelopTab.tsx
 msgid "Filter projects"
-msgstr ""
-
-#: src/shell/ErrorRetry.tsx
-msgid "Open Settings"
 msgstr ""
 
 #: src/game/NewProfileDialog.tsx
@@ -5428,6 +5420,10 @@ msgstr ""
 msgid "Fits {name}"
 msgstr ""
 
+#: src/share/ListFormat.tsx
+msgid "{mods}, {off} of them disabled"
+msgstr ""
+
 #: src/develop/NewModDialog.tsx
 msgid "Features"
 msgstr ""
@@ -7345,6 +7341,7 @@ msgid "Leave empty to use the game folder. Same placeholders as arguments."
 msgstr ""
 
 #: src/queue/actions.ts
+#: src/shell/ErrorRetry.tsx
 msgid "Open settings"
 msgstr ""
 

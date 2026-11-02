@@ -113,9 +113,10 @@ export function ListFormat() {
   const off = items.filter((item) => !item.enabled).length
   const options = useFormatOptions(thunderstore)
   const count = items.length
+  const mods = plural(count, { one: '# mod', other: '# mods' })
   const summary = [
     // The disabled ones are part of the count, not added to it.
-    plural(count, { one: '# mod', other: '# mods' }) + (off > 0 ? ` ${t`(${off} disabled)`}` : ''),
+    off > 0 ? t`${mods}, ${off} of them disabled` : mods,
     total > 1 ? t`${total} messages` : '',
   ]
     .filter(Boolean)
