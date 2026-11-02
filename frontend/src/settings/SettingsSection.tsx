@@ -142,6 +142,7 @@ export function SettingRow({
       sx={{
         display: 'flex',
         alignItems: block ? 'stretch' : 'center',
+        justifyContent: 'center',
         flexDirection: block ? 'column' : 'row',
         gap: block ? BLOCK_GAP : ROW_GAP,
         minHeight: 64,
