@@ -76,22 +76,21 @@ export function stubbedCases(kit: ReturnType<typeof dialogKit>): Case[] {
           { id: 'github', configured: true, ready: true },
         ],
       })
-      let offered = false
       return {
         name: 'develop-upload-github',
         setup: async (p: Page) => {
           await p.route('**/wails/runtime', stub)
           await developTab(p)
           await p.getByRole('main').getByRole('button', { name: 'More actions' }).first().click()
-          offered = (await p.getByRole('menuitem', { name: /^Upload v/ }).count()) > 0
-          if (!offered) {
-            await p.keyboard.press('Escape')
+          // The first project must have a released version for Upload to be offered; a case that skipped would
+          // pass while measuring nothing.
+          if ((await p.getByRole('menuitem', { name: /^Upload v/ }).count()) === 0) {
+            throw new Error(
+              'the first Develop project offers no Upload; the render data needs a released project',
+            )
           }
         },
         run: async (p: Page) => {
-          if (!offered) {
-            return
-          }
           await pick(p, /^Upload v/)
           await p.getByRole('dialog').last().getByText('GitHub', { exact: true }).waitFor()
         },
