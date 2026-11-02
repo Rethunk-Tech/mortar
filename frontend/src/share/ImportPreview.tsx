@@ -112,13 +112,18 @@ const DRAG_PX = 4
 function useSourceNeed() {
   const { t } = useLingui()
   return (mod: Mod) => {
-    if (needsPatreonFile(mod))
+    if (needsPatreonFile(mod)) {
       return t`Needs a file from its ${{ source: sourceLabel('patreon') }} post`
-    if (needsItchFile(mod)) return t`Needs a file from its ${{ source: sourceLabel('itch') }} page`
-    if (needsCurseForgeKey(mod))
+    }
+    if (needsItchFile(mod)) {
+      return t`Needs a file from its ${{ source: sourceLabel('itch') }} page`
+    }
+    if (needsCurseForgeKey(mod)) {
       return t`Needs a ${{ source: sourceLabel('curseforge') }} key, or the file from its page`
-    if (needsModioToken(mod))
+    }
+    if (needsModioToken(mod)) {
       return t`Needs your ${{ source: sourceLabel('modio') }} access token in Settings, Accounts`
+    }
     return ''
   }
 }
