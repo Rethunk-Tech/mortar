@@ -23,14 +23,7 @@ const Site = "https://thunderstore.io/"
 
 // Client refuses a redirect to another host or scheme, which would carry the token along. Its nil Transport is
 // http.DefaultTransport at request time, the one that names Mortar to every site.
-var Client = &http.Client{
-	CheckRedirect: func(req *http.Request, via []*http.Request) error {
-		if req.URL.Scheme != via[0].URL.Scheme || req.URL.Host != via[0].URL.Host {
-			return errors.New("refusing a redirect to another host")
-		}
-		return nil
-	},
-}
+var Client = httpkit.WithRedirect(nil, httpkit.SameOrigin)
 
 // Community is the game's Thunderstore community key, empty when it has none.
 func Community(gameID string) string {
