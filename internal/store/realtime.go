@@ -42,8 +42,8 @@ func RealTimeBlock(game, key string, err error, staging ...string) error {
 }
 
 func vanishedFrom(err error, staging []string) bool {
-	var pe *fs.PathError
-	if !errors.Is(err, fs.ErrNotExist) || !errors.As(err, &pe) {
+	pe, ok := errors.AsType[*fs.PathError](err)
+	if !errors.Is(err, fs.ErrNotExist) || !ok {
 		return false
 	}
 	for _, dir := range staging {

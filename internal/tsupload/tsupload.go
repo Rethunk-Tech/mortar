@@ -68,8 +68,7 @@ func Upload(ctx context.Context, client *http.Client, site, zipPath, team, commu
 }
 
 func refusedToken(err error) error {
-	var status *httpkit.StatusError
-	if errors.As(err, &status) && (status.Code == http.StatusUnauthorized || status.Code == http.StatusForbidden) {
+	if status, ok := errors.AsType[*httpkit.StatusError](err); ok && (status.Code == http.StatusUnauthorized || status.Code == http.StatusForbidden) {
 		return usererr.Wrap(usererr.Permission, fmt.Errorf("thunderstore refused the token: %w", err))
 	}
 	return err

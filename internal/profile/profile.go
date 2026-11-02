@@ -729,8 +729,8 @@ func (s *Store) createBundled(game, name string) (Profile, error) {
 	}
 	for _, b := range s.Bundled(game) {
 		_, err := s.AddEntry(game, p.ID, b.Key, b.Source)
-		var dup *DuplicateError
-		if errors.Is(err, store.ErrNotFound) || errors.As(err, &dup) && dup.Key == b.Key {
+		dup, isDup := errors.AsType[*DuplicateError](err)
+		if errors.Is(err, store.ErrNotFound) || isDup && dup.Key == b.Key {
 			// Collected while no profile used it, the next sync adds it again; or a sync running alongside added it
 			// to the new profile between its creation and this.
 			continue

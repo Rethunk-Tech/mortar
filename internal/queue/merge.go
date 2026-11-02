@@ -124,8 +124,8 @@ func (s *Service) installNexusPath(ctx context.Context, it Item, path string, im
 const rawXNBMessage = "This file replaces game files directly (raw .xnb). Mortar installs SMAPI mods; use the mod's Content Patcher version."
 
 func (s *Service) contentPatcherHint(ctx context.Context, it Item, err error) error {
-	var installErr *profile.InstallError
-	if !errors.As(err, &installErr) || !strings.HasPrefix(installErr.Msg, rawXNBMessage) {
+	installErr, ok := errors.AsType[*profile.InstallError](err)
+	if !ok || !strings.HasPrefix(installErr.Msg, rawXNBMessage) {
 		return err
 	}
 	c, clientErr := s.d.Client()
