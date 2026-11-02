@@ -9,7 +9,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { i18n } from '../i18n/index.ts'
-import { openWeb } from '../shell/openWeb.ts'
+import { openPageReported } from '../shell/openPageReported.ts'
 import { errorKind } from '../toasts/errorKind.ts'
 import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -75,7 +75,7 @@ export async function uploadTo(
         ? {
             action: {
               label: i18n._(msg`Open page`),
-              run: () => openWeb(url).catch(reportError(i18n._(msg`Could not open the page`))),
+              run: () => openPageReported(url),
             },
           }
         : {}),
