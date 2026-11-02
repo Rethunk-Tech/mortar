@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import process from 'node:process'
 import type { Page, Route } from '@playwright/test'
 import type { Result } from '../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
+import { openSettings } from './app.ts'
 import type { Case } from './render-budget.ts'
 import type { Helpers } from './renderCases.ts'
 import { openGame, otherGameIds, returnToMainGame } from './renderProfile.ts'
@@ -266,6 +267,27 @@ function otherGameCases({ tab, tabs }: Helpers): Case[] {
 }
 
 /** Cases for the menus, the source row and the games a run does not open on its own. */
+/** The account cards below the fold, which the Accounts section's own picture cuts off. */
+const modioAccountCase: Case = {
+  name: 'settings-accounts-modio',
+  setup: openSettings,
+  run: async (p) => {
+    await p
+      .getByRole('navigation', { name: 'Settings sections' })
+      .getByRole('button', { name: 'Accounts', exact: true })
+      .click()
+    const card = p.getByText('mod.io', { exact: true }).first()
+    await card.waitFor()
+    await card.evaluate((el) => el.scrollIntoView({ block: 'center' }))
+  },
+}
+
 export function coverageCases(h: Helpers): Case[] {
-  return [...menuCases(h), browseSourcesCase(h), problemsSectionsCase(h), ...otherGameCases(h)]
+  return [
+    modioAccountCase,
+    ...menuCases(h),
+    browseSourcesCase(h),
+    problemsSectionsCase(h),
+    ...otherGameCases(h),
+  ]
 }
