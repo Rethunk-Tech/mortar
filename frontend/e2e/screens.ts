@@ -122,6 +122,10 @@ const WIDE = { width: 1400, height: 840 }
 
 // The sandbox remembers the last opened profile, so each scene names the one it needs.
 async function openNamedProfile(page: Page, game: string, name: string) {
+  // A sandbox that has opened nothing yet lands on the game list, whose rows hold each profile's button.
+  if (await page.getByRole('button', { name: 'Choose a game' }).isVisible()) {
+    return openProfile(page, new RegExp(`^${name}$`, 'u'))
+  }
   const gameButton = page.getByRole('button', { name: /^Switch game/u })
   await gameButton.waitFor({ timeout: STEP_MS })
   if (!(await gameButton.getAttribute('aria-label'))?.includes(game)) {
@@ -330,14 +334,8 @@ const SITE: Scene[] = [
     name: 'config',
     ...DESK,
     profile: LETHAL,
-    steps: async (page) => {
-      await click(page, 'tab', 'Config')
-      // Its settings are shared by the host, so the picture shows the crowns.
-      await page
-        .getByRole('group', { name: 'Mods with settings' })
-        .getByRole('button', { name: /^Dropzone/u })
-        .click({ timeout: STEP_MS })
-    },
+    // Its settings are shared by the host, so the picture shows the crowns.
+    steps: (page) => configOf(page, /^Dropzone/u),
   },
   ...releaseScenes({
     click,
@@ -346,6 +344,8 @@ const SITE: Scene[] = [
     wide: WIDE,
     profile: LETHAL_MEASURED,
     developing: LETHAL,
+    baldurs: { game: "Baldur's Gate 3", name: 'Main' },
+    settings,
     stepMs: STEP_MS,
   }),
 ]

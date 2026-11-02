@@ -10,6 +10,7 @@ const UPLOAD_SITES = 858_225_634
 const LOAD_ORDER = 3_963_816_757
 const PACK = 1_330_956_574
 const UPLOAD_GITHUB = 3_405_360_245
+const UPLOAD_THUNDERSTORE = 1_056_045_837
 const UPDATE_CHECK = 3_749_236_397
 const UPDATE_INFO = 3_769_649_439
 
@@ -29,8 +30,8 @@ function stubCalls(answers: Record<number, unknown>): Stub {
 }
 
 // Release everywhere: the package is stubbed as built, GitHub uploads, Thunderstore is refused and Nexus is not ready.
-function releaseEverywhereCase({ developTab, pick }: ReturnType<typeof dialogKit>): Case {
-  const stub = stubCalls({
+const releaseEverywhereStub = (extra: Record<number, unknown> = {}) =>
+  stubCalls({
     [UPLOAD_SITES]: [
       { id: 'thunderstore', configured: true, ready: true },
       { id: 'nexus', configured: true, ready: false },
@@ -38,7 +39,17 @@ function releaseEverywhereCase({ developTab, pick }: ReturnType<typeof dialogKit
     ],
     [PACK]: { zip: '/tmp/render.zip', issues: [] },
     [UPLOAD_GITHUB]: 'https://github.com/example/mod/releases/tag/v1.0.0',
+    ...extra,
   })
+
+/** The picture's run: Thunderstore accepts the package too. */
+export const releaseEverywhereGoodRun = () =>
+  releaseEverywhereStub({
+    [UPLOAD_THUNDERSTORE]: 'https://thunderstore.io/c/example/p/Example/Mod/',
+  })
+
+function releaseEverywhereCase({ developTab, pick }: ReturnType<typeof dialogKit>): Case {
+  const stub = releaseEverywhereStub()
   return {
     name: 'develop-release-everywhere',
     setup: async (p: Page) => {
@@ -63,7 +74,7 @@ function releaseEverywhereCase({ developTab, pick }: ReturnType<typeof dialogKit
 }
 
 /** The Load order tab as Baldur's Gate 3 shows it: GustavX, then paks in the profile's order, one with an issue. */
-function loadOrderCase(tab: (page: Page, name: string) => Promise<void>): Case {
+export const loadOrderStub = () => {
   const row = (position: number, name: string, over: Record<string, unknown> = {}) => ({
     position,
     id: `folder:uuid-${position}`,
@@ -72,7 +83,7 @@ function loadOrderCase(tab: (page: Page, name: string) => Promise<void>): Case {
     detail: `${name}.pak`,
     ...over,
   })
-  const stub = stubCalls({
+  return stubCalls({
     [LOAD_ORDER]: [
       row(1, 'GustavX', { official: true, detail: undefined }),
       row(2, 'Improved UI', { entry: 'improved-ui' }),
@@ -83,6 +94,10 @@ function loadOrderCase(tab: (page: Page, name: string) => Promise<void>): Case {
       row(4, 'Hand-added override'),
     ],
   })
+}
+
+function loadOrderCase(tab: (page: Page, name: string) => Promise<void>): Case {
+  const stub = loadOrderStub()
   return {
     name: 'load-order-bg3',
     setup: async (p: Page) => {
