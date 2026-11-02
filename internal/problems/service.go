@@ -30,6 +30,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/source"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
@@ -845,7 +846,8 @@ func (s *Service) updatesFor(ctx context.Context, gameID, id string, fresh bool)
 		return UpdatesResult{}, err
 	}
 	env := s.Environment(gameID)
-	fp := fingerprint(env, mods, "")
+	cutoff := s.profiles.ModsUpTo(gameID, id)
+	fp := fingerprint(env, mods, "cutoff:"+cutoff.String())
 	key := gameID + "/" + id
 	s.mu.Lock()
 	c, ok := s.updates[key]
@@ -864,7 +866,7 @@ func (s *Service) updatesFor(ctx context.Context, gameID, id string, fresh bool)
 		s.fixStaleManifests(gameID, id, r.Held)
 	}
 	r.Updates = s.curseforgeSwitches(ctx, mods, r.Updates)
-	r.Updates = oncePerItem(append(r.Updates, s.sourceUpdates(ctx, gameID, mods, r.Updates)...))
+	r.Updates = oncePerItem(append(r.Updates, s.sourceUpdates(source.WithCutoff(ctx, cutoff), gameID, mods, r.Updates)...))
 	if !r.Unknown {
 		s.mu.Lock()
 		s.updates[key] = cachedUpdates{fingerprint: fp, at: time.Now(), result: r}

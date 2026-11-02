@@ -166,6 +166,8 @@ Click the game's name in the title bar; it opens on the profile you used last. *
 
 A game installed more than once (Steam and GOG, a beta branch, another folder) has a separate install for each. A profile uses the selected install unless you pin it in the game's settings; profiles pinned to different installs can run at once.
 
+A profile can also run its own copy of the game: **Edit profile** › **Launch**, **Game folder**, **Choose folder…** (the folder must hold the game). For a Steam game, **Get an older version…** lists the game's depots and asks for the manifest id of the version you want (SteamDB lists them). Mortar opens Steam's console and copies the `download_depot` command for you to paste and run; it never asks for your Steam login. When Steam finishes, Mortar copies the files into its versions folder and points the profile at them. **Mod versions up to** on the same page makes the profile install and update mods at the newest version released on or before a date; Thunderstore and GitHub list dates, mods from other sources are not filtered.
+
 ### Bottles
 
 On Linux, Mortar finds a Windows build in a [Bottles](https://usebottles.com) bottle (native or Flatpak) when the game sits in the bottle's Steam or GOG folders; the store reads **Bottles**. Open it from **Game select** (**Choose folder…** if it sits elsewhere in the bottle). Mortar installs the Windows SMAPI inside the bottle and **Play** starts the game through it.

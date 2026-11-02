@@ -18,6 +18,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/source"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -63,7 +64,7 @@ func (s *Service) expandPackages(ctx context.Context, reqs []Request) ([]Request
 			roots = append(roots, tstore.Ref{Namespace: ns, Name: name, Version: q.Version})
 			byID[strings.ToLower(q.Package)] = q
 		}
-		cctx, cancel := context.WithTimeout(ctx, closureTimeout)
+		cctx, cancel := context.WithTimeout(source.WithCutoff(ctx, s.cutoff(r.Game, r.Profile)), closureTimeout)
 		list, err := s.d.Closure(cctx, r.Game, roots, s.depsFor(r.Game, r.Profile, r.AsIs))
 		cancel()
 		if err != nil {
@@ -112,7 +113,7 @@ func (s *Service) Unresolvable(ctx context.Context, gameID, profileID string, re
 			continue
 		}
 		ns, name, _ := strings.Cut(q.Package, "-")
-		cctx, cancel := context.WithTimeout(ctx, closureTimeout)
+		cctx, cancel := context.WithTimeout(source.WithCutoff(ctx, s.cutoff(gameID, profileID)), closureTimeout)
 		list, err := s.d.Closure(cctx, gameID, []tstore.Ref{{Namespace: ns, Name: name, Version: q.Version}}, s.depsFor(gameID, profileID, q.AsIs))
 		cancel()
 		if err != nil {

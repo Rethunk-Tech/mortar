@@ -287,6 +287,9 @@ type Profile struct {
 	// Install is the id of the game install this profile launches and reads saves from; empty means the game's
 	// selected install.
 	Install string `json:"install,omitempty"`
+	// ModsUpTo is a YYYY-MM-DD date: installs and updates pick the newest mod version released on or before it. Empty
+	// means no limit.
+	ModsUpTo string `json:"modsUpTo,omitempty"`
 	// SeparateSaves gives the profile its own saves folder, which replaces the game's shared one while it runs.
 	SeparateSaves bool `json:"separateSaves,omitempty"`
 	// TestCopies is how many copies the Develop tab's Test starts, as last picked from its menu; 0 lets the tab choose

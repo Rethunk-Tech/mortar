@@ -1,6 +1,10 @@
 msgid ""
 msgstr "POT-Creation-Date: 2026-10-28 14:49-0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nX-Generator: Weblate 2026.11.dev0\nLanguage: zh-Hans\nPO-Revision-Date: 2026-10-31 13:53+0000\nLast-Translator: MOXIAOLEQWQ <moxiaole@users.noreply.hosted.weblate.org>\nLanguage-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/projects/mortar/profiles/zh_Hans/>\nPlural-Forms: nplurals=1; plural=0;\n"
 
+#: src/profiles/GameVersionRows.tsx
+msgid "This profile runs the game from this folder, an older copy, instead of the selected install."
+msgstr ""
+
 #: src/profiles/CompareDialog.tsx
 msgid "{count, plural, one {Copied # mod to {name}} other {Copied # mods to {name}}}"
 msgstr ""
@@ -102,6 +106,10 @@ msgstr ""
 msgid "Use the newer version ({count, plural, one {# mod updates} other {# mods update}})"
 msgstr ""
 
+#: src/profiles/OlderVersionDialog.tsx
+msgid "Copying…"
+msgstr ""
+
 #: src/profiles/ProfilesPage.tsx
 msgid "Delete {name} permanently"
 msgstr ""
@@ -128,6 +136,10 @@ msgstr ""
 
 #: src/profiles/ProfileRow.tsx
 msgid "Rename"
+msgstr ""
+
+#: src/profiles/GameVersionRows.tsx
+msgid "Choose the game folder"
 msgstr ""
 
 #: src/profiles/ProfilesPage.tsx
@@ -242,6 +254,10 @@ msgstr ""
 msgid "Mortar cannot download {names} again."
 msgstr ""
 
+#: src/profiles/GameVersionRows.tsx
+msgid "Mod versions up to"
+msgstr ""
+
 #: src/profiles/CompareDialog.tsx
 msgid "{count, plural, one {# difference} other {# differences}}"
 msgstr ""
@@ -294,6 +310,10 @@ msgstr ""
 
 #: src/profiles/store.ts
 msgid "Repaired {name}"
+msgstr ""
+
+#: src/profiles/GameVersionRows.tsx
+msgid "Game folder"
 msgstr ""
 
 #: src/profiles/useColorName.ts
@@ -389,6 +409,7 @@ msgstr ""
 msgid "Could not open the file dialog"
 msgstr ""
 
+#: src/profiles/GameVersionRows.tsx
 #: src/profiles/ManagerFolderPrompt.tsx
 msgid "Choose folder…"
 msgstr ""
@@ -489,6 +510,7 @@ msgid "Cover image"
 msgstr ""
 
 #: src/profiles/GameModsDialog.tsx
+#: src/profiles/OlderVersionDialog.tsx
 msgid "Cancel"
 msgstr ""
 
@@ -512,6 +534,10 @@ msgstr ""
 msgid "Crashed in {nativeFrame}"
 msgstr ""
 
+#: src/profiles/OlderVersionDialog.tsx
+msgid "Depot"
+msgstr ""
+
 #: src/profiles/ProfileFolderDialog.tsx
 msgid "Choose where {name} lives"
 msgstr ""
@@ -530,8 +556,16 @@ msgstr ""
 msgid "Presets already copied into profiles stay."
 msgstr ""
 
+#: src/profiles/OlderVersionDialog.tsx
+msgid "Manifest id of the version"
+msgstr ""
+
 #: src/profiles/HistoryTimeline.tsx
 msgid "Today"
+msgstr ""
+
+#: src/profiles/OlderVersionDialog.tsx
+msgid "Could not open the {launcher} console"
 msgstr ""
 
 #: src/profiles/useColorName.ts
@@ -601,6 +635,10 @@ msgstr ""
 
 #: src/profiles/AppearancePickers.tsx
 msgid "Heart"
+msgstr ""
+
+#: src/profiles/OlderVersionDialog.tsx
+msgid "Could not open the browser"
 msgstr ""
 
 #: src/profiles/HealthDialog.tsx
@@ -872,6 +910,10 @@ msgstr ""
 msgid "imported from the game's Mods folder"
 msgstr ""
 
+#: src/profiles/OlderVersionDialog.tsx
+msgid "Open the {launcher} console"
+msgstr ""
+
 #: src/profiles/historyDiff.ts
 #: src/profiles/historyLabel.ts
 msgid "Updated {name} from {from} to {to}"
@@ -881,12 +923,24 @@ msgstr ""
 msgid "Changed launch settings"
 msgstr ""
 
+#: src/profiles/GameVersionRows.tsx
+msgid "Could not use that folder"
+msgstr ""
+
 #: src/profiles/CompareTop.tsx
 msgid "Someone else's"
 msgstr ""
 
+#: src/profiles/OlderVersionDialog.tsx
+msgid "Get an older version"
+msgstr ""
+
 #: src/profiles/AppearancePickers.tsx
 msgid "Colour"
+msgstr ""
+
+#: src/profiles/GameVersionRows.tsx
+msgid "Could not save the date"
 msgstr ""
 
 #: src/profiles/EditProfileDialog.tsx
@@ -973,6 +1027,7 @@ msgid "{onlyA} only in {name}"
 msgstr ""
 
 #: src/profiles/LaunchPreview.tsx
+#: src/profiles/OlderVersionDialog.tsx
 msgid "Command copied"
 msgstr ""
 
@@ -1054,6 +1109,10 @@ msgstr ""
 msgid "Could not repair profile"
 msgstr ""
 
+#: src/profiles/GameVersionRows.tsx
+msgid "Get an older version…"
+msgstr ""
+
 #: src/profiles/HealthCheckBadge.tsx
 msgid "{count, plural, one {# thing to repair} other {# things to repair}}"
 msgstr ""
@@ -1084,6 +1143,10 @@ msgstr ""
 
 #: src/profiles/MergeDialog.tsx
 msgid "Added {added} from {profile} to {name}"
+msgstr ""
+
+#: src/profiles/GameVersionRows.tsx
+msgid "Installs from Browse and updates pick the newest version released on or before this date. Mods from sites that list no dates are not filtered."
 msgstr ""
 
 #: src/profiles/HealthDialog.tsx
@@ -1147,6 +1210,10 @@ msgstr ""
 msgid "{loader} console window"
 msgstr ""
 
+#: src/profiles/OlderVersionDialog.tsx
+msgid "Use this version"
+msgstr ""
+
 #: src/profiles/LaunchPresetDialog.tsx
 msgid "Name the preset."
 msgstr ""
@@ -1163,6 +1230,10 @@ msgstr ""
 msgid "Changed groups"
 msgstr ""
 
+#: src/profiles/GameVersionRows.tsx
+msgid "Use the selected install"
+msgstr ""
+
 #: src/profiles/historyLabel.ts
 msgid "Marked {name} explicit"
 msgstr ""
@@ -1173,6 +1244,10 @@ msgstr ""
 
 #: src/profiles/VortexFolderPrompt.tsx
 msgid "The {manager} folder {path} has no profiles."
+msgstr ""
+
+#: src/profiles/GameVersionRows.tsx
+msgid "The selected install"
 msgstr ""
 
 #: src/profiles/GameSettings.tsx
@@ -1201,6 +1276,10 @@ msgstr ""
 
 #: src/profiles/CompareDialog.tsx
 msgid "No matching mods"
+msgstr ""
+
+#: src/profiles/OlderVersionDialog.tsx
+msgid "Waiting for {source}…"
 msgstr ""
 
 #: src/profiles/HealthDialog.tsx
@@ -1278,6 +1357,10 @@ msgstr ""
 msgid "Sparkles"
 msgstr ""
 
+#: src/profiles/OlderVersionDialog.tsx
+msgid "Could not copy the older version"
+msgstr ""
+
 #: src/profiles/historyLabel.ts
 msgid "Set {detail} of {name} for the next start"
 msgstr ""
@@ -1345,6 +1428,10 @@ msgstr ""
 
 #: src/profiles/LaunchPresetDialog.tsx
 msgid "Follow the setting"
+msgstr ""
+
+#: src/profiles/OlderVersionDialog.tsx
+msgid "The {launcher} console downloads the version. Mortar never asks for your {launcher} login."
 msgstr ""
 
 #: src/profiles/store.ts
@@ -1507,6 +1594,10 @@ msgstr ""
 msgid "Leaf"
 msgstr ""
 
+#: src/profiles/OlderVersionDialog.tsx
+msgid "The download is done."
+msgstr ""
+
 #: src/profiles/HistoryTimeline.tsx
 msgid "Yesterday"
 msgstr ""
@@ -1517,6 +1608,10 @@ msgstr ""
 
 #: src/profiles/historyLabel.ts
 msgid "Went back to {when}"
+msgstr ""
+
+#: src/profiles/OlderVersionDialog.tsx
+msgid "The command is on your clipboard. Paste it into the {launcher} console and press Enter. Mortar waits for the download to finish."
 msgstr ""
 
 #: src/profiles/ProfileRow.tsx
@@ -1564,6 +1659,7 @@ msgstr ""
 #: src/profiles/HealthDialog.tsx
 #: src/profiles/HistoryToolbar.tsx
 #: src/profiles/LaunchPresetTemplatesDialog.tsx
+#: src/profiles/OlderVersionDialog.tsx
 #: src/profiles/ProfileFolderDialog.tsx
 msgid "Close"
 msgstr ""
@@ -1590,6 +1686,10 @@ msgstr ""
 
 #: src/profiles/SeparateSavesRow.tsx
 msgid "Start with a copy of my current saves"
+msgstr ""
+
+#: src/profiles/OlderVersionDialog.tsx
+msgid "Look up manifests on SteamDB"
 msgstr ""
 
 #: src/profiles/HistoryToolbar.tsx

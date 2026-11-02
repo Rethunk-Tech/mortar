@@ -6,6 +6,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Rethunk-Tech/go-semverish"
 	tstore "github.com/Rethunk-Tech/go-thunderstore"
@@ -13,6 +14,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
 func packageID(namespace, name string) string { return strings.ToLower(namespace + "-" + name) }
@@ -27,7 +29,26 @@ func parseVersion(v string) semverish.Version {
 // dependency's pin, which r2modman treats as a minimum; for a BepInEx loader pack the newest of the series Mortar runs it as (5.4.x, or the
 // whole major the catalog names, 6 for BepInExPack_IL2CPP), since mods name old pack versions of the same major (5.3.1)
 // that the newest one still serves; else exactly the named one.
-func pick(p tstore.Package, ref tstore.Ref, minimum bool) (string, error) {
+func pick(p tstore.Package, ref tstore.Ref, minimum bool, cutoff time.Time) (string, error) {
+	if !cutoff.IsZero() && !components.IsBepInExPackage(p.Owner+"-"+p.Name) {
+		q := p
+		q.Versions = source.Within(p.Versions, cutoff, versionDate)
+		// A package that began after the cutoff, or a dependency that needs a newer version, still resolves.
+		if len(q.Versions) > 0 {
+			if v, err := pickIn(q, ref, minimum); err == nil {
+				return v, nil
+			}
+		}
+	}
+	return pickIn(p, ref, minimum)
+}
+
+// versionDate is when v was published; a version the index gave no date for is undated.
+func versionDate(v tstore.Version) (time.Time, bool) {
+	return time.Unix(v.Created, 0), v.Created > 0
+}
+
+func pickIn(p tstore.Package, ref tstore.Ref, minimum bool) (string, error) {
 	id := p.ID()
 	if components.IsBepInExPackage(p.Owner + "-" + p.Name) {
 		major := components.LoaderPackageMajor(p.Owner + "-" + p.Name)
@@ -110,7 +131,7 @@ func (d Driver) Closure(ctx context.Context, key string, roots []tstore.Ref, mor
 	// A later request can raise a version that an earlier visit used, so walk again until nothing rises; versions only
 	// go up, so this ends.
 	for {
-		w := &walk{byID: byID, exact: exact, deps: deps, chosen: chosen, state: map[string]int{}, dropIns: d.DropIns, missing: map[string][]string{}}
+		w := &walk{cutoff: source.CutoffOf(ctx), byID: byID, exact: exact, deps: deps, chosen: chosen, state: map[string]int{}, dropIns: d.DropIns, missing: map[string][]string{}}
 		for _, r := range roots {
 			if err := w.visit(r, nil); err != nil {
 				return nil, err
@@ -134,6 +155,7 @@ func (d Driver) Closure(ctx context.Context, key string, roots []tstore.Ref, mor
 }
 
 type walk struct {
+	cutoff time.Time
 	byID   map[string]tstore.Package
 	exact  map[string]bool
 	deps   Deps
@@ -173,7 +195,7 @@ func (w *walk) visit(ref tstore.Ref, chain []string) error {
 	if !ok {
 		return fmt.Errorf("%s is not in the index (requested by %s)", id, via)
 	}
-	v, err := pick(p, ref, chain != nil && !w.exact[id] && w.deps == DepsNewest)
+	v, err := pick(p, ref, chain != nil && !w.exact[id] && w.deps == DepsNewest, w.cutoff)
 	if err != nil {
 		return fmt.Errorf("%w (requested by %s)", err, via)
 	}

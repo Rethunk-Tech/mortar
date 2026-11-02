@@ -73,6 +73,9 @@ func (s *Service) OpenWeb(raw string) error {
 // passes reaches the system handler.
 func (s *Service) OpenSteam() error { return s.Open("steam://open/main") }
 
+// OpenSteamConsole opens Steam's console, where the older-version command is pasted. The address is fixed.
+func (s *Service) OpenSteamConsole() error { return s.Open("steam://open/console") }
+
 // OpenSteamValidate asks Steam to verify an app's files. It exists apart from OpenWeb because steam:// is the one
 // non-web scheme the window needs, and only for a numeric app id.
 func (s *Service) OpenSteamValidate(appID string) error {

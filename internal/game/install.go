@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	goruntime "runtime"
 	"slices"
+	"strings"
 	"sync"
 	"time"
 
@@ -275,6 +276,9 @@ func ResolveInstall(home string, s settings.Settings, id, pin string) (Install, 
 	if err != nil {
 		return Install{}, err
 	}
+	if dir, ok := FolderPinDir(pin); ok {
+		return folderInstall(id, dir, pin)
+	}
 	if pin != "" {
 		for _, in := range all {
 			if in.ID == pin {
@@ -300,6 +304,36 @@ func ResolveInstall(home string, s settings.Settings, id, pin string) (Install, 
 		store = StoreBottles
 	}
 	return newInstall(info, store, dir, prefix, OriginFolder), nil
+}
+
+// folderPrefix starts a pin that names a game folder (an old copy of the game) instead of a discovered install.
+const folderPrefix = "dir:"
+
+// FolderPin is the install pin for a profile that runs the game from dir.
+func FolderPin(dir string) string { return folderPrefix + filepath.Clean(dir) }
+
+// FolderPinDir is the folder a FolderPin names.
+func FolderPinDir(pin string) (string, bool) {
+	dir, ok := strings.CutPrefix(pin, folderPrefix)
+	return dir, ok && dir != ""
+}
+
+// folderInstall is the install in dir for a pin that names it; the folder must still hold the game.
+func folderInstall(id, dir, pin string) (Install, error) {
+	g := Find(id)
+	info, _ := catalogGame(id)
+	if g == nil || !filepath.IsAbs(dir) {
+		return Install{}, usererr.Wrap(usererr.Invalid, fmt.Errorf("%q is not a game folder", dir))
+	}
+	if err := g.ValidInstall(dir); err != nil {
+		return Install{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("the game folder %s of this profile is no longer valid: %w", dir, err))
+	}
+	in := newInstall(info, "", dir, bottles.Of(dir), OriginFolder)
+	in.ID = pin
+	if in.Prefix != "" {
+		in.Store = StoreBottles
+	}
+	return in, nil
 }
 
 // StoreStarts reports whether the store that installed this copy can start it: `steam -applaunch` and the Epic Games

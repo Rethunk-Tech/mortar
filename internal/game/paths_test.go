@@ -84,3 +84,40 @@ func TestResolveInstallPinsADiscoveredInstall(t *testing.T) {
 		t.Fatal("a pin that names no install resolved")
 	}
 }
+
+func TestResolveInstallPinsAFolder(t *testing.T) {
+	home := t.TempDir()
+	mk := func(dir string, marker bool) {
+		if err := os.MkdirAll(dir, 0o750); err != nil {
+			t.Fatal(err)
+		}
+		if marker {
+			if err := os.WriteFile(filepath.Join(dir, "Stardew Valley.dll"), nil, 0o600); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+	root := filepath.Join(home, "GOG Games")
+	current := filepath.Join(root, "Stardew Valley")
+	old := filepath.Join(home, "versions", "1.5")
+	empty := filepath.Join(home, "versions", "empty")
+	mk(current, true)
+	mk(old, true)
+	mk(empty, false)
+	s := settings.Defaults()
+	s.LauncherRoots = map[string][]string{LauncherGOG: {root}}
+
+	got, err := ResolveInstall(home, s, "stardew", FolderPin(old))
+	if err != nil || got.Dir != old || got.Origin != OriginFolder || got.ID != FolderPin(old) {
+		t.Fatalf("folder pin = %+v, %v", got, err)
+	}
+	selected, err := ResolveInstall(home, s, "stardew", "")
+	if err != nil || selected.Dir != current {
+		t.Fatalf("an unpinned profile must keep the selected install: %+v, %v", selected, err)
+	}
+	for _, pin := range []string{FolderPin(empty), FolderPin(filepath.Join(home, "gone")), "dir:relative"} {
+		if _, err := ResolveInstall(home, s, "stardew", pin); err == nil {
+			t.Fatalf("pin %q resolved", pin)
+		}
+	}
+}

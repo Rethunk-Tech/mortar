@@ -375,6 +375,8 @@ type Deps struct {
 	// ExactDependencies reports whether the profile installs a package's dependencies at the versions it pins; nil
 	// means the newest.
 	ExactDependencies func(gameID, profileID string) bool
+	// ModsUpTo is the date after which the profile picks no newer mod version; zero or nil means none.
+	ModsUpTo func(gameID, profileID string) time.Time
 	// CDNs are Thunderstore's download hosts as base addresses, tried in order; nil means tstore.CDNs.
 	CDNs []string
 	// ThunderstoreHost is the base address of the one CDN the player pinned, or empty for automatic; nil means automatic.
@@ -1183,4 +1185,12 @@ func (s *Service) OpenPage(id string) error {
 		return errors.New("this download has no page to open yet")
 	}
 	return s.d.OpenURL(url)
+}
+
+// cutoff is the profile's "mod versions up to" date, zero when it has none.
+func (s *Service) cutoff(gameID, profileID string) time.Time {
+	if s.d.ModsUpTo == nil {
+		return time.Time{}
+	}
+	return s.d.ModsUpTo(gameID, profileID)
 }

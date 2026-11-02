@@ -21,6 +21,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/source"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -32,7 +33,11 @@ func (s *Service) release(ctx context.Context, it Item) (github.Release, []githu
 	if err != nil {
 		return github.Release{}, nil, usererr.Wrap(usererr.Network, err)
 	}
-	rel, assets, err := github.Select(all, cmp.Or(it.Tag, it.Version), false)
+	want := cmp.Or(it.Tag, it.Version)
+	if want == "" {
+		all = source.ReleasesWithin(all, s.cutoff(it.Game, it.Profile))
+	}
+	rel, assets, err := github.Select(all, want, false)
 	if err != nil {
 		return github.Release{}, nil, fmt.Errorf("%s: %w", it.Repo, err)
 	}

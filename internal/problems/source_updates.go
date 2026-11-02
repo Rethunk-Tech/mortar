@@ -17,6 +17,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source"
+	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 
 	"github.com/Rethunk-Tech/go-semverish"
 )
@@ -70,6 +71,7 @@ func (s *Service) githubUpdates(ctx context.Context, mods []framework.Mod, have 
 		if err != nil {
 			return out
 		}
+		all = source.ReleasesWithin(all, source.CutoffOf(ctx))
 		r, _, err := github.Select(all, "", profile.NormalizeChannel(x.UpdateChannel) == profile.ChannelBeta)
 		if err != nil {
 			continue
@@ -177,10 +179,17 @@ func (s *Service) searchUpdates(ctx context.Context, gameID string, src componen
 			if !sameMod(x, it) && (twin == "" || !strings.EqualFold(it.ID, twin)) {
 				continue
 			}
-			if c, ok := semverish.Compare(it.Version, installed); !ok || c <= 0 {
+			version := it.Version
+			if d, ok := entry.Source.(thunderstore.Driver); ok && !source.CutoffOf(ctx).IsZero() {
+				ns, name, _ := strings.Cut(it.ID, "-")
+				if r, err := d.Resolve(ctx, src.Key, ns, name, "", ""); err == nil {
+					version = r.Version
+				}
+			}
+			if c, ok := semverish.Compare(version, installed); !ok || c <= 0 {
 				break
 			}
-			if coveredBy(append(slices.Clone(have), out...), x.Key, it.Version) {
+			if coveredBy(append(slices.Clone(have), out...), x.Key, version) {
 				break
 			}
 			ref := source.VersionRef{}
@@ -189,7 +198,7 @@ func (s *Service) searchUpdates(ctx context.Context, gameID string, src componen
 			}
 			installedRefs = append(installedRefs, ref)
 			u := Update{
-				Key: x.Key, ID: x.ModID(), Name: x.Name, Installed: installed, Version: it.Version, URL: it.URL,
+				Key: x.Key, ID: x.ModID(), Name: x.Name, Installed: installed, Version: version, URL: it.URL,
 				Source: entry.Source.Name(), Switch: x.SourceKind != src.ID,
 			}
 			switch src.ID {

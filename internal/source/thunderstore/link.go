@@ -42,7 +42,13 @@ func (d Driver) Resolve(ctx context.Context, key, namespace, name, ver, mortarVe
 		if !strings.EqualFold(p.Owner, namespace) || !strings.EqualFold(p.Name, name) {
 			continue
 		}
-		for _, v := range p.Versions {
+		versions := p.Versions
+		if ver == "" {
+			if up := source.Within(versions, source.CutoffOf(ctx), versionDate); len(up) > 0 {
+				versions = up
+			}
+		}
+		for _, v := range versions {
 			if ver == "" || v.Number == ver {
 				return d.resolved(p, v), nil
 			}

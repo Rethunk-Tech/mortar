@@ -13,6 +13,7 @@ import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { AppearancePickers } from './AppearancePickers.tsx'
 import { MAX_NAME } from './appearance.ts'
+import { GameVersionRows } from './GameVersionRows.tsx'
 import { LaunchOptionsBlock } from './LaunchOptionsBlock.tsx'
 import { LaunchPresetsBlock } from './LaunchPresetsBlock.tsx'
 import { LoaderPicker } from './LoaderPicker.tsx'
@@ -198,6 +199,12 @@ function ProfileFields({
             gameId={gameId}
             profileId={profile.id}
             on={profile.separateSaves ?? false}
+          />
+          <GameVersionRows
+            gameId={gameId}
+            profileId={profile.id}
+            install={profile.install ?? ''}
+            modsUpTo={profile.modsUpTo ?? ''}
           />
           <FormSection title={t`Command line`}>
             <LaunchOptionsBlock

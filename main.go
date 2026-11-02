@@ -685,6 +685,7 @@ func run() error {
 			}
 			return settings.ResolveAt(store.Get(), "dependencyVersions", settings.Scope{Game: game, Profile: profileID}, p.PrefOverrides()) == settings.DependencyExact
 		},
+		ModsUpTo: profiles.ModsUpTo,
 		ThunderstoreHost: func() string {
 			if h := store.Get().ThunderstoreHost; h != settings.ThunderstoreHostAuto {
 				return "https://" + h
