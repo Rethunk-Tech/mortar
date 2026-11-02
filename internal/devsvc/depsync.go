@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	tstore "github.com/Rethunk-Tech/go-thunderstore"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -37,12 +38,18 @@ type DepSync struct {
 // diffDependencies compares the declared dependencies with the profile's Thunderstore mods. A soft dependency is not
 // missing, since the mod runs without it. Mods the profile brought in for another mod (implicit), the loader, the
 // project's own package and the ignored ones are not offered as undeclared.
-func diffDependencies(declared []Dependency, installed []profile.Installed, ignored, own []string) DepSync {
+func diffDependencies(declared []Dependency, installed []profile.Installed, ignored, own []string, shared bool) DepSync {
 	out := DepSync{Missing: []Dependency{}, Undeclared: []DepPackage{}, Differs: []DepVersion{}}
 	held := map[string]profile.Installed{}
+	// A package in the profile from a local folder, such as another project's own build: it is there, and offering the
+	// published version would put a second copy beside it.
+	local := map[string]bool{}
 	for _, im := range installed {
-		if im.Source.Kind == profile.KindThunderstore {
+		switch {
+		case im.Source.Kind == profile.KindThunderstore:
 			held[strings.ToLower(im.Source.Name)] = im
+		case mod.ID(im.UniqueID).Format() == mod.FormatThunderstore:
+			local[strings.ToLower(mod.ID(im.UniqueID).Local())] = true
 		}
 	}
 	isDeclared := map[string]bool{}
@@ -50,6 +57,7 @@ func diffDependencies(declared []Dependency, installed []profile.Installed, igno
 		isDeclared[strings.ToLower(d.Package)] = true
 		im, ok := held[strings.ToLower(d.Package)]
 		switch {
+		case local[strings.ToLower(d.Package)]:
 		case !ok:
 			if !d.Soft {
 				out.Missing = append(out.Missing, d)
@@ -57,6 +65,10 @@ func diffDependencies(declared []Dependency, installed []profile.Installed, igno
 		case d.Version != "" && im.Source.Version != "" && versionOf(d.Package, d.Version) != versionOf(d.Package, im.Source.Version):
 			out.Differs = append(out.Differs, DepVersion{Package: d.Package, Declared: d.Version, Installed: im.Source.Version, Soft: d.Soft})
 		}
+	}
+	// In a profile several projects are developed in, a mod may be there for any of them, or just for playing.
+	if shared {
+		return out
 	}
 	seen := map[string]bool{}
 	for _, im := range installed {
@@ -99,12 +111,16 @@ func (s *Service) DependencySync(gameID, dir string) (DepSync, error) {
 		return DepSync{}, err
 	}
 	var own []string
+	sharing := 0
 	for _, q := range s.Projects(gameID) {
+		if q.Profile == p.Profile {
+			sharing++
+		}
 		if pkg := packageOf(q.Dir); pkg != "" {
 			own = append(own, pkg)
 		}
 	}
-	out := diffDependencies(declared, installed, p.IgnoredDeps, own)
+	out := diffDependencies(declared, installed, p.IgnoredDeps, own, sharing > 1)
 	out.Profile = p.Profile
 	return out, nil
 }

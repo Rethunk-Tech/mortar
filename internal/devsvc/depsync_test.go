@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
@@ -35,7 +36,7 @@ func TestDiffDependencies(t *testing.T) {
 		installedTS("f-extra", "2.0.0", true, false),
 		{Source: profile.Source{Kind: profile.KindNexus, Name: "Z-Nexus"}, Enabled: true},
 	}
-	got := diffDependencies(declared, installed, []string{"I-Tolerated"}, []string{"Me-Mine"})
+	got := diffDependencies(declared, installed, []string{"I-Tolerated"}, []string{"Me-Mine"}, false)
 	want := DepSync{
 		Missing:    []Dependency{{Package: "A-Needed", Version: "1.0.0"}},
 		Undeclared: []DepPackage{{Package: "F-Extra", Version: "2.0.0"}},
@@ -66,5 +67,31 @@ func TestDependencySyncNamesTheDevelopmentProfile(t *testing.T) {
 	got, err := svc.DependencySync("lethal-company", dir)
 	if err != nil || got.Profile != prof.ID {
 		t.Fatalf("profile = %q, %v", got.Profile, err)
+	}
+}
+
+func TestDiffDependenciesCountsAProjectBuiltFromItsOwnFolder(t *testing.T) {
+	declared := []Dependency{{Package: "Mortar-ConfigSync", Version: "0.1.0"}}
+	dev := profile.Installed{
+		Source:   profile.Source{Kind: profile.KindLocal, Name: "debug"},
+		Enabled:  true,
+		UniqueID: string(mod.NewID(mod.FormatThunderstore, "Mortar-ConfigSync")),
+		Version:  "0.1.1",
+	}
+	got := diffDependencies(declared, []profile.Installed{dev}, nil, []string{"Mortar-ConfigSync"}, false)
+	if len(got.Missing) != 0 || len(got.Differs) != 0 || len(got.Undeclared) != 0 {
+		t.Fatalf("a dev build counts as present and is not offered an update: %+v", got)
+	}
+}
+
+func TestDiffDependenciesInASharedProfileReportsNothingUndeclared(t *testing.T) {
+	declared := []Dependency{{Package: "A-Needed", Version: "1.0.0"}}
+	installed := []profile.Installed{installedTS("F-Extra", "2.0.0", true, false)}
+	got := diffDependencies(declared, installed, nil, nil, true)
+	if len(got.Undeclared) != 0 || len(got.Missing) != 1 {
+		t.Fatalf("got %+v", got)
+	}
+	if got := diffDependencies(declared, installed, nil, nil, false); len(got.Undeclared) != 1 {
+		t.Fatalf("a project alone in its profile still hears about extras: %+v", got)
 	}
 }
