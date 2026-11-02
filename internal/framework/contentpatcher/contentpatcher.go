@@ -2017,14 +2017,11 @@ func normalizeTarget(s string) string {
 }
 
 func inside(root, rel string) (string, bool) {
-	if filepath.IsAbs(rel) {
+	local := filepath.FromSlash(rel)
+	if !filepath.IsLocal(local) {
 		return "", false
 	}
-	joined := filepath.Join(root, filepath.FromSlash(rel))
-	if !safefs.UnderRoot(root, joined) {
-		return "", false
-	}
-	return joined, true
+	return filepath.Join(root, local), true
 }
 
 func preloadContentPacks(mods []framework.Mod, skip bool) {
