@@ -50,7 +50,14 @@ const Pills = memo(function PillsView({ counts: joined }: { counts: string }) {
             <ToggleButton
               key={level}
               value={level}
-              aria-label={t`${{ level: names[level] }}: ${plural({ count: n }, { one: '# line', other: '# lines' })}`}
+              // The spoken name starts with what the button shows, so voice control can find it by that.
+              aria-label={plural(
+                { count: n },
+                {
+                  one: `${{ level: names[level] }} ${{ shown: formatCount(n, i18n.locale) }} line`,
+                  other: `${{ level: names[level] }} ${{ shown: formatCount(n, i18n.locale) }} lines`,
+                },
+              )}
               onClick={() => toggle(level)}
               sx={{
                 ...pillButtonSx('var(--mortar-ink-dim)', {

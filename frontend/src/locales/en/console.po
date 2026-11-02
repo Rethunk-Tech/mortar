@@ -275,6 +275,10 @@ msgstr "A mod's files are missing from this profile's folder, so Mortar cannot d
 msgid "{level} ({count})"
 msgstr "{level} ({count})"
 
+#: src/console/LevelToggles.tsx
+msgid "{count, plural, one {{level} {shown} line} other {{level} {shown} lines}}"
+msgstr "{count, plural, one {{level} {shown} line} other {{level} {shown} lines}}"
+
 #: src/console/PerformanceCards.tsx
 msgid "{total} to the title screen"
 msgstr "{total} to the title screen"
@@ -294,11 +298,6 @@ msgstr "{app} starts"
 #: src/console/RunsPicker.tsx
 msgid "No recorded runs yet"
 msgstr "No recorded runs yet"
-
-#. placeholder {0}: plural({ count: n }, { one: '# line', other: '# lines' })
-#: src/console/LevelToggles.tsx
-msgid "{level}: {0}"
-msgstr "{level}: {0}"
 
 #: src/console/ConsoleTab.tsx
 msgid "Filter by level or mod, and use Share log to copy this run and paste it on a paste site."
@@ -530,10 +529,6 @@ msgstr "Warn"
 #: src/console/CrashDialog.tsx
 msgid "The game log has errors."
 msgstr "The game log has errors."
-
-#: src/console/LevelToggles.tsx
-msgid "{count, plural, one {# line} other {# lines}}"
-msgstr "{count, plural, one {# line} other {# lines}}"
 
 #: src/console/StartupSections.tsx
 msgid "{name} takes {own} of your {total} start; {count, plural, one {# content pack causes} other {# content packs cause}} most of it."

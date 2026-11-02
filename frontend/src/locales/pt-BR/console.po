@@ -275,6 +275,10 @@ msgstr ""
 msgid "{level} ({count})"
 msgstr ""
 
+#: src/console/LevelToggles.tsx
+msgid "{count, plural, one {{level} {shown} line} other {{level} {shown} lines}}"
+msgstr ""
+
 #: src/console/PerformanceCards.tsx
 msgid "{total} to the title screen"
 msgstr ""
@@ -293,11 +297,6 @@ msgstr ""
 
 #: src/console/RunsPicker.tsx
 msgid "No recorded runs yet"
-msgstr ""
-
-#. placeholder {0}: plural({ count: n }, { one: '# line', other: '# lines' })
-#: src/console/LevelToggles.tsx
-msgid "{level}: {0}"
 msgstr ""
 
 #: src/console/ConsoleTab.tsx
@@ -529,10 +528,6 @@ msgstr ""
 
 #: src/console/CrashDialog.tsx
 msgid "The game log has errors."
-msgstr ""
-
-#: src/console/LevelToggles.tsx
-msgid "{count, plural, one {# line} other {# lines}}"
 msgstr ""
 
 #: src/console/StartupSections.tsx
