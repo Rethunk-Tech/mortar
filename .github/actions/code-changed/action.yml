@@ -1,0 +1,48 @@
+name: Code changed
+description: Reports whether a change touches code (code) or the site (site), so a docs-only change skips setup and the gate.
+
+inputs:
+  token:
+    description: Token for the compare API.
+    default: ${{ github.token }}
+
+outputs:
+  code:
+    description: "false when only Markdown, docs/ (not docs/user-guide.md) or issue templates changed."
+    value: ${{ steps.changes.outputs.code }}
+  site:
+    description: "false when nothing under web/ changed."
+    value: ${{ steps.changes.outputs.site }}
+
+runs:
+  using: composite
+  steps:
+    # Nothing the gate runs reads Markdown except docs/user-guide.md (problemWhy.test.ts checks its headings) and web/ (the site build reads its posts), so a docs-only change skips setup and gate unless it touches that file. The filter is a step rather than
+    # paths-ignore so the check still reports green for a required status check.
+    - name: Code changed
+      id: changes
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+      run: |
+        set -euo pipefail
+        code=true
+        site=true
+        if [ -n "$BASE" ] && [ "$BASE" != 0000000000000000000000000000000000000000 ]; then
+          files="$(gh api "repos/$GITHUB_REPOSITORY/compare/$BASE...$HEAD" --jq '.files[].filename')"
+          # The compare API lists at most 300 files; a longer list runs the gate.
+          if [ -n "$files" ] && [ "$(printf '%s\n' "$files" | wc -l)" -lt 300 ] && ! printf '%s\n' "$files" | grep -q '^web/'; then
+            site=false
+          fi
+          if [ -n "$files" ] && [ "$(printf '%s\n' "$files" | wc -l)" -lt 300 ] \
+            && ! printf '%s\n' "$files" | grep -qx 'docs/user-guide.md' \
+            && ! printf '%s\n' "$files" | grep -q '^web/' \
+            && ! printf '%s\n' "$files" | grep -qvE '(\.md$|^docs/|^\.github/ISSUE_TEMPLATE/)'; then
+            code=false
+            echo "Only documentation changed; skipping the gate"
+          fi
+        fi
+        echo "code=$code" >>"$GITHUB_OUTPUT"
+        echo "site=$site" >>"$GITHUB_OUTPUT"
