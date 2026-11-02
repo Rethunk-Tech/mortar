@@ -19,6 +19,7 @@ import (
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/installer"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
@@ -38,12 +39,18 @@ func (s *Store) packageFilesWith(gameID, id string, withDev bool) (files map[str
 	if !ok || info.Deploy != components.DeployProfile {
 		return nil, map[string]int{}, nil
 	}
-	p, _, err := s.readDir(gameID, id)
+	p, dir, err := s.readDir(gameID, id)
 	if err != nil {
 		return nil, nil, err
 	}
 	ginfo := installerGame(gameID)
 	files, wins = map[string]packageFile{}, map[string]int{}
+	zips := map[string]bool{}
+	defer func() {
+		if err == nil {
+			pruneZips(dir, zips)
+		}
+	}()
 	byFold := map[string]string{}
 	for _, e := range p.Entries {
 		if e.IsOverlay() || !e.hasPackageEnabled() || e.isTrayEntry() || (e.DevOnly && !withDev) {
@@ -70,10 +77,47 @@ func (s *Store) packageFilesWith(gameID, id string, withDev bool) (files map[str
 				wins[e.Key]++
 			}
 			byFold[fold] = rel
-			files[rel] = packageFile{src: filepath.Join(arch.Dir, filepath.FromSlash(f.Src)), key: e.Key, beaten: beaten}
+			src := filepath.Join(arch.Dir, filepath.FromSlash(f.Src))
+			if f.Zip {
+				if src, err = zipCached(dir, e.StoreKey(), src); err != nil {
+					return nil, nil, fmt.Errorf("%s: %w", entryLabel(e), err)
+				}
+				zips[filepath.Base(src)] = true
+			}
+			files[rel] = packageFile{src: src, key: e.Key, beaten: beaten}
 		}
 	}
 	return files, wins, nil
+}
+
+// zipsDir holds, in the profile's root, the zips built from the store items of the mods a zip-only loader reads, which
+// are what the profile's mods folder is filled from.
+const zipsDir = ".mortar-zips"
+
+// zipCached is the zip of the store item folder src, built once per store key because an item never changes.
+func zipCached(dir, key, src string) (string, error) {
+	zp := filepath.Join(dir, zipsDir, key+".zip")
+	if safefs.IsFile(zp) {
+		return zp, nil
+	}
+	tmp := zp + ".tmp"
+	if err := installer.ZipDir(src, tmp); err != nil {
+		return "", err
+	}
+	return zp, safefs.Rename(tmp, zp)
+}
+
+// pruneZips removes the cached zips no enabled entry uses any more.
+func pruneZips(dir string, keep map[string]bool) {
+	entries, err := os.ReadDir(filepath.Join(dir, zipsDir))
+	if err != nil {
+		return
+	}
+	for _, e := range entries {
+		if !keep[e.Name()] {
+			_ = safefs.Remove(filepath.Join(dir, zipsDir, e.Name()))
+		}
+	}
 }
 
 // packageFile is a file a package lays out: where it is read from, the entry that wins it, and the entries before it

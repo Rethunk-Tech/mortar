@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 
 	tstore "github.com/Rethunk-Tech/go-thunderstore"
@@ -21,6 +22,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/modname"
+	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
 // driverThunderstore is the installer driver for Thunderstore packages, whose files go to the profile target and are
@@ -86,6 +88,12 @@ func (s *Store) layoutOf(game, id, key string, choices map[string]map[string][]s
 func writeLayout(arch installer.Archive, l installer.Layout, dst string) error {
 	for _, f := range l.Files {
 		to := filepath.Join(dst, filepath.FromSlash(strings.TrimPrefix(f.Rel, arch.Key+"/")))
+		if f.Zip {
+			if err := installer.ZipDir(filepath.Join(arch.Dir, filepath.FromSlash(f.Src)), to); err != nil {
+				return err
+			}
+			continue
+		}
 		if err := os.MkdirAll(filepath.Dir(to), 0o700); err != nil {
 			return err
 		}
@@ -177,6 +185,9 @@ func (s *Store) packageMods(game, key, title string) (mods []Component, ok bool,
 			}
 		}
 		return []Component{c}, true, nil
+	}
+	if err == nil && inst.ID() == installer.DriverZipped {
+		return []Component{s.zippedComponent(game, key, title, arch.Dir)}, true, nil
 	}
 	if err != nil || inst.ID() != driverThunderstore {
 		return nil, false, err
@@ -319,4 +330,25 @@ func (s *Store) writeProfileFiles(game, id string, files map[string][]byte, over
 		written = append(written, rel)
 	}
 	return dir, written, nil
+}
+
+// zippedComponent is the one component of a mod placed as a zip. A Thunderstore package is named by its manifest, so a
+// newer version replaces it; any other mod is named by the Nexus mod it came from, else by its store key.
+func (s *Store) zippedComponent(game, key, title, dir string) Component {
+	_, pkg, _, ok := s.items.Meta(game, key)
+	if b, err := safefs.ReadFile(filepath.Join(dir, "manifest.json")); err == nil && ok && pkg != "" {
+		if m, err := tstore.ParseManifest(b); err == nil && m.Name != "" {
+			var needs []mod.ID
+			for _, d := range bepinex5.Needs(m) {
+				needs = append(needs, d.ModID())
+			}
+			author, _, _ := strings.Cut(pkg, "-")
+			return Component{ID: mod.NewID(mod.FormatThunderstore, pkg), Version: m.Version, Name: m.Name, Author: author, Folder: ".", Needs: needs}
+		}
+	}
+	id := key
+	if modID, _, ok := store.NexusFile(key); ok {
+		id = "nexus-" + strconv.Itoa(modID)
+	}
+	return Component{ID: mod.NewID(mod.FormatFolder, id), Name: cmp.Or(title, key), Folder: "."}
 }

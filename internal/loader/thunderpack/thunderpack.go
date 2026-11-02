@@ -63,6 +63,9 @@ type Spec struct {
 	ConfigFolders []string
 	// Log is the loader's log; nil for a loader that keeps none Mortar reads.
 	Log *LogSpec
+	// ZippedMods means the loader reads mods only as .zip files in the profile's mods folder: every archive, from any
+	// site, is placed as one zip (installer.DriverZipped).
+	ZippedMods bool
 	// Route is where each file of package pkg goes in the profile; nil means the catalog's routes.
 	Route func(files []string, pkg string) map[string]string
 }

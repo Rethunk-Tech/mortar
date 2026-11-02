@@ -162,7 +162,7 @@ const pendingPrefix = tempPrefix + "pending_"
 // under, or "" when e has no folder of its own.
 func (s *Store) placeStaged(game, modsDir string, e Entry, stage func(final string) string) (string, error) {
 	arch, l, driver, err := s.layoutOf(game, filepath.Base(filepath.Dir(modsDir)), e.StoreKey(), e.Fomod, !e.FomodSpec)
-	if err != nil || driver == driverThunderstore {
+	if err != nil || driver == driverThunderstore || driver == installer.DriverZipped {
 		return "", err
 	}
 	scratch, err := os.MkdirTemp(modsDir, tempPrefix)

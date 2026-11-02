@@ -64,3 +64,10 @@ func inFolder(p, dir string) (rest string, ok bool) {
 	first, rest := firstSegment(p)
 	return rest, rest != "" && strings.EqualFold(first, dir)
 }
+
+// Zipped reports whether the first thunderpack loader of loaders reads its mods only as .zip files in the profile's
+// mods folder, so a mod from any site is placed as one zip.
+func Zipped(loaders []string) bool {
+	id, ok := Of(loaders)
+	return ok && slices.ContainsFunc(specs, func(s Spec) bool { return s.LoaderID == id && s.ZippedMods })
+}

@@ -121,7 +121,11 @@ const (
 )
 
 // File is one file of a layout: Src is its slash path in the archive, Rel where it goes below the target's root.
-type File struct{ Src, Target, Rel string }
+type File struct {
+	Src, Target, Rel string
+	// Zip means Src is a folder of the archive that is placed as one zip file at Rel, not as the files below it.
+	Zip bool
+}
 
 // Layout is where an archive's files go.
 type Layout struct{ Files []File }
@@ -135,7 +139,7 @@ type Installer interface {
 }
 
 // detectionOrder is the order drivers are asked: the most specific shape first, plain last because it takes anything.
-var detectionOrder = []string{"source-target", "fomod", "thunderstore-rules", "plain"}
+var detectionOrder = []string{"source-target", "zipped", "fomod", "thunderstore-rules", "plain"}
 
 var (
 	mu       sync.RWMutex
