@@ -168,6 +168,7 @@ func TestEveryProfileChangeRecordsAnEventAndUndoesExactly(t *testing.T) {
 		{"SetLoader", func(e env, p Profile) error { _, err := e.SetLoader("stardew", p.ID, "smapi"); return err }},
 		{"SetInstall", func(e env, p Profile) error { _, err := e.SetInstall("stardew", p.ID, "abc"); return err }},
 		{"SetSeparateSaves", func(e env, p Profile) error { _, err := e.SetSeparateSaves("stardew", p.ID, true, false); return err }},
+		{"SetServerMode", func(e env, p Profile) error { _, err := e.SetServerMode("stardew", p.ID, true); return err }},
 		{"SetOverride", func(e env, p Profile) error {
 			_, err := e.SetOverride("stardew", p.ID, overrideSkipPlayCheck, "true")
 			return err

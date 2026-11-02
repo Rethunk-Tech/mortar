@@ -3567,6 +3567,10 @@ msgstr ""
 msgid "Rescan"
 msgstr ""
 
+#: src/game/ProfileMenuItems.tsx
+msgid "Make a server from this profile"
+msgstr ""
+
 #: src/firstrunTour/TourPopover.tsx
 #: src/fomod/Dialog.tsx
 #: src/lan/SendPanel.tsx

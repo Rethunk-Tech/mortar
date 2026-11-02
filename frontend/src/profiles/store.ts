@@ -13,6 +13,7 @@ import {
   Duplicate,
   ListDamaged,
   ListTrash,
+  MakeServer,
   OpenFolder,
   Purge,
   PurgeTrash,
@@ -57,17 +58,32 @@ function ensureListed(
   }
 }
 
+// How a copy of a profile is made, and what is said when it fails.
+interface ProfileCopy {
+  copy: (game: string, id: string) => Promise<Profile>
+  failure: () => string
+}
+const DUPLICATE: ProfileCopy = {
+  copy: Duplicate,
+  failure: () => i18n._(msg`Could not duplicate the profile`),
+}
+const MAKE_SERVER: ProfileCopy = {
+  copy: MakeServer,
+  failure: () => i18n._(msg`Could not make a server profile`),
+}
+
 async function duplicateProfile(
   get: () => { game: GameInfo | null; open: (id: string) => void },
   set: (p: { profiles: Profile[] }) => void,
   id: string,
+  how: ProfileCopy = DUPLICATE,
 ) {
   const { game } = get()
   if (!game) {
     return
   }
   try {
-    const p = await Duplicate(game.id, id)
+    const p = await how.copy(game.id, id)
     const listed = splitListed((await listProfiles(game.id)) ?? [p])
     if (get().game?.id !== game.id) {
       return
@@ -75,7 +91,7 @@ async function duplicateProfile(
     set({ ...listed })
     get().open(p.id)
   } catch (e) {
-    fail(i18n._(msg`Could not duplicate the profile`))(e)
+    fail(how.failure())(e)
   }
 }
 
@@ -285,6 +301,7 @@ export const useProfiles = create<{
   refresh: () => Promise<void>
   loadTrash: () => Promise<void>
   duplicate: (id: string) => Promise<void>
+  makeServer: (id: string) => Promise<void>
   openFolder: (id: string) => Promise<void>
   repair: (id: string) => Promise<void>
   remove: (id: string) => Promise<void>
@@ -388,6 +405,7 @@ export const useProfiles = create<{
     }
   },
   duplicate: (id) => duplicateProfile(get, set, id),
+  makeServer: (id) => duplicateProfile(get, set, id, MAKE_SERVER),
   openFolder: async (id) => {
     const { game } = get()
     if (!game) {

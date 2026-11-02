@@ -209,6 +209,20 @@ type GameInfo struct {
 	// Server marks a dedicated server: the game it runs mods of and the launch arguments its profile settings fill.
 	// An older Mortar leaves the entry out through MinVersion.
 	Server *ServerSpec `json:"server,omitempty"`
+	// ProfileServer marks a game whose profile can run the game's dedicated server instead of the client, from the
+	// same install and with the profile's mods. An older Mortar leaves the entry out through MinVersion.
+	ProfileServer *ProfileServerSpec `json:"profileServer,omitempty"`
+}
+
+// ProfileServerSpec describes how a profile starts the game's dedicated server from the game's install folder.
+type ProfileServerSpec struct {
+	// Exe is the server's executable in the install, started as it is on Windows.
+	Exe string `json:"exe"`
+	// Assembly is the .NET assembly of the server in the install, which every other platform runs with dotnet.
+	Assembly string `json:"assembly"`
+	// DataFlag is the argument that precedes the profile's server data folder, where the server keeps its config,
+	// saves, logs and the Mods and ModConfig the profile gives it.
+	DataFlag string `json:"dataFlag"`
 }
 
 // ServerSpec describes a dedicated server's launch.
@@ -972,6 +986,9 @@ func (g GameInfo) Validate() error {
 	}
 	if len(g.Loaders) == 0 {
 		return fmt.Errorf("game %q needs a loader", g.ID)
+	}
+	if ps := g.ProfileServer; ps != nil && (ps.Exe == "" || ps.Assembly == "" || ps.DataFlag == "") {
+		return fmt.Errorf("game %q has a profile server without an exe, an assembly and a data flag", g.ID)
 	}
 	if g.Server != nil {
 		if err := g.Server.validate(); err != nil {

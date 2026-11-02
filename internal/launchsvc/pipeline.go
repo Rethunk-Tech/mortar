@@ -81,6 +81,11 @@ func (s *Service) launchPlan(ctx context.Context, g game.Game, inst game.Install
 	if err := l.Contribute(ctx, plan, view); err != nil {
 		return nil, err
 	}
+	if s.serverMode(g.ID(), profileID) {
+		if err := s.serverPlan(plan, g.ID(), inst, profileID); err != nil {
+			return nil, err
+		}
+	}
 	_, testCopies := ctx.Value(instancesKey{}).(int)
 	if err := s.armIntroSkip(g, l, profileID, view.Dir, testCopies); err != nil {
 		return nil, err
@@ -274,7 +279,12 @@ func (s *Service) swapModConfig(ctx context.Context, gameID string, inst game.In
 	if err != nil {
 		return err
 	}
-	shared, err := game.PathFor(s.home, s.settings.Get(), gameID, s.pinOf(gameID, profileID, installID), profile.ModConfigRole)
+	var shared string
+	if s.serverMode(gameID, profileID) {
+		shared, err = s.serverModConfig(gameID, profileID)
+	} else {
+		shared, err = game.PathFor(s.home, s.settings.Get(), gameID, s.pinOf(gameID, profileID, installID), profile.ModConfigRole)
+	}
 	if err != nil {
 		return err
 	}
@@ -340,9 +350,12 @@ func (s *Service) planRoots(gameID string, inst game.Install, plan *launchplan.P
 		if f.Root == "" || roots[f.Root] != "" {
 			continue
 		}
-		dir, err := game.PathFor(s.home, s.settings.Get(), gameID, inst.ID, f.Root)
-		if err != nil {
-			return nil, err
+		dir, ok := plan.RootDirs[f.Root]
+		if !ok {
+			var err error
+			if dir, err = game.PathFor(s.home, s.settings.Get(), gameID, inst.ID, f.Root); err != nil {
+				return nil, err
+			}
 		}
 		if roots == nil {
 			roots = map[string]string{}

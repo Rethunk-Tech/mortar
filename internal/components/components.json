@@ -1,5 +1,5 @@
 {
-  "serial": 1793583076,
+  "serial": 1793583585,
   "components": [
     {
       "game": "melonloader",
@@ -2402,8 +2402,10 @@
       "id": "vintage-story",
       "name": "Vintage Story",
       "enabled": true,
+      "minVersion": "0.5.0",
       "marker": "Vintagestory.exe",
       "linuxMarker": "Vintagestory",
+      "processes": ["VintagestoryServer.exe"],
       "linuxStart": "run.sh",
       "art": "assets/game/textures/gui/backgrounds/mainmenu1.png",
       "metadata": [],
@@ -2530,7 +2532,12 @@
             }
           ]
         }
-      ]
+      ],
+      "profileServer": {
+        "exe": "VintagestoryServer.exe",
+        "assembly": "VintagestoryServer.dll",
+        "dataFlag": "--dataPath"
+      }
     },
     {
       "id": "void-crew",

@@ -29,6 +29,10 @@ msgstr "无法打开文件夹"
 msgid "Choose…"
 msgstr "选择…"
 
+#: src/profiles/ServerModeRow.tsx
+msgid "Client"
+msgstr ""
+
 #: src/profiles/HealthDialog.tsx
 msgid "Revert {name} to the installed copy?"
 msgstr ""
@@ -1121,6 +1125,10 @@ msgstr ""
 msgid "Default"
 msgstr ""
 
+#: src/profiles/ServerModeRow.tsx
+msgid "Play as"
+msgstr ""
+
 #: src/profiles/historyTimeline.ts
 msgid "{count, plural, one {Added # mod} other {Added # mods}}"
 msgstr ""
@@ -1487,6 +1495,10 @@ msgstr ""
 msgid "Could not use that image"
 msgstr ""
 
+#: src/profiles/ServerModeRow.tsx
+msgid "Play starts the server with this profile's mods and mod settings. Its config and saves stay in this profile's own folder."
+msgstr ""
+
 #: src/profiles/ProfileMenu.tsx
 msgid "Manage templates…"
 msgstr ""
@@ -1523,6 +1535,10 @@ msgstr ""
 
 #: src/profiles/ProfilesPage.tsx
 msgid "Could not read this profile"
+msgstr ""
+
+#: src/profiles/store.ts
+msgid "Could not make a server profile"
 msgstr ""
 
 #: src/profiles/HistoryToolbar.tsx
@@ -1682,6 +1698,10 @@ msgstr ""
 
 #: src/profiles/EditProfileDialog.tsx
 msgid "Launch"
+msgstr ""
+
+#: src/profiles/ServerModeRow.tsx
+msgid "Dedicated server"
 msgstr ""
 
 #: src/profiles/SeparateSavesRow.tsx

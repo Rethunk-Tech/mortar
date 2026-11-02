@@ -35,6 +35,10 @@ msgstr "Could not open the folder"
 msgid "Choose…"
 msgstr "Choose…"
 
+#: src/profiles/ServerModeRow.tsx
+msgid "Client"
+msgstr "Client"
+
 #: src/profiles/HealthDialog.tsx
 msgid "Revert {name} to the installed copy?"
 msgstr "Revert {name} to the installed copy?"
@@ -1127,6 +1131,10 @@ msgstr "{count, plural, one {# thing to repair} other {# things to repair}}"
 msgid "Default"
 msgstr "Default"
 
+#: src/profiles/ServerModeRow.tsx
+msgid "Play as"
+msgstr "Play as"
+
 #: src/profiles/historyTimeline.ts
 msgid "{count, plural, one {Added # mod} other {Added # mods}}"
 msgstr "{count, plural, one {Added # mod} other {Added # mods}}"
@@ -1493,6 +1501,10 @@ msgstr "This value is not allowed."
 msgid "Could not use that image"
 msgstr "Could not use that image"
 
+#: src/profiles/ServerModeRow.tsx
+msgid "Play starts the server with this profile's mods and mod settings. Its config and saves stay in this profile's own folder."
+msgstr "Play starts the server with this profile's mods and mod settings. Its config and saves stay in this profile's own folder."
+
 #: src/profiles/ProfileMenu.tsx
 msgid "Manage templates…"
 msgstr "Manage templates…"
@@ -1530,6 +1542,10 @@ msgstr "Teal"
 #: src/profiles/ProfilesPage.tsx
 msgid "Could not read this profile"
 msgstr "Could not read this profile"
+
+#: src/profiles/store.ts
+msgid "Could not make a server profile"
+msgstr "Could not make a server profile"
 
 #: src/profiles/HistoryToolbar.tsx
 msgid "Mark current as known good"
@@ -1689,6 +1705,10 @@ msgstr "Unlinked collection {name}"
 #: src/profiles/EditProfileDialog.tsx
 msgid "Launch"
 msgstr "Launch"
+
+#: src/profiles/ServerModeRow.tsx
+msgid "Dedicated server"
+msgstr "Dedicated server"
 
 #: src/profiles/SeparateSavesRow.tsx
 msgid "Start with a copy of my current saves"

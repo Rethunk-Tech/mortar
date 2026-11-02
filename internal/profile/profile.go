@@ -292,6 +292,9 @@ type Profile struct {
 	ModsUpTo string `json:"modsUpTo,omitempty"`
 	// SeparateSaves gives the profile its own saves folder, which replaces the game's shared one while it runs.
 	SeparateSaves bool `json:"separateSaves,omitempty"`
+	// Server makes the profile run the game's dedicated server instead of the client (components.GameInfo.ProfileServer),
+	// with the profile's mods and mod config and a data folder of its own. A profile written without it is a client.
+	Server bool `json:"server,omitempty"`
 	// TestCopies is how many copies the Develop tab's Test starts, as last picked from its menu; 0 lets the tab choose
 	// from the mods in development.
 	TestCopies int `json:"testCopies,omitempty"`

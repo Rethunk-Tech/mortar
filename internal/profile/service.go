@@ -14,6 +14,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // Service exposes the store to the frontend.
@@ -270,6 +271,20 @@ func (s *Service) SetInstall(game, id, install string) (Profile, error) {
 func (s *Service) SetSeparateSaves(game, id string, on, copyCurrent bool) (Profile, error) {
 	return s.store.SetSeparateSaves(game, id, on, copyCurrent)
 }
+
+// HasServer reports whether the game's profiles can run its dedicated server.
+func (s *Service) HasServer(game string) bool { return HasServer(game) }
+
+// SetServerMode makes the profile run the game's dedicated server instead of the client, or the client again.
+func (s *Service) SetServerMode(game, id string, on bool) (Profile, error) {
+	if on && !HasServer(game) {
+		return Profile{}, usererr.Wrap(usererr.Invalid, fmt.Errorf("%s has no dedicated server", game))
+	}
+	return s.store.SetServerMode(game, id, on)
+}
+
+// MakeServer copies the profile, mods and mod config included, into a new profile that runs the dedicated server.
+func (s *Service) MakeServer(game, id string) (Profile, error) { return s.store.MakeServer(game, id) }
 
 // SetLoader makes the profile run the game's loader with this id; "" is the primary loader.
 func (s *Service) SetLoader(game, id, loaderID string) (Profile, error) {

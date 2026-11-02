@@ -22,6 +22,7 @@ type ProfileState struct {
 	Loader              string            `json:"loader,omitempty"`
 	Install             string            `json:"install,omitempty"`
 	SeparateSaves       bool              `json:"separateSaves,omitempty"`
+	Server              bool              `json:"server,omitempty"`
 	LaunchOptions       string            `json:"launchOptions,omitempty"`
 	LaunchPrefix        string            `json:"launchPrefix,omitempty"`
 	LaunchEnv           string            `json:"launchEnv,omitempty"`
@@ -34,7 +35,7 @@ type ProfileState struct {
 
 func stateOf(p Profile) ProfileState {
 	st := ProfileState{
-		Loader: p.Loader, Install: p.Install, SeparateSaves: p.SeparateSaves,
+		Loader: p.Loader, Install: p.Install, SeparateSaves: p.SeparateSaves, Server: p.Server,
 		LaunchOptions: p.LaunchOptions, LaunchPrefix: p.LaunchPrefix, LaunchEnv: p.LaunchEnv,
 		DefaultLaunchPreset: p.DefaultLaunchPreset, Origin: p.Origin,
 		LaunchPresets: slices.Clone(p.LaunchPresets),
@@ -52,6 +53,7 @@ func stateOf(p Profile) ProfileState {
 
 func (st ProfileState) applyTo(p *Profile) {
 	p.Groups, p.Loader, p.Install, p.SeparateSaves = st.Groups, st.Loader, st.Install, st.SeparateSaves
+	p.Server = st.Server
 	p.LaunchOptions, p.LaunchPrefix, p.LaunchEnv = st.LaunchOptions, st.LaunchPrefix, st.LaunchEnv
 	p.LaunchPresets, p.DefaultLaunchPreset, p.Overrides = st.LaunchPresets, st.DefaultLaunchPreset, st.Overrides
 	p.Origin, p.Collection = st.Origin, st.Collection
@@ -74,7 +76,7 @@ func stateChange(a, b ProfileState) HistoryChange {
 		return ChangeInstall
 	case a.SeparateSaves != b.SeparateSaves:
 		return ChangeSaves
-	case a.LaunchOptions != b.LaunchOptions, a.LaunchPrefix != b.LaunchPrefix, a.LaunchEnv != b.LaunchEnv,
+	case a.Server != b.Server, a.LaunchOptions != b.LaunchOptions, a.LaunchPrefix != b.LaunchPrefix, a.LaunchEnv != b.LaunchEnv,
 		a.DefaultLaunchPreset != b.DefaultLaunchPreset, !same(a.LaunchPresets, b.LaunchPresets):
 		return ChangeLaunch
 	case !same(a.Overrides, b.Overrides):

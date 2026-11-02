@@ -1039,7 +1039,9 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 	if err := inst.RunError(g.Name(), s.settings.Get().LauncherRoots[game.LauncherSteam]...); err != nil {
 		return err
 	}
-	direct = direct || !inst.StoreStarts()
+	// A store's relay starts the client, so the server is always started directly.
+	server := !vanilla && s.serverMode(g.ID(), profileID)
+	direct = direct || server || !inst.StoreStarts()
 	env := game.StartEnv{Direct: direct, HideWindow: !showConsole, Ready: s.seen(g)}
 	env.Proton = settings.ResolveAt(s.settings.Get(), "protonVersion", settings.Scope{Game: g.ID(), Install: installOf(g), Profile: profileID}, launchOverrides(s.profiles, g.ID(), profileID))
 	env.StartFirst = settings.ResolveAt(s.settings.Get(), "startFirst", settings.Scope{Game: g.ID(), Install: installOf(g), Profile: profileID}, launchOverrides(s.profiles, g.ID(), profileID))
@@ -1087,7 +1089,10 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 	if plan, err = s.planProfile(ctx, g, inst, profileID, mode, spec.Options, spec.Prefix, spec.Env); err != nil {
 		return err
 	}
-	env.LogFile = s.followLog(g.ID(), profileID)
+	// The server writes no client-main.log, so a launch of it is up when its process is.
+	if !server {
+		env.LogFile = s.followLog(g.ID(), profileID)
+	}
 	// The install is locked from the preparing claim until the waiter has unwound: a second launch finds the game busy.
 	dep, err := s.deployProfile(ctx, g.ID(), inst, profileID, plan)
 	if err != nil {
@@ -1126,15 +1131,18 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 	var settingsMissing bool
 	var backupErr error
 	if !vanilla && profileID != "" {
-		restore, settingsMissing, err = s.prepareGameSettings(g.ID(), profileID, t.install)
-		if err != nil {
-			dep.unwind(ctx)
-			return err
-		}
-		backupErr = s.backupChangedSaves(ctx, g.ID(), profileID, t.install, dir)
-		err = s.swapSaves(ctx, g.ID(), inst, profileID, t.install, dep)
-		if err == nil {
-			err = s.swapOptions(ctx, g.ID(), inst, profileID, t.install, dep)
+		// The server keeps its saves, options and caches in its own data folder, not the client's.
+		if !server {
+			restore, settingsMissing, err = s.prepareGameSettings(g.ID(), profileID, t.install)
+			if err != nil {
+				dep.unwind(ctx)
+				return err
+			}
+			backupErr = s.backupChangedSaves(ctx, g.ID(), profileID, t.install, dir)
+			err = s.swapSaves(ctx, g.ID(), inst, profileID, t.install, dep)
+			if err == nil {
+				err = s.swapOptions(ctx, g.ID(), inst, profileID, t.install, dep)
+			}
 		}
 		if err == nil {
 			err = s.swapModConfig(ctx, g.ID(), inst, profileID, t.install, dep)
@@ -1146,7 +1154,9 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 			}
 			return err
 		}
-		s.clearCaches(g.ID(), profileID, t.install)
+		if !server {
+			s.clearCaches(g.ID(), profileID, t.install)
+		}
 	}
 	if err := s.ensureRuntime(inst, plan.RuntimeReqs, env.Direct || plan.Exe != ""); err != nil {
 		if errors.Is(err, errNoPrefix) {

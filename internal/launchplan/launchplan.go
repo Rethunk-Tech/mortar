@@ -47,12 +47,15 @@ type Plan struct {
 	Exe  string
 	// Entry is the executable a direct start runs when no loader replaces Exe. A store that relays the start lets the
 	// game's own launcher run instead.
-	Entry        string
-	Args         []string
-	Env          map[string]string
-	Prefix       []string
-	RuntimeReqs  []RuntimeReq
-	Files        []PlanFile
+	Entry       string
+	Args        []string
+	Env         map[string]string
+	Prefix      []string
+	RuntimeReqs []RuntimeReq
+	Files       []PlanFile
+	// RootDirs are folders for catalog path roles that a Files entry's Root resolves to instead of the game's own
+	// path (a server run keeps its Mods in its own data folder).
+	RootDirs     map[string]string
 	ProcessNames []string
 	// SteamLaunchOption is the launch option the player must set in Steam for the loader to start, where the platform
 	// gives Mortar no way to inject it into the process (BepInEx's run_bepinex.sh on macOS).
@@ -79,6 +82,14 @@ func (p *Plan) SetEnv(key, value string) { p.Env[key] = value }
 
 // AddFile declares an install-side file for the deployer.
 func (p *Plan) AddFile(f PlanFile) { p.Files = append(p.Files, f) }
+
+// SetRootDir makes dir the folder files with this root are placed under.
+func (p *Plan) SetRootDir(root, dir string) {
+	if p.RootDirs == nil {
+		p.RootDirs = map[string]string{}
+	}
+	p.RootDirs[root] = dir
+}
 
 // AddProcessName names an executable the running game can be found by.
 func (p *Plan) AddProcessName(name string) {

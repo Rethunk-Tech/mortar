@@ -18,6 +18,7 @@ import { LaunchOptionsBlock } from './LaunchOptionsBlock.tsx'
 import { LaunchPresetsBlock } from './LaunchPresetsBlock.tsx'
 import { LoaderPicker } from './LoaderPicker.tsx'
 import { SeparateSavesRow } from './SeparateSavesRow.tsx'
+import { ServerModeRow } from './ServerModeRow.tsx'
 import { ServerSettings } from './ServerSettings.tsx'
 import { saveProfile } from './saveProfile.ts'
 import { useProfiles } from './store.ts'
@@ -195,6 +196,7 @@ function ProfileFields({
         'launch',
         <>
           <LoaderPicker gameId={gameId} profileId={profile.id} loader={profile.loader ?? ''} />
+          <ServerModeRow gameId={gameId} profileId={profile.id} on={profile.server ?? false} />
           <SeparateSavesRow
             gameId={gameId}
             profileId={profile.id}

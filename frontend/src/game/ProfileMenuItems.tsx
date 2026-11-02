@@ -1,4 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
+import { useLoaded } from '@rethunk/react-load-hooks'
 import {
   Copy,
   FolderInput,
@@ -8,6 +9,7 @@ import {
   GitMerge,
   History,
   PackagePlus,
+  Server,
   ShieldCheck,
   Snowflake,
   SquareArrowOutUpRight,
@@ -17,7 +19,10 @@ import {
 import { useEffect, useState } from 'react'
 import { AddResult } from '../../bindings/github.com/Rethunk-Tech/go-gamelocator/steam/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { SetFavourite } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import {
+  HasServer,
+  SetFavourite,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import {
   AddToSteam,
   Create as CreateShortcut,
@@ -212,6 +217,29 @@ function ReviewItems({ profile, close }: Item) {
   ]
 }
 
+// Offered only for a game whose profiles can run its dedicated server.
+function MakeServerItem({ profile, close }: Item) {
+  const { t } = useLingui()
+  const gameId = useProfiles((s) => s.game?.id ?? '')
+  const makeServer = useProfiles((s) => s.makeServer)
+  const { data: offered } = useLoaded(
+    gameId ? () => HasServer(gameId) : null,
+    [gameId],
+    false,
+    reportUnexpected,
+  )
+  return offered ? (
+    <ProfileMenuItem
+      icon={<Server size={16} />}
+      label={t`Make a server from this profile`}
+      onClick={() => {
+        close()
+        makeServer(profile.id).catch(reportUnexpected)
+      }}
+    />
+  ) : null
+}
+
 // What makes another profile, template or list from this one, then the backup file and its restore.
 function CopyItems({ profile, close }: Item) {
   const { t } = useLingui()
@@ -229,6 +257,7 @@ function CopyItems({ profile, close }: Item) {
         duplicate(profile.id).catch(reportUnexpected)
       }}
     />,
+    <MakeServerItem key="make-server" profile={profile} close={close} />,
     <ProfileMenuItem
       key="merge"
       icon={<GitMerge size={16} />}
