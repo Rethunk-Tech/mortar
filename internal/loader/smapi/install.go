@@ -95,6 +95,19 @@ func buildOS(dir string) string {
 // hostOS is the OS Mortar runs on; tests set it to exercise another host's branch.
 var hostOS = runtime.GOOS
 
+// macBundle is the folder inside the game's macOS bundle that holds the executable, which SMAPI's installer treats
+// as the game folder.
+const macBundle = "Stardew Valley.app/Contents/MacOS"
+
+// gameFolder is the folder SMAPI's files live in for the install dir on goos: the bundle's executable folder on
+// macOS, the install itself elsewhere.
+func gameFolder(dir, goos string) string {
+	if goos == "darwin" {
+		return filepath.Join(dir, filepath.FromSlash(macBundle))
+	}
+	return dir
+}
+
 // loaderState reports what is installed in dir for goos. On Linux SMAPI renames the game's launcher to
 // StardewValley-original and installs its own in its place, which a game update overwrites.
 func loaderState(dir, goos string) (installed, broken bool) {
@@ -115,15 +128,16 @@ func loaderState(dir, goos string) (installed, broken bool) {
 // Status reports SMAPI's state in the install. The version is the log's, else the bundled mods'; a version Mortar
 // recorded when it installed SMAPI takes precedence over both and is the caller's to apply.
 func (l Loader) Status(t loader.Target) (loader.Status, error) {
-	installed, broken := loaderState(t.InstallDir, buildOS(t.InstallDir))
+	goos := buildOS(t.InstallDir)
+	installed, broken := loaderState(gameFolder(t.InstallDir, goos), goos)
 	st := loader.Status{Installed: installed, Broken: broken}
-	st.Shared, st.LinkedFrom = sharedSMAPI(t.InstallDir)
+	st.Shared, st.LinkedFrom = sharedSMAPI(gameFolder(t.InstallDir, goos))
 	if !installed && !broken {
 		return st, nil
 	}
 	logSMAPI, logGame := l.logVersions()
 	st.GameVersion = logGame
-	st.Version = cmp.Or(logSMAPI, bundledVersion(t.InstallDir))
+	st.Version = cmp.Or(logSMAPI, bundledVersion(gameFolder(t.InstallDir, goos)))
 	return st, nil
 }
 
@@ -249,6 +263,8 @@ func installer(version, goos string) (dir, exe string, err error) {
 	switch goos {
 	case "linux":
 		return filepath.Join(root, "linux"), "SMAPI.Installer", nil
+	case "darwin":
+		return filepath.Join(root, "macOS"), "SMAPI.Installer", nil
 	case "windows":
 		return filepath.Join(root, "windows"), "SMAPI.Installer.exe", nil
 	}
@@ -258,8 +274,9 @@ func installer(version, goos string) (dir, exe string, err error) {
 // Install runs the installer in pkg's archive, which is the same for a first install and an update, and hands t.Bundled
 // SMAPI's own mods before anything is cleaned up. It returns the installed version.
 func (Loader) Install(ctx context.Context, t loader.Target, pkg loader.Package, progress func(loader.Step)) (string, error) {
-	dir, version := t.InstallDir, pkg.Version
-	goos := buildOS(dir)
+	version := pkg.Version
+	goos := buildOS(t.InstallDir)
+	dir := gameFolder(t.InstallDir, goos)
 	instDir, exe, err := installer(version, goos)
 	if err != nil {
 		return "", err

@@ -70,19 +70,20 @@ type Install struct {
 func newInstall(info components.GameInfo, store, dir, prefix, origin string) Install {
 	sum := sha256.Sum256([]byte(store + "\x00" + dir))
 	in := Install{ID: hex.EncodeToString(sum[:6]), Game: info.ID, Store: store, Dir: dir, Prefix: prefix, Origin: origin}
-	in.Platform = platformOf(info, dir)
+	in.Platform = platformOf(info, dir, goruntime.GOOS)
 	in.Runtime = runtime.IDOf(in.runtime(info, ""))
 	in.RuntimeVersion = runtime.Version(in.runtime(info, ""))
 	return in
 }
 
-// platformOf is the OS the build in dir is for: the native Linux build when dir holds the catalog's LinuxMarker and not
-// its Marker, else the platform Marker implies.
-func platformOf(info components.GameInfo, dir string) string {
-	if info.LinuxMarker != "" && goruntime.GOOS == "linux" && !safefs.IsFile(filepath.Join(dir, info.Marker)) && safefs.IsFile(filepath.Join(dir, info.LinuxMarker)) {
-		return "linux"
+// platformOf is the OS the build in dir is for on host goos: the native Linux or macOS build when dir holds the
+// catalog's LinuxMarker or DarwinMarker and not its Marker, else the platform Marker implies.
+func platformOf(info components.GameInfo, dir, goos string) string {
+	native := map[string]string{"linux": info.LinuxMarker, "darwin": info.DarwinMarker}[goos]
+	if native != "" && !safefs.IsFile(filepath.Join(dir, info.Marker)) && safefs.IsFile(filepath.Join(dir, filepath.FromSlash(native))) {
+		return goos
 	}
-	return runtime.PlatformOf(info.Marker, goruntime.GOOS)
+	return runtime.PlatformOf(info.Marker, goos)
 }
 
 func (in Install) runtime(info components.GameInfo, home string) runtime.Install {

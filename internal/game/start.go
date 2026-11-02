@@ -287,6 +287,8 @@ func (st Starter) command(goos string, inst Install, plan *launchplan.Plan, env 
 			switch {
 			case inst.Platform == "linux" && info.LinuxMarker != "":
 				exe = filepath.Join(inst.Dir, filepath.FromSlash(cmp.Or(info.LinuxStart, info.LinuxMarker)))
+			case inst.Platform == "darwin" && info.DarwinMarker != "":
+				exe = filepath.Join(inst.Dir, filepath.FromSlash(info.DarwinMarker))
 			case strings.HasSuffix(strings.ToLower(info.Marker), ".exe"):
 				exe = filepath.Join(inst.Dir, info.MarkerPath())
 			}

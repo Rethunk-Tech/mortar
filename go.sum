@@ -18,8 +18,6 @@ github.com/Rethunk-Tech/go-dotnet v0.2.0 h1:5V6tEBfTXSnwbsUMNAKovLjLkLWUxyHF0f0f
 github.com/Rethunk-Tech/go-dotnet v0.2.0/go.mod h1:Nd59gwMl484+cwGQy+vVIOWPduhkj2PRg/UWzfJy/fY=
 github.com/Rethunk-Tech/go-fomod v0.1.0 h1:NAmHf2WPHAsD+fcuc1UYWyjYpG56ioDwxjf/Qyq0ahA=
 github.com/Rethunk-Tech/go-fomod v0.1.0/go.mod h1:vNHiJeDb3TOL4FMGPqANWoM3kA16wKUDL/2kEEJ0BMo=
-github.com/Rethunk-Tech/go-gamelocator v0.1.0 h1:OS8Gp+ANUu4BHzCL0+YqclN4UVZE0qDZmuUXd0QH8Sg=
-github.com/Rethunk-Tech/go-gamelocator v0.1.0/go.mod h1:+QGK8M6vxBzKDmy70Gdj0pJMmCECbn8jCeZq7oa4/AY=
 github.com/Rethunk-Tech/go-gameproc v0.1.0 h1:ZbuqIW6Dqqt9n7m0mTq+M12PmkYPlHtGt/DNgdJgqr4=
 github.com/Rethunk-Tech/go-gameproc v0.1.0/go.mod h1:QxA0/v7sAD+a2yOkIO/Zkznp4H197STWms/Y9vYUvnA=
 github.com/Rethunk-Tech/go-github v0.2.0 h1:sHjszKXkl3QtFT38Xi9RvhvP9OioCsHczla5pMBDL8E=
@@ -36,8 +34,6 @@ github.com/Rethunk-Tech/go-nettrace v0.1.0 h1:nwx2R/p7HGauax19KB1es9rSwr3ROubPEM
 github.com/Rethunk-Tech/go-nettrace v0.1.0/go.mod h1:fy5SH8B/dIoykYgt2alKsyc745KnlMPnArGf+Egqm3s=
 github.com/Rethunk-Tech/go-nexusmods v0.2.0 h1:7mXZn4LzeoafeZGOJ1V3WI+mm5aNBciXJRTdaiFeOuU=
 github.com/Rethunk-Tech/go-nexusmods v0.2.0/go.mod h1:lUcJ9+1GOuQUqrJdOkset+e5K8RZdCPcxH2S4OB3tuE=
-github.com/Rethunk-Tech/go-safefs v0.2.0 h1:ZNsfZ+s62DFH0mj60qCkLV/sqhOMkyZ1S6vN7awJ8e4=
-github.com/Rethunk-Tech/go-safefs v0.2.0/go.mod h1:QCWJYkNlLkYuA2VKbJkz5x+8wJHnkfiBmzEH64qP7sk=
 github.com/Rethunk-Tech/go-semverish v0.2.0 h1:UrJw6+D1uOclXnkLmpSQAIvzoCqF9XPmXBqRRdA+1lw=
 github.com/Rethunk-Tech/go-semverish v0.2.0/go.mod h1:aCtsBrSen/cxziPkxMmXxk/C3xsFVcH5+GjqPKtr6iM=
 github.com/Rethunk-Tech/go-smapi v0.2.0 h1:nH+UsxO7kpJp1QKvLDfHKF/qiUDJ2JXtIw93qBmXcqI=

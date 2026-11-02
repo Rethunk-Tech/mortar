@@ -54,7 +54,10 @@ type Plan struct {
 	RuntimeReqs  []RuntimeReq
 	Files        []PlanFile
 	ProcessNames []string
-	Version      *VersionManifest
+	// SteamLaunchOption is the launch option the player must set in Steam for the loader to start, where the platform
+	// gives Mortar no way to inject it into the process (BepInEx's run_bepinex.sh on macOS).
+	SteamLaunchOption string
+	Version           *VersionManifest
 	// ForCopy, when a loader sets it, adjusts the plan of the n-th (1-based, from 2) copy of a test run, which gets a
 	// clone of the plan whose Args and Env it may change.
 	ForCopy func(n int, copied *Plan) error

@@ -58,6 +58,8 @@ const (
 	LineEvent = "launch:line"
 	// BackupWarningEvent is emitted when a launch could not make its pre-play save backup.
 	BackupWarningEvent = "launch:backup-warning"
+	// SteamOptionEvent is emitted when a launch works only once the player sets a Steam launch option.
+	SteamOptionEvent = "launch:steam-option"
 	// SettingsRestoreWarningEvent is emitted when profile game settings could not be restored.
 	SettingsRestoreWarningEvent = "launch:settings-restore-warning"
 
@@ -107,6 +109,13 @@ type BackupWarning struct {
 	Game    string `json:"game"`
 	Profile string `json:"profile"`
 	Error   string `json:"error"`
+}
+
+// SteamOption is the launch option the player must set in Steam before the loader starts with the game.
+type SteamOption struct {
+	Game    string `json:"game"`
+	Profile string `json:"profile"`
+	Option  string `json:"option"`
 }
 
 // SettingsRestoreWarning describes a profile game settings restore failure.
@@ -1187,6 +1196,9 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 		msg := fmt.Sprintf("Could not back up saves before playing: %v.", backupErr)
 		s.sayCode(g, profileID, msg, "backupFailed", map[string]string{"error": backupErr.Error()})
 		s.emit(BackupWarningEvent, BackupWarning{Game: gameID, Profile: profileID, Error: backupErr.Error()})
+	}
+	if plan.SteamLaunchOption != "" {
+		s.emit(SteamOptionEvent, SteamOption{Game: gameID, Profile: profileID, Option: plan.SteamLaunchOption})
 	}
 	s.watch(g)
 	go s.followRunning(runCtx, g)

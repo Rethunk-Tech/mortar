@@ -161,6 +161,7 @@ func registerEvents() {
 	application.RegisterEvent[lan.PairedPeer](lan.PairedEvent)
 	application.RegisterEvent[launchsvc.NoticeClick](launchsvc.NoticeClickEvent)
 	application.RegisterEvent[launchsvc.BackupWarning](launchsvc.BackupWarningEvent)
+	application.RegisterEvent[launchsvc.SteamOption](launchsvc.SteamOptionEvent)
 	application.RegisterEvent[launchsvc.SettingsRestoreWarning](launchsvc.SettingsRestoreWarningEvent)
 	application.RegisterEvent[updatesvc.Release](updatesvc.StagedEvent)
 	application.RegisterEvent[updatesvc.ModUpdateDigestNotice](updatesvc.ModUpdateDigestEvent)

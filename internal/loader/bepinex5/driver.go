@@ -121,6 +121,10 @@ func (Loader) Contribute(ctx context.Context, plan *launchplan.Plan, p loader.Pr
 		}
 		return contributeLinux(plan, p, m)
 	}
+	if p.Platform == "darwin" {
+		g, _ := components.Game(p.Game)
+		return contributeDarwin(plan, p, m, g)
+	}
 	proton := p.Runtime == "proton" || p.Runtime == "mortar-proton"
 	plan.ForCopy = forCopy(p, proton)
 	plan.AddArgs(bepinex.LaunchArgs(p.Dir, m.Doorstop, proton)...)
@@ -178,6 +182,36 @@ func contributeLinux(plan *launchplan.Plan, p loader.ProfileView, m marker) erro
 	if id := g.SteamAppID(); id != "" {
 		plan.SetEnv("SteamAppId", id)
 	}
+	return nil
+}
+
+// contributeDarwin prepares the pack's run_bepinex.sh, which dyld-injects Doorstop into the game when Steam starts
+// it, so nothing is placed in the game folder and the player must set the returned launch option in Steam. The
+// Doorstop flags are passed as on Linux, ignored by the game, so Owns can tell the profile's process.
+func contributeDarwin(plan *launchplan.Plan, p loader.ProfileView, m marker, g components.GameInfo) error {
+	app, _, ok := strings.Cut(g.DarwinMarker, "/")
+	if !ok || !strings.HasSuffix(app, ".app") {
+		return errors.New(g.Name + " names no macOS app")
+	}
+	place := bepinex.PlacementFor(p.Dir, "darwin")
+	if place.LaunchOption == "" {
+		return errors.New("the BepInEx pack has no run_bepinex.sh for macOS; reinstall the loader")
+	}
+	for _, f := range place.Executable {
+		if err := safefs.Chmod(filepath.Join(p.Dir, filepath.FromSlash(f)), 0o755); err != nil {
+			return err
+		}
+	}
+	script := filepath.Join(p.Dir, "run_bepinex.sh")
+	b, err := safefs.ReadFile(script)
+	if err != nil {
+		return err
+	}
+	if err := safefs.WriteFile(script, bepinex.SetScriptExecutable(b, strings.TrimSuffix(app, ".app")), 0o755); err != nil {
+		return err
+	}
+	plan.AddArgs(bepinex.LaunchArgs(p.Dir, m.Doorstop, false)...)
+	plan.SteamLaunchOption = place.LaunchOption
 	return nil
 }
 

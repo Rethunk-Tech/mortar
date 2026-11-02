@@ -2,6 +2,7 @@ import { msg, plural } from '@lingui/core/macro'
 import { Events } from '@wailsio/runtime'
 import { create } from 'zustand'
 import type { SweepReport } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
+import { MACOS, STEAM } from '../brand/productNames.ts'
 import { useConsole } from '../console/store.ts'
 import { i18n } from '../i18n/index.ts'
 import { useSettings } from '../settings/store.ts'
@@ -68,6 +69,16 @@ export function initLaunch() {
       title: i18n._(msg`Could not back up saves before Play`),
       body: errorMessage(data.error),
       ...(details === '' ? {} : { detail: details }),
+    })
+  })
+  Events.On('launch:steam-option', (event) => {
+    const data = event.data as { option?: string }
+    useToasts.getState().push({
+      kind: 'warning',
+      title: i18n._(
+        msg`Set this ${{ launcher: STEAM }} launch option so the mod loader starts on ${{ os: MACOS }}`,
+      ),
+      body: data.option ?? '',
     })
   })
   Events.On('avscan:failed', (event) => {

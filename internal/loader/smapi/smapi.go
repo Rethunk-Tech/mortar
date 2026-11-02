@@ -84,7 +84,9 @@ func modsDir(p loader.ProfileView) string { return filepath.Join(p.Dir, "mods") 
 
 // Contribute points SMAPI at the profile's mods folder.
 func (Loader) Contribute(_ context.Context, plan *launchplan.Plan, p loader.ProfileView) error {
-	return contribute(buildOS(p.InstallDir), plan, p)
+	goos := buildOS(p.InstallDir)
+	p.InstallDir = gameFolder(p.InstallDir, goos)
+	return contribute(goos, plan, p)
 }
 
 // contribute: Linux SMAPI's launcher reads its own flags before `--` and forwards only what follows it.
@@ -114,8 +116,9 @@ func (Loader) Prelaunch(p loader.ProfileView) error {
 	if p.InstallDir == "" {
 		return nil
 	}
+	dir := gameFolder(p.InstallDir, buildOS(p.InstallDir))
 	for _, name := range startupMarkers {
-		if err := safefs.RemoveAll(filepath.Join(p.InstallDir, "smapi-internal", name)); err != nil {
+		if err := safefs.RemoveAll(filepath.Join(dir, "smapi-internal", name)); err != nil {
 			return err
 		}
 	}
@@ -125,7 +128,8 @@ func (Loader) Prelaunch(p loader.ProfileView) error {
 // Vanilla starts the unmodded game. SMAPI's unix-launcher.sh always execs StardewModdingAPI, so on Linux the game
 // the installer kept as StardewValley-original is run directly; Windows has a plain executable.
 func (Loader) Vanilla(_ context.Context, plan *launchplan.Plan, t loader.Target) error {
-	return vanilla(buildOS(t.InstallDir), plan, t.InstallDir)
+	goos := buildOS(t.InstallDir)
+	return vanilla(goos, plan, gameFolder(t.InstallDir, goos))
 }
 
 func vanilla(goos string, plan *launchplan.Plan, dir string) error {

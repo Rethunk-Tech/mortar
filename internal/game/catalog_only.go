@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -45,6 +46,9 @@ func (g catalogOnly) GameProcesses() []string {
 	if info.LinuxMarker != "" {
 		out = append(out, info.LinuxMarker)
 	}
+	if info.DarwinMarker != "" {
+		out = append(out, path.Base(info.DarwinMarker))
+	}
 	for _, p := range info.Processes {
 		out = append(out, p, strings.TrimSuffix(p, filepath.Ext(p)))
 	}
@@ -55,7 +59,7 @@ func (g catalogOnly) GameProcesses() []string {
 // Linux build's executable.
 func (g catalogOnly) ValidInstall(dir string) error {
 	info, _ := catalogGame(string(g))
-	for _, m := range []string{info.MarkerPath(), info.LinuxMarker} {
+	for _, m := range []string{info.MarkerPath(), info.LinuxMarker, filepath.FromSlash(info.DarwinMarker)} {
 		if m != "" && safefs.IsFile(filepath.Join(dir, m)) {
 			return nil
 		}

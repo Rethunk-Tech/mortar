@@ -113,6 +113,10 @@ type GameInfo struct {
 	// LinuxMarker is the executable of the game's native Linux build where the store ships one beside the build Marker
 	// names: an install holding it and not Marker is that build, started natively rather than under Proton.
 	LinuxMarker string `json:"linuxMarker,omitempty"`
+	// DarwinMarker is the slash path below the install folder of the executable inside the game's macOS bundle
+	// (Game.app/Contents/MacOS/Game). On a Mac an install holding it and not Marker is that build. A store that
+	// installs the .app itself needs no entry: the bundle's folder is the install.
+	DarwinMarker string `json:"darwinMarker,omitempty"`
 	// Processes are other executables in the install the game runs as (another renderer's build), file names only, so
 	// running-game detection sees them too.
 	Processes []string `json:"processes,omitempty"`
@@ -999,7 +1003,7 @@ func (g GameInfo) Validate() error {
 	if g.MarkerDir != "" && (strings.Contains(g.MarkerDir, "\\") || !fs.ValidPath(g.MarkerDir) || g.MarkerDir == ".") {
 		return fmt.Errorf("game %q has an unsafe marker folder %q", g.ID, g.MarkerDir)
 	}
-	for _, p := range []string{g.LinuxStart, g.Art} {
+	for _, p := range []string{g.LinuxStart, g.DarwinMarker, g.Art} {
 		if p != "" && (strings.Contains(p, "\\") || !fs.ValidPath(p) || p == ".") {
 			return fmt.Errorf("game %q has an unsafe install file %q", g.ID, p)
 		}

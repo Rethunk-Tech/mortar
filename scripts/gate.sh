@@ -122,6 +122,7 @@ step shellcheck bash -c "set -o pipefail; git ls-files -co --exclude-standard -z
 } >"$logs/racechain" 2>&1 &
 pids[racechain]=$!
 step golangci-windows env GOGC=400 GOOS=windows golangci-lint run --allow-parallel-runners
+step vet-darwin env GOOS=darwin go vet ./internal/...
 step version go run ./cmd/version -check
 step i18n-dupes bun scripts/i18n-dupes.ts
 step credits bun scripts/gen-credits.ts --check

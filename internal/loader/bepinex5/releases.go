@@ -17,7 +17,7 @@ import (
 func (Loader) ProfileFiles() []string {
 	// .doorstop_version and the runtime folders (dotnet, mono, unstripped_corlib) are the pack's, as bepinex.InstallPack
 	// lays them out.
-	return append(append([]string{"BepInEx", "doorstop_config.ini", "doorstop_libs", ".doorstop_version", markerFile}, bepinex.Proxies()...),
+	return append(append([]string{"BepInEx", "doorstop_config.ini", "doorstop_libs", ".doorstop_version", markerFile, "run_bepinex.sh", "libdoorstop.dylib"}, bepinex.Proxies()...),
 		"dotnet", "mono", "unstripped_corlib")
 }
 

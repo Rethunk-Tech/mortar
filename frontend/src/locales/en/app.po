@@ -764,6 +764,10 @@ msgstr "Shown under Advanced on the mod's Files tab."
 msgid "Mortar tidied up {count, plural, one {# thing} other {# things}}"
 msgstr "Mortar tidied up {count, plural, one {# thing} other {# things}}"
 
+#: src/launch/events.ts
+msgid "Set this {launcher} launch option so the mod loader starts on {os}"
+msgstr "Set this {launcher} launch option so the mod loader starts on {os}"
+
 #: src/shell/FlatpakGrant.tsx
 msgid "Grant access…"
 msgstr "Grant access…"
