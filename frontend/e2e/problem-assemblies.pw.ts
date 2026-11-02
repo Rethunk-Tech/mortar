@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url'
 import { expect, type Page, test } from '@playwright/test'
 import { openGameSelect, openSeedFarm, showProblemSection, switchProfile } from './app.ts'
 import { serverEnv } from './sandbox.ts'
+import { zipPaths } from './zip.ts'
 
 // The Problems sentences that need compiled assemblies (internal/dotnet/testdata/src/E2E, rebuilt by build.sh): a
 // Stardew mod whose writes sit inside another's, and a Lethal Company plugin that declares another one incompatible.
@@ -29,7 +30,7 @@ function zip(root: string, name: string, folder: string, files: Record<string, s
     writeFileSync(`${at}/${path}`, body)
   }
   const out = `${root}/${name}.zip`
-  execFileSync('python3', ['-m', 'zipfile', '-c', out, folder], { cwd: `${root}/${name}` })
+  zipPaths(out, [folder], `${root}/${name}`)
   return out
 }
 

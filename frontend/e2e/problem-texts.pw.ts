@@ -4,6 +4,7 @@ import process from 'node:process'
 import { expect, type Page, test } from '@playwright/test'
 import { openSeedFarm, showProblemSection, switchProfile } from './app.ts'
 import { serverEnv } from './sandbox.ts'
+import { zipPaths } from './zip.ts'
 
 // One profile of small generated content packs, each pair shaped to give one of the Problems tab's explained rows,
 // so every sentence is checked as the app renders it: in its section and with nothing left uninterpolated.
@@ -143,7 +144,7 @@ function writePacks(root: string): string[] {
       writeFileSync(`${folder}/${name}`, body)
     }
     const zip = `${root}/${id}.zip`
-    execFileSync('python3', ['-m', 'zipfile', '-c', zip, `Texts.${id}`], { cwd: `${root}/${id}` })
+    zipPaths(zip, [`Texts.${id}`], `${root}/${id}`)
     return zip
   })
 }

@@ -4,6 +4,7 @@ import process from 'node:process'
 import { expect, test } from '@playwright/test'
 import { openSeedFarm } from './app.ts'
 import { serverEnv } from './sandbox.ts'
+import { zipPaths } from './zip.ts'
 
 // The Custom command scanner stands in for a real antivirus: a script that flags any file holding a marker, so the whole
 // refusal, Install anyway and History flow runs with no antivirus installed.
@@ -34,9 +35,7 @@ test.beforeAll(() => {
     '{"Name":"Flagged Test","UniqueID":"Mortar.FlaggedTest","Version":"1.0.0","MinimumApiVersion":"4.0.0"}',
   )
   writeFileSync(`${stage}/marker.txt`, MARKER)
-  execFileSync('zip', ['-qr', `${downloads}/flagged-test.zip`, 'FlaggedMod'], {
-    cwd: `${dir}/av-stage`,
-  })
+  zipPaths(`${downloads}/flagged-test.zip`, ['FlaggedMod'], `${dir}/av-stage`)
 })
 
 // Later specs share the sandbox, so the scanner setting and the mod go back out.

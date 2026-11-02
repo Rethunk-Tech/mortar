@@ -57,22 +57,26 @@
 }
 
 .lightbox {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  border: 0;
   background: rgba(8, 8, 10, 0.92);
-  display: grid;
-  place-items: center;
   padding: 4vw;
-  opacity: 0;
-  pointer-events: none;
+  cursor: zoom-out;
   transition: opacity 0.25s;
 }
 
-.lightbox.open {
-  opacity: 1;
-  pointer-events: auto;
-  cursor: zoom-out;
+.lightbox[open] {
+  display: grid;
+  place-items: center;
+}
+
+@starting-style {
+  .lightbox[open] {
+    opacity: 0;
+  }
 }
 
 .lightbox img {
@@ -80,12 +84,17 @@
   max-height: 100%;
   border-radius: 12px;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
-  transform: scale(0.96);
   transition: transform 0.25s;
 }
 
-.lightbox.open img {
+.lightbox[open] img {
   transform: none;
+}
+
+@starting-style {
+  .lightbox[open] img {
+    transform: scale(0.96);
+  }
 }
 
 /* cards */

@@ -1,8 +1,8 @@
-import { execFileSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, readFileSync, utimesSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
 import { expect, type Page, test } from '@playwright/test'
 import { calledWith, openSeedFarm } from './app.ts'
+import { zipPaths } from './zip.ts'
 
 // A pasted Patreon post opens in the browser and is remembered; the file the player then saves is added from the
 // Downloads dialog under that post. The browser open is answered by the test, so the sandbox opens nothing.
@@ -28,7 +28,7 @@ function writeArchive(into: string, id = 'Seed.Patreon') {
     `{"Name":"${id.replace('.', ' ')}","Author":"Self-test","Version":"1.0.0","Description":"Fixture mod","UniqueID":"${id}","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}\n`,
   )
   mkdirSync(into, { recursive: true })
-  execFileSync('python3', ['-m', 'zipfile', '-c', `${into}/${id}.zip`, `${src}/${id}`])
+  zipPaths(`${into}/${id}.zip`, [`${src}/${id}`])
   return `${into}/${id}.zip`
 }
 

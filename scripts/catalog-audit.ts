@@ -2,7 +2,6 @@
 // listed Thunderstore communities with enough packages that the catalog lacks, lists catalog games that Nexus or
 // CurseForge host but the catalog does not name them for, and fails when a catalog game's community or loader pack
 // is gone.
-import { readFileSync } from 'node:fs'
 
 const SOURCE = 'components.source.json'
 const API = 'https://thunderstore.io/api'
@@ -39,7 +38,7 @@ async function packageExists(id: string): Promise<boolean> {
   return res.ok
 }
 
-const games: Game[] = JSON.parse(readFileSync(SOURCE, 'utf8')).games
+const games: Game[] = (await Bun.file(SOURCE).json()).games
 const keyed = new Map<string, string>()
 for (const g of games) {
   const key = g.sources?.find((s) => s.id === 'thunderstore')?.key

@@ -112,7 +112,7 @@ async function browserHeap(page: Page, scenario: string, browserPid: number): Pr
     // A critical pressure notice makes Chromium drop its reclaimable caches (decoded images, resource cache), so what
     // remains is memory the page itself holds.
     await cdp.send('Memory.simulatePressureNotification', { level: 'critical' })
-    await sleep(SETTLE_MS)
+    await Bun.sleep(SETTLE_MS)
     const purged = web()
     return `Browser PSS ${held.toFixed(0)} MiB, ${purged.toFixed(0)} MiB after a pressure purge. ${await domStats(page)} JS heap after GC: ${(usedSize / MIB / 1024).toFixed(0)} MiB used of ${(totalSize / MIB / 1024).toFixed(0)} MiB.${saved}`
   } finally {
@@ -144,7 +144,7 @@ function pollPeakHeap(addr: string, scenario: string): () => Promise<string> {
       } catch {
         // The server is busy or gone; the next poll tries again.
       }
-      await sleep(PEAK_POLL_MS)
+      await Bun.sleep(PEAK_POLL_MS)
     }
   })()
   return async () => {
@@ -162,8 +162,6 @@ async function gcStats(addr: string): Promise<{ cycles: number; fraction: number
     fraction: Number(/# GCCPUFraction = ([\d.e+-]+)/.exec(text)?.[1] ?? 0),
   }
 }
-
-const sleep = (ms: number) => new Promise((done) => setTimeout(done, ms))
 
 let env: Record<string, string> = {}
 const cli = (...args: string[]) =>
@@ -247,7 +245,7 @@ async function waitQuiet(): Promise<string> {
     (quiet < QUIET_SECONDS || elapsed() < QUIET_MIN_S * 1000) &&
     elapsed() < QUIET_MAX_S * 1000
   ) {
-    await sleep(1000)
+    await Bun.sleep(1000)
     const now = cpuSeconds(serverPid())
     quiet = now - last < QUIET_CPU_S ? quiet + 1 : 0
     last = now
@@ -267,7 +265,7 @@ const idleScenario = (name: string): Scenario => ({
     return waitQuiet()
   },
   async run() {
-    await sleep(IDLE_SAMPLE_MS)
+    await Bun.sleep(IDLE_SAMPLE_MS)
   },
 })
 
@@ -278,12 +276,12 @@ const scenarios: Scenario[] = [
     async run(page) {
       await page.getByRole('tab', { name: 'Browse' }).click()
       await page.getByRole('textbox').first().fill(BROWSE_QUERY)
-      await sleep(SETTLE_MS)
+      await Bun.sleep(SETTLE_MS)
       for (let n = 1; n <= SCROLLS; n++) {
         cli('browse', 'stardew', BROWSE_QUERY, '--source', 'all', '--page', String(n))
         await page.mouse.move(700, 500)
         await page.mouse.wheel(0, SCROLL_STEP_PX)
-        await sleep(SCROLL_WAIT_MS)
+        await Bun.sleep(SCROLL_WAIT_MS)
       }
       await page.getByRole('tab', { name: 'Mods' }).click()
     },
@@ -299,7 +297,7 @@ const scenarios: Scenario[] = [
       if (r.status !== 0) {
         throw new Error(`install failed: ${r.stderr || r.stdout}`)
       }
-      await sleep(SETTLE_MS)
+      await Bun.sleep(SETTLE_MS)
     },
   },
   {
@@ -310,7 +308,7 @@ const scenarios: Scenario[] = [
       if (r.status !== 0 && r.status !== 3) {
         throw new Error(`problems failed: ${r.stderr || r.stdout}`)
       }
-      await sleep(SETTLE_MS)
+      await Bun.sleep(SETTLE_MS)
     },
   },
   {
@@ -331,13 +329,13 @@ const scenarios: Scenario[] = [
       await page.keyboard.press('Escape')
       await page.getByRole('button', { name: /^(Switch game|Choose a game)/ }).click()
       await page.getByRole('menuitem', { name: 'All games…' }).click()
-      await sleep(SETTLE_MS)
+      await Bun.sleep(SETTLE_MS)
       for (let n = 0; n < GAME_SCROLLS; n++) {
         await page.mouse.move(700, 500)
         await page.mouse.wheel(0, GAME_SCROLL_PX)
-        await sleep(GAME_SCROLL_WAIT_MS)
+        await Bun.sleep(GAME_SCROLL_WAIT_MS)
       }
-      await sleep(SETTLE_MS)
+      await Bun.sleep(SETTLE_MS)
     },
   },
 ]

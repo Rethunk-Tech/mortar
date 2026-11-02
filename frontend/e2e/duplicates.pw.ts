@@ -4,6 +4,7 @@ import process from 'node:process'
 import { expect, test } from '@playwright/test'
 import { openSeedFarm, showProblemSection, switchProfile } from './app.ts'
 import { serverEnv } from './sandbox.ts'
+import { zipPaths } from './zip.ts'
 
 // A profile holding one mod id twice: Resolve on its Problems row must open the dialog without a visit to Mods.
 
@@ -30,7 +31,7 @@ function pack(root: string, id: string, version: string) {
   )
   writeFileSync(`${folder}/content.json`, JSON.stringify({ Changes: [] }))
   const zip = `${root}/${id}.zip`
-  execFileSync('python3', ['-m', 'zipfile', '-c', zip, id], { cwd: `${root}/${id}` })
+  zipPaths(zip, [id], `${root}/${id}`)
   return zip
 }
 

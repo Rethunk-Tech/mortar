@@ -28,21 +28,14 @@ function onScroll() {
 addEventListener('scroll', onScroll, { passive: true })
 onScroll()
 
+// Popover supplies the drawer's light dismiss and Escape; browsers without it get a plain toggle.
 const menu = document.querySelector<HTMLButtonElement>('.nav-menu')
 const drawer = document.getElementById('nav-drawer')
-function setMenu(open: boolean) {
-  if (drawer && menu) {
-    drawer.hidden = !open
-    menu.setAttribute('aria-expanded', String(open))
-  }
+if (menu && drawer && !('popover' in HTMLElement.prototype)) {
+  menu.addEventListener('click', () => {
+    menu.setAttribute('aria-expanded', String(drawer.classList.toggle('open')))
+  })
 }
-menu?.addEventListener('click', () => setMenu(drawer?.hidden === true))
-document.addEventListener('click', (e) => {
-  const t = e.target
-  if (drawer && !drawer.hidden && t instanceof Node && !drawer.contains(t) && !menu?.contains(t)) {
-    setMenu(false)
-  }
-})
 
 const reveal = new IntersectionObserver(
   (entries) => {
@@ -80,12 +73,8 @@ for (const pre of document.querySelectorAll('pre')) {
   pre.tabIndex = 0
 }
 
-const lightbox = document.getElementById('lightbox')
+const lightbox = document.querySelector<HTMLDialogElement>('dialog#lightbox')
 const big = lightbox?.querySelector('img')
-function closeLightbox() {
-  lightbox?.classList.remove('open')
-  lightbox?.setAttribute('aria-hidden', 'true')
-}
 document.addEventListener('click', (e) => {
   const t = e.target instanceof Element ? e.target : null
   const img = t?.closest<HTMLImageElement>('img.zoom')
@@ -93,15 +82,8 @@ document.addEventListener('click', (e) => {
     e.preventDefault()
     big.src = img.currentSrc || img.src
     big.alt = img.alt
-    lightbox.classList.add('open')
-    lightbox.setAttribute('aria-hidden', 'false')
+    lightbox.showModal()
   } else if (t?.closest('#lightbox')) {
-    closeLightbox()
-  }
-})
-globalThis.addEventListener('keydown', (e: KeyboardEvent) => {
-  if (e.key === 'Escape') {
-    closeLightbox()
-    setMenu(false)
+    lightbox?.close()
   }
 })

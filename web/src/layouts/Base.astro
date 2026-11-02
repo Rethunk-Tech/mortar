@@ -111,7 +111,7 @@ const ld = [appLd(), ...(crumbs ? [breadcrumbLd(crumbs)] : []), ...jsonLd]
       <slot />
     </main>
     <Footer band={band} />
-    <div class="lightbox" id="lightbox" aria-hidden="true"><img alt="" /></div>
+    <dialog class="lightbox" id="lightbox" aria-label="Screenshot"><img alt="" /></dialog>
     <script>
       import '../scripts/site.ts'
     </script>

@@ -46,13 +46,13 @@ const outbound = [
           </a>
         ))
       }
-      <button type="button" class="nav-menu" aria-label="Menu" aria-expanded="false" aria-controls="nav-drawer">
+      <button type="button" class="nav-menu" aria-label="Menu" popovertarget="nav-drawer">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
       </button>
     </span>
     <a class="btn primary" href="/download/" aria-current={current === 'download' ? 'page' : undefined}>Download</a>
   </div>
-  <div class="nav-drawer" id="nav-drawer" hidden>
+  <div class="nav-drawer" id="nav-drawer" popover>
     {links.map((l) => <a href={l.href}>{l.label}</a>)}
     {outbound.map((o) => <a href={o.href}>{o.label}</a>)}
     <a href="/download/">Download</a>

@@ -188,6 +188,12 @@ async function getText(url: string): Promise<string> {
 // A source that cannot be fetched keeps its committed figure, so one site being down never blocks a release's
 // publish; the warning names it for the next refresh. A source that answers but no longer parses (a reworded page)
 // fails the refresh, because keeping the old figure would present it as freshly checked.
+const MONTH_YEAR = new Intl.DateTimeFormat('en-US', {
+  month: 'long',
+  year: 'numeric',
+  timeZone: 'UTC',
+})
+
 export async function refreshRivalFacts(): Promise<void> {
   const prev = rivalFacts()
   const out: Record<string, number | string> = {}
@@ -221,11 +227,7 @@ export async function refreshRivalFacts(): Promise<void> {
     try {
       const rel = JSON.parse(await getText(url)) as { tag_name: string; published_at: string }
       out[`${id}_release`] = rel.tag_name
-      out[`${id}_released`] = new Date(rel.published_at).toLocaleDateString('en-US', {
-        month: 'long',
-        year: 'numeric',
-        timeZone: 'UTC',
-      })
+      out[`${id}_released`] = MONTH_YEAR.format(new Date(rel.published_at))
     } catch (err) {
       keep([`${id}_release`, `${id}_released`], url, err)
     }

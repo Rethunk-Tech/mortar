@@ -55,8 +55,14 @@ export async function posts(): Promise<Post[]> {
   return [...fromReleases, ...howtos].sort((a, b) => b.date.getTime() - a.date.getTime())
 }
 
-export const longDate = (d: Date) =>
-  d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
+const LONG = new Intl.DateTimeFormat('en-US', {
+  month: 'long',
+  day: 'numeric',
+  year: 'numeric',
+  timeZone: 'UTC',
+})
+const SHORT = new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', timeZone: 'UTC' })
 
-export const shortDate = (d: Date) =>
-  d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', timeZone: 'UTC' })
+export const longDate = (d: Date) => LONG.format(d)
+
+export const shortDate = (d: Date) => SHORT.format(d)

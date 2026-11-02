@@ -1,6 +1,6 @@
-import { spawnSync } from 'node:child_process'
 import { join } from 'node:path'
 import process from 'node:process'
+import { zipPaths } from './zip.ts'
 
 const FIXTURE = join(import.meta.dir, 'fixtures')
 
@@ -10,10 +10,7 @@ const FIXTURE = join(import.meta.dir, 'fixtures')
  */
 export function serveModTemplate(dir: string): () => void {
   const zip = join(dir, 'mod-template.zip')
-  const made = spawnSync('zip', ['-q', '-r', zip, 'mod-template'], { cwd: FIXTURE })
-  if (made.status !== 0) {
-    throw new Error(`zip mod-template: ${made.stderr}`)
-  }
+  zipPaths(zip, ['mod-template'], FIXTURE)
   const server = Bun.serve({
     port: 0,
     hostname: '127.0.0.1',

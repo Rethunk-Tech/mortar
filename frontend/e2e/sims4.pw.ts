@@ -1,8 +1,8 @@
-import { execFileSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, readFileSync, utimesSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
 import { expect, type Page, test } from '@playwright/test'
 import { calledWith, openGameSelect, openGameSettings, openSeedFarm } from './app.ts'
+import { zipPaths } from './zip.ts'
 
 // The Sims 4 through the real UI against the sandbox's stand-in install (scripts/selftest.sh sims4-install): a Steam
 // install with a placeholder TS4_x64.exe and the player's Documents tree. The game is disabled in the shipped catalog;
@@ -23,13 +23,10 @@ function writeZip(into: string, name: string, files: Record<string, string>) {
   }
   mkdirSync(into, { recursive: true })
   const out = `${into}/${name}.zip`
-  execFileSync('python3', [
-    '-m',
-    'zipfile',
-    '-c',
+  zipPaths(
     out,
-    ...Object.keys(files).map((f) => `${src}/${f}`),
-  ])
+    Object.keys(files).map((f) => `${src}/${f}`),
+  )
   return out
 }
 
