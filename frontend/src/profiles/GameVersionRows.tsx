@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, TextField, Typography } from '@mui/material'
 import { useLoaded } from '@rethunk/react-load-hooks'
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { PickFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import {
   CanGetOlderVersion,
@@ -30,6 +30,7 @@ export function GameVersionRows({
   modsUpTo: string
 }) {
   const { t } = useLingui()
+  const dateId = useId()
   const replace = useProfiles((s) => s.replace)
   const [asking, setAsking] = useState(false)
   const { data: steam } = useLoaded(() => CanGetOlderVersion(gameId), [gameId], false)
@@ -69,8 +70,9 @@ export function GameVersionRows({
           {t`This profile runs the game from this folder, an older copy, instead of the selected install.`}
         </Typography>
       </Field>
-      <Field label={t`Mod versions up to`}>
+      <Field label={t`Mod versions up to`} htmlFor={dateId}>
         <TextField
+          id={dateId}
           type="date"
           size="small"
           value={modsUpTo}
