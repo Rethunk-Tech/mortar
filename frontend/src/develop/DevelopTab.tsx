@@ -48,7 +48,7 @@ import { CloneDialog } from './CloneDialog.tsx'
 import { ElsewhereHost } from './ElsewhereDialog.tsx'
 import { useElsewhere } from './elsewhere.ts'
 import { GameCodeDialog } from './GameCodeDialog.tsx'
-import { useCodeProject, useDevKinds } from './kinds.ts'
+import { useCodeProject } from './kinds.ts'
 import { NewModDialog } from './NewModDialog.tsx'
 import { ProjectCard } from './ProjectCard.tsx'
 import { TrustDialog } from './TrustDialog.tsx'
@@ -57,13 +57,12 @@ import { installTestMods } from './testMods.ts'
 const profileNameOf = (list: { id: string; name: string }[], id: string) =>
   list.find((p) => p.id === id)?.name ?? ''
 
-// Builds the profile's code projects that are trusted, all at once save for waiting on their dependencies: a content
-// pack has nothing to compile and an untrusted project asks first, from its own card. Shown only when there is more
+// Builds the profile's trusted projects, all at once save for waiting on their dependencies: a content pack's build
+// puts its folder in the profile, and an untrusted project asks first, from its own card. Shown only when there is more
 // than one to build.
 function BuildAll({ game, projects }: { game: string; projects: DevProject[] }) {
   const { t } = useLingui()
-  const kinds = useDevKinds((s) => s.byDir)
-  const buildable = projects.filter((p) => !(p.untrusted || kinds[p.dir])).map((p) => p.dir)
+  const buildable = projects.filter((p) => !p.untrusted).map((p) => p.dir)
   const building = useDevRuns((s) => projects.some((p) => runOf(s.byDir, p.dir).running !== null))
   return buildable.length > 1 ? (
     <Button

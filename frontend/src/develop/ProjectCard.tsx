@@ -40,6 +40,7 @@ import { StartDebugging } from '../../bindings/github.com/Rethunk-Tech/mortar/in
 import type { DevProject } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import { formatNumber } from '../i18n/numberFormat.ts'
 import { LetterTile } from '../mods/LetterTile.tsx'
+import { useProfiles } from '../profiles/store.ts'
 import { persist, saveSetting } from '../settings/persist.ts'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { MenuAction, MenuCheck } from '../shell/MenuAction.tsx'
@@ -66,9 +67,20 @@ import { ReleaseDialog } from './ReleaseDialog.tsx'
 import { ReleaseItems } from './ReleaseItems.tsx'
 import { UploadDialog } from './UploadDialog.tsx'
 
+// Whether the project's folder is in its profile: a mod removed there stays out until asked for again.
+function useInProfile(project: DevProject) {
+  return useProfiles(
+    (s) =>
+      s.profiles
+        .find((p) => p.id === project.profile)
+        ?.entries?.some((e) => e.source.folder === project.output) ?? true,
+  )
+}
+
 function Status({ project }: { project: DevProject }) {
   const dir = project.dir
   const asset = useIsAsset(dir)
+  const inProfile = useInProfile(project)
   const { t, i18n } = useLingui()
   const run = useDevRuns((s) => runOf(s.byDir, dir))
   // The files remember a build from before Mortar started; this session's result adds its errors.
@@ -97,8 +109,7 @@ function Status({ project }: { project: DevProject }) {
     )
   }
   if (asset) {
-    // Nothing compiles: once trusted, the project's folder is what installs.
-    return project.untrusted ? (
+    return project.untrusted || !inProfile ? (
       <Chip size="small" sx={statusSx} variant="outlined" label={t`Not installed`} />
     ) : (
       <Chip size="small" sx={statusSx} color="success" variant="outlined" label={t`Installed`} />
@@ -387,8 +398,9 @@ function BuildButton({
   const running = useDevRuns((s) => runOf(s.byDir, project.dir).running)
   const build = () => buildProject(game, project.dir).catch(() => undefined)
   const asset = useIsAsset(project.dir)
-  if (asset && project.untrusted) {
-    // Added from a folder: its files install only once trusted, which the build's refusal asks for.
+  const inProfile = useInProfile(project)
+  if (asset && (project.untrusted || !inProfile)) {
+    // Its files install through a build; one added from a folder has its refusal ask for trust first.
     return compact ? (
       <TipIconButton label={t`Install`} onClick={build}>
         <PackagePlus size={18} />
