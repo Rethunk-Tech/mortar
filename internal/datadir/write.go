@@ -54,6 +54,15 @@ func WriteJSON(path string, v any) error {
 	return safefs.WriteFileAtomic(path, b, 0o600)
 }
 
+// WriteJSONCompact is WriteJSON without indentation, for a file rewritten whole often or never read by hand.
+func WriteJSONCompact(path string, v any) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	return safefs.WriteFileAtomic(path, b, 0o600)
+}
+
 // WriteJSONIn is WriteJSON to name inside dir, making dir first.
 func WriteJSONIn(dir, name string, v any) error {
 	if err := os.MkdirAll(dir, 0o700); err != nil {

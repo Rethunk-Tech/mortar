@@ -8,6 +8,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-safefs"
 	tstore "github.com/Rethunk-Tech/go-thunderstore"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
@@ -47,9 +48,7 @@ func derivedFor(dir, key, path string) (derivedFile, error) {
 	if err != nil {
 		return s, err
 	}
-	if b, err := json.Marshal(s); err == nil {
-		_ = safefs.WriteFileAtomic(derivedPath(dir, key), b, 0o644)
-	}
+	_ = datadir.WriteJSONCompact(derivedPath(dir, key), s)
 	return s, nil
 }
 

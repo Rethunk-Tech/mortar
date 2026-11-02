@@ -12,6 +12,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-safefs"
 	tstore "github.com/Rethunk-Tech/go-thunderstore"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
 // Look is how the Mods tab shows a package: its icon's address and its category.
@@ -119,8 +120,6 @@ func (d Driver) CachedLooks(key string, names []string) (map[string]Look, error)
 		mark.Names = append(mark.Names, id)
 	}
 	slices.Sort(mark.Names)
-	if b, err := json.Marshal(mark); err == nil {
-		_ = safefs.WriteFileAtomic(markPath, b, 0o644)
-	}
+	_ = datadir.WriteJSONCompact(markPath, mark)
 	return out, nil
 }

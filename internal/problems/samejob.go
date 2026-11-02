@@ -2,7 +2,6 @@ package problems
 
 import (
 	"cmp"
-	"encoding/json"
 	"maps"
 	"math"
 	"os"
@@ -11,7 +10,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
@@ -333,8 +331,8 @@ func assemblyMembers(dlls []string, read func(dll string) []string) [][]string {
 				delete(assemblyCache.entries, dll)
 			}
 		}
-		if raw, err := json.Marshal(assemblyCacheFile{Version: assemblyCacheVersion, DLLs: assemblyCache.entries}); err == nil && os.MkdirAll(filepath.Dir(path), 0o700) == nil {
-			_ = safefs.WriteFileAtomic(path, raw, 0o600)
+		if os.MkdirAll(filepath.Dir(path), 0o700) == nil {
+			_ = datadir.WriteJSONCompact(path, assemblyCacheFile{Version: assemblyCacheVersion, DLLs: assemblyCache.entries})
 		}
 	}
 	return out

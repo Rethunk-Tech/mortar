@@ -15,7 +15,6 @@ import (
 	"io"
 	"math/big"
 	"net/http"
-	"os"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -88,13 +87,7 @@ func (b *peerBook) loadLocked() error {
 		return nil
 	}
 	if b.dir != "" {
-		raw, err := safefs.ReadFile(filepath.Join(b.dir, "peers.json"))
-		switch {
-		case err == nil:
-			if err := json.Unmarshal(raw, &b.file); err != nil {
-				return fmt.Errorf("read paired computers: %w", err)
-			}
-		case !errors.Is(err, os.ErrNotExist):
+		if _, err := datadir.ReadJSON(filepath.Join(b.dir, "peers.json"), &b.file); err != nil {
 			return fmt.Errorf("read paired computers: %w", err)
 		}
 	}

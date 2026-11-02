@@ -242,9 +242,7 @@ func (s *Service) saveKept() {
 	slices.SortFunc(recs, func(a, b keptRecord) int {
 		return strings.Compare(a.Game+"\x00"+a.Profile+"\x00"+a.Mod+"\x00"+a.File, b.Game+"\x00"+b.Profile+"\x00"+b.Mod+"\x00"+b.File)
 	})
-	if b, err := json.Marshal(recs); err == nil {
-		_ = safefs.WriteFileAtomic(filepath.Join(dir, keptFile), b, 0o600)
-	}
+	_ = datadir.WriteJSONCompact(filepath.Join(dir, keptFile), recs)
 }
 
 // FlushKept writes the kept host values of every profile whose game is no longer running; the app calls it when a

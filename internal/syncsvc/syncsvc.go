@@ -220,9 +220,8 @@ func (s *Service) sharedPath(folder, game, remote string) string {
 }
 
 func (s *Service) readShared(folder, game, remote string) (shared, bool) {
-	b, err := safefs.ReadFile(s.sharedPath(folder, game, remote))
 	var sh shared
-	if err != nil || json.Unmarshal(b, &sh) != nil || sh.Vector == nil {
+	if found, err := datadir.ReadJSON(s.sharedPath(folder, game, remote), &sh); !found || err != nil || sh.Vector == nil {
 		return shared{}, false
 	}
 	return sh, true
@@ -426,11 +425,8 @@ func (s *Service) push(folder string, ref Ref, t tracked, base Vector) error {
 	if err := safefs.WriteFileAtomic(s.payloadPath(folder, ref.Game, t.Remote), payload, 0o600); err != nil {
 		return err
 	}
-	meta, err := json.Marshal(shared{Name: ref.Name, Machine: s.st.Machine, MachineName: s.d.Machine, Vector: vec, Payload: hashOf(payload)})
-	if err != nil {
-		return err
-	}
-	if err := safefs.WriteFileAtomic(s.sharedPath(folder, ref.Game, t.Remote), meta, 0o600); err != nil {
+	meta := shared{Name: ref.Name, Machine: s.st.Machine, MachineName: s.d.Machine, Vector: vec, Payload: hashOf(payload)}
+	if err := datadir.WriteJSONCompact(s.sharedPath(folder, ref.Game, t.Remote), meta); err != nil {
 		return err
 	}
 	t.Synced, t.Seen = vec, ref.Updated
