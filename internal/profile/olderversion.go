@@ -18,17 +18,10 @@ import (
 
 var digits = regexp.MustCompile(`^[0-9]+$`)
 
-// Depot is one depot of the game's Steam install.
-type Depot struct {
-	ID       string `json:"id"`
-	Manifest string `json:"manifest"`
-	Size     int64  `json:"size"`
-}
-
 // OlderVersion is what the "Get an older version" dialog needs: the game's Steam app and the depots it has installed.
 type OlderVersion struct {
 	AppID  string  `json:"appId"`
-	Depots []Depot `json:"depots"`
+	Depots []steam.Depot `json:"depots"`
 }
 
 // OlderVersionState is whether Steam has finished writing a depot download.
@@ -96,11 +89,7 @@ func (s *Service) OlderVersionDepots(gameID string) (OlderVersion, error) {
 	if err != nil {
 		return OlderVersion{}, err
 	}
-	out := OlderVersion{AppID: appID}
-	for _, d := range got {
-		out.Depots = append(out.Depots, Depot{ID: d.ID, Manifest: d.Manifest, Size: d.Size})
-	}
-	return out, nil
+	return OlderVersion{AppID: appID, Depots: got}, nil
 }
 
 // DownloadDepotCommand is the Steam console line that downloads the manifest of a depot.

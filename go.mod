@@ -78,3 +78,11 @@ require (
 )
 
 replace github.com/wailsapp/wails/v3 => github.com/Rethunk-AI/wails/v3 v3.0.0-mortar.1
+
+replace github.com/Rethunk-Tech/go-thunderstore => ../go-thunderstore
+
+replace github.com/Rethunk-Tech/go-larian => ../go-larian
+
+replace github.com/Rethunk-Tech/go-bannerlord => ../go-bannerlord
+
+replace github.com/Rethunk-Tech/go-gamelocator => ../go-gamelocator
