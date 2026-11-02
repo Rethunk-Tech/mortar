@@ -108,27 +108,34 @@ function TileName({ mod }: { mod: Mod }) {
 // How far a press may move and still be a click, not a drag selecting the tile's text.
 const DRAG_PX = 4
 
+// What the receiver must set up before a mod's source can supply its file.
+function useSourceNeed() {
+  const { t } = useLingui()
+  return (mod: Mod) => {
+    if (needsPatreonFile(mod))
+      return t`Needs a file from its ${{ source: sourceLabel('patreon') }} post`
+    if (needsItchFile(mod)) return t`Needs a file from its ${{ source: sourceLabel('itch') }} page`
+    if (needsCurseForgeKey(mod))
+      return t`Needs a ${{ source: sourceLabel('curseforge') }} key, or the file from its page`
+    if (needsModioToken(mod))
+      return t`Needs your ${{ source: sourceLabel('modio') }} access token in Settings, Accounts`
+    return ''
+  }
+}
+
 function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle: () => void }) {
   const { t } = useLingui()
   const theme = useTheme()
   const chip = CHIP(theme)
   const label = useStateLabel()
+  const sourceNeed = useSourceNeed()
   const state = isModState(mod.state) ? mod.state : 'later'
   const fixed = state === 'installed' || state === 'unavailable'
   const notes = [
     mod.different ? t`different file` : '',
     mod.unverified ? t`unverified until downloaded` : '',
     mod.site === 'local' && !mod.enabled ? lowerFirst(t`Disabled`) : '',
-    needsPatreonFile(mod)
-      ? t`Needs a file from its ${{ source: sourceLabel('patreon') }} post`
-      : '',
-    needsItchFile(mod) ? t`Needs a file from its ${{ source: sourceLabel('itch') }} page` : '',
-    needsCurseForgeKey(mod)
-      ? t`Needs a ${{ source: sourceLabel('curseforge') }} key, or the file from its page`
-      : '',
-    needsModioToken(mod)
-      ? t`Needs your ${{ source: sourceLabel('modio') }} access token in Settings, Accounts`
-      : '',
+    sourceNeed(mod),
     mod.filesFrom === 'code' ? t`program files from this code` : '',
     mod.filesFrom === 'computer' ? t`copied from this computer` : '',
   ].filter(Boolean)
