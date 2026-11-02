@@ -13154,6 +13154,27 @@
       },
       "loaders": [{ "id": "folder" }],
       "sources": [{ "id": "nexus", "key": "baldursgate3" }]
+    },
+    {
+      "id": "mount-and-blade-2-bannerlord",
+      "name": "Mount & Blade II: Bannerlord",
+      "enabled": true,
+      "minVersion": "0.5.0",
+      "marker": "Bannerlord.exe",
+      "markerDir": "bin/Win64_Shipping_Client",
+      "metadata": [],
+      "paths": {
+        "mods": { "windows": "{install}/Modules" },
+        "launcherData": { "windows": "{documents}/Mount and Blade II Bannerlord/Configs" }
+      },
+      "deploy": "profile",
+      "targets": [{ "id": "mods", "root": "{profile}/Modules", "modRoot": "SubModule.xml" }],
+      "stores": {
+        "steam": { "appId": "261550" },
+        "gog": { "productId": "1802539526", "folder": "Mount & Blade II Bannerlord" }
+      },
+      "loaders": [{ "id": "folder" }],
+      "sources": [{ "id": "nexus", "key": "mountandblade2bannerlord" }]
     }
   ],
   "authors": [{ "names": ["Evaisa", "EvaisaDev"] }]

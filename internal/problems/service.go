@@ -25,6 +25,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
+	"github.com/Rethunk-Tech/mortar/internal/loader/folder"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -445,6 +446,7 @@ func (s *Service) problems(ctx context.Context, gameID, id string, wait bool) (R
 			if f, bad := gameVersionFailure(gameID, l, env); bad {
 				r.LoadFailures = append(r.LoadFailures, f)
 			}
+			r.LoadFailures = append(r.LoadFailures, s.extensionFailures(gameID, id, l)...)
 		}
 		if l, _ := game.LoaderOf(gameID, s.profiles.LoaderID(gameID, id)); game.HasPath(gameID, game.PathLog) {
 			if _, own := l.(loader.WithLogs); !own {
@@ -1084,6 +1086,28 @@ func damagedRows(mods []framework.Mod, damaged map[string]store.Damage) []Damage
 			Key: m.Key, Name: m.Name, Missing: len(d.Missing), Changed: len(d.Changed), Extra: len(d.Extra),
 			Files: files[:min(len(files), maxDamagedFiles)],
 		})
+	}
+	return out
+}
+
+// extensionFailures are the findings of a folder-loader game's extensions: problems read off the profile's files with
+// no run.
+func (s *Service) extensionFailures(gameID, id string, l loader.Loader) []LoadFailure {
+	if l.ID() != folder.ID || !folder.WantsOrder(gameID) {
+		return nil
+	}
+	dir, err := s.profiles.ProfileDir(gameID, id)
+	if err != nil {
+		return nil
+	}
+	install, err := game.InstallDir(s.home, s.settings.Get(), gameID)
+	if err != nil {
+		return nil
+	}
+	found := folder.Findings(loader.ProfileView{Game: gameID, Dir: dir, InstallDir: install})
+	out := make([]LoadFailure, len(found))
+	for i, f := range found {
+		out[i] = LoadFailure{Plugin: f.Plugin, Kind: f.Kind, Message: f.Message, Code: f.Code, Params: f.Params, Dependency: f.Dependency}
 	}
 	return out
 }

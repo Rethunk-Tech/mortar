@@ -4420,6 +4420,10 @@ msgstr ""
 msgid "{count, plural, one {# result} other {# results}}"
 msgstr ""
 
+#: src/i18n/reasonText.ts
+msgid "dependency cycle among {list}"
+msgstr ""
+
 #: src/develop/DependencySync.tsx
 msgid "Could not update the dependency"
 msgstr ""
@@ -4543,6 +4547,10 @@ msgstr ""
 
 #: src/develop/builds.ts
 msgid "Could not build the mod"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "requires {other} {detail}"
 msgstr ""
 
 #: src/share/ListFormat.tsx
@@ -4706,6 +4714,10 @@ msgstr ""
 msgid "A mod with a config file has an Edit config button in its details: a typed editor with presets and Reset all."
 msgstr ""
 
+#: src/i18n/reasonText.ts
+msgid "is incompatible with {other}"
+msgstr ""
+
 #: src/browse/CardAction.tsx
 msgid "Built in"
 msgstr ""
@@ -4796,6 +4808,10 @@ msgstr ""
 
 #: src/develop/LicenseChart.tsx
 msgid "Release that mod under another licence"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "is installed more than once"
 msgstr ""
 
 #: src/develop/DependenciesStep.tsx
@@ -6419,6 +6435,10 @@ msgstr ""
 
 #: src/launch/LaunchScreen.tsx
 msgid "Waiting"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "requires {other}, which is not installed"
 msgstr ""
 
 #: src/launch/KnownGoodOffer.tsx

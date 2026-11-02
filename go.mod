@@ -5,6 +5,7 @@ go 1.27.3
 require (
 	github.com/Rethunk-Tech/go-archive v0.2.0
 	github.com/Rethunk-Tech/go-avscan v0.1.0
+	github.com/Rethunk-Tech/go-bannerlord v0.0.0
 	github.com/Rethunk-Tech/go-bepinex v0.2.0
 	github.com/Rethunk-Tech/go-cfgedit v0.2.0
 	github.com/Rethunk-Tech/go-curseforge v0.2.0
@@ -35,7 +36,6 @@ require (
 	github.com/godbus/dbus/v5 v5.2.4
 	github.com/google/pprof v0.0.0-20261026192309-dbd0ed30aa88
 	github.com/hashicorp/mdns v1.0.7
-	github.com/pierrec/lz4/v4 v4.1.33
 	github.com/syndtr/goleveldb v1.0.1-0.20220721030215-126854af5e6d
 	github.com/wailsapp/wails/v3 v3.0.0
 	github.com/zalando/go-keyring v0.2.8
@@ -64,6 +64,7 @@ require (
 	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/miekg/dns v1.1.73 // indirect
 	github.com/ncruces/go-strftime v1.1.0 // indirect
+	github.com/pierrec/lz4/v4 v4.1.33 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/stangelandcl/ppmd v0.1.1 // indirect
@@ -79,3 +80,5 @@ require (
 replace github.com/wailsapp/wails/v3 => github.com/Rethunk-AI/wails/v3 v3.0.0-mortar.1
 
 replace github.com/Rethunk-Tech/go-larian => ../go-larian
+
+replace github.com/Rethunk-Tech/go-bannerlord => ../go-bannerlord

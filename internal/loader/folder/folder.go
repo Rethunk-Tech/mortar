@@ -38,6 +38,11 @@ type Extension interface {
 	Prelaunch(p loader.ProfileView) error
 }
 
+// Checker is an Extension that also finds problems in a profile's mods without a run.
+type Checker interface {
+	Findings(p loader.ProfileView) []loader.Finding
+}
+
 var extensions []Extension
 
 // Extend adds an extension and reports true, for a driver package's blank variable like loader.Register.
@@ -62,6 +67,17 @@ func extensionsOf(gameID string) []Extension {
 
 // WantsOrder reports whether the game has an extension that needs ProfileView.Enabled.
 func WantsOrder(gameID string) bool { return len(extensionsOf(gameID)) > 0 }
+
+// Findings are the problems the game's extensions find in the profile.
+func Findings(p loader.ProfileView) []loader.Finding {
+	var out []loader.Finding
+	for _, e := range extensionsOf(p.Game) {
+		if c, ok := e.(Checker); ok {
+			out = append(out, c.Findings(p)...)
+		}
+	}
+	return out
+}
 
 // Prelaunch runs the game's extensions.
 func (Loader) Prelaunch(p loader.ProfileView) error {

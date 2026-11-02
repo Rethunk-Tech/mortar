@@ -31,6 +31,16 @@ export function useReasonText(): ReasonText {
         return t`module ${name} failed: ${{ error: p.error ?? '' }}`
       case 'patchMatchedNothing':
         return t`a patch for ${name} matched nothing in the game's code`
+      case 'moduleMissing':
+        return t`requires ${{ other: p.other ?? '' }}, which is not installed`
+      case 'moduleOutdated':
+        return t`requires ${{ other: p.other ?? '' }} ${{ detail: p.detail ?? '' }}`
+      case 'moduleIncompatible':
+        return t`is incompatible with ${{ other: p.other ?? '' }}`
+      case 'moduleDuplicate':
+        return t`is installed more than once`
+      case 'moduleCycle':
+        return t`dependency cycle among ${list}`
       case 'gameVersionOlder':
         return t`game version ${{ version: p.version ?? '' }} is older than the loader accepts (${{ otherVersion: p.accepted ?? '' }})`
       case 'off':

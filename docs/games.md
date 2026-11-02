@@ -28,6 +28,14 @@ Sources: Vortex's `game-baldursgate3` extension (`Nexus-Mods/vortex-games`, `gam
 - Unverified until someone runs the game: the GOG install folder name (`Baldurs Gate 3`), and that the game accepts a `modsettings.lsx` whose GustavX entry carries Mortar's fixed version.
 - Planet Zoo and Graveyard Keeper are not in the catalog: no r2modman, Gale or Vortex source names a mods folder or a marker for either.
 
+## Mount & Blade II: Bannerlord
+
+Sources: BUTR's Vortex extension (`BUTR/game-mount-and-blade2`, `packages/core/src/common.ts`: `STEAMAPP_ID` `261550`, `GOG_IDS` `1802539526` and `1564781494`, `BANNERLORD_EXE` in `bin/Win64_Shipping_Client`, a module found as `Modules/<Module>/SubModule.xml`; Nexus's own Vortex entry is only a stub), BUTR's `Bannerlord.BLSE` (`src/Bannerlord.LauncherEx/Manager.cs`: `Documents/Mount and Blade II Bannerlord/Configs/LauncherData.xml`) and Nexus's `mountandblade2bannerlord`.
+
+- The folder loader places the profile's module folders in the install's `Modules` folder for the run (a mod's folder is the one holding its `SubModule.xml`). Its Bannerlord extension (`internal/loader/bannerlord`, on the `launcherData` path role) writes a `LauncherData.xml` whose singleplayer list selects the profile's modules and the official modules the game starts with, plus any official module a profile module depends on, in go-bannerlord's dependency order. The deployer sets the player's own `LauncherData.xml` aside and puts it back after the run. The file is written fresh, so the player's multiplayer list and other launcher settings are not in it during the run.
+- Problems lists a profile module's missing or outdated dependency, an incompatible pair, a module installed twice and a dependency cycle, from the same sort.
+- Only the Windows build is started, under Proton. Unverified until someone runs the game: the GOG install folder name (`Mount & Blade II Bannerlord`), that the game starts the listed modules from a `LauncherData.xml` written like this when started through Steam's launcher, and Xbox and Epic installs (their binaries sit in other folders).
+
 ## Dome Keeper
 
 Sources: r2modman's ecosystem schema (`dome-keeper`: Steam `1637320`, `exeNames` `domekeeper.exe`, `packageLoader` `godotml`, one install rule, `package-zip` into `mods`), Thunderstore's `dome-keeper` community and Nexus's `domekeeper`.

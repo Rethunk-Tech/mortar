@@ -155,6 +155,11 @@
     "url": "https://github.com/Rethunk-Tech/go-avscan"
   },
   {
+    "name": "github.com/Rethunk-Tech/go-bannerlord",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/go-bannerlord"
+  },
+  {
     "name": "github.com/Rethunk-Tech/go-bepinex",
     "licence": "MIT",
     "url": "https://github.com/Rethunk-Tech/go-bepinex"
@@ -303,11 +308,6 @@
     "name": "github.com/hashicorp/mdns",
     "licence": "MIT",
     "url": "https://github.com/hashicorp/mdns"
-  },
-  {
-    "name": "github.com/pierrec/lz4/v4",
-    "licence": "BSD-3-Clause",
-    "url": "https://github.com/pierrec/lz4"
   },
   {
     "name": "github.com/syndtr/goleveldb",
