@@ -49,14 +49,29 @@ for (const g of games) {
 const { results } = await json<{ results: Community[] }>(`${API}/cyberstorm/community/`)
 const live = new Set(results.map((c) => c.identifier))
 
-// Communities whose own page sends modders elsewhere; they stay out of the catalog.
+// The list leaves out unlisted communities, which still serve their packages, so only the community's own page can say
+// it is gone.
+async function communityExists(key: string): Promise<boolean> {
+  const res = await fetch(`https://thunderstore.io/c/${key}/`, { method: 'HEAD' })
+  return res.status !== 404
+}
+
+// Communities that stay out of the catalog, each for the reason beside it.
 const LEFT_OUT = new Set([
   // Its Thunderstore page says mods moved to the Steam Workshop and those left there are out of date.
   'wrestling-empire',
-  // Its Thunderstore page says mods moved to mod.io and those left there are out of date.
-  'core-keeper',
   // Its Thunderstore page says mods moved to the Steam Workshop and those left there are out of date.
   'stacklands',
+  // Thunderstore's ecosystem schema names no mod loader for these, so no driver can place their mods.
+  'reskate',
+  'zelda-64-recompiled',
+  'banjo-recompiled',
+  '2-ship-2-harkinian',
+  'r5flowstate',
+  // On BepisLoader, which has no driver; docs/design.md keeps it under Later.
+  'resonite',
+  // Sold on no store Mortar reads, and the schema has no entry naming its executable.
+  '3dash',
 ])
 
 const missing = results
@@ -77,7 +92,7 @@ for (const c of missing) {
 
 const drift: string[] = []
 for (const [key, id] of keyed) {
-  if (!live.has(key)) {
+  if (!(live.has(key) || (await communityExists(key)))) {
     drift.push(`${id}: Thunderstore has no community "${key}"`)
   }
 }

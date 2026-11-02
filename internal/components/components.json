@@ -1,5 +1,5 @@
 {
-  "serial": 1793591312,
+  "serial": 1793634362,
   "components": [
     {
       "game": "melonloader",
@@ -5743,6 +5743,11 @@
         {
           "id": "thunderstore",
           "key": "last-pirates-die-together"
+        },
+        {
+          "id": "nexus",
+          "key": "lastpiratesdietogether",
+          "gameId": 10782
         }
       ]
     },
@@ -14090,6 +14095,45 @@
         {
           "id": "nexus",
           "key": "domekeeper"
+        }
+      ]
+    },
+    {
+      "id": "romestead",
+      "name": "Romestead",
+      "enabled": true,
+      "marker": "Romestead.exe",
+      "r2modmanFolder": "Romestead",
+      "metadata": null,
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "1805320"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 6 (CoreCLR)",
+          "package": "Romestead_Modding-BepInExPack_Romestead",
+          "major": 6
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "romestead"
+        },
+        {
+          "id": "nexus",
+          "key": "romestead",
+          "gameId": 9333
         }
       ]
     },
