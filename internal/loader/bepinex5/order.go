@@ -71,12 +71,12 @@ func asLastRun(order []plugins.Loaded, log string) map[string]bool {
 
 // names reports whether a Loading line's "Name Version" is the plugin, reading versions as System.Version does.
 func names(p dotnet.Plugin, nameVersion string) bool {
-	i := strings.LastIndexByte(nameVersion, ' ')
-	if i < 0 || nameVersion[:i] != p.Name {
+	name, version, found := strings.CutLast(nameVersion, " ")
+	if !found || name != p.Name {
 		return false
 	}
-	c, ok := semverish.CompareDotNet(nameVersion[i+1:], p.Version)
-	return ok && c == 0 || nameVersion[i+1:] == p.Version
+	c, ok := semverish.CompareDotNet(version, p.Version)
+	return ok && c == 0 || version == p.Version
 }
 
 func rows(order []plugins.Loaded, moved map[string]bool) []loadorder.Row {

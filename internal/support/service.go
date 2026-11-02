@@ -168,8 +168,8 @@ func fitPost(text string, limit int) string {
 		return text
 	}
 	cut := string([]rune(text)[:limit-2])
-	if i := strings.LastIndex(cut, "\n"); i > 0 {
-		cut = cut[:i]
+	if head, _, ok := strings.CutLast(cut, "\n"); ok && head != "" {
+		cut = head
 	}
 	return cut + "\n…"
 }

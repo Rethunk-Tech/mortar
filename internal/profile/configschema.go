@@ -55,8 +55,8 @@ func (s *Service) ListConfigFields(game, id, key string, uniqueID mod.ID) ([]Con
 	seen := map[string]bool{}
 	for _, f := range fields {
 		leaf := f.Path
-		if i := strings.LastIndex(leaf, "."); i >= 0 {
-			leaf = leaf[i+1:]
+		if _, tail, ok := strings.CutLast(leaf, "."); ok {
+			leaf = tail
 		}
 		seen[strings.ToLower(leaf)] = true
 	}

@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"slices"
-	"sort"
 	"strconv"
 	"strings"
 	"testing"
@@ -159,7 +158,7 @@ func docFiles(t *testing.T, r repoFiles) []string {
 			docs = append(docs, f)
 		}
 	}
-	sort.Strings(docs)
+	slices.Sort(docs)
 	return docs
 }
 

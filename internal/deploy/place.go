@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/fs"
 	"log"
+	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -46,7 +47,7 @@ func (Place) Plan(view View, dir string, files []launchplan.PlanFile) (Plan, err
 		}
 	}
 	plan := Plan{Dir: dir, View: view, Owned: owned}
-	for _, dst := range slices.Sorted(mapsKeys(byDst)) {
+	for _, dst := range slices.Sorted(maps.Keys(byDst)) {
 		plan.Ops = append(plan.Ops, byDst[dst])
 	}
 	return plan, nil
@@ -61,16 +62,6 @@ func ownedOf(base string, f launchplan.PlanFile) (Owned, bool) {
 	}
 	profileRoot := strings.TrimSuffix(f.Src, f.Dst)
 	return Owned{Dst: filepath.Join(base, top), Src: filepath.Join(profileRoot, top)}, true
-}
-
-func mapsKeys[V any](m map[string]V) func(yield func(string) bool) {
-	return func(yield func(string) bool) {
-		for k := range m {
-			if !yield(k) {
-				return
-			}
-		}
-	}
 }
 
 func journalPath(dir string) string { return filepath.Join(dir, journalFile) }

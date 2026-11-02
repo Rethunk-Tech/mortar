@@ -122,7 +122,7 @@ func blameOf(exception string, stack, before []string, notMod map[string]bool) (
 		if !strings.Contains(m[1], ".") || notMod[strings.ToLower(root)] {
 			continue
 		}
-		ns := m[1][:strings.LastIndex(m[1], ".")]
+		ns, _, _ := strings.CutLast(m[1], ".")
 		return loader.Blame{Exception: exception, Frame: inFile.ReplaceAllString(strings.TrimSpace(l), ""), Namespace: ns}, true
 	}
 	if patched {

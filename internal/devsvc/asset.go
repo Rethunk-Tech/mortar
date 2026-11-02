@@ -380,8 +380,8 @@ func manifestDependencies(dir string) ([]Dependency, error) {
 	}
 	out := []Dependency{}
 	for _, d := range m.Dependencies {
-		if i := strings.LastIndex(d, "-"); i > 0 && d[:i] != loaderPackage {
-			out = append(out, Dependency{Package: d[:i], Version: d[i+1:]})
+		if pkg, version, ok := strings.CutLast(d, "-"); ok && pkg != "" && pkg != loaderPackage {
+			out = append(out, Dependency{Package: pkg, Version: version})
 		}
 	}
 	return out, nil

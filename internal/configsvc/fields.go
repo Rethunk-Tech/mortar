@@ -48,8 +48,8 @@ func (s *Service) Fields(game, profileID, modID string) ([]profile.ConfigField, 
 // caller can try another kind of config.
 func (s *Service) SetField(game, profileID, modID, fieldPath, value string) (ok bool, err error) {
 	file, rest, found := strings.Cut(fieldPath, "/")
-	i := strings.LastIndex(rest, "/")
-	if !found || i < 0 {
+	path, key, nested := strings.CutLast(rest, "/")
+	if !found || !nested {
 		return false, nil
 	}
 	files, err := s.Files(game, profileID, modID)
@@ -58,7 +58,7 @@ func (s *Service) SetField(game, profileID, modID, fieldPath, value string) (ok 
 	}
 	for _, f := range files {
 		if f.Name == file && typedFile(f) {
-			if err := s.Set(game, profileID, modID, file, rest[:i], rest[i+1:], value); err != nil {
+			if err := s.Set(game, profileID, modID, file, path, key, value); err != nil {
 				return true, fmt.Errorf("%s: %w", fieldPath, err)
 			}
 			return true, nil
