@@ -183,11 +183,11 @@ func New(d Deps) (*Service, error) {
 	if d.Machine == "" {
 		s.d.Machine, _ = os.Hostname()
 	}
-	b, _, err := safefs.ReadFileIfExists(s.statePath())
+	b, found, err := safefs.ReadFileIfExists(s.statePath())
 	if err != nil {
 		return nil, err
 	}
-	if err == nil {
+	if found {
 		if err := json.Unmarshal(b, &s.st); err != nil {
 			return nil, fmt.Errorf("sync state: %w", err)
 		}
