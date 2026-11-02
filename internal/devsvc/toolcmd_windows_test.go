@@ -15,7 +15,7 @@ func TestRunStartsACommandFileInAFolderWithASpace(t *testing.T) {
 		t.Fatal(err)
 	}
 	tool := filepath.Join(dir, "tool.cmd")
-	if err := os.WriteFile(tool, []byte("@echo [%~1][%~2]\r\n"), 0o600); err != nil {
+	if err := os.WriteFile(tool, []byte("@echo [%1][%2]\r\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	s := &Service{}
@@ -23,7 +23,7 @@ func TestRunStartsACommandFileInAFolderWithASpace(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got := strings.TrimSpace(string(out)); got != `[-t][C:\a & b\G.dll]` {
+	if got := strings.TrimSpace(string(out)); got != `["-t"]["C:\a & b\G.dll"]` {
 		t.Fatalf("output %q", got)
 	}
 }
