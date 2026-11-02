@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/github"
 )
 
 func TestWithin(t *testing.T) {
@@ -48,5 +50,16 @@ func TestCutoffContext(t *testing.T) {
 	c := ParseCutoff("2024-02-10")
 	if !CutoffOf(WithCutoff(context.Background(), c)).Equal(c) {
 		t.Fatal("cutoff lost")
+	}
+}
+
+func TestReleasesWithin(t *testing.T) {
+	all := []github.Release{{Tag: "new", Published: "2024-03-01T10:00:00Z"}, {Tag: "old", Published: "2024-01-01T00:00:00Z"}, {Tag: "undated"}}
+	var got []string
+	for _, r := range ReleasesWithin(all, ParseCutoff("2024-02-01")) {
+		got = append(got, r.Tag)
+	}
+	if len(got) != 2 || got[0] != "old" || got[1] != "undated" {
+		t.Fatalf("got %v", got)
 	}
 }
