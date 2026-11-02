@@ -109,3 +109,36 @@ func TestZippedModUpdateReplacesTheOldZip(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestReadOnlyQueriesLeaveTheZipCacheToTheSync(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, _ := e.Create(godotGame, "G")
+	archive := zipOf(t, "m.zip", map[string]string{"mods-unpacked/Me-Mod/main.gd": "1"})
+	if _, err := e.InstallSource(t.Context(), godotGame, p.ID, archive, nexusSource(5, 9)); err != nil {
+		t.Fatal(err)
+	}
+	dir, _ := e.ProfileDir(godotGame, p.ID)
+	stray := filepath.Join(dir, zipsDir, "stray.zip")
+	if err := os.MkdirAll(filepath.Dir(stray), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := safefs.WriteFile(stray, []byte("x"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err := e.packageFiles(godotGame, p.ID); err != nil {
+		t.Fatal(err)
+	}
+	if !safefs.IsFile(stray) {
+		t.Fatal("a read-only query pruned the cache")
+	}
+	if err := e.SyncPackages(godotGame, p.ID); err != nil {
+		t.Fatal(err)
+	}
+	if safefs.IsFile(stray) {
+		t.Fatal("the sync left a stray zip")
+	}
+	if left, _ := filepath.Glob(filepath.Join(dir, zipsDir, "*.tmp")); len(left) != 0 {
+		t.Fatalf("temp files left: %v", left)
+	}
+}

@@ -45,12 +45,6 @@ func (s *Store) packageFilesWith(gameID, id string, withDev bool) (files map[str
 	}
 	ginfo := installerGame(gameID)
 	files, wins = map[string]packageFile{}, map[string]int{}
-	zips := map[string]bool{}
-	defer func() {
-		if err == nil {
-			pruneZips(dir, zips)
-		}
-	}()
 	byFold := map[string]string{}
 	for _, e := range p.Entries {
 		if e.IsOverlay() || !e.hasPackageEnabled() || e.isTrayEntry() || (e.DevOnly && !withDev) {
@@ -82,7 +76,6 @@ func (s *Store) packageFilesWith(gameID, id string, withDev bool) (files map[str
 				if src, err = zipCached(dir, e.StoreKey(), src); err != nil {
 					return nil, nil, fmt.Errorf("%s: %w", entryLabel(e), err)
 				}
-				zips[filepath.Base(src)] = true
 			}
 			files[rel] = packageFile{src: src, key: e.Key, beaten: beaten}
 		}
@@ -100,21 +93,37 @@ func zipCached(dir, key, src string) (string, error) {
 	if safefs.IsFile(zp) {
 		return zp, nil
 	}
-	tmp := zp + ".tmp"
+	if err := os.MkdirAll(filepath.Dir(zp), 0o750); err != nil {
+		return "", err
+	}
+	f, err := os.CreateTemp(filepath.Dir(zp), key+".*.tmp")
+	if err != nil {
+		return "", err
+	}
+	tmp := f.Name()
+	_ = f.Close()
 	if err := installer.ZipDir(src, tmp); err != nil {
+		_ = safefs.Remove(tmp)
 		return "", err
 	}
 	return zp, safefs.Rename(tmp, zp)
 }
 
-// pruneZips removes the cached zips no enabled entry uses any more.
-func pruneZips(dir string, keep map[string]bool) {
+// pruneZips removes the cached zips none of files lays out any more. It runs under the profile's layout lock, which
+// the read-only queries that also build zips do not hold, so an in-flight build's temp file is left alone.
+func pruneZips(dir string, files map[string]packageFile) {
+	keep := map[string]bool{}
+	for _, f := range files {
+		if filepath.Dir(f.src) == filepath.Join(dir, zipsDir) {
+			keep[filepath.Base(f.src)] = true
+		}
+	}
 	entries, err := os.ReadDir(filepath.Join(dir, zipsDir))
 	if err != nil {
 		return
 	}
 	for _, e := range entries {
-		if !keep[e.Name()] {
+		if !keep[e.Name()] && !strings.HasSuffix(e.Name(), ".tmp") {
 			_ = safefs.Remove(filepath.Join(dir, zipsDir, e.Name()))
 		}
 	}
@@ -248,6 +257,7 @@ func (s *Store) syncPackages(gameID, id string, withDev bool) error {
 	if err != nil {
 		return err
 	}
+	pruneZips(dir, files)
 	if err := s.parkModConfigs(gameID, p, dir); err != nil {
 		return err
 	}
