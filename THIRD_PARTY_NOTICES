@@ -3039,7 +3039,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-bepinex@v0.1.0
+github.com/Rethunk-Tech/go-bepinex@v0.2.0
 licence: MIT
 https://github.com/Rethunk-Tech/go-bepinex
 
@@ -3459,7 +3459,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-safefs@v0.2.0
+github.com/Rethunk-Tech/go-safefs@v0.3.0
 licence: MIT
 https://github.com/Rethunk-Tech/go-safefs
 

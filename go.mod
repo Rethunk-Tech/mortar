@@ -5,7 +5,7 @@ go 1.27.3
 require (
 	github.com/Rethunk-Tech/go-archive v0.2.0
 	github.com/Rethunk-Tech/go-avscan v0.1.0
-	github.com/Rethunk-Tech/go-bepinex v0.1.0
+	github.com/Rethunk-Tech/go-bepinex v0.2.0
 	github.com/Rethunk-Tech/go-cfgedit v0.2.0
 	github.com/Rethunk-Tech/go-curseforge v0.2.0
 	github.com/Rethunk-Tech/go-desktopenv v0.4.0
@@ -20,7 +20,7 @@ require (
 	github.com/Rethunk-Tech/go-modmanagers v0.2.0
 	github.com/Rethunk-Tech/go-nettrace v0.1.0
 	github.com/Rethunk-Tech/go-nexusmods v0.2.0
-	github.com/Rethunk-Tech/go-safefs v0.2.0
+	github.com/Rethunk-Tech/go-safefs v0.3.0
 	github.com/Rethunk-Tech/go-semverish v0.2.0
 	github.com/Rethunk-Tech/go-smapi v0.2.0
 	github.com/Rethunk-Tech/go-smapiweb v0.1.0
@@ -77,8 +77,4 @@ require (
 
 replace github.com/wailsapp/wails/v3 => github.com/Rethunk-AI/wails/v3 v3.0.0-mortar.1
 
-replace github.com/Rethunk-Tech/go-bepinex => ../go-bepinex
-
 replace github.com/Rethunk-Tech/go-gamelocator => ../go-gamelocator
-
-replace github.com/Rethunk-Tech/go-safefs => ../go-safefs
