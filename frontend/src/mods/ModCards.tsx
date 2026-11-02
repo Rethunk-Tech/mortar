@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Card, Typography, useMediaQuery } from '@mui/material'
-import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useMemo, useRef } from 'react'
 import type {
   Mod,
   Profile,
@@ -9,6 +9,7 @@ import { parseCardStats } from '../browse/stats.ts'
 import { compact, compactQuery } from '../game/compact.ts'
 import { boundShortcut } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
+import { useElementSize } from '../shell/useElementSize.ts'
 import { space } from '../theme/density.ts'
 import { PAD_FOCUS } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -350,7 +351,8 @@ function CardsPane({
     gridLanePx(laneCompact) +
     (cardSize === 'large' ? LARGE_LANE_EXTRA : 0) +
     (statsLine ? STATS_LINE_PX : 0)
-  const [width, setWidth] = useState(0)
+  const parentRef = useRef<HTMLDivElement>(null)
+  const { width } = useElementSize(parentRef)
   const columns = gridColumnCount(width)
   const columnsRef = useRef(columns)
   columnsRef.current = columns
@@ -365,24 +367,12 @@ function CardsPane({
       }),
     [collapsed, columns, groupBy, groups],
   )
-  const { parentRef, virtualizer } = useModVirtual(items, lanePx)
+  const { virtualizer } = useModVirtual(items, lanePx, parentRef)
   const virtualItems = virtualizer.getVirtualItems()
   const visible = virtualItems.flatMap((vi) => items[vi.index] ?? [])
   const visibleStart = virtualItems[0]?.start ?? 0
   const stuck = stuckHeader(items, virtualizer.measurementsCache, virtualizer.scrollOffset ?? 0)
   const { orderedRef } = useRowFocus(orderedIds)
-  // Measured before paint, so the first frame lays out the real column count rather than one column.
-  useLayoutEffect(() => {
-    const el = parentRef.current
-    if (!el) {
-      return
-    }
-    const sync = () => setWidth(el.clientWidth)
-    const ro = new ResizeObserver(sync)
-    ro.observe(el)
-    sync()
-    return () => ro.disconnect()
-  }, [parentRef])
   const navIds = useMemo(() => orderedModIds(items, (row) => modId(row.mod)), [items])
   const move = useRef<(id: string, delta: number) => void>(() => undefined)
   move.current = (id, delta) => {

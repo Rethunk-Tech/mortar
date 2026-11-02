@@ -199,8 +199,14 @@ export function stepId(ids: readonly string[], current: string, delta: number): 
   return ids[Math.min(ids.length - 1, Math.max(0, i + delta))]
 }
 
-export function useModVirtual<T>(items: readonly VirtualRow<T>[], lanePx: number) {
-  const parentRef = useRef<HTMLDivElement>(null)
+// A caller that needs the scroll element before it has the rows (to measure its width) passes its own ref.
+export function useModVirtual<T>(
+  items: readonly VirtualRow<T>[],
+  lanePx: number,
+  ownRef?: RefObject<HTMLDivElement | null>,
+) {
+  const fallbackRef = useRef<HTMLDivElement>(null)
+  const parentRef = ownRef ?? fallbackRef
   const virtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => parentRef.current,

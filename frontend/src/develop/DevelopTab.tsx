@@ -39,6 +39,7 @@ import { ControlsRow } from '../shell/ControlsRow.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
+import { useOnWindowFocus } from '../shell/useOnWindowFocus.ts'
 import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
 import { ViewToggle } from '../shell/ViewToggle.tsx'
 import { isViewMode, type ViewMode } from '../shell/viewMode.ts'
@@ -333,15 +334,12 @@ export function DevelopTab({ game }: { game: string }) {
   const elsewhere = projects.filter((p) => p.profile !== openId)
   // Files can change in an editor while Mortar is in the background; coming back rereads them.
   const dirs = here.map((p) => p.dir).join('\n')
-  useEffect(() => {
-    const reread = () => {
-      for (const dir of dirs.split('\n').filter(Boolean)) {
-        refreshInfo(game, dir, true).catch(() => undefined)
-      }
+  const reread = useCallback(() => {
+    for (const dir of dirs.split('\n').filter(Boolean)) {
+      refreshInfo(game, dir, true).catch(() => undefined)
     }
-    globalThis.addEventListener('focus', reread)
-    return () => globalThis.removeEventListener('focus', reread)
   }, [game, dirs])
+  useOnWindowFocus(reread)
   return (
     <Box
       sx={{

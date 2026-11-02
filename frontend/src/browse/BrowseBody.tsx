@@ -3,10 +3,11 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Pagination, Typography } from '@mui/material'
 import { arrowFocus } from '@rethunk/dom-input-nav'
 import { CloudOff, Search, SearchX } from 'lucide-react'
-import { memo, useLayoutEffect, useRef, useState } from 'react'
+import { memo, useRef } from 'react'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { unreachableNote, unsortedNote } from '../shell/offlineText.ts'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
+import { useElementSize } from '../shell/useElementSize.ts'
 import { space } from '../theme/density.ts'
 import type { InlineError } from '../toasts/report.ts'
 import {
@@ -51,18 +52,7 @@ interface BrowseBodyProps {
 function BrowseSkeleton({ view }: { view: string }) {
   const { t } = useLingui()
   const box = useRef<HTMLDivElement>(null)
-  const [size, setSize] = useState({ width: 0, height: 0 })
-  useLayoutEffect(() => {
-    const el = box.current
-    if (!el) {
-      return
-    }
-    const measure = () => setSize({ width: el.clientWidth, height: el.clientHeight })
-    const ro = new ResizeObserver(measure)
-    ro.observe(el)
-    measure()
-    return () => ro.disconnect()
-  }, [])
+  const size = useElementSize(box)
   const isGrid = view === 'grid'
   const rowPx = PICTURE_PX + CARD_PAD_PX
   return (

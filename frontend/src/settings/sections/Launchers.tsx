@@ -2,9 +2,9 @@ import { useLingui } from '@lingui/react/macro'
 import { useCallback, useEffect, useState } from 'react'
 import type { StoreApp } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import { Launchers as ListLaunchers } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
-import { useRefreshOnFocus } from '../../firstrun/useRefreshOnFocus.ts'
 import { LauncherList } from '../../launchers/LauncherList.tsx'
 import { SkeletonRows } from '../../shell/SkeletonRows.tsx'
+import { useOnWindowFocus } from '../../shell/useOnWindowFocus.ts'
 import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { Searchable, SettingsSection } from '../SettingsSection.tsx'
@@ -22,7 +22,7 @@ export function Launchers() {
       .catch(reportUnexpected)
   }, [])
   useEffect(refresh, [refresh])
-  useRefreshOnFocus(refresh)
+  useOnWindowFocus(refresh)
   return (
     <SettingsSection
       title={t`Launchers`}

@@ -16,10 +16,10 @@ import { storeName } from '../games/storeName.ts'
 import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { useLoader } from '../loader/store.ts'
 import { TypedFolder } from '../shell/TypedFolder.tsx'
+import { useOnWindowFocus } from '../shell/useOnWindowFocus.ts'
 import { space } from '../theme/density.ts'
 import { type InlineError, inlineError } from '../toasts/report.ts'
 import { Panel } from './Panel.tsx'
-import { useRefreshOnFocus } from './useRefreshOnFocus.ts'
 
 const shadow = '0 1px 2px var(--mortar-overlay-90), 0 0 18px var(--mortar-overlay-85)'
 // The art is dimmed until the game is found.
@@ -178,7 +178,7 @@ export function FindStep({
   const dir = game.installDir
   const named = storeName(game.store)
   const caption = named ? t`Found in ${{ path: named }}` : t`Folder chosen by you`
-  useRefreshOnFocus(refresh, !found)
+  useOnWindowFocus(refresh, !found)
   useEffect(() => {
     if (dir) {
       check(game.id)

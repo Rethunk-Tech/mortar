@@ -12,6 +12,7 @@ import {
   useState,
 } from 'react'
 import type { Entry } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
+import { useElementSize } from '../shell/useElementSize.ts'
 import { space } from '../theme/density.ts'
 import {
   type ConsoleLink,
@@ -283,7 +284,7 @@ export function VirtualLog({
   const { t } = useLingui()
   const ref = useRef<HTMLDivElement>(null)
   const [top, setTop] = useState(0)
-  const [height, setHeight] = useState(0)
+  const { height } = useElementSize(ref)
   const [menu, setMenu] = useState<{
     seq: number
     top: number
@@ -333,16 +334,6 @@ export function VirtualLog({
     return lines.some((r) => r.seq === menu?.seq) ? lines : []
   }, [menu?.ends, menu?.seq, rows])
   const marked = selection.length > 0 ? selection : menuGroup
-
-  useLayoutEffect(() => {
-    const el = ref.current
-    if (!el) {
-      return
-    }
-    const measure = new ResizeObserver(() => setHeight(el.clientHeight))
-    measure.observe(el)
-    return () => measure.disconnect()
-  }, [])
 
   // Whether the view sits at the bottom, kept from each scroll as it happens: lines arriving between a scroll and the
   // next render must not pull the view back down.

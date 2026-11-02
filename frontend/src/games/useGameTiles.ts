@@ -6,12 +6,12 @@ import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/inte
 import type { Played } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import { Get } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { setupNeeded } from '../firstrun/needed.ts'
-import { useRefreshOnFocus } from '../firstrun/useRefreshOnFocus.ts'
 import { useLoader } from '../loader/store.ts'
 import { isGameId } from '../nav/store.ts'
 import { listProfiles } from '../profiles/listProfiles.ts'
 import { useSettings } from '../settings/store.ts'
 import { profileCounts } from '../shell/sharedReads.ts'
+import { useOnWindowFocus } from '../shell/useOnWindowFocus.ts'
 import { type InlineError, inlineError, reportError } from '../toasts/report.ts'
 import { type GameStatus, installedVersion, loaderCaption, loadGameStatus } from './status.ts'
 
@@ -81,7 +81,7 @@ function useGameTiles() {
       })
   }, [t])
   useEffect(refresh, [refresh])
-  useRefreshOnFocus(refresh)
+  useOnWindowFocus(refresh)
   const noteFor = (g: Game) => {
     const st = states[g.id]
     if (!g.available) {

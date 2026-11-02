@@ -12,9 +12,9 @@ import { LauncherList } from '../launchers/LauncherList.tsx'
 import { openPage } from '../mods/menu.ts'
 import { useNav } from '../nav/store.ts'
 import { LoadErrorRow, LoadingRow } from '../shell/LoadingRow.tsx'
+import { useOnWindowFocus } from '../shell/useOnWindowFocus.ts'
 import { space } from '../theme/density.ts'
 import { type InlineError, inlineError, reportUnexpected } from '../toasts/report.ts'
-import { useRefreshOnFocus } from './useRefreshOnFocus.ts'
 
 // First run: the launchers that tell Mortar which games are installed. Each game is set up when first opened.
 export function FirstRun() {
@@ -40,7 +40,7 @@ export function FirstRun() {
       })
   }, [])
   useEffect(refresh, [refresh])
-  useRefreshOnFocus(refresh)
+  useOnWindowFocus(refresh)
   if (loadError) {
     return <LoadErrorRow error={loadError} onRetry={refresh} />
   }

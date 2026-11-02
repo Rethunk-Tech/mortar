@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { Takeover } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nxmsvc/models.ts'
 import {
   TakeBack,
@@ -9,6 +9,7 @@ import {
 import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { listNames } from '../../i18n/list.ts'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
+import { useOnWindowFocus } from '../../shell/useOnWindowFocus.ts'
 import { toastError } from '../../toasts/report.ts'
 import { useSettings } from '../store.ts'
 
@@ -24,19 +25,18 @@ export function NxmReclaim() {
       s.vsmoddbHandleLinks === true,
   )
   const [taken, setTaken] = useState<Takeover[]>([])
+  const watching = nexus || thunderstore
+  const check = useCallback(() => {
+    Taken()
+      .then((list) => setTaken(list ?? []))
+      .catch(() => undefined)
+  }, [])
   useEffect(() => {
-    if (!(nexus || thunderstore)) {
-      return
+    if (watching) {
+      check()
     }
-    const check = () => {
-      Taken()
-        .then((list) => setTaken(list ?? []))
-        .catch(() => undefined)
-    }
-    check()
-    globalThis.addEventListener('focus', check)
-    return () => globalThis.removeEventListener('focus', check)
-  }, [nexus, thunderstore])
+  }, [watching, check])
+  useOnWindowFocus(check, watching)
   const fail = (e: unknown) => toastError(t`Could not change how mod links open`, e)
   const lines = taken.map(({ source, name }) => {
     if (source === 'nexus') {
