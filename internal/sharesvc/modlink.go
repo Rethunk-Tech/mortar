@@ -3,6 +3,7 @@ package sharesvc
 import (
 	"context"
 	"errors"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 
 	"github.com/Rethunk-Tech/go-nexusmods"
 
@@ -14,7 +15,7 @@ import (
 
 // errModLinkNeedsPremium explains why a pasted mod page link cannot install on a free account: Nexus only hands
 // a free account a file through its own Mod Manager Download button.
-var errModLinkNeedsPremium = errors.New("installing from a mod page link needs Nexus Premium; on a free account, press Mod Manager Download on the mod's Files tab")
+var errModLinkNeedsPremium = usererr.Wrap(usererr.Permission, errors.New("installing from a mod page link needs Nexus Premium; on a free account, press Mod Manager Download on the mod's Files tab"))
 
 // previewModPage previews the mod's primary file (else its newest MAIN file) as a one-mod import.
 func (s *Service) previewModPage(ctx context.Context, gameID, domain string, modID int, profileID string) (Preview, error) {
@@ -34,7 +35,7 @@ func (s *Service) previewModPage(ctx context.Context, gameID, domain string, mod
 	}
 	f := pickModPageFile(files)
 	if f == nil {
-		return Preview{}, errors.New("that mod has no main file to install")
+		return Preview{}, usererr.Wrap(usererr.NotFound, errors.New("that mod has no main file to install"))
 	}
 	ref := share.Ref{ModID: modID, FileID: f.FileID}
 	return s.preview(ctx, gameID, share.Shared{Name: f.Name, Entries: []share.Ref{ref}}, "", nil, profileID, profile.OriginLink)

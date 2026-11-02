@@ -65,11 +65,11 @@ func historyBatchID() string {
 
 var (
 	// ErrNoPreview means Import was asked for without a preview to act on.
-	ErrNoPreview = errors.New("there is nothing to import: open a link or file first")
+	ErrNoPreview = usererr.Wrap(usererr.Invalid, errors.New("there is nothing to import: open a link or file first"))
 	// ErrStalePreview means Import named a preview other than the one the service holds.
-	ErrStalePreview = errors.New("the preview changed: check it again before importing")
+	ErrStalePreview = usererr.Wrap(usererr.Invalid, errors.New("the preview changed: check it again before importing"))
 	// ErrSignedOut means the import has Nexus downloads and no account is signed in.
-	ErrSignedOut = errors.New("sign in to Nexus Mods before importing mods from Nexus")
+	ErrSignedOut = usererr.Wrap(usererr.Permission, errors.New("sign in to Nexus Mods before importing mods from Nexus"))
 )
 
 // Arrival is a link, a .mortar file, or a mod route that reached the app from outside. It is only ever shown in the
@@ -1210,7 +1210,7 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 // are removed, and local-only mods not in the share are kept. profileID must be the preview's target.
 func (s *Service) Replace(ctx context.Context, game, session, profileID string, exclude []string, asIs bool) (Result, error) {
 	if profileID == "" {
-		return Result{}, errors.New("replace needs a profile")
+		return Result{}, usererr.Wrap(usererr.Invalid, errors.New("replace needs a profile"))
 	}
 	s.mu.Lock()
 	cur := s.current

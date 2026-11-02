@@ -241,7 +241,7 @@ func (s *Service) ExportModpack(gameID, profileID, dest string, o ModpackOptions
 	res := modpackPackages(p, o.IncludeDisabled)
 	res.Path = dest
 	if len(res.Dependencies) == 0 {
-		return res, errors.New("the profile holds no enabled Thunderstore packages")
+		return res, usererr.Wrap(usererr.Invalid, errors.New("the profile holds no enabled Thunderstore packages"))
 	}
 	files := map[string][]byte{}
 	if len(o.Configs) > 0 {
@@ -322,7 +322,7 @@ func (s *Service) find(gameID, profileID string) (profile.Profile, error) {
 			return p, nil
 		}
 	}
-	return profile.Profile{}, fmt.Errorf("no profile %q", profileID)
+	return profile.Profile{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("no profile %q", profileID))
 }
 
 func entryName(e profile.Entry) string {

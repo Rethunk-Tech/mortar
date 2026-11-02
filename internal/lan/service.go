@@ -297,7 +297,7 @@ func (s *Service) ensureStarted(ctx context.Context) error {
 		return nil
 	}
 	if s.deps.Settings == nil || !s.deps.Settings.Get().LanSharing {
-		return errors.New("LAN sharing is disabled")
+		return usererr.Wrap(usererr.Permission, errors.New("LAN sharing is disabled"))
 	}
 	anyAddr := s.allowAnyAddress()
 	if s.publicBlocksListening(anyAddr) {
@@ -696,10 +696,10 @@ func (s *Service) hello(ctx context.Context, peerID string) (helloResponse, erro
 	}
 	hello.challenge = challenge
 	if hello.Nonce == "" {
-		return helloResponse{}, errors.New("LAN peer returned no handshake nonce")
+		return helloResponse{}, usererr.Wrap(usererr.Damaged, errors.New("LAN peer returned no handshake nonce"))
 	}
 	if hello.Version != protocolVersion {
-		return helloResponse{}, errors.New("update Mortar on the other computer")
+		return helloResponse{}, usererr.Wrap(usererr.Outdated, errors.New("update Mortar on the other computer"))
 	}
 	return hello, nil
 }
@@ -1071,10 +1071,10 @@ func validateRequest(request shareRequest) (share.Shared, error) {
 		return share.Shared{}, errors.New("sender is invalid")
 	}
 	if game.Find(request.Game) == nil {
-		return share.Shared{}, errors.New("game is invalid")
+		return share.Shared{}, usererr.Wrap(usererr.Invalid, errors.New("game is invalid"))
 	}
 	if request.Version != protocolVersion {
-		return share.Shared{}, errors.New("update Mortar on the other computer")
+		return share.Shared{}, usererr.Wrap(usererr.Outdated, errors.New("update Mortar on the other computer"))
 	}
 	raw, err := base64.RawStdEncoding.DecodeString(request.Payload)
 	if err != nil {

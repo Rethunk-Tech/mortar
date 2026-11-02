@@ -3,6 +3,7 @@ package sharesvc
 import (
 	"context"
 	"fmt"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"net/url"
 	"strconv"
 	"strings"
@@ -194,7 +195,7 @@ func (s *Service) PreviewCollectionUpdate(ctx context.Context, game, profileID s
 		return Preview{}, err
 	}
 	if p.Collection == nil || p.Collection.Domain == "" || p.Collection.Slug == "" {
-		return Preview{}, fmt.Errorf("this profile is not from a collection")
+		return Preview{}, usererr.Wrap(usererr.Invalid, fmt.Errorf("this profile is not from a collection"))
 	}
 	return s.previewCollection(ctx, game, p.Collection.Domain, p.Collection.Slug, 0, profileID)
 }
@@ -208,7 +209,7 @@ func checkDomain(game, domain, what string) error {
 		name, want = info.Name, info.NexusDomain()
 	}
 	if want == "" || !strings.EqualFold(want, domain) {
-		return fmt.Errorf("that %s is not for %s", what, name)
+		return usererr.Wrap(usererr.OtherGame, fmt.Errorf("that %s is not for %s", what, name))
 	}
 	return nil
 }

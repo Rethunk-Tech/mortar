@@ -3,6 +3,7 @@ package sharesvc
 import (
 	"encoding/json"
 	"errors"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"io"
 	"path"
 	"strings"
@@ -84,7 +85,7 @@ func readCollectionArchive(raw []byte) (_ collectionDetails, err error) {
 		}
 	}
 	if !found {
-		return collectionDetails{}, errors.New("the collection archive has no collection.json")
+		return collectionDetails{}, usererr.Wrap(usererr.Damaged, errors.New("the collection archive has no collection.json"))
 	}
 	for _, bd := range bundles {
 		d.Configs = append(d.Configs, bd.configs()...)

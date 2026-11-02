@@ -30,7 +30,11 @@ func siteError(site, what string, res *http.Response, reply []byte) error {
 	if len(text) > 300 {
 		text = text[:300]
 	}
-	return fmt.Errorf("%s %s: %s: %s", site, what, res.Status, text)
+	kind := usererr.Invalid
+	if res.StatusCode >= http.StatusInternalServerError {
+		kind = usererr.Network
+	}
+	return usererr.Wrap(kind, fmt.Errorf("%s %s: %s: %s", site, what, res.Status, text))
 }
 
 // storageURL is a URL a site handed out to upload bytes to. It carries no credential of Mortar's, but the file must not

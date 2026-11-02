@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"maps"
 	"path/filepath"
 	"slices"
@@ -232,7 +233,7 @@ func (s *Service) ExportCollection(ctx context.Context, game, profileID string) 
 	}
 	info, ok := components.Game(game)
 	if !ok || info.NexusDomain() == "" {
-		return ExportedCollection{}, fmt.Errorf("%s has no Nexus page to make a collection for", game)
+		return ExportedCollection{}, usererr.Wrap(usererr.Invalid, fmt.Errorf("%s has no Nexus page to make a collection for", game))
 	}
 	t := nexusmods.Title{Domain: info.NexusDomain(), ID: info.NexusID()}
 	dest, err := s.App.SaveFile(winhost.Dialog{Filename: "collection.zip", Filters: []winhost.Filter{{Name: i18n.T("{source} collection draft (zip)", "source", "Nexus"), Pattern: "*.zip"}}})
