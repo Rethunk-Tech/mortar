@@ -257,7 +257,7 @@ func TestSiteIDsAreKeptInTheProjectsRecordAndOffered(t *testing.T) {
 	svc, _ := testService(t, testTemplate)
 	dir := fixtureProject(t, svc)
 	configured := func() []string {
-		sites, _ := svc.UploadSites("lethal-company", dir)
+		sites, _ := svc.UploadSites(t.Context(), "lethal-company", dir)
 		ids := []string{}
 		for _, s := range sites {
 			ids = append(ids, s.ID+fmt.Sprint(s.Configured))

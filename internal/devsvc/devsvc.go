@@ -65,6 +65,8 @@ type Service struct {
 	Version string
 	// ThunderstoreURL, when set, replaces https://thunderstore.io/ for uploads (tests).
 	ThunderstoreURL string
+	// GitHubURL, when set, replaces https://api.github.com for releases (tests).
+	GitHubURL string
 	// LicensesURL, when set, replaces GitHub's licenses API (tests).
 	LicensesURL string
 	// ArchiveURL, when set, replaces codeload.github.com for the template archive (tests).

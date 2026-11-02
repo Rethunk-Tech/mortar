@@ -3,6 +3,7 @@ import {
   ForgetCurseForgeToken,
   ForgetThunderstoreToken,
   UploadCurseForge,
+  UploadGitHub,
   UploadNexus,
   UploadThunderstore,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
@@ -21,6 +22,9 @@ function uploadCall(id: string, game: string, dir: string, version: string): Pro
   }
   if (id === 'curseforge') {
     return UploadCurseForge(game, dir, version)
+  }
+  if (id === 'github') {
+    return UploadGitHub(game, dir, version)
   }
   return UploadThunderstore(game, dir)
 }

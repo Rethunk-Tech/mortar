@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Checkbox, FormControlLabel, TextField } from '@mui/material'
+import { Box, Button, Checkbox, FormControlLabel, TextField, Typography } from '@mui/material'
 import { Upload } from 'lucide-react'
-import { useCallback, useEffect, useId, useState } from 'react'
+import { type ReactNode, useCallback, useEffect, useId, useState } from 'react'
 import type { UploadSite } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import {
   SetCurseForgeToken,
@@ -114,11 +114,20 @@ function SiteRow({
   onKey: () => void
 }) {
   const { t } = useLingui()
-  const missing = site.ready ? null : (
-    <Button size="small" onClick={site.id === 'nexus' ? onKey : onAsk}>
-      {site.id === 'nexus' ? t`Add your API key in Settings` : t`Add token`}
-    </Button>
-  )
+  let missing: ReactNode = null
+  if (!site.ready && site.id === 'github') {
+    missing = (
+      <Typography variant="caption" color="text.secondary">
+        {t`Sign in with the gh CLI: gh auth login`}
+      </Typography>
+    )
+  } else if (!site.ready) {
+    missing = (
+      <Button size="small" onClick={site.id === 'nexus' ? onKey : onAsk}>
+        {site.id === 'nexus' ? t`Add your API key in Settings` : t`Add token`}
+      </Button>
+    )
+  }
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, minHeight: 36 }}>
       <FormControlLabel

@@ -13,7 +13,7 @@ require (
 	github.com/Rethunk-Tech/go-fomod v0.1.0
 	github.com/Rethunk-Tech/go-gamelocator v0.1.0
 	github.com/Rethunk-Tech/go-gameproc v0.1.0
-	github.com/Rethunk-Tech/go-github v0.1.1
+	github.com/Rethunk-Tech/go-github v0.2.0
 	github.com/Rethunk-Tech/go-httpkit v0.1.0
 	github.com/Rethunk-Tech/go-keyring v0.1.0
 	github.com/Rethunk-Tech/go-lenientjson v0.1.0

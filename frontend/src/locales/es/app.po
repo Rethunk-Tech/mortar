@@ -7476,6 +7476,10 @@ msgstr ""
 msgid "Downloads resume {when}."
 msgstr ""
 
+#: src/develop/UploadDialog.tsx
+msgid "Sign in with the gh CLI: gh auth login"
+msgstr ""
+
 #: src/install/MissingDepsDialog.tsx
 msgid "Add them"
 msgstr ""

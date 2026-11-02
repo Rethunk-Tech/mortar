@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"time"
 
+	gh "github.com/Rethunk-Tech/go-github"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/secret"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -106,7 +107,7 @@ func (s *Service) UploadThunderstore(ctx context.Context, gameID, dir string) (s
 	return tsupload.Upload(ctx, s.httpClient(), s.thunderstoreSite(), zipPath, info.Team, community, info.Categories)
 }
 
-// UploadSite is a site the game can be uploaded to: its id is thunderstore, nexus or curseforge. Configured is set when
+// UploadSite is a site the game can be uploaded to: its id is thunderstore, nexus, curseforge or github. Configured is set when
 // the project's ids for it are filled in (Thunderstore needs none), and Ready when the credentials it needs are kept.
 type UploadSite struct {
 	ID         string `json:"id"`
@@ -115,9 +116,9 @@ type UploadSite struct {
 }
 
 // UploadSites lists the sites the game can be uploaded to: Thunderstore when it has a community, Nexus Mods when it
-// has a Nexus domain and CurseForge when its source names an upload subdomain. Edit shows the id fields of those; Upload
+// has a Nexus domain and CurseForge when its source names an upload subdomain, and GitHub when the project's origin is there. Edit shows the id fields of those; Upload
 // offers the Configured ones.
-func (s *Service) UploadSites(gameID, dir string) ([]UploadSite, error) {
+func (s *Service) UploadSites(ctx context.Context, gameID, dir string) ([]UploadSite, error) {
 	p, err := s.project(gameID, dir)
 	if err != nil {
 		return nil, err
@@ -133,6 +134,9 @@ func (s *Service) UploadSites(gameID, dir string) ([]UploadSite, error) {
 	}
 	if curseForgeBase(gameID) != "" {
 		sites = append(sites, UploadSite{ID: "curseforge", Configured: ids.CurseForge.ProjectID > 0, Ready: s.HasCurseForgeToken()})
+	}
+	if _, _, ok := s.githubOrigin(ctx, p.Dir); ok {
+		sites = append(sites, UploadSite{ID: "github", Configured: true, Ready: gh.DefaultAuth.LoggedIn(ctx)})
 	}
 	return sites, nil
 }

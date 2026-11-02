@@ -7476,6 +7476,10 @@ msgstr "Could not open the page"
 msgid "Downloads resume {when}."
 msgstr "Downloads resume {when}."
 
+#: src/develop/UploadDialog.tsx
+msgid "Sign in with the gh CLI: gh auth login"
+msgstr "Sign in with the gh CLI: gh auth login"
+
 #: src/install/MissingDepsDialog.tsx
 msgid "Add them"
 msgstr "Add them"
