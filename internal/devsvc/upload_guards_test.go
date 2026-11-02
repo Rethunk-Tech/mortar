@@ -63,9 +63,6 @@ func TestUploadGuardsRefuseBeforeAnyRequest(t *testing.T) {
 }
 
 func TestSitePagesNameTheProjectsFilesPage(t *testing.T) {
-	if got := curseForgePage(31); got != "https://authors.curseforge.com/#/projects/31/files" {
-		t.Errorf("curseforge page = %q", got)
-	}
 	if got := nexusPage("lethal-company", NexusIDs{ModID: "x"}); got != "" {
 		t.Errorf("nexus page without a numeric mod id = %q", got)
 	}

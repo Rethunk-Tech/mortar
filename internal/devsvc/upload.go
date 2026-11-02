@@ -1,13 +1,14 @@
 package devsvc
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"net/http"
 	"os"
 	"path/filepath"
-	"time"
 
+	"github.com/Rethunk-Tech/go-curseforge"
 	gh "github.com/Rethunk-Tech/go-github"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/secret"
@@ -206,8 +207,7 @@ func (s *Service) UploadNexus(ctx context.Context, gameID, dir, version string) 
 	if err != nil {
 		return "", err
 	}
-	up := nexusUploader{client: s.httpClient(), base: nexusAPI, key: key, version: s.Version, poll: 2 * time.Second}
-	if err := up.upload(ctx, zipPath, info.Name, ids, version, notes); err != nil {
+	if err := s.uploadNexus(ctx, key, zipPath, info.Name, ids, version, notes); err != nil {
 		return "", err
 	}
 	return nexusPage(gameID, ids), nil
@@ -217,7 +217,7 @@ func (s *Service) UploadNexus(ctx context.Context, gameID, dir, version string) 
 // project's files page on the authors site.
 func (s *Service) UploadCurseForge(ctx context.Context, gameID, dir, version string) (string, error) {
 	var id int
-	base := curseForgeBase(gameID)
+	base := cmp.Or(s.CurseForgeURL, curseForgeBase(gameID))
 	p, zipPath, notes, err := s.prepareUpload(gameID, dir, version, true, func(p settings.DevProject) error {
 		if id = readSites(p.Dir).CurseForge.ProjectID; id <= 0 || base == "" {
 			return usererr.Wrap(usererr.Invalid, errors.New("set the project's CurseForge project id first"))
@@ -235,11 +235,10 @@ func (s *Service) UploadCurseForge(ctx context.Context, gameID, dir, version str
 	if err != nil {
 		return "", err
 	}
-	up := curseForgeUploader{client: s.httpClient(), base: base, token: token, version: s.Version}
-	if _, err := up.upload(ctx, zipPath, id, info.Name+" "+version, notes); err != nil {
+	if _, err := s.uploadCurseForge(ctx, base, token, zipPath, id, info.Name+" "+version, notes); err != nil {
 		return "", err
 	}
-	return curseForgePage(id), nil
+	return curseforge.AuthorFilesURL(id), nil
 }
 
 // newestPackage is the most recent zip Pack wrote.

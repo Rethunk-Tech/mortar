@@ -67,6 +67,8 @@ type Service struct {
 	ThunderstoreURL string
 	// GitHubURL, when set, replaces https://api.github.com for releases (tests).
 	GitHubURL string
+	// NexusURL and CurseForgeURL, when set, replace the Nexus Mods API origin and the game's CurseForge upload host (tests).
+	NexusURL, CurseForgeURL string
 	// LicensesURL, when set, replaces GitHub's licenses API (tests).
 	LicensesURL string
 	// ArchiveURL, when set, replaces codeload.github.com for the template archive (tests).

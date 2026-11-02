@@ -78,3 +78,9 @@ require (
 )
 
 replace github.com/wailsapp/wails/v3 => github.com/Rethunk-AI/wails/v3 v3.0.0-mortar.1
+
+replace github.com/Rethunk-Tech/go-safefs => ../go-safefs
+
+replace github.com/Rethunk-Tech/go-nexusmods => ../go-nexusmods
+
+replace github.com/Rethunk-Tech/go-curseforge => ../go-curseforge
